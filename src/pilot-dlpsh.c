@@ -558,7 +558,7 @@ int exit_fn(int sd, int argc, char *argv[])
 				"Thank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
-	return 0;
+	exit(0);
 }
 
 /***********************************************************************
@@ -579,7 +579,7 @@ char *strtoke(char *str, char *ws, char *delim)
 			*start;
 
 
-	if (str) {
+	if (str != NULL) {
 		s = str;
 	}
 
