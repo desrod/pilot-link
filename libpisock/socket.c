@@ -518,7 +518,7 @@ alarm(unsigned sec)
 }
 #endif
 
-static void
+static RETSIGTYPE
 onalarm(int signo)
 {
 	struct pi_socket_list *l;

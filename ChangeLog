@@ -1,3 +1,7 @@
+2002-04-16  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/socket.c (onalarm): use RETSIGTYPE
+
 2002-04-12  David A. Desrosiers <hacker at gnu-designs dot com>
 
         * bindings/Python/setup.py: Fixed libdir
