@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 	buffer = pi_buffer_new (0xffff);
 
 	while ((len = pi_read(sd2, buffer, 0xffff)) > 0) {
-		pi_write(sd, buffer, len);
+		pi_write(sd, buffer->data, len);
 		buffer->used = 0;
 		len = pi_read(sd, buffer, 0xffff);
 		if (len < 0)
