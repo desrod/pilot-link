@@ -3,8 +3,7 @@ INCLUDES = 			\
 	-I$(top_srcdir)/include
 
 serial_FILES = 		\
-	unixserial.c 	\
-	os2serial.c
+	unixserial.c
 serial_SOURCE = unixserial.c
 
 usb_FILES = 		\
@@ -61,6 +60,7 @@ libpisock_la_SOURCES =  \
 	sys.c		\
 	socket.c	\
 	syspkt.c	\
+	threadsafe.c\
 	todo.c		\
 	utils.c		\
 	veo.c		\

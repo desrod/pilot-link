@@ -54,18 +54,13 @@
 #include "pi-syspkt.h"
 #include "pi-debug.h"
 #include "pi-error.h"
+#include "pi-threadsafe.h"
 
 /* Declare function prototypes */
 static pi_socket_list_t *ps_list_append (pi_socket_list_t *list,
 	pi_socket_t *ps);
-/* knghtbrd: unused
-static pi_socket_list_t *ps_list_prepend (pi_socket_list_t *list,
-	pi_socket_t *ps); */
 static pi_socket_t *ps_list_find (pi_socket_list_t *list,
 	int pi_sd);
-/* fpillet: unused
-static pi_socket_list_t *ps_list_find_elem (pi_socket_list_t *list,
-	int pi_sd);  */
 static pi_socket_list_t *ps_list_remove (pi_socket_list_t *list,
 	int pi_sd); 
 static pi_socket_list_t *ps_list_copy (pi_socket_list_t *list);
@@ -82,7 +77,10 @@ static int is_connected (pi_socket_t *ps);
 static int is_listener (pi_socket_t *ps);
 
 /* GLOBALS */
+static PI_MUTEX_DEFINE(psl_mutex);
 static pi_socket_list_t *psl = NULL;
+
+static PI_MUTEX_DEFINE(watch_list_mutex);
 static pi_socket_list_t *watch_list = NULL;
 
 /* Automated tickling interval */
@@ -104,7 +102,7 @@ int pi_sock_installedexit = 0;
  * Returns:     void
  *
  ***********************************************************************/
-/* fpillet: used only during debug phases
+#if DEBUG
 static void
 ps_list_dump (pi_socket_list_t *list)
 {
@@ -114,7 +112,7 @@ ps_list_dump (pi_socket_list_t *list)
 		list = list->next;
 	}
 }
-*/
+#endif
 
 /***********************************************************************
  *
@@ -157,39 +155,6 @@ ps_list_append (pi_socket_list_t *list, pi_socket_t *ps)
 
 /***********************************************************************
  *
- * Function:    ps_list_prepend
- *
- * Summary:     creates and prepends a new pi_socket_list element to
- *		the (possibly empty) pi_socket_list and	fills in the
- *		pi_socket_t* member to point to the given pi_socket.
- *
- * Parameters:	pi_socket_list_t *, pi_socket_t *
- *
- * Returns:     pi_socket_list_t *, or NULL if operation failed
- *
- ***********************************************************************/
-/* knghtbrd: unused
-static pi_socket_list_t *
-ps_list_prepend (pi_socket_list_t *list, pi_socket_t *ps) 
-{
-	pi_socket_list_t *new_elem;
-	
-	ASSERT (ps != NULL);
-
-	new_elem = malloc(sizeof(pi_socket_list_t));
-
-	if (new_elem != NULL) {
-		new_elem->ps 	= ps;
-		new_elem->version = 0;
-		new_elem->next 	= list;
-	}
-
-	return new_elem;
-}*/
-
-
-/***********************************************************************
- *
  * Function:    ps_list_find
  *
  * Summary:     traverse a (possibly empty) pi_socket_list and find
@@ -220,40 +185,6 @@ ps_list_find (pi_socket_list_t *list, int pi_sd)
 	return NULL;
 }
 
-
-/***********************************************************************
- *
- * Function:    ps_find_elem
- *
- * Summary:     traverse a (possibly empty) pi_socket_list and find
- *		the first list element whose pi_socket* member points
- *		to a pi_socket matching the given socket descriptor
- *
- * Parameters:	pi_socket_list_t*, socket descriptor 
- *
- * Returns:     pi_socket_list_t*, or NULL if not found
- *
- * NOTE:	ps_list_find returns a pointer which points directly to
- *		the socket (pi_socket_t *) whereas ps_find_elem returns a
- *		pointer to the list element (pi_socket_list_t *) which
- *		_contains_ a pointer to the socket
- *
- ***********************************************************************/
-/* fpillet: unused
-static pi_socket_list_t *
-ps_list_find_elem (pi_socket_list_t *list, int pi_sd) 
-{
-	pi_socket_list_t *elem;
-	
-	for (elem = list; elem != NULL; elem = elem->next) {
-		if (elem->ps != NULL)
-			if (elem->ps->sd == pi_sd)
-				return elem;
-	}
-
-	return NULL;
-}
-*/
 
 /***********************************************************************
  *
@@ -823,6 +754,8 @@ onalarm(int signo)
 
 	signal(signo, onalarm);
 	
+	pi_mutex_lock(&watch_list_mutex);
+
 	for (l = watch_list; l != NULL; l = l->next) {
 		pi_socket_t *ps = l->ps;
 
@@ -840,6 +773,8 @@ onalarm(int signo)
 			alarm(interval);
 		}
 	}
+
+	pi_mutex_unlock(&watch_list_mutex);
 }
 
 /* Exit Handling Code */
@@ -861,7 +796,9 @@ onexit(void)
 	pi_socket_list_t *l,
 			 *list;
 
+	pi_mutex_lock(&psl_mutex);
 	list = ps_list_copy (psl);
+	pi_mutex_unlock(&psl_mutex);
 
 	for (l = list; l != NULL; l = l->next)
 		pi_close(l->ps->sd);
@@ -1025,7 +962,10 @@ pi_socket_init(pi_socket_t *ps)
 pi_socket_list_t *
 pi_socket_recognize(pi_socket_t *ps)
 {
-	return (psl = ps_list_append (psl, ps));
+	pi_mutex_lock(&psl_mutex);
+	psl = ps_list_append(psl, ps);
+	pi_mutex_unlock(&psl_mutex);
+	return psl;
 }
 
 /***********************************************************************
@@ -1538,8 +1478,13 @@ pi_close(int pi_sd)
 	if (result == 0) {
 		/* we need to remove the entry from the list prior to
 		 * closing it, because closing it will reset the pi_sd */
+		pi_mutex_lock(&psl_mutex);
 		psl = ps_list_remove (psl, pi_sd);
+		pi_mutex_unlock(&psl_mutex);
+
+		pi_mutex_lock(&watch_list_mutex);
 		watch_list = ps_list_remove (watch_list, pi_sd);
+		pi_mutex_unlock(&watch_list_mutex);
 
 		if (ps->device != NULL)
 			result = ps->device->close (ps);
@@ -1632,12 +1577,12 @@ pi_version(int pi_sd)
 	size_t 	size;
 	pi_socket_t *ps;
 	struct  SysInfo si;
-	
+
 	/* FIXME This is an ugly hack for versions because cmp doesn't
 	 * go beyond 1.1 in its versioning because ReadSysInfo
 	 * provides the dlp version in dlp 1.2 and higher */
 
-	if (!(ps = ps_list_find (psl, pi_sd))) {
+	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return PI_ERR_SOCK_INVALID;
 	}
@@ -1688,7 +1633,7 @@ pi_maxrecsize(int pi_sd)
 {
 	pi_socket_t *ps;
 
-	if (!(ps = ps_list_find (psl, pi_sd))) {
+	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return 0;
 	}
@@ -1704,7 +1649,7 @@ pi_maxrecsize(int pi_sd)
  *
  * Function:    find_pi_socket
  *
- * Summary:     Wrapper for ps_list_find
+ * Summary:     Thread-safe wrapper for ps_list_find
  *
  * Parameters:  None
  *
@@ -1714,7 +1659,13 @@ pi_maxrecsize(int pi_sd)
 pi_socket_t *
 find_pi_socket(int pi_sd)
 {
-	return ps_list_find (psl, pi_sd);
+	pi_socket_t *result;
+
+	pi_mutex_lock(&psl_mutex);
+	result = ps_list_find (psl, pi_sd);
+	pi_mutex_unlock(&psl_mutex);
+	
+	return result;
 }
 
 /***********************************************************************
@@ -1738,7 +1689,10 @@ pi_watchdog(int pi_sd, int newinterval)
 		return PI_ERR_SOCK_INVALID;
 	}
 
+	pi_mutex_lock(&watch_list_mutex);
 	watch_list = ps_list_append (watch_list, ps);
+	pi_mutex_unlock(&watch_list_mutex);
+
 	signal(SIGALRM, onalarm);
 	interval = newinterval;
 	alarm(interval);
