@@ -244,14 +244,19 @@ dnl ******************************
 msg_readline=no
 AC_ARG_WITH(readline,      [  --with-readline             use readline [default=yes]])
 if test "x$with_readline" != "xno"; then
-	AC_MSG_CHECKING(for readline)
-
 	ac_save_LIBS="$LIBS"
 	LIBS="$LIBS -lreadline"
+
+	dnl Let's check all the possible places for readline
+	for termlib in ncurses curses termcap terminfo termlib ; do
+		AC_CHECK_LIB(${termlib}, tputs,
+                [LIBS="-l${termlib} $LIBS"; break])
+		LIBS="$ac_save_LIBS"
+	done
+
+	AC_MSG_CHECKING(for readline)
 	AC_TRY_LINK(,[(void)readline(0);], RL_LIBS="-lreadline",
-		LIBS="$LIBS -ltermcap"
-		AC_TRY_LINK(,[(void)readline(0);], RL_LIBS="-lreadline -ltermcap"))
-	LIBS="$ac_save_LIBS"
+		AC_TRY_LINK(,[(void)readline(0);], RL_LIBS="-lreadline -l${termlib}"))
 
 	if test "x$RL_LIBS" = "x"; then
 		AC_MSG_RESULT(not found)
