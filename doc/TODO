@@ -36,11 +36,6 @@ Major Issues
 	- USB syncronization with m50x devices. DLP changes to facilitate
 	  these fixes. Document. 
 
-	- Fix the broken readline() support 	
-
-	- pilot-xfer does not test for the existance of the target directory
-	  when using '-b <dir>'. Critical. 
-
 	- Java code needs to be cleaned up. Any volunteers? I could learn
 	  this, but it would slow down releases (thanks to David Goodenough
 	  for taking on this task!)
@@ -65,14 +60,6 @@ Minor Issues
 	- install-hinote duplicate note detection, export of notes from
 	  Hi-NoteDB.pdb into desktop text files. Can we easily handle
 	  images?
-
-	- Review pilot-mail. Do we need this? Can we depricate this, and
-	  begin the transition over to Hollis' work on pilot-mailsync?
-
-	- manpages. I know, nobody wants to do them, but we need to clearly
-	  document some of the obscure options that some of the pilot-link
-	  binaries offer (such as 'ls -l' in dlpsh). This also includes
-	  active examples of some of the complicated options.
 
 	- Should we nuke addresses from the package? The functionality it
 	  provides is already in pilot-addresses.
@@ -127,7 +114,7 @@ Tweaks/Enhancements
 	  code in there.  Symlink the rest of the apps to pilot-install, and
 	  just test argv[0] to run the proper functions. Multi-call binary.
 
-	- 'pilot-xfer -f Foo' to pull 'Foo.prc' from your Palm works.
+	- 'pilot-xfer -f Foo' to pull 'Foo.prc' from your Palm works. 
 	  Additional option to pull by CrID would be nice as well (and
 	  faster, since we can use the DLP equivalent of
 	  DmOpenDatabaseByTypeCreator())
@@ -141,7 +128,7 @@ Tweaks/Enhancements
 	  functions, clean up the channel code rats nest. Somehow. (Separate
 	  source file?)
 
-	- Perl bindingss: Change record representation from string to object
+	- Perl bindings: Change record representation from string to object
 	  to match Python implementation. Add packers. Document.
 
 	- Collapse: read-todos/install-todos, memos/install-memos, etc.
@@ -151,11 +138,6 @@ Tweaks/Enhancements
 New Features
 ------------
         - pxd, first cut at a pilot-xfer'ized daemon
-
-	- Deal with the m100 API to Notepad. Has anyone taken a look at the
-	  data structures and come up with a way we can replicate them, to
-	  read records? Ideally the images should be $(NAME).png, and the
-	  text associated with it should be $(NAME).txt.
 
 	- Standard output format for the "4 Magic Buttons". XML? csv?
 	  iCal/vCard?
@@ -176,7 +158,3 @@ New Features
 	  port in a non-scripted hacky way. All applications which return
 	  should have this functionality. Interactive applications should be
 	  left alone.
-
-	- File size reported on all pilot-xfer'style syncs, ala:
-	  Backing up './Small Icon EditorSSle.prc'...(2192 bytes, OK)
-
