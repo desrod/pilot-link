@@ -143,6 +143,7 @@ java_jar: $(java_classes)
 java_pisock: java_write java_compile java_lib java_jar
 
 clean-local:
+	rm -f libPiJni.so
 	rm -f test.class
 	rm -f $(java_classes)
 	rm -f pilot-link.jar
