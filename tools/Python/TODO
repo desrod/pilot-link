@@ -1,0 +1,14 @@
+
+TODO for python-libpisock:
+
+  - clean up prc.py from Pyrite/Publisher/palmdb-xml and include it
+  - shadow class for pi_file
+  - shadow class for DLP connection
+  - shadow class for DLP database
+  - wrap the pi-sync functions
+  - wrap the netsync related functions
+  - do something about pack/unpack of fundamental data types (maybe
+    use Python code from Pyrite; consider a simple API which will
+    allow adding other packer/unpackers more easily later)
+  - examples
+  - documentation
