@@ -1588,7 +1588,9 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		    unsigned long *retcode, pi_buffer_t *retbuf)
 {
 	int 	result,
-		version = pi_version(sd);
+		version = pi_version(sd),
+		previous_honor_rx_timeout,
+		no_rx_timeout = 0;
 	size_t	data_len;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
@@ -1597,6 +1599,14 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 	pi_reset_errors(sd);
 	if (retbuf)
 		pi_buffer_clear(retbuf);
+
+	/* we are going to temporarily disable PI_SOCK_HONOR_RX_TIMEOUT
+	 * so that lengthy tasks on the device side don't cause a
+	 * connection timeout
+	 */
+	data_len = sizeof(previous_honor_rx_timeout);
+	pi_getsockopt(sd, PI_LEVEL_SOCK, PI_SOCK_HONOR_RX_TIMEOUT,
+		&previous_honor_rx_timeout, &data_len);
 
 	if (version >= 0x0101) {	/* PalmOS 2.0 call encoding */
 
@@ -1621,7 +1631,14 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		if (length)
 			memcpy(DLP_REQUEST_DATA(req, 0, 22), data, length);
 
+		data_len = sizeof(no_rx_timeout);
+		pi_setsockopt(sd, PI_LEVEL_SOCK, PI_SOCK_HONOR_RX_TIMEOUT,
+			&no_rx_timeout, &data_len);
+
 		result = dlp_exec(sd, req, &res);
+
+		pi_setsockopt(sd, PI_LEVEL_SOCK, PI_SOCK_HONOR_RX_TIMEOUT,
+			&previous_honor_rx_timeout, &data_len);
 
 		dlp_request_free(req);
 
@@ -1662,7 +1679,14 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		set_short(DLP_REQUEST_DATA(req, 0, 6), length);
 		memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
 
+		data_len = sizeof(no_rx_timeout);
+		pi_setsockopt(sd, PI_LEVEL_SOCK, PI_SOCK_HONOR_RX_TIMEOUT,
+			&no_rx_timeout, &data_len);
+
 		result = dlp_exec(sd, req, &res);
+
+		pi_setsockopt(sd, PI_LEVEL_SOCK, PI_SOCK_HONOR_RX_TIMEOUT,
+			&previous_honor_rx_timeout, &data_len);
 
 		dlp_request_free(req);
 
