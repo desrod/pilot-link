@@ -1,93 +1,53 @@
-JavaJni.
+Feb 2003   Stephan Bösebeck & John Mitchell
+Pilot-Link Java-Bindings
+Consider this Code PRE-Alpha! Use at own risk!
 
-16 Mar 2001
+I wrote this new version of Java because i could not get the original one by
+David Goodenough to work with the new Java VM 1.4. I used a different
+apporach to the problem:
 
-This version of the Java support in pilot-link is designed to work with any 
-version of Java that supports JNI, i.e. Java 1.1, 1.2, 1.3 for certain, and
-probably future versions as well.
+- I tried to keep the C-part as small as possible for two reasons, 1st I
+  wanted to be able to expand the functionality to other datatypes (like
+  mileage, images etc.) in java without running a c-compiler! This makes it
+  more easy to keep it platform independent; and 2nd, I coded my last C
+  program several years ago ;-)
 
-This code is maintained separately from the main pilot-link code by
-David Goodenough (David.Goodenough@DGA.co.uk).
+- All the communication with the pilot-link interface is done by one class,
+  org.gnu.pilotlink.PilotLink which calls the c-functions. There, raw
+  records are used (org.gnu.pilotlink.RawRecord) which can then be
+  transformed to other types of records (memo, datebookrecord etc. - analog
+  to streams in java), e.g.:
 
-The code has been moved into a new package (org.gnu.pdapilot) to follow the
-standard suggested by Sun in the Java documentation.  The code has been 
-compiled using the IBM JDKs 1.3.0 under Linux.  It is expected that it 
-should also work with the Sun JDKs and any JDK version 1.1.x, 1.2.x or 1.3.x.
-All the testing so far has been done using Linux.  NOTE this code will NOT
-work with Java 1.0 of any form or kind so please use the old code for that.
+    DatebookRecord dr=new DatebookRecord(PilotLink.getRecord...)
 
-Currently the code can not be built using the Makefile, as it has not been
-fixed to do the compiles etc.  The whole lot can however be built (on a
-Unix system) using the following commands:-
-   
-   <make sure the directory containing this file is the current one  >
-   < this code also assumes that the relevant JDK is on the path, if >
-   < not then prefix the javac and jar commands appropriately.       >
-   cc -o doConstants doConstants.c 
-   doConstants
-   javac `find -name *.java`
-   g++ -I ${JAVA_HOME}/include -I ../../include -L ../.. -lpisock -shared -o libPiJni.so Jni.c
-   jar cvf pilot-link.jar `find -name "*.class"`
 
-This generates two files, libPiJni.so and pilot-link.jar.  These are all that
-is needed to use the Java interface.
+Things the java-bindings can do now (not much, I know...):
+- Read raw records, write raw records
+- read in datebook entries
+- write datebook entries
+- read user and sys info
 
-To run the test program run the following having made sure that libPiJni.so is
-installed in the right directory so that it will get loaded:-
+More functionality will follow as soon as possible...
 
-   java -jar pilot-link test 
+There is a problem with opening more than one db in one session, even if
+closing before. I'm working on it...
 
-The test program will first ask for the port (default /dev/pilot) and then
-ask you to press the Hotsync button.  It will then go fetch information from
-the Palm Pilot and dump system information, the list of DBs, and all the events
-in your datebook.
+INSTALL
 
-STATUS
+Normally you install it by following these steps:
 
-Currently this code should be regarded as a very early alpha.  I have tested
-the read bits of this code, and will continue to excercise it.  However it needs
-two things done to it now rather than later.  Firstly it needs wrapping in
-a makefile to build properly, and secondly it needs merging into the CVS tree.
-I will then test the other parts of the system, which are present just untested,
-to write data to the Palm.  The Makefile should also put the results of the
-compilations into the pilot-link/JavaJni directory, this directory tree is
-pilot-link/tools/JavaJni which is properly the source only directory.
+1) Edit the Makefile and change the path to JAVA_HOME according to your
+   jdk-installation, set PORT to your Pilot-Port
 
-KNOWN RESTRICTIONS
+2) Run "make"
+3) As root do: "make install"
 
-1) There is one part of the code that appears to have a problem so currently it is
-disabled.  I am running on a Handspring Visor and when I dump the datebook in the
-middle it suddenly finds a record with a vast number of exceptions, actually more
-than could be in memory currently.  It therefore blows out, so currently the
-exception records are not retrieved.
+4) Test the installation with: java test
 
-MAJOR CHANGES SINCE Java 1.0 version
+The testfile should establish a connection to your palm and read out some
+records. You can test storing as well by editinng the test.java accordingly.
 
-1) The most obvious change is the change to the package name, which is now
-org/gnu/pdapilot (it was Pdapilot which is insufficiently qualified and is
-the wrong case).  I have also fixed all the places where naming does not
-follow the Sun naming conventions.  
+If you have suggestions or questions, drop me a line.
 
-2) The .so file is now called libPiJni.so so that both libraries can coexist.
-
-3) All the class files are now in a JAR file which makes distribution of the
-binary easier.  This JAR file by the way can be added to the system extensions
-directory (for the IBM 1.3 JDK this is /opt/IBMJava2-13/jre/lib/ext) and then
-it does not need to be explicitly mentioned in the -cp option when running
-programs.
-
-4) All the encapsulation classes for Palm date (Record, Pref, AppInfo etc) now
-have their data members as private members.  Access to them is now through
-Accessor methods, so to get the text field (type String) you invoke getText( ) 
-and to set the text you invoke setText( <new string>).
-
-5) For those who look at the code, I fear I have a somewhat idiosyncratic
-coding style.  Sorry about that, but thats the way I work & how my tools do
-things for me.  At least until all the function is tested please do not 
-run this through some prettyprinter to get it back to a more normal style as
-it will slow me down getting the code up to a more "production" quality.
-
-CONCLUSION
-
-OK, so here it is, have fun.  Please feed any problems back either to the
-Palm Unix mailing list, or directly to myself david.goodenough@btconnect.com.
+Stephan Bösebeck (stephan_boesebeck@web.de)
+John Mitchell (jfm@minioak.com)

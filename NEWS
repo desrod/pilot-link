@@ -12,7 +12,7 @@ Major Features:
         * pilot-foto conduit to fetch/convert photos taken with a Palm
           Zire71 camera device
 	* Completely new Java bindings, rewritten from the ground-up by John
-	  Mitchell (thanks John!)
+	  Mitchell and Stephan Bösebeck.
 
 Other Features:
         * A few new manpages
