@@ -12,7 +12,7 @@ INCLUDES = 			\
 	$(RL_CFLAGS)
 
 if WITH_CXX
-CCEXECS = ccexample iambicexample
+CCEXECS = ccexample
 else
 CCEXECS =
 endif
@@ -71,13 +71,6 @@ bin_SCRIPTS =
 ccexample_SOURCES = \
 	ccexample.cc
 ccexample_LDADD = 					\
-	@LIBOBJS@					\
-	$(top_builddir)/libpisock++/libpisock++.la	\
-	$(top_builddir)/libpisock/libpisock.la
-
-iambicexample_SOURCES = \
-	iambicexample.cc
-iambicexample_LDADD = 					\
 	@LIBOBJS@					\
 	$(top_builddir)/libpisock++/libpisock++.la	\
 	$(top_builddir)/libpisock/libpisock.la

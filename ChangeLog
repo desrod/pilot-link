@@ -1,5 +1,13 @@
 2002-06-28  JP Rosevear  <jpr@ximian.com>
 
+	* src/Makefile.am: don't build iambicexample.cc
+
+	* src/iambicexample.cc: remove because lib support is gone
+
+	* tests/Makefile.os2: remove unused file
+
+2002-06-28  JP Rosevear  <jpr@ximian.com>
+	
 	* libpisock++/Makefile.am: don't build iambicExpense.cc
 
 	* libpisock++/iambicExpense.cc: kill at request of author
