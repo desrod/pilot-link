@@ -1,3 +1,10 @@
+2004-01-02 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/connect.c: Add appropriate flushing to try to work
+	  around the printf() problem in userland. Might be temporary.
+
+	* src/pilot-xfer.c: More cleanup
+
 2003-12-27 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/connect.c: Make sure we are a valid tty before printing
