@@ -12,7 +12,7 @@
 #include "pi-socket.h"
 #include "dlp.h"
 #include "address.h"
-
+                        
 void free_Address(struct Address * a) {
   int i;
   for(i=0;i<19;i++)
@@ -30,11 +30,11 @@ void unpack_Address(struct Address * a, unsigned char * buffer, int len) {
   
   /*get_byte(buffer); gapfil*/
   a->whichphone = hi(get_byte(buffer+1));
-  a->phonelabel5 = lo(get_byte(buffer+1));
-  a->phonelabel4 = hi(get_byte(buffer+2));
-  a->phonelabel3 = lo(get_byte(buffer+2));
-  a->phonelabel2 = hi(get_byte(buffer+3));
-  a->phonelabel1 = lo(get_byte(buffer+3));
+  a->phonelabel[4] = lo(get_byte(buffer+1));
+  a->phonelabel[3] = hi(get_byte(buffer+2));
+  a->phonelabel[2] = lo(get_byte(buffer+2));
+  a->phonelabel[1] = hi(get_byte(buffer+3));
+  a->phonelabel[0] = lo(get_byte(buffer+3));
   
   contents = get_long(buffer+4);
   
@@ -75,7 +75,7 @@ void pack_Address(struct Address * a, unsigned char * record, int * len) {
   offset = 0; /* FIXME: Check to see if this really should default to zero */
 
   for(v=0;v<19;v++) {
-    if(a->entry[v]) {
+    if(a->entry[v] && strlen(a->entry[v])) {
       if(v==entryCompany)
         offset = (unsigned char)(*len - 8);
       contents |= (1 << v);
@@ -85,12 +85,12 @@ void pack_Address(struct Address * a, unsigned char * record, int * len) {
       buffer+=l;
     }
   }
-
-  phoneflag  = ((unsigned long)a->phonelabel1) << 0;
-  phoneflag |= ((unsigned long)a->phonelabel2) << 4;
-  phoneflag |= ((unsigned long)a->phonelabel3) << 8;
-  phoneflag |= ((unsigned long)a->phonelabel4) << 12;
-  phoneflag |= ((unsigned long)a->phonelabel5) << 16;
+  
+  phoneflag  = ((unsigned long)a->phonelabel[0]) << 0;
+  phoneflag |= ((unsigned long)a->phonelabel[1]) << 4;
+  phoneflag |= ((unsigned long)a->phonelabel[2]) << 8;
+  phoneflag |= ((unsigned long)a->phonelabel[3]) << 12;
+  phoneflag |= ((unsigned long)a->phonelabel[4]) << 16;
   phoneflag |= ((unsigned long)a->whichphone)  << 20;
 
   set_long(record, phoneflag);
@@ -117,6 +117,11 @@ void unpack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, i
   ai->country = get_short(record);
   record+=2;
   ai->sortByCompany = get_byte(record);
+  
+  for(i=3;i<8;i++)
+    strcpy(ai->phonelabels[i-3],ai->labels[i]);
+  for(i=19;i<22;i++)
+    strcpy(ai->phonelabels[i-19+5],ai->labels[i]);
 }
 
 void pack_AddressAppInfo(struct AddressAppInfo *, unsigned char * AppInfo, int * len);

@@ -91,32 +91,10 @@ int main(int argc, char *argv[])
 	for(j=0;j<19;j++) {
 	  if(a.entry[j]) {
 	    int l = j;
-	    if(l == entryPhone1) {
-	       l = entryPhone1 + a.phonelabel1;
-	       if(a.phonelabel1 >= 5) 
-	         l += 16 - 5;
-	    }
-	    if(l == entryPhone2) {
-	       l = entryPhone1 + a.phonelabel2;
-	       if(a.phonelabel2 >= 5) 
-	         l += 16 - 5;
-	    }
-	    if(l == entryPhone3) {
-	       l = entryPhone1 + a.phonelabel3;
-	       if(a.phonelabel3 >= 5) 
-	         l += 16 - 5;
-	    }
-	    if(l == entryPhone4) {
-	       l = entryPhone1 + a.phonelabel4;
-	       if(a.phonelabel4 >= 5)
-	         l += 16 - 5;
-	    }
-	    if(l == entryPhone5) {
-	       l = entryPhone1 + a.phonelabel5;
-	       if(a.phonelabel5 >= 5) 
-	         l += 16 - 5;
-	    }
-	    printf("%s: %s\n", aai.labels[l], a.entry[j]);
+	    if ( (l >= entryPhone1) && ( l <= entryPhone5))
+	      printf("%s: %s\n", aai.phonelabels[a.phonelabel[l-entryPhone1]], a.entry[j]);
+	    else
+	      printf("%s: %s\n", aai.labels[l], a.entry[j]);
 	  }
 	}
 	printf("\n");

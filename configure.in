@@ -6,6 +6,9 @@ AC_PROG_CC
 dnl AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+dnl Check host type
+AC_CANONICAL_HOST
+
 dnl Checks for libraries.
 
 dnl Checks for header files.
@@ -20,7 +23,7 @@ AC_STRUCT_TM
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(atexit strchr memcpy strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed)
+AC_CHECK_FUNCS(atexit strchr memcpy strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction)
 
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
   ac_cv_termios_cspeed,
@@ -31,22 +34,28 @@ if test $ac_cv_termios_cspeed = yes; then
   AC_DEFINE(TERMIOS_CSPEED)
 fi
 
-dnl Check host type
-dnl (Instead of using large messy autoconf facilities, just check uname)
-host=`uname`
-
 dnl Derive warning flag
 AC_CACHE_CHECK([for maximum warnings compiler flag],
   ac_cv_cwflag,
-[case "$cc" in
+[case "${CC-cc}" in
   *gcc*) ac_cv_cwflag=-Wall;;
   *)	case "$host" in
-			*IRIX*)	ac_cv_cwflag=-fullwarn ;;
+			*irix*)	ac_cv_cwflag=-fullwarn ;;
 			*)		ac_cv_cwflag=-Wall;;
 		esac ;;
 esac])
 CWFLAG=$ac_cv_cwflag
 AC_SUBST(CWFLAG)
+
+dnl NeXT support
+case "$host" in
+    *next*) CPLIB="ln -s"
+            ARFLAGS="cur" ;;
+    *)      CPLIB="cp"
+            ARFLAGS="cur" ;;
+esac
+AC_SUBST(CPLIB)
+AC_SUBST(ARFLAGS)
 
 AC_CONFIG_HEADER(include/pi-config.h)
 AC_OUTPUT(lib/Makefile Makefile)

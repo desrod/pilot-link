@@ -1,28 +1,41 @@
 #ifndef _PILOT_SOCKET_H_
 #define _PILOT_SOCKET_H_
 
-#include <termios.h>
+#ifdef NeXT
+# include <sys/types.h>
+# include <sys/socket.h>
+#endif
 
 #ifdef __EMX__
-#define OS2
-#include <sys/param.h> /* for htonl .. */
-#define ENOMSG 150
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
+# define OS2
+# include <sys/param.h> /* for htonl .. */
+# define ENOMSG 150
+# define strcasecmp stricmp
+# define strncasecmp strnicmp
 
 # include <sys/ioctl.h>
 # include <sys/time.h>
+# include <sys/types.h>
+# include <sys/errno.h>
 # include <time.h>
 # include <fcntl.h>
 # include <unistd.h>
 # include <string.h>
 # include <stdlib.h>
-# include <netinet/in.h>
+/*# include <netinet/in.h>*/
 # include <dirent.h>
+# include <errno.h>
 # define TTYPrompt "com#"
+# define RETSIGTYPE void
 
 #else
-#include "pi-config.h"
+# include "pi-config.h"
+#endif
+
+#ifdef SGTTY
+# include <sgtty.h>
+#else
+# include <termios.h>
 #endif
 
 #define AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
@@ -76,7 +89,11 @@ struct pi_socket {
   int initiator;
   struct pi_mac mac;
 #ifndef OS2
-  struct termios tco;
+# ifndef SGTTY
+   struct termios tco;
+# else
+   struct sgttyb tco;
+# endif
 #endif
   struct pi_skb *txq;
   struct pi_skb *rxq;

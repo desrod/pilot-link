@@ -12,17 +12,17 @@
 #include "pi-serial.h"
 #include "slp.h"
 
-#ifdef HAVE_SYS_IOCTL_COMPAT_H
-#include <sys/ioctl_compat.h>
+/* if this is running on a NeXT system... */
+#ifdef NeXT
+#include <sys/uio.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <sys/file.h>
+#include <fcntl.h>
 #endif
 
-#ifndef HAVE_CFMAKERAW
-#define cfmakeraw(ptr) (ptr)->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR\
-					 |IGNCR|ICRNL|IXON);\
-                       (ptr)->c_oflag &= ~OPOST;\
-                       (ptr)->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);\
-                       (ptr)->c_cflag &= ~(CSIZE|PARENB);\
-                       (ptr)->c_cflag |= CS8
+#ifdef HAVE_SYS_IOCTL_COMPAT_H
+#include <sys/ioctl_compat.h>
 #endif
 
 #ifdef OS2
@@ -34,6 +34,17 @@
 #endif /* OS2 */
 
 #ifndef OS2
+
+#ifndef SGTTY
+
+#ifndef HAVE_CFMAKERAW
+#define cfmakeraw(ptr) (ptr)->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR\
+					 |IGNCR|ICRNL|IXON);\
+                       (ptr)->c_oflag &= ~OPOST;\
+                       (ptr)->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);\
+                       (ptr)->c_cflag &= ~(CSIZE|PARENB);\
+                       (ptr)->c_cflag |= CS8
+#endif
 
 #ifndef HAVE_CFSETSPEED
 #if defined(HAVE_CFSETISPEED) && defined(HAVE_CFSETOSPEED)
@@ -51,6 +62,8 @@ static int cfsetspeed(struct termios * t,int speed) {
 }
 #endif
 #endif
+
+#endif /*SGTTY*/
 
 static int calcrate(int baudrate) {
 #ifdef B300
@@ -88,9 +101,13 @@ static int calcrate(int baudrate) {
 
 int pi_device_open(char *tty, struct pi_socket *ps)
 {
-  int i;
 
+#ifndef SGTTY
+  int i;
   struct termios tcn;
+#else
+  struct sgttyb tcn;
+#endif
 
   if ((ps->mac.fd = open(tty, O_RDWR )) == -1) {
     return -1;     /* errno already set */
@@ -102,6 +119,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
     return -1;
   }
 
+#ifndef SGTTY
   /* Set the tty to raw and to the correct speed */
   tcgetattr(ps->mac.fd,&tcn);
 
@@ -129,12 +147,25 @@ int pi_device_open(char *tty, struct pi_socket *ps)
 #endif                  
 
   tcsetattr(ps->mac.fd,TCSANOW,&tcn);
+#else
+  /* Set the tty to raw and to the correct speed */
+  ioctl(ps->mac.fd, TIOCGETP, &tcn);
+
+  ps->tco = tcn;
+
+  tcn.sg_flags = RAW;
+  tcn.sg_ispeed = calcrate(ps->rate);
+  tcn.sg_ospeed = calcrate(ps->rate);
+  
+  ioctl(ps->mac.fd, TIOCSETN, &tcn);
+#endif
 
   return ps->mac.fd;
 }
 
 int pi_device_changebaud(struct pi_socket *ps)
 {
+#ifndef SGTTY
   struct termios tcn;
 
   /* Set the tty to the new speed */
@@ -151,12 +182,25 @@ int pi_device_changebaud(struct pi_socket *ps)
   sleep(1);
 #endif
 
+#else
+  struct sgttyb tcn;
+
+  ioctl(ps->mac.fd, TIOCGETP, &tcn);
+
+  tcn.sg_ispeed = calcrate(ps->rate);
+  tcn.sg_ospeed = calcrate(ps->rate);
+  
+  ioctl(ps->mac.fd, TIOCSETN, &tcn);
+#endif
+
   return 0;
 }
 
 int pi_device_close(struct pi_socket *ps)
 {
   int result;
+#ifndef SGTTY
+
 #ifdef linux
   /* Something isn't getting flushed somewhere. If this sleep is removed,
      the Pilot never gets the final padp Ack.*/
@@ -164,6 +208,11 @@ int pi_device_close(struct pi_socket *ps)
 #endif
 
   tcsetattr(ps->mac.fd,TCSADRAIN, &ps->tco);
+#else
+
+  ioctl(ps->mac.fd, TIOCSETP, &ps->tco);
+
+#endif
 
   result = close(ps->mac.fd);
   ps->mac.fd = 0;
@@ -236,7 +285,8 @@ int pi_device_changebaud(struct pi_socket *ps)
 {
   int param_length;
   int rc, baudrate;
-  
+  unsigned char linctrl[3] = {8,0,0};
+
   baudrate = ps->rate;
 
   param_length=sizeof(baudrate);
@@ -249,6 +299,22 @@ int pi_device_changebaud(struct pi_socket *ps)
 		 NULL, /* data to be sent */
 		 0, /* length of data */
 		 NULL); /* length of data returned */
+
+  /* also set the port to 8N1 as OS/2 defaults to some braindead values */
+  if (!rc)   /* but only if the previous operation succeeded */
+    {
+      param_length = 3; /* 3 bytes for line control */
+      rc=DosDevIOCtl(ps->mac.fd, /* file decsriptor */
+		     IOCTL_ASYNC, /*asyncronous change */
+		     ASYNC_SETLINECTRL, /* set the line controls */
+		     linctrl, /* pointer to the configuration */
+		     param_length, /* length of the previous parameter */
+		     (unsigned long *)&param_length, /* max length of params */
+		     NULL, /* data to be returned */
+		     0, /* length of data */
+		     NULL); /* length of data returned */
+    }
+
 
   if (rc)
     {

@@ -1,17 +1,18 @@
 CC = @CC@
 CFLAGS = @CFLAGS@ @CWFLAG@ -I./include
 # -DDEBUG
-AR = ar -cur
 RANLIB = @RANLIB@
 RM = rm -f
 STRIP = strip
 LIBS =
 # -lefence
+CPLIB = @CPLIB@
 EXT =
 SUBMAKE_COMM = cd lib ; $(MAKE)
 
 EXECS = install-memo$(EXT) install-user$(EXT)\
-		install-todos$(EXT) read-ical$(EXT)\
+		install-todos$(EXT) pilot-addresses$(EXT)\
+		read-ical$(EXT)\
 		sync-memodir$(EXT) sync-ical$(EXT)\
 		pilot-xfer$(EXT) pilot-file$(EXT)\
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
@@ -23,13 +24,16 @@ submake lib/libpisock.a:
 	$(SUBMAKE_COMM)
 
 libpisock.a: lib/libpisock.a
-	cp lib/libpisock.a libpisock.a
+	$(CPLIB) lib/libpisock.a libpisock.a
 
 install-memo$(EXT): libpisock.a install-memo.o
 	$(CC) $(CFLAGS) install-memo.o libpisock.a -o $@ $(LIBS)
 
 install-todos$(EXT): libpisock.a install-todos.o
 	$(CC) $(CFLAGS) install-todos.o libpisock.a -o $@ $(LIBS)
+
+pilot-addresses$(EXT): libpisock.a pilot-addresses.o
+	$(CC) $(CFLAGS) pilot-addresses.o libpisock.a -o $@ $(LIBS)
 
 install-user$(EXT): libpisock.a install-user.o
 	$(CC) $(CFLAGS) install-user.o libpisock.a -o $@ $(LIBS)
@@ -79,7 +83,7 @@ strip: $(EXECS)
 distclean: clean
 	$(SUBMAKE_COMM) depend
 	$(RM) Makefile lib/Makefile lib/Makefile.in~ include/pi-config.h
-	$(RM) config.*
+	$(RM) config.log config.status config.cache
 	perl os2dist.pl
 
 clean:

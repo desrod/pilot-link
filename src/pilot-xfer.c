@@ -13,6 +13,8 @@
 #include "pi-socket.h"
 #include "pi-file.h"
 
+#define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
+
 int sd = 0;
 char * device;
 char * progname;
@@ -77,6 +79,19 @@ RETSIGTYPE SigHandler(int signal)
   puts("Abort on signal!");
   Disconnect();
   exit(3);
+}
+
+void VoidSyncFlags(void)
+{
+  struct PilotUser U;
+  Connect();
+  if (dlp_ReadUserInfo(sd, &U)>=0) {
+    U.lastSyncPC = 0xDEADBEEF; /* Hopefully unique constant, to tell
+                                  any Desktop software that databases
+                                  have been altered, and that a slow
+                                  sync is necessary */
+    dlp_WriteUserInfo(sd, &U);
+  } 
 }
 
 void Backup(char * dirname)
@@ -165,33 +180,124 @@ void Fetch(char * dbname)
   printf("Fetch done.\n");
 }
 
+struct db {
+  	char name[256];
+  	int flags;
+  	unsigned long creator;
+  	unsigned long type;
+  	int maxblock;
+};
+
+int compare(struct db * d1, struct db * d2)
+{
+  /* types of 'appl' sort later then other types */
+  if(d1->creator == d2->creator)
+    if(d1->type != d2->type) {
+      if(d1->type == pi_mktag('a','p','p','l'))
+        return 1;
+      if(d2->type == pi_mktag('a','p','p','l'))
+        return -1;
+    }
+  return d1->maxblock < d2->maxblock;
+}
+
 void Restore(char * dirname)
 {
   DIR * dir;
   struct dirent * dirent;
-  
-  Connect();
+  struct DBInfo info;
+  struct db * db[256];
+  int dbcount = 0;
+  int i,j,max,size;
+  struct pi_file * f;
 
   dir = opendir(dirname);
   
   while( (dirent = readdir(dir)) ) {
-        struct pi_file * f;
         char name[256];
         
         if (dirent->d_name[0] == '.')
            continue;
 
-	if ( dlp_OpenConduit(sd) < 0) {
-	   puts("Exiting on cancel. All data not restored.");
-	   exit(1);
-	}
-        sprintf(name,"%s/%s",dirname,dirent->d_name);
-  	f = pi_file_open(name);
+	
+	db[dbcount] = malloc(sizeof(struct db));
+	
+	sprintf(db[dbcount]->name, "%s/%s", dirname, dirent->d_name);
+	
+	f = pi_file_open(db[dbcount]->name);
   	if (f==0) {
   	  printf("Unable to open '%s'!\n", name);
   	  break;
   	}
-  	printf("Restoring %s... ", name);
+  	
+  	pi_file_get_info(f, &info);
+  	
+  	db[dbcount]->creator = info.creator;
+  	db[dbcount]->type = info.type;
+  	db[dbcount]->flags = info.flags;
+  	db[dbcount]->maxblock = 0;
+  	
+  	pi_file_get_entries(f, &max);
+  	
+  	for (i=0;i<max;i++) {
+  	  if (info.flags & dlpDBFlagResource)
+  	    pi_file_read_resource(f, i, 0, &size, 0, 0);
+  	  else
+  	    pi_file_read_record(f, i, 0, &size, 0, 0,0 );
+  	    
+  	  if (size > db[dbcount]->maxblock)
+  	    db[dbcount]->maxblock = size;
+  	}
+  	
+  	pi_file_close(f);
+  	dbcount++;
+  }
+
+  closedir(dir);
+
+#ifdef DEBUG      
+  printf("Unsorted:\n");
+  for (i=0;i<dbcount;i++) {
+     printf("%d: %s\n", i, db[i]->name);
+     printf("  maxblock: %d\n", db[i]->maxblock);
+     printf("  creator: '%s'\n", printlong(db[i]->creator));
+     printf("  type: '%s'\n", printlong(db[i]->type));
+  }
+#endif
+  
+  for (i=0;i<dbcount;i++)
+    for (j=i+1;j<dbcount;j++) 
+      if (compare(db[i],db[j])>0) {
+        struct db * temp = db[i];
+        db[i] = db[j];
+        db[j] = temp;
+      }
+
+#ifdef DEBUG      
+  printf("Sorted:\n");
+  for (i=0;i<dbcount;i++) {
+     printf("%d: %s\n", i, db[i]->name);
+     printf("  maxblock: %d\n", db[i]->maxblock);
+     printf("  creator: '%s'\n", printlong(db[i]->creator));
+     printf("  type: '%s'\n", printlong(db[i]->type));
+  }
+#endif
+
+  Connect();
+  
+  for (i=0;i<dbcount;i++) {
+
+	if ( dlp_OpenConduit(sd) < 0) {
+	   puts("Exiting on cancel. All data not restored.");
+	   exit(1);
+	}
+
+  	f = pi_file_open(db[i]->name);
+  	if (f==0) {
+  	  printf("Unable to open '%s'!\n", db[i]->name);
+  	  break;
+  	}
+  	printf("Restoring %s... ", db[i]->name);
   	fflush(stdout);
   	if(pi_file_install(f, sd, 0)<0)
   	  printf("failed.\n");
@@ -200,7 +306,7 @@ void Restore(char * dirname)
   	pi_file_close(f);
   }
   
-  closedir(dir);
+  VoidSyncFlags();
 
   printf("Restore done\n");
 }
@@ -228,6 +334,8 @@ void Install(char * filename)
   else
     printf("OK\n");
   pi_file_close(f);
+  
+  VoidSyncFlags();
 
   printf("Install done\n");
 }

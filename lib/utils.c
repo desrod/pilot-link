@@ -8,6 +8,13 @@
 
 #include <stdio.h>
 #include <ctype.h>
+
+#ifdef NeXT
+# include <stdlib.h>
+# include <string.h>
+# include <assert.h>
+#endif
+
 #include "pi-socket.h"
 
 /* this routine ruthlessly stolen verbatim from Brian J. Swetland */
@@ -27,6 +34,26 @@ int crc16(unsigned char *ptr, int count)
   }
   return (crc & 0xFFFF);
 }
+
+#ifdef NeXT
+char * strdup(const char *string)
+{
+    size_t length;
+    char *result;
+
+    assert(string != NULL);
+
+    length = strlen(string) + 1;
+    result = malloc(length);
+
+    if (result == NULL)
+	return NULL;
+
+    memcpy(result, string, length);
+
+    return result;
+}
+#endif
 
 char * printlong (unsigned long val)
 {

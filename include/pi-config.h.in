@@ -37,6 +37,9 @@
 /* Define if you have the cfsetospeed function. */
 #undef HAVE_CFSETOSPEED
 
+/* Define if you have the sigaction function. */
+#undef HAVE_SIGACTION
+
 /* Define if you have the cispeed and cospeed members of struct termios */
 #undef TERMIOS_CSPEED
 
@@ -85,8 +88,8 @@
 /* Define if you have the <ndir.h> header file.  */
 #undef HAVE_NDIR_H
 
-#ifdef HAVE_SYS_IOCTL_H
-# include <sys/ioctl.h>
+#ifdef NeXT
+# include <libc.h>
 #endif
 
 #if TIME_WITH_SYS_TIME
@@ -132,7 +135,11 @@
 # include <netinet/in.h>
 #endif
 
-#if HAVE_DIRENT_H
+#ifdef HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
+
+#if defined(HAVE_DIRENT_H) && !defined(NeXT)
 # include <dirent.h>
 # define NAMLEN(dirent) strlen((dirent)->d_name)
 #else
@@ -166,6 +173,13 @@
 # define atexit(x) on_exit((x),NULL)
 #endif
 
+#ifdef NeXT
+char * strdup(const char *string);
+# ifndef bzero
+#  define bzero(b,len) memset(b,0,len)
+# endif
+#endif
+
 #include <errno.h>
 
 #ifndef ENOMSG
@@ -176,5 +190,9 @@
 # define TTYPrompt "/dev/cua??"
 #else
 # define TTYPrompt "/dev/tty??"
+#endif
+
+#ifdef NeXT
+# define SGTTY
 #endif
 

@@ -428,10 +428,14 @@ pi_file_read_resource (struct pi_file *pf, int idx,
   if (fread (pf->rbuf, 1, entp->size, pf->f) != entp->size)
     return (-1);
 
-  *bufp = pf->rbuf;
-  *sizep = entp->size;
-  *type = entp->type;
-  *idp = entp->id;
+  if (bufp)
+    *bufp = pf->rbuf;
+  if (sizep)
+    *sizep = entp->size;
+  if (type)
+    *type = entp->type;
+  if (idp)
+    *idp = entp->id;
   
   return (0);
 }
@@ -464,11 +468,16 @@ pi_file_read_record (struct pi_file *pf, int idx,
   if (fread (pf->rbuf, 1, entp->size, pf->f) != entp->size)
     return (-1);
 
-  *bufp = pf->rbuf;
-  *sizep = entp->size;
-  *attrp = entp->attrs & 0xf0;
-  *catp = entp->attrs & 0xf;
-  *uidp = entp->uid;
+  if (bufp)
+    *bufp = pf->rbuf;
+  if (sizep)
+    *sizep = entp->size;
+  if (attrp)
+    *attrp = entp->attrs & 0xf0;
+  if (catp)
+    *catp = entp->attrs & 0xf;
+  if (uidp)
+    *uidp = entp->uid;
 
   return (0);
 }

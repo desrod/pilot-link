@@ -300,7 +300,12 @@ void handle_user_commands(int sd) {
 
 int main(int argc, char **argv) {
   struct pi_sockaddr addr;
+#ifdef HAVE_SIGACTION
   struct sigaction sigact;
+#else
+  struct sigvec vec;
+#endif
+  
   int sd;
   int ret;
 
@@ -348,16 +353,27 @@ int main(int argc, char **argv) {
 
   /* Set up signal handlers. */
 
+#ifdef HAVE_SIGACTION
   sigact.sa_handler = sigalarm;
   sigemptyset(&sigact.sa_mask);
   sigact.sa_flags = 0;
   sigaction(SIGALRM, &sigact, NULL);
 
-  alarm(TICKLE_INTERVAL);
-
   sigact.sa_handler = sigexit;
   sigaction(SIGINT, &sigact, NULL);
   sigaction(SIGTERM, &sigact, NULL);
+#else
+  vec.sv_handler = sigalarm;
+  vec.sv_mask = 0;
+  vec.sv_onstack = 0;
+  sigvec(SIGALRM, &vec, NULL);
+  
+  vec.sv_handler = sigexit;
+  sigvec(SIGINT, &vec, NULL);
+  sigvec(SIGTERM, &vec, NULL);
+#endif
+
+  alarm(TICKLE_INTERVAL);
 
   socket_descriptor = sd;
   atexit(exit_func);

@@ -8,9 +8,6 @@
  */
 
 #include <stdio.h>
-#ifndef bsdi
-#include <malloc.h>
-#endif
 #include "pi-socket.h"
 #include "slp.h"
 

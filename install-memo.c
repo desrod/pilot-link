@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "pi-socket.h"
 #include "dlp.h"
+#include "memo.h"
 
 int main(int argc, char *argv[])
 {
@@ -21,9 +22,12 @@ int main(int argc, char *argv[])
   FILE *f;
   struct PilotUser U;
   int ret;
+  char buf[0xffff];
+  int category;
+  struct MemoAppInfo mai;
 
   if (argc < 3) {
-    fprintf(stderr,"usage:%s %s file [file] ...\n",argv[0],TTYPrompt);
+    fprintf(stderr,"usage:%s %s [-c category] file [file] ...\n",argv[0],TTYPrompt);
     exit(2);
   }
   if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
@@ -65,8 +69,25 @@ int main(int argc, char *argv[])
     dlp_AddSyncLogEntry(sd, "Unable to open MemoDB.\n");
     exit(1);
   }
+  
+  l = dlp_ReadAppBlock(sd, db, 0, buf, 0xffff);
+  unpack_MemoAppInfo(&mai, buf, l);
 
+  category = 0;
+  
   for (i=2; i<argc; i++) {
+  
+    if (strcmp(argv[i],"-c")==0) {
+      for (l=0; l<16; l++)
+        if (strcasecmp(mai.CategoryName[l], argv[i+1]) == 0) {
+          category = l;
+          break;
+        }
+      if (l==16)
+        category = atoi(argv[i+1]);
+      i++;
+      continue;
+    }
 
     f = fopen(argv[i], "r");
     if (f == NULL) {
@@ -93,7 +114,7 @@ int main(int argc, char *argv[])
     memo_buf[l + 1 + memo_size] = '\0';
 
     /* dlp_exec(sd, 0x26, 0x20, &db, 1, NULL, 0); */
-    dlp_WriteRecord(sd, (unsigned char)db, 0, 0, 0, memo_buf, -1, 0);
+    dlp_WriteRecord(sd, (unsigned char)db, 0, 0, category, memo_buf, -1, 0);
     free(memo_buf);
   }
 

@@ -9,7 +9,7 @@ enum { entryLastname, entryFirstname, entryCompany,
 };
 
 struct Address {
-  int phonelabel1, phonelabel2, phonelabel3, phonelabel4, phonelabel5;
+  int phonelabel[5];
   int whichphone;
   
   char *entry[19];
@@ -25,6 +25,8 @@ struct AddressAppInfo {
                                  sure what role lastUniqueID plays. */
   unsigned long dirtyfieldlabels; /* bitfield of same */
   char labels[19+3][16]; /* Hairy to explain, obvious to look at */
+  char phonelabels[8][16]; /* Duplication of some labels, to
+                              greatly reduce hair */
   int country;
   int sortByCompany;
 };

@@ -1,0 +1,12 @@
+
+Sorry for not providing decent information here. The basics are:
+  
+  1) run configure (unless using OS/2)
+    
+  2) run make (unless using OS/2, then make -f Makefile.os2)
+    
+  3) play around, _carefully_. pilot-xfer is probably the most useful
+     program for you, and also the safest.
+
+Happy Hacking,
+Kenneth Albanowski <kjahds@kjahds.com>

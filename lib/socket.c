@@ -6,9 +6,6 @@
  */
 
 #include <errno.h>
-#ifndef bsdi
-#include <malloc.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -62,6 +59,8 @@ int pi_socket(int domain, int type, int protocol)
 #else
     ps->establishrate = 19200; /* Default PADP connection rate */
 #endif
+    if (getenv("PILOTRATE"))
+    	ps->establishrate = atoi(getenv("PILOTRATE"));
     ps->rate = 9600; /* Mandatory CMP conncetion rate */
   } else if(type == SOCK_RAW) {
     ps->establishrate = ps->rate = 57600; /* Mandatory SysPkt connection rate */

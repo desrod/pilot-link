@@ -7,15 +7,16 @@ CFLAGS = -g -O2 -Wall -I../include
 # -DDLP_TRACE
 # -DDEBUG
 # -DTRACE
-AR = ar -cur
-RANLIB = ranlib
+AR = ar
+ARFLAGS = -cur
+RANLIB = ar -s
 RM = rm -f
 
 all: libpisock.a
 
 libpisock.a: $(OBJS)
 	$(RM) libpisock.a
-	$(AR) libpisock.a $(OBJS)
+	$(AR) $(ARFLAGS) libpisock.a $(OBJS)
 	$(RANLIB) libpisock.a
 
 clean:

@@ -1,3 +1,21 @@
+Jan 18, 1997	Kenneth Albanowski 0.4.3
+
+	Modified configure support for NeXT and OS/2.
+	Added pilot-addresses program, a program designed to translate
+		between a comma-separated-value format and the Pilot address book.
+		In theory the format is compatible with the Palm Desktop
+		import/export format. An "a" switch (Advanced/Augment) is available
+		to output more data in a Desktop incompatible format.
+		This software may be buggy! Always back up the DatebookDB database
+		before installing records!
+    Modified pilot-xfer to sort databases during Restore to put applications
+        after their data, and larger records after smaller ones.
+    Modified pilot-xfer to clear lastsyncpc value so that a fast sync will
+        not be done with possibly missing sync flags on newly installed DBs.
+	Added lib/address.c & addresses.c patches to simplify phone label storage. 
+	Added -c switch to install-memo.c
+	Added stub README.
+	
 Jan 9, 1997		Kenneth Albanowski 0.4.2
 
 	Applied Pace's rm_fn patch, and pi-file patch for freads and attrs.
