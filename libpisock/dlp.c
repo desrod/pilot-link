@@ -538,7 +538,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 
 	buf = dlp_buf->data + 4;
 	for (i = 0; i < response->argc; i++) {
-		argid = get_byte (buf) & 0x7f;
+		argid = get_byte (buf) & 0x3f;
 		if (get_byte(buf) & PI_DLP_ARG_FLAG_LONG) {
 			if (pi_version(sd) < 0x0104) {
 				/* we received a response from a device indicating that
