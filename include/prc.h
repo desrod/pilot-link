@@ -1,19 +1,28 @@
 /* File header */
 
+#pragma pack(2)
+
 typedef struct prc {
   char AppName[32];     /* Application Name, NULL terminated string */
-  char PrcMagic1[28];   /* A whole bunch constant bytes.   A key?   */
-  char ApplString[4];   /* The 4 bytes "appl"                       */
-  char AppID[4];        /* Application ID?  4 bytes                 */
+  short prcversion;     /* Guess: The version of .prc format used   */
+  short version;        /* File version, as set during creation     */
+  long date1;		/* Unknown date (Mac epoch!)                */
+  long date2;		/* Unknown date (Mac epoch!)                */
+  char PrcMagic1[16];   /* A whole bunch constant bytes. A key?     */
+  long Type;            /* File 'creator'                           */
+  long Creator;         /* File 'type'                              */
   char PrcMagic2[8];    /* More constant bytes, same for all files  */
   short NumSections;    /* Number of sections in this file          */
 } prc_t;
 
+/* In my opinion, both "Magic" chunks are simply unused fields that weren't
+   cleared to nulls by the Mac tools. - KJA */
+
 /* Section header */
 typedef struct sect {
-  char SectName[4];     /* Section "type" name                      */
-  short Number;         /* ID of this section within section type   */
-  short junk;
-  short Offset;         /* Offset, begin of file to section's data  */
+  long Type;     /* Section "type" name                      */
+  short ID;
+  long Offset;
 } sect_t;
 
+#pragma pack(4)

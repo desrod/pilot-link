@@ -22,7 +22,7 @@ main(int argc, char *argv[])
   char *memo_buf;
   FILE *f;
 
-  if (argc <= 3) {
+  if (argc < 3) {
 #ifdef linux  
     fprintf(stderr,"usage:%s /dev/cua?? file [file] ...\n",argv[0]);
 #else
@@ -39,7 +39,9 @@ main(int argc, char *argv[])
   addr.port = 3;
   strcpy(addr.device,argv[1]);
   
-  pi_connect(sd, &addr, sizeof(addr));
+  pi_bind(sd, &addr, sizeof(addr));
+  pi_listen(sd,1);
+  sd = pi_accept(sd, 0, 0);
   
   /* Tell user (via Pilot) that we are starting things up */
   dlp_OpenConduit(sd);
@@ -78,7 +80,7 @@ main(int argc, char *argv[])
     memo_buf[l + 1 + memo_size] = '\0';
 
     /* dlp_exec(sd, 0x26, 0x20, &db, 1, NULL, 0); */
-    dlp_WriteRec(sd, (unsigned char)db, 0x80, 0x00000000, 0x0000, memo_buf);
+    dlp_WriteRecord(sd, (unsigned char)db, 0, 0, 0, memo_buf, -1, 0);
     free(memo_buf);
   }
 
@@ -90,4 +92,5 @@ main(int argc, char *argv[])
   
   dlp_EndOfSync(sd,0);
   pi_close(sd);
+  exit(0);
 }

@@ -2,6 +2,8 @@
 #ifndef _PILOT_CMP_H_
 #define _PILOT_CMP_H_
 
+#define OurCommVersion 0x01000000
+
 #pragma pack(2)
 struct cmp {
   unsigned char type;

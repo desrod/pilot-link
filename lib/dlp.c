@@ -13,6 +13,32 @@
 #include "pi-socket.h"
 #include "dlp.h"
 
+/* These functions are inefficient, but completely portable */
+
+#define get_long(ptr) (((ptr)[0] << 24) | \
+                       ((ptr)[1] << 16) | \
+                       ((ptr)[2] << 8)  | \
+                       ((ptr)[3] << 0))
+                       
+#define get_short(ptr) (((ptr)[0] << 8)  | \
+                        ((ptr)[1] << 0)
+                        
+#define get_date(ptr) (dlp_ptohdate((ptr)))                        
+
+#define get_byte(ptr) ((ptr)[0])
+
+#define set_long(ptr,val) (((ptr)[0] = ((val) >> 24) & 0xff), \
+		          ((ptr)[1] = ((val) >> 16) & 0xff), \
+		          ((ptr)[2] = ((val) >> 8) & 0xff), \
+		          ((ptr)[3] = ((val) >> 0) & 0xff))
+                       
+#define set_short(ptr,val) (((ptr)[0] = ((val) >> 8) & 0xff), \
+		            ((ptr)[1] = ((val) >> 0) & 0xff))
+
+#define set_date(ptr,val) (dlp_htopdate((val),(ptr)))                        
+
+#define set_byte(ptr,val) ((ptr)[0]=(val))
+
 
 static unsigned char dlp_buf[0xffff];
 
@@ -71,7 +97,7 @@ int dlp_exec(int sd, int cmd, int arg, void *msg, int msglen,
   	if (i>maxlen)
   	  i = maxlen;
   	  
-  	memcpy(result, &dlp_buf[8], i);
+  	memmove(result, &dlp_buf[8], i);
   } else {
   	i = dlp_buf[5];
 
@@ -79,59 +105,53 @@ int dlp_exec(int sd, int cmd, int arg, void *msg, int msglen,
   	  i = maxlen;
   	  
 
-  	memcpy(result, &dlp_buf[6], i);
+  	memmove(result, &dlp_buf[6], i);
   }
   return i;
   
 }
 
-/* This structure and the accompanying conversion functions
-   are strictly for use within the DLP layer. This particular
-   date/time format does not occur anywhere else within
-   the Pilot or its communications. */
+/* These conversion functions are strictly for use within the DLP layer.
+   This particular date/time format does not occur anywhere else within the
+   Pilot or its communications. */
    
-typedef struct {
-  unsigned char data[8];
-} dlp_PilotDateTime;
-
-static time_t dlp_ptohdate(dlp_PilotDateTime d) {
+static time_t dlp_ptohdate(unsigned const char * data) {
         struct tm t;
         
-        t.tm_sec = d.data[6];
-        t.tm_min = d.data[5];
-        t.tm_hour = d.data[4];
-        t.tm_mday = d.data[3];
-        t.tm_mon = d.data[2]-1;
-        t.tm_year = ((d.data[0]<<8) | d.data[1])-1900;
+        t.tm_sec = data[6];
+        t.tm_min = data[5];
+        t.tm_hour = data[4];
+        t.tm_mday = data[3];
+        t.tm_mon = data[2]-1;
+        t.tm_year = ((data[0]<<8) | data[1])-1900;
         t.tm_isdst = -1;
         
         return mktime(&t);
 }
 
-static dlp_PilotDateTime dlp_htopdate(time_t time) {
+static void dlp_htopdate(time_t time, unsigned char * data) {
         struct tm * t = localtime(&time);
-        dlp_PilotDateTime d;
         
         int y = t->tm_year+1900;
         
-        d.data[7] = 0; /* packing spacer */
-        d.data[6] = t->tm_sec;
-        d.data[5] = t->tm_min;
-        d.data[4] = t->tm_hour;
-        d.data[3] = t->tm_mday;
-        d.data[2] = t->tm_mon+1;
-        d.data[0] = (y >> 8) & 0xff;
-        d.data[1] = (y >> 0) & 0xff;
+        data[7] = 0; /* packing spacer */
+        data[6] = t->tm_sec;
+        data[5] = t->tm_min;
+        data[4] = t->tm_hour;
+        data[3] = t->tm_mday;
+        data[2] = t->tm_mon+1;
+        data[0] = (y >> 8) & 0xff;
+        data[1] = (y >> 0) & 0xff;
         
-        return d;
+        return;
 }
 
 int dlp_GetSysDateTime(int sd, time_t * t) {
-  dlp_PilotDateTime d;
-  int result = dlp_exec(sd, 0x13, 0x20, 0, 0, &d, sizeof(d));
+  char buf[8];
+  int result = dlp_exec(sd, 0x13, 0x20, 0, 0, buf, 8);
   
-  if(result == sizeof(d))
-    *t = dlp_ptohdate(d);
+  if(result == 8)
+    *t = dlp_ptohdate(buf);
   else
     *t = 0;
   
@@ -139,9 +159,25 @@ int dlp_GetSysDateTime(int sd, time_t * t) {
 }
 
 int dlp_SetSysDateTime(int sd, time_t time) {
-  dlp_PilotDateTime d = dlp_htopdate(time);
+  char buf[8];
+  dlp_htopdate(time, buf);
   
-  return dlp_exec(sd, 0x14, 0x20, &d, sizeof(d), 0, 0);
+  return dlp_exec(sd, 0x14, 0x20, buf, 8, 0, 0);
+}
+
+int dlp_ReadSysInfo(int sd, struct SysInfo * s) {
+  int result = dlp_exec(sd, 0x12, 0x20, NULL, 0, dlp_buf, 256);
+  
+  if(result >= 10) {
+    s->ROMVersion = get_long(dlp_buf);
+    s->localizationID = get_long(dlp_buf+4);
+    /* dlp_buf+8 is a filler byte */
+    s->namelength = get_byte(dlp_buf+9);
+    memcpy(s->name, dlp_buf+10, s->namelength);
+    s->name[s->namelength] = 0;
+  }
+  
+  return result;
 }
 
 int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle) {
@@ -161,6 +197,39 @@ int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle) {
   
   return result;
 }
+
+int dlp_DeleteDB(int sd, int card, const char * name) {
+  
+  dlp_buf[0] = card;
+  dlp_buf[1] = 0;
+  strcpy(dlp_buf+2, name);
+  
+  return dlp_exec(sd, 0x1A, 0x20, dlp_buf, 2+strlen(name)+1, 0, 0);
+}
+
+int dlp_CreateDB(int sd, long creator, long type, int cardno, 
+                 int flags, int version, const char * name, int * dbhandle) {
+  unsigned char handle;
+  int result;
+  
+  set_long(dlp_buf, creator);
+  set_long(dlp_buf+4, type);
+  set_byte(dlp_buf+8, cardno);
+  set_byte(dlp_buf+9, 0);
+  set_short(dlp_buf+10, flags);
+  set_short(dlp_buf+12, version);
+  strcpy(dlp_buf+14, name);
+  
+  result = dlp_exec(sd, 0x18, 0x20, dlp_buf, 14+strlen(name)+1, &handle, 1);
+  
+  if(result==1)
+    *dbhandle = handle;
+  else
+    *dbhandle = 0;
+  
+  return result;
+}
+
 
 int dlp_CloseDB(int sd, int dbhandle) {
   unsigned char handle = dbhandle;
@@ -218,46 +287,90 @@ int dlp_EndOfSync(int sd, int status) {
   return result;
 }
 
-int dlp_WriteUser(int sd, struct PilotUser *User, time_t tm) {
-  dlp_PilotDateTime d;
+int dlp_AbortSync(int sd) {
+  struct pi_socket * ps;
+  
+  /* Set end-of-sync flag on socket so pi_close won't do a dlp_EndOfSync */
+  if (ps = find_pi_socket(sd))
+    ps->connected |= 2;
 
-  *((long *)(dlp_buf)) = htonl(User->id1);
-  *((long *)(dlp_buf+4)) = htonl(User->id2);
-  *((long *)(dlp_buf+8)) = htonl(User->id3);
-
-  d = dlp_htopdate(tm);
-  memcpy(dlp_buf+12,&d,sizeof(d));
-
-  dlp_buf[20] = 0xff;
-  dlp_buf[21] = strlen(User->username)+1;
-  strcpy(dlp_buf+22,User->username);
-
-  return dlp_exec(sd, 0x11, 0x20, dlp_buf, strlen(User->username)+23, NULL, 0);
+  pi_close(sd);
+  
+  return 0;
 }
 
-int dlp_ReadUser(int sd, struct PilotUser *User) {
+int dlp_WriteUserInfo(int sd, struct PilotUser *User) {
+
+  set_long(dlp_buf, User->userID);
+  set_long(dlp_buf+4, User->viewerID);
+  set_long(dlp_buf+8, User->lastSyncPC);
+  set_date(dlp_buf+12, User->lastSyncDate);
+  set_byte(dlp_buf+20, 0xff);
+  set_byte(dlp_buf+21, strlen(User->username)+1);
+  strcpy(dlp_buf+22, User->username);
+
+  return dlp_exec(sd, 0x11, 0x20, dlp_buf, 22+strlen(User->username)+1, NULL, 0);
+}
+                        
+int dlp_ReadUserInfo(int sd, struct PilotUser *User) {
 
   int result;
 
   result = dlp_exec(sd, 0x10, 0x00, NULL, 0, dlp_buf, 0xffff);
+  
+  if (result >= 30) {
+  
+    User->userID = get_long(dlp_buf);
+    User->viewerID = get_long(dlp_buf+4);
+    User->lastSyncPC = get_long(dlp_buf+8);
+    User->succSyncDate = get_date(dlp_buf+12);
+    User->lastSyncDate = get_date(dlp_buf+20);
+    User->passwordLen = get_byte(dlp_buf+29);
+    memcpy(User->username, dlp_buf+30, get_byte(dlp_buf+28));
+    User->username[get_byte(dlp_buf+28)] = 0;
+    memcpy(User->password, dlp_buf+30+get_byte(dlp_buf+28), User->passwordLen);
 
-  User->id1 = ntohl(*((long *)(dlp_buf)));
-  User->id2 = ntohl(*((long *)(dlp_buf+4)));
-  User->id3 = ntohl(*((long *)(dlp_buf+8)));
-
-  strcpy(User->username, dlp_buf+30);
+  }
 
   return result;
 }
 
-int dlp_WriteRec(int sd, unsigned char dbhandle, unsigned char flags,
-                 long recID, short catID, char *text) {
+int dlp_WriteRecord(int sd, unsigned char dbhandle, unsigned char flags,
+                 long recID, short catID, char *data, int length, long * NewID) {
+  char buf[4];
+  int result;
 
-  dlp_buf[0] = dbhandle;
-  dlp_buf[1] = flags;
-  *((long *)(dlp_buf+2)) = htonl(recID);
-  *((short *)(dlp_buf+6)) = htons(catID);
-  strcpy(dlp_buf+8,text);
+  set_byte(dlp_buf, dbhandle);
+  set_byte(dlp_buf+1, 0);
+  set_long(dlp_buf+2, recID);
+  set_byte(dlp_buf+6, flags);
+  set_byte(dlp_buf+7, catID);
+  
+  if(length == -1)
+  	length = strlen(data)+1;
+  	
+  memcpy(dlp_buf+8, data, length);
 
-  return dlp_exec(sd, 0x21, 0x20, dlp_buf, 9+strlen(text), NULL, 0);
+  result = dlp_exec(sd, 0x21, 0x20, dlp_buf, 8+length, buf, 4);
+  
+  if(NewID)
+    if(result == 4)
+      *NewID = get_long(buf); /* New record ID */
+    else
+      *NewID = 0;
+      
+  return result;
+}
+
+int dlp_WriteResource(int sd, unsigned char dbhandle, long type, int id,
+                 const char *data, int length) {
+
+  set_byte(dlp_buf, dbhandle);
+  set_byte(dlp_buf+1, 0);
+  set_long(dlp_buf+2, type);
+  set_short(dlp_buf+6, id);
+  set_short(dlp_buf+8, length);
+  memcpy(dlp_buf+10, data, length);
+
+  return dlp_exec(sd, 0x24, 0x20, dlp_buf, 10+length, NULL, 0);
 }

@@ -5,7 +5,7 @@ AR = ar -cur
 RANLIB = ranlib
 RM = rm -f
 
-all: install-prc install-memo install-user
+all: install-prc install-memo install-user test-connector test-acceptor
 
 libpisock.a: lib/libpisock.a
 	mv lib/libpisock.a libpisock.a
@@ -19,9 +19,16 @@ install-user: libpisock.a install-user.o
 install-prc: libpisock.a install-prc.o
 	$(CC) $(CFLAGS) install-prc.o libpisock.a -o $@
 
+test-connector: libpisock.a test-connector.o
+	$(CC) $(CFLAGS) test-connector.o libpisock.a -o $@
+
+test-acceptor: libpisock.a test-acceptor.o
+	$(CC) $(CFLAGS) test-acceptor.o libpisock.a -o $@
+
 lib/libpisock.a:
 	make -C lib
 
 clean:
 	$(RM) *.[oa] *~ core a.out test_[sc] install-prc install-memo install-user
+	$(RM) test-acceptor test-connector
 	make -C lib clean

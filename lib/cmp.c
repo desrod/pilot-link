@@ -17,7 +17,7 @@ int cmp_rx(struct pi_socket *ps, struct cmp * c)
   cmp_dump(c,0);
 
   c->baudrate = ntohl(c->baudrate); /* This baud rate is the _maximum_, not the default */
-  /*c->commversion = ntohl(c->commversion);  /*Skip this for some unclear reason*/
+  c->commversion = ntohl(c->commversion);
 }
 
 int cmp_init(struct pi_socket *ps, int baudrate)
@@ -52,6 +52,23 @@ int cmp_abort(struct pi_socket *ps, int reason)
   c.flags = reason;
   c.commversion = 0;
   c.baudrate = 0;
+  
+  cmp_dump(&c,1);
+  
+  padp_tx(ps, &c, sizeof(struct cmp), padData);
+  pi_socket_read(ps);
+  padp_rx(ps, buf, 0);
+}
+
+int cmp_wakeup(struct pi_socket *ps, int maxbaud)
+{
+  char buf[200];
+  struct cmp c;
+  
+  c.type = 1;
+  c.flags = 0;
+  c.commversion = htonl(OurCommVersion);
+  c.baudrate = htonl(maxbaud);
   
   cmp_dump(&c,1);
   

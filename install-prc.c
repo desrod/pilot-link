@@ -2,6 +2,7 @@
  *
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
+ * Changed to use DLP layer, Kenneth Albanowski, 1996
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
@@ -11,9 +12,6 @@
 #include "pi-socket.h"
 
 static unsigned char User[] = { 0x10, 0};
-
-static unsigned char SyncClose[] = { 0x29, 0 };
-static unsigned char EOS[] = { 0x2f, 0x01, 0x20, 0x02, 0, 0};
 
 main(int argc, char *argv[])
 {
@@ -39,25 +37,22 @@ main(int argc, char *argv[])
   strcpy(addr.device,argv[1]);
 
   pi_bind(sd, &addr, sizeof(addr));
-
-  pi_listen(sd,0);
+  pi_listen(sd,1);
+  sd = pi_accept(sd,0,0);
+  
+  puts("Connected");
 
   buf = (char *)malloc(4096);  /* some huge (in Pilot terms) working space */
 
-  pi_write(sd,User,sizeof(User));
-  pi_read(sd,userid,64);
+  /*pi_write(sd,User,sizeof(User));
+  pi_read(sd,userid,64);*/
 
   for (i=2; i<argc; i++) LoadPRC(sd,argv[i]);
 
-  pi_write(sd, SyncClose, sizeof(SyncClose));
-  pi_read(sd, buf, 64);
+  dlp_ResetSystem(sd,0);
   
-  /* I think this is End Of Session */
-
   dlp_EndOfSync(sd, 0);
 
   pi_close(sd);
-  
-  /* wait a second, for things to close */
-  sleep(1);
+  exit(0);
 }
