@@ -52,8 +52,8 @@
 static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(struct pi_socket *ps);
 static int u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags);
-static int u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags);
-static int u_read_i(struct pi_socket *ps, unsigned char *buf, size_t len, int flags, int timeout);
+static int u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags);
+static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout);
 static int u_poll(struct pi_socket *ps, int timeout);
 static int u_control_request (pi_usb_data_t *usb_data, int request_type, int request, int value, int index, void *data, int size, int timeout);
 
@@ -119,9 +119,12 @@ restart:
 
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 			USB_handle = usb_open(dev);
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 
 			if (!try++) {
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 				usb_reset (USB_handle);
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 				usb_close (USB_handle);
 				CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (0));
 				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
@@ -371,10 +374,9 @@ u_close(struct pi_socket *ps)
 static int
 u_poll(struct pi_socket *ps, int timeout)
 {
-	unsigned char hack[28];
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
 
-	return u_read_i (ps, hack, 1, PI_MSG_PEEK, timeout);
+	return u_read_i (ps, NULL, 1, PI_MSG_PEEK, timeout);
 }
 
 static int
@@ -398,20 +400,20 @@ u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 }
 
 static int
-u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
+u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	int ret;
 
 	ret = u_read_i (ps, buf, len, flags, ((struct pi_usb_data *)ps->device->data)->timeout);
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Read: %d (%d).\n", ret, len));
 	if (ret > 0)
-		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata (buf, ret));
+		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata (buf->data, ret));
 
 	return ret;
 }
 
 static int
-u_read_i(struct pi_socket *ps, unsigned char *buf, size_t len, int flags, int timeout)
+u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout)
 {
 	if (!RD_running)
 		return -1;
@@ -467,8 +469,8 @@ u_read_i(struct pi_socket *ps, unsigned char *buf, size_t len, int flags, int ti
 	if (RD_buffer_used < len)
 		len = RD_buffer_used;
 	
-	if (len) {
-		memcpy (buf, RD_buffer, len);
+	if (len && buf) {
+		pi_buffer_append (buf, RD_buffer, len);
 		if (!(flags & PI_MSG_PEEK)) {
 			RD_buffer_used -= len;
 			if (RD_buffer_used)
