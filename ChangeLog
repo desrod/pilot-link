@@ -1,5 +1,9 @@
 2000-10-28    <jpr@helixcode.com>
 
+	* libcc/.cvsignore: ditto
+
+2000-10-28    <jpr@helixcode.com>
+
 	* Makefile.in: Re-run make depend to generate correct
 	dependencies
 
