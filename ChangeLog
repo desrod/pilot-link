@@ -5,6 +5,10 @@
 
 	* doc/man/pilot-addresses.1.in: Fixed erroneous blank line
 
+	* configure.in: Added a check for libstdc++ for libpisock++
+
+	* libpisock++/Makefile.am: Export LIBCXX into LDFLAGS
+
 2003-07-21  Angus Ainslie  <angusa@deltatee.com>
 
 	* src/read-veo.c: Added veo traveler decoder

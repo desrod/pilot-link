@@ -141,6 +141,8 @@ if test "$tcl_checkSocket" = 1; then
         AC_CHECK_LIB(socket, main, LIBS="$LIBS -lsocket", tcl_checkBoth=1)
 fi
 
+
+
 if test "$tcl_checkBoth" = 1; then
         tk_oldLibs=$LIBS
         LIBS="$LIBS -lsocket -lnsl"
@@ -341,6 +343,10 @@ if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
 	use_cpp=true
 fi
+
+AC_CHECK_LIB(stdc++, main,, AC_MSG_ERROR([Cannot find a Standard C++ library.]))
+LIBCXX=stdc++
+AC_SUBST(LIBCXX)
 
 AM_CONDITIONAL(WITH_CXX, $use_cpp)
 if $use_cpp; then
