@@ -28,7 +28,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 
 #include "pi-source.h"
 #include "pi-veo.h"

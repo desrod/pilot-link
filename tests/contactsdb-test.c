@@ -14,9 +14,13 @@
  * General Public License.  Please see the GNU LGPL for details.
  */
 
+#include <config.h>
+
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
