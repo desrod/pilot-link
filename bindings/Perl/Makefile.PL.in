@@ -11,8 +11,8 @@ $lib = "-L$libdir -lpisock";
 WriteMakefile(
     'NAME'       => 'PDA::Pilot',
     'VERSION'    => '@PILOT_LINK_VERS@.@PILOT_LINK_MAJOR@.@PILOT_LINK_MINOR@',
-    'LIBS'       => $lib,
     'XSPROTOARG' => '-noprototypes',
     'INC'        => '-I../../include',
     'DEFINE'     => '-DPERL_POLLUTE',
+    dynamic_lib  => {'OTHERLDFLAGS' => $lib}
 );
