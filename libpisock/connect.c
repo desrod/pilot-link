@@ -36,7 +36,7 @@ int pilot_connect(const char *port)
 	struct 	pi_sockaddr addr;
 
 	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-		fprintf(stderr, "\n   Unable to create socket '%s'\n", port ? port : "<NONE>");
+		fprintf(stderr, "\n   Unable to create socket '%s'\n", port ? port : getenv("PILOTPORT"));
 		return -1;
 	}
 
@@ -49,12 +49,12 @@ int pilot_connect(const char *port)
 	}
 
 	if (result < 0) {
-		fprintf(stderr, "\n   Unable to bind to port '%s'\n", port ? port : "<NONE>");
+		fprintf(stderr, "\n   Unable to bind to port '%s'\n", port ? port : getenv("PILOTPORT"));
 		pi_close(sd);
 		return -1;
 	}
 
-	fprintf(stderr, "\n   Listening to port: %s\n\n   Please press the HotSync button now... ",
+	fprintf(stderr, "\n   Listening to port: %s\n\n   Please press the HotSync button now... ", 
 		port ? port : getenv("PILOTPORT"));
 
 	if (pi_listen(sd, 1) == -1) {

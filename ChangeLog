@@ -6,6 +6,9 @@
 	* $TOPDIR/*.c: Cleaned up the perror() printfs, no double-colon, no
 	  tabs
 
+	* libsock/connect.c: Report errors on the port specified, let
+	   getenv() fill the rest
+
 2002-01-23  David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* install-datebook.c: Added pilot_connect();
