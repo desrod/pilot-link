@@ -657,28 +657,36 @@ dnl *************************************
 dnl ElectricFence (optional)
 dnl *************************************
 use_efence=false
-msg_efence=no
-AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking], [AC_CHECK_LIB(efence,malloc)
+msg_efence=no   
+AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking])
+
+case $withval in
+/*)
+    LIBS="-L$withval/lib"
+    ;;
+esac  
+
+AC_CHECK_LIB(efence, malloc, LIBS="$LIBS -lefence")
 
 if test "x$with_efence" != "xno"; then
-	if test "$ac_cv_lib_efence_malloc" = yes; then
-		use_efence=true
-		LIBS="$LIBS -lefence"
-	else
-		use_efence=false
-		echo "Unable to locate ElectricFence malloc() debugging library!"
-		echo "Please download from ftp://ftp.perens.com/pub/ElectricFence/"
-		echo "You may also try omitting --with-efence when running configure."
-		echo ""
-		exit 1
-	fi])
+        if test "$ac_cv_lib_efence_malloc" = yes; then
+                use_efence=true
+        else
+                use_efence=false
+                echo "Unable to locate ElectricFence malloc() debugging library!"
+                echo "Please download from ftp://ftp.perens.com/pub/ElectricFence/"
+                echo "You may also try omitting --with-efence when running configure."
+                echo ""
+                exit 1 
+        fi
+fi
+  
+if $use_efence; then
+        msg_efence=yes
+else
+        msg_efence=no
 fi
 
-if $use_efence; then
-	msg_efence=yes
-else
-	msg_efence=no
-fi
 
 dnl *************************************
 dnl Runtime debugging
