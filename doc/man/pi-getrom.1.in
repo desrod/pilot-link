@@ -1,13 +1,12 @@
-;.\" 
-.\" 
 .TH "pi-getrom" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
-\fBpi\-getrom\fR \- Retrieves the ROM image from your Palm device for use in 
-debugging.
+\fBpi\-getrom\fR \- Retrieves a ROM image or sysem information from your Palm device.
 
 
 .SH "SYNOPSIS"
-\fBpi\-getrom\fR [\fB\-p\fR <\fIport\fR>] [\fIfilename\fR]
+\fBpi\-getrom\fR [\fIcommon\-options\fR] [\fB\-\-rom\fR] <\fIfilename\fR>
+
+\fBpi\-getrom\fR [\fIcommon\-options\fR] \fB\-\-sysinfo\fR
 
 
 .SH "DESCRIPTION"
@@ -15,31 +14,18 @@ debugging.
 debugging Palm applications through the use of POSE, the \fIPalm OS Emulator
 application\fR. 
 
-Note, because \fBpi\-getrom\fR uses the low-level RPC protocol to fetch the
-ROM image, and the new OS5 devices do not use this protocol, you currently
-cannot fetch an OS5 ROM image using this utility. This will be updated in a
-future release to handle fetching OS5 ROM images, using the debugger
-protocol.
-
 
 .SH "OPTIONS"
 .TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld. If this
-is not specified, will look for the \fI$PILOTPORT\fR environment variable.
-If both are not found or supplied, \fBpi\-getrom\fR will fall back to
-/dev/pilot.
-   
-   
-.TP 
-\fB\-h\fR, \fB\-\-help\fR
-Display the help synopsis for \fBpi\-getrom\fR.
+See \fBpilot-link\fR(7) for details on the common options.
 
+.TP
+\fB\-\-rom\fR
+Read the ROM image. This is the default.
 
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version of \fBpi\-getrom\fR.
-
+.TP
+\fB\-s\fR, \fB\-\-sysinfo\fR
+Read the system information instead of retrieving a ROM image.
 
 .TP 
 <\fIfilename\fR>
@@ -50,10 +36,12 @@ filename of 'pilot-3.5.0.rom'.
 
 
 .SH "USAGE"
-Connect to a target Palm handheld and fetch the ROM for use in debugging
+(With \fB\-\-rom\fR) Connect to a target Palm handheld and fetch the ROM for use in debugging
 Palm applications through the use of POSE, the \fIPalm OS Emulator\fR or
 with the \fICoPilot\fR application (deprecated).
 
+(With \fB\-\-sysinfo\fR) Connect to a target Palm handheld and print the system information
+to standard output.
 
 .SH "LICENSING"
 \fBWarning\fR: Please completely back up your Palm before using this
@@ -64,6 +52,14 @@ Use of this program MAY place you in violation of your license agreement
 with Palmsource, Inc. or other OEM partners. Please read your Palm
 documentation (specifically the "Software License Agreement") before running
 this program.
+
+.SH "NOTES"
+
+Note, because \fBpi\-getrom\fR uses the low-level RPC protocol to fetch the
+ROM image, and the new OS5 devices do not use this protocol, you currently
+cannot fetch an OS5 ROM image using this utility. This will be updated in a
+future release to handle fetching OS5 ROM images, using the debugger
+protocol.
 
 
 .SH "BUGS"
@@ -82,4 +78,4 @@ Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 .SH "AUTHOR"
 \fBpi\-getrom\fR was originally written by Kenneth Albanowski.
 .SH "SEE ALSO"
-\fBpi\-getram\fR(1)
+\fBpi\-get\fR(1)

@@ -11,6 +11,37 @@ libraries, and language bindings for moving information to and from your
 Palm device and your desktop or server/workstation system, as well as across
 the network.
 
+.SH "OPTIONS"
+All \fBpilot\-link\fR programs recognize a set of standard
+options; programs may have additional options or required arguments
+as well. The standard options are:
+
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld.
+If this is not specified, will look for the \fI$PILOTPORT\fR environment
+variable. See
+\fBTARGET DEVICE\fR below for details.
+
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+Suppress progress output, status messages, and other non-essential
+messages from the application.
+
+.TP
+\fB\-\-usage\fR
+Display the help synopsis for the application.
+
+.TP
+\fB\-?\fR, \fB\-\-help\fR
+Display the extended help for the application.
+
+.TP
+\fB\-\-version\fR
+Display version information about \fBpilot\-link\fR.
+
+
+
+
 .SH "TARGET DEVICE"
 All of the \fBpilot\-link\fR programs will default to \fI/dev/pilot\fR as
 the default device used to communicate with a Palm. In general, if the

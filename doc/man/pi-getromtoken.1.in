@@ -1,0 +1,51 @@
+.\" 
+.\" 
+.TH "pi-getromtoken" "1" "pilot-link - @VERSION@" "(c) Adriaan de Groot 2004" "Conduits"
+.SH "NAME"
+\fBpi\-getromtoken\fR \- Retrieves a system token from your Palm device.
+
+
+.SH "SYNOPSIS"
+\fBpi\-getromtoken\fR [\fIcommon-options\fR>] [\fIramfile\fR]
+
+
+.SH "DESCRIPTION"
+\fBpi\-getromtoken\fR is used to fetch ROM tokens
+from your Palm handheld.
+
+
+
+.SH "OPTIONS"
+.TP 
+See \fBpilot-link\fR (7) for details on the common options.
+
+
+.TP 
+\fB\-t\fR, \fB\-\-token\fR <\fItoken\fR>
+The name of the token to retrieve. These are specified by four letters;
+common ones are
+\fBadcc\fR, the entropy calibration for the A-D converter,
+\fBirda\fR, some IR information available only on IR-enabled devices,
+\fBsnum\fR, the device serial number.
+
+
+
+.SH "USAGE"
+Connect to a target Palm handheld and fetch a ROM token from the device.
+
+
+
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBpi\-getromtoken\fR has no known bugs at this time.
+
+.PP
+\fBREPORTING BUGS\fR
+.IP
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+.SH "AUTHOR"
+\fBpi\-getromtoken\fR was originally written by Kenneth Albanowski.
+.SH "SEE ALSO"
+\fBpi\-getrom\fR(1)
