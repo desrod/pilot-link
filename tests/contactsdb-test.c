@@ -1,19 +1,17 @@
 /*
- * contactsdv-test.c:  Playing around with ContactsDB
+ * contactsdb-test.c:  Playing around with palmOne's ContactsDB-PAdd
  *
  * Written by  T. Joseph Carter <knghtbrd@bluecherry.net>
  *
- * This program is released to the public domain, except in countries such as
- * the United States where one cannot legally do so.  In such places, consider
- * this code to be licensed such that you may use it as if it were.
+ * This program is released to the public domain where allowed by law.  Some
+ * countries (eg, the United States) lack legal provision for releasing
+ * Copyright claims.  In such jurisdictions you are licensed to use, modify,
+ * and distribute this program as you see fit.  This program is released
+ * WITHOUT ANY WARRANTY, including the implied warranties of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This software is released without any warranty whatsoever in the hopes that
- * someone will figure out the damned ContactsDB format, or that someone from
- * PalmOne will write me an email and make sense of the output for me.  You
- * won't find enlightenment reading this code, only my frustration.  If it
- * breaks, it's not my problem.  If it breaks your PDA, I'm impressed since it
- * doesn't write anything--but it's still not my problem.  =)  You've been
- * duly warned.
+ * These terms do NOT apply to libpisock, which is covered by the GNU Library
+ * General Public License.  Please see the GNU LGPL for details.
  */
 
 #include <stdio.h>
