@@ -25,7 +25,7 @@ if ($ARGV[0]) {
 }
 
 $socket = PDA::Pilot::openPort($port) or die "$!";
-exit if (!$socket);
+
 #
 # openPort is the equivalent of:
 #
