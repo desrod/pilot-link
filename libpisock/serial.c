@@ -491,7 +491,9 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
 	size_t 	size;
-	int err;
+	int	err,
+		split = 0,
+		chunksize = 0;
 
 	/* Wait for data */
 	if ((err = data->impl.poll(ps, ps->accept_to * 1000)) < 0)
@@ -528,6 +530,25 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 				break;
 
 			case PI_CMD_NET:
+				/* serial/network: make sure we don't split writes. set socket option
+				 * on both the command and non-command instances of the protocol
+				 */
+				size = sizeof (split);
+				pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
+					&split, &size);
+				size = sizeof (chunksize);
+				pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
+					&chunksize, &size);
+
+				ps->command ^= 1;
+				size = sizeof (split);
+				pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
+					&split, &size);
+				size = sizeof (chunksize);
+				pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
+					&chunksize, &size);
+				ps->command ^= 1;
+
 				if ((err = net_rx_handshake(ps)) < 0)
 					return err;
 				break;
