@@ -1,0 +1,10 @@
+
+* Changes from 0.9.5.0 to 0.9.5.1 [June 26, 2001]:
+
+  - Added wrappers for all of the pi_file functions.  (However, if your only
+    reason to use this library is prc/pdb access, note that a pure-Python
+    prc/pdb library is coming soon.)
+
+  - Renamed the C module to "_pisock" and made the "pisock" module a Python
+    wrapper that imports everything from _pisock.  This will enable the
+    addition of shadow classes and the like.
