@@ -446,27 +446,27 @@ typedef unsigned long FileRef;
 	 */
 	enum dlpErrors {
 		dlpErrNoError 		= 0,
-		dlpErrSystem,
-		dlpErrIllegalReq,
-		dlpErrMemory,
-		dlpErrParam,
-		dlpErrNotFound,
-		dlpErrNoneOpen,
-		dlpErrAlreadyOpen,
-		dlpErrTooManyOpen,
-		dlpErrExists,
-		dlpErrOpen,
-		dlpErrDeleted,
-		dlpErrBusy,
-		dlpErrNotSupp,
-		dlpErrUnused1,
-		dlpErrReadOnly,
-		dlpErrSpace,
-		dlpErrLimit,
-		dlpErrSync,
-		dlpErrWrapper,
-		dlpErrArgument,
-		dlpErrSize,
+		dlpErrSystem,		/* 0x0001 */
+		dlpErrIllegalReq,	/* 0x0002 */
+		dlpErrMemory,		/* 0x0003 */
+		dlpErrParam,		/* 0x0004 */
+		dlpErrNotFound,		/* 0x0005 */
+		dlpErrNoneOpen,		/* 0x0006 */
+		dlpErrAlreadyOpen,	/* 0x0007 */
+		dlpErrTooManyOpen,	/* 0x0008 */
+		dlpErrExists,		/* 0x0009 */
+		dlpErrOpen,			/* 0x000a */
+		dlpErrDeleted,		/* 0x000b */
+		dlpErrBusy,			/* 0x000c */
+		dlpErrNotSupp,		/* 0x000d */
+		dlpErrUnused1,		/* 0x000e */
+		dlpErrReadOnly,		/* 0x000f */
+		dlpErrSpace,		/* 0x0010 */
+		dlpErrLimit,		/* 0x0011 */
+		dlpErrSync,			/* 0x0012 */
+		dlpErrWrapper,		/* 0x0013 */
+		dlpErrArgument,		/* 0x0014 */
+		dlpErrSize,			/* 0x0015 */
 
 		dlpErrUnknown = 127
 	};
@@ -720,7 +720,7 @@ typedef unsigned long FileRef;
 	/* 32-bit retcode and data over 64K only supported on v2.0 Palms */
 	extern int dlp_CallApplication
 		PI_ARGS((int sd, unsigned long creator, unsigned long type,
-			int action, size_t length, void *data,
+			int action, size_t length, const void *data,
 			unsigned long *retcode, pi_buffer_t *retbuf));
 
 	extern int dlp_ReadFeature
