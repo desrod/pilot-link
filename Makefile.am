@@ -26,6 +26,7 @@ bin_PROGRAMS = 		\
 	install-hinote	\
 	install-memo	\
 	install-todos	\
+	install-user	\
 	memos		\
 	money2qif	\
 	pi-csd		\
@@ -117,10 +118,10 @@ install_todos_SOURCES = \
 install_todos_LDADD = \
 	$(top_builddir)/libsock/libpisock.la
 
-#install_user_SOURCES = \
-#	install-user.c
-#install_user_LDADD = \
-#	$(top_builddir)/libsock/libpisock.la
+install_user_SOURCES = \
+	install-user.c
+install_user_LDADD = \
+	$(top_builddir)/libsock/libpisock.la
 
 memos_SOURCES = \
 	memos.c

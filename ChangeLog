@@ -1,5 +1,15 @@
 2001-11-17  JP Rosevear  <jpr@ximian.com>
 
+	* Remove dead files
+	
+	* Makefile.am: build install-user again
+
+	* tools/Makefile.am (SUBDIRS): don't build any subdirs right now
+
+	* libsock/Makefile.am: make sure connect.c is a source
+
+2001-11-17  JP Rosevear  <jpr@ximian.com>
+	
 	* Convert to automake
 
 2001-11-05  David A. Desrosiers <hacker at gnu-designs dot com>

@@ -13,6 +13,7 @@ libpisock_la_SOURCES =  \
 	$(serial_SOURCE)\
 	address.c	\
 	appinfo.c	\
+	connect.c	\
 	cmp.c		\
 	datebook.c	\
 	dlp.c		\

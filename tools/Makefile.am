@@ -22,4 +22,4 @@ else
 TCL_DIR =
 endif
 
-SUBDIRS = $(PYTHON_DIR) $(JAVA_DIR) $(PERL5_DIR) $(TCL_DIR)
+SUBDIRS = 
