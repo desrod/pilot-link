@@ -83,7 +83,7 @@ int unpack_Contact(struct Contact *c, unsigned char *buffer, int len)
 	c->addressLabel[1] = hi(get_byte(buffer + 5));
 	c->addressLabel[0] = lo(get_byte(buffer + 5));
 
-	c->IMLabel[1] = hi(get_byte(buffer + 7)) - 1; // First (AIM) = 1, not 0 on HH.
+	c->IMLabel[1] = hi(get_byte(buffer + 7)) - 1; /* First (AIM) = 1, not 0 on HH. */
 	c->IMLabel[0] = lo(get_byte(buffer + 7)) - 1;
 
 	contents = get_long(start + 8);
@@ -228,7 +228,7 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
 	phoneflag |= (((unsigned long) c->phoneLabel[6]) & 0xF) << 24;
 	phoneflag |= (((unsigned long) c->showPhone) & 0xF) << 28;
 
-	typesflag   = (((unsigned long) c->IMLabel[0]+1) & 0xF) << 0; // First = 1, not 0 on HH.
+	typesflag   = (((unsigned long) c->IMLabel[0]+1) & 0xF) << 0; /* First = 1, not 0 on HH. */
 	typesflag  |= (((unsigned long) c->IMLabel[1]+1) & 0xF) << 4;
 	typesflag  |= (((unsigned long) c->addressLabel[0]) & 0xF) << 16;
 	typesflag  |= (((unsigned long) c->addressLabel[1]) & 0xF) << 20;

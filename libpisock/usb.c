@@ -890,8 +890,9 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci.connections[i].port));
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, ci.connections[i].endpoint_info));
 			if (!memcmp(ci.connections[i].port_function_id, "cnys", 4)) {
-				// 'sync': we found the pipes to use for synchronization
-				// force find_interfaces to select this one rather than another one
+
+				/* 'sync': we found the pipes to use for synchronization force
+				   find_interfaces to select this one rather than another one */
 				if (ci.endpoint_numbers_different) {
 					if (input_pipe)
 						*input_pipe = ci.connections[i].endpoint_info >> 4;
