@@ -1,11 +1,11 @@
-/* 
+/*
  * pi-dlp.h: Desktop Link Protocol implementation (ala SLP)
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
@@ -75,7 +75,7 @@ extern "C" {
 #define vfsFileDateModified 	2
 
 /* The date the file was last accessed. */
-#define vfsFileDateAccessed 	3       	
+#define vfsFileDateAccessed 	3
 
 #define vfsMAXFILENAME 256
 
@@ -84,7 +84,7 @@ extern "C" {
 
 /* constant for an invalid volume reference, guaranteed not to represent a
    valid one.  Use it like you would use NULL for a FILE*. */
-#define vfsInvalidVolRef 0	
+#define vfsInvalidVolRef 0
 
 /* constant for an invalid file reference, guaranteed not to represent a
    valid one.  Use it like you would use NULL for a FILE*. */
@@ -115,7 +115,7 @@ typedef unsigned long FileRef;
    no FS lib call will ever have to handle this. */
 #define vfsModeCreate		(0x0008U)
 
-/* Truncate file to 0 bytes after opening, removing all existing data. 
+/* Truncate file to 0 bytes after opening, removing all existing data.
    Implemented in VFS layer, no FS lib call will ever have to handle this.
    */
 #define vfsModeTruncate		(0x0010U)
@@ -135,13 +135,13 @@ typedef unsigned long FileRef;
 		unsigned long attr;
 		char name[vfsMAXFILENAME];
 	};
-	
+
 	typedef struct VFSAnyMountParamTag {
 		unsigned short volRefNum;
 		unsigned short reserved;
 		unsigned long  mountClass;
 	} VFSAnyMountParamType;
-	
+
 	struct VFSSlotMountParamTag {
 		VFSAnyMountParamType vfsMountParam;
 		unsigned short slotLibRefNum;
@@ -157,11 +157,11 @@ typedef unsigned long FileRef;
 
 		/* 8: Creator code of filesystem driver for this volume. */
 		unsigned long   fsCreator;
-							
+
 		/* For slot based filesystems: (mountClass = VFSMountClass_SlotDriver)
 		   12: mount class that mounted this volume */
 		unsigned long   mountClass;
-		
+
 		/* 16: Library on which the volume is mounted */
 		int slotLibRefNum;
 
@@ -198,7 +198,7 @@ typedef unsigned long FileRef;
 		unsigned short dlpMinorVersion;
 		unsigned short compatMajorVersion;
 		unsigned short compatMinorVersion;
-		unsigned long  maxRecSize;		
+		unsigned long  maxRecSize;
 	};
 
 	struct DBInfo {
@@ -285,7 +285,7 @@ typedef unsigned long FileRef;
 		dlpFuncEndOfSync,			/* 0x2f */
 		dlpFuncResetRecordIndex,		/* 0x30 */
 		dlpFuncReadRecordIDList,		/* 0x31 */
-	
+
 		/* DLP 1.1 FUNCTIONS ADDED HERE (PalmOS v2.0 Personal, and Professional) */
 		dlpFuncReadNextRecInCategory,   	/* 0x32 */
 		dlpFuncReadNextModifiedRecInCategory,   /* 0x33 */
@@ -294,11 +294,11 @@ typedef unsigned long FileRef;
 		dlpFuncReadNetSyncInfo,			/* 0x36 */
 		dlpFuncWriteNetSyncInfo,		/* 0x37 */
 		dlpFuncReadFeature,			/* 0x38 */
-	
+
 		/* DLP 1.2 FUNCTIONS ADDED HERE (PalmOS v3.0) */
 		dlpFuncFindDB,				/* 0x39 */
 		dlpFuncSetDBInfo,			/* 0x3a */
-	
+
 		/* DLP 1.3 FUNCTIONS ADDED HERE (PalmOS v4.0) */
 		dlpLoopBackTest,			/* 0x3b */
 		dlpFuncExpSlotEnumerate,		/* 0x3c */
@@ -346,7 +346,7 @@ typedef unsigned long FileRef;
 		dlpFuncReadResourceEx,			/* 0x64 - function to read resources >64k by index in TapWave */
 		dlpLastFunc
 	};
-	
+
 	enum dlpDBFlags {
 		dlpDBFlagResource 	= 0x0001,	/* Resource DB, instead of record DB            */
 		dlpDBFlagReadOnly 	= 0x0002,	/* DB is read only                              */
@@ -384,6 +384,13 @@ typedef unsigned long FileRef;
 		dlpOpenSecret = 0x10,
 		dlpOpenReadWrite = 0xC0
 	};
+
+	enum dlpVFSOpenFlags {
+		dlpVFSOpenExclusive = 0x1,
+		dlpVFSOpenRead = 0x2,
+		dlpVFSOpenWrite = 0x5 /* implies exclusive */,
+		dlpVFSOpenReadWrite = 0x7 /* read | write */
+	} ;
 
 	enum dlpEndStatus {
 		dlpEndCodeNormal 	= 0,		/* Normal					 */
@@ -439,19 +446,19 @@ typedef unsigned long FileRef;
 		dlpErrWrapper,
 		dlpErrArgument,
 		dlpErrSize,
-		
+
 		dlpErrUnknown = 127
 	};
 
 	struct dlpArg {
 		int 	id;
-		size_t	len;		
+		size_t	len;
 		char *data;
 	};
 
 	struct dlpRequest {
 		enum dlpFunctions cmd;
-		
+
 		int argc;
 		struct dlpArg **argv;
 	};
@@ -459,18 +466,18 @@ typedef unsigned long FileRef;
 	struct dlpResponse {
 		enum dlpFunctions cmd;
 		enum dlpErrors err;
-		
+
 		int argc;
 		struct dlpArg **argv;
-	};	
+	};
 
 	extern struct dlpArg * dlp_arg_new PI_ARGS((int id, size_t len));
 	extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
 	extern int dlp_arg_len PI_ARGS((int argc, struct dlpArg **argv));
 
-	extern struct dlpRequest *dlp_request_new 
+	extern struct dlpRequest *dlp_request_new
 	        PI_ARGS((enum dlpFunctions cmd, int argc, ...));
-	extern struct dlpRequest * dlp_request_new_with_argid 
+	extern struct dlpRequest * dlp_request_new_with_argid
 	        PI_ARGS((enum dlpFunctions cmd, int argid, int argc, ...));
 	extern void dlp_request_free PI_ARGS((struct dlpRequest *req));
 
@@ -491,7 +498,7 @@ typedef unsigned long FileRef;
 	extern void dlp_set_protocol_version
 			PI_ARGS((int major, int minor));
 
-	/* Get the time on the Palm and return it as a local time_t value. */ 
+	/* Get the time on the Palm and return it as a local time_t value. */
 	extern int dlp_GetSysDateTime PI_ARGS((int sd, time_t *t));
 
 	/* Set the time on the Palm using a local time_t value. */
@@ -509,7 +516,7 @@ typedef unsigned long FileRef;
 	 * packed in the pi_buffer_t
 	 */
 	extern int dlp_ReadDBList
-		PI_ARGS((int sd, int cardno, int flags, int start, 
+		PI_ARGS((int sd, int cardno, int flags, int start,
 			pi_buffer_t *info));
 
 	extern int dlp_FindDBInfo
@@ -579,7 +586,7 @@ typedef unsigned long FileRef;
 	extern int dlp_AbortSync PI_ARGS((int sd));
 
 	/* Return info about an opened database. Currently the only information
-	   returned is the number of records in the database. 
+	   returned is the number of records in the database.
 	 */
 	extern int dlp_ReadOpenDBInfo
 		PI_ARGS((int sd, int dbhandle, int *records));
@@ -620,14 +627,14 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, int dbhandle, int sort, int start, int max,
 			recordid_t * IDs, int *count));
 
-	/* Write a new record to an open database.  
-	   Flags: 0 or dlpRecAttrSecret 
+	/* Write a new record to an open database.
+	   Flags: 0 or dlpRecAttrSecret
 	   RecID: a UniqueID to use for the new record, or 0 to have the
 	          Palm create an ID for you.
 	   CatID: the category of the record data: the record contents
 	          length: length of record.
-	   If -1, then strlen will be used on data 
-	   NewID: storage for returned ID, or null.  
+	   If -1, then strlen will be used on data
+	   NewID: storage for returned ID, or null.
 	 */
 
 	extern int dlp_WriteRecord
@@ -650,7 +657,7 @@ typedef unsigned long FileRef;
 			unsigned long *type, int *id));
 
 	extern int dlp_WriteResource
-		PI_ARGS((int sd, int dbhandle, unsigned long type, int id, 
+		PI_ARGS((int sd, int dbhandle, unsigned long type, int id,
 			PI_CONST void *data, size_t length));
 
 	extern int dlp_DeleteResource
@@ -721,19 +728,19 @@ typedef unsigned long FileRef;
 	/* PalmOS 3.0 only */
 	extern int dlp_SetDBInfo
 	        PI_ARGS((int sd, int dbhandle, int flags, int clearFlags, unsigned int version,
-			 time_t createDate, time_t modifyDate, time_t backupDate, 
+			 time_t createDate, time_t modifyDate, time_t backupDate,
 			 unsigned long type, unsigned long creator));
 
 	extern int dlp_FindDBByName
 	        PI_ARGS((int sd, int cardno, PI_CONST char *name, unsigned long *localid, int *dbhandle,
 			 struct DBInfo *info, struct DBSizeInfo *size));
 
-	extern int dlp_FindDBByOpenHandle 
-	        PI_ARGS((int sd, int dbhandle, int *cardno, unsigned long *localid, 
+	extern int dlp_FindDBByOpenHandle
+	        PI_ARGS((int sd, int dbhandle, int *cardno, unsigned long *localid,
 			 struct DBInfo *info, struct DBSizeInfo *size));
 
 	extern int dlp_FindDBByTypeCreator
-	        PI_ARGS((int sd, unsigned long type, unsigned long creator, int start, 
+	        PI_ARGS((int sd, unsigned long type, unsigned long creator, int start,
 			 int latest, int *cardno, unsigned long *localid, int *dbhandle,
 			 struct DBInfo *info, struct DBSizeInfo *size));
 
@@ -758,7 +765,7 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, int volRefNum, const char *name,char *dir, int *len));
 
 	extern int dlp_VFSImportDatabaseFromFile
-		PI_ARGS((int sd, int volRefNum, const char *pathNameP, 
+		PI_ARGS((int sd, int volRefNum, const char *pathNameP,
 			 int *cardno, unsigned long *localid));
 
 	extern int dlp_VFSExportDatabaseToFile
@@ -810,11 +817,11 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, int volRefNum, const char *path));
 
 	extern int dlp_VFSDirEntryEnumerate
-		PI_ARGS((int sd, FileRef dirRefNum, unsigned long *dirIterator, 
+		PI_ARGS((int sd, FileRef dirRefNum, unsigned long *dirIterator,
 			int *maxDirItems, struct VFSDirInfo *dirItems));
 
 	extern int dlp_VFSVolumeFormat
-		PI_ARGS((int sd, unsigned char flags, int fsLibRef, 
+		PI_ARGS((int sd, unsigned char flags, int fsLibRef,
 			struct VFSSlotMountParamTag *param));
 
 	extern int dlp_VFSVolumeEnumerate
@@ -830,7 +837,7 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, int volRefNum, const char *name));
 
 	extern int dlp_VFSVolumeSize
-		PI_ARGS((int sd, int volRefNum, long *volSizeUsed, 
+		PI_ARGS((int sd, int volRefNum, long *volSizeUsed,
 			long *volSizeTotal));
 
 	extern int dlp_VFSFileSeek
@@ -843,7 +850,7 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, FileRef afile,int *size));
 
 	/* DLP 1.4 only (Palm OS 5.2, seen on TapWave) */
-	extern int dlp_ExpSlotMediaType 
+	extern int dlp_ExpSlotMediaType
 		PI_ARGS((int sd, int slotNum, unsigned long *mediaType));
 
 #ifdef __cplusplus
