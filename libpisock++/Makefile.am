@@ -18,7 +18,7 @@ libpisock___la_LIBADD = \
 	$(top_builddir)/libpisock/libpisock.la
 
 libpisock___la_LDFLAGS = \
-	$(LIBCXX) -export-dynamic -version-info $(PISOCKPP_CURRENT):$(PISOCKPP_REVISION):$(PISOCKPP_AGE)
+	-export-dynamic -version-info $(PISOCKPP_CURRENT):$(PISOCKPP_REVISION):$(PISOCKPP_AGE)
 
 endif
 

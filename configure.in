@@ -287,7 +287,6 @@ dnl *********************************
 dnl Check if using the included popt
 dnl *********************************
 
-AC_MSG_CHECKING(whether to use included popt)
 AC_ARG_WITH(included-popt,
 [  --with-included-popt    use bundled popt library, not from system],,
 		AC_CHECK_LIB(popt, poptGetContext,
@@ -295,6 +294,7 @@ AC_ARG_WITH(included-popt,
 				[with_included_popt="yes"])
 )
 
+AC_MSG_CHECKING(whether to use included popt)
 if test "x$with_included_popt" = "xyes"; then
 	msg_popt="yes (included)"
     AC_MSG_RESULT(yes)
@@ -409,23 +409,31 @@ AC_SUBST(ICONV_LIBS)
 dnl ******************************
 dnl C++
 dnl ******************************
-msg_cpp=no
-LIBCXX=
+msg_cxx=no
 
-AC_ARG_WITH(cpp,
-		[  --with-cpp=cppexec      use C++                    [default=yes]])
+AC_ARG_WITH(cxx,
+		[  --with-cxx=compiler     build with C++ support      [autodetect]])
 
-if test "x$with_cpp" != "xno"; then
-	AC_PROG_CXX
-	save_LIBS="$LIBS"
-	AC_CHECK_LIB(stdc++, main,LIBCXX=stdc++,
-		     AC_MSG_ERROR([Cannot find a Standard C++ library.]))
-	LIBS="$save_LIBS"
-	msg_cpp=yes
-	CXXFLAGS="$CXXFLAGS -Wno-deprecated"
+if test "x$with_cxx" != "xno"; then
+	if test "x$with_cxx" = "xyes"; then
+		AC_PROG_CXX
+	else
+		AC_PROG_CXX([$with_cxx])
+	fi
+	dnl AC_PROG_CXX sets CXX even if it doesn't work/exist...
+	if test "x$GXX" = "xyes"; then
+		CXXFLAGS="$CXXFLAGS -Wno-deprecated"
+	fi
+	AC_MSG_CHECKING([whether $CXX works])
+	AC_LANG_PUSH(C++)
+	AC_TRY_COMPILE([
+#include <iostream>
+using namespace std;
+],,msg_cxx="yes",msg_cxx="no")
+	AC_LANG_POP(C++)
+	AC_MSG_RESULT([$msg_cxx])
 fi
-AC_SUBST(LIBCXX)
-AM_CONDITIONAL(WITH_CXX, test "x$msg_cpp" = "xyes")
+AM_CONDITIONAL(WITH_CXX, test "x$msg_cxx" = "xyes")
 
 
 dnl ******************************
@@ -729,7 +737,7 @@ AC_OUTPUT([
 	darwin/Makefile
 ])
 
-echo "
+AC_MSG_RESULT([
   Options detected/selected 
   -------------------------.
   pilot-link version...... : $VERSION
@@ -747,7 +755,7 @@ echo "
 
   Internal Language Support
   -------------------------.
-  C++ support............. : $msg_cpp
+  C++ support............. : $msg_cxx
   Iconv support........... : $msg_iconv
   PNG support............. : $msg_png
 
@@ -757,7 +765,7 @@ echo "
   Java support............ : $msg_java	$JAVA_VERSION
   Python support.......... : $msg_python	$PYTHONVER
   Perl support............ : $msg_perl	$PERL_VERSION
-"
+])
 
 if [[ x"$PL_FROM_CVS" = xyes ]]; then
   echo " .----- NOTICE ------------------------------------------------."

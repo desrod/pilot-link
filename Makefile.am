@@ -16,6 +16,7 @@ endif
 ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = 			\
+	autogen.sh		\
 	$(m4_DATA)		\
 	pilot-link.pc.in	\
 	pilot-link-pp.pc.in
