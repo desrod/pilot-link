@@ -123,16 +123,10 @@ int main(int argc, const char *argv[])
 
 
 	if (cat != NULL) {
-		for (j = 0; j < 16; j++) {
-			if (strcasecmp
-			    (mai.category.name[j],
-				cat) == 0) {
-				category = j;
-				break;
-			}
-		}
-		if (j == 16)
-			category = atoi(cat);
+		category = plu_findcategory(&mai.category,cat,
+			PLU_CAT_CASE_INSENSITIVE |
+			PLU_CAT_MATCH_NUMBERS |
+			PLU_CAT_DEFAULT_UNFILED);
 	}
 
 	while((file_arg = poptGetArg(pc)) != NULL) {

@@ -305,12 +305,8 @@ int main(int argc, const char *argv[])
 	unpack_MemoAppInfo(&mai, (unsigned char *) appblock, 0xffff);
 
 	if (category_name && category_name[0] != '\0') {
-		match_category = plu_findcategory(&mai.category,category_name, PLU_CAT_NOFLAGS);
+		match_category = plu_findcategory(&mai.category,category_name, PLU_CAT_WARN_UNKNOWN);
 		if (match_category < 0) {
-			fprintf(stderr,"   ERROR: Can't find specified Memo category \"%s\".\n",
-				category_name);
-			dlp_AddSyncLogEntry(sd,
-				"Can't find specified memo category.\n");
 			goto error_close;
 		};
 	}

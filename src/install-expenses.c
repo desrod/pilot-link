@@ -157,17 +157,9 @@ int main(int argc, const char *argv[])
 
 	category = 0;	/* unfiled */
 	if (category_name) {
-		category = -1;	/* invalid category */
-		for (i = 0; i < 16; i++)
-			if (!strcasecmp
-			    (eai.category.name[i], category_name)) {
-				category = i;
-				break;
-			}
+		category = plu_findcategory(&eai.category,category_name,
+			PLU_CAT_CASE_INSENSITIVE | PLU_CAT_WARN_UNKNOWN);
 		if (category < 0) {
-			fprintf(stderr,
-				"   ERROR: category %s not found on Palm\n",
-				category_name);
 			goto error_close;
 		}
 

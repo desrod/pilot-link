@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
 		category	= -1,
 		replace		= 0,
 		db,
-		i		= 0,
 		ReadAppBlock,
 		memo_size,
 		preamble;
@@ -166,19 +165,10 @@ int main(int argc, char *argv[])
 	unpack_MemoAppInfo(&mai, (unsigned char *) buf, ReadAppBlock);
 
 	if (category_name) {
-		for (i = 0; i < 16; i++)
-			if (!strcasecmp
-			    (mai.category.name[i], category_name)) {
-				category = i;
-				break;
-			}
-
-                if (category < 0) {
-                        printf("   Category '%s' did not exist on the Palm, "
-                               "entry created in 'Unfiled'.\n\n",
-                                category_name);
-                        category = 0;
-                }
+		category = plu_findcategory(&mai.category,category_name,
+			PLU_CAT_CASE_INSENSITIVE |
+			PLU_CAT_DEFAULT_UNFILED |
+			PLU_CAT_WARN_UNKNOWN);
 
 		if (replace) {
 			dlp_DeleteCategory(sd, db, category);
