@@ -10,9 +10,10 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "dlp.h"
-#include "syspkt.h"
+#include "pi-dlp.h"
+#include "pi-syspkt.h"
 
 int done = 0;
 
@@ -32,7 +33,7 @@ void read_user(int sd)
   } else if(strcmp(line,"reboot")==0) {
     RPC(sd, 0xA08C, 2, RPC_End);
   } else if(strcmp(line,"coldboot")==0) {
-    RPC(sd, 0xA08B, 2  RPC_Long(0),RPC_Long(0),RPC_Long(0),RPC_Long(0), RPC_End);
+    RPC(sd, 0xA08B, 2, RPC_Long(0),RPC_Long(0),RPC_Long(0),RPC_Long(0), RPC_End);
   } else if(strcmp(line,"numdb")==0) {
     printf("Number of databases on card 0: %d\n",
       RPC(sd, 0xA043, 0, RPC_Short(0), RPC_End)
@@ -108,12 +109,12 @@ int main(int argc, char *argv[])
     exit(2);
   }
 
-  if (!(sd = pi_socket(AF_SLP, SOCK_RAW, PF_SLP))) {
+  if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP))) {
     perror("pi_socket");
     exit(1);
   }
     
-  laddr.sa_family = AF_SLP;
+  laddr.sa_family = PI_AF_SLP;
   strcpy(laddr.device,argv[1]);
   
   pi_bind(sd, &laddr, sizeof(laddr));

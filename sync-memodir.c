@@ -28,12 +28,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "datebook.h"
-#include "todo.h"
-#include "dlp.h"
+#include "pi-datebook.h"
+#include "pi-todo.h"
+#include "pi-dlp.h"
 
-#include "sync.h"
+#include "pi-sync.h"
 
 /* Define our own LocalRecord type. */
 struct LocalRecord {
@@ -101,19 +102,19 @@ char * newarchivename(PilotRecord * r, LocalRecord * l) {
 
 /* Get a Pilot ID for a local record, or 0 if no Pilot ID has been set. Any
    local ID mechanism is not relevent, only IDs given by the Pilot. */
-unsigned long GetPilotID(SyncAbs * this,LocalRecord * Local) {
+unsigned long GetPilotID(SyncAbs * thisSA,LocalRecord * Local) {
 	return Local->ID;
 	return 1;
 }
 
 /* Set the ID on a local record to match a given Pilot ID. */
-int SetPilotID(SyncAbs * this,LocalRecord * Local, unsigned long ID) {
+int SetPilotID(SyncAbs * thisSA,LocalRecord * Local, unsigned long ID) {
 	Local->ID = ID;
 	return 1;
 }
 
 /* Given a PilotRecord, try and find a local record with a matching ID */
-int MatchRecord(SyncAbs * this,  LocalRecord ** Local, PilotRecord * p) {
+int MatchRecord(SyncAbs * thisSA,  LocalRecord ** Local, PilotRecord * p) {
 	LocalRecord * m = memos;
 	while(m) {
 		if(m->ID == p->ID)
@@ -129,13 +130,13 @@ int MatchRecord(SyncAbs * this,  LocalRecord ** Local, PilotRecord * p) {
 }
 
 /* Free up the LocalRecord returned by MatchRecord */
-int FreeMatch(SyncAbs * this,LocalRecord ** Local) {
+int FreeMatch(SyncAbs * thisSA,LocalRecord ** Local) {
 	*Local = 0;
 	return 0;
 }
 
 /* Iterate over all LocalRecords, in arbitrary order */
-int Iterate(SyncAbs * this, LocalRecord ** Local) {
+int Iterate(SyncAbs * thisSA, LocalRecord ** Local) {
 	LocalRecord * m = *Local;
 	if( !m) {
 		m = memos;
@@ -147,7 +148,7 @@ int Iterate(SyncAbs * this, LocalRecord ** Local) {
 }
 
 /* Iterate over local records of a specified type. */
-int IterateSpecific(SyncAbs * this, LocalRecord ** Local, int flag, int archived) {
+int IterateSpecific(SyncAbs * thisSA, LocalRecord ** Local, int flag, int archived) {
 	LocalRecord * m = *Local;
 	if( !m) {
 		m = memos;
@@ -169,7 +170,7 @@ int IterateSpecific(SyncAbs * this, LocalRecord ** Local, int flag, int archived
 }
 
 /* Set status of local record */
-int SetStatus(SyncAbs * this,LocalRecord * Local, int status) {
+int SetStatus(SyncAbs * thisSA,LocalRecord * Local, int status) {
 	Local->attr = status;
 	return 0;
 }
@@ -177,7 +178,7 @@ int SetStatus(SyncAbs * this,LocalRecord * Local, int status) {
 /* There is no GetStatus, the abstract layer used Local->attr */
 
 /* Set archival status of local record */
-int SetArchived(SyncAbs * this,LocalRecord * Local,int archived) {
+int SetArchived(SyncAbs * thisSA,LocalRecord * Local,int archived) {
         Local->archived = archived;
 	return 0;
 }
@@ -185,7 +186,7 @@ int SetArchived(SyncAbs * this,LocalRecord * Local,int archived) {
 /* There is no GetStatus, the abstract layer used Local->archived */
 
 /* Given a PilotRecord, store it in the local database */
-int StoreRemote(SyncAbs * this,PilotRecord* p) {
+int StoreRemote(SyncAbs * thisSA,PilotRecord* p) {
 	LocalRecord * m;
 	int h;
 	struct stat stbuf;
@@ -209,7 +210,7 @@ int StoreRemote(SyncAbs * this,PilotRecord* p) {
 		}
 	}
 	/* new record */
-	m = malloc(sizeof(LocalRecord));
+	m = (LocalRecord*)malloc(sizeof(LocalRecord));
 	m->ID = p->ID;
 	m->attr = p->attr;
 	m->secret = p->secret;
@@ -232,14 +233,14 @@ int StoreRemote(SyncAbs * this,PilotRecord* p) {
 
 /* Given a local record, construct a PilotRecord suitable for transmission
 to a Pilot */
-PilotRecord * Transmit(SyncAbs* this ,LocalRecord* Local) {
+PilotRecord * Transmit(SyncAbs* thisSA ,LocalRecord* Local) {
         static PilotRecord p;
 	int h = open(filename(Local->name),O_RDONLY);
 	
 	struct stat statbuf;
 	stat(filename(Local->name),&statbuf);
 	p.length = statbuf.st_size+1;
-	p.record = malloc(p.length);
+	p.record = (unsigned char*)malloc(p.length);
 	read(h, p.record, p.length-1);
 	p.record[p.length-1] = '\0';
 	close(h);
@@ -253,13 +254,13 @@ PilotRecord * Transmit(SyncAbs* this ,LocalRecord* Local) {
 }
 
 /* Free PilotRecord created by Transmit */
-int FreeTransmit(SyncAbs* this,LocalRecord* Local,PilotRecord* Remote) {
+int FreeTransmit(SyncAbs* thisSA,LocalRecord* Local,PilotRecord* Remote) {
 	free(Remote->record);
 	return 0;
 }
 
 /* Find a local backup record and compare it to the pilot record for inequality */
-int CompareBackup(SyncAbs * this, LocalRecord* m, PilotRecord* p) {
+int CompareBackup(SyncAbs * thisSA, LocalRecord* m, PilotRecord* p) {
 	char buffer[0xffff];
 	int r,len;
 
@@ -281,7 +282,7 @@ int CompareBackup(SyncAbs * this, LocalRecord* m, PilotRecord* p) {
 }
 
 /* Compare a local record and pilot record for inequality */
-int Compare(SyncAbs * this, LocalRecord * m, PilotRecord* p) {
+int Compare(SyncAbs * thisSA, LocalRecord * m, PilotRecord* p) {
 	char buffer[0xffff];
   	int r = open(filename(m->name),O_RDONLY);
   	int len = read(r,buffer,0xffff);
@@ -297,7 +298,7 @@ int Compare(SyncAbs * this, LocalRecord * m, PilotRecord* p) {
 }
 
 /* Delete all local records */
-int DeleteAll(SyncAbs * this) {
+int DeleteAll(SyncAbs * thisSA) {
 	while(memos) {
 		LocalRecord * m = memos;
 		memos = memos->next;
@@ -311,7 +312,7 @@ int DeleteAll(SyncAbs * this) {
 
 /* Do a local purge, deleting all records marked Deleted, and
    archiving all records marked for archiving */
-int Purge(SyncAbs * this) {
+int Purge(SyncAbs * thisSA) {
 	LocalRecord * prev = 0;
 	LocalRecord * m = memos, *next;
 	while(m) {
@@ -386,7 +387,7 @@ int main(int argc, char *argv[])
     fprintf(stderr,"usage:%s %s # A directory called Memos will be created!\n",argv[0],TTYPrompt);
     exit(2);
   }
-  if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
+  if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
     exit(1);
   }
@@ -397,7 +398,7 @@ int main(int argc, char *argv[])
   
   d = opendir("Memos");
   while( (dirent = readdir(d)) ) {
-  	struct file * f = malloc(sizeof(struct file));
+  	struct file * f = (struct file*)malloc(sizeof(struct file));
   	if(dirent->d_name[0] == '.')
   		continue;
   	if(strcmp(dirent->d_name,"Archive")==0)
@@ -416,7 +417,7 @@ int main(int argc, char *argv[])
   f = fopen("Memos.dir","r");
   while (f && !feof(f)) {
   	long l;
-  	LocalRecord * m = malloc(sizeof(LocalRecord));
+  	LocalRecord * m = (LocalRecord*)malloc(sizeof(LocalRecord));
   	if(fscanf(f, "%lu %lu %s", &m->ID, &l, &m->name[0])<3)
   		break;
   	m->mtime = (time_t)l;
@@ -445,7 +446,7 @@ int main(int argc, char *argv[])
   			m=m->next;
   		}
   		if(!m) {
-  			m = malloc(sizeof(LocalRecord));
+  			m = (LocalRecord*)malloc(sizeof(LocalRecord));
   			strcpy(m->name, f->name);
   			m->ID = 0;
   			m->attr = RecordNew;
@@ -484,7 +485,7 @@ int main(int argc, char *argv[])
   }
   
 
-  addr.sa_family = AF_SLP;
+  addr.sa_family = PI_AF_SLP;
   addr.port = 3;
   strcpy(addr.device,argv[1]);
   

@@ -11,8 +11,9 @@
 /*@-boolops@*/ 
  
 #include <stdio.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "dlp.h"
+#include "pi-dlp.h"
 
 
 #define get_date(ptr) (dlp_ptohdate((ptr)))                        
@@ -807,6 +808,17 @@ int dlp_ReadUserInfo(int sd, struct PilotUser* User)
 #endif
 
   return result;
+}
+
+int dlp_ResetLastSyncPC(int sd)
+{
+  struct PilotUser U;
+  int err;
+  
+  if ((err = dlp_ReadUserInfo(sd, &U))<0)
+    return err;
+  U.lastSyncPC = 0;
+  return dlp_WriteUserInfo(sd, &U);
 }
 
 int dlp_ResetDBIndex(int sd, int dbhandle)

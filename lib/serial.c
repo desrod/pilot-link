@@ -8,9 +8,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
-#include "slp.h"
+#include "pi-slp.h"
 
 /* if this is running on a NeXT system... */
 #ifdef NeXT
@@ -32,6 +33,10 @@
 #define INCL_DOSDEVICES    /* DosDevice   values */
 #include <os2.h>
 #endif /* OS2 */
+
+#ifdef SERIAL_TRACE
+int debugh=0;
+#endif
 
 #ifndef OS2
 
@@ -160,6 +165,13 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   ioctl(ps->mac.fd, TIOCSETN, &tcn);
 #endif
 
+#ifdef SERIAL_TRACE
+  if(debugh==0) {
+    debugh = open("PiDebug.log",O_WRONLY|O_CREAT|O_APPEND,0666);
+    write(debugh, "\0\1\0\0\0\0\0\0\0\0", 10);
+  }
+#endif
+
   return ps->mac.fd;
 }
 
@@ -216,6 +228,12 @@ int pi_device_close(struct pi_socket *ps)
 
   result = close(ps->mac.fd);
   ps->mac.fd = 0;
+
+#ifdef SERIAL_TRACE
+  if (debugh)
+    close(debugh);  
+#endif
+
   return result;
 }
 #endif /* not OS2 */
@@ -227,7 +245,6 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   HFILE fd;
   unsigned long action;
   int filesize=0;
-  int param_length;
 
   /* open the device */
   rc=DosOpen(tty, /* the device */
@@ -278,6 +295,13 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   ps->mac.fd=fd;
   pi_device_changebaud(ps);
   pi_socket_set_timeout(ps,-1,60);
+  
+#ifdef SERIAL_TRACE
+  if (debugh==0) {
+    debugh = open("PiDebug.log",O_WRONLY|O_CREAT,0666);
+    write(debugh, "\0\1\0\0\0\0\0\0\0\0", 10);
+  }
+#endif
   return(fd);  
 }
 
@@ -346,7 +370,13 @@ int pi_device_changebaud(struct pi_socket *ps)
 
 int pi_device_close(struct pi_socket *ps)
 {
+#ifdef SERIAL_TRACE
+  if (debugh)
+    close(debugh);  
+#endif
+
   DosClose(ps->mac.fd);
+  return(0);
 }
 
 
@@ -461,6 +491,9 @@ error:
 int pi_socket_send(struct pi_socket *ps)
 {
   struct pi_skb *skb;
+#ifdef SERIAL_TRACE
+  int i;
+#endif
 #ifdef OS2
   int rc,nwrote;
 #endif
@@ -475,8 +508,12 @@ int pi_socket_send(struct pi_socket *ps)
 #else
     write(ps->mac.fd,skb->data,skb->len);
 #endif
-#ifdef DEBUG
-    write(6,skb->data,skb->len);
+#ifdef SERIAL_TRACE
+    /*write(6,skb->data,skb->len);*/
+    for (i=0;i<skb->len;i++) {
+      write(debugh, "2", 1);
+      write(debugh, skb->data+i, 1);
+    }
 #endif
     ps->tx_bytes += skb->len;
     free(skb);
@@ -496,6 +533,9 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
 {
   int r;
   char *buf;
+#ifdef SERIAL_TRACE
+  int i;
+#endif
 #ifdef OS2
   int rc;
 #else
@@ -549,8 +589,12 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
         ps->rx_errors++;
         return 0;
       }
-#ifdef DEBUG
-      write(7, buf, r);
+#ifdef SERIAL_TRACE
+      /*write(7, buf, r);*/
+      for (i=0;i<r;i++) {
+        write(debugh, "1", 1);
+        write(debugh, buf+i, 1);
+      }
 #endif
       ps->rx_bytes += r;
       buf += r;

@@ -9,9 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "dlp.h"
-#include "datebook.h"
+#include "pi-dlp.h"
+#include "pi-datebook.h"
 
 /* dom1stSun = REM Sun 1  
  dom1stMon = Rem Mon 1 

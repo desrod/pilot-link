@@ -15,6 +15,7 @@
 # include <assert.h>
 #endif
 
+#include "pi-source.h"
 #include "pi-socket.h"
 
 /* this routine ruthlessly stolen verbatim from Brian J. Swetland */

@@ -11,9 +11,10 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "padp.h"
-#include "slp.h"
+#include "pi-padp.h"
+#include "pi-slp.h"
 #include "pi-serial.h"
 
 #define xmitTimeout 4

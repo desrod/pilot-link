@@ -1,7 +1,7 @@
 #ifndef _PILOT_PADP_H_
 #define _PILOT_PADP_H_
 
-#include <pi-socket.h>
+#include "pi-socket.h"
 #ifdef OS2
 #include <time.h>
 #endif
@@ -23,8 +23,8 @@ struct padp {
 
 #define SIZEOF_PADP 4
 
-int padp_tx(struct pi_socket *ps, void *msg, int len, int type);
-int padp_rx(struct pi_socket *ps, void *buf, int len);
-void padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx);
+extern int padp_tx(struct pi_socket *ps, void *msg, int len, int type);
+extern int padp_rx(struct pi_socket *ps, void *buf, int len);
+extern void padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx);
 
 #endif /* _PILOT_PADP_H_ */

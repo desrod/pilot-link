@@ -19,6 +19,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-file.h"
 
@@ -167,7 +168,7 @@ pi_file_open (char *name)
 
   pf->for_writing = 0;
 
-  if ((pf->f = fopen (name, "r")) == NULL)
+  if ((pf->f = fopen (name, "rb")) == NULL)
     goto bad;
 
   fseek (pf->f, 0, SEEK_END);
@@ -703,7 +704,7 @@ pi_file_close_for_write (struct pi_file *pf)
     return (-1);
   }
 
-  if ((f = fopen (pf->file_name, "w")) == NULL)
+  if ((f = fopen (pf->file_name, "wb")) == NULL)
     return (-1);
 
   ip = &pf->info;
@@ -830,14 +831,23 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
   int db;
   int l,j;
   int reset = 0;
+  int flags;
   void * buffer;
   
   /* Delete DB if it already exists */
   dlp_DeleteDB(socket, cardno, pf->info.name);
   
+  /* Set up DB flags */
+  flags = pf->info.flags;
+  if (strcmp(pf->info.name, "Graffiti ShortCuts ")==0) {
+    flags |= 0x8000; /* Rewrite an open DB */
+    reset = 1; /* To be on the safe side */
+  }
+  printf("Flags = %8.8X, name = '%s'\n", flags, pf->info.name);
+  
   /* Create DB*/
   if(dlp_CreateDB(socket, pf->info.creator, pf->info.type, cardno,
-                       pf->info.flags, pf->info.version,
+                       flags, pf->info.version,
                        pf->info.name, &db)<0)
     return -1;
     

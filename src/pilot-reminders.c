@@ -9,9 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "datebook.h"
-#include "dlp.h"
+#include "pi-datebook.h"
+#include "pi-dlp.h"
 
 char *Weekday[7] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 char *Month[12] = {"jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"};
@@ -24,18 +25,18 @@ int main(int argc, char *argv[])
   int i;
   struct PilotUser U;
   int ret;
-  char buffer[0xffff];
+  unsigned char buffer[0xffff];
 
   if (argc < 2) {
     fprintf(stderr,"usage:%s %s\n",argv[0],TTYPrompt);
     exit(2);
   }
-  if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
+  if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
     exit(1);
   }
     
-  addr.sa_family = AF_SLP;
+  addr.sa_family = PI_AF_SLP;
   addr.port = 3;
   strcpy(addr.device,argv[1]);
   

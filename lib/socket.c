@@ -10,12 +10,13 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
-#include "padp.h"
-#include "cmp.h"
-#include "dlp.h"
-#include "syspkt.h"
+#include "pi-padp.h"
+#include "pi-cmp.h"
+#include "pi-dlp.h"
+#include "pi-syspkt.h"
 
 static struct pi_socket *psl = (struct pi_socket *)0;
 static int pi_next_socket = 3;            /* FIXME: This should be a real fd */
@@ -29,11 +30,11 @@ int pi_socket(int domain, int type, int protocol)
   struct pi_socket *p;
   struct pi_socket *ps;
 
-  if ((domain != AF_SLP) ||
-      ((type  != SOCK_STREAM) &&
-      (type   != SOCK_RAW)) ||
-      ((protocol != PF_PADP) &&
-       (protocol != PF_SLP))) {  /* FIXME:  Need to support more */
+  if ((domain != PI_AF_SLP) ||
+      ((type  != PI_SOCK_STREAM) &&
+      (type   != PI_SOCK_RAW)) ||
+      ((protocol != PI_PF_PADP) &&
+       (protocol != PI_PF_SLP))) {  /* FIXME:  Need to support more */
     errno = EINVAL;
     return -1;
   }
@@ -53,7 +54,7 @@ int pi_socket(int domain, int type, int protocol)
   ps->os2_write_timeout=60;
 #endif
 
-  if(type == SOCK_STREAM) {
+  if(type == PI_SOCK_STREAM) {
 #ifdef __sgi
     ps->establishrate = 9600; /* Default PADP connection rate */
 #else
@@ -62,7 +63,7 @@ int pi_socket(int domain, int type, int protocol)
     if (getenv("PILOTRATE"))
     	ps->establishrate = atoi(getenv("PILOTRATE"));
     ps->rate = 9600; /* Mandatory CMP conncetion rate */
-  } else if(type == SOCK_RAW) {
+  } else if(type == PI_SOCK_RAW) {
     ps->establishrate = ps->rate = 57600; /* Mandatory SysPkt connection rate */
   }
   
@@ -97,7 +98,7 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
   ps->raddr = *addr;
   ps->laddr = *addr;
    
-  if(ps->type == SOCK_STREAM) {
+  if(ps->type == PI_SOCK_STREAM) {
 
     if(cmp_wakeup(ps, 38400)<0) /* Assume this box can't go over 38400 */
       return -1;
@@ -178,7 +179,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
     return -1;
   }
 
-  if(ps->type == SOCK_STREAM) {
+  if(ps->type == PI_SOCK_STREAM) {
 
     pi_socket_read(ps, 20);
     if(cmp_rx(ps, &c) < 0)
@@ -227,7 +228,7 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
     return -1;
   }
 
-  if(ps->type == SOCK_STREAM) {
+  if(ps->type == PI_SOCK_STREAM) {
     return padp_tx(ps,msg,len,padData);
   } else {
     return syspkt_tx(ps, msg, len);
@@ -245,7 +246,7 @@ int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
     return -1;
   }
 
-  if(ps->type == SOCK_STREAM) {
+  if(ps->type == PI_SOCK_STREAM) {
     return padp_rx(ps,msg,len);
   } else {
     return syspkt_rx(ps,msg,len);
@@ -277,7 +278,7 @@ int pi_tickle(int pi_sd)
     return -1;
   }
   
-  if(ps->type == SOCK_STREAM)
+  if(ps->type == PI_SOCK_STREAM)
     return padp_tx(ps,0,0,padTickle);
   else {
     errno = EOPNOTSUPP;
@@ -297,7 +298,7 @@ int pi_close(int pi_sd)
     return -1;
   }
   
-  if (ps->type == SOCK_STREAM) {
+  if (ps->type == PI_SOCK_STREAM) {
     if (ps->connected & 1) /* If socket is connected */
       if (!(ps->connected & 2)) /* And it wasn't end-of-synced */
         dlp_EndOfSync(pi_sd, 0);  /* Then do it now, with clean status */

@@ -9,9 +9,10 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <signal.h>
-#include "dlp.h"
+#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-file.h"
+#include "pi-dlp.h"
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -32,12 +33,12 @@ void Connect(void) {
   signal(SIGINT, SigHandler);
   signal(SIGSEGV, SigHandler);
       
-  if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
+  if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
     exit(1);
   }
 
-  addr.sa_family = AF_SLP;
+  addr.sa_family = PI_AF_SLP;
   addr.port = 3;
   strcpy(addr.device,device);
   
@@ -86,7 +87,7 @@ void VoidSyncFlags(void)
   struct PilotUser U;
   Connect();
   if (dlp_ReadUserInfo(sd, &U)>=0) {
-    U.lastSyncPC = 0xDEADBEEF; /* Hopefully unique constant, to tell
+    U.lastSyncPC = 0x00000000; /* Hopefully unique constant, to tell
                                   any Desktop software that databases
                                   have been altered, and that a slow
                                   sync is necessary */
@@ -126,6 +127,8 @@ void Backup(char * dirname)
   	printf("Backing up '%s'... ", name);
   	fflush(stdout);
   	
+  	info.flags &= 0xff;
+  	
   	f = pi_file_create(name, &info);
   	if (f==0) {
   	  printf("Failed, unable to create file\n");
@@ -164,6 +167,8 @@ void Fetch(char * dbname)
   	  
   printf("Fetching '%s'... ", name);
   fflush(stdout);
+
+  info.flags &= 0xff;
   	
   f = pi_file_create(name, &info);
   if (f==0) {
@@ -178,6 +183,32 @@ void Fetch(char * dbname)
   pi_file_close(f);
 
   printf("Fetch done.\n");
+}
+
+void Delete(char * dbname)
+{
+  struct DBInfo info;
+  Connect();
+
+  if (dlp_OpenConduit(sd)<0) {
+    puts("Exiting on cancel, all data _not_ backed up.");
+    exit(1);
+  }
+
+  dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info);
+  
+  printf("Deleting '%s'... ", dbname);
+  if (dlp_DeleteDB(sd, 0, dbname)>=0) {
+        if (info.type == pi_mktag('b','o','o','t')) {
+           printf(" (rebooting afterwards) ");
+        }
+  	printf("OK\n");
+  } else {
+  	printf("Failed, unable to delete database\n");
+  }
+  fflush(stdout);
+  	
+  printf("Delete done.\n");
 }
 
 struct db {
@@ -220,7 +251,7 @@ void Restore(char * dirname)
            continue;
 
 	
-	db[dbcount] = malloc(sizeof(struct db));
+	db[dbcount] = (struct db*)malloc(sizeof(struct db));
 	
 	sprintf(db[dbcount]->name, "%s/%s", dirname, dirent->d_name);
 	
@@ -366,6 +397,51 @@ void List(void)
   printf("List done.\n");
 }
 
+void Purge(void)
+{
+  struct DBInfo info;
+  int i;
+  int h;
+  
+  Connect();
+
+  if ( dlp_OpenConduit(sd) < 0) {
+    puts("Exiting on cancel. All data not restored.");
+    exit(1);
+  }
+  
+  printf("Reading list of databases to purge...\n");
+  
+  i = 0;
+  while(1) {
+  	if( dlp_ReadDBList(sd, 0, 0x80, i, &info) < 0)
+  		break;
+  	i = info.index + 1;
+  	
+  	if (info.flags & 1)
+  		continue; /* skip resource databases */
+  	
+  	printf("Purging deleted records from '%s'... ", info.name);
+  	
+  	h = 0;
+  	if ((dlp_OpenDB(sd, 0, 0x40|0x80, info.name, &h)>=0) &&
+	    (dlp_CleanUpDatabase(sd, h)>=0) &&
+  	    (dlp_ResetSyncFlags(sd,h)>=0) ) {
+  	    printf("OK\n");
+  	} else {
+  	    printf("Failed\n");
+  	}
+  	
+  	if (h!=0)
+  	    dlp_CloseDB(sd, h);
+  	
+  }
+  
+  VoidSyncFlags();
+  
+  printf("Purge done.\n");
+}
+
 void Help(void)
 {
       printf("Usage: %s %s command(s)\n\n",progname,TTYPrompt);
@@ -373,6 +449,8 @@ void Help(void)
       printf("                           -r(estore) backupdir\n");
       printf("                           -i(nstall) filename \n");
       printf("                           -f(etch)   dbname   \n");
+      printf("                           -d(elete)  dbname   \n");
+      printf("                           -p(urge)\n");
       printf("                           -l(ist)\n");
       exit(0);
 }
@@ -395,7 +473,7 @@ int main(int argc, char *argv[])
   device = argv[1];
   
   optind = 2;
-  while ((c = getopt(argc, argv, "b:r:i:f:lh")) != -1) {
+  while ((c = getopt(argc, argv, "b:r:i:f:d:plh")) != -1) {
     switch (c) {
     case 'b':
       Backup(optarg);
@@ -408,6 +486,12 @@ int main(int argc, char *argv[])
       break;
     case 'f':
       Fetch(optarg);
+      break;
+    case 'd':
+      Delete(optarg);
+      break;
+    case 'p':
+      Purge();
       break;
     case 'l':
       List();

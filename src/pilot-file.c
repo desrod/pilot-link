@@ -12,8 +12,9 @@
 #include <unistd.h>
 #include <time.h>
 
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "dlp.h"
+#include "pi-dlp.h"
 #include "pi-file.h"
 
 #ifdef sun

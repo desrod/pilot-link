@@ -8,8 +8,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "dlp.h"
+#include "pi-dlp.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,12 +19,12 @@ int main(int argc, char *argv[])
   char buffer[64];
   int ret;
 
-  if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
+  if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
     exit(1);
   }
     
-  addr.sa_family = AF_SLP;
+  addr.sa_family = PI_AF_SLP;
   addr.port = 3;
   strcpy(addr.device,"/dev/ttyp9");
   

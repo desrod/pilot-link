@@ -1,3 +1,20 @@
+Feb  5, 1997	Kenneth Albanowski 0.5.0
+
+	Rearranged header files so they should be cleaner to externally use.
+	Added pilot-dedupe program, which will automatically remove duplicate
+		records from any Pilot database. (Use with caution on databases
+		for third-party applications. It is safe to use on all of the
+		standard databases.)
+	Added useful serial trace. If SERIAL_TRACE is defined during
+		compilation, then a complete trace of all serial activity (in and
+		out) will be appended to PiDebug.log in the current directory. If
+		you are getting low level failures of the software, please try
+		generating one of these logs and mailing it to me
+		(kjahds@kjahds.com) so I can attempt to find the problem.
+	Made a few slight changes in various programs and headers to 
+		reduce miscasts.
+	Removed -Wall flag for CC compiler.
+
 Jan 18, 1997	Kenneth Albanowski 0.4.3
 
 	Modified configure support for NeXT and OS/2.

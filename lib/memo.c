@@ -9,9 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "dlp.h"
-#include "memo.h"
+#include "pi-dlp.h"
+#include "pi-memo.h"
 
 void free_Memo(struct Memo * a) {
   if(a->text)

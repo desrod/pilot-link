@@ -2,9 +2,10 @@
 
 #include <signal.h>
 #include <stdio.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "padp.h"
-#include "dlp.h"
+#include "pi-padp.h"
+#include "pi-dlp.h"
 #include "pi-serial.h"
 
 #define TICKLE_INTERVAL 7
@@ -316,13 +317,13 @@ int main(int argc, char **argv) {
 
   /* Connect to the Pilot. */
 
-  sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP);
+  sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP);
   if (sd == -1) {
     perror("pi_socket");
     exit(1);
   }
 
-  addr.sa_family = AF_SLP;
+  addr.sa_family = PI_AF_SLP;
   addr.port = 3;
   strcpy(addr.device, argv[1]);
 

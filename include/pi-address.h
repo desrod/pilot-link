@@ -31,10 +31,10 @@ struct AddressAppInfo {
   int sortByCompany;
 };
 
-void free_Address(struct Address *);
-void unpack_Address(struct Address *, unsigned char * record, int len);
-void pack_Address(struct Address *, unsigned char * record, int * len);
-void unpack_AddressAppInfo(struct AddressAppInfo *, unsigned char * AppInfo, int len);
-void pack_AddressAppInfo(struct AddressAppInfo *, unsigned char * AppInfo, int * len);
+extern void free_Address(struct Address *);
+extern void unpack_Address(struct Address *, unsigned char * record, int len);
+extern void pack_Address(struct Address *, unsigned char * record, int * len);
+extern void unpack_AddressAppInfo(struct AddressAppInfo *, unsigned char * AppInfo, int len);
+extern void pack_AddressAppInfo(struct AddressAppInfo *, unsigned char * AppInfo, int * len);
 
 #endif /* _PILOT_ADDRESS_H_ */

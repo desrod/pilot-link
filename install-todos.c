@@ -8,9 +8,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "dlp.h"
-#include "todo.h"
+#include "pi-dlp.h"
+#include "pi-todo.h"
 
 int main(int argc, char *argv[])
 {
@@ -37,12 +38,12 @@ int main(int argc, char *argv[])
     fprintf(stderr,"usage:%s %s file [file] ...\n",argv[0],TTYPrompt);
     exit(2);
   }
-  if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
+  if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
     exit(1);
   }
     
-  addr.sa_family = AF_SLP;
+  addr.sa_family = PI_AF_SLP;
   addr.port = 3;
   strcpy(addr.device,argv[1]);
   
@@ -89,7 +90,7 @@ int main(int argc, char *argv[])
     filelen = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    file_text = malloc(filelen+1);
+    file_text = (char*)malloc(filelen+1);
     if (file_text == NULL) {
       perror("malloc()");
       exit(1);

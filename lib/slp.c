@@ -8,8 +8,9 @@
  */
 
 #include <stdio.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "slp.h"
+#include "pi-slp.h"
 
 /* Build and queue up an SLP packet to be transmitted */
 
@@ -138,7 +139,7 @@ int slp_rx(struct pi_socket *ps)
       
       /* hack to ignore LOOP packets... */
 
-      if (ps->mac.rxb->data[5] == PF_LOOP) {
+      if (ps->mac.rxb->data[5] == PI_PF_LOOP) {
 	ps->mac.expect = 1;
 	ps->mac.state = 1;
 	ps->mac.rxb->next = (struct pi_skb *)0;

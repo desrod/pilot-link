@@ -1,12 +1,21 @@
-OBJS = socket.o serial.o slp.o padp.o utils.o \
+SOCKOBJS = socket.o serial.o slp.o padp.o \
        dlp.o cmp.o syspkt.o datebook.o memo.o address.o todo.o \
        sync.o pi-file.o
 
+FILEOBJS = pi-file.o
+
+APPOBJS = datebook.o memo.o address.o todo.o sync.o
+
+UTILOBJS = utils.o
+
+OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS)
+
 CC = gcc
 CFLAGS = -g -O2 -Wall -I../include
+# -DSERIAL_TRACE
 # -DDLP_TRACE
+# -DPADP_TRACE
 # -DDEBUG
-# -DTRACE
 AR = ar
 ARFLAGS = -cur
 RANLIB = ar -s
@@ -26,31 +35,43 @@ depend:
 	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -MM -I../include *.c >> Makefile.in
 
 #Dependencies
-address.o: address.c ../include/pi-socket.h   \
- ../include/dlp.h ../include/address.h
-cmp.o: cmp.c ../include/pi-socket.h   \
- ../include/padp.h ../include/cmp.h ../include/pi-serial.h
-datebook.o: datebook.c ../include/pi-socket.h   \
- ../include/dlp.h ../include/datebook.h
-dlp.o: dlp.c ../include/pi-socket.h   \
- ../include/dlp.h
-memo.o: memo.c ../include/pi-socket.h   \
- ../include/dlp.h ../include/memo.h
-padp.o: padp.c ../include/pi-socket.h   \
- ../include/padp.h ../include/slp.h ../include/pi-serial.h
-pi-file.o: pi-file.c ../include/pi-socket.h   \
- ../include/pi-file.h ../include/dlp.h
-serial.o: serial.c ../include/pi-socket.h   \
- ../include/pi-serial.h ../include/slp.h
-slp.o: slp.c ../include/pi-socket.h   \
- ../include/slp.h
-socket.o: socket.c ../include/pi-socket.h   \
- ../include/pi-serial.h ../include/padp.h ../include/cmp.h \
- ../include/dlp.h ../include/syspkt.h
-sync.o: sync.c ../include/pi-socket.h   \
- ../include/dlp.h ../include/sync.h
-syspkt.o: syspkt.c ../include/pi-socket.h   \
- ../include/syspkt.h ../include/slp.h ../include/pi-serial.h
-todo.o: todo.c ../include/pi-socket.h   \
- ../include/dlp.h ../include/todo.h
-utils.o: utils.c ../include/pi-socket.h  
+address.o: address.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-address.h
+cmp.o: cmp.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-padp.h \
+ ../include/pi-cmp.h ../include/pi-serial.h
+datebook.o: datebook.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-datebook.h
+dlp.o: dlp.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h
+memo.o: memo.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-memo.h
+padp.o: padp.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-padp.h \
+ ../include/pi-slp.h ../include/pi-serial.h
+pi-file.o: pi-file.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-file.h \
+ ../include/pi-dlp.h
+serial.o: serial.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-serial.h \
+ ../include/pi-slp.h
+slp.o: slp.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-slp.h
+socket.o: socket.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-serial.h \
+ ../include/pi-padp.h ../include/pi-cmp.h ../include/pi-dlp.h \
+ ../include/pi-syspkt.h
+sync.o: sync.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-sync.h
+syspkt.o: syspkt.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-syspkt.h \
+ ../include/pi-slp.h ../include/pi-serial.h
+todo.o: todo.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-todo.h
+utils.o: utils.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-macros.h

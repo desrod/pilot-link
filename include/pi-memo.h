@@ -16,10 +16,10 @@ struct MemoAppInfo {
   
 };
 
-void free_Memo(struct Memo *);
-void unpack_Memo(struct Memo *, unsigned char * record, int len);
-void pack_Memo(struct Memo *, unsigned char * record, int * len);
-void unpack_MemoAppInfo(struct MemoAppInfo *, unsigned char * AppInfo, int len);
-void pack_MemoAppInfo(struct MemoAppInfo *, unsigned char * AppInfo, int * len);
+extern void free_Memo(struct Memo *);
+extern void unpack_Memo(struct Memo *, unsigned char * record, int len);
+extern void pack_Memo(struct Memo *, unsigned char * record, int * len);
+extern void unpack_MemoAppInfo(struct MemoAppInfo *, unsigned char * AppInfo, int len);
+extern void pack_MemoAppInfo(struct MemoAppInfo *, unsigned char * AppInfo, int * len);
 
 #endif /* _PILOT_MEMO_H_ */

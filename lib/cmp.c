@@ -6,9 +6,10 @@
  */
 
 #include <stdio.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "padp.h"
-#include "cmp.h"
+#include "pi-padp.h"
+#include "pi-cmp.h"
 #include "pi-serial.h"
 
 int cmp_rx(struct pi_socket *ps, struct cmp * c)

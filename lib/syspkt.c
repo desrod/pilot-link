@@ -10,9 +10,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "syspkt.h"
-#include "slp.h"
+#include "pi-syspkt.h"
+#include "pi-slp.h"
 #include "pi-serial.h"
 
 int syspkt_tx(struct pi_socket *ps, unsigned char *msg, int length)
@@ -290,4 +291,13 @@ int RPC_Ptr_Void(int sd, int trap) {
   return RPC(sd, trap, 1, RPC_End);
 }
 
-
+/* Untested complex RPC example
+int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
+                    int * version, long * date, long * romsize, long * ramsize,
+                    long * freeram) {
+  return RPC(sd, 0xA004, 0, RPC_Short(cardno), RPC_Ptr(cardname, 32), 
+                            RPC_Ptr(manufname, 32), RPC_ShortPtr(version),
+                            RPC_LongPtr(date), RPC_LongPtr(romsize),
+                            RPC_LongPtr(ramsize), RPC_LongPtr(freeram));
+}                    
+*/

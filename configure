@@ -447,7 +447,7 @@ echo > confdefs.h
 
 # A filename unique to this package, relative to the directory that
 # configure is in, which we can look for to find out if srcdir is correct.
-ac_unique_file=include/cmp.h
+ac_unique_file=include/pi-cmp.h
 
 # Find the source files, if location was not specified.
 if test -z "$srcdir"; then
@@ -1330,6 +1330,7 @@ if eval "test \"`echo '$''{'ac_cv_cwflag'+set}'`\" = set"; then
 else
   case "${CC-cc}" in
   *gcc*) ac_cv_cwflag=-Wall;;
+  *CC*) ac_cv_cwflag="";;
   *)	case "$host" in
 			*irix*)	ac_cv_cwflag=-fullwarn ;;
 			*)		ac_cv_cwflag=-Wall;;

@@ -38,11 +38,12 @@
  */
  
 #include <stdio.h>
+#include "pi-source.h"
 #include "pi-socket.h"
-#include "dlp.h"
+#include "pi-dlp.h"
 
 #define Abstract_sync
-#include "sync.h"
+#include "pi-sync.h"
 
 /* Given a remote (Pilot) record, stored in a PilotRecord structure, determine what,
    if anything, should be done with it, by looking at its flags, and possibly looking

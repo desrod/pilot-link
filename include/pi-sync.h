@@ -68,13 +68,13 @@ struct SyncAbs {
 #endif
 
 /* Erase all local records, and copy all remote records to local */
-int CopyFromRemote(int handle, int db, struct SyncAbs * s);
+extern int CopyFromRemote(int handle, int db, struct SyncAbs * s);
 /* Erase all remote records, and copy all local records to remote */
-int CopyToRemote(int handle, int db, struct SyncAbs * s);
+extern int CopyToRemote(int handle, int db, struct SyncAbs * s);
 /* Synchronize local and remote using flags on remote */
-int FastSync(int handle, int db, struct SyncAbs * s );
+extern int FastSync(int handle, int db, struct SyncAbs * s );
 /* Synchronize by pulling all data off remote, and comparing to backup
    on local if flags show no change */
-int SlowSync(int handle, int db, struct SyncAbs * s );
+extern int SlowSync(int handle, int db, struct SyncAbs * s );
 
 #endif

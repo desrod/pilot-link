@@ -15,12 +15,20 @@ Once the user has executed
 .B pilot-xfer
 the user must invoke HotSync on the target device.
 .SS OPTIONS
-Several optionss exist, including "-b dir" which backs up the Pilot into
-the specified directory (which will be created if it does not already exist), "-r dir"
-which installs all files contained in a directory into the Pilot (use this to
-restore your Pilot after a hard reset has cleared its memory), "-i file" will install
-a file into the Pilot, and "-f dbname" will fetch a database out of the Pilot. "-l" will
-list the databases in the Pilot.
+Several options exist, including "-b dir" which backs up the Pilot into the
+specified directory (which will be created if it does not already exist),
+"-r dir" which installs all files contained in a directory into the Pilot
+(use this to restore your Pilot after a hard reset has cleared its memory),
+"-i file" will install a file into the Pilot, and "-f dbname" will fetch a
+database out of the Pilot. "-l" will list the databases in the Pilot.
+
+"-p" purges any data that hasn't been cleaned up be a sync (this is a safe
+operation, and will prevent your Pilot from accumulating crud if you delete
+records but aren't syncing with the PIM. The only information you can lose is
+archived but un-synced records.)
+
+"-d dbname" lets you delete a particular database. Obviously, be careful
+with this one.
 .SH USAGE
 The program will connect to a target, and perform the quested database options.
 .SH AUTHOR

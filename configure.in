@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(include/cmp.h)
+AC_INIT(include/pi-cmp.h)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -39,6 +39,7 @@ AC_CACHE_CHECK([for maximum warnings compiler flag],
   ac_cv_cwflag,
 [case "${CC-cc}" in
   *gcc*) ac_cv_cwflag=-Wall;;
+  *CC*) ac_cv_cwflag="";;
   *)	case "$host" in
 			*irix*)	ac_cv_cwflag=-fullwarn ;;
 			*)		ac_cv_cwflag=-Wall;;

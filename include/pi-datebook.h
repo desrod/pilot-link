@@ -56,10 +56,10 @@ struct AppointmentAppInfo {
   int startOfWeek;
 };
 
-void free_Appointment(struct Appointment *);
-void unpack_Appointment(struct Appointment *, unsigned char * record, int len);
-void pack_Appointment(struct Appointment *, unsigned char * record, int * len);
-void unpack_AppointmentAppInfo(struct AppointmentAppInfo *, unsigned char * AppInfo, int len);
-void pack_AppointmentAppInfo(struct AppointmentAppInfo *, unsigned char * AppInfo, int * len);
+extern void free_Appointment(struct Appointment *);
+extern void unpack_Appointment(struct Appointment *, unsigned char * record, int len);
+extern void pack_Appointment(struct Appointment *, unsigned char * record, int * len);
+extern void unpack_AppointmentAppInfo(struct AppointmentAppInfo *, unsigned char * AppInfo, int len);
+extern void pack_AppointmentAppInfo(struct AppointmentAppInfo *, unsigned char * AppInfo, int * len);
 
 #endif /* _PILOT_DATEBOOK_H_ */

@@ -8,5 +8,32 @@ Sorry for not providing decent information here. The basics are:
   3) play around, _carefully_. pilot-xfer is probably the most useful
      program for you, and also the safest.
 
+Usage notes:
+
+  read-ical and sync-ical only work if you have ical-2.x installed and
+  in the path.
+
+Debugging notes:
+
+  There are several defines mentioned in lib/Makefile that enabled different
+  types of debugging information. Possibly the most valuable is SERIAL_TRACE
+  which will generate a file called PiDebug.log in the current directory
+  containing a complete trace of all serial activity. Please try and mail me
+  (kjahds@kjahds.com) such a log if you are having low-level failures.
+  
+Embedding information:
+
+  As of 0.5.0, I've rearranged the headers slightly so that it should be
+  easier and more reliable to use the libpisock.a library in external
+  applications.
+  
+  If you want to use the pilot-link portability layer (configured via
+  autoconf), then include pi-source.h. Otherwise, do not touch this file,
+  as it sets up a mildly complex environment.
+  
+  For all normal operations, simply include the obvious files (pi-file for
+  .pdb and .prc file access, pi-dlp for DLP sync functions, etc.). pi-macros
+  contains the portable byte-access routines.
+  
 Happy Hacking,
 Kenneth Albanowski <kjahds@kjahds.com>

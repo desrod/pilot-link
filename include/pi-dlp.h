@@ -108,29 +108,29 @@ enum dlpErrors {
   dlpErrUnknown = -128
 };
 
-int dlp_GetSysDateTime(int sd, time_t * t);
+extern int dlp_GetSysDateTime(int sd, time_t * t);
 
   /* Get the time on the Pilot and return it as a local time_t value. */
   
-int dlp_SetSysDateTime(int sd, time_t time);
+extern int dlp_SetSysDateTime(int sd, time_t time);
 
   /* Set the time on the Pilot using a local time_t value. */
   
-int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c);
+extern int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c);
 
 
-int dlp_ReadSysInfo(int sd, struct SysInfo * s);
+extern int dlp_ReadSysInfo(int sd, struct SysInfo * s);
 
   /* Read the system information block. */
 
-int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * info);
+extern int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * info);
 
   /* flags must contain dlpDBListRAM and/or dlpDBListROM */
 
-int dlp_FindDBInfo(int sd, int cardno, int start, char * dbname, unsigned long type,
+extern int dlp_FindDBInfo(int sd, int cardno, int start, char * dbname, unsigned long type,
                                unsigned long creator, struct DBInfo * info);
   
-int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle);
+extern int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle);
 
   /* Open a database on the Pilot. cardno is the target memory card (always
      use zero for now), mode is the access mode, and name is the ASCII name
@@ -142,42 +142,42 @@ int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle);
                                                     ShowSecret = 0x10
   */
   
-int dlp_CloseDB(int sd, int dbhandle);
+extern int dlp_CloseDB(int sd, int dbhandle);
 
   /* Close an opened database using the handle returned by OpenDB. */
 
-int dlp_CloseDB_All(int sd);
+extern int dlp_CloseDB_All(int sd);
 
   /* Variant of CloseDB that closes all opened databases. */
 
-int dlp_DeleteDB(int sd, int cardno, const char * name);
+extern int dlp_DeleteDB(int sd, int cardno, const char * name);
 
   /* Delete a database.
        cardno: zero for now
        name: ascii name of DB. */
   
-int dlp_CreateDB(int sd, long creator, long type, int cardno,
+extern int dlp_CreateDB(int sd, long creator, long type, int cardno,
                  int flags, int version, const char * name, int * dbhandle);
 
  /* Create database */                 
                     
-int dlp_ResetSystem(int sd);
+extern int dlp_ResetSystem(int sd);
 
  /* Require reboot of Pilot after HotSync terminates. */
  
-int dlp_AddSyncLogEntry(int sd, char * entry);
+extern int dlp_AddSyncLogEntry(int sd, char * entry);
 
  /* Add an entry into the HotSync log on the Pilot.  Move to the next line
     with \n, as usual. You may invoke this command once or more before
     calling EndOfSync, but it is not required. */
 
-int dlp_OpenConduit(int sd);
+extern int dlp_OpenConduit(int sd);
 
  /* State that the conduit has been succesfully opened -- puts up a status
      message on the Pilot, no other effect as far as I know. Not required.
      */
      
-int dlp_EndOfSync(int sd, int status);
+extern int dlp_EndOfSync(int sd, int status);
 
  /* Terminate HotSync. Required at the end of a session. The pi_socket layer
     will call this for you if you don't.
@@ -186,7 +186,7 @@ int dlp_EndOfSync(int sd, int status);
             dlpEndCodeOther
   */            
 
-int dlp_AbortSync(int sd);
+extern int dlp_AbortSync(int sd);
 
  /* Terminate HotSync _without_ notifying Pilot. This will cause the Pilot
     to time out, and should (if I remember right) lose any changes to
@@ -194,42 +194,46 @@ int dlp_AbortSync(int sd);
     sync needs to be aborted in a reasonable manner, use EndOfSync with a
     non-zero status. */
    
-int dlp_ReadOpenDBInfo(int sd, int dbhandle, int * records);
+extern int dlp_ReadOpenDBInfo(int sd, int dbhandle, int * records);
 
  /* Return info about an opened database. Currently the only information
     returned is the number of records in the database. */
 
 
-int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat);
+extern int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat);
 
-int dlp_WriteUserInfo(int sd, struct PilotUser *User);
+extern int dlp_WriteUserInfo(int sd, struct PilotUser *User);
 
  /* Tell the pilot who it is. */
 
-int dlp_ReadUserInfo(int sd, struct PilotUser *User);
+extern int dlp_ReadUserInfo(int sd, struct PilotUser *User);
 
  /* Ask the pilot who it is. */
+ 
+extern int dlp_ResetLastSyncPC(int sd);
 
-int dlp_ReadAppBlock(int sd, int fHandle, int offset,
+ /* Convenience function to reset lastSyncPC in the UserInfo to 0 */
+
+extern int dlp_ReadAppBlock(int sd, int fHandle, int offset,
                            unsigned char *dbuf, int dlen);
 
-int dlp_WriteAppBlock(int sd, int fHandle, const unsigned char *dbuf,
+extern int dlp_WriteAppBlock(int sd, int fHandle, const unsigned char *dbuf,
                             int dlen);
 
-int dlp_ReadSortBlock(int sd, int fHandle, int offset,
+extern int dlp_ReadSortBlock(int sd, int fHandle, int offset,
                            unsigned char *dbuf, int dlen);
 
-int dlp_WriteSortBlock(int sd, int fHandle, const unsigned char *dbuf,
+extern int dlp_WriteSortBlock(int sd, int fHandle, const unsigned char *dbuf,
                             int dlen);
 
-int dlp_ResetDBIndex(int sd, int dbhandle);
+extern int dlp_ResetDBIndex(int sd, int dbhandle);
 
  /* Reset NextModified position to beginning */
 
-int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
+extern int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
                          int start, int max, unsigned long * IDs);
                          
-int dlp_WriteRecord(int sd, int dbhandle, int flags,
+extern int dlp_WriteRecord(int sd, int dbhandle, int flags,
                  unsigned long recID, int catID, unsigned char *data, int length, long * NewID);
 
  /* Write a new record to an open database. 
@@ -242,39 +246,39 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
       
       NewID: storage for returned ID, or null. */
 
-int dlp_DeleteRecord(int sd, int dbhandle, int all, unsigned long recID);
+extern int dlp_DeleteRecord(int sd, int dbhandle, int all, unsigned long recID);
 
-int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, unsigned char* buffer, 
+extern int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, unsigned char* buffer, 
                           int* index, int* size);
 
-int dlp_ReadResourceByIndex(int sd, int fHandle, int index, unsigned char* buffer,
+extern int dlp_ReadResourceByIndex(int sd, int fHandle, int index, unsigned char* buffer,
                           unsigned long* type, int * id, int* size);
 
-int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
+extern int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
                  const unsigned char *data, int length);
 
-int dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype, int resID);
+extern int dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype, int resID);
 
-int dlp_ReadNextModifiedRec(int sd, int fHandle, unsigned char *buffer,
+extern int dlp_ReadNextModifiedRec(int sd, int fHandle, unsigned char *buffer,
                           unsigned long * id, int * index, int * size, int * attr, int * category);
 
-int dlp_ReadRecordById(int sd, int fHandle, unsigned long id, unsigned char * buffer, 
+extern int dlp_ReadRecordById(int sd, int fHandle, unsigned long id, unsigned char * buffer, 
                           int * index, int * size, int * attr, int * category);
 
-int dlp_ReadRecordByIndex(int sd, int fHandle, int index, unsigned char * buffer, 
+extern int dlp_ReadRecordByIndex(int sd, int fHandle, int index, unsigned char * buffer, 
                           long * id, int * size, int * attr, int * category);
 
-int dlp_CleanUpDatabase(int sd, int fHandle);
+extern int dlp_CleanUpDatabase(int sd, int fHandle);
 
   /* Deletes all records in the opened database which are marked as archived
      or deleted. */
 
-int dlp_ResetSyncFlags(int sd, int fHandle);
+extern int dlp_ResetSyncFlags(int sd, int fHandle);
 
   /* For record databases, reset all dirty flags. For both record and
      resource databases, set the last sync time to now. */
 
-int dlp_CallApplication(int sd, unsigned long creator, int action,
+extern int dlp_CallApplication(int sd, unsigned long creator, int action,
                         int length, unsigned char * data,
                         int * resultptr,
                         int * retlen, unsigned char * retdata);

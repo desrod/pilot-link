@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "pi-socket.h"
-#include "dlp.h"
-#include "todo.h"
+#include "pi-source.h"
+#include "pi-dlp.h"
+#include "pi-todo.h"
 
 void free_ToDo(struct ToDo * a) {
   if(a->description)

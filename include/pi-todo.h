@@ -21,10 +21,10 @@ struct ToDoAppInfo {
   int sortByPriority;
 };
 
-void free_ToDo(struct ToDo *);
-void unpack_ToDo(struct ToDo *, unsigned char * record, int len);
-void pack_ToDo(struct ToDo *, unsigned char * record, int * len);
-void unpack_ToDoAppInfo(struct ToDoAppInfo *, unsigned char * record, int len);
-void pack_ToDoAppInfo(struct ToDoAppInfo *, unsigned char * record, int * len);
+extern void free_ToDo(struct ToDo *);
+extern void unpack_ToDo(struct ToDo *, unsigned char * record, int len);
+extern void pack_ToDo(struct ToDo *, unsigned char * record, int * len);
+extern void unpack_ToDoAppInfo(struct ToDoAppInfo *, unsigned char * record, int len);
+extern void pack_ToDoAppInfo(struct ToDoAppInfo *, unsigned char * record, int * len);
 
 #endif /* _PILOT_TODO_H_ */
