@@ -126,8 +126,8 @@ int main(int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-	        {"get",		'g', POPT_ARG_NONE, NULL,   'g', "Get the contents of the clipboard"},
-        	{"set",		's', POPT_ARG_NONE, NULL,   's', "Set the value <value> in the clipboard"},
+	        {"get",		'g', POPT_ARG_NONE, NULL,   'g', "Print the contents of the clipboard on STDOUT"},
+        	{"set",		's', POPT_ARG_NONE, NULL,   's', "Set the value in the clipboard from STDIN"},
 	         POPT_AUTOHELP
                 { NULL, 0, 0, NULL, 0 }
 	};
