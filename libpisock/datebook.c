@@ -383,7 +383,7 @@ pack_AppointmentAppInfo(struct AppointmentAppInfo *ai, unsigned char *record,
       return i;
    record += i;
    len -= i;
-   if (i < 2)
+   if (len < 2)
       return 0;
    set_short(record, 0);
    set_byte(record, ai->startOfWeek);

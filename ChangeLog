@@ -1,3 +1,13 @@
+2001-01-05  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/datebook.c (pack_AppointmentAppInfo): Fix bug pointed out
+	by Matthias Hessler <Matthias.Hessler@t-online.de> where i rather than
+	len was being checked
+
+	* libsock/sync.c (sync_MergeFromPilot_slow): Build a list of pilot
+	records before iterating because its not valid to edit in place
+	during the index loop
+
 2000-12-21  JP Rosevear  <jpr@helixcode.com>
 
 	* include/pi-sync.h: new prototypes

@@ -397,6 +397,8 @@ sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 static int
 sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
+	PilotRecordList *pl = NULL;
+	PilotRecordList *l = NULL;
 	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
 	DesktopRecord *drecord = NULL;
 	int index;
@@ -407,6 +409,26 @@ sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 	while (dlp_ReadRecordByIndex (sh->sd, dbhandle, index, precord->buffer, 
 				      &precord->recID, &precord->len, 
 				      &precord->flags, &precord->catID) > 0) {
+		PilotRecordList *elem = malloc (sizeof (PilotRecordList));
+
+		elem->record = precord;
+		elem->next = NULL;
+
+		if (pl == NULL) {
+			pl = l = elem;
+		} else {
+			l->next = elem;		
+			l = l->next;
+		}
+
+		precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+		index++;
+	}
+	sync_FreePilotRecord (precord);
+
+	for (l = pl; l != NULL; l = l->next) {
+		precord = l->record;
+
 		result = sh->Match (sh, precord, &drecord);
 		DesktopCheck(result);
 
@@ -437,9 +459,7 @@ sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 			result = sh->FreeMatch (sh, drecord);
 			DesktopCheck(result);
 		}
-		
-		index++;
-	}	
+	}
 
 	return result;
 }
