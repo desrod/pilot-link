@@ -42,13 +42,16 @@ This is the file to output the ical\-formatted data to.
 The program will connect to a target device, retrieve the ToDo and Datebook databases (ToDoDB.pdb and DatebookDB.pdb respectively), then instruct \fIical\fR to write a calendar file based on the retrieved information.
 
 
-.SH "KNOWN BUGS"
-\fBread\-ical\fR has no known bugs.
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBread\-ical\fR has no known bugs at this time.
 
 
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBread\-ical\fR was written by Kenneth Albanowski

@@ -42,16 +42,18 @@ none
 The program will connect to the target Palm device, and write the datebook\-formatted file given on the command line onto the Palm into the DatebookDB.pdb file.
 
 
-.SH "KNOWN BUGS"
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
 If no timezone is given, \fBinstall\-datebook\fR will assume the time is in GMT and it will convert it to localtime. If you don't want to write timezone entries to all begin and end times, set the TZ environment variable to GMT before running this program.
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
-\fBinstall\-datebook\fR was written by Tero Kivinen <\fIkivinen@iki.fi \fR>. This program was based on \fBinstall\-todos\fR program written by Robert A. Kaplan <\fIkaplan@openmarket.com\fR>.
+\fBinstall\-datebook\fR was written by Tero Kivinen <\fIkivinen@iki.fi\fR>. This program was based on \fBinstall\-todos\fR program written by Robert A. Kaplan <\fIkaplan@openmarket.com\fR>.
 
 
 .SH "SEE ALSO"

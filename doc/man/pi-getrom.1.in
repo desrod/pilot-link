@@ -49,15 +49,17 @@ Connect to a target Palm handheld device and fetch the ROM for use in debugging 
 Use of this program may place you in violation of your license agreement with Palm, Inc. or OEM partners. Please read your Palm handbook ("Software License Agreement") before running this program.
 
 
-.SH "SEE ALSO"
-\fBpi\-getram\fR(1)
-.SH "KNOWN BUGS"
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
 \fBpi\-getrom\fR does not work with OS5 devices as yet, due to changes in the architecture and design of the Palm HotSync protocol and file type changes from m68k to ARM. Other than that, \fBpi\-getrom\fR has no known bugs
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBpi\-getrom\fR was written by Kenneth Albanowski
+.SH "SEE ALSO"
+\fBpi\-getram\fR(1)

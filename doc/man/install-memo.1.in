@@ -54,15 +54,19 @@ The program will connect to the Palm handheld device, and write the file or
 files given on the command line into the MemoPad application on the Palm.
 
 
-.SH "KNOWN BUGS"
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
 The Palm Device has a maximum length of 4,096 bytes (4k) on memopad entries, if you wish to retain the ability to edit the Memo on the Palm itself. You can create a MemoPad entry of 65,490 bytes in size (the absolute maximum) if you do not need to edit the Memo entry further on the Palm device itself.
 
 This is not specifically a "bug", but a limitation in the PalmOS design itself. 
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBinstall\-memo\fR was written by Damien P. Neil <\fIneild@rpi.edu\fR>
+.SH "SEE ALSO"
+\fBmemos\fR(1)

@@ -48,16 +48,20 @@ While in \fBdlpsh\fR, you can always invoke 'help' or <option> \-\-help to get f
 
 
 .SH "USAGE"
-The program will connect to your Palm handheld device and give the user a prompt for executing commands.
+The program will connect to your Palm handheld device and give the user an interactive prompt for executing commands across the DLP \fIHotSync\fR protocol.
 
 
-.SH "REPORTING BUGS"
+.SH "BUGS"
+.PP 
+\fBKNOWN BUGS\fR
+    
+.IP 
+\fBdlpsh\fR has no known bugs at this time.
+   
+.PP 
+\fBREPORTING BUGS\fR
+   
+.IP 
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
-.SH "KNOWN BUGS"
-\fBdlpsh\fR has no known bugs.
-
-
 .SH "AUTHOR"
-\fBdlpsh\fR was written by Chris Stevens <stevens@rpi.edu> and Damien Neil <neild@rpi.edu>
+\fBdlpsh\fR was written by Chris Stevens <\fIstevens@rpi.edu\fR> and Damien Neil <\fIneild@rpi.edu\fR>

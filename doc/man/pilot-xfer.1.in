@@ -158,19 +158,23 @@ To fetch a file that is on your Palm handheld, such as the Palm Address Book dat
 .LP 
 
 
-.SH "SEE ALSO"
-\fBpilot\-link\fR(7)
-
-
-.SH "KNOWN BUGS"
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
 \fB\-\-backup\fR will currently truncate/corrupt pdb/prc files if communication is
 interrupted during sync. Ideally, this should restore the original file, or delete the corrupted version and restore the original version back into place.
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 
 
 .SH "AUTHOR"
 \fBpilot\-xfer\fR written by Kenneth Albanowski. This manual page was originally written by
 Kenneth Albanowski and David H. Silber. Completely rewritten by David A. Desrosiers.
+.SH "SEE ALSO"
+\fBpilot\-link\fR(7)
+
+

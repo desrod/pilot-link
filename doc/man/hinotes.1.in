@@ -29,14 +29,17 @@ output format suitable for the \fIHi\-Notes\fR application to use.
 
 Please see \fIhttp://www.cyclos.com/\fR for more information on Hi\-Note.
 
-.SH "KNOWN BUGS"
-\fBhinotes\fR has no known bugs.
+.SH "BUGS"
+.PP 
+\fBKNOWN BUGS\fR
+.IP
+\fBhinotes\fR has no known bugs at this time.
 
-
-.SH "REPORTING BUGS"
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
+.PP
+\fBREPORTING BUGS\fR
+   
+.IP 
+Report bugs at \fIhttp://bugs.pilot\\-link.org/\fR
 .SH "AUTHOR"
 \fBhinotes\fR was written by Kenneth Albanowski, based on code by Bill
 \Goodman <\fIbgoodman@cyclos.com\fR> and modified by Michael Bravo

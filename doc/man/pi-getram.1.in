@@ -43,15 +43,17 @@ Write the RAM image to this file
 Connect to a target Palm handheld device and fetch the RAM from the device.
 
 
-.SH "SEE ALSO"
-\fBpi\-getrom\fR(1)
-.SH "KNOWN BUGS"
-\fBpi\-getram\fR has no known bugs
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBpi\-getram\fR has no known bugs at this time.
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBpi\-getram\fR was written by Kenneth Albanowski
+.SH "SEE ALSO"
+\fBpi\-getrom\fR(1)

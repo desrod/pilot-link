@@ -41,13 +41,17 @@ The program will connect to a target Palm handheld device, and writes the
 file or files given on the command line into the Hi\-Note application.
 
 
-.SH "KNOWN BUGS"
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
 The Palm Device may have a maximum length on Hi\-Note sizes.
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBinstall\-hinote\fR was written by Bill Goodman <\fIbgoodman@cyclos.com\fR>
+.SH "SEE ALSO"
+\fBhinotes\fR(1)

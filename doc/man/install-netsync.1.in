@@ -56,15 +56,17 @@ The program will connect to a target Palm handheld device, and read and display 
 the Network Preferences information specified or display the Network Preferences stored on the Palm device
 
 
-.SH "SEE ALSO"
-\fBinstall\-user\fR(1)
-.SH "KNOWN BUGS"
-\fBinstall\-netsync\fR has no known bugs.
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBinstall\-netsync\fR has no known bugs at this time.
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBinstall\-netsync\fR was created from the original \fBinstall\-user\fR application originally written by D. Jeff Dionne <\fIjeff@RyeHam.ee.ryerson.ca\fR>, and was split into a separate conduit by JP Rosevear <\fIjpr@ximian.com\fR>.
+.SH "SEE ALSO"
+\fBinstall\-user\fR(1)

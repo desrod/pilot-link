@@ -54,13 +54,20 @@ There is only one option (and it is, well, optional), and that is the '>' redire
 The program will read Address data from the Palm and output format suitable for the other programs to import as required. You may redirect the output to a file or process, at your choosing.
 
 
-.SH "KNOWN BUGS"
-\fBaddresses\fR has no known bugs.
-
-
-.SH "REPORTING BUGS"
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBaddresses\fR was written by Kenneth Albanowski
+
+.SH "BUGS"
+.PP 
+\fBKNOWN BUGS\fR
+
+.IP 
+\fBaddresses\fR has no known bugs at this time.
+
+.PP 
+\fBREPORTING BUGS\fR
+
+.IP 
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+.SH "SEE ALSO"
+\fBpilot\-addresses\fR(1)

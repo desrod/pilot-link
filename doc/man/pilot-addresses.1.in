@@ -114,18 +114,20 @@ the Palm address book database category \fISpecial\fR after first deleting all c
 \fBpilot\-addresses\fR \fB\-c\fR Special \fB\-d\fR Special \fB\-r\fR addrbook.csv
 
 
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBpilot\-addresses\fR has no known bugs at this time.
+
+.PP
+\fBREPORTING BUGS\fR
+.IP
+Report bugs at \fIhttp://bugs.pilot\-link.org/<fR
+.SH "AUTHOR"
+\fBpilot\-addresses\fR originally written by Kenneth Albanowski, manual page was written by Robert Wittig <\fIbob.wittig@gt.org\fR> and later updated by David A. Desrosiers <\fIhacker@gnu\-designs.com\fR>
 .SH "SEE ALSO"
 \fBaddresses\fR(1)
 \fBpilot\-link\fR(7)
 
 
-.SH "KNOWN BUGS"
-\fBpilot\-addresses\fR has no known bugs.
-
-
-.SH "REPORTING BUGS"
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
-.SH "AUTHOR"
-\fBpilot\-addresses\fR originally written by Kenneth Albanowski, manual page was written by Robert Wittig <\fIbob.wittig@gt.org\fR> and later updated by David A. Desrosiers <\fIhacker@gnu\-designs.com\fR>

@@ -188,19 +188,19 @@ test program demonstrating C++ interface
 experimental program to test C++ features    
 
 .SH "OBTAINING"
-The  most  current  version of the \fBpilot\-link\fR suite of tools can be found at the Pilot Link Homepage:
+The  most  current  version of the \fBpilot\-link\fR suite of tools can be found at the pilot link Homepage:
 .IP 
 \fIhttp://pilot\-link.org/\fR
 .LP 
 .SH "MAILING LIST"
 The original pilot\-unix mailing list has been taken offline, and is now being hosted and maintained by David A. Desrosiers <\fIdesrod@gnu\-designs.com\fP>. The original pilot\-unix mailing list was maintained by Matthew Cravit. Its mandate is:
-
+.IP
 The pilot\-unix mailing list is for discussion and idea\-sharing for those interested in using your Palm PDA with UNIX systems. This includes people who are interested in helping to develop tools to allow the Palm to operate with UNIX, and possibly to develop an SDK for the Palm for Unix.
-
-For more information, including how to subscribe to the list, please visit
-the following page: 
+.LP
+For more information, including how to subscribe to the pilot\-link mailing lists, please visit the pilot\-link mailing list subscription page:
+.IP
 \fIhttp://lists.pilot\-link.org/mailman/listinfo/pilot\-unix\-ng\fR
-
+.LP 
 pilot\-link specific mailing lists are also available for Development, General, and Announce topics, at the following:
 .IP 
 \fIhttp://lists.pilot\-link.org/mailman/listinfo/pilot\-link\-devel\fR
@@ -209,6 +209,16 @@ pilot\-link specific mailing lists are also available for Development, General, 
 
 \fIhttp://lists.pilot\-link.org/mailman/listinfo/pilot\-link\-announce\fR
 .LP 
+.SH "AUTHOR"
+Most of the \fBpilot\-link\fR tools were written by Kenneth Albanowski. This manual page was written by David H. Silber <\fIpilot@orbits.com\fR>, and updated for this version of \fBpilot\-link\fR by David A. Desrosiers <\fIdesrod@gnu\-designs.com\fR>.
+
+Current maintainer of pilot\-link as of the authoring of this manpage is David A. Desrosiers <\fIdesrod@gnu\-designs.com\fR>.
+
+Any questions or problems with \fBpilot\-link\fR should be directed at the various
+\fBpilot\-link\fR mailing lists. 
+
+.SH "PATCHES "
+All patches should be sent to <\fIpatches@pilot\-link.org\fR> directly.
 .SH "SEE ALSO"
 \fBaddresses\fR(1),
 \fBdlpsh\fR(1),
@@ -229,14 +239,3 @@ pilot\-link specific mailing lists are also available for Development, General, 
 \fBread\-palmpix\fR(1)
 
 David Silber <\fIpilot@orbits.com\fR> has written a Pilot HOWTO, which you can find at \fIhttp://www.sgmltools.org/HOWTO/Pilot\-HOWTO/t1.html\fR
-.SH "AUTHOR"
-Most of the \fBpilot\-link\fR tools were written by Kenneth Albanowski.
-This manual page was written by David H. Silber <\fIpilot@orbits.com\fR>, and updated for this version of \fBpilot\-link\fR by David A. Desrosiers <\fIdesrod@gnu\-designs.com\fR>.
-
-Current maintainer of pilot\-link as of the authoring of this manpage is David A. Desrosiers <\fIdesrod@gnu\-designs.com\fR>.
-
-Any questions or problems with \fBpilot\-link\fR should be directed at the various
-\fBpilot\-link\fR mailing lists. 
-
-.SH "PATCHES "
-All patches should be sent to <\fIpatches@pilot\-link.org\fR> directly.

@@ -45,13 +45,18 @@ the Palm UserName specified or display the Palm username and UserID if none
 is specified.
 
 
-.SH "KNOWN BUGS"
-\fBinstall\-user\fR has no known bugs.
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBinstall\-user\fR has no known bugs at this time.
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBinstall\-user\fR was originally written by D. Jeff Dionne <\fIjeff@RyeHam.ee.ryerson.ca\fR>
+.SH "SEE ALSO"
+\fBinstall\-netsync\fR(1),
+\fBdlpsh\fR(1)

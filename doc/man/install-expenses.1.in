@@ -78,13 +78,17 @@ Replace entry found in the named category identified by <\fIcategory\fR>.
 The program will connect to the target Palm handheld device, and install entries into the Expense application based on values passed to \fBinstall\-expenses\fR as arguments.
 
 
-.SH "KNOWN BUGS"
-\fBinstall\-expenses\fR has no known bugs.
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBinstall\-expenses\fR has no known bugs at this time.
 
-
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBinstall\-expenses\fR was written by community authors, the original author is unknown.
+.SH "SEE ALSO"
+read\-expenses(1)

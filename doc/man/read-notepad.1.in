@@ -43,13 +43,16 @@ Specify the output picture type. Can be either "png" or "ppm".
 The program will connect to the target Palm handheld device, and list or convert the records and images found in the Palm Notepad application to Portable Network Graphic (.png) or Portable Pixmap (.ppm) files.
 
 
-.SH "KNOWN BUGS"
-\fBread\-notepad\fR has no known bugs.
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBread\-notepad\fR has no known bugs at this time.
 
 
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBread\-notepad\fR was written by Angus Ainslie <\fIangusa@deltatee.com\fR>.

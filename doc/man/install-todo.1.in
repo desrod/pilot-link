@@ -51,14 +51,17 @@ A local filename containing the Note text
 .SH "USAGE"
 The program will connect to a target Palm handheld device, and writes the
 ToDo entry to the Palm ToDo List application, using the specified parameters and input from the supplied file passed as arguments
-.SH "SEE ALSO"
-\fBinstall\-todos\fR(1)
-.SH "KNOWN BUGS"
-\fBinstall\-todo\fR has no known bugs
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBinstall\-todo\fR has no known bugs at this time.
 
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBinstall\-todo\fR was written by Martin Fick, based on code in install\-todos by Robert A. Kaplan
+.SH "SEE ALSO"
+\fBinstall\-todos\fR(1)

@@ -49,13 +49,16 @@ Specify the output picture type. Can be either "png" or "ppm".
 The program will connect to the target Palm handheld device, and read the images found in the Kodak PalmPix image database (\fIArchImage.pdb\fR), and allow the user to view the list of images, or to select one or all of them, and convert them to Portable Network Graphic (.png) or Portable Pixmap (.ppm) files to be viewed or printed at the desktop. If no options are specified, all of the images on the device will be converted to ppm files.
 
 
-.SH "KNOWN BUGS"
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
 \fBread\-palmpix\fR's colour correction is not yet as good as Kodak's.
 
 
-.SH "REPORTING BUGS"
+.PP
+\fBREPORTING BUGS\fR
+.IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-
-
 .SH "AUTHOR"
 \fBread\-palmpix \fR was originally written by Angus Ainslie <\fIangusa@deltatee.com\fR>, and updated by John Marshall <\fIjmarshall@acm.org\fR>to include core pilot\-link functionality.
