@@ -393,7 +393,7 @@ AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir       use Tcl      [default=no]],
 AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir      use ITcl     [default=no]],  , with_itcl=no)
 AC_ARG_WITH(tk,       [  --with-tk=tkbasedir         use Tk       [default=no]],  , with_tk=no)
 if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
-		for tcl_path in /usr /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.4 /usr/local/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
+		for tcl_path in /usr /usr/contrib /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.4 /usr/local/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
 		if test -f $tcl_path/lib/tclConfig.sh; then
 			with_tcl=$tcl_path; break
 		elif test -f $tcl_path/lib/itcl/tclConfig.sh; then
