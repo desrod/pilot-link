@@ -64,6 +64,7 @@ main (int argc, char **argv)
 	struct NetSyncInfo n1, n2;
 	struct CardInfo c;
 	struct DBInfo dbi;
+	struct DBSizeInfo dbsi;
 	unsigned long romVersion;
 	time_t t1, t2;	
 	int handle;
@@ -76,6 +77,7 @@ main (int argc, char **argv)
 	recordid_t rid1, rid2, rid3, rlist[4];
 	int index, id, count;
 	unsigned long type;
+	int cardno;
 	int i;
 
 	sd = pilot_connect (argv[1]);
@@ -289,13 +291,17 @@ main (int argc, char **argv)
 
 	/*********************************************************************
 	 *
-	 * Test: Database Info
+	 * Test: Database Info and Searching
 	 *
 	 * Direct Testing Functions:
 	 *   dlp_SetDBInfo
+	 *   dlp_FindDBByName
+	 *   dlp_FindDBByOpenHandle
+	 *   dlp_FindDBByTypeCreator
 	 *
 	 * Indirect Testing Functions:
 	 *   dlp_CreateDB
+	 *   dlp_OpenDB
 	 *   dlp_ReadDBList
 	 *   dlp_CloseDB
 	 *   dlp_DeleteDB
@@ -305,23 +311,37 @@ main (int argc, char **argv)
 	result = dlp_CreateDB (sd, CREATOR, DATA, 0, 0, 1, "TestRecord", &handle);
 	CHECK_RESULT(dlp_CreateDB);
 	result = dlp_SetDBInfo (sd, handle, dlpDBFlagBackup, dlpDBFlagCopyPrevention, 0, 0, 0, 0, 0, 0);
-	CHECK_RESULT(dlp_SetDBInfo);
+	CHECK_RESULT(dlp_SetDBInfo);	
+	result = dlp_CloseDB (sd, handle);
+	CHECK_RESULT(dlp_CloseDB);
+
+	result = dlp_OpenDB (sd, 0, dlpOpenReadWrite, "TestRecord", &handle);
+	CHECK_RESULT(dlp_OpenDB);
+	
+	result = dlp_FindDBByOpenHandle (sd, handle, &cardno, &dbi, &dbsi);
+	CHECK_RESULT(dlp_FindDBByOpenHandle);
+	if (strcmp (dbi.name, "TestRecord") || !(dbi.flags & dlpDBFlagBackup)) {
+		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Database info mismatch with openhandle\n"));
+		goto error;
+	}
+
 	result = dlp_CloseDB (sd, handle);
 	CHECK_RESULT(dlp_CloseDB);
 	
-	dbi.more = 1;
-	for (i = 0; dbi.more != 0; i++) {
-		result = dlp_ReadDBList (sd, 0, dlpDBListRAM, i, &dbi);
-		CHECK_RESULT(dlp_ReadDBList);
-
-		if (!strcmp (dbi.name, "TestRecord")) {
-			if (dbi.flags != dlpDBFlagBackup) {
-				LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Database info mismatch\n"));
-				goto error;
-			}
-		}
+	result = dlp_FindDBByName (sd, 0, "TestRecord", &dbi, &dbsi);
+	CHECK_RESULT(dlp_FindDBByName);
+	if (strcmp (dbi.name, "TestRecord") || !(dbi.flags & dlpDBFlagBackup)) {
+		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Database info mismatch with name\n"));
+		goto error;
 	}
-	
+
+	result = dlp_FindDBByTypeCreator (sd, DATA, CREATOR, 1, 0, &cardno, &dbi, &dbsi);
+	CHECK_RESULT(dlp_FindDBByName);
+	if (strcmp (dbi.name, "TestRecord") || !(dbi.flags & dlpDBFlagBackup)) {
+		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Database info mismatch with type/creator\n"));
+		goto error;
+	}
+
 	result = dlp_DeleteDB (sd, 0, "TestRecord");
 	CHECK_RESULT(dlp_DeleteDB);
 #endif

@@ -1145,8 +1145,6 @@ int main(int argc, char *argv[])
 
         start = time(NULL);
 
-	unsigned long int flags = 0;
-
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 

@@ -1,3 +1,16 @@
+2003-07-14  JP Rosevear  <jpr@ximian.com>
+
+	* src/pilot-xfer.c (main): remove unused var
+
+	* libpisock/dlp.c (dlp_FindDBByName): implement
+	(dlp_FindDBByOpenHandle): ditto
+	(dlp_FindDBByTypeCreator): ditto
+
+	* include/pi-dlp.h: add find db option and search flags, add
+	protos
+
+	* tests/dlp-test.c (main): add testing of dlp 1.2 FindDB functions
+
 2003-07-07 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-xfer.c: Removed some redundant, unused code, changed the

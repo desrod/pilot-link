@@ -82,6 +82,15 @@ extern "C" {
 		time_t createDate, modifyDate, backupDate;
 	};
 
+	struct DBSizeInfo {
+		unsigned long numRecords;
+		unsigned long totalBytes;
+		unsigned long dataBytes;
+		unsigned long appBlockSize;
+		unsigned long sortBlockSize;
+		unsigned long maxRecSize;
+	};
+
 	struct CardInfo {
 		int 	card,
 			version;
@@ -250,6 +259,17 @@ extern "C" {
 	enum dlpDBList {
 		dlpDBListRAM 		= 0x80,
 		dlpDBListROM 		= 0x40
+	};
+
+	enum dlpFindDBOptFlags {
+		dlpFindDBOptFlagGetAttributes = 0x80,
+		dlpFindDBOptFlagGetSize       = 0x40,
+		dlpFindDBOptFlagMaxRecSize    = 0x20
+	};
+
+	enum dlpFindDBSrchFlags {
+		dlpFindDBSrchFlagNewSearch  = 0x80,
+		dlpFindDBSrchFlagOnlyLatest = 0x40
 	};
 
 	enum dlpErrors {
@@ -547,6 +567,16 @@ extern "C" {
 	        PI_ARGS((int sd, int dbhandle, int flags, int clearFlags, unsigned int version,
 			 time_t createDate, time_t modifyDate, time_t backupDate, 
 			 unsigned long type, unsigned long creator));
+
+	extern int dlp_FindDBByName
+	        PI_ARGS((int sd, int cardno, char *name, struct DBInfo *info, struct DBSizeInfo *size));
+
+	extern int dlp_FindDBByOpenHandle 
+	        PI_ARGS((int sd, int dbhandle, int *cardno, struct DBInfo *info, struct DBSizeInfo *size));
+
+	extern int dlp_FindDBByTypeCreator
+	        PI_ARGS((int sd, unsigned long type, unsigned long creator, int start, 
+			 int latest, int *cardno, struct DBInfo *info, struct DBSizeInfo *size));
 
 	struct RPC_params;
 
