@@ -34,9 +34,13 @@ extern "C" {
             similar.
    pi_untag Given a 32 bit identifier, unpack it into the 5-byte char array
 	    buf so it is suitable for printing.
+
+
+   Both of these macros are deprecated for runtime use, but for
+   calculating compile-time constants pi_mktag is ok.
 */
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
-#defube pi_untag(buf,tag) { buf[0]=(tag >> 24) & 0xff; \
+#define pi_untag(buf,tag) { buf[0]=(tag >> 24) & 0xff; \
 	buf[1]=(tag >> 16) & 0xff; \
 	buf[2]=(tag >> 8) & 0xff; \
 	buf[3]=(tag) & 0xff; \
