@@ -577,6 +577,15 @@ else
 	esac
 fi
 
+case "$host" in
+	*bsd*)
+		AC_DEFINE(TTYPrompt, "/dev/cua[<0..n>]")
+	;;
+	*)
+		AC_DEFINE(TTYPrompt, "/dev/tty[<0..n>]")
+	;;
+esac
+
 AC_OUTPUT([
 Makefile
 pilot-link.m4

@@ -21,10 +21,19 @@
  * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef WIN32
 #include <winsock.h>
 #endif
+
+#include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <netinet/in.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"

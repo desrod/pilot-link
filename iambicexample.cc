@@ -28,6 +28,7 @@
 #include <iostream.h>
 #include <sys/types.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "pi-source.h"
 #include "pi-file.h"

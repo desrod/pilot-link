@@ -22,11 +22,19 @@
 /* @-predboolint@	*/
 /* @-boolops@		*/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef WIN32
 #include <winsock.h>		/* for hton* */
 #endif
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <netinet/in.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
@@ -268,8 +276,7 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 	int 	year;
 	struct 	tm *t = localtime(&time);
 
-	if (!t)
-		abort();
+	ASSERT(t != 0);
 
 	year = t->tm_year + 1900;
 

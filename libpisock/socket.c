@@ -23,17 +23,24 @@
  * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef WIN32
 #include <winsock.h>
 #include <io.h>
 #else
+#include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
+#include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -471,7 +478,7 @@ alarm(unsigned sec)
 }
 #endif
 
-static RETSIGTYPE
+static void
 onalarm(int signo)
 {
 	struct pi_socket_list *l;

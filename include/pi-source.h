@@ -47,9 +47,6 @@
 # define ECONNREFUSED 1027
 # define EOPNOTSUPP 1028
 #define HAVE_DUP2
-
-#else
-#include "pi-config.h"
 #endif
 #endif
 

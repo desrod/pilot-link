@@ -22,19 +22,27 @@
  * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- 
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #ifdef WIN32
 #include <winsock.h>
 #include <fcntl.h>
 #include <io.h>
 #else
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <netinet/in.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #endif
-
-#include <stdio.h>
+#include <netinet/in.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
@@ -42,8 +50,6 @@
 #include "pi-inet.h"
 #include "pi-cmp.h"
 #include "pi-net.h"
-#include "pi-syspkt.h"
-#include "pi-dlp.h"
 
 static int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr,
 			  int addrlen);

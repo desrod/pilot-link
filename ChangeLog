@@ -1,4 +1,12 @@
 2002-01-22  JP Rosevear  <jpr@ximian.com>
+ 
+ 	* include/pi-config.h: remove unused file
+ 	
+ 	* include/pi-source.h: no longer include pi-config.h
+ 
+ 	* libsock/*.c: fix includes
+ 
+2002-01-22  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/inet.c (pi_inet_bind): INADDR_NONE is not defined on
 	some platforms

@@ -21,14 +21,20 @@
  * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-padp.h"
 #include "pi-cmp.h"
-#include "pi-serial.h"
 
 static int cmp_getsockopt(struct pi_socket *ps, int level, int option_name, 
 			  void *option_value, int *option_len);

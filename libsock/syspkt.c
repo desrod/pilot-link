@@ -20,12 +20,20 @@
  *
  */
 
-#ifdef WIN32
-#include <winsock.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
 #endif
 
+#ifdef WIN32
+#include <winsock.h>
+#else
+#include <netinet/in.h>
+#endif
+
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"

@@ -7,7 +7,7 @@
  * See the file COPYING.LIB for details.
  */
 
-
+#include <string.h>
 #include <iostream.h>
 
 extern "C" {

@@ -19,14 +19,10 @@
  *
  */
 
-#ifdef __EMX__
-# include <sys/types.h>
-# include <netinet/in.h>
-#endif
-
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"

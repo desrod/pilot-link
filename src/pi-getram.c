@@ -19,21 +19,21 @@
  *
  */
 
-#ifndef HAVE_GETOPT_LONG
 #include "getopt.h"
-#else
-#include <getopt.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <signal.h>
+#include <string.h>
+#include <netinet/in.h>
 
 #include "pi-header.h"
 #include "pi-source.h"
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
-
-#include <termios.h>
 
 int cancel = 0;
 int pilot_connect(const char *port);
@@ -63,7 +63,7 @@ static void Help(char *progname)
 	       progname, progname, progname);
 }
 
-static RETSIGTYPE sighandler(int signo)
+static void sighandler(int signo)
 {
 	cancel = 1;
 }

@@ -7,6 +7,8 @@
  * See the file COPYING.LIB for details.
  */
 
+#include <string.h>
+
 #include "pi-source.h"
 #include "pi-memo.h"
 

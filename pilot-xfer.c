@@ -26,15 +26,26 @@
     fault (core dumped)'' when an unreadable exclude file is specified.
  */
 
+#include "getopt.h"
 #include <stdio.h>
-#include <time.h>
-#ifdef __EMX__
-#include <sys/types.h>
+#include <stdlib.h>
+#include <unistd.h>
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
 #endif
-#include <getopt.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>
 #include <utime.h>
+#include <string.h>
+#include <dirent.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"

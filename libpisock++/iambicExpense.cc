@@ -37,6 +37,16 @@ iambicExpenseAppInfo_t::iambicExpenseAppInfo_t(void *ai)
      (void) memcpy(_conversionNames, ptr, 256);
 }
 
+const category_t *iambicExpenseAppInfo_t::conversionNames(void)
+{
+	return &_conversionNames;
+}
+
+void *iambicExpenseAppInfo_t::pack(void)
+{
+	return NULL;
+}
+
 iambicExpenseList_t::~iambicExpenseList_t() 
 {
      iambicExpense_t *next;
@@ -65,6 +75,16 @@ void iambicExpenseList_t::merge(iambicExpenseList_t &list)
           newguy->_next = _head;
           _head = newguy;
      }
+}
+
+iambicExpense_t *iambicExpenseList_t::first()
+{
+	return _head;
+}
+
+iambicExpense_t *iambicExpenseList_t::next(iambicExpense_t *ptr)
+{
+	return ptr->_next; 
 }
 
 // Palm used a really annoying method of encryption armor for their floating
@@ -141,6 +161,21 @@ static char *getString(unsigned char **buf)
      return strcpy(ret, (const char *) ptr);
 }
 
+
+void *iambicExpense_t::internalPack(unsigned char *a)
+{
+	return NULL; 
+}
+
+void *iambicExpense_t::pack(int *a)
+{
+	return NULL;
+}
+
+void *iambicExpense_t::pack(void *a, int *b)
+{
+	return NULL; 
+}
 
  // Format of an expense record:
  // ba 4b 80 00 00 00 ff e1 01 00 00 0b 00 10 c7 4b
@@ -255,6 +290,24 @@ void iambicExpense_t::unpack(void *buf)
 	  _note = NULL;
 }
 
+iambicExpense_t::iambicExpense_t(void) 
+	: baseApp_t()
+{
+	(void) memset(this, '\0', sizeof(iambicExpense_t));
+}
+
+iambicExpense_t::iambicExpense_t(void *buf)
+	: baseApp_t()
+{
+	unpack(buf); 
+}
+
+iambicExpense_t::iambicExpense_t(void *buf, int attr, recordid_t id, int category)
+	: baseApp_t(attr, id, category)
+{
+	unpack(buf);
+}
+
 iambicExpense_t::iambicExpense_t(const iambicExpense_t &oldCopy)
      : baseApp_t()
 {
@@ -290,3 +343,52 @@ iambicExpense_t::~iambicExpense_t()
 	  delete _note;
 }
 
+const char *iambicExpense_t::type(void)
+{
+	return _type;
+}
+
+const char *iambicExpense_t::paidBy(void)
+{
+	return _paidby;
+}
+
+const char *iambicExpense_t::paidby(void)
+{
+	return _paidby;
+}
+
+const char *iambicExpense_t::payee(void)
+{
+	return _payee;
+}
+
+const char *iambicExpense_t::note(void)
+{
+	return _note;
+}
+
+double iambicExpense_t::amount(void)
+{
+	return _amount;
+}
+
+double iambicExpense_t::milesStart(void)
+{
+	return _milesStart;
+}
+
+double iambicExpense_t::milesEnd(void)
+{
+	return _milesEnd;
+}
+
+double iambicExpense_t::exchangeRate(void)
+{
+	return _exchangeRate; 
+}
+
+const tm *iambicExpense_t::date(void)
+{
+	return &_date; 
+}

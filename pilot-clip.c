@@ -20,6 +20,8 @@
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <netinet/in.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"

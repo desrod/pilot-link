@@ -25,10 +25,11 @@
 #endif
 
 #include "getopt.h"
-#include <signal.h>
 #include <stdio.h>
-#include <stdlib.h>		/* free() */
+#include <stdlib.h>
+#include <signal.h>
 #include <ctype.h>
+#include <netinet/in.h>
 
 #include "pi-source.h"
 #include "pi-dlp.h"
@@ -172,12 +173,6 @@ int ls_fn(int sd, int argc, char *argv[])
 		lflag = 0,
 		rom_flag = 0;
 
-#ifdef sun
-	extern char *optarg;
-	extern int optind;
-#endif
-
-	optind = 0;
 	while ((c = getopt(argc, argv, "lr")) != -1) {
 		switch (c) {
 		  case 'r':

@@ -4,3 +4,4 @@
 #undef HAVE_SA_LEN
 #undef TERMIOS_CSPEED
 #undef PI_DEBUG
+#undef TTYPrompt

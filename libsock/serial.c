@@ -21,6 +21,16 @@
  * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <string.h>
+
 #ifdef WIN32
 #include <windows.h>
 #include <winsock.h>
@@ -30,9 +40,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
-#include <stdio.h>
-#include <signal.h>
-#include <fcntl.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
@@ -489,8 +496,10 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
  ***********************************************************************/
 static int pi_serial_close(struct pi_socket *ps)
 {
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+
 	if (ps->sd)
-		close(ps->sd);
+		data->impl.close (ps);
 
 	if (ps->laddr)
 		free(ps->laddr);

@@ -5,6 +5,8 @@
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
  */
+
+#include <string.h>
       
 #include "pi-source.h"
 #include "pi-appinfo.hxx"

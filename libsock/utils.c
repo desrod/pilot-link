@@ -25,7 +25,6 @@
 
 #ifdef NeXT
 # include <stdlib.h>
-# include <string.h>
 # include <assert.h>
 #endif
 
@@ -46,6 +45,7 @@
 # include <ctype.h>
 #endif
 #endif
+# include <string.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"

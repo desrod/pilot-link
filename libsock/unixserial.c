@@ -18,25 +18,29 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <stdio.h>
+#include <fcntl.h>
+#include <string.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
-#include "pi-slp.h"
-#include "pi-syspkt.h"
-#include "pi-padp.h"
 
 /* if this is running on a NeXT system... */
 #ifdef NeXT
 #include <sys/uio.h>
 #include <sys/time.h>
-#include <unistd.h>
 #include <sys/file.h>
-#include <fcntl.h>
 #endif
 
 #ifdef HAVE_SYS_IOCTL_COMPAT_H
@@ -347,7 +351,6 @@ static int s_changebaud(struct pi_socket *ps)
  ***********************************************************************/
 static int s_close(struct pi_socket *ps)
 {
-	int 	result;
 	struct 	pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 
 #ifdef sleeping_beauty
@@ -362,10 +365,7 @@ static int s_close(struct pi_socket *ps)
 
 	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV Serial CLOSE fd: %d\n", ps->sd);
 
-	result 	= close(ps->sd);
-	ps->sd 	= 0;
-
-	return result;
+	return close(ps->sd);
 }
 
 static int s_poll(struct pi_socket *ps, int timeout)

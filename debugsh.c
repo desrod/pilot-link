@@ -17,12 +17,18 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <string.h>
+#include <netinet/in.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"

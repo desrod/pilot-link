@@ -3,8 +3,6 @@ c_header_DATA = \
 	pi-appinfo.h		\
 	pi-args.h		\
 	pi-cmp.h		\
-	pi-config-win32.h	\
-	pi-config.h		\
 	pi-datebook.h		\
 	pi-debug.h		\
 	pi-dlp.h		\

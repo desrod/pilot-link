@@ -23,6 +23,9 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <string.h>
+#include <netinet/in.h>
+#include <errno.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"

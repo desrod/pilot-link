@@ -5,7 +5,10 @@
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
  */
-      
+
+#include <stdlib.h>
+#include <string.h>
+
 #include "pi-source.h"
 #include "pi-address.h"
 
@@ -62,6 +65,43 @@ void *addressAppInfo_t::pack(void)
      return buffer;
 }
 
+const addressLabels_t *addressAppInfo_t::labels(void)
+{
+	return &_labels;
+}
+
+const addressPhoneLabels_t *addressAppInfo_t::phoneLabels(void)
+{
+	return &_phoneLabels;
+}
+
+int addressAppInfo_t::country(void)
+{
+	return _country;
+}
+
+int addressAppInfo_t::sortByCompany(void)
+{
+	return _sortByCompany;
+}
+
+address_t::address_t(void *buf)
+{
+	unpack(buf); 
+}
+
+address_t::address_t(void)
+{
+	memset(this, '\0', sizeof(address_t));
+}
+
+	
+address_t::address_t(void *buf, int attr, recordid_t id, int category)
+	: baseApp_t(attr, id, category)
+{
+	unpack(buf);
+}
+
 address_t::address_t(const address_t &oldCopy) 
 {
      (void) memcpy(this, &oldCopy, sizeof(address_t));
@@ -74,6 +114,21 @@ address_t::address_t(const address_t &oldCopy)
 	       _entry[i] = new char [len + 1];
 	       (void) strcpy(_entry[i], oldCopy._entry[i]);
 	  }
+}
+
+char *address_t::entry(labelTypes_t idx)
+{ 
+	return _entry[idx]; 
+}
+
+int address_t::whichPhone(void) 
+{ 
+	return _whichPhone;
+}
+
+int address_t::phoneLabel(int idx)
+{ 
+	return _phoneLabels[idx];
 }
 
 void address_t::unpack(void *buf) 
@@ -188,7 +243,18 @@ void *address_t::pack(void *buf, int *len)
      return internalPack((unsigned char *) buf);
 }
 
+
 // We can't just point to the data, as it might be deleted.  Make a copy
+address_t *addressList_t::first()
+{
+	return _head; 
+}
+
+address_t *addressList_t::next(address_t *ptr)
+{
+	return ptr->_next;
+}
+
 void addressList_t::merge(address_t &address) 
 {
      address._next = _head;
