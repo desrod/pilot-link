@@ -194,6 +194,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 {
 	int 	i, 
 		checksum, 
+		checksum_packet,
 		b1, 
 		b2, 
 		b3,	
@@ -259,7 +260,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				packet_len = get_short(&slp_buf[PI_SLP_OFFSET_SIZE]);
 				expect = packet_len;
 			} else {
-				LOG(PI_DBG_SLP, PI_DBG_LVL_WARN, "SLP RX Header Checksum failed\n");
+				LOG(PI_DBG_SLP, PI_DBG_LVL_WARN, "SLP RX Header checksum failed\n");
 				return -1;
 			}
 			break;
@@ -270,15 +271,21 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		case 4:
 			/* that should be the whole packet. */
 			checksum = crc16(slp_buf, PI_SLP_HEADER_LEN + packet_len);
-			if (checksum != get_short(&slp_buf[PI_SLP_HEADER_LEN + packet_len])) {
+			checksum_packet = get_short(&slp_buf[PI_SLP_HEADER_LEN + packet_len]);
+			if (get_byte(&slp_buf[PI_SLP_OFFSET_TYPE]) == PI_SLP_TYPE_LOOP) {
+				/* Adjust because every tenth loopback
+				   packet has a bogus check sum */
+				if (checksum != checksum_packet)
+					checksum = checksum | 0xffef;
+			}
+			if (checksum != checksum_packet) {
 				LOG(PI_DBG_SLP, PI_DBG_LVL_ERR,
-				    "CRC16 check failed: computed=0x%.4x received=0x%.4x\n", 
-				    checksum, get_short(&slp_buf[PI_SLP_HEADER_LEN + packet_len]));
+				    "SLP RX Packet checksum failed: "
+				    "computed=0x%.4x received=0x%.4x\n",
+				    checksum, checksum_packet);
 				return -1;
 			}
 			
-			/* FIXME: Handle LOOP packets */
-
 			/* Track the info so getsockopt will work */
 			data->last_dest 	= get_byte(&slp_buf[PI_SLP_OFFSET_DEST]);
 			data->last_src 		= get_byte(&slp_buf[PI_SLP_OFFSET_SRC]);
@@ -453,13 +460,14 @@ slp_setsockopt(struct pi_socket *ps, int level, int option_name,
 void slp_dump_header(unsigned char *data, int rxtx)
 {	
 	LOG(PI_DBG_SLP, PI_DBG_LVL_NONE,
-	    "SLP %s %d->%d type=%d txid=0x%.2x len=0x%.4x\n",
+	    "SLP %s %d->%d type=%d txid=0x%.2x len=0x%.4x\n checksum=0x%.2",
 	    rxtx ? "TX" : "RX",
 	    get_byte(&data[PI_SLP_OFFSET_DEST]),
 	    get_byte(&data[PI_SLP_OFFSET_SRC]),
 	    get_byte(&data[PI_SLP_OFFSET_TYPE]),
 	    get_byte(&data[PI_SLP_OFFSET_TXID]),
-	    get_short(&data[PI_SLP_OFFSET_SIZE]));
+	    get_short(&data[PI_SLP_OFFSET_SIZE]),
+	    get_byte(&data[PI_SLP_OFFSET_SUM]));
 }
 
 void slp_dump(unsigned char *data)

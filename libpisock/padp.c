@@ -364,10 +364,9 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		unsigned char txid;
 		
 		if (time(NULL) > endtime) {
-			/* Start timeout, return error */
+			/* Bad timeout breaks connection */
 			errno 		= ETIMEDOUT;
-			ouroffset 	= -1;
-			ps->state 	= PI_SOCK_CONBK;	/* Bad timeout breaks connection */
+			ps->state 	= PI_SOCK_CONBK;	
 			return -1;
 		}
 
