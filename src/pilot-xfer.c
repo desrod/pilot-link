@@ -162,6 +162,7 @@ static void MakeExcludeList(char *efile)
 	}
 }
 
+
 /***********************************************************************
  *
  * Function:    protect_name
@@ -226,6 +227,7 @@ static void protect_name(char *d, char *s)
 	*d = '\0';
 }
 
+
 /***********************************************************************
  *
  * Function:    Connect
@@ -246,6 +248,7 @@ static void Connect(void)
 	if (sd < 0)
 		exit(EXIT_FAILURE);
 }
+
 
 /***********************************************************************
  *
@@ -272,6 +275,7 @@ static void VoidSyncFlags(void)
 		dlp_WriteUserInfo(sd, &User);
 	}
 }
+
 
 /***********************************************************************
  *
@@ -654,6 +658,7 @@ static void Fetch(char *dbname)
 	pi_file_close(f);
 }
 
+
 /***********************************************************************
  *
  * Function:    Delete
@@ -708,6 +713,7 @@ static int compare(struct db *d1, struct db *d2)
 		}
 	return d1->maxblock < d2->maxblock;
 }
+
 
 /***********************************************************************
  *
@@ -866,6 +872,7 @@ static void Restore(char *dirname)
 	printf("Restore done\n");
 }
 
+
 /***********************************************************************
  *
  * Function:    Install
@@ -936,6 +943,7 @@ static void Install(char *filename)
 		VoidSyncFlags();
 }
 
+
 /***********************************************************************
  *
  * Function:    Merge
@@ -974,6 +982,7 @@ static void Merge(char *filename)
 
 	printf("Merge done\n");
 }
+
 
 /***********************************************************************
  *
@@ -1014,6 +1023,7 @@ static void List(palm_media_t media_type)
 		dbcount);
 	dlp_AddSyncLogEntry(sd, synclog);
 }
+
 
 /***********************************************************************
  *
@@ -1067,7 +1077,6 @@ static void Purge(void)
 	
 	printf("Purge complete.\n");
 }
-
 
 
 /***********************************************************************
@@ -1172,6 +1181,7 @@ static void display_help(char *progname)
 
 	return;
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -1335,4 +1345,3 @@ int main(int argc, char *argv[])
 	printf("   Thank you for using pilot-link.\n");
 	return 0;
 }
-
