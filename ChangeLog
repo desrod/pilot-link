@@ -1,3 +1,7 @@
+2001-01-12  JP Rosevear  <jpr@ximian.com>
+
+	* include/pi-sockaddr.h: Up the device name limit to 255
+
 2001-01-12  JP Rosevear  <jpr@helixcode.com>
 
 	* libsock/dlp.c (dlp_ReadSortBlock): Expect 2 bytes, fixes bug pointed 
