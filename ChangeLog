@@ -1,5 +1,10 @@
 2002-03-18  JP Rosevear  <jpr@ximian.com>
 
+	* src/dlpsh.c (strtoke): don't run past the end of the string on
+	the last token
+	
+2002-03-18  JP Rosevear  <jpr@ximian.com>
+
 	* src/dlpsh.c (strtoke): end the string in the right spot if it
 	was delimited
 

@@ -592,8 +592,12 @@ char *strtoke(char *str, char *ws, char *delim)
 		s++;
 	} else {
 		inc = strcspn(s, ws);
-		s[inc] = '\0';
-		s += inc + 1;
+		if (s[inc] == '\0') {
+			s += inc;
+		} else {
+			s[inc] = '\0';
+			s += inc + 1;
+		}
 	}
 
 	return start;
