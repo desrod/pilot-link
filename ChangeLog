@@ -1,3 +1,8 @@
+2001-12-5   David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* dlpsh.c: major updates, moved things around, cleaning house.
+	  Fixed an include problem, merged with HAVE_READLINE updates.
+
 2001-12-05  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: check for a few more readline functions
@@ -15,6 +20,11 @@
 
 	* Makefile.am: conditionally compile tcl/tk dependant apps,
 	include readline cflags and libs
+
+2001-11-28  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* pi-getrom.c: gutted, added connect, moved things around, added
+	  logging to the Palm-side logfile, UI cleanups.
 
 2001-11-23  JP Rosevear  <jpr@ximian.com>
 
