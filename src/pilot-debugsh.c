@@ -111,6 +111,9 @@ void read_pilot(int sd)
 	int 	l = pi_read(sd, buf, 4096);
 	
 	printf("From Palm %d:", l);
+	if (l < 0)
+		exit(1);
+	
 	dumpdata((unsigned char *) buf, l);
 
 	if (buf[2] == 0) {			/* SysPkt command 	*/
@@ -152,7 +155,20 @@ int main(int argc, char *argv[])
 		exit(2);
 	}
 
-	pi_bind(sd, (struct sockaddr *) &laddr, sizeof(laddr));
+	sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_SYS);
+	if (sd < 0) {
+		fprintf(stderr, "Unable to create socket\n");
+		return -1;
+	}
+
+	laddr.pi_family = PI_AF_PILOT;
+	strcpy(laddr.pi_device, argv[1]);
+
+	if (pi_connect(sd, (struct sockaddr *) &laddr, sizeof(laddr)) < 0) {
+		fprintf(stderr, "Unable to connect\n");
+		return -1;
+	}
+	
 
 	/* Now we can read and write packets: to get the Palm to send a
 	   packet, write a ".2" shortcut, which starts the debugging mode.

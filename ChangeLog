@@ -1,3 +1,25 @@
+2002-07-02  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/serial.c (pi_serial_connect): set the data rate to
+	57600 for a sys socket
+	(pi_serial_connect): set the baud rate for the device for all
+	command queue types
+
+	* libpisock/dlp.c (dlp_request_new): don't malloc a 0 size array
+	(dlp_request_new_with_argid): ditto
+	(dlp_response_new): ditto
+	(dlp_request_free): don't free a 0 size array
+	(dlp_response_free): ditto
+	(dlp_exec): set the result to NULL in case we never read a result
+
+	* libpisock/syspkt.c (sys_QueryState): only write 2 bytes
+	(sys_RemoteEvent): don't write the slp info, just the event info
+	(sys_RPC): ditto
+
+	* libpisock/sys.c (sys_tx): transmit on the console socket type
+
+	* src/debugsh.c (main): create the SYS socket and connect
+
 2002-06-30  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/connect.c: dlp_OpenConduit call fixed

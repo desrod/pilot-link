@@ -218,23 +218,27 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 
 	if (ps->type == PI_SOCK_STREAM) {
-		if (data->establishrate == -1) {
-			data->establishrate = 9600;	/* Default PADP connection rate */
-			rate_env = getenv("PILOTRATE");
-			if (rate_env) {
-				if (rate_env[0] == 'H') {	/* Establish high rate */
-					data->establishrate =
-					    atoi(rate_env + 1);
-					data->establishhighrate = -1;
-				} else {
-					data->establishrate = atoi(rate_env);
-					data->establishhighrate = 0;
+		if (ps->protocol == PI_PF_SYS) {
+			data->establishrate = data->rate = 57600;
+		} else {
+			if (data->establishrate == -1) {
+				data->establishrate = 9600;	/* Default PADP connection rate */
+				rate_env = getenv("PILOTRATE");
+				if (rate_env) {
+					if (rate_env[0] == 'H') {	/* Establish high rate */
+						data->establishrate =
+							atoi(rate_env + 1);
+						data->establishhighrate = -1;
+					} else {
+						data->establishrate = atoi(rate_env);
+						data->establishhighrate = 0;
+					}
 				}
 			}
+			data->rate = 9600;	/* Mandatory CMP connection rate */
 		}
-		data->rate = 9600;	/* Mandatory CMP conncetion rate */
 	} else if (ps->type == PI_SOCK_RAW) {
-		data->establishrate = data->rate = 57600;	/* Mandatory SysPkt connection rate */
+		data->establishrate = data->rate = 57600;
 	}
 
 	if (data->impl.open(ps, pa, addrlen) == -1)
@@ -259,13 +263,19 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 			pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
 				      &data->rate, &size);
 
-			/* We always reconfigure our port, no matter what */
 			if (data->impl.changebaud(ps) < 0)
 				goto fail;
 
 			break;
 			
 		case PI_CMD_NET:
+			if (data->impl.changebaud(ps) < 0)
+				goto fail;
+			break;
+
+		case PI_CMD_SYS:
+			if (data->impl.changebaud(ps) < 0)
+				goto fail;
 			break;
 		}
 	}

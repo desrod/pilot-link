@@ -167,8 +167,11 @@ dlp_request_new (enum dlpFunctions cmd, int argc, ...)
 	va_list ap;
 	int i;
 	
-	req->argv = malloc (sizeof (struct dlpArg *) * argc);
-
+	req = malloc (sizeof (struct dlpRequest));
+	req->cmd = cmd;
+	
+	req->argc = argc;
+	if (argc)
 		req->argv = malloc (sizeof (struct dlpArg *) * argc);
 	else
 		req->argv = NULL;
@@ -192,8 +195,11 @@ dlp_request_new_with_argid (enum dlpFunctions cmd, int argid, int argc, ...)
 	va_list ap;
 	int i;
 	
-	req->argv = malloc (sizeof (struct dlpArg *) * argc);
-
+	req = malloc (sizeof (struct dlpRequest));
+	req->cmd = cmd;
+	
+	req->argc = argc;
+	if (argc)
 		req->argv = malloc (sizeof (struct dlpArg *) * argc);
 	else
 		req->argv = NULL;
@@ -216,7 +222,10 @@ dlp_response_new (enum dlpFunctions cmd, int argc)
 	struct dlpResponse *res;
 	
 	res = malloc (sizeof (struct dlpResponse));
-	res->argv = malloc (sizeof (struct dlpArg *) * argc);
+	res->cmd = cmd;
+	res->err = dlpErrNoError;
+	
+	res->argc = argc;
 	if (argc)
 		res->argv = malloc (sizeof (struct dlpArg *) * argc);
 	else
@@ -317,8 +326,9 @@ dlp_request_write (struct dlpRequest *req, int sd)
 void
 dlp_request_free (struct dlpRequest *req)
 {
-	
-	free (req->argv);
+	int i;
+
+	for (i = 0; i < req->argc; i++)
 		dlp_arg_free (req->argv[i]);
 
 	if (req->argv)
@@ -333,12 +343,15 @@ dlp_response_free (struct dlpResponse *res)
 
 	if (!res)
 		return;
-	free (res->argv);
+	
+	for (i = 0; i < res->argc; i++)
 		dlp_arg_free (res->argv[i]);
 	
 	if (res->argv)
 		free (res->argv);
 	free (res);	
+
+int dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 {
 	int bytes;
 	*res = NULL;

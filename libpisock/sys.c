@@ -124,7 +124,7 @@ int sys_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 	type 	= PI_SLP_TYPE_RDCP;
 	/* Fix me, allow socket type */
-	socket 	= PI_SLP_SOCK_DBG;
+	socket 	= PI_SLP_SOCK_CON;
 	size 	= sizeof(type);
 	pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TYPE, 
 		      &type, &size);
@@ -170,7 +170,7 @@ int sys_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		return -1;
 
 	data_len = next->read(ps, buf, len, flags);
-	
+
 	CHECK(PI_DBG_SYS, PI_DBG_LVL_INFO, sys_dump_header(buf, 0));
 	CHECK(PI_DBG_SYS, PI_DBG_LVL_DEBUG, sys_dump(buf, data_len));
 

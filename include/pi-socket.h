@@ -23,6 +23,7 @@ extern "C" {
 
 #define PI_CMD_CMP 0x01
 #define PI_CMD_NET 0x02
+#define PI_CMD_SYS 0x03
 
 #define PI_MSG_PEEK 0x01
 

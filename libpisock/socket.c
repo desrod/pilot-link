@@ -310,7 +310,6 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 	switch (protocol) {
 	case PI_PF_PADP:
 	case PI_PF_SLP:
-	case PI_PF_SYS:
 		prot 	= cmp_protocol ();
 		protocol_cmd_queue_add (ps, prot);
 	
@@ -327,17 +326,19 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 		protocol_cmd_queue_add (ps, prot);
 		ps->cmd = PI_CMD_NET;
 		break;
+	case PI_PF_SYS:
+		ps->cmd = PI_CMD_SYS;
+		break;
 	}
 
-  	protocol_queue_add (ps, dev_prot);
+	protocol_queue_add (ps, dev_prot);
   	protocol_cmd_queue_add (ps, dev_cmd_prot);
 }
 
 static void
 protocol_queue_destroy (struct pi_socket *ps)
 {
-	int 	i;
-	
+	int 	i;	
 	for (i = 0; i < ps->queue_len; i++)
 		ps->protocol_queue[i]->free(ps->protocol_queue[i]);
 	for (i = 0; i < ps->cmd_len; i++)
@@ -1194,7 +1195,7 @@ int pi_close(int pi_sd)
 		return -1;
 	}
 
-	if (ps->type == PI_SOCK_STREAM) {
+	if (ps->type == PI_SOCK_STREAM && ps->cmd != PI_CMD_SYS) {
 		if (is_connected (ps)) {
 				ps->command = 1;
 				

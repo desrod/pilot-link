@@ -380,7 +380,7 @@ int sys_QueryState(int sd)
 	buf[4] = 0;
 	buf[5] = 0;		/* gapfill */
 
-	return pi_write(sd, buf, 6);
+	return pi_write(sd, buf, 2);
 }
 
 /***********************************************************************
@@ -547,30 +547,22 @@ int
 sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
 		int keymod, int keyasc, int keycode)
 {
-	char 	buf[20];
+	char 	buf[16];
 
-	buf[0] 	= 2;
-	buf[1] 	= 2;
-	buf[2] 	= 0;
-	buf[3] 	= 0x11;
-	buf[4] 	= 0x0d;		/* RemoteEvtCommand	*/
-	buf[5] 	= 0;		/* gapfill 		*/
-	buf[6] 	= penDown;
-	buf[7] 	= 0;		/* gapfill 		*/
-	buf[8] 	= x >> 8;
-	buf[9] 	= x & 0xff;
-	buf[10] = y >> 8;
-	buf[11] = y & 0xff;
-	buf[12] = keypressed;
-	buf[13] = 0;		/* gapfill 		*/
-	buf[14] = keymod >> 8;
-	buf[15] = keymod & 0xff;
-	buf[16] = keyasc >> 8;
-	buf[17] = keyasc & 0xff;
-	buf[18] = keycode >> 8;
-	buf[19] = keycode & 0xff;
+	/* Offset 1, 3 and 9 are padding */
+	set_byte(&buf[0], 0x0D); /* RemoteEvtCommand	*/
+	set_byte(&buf[1], 0);
+	set_byte(&buf[2], penDown);
+	set_byte(&buf[3], 0);
+	set_short(&buf[4], x);
+	set_short(&buf[6], y);
+	set_byte(&buf[8], keypressed);
+	set_byte(&buf[9], 0);
+	set_short(&buf[10], keymod);
+	set_short(&buf[12], keyasc);
+	set_short(&buf[14], keycode);
 
-	return pi_write(sd, buf, 16 + 4);
+	return pi_write(sd, buf, 16);
 }
 
 /***********************************************************************
@@ -619,7 +611,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 	if (socket == 3)
 		set_short(buf + 4, c - buf - 6);
 
-	pi_write(sd, buf, c - buf);
+	pi_write(sd, buf + 4, c - buf - 4);
 
 	if (reply) {
 		int l = pi_read(sd, buf, 4096);
