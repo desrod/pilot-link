@@ -358,13 +358,15 @@ pack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 
 
 void
-free_ContactAppInfo (ContactAppInfo_t *ai)
+free_ContactsAppInfo (ContactAppInfo_t *ai)
 {
 	if (ai == NULL)
 		return;
 
 	pi_buffer_free (ai->internal);
+	pi_buffer_free (ai->labels);
 	ai->internal = NULL;
+	ai->labels = NULL;
 }
 
 
@@ -372,6 +374,7 @@ int
 unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 {
 	int				i,
+					numlabels,
 					destlen;
 	ptrdiff_t		ofs = 0;
 
@@ -381,11 +384,11 @@ unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 	switch (buf->used) {
 		case 1092:
 			ai->type = contacts_v10;
-			ai->numLabels = 49;
+			numlabels = 49;
 			break;
 		case 1156:
 			ai->type = contacts_v11;
-			ai->numLabels = 53;
+			numlabels = 53;
 			break;
 		default:
 			/* Unknown version */
@@ -393,7 +396,7 @@ unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 	}
 	destlen = 278						/* categories */
 			+ 26						/* internal */
-			+ ai->numLabels * 16		/* a bunch of strings */
+			+ numlabels * 16			/* a bunch of strings */
 			+ 2							/* country */
 			+ 2;						/* sorting */
 
@@ -409,8 +412,9 @@ unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 	pi_buffer_append (ai->internal, buf->data + ofs, 26);
 	ofs += 26;
 
-	memcpy (ai->labels, buf->data + ofs, 16 * ai->numLabels);
-	ofs += 16 * ai->numLabels;
+	ai->labels = pi_buffer_new (16 * numlabels);
+	pi_buffer_append (ai->labels, buf->data + ofs, 16 * numlabels);
+	ofs += 16 * numlabels;
 
 	ai->country = get_byte (buf->data + ofs);
 	ofs += 2;
@@ -422,16 +426,13 @@ unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 		/* Should never happen */
 		return -1;
 
+	/* ofs gets repurposed here! */
+	ofs = 14 * 16;
 	ai->numCustoms = 9;
-	strcpy(ai->customLabels[0], ai->labels[14]);
-	strcpy(ai->customLabels[1], ai->labels[15]);
-	strcpy(ai->customLabels[2], ai->labels[16]);
-	strcpy(ai->customLabels[3], ai->labels[17]);
-	strcpy(ai->customLabels[4], ai->labels[18]);
-	strcpy(ai->customLabels[5], ai->labels[19]);
-	strcpy(ai->customLabels[6], ai->labels[20]);
-	strcpy(ai->customLabels[7], ai->labels[21]);
-	strcpy(ai->customLabels[8], ai->labels[22]);
+	for (i = 0; i < ai->numCustoms; i++) {
+		strcpy (ai->customLabels[i], ai->labels->data + ofs);
+		ofs += 16;
+	}
 
 	return 0;
 }
@@ -439,7 +440,9 @@ unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 int
 pack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 {
-	int				destlen;
+	int				i,
+					destlen;
+	size_t			ofs;
 
 	if (buf == NULL || buf->data == NULL)
 		return -1;
@@ -451,7 +454,7 @@ pack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 
 	destlen = 278						/* categories */
 			+ 26						/* internal */
-			+ ai->numLabels * 16		/* a bunch of strings */
+			+ ai->labels->used			/* a bunch of strings */
 			+ 2							/* country */
 			+ 2;						/* sorting */
 
@@ -465,17 +468,13 @@ pack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 	pi_buffer_append_buffer (buf, ai->internal);
 
 	/* First write the custom labels back out */
-	strcpy(ai->labels[14], ai->customLabels[0]);
-	strcpy(ai->labels[15], ai->customLabels[1]);
-	strcpy(ai->labels[16], ai->customLabels[2]);
-	strcpy(ai->labels[17], ai->customLabels[3]);
-	strcpy(ai->labels[18], ai->customLabels[4]);
-	strcpy(ai->labels[19], ai->customLabels[5]);
-	strcpy(ai->labels[20], ai->customLabels[6]);
-	strcpy(ai->labels[21], ai->customLabels[7]);
-	strcpy(ai->labels[22], ai->customLabels[8]);
+	ofs = 14 * 16;
+	for (i = 0; i < ai->numCustoms; i++) {
+		strcpy (ai->labels->data + ofs, ai->customLabels[i]);
+		ofs += 16;
+	}
 
-	pi_buffer_append (buf, ai->labels, 16 * ai->numLabels);
+	pi_buffer_append_buffer (buf, ai->labels);
 
 	set_byte (buf->data + buf->used++, ai->country);
 	set_byte (buf->data + buf->used++, 0);

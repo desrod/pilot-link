@@ -156,6 +156,7 @@ int
 print_appblock (int sd, int db, struct ContactAppInfo *cai)
 {
 	int i;
+	size_t j;
 	pi_buffer_t *appblock = pi_buffer_new(0xffff);
 
 	if (dlp_ReadAppBlock(sd, db, 0, -1, appblock) <= 0)
@@ -175,17 +176,6 @@ print_appblock (int sd, int db, struct ContactAppInfo *cai)
 	}
 	printf (" Last Unique ID: %i\n", cai->category.lastUniqueID);
 
-	printf ("Internal data:\n");
-	hexprint (cai->internal->data, cai->internal->used, 0, 0);
-
-	printf ("Field labels");
-	for (i = 0; i < cai->numLabels; i++)
-	{
-		if (i%4 == 0)
-			printf ("\n ");
-		printf ("%02i:%-16s ", i, cai->labels[i]);
-	}
-	
 	printf ("\nCustom labels");
 	for (i = 0; i < cai->numCustoms; i++)
 	{
@@ -193,7 +183,28 @@ print_appblock (int sd, int db, struct ContactAppInfo *cai)
 			printf ("\n ");
 		printf ("%02i:%-16s ", i, cai->customLabels[i]);
 	}
+	if (i%4 != 0)
+		printf ("\n");
 
+	/* Fair enough for a test to print opaque data.. */
+	if (cai->internal != NULL) {
+		printf ("\nInternal data (opaque)\n");
+		hexprint (cai->internal->data, cai->internal->used, 0, 0);
+	}
+
+	if (cai->labels != NULL && cai->labels->used % 16 == 0) {
+		printf ("\nField labels (also \"opaque\")");
+		i = 0;
+		for (j = 0; j < cai->labels->used; j += 16)
+		{
+			if (i%4 == 0)
+				printf ("\n ");
+			printf ("%02i:%-16s ", i++, cai->labels->data + j);
+		}
+		if (i%4 != 0)
+			printf ("\n");
+	}
+	
 	printf ("\nCountry: %i\n", cai->country);
 
 	printf ("Sorting: %s\n\n", cai->sortByCompany ? "By company" : "By name");
@@ -354,6 +365,7 @@ main (const int argc, const char **argv)
 	} else {
 		print_records (sd, db, &cai);
 	}
+	free_ContactsAppInfo (&cai);
 
 	dlp_CloseDB(sd, db);
 	dlp_EndOfSync (sd, 0);

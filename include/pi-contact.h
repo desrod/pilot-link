@@ -109,9 +109,10 @@ typedef struct Contact {
 typedef struct ContactAppInfo {
 	contactsType type;
 	struct CategoryAppInfo category;
+
+	/* These fields should be considered opaque */
 	pi_buffer_t *internal;
-	int numLabels;
-	char labels[53][16];		/* Hairy to explain, obvious to look at */
+	pi_buffer_t *labels;
 
 	int numCustoms;
 	char customLabels[9][16];
