@@ -221,8 +221,9 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					if (txid == data->txid) {
 						/* OS 2.x enjoys sending erroneous memory errors */
 
-						fprintf(stderr,
-							"Out of memory\n");
+
+						LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
+						    "PADP TX Memory Error\n");
 						errno = EMSGSIZE;
 						count = -1;
 						goto done;
@@ -236,9 +237,10 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					   && (padp.type == (unsigned char) padData)
 					   && (txid == data->txid)
 					   && (len == 0)) {
-#ifdef DEBUG
-					fprintf(stderr, "Missing ack\n");
-#endif
+
+					LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
+					    "PADP TX Missing Ack\n");
+
 					/* Incoming padData from response to
 					   this transmission.  Maybe the Ack
 					   was lost 
@@ -384,7 +386,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 		if (padp.flags & MEMERROR) {
 			if (txid == data->txid) {
-				fprintf(stderr, "Out of memory\n");
+				LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
+				    "PADP RX Memory Error\n");
 				errno = EMSGSIZE;
 				ouroffset = -1;
 				goto done;
@@ -396,23 +399,16 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			continue;
 		} else if (padp.type == (unsigned char) 4) {
 			/* Tickle to avoid timeout */
-
+			LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
+			    "PADP RX Got Tickled\n");
 			endtime = time(NULL) + recStartTimeout / 1000;
-#ifdef DEBUG
-			fprintf(stderr, "Got tickled\n");
-#endif
 			continue;
 		} else if ((type != PI_SLP_TYPE_PADP) || (padp.type != padData)
 			   || (txid != data->txid)
 			   || !(padp.flags & FIRST)) {
-			if (padp.type == padTickle) {
-				endtime =
-				    time(NULL) + recStartTimeout / 1000;
-#ifdef DEBUG
-				fprintf(stderr, "Got tickled\n");
-#endif
-			}
-			fprintf(stderr, "\n   Wrong packet type on queue (port speed problem?)\n");
+			LOG(PI_DBG_PADP, PI_DBG_LVL_ERR,
+			    "PADP RX Wrong packet type on queue"
+			    "(possible port speed problem?)\n");
 			continue;
 		}
 		break;
@@ -478,8 +474,9 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				unsigned char txid;
 				
 				if (time(NULL) > endtime) {
-					fprintf(stderr,
-						"segment timeout\n");
+					LOG(PI_DBG_PADP, PI_DBG_LVL_ERR,
+					    "PADP RX Segment Timeout");
+
 					/* Segment timeout, return error */
 					errno = ETIMEDOUT;
 					ouroffset = -1;
@@ -513,8 +510,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 				if (padp.flags & MEMERROR) {
 					if (txid == data->txid) {
-						fprintf(stderr,
-							"Out of memory\n");
+						LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
+						    "PADP RX Memory Error");
 						errno = EMSGSIZE;
 						ouroffset = -1;
 						goto done;
@@ -530,25 +527,17 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					endtime =
 					    time(NULL) +
 					    recStartTimeout / 1000;
-#ifdef DEBUG
-					fprintf(stderr, "Got tickled\n");
-#endif
+					LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
+					    "PADP RX Got Tickled");
 					continue;
 				} else
 				    if ((type != PI_SLP_TYPE_PADP)
 					|| (padp.type != padData)
 					|| (txid != data->txid)
 					|| (padp.flags & FIRST)) {
-					if (padp.type == padTickle) {
-						endtime =
-						    time(NULL) +
-						    recSegTimeout / 1000;
-#ifdef DEBUG
-						fprintf(stderr, "Got tickled\n");
-#endif
-					}
-					fprintf(stderr,
-						"Wrong packet type on queue\n");
+					    LOG(PI_DBG_PADP, PI_DBG_LVL_ERR,
+						"PADP RX Wrong packet type on queue"
+						"(possible port speed problem?)\n");
 					continue;
 				}
 				break;
