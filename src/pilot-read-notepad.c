@@ -71,6 +71,18 @@ struct option options[] = {
 
 static const char *optstring = "hvp:lt:";
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Syncronize your NotePad database with your desktop machine\n\n");
@@ -87,6 +99,18 @@ static void display_help(char *progname)
 	return;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    fmt_date
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 static const char *fmt_date ( noteDate_t d )
 {
    
@@ -97,6 +121,18 @@ static const char *fmt_date ( noteDate_t d )
    
 }
 
+
+/***********************************************************************
+ *
+ * Function:    write_ppm
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 void write_ppm( FILE *f, struct NotePad *n )
 {
    int i,j,k,datapoints = 0;
@@ -153,6 +189,18 @@ void write_ppm( FILE *f, struct NotePad *n )
    
 }
 
+
+/***********************************************************************
+ *
+ * Function:    write_png
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 #ifdef HAVE_PNG
 void write_png( FILE *f, struct NotePad *n )
 {
@@ -235,6 +283,18 @@ void write_png( FILE *f, struct NotePad *n )
 }
 #endif
 
+
+/***********************************************************************
+ *
+ * Function:    write_png_v2
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 void write_png_v2( FILE *f, struct NotePad *n )
 {
    if( n->body.dataType != NOTEPAD_DATA_PNG )
@@ -247,6 +307,18 @@ void write_png_v2( FILE *f, struct NotePad *n )
    fflush( f );
 }
 
+
+/***********************************************************************
+ *
+ * Function:    print_note_info
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category )
 {
    if( n.flags & NOTEPAD_FLAG_NAME )
@@ -272,9 +344,22 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
 
 }
 
+
+/***********************************************************************
+ *
+ * Function:    protect_files
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 int protect_files( char *name, char *extension )
 {
-   char *save_name, c = 1;
+   char *save_name, 
+	c = 1;
    
    save_name = strdup( name );
    
@@ -307,6 +392,18 @@ int protect_files( char *name, char *extension )
    return( 1 );
 }
 
+
+/***********************************************************************
+ *
+ * Function:    output_picture
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 void output_picture( int type, struct NotePad n )
 {
    char fname[FILENAME_MAX];
@@ -380,6 +477,7 @@ void output_picture( int type, struct NotePad n )
    
    free_NotePad( &n );
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -507,7 +605,7 @@ int main(int argc, char *argv[])
    if( sd ) {
 	/* Close the database */
 	dlp_CloseDB( sd, db );
-	dlp_AddSyncLogEntry( sd, "Successfully read NotePad from Palm.\n"
+	dlp_AddSyncLogEntry( sd, "Successfully read NotePad from Palm.\n\n"
 			    "Thank you for using pilot-link.");
 	dlp_EndOfSync( sd, 0 );
 	pi_close(sd);
