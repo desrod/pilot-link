@@ -43,7 +43,7 @@ extern "C" {
 	extern void net_dump_header
 	    PI_ARGS((unsigned char *data, int rxtx));
 	extern void net_dump
-	    PI_ARGS((unsigned char *data));
+	    PI_ARGS((unsigned char *header, unsigned char *data));
 
 #ifdef __cplusplus
 }

@@ -304,7 +304,13 @@ net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
  *
  * Parameters:  pi_socket_t*, char* to buf, buf length, flags
  *
- * Returns:     A negative number on error, 0 otherwise
+ * Returns:     A negative number on error, 0 on timeout, otherwise the
+ *              length of the received packet. If the packet length exceeds
+ *              the max size of the receive buffer, the additional bytes are
+ *              discarded and the TOTAL packet length is returned (to
+ *              indicate that the buffer was too small). Caller can then
+ *              take any necessary action like use a bigger buffer and
+ *              reissue the request.
  *
  ***********************************************************************/
 int
@@ -313,6 +319,7 @@ net_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	int 	bytes, 
 		total_bytes, 
 		packet_len,
+		discard_bytes,
 		timeout;
 
 	size_t	size;
@@ -320,12 +327,15 @@ net_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	pi_protocol_t	*prot,
 			*next;
 
+	unsigned char header[PI_NET_HEADER_LEN], *discard;
+
 	pi_net_data_t *data;
 	unsigned char *cur;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
+	
 	data = (pi_net_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_NET);
 	if (next == NULL)
@@ -339,31 +349,30 @@ net_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	total_bytes = 0;
 	if (data->txid == 0) {	
 		/* Peek to see if it is a headerless packet */
-		bytes = next->read(ps, msg, 1, flags);
-		if (bytes > 0) {
-			LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
-			     "NET RX: Checking for headerless packet %d\n",
-				msg[0]));
-
-			if (msg[0] == 0x90) {
-				/* Cause the header bytes to be skipped */
-				LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
-				     "NET RX: Headerless packet\n"));
-				total_bytes = PI_NET_HEADER_LEN;
-				msg[PI_NET_OFFSET_TYPE] = PI_NET_TYPE_DATA;
-				msg[PI_NET_OFFSET_TXID] = 0x01;
-				set_long (&msg[PI_NET_OFFSET_SIZE], 21);
-			} else {
-				total_bytes += bytes;
-			}
-		} else {
+		bytes = next->read(ps, header, 1, flags);
+		if (bytes <= 0)
 			return bytes;
+
+		LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
+			"NET RX: Checking for headerless packet %d\n",
+			header[0]));
+
+		if (header[0] == 0x90) {
+			/* Cause the header bytes to be skipped */
+			LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
+				"NET RX: Headerless packet\n"));
+			total_bytes = PI_NET_HEADER_LEN;
+			header[PI_NET_OFFSET_TYPE] = PI_NET_TYPE_DATA;
+			header[PI_NET_OFFSET_TXID] = 0x01;
+			set_long (&header[PI_NET_OFFSET_SIZE], 21);
+		} else {
+			total_bytes += bytes;
 		}
 	}
 	
 	/* Bytes in what's left of the header */
 	while (total_bytes < PI_NET_HEADER_LEN) {
-		bytes = next->read(ps, msg + total_bytes,
+		bytes = next->read(ps, &header[total_bytes],
 			(size_t)(PI_NET_HEADER_LEN - total_bytes), flags);
 		if (bytes <= 0)
 			return bytes;
@@ -371,34 +380,57 @@ net_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	}
 
 	/* Bytes in the rest of the packet */
-	packet_len = get_long(&msg[PI_NET_OFFSET_SIZE]);
-	while (total_bytes < PI_NET_HEADER_LEN + packet_len) {
-		bytes = next->read(ps, msg + total_bytes, 
-		   (size_t)(PI_NET_HEADER_LEN + packet_len - total_bytes),
-		    flags);
-		if (bytes <= 0)
-			return bytes;
-		else if (bytes > 0)
-			total_bytes += bytes;
+	total_bytes = 0;
+	discard_bytes = 0;
+	packet_len = get_long(&header[PI_NET_OFFSET_SIZE]);
+	if (packet_len > len) {
+		discard_bytes = packet_len - len;
+		packet_len = len;
 	}
 
-	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(msg, 0));
-	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(msg));
+	while (total_bytes < packet_len) {
+		bytes = next->read(ps, &msg[total_bytes],
+			(size_t)(packet_len - total_bytes), flags);
+		if (bytes < 0)
+			return bytes;
+
+		total_bytes += bytes;
+       }
+
+	/* discard additional data that wouldn't fit in the buffer */
+	if (discard_bytes) {
+		LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
+			"NET RX: Buffer (%d bytes) too short for packet length (%d bytes)\n",
+			len, packet_len));
+
+		set_long (&header[PI_NET_OFFSET_SIZE], packet_len);             /* for net_dump below */
+		total_bytes = 0;
+		discard = (unsigned char *) malloc (discard_bytes);
+		while (total_bytes < discard_bytes) {
+			bytes = next->read(ps, &discard[total_bytes],
+				(size_t)(discard_bytes - total_bytes), flags);
+			if (bytes < 0) {
+				free (discard);
+				return bytes;  
+			}
+			total_bytes += bytes;
+		}
+		free (discard);
+	}
+
+	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(header, 0));
+	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(header, msg));
 
 	/* Update the transaction id */
 	if (ps->state == PI_SOCK_CONIN || ps->command == 1)
-		data->txid = msg[PI_NET_OFFSET_TXID];
+		data->txid = header[PI_NET_OFFSET_TXID];
 	else {
 		data->txid++;
 		if (data->txid == 0xff)
 			data->txid = 1;
 	}
 
-	/* Remove the header */
-	cur = msg + PI_NET_HEADER_LEN;
-	memmove (msg, cur, (size_t)packet_len);	
-
-	return packet_len;
+	return packet_len + discard_bytes;
 }
 
 
@@ -519,10 +551,10 @@ net_dump_header(unsigned char *data, int rxtx)
  *
  ***********************************************************************/
 void
-net_dump(unsigned char *data)
+net_dump(unsigned char *header, unsigned char *data)
 {
 	size_t 	size;
 
-	size = get_long(&data[PI_NET_OFFSET_SIZE]);
-	dumpdata((char *)&data[PI_NET_HEADER_LEN], size);
+	size = get_long(&header[PI_NET_OFFSET_SIZE]);
+	dumpdata((char *)data, size);
 }
