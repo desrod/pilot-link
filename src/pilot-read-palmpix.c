@@ -260,7 +260,7 @@ int
 		  int, const char *) = write_all;
    const char *pixname = NULL;
    char *port = NULL;
-   struct 	PilotUser U;
+   struct 	PilotUser User;
    
    char *progname = argv[0];
    
@@ -352,11 +352,11 @@ int
 	if (sd < 0)
 	  return fail ("pi_socket");
 	
-	if (dlp_ReadUserInfo(sd, &U) < 0)
+	if (dlp_ReadUserInfo(sd, &User) < 0)
 	  return fail( "Read user info" );
 	       
 	dlp_OpenConduit (sd);
-	dlp_ReadUserInfo (sd, &U);
+	dlp_ReadUserInfo (sd, &User);
 	
 	if (dlp_OpenDB (sd, 0, dlpOpenRead, PalmPix_DB, &db) >= 0) 
 	  {
@@ -373,9 +373,9 @@ int
 	     dlp_AddSyncLogEntry (sd,
 				  "Read PalmPix images from Palm.\n");
 	     
-	     U.lastSyncPC = 0x00010000;
-	     U.lastSyncDate = U.successfulSyncDate = time (NULL);
-	     dlp_WriteUserInfo (sd, &U);
+	     User.lastSyncPC = 0x00010000;
+	     User.lastSyncDate = User.successfulSyncDate = time (NULL);
+	     dlp_WriteUserInfo (sd, &User);
 	     
 	  }
 	else

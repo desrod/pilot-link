@@ -2,6 +2,8 @@
 
 	* src/pilot-addresses.c: WriteUserInfo fix
 
+	* src/read-palmpix.c: s/U/User/ to align with other conduits
+
 2002-07-03  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: check for stdint.h and inttypes.h
