@@ -435,6 +435,8 @@ sub LoadPilotRecord {
 	my($record) = $db->getRecord($i);
 	if ($record) {
 		$pilotID{$record->{id}} = $record;
+	} elsif ($db->errno() != -5) { 			# dlpErrNotFound
+		die "I/O error";
 	}
 	$record;
 }
