@@ -6,7 +6,14 @@ INCLUDES = 				\
 bin_PROGRAMS = 				\
 	pilot-datebook	
 
+if NEED_GETOPT
+getopt_sources = getopt.h getopt.c getopt1.c
+else
+getopt_sources = 
+endif
+
 pilot_datebook_SOURCES = 		\
+	$(getopt_sources)		\
 	parsedate.y			\
 	pilot-datebook.c		\
 	pilot-datebook.h		\
@@ -44,9 +51,4 @@ pilot_datebook_SOURCES = 		\
 
 pilot_datebook_LDADD =			\
 	$(top_builddir)/libpisock/libpisock.la	
-
-EXTRA_DIST =			\
-	getopt.h		\
-	getopt.c		\
-	getopt1.c
 
