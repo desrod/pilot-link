@@ -1,3 +1,9 @@
+2002-12-24 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/install-memo: Lots of fixes, malloc() bug, cast bug, check
+	  file size before syncronizing, fix missing 't' requirements, added
+	  patch to fix titling bugs.
+
 2002-12-22 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Cleaning up deprecated headers (dirent.h is on BSD,

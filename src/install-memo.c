@@ -1,5 +1,5 @@
 /* 
- * install-memo.c: Palm memo pad installer
+ * install-memo.c: Palm MemoPad Record Syncronization Conduit
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <errno.h>
 
 #include "pi-source.h"
@@ -44,18 +45,20 @@ struct option options[] = {
 	{"version",     no_argument,       NULL, 'v'},
 	{"category",    required_argument, NULL, 'c'},
 	{"replace",     no_argument,       NULL, 'r'},
-	{"title",       no_argument,       NULL, 't'},
+	{"title",       required_argument, NULL, 't'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "p:hvc:rt";
+static const char *optstring = "p:hvc:rt:";
 
 static void display_help(char *progname)
 {
-	printf("Usage: %s -p <port> [-qrt] [-c category] file [file] ...\n", progname);
-	printf("       -r = replace all memos in specified category\n");
-	printf("       -t = use filename as memo title\n");
-
+	printf("   Installs a new memo in a Palm Computing Device\n\n");
+	printf("   Usage: %s -p <port> [-rt] [-c category] file [file] ...\n\n", 
+		progname);
+	printf("   Options:\n");
+	printf("     -r = replace all memos in specified category\n");
+	printf("     -t = use filename as memo title\n\n");
 	exit(0);
 }
 
@@ -81,6 +84,7 @@ int main(int argc, char *argv[])
 	
         struct 	PilotUser User;
         struct 	MemoAppInfo mai;
+	struct  stat sbuf;
 
 	FILE *f;
 	
@@ -116,6 +120,17 @@ int main(int argc, char *argv[])
 			progname);
 		display_help(progname);
 	}
+
+	stat(argv[j], &sbuf);
+	if (sbuf.st_size > 65490) {
+		fprintf(stderr, "\n");
+		fprintf(stderr, "   File is larger than the allowed size for Palm memo size. Please\n");
+		fprintf(stderr, "   decrease the file size to less than 65,490 bytes and try again.\n\n");
+		fprintf(stderr, "   Files larger than 4,096 bytes and less than 65,490 bytes may be\n");
+		fprintf(stderr, "   syncronized, but will not be editable on the Palm device itself\n");
+		fprintf(stderr, "   due to Palm limitationis.\n\n");
+		return 1;
+	}
 	
 	sd = pilot_connect(port);
 	if (sd < 0)
@@ -129,7 +144,9 @@ int main(int argc, char *argv[])
 
 	/* Open the Memo Pad's database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MemoDB", &db) < 0) {
-		printf("Unable to open MemoDB");
+		fprintf(stderr, "   Unable to open MemoDB. Please make sure you have hit the MemoPad\n");
+		fprintf(stderr, "   button at least once, to create a MemoDB.pdb file on your Palm,\n");
+		fprintf(stderr, "   then sync again.\n\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open MemoDB.\n");
 		exit(1);
 	}
@@ -158,28 +175,37 @@ int main(int argc, char *argv[])
 
 	for (j = 0; j < argc; j++) {
 
-		f = fopen(argv[j], "r");
+		f = fopen(argv[j], "rb");
 
-		if (f == NULL) {
-			printf("%s: Cannot open %s (%s), skipping...\n",
-				progname, argv[j], strerror(errno));
+		if (f == 0) {
+			printf("   Unable to open %s (%s), skipping...\n\n",
+				argv[j], strerror(errno));
 			continue;
 		}
-		
+
 		fseek(f, 0, SEEK_END);
 		memo_size = ftell(f);
 		fseek(f, 0, SEEK_SET);
 
-		preamble = add_title ? strlen(argv[i]) + 1 : 0;
+		if ((sbuf.st_size < 65490) && (sbuf.st_size > 4096)) {
+			fprintf(stderr, "   This file was synconized successfully, but will remain uneditable,\n");
+			fprintf(stderr, "   because it is larger than the Palm limitation of 4,096 bytes in\n");
+			fprintf(stderr, "   size.\n\n");
 
-		memo_buf = (char *) malloc(memo_size + preamble + 1);
+		} else if ((sbuf.st_size < 4096) && (sbuf.st_size > 0)) {
+			fprintf(stderr, "   %s was syncronized successfully to your Palm device\n\n", argv[j]);
+		}
+
+		preamble = add_title ? strlen(argv[j]) + 1 : 0;
+
+		memo_buf = malloc(memo_size + preamble + 1);
 		if (memo_buf == NULL) {
 			perror("malloc()");
 			exit(1);
 		}
 
 		if (preamble)
-			sprintf(memo_buf, "%s\n", argv[i]);
+			sprintf(memo_buf, "%s\n", argv[j]);
 
 		fread(memo_buf + preamble, memo_size, 1, f);
 
@@ -187,7 +213,6 @@ int main(int argc, char *argv[])
 
 		dlp_WriteRecord(sd, (unsigned char) db, 0, 0, category,
 				(unsigned char *) memo_buf, -1, 0);
-		printf("File %s successfully installed..\n", argv[j]);
 		free(memo_buf);
 		fclose(f);
 	}
@@ -204,11 +229,7 @@ int main(int argc, char *argv[])
 	dlp_AddSyncLogEntry(sd, "Successfully wrote memo(s) to Palm.\n"
 				"Thank you for using pilot-link.\n");
 
-	/* All of the following code is now unnecessary, but harmless */
-
 	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-
 	return 0;
  
  error_close:
