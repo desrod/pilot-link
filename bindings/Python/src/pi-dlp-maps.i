@@ -89,7 +89,7 @@ typedef int DLPDBERROR;
     $result = PyList_New(($1->used / sizeof(struct DBInfo)));
     for (j=0; j < ($1->used / sizeof(struct DBInfo)); j++) {
       memcpy(&info, $1->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
-      o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisi}",
+      o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
 			"more", info.more,
 			"flags", info.flags,
 			"miscFlags", info.miscFlags,
@@ -113,7 +113,12 @@ typedef int DLPDBERROR;
 			"flagReset", !!(info.flags & dlpDBFlagReset),
 			"flagCopyPrevention", !!(info.flags & dlpDBFlagCopyPrevention),
 			"flagStream", !!(info.flags & dlpDBFlagStream),
-			"flagExcludeFromSync", !!(info.miscFlags & dlpDBMiscFlagExcludeFromSync));
+			"flagExcludeFromSync", !!(info.miscFlags & dlpDBMiscFlagExcludeFromSync),
+
+		    "flagSchema", !!(info.flags & dlpDBFlagSchema),
+			"flagSecure", !!(info.flags & dlpDBFlagSecure),
+			"flagExtended", !!(info.flags & dlpDBFlagExtended),
+			"flagFixedUp", !!(info.flags & dlpDBFlagFixedUp));
       Py_INCREF(o);
       PyList_SET_ITEM($result, j, o);
     }
@@ -126,7 +131,7 @@ typedef int DLPDBERROR;
     PyObject *o;
 
     if ($1) {
-	o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisi}",
+	o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
 			  "more", $1->more,
 			  "flags", $1->flags,
 			  "miscFlags", $1->miscFlags,
@@ -150,7 +155,12 @@ typedef int DLPDBERROR;
 			  "flagReset", !!($1->flags & dlpDBFlagReset),
 			  "flagCopyPrevention", !!($1->flags & dlpDBFlagCopyPrevention),
 			  "flagStream", !!($1->flags & dlpDBFlagStream),
-			  "flagExcludeFromSync", !!($1->miscFlags & dlpDBMiscFlagExcludeFromSync));
+			  "flagExcludeFromSync", !!($1->miscFlags & dlpDBMiscFlagExcludeFromSync),
+		    
+			  "flagSchema", !!($1->flags & dlpDBFlagSchema),
+			  "flagSecure", !!($1->flags & dlpDBFlagSecure),
+			  "flagExtended", !!($1->flags & dlpDBFlagExtended),
+			  "flagFixedUp", !!($1->flags & dlpDBFlagFixedUp));
 	$result = t_output_helper($result, o);
     }
 }
@@ -183,6 +193,10 @@ typedef int DLPDBERROR;
     if (DGETLONG($input,"flagReset",0)) temp.flags |= dlpDBFlagReset;
     if (DGETLONG($input,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
     if (DGETLONG($input,"flagStream",0)) temp.flags |= dlpDBFlagStream;
+	if (DGETLONG($input,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
+	if (DGETLONG($input,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
+	if (DGETLONG($input,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
+	if (DGETLONG($input,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
     temp.miscFlags = 0;
     if (DGETLONG($input,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
     $1 = &temp;
