@@ -70,6 +70,17 @@ AM_PROG_LIBTOOL
 AC_PROG_YACC
 
 dnl ******************************
+dnl Check for CVS source
+dnl ******************************
+if test -d "${srcdir}/CVS" ; then
+        PL_FROM_CVS=yes
+        CFLAGS="$CFLAGS -Werror"
+else
+        PL_FROM_CVS=no
+fi
+
+
+dnl ******************************
 dnl Pilot Link Checks 
 dnl ******************************
 AC_HEADER_STDC
@@ -724,3 +735,16 @@ echo "
   Python support.......... : $msg_python	$PYTHONVER
   Perl support............ : $msg_perl	$PERLVER
 "
+
+if [[ x"$PL_FROM_CVS" = xyes ]]; then
+  echo " .----- NOTICE ------------------------------."
+  echo " | You are using pilot-link from CVS source. |"
+  echo " |                                           |"
+  echo " | This is likely to be unstable, or contain |"
+  echo " | some incomplete features, or just plain   |"
+  echo " | not work at all. Use it at your own risk. |"
+  echo " |                                           |"
+  echo " |         You have been warned.             |"
+  echo " \`-------------------------------------------'"
+  echo ""
+fi
