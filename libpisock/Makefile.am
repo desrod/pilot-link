@@ -11,10 +11,14 @@ serial_SOURCE = unixserial.c
 
 usb_FILES = 		\
 	usb.c		\
+	libusb.c	\
 	linuxusb.c	\
 	freebsdusb.c	\
 	darwinusb.c
 
+if WITH_LIBUSB
+usb_SOURCE = usb.c libusb.c
+endif
 if WITH_LINUXUSB
 usb_SOURCE = usb.c linuxusb.c
 endif
