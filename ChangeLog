@@ -1,3 +1,7 @@
+2004-02-24 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/dlp.c: Fix comments
+
 2004-01-17 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/utils.c: Reverted strdup change, fixed with a static

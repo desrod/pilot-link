@@ -4063,11 +4063,12 @@ int dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, int len)
 			
 			return -1;
 		} else {
-//			respondlength = pi_read(sd, data, len);
-//			result = get_short(DLP_RESPONSE_DATA (res, 0, 2));
+/*			respondlength = pi_read(sd, data, len);
+			result = get_short(DLP_RESPONSE_DATA (res, 0, 2));
 			
-//			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-//			     "send success (%d) res %d!\n", len, result));
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     "send success (%d) res %d!\n", len, result));
+*/
 		} 
 #endif
 	}
