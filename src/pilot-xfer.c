@@ -365,6 +365,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 	static int totalsize;
 
 	char 	**orig_files = NULL,
+		*name,
 		synclog[70];
 
 	const char *synctext = (flags & UPDATE) ? "Syncronizing" : "Backing up";
@@ -396,7 +397,6 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			struct 	dirent *dirent;
 
 			while ((dirent = readdir(dir))) {
-				char *name;
 				int dirnamelen;
 				dirnamelen = strlen(dirname);
 
@@ -421,6 +421,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 	}
 
 	buffer = pi_buffer_new (sizeof(struct DBInfo));
+	name = (char *)malloc(strlen(dirname) + 1 + 256);
 
 	for(;;) {
 		struct 	DBInfo info;
@@ -430,10 +431,14 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		int 	skip 	= 0;
 		int 	excl	= 0;
 
-		char 	name[256];
 		struct 	stat sbuf;
 		char crid[5];
 	
+		if (!pi_socket_connected(sd)) {
+			printf("\n   Connection broken - Exiting. All data was not backed up\n");
+			exit(EXIT_FAILURE);
+		}
+
 		if (dlp_ReadDBList(sd, 0, (media_type ? 0x40 : 0x80), i, buffer) < 0)
 			break;
 
@@ -452,12 +457,10 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			sprintf(synclog, "\npilot-xfer was cancelled by the user "
 				"before backing up '%s'.", info.name);
 			dlp_AddSyncLogEntry(sd, synclog);
-			pi_buffer_free(buffer);
 			exit(EXIT_FAILURE);
 		}
 		
-		strncpy(name, dirname, sizeof(name));
-		name[sizeof(name) - 1] = 0;
+		strcpy(name, dirname);
 		strcat(name, "/");
 		protect_name(name + strlen(name), info.name);
 
@@ -526,6 +529,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 				crid, info.name);
 			failed++;
 			pi_file_close(f);
+			unlink(name);
 		} else {
 			pi_file_close(f);		/* writes the file to disk so we can stat() it */
 			stat(name, &sbuf);
@@ -537,7 +541,6 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 
 		filecount++;
 
-			
 		printf("\n");
 
 		times.actime 	= info.createDate;
@@ -545,11 +548,10 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		utime(name, &times);
 	}
 	pi_buffer_free(buffer);
-		
+
 	if (orig_files) {
 		int     i = 0;
 		int 	dirname_len = strlen(dirname);
-		char 	newname[256];
 
 		for (i = 0; i < ofile_total; i++) {
 			if (orig_files[i] != NULL) {
@@ -557,12 +559,12 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 					if (archive_dir) {
 						printf("Archiving '%s'", orig_files[i]);
 
-						sprintf(newname, "%s/%s", archive_dir, 
+						sprintf(name, "%s/%s", archive_dir, 
 							&orig_files[i] [dirname_len + 1]);
 						
-						if (rename (orig_files[i], newname) != 0) {
+						if (rename (orig_files[i], name) != 0) {
 							printf("rename(%s, %s) ", orig_files [i], 
-								newname);
+								name);
 							perror("failed");
 						}
 					} else {
@@ -574,6 +576,8 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			}
 		}
 	}
+
+	free(name);
 
 	printf("%s backup complete.",
 	       (media_type == 2 ? "\n   OS" 
