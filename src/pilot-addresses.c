@@ -43,15 +43,14 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
 int pilot_connect(const char *port);
 static void display_help(char *progname);
 
-/* Yet more hair: reorganize fields to match visible appearence */
-/* 
+/* Yet more hair: reorganize fields to match visible appearence
 int realentry[19] =
     { 0, 1, 2, 14, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 3, 15, 16, 17, 18 };
 */
 int realentry[19] = 
     { 0, 1, 2, 13, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18 };
 
-char *tableheads[22] = { 
+char *tableheads[23] = { 
 	"Last name", "First name", "Company", "Title", "Work", "Home",
 	"Fax", "Other", "E-mail", "Address", "City", "State", "Zip Code",
 	"Country", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Note",

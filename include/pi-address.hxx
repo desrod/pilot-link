@@ -41,9 +41,26 @@ class address_t : public baseApp_t
      
 public:
 	enum labelTypes_t {
-		lastName, firstName, company, phone1, phone2, phone3, phone4,
-		phone5, address, city, state, zip, country, title, custom1,
-		custom2, custom3, custom4, note
+		lastName, 
+		firstName, 
+		company, 
+		phone1, 
+		phone2, 
+		phone3, 
+		phone4,
+		phone5, 
+		address, 
+		city, 
+		state, 
+		zip, 
+		country, 
+		title, 
+		custom1,
+		custom2, 
+		custom3, 
+		custom4, 
+		note,
+		category
 	};
 	
 	address_t(void);	
