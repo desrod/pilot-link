@@ -1,3 +1,17 @@
+2002-01-24  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/socket.c (protocol_queue_destroy): increment the index
+	rather than decrement
+	(pi_close): check if the device close was strictly less than 0
+
+	* libsock/serial.c (pi_serial_protocol_dup): copy the free member
+	(pi_serial_protocol_free): free the protocol
+	(pi_serial_protocol): set the free member
+
+	* libsock/inet.c (pi_inet_protocol_dup): copy the free member
+	(pi_inet_protocol_free): free the protocol
+	(pi_inet_protocol): set the free member
+
 2002-01-24  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* dlpsh.c: More bugs squashed, getopt_long'ified, added more useful

@@ -293,9 +293,9 @@ protocol_queue_destroy (struct pi_socket *ps)
 {
 	int idx;
 	
-	for (idx = 0; idx < ps->queue_len; idx--)
+	for (idx = 0; idx < ps->queue_len; idx++)
 		ps->protocol_queue[idx]->free(ps->protocol_queue[idx]);
-	for (idx = 0; idx < ps->cmd_len; idx--)
+	for (idx = 0; idx < ps->cmd_len; idx++)
 		ps->cmd_queue[idx]->free(ps->cmd_queue[idx]);
 
 	if (ps->queue_len > 0)
@@ -1114,10 +1114,10 @@ int pi_close(int pi_sd)
 				ps->command = 0;
 		}
 	}
-	
+
 	if (ps->device != NULL) {
 		result = ps->device->close (ps);
-		if (result <= 0)
+		if (result < 0)
 			return result;
 	}
 	

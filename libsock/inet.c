@@ -75,6 +75,7 @@ static struct pi_protocol *pi_inet_protocol_dup (struct pi_protocol *prot)
 	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
 	new_prot->level 	= prot->level;
 	new_prot->dup 		= prot->dup;
+	new_prot->free 		= prot->free;
 	new_prot->read 		= prot->read;
 	new_prot->write 	= prot->write;
 	new_prot->getsockopt 	= prot->getsockopt;
@@ -82,6 +83,11 @@ static struct pi_protocol *pi_inet_protocol_dup (struct pi_protocol *prot)
 	new_prot->data 		= NULL;
 
 	return new_prot;
+}
+
+static void pi_inet_protocol_free (struct pi_protocol *prot)
+{
+	free(prot);
 }
 
 static struct pi_protocol *pi_inet_protocol (struct pi_device *dev)
@@ -94,6 +100,7 @@ static struct pi_protocol *pi_inet_protocol (struct pi_device *dev)
 	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
 	prot->level 		= PI_LEVEL_DEV;
 	prot->dup 		= pi_inet_protocol_dup;
+	prot->free 		= pi_inet_protocol_free;
 	prot->read 		= pi_inet_read;
 	prot->write 		= pi_inet_write;
 	prot->getsockopt 	= pi_inet_getsockopt;
