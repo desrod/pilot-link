@@ -1,8 +1,0 @@
-MANIFEST
-Makefile.PL
-Pilot.pm
-Pilot.xs
-README
-dump.pl
-test.pl
-typemap
