@@ -1,5 +1,5 @@
-Pilot-Link 0.10.99.1, "Altamont", 06-28-2002
---------------------------------------------
+Pilot-Link 0.11, "Ocean's Eleven", 07-12-2002
+---------------------------------------------
 
 This is a development release, primarily to test the new usb device support. 
 Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the

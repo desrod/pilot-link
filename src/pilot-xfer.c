@@ -972,7 +972,7 @@ static void print_help(char *progname)
 	       "   Usage: %s [-p port] [ -F|-O -I -q|-c ] command(s)\n"
 	       "   Options:\n"
 	       "     -p <port>    Use device file <port> to communicate with Palm\n"
-	       "     -h           Display this information (--port)\n"
+	       "     -h, --help   Display this information\n"
 	       "     -b <dir>     Copy the contents of your palm to <dir> (--backup)\n"
 	       "     -u <dir>     Update <dir> with newer Palm data (--update)\n"
 	       "     -s <dir>     Same as -u above, but removes local files if data\n"
