@@ -91,9 +91,10 @@ bin_SCRIPTS =		\
 #	$(top_builddir)/libpisock++/libpisock++.la	\
 #	$(top_builddir)/libpisock/libpisock.la
 
-libpiuserland_la_SOURCES =		\
+libpiuserland_la_SOURCES =	\
+	plu_args.c		\
 	userland.c
-libpiuserland_la_LDFLAGS =		\
+libpiuserland_la_LDFLAGS =	\
 	-static
 
 addresses_SOURCES = 		\

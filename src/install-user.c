@@ -58,9 +58,10 @@ int main(int argc, char *argv[])
 		/* Everything is handled by popt magic */
 	}
 
-	if (po_err < -1) userland_badoption(po,po_err);
+	if (po_err < -1)
+	    plu_badoption(po,po_err);
 
-	sd = userland_connect();
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 

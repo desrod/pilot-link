@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
 	while ((po_err = poptGetNextOpt(po)) >= 0) {
 	}
-	if (po_err < -1) userland_badoption(po,po_err);
+	if (po_err < -1) plu_badoption(po,po_err);
 
 	/* FIXME: Take the user-supplied IP or hostname and reverse it to
 	   get the other component, which reduces the complexity of this by
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	sd = userland_connect();
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 

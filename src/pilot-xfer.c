@@ -1718,16 +1718,16 @@ int main(int argc, const char *argv[])
 
 	poptSetOtherOptionHelp(pc, help_header_text);
 	/* can't alias both short and long in one go, hence "dupes" */
-	userland_popt_alias(pc,"List",0,"--bad-option --list --rom");
-	userland_popt_alias(pc,"Listall",0,"--bad-option --list --rom");
-	userland_popt_alias(pc,NULL,'L',"--bad-option --list --rom");
-	userland_popt_alias(pc,"Flash",0,"--bad-option --rom");
-	userland_popt_alias(pc,NULL,'F',"--bad-option --rom");
-	userland_popt_alias(pc,"OsFlash", 0,"--bad-option --with-os");
-	userland_popt_alias(pc,NULL, 'O',"--bad-option --with-os");
-	userland_popt_alias(pc,"Illegal", 0,"--bad-option --illegal");
-	userland_popt_alias(pc,NULL, 'I',"--bad-option --illegal");
-	userland_set_badoption_help(
+	plu_popt_alias(pc,"List",0,"--bad-option --list --rom");
+	plu_popt_alias(pc,"Listall",0,"--bad-option --list --rom");
+	plu_popt_alias(pc,NULL,'L',"--bad-option --list --rom");
+	plu_popt_alias(pc,"Flash",0,"--bad-option --rom");
+	plu_popt_alias(pc,NULL,'F',"--bad-option --rom");
+	plu_popt_alias(pc,"OsFlash", 0,"--bad-option --with-os");
+	plu_popt_alias(pc,NULL, 'O',"--bad-option --with-os");
+	plu_popt_alias(pc,"Illegal", 0,"--bad-option --illegal");
+	plu_popt_alias(pc,NULL, 'I',"--bad-option --illegal");
+	plu_set_badoption_help(
 		"       --rom instead of -F, --Flash\n"
 		"       --with-os instead of -O, --OsFlash\n"
 		"       --illegal instead of -I, --Illegal\n"
@@ -1858,10 +1858,11 @@ int main(int argc, const char *argv[])
 		break;
 	}
 
-	/* userland_connect() prints diagnostics as needed, returns -1 on
+	/* plu_connect() prints diagnostics as needed, returns -1 on
 	   failure so just bail in that case. */
-	sd = userland_connect();
-	if (sd < 0) return 1;
+	sd = plu_connect();
+	if (sd < 0)
+	    return 1;
 
 	/* actual operation */
 	switch(palm_operation) {

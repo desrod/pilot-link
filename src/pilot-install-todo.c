@@ -154,7 +154,8 @@ int main(int argc, const char *argv[])
         while ((po_err = poptGetNextOpt(po)) >= 0) {
 	}
 
-	if (po_err < -1) userland_badoption(po,po_err);
+	if (po_err < -1)
+	    plu_badoption(po,po_err);
 
 	if ((priority < 1) || (priority > 5)) {
 		priority=1;
@@ -176,16 +177,17 @@ int main(int argc, const char *argv[])
 		todo.due.tm_hour = 0;
 	}
 
-	sd = userland_connect();
+	sd = plu_connect();
 
         if (sd < 0)
-		exit(EXIT_FAILURE);
+	    return 1;
 
 	/* Open the ToDo database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
 		puts("Unable to open ToDo Database");
 		dlp_AddSyncLogEntry(sd, "Unable to open ToDo Database.\n");
-		exit(EXIT_FAILURE);
+		pi_close(sd);
+		return 1;
 	}
 
 	install_ToDo(sd, db, todo);

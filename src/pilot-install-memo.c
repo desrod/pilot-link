@@ -79,7 +79,8 @@ int main(int argc, char *argv[])
 
         while ((po_err = poptGetNextOpt(po)) >= 0) {
 	}
-	if (po_err < -1) userland_badoption(po,po_err);
+	if (po_err < -1)
+	    plu_badoption(po,po_err);
 
 	if (replace && !category_name) {
 		fprintf(stderr,"   ERROR: memo category required when specifying replace\n");
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
 	}
 
 
-	sd = userland_connect();
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 

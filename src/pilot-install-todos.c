@@ -132,7 +132,7 @@ int main(int argc, const char *argv[])
 	while ((c = poptGetNextOpt(po)) >= 0) {
 	}
 
-	if (c < -1) userland_badoption(po,c);
+	if (c < -1) plu_badoption(po,c);
 
 	if (filename == NULL) {
 		fprintf(stderr,"\n   ERROR: You must specify a filename to read ToDo entries from.\n"
@@ -141,12 +141,14 @@ int main(int argc, const char *argv[])
 	}
 
 
-		sd = userland_connect();
-		if (sd<0) exit(EXIT_FAILURE);
+		sd = plu_connect();
+		if (sd < 0)
+			return 1;
 
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
-			exit(EXIT_FAILURE);
+			pi_close(sd);
+			return 1;
 		}
 
 		/* Tell user (via Palm) that we are starting things up */
@@ -156,7 +158,8 @@ int main(int argc, const char *argv[])
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
 			puts("Unable to open ToDoDB");
 			dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
-			exit(EXIT_FAILURE);
+			pi_close(sd);
+			return 1;
 		}
 
 		/* Actually do the install here, passed a filename */

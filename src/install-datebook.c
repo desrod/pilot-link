@@ -77,15 +77,15 @@ int main(int argc, const char *argv[])
 		return 1;
         }
 
-	if (c < -1) {
-		userland_badoption(pc,c);
-	}
+	if (c < -1)
+		plu_badoption(pc,c);
+
 	if (filename == NULL) {
 		fprintf(stderr,"   ERROR: No filename given.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	sd = userland_connect();
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 

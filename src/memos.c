@@ -269,12 +269,12 @@ int main(int argc, const char *argv[])
 	}
 
 	if (c < -1)
-                userland_badoption(po, c);
+                plu_badoption(po, c);
 
 	/* FIXME - Need to add tests here for port/filename, clean this. -DD */
 	if (filename[0] == '\0') {
 
-	        sd = userland_connect();
+	        sd = plu_connect();
 
         	if (sd < 0)
                 	goto error;

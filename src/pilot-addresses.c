@@ -371,7 +371,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 		addr.showPhone = 0;
 
 		if (i == 2) {
-			category = userland_findcategory(&aai->category,buf);
+			category = plu_findcategory(&aai->category,buf);
 			i = read_field(buf, f);
 			if (i == 2) {
 				addr.showPhone = match_phone(buf, aai);
@@ -547,9 +547,9 @@ int main(int argc, const char *argv[])
 	poptSetOtherOptionHelp(po," [-p port] <options> -r|-w file\n\n"
 		"   Reads addresses from the Palm to CSV file or\n"
 		"   writes addresses from CSV file to the Palm.\n\n");
-	userland_popt_alias(po,"delall",0,"--bad-option --delete-all");
-	userland_popt_alias(po,"delcat",0,"--bad-option --delete-category");
-	userland_popt_alias(po,"install",0,"--bad-option --category");
+	plu_popt_alias(po,"delall",0,"--bad-option --delete-all");
+	plu_popt_alias(po,"delcat",0,"--bad-option --delete-category");
+	plu_popt_alias(po,"install",0,"--bad-option --category");
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		const char *duplicate_rw = "   ERROR: Can only specify one of -rw.\n";
@@ -574,7 +574,8 @@ int main(int argc, const char *argv[])
 		}
 	}
 
-	if (c < -1) userland_badoption(po,c);
+	if (c < -1)
+		plu_badoption(po,c);
 
 	/* The first implies that -t was given; the second that it wasn't,
 	   so use default, and the third if handles weird values. */
@@ -590,7 +591,7 @@ int main(int argc, const char *argv[])
 		return 1;
 	}
 
-	sd = userland_connect();
+	sd = plu_connect();
 
 	if (sd < 0)
 		goto error;
@@ -610,7 +611,7 @@ int main(int argc, const char *argv[])
 
 	if (defaultcategoryname)
 		defaultcategory =
-		    userland_findcategory(&aai.category,defaultcategoryname);
+		    plu_findcategory(&aai.category,defaultcategoryname);
 	else
 		defaultcategory = 0;	/* Unfiled */
 
@@ -626,7 +627,7 @@ int main(int argc, const char *argv[])
 		write_file(f, sd, db, &aai);
 		if (deletecategory)
 			dlp_DeleteCategory(sd, db,
-				userland_findcategory(&aai.category,deletecategory));
+				plu_findcategory(&aai.category,deletecategory));
 		fclose(f);
 
 	} else if (mode == 1) {	/* Read from file */
@@ -648,7 +649,7 @@ int main(int argc, const char *argv[])
 		fclose(f);
 	} else if (deletecategory)
 		dlp_DeleteCategory(sd, db,
-				userland_findcategory (&aai.category,deletecategory));
+				plu_findcategory (&aai.category,deletecategory));
 	  else
 		if (deleteallcategories) {
 			int i;

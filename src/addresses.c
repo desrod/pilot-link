@@ -61,9 +61,10 @@ int main(int argc, char *argv[])
 		return 1;
         }
 
-	if (po_err < -1) userland_badoption(po,po_err);
-	sd = userland_connect();
-
+	if (po_err < -1)
+	    plu_badoption(po,po_err);
+	
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 

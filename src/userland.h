@@ -33,9 +33,9 @@
  * - Each conduit should start its options table with USERLAND_RESERVED_OPTIONS.
  *   This sets up the standard options --port, --version, --quiet as well as
  *   popt autohelp.
- * - If an error is found while processing options, call userland_badoption.
+ * - If an error is found while processing options, call plu_badoption.
  *   This produces a standard error message.
- * - If no error is found, call userland_connect() instead of pilot_connect().
+ * - If no error is found, call plu_connect() instead of pilot_connect().
  *   This does the same as pilot_connect, but obeys --quiet and produces
  *   output on stderr only if there _is_ an error.
  */
@@ -48,7 +48,7 @@
  */
 
 #define USERLAND_RESERVED_OPTIONS \
-	{NULL,0,POPT_ARG_INCLUDE_TABLE,userland_common_options,0,"Options common to all conduits.",NULL}, \
+	{NULL,0,POPT_ARG_INCLUDE_TABLE,plu_common_options,0,"Options common to all conduits.",NULL}, \
 	POPT_AUTOHELP
 
 
@@ -58,13 +58,15 @@
  * marginally cleaner.
  */
 
-extern int userland_connect();
+extern int plu_connect();
+
 
 /*
  * Complain about a bad option and exit();
  */
 
-extern void userland_badoption(poptContext pc, int optc);
+extern void plu_badoption(poptContext pc, int optc);
+
 
 /*
  * Look up a category name. Argument @p info is the category part of the
@@ -72,14 +74,15 @@ extern void userland_badoption(poptContext pc, int optc);
  * Returns the index of the category if found (0..15) or -1 if not.
  */
 
-extern int userland_findcategory(const struct CategoryAppInfo *info, const char *name);
+extern int plu_findcategory(const struct CategoryAppInfo *info, const char *name);
+
 
 /*
  * Add an alias to a popt context; remember to use --bad-option in the alias
  * to add a complaint about deprecated options. Do not pass in both
  * a long and a short option in one go, use two calls for that.
  */
-void userland_popt_alias(poptContext pc,
+void plu_popt_alias(poptContext pc,
 	const char *alias_long,
 	char alias_short,
 	const char *expansion);
@@ -88,14 +91,15 @@ void userland_popt_alias(poptContext pc,
  * Set explanation of what options to use in response to an alias
  * that contains --bad-option.
  */
-void userland_set_badoption_help(const char *help);
+void plu_set_badoption_help(const char *help);
 
 /*
  * We need to be able to refer to the table of common options.
  */
 
-extern struct poptOption userland_common_options[];
-extern int userland_quiet;
+extern struct poptOption plu_common_options[];
+extern int plu_quiet;
+extern char *plu_port;
 
 
 #endif
