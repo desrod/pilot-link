@@ -627,7 +627,7 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor = 0x0830,
 		.product = 0x0061,
-		.id = "Zire 31",
+		.id = "Zire 31, 72",
 	},
 	{
 		.vendor = 0x0830,
