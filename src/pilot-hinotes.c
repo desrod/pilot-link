@@ -20,7 +20,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,13 +29,13 @@
 #include "pi-hinote.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "userland.h"
 
 /* constants to determine how to produce memos */
 #define MEMO_MBOX_STDOUT 0
 #define MEMO_DIRECTORY 1
 #define MAXDIRNAMELEN 1024
 
-char *progname;
 void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 		     struct HiNoteAppInfo mai, int category);
 
@@ -50,7 +49,7 @@ void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 
 	time_t 	ltime;
 	struct 	tm *tm_ptr;
-	char 	c, 
+	char 	c,
 		fromtmbuf[80],
 		recvtmbuf[80];
 
@@ -131,47 +130,18 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 		strcat(pathbuffer, tmp);
 	}
 
-	printf("Writing to file %s\n", pathbuffer);
+	if (!plu_quiet) {
+		printf("   Writing to file %s\n", pathbuffer);
+	}
 	if (!(fd = fopen(pathbuffer, "w"))) {
-		printf("%s: can't open file \"%s\" for writing\n",
-		       progname, pathbuffer);
-		exit(EXIT_FAILURE);
+		fprintf(stderr,"   WARNING: can't open file \"%s\" for writing\n",
+		       pathbuffer);
+		return;
 	}
 	fputs(m.text, fd);
 	fclose(fd);
 }
 
-static void display_help(const char *progname)
-{
-	printf("   Syncronize your Hi-Notes database with your desktop machine\n\n");
-	printf("   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n", progname);
-	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
-	printf("     -d directory   Save memos in <dir> instead of writing to STDOUT\n");
-	printf("     -h             Display this information\n\n");
-	printf("   Examples: %s -p /dev/pilot -d ~/Palm\n\n", progname);
-	printf("   By default, the contents of your Palm's Hi-Notes database will be written to\n");
-	printf("   STDOUT as a standard Unix mailbox (in mbox-format) file, with each\n");
-	printf("   memo as a separate message.  The subject of each message will be the\n");
-	printf("   category.\n\n");
-	printf("   The memos will be written to STDOUT unless the '-d' option is specified.\n");
-	printf("   Using '-d' will be save the memos in subdirectories of <dir>.  Each\n");
-	printf("   subdirectory will contain the name of a category on the Palm where the\n");
-	printf("   record was stored, and will contain the memos found in that category. \n\n");
-	printf("   Each memo's filename will be the first line (up to the first 40\n");
-	printf("   characters) of the memo.  Control characters, slashes, and equal signs\n");
-	printf("   that would otherwise appear in filenames are converted using the correct\n");
-	printf("   MIME's quoted-printable encoding.\n\n");
-	printf("   ----------------------------------------------------------------------\n");
-	printf("   WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING\n");
-        printf("   ----------------------------------------------------------------------\n");
-	printf("   Note that if you have two memos in the same category whose first lines\n");
-	printf("   are identical, one of them will be OVERWRITTEN! This is unavoidable at\n");
-	printf("   the present time, but may be fixed in a future release. Also, please note\n");
-	printf("   that syncronizing Hi-Note images is not supported at this time, only text.\n\n");
-	printf("   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n");
-
-	return;
-}
 
 int main(int argc, const char **argv)
 {
@@ -182,12 +152,8 @@ int main(int argc, const char **argv)
 		sd 		= -1,
 		mode 		= MEMO_MBOX_STDOUT;
 
-	const char
-                *progname 	= argv[0];
-
 	char 	appblock[0xffff],
-		dirname[MAXDIRNAMELEN] = "",
-		*port 		= getenv("PILOTPORT");
+		*dirname = NULL;
 
 	struct 	HiNoteAppInfo mai;
 	struct 	PilotUser User;
@@ -197,61 +163,64 @@ int main(int argc, const char **argv)
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
-		{"dirname", 'd', POPT_ARG_STRING, NULL, 'd', "Save memos in <dir> instead of writing to STDOUT", "dir"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display this information", NULL},
+		USERLAND_RESERVED_OPTIONS
+		{"dirname", 'd', POPT_ARG_STRING, &dirname, 0, "Save memos in <dir> instead of writing to STDOUT", "dir"},
 		 POPT_TABLEEND
 	};
 
 	pc = poptGetContext("hinotes", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc,"\n\n"
+	"   Synchronize your Hi-Notes database with your desktop machine\n\n"
+	"   By default, the contents of your Palm's Hi-Notes database will be written to\n"
+	"   STDOUT as a standard Unix mailbox (in mbox-format) file, with each\n"
+	"   memo as a separate message.  The subject of each message will be the\n"
+	"   category.\n\n"
+	"   The memos will be written to STDOUT unless the '-d' option is specified.\n"
+	"   Using '-d' will be save the memos in subdirectories of <dir>.  Each\n"
+	"   subdirectory will contain the name of a category on the Palm where the\n"
+	"   record was stored, and will contain the memos found in that category. \n\n"
+	"   Each memo's filename will be the first line (up to the first 40\n"
+	"   characters) of the memo.  Control characters, slashes, and equal signs\n"
+	"   that would otherwise appear in filenames are converted using the correct\n"
+	"   MIME's quoted-printable encoding.\n\n"
+	"   ----------------------------------------------------------------------\n"
+	"   WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING\n"
+        "   ----------------------------------------------------------------------\n"
+	"   Note that if you have two memos in the same category whose first lines\n"
+	"   are identical, one of them will be OVERWRITTEN! This is unavoidable at\n"
+	"   the present time, but may be fixed in a future release. Also, please note\n"
+	"   that syncronizing Hi-Note images is not supported at this time, only text.\n\n"
+	"   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n"
+	"   Example arguments:\n"
+	"      -p /dev/pilot -d ~/Palm\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(pc)) >= 0) {
-		switch (c) {
-			
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 'd':
-			/* Name of directory to create and store memos in */
-			strncpy(dirname, poptGetOptArg(pc), sizeof(dirname));
-			mode = MEMO_DIRECTORY;
-			break;
-		default:
-			display_help(progname);
-			return 0;
-		}
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return -1;
 	}
 
 	if (c < -1) {
-             /* an error occurred during option processing */
-             fprintf(stderr, "%s: %s\n",
-                     poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-                     poptStrerror(c));
-             return 1;
-          }
-
-
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		print_splash(progname);
-		return 0;
+		plu_badoption(pc,c);
 	}
 
-	if (port == NULL) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
-		exit(EXIT_FAILURE);
-	} else {
 
-		sd = pilot_connect(port);
+	if (dirname != NULL) {
+		mode = MEMO_DIRECTORY;
+	}
+
+		sd = plu_connect();
+		if (sd<0) {
+			goto error;
+		}
 
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
-			exit(EXIT_FAILURE);
+			goto error_close;
 		}
 
 		/* Tell user (via Palm) that we are starting things up */
@@ -260,11 +229,10 @@ int main(int argc, const char **argv)
 
 		/* Open the Memo Pad's database, store access handle in db */
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "Hi-NoteDB", &db) < 0) {
-			printf("Unable to open Hi-NoteDB. Is Hi-Notes installed?\n"
-			       "You must run Hi-Notes and create at least one entry first.\n");
+			fprintf(stderr,"   ERROR: Unable to open Hi-NoteDB on the Palm.\n");
 			dlp_AddSyncLogEntry(sd,
 					    "Unable to locate or open Hi-NoteDB.\nFile not found.\n");
-			exit(EXIT_FAILURE);
+			goto error_close;
 		}
 
 		dlp_ReadAppBlock(sd, db, 0, appblock,
@@ -278,7 +246,7 @@ int main(int argc, const char **argv)
 			int 	attr,
 				category;
 			struct 	HiNoteNote m;
-			
+
 			int len =
 			    dlp_ReadRecordByIndex(sd, db, i, buffer, NULL,
 						  &attr,
@@ -303,7 +271,6 @@ int main(int argc, const char **argv)
 				  break;
 			}
 		}
-	}
 
 	/* Close the Hi-Note database and write out to the Palm logfile */
 	dlp_CloseDB(sd, db);
@@ -311,6 +278,12 @@ int main(int argc, const char **argv)
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	return 0;
+
+error_close:
+	pi_close(sd);
+
+error:
+	return -1;
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
