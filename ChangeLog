@@ -1,3 +1,7 @@
+2003-10-04 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* Test commit, ignore.
+
 2003-09-23 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/memos.c: Minor fix to make the output file a "real" mbox file,
