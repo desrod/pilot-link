@@ -120,7 +120,7 @@ sub RecordPlanToPilot {
 		print "Converting repetition...\n";
 		delete $pilot->{repeat};
 		if ($plan->{repeat}->[1]) {
-			$pilot->{repeat}->{end} = [localtime($plan->{repeat}->[1])];
+			$pilot->{repeat}->{end} = [gmtime($plan->{repeat}->[1])];
 		}
 		my($days,$end,$weekday,$mday,$yearly) = @{$plan->{repeat}};
 		print "Days: $days, End: $end, Weekday: $weekday, Mday: $mday, Yearly: $yearly\n";
