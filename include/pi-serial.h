@@ -31,14 +31,12 @@ extern "C" {
 		/* I/O options */
 		/*int *ref;*/
 		
-#ifndef WIN32
 #ifndef OS2
 # ifndef SGTTY
 		struct termios tco;
 # else
 		struct sgttyb tco;
 # endif
-#endif
 #endif
 
 		/* Baud rate info */

@@ -1,7 +1,4 @@
 extern "C" {
-#ifndef WIN32
-#include <sys/time.h>
-#endif
 #include <memory.h>
 }
 

@@ -34,28 +34,12 @@
 # define HAVE_SYS_SELECT_H
 # define HAVE_STRDUP
 #else
-#ifdef WIN32
-# include <time.h>
-# include <string.h>
-# include <stdlib.h>
-# include <errno.h>
-# define RETSIGTYPE void
-# define SIGALRM 14
-# define ENOMSG 1024
-# define EMSGSIZE 1025
-# define ETIMEDOUT 1026
-# define ECONNREFUSED 1027
-# define EOPNOTSUPP 1028
-#define HAVE_DUP2
-#endif
 #endif
 
-#ifndef WIN32
 #ifdef SGTTY
 # include <sgtty.h>
 #else
 # include <termios.h>
-#endif
 #endif
 
 #ifdef __cplusplus
