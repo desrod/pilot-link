@@ -1106,15 +1106,15 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 	dlp_VFSFileClose(sd,file);
 	close(fd);
 
-	printf("(%lu bytes, %ld KiB total)\n\n",
-		(unsigned long)sbuf.st_size, (totalsize == 0)
-		? (long)sbuf.st_size/1024
-		: totalsize/1024);
-	totalsize += sbuf.st_size;
+	printf("(%lu bytes, %ld KiB total)\n",
+		(unsigned long)sbuf.st_size, totalsize/1024);
+	/* Advancing totalsize already done by write loop.
+	totalsize += sbuf.st_size; */
 }
 
 static void Install(palm_media_t media_type,const char *localfile)
 {
+	Connect();
 	switch(media_type) {
 	case palm_media_ram :
 	case palm_media_rom :
@@ -1699,7 +1699,7 @@ int main(int argc, char *argv[])
 		 "data is removed from your Palm", "dir"},
 		{"restore", 'r', POPT_ARG_STRING, &dirname, 'r',
 		 "Restore backupdir <dir> to your Palm", "dir"},
-		{"install", 'i', POPT_ARG_STRING, &dbname, 'i',
+		{"install", 'i', POPT_ARG_STRING, NULL, 'i',
 		 "Install local prc, pdb, pqa files to your Palm", "file"},
 		{"fetch", 'f', POPT_ARG_STRING, &dbname, 'f',
 		 "Retrieve [db] from your Palm", "db"},
@@ -1779,11 +1779,11 @@ int main(int argc, char *argv[])
 			break;
 		case 'r':
 			palm_operation = palm_op_restore;
+			if (verbose)
+				printf("Option -r with value: %s\n", dirname);
 			break;
 		case 'i':
-			palm_operation = palm_op_install;
-			if (verbose)
-				printf("Option -i with value: %s\n", dbname);
+			Install(media_type,poptGetOptArg(pc));
 			break;
 		case 'm':
 			Merge(poptGetOptArg(pc));
@@ -1815,7 +1815,8 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 'D':
-			media_type = palm_media_vfs;
+			if (vfsdir && !vfsdir[0]) media_type = palm_media_ram;
+			else media_type = palm_media_vfs;
 			break;
 		default:
 			printf("got option %d, arg %s\n", optc, poptGetOptArg(pc));
