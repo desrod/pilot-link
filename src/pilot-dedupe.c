@@ -73,7 +73,7 @@ static int compare_r(const void *av, const void *bv)
 	return o;
 }
 
-static int DeDupe (int sd, const char *dbname) 
+static int DeDupe (int sd, const char *dbname)
 {
 	int 	c,
 		db,
@@ -264,7 +264,7 @@ int main(int argc, const char *argv[])
 		fprintf(stderr, "\tERROR: You must specify at least one database\n");
 		return -1;
 	}
-	
+
 	sd = pilot_connect (port);
 	if (sd < 0)
 		goto error;
@@ -277,12 +277,12 @@ int main(int argc, const char *argv[])
 
 	if (pi_close(sd) < 0)
 		goto error;
-	
+
 	return 0;
 
  error_close:
 	pi_close(sd);
-	
+
  error:
 
 	return -1;

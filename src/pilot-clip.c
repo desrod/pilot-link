@@ -17,7 +17,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -27,6 +26,7 @@
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "userland.h"
 
 static void *GetClip(int socket, int type, int *length)
 {
@@ -139,9 +139,9 @@ int main(int argc, const char *argv[])
 
 	char 	buffer[0xffff],
 		*port		= NULL;
-	
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
         	{"port",	'p', POPT_ARG_STRING, &port, 0,  "Use device <port> to communicate with Palm"},
 	        {"help",	'h', POPT_ARG_NONE, NULL,   'h', "Display this information"},
@@ -180,10 +180,10 @@ int main(int argc, const char *argv[])
 				"\"Get\" or \"Set\" the clipboard\n");
 		return -1;
 	}
-	
+
 	sd = pilot_connect(port);
 	if (sd < 0)
-		goto error;	
+		goto error;
 
 	if (dlp_OpenConduit(sd) < 0)
 		goto error_close;
@@ -198,7 +198,7 @@ int main(int argc, const char *argv[])
 		}
 	} else {
 		char *b;
-		
+
 		ret = 0;
 		b = GetClip(sd, 0, &ret);
 		if (b == NULL)
@@ -214,7 +214,7 @@ int main(int argc, const char *argv[])
 
 error_close:
 	pi_close(sd);
-	
+
 error:
-	return -1;	
+	return -1;
 }
