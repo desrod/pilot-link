@@ -1,5 +1,9 @@
 2002-03-18  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/slp.c (slp_rx): correct bit mask
+	
+2002-03-18  JP Rosevear  <jpr@ximian.com>
+
 	* libpisock/slp.c (slp_rx): adjust the check sum for loop back
 	packets if it doesn't match in case its the tenth one
 
