@@ -43,6 +43,7 @@
 #define PI_PADP_RX_SEGMENT_TO 30*1000
 
 /* Declare function prototypes */
+static int padp_flush(pi_socket_t *ps, int flags);
 static int padp_getsockopt(pi_socket_t *ps, int level, int option_name, 
 				void *option_value, size_t *option_len);
 static int padp_setsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -81,6 +82,7 @@ static pi_protocol_t
 			new_prot->free 	= prot->free;
 			new_prot->read 	= prot->read;
 			new_prot->write = prot->write;
+			new_prot->flush	= prot->flush;
 			new_prot->getsockopt = prot->getsockopt;
 			new_prot->setsockopt = prot->setsockopt;
 
@@ -150,6 +152,7 @@ pi_protocol_t
 			prot->free 	= padp_protocol_free;
 			prot->read 	= padp_rx;
 			prot->write 	= padp_tx;
+			prot->flush	= padp_flush;
 			prot->getsockopt = padp_getsockopt;
 			prot->setsockopt = padp_setsockopt;
 
@@ -652,6 +655,33 @@ done:
 	return ouroffset;
 }
 
+/***********************************************************************
+ *
+ * Function:    padp_flush
+ *
+ * Summary:     Flush input and output buffers
+ *
+ * Parameters:  pi_socket_t*, flags
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
+static int
+padp_flush(pi_socket_t *ps, int flags)
+{
+	pi_protocol_t	*prot,
+			*next;
+
+	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
+	if (prot == NULL)
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	next = pi_protocol_next(ps->sd, PI_LEVEL_PADP);
+	if (next == NULL)
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	return next->flush(ps, flags);
+}
 
 /***********************************************************************
  *
@@ -754,10 +784,10 @@ padp_setsockopt(pi_socket_t *ps, int level, int option_name,
 ***********************************************************************/
 static int
 padp_sendack(struct pi_socket *ps,
-			 struct pi_padp_data *data, /* padp state, will be modified */
-			 unsigned char txid,        /* txid of the packet being acked */
-			 struct padp *padp,         /* padp header of the packet being acked */
-			 int flags)
+		struct pi_padp_data *data, /* padp state, will be modified */
+		unsigned char txid,        /* txid of the packet being acked */
+		struct padp *padp,         /* padp header of the packet being acked */
+		int flags)
 {
 	int type, socket;
 	size_t size;

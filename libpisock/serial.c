@@ -154,6 +154,7 @@ pi_serial_protocol (pi_device_t *dev)
 		prot->free 		= pi_serial_protocol_free;
 		prot->read 		= data->impl.read;
 		prot->write 		= data->impl.write;
+		prot->flush		= data->impl.flush;
 		prot->getsockopt 	= pi_serial_getsockopt;
 		prot->setsockopt 	= pi_serial_setsockopt;
 		prot->data 		= NULL;
@@ -484,9 +485,7 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
 	size_t 	size;
-	int	err,
-		split = 0,
-		chunksize = 0;
+	int	err;
 
 	/* Wait for data */
 	if ((err = data->impl.poll(ps, ps->accept_to * 1000)) < 0)

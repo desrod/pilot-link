@@ -38,6 +38,7 @@
 #include "pi-error.h"
 
 /* Declare prototypes */
+static int cmp_flush(pi_socket_t *ps, int flags);
 static int cmp_getsockopt(pi_socket_t *ps, int level, int option_name, 
 			  void *option_value, size_t *option_len);
 static int cmp_setsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -75,6 +76,7 @@ cmp_protocol_dup (pi_protocol_t *prot)
 		new_prot->free 		= prot->free;
 		new_prot->read 		= prot->read;
 		new_prot->write 	= prot->write;
+		new_prot->flush		= prot->flush;
 		new_prot->getsockopt 	= prot->getsockopt;
 		new_prot->setsockopt 	= prot->setsockopt;
 
@@ -146,6 +148,7 @@ cmp_protocol (void)
 		prot->free 		= cmp_protocol_free;
 		prot->read 		= cmp_rx;
 		prot->write 		= cmp_tx;
+		prot->flush		= cmp_flush;
 		prot->getsockopt 	= cmp_getsockopt;
 		prot->setsockopt 	= cmp_setsockopt;
 
@@ -163,7 +166,7 @@ cmp_protocol (void)
 		free(data);
 		data = NULL;
 	}
-	
+
 	return prot;
 }
 
@@ -369,6 +372,34 @@ cmp_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 	data->baudrate 	= get_long(&msg->data[PI_CMP_OFFSET_BAUD]);
 
 	return 0;
+}
+
+/***********************************************************************
+ *
+ * Function:    cmp_flush
+ *
+ * Summary:     Flush input and output buffers
+ *
+ * Parameters:  pi_socket_t*, flags
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
+static int
+cmp_flush(pi_socket_t *ps, int flags)
+{
+	pi_protocol_t	*prot,
+			*next;
+
+	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
+	if (prot == NULL)
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	next = pi_protocol_next(ps->sd, PI_LEVEL_CMP);
+	if (next == NULL)
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	return next->flush(ps, flags);
 }
 
 /***********************************************************************

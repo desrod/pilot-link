@@ -37,6 +37,7 @@
 
 #define PI_NET_TIMEOUT 10*1000
 
+static int net_flush(pi_socket_t *ps, int flags);
 static int net_getsockopt(pi_socket_t *ps, int level, int option_name, 
 			  void *option_value, size_t *option_len);
 static int net_setsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -77,6 +78,7 @@ static pi_protocol_t
 		new_prot->free 		= prot->free;
 		new_prot->read 		= prot->read;
 		new_prot->write 	= prot->write;
+		new_prot->flush		= prot->flush;
 		new_prot->getsockopt 	= prot->getsockopt;
 		new_prot->setsockopt 	= prot->setsockopt;
 
@@ -149,6 +151,7 @@ pi_protocol_t
 		prot->free 		= net_protocol_free;
 		prot->read 		= net_rx;
 		prot->write 		= net_tx;
+		prot->flush		= net_flush;
 		prot->getsockopt 	= net_getsockopt;
 		prot->setsockopt 	= net_setsockopt;
 
@@ -258,6 +261,33 @@ net_tx_handshake(pi_socket_t *ps)
 	return err;
 }
 
+/***********************************************************************
+ *
+ * Function:    net_flush
+ *
+ * Summary:     Flush input and output buffers
+ *
+ * Parameters:  pi_socket_t*, flags
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
+int
+net_flush(pi_socket_t *ps, int flags)
+{
+	pi_protocol_t	*prot,
+			*next;
+
+	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
+	if (prot == NULL)
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	next = pi_protocol_next(ps->sd, PI_LEVEL_NET);
+	if (next == NULL)
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	return next->flush(ps, flags);
+}
 
 /***********************************************************************
  *
@@ -363,10 +393,10 @@ net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
  *
  * Summary:     Receive NET Packets
  *
- * Parameters:  ps		--> socket to read from
- *				msg		<-- malloc()ed buffer containing the data
- *				len		--> unused
- *				flags   --> unused
+ * Parameters:  ps	--> socket to read from
+ *		msg	<-- malloc()ed buffer containing the data
+ *		len	--> unused
+ *		flags   --> unused
  *
  * Returns:     A negative number on error, 0 on timeout, otherwise the
  *              length of the received packet.

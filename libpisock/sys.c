@@ -36,6 +36,7 @@
 #include "pi-error.h"
 
 /* Declare function prototypes */
+static int sys_flush(pi_socket_t *ps, int flags);
 static int sys_getsockopt(pi_socket_t *ps, int level, int option_name, 
 			  void *option_value, size_t *option_len);
 static int sys_setsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -75,6 +76,7 @@ sys_protocol_dup (pi_protocol_t *prot)
 		new_prot->free 	= prot->free;
 		new_prot->read 	= prot->read;
 		new_prot->write = prot->write;
+		new_prot->flush = prot->flush;
 		new_prot->getsockopt	= prot->getsockopt;
 		new_prot->setsockopt 	= prot->setsockopt;
 
@@ -143,6 +145,7 @@ sys_protocol (void)
 		prot->free 	= sys_protocol_free;
 		prot->read 	= sys_rx;
 		prot->write 	= sys_tx;
+		prot->flush	= sys_flush;
 		prot->getsockopt = sys_getsockopt;
 		prot->setsockopt = sys_setsockopt;
 
@@ -256,6 +259,33 @@ sys_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	return data_len;
 }
 
+/***********************************************************************
+ *
+ * Function:    sys_flush
+ *
+ * Summary:     Flush input and output buffers
+ *
+ * Parameters:  pi_socket_t*, flags
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
+static int
+sys_flush(pi_socket_t *ps, int flags)
+{
+	pi_protocol_t	*prot,
+			*next;
+
+	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
+	if (prot == NULL)
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	next = pi_protocol_next(ps->sd, PI_LEVEL_SYS);
+	if (next == NULL)
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	return next->flush(ps, flags);
+}
 
 /***********************************************************************
  *
