@@ -27,13 +27,9 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
-int pilot_connect(const char *port, struct PilotUser *User, 
-		  struct SysInfo *Sys, struct NetSyncInfo *Net, 
-		  struct CardInfo *Card);
+int pilot_connect(const char *port);
 
-int pilot_connect(const char *port, struct PilotUser *User, 
-                  struct SysInfo *Sys, struct NetSyncInfo *Net, 
-                  struct CardInfo *Card)
+int pilot_connect(const char *port)
 {
 	int 	sd;
 	struct 	pi_sockaddr addr;
@@ -78,11 +74,6 @@ int pilot_connect(const char *port, struct PilotUser *User,
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
-
-	dlp_ReadUserInfo(sd, User);
-	dlp_ReadSysInfo(sd, Sys);
-	dlp_ReadNetSyncInfo(sd, Net);
-	dlp_ReadStorageInfo(sd, 0, Card);
 
 	return sd;
 }

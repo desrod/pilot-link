@@ -25,12 +25,11 @@
 #endif
 #include "getopt.h"
 #include <signal.h>
-// #include <stdio.h>
-// #include <stdlib.h>		/* free() */
-// #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>		/* free() */
+#include <ctype.h>
 
 #include "pi-source.h"
-// #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-serial.h"
 #include "pi-header.h"
@@ -45,23 +44,23 @@
 struct pi_socket *ticklish_pi_socket;
 
 /* Declare prototypes */
-int df_fn(int sd, int argc, char *argv[]);  
-int exit_fn(int sd, int argc, char *argv[]);
-int help_fn(int sd, int argc, char *argv[]);
-int ls_fn(int sd, int argc, char *argv[]);  
-int rm_fn(int sd, int argc, char *argv[]);  
-int time_fn(int sd, int argc, char *argv[]);
-int user_fn(int sd, int argc, char *argv[]);
+int 	df_fn(int sd, int argc, char *argv[]),
+	exit_fn(int sd, int argc, char *argv[]),
+	help_fn(int sd, int argc, char *argv[]),
+	ls_fn(int sd, int argc, char *argv[]),
+	rm_fn(int sd, int argc, char *argv[]),
+	time_fn(int sd, int argc, char *argv[]),
+	user_fn(int sd, int argc, char *argv[]);
 
-char *strtoke(char *str, char *ws, char *delim);
+char 	*strtoke(char *str, char *ws, char *delim),
+	*timestr(time_t t);
+
 void exit_func(void);
-char *timestr(time_t t);
-
 void handle_user_commands(int sd);
 
 typedef int (*cmd_fn_t) (int, int, char **);
 
-int pilot_connect(char const *port);
+int pilot_connect(const char *port);
 static void Help(char *progname);
 
 static const char *optstring = "hp:";
@@ -123,6 +122,7 @@ int main(int argc, char *argv[])
 	} else if (port != NULL) {
 
 		sd = pilot_connect(port);
+
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
 			exit(1);
@@ -370,20 +370,16 @@ int time_fn(int sd, int argc, char *argv[])
 	int 	s;
 	time_t 	ltime;
 	struct 	tm *tm_ptr;
-	char 	c,
-		timebuf[80];
+	char 	timebuf[80];
 
 	time(&ltime);
-
 	tm_ptr = localtime(&ltime);
 
-	c = *asctime(tm_ptr);
+	strftime(timebuf, 80, "Now setting Palm time from desktop to:"
+			      "%a %b %d %H:%M:%S %Z %Y\n", tm_ptr);
+	printf(timebuf);
 	s = dlp_SetSysDateTime(sd, ltime);
 
-	strftime(timebuf, 80,
-		 "Now setting Palm time from desktop to: %a %b %d %H:%M:%S %Z %Y\n",
-		 tm_ptr);
-	printf(timebuf);
 	return 0;
 }
 
