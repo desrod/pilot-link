@@ -111,16 +111,18 @@
 #define AUTO_READ_SIZE		64
 
 
-/* Hardware interface */
+/* IOKit interface */
 static IONotificationPortRef usb_notify_port;
 static io_iterator_t usb_device_added_iter;
 
+/* RunLoop / threading management */
 static CFRunLoopRef usb_run_loop = 0;
 static pthread_mutex_t usb_run_loop_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t usb_thread_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t usb_thread_ready_cond = PTHREAD_COND_INITIALIZER;
 static pthread_t usb_thread = 0;
 
+/* Device interface */
 typedef struct
 {
 	IOUSBInterfaceInterface182 **interface;
@@ -159,20 +161,16 @@ static usb_connection_t usb = {
 	0,0
 };
 
-/*
- * USB control requests we send to the devices
+/* USB control requests we send to the devices
  * Got them from linux/drivers/usb/serial/visor.h
- *
  */
 #define	GENERIC_REQUEST_BYTES_AVAILABLE			0x01
 #define	GENERIC_CLOSE_NOTIFICATION				0x02
 #define VISOR_GET_CONNECTION_INFORMATION		0x03
 #define PALM_GET_EXT_CONNECTION_INFORMATION		0x04
 
-/*
- * Structures defining the info a device returns
+/* Structures defining the info a device returns
  * Got them from linux/drivers/usb/serial/visor.h
- *
  */
 typedef struct
 {
@@ -209,10 +207,7 @@ typedef struct
     } connections[8];
 } palm_ext_connection_info;
 
-/*
- * Some vendor and product codes we use
- *
- */
+/* Some vendor and product codes we use */
 #define	VENDOR_SONY					0x054c
 #define	VENDOR_HANDSPRING			0x082d
 #define	VENDOR_PALMONE				0x0830
@@ -221,10 +216,10 @@ typedef struct
 #define	PRODUCT_HANDSPRING_VISOR	0x0100
 #define PRODUCT_SONY_CLIE_3_5		0x0038
 
-/*
- * This table helps us determine whether a connecting USB device is
- * one we'd like to talk to.
- *
+/* This table helps us determine whether a connecting USB device is
+ * one we'd like to talk to. Don't forget to update it as new
+ * devices come out. To accept ALL the devices from a vendor, add
+ * an entry with the vendorID and 0xFFFF as productID.
  */
 static struct {
 	unsigned short vendorID;
@@ -232,63 +227,63 @@ static struct {
 }
 acceptedDevices[] = {
 	/* Sony */
-	{0x054c, 0x0038},	// Sony Palm OS 3.5 devices, S300
-	{0x054c, 0x0066},	// Sony T, S320, SJ series, and other Palm OS 4.0 devices
-	{0x054c, 0x0095},	// Sony S360
-	{0x054c, 0x000a},	// Sony NR and other Palm OS 4.1 devices
-	{0x054c, 0x009a},	// Sony NR70V/U
-	{0x054c, 0x00da},	// Sony NX
-	{0x054c, 0x00e9},	// Sony NZ
-	{0x054c, 0x0144},	// Sony UX
-	{0x054c, 0x0169},	// Sony TJ
+	{0x054c, 0x0038},	/* Sony Palm OS 3.5 devices, S300 */
+	{0x054c, 0x0066},	/* Sony T, S320, SJ series, and other Palm OS 4.0 devices */
+	{0x054c, 0x0095},	/* Sony S360 */
+	{0x054c, 0x000a},	/* Sony NR and other Palm OS 4.1 devices */
+	{0x054c, 0x009a},	/* Sony NR70V/U */
+	{0x054c, 0x00da},	/* Sony NX */
+	{0x054c, 0x00e9},	/* Sony NZ */
+	{0x054c, 0x0144},	/* Sony UX */
+	{0x054c, 0x0169},	/* Sony TJ */
 
 	/* AlphaSmart */
-	{0x081e, 0xdf00},   // Dana?
+	{0x081e, 0xdf00},   /* Dana */
 
 	/* HANDSPRING (vendor 0x082d) */
-	{0x082d, 0x0100},	// Visor
-	{0x082d, 0x0200},	// Treo
-	{0x082d, 0x0300},	// Treo 600
+	{0x082d, 0x0100},	/* Visor */
+	{0x082d, 0x0200},	/* Treo */
+	{0x082d, 0x0300},	/* Treo 600 */
 
 	/* PalmOne, Palm Inc */
-	{0x0830, 0x0001},	// m500
-	{0x0830, 0x0002},	// m505
-	{0x0830, 0x0003},	// m515
+	{0x0830, 0x0001},	/* m500 */
+	{0x0830, 0x0002},	/* m505 */
+	{0x0830, 0x0003},	/* m515 */
 	{0x0830, 0x0010},
 	{0x0830, 0x0011},
-	{0x0830, 0x0020},	// i705
+	{0x0830, 0x0020},	/* i705 */
 	{0x0830, 0x0030},
-	{0x0830, 0x0031},	// Tungsten|W
-	{0x0830, 0x0040},	// m125
-	{0x0830, 0x0050},	// m130
+	{0x0830, 0x0031},	/* Tungsten|W */
+	{0x0830, 0x0040},	/* m125 */
+	{0x0830, 0x0050},	/* m130 */
 	{0x0830, 0x0051},
 	{0x0830, 0x0052},
 	{0x0830, 0x0053},
-	{0x0830, 0x0060},	// Tungsten series, Zire 71
-	{0x0830, 0x0061},	// Zire 31, 72, T5
+	{0x0830, 0x0060},	/* Tungsten series, Zire 71 */
+	{0x0830, 0x0061},	/* Zire 31, 72, T5 */
 	{0x0830, 0x0062},
 	{0x0830, 0x0063},
-	{0x0830, 0x0070},	// Zire
+	{0x0830, 0x0070},	/* Zire */
 	{0x0830, 0x0071},
-	{0x0830, 0x0080},	// serial adapter
+	{0x0830, 0x0080},	/* serial adapter */
 	{0x0830, 0x0099},
 	{0x0830, 0x0100},
 
 	/* GARMIN */
-	{0x091e, 0x0004},	// IQUE 3600
+	{0x091e, 0x0004},	/* IQUE 3600 */
 
 	/* Kyocera */
-	{0x0c88, 0x0021},	// 7135 Smartphone
-	{0x0c88, 0xa226},	// 6035 Smartphone
+	{0x0c88, 0x0021},	/* 7135 Smartphone */
+	{0x0c88, 0xa226},	/* 6035 Smartphone */
 
 	/* Tapwave */
-	{0x12ef, 0x0100},	// Zodiac, Zodiac2
+	{0x12ef, 0x0100},	/* Zodiac, Zodiac2 */
 
 	/* ACEECA */
-	{0x4766, 0x0001},	// MEZ1000
+	{0x4766, 0x0001},	/* MEZ1000 */
 
 	/* Samsung */
-	{0x04e8, 0x8001}	// I330
+	{0x04e8, 0x8001}	/* I330 */
 };
 
 
@@ -479,7 +474,9 @@ device_added (void *refCon, io_iterator_t iterator)
 	{
 		if (usb.opened)
 		{
-			// we can only handle one connection at once for now
+			/* we can only handle one connection at once for now
+			 * (this will change soon)
+			 */
 			IOObjectRelease (ioDevice);
 			break;
 		}
@@ -541,8 +538,9 @@ device_added (void *refCon, io_iterator_t iterator)
 			continue;
 		}
 
-		// Register for an interest notification for this device,
-		// so we get notified when it goes away
+		/* Register for an interest notification for this device,
+		 * so we get notified when it goes away
+		 */
 		kr = IOServiceAddInterestNotification(
 				usb_notify_port,
 				ioDevice,
@@ -569,7 +567,9 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	IOUSBConfigurationDescriptorPtr confDesc;
 
 	/* Get the device class. Most handhelds are registered as composite devices
-	 * and therefore already opened & configured by OS X drivers!
+	 * and therefore already opened & configured by OS X drivers! It seems that
+	 * reconfiguring them as we did before is what caused some Sony devices to
+	 * refuse talking to us.
 	 */
 	kr = (*dev)->GetDeviceClass (dev, &deviceClass);
 	if (kr != kIOReturnSuccess)
@@ -610,13 +610,11 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 			return kr;
 	}
 
-	/*
-	 * Device specific magic incantations
+	/* Device specific magic incantations
 	 *
 	 * Many devices agree on talking only if you say the "magic" incantation first.
 	 * Usually, it's a control request or a sequence of control requests
 	 * Additionally, this gives us a chance to try finding the pipes we want
-	 *
 	 */
 	if (vendor == VENDOR_PALMONE && product == PRODUCT_PALMCONNECT_USB)
 	{
@@ -626,11 +624,15 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 		return kIOReturnSuccess;
 	}
 
-	/* try reading pipe information */
+	/* Try reading pipe information. Most handhelds support
+	 * a control request that returns info about the ports and
+	 * pipes. We first try the generic control code, and if it
+	 * doesn't work we try the Visor one which seems to be
+	 * supported by some devices
+	 */
 	kr = read_generic_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
 	if (kr != kIOReturnSuccess)
 	{
-		/* didn't work? try reading the Visor way */
 		kr = read_visor_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
 		if (kr == kIOReturnSuccess)
 			*pipe_info_retrieved = 1;
@@ -688,22 +690,23 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 			continue;
 		}
 
-		// we have the interface plugin: we now need the interface interface
+		/* we have the interface plugin: we now need the interface interface */
 		res = (*plugInInterface)->QueryInterface (plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID *) &usb.interface);
-		(*plugInInterface)->Release (plugInInterface);			// done with this
+		(*plugInInterface)->Release (plugInInterface);			/* done with this */
 		if (res || usb.interface == NULL)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: couldn't create an IOUSBInterfaceInterface (%08x)\n", (int) res));
 			continue;
 		}
 
-		// get the interface class and subclass
+		/* get the interface class and subclass */
 		kr = (*usb.interface)->GetInterfaceClass (usb.interface, &intfClass);
 		kr = (*usb.interface)->GetInterfaceSubClass (usb.interface, &intfSubClass);
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface class %d, subclass %d\n", intfClass, intfSubClass));
 
-		// Now open the interface. This will cause the pipes to be instantiated that are
-		// associated with the endpoints defined in the interface descriptor.
+		/* Now open the interface. This will cause the pipes to be instantiated that are
+		 * associated with the endpoints defined in the interface descriptor.
+		 */
 		kr = (*usb.interface)->USBInterfaceOpen (usb.interface);
 		if (kr != kIOReturnSuccess)
 		{
@@ -725,7 +728,9 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface has %d endpoints\n", intfNumEndpoints));
 
 		/* If device didn't answer to the connection_information request, check manually over the pipes
-		 * if there is a connection data sent by the device
+		 * if there is a connection data sent by the device. I some traces were showing data
+		 * sent over pipes that didn't look like legit. packets. Turns out this looked more like a
+		 * palm_ext_connection_info buffer.
 		 */
 		if (!pipe_info_retrieved)
 		{
@@ -750,14 +755,8 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 						/* got something!! */
 						LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: got %d bytes there!\n", (int)size));
 						CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(usb.read_buffer, size));
-
-						/* the data sent by the device looks like it's a connection info buffer with
-						 * 'VNDR' prefix
-						 */
-						if (usb.read_buffer[0]=='V' &&
-							usb.read_buffer[1]=='N' &&
-							usb.read_buffer[2]=='D' &&
-							usb.read_buffer[3]=='R')
+						if (usb.read_buffer[0]=='V' && usb.read_buffer[1]=='N' &&
+							usb.read_buffer[2]=='D' && usb.read_buffer[3]=='R')
 						{
 							palm_ext_connection_info ci;
 							memcpy(&ci, &usb.read_buffer[6], sizeof(ci));
@@ -776,7 +775,6 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		 *    64 bytes transfer size
 		 * 3. Finally of this failed, forget about the transfer size and take the first ones that
 		 *    come (i.e. Tungsten W has a 64 bytes IN pipe and a 32 bytes OUT pipe).
-		 *
 		 */
 		for (pass=1; pass <= 3 && (usb.in_pipe_ref==0 || usb.out_pipe_ref==0); pass++)
 		{
@@ -828,8 +826,9 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 
 		if (usb.in_pipe_ref && usb.out_pipe_ref)
 		{
-			// Just like with service matching notifications, we need to create an event source and add it
-			// to our run loop in order to receive async completion notifications.
+			/* Just like with service matching notifications, we need to create an event source and add it
+			 * to our run loop in order to receive async completion notifications.
+			 */
 			CFRunLoopSourceRef runLoopSource;
 			kr = (*usb.interface)->CreateInterfaceAsyncEventSource (usb.interface, &runLoopSource);
 			if (kr != kIOReturnSuccess)
@@ -904,6 +903,8 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 	else
 	{
 		ci.num_ports >>= 8;				/* number of ports is little-endian */
+		if (ci.num_ports > 8)
+			ci.num_ports = 8;
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: VISOR_GET_CONNECTION_INFORMATION, num_ports=%d\n", ci.num_ports));
 		for (i=0; i < ci.num_ports; i++)
 		{
@@ -949,7 +950,8 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx\n", i, ci->connections[i].port_function_id));
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci->connections[i].port));
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, ci->connections[i].endpoint_info));
-		if (ci->connections[i].port_function_id == 'cnys')
+		if (ci->connections[i].port_function_id == 'cnys' ||
+			ci->connections[i].port_function_id == 'Lsfr')		/* T5 */
 		{
 			/* 'sync': we found the port/pipes to use for synchronization
 			 * force find_interfaces to select this one rather than another one
@@ -1060,7 +1062,7 @@ prime_read(usb_connection_t *c)
 {
 	if (c->opened)
 	{
-		// select a correct read size (always use a multiple of the USB packet size)
+		/* select a correct read size (always use a multiple of the USB packet size) */
 		c->last_read_ahead_size = c->read_ahead_size & ~63;
 		if (c->last_read_ahead_size <= 0)
 			c->last_read_ahead_size = c->auto_read_size;
@@ -1068,8 +1070,6 @@ prime_read(usb_connection_t *c)
 			c->last_read_ahead_size = MAX_AUTO_READ_SIZE;
 		else if (c->last_read_ahead_size <= 0)
 			c->last_read_ahead_size = 64;				// USB packet size
-
-		//usb.last_read_ahead_size = MAX_AUTO_READ_SIZE;	// testing
 
 #ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read() for %d bytes\n",
@@ -1113,7 +1113,6 @@ accepts_device(unsigned short vendor, unsigned short product)
 	}
 	return 0;
 }
-
 
 
 /***************************************************************************/
@@ -1277,7 +1276,8 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 
 		do
 		{
-			usb.read_ahead_size = len - usb.read_queue_used - usb.last_read_ahead_size;		// next prime_read() will use a bigger read request
+			/* next prime_read() will use a bigger read request */
+			usb.read_ahead_size = len - usb.read_queue_used - usb.last_read_ahead_size;
 
 			if (timeout)
 			{
@@ -1300,7 +1300,7 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 
 	if (!usb.opened)
 	{
-		// make sure we report broken connections
+		/* make sure we report broken connections */
 		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
 			ps->state = PI_SOCK_CONBK;
 		bytes_read = PI_ERR_SOCK_DISCONNECTED;
@@ -1323,8 +1323,9 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 					memmove(usb.read_queue, usb.read_queue + len, usb.read_queue_used);
 				if ((usb.read_queue_size - usb.read_queue_used) > (16L * 65535L))
 				{
-					// if we have more than 1M free in the read queue, we'd better
-					// shrink the buffer
+					/* if we have more than 1M free in the read queue, we'd better
+					 * shrink the buffer
+					 */
 					usb.read_queue_size = ((usb.read_queue_used + 0xfffe) & ~0xffff) - 1;
 					usb.read_queue = (char *) realloc (usb.read_queue, usb.read_queue_size);
 				}
@@ -1365,5 +1366,5 @@ pi_usb_impl_init (struct pi_usb_impl *impl)
 /* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
 /* Local Variables: */
 /* indent-tabs-mode: t */
-/* c-basic-offset: 8 */
+/* c-basic-offset: 4 */
 /* End: */
