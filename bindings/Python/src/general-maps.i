@@ -4,7 +4,7 @@
 %apply long { time_t }
 
 
-%typemap (python,in,numinputs=0) (pi_buffer_t *OUTBUF) {
+%typemap (python,in,numinputs=0) (pi_buffer_t *) {
   $1 = pi_buffer_new(0xFFFF);
 }
 
@@ -13,7 +13,7 @@
   $1 = &outbuflen;
 }
 
-%typemap (python,argout) (pi_buffer_t *OUTBUF) {
+%typemap (python,argout) (pi_buffer_t *) {
   PyObject *o1;
   if ($1) {
     o1 = Py_BuildValue("s#", $1->data, $1->used);

@@ -22,7 +22,7 @@
     $1 = (struct sockaddr *)&temp;
 }
 
-%typemap (python, argout) struct sockaddr *remote_addr {
+%typemap (python, argout,fragment="t_output_helper") struct sockaddr *remote_addr {
     PyObject *o;
 
     if ($1) {

@@ -1,5 +1,7 @@
 // -*-C-*-
 
+// Not used any more - just left for reference for now. 20050217 NCP
+
 extern char * dlp_strerror(int error);
 
 enum dlpDBFlags {
@@ -134,7 +136,6 @@ extern DLPERROR dlp_WriteSortBlock(int sd, int dbhandle, const void *INBUF, size
 
 extern DLPERROR dlp_ResetDBIndex (int sd, int dbhandle);
 
-%native(dlp_ReadRecordIDList) PyObject *_wrap_dlp_ReadRecordIDList(PyObject *, PyObject *);
 
 extern DLPDBERROR dlp_WriteRecord (int sd, int dbhandle, int flags,
 				 recordid_t INPUT, int catID, PI_CONST void *INBUF,

@@ -74,17 +74,14 @@ error = _pisock.error
 
 #define PI_DEPRECATED
 
-%include ../../../include/pi-args.h
-
-%include ../../../include/pi-header.h
-
 %include general-maps.i
-
 %include pi-socket-maps.i
-%include ../../../include/pi-socket.h
-
 %include pi-dlp-maps.i
-%include pi-dlp.i
 
+%include ../../../include/pi-args.h
+%include ../../../include/pi-header.h
+%include ../../../include/pi-socket.h
+%include ../../../include/pi-dlp.h
+%include ../../../include/pi-socket.h
+%include ../../../include/pi-file.h
 
-%include pi-file.i

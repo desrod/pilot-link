@@ -908,7 +908,7 @@ struct dlpResponse {
 	 */
 	extern int dlp_ReadDBList
 		PI_ARGS((int sd, int cardno, int flags, int start,
-			pi_buffer_t *info));
+			pi_buffer_t *dblist));
 
 	/** @brief Find a database by name
 	 *
