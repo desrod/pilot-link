@@ -1,3 +1,4 @@
+pixdir = $(datadir)/pilot-link/pix
 pix_DATA = 		\
 	b1.gif		\
 	b2.gif		\

@@ -1,5 +1,9 @@
 2002-03-15  JP Rosevear  <jpr@ximian.com>
 
+	* src/pix/Makefile.am: install pix
+
+2002-03-15  JP Rosevear  <jpr@ximian.com>
+	
 	* tests/Makefile.am (INCLUDES): fix dir for linking
 
 	* src/prc/Makefile.am: dist and install the prc data
