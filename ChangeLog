@@ -1,3 +1,14 @@
+2001-02-17 David A. Desrosiers
+        * aclocal.m4: Fixed the BSD nm test (again). How many 
+          times do we have to keep fixing this?!
+
+        sync-plan.PL: s/Pilot/Palm where required. No breakage.
+
+        dlpsh.c: Fixed the double "EXITING" error. Prettied up
+        the 'mem' function and added kbytes. Removed the 'exit' 
+        option. Changed the layout of 'help'. Fixed some of the 
+        formatting. Lots more to do to this binary.
+
 2001-01-28 David A. Desrosiers
 
         * Makefile.in: Removed '-FOO' from the tcl/itcl testing.

@@ -78,7 +78,7 @@ int console = 0;  /* If non-zero, then console is thought to be active
                            active, only the debugger will be usable. If
                            execution is continued, the console be
                            be usable again. */
-int stalestate = 1; /* If non-zero, then the current Pilot state (in particular the registers)
+int stalestate = 1; /* If non-zero, then the current Palm state (in particular the registers)
                        should be assumed out-of-date */
                        
 int port = 0;

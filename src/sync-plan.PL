@@ -447,13 +447,13 @@ sub DeletePlanRecord {
 	SendPlanCommand($socket, $raw);
 }
 
-# takes a Pilot record in hash format
+# takes a Palm record in hash format
 sub WritePilotRecord {
 	my($db, $control, $record) = @_; 
 	
 	$record->{id} ||= 0;
 	
-	#print "Installing record in Pilot: ",Dumper($record);
+	#print "Installing record in Palm: ",Dumper($record);
 	
 	my($id) = $db->setRecord($record);
 	
@@ -580,7 +580,7 @@ sub doafterplan {
 	my($db,$socket,$control) = @_;
 	print "After stuff:\n";
 
-	# This batch of code scans for Plan records with identical PilotIDs,
+	# This batch of code scans for Plan records with identical Pilot IDs,
 	# presumambly caused by duplicating a plan record. We remove the ids
 	# from the duplicates.  The weird sort is magic to prefer keeping the id
 	# (and thus leaving unmodified) of an otherwise unmodified record.
@@ -600,20 +600,20 @@ sub doafterplan {
 	# Use our saved Pilot ID cache to detect deleted Plan records.
 	# This will not catch deleted Plan records that were never assigned
 	# a Pilot ID, but that is OK because such records do not have to be removed
-	# from the Pilot.
+	# from the Palm.
 
 	my($del)=-1;
 	foreach (keys %pilothash) {
 
-		# Pilot records originally downloaded from a different Plan database
+		# Palm records originally downloaded from a different Plan database
 		# are off-limits during this pass.
 		
 		next if $dbname{$_} ne $control->{name}; 
 		
 
-#		print "Pilot cached ID: $_\n";
+#		print "Palm cached ID: $_\n";
 		if (not defined $planID{$_} and not $exceptID{$_}) {
-			#print "Deleted plan record, with Pilot id $_\n";
+			#print "Deleted plan record, with Pilot ID $_\n";
 			$planID{$_}->{deleted} = 1;
 			$planID{$_}->{pilotid} = $_;
 			$planID{$_}->{id} = $del;
@@ -622,7 +622,7 @@ sub doafterplan {
 		}
 	}
 
-	print "Pilot loop\n";	
+	print "Palm loop\n";	
 
 	foreach (keys %pilotID) {
 
@@ -633,17 +633,17 @@ sub doafterplan {
 		$ticklecount = 0;
 	}
 	
-		# Pilot records originally downloaded from a different Plan database
+		# Palm records originally downloaded from a different Plan database
 		# are off-limits during this pass.
 		
 		next if $dbname{$_} ne $control->{name}; 
 		
 		
-		print "Pilot record: ",PrintPilotRecord($pilotID{$_}),"\n";
-		#print "Pilot record: ",Dumper($pilotID{$_}),"\n";
+		print "Palm record: ",PrintPilotRecord($pilotID{$_}),"\n";
+		#print "Palm record: ",Dumper($pilotID{$_}),"\n";
 		if ($pilotID{$_}->{deleted} || $pilotID{$_}->{archived}) {
 		#	
-		#	# At this point are seeing Pilot records marked as deleted or
+		#	# At this point are seeing Palm records marked as deleted or
 		#	# archived.  In the case of a slow sync, deleted records may not
 		#	# be seen until a later pass.
 		#	
@@ -687,12 +687,12 @@ sub doafterplan {
 			
 			if (not defined $planID{$_}) {
 				if (!$exceptID{$_}) {
-					# The Pilot record has no matching Plan record
+					# The Palm record has no matching Plan record
 					
-					# Action: Install the Pilot record in Plan, regardless of
+					# Action: Install the Palm record in Plan, regardless of
 					# changed status
 					
-					print "Action: Install Pilot record in Plan.\n";
+					print "Action: Install Palm record in Plan.\n";
 					
 					#print "Installing pilot record in plan: ",Dumper($pilotID{$_});
 					
@@ -707,7 +707,7 @@ sub doafterplan {
 						
 						$exceptID{$_} = 1;
 	
-						print "Log: Pilot record unsyncable\n";
+						print "Log: Palm record unsyncable\n";
 	
 					} else {
 					
@@ -716,14 +716,14 @@ sub doafterplan {
 				}
 			} elsif ($pilotID{$_}->{modified} and $planID{$_}->{deleted}) {
 
-				# The Pilot record has a matching _deleted_ Plan record.
+				# The Palm record has a matching _deleted_ Plan record.
 				
 				# This is collision, with a relatively simple solution.
-				# replace the Plan record with the Pilot record. As the Plan
+				# replace the Plan record with the Palm record. As the Plan
 				# record has already been permanently deleted, we need only copy
-				# the Pilot record over.
+				# the Palm record over.
 				
-				# Action: Install the Pilot record in Plan
+				# Action: Install the Palm record in Plan
 								
 				my($record) = RecordPilotToPlan($pilotID{$_}, $planID{$_});
 				if (not defined $record) {
@@ -734,38 +734,38 @@ sub doafterplan {
 					
 					$exceptID{$_} = 1;
 					
-					print "Log: Pilot record modified while Plan record deleted, but new Pilot record unsyncable\n";
+					print "Log: Palm record modified while Plan record deleted, but new Palm record unsyncable\n";
 				} else {
 
 					WritePlanRecord($socket, $record);
 
-					print "Log: Pilot record modified while Plan record deleted\n";
+					print "Log: Palm record modified while Plan record deleted\n";
 				}
 				
 			} elsif ($pilotID{$_}->{modified} and $planID{$_}->{modified}) {
 
-				# The Pilot record has a matching _modified_ Plan record.
+				# The Palm record has a matching _modified_ Plan record.
 				
 				# TODO: Use a comparator function to verify that the records
 				# are actually substantially different. If not, simply skip
 				# any action.
 				
 				# This is collision with an ugly, but lossless, solution. 
-				# Neither the Pilot or Plan record is inherantly preferable,
+				# Neither the Palm or Plan record is inherantly preferable,
 				# so we duplicate each record on the other side, severing
 				# the link between the original new records, forging two new
 				# links and two new records, one on each side.
 				
-				# Action: Install the Pilot record in Plan as a new,
-				# distinct, record, and install the Plan record on the Pilot
+				# Action: Install the Palm record in Plan as a new,
+				# distinct, record, and install the Plan record on the Palm
 				# as a new, distinct, record.
 				
-				print "Log: Conflicting modified Plan and Pilot records\n";
+				print "Log: Conflicting modified Plan and Palm records\n";
 				
 				{
 					my($record) = RecordPlanToPilot($planID{$_});
 					if (not defined $record) {
-						# The Plan record is not translatable to a Pilot record. 
+						# The Plan record is not translatable to a Palm record. 
 						
 						# Action: Abort the install.
 	
@@ -789,20 +789,20 @@ sub doafterplan {
 			
 						WritePlanRecord($socket, $planID{$_});
 						
-						print "ID of new Pilot record is $id\n";
+						print "ID of new Palm record is $id\n";
 					}
 				}
 				
 				{
 					my($record) = RecordPilotToPlan($pilotID{$_});
 					if (not defined $record) {
-						# The Pilot record is not translatable to a Plan record. 
+						# The Palm record is not translatable to a Plan record. 
 						
 						# Action: Abort the install.
 	
 						$exceptID{$_} = 1;
 	
-						print "Log: Conflicting Pilot record unsyncable.\n";
+						print "Log: Conflicting Palm record unsyncable.\n";
 					} else {
 					
 						$record->{modified} = 0;
@@ -815,10 +815,10 @@ sub doafterplan {
 				}
 			} elsif($pilotID{$_}->{modified}) {
 			
-				# At this point, we have a changed Pilot record with an
+				# At this point, we have a changed Palm record with an
 				# existing unmodified Plan record.
 				
-				# Action: Install the Pilot record in Plan, overwriting the
+				# Action: Install the Palm record in Plan, overwriting the
 				# Plan record.
 								
 				my($record) = RecordPilotToPlan($pilotID{$_}, $planID{$_});
@@ -833,7 +833,7 @@ sub doafterplan {
 					$exceptID{$_} = 1;
 					DeletePlanRecord($socket, $planID{$_});
 					
-					print "Log: Pilot record modified while Plan record unchanged, but new Pilot record unsyncable. Plan record has been deleted.\n";
+					print "Log: Palm record modified while Plan record unchanged, but new Palm record unsyncable. Plan record has been deleted.\n";
 				} else {
 				
 					#print "Overwriting plan record: ",Dumper($planID{$_});
@@ -841,7 +841,7 @@ sub doafterplan {
 					#print "As plan record: ",Dumper($record);
 				
 					WritePlanRecord($socket, $record);
-					print "Log: Overwriting unchanged Plan record with modified Pilot record.\n";
+					print "Log: Overwriting unchanged Plan record with modified Palm record.\n";
 					#print "New plan record state: ",Dumper($planID{$_}),"\n";
 				}
 			}
@@ -866,7 +866,7 @@ sub doafterplan {
 		#print "Plan record: ",Dumper($record),"\n";
 		if ($record->{deleted}) {
 		#	
-		#	# At this point are seeing Pilot records marked as deleted or
+		#	# At this point are seeing Palm records marked as deleted or
 		#	# archived.  In the case of a slow sync, deleted records may not
 		#	# be seen until a later pass.
 		#	
@@ -907,7 +907,7 @@ sub doafterplan {
 			}
 			
 			if (defined $pid and defined $pilotID{$pid} and ($dbname{$pid} ne $control->{name})) {
-				print "Weird: Plan database $control->{name} claims to own Pilot record $pid,\n";
+				print "Weird: Plan database $control->{name} claims to own Palm record $pid,\n";
 				print "but my ID database says it is owned by $dbname{$pid}. I'll skip it.\n";
 				next;
 			}
@@ -916,19 +916,19 @@ sub doafterplan {
 			
 			if (not defined $pid or not defined $pilotID{$pid}) {
 				if (!$record->{pilotexcept}) {
-					# The Plan record has no matching Pilot record
+					# The Plan record has no matching Palm record
 					
-					# Action: Install the Plan record in Pilot, regardless of
+					# Action: Install the Plan record in Palm, regardless of
 					# changed status
 					
-					print "Action: Install Plan record in Pilot.\n";
+					print "Action: Install Plan record in Palm.\n";
 
 					#print "Installing plan record in pilot: ",Dumper($record);
 					#print "Trying to install Plan record: ",Dumper($record),"\n";
 					
 					my($newrecord) = RecordPlanToPilot($record);
 					if (not defined $newrecord) {
-						# The record is not translatable to a Pilot record. 
+						# The record is not translatable to a Palm record. 
 						
 						# Action: Abort the install, and mark the record as
 						# uninstallable so that it will not be tried each sync.
@@ -941,14 +941,14 @@ sub doafterplan {
 						print "Log: Plan record unsyncable\n";
 	
 					} else {
-						#print "Installing Pilot record: ", Dumper($newrecord),"\n";
+						#print "Installing Palm record: ", Dumper($newrecord),"\n";
 						
 						$newrecord->{id} = 0;
 						$newrecord->{secret} = 0;
 						my($id) = WritePilotRecord($db,$control,$newrecord);
 						#$db->setRecord($newrecord);
 
-						print "ID of new Pilot record is $id\n";
+						print "ID of new Palm record is $id\n";
 						
 						#my ($hash) = HashPilotRecord($newrecord);						
 						#$pilothash{$id} = $hash;
@@ -957,38 +957,38 @@ sub doafterplan {
 						#$pilotID{$id} = $newrecord;
 						#$dbname{$id} = $dbname;
 						
-						$record->{pilotid} = $id; # Match the Pilot record to the Plan record
+						$record->{pilotid} = $id; # Match the Palm record to the Plan record
 						$record->{modified} = 1;  # and make sure it is written back out
 					}
 				}
 			} elsif ($record->{modified} and $pilotID{$pid}->{deleted}) {
 
-				# The Plan record has a matching _deleted_ Pilot record.
+				# The Plan record has a matching _deleted_ Palm record.
 				
 				# This is collision, with a relatively simple solution.
-				# replace the Pilot record with the Plan record. 
+				# replace the Palm record with the Plan record. 
 				
-				# Action: Install the Plan record in Pilot
+				# Action: Install the Plan record in Palm
 								
 				my($newrecord) = RecordPlanToPilot($record, $pilotID{$pid});
 				if (not defined $newrecord) {
-					# The record is not translatable to a Pilot record. 
+					# The record is not translatable to a Palm record. 
 					
 					# Action: Abort the install, and mark the record as
 					# uninstallable so that it will not be tried each sync.
 					
 					$record->{pilotexcept} = 1;
 					
-					print "Log: Plan record modified while Pilot record deleted, but new Plan record unsyncable\n";
+					print "Log: Plan record modified while Palm record deleted, but new Plan record unsyncable\n";
 				} else {
 
-					#print "Installing Pilot record: ", Dumper($newrecord),"\n";
+					#print "Installing Palm record: ", Dumper($newrecord),"\n";
 					WritePilotRecord($db,$control,$newrecord);
 					#$db->setRecord($newrecord);
 					#my ($hash) = HashPilotRecord($newrecord);						
 					#$pilothash{$pid} = $hash;
 
-					print "Log: Plan record modified while Pilot record deleted\n";
+					print "Log: Plan record modified while Palm record deleted\n";
 				}
 				
 			} elsif ($record->{modified} and $pilotID{$pid}->{modified}) {
@@ -996,10 +996,10 @@ sub doafterplan {
 			} elsif ($record->{modified}) {
 			
 				# At this point, we have a changed Plan record with an
-				# existing unmodified Pilot record.
+				# existing unmodified Palm record.
 				
-				# Action: Install the Plan record in the Pilot, overwriting the
-				# Pilot record.
+				# Action: Install the Plan record in the Palm, overwriting the
+				# Palm record.
 				
 				#print "Trying to install Plan record: ",Dumper($record),"\n";
 				my($newrecord) = RecordPlanToPilot($record, $pilotID{$pid});
@@ -1018,20 +1018,20 @@ sub doafterplan {
 					#delete $pilothash{$record->{pilotid}};
 					#delete $exceptID{$record->{pilotid}};
 					
-					print "Log: Plan record modified while Pilot record unchanged, but new Plan record unsyncable. Pilot record has been deleted.\n";
+					print "Log: Plan record modified while Palm record unchanged, but new Plan record unsyncable. Palm record has been deleted.\n";
 				} else {
 
 					#print "Overwriting pilot record: ",Dumper($pilotID{$_});
 					#print "With plan record: ",Dumper($record);
 					#print "As pilot record: ",Dumper($newrecord);
 
-					#print "Installing Pilot record: ", Dumper($newrecord),"\n";
+					#print "Installing Palm record: ", Dumper($newrecord),"\n";
 					WritePilotRecord($db,$control,$newrecord);
 					#$db->setRecord($newrecord);
 					#my ($hash) = HashPilotRecord($newrecord);						
 					#$pilothash{$pid} = $hash;
 					
-					print "Log: Overwriting unchanged Pilot record with modified Plan record.\n";
+					print "Log: Overwriting unchanged Palm record with modified Plan record.\n";
 				}
 			}
 		}
@@ -1040,7 +1040,7 @@ sub doafterplan {
 		}
 	}
 
-	print "Pilot delete loop\n";	
+	print "Palm delete loop\n";	
 
 	foreach (keys %pilotID) {
 
@@ -1052,23 +1052,23 @@ sub doafterplan {
 	}
 
 	
-		# Pilot records originally downloaded from a different Plan database
+		# Palm records originally downloaded from a different Plan database
 		# are off-limits during this pass.
 		
 		next if $dbname{$_} ne $control->{name}; 
 
-		#print "Pilot record: ",Dumper($pilotID{$_}),"\n";
-		print "Pilot record: ",PrintPilotRecord($pilotID{$_}),"\n";
+		#print "Palm record: ",Dumper($pilotID{$_}),"\n";
+		print "Palm record: ",PrintPilotRecord($pilotID{$_}),"\n";
 		if ($pilotID{$_}->{deleted} || $pilotID{$_}->{archived}) {
 			
-			# At this point are seeing Pilot records marked as deleted or
+			# At this point are seeing Palm records marked as deleted or
 			# archived.  In the case of a slow sync, deleted records may not
 			# be seen until a later pass.
 			
 			# Action: If there is an associated Plan record that has not
 			# already been deleted, delete it.
 			
-			print "Log: Deleting Pilot record.\n";
+			print "Log: Deleting Palm record.\n";
 			
 			if (defined $planID{$_} and not $planID{$_}->{deleted}) {
 				print "Log: ... and associated Plan record.\n";
@@ -1118,14 +1118,14 @@ sub doafterplan {
 		}
 		
 		if (defined $pid and defined $pilotID{$pid} and ($dbname{$pid} ne $control->{name})) {
-			print "Weird: Plan database $control->{name} claims to own Pilot record $pid,\n";
+			print "Weird: Plan database $control->{name} claims to own Palm record $pid,\n";
 			print "but my ID database says it is owned by $dbname{$pid}. I'll skip it.\n";
 			next;
 		}
 		
 		if ($record->{deleted}) {
 			
-			# At this point are seeing Pilot records marked as deleted or
+			# At this point are seeing Palm records marked as deleted or
 			# archived.  In the case of a slow sync, deleted records may not
 			# be seen until a later pass.
 			
@@ -1134,7 +1134,7 @@ sub doafterplan {
 			
 			print "Log: Deleting Plan record.\n";
 			if (defined $pid and defined $pilotID{$pid} and not $pilotID{$_}->{deleted}) {
-				print "Log: ... and associated Pilot record.\n";
+				print "Log: ... and associated Palm record.\n";
 				DeletePilotRecord($db, $pid);
 				#$db->deleteRecord($pid);
 				#delete $pilotID{$pid};
@@ -1157,7 +1157,7 @@ sub loadpilotrecords {
 	print "Please start HotSync now.\n";
 	$psocket = PDA::Pilot::openPort($port);
 	if (!$psocket) {
-		die "Unable to open Pilot port $port\n";
+		die "Unable to open port $port\n";
 	}
 	$dlp = PDA::Pilot::accept($psocket);
 	
@@ -1173,10 +1173,10 @@ sub loadpilotrecords {
 	print "Synchronizing pilot called '$pilotname'\n";
 	
 	if (not defined $control{$pilotname}) {
-		print "Database access list for Pilot has not been defined!\n\n";
-		print "Pilot '$pilotname' has been added to $controldir/control.\n";
+		print "Database access list for Palm has not been defined!\n\n";
+		print "Palm '$pilotname' has been added to $controldir/control.\n";
 		print "Please edit $controldir/control and add the names of the Plan databases\n";
-		print "that this Pilot should synchronize with.\n";
+		print "that this Palm should synchronize with.\n";
 		
 		open (C, ">>$controldir/control");
 		print C "$pilotname\n";
@@ -1190,7 +1190,7 @@ sub loadpilotrecords {
 	$i=0;
 	while(defined($r = LoadPilotRecord($db,$i++))) {
 		push @pilotRecord, $r;
-		#print "Pilot Record: ",Dumper($r),"\n";
+		#print "Palm Record: ",Dumper($r),"\n";
 #		$pilotID{$r->{id}} = $r;
 	}
 	print "Done reading records\n";
@@ -1349,18 +1349,18 @@ if (! -d $controldir) {
 
 if (! -f "$controldir/control") {
 	open(C, ">$controldir/control") || die "Unable to write to $controdir/control";
-	print C "# this file is used to control which Pilots are allowed to sync, and what databases\n";
-	print C "# each Pilot will sync with. Each line consists of whitespace-separated fields, the\n";
-	print C "# first one being the name (and ID) of the Pilot, and subsequent fields listing\n";
-	print C "# all plan databases that Pilot will synchronize with.\n";
+	print C "# this file is used to control which Palms are allowed to sync, and what databases\n";
+	print C "# each Palm will sync with. Each line consists of whitespace-separated fields, the\n";
+	print C "# first one being the name (and ID) of the Palm, and subsequent fields listing\n";
+	print C "# all plan databases that Palm will synchronize with.\n";
 	print C "#\n";
 	print C "# For example: Foo_s_Pilot_1234 myname\@localhost group\@host.io ro:all\@localhostn";
 	print C "#\n";
-	print C "# New entries on the Pilot are installed in the first database listed.\n";
+	print C "# New entries on the Palm are installed in the first database listed.\n";
 	print C "# Records will not exchanged between separate plan datatabses.\n";
 	print C "# A database may be prefixed with 'rw:' or 'ro:' to indicate read/write (the\n";
 	print C "# default) or read only access. If a database is read-only, any record changes\n";
-	print C "# on the Pilot will be discarded. However, for technical reasons, you must have\n";
+	print C "# on the Palm will be discarded. However, for technical reasons, you must have\n";
 	print C "# read/write access to the plan database itself.\n";
 }
 
@@ -1381,7 +1381,7 @@ while(<C>) {
 			$host = "localhost";
 		}
 		if ($mode !~ /^rw$/) {
-			die "Access mode $mode (for Pilot '$i') at line $. of $controldir/control unknown or unsupported.\n";
+			die "Access mode $mode (for Palm '$i') at line $. of $controldir/control unknown or unsupported.\n";
 		}
 		if ($first) {
 			$defaultname = $name.'@'.$host;
@@ -1399,7 +1399,7 @@ if (loadpilotrecords) {
 	}
 
 	if (!@{$control{$pilotname}}) {
-		print "No plan databases are registered for the '$pilotname' Pilot. Please\n";
+		print "No plan databases are registered for the '$pilotname' Palm. Please\n";
 		print "edit $controldir/control and add one or more databases.\n";
 	}
 
@@ -1419,7 +1419,7 @@ if (loadpilotrecords) {
 			print "to database $dbname, but the control file $controldir/control does not list this\n";
 			print "this database. If you have renamed a database, please edit $controldir/ids.$pilotname\n";
 			print "so all references to this database match the new name.\n";
-			print "\nIf you wish to delete all on the Pilot that were originally from $dbname, then\n";
+			print "\nIf you wish to delete all on the Palm that were originally from $dbname, then\n";
 			print "delete the database name from the end of each record's line.\n";
 			print "To merge the records into the default database, delete each affected line entriely.\n";
 			

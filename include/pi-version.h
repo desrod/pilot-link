@@ -10,6 +10,6 @@
  *  that this is *NOT* defined.
  */
 
-#define PILOT_LINK_PATCH ""
+#define PILOT_LINK_PATCH "-pre5"
 
 #endif /* _PILOT_VERSION_H_ */
