@@ -19,6 +19,7 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,158 +33,155 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-int sd = 0;
-void Disconnect(void);
+int pilot_connect(const char *port);
+static void Help(char *progname);
 
-RETSIGTYPE SigHandler(int signal);
+struct option options[] = {
+	{"help",     no_argument,       NULL, 'h'},
+	{"port",     required_argument, NULL, 'p'},
+	{"fancy",    no_argument,       NULL, 'f'},
+	{NULL,       0,                 NULL, 0}
+};
 
-void Disconnect(void)
-{
-	if (sd == 0)
-		return;
-
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-	sd = 0;
-}
-
-RETSIGTYPE SigHandler(int signal)
-{
-	puts("   Abort on signal!");
-	Disconnect();
-	exit(3);
-}
+static const char *optstring = "hp:f";
 
 int main(int argc, char *argv[])
 {
-	struct pi_sockaddr addr;
-	struct PilotUser U;
-	struct AddressAppInfo aai;
+	int c;
 	int db;
 	int i;
-	int ret;
+	int sd = -1;
+	int fstyle = -1;
+	struct AddressAppInfo aai;
 	unsigned char buffer[0xffff];
 	char *progname = argv[0];
-	char *port = argv[1];
+	char *port = NULL;
+	char *fancy = NULL;
 
-	PalmHeader(progname);
+        while ((c =
+                getopt(argc, argv, optstring)) != -1) {
+                switch (c) {
 
-	if (argc < 2) {
-		fprintf(stderr, "   Usage: %s %s\n\n", progname,
-			TTYPrompt);
-		exit(2);
-	}
+                  case 'h':
+                          Help(progname);
+                          exit(0);
+                  case 'p':
+                          port = optarg;
+                          break;
+                  case 'f':
+                          fancy = optarg;
+			  fstyle = 1;
+                          break;
+                  case ':':
+                }
+        }
 
-	if (sd && sd != 0)
-		return 0;
-
-	signal(SIGHUP, SigHandler);
-	signal(SIGINT, SigHandler);
-	signal(SIGSEGV, SigHandler);
-
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
-		exit(1);
-	}
-
-	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, port);
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n", port);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-	     port);
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", port);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n", port);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	fprintf(stderr, "Connected...\n");
-
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
-
-	/* Tell user (via Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
-
-	/* Open the Address book's database, store access handle in db */
-	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
-		puts("Unable to open AddressDB");
-		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-		exit(1);
-	}
-
-	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-	unpack_AddressAppInfo(&aai, buffer, 0xffff);
-
-	for (i = 0;; i++) {
-		struct Address a;
-		int attr;
-		int category;
-		int j;
-
-		int len =
-		    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
-					  &category);
-
-		if (len < 0)
-			break;
-
-		/* Skip deleted records */
-		if ((attr & dlpRecAttrDeleted)
-		    || (attr & dlpRecAttrArchived))
-			continue;
-
-		unpack_Address(&a, buffer, len);
-
-		printf("Category: %s\n", aai.category.name[category]);
-		for (j = 0; j < 19; j++) {
-			if (a.entry[j]) {
-				int l = j;
-
-				if ((l >= entryPhone1)
-				    && (l <= entryPhone5))
-					printf("%s: %s\n",
-					       aai.phoneLabels[a.
-							       phoneLabel[l
-									  -
-									  entryPhone1]],
-					       a.entry[j]);
-				else
-					printf("%s: %s\n", aai.labels[l],
-					       a.entry[j]);
-			}
+        if (port == NULL) {
+		PalmHeader(progname);
+                Help(progname);
+                printf("ERROR: You forgot to specify a valid port\n");
+                exit(1);
+        } else {
+		
+		sd = pilot_connect(port);
+	
+		/* Did we get a valid socket descriptor back? */
+		if (dlp_OpenConduit(sd) < 0) {
+			exit(1);
 		}
-		printf("\n");
+	
+		/* Tell user (via Palm) that we are starting things up */
+		dlp_OpenConduit(sd);
+	
+		/* Open the Address book's database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
+			puts("Unable to open AddressDB");
+			dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
+			exit(1);
+		}
+	
+		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+		unpack_AddressAppInfo(&aai, buffer, 0xffff);
+	
+		for (i = 0;; i++) {
+			struct Address a;
+			int attr;
+ 			int category;
+			int count = 0;
+			int j;
+	
+			int len =
+			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
+						  &category);
+	
+			if (len < 0)
+				break;
+	
+			/* Skip deleted records */
+			if ((attr & dlpRecAttrDeleted)
+			    || (attr & dlpRecAttrArchived))
+				continue;
+	
+			unpack_Address(&a, buffer, len);
 
-		free_Address(&a);
+			if (fstyle == 1) {
+				printf(".");
+				for(count=0;count<50;count++) printf("-");
+				printf(".\n");
+				printf("| Category     %35s |\n", aai.category.name[category]);
+			} else {
+				printf("Category: %s\n", aai.category.name[category]);
+			}
+			for (j = 0; j < 19; j++) {
+				if (a.entry[j]) {
+					int l = j;
+	
+					if ((l >= entryPhone1) && (l <= entryPhone5))
+						if (fstyle == 1) {
+							printf("| %-11s: %-35s |\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[j]);
+						} else {
+							printf("%s: %s\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[j]);
+						}
+					else
+						if (fstyle == 1) {
+							printf("| %-11s: %-35s |\n", 
+								aai.labels[l], a.entry[j]);
+						} else {
+							printf("%s: %s\n", 
+								aai.labels[l], a.entry[j]);
+						}
+				}
+			}
+			if (fstyle == 1) {
+				printf("`");
+				for(count=0;count<50;count++) printf("-");
+				printf("'\n");
+			}
+			printf("\n");
+			free_Address(&a);
+		}
 	}
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);
 
-	dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
-
+        dlp_AddSyncLogEntry(sd, "Successfully read addresses from Palm\nThank you for using pilot-link.\n");
 	pi_close(sd);
-
 	return 0;
+}
+
+
+static void Help(char *progname)
+{
+        printf("   Dumps the Palm AddressDB database into a generic text output format\n\n"
+               "   Usage: %s -p <port> [options]\n"
+               "   Only the port option is required, the other options are... optional.\n\n"
+               "   -p <port>           Use device file <port> to communicate with Palm\n"
+               "   -f                  Use the new \"fancy\" index card output format\n"
+	       "   -h                  Display this information\n\n"
+               "   Example: %s -p /dev/pilot\n\n"
+	       "   You can redirect the output of %s to a file instead of the default\n"
+	       "   STDOUT by using redirection and pipes as necessary.\n\n"
+	       "   Example: %s -p /dev/pilot -f > MyAddresses.txt\n\n", progname, progname, progname, progname);
+	return;
 }

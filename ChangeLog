@@ -1,3 +1,9 @@
+2001-12-07  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* addresses.c: Rework, added pilot_connect, cleaned up Help() and
+	  added some new formatting for output styles to make the address
+	  records resemble "cards" when dumped.
+
 2001-12-06  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Typo. Whoopsie! 
