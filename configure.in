@@ -1,6 +1,10 @@
 # This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
 AC_INIT(include/pi-version.h.in)
+
+dnl Initialize maintainer mode
+AM_MAINTAINER_MODE
+
 AC_PREFIX_DEFAULT(/usr/local)
 
 dnl ******************************
@@ -11,6 +15,7 @@ dnl AC_PREREQ(2.53)
 AM_CONFIG_HEADER(config.h)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
+
 
 AC_PATH_PROG(ID, id)
 
@@ -351,9 +356,20 @@ msg_readline=no
 AC_ARG_WITH(readline,      [  --with-readline         use readline               [default=yes]])
 if test "x$with_readline" != "xno"; then
 
+
+dnl ***************
 dnl For OSX builds
-CFLAGS="$CFLAGS -L/sw/lib"
-LDFLAGS="$LDFLAGS -I/sw/include"  
+dnl ***************
+save_CFLAGS="$CFLAGS"
+save_LDFLAGS="$LDFLAGS"
+
+case "$host" in
+        *darwin*)
+		CFLAGS="$CFLAGS -L/sw/lib"
+		LDFLAGS="$LDFLAGS -I/sw/include"  
+		echo "CFLAGS is set to $CFLAGS"
+        ;;
+esac
 
 AC_CHECK_LIB(termcap, tgoto, [
 	AC_CHECK_LIB(readline, readline, [

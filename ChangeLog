@@ -1,3 +1,8 @@
+2003-08-18 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Added AM_MAINTAINER_MODE to allow clean 
+	  conditional rebuilds.
+
 2003-07-21  Angus Ainslie  <angusa@deltatee.com>
 
 	* src/read-veo.c: Added veo traveler decoder
