@@ -1,3 +1,12 @@
+2002-01-04  JP Rosevear  <jpr@ximian.com>
+
+	* *.c: fix getopt.h includes
+	
+	* Makefile.am: add LIBOBJS to LDADD lines
+
+	* configure.in: check for getopt_long availability and compile in
+	ours if not available
+
 2002-01-03  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: put termios cspeed check in a private section

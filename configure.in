@@ -97,6 +97,12 @@ if test $ac_cv_termios_cspeed = yes; then
 fi
 
 dnl ******************************
+dnl getopt checking
+dnl ******************************
+AC_CHECK_FUNCS(getopt_long, , [LIBOBJS="$LIBOBJS getopt.o getopt1.o"] )
+AC_SUBST(LIBOBJS)
+
+dnl ******************************
 dnl iconv checking
 dnl ******************************
 have_iconv=no

@@ -24,7 +24,11 @@
 # include <netinet/in.h>
 #endif
 
+#ifndef HAVE_GETOPT_LONG
 #include "getopt.h"
+#else
+#include <getopt.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
