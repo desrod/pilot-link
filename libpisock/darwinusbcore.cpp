@@ -97,7 +97,7 @@
 													// with exactly the size of one USB packet works muuuch better.
 // Static variables
 static IONotificationPortRef		usb_notify_port;
-static IOUSBInterfaceInterface182** usb_interface;	// the USB interface we are talking to
+static IOUSBInterfaceInterface**	usb_interface;	// the USB interface we are talking to
 static IOUSBDeviceInterface**		usb_device;		// the USB device we are talking to (kept for the CLOSE_NOTIFICATION control request)
 static io_iterator_t		usb_device_added_iter;	// iterators for the device added notifications
 static io_object_t			usb_device_notification;// the general interest notification we use to detect when the device is removed
@@ -198,6 +198,7 @@ typedef struct
 #define	VENDOR_HANDSPRING			0x082d
 #define	VENDOR_PALMONE				0x0830
 #define	VENDOR_TAPWAVE				0x12ef
+#define	PRODUCT_PALMCONNECT_USB		0x0080
 #define	PRODUCT_HANDSPRING_VISOR	0x0100
 #define PRODUCT_SONY_CLIE_3_5		0x0038
 
@@ -243,7 +244,7 @@ acceptedDevices[] = {
 	{2096,82},
 	{2096,83},
 	{2096,96},		// Zire 71, Tungsten TT, E, T2, T3
-	{2096,97},
+	{2096,97},		// Zire 31
 	{2096,98},
 	{2096,99},
 	{2096,112},		// Zire
@@ -525,10 +526,6 @@ start_listening()
     runLoopSource = IONotificationPortGetRunLoopSource (usb_notify_port);
     CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
 
-    // Retain additional references because we use this same dictionary with two calls to
-    // IOServiceAddMatchingNotification, each of which consumes one reference.
-    matchingDict = (CFMutableDictionaryRef) CFRetain (matchingDict);
-
     // Now set up two notifications, one to be called when a raw device is first matched by I/O Kit, and the other to be
     // called when the device is terminated.
     kr = IOServiceAddMatchingNotification (	usb_notify_port,
@@ -557,7 +554,7 @@ stop_listening()
 	}
 
 	if (usb_opened && usb_device)
-		control_request (usb_device, 0xc2, GENERIC_CLOSE_NOTIFICATION, NULL, 0x12);
+		control_request (usb_device, 0xc2, GENERIC_CLOSE_NOTIFICATION, NULL, 0);
 
 	if (usb_interface) {
 		(*usb_interface)->USBInterfaceClose (usb_interface);
@@ -599,6 +596,12 @@ device_added (void *refCon, io_iterator_t iterator)
 	UInt8			inputPipeNumber, outputPipeNumber;
 	
     while (ioDevice = IOIteratorNext (iterator)) {
+		if (usb_opened) {
+			// we can only handle one connection at once
+			IOObjectRelease (ioDevice);
+			continue;
+		}
+
         kr = IOCreatePlugInInterfaceForService (ioDevice,
 												kIOUSBDeviceUserClientTypeID,
 												kIOCFPlugInInterfaceID,
@@ -713,6 +716,12 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	 * Usually, it's a control request or a sequence of control requests
 	 *
 	 */
+	if (vendor == VENDOR_PALMONE && product == PRODUCT_PALMCONNECT_USB) {
+		// PalmConnect USB is a serial <-> USB adapter. Even though it shows up
+		// as a USB device, it really requires talking using a serial protocol
+		return kIOReturnSuccess;
+	}
+
 	if (vendor == VENDOR_HANDSPRING && product == PRODUCT_HANDSPRING_VISOR) {
 		kr = read_visor_connection_information (dev);
 	}
