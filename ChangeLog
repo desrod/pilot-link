@@ -2,6 +2,8 @@
 
 	* More code cleanups, function relocation, pilot_connect().
 
+	* configure.in: Fixed the version
+
 2001-12-30  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Lots of changes, so many, I'm not listing the files here. Many
