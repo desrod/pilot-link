@@ -36,7 +36,7 @@ Display version of \fBpi\-getram\fR.
 .TP 
 <\fIfilename\fR>
 Write the RAM image to the file named by <\fIfilename\fR>. If this is
-omitted, the filename will be written out as the rom version name as
+omitted, the filename will be written out as the RAM version name as
 follows: 'pilot-$VERSION.ram', where an OS 3.5 image would be written as the
 filename of 'pilot-3.5.0.ram'.
 

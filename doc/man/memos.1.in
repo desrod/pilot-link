@@ -45,7 +45,7 @@ Delete memo named by number <\fInum\fR>.
 
 .TP 
 \fB\-f\fR, \fB\-\-file\fR [\fIfile\fR] ..    
-Use <file> as input file (instead of the default MemoDB.pdb).
+Use <file> as input file (instead of MemoDB.pdb).
 
 .TP 
 \fB\-s\fR, \fB\-\-save\fR <\fIdir\fR>

@@ -75,7 +75,7 @@ import Memo records from a text format into the Palm.
 
 .TP 
 \fBinstall\-netsync\fR
-modify the "Network Preference" settings and report additional intormation
+modify the "Network Preference" settings and report additional information
 about the Palm, such as the IP, hostname, and other information as they are
 set on the Palm.
 
@@ -86,7 +86,7 @@ import ToDo records from a text format into the Palm.
 
 .TP 
 \fBinstall\-user\fR
-modify the "User Preference" settings and report additional intormation
+modify the "User Preference" settings and report additional information
 about the Palm, such as the Username and UserID as they are set on the Palm.
 
 .TP 

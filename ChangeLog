@@ -16,6 +16,18 @@
 	* src/read-ical.c: Fallout when no file is passed (closes Debian bug
 	  #176294)
 
+	* doc/man/dlpsh.1.in: Fixing typos (Theodore Robert Harris)
+
+	* doc/man/memos.1.in: Ditto
+
+	* doc/man/pi-getram.1.in: Ditto
+
+	* doc/man/pilot-addresses.1.in: Ditto
+
+	* doc/man/pilot-link.7.in: Ditto
+
+	* doc/man/pilot-xfer.1.in: Ditto
+
 2003-10-05 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* First pass at VFS functionality

@@ -2,6 +2,7 @@
 .\" 
 .TH "pilot-addresses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
+
 \fBpilot\-addresses\fR \- read and write address book databases to and from
 a Palm handheld, such as those made from \fIPalm\fR, \fIHandspring\fR,
 \fIHandera\fR, \fITRGPro\fR, \fISony\fR or other Palm handheld.

@@ -36,7 +36,7 @@ Set the time on the Palm from the currently-set desktop time. This does not work
 
 .TP 
 \fBrm\fR
-Remove a file and delete it entirely from the Palm device. This is an irrevokable process, and you cannot "undelete" a file, once it has been deleted with this command.
+Remove a file and delete it entirely from the Palm device. This is an irrevocable process, and you cannot "undelete" a file, once it has been deleted with this command.
 
 .TP 
 \fBquit\fR
