@@ -48,13 +48,6 @@ int pilot_connect(char *port);
 	goto error; \
   }
 
-/* Utility defines */
-#define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
-
-#define CREATOR pi_mktag('T', 'e', 's', 't')
-#define DATA pi_mktag('D', 'A', 'T', 'A')
-#define INFO pi_mktag('I', 'N', 'F', 'O')
-
 int
 main (int argc, char **argv)
 {
