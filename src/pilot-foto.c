@@ -780,7 +780,7 @@ int main(int argc, const char *argv[])
 		case 'F':
 		case 'c':
 			if (mode != mode_none) {
-				fprintf(stderr,"   ERROR: Specify only mode (delete, install, list, fetch, convert).\n");
+				fprintf(stderr,"   ERROR: Specify only one mode (delete, install, list, fetch, convert).\n");
 				return 1;
 			}
 			mode = c;
