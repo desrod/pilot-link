@@ -106,11 +106,12 @@ fi
 
 
 dnl ******************************
-dnl Use fink on MacOS X, if found
+dnl Platform-specific things
 dnl ******************************
 
 case "$host" in
         *darwin*)
+		dnl Use fink under MacOS X
 		AC_MSG_CHECKING(for fink support)
 		if test -d "/sw/lib" -a -d "/sw/include"; then
 			CPPFLAGS="$CPPFLAGS -I/sw/include"
@@ -119,8 +120,16 @@ case "$host" in
 		else
 			AC_MSG_RESULT(no)
 		fi
+
+		null_device="/dev/null"
         ;;
+
+	*)
+		null_device="/dev/null"
+	;;
 esac
+AC_DEFINE_UNQUOTED(NULL_DEVICE, "$null_device",
+		   [Your system's bitbucket (usually /dev/null or NUL)])
 
 
 dnl ******************************
@@ -342,34 +351,6 @@ fi
 AM_CONDITIONAL(INCLUDED_POPT, test "x$with_included_popt" = "xyes")
 AC_SUBST(POPT_LIBS)
 AC_SUBST(POPT_INCLUDES)
-
-dnl ******************************
-dnl Test for getopt
-dnl ******************************
-
-dnl use our included getopt if the system doesn't have getopt() or
-dnl getopt_long()
-
-need_getopt=no
-
-if test "x$enable_clients" != "xno"; then
-	unistd_getopt=yes
-	getopt_getopt=yes
-	AC_CHECK_HEADER([unistd.h], [
-		AC_CHECK_FUNCS(
-			[getopt getopt_long], , unistd_getopt=no)], unistd_getopt=no)
-
-	AC_CHECK_HEADER([getopt.h], [
-		AC_CHECK_FUNCS(
-			[getopt getopt_long], , getopt_getopt=no)], getopt_getopt=no)
-	
-	if test "x$unistd_getopt" = "xno"; then
-		if test"x$getopt_getopt" = "xno"; then
-			need_getopt=yes
-		fi
-	fi
-fi
-AM_CONDITIONAL(NEED_GETOPT,[test "x$need_getopt" = "xyes"])
 
 
 dnl ******************************

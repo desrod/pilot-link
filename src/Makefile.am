@@ -84,7 +84,6 @@ bin_SCRIPTS =		\
 	$(PERLSCRIPTS)
 
 #ccexample_SOURCES = 		\
-#	$(getopt_sources)	\
 #	ccexample.cc
 #ccexample_LDADD = 		\
 #	$(top_builddir)/libpisock++/libpisock++.la	\
@@ -293,18 +292,11 @@ pilot_foto_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
+
 ######################################################
 # pilot-mail has been deprecated, and replaced with 
 # pilot-mailsync. Please use that instead. 
 # http://wissrech.iam.uni-bonn.de/people/garcke/pms/
-######################################################
-#pilot_mail_SOURCES = 		\
-#	$(getopt_sources)	\
-#	parsedate.y		\
-#	pilot-mail.c
-#pilot_mail_LDADD = 		\
-#	$(POPT_LIBS)		\
-#	$(top_builddir)/libpisock/libpisock.la
 ######################################################
 
 
@@ -412,9 +404,6 @@ CLEANFILES = $(PERLSCRIPTS)
 endif
 
 EXTRA_DIST = 			\
-	getopt.h		\
-	getopt.c		\
-	getopt1.c		\
 	ietf2datebook.PL	\
 	pilot-undelete.PL	\
 	sync-plan.PL		\
@@ -449,7 +438,6 @@ EXTRA_DIST = 			\
 	pilot-dedupe.c		\
 	pilot-file.c		\
 	pilot-foto.c		\
-	pilot-mail.c		\
 	pilot-schlep.c		\
 	pilot-treofoto.c	\
 	pilot-wav.c		\
