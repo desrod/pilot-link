@@ -801,7 +801,7 @@ shorttxt_pushback_line(char *buffer, struct shorttxt_file_data *in_file)
  
   Especially useful for printing multi-line text, to properly count line
   numbers
- +/
+ */
 void
 shorttxt_write_str(struct shorttxt_file_data *out_file,
 		   const char *out_string)
