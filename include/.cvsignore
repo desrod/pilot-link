@@ -1,5 +1,2 @@
 Makefile
 Makefile.in
-stamp-h*
-pi-config.h
-pi-sockaddr.h

@@ -1,5 +1,9 @@
 2001-11-23  JP Rosevear  <jpr@ximian.com>
 
+	* autogen.sh: handle ACLOCAL_FLAGS properly
+
+2001-11-23  JP Rosevear  <jpr@ximian.com>
+	
 	* include/pi-sockaddr-win32.h: ditto
 
 	* include/pi-sockaddr.h: ditto

@@ -13,6 +13,9 @@ ltconfig
 ltmain.sh
 .deps
 .libs
+stamp-h
+stamp-h.in
+aclocal.m4
 Makefile
 Makefile.in
 addresses
