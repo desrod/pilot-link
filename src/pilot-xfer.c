@@ -1737,8 +1737,9 @@ int main(int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		{"port",     'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
-		{"version",  'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
-		{"verbose",  'V', POPT_ARG_NONE, &verbose, 0, "Print  verbose  information - normally routine progress messages will be displayed.", NULL},
+		{"version",   0 , POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+		POPT_AUTOHELP
+		{"verbose",  'v', POPT_ARG_NONE, &verbose, 0, "Print  verbose  information - normally routine progress messages will be displayed.", NULL},
 
 		/* action indicators that take a <dir> argument */
 		{"backup",   'b', POPT_ARG_STRING, &dirname, palm_op_backup, "Back up your Palm to <dir>", "dir"},
@@ -1769,15 +1770,14 @@ int main(int argc, const char *argv[])
 		/* misc */
 		{"exec",     'x', POPT_ARG_STRING, NULL, 'x', "Execute a shell command for intermediate processing", "command"},
 		{"booger",    0 , POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, DEPRECATED_OPTION, NULL, NULL},
-		POPT_AUTOHELP
 		POPT_TABLEEND
 	};
 
 	const char *help_header_text =
-		" [-p  <port>] [--help] <options> <actions>\n"
+		"\n"
 		"   Sync, backup, install, delete and more from your Palm device.\n"
 		"   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
-		"   Use exactly one of -brsudfiml; mix in -aexDPV, --rom and --with-os.\n\n";
+		"   Use exactly one of -brsudfiml; mix in -aexDPv, --rom and --with-os.\n\n";
 
 	pc = poptGetContext("pilot-xfer", argc, argv, options, 0);
 
@@ -1793,7 +1793,6 @@ int main(int argc, const char *argv[])
 	add_popt_alias(pc,"Illegal", 0,"--booger --illegal");
 	add_popt_alias(pc,NULL, 'I',"--booger --illegal");
 
-	poptSetOtherOptionHelp(pc, help_header_text);
 	while ((optc = poptGetNextOpt(pc)) >= 0) {
 		switch (optc) {
 		case 'v':
