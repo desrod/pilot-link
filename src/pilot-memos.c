@@ -190,12 +190,13 @@ int main(int argc, const char *argv[])
 	const char
                 *progname 	= argv[0];
 
-	char 	appblock[0xffff],
-		dirname[MAXDIRNAMELEN] = "",
-		*buf 		= NULL,
-		category_name[MAXDIRNAMELEN + 1] = "",
-		filename[MAXDIRNAMELEN + 1], *ptr,
-		*fnameArg, *dnameArg, *catnameArg, *regexArg;
+	char    appblock[0xffff],
+		*buf = NULL,
+		*dirname = NULL,
+		*category_name = NULL,
+		*filename = NULL,
+		*regex = NULL,
+	        *ptr;
 
 	struct 	MemoAppInfo mai;
 	struct 	pi_file *pif = NULL;
@@ -210,15 +211,15 @@ int main(int argc, const char *argv[])
 		USERLAND_RESERVED_OPTIONS
 	        {"verbose",	'v', POPT_ARG_VAL, &verbose, 1, "Verbose, with -s, print each filename when written"},
         	{"delete",	'd', POPT_ARG_VAL, &delete,  1, "Delete memo named by number <num>"},
-                {"file",	'f', POPT_ARG_STRING, &fnameArg, 'f', "Use <file> as input file (instead of MemoDB.pdb)"},
-                {"save",	's', POPT_ARG_STRING, &dnameArg, 's', "Save memos in <dir> instead of writing to STDOUT"},
-	        {"category",	'c', POPT_ARG_STRING, &catnameArg, 'c', "Only upload memos in this category"},
-                {"regex",	'r', POPT_ARG_STRING, &regexArg, 'r', "Select memos saved by regular expression on title"},
+                {"file",	'f', POPT_ARG_STRING, &filename, 0, "Use <file> as input file (instead of MemoDB.pdb)"},
+                {"save",	's', POPT_ARG_STRING, &dirname, 0, "Save memos in <dir> instead of writing to STDOUT"},
+	        {"category",	'c', POPT_ARG_STRING, &category_name, 0, "Only upload memos in this category"},
+                {"regex",	'r', POPT_ARG_STRING, &regex, 0, "Select memos saved by regular expression on title"},
                 POPT_TABLEEND
 	};
 
 	po = poptGetContext("memos", argc, argv, options, 0);
-	poptSetOtherOptionHelp(po,"[-p port] [-v] <options>\n\n"
+	poptSetOtherOptionHelp(po,"\n\n"
 		"  Manipulate Memo entries from a file or your Palm device\n\n"
 		"  By default, the contents of your Palm's memo database will be written to\n"
 		"  standard output as a standard UNIX mailbox (mbox-format) file, with each\n"
@@ -238,41 +239,32 @@ int main(int argc, const char *argv[])
 		"  If '-f' is specified, the specified file will be treated as a memo\n"
 		"  database from which to read memos, rather than HotSyncing from the Palm.\n");
 
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		switch (c) {
-		case 'f':
-			strncpy(filename, fnameArg, MAXDIRNAMELEN);
-			filename[MAXDIRNAMELEN] = '\0';
-			break;
-		case 's':
-			strncpy(dirname, dnameArg, sizeof(dirname));
-			mode = MEMO_DIRECTORY;
-			break;
-		case 'c':
-			strncpy(category_name, catnameArg, MAXDIRNAMELEN);
-			category_name[strlen( category_name )] = '\0';
-			break;
-		case 'r':
-			ret = regcomp(&title_pattern, regexArg, REG_NOSUB);
-			buf = (char *) malloc(bufsize);
-			if (ret) {
-				regerror(ret, &title_pattern, buf, bufsize);
-				printf("%s\n", buf);
-				exit(EXIT_FAILURE);
-			}
-			title_matching = 1;
-			break;
-		default:
-			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
-			return -1;
-		}
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return -1;
 	}
 
 	if (c < -1)
                 plu_badoption(po, c);
 
+	if (regex) {
+		ret = regcomp(&title_pattern, regex, REG_NOSUB);
+		buf = (char *) malloc(bufsize);
+		if (ret) {
+			regerror(ret, &title_pattern, buf, bufsize);
+			fprintf(stderr,"   ERROR: Regexp - %s\n", buf);
+			return 1;
+		}
+		title_matching = 1;
+	}
+
 	/* FIXME - Need to add tests here for port/filename, clean this. -DD */
-	if (filename[0] == '\0') {
+	if (!filename) {
 
 	        sd = plu_connect();
 
@@ -284,10 +276,10 @@ int main(int argc, const char *argv[])
 
 		/* Open the Memo Pad's database, store access handle in db */
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MemoDB", &db) < 0) {
-			printf("Unable to open MemoDB.\n");
+			fprintf(stderr,"   ERROR: Unable to open MemoDB on Palm.\n");
 			dlp_AddSyncLogEntry(sd,
 					    "Unable to open MemoDB.\n");
-			exit(EXIT_FAILURE);
+			goto error_close;
 		}
 
 		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
@@ -295,8 +287,8 @@ int main(int argc, const char *argv[])
 	} else {
 		pif = pi_file_open(filename);
 		if (!pif) {
-			perror("pi_file_open");
-			exit(EXIT_FAILURE);
+			fprintf(stderr,"   ERROR: pi_file_open: %s\n",strerror(errno));
+			return 1;
 		}
 
 		pi_file_get_app_info(pif, (void *) &ptr, &len);
@@ -314,11 +306,11 @@ int main(int argc, const char *argv[])
 				match_category = index;
 		}
 		if (match_category < 0) {
-			printf("Can't find specified Memo category \"%s\".\n",
+			fprintf(stderr,"   ERROR: Can't find specified Memo category \"%s\".\n",
 				category_name);
 			dlp_AddSyncLogEntry(sd,
 				"Can't find specified memo category.\n");
-			exit(EXIT_FAILURE);
+			goto error_close;
 		};
 	}
 
@@ -326,7 +318,7 @@ int main(int argc, const char *argv[])
 
 	for (index = 0;; index++) {
 
-		if (filename[0] == '\0') {
+		if (!filename) {
 			if (match_category >= 0) {
 				len = dlp_ReadNextRecInCategory(sd, db,
 							        match_category,
@@ -389,7 +381,7 @@ int main(int argc, const char *argv[])
 
 	pi_buffer_free (buffer);
 
-	if (delete && (filename[0] == '\0')) {
+	if (delete && !filename) {
 		if (verbose)
 			printf("Deleting record %d.\n", (int) id);
 		dlp_DeleteRecord(sd, db, 0, id);
@@ -400,7 +392,7 @@ int main(int argc, const char *argv[])
 		free(buf);
 	}
 
-	if (filename[0] == '\0') {
+	if (!filename) {
 		/* Close the database */
 		dlp_CloseDB(sd, db);
 		dlp_AddSyncLogEntry(sd, "Successfully read memos from Palm.\n"
@@ -412,7 +404,12 @@ int main(int argc, const char *argv[])
 	return 0;
 
 error_close:
-	pi_close(sd);
+	if (pif) {
+		pi_file_close(pif);
+	}
+	if (sd >= 0) {
+		pi_close(sd);
+	}
 
 error:
 	return -1;
