@@ -1,34 +1,34 @@
-use Config;
-print $Config{startperl}, " -w\n";
-print <DATA>;
-__DATA__;
-# -*- perl -*-
+#!/usr/bin/env perl 
+
 ######################################################################
 # ietf2datebook.pl -- Convert IETF agenda to suitable format for
-#		      install-datebook 
+#		      install-datebook
+#
 # Copyright (c) 1997 Tero Kivinen
 #
-# This is free software, licensed under the GNU Public License V2.
-# See the file COPYING for details.
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ######################################################################
-#         Program: ietf2datebook.pl
-#	  $Source$
-#	  Author : $Author$
-#
-#	  (C) Tero Kivinen 1997 <kivinen@iki.fi>
-#
-#	  Creation          : 03:20 Aug  8 1997 kivinen
-#	  Last Modification : 04:13 Aug  8 1997 kivinen
-#	  Last check in     : $Date$
-#	  Revision number   : $Revision$
-#	  State             : $State$
-#	  Version	    : 1.4
-#	  Edit time	    : 3 min
-#
-#	  Description       : Convert IETF agenda to suitable format for
-#		      	      install-datebook 
-#
-######################################################################
+
+use strict;
+# use warnings;
+# use diagnostics;
+
+print <DATA>;
+
+__DATA__;
+# -*- perl -*-
 
 while (<>) {
     chomp;

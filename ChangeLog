@@ -30,6 +30,8 @@
 
 	* src/read-notepad.c: Ditto
 
+	* src/ietf2datebook.PL: Cleaned up perl 
+
 	* doc/man/pilot-addresses.1: Updated manpage
 	
 	* doc/man/install-user.1: Ditto
