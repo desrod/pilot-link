@@ -50,7 +50,7 @@ dnl Pilot Link Library Version
 dnl libpisock.so
 dnl ******************************
 PISOCK_CURRENT=8
-PISOCK_REVISION=4
+PISOCK_REVISION=5
 PISOCK_AGE=0
 
 AC_SUBST(PISOCK_CURRENT)
@@ -63,7 +63,7 @@ dnl Pilot Link Sync Library Version
 dnl libpisync.so
 dnl ******************************
 PISYNC_CURRENT=0
-PISYNC_REVISION=0
+PISYNC_REVISION=1
 PISYNC_AGE=0
 
 AC_SUBST(PISYNC_CURRENT)
@@ -912,6 +912,7 @@ echo "
   -------------------------.
   pilot-link version...... : $VERSION
   libpisock version....... : $PISOCK_CURRENT.$PISOCK_AGE.$PISOCK_REVISION
+  libpisync version....... : $PISYNC_CURRENT.$PISYNC_AGE.$PISYNC_REVISION
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
