@@ -35,7 +35,6 @@ java_files= \
 	$(srcdir)/org/gnu/pilotlink/ToDoRecord.java	\
 	$(srcdir)/org/gnu/pilotlink/Record.java	\
 	$(srcdir)/test.java	\
-#	$(srcdir)/tst/ftbtest.java	\
 	$(srcdir)/datebooktst.java	\
 	$(srcdir)/adrtest.java
 
