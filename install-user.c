@@ -48,9 +48,8 @@ static void Help(char *progname)
 	       "     -p <port>         Use device file <port> to communicate with Palm\n"
 	       "     -u <username>     Your username, use quotes for spaces (see example)\n"
 	       "     -i <userid>       A 5-digit numeric UserID, required for PalmOS\n"
-	       "     -h, --help        Display this information\n\n"
-	       "     -v, --version     Display this information\n\n"
-	       "   Only the port option is required, the other options are... optional.\n\n"
+	       "     -h, --help        Display this information\n"
+	       "     -v, --version     Display version information\n\n"
 	       "   Examples: %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n"
 	       "             %s -p /dev/pilot -o Host -a 192.168.1.1 -n 255.255.255.0\n\n",
 	       progname, progname, progname);
@@ -100,9 +99,6 @@ int main(int argc, char *argv[])
 	sd = pilot_connect(port);
 	if (sd < 0)
 		goto error;
-
-	if (dlp_OpenConduit(sd) < 0)
-		goto error_close;
 
 	if (dlp_ReadUserInfo(sd, &User) < 0)
 		goto error_close;

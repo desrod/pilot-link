@@ -31,13 +31,13 @@ struct option options[] = {
 	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{"enable",      no_argument,       NULL, 'e'},
-	{"hostname",    required_argument, NULL, 'o'},
+	{"hostname",    required_argument, NULL, 'H'},
 	{"address",     required_argument, NULL, 'a'},
 	{"netmask",     required_argument, NULL, 'n'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:eo:a:n:l:";
+static const char *optstring = "hvp:eH:a:n:l:";
 
 static void Help(char *progname)
 {
@@ -51,7 +51,6 @@ static void Help(char *progname)
 	       "     -n <netmask>      The subnet mask of the network your Palm is on\n"
 	       "     -h, --help        Display this information\n\n"
 	       "     -v, --version     Display this information\n\n"
-	       "   Only the port option is required, the other options are... optional.\n\n"
 	       "   Examples: %s -p /dev/pilot -o \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
 	       progname, progname);
 	return;

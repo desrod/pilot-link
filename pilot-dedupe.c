@@ -17,25 +17,25 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "pi-header.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
-#include "pi-header.h"
 
-/* Declare prototypes */
-void Help(char *progname);
-int compare_r(const void *av, const void *bv);
+int pilot_connect(const char *port);
 
-/* Print usage instructions */
-void Help(char *progname)
-{
-	fprintf(stderr, "   Usage: %s %s dbname [dbname ...]\n\n",
-		progname, TTYPrompt);
-	exit(2);
-}
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
+	{"port",        required_argument, NULL, 'p'},
+	{NULL,          0,                 NULL, 0}
+};
+
+static const char *optstring = "hvp:";
 
 struct record {
 	struct record *next;
@@ -57,7 +57,7 @@ struct record {
  * Returns:     Nothing
  *
  ***********************************************************************/
-int compare_r(const void *av, const void *bv)
+static int compare_r(const void *av, const void *bv)
 {
 	int 	i,
 		o;
@@ -84,199 +84,195 @@ int compare_r(const void *av, const void *bv)
 	return o;
 }
 
-struct record *records = 0;
+static int DeDupe (int sd, char *dbname) 
+{
+	int 	count,
+		db,
+		dupe = 0,
+		j,
+		k,
+		l;
+	char buf[0xffff];
+	struct record *r,
+		      **sortidx,
+		      *records = NULL;
+
+	/* Open the database, store access handle in db */
+	printf("Opening %s\n", dbname);
+	if (dlp_OpenDB(sd, 0, dlpOpenReadWrite, dbname, &db) < 0) {
+		printf("Unable to open %s\n", dbname);
+		return -1;
+	}
+
+	printf("Reading records...\n");
+
+	l 	= 0;
+	count 	= 0;
+	for (;;) {
+		int attr;
+		int cat;
+		recordid_t id;
+		int len =
+			dlp_ReadRecordByIndex(sd, db, l,
+					      (unsigned char *) buf,
+					      &id,
+					      0, &attr, &cat);
+
+		l++;
+
+		if (len < 0)
+			break;
+
+		/* Skip deleted records */
+		if ((attr & dlpRecAttrDeleted)
+		    || (attr & dlpRecAttrArchived))
+			continue;
+
+		count++;
+
+		r = (struct record *)
+			malloc(sizeof(struct record));
+
+		r->data = (char *) malloc(len);
+		memcpy(r->data, buf, len);
+		r->len = len;
+		r->cat = cat;
+		r->id = id;
+		r->index = l;
+
+		r->next = records;
+		records = r;
+
+	}
+
+	sortidx = malloc(sizeof(struct record *) * count);
+
+	r = records;
+	for (k = 0; r && (k < count); k++, r = r->next)
+		sortidx[k] = r;
+
+	qsort(sortidx, count, sizeof(struct record *), compare_r);
+
+	printf("Scanning for duplicates...\n");
+
+	for (k = 0; k < count; k++) {
+		struct record *r2;
+		int d = 0;
+
+		r = sortidx[k];
+
+		if (r->len < 0)
+			continue;
+
+		for (j = k + 1; j < count; j++) {
+			r2 = sortidx[j];
+
+			if (r2->len < 0)
+				continue;
+
+			if ((r->len != r2->len)
+			    || memcmp(r->data, r2->data, r->len))
+				break;
+
+			printf
+				("Deleting record %d, duplicate #%d of record %d\n",
+				 r2->index, ++d, r->index);
+			dupe++;
+			dlp_DeleteRecord(sd, db, 0, r2->id);
+
+			r2->len = -1;
+			r2->id = 0;
+
+		}
+		k = j - 1;
+
+	}
+
+	free(sortidx);
+
+	while (records) {
+		if (records->data)
+			free(records->data);
+		r 	= records;
+		records = records->next;
+		free(r);
+	}
+
+	/* Close the database */
+	dlp_CloseDB(sd, db);
+	sprintf(buf, "Removed %d duplicates from %s\n", dupe,
+		dbname);
+	printf("%s", buf);
+	dlp_AddSyncLogEntry(sd, buf);
+
+	return 0;
+}
+
+static void Help(char *progname)
+{
+	printf("   Removes duplicate records from any Palm database\n\n"
+	       "   Usage: %s -p <port> dbname [dbname ...]\n"
+	       "                       -o <hostname> -a <ip> -n <subnet>\n\n"
+	       "   Options:\n"
+	       "     -p <port>         Use device file <port> to communicate with Palm\n"
+	       "     -h, --help        Display this information\n"
+	       "     -v, --version     Display version information\n\n"
+	       "   Examples: %s -p /dev/pilot AddressDb\n\n",
+	       progname, progname);
+	return;
+}
 
 
 int main(int argc, char *argv[])
 {
-	int 	db,
-		idx,
-		l,
-		ret,
+	int     count,
 		sd;
-	char 	*device 	= argv[1],
-		*progname 	= argv[0],
-		buf[0xffff];
-	struct pi_sockaddr addr;
-	struct PilotUser U; 
-	struct record *r;
+	char 	*port 	        = NULL,
+		*progname 	= argv[0];
 
-#ifdef sun
-	extern char *optarg;
-	extern int optind;
-#endif
+	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (count) {
 
-	PalmHeader(progname);
+		case 'h':
+			Help(progname);
+			return 0;
+		case 'v':
+			PalmHeader(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		default:
+		}
+	}
 
-	if (argc < 3)
+	if (optind < 0) {
 		Help(progname);
-
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-		perror("pi_socket");
-		exit(1);
+		fprintf(stderr, "\tERROR: You must specify atleast one database\n");
+		return -1;		
 	}
+	
+	sd = pilot_connect (port);
+	if (sd < 0)
+		goto error;
 
-	addr.pi_family = PI_AF_PILOT;
-	strcpy(addr.pi_device, device);
+	for (; optind < argc; optind++)
+		DeDupe (sd, argv[optind]);
 
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
+	if (dlp_ResetLastSyncPC(sd) < 0)
+		goto error_close;
 
-	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-	     device);
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			device);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	fprintf(stderr, "Connected...\n");
-
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
-
-	/* Tell user (via Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
-
-	for (idx = 2; idx < argc; idx++) {
-		int 	count,
-			dupe = 0,
-			j,
-			k;
-		struct record **sortidx;
-
-
-		/* Open the database, store access handle in db */
-		printf("Opening %s\n", argv[idx]);
-		if (dlp_OpenDB(sd, 0, dlpOpenReadWrite, argv[idx], &db) < 0) {
-			printf("Unable to open %s\n", argv[idx]);
-			/*dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-			   exit(1); */
-			continue;
-		}
-
-		printf("Reading records...\n");
-
-		l 	= 0;
-		count 	= 0;
-		for (;;) {
-			int attr;
-			int cat;
-			recordid_t id;
-			int len =
-			    dlp_ReadRecordByIndex(sd, db, l,
-						  (unsigned char *) buf,
-						  &id,
-						  0, &attr, &cat);
-
-			l++;
-
-			if (len < 0)
-				break;
-
-			/* Skip deleted records */
-			if ((attr & dlpRecAttrDeleted)
-			    || (attr & dlpRecAttrArchived))
-				continue;
-
-			count++;
-
-			r = (struct record *)
-			    malloc(sizeof(struct record));
-
-			r->data = (char *) malloc(len);
-			memcpy(r->data, buf, len);
-			r->len = len;
-			r->cat = cat;
-			r->id = id;
-			r->index = l;
-
-			r->next = records;
-			records = r;
-
-		}
-
-		sortidx = malloc(sizeof(struct record *) * count);
-
-		r = records;
-		for (k = 0; r && (k < count); k++, r = r->next)
-			sortidx[k] = r;
-
-		qsort(sortidx, count, sizeof(struct record *), compare_r);
-
-		printf("Scanning for duplicates...\n");
-
-		for (k = 0; k < count; k++) {
-			struct record *r2;
-			int d = 0;
-
-			r = sortidx[k];
-
-			if (r->len < 0)
-				continue;
-
-			for (j = k + 1; j < count; j++) {
-				r2 = sortidx[j];
-
-				if (r2->len < 0)
-					continue;
-
-				if ((r->len != r2->len)
-				    || memcmp(r->data, r2->data, r->len))
-					break;
-
-				printf
-				    ("Deleting record %d, duplicate #%d of record %d\n",
-				     r2->index, ++d, r->index);
-				dupe++;
-				dlp_DeleteRecord(sd, db, 0, r2->id);
-
-				r2->len = -1;
-				r2->id = 0;
-
-			}
-			k = j - 1;
-
-		}
-
-		free(sortidx);
-
-		while (records) {
-			if (records->data)
-				free(records->data);
-			r 	= records;
-			records = records->next;
-			free(r);
-		}
-
-		/* Close the database */
-		dlp_CloseDB(sd, db);
-		sprintf(buf, "Removed %d duplicates from %s\n", dupe,
-			argv[idx]);
-		printf("%s", buf);
-		dlp_AddSyncLogEntry(sd, buf);
-	}
-
-	dlp_ResetLastSyncPC(sd);
-	pi_close(sd);
+	if (pi_close(sd) < 0)
+		goto error;
+	
 	return 0;
+
+ error_close:
+	pi_close(sd);
+	
+ error:
+	perror("\tERROR:");
+	fprintf(stderr, "\n");
+
+	return -1;
 }

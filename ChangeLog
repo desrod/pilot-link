@@ -1,5 +1,16 @@
 2002-01-16  JP Rosevear  <jpr@ximian.com>
 
+	* install-user.c (Help): remove bogus info
+	(main): don't call dlp_OpenConduit
+
+	* install-netsync.c: use -H insted of -o
+
+	* pilot-dedupe.c: convert to getopt_long, tidy
+
+	* pilot-file.c: convert to getopt_long
+
+2002-01-16  JP Rosevear  <jpr@ximian.com>
+	
 	* tools/Makefile.am: fix cleaning rules
 
 2002-01-16  JP Rosevear  <jpr@ximian.com>

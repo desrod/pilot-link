@@ -20,120 +20,36 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
 
+#include "pi-header.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
-#include "pi-header.h"
-
-#ifdef sun
-extern char *optarg;
-extern int optind;
-#endif
-
-void dump_header(struct pi_file *pf, struct DBInfo *ip);
-void dump_app_info(struct pi_file *pf, struct DBInfo *ip);
-void dump_sort_info(struct pi_file *pf, struct DBInfo *ip);
-void list_records(struct pi_file *pf, struct DBInfo *ip);
-void dump_record(struct pi_file *pf, struct DBInfo *ip);
-
-char *iso_time_str(time_t t);
-void dump(void *buf, int size);
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
 
-int hflag = 0, aflag = 0, sflag = 0, vflag = 0, lflag = 0, 
-	rflag = 0, filedump = 0;
-char *rkey;
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
+	{"header",      no_argument,       NULL, 'H'},
+	{"appinfo",     no_argument,       NULL, 'a'},
+	{"sortinfo",    no_argument,       NULL, 's'},
+	{"list",        no_argument,       NULL, 'l'},
+	{"record",      required_argument, NULL, 'r'},
+	{"record-res",  required_argument, NULL, 'R'},
+	{"dump",        no_argument,       NULL, 'd'},
+	{"dump-res",    no_argument,       NULL, 'D'},
+	{NULL,          0,                 NULL, 0}
+};
 
-static const char *optstring = "hp:Haslr:R:vV";
+static const char *optstring = "hvHaslr:R:dD";
 
-
-int main(int argc, char **argv)
-{
-	int 	ch;
-	char 	*name,
-		*progname 	= argv[0],
-		*port 		= NULL;
-	struct 	pi_file *pf;
-	struct 	DBInfo info;
-		
-	while ((ch = getopt(argc, argv, optstring)) != EOF) {
-		switch (ch) {
-		case 'h':
-			Help(progname);
-			exit(0);
-		case 'p':
-			port = optarg;
-			break;
-
-		case 'H':
-			hflag = 1;
-			break;
-		case 'a':
-			aflag = 1;
-			break;
-		case 's':
-			sflag = 1;
-			break;
-		case 'V':
-			filedump = 1;
-			/* FALLTHROUGH */
-		case 'v':
-			vflag = 1;
-			break;
-		case 'l':
-			lflag = 1;
-			break;
-		case 'R':
-			filedump = 1;
-			/* FALLTHROUGH */
-		case 'r':
-			rflag = 1;
-			rkey = optarg;
-			break;
-		default:
-		}
-	}
-
-	name = argv[optind++];
-
-	if (optind != argc)
-		Help(progname);
-
-	if ((pf = pi_file_open(name)) == NULL) {
-		fprintf(stderr, "can't open %s\n", name);
-		exit(1);
-	}
-
-	if (pi_file_get_info(pf, &info) < 0) {
-		fprintf(stderr, "can't get info\n\n");
-		exit(1);
-	}
-
-	if (hflag || vflag)
-		dump_header(pf, &info);
-
-	if (aflag || vflag)
-		dump_app_info(pf, &info);
-
-	if (sflag || vflag)
-		dump_sort_info(pf, &info);
-
-	if (lflag || vflag)
-		list_records(pf, &info);
-
-	if (rflag)
-		dump_record(pf, &info);
-
-	return (0);
-}
 
 /***********************************************************************
  *
@@ -146,7 +62,7 @@ int main(int argc, char **argv)
  * Returns:     Nothing
  *
  ***********************************************************************/
-char *iso_time_str(time_t t)
+static char *iso_time_str(time_t t)
 {
 	struct 	tm tm;
 	static 	char buf[50];
@@ -169,7 +85,7 @@ char *iso_time_str(time_t t)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void dump(void *buf, int n)
+static void dump(void *buf, int n)
 {
 	int 	ch,
 		idx,
@@ -207,7 +123,7 @@ void dump(void *buf, int n)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void dump_header(struct pi_file *pf, struct DBInfo *ip)
+static void dump_header(struct pi_file *pf, struct DBInfo *ip)
 {
 	printf("name: \"%s\"\n", ip->name);
 	printf("flags: 0x%x", ip->flags);
@@ -251,7 +167,7 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
+static void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 {
 	int 	app_info_size;
 	void 	*app_info;
@@ -277,7 +193,7 @@ void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
+static void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 {
 	int 	sort_info_size;
 	void 	*sort_info;
@@ -304,7 +220,7 @@ void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void list_records(struct pi_file *pf, struct DBInfo *ip)
+static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, int verbose)
 {
 	int 	attrs,
 		cat,
@@ -328,7 +244,7 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
 			}
 			printf("%d\t%d\t%s\t%d\n", entnum, size,
 			       printlong(type), id);
-			if (vflag) {
+			if (verbose) {
 				dump(buf, size);
 				printf("\n");
 				if (filedump) {
@@ -355,7 +271,7 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
 			}
 			printf("%d\t%d\t0x%x\t%d\t0x%lx\n", entnum, size,
 			       attrs, cat, uid);
-			if (vflag) {
+			if (verbose) {
 				dump(buf, size);
 				printf("\n");
 			}
@@ -376,7 +292,7 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void dump_record(struct pi_file *pf, struct DBInfo *ip)
+static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int filedump)
 {
 	int 	attrs,
 		cat,
@@ -455,19 +371,111 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip)
 
 static void Help(char *progname)
 {
-	printf("   Dump application and header information from your PRC/PDB files\n\n"
-	       "   Usage: %s -p <port> [options] file\n\n"
+	printf("   Dump application and header information from your local PRC/PDB files\n\n"
+	       "   Usage: %s [options] file\n\n"
 	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -h                Display this information\n\n"
 	       "     -H                Dump the header of the database(s)\n"
 	       "     -a                Dump app_info segment of the database(s)\n"
 	       "     -s                Dump sort_info block of database(s)\n"
 	       "     -l                List all records in the database(s)\n"
 	       "     -r <num>          Dump a record (<num> is an index, or eg 'code0' or a uid '1234')\n"
-	       "     -v       = dump all data and all records, very verbose\n\n"
-	       "     -R, -V as -r, -v, but also dump resources to files\n\n"
-	       "   Examples: %s -p /dev/pilot -l Foo.prc\n"
-	       "             %s -p /dev/pilot -h -a Bar.pdb\n\n", progname, progname, progname);
+	       "     -R <num>          As above but also dump resources to files\n"
+	       "     -d                Dump all data and all records, very verbose\n"
+	       "     -D                As above but also dump resources to files\n"
+	       "     -h, --help        Display this information\n"
+	       "     -v, --version     Display version information\n\n"
+	       "   Examples: %s -l Foo.prc\n"
+	       "             %s -H -a Bar.pdb\n\n", progname, progname, progname);
 	return;
+}
+
+
+int main(int argc, char **argv)
+{
+	int 	count,
+		hflag = 0,
+		aflag = 0,
+		sflag = 0,
+		dflag = 0,
+		lflag = 0, 
+		rflag = 0,
+		filedump = 0;
+	char 	*name,
+		*rkey           = NULL,
+		*progname 	= argv[0];
+	struct 	pi_file *pf;
+	struct 	DBInfo info;
+		
+	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (count) {
+
+		case 'h':
+			Help(progname);
+			return 0;
+		case 'v':
+			PalmHeader(progname);
+			return 0;
+		case 'H':
+			hflag = 1;
+			break;
+		case 'a':
+			aflag = 1;
+			break;
+		case 's':
+			sflag = 1;
+			break;
+		case 'D':
+			filedump = 1;
+			/* FALLTHROUGH */
+		case 'd':
+			dflag = 1;
+			break;
+		case 'l':
+			lflag = 1;
+			break;
+		case 'R':
+			filedump = 1;
+			/* FALLTHROUGH */
+		case 'r':
+			rflag = 1;
+			rkey = optarg;
+			break;
+		default:
+		}
+	}
+
+	if (optind > 0) {
+		name = argv[optind];
+	} else {
+		Help(progname);
+		fprintf(stderr, "ERROR: You must specify a file\n");
+		return -1;
+	}
+	
+	if ((pf = pi_file_open(name)) == NULL) {
+		fprintf(stderr, "can't open %s\n", name);
+		return -1;
+	}
+
+	if (pi_file_get_info(pf, &info) < 0) {
+		fprintf(stderr, "can't get info\n\n");
+		return -1;
+	}
+
+	if (hflag || dflag)
+		dump_header(pf, &info);
+
+	if (aflag || dflag)
+		dump_app_info(pf, &info);
+
+	if (sflag || dflag)
+		dump_sort_info(pf, &info);
+
+	if (lflag || dflag)
+		list_records(pf, &info, filedump, dflag);
+
+	if (rflag)
+		dump_record(pf, &info, rkey, filedump);
+
+	return 0;
 }
