@@ -245,7 +245,7 @@ int main (int argc, char **argv)
 							LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "\t'%s' attrs = 0x%08lx\n", dirItems[j].name, dirItems[j].attr));
 						}
 					}
-				} while (dirIterator != vfsIteratorStop);
+				} while (dirIterator != vfsIteratorStop && result >= 0);
 
 				result = dlp_VFSFileClose (sd, fileRef);
 				CHECK_RESULT(dlp_VFSFileClose);
