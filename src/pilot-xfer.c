@@ -1043,26 +1043,20 @@ static void ListInternal(palm_media_t media_type)
 
 /***********************************************************************
  *
- * Function:    List
+ * Function:    PrintVolumeInfo
  *
- * Summary:     List the databases found on the Palm device's given VFS
- *              volume.  Uses the global vfsdir value.
+ * Summary:     Show information about the given @p volume; the
+ *              VFSInfo structure @p info should already have been
+ *              filled in with a call to VFSVolumeInfo, and buf
+ *              should contain the volume label (if any).
  *
- * Parameters:  None
+ * Parameters:  buf         --> volume label. May be NULL.
+ *              volume      --> volume ref number.
+ *              info        --> volume info
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void printLong(unsigned long l)
-{
-#define SAFE_CHAR(x) (isprint(x) ? x : '?')
-	printf("%c%c%c%c (%lx)",
-		SAFE_CHAR((char)((l&0xff000000)>>24)),
-		SAFE_CHAR((char)((l&0x00ff0000)>>16)),
-		SAFE_CHAR((char)((l&0x0000ff00)>>8)),
-		SAFE_CHAR((char)((l&0x000000ff))),l);
-}
-
 static void PrintVolumeInfo(const char *buf, long volume, struct VFSInfo *info)
 {
 	long size_used, size_total;
@@ -1093,7 +1087,20 @@ static void PrintVolumeInfo(const char *buf, long volume, struct VFSInfo *info)
 	}
 }
 
-static void PrintFileInfo(long volume, const char *path, FileRef file)
+/***********************************************************************
+ *
+ * Function:    PrintFileInfo
+ *
+ * Summary:     Show information about the given @p file (which is
+ *              assumed to have VFS path @p path).
+ *
+ * Parameters:  path        --> path to file in VFS volume.
+ *              file        --> FileRef for already opened file.
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void PrintFileInfo(const char *path, FileRef file)
 {
 	int size;
 	time_t date;
@@ -1105,6 +1112,21 @@ static void PrintFileInfo(long volume, const char *path, FileRef file)
 	printf("   %8d %s %s\n",size,s,path);
 }
 
+/***********************************************************************
+ *
+ * Function:    PrintDir
+ *
+ * Summary:     Show information about the given @p dir on VFS
+ *              volume @p volume. The directory is assumed to have
+ *              path @p path on that volume.
+ *
+ * Parameters:  volume      --> volume ref number.
+ *              path        --> path to directory.
+ *              dir         --> file ref to already opened dir.
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void PrintDir(long volume, const char *path, FileRef dir)
 {
 	unsigned long it = 0;
@@ -1112,7 +1134,7 @@ static void PrintDir(long volume, const char *path, FileRef dir)
 	struct VFSDirInfo infos[64];
 	int i;
 	FileRef file;
-	char buf[256];
+	char buf[vfsMAXFILENAME];
 	int pathlen = strlen(path);
 
 	/* Set up buf so it contains path with trailing / and
@@ -1122,15 +1144,15 @@ static void PrintDir(long volume, const char *path, FileRef dir)
 		return;
 	}
 
-	memset(buf,0,256);
-	strncpy(buf,path,255);
+	memset(buf,0,vfsMAXFILENAME);
+	strncpy(buf,path,vfsMAXFILENAME-1);
 
 	if (buf[pathlen-1] != '/') {
 		buf[pathlen]='/';
 		pathlen++;
 	}
 
-	if (pathlen>254) {
+	if (pathlen>vfsMAXFILENAME-2) {
 		printf("   Path too long.\n");
 		return;
 	}
@@ -1138,12 +1160,12 @@ static void PrintDir(long volume, const char *path, FileRef dir)
 	while (dlp_VFSDirEntryEnumerate(sd,dir,&it,&max,infos) >= 0) {
 		if (max<1) break;
 		for (i = 0; i<max; i++) {
-			memset(buf+pathlen,0,256-pathlen);
-			strncpy(buf+pathlen,infos[i].name,255-pathlen);
+			memset(buf+pathlen,0,vfsMAXFILENAME-pathlen);
+			strncpy(buf+pathlen,infos[i].name,vfsMAXFILENAME-pathlen);
 			if (dlp_VFSFileOpen(sd,volume,buf,dlpVFSOpenRead,&file) < 0) {
 				printf("   %s: No such file or directory.\n",infos[i].name);
 			} else {
-				PrintFileInfo(volume, infos[i].name, file);
+				PrintFileInfo(infos[i].name, file);
 				dlp_VFSFileClose(sd,file);
 			}
 		}
@@ -1151,6 +1173,29 @@ static void PrintDir(long volume, const char *path, FileRef dir)
 }
 
 
+/***********************************************************************
+ *
+ * Function:    FindVFSRoot
+ *
+ * Summary:     Twofold: if @p list_root is non-zero, list the "fake root"
+ *              directory containing all the VFS volumes. Sets @p match
+ *              equal to the VFS volume matching @p root_component (if any).
+ *              Acceptable root components are /slotX/ for slot indicators
+ *              or /volumename/ for for identifying VFS volumes by their
+ *              volume name (note: do not include that "/" in the root
+ *              component).
+ *
+ * Parameters:  root_component --> root path to search for.
+ *              list_root      --> list contents? (otherwise just search)
+ *              match          <-> volume matching root_component.
+ *
+ * Returns:     -2 on VFSVolumeEnumerate error,
+ *              -1 if no match was found,
+ *              0 if a match was found and @p match is set,
+ *              1 if no match but only one VFS volume exists and
+ *                match is set.
+ *
+ ***********************************************************************/
 static int findVFSRoot(const char *root_component, int list_root, long *match)
 {
 	int volume_count=16;
@@ -1209,12 +1254,25 @@ static int findVFSRoot(const char *root_component, int list_root, long *match)
 	return -1;
 }
 
-static void ListVFSDir(long matched_volume, const char *path)
+/***********************************************************************
+ *
+ * Function:    ListVFSDir
+ *
+ * Summary:     Dispatch listing for given @p path to either
+ *              PrintDir or PrintFileInfo, depending on type.
+ *
+ * Parameters:  volume      --> volume ref number.
+ *              path        --> path to file or directory.
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void ListVFSDir(long volume, const char *path)
 {
 	FileRef file;
 	unsigned long attributes;
 
-	if (dlp_VFSFileOpen(sd,matched_volume,path,dlpVFSOpenRead,&file) < 0) {
+	if (dlp_VFSFileOpen(sd,volume,path,dlpVFSOpenRead,&file) < 0) {
 		printf("   No such file or directory.\n");
 		return;
 	}
@@ -1226,15 +1284,31 @@ static void ListVFSDir(long matched_volume, const char *path)
 
 	if (vfsFileAttrDirectory == (attributes & vfsFileAttrDirectory)) {
 		/* directory */
-		PrintDir(matched_volume,path,file);
+		PrintDir(volume,path,file);
 	} else {
 		/* file */
-		PrintFileInfo(matched_volume,path,file);
+		PrintFileInfo(path,file);
 	}
 
 	(void) dlp_VFSFileClose(sd,file);
 }
 
+/***********************************************************************
+ *
+ * Function:    ListVFS
+ *
+ * Summary:     Show information about the directory or file specified
+ *              in global vfsdir. Listing / will always tell you the
+ *              physical VFS slots present; other paths should specify
+ *              either a slot as /slotX/ in the path of a volume label.
+ *              As a special case, /dir/ is mapped to /slot1/dir/ if
+ *              there is only one slot.
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void ListVFS()
 {
 	char root_component[256];
@@ -1288,7 +1362,7 @@ static void ListVFS()
 		/* Path without slot label */
 		memset(root_component,0,256);
 		strncpy(root_component,vfsdir,255);
-	} 
+	}
 
 	if (!root_component[0]) {
 		root_component[0]='/';
@@ -1303,7 +1377,7 @@ static void ListVFS()
  *
  * Function:    List
  *
- * Summary:     List the databases found on the Palm device. 
+ * Summary:     List the databases found on the Palm device.
  *              Dispatches to previous List*() functions.
  *
  * Parameters:  Media type
