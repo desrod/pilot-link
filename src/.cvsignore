@@ -18,8 +18,10 @@ install-netsync
 install-todo
 install-todos
 install-user
+libpiuserland.la
 memos
 money2qif
+parsedate.c
 pi-csd
 pi-getram
 pi-getrom
@@ -50,4 +52,4 @@ read-veo
 reminders
 sync-plan
 tags
-parsedate.c
+userland.lo
