@@ -1,7 +1,7 @@
 SUBDIRS = man
 
 EXTRA_DIST = 		 \
-	CodingGuideline	 \
+	CodingGuidelines \
 	README.debugging \
 	README-Win32.txt \
 	README.usb	 \
