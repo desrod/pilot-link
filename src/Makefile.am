@@ -1,10 +1,12 @@
+SUBDIRS=prc pix pilot-datebook
+
+if ENABLE_USERLAND
+
 if WITH_CXX
 CXX_DIR = libpisock++
 else
 CXX_DIR =
 endif
-
-SUBDIRS=prc pix pilot-datebook
 
 INCLUDES = 			\
 	-I/usr/include		\
@@ -370,6 +372,7 @@ sync-plan: sync-plan.PL
 	chmod +x $@
 
 CLEANFILES = $(PERLSCRIPTS)
+endif
 
 EXTRA_DIST = 			\
 	getopt.h		\
@@ -377,4 +380,50 @@ EXTRA_DIST = 			\
 	getopt1.c		\
 	ietf2datebook.PL	\
 	pilot-undelete.PL	\
-	sync-plan.PL
+	sync-plan.PL		\
+	addresses.c		\
+	ccexample.cc		\
+	debugsh.c		\
+	dlpsh.c			\
+	hinotes.c		\
+	install-datebook.c	\
+	install-expenses.c	\
+	install-hinote.c	\
+	install-memo.c		\
+	install-netsync.c	\
+	install-todo.c		\
+	install-todos.c		\
+	install-user.c		\
+	kittykiller.c		\
+	memos.c			\
+	money2qif.c		\
+	parsedate.y		\
+	pd-tty.c		\
+	pi-csd.c		\
+	pi-getram.c		\
+	pi-getrom.c		\
+	pi-getromtoken.c	\
+	pi-nredir.c		\
+	pi-port.c		\
+	pilot-addresses.c	\
+	pilot-archive.c		\
+	pilot-clip.c		\
+	pilot-debug.c		\
+	pilot-dedupe.c		\
+	pilot-file.c		\
+	pilot-foto.c		\
+	pilot-mail.c		\
+	pilot-prc.c		\
+	pilot-schlep.c		\
+	pilot-wav.c		\
+	pilot-xfer.c		\
+	read-expenses.c		\
+	read-ical.c		\
+	read-notepad.c		\
+	read-palmpix.c		\
+	read-screenshot.c	\
+	read-todos.c		\
+	read-veo.c		\
+	reminders.c		\
+	validate.cc
+

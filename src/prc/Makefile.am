@@ -1,4 +1,8 @@
-prc_DATA = getrom.prc getrom2.prc
-prcdir = $(datadir)/pilot-link
+PRCS = getrom.prc getrom2.prc
 
-EXTRA_DIST = $(prc_DATA)
+if ENABLE_USERLAND
+prc_DATA = $(PRCS)
+prcdir = $(datadir)/pilot-link
+endif
+
+EXTRA_DIST = $(PRCS)

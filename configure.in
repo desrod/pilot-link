@@ -187,45 +187,64 @@ fi
 
 
 dnl ******************************
+dnl Pilot-link userland
+dnl ******************************
+
+AC_ARG_ENABLE(userland,
+		[  --disable-userland      Build only pilot-link libraries],,
+		enable_userland="yes"
+)
+AM_CONDITIONAL(ENABLE_USERLAND,[test "x$enable_userland" != "xno"])
+
+
+dnl ******************************
 dnl PNG Support
 dnl ******************************
-have_png=no
-msg_png=no
+if test "x$enable_userland" != "xno"; then
+	have_png=no
+	msg_png=no
 
-AC_ARG_WITH(libpng, [  --with-libpng           Prefix where libpng is installed])
-
-case $withval in
-	/*)
+	AC_ARG_WITH(libpng,
+		[  --with-libpng           Prefix where libpng is installed]
+	)
+	
+	case $with_libpng in
+		/*)
 		PNG_CFLAGS="-I$withval/include"
 		PNG_LIBS="-L$withval/lib"
-	;;
-esac
+		;;
+	esac
 
-save_CFLAGS="$CFLAGS"
-save_LDFLAGS="$LDFLAGS"
-CFLAGS="$CFLAGS $PNG_CFLAGS"
-LDFLAGS="$LDFLAGS $PNG_LIBS"
+	save_CFLAGS="$CFLAGS"
+	save_LDFLAGS="$LDFLAGS"
+	CFLAGS="$CFLAGS $PNG_CFLAGS"
+	LDFLAGS="$LDFLAGS $PNG_LIBS"
 
-AC_CHECK_LIB(png, main, [have_png=yes; PNG_LIBS="$PNG_LIBS -lpng"],[have_png=no],[-lm])
-if test "$have_png" = yes; then
-	AC_CHECK_HEADER(png.h, , have_png=no)
+	AC_CHECK_LIB(png, main, [have_png=yes; PNG_LIBS="$PNG_LIBS -lpng"],[have_png=no],[-lm])
 	if test "$have_png" = yes; then
-		AC_MSG_CHECKING(for png setjmp support)
-		AC_EGREP_CPP(yes, 
-		[#include <png.h>
-		#ifdef PNG_SETJMP_SUPPORTED
-			yes
-		#endif], , have_png=no)
-		AC_MSG_RESULT($have_png)
+		AC_CHECK_HEADER(png.h, , have_png=no)
 		if test "$have_png" = yes; then
-			AC_DEFINE(HAVE_PNG, 1, [Define if we have PNG support])
-			msg_png=yes
+			AC_MSG_CHECKING(for png setjmp support)
+			AC_EGREP_CPP(yes, 
+			[#include <png.h>
+			#ifdef PNG_SETJMP_SUPPORTED
+				yes
+			#endif], , have_png=no)
+			AC_MSG_RESULT($have_png)
+			if test "$have_png" = yes; then
+				AC_DEFINE(HAVE_PNG, 1, [Define if we have PNG support])
+				msg_png=yes
+			fi
 		fi
 	fi
-fi
 
-CFLAGS="$save_CFLAGS"
-LDFLAGS="$save_LDFLAGS"
+	CFLAGS="$save_CFLAGS"
+	LDFLAGS="$save_LDFLAGS"
+else
+	msg_png=
+	PNG_CFLAGS=
+	PNG_LIBS=
+fi
 
 AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
@@ -292,25 +311,32 @@ AC_ARG_WITH(included-popt,
 		[with_included_popt="auto"]
 )
 
-if test "x$with_included_popt" != "xyes"; then
-	dnl Determine if system popt is good enough
-	AC_CHECK_HEADER(popt.h,
-		AC_CHECK_LIB(popt, poptStrippedArgv,,
-			[with_included_popt="yes"]),
-		[with_included_popt="yes"]
-	)
-fi
+if test "x$enable_userland" != "xno"; then
+	if test "x$with_included_popt" != "xyes"; then
+		dnl Determine if system popt is good enough
+		AC_CHECK_HEADER(popt.h,
+			AC_CHECK_LIB(popt, poptStrippedArgv,,
+				[with_included_popt="yes"]),
+			[with_included_popt="yes"]
+		)
+	fi
 
-AC_MSG_CHECKING(whether to use included popt)
-if test "x$with_included_popt" = "xyes"; then
-	msg_popt="Included"
-    AC_MSG_RESULT(yes)
-	POPT_LIBS='$(top_builddir)/popt/libpopt.la'
-    POPT_INCLUDES='-I$(top_srcdir)/popt'
+	AC_MSG_CHECKING(whether to use included popt)
+	if test "x$with_included_popt" = "xyes"; then
+		msg_popt="included"
+	    AC_MSG_RESULT(yes)
+		POPT_LIBS='$(top_builddir)/popt/libpopt.la'
+	    POPT_INCLUDES='-I$(top_srcdir)/popt'
+	else
+	    AC_MSG_RESULT(no)
+		msg_popt="system"
+	    POPT_LIBS="-lpopt"
+	fi
 else
-    AC_MSG_RESULT(no)
-	msg_popt="System"
-    POPT_LIBS="-lpopt"
+	with_included_popt="no"
+	msg_popt=
+	POPT_LIBS=
+	POPT_INCLUDES=
 fi
 AM_CONDITIONAL(INCLUDED_POPT, test "x$with_included_popt" = "xyes")
 AC_SUBST(POPT_LIBS)
@@ -323,19 +349,26 @@ dnl ******************************
 dnl use our included getopt if the system doesn't have getopt() or
 dnl getopt_long()
 
-unistd_getopt=yes
-getopt_getopt=yes
+need_getopt=no
 
-AC_CHECK_HEADER([unistd.h], [
-	AC_CHECK_FUNCS(
-		[getopt getopt_long], , unistd_getopt=no)], unistd_getopt=no)
+if test "x$enable_clients" != "xno"; then
+	unistd_getopt=yes
+	getopt_getopt=yes
+	AC_CHECK_HEADER([unistd.h], [
+		AC_CHECK_FUNCS(
+			[getopt getopt_long], , unistd_getopt=no)], unistd_getopt=no)
 
-AC_CHECK_HEADER([getopt.h], [
-	AC_CHECK_FUNCS(
-		[getopt getopt_long], , getopt_getopt=no)], getopt_getopt=no)
-
-AM_CONDITIONAL(NEED_GETOPT, 
-	test x$unistd_getopt = xno -a x$getopt_getopt = xno)
+	AC_CHECK_HEADER([getopt.h], [
+		AC_CHECK_FUNCS(
+			[getopt getopt_long], , getopt_getopt=no)], getopt_getopt=no)
+	
+	if test "x$unistd_getopt" = "xno"; then
+		if test"x$getopt_getopt" = "xno"; then
+			need_getopt=yes
+		fi
+	fi
+fi
+AM_CONDITIONAL(NEED_GETOPT,[test "x$need_getopt" = "xyes"])
 
 
 dnl ******************************
@@ -709,6 +742,7 @@ AC_OUTPUT([
 	src/prc/Makefile
 	src/pix/Makefile
 	src/pilot-datebook/Makefile
+	src/pilot-datebook/tests/Makefile
 	bindings/Makefile
 	bindings/Perl/Makefile.PL
 	bindings/Python/setup.py
@@ -754,17 +788,21 @@ AC_MSG_RESULT([
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
   ElectricFence checks.... : $msg_efence
-  Support for popt........ : $msg_popt
-  Readline support........ : $msg_readline
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
   CXXFLAGS................ : $CXXFLAGS
+
+  Userland Tools
+  -------------------------.
+  Build userland tools.... : $enable_userland
+  Support for popt........ : $msg_popt
+  Readline support........ : $msg_readline
+  PNG support............. : $msg_png
 
   Internal Language Support
   -------------------------.
   C++ support............. : $msg_cxx
   Iconv support........... : $msg_iconv
-  PNG support............. : $msg_png
 
   External Language Support
   -------------------------.

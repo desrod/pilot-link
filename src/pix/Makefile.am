@@ -1,5 +1,4 @@
-pixdir = $(datadir)/pilot-link/pix
-pix_DATA = 		\
+PIX =			\
 	b1.gif		\
 	b2.gif		\
 	b3.gif		\
@@ -11,4 +10,9 @@ pix_DATA = 		\
 	casemask.xbm	\
 	case.xbm
 
-EXTRA_DIST = $(pix_DATA)
+if ENABLE_USERLAND
+pixdir = $(datadir)/pilot-link/pix
+pix_DATA = $(PIX)
+endif
+
+EXTRA_DIST = $(PIX)

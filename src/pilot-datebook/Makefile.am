@@ -52,7 +52,43 @@ pilot_datebook_SOURCES = 		\
 pilot_datebook_LDADD =			\
 	$(top_builddir)/libpisock/libpisock.la	
 
-EXTRA_DIST = 			\
-	getopt.h		\
-	getopt.c		\
-	getopt1.c
+EXTRA_DIST = 				\
+	COPYING				\
+	README				\
+	getopt.c			\
+	getopt.h			\
+	getopt1.c			\
+	parsedate.y			\
+	pilot-datebook-compare.c	\
+	pilot-datebook-compare.h	\
+	pilot-datebook-csv.c		\
+	pilot-datebook-csv.h		\
+	pilot-datebook-data.c		\
+	pilot-datebook-data.h		\
+	pilot-datebook-hotsync.c	\
+	pilot-datebook-hotsync.h	\
+	pilot-datebook-ical.c		\
+	pilot-datebook-ical.h		\
+	pilot-datebook-io.c		\
+	pilot-datebook-io.h		\
+	pilot-datebook-job.c		\
+	pilot-datebook-job.h		\
+	pilot-datebook-joblist.c	\
+	pilot-datebook-joblist.h	\
+	pilot-datebook-longtxt.c	\
+	pilot-datebook-longtxt.h	\
+	pilot-datebook-pdb.c		\
+	pilot-datebook-pdb.h		\
+	pilot-datebook-remind.c		\
+	pilot-datebook-remind.h		\
+	pilot-datebook-shorttxt.c	\
+	pilot-datebook-shorttxt.h	\
+	pilot-datebook-sort.c		\
+	pilot-datebook-sort.h		\
+	pilot-datebook-todo.txt		\
+	pilot-datebook-update.c		\
+	pilot-datebook-update.h		\
+	pilot-datebook-windat.c		\
+	pilot-datebook-windat.h		\
+	pilot-datebook.c		\
+	pilot-datebook.h
