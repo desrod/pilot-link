@@ -1,6 +1,4 @@
-char *progname;
-
-void PalmHeader()
+void PalmHeader(char *progname)
 {
    fprintf(stderr,"
    ---o-o---  The Palm name and logo are copyright Palm Computing, Inc.

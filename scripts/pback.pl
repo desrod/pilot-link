@@ -1,15 +1,15 @@
 #!/usr/bin/perl -w
-# pback - wrapper for pilot-xfer to streamline PalmPilot syncs.  12/14/98 by CRJ
+# pback - wrapper for pilot-xfer to streamline Palm syncs.  12/14/98 by CRJ
 #
 # This script is meant to make using pilot-xfer on a daily basis as
 # painless as possible.  You set the PILOTPORT and PILOTRATE environment
 # variables (or hack the copies in the setup section, below), and create
-# a "Pilot" directory under your home directory, and then you can type:
+# a "Palm" directory under your home directory, and then you can type:
 #
 #	pback sync
 #
 # to create (or update) a backup of the RAM and Flash ROM (if any) in
-# your PalmPilot.  At the same time that it does the backup, it will
+# your Palm.  At the same time that it does the backup, it will
 # install any files that have previously fed to pback with, e.g.,
 #
 #	pback install Frotz.prc zork1.pdb
@@ -124,7 +124,7 @@ if ($cmd eq 'install') {
 	  if @ARGV;
 }
 
-# All remaining commands are relative to Pilot dir, so go there...
+# All remaining commands are relative to Palm dir, so go there...
 
 chdir $base  or die "$prog_name: can't chdir $base: $!\n";
 
