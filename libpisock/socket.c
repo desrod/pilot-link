@@ -350,9 +350,13 @@ protocol_queue_add (pi_socket_t *ps, pi_protocol_t *prot)
 {
 	ps->protocol_queue = realloc(ps->protocol_queue,
 		(sizeof(pi_protocol_t *)) * (ps->queue_len + 1));
-
-	ps->protocol_queue[ps->queue_len] = prot;
-	ps->queue_len++;
+	if (ps->protocol_queue != NULL) {
+		ps->protocol_queue[ps->queue_len] = prot;
+		ps->queue_len++;
+	} else {
+		errno = ENOMEM;
+		ps->queue_len = 0;
+	}
 }
 
 
@@ -372,9 +376,13 @@ protocol_cmd_queue_add (pi_socket_t *ps, pi_protocol_t *prot)
 {
 	ps->cmd_queue = realloc(ps->cmd_queue,
 		(sizeof(pi_protocol_t *)) * (ps->cmd_len + 1));
-
-	ps->cmd_queue[ps->cmd_len] = prot;
-	ps->cmd_len++;
+	if (ps->cmd_queue != NULL) {
+		ps->cmd_queue[ps->cmd_len] = prot;
+		ps->cmd_len++;
+	} else {
+		errno = ENOMEM;
+		ps->cmd_len = 0;
+	}
 }
 
 
@@ -428,11 +436,14 @@ protocol_queue_find_next (pi_socket_t *ps, int level)
 
 	if (ps->command && ps->cmd_len == 0)
 		return NULL;
-	else if (!ps->command && ps->queue_len == 0)
+
+	if (!ps->command && ps->queue_len == 0)
 		return NULL;
+
 	if (ps->command && level == 0)
 		return ps->cmd_queue[0];
-	else if (!ps->command && level == 0)
+
+	if (!ps->command && level == 0)
 		return ps->protocol_queue[0];
 	
 	if (ps->command) {
@@ -929,8 +940,10 @@ pi_socket(int domain, int type, int protocol)
 	}
 
 	ps = calloc(sizeof(pi_socket_t), 1);
-	if (ps == NULL)
+	if (ps == NULL) {
+		errno = ENOMEM;
 		return -1;
+	}
 
 	/* Create unique socket descriptor */
 #if defined( OS2 ) || defined( WIN32 )
@@ -977,11 +990,12 @@ pi_socket(int domain, int type, int protocol)
 	if (list == NULL) {
 		close (ps->sd);
 		free(ps);
+		errno = ENOMEM;
 		return -1;
-	} else {
-		installexit();
-		return ps->sd;
 	}
+
+	installexit();
+	return ps->sd;
 }
 
 
@@ -1006,20 +1020,20 @@ pi_socket_setsd(pi_socket_t *ps, int pi_sd)
 #ifdef HAVE_DUP2
 	pi_sd = dup2(pi_sd, ps->sd);
 #else
-#ifdef F_DUPFD
-	close(ps->sd);
-	pi_sd = fcntl(sd, F_DUPFD, ps->sd);
-#else
-	close(ps->sd);
-	pi_sd = dup(pi_sd);	/* Unreliable */
+	#ifdef F_DUPFD
+		close(ps->sd);
+		pi_sd = fcntl(sd, F_DUPFD, ps->sd);
+	#else
+		close(ps->sd);
+		pi_sd = dup(pi_sd);	/* Unreliable */
+	#endif
 #endif
-#endif
-	if (pi_sd != orig)
+	if (pi_sd != orig) {
 		close(orig);
-	else
-		return -1;
+		return 0;
+	}
 
-	return 0;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 }
 
 
@@ -1057,7 +1071,7 @@ pi_socket_init(pi_socket_t *ps)
 pi_socket_list_t *
 pi_socket_recognize(pi_socket_t *ps)
 {
-	return(psl = ps_list_append (psl, ps));
+	return (psl = ps_list_append (psl, ps));
 }
 
 /***********************************************************************
@@ -1081,7 +1095,7 @@ pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (paddr == NULL && getenv("PILOTPORT")) {
@@ -1092,7 +1106,7 @@ pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 		addrlen = sizeof(struct pi_sockaddr);
 	} else if (paddr == NULL) {
 		errno = EINVAL;
-		return -1;
+		return PI_ERR_GENERIC_ARGUMENT;
 	}
 
 	/* Determine the device type */
@@ -1137,7 +1151,7 @@ pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (paddr == NULL && getenv("PILOTPORT")) {
@@ -1148,7 +1162,7 @@ pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 		addrlen = sizeof(struct pi_sockaddr);
 	} else if (paddr == NULL) {
 		errno = EINVAL;
-		return -1;
+		return PI_ERR_GENERIC_ARGUMENT;
 	}
 	
 	/* Determine the device type */
@@ -1193,7 +1207,7 @@ pi_listen(int pi_sd, int backlog)
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	return ps->device->listen (ps, backlog);
@@ -1203,7 +1217,7 @@ pi_listen(int pi_sd, int backlog)
  *
  * Function:    pi_accept
  *
- * Summary:     Accept an incoming connection
+ * Summary:     Wait forever for an incoming connection
  *
  * Parameters:  None
  *
@@ -1213,26 +1227,14 @@ pi_listen(int pi_sd, int backlog)
 int
 pi_accept(int pi_sd, struct sockaddr *addr, size_t *addrlen)
 {
-	pi_socket_t *ps;
-		
-	if (!(ps = find_pi_socket(pi_sd))) {
-		errno = ESRCH;
-		return -1;
-	}
-
-	if (!is_listener (ps))
-		return -1;
-	
-	ps->accept_to = 0;
-
-	return ps->device->accept(ps, addr, addrlen);
+	return pi_accept_to(pi_sd, addr, addrlen, 0);
 }
 
 /***********************************************************************
  *
  * Function:    pi_accept_to
  *
- * Summary:     
+ * Summary:     Accept an incoming connection (with timeout)
  *
  * Parameters:  None
  *
@@ -1246,11 +1248,11 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, size_t *addrlen, int timeout)
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (!is_listener (ps))
-		return -1;
+		return PI_ERR_SOCK_LISTENER;
 
 	ps->accept_to = timeout;
 
@@ -1277,30 +1279,26 @@ pi_getsockopt(int pi_sd, int level, int option_name,
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (level == PI_LEVEL_SOCK) {
-		switch (option_name) {
-		case PI_SOCK_STATE:
-			if (*option_len < sizeof (ps->state))
-				goto error;
+		if (option_name == PI_SOCK_STATE) {
+			if (*option_len != sizeof (ps->state)) {
+				errno = EINVAL;
+				return PI_ERR_GENERIC_ARGUMENT;
+			}
 			memcpy (option_value, &ps->state, sizeof (ps->state));
 			*option_len = sizeof (ps->state);
-			break;
 		}
 		return 0;
-
-	error:
-		errno = EINVAL;
-		return -1;
 	}
 
 	prot = protocol_queue_find (ps, level);
 	
 	if (prot == NULL || prot->level != level) {
 		errno = EINVAL;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	return prot->getsockopt (ps, level, option_name,
@@ -1328,30 +1326,25 @@ pi_setsockopt(int pi_sd, int level, int option_name,
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (level == PI_LEVEL_SOCK) {
-		switch (option_name) {
-		case PI_SOCK_STATE:
-			if (*option_len != sizeof (ps->state))
-				goto error;
-			memcpy (&ps->state, option_value,
-				sizeof (ps->state));
-			break;
+		if (option_name == PI_SOCK_STATE) {
+			if (*option_len != sizeof (ps->state)) {
+				errno = EINVAL;
+				return PI_ERR_GENERIC_ARGUMENT;
+			}
+			memcpy (&ps->state, option_value, sizeof (ps->state));
 		}
 		return 0;
-
-	error:
-		errno = EINVAL;
-		return -1;
 	}
 		
 	prot = protocol_queue_find (ps, level);
-	
+
 	if (prot == NULL || prot->level != level) {
 		errno = EINVAL;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	return prot->setsockopt (ps, level, option_name,
@@ -1376,11 +1369,11 @@ pi_send(int pi_sd, void *msg, size_t len, int flags)
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (!is_connected (ps))
-		return -1;
+		return PI_ERR_SOCK_DISCONNECTED;
 	
 	if (interval)
 		alarm(interval);
@@ -1406,11 +1399,11 @@ pi_recv(int pi_sd, pi_buffer_t *msg, size_t len, int flags)
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (!is_connected (ps))
-		return -1;
+		return PI_ERR_SOCK_DISCONNECTED;
 
 	return ps->protocol_queue[0]->read (ps, msg, len, flags);
 }
@@ -1471,11 +1464,11 @@ pi_tickle(int pi_sd)
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (!is_connected (ps))
-		return -1;
+		return PI_ERR_SOCK_DISCONNECTED;
 
 	LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 			"SOCKET Tickling socket %d\n", pi_sd));
@@ -1485,17 +1478,16 @@ pi_tickle(int pi_sd)
 	
 	/* Set the type to "tickle" */
 	switch (ps->cmd) {
-	case PI_CMD_CMP:
-		type = padTickle;
-		size = sizeof(type);
-		pi_setsockopt(ps->sd, PI_LEVEL_PADP,
-			 PI_PADP_TYPE, &type, &size);
-		break;
-	case PI_CMD_NET:
-		type = PI_NET_TYPE_TCKL;
-		size = sizeof(type);
-		pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_TYPE, &type, &size);
-		break;
+		case PI_CMD_CMP:
+			type = padTickle;
+			size = sizeof(type);
+			pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &type, &size);
+			break;
+		case PI_CMD_NET:
+			type = PI_NET_TYPE_TCKL;
+			size = sizeof(type);
+			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_TYPE, &type, &size);
+			break;
 	}
 
 	result = ps->cmd_queue[0]->write (ps, msg, len, 0);
@@ -1526,7 +1518,7 @@ pi_close(int pi_sd)
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (ps->type == PI_SOCK_STREAM && ps->cmd != PI_CMD_SYS) {
@@ -1575,7 +1567,7 @@ pi_getsockname(int pi_sd, struct sockaddr *addr, size_t *namelen)
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (*namelen > ps->laddrlen)
@@ -1604,7 +1596,7 @@ pi_getsockpeer(int pi_sd, struct sockaddr *addr, size_t *namelen)
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	if (*namelen > ps->raddrlen)
@@ -1640,7 +1632,7 @@ pi_version(int pi_sd)
 
 	if (!(elem = ps_list_find_elem (psl, pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 	
 	if (elem->version != 0)
@@ -1659,13 +1651,11 @@ pi_version(int pi_sd)
 	elem->ps->command = 1;
 
 	/* Get the version */
-	switch (elem->ps->cmd) {
-	case PI_CMD_CMP:
+	if (elem->ps->cmd == PI_CMD_CMP) {
 		size = sizeof(elem->version);
 		pi_getsockopt(elem->ps->sd, PI_LEVEL_CMP,
 			PI_CMP_VERS, &elem->version, &size);
 		elem->maxrecsize = DLP_BUF_SIZE;
-		break;
 	}
 
 	/* Exit command state */
@@ -1693,7 +1683,7 @@ pi_maxrecsize(int pi_sd)
 
 	if (!(elem = ps_list_find_elem (psl, pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
 	/* pi_version will read necessary info from device */
@@ -1703,6 +1693,17 @@ pi_maxrecsize(int pi_sd)
 	return elem->maxrecsize;
 }
 
+/***********************************************************************
+ *
+ * Function:    find_pi_socket
+ *
+ * Summary:     Wrapper for ps_list_find
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 pi_socket_t *
 find_pi_socket(int pi_sd)
 {
@@ -1727,12 +1728,12 @@ pi_watchdog(int pi_sd, int newinterval)
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
-		return -1;
+		return PI_ERR_SOCK_INVALID;
 	}
 
-	watch_list 	= ps_list_append (watch_list, ps);
+	watch_list = ps_list_append (watch_list, ps);
 	signal(SIGALRM, onalarm);
-	interval 	= newinterval;
+	interval = newinterval;
 	alarm(interval);
 
 	return 0;

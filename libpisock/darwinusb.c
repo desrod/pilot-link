@@ -40,6 +40,7 @@
 #include "pi-socket.h"
 #include "pi-source.h"
 #include "pi-usb.h"
+#include "pi-error.h"
 
 /*
  * Theory of operation
@@ -321,7 +322,7 @@ start_listening()
 	if (kr || !masterPort)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: couldn't create a master IOKit Port(%08x)\n", kr));
-		return -1;
+		return PI_ERR_GENERIC_SYSTEM;
 	}
 
 	// Set up the matching criteria for the devices we're interested in
@@ -333,7 +334,7 @@ start_listening()
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: can't create a USB matching dictionary\n"));
 		mach_port_deallocate (mach_task_self(), masterPort);
-		return -1;
+		return PI_ERR_GENERIC_SYSTEM;
 	}
 
 	// Create a notification port and add its run loop event source to our run loop
@@ -1044,7 +1045,7 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 			return 1;
 
 		errno = EINVAL;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
 	
 	// thread exists: empty the read queue
@@ -1126,7 +1127,12 @@ static int
 u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 {
 	if (!usb_opened)
+	{
+		// make sure we report broken connections
+		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
+			ps->state = PI_SOCK_CONBK;
 		return 0;
+	}
 
 	IOReturn kr = (*usb_interface)->WritePipe(usb_interface, usb_out_pipe_ref, buf, len);
 	if (kr != kIOReturnSuccess)
@@ -1141,12 +1147,16 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
 
-	if (!usb_opened)
+	if (!usb_opened) {
+		// make sure we report broken connections
+		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
+			ps->state = PI_SOCK_CONBK;
 		return 0;
+	}
 
 	if (pi_buffer_expect (buf, len) == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 #ifdef DEBUG_USB
@@ -1194,7 +1204,12 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 	if (!usb_opened)
+	{
+		// make sure we report broken connections
+		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
+			ps->state = PI_SOCK_CONBK;
 		len = -1;
+	}
 	else
 	{
 		if (read_queue_used < len)

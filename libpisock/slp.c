@@ -42,6 +42,7 @@
 #include "pi-source.h"
 #include "pi-serial.h"
 #include "pi-slp.h"
+#include "pi-error.h"
 
 /* Declare function prototypes */
 static int slp_getsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -72,7 +73,7 @@ slp_protocol_dup (pi_protocol_t *prot)
 	new_prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
 	new_data = (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
 
-	if ( (new_prot != NULL) && (new_data != NULL) ) {
+	if (new_prot != NULL && new_data != NULL) {
 		new_prot->level	= prot->level;
 		new_prot->dup 	= prot->dup;
 		new_prot->free 	= prot->free;
@@ -120,13 +121,11 @@ slp_protocol_dup (pi_protocol_t *prot)
 static void
 slp_protocol_free (pi_protocol_t *prot)
 {
-	if (prot == NULL)
-		return;
-
-	if ( (prot->data) != NULL)
-		free(prot->data);
-
-	free(prot);
+	if (prot != NULL) {
+		if (prot->data != NULL)
+			free(prot->data);
+		free(prot);
+	}
 }
 
 
@@ -150,7 +149,7 @@ slp_protocol (void)
 	prot 	= (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
 	data 	= (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
 
-	if ( (prot != NULL) && (data != NULL) ) {
+	if (prot != NULL && data != NULL) {
 		prot->level = PI_LEVEL_SLP;
 		prot->dup = slp_protocol_dup;
 		prot->free = slp_protocol_free;
@@ -196,26 +195,22 @@ ssize_t
 slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes;
-	
 	pi_protocol_t	*prot,
 			*next;
-
 	struct 	pi_slp_data *data;
 	struct 	slp *slp;
-		
 	unsigned char slp_buf[PI_SLP_HEADER_LEN + PI_SLP_MTU +
 		PI_SLP_FOOTER_LEN];
-
 	unsigned int	i,
 			n;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (struct pi_slp_data *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SLP);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	
 	slp = (struct slp *) slp_buf;
 
@@ -244,8 +239,10 @@ slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	bytes = next->write(ps, slp_buf,
 		PI_SLP_HEADER_LEN + len + PI_SLP_FOOTER_LEN, flags);
 
-	CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf, 1));
-	CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf));
+	if (bytes >= 0) {
+		CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf, 1));
+		CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf));
+	}
 
 	return bytes;
 }
@@ -265,7 +262,7 @@ slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
  *
  * Parameters:  None
  *
- * Returns:     packet length or -1 on error
+ * Returns:     packet length or negative on error
  *
  ***********************************************************************/
 ssize_t
@@ -289,17 +286,17 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	data = (struct pi_slp_data *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SLP);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	slp_buf = pi_buffer_new (PI_SLP_HEADER_LEN + PI_SLP_MTU + PI_SLP_FOOTER_LEN);
 	if (slp_buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	state 		= 0;
@@ -349,7 +346,7 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 					LOG((PI_DBG_SLP, PI_DBG_LVL_ERR,
 						"SLP RX Packet size exceed buffer\n"));
 					pi_buffer_free (slp_buf);
-					return -1;
+					return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
 				}
 				expect = packet_len;
 			} else {
@@ -359,10 +356,12 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 				return 0;
 			}
 			break;
+
 		case 3:
 			state++;
 			expect = PI_SLP_FOOTER_LEN;
 			break;
+
 		case 4:
 			/* that should be the whole packet. */
 			checksum = crc16(slp_buf->data,
@@ -402,7 +401,7 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 
 			if (pi_buffer_append (buf, &slp_buf->data[PI_SLP_HEADER_LEN], packet_len) == NULL) {
 				errno = ENOMEM;
-				return -1;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 			}
 			pi_buffer_free (slp_buf);
 			return packet_len;
@@ -417,7 +416,7 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR,
 					"SLP RX Read Error\n"));
 				pi_buffer_free (slp_buf);
-				return -1;
+				return bytes;
 			}
 			total_bytes += bytes;
 			expect -= bytes;
@@ -434,7 +433,7 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -446,72 +445,73 @@ slp_getsockopt(pi_socket_t *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
 	data = (struct pi_slp_data *)prot->data;
 
 	switch (option_name) {
-	case PI_SLP_DEST:
-		if (*option_len < sizeof (data->dest))
-			goto error;
-		memcpy (option_value, &data->dest, sizeof (data->dest));
-		*option_len = sizeof (data->dest);
-		break;
-	case PI_SLP_LASTDEST:
-		if (*option_len < sizeof (data->dest))
-			goto error;
-		memcpy (option_value, &data->last_dest,
-			sizeof (data->last_dest));
-		*option_len = sizeof (data->last_dest);
-		break;
-	case PI_SLP_SRC:
-		if (*option_len < sizeof (data->src))
-			goto error;
-		memcpy (option_value, &data->src, 
-			sizeof (data->src));
-		*option_len = sizeof (data->src);
-		break;
-	case PI_SLP_LASTSRC:
-		if (*option_len < sizeof (data->last_src))
-			goto error;
-		memcpy (option_value, &data->last_src, 
-			sizeof (data->last_src));
-		*option_len = sizeof (data->last_src);
-		break;
-	case PI_SLP_TYPE:
-		if (*option_len < sizeof (data->type))
-			goto error;
-		memcpy (option_value, &data->type,
-			sizeof (data->type));
-		*option_len = sizeof (data->type);
-		break;
-	case PI_SLP_LASTTYPE:
-		if (*option_len < sizeof (data->last_type))
-			goto error;
-		memcpy (option_value, &data->last_type,
-			sizeof (data->last_type));
-		*option_len = sizeof (data->last_type);
-		break;
-	case PI_SLP_TXID:
-		if (*option_len < sizeof (data->txid))
-			goto error;
-		memcpy (option_value, &data->txid,
-			sizeof (data->txid));
-		*option_len = sizeof (data->txid);
-		break;
-	case PI_SLP_LASTTXID:
-		if (*option_len < sizeof (data->last_txid))
-			goto error;
-		memcpy (option_value, &data->last_txid,
-			sizeof (data->last_txid));
-		*option_len = sizeof (data->last_txid);
-		break;
+		case PI_SLP_DEST:
+			if (*option_len < sizeof (data->dest))
+				goto error;
+			memcpy (option_value, &data->dest, sizeof (data->dest));
+			*option_len = sizeof (data->dest);
+			break;
+		case PI_SLP_LASTDEST:
+			if (*option_len < sizeof (data->dest))
+				goto error;
+			memcpy (option_value, &data->last_dest,
+					sizeof (data->last_dest));
+			*option_len = sizeof (data->last_dest);
+			break;
+		case PI_SLP_SRC:
+			if (*option_len < sizeof (data->src))
+				goto error;
+			memcpy (option_value, &data->src, 
+					sizeof (data->src));
+			*option_len = sizeof (data->src);
+			break;
+		case PI_SLP_LASTSRC:
+			if (*option_len < sizeof (data->last_src))
+				goto error;
+			memcpy (option_value, &data->last_src, 
+					sizeof (data->last_src));
+			*option_len = sizeof (data->last_src);
+			break;
+		case PI_SLP_TYPE:
+			if (*option_len < sizeof (data->type))
+				goto error;
+			memcpy (option_value, &data->type,
+					sizeof (data->type));
+			*option_len = sizeof (data->type);
+			break;
+		case PI_SLP_LASTTYPE:
+			if (*option_len < sizeof (data->last_type))
+				goto error;
+			memcpy (option_value, &data->last_type,
+					sizeof (data->last_type));
+			*option_len = sizeof (data->last_type);
+			break;
+		case PI_SLP_TXID:
+			if (*option_len < sizeof (data->txid))
+				goto error;
+			memcpy (option_value, &data->txid,
+					sizeof (data->txid));
+			*option_len = sizeof (data->txid);
+			break;
+		case PI_SLP_LASTTXID:
+			if (*option_len < sizeof (data->last_txid))
+				goto error;
+			memcpy (option_value, &data->last_txid,
+					sizeof (data->last_txid));
+			*option_len = sizeof (data->last_txid);
+			break;
 	}
-
+	
 	return 0;
 	
  error:
 	errno = EINVAL;
-	return -1;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 
@@ -523,7 +523,7 @@ slp_getsockopt(pi_socket_t *ps, int level, int option_name,
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -535,45 +535,45 @@ slp_setsockopt(pi_socket_t *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (struct pi_slp_data *)prot->data;
 
 	switch (option_name) {
-	case PI_SLP_DEST:
-		if (*option_len != sizeof (data->dest))
-			goto error;
-		memcpy (&data->dest, option_value,
-			sizeof (data->dest));
-		*option_len = sizeof (data->dest);
-		break;
-	case PI_SLP_SRC:
-		if (*option_len != sizeof (data->src))
-			goto error;
-		memcpy (&data->src, option_value,
-			sizeof (data->src));
-		*option_len = sizeof (data->src);
-		break;
-	case PI_SLP_TYPE:
-		if (*option_len != sizeof (data->type))
-			goto error;
-		memcpy (&data->type, option_value,
-			sizeof (data->type));
-		*option_len = sizeof (data->type);
-		break;
-	case PI_SLP_TXID:
-		if (*option_len != sizeof (data->txid))
-			goto error;
-		memcpy (&data->txid, option_value,
-			sizeof (data->txid));
-		*option_len = sizeof (data->txid);
-		break;
+		case PI_SLP_DEST:
+			if (*option_len != sizeof (data->dest))
+				goto error;
+			memcpy (&data->dest, option_value,
+					sizeof (data->dest));
+			*option_len = sizeof (data->dest);
+			break;
+		case PI_SLP_SRC:
+			if (*option_len != sizeof (data->src))
+				goto error;
+			memcpy (&data->src, option_value,
+					sizeof (data->src));
+			*option_len = sizeof (data->src);
+			break;
+		case PI_SLP_TYPE:
+			if (*option_len != sizeof (data->type))
+				goto error;
+			memcpy (&data->type, option_value,
+					sizeof (data->type));
+			*option_len = sizeof (data->type);
+			break;
+		case PI_SLP_TXID:
+			if (*option_len != sizeof (data->txid))
+				goto error;
+			memcpy (&data->txid, option_value,
+					sizeof (data->txid));
+			*option_len = sizeof (data->txid);
+			break;
 	}
-
+	
 	return 0;
 	
  error:
 	errno = EINVAL;
-	return -1;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 

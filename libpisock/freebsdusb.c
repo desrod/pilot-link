@@ -110,13 +110,15 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 	char 	*pEndPoint 	= NULL;
 
 	/* open the usb device */
-	if ((fd = open(tty, O_RDWR, 0)) == -1) {
-		return -1;	/* errno already set */
+	if ((fd = open(tty, O_RDWR, 0)) < 0) {
+		ps->last_error = PI_ERR_GENERIC_SYSTEM;
+		return PI_ERR_GENERIC_SYSTEM;
 	}
 
 	/* check for a valid file descriptor */
 	if (fd < 0) {
-		return -1;
+		ps->last_error = PI_ERR_GENERIC_SYSTEM;
+		return PI_ERR_GENERIC_SYSTEM;
 	}
 
 	/* fill the udi structure with information about the handheld, after
@@ -124,8 +126,9 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 	   */
 
 	if (ioctl(fd, USB_GET_DEVICEINFO, &udi)) {
-		(void) close(fd);
-		return -1;
+		close(fd);
+		ps->last_error = PI_ERR_GENERIC_SYSTEM;
+		return PI_ERR_GENERIC_SYSTEM;
 	}
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
@@ -138,20 +141,22 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 		 "DEV USB_SET_CONFIG USB FreeBSD fd: %d failed\n", fd));
 
 		close(fd);
-		return -1;
+		ps->last_error = PI_ERR_GENERIC_SYSTEM;
+		return PI_ERR_GENERIC_SYSTEM;
 	}
 
 	/* close the main communication pipe since we have initilized
 	  everything we needed to
 	NOTE: we HAVE to do all this stuff to the main pipe or we will
 	 cause a kernel panic when data is sent over the endpoint */
-	(void) close(fd);
+	close(fd);
 
 	/* open endpoint */
 	/* allocate data for the usb endpoint string */
 	pEndPoint = malloc(strlen(tty)+20);
 	if(!pEndPoint)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
+
 	/* create device endpoint name string */
 	sprintf(pEndPoint, "%s.%d", tty, 2);
 
@@ -160,7 +165,7 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 	if(endpoint_fd < 0) {
 		/* we failed to open the endpoint */
 		free(pEndPoint);
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
 
 	if ((i = fcntl(endpoint_fd, F_GETFL, 0)) != -1) {
@@ -188,9 +193,9 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 	}
 
 	/* save our file descriptor in the pi_socket structure */
-	if (pi_socket_setsd(ps, endpoint_fd) < 0) {
+	if ((i = pi_socket_setsd(ps, endpoint_fd)) < 0) {
 		free(pEndPoint);
-		return -1;
+		return i;
 	}
 
 	/* free endpoint string memory */
@@ -269,7 +274,7 @@ u_poll(pi_socket_t *ps, int timeout)
  *
  * Parameters:  None
  *
- * Returns:     The number of bytes written from buf or -1 to indicate an
+ * Returns:     The number of bytes written from buf or negative to indicate an
  * 		error
  *
  ***********************************************************************/
@@ -279,7 +284,6 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	int 	nwrote, 
 		total, 
 		write_len;
-
 	fd_set 	ready;
 
 	total 		= len;
@@ -291,12 +295,16 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 		FD_ZERO(&ready);
 		FD_SET(ps->sd, &ready);
 
-		if (!FD_ISSET(ps->sd, &ready))
-			return -1;
-		nwrote = write(ps->sd, buf, write_len);
+		if (!FD_ISSET(ps->sd, &ready)) {
+			ps->state = PI_SOCK_CONBK;
+			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
+		}
 
-		if (nwrote < 0)
-			return -1;
+		nwrote = write(ps->sd, buf, write_len);
+		if (nwrote < 0) {
+			ps->state = PI_SOCK_CONBK;
+			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
+		}
 
 		write_len -= nwrote;
 		buf += nwrote;
@@ -347,7 +355,7 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	
 	if (pi_buffer_expect (buf, len) == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	/* first extract anything we had in the "peek" buffer */
@@ -372,7 +380,7 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
 			 "DEV RX USB FreeBSD timeout\n"));
 		errno = ETIMEDOUT;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
 
 	/* read data to pre-sized buffer */

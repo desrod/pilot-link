@@ -33,6 +33,7 @@
 #include "pi-source.h"
 #include "pi-slp.h"
 #include "pi-sys.h"
+#include "pi-error.h"
 
 /* Declare function prototypes */
 static int sys_getsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -68,8 +69,7 @@ sys_protocol_dup (pi_protocol_t *prot)
 		}
 	}
 
-	if ( (new_prot != NULL) && (new_data != NULL) ) {
-	
+	if (new_prot != NULL && new_data != NULL) {	
 		new_prot->level	= prot->level;
 		new_prot->dup 	= prot->dup;
 		new_prot->free 	= prot->free;
@@ -103,7 +103,6 @@ sys_protocol_free (pi_protocol_t *prot)
 {
 
 	ASSERT (prot != NULL);
-
 	if (prot != NULL) {
 		if (prot->data != NULL)
 			free(prot->data);
@@ -138,8 +137,7 @@ sys_protocol (void)
 		}
 	}
 
-	if ( (prot != NULL) && (data != NULL) ) {
-
+	if (prot != NULL && data != NULL) {
 		prot->level 	= PI_LEVEL_SYS;
 		prot->dup 	= sys_protocol_dup;
 		prot->free 	= sys_protocol_free;
@@ -151,7 +149,7 @@ sys_protocol (void)
 		data->txid 	= 0x00;
 		prot->data 	= data;
 	}
-	
+
 	return prot;
 }
 
@@ -182,16 +180,18 @@ sys_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
 	data = (pi_sys_data_t *)prot->data;
+
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SYS);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
-	if ((!data->txid) || (data->txid == 0xff))
+	if (!data->txid || data->txid == 0xff)
 		data->txid = 0x11;	/* some random # */
 	data->txid++;
-	if ((!data->txid) || (data->txid == 0xff))
+	if (!data->txid || data->txid == 0xff)
 		data->txid = 0x11;	/* some random # */
 
 	type 	= PI_SLP_TYPE_RDCP;
@@ -209,12 +209,13 @@ sys_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TXID, 
 		      &data->txid, &size);
 	
-	next->write(ps, buf, len, flags);
+	len = next->write(ps, buf, len, flags);
+	if (len >= 0) {
+		CHECK(PI_DBG_SYS, PI_DBG_LVL_INFO, sys_dump_header(buf, 1));
+		CHECK(PI_DBG_SYS, PI_DBG_LVL_DEBUG, sys_dump(buf, len));
+	}
 
-	CHECK(PI_DBG_SYS, PI_DBG_LVL_INFO, sys_dump_header(buf, 1));
-	CHECK(PI_DBG_SYS, PI_DBG_LVL_DEBUG, sys_dump(buf, len));
-
-	return 0;
+	return len;
 }
 
 
@@ -226,7 +227,7 @@ sys_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
  *
  * Parameters:  pi_socket_t*, char* to buffer, buffer length, flags
  *
- * Returns:     Length of read or -1 on error
+ * Returns:     Length of read or negative on error
  *
  ***********************************************************************/
 ssize_t
@@ -240,12 +241,12 @@ sys_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	data = (pi_sys_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SYS);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	data_len = next->read(ps, buf, len, flags);
 
@@ -264,31 +265,14 @@ sys_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success
  *
  ***********************************************************************/
 static int
 sys_getsockopt(pi_socket_t *ps, int level, int option_name, 
 	       void *option_value, size_t *option_len)
 {
-	pi_protocol_t *prot;
-
-	pi_sys_data_t *data;
-
-	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
-	if (prot == NULL)
-		goto error;
-	data = (pi_sys_data_t *)prot->data;
-
-	switch (option_name) {
-
-	}
-	
 	return 0;
-	
- error:
-	errno = EINVAL;
-	return -1;
 }
 
 
@@ -300,30 +284,14 @@ sys_getsockopt(pi_socket_t *ps, int level, int option_name,
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success
  *
  ***********************************************************************/
 static int
 sys_setsockopt(pi_socket_t *ps, int level, int option_name, 
 	       const void *option_value, size_t *option_len)
 {
-	pi_protocol_t *prot;
-	pi_sys_data_t *data;
-
-	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
-	if (prot == NULL)
-		goto error;
-	data = (pi_sys_data_t *)prot->data;
-
-	switch (option_name) {
-
-	}
-
 	return 0;
-	
- error:
-	errno = EINVAL;
-	return -1;
 }
 
 

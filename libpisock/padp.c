@@ -35,6 +35,7 @@
 #include "pi-source.h"
 #include "pi-padp.h"
 #include "pi-slp.h"
+#include "pi-error.h"
 
 #define PI_PADP_TX_TIMEOUT 2*1000
 #define PI_PADP_TX_RETRIES 10
@@ -148,7 +149,7 @@ pi_protocol_t
 		}
 	}
 
-	if ( (prot != NULL) && (data != NULL) ) {
+	if (prot != NULL && data != NULL) {
 
 		prot->level	= PI_LEVEL_PADP;
 		prot->dup 	= padp_protocol_dup;
@@ -193,31 +194,30 @@ padp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
 	data = (pi_padp_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_PADP);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
-	if (data->type == padWake) {
+	if (data->type == padWake)
 		data->txid = 0xff;
-	}
 
 	if (data->txid == 0)
 		data->txid = 0x10;	/* some random # */
-
-	if (data->txid >= 0xfe)
+	else if (data->txid >= 0xfe)
 		data->next_txid = 1;	/* wrap */
 	else
 		data->next_txid = data->txid + 1;
 
-	if ((data->type != padAck) && ps->state == PI_SOCK_CONAC)
+	if (data->type != padAck && ps->state == PI_SOCK_CONAC)
 		data->txid = data->next_txid;
 
 	padp_buf = pi_buffer_new (PI_PADP_HEADER_LEN + PI_PADP_MTU);
 	if (padp_buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	do {
@@ -264,6 +264,7 @@ padp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 			CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG,
 				padp_dump(padp_buf->data));
 			
+			/* FIXME: write return code not handled */
 			next->write(ps, padp_buf->data, tlen + 4, flags);
 
 			/* Tickles don't get acks */
@@ -354,10 +355,6 @@ keepwaiting:
 					    "possible port speed problem? "
 					    "out of sync packet?)\n"));
 
-					fprintf(stderr,
-					 "PADP TX Unexpected packet, "
-					 "possible port speed problem?\n\n");
-
 					padp_dump_header (buf, 1);
 					/* Got unknown packet */
 					errno = EIO;
@@ -369,19 +366,19 @@ keepwaiting:
 		} while (--retries > 0);
 
 		if (retries == 0) {
+			/* Maximum failure: transmission
+			   failed, and the connection must be presumed dead */
 			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 				"PADP TX Timed out"));
 			errno = ETIMEDOUT;
 			ps->state = PI_SOCK_CONBK;
 			pi_buffer_free (padp_buf);
-			return -1;	/* Maximum failure: transmission
-					   failed, and the connection must
-					   be presumed dead */
+			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
 	} while (len);
 
 done:
-	if ((data->type != padAck) && ps->state == PI_SOCK_CONIN)
+	if (data->type != padAck && ps->state == PI_SOCK_CONIN)
 		data->txid = data->next_txid;
 
 	pi_buffer_free (padp_buf);
@@ -398,7 +395,7 @@ done:
  *
  * Parameters:  pi_socket_t*, char* to buffer, expected length, flags
  *
- * Returns:     number of bytes received or -1 on error
+ * Returns:     number of bytes received or negative on error
  *
  ***********************************************************************/
 ssize_t
@@ -419,17 +416,17 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	data = (pi_padp_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_PADP);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	padp_buf = pi_buffer_new (PI_PADP_HEADER_LEN + PI_PADP_MTU);
 	if (padp_buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	if (ps->state == PI_SOCK_CONAC) {
@@ -454,7 +451,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 			errno 		= ETIMEDOUT;
 			ps->state 	= PI_SOCK_CONBK;
 			pi_buffer_free (padp_buf);
-			return -1;
+			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
 
 		timeout = PI_PADP_RX_BLOCK_TO + 2000;
@@ -470,7 +467,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 				LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 					"PADP RX Read Error\n"));
 				pi_buffer_free (padp_buf);
-				return -1;
+				return bytes;
 			}
 			total_bytes += bytes;
 		}
@@ -480,7 +477,6 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 		padp.size = get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
 
 		size = sizeof(type);
-		/* FIXME: error checking */
 		pi_getsockopt(ps->sd, PI_LEVEL_SLP, 
 			      PI_SLP_LASTTYPE,
 			      &type, &size);
@@ -562,6 +558,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 		CHECK(PI_DBG_PADP,
 			 PI_DBG_LVL_DEBUG, padp_dump(npadp_buf));
 
+		/* FIXME: add error checking */
 		next->write(ps, npadp_buf, PI_PADP_HEADER_LEN, flags);
 
 		/* calculate length and offset - remove  */
@@ -573,113 +570,114 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 		if (offset == ouroffset) {
 			if (pi_buffer_append (buf, &padp_buf->data[PI_PADP_HEADER_LEN], total_bytes) == NULL) {
 				errno = ENOMEM;
-				return -1;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 			}
 			ouroffset += total_bytes;
 		}
 
-		if (padp.flags & LAST) {
+		if (padp.flags & LAST)
 			break;
-		} else {
-			endtime = time(NULL) + PI_PADP_RX_SEGMENT_TO / 1000;
 
-			for (;;) {
-				int type, timeout;
-				size_t size;
-				unsigned char txid;
-				
-				if (time(NULL) > endtime) {
-					LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
-					    "PADP RX Segment Timeout"));
+		endtime = time(NULL) + PI_PADP_RX_SEGMENT_TO / 1000;
 
-					/* Segment timeout, return error */
-					errno = ETIMEDOUT;
-					ouroffset = -1;
-					/* Bad timeout breaks connection */
-					ps->state = PI_SOCK_CONBK;
-					pi_buffer_free (padp_buf);
-					return -1;
-				}
+		for (;;) {
+			int type, timeout;
+			size_t size;
+			unsigned char txid;
+			
+			if (time(NULL) > endtime) {
+				LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
+					"PADP RX Segment Timeout"));
 
-				timeout = PI_PADP_RX_SEGMENT_TO + 2000;
-				size = sizeof(timeout);
-				pi_setsockopt(ps->sd, PI_LEVEL_DEV,
-					 PI_DEV_TIMEOUT, &timeout, &size);
-
-				total_bytes = 0;
-				while (total_bytes < PI_PADP_HEADER_LEN) {
-					padp_buf->used = total_bytes;
-					bytes = next->read(ps, padp_buf, 
-					  	PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes,  flags);
-					if (bytes < 0) {
-						LOG((PI_DBG_PADP,
-							PI_DBG_LVL_ERR, "PADP RX Read Error"));
-						pi_buffer_free (padp_buf);
-						return -1;
-					}
-					total_bytes += bytes;
-				}				
-
-				padp.type =
-				    get_byte(&padp_buf->data[PI_PADP_OFFSET_TYPE]);
-				padp.flags =
-				    get_byte(&padp_buf->data[PI_PADP_OFFSET_FLGS]);
-				padp.size =
-				    get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
-
-				CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO,
-					 padp_dump_header(padp_buf->data, 0));
-				CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG,
-					 padp_dump(padp_buf->data));
-
-				size = sizeof(type);
-				/* FIXME: error checking */
-				pi_getsockopt(ps->sd, PI_LEVEL_SLP, 
-					      PI_SLP_LASTTYPE,
-					      &type, &size);
-				size = sizeof(txid);
-				pi_getsockopt(ps->sd, PI_LEVEL_SLP,
-					      PI_SLP_LASTTXID,
-					      &txid, &size);
-
-				if (padp.flags & MEMERROR) {
-					if (txid == data->txid) {
-						LOG((PI_DBG_PADP,
-						  PI_DBG_LVL_WARN,
-						  "PADP RX Memory Error"));
-						errno = EMSGSIZE;
-						ouroffset = -1;
-						goto done;
-						/* Mimimum failure:
-						 transmission failed due
-						 to lack of memory in reciever
-						 link layer, but connection is
-						 still active. This
-						 transmission was lost, but
-						 other transmissions will be
-						 received. */
-					} else
-						continue;
-				} else if (padp.type == (unsigned char) 4) {
-					/* Tickle to avoid timeout */
-
-					endtime = time(NULL) +
-						PI_PADP_RX_BLOCK_TO / 1000;
-					LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
-					    "PADP RX Got Tickled"));
-					continue;
-				} else
-				    if ((type != PI_SLP_TYPE_PADP)
-					|| (padp.type != padData)
-					|| (txid != data->txid)
-					|| (padp.flags & FIRST)) {
-					    LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
-					"PADP RX Wrong packet type on queue"
-					"(possible port speed problem?)\n"));
-					continue;
-				}
-				break;
+				/* Segment timeout, return error */
+				errno = ETIMEDOUT;
+				ouroffset = -1;
+				/* Bad timeout breaks connection */
+				ps->state = PI_SOCK_CONBK;
+				pi_buffer_free (padp_buf);
+				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 			}
+
+			timeout = PI_PADP_RX_SEGMENT_TO + 2000;
+			size = sizeof(timeout);
+			pi_setsockopt(ps->sd, PI_LEVEL_DEV,
+				 PI_DEV_TIMEOUT, &timeout, &size);
+
+			total_bytes = 0;
+			while (total_bytes < PI_PADP_HEADER_LEN) {
+				padp_buf->used = total_bytes;
+				bytes = next->read(ps, padp_buf, 
+					PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes,  flags);
+				if (bytes < 0) {
+					LOG((PI_DBG_PADP,
+						PI_DBG_LVL_ERR, "PADP RX Read Error"));
+					pi_buffer_free (padp_buf);
+					return bytes;
+				}
+				total_bytes += bytes;
+			}				
+
+			padp.type =
+				get_byte(&padp_buf->data[PI_PADP_OFFSET_TYPE]);
+			padp.flags =
+				get_byte(&padp_buf->data[PI_PADP_OFFSET_FLGS]);
+			padp.size =
+				get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
+
+			CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO,
+				 padp_dump_header(padp_buf->data, 0));
+			CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG,
+				 padp_dump(padp_buf->data));
+
+			size = sizeof(type);
+			pi_getsockopt(ps->sd, PI_LEVEL_SLP, 
+					  PI_SLP_LASTTYPE,
+					  &type, &size);
+			size = sizeof(txid);
+			pi_getsockopt(ps->sd, PI_LEVEL_SLP,
+					  PI_SLP_LASTTXID,
+					  &txid, &size);
+
+			if (padp.flags & MEMERROR) {
+				if (txid == data->txid) {
+					LOG((PI_DBG_PADP,
+					  PI_DBG_LVL_WARN,
+					  "PADP RX Memory Error"));
+					errno = EMSGSIZE;
+					ouroffset = -1;
+					goto done;
+					/* Mimimum failure:
+					 transmission failed due
+					 to lack of memory in reciever
+					 link layer, but connection is
+					 still active. This
+					 transmission was lost, but
+					 other transmissions will be
+					 received. */
+				}
+				continue;
+			}
+			
+			if (padp.type == (unsigned char) 4) {
+				/* Tickle to avoid timeout */
+
+				endtime = time(NULL) +
+					PI_PADP_RX_BLOCK_TO / 1000;
+				LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
+					"PADP RX Got Tickled"));
+				continue;
+			}
+
+			if ((type != PI_SLP_TYPE_PADP)
+				|| (padp.type != padData)
+				|| (txid != data->txid)
+				|| (padp.flags & FIRST)) {
+					LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
+				"PADP RX Wrong packet type on queue"
+				"(possible port speed problem?)\n"));
+				continue;
+			}
+			break;
 		}
 	}
 
@@ -700,7 +698,7 @@ done:
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -712,31 +710,31 @@ padp_getsockopt(pi_socket_t *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (pi_padp_data_t *)prot->data;
 
 	switch (option_name) {
-	case PI_PADP_TYPE:
-		if (*option_len < sizeof (data->type))
-			goto error;
-		memcpy (option_value, &data->type,
-			sizeof (data->type));
-		*option_len = sizeof (data->type);
-		break;
-	case PI_PADP_LASTTYPE:
-		if (*option_len < sizeof (data->last_type))
-			goto error;
-		memcpy (option_value, &data->last_type,
-			sizeof (data->last_type));
-		*option_len = sizeof (data->last_type);
-		break;
+		case PI_PADP_TYPE:
+			if (*option_len < sizeof (data->type))
+				goto error;
+			memcpy (option_value, &data->type,
+					sizeof (data->type));
+			*option_len = sizeof (data->type);
+			break;
+		case PI_PADP_LASTTYPE:
+			if (*option_len < sizeof (data->last_type))
+				goto error;
+			memcpy (option_value, &data->last_type,
+					sizeof (data->last_type));
+			*option_len = sizeof (data->last_type);
+			break;
 	}
 
 	return 0;
 	
  error:
 	errno = EINVAL;
-	return -1;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 
@@ -748,7 +746,7 @@ padp_getsockopt(pi_socket_t *ps, int level, int option_name,
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -760,7 +758,7 @@ padp_setsockopt(pi_socket_t *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (pi_padp_data_t *)prot->data;
 
 	switch (option_name) {
@@ -777,7 +775,7 @@ padp_setsockopt(pi_socket_t *ps, int level, int option_name,
 	
  error:
 	errno = EINVAL;
-	return -1;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 

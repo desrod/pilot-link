@@ -35,6 +35,7 @@
 #include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-usb.h"
+#include "pi-error.h"
 
 #ifdef HAVE_SYS_IOCTL_COMPAT_H
 #include <sys/ioctl_compat.h>
@@ -83,14 +84,16 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 		i;
 	char 	*tty 	= addr->pi_device + 4;
 
-	if ((fd = open(tty, O_RDWR | O_NONBLOCK)) == -1) {
-		return -1;	/* errno already set */
+	if ((fd = open(tty, O_RDWR | O_NONBLOCK)) < 0) {
+		ps->last_error = PI_ERR_GENERIC_SYSTEM;
+		return PI_ERR_GENERIC_SYSTEM;	/* errno already set */
 	}
 
 	if (!isatty(fd)) {
 		close(fd);
 		errno = EINVAL;
-		return -1;
+		ps->last_error = PI_ERR_GENERIC_SYSTEM;
+		return PI_ERR_GENERIC_SYSTEM;
 	}
 
 	if ((i = fcntl(fd, F_GETFL, 0)) != -1) {
@@ -98,8 +101,8 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 		fcntl(fd, F_SETFL, i);
 	}
 
-	if (pi_socket_setsd(ps, fd) < 0)
-		return -1;
+	if ((i = pi_socket_setsd(ps, fd)) < 0)
+		return i;
 
 	return fd;
 }
@@ -161,7 +164,7 @@ u_poll(pi_socket_t *ps, int timeout)
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
 			 "DEV POLL USB Linux timeout\n"));
 		errno = ETIMEDOUT;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
 		"DEV POLL USB Linux Found data on fd: %d\n", ps->sd));
@@ -200,13 +203,21 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 		else {
 			t.tv_sec 	= data->timeout / 1000;
 			t.tv_usec 	= (data->timeout % 1000) * 1000;
-			select(ps->sd + 1, 0, &ready, 0, &t);
+			if (select(ps->sd + 1, 0, &ready, 0, &t))
+				return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 		}
-		if (!FD_ISSET(ps->sd, &ready))
-			return -1;
+
+		if (!FD_ISSET(ps->sd, &ready)) {
+			ps->state = PI_SOCK_CONBK;
+			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
+		}
+
 		nwrote = write(ps->sd, buf, len);
-		if (nwrote < 0)
-			return -1;
+		if (nwrote < 0) {
+			ps->state = PI_SOCK_CONBK;
+			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
+		}
+
 		total -= nwrote;
 	}
 
@@ -231,19 +242,18 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 static int
 u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len) 
 {
-	unsigned int 	rbuf;
 	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
-
-	rbuf = data->buf_size;
+	size_t rbuf = data->buf_size;
+	
 	if (rbuf > len)
 		rbuf = len;
 
 	if (pi_buffer_append (buf, data->buf, rbuf) == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 	data->buf_size -= rbuf;
-	
+
 	if (data->buf_size > 0)
 		memcpy(data->buf, &data->buf[rbuf], data->buf_size);
 	
@@ -262,36 +272,40 @@ u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len)
  *
  * Parameters:  pi_socket_t*, char* to buffer, buffer length, flags
  *
- * Returns:     number of bytes read or -1 otherwise
+ * Returns:     number of bytes read or negative otherwise
  *
  ***********************************************************************/
 static int
 u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
-	unsigned int 	rbuf;
+	size_t rbuf;
 	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
 	struct 	timeval t;
 	fd_set 	ready;
-
-	FD_ZERO(&ready);
-	FD_SET(ps->sd, &ready);
 
 	if (data->buf_size > 0)
 		return u_read_buf(ps, buf, len);
 	
 	if (pi_buffer_expect (buf, len) == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
+	FD_ZERO(&ready);
+	FD_SET(ps->sd, &ready);
 	if (data->timeout == 0)
 		select(ps->sd + 1, &ready, 0, 0, 0);
 	else {
 		t.tv_sec 	= data->timeout / 1000;
 		t.tv_usec 	= (data->timeout % 1000) * 1000;
-		select(ps->sd + 1, &ready, 0, 0, &t);
+		if (select(ps->sd + 1, &ready, 0, 0, &t) == 0) {
+			LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
+				"DEV RX USB Linux timeout\n"));
+			errno = ETIMEDOUT;
+			return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
+		}
 	}
 	/* If data is available in time, read it */
 	if (FD_ISSET(ps->sd, &ready)) {
@@ -309,7 +323,7 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
 			"DEV RX USB Linux timeout\n"));
 		errno = ETIMEDOUT;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,

@@ -35,6 +35,7 @@
 #include "pi-socket.h"
 #include "pi-padp.h"
 #include "pi-cmp.h"
+#include "pi-error.h"
 
 /* Declare prototypes */
 static int cmp_getsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -139,7 +140,7 @@ cmp_protocol (void)
 	prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));	
 	data = (struct pi_cmp_data *)malloc (sizeof (struct pi_cmp_data));
 
-	if ( (prot != NULL) && (data != NULL) ) {
+	if (prot != NULL && data != NULL) {
 		prot->level 		= PI_LEVEL_CMP;
 		prot->dup 		= cmp_protocol_dup;
 		prot->free 		= cmp_protocol_free;
@@ -175,7 +176,7 @@ cmp_protocol (void)
  *
  * Parameters:  pi_socket_t*, baudrate, hirate enable
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 int
@@ -189,14 +190,15 @@ cmp_rx_handshake(pi_socket_t *ps, unsigned long establishrate,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
 	data = (struct pi_cmp_data *)prot->data;
 
 	/* Read the cmp packet */
 	buf = pi_buffer_new (PI_CMP_HEADER_LEN);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 	
 	bytes = cmp_rx(ps, buf, PI_CMP_HEADER_LEN, 0);
@@ -217,15 +219,14 @@ cmp_rx_handshake(pi_socket_t *ps, unsigned long establishrate,
 			data->baudrate = establishrate;
 		}
 		
-		if (cmp_init(ps, data->baudrate) < 0)
-			return -1;
+		if ((bytes = cmp_init(ps, data->baudrate)) < 0)
+			return bytes;
 	} else {
 		/* 0x80 means the comm version wasn't compatible */
 		LOG((PI_DBG_CMP, PI_DBG_LVL_ERR, "CMP Incompatible Version\n"));
-
 		cmp_abort(ps, 0x80);
 		errno = ECONNREFUSED;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_PROT_INCOMPATIBLE);
 	}
 
 	return 0;
@@ -240,7 +241,7 @@ cmp_rx_handshake(pi_socket_t *ps, unsigned long establishrate,
  *
  * Parameters:  pi_socket_t*
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     >= 0 for success, negative otherwise
  *
  ***********************************************************************/
 int
@@ -248,29 +249,31 @@ cmp_tx_handshake(pi_socket_t *ps)
 {
 	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
+	int result;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
 	data = (struct pi_cmp_data *)prot->data;
 
-	if (cmp_wakeup(ps, 38400) < 0)	/* Assume box can't go over 38400 */
-		return -1;
+	if ((result = cmp_wakeup(ps, 38400)) < 0)	/* Assume box can't go over 38400 */
+		return result;
 
-	if (cmp_rx(ps, NULL, 0, 0) < 0)
-		return -1;	/* failed to read, errno already set */
+	if ((result = cmp_rx(ps, NULL, 0, 0)) < 0)
+		return result;							/* failed to read, errno already set */
 
 	switch (data->type) {
-	case PI_CMP_TYPE_INIT:
-		return 0;
-	case PI_CMP_TYPE_ABRT:
-		LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,
-			"CMP Aborted by other end\n"));
-		errno = -EIO;
-		return -1;
+		case PI_CMP_TYPE_INIT:
+			return 0;
+		case PI_CMP_TYPE_ABRT:
+			LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,
+				"CMP Aborted by other end\n"));
+			errno = -EIO;
+			return pi_set_error(ps->sd, PI_ERR_PROT_ABORTED);
 	}
 
-	return -1;
+	return PI_ERR_PROT_INCOMPATIBLE;
 
 }
 
@@ -291,23 +294,20 @@ cmp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes,
 		type;
-
 	size_t	size;
-	
 	pi_protocol_t	*prot,
 			*next;
-
 	struct 	pi_cmp_data *data;
-		
 	unsigned char cmp_buf[PI_CMP_HEADER_LEN];
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
 	data = (struct pi_cmp_data *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_CMP);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	type = padData;
 	size = sizeof(type);
@@ -324,7 +324,7 @@ cmp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 
 	bytes = next->write(ps, cmp_buf, PI_CMP_HEADER_LEN, flags);
 	if (bytes < 10)
-		return -1;
+		return (bytes < 0) ? bytes : pi_set_error(ps->sd, PI_ERR_PROT_ABORTED);
 
 	return 0;
 }
@@ -344,24 +344,22 @@ ssize_t
 cmp_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 {
 	int 	bytes;
-
 	pi_protocol_t	*prot,
 			*next;
-
 	struct 	pi_cmp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	data = (struct pi_cmp_data *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_CMP);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	bytes = next->read(ps, msg, len, flags);
 	if (bytes < 10)
-		return -1;
+		return (bytes < 0) ? bytes : pi_set_error(ps->sd, PI_ERR_PROT_ABORTED);
 
 	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(msg->data, 0));
 
@@ -392,7 +390,7 @@ cmp_init(pi_socket_t *ps, speed_t baudrate)
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (struct pi_cmp_data *)prot->data;
 
 	data->type = PI_CMP_TYPE_INIT;
@@ -413,7 +411,7 @@ cmp_init(pi_socket_t *ps, speed_t baudrate)
  *
  * Parameters:  pi_socket_t*
  *
- * Returns:     Number of PADP packets transmitted or -1 on error
+ * Returns:     Number of PADP packets transmitted or negative on error
  *
  ***********************************************************************/
 int
@@ -424,9 +422,9 @@ cmp_abort(pi_socket_t *ps, int reason)
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
-		return -1;
-	data = (struct pi_cmp_data *)prot->data;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
+	data = (struct pi_cmp_data *)prot->data;
 	data->type = PI_CMP_TYPE_ABRT;
 	data->flags = reason;
 
@@ -443,7 +441,7 @@ cmp_abort(pi_socket_t *ps, int reason)
  *
  * Parameters:  pi_socket_t*
  *
- * Returns:     Number of PADP packets transmitted or -1 on error
+ * Returns:     Number of PADP packets transmitted or negative on error
  *
  ***********************************************************************/
 int
@@ -454,9 +452,9 @@ cmp_wakeup(pi_socket_t *ps, speed_t maxbaud)
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
-		return -1;
-	data = (struct pi_cmp_data *)prot->data;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
+	data = (struct pi_cmp_data *)prot->data;
 	data->type 	= PI_CMP_TYPE_WAKE;
 	data->flags 	= 0;
 	data->version 	= PI_CMP_VERS_1_0;
@@ -474,7 +472,7 @@ cmp_wakeup(pi_socket_t *ps, speed_t maxbaud)
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -486,45 +484,45 @@ cmp_getsockopt(pi_socket_t *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (struct pi_cmp_data *)prot->data;
 
 	switch (option_name) {
-	case PI_CMP_TYPE:
-		if (*option_len < sizeof (data->type))
-			goto error;
-		memcpy (option_value, &data->type,
-			sizeof (data->type));
-		*option_len = sizeof (data->type);
-		break;
-	case PI_CMP_FLAGS:
-		if (*option_len < sizeof (data->flags))
-			goto error;
-		memcpy (option_value, &data->flags,
-			sizeof (data->flags));
-		*option_len = sizeof (data->flags);
-		break;
-	case PI_CMP_VERS:
-		if (*option_len < sizeof (data->version))
-			goto error;
-		memcpy (option_value, &data->version,
-			sizeof (data->version));
-		*option_len = sizeof (data->version);
-		break;
-	case PI_CMP_BAUD:
-		if (*option_len < sizeof (data->baudrate))
-			goto error;
-		memcpy (option_value, &data->baudrate,
-			sizeof (data->baudrate));
-		*option_len = sizeof (data->baudrate);
-		break;
+		case PI_CMP_TYPE:
+			if (*option_len != sizeof (data->type))
+				goto error;
+			memcpy (option_value, &data->type,
+				sizeof (data->type));
+			*option_len = sizeof (data->type);
+			break;
+		case PI_CMP_FLAGS:
+			if (*option_len != sizeof (data->flags))
+				goto error;
+			memcpy (option_value, &data->flags,
+				sizeof (data->flags));
+			*option_len = sizeof (data->flags);
+			break;
+		case PI_CMP_VERS:
+			if (*option_len != sizeof (data->version))
+				goto error;
+			memcpy (option_value, &data->version,
+				sizeof (data->version));
+			*option_len = sizeof (data->version);
+			break;
+		case PI_CMP_BAUD:
+			if (*option_len != sizeof (data->baudrate))
+				goto error;
+			memcpy (option_value, &data->baudrate,
+				sizeof (data->baudrate));
+			*option_len = sizeof (data->baudrate);
+			break;
 	}
 
 	return 0;
 	
  error:
 	errno = EINVAL;
-	return -1;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 
@@ -536,7 +534,7 @@ cmp_getsockopt(pi_socket_t *ps, int level, int option_name,
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -548,24 +546,22 @@ cmp_setsockopt(pi_socket_t *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (struct pi_padp_data *)prot->data;
 
-	switch (option_name) {
-	case PI_PADP_TYPE:
+	if (option_name == PI_PADP_TYPE) {
 		if (*option_len != sizeof (data->type))
 			goto error;
 		memcpy (&data->type, option_value,
 			sizeof (data->type));
 		*option_len = sizeof (data->type);
-		break;
 	}
 
 	return 0;
 	
  error:
 	errno = EINVAL;
-	return -1;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 
@@ -586,18 +582,18 @@ cmp_dump(unsigned char *cmp, int rxtx)
 	char *type;
 	
 	switch (get_byte(&cmp[PI_CMP_OFFSET_TYPE])) {
-	case PI_CMP_TYPE_WAKE:
-		type = "WAKE";
-		break;
-	case PI_CMP_TYPE_INIT:
-		type = "INIT";
-		break;
-	case PI_CMP_TYPE_ABRT:
-		type = "ABRT";
-		break;
-	default:
-		type = "UNK";
-		break;
+		case PI_CMP_TYPE_WAKE:
+			type = "WAKE";
+			break;
+		case PI_CMP_TYPE_INIT:
+			type = "INIT";
+			break;
+		case PI_CMP_TYPE_ABRT:
+			type = "ABRT";
+			break;
+		default:
+			type = "UNK";
+			break;
 	}
 	
 	LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,

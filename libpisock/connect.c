@@ -173,14 +173,14 @@ pilot_connect(const char *port)
 			port ? port : getenv("PILOTPORT"));
 	}
 
-	if (pi_listen(sd, 1) == -1) {
+	if (pi_listen(sd, 1) < 0) {
 		fprintf(stderr, "\n   Error listening on %s\n", port);
 		pi_close(sd);
 		return -1;
 	}
 
 	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
+	if (sd < 0) {
 		fprintf(stderr, "\n   Error accepting data on %s\n", port);
 		pi_close(sd);
 		return -1;

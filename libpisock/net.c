@@ -32,6 +32,7 @@
 #include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-net.h"
+#include "pi-error.h"
 
 #define PI_NET_TIMEOUT 10*1000
 
@@ -165,7 +166,7 @@ pi_protocol_t
  *
  * Parameters:  pi_socket_t*
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 int
@@ -182,25 +183,26 @@ net_rx_handshake(pi_socket_t *ps)
 		"\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00";
 	pi_buffer_t *buffer;
+	int err;
 	
 	buffer = pi_buffer_new (200);
 	if (buffer == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
-	if (net_rx(ps, buffer, 22, 0) >= 0  &&
-		net_tx(ps, msg1, 50, 0) >= 0	&&
-		net_rx(ps, buffer, 50, 0) >= 0  &&
-		net_tx(ps, msg2, 46, 0) >= 0	&&
-		net_rx(ps, buffer, 8, 0) >= 0)
+	if ((err = net_rx(ps, buffer, 22, 0)) >= 0  &&
+		(err = net_tx(ps, msg1, 50, 0)) >= 0	&&
+		(err = net_rx(ps, buffer, 50, 0)) >= 0  &&
+		(err = net_tx(ps, msg2, 46, 0)) >= 0	&&
+		(err = net_rx(ps, buffer, 8, 0)) >= 0)
 	{
 		pi_buffer_free (buffer);
 		return 0;
 	}
 
 	pi_buffer_free (buffer);
-	return -1;
+	return err;
 }
 
 
@@ -212,7 +214,7 @@ net_rx_handshake(pi_socket_t *ps)
  *
  * Parameters:  pi_socket_t*
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 int
@@ -229,25 +231,26 @@ net_tx_handshake(pi_socket_t *ps)
 	unsigned char msg3[8]  = 
 		"\x93\x00\x00\x00\x00\x00\x00\x00";
 	pi_buffer_t *buffer;
+	int err;
 	
 	buffer = pi_buffer_new (200);
 	if (buffer == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 	
-	if (net_tx(ps, msg1, 22, 0) >= 0	&&
-		net_rx(ps, buffer, 50, 0) >= 0  &&
-		net_tx(ps, msg2, 50, 0) >= 0	&&
-		net_rx(ps, buffer, 46, 0) >= 0  &&
-		net_tx(ps, msg3, 8, 0) >= 0)
+	if ((err = net_tx(ps, msg1, 22, 0)) >= 0	&&
+		(err = net_rx(ps, buffer, 50, 0)) >= 0  &&
+		(err = net_tx(ps, msg2, 50, 0)) >= 0	&&
+		(err = net_rx(ps, buffer, 46, 0)) >= 0  &&
+		(err = net_tx(ps, msg3, 8, 0)) >= 0)
 	{
 		pi_buffer_free (buffer);
 		return 0;
 	}
 
 	pi_buffer_free (buffer);
-	return -1;
+	return err;
 }
 
 
@@ -275,14 +278,17 @@ net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (pi_net_data_t *)prot->data;
+
 	next = pi_protocol_next(ps->sd, PI_LEVEL_NET);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	/* Create the header */
 	buf = (unsigned char *) malloc(PI_NET_HEADER_LEN + len);
+	if (buf == NULL)
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	buf[PI_NET_OFFSET_TYPE] = data->type;
 	if (data->type == PI_NET_TYPE_TCKL)
 		buf[PI_NET_OFFSET_TXID] = 0xff;
@@ -335,12 +341,12 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	
 	data = (pi_net_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_NET);
 	if (next == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	timeout = PI_NET_TIMEOUT;
 	size = sizeof(timeout);
@@ -351,7 +357,7 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 	header = pi_buffer_new (PI_NET_HEADER_LEN);
 	if (header == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	if (data->txid == 0) {	
@@ -417,7 +423,6 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 	}
 
 	pi_buffer_free (header);
-
 	return packet_len;
 }
 
@@ -429,7 +434,7 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -441,7 +446,7 @@ net_getsockopt(pi_socket_t *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	data = (pi_net_data_t *)prot->data;
 
@@ -449,7 +454,7 @@ net_getsockopt(pi_socket_t *ps, int level, int option_name,
 		case PI_NET_TYPE:
 			if (*option_len != sizeof (data->type)) {
 				errno = EINVAL;
-				return -1;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 			}
 			memcpy (option_value, &data->type,
 				sizeof (data->type));
@@ -469,7 +474,7 @@ net_getsockopt(pi_socket_t *ps, int level, int option_name,
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -481,7 +486,7 @@ net_setsockopt(pi_socket_t *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
 	data = (pi_net_data_t *)prot->data;
 
@@ -489,7 +494,7 @@ net_setsockopt(pi_socket_t *ps, int level, int option_name,
 		case PI_NET_TYPE:
 			if (*option_len != sizeof (data->type)) {
 				errno = EINVAL;
-				return -1;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 			}
 			memcpy (&data->type, option_value,
 				sizeof (data->type));

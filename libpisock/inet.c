@@ -51,6 +51,7 @@
 #include "pi-inet.h"
 #include "pi-cmp.h"
 #include "pi-net.h"
+#include "pi-error.h"
 
 /* Declare prototypes */
 static int pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr,
@@ -245,13 +246,14 @@ pi_device_t
  *
  * Parameters:  pi_socket_t*, sockaddr*, address length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
 pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
-	int 	sd;
+	int 	sd,
+		err;
 
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	sockaddr_in serv_addr;
@@ -269,7 +271,7 @@ pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
 				    "DEV CONNECT Inet: Unable"
 					" to determine host\n"));
-				return -1;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 			}
 			
 			memcpy((char *) &serv_addr.sin_addr.s_addr,
@@ -285,17 +287,17 @@ pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	if (sd < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
 		    "DEV CONNECT Inet: Unable to create socket\n"));
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
 
-	if (pi_socket_setsd (ps, sd) < 0)
-		return -1;
+	if ((err = pi_socket_setsd (ps, sd)) < 0)
+		return err;
 
 	if (connect (ps->sd, (struct sockaddr *) &serv_addr,
 		     sizeof(serv_addr)) < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
 		    "DEV CONNECT Inet: Unable to connect\n"));
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
 
 	ps->raddr 	= malloc(addrlen);
@@ -306,14 +308,14 @@ pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	ps->laddrlen 	= addrlen;
 
 	switch (ps->cmd) {
-	case PI_CMD_CMP:
-		if (cmp_tx_handshake(ps) < 0)
-			goto fail;
-		break;
-	case PI_CMD_NET:
-		if (net_tx_handshake(ps) < 0)
-			goto fail;
-		break;
+		case PI_CMD_CMP:
+			if ((err = cmp_tx_handshake(ps)) < 0)
+				goto fail;
+			break;
+		case PI_CMD_NET:
+			if ((err = net_tx_handshake(ps)) < 0)
+				goto fail;
+			break;
 	}
 	ps->state = PI_SOCK_CONIN;
 	ps->command = 0;
@@ -323,7 +325,7 @@ pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 
  fail:
 	pi_close (ps->sd);
-	return -1;
+	return err;
 }
 
 
@@ -335,14 +337,15 @@ pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
  *
  * Parameters:  pi_socket_t*, sockaddr*, address length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
 pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	int 	opt,
-		sd;
+		sd,
+		err;
 	size_t	optlen;
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	sockaddr_in serv_addr;
@@ -358,7 +361,7 @@ pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 			struct hostent *hostent = gethostbyname(device);
 		
 			if (!hostent)
-				return -1;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 
 			memcpy((char *) &serv_addr.sin_addr.s_addr,
 			       hostent->h_addr, (size_t)hostent->h_length);
@@ -376,10 +379,10 @@ pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	if (sd < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
 		    "DEV BIND Inet: Unable to create socket\n"));
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}	
-	if (pi_socket_setsd (ps, sd) < 0)
-		return -1;
+	if ((err = pi_socket_setsd (ps, sd)) < 0)
+		return err;
 
 	opt = 1;
 	optlen = sizeof(opt);
@@ -387,18 +390,18 @@ pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	if (setsockopt
 	    (ps->sd, SOL_SOCKET, SO_REUSEADDR, (const char *) &opt,
 	     optlen) < 0) {
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
 #else
 	if (setsockopt
 	    (ps->sd, SOL_SOCKET, SO_REUSEADDR, (void *) &opt,
 	     optlen) < 0) {
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
 #endif
 
 	if (bind(ps->sd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
 		"DEV BIND Inet Bound to %s\n", device));
@@ -422,7 +425,7 @@ pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
  *
  * Parameters:  pi_socket_t*, backlog
  *
- * Returns:     0 on success, -1 otherwise
+ * Returns:     0 on success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -445,13 +448,14 @@ pi_inet_listen(pi_socket_t *ps, int backlog)
  *
  * Parameters:  pi_socket_t*, sockaddr*, address length
  *
- * Returns:     socket descriptor on success, -1 otherwise
+ * Returns:     socket descriptor on success, negative otherwise
  *
  ***********************************************************************/
 static int
 pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
-	int sd;
+	int sd,
+		err;
 	
  	sd = accept(ps->sd, addr, (socklen_t *)addrlen);
 	if (sd < 0)
@@ -461,14 +465,14 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	pi_socket_init(ps);
 
 	switch (ps->cmd) {
-	case PI_CMD_CMP:
-		if (cmp_rx_handshake(ps, 57600, 0) < 0)
-			return -1;
-		break;
-	case PI_CMD_NET:
-		if (net_rx_handshake(ps) < 0)
-			return -1;
-		break;
+		case PI_CMD_CMP:
+			if ((err = cmp_rx_handshake(ps, 57600, 0)) < 0)
+				return err;
+			break;
+		case PI_CMD_NET:
+			if ((err = net_rx_handshake(ps)) < 0)
+				return err;
+			break;
 	}
 
 	ps->state 	= PI_SOCK_CONAC;
@@ -482,7 +486,7 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
  fail:
 	if (ps)
 		pi_close (ps->sd);
-	return -1;
+	return PI_ERR_GENERIC_SYSTEM;
 }
 
 /***********************************************************************
@@ -493,7 +497,7 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
  *
  * Parameters:  pi_socket_t*, char* to message, length of message, flags
  *
- * Returns:     number of bytes written or -1 on error
+ * Returns:     number of bytes written or negative on error
  *
  ***********************************************************************/
 static ssize_t
@@ -510,18 +514,31 @@ pi_inet_write(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 
 	total = len;
 	while (total > 0) {
-		if (data->timeout == 0)
-			select(ps->sd + 1, 0, &ready, 0, 0);
-		else {
+		if (data->timeout == 0) {
+			if (select(ps->sd + 1, 0, &ready, 0, 0) < 0
+				&& errno == EINTR)
+				continue;
+		} else {
 			t.tv_sec 	= data->timeout / 1000;
 			t.tv_usec 	= (data->timeout % 1000) * 1000;
-			select(ps->sd + 1, 0, &ready, 0, &t);
+			if (select(ps->sd + 1, 0, &ready, 0, &t) == 0)
+				return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 		}
-		if (!FD_ISSET(ps->sd, &ready))
-			return -1;
+		if (!FD_ISSET(ps->sd, &ready)) {
+			ps->state = PI_SOCK_CONBK;
+			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
+		}
+
 		nwrote = write(ps->sd, msg, len);
-		if (nwrote < 0)
-			return -1;
+		if (nwrote < 0) {
+			/* test errno to properly set the socket error */
+			if (errno == EPIPE || errno == EBADF) {
+				ps->state = PI_SOCK_CONBK;
+				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
+			}
+			return pi_set_error(ps->sd, PI_ERR_SOCK_IO);
+		}
+
 		total -= nwrote;
 	}
 	data->tx_bytes += len;
@@ -539,7 +556,7 @@ pi_inet_write(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
  *
  * Parameters:  pi_socket_t*, char* to message, length of message, flags
  *
- * Returns:     number of bytes read or -1 on error
+ * Returns:     number of bytes read or negative on error
  *
  ***********************************************************************/
 static ssize_t
@@ -553,7 +570,7 @@ pi_inet_read(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 
 	if (pi_buffer_expect (msg, len) == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	if (flags == PI_MSG_PEEK)
@@ -569,12 +586,20 @@ pi_inet_read(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 	else {
 		t.tv_sec 	= data->timeout / 1000;
 		t.tv_usec 	= (data->timeout % 1000) * 1000;
-		select(ps->sd + 1, &ready, 0, 0, &t);
+		if (select(ps->sd + 1, &ready, 0, 0, &t) == 0)
+			return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
 
 	/* If data is available in time, read it */
 	if (FD_ISSET(ps->sd, &ready)) {
 		r = recv(ps->sd, msg->data + msg->used, len, fl);
+		if (r < 0) {
+			if (errno == EPIPE || errno == EBADF) {
+				ps->state = PI_SOCK_CONBK;
+				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
+			}
+			return pi_set_error(ps->sd, PI_ERR_SOCK_IO);
+		}
 
 		data->rx_bytes += r;
 		msg->used += r;
@@ -598,7 +623,7 @@ pi_inet_read(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -611,7 +636,7 @@ pi_inet_getsockopt(pi_socket_t *ps, int level, int option_name,
 		case PI_DEV_TIMEOUT:
 			if (*option_len != sizeof (data->timeout)) {
 				errno = EINVAL;
-				return -1;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 			}
 			memcpy (option_value, &data->timeout,
 				sizeof (data->timeout));
@@ -631,7 +656,7 @@ pi_inet_getsockopt(pi_socket_t *ps, int level, int option_name,
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -644,7 +669,7 @@ pi_inet_setsockopt(pi_socket_t *ps, int level, int option_name,
 		case PI_DEV_TIMEOUT:
 			if (*option_len != sizeof (data->timeout)) {
 				errno = EINVAL;
-				return -1;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 			}
 			memcpy (&data->timeout, option_value,
 				sizeof (data->timeout));

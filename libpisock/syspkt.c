@@ -41,6 +41,7 @@
 #include "pi-syspkt.h"
 #include "pi-slp.h"
 #include "pi-serial.h"
+#include "pi-error.h"
 
 static int sys_RPCerror;
 
@@ -241,7 +242,7 @@ sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
 	buf = pi_buffer_new (94);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	buf->data[0] = 0;
@@ -290,7 +291,7 @@ sys_SetTrapBreaks(int sd, int *traps)
 	buf = pi_buffer_new (32);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	buf->data[0] = 0;
@@ -337,7 +338,7 @@ sys_GetTrapBreaks(int sd, int *traps)
 	buf = pi_buffer_new (32);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	buf->data[0] = 0;
@@ -386,7 +387,7 @@ sys_ToggleDbgBreaks(int sd)
 	buf = pi_buffer_new (32);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	buf->data[0] = 0;
@@ -460,7 +461,7 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
 	buf = pi_buffer_new (0xFFFF);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	done = 0;
@@ -524,7 +525,7 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
 	buf = pi_buffer_new (0xFFFF);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	done = 0;
@@ -589,7 +590,7 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, size_t len,
 	buf = pi_buffer_new (len + 17);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	buf->data[0] = 0;
@@ -682,7 +683,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 	buf = pi_buffer_new (4096);
 	if (buf == NULL) {
 		errno = ENOMEM;
-		return -1;
+		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
 	buf->data[0] = socket;	/* 0 for debug, 1 for console */
@@ -721,10 +722,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 			pi_buffer_free (buf);
 			return l;
 		}
-		if (l < 2) {
-			pi_buffer_free (buf);
-			return -1;
-		}
+
 		if (buf->data[0] != (unsigned char)0x8a) {
 			pi_buffer_free (buf);
 			return -2;

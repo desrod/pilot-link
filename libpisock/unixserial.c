@@ -36,6 +36,7 @@
 #include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-serial.h"
+#include "pi-error.h"
 
 /* if this is running on a NeXT system... */
 #ifdef NeXT
@@ -147,7 +148,7 @@ static void s_delay(time_t sec, suseconds_t usec);
  *
  * Parameters:	pi_socket_t*, pi_socket_taddr*, socklen_t
  *
- * Returns:     The file descriptor or -1 on error
+ * Returns:     The file descriptor or negative on error
  *
  ***********************************************************************/
 int
@@ -165,14 +166,16 @@ s_open(pi_socket_t *ps, struct pi_sockaddr *addr, socklen_t addrlen)
 #else
 	struct sgttyb tcn;
 #endif
-	if ((fd = open(tty, O_RDWR | O_NONBLOCK)) == -1) {
-		return -1;	/* errno already set */
+	if ((fd = open(tty, O_RDWR | O_NONBLOCK)) < 0) {
+		ps->last_error = PI_ERR_GENERIC_SYSTEM;
+		return PI_ERR_GENERIC_SYSTEM;	/* errno already set */
 	}
 
 	if (!isatty(fd)) {
 		close(fd);
 		errno = EINVAL;
-		return -1;
+		ps->last_error = PI_ERR_GENERIC_SYSTEM;
+		return PI_ERR_GENERIC_SYSTEM;
 	}
 
 #ifndef SGTTY
@@ -215,8 +218,8 @@ s_open(pi_socket_t *ps, struct pi_sockaddr *addr, socklen_t addrlen)
 		fcntl(fd, F_SETFL, i);
 	}
 
-	if (pi_socket_setsd(ps, fd) < 0)
-		return -1;
+	if ((i = pi_socket_setsd(ps, fd)) < 0)
+		return i;
 
 	return fd;
 }
@@ -230,7 +233,7 @@ s_open(pi_socket_t *ps, struct pi_sockaddr *addr, socklen_t addrlen)
  *
  * Parameters:	pi_socket_t*
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -266,7 +269,7 @@ s_close(pi_socket_t *ps)
  *
  * Parameters:	pi_socket_t*, timeout in milliseconds
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -287,7 +290,8 @@ s_poll(pi_socket_t *ps, int timeout)
 	else {
 		t.tv_sec 	= timeout / 1000;
 		t.tv_usec 	= (timeout % 1000) * 1000;
-		select(ps->sd + 1, &ready, 0, 0, &t);
+		if (select(ps->sd + 1, &ready, 0, 0, &t) == 0)
+			return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
 
 	if (!FD_ISSET(ps->sd, &ready)) {
@@ -296,7 +300,7 @@ s_poll(pi_socket_t *ps, int timeout)
 			"DEV POLL Serial Unix timeout\n"));
 		data->rx_errors++;
 		errno = ETIMEDOUT;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
 		"DEV POLL Serial Unix Found data on fd: %d\n", ps->sd));
@@ -313,7 +317,7 @@ s_poll(pi_socket_t *ps, int timeout)
  *
  * Parameters:	pi_socket_t*, unsigned char* to buf, buf length
  *
- * Returns:     number of bytes written or -1 on error
+ * Returns:     number of bytes written or negative on error
  *
  ***********************************************************************/
 static ssize_t
@@ -337,13 +341,21 @@ s_write(pi_socket_t *ps, unsigned char *buf, size_t len,
 		else {
 			t.tv_sec 	= data->timeout / 1000;
 			t.tv_usec 	= (data->timeout % 1000) * 1000;
-			select(ps->sd + 1, 0, &ready, 0, &t);
+			if (select(ps->sd + 1, 0, &ready, 0, &t) == 0)
+				return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 		}
+
 		if (!FD_ISSET(ps->sd, &ready))
-			return -1;
+			return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
+
 		nwrote = write(ps->sd, buf, len);
-		if (nwrote < 0)
-			return -1;
+		if (nwrote < 0) {
+			if (errno == EPIPE || errno == EBADF) {
+				ps->state = PI_SOCK_CONBK;
+				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
+			}
+			return pi_set_error(ps->sd, PI_ERR_SOCK_IO);
+		}
 		total -= nwrote;
 	}
 	data->tx_bytes += len;
@@ -400,7 +412,7 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len)
  *
  * Parameters:	pi_socket_t*, pi_buffer_t* to buf, expect length, flags
  *
- * Returns:     number of bytes read or -1 on error
+ * Returns:     number of bytes read or negative on error
  *
  ***********************************************************************/
 static ssize_t
@@ -412,20 +424,20 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	struct 	timeval t;
 	fd_set 	ready;
 
-	FD_ZERO(&ready);
-	FD_SET(ps->sd, &ready);
-
 	if (data->buf_size > 0)
 		return s_read_buf(ps, buf, len);
 	
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
+	FD_ZERO(&ready);
+	FD_SET(ps->sd, &ready);
 	if (data->timeout == 0)
 		select(ps->sd + 1, &ready, 0, 0, 0);
 	else {
 		t.tv_sec 	= data->timeout / 1000;
 		t.tv_usec 	= (data->timeout % 1000) * 1000;
-		select(ps->sd + 1, &ready, 0, 0, &t);
+		if (select(ps->sd + 1, &ready, 0, 0, &t) == 0)
+			return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
 	/* If data is available in time, read it */
 	if (FD_ISSET(ps->sd, &ready)) {
@@ -433,7 +445,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			len = 256;
 		if (pi_buffer_expect (buf, len) == NULL) {
 			errno = ENOMEM;
-			return -1;
+			return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 		}
 		rbuf = read(ps->sd, &buf->data[buf->used], len);
 		if (rbuf > 0) {
@@ -448,7 +460,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			"DEV RX Unix Serial timeout\n"));
 		data->rx_errors++;
 		errno = ETIMEDOUT;
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
 	data->rx_bytes += rbuf;
 
@@ -491,7 +503,7 @@ s_delay(time_t sec, suseconds_t usec)
  *
  * Parameters:	pi_socket_t*
  *
- * Returns:     0 on success, -1 otherwise
+ * Returns:     0 on success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -507,25 +519,25 @@ s_changebaud(pi_socket_t *ps)
 #endif
 	/* Set the tty to the new speed */
 	if (tcgetattr(ps->sd, &tcn))
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 
 	tcn.c_cflag 	= CREAD | CLOCAL | CS8;
 	(void) cfsetspeed(&tcn, calcrate(data->rate));
 
 	if (tcsetattr(ps->sd, TCSADRAIN, &tcn))
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 
 #else
 	struct sgttyb tcn;
 
 	if (ioctl(ps->sd, TIOCGETP, &tcn))
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 
 	tcn.sg_ispeed 	= calcrate(data->rate);
 	tcn.sg_ospeed 	= calcrate(data->rate);
 
 	if (ioctl(ps->sd, TIOCSETN, &tcn))
-		return -1;
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 #endif
 
 #ifdef sleeping_beauty

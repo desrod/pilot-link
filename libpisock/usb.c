@@ -41,6 +41,7 @@
 #include "pi-usb.h"
 #include "pi-net.h"
 #include "pi-cmp.h"
+#include "pi-error.h"
 
 static int pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, 
 			     size_t addrlen);
@@ -205,7 +206,7 @@ pi_usb_device (int type)
 		}
 	}
 	
-	if ( (dev != NULL) && (data != NULL) ) {
+	if (dev != NULL && data != NULL) {
 
 		dev->free 		= pi_usb_device_free;
 		dev->protocol 		= pi_usb_protocol;	
@@ -216,12 +217,12 @@ pi_usb_device (int type)
 		dev->close 		= pi_usb_close;
 
 		switch (type) {
-		case PI_USB_DEV:
-			pi_usb_impl_init (&data->impl);
-			break;
-		default:
-			pi_usb_impl_init (&data->impl);
-			break;
+			case PI_USB_DEV:
+				pi_usb_impl_init (&data->impl);
+				break;
+			default:
+				pi_usb_impl_init (&data->impl);
+				break;
 		}
 	
 		data->buf_size 		= 0;
@@ -249,9 +250,11 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
+	int result;
 
-	if (data->impl.open(ps, pa, addrlen) == -1)
-		return -1;	/* errno already set */
+	result = data->impl.open(ps, pa, addrlen);
+	if (result < 0)
+		return result;
 
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
@@ -266,8 +269,8 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 			break;
 			
 		case PI_CMD_NET:
-			if (net_tx_handshake(ps) < 0)
-				return -1;
+			if ((result = net_tx_handshake(ps)) < 0)
+				return result;
 			break;
 		}
 	}
@@ -293,10 +296,11 @@ pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
+	int result;
 
-	if (data->impl.open(ps, pa, addrlen) == -1) {
-		return -1;	/* errno already set */
-	}
+	result = data->impl.open(ps, pa, addrlen);
+	if (result < 0)
+		return result;
 
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
@@ -335,34 +339,37 @@ pi_usb_listen(pi_socket_t *ps, int backlog)
  *
  * Parameters:  pi_socket_t*, sockaddr*, socket length
  *
- * Returns:     pi_socket descriptor or -1 on error
+ * Returns:     pi_socket descriptor or negative on error
  *
  ***********************************************************************/
 static int
 pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
+	int result;
 
 	/* Wait for data */
-	if (data->impl.poll(ps, ps->accept_to) < 0)
-		goto fail;
-	
+	result = data->impl.poll(ps, ps->accept_to);
+	if (result < 0) {
+		pi_close(ps->sd);
+		return result;
+	}
+
 	data->timeout = ps->accept_to * 1000;
 
 	pi_socket_init(ps);
+
 	if (ps->type == PI_SOCK_STREAM) {
 		switch (ps->cmd) {
-		case PI_CMD_CMP:
-			if (cmp_rx_handshake(ps, 57600, 1) < 0)
-				return -1;
-
-			break;
-		case PI_CMD_NET:
-			if (net_rx_handshake(ps) < 0)
-				return -1;
+			case PI_CMD_CMP:
+				if ((result = cmp_rx_handshake(ps, 57600, 1)) < 0)
+					return result;
+				break;
+			case PI_CMD_NET:
+				if ((result = net_rx_handshake(ps)) < 0)
+					return result;
 			break;
 		}
-
 		ps->dlprecord = 0;
 	}
 
@@ -371,10 +378,6 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	ps->state 	= PI_SOCK_CONAC;
 
 	return ps->sd;
-
- fail:
-	pi_close (ps->sd);
-	return -1;
 }
 
 
@@ -386,7 +389,7 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -396,20 +399,18 @@ pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
 	switch (option_name) {
-	case PI_DEV_TIMEOUT:
-		if (*option_len < sizeof (data->timeout))
-			goto error;
-		memcpy (option_value, &data->timeout,
-			sizeof (data->timeout));
-		*option_len = sizeof (data->timeout);
-		break;
+	    case PI_DEV_TIMEOUT:
+		    if (*option_len != sizeof (data->timeout)) {
+				errno = EINVAL;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
+		    }
+		    memcpy (option_value, &data->timeout,
+			    sizeof (data->timeout));
+		    *option_len = sizeof (data->timeout);
+		    break;
 	}
 
 	return 0;
-	
- error:
-	errno = EINVAL;
-	return -1;
 }
 
 
@@ -421,7 +422,7 @@ pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
  *
  * Parameters:  pi_socket*, level, option name, option value, option length
  *
- * Returns:     0 for success, -1 otherwise
+ * Returns:     0 for success, negative otherwise
  *
  ***********************************************************************/
 static int
@@ -431,19 +432,17 @@ pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name,
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
 	switch (option_name) {
-	case PI_DEV_TIMEOUT:
-		if (*option_len != sizeof (data->timeout))
-			goto error;
-		memcpy (&data->timeout, option_value,
-			sizeof (data->timeout));
-		break;
+	    case PI_DEV_TIMEOUT:
+		    if (*option_len != sizeof (data->timeout)) {
+				errno = EINVAL;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
+		    }
+		    memcpy (&data->timeout, option_value,
+			    sizeof (data->timeout));
+		    break;
 	}
 
 	return 0;
-	
- error:
-	errno = EINVAL;
-	return -1;
 }
 
 
