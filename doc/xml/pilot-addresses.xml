@@ -1,0 +1,318 @@
+<refentry id="pilot-addresses">
+   <refmeta>
+      <refentrytitle>pilot-addresses</refentrytitle>
+      <manvolnum>1</manvolnum>
+      <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
+   </refmeta>
+   <refnamediv>
+      <refname>pilot-addresses</refname>
+      <refpurpose>Read and write address book databases to and from a Palm
+         handheld.
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>Synopsis</title>
+      <para>
+         <emphasis>pilot-addresses</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>--delete-all</option>]
+         [<option>-t</option>|<option>--delimiter</option> <userinput>INT</userinput>]
+         [<option>-d</option>|<option>--delete-category</option> <userinput>
+            category
+         </userinput>
+         ]
+         [<option>-c</option>|<option>--category</option> <userinput>category</userinput>]
+         [<option>-a</option>|<option>--augment</option>]
+         [<option>-r</option>|<option>--read</option>
+         <filename>file</filename>]	[<option>-w</option>|<option>--write</option> <filename>
+            file
+         </filename>
+         ]
+         [<option>-C</option>|<option>--human-readable</option>]
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>
+         <emphasis>pilot-addresses</emphasis> allows the user to read all
+         entries from a Palm handheld such as those made by
+         <emphasis>Palm</emphasis>,	<emphasis>Handspring</emphasis>,
+         <emphasis>Handera</emphasis>,	<emphasis>TRGPro</emphasis>,
+         <emphasis>Sony</emphasis> or other Palm handheld in	the Palm Address
+         Book
+         application, write new entries into the database, and	delete a
+         category or
+         delete all entries in the database.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>commands</title>
+      <para>Provide exactly one of --read or --write.</para>
+      <para>
+         <option>-r</option>,
+         <option>--read</option>=&lt;<filename>file</filename>&gt;
+      </para>
+      <blockquote>
+         <para>
+            Reads records from &lt;<filename>file</filename>&gt; and install
+            them to the Palm Address Book application. (Use the
+            <option>-w</option> &lt;<filename>file</filename>&gt; option to
+            get a sample "template file" for input records to see how
+            the fields are laid out).
+         </para>
+      </blockquote>
+      <para>
+         <option>-w</option>, --write=<filename>file</filename>
+      </para>
+      <blockquote>
+         <para>Reads all address book records from the Palm Address Book
+            application and writes them into <filename>file</filename>
+         </para>
+      </blockquote>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>pilot-addresses options</title>
+         <para>
+            <option>-a</option>, <option>--augment</option>
+         </para>
+         <blockquote>
+            <para>Augments fields in address book records with additional
+               information.
+               The augmented information is placed before and separated from
+               the field
+               with a semi-colon, (;).
+            </para>
+            <para>Augmented information can include any of the following below.
+            </para>
+            <para>
+               <userinput>category</userinput>  # Placed in front of each
+               record		or..
+            </para>
+            <para>Placed in front of each phone number field:</para>
+            <para>
+               ["Work"|"Home"|"Fax"|"Other"|"E-mail"|"Main"|"Pager"|"Mobile"]	 
+            </para>
+            <para>Empty fields are not augmented.</para>
+         </blockquote>
+         <para>
+            <option>-c</option>,
+            <option>--category</option>=<userinput>category</userinput>
+         </para>
+         <blockquote>
+            <para>
+               Install records to category <userinput>category</userinput> by
+               default. Normally <emphasis>pilot-addresses</emphasis> uses the
+               <filename>Unfiled</filename> category by default. This option is
+               overridden by the category specified in the record with the
+               <option>-a</option> option.
+            </para>
+         </blockquote>
+         <para>
+            <option>-d</option>, <option>--delete-category</option>
+         </para>
+         <blockquote>
+            <para>Delete all records in the specified category
+               <userinput>category</userinput> before installing new records.
+            </para>
+            <para>Note that the long name of this option has changed since
+               0.11.8
+            </para>
+         </blockquote>
+         <para>
+            <option>-D</option>, <option>--delete-all</option>
+         </para>
+         <blockquote>
+            <para>Delete all address book records in all categories. Obviously,
+               be
+               <emphasis>very</emphasis> careful with this one.
+            </para>
+            <para>Note that the long name of this option has changed since
+               0.11.8
+            </para>
+         </blockquote>
+         <para>
+            <option>-t</option>,
+            <option>--delimiter</option> <userinput>INT</userinput>
+         </para>
+         <blockquote>
+            <para>Include category in each record, use the delimiter specified
+               to
+               separate all fields of a record. Delimiters are specified as
+               follows:
+               3=tab, 2=;, 1=,. This overrides the default delimiter of comma
+               between
+               fields and semi-colon between a field's augmented information.
+               (Please note that this may generate confusing results when used
+               with
+               the <option>-a</option> option.)
+            </para>
+            <para>Note that the long name of this option has changed since
+               0.11.8
+            </para>
+         </blockquote>
+         <para>
+            <option>-T</option>, <option>--titles</option>
+         </para>
+         <blockquote>
+            <para>Obsolete. This option has been removed since 0.11.8</para>
+         </blockquote>
+         <para>
+            <option>-C</option>|<option>--human-readable</option>
+         </para>
+         <blockquote>
+            <para>
+               Write generic human-readable output instead of CSV.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>,
+            <option>--port</option> &lt;<filename>port</filename>&gt;
+         </para>
+         <blockquote>
+            <para>
+               Use device file &lt;<filename>port</filename>&gt; to communicate
+               with the Palm handheld. If this is not specified,
+               <emphasis>pilot-addresses</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither
+               are
+               found or supplied, <emphasis>pilot-addresses</emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>pilot-addresses</emphasis> and
+               exit without connecting.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>
+               Display the help synopsis for <emphasis>pilot-addresses</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Usage</title>
+      <para>The program will connect to the Palm handheld, and perform the
+         requested read or write operation specified by the user.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Examples</title>
+      <para>To write all address records in a Palm to the file
+         addrbook.csv:
+      </para>
+      <para>
+         <emphasis>pilot-addresses</emphasis>
+         <option>-w</option>
+         <filename>addrbook.csv</filename>
+      </para>
+      <para>or</para>
+      <para>
+         <emphasis>pilot-addresses</emphasis>
+         <option>-p</option>
+         <filename>/dev/pilot</filename>
+         <option>-w</option>
+         <filename>addrbook.csv</filename>
+      </para>
+      <para>To read the address book records in the file addrbook.csv and
+         install
+         them onto the Palm:
+      </para>
+      <para>
+         <emphasis>pilot-addresses</emphasis>
+         <option>-r</option>
+         <filename>addrbook.csv</filename>
+      </para>
+      <para>To read the address book records in the file addrbook.csv and place
+         them into the Palm address book database category
+         <emphasis>Special</emphasis> after first deleting all current records
+         in the <emphasis>Special</emphasis> category on the palm:
+      </para>
+      <para>
+         <emphasis>pilot-addresses</emphasis>
+         <option>-c</option>
+         <userinput>Special</userinput>
+         <option>-d</option>
+         <userinput>Special</userinput>
+         <option>-r</option>
+         <filename>addrbook.csv</filename>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>
+         <emphasis>pilot-addresses</emphasis> originally written by
+         Kenneth Albanowski, this manual page was written by Robert Wittig
+         <email>bob.wittig@gt.org</email> and later updated by David A.
+         Desrosiers
+         <email>hacker@gnu-designs.com</email> and Neil Williams
+         <email>linux@codehelp.co.uk</email>.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Reporting Bugs</title>
+      <para>Report bugs at:
+         <emphasis>http://bugs.pilot-link.org</emphasis>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>addresses</emphasis>(1)
+         <emphasis>pilot-link</emphasis>(7)
+      </para>
+   </refsect1>
+</refentry>

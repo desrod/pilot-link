@@ -1,0 +1,177 @@
+<refentry id="addresses">
+   <refmeta>
+      <refentrytitle>addresses</refentrytitle>
+      <manvolnum>1</manvolnum>
+      <refmiscinfo>pilot-link: Conduits</refmiscinfo>
+   </refmeta>
+   <refnamediv>
+      <refname>addresses</refname>
+      <refpurpose>Dumps the Palm Address Book entries to STDOUT in a generic
+         text
+         output format.
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>Synopsis</title>
+      <para>Output to STDOUT (the screen):</para>
+      <para>
+         <emphasis>addresses</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>addresses will connect to your Palm handheld and dump all entries
+         found in the AddressDB.pdb (Address Book) file to STDOUT (screen
+         output) or
+         to a file using standard redirects.
+      </para>
+      <para>&gt; (greater-than) to create a new file or
+         replace an existing file.
+      </para>
+      <para> &gt;&gt; to append to an existing file without losing existing
+         data.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>command</title>
+      <para>
+         <option>-p</option>, <option>--port</option>
+         &lt;<userinput>port</userinput>&gt;
+      </para>
+      <blockquote>
+         <para>
+            Use device file &lt;<filename>port</filename>&gt; to communicate
+            with the Palm handheld. If this is not specified, addresses will
+            look
+            for the <filename>$PILOTPORT</filename> environment variable. If
+            neither
+            are found, addresses will fall back to <filename>/dev/pilot</filename>.
+         </para>
+      </blockquote>
+   </refsect1>
+   <refsect1>
+      <title>options</title>
+      <para>
+         <option>--version</option>
+      </para>
+      <blockquote>
+         <para>Display the copyright information,version number, licence
+            details and build details and exit without connecting.
+         </para>
+      </blockquote>
+      <para>
+         <option>-q</option>, <option>--quiet</option>
+      </para>
+      <blockquote>
+         <para>Suppress 'Hit HotSync button' message</para>
+      </blockquote>
+      <para>
+         <option>-?</option>, <option>--help</option>
+      </para>
+      <blockquote>
+         <para>Show the help message and exit without connecting.</para>
+      </blockquote>
+      <para>
+         <option>--usage</option>
+      </para>
+      <blockquote>
+         <para>Display a brief usage message and exit without connecting.</para>
+      </blockquote>
+   </refsect1>
+   <refsect1>
+      <title>Examples</title>
+      <para>Like other programs, STDOUT can be redirected to a specified output
+         file using the standard redirect commands:
+      </para>
+      <programlisting>Create a new file (empty it first if it already exists):
+         <userinput>addresses</userinput> [--p <option>&lt;port&gt;</option>] <userinput>&gt; MyAddresses.txt</userinput>
+         (Note the redirect)    ^
+      </programlisting>
+      <programlisting>Append to an existing file (create it if it does not exist):
+         <userinput>addresses</userinput> [--p <option>&lt;port&gt;</option>] <userinput>&gt;&gt; MyAddresses.txt</userinput>
+         (Note the redirect)    ^^
+      </programlisting>
+      <programlisting>
+         <userinput>addresses</userinput> [--p <option>&lt;port&gt;</option>]<userinput> &gt; MyAddresses.txt</userinput>
+      </programlisting>
+      <para>This will dump the Address Book from your Palm into the file
+         MyAddresses.txt in the format that looks similar to the following
+         format:
+      </para>
+      <programlisting>
+         Category: Personal Businesses
+         Last name: Doe
+         First name: Jane
+         Company: Acme, Inc.
+         Work: +1 (800) GO-ACME
+         Home: jdoe@acme.org
+         Address: 123 Main Street
+         City: Anywhere
+         State: CA
+         Zip Code: 01234-5678
+         Country: USA
+         Title: Chief Annoyance Officer
+      </programlisting>
+      <para>
+         The output of <filename>addresses</filename> can be piped to any other
+         command to limit the output. To only list LastName, FirstName and
+         Company of
+         all listed at the company "Acme, Inc.":
+      </para>
+      <programlisting>
+         <userinput>addresses</userinput> [--p <option>&lt;port&gt;</option>]<userinput> | grep -B 3 "Acme, Inc."</userinput>
+      </programlisting>
+      <para>The accuracy of this filter depends on how consistently you have
+         entered the company name - missing or added punctuation will require
+         some
+         extra options in the grep command.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>
+         <filename>addresses</filename> was originally written by Kenneth
+         Albanowski
+      </para>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Reporting Bugs</title>
+      <para>Report bugs at:
+         <emphasis>http://bugs.pilot-link.org</emphasis>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>pilot-link</emphasis> (7)
+      </para>
+   </refsect1>
+</refentry>

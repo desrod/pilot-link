@@ -1,0 +1,211 @@
+<refentry id="memos">
+   <refmeta>
+      <refentrytitle>memos</refentrytitle>
+      <manvolnum>1</manvolnum>
+      <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
+   </refmeta>
+   <refnamediv>
+      <refname>memos</refname>
+      <refpurpose>Manipulate Memo entries from a file or your Palm
+         device.
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>Synopsis</title>
+      <para>
+         <emphasis>memos</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>-v</option>|<option>--verbose</option>]
+         [<option>-d</option>|<option>--delete</option>]
+         [<option>-f</option>|<option>--file</option>
+         <filename>file</filename>]	[<option>-s</option>|<option>--save</option> <filename>
+            dir
+         </filename>
+         ]
+         [<option>-c</option>|<option>--category</option> <userinput>STRING</userinput>]
+         [<option>-r</option>|<option>--regex</option> <userinput>STRING</userinput>]
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>By default, the contents of your Palm's memo database will be
+         written
+         to standard output as a standard UNIX mailbox (mbox-format) file, with
+         each
+         memo as a separate message.  The subject of each message will be the
+         category.
+      </para>
+      <para>If '-s' is specified, than instead of being written to standard
+         output,
+         will be saved in subdirectories of <filename>dir</filename>. Each
+         subdirectory
+         will be the name of a category on the Palm, and will contain the memos
+         in that
+         category. Each memo's filename will be the first line (up to the first
+         40
+         characters) of the memo. Control chcters, slashes, and equal signs
+         that	would otherwise appear in filenames are converted after the
+         fashion of
+         MIME's quoted-printable encoding. Note that if you have two memos in
+         the
+         same category whose first lines are identical, one of them will be
+         overwritten.
+      </para>
+      <para>If '-f' is specified, the specified file will be treated as a memo
+         database from which to read memos, rather than HotSyncing from the
+         Palm.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>memos options</title>
+         <para>
+            <option>-V</option>, <option>--verbose</option>
+         </para>
+         <blockquote>
+            <para>Verbose, with -d, print each filename when written to disk.</para>
+         </blockquote>
+         <para>
+            <option>-d</option>,
+            <option>--delete</option> <userinput>NUMBER</userinput>
+         </para>
+         <blockquote>
+            <para>
+               Delete memo named by number <userinput>num</userinput>.
+            </para>
+         </blockquote>
+         <para>
+            <option>-f</option>,
+            <option>--file</option> <filename>file</filename>.
+         </para>
+         <blockquote>
+            <para>
+               Use &lt;<filename>file</filename>&gt; as input file (instead of
+               MemoDB.pdb).
+            </para>
+         </blockquote>
+         <para>
+            <option>-s</option>,
+            <option>--save</option> <filename>dir</filename>.
+         </para>
+         <blockquote>
+            <para>
+               Save memos in <filename>dir</filename> instead of writing to
+               STDOUT.
+            </para>
+         </blockquote>
+         <para>
+            <option>-c</option>,
+            <option>--category</option> <userinput>cat</userinput>.
+         </para>
+         <blockquote>
+            <para>Only create memos in this category.</para>
+         </blockquote>
+         <para>
+            <option>-r</option>,
+            <option>--regex</option> <userinput>regex</userinput>.
+         </para>
+         <blockquote>
+            <para>Select memos saved by regular expression on the title.</para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>, <option>--port</option>
+            &lt;<userinput>port</userinput>&gt;
+         </para>
+         <blockquote>
+            <para>
+               Use device file &lt;<filename>port</filename>&gt; to communicate
+               with the Palm handheld. If this is not specified,
+               <emphasis>memos</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable.  If
+               neither are
+               found or supplied, <emphasis>memos</emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>memos</emphasis> and exit without
+               connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>
+               Display the help synopsis for <emphasis>memos</emphasis> and
+               exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>
+         <emphasis>memos</emphasis> was written by Kenneth Albanowski.
+      </para>
+      <para>This manual page was written by Neil Williams
+         <email>linux@codehelp.co.uk</email>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Reporting Bugs</title>
+      <para>Report bugs at:
+         <emphasis>http://bugs.pilot-link.org</emphasis>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>install-memo</emphasis> (1),
+         <emphasis>pilot-link</emphasis> (7).
+      </para>
+   </refsect1>
+</refentry>

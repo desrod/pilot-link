@@ -1,0 +1,239 @@
+<refentry id="pilot-foto">
+   <refmeta>
+      <refentrytitle>pilot-foto</refentrytitle>
+      <manvolnum>1</manvolnum>
+   </refmeta>
+   <refnamediv>
+      <refname>pilot-foto</refname>
+      <refpurpose>Palm 'Foto' Image
+         Installer/Remover/Fetcher/Converter
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>synopsis</title>
+      <para>
+         <emphasis>pilot-foto</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>-d</option>|<option>--delete</option>] [<option>--delete-all</option>]
+         [<option>-i</option>|<option>--install</option>]
+         [<option>-l</option>|<option>--list</option>]
+         [<option>-f</option>|<option>--fetch</option>]
+         [<option>-F</option>|<option>--fetch-all</option>]
+         [<option>-c</option>|<option>--convert</option>]
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>This is a palm conduit to fetch, install, or remove, Foto files
+         from		a Palm.  It can also convert *.jpg.pdb files that have already
+         been
+         fetched from the Palm to jpeg files.
+      </para>
+      <itemizedlist>
+         <listitem>
+            <para>Delete all, or named fotos from handheld.</para>
+         </listitem>
+         <listitem>
+            <para>Install one, or many jpeg images to handheld.</para>
+         </listitem>
+         <listitem>
+            <para>List all jpeg files and thumbnails on handheld.</para>
+         </listitem>
+         <listitem>
+            <para>Fetch all jpeg files, or certain ones by name.</para>
+         </listitem>
+         <listitem>
+            <para>Tries to detect if a file really is a jpeg and refuses to
+               install
+               it, if it is not.
+            </para>
+         </listitem>
+      </itemizedlist>
+      <para>pilot-foto allows you to do multiple operations in one sync.  For
+         instance, delete test.jpg and install test.jpg.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Usage</title>
+      <para>
+         pilot-foto -p &lt;port&gt; [options] <filename>file</filename>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>pilot-foto options</title>
+         <para>
+            <option>-d</option>, <option>--delete</option>
+         </para>
+         <blockquote>
+            <para>Delete a jpg file on the handheld</para>
+         </blockquote>
+         <para>
+            <option>--delete-all</option>
+         </para>
+         <blockquote>
+            <para>Delete ALL jpg files on the handheld</para>
+         </blockquote>
+         <para>
+            <option>-i</option>, <option>--install</option>
+         </para>
+         <blockquote>
+            <para>Install a jpg file</para>
+         </blockquote>
+         <para>
+            <option>-l</option>, <option>--list</option>
+         </para>
+         <blockquote>
+            <para>List all photos and thumbnails</para>
+         </blockquote>
+         <para>
+            <option>-f</option>, <option>--fetch</option>
+         </para>
+         <blockquote>
+            <para>Fetch files from the Palm</para>
+         </blockquote>
+         <para>
+            <option>-F</option>, <option>--fetch-all</option>
+         </para>
+         <blockquote>
+            <para>Fetch ALL jpg files from the Palm</para>
+         </blockquote>
+         <para>
+            <option>-c</option>, <option>--convert</option>
+         </para>
+         <blockquote>
+            <para>convert [file].jpg.pdb files to jpg</para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>,
+            <option>--port</option><filename>port</filename>
+         </para>
+         <blockquote>
+            <para>
+               Use device file <filename>port</filename> to communicate with
+               the		Palm handheld. If this is not specified,
+               <emphasis>pilot-foto</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither
+               are
+               found or supplied, <emphasis>pilot-foto</emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>pilot-foto</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>
+               Display the help synopsis for <emphasis>pilot-foto</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Examples</title>
+      <programlisting>
+         Examples:
+         pilot-foto -p <userinput>/dev/pilot</userinput> -f
+         pilot-foto -d <userinput>MyImage.jpg</userinput>
+         pilot-foto -i <userinput>MyImage.jpg</userinput>
+         pilot-foto -i <userinput>*.jpg</userinput>
+         pilot-foto -f <userinput>MyImage</userinput>
+         pilot-foto -c <userinput>MyImage.jpg.pdb</userinput>
+      </programlisting>
+   </refsect1>
+   <refsect1>
+      <title>Problems</title>
+      <itemizedlist>
+         <listitem>
+            <para>Palm has not published their database format for the thumbnails. So, pilot-foto puts a generic
+               penguin thumbnail for every image uploaded.  Fotos can be accessed by a named list on the handheld as
+               well as the thumbnails.  This has been tried on a couple of handhelds. It is possible that a foreign
+               palm or different model will not like it.
+            </para>
+         </listitem>
+         <listitem>
+            <para>To get a thumbnail image you can copy the jpegs to the memory card. If you copy them back to the
+               handheld they will have a new thumbnail that matches the jpeg.
+            </para>
+         </listitem>
+      </itemizedlist>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>This  manual  page  was  written by Neil Williams
+         <email>linux@codehelp.co.uk</email>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Bugs</title>
+      <itemizedlist>
+         <listitem>
+            <para>If a jpeg is installed with the same name as one already on the palm you will have 2 thumbnails
+               pointing to the same jpeg. The new jpeg will overwrite the old jpeg.
+            </para>
+         </listitem>
+         <listitem>
+            <para>If the thumbnail fails to install then the jpeg should be removed. It is not.</para>
+         </listitem>
+      </itemizedlist>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>pilot-link</emphasis> (7)
+      </para>
+   </refsect1>
+</refentry>

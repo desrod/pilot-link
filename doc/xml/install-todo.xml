@@ -1,0 +1,214 @@
+<refentry id="install-todo">
+   <refmeta>
+      <refentrytitle>install-todo</refentrytitle>
+      <manvolnum>1</manvolnum>
+      <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
+   </refmeta>
+   <refnamediv>
+      <refname>install-todo</refname>
+      <refpurpose>Updates the Palm ToDo list with one new entry.</refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>Synopsis</title>
+      <para>
+         <emphasis>install-todo</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>-P</option>|<option>--priority</option>
+         [<userinput>1|2|3|4|5</userinput>]]
+         [<option>-d</option>|<option>--due</option> <userinput>mm/dd/yyyy</userinput>]
+         [<option>-c</option>|<option>--completed</option>]
+         [<option>-D</option>|<option>--description</option> [<userinput>title</userinput>]]
+         [<option>-n</option>|<option>--note</option> <userinput>note</userinput>]
+         [<option>-f</option>|<option>--file</option> <filename>filename</filename>]
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>
+         <emphasis>install-todo</emphasis> allows the user to install one new
+         ToDo list entry with specified paramters passed to
+         <emphasis>install-todo</emphasis> and add a Note entry using  text
+         found in a filename &lt;<filename>filename</filename>&gt; passed to
+         <emphasis>install-todo</emphasis>.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>install-todo options</title>
+         <para>
+            <option>-P</option>,
+            <option>--priority</option>=<userinput>priority</userinput>
+         </para>
+         <blockquote>
+            <para>Specify the priority of the ToDo entry (defaults to a
+               priority	  of 1).
+            </para>
+            <para>
+               <emphasis>NOTE:</emphasis> this value has changed from the
+               default
+               of 4 to the default of 1, just as a new ToDo entry on the Palm
+               would
+               set it.
+            </para>
+         </blockquote>
+         <para>
+            <option>-d</option>,
+            <option>--due</option> <userinput>duedate</userinput>
+         </para>
+         <blockquote>
+            <para>The due Date MM/DD/YYYY (defaults to blank, no due date if
+               this is
+               not specified).
+            </para>
+         </blockquote>
+         <para>
+            <option>-c</option>, <option>--completed</option>
+         </para>
+         <blockquote>
+            <para>Mark the item complete (the default is to mark the item as
+               incomplete, as the Palm would do it).
+            </para>
+         </blockquote>
+         <para>
+            <option>-D</option>,
+            <option>--description</option> <userinput>title</userinput>
+         </para>
+         <blockquote>
+            <para>The title of the ToDo entry</para>
+         </blockquote>
+         <para>
+            <option>-n</option>, <option>--note</option>
+            <userinput>note</userinput>
+         </para>
+         <blockquote>
+            <para>The Note text you wish to add to this ToDo entry, if any.</para>
+         </blockquote>
+         <para>
+            <option>-f</option>,
+            <option>--file</option> <filename>filename</filename>
+         </para>
+         <blockquote>
+            <para>A local filename containing the Note text.</para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>, <option>--port</option>
+            &lt;<userinput>port</userinput>&gt;
+         </para>
+         <blockquote>
+            <para>
+               Use device file &lt;<filename>port</filename>&gt; to communicate
+               with the Palm handheld. If this is not specified,
+               <emphasis>install-todo</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither
+               are
+               found or supplied, <emphasis>install-todo</emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>install-todo</emphasis> and exit
+               without connecting.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>
+               Display the help synopsis for <emphasis>install-todo</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Usage</title>
+      <para>The program will connect to a target Palm handheld, and creates the
+         ToDo entry to the Palm ToDo application, using the specified
+         parameters		and input from the supplied file passed as arguments on
+         the commandline.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>example</title>
+      <para>
+         <emphasis>install-todo</emphasis>
+         <option>-p</option>
+         <filename>/dev/pilot</filename>
+         <option>-n</option>
+         <userinput>'Buy Milk'</userinput>
+         <option>-D</option>
+         <userinput>'Go shopping, see note for items'</userinput>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>
+         <emphasis>install-todo</emphasis> was originally written by
+         Martin Fick, based on code in <emphasis>install-todos</emphasis> by
+         Robert A. Kaplan.
+      </para>
+      <para>This manual page was written by Neil Williams
+         <email>linux@codehelp.co.uk</email>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Reporting Bugs</title>
+      <para>Report bugs at:
+         <emphasis>http://bugs.pilot-link.org</emphasis>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>pilot-link</emphasis> (7).
+      </para>
+   </refsect1>
+</refentry>

@@ -1,0 +1,134 @@
+<refentry id="reminders">
+   <refmeta>
+      <refentrytitle>reminders</refentrytitle>
+      <manvolnum>1</manvolnum>
+   </refmeta>
+   <refnamediv>
+      <refname>reminders </refname>
+      <refpurpose>Exports your Palm Datebook database into a 'remind' data file
+         format.
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>synopsis </title>
+      <para>
+         <emphasis>reminders</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>-w</option>|<option>--write</option>]
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>Your Datebook database will be written to STDOUT as it is converted
+         unless redirected to a file.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>Reminders Options</title>
+         <para>
+            <option>-w</option>, <option>--write</option>
+         </para>
+         <blockquote>
+            <para>Write out the datebook database.</para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>, <option>--port</option><filename>port</filename>
+         </para>
+         <blockquote>
+            <para>
+               Use device file <filename>port</filename> to communicate with
+               the Palm handheld. If this is not specified,
+               <emphasis>reminders </emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither
+               are
+               found or supplied, <emphasis>reminders </emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>reminders </emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>
+               Display the help synopsis for <emphasis>reminders </emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>This  manual  page  was  written by Neil Williams
+         <email>linux@codehelp.co.uk</email>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Reporting Bugs</title>
+      <para>Report bugs at:
+         <emphasis>http://bugs.pilot-link.org</emphasis>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>http://www.roaringpenguin.com/penguin/open_source_remind.php</emphasis>
+      </para>
+      <para>
+         <emphasis>pilot-link</emphasis> (7)
+      </para>
+   </refsect1>
+   
+</refentry>

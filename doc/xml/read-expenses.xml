@@ -1,0 +1,163 @@
+<refentry id="read-expenses">
+   <refmeta>
+      <refentrytitle>read-expenses</refentrytitle>
+      <manvolnum>1</manvolnum>
+      <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
+   </refmeta>
+   <refnamediv>
+      <refname>read-expenses</refname>
+      <refpurpose>Export Palm Expense application data in a text
+         format.
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>Synopsis</title>
+      <para>
+         <emphasis>read-expenses</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>-w</option>|<option>--write</option>]
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>
+         <emphasis>read-expenses</emphasis> is used to output the Expense data
+         in a simple text format, which can be used to import into any other
+         application you wish, such as Excel or other application.
+      </para>
+      <para>If you have expense entries saved on your Palm in the ExpenseDB.pdb
+         file, you can export them to a simple text format, and redirect that
+         to a
+         file/pipe, or STDOUT (the default) using <emphasis>read-expenses</emphasis>.
+      </para>
+      <para>The output data will resemble something like the following:</para>
+      <programlisting>
+         Category: Unfiled
+         Type:   5
+         Payment:   7
+         Currency:  23
+         Amount: 400.00
+         Vendor: Super Salads
+         City: Westerly
+         Attendees: Joe, Mary, Bob
+         Note: Some simple note text
+         Date: Fri May  9 00:00:00 2004
+      </programlisting>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>read-expenses option</title>
+         <para>
+            <option>-w</option>, <option>--write</option>
+         </para>
+         <blockquote>
+            <para>Write out the expense data</para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>, <option>--port</option>
+            &lt;<userinput>port</userinput>&gt;
+         </para>
+         <blockquote>
+            <para>
+               Use device file &lt;<filename>port</filename>&gt; to communicate
+               with the Palm handheld. If this is not specified,
+               <emphasis>read-expenses</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither
+               are
+               found or supplied, <emphasis>read-expenses</emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>read-expenses</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>
+               Display the help synopsis for <emphasis>read-expenses</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>
+         <emphasis>read-expenses</emphasis> was originally written by
+         Kenneth Albanowski.
+      </para>
+      <para>This manual page was written by Neil Williams
+         <email>linux@codehelp.co.uk</email>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Reporting Bugs</title>
+      <para>Report bugs at:
+         <emphasis>http://bugs.pilot-link.org</emphasis>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>pilot-link</emphasis> (7)
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>install-expenses</emphasis> (1),
+         <emphasis>pilot-link</emphasis> (7).
+      </para>
+   </refsect1>
+</refentry>

@@ -1,0 +1,451 @@
+<refentry id="pilot-xfer">
+   <refmeta>
+      <refentrytitle>pilot-xfer</refentrytitle>
+      <manvolnum>1</manvolnum>
+      <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
+   </refmeta>
+   <refnamediv>
+      <refname>pilot-xfer</refname>
+      <refpurpose>Backup, sync, and restore databases from a Palm handheld
+         device.
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>Synopsis</title>
+      <para>
+         <emphasis>pilot-xfer</emphasis> [<option>-p</option>
+         &lt;<userinput>port</userinput>&gt;] [<option>-e</option>
+         &lt;<filename>file</filename>&gt;] [<option>-b</option>]
+         [<option>-u</option>]
+         [<option>-s</option>] &lt;<filename>directory</filename>&gt;
+      </para>
+      <para>or</para>
+      <para>
+         <emphasis>pilot-xfer</emphasis> [<option>-p</option>
+         &lt;<userinput>port</userinput>&gt;] [<option>-r</option>
+         &lt;<userinput>directory</userinput>&gt;] [<option>-l</option>]
+         [<option>-L</option>]
+         [<option>-P</option>] [<option>-f</option>
+         &lt;<userinput>dbname</userinput>&gt;]
+         [<option>-d</option> &lt;<userinput>dbname</userinput>&gt;]
+         [<option>-i</option> &lt;<userinput>dbname</userinput>&gt;]
+         [<option>-m</option>
+         &lt;<filename>file</filename>&gt;] ...
+      </para>
+      <para>Use exactly one of -brsudfimlI; mix in -aexDPv, --rom and
+         --with-os.
+      </para>
+      <para>(Note that some options are not shown above and short option
+         aliases		are excluded for brevity. Please see <emphasis>OPTIONS</emphasis> for
+         the full list of available options).
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>This is the swiss-army-knife of the entire pilot-link suite.</para>
+      <para>
+         <emphasis>pilot-xfer</emphasis> allows the user to install databases
+         contained in the standard .prc (Palm Resource Database),
+         .pdb (Palm Record Database), and .pqa (Palm Query Application) formats
+         onto a Palm, retrieve databases from the Palm, list the databases
+         contained
+         in a Palm, and backup or restore all of the databases at once, and
+         many	other powerful operations.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>pilot-xfer options</title>
+         <para>
+            <option>-a</option>, <option>--archive</option>
+            &lt;<filename>dir</filename>&gt;
+         </para>
+         <blockquote>
+            <para>Archives files which have been removed from the Palm to
+               &lt;<filename>dir</filename>&gt; instead of just deleting
+               (unlinking) them.
+            </para>
+         </blockquote>
+         <para>
+            <option>-b</option>, <option>--backup</option>
+            &lt;<filename>dir</filename>&gt;
+         </para>
+         <blockquote>
+            <para>Backs up the Palm into the specified directory (which will be
+               created if it does not already exist).
+            </para>
+         </blockquote>
+         <para>
+            <option>-C</option>, <option>--cardinfo</option>
+         </para>
+         <blockquote>
+            <para>Show information on available cards</para>
+         </blockquote>
+         <para>
+            --delete &lt;<userinput>dbname</userinput>&gt;
+         </para>
+         <blockquote>
+            <para>Permanently delete the specified database(s) by name (without
+               extension). Obviously, be very careful with this one.
+            </para>
+         </blockquote>
+         <para>
+            <option>-D</option>, <option>--vfsdir</option>=<filename>dir</filename>
+         </para>
+         <blockquote>
+            <para>
+               Modifies <option>-l</option>, <option>-i</option> or
+               <option>-f</option> to use VFS <filename>dir</filename>
+               instead of internal storage
+            </para>
+         </blockquote>
+         <para>
+            <option>-e</option>, --exclude=<filename>file</filename>
+         </para>
+         <blockquote>
+            <para>
+               Reads a list of databases from &lt;<filename>file</filename>&gt;
+               and
+               prevents <option>--backup</option>, <option>--sync</option>, or
+               <option>--update</option> from operating on the listed
+               database(s).
+               A maximum of 100 databases can be excluded. Databases should be
+               specified
+               by name without the extension, as displayed with --list, in any
+               order.
+            </para>
+         </blockquote>
+         <para>
+            <option>-f</option>, --fetch
+            &lt;<userinput>dbname</userinput>&gt;
+         </para>
+         <blockquote>
+            <para>Fetch each specified database out of the Palm into the
+               current		directory.
+            </para>
+         </blockquote>
+         <para>
+            <option>-F</option>, <option>--Flash</option>
+         </para>
+         <blockquote>
+            <para>
+               Obsolete. Replaced by <option>--rom</option> in v0.12.
+            </para>
+         </blockquote>
+         <para>
+            <option>-i</option>, --install &lt;<filename>file</filename>&gt;
+            [...]
+         </para>
+         <blockquote>
+            <para>Install each specified file into the Palm. Wildcards are
+               valid with
+               this syntax and multiple files may be listed at once.
+            </para>
+         </blockquote>
+         <para>
+            <option>-l</option>, <option>--list</option>
+         </para>
+         <blockquote>
+            <para>Note: changed behaviour in 0.12</para>
+            <para>List all the databases in the Palm, including OS-specific
+               native
+               databases.
+            </para>
+         </blockquote>
+         <para>
+            <option>-L</option>, <option>--Listall</option>
+         </para>
+         <blockquote>
+            <para>
+               Unsupported in 0.12 - see <option>-l</option>
+            </para>
+         </blockquote>
+         <para>
+            <option>-m</option>, <option>--merge</option>
+            &lt;<filename>file</filename>&gt; [...]
+         </para>
+         <blockquote>
+            <para>Adds the records in each specified file into the
+               corresponding Palm
+               database.
+            </para>
+         </blockquote>
+         <para>
+            <option>-O</option>, --<option>Osflash</option>
+         </para>
+         <blockquote>
+            <para>
+               Obsolete. Replaced by <option>--with-os</option> in 0.12
+            </para>
+         </blockquote>
+         <para>
+            <option>-P</option>, <option>--Purge</option>
+         </para>
+         <blockquote>
+            <para>Purge any deleted data that hasn't been cleaned up by a sync
+               (this
+               is a safe operation, and will prevent your Palm from
+               accumulating crud
+               if you delete records but aren't syncing with a PIM.) The only
+               information you can lose is archived but un-synced records.
+            </para>
+         </blockquote>
+         <para>
+            <option>-r</option>, <option>--restore</option>
+            &lt;<filename>dir</filename>&gt;
+         </para>
+         <blockquote>
+            <para>Installs all files contained in a directory into the Palm.
+               (Use this
+               to restore your Palm after a hard reset has cleared its memory,
+               using your
+               backup directory as a baseline.)
+            </para>
+         </blockquote>
+         <para>
+            <option>--rom</option>
+         </para>
+         <blockquote>
+            <para>
+               Modifies <option>-b</option>, <option>-u</option>, and <option>
+                  -s
+               </option>
+               ,
+               to back up non-OS dbs from Flash ROM
+            </para>
+         </blockquote>
+         <para>
+            <option>-s</option>, <option>--sync</option>
+            &lt;<filename>dir</filename>&gt;
+         </para>
+         <blockquote>
+            <para>Backs up the Palm into the specified directory (which will be
+               created if it does not already exist). Any Palm databases which
+               have not
+               been modified or created since the versions stored in the
+               specified
+               directory will not be backed up.
+            </para>
+            <para>
+               <emphasis>NOTE</emphasis>: Any Palm databases which have been
+               deleted will have their corresponding backup file removed.
+            </para>
+         </blockquote>
+         <para>
+            <option>-S</option>, <option>--novsf</option>
+         </para>
+         <blockquote>
+            <para>Not supported in 0.12. No replacement.</para>
+         </blockquote>
+         <para>
+            <option>--with-os</option>
+         </para>
+         <blockquote>
+            <para>
+               Modifies <option>-b</option>, <option>-u</option>, and <option>
+                  -s
+               </option>
+               ,
+               to back up OS dbs from Flash ROM.
+            </para>
+         </blockquote>
+         <para>
+            <option>-u</option>, <option>--update</option>
+         </para>
+         <blockquote>
+            <para>Backs up the Palm into the specified directory (which will be
+               created if it does not already exist). Any Palm databases which
+               have
+               not been modified or created since the versions stored in the
+               specified directory will not be backed up.
+            </para>
+         </blockquote>
+         <para>
+            <option>-I</option>, <option>--Illegal</option>
+         </para>
+         <blockquote>
+            <para>This will back up the UnsavedPreferences.pdb file from the
+               Palm.
+               Normally this file is not backed up by normal means (Palm
+               Computing
+               recommends that you do <emphasis>not</emphasis> restore this
+               file upon
+               restoration of your device using <option>--restore</option>.
+            </para>
+            <para>
+               This also modifies the behavior of <option>--backup</option>,
+               <option>--sync</option>, and <option>--update</option>.
+            </para>
+         </blockquote>
+         <para>
+            <option>-x</option>, <option>--exec=command</option>
+         </para>
+         <blockquote>
+            <para>Execute a shell command for intermediate processing.
+               All commands will be done, from left to right in the
+               command-line, before
+               the connection to the pilot is made.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>, <option>--port</option>
+            &lt;<userinput>port</userinput>&gt;
+         </para>
+         <blockquote>
+            <para>
+               Use device file &lt;<filename>port</filename>&gt; to communicate
+               with the Palm handheld. If this is not specified,
+               <emphasis>pilot-xfer</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither
+               are
+               found, <emphasis>pilot-xfer</emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>install-xfer</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>
+               Display the help synopsis for <emphasis>install-xfer</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Usage</title>
+      <para>The program will connect to a target Palm handheld and port, prompt
+         the user to hit <emphasis>HotSync</emphasis>, and perform the
+         requested	options specified by the user on the commandline.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Examples</title>
+      <para>To perform a full backup of your Palm handheld: </para>
+      <para># using long options</para>
+      <para>
+         <emphasis>pilot-xfer</emphasis>
+         <option>--port</option>
+         <filename>/dev/pilot</filename>
+         <option>--backup</option>
+         <filename>$HOME/pilot/Backup</filename>
+      </para>
+      <para># or over IrDA, using short options</para>
+      <para>
+         <emphasis>pilot-xfer</emphasis>
+         <option>-p</option>
+         <filename>/dev/ircomm0</filename>
+         <option>-b</option>
+         <filename>$HOME/pilot/Backup</filename>
+      </para>
+      <para>To restore that backup to a non-standard serial port (for example,
+         to
+         a xcopilot or POSE session, assuming you have xcopilot or POSE
+         configured properly for this operation, see the appropriate man pages
+         for details on configuring your emulator):
+      </para>
+      <para>
+         <emphasis>pilot-xfer</emphasis>
+         <option>-p</option>
+         <filename>/dev/ttyqe</filename>
+         <option>--restore</option>
+         <filename>$HOME/pilot/Backup</filename>
+      </para>
+      <para>To fetch a file that is on your Palm handheld, such as the Palm
+         Address Book database:
+      </para>
+      <para>
+         <emphasis>pilot-xfer</emphasis>
+         <option>-p</option>
+         <filename>/dev/pilot</filename>
+         <option>--fetch</option>
+         <userinput>AddressDB</userinput>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>
+         <emphasis>pilot-xfer</emphasis> written by Kenneth Albanowski.
+         This manual page was originally written by Kenneth Albanowski and
+         David H. Silber. Completely rewritten by David A. Desrosiers.
+         Updated for 0.12 by Neil Williams <email>linux@codehelp.co.uk</email>.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Bugs</title>
+      <refsect2>
+         <title>Known Bugs</title>
+         <para>
+            <option>--backup</option> will currently truncate/corrupt pdb/prc
+            files if communication is interrupted during sync. Ideally, this
+            should
+            restore the original file, or delete the corrupted version and
+            restore
+            the original version back into place.
+         </para>
+      </refsect2>
+      <refsect2>
+         <title>Reporting Bugs</title>
+         <para>Report bugs at
+            <emphasis>http://bugs.pilot-link.org/</emphasis>
+         </para>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>pilot-link</emphasis> (7)
+      </para>
+   </refsect1>
+</refentry>

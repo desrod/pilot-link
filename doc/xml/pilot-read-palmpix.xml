@@ -1,0 +1,247 @@
+<refentry id="read-palmpix">
+   <refmeta>
+      <refentrytitle>read-palmpix</refentrytitle>
+      <manvolnum>1</manvolnum>
+      <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
+   </refmeta>
+   <refnamediv>
+      <refname>read-palmpix</refname>
+      <refpurpose>Convert all pictures in the files given or found on a Palm
+         handheld.
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>Synopsis</title>
+      <para>
+         <emphasis>read-palmpix</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>-s</option>|<option>--stretch</option>]
+         [<option>-c</option>|<option>--colour</option>]
+         [<option>-t</option>|<option>--type</option> [<userinput>ppm|png</userinput>]]
+         [<option>-b</option>|<option>--bias</option> <userinput>bias</userinput>]
+         [<option>-l</option>|<option>--list</option>]
+         [<option>-n</option>|<option>--name</option> <userinput>name</userinput>]
+         [<filename>file</filename>] ...
+      </para>
+      <para>
+         <emphasis>read-palmpix</emphasis> Image1.pdb Image2.pdb
+         Image3.pdb
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>
+         <emphasis>read-palmpix</emphasis> allows a Kodak PalmPix camera user
+         to extract the images from their Palm handheld and convert them to
+         Portable Network Graphic (.png) or Portable Pixmap (.ppm) files on
+         their system. The default output type is Portable Pixmap (.ppm).
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>read-palmpix options</title>
+         <para>
+            <option>-b</option>,
+            <option>--bias</option> <userinput>bias</userinput>
+         </para>
+         <blockquote>
+            <para>lighten or darken the image (0..49 darken, 51..100
+               lighten)
+            </para>
+         </blockquote>
+         <para>
+            <option>-c</option>, <option>--colour</option>
+         </para>
+         <blockquote>
+            <para>Do a simple colour correction. The colour correction code
+               makes a
+               histogram from the image. Using the histogram it then makes up a
+               couple
+               of colour tables to try and balance the colours. It also clips
+               the
+               top and bottom colours to produce better perceived contrast.
+            </para>
+         </blockquote>
+         <para>
+            <option>-l</option>, <option>--list</option>
+         </para>
+         <blockquote>
+            <para>List picture information found on the Palm handheld instead
+               of		converting the entries found to image files.
+            </para>
+         </blockquote>
+         <para>
+            <option>-n</option>, <option>--name</option>
+            &lt;<filename>pixname</filename>&gt;
+         </para>
+         <blockquote>
+            <para>
+               Convert only <filename>pixname</filename> to STDOUT, and output
+               as
+               <option>type</option>: .ppm or .png.
+            </para>
+         </blockquote>
+         <para>
+            <option>-s</option>, <option>--stretch</option>
+         </para>
+         <blockquote>
+            <para>Do a histogram stretch on the colour planes</para>
+         </blockquote>
+         <para>
+            <option>-t</option>,
+            <option>--type</option> <userinput>[ppm|png]</userinput>
+         </para>
+         <blockquote>
+            <para>Specify the output picture type. Can be either "png" or
+               "ppm".
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>, <option>--port</option>
+            &lt;<userinput>port</userinput>&gt;
+         </para>
+         <blockquote>
+            <para>
+               Use device file &lt;<filename>port</filename>&gt; to communicate
+               with the Palm handheld. If this is not specified,
+               <emphasis>read-palmpix</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither
+               are
+               found or supplied, <emphasis>read-palmpix</emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>read-palmpix</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>
+               Display the help synopsis for <emphasis>read-palmpix</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Usage</title>
+      <para>If a filelist is not given, connects to the target Palm handheld,
+         and
+         reads the images found in the Kodak PalmPix image database
+         (<filename>ArchImage.pdb</filename>), and allows the user to view the
+         list
+         of images and image details, or to select one or all of them, and
+         convert
+         them to Portable Network Graphic (.png) or Portable Pixmap (.ppm)
+         files to
+         be viewed or printed at the desktop.
+      </para>
+      <para>If no options are specified, all of the images on the device will
+         be		converted to ppm files by default.
+      </para>
+      <para>If a filelist is given, convert all listed files previously fetched
+         via pilot-xfer. See <emphasis>BUGS</emphasis> - a single file argument
+         is
+         ignored, a list will work.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>
+         <emphasis>read-palmpix </emphasis> was originally written by
+         Angus Ainslie <email>angusa at deltatee.com</email>, and updated by
+         John Marshall <email>jmarshall@acm.org</email> to include core
+         pilot-link functionality.
+      </para>
+      <para>This manual page was written by Neil Williams
+         <email>linux@codehelp.co.uk</email>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Bugs</title>
+      <refsect2>
+         <title>Known Bugs</title>
+         <para>
+            <emphasis>read-palmpix</emphasis>'s colour correction is nearly as
+            good as Kodak's own, but Kodak has deprecated the PalmPix device,
+            so it
+            is not likely that there will be any updates to their software in
+            the
+            future, so this may be as good as it gets. A simple method to
+            improve
+            the look of colours is to do a histogram equalization in your
+            favourite
+            image editor.
+         </para>
+         <para>
+            <emphasis>read-palmpix</emphasis> command DOES read from a file,
+            but		only if you specify a LIST of files. If only one file is
+            given, the
+            command tries reading from <filename>$PILOTPORT</filename>.
+         </para>
+      </refsect2>
+      <refsect2>
+         <title>Reporting Bugs</title>
+         <para>Report bugs at
+            <emphasis>http://bugs.pilot-link.org/</emphasis>
+         </para>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>pilot-link</emphasis> (7)
+      </para>
+   </refsect1>
+</refentry>

@@ -1,0 +1,169 @@
+<refentry id="read-todos">
+   <refmeta>
+      <refentrytitle>read-todos</refentrytitle>
+      <manvolnum>1</manvolnum>
+      <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
+   </refmeta>
+   <refnamediv>
+      <refname>read-todos</refname>
+      <refpurpose>Syncronize your Palm ToDo application's database with your
+         desktop machine.
+      </refpurpose>
+   </refnamediv>
+   <refsect1>
+      <title>Section</title>
+      <para>pilot-link: Conduits</para>
+   </refsect1>
+   <refsect1>
+      <title>Synopsis</title>
+      <para>
+         <emphasis>read-todos</emphasis>
+         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>-f</option>|<option>--file</option>
+         <filename>file</filename>]	[<option>-A</option>|<option>--archived</option>]
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Description</title>
+      <para>
+         <emphasis>read-todos</emphasis> will read the ToDo database on the
+         Palm handheld, or read the ToDoDB.pdb file directly from disk on your
+         desktop machine, and print the contents to STDOUT (generally the
+         screen).
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Options</title>
+      <refsect2>
+         <title>read-todos option</title>
+         <para>
+            <option>-f</option>, <option>--file</option> <filename>file</filename>
+         </para>
+         <blockquote>
+            <para>
+               Save ToDO entries in <filename>file</filename> instead of STDOUT
+            </para>
+         </blockquote>
+         <para>
+            <option>-A</option>, <option>--archived</option>
+         </para>
+         <blockquote>
+            <para>Write archived entries only, in human-readable format</para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>conduit options</title>
+         <para>
+            <option>-p</option>, <option>--port</option>
+            &lt;<userinput>port</userinput>&gt;
+         </para>
+         <blockquote>
+            <para>
+               Use device file &lt;<filename>port</filename>&gt; to communicate
+               with the Palm handheld device. If this is not specified,
+               <emphasis>read-todos</emphasis> will look for
+               the <filename>$PILOTPORT</filename> environment variable. If
+               neither
+               are found or supplied, <emphasis>read-todos</emphasis> will
+               print the usage information.
+            </para>
+         </blockquote>
+         <para>
+            <option>-q</option>, <option>--quiet</option>
+         </para>
+         <blockquote>
+            <para>Suppress 'Hit HotSync button' message</para>
+         </blockquote>
+         <para>
+            <option>-v</option>, <option>--version</option>
+         </para>
+         <blockquote>
+            <para>
+               Display version of <emphasis>read-todos</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+      </refsect2>
+      <refsect2>
+         <title>help options</title>
+         <para>
+            <option>-h</option>, <option>--help</option>
+         </para>
+         <blockquote>
+            <para>Display the help synopsis for
+               <emphasis>read-todos</emphasis>
+               and exit without connecting.
+            </para>
+         </blockquote>
+         <para>
+            <option>--usage</option> 
+         </para>
+         <blockquote>
+            <para>Display a brief usage message and exit without connecting.</para>
+         </blockquote>
+      </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Usage</title>
+      <para>Connect to a target Palm handheld and read the ToDo database, or
+         read
+         the ToDoDB.pdb file from disk and print the entries found to STDOUT.
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Examples</title>
+      <para>Read the on-Palm ToDo database, and dump to STDOUT.</para>
+      <para>
+         <emphasis>read-todos</emphasis>
+         <option>-p</option>
+         <filename>/dev/pilot</filename>
+      </para>
+      <para>Read the ToDoDB.pdb file on disk, and dump to STDOUT</para>
+      <para>
+         <emphasis>read-todos</emphasis>
+         <option>-f</option>
+         <filename>ToDoDB.pdb</filename>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Author</title>
+      <para>
+         <emphasis>read-todos</emphasis> was originally written by
+         Kenneth Albanowski
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Reporting Bugs</title>
+      <para>Report bugs at:
+         <emphasis>http://bugs.pilot-link.org</emphasis>
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>Copyright</title>
+      <para>This  program  is  free  software; you can redistribute it and/or
+         modify it under the terms of the GNU General Public License as
+         published by the Free Software Foundation; either version 2 of  the 
+         License,  or  (at  your option) any later version.
+      </para>
+      <para>This  program  is  distributed  in the hope that it will be useful,
+         but WITHOUT ANY WARRANTY; without even the implied warranty of
+         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+         General  Public  License for more details.
+      </para>
+      <para>You  should  have  received a copy of the GNU General Public
+         License along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+         USA
+      </para>
+   </refsect1>
+   <refsect1>
+      <title>See Also</title>
+      <para>
+         <emphasis>install-todo</emphasis> (1),
+         <emphasis>install-todos</emphasis> (1),
+         <emphasis>pilot-link</emphasis> (7)
+      </para>
+   </refsect1>
+</refentry>
