@@ -5408,7 +5408,7 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 			*dirIterator = get_long (DLP_RESPONSE_DATA (res, 0, 0));
 			entries = get_long (DLP_RESPONSE_DATA (res, 0, 4));
 		} else {
-			*dirIterator = 0xffffffff;
+			*dirIterator = vfsIteratorStop;
 			entries = 0;
 		}
 	
