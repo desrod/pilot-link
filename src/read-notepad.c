@@ -215,6 +215,41 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
      printf( "no\n" );
 }
 
+int protect_files( char *name, char *extension )
+{
+   char *save_name, c = 1;
+   
+   save_name = strdup( name );
+   
+   if( NULL == save_name )
+     {
+	printf( "Failed to generate filename %s%s\n", name, extension );
+	return( 0 );
+     }
+	
+   sprintf( name, "%s%s", save_name, extension );
+   
+   while( access( name, F_OK ) == 0 )
+     {
+	sprintf( name, "%s_%02d%s", save_name, c, extension );
+
+	c++;
+	
+	if( c == 'z' + 1 )
+	  c = 'A';
+	
+	if( c == 'Z' + 1 )
+	  {
+	     printf( "Failed to generate filename %s\n", name );
+	     return( 0 );
+	  }
+     }
+   
+   free( save_name );
+   
+   return( 1 );
+}
+
 void output_picture( int type, struct NotePad n )
 {
    char fname[FILENAME_MAX];
@@ -222,15 +257,26 @@ void output_picture( int type, struct NotePad n )
    char extension[8];
    static int i = 1;
    
-   if( type == NOTE_OUT_PNG )
-     sprintf( extension, "png" );
-   else if( type == NOTE_OUT_PPM )
-     sprintf( extension, "ppm" );
-   
    if( n.flags & NOTEPAD_FLAG_NAME )
-     sprintf( fname, "%s.%s", n.name, extension );
+     {
+	if( type == NOTE_OUT_PNG )
+	  sprintf( extension, ".png" );
+	else if( type == NOTE_OUT_PPM )
+	  sprintf( extension, ".ppm" );
+   
+	sprintf( fname, "%s", n.name );
+     }
    else
-     sprintf( fname, "%4.4d_np.%s", i++, extension );
+     {
+	if( type == NOTE_OUT_PNG )
+	  sprintf( extension, "_np.png" );
+	else if( type == NOTE_OUT_PPM )
+	  sprintf( extension, "_np.ppm" );
+   
+	sprintf( fname, "%4.4d", i++ );
+     }
+   
+   protect_files( fname, extension );
    
    printf ("Generating %s...\n", fname);
    
@@ -272,7 +318,7 @@ int main(int argc, char *argv[])
    int type = NOTE_OUT_PPM;
    
    char     *port 		= NULL,
-     *filename 	= NULL,
+/*     *filename 	= NULL, */
      *ptr;
    
    struct 	PilotUser User;
@@ -293,7 +339,7 @@ int main(int argc, char *argv[])
 	   return 0;
 	 case 'p':
 	   port = optarg;
-	   filename = NULL;
+/* 	   filename = NULL; */
 	   break;
 	 case 't':
 	   if( !strncmp( "png", optarg, 3 ))
@@ -314,7 +360,7 @@ int main(int argc, char *argv[])
 		type = NOTE_OUT_PPM;
 	     }
 	   
-	     filename = NULL;
+/*	     filename = NULL; */
 
 	   break;
 #if 0	   
@@ -329,6 +375,7 @@ int main(int argc, char *argv[])
      }
    
    sd = pilot_connect(port);
+
    if (sd < 0)
      goto error;   
    
@@ -345,31 +392,6 @@ int main(int argc, char *argv[])
    
    dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
    
-#if 0
-   /* Not going use this right now but it might come back */
-   /* later - AA */
-   if (filename) 
-     {
-	int 	len;
-	
-	pif = pi_file_open(filename);
-	if (!pif) 
-	  {
-	     perror("pi_file_open");
-	     exit(1);
-	  }
-	
-	sd = pi_file_get_app_info(pif, (void *) &ptr, &len);
-	if (sd == -1) 
-	  {
-	     perror("pi_file_get_app_info");
-	     exit(1);
-	  }
-	
-	memcpy(buffer, ptr, len);
-     }
-#endif
-   
    unpack_NotePadAppInfo( &nai, buffer, 0xffff);
    
    for (i = 0;; i++) 
@@ -383,18 +405,9 @@ int main(int argc, char *argv[])
 	  {
 	     len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
 				       &attr, &category);
-
+	     
 	     if (len < 0)
 	       break;
-	  }
-	
-	if (filename) 
-	  {
-	     if (pi_file_read_record
-		 (pif, i, (void *) &ptr, &len, &attr, &category, 0))
-	       break;
-	     
-	     memcpy(buffer, ptr, len);
 	  }
 	
 	/* Skip deleted records */
@@ -428,11 +441,11 @@ int main(int argc, char *argv[])
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
      } 
-   else if (filename) 
+/*   else if (filename) 
      {
 	pi_file_close(pif);
      }
-   
+*/   
    return 0;
    
    error_close:

@@ -44,6 +44,7 @@
 const char *progname;
 int pilot_connect(const char *port);
 
+void write_png (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
 void write_ppm (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
 void write_png( FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
 void init_for_ppm (struct PalmPixState *state);
@@ -71,7 +72,7 @@ static void display_help(char *progname)
         printf("     --type, -t   specify picture output type\n");
         printf("                  either \"ppm\" or \"png\"\n");
         printf("     --list, -l   List picture information instead of converting\n");
-        printf("     -n [name]    Convert only <pixname>, and output to stdout as .ppm\n\n");
+        printf("     -n [name]    Convert only <pixname>, and output to stdout as type\n\n");
 	
 	exit(0);
 }
@@ -200,6 +201,41 @@ void write_png( FILE *f, const struct PalmPixState *state,
 }
 #endif
 
+int protect_files( char *name, char *extension )
+{
+   char *save_name, c = 1;
+   
+   save_name = strdup( name );
+   
+   if( NULL == save_name )
+     {
+	printf( "Failed to generate filename %s%s\n", name, extension );
+	return( 0 );
+     }
+	
+   sprintf( name, "%s%s", save_name, extension );
+   
+   while( access( name, F_OK ) == 0 )
+     {
+	sprintf( name, "%s_%02d%s", save_name, c, extension );
+
+	c++;
+	
+	if( c == 'z' + 1 )
+	  c = 'A';
+	
+	if( c == 'Z' + 1 )
+	  {
+	     printf( "Failed to generate filename %s\n", name );
+	     return( 0 );
+	  }
+     }
+   
+   free( save_name );
+   
+   return( 1 );
+}
+
 static int
   write_one (const struct PalmPixHeader *header, struct PalmPixState *state,
 	     int recno, const char *pixname)
@@ -237,20 +273,22 @@ static int
   write_all (const struct PalmPixHeader *header, struct PalmPixState *state,
 	     int recno, const char *ignored)
 {
-   
    init_for_ppm (state);
    if (unpack_PalmPix (state, header, recno, pixName | pixPixmap) != 0) 
      {
 	
-	char fname[FILENAME_MAX];
+	char fname[FILENAME_MAX], ext[10];
 	FILE *f;
 	
-	/* FIXME ought to use something like protect_filename here */
+	sprintf( fname, "%s", state->pixname );
+
 	if( state->output_type == PALMPIX_OUT_PPM )
-	  sprintf (fname, "%s_pp.ppm", state->pixname);
+	  sprintf( ext, "_pp.ppm" );
 	else if( state->output_type == PALMPIX_OUT_PNG )
-	  sprintf (fname, "%s_pp.png", state->pixname);
-	  
+	  sprintf( ext, "_pp.png" );
+
+	protect_files( fname, ext );
+
 	printf ("Generating %s...\n", fname);
 	
 	f = fopen (fname, "wb");
@@ -320,9 +358,6 @@ void
    
    
 }
-
-
-
 
 static int
   fail (const char *func)  
