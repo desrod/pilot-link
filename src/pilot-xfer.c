@@ -2353,6 +2353,11 @@ main(int argc, const char *argv[])
 		"       --illegal instead of -I, --Illegal\n"
 		"       --list --rom instead of -L, --List, --Listall\n\n");
 
+	if (argc < 2) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
+	}
+
 	while ((optc = poptGetNextOpt(pc)) >= 0)
 	{
 		switch (optc)
