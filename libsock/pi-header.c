@@ -38,9 +38,10 @@ void PalmHeader(char *progname)
 	       "   | (c) Copyright 1996-2001, pilot-link team   |\n"
 	       "   |    Join the pilot-unix list to contribute. |\n"
 	       "   `--------------------------------------------'\n"
-	       "   This is %s from pilot-link version %d.%d.%d%s\n\n",
-                progname, PILOT_LINK_VERSION, PILOT_LINK_MAJOR,
-                PILOT_LINK_MINOR, patchlevel);
+	       "   This is %s from pilot-link version %d.%d.%d%s\n"
+	       "   Build date: %s %s\n\n", progname, PILOT_LINK_VERSION, 
+	       PILOT_LINK_MAJOR, PILOT_LINK_MINOR, patchlevel, __DATE__,
+	       __TIME__);
 	printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",
                 PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
                 patchlevel);

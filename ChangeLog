@@ -2,6 +2,9 @@
 
 	* libsock/pi-file.c: Removed "pretty-print" for release. Will return
 	  it later with proper callbacks. 
+	
+	* libsock/pi-header.c: Added build date and time, helps with more
+	  granular tracking of bug reports.
 
 2002-02-20  David A. Desrosiers <hacker at gnu-designs dot com>
  
