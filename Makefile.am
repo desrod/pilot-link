@@ -7,6 +7,7 @@ endif
 SUBDIRS=libsock $(CXX_DIR) include man tests . tools
 
 INCLUDES = 			\
+	-Iinclude		\
 	-I$(top_srcdir)/include \
 	$(RL_CFLAGS)
 

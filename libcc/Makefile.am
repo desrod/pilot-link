@@ -1,6 +1,7 @@
 lib_LIBRARIES = libpicc.a
 
 INCLUDES = \
+	-I../include		\
 	-I$(top_srcdir)/include
 
 libpicc_a_SOURCES = 	\

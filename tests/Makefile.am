@@ -1,4 +1,5 @@
 INCLUDES = \
+	-I../include		\
 	-I$(top_srcdir)/include
 
 check_PROGRAMS =  \

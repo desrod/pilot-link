@@ -1,6 +1,7 @@
 all: java_pisock
 
 INCLUDES= 				\
+	-I../../include			\
 	-I $(top_srcdir)/include 	\
 	-I $(top_builddir)/include	\
 	-I $(JAVABASE)/include		\

@@ -1,5 +1,17 @@
 2002-02-27  David A. Desrosiers <hacker at gnu-designs dot com>
 
+	* Makefile.am: Fixes to build outside $SRCDIR (John Marshall)
+
+	* libcc/Makefile.am: Same
+
+	* libsock/Makefile.am: Same
+
+	* tests/Makefile.am: Same
+	
+	* tools/Makefile.am: Same
+
+	* tools/Java/Makefile.am: Same
+
 	* dlpsh.c: pilot_connect() fixes, getopt_long() fixes, cleanup.
 
 	* install-user.c: Same

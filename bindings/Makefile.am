@@ -33,20 +33,20 @@ endif
 #
 # Perl Building
 #
-perl5-make: $(srcdir)/Perl5/Makefile.PL
-	cd $(srcdir)/Perl5 && $(PERL5) Makefile.PL
+perl5-make: Perl5/Makefile.PL
+	cd Perl5 && $(PERL5) Makefile.PL
 
 perl5-build: perl5-make
-	cd $(srcdir)/Perl5 && $(MAKE)
+	cd Perl5 && $(MAKE)
 
 perl5-install: perl5-build
-	cd $(srcdir)/Perl5 && $(MAKE) install
+	cd Perl5 && $(MAKE) install
 
 perl5-uninstall: perl5-make
-	cd $(srcdir)/Perl5 && $(MAKE) uninstall
+	cd Perl5 && $(MAKE) uninstall
 
 perl5-clean: perl5-make
-	cd $(srcdir)/Perl5 && $(MAKE) realclean
+	cd Perl5 && $(MAKE) realclean
 
 if WITH_PERL5
 PERL5_ALL = perl5-build
