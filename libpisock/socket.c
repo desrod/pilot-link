@@ -964,11 +964,7 @@ pi_socket(int domain, int type, int protocol)
 	}
 
 	/* Create unique socket descriptor */
-#if defined( OS2 ) || defined( WIN32 )
-	if ((ps->sd = open("NUL", O_RDWR)) == -1) {
-#else
-	if ((ps->sd = open("/dev/null", O_RDWR)) == -1) {
-#endif
+	if ((ps->sd = open(NULL_DEVICE, O_RDWR)) == -1) {
 		int 	err = errno;	/* Save errno of open */
 
 		free(ps);
