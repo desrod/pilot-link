@@ -1,3 +1,8 @@
+2003-04-01  JP Rosevear  <jpr@ximian.com>
+
+	* libpisync/sync.c (store_record_on_pilot): preserve the secret
+	flag for the record
+
 2003-03-27 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Fix to find libpng on Solaris (Simon Burr)

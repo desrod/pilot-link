@@ -306,7 +306,7 @@ store_record_on_pilot(SyncHandler * sh, int dbhandle,
 	if (result != 0)
 		return result;
 
-	PilotCheck(dlp_WriteRecord(sh->sd, dbhandle, 0,
+	PilotCheck(dlp_WriteRecord(sh->sd, dbhandle, precord.flags & dlpRecAttrSecret,
 				   precord.recID, precord.catID,
 				   precord.buffer, precord.len, &id));
 
