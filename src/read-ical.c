@@ -188,7 +188,7 @@ int main(int argc, const char *argv[])
 			    || (attr & dlpRecAttrArchived))
 				continue;
 
-			unpack_ToDo(&t, recbuf->data, recbuf->used);
+			unpack_ToDo(&t, recbuf, todo_v1);
 
 			fprintf(ical, "set n [notice]\n");
 
@@ -240,7 +240,7 @@ int main(int argc, const char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 
-		unpack_Appointment(&a, recbuf->data, recbuf->used);
+		unpack_Appointment(&a, recbuf, datebook_v1);
 
 		if (a.event) {
 			fprintf(ical, "set i [notice]\n");

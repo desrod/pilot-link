@@ -32,13 +32,13 @@
 #include "pi-dlp.h"
 #include "pi-datebook.h"
 #include "pi-userland.h"
+#include "pi-buffer.h"
 
 extern time_t parsedate(char *p);
 
 int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
-		Appointment_size,
 		db,
 		fieldno,
 		filelen,
@@ -49,8 +49,8 @@ int main(int argc, const char *argv[])
 		*filename	= NULL,
 		*file_text	= NULL,
 		*fields[4];
-
-	unsigned char Appointment_buf[0xffff];
+	
+	pi_buffer_t *Appointment_buf;
 	FILE 	*f = NULL;
 
 	struct 	PilotUser User;
@@ -220,11 +220,8 @@ int main(int argc, const char *argv[])
 			appointment.description 	= fields[3];
 			appointment.note 		= NULL;
 
-			Appointment_size =
-			    pack_Appointment(&appointment,
-					     Appointment_buf,
-					     sizeof
-					     (Appointment_buf));
+			pack_Appointment(&appointment, Appointment_buf, datebook_v1);
+
 			printf("Description: %s, %s\n",
 				appointment.description, appointment.note);
 
@@ -236,8 +233,8 @@ int main(int argc, const char *argv[])
 				appointment.begin.tm_min);
 
 			dlp_WriteRecord(sd, db, 0, 0, 0,
-					Appointment_buf,
-					Appointment_size, 0);
+					Appointment_buf->data,
+					Appointment_buf->used, 0);
 			fields[fieldno++] = cPtr;
 		} else {
 			cPtr++;

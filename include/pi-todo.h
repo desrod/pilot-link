@@ -3,10 +3,14 @@
 
 #include <time.h>
 #include "pi-appinfo.h"
+#include "pi-buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+	typedef enum {
+		todo_v1,
+	} todoType;
 
 	typedef struct ToDo {
 		int indefinite;
@@ -18,6 +22,7 @@ extern "C" {
 	} ToDo_t;
 
 	typedef struct ToDoAppInfo {
+		todoType type;
 		struct CategoryAppInfo category;
 		int dirty;
 		int sortByPriority;
@@ -25,9 +30,9 @@ extern "C" {
 
 	extern void free_ToDo PI_ARGS((ToDo_t *));
 	extern int unpack_ToDo
-	    PI_ARGS((ToDo_t *, unsigned char *record, size_t len));
+	    PI_ARGS((ToDo_t *, pi_buffer_t *record, todoType type));
 	extern int pack_ToDo
-	    PI_ARGS((ToDo_t *, unsigned char *record, size_t len));
+	    PI_ARGS((ToDo_t *, pi_buffer_t *record, todoType type));
 	extern int unpack_ToDoAppInfo
 	    PI_ARGS((ToDoAppInfo_t *, unsigned char *record, size_t len));
 	extern int pack_ToDoAppInfo

@@ -2,11 +2,16 @@
 #define _PILOT_ADDRESS_H_
 
 #include "pi-appinfo.h"
+#include "pi-buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+	typedef enum {
+		address_v1,
+	} addressType;
+  
 	enum {  entryLastname, 
 		entryFirstname, 
 		entryCompany, 
@@ -37,6 +42,7 @@ extern "C" {
 	} Address_t;
 
 	typedef struct AddressAppInfo {
+		addressType type;
 		struct CategoryAppInfo category;
 		char labels[19 + 3][16]; /* Hairy explain, obvious to look */
 		int labelRenamed[19 + 3]; /* booleans show labels modified */
@@ -48,9 +54,9 @@ extern "C" {
 	extern void free_Address
 	  PI_ARGS((Address_t *));
 	extern int unpack_Address
-	  PI_ARGS((Address_t *, unsigned char *record, size_t len));
+	  PI_ARGS((Address_t *, pi_buffer_t *buf, addressType type));
 	extern int pack_Address
-	  PI_ARGS((Address_t *, unsigned char *record, size_t len));
+	  PI_ARGS((Address_t *, pi_buffer_t *buf, addressType type));
 	extern int unpack_AddressAppInfo
 	  PI_ARGS((AddressAppInfo_t *, unsigned char *AppInfo, size_t len));
 	extern int pack_AddressAppInfo

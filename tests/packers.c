@@ -94,6 +94,7 @@ int test_memo()
 {
    struct MemoAppInfo mai;
    struct Memo m;
+   pi_buffer_t *RecordBuffer;
    int l;
    int errors = 0;
 
@@ -246,15 +247,11 @@ int test_memo()
       dumpdata(MemoAppBlock, sizeof(MemoAppBlock));
    }
 
-
-   /* Unpacker should return count of bytes used */
-   l = unpack_Memo(&m, MemoRecord, sizeof(MemoRecord) + 10);
-   if (l != sizeof(MemoRecord)) {
-      errors++;
-      printf
-	  ("13: unpack_Memo returned incorrect length (got %d, expected %d)\n",
-	   l, sizeof(MemoRecord));
-   }
+   RecordBuffer = pi_buffer_new(sizeof(MemoRecord));
+   memcpy(RecordBuffer->data, MemoRecord, RecordBuffer->allocated);
+   RecordBuffer->used=sizeof(MemoRecord);
+   unpack_Memo(&m, RecordBuffer, memo_v1);
+   pi_buffer_free(RecordBuffer);
 
    if (
        (m.text == 0) ||
@@ -262,54 +259,31 @@ int test_memo()
 	      "aaMakefile\x0aREADME\x0alicense.terms\x0apilotlink.c\x0atest.tcl*\x0a"))
    {
       errors++;
-      printf("14: unpack_Memo generated incorrect information\n");
+      printf("13: unpack_Memo generated incorrect information\n");
+   }
+   
+   RecordBuffer = pi_buffer_new(0);
+   if (pack_Memo(&m, RecordBuffer, memo_v1) != 0) {
+      errors++;
+     printf("14: pack_Memo returned failure\n");
    }
 
-   /* Packer should return necessary block length when no buffer is given */
-   l = pack_Memo(&m, 0, 0);
-   if (l != sizeof(MemoRecord)) {
+   if (RecordBuffer->used != sizeof(MemoRecord)) {
       errors++;
       printf
 	  ("15: pack_MemoRecord returned incorrect allocation length (got %d, expected %d)\n",
-	   l, sizeof(MemoRecord));
+	   RecordBuffer->used, sizeof(MemoRecord));
    }
 
-   reset_block(target, 8192);
-
-   /* Packer should not pack when the block length is too small */
-   l = pack_Memo(&m, target + 128, 1);
-   if (l != 0) {
+   if (memcmp(RecordBuffer->data, MemoRecord, sizeof(MemoRecord))) {
       errors++;
-      printf("16: pack_MemoRecord packed into too small buffer (got %d)\n",
-	     l);
-   }
-
-   /* Packer should not scribble on memory */
-   if (check_block(17, target, 8192, 128, 1, "pack_Memo"))
-      errors++;
-
-   reset_block(target, 8192);
-
-   /* Packer should return length of data written */
-   l = pack_Memo(&m, target + 128, 8192 - 256);
-   if (l != sizeof(MemoRecord)) {
-      errors++;
-      printf
-	  ("18: pack_MemoRecord returned incorrect length (got %d, expected %d)\n",
-	   l, sizeof(MemoRecord));
-   }
-
-   /* Packer should not scribble on memory */
-   if (check_block(19, target, 8192, 128, l, "pack_Memo"))
-      errors++;
-
-   if (memcmp(target + 128, MemoRecord, sizeof(MemoRecord))) {
-      errors++;
-      printf("20: pack_Memo generated incorrect information. Got:\n");
+      printf("16: pack_Memo generated incorrect information. Got:\n");
       dumpdata(target + 128, l);
       printf(" expected:\n");
       dumpdata(MemoRecord, sizeof(MemoRecord));
    }
+
+   pi_buffer_free(RecordBuffer);
 
    printf("Memo packers test completed with %d error(s).\n", errors);
 
@@ -367,6 +341,7 @@ int test_address()
 {
    struct AddressAppInfo mai;
    struct Address m;
+   pi_buffer_t *RecordBuffer;
    int l;
    int errors = 0;
 
@@ -528,13 +503,11 @@ int test_address()
 
 
    /* Unpacker should return count of bytes used */
-   l = unpack_Address(&m, AddressRecord, sizeof(AddressRecord) + 10);
-   if (l != sizeof(AddressRecord)) {
-      errors++;
-      printf
-	  ("13: unpack_Address returned incorrect length (got %d, expected %d)\n",
-	   l, sizeof(AddressRecord));
-   }
+   RecordBuffer = pi_buffer_new(sizeof(AddressRecord));
+   memcpy(RecordBuffer->data, AddressRecord, RecordBuffer->allocated);
+   RecordBuffer->used=sizeof(AddressRecord);
+   unpack_Address(&m, RecordBuffer, address_v1);
+   pi_buffer_free(RecordBuffer);
 
    if (
        (m.phoneLabel[0] != 0) ||
@@ -549,54 +522,31 @@ int test_address()
        strcmp(m.entry[8], "None known") ||
        strcmp(m.entry[14], "C1") || (m.showPhone != 1) || 0) {
       errors++;
-      printf("14: unpack_Address generated incorrect information\n");
+      printf("13: unpack_Address generated incorrect information\n");
    }
 
-   /* Packer should return necessary block length when no buffer is given */
-   l = pack_Address(&m, 0, 0);
-   if (l != sizeof(AddressRecord)) {
+   RecordBuffer = pi_buffer_new(0);
+   if (pack_Address(&m, RecordBuffer, address_v1) != 0) {
+      errors++;
+     printf("14: pack_Address returned failure\n");
+   }
+
+   if (RecordBuffer->used != sizeof(AddressRecord)) {
       errors++;
       printf
-	  ("15: pack_Address returned incorrect allocation length (got %d, expected %d)\n",
-	   l, sizeof(AddressRecord));
+	  ("15: pack_Address returned incorrect length (got %d, expected %d)\n",
+	   RecordBuffer->used, sizeof(AddressRecord));
    }
 
-   reset_block(target, 8192);
-
-   /* Packer should not pack when the block length is too small */
-   l = pack_Address(&m, target + 128, 1);
-   if (l != 0) {
+   if (memcmp(RecordBuffer->data, AddressRecord, sizeof(AddressRecord))) {
       errors++;
-      printf("16: pack_Address packed into too small buffer (got %d)\n",
-	     l);
-   }
-
-   /* Packer should not scribble on memory */
-   if (check_block(17, target, 8192, 128, 1, "pack_Address"))
-      errors++;
-
-   reset_block(target, 8192);
-
-   /* Packer should return length of data written */
-   l = pack_Address(&m, target + 128, 8192 - 256);
-   if (l != sizeof(AddressRecord)) {
-      errors++;
-      printf
-	  ("18: pack_Address returned incorrect length (got %d, expected %d)\n",
-	   l, sizeof(AddressRecord));
-   }
-
-   /* Packer should not scribble on memory */
-   if (check_block(19, target, 8192, 128, l, "pack_Address"))
-      errors++;
-
-   if (memcmp(target + 128, AddressRecord, sizeof(AddressRecord))) {
-      errors++;
-      printf("20: pack_Address generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      printf("16: pack_Address generated incorrect information. Got:\n");
+      dumpdata(RecordBuffer->data, l);
       printf(" expected:\n");
       dumpdata(AddressRecord, sizeof(AddressRecord));
    }
+   
+   pi_buffer_free(RecordBuffer);
 
    printf("Address packers test completed with %d error(s).\n", errors);
 
@@ -637,6 +587,7 @@ int test_appointment()
 {
    struct AppointmentAppInfo mai;
    struct Appointment m;
+   pi_buffer_t *RecordBuffer;
    int l;
    int errors = 0;
 
@@ -801,16 +752,11 @@ int test_appointment()
    }
 
 
-   /* Unpacker should return count of bytes used */
-   l =
-       unpack_Appointment(&m, AppointmentRecord,
-			  sizeof(AppointmentRecord) + 10);
-   if (l != sizeof(AppointmentRecord)) {
-      errors++;
-      printf
-	  ("13: unpack_Appointment returned incorrect length (got %d, expected %d)\n",
-	   l, sizeof(AppointmentRecord));
-   }
+   RecordBuffer = pi_buffer_new(sizeof(AppointmentRecord));
+   memcpy(RecordBuffer->data, AppointmentRecord, RecordBuffer->allocated);
+   RecordBuffer->used=sizeof(AppointmentRecord);
+   unpack_Appointment(&m, RecordBuffer, datebook_v1);
+   pi_buffer_free(RecordBuffer);
 
    if (
 /*     (m.phonelabel[0] != 0) ||
@@ -827,53 +773,27 @@ int test_appointment()
      (m.whichphone != 1) ||*/
 	 0) {
       errors++;
-      printf("14: unpack_Appointment generated incorrect information\n");
+      printf("13: unpack_Appointment generated incorrect information\n");
    }
 
-   /* Packer should return necessary block length when no buffer is given */
-   l = pack_Appointment(&m, 0, 0);
-   if (l != sizeof(AppointmentRecord)) {
+   RecordBuffer = pi_buffer_new(0);
+   if (pack_Appointment(&m, RecordBuffer, datebook_v1) != 0) {
       errors++;
-      printf
-	  ("15: pack_Appointment returned incorrect allocation length (got %d, expected %d)\n",
-	   l, sizeof(AppointmentRecord));
+     printf("14: pack_Appointment returned failure\n");
    }
 
-   reset_block(target, 8192);
-
-   /* Packer should not pack when the block length is too small */
-   l = pack_Appointment(&m, target + 128, 1);
-   if (l != 0) {
+   if (RecordBuffer->used != sizeof(AppointmentRecord)) {
       errors++;
       printf
-	  ("16: pack_Appointment packed into too small buffer (got %d)\n",
-	   l);
+	  ("15: pack_Appointment returned incorrect length (got %d, expected %d)\n",
+	   RecordBuffer->used, sizeof(AppointmentRecord));
    }
 
-   /* Packer should not scribble on memory */
-   if (check_block(17, target, 8192, 128, 1, "pack_Appointment"))
-      errors++;
-
-   reset_block(target, 8192);
-
-   /* Packer should return length of data written */
-   l = pack_Appointment(&m, target + 128, 8192 - 256);
-   if (l != sizeof(AppointmentRecord)) {
+   if (memcmp(RecordBuffer->data, AppointmentRecord, sizeof(AppointmentRecord))) {
       errors++;
       printf
-	  ("18: pack_Appointment returned incorrect length (got %d, expected %d)\n",
-	   l, sizeof(AppointmentRecord));
-   }
-
-   /* Packer should not scribble on memory */
-   if (check_block(19, target, 8192, 128, l, "pack_Appointment"))
-      errors++;
-
-   if (memcmp(target + 128, AppointmentRecord, sizeof(AppointmentRecord))) {
-      errors++;
-      printf
-	  ("20: pack_Appointment generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+	  ("16: pack_Appointment generated incorrect information. Got:\n");
+      dumpdata(RecordBuffer->data, l);
       printf(" expected:\n");
       dumpdata(AppointmentRecord, sizeof(AppointmentRecord));
    }
@@ -912,6 +832,7 @@ int test_todo()
 {
    struct ToDoAppInfo mai;
    struct ToDo m;
+   pi_buffer_t *RecordBuffer;
    int l;
    int errors = 0;
 
@@ -1064,13 +985,11 @@ int test_todo()
 
 
    /* Unpacker should return count of bytes used */
-   l = unpack_ToDo(&m, ToDoRecord, sizeof(ToDoRecord) + 10);
-   if (l != sizeof(ToDoRecord)) {
-      errors++;
-      printf
-	  ("13: unpack_ToDo returned incorrect length (got %d, expected %d)\n",
-	   l, sizeof(ToDoRecord));
-   }
+   RecordBuffer = pi_buffer_new(sizeof(ToDoRecord));
+   memcpy(RecordBuffer->data, ToDoRecord, RecordBuffer->allocated);
+   RecordBuffer->used=sizeof(ToDoRecord);
+   unpack_ToDo(&m, RecordBuffer, todo_v1);
+   pi_buffer_free(RecordBuffer);
 
    if (
 /*     (m.phonelabel[0] != 0) ||
@@ -1087,53 +1006,33 @@ int test_todo()
      (m.whichphone != 1) ||*/
 	 0) {
       errors++;
-      printf("14: unpack_ToDo generated incorrect information\n");
-   }
-
-   /* Packer should return necessary block length when no buffer is given */
-   l = pack_ToDo(&m, 0, 0);
-   if (l != sizeof(ToDoRecord)) {
-      errors++;
-      printf
-	  ("15: pack_ToDo returned incorrect allocation length (got %d, expected %d)\n",
-	   l, sizeof(ToDoRecord));
+      printf("13: unpack_ToDo generated incorrect information\n");
    }
 
    reset_block(target, 8192);
 
-   /* Packer should not pack when the block length is too small */
-   l = pack_ToDo(&m, target + 128, 1);
-   if (l != 0) {
+   RecordBuffer = pi_buffer_new(0);
+   if (pack_ToDo(&m, RecordBuffer, todo_v1) != 0) {
       errors++;
-      printf("16: pack_ToDo packed into too small buffer (got %d)\n", l);
+     printf("14: pack_ToDo returned failure\n");
    }
 
-   /* Packer should not scribble on memory */
-   if (check_block(17, target, 8192, 128, 1, "pack_ToDo"))
-      errors++;
-
-   reset_block(target, 8192);
-
-   /* Packer should return length of data written */
-   l = pack_ToDo(&m, target + 128, 8192 - 256);
-   if (l != sizeof(ToDoRecord)) {
+   if (RecordBuffer->used != sizeof(ToDoRecord)) {
       errors++;
       printf
-	  ("18: pack_ToDo returned incorrect length (got %d, expected %d)\n",
+	  ("15: pack_ToDo returned incorrect length (got %d, expected %d)\n",
 	   l, sizeof(ToDoRecord));
    }
 
-   /* Packer should not scribble on memory */
-   if (check_block(19, target, 8192, 128, l, "pack_ToDo"))
+   if (memcmp(RecordBuffer->data, ToDoRecord, sizeof(ToDoRecord))) {
       errors++;
-
-   if (memcmp(target + 128, ToDoRecord, sizeof(ToDoRecord))) {
-      errors++;
-      printf("20: pack_ToDo generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      printf("16: pack_ToDo generated incorrect information. Got:\n");
+      dumpdata(RecordBuffer->data, l);
       printf(" expected:\n");
       dumpdata(ToDoRecord, sizeof(ToDoRecord));
    }
+
+   pi_buffer_free(RecordBuffer);
 
    printf("ToDo packers test completed with %d error(s).\n", errors);
 

@@ -97,9 +97,11 @@ pi_buffer_clear (pi_buffer_t *buf)
 void
 pi_buffer_free (pi_buffer_t* buf)
 {
-	if (buf->data)
-		free (buf->data);
-	free (buf);
+	if (buf) {
+		if (buf->data)
+			free (buf->data);
+		free (buf);
+	}
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

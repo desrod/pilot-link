@@ -227,7 +227,7 @@ int main(int argc, const char *argv[])
 		/* Skip deleted records */
 		if (attr & dlpRecAttrArchived) {
 			if (archived) {
-				unpack_ToDo(&todo, recbuf->data, recbuf->used);
+				unpack_ToDo(&todo, recbuf, todo_v1);
 				print_archived(&tai,&todo,category);
 				free_ToDo(&todo);
 			}
@@ -237,7 +237,7 @@ int main(int argc, const char *argv[])
 			continue;
 
 		if (!archived) {
-			unpack_ToDo(&todo, recbuf->data, recbuf->used);
+			unpack_ToDo(&todo, recbuf, todo_v1);
 			print_unarchived(&tai,&todo,category);
 			free_ToDo(&todo);
 		}

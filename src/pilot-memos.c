@@ -350,7 +350,7 @@ int main(int argc, const char *argv[])
 				continue;
 		}
 
-		unpack_Memo(&m, buffer->data, buffer->used);
+		unpack_Memo(&m, buffer, memo_v1);
 
 		/* Skip memos whose title does not match with the query */
 		if (title_matching) {

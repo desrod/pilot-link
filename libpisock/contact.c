@@ -58,6 +58,7 @@ free_Contact (Contact_t *c)
 		pi_buffer_free (c->picture);
 		c->picture = NULL;
 	}
+
 }
 
 
@@ -366,7 +367,7 @@ pack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 
 
 void
-free_ContactsAppInfo (ContactAppInfo_t *ai)
+free_ContactAppInfo (ContactAppInfo_t *ai)
 {
 	if (ai == NULL)
 		return;

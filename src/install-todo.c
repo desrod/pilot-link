@@ -93,9 +93,8 @@ int read_file(char *filename, char **text)
  ***********************************************************************/
 void install_ToDo(int sd, int db, struct ToDo todo)
 {
-	int 	ToDo_size;
 
-	unsigned char ToDo_buf[0xffff];
+	pi_buffer_t *ToDo_buf;
 	char  duedate[DATE_STR_MAX];
 
 	printf("Indefinite:  %i\n", todo.indefinite);
@@ -111,10 +110,12 @@ void install_ToDo(int sd, int db, struct ToDo todo)
 	printf("Description: %s\n", todo.description);
 	printf("Note:        %s\n", todo.note);
 
-	ToDo_size = pack_ToDo(&todo, ToDo_buf, sizeof(ToDo_buf));
+	ToDo_buf = pi_buffer_new(0);
+	pack_ToDo(&todo, ToDo_buf, todo_v1);
 
-	dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf, ToDo_size, 0);
+	dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf->data, ToDo_buf->used, 0);
 
+	pi_buffer_free(ToDo_buf);
 	return;
 }
 

@@ -27,6 +27,7 @@
 #include "pi-dlp.h"
 #include "pi-todo.h"
 #include "pi-header.h"
+#include "pi-buffer.h"
 
 void install_ToDos(int sd, int db, char *filename)
 {
@@ -40,7 +41,7 @@ void install_ToDos(int sd, int db, char *filename)
 		*begPtr 	= cPtr,
 		note_text[] 	= "";
 
-        unsigned char ToDo_buf[0xffff];
+        pi_buffer_t *ToDo_buf;
 
         struct 	ToDo todo;
         FILE 	*f;
@@ -81,14 +82,14 @@ void install_ToDos(int sd, int db, char *filename)
 			/* now = time(0);
 			   todo.due = *localtime(&now); */
 			todo.note = note_text;
-			ToDo_size =
-			    pack_ToDo(&todo, ToDo_buf,
-				      sizeof(ToDo_buf));
+			ToDo_buf = pi_buffer_new(0);
+			pack_ToDo(&todo, ToDo_buf, todo_v1);
 			printf("Description: %s\n", todo.description);
 
-			/* printf("todobuf: %s\n",ToDo_buf);       */
-			dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf,
-					ToDo_size, 0);
+			/* printf("todobuf: %s\n",ToDo_buf->data);       */
+			dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf->data,
+					ToDo_buf->used, 0);
+			pi_buffer_free(ToDo_buf);
 			cPtr++;
 			begPtr = cPtr;
 			cLen = 0;

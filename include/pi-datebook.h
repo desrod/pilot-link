@@ -3,10 +3,15 @@
 
 #include <time.h>
 #include "pi-appinfo.h"
+#include "pi-buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+	typedef enum {
+		datebook_v1,
+	} datebookType;
 
 	extern char *DatebookAlarmTypeNames[];
 	extern char *DatebookRepeatTypeNames[];
@@ -78,9 +83,9 @@ extern "C" {
 	extern void free_Appointment
 	  PI_ARGS((struct Appointment *));
 	extern int unpack_Appointment
-	  PI_ARGS((struct Appointment *, unsigned char *record, int len));
+	    PI_ARGS((struct Appointment *, pi_buffer_t *record, datebookType type));
 	extern int pack_Appointment
-	  PI_ARGS((struct Appointment *, unsigned char *record, int len));
+	    PI_ARGS((struct Appointment *, pi_buffer_t *record, datebookType type));
 	extern int unpack_AppointmentAppInfo
 	  PI_ARGS((struct AppointmentAppInfo *, unsigned char *AppInfo,
 		     int len));

@@ -186,14 +186,20 @@ void addresses(void *buf)
      packedBuf[0] = *ptr;
      
      Address m;
-     unpack_Address(&m, (unsigned char *) buf, size);
-     kenSize = pack_Address(&m, kenBuf, 0xffff);
+     pi_buffer_t *record;
+
+     record = pi_buffer_new();
+     unpack_Address(&m, record, address_v1);
+     pi_buffer_free(record);
+     record = pi_buffer_new();
+     pack_Address(&m, record, address_v1);
      free_Address(&m);
-     kenBuf[0] = *ptr;
+     
+     kenBuf[0] = *ptr; /* From before pi_buffer-ification. What did it do? */
      
      compare(buf, size, packed, packedSize1,
-	     packedBuf, packedSize2, kenBuf, kenSize);
-     
+	     packedBuf, packedSize2, record->buf, record->used);
+     pi_buffer_free(record);     
      delete packed;
 }
 

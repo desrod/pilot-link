@@ -61,57 +61,58 @@ free_Address(Address_t *addr)
  * Summary:     Fill in the address structure based on the raw record 
  *		data
  *
- * Parameters:  Address_t*, char* to buf, buf size
+ * Parameters:  Address_t*, pi_buffer_t *buf
  *
- * Returns:     0 on error, the length of the data used from the
- *		buffer otherwise
+ * Returns:     -1 on error, 0 on success
  *
  ***********************************************************************/
 int
-unpack_Address(Address_t *addr, unsigned char *buffer, size_t len)
+unpack_Address(Address_t *addr, pi_buffer_t *buf, addressType type)
 {
 	unsigned long	contents,
 			v;
-	unsigned char *start = buffer;
+	size_t		ofs;
 
-	if (len < 9)
-		return 0;
+	if (type != address_v1)
+		/* Don't support anything else yet */
+		return -1;
+
+	if (buf == NULL || buf->data == NULL || buf->used < 9)
+		return -1;
 
 	/* get_byte(buffer); gapfill */
-	addr->showPhone     = hi(get_byte(buffer + 1));
-	addr->phoneLabel[4] = lo(get_byte(buffer + 1));
-	addr->phoneLabel[3] = hi(get_byte(buffer + 2));
-	addr->phoneLabel[2] = lo(get_byte(buffer + 2));
-	addr->phoneLabel[1] = hi(get_byte(buffer + 3));
-	addr->phoneLabel[0] = lo(get_byte(buffer + 3));
+	addr->showPhone     = hi(get_byte(buf->data + 1));
+	addr->phoneLabel[4] = lo(get_byte(buf->data + 1));
+	addr->phoneLabel[3] = hi(get_byte(buf->data + 2));
+	addr->phoneLabel[2] = lo(get_byte(buf->data + 2));
+	addr->phoneLabel[1] = hi(get_byte(buf->data + 3));
+	addr->phoneLabel[0] = lo(get_byte(buf->data + 3));
 
-	contents = get_long(buffer + 4);
+	contents = get_long(buf->data + 4);
 
-	/* get_byte(buffer+8) offset */
+	/* get_byte(buf->data+8) offset */
 
-	buffer 	+= 9;
-	len 	-= 9;
+	ofs = 9;
 
 	/* if(flag & 0x1) { 
-	   addr->lastname = strdup(buffer);
-	   buffer += strlen(buffer) + 1;
+	   addr->lastname = strdup((buf->data + ofs);
+	   ofs += strlen((buf->data + ofs)) + 1;
 	   } else {
 	   addr->lastname = 0;
 	   } */
 
 	for (v = 0; v < 19; v++) {
 		if (contents & (1 << v)) {
-			if (len < 1)
+			if ((buf->used - ofs) < 1)
 				return 0;
-			addr->entry[v] = strdup((char *) buffer);
-			buffer += strlen((char *) buffer) + 1;
-			len -= strlen(addr->entry[v]) + 1;
+			addr->entry[v] = strdup((char *) (buf->data + ofs));
+                  	ofs += strlen(addr->entry[v]) + 1;
 		} else {
 			addr->entry[v] = 0;
 		}
 	}
 
-	return (buffer - start);
+	return 0;
 }
 
 
@@ -122,20 +123,17 @@ unpack_Address(Address_t *addr, unsigned char *buffer, size_t len)
  * Summary:     Fill in the raw address record data based on the 
  *		address structure
  *
- * Parameters:  Address_t*, char * to record, record length
+ * Parameters:  Address_t*, pi_buffer_t *buf of record, record type
  *
- * Returns:     The length of the buffer required if record is NULL,
- *		or 0 on error, the length of the data used from the 
- *		buffer otherwise
+ * Returns:     -1 on error, 0 on success.
  *
  ***********************************************************************/
 int
-pack_Address(Address_t *addr, unsigned char *record, size_t len)
+pack_Address(Address_t *addr, pi_buffer_t *buf, addressType type)
 {
 	unsigned int	l,
 			destlen = 9;
 
-	unsigned char *start = record;
 	unsigned char *buffer;
 	unsigned long 	contents,
 			v,
@@ -143,16 +141,25 @@ pack_Address(Address_t *addr, unsigned char *record, size_t len)
 
 	unsigned char offset;
 
+	if (addr == NULL)
+		return -1;
+
+	if (type != address_v1)
+		/* Don't support anything else yet */
+		return -1;
+
 	for (v = 0; v < 19; v++)
 		if (addr->entry[v])
 			destlen += strlen(addr->entry[v]) + 1;
 
-	if (!record)
-		return destlen;
-	if (len < destlen)
-		return 0;
 
-	buffer 		= record + 9;
+	if (buf == NULL || buf->data == NULL)
+		return -1;
+
+	pi_buffer_expect (buf, destlen);
+	buf->used = destlen;
+
+	buffer 		= buf->data + 9;
 	phoneflag 	= 0;
 	contents 	= 0;
 	offset 		= 0;
@@ -161,7 +168,7 @@ pack_Address(Address_t *addr, unsigned char *record, size_t len)
 		if (addr->entry[v] && strlen(addr->entry[v])) {
 			if (v == entryCompany)
 				offset =
-				    (unsigned char) (buffer - record) - 8;
+				    (unsigned char) (buffer - buf->data) - 8;
 			contents |= (1 << v);
 			l = strlen(addr->entry[v]) + 1;
 			memcpy(buffer, addr->entry[v], l);
@@ -176,11 +183,11 @@ pack_Address(Address_t *addr, unsigned char *record, size_t len)
 	phoneflag |= ((unsigned long) addr->phoneLabel[4]) << 16;
 	phoneflag |= ((unsigned long) addr->showPhone) << 20;
 
-	set_long(record, phoneflag);
-	set_long(record + 4, contents);
-	set_byte(record + 8, offset);
+	set_long(buf->data, phoneflag);
+	set_long(buf->data + 4, contents);
+	set_byte(buf->data + 8, offset);
 
-	return (buffer - start);
+	return 0;
 }
 
 
@@ -206,6 +213,8 @@ unpack_AddressAppInfo(AddressAppInfo_t *ai, unsigned char *record, size_t len)
 
 	unsigned char *start = record;
 	unsigned long r;
+
+	ai->type = address_v1;
 
 	i = unpack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)

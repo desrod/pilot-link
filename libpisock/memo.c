@@ -58,12 +58,15 @@ free_Memo(Memo_t *memo)
  *
  ***********************************************************************/
 int
-unpack_Memo(Memo_t *memo, unsigned char *buffer, size_t len)
+unpack_Memo(Memo_t *memo, pi_buffer_t *record, memoType type)
 {
-	if (len < 1)
-		return 0;
-	memo->text = strdup((char *) buffer);
-	return strlen((char *) buffer) + 1;
+	if (type != memo_v1)
+		/* Don't support anything else yet */
+		return -1;
+	if (record == NULL || record->data == NULL || record->used < 1)
+		return -1;
+	memo->text = strdup((char *) record->data);
+	return 0;
 }
 
 
@@ -79,23 +82,25 @@ unpack_Memo(Memo_t *memo, unsigned char *buffer, size_t len)
  *
  ***********************************************************************/
 int
-pack_Memo(Memo_t *memo, unsigned char *buffer, size_t len)
+pack_Memo(Memo_t *memo, pi_buffer_t *record, memoType type)
 {
 	size_t destlen = (memo->text ? strlen(memo->text) : 0) + 1;
 
-	if (!buffer)
-		return destlen;
-	if (len < destlen)
-		return 0;
-	if (memo->text) {
-		if (buffer)
-			strcpy((char *) buffer, memo->text);
-		return strlen(memo->text) + 1;
-	} else {
-		if (buffer)
-			buffer[0] = 0;
-		return 1;
-	}
+	if (type != memo_v1)
+		/* Don't support anything else yet */
+		return -1;
+	if (record == NULL)
+		return -1;
+
+	pi_buffer_expect(record, destlen);
+	record->used = destlen;
+
+	if (memo->text)
+		strcpy((char *) record->data, memo->text);
+	else
+		record->data[0] = NULL;
+
+	return 0;
 }
 
 
@@ -116,6 +121,8 @@ unpack_MemoAppInfo(struct MemoAppInfo *appinfo, unsigned char *record,
 {
 	int 	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
 	unsigned char *start = record;
+
+	appinfo->type = memo_v1;
 
 	if (!i)
 		return i;

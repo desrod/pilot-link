@@ -125,7 +125,7 @@ int main(int argc, const char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 
-		unpack_Appointment(&a, buffer->data, buffer->used);
+		unpack_Appointment(&a, buffer, datebook_v1);
 
 		strcpy(delta, "+7 ");
 		satisfy[0] = 0;

@@ -91,14 +91,13 @@ free_Appointment(Appointment_t *a)
  * Summary:     Fill in the appointment structure based on the raw 
  *		record data
  *
- * Parameters:  Appointment_t*, char* to buffer, buffer length
+ * Parameters:  Appointment_t*, pi_buffer_t * of buffer, datebook type
  *
- * Returns:     0 on error, the length of the data used from the
- *		buffer otherwise
+ * Returns:     -1 on fail, 0 on success
  *
  ***********************************************************************/
 int
-unpack_Appointment(Appointment_t *a, unsigned char *buffer, int len)
+unpack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
 {
 	int 	iflags,
 		j,
@@ -123,23 +122,27 @@ unpack_Appointment(Appointment_t *a, unsigned char *buffer, int len)
 	   -- KJA */
 
 	destlen = 8;
-	if (len < destlen)
-		return 0;
 
-	a->begin.tm_hour 	= get_byte(buffer);
-	a->begin.tm_min 	= get_byte(buffer + 1);
+	if (type != datebook_v1)
+		return -1;
+
+	if (buf == NULL || buf->data == NULL || buf->used < destlen)
+		return -1;
+
+	a->begin.tm_hour 	= get_byte(buf->data);
+	a->begin.tm_min 	= get_byte(buf->data + 1);
 	a->begin.tm_sec 	= 0;
-	d = (unsigned short int) get_short(buffer + 4);
+	d = (unsigned short int) get_short(buf->data + 4);
 	a->begin.tm_year 	= (d >> 9) + 4;
 	a->begin.tm_mon 	= ((d >> 5) & 15) - 1;
 	a->begin.tm_mday 	= d & 31;
 	a->begin.tm_isdst 	= -1;
 	a->end = a->begin;
 
-	a->end.tm_hour = get_byte(buffer + 2);
-	a->end.tm_min = get_byte(buffer + 3);
+	a->end.tm_hour = get_byte(buf->data + 2);
+	a->end.tm_min = get_byte(buf->data + 3);
 
-	if (get_short(buffer) == 0xffff) {
+	if (get_short(buf->data) == 0xffff) {
 		a->event 		= 1;
 		a->begin.tm_hour 	= 0;
 		a->begin.tm_min 	= 0;
@@ -152,11 +155,11 @@ unpack_Appointment(Appointment_t *a, unsigned char *buffer, int len)
 	mktime(&a->begin);
 	mktime(&a->end);
 
-	iflags = get_byte(buffer + 6);
+	iflags = get_byte(buf->data + 6);
 
-	/* buffer+7 is gapfill */
+	/* buf->data+7 is gapfill */
 
-	p2 = (unsigned char *) buffer + 8;
+	p2 = (unsigned char *) buf->data + 8;
 
 	if (iflags & alarmFlag) {
 		a->alarm 	= 1;
@@ -254,7 +257,7 @@ unpack_Appointment(Appointment_t *a, unsigned char *buffer, int len)
 	} else {
 		a->note = 0;
 	}
-	return (p2 - buffer);
+	return 0;
 }
 
 /***********************************************************************
@@ -272,11 +275,17 @@ unpack_Appointment(Appointment_t *a, unsigned char *buffer, int len)
  *
  ***********************************************************************/
 int
-pack_Appointment(Appointment_t *a, unsigned char *buf, int len)
+pack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
 {
 	int 	iflags,
 		destlen = 8;
 	char 	*pos;
+
+	if (a == NULL)
+		return -1;
+
+	if (type != datebook_v1)
+		return -1;
 
 	if (a->alarm)
 		destlen += 2;
@@ -289,28 +298,26 @@ pack_Appointment(Appointment_t *a, unsigned char *buf, int len)
 	if (a->description)
 		destlen += strlen(a->description) + 1;
 
-	if (!buf)
-		return destlen;
-	if (len < destlen)
-		return 0;
+	pi_buffer_expect (buf, destlen);
+	buf->used = destlen;	
 
-	set_byte(buf, a->begin.tm_hour);
-	set_byte(buf + 1, a->begin.tm_min);
-	set_byte(buf + 2, a->end.tm_hour);
-	set_byte(buf + 3, a->end.tm_min);
-	set_short(buf + 4,
+	set_byte(buf->data, a->begin.tm_hour);
+	set_byte(buf->data + 1, a->begin.tm_min);
+	set_byte(buf->data + 2, a->end.tm_hour);
+	set_byte(buf->data + 3, a->end.tm_min);
+	set_short(buf->data + 4,
 		  ((a->
 		    begin.tm_year - 4) << 9) | ((a->begin.tm_mon +
 						 1) << 5) | a->begin.
 		  tm_mday);
 
 	if (a->event) {
-		set_long(buf, 0xffffffff);
+		set_long(buf->data, 0xffffffff);
 	}
 
 	iflags = 0;
 
-	pos = (char *) buf + 8;
+	pos = (char *) buf->data + 8;
 
 	if (a->alarm) {
 		iflags |= alarmFlag;
@@ -393,10 +400,10 @@ pack_Appointment(Appointment_t *a, unsigned char *buf, int len)
 		pos += strlen(pos) + 1;
 	}
 
-	set_byte(buf + 6, iflags);
-	set_byte(buf + 7, 0);	/* gapfill */
+	set_byte(buf->data + 6, iflags);
+	set_byte(buf->data + 7, 0);	/* gapfill */
 
-	return ((long) pos - (long) buf);
+	return 0;
 }
 
 /***********************************************************************

@@ -369,7 +369,7 @@ main (const int argc, const char **argv)
 	} else {
 		print_records (sd, db, &cai);
 	}
-	free_ContactsAppInfo (&cai);
+	free_ContactAppInfo (&cai);
 
 	dlp_CloseDB(sd, db);
 	dlp_EndOfSync (sd, 0);

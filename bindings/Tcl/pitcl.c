@@ -21,6 +21,7 @@
 #include <pi-socket.h>
 #include <pi-dlp.h>
 #include <pi-memo.h>
+#include <pi-buffer.h>
 
 #if TCL_MAJOR_VERSION >= 8
 # define Objects
@@ -138,8 +139,12 @@ struct Packer {
 void MemoUnpackCmd(Tcl_Interp * interp, char * buf, int len)
 {
 	struct Memo m;
-	
-	len = unpack_Memo(&m, buf, len);
+	pi_buffer_t *record;
+	record = pi_buffer_new(len);
+	memcpy(record->data, buf, len);
+	record->used = len;
+	len = unpack_Memo(&m, record, len);
+	pi_buffer_free(record);
 
 	Tcl_AppendElement(interp, m.text);
 	free_Memo(&m);
@@ -149,10 +154,22 @@ void MemoUnpackCmd(Tcl_Interp * interp, char * buf, int len)
 int MemoPackCmd(Tcl_Interp * interp, char * rec, char * buf, int len)
 {
 	struct Memo m;
-	
+	pi_buffer_t *record;
+	int used;
+	record = pi_buffer_new(0);	
+
 	m.text = rec;
 	
-	return pack_Memo(&m, buf, len);
+	pack_Memo(&m, record, memo_v1);
+	if (record->used <= len) {
+	  memcpy(buf,record->data,record->used);
+	  used = record->used;
+	} else {
+	  /* It didn't fit in their fixed size buffer */
+	  used = 0;
+	}
+	pi_record_free(record);
+	return used;
 }
 
 struct { char * name; packcmd pack, packai, packsi; unpackcmd unpack, unpackai, unpacksi; }

@@ -342,6 +342,8 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 	char 	buf[0xffff];
 	int showPhone = -1;
 
+	pi_buffer_t *record;
+
 	struct 	Address addr;
 
 	int fields = 0; /* Number of fields in this entry */
@@ -451,9 +453,11 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 		}
 
 		if (fields>0) {
-			l = pack_Address(&addr, (unsigned char *) buf, sizeof(buf));
+		        record = pi_buffer_new(0);
+			pack_Address(&addr, record, address_v1);
 			dlp_WriteRecord(sd, db, attribute, 0, category,
-					(unsigned char *) buf, l, 0);
+					(unsigned char *) record->data, record->used, 0);
+			pi_buffer_free(record);
 			++count;
 		}
 		free_Address(&addr);
@@ -585,7 +589,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai, int human
 
 		if (attribute & dlpRecAttrDeleted)
 			continue;
-		unpack_Address(&addr, buf->data, buf->used);
+		unpack_Address(&addr, buf, address_v1);
 
 		if (!human) {
 			write_record_CSV(out,aai,&addr,attribute,category);

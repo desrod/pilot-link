@@ -74,16 +74,16 @@ free_ToDo(ToDo_t *todo)
  *
  * Summary:     Unpack the ToDo structure into records we can chew on
  *
- * Parameters:  ToDo_t*, char* to buffer, length of buffer
+ * Parameters:  ToDo_t*, pi_buffer_t * of buffer, todo type
  *
- * Returns:     effective buffer length
+ * Returns:     -1 on fail, 0 on success
  *
  ***********************************************************************/
 int
-unpack_ToDo(ToDo_t *todo, unsigned char *buffer, size_t len)
+unpack_ToDo(ToDo_t *todo, pi_buffer_t *buf, todoType type)
 {
 	unsigned long d;
-	unsigned char *start = buffer;
+	int ofs;
 
 	/* Note: There are possible timezone conversion problems related to
 	   the use of the due member of a struct ToDo. As it is kept in
@@ -99,9 +99,13 @@ unpack_ToDo(ToDo_t *todo, unsigned char *buffer, size_t len)
 	   appointments.
 	   -- KJA */
 
-	if (len < 3)
-		return 0;
-	d = (unsigned short int) get_short(buffer);
+	if (type != todo_v1)
+		return -1;
+
+	if (buf == NULL || buf->data == NULL || buf->used < 3)
+		return -1;
+
+	d = (unsigned short int) get_short(buf->data);
 	if (d != 0xffff) {
 		todo->due.tm_year = (d >> 9) + 4;
 		todo->due.tm_mon = ((d >> 5) & 15) - 1;
@@ -116,7 +120,7 @@ unpack_ToDo(ToDo_t *todo, unsigned char *buffer, size_t len)
 		todo->indefinite = 1;	/* todo->due is invalid */
 	}
 
-	todo->priority = get_byte(buffer + 2);
+	todo->priority = get_byte(buf->data + 2);
 	if (todo->priority & 0x80) {
 		todo->complete = 1;
 		todo->priority &= 0x7f;
@@ -124,27 +128,23 @@ unpack_ToDo(ToDo_t *todo, unsigned char *buffer, size_t len)
 		todo->complete = 0;
 	}
 
-	buffer += 3;
-	len -= 3;
+	ofs = 3;
 
-	if (len < 1)
-		return 0;
-	todo->description = strdup((char *) buffer);
+	if (buf->used - ofs < 1)
+		return -1;
 
-	buffer += strlen(todo->description) + 1;
-	len -= strlen(todo->description) + 1;
+	todo->description = strdup((char *) buf->data + ofs);
 
-	if (len < 1) {
+	ofs += strlen(todo->description) + 1;
+
+	if (buf->used - ofs < 1) {
 		free(todo->description);
 		todo->description = 0;
-		return 0;
+		return -1;
 	}
-	todo->note = strdup((char *) buffer);
+	todo->note = strdup((char *) buf->data + ofs);
 
-	buffer += strlen(todo->note) + 1;
-	len -= strlen(todo->note) + 1;
-
-	return (buffer - start);	/* FIXME: return real length */
+	return 0;
 }
 
 
@@ -154,16 +154,22 @@ unpack_ToDo(ToDo_t *todo, unsigned char *buffer, size_t len)
  *
  * Summary:     Pack the ToDo records into a structure
  *
- * Parameters:  ToDo_t*, char* to buffer, length of buffer
+ * Parameters:  ToDo_t*, pi_buffer_t *buf of record, record type
  *
- * Returns:     effective buffer length
+ * Returns:     -1 on error, 0 on success.
  *
  ***********************************************************************/
 int
-pack_ToDo(ToDo_t *todo, unsigned char *buf, size_t len)
+pack_ToDo(ToDo_t *todo, pi_buffer_t *buf, todoType type)
 {
 	int pos;
 	size_t destlen = 3;
+
+	if (todo == NULL)
+		return -1;
+
+	if (type != todo_v1)
+		return -1;
 
 	if (todo->description)
 		destlen += strlen(todo->description);
@@ -172,41 +178,42 @@ pack_ToDo(ToDo_t *todo, unsigned char *buf, size_t len)
 		destlen += strlen(todo->note);
 	destlen++;
 
-	if (!buf)
-		return destlen;
-	if (len < destlen)
-		return 0;
+	if (buf == NULL || buf->data == NULL)
+		return -1;
+
+	pi_buffer_expect (buf, destlen);
+	buf->used = destlen;	
 
 	if (todo->indefinite) {
-		buf[0] = 0xff;
-		buf[1] = 0xff;
+		buf->data[0] = 0xff;
+		buf->data[1] = 0xff;
 	} else {
-		set_short(buf,
+		set_short(buf->data,
 			  ((todo->due.tm_year - 4) << 9) | ((todo->due.tm_mon +
 							  1) << 5) | todo->
 			  due.tm_mday);
 	}
-	buf[2] = todo->priority;
+	buf->data[2] = todo->priority;
 	if (todo->complete) {
-		buf[2] |= 0x80;
+		buf->data[2] |= 0x80;
 	}
 
 	pos = 3;
 	if (todo->description) {
-		strcpy((char *) buf + pos, todo->description);
+		strcpy((char *) buf->data + pos, todo->description);
 		pos += strlen(todo->description) + 1;
 	} else {
-		buf[pos++] = 0;
+		buf->data[pos++] = 0;
 	}
 
 	if (todo->note) {
-		strcpy((char *) buf + pos, todo->note);
+		strcpy((char *) buf->data + pos, todo->note);
 		pos += strlen(todo->note) + 1;
 	} else {
-		buf[pos++] = 0;
+		buf->data[pos++] = 0;
 	}
 
-	return pos;
+	return 0;
 }
 
 
@@ -226,6 +233,8 @@ unpack_ToDoAppInfo(ToDoAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
 	int i;
 	unsigned char *start = record;
+
+	appinfo->type = todo_v1;
 
 	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!i)
