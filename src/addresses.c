@@ -39,8 +39,6 @@ int main(int argc, char *argv[])
 		sd 		= -1,
 		po_err		= -1;
 
-	char 	*progname 	= argv[0];
-
 	struct 	AddressAppInfo aai;
 	poptContext po;
 
@@ -51,9 +49,13 @@ int main(int argc, char *argv[])
 		POPT_TABLEEND
 	} ;
         po = poptGetContext("addresses", argc, (const char **) argv, options, 0);
-	poptSetOtherOptionHelp(po," [- port]\n\n"
+	poptSetOtherOptionHelp(po,"\n\n"
 		"   Dumps the Palm AddressDB database into a generic text output format\n\n");
 
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
         while ((po_err = poptGetNextOpt(po)) >= 0) {
 		/* No arguments not handled by popt. */
