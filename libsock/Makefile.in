@@ -6,13 +6,15 @@ SOCKOBJS = socket.$(O) serial.$(O) inetserial.$(O) slp.$(O) padp.$(O) \
 
 FILEOBJS = pi-file.$(O)
 
+PIHEADER = pi-header.$(O)
+
 APPOBJS = datebook.$(O) memo.$(O) address.$(O) todo.$(O) expense.$(O) mail.$(O) sync.$(O) appinfo.$(O) hinote.$(O)
 
 UTILOBJS = utils.$(O)
 
 SERIAL = unixserial.$(O)
 
-OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS) $(SERIAL)
+OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(PIHEADER) $(UTILOBJS) $(SERIAL)
 
 prefix = @prefix@
 exec_prefix = ${prefix}
@@ -103,6 +105,10 @@ datebook.o datebook.lo: datebook.c ../include/pi-source.h ../include/pi-config.h
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
  ../include/pi-datebook.h ../include/pi-appinfo.h
+dlp-backup.o dlp-backup.lo: dlp-backup.c ../include/pi-source.h \
+ ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
+ ../include/pi-version.h ../include/pi-sockaddr.h \
+ ../include/pi-macros.h ../include/pi-dlp.h ../include/pi-syspkt.h
 dlp.o dlp.lo: dlp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
@@ -151,6 +157,7 @@ pi-file.o pi-file.lo: pi-file.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-file.h \
  ../include/pi-dlp.h
+pi-header.o pi-header.lo: pi-header.c ../include/pi-version.h
 serial.o serial.lo: serial.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h \
@@ -166,10 +173,8 @@ socket.o socket.lo: socket.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-serial.h ../include/pi-inetserial.h \
  ../include/pi-inet.h ../include/pi-padp.h ../include/pi-cmp.h \
  ../include/pi-dlp.h ../include/pi-syspkt.h
-sync.o sync.lo: sync.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-sync.h
+sync.o sync.lo: sync.c ../include/pi-dlp.h ../include/pi-args.h \
+ ../include/pi-macros.h ../include/pi-sync.h
 syspkt.o syspkt.lo: syspkt.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h \

@@ -1,14 +1,28 @@
-/* mail.c:  Translate Pilot mail data formats
+/*
+ * mail.c:  Translate Pilot mail data formats
  *
  * Copyright (c) 1997, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
@@ -17,7 +31,8 @@
 char *MailSortTypeNames[] = { "Date", "Type", NULL };
 char *MailSyncTypeNames[] = { "All", "Send", "Filter", NULL };
 
-void free_Mail(struct Mail *a)
+void
+free_Mail(struct Mail *a)
 {
    if (a->from)
       free(a->from);
@@ -37,13 +52,15 @@ void free_Mail(struct Mail *a)
       free(a->body);
 }
 
-void free_MailAppInfo(struct MailAppInfo *a)
+void
+free_MailAppInfo(struct MailAppInfo *a)
 {
    /*if (a->signature)
       free(a->signature); */
 }
 
-void free_MailSyncPref(struct MailSyncPref *a)
+void
+free_MailSyncPref(struct MailSyncPref *a)
 {
    if (a->filterTo);
    free(a->filterTo);
@@ -53,13 +70,15 @@ void free_MailSyncPref(struct MailSyncPref *a)
    free(a->filterSubject);
 }
 
-void free_MailSignaturePref(struct MailSignaturePref *a)
+void
+free_MailSignaturePref(struct MailSignaturePref *a)
 {
    if (a->signature);
    free(a->signature);
 }
 
-int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
+int
+unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
 {
    unsigned long d;
    int flags;
@@ -101,7 +120,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
       a->subject = strdup(buffer);
       buffer += strlen(buffer);
       len -= strlen(buffer);
-   } else
+   }
+   else
       a->subject = 0;
    buffer++;
    len--;
@@ -111,7 +131,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
       a->from = strdup(buffer);
       buffer += strlen(buffer);
       len -= strlen(buffer);
-   } else
+   }
+   else
       a->from = 0;
    buffer++;
    len--;
@@ -121,7 +142,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
       a->to = strdup(buffer);
       buffer += strlen(buffer);
       len -= strlen(buffer);
-   } else
+   }
+   else
       a->to = 0;
    buffer++;
    len--;
@@ -131,7 +153,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
       a->cc = strdup(buffer);
       buffer += strlen(buffer);
       len -= strlen(buffer);
-   } else
+   }
+   else
       a->cc = 0;
    buffer++;
    len--;
@@ -141,7 +164,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
       a->bcc = strdup(buffer);
       buffer += strlen(buffer);
       len -= strlen(buffer);
-   } else
+   }
+   else
       a->bcc = 0;
    buffer++;
    len--;
@@ -151,7 +175,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
       a->replyTo = strdup(buffer);
       buffer += strlen(buffer);
       len -= strlen(buffer);
-   } else
+   }
+   else
       a->replyTo = 0;
    buffer++;
    len--;
@@ -161,7 +186,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
       a->sentTo = strdup(buffer);
       buffer += strlen(buffer);
       len -= strlen(buffer);
-   } else
+   }
+   else
       a->sentTo = 0;
    buffer++;
    len--;
@@ -171,7 +197,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
       a->body = strdup(buffer);
       buffer += strlen(buffer);
       len -= strlen(buffer);
-   } else
+   }
+   else
       a->body = 0;
    buffer++;
    len--;
@@ -179,7 +206,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
    return (buffer - start);
 }
 
-int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
+int
+pack_Mail(struct Mail *a, unsigned char *buffer, int len)
 {
    unsigned char *start = buffer;
    int destlen = 6 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
@@ -206,8 +234,9 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
    if (len < destlen)
       return 0;
 
-   set_short(buffer, ((a->date.tm_year - 4) << 9) |
-	     ((a->date.tm_mon + 1) << 5) | a->date.tm_mday);
+   set_short(buffer,
+	     ((a->date.tm_year - 4) << 9) | ((a->date.tm_mon + 1) << 5) | a->
+	     date.tm_mday);
    set_byte(buffer + 2, a->date.tm_hour);
    set_byte(buffer + 3, a->date.tm_min);
 
@@ -215,11 +244,13 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
       set_long(buffer, 0);
 
    set_byte(buffer + 4, (a->read ? (1 << 7) : 0) |
-	    (a->signature ? (1 << 6) : 0) |
-	    (a->confirmRead ? (1 << 5) : 0) |
-	    (a->confirmDelivery ? (1 << 4) : 0) |
-	    ((a->priority & 3) << 2) | (a->addressing & 3)
-       );
+	    (a->signature ? (1 << 6) : 0) | (a->
+					     confirmRead ? (1 << 5) : 0) |
+	    (a->
+	     confirmDelivery ? (1 << 4) : 0) | ((a->priority & 3) << 2) | (a->
+									   addressing
+									   &
+									   3));
    set_byte(buffer + 5, 0);
 
    buffer += 6;
@@ -227,58 +258,65 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
    if (a->subject) {
       strcpy(buffer, a->subject);
       buffer += strlen(buffer);
-   } else
+   }
+   else
       set_byte(buffer, 0);
    buffer++;
    if (a->from) {
       strcpy(buffer, a->from);
       buffer += strlen(buffer);
-   } else
+   }
+   else
       set_byte(buffer, 0);
    buffer++;
    if (a->to) {
       strcpy(buffer, a->to);
       buffer += strlen(buffer);
-   } else
+   }
+   else
       set_byte(buffer, 0);
    buffer++;
    if (a->cc) {
       strcpy(buffer, a->cc);
       buffer += strlen(buffer);
-   } else
+   }
+   else
       set_byte(buffer, 0);
    buffer++;
    if (a->bcc) {
       strcpy(buffer, a->bcc);
       buffer += strlen(buffer);
-   } else
+   }
+   else
       set_byte(buffer, 0);
    buffer++;
    if (a->replyTo) {
       strcpy(buffer, a->replyTo);
       buffer += strlen(buffer);
-   } else
+   }
+   else
       set_byte(buffer, 0);
    buffer++;
    if (a->sentTo) {
       strcpy(buffer, a->sentTo);
       buffer += strlen(buffer);
-   } else
+   }
+   else
       set_byte(buffer, 0);
    buffer++;
    if (a->body) {
       strcpy(buffer, a->body);
       buffer += strlen(buffer);
-   } else
+   }
+   else
       set_byte(buffer, 0);
    buffer++;
 
    return (buffer - start);
 }
 
-
-int unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record,
-		       int len)
+int
+unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 {
    int i;
    unsigned char *start = record;
@@ -303,8 +341,8 @@ int unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record,
    return (record - start);
 }
 
-int pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record,
-		     int len)
+int
+pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 {
    int i;
    unsigned char *start = record;
@@ -340,8 +378,8 @@ int pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record,
    return (record - start);
 }
 
-int unpack_MailSyncPref(struct MailSyncPref *a, unsigned char *record,
-			int len)
+int
+unpack_MailSyncPref(struct MailSyncPref *a, unsigned char *record, int len)
 {
    unsigned char *start = record;
 
@@ -357,27 +395,30 @@ int unpack_MailSyncPref(struct MailSyncPref *a, unsigned char *record,
    if (get_byte(record)) {
       a->filterTo = strdup(record);
       record += strlen(record);
-   } else
+   }
+   else
       a->filterTo = 0;
    record++;
    if (get_byte(record)) {
       a->filterFrom = strdup(record);
       record += strlen(record);
-   } else
+   }
+   else
       a->filterFrom = 0;
    record++;
    if (get_byte(record)) {
       a->filterSubject = strdup(record);
       record += strlen(record);
-   } else
+   }
+   else
       a->filterSubject = 0;
    record++;
 
    return (record - start);
 }
 
-int pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record,
-		      int len)
+int
+pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record, int len)
 {
    unsigned char *start = record;
    int destlen = 6 + 1 + 1 + 1;
@@ -426,8 +467,9 @@ int pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record,
    return (record - start);
 }
 
-int unpack_MailSignaturePref(struct MailSignaturePref *a,
-			     unsigned char *record, int len)
+int
+unpack_MailSignaturePref(struct MailSignaturePref *a, unsigned char *record,
+			 int len)
 {
    unsigned char *start = record;
 
@@ -441,8 +483,9 @@ int unpack_MailSignaturePref(struct MailSignaturePref *a,
    return (record - start);
 }
 
-int pack_MailSignaturePref(struct MailSignaturePref *ai,
-			   unsigned char *record, int len)
+int
+pack_MailSignaturePref(struct MailSignaturePref *ai, unsigned char *record,
+		       int len)
 {
    unsigned char *start = record;
    int destlen = 1;

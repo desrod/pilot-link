@@ -1,4 +1,5 @@
-/* padp.c:  Pilot PADP protocol
+/*
+ * padp.c:  Pilot PADP protocol
  *
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
@@ -6,12 +7,25 @@
  * Mostly rewritten by Kenneth Albanowski.
  * Adjusted timeout values and better error handling by Tilo Christ.
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
 #include <errno.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-padp.h"
@@ -23,7 +37,8 @@
 
 /*@+matchanyintegral@*/
 
-int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
+int
+padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 /*@-predboolint@*/
 {
    int flags = FIRST;
@@ -128,13 +143,14 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 				   memory in reciever link layer, but connection is still
 				   active. This transmission was lost, but other
 				   transmissions will be received. */
-	       } else
+	       }
+	       else
 		  goto keepwaiting;
-	    } else
-	       
-		if ((slp->type == (unsigned char) 2)
-		    && (padp.type == (unsigned char) padData)
-		    && (slp->id == ps->xid) && (len == 0)) {
+	    }
+	    else
+	       if ((slp->type == (unsigned char) 2)
+		   && (padp.type == (unsigned char) padData)
+		   && (slp->id == ps->xid) && (len == 0)) {
 	       fprintf(stderr, "Missing ack\n");
 	       /* Incoming padData from response to this transmission.
 	          Maybe the Ack was lost */
@@ -142,8 +158,8 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 	       count = 0;
 	       goto done;
 	       return 0;
-	    } else
-	     if (padp.type == (unsigned char) 4) {
+	    }
+	    else if (padp.type == (unsigned char) 4) {
 	       /* Tickle to avoid timeout */
 
 	       /* Consume packet */
@@ -151,10 +167,11 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 	       free(skb);
 
 	       goto keepwaiting;
-	    } else
-	        if ((slp->type == (unsigned char) 2) &&
-		    (padp.type == (unsigned char) padAck)
-		    && (slp->id == ps->xid)) {
+	    }
+	    else
+	       if ((slp->type == (unsigned char) 2)
+		   && (padp.type == (unsigned char) padAck)
+		   && (slp->id == ps->xid)) {
 	       /* Got correct Ack */
 	       flags = (unsigned char) padp.flags;
 
@@ -168,7 +185,8 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 	       count += tlen;
 	       flags = 0;
 	       break;
-	    } else {
+	    }
+	    else {
 	       fprintf(stderr, "Weird packet\n");
 	       /* Got unknown packet */
 	       /* Don't consume packet */
@@ -203,11 +221,11 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
    return count;
 }
 
-
 #define recStartTimeout 30*1000
 #define recSegTimeout 30*1000
 
-int padp_rx(struct pi_socket *ps, void *buf, int len)
+int
+padp_rx(struct pi_socket *ps, void *buf, int len)
 {
    struct pi_skb *skb;
    struct padp padp;
@@ -231,7 +249,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 	 ps->nextid = 1;	/* wrap */
       else
 	 ps->nextid = ps->xid + 1;
-   } else {
+   }
+   else {
       ps->nextid = ps->xid;
    }
 
@@ -280,8 +299,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 				   transmissions will be received. */
 	 }
 	 continue;
-      } else
-       if (padp.type == (unsigned char) 4) {
+      }
+      else if (padp.type == (unsigned char) 4) {
 	 /* Tickle to avoid timeout */
 
 	 endtime = time(NULL) + recStartTimeout / 1000;
@@ -292,9 +311,10 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 	 free(skb);
 
 	 continue;
-      } else
-	  if ((slp->type != 2) || (padp.type != padData) ||
-	      (slp->id != ps->xid) || !(padp.flags & FIRST)) {
+      }
+      else
+	 if ((slp->type != 2) || (padp.type != padData)
+	     || (slp->id != ps->xid) || !(padp.flags & FIRST)) {
 	 if (padp.type == padTickle) {
 	    endtime = time(NULL) + recStartTimeout / 1000;
 	    fprintf(stderr, "Got tickled\n");
@@ -350,8 +370,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 
       if (offset == ouroffset) {
 	 At(storing block);
-	 memcpy((unsigned char *) buf + ouroffset, &skb->data[14],
-		data_len);
+	 memcpy((unsigned char *) buf + ouroffset, &skb->data[14], data_len);
 
 	 ouroffset += data_len;
 	 free(skb);
@@ -359,7 +378,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 
       if (padp.flags & LAST) {
 	 break;
-      } else {
+      }
+      else {
 	 endtime = time(NULL) + recSegTimeout / 1000;
 
 	 for (;;) {
@@ -404,10 +424,11 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 				   memory in reciever link layer, but connection is still
 				   active. This transmission was lost, but other
 				   transmissions will be received. */
-	       } else
+	       }
+	       else
 		  continue;
-	    } else
-	     if (padp.type == (unsigned char) 4) {
+	    }
+	    else if (padp.type == (unsigned char) 4) {
 	       /* Tickle to avoid timeout */
 
 	       endtime = time(NULL) + recStartTimeout / 1000;
@@ -418,9 +439,10 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 	       free(skb);
 
 	       continue;
-	    } else
-	        if ((slp->type != 2) || (padp.type != padData) ||
-		    (slp->id != ps->xid) || (padp.flags & FIRST)) {
+	    }
+	    else
+	       if ((slp->type != 2) || (padp.type != padData)
+		   || (slp->id != ps->xid) || (padp.flags & FIRST)) {
 	       if (padp.type == padTickle) {
 		  endtime = time(NULL) + recSegTimeout / 1000;
 		  fprintf(stderr, "Got tickled\n");
@@ -446,7 +468,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
    return ouroffset;
 }
 
-void padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
+void
+padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
 {
 #ifdef DEBUG
    int i;
@@ -474,10 +497,8 @@ void padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
       break;
    }
 
-   fprintf(stderr, "PADP %s %s %c%c%c len=0x%.4x\n",
-	   stype,
-	   rxtx ? "TX" : "RX",
-	   (padp->flags & FIRST) ? 'F' : ' ',
+   fprintf(stderr, "PADP %s %s %c%c%c len=0x%.4x\n", stype,
+	   rxtx ? "TX" : "RX", (padp->flags & FIRST) ? 'F' : ' ',
 	   (padp->flags & LAST) ? 'L' : ' ',
 	   (padp->flags & MEMERROR) ? 'M' : ' ', padp->size);
 

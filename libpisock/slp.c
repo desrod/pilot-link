@@ -1,24 +1,38 @@
-/* slp.c:  Pilot SLP protocol
+/*
+ * slp.c:  Pilot SLP protocol
  *
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
-
 
 #ifdef WIN32
 #include <winsock.h>
 #endif
 #include <stdio.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-slp.h"
 
 /* Build and queue up an SLP packet to be transmitted */
 
-int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
+int
+slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
 {
    struct pi_skb *skb;
    struct slp *slp;
@@ -69,7 +83,8 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
    has to keep a pile of status info while it builds frames for itself.
    So here's the code that does that. */
 
-int slp_rx(struct pi_socket *ps)
+int
+slp_rx(struct pi_socket *ps)
 {
    int i;
    int v;
@@ -94,7 +109,8 @@ int slp_rx(struct pi_socket *ps)
 	 ps->mac->state++;
 	 ps->mac->expect = 1;
 	 ps->mac->buf++;
-      } else
+      }
+      else
 	 ps->mac->expect = 1;
       break;
 
@@ -140,10 +156,9 @@ int slp_rx(struct pi_socket *ps)
 	     CRC errors for them -- working around a problem where
 	     the tenth LOOP packet carries an incorrect CRC value */
 #if 0
-	  || (0xbeef ==
-	      get_short(&ps->mac->rxb->data[ps->mac->rxb->len - 2]))
+	  || (0xbeef == get_short(&ps->mac->rxb->data[ps->mac->rxb->len - 2]))
 #endif
-	  ) {
+	 ) {
 
 	 ps->mac->rxb->dest = ps->mac->rxb->data[3];
 	 ps->mac->rxb->source = ps->mac->rxb->data[4];
@@ -161,7 +176,8 @@ int slp_rx(struct pi_socket *ps)
 	    ps->mac->state = 1;
 	    ps->mac->rxb->next = (struct pi_skb *) 0;
 	    ps->mac->buf = ps->mac->rxb->data;
-	 } else {
+	 }
+	 else {
 	    if (!ps->rxq)
 	       ps->rxq = ps->mac->rxb;
 	    else {
@@ -172,7 +188,8 @@ int slp_rx(struct pi_socket *ps)
 	    ps->mac->state = 0;
 	 }
 	 ps->rx_packets++;
-      } else {
+      }
+      else {
 #ifdef DEBUG
 	 fprintf(stderr, "my crc=0x%.4x your crc=0x%.4x\n", v,
 		 get_short((&ps->mac->rxb->data[ps->mac->rxb->len - 2])));
@@ -199,18 +216,18 @@ int slp_rx(struct pi_socket *ps)
    return 0;
 }
 
-void slp_dump(struct pi_skb *skb, int rxtx)
+void
+slp_dump(struct pi_skb *skb, int rxtx)
 {
 #ifdef DEBUG
    fprintf(stderr, "SLP %s %d->%d len=0x%.4x Prot=%d ID=0x%.2x\n",
-	   rxtx ? "TX" : "RX",
-	   skb->data[4], skb->data[3],
+	   rxtx ? "TX" : "RX", skb->data[4], skb->data[3],
 	   get_short(&skb->data[6]), skb->data[5], skb->data[8]);
 #endif
 }
 
-
-void dph(unsigned char *d)
+void
+dph(unsigned char *d)
 {
 #ifdef DEBUG
    int i;

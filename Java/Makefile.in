@@ -74,7 +74,7 @@ LIBTOOL = @LIBTOOL@
 all: libJavaPisock.la Pdapilot/constants.class $(CLASSES)
 
 $(JDKSPECIFIC):
-	cd Pdapilot; for i in ../Pdapilot-JDK-$(JAVAVERSION)/*; do ln -s $$i .; done
+	cd Pdapilot; for p in ../Pdapilot-JDK-$(JAVAVERSION)/Char4.java ../Pdapilot-JDK-$(JAVAVERSION)/Util.java; do ln -s $$p .; done
 
 doConstants: doConstants.o
 	$(CC) -o doConstants doConstants.o
@@ -85,7 +85,7 @@ java_util_Date.h:
 	$(JAVAH) java.util.Date
 
 Pdapilot/constants.java: doConstants
-	doConstants
+	./doConstants
 
 Pdapilot_calls.h: Pdapilot/calls.class
 	$(JAVAH) Pdapilot.calls

@@ -2,7 +2,7 @@
 
 #include "pi-version.h"
 
-void main(void)
+int main(void)
 {
 	char dir[80],cmd[256];
 	sprintf(dir, "pilot-link.%d.%d.%d", PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR);

@@ -1,7 +1,19 @@
-/* pilot-debug.c:  Pilot debugging console, with optional graphics support
+/* 
+ * pilot-debug.c:  Palm debugging console, with optional graphics support
  *
- * This is free software, licensed under the GNU Public License V2.
- * See the file COPYING for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
 
@@ -11,6 +23,7 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <sys/types.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
@@ -20,8 +33,10 @@
 
 extern void do_readline(void);
 
-/* Display text asynchronously, and make sure it doesn't interfere with
-   the current prompt */
+/* 
+ * Display text asynchronously, and make sure it doesn't interfere with
+ * the current prompt
+ */
 extern void display(char * text, char * tag, int type);
  
 #ifndef LIBDIR
@@ -30,9 +45,9 @@ extern void display(char * text, char * tag, int type);
 
 #ifdef TK
 int usetk;
-# include <tk.h>
+# include <tk/tk.h>
 #else
-# include <tcl.h>
+# include <tcl/tcl.h>
 #endif
 
 #ifndef TCL_ACTIVE
@@ -187,7 +202,7 @@ void SetModeLabel(void)
 }
 
 
-/* Workhorse function to read input from the Pilot. Called both via Tcl event loop on serial input,
+/* Workhorse function to read input from the Palm. Called both via Tcl event loop on serial input,
    and explicitly by any function has thinks there should be a packet ready. */
    
 void Read_Pilot(ClientData clientData, int mask) {
@@ -200,7 +215,7 @@ void Read_Pilot(ClientData clientData, int mask) {
   if (l < 6)
     return;
 
-  /*puts("From Pilot:");
+  /*puts("From Palm:");
   dumpdata((unsigned char *)buf, l);*/
   
   if(buf[2] == 0) { /* SysPkt command */
@@ -267,7 +282,7 @@ void Read_Pilot(ClientData clientData, int mask) {
       }
       
     } else if(buf[0] == 1) { /* Console */
-      if(buf[4] == 0x7f) { /* Message from Pilot */
+      if(buf[4] == 0x7f) { /* Message from Palm */
       	int i;
 		
       	for(i=6;i<l;i++)
@@ -311,7 +326,7 @@ void Read_Pilot(ClientData clientData, int mask) {
     	   
     	   if (stalestate) {
     	   	char buffer[40];
-    	   	sprintf(buffer, "Pilot halted at %8.8lX (function %s) with exception %d\n",
+    	   	sprintf(buffer, "Palm halted at %8.8lX (function %s) with exception %d\n",
     	   		state.regs.PC, state.func_name, state.exception);
     	   	display(buffer, "Debug: ", 1);
     	   	stalestate = 0;
@@ -440,12 +455,11 @@ again:
     sys_QueryState(port);
     debugger = 0;
     Read_Pilot(0,0);
-    if (debugger && !old) {
+    if (debugger && !old)
       if (verify > 1)
-        Say("Attaching to Pilot debugger\n");
-      } else {
-        SayInteractive("(attaching to Pilot debugger)\n");
-      }
+        Say("Attaching to Palm debugger\n");
+      else
+        SayInteractive("(attaching to Palm debugger)\n");
   }
   
   if (!debugger && (verify || !console)) {
@@ -454,20 +468,16 @@ again:
      console = 0;
     PackRPC(&p, 0xA09E, RPC_IntReply, RPC_End); /* TaskID, a harmless call */
     DoRPC(port, 1, &p, &err);
-
-	if (err == 0) {
-		console = 1;
-	} else {
-		console = 0;
-	}
-
-	if (console && !old) {
-		if (verify > 1) {
-			Say("Attaching to Pilot console\n");
-		} else {
-			SayInteractive("(attaching to Pilot console)\n");
-    		}    
-	}
+    if (err == 0)
+      console = 1;
+    else 
+      console = 0;
+    if (console && !old)
+      if (verify > 1)
+        Say("Attaching to Palm console\n");
+      else
+        SayInteractive("(attaching to Palm console)\n");
+    
   }
   
   if (!debugger && !console && !verify) {
@@ -494,11 +504,11 @@ int DbgAttachDebugger(int verify)
     Read_Pilot(0,0);
     SetModeLabel();
     if (debugger && !old)
-      SayInteractive("(attaching to Pilot debugger)\n");
+      SayInteractive("(attaching to Palm debugger)\n");
   }
   
   if (!debugger) {
-    Error("Unable to attach to debugger on Pilot. Is the Pilot connected and in debugging mode?\n");
+    Error("Unable to attach to debugger on Palm. Is the Palm connected and in debugging mode?\n");
   }
   return debugger;
 }
@@ -527,11 +537,11 @@ int DbgAttachConsole(int verify)
         console = 0;
     }
     if ((console && !debugger) && !old)
-      SayInteractive("(attaching to Pilot console)\n");
+      SayInteractive("(attaching to Palm console)\n");
   }
   
   if (!console || debugger) {
-    Error("Unable to attach to console on Pilot. Is the Pilot connected, in console mode, and not in debugger mode?\n");
+    Error("Unable to attach to console on Palm. Is the Palm connected, in console mode, and not in debugger mode?\n");
   }
   
   return console;
@@ -554,7 +564,7 @@ unsigned long DbgRPC(struct RPC_params * p, int * error)
 	  if (!debugger && !console) {
 	    if (error)
 	      *error = -1;
-	    Error("Unable to invoke RPC on Pilot. Is the Pilot connected and in debugging or console mode?\n");
+	    Error("Unable to invoke RPC on Palm. Is the Palm connected and in debugging or console mode?\n");
 	    return 0;
 	  }
 	}
@@ -572,7 +582,7 @@ unsigned long DbgRPC(struct RPC_params * p, int * error)
 			SetModeLabel();
 		}
 	}/* else {
-		Say("(attaching to Pilot)\n");
+		Say("(attaching to Palm)\n");
 	}*/
 	
 	if (!console && !debugger) {
@@ -583,7 +593,7 @@ unsigned long DbgRPC(struct RPC_params * p, int * error)
 			result = DoRPC(port, 1, p, &err);
 		} else {
 			/* complete failure to attach */
-			Error("Unable to invoke RPC on Pilot. Is the Pilot connected and in debugging or console mode?\n");
+			Error("Unable to invoke RPC on Palm. Is the Palm connected and in debugging or console mode?\n");
 		}
 	}
 	
@@ -616,7 +626,7 @@ int proc_g(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   
   Say("Resuming execution\n");
   
-  /* Assume the Pilot is no longer halted */
+  /* Assume the Palm is no longer halted */
   
   debugger = 0;
   console = 0;
@@ -652,7 +662,7 @@ int proc_t(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   
   Say("Resuming execution\n");
   
-  /* Assume the Pilot is no longer halted */
+  /* Assume the Palm is no longer halted */
   
   debugger = 0;
   console = 0;
@@ -665,13 +675,13 @@ int proc_t(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   return TCL_OK;
 }
 
-/* Attach to a Pilot that has already crashed into the debugger without notifying us */
+/* Attach to a Palm that has already crashed into the debugger without notifying us */
 int proc_attach(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
   DbgAttach(2); /* Two means explicit verify, as opposed to implicit */
   
   if (!debugger && !console) {
-     Say("Unable to attach to to Pilot. Is the Pilot connected and in debugging or console mode?\n");
+     Say("Unable to attach to to Palm. Is the Palm connected and in debugging or console mode?\n");
   }
 
   return TCL_OK;
@@ -839,7 +849,7 @@ int proc_mirror(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[
   }
 
   if (active) {
-    /* Try to prod Pilot into immediately giving us a screen update */
+    /* Try to prod Palm into immediately giving us a screen update */
     PackRPC(&p,0xA0F1, RPC_IntReply, RPC_Short(0), RPC_Short(0), RPC_Short(160), RPC_Short(160), RPC_End);
     e1=DbgRPC(&p, &e2);
   }
@@ -855,7 +865,7 @@ int proc_updatedisplay(ClientData clientData, Tcl_Interp *interp, int argc, char
   if (!DbgAttachConsole(0))
     return TCL_ERROR;
 
-  /* Try to prod Pilot into immediately giving us a screen update */
+  /* Try to prod Palm into immediately giving us a screen update */
   PackRPC(&p,0xA0F1, RPC_IntReply, RPC_Short(0), RPC_Short(0), RPC_Short(160), RPC_Short(160), RPC_End);
   e1=DbgRPC(&p, &e2);
   
@@ -1013,7 +1023,7 @@ int proc_pen(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
   int x = atoi(argv[1])-32, y = atoi(argv[2])-33, pen = atoi(argv[3]);
   
-  /* Transmit Pen event to Pilot */
+  /* Transmit Pen event to Palm */
   
  /*printf("Pen %d, %d, %d\n", x, y, pen);*/
   
@@ -1033,7 +1043,7 @@ int proc_key(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   /* Change \r to \n */
   if (key == 13) key = 10;
   
-  /* Transmit ASCII key to Pilot */
+  /* Transmit ASCII key to Palm */
 
   /*printf("Key %d\n", key);*/
   
@@ -1175,7 +1185,7 @@ int proc_inittkdbg(ClientData clientData, Tcl_Interp *interp, int argc, char *ar
 set tkdbg 1
 
 toplevel .remote
-wm title .remote {Pilot Remote UI}
+wm title .remote {Palm Remote UI}
 
 catch {
 	if {[file exists {pix/case.gif}]} {
@@ -1370,7 +1380,7 @@ bind .remote <ButtonPress-2> {do_paste}
 #####  /*** Generate remote console window ***/
 
 toplevel .console
-wm title .console \"Pilot Remote Console\"
+wm title .console \"Palm Remote Console\"
 scrollbar .console.y -orient vertical -command {.console.t yview}
 text .console.t -yscrollcommand {.console.y set}
 pack .console.t -fill both -expand yes -side left
@@ -1380,7 +1390,7 @@ focus .console.t
 ####  /*** Generate pilot state window ***/
 
 toplevel .state
-wm title .state {Pilot State}
+wm title .state {Palm State}
 label .state.l1 -text {Active mode:}
 label .state.l1x -text {Battery:}
 label .state.l2 -text {Exception:}
@@ -1557,7 +1567,7 @@ grid .state.b6a -column 2 -row 24 -sticky w
 
 ###  /*** Generate debugger console window ***/
 
-wm title . \"Pilot Debugger Console\"
+wm title . \"Palm Debugger Console\"
 catch {
 	wm iconbitmap . {@pix/case.xbm}
 	wm iconbitmap .remote {@pix/case.xbm}
@@ -1706,8 +1716,8 @@ t <addr1> [<addr2>}\tTill: Resume execution until addr1 (if addr2 is supplied, w
 coldboot\n\
 warmboot\n\
 pushbutton <button number>\tSimulate button push\n\
-mirror [bool]\tContinually view the Pilot's screen in the Remote UI window (if bool supplied, can turn on or off mirroring, otherwise toggles)\n\
-getdisplay\tShow the Pilot's display in the Remote UI window\n\
+mirror [bool]\tContinually view the Palm's screen in the Remote UI window (if bool supplied, can turn on or off mirroring, otherwise toggles)\n\
+getdisplay\tShow the Palm's display in the Remote UI window\n\
 updatedisplay\tForce a mirror refresh\n\
 feature\tSet/Get/Read features\n\
 ");
@@ -1828,28 +1838,28 @@ proc checkupin {time} {
   
 #if 0
   Say("\tWelcome to pilot-debug!\n\n\
-Please connect your Pilot and start console or debugging mode.\n\n(Console mode is a background \
+Please connect your Palm and start console or debugging mode.\n\n(Console mode is a background \
 task that can respond to a few commands, most importantly RPC which lets any function on the \
-Pilot be invoked. The Pilot operates as usual while console mode is active, except that \
+Palm be invoked. The Palm operates as usual while console mode is active, except that \
 since the serial port is help open, HotSync and other applications that use the serial port \
-will not work. Debug mode is activated on demand or when the Pilot crashes. In debug mode, the \
+will not work. Debug mode is activated on demand or when the Palm crashes. In debug mode, the \
 CPU is halted, and no commands may be executed, except via a debugging console like this one.)\n\n\
 In the absence of special utilities, the console can be started by \
 the \".2\" shortcut, and debugging via \".1\". To clear either mode, \
 reboot via the reset button. If console mode is active, you may \
 also reboot via the \"coldboot\" or \"warmboot\" commands.\n\n\
-The Remote UI window lets you manipulate the Pilot if console mode is active. By clicking the \
+The Remote UI window lets you manipulate the Palm if console mode is active. By clicking the \
 mouse button on the screen or buttons, you can simulate pen taps, and if you type anything \
-while the window has the focus, the Pilot will receive the keystrokes.\n\n \
+while the window has the focus, the Palm will receive the keystrokes.\n\n \
 The Remote Console window is specifically for the transmission and reception of console \
 packets. Pressing Return on a line will transmit it, and any incoming packets will be \
 displayed here in addition to the Debug Console.\n\n\
-The Remote State window shows the current Pilot CPU state. It is only updated on request or \
-when the Pilot halts.\n\n\
+The Remote State window shows the current Palm CPU state. It is only updated on request or \
+when the Palm halts.\n\n\
 The Debugging Console window is the primary interface for pilot-debug. Pressing Return on a \
 line that contains text will execute that line as a Tcl command. (Try 'expr 3+4'.) All of \
 the usual Tcl and Tk commands are available, as well as some special-purpose ones, including \
-'help', 'coldboot', 'warmboot', 'attach', 't', and 'g', (the last one continues after the Pilot halts.)\n\n\
+'help', 'coldboot', 'warmboot', 'attach', 't', and 'g', (the last one continues after the Palm halts.)\n\n\
 Execute 'help' for the list of commands currently implemented.\n\
 ");
 #endif

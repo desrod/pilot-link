@@ -5,23 +5,30 @@
 #include "pi-appinfo.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct Memo {
-  char * text;
-};
+   struct Memo
+   {
+      char *text;
+   };
 
-struct MemoAppInfo {
-  struct CategoryAppInfo category;
-  int sortByAlpha; /* New for 2.0 memo application, 0 is manual, 1 is alphabetical. */
-};
+   struct MemoAppInfo
+   {
+      struct CategoryAppInfo category;
+      int sortByAlpha;		/* New for 2.0 memo application, 0 is manual, 1 is alphabetical. */
+   };
 
-extern void free_Memo PI_ARGS((struct Memo *));
-extern int unpack_Memo PI_ARGS((struct Memo *, unsigned char * record, int len));
-extern int pack_Memo PI_ARGS((struct Memo *, unsigned char * record, int len));
-extern int unpack_MemoAppInfo PI_ARGS((struct MemoAppInfo *, unsigned char * AppInfo, int len));
-extern int pack_MemoAppInfo PI_ARGS((struct MemoAppInfo *, unsigned char * AppInfo, int len));
+   extern void free_Memo PI_ARGS((struct Memo *));
+   extern int unpack_Memo
+      PI_ARGS((struct Memo *, unsigned char *record, int len));
+   extern int pack_Memo
+      PI_ARGS((struct Memo *, unsigned char *record, int len));
+   extern int unpack_MemoAppInfo
+      PI_ARGS((struct MemoAppInfo *, unsigned char *AppInfo, int len));
+   extern int pack_MemoAppInfo
+      PI_ARGS((struct MemoAppInfo *, unsigned char *AppInfo, int len));
 
 #ifdef __cplusplus
 }
@@ -30,4 +37,4 @@ extern int pack_MemoAppInfo PI_ARGS((struct MemoAppInfo *, unsigned char * AppIn
 
 #endif /*__cplusplus*/
 
-#endif /* _PILOT_MEMO_H_ */
+#endif				/* _PILOT_MEMO_H_ */

@@ -1,18 +1,30 @@
 /* 
- * Pilot File Interface Library
+ * pi-file.c - Palm File Interface Library
+ * 
  * Pace Willisson <pace@blitz.com> December 1996
  * Additions by Kenneth Albanowski
- *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
  *
  * the following is extracted from the combined wisdom of
  * PDB by Kevin L. Flynn
  * install-prc by Brian J. Swetland, D. Jeff Dionne and Kenneth Albanowski
  * makedoc7 by Pat Beirne, <patb@corel.com>
  * and the include files from the pilot SDK
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,7 +85,8 @@
 #define PI_RESOURCE_ENT_SIZE 10
 #define PI_RECORD_ENT_SIZE 8
 
-struct pi_file_entry {
+struct pi_file_entry
+{
    int offset;
    int size;
    unsigned long type;
@@ -82,7 +95,8 @@ struct pi_file_entry {
    pi_uid_t uid;
 };
 
-struct pi_file {
+struct pi_file
+{
    int err;
    int for_writing;
    FILE *f;
@@ -116,19 +130,18 @@ static void pi_file_free(struct pi_file *pf);
 /* Exact value of "Jan 1, 1970 0:00:00 GMT" - "Jan 1, 1904 0:00:00 GMT" */
 #define PILOT_TIME_DELTA (unsigned)(2082844800)
 
-
 /* FIXME: These conversion functions apply no timezone correction. UNIX uses
-   UTC for time_t's, while the Pilot uses local time for database backup
+   UTC for time_t's, while the Palm uses local time for database backup
    time and appointments, etc. It is not particularly simple to convert
-   between these in UNIX, especially since the Pilot's local time is
+   between these in UNIX, especially since the Palm's local time is
    unknown, and if syncing over political boundries, could easily be
-   different then the local time on the UNIX box. Since the Pilot does not
+   different then the local time on the UNIX box. Since the Palm does not
    know what timezone it is in, there is no unambiguous way to correct for
    this.
    
    Worse, the creation date for a program is stored in the local time _of
    the computer which did the final linking of that program_. Again, the
-   Pilot does not store the timezone information needed to reconstruct
+   Palm does not store the timezone information needed to reconstruct
    where/when this was.
    
    A better immediate tack would be to dissect these into struct tm's, and
@@ -136,12 +149,14 @@ static void pi_file_free(struct pi_file *pf);
                                                                      --KJA
    */
 
-static time_t pilot_time_to_unix_time(unsigned long raw_time)
+static time_t
+pilot_time_to_unix_time(unsigned long raw_time)
 {
    return (time_t) (raw_time - PILOT_TIME_DELTA);
 }
 
-static unsigned long unix_time_to_pilot_time(time_t t)
+static unsigned long
+unix_time_to_pilot_time(time_t t)
 {
    return (unsigned long) ((unsigned long) t + PILOT_TIME_DELTA);
 }
@@ -149,7 +164,8 @@ static unsigned long unix_time_to_pilot_time(time_t t)
 /*
  * open .prc or .pdb file for reading
  */
-struct pi_file *pi_file_open(char *name)
+struct pi_file *
+pi_file_open(char *name)
 {
    struct pi_file *pf;
    struct DBInfo *ip;
@@ -198,8 +214,8 @@ struct pi_file *pi_file_open(char *name)
    pf->nentries = get_short(p + 76);
 
 #ifdef DEBUG
-   printf("pi_file_open:\n Name '%s', flags 0x%4.4X, version %d\n",
-	  ip->name, ip->flags, ip->version);
+   printf("pi_file_open:\n Name '%s', flags 0x%4.4X, version %d\n", ip->name,
+	  ip->flags, ip->version);
    printf(" Creation date %s\n", ctime(&ip->createDate));
    printf(" Modification date %s\n", ctime(&ip->modifyDate));
    printf(" Backup date %s\n", ctime(&ip->backupDate));
@@ -218,7 +234,8 @@ struct pi_file *pi_file_open(char *name)
    if (ip->flags & dlpDBFlagResource) {
       pf->resource_flag = 1;
       pf->ent_hdr_size = PI_RESOURCE_ENT_SIZE;
-   } else {
+   }
+   else {
       pf->resource_flag = 0;
       pf->ent_hdr_size = PI_RECORD_ENT_SIZE;
    }
@@ -231,8 +248,8 @@ struct pi_file *pi_file_open(char *name)
    offset = file_size;
 
    if (pf->nentries) {
-      if ((pf->entries = calloc(pf->nentries, sizeof *pf->entries)) ==
-	  NULL) goto bad;
+      if ((pf->entries = calloc(pf->nentries, sizeof *pf->entries)) == NULL)
+	 goto bad;
 
       for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
 	 if (fread(buf, pf->ent_hdr_size, 1, pf->f) != (size_t) 1)
@@ -247,7 +264,8 @@ struct pi_file *pi_file_open(char *name)
 	    printf("Entry %d '%s' #%d @%X\n", i, printlong(entp->type),
 		   entp->id, entp->offset);
 #endif
-	 } else {
+	 }
+	 else {
 	    entp->offset = get_long(p);
 	    entp->attrs = get_byte(p + 4);
 	    entp->uid = get_treble(p + 5);
@@ -321,7 +339,8 @@ struct pi_file *pi_file_open(char *name)
    return (NULL);
 }
 
-int pi_file_close(struct pi_file *pf)
+int
+pi_file_close(struct pi_file *pf)
 {
    int err;
 
@@ -340,7 +359,8 @@ int pi_file_close(struct pi_file *pf)
    return (0);
 }
 
-static void pi_file_free(struct pi_file *pf)
+static void
+pi_file_free(struct pi_file *pf)
 {
    if (pf->f)
       fclose(pf->f);
@@ -359,27 +379,31 @@ static void pi_file_free(struct pi_file *pf)
    free(pf);
 }
 
-int pi_file_get_info(struct pi_file *pf, struct DBInfo *infop)
+int
+pi_file_get_info(struct pi_file *pf, struct DBInfo *infop)
 {
    *infop = pf->info;
    return (0);
 }
 
-int pi_file_get_app_info(struct pi_file *pf, void **datap, int *sizep)
+int
+pi_file_get_app_info(struct pi_file *pf, void **datap, int *sizep)
 {
    *datap = pf->app_info;
    *sizep = pf->app_info_size;
    return (0);
 }
 
-int pi_file_get_sort_info(struct pi_file *pf, void **datap, int *sizep)
+int
+pi_file_get_sort_info(struct pi_file *pf, void **datap, int *sizep)
 {
    *datap = pf->sort_info;
    *sizep = pf->sort_info_size;
    return (0);
 }
 
-static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
+static int
+pi_file_set_rbuf_size(struct pi_file *pf, int size)
 {
    int new_size;
    void *rbuf;
@@ -388,7 +412,8 @@ static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
       if (pf->rbuf_size == 0) {
 	 new_size = size + 2048;
 	 rbuf = malloc(new_size);
-      } else {
+      }
+      else {
 	 new_size = size + 2048;
 	 rbuf = realloc(pf->rbuf, new_size);
       }
@@ -405,9 +430,8 @@ static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
 
 /* returned buffer is valid until next call, or until pi_file_close */
 int
-pi_file_read_resource(struct pi_file *pf, int idx,
-		      void **bufp, int *sizep, unsigned long *type,
-		      int *idp)
+pi_file_read_resource(struct pi_file *pf, int idx, void **bufp, int *sizep,
+		      unsigned long *type, int *idp)
 {
    struct pi_file_entry *entp;
 
@@ -443,9 +467,8 @@ pi_file_read_resource(struct pi_file *pf, int idx,
 
 /* returned buffer is valid until next call, or until pi_file_close */
 int
-pi_file_read_record(struct pi_file *pf, int idx,
-		    void **bufp, int *sizep, int *attrp, int *catp,
-		    pi_uid_t * uidp)
+pi_file_read_record(struct pi_file *pf, int idx, void **bufp, int *sizep,
+		    int *attrp, int *catp, pi_uid_t * uidp)
 {
    struct pi_file_entry *entp;
 
@@ -467,7 +490,6 @@ pi_file_read_record(struct pi_file *pf, int idx,
 #ifdef DEBUG
    fprintf(stderr, "record size is %d\n", entp->size);
 #endif
-
 
    if (bufp) {
       if (pi_file_set_rbuf_size(pf, entp->size) < 0)
@@ -491,9 +513,8 @@ pi_file_read_record(struct pi_file *pf, int idx,
 }
 
 int
-pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid,
-			  void **bufp, int *sizep, int *idxp, int *attrp,
-			  int *catp)
+pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid, void **bufp,
+			  int *sizep, int *idxp, int *attrp, int *catp)
 {
    int idx;
    struct pi_file_entry *entp;
@@ -510,7 +531,8 @@ pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid,
    return (-1);
 }
 
-int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
+int
+pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
 {
    int idx;
    struct pi_file_entry *entp;
@@ -522,7 +544,8 @@ int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
    return (0);
 }
 
-struct pi_file *pi_file_create(char *name, struct DBInfo *info)
+struct pi_file *
+pi_file_create(char *name, struct DBInfo *info)
 {
    struct pi_file *pf;
 
@@ -538,7 +561,8 @@ struct pi_file *pi_file_create(char *name, struct DBInfo *info)
    if (info->flags & dlpDBFlagResource) {
       pf->resource_flag = 1;
       pf->ent_hdr_size = PI_RESOURCE_ENT_SIZE;
-   } else {
+   }
+   else {
       pf->resource_flag = 0;
       pf->ent_hdr_size = PI_RECORD_ENT_SIZE;
    }
@@ -554,7 +578,8 @@ struct pi_file *pi_file_create(char *name, struct DBInfo *info)
 }
 
 /* may call these any time before close (even multiple times) */
-int pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
+int
+pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
 {
    if (!pf->for_writing)
       return (-1);
@@ -567,7 +592,8 @@ int pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
    return (0);
 }
 
-int pi_file_set_app_info(struct pi_file *pf, void *data, int size)
+int
+pi_file_set_app_info(struct pi_file *pf, void *data, int size)
 {
    void *p;
 
@@ -589,7 +615,8 @@ int pi_file_set_app_info(struct pi_file *pf, void *data, int size)
    return (0);
 }
 
-int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
+int
+pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
 {
    void *p;
 
@@ -615,7 +642,8 @@ int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
  * internal function to extend entry list if necessary, and return a
  * pointer to the next available slot
  */
-static struct pi_file_entry *pi_file_append_entry(struct pi_file *pf)
+static struct pi_file_entry *
+pi_file_append_entry(struct pi_file *pf)
 {
    int new_count;
    int new_size;
@@ -669,8 +697,9 @@ pi_file_append_resource(struct pi_file *pf, void *buf, int size,
    return (0);
 }
 
-int pi_file_append_record(struct pi_file *pf, void *buf, int size,
-			  int attrs, int category, pi_uid_t uid)
+int
+pi_file_append_record(struct pi_file *pf, void *buf, int size, int attrs,
+		      int category, pi_uid_t uid)
 {
    struct pi_file_entry *entp;
 
@@ -695,14 +724,16 @@ int pi_file_append_record(struct pi_file *pf, void *buf, int size,
    return (0);
 }
 
-int pi_file_get_entries(struct pi_file *pf, int *entries)
+int
+pi_file_get_entries(struct pi_file *pf, int *entries)
 {
    *entries = pf->nentries;
 
    return (0);
 }
 
-static int pi_file_close_for_write(struct pi_file *pf)
+static int
+pi_file_close_for_write(struct pi_file *pf)
 {
    FILE *f;
    struct DBInfo *ip;
@@ -756,7 +787,8 @@ static int pi_file_close_for_write(struct pi_file *pf)
 	 set_long(p, entp->type);
 	 set_short(p + 4, entp->id);
 	 set_long(p + 6, entp->offset);
-      } else {
+      }
+      else {
 	 set_long(p, entp->offset);
 	 set_byte(p + 4, entp->attrs);
 	 set_treble(p + 5, entp->uid);
@@ -779,7 +811,6 @@ static int pi_file_close_for_write(struct pi_file *pf)
        && (fwrite(pf->sort_info, 1, pf->sort_info_size, f) !=
 	   (size_t) pf->sort_info_size)) goto bad;
 
-
    rewind(pf->tmpf);
    while ((c = getc(pf->tmpf)) != EOF)
       putc(c, f);
@@ -797,15 +828,16 @@ static int pi_file_close_for_write(struct pi_file *pf)
    return (-1);
 }
 
-int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
+int
+pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 {
    int db;
    int l, j;
    unsigned char buffer[0xffff];
 
    if (dlp_OpenDB
-       (socket, cardno, dlpOpenRead | dlpOpenSecret, pf->info.name,
-	&db) < 0) return -1;
+       (socket, cardno, dlpOpenRead | dlpOpenSecret, pf->info.name, &db) < 0)
+      return -1;
 
    l = dlp_ReadAppBlock(socket, db, 0, buffer, 0xffff);
    if (l > 0)
@@ -827,7 +859,8 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 	    dlp_CloseDB(socket, db);
 	    return -1;
 	 }
-   } else
+      }
+   else
       for (j = 0; j < l; j++) {
 	 unsigned long id;
 	 int size;
@@ -844,8 +877,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 	    use in backing them up */
 	 if (attr & (dlpRecAttrArchived | dlpRecAttrDeleted))
 	    continue;
-	 if (pi_file_append_record(pf, buffer, size, attr, category, id) <
-	     0) {
+	 if (pi_file_append_record(pf, buffer, size, attr, category, id) < 0) {
 	    dlp_CloseDB(socket, db);
 	    return -1;
 	 }
@@ -854,7 +886,8 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
    return dlp_CloseDB(socket, db);
 }
 
-int pi_file_install(struct pi_file *pf, int socket, int cardno)
+int
+pi_file_install(struct pi_file *pf, int socket, int cardno)
 {
    int db;
    int l, j;
@@ -869,22 +902,60 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
    /* Delete DB if it already exists */
    dlp_DeleteDB(socket, cardno, pf->info.name);
 
+   /* Judd - 25Nov99 - Graffiti hack */
+   /* We want to make sure that these 2 flags get set for this one */
+   if (pf->info.creator == pi_mktag('g', 'r', 'a', 'f')) {
+      flags |= dlpDBFlagNewer;
+      flags |= dlpDBFlagReset;
+   }
+
    /* Set up DB flags */
    flags = pf->info.flags;
 
-   if (strcmp(pf->info.name, "Graffiti ShortCuts ") == 0) {
-      flags |= 0x8000;		/* Rewrite an open DB */
-      reset = 1;		/* To be on the safe side */
-   }
 #ifdef DEBUG
    printf("Flags = %8.8X, name = '%s'\n", flags, pf->info.name);
 #endif
 
    /* Create DB */
-   if (dlp_CreateDB(socket, pf->info.creator, pf->info.type, cardno,
-		    flags, pf->info.version, pf->info.name, &db) < 0)
-      return -1;
+   if (dlp_CreateDB
+       (socket, pf->info.creator, pf->info.type, cardno, flags,
+	pf->info.version, pf->info.name, &db) < 0) {
+      int retry = 0;
 
+      /* Judd - 25Nov99 - Graffiti hack
+       * The dlpDBFlagNewer specifies that if a DB is open and cannot be
+       * deleted then it can be overwritten by a DB with a different name.
+       * The creator ID of "graf" is what really identifies a DB, not the name.
+       * We could call it JimBob and the palm would still find it and use it.
+       */
+      if (strcmp(pf->info.name, "Graffiti ShortCuts ") == 0) {
+	 strcpy(pf->info.name, "Graffiti ShortCuts");
+	 retry = 1;
+      }
+      else if (strcmp(pf->info.name, "Graffiti ShortCuts") == 0) {
+	 strcpy(pf->info.name, "Graffiti ShortCuts ");
+	 retry = 1;
+      }
+      else if (pf->info.creator == pi_mktag('g', 'r', 'a', 'f')) {
+	 /* Yep, someone has named it JimBob */
+	 strcpy(pf->info.name, "Graffiti ShortCuts");
+	 retry = 1;
+      }
+
+      if (retry) {
+	 /* Judd - 25Nov99 - Graffiti hack
+	  * We changed the name, now we can try to write it again
+	  */
+	 if (dlp_CreateDB
+	     (socket, pf->info.creator, pf->info.type, cardno, flags,
+	      pf->info.version, pf->info.name, &db) < 0) {
+	    return -1;
+	 }
+      }
+      else {
+	 return -1;
+      }
+   }
 
    pi_file_get_app_info(pf, &buffer, &l);
 
@@ -925,8 +996,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
       for (j = 0; j < pf->nentries; j++) {
 	 int size;
 
-	 if ((pi_file_read_resource(pf, j, 0, &size, 0, 0) == 0) &&
-	     (size > 65536)) {
+	 if ((pi_file_read_resource(pf, j, 0, &size, 0, 0) == 0)
+	     && (size > 65536)) {
 	    fprintf(stderr, "Database contains resource over 64K!\n");
 	    goto fail;
 	 }
@@ -947,12 +1018,13 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	 if (type == pi_mktag('b', 'o', 'o', 't'))
 	    reset = 1;
       }
-   } else {
+   }
+   else {
       for (j = 0; j < pf->nentries; j++) {
 	 int size;
 
-	 if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0) == 0)) &&
-	     (size > 65536)) {
+	 if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0) == 0))
+	     && (size > 65536)) {
 	    fprintf(stderr, "Database contains record over 64K!\n");
 	    goto fail;
 	 }
@@ -963,14 +1035,13 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	 int attr;
 	 int category;
 
-	 if (pi_file_read_record
-	     (pf, j, &buffer, &size, &attr, &category, &id) < 0)
+	 if (pi_file_read_record(pf, j, &buffer, &size, &attr, &category, &id)
+	     < 0)
 	    goto fail;
-	 if ((attr & (dlpRecAttrArchived | dlpRecAttrDeleted)) &&
-	     (version < 0x0101))
-	    continue;		/* Old OS cannot install deleted records, so don't try */
-	 if (dlp_WriteRecord
-	     (socket, db, attr, id, category, buffer, size, 0) < 0)
+	 if ((attr & (dlpRecAttrArchived | dlpRecAttrDeleted))
+	     && (version < 0x0101)) continue;	/* Old OS cannot install deleted records, so don't try */
+	 if (dlp_WriteRecord(socket, db, attr, id, category, buffer, size, 0)
+	     < 0)
 	    goto fail;
       }
    }
@@ -986,7 +1057,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
    return -1;
 }
 
-int pi_file_merge(struct pi_file *pf, int socket, int cardno)
+int
+pi_file_merge(struct pi_file *pf, int socket, int cardno)
 {
    int db;
    int j;
@@ -1013,8 +1085,8 @@ int pi_file_merge(struct pi_file *pf, int socket, int cardno)
       for (j = 0; j < pf->nentries; j++) {
 	 int size;
 
-	 if ((pi_file_read_resource(pf, j, 0, &size, 0, 0) == 0) &&
-	     (size > 65536)) {
+	 if ((pi_file_read_resource(pf, j, 0, &size, 0, 0) == 0)
+	     && (size > 65536)) {
 	    fprintf(stderr, "Database contains resource over 64K!\n");
 	    goto fail;
 	 }
@@ -1035,12 +1107,13 @@ int pi_file_merge(struct pi_file *pf, int socket, int cardno)
 	 if (type == pi_mktag('b', 'o', 'o', 't'))
 	    reset = 1;
       }
-   } else {
+   }
+   else {
       for (j = 0; j < pf->nentries; j++) {
 	 int size;
 
-	 if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0) == 0)) &&
-	     (size > 65536)) {
+	 if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0) == 0))
+	     && (size > 65536)) {
 	    fprintf(stderr, "Database contains record over 64K!\n");
 	    goto fail;
 	 }
@@ -1051,15 +1124,13 @@ int pi_file_merge(struct pi_file *pf, int socket, int cardno)
 	 int attr;
 	 int category;
 
-	 if (pi_file_read_record
-	     (pf, j, &buffer, &size, &attr, &category, &id) < 0)
+	 if (pi_file_read_record(pf, j, &buffer, &size, &attr, &category, &id)
+	     < 0)
 	    goto fail;
-	 if ((attr & (dlpRecAttrArchived | dlpRecAttrDeleted)) &&
-	     (version < 0x0101))
-	    continue;		/* Old OS cannot install deleted records, so don't try */
-	 if (dlp_WriteRecord
-	     (socket, db, attr, 0, category, buffer, size, 0) < 0)
-	    goto fail;
+	 if ((attr & (dlpRecAttrArchived | dlpRecAttrDeleted))
+	     && (version < 0x0101)) continue;	/* Old OS cannot install deleted records, so don't try */
+	 if (dlp_WriteRecord(socket, db, attr, 0, category, buffer, size, 0) <
+	     0) goto fail;
       }
    }
 

@@ -1,20 +1,35 @@
-/* address.c:  Translate Pilot address book data formats
+/*
+ * address.c:  Translate Pilot address book data formats
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-address.h"
 
-void free_Address(struct Address *a)
+void
+free_Address(struct Address *a)
 {
    int i;
 
@@ -27,7 +42,8 @@ void free_Address(struct Address *a)
 #define lo(x) ((x) & 0x0f)
 #define pair(x,y) (((x) << 4) | (y))
 
-int unpack_Address(struct Address *a, unsigned char *buffer, int len)
+int
+unpack_Address(struct Address *a, unsigned char *buffer, int len)
 {
    unsigned long contents;
    unsigned long v;
@@ -65,7 +81,8 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
 	 a->entry[v] = strdup((char *) buffer);
 	 buffer += strlen((char *) buffer) + 1;
 	 len -= strlen(a->entry[v]) + 1;
-      } else {
+      }
+      else {
 	 a->entry[v] = 0;
       }
    }
@@ -73,7 +90,8 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
    return (buffer - start);
 }
 
-int pack_Address(struct Address *a, unsigned char *record, int len)
+int
+pack_Address(struct Address *a, unsigned char *record, int len)
 {
    unsigned char *start = record;
    unsigned char *buffer;
@@ -125,8 +143,9 @@ int pack_Address(struct Address *a, unsigned char *record, int len)
    return (buffer - start);
 }
 
-int unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
-			  int len)
+int
+unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
+		      int len)
 {
    int i;
    unsigned char *start = record;
@@ -164,14 +183,13 @@ int unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
    return (record - start);
 }
 
-int pack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
-			int len)
+int
+pack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record, int len)
 {
    int i;
    unsigned char *pos = record;
    unsigned long r;
    int destlen = 4 + 16 * 22 + 2 + 2;
-
 
    i = pack_CategoryAppInfo(&ai->category, record, len);
    if (!record)

@@ -1,15 +1,30 @@
-/* winserial.c: tty line interface code for Pilot comms under Win32
+/*
+ * winserial.c: tty line interface code for Pilot comms under Win32
  *
  * Copyright (c) 1999 Jeff Senn
  * Copyright (c) 1999 Tilo Christ
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <windows.h>
 #include <stdio.h>
 #include <io.h>
 #include <fcntl.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
@@ -24,8 +39,8 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 static int so_write(struct pi_socket *ps);
 static int so_read(struct pi_socket *ps, int timeout);
 
-int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr,
-		   int addrlen)
+int
+pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
    HANDLE fd;
    char *tty = addr->pi_device;
@@ -35,14 +50,14 @@ int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr,
       tty = getenv("PILOTPORT");
    if (!tty)
       tty = "<Null>";
-   fd = CreateFile(tty, GENERIC_READ | GENERIC_WRITE,
-		   0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+   fd =
+      CreateFile(tty, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+		 FILE_ATTRIBUTE_NORMAL, 0);
    if (fd == INVALID_HANDLE_VALUE) {
       /*can't open */
       errno = ENOENT;
       return -1;
    }
-
 
    ps->mac->fd = (int) fd;
 
@@ -62,16 +77,16 @@ int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr,
    return ((int) fd);
 }
 
-
-int so_changebaud(struct pi_socket *ps)
+int
+so_changebaud(struct pi_socket *ps)
 {
    HANDLE fd = (HANDLE) ps->mac->fd;
 
    return win_changebaud(fd, ps->rate);
 }
 
-
-static int win_changebaud(HANDLE fd, int rate)
+static int
+win_changebaud(HANDLE fd, int rate)
 {
    BOOL rc;
    COMMTIMEOUTS ctmoCommPort;
@@ -91,16 +106,16 @@ static int win_changebaud(HANDLE fd, int rate)
    dcbCommPort.DCBlength = sizeof(DCB);
    GetCommState(fd, &dcbCommPort);
    dcbCommPort.BaudRate = rate;
-   dcbCommPort.fOutxCtsFlow = (rate > 9600) ? TRUE : FALSE;	// CTS output flow control 
-   dcbCommPort.fOutxDsrFlow = 0;	// DSR output flow control 
-   dcbCommPort.fDtrControl = DTR_CONTROL_ENABLE;	// DTR flow control type 
+   dcbCommPort.fOutxCtsFlow = (rate > 9600) ? TRUE : FALSE;					// CTS output flow control 
+   dcbCommPort.fOutxDsrFlow = 0;								// DSR output flow control 
+   dcbCommPort.fDtrControl = DTR_CONTROL_ENABLE;						// DTR flow control type 
    dcbCommPort.fRtsControl = (rate > 9600) ? RTS_CONTROL_HANDSHAKE : RTS_CONTROL_ENABLE;	// RTS flow control type 
-   dcbCommPort.fTXContinueOnXoff = 0;	// XOFF continues Tx 
-   dcbCommPort.fOutX = 0;	// XON/XOFF out flow control 
-   dcbCommPort.fInX = 0;	// XON/XOFF in flow control 
+   dcbCommPort.fTXContinueOnXoff = 0;								// XOFF continues Tx 
+   dcbCommPort.fOutX = 0;									// XON/XOFF out flow control 
+   dcbCommPort.fInX = 0;									// XON/XOFF in flow control 
    dcbCommPort.ByteSize = 8;
-   dcbCommPort.Parity = NOPARITY;	//no parity
-   dcbCommPort.StopBits = 0;	//1 stop bit
+   dcbCommPort.Parity = NOPARITY;								// no parity
+   dcbCommPort.StopBits = 0;									// 1 stop bit
 
    rc = SetCommState(fd, &dcbCommPort);
 
@@ -112,8 +127,8 @@ static int win_changebaud(HANDLE fd, int rate)
       return -1;
 }
 
-
-static int so_close(struct pi_socket *ps)
+static int
+so_close(struct pi_socket *ps)
 {
 #ifndef NO_SERIAL_TRACE
    if (ps->debugfd)
@@ -123,8 +138,8 @@ static int so_close(struct pi_socket *ps)
    return (0);
 }
 
-
-static int so_write(struct pi_socket *ps)
+static int
+so_write(struct pi_socket *ps)
 {
    struct pi_skb *skb;
    int nwrote, len;
@@ -143,8 +158,8 @@ static int so_write(struct pi_socket *ps)
       while (len < skb->len) {
 	 nwrote = 0;
 	 rc =
-	     WriteFile(hCommPort, skb->data + len, skb->len - len, &nwrote,
-		       NULL);
+	    WriteFile(hCommPort, skb->data + len, skb->len - len, &nwrote,
+		      NULL);
 	 if (!rc || nwrote <= 0)
 	    break;		/* transmission failure */
 	 len += nwrote;
@@ -166,8 +181,8 @@ static int so_write(struct pi_socket *ps)
    return 0;
 }
 
-
-static int so_read(struct pi_socket *ps, int timeout)
+static int
+so_read(struct pi_socket *ps, int timeout)
 {
    int r;
    unsigned char *buf;
@@ -178,7 +193,8 @@ static int so_read(struct pi_socket *ps, int timeout)
    int rc;
    HANDLE hCommPort = (HANDLE) ps->mac->fd;
 
-/*  pi_socket_set_timeout(ps,timeout,-1);  *//* Palm Desktop doesn't do this */
+/*  pi_socket_set_timeout(ps,timeout,-1);  */
+/*  Palm Desktop doesn't do this           */
    pi_serial_flush(ps);		/* We likely want to be in sync with tx */
 
    if (!ps->mac->expect)
@@ -212,10 +228,9 @@ static int so_read(struct pi_socket *ps, int timeout)
    return 0;
 }
 
-
-
 /* Wait for incoming connection from Palm device */
-int win_peek(struct pi_socket *ps, int timeout)
+int
+win_peek(struct pi_socket *ps, int timeout)
 {
    int time = timeout;
    COMSTAT comstat;

@@ -1,14 +1,28 @@
-/* datebook.c:  Translate Pilot datebook data formats
+/*
+ * datebook.c:  Translate Pilot datebook data formats
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
@@ -17,15 +31,16 @@
 char *DatebookAlarmTypeNames[] = { "Minutes", "Hours", "Days", NULL };
 
 char *DatebookRepeatTypeNames[] =
-    { "None", "Daily", "Weekly", "MonthlyByDay", "MonthlyByDate", "Yearly",
-       NULL };
+   { "None", "Daily", "Weekly", "MonthlyByDay", "MonthlyByDate", "Yearly",
+      NULL };
 
 /* dom1stSun = REM Sun 1  
  dom1stMon = Rem Mon 1 
  dom2ndSun = REM Sun 8 
  domLastSun = REM Sun 1 -7*/
 
-void free_Appointment(struct Appointment *a)
+void
+free_Appointment(struct Appointment *a)
 {
    if (a->exception)
       free(a->exception);
@@ -35,8 +50,8 @@ void free_Appointment(struct Appointment *a)
       free(a->note);
 }
 
-int unpack_Appointment(struct Appointment *a, unsigned char *buffer,
-		       int len)
+int
+unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 {
    int iflags;
    unsigned char *p2;
@@ -83,7 +98,8 @@ int unpack_Appointment(struct Appointment *a, unsigned char *buffer,
       a->begin.tm_min = 0;
       a->end.tm_hour = 0;
       a->end.tm_min = 0;
-   } else {
+   }
+   else {
       a->event = 0;
    }
 
@@ -109,7 +125,8 @@ int unpack_Appointment(struct Appointment *a, unsigned char *buffer,
       a->advanceUnits = get_byte(p2);
       p2 += 1;
 
-   } else {
+   }
+   else {
       a->alarm = 0;
       a->advance = 0;
       a->advanceUnits = 0;
@@ -151,7 +168,8 @@ int unpack_Appointment(struct Appointment *a, unsigned char *buffer,
       a->repeatWeekstart = get_byte(p2);
       p2++;
       p2++;
-   } else {
+   }
+   else {
       int i;
 
       a->repeatType = (enum repeatTypes) 0;
@@ -180,7 +198,8 @@ int unpack_Appointment(struct Appointment *a, unsigned char *buffer,
 	 mktime(&a->exception[j]);
       }
 
-   } else {
+   }
+   else {
       a->exceptions = 0;
       a->exception = 0;
    }
@@ -188,19 +207,22 @@ int unpack_Appointment(struct Appointment *a, unsigned char *buffer,
    if (iflags & descFlag) {
       a->description = strdup(p2);
       p2 += strlen(p2) + 1;
-   } else
+   }
+   else
       a->description = 0;
 
    if (iflags & noteFlag) {
       a->note = strdup(p2);
       p2 += strlen(p2) + 1;
-   } else {
+   }
+   else {
       a->note = 0;
    }
    return (p2 - buffer);
 }
 
-int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
+int
+pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 {
    int iflags;
    char *pos;
@@ -226,12 +248,15 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
    set_byte(buf + 1, a->begin.tm_min);
    set_byte(buf + 2, a->end.tm_hour);
    set_byte(buf + 3, a->end.tm_min);
-   set_short(buf + 4, ((a->begin.tm_year - 4) << 9) |
-	     ((a->begin.tm_mon + 1) << 5) | a->begin.tm_mday);
+   set_short(buf + 4,
+	     ((a->
+	       begin.tm_year - 4) << 9) | ((a->begin.tm_mon +
+					    1) << 5) | a->begin.tm_mday);
 
    if (a->event) {
       set_long(buf, 0xffffffff);
    }
+
 #define alarmFlag 64
 #define repeatFlag 32
 #define noteFlag 16
@@ -262,7 +287,8 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 	 for (i = 0; i < 7; i++)
 	    if (a->repeatDays[i])
 	       on |= 1 << i;
-      } else
+      }
+      else
 	 on = 0;
 
       set_byte(pos, a->repeatType);
@@ -272,9 +298,11 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
       if (a->repeatForever)
 	 set_short(pos, 0xffff);
       else
-	 set_short(pos, ((a->repeatEnd.tm_year - 4) << 9) |
-		   ((a->repeatEnd.tm_mon + 1) << 5) |
-		   a->repeatEnd.tm_mday);
+	 set_short(pos,
+		   ((a->
+		     repeatEnd.tm_year - 4) << 9) | ((a->repeatEnd.tm_mon +
+						      1) << 5) | a->repeatEnd.
+		   tm_mday);
 
       pos += 2;
 
@@ -297,9 +325,11 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
       pos += 2;
 
       for (i = 0; i < a->exceptions; i++, pos += 2)
-	 set_short(pos, ((a->exception[i].tm_year - 4) << 9) |
-		   ((a->exception[i].tm_mon + 1) << 5) |
-		   a->exception[i].tm_mday);
+	 set_short(pos,
+		   ((a->
+		     exception[i].tm_year -
+		     4) << 9) | ((a->exception[i].tm_mon +
+				  1) << 5) | a->exception[i].tm_mday);
    }
 
    if (a->description != NULL) {
@@ -322,9 +352,9 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
    return ((long) pos - (long) buf);
 }
 
-
-int unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
-			      unsigned char *record, int len)
+int
+unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
+			  unsigned char *record, int len)
 {
    int i;
 
@@ -339,8 +369,9 @@ int unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
    return i + 2;
 }
 
-int pack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
-			    unsigned char *record, int len)
+int
+pack_AppointmentAppInfo(struct AppointmentAppInfo *ai, unsigned char *record,
+			int len)
 {
    int i;
    unsigned char *start = record;

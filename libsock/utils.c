@@ -1,10 +1,23 @@
-/* utils.c:  misc. stuff for dealing with packets.
+/*
+ * utils.c:  misc. stuff for dealing with packets.
  *
  * Portions Copyright (c) 1996, D. Jeff Dionne.
  * Portions Copyright (c) 1996, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
@@ -40,7 +53,8 @@
 
 /* this routine ruthlessly stolen verbatim from Brian J. Swetland */
 
-int crc16(unsigned char *ptr, int count)
+int
+crc16(unsigned char *ptr, int count)
 {
    int crc, i;
 
@@ -57,7 +71,8 @@ int crc16(unsigned char *ptr, int count)
 }
 
 #ifndef HAVE_STRDUP
-char *strdup(const char *string)
+char *
+strdup(const char *string)
 {
    size_t length;
    char *result;
@@ -87,7 +102,8 @@ extern char **environ;
 #endif
 
 /* Put STRING, which is of the form "NAME=VALUE", in the environment.  */
-int putenv(const char *string)
+int
+putenv(const char *string)
 {
    const char *const name_end = strchr(string, '=');
    register size_t size;
@@ -109,8 +125,8 @@ int putenv(const char *string)
 
    size = 0;
    for (ep = environ; *ep != NULL; ++ep)
-      if (!strncmp(*ep, string, name_end - string) &&
-	  (*ep)[name_end - string] == '=')
+      if (!strncmp(*ep, string, name_end - string)
+	  && (*ep)[name_end - string] == '=')
 	 break;
       else
 	 ++size;
@@ -121,16 +137,16 @@ int putenv(const char *string)
 
       if (new_environ == NULL)
 	 return -1;
-      (void) memcpy((void *) new_environ, (void *) environ,
+      (void) memcpy((void *) new_environ, (void *) environ, size * sizeof(char *));
 
-		    size * sizeof(char *));
       new_environ[size] = (char *) string;
       new_environ[size + 1] = NULL;
       if (last_environ != NULL)
 	 free((void *) last_environ);
       last_environ = new_environ;
       environ = new_environ;
-   } else
+   }
+   else
       *ep = (char *) string;
 
    return 0;
@@ -138,7 +154,8 @@ int putenv(const char *string)
 #endif
 
 #ifndef HAVE_INET_ATON
-int inet_aton(const char *cp, struct in_addr *addr)
+int
+inet_aton(const char *cp, struct in_addr *addr)
 {
    register u_long val;
    register int base, n;
@@ -183,7 +200,8 @@ int inet_aton(const char *cp, struct in_addr *addr)
 	 if (pp >= parts + 3 || val > 0xff)
 	    return (0);
 	 *pp++ = val, cp++;
-      } else
+      }
+      else
 	 break;
    }
    /*
@@ -225,7 +243,8 @@ int inet_aton(const char *cp, struct in_addr *addr)
 }
 #endif
 
-char *printlong(unsigned long val)
+char *
+printlong(unsigned long val)
 {
    static char buf[5];
 
@@ -234,7 +253,8 @@ char *printlong(unsigned long val)
    return buf;
 }
 
-unsigned long makelong(char *c)
+unsigned long
+makelong(char *c)
 {
    char c2[4];
    int l = strlen(c);
@@ -246,7 +266,8 @@ unsigned long makelong(char *c)
    return get_long(c2);
 }
 
-void dumpline(const unsigned char *buf, int len, int addr)
+void
+dumpline(const unsigned char *buf, int len, int addr)
 {
    int i;
 
@@ -271,7 +292,8 @@ void dumpline(const unsigned char *buf, int len, int addr)
    fprintf(stderr, "\n");
 }
 
-void dumpdata(const unsigned char *buf, int len)
+void
+dumpdata(const unsigned char *buf, int len)
 {
    int i;
 
@@ -280,7 +302,8 @@ void dumpdata(const unsigned char *buf, int len)
    }
 }
 
-double get_float(void *buffer)
+double
+get_float(void *buffer)
 {
    unsigned char *buf = buffer;
 
@@ -292,7 +315,8 @@ double get_float(void *buffer)
    return ldexp(sign ? (double) frac : -(double) frac, exp);
 }
 
-void set_float(void *buffer, double value)
+void
+set_float(void *buffer, double value)
 {
    unsigned char *buf = buffer;
 
@@ -303,7 +327,8 @@ void set_float(void *buffer, double value)
    if (value < 0) {
       sign = 0;
       value = -value;
-   } else
+   }
+   else
       sign = 0xFF;
 
    /* Convert mantissa to 32-bit integer, and take exponent */
@@ -317,7 +342,8 @@ void set_float(void *buffer, double value)
    set_byte(buf + 7, 0);
 }
 
-int compareTm(struct tm *a, struct tm *b)
+int
+compareTm(struct tm *a, struct tm *b)
 {
    int d;
 
@@ -340,13 +366,13 @@ int compareTm(struct tm *a, struct tm *b)
    return d;
 }
 
-
 #ifdef OS2
 
 /* Replacement version of getenv(), because the one in the EMX 0.9c,
  * fix03 dist appears to be busted when called from inside a DLL. (MJJ)
  */
-char *getenv(const char *envar)
+char *
+getenv(const char *envar)
 {
    APIRET rc;
    unsigned char *envstring;

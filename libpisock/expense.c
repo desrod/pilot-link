@@ -1,14 +1,28 @@
-/* expense.c:  Translate Pilot expense tracker data formats
+/*
+ * expense.c:  Translate Pilot expense tracker data formats
  *
  * Copyright (c) 1997, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
@@ -17,19 +31,18 @@
 char *ExpenseSortNames[] = { "Date", "Type", NULL };
 char *ExpenseDistanceNames[] = { "Miles", "Kilometers", NULL };
 char *ExpensePaymentNames[] =
-    { "AmEx", "Cash", "Check", "CreditCard", "MasterCard", "Prepaid",
-       "VISA", "Unfiled" };
+   { "AmEx", "Cash", "Check", "CreditCard", "MasterCard", "Prepaid", "VISA",
+      "Unfiled" };
 char *ExpenseTypeNames[] =
-    { "Airfare", "Breakfast", "Bus", "Business Meals", "Car Rental",
-       "Dinner",
-   "Entertainment", "Fax", "Gas", "Gifts", "Hotel", "Incidentals",
-       "Laundry",
+   { "Airfare", "Breakfast", "Bus", "Business Meals", "Car Rental", "Dinner",
+   "Entertainment", "Fax", "Gas", "Gifts", "Hotel", "Incidentals", "Laundry",
    "Limo", "Lodging", "Lunch", "Mileage", "Other", "Parking", "Postage",
    "Snack", "Subway", "Supplies", "Taxi", "Telephone", "Tips", "Tolls",
    "Train"
 };
 
-void free_Expense(struct Expense *a)
+void
+free_Expense(struct Expense *a)
 {
    if (a->note)
       free(a->note);
@@ -43,7 +56,8 @@ void free_Expense(struct Expense *a)
       free(a->attendees);
 }
 
-int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
+int
+unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 {
    unsigned long d;
    unsigned char *start = buffer;
@@ -75,7 +89,8 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
       a->amount = strdup(buffer);
       buffer += strlen(a->amount);
       len -= strlen(a->amount);
-   } else {
+   }
+   else {
       a->amount = 0;
    }
    buffer++;
@@ -88,7 +103,8 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
       a->vendor = strdup(buffer);
       buffer += strlen(a->vendor);
       len -= strlen(a->vendor);
-   } else {
+   }
+   else {
       a->vendor = 0;
    }
    buffer++;
@@ -101,7 +117,8 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
       a->city = strdup(buffer);
       buffer += strlen(a->city);
       len -= strlen(a->city);
-   } else {
+   }
+   else {
       a->city = 0;
    }
    buffer++;
@@ -114,7 +131,8 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
       a->attendees = strdup(buffer);
       buffer += strlen(a->attendees);
       len -= strlen(a->attendees);
-   } else {
+   }
+   else {
       a->attendees = 0;
    }
    buffer++;
@@ -127,7 +145,8 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
       a->note = strdup(buffer);
       buffer += strlen(a->note);
       len -= strlen(a->note);
-   } else {
+   }
+   else {
       a->note = 0;
    }
 
@@ -137,7 +156,8 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
    return (buffer - start);
 }
 
-int pack_Expense(struct Expense *a, unsigned char *record, int len)
+int
+pack_Expense(struct Expense *a, unsigned char *record, int len)
 {
    unsigned char *buf = record;
    int destlen = 6 + 1 + 1 + 1 + 1 + 1;
@@ -158,8 +178,9 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
    if (len < destlen)
       return 0;
 
-   set_short(buf, ((a->date.tm_year - 4) << 9) |
-	     ((a->date.tm_mon + 1) << 5) | a->date.tm_mday);
+   set_short(buf,
+	     ((a->date.tm_year - 4) << 9) | ((a->date.tm_mon + 1) << 5) | a->
+	     date.tm_mday);
    buf += 2;
    set_byte(buf, a->type);
    set_byte(buf + 1, a->payment);
@@ -170,7 +191,8 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
    if (a->amount) {
       strcpy(buf, a->amount);
       buf += strlen(buf);
-   } else {
+   }
+   else {
       set_byte(buf, 0);
    }
    buf++;
@@ -178,7 +200,8 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
    if (a->vendor) {
       strcpy(buf, a->vendor);
       buf += strlen(buf);
-   } else {
+   }
+   else {
       set_byte(buf, 0);
    }
    buf++;
@@ -186,7 +209,8 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
    if (a->city) {
       strcpy(buf, a->city);
       buf += strlen(buf);
-   } else {
+   }
+   else {
       set_byte(buf, 0);
    }
    buf++;
@@ -194,7 +218,8 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
    if (a->attendees) {
       strcpy(buf, a->attendees);
       buf += strlen(buf);
-   } else {
+   }
+   else {
       set_byte(buf, 0);
    }
    buf++;
@@ -202,7 +227,8 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
    if (a->note) {
       strcpy(buf, a->note);
       buf += strlen(buf);
-   } else {
+   }
+   else {
       set_byte(buf, 0);
    }
    buf++;
@@ -210,8 +236,9 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
    return (buf - record);
 }
 
-int unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
-			  int len)
+int
+unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
+		      int len)
 {
    int i;
    unsigned char *start = record;
@@ -235,8 +262,8 @@ int unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
    return (record - start);
 }
 
-int pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
-			int len)
+int
+pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record, int len)
 {
    unsigned char *start = record;
    int i;
@@ -266,8 +293,8 @@ int pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
    return (record - start);
 }
 
-int unpack_ExpensePref(struct ExpensePref *p, unsigned char *record,
-		       int len)
+int
+unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 {
    int i;
    unsigned char *start = record;
@@ -295,7 +322,8 @@ int unpack_ExpensePref(struct ExpensePref *p, unsigned char *record,
    return (record - start);
 }
 
-int pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
+int
+pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 {
    int i;
    unsigned char *start = record;

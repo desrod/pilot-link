@@ -1,10 +1,24 @@
-/* inet.c: Interface layer to TCP/IP NetSync connections
+/*
+ * inet.c: Interface layer to TCP/IP NetSync connections
  *
  * Copyright (c) 1997, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  * Copyright (c) 1999, John Franks
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #ifdef WIN32
@@ -20,6 +34,7 @@
 #endif
 
 #include <stdio.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-inet.h"
@@ -43,13 +58,13 @@ static int pi_net_close(struct pi_socket *ps);
 
 extern int dlp_trace;
 
-int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr,
-		    int addrlen)
+int
+pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
    struct sockaddr_in serv_addr;
    char msg1[22] =
 
-       "\x90\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00\x08\x01\x00\x00\x00\x00\x00\x00\x00";
+      "\x90\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00\x08\x01\x00\x00\x00\x00\x00\x00\x00";
    char msg2[50] = "\x92\x01\x00\x00\x00\x00\x00\x00\x00\x20\
 \x00\x00\x00\x24\xff\xff\xff\xff\x00\x3c\x00\x3c\x40\x00\x00\x00\
 \x01\x00\x00\x00\xc0\xa8\xa5\x1e\x04\x01\x00\x00\x00\x00\x00\x00\
@@ -79,7 +94,8 @@ int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr,
 
    if (addr->sa_family == AF_INET) {
       memcpy(&serv_addr, addr, addrlen);
-   } else {
+   }
+   else {
       struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
       char *device = paddr->pi_device + 1;
 
@@ -101,10 +117,9 @@ int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr,
       }
    }
 
-
-   if (connect
-       (ps->mac->fd, (struct sockaddr *) &serv_addr,
-	sizeof(serv_addr)) < 0) return -1;
+   if (connect(ps->mac->fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
+       < 0)
+      return -1;
 
    ps->socket_listen = pi_net_listen;
    ps->socket_accept = pi_net_accept;
@@ -127,8 +142,7 @@ int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr,
 
 #ifndef NO_SERIAL_TRACE
    if (ps->debuglog) {
-      ps->debugfd =
-	  open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND, 0666);
+      ps->debugfd = open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND, 0666);
       /* This sequence is magic used by my trace analyzer - kja */
       write(ps->debugfd, "\0\2\0\0\0\0\0\0\0\0", 10);
    }
@@ -139,7 +153,8 @@ int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr,
 
 /* Bind address to a local socket */
 
-int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
+int
+pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
    int opt, optlen;
    struct sockaddr_in serv_addr;
@@ -170,7 +185,8 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
    if (addr->sa_family == AF_INET) {
       memcpy(&serv_addr, addr, addrlen);
-   } else {
+   }
+   else {
       struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
       char *device = paddr->pi_device + 1;
 
@@ -200,8 +216,8 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
       return -1;
    }
 #else
-   if (setsockopt(ps->sd, SOL_SOCKET, SO_REUSEADDR, (void *) &opt, optlen)
-       < 0) {
+   if (setsockopt(ps->sd, SOL_SOCKET, SO_REUSEADDR, (void *) &opt, optlen) <
+       0) {
       return -1;
    }
 #endif
@@ -211,8 +227,7 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
 #ifndef NO_SERIAL_TRACE
    if (ps->debuglog) {
-      ps->debugfd =
-	  open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND, 0666);
+      ps->debugfd = open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND, 0666);
       /* This sequence is magic used by my trace analyzer - kja */
       write(ps->debugfd, "\0\2\0\0\0\0\0\0\0\0", 10);
    }
@@ -236,33 +251,33 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
 /* Wait for an incoming connection */
 
-static int pi_net_listen(struct pi_socket *ps, int backlog)
+static int
+pi_net_listen(struct pi_socket *ps, int backlog)
 {
    return listen(ps->sd, backlog);
 }
 
 /* Accept an incoming connection */
 
-static int pi_net_accept(struct pi_socket *ps, struct sockaddr *addr,
-			 int *addrlen)
+static int
+pi_net_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
    struct pi_socket *a;
    char msg1[50] =
 
-       "\x12\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00\x24\xff\xff\
+      "\x12\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00\x24\xff\xff\
 \xff\xff\x3c\x00\x3c\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc0\xa8\
 \xa5\x1f\x04\x27\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00";
    char msg2[46] =
 
-       "\x13\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00\x20\xff\xff\
+      "\x13\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00\x20\xff\xff\
 \xff\xff\x00\x3c\x00\x3c\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\
 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
    char buffer[200];
 
    a = malloc(sizeof(struct pi_socket));
    memcpy(a, ps, sizeof(struct pi_socket));
-
 
    a->sd = accept(ps->sd, addr, addrlen);
    if (a->sd < 0)
@@ -286,8 +301,8 @@ static int pi_net_accept(struct pi_socket *ps, struct sockaddr *addr,
 
 /* Send msg on a connected socket */
 
-static int pi_net_send(struct pi_socket *ps, void *msg, int len,
-		       unsigned int flags)
+static int
+pi_net_send(struct pi_socket *ps, void *msg, int len, unsigned int flags)
 {
    int n, l;
    unsigned char buf[6];
@@ -329,8 +344,8 @@ static int pi_net_send(struct pi_socket *ps, void *msg, int len,
 
 /* Recv msg on a connected socket */
 
-static int pi_net_recv(struct pi_socket *ps, void *msg, int len,
-		       unsigned int flags)
+static int
+pi_net_recv(struct pi_socket *ps, void *msg, int len, unsigned int flags)
 {
    int n, l;
    int rlen;
@@ -398,14 +413,16 @@ static int pi_net_recv(struct pi_socket *ps, void *msg, int len,
    return len;
 }
 
-static int pi_net_tickle(struct pi_socket *ps)
+static int
+pi_net_tickle(struct pi_socket *ps)
 {
    return -1;
 }
 
 /* Close a connection, destroy the socket */
 
-static int pi_net_close(struct pi_socket *ps)
+static int
+pi_net_close(struct pi_socket *ps)
 {
    if (ps->type == PI_SOCK_STREAM) {
       if (ps->connected & 1)	/* If socket is connected */

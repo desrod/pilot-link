@@ -1,11 +1,11 @@
 .TH READ-ICAL 1 "USR Pilot tools" "FSF" \" -*- nroff -*-
 .SH NAME
-read-ical \- coverts information on USR Pilot into Ical calendar 
+read-ical \- coverts information on your Palm Computing Device into 
+an Ical-formatted calendar 
 .SH SYNOPSIS
-.B read-ical /dev/cua? filename
+.B read-ical /dev/tty[<0..n>] filename
 .SH DESCRIPTION
-This manual page
-documents the small application
+This manual page documents the small application
 .BR read-ical .
 .B read-ical
 allows the user to retrieve the contents of the ToDo and Datebook databases
@@ -21,13 +21,13 @@ a separate one for this purpose, and include it in your main
 calendar.
 
 As 
-.B read-ical
+.B read-ical 
 works by passing a script to ical, ical must be in your path.
 .SS OPTIONS
-none
+<port> <filename>
 .SH USEAGE
-The program will connect to a target, retrieve the ToDo and Datebook 
-databases, then instruct
+The program will connect to a target device, retrieve the ToDo and Datebook 
+databases (ToDoDB.pdb and DatebookDB.pdb respectively), then instruct
 .B ical
 to write a calendar file based on the retrieved information.
 .SH AUTHOR

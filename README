@@ -31,38 +31,38 @@ source directory if you want the fancy images for the Remote UI window.
 
 Basic program list, in no particular order:
 
-    addresses: dump Pilot address book into generic format
+    addresses: dump Palm address book into generic format
 
     ccexample: test program demonstrating C++ interface
     
-    debugsh: command-line interface to Pilot debug monitor
+    debugsh: command-line interface to Palm debug monitor
 
-    dlpsh: command-line interface to Pilot HotSync protocol
+    dlpsh: command-line interface to Palm HotSync protocol
 
     getrom: program to fetch ROM using getrom.prc or getrom2.prc
 
-    getrom.prc:  Pilot program to help dump a 512K ROM 
-    getrom2.prc: Pilot program to help dump a 1024K ROM (used for OS 2.x)
+    getrom.prc:  Palm program to help dump a 512K ROM 
+    getrom2.prc: Palm program to help dump a 1024K ROM (used for OS 2.x)
     
     iambicexample: test program demonstrating C++ interface
 
     ietf2datebook: convert IETF calendar to format used by install-datebook
 
-    install-datebook: import datebook records from a text format into Pilot
+    install-datebook: import datebook records from a text format into Palm
 
-    install-memo: import memo records from a text format into Pilot
+    install-memo: import memo records from a text format into Palm
 
-    install-todos: import todo records from a text format into Pilot
+    install-todos: import todo records from a text format into Palm
 
-    install-user: modify user name settings (and report lots of into) about Pilot
+    install-user: modify user name settings (and report lots of into) about Palm
 
-    memos: export memos from Pilot in mailbox format
+    memos: export memos from Palm in mailbox format
 
     pi-csd: must be running to accept Network HotSync(tm) connects
     
-    pi-getram: program that retrieves RAM from Pilot
+    pi-getram: program that retrieves RAM from Palm
     
-    pi-getrom: program that retrieves ROM from Pilot (without getrom.prc)
+    pi-getrom: program that retrieves ROM from Palm (without getrom.prc)
     
     pi-nredir: program that accepts connections and redirects them via the Network HotSync(tm) protocol
     
@@ -70,32 +70,32 @@ Basic program list, in no particular order:
 
     pilot-addresses: import and export address book
 
-    pilot-clip: experimental program to import and export data from Pilot clipboard
+    pilot-clip: experimental program to import and export data from Palm clipboard
     
-    pilot-debug: graphical and command-line program to interface with Pilot debug monitor
+    pilot-debug: graphical and command-line program to interface with Palm debug monitor
     
-    pilot-dedupe: strips duplicate records from Pilot databases
+    pilot-dedupe: strips duplicate records from Palm databases
 
     pilot-file: disect .prc and .pdb files
 
-    pilot-mail: import mail from POP3 mailbox into Pilot Pro's Mail application,
+    pilot-mail: import mail from POP3 mailbox into Palm Pro's Mail application,
                 and send mail via sendmail
 
-    pilot-schlep: store a single file on the Pilot
+    pilot-schlep: store a single file on the Palm
      
     pilot-undelete: turn archived records into normal records
 
-    pilot-xfer: back up, restore, install & delete Pilot databases (This is a very useful program)
+    pilot-xfer: back up, restore, install & delete Palm databases (This is a very useful program)
 
-    read-expenses: export Pilot Pro expense database into text format
+    read-expenses: export Palm Pro expense database into text format
 
-    read-ical: export Pilot datebook and todo databases into an Ical calendar (ical is required)
+    read-ical: export Palm datebook and todo databases into an Ical calendar (ical is required)
     
-    read-todos: export Pilot todo database into generic text format
+    read-todos: export Palm todo database into generic text format
 
-    reminders: export Pilot datebook into a 'remind' data file
+    reminders: export Palm datebook into a 'remind' data file
 
-    sync-plan: completely synchronize the Pilot datebook with the Plan calendar via netplan
+    sync-plan: completely synchronize the Palm datebook with the Plan calendar via netplan
     
     validate: experimental program to test C++ features
 
@@ -108,11 +108,11 @@ Usage notes:
   quirks and requirements. You must running netplan from plan-1.6.1
   (probably available at <http://www.in-berlin.de/User/bitrot>). Future or
   later versions may work, but I cannot gaurantee this. Sync-plan does _not_
-  check the Pilot's user name, so be very careful not to sync two Pilots to
+  check the Palm's user name, so be very careful not to sync two Palms to
   the same Plan database. This will not work in a useful manner, at the
   moment. Sync-plan leaves a file, that has a name starting with
   "pilothash", in the current directory. This file must be present for all
-  future syncs between that plan database and that Pilot.
+  future syncs between that plan database and that Palm.
   
   As sync-plan is a work in progress, please contact me with any problems.
   
@@ -122,12 +122,12 @@ Usage notes:
   38400 on a Linux box if you've been using setserial to change the
   multiplier.)
   
-  pilot-mail (which requires a PalmPilot with the new Mail application, as
+  pilot-mail (which requires a Palm with the new Mail application, as
   well as sendmail and/or a POP3 server) is still in the experimental stage. 
   Run with an argument of '-H' for help. While I don't expect it to lose
   data, (and by default mail is kept on both sides, not deleted) I can not
   and will not guarantee that you won't. Please back up your UNIX mailbox
-  and Pilot mailbox (via pilot-xfer) before experimenting.
+  and Palm mailbox (via pilot-xfer) before experimenting.
   
   If you wish, you may easily change the default settings (pop host,
   password, etc.) for pilot-mail by editing the top of pilot-mail.c, as well

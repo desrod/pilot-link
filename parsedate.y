@@ -18,6 +18,7 @@
 /* SUPPRESS 593 on yynewstate *//* Label was not used */
 /* SUPPRESS 595 on yypvt *//* Automatic variable may be used before set */
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <ctype.h>
 #include <time.h>

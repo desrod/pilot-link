@@ -1,19 +1,34 @@
-/* todo.c:  Translate Pilot ToDo application data formats
+/*
+ * todo.c:  Translate Palm ToDo application data formats
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-todo.h"
 
-void free_ToDo(struct ToDo *a)
+void
+free_ToDo(struct ToDo *a)
 {
    if (a->description)
       free(a->description);
@@ -21,16 +36,17 @@ void free_ToDo(struct ToDo *a)
       free(a->note);
 }
 
-int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
+int
+unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 {
    unsigned long d;
    unsigned char *start = buffer;
 
    /* Note: There are possible timezone conversion problems related to the
       use of the due member of a struct ToDo. As it is kept in local
-      (wall) time in struct tm's, the timezone of the Pilot is
+      (wall) time in struct tm's, the timezone of the Palm is
       irrelevant, _assuming_ that any UNIX program keeping time in
-      time_t's converts them to the correct local time. If the Pilot is
+      time_t's converts them to the correct local time. If the Palm is
       in a different timezone than the UNIX box, it may not be simple
       to deduce that correct (desired) timezone.
 
@@ -40,7 +56,6 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
       appointments.
       -- KJA
     */
-
 
    if (len < 3)
       return 0;
@@ -55,7 +70,8 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
       a->due.tm_isdst = -1;
       mktime(&a->due);
       a->indefinite = 0;
-   } else {
+   }
+   else {
       a->indefinite = 1;	/* a->due is invalid */
    }
 
@@ -63,7 +79,8 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
    if (a->priority & 0x80) {
       a->complete = 1;
       a->priority &= 0x7f;
-   } else {
+   }
+   else {
       a->complete = 0;
    }
 
@@ -90,7 +107,8 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
    return (buffer - start);	/* FIXME: return real length */
 }
 
-int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
+int
+pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
 {
    int pos;
    int destlen = 3;
@@ -110,9 +128,11 @@ int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
    if (a->indefinite) {
       buf[0] = 0xff;
       buf[1] = 0xff;
-   } else {
-      set_short(buf, ((a->due.tm_year - 4) << 9) |
-		((a->due.tm_mon + 1) << 5) | a->due.tm_mday);
+   }
+   else {
+      set_short(buf,
+		((a->due.tm_year - 4) << 9) | ((a->due.tm_mon + 1) << 5) | a->
+		due.tm_mday);
    }
    buf[2] = a->priority;
    if (a->complete) {
@@ -123,23 +143,24 @@ int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
    if (a->description) {
       strcpy((char *) buf + pos, a->description);
       pos += strlen(a->description) + 1;
-   } else {
+   }
+   else {
       buf[pos++] = 0;
    }
 
    if (a->note) {
       strcpy((char *) buf + pos, a->note);
       pos += strlen(a->note) + 1;
-   } else {
+   }
+   else {
       buf[pos++] = 0;
    }
 
    return pos;
 }
 
-
-int unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record,
-		       int len)
+int
+unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 {
    int i;
    unsigned char *start = record;
@@ -158,8 +179,8 @@ int unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record,
    return (record - start);
 }
 
-int pack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record,
-		     int len)
+int
+pack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 {
    int i;
    unsigned char *start = record;

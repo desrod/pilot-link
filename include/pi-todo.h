@@ -5,29 +5,36 @@
 #include "pi-appinfo.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct ToDo {
-  int indefinite;
-  struct tm due;
-  int priority;
-  int complete;
-  char * description;
-  char * note;
-};
+   struct ToDo
+   {
+      int indefinite;
+      struct tm due;
+      int priority;
+      int complete;
+      char *description;
+      char *note;
+   };
 
-struct ToDoAppInfo {
-  struct CategoryAppInfo category;
-  int dirty;
-  int sortByPriority;
-};
+   struct ToDoAppInfo
+   {
+      struct CategoryAppInfo category;
+      int dirty;
+      int sortByPriority;
+   };
 
-extern void free_ToDo PI_ARGS((struct ToDo *));
-extern int unpack_ToDo PI_ARGS((struct ToDo *, unsigned char * record, int len));
-extern int pack_ToDo PI_ARGS((struct ToDo *, unsigned char * record, int len));
-extern int unpack_ToDoAppInfo PI_ARGS((struct ToDoAppInfo *, unsigned char * record, int len));
-extern int pack_ToDoAppInfo PI_ARGS((struct ToDoAppInfo *, unsigned char * record, int len));
+   extern void free_ToDo PI_ARGS((struct ToDo *));
+   extern int unpack_ToDo
+      PI_ARGS((struct ToDo *, unsigned char *record, int len));
+   extern int pack_ToDo
+      PI_ARGS((struct ToDo *, unsigned char *record, int len));
+   extern int unpack_ToDoAppInfo
+      PI_ARGS((struct ToDoAppInfo *, unsigned char *record, int len));
+   extern int pack_ToDoAppInfo
+      PI_ARGS((struct ToDoAppInfo *, unsigned char *record, int len));
 
 #ifdef __cplusplus
 }
@@ -36,4 +43,4 @@ extern int pack_ToDoAppInfo PI_ARGS((struct ToDoAppInfo *, unsigned char * recor
 
 #endif /*__cplusplus*/
 
-#endif /* _PILOT_TODO_H_ */
+#endif				/* _PILOT_TODO_H_ */

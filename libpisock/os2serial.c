@@ -1,14 +1,29 @@
-/* os2serial.c: tty line interface code for Pilot comms under OS/2
+/*
+ * os2serial.c: tty line interface code for Pilot comms under OS/2
  *
  * Copyright (c) 1996, 1997, D. Jeff Dionne & Kenneth Albanowski.
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
 #include <io.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
@@ -35,8 +50,8 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 static int so_write(struct pi_socket *ps);
 static int so_read(struct pi_socket *ps, int timeout);
 
-int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr,
-		   int addrlen)
+int
+pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
    int rc;
    HFILE fd;
@@ -48,7 +63,6 @@ int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr,
       tty = getenv("PILOTPORT");
    if (!tty)
       tty = "<Null>";
-
 
    /* open the device */
    rc = DosOpen(tty,		/* the device */
@@ -121,13 +135,14 @@ int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr,
  * this seems like a good place to put this, as it is only used here in
  * so_changebaud(), MJJ.
  */
-struct STR_EXTSETBAUDRATE {
+struct STR_EXTSETBAUDRATE
+{
    ULONG baudrate;
    UCHAR fraction;
 };
 
-
-static int so_changebaud(struct pi_socket *ps)
+static int
+so_changebaud(struct pi_socket *ps)
 {
    int param_length;
    int rc;
@@ -163,7 +178,6 @@ static int so_changebaud(struct pi_socket *ps)
 		       NULL);	/* length of data returned */
    }
 
-
    if (rc) {
       switch (rc) {
       case 1:			/* ERROR_INVALID_FUNCTION */
@@ -190,7 +204,8 @@ static int so_changebaud(struct pi_socket *ps)
    return (0);
 }
 
-static int so_close(struct pi_socket *ps)
+static int
+so_close(struct pi_socket *ps)
 {
 #ifndef NO_SERIAL_TRACE
    if (ps->debugfd)
@@ -201,23 +216,23 @@ static int so_close(struct pi_socket *ps)
    return (0);
 }
 
-
 /* 
  * values for read_timeout and write_timeout 
  * 0           = infinite timeout
  * 1 to 65535  = timeout in seconds
  * -1          = dont change timeout
  */
-static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
-				 int write_timeout)
+static int
+pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
+		      int write_timeout)
 {
    int param_length, ret_len;
    int rc;
    int newtimeout;
    DCBINFO devinfo;
 
-   if ((ps->os2_read_timeout == read_timeout || read_timeout == -1) &&
-       (ps->os2_write_timeout == write_timeout || write_timeout == -1))
+   if ((ps->os2_read_timeout == read_timeout || read_timeout == -1)
+       && (ps->os2_write_timeout == write_timeout || write_timeout == -1))
       return (0);
 
    ret_len = sizeof(DCBINFO);
@@ -236,7 +251,8 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
    if (read_timeout != -1) {
       if (read_timeout == 0) {
 	 devinfo.usReadTimeout = 65535;
-      } else {
+      }
+      else {
 	 newtimeout = read_timeout - 0.1;
 	 if (newtimeout > 65535)
 	    newtimeout = 65535;
@@ -246,7 +262,8 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
    if (write_timeout == -1) {
       if (write_timeout == 0) {
 	 devinfo.fbTimeout |= 0x01;
-      } else {
+      }
+      else {
 	 devinfo.fbTimeout &= 0xFE;
 	 newtimeout = write_timeout;
 	 if (newtimeout > 65535)
@@ -264,8 +281,6 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 		    NULL,	/* data to be recieved */
 		    0,		/* length of data */
 		    NULL);	/* length of data returned */
-
-
 
  error:
    if (rc) {
@@ -296,7 +311,8 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
    return (0);
 }
 
-static int so_write(struct pi_socket *ps)
+static int
+so_write(struct pi_socket *ps)
 {
    struct pi_skb *skb;
    int nwrote, len;
@@ -317,8 +333,8 @@ static int so_write(struct pi_socket *ps)
       while (len < skb->len) {
 	 nwrote = 0;
 	 rc =
-	     DosWrite(ps->mac->fd, skb->data, skb->len,
-		      (unsigned long *) &nwrote);
+	    DosWrite(ps->mac->fd, skb->data, skb->len,
+		     (unsigned long *) &nwrote);
 	 if (nwrote <= 0)
 	    break;		/* transmission failure */
 	 len += nwrote;
@@ -340,7 +356,8 @@ static int so_write(struct pi_socket *ps)
    return 0;
 }
 
-static int so_read(struct pi_socket *ps, int timeout)
+static int
+so_read(struct pi_socket *ps, int timeout)
 {
    int r;
    unsigned char *buf;
@@ -369,8 +386,7 @@ static int so_read(struct pi_socket *ps, int timeout)
 
       while (ps->mac->expect) {
 	 rc =
-	     DosRead(ps->mac->fd, buf, ps->mac->expect,
-		     (unsigned long *) &r);
+	    DosRead(ps->mac->fd, buf, ps->mac->expect, (unsigned long *) &r);
 	 if (rc) {
 	    /* otherwise throw out any current packet and return */
 #ifdef DEBUG

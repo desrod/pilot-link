@@ -3,11 +3,13 @@
 
 #define PILOT_LINK_VERSION 0
 #define PILOT_LINK_MAJOR 9
-#define PILOT_LINK_MINOR 4
+#define PILOT_LINK_MINOR 5
 
-/*  If releasing a version without a patch number, make sure
+/*  
+ * If releasing a version without a patch number, make sure
  *  that this is *NOT* defined.
  */
-/*#define PILOT_LINK_PATCH "something"*/
+
+#define PILOT_LINK_PATCH "-pre3"
 
 #endif /* _PILOT_VERSION_H_ */

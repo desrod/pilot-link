@@ -1,3 +1,26 @@
+/*
+ * sync.h: Header for generic synchronization algorithm
+ *
+ * Copyright (c) 2000, Helix Code Inc.
+ *
+ * Author: JP Rosevear <jpr@helixcode.com> 
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
 #ifndef _PILOT_SYNC_H_
 #define _PILOT_SYNC_H_
 
@@ -5,81 +28,65 @@
 extern "C" {
 #endif
 
-enum { RecordNothing , RecordNew, RecordDeleted, RecordModified, RecordPending };
+#include "pi-macros.h"
 
-struct PilotRecord {
-	recordid_t ID;
-	int attr;
-	int archived;
-	int secret;
-	int length;
-	int category;
-	unsigned char * record;
+typedef struct _SyncHandler SyncHandler;
+typedef struct _DesktopRecord DesktopRecord;
+typedef struct _PilotRecord PilotRecord;
+	
+struct _DesktopRecord {
+	int recID;
+	int catID;
+	int flags;
 };
 
-struct SyncAbs;
-struct LocalRecord;
-
-typedef struct SyncAbs SyncAbs;
-typedef struct LocalRecord LocalRecord;
-typedef struct PilotRecord PilotRecord;
-
-/* This is a bit complex: we are setting up the list of structure members
-   needed to implement synchronization. These are defined outside of a 
-   structure definition, so they can be pasted into multiple definitions,
-   with the result of two structures sharing (at least in part) the same
-   layout. It's very likely that this approach is less portable then using
-   void*'s, but its less messy to read. */
-
-#define StandardLocalRecord \
-	int attr; \
-	int archived; \
-	int secret
-
-#define StandardSyncAbs \
-	int (*MatchRecord)(SyncAbs*, LocalRecord**, PilotRecord*); \
-	int (*FreeMatch)(SyncAbs*, LocalRecord**); \
-	int (*ArchiveLocal)(SyncAbs*, LocalRecord*); \
-	int (*ArchiveRemote)(SyncAbs*,LocalRecord*,PilotRecord*); \
-	int (*StoreRemote)(SyncAbs*,PilotRecord*); \
-	int (*ClearStatusArchiveLocal)(SyncAbs*,LocalRecord*); \
-	int (*Iterate)(SyncAbs*,LocalRecord**); \
-	int (*IterateSpecific)(SyncAbs*,LocalRecord**, int flag, int archived); \
-	int (*Purge)(SyncAbs*); \
-	int (*SetStatus)(SyncAbs*,LocalRecord*,int status); \
-	int (*SetArchived)(SyncAbs*,LocalRecord*, int); \
-	unsigned long (*GetPilotID)(SyncAbs*,LocalRecord*); \
-	int (*SetPilotID)(SyncAbs*,LocalRecord*,unsigned long); \
-	int (*Compare)(SyncAbs*,LocalRecord*,PilotRecord*); \
-	int (*CompareBackup)(SyncAbs*,LocalRecord*,PilotRecord*); \
-	int (*FreeTransmit)(SyncAbs*,LocalRecord*,PilotRecord*); \
-	int (*DeleteAll)(SyncAbs*); \
-	PilotRecord * (*Transmit)(SyncAbs*,LocalRecord*)
-
-#ifdef Abstract_sync
-
-/* Only lib/sync should define Abstract_sync. All other code must
-   define their own LocalRecord and SyncAbs structures. */
-
-struct LocalRecord {
-        StandardLocalRecord;
+struct _PilotRecord {
+	recordid_t recID;
+	int catID;
+	int flags;
+	void *buffer;
+	int len;
 };
 
-struct SyncAbs {
-        StandardSyncAbs;
+struct _SyncHandler {
+	int sd;
+	char *name;
+	void *data;
+
+	int (*Pre) (SyncHandler *, int dbhandle, int *slow);
+	int (*Post) (SyncHandler *, int dbhandle);
+	
+	int (*SetPilotID) (SyncHandler *, DesktopRecord *, recordid_t);
+
+	int (*ForEach) (SyncHandler *, DesktopRecord **);
+	int (*ForEachModified) (SyncHandler *, DesktopRecord **);
+	int (*Compare) (SyncHandler *, PilotRecord *, DesktopRecord *);
+	
+	int (*AddRecord) (SyncHandler *, PilotRecord *);
+	int (*AddArchiveRecord) (SyncHandler *, PilotRecord *);
+
+	int (*ReplaceRecord) (SyncHandler *, DesktopRecord *, PilotRecord *);
+
+	int (*DeleteRecord) (SyncHandler *, DesktopRecord *);
+	int (*DeleteArchiveRecord) (SyncHandler *, DesktopRecord *);
+
+	int (*Match) (SyncHandler *, PilotRecord *, DesktopRecord **);
+	int (*FreeMatch) (SyncHandler *, DesktopRecord *);	
+	
+	int (*Prepare) (SyncHandler *, DesktopRecord *, PilotRecord **);
+	int (*FreePrepare) (SyncHandler *, PilotRecord *);
 };
 
-#endif
+PilotRecord *sync_NewPilotRecord (int buf_size);
+DesktopRecord *sync_NewDesktopRecord (void);	
 
-/* Erase all local records, and copy all remote records to local */
-extern int CopyFromRemote(int handle, int db, struct SyncAbs * s);
-/* Erase all remote records, and copy all local records to remote */
-extern int CopyToRemote(int handle, int db, struct SyncAbs * s);
-/* Synchronize local and remote using flags on remote */
-extern int FastSync(int handle, int db, struct SyncAbs * s );
-/* Synchronize by pulling all data off remote, and comparing to backup
-   on local if flags show no change */
-extern int SlowSync(int handle, int db, struct SyncAbs * s );
+int sync_CopyToPilot (SyncHandler *sh);
+int sync_CopyFromPilot (SyncHandler *sh);
+
+int sync_MergeToPilot (SyncHandler *sh);
+int sync_MergeFromPilot (SyncHandler *sh);
+
+int sync_Synchronize (SyncHandler *sh);
 
 #ifdef __cplusplus
 }

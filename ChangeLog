@@ -1,3 +1,159 @@
+2000-10-18  David A. Desrosiers <hacker@linuxcare.com>
+
+        * s/port = argv[1]/device = argv[1]/
+
+	* Yet more string fixes, trying to get these
+          things to act and look similar. 
+
+	* Took out the \007 dreck. Bad linux, bad..
+
+	* dlpsh.c: Fixed a non-ANSI_C compliant %G 
+          macro in the time_fn function, replaced with
+          a hack with 20%g. Throws a warning about 2
+          digit century, but the '20' sneaked in front
+          fixes that (uuugly!)
+
+	* s/socket_descriptor/sd/
+	
+	* Commented out the OS2 declarations until we
+	  can *PROPERLY* test for $(HOST)
+
+	* Small buglet in PILOT_LINK_PATCH fixed
+
+	* Added a -pre3 declaration to pi-version.h
+
+	* Simple deprecation warning in pilot-mail hinting
+	  at it's impending removal. 
+
+	* More ANSI-C'ification (gotta love -pedantic)
+		
+2000-10-14  David A. Desrosiers <hacker@linuxcare.com>
+
+	* dlpsh.c: Added a 'time' option to sync unix 
+          desktop time and date to Palm. 
+
+	* Makefile.in: Added install-strip stanza
+
+	* parsedate.y: Added <stdlib.h> to stop bison
+          errors it was throwing related to free()
+
+	* Added some typedefs to include/pi-mail.h 
+
+	* Updated TODO, README
+
+	* Cleaned up the pi-header.h mess. 
+
+	* More indenting cleanups. 
+
+	* Java Makefile.in fix for the ln syntax and
+          a bad doConstants path. 
+
+2000-10-11  JP Rosevear  <jpr@helixcode.com>
+
+        * libsock/sync.c: Unconditionally close the database after use.
+        The slow/fast flag is now passed back via the Pre callback
+        (sync_record): Reflect the fact that the dirty and deleted pilot
+        record flags are not mutually exclusive.
+        (store_record_on_palm): When storing, 0 the flags.
+
+2000-10-10  JP Rosevear  <jpr@helixcode.com>
+
+        * libsock/sync.c (sync_MergeToPilot_slow): Only try and obtain a pilot
+        record if there record id set.
+
+2000-10-08  David A. Desrosiers <hacker@linuxcare.com>
+
+	* dlpsh.c: Added a mem function to determine 
+          the amount of ROM/RAM on the device, and 
+          ROM/RAM free. Only works w/Card 0
+
+	* Added all appropriate FSF/GPL pointers in the
+          headers of the files which were missing them.
+
+        * confiugre: Fixed BSD nm test
+
+        * libsock/sync.c (sync_record): Use ReplaceRecord callback.
+        There can be a subtle difference between add/delete and replace.
+        (sync_MergeToPilot_slow): Calculate flags for records during
+        a slow sync
+        (sync_MergeFromPilot_slow): ditto
+
+        * include/pi-sync.h: Add ReplaceRecord callback
+
+2000-10-08  JP Rosevear  <jpr@helixcode.com>
+
+        * libsock/sync.c (sync_MergeToPilot_fast): Only try and obtain a pilot
+        record if there record id set.
+
+
+2000-10-08  JP Rosevear  <jpr@helixcode.com>
+
+	* .cvsignore, libsock/.cvsignore: Shush
+	
+2000-10-08  JP Rosevear  <jpr@helixcode.com>
+
+	* include/pi-sync.h: Reorder SetPilotID args
+
+	* libsock/sync.c (sync_CopyFromPilot): Break out of loop
+	if returned record is null (we're done)
+	(sync_CopyToPilot): ditto
+	(store_record_on_palm): Reorder SetPilotID args
+
+2000-10-08  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_CopyToPilot): Pass the sync
+	handler to close_db like we're supposed to
+	(sync_CopyFromPilot): ditto
+	(sync_MergeFromPilot): ditto
+	(sync_MergeToPilot): ditto
+	(sync_CopyFromPilot): Make sure the pre call occurs before the for
+	each call
+
+2000-10-08  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_MergeFromPilot_slow): Only free
+	the match if one was actually found
+	(sync_MergeFromPilot_fast): ditto
+	(sync_MergeToPilot_fast): Break out of the loop if
+	the returned record is null (we're done)
+	(sync_MergeToPilot_slow): ditto
+
+2000-10-06  JP Rosevear  <jpr@helixcode.com>
+
+	* include/pi-sync.h: Some renaming, add pre and post
+	sync callback struct members.
+
+	* libsock/sync.c: Some renaming.  Add pre and post sync
+	callbacks.
+	(close_db): Don't just close the db, clean it up and 
+	reset the sync flags.
+
+2000-10-04  JP Rosevear  <jpr@helixcode.com>
+
+	* s/PalmRecord/PilotRecord/
+	
+	* s/PalmUser/PilotUser/
+
+2000-09-28  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_Synchronize): Do a full blown sync
+	(sync_MergeToRemote): Sync desktop records to pilot.
+	(sync_MergeToRemote_slow): Implement slow sync of above
+	(sync_MergeToRemote_fast): Implement fast sync of above
+	(sync_MergeFromRemote): Sync pilot records to desktop
+	(sync_MergeFromRemote_slow): Implement slow sync of above
+	(sync_MergeFromRemote_fast): Implement fast sync of above
+	(sync_CopyFromRemote): Copy pilot records to desktop
+	(sync_CopyToRemote): Copy desktop records to pilot
+	(sync_record): Sync a desktop and pilot record
+	(store_record_on_palm): Utility routine
+
+	* include/pi-sync.h: Rewrite of header for generic sync algorithm
+
+	* include/pi-macros.h: Include <time.h> for struct tm
+
+	* include/pi-dlp.h: Make the DLP_BUF_SIZE macro available
+
 May 10, 1999    Tilo Christ             0.9.3
 
         Fixed Win32 support.

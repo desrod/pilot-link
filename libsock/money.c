@@ -1,21 +1,35 @@
-/* money.c:  Translate Pilot MoneyManager data formats
+/*
+ * money.c:  Translate Pilot MoneyManager data formats
  *
  * Copyright (c) 1998, Rui Oliveira
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-money.h"
 
-int unpack_Transaction(struct Transaction *a,
-		       unsigned char *buffer, int len)
+int
+unpack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 {
 
    unsigned char *p;
@@ -73,7 +87,8 @@ int unpack_Transaction(struct Transaction *a,
    return (p - buffer);
 }
 
-int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
+int
+pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 {
    unsigned char *p;
 
@@ -137,9 +152,8 @@ int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
    return (p - buffer);
 }
 
-
-int unpack_MoneyAppInfo(struct MoneyAppInfo *a,
-			unsigned char *buffer, int len)
+int
+unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 {
    int i, j;
    unsigned char *p;
@@ -167,8 +181,8 @@ int unpack_MoneyAppInfo(struct MoneyAppInfo *a,
    return i + 603;
 }
 
-int pack_MoneyAppInfo(struct MoneyAppInfo *a,
-		      unsigned char *buffer, int len)
+int
+pack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 {
    int i, j;
    unsigned char *p;

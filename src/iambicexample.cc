@@ -57,8 +57,8 @@ static void generateHeader(const int idx)
 {
      cout << "%!PS-Adobe-1.0" << endl
 	  << "%%DocumentFonts: Helvetica" << endl
-	  << "%%Title: XPilot Expenditures Report" << endl
-	  << "%%Creator: XPilot 1.0" << endl
+	  << "%%Title: XPalm Expenditures Report" << endl
+	  << "%%Creator: XPalm 1.0" << endl
 	  << "%%CreationDate: Fri Feb 28 13:48:43 1997" << endl
 	  << "%%Pages: 1" << endl
 	  << "%%EndComments" << endl

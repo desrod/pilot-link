@@ -1,21 +1,36 @@
-/* appinfo.c:  Translate Pilot category info
+/*
+ * appinfo.c:  Translate Pilot category info
  *
  * Copyright (c) 1996, 1997, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-appinfo.h"
 
-int unpack_CategoryAppInfo(struct CategoryAppInfo *ai,
-			   unsigned char *record, int len)
+int
+unpack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
+		       int len)
 {
    int i;
    int r;
@@ -41,8 +56,9 @@ int unpack_CategoryAppInfo(struct CategoryAppInfo *ai,
    return 2 + 16 * 16 + 16 + 4;
 }
 
-int pack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
-			 int len)
+int
+pack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
+		     int len)
 {
    int i;
    int r;

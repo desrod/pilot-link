@@ -50,7 +50,7 @@ void compare(void *fromPilot, int pilotSize, void *pack1, int pack1size, void *p
 
      if (pack1size != pilotSize) {
 	  cerr << "My pack routine gave a size of " << pack1size << endl;
-	  cerr << "Pilot's packed buffer had size " << pilotSize << endl;
+	  cerr << "Palm's packed buffer had size " << pilotSize << endl;
 	  return;
      }
 

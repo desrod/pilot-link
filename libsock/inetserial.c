@@ -1,8 +1,22 @@
-/* inetserial.c: Experimental interface layer to pi-port via TCP/IP
+/*
+ * inetserial.c: Experimental interface layer to pi-port via TCP/IP
  *
  * Copyright (c) 1996, 1997,  D. Jeff Dionne & Kenneth Albanowski.
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 #ifdef WIN32
@@ -17,6 +31,7 @@
 #include <netdb.h>
 #endif
 #include <stdio.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
@@ -34,8 +49,8 @@ static int n_close(struct pi_socket *ps);
 static int n_write(struct pi_socket *ps);
 static int n_read(struct pi_socket *ps, int timeout);
 
-int pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr,
-		       int addrlen)
+int
+pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
    struct sockaddr_in serv_addr;
 
@@ -43,7 +58,8 @@ int pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr,
 
    if (addr->sa_family == AF_INET) {
       memcpy(&serv_addr, addr, addrlen);
-   } else {
+   }
+   else {
       struct pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 
       memset(&serv_addr, 0, sizeof(serv_addr));
@@ -71,10 +87,10 @@ int pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr,
       if (ps->mac->fd != orig)
 	 close(orig);
    }
+
 #ifndef NO_SERIAL_TRACE
    if (ps->debuglog) {
-      ps->debugfd =
-	  open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND, 0666);
+      ps->debugfd = open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND, 0666);
       /* This sequence is magic used by my trace analyzer - kja */
       write(ps->debugfd, "\0\1\0\0\0\0\0\0\0\0", 10);
    }
@@ -88,7 +104,8 @@ int pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr,
    return ps->mac->fd;
 }
 
-static int n_changebaud(struct pi_socket *ps)
+static int
+n_changebaud(struct pi_socket *ps)
 {
    char buffer[20];
 
@@ -101,7 +118,8 @@ static int n_changebaud(struct pi_socket *ps)
    return 0;
 }
 
-static int n_close(struct pi_socket *ps)
+static int
+n_close(struct pi_socket *ps)
 {
    int result;
    char buffer[4];
@@ -122,7 +140,8 @@ static int n_close(struct pi_socket *ps)
    return result;
 }
 
-static int n_write(struct pi_socket *ps)
+static int
+n_write(struct pi_socket *ps)
 {
    struct pi_skb *skb;
    int nwrote, len;
@@ -168,7 +187,8 @@ static int n_write(struct pi_socket *ps)
    return 0;
 }
 
-static int n_read(struct pi_socket *ps, int timeout)
+static int
+n_read(struct pi_socket *ps, int timeout)
 {
    int r;
    unsigned char *buf;

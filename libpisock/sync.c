@@ -1,197 +1,534 @@
-/* sync.c:  Pilot synchronization logic
+/*
+ * sync.c:  Implement generic synchronization algorithm
  *
- * Code written by Kenneth Albanowski, based on work apparently
- * Copyright (C) 1996, U.S. Robotics Inc. (Possibly Copyright
- * Palm Computing, Inc., or Copyright The Windward Group.)
+ * Copyright (c) 2000, Helix Code Inc.
  *
- * This file contains no information directly copied from the PC Conduit SDK,
- * but paraphrases many of the algorithms used in that source.
+ * Author: JP Rosevear <jpr@helixcode.com> 
  *
- */
-
-/* Note: This file currently does nothing useful, and even if completed
- * won't give you a full HotSync manager. 
- * 
- * Mostly I am including this as an exploration of the abstractions
- * needed to portably sync local databases.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * Revised note: most of the algorithms needed are here, except for ones
- * that checks the Pilot to decided whether slow or fast sync is needed, and
- * to deal with category synchronization.
- * Always use slow sync for now (and be sure to modify the Pilot's 
- * PCID afterwards.)
- *  
- * Revised revision: all sections of code directly derived (albeit in a
- * paraphased manner) from code in the Palm Conduit SDK, _which are not
- * blatently obvious and irreducible_ have been temporarily removed until
- * word is obtained from Palm that the code may be publically released.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * The issue that needs to be resolved is whether Palm Computing Inc. will
- * allow the public distribution of source code derived from source code in
- * their Pilot PC Conduit SDK. The licensing information that I recieved
- * with the PC and Mac SDKs is not sufficient to resolve this question.
- *
- * In keeping with the sprit of the EU practice for reverse engineering, the
- * interface that I have designed to plug into the Palm algorithms has been
- * retained.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
 
-#include <stdio.h>
-#include "pi-source.h"
-#include "pi-socket.h"
+#include <stdlib.h>
+
 #include "pi-dlp.h"
-
-#define Abstract_sync
 #include "pi-sync.h"
 
-/* Given a remote (Pilot) record, stored in a PilotRecord structure, determine what,
-   if anything, should be done with it, by looking at its flags, and possibly looking
-   it up in the local database. */
-int SyncRecord(int handle, int db, PilotRecord * Remote, struct SyncAbs *s,
-	       int slowsync)
+#define PErrorCheck(r) if (r < 0) return r;
+#define ErrorCheck(r)  if (r != 0) return r; 
+
+PilotRecord *
+sync_NewPilotRecord (int buf_size)
 {
-   /* --- Paraphrased code derived from Palm;s Conduit SDK elided --- */
-   abort();			/* For lack of anything better to do */
-   return 0;
+	PilotRecord *precord;
+	
+	precord = (PilotRecord *) malloc (sizeof (PilotRecord));
+	memset (precord, 0, sizeof (PilotRecord));
+	
+	precord->buffer = malloc (buf_size);
+	
+	return precord;
 }
 
-/* Iterate over local records, copying records to remote, or deleting, or
-    archiving, as flags dictate. This is the last step in any sync. */
-void MergeToRemote(int handle, int db, struct SyncAbs *s)
+DesktopRecord *
+sync_NewDesktopRecord (void)
 {
-   /* --- Paraphrased code derived from Palm's Conduit SDK elided --- */
-   abort();			/* For lack of anything better to do */
-   return;
+	DesktopRecord *drecord;
+	
+	drecord = (DesktopRecord *) malloc (sizeof (DesktopRecord));
+	memset (drecord, 0, sizeof (DesktopRecord));
+
+	return drecord;
 }
 
-/* Perform a "slow" sync. This requires that the local (PC) has
-   consistent, accurate, and sufficient modification flags. All
-   of the records on the remote (Pilot) are pulled in, and compared
-   for modifications */
-int SlowSync(int handle, int db, struct SyncAbs *s)
+static int
+delete_both (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord)
 {
-   int index = 0;
-   int retval = 0;
-   unsigned char buffer[0xffff];
-   PilotRecord p;
+	int result = 0;
+	
+	if (drecord != NULL) {
+		result = sh->DeleteRecord (sh, drecord);
+		ErrorCheck(result);
+	}
+	
+	
+	if (precord != NULL) {
+		result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+		ErrorCheck(result);
+	}
 
-   p.record = buffer;
-
-   /* --- Paraphrased code derived from Palm's Conduit SDK elided --- */
-   index = 0;
-
-   while (dlp_ReadRecordByIndex
-	  (handle, db, index, p.record, &p.ID, &p.length, &p.attr,
-	   &p.category) >= 0) {
-      p.secret = p.attr & dlpRecAttrSecret;
-      p.archived = p.attr & dlpRecAttrArchived;
-      if (p.attr & dlpRecAttrDeleted)
-	 p.attr = RecordDeleted;
-      else if (p.attr & dlpRecAttrDirty)
-	 p.attr = RecordModified;
-      else
-	 p.attr = RecordNothing;
-      SyncRecord(handle, db, &p, s, 1);
-      index++;
-   }
-
-   MergeToRemote(handle, db, s);
-
-   return retval;
+	return result;
 }
 
-/* Perform a "fast" sync. This requires that both the remote (Pilot) and
-   local (PC) have consistent, accurate, and sufficient modification flags.
-   If this is not true, a slow sync should be used */
-int FastSync(int handle, int db, struct SyncAbs *s)
+static int
+archive_and_delete (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord)
 {
-   int index = 0;
-   int retval = 0;
-   unsigned char buffer[0xffff];
-   PilotRecord p;
+	int result = 0;
+	
+	result = sh->AddArchiveRecord (sh, precord);
+	ErrorCheck(result);
 
-   p.record = buffer;
+	result = delete_both (sh, dbhandle, drecord, precord);
 
-   while (dlp_ReadNextModifiedRec
-	  (handle, db, p.record, &p.ID, &index, &p.length, &p.attr,
-	   &p.category) >= 0) {
-      printf("Got a modified record\n");
-      p.secret = p.attr & dlpRecAttrSecret;
-      p.archived = p.attr & dlpRecAttrArchived;
-      if (p.attr & dlpRecAttrDeleted)
-	 p.attr = RecordDeleted;
-      else if (p.attr & dlpRecAttrDirty)
-	 p.attr = RecordModified;
-      else
-	 p.attr = RecordNothing;
-      SyncRecord(handle, db, &p, s, 0);
-   }
-
-   MergeToRemote(handle, db, s);
-
-   return retval;
+	return result;
 }
 
-/* Overwrite remote (Pilot) with local (PC) records */
-int CopyToRemote(int handle, int db, struct SyncAbs *s)
+static int
+store_record_on_palm (SyncHandler *sh, int dbhandle, DesktopRecord *drecord)
 {
-   LocalRecord *Local = 0;
-   int retval = 0;
+	PilotRecord *precord;
+	recordid_t id;
+	int result = 0;
+	
+	result = sh->Prepare (sh, drecord, &precord);
+	ErrorCheck(result);
 
-   dlp_DeleteRecord(handle, db, 1, 0);
-   while (s->Iterate(s, &Local) && Local) {
-      if (Local->archived) {
-	 retval = s->ClearStatusArchiveLocal(s, Local);
-	 s->SetStatus(s, Local, RecordDeleted);
-      } else if (Local->attr != RecordDeleted) {
-	 PilotRecord *p = s->Transmit(s, Local);
+	result = dlp_WriteRecord (sh->sd, dbhandle, 0,
+				  precord->recID, precord->catID, 
+				  precord->buffer, precord->len, &id);
+	PErrorCheck(result);
 
-	 s->SetStatus(s, Local, RecordNothing);
-	 p->attr = 0;
-	 if (p->secret)
-	    p->attr |= dlpRecAttrSecret;
-	 retval = (dlp_WriteRecord(handle, db, p->attr, p->ID,
-				   p->category, p->record, p->length,
-				   0) < 0);
-	 s->FreeTransmit(s, Local, p);
-      }
-   }
-   s->Purge(s);
-   return retval;
+	result = sh->FreePrepare (sh, precord);
+	ErrorCheck(result);
+
+	result = sh->SetPilotID (sh, drecord, id);
+
+	return result;
 }
 
-/* Overwrite local (PC) with remote (Pilot) records. */
-int CopyFromRemote(int handle, int db, struct SyncAbs *s)
+static int
+close_db (SyncHandler *sh, int dbhandle)
 {
-   unsigned char buffer[0xffff];
-   int index = 0;
-   PilotRecord p;
+	dlp_CleanUpDatabase (sh->sd, dbhandle);
+	
+	dlp_ResetSyncFlags (sh->sd, dbhandle);
+	dlp_CloseDB (sh->sd, dbhandle);
 
-   p.record = buffer;
-   s->DeleteAll(s);
-   while (dlp_ReadRecordByIndex
-	  (handle, db, index, p.record, &p.ID, &p.length, &p.attr,
-	   &p.category) >= 0) {
-      p.secret = p.attr & dlpRecAttrSecret;
-      p.archived = p.attr & dlpRecAttrArchived;
-      if (p.attr & dlpRecAttrDeleted)
-	 p.attr = RecordDeleted;
-      else if (p.attr & dlpRecAttrDirty)
-	 p.attr = RecordModified;
-      else
-	 p.attr = RecordNothing;
-      if (p.archived) {
-	 p.attr = 0;
-	 p.archived = 0;
-	 s->ArchiveRemote(s, 0, &p);
-      } else if (p.attr != RecordDeleted) {
-	 p.attr = 0;
-	 p.archived = 0;
-	 s->StoreRemote(s, &p);
-      }
-      index++;
-   }
-   dlp_CleanUpDatabase(handle, db);
-   return 0;
+	return 0;
 }
+
+static int
+sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord)
+{
+	int parch = 0, pdel = 0, pchange = 0;
+	int darch = 0, ddel = 0, dchange = 0;
+
+	/* The flags are calculated like this because the deleted and dirty
+	   pilot flags are not mutually exclusive */
+	if (precord) {
+		parch = precord->flags & dlpRecAttrArchived;
+		pdel = precord->flags & dlpRecAttrDeleted;
+		pchange = (precord->flags & dlpRecAttrDirty) && (!pdel);
+	}
+	
+	if (drecord) {
+		darch = drecord->flags & dlpRecAttrArchived;
+		ddel = drecord->flags & dlpRecAttrDeleted;
+		dchange = (drecord->flags & dlpRecAttrDirty) && (!ddel);
+	}
+	
+	if (pchange && !parch && drecord == NULL) {
+		sh->AddRecord (sh, precord);
+
+	} else if (precord == NULL && dchange && !darch) {
+		store_record_on_palm (sh, dbhandle, drecord);
+		
+	} else if (parch && ddel) {
+		archive_and_delete (sh, dbhandle, drecord, precord);
+		
+	} else if (parch && !darch && !dchange) {
+		archive_and_delete (sh, dbhandle, drecord, precord);
+		
+	} else if (parch && drecord == NULL) {
+		archive_and_delete (sh, dbhandle, NULL, precord);
+		
+	} else if (parch && pchange && !darch && dchange) {
+		int comp;
+		
+		comp = sh->Compare (sh, precord, drecord);
+		if (comp == 0) {
+			archive_and_delete (sh, dbhandle, drecord, precord);
+		} else {
+			dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+			store_record_on_palm (sh, dbhandle, drecord);				
+			sh->AddRecord (sh, precord);
+		}
+		
+	} else if (parch && !pchange && !darch && dchange) {
+		dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+		store_record_on_palm (sh, dbhandle, drecord);
+		
+	} else if (pchange && darch && dchange) {
+		int comp;
+		
+		comp = sh->Compare (sh, precord, drecord);
+		if (comp == 0) {
+			archive_and_delete (sh, dbhandle, drecord, precord);
+		} else {
+			sh->DeleteArchiveRecord (sh, drecord);
+			sh->AddRecord (sh, precord);
+		}
+		
+	} else if (pchange && darch && !dchange) {
+		sh->DeleteArchiveRecord (sh, drecord);
+		sh->AddRecord (sh, precord);
+			
+	} else if (pchange && dchange) {
+		int comp;
+		
+		comp = sh->Compare (sh, precord, drecord);
+		if (comp != 0) {
+			sh->AddRecord (sh, precord);
+			drecord->recID = 0;
+ 			store_record_on_palm (sh, dbhandle, drecord);
+		}
+		
+	} else if (pchange && ddel) {
+		sh->ReplaceRecord (sh, drecord, precord);
+		
+	} else if (pchange && !dchange) {
+		sh->ReplaceRecord (sh, drecord, precord);
+		
+	} else if (pdel && dchange) {
+		store_record_on_palm (sh, dbhandle, drecord);
+		
+	} else if (pdel && !dchange) {
+		delete_both (sh, dbhandle, drecord, precord);
+		
+	} else if (!pchange && darch) {
+		dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+		
+	} else if (!pchange && dchange) {
+		dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+		store_record_on_palm (sh, dbhandle, drecord);
+		
+	} else if (!pchange && ddel) {
+		delete_both (sh, dbhandle, drecord, precord);
+	}
+
+	return 0;
+}
+
+int
+sync_CopyToPilot (SyncHandler *sh)
+{
+	int dbhandle;
+	DesktopRecord *drecord = NULL;
+	int slow = 0;
+	int result = 0;
+	
+	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	PErrorCheck(result);
+
+	result = sh->Pre (sh, dbhandle, &slow);
+	ErrorCheck(result);
+	
+	result = dlp_DeleteRecord (sh->sd, dbhandle, 1, 0);
+	PErrorCheck(result);
+	
+	while (sh->ForEach (sh, &drecord) == 0 && drecord) {
+		result = store_record_on_palm (sh, dbhandle, drecord);
+		if (result != 0) break;
+	}
+
+	result = sh->Post (sh, dbhandle);
+
+	close_db (sh, dbhandle);
+
+	return result;
+}
+
+int
+sync_CopyFromPilot (SyncHandler *sh)
+{
+	int dbhandle;
+	int index;
+	DesktopRecord *drecord = NULL;
+	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+	int slow = 0;
+	int result = 0;
+
+	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	PErrorCheck(result);
+
+	result = sh->Pre (sh, dbhandle, &slow);
+	ErrorCheck(result);
+	
+	while (sh->ForEach (sh, &drecord) == 0 && drecord) {
+		result = sh->DeleteRecord (sh, drecord);
+		ErrorCheck(result);
+	}
+	
+	index = 0;
+	while (dlp_ReadRecordByIndex (sh->sd, dbhandle, index, precord->buffer, 
+				      &precord->recID, &precord->len, 
+				      &precord->flags, &precord->catID) > 0) {
+		result = sh->AddRecord (sh, precord);
+		ErrorCheck(result);
+		
+		index++;
+	}
+
+	result = sh->Post (sh, dbhandle);
+
+	close_db (sh, dbhandle);
+
+	return result;
+}
+
+static int
+sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle)
+{
+	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+	DesktopRecord *drecord = NULL;
+	int result = 0;
+	
+	while (dlp_ReadNextModifiedRec (sh->sd, dbhandle, precord->buffer,
+					&precord->recID, NULL, &precord->len,
+					&precord->flags, &precord->catID) >= 0) {
+		result = sh->Match (sh, precord, &drecord);
+		ErrorCheck(result);
+		
+		result = sync_record (sh, dbhandle, drecord, precord);
+		ErrorCheck(result);
+
+		if (drecord) {
+			result = sh->FreeMatch (sh, drecord);
+			ErrorCheck(result);
+		}
+	}
+
+	return result;
+}
+
+static int
+sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle)
+{
+	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+	DesktopRecord *drecord = NULL;
+	int index;
+	int parch, psecret;
+	int result = 0;
+
+	index = 0;
+	while (dlp_ReadRecordByIndex (sh->sd, dbhandle, index, precord->buffer, 
+				      &precord->recID, &precord->len, 
+				      &precord->flags, &precord->catID) > 0) {
+		result = sh->Match (sh, precord, &drecord);
+		ErrorCheck(result);
+
+		/* Since this is a slow sync, we must calculate the flags */
+		parch = precord->flags & dlpRecAttrArchived;
+		psecret = precord->flags & dlpRecAttrSecret;
+
+		precord->flags = 0;
+		if (drecord == NULL) {
+			precord->flags = precord->flags | dlpRecAttrDirty;
+		} else {
+			int comp;
+			
+			comp = sh->Compare (sh, precord, drecord);
+			if (comp != 0) {
+				precord->flags = precord->flags | dlpRecAttrDirty;
+			}
+		}
+		if (parch)
+			precord->flags = precord->flags | dlpRecAttrArchived;
+		if (psecret)
+			precord->flags = precord->flags | dlpRecAttrSecret;
+		
+		result = sync_record (sh, dbhandle, drecord, precord);
+		ErrorCheck(result);
+
+		if (drecord) {
+			result = sh->FreeMatch (sh, drecord);
+			ErrorCheck(result);
+		}
+		
+		index++;
+	}	
+
+	return result;
+}
+
+int
+sync_MergeFromPilot (SyncHandler *sh)
+{
+	int dbhandle;
+	int slow = 0;
+	int result = 0;
+	
+	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	PErrorCheck(result);
+
+	result = sh->Pre (sh, dbhandle, &slow);
+	ErrorCheck(result);
+	
+	if (!slow)
+		result = sync_MergeFromPilot_fast (sh, dbhandle);
+	else
+		result = sync_MergeFromPilot_slow (sh, dbhandle);
+	ErrorCheck(result);
+
+	result = sh->Post (sh, dbhandle);
+
+	close_db (sh, dbhandle);
+
+	return result;
+}
+
+static int
+sync_MergeToPilot_fast (SyncHandler *sh, int dbhandle)
+{
+	PilotRecord *precord = NULL;
+	DesktopRecord *drecord = NULL;
+	int result = 0;
+	
+	while (sh->ForEachModified (sh, &drecord) == 0 && drecord) {
+		if (drecord->recID != 0) {
+			precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+			result = dlp_ReadRecordById (sh->sd, dbhandle, 
+						     drecord->recID,
+						     precord->buffer, 
+						     NULL, &precord->len, 
+						     &precord->flags,
+						     &precord->catID);
+			PErrorCheck(result);
+		}
+		
+		result = sync_record (sh, dbhandle, drecord, precord);
+		ErrorCheck(result);
+
+		if (precord)
+			free (precord);
+		precord = NULL;
+	}
+	
+	return result;
+}
+
+static int
+sync_MergeToPilot_slow (SyncHandler *sh, int dbhandle)
+{
+	PilotRecord *precord = NULL;
+	DesktopRecord *drecord = NULL;
+	int darch, dsecret;
+	int result = 0;
+	
+	while (sh->ForEach (sh, &drecord) == 0 && drecord) {
+		if (drecord->recID != 0) {
+			precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+			result = dlp_ReadRecordById (sh->sd, dbhandle, 
+						     drecord->recID,
+						     precord->buffer, 
+						     NULL, &precord->len, 
+						     &precord->flags, 
+						     &precord->catID);
+			PErrorCheck(result);
+		}
+
+		/* Since this is a slow sync, we must calculate the flags */
+		darch = drecord->flags & dlpRecAttrArchived;
+		dsecret = drecord->flags & dlpRecAttrSecret;
+
+		drecord->flags = 0;
+		if (precord == NULL) {
+			drecord->flags = drecord->flags | dlpRecAttrDirty;
+		} else {
+			int comp;
+			
+			comp = sh->Compare (sh, precord, drecord);
+			if (comp != 0) {
+				drecord->flags = drecord->flags | dlpRecAttrDirty;
+			}
+		}
+		if (darch)
+			drecord->flags = drecord->flags | dlpRecAttrArchived;
+		if (dsecret)
+			drecord->flags = drecord->flags | dlpRecAttrSecret;
+		
+		result = sync_record (sh, dbhandle, drecord, precord);
+		ErrorCheck(result);
+
+		if (precord)
+			free (precord);
+		precord = NULL;
+	}
+
+	return result;
+}
+
+int
+sync_MergeToPilot (SyncHandler *sh)
+{
+	int dbhandle;
+	int slow = 0;
+	int result = 0;
+	
+	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	PErrorCheck(result);
+
+	result = sh->Pre (sh, dbhandle, &slow);
+	ErrorCheck(result);
+
+	if (!slow)
+		result = sync_MergeToPilot_fast (sh, dbhandle);
+	else
+		result = sync_MergeToPilot_slow (sh, dbhandle);
+	ErrorCheck(result);
+	
+	result = sh->Post (sh, dbhandle);
+
+	close_db (sh, dbhandle);
+
+	return result;
+}
+
+int
+sync_Synchronize (SyncHandler *sh)
+{
+	int dbhandle;
+	int slow = 0;
+	int result = 0;
+	
+	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	PErrorCheck(result);
+
+	result = sh->Pre (sh, dbhandle, &slow);
+	ErrorCheck(result);
+	
+	if (!slow) {
+		result = sync_MergeFromPilot_fast (sh, dbhandle);
+		ErrorCheck(result);
+		
+		result = sync_MergeToPilot_fast (sh, dbhandle);
+		ErrorCheck(result);
+	} else {
+		result = sync_MergeFromPilot_slow (sh, dbhandle);
+		ErrorCheck(result);
+		
+		result = sync_MergeToPilot_slow (sh, dbhandle);
+		ErrorCheck(result);
+	}
+	
+	result = sh->Post (sh, dbhandle);
+	
+	close_db (sh, dbhandle);
+
+	return result;
+}
+
+
+

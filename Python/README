@@ -95,7 +95,7 @@ Documentation (such as it is):
 
 	pdapilot.Listen(socket, backup):
 	
-	pdapilot.Accept(socket): Waits for incoming Pilot connection
+	pdapilot.Accept(socket): Waits for incoming Palm connection
 	
 		returns a new pdapilot.dlp object if a connection succeeds.
 	
@@ -143,9 +143,9 @@ Documentation (such as it is):
 	
 Methods of pdapilot.dlp:
 	
-	Close(status=0): Closes the Pilot connection
+	Close(status=0): Closes the Palm connection
 	
-		If status is non-zero, convey that status to the Pilot.
+		If status is non-zero, convey that status to the Palm.
 		Note that Close is automatic on destruction of a pdapilot.dlp
 		object.
 

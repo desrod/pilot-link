@@ -1,9 +1,22 @@
-/* dlp.c:  Pilot DLP protocol
+/*
+ * dlp.c:  Palm DLP protocol
  *
  * Copyright (c) 1996, 1997, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Library Public License V2.
- * See the file COPYING.LIB for details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 /*@+matchanyintegral@*/
@@ -15,6 +28,7 @@
 #endif
 
 #include <stdio.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
@@ -53,7 +67,8 @@ char *dlp_errorlist[] = {
    "Bad argument size"
 };
 
-char *dlp_strerror(int error)
+char *
+dlp_strerror(int error)
 {
    if (error < 0)
       error = -error;
@@ -63,8 +78,9 @@ char *dlp_strerror(int error)
       return dlp_errorlist[error];
 }
 
-const int dlp_trace = 1;
+int dlp_trace = 0;
 
+#ifndef NO_DLP_TRACE
 #define DLP_TRACE
 
 #define Trace(name) \
@@ -84,11 +100,12 @@ const int dlp_trace = 1;
   } else                 \
     if (dlp_trace)       \
       fprintf(stderr, "Result: No error, %d bytes\n", result);
+#endif
 
 #if 0
 /* Eventual code to dynamically allocate buffer */
-void *dlp_buffer(int sd, int cmd, int arg, int arglen,
-		 struct pi_socket *ps)
+void *
+dlp_buffer(int sd, int cmd, int arg, int arglen, struct pi_socket *ps)
 {
    unsigned char *buf;
 
@@ -111,9 +128,10 @@ void *dlp_buffer(int sd, int cmd, int arg, int arglen,
 buf[1] = etc.}
 #endif
 
-int dlp_exec(int sd, int cmd, int arg,
-	     const unsigned char /*@null@ */ *msg, int msglen, unsigned char	/*@out@ */
-	     /*@null@ */ *result, int maxlen)
+int
+dlp_exec(int sd, int cmd, int arg, const unsigned char /*@null@ */ *msg,
+	 int msglen, unsigned char	/*@out@ */
+	 /*@null@ */ *result, int maxlen)
  /*@modifies *result, exec_buf;@ */
  /*@-predboolint -boolops@ */
 {
@@ -128,7 +146,8 @@ int dlp_exec(int sd, int cmd, int arg,
       exec_buf[3] = (unsigned char) 0;
       set_short(exec_buf + 4, msglen);
       i = msglen + 6;
-   } else {
+   }
+   else {
       exec_buf[1] = (unsigned char) 0;
       i = 2;
    }
@@ -163,14 +182,16 @@ int dlp_exec(int sd, int cmd, int arg,
 	 i = maxlen;
 
       memcpy(result, &exec_buf[10], i);
-   } else if (exec_buf[4] & 0x80) {	/* Short arg */
+   }
+   else if (exec_buf[4] & 0x80) {	/* Short arg */
       i = get_short(exec_buf + 6);
 
       if (i > maxlen)
 	 i = maxlen;
 
       memcpy(result, &exec_buf[8], i);
-   } else {			/* Tiny arg */
+   }
+   else {			/* Tiny arg */
       i = (int) exec_buf[5];
 
       if (i > maxlen)
@@ -185,17 +206,17 @@ int dlp_exec(int sd, int cmd, int arg,
 
 /* These conversion functions are strictly for use within the DLP layer.
    This particular date/time format does not occur anywhere else within the
-   Pilot or its communications. */
+   Palm or its communications. */
 
 /* Notice: These conversion functions apply a possibly incorrect timezone
    correction. They use the local time on the UNIX box, and transmit this
-   directly to the Pilot. This assumes that the Pilot has the same local
-   time. If the Pilot is communicating from a different timezone, this is
+   directly to the Palm. This assumes that the Palm has the same local
+   time. If the Palm is communicating from a different timezone, this is
    not necessarily correct.
    
-   It would be possible to compare the current time on the Pilot with the
+   It would be possible to compare the current time on the Palm with the
    current time on the UNIX box, and use that as the timezone offset, but
-   this would break if the Pilot had the wrong time, or one or the either
+   this would break if the Palm had the wrong time, or one or the either
    didn't have the proper local (wall) time.
    
    In any case, since the (possibly incorrect) timezone correction is
@@ -203,7 +224,8 @@ int dlp_exec(int sd, int cmd, int arg,
                                                                    -- KJA
    */
 
-static time_t dlp_ptohdate(unsigned const char *data)
+static time_t
+dlp_ptohdate(unsigned const char *data)
 {
    struct tm t;
 
@@ -217,10 +239,25 @@ static time_t dlp_ptohdate(unsigned const char *data)
    t.tm_yday = 0;
    t.tm_isdst = -1;
 
+   /* Seems like year comes back as all zeros if the date is "empty"
+    * (but other fields can vary).  And mktime() chokes on 1900 B.C.
+    * (result of 0 minus 1900), returning -1, which the higher level
+    * code can't deal with (passes it straight on to utime(), which
+    * simply leaves the file's timestamp "as-is").
+    *
+    * So, since year 0 appears to mean "no date", we'll return an odd
+    * number that works out to precisely one day before the start of
+    * the Palm's clock (thus little chance of being run into by any
+    * Palm-based time stamp).
+    */
+   if (data[0] == 0 && data[1] == 0)
+      return (time_t) 0x83D8FE00;	/* Dec 31, 1903 00:00:00 GMT */
+
    return mktime(&t);
 }
 
-static void dlp_htopdate(time_t time, unsigned char *data)
+static void
+dlp_htopdate(time_t time, unsigned char *data)
 {				/*@+ptrnegate@ */
    struct tm *t = localtime(&time);
    int y;
@@ -242,7 +279,8 @@ static void dlp_htopdate(time_t time, unsigned char *data)
    return;
 }
 
-int dlp_GetSysDateTime(int sd, time_t * t)
+int
+dlp_GetSysDateTime(int sd, time_t * t)
 {
    unsigned char buf[8];
    int result;
@@ -264,7 +302,8 @@ int dlp_GetSysDateTime(int sd, time_t * t)
    return result;
 }
 
-int dlp_SetSysDateTime(int sd, time_t time)
+int
+dlp_SetSysDateTime(int sd, time_t time)
 {
    unsigned char buf[8];
    int result;
@@ -329,7 +368,8 @@ int dlp_SetSysDateTime(int sd, time_t time)
 #define sizeof_SIRequest		(2)
  /* end struct SIRequest */
 
-int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
+int
+dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 {
    int result;
    int len1, len2;
@@ -377,8 +417,7 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 	      "        Total ROM: %lu, Total RAM: %lu, Free RAM: %lu\n",
 	      c->romSize, c->ramSize, c->ramFree);
       fprintf(stderr, "        Card name: '%s'\n", c->name);
-      fprintf(stderr, "        Manufacturer name: '%s'\n",
-	      c->manufacturer);
+      fprintf(stderr, "        Manufacturer name: '%s'\n", c->manufacturer);
       fprintf(stderr, "        More: %s\n", c->more ? "Yes" : "No");
    }
 #endif
@@ -386,8 +425,8 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
    return result;
 }
 
-
-int dlp_ReadSysInfo(int sd, struct SysInfo *s)
+int
+dlp_ReadSysInfo(int sd, struct SysInfo *s)
 {
    int result;
 
@@ -416,8 +455,8 @@ int dlp_ReadSysInfo(int sd, struct SysInfo *s)
    return result;
 }
 
-int dlp_ReadDBList(int sd, int cardno, int flags, int start,
-		   struct DBInfo *info)
+int
+dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo *info)
 {
    int result;
 
@@ -429,8 +468,7 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start,
 
 #ifdef DLP_TRACE
    if (dlp_trace) {
-      fprintf(stderr, " Wrote: Cardno: %d, Start: %d, Flags:", cardno,
-	      start);
+      fprintf(stderr, " Wrote: Cardno: %d, Start: %d, Flags:", cardno, start);
       if (flags & dlpDBListROM)
 	 fprintf(stderr, " ROM");
       if (flags & dlpDBListRAM)
@@ -498,9 +536,9 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start,
    return result;
 }
 
-int dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
-		   unsigned long type, unsigned long creator,
-		   struct DBInfo *info)
+int
+dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
+	       unsigned long type, unsigned long creator, struct DBInfo *info)
 {
    int i;
 
@@ -513,12 +551,11 @@ int dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
    if (start < 0x1000) {
       i = start;
       while (dlp_ReadDBList(sd, cardno, 0x80, i, info) > 0) {
-	 if (
-	     ((!dbname) || (strcmp(info->name, dbname) == 0)) &&
-	     ((!type) || (info->type == type)) &&
-	     ((!creator) || (info->creator == creator))
-	     )
-	    goto found;
+	 if (((!dbname) || (strcmp(info->name, dbname) == 0))
+	     && ((!type) || (info->type == type)) && ((!creator)
+						      || (info->creator ==
+							  creator))) goto
+	       found;
 	 i = info->index + 1;
       }
       start = 0x1000;
@@ -526,11 +563,10 @@ int dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 
    i = start & 0xFFF;
    while (dlp_ReadDBList(sd, cardno, 0x40, i, info) > 0) {
-      if (
-	  ((!dbname) || (strcmp(info->name, dbname) == 0)) &&
-	  ((!type) || (info->type == type)) &&
-	  ((!creator) || (info->creator == creator))
-	  ) {
+      if (((!dbname) || (strcmp(info->name, dbname) == 0))
+	  && ((!type) || (info->type == type)) && ((!creator)
+						   || (info->creator ==
+						       creator))) {
 	 info->index |= 0x1000;
 	 goto found;
       }
@@ -544,7 +580,8 @@ int dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
    return 0;
 }
 
-int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
+int
+dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 {
    unsigned char handle;
    int result;
@@ -557,8 +594,7 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 
 #ifdef DLP_TRACE
    if (dlp_trace) {
-      fprintf(stderr, " Wrote: Cardno: %d, Name: '%s', Mode:", cardno,
-	      name);
+      fprintf(stderr, " Wrote: Cardno: %d, Name: '%s', Mode:", cardno, name);
       if (mode & dlpOpenRead)
 	 fprintf(stderr, " Read");
       if (mode & dlpOpenWrite)
@@ -574,7 +610,7 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 #endif
 
    result =
-       dlp_exec(sd, 0x17, 0x20, &dlp_buf[0], strlen(name) + 3, &handle, 1);
+      dlp_exec(sd, 0x17, 0x20, &dlp_buf[0], strlen(name) + 3, &handle, 1);
 
    Expect(1);
 
@@ -589,9 +625,8 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
    return result;
 }
 
-
-
-int dlp_DeleteDB(int sd, int card, const char *name)
+int
+dlp_DeleteDB(int sd, int card, const char *name)
 {
    int result;
 
@@ -614,8 +649,9 @@ int dlp_DeleteDB(int sd, int card, const char *name)
    return result;
 }
 
-int dlp_CreateDB(int sd, long creator, long type, int cardno,
-		 int flags, int version, const char *name, int *dbhandle)
+int
+dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
+	     int version, const char *name, int *dbhandle)
 {
    unsigned char handle;
    int result;
@@ -651,15 +687,13 @@ int dlp_CreateDB(int sd, long creator, long type, int cardno,
 	 fprintf(stderr, " Open");
       if (!flags)
 	 fprintf(stderr, " None");
-      fprintf(stderr, " (0x%2.2X), Creator: '%s'", flags,
-	      printlong(creator));
+      fprintf(stderr, " (0x%2.2X), Creator: '%s'", flags, printlong(creator));
       fprintf(stderr, ", Type: '%s'\n", printlong(type));
    }
 #endif
 
    result =
-       dlp_exec(sd, 0x18, 0x20, dlp_buf, 14 + strlen(name) + 1, &handle,
-		1);
+      dlp_exec(sd, 0x18, 0x20, dlp_buf, 14 + strlen(name) + 1, &handle, 1);
 
    Expect(1);
 
@@ -675,8 +709,8 @@ int dlp_CreateDB(int sd, long creator, long type, int cardno,
    return result;
 }
 
-
-int dlp_CloseDB(int sd, int dbhandle)
+int
+dlp_CloseDB(int sd, int dbhandle)
 {
    unsigned char handle = (unsigned char) dbhandle;
    int result;
@@ -696,7 +730,8 @@ int dlp_CloseDB(int sd, int dbhandle)
    return result;
 }
 
-int dlp_CloseDB_All(int sd)
+int
+dlp_CloseDB_All(int sd)
 {
    int result;
 
@@ -709,10 +744,11 @@ int dlp_CloseDB_All(int sd)
    return result;
 }
 
-int dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
-			int action, int length, void *data,
-			unsigned long *retcode, int maxretlen, int *retlen,
-			void *retdata)
+int
+dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
+		    int action, int length, void *data,
+		    unsigned long *retcode, int maxretlen, int *retlen,
+		    void *retdata)
 {
    int result;
    int version = pi_version(sd);
@@ -745,7 +781,7 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 #endif
 
       result =
-	  dlp_exec(sd, 0x28, 0x21, dlp_buf, 22 + length, dlp_buf, 0xffff);
+	 dlp_exec(sd, 0x28, 0x21, dlp_buf, 22 + length, dlp_buf, 0xffff);
 
       Expect(16);
 
@@ -770,8 +806,8 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
       return result;
 
-
-   } else {			/* PalmOS 1.0 call encoding */
+   }
+   else {			/* PalmOS 1.0 call encoding */
       set_long(dlp_buf + 0, creator);
       set_short(dlp_buf + 4, action);
       set_short(dlp_buf + 6, length);
@@ -819,7 +855,8 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
 }
 
-int dlp_ResetSystem(int sd)
+int
+dlp_ResetSystem(int sd)
 {
    int result;
 
@@ -832,7 +869,8 @@ int dlp_ResetSystem(int sd)
    return result;
 }
 
-int dlp_AddSyncLogEntry(int sd, char *entry)
+int
+dlp_AddSyncLogEntry(int sd, char *entry)
 {
    int result;
 
@@ -846,15 +884,15 @@ int dlp_AddSyncLogEntry(int sd, char *entry)
 #endif
 
    result =
-       dlp_exec(sd, 0x2A, 0x20, (unsigned char *) entry, strlen(entry), 0,
-		0);
+      dlp_exec(sd, 0x2A, 0x20, (unsigned char *) entry, strlen(entry), 0, 0);
 
    Expect(0);
 
    return result;
 }
 
-int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
+int
+dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 {
    unsigned char buf[2];
    int result;
@@ -884,7 +922,8 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
    return result;
 }
 
-int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
+int
+dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 {
    int result;
 
@@ -909,8 +948,8 @@ int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
    return result;
 }
 
-
-int dlp_OpenConduit(int sd)
+int
+dlp_OpenConduit(int sd)
 {
    int result;
 
@@ -923,7 +962,8 @@ int dlp_OpenConduit(int sd)
    return result;
 }
 
-int dlp_EndOfSync(int sd, int status)
+int
+dlp_EndOfSync(int sd, int status)
 {
    int result;
    struct pi_socket *ps;
@@ -951,13 +991,14 @@ int dlp_EndOfSync(int sd, int status)
    return result;
 }
 
-int dlp_AbortSync(int sd)
+int
+dlp_AbortSync(int sd)
 {
    struct pi_socket *ps;
 
 #ifdef DLP_TRACE
    if (dlp_trace) {
-      fprintf(stderr, "DLP %d: AbortSync\nResult: Whatever\n", sd);
+      fprintf(stderr, "DLP %d: AbortSync\nResult: Aborted Sync\n", sd);
    }
 #endif
 
@@ -968,7 +1009,8 @@ int dlp_AbortSync(int sd)
    return pi_close(sd);
 }
 
-int dlp_WriteUserInfo(int sd, struct PilotUser *User)
+int
+dlp_WriteUserInfo(int sd, struct PilotUser *User)
 {
    int result;
 
@@ -994,15 +1036,16 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
    strcpy((char *) dlp_buf + 22, User->username);
 
    result =
-       dlp_exec(sd, 0x11, 0x20, dlp_buf, 22 + strlen(User->username) + 1,
-		NULL, 0);
+      dlp_exec(sd, 0x11, 0x20, dlp_buf, 22 + strlen(User->username) + 1, NULL,
+	       0);
 
    Expect(0);
 
    return result;
 }
 
-int dlp_ReadUserInfo(int sd, struct PilotUser *User)
+int
+dlp_ReadUserInfo(int sd, struct PilotUser *User)
 {
    int result;
    int userlen;
@@ -1036,10 +1079,10 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User)
 	      ctime(&User->successfulSyncDate));
       fprintf(stderr, "        User name '%s'", User->username);
       if (User->passwordLength) {
-	 fprintf(stderr, ", Password of %d bytes:\n",
-		 User->passwordLength);
+	 fprintf(stderr, ", Password of %d bytes:\n", User->passwordLength);
 	 dumpdata((unsigned char *) User->password, User->passwordLength);
-      } else
+      }
+      else
 	 fprintf(stderr, ", No password\n");
    }
 #endif
@@ -1047,7 +1090,8 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User)
    return result;
 }
 
-int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
+int
+dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
    int result;
    int p;
@@ -1060,7 +1104,6 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
    result = dlp_exec(sd, 0x36, 0x20, NULL, 0, dlp_buf, DLP_BUF_SIZE);
 
    Expect(24);
-
 
    i->lanSync = get_byte(dlp_buf);
    p = 24;
@@ -1080,8 +1123,7 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 #ifdef DLP_TRACE
    if (dlp_trace) {
       fprintf(stderr, "  Read: Active: %d\n", get_byte(dlp_buf));
-      fprintf(stderr,
-	      "        PC hostname: '%s', address '%s', mask '%s'\n",
+      fprintf(stderr, "        PC hostname: '%s', address '%s', mask '%s'\n",
 	      i->hostName, i->hostAddress, i->hostSubnetMask);
    }
 #endif
@@ -1089,7 +1131,8 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
    return result;
 }
 
-int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
+int
+dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
    int result;
    int p;
@@ -1102,8 +1145,7 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 #ifdef DLP_TRACE
    if (dlp_trace) {
       fprintf(stderr, "  Wrote: Active: %d\n", get_byte(dlp_buf));
-      fprintf(stderr,
-	      "        PC hostname: '%s', address '%s', mask '%s'\n",
+      fprintf(stderr, "        PC hostname: '%s', address '%s', mask '%s'\n",
 	      i->hostName, i->hostAddress, i->hostSubnetMask);
    }
 #endif
@@ -1133,7 +1175,8 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 }
 
 #ifdef _PILOT_SYSPKT_H
-int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
+int
+dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 {
    int i;
    unsigned char *c;
@@ -1200,7 +1243,8 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
    if (result) {
       if (p->reply == RPC_PtrReply) {
 	 *result = A0;
-      } else if (p->reply == RPC_IntReply) {
+      }
+      else if (p->reply == RPC_IntReply) {
 	 *result = D0;
       }
    }
@@ -1208,8 +1252,9 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
    return err;
 }
 
-int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
-		    unsigned long *feature)
+int
+dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
+		unsigned long *feature)
 {
    int result;
 
@@ -1231,12 +1276,11 @@ int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 
 	 *feature = 0x12345678;
 
-	 PackRPC(&p, 0xA27B, RPC_IntReply,
-		 RPC_Long(creator), RPC_Short((unsigned short) num),
-		 RPC_LongPtr(feature), RPC_End);
+	 PackRPC(&p, 0xA27B, RPC_IntReply, RPC_Long(creator),
+		 RPC_Short((unsigned short) num), RPC_LongPtr(feature),
+		 RPC_End);
 
 	 val = dlp_RPC(sd, &p, &result);
-
 
 #ifdef DLP_TRACE
 	 if (dlp_trace) {
@@ -1289,10 +1333,10 @@ int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 
    return result;
 }
-#endif				/* IFDEF _PILOT_SYSPKT_H */
+#endif /* IFDEF _PILOT_SYSPKT_H */
 
-
-int dlp_ResetLastSyncPC(int sd)
+int
+dlp_ResetLastSyncPC(int sd)
 {
    struct PilotUser U;
    int err;
@@ -1303,7 +1347,8 @@ int dlp_ResetLastSyncPC(int sd)
    return dlp_WriteUserInfo(sd, &U);
 }
 
-int dlp_ResetDBIndex(int sd, int dbhandle)
+int
+dlp_ResetDBIndex(int sd, int dbhandle)
 {
    int result;
    struct pi_socket *ps;
@@ -1326,9 +1371,9 @@ int dlp_ResetDBIndex(int sd, int dbhandle)
    return result;
 }
 
-
-int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
-			 int start, int max, recordid_t * IDs, int *count)
+int
+dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
+		     recordid_t * IDs, int *count)
 {
    int result, i, ret;
    unsigned int nbytes;
@@ -1374,9 +1419,9 @@ int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
    return nbytes;
 }
 
-int dlp_WriteRecord(int sd, int dbhandle, int flags,
-		    recordid_t recID, int catID, void *data, int length,
-		    recordid_t * NewID)
+int
+dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID, int catID,
+		void *data, int length, recordid_t * NewID)
 {
    unsigned char buf[4];
    int result;
@@ -1417,8 +1462,7 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
 	 fprintf(stderr, " Archive");
       if (!flags)
 	 fprintf(stderr, " None");
-      fprintf(stderr, " (0x%2.2X), and %d bytes of data: \n", flags,
-	      length);
+      fprintf(stderr, " (0x%2.2X), and %d bytes of data: \n", flags, length);
       dumpdata(data, length);
    }
 #endif
@@ -1430,7 +1474,8 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
    if (NewID) {
       if (result == 4) {
 	 *NewID = get_long(buf);	/* New record ID */
-      } else {
+      }
+      else {
 	 *NewID = 0;
       }
    }
@@ -1444,7 +1489,8 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
    return result;
 }
 
-int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
+int
+dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 {
    int result;
    int flags = all ? 0x80 : 0;
@@ -1469,7 +1515,8 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
    return result;
 }
 
-int dlp_DeleteCategory(int sd, int dbhandle, int category)
+int
+dlp_DeleteCategory(int sd, int dbhandle, int category)
 {
    int result;
    int flags = 0x40;
@@ -1492,7 +1539,8 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 	   dlp_ReadRecordByIndex(sd, dbhandle, i, NULL, &id, NULL, &attr,
 				 &cat) >= 0; i++) {
 	 if ((cat != category) || (attr & dlpRecAttrDeleted)
-	     || (attr & dlpRecAttrArchived)) continue;
+	     || (attr & dlpRecAttrArchived))
+	    continue;
 	 r = dlp_DeleteRecord(sd, dbhandle, 0, id);
 	 if (r < 0)
 	    return r;
@@ -1509,8 +1557,8 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 
 #ifdef DLP_TRACE
    if (dlp_trace) {
-      fprintf(stderr, " Wrote: Handle: %d, Category: %d\n",
-	      dbhandle, category & 0xff);
+      fprintf(stderr, " Wrote: Handle: %d, Category: %d\n", dbhandle,
+	      category & 0xff);
    }
 #endif
 
@@ -1521,9 +1569,9 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
    return result;
 }
 
-
-int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
-			   void *buffer, int *index, int *size)
+int
+dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
+		       void *buffer, int *index, int *size)
 {
    int result;
 
@@ -1538,8 +1586,8 @@ int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 
 #ifdef DLP_TRACE
    if (dlp_trace) {
-      fprintf(stderr, " Wrote: Handle: %d, Type: '%s', ID: %d\n",
-	      fHandle, printlong(type), id);
+      fprintf(stderr, " Wrote: Handle: %d, Type: '%s', ID: %d\n", fHandle,
+	      printlong(type), id);
    }
 #endif
 
@@ -1566,8 +1614,9 @@ int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
    return result - 10;
 }
 
-int dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
-			    unsigned long *type, int *id, int *size)
+int
+dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
+			unsigned long *type, int *id, int *size)
 {
    int result;
 
@@ -1611,8 +1660,9 @@ int dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
    return result - 10;
 }
 
-int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
-		      const void *data, int length)
+int
+dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
+		  const void *data, int length)
 {
    int result;
 
@@ -1646,8 +1696,9 @@ int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
    return result;
 }
 
-int dlp_DeleteResource(int sd, int dbhandle, int all,
-		       unsigned long restype, int resID)
+int
+dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
+		   int resID)
 {
    int result;
    int flags = all ? 0x80 : 0;
@@ -1673,7 +1724,8 @@ int dlp_DeleteResource(int sd, int dbhandle, int all,
    return result;
 }
 
-int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
+int
+dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 {
    int result;
 
@@ -1708,8 +1760,9 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
    return result - 2;
 }
 
-int dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@ */ void *data,
-		      int length)
+int
+dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@ */ void *data,
+		  int length)
 {
    int result;
 
@@ -1740,8 +1793,8 @@ int dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@ */ void *data,
    return result;
 }
 
-int dlp_ReadSortBlock(int sd, int fHandle, int offset,
-		      void *dbuf, int dlen)
+int
+dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 {
    int result;
 
@@ -1773,8 +1826,9 @@ int dlp_ReadSortBlock(int sd, int fHandle, int offset,
    return result - 2;
 }
 
-int dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@ */ void *data,
-		       int length)
+int
+dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@ */ void *data,
+		   int length)
 {
    int result;
 
@@ -1805,7 +1859,8 @@ int dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@ */ void *data,
    return result;
 }
 
-int dlp_CleanUpDatabase(int sd, int fHandle)
+int
+dlp_CleanUpDatabase(int sd, int fHandle)
 {
    int result;
    unsigned char handle = fHandle;
@@ -1825,7 +1880,8 @@ int dlp_CleanUpDatabase(int sd, int fHandle)
    return result;
 }
 
-int dlp_ResetSyncFlags(int sd, int fHandle)
+int
+dlp_ResetSyncFlags(int sd, int fHandle)
 {
    int result;
    unsigned char handle = fHandle;
@@ -1845,9 +1901,9 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
    return result;
 }
 
-int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
-			      void *buffer, recordid_t * id, int *index,
-			      int *size, int *attr)
+int
+dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void *buffer,
+			  recordid_t * id, int *index, int *size, int *attr)
 {
    int result;
 
@@ -1876,8 +1932,8 @@ int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
       for (;;) {
 	 /* Fetch next modified record (in any category) */
 	 r =
-	     dlp_ReadRecordByIndex(sd, fHandle, ps->dlprecord, 0, 0, 0, 0,
-				   &cat);
+	    dlp_ReadRecordByIndex(sd, fHandle, ps->dlprecord, 0, 0, 0, 0,
+				  &cat);
 
 	 if (r < 0)
 	    break;
@@ -1888,17 +1944,18 @@ int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 	 }
 
 	 r =
-	     dlp_ReadRecordByIndex(sd, fHandle, ps->dlprecord, buffer, id,
-				   size, attr, &cat);
+	    dlp_ReadRecordByIndex(sd, fHandle, ps->dlprecord, buffer, id,
+				  size, attr, &cat);
 
 	 if (r >= 0) {
 	    if (index)
 	       *index = ps->dlprecord;
 	    ps->dlprecord++;
-	 } else {
+	 }
+	 else {
 	    /* If none found, reset modified pointer so that another search on a different
 	       (or the same!) category will work */
-	    /* Freeow! Do _not_ reset, as the Pilot itself does not!
+	    /* Freeow! Do _not_ reset, as the Palm itself does not!
 	       ps->dlprecord = 0;
 	     */
 	 }
@@ -1963,10 +2020,9 @@ int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
    return result - 10;
 }
 
-
-int dlp_ReadAppPreference(int sd, unsigned long creator, int id,
-			  int backup, int maxsize, void *buffer, int *size,
-			  int *version)
+int
+dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
+		      int maxsize, void *buffer, int *size, int *version)
 {
    int result;
 
@@ -1992,7 +2048,6 @@ int dlp_ReadAppPreference(int sd, unsigned long creator, int id,
 
       r = dlp_ReadResourceByType(sd, db, creator, id, buffer, NULL, size);
 
-
       if (r < 0) {
 	 dlp_CloseDB(sd, db);
 	 return r;
@@ -2007,7 +2062,8 @@ int dlp_ReadAppPreference(int sd, unsigned long creator, int id,
       if (r > 2) {
 	 r -= 2;
 	 memmove(buffer, ((char *) buffer) + 2, r);
-      } else {
+      }
+      else {
 	 r = 0;
       }
 
@@ -2026,8 +2082,7 @@ int dlp_ReadAppPreference(int sd, unsigned long creator, int id,
 
 #ifdef DLP_TRACE
    if (dlp_trace) {
-      fprintf(stderr,
-	      " Wrote: Creator: '%s', Id: %d, Size: %d, Backup: %d\n",
+      fprintf(stderr, " Wrote: Creator: '%s', Id: %d, Size: %d, Backup: %d\n",
 	      printlong(creator), id, buffer ? maxsize : 0,
 	      backup ? 0x80 : 0);
    }
@@ -2039,8 +2094,7 @@ int dlp_ReadAppPreference(int sd, unsigned long creator, int id,
 
 #ifdef DLP_TRACE
    if (dlp_trace) {
-      fprintf(stderr,
-	      " Read: Version: %d, Total size: %d, Read %d bytes:\n",
+      fprintf(stderr, " Read: Version: %d, Total size: %d, Read %d bytes:\n",
 	      get_short(dlp_buf), get_short(dlp_buf + 2),
 	      get_short(dlp_buf + 4));
       dumpdata(dlp_buf + 6, get_short(dlp_buf + 4));
@@ -2059,8 +2113,9 @@ int dlp_ReadAppPreference(int sd, unsigned long creator, int id,
    return get_short(dlp_buf + 4);
 }
 
-int dlp_WriteAppPreference(int sd, unsigned long creator, int id,
-			   int backup, int version, void *buffer, int size)
+int
+dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
+		       int version, void *buffer, int size)
 {
    int result;
 
@@ -2088,7 +2143,8 @@ int dlp_WriteAppPreference(int sd, unsigned long creator, int id,
 	 memcpy(dlp_buf + 2, buffer, size);
 	 set_short(dlp_buf, version);
 	 r = dlp_WriteResource(sd, db, creator, id, dlp_buf, size);
-      } else
+      }
+      else
 	 r = dlp_WriteResource(sd, db, creator, id, NULL, 0);
 
       dlp_CloseDB(sd, db);
@@ -2128,9 +2184,10 @@ int dlp_WriteAppPreference(int sd, unsigned long creator, int id,
    return result;
 }
 
-int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
-				      void *buffer, recordid_t * id,
-				      int *index, int *size, int *attr)
+int
+dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
+				  void *buffer, recordid_t * id, int *index,
+				  int *size, int *attr)
 {
    int result;
 
@@ -2155,8 +2212,8 @@ int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
       do {
 	 /* Fetch next modified record (in any category) */
 	 r =
-	     dlp_ReadNextModifiedRec(sd, fHandle, buffer, id, index, size,
-				     attr, &cat);
+	    dlp_ReadNextModifiedRec(sd, fHandle, buffer, id, index, size,
+				    attr, &cat);
 
 	 /* If none found, reset modified pointer so that another search on a different
 	    (or the same!) category will start from the beginning */
@@ -2167,7 +2224,8 @@ int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 	  */
 
 	 /* Loop until we fail to get a record or a record is found in the proper category */
-      } while ((r >= 0) && (cat != incategory));
+      }
+      while ((r >= 0) && (cat != incategory));
 
       return r;
    }
@@ -2226,10 +2284,9 @@ int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
    return result - 10;
 }
 
-
-int dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer,
-			    recordid_t * id, int *index, int *size,
-			    int *attr, int *category)
+int
+dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
+			int *index, int *size, int *attr, int *category)
 {
    unsigned char handle = fHandle;
    int result;
@@ -2290,8 +2347,9 @@ int dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer,
    return result - 10;
 }
 
-int dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
-		       int *index, int *size, int *attr, int *category)
+int
+dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
+		   int *index, int *size, int *attr, int *category)
 {
    int result;
 
@@ -2357,9 +2415,9 @@ int dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
    return result - 10;
 }
 
-int dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
-			  recordid_t * id, int *size, int *attr,
-			  int *category)
+int
+dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
+		      recordid_t * id, int *size, int *attr, int *category)
 {
    int result;
 

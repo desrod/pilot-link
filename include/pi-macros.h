@@ -1,17 +1,19 @@
 #ifndef _PILOT_MACROS_H_
 #define _PILOT_MACROS_H_
 
+#include <time.h>
 #include "pi-args.h"
 
 typedef unsigned long recordid_t;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern double get_float PI_ARGS((void *));
-extern void set_float PI_ARGS((void *, double));
-extern int compareTm PI_ARGS((struct tm *a, struct tm *b));
+   extern double get_float PI_ARGS((void *));
+   extern void set_float PI_ARGS((void *, double));
+   extern int compareTm PI_ARGS((struct tm * a, struct tm * b));
 
 #ifdef __cplusplus
 }
@@ -29,11 +31,11 @@ extern int compareTm PI_ARGS((struct tm *a, struct tm *b));
                         ((((unsigned char*)(ptr))[0] << 16) | \
                          (((unsigned char*)(ptr))[1] << 8)  | \
                          (((unsigned char*)(ptr))[2])))
-                       
+
 #define get_short(ptr) ((unsigned short)\
                        ((((unsigned char*)(ptr))[0] << 8)  | \
                         (((unsigned char*)(ptr))[1])))
-                        
+
 #define get_byte(ptr) (((unsigned char*)(ptr))[0])
 
 #define get_slong(ptr) (signed long)(\
@@ -80,7 +82,7 @@ extern int compareTm PI_ARGS((struct tm *a, struct tm *b));
                             ((unsigned long)(((signed long)(val)) + 0x800000) | 0x800000) :\
                             (val)\
                            )))
-                       
+
 #define set_short(ptr,val) ((((unsigned char*)(ptr))[0] = (((unsigned short)(val)) >> 8) & 0xff), \
 		            (((unsigned char*)(ptr))[1] = (((unsigned short)(val)) >> 0) & 0xff))
 
@@ -100,180 +102,207 @@ extern int compareTm PI_ARGS((struct tm *a, struct tm *b));
 
 #define char4(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
-#else /*ifdef __cplusplus*/
+#else				/*ifdef __cplusplus */
 
-inline unsigned long get_long(const void *buf) 
+inline unsigned long
+get_long(const void *buf)
 {
-     unsigned char *ptr = (unsigned char *) buf;
+   unsigned char *ptr = (unsigned char *) buf;
 
-     return (*ptr << 24) | (*(++ptr) << 16) | (*(++ptr) << 8) | *(++ptr);
+   return (*ptr << 24) | (*(++ptr) << 16) | (*(++ptr) << 8) | *(++ptr);
 }
 
-inline signed long get_slong(const void *buf)
+inline signed long
+get_slong(const void *buf)
 {
-     unsigned long val = get_long(buf);
-     if (val > 0x7FFFFFFF)
-         return ((signed long)(val & 0x7FFFFFFF)) - 0x80000000;
-     else
-         return val;
+   unsigned long val = get_long(buf);
+
+   if (val > 0x7FFFFFFF)
+      return ((signed long) (val & 0x7FFFFFFF)) - 0x80000000;
+   else
+      return val;
 }
 
-inline unsigned long get_treble(const void *buf) 
+inline unsigned long
+get_treble(const void *buf)
 {
-     unsigned char *ptr = (unsigned char *) buf;
+   unsigned char *ptr = (unsigned char *) buf;
 
-     return (*ptr << 16) | (*(++ptr) << 8) | *(++ptr);
+   return (*ptr << 16) | (*(++ptr) << 8) | *(++ptr);
 }
 
-inline signed long get_streble(const void *buf)
+inline signed long
+get_streble(const void *buf)
 {
-     unsigned long val = get_treble(buf);
-     if (val > 0x7FFFFF)
-         return ((signed long)(val & 0x7FFFFF)) - 0x800000;
-     else
-         return val;
+   unsigned long val = get_treble(buf);
+
+   if (val > 0x7FFFFF)
+      return ((signed long) (val & 0x7FFFFF)) - 0x800000;
+   else
+      return val;
 }
 
-inline int get_short(const void *buf) 
+inline int
+get_short(const void *buf)
 {
-     unsigned char *ptr = (unsigned char *) buf;
+   unsigned char *ptr = (unsigned char *) buf;
 
-     return (*ptr << 8) | *(++ptr);
+   return (*ptr << 8) | *(++ptr);
 }
 
-inline signed short get_sshort(const void *buf)
+inline signed short
+get_sshort(const void *buf)
 {
-     unsigned short val = get_short(buf);
-     if (val > 0x7FFF)
-         return ((signed short)(val & 0x7FFF)) - 0x8000;
-     else
-         return val;
+   unsigned short val = get_short(buf);
+
+   if (val > 0x7FFF)
+      return ((signed short) (val & 0x7FFF)) - 0x8000;
+   else
+      return val;
 }
 
-inline int get_byte(const void *buf) 
+inline int
+get_byte(const void *buf)
 {
-     return *((unsigned char *) buf);
+   return *((unsigned char *) buf);
 }
 
-inline signed char get_sbyte(const void *buf)
+inline signed char
+get_sbyte(const void *buf)
 {
-     unsigned char val = get_byte(buf);
-     if (val > 0x7F)
-         return ((signed char)(val & 0x7F)) - 0x80;
-     else
-         return val;
+   unsigned char val = get_byte(buf);
+
+   if (val > 0x7F)
+      return ((signed char) (val & 0x7F)) - 0x80;
+   else
+      return val;
 }
 
-inline void set_long(void *buf, const unsigned long val) 
+inline void
+set_long(void *buf, const unsigned long val)
 {
-     unsigned char *ptr = (unsigned char *) buf;
+   unsigned char *ptr = (unsigned char *) buf;
 
-     *ptr = (unsigned char)((val >> 24) & 0xff);
-     *(++ptr) = (unsigned char)((val >> 16) & 0xff);
-     *(++ptr) = (unsigned char)((val >> 8) & 0xff);
-     *(++ptr) = (unsigned char)(val & 0xff);
+   *ptr = (unsigned char) ((val >> 24) & 0xff);
+   *(++ptr) = (unsigned char) ((val >> 16) & 0xff);
+   *(++ptr) = (unsigned char) ((val >> 8) & 0xff);
+   *(++ptr) = (unsigned char) (val & 0xff);
 }
 
-inline void set_slong(void *buf, const signed long val) 
+inline void
+set_slong(void *buf, const signed long val)
 {
-     unsigned long uval;
-     
-     if (val < 0) {
-         uval = (val + 0x80000000);
-         uval |= 0x80000000;
-     } else
-         uval = val;
-     set_long(buf, uval);
+   unsigned long uval;
+
+   if (val < 0) {
+      uval = (val + 0x80000000);
+      uval |= 0x80000000;
+   }
+   else
+      uval = val;
+   set_long(buf, uval);
 }
 
-inline void set_treble(void *buf, const unsigned long val) 
+inline void
+set_treble(void *buf, const unsigned long val)
 {
-     unsigned char *ptr = (unsigned char *) buf;
-     
-     *ptr = (unsigned char)((val >> 16) & 0xff);
-     *(++ptr) = (unsigned char)((val >> 8) & 0xff);
-     *(++ptr) = (unsigned char)(val & 0xff);
+   unsigned char *ptr = (unsigned char *) buf;
+
+   *ptr = (unsigned char) ((val >> 16) & 0xff);
+   *(++ptr) = (unsigned char) ((val >> 8) & 0xff);
+   *(++ptr) = (unsigned char) (val & 0xff);
 }
 
-inline void set_streble(void *buf, const signed long val) 
+inline void
+set_streble(void *buf, const signed long val)
 {
-     unsigned long uval;
-     
-     if (val < 0) {
-         uval = (val + 0x800000);
-         uval |= 0x800000;
-     } else
-         uval = val;
-     set_treble(buf, uval);
+   unsigned long uval;
+
+   if (val < 0) {
+      uval = (val + 0x800000);
+      uval |= 0x800000;
+   }
+   else
+      uval = val;
+   set_treble(buf, uval);
 }
 
-inline void set_short(void *buf, const int val) 
+inline void
+set_short(void *buf, const int val)
 {
-     unsigned char *ptr = (unsigned char *) buf;
+   unsigned char *ptr = (unsigned char *) buf;
 
-     *ptr = (val >> 8) & 0xff;
-     *(++ptr) = val & 0xff;
+   *ptr = (val >> 8) & 0xff;
+   *(++ptr) = val & 0xff;
 }
 
-inline void set_sshort(void *buf, const signed short val) 
+inline void
+set_sshort(void *buf, const signed short val)
 {
-     unsigned short uval;
-     
-     if (val < 0) {
-         uval = (val + 0x8000);
-         uval |= 0x8000;
-     } else
-         uval = val;
-     set_treble(buf, uval);
+   unsigned short uval;
+
+   if (val < 0) {
+      uval = (val + 0x8000);
+      uval |= 0x8000;
+   }
+   else
+      uval = val;
+   set_treble(buf, uval);
 }
 
-inline void set_byte(void *buf, const int val) 
+inline void
+set_byte(void *buf, const int val)
 {
-     *((unsigned char *)buf) = val;
+   *((unsigned char *) buf) = val;
 }
 
-inline void set_sbyte(void *buf, const signed char val) 
+inline void
+set_sbyte(void *buf, const signed char val)
 {
-     unsigned char uval;
-     
-     if (val < 0) {
-         uval = (val + 0x80);
-         uval |= 0x80;
-     } else
-         uval = val;
-     set_byte(buf, uval);
+   unsigned char uval;
+
+   if (val < 0) {
+      uval = (val + 0x80);
+      uval |= 0x80;
+   }
+   else
+      uval = val;
+   set_byte(buf, uval);
 }
 
-inline struct tm *getBufTm(struct tm *t, const void *buf, int setTime) 
+inline struct tm *
+getBufTm(struct tm *t, const void *buf, int setTime)
 {
-     unsigned short int d = get_short(buf);
-     
-     t->tm_year = (d >> 9) + 4;
-     t->tm_mon = ((d >> 5) & 15) - 1;
-     t->tm_mday = d & 31;
+   unsigned short int d = get_short(buf);
 
-     if (setTime) {
-	  t->tm_hour = 0;
-	  t->tm_min = 0;
-	  t->tm_sec = 0;
-     }
-     
-     t->tm_isdst = -1;
+   t->tm_year = (d >> 9) + 4;
+   t->tm_mon = ((d >> 5) & 15) - 1;
+   t->tm_mday = d & 31;
 
-     mktime(t);
-     
-     return t;
+   if (setTime) {
+      t->tm_hour = 0;
+      t->tm_min = 0;
+      t->tm_sec = 0;
+   }
+
+   t->tm_isdst = -1;
+
+   mktime(t);
+
+   return t;
 }
 
-inline void setBufTm(void *buf, const struct tm *t)
+inline void
+setBufTm(void *buf, const struct tm *t)
 {
-     set_short(buf,
-	       ((t->tm_year - 4) << 9) | ((t->tm_mon + 1) << 5) | t->tm_mday);
+   set_short(buf,
+	     ((t->tm_year - 4) << 9) | ((t->tm_mon + 1) << 5) | t->tm_mday);
 }
 
-inline unsigned long char4(char c1, char c2, char c3, char c4)
+inline unsigned long
+char4(char c1, char c2, char c3, char c4)
 {
-     return (c1<<24)|(c2<<16)|(c3<<8)|c4;
+   return (c1 << 24) | (c2 << 16) | (c3 << 8) | c4;
 }
 
 #endif /*__cplusplus*/
