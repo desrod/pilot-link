@@ -12,8 +12,8 @@ handheld. The output type is Portable Pixmap (.ppm).
 
 .SH "DESCRIPTION"
 \fBread\-veo\fR allows a Veo traveler camera user to extract the images
-from their Palm handheld and convert them to Portable Pixmap (.ppm) files on
-their system.
+from their Palm handheld and convert them to Portable Pixmap (.ppm) or
+PNG (.png) files on their system.
 
 
 .SH "OPTIONS"
@@ -25,14 +25,24 @@ variable. If both are not found or supplied, \fBread\-veo\fR will
 fall back to /dev/pilot.
 
 
+.TP
+\fB\-b\fR, \fB\-\-bias [num]\fR
+lighten or darken the image. 
+.br
+num   0..50   darken image 
+.br
+num   50..100 lighten image
+
+
+.TP
+\fB\-c\fR, \fB\-\-colour\fR
+Colour correct the output colours. The only reason you wouldn't want
+to use this would be to to get the raw image data.
+
+
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
 Display the help synopsis for \fBread\-veo\fR.
-
-
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version of \fBread\-veo\fR.
 
 
 .TP 
@@ -41,22 +51,36 @@ List picture information found on the Palm handheld instead of converting
 the entries found to image files.
 
 
+.TP
+\fB\-n\fR,, \fB\-\-name [name]\fR
+Specify single output picture by name
+
+
+.TP
+\fB\-t\fR, \fB\-\-type [type]\fR 
+Specify picture output type (.ppm or .png). \fread\-veo\fR must have been
+compiled with PNG support for PNG output.
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBread\-veo\fR.
+
+
 .SH "USAGE"
 The program will connect to the target Palm handheld, and read the images
 found in the Veo Traveler image databases, and allow the user to view the
-list of images or to convert all of them to Portable Pixmap (.ppm) files to
-be viewed or printed at the desktop. If no options are specified, all of the
-images on the device will be converted to ppm files by default.
+list of images or to convert one or all of them to Portable Pixmap (.ppm) or
+PNG (.png) files to be viewed or printed at the desktop. If no options 
+are specified, all of the images on the device will be converted to ppm 
+files by default.
 
 
 .SH "BUGS"
 .PP
 \fBKNOWN BUGS\fR
 .IP
-\fBread\-veo\fR does no colour correction or intensity adjustment. A simple
-step to improve the look of colours is to do a histogram equalization in
-your favourite image editor. This may get added in the future.
-
+None Known
 
 .PP
 \fBREPORTING BUGS\fR
