@@ -1,8 +1,13 @@
 2001-11-17  JP Rosevear  <jpr@ximian.com>
 
+	* tools/Makefile.am (EXTRA_DIST): add the language binding dirs
+
+2001-11-17  JP Rosevear  <jpr@ximian.com>
+	
 	* include/pi-source.h: remove i18n.h inclusion
 
 	* include/i18n.h: kill
+	
 2001-11-17  JP Rosevear  <jpr@ximian.com>	
 
 	* acconfig.h: re-add file

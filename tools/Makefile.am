@@ -22,4 +22,6 @@ else
 TCL_DIR =
 endif
 
-SUBDIRS = 
+SUBDIRS = .
+
+EXTRA_DIST = Python Java Perl5 Tcl
