@@ -295,6 +295,7 @@ if test "x$PERL5" != "x"; then
 			use_perl5=true
 		else
 			AC_MSG_RESULT($verstext [perl 5 not found])
+			use_perl5=false
 		fi
 	else
 		AC_MSG_RESULT($verstext [perl 5 not found])

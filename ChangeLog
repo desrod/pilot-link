@@ -1,7 +1,8 @@
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
-	* configure.in: set use_python to false when appropriate
-	
+	* configure.in: set use_python to false when appropriate, same for
+	perl
+
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: dump python check to /dev/null
