@@ -1,5 +1,9 @@
 2001-12-29  JP Rosevear  <jpr@ximian.com>
 
+	* include/pi-version.h.in: add new line to end of file
+
+2001-12-29  JP Rosevear  <jpr@ximian.com>
+	
 	* configure.in: vars for the module and library versions, subst
 	the version stuff into the version header
 
