@@ -106,6 +106,9 @@ typedef struct pi_socket {
 	int accept_to;	/* timeout value for call to accept() */
 	int dlprecord;	/* Index used for some DLP functions */
 
+	int dlpversion;	/* version of the DLP protocol running on the device */
+	unsigned long maxrecsize;/* max record size on the device */
+
 	int last_error;		/* error code returned by the last dlp_* command */
 	int palmos_error;	/* Palm OS error code returned by the last transaction with the handheld */
 
@@ -118,10 +121,6 @@ typedef struct pi_socket {
 typedef struct pi_socket_list
 {
 	pi_socket_t *ps;
-
-	int version;		/* version of the DLP protocol */
-	unsigned long maxrecsize;/* max record size on the device */
-
 	struct pi_socket_list *next;
 } pi_socket_list_t;
 

@@ -67,8 +67,9 @@ static pi_socket_list_t *ps_list_prepend (pi_socket_list_t *list,
 	pi_socket_t *ps); */
 static pi_socket_t *ps_list_find (pi_socket_list_t *list,
 	int pi_sd);
+/* fpillet: unused
 static pi_socket_list_t *ps_list_find_elem (pi_socket_list_t *list,
-	int pi_sd); 
+	int pi_sd);  */
 static pi_socket_list_t *ps_list_remove (pi_socket_list_t *list,
 	int pi_sd); 
 static pi_socket_list_t *ps_list_copy (pi_socket_list_t *list);
@@ -107,15 +108,17 @@ int pi_sock_installedexit = 0;
  * Returns:     void
  *
  ***********************************************************************/
+/* fpillet: used only during debug phases
 static void
 ps_list_dump (pi_socket_list_t *list)
 {
-	fprintf(stderr, "* Dumping pi_socket_list @ %p:\n",list);
+	fprintf(stderr, "* Dumping pi_socket_list @ %p:\n",(void*)list);
 	while (list != NULL) {
-		fprintf(stderr,"  %p: ps=%p, pi_sd=%d\n", list, list->ps, list->ps->sd);
+		fprintf(stderr,"  %p: ps=%p, pi_sd=%d\n", (void*)list, (void*)list->ps, list->ps->sd);
 		list = list->next;
 	}
 }
+*/
 
 /***********************************************************************
  *
@@ -137,22 +140,20 @@ ps_list_append (pi_socket_list_t *list, pi_socket_t *ps)
 	
 	ASSERT (ps != NULL);
 
-	new_elem = (pi_socket_list_t *)malloc(sizeof(pi_socket_list_t));
+	new_elem = (pi_socket_list_t *) malloc (sizeof(pi_socket_list_t));
+	if (new_elem == NULL)
+		return list;
 
-	if (new_elem != NULL) {
-		new_elem->ps 	= ps;
-		new_elem->version = 0;
-		new_elem->next 	= NULL;
+	new_elem->ps 	= ps;
+	new_elem->next 	= NULL;
 
-		if (list == NULL)
-			return new_elem;
+	if (list == NULL)
+		return new_elem;
 
-		elem = list;
-		while (elem->next != NULL)
-			elem = elem->next;
-		elem->next = new_elem;
-	} else
-		list = NULL;
+	elem = list;
+	while (elem->next != NULL)
+		elem = elem->next;
+	elem->next = new_elem;
 
 	return list;
 }
@@ -242,6 +243,7 @@ ps_list_find (pi_socket_list_t *list, int pi_sd)
  *		_contains_ a pointer to the socket
  *
  ***********************************************************************/
+/* fpillet: unused
 static pi_socket_list_t *
 ps_list_find_elem (pi_socket_list_t *list, int pi_sd) 
 {
@@ -255,7 +257,7 @@ ps_list_find_elem (pi_socket_list_t *list, int pi_sd)
 
 	return NULL;
 }
-
+*/
 
 /***********************************************************************
  *
@@ -955,7 +957,7 @@ pi_socket(int domain, int type, int protocol)
 			protocol = PI_PF_DEV;
 	}
 
-	ps = calloc(sizeof(pi_socket_t), 1);
+	ps = calloc(1, sizeof(pi_socket_t));
 	if (ps == NULL) {
 		errno = ENOMEM;
 		return -1;
@@ -974,27 +976,12 @@ pi_socket(int domain, int type, int protocol)
 		return -1;
 	}
 
-	/* Initialize the rest of the fields */
+	/* Initialize the rest of the fields (calloc zeroes out
+	   all the fields we don't touch) */
 	ps->type 	= type;
 	ps->protocol 	= protocol;
-	ps->cmd 	= 0;
-
-	ps->laddr 	= NULL;
-	ps->laddrlen 	= 0;
-	ps->raddr 	= NULL;
-	ps->raddrlen 	= 0;
-
-	ps->protocol_queue = NULL;
-	ps->queue_len   = 0;
-	ps->cmd_queue   = NULL;
-	ps->cmd_len     = 0;
-	ps->device      = NULL;
-
 	ps->state       = PI_SOCK_CLOSE;
 	ps->command 	= 1;
-
-	ps->accept_to 	= 0;
-	ps->dlprecord 	= 0;
 
 #ifdef OS2
 	ps->os2_read_timeout 	= 60;
@@ -1659,45 +1646,45 @@ int
 pi_version(int pi_sd)
 {
 	size_t 	size;
-	pi_socket_list_t *elem;
+	pi_socket_t *ps;
 	struct  SysInfo si;
 	
 	/* FIXME This is an ugly hack for versions because cmp doesn't
 	 * go beyond 1.1 in its versioning because ReadSysInfo
 	 * provides the dlp version in dlp 1.2 and higher */
 
-	if (!(elem = ps_list_find_elem (psl, pi_sd))) {
+	if (!(ps = ps_list_find (psl, pi_sd))) {
 		errno = ESRCH;
 		return PI_ERR_SOCK_INVALID;
 	}
 	
-	if (elem->version != 0)
-		return elem->version;
+	if (ps->dlpversion)
+		return ps->dlpversion;
 	
-	if (dlp_ReadSysInfo (elem->ps->sd, &si) < 0)
+	if (dlp_ReadSysInfo (ps->sd, &si) < 0)
 		return 0x0000;
 
 	if (si.dlpMajorVersion != 0) {
-		elem->version = (si.dlpMajorVersion << 8) | si.dlpMinorVersion;
-		elem->maxrecsize = si.maxRecSize;		
-		return elem->version;
+		ps->dlpversion = (si.dlpMajorVersion << 8) | si.dlpMinorVersion;
+		ps->maxrecsize = si.maxRecSize;		
+		return ps->dlpversion;
 	}
 	
 	/* Enter command state */
-	elem->ps->command = 1;
+	ps->command = 1;
 
 	/* Get the version */
-	if (elem->ps->cmd == PI_CMD_CMP) {
-		size = sizeof(elem->version);
-		pi_getsockopt(elem->ps->sd, PI_LEVEL_CMP,
-			PI_CMP_VERS, &elem->version, &size);
-		elem->maxrecsize = DLP_BUF_SIZE;
+	if (ps->cmd == PI_CMD_CMP) {
+		size = sizeof(ps->dlpversion);
+		pi_getsockopt(ps->sd, PI_LEVEL_CMP,
+			PI_CMP_VERS, &ps->dlpversion, &size);
+		ps->maxrecsize = DLP_BUF_SIZE;
 	}
 
 	/* Exit command state */
-	elem->ps->command = 0;
+	ps->command = 0;
 
-	return elem->version;
+	return ps->dlpversion;
 }
 
 /***********************************************************************
@@ -1715,18 +1702,18 @@ pi_version(int pi_sd)
 unsigned long
 pi_maxrecsize(int pi_sd)
 {
-	pi_socket_list_t *elem;
+	pi_socket_t *ps;
 
-	if (!(elem = ps_list_find_elem (psl, pi_sd))) {
+	if (!(ps = ps_list_find (psl, pi_sd))) {
 		errno = ESRCH;
-		return PI_ERR_SOCK_INVALID;
+		return 0;
 	}
 
 	/* pi_version will read necessary info from device */
 	if (pi_version(pi_sd) == 0x0000)
 		return DLP_BUF_SIZE;
 
-	return elem->maxrecsize;
+	return ps->maxrecsize;
 }
 
 /***********************************************************************
