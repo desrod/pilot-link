@@ -73,19 +73,6 @@ delete_both (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 }
 
 static int
-archive_and_delete (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord)
-{
-	int result = 0;
-	
-	result = sh->AddArchiveRecord (sh, precord);
-	ErrorCheck(result);
-
-	result = delete_both (sh, dbhandle, drecord, precord);
-
-	return result;
-}
-
-static int
 store_record_on_palm (SyncHandler *sh, int dbhandle, DesktopRecord *drecord)
 {
 	PilotRecord *precord;
@@ -124,7 +111,8 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 {
 	int parch = 0, pdel = 0, pchange = 0;
 	int darch = 0, ddel = 0, dchange = 0;
-
+	int result = 0;
+	
 	/* The flags are calculated like this because the deleted and dirty
 	   pilot flags are not mutually exclusive */
 	if (precord) {
@@ -146,22 +134,27 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		store_record_on_palm (sh, dbhandle, drecord);
 		
 	} else if (parch && ddel) {
-		archive_and_delete (sh, dbhandle, drecord, precord);
-		
+		sh->ReplaceRecord (sh, drecord, precord);
+		sh->SetArchiveStatus (sh, drecord, 0);
+
 	} else if (parch && !darch && !dchange) {
-		archive_and_delete (sh, dbhandle, drecord, precord);
+		sh->SetArchiveStatus (sh, drecord, 1);
 		
 	} else if (parch && drecord == NULL) {
-		archive_and_delete (sh, dbhandle, NULL, precord);
+		sh->AddRecord (sh, precord);
+		sh->SetArchiveStatus (sh, drecord, 1);
 		
 	} else if (parch && pchange && !darch && dchange) {
 		int comp;
 		
 		comp = sh->Compare (sh, precord, drecord);
 		if (comp == 0) {
-			archive_and_delete (sh, dbhandle, drecord, precord);
+			sh->SetArchiveStatus (sh, drecord, 1);
+			result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+			ErrorCheck(result);
 		} else {
-			dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+			result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+			ErrorCheck(result);
 			store_record_on_palm (sh, dbhandle, drecord);				
 			sh->AddRecord (sh, precord);
 		}
@@ -175,15 +168,16 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		
 		comp = sh->Compare (sh, precord, drecord);
 		if (comp == 0) {
-			archive_and_delete (sh, dbhandle, drecord, precord);
+			result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
+			ErrorCheck(result);
 		} else {
-			sh->DeleteArchiveRecord (sh, drecord);
-			sh->AddRecord (sh, precord);
+			sh->SetArchiveStatus (sh, drecord, 0);
+			sh->ReplaceRecord (sh, drecord, precord);
 		}
 		
 	} else if (pchange && darch && !dchange) {
-		sh->DeleteArchiveRecord (sh, drecord);
-		sh->AddRecord (sh, precord);
+		sh->SetArchiveStatus (sh, drecord, 0);
+		sh->ReplaceRecord (sh, drecord, precord);
 			
 	} else if (pchange && dchange) {
 		int comp;

@@ -57,19 +57,16 @@ struct _SyncHandler {
 	int (*Post) (SyncHandler *, int dbhandle);
 	
 	int (*SetPilotID) (SyncHandler *, DesktopRecord *, recordid_t);
+	int (*SetArchiveStatus) (SyncHandler *, DesktopRecord *, int archive);
 
 	int (*ForEach) (SyncHandler *, DesktopRecord **);
 	int (*ForEachModified) (SyncHandler *, DesktopRecord **);
 	int (*Compare) (SyncHandler *, PilotRecord *, DesktopRecord *);
 	
 	int (*AddRecord) (SyncHandler *, PilotRecord *);
-	int (*AddArchiveRecord) (SyncHandler *, PilotRecord *);
-
 	int (*ReplaceRecord) (SyncHandler *, DesktopRecord *, PilotRecord *);
-
 	int (*DeleteRecord) (SyncHandler *, DesktopRecord *);
-	int (*DeleteArchiveRecord) (SyncHandler *, DesktopRecord *);
-
+	
 	int (*Match) (SyncHandler *, PilotRecord *, DesktopRecord **);
 	int (*FreeMatch) (SyncHandler *, DesktopRecord *);	
 	

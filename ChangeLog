@@ -1,3 +1,15 @@
+2000-10-30  JP Rosevear  <jpr@helixcode.com>
+
+	* include/pi-sync.h: Replace AddArchiveRecord and DeleteArchivedRecord
+	callbacks with the set archive status callback.
+
+	* libsock/sync.c (store_record_on_palm): Do some proper
+	result checking for errors.
+	(sync_record): Use new set archive status callback which makes the 
+	semantics such that the implementor can choose several implementations
+	and preserve continuity.  Replaces AddArchiveRecord and
+	DeleteArchiveRecord.
+
 2000-10-28    <jpr@helixcode.com>
 
 	* Makefile.in: install pix dir properly
