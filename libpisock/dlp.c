@@ -4537,12 +4537,11 @@ dlp_VFSFileOpen(int sd, int volRefNum, const char *path, int openMode,
 
 	dlp_request_free (req);
 	
-	if (result >= 0) {
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		     "OpenFileRef: 0x%x\n",
-			get_long (DLP_RESPONSE_DATA (res, 0, 0))));
-
+	if (result > 0) {
 		*fileRef = get_long(DLP_RESPONSE_DATA (res, 0, 0));
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "OpenFileRef: 0x%x\n", *fileRef));
 	}
 	
 	dlp_response_free(res);
@@ -5679,7 +5678,7 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
-	RequireDLPVersion(sd,1, 3);
+	RequireDLPVersion(sd,1,2);
 	Trace(dlp_VFSFileResize);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -5726,7 +5725,7 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	RequireDLPVersion(sd,1, 3);
+	RequireDLPVersion(sd,1,2);
 	Trace (dlp_VFSFileSize);
 	
 	req = dlp_request_new (dlpFuncVFSFileSize, 1, 4);
@@ -5737,7 +5736,7 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 	
 	dlp_request_free (req);
 	
-	if (result >= 0) {
+	if (result > 0) {
 		*size = get_long (DLP_RESPONSE_DATA (res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
