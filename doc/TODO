@@ -18,8 +18,13 @@ Major Issues
 	- Check RPC code (something broken on large-endian machines?)
 
         - pilot-addresses -T header fix (don't import header into record)
+	  - Progress output per record
+	  - Check for 0-byte files on read
+	  - Strip CR/LF on read
+	  - Export categories to csv
 
         - pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
+	  - Split out "Sync" from Backup function
 
 
 	Fixed/Closed
@@ -40,6 +45,7 @@ Major Issues
 
 	- Fix the C++ test(s) in ./configure, and roll all of this back into
 	  autogen.sh/automake scripts.
+
 
 Minor Issues
 ------------
