@@ -1,7 +1,6 @@
 INCLUDES = 			\
 	-I../include		\
-	-I$(top_srcdir)/include	\
-	$(ICONV_CFLAGS)
+	-I$(top_srcdir)/include
 
 serial_FILES = 		\
 	unixserial.c 	\
@@ -63,13 +62,12 @@ libpisock_la_SOURCES =  \
 	socket.c	\
 	syspkt.c	\
 	todo.c		\
-	util.c		\
 	utils.c		\
 	veo.c		\
 	versamail.c
 
 libpisock_la_LIBADD = \
-	$(ICONV_LIBS) @usb_libs@
+	@usb_libs@
 
 libpisock_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
