@@ -1,5 +1,17 @@
 2002-07-23  David A. Desrosiers <hacker at gnu-designs dot com>
 
+	* src/pilot-datebook/pilot-datebook-update.c: Fixed indenting,
+	  function comments, GPL banner, copyright
+
+	* src/pilot-datebook/pilot-datebook-windat.c: Ditto, signedness
+	  fixes
+
+	* src/pilot-datebook/pilot-datebook-shorttxt.c: Ditto
+
+	* src/pilot-datebook/pilot-datebook-compare.c: Ditto
+
+	* src/pilot-datebook/pilot-datebook-job.c: Ditto
+
 	* src/install-datebook.c: Fix for wrong number of fields
 	  encountered, updated to getopt_long, cleansed
 
