@@ -519,14 +519,18 @@ fi
 
 AM_CONDITIONAL(WITH_JAVA, $use_java)
 
+
 if $use_java; then
 	msg_java=yes
+	JAVA_VERSION=`java -version 2>&1 | grep '^java version' | awk -F\" '{print $2}'`
 fi
 
 AC_SUBST(JAVA)
 AC_SUBST(JAVAC)
 AC_SUBST(JAR)
 AC_SUBST(JAVABASE)	
+AC_SUBST(JAVA_VERSION)
+
 
 dnl ******************************
 dnl TCL
@@ -545,6 +549,7 @@ AC_SUBST(TCL_LIB_FILE)
 AC_SUBST(TCL_LIB_FLAG)
 AC_SUBST(TCL_LIB_SPEC)
 AC_SUBST(TCL_LIBS)
+AC_SUBST(TCL_VERSION)
 AC_SUBST(TCLSH_PROG)
 AC_SUBST(WISH_PROG)
 
@@ -737,8 +742,8 @@ echo "
 
   External Language Support
   -------------------------.
-  TCL support............. : $msg_tcl
-  Java support............ : $msg_java	
+  TCL support............. : $msg_tcl	$TCL_VERSION
+  Java support............ : $msg_java	$JAVA_VERSION
   Python support.......... : $msg_python	$PYTHONVER
   Perl support............ : $msg_perl	$PERL_VERSION
 "
