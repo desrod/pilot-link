@@ -31,7 +31,7 @@
 #ifdef __EMX__
 #include <sys/types.h>
 #endif
-#include "getopt.h"
+#include <getopt.h>
 #include <sys/stat.h>
 #include <signal.h>
 #include <utime.h>
@@ -52,7 +52,8 @@ char *progname;
 char *exclude[100];
 int numexclude = 0;
 
-RETSIGTYPE SigHandler(int signal);
+int pilot_connect(char const *port);
+static void Help(char *progname);
 
 /***********************************************************************
  *
@@ -72,8 +73,7 @@ void MakeExcludeList(char *efile)
 
 	/*  If the Exclude file cannot be opened, ... */
 	if (!f) {
-		fprintf(stderr, "Unable to open exclude list file '%s'.\n",
-			efile);
+		printf("Unable to open exclude list file '%s'.\n", efile);
 		exit(1);
 	}
 
@@ -145,87 +145,53 @@ static void protect_name(char *d, char *s)
  ***********************************************************************/
 void Connect(void)
 {
-	struct pi_sockaddr addr;
-	int ret;
+        struct pi_sockaddr addr;
+        int ret;
 
-	if (sd != 0)
-		return;
+        if (sd != 0)
+                return;
 
-	signal(SIGHUP, SigHandler);
-	signal(SIGINT, SigHandler);
-	signal(SIGSEGV, SigHandler);
+        if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+                perror("   pi_socket");
+                exit(1);
+        }
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("   pi_socket");
-		exit(1);
-	}
+        addr.pi_family = PI_AF_SLP;
+        strcpy(addr.pi_device, device);
 
-	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, device);
+        ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
+        if (ret == -1) {
+                fprintf(stderr, "\n   Unable to bind to port %s\n",
+                        device);
+                perror("   pi_bind");
+                fprintf(stderr, "\n");
+                exit(1);
+        }
 
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
+        printf
+            ("   Port: %s\n\n   Please press the HotSync button now...\n",
+             device);
 
-	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-	     device);
+        ret = pi_listen(sd, 1);
+        if (ret == -1) {
+                fprintf(stderr, "\n   Error listening on %s\n", device);
+                perror("   pi_listen");
+                fprintf(stderr, "\n"); 
+                exit(1);
+        }
 
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
+        sd = pi_accept(sd, 0, 0);
+        if (sd == -1) {
+                fprintf(stderr, "\n   Error accepting data on %s\n",
+                        device);
+                perror("   pi_accept");
+                fprintf(stderr, "\n"); 
+                exit(1);
+        }
 
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			device);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	fprintf(stderr, "Connected...\n");
+        fprintf(stderr, "Connected...\n");
 }
 
-/***********************************************************************
- *
- * Function:    Disconnect
- *
- * Summary:     Disconnect from the device and close the open socket
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/ 
-void Disconnect(void)
-{
-	if (sd == 0)
-		return;
-
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-	sd = 0;
-}
-
-RETSIGTYPE SigHandler(int signal)
-{
-	puts("   Abort on signal!");
-	if (sd != 0) {
-		dlp_AbortSync(sd);
-		pi_close(sd);
-	}
-	exit(3);
-}
 
 /***********************************************************************
  *
@@ -409,8 +375,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		}
 
 		if (dlp_OpenConduit(sd) < 0) {
-			fprintf(stderr,
-				"Exiting on cancel, all data was not backed up, halted before backing up '%s'.\n",
+			printf("Exiting on cancel, all data was not backed up, halted before backing up '%s'.\n",
 				info.name);
 			exit(1);
 		}
@@ -501,8 +466,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		if (remove_deleted && dlp_OpenConduit(sd) < 0) {
 			/* If the connection has gone down here, there is
 			   probably a communication error. */
-			fprintf(stderr,
-				"Exiting on error, stopped before removing files.\n");
+			printf("Exiting on error, stopped before removing files.\n");
 			exit(1);
 		}
 
@@ -515,7 +479,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 						printf("Archiving '%s'.\n", orig_files[i]);
 						sprintf(newname, "%s/%s", archive_dir, &orig_files[i] [dirname_len + 1]);
 						if (rename (orig_files[i], newname) != 0) {
-							fprintf(stderr, "rename(%s, %s) ", orig_files [i], newname);
+							printf("rename(%s, %s) ", orig_files [i], newname);
 							perror("failed");
 						}
 					} else {
@@ -530,7 +494,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 	}
 
 	printf("%s backup done.\n",
-	       (rom == 2 ? "OS" : (rom == 1 ? "Flash" : "RAM")));
+	       (rom == 2 ? "\nOS" : (rom == 1 ? "\nFlash" : "\nRAM")));
 }
 
 /***********************************************************************
@@ -553,8 +517,7 @@ void Fetch(char *dbname)
 	Connect();
 
 	if (dlp_OpenConduit(sd) < 0) {
-		fprintf(stderr,
-			"Exiting on cancel, stopped before fetching '%s'.\n",
+		printf("Exiting on cancel, stopped before fetching '%s'.\n",
 			dbname);
 		exit(1);
 	}
@@ -619,8 +582,7 @@ void Delete(char *dbname)
 	Connect();
 
 	if (dlp_OpenConduit(sd) < 0) {
-		fprintf(stderr,
-			"Exiting on cancel, stopped before deleting '%s'.\n",
+		printf("Exiting on cancel, stopped before deleting '%s'.\n",
 			dbname);
 		exit(1);
 	}
@@ -699,8 +661,7 @@ void Restore(char *dirname)
 	db = (struct db **) calloc(dbcount, sizeof(struct db *));
 
 	if (!db) {
-		fprintf(stderr,
-			"Unable to allocate memory for directory entry table\n");
+		printf("Unable to allocate memory for directory entry table\n");
 		exit(1);
 	}
 
@@ -784,8 +745,7 @@ void Restore(char *dirname)
 	for (i = 0; i < dbcount; i++) {
 
 		if (dlp_OpenConduit(sd) < 0) {
-			fprintf(stderr,
-				"Exiting on cancel, all data not restored, stopped before restoing '%s'.\n",
+			printf("Exiting on cancel, all data not restored, stopped before restoing '%s'.\n",
 				db[i]->name);
 			exit(1);
 		}
@@ -832,8 +792,7 @@ void Install(char *filename)
 	Connect();
 
 	if (dlp_OpenConduit(sd) < 0) {
-		fprintf(stderr,
-			"Exiting on cancel, stopped before installing '%s'.\n",
+		printf("Exiting on cancel, stopped before installing '%s'.\n",
 			filename);
 		exit(1);
 	}
@@ -873,8 +832,7 @@ void Merge(char *filename)
 	Connect();
 
 	if (dlp_OpenConduit(sd) < 0) {
-		fprintf(stderr,
-			"Exiting on cancel, stopped before merging '%s'.\n",
+		printf("Exiting on cancel, stopped before merging '%s'.\n",
 			filename);
 		exit(1);
 	}
@@ -914,12 +872,12 @@ void List(int rom)
 {
 	struct DBInfo info;
 	int i;
+	int dbcount = 0; 
 
 	Connect();
 
 	if (dlp_OpenConduit(sd) < 0) {
-		fprintf(stderr,
-			"Exiting on cancel, stopped before listing databases.\n");
+		printf("Exiting on cancel, stopped before listing databases.\n");
 		exit(1);
 	}
 
@@ -929,16 +887,18 @@ void List(int rom)
 		printf("Reading list of databases in RAM...\n");
 
 	i = 0;
+
 	for (;;) {
 		if (dlp_ReadDBList
 		    (sd, 0, (rom ? 0x80 | 0x40 : 0x80), i, &info) < 0)
 			break;
+		dbcount++;
 		i = info.index + 1;
 
-		printf("'%s'\n", info.name);
+		printf("[%ld] \t%s\n", dbcount, info.name);
 	}
+	printf("\nList done. %d files found.\n", dbcount);
 
-	printf("List done.\n");
 }
 
 /***********************************************************************
@@ -962,8 +922,7 @@ void Purge(void)
 	Connect();
 
 	if (dlp_OpenConduit(sd) < 0) {
-		fprintf(stderr,
-			"Exiting on cancel, stopped before purging databases.\n");
+		printf("Exiting on cancel, stopped before purging databases.\n");
 		exit(1);
 	}
 
@@ -1010,50 +969,46 @@ void Purge(void)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Help(void)
+static void Help(char *progname)
 {
+	PalmHeader(progname);
 
-	fprintf(stderr, "\n");
-	fprintf(stderr, "   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n\n",
-		progname);
-	fprintf(stderr, "   -b[ackup] backupdir   = copy the contents of your palm to < backupdir >\n");
-	fprintf(stderr, "   -u[pdate] backupdir   = update backupdir with newer Palm data\n");
-	fprintf(stderr, "   -s[ync] backupdir     = same as - u above, but removes local files if data\n");
-	fprintf(stderr, "                           is removed from your Palm\n");
-	fprintf(stderr, "   -r[estore] backupdir  = restore backupdir to your Palm\n");
-	fprintf(stderr, "   -i[nstall] dbname(s)  = install local[prc | pdb] files to your Palm\n");
-	fprintf(stderr, "   -m[erge] filename(s)  = adds the records in <file> into the corresponding\n");
-	fprintf(stderr, "                           Palm database\n");
-	fprintf(stderr, "   -f[etch] dbname(s)    = retrieve dbname(s) from your Palm\n");
-	fprintf(stderr, "   -d[elete] dbname(s)   = delete(permanently) dbname(s) from your Palm\n");
-	fprintf(stderr, "   -e[xclude] filename   = exclude dbname(s) listed in <filename> from being\n");
-	fprintf(stderr, "                           included by -backup, -sync, or -update.\n");
-	fprintf(stderr, "   -P[urge]              = purge any deleted data that hasn't been cleaned up\n");
-	fprintf(stderr, "                           by a sync\n\n");
- 	fprintf(stderr, "   -l[ist]               = list all application and 3 rd party data on the Palm\n");
-	fprintf(stderr, "   -L[istall]            = list all data, internal and external on the Palm\n");
-	fprintf(stderr, "   -v[ersion]            = report the version of %s\n",
-		progname);
-	fprintf(stderr, "                           (currently %d.%d.%d%s)\n",
-		PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
-		PILOT_LINK_PATCH);
-	fprintf(stderr, "   -h[elp]               = reprint this usage screen\n\n");
-	fprintf(stderr, "   -a modifies -s to archive deleted files in specified directory.\n");
-	fprintf(stderr, "   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n");
-	fprintf(stderr, "   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n");
-	fprintf(stderr, "   -I modifies -b, -u, and -s, to back up \"illegal\"\n");
-	fprintf(stderr, "      Unsaved Preferences.prc (normally skipped, per Palm's recommendation).\n");
-	fprintf(stderr, "   -q makes all the backup options shut up about skipped files.\n");
-	fprintf(stderr, "   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n");
- 	fprintf(stderr, "   The serial port used to connect to may be specified by the $PILOTPORT\n");
-	fprintf(stderr, "   environment variable in your shell instead of the command line.  If it is\n");
-	fprintf(stderr, "   not specified anywhere, it will default to /dev/pilot.\n\n");
- 	fprintf(stderr, "   Additionally, the baud rate to connect with may be specified by the\n");
-	fprintf(stderr, "   $PILOTRATE environment variable.If not specified, it will default to 9600.\n");
-	fprintf(stderr, "   Please use caution setting $PILOTRATE to higher values, as several types of\n");
-	fprintf(stderr, "   workstations have problems with higher baud rates.\n");
- 	fprintf(stderr, "   Always consult the man page(s) for additional usage of these options as well\n");
-	fprintf(stderr, "   as details on the results of combining other parameters together.\n\n");
+	printf("   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n\n"
+	       "   -b[ackup] backupdir   = copy the contents of your palm to < backupdir >\n"
+	       "   -u[pdate] backupdir   = update backupdir with newer Palm data\n"
+	       "   -s[ync] backupdir     = same as - u above, but removes local files if data\n"
+	       "                           is removed from your Palm\n"
+	       "   -r[estore] backupdir  = restore backupdir to your Palm\n"
+	       "   -i[nstall] dbname(s)  = install local[prc | pdb] files to your Palm\n"
+	       "   -m[erge] filename(s)  = adds the records in <file> into the corresponding\n"
+	       "                           Palm database\n"
+	       "   -f[etch] dbname(s)    = retrieve dbname(s) from your Palm\n"
+	       "   -d[elete] dbname(s)   = delete(permanently) dbname(s) from your Palm\n"
+	       "   -e[xclude] filename   = exclude dbname(s) listed in <filename> from being\n"
+	       "                           included by -backup, -sync, or -update.\n"
+	       "   -P[urge]              = purge any deleted data that hasn't been cleaned up\n"
+	       "                           by a sync\n\n"
+ 	       "   -l[ist]               = list all application and 3 rd party data on the Palm\n"
+	       "   -L[istall]            = list all data, internal and external on the Palm\n"
+	       "   -v[ersion]            = report the version of %s\n", progname, progname, progname);
+	printf("                           (currently %d.%d.%d%s)\n"
+	       "   -h[elp]               = reprint this usage screen\n\n"
+	       "   -a modifies -s to archive deleted files in specified directory.\n"
+	       "   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n"
+	       "   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n"
+	       "   -I modifies -b, -u, and -s, to back up \"illegal\"\n"
+	       "      Unsaved Preferences.prc (normally skipped, per Palm's recommendation).\n"
+	       "   -q makes all the backup options shut up about skipped files.\n"
+	       "   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n"
+ 	       "   The serial port used to connect to may be specified by the $PILOTPORT\n"
+	       "   environment variable in your shell instead of the command line.  If it is\n"
+	       "   not specified anywhere, it will default to /dev/pilot.\n\n"
+ 	       "   Additionally, the baud rate to connect with may be specified by the\n"
+	       "   $PILOTRATE environment variable.If not specified, it will default to 9600.\n"
+	       "   Please use caution setting $PILOTRATE to higher values, as several types of\n"
+	       "   workstations have problems with higher baud rates.\n"
+ 	       "   Always consult the man page(s) for additional usage of these options as well\n"
+	       "   as details on the results of combining other parameters together.\n\n", PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
 	exit(0);
 }
 
@@ -1071,8 +1026,7 @@ void Help(void)
 void Version(void)
 {
 	PalmHeader(progname);
-	fprintf(stderr,
-		"   Type 'man 7 pilot-link' at your shell for more information.\n\n");
+	printf("   Type 'man 7 pilot-link' at your shell for more information.\n\n");
 	exit(0);
 }
 
@@ -1107,12 +1061,14 @@ int main(int argc, char *argv[])
 	int do_unsaved = 0;
 	int i;
 	int mode;
+	int timespent = 0;
 	int quiet = 0;
-
+        time_t start,end;
+        start = time(NULL);
 	progname = argv[0];
 
 	if (argc < 2) {
-		Help();
+		Help(progname);
 	}
 
 	tmp = getenv("PILOTPORT");
@@ -1148,20 +1104,18 @@ int main(int argc, char *argv[])
 					}
 			}
 			if (strlen(argv[i]) != 2) {
-				fprintf(stderr,
-					"%s: Unknown option '%s'\n",
+				printf("%s: Unknown option '%s'\n",
 					argv[0], argv[i]);
-				Help();
+				Help(progname);
 			}
 
 			/* Check for commands that take a single argument */
 			else if (strchr("bus", argv[i][1])) {
 				mode = 0;
 				if (++i >= argc) {
-					fprintf(stderr,
-						"%s: Options '%s' requires argument\n",
+					printf("%s: Options '%s' requires argument\n",
 						argv[0], argv[i - 1]);
-					Help();
+					Help(progname);
 				}
 				action = 1;
 
@@ -1170,10 +1124,9 @@ int main(int argc, char *argv[])
 				mode = argv[i][1];
 				action = 1;
 				if (++i >= argc) {
-					fprintf(stderr,
-						"%s: Options '%s' requires argument\n",
+					printf("%s: Options '%s' requires argument\n",
 						argv[0], argv[i - 1]);
-					Help();
+					Help(progname);
 				}
 				/* Check for commands that take no arguments */
 			} else if (strchr("lLP", argv[i][1])) {
@@ -1187,30 +1140,27 @@ int main(int argc, char *argv[])
 				/* Check for options that take a single argument */
 			} else if (strchr("a", argv[i][1])) {
 				if (++i >= argc) {
-					fprintf(stderr,
-						"%s: Options '%s' requires argument\n",
+					printf("%s: Options '%s' requires argument\n",
 						argv[0], argv[i - 1]);
-					Help();
+					Help(progname);
 				}
 
 				/* Check for forcing commands */
 			} else if (argv[i][1] == 'v') {
 				Version();
 			} else if (argv[i][1] == 'h') {
-				Help();
+				Help(progname);
 
 			} else {
-				fprintf(stderr,
-					"%s: Unknown option '%s'\n",
+				printf("%s: Unknown option '%s'\n",
 					argv[0], argv[i]);
-				Help();
+				Help(progname);
 			}
 		} else {
 			if (!mode) {
-				fprintf(stderr,
-					"%s: Must specify command before argument '%s'\n",
+				printf("%s: Must specify command before argument '%s'\n",
 					argv[0], argv[i]);
-				Help();
+				Help(progname);
 			}
 			if (mode != 'p')
 				action = 1;
@@ -1219,8 +1169,8 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (!action) {
-		fprintf(stderr, "%s: Please give a command\n", argv[0]);
-		Help();
+		printf("%s: Please give a command\n", argv[0]);
+		Help(progname);
 	}
 
 	/* Process arguments */
@@ -1261,7 +1211,7 @@ int main(int argc, char *argv[])
 					continue;
 				default:
 					/* Shouldn't reach here */
-					Help();
+					Help(progname);
 				}
 		}
 		switch (mode) {
@@ -1308,11 +1258,13 @@ int main(int argc, char *argv[])
 			break;
 		default:
 			/* Shouldn't reach here */
-			Help();
+			Help(progname);
 		}
 	}
 
-	Disconnect();
-
+	pi_close(sd);
+        end=time(NULL);
+        timespent = (end-start);
+        printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
 	return 0;
 }

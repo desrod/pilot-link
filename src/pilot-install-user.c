@@ -17,7 +17,7 @@
  *
  */
 
-#include <getopt.h>
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -26,7 +26,7 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-int pilot_connect(char const *port);
+int pilot_connect(const char *port);
 static void Help(char *progname);
 
 struct option options[] = {
@@ -45,7 +45,6 @@ static const char *optstring = "hp:u:i:n:a:m:l:";
 int main(int argc, char *argv[])
 {
 	int c;
-	int index;
 	int sd = -1;
 	char *progname = argv[0];
 	char *port = NULL;
@@ -60,10 +59,11 @@ int main(int argc, char *argv[])
 	struct CardInfo C;
 	struct NetSyncInfo N;
 	unsigned long romversion;
+	extern int opterr;
+	opterr = 0;
 
 	while ((c =
-		getopt_long(argc, argv, optstring, options,
-			    &index)) != -1) {
+		getopt(argc, argv, optstring)) != -1) {
 		switch (c) {
 
 		  case 'h':
@@ -92,52 +92,55 @@ int main(int argc, char *argv[])
 	}
 
 	if (port == NULL) {
-		fprintf(stderr,
-			"\n** ERROR: You forgot to specify a valid port\n");
+		printf("ERROR: You forgot to specify a valid port\n");
 		Help(progname);
 		exit(1);
 	} else if (port != NULL) {
 		if (!user && userid) {
-			fprintf(stderr,
-				"\n** ERROR: You forgot to specify a valid username\n");
 			Help(progname);
+			printf("ERROR: You forgot to specify a valid username\n");
 			exit(1);
 		}
 		if (user && !userid) {
-			fprintf(stderr,
-				"\n** ERROR: You forgot to specify a valid numeric UserID\n");
 			Help(progname);
+			printf("ERROR: You forgot to specify a valid numeric UserID\n");
 			exit(1);
 		}
 		sd = pilot_connect(port);
+
+		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
 			exit(1);
 		} else {
 			dlp_ReadUserInfo(sd, &U);
 			dlp_ReadSysInfo(sd, &S);
+
 			C.card = -1;
 			C.more = 1;
+
 			while (C.more) {
-				if (dlp_ReadStorageInfo(sd, C.card + 1, &C)
-				    < 0)
+				if (dlp_ReadStorageInfo(sd, C.card + 1, &C) < 0)
 					break;
 				printf
 				    ("\n   Card #%d has %lu bytes of ROM, and %lu bytes of RAM (%lu of that is free)\n",
 				     C.card, C.romSize, C.ramSize,
 				     C.ramFree);
-				printf
-				    ("   It is called '%s', and was made by '%s'.\n",
-				     C.name, C.manufacturer);
+				printf("   It is called '%s', and was made by '%s'.\n", C.name, C.manufacturer);
 			}
+
+
+			/* Let's make sure we have valid arguments for these
+			   before we write the data to the Palm */
 			if (user != NULL && userid != NULL) {
-				strncpy(U.username, user,
-					sizeof(U.username) - 1);
+				strncpy(U.username, user, sizeof(U.username) - 1);
 				if (user && userid) {
-					U.userID = atoi(userid);
+					/* atoi should go away here, replace with strtoul() */
+					U.userID = atoi(userid); 
 				}
 
 				U.lastSyncDate = time((time_t *) 0);
 
+				/* Write the data to the Palm device */
 				dlp_WriteUserInfo(sd, &U);
 			}
 
@@ -153,6 +156,7 @@ int main(int argc, char *argv[])
 			     romversion);
 
 
+			/* Read and write the LanSync data to the Palm device */
 			if (dlp_ReadNetSyncInfo(sd, &N) >= 0) {
 				if (N.lanSync == 0) {
 					netsync = "Local HotSync";
@@ -172,10 +176,10 @@ int main(int argc, char *argv[])
 				dlp_WriteNetSyncInfo(sd, &N);
 
 				printf("\n");
-				printf("   NetSync:     = '%s'\n", netsync);
-				printf("   Host name    = '%s'\n", N.hostName);
-				printf("   IP address   = '%s'\n", N.hostAddress);
-				printf("   Netmask      = '%s'\n\n", N.hostSubnetMask);
+				printf("   NetSync:     = '%s'\n"
+				       "   Host name    = '%s'\n"
+				       "   IP address   = '%s'\n"
+				       "   Netmask      = '%s'\n\n", netsync, N.hostName, N.hostAddress, N.hostSubnetMask);
 			}
 			pi_close(sd);
 			exit(0);
@@ -187,18 +191,18 @@ int main(int argc, char *argv[])
 static void Help(char *progname)
 {
 	PalmHeader(progname);
-	fprintf(stderr, "   Assigns your Palm device a Username and unique UserID and can query the\n");
-	fprintf(stderr, "   device's Card Info\n\n");
-	fprintf(stderr, "   Usage: %s -p <port> -u \"User name\" -i <userid>\n", progname);
-	fprintf(stderr, "                       -n <hostname> -a <ip> -m <subnet>\n\n");
-	fprintf(stderr, "   Only the port option is required, the other options are... optional.\n\n");
-	fprintf(stderr, "   -p <port>       = use device file <port> to communicate with Palm\n");
-	fprintf(stderr, "   -u <user>       = your username, use quotes for spaces (see example)\n");
-	fprintf(stderr, "   -i <userid>     = a 5-digit numeric UserID, required for PalmOS\n");
-	fprintf(stderr, "   -n <hostname>   = the hostname of the desktop you are syncing with\n");
-	fprintf(stderr, "   -a <ip address> = ip address of the machine you connect your Palm to\n");
-	fprintf(stderr, "   -m <netmask>    = the subnet mask of the network your Palm is on\n\n");
-	fprintf(stderr, "   Example: %s -p /dev/ttyS0 -u \"John Q. Public\" -i 12345\n\n", progname);
+	printf("   Assigns your Palm device a Username and unique UserID and can query the\n"
+	       "   device's Card Info\n\n"
+	       "   Usage: %s -p <port> -u \"User name\" -i <userid>\n"
+	       "                       -n <hostname> -a <ip> -m <subnet>\n\n"
+	       "   Only the port option is required, the other options are... optional.\n\n"
+	       "   -p <port>       = use device file <port> to communicate with Palm\n"
+	       "   -u <user>       = your username, use quotes for spaces (see example)\n"
+	       "   -i <userid>     = a 5-digit numeric UserID, required for PalmOS\n"
+	       "   -n <hostname>   = the hostname of the desktop you are syncing with\n"
+	       "   -a <ip address> = ip address of the machine you connect your Palm to\n"
+	       "   -m <netmask>    = the subnet mask of the network your Palm is on\n\n"
+	       "   Example: %s -p /dev/ttyS0 -u \"John Q. Public\" -i 12345\n\n", progname, progname);
 
 	exit(0);
 }

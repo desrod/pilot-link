@@ -1,3 +1,16 @@
+2001-11-19  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* pilot-xfer.c: Working out the bugs, optarg is a mess. Blecch.
+	  Added a timer and numeric listing for file outputs.
+	  Beautification. Still getting segfaults.
+
+	* Conduits in the toplevel directory are all getting gutted. Fixed a
+	  few bugs with getopt() in there from a getopt_long() miscarriage.
+
+	* include/pi-version.h: decremented the version from 0.9.6-cvs to
+	  0.9.5.1. There's already some rogue 0.9.6 versions showing up in
+	  places. Until this is releasd, I'll keep it "standard" numerics.
+	
 2001-11-17  JP Rosevear  <jpr@ximian.com>
 
 	* tools/Makefile.am (EXTRA_DIST): add the language binding dirs

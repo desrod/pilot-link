@@ -1,5 +1,5 @@
 
-/*  A Bison parser, made from parsedate.y
+/*  A Bison parser, made from /src/cvs/palm/pilot-link/11-16-2001/pilot-link/parsedate.y
     by GNU Bison version 1.28  */
 
 #define YYBISON 1  /* Identify Bison output.  */

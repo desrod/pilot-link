@@ -32,7 +32,7 @@ int pilot_connect(const char *port) {
 	struct pi_sockaddr addr;
 
 	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
+		perror("   Reason: pi_socket");
 		return 0;
 	}
 
@@ -41,35 +41,36 @@ int pilot_connect(const char *port) {
 
 	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
 	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			port);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
+		printf("\n   Unable to bind to port %s\n", port);
+		perror("   Reason: pi_bind");
+		printf("\n");
+		pi_close(sd);
 		return 0;
 	}
 
 	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
+	    ("\n   Connecting to port: %s\n\n   Please press the HotSync button now...\n",
 	     port);
 
 	ret = pi_listen(sd, 1);
 	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", port);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
+		printf("\n   Error listening on %s\n", port);
+		perror("   Reason: pi_listen");
+		printf("\n");
+		pi_close(sd);
 		return 0;
 	}
 
 	sd = pi_accept(sd, 0, 0);
 	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			port);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
+		printf("\n   Error accepting data on %s\n", port);
+		perror("   Reason: pi_accept");
+		printf("\n");
+		pi_close(sd);
 		return 0;
 	}
 
-	fprintf(stderr, "   Connected...\n");
+	printf("   Connected...\n");
 
 	/* Ask the pilot who it is. */
 	dlp_ReadUserInfo(sd, &U);
