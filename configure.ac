@@ -191,7 +191,7 @@ dnl ******************************
 
 AC_ARG_ENABLE(conduits,
 		[  --enable-conduits       Build the userland conduits],,
-		enable_conduits="no"
+		enable_conduits="yes"
 )
 AM_CONDITIONAL(ENABLE_CONDUITS,[test "x$enable_conduits" != "xno"])
 
