@@ -24,8 +24,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/time.h> 	 
+#include <time.h>
 #include <unistd.h>
-
 #include <sys/types.h>
 #include <signal.h>
 #include <utime.h>
@@ -39,7 +40,6 @@
 #include "pi-dlp.h"
 #include "pi-version.h"
 #include "pi-header.h"
-#include "pi-tconfig.h"
 
 /* unsigned char typedef byte; */
 typedef unsigned char byte;
@@ -485,7 +485,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 			*/
 			totalsize += sbuf.st_size;
 		} else {
-			printf("\n");
+			/* printf("\n"); */
 		}
 
 		pi_file_close(f);

@@ -1238,11 +1238,9 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 
 			written += size;
 
-			/* FIXME - need to add callbacks for this info, not print here -DD
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
-			 */
 
 			if ((dlp_ReadResourceByIndex
 			     (socket, db, j, buffer, &type, &id,
@@ -1268,11 +1266,10 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 
 			written += size;
 
-			/* FIXME - need to add callbacks for this info, not print here -DD
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
-			*/
+
 			/* There is no way to restore records with these
 			   attributes, so there is no use in backing them up
 			 */
@@ -1285,7 +1282,6 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 				return -1;
 			}
 		}
-	/* printf("\n"); */
 	return dlp_CloseDB(socket, db);
 }
 
@@ -1444,11 +1440,9 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			    (socket, db, type, id, buffer, size) < 0)
 				goto fail;
 
-			/* FIXME - need to add callbacks for this info, not print here -DD
 			display_rate(j + 1, pf->nentries, ftell(pf->f),
 				     (double) ((unsigned long) time(NULL) -
 					       start_time));
-			*/
 			
 			/* If we see a 'boot' section, regardless of file
 			   type, require reset */
@@ -1487,11 +1481,9 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			     0) < 0)
 				goto fail;
 
-			/* FIXME - need to add callbacks for this info, not print here -DD
 			display_rate(j + 1, pf->nentries, ftell(pf->f),
 				     (double) ((unsigned long) time(NULL) -
 					       start_time));
-			*/
 		}
 		/* printf("\n"); */
 	}
