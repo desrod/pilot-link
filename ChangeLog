@@ -1,3 +1,11 @@
+2003-07-04 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pilot-xfer.c: Fixed some screen bugs
+	
+	* bindings/Java/README: Fixed old readme
+
+	* NEWS: Corrected attribution re: Java bindings
+
 2003-07-02  JP Rosevear  <jpr@ximian.com>
 
 	* tests/dlp-test.c (main): test SetDBInfo
