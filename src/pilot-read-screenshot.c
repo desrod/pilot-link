@@ -321,8 +321,8 @@ void WritePictures (int sd, int db, int type )
 	    }
 	  
 	  idx++;
-	  state.h = ( inBuf->data[4] << 8 )+ inBuf->data[5];
-	  state.w = ( inBuf->data[6] << 8 ) + inBuf->data[7];
+	  state.w = ( inBuf->data[4] << 8 )+ inBuf->data[5];
+	  state.h = ( inBuf->data[6] << 8 ) + inBuf->data[7];
 	  recs = inBuf->data[9];
 	  state.depth = inBuf->data[8];
 	  magic = ((unsigned long *)inBuf->data)[0];
