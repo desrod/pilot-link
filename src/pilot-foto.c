@@ -38,7 +38,7 @@
 #include "pi-file.h"
 #include "pi-socket.h"
 #include "pi-foto.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 /* Declare prototypes */
 int get_jpg_info(FILE *in, char *type, unsigned short *version,

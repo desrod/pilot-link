@@ -35,7 +35,7 @@
 #include "pi-header.h"
 #include "pi-palmpix.h"
 
-#include "userland.h"
+#include "pi-userland.h"
 
 #ifdef HAVE_PNG
 #include "png.h"

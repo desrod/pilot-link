@@ -28,7 +28,7 @@
 #include "pi-dlp.h"
 #include "pi-hinote.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 /*
  * Size of maximum buffer, containing 28k of note + a filename + \n + NUL at the end.

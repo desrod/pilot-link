@@ -26,7 +26,7 @@
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 static void *GetClip(int socket, int type, int *length)
 {

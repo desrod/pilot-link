@@ -43,7 +43,7 @@
 #include "pi-serial.h"
 #include "pi-slp.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 char hostname[130];
 struct in_addr address, netmask;

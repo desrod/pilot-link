@@ -34,7 +34,7 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 #include "pi-error.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 #ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>

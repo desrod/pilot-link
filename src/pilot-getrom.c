@@ -39,7 +39,7 @@
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 #ifndef DEFAULT_MODE
 #define DEFAULT_MODE mode_getrom

@@ -29,7 +29,7 @@
 #include "pi-hinote.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 /* constants to determine how to produce memos */
 #define MEMO_MBOX_STDOUT 0

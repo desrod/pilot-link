@@ -30,7 +30,7 @@
 #include "pi-datebook.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 char *tclquote(char *in)
 {

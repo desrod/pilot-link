@@ -36,7 +36,7 @@
 #include "pi-serial.h"
 #include "pi-slp.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 
 void do_read(struct pi_socket *ps, int type, char *buffer, int length);

@@ -32,7 +32,7 @@
 
 #include "pi-file.h"
 #include "pi-source.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 /* Declare prototypes */
 long write_header(FILE *out);

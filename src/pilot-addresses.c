@@ -28,7 +28,7 @@
 #include "pi-dlp.h"
 #include "pi-address.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 /* These are indexes in the tabledelims array */
 enum terminators { term_newline=0,

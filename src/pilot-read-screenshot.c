@@ -33,7 +33,7 @@
 #include "pi-source.h"
 #include "pi-file.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 #ifdef HAVE_PNG
 # include "png.h"

@@ -28,7 +28,7 @@
 #include "pi-datebook.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 static char
 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },

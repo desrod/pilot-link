@@ -30,7 +30,7 @@
 #include "pi-header.h"
 #include "pi-dlp.h"
 #include "pi-socket.h"
-#include "userland.h"
+#include "pi-userland.h"
 
 #define MAIN_PDB_NAME "ImageLib_mainDB.pdb"
 #define IMG_PDB_NAME  "ImageLib_imageDB.pdb"
