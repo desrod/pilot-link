@@ -122,6 +122,9 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	if test -n "$(PICCLIB)"; then \
 		$(INSTALL_DATA) $(PICCLIB) $(libdir)/libpicc.la; \
 	fi
+	for p in $(CEXECS); do \
+		$(STRIP) -s ".libs/$$p"; \
+	done        
 	for p in $(EXECS); do \
 		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
 	done
@@ -138,15 +141,6 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
 	done
 	$(LIBTOOL) -n --finish $(libdir)
-
-install-strip: install
-	for p in $(CEXECS); do \
-		$(STRIP) -s ".libs/$$p"; \
-	done        
-#	for p in $(EXECS); do \
-#		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
-#	done        
-#	$(LIBTOOL) -n --finish $(libdir)
 
 uninstall:
 	-for p in $(EXECS) $(PERLEXECS) $(CXXEXECS) $(TCLEXECS); do \
