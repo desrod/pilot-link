@@ -697,7 +697,7 @@ typedef unsigned long FileRef;
 
 	extern int dlp_ReadNextRecInCategory
 		PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
-			recordid_t * id_, int *recindex, int *attr));
+			recordid_t *recuid, int *recindex, int *attr));
 
 	extern int dlp_ReadRecordById
 		PI_ARGS((int sd, int fHandle, recordid_t id_, pi_buffer_t *buffer,
@@ -705,7 +705,7 @@ typedef unsigned long FileRef;
 
 	extern int dlp_ReadRecordByIndex
 		PI_ARGS((int sd, int fHandle, int recindex, pi_buffer_t *buffer,
-			recordid_t * id_, int *attr, int *category));
+			recordid_t *recuid, int *attr, int *category));
 
 	/* Deletes all records in the opened database which are marked as
 	   archived or deleted.

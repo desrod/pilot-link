@@ -3697,7 +3697,7 @@ dlp_ResetSyncFlags(int sd, int fHandle)
  ***************************************************************************/
 int
 dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
-			  pi_buffer_t *buffer, recordid_t * id_, int *recindex,
+			  pi_buffer_t *buffer, recordid_t *recuid, int *recindex,
 			  int *attr)
 {
 	int 	result,
@@ -3741,7 +3741,7 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 
 			rec = dlp_ReadRecordByIndex(sd, fHandle,
 						    ps->dlprecord, buffer,
-						    id_, attr, &cat);
+						    recuid, attr, &cat);
 
 			if (rec >= 0) {
 				if (recindex)
@@ -3777,8 +3777,8 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 
 	if (result > 0) {
 		data_len = res->argv[0]->len - 10;
-		if (id_)
-			*id_ = get_long(DLP_RESPONSE_DATA(res, 0, 0));
+		if (recuid)
+			*recuid = get_long(DLP_RESPONSE_DATA(res, 0, 0));
 		if (recindex)
 			*recindex = get_short(DLP_RESPONSE_DATA(res, 0, 4));
 		if (attr)
@@ -4277,10 +4277,9 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id_, pi_buffer_t *buffer,
  *              fHandle  --> Database handle as returned by dlp_OpenDB().
  *              recindex --> Specifies record to get.
  *              buffer   <-- Data from specified record. emptied prior to reading data
- *              id_      <-- Record ID of record on palm device.
- *              size     <-- Size of data returned in buffer.
- *              attr     <-- Attributes from record on palm device.
- *              category <-- Category from record on palm device.
+ *              recuid   <-- ptr to Record ID of record on palm device (can be NULL).
+ *              attr     <-- ptr to Attributes from record on palm device (can be NULL).
+ *              category <-- ptr to Category from record on palm device (can be NULL).
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
@@ -4291,7 +4290,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id_, pi_buffer_t *buffer,
  ***************************************************************************/
 int
 dlp_ReadRecordByIndex(int sd, int fHandle, int recindex, pi_buffer_t *buffer,
-	recordid_t * id_, int *attr, int *category)
+	recordid_t * recuid, int *attr, int *category)
 {
 	int 	result,
 		large = 0;
@@ -4332,8 +4331,8 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int recindex, pi_buffer_t *buffer,
 	
 	if (result > 0) {
 		result = res->argv[0]->len - (large ? 14 : 10);
-		if (id_)
-			*id_ = get_long(DLP_RESPONSE_DATA(res, 0, 0));
+		if (recuid)
+			*recuid = get_long(DLP_RESPONSE_DATA(res, 0, 0));
 		if (attr)
 			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, large ? 12 : 8));
 		if (category)
@@ -4346,7 +4345,7 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int recindex, pi_buffer_t *buffer,
 
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
 			 record_dump(
-				get_long(DLP_RESPONSE_DATA(res, 0, 0)),			/* recID */
+				get_long(DLP_RESPONSE_DATA(res, 0, 0)),			/* recUID */
 				get_short(DLP_RESPONSE_DATA(res, 0, 4)),		/* index */
 				get_byte(DLP_RESPONSE_DATA(res, 0, large ? 12 : 8)),	/* flags */
 				get_byte(DLP_RESPONSE_DATA(res, 0, large ? 13 : 9)),	/* catID */
