@@ -80,9 +80,6 @@ int help_fn(int sd, int argc, char **argv)
 	printf("Built-in commands:\n\n");
 	for (i = 0; command_list[i].name != NULL; i++) {
 		printf("%s\t\n", command_list[i].name);
-//      if ((i % 5) == 4) {
-//       printf("\n");
-//      }
 	}
 	printf("\n");
 	printf("Use '<command> -help' for additional syntax\n\n");
@@ -178,6 +175,7 @@ char *timestr(time_t t)
 int df_fn(int sd, int argc, char **argv)
 {
 	struct CardInfo C;
+	int i;
 
 	C.card = -1;
 	C.more = 1;
@@ -186,18 +184,17 @@ int df_fn(int sd, int argc, char **argv)
 		if (dlp_ReadStorageInfo(sd, C.card + 1, &C) < 0)
 			break;
 
-		printf("/***\n *\n");
-		printf(" * ROM      : %lu bytes (%luk) \n", C.romSize,
+		printf("ROM      : %lu bytes  (%luk) \n", C.romSize,
 		       (C.romSize / 1024));
-		printf(" * RAM      : %lu bytes (%luk) \n", C.ramSize,
+		printf("RAM      : %lu bytes  (%luk) \n", C.ramSize,
 		       (C.ramSize / 1024));
-		printf(" * Free RAM : %lu bytes (%luk) \n", C.ramFree,
+		printf("Free RAM : %lu bytes  (%luk) \n", C.ramFree,
 		       (C.ramFree / 1024));
-		printf("   --------------------------------\n");
-		printf(" * Total : %lu bytes (%luk) \n",
+		for(i=0;i<33;i++) printf("-");
+		printf("\n");
+		printf("Total    : %lu bytes (%luk) \n\n",
 		       (C.romSize + C.ramSize),
 		       ((C.romSize + C.ramSize) / 1024));
-		printf(" *\n */\n");
 	}
 	return 0;
 }
@@ -227,7 +224,7 @@ int time_fn(int sd, int argc, char **argv)
 
 int ls_fn(int sd, int argc, char **argv)
 {
-	int c, ret;
+	int c, k, ret;
 	int lflag = 0;
 	int cardno, flags, start;
 	int rom_flag = 0;
@@ -298,9 +295,11 @@ int ls_fn(int sd, int argc, char **argv)
 			printf("Modified %s;\n  ",
 			       timestr(info.modifyDate));
 			printf("Backed up %s; ", timestr(info.backupDate));
+			printf("\n ");
+			for (k = 0; k < 81; k++) { 
+				printf("\n"); 
+			}
 			printf("\n");
-			printf
-			    ("  --------------------------------------------------------------------------------\n");
 		}
 
 		if (info.index < start) {

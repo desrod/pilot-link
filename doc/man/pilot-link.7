@@ -1,30 +1,30 @@
 .TH PILOT-LINK 7 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
 .SH NAME
 pilot-link \- a suite of tools for communicating with Palm Computing, Inc. 
-Palm Devices as well as the Handspring Visor, TRGPro, and other devices 
+Palm Devices as well as the Handspring Visor, TRGPro, and other devices
 which conform to this standard (PalmOS licensed devices).
 .SH DESCRIPTION
 The
 .B pilot-link
-suite of tools contains a series of conduits for moving information to and from
-your Palm device and your desktop or workstation system.
+suite of tools contains a series of conduits for moving information to and
+from your Palm device and your desktop or workstation system.
 .SH TARGET DEVICE
 All of the
 .B pilot-link
 programs will default to
 .B /dev/pilot
-as the default serial device used to communicate with a Palm.
-In general, if the environment variable
+as the default serial device used to communicate with a Palm. In general, if
+the environment variable
 .B $PILOTPORT
-is set, its value will override the default.
-A serial device specified on the command-line will be used regardless of any
+is set, its value will override the default. A serial device specified on
+the command-line will be used regardless of any
 $PILOTPORT setting.
 .PP
-The default connection rate is 9600 baud.
-You are welcome to try higher baud rates (19200, 38400, 57600 or higher) by setting the
+The default connection rate is 9600 baud. You are welcome to try higher baud
+rates (19200, 38400, 57600 or higher) by setting the
 .B $PILOTRATE
-environment variable, but various machines have various limitations.
-(Be careful about values higher than 115200 on Linux boxes if you've been using 
+environment variable, but various machines have various limitations. (Be
+careful about values higher than 115200 on Linux boxes if you've been using
 setserial to change the multiplier.)
 .SH USAGE
 Here is a list of programs available from within the
@@ -41,8 +41,8 @@ command-line interface to a Palm debug monitor
 .TP
 .B dlpsh
 command-line interface to Palm HotSync protocol. This is very useful for
-debugging potential problems with your serial port. Query the RAM/ROM, 
-list databases, change your UserID or Username, and many more functions.
+debugging potential problems with your serial port. Query the RAM/ROM, list
+databases, change your UserID or Username, and many more functions.
 
 .TP
 .B getrom
@@ -127,20 +127,21 @@ information
 
 .TP
 .B pilot-mail
-import mail from POP3 mailbox into Palm's default Mail application, and send mail via sendmail.
-This has been replaced by 
-.I pilot-mailsync
-from Hollis Blanchard. Please see the CREDITS file for additional information on how to 
-obtain this package. 
+import mail from POP3 mailbox into Palm's default Mail application, and send
+mail via sendmail. This has been replaced by
+.I pilot-mailsync 
+from Hollis Blanchard. Please see the CREDITS file for additional
+information on how to obtain this package.
 
 .TP
 .B pilot-schlep
-stores a single file on the Palm or retrieve one from the Palm
+stores a single file of any data type (such as .zip or .mp3) on the Palm or
+retrieves one from the Palm
 
 .TP
 .B pilot-undelete
-turn previously archived records into normal records by resetting the
-Dirty bit
+turn previously archived records into normal records by resetting the Dirty
+bit
 
 .TP
 .B pilot-xfer
@@ -155,7 +156,7 @@ export Palm expense database into text format
 .TP
 .B read-ical
 export Palm Datebook and ToDo databases (DatebookDB.pdb and ToDoDB.pdb
-respectively)  into an Ical calendar (ical is required)
+respectively) into an Ical calendar (ical is required)
 
 .TP
 .B read-todos
@@ -167,13 +168,13 @@ export Palm Datebook into a 'remind' data file
 
 .TP
 .B sync-plan
-completely synchronize the Palm datebook with the Plan calendar via
-netplan, including authenticating to the netplan server
+completely synchronize the Palm datebook with the Plan calendar via netplan,
+including authenticating to the netplan server
 
 .SH ADVANCED PROGRAMS
-Some of these programs are not intended for general end-users.
-More detailed documentation on their usage can be obtained by 
-reading the source of the application.
+Some of these programs are not intended for general end-users. More detailed
+documentation on their usage can be obtained by reading the source of the
+application.
 .TP
 .B ccexample
 test program demonstrating C++ interface
@@ -198,10 +199,9 @@ is:
 .RS
 
 The pilot-unix mailing list is for discussion and idea-sharing for those
-interested in using your Palm PDA with UNIX systems. This includes people 
-who are interested in helping to develop tools to allow the
-Palm to operate with UNIX, and possibly to develop an SDK for the Palm
-for Unix.
+interested in using your Palm PDA with UNIX systems. This includes people
+who are interested in helping to develop tools to allow the Palm to operate
+with UNIX, and possibly to develop an SDK for the Palm for Unix.
 .RE
 .PP
 For more information, including how to subscribe to the list, send mail
@@ -230,8 +230,8 @@ This manual page was written by David H. Silber, and updated for this version of
 .B pilot-link 
 by David A. Desrosiers.
 
-Current maintainer of pilot-link as of the authoring of this manpage is 
-David A. Desrosiers. 
+Current maintainer of pilot-link as of the authoring of this manpage is
+David A. Desrosiers.
 
 Any questions or problems with 
 .B pilot-link

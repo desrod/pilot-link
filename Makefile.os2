@@ -95,13 +95,17 @@ PERLEXECS = pilot-undelete ietf2datebook sync-plan
 
 GETOPT = getopt.o getopt1.o
 
-EXECS = $(CEXECS) $(WITHOUTTCL) $(WITHCXX) $(WITHOUTPERL5)
+EXECS = INITIAL $(CEXECS) $(WITHOUTTCL) $(WITHCXX) $(WITHOUTPERL5)
 
 PILIB = libsock/libpisockdll.a
 PICCLIB = libcc/libpicc.a
 PIHEADER = libsock/pi-header.o
 
 all: $(EXECS)
+
+INITIAL:
+        cp include\pi-sockaddr.h.in include\pi-sockaddr.h
+        touch include\pi-config.h
 
 $(PILIB): FORCE
 	$(SUBMAKE_COMM) libpisockdll.a

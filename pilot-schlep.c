@@ -207,11 +207,11 @@ void Help(void)
 	fprintf(stderr, "      -f[etch]   > file_to_write_to\n");
 	fprintf(stderr, "      -d[elete]\n\n");
 	fprintf(stderr, "   Examples:\n\n");
-	fprintf(stderr, "   To install a file on your Palm:\n");
-	fprintf(stderr, "      %s /dev/ttyS0 -i < MyProg.prc\n\n",
+	fprintf(stderr, "   To store a file on your Palm:\n");
+	fprintf(stderr, "      %s /dev/ttyS0 -i < AnyFile.zip\n\n",
 		progname);
-	fprintf(stderr, "    To extract a file from your Palm:\n");
-	fprintf(stderr, "      %s /dev/ttyS3 -f > ExtractedProg.prc\n\n",
+	fprintf(stderr, "    To unpack a stored file from your Palm:\n");
+	fprintf(stderr, "      %s /dev/ttyS3 -f > AnyFile.zip\n\n",
 		progname);
 	exit(0);
 }

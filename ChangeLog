@@ -1,3 +1,25 @@
+2001-05-09  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* pilot-schlep.c: Updated the help verbage to be a bit more verbose
+	  about what the tool actually does. (Walter Koch, Voytek Eymont)
+
+	* man/pilot-link.7: Updated verbage to reflect change in pilot-schlep,
+	  also repaginated page to 80 cols. (David A. Desrosiers)
+
+	* man/pilot-addresses.1: Repaginated to 80 cols. (David A. Desrosiers)
+
+	* ccexample.cc: Yes, it's just a sample app, but all of this should
+	  compile cleanly. unsigned char* packed = (unsigned char*)mai.pack();
+	  fixes where required, and delete[] fixes also. (David A. Desrosiers)
+
+	* Makefile.os2: Temporary fix for compilation buglet, need to revisit
+	  this when I get a proper OS/2 workstation built here for testing. 
+	  Credit for this goes to several people on the os2-pda mailing list
+	  (John Poltorak, Bob Wittig, others. Thanks guys!)
+
+	* dlpsh.c: Cleaned up the 'df' function again, no more eye-candy. Need
+	  to clean up argument parsing here. (David A. Desrosiers)
+
 2001-04-29  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* MAJOR change to the codebase, everything was properly 

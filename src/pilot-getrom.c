@@ -96,22 +96,14 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	fprintf(stderr,
-		"   Warning: Please completely back up your Palm (with pilot-xfer -b)\n");
+	fprintf(stderr, "   Warning: Please completely back up your Palm (with pilot-xfer -b)\n");
 	fprintf(stderr, "            before using this program!\n\n");
-	fprintf(stderr,
-		"   NOTICE: Use of this program may place you in violation\n");
-	fprintf(stderr,
-		"           of your license agreement with Palm Computing.\n\n");
-	fprintf(stderr,
-		"           Please read your Palm Computing handbook (\"Software\n");
-	fprintf(stderr,
-		"           License Agreement\") before running this program.\n\n");
-	fprintf(stderr,
-		"   Start HotSync (not getrom.prc) on your Palm.\n");
-	fprintf(stderr,
-		"   Port: %s\n\n   Please press the HotSync button...\n",
-		device);
+	fprintf(stderr, "   NOTICE: Use of this program may place you in violation\n");
+	fprintf(stderr, "           of your license agreement with Palm Computing.\n\n");
+	fprintf(stderr, "           Please read your Palm Computing handbook (\"Software\n");
+	fprintf(stderr, "           License Agreement\") before running this program.\n\n");
+	fprintf(stderr, "   Start HotSync (not getrom.prc) on your Palm.\n");
+	fprintf(stderr, "   Port: %s\n\n   Please press the HotSync button...\n", device);
 
 	sd = pi_accept(sd, 0, 0);
 	if (sd == -1) {
@@ -126,9 +118,9 @@ int main(int argc, char *argv[])
 	dlp_OpenConduit(sd);
 
 	PackRPC(&p, 0xA23E, RPC_IntReply, RPC_Long(0xFFFFFFFF), RPC_End);
-	/*err = */ dlp_RPC(sd, &p, &ROMstart);
+	/* err = */ dlp_RPC(sd, &p, &ROMstart);
 	PackRPC(&p, 0xA23E, RPC_IntReply, RPC_Long(ROMstart), RPC_End);
-	/*err = */ dlp_RPC(sd, &p, &ROMlength);
+	/* err = */ dlp_RPC(sd, &p, &ROMlength);
 
 	dlp_ReadFeature(sd, makelong("psys"), 1, &ROMversion);
 
