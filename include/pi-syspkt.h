@@ -57,6 +57,8 @@ extern "C" {
 	extern int sys_UnpackState
 		PI_ARGS((void *buffer, struct Pilot_state * s));
 
+        extern int sys_PackRegisters
+	        PI_ARGS((void *data, struct Pilot_registers *r));
 	extern int sys_UnpackRegisters
 		PI_ARGS((void *buffer, struct Pilot_registers * r));
 
@@ -135,6 +137,11 @@ extern "C" {
 	extern int RPC_Int_Void PI_ARGS((int sd, int trap));
 	extern int RPC_Ptr_Void PI_ARGS((int sd, int trap));
 
+	extern int RPC_MemCardInfo
+	        PI_ARGS((int sd, int cardno, char * cardname, char * manufname,
+			 int * version, long * date, long * romsize, long * ramsize,
+			 long * freeram));
+	
 #ifdef __cplusplus
 }
 #endif

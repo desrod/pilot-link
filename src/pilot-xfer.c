@@ -690,7 +690,7 @@ struct db {
 	unsigned long creator, type;
 };
 
-int compare(struct db *d1, struct db *d2)
+static int compare(struct db *d1, struct db *d2)
 {
 	/* types of 'appl' sort later then other types */
 	if (d1->creator == d2->creator)

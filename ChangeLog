@@ -1,3 +1,29 @@
+2002-01-03  JP Rosevear  <jpr@ximian.com>
+
+	* configure.in: put termios cspeed check in a private section
+
+	* pilot-link.m4: remove termios cspeed check
+
+	* pilot-debug.c: mark many functions static
+
+	* pilot-xfer.c (compare): make static
+
+	* reminders.c: end file with new line
+
+	* memos.c: ditto
+
+	* pi-csd.c: ditto
+
+	* pilot-mail.c: ditto
+
+	* read-todos.c: ditto
+
+	* libsock/pi-file.c: include time.h headers properly
+
+	* include/pi-config.h: remove time.h related includes
+
+	* include/pi-syspkt.h: add prototypes for publicly exposed symbols
+
 2002-01-02  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Nothin' but net! er, I mean whitespace. Minor changes. 

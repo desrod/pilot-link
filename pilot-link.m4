@@ -27,15 +27,6 @@ AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname putenv)
 
-AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
-  ac_cv_termios_cspeed,
-[AC_TRY_COMPILE([#include <termios.h>], [int main(void) {
- struct termios t;t.c_ispeed=t.c_ospeed=0;}],
-  ac_cv_termios_cspeed=yes,ac_cv_termios_cspeed=no)])
-if test $ac_cv_termios_cspeed = yes; then
-  AC_DEFINE(TERMIOS_CSPEED)
-fi
-
 AC_CACHE_CHECK([for sa_len],
   ac_cv_sa_len,
 [AC_TRY_COMPILE([#include <sys/types.h>

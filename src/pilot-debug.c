@@ -86,7 +86,7 @@ int tty;		/* Non-zero means standard input is a terminal-like
 
 
 /* Misc utility */
-void SetLabel(const char * label, const char * value)
+static void SetLabel(const char * label, const char * value)
 {
 #ifdef TK
   if (usetk)
@@ -94,28 +94,28 @@ void SetLabel(const char * label, const char * value)
 #endif
 }
 
-char *itoa(int val)
+static char *itoa(int val)
 {
         static 	char buf[20];
         sprintf(buf, "%d", val);
         return 	buf;
 }
 
-char *htoa(int val)
+static char *htoa(int val)
 {
         static char buf[9];
         sprintf(buf, "%8.8X", val);
         return buf;
 }
 
-char *h4toa(int val)
+static char *h4toa(int val)
 {
         static char buf[5];
         sprintf(buf, "%4.4X", val);
         return buf;
 }
 
-int SayInteractive(char *text)
+static int SayInteractive(char *text)
 {
         Tcl_DString d;
 
@@ -164,7 +164,7 @@ int SayInteractive(char *text)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int Say(char *text)
+static int Say(char *text)
 {
         Tcl_DString d;
 
@@ -199,7 +199,7 @@ int Say(char *text)
         return 0;
 }
 
-int Error(char *text)
+static int Error(char *text)
 {
         Tcl_SetResult(interp, text, TCL_STATIC);
         return TCL_ERROR;
@@ -216,7 +216,7 @@ int Error(char *text)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void SetModeLabel(void)
+static void SetModeLabel(void)
 {
         SetLabel(".state.halted", debugger ? "Debugger" :
                  console ? "Console" : "None");
@@ -235,7 +235,7 @@ void SetModeLabel(void)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void
+static void
 Read_Pilot(ClientData clientData, int mask)
 {
    unsigned char buf[4096];
@@ -441,7 +441,7 @@ Read_Pilot(ClientData clientData, int mask)
  * Returns:     Nothing
  *
  ***********************************************************************/
-unsigned long ParseAddress(char *address)
+static unsigned long ParseAddress(char *address)
 {
         return strtoul(address, 0, 16);
 }
@@ -457,7 +457,7 @@ unsigned long ParseAddress(char *address)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int SetBreakpoint(int bp, unsigned long address, int enabled)
+static int SetBreakpoint(int bp, unsigned long address, int enabled)
 {
 
         state.breakpoint[bp].address = address;
@@ -502,7 +502,7 @@ int majorVersion, minorVersion, stateVersion, buildVersion;
  * Returns:     Nothing
  *
  ***********************************************************************/
-void DbgGetDeviceVersion(void)
+static void DbgGetDeviceVersion(void)
 {
         int 	result;
         struct RPC_params p;
@@ -538,7 +538,7 @@ void DbgGetDeviceVersion(void)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int DbgAttach(int verify)
+static int DbgAttach(int verify)
 {
         struct RPC_params p;
 
@@ -606,7 +606,7 @@ int DbgAttach(int verify)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int DbgAttachDebugger(int verify)
+static int DbgAttachDebugger(int verify)
 {
         if (!port) {
                 Error
@@ -643,7 +643,7 @@ int DbgAttachDebugger(int verify)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int DbgAttachConsole(int verify)
+static int DbgAttachConsole(int verify)
 {
         int 	err;
         struct 	RPC_params p;
@@ -690,7 +690,7 @@ int DbgAttachConsole(int verify)
  * Returns:     Nothing
  *
  ***********************************************************************/
-unsigned long DbgRPC(struct RPC_params *p, int *error)
+static unsigned long DbgRPC(struct RPC_params *p, int *error)
 {
         unsigned long result = 0;
         int err = -1;
@@ -762,8 +762,8 @@ unsigned char buffer[0xffff];
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_g(ClientData clientData, Tcl_Interp * interp, int argc,
-           char *argv[])
+static int proc_g(ClientData clientData, Tcl_Interp * interp, int argc,
+		  char *argv[])
 {
         /* Use verify since the sys_Continue command produces no return value */
 
@@ -806,8 +806,8 @@ int proc_g(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_t(ClientData clientData, Tcl_Interp * interp, int argc,
-           char *argv[])
+static int proc_t(ClientData clientData, Tcl_Interp * interp, int argc,
+		  char *argv[])
 {
         /* Use verify since the sys_Continue command produces no return value */
 
@@ -854,8 +854,8 @@ int proc_t(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_attach(ClientData clientData, Tcl_Interp * interp, int argc,
-                char *argv[])
+static int proc_attach(ClientData clientData, Tcl_Interp * interp, int argc,
+		       char *argv[])
 {
         DbgAttach(2);           /* Two means explicit verify, as opposed to implicit */
 
@@ -877,8 +877,8 @@ int proc_attach(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_sendscreen(ClientData clientData, Tcl_Interp * interp, int argc,
-                    char *argv[])
+static int proc_sendscreen(ClientData clientData, Tcl_Interp * interp, int argc,
+			   char *argv[])
 {
         struct RPC_params p;
 
@@ -900,8 +900,8 @@ int proc_sendscreen(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_coldboot(ClientData clientData, Tcl_Interp * interp, int argc,
-                  char *argv[])
+static int proc_coldboot(ClientData clientData, Tcl_Interp * interp, int argc,
+			 char *argv[])
 {
         struct RPC_params p;
 
@@ -932,8 +932,8 @@ int proc_coldboot(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_warmboot(ClientData clientData, Tcl_Interp * interp, int argc,
-                  char *argv[])
+static int proc_warmboot(ClientData clientData, Tcl_Interp * interp, int argc,
+			 char *argv[])
 {
         struct RPC_params p;
 
@@ -963,8 +963,8 @@ int proc_warmboot(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_battery(ClientData clientData, Tcl_Interp * interp, int argc,
-                 char *argv[])
+static int proc_battery(ClientData clientData, Tcl_Interp * interp, int argc,
+			char *argv[])
 {
         int 	err,
 		warn,
@@ -1034,8 +1034,8 @@ int proc_battery(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_mirror(ClientData clientData, Tcl_Interp * interp, int argc,
-                char *argv[])
+static int proc_mirror(ClientData clientData, Tcl_Interp * interp, int argc,
+		       char *argv[])
 {
         int 	e1,
 		e2,
@@ -1116,8 +1116,8 @@ int proc_mirror(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_updatedisplay(ClientData clientData, Tcl_Interp * interp,
-                       int argc, char *argv[])
+static int proc_updatedisplay(ClientData clientData, Tcl_Interp * interp,
+			      int argc, char *argv[])
 {
         int 	e1,
 		e2;
@@ -1137,8 +1137,8 @@ int proc_updatedisplay(ClientData clientData, Tcl_Interp * interp,
 #define DB 0xFFFF0000
 #define LSSA 0xFA00  
 
-int proc_getdisplay(ClientData clientData, Tcl_Interp * interp, int argc,
-                    char *argv[])
+static int proc_getdisplay(ClientData clientData, Tcl_Interp * interp, int argc,
+			   char *argv[])
 {
 #ifndef TK
         Say("getdisplay is not available due to pilot-debug being compiled without Tk support");
@@ -1218,8 +1218,8 @@ int proc_getdisplay(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_transmit(ClientData clientData, Tcl_Interp * interp, int argc,
-                  char *argv[])
+static int proc_transmit(ClientData clientData, Tcl_Interp * interp, int argc,
+			 char *argv[])
 {
         if (argc < 2)
                 return TCL_OK;
@@ -1252,8 +1252,8 @@ int proc_transmit(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_pushbutton(ClientData clientData, Tcl_Interp * interp, int argc,
-                    char *argv[])
+static int proc_pushbutton(ClientData clientData, Tcl_Interp * interp, int argc,
+			   char *argv[])
 {
         struct 	RPC_params p;
         unsigned int key 	= 0;
@@ -1321,8 +1321,8 @@ int proc_pushbutton(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_pen(ClientData clientData, Tcl_Interp * interp, int argc,
-             char *argv[])
+static int proc_pen(ClientData clientData, Tcl_Interp * interp, int argc,
+		    char *argv[])
 {
         int x = atoi(argv[1]) - 32, y = atoi(argv[2]) - 33, pen =
             atoi(argv[3]);
@@ -1351,8 +1351,8 @@ int proc_pen(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_key(ClientData clientData, Tcl_Interp * interp, int argc,
-             char *argv[])
+static int proc_key(ClientData clientData, Tcl_Interp * interp, int argc,
+		    char *argv[])
 {
         /*struct RPC_params p; */
         int 	key = argv[1][0];
@@ -1392,8 +1392,8 @@ int proc_key(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_port(ClientData clientData, Tcl_Interp * interp, int argc,
-              char *argv[])
+static int proc_port(ClientData clientData, Tcl_Interp * interp, int argc,
+		     char *argv[])
 {
         static struct pi_sockaddr laddr;
         static Tcl_Channel channel;
@@ -1458,8 +1458,8 @@ int proc_port(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_feature(ClientData clientData, Tcl_Interp * interp, int argc,
-                 char *argv[])
+static int proc_feature(ClientData clientData, Tcl_Interp * interp, int argc,
+			char *argv[])
 {
 
         if (argc < 2) {
@@ -1529,7 +1529,7 @@ int proc_feature(ClientData clientData, Tcl_Interp * interp, int argc,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int proc_inittkdbg(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+static int proc_inittkdbg(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
 #ifndef TK
   Say("This executable does not contain Tk support!\n");
@@ -2070,7 +2070,7 @@ proc Say {text} {
 #endif
 }
 
-int proc_help(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+static int proc_help(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
   Say("\
 --- Help ---\n\
