@@ -3011,7 +3011,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 				0xffff,									/* index */
 				flags,
 				catID,
-				data, length));
+				data, (int)length));
 	}
 	
 	dlp_response_free(res);
@@ -5409,10 +5409,18 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 		for (at = 0; at < entries; at++) {
 			if ((*maxDirItems) > at) {
 				data[at].attr = 
-					get_long(DLP_RESPONSE_DATA (res,
-					 0, 0) + from);
+					get_long(DLP_RESPONSE_DATA (res, 0, from));
+
+				/* fix for Sony sims (and probably devices too): they return
+				   the attributes in the high word of attr instead of the low
+				   word. We can safely shift it since the high 16 bits are not
+				   used for VFS flags */
+				if ((data[at].attr & 0x0000FFFF) == 0 &&
+					(data[at].attr & 0xFFFF0000) != 0)
+					data[at].attr >>= 16;
+
 				strncpy (data[at].name,
-					 DLP_RESPONSE_DATA(res, 0, from + 4),
+					DLP_RESPONSE_DATA(res, 0, from + 4),
 					vfsMAXFILENAME);
 				data[at].name[vfsMAXFILENAME-1] = 0;
 				count++;
