@@ -199,7 +199,7 @@ claim:
 		}
 	}
 
-	if (try < 3) {
+	if (try && (try < 3)) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 		sleep (1);
 		goto restart;
