@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = 1.7
+
 SUBDIRS=popt 		\
 	libpisock 	\
 	libpisync 	\
