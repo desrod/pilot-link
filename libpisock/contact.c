@@ -18,33 +18,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 
 #include "pi-macros.h"
 #include "pi-contact.h"
-
-/***********************************************************************
- *
- * Function:    free_Contact
- *
- * Summary:	Free the members of an contact structure
- *
- * Parameters:  struct Contact *c
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void free_Contact(struct Contact *c)
-{
-	int 	i;
-
-	for (i = 0; i < NUM_CONTACT_ENTRIES; i++)
-		if (c->entry[i])
-			free(c->entry[i]);
-	if (c->picture != NULL)
-		pi_buffer_free (c->picture);
-}
+#include "pi-debug.h"
 
 #define hi(x) (((x) >> 4) & 0x0f)
 #define lo(x) ((x) & 0x0f)
@@ -52,82 +32,134 @@ void free_Contact(struct Contact *c)
 
 /***********************************************************************
  *
- * Function:    unpack_Contact
+ * Function:	free_Contact
  *
- * Summary:     Fill in the contact structure based on the raw record 
- *		data
+ * Summary:		Frees the allocated contents of a Contact.  Call this
+ *				when the structure's data is no longer needed.
  *
- * Parameters:  struct Contact *c, unsigned char *buffer, int len
+ * Parameters:	*c, the Contact to be disposed of
+ *
+ * Returns:		Nothing
+ *
+ ***********************************************************************/
+void
+free_Contact (struct Contact *c)
+{
+	int				i;
+
+	for (i = 0; i < NUM_CONTACT_ENTRIES; i++)
+		if (c->entry[i])
+			free(c->entry[i]);
+
+	if (c->picture != NULL)
+		pi_buffer_free (c->picture);
+}
+
+
+/***********************************************************************
+ *
+ * Function:	unpack_Contact
+ *
+ * Summary:		Unpacks a raw contact data into a common structure for
+ *				all known version of palmOne Contacts
+ *
+ * Parameters:	*c, a Contact structure to fill in
+ *				*buf, a pi_buffer_t containing (only) the raw record
+ *				type, the type field from ContactAppInfo
  *
  * Returns:     0 on error, the length of the data used from the
  *		buffer otherwise
  *
  ***********************************************************************/
-int unpack_Contact(struct Contact *c, unsigned char *buffer, int len)
+int
+unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 {
-	unsigned long contents;
-	unsigned long v;
-	unsigned char *start = buffer;
-	int i, max_bit, field_num;
-	unsigned int packed_date;
-	if (len < 17)
-		return 0;
+	int				i;
+	uint32_t		contents1,
+					contents2;
+	size_t			ofs;
+	uint16_t		packed_date;
 
-	c->showPhone     = hi(get_byte(buffer));
-	c->phoneLabel[6] = lo(get_byte(buffer));
-	c->phoneLabel[5] = hi(get_byte(buffer + 1));
-	c->phoneLabel[4] = lo(get_byte(buffer + 1));
-	c->phoneLabel[3] = hi(get_byte(buffer + 2));
-	c->phoneLabel[2] = lo(get_byte(buffer + 2));
-	c->phoneLabel[1] = hi(get_byte(buffer + 3));
-	c->phoneLabel[0] = lo(get_byte(buffer + 3));
+	if (c == NULL)
+		return -1;
 
-	c->addressLabel[2] = lo(get_byte(buffer + 4));
-	c->addressLabel[1] = hi(get_byte(buffer + 5));
-	c->addressLabel[0] = lo(get_byte(buffer + 5));
+	/* just in case... */
+	for (i = 0; i < NUM_CONTACT_ENTRIES; i++)
+		c->entry[i] = NULL;
+	c->picture = NULL;
 
-	c->IMLabel[1] = hi(get_byte(buffer + 7));
-	c->IMLabel[0] = lo(get_byte(buffer + 7));
+	if (buf == NULL || buf->data == NULL || buf->used < 17)
+		return -1;
 
-	contents = get_long(start + 8);
+	if (type != contacts_v10
+			&& type != contacts_v11)
+		/* Don't support anything else yet */
+		return -1;
 
-	/* We calculate the new offset in pack_Contact(),
-           and we don't need to store this anywhere */
-	/* c->companyOffset = get_byte(start + 16); */
+	c->showPhone     = hi (get_byte (buf->data));
+	c->phoneLabel[6] = lo (get_byte (buf->data));
+	c->phoneLabel[5] = hi (get_byte (buf->data + 1));
+	c->phoneLabel[4] = lo (get_byte (buf->data + 1));
+	c->phoneLabel[3] = hi (get_byte (buf->data + 2));
+	c->phoneLabel[2] = lo (get_byte (buf->data + 2));
+	c->phoneLabel[1] = hi (get_byte (buf->data + 3));
+	c->phoneLabel[0] = lo (get_byte (buf->data + 3));
 
-	buffer 	+= 17;
-	len 	-= 17;
+	/* hi(get_byte (buf->data + 4)) unused */
+	c->addressLabel[2] = lo (get_byte(buf->data + 4));
+	c->addressLabel[1] = hi (get_byte(buf->data + 5));
+	c->addressLabel[0] = lo (get_byte(buf->data + 5));
 
-	field_num=0;
-	for (i=0; i<2; i++) {
-		if (i==0) {
-			max_bit=28;
-		} else {
-			max_bit=11;
-			contents = get_long(start + 12);
-		}
-		for (v = 0; v < max_bit; v++, field_num++) {
-			if (contents & (1 << v)) {
-				if (len < 1)
-					return 0;
-				c->entry[field_num] = strdup((char *) buffer);
-				buffer += strlen((char *) buffer) + 1;
-				len -= strlen(c->entry[field_num]) + 1;
-			} else {
-				c->entry[field_num] = 0;
-			}
+	/* get_byte (buf->data + 6) unused */
+	c->IMLabel[1] = hi(get_byte(buf->data + 7));
+	c->IMLabel[0] = lo(get_byte(buf->data + 7));
+
+	contents1 = get_long(buf->data + 8);
+	contents2 = get_long(buf->data + 12);
+
+	/* get_byte (buf->data + 16) is an offset to the Company field */
+
+	ofs = 17;
+
+	for (i = 0; i < 28; i++) {
+		if ((contents1 & (1 << i)) != 0) {
+			if (ofs <= buf->used)
+				c->entry[i] = strdup (buf->data + ofs);
+			else
+				return -1;
+
+			while (ofs < buf->used)
+				if (buf->data[ofs++] == '\0')
+					break;
+
+			contents1 ^= (1 << i);
 		}
 	}
 
-	/* Both of these are set if the birthday field is set.  Previously
-	 * this comment suspected one may be an alarm, but I see no evidence
-	 * of that.  --KB
-	 */
-	if ((contents & 0x0800) || (contents & 0x1000)) {
-                c->birthdayFlag = 1;
-		if (len < 1)
-			return 0;
-		packed_date = get_short(buffer);
+	for (i = 0; i < 11; i++) {
+		if ((contents2 & (1 << i)) != 0) {
+			if (ofs <= buf->used)
+				c->entry[i + 28] = strdup (buf->data + ofs);
+			else
+				return -1;
+
+			while (ofs < buf->used)
+				if (buf->data[ofs++] == '\0')
+					break;
+
+			contents2 ^= (1 << i);
+		}
+	}
+
+	/* Both bits are set if the birthday field is present */
+	if (contents2 & 0x1800) {
+		/* Two bytes of padding */
+		if (ofs - buf->used < 4)
+			return -1;
+
+		c->birthdayFlag = 1;
+
+		packed_date = get_short(buf->data + ofs);
 		c->birthday.tm_year = ((packed_date & 0xFE00) >> 9) + 4;
 		c->birthday.tm_mon  = ((packed_date & 0x01E0) >> 5) - 1;
 		c->birthday.tm_mday = (packed_date & 0x001F);
@@ -136,35 +168,44 @@ int unpack_Contact(struct Contact *c, unsigned char *buffer, int len)
 		c->birthday.tm_sec  = 0;
 		c->birthday.tm_isdst= -1;
 		mktime(&c->birthday);
-		/* 1 byte containing a zero (padding) */
-		len -= 3;
-		buffer += 3;
+
+		ofs += 4;
+
+		if (contents2 & 0x2000) {
+			if (ofs - buf->used < 1)
+				return -1;
+
+			c->reminder = get_byte(buf->data + ofs++);
+			contents2 ^= 0x2000;
+		} else
+			c->reminder = -1;
+
+		contents2 ^= 0x1800;
 	} else {
 		c->birthdayFlag = 0;
+		c->reminder = -1;
 	}
 
-	if (contents & 0x2000) {
-		c->reminderFlag = 1;
-		if (len < 2)
-			return 0;
-		c->advanceUnits = get_byte(buffer);
-		c->advance = get_byte(buffer+1);
-		len -= 2;
-		buffer += 2;
-	} else {
-		c->reminderFlag = 0;
+	if (contents1 != 0 || contents2 != 0) {
+		/* We want to know if this happens! */
+		LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+					"Contact has remaining fields 0x%08x%08x",
+					contents2, contents1));
 	}
 
-	if (len > (size_t)(buffer - start)) {
-		if ((c->picture = pi_buffer_new (len)) == NULL)
+	if (ofs < buf->used) {
+		if (type == contacts_v11) {
+			if ((c->picture = pi_buffer_new (buf->used - ofs)) == NULL)
+				return -1;
+
+			pi_buffer_append (c->picture, buf->data + ofs, buf->used - ofs);
+		} else
 			return -1;
+	}
 
-		pi_buffer_append (c->picture, buffer, len);
-	} else
-		c->picture = NULL;
-
-	return (buffer - start);
+	return 0;
 }
+
 
 /***********************************************************************
  *
@@ -180,13 +221,13 @@ int unpack_Contact(struct Contact *c, unsigned char *buffer, int len)
  *		buffer otherwise
  *
  ***********************************************************************/
-int pack_Contact(struct Contact *c, unsigned char *record, int len)
+int
+pack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 {
 	int 	l,
 		destlen = 17;
 
-	unsigned char *start = record;
-	unsigned char *buffer;
+	size_t ofs;
 	unsigned long contents1, contents2;
 	unsigned long v;
 	unsigned int  field_i;
@@ -195,6 +236,14 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
 	unsigned short packed_date;
 	int companyOffset = 0;
 
+	if (c == NULL)
+		return -1;
+
+	if (type != contacts_v10
+			&& type != contacts_v11)
+		/* Don't support anything else yet */
+		return -1;
+	
 	for (v = 0; v < NUM_CONTACT_ENTRIES; v++) {
 		if (c->entry[v]) {
 			destlen += (strlen(c->entry[v]) + 1);
@@ -202,36 +251,37 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
 	}
 	if (c->birthdayFlag)
 		destlen += 3;
-	if (c->reminderFlag)
+	if (c->reminder != -1)
 		destlen += 2;
 	if (c->picture != NULL) {
 		destlen += c->picture->used;
 	}
 
-	if (!record)
-		return destlen;
-	if (len < destlen)
-		return 0;
+	if (buf == NULL || buf->data == NULL)
+		return -1;
+	
+	pi_buffer_expect (buf, destlen);
 
-	buffer = record + 17;
+	ofs = 17;
 	phoneflag = 0;
-	contents1 = contents2 = 0;
+	contents1 = 0;
+	contents2 = 0;
 
 	field_i = 0;
 	for (v = 0; v < 28; v++, field_i++) {
-		if (c->entry[field_i] && strlen(c->entry[field_i])) {
+		if (c->entry[field_i] && strlen (c->entry[field_i])) {
 			contents1 |= (1 << v);
-			l = strlen(c->entry[field_i]) + 1;
-			memcpy(buffer, c->entry[field_i], l);
-			buffer += l;
+			l = strlen (c->entry[field_i]) + 1;
+			memcpy (buf->data + ofs, c->entry[field_i], l);
+			ofs += l;
 		}
 	}
 	for (v = 0; v < 11; v++, field_i++) {
-		if (c->entry[field_i] && strlen(c->entry[field_i])) {
+		if (c->entry[field_i] && strlen (c->entry[field_i])) {
 			contents2 |= (1 << v);
-			l = strlen(c->entry[field_i]) + 1;
-			memcpy(buffer, c->entry[field_i], l);
-			buffer += l;
+			l = strlen (c->entry[field_i]) + 1;
+			memcpy (buf->data + ofs, c->entry[field_i], l);
+			ofs += l;
 		}
 	}
 
@@ -240,21 +290,22 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
 		packed_date = (((c->birthday.tm_year - 4) << 9) & 0xFE00) |
                         (((c->birthday.tm_mon+1) << 5) & 0x01E0) |
 			(c->birthday.tm_mday & 0x001F);
-		set_short(buffer, packed_date);
-		buffer += 2;
-		set_byte(buffer, 0);
-		buffer += 1;
+		set_short (buf->data + ofs, packed_date);
+		ofs += 2;
+		set_byte(buf->data + ofs, 0);
+		ofs += 1;
+		if (c->reminder != -1) {
+			contents2 |= 0x2000;
+			/* reminder in days */
+			set_byte(buf->data + ofs++, 1);
+			set_byte(buf->data + ofs++, c->reminder);
+		} else
+			/* no reminder */
+			set_byte(buf->data + ofs++, 0);
 	}
-	if (c->reminderFlag) {
-		contents2 |= 0x2000;
-		set_byte(buffer, c->advanceUnits);
-		buffer += 1;
-		set_byte(buffer, c->advance);
-		buffer += 1;
-	}
-	if (c->picture != NULL) {
-		memcpy (buffer, c->picture->data, c->picture->used);
-		buffer += c->picture->used;
+	if (type == contacts_v11 && c->picture != NULL) {
+		memcpy (buf->data + ofs, c->picture->data, c->picture->used);
+		ofs += c->picture->used;
 	}
 
 	phoneflag  = (((unsigned long) c->phoneLabel[0]) & 0xF) << 0;
@@ -272,10 +323,10 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
 	typesflag  |= (((unsigned long) c->addressLabel[1]) & 0xF) << 20;
 	typesflag  |= (((unsigned long) c->addressLabel[2]) & 0xF) << 24;
 
-	set_long(record, phoneflag);
-	set_long(record + 4, typesflag);
-	set_long(record + 8, contents1);
-	set_long(record + 12, contents2);
+	set_long(buf->data, phoneflag);
+	set_long(buf->data + 4, typesflag);
+	set_long(buf->data + 8, contents1);
+	set_long(buf->data + 12, contents2);
 	/* companyOffset is the offset from itself to the company field,
 	 * or zero if no company field.  Its not useful to us at all.
 	 */
@@ -284,19 +335,22 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
                if (c->entry[0]) companyOffset += strlen(c->entry[0]) + 1;
                if (c->entry[1]) companyOffset += strlen(c->entry[1]) + 1;
 	}
-	set_byte(record + 16, companyOffset);
+	set_byte (buf->data + 16, companyOffset);
+	buf->used = ofs;
 
-	return (buffer - start);
+	return 0;
 }
+
 
 /***********************************************************************
  *
  * Function:    unpack_ContactAppInfo
  *
- * Summary:     Fill in the app info structure based on the raw app 
- *				info data
+ * Summary:     Unpacks a raw AppInfo into a usable structure.  palmOne
+ *				Contacts 1.0 and 1.1/1.2 are currently supported.
  *
- * Parameters:  struct ContactAppInfo *ai, unsigned char *record, int len
+ * Parameters:  *ai, the ContactAppInfo structure to write
+ *				*buf, a pi_buffer_t containing (only) the raw AppInfo
  *
  * Returns:     0 on success
  *				-1 on error
@@ -384,25 +438,31 @@ unpack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
 
 /***********************************************************************
  *
- * Function:    pack_ContactAppInfo
+ * Function:	pack_ContactAppInfo
  *
- * Summary:     Fill in the raw app info record data based on the
- *		ContactAppInfo structure
+ * Summary:		Build a raw AppInfo structure from a previously unpacked
+ *				CategoryAppInfo structure.
  *
- * Parameters:  struct ContactAppInfo *ai, unsigned char *record, int len
+ *				NOTE: ContactAppInfo contains data necessary to produce
+ *				only the raw AppInfo it was unpacked from.  Raw AppInfos
+ *				can only be written to the devices they were read from.
+ *				Use a read-modify-update on devices and database files.
+ *				FIXME: Add a note about translate_ContactAppInfo once it
+ *				exists.
  *
- * Returns:     The length of the buffer required if record is NULL,
- *		or 0 on error, the length of the data used from the
- *		buffer otherwise
+ * Parameters:	*ai, an unpacked ContactAppInfo structure
+ *				*buf, a pi_buffer_t to store the raw AppInfo into
+ *
+ * Returns:		0 on success
+ *				-1 on error
  *
  ***********************************************************************/
 int
-pack_ContactAppInfo(struct ContactAppInfo *ai, pi_buffer_t *buf)
+pack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
 {
 	int				destlen;
 
-
-	if (buf == NULL)
+	if (buf == NULL || buf->data == NULL)
 		return -1;
 
 	destlen = 278						/* categories */

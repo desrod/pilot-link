@@ -152,16 +152,15 @@ hexprint (unsigned char *data, size_t len, size_t ofs, int ascii)
 
 
 int
-print_appblock (int sd, int db)
+print_appblock (int sd, int db, struct ContactAppInfo *cai)
 {
 	int i;
-	struct ContactAppInfo cai;
 	pi_buffer_t *appblock = pi_buffer_new(0xffff);
 
 	if (dlp_ReadAppBlock(sd, db, 0, -1, appblock) <= 0)
 		goto error;
 
-	if (unpack_ContactAppInfo (&cai, appblock) < 0)
+	if (unpack_ContactAppInfo (cai, appblock) < 0)
 		goto error;
 
 	pi_buffer_free (appblock);
@@ -169,21 +168,21 @@ print_appblock (int sd, int db)
 	printf ("Categories:\n");
 	for (i = 0; i < 16; i++)
 	{
-		if (strlen(cai.category.name[i]) > 0)
+		if (strlen(cai->category.name[i]) > 0)
 			printf (" Category %i: %s\n",
-					cai.category.ID[i], cai.category.name[i]);
+					cai->category.ID[i], cai->category.name[i]);
 	}
-	printf (" Last Unique ID: %i\n", cai.category.lastUniqueID);
+	printf (" Last Unique ID: %i\n", cai->category.lastUniqueID);
 
 	printf ("Internal data:\n");
-	hexprint (cai.internal, 26, 0, 0);
+	hexprint (cai->internal, 26, 0, 0);
 
 	printf ("Field labels");
-	for (i = 0; i < cai.numLabels; i++)
+	for (i = 0; i < cai->numLabels; i++)
 	{
 		if (i%4 == 0)
 			printf ("\n ");
-		printf ("%02i:%-16s ", i, cai.labels[i]);
+		printf ("%02i:%-16s ", i, cai->labels[i]);
 	}
 	
 	printf ("\nPhone labels");
@@ -191,7 +190,7 @@ print_appblock (int sd, int db)
 	{
 		if (i%4 == 0)
 			printf ("\n ");
-		printf ("%02i:%-16s ", i, cai.phoneLabels[i]);
+		printf ("%02i:%-16s ", i, cai->phoneLabels[i]);
 	}
 
 	printf ("\nAddress labels");
@@ -199,7 +198,7 @@ print_appblock (int sd, int db)
 	{
 		if (i%4 == 0)
 			printf ("\n ");
-		printf ("%02i:%-16s ", i, cai.addrLabels[i]);
+		printf ("%02i:%-16s ", i, cai->addrLabels[i]);
 	}
 
 	printf ("\nIM labels");
@@ -207,12 +206,12 @@ print_appblock (int sd, int db)
 	{
 		if (i%4 == 0)
 			printf ("\n ");
-		printf ("%02i:%-16s ", i, cai.IMLabels[i]);
+		printf ("%02i:%-16s ", i, cai->IMLabels[i]);
 	}
 
-	printf ("\nCountry: %i\n", cai.country);
+	printf ("\nCountry: %i\n", cai->country);
 
-	printf ("Sorting: %s\n\n", cai.sortByCompany ? "By company" : "By name");
+	printf ("Sorting: %s\n\n", cai->sortByCompany ? "By company" : "By name");
 
 	return 0;
 
@@ -223,7 +222,7 @@ error:
 
 
 void
-print_records (int sd, int db)
+print_records (int sd, int db, struct ContactAppInfo *cai)
 {
 	char *l;
 	struct Contact c;
@@ -252,7 +251,7 @@ print_records (int sd, int db)
 			/* Empty records are legal */
 			continue;
 
-		if (unpack_Contact (&c, buf->data, buf->used) < 0) {
+		if (unpack_Contact (&c, buf, cai->type) < 0) {
 			printf (" [Broken record]\n");
 			continue;
 		}
@@ -303,8 +302,8 @@ print_records (int sd, int db)
 					c.birthday.tm_mon + 1,
 					c.birthday.tm_mday);
 
-			if (c.reminderFlag)
-				printf (" (%i day reminder)", c.advance);
+			if (c.reminder != -1)
+				printf (" (%i day reminder)", c.reminder);
 			puts ("");
 		}
 
@@ -324,6 +323,7 @@ main (const int argc, const char **argv)
 {
 	int sd = -1;
 	int db;
+	struct ContactAppInfo cai;
 
 	if (argc != 2)
 	{
@@ -345,11 +345,11 @@ main (const int argc, const char **argv)
 		goto error;
 	}
 
-	if (print_appblock (sd, db) < 0) {
+	if (print_appblock (sd, db, &cai) < 0) {
 		fprintf (stderr, "Failed read/print appblock\n");
 		goto error;
 	} else {
-		print_records (sd, db);
+		print_records (sd, db, &cai);
 	}
 
 	dlp_CloseDB(sd, db);

@@ -74,9 +74,7 @@ struct Contact {
 	int birthdayFlag;
 	struct tm birthday;
 
-	int reminderFlag;
-	int advance;
-	int advanceUnits;
+	int reminder;
 
 	pi_buffer_t *picture;
 };
@@ -98,9 +96,9 @@ struct ContactAppInfo {
 
 extern void free_Contact PI_ARGS((struct Contact *));
 extern int unpack_Contact
-		PI_ARGS((struct Contact *, unsigned char *record, int len));
+		PI_ARGS((struct Contact *, pi_buffer_t *buf, contactsType type));
 extern int pack_Contact
-		PI_ARGS((struct Contact *, unsigned char *record, int len));
+		PI_ARGS((struct Contact *, pi_buffer_t *buf, contactsType type));
 extern int unpack_ContactAppInfo
 		PI_ARGS((struct ContactAppInfo *, pi_buffer_t *buf));
 extern int pack_ContactAppInfo
@@ -109,5 +107,6 @@ extern int pack_ContactAppInfo
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-
 #endif /* _PILOT_CONTACT_H_ */
+
+/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
