@@ -428,6 +428,48 @@ pi_file_set_rbuf_size(struct pi_file *pf, int size)
    return (0);
 }
 
+static int
+pi_file_find_resource_by_type_id(struct pi_file *pf,
+                                 unsigned long type, int id, int *idxp)
+{
+   int idx;
+   struct pi_file_entry *entp;
+
+   if (!pf->resource_flag)
+      return (-1);
+
+   for (idx = 0, entp = pf->entries; idx < pf->nentries; idx++, entp++) {
+      if (entp->type == type && entp->id == id) {
+         if (idxp)
+            *idxp = idx;
+         return (0);
+      }
+   }
+
+   return (-1);
+}
+   
+int
+pi_file_read_resource_by_type_id(struct pi_file *pf, unsigned long type,
+                                 int id, void **bufp, int *sizep,
+                                 int *idxp)
+{
+   int idx;
+
+   if (pi_file_find_resource_by_type_id(pf, type, id, &idx) == 0) {
+      if (idxp)
+         *idxp = idx;
+      return (pi_file_read_resource(pf, idx, bufp, sizep, NULL, NULL));
+   }
+
+   return (-1);
+}
+
+int pi_file_type_id_used(struct pi_file *pf, unsigned long type, int id)
+{
+   return (pi_file_find_resource_by_type_id(pf, type, id, NULL) == 0);
+}
+
 /* returned buffer is valid until next call, or until pi_file_close */
 int
 pi_file_read_resource(struct pi_file *pf, int idx, void **bufp, int *sizep,

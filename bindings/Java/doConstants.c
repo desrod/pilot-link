@@ -47,6 +47,8 @@ main(int argc, char *argv[])
       W(dlpDBFlagOpen)
       W(dlpDBFlagNewer)
       W(dlpDBFlagReset)
+      W(dlpDBFlagCopyPrevention)
+      W(dlpDBFlagStream)
 
       W(dlpRecAttrDeleted)
       W(dlpRecAttrDirty)

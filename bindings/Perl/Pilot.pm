@@ -64,6 +64,8 @@ require AutoLoader;
 	dlpDBFlagOpen
 	dlpDBFlagNewer
 	dlpDBFlagReset
+   dlpDBFlagCopyPrevention
+   dlpDBFlagStream
 	dlpDBListRAM
 	dlpDBListROM
 );

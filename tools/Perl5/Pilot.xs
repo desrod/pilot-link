@@ -213,6 +213,8 @@ int arg;
 				DoName(dlpDBFlagOpen);
 				DoName(dlpDBFlagNewer);
 				DoName(dlpDBFlagReset);
+            DoName(dlpDBFlagCopyPrevention);
+            DoName(dlpDBFlagStream);
 				
 				DoName(dlpDBListRAM);
 				DoName(dlpDBListROM);
@@ -347,6 +349,8 @@ SvChar4(arg)
 	    	hv_store(i, "flagAppInfoDirty", 16, newSViv((var.flags & dlpDBFlagAppInfoDirty)!=0), 0);\
 	    	hv_store(i, "flagNewer", 9, newSViv((var.flags & dlpDBFlagNewer)!=0), 0);				\
 	    	hv_store(i, "flagReset", 9, newSViv((var.flags & dlpDBFlagReset)!=0), 0);				\
+         hv_store(i, "flagCopyPrevention", 18, newSViv((var.flags & dlpDBFlagCopyPrevention)!=0), 0); \
+         hv_store(i, "flagStream", 10, newSViv((var.flags & dlpDBFlagStream)!=0), 0);                    \
 	    	hv_store(i, "flagExcludeFromSync", 19, newSViv((var.miscFlags & dlpDBMiscFlagExcludeFromSync)!=0), 0);	\
 	    	hv_store(i, "type", 4, newSVChar4(var.type), 0);				\
 	    	hv_store(i, "creator", 7, newSVChar4(var.creator), 0);			\
@@ -374,6 +378,8 @@ SvChar4(arg)
 	    	(((s = hv_fetch(i, "flagAppInfoDirty", 16, 0)) && SvTRUE(*s)) ? dlpDBFlagAppInfoDirty : 0)	|\
 	    	(((s = hv_fetch(i, "flagNewer", 9, 0)) && SvTRUE(*s)) ? dlpDBFlagNewer : 0)	|			\
 	    	(((s = hv_fetch(i, "flagReset", 9, 0)) && SvTRUE(*s)) ? dlpDBFlagReset : 0) |		\
+         (((s = hv_fetch(i, "flagCopyPrevention", 18, 0)) && SvTRUE(*s)) ? dlpDBFlagCopyPrevention : 0) |\
+         (((s = hv_fetch(i, "flagStream", 10, 0)) && SvTRUE(*s)) ? dlpDBFlagStream : 0) |                \
 	    	0;\
 	    var.miscFlags = \
 	    	 (((s = hv_fetch(i, "flagExcludeFromSync", 19, 0)) && SvTRUE(*s)) ? dlpDBMiscFlagExcludeFromSync : 0);	\

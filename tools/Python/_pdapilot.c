@@ -1789,7 +1789,7 @@ static PyObject *
 BuildDBInfo(i)
 	struct DBInfo * i;
 {
-	return Py_BuildValue("{sisisisisisisisisisOsOsisislslslslss}",
+	return Py_BuildValue("{sisisisisisisisisisisisOsOsisislslslslss}",
 		"more", i->more,
 		"flagResource", !!(i->flags & dlpDBFlagResource),
 		"flagReadOnly", !!(i->flags & dlpDBFlagReadOnly),
@@ -1798,6 +1798,8 @@ BuildDBInfo(i)
 		"flagOpen", !!(i->flags & dlpDBFlagOpen),
 		"flagNewer", !!(i->flags & dlpDBFlagNewer),
 		"flagReset", !!(i->flags & dlpDBFlagReset),
+		"flagCopyPrevention", !!(i->flags & dlpDBFlagCopyPrevention),
+		"flagStream", !!(i->flags & dlpDBFlagStream),
 		"flagExcludeFromSync", !!(i->miscFlags & dlpDBMiscFlagExcludeFromSync),
 		"type", BuildChar4(&i->type),
 		"creator", BuildChar4(&i->creator),
@@ -1827,6 +1829,9 @@ static int ParseDBInfo(d, i)
 		| (((e=PyDict_GetItemString(d, "flagOpen")) && PyInt_AsLong(e)) ? dlpDBFlagOpen : 0)
 		| (((e=PyDict_GetItemString(d, "flagNewer")) && PyInt_AsLong(e)) ? dlpDBFlagNewer : 0)
 		| (((e=PyDict_GetItemString(d, "flagReset")) && PyInt_AsLong(e)) ? dlpDBFlagReset : 0)
+		| (((e=PyDict_GetItemString(d, "flagCopyPrevention")) && PyInt_AsLong(e)) ? dlpDBFlagCopyPrevention : 0)
+		| (((e=PyDict_GetItemString(d, "flagStream")) && PyInt_AsLong(e)) ? dlpDBFlagStream : 0)
+
 	;
 	
 	i->miscFlags = 0
@@ -3449,6 +3454,8 @@ init_pdapilot()
 	SetDictInt("DBOpen", dlpDBFlagOpen);
 	SetDictInt("DBNew", dlpDBFlagNewer);
 	SetDictInt("DBReset", dlpDBFlagReset);
+	SetDictInt("DBCopyPrevention", dlpDBFlagCopyPrevention);
+	SetDictInt("DBStream", dlpDBFlagStream);
 	
 	SetDictInt("OpenDBRead", dlpOpenRead);
 	SetDictInt("OpenDBWrite", dlpOpenWrite);

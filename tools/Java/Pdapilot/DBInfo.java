@@ -23,7 +23,8 @@ package Pdapilot;
 
 public class DBInfo {
 	public boolean flagReadOnly, flagResource, flagBackup, flagOpen;
-	public boolean flagAppInfoDirty, flagNewer, flagReset, flagExcludeFromSync;
+   public boolean flagAppInfoDirty, flagNewer, flagReset, flagCopyPrevention, flagStream;
+   public boolean flagExcludeFromSync;
 	public Char4 creator, type;
 	public int version;
 	public int modnum;
@@ -39,7 +40,8 @@ public class DBInfo {
 			", flagReadOnly="+flagReadOnly+", flagResource="+flagResource+
 			", flagOpen="+flagOpen+", flagBackup="+flagBackup+
 			", flagAppInfoDirty="+flagAppInfoDirty+", flagNewer="+flagNewer+
-			", flagReset="+flagReset+", flagExcludeFromSync="+flagExcludeFromSync+
+         ", flagReset="+flagReset+", flagCopyPrevention="+flagCopyPrevention+  
+         ", flagStream="+flagStream+", flagExcludeFromSync="+flagExcludeFromSync+
 			", creator "+creator.toString()+
 			", type "+type.toString()+", modnum "+modnum+
 			", createDate " + ((createDate==null) ? "null" : createDate.toString())+

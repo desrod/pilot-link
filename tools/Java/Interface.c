@@ -699,8 +699,9 @@ Pdapilot_calls_dlp_ReadDBList(struct HPdapilot_calls *self, javaint_t socket,
    unhand(output)->flagAppInfoDirty = !!(i.flags & dlpDBFlagAppInfoDirty);
    unhand(output)->flagNewer = !!(i.flags & dlpDBFlagNewer);
    unhand(output)->flagReset = !!(i.flags & dlpDBFlagReset);
-   unhand(output)->flagExcludeFromSync =
-      !!(i.miscFlags & dlpDBMiscFlagExcludeFromSync);
+   unhand(output)->flagCopyPrevention = !!(i.flags & dlpDBFlagCopyPrevention);
+   unhand(output)->flagStream = !!(i.flags & dlpDBFlagStream);
+   unhand(output)->flagExcludeFromSync = !!(i.miscFlags & dlpDBMiscFlagExcludeFromSync);
    unhand(output)->index = i.index;
    unhand(output)->version = i.version;
    unhand(output)->modnum = i.modnum;
@@ -2527,9 +2528,10 @@ Pdapilot_File_pi_file_create(struct HPdapilot_File *self,
       (unhand(info)->flagOpen ? dlpDBFlagOpen : 0) |
       (unhand(info)->flagAppInfoDirty ? dlpDBFlagAppInfoDirty : 0) |
       (unhand(info)->flagNewer ? dlpDBFlagNewer : 0) |
-      (unhand(info)->flagReset ? dlpDBFlagReset : 0);
-   dbInfo.miscFlags =
-      (unhand(info)->flagExcludeFromSync ? dlpDBMiscFlagExcludeFromSync : 0);
+      (unhand(info)->flagReset ? dlpDBFlagReset : 0) |
+      (unhand(info)->flagCopyPrevention ? dlpDBFlagCopyPrevention : 0) |
+      (unhand(info)->flagStream ? dlpDBFlagStream : 0);
+   dbInfo.miscFlags = (unhand(info)->flagExcludeFromSync ? dlpDBMiscFlagExcludeFromSync : 0);
    dbInfo.version = unhand(info)->version;
    dbInfo.modnum = unhand(info)->modnum;
    dbInfo.type = getJavaChar4(unhand(info)->type);
@@ -2760,8 +2762,9 @@ Pdapilot_File_pi_file_get_info(struct HPdapilot_File *self)
    unhand(output)->flagAppInfoDirty = !!(i.flags & dlpDBFlagAppInfoDirty);
    unhand(output)->flagNewer = !!(i.flags & dlpDBFlagNewer);
    unhand(output)->flagReset = !!(i.flags & dlpDBFlagReset);
-   unhand(output)->flagExcludeFromSync =
-      !!(i.miscFlags & dlpDBMiscFlagExcludeFromSync);
+   unhand(output)->flagCopyPrevention = !!(i.flags & dlpDBFlagCopyPrevention);
+   unhand(output)->flagStream = !!(i.flags & dlpDBFlagStream);
+   unhand(output)->flagExcludeFromSync = !!(i.miscFlags & dlpDBMiscFlagExcludeFromSync);
    unhand(output)->index = i.index;
    unhand(output)->version = i.version;
    unhand(output)->modnum = i.modnum;
@@ -2792,9 +2795,10 @@ Pdapilot_File_pi_file_set_info(struct HPdapilot_File *self,
       (unhand(info)->flagOpen ? dlpDBFlagOpen : 0) |
       (unhand(info)->flagAppInfoDirty ? dlpDBFlagAppInfoDirty : 0) |
       (unhand(info)->flagNewer ? dlpDBFlagNewer : 0) |
-      (unhand(info)->flagReset ? dlpDBFlagReset : 0);
-   dbInfo.miscFlags =
-      (unhand(info)->flagExcludeFromSync ? dlpDBMiscFlagExcludeFromSync : 0);
+      (unhand(info)->flagReset ? dlpDBFlagReset : 0) |
+      (unhand(info)->flagCopyPrevention ? dlpDBFlagCopyPrevention : 0) |
+      (unhand(info)->flagStream ? dlpDBFlagStream : 0);
+   dbInfo.miscFlags = (unhand(info)->flagExcludeFromSync ? dlpDBMiscFlagExcludeFromSync : 0);
    dbInfo.version = unhand(info)->version;
    dbInfo.modnum = unhand(info)->modnum;
    dbInfo.type = getJavaChar4(unhand(info)->type);

@@ -174,6 +174,10 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
 {
    printf("name: \"%s\"\n", ip->name);
    printf("flags: 0x%x", ip->flags);
+   if (ip->flags & dlpDBFlagNewer)
+      printf (" NEWER");
+   if (ip->flags & dlpDBFlagReset)
+      printf (" RESET");
    if (ip->flags & dlpDBFlagResource)
       printf(" RESOURCE");
    if (ip->flags & dlpDBFlagReadOnly)
@@ -182,6 +186,10 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
       printf(" APP-INFO-DIRTY");
    if (ip->flags & dlpDBFlagBackup)
       printf(" BACKUP");
+   if (ip->flags & dlpDBFlagCopyPrevention)
+      printf (" COPY-PREVENTION");
+   if (ip->flags & dlpDBFlagStream)
+      printf (" STREAM");
    if (ip->flags & dlpDBFlagOpen)
       printf(" OPEN");
    printf("\n");

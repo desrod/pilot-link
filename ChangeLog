@@ -1,3 +1,13 @@
+2001-03-01 David A. Desrosiers
+
+        * Addition of CopyPrevention and Stream flags to various interfaces 
+          (John Marshall) 
+          
+          Added pi_file_find_resource_by_type_id  and pi_file_read_resource_by_type_id 
+          to pilot-file.c (John Marshall) 
+
+          General code cleanups and housecleaning
+
 2001-02-28 David A. Desrosiers
 
         * kittykiller.c: Fixed ^M madness

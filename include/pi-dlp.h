@@ -96,7 +96,11 @@ extern "C"
 
       /* v2.0 specific */
       dlpDBFlagNewer = 0x0010,	/* Newer version may be installed over open DB */
-      dlpDBFlagReset = 0x0020	/* Reset after installation                    */
+      dlpDBFlagReset = 0x0020,	/* Reset after installation                    */
+
+      /* v3.0 specific */
+      dlpDBFlagCopyPrevention = 0x0040, /* DB should not be beamed */
+      dlpDBFlagStream = 0x0080 /* DB implements a file stream */
    };
 
    enum dlpDBMiscFlags

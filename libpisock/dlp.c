@@ -520,6 +520,10 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo *info)
 	 fprintf(stderr, " Reset");
       if (info->flags & dlpDBFlagNewer)
 	 fprintf(stderr, " Newer");
+      if (info->flags & dlpDBFlagCopyPrevention)
+         fprintf(stderr, " CopyPrevention");
+      if (info->flags & dlpDBFlagStream)   
+         fprintf(stderr, " Stream");
       if (info->flags & dlpDBFlagOpen)
 	 fprintf(stderr, " Open");
       if (!info->flags)
@@ -683,6 +687,10 @@ dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	 fprintf(stderr, " Reset");
       if (flags & dlpDBFlagNewer)
 	 fprintf(stderr, " Newer");
+      if (flags & dlpDBFlagCopyPrevention)
+         fprintf(stderr, " CopyPrevention");
+      if (flags & dlpDBFlagStream)
+         fprintf(stderr, " Stream");
       if (flags & dlpDBFlagOpen)
 	 fprintf(stderr, " Open");
       if (!flags)

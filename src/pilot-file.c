@@ -40,7 +40,7 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip);
 void dump_app_info(struct pi_file *pf, struct DBInfo *ip);
 void dump_sort_info(struct pi_file *pf, struct DBInfo *ip);
 void list_records(struct pi_file *pf, struct DBInfo *ip);
-void dump_record(struct pi_file *pf, struct DBInfo *ip, int record);
+void dump_record(struct pi_file *pf, struct DBInfo *ip);
 
 char *iso_time_str(time_t t);
 void dump(void *buf, int size);
@@ -56,14 +56,15 @@ void usage(void)
    fprintf(stderr, "   -a       = dump app_info segment of the database(s)\n");
    fprintf(stderr, "   -s       = dump sort_info block of database(s)\n");
    fprintf(stderr, "   -l       = list all records in the database(s)\n");
-   fprintf(stderr, "   -r rec   = dump a single record\n");
+   fprintf(stderr, "  -r #     = dump a record (# is an index, or eg ode0' or a uid 1234')\n");
    fprintf(stderr, "   -v       = dump all data and all records, very verbose\n\n");
    fprintf(stderr, "   -R, -V as -r, -v, but also dump resources to files\n\n");
    exit(1);
 }
 
-int hflag = 0, aflag = 0, sflag = 0, vflag = 0, lflag = 0, rflag =
-    0, rnum = 0, filedump = 0;
+int hflag = 0, aflag = 0, sflag = 0, vflag = 0, lflag = 0, rflag = 0, filedump = 0;
+char *rkey;
+
 
 int main(int argc, char **argv)
 {
@@ -99,7 +100,7 @@ int main(int argc, char **argv)
 	 /* FALLTHROUGH */
       case 'r':
 	 rflag = 1;
-	 rnum = atoi(optarg);
+         rkey = optarg;
 	 break;
       default:
 	 usage();
@@ -137,7 +138,7 @@ int main(int argc, char **argv)
       list_records(pf, &info);
 
    if (rflag)
-      dump_record(pf, &info, rnum);
+      dump_record(pf, &info);
 
    return (0);
 }
@@ -194,6 +195,10 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
       printf(" APP-INFO-DIRTY");
    if (ip->flags & dlpDBFlagBackup)
       printf(" BACKUP");
+   if (ip->flags & dlpDBFlagCopyPrevention) 
+      printf (" COPY-PREVENTION");
+   if (ip->flags & dlpDBFlagStream) 
+      printf (" STREAM");
    if (ip->flags & dlpDBFlagOpen)
       printf(" OPEN");
    printf("\n");
@@ -296,40 +301,63 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
    printf("\n");
 }
 
-void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
+void dump_record(struct pi_file *pf, struct DBInfo *ip)
 {
    int size;
    unsigned long type, uid;
-   int id;
+   int record, id;
    void *buf;
    int attrs, cat;
 
    if (ip->flags & dlpDBFlagResource) {
       printf("entries\n");
       printf("index\tsize\ttype\tid\n");
-      if (pi_file_read_resource(pf, record, &buf, &size, &type, &id) < 0) {
-	 printf("error reading resource #%d\n\n", record);
-	 return;
+      if (sscanf(rkey, "%d", &record) == 1) {
+         if (pi_file_read_resource(pf, record, &buf, &size, &type, &id) <
+             0) {
+            printf("error reading resource #%d\n\n", record);
+            return;
+         }
+      } else {
+         type = makelong(rkey);
+         id = 0;
+         sscanf(&rkey[4], "%x", &id);
+         if (pi_file_read_resource_by_type_id(pf, type, id, &buf, &size,
+                                              &record) < 0) {
+            printf("error reading resource %s' #%d (0x%x)\n\n",
+                   printlong(type), id, id);
+            return;
+         }
       }
       printf("%d\t%d\t%s\t%d\n", record, size, printlong(type), id);
       dump(buf, size);
       if (filedump) {
-	 FILE *fp;
-	 char name[64];
+         FILE *fp;
+         char name[64];
 
-	 sprintf(name, "%4s%04x.bin", printlong(type), id);
-	 fp = fopen(name, "w");
-	 fwrite(buf, size, 1, fp);
-	 fclose(fp);
-	 printf("(written to %s)\n", name);
+         sprintf(name, "%4s%04x.bin", printlong(type), id);
+         fp = fopen(name, "w");
+         fwrite(buf, size, 1, fp);
+         fclose(fp);
+         printf("(written to %s)\n", name);
       }
    } else {
       printf("entries\n");
       printf("index\tsize\tattrs\tcat\tuid\n");
-      if (pi_file_read_record(pf, record, &buf, &size,
-			      &attrs, &cat, &uid) < 0) {
-	 printf("error reading record #%d\n\n", record);
-	 return;
+      if (sscanf(rkey, "0x%lx", &uid) == 1) {
+         if (pi_file_read_record_by_id(pf, uid, &buf, &size,
+                                       &record, &attrs, &cat) < 0) {
+            printf("error reading record uid 0x%lx\n\n", uid);
+            return;
+         }
+      } else {
+         record = 0;
+         sscanf(rkey, "%d", &record);
+         if (pi_file_read_record(pf, record, &buf, &size,
+                                 &attrs, &cat, &uid) < 0) {
+            printf("error reading record #%d\n\n", record);
+            return;
+         }
       }
       printf("%d\t%d\t0x%x\t%d\t0x%lx\n", record, size, attrs, cat, uid);
       dump(buf, size);

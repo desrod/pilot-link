@@ -22,7 +22,6 @@ extern "C"
 
 /* closes read or write handle */
    extern int pi_file_close PI_ARGS((struct pi_file * pf));
-
    extern int pi_file_get_info
       PI_ARGS((struct pi_file * pf, struct DBInfo * infop));
    extern int pi_file_get_app_info
@@ -30,21 +29,22 @@ extern "C"
    extern int pi_file_get_sort_info
       PI_ARGS((struct pi_file * pf, void **dadtap, int *sizep));
    extern int pi_file_read_resource
-      PI_ARGS(
-	      (struct pi_file * pf, int idx, void **bufp, int *sizep,
-	       unsigned long *type, int *idp));
+      PI_ARGS((struct pi_file * pf, int idx, void **bufp, int *sizep,
+               unsigned long *type, int *idp));
+   extern int pi_file_read_resource_by_type_id
+      PI_ARGS((struct pi_file * pf, unsigned long type, int id, void **bufp,
+               int *sizep, int *idxp));
+   extern int pi_file_type_id_used
+      PI_ARGS((struct pi_file * pf, unsigned long type, int id));
    extern int pi_file_read_record
-      PI_ARGS(
-	      (struct pi_file * pf, int idx, void **bufp, int *sizep,
-	       int *attrp, int *catp, pi_uid_t * uidp));
+      PI_ARGS((struct pi_file * pf, int idx, void **bufp, int *sizep, int *attrp,
+               int *catp, pi_uid_t * uidp));
    extern int pi_file_get_entries
       PI_ARGS((struct pi_file * pf, int *entries));
    extern int pi_file_read_record_by_id
-      PI_ARGS(
-	      (struct pi_file * pf, pi_uid_t uid, void **bufp, int *sizep,
-	       int *idxp, int *attrp, int *catp));
+      PI_ARGS((struct pi_file * pf, pi_uid_t uid, void **bufp, int *sizep,
+               int *idxp, int *attrp, int *catp));
    extern int pi_file_id_used PI_ARGS((struct pi_file * pf, pi_uid_t uid));
-
    extern struct pi_file *pi_file_create
       PI_ARGS((char *name, struct DBInfo * info));
 

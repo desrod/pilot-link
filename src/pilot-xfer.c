@@ -130,8 +130,6 @@ void Connect(void)
    addr.pi_family = PI_AF_SLP;
    strcpy(addr.pi_device, device);
  
-   PalmHeader(progname);
-
    ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
    if (ret == -1)
    {
