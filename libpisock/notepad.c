@@ -69,7 +69,6 @@ void free_NotePad( struct NotePad *a )
 int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
 {
    unsigned char *start = buffer;
-   int i;
    
    a->createDate.sec = (unsigned short int) get_short(buffer);
    buffer += 2;
