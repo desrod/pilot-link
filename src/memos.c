@@ -205,7 +205,7 @@ write_memo_in_directory(char *dirname, struct Memo m,
 static void print_help(char *progname)
 {
 	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n"
-	       "   Usage: memos [-p <port> | -f MemoDB] [options]\n"
+	       "   Usage: memos [options]\n"
 	       "   Options:\n"
                "     -p <port>      Use device file <port> to communicate with Palm\n"
                "     -h --help      Display this information\n"
@@ -215,7 +215,7 @@ static void print_help(char *progname)
 	       "     -f file        Use <file> as memo database file (rather than HotSync)\n"
 	       "     -s <dir>       Save memos in <dir> instead of writing to STDOUT\n"
 	       "     -c category    Only upload memos in this category\n"
-	       "     -r regexp      Select memos to be saved by regular expression on title\n\n" 
+	       "     -r regexp      Select memos to be saved by regular expression on title\n\n"
 	       "   By default, the contents of your Palm's memo database will be written to\n"
 	       "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
 	       "   memo as a separate message.  The subject of each message will be the\n"
@@ -310,11 +310,6 @@ int main(int argc, char *argv[])
 			  print_help(progname);
 			  exit(0);
 		}
-	}
-
-	if (optind < 2) {
-		print_splash(progname);
-		exit(0);
 	}
 
 	/* FIXME - Need to add tests here for port/filename, clean this. -DD */
