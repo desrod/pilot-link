@@ -1756,6 +1756,7 @@ numdigits (int num)
 static char *
 mediatype (struct VFSInfo *info)
 {
+	size_t                  ret_size;
 	char			*fs,
 					*media,
 					*ret;
@@ -1807,10 +1808,15 @@ mediatype (struct VFSInfo *info)
 			crid2[7] = (char)(info->mediaType) & 0xff;
 			media = crid2;
 	}
-	if (asprintf (&ret, "%s %s", fs, media) > -1)
-		return ret;
-	else
-		return "<unknown>";
+	ret_size = strlen(fs) + strlen(media) + 8;
+	ret = (char *)malloc(ret_size);
+	if (ret == NULL) {
+		return NULL;
+	}
+
+	memset(ret,0,ret_size);
+	snprintf (ret, ret_size-1, "%s %s", fs, media);
+	return ret;
 }
 
 typedef struct cardreport_s {
@@ -1836,7 +1842,7 @@ palm_cardinfo ()
 					*t2;
 	struct VFSInfo	info;
 	char			buf[vfsMAXFILENAME],
-					*fmt;
+					fmt[64];
 	long			size_used,
 					size_total;
 	int				len;					/* should be size_t in dlp.c? */
@@ -1846,6 +1852,7 @@ palm_cardinfo ()
 					digits_used = 4,
 					digits_free = 4,
 					digits_cardnum = 1;
+	static const char unknown_type[] = "<unknown>";
 
 	/* VFS info */
 	if ((ret = dlp_VFSVolumeEnumerate(sd,&volume_count,volumes)) < 0) {
@@ -1900,7 +1907,7 @@ palm_cardinfo ()
 		j = FUNC;					\
 		if (j > NAME)				\
 				NAME = j
-		FIELDWIDTH (digits_type, strlen(t->type));
+		FIELDWIDTH (digits_type, (t->type==NULL ? sizeof(unknown_type) : strlen(t->type)));
 		FIELDWIDTH (digits_used, numdigits(t->size_used));
 		FIELDWIDTH (digits_total, numdigits(t->size_total));
 		FIELDWIDTH (digits_free, numdigits(t->size_free));
@@ -1908,31 +1915,22 @@ palm_cardinfo ()
 #undef FIELDWIDTH
 	}
 
-	asprintf (&fmt, "%%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
+	memset(fmt,0,sizeof(fmt));
+	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
 			digits_type, digits_used, digits_total, digits_free,
 			digits_cardnum);
-	if (fmt == NULL) {
-		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
-					"palm_cardinfo: unable to allocate hdr fmt memory\n"));
-		goto cleanup;
-	}
 	
 	printf (fmt, "Filesystem", "Size", "Used", "Free", "#", "Card name");
-	free (fmt);
-	asprintf (&fmt, "%%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
+
+	memset(fmt,0,sizeof(fmt));
+	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
 			digits_type, digits_used, digits_total, digits_free,
 			digits_cardnum);
-	if (fmt == NULL) {
-		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
-					"palm_cardinfo: unable to allocate data fmt memory\n"));
-		goto cleanup;
-	}
 
 	for (t = cards; t != NULL; t = t->next) {
-		printf (fmt, t->type, t->size_used, t->size_total,
+		printf (fmt, t->type==NULL ? unknown_type : t->type, t->size_used, t->size_total,
 				t->size_free, t->cardnum, t->name);
 	}
-	free (fmt);
 
 cleanup:
 	t = cards;
@@ -1940,7 +1938,8 @@ cleanup:
 	{
 		cards = t->next;
 		free (t->name);
-		free (t->type);
+		if (t->type != NULL) 
+			free (t->type);
 		free (t);
 		t = cards;
 	}
