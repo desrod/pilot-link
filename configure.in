@@ -40,18 +40,31 @@ AM_PROG_LIBTOOL
 AC_PROG_YACC
 
 dnl ******************************
-dnl Pilot Link Checks
+dnl Pilot Link Checks 
 dnl
 dnl If you update these, update
 dnl pilot-link.m4 as well
 dnl ******************************
-AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h)
 
-dnl Checks for typedefs, structures, and compiler characteristics.
+dnl If you update these, update pilot-link.m4 as well
+AC_HEADER_STDC
 AC_C_CONST
 AC_HEADER_TIME
 AC_STRUCT_TM
+
+AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h)
+
+AC_CACHE_CHECK([for sa_len],
+  ac_cv_sa_len,
+[AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/socket.h>], [int main(void) {
+ struct sockaddr t;t.sa_len = 0;}],
+  ac_cv_sa_len=yes,ac_cv_sa_len=no)])
+if test $ac_cv_sa_len = yes; then
+  AC_DEFINE(HAVE_SA_LEN)
+  SA_LEN_FIELD="unsigned char pi_len;"
+fi
+AC_SUBST(SA_LEN_FIELD)
 
 dnl Find optional libraries (borrowed from Tcl)
 tcl_checkBoth=0
@@ -71,18 +84,6 @@ dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname putenv)
-
-AC_CACHE_CHECK([for sa_len],
-  ac_cv_sa_len,
-[AC_TRY_COMPILE([#include <sys/types.h>
-#include <sys/socket.h>], [int main(void) {
- struct sockaddr t;t.sa_len = 0;}],
-  ac_cv_sa_len=yes,ac_cv_sa_len=no)])
-if test $ac_cv_sa_len = yes; then
-  AC_DEFINE(HAVE_SA_LEN)
-  SA_LEN_FIELD="unsigned char pi_len;"
-fi
-AC_SUBST(SA_LEN_FIELD)
 
 dnl ******************************
 dnl Private Pilot Link Checks

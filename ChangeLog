@@ -1,5 +1,11 @@
 2002-01-18  JP Rosevear  <jpr@ximian.com>
 
+	* pilot-link.m4: reduce number of checks
+
+	* configure.in: reorg checks
+
+2002-01-18  JP Rosevear  <jpr@ximian.com>	
+
 	* pi-nredir.c (main): don't write log info since the other end
 	closed the connection
 
