@@ -2377,7 +2377,7 @@ accept(socket)
 	CODE:
 	{
 		struct pi_sockaddr a;
-		int len = sizeof(struct pi_sockaddr);
+		size_t len = sizeof(struct pi_sockaddr);
 		int result;
 		result = pi_accept(socket, (struct sockaddr*)&a, &len);
 		if (result < 0) {
@@ -2966,7 +2966,8 @@ getPref(self, id=0, backup=1)
 	PPCODE:
 	{
 		Char4 creator;
-	    int len, version, result;
+	    int version, result;
+		size_t len;
 	    SV * c, n, v;
 	    int r;
 		if (self->Class) {
@@ -3378,7 +3379,8 @@ getPref(self, creator, id=0, backup=1)
 	int	backup
 	PPCODE:
 	{
-	    int len, version, result;
+	    int version, result;
+		size_t len;
 	    SV * c, n, v;
 	    result = dlp_ReadAppPreference(self->socket, creator, id, backup, 0xFFFF, mybuf, &len, &version);
 	    ReturnReadPref(mybuf, len);
@@ -3567,7 +3569,7 @@ getROMToken(self,token)
 	{
 		char buffer[50];
 		long long_token;
-		unsigned int size;
+		size_t size;
 		int result;
 
 		result = dlp_GetROMToken(self->socket, token, buffer, &size);
@@ -3746,10 +3748,11 @@ getAppBlock(self)
 	PDA::Pilot::File *self
 	PPCODE:
 	{
-	    int len, result;
+		int result = 0;
+	    size_t len;
 	    void * buf;
-		result = pi_file_get_app_info(self->pf, &buf, &len);
-		ReturnReadAI(buf, len);
+		pi_file_get_app_info(self->pf, &buf, &len);
+		ReturnReadAI(buf, (int)len);
 	}
 
 SV *
@@ -3757,10 +3760,11 @@ getSortBlock(self)
 	PDA::Pilot::File *self
 	PPCODE:
 	{
-	    int len, result;
+		int result = 0;
+	    size_t len;
 	    void * buf;
-		result = pi_file_get_sort_info(self->pf, &buf, &len);
-		ReturnReadSI(buf, len);
+		pi_file_get_sort_info(self->pf, &buf, &len);
+		ReturnReadSI(buf, (int)len);
 	}
 
 
@@ -3769,13 +3773,9 @@ getRecords(self)
 	PDA::Pilot::File *self
 	CODE:
 	{
-		int len, result;
-		result = pi_file_get_entries(self->pf, &len);
-		if (result) {
-			self->errnop = result;
-			RETVAL = &sv_undef;
-		} else
-			RETVAL = newSViv(len);
+		int len, result = 0;
+		pi_file_get_entries(self->pf, &len);
+		RETVAL = newSViv((int)len);
 	}
 	OUTPUT:
 	RETVAL
@@ -3786,11 +3786,12 @@ getResource(self, index)
 	int	index
 	CODE:
 	{
-	    int len, result, id;
+	    int result, id;
+		size_t len;
 	    Char4 type;
 	    void * buf;
 		result = pi_file_read_resource(self->pf, index, &buf, &len, &type, &id);
-		ReturnReadResource(buf,len);
+		ReturnReadResource(buf,(int)len);
 	}
 	OUTPUT:
 	RETVAL
@@ -3801,11 +3802,12 @@ getRecord(self, index)
 	int	index
 	PPCODE:
 	{
-	    int len, result, attr, category;
+	    int result, attr, category;
+		size_t len;
 	    unsigned long id;
 	    void * buf;
 		result = pi_file_read_record(self->pf, index, &buf, &len, &attr, &category, &id);
-		ReturnReadRecord(buf,len);
+		ReturnReadRecord(buf,(int)len);
 	}
 
 
@@ -3815,11 +3817,12 @@ getRecordByID(self, id)
 	unsigned long	id
 	CODE:
 	{
-	    int len, result;
+	    int result;
+		size_t len;
 	    int attr, category, index;
 	    void * buf;
 		result = pi_file_read_record_by_id(self->pf, id, &buf, &len, &index, &attr, &category);
-		ReturnReadRecord(buf, len);
+		ReturnReadRecord(buf, (int)len);
 	}
 	OUTPUT:
 	RETVAL
@@ -3839,8 +3842,8 @@ getDBInfo(self)
 	CODE:
 	{
 		DBInfo result;
-		int err = pi_file_get_info(self->pf, &result);
-		pack_dbinfo(RETVAL, result, err);
+		pi_file_get_info(self->pf, &result);
+		pack_dbinfo(RETVAL, result, 0);
 	}
 	OUTPUT:
 	RETVAL

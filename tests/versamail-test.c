@@ -187,13 +187,9 @@ int main(int argc, char *argv[]) {
       return -1;
    }
 
-   r = pi_file_get_app_info PI_ARGS((pi_fp, &record, &size));
-   if (r<0) {
-     printf("Error reading app_info block\n");
-   } else {
-     print_versamail_app_info(r, record, size);
-     printf("----------\n");
-   }
+   pi_file_get_app_info PI_ARGS((pi_fp, &record, &size));
+   print_versamail_app_info(r, record, size);
+   printf("----------\n");
 
    for(idx=0;;idx++) {
       r = pi_file_read_record(pi_fp, idx, &record, &size, &attr, &cat, &uid);

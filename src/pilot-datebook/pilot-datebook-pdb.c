@@ -464,7 +464,7 @@ pdb_write_row (struct pdb_file_data * out_file, struct header_data * header, str
 
   /* Write datebook row data */
   buffer_len = pack_Appointment(&a, buffer, sizeof(buffer));
-  if (pi_file_append_record (out_file->pf, &buffer, buffer_len, attributes, category, uid))
+  if (pi_file_append_record (out_file->pf, &buffer, buffer_len, attributes, category, uid) < 0)
     error_message("Write of datebook application row %d to output file failed!\n\n",
 		  record_num);
 
@@ -541,17 +541,15 @@ pdb_read_header (struct pdb_file_data * in_file, struct header_data * header)
   }
   else {
     /* Read info header */
-    if (pi_file_get_info (in_file->pf, &header->info) < 0)
-      error_message("Can not get database header info from input file\n\n");
+    pi_file_get_info (in_file->pf, &header->info);
 
     if ((header->info).flags & dlpDBFlagResource)
       error_message("Input file is not a Datebook file, resource flag is set!\n\n");
 
     /* Read datebook application header data */
-    if (pi_file_get_app_info (in_file->pf,
+    pi_file_get_app_info (in_file->pf,
 			      &app_info,
-			      &(header->app_info_size)) < 0)
-      error_message("Can not get application information header data from input file\n\n");
+			      &(header->app_info_size));
 
     /* Convert datebook application header data */
     if (header->app_info_size > 0)
@@ -560,10 +558,9 @@ pdb_read_header (struct pdb_file_data * in_file, struct header_data * header)
 				header->app_info_size);
 
     /* Read datebook sort header data */
-    if (pi_file_get_sort_info (in_file->pf,
+    pi_file_get_sort_info (in_file->pf,
 			       &(header->sort_info),
-			       &(header->sort_info_size)) < 0)
-      error_message("Can not get sort information header data from input file\n\n");
+			       &(header->sort_info_size));
 
   /* If we reach this, then header is valid
    * (otherwise an error_message would have terminated the program).
@@ -710,12 +707,12 @@ pdb_write_header (struct pdb_file_data * out_file, struct header_data * header)
   if(buffer_len < 0)
     error_message("Datebook application info for output file could not be packed!\n\n");
 
-  if (pi_file_set_app_info(out_file->pf, buffer, buffer_len))
+  if (pi_file_set_app_info(out_file->pf, buffer, buffer_len) < 0)
     error_message("Can not set datebook application info for output file!\n\n");
 
 
   /* Set database sort information */
-  if (pi_file_set_sort_info(out_file->pf, sort_info, sort_info_size))
+  if (pi_file_set_sort_info(out_file->pf, sort_info, sort_info_size) < 0)
     error_message("Can not set datebook sort info for output file!\n\n");
 
   /* Debug */

@@ -180,10 +180,7 @@ static void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 	size_t 	app_info_size;
 	void 	*app_info;
 
-	if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
-		printf("can't get app_info\n\n");
-		return;
-	}
+	pi_file_get_app_info(pf, &app_info, &app_info_size);
 
 	printf("app_info_size %zu\n", app_info_size);
 	dump(app_info, app_info_size);
@@ -208,10 +205,7 @@ static void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 	void 	*sort_info;
 
 
-	if (pi_file_get_sort_info(pf, &sort_info, &sort_info_size) < 0) {
-		printf("can't get sort_info\n\n");
-		return;
-	}
+	pi_file_get_sort_info(pf, &sort_info, &sort_info_size);
 
 	printf("sort_info_size %zu\n", sort_info_size);
 	dump(sort_info, sort_info_size);
@@ -485,10 +479,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	if (pi_file_get_info(pf, &info) < 0) {
-		fprintf(stderr, "can't get info\n\n");
-		return -1;
-	}
+	pi_file_get_info(pf, &info);
 
 	if (hflag || dflag)
 		dump_header(pf, &info);

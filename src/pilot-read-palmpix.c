@@ -100,7 +100,7 @@ static int getrecord_pi_file (struct PalmPixState *vstate, int recno,
 		(struct PalmPixState_pi_file *) vstate;
 
 	return pi_file_read_record (state->f, recno, buf, bufsize, NULL,
-		NULL, NULL);
+		NULL, NULL) < 0 ? -1 : 0;
 }
 
 
@@ -587,8 +587,8 @@ int main (int argc, char **argv) {
 				if (nfileargs > 1 && action != write_one)
 					printf ("%s:\n", argv[i]);
 		  
-				if (pi_file_get_info (f, &info) == 0
-					&& ! (info.flags & dlpDBFlagResource)) {
+				pi_file_get_info (f, &info);
+                if (info.flags & dlpDBFlagResource) {
 		       
 				struct PalmPixState_pi_file s;
 				int n = 0;

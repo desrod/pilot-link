@@ -785,9 +785,9 @@ extern DLPERROR dlp_WriteAppPreference (int sd, unsigned long STR4, int id, int 
 extern struct pi_file *pi_file_open (const char *name);
 extern PIERROR pi_file_close (struct pi_file *pf);
 extern PIERROR pi_file_get_info (struct pi_file *pf, struct DBInfo *OUTPUT);
-extern PIERROR pi_file_get_app_info  (struct pi_file *pf, void **OUTBUF,
+extern void pi_file_get_app_info  (struct pi_file *pf, void **OUTBUF,
 					      size_t *OUTBUFLEN);
-extern PIERROR pi_file_get_sort_info (struct pi_file *pf, void **OUTBUF,
+extern void pi_file_get_sort_info (struct pi_file *pf, void **OUTBUF,
 					      size_t *OUTBUFLEN);
 extern PIERROR pi_file_read_resource (struct pi_file *pf, int idx, void **OUTBUF,
 				  size_t *OUTBUFLEN, unsigned long *OUTSTR4,
@@ -798,7 +798,7 @@ extern PIERROR pi_file_read_resource_by_type_id (struct pi_file *pf,
 extern PIERROR pi_file_type_id_used (struct pi_file *pf, unsigned long STR4, int id);
 extern PIERROR pi_file_read_record (struct pi_file *pf, int idx, void **OUTBUF, size_t *OUTBUFLEN,
 				    int *OUTPUT, int *OUTPUT, recordid_t *OUTPUT);
-extern PIERROR pi_file_get_entries (struct pi_file *pf, int *OUTPUT);
+extern void pi_file_get_entries (struct pi_file *pf, int *OUTPUT);
 extern PIERROR pi_file_read_record_by_id (struct pi_file *pf, recordid_t INPUT, void **OUTBUF,
 					  size_t *OUTBUFLEN, int *OUTPUT, int *OUTPUT,
 					  int *OUTPUT);

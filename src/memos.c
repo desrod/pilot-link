@@ -339,11 +339,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		ret = pi_file_get_app_info(pif, (void *) &ptr, &len);
-		if (ret == -1) {
-			perror("pi_file_get_app_info");
-			exit(EXIT_FAILURE);
-		}
+		pi_file_get_app_info(pif, (void *) &ptr, &len);
 
 		memcpy(appblock, ptr, len);
 	}
@@ -388,7 +384,7 @@ int main(int argc, char *argv[])
 		} else {
 			if (pi_file_read_record
 			    (pif, index, (void *) &ptr, &len, &attr, &category,
-			     0))
+			     0) < 0)
 				break;
 			memcpy(buffer->data, ptr, len);
 			buffer->used = len;

@@ -829,14 +829,14 @@ extern DLPERROR dlp_ReadAppPreference(int,unsigned long,int,int,int,void *,size_
 extern DLPERROR dlp_WriteAppPreference(int,unsigned long,int,int,int,void *,size_t);
 extern struct pi_file *pi_file_open(char const *);
 extern PIERROR pi_file_close(struct pi_file *);
-extern PIERROR pi_file_get_info(struct pi_file *,struct DBInfo *);
-extern PIERROR pi_file_get_app_info(struct pi_file *,void **,size_t *);
-extern PIERROR pi_file_get_sort_info(struct pi_file *,void **,size_t *);
+extern void pi_file_get_info(struct pi_file *,struct DBInfo *);
+extern void pi_file_get_app_info(struct pi_file *,void **,size_t *);
+extern void pi_file_get_sort_info(struct pi_file *,void **,size_t *);
 extern PIERROR pi_file_read_resource(struct pi_file *,int,void **,size_t *,unsigned long *,int *);
 extern PIERROR pi_file_read_resource_by_type_id(struct pi_file *,unsigned long,int,void **,size_t *,int *);
 extern PIERROR pi_file_type_id_used(struct pi_file *,unsigned long,int);
 extern PIERROR pi_file_read_record(struct pi_file *,int,void **,size_t *,int *,int *,recordid_t *);
-extern PIERROR pi_file_get_entries(struct pi_file *,int *);
+extern void pi_file_get_entries(struct pi_file *,int *);
 extern PIERROR pi_file_read_record_by_id(struct pi_file *,recordid_t,void **,size_t *,int *,int *,int *);
 extern PIERROR pi_file_id_used(struct pi_file *,recordid_t);
 extern pi_file_t *pi_file_create(char const *,struct DBInfo const *);
@@ -3159,17 +3159,9 @@ static PyObject *_wrap_pi_file_get_info(PyObject *self, PyObject *args) {
     }
     if(!PyArg_ParseTuple(args,(char *)"O:pi_file_get_info",&obj0)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_get_info(arg1,arg2);
+    pi_file_get_info(arg1,arg2);
     
     {
-        int *res_pointer, res;
-        res_pointer = (int *) result;
-        res = *res_pointer;
-        if (res != 0) {
-            PyErr_SetObject(Error, Py_BuildValue("(is)", res,
-            "pisock error"));
-            return NULL;
-        }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
@@ -3228,17 +3220,9 @@ static PyObject *_wrap_pi_file_get_app_info(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_get_app_info",&obj0,&obj1)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj1,(void **) &arg2, SWIGTYPE_p_p_void,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_get_app_info(arg1,arg2,arg3);
+    pi_file_get_app_info(arg1,arg2,arg3);
     
     {
-        int *res_pointer, res;
-        res_pointer = (int *) result;
-        res = *res_pointer;
-        if (res != 0) {
-            PyErr_SetObject(Error, Py_BuildValue("(is)", res,
-            "pisock error"));
-            return NULL;
-        }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
@@ -3265,17 +3249,9 @@ static PyObject *_wrap_pi_file_get_sort_info(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_get_sort_info",&obj0,&obj1)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj1,(void **) &arg2, SWIGTYPE_p_p_void,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_get_sort_info(arg1,arg2,arg3);
+    pi_file_get_sort_info(arg1,arg2,arg3);
     
     {
-        int *res_pointer, res;
-        res_pointer = (int *) result;
-        res = *res_pointer;
-        if (res != 0) {
-            PyErr_SetObject(Error, Py_BuildValue("(is)", res,
-            "pisock error"));
-            return NULL;
-        }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
@@ -3508,17 +3484,9 @@ static PyObject *_wrap_pi_file_get_entries(PyObject *self, PyObject *args) {
     arg2 = &temp2;
     if(!PyArg_ParseTuple(args,(char *)"O:pi_file_get_entries",&obj0)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_get_entries(arg1,arg2);
+    pi_file_get_entries(arg1,arg2);
     
     {
-        int *res_pointer, res;
-        res_pointer = (int *) result;
-        res = *res_pointer;
-        if (res != 0) {
-            PyErr_SetObject(Error, Py_BuildValue("(is)", res,
-            "pisock error"));
-            return NULL;
-        }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }

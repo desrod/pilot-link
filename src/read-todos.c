@@ -137,11 +137,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		sd = pi_file_get_app_info(pif, (void *) &ptr, &len);
-		if (sd == -1) {
-			perror("pi_file_get_app_info");
-			exit(EXIT_FAILURE);
-		}
+		pi_file_get_app_info(pif, (void *) &ptr, &len);
 
 		memcpy(buffer, ptr, len);
 
