@@ -1,3 +1,7 @@
+2002-06-22  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* doc/README.usb: Added USB device matrix
+
 2002-05-29  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/socket.c: Adjust size of realloc protocol_queue_add (jhmark) 

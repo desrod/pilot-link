@@ -197,3 +197,26 @@ Talking to your Palm over USB
 	is not specified. If you do not specify either, /dev/pilot will be
 	used if it exists.
 
+USB Palm Handheld Device Kernel Matrix
+--------------------------------------
+	Many thanks go to Greg Kroah for his tireless work supporting these
+	new devices as they come out. Below is the matrix of which kernels
+	support which Palm handheld device. If you see your Palm in this
+	list, you must be running the corresponding kernel version to be
+	able to use it with pilot-link or ColdSync using the USB interface.
+
+        Device                          Kernel version
+        Palm M500                       2.4.6-pre1
+        Palm M505                       2.4.6-pre1
+        Palm M515                       2.4.19-pre2
+        Palm I705                       2.4.19-pre6
+        Palm M125                       2.4.15-pre5
+        Palm M130                       2.4.19-pre5
+        Sony Clie 320                   2.4.10-pre2
+        Sony Clie (OS v3.5)             2.4.10-pre5
+        Sony Clie (OS v4.0)             2.4.10-pre5
+        Sony Clie (OS v4.1)             2.4.19-pre7
+        Sony Clie S360                  2.4.19-pre2
+
+
+
