@@ -1,3 +1,7 @@
+2002-05-05  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* doc/README.usb: Minor readability adjustments
+
 2002-05-04  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/ccexample.cc: Fixed a namespace typing problem with gcc 3.x.x

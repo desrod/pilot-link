@@ -30,15 +30,15 @@ Linux USB Configuration
 	the USB host controller that your system supports (you _do_ have a
 	system with USB ports on it, right?) with the following syntax: 
 
-		modprobe usb-ohci
+		# modprobe usb-ohci
 
 	..or
 
-		modprobe usb-uhci
+		# modprobe usb-uhci
 
 	..or 
 
-		modprobe usb
+		# modprobe usb
 
 	Each motherboard will have a specific chipset that one of these
 	drivers should support. You will only need one, so please don't be
@@ -49,7 +49,7 @@ Linux USB Configuration
 	Once you have that working, verified to be loaded with 'lsmod', you
 	can then try loading the USB serial support layer, using:
 
-		modprobe usbserial
+		# modprobe usbserial
 
 	Then on top of that, add the Visor driver. NOTE: You do not need to
 	be using a Handspring Visor to use this driver. The name 'visor.o'
@@ -58,7 +58,7 @@ Linux USB Configuration
 	USB-based handheld devices, the code still is inside visor.o, but it
 	retains its legacy name.
 
-		modprobe visor
+		# modprobe visor
 
 	Now if you do an 'lsmod' you should see something similar to this:
 
@@ -95,8 +95,8 @@ Linux USB Configuration
 	/writing of this document, two Sony models use /dev/ttyUSB0, and the
 	/rest of the Sony and Palm models use /dev/ttyUSB1)
 
-		mknod /dev/ttyUSB0 c 188 0
-		mknod /dev/ttyUSB1 c 188 1
+		# mknod /dev/ttyUSB0 c 188 0
+		# mknod /dev/ttyUSB1 c 188 1
 
 	If you are using devfs (not recommended for security reasons), the
     	devices supported will show up as /dev/usb/tts/0 and /dev/usb/tts/1
@@ -105,11 +105,11 @@ Linux USB Configuration
 	Also, make sure your user has read and write permissions to those
 	device nodes: 
 
-		chmod 0666 /dev/ttyUSB?    # the '?' is a wildcard 
+		# chmod 0666 /dev/ttyUSB?    # the '?' is a wildcard 
 	
 	..or
 
-		chmod a+rw /dev/ttyUSB?
+		# chmod a+rw /dev/ttyUSB?
 
 
 Linux Kernel Condfiguration
@@ -126,7 +126,7 @@ Linux Kernel Condfiguration
 	which will walk you through the entire process, in non-confusing
 	language, found here:
 
-	http://howto.gnu-designs.com/kernel-HOWTO
+		http://howto.gnu-designs.com/kernel-HOWTO
 
 	Once you have built a kernel, and tested it, you can easily add the
 	necessary support for USB devices and USB host controller support
@@ -185,12 +185,12 @@ Talking to your Palm over USB
 	If you see the successful message when you hit HotSync, now you can
 	launch any of pilot-link's various tools as follows:
 
-		./dlpsh -p /dev/ttyUSB1
+		$ ./dlpsh -p /dev/ttyUSB1
 
 	..or 
 
 		export PILOTPORT=/dev/ttyUSB1
-		./pilot-xfer -l
+		$ ./pilot-xfer -l
 
 	..and it should connect and allow you to talk to your Palm device.
 	The $PILOTPORT environment variable will be read if the '-p' option
