@@ -121,17 +121,16 @@ class DLP
 
      int resetLastSyncPC(void) const { return dlp_ResetLastSyncPC(_sd); }
 
-     int readAppBlock(const int handle, const int offset, void *bud,
-		      const int len) const {
-	  return dlp_ReadAppBlock(_sd, handle, offset, bud, len);
+     int readAppBlock(const int handle, const int offset, int reqbytes, pi_buffer_t *retbuf) const {
+	  return dlp_ReadAppBlock(_sd, handle, offset, reqbytes, retbuf);
      }
 
      int writeAppBlock(const int h, const void *buf, const int len) const {
 	  return dlp_WriteAppBlock(_sd, h, buf, len);
      }
 
-     int readSortBlock(const int h, const int offset, void *buf, const int len) const {
-	  return dlp_ReadSortBlock(_sd, h, offset, buf, len);
+     int readSortBlock(const int h, const int offset, int reqbytes, pi_buffer_t *retbuf) const {
+	  return dlp_ReadSortBlock(_sd, h, offset, reqbytes, retbuf);
      }
 
      int writeSortBlock(const int h, const void *buf, int len) const {
