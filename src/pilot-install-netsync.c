@@ -50,27 +50,39 @@ const struct poptOption options[] = {
 
 poptContext po;
 
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments  
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(const char *progname) {
 		printf("Assigns your Palm device NetSync information\n\n");
 
 		poptPrintHelp(po, stderr, 0);
 
-		printf("\n  Examples: %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
+		printf("\n  Examples:\n");
+		printf("      %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
 			progname);
 		exit(1);
 }
 
 int main(int argc, char *argv[])
 {
-	int 	enable		= -1,
-		sd 		= -1;
+	int 	enable	= -1,
+		sd 	= -1,
+		po_err	= -1;
 
-	const char *progname 	= argv[0];
+	char *progname 	= argv[0];
 
 	struct 	NetSyncInfo 	Net;
 	struct in_addr addr;
 
-	int po_err;
 	po = poptGetContext("install-netsync", argc, (const char **) argv, options, 0);
 
 	if (argc < 2) {
@@ -165,3 +177,4 @@ error_close:
 error:
 	return -1;
 }
+

@@ -90,9 +90,9 @@ endif
 #	$(top_builddir)/libpisock/libpisock.la
 
 addresses_SOURCES = 		\
-	$(getopt_sources)	\
 	addresses.c
 addresses_LDADD = 		\
+	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 debugsh_SOURCES = 		\
@@ -144,7 +144,6 @@ install_memo_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_netsync_SOURCES = 	\
-	$(getopt_sources)	\
 	install-netsync.c
 install_netsync_LDADD = 	\
 	$(POPT_LIBS)		\
@@ -163,9 +162,9 @@ install_todo_LDADD =            \
         $(top_builddir)/libpisock/libpisock.la
 
 install_user_SOURCES = 		\
-	$(getopt_sources)	\
 	install-user.c
 install_user_LDADD = 		\
+	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 memos_SOURCES = 		\
@@ -329,9 +328,9 @@ read_screenshot_SOURCES =	\
         $(getopt_sources)	\
         read-screenshot.c
 read_screenshot_LDADD =		\
+	$(POPT_LIBS)		\
         $(PNG_LIBS)		\
-        $(top_builddir)/libpisock/libpisock.la	\
-	$(POPT_LIBS)
+        $(top_builddir)/libpisock/libpisock.la
 
 read_todos_SOURCES = 		\
 	$(getopt_sources)	\

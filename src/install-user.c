@@ -17,7 +17,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,17 +26,22 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"user",        required_argument, NULL, 'u'},
-	{"id",          required_argument, NULL, 'i'},
-	{0, 		0, 		   0, 	 0}
+const char *port	= NULL,
+	*user		= NULL,
+	*userid		= NULL;
+
+
+const struct poptOption options[] = {
+        { "port",    'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
+        { "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
+        { "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
+        { "user",    'u', POPT_ARG_STRING, &user, 0, "Set the username, use quotes for spaces (see example)", "<username>"},
+        { "id",      'i', POPT_ARG_STRING, &userid, 0, "A 5-digit numeric UserID, required for PalmOS", "<userid>"},
+        POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
 };
 
-static const char *optstring = "p:hvu:i:";
-
+poptContext po;
 
 /***********************************************************************
  *
@@ -49,54 +54,41 @@ static const char *optstring = "p:hvu:i:";
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Assigns your Palm device a Username and unique UserID\n\n");
-	printf("   Usage: %s -p <port> -u \"User name\" -i <userid>\n", progname);
-	printf("                       -o <hostname> -a <ip> -n <subnet>\n");
-	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -u <username>     Set the username, use quotes for spaces (see example)\n");
-	printf("     -i <userid>       A 5-digit numeric UserID, required for PalmOS\n");
-	printf("     -h --help         Display this information\n");
-	printf("     -v --version      Display version information\n\n");
-	printf("   Examples: \n");
-	printf("      install-user -p /dev/pilot -u \"John Q. Public\" -i 12345\n\n");
+static void display_help(const char *progname) {
+                printf("Assigns your Palm device a Username and unique UserID\n\n");
 
-	return;
+                poptPrintHelp(po, stderr, 0);
+
+                printf("\n  Examples: \n");
+		printf("      %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
+			progname);
+                exit(1);
 }
 
 int main(int argc, char *argv[])
 {
-	int 	c,		/* switch */
-		sd 		= -1;
-	char 	*progname 	= argv[0],
-		*port		= NULL,
-		*user 		= NULL,
-		*userid		= NULL;
+	int 	sd 		= -1,
+		po_err		= -1;
 
 	struct 	PilotUser 	User;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (c) {
+	const char *progname	= argv[0];
 
-		case 'h':
-			display_help(progname);
-			return 0;
+        po = poptGetContext("install-user", argc, (const char **) argv, options, 0);
+  
+        if (argc < 2) {
+                display_help(progname);
+                exit(1);
+        }
+
+        while ((po_err = poptGetNextOpt(po)) != -1) {
+                switch (po_err) {
+
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
-		case 'u':
-			user = optarg;
-			break;
-		case 'i':
-			userid = optarg;
-			break;
 		default:
-			display_help(progname);
+			poptPrintHelp(po, stderr, 0);
 			return 0;
 		}
 	}

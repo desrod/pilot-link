@@ -19,26 +19,27 @@
  *
  */
 
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include "getopt.h"
 
 #include "pi-socket.h"
 #include "pi-address.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{NULL,          0,                 NULL, 0}
+const char *port        = NULL;
+
+const struct poptOption options[] = {
+        { "port",    'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
+        { "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
+        { "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
+        POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
 };
 
-static const char *optstring = "p:hv";
-
+poptContext po;
 
 /***********************************************************************
  *
@@ -53,55 +54,51 @@ static const char *optstring = "p:hv";
  ***********************************************************************/
 static void display_help(const char *progname)
 {
-	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n");
-	printf("   Usage: addresses -p <port> [options]\n\n");
-	printf("   Options:\n");
-	printf("   -p <port>      Use device file <port> to communicate with Palm\n");
-	printf("   -h             Display this information\n\n");
-	printf("   Only the port option is required, the other options are... optional.\n\n");
-	printf("   Example: %s -p /dev/pilot\n\n", progname);
-	printf("   You can redirect the output of 'addresses' to a file instead of the default\n");
-	printf("   STDOUT by using redirection and pipes as necessary.\n\n");
-	printf("   Example: %s -p /dev/pilot > MyAddresses.txt\n\n", progname);
+	printf("Dumps the Palm AddressDB database into a generic text output format\n\n");
+
+	poptPrintHelp(po, stderr, 0);
+
+	printf("\nOnly the port option is required, the other options are... optional.\n\n");
+	printf("Example:\n");
+	printf("  %s -p /dev/pilot\n\n", progname);
+	printf("You can redirect the output of 'addresses' to a file instead of the default\n");
+	printf("STDOUT by using redirection and pipes as necessary.\n\n");
+	printf("Example:\n");
+	printf("  %s -p /dev/pilot > MyAddresses.txt\n\n", progname);
 
 	return;
 }
 
 int main(int argc, char *argv[])
 {
-	int 	c,		/* switch */
-		db,
+	int 	db,
 		index,
-		sd 		= -1;
+		sd 		= -1,
+		po_err		= -1;
 	
-	char 	*progname 	= argv[0],
-		*port		= NULL;
+	char 	*progname 	= argv[0];
 	
 	struct 	AddressAppInfo aai;
 
 	pi_buffer_t *buffer;
 	
-        while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-                switch (c) {
+        po = poptGetContext("addresses", argc, (const char **) argv, options, 0);
+  
+        if (argc < 2) {
+                display_help(progname);
+                exit(1);
+        }
+  
+        while ((po_err = poptGetNextOpt(po)) != -1) {
+                switch (po_err) {
 
-		case 'h':
-			display_help(progname);
-			return 0;
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
 		default:
-			display_help(progname);
+			poptPrintHelp(po, stderr, 0);
 			return 0;
                 }
-        }
-
-        if (argc < 2) {
-                display_help(progname);
-                return 0;
         }
 
 	sd = pilot_connect(port);
