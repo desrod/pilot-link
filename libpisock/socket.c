@@ -541,13 +541,16 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 					   normal read then do a PEEK again to catch the
 					   next one */
 					byte_buf.used = 0;
-					if (dev_prot->read (ps, &byte_buf, 1, 0) < 0
-						|| dev_prot->read (ps, &byte_buf, 1, PI_MSG_PEEK) < 0)
+					if (dev_prot->read (ps, &byte_buf, 1, 0) >= 0
 					{
-						protocol = PI_PF_PADP;
-						LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-						 "Default\n"));
-						found = 1;
+						byte_buf.used = 0;
+						if (dev_prot->read (ps, &byte_buf, 1, PI_MSG_PEEK) < 0)
+						{
+							protocol = PI_PF_PADP;
+							LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+								"Default\n"));
+							found = 1;
+						}
 					}
 				}
 			}
