@@ -117,7 +117,6 @@ typedef struct pi_socket_list
 } pi_socket_list_t;
 
 	extern int pi_socket PI_ARGS((int domain, int type, int protocol));
-	extern pi_socket_t *pi_socket_copy PI_ARGS((pi_socket_t *ps));
 	extern int pi_socket_setsd PI_ARGS((pi_socket_t *ps, int pi_sd));
 
 	extern int pi_connect

@@ -154,62 +154,6 @@ pi_usb_protocol (pi_device_t *dev)
 	return prot;
 }
 
-/* Device Functions */
-/***********************************************************************
- *
- * Function:    pi_usb_device_dup
- *
- * Summary:     creates a new copy of a USB pi_device instance
- *
- * Parameters:	pi_device_t*
- *
- * Returns:     new pi_device_t* or NULL if operation failed
- *
- ***********************************************************************/
-static pi_device_t *
-pi_usb_device_dup (pi_device_t *dev)
-{
-	pi_device_t *new_dev = NULL;
-
-	struct 	pi_usb_data	*new_data = NULL,
-				*data = NULL;
-
-	ASSERT(dev != NULL);
-	
-	new_dev	= (pi_device_t *)malloc (sizeof (pi_device_t));
-		if (new_dev != NULL) {
-			new_data = (pi_usb_data_t *)malloc
-				(sizeof (struct pi_usb_data));
-			if (new_data == NULL) {
-				free(new_dev);
-				new_dev = NULL;
-			}
-		}
-
-	if ( (new_dev != NULL) && (new_data != NULL) ) {
-
-		new_dev->dup 		= dev->dup;
-		new_dev->free 		= dev->free;
-		new_dev->protocol 	= dev->protocol;	
-		new_dev->bind 		= dev->bind;
-		new_dev->listen 	= dev->listen;
-		new_dev->accept 	= dev->accept;
-		new_dev->connect 	= dev->connect;
-		new_dev->close 		= dev->close;
-	
-		data 	= (pi_usb_data_t *)dev->data;
-		new_data->impl 		= data->impl;
-		memcpy(new_data->buf, data->buf, data->buf_size);
-		new_data->buf_size 	= data->buf_size;
-		new_data->ref           = NULL;
-		new_data->timeout 	= data->timeout;
-		new_dev->data 		= new_data;
-	}
-	
-	return new_dev;
-}
-
-
 /***********************************************************************
  *
  * Function:    pi_usb_device_free
@@ -263,7 +207,6 @@ pi_usb_device (int type)
 	
 	if ( (dev != NULL) && (data != NULL) ) {
 
-		dev->dup 		= pi_usb_device_dup;
 		dev->free 		= pi_usb_device_free;
 		dev->protocol 		= pi_usb_protocol;	
 		dev->bind 		= pi_usb_bind;
@@ -399,42 +342,38 @@ static int
 pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
-	struct 	pi_socket *accept = NULL;
 
 	/* Wait for data */
 	if (data->impl.poll(ps, ps->accept_to) < 0)
 		goto fail;
 	
-	accept = pi_socket_copy(ps);
-	data = accept->device->data;
-	data->timeout = accept->accept_to * 1000;
+	data->timeout = ps->accept_to * 1000;
 
-	pi_socket_init(accept);
+	pi_socket_init(ps);
 	if (ps->type == PI_SOCK_STREAM) {
-		switch (accept->cmd) {
+		switch (ps->cmd) {
 		case PI_CMD_CMP:
-			if (cmp_rx_handshake(accept, 57600, 1) < 0)
+			if (cmp_rx_handshake(ps, 57600, 1) < 0)
 				return -1;
 
 			break;
 		case PI_CMD_NET:
-			if (net_rx_handshake(accept) < 0)
+			if (net_rx_handshake(ps) < 0)
 				return -1;
 			break;
 		}
 
-		accept->dlprecord = 0;
+		ps->dlprecord = 0;
 	}
 
 	data->timeout = 0;
-	accept->command = 0;
-	accept->state 	= PI_SOCK_CONAC;
+	ps->command = 0;
+	ps->state 	= PI_SOCK_CONAC;
 
-	return accept->sd;
+	return ps->sd;
 
  fail:
-	if (accept)
-		pi_close (accept->sd);
+	pi_close (ps->sd);
 	return -1;
 }
 
@@ -898,7 +837,7 @@ static int
 USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe)
 {
 	int i, ret;
-	palm_ext_connection_info_t ci;
+	palm_ext_connection_info_t ci = { 0 };
 	u_int32_t flags = dev->dev.flags;
 
 	ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);

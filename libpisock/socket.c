@@ -970,87 +970,13 @@ pi_socket(int domain, int type, int protocol)
 	/* post the new socket to the list */
 	list = pi_socket_recognize(ps);
 	if (list == NULL) {
+		close (ps->sd);
 		free(ps);
 		return -1;
 	} else {
 		installexit();
 		return ps->sd;
 	}
-}
-
-
-/***********************************************************************
- *
- * Function:    pi_socket_copy
- *
- * Summary:	copies a pi_socket
- *
- * Parameters:  pi_socket_t*
- *
- * Returns:     pi_socket_t * (New socket), or NULL if operation failed
- *
- ***********************************************************************/
-pi_socket_t *
-pi_socket_copy(pi_socket_t *ps)
-{
-	int 	i;
-	pi_socket_t *new_ps = NULL;
-	struct sockaddr *laddr = NULL;
-	struct sockaddr *raddr = NULL;
-	
-	new_ps = malloc(sizeof(pi_socket_t));
-	if (new_ps != NULL) {
-		laddr = malloc(ps->laddrlen);
-		if (laddr != NULL) {
-			raddr = malloc(ps->raddrlen);
-			if (raddr == NULL) {
-				free(laddr);
-				laddr = NULL;
-				free(new_ps);
-				new_ps = NULL;
-			}
-		} else {
-			free(new_ps);
-			new_ps = NULL;
-		}
-	}
-
-	if ( (new_ps != NULL) && (laddr != NULL) && (raddr != NULL) ) {
-		memcpy(new_ps, ps, sizeof(pi_socket_t));
-
-		new_ps->laddr = laddr;
-		new_ps->raddr = raddr;
-		memcpy(new_ps->laddr, ps->laddr, ps->laddrlen);
-		memcpy(new_ps->raddr, ps->raddr, ps->raddrlen);
-
-		new_ps->sd = dup(ps->sd);
-	
-		new_ps->protocol_queue = NULL;
-		new_ps->queue_len = 0;
-
-		for (i = 0; i < ps->queue_len; i++) {
-			pi_protocol_t *prot;
-		
-			prot =
-			 ps->protocol_queue[i]->dup (ps->protocol_queue[i]);
-			protocol_queue_add(new_ps, prot);
-		}
-
-		new_ps->cmd_queue = NULL;
-		new_ps->cmd_len = 0;
-
-		for (i = 0; i < ps->cmd_len; i++) {
-			pi_protocol_t *prot;
-		
-			prot = ps->cmd_queue[i]->dup (ps->cmd_queue[i]);
-			protocol_cmd_queue_add(new_ps, prot);
-		}
-		new_ps->device = ps->device->dup (ps->device);
-	
-		pi_socket_recognize(new_ps);
-	}
-
-	return new_ps;
 }
 
 

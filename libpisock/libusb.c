@@ -192,9 +192,11 @@ claim:
 				usb_close (USB_handle);
 
 				errno = -i;
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 				return 0;
 			}
 
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 			return 1;
 		}
 	}
@@ -324,6 +326,7 @@ RD_stop (void)
 
 	RD_running = 0;
 	pthread_join (RD_thread, NULL);
+	RD_thread = 0;
 
 	return 1;
 }
@@ -362,7 +365,7 @@ u_close(struct pi_socket *ps)
 	RD_stop ();
 	USB_close ();
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
-	return 1;
+	return close (ps->sd);
 }
 
 static int

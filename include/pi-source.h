@@ -96,8 +96,6 @@ extern "C" {
 	} pi_protocol_t;
 
 	typedef struct pi_device {
-		struct pi_device *(*dup)
-			PI_ARGS((struct pi_device *dev));
 		void (*free)
 			PI_ARGS((struct pi_device *dev));
 		struct pi_protocol *(*protocol)

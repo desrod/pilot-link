@@ -166,60 +166,6 @@ static pi_protocol_t
 	return prot;
 }
 
-/* Device Functions */
-/***********************************************************************
- *
- * Function:    pi_inet_device_dup
- *
- * Summary:     clones an existing pi_device struct
- *
- * Parameters:  pi_device_t*
- *
- * Returns:     pi_device_t* or NULL if operation failed
- *
- ***********************************************************************/
-static pi_device_t
-*pi_inet_device_dup (pi_device_t *dev)
-{
-	pi_device_t	*new_dev = NULL;
-	pi_inet_data_t	*new_data = NULL,
-			*data = NULL;
-
-	ASSERT (dev != NULL);
-	
-	new_dev	= (pi_device_t *)malloc (sizeof (pi_device_t));
-	if (new_dev != NULL) {
-		new_data = (pi_inet_data_t *)malloc (sizeof (pi_inet_data_t));
-		if (new_data == NULL) {
-			free(new_dev);
-			new_dev = NULL;
-		}
-	}
-
-	if ( (new_dev != NULL) && (new_data != NULL) ) {
-
-		new_dev->dup 		= dev->dup;
-		new_dev->free 		= dev->free;
-		new_dev->protocol 	= dev->protocol;	
-		new_dev->bind 		= dev->bind;
-		new_dev->listen 	= dev->listen;
-		new_dev->accept 	= dev->accept;
-		new_dev->connect 	= dev->connect;
-		new_dev->close 		= dev->close;
-	
-		data = (pi_inet_data_t *)dev->data;
-		new_data->timeout 	= data->timeout;
-		new_data->rx_bytes 	= 0;
-		new_data->rx_errors 	= 0;
-		new_data->tx_bytes 	= 0;
-		new_data->tx_errors 	= 0;
-		new_dev->data 		= new_data;
-	}
-	
-	return new_dev;
-}
-
-
 /***********************************************************************
  *
  * Function:    pi_inet_device_free
@@ -275,7 +221,6 @@ pi_device_t
 
 	if ( (dev != NULL) && (data != NULL) ) {
 
-		dev->dup 	= pi_inet_device_dup;
 		dev->free 	= pi_inet_device_free;
 		dev->protocol 	= pi_inet_protocol;	
 		dev->bind 	= pi_inet_bind;
@@ -509,40 +454,37 @@ pi_inet_listen(pi_socket_t *ps, int backlog)
 static int
 pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
-	struct 	pi_socket *acpt = NULL;
 	int sd;
-	
-	acpt = pi_socket_copy(ps);
 	
  	sd = accept(ps->sd, addr, (socklen_t *)addrlen);
 	if (sd < 0)
 		goto fail;
 
-	pi_socket_setsd(acpt, sd);
-	pi_socket_init(acpt);
+	pi_socket_setsd(ps, sd);
+	pi_socket_init(ps);
 
-	switch (acpt->cmd) {
+	switch (ps->cmd) {
 	case PI_CMD_CMP:
-		if (cmp_rx_handshake(acpt, 57600, 0) < 0)
+		if (cmp_rx_handshake(ps, 57600, 0) < 0)
 			return -1;
 		break;
 	case PI_CMD_NET:
-		if (net_rx_handshake(acpt) < 0)
+		if (net_rx_handshake(ps) < 0)
 			return -1;
 		break;
 	}
 
-	acpt->state 	= PI_SOCK_CONAC;
-	acpt->command 	= 0;
-	acpt->dlprecord = 0;
+	ps->state 	= PI_SOCK_CONAC;
+	ps->command 	= 0;
+	ps->dlprecord = 0;
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV ACCEPT Accepted\n"));
 
-	return acpt->sd;
+	return ps->sd;
 
  fail:
-	if (acpt)
-		pi_close (acpt->sd);
+	if (ps)
+		pi_close (ps->sd);
 	return -1;
 }
 

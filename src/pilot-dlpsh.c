@@ -29,6 +29,7 @@
 #include <string.h>
 #include <strings.h>
 #include <netinet/in.h>
+#include <setjmp.h>
 
 #include "pi-source.h"
 #include "pi-dlp.h"
@@ -73,6 +74,7 @@ int pilot_connect(const char *port);
 */
 
 int 	df_fn(int sd, int argc, char *argv[]),
+	reopen_fn(int sd, int argc, char *argv[]),
 	exit_fn(int sd, int argc, char *argv[]),
 	ls_fn(int sd, int argc, char *argv[]),
 	help_fn(int sd, int argc, char *argv[]),
@@ -82,6 +84,8 @@ int 	df_fn(int sd, int argc, char *argv[]),
 
 char 	*strtoke(char *str, char *ws, char *delim),
 	*timestr(time_t t);
+
+static jmp_buf main_jmp;
 
 void exit_func(void);
 void handle_user_commands(int sd);
@@ -97,6 +101,7 @@ struct Command command_list[] = {
 	{"df",   df_fn},  
 	{"help", help_fn},
 	{"ls",   ls_fn},  
+	{"reopen", reopen_fn},
 	{"exit", exit_fn},
 	{"quit", exit_fn},
 	{"rm",   rm_fn},
@@ -641,6 +646,31 @@ int exit_fn(int sd, int argc, char *argv[])
 
 /***********************************************************************
  *
+ * Function:    reopen_fn
+ *
+ * Summary:     Reopen the connection.
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+int reopen_fn(int sd, int argc, char *argv[])
+{
+	printf("Reopening.\n");
+	dlp_AddSyncLogEntry(sd, "dlpsh, the DLP Protocol Shell ended.\n\n"
+				"Thank you for using pilot-link.\n");
+	dlp_EndOfSync(sd, 0);
+	pi_close(sd);
+
+	sleep (2);
+
+	longjmp (main_jmp, 1);
+}
+
+
+/***********************************************************************
+ *
  * Function:    strtoke
  *
  * Summary:     Strip out path delimiters in arguments and filenames
@@ -761,6 +791,8 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 	}	
+
+	setjmp (main_jmp);
 	
 	sd = pilot_connect(port);
 	if (sd < 0)
