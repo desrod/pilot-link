@@ -1,3 +1,17 @@
+2002-09-13  JP Rosevear  <jpr@ximian.com>
+
+	* src/pilot-datebook/Makefile.am: remove LIBOBJS from LDADD
+
+	* src/Makefile.am: include PNG_CFLAGS
+
+	* src/read-palmpix.c: conditionally include config.h and don't
+	force undef of HAVE_PNG
+
+	* src/read-notepad.c: same
+
+	* configure.in: Update libpng check to also check for header file
+	and take arg for libpng location
+
 2002-09-11  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Remove -lpng from binaries which don't need it (Ben

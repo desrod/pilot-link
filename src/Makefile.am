@@ -9,6 +9,7 @@ SUBDIRS=prc pix pilot-datebook
 INCLUDES = 			\
 	-Iinclude		\
 	-I$(top_srcdir)/include \
+	$(PNG_CFLAGS)		\
 	$(TCL_INC)		\
 	$(TK_INC)		\
 	$(RL_CFLAGS)
@@ -243,13 +244,13 @@ read_ical_LDADD = 				\
 read_notepad_SOURCES = \
 	read-notepad.c
 read_notepad_LDADD = 				\
-	$(PNGLIBS) 				\
+	$(PNG_LIBS) 				\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_palmpix_SOURCES = \
 	read-palmpix.c
 read_palmpix_LDADD = 				\
-	$(PNGLIBS) 				\
+	$(PNG_LIBS) 				\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_todos_SOURCES = \

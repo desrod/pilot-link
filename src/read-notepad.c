@@ -19,22 +19,22 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "config.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-notepad.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-header.h"
-
-/* FIXME: Fixes for AIX 4.3.3 Need testers */
-#undef HAVE_PNG
 
 #ifdef HAVE_PNG
 #include "png.h"

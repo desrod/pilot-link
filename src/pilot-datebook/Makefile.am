@@ -43,7 +43,6 @@ pilot_datebook_SOURCES = 		\
 	pilot-datebook-windat.h
 
 pilot_datebook_LDADD =			\
-	@LIBOBJS@			\
 	$(top_builddir)/libpisock/libpisock.la	
 
 EXTRA_DIST =				\
