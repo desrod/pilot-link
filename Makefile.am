@@ -241,10 +241,14 @@ sync-plan: sync-plan.PL
 prc_DATA = getrom.prc getrom2.prc
 prcdir = $(datadir)/pilot-link
 
+m4dir = $(datadir)/aclocal
+m4_DATA = pilot-link.m4
+
 CLEANFILES = $(PERLSCRIPTS)
 
 EXTRA_DIST = 			\
 	$(prc_DATA)		\
+	$(m4_DATA)		\
 	ietf2datebook.PL	\
 	pilot-undelete.PL	\
 	sync-plan.PL

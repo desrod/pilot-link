@@ -98,6 +98,8 @@ do
 	  libtoolize --force --copy
 	fi
       fi
+
+      aclocalinclude="-I ."
       echo "Running aclocal $aclocalinclude ..."
       aclocal $aclocalinclude || {
 	echo
@@ -109,6 +111,10 @@ do
 	exit 1
       }
 
+      if grep "^AM_CONFIG_HEADER" configure.in >/dev/null; then
+	echo "Running autoheader..."
+	autoheader || { echo "**Error**: autoheader failed."; exit 1; }
+      fi
       echo "Running automake --gnu $am_opt ..."
       automake --add-missing --gnu $am_opt ||
 	{ echo "**Error**: automake failed."; exit 1; }
