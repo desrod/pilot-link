@@ -1328,7 +1328,7 @@ pi_send(int pi_sd, const void *msg, size_t len, int flags)
 	if (interval)
 		alarm(interval);
 
-	return ps->protocol_queue[0]->write (ps, msg, len, flags);
+	return ps->protocol_queue[0]->write (ps, (void *)msg, len, flags);
 }
 
 /***********************************************************************
