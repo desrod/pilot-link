@@ -20,16 +20,12 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <pi-dlp.h>
 #include <pi-file.h>
-#include <pi-socket.h>
 #include <pi-header.h>
 
 #define MAIN_PDB_NAME "ImageLib_mainDB.pdb"
@@ -37,7 +33,7 @@
 #define PORT          "/dev/ttyUSB1"
 
 /* Record formats via script from 
- *   http://www.xent.com/~bsittler/treo600/dumphotos  
+ * http://www.xent.com/~bsittler/treo600/dumphotos  
  */
 
 typedef struct MainDBImgRecord {
