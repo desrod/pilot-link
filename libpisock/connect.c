@@ -28,33 +28,33 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-
 /***********************************************************************
  *
  * Function:    pilot_connect
  *
  * Summary:     Connect to a Palm device.
  *
- * Parameters:  port -- Communications port through which a Palm device
- *                      is connected.  If this is NULL, pilot_connect()
- *                      will attempt to discover the correct port.
+ * Parameters:  port. Communications port through which the Palm device is
+ *              connected.  If this is NULL, pilot_connect() will attempt to
+ *              discover the correct port, and fall back to /dev/pilot.
  *
- * Returns:     Socket descriptor, if successful.
- *              -1, if the connection can not be established.
+ * Returns:     Socket descriptor of type 'client_sd', if successful.
+ *		Returns 1, if the connection can not be established.
  *
  *  If 'port' is NULL, the PILOTPORT environment variable is checked.
+ *
  *  If neither of them are set, the port defaults to /dev/pilot.
  *
- *  A socket is created.
- *  A message is displayed, reminding the user to press the HotSync button.
- *  pilot_connect() waits for communication to be established.
- *  ... potentially forever.
- *  Once communication is established, the socket descriptor is returned.
+ *  A socket is created. A message is displayed, reminding the user to press
+ *  the HotSync button. pilot_connect() waits for communication to be
+ *  established... potentially forever. Once communication is established,
+ *  the socket descriptor is returned.
  *
  ***********************************************************************/
 int pilot_connect(char *port)
 {
-	int 	sd, 
+	int 	parent_sd	= -1, 	/* Client socket, formerly sd */
+		client_sd	= -1,	/* Parent socket, formerly sd2 */
 		result, 
 		err	= 0;
 	struct 	pi_sockaddr addr;
@@ -77,7 +77,7 @@ int pilot_connect(char *port)
 		exit(1);
 	}
 
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
+	if (!(parent_sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n",
 			port ? port : getenv("PILOTPORT"));
 		return -1;
@@ -87,9 +87,9 @@ int pilot_connect(char *port)
 		addr.pi_family = PI_AF_PILOT;
 		strncpy(addr.pi_device, port, sizeof(addr.pi_device));
 		result =
-		    pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
+		    pi_bind(parent_sd, (struct sockaddr *) &addr, sizeof(addr));
 	} else {
-		result = pi_bind(sd, NULL, 0);
+		result = pi_bind(parent_sd, NULL, 0);
 	}
 
 	if (result < 0) {
@@ -101,13 +101,15 @@ int pilot_connect(char *port)
 		if (portname) {
 			fprintf(stderr, "\n");
 			errno = save_errno;
-			perror("   ERROR"); 
+			perror("   ERROR");
+			fprintf(stderr, "   Are you sure the device %s exists?\n", portname);
+			fprintf(stderr, "   Correct permissions to read and write to %s? (%d)\n\n", portname, save_errno);
 			fprintf(stderr, "   Unable to bind to port '%s'\n",
 				portname);
 	                fprintf(stderr, "   Please use --help for more information\n\n");
 		} else
 			fprintf(stderr, "\n   No port specified\n");
-		pi_close(sd);
+		pi_close(parent_sd);
 		return -1;
 	}
 
@@ -115,29 +117,28 @@ int pilot_connect(char *port)
 		"\n   Listening to port: %s\n\n   Please press the HotSync button now... ",
 		port ? port : getenv("PILOTPORT"));
 
-	if (pi_listen(sd, 1) == -1) {
+	if (pi_listen(parent_sd, 1) == -1) {
 		fprintf(stderr, "\n   Error listening on %s\n", port);
-		pi_close(sd);
+		pi_close(parent_sd);
 		return -1;
 	}
 
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
+	client_sd = pi_accept(parent_sd, 0, 0);
+	if (client_sd == -1) {
 		fprintf(stderr, "\n   Error accepting data on %s\n", port);
-		pi_close(sd);
+		pi_close(parent_sd);
 		return -1;
 	}
-
 
 	fprintf(stderr, "Connected\n\n");
 
-
-	if (dlp_ReadSysInfo (sd, &sys_info) < 0) {
+	if (dlp_ReadSysInfo(client_sd, &sys_info) < 0) {
 		fprintf(stderr, "\n   Error read system info on %s\n", port);
-		pi_close(sd);
+		pi_close(parent_sd);
+		pi_close(client_sd);
 		return -1;
 	}
 
-	dlp_OpenConduit(sd);
-	return sd;
+	dlp_OpenConduit(client_sd);
+	return client_sd;
 }

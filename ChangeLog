@@ -1,3 +1,7 @@
+2002-11-20  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/connect.c: Minor fixes to stop losing the client socket
+
 2002-11-17  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/pi-header.c: Minor verbage changes
