@@ -65,10 +65,11 @@ static pi_protocol_t
 		new_data = (pi_net_data_t *)malloc (sizeof (pi_net_data_t));
 		if (new_data == NULL) {
 			free(new_prot);
+			new_prot = NULL;
 		}
 	}
 
-	if ( (new_prot != NULL) && (new_data != NULL) ) {
+	if (new_prot != NULL && new_data != NULL) {
 		new_prot->level 	= prot->level;
 		new_prot->dup 		= prot->dup;
 		new_prot->free 		= prot->free;
@@ -101,14 +102,11 @@ static pi_protocol_t
 static
 void net_protocol_free (pi_protocol_t *prot)
 {
-
 	ASSERT (prot != NULL);
 
 	if (prot != NULL) {
-		if (prot->data != NULL) {
+		if (prot->data != NULL)
 			free(prot->data);
-			prot->data = NULL;
-		}
 		free(prot);
 	}
 }
@@ -131,16 +129,16 @@ pi_protocol_t
 	pi_protocol_t *prot = NULL;
 	pi_net_data_t *data = NULL;
 
-	prot 	= (pi_protocol_t *)malloc (sizeof (pi_protocol_t));	
+	prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));	
 	if (prot != NULL) {
-		data 	= (pi_net_data_t *)malloc (sizeof (pi_net_data_t));
+		data = (pi_net_data_t *)malloc (sizeof (pi_net_data_t));
 		if (data == NULL) {
 			free(prot);
 			prot = NULL;
 		}
 	}
 
-	if ( (prot != NULL) && (data != NULL) ) {
+	if (prot != NULL && data != NULL) {
 
 		prot->level 		= PI_LEVEL_NET;
 		prot->dup 		= net_protocol_dup;
@@ -444,23 +442,22 @@ net_getsockopt(pi_socket_t *ps, int level, int option_name,
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
+
 	data = (pi_net_data_t *)prot->data;
 
 	switch (option_name) {
-	case PI_NET_TYPE:
-		if (*option_len < sizeof (data->type))
-			goto error;
-		memcpy (option_value, &data->type,
-			sizeof (data->type));
-		*option_len = sizeof (data->type);
-		break;
+		case PI_NET_TYPE:
+			if (*option_len != sizeof (data->type)) {
+				errno = EINVAL;
+				return -1;
+			}
+			memcpy (option_value, &data->type,
+				sizeof (data->type));
+			*option_len = sizeof (data->type);
+			break;
 	}
-	
+
 	return 0;
-	
- error:
-	errno = EINVAL;
-	return -1;
 }
 
 
@@ -485,25 +482,23 @@ net_setsockopt(pi_socket_t *ps, int level, int option_name,
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
+
 	data = (pi_net_data_t *)prot->data;
 
 	switch (option_name) {
-	case PI_NET_TYPE:
-		if (*option_len != sizeof (data->type))
-			goto error;
-		memcpy (&data->type, option_value,
-			sizeof (data->type));
-		*option_len = sizeof (data->type);
-		break;
+		case PI_NET_TYPE:
+			if (*option_len != sizeof (data->type)) {
+				errno = EINVAL;
+				return -1;
+			}
+			memcpy (&data->type, option_value,
+				sizeof (data->type));
+			*option_len = sizeof (data->type);
+			break;
 	}
 
 	return 0;
-	
- error:
-	errno = EINVAL;
-	return -1;
 }
-
 
 /***********************************************************************
  *
