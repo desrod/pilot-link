@@ -1092,21 +1092,21 @@ void packInt( byte* dest, unsigned long l, int size ) {
 static void Time(void)
 {
 	time_t  t1,t2;
-	char    text[30];
+	char    text[24];
 	struct  SysInfo s;
 
 	Connect();
 
-	dlp_ReadSysInfo (sd, &s);
+	dlp_ReadSysInfo(sd, &s);
 
-	if ((s.romVersion >> 5) != 0x33) {
-		dlp_GetSysDateTime (sd, &t2);
-		t1 = time(NULL);
-		dlp_SetSysDateTime (sd, t1);
-		sprintf(text,"Time sync successful (%i sec).\n",t2-t1);
-		dlp_AddSyncLogEntry(sd, text);
-	} else {
+	if ((s.romVersion) == 0x03303000) {
 		dlp_AddSyncLogEntry(sd, "Syncing time will cause the device to\nhard-reset on PalmOS version 3.3!\n");
+	} else {
+		dlp_GetSysDateTime(sd, &t2);
+		t1 = time(NULL);
+		dlp_SetSysDateTime(sd, t1);
+		sprintf(text,"Time sync successful.\n");
+		dlp_AddSyncLogEntry(sd, text);
 	}
 }
 
