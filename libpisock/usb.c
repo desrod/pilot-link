@@ -291,6 +291,25 @@ pi_usb_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	if (ps->type == PI_SOCK_STREAM) {
 		switch (accept->cmd) {
 		case PI_CMD_CMP:
+			if (cmp_rx_handshake(accept, data->establishrate, data->establishhighrate) < 0)
+				return -1;
+
+			size = sizeof(data->rate);
+			pi_getsockopt(accept->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
+				      &data->rate, &size);
+			
+			/* We always reconfigure our port, no matter what */
+			if (data->impl.changebaud(accept) < 0)
+				goto fail;
+			
+			/* Palm device needs some time to reconfigure its port */
+#ifdef WIN32
+			Sleep(100);
+#else
+			tv.tv_sec 	= 0;
+			tv.tv_usec 	= 50000;
+			select(0, 0, 0, 0, &tv);
+#endif
 			break;
 		case PI_CMD_NET:
 			if (net_rx_handshake(accept) < 0)
