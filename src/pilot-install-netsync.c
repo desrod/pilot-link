@@ -59,7 +59,7 @@ static void display_help(char *progname)
 	printf("     -v, --version     Display version information\n\n");
 	printf("   Examples: %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -73,8 +73,6 @@ int main(int argc, char *argv[])
 		*address 	= NULL,
 		*netmask 	= NULL;
 	struct 	NetSyncInfo 	Net;
-
-	opterr = 0;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -100,6 +98,9 @@ int main(int argc, char *argv[])
 		case 'm':
 			netmask = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 	
@@ -123,23 +124,30 @@ int main(int argc, char *argv[])
 	
 	if (enable)
 		Net.lanSync = 1;
-	if (hostname != NULL)
+
+	if (hostname)
 		strncpy(Net.hostName, hostname, sizeof(Net.hostName));
-	if (address != NULL)
+
+	if (address)
 		strncpy(Net.hostAddress, address, sizeof(Net.hostAddress));
-	if (netmask != NULL)
+
+	if (netmask)
 		strncpy(Net.hostSubnetMask, netmask,
 			sizeof(Net.hostSubnetMask));
+
 	if (dlp_WriteNetSyncInfo(sd, &Net) < 0)
 		goto error_close;
 
 	if (enable > 0)
 		printf("\tEnabled NetSync");
-	if (hostname != NULL)
+
+	if (hostname)
 		printf("\tInstalled Host Name: %s\n", Net.hostName);
-	if (address != NULL)
+
+	if (address)
 		printf("\tInstalled IP Address: %s\n", Net.hostAddress);
-	if (netmask != NULL)
+
+	if (netmask)
 		printf("\tInstalled Net Mask: %s\n", Net.hostSubnetMask);
 	printf("\n");
 

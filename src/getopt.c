@@ -746,7 +746,7 @@ char **argv;
 		printf("\n");
 	}
 
-	exit(0);
+	return 0;
 }
 
 #endif				/* TEST */

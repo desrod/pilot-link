@@ -1781,7 +1781,7 @@ main(ac, av)
 	    (void)printf("%s", ctime(&d));
     }
 
-    exit(0);
+    return 0;
     /* NOTREACHED */
 }
 #endif /* TEST */

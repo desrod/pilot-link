@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -50,18 +51,24 @@ static void display_help(char *progname)
 {
 	printf("   Syncronize your ToDo database with your desktop machine\n\n");
 	printf("   Usage: %s -p <port> [options]\n\n", progname);
-	printf("   Options:\n", progname);
+	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
 	printf("     -h, --help              Display help information for %s\n", progname); 
 	printf("     -v, --version           Display %s version information\n", progname);  
 	printf("     -f, --file <filename>   Save ToDO entries in <filename> instead of STDOUT\n\n");
-	printf("   Examples: %s -p /dev/pilot -d ~/Palm\n\n", progname);
-	printf("   By default, the contents of your Palm's memo database will be written to\n");
-	printf("   standard output as a standard Unix mailbox (mbox-format) file, with each\n");
-	printf("   memo as a separate message.  The subject of each message will be the\n");
-	printf("   category.\n\n");
+	printf("   Examples:\n\n");
+	printf("\tRead the on-Palm ToDo database, and dump to STDOUT\n");
+	printf("\t\t%s -p /dev/pilot \n\n", progname);
+	printf("\tRead the ToDoDB.pdb file on disk, and dump to STDOUT\n");
+	printf("\t\t%s -f ToDoDB.pdb\n\n", progname);
+	printf("   By default, the contents of your Palm's ToDo database will be written to\n");
+	printf("   standard output in a generic text format if the -p <port> parameters are\n");
+	printf("   passed.\n\n");
+	printf("   If you supply the -f <file> parameter, (omitting the -p <port>), your\n");
+	printf("   ToDo database file on disk will be read and sent to STDOUT in the same\n");
+	printf("   manner.\n\n");
 	
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -81,45 +88,50 @@ int main(int argc, char *argv[])
 	
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
-		  case 'h':
-			  display_help(progname);
-			  exit(0);
-                  case 'v':
-			  print_splash(progname);
-			  return 0;
-		  case 'p':
-			  port = optarg;
-			  filename = NULL;
-			  break;
-		  case 'f':
-			  filename = optarg;
-			  break;
+		case 'h':
+			display_help(progname);
+			return 0;
+		case 'v':
+			print_splash(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			filename = NULL;
+			break;
+		case 'f':
+			filename = optarg;
+			port = NULL;
+			break;
+		default:
+			display_help(progname);
+			return 0;			
 		}
 	}
 		
-        sd = pilot_connect(port);
-        if (sd < 0)
-                goto error;   
-
-        if (dlp_ReadUserInfo(sd, &User) < 0)
-                goto error_close;
-		
-	/* Open the ToDo database, store access handle in db */
-	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-		puts("Unable to open ToDoDB");
-		dlp_AddSyncLogEntry(sd,
-				    "Unable to open ToDoDB.\n");
-		exit(1);
-	}
-
-	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-
-	if (filename) {
+	if (port) {
+		sd = pilot_connect(port);
+		if (sd < 0)
+			goto error;   
+	
+		if (dlp_ReadUserInfo(sd, &User) < 0)
+			goto error_close;
+			
+		/* Open the ToDo database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
+			puts("   Unable to open ToDoDB");
+			dlp_AddSyncLogEntry(sd,
+					    "   Unable to open ToDoDB.\n");
+			exit(1);
+		}
+	
+		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+	} else if (filename) {
 		int 	len;
 
 		pif = pi_file_open(filename);
 		if (!pif) {
-			perror("pi_file_open");
+			fprintf(stderr, "   ERROR: %s\n", strerror(errno));
+			fprintf(stderr, "   Does %s exist?\n\n", filename);
 			exit(1);
 		}
 
@@ -130,6 +142,9 @@ int main(int argc, char *argv[])
 		}
 
 		memcpy(buffer, ptr, len);
+	} else {
+		printf("ERROR: Insufficient number of arguments\n\n");
+		display_help(progname);
 	}
 
 	unpack_ToDoAppInfo(&tai, buffer, 0xffff);

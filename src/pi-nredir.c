@@ -56,7 +56,7 @@ static void display_help(char *progname)
 	printf("   redirect them through the network device to a listening server as\n");
 	printf("   specified in the LANSync Preferences panel on your Palm.\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -80,13 +80,16 @@ int main(int argc, char *argv[])
 
 		case 'h':
 			display_help(progname);
-			exit(0);
+			return 0;
 		case 'v':
 			print_splash(progname);
-			exit(0);
+			return 0;
 		case 'p':
 			port = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 
@@ -147,5 +150,3 @@ int main(int argc, char *argv[])
  error:
 	return -1;
 }
-
-

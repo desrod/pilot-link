@@ -58,7 +58,7 @@ static void display_help(char *progname)
 	printf("      %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n", progname);
 	printf("      %s -p /dev/pilot -o Host -a 192.168.1.1 -n 255.255.255.0\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -72,17 +72,15 @@ int main(int argc, char *argv[])
 	
 	struct 	PilotUser 	User;
 
-	opterr = 0;
-
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
 		case 'h':
 			display_help(progname);
-			exit(0);
+			return 0;
 		case 'v':
 			print_splash(progname);
-			exit(0);
+			return 0;
 		case 'p':
 			port = optarg;
 			break;
@@ -92,6 +90,9 @@ int main(int argc, char *argv[])
 		case 'i':
 			userid = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 	
@@ -106,15 +107,15 @@ int main(int argc, char *argv[])
 		printf("   Palm user: %s\n", User.username);
 		printf("   UserID:    %ld \n\n", User.userID);
 		pi_close(sd);
-		exit(0);
+		return 0;
 	}
 	
 	/* Let's make sure we have valid arguments for these
 	   before we write the data to the Palm */
-	if (user != NULL)
+	if (user)
 		strncpy(User.username, user, sizeof(User.username) - 1);
 
-	if (userid != NULL)
+	if (userid)
 		User.userID = atoi(userid);
 	
 	User.lastSyncDate = time(NULL);
@@ -122,9 +123,9 @@ int main(int argc, char *argv[])
 	if (dlp_WriteUserInfo(sd, &User) < 0)
 		goto error_close;
 
-	if (user != NULL)
+	if (user)
 		printf("   Installed User Name: %s\n", User.username);
-	if (userid != NULL)
+	if (userid)
 		printf("   Installed User ID: %ld \n", User.userID);
 	printf("\n");
 	

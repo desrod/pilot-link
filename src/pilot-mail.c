@@ -221,7 +221,7 @@ static void display_help(char *progname, char *port, char *pop_host, char *pop_u
 	printf("      ** the manpages for additional information... **\n");
 	printf("      ************************************************\n\n");
 
-	exit(0);
+	return 0;
 }
 int main(int argc, char *argv[])
 {
@@ -266,7 +266,7 @@ int main(int argc, char *argv[])
 			display_help(progname, port, pop_host, pop_user, pop_pass, 
 			     from_address, pop_keep, pilot_dispose, 
 			     topilot_mhdir, sendmail);
-			break;
+			return 0;
 		case 'p':
 			port = optarg;
 			break;
@@ -291,6 +291,11 @@ int main(int argc, char *argv[])
 		case 'm':
 			topilot_mhdir = optarg;
 			break;
+		default:
+			display_help(progname, port, pop_host, pop_user, pop_pass, 
+			     from_address, pop_keep, pilot_dispose, 
+			     topilot_mhdir, sendmail);
+			return 0;
 		}
 	}
 	argc -= optind;

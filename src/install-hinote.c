@@ -57,7 +57,7 @@ static void display_help(char *progname)
 	printf("   Examples: %s -p /dev/pilot -c 1 ~/Palm/Note1.txt ~/Note2.txt\n\n", progname);
 	printf("   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -88,15 +88,22 @@ int main(int argc, char *argv[])
 		
 	while (((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)) {
 		switch (c) {
-		  case 'h':
-			  display_help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  case 'c':
-			  cat = optarg;
-			  break;
+			
+		case 'h':
+			display_help(progname);
+			return 0;
+                case 'v':
+                        print_splash(progname);
+                        return 0;
+		case 'p':
+			port = optarg;
+			break;
+		case 'c':
+			cat = optarg;
+			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 
@@ -211,4 +218,3 @@ error_close:
 error:
 	return -1;
 }
-

@@ -112,7 +112,7 @@ int df_fn(int sd, int argc, char *argv[])
                 printf("          n/a   %9lu      n/a     %4luk\n", Card.romSize, Card.romSize/1024);
 
 		printf("Card0:RAM            %9lu", Card.ramSize);
-		printf("     %8lu    %8lu     %3ld%%     %4luk\n", (Card.ramSize - Card.ramFree), Card.ramFree, ((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
+		printf("     %8lu    %8lu     %3ld%%    %4luk\n", (Card.ramSize - Card.ramFree), Card.ramFree, ((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
 
 		printf("Total (ROM + RAM)     %8lu     %8lu         n/a      n/a    %5luk\n\n", 
 			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree, 
@@ -558,7 +558,7 @@ int exit_fn(int sd, int argc, char *argv[])
 				"Thank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
-	exit(0);
+	return 0;
 }
 
 /***********************************************************************
@@ -620,7 +620,7 @@ static void display_help(char *progname)
 	printf("   other useful functions.\n\n");
 	printf("   While inside the dlpsh shell, type 'help' for more options.\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -642,15 +642,19 @@ int main(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
-		  case 'h':
-			  display_help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  case 'v':
-			  print_splash(progname);
-			  exit(0);
+
+		case 'h':
+			display_help(progname);
+			return 0;
+		case 'v':
+			print_splash(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}	
 	

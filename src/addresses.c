@@ -60,7 +60,7 @@ static void display_help(char *progname)
 	printf("   STDOUT by using redirection and pipes as necessary.\n\n");
 	printf("   Example: %s -p /dev/pilot -f > MyAddresses.txt\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -80,15 +80,18 @@ int main(int argc, char *argv[])
         while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
                 switch (c) {
 
-                  case 'h':
-                          display_help(progname);
-                          exit(0);
-                  case 'v':
-                          print_splash(progname);
-                          exit(0);
-                  case 'p':
-                          port = optarg;
-                          break;
+		case 'h':
+			display_help(progname);
+			return 0;
+		case 'v':
+			print_splash(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		default:
+			display_help(progname);
+			return 0;
                 }
         }
 

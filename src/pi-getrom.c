@@ -112,6 +112,9 @@ int main(int argc, char *argv[])
 		case 'p':
 			port = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 	if (optind > 0)

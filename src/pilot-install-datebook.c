@@ -62,7 +62,7 @@ static void display_help(char *progname)
 	printf("   Examples: \n");
 	printf("      %s -p /dev/pilot -r db.txt\n\n", progname);
 
-        exit(0);
+        return;
 }
 
 int main(int argc, char *argv[])
@@ -93,16 +93,19 @@ int main(int argc, char *argv[])
 
                 case 'h':
                         display_help(progname);
-                        exit(0);
+                        return 0;
                 case 'v':
                         print_splash(progname);
-                        exit(0);
+                        return 0;
                 case 'p':
                         port = optarg;
                         break;
                 case 'r':
                         filename = optarg;
                         break;
+		default:
+                        display_help(progname);
+                        return 0;
                 }
         }
 

@@ -1,4 +1,4 @@
- /* ex: set tabstop=8 expandtab: */
+/* ex: set tabstop=8 expandtab: */
 /* 
  * pilot-xfer.c:  Palm Database transfer utility
  *
@@ -41,10 +41,37 @@
 #include "pi-version.h"
 #include "pi-header.h"
 
+/* unsigned char typedef byte; */
+typedef unsigned char byte;
+
+typedef struct {
+  byte data[4];
+  char attr;
+  byte id[3];
+} recInfo_t;
+
+typedef struct {
+  char name[32];
+  byte attr[2];
+  byte version[2];
+  byte cdate[4];
+  byte mdate[4];
+  byte backupdate[4];
+  byte modno[4];
+  byte appinfo[4];
+  byte sortinfo[4];
+  char dbType[4];
+  char dbCreator[4];
+  byte seed[4];
+  byte nextRecList[4];
+  char nRec[2];
+} pdb_t;
+
 /* Declare prototypes */
 static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
+void packInt(byte* dest, unsigned long l, int size);
 
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
@@ -180,15 +207,14 @@ static void protect_name(char *d, char *s)
  *
  ***********************************************************************/
 static void Connect(void)
-{
+ {
 	if (sd != 0)
 		return;
-
+  
 	sd = pilot_connect(port);
 	if (sd < 0)
 		exit(1);
 }
-
 
 /***********************************************************************
  *
@@ -206,6 +232,7 @@ static void VoidSyncFlags(void)
 	struct 	PilotUser User;
 
 	Connect();
+
 	if (dlp_ReadUserInfo(sd, &User) >= 0) {
 		User.lastSyncPC = 0x00000000;	
 		/* Hopefully unique constant, to tell any Desktop software
@@ -450,7 +477,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
 		} else if (stat(name, &sbuf) == 0) {
-			printf("\n\t(%7ld bytes, %3ld kb total)\n\n", 
+			printf("\n\t(%7ld bytes, %3d kb total)\n\n", 
 				sbuf.st_size, totalsize/1024);
 			totalsize += sbuf.st_size;
 		} else {
@@ -885,7 +912,7 @@ static void Install(char *filename)
 		fprintf(stderr, "failed.\n");
 
 	} else if (stat(filename, &sbuf) == 0) {
-		printf("\n\t(%7ld bytes, %3ld kb total)\n\n",
+		printf("\n\t(%7ld bytes, %3d kb total)\n\n",
 			sbuf.st_size, totalsize/1024);
 		totalsize += sbuf.st_size;
 	}
@@ -1027,32 +1054,7 @@ static void Purge(void)
 }
 
 
-typedef unsigned char byte;
-
-typedef struct {
-  byte data[4];
-  char attr;
-  byte id[3];
-} recInfo_t;
-
-typedef struct {
-  char name[32];
-  byte attr[2];
-  byte version[2];
-  byte cdate[4];
-  byte mdate[4];
-  byte backupdate[4];
-  byte modno[4];
-  byte appinfo[4];
-  byte sortinfo[4];
-  char dbType[4];
-  char dbCreator[4];
-  byte seed[4];
-  byte nextRecList[4];
-  char nRec[2];
-} pdb_t;
-
-void packInt( byte* dest, unsigned long l, int size ) {
+void packInt(byte* dest, unsigned long l, int size) {
 	int i;
 	for( i=size; i-->0; ) {
 		dest[i] = l & 0x000000ff;
@@ -1122,7 +1124,8 @@ static void display_help(char *progname)
 	printf("                             Palm database\n");
 	printf("     -f, --fetch [db]        Retrieve [db] from your Palm\n");
 	printf("     -d, --delete [db]       Delete (permanently) [db] from your Palm\n");
-	printf("     -e, --exclude [db]      Exclude [db] from being included by -b, -s, or -u\n");
+	printf("     -e, --exclude <file>    Exclude databases listed in <file> from being included\n");
+	printf("                             by -b, -s, or -u (See pilot-xfer(1) for more detail)\n");
 	printf("     -P, --Purge             Purge any deleted data that hasn't been cleaned up\n");
 	printf("                             by a sync\n");
 	printf("     -l, --list              List all application and 3rd party Palm data/apps\n");
@@ -1149,7 +1152,7 @@ static void display_help(char *progname)
 	printf("   man page(s) for additional usage of these options as well as details on\n");
 	printf("   the results of combining other parameters together.\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -1170,13 +1173,6 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
-		/* This means a field is unknown, could be multiple arg */
-		case 1:
-			if (last_c=='i') {
-				Install(optarg);
-			}
-			/* else { Unknown param, let it go by quietly } */
-			break;
 		case 'h':
 			display_help(progname);
 			return 0;
@@ -1186,9 +1182,17 @@ int main(int argc, char *argv[])
 		case 'p':
 			port = optarg;
 			break;
+
+		/* This means a field is unknown, could be multiple arg */
+		case 1:
+			if (last_c=='i') {
+				Install(optarg);
+			}
+			/* else { Unknown param, let it go by quietly } */
+			break;
+
 		case 'b':
 			Backup(optarg, 0, 0, do_rom, do_unsaved, archive_dir);
-
 			break;
 		case 'u':
 			Backup(optarg, 1, 0, do_rom, do_unsaved, archive_dir);
@@ -1247,6 +1251,9 @@ int main(int argc, char *argv[])
 		case 'S':
 			novsf = 1;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 
 		if (c > 1) {
@@ -1255,15 +1262,16 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc < 2) {
-		fprintf(stderr, "\n");
-		printf("   Insufficient number of arguments\n");
-		fprintf(stderr, "   Please use --help for more information\n");
+		printf("ERROR: Insufficient number of arguments\n\n");
+		puts("Hit any key to continue..");
+		for( c = ' ' ; c != '\n' && c != EOF ; c = getchar() );
+		display_help(progname);
 	} else {
-		
 		end=time(NULL);
 		timespent = (end-start);
 		printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
 	}
 	pi_close(sd);
 	return 0;
+
 }

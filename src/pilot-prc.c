@@ -341,7 +341,7 @@ static void display_help(char *progname)
 	printf("     tSTR10000[.bin] (a reousrce with decimal index)\n");
 	printf("     sort            (a file containing the names of other files)\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -360,6 +360,7 @@ int main(int argc, char *argv[])
 	
 	while ((c = getopt(argc, argv, optstring)) != EOF) {
 		switch (c) {
+			
 		case 'h':
 			hflag = 1;
 			break;
@@ -379,6 +380,9 @@ int main(int argc, char *argv[])
 			rflag = 1;
 			rnum = atoi(optarg);
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 

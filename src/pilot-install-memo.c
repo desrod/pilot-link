@@ -59,7 +59,8 @@ static void display_help(char *progname)
 	printf("   Options:\n");
 	printf("     -r = replace all memos in specified category\n");
 	printf("     -t = use filename as memo title\n\n");
-	exit(0);
+
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -90,11 +91,18 @@ int main(int argc, char *argv[])
 	
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
-		case 'c':
-			category_name = optarg;
-			break;
+			
+		case 'h':
+			display_help(progname);
+			return 0;
+		case 'v':
+			print_splash(progname);
+			return 0;
 		case 'p':
 			port = optarg;
+			break;
+		case 'c':
+			category_name = optarg;
 			break;
 		case 'r':
 			replace_category++;
@@ -102,13 +110,9 @@ int main(int argc, char *argv[])
 		case 't':
 			add_title++;
 			break;
-		case 'h':
+		default:
 			display_help(progname);
-			break;
-			exit(0);
-		case 'v':
-			print_splash(progname);
-			exit(0);
+			return 0;
 		}
 	}
 		

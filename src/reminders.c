@@ -64,7 +64,7 @@ static void display_help(char *progname)
 	printf("   Please see http://www.roaringpenguin.com/remind.html for more\n");
 	printf("   information on the Remind Calendar Program.\n\n");
 	
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -89,6 +89,9 @@ int main(int argc, char *argv[])
 		case 'p':
 			port = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 	
@@ -312,9 +315,6 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 
 	return 0;
-
-error_close:
-        pi_close(sd);
 
 error:
 	return -1;

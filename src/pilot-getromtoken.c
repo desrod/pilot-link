@@ -66,7 +66,7 @@ static void display_help(char *progname)
 	printf("       irda:  Present only on memory card w/IrDA support\n");
 	printf("       snum:  Device serial number (from Memory Card Flash ID)\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -82,8 +82,6 @@ int main(int argc, char *argv[])
 
 	char    buffer[50];
 	
-	opterr = 0;
-
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
@@ -99,6 +97,9 @@ int main(int argc, char *argv[])
 		case 't':
 			token = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 	

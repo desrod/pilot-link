@@ -171,7 +171,7 @@ static void display_help(char *progname)
 	printf("   fetching. This will be updated in a later release to handle this type of\n");
 	printf("   capability, as well as handle multiple 'Schlep' files.\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -192,10 +192,10 @@ int main(int argc, char *argv[])
 
 		case 'h':
 			display_help(progname);
-			exit(0);
+			return 0;
 		case 'v':
 			print_splash(progname);
-			exit(0);
+			return 0;
 		case 'p':
 			port = optarg;
 			break;
@@ -210,6 +210,9 @@ int main(int argc, char *argv[])
 		case 'd':
 			delete = 1;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 	
@@ -259,4 +262,3 @@ error_close:
 error:
         return -1;
 }
-

@@ -54,6 +54,7 @@ int protect_files(char *name, char *extension);
 void write_ppm( FILE *f, struct NotePad *n );
 void output_picture( int type, struct NotePad n );
 void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category );
+void write_png_v2( FILE *f, struct NotePad *n );
 
 #ifdef HAVE_PNG
 void write_png( FILE *f, struct NotePad *n );
@@ -83,7 +84,7 @@ static void display_help(char *progname)
 	printf("                             either \"ppm\" or \"png\"\n\n");
 	printf("   Examples: %s -p /dev/pilot -l -t png\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 static const char *fmt_date ( noteDate_t d )
@@ -203,8 +204,6 @@ void write_png( FILE *f, struct NotePad *n )
 
 void write_png_v2( FILE *f, struct NotePad *n )
 {
-   int i;
-   
    if( n->body.dataType != NOTEPAD_DATA_PNG )
      {
 	fprintf( stderr, "Bad data Type" );
@@ -355,12 +354,9 @@ int main(int argc, char *argv[])
    
    int type = NOTE_OUT_PPM;
    
-   char     *port 		= NULL,
-/*     *filename 	= NULL, */
-     *ptr;
+   char		*port 		= NULL; 	/* *filename = NULL, *ptr */
    
    struct 	PilotUser User;
-   struct 	pi_file *pif 	= NULL;
    struct 	NotePadAppInfo nai;
    unsigned char buffer[0xffff];
 
@@ -371,7 +367,7 @@ int main(int argc, char *argv[])
 	switch (c) {
 	 case 'h':
 	   display_help(progname);
-	   exit(0);
+	   return 0;
 	 case 'v':
 	   print_splash(progname);
 	   return 0;

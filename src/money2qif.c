@@ -62,7 +62,7 @@ static void display_help(char *progname)
 	printf("   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n");
 	printf("   pilot-link.\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -97,6 +97,9 @@ int main(int argc, char *argv[])
 		case 'a':
 			account = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 

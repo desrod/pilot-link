@@ -223,7 +223,7 @@ static void display_help(char *progname)
 	printf("     -v, --version           Display %s version information\n\n", progname);
 	printf("   Examples: %s -p /dev/pilot AddressDb\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 
@@ -246,6 +246,9 @@ int main(int argc, char *argv[])
 		case 'p':
 			port = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 

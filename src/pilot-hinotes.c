@@ -165,7 +165,7 @@ static void display_help(char *progname)
 	printf("     -d directory   Save memos in <dir> instead of writing to STDOUT\n");
 	printf("     -h             Display this information\n\n");
 	printf("   Examples: %s -p /dev/pilot -d ~/Palm\n\n", progname);
-	printf("   By default, the contents of your Palm's memo database will be written to\n");
+	printf("   By default, the contents of your Palm's Hi-Notes database will be written to\n");
 	printf("   STDOUT as a standard Unix mailbox (in mbox-format) file, with each\n");
 	printf("   memo as a separate message.  The subject of each message will be the\n");
 	printf("   category.\n\n");
@@ -186,7 +186,7 @@ static void display_help(char *progname)
 	printf("   that syncronizing Hi-Note images is not supported at this time, only text.\n\n");
 	printf("   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -210,20 +210,24 @@ int main(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
-		  case 'h':
-			  display_help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  case 'd':
-			  /* Name of directory to create and store memos in */
-			  strncpy(dirname, optarg, sizeof(dirname));
-			  mode = MEMO_DIRECTORY;
-			  break;
-		  case 'v':
-			  print_splash(progname);
-                          exit(0);
+			
+		case 'h':
+			display_help(progname);
+			return 0;
+		case 'v':
+			print_splash(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		case 'd':
+			/* Name of directory to create and store memos in */
+			strncpy(dirname, optarg, sizeof(dirname));
+			mode = MEMO_DIRECTORY;
+			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 
@@ -302,11 +306,4 @@ int main(int argc, char *argv[])
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	return 0;
-	
-error_close:
-        pi_close(sd);
-
-error:
-        return -1;
-
 }

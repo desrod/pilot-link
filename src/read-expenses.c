@@ -55,7 +55,7 @@ static void display_help(char *progname)
 	printf("     -v, --version           Display %s version information\n\n", progname);
 	printf("   Examples: %s -p /dev/pilot\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -75,15 +75,19 @@ int main(int argc, char *argv[])
 		
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
-		  case 'h':
-			  display_help(progname);
-			  exit(0);
-		  case 'v':
-			  print_splash(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
+
+		case 'h':
+			display_help(progname);
+			return 0;
+		case 'v':
+			print_splash(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 
@@ -202,7 +206,7 @@ int main(int argc, char *argv[])
 	dlp_AddSyncLogEntry(sd, "Successfully read Expenses from Palm.\n"
 				"Thank you for using pilot-link\n");
 	pi_close(sd);
-	exit(0);
+	return 0;
 
 error_close:
         pi_close(sd);

@@ -91,9 +91,9 @@ void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 
 	time_str = ctime(&now); 
 
-	printf("From Your.PDA\n"
-	       "Received: Palm@p by memo %s" 
-	       "To: you@y\n"
+	printf("From: MemoDB@Palm.Handheld via pilot-link/memos\n"
+	       "Received: %s" 
+	       "To: Your Machine\n"
 	       "Date: %s"
 	       "Subject: ", time_str, time_str ); 
 
@@ -144,9 +144,6 @@ write_memo_in_directory(char *dirname, struct Memo m,
 
 	/* Should make sure category doesn't have slashes in it */
 	strncat(pathbuffer, mai.category.name[category], 60);
-
-	/* Should check if dirname exists and is a directory */
-	mkdir(pathbuffer, 0700);
 
 	/* Should check if there were problems creating directory */
 	/* open the actual file to write */
@@ -240,7 +237,7 @@ static void display_help(char *progname)
 	printf("   If '-f' is specified, the specified file will be treated as a memo\n");
 	printf("   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -279,45 +276,45 @@ int main(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
-		  case 'v':
-			  print_splash(progname);
-			  exit(0);
-		  case 'd':
-			  delete = 1;
-			  break;
-		  case 'p':
-			  port = optarg;
-			  break;
-		  case 'f':
-			  /* optarg is name of file to use instead of hotsyncing */
-			  strncpy(filename, optarg, MAXDIRNAMELEN);
-			  filename[MAXDIRNAMELEN] = '\0';
-			  break;
-		  case 's':
-			  /* optarg is name of directory to create and store memos in */
-			  strncpy(dirname, optarg, sizeof(dirname));
-			  mode = MEMO_DIRECTORY;
-			  break;
-		  case 'c':
-			  /* optarg is name of category to fetch memos of */
-			  strncpy(category_name, optarg, MAXDIRNAMELEN);
-			  category_name[strlen( category_name )] = '\0';
-			  break;
-		  case 'r':
-			  /* optarg is a query to select memos by title */
-			  ret = regcomp(&title_pattern, optarg, REG_NOSUB);
-			  buf = (char *) malloc(bufsize);
-			  if (ret) {
-				  regerror(ret, &title_pattern, buf,
-					   bufsize);
-				  printf("%s\n", buf);
-				  exit(1);
-			  }
-			  title_matching = 1;
-			  break;
-		  case 'h':
-			  display_help(progname);
-			  exit(0);
+
+		case 'h':
+			display_help(progname);
+			return 0;
+		case 'v':
+			print_splash(progname);
+			return 0;
+		case 'd':
+			delete = 1;
+			break;
+		case 'p':
+			port = optarg;
+			break;
+		case 'f':
+			strncpy(filename, optarg, MAXDIRNAMELEN);
+			filename[MAXDIRNAMELEN] = '\0';
+			break;
+		case 's':
+			strncpy(dirname, optarg, sizeof(dirname));
+			mode = MEMO_DIRECTORY;
+			break;
+		case 'c':
+			strncpy(category_name, optarg, MAXDIRNAMELEN);
+			category_name[strlen( category_name )] = '\0';
+			break;
+		case 'r':
+			ret = regcomp(&title_pattern, optarg, REG_NOSUB);
+			buf = (char *) malloc(bufsize);
+			if (ret) {
+				regerror(ret, &title_pattern, buf,
+					bufsize);
+				printf("%s\n", buf);
+				exit(1);
+			}
+			title_matching = 1;
+			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 
@@ -373,7 +370,7 @@ int main(int argc, char *argv[])
 			printf("Can't find specified Memo category \"%s\".\n",
 				category_name);
 			dlp_AddSyncLogEntry(sd,
-					    "Can't find specified memo category.\n");
+				"Can't find specified memo category.\n");
 			exit(1);
 		};
 	}

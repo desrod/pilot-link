@@ -45,27 +45,27 @@ int realentry[21] =
     { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20 };
 
 char *tableheads[21] = { 
-	"Last name",	// 0 
-	"First name", 	// 1
-	"Title", 	// 2 
-	"Company", 	// 3
-	"Work", 	// 4
-	"Home",		// 5
-	"Fax", 		// 6
-	"Other", 	// 7
-	"E-mail", 	// 8
-	"Address", 	// 9
-	"City", 	// 10
-	"State",	// 11
-	"Zip Code",	// 12
-	"Country", 	// 13
-	"Custom 1", 	// 14
-	"Custom 2", 	// 15
-	"Custom 3", 	// 16
-	"Custom 4", 	// 17
-	"Note",		// 18
-	"Private", 	// 19
-	"Category"	// 20
+	"Last name",	/* 0 	*/
+	"First name", 	/* 1	*/
+	"Title", 	/* 2	*/
+	"Company", 	/* 3	*/
+	"Work", 	/* 4	*/
+	"Home",		/* 5	*/
+	"Fax", 		/* 6	*/
+	"Other", 	/* 7	*/
+	"E-mail", 	/* 8	*/
+	"Address", 	/* 9	*/
+	"City", 	/* 10	*/
+	"State",	/* 11	*/
+	"Zip Code",	/* 12	*/
+	"Country", 	/* 13	*/
+	"Custom 1", 	/* 14	*/
+	"Custom 2", 	/* 15	*/
+	"Custom 3", 	/* 16	*/
+	"Custom 4", 	/* 17	*/
+	"Note",		/* 18	*/
+	"Private", 	/* 19	*/
+	"Category"	/* 20	*/
 };
 
 static const char *optstring = "hvDTeqp:t:d:c:arw";
@@ -141,10 +141,13 @@ int read_field(char *dest, FILE * in)
 {
 	int 	c;
 
-	do {			/* Absorb whitespace */
+	do {	/* Absorb whitespace */
 		c = getc(in);
-		if(c == '\n')
+		if(c == '\n') {
+			c = ' ';
 			return 0;
+		}
+
 	} while ((c != EOF) && ((c == ' ') || (c == '\t') || (c == '\r')));
 
 	if (c == '"') {
@@ -237,6 +240,7 @@ void outchar(char c, FILE * out)
 int write_field(FILE * out, char *source, int more)
 {
 	putc('"', out);
+
 	while (*source) {
 		outchar(*source, out);
 		source++;
@@ -277,18 +281,26 @@ int match_phone(char *buf, struct AddressAppInfo *aai)
 	return atoi(buf);	/* 0 is default */
 }
 
-int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
+int read_file(FILE *in, int sd, int db, struct AddressAppInfo *aai)
 {
-	int 	i,
+	int 	i	= -1,
 		l,
 		attribute,
 		category;
 	char 	buf[0xffff];
+	char	line[1000];
 	struct 	Address a;
 
 	printf("   Reading CSV entries, writing to Palm Address Book... ");
 	fflush(stdout);
 	do {
+
+                fgets(line, 1000, in);
+		if (index(line, '#') == line) {
+			fprintf(stderr, "\nIgnoring header\n");		
+                        continue;
+		} 
+
 		i = read_field(buf, in);
 
 		memset(&a, 0, sizeof(a));
@@ -482,7 +494,7 @@ static void display_help(char *progname)
 	printf("     -h, --help        Display this information\n");
 	printf("     -v, --version     Display version information\n\n");
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -508,6 +520,7 @@ int main(int argc, char *argv[])
 	while (((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
 	       && (mode == 0)) {
 		switch (c) {
+			
 		case 'h':
 			display_help(progname);
 			return 0;
@@ -548,6 +561,9 @@ int main(int argc, char *argv[])
 		case 'w':
 			mode = 2;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 

@@ -82,7 +82,7 @@ static void display_help(char *progname)
 	printf("     -l, --list,             List picture information instead of converting\n");
 	printf("     -n, --name [name]       Convert only <name>, and output to STDOUT as type\n\n");
 	
-	exit(0);
+	return;
 }
 
 struct PalmPixState_pi_file
@@ -353,10 +353,10 @@ int main (int argc, char **argv) {
 
 	case 'h':
 		display_help(progname);
-		exit(0);
+		return 0;
 	case 'v':
 		print_splash(progname);
-		exit(0);
+		return 0;
 	case 'p':
 		port = optarg;
 		break;
@@ -381,7 +381,9 @@ int main (int argc, char **argv) {
 			output_type = PALMPIX_OUT_PPM;
 		}
 		break;
-
+	default:
+		display_help(progname);
+		return 0;
 	}
 }
 	nfileargs = argc - optind - 1;
@@ -460,4 +462,3 @@ int main (int argc, char **argv) {
 	}
 	return 0;
 }
-

@@ -267,7 +267,7 @@ static void display_help(char *progname)
 	printf("     -v, --version     Display version information\n\n");
 	printf("   Examples: %s -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -326,6 +326,9 @@ int main(int argc, char *argv[])
 		case 'q':
 			quiet = 1;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 
@@ -432,6 +435,5 @@ int main(int argc, char *argv[])
 		dumpdata(mesg, n);
 	}
 
-	exit(0);
+	return 0;
 }
-

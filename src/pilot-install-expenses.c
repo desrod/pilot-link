@@ -115,9 +115,10 @@ static void display_help(char *progname)
 	printf("     -c, --category <cat>    Install entry into this category\n\n");
 	printf("     -r, --replace <cat>     Replace entry in this category\n\n");
 	printf("   Example:\n");
-	printf("     %s -p /dev/pilot -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n");
-	printf("                      -g 21 -l \"San Francisco\" -N \"This is a note\"\n\n", progname);
-	exit(0);
+	printf("     %s -p /dev/pilot -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n", progname);
+	printf("                      -g 21 -l \"San Francisco\" -N \"This is a note\"\n\n");
+
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -128,24 +129,29 @@ int main(int argc, char *argv[])
 		l,
 		category,
 		c,		/* switch */
-		replace_category, 
-		add_title;
+		replace_category = 0;
 	
 	char 	*port		= NULL,
 		buf[0xffff],
 		*progname 	= argv[0],
 		*category_name 	= NULL;
 	
-	struct 	pi_sockaddr addr;
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo mai;
 	struct 	Expense theExpense;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
+			
                 case 'h':
                         display_help(progname);
-                        exit(0);
+                        return 0;
+                case 'v':
+                        print_splash(progname);
+                        return 0;
+		case 'p':
+			port = optarg;
+			break;
 		case 'e':
 			theExpense.type = etBus;
 			for (i = 0; expenseTypes[i] != NULL; i++)
@@ -186,15 +192,12 @@ int main(int argc, char *argv[])
 		case 'c':
 			category_name = optarg;
 			break;
-		case 'p':
-			port = optarg;
-			break;
 		case 'r':
 			replace_category++;
 			break;
-                case 'v':
-                        print_splash(progname);
-                        exit(0);
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 
@@ -248,8 +251,7 @@ int main(int argc, char *argv[])
 
 	} else {
 		int 	size;
-		char 	buff[256], 
-			*b;
+		unsigned char buff[256], *b;
 
 		category 		= 0;	/* unfiled */
 		theExpense.currency 	= 0;
@@ -265,6 +267,7 @@ int main(int argc, char *argv[])
 		*(b++) 	= theExpense.payment;
 		*(b++) 	= theExpense.currency;
 		*(b++) 	= 0x00;
+
 		strcpy(b, theExpense.amount);
 		b += strlen(theExpense.amount) + 1;
 		strcpy(b, theExpense.vendor);
@@ -301,4 +304,3 @@ error_close:
 error:
 	return -1;
 }
-

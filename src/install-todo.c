@@ -132,7 +132,7 @@ static void display_help(char *progname)
 	printf("     %s -y 1 'Buy Milk'\n", progname);
 	printf("     %s -p /dev/pilot -N ShoppingList.txt 'Go to supermarket'\n\n", progname);
 
-        exit(0);
+        return;
 }
 
 int main(int argc, char *argv[])
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 
 	/*  Setup some todo defaults */
 	todo.indefinite = 1;
-	todo.priority = 4;
+	todo.priority = 1;
 	todo.complete = 0;
 	todo.description = "";
 	todo.note = "";
@@ -160,31 +160,34 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
-		  case 'h': /* Help */
+		case 'h': /* Help */
 			  display_help(progname);
-			  exit(0);
-		  case 'p': /* Port */
+			  return 0;
+		case 'v':
+                          print_splash(progname);
+                          return 0;
+		case 'p': /* Port */
 			  port = optarg;
 			  break;
-		  case 'P': /* Priority */
+		case 'P': /* Priority */
 			  todo.priority = atoi(optarg);
 			  break;
-		  case 'd': /* Due Date */
+		case 'd': /* Due Date */
 			  strptime(optarg, "%m/%d/%Y", &todo.due);
 			  todo.indefinite = 0;
 			  break;
-		  case 'c': /* Complete */
+		case 'c': /* Complete */
 			  todo.complete = 1;
 			  break;
-		  case 'n': /* Note */
+		case 'n': /* Note */
 			  todo.note = optarg;
 			  break;
-		  case 'f': /* Note filename */
+		case 'f': /* Note filename */
 			  todo.note = read_file(optarg);
 			  break;
-                  case 'v':
-                          print_splash(progname);
-                          exit(0);
+		default:
+		  	display_help(progname);
+		  	return 0;
 		}
 	}
 
@@ -235,11 +238,4 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 
 	return 0;
-
-error_close:
-	pi_close(sd);
-
-error:
-	return -1;
-	
 }

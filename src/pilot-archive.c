@@ -55,7 +55,7 @@ static void display_help(char *progname)
 	printf("     -h, --help              Display help information for %s\n", progname);
 	printf("     -v, --version           Display %s version information\n\n", progname);
 	
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -88,6 +88,9 @@ int main(int argc, char *argv[])
 		case 'p':
 			port = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 	

@@ -399,7 +399,7 @@ static void display_help(char *progname)
 	printf("        Examples: %s -l Foo.prc\n", progname);
 	printf("                  %s -H -a Bar.pdb\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 
@@ -421,12 +421,13 @@ int main(int argc, char **argv)
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
+			
 		case 'h':
 			display_help(progname);
-			exit(0);
+			return 0;
 		case 'v':
 			print_splash(progname);
-			exit(0);
+			return 0;
 		case 'H':
 			hflag = 1;
 			break;
@@ -450,6 +451,9 @@ int main(int argc, char **argv)
 			rflag = 1;
 			rkey = optarg;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 

@@ -141,7 +141,7 @@ static void display_help(char *progname)
 	printf("   Examples: %s -p /dev/pilot -g\n", progname);
 	printf("             %s -p /dev/pilot -s \"Put this in the clipboard\"\n\n", progname);
 
-	exit(0);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -159,10 +159,10 @@ int main(int argc, char *argv[])
 
 		case 'h':
 			display_help(progname);
-			exit(0);
+			return 0;
 		case 'v':
 			print_splash(progname);
-			exit(0);
+			return 0;
 		case 'p':
 			port = optarg;
 			break;
@@ -172,6 +172,9 @@ int main(int argc, char *argv[])
 		case 's':
 			getset = 1;
 			break;
+		default:
+			display_help(progname);
+			return 0;
 		}
 	}
 	if (getset < 0) {
