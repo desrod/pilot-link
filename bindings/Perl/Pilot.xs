@@ -31,6 +31,7 @@
 #undef dirty
 
 #include "pi-macros.h"
+#include "pi-buffer.h"
 #include "pi-file.h"
 #include "pi-datebook.h"
 #include "pi-memo.h"
@@ -353,8 +354,8 @@ SvChar4(arg)
 	    	hv_store(i, "flagAppInfoDirty", 16, newSViv((var.flags & dlpDBFlagAppInfoDirty)!=0), 0);\
 	    	hv_store(i, "flagNewer", 9, newSViv((var.flags & dlpDBFlagNewer)!=0), 0);\
 	    	hv_store(i, "flagReset", 9, newSViv((var.flags & dlpDBFlagReset)!=0), 0);\
-         hv_store(i, "flagCopyPrevention", 18, newSViv((var.flags & dlpDBFlagCopyPrevention)!=0), 0);\
-         hv_store(i, "flagStream", 10, newSViv((var.flags & dlpDBFlagStream)!=0), 0);\
+	        hv_store(i, "flagCopyPrevention", 18, newSViv((var.flags & dlpDBFlagCopyPrevention)!=0), 0);\
+        	hv_store(i, "flagStream", 10, newSViv((var.flags & dlpDBFlagStream)!=0), 0);\
 	    	hv_store(i, "flagExcludeFromSync", 19, newSViv((var.miscFlags & dlpDBMiscFlagExcludeFromSync)!=0), 0);\
 	    	hv_store(i, "type", 4, newSVChar4(var.type), 0);\
 	    	hv_store(i, "creator", 7, newSVChar4(var.creator), 0);\
@@ -919,7 +920,7 @@ Pack(record)
     HV * h;
     long advance;
     struct Appointment a;
-    
+
     if (!SvOK(record) || !SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
     	RETVAL = record;
     else if ((s=hv_fetch(h, "deleted", 7, 0)) && SvOK(*s) && SvTRUE(*s) &&
@@ -1031,7 +1032,7 @@ Pack(record)
       croak("appointments must contain a description");
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
-    len = pack_Appointment(&a, (CPTR)mybuf, 0xffff);
+    len = pack_Appointment(&a, mybuf, 0xffff);
     
     if (a.exception)
 		free(a.exception);
@@ -1105,7 +1106,7 @@ PackAppBlock(record)
 	else
 		a.startOfWeek = 0;
 
-    len = pack_AppointmentAppInfo(&a, (CPTR)mybuf, 0xffff);
+    len = pack_AppointmentAppInfo(&a, mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1193,7 +1194,7 @@ Pack(record)
     a.description = (s = hv_fetch(h, "description", 11, 0)) ? SvPV(*s,na) : 0;
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
-    len = pack_ToDo(&a, (CPTR)mybuf, 0xffff);
+    len = pack_ToDo(&a, mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
 
@@ -1266,7 +1267,7 @@ PackAppBlock(record)
     a.dirty = (s = hv_fetch(h, "dirty", 5, 0)) ? SvIV(*s) : 0;
     a.sortByPriority = (s = hv_fetch(h, "sortByPriority", 14, 0)) ? SvIV(*s) : 0;
 
-    len = pack_ToDoAppInfo(&a, (CPTR)mybuf, 0xffff);
+    len = pack_ToDoAppInfo(&a, mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1368,7 +1369,7 @@ Pack(record)
 	else
 	  a.showPhone = 0;
 
-    len = pack_Address(&a, (CPTR)mybuf, 0xffff);
+    len = pack_Address(&a, mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
 
@@ -1476,7 +1477,7 @@ PackAppBlock(record)
 		for (i=0;i<8;i++) a.phoneLabels[i][0] = 0;
 	for (i=0;i<8;i++) a.phoneLabels[i][15] = 0;
 
-    len = pack_AddressAppInfo(&a, (CPTR)mybuf, 0xffff);
+    len = pack_AddressAppInfo(&a, mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1548,7 +1549,7 @@ Pack(record)
 	else
 		a.text = 0;
     
-    len = pack_Memo(&a, (CPTR)mybuf, 0xffff);
+    len = pack_Memo(&a, mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
     
@@ -1618,7 +1619,7 @@ PackAppBlock(record)
 	else
 		a.sortByAlpha = 0;
     
-    len = pack_MemoAppInfo(&a, (CPTR)mybuf, 0xffff);
+    len = pack_MemoAppInfo(&a, mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1725,7 +1726,7 @@ Pack(record)
     if ((s = hv_fetch(h, "note", 4, 0))) e.note = SvPV(*s,na);
 	else e.note = 0;
     
-    len = pack_Expense(&e, (CPTR)mybuf, 0xffff);
+    len = pack_Expense(&e, mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
     
@@ -1826,7 +1827,7 @@ PackAppBlock(record)
 			e.currencies[i].rate[0] = 0;
 		}
 	
-    len = pack_ExpenseAppInfo(&e, (CPTR)mybuf, 0xffff);
+    len = pack_ExpenseAppInfo(&e, mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1916,8 +1917,10 @@ PackPref(record, id)
 			a.currencies[i] = 0;
 	a.noteFont = (s=hv_fetch(h,"noteFont",8,0)) ? SvIV(*s) : 0;
 		
-    len = pack_ExpensePref(&a, (CPTR)mybuf, 0xffff);
+    len = pack_ExpensePref(&a, mybuf, 0xffff);
+
     RETVAL = newSVpv(mybuf, len);
+
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
@@ -2017,7 +2020,7 @@ Pack(record)
     a.dated = (s = hv_fetch(h, "date", 4, 0)) ? 1 : 0;
     if (s && SvOK(*s) && SvRV(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) avtotm((AV*)SvRV(*s), &a.date);
 
-    len = pack_Mail(&a, (CPTR)mybuf, 0xffff);
+    len = pack_Mail(&a, mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
 
@@ -2093,7 +2096,7 @@ PackAppBlock(record)
 	a.dirty = (s=hv_fetch(h,"dirty",5,0)) ? SvIV(*s) : 0;
 	a.unsentMessage = (s=hv_fetch(h,"unsentMessage",13,0)) ? SvIV(*s) : 0;
 
-    len = pack_MailAppInfo(&a, (CPTR)mybuf, 0xffff);
+    len = pack_MailAppInfo(&a, mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -2177,8 +2180,10 @@ PackSyncPref(record, id)
 	a.filterFrom = (s=hv_fetch(h,"filterFrom",10,0)) ? SvPV(*s,na) : 0;
 	a.filterSubject = (s=hv_fetch(h,"filterSubject",13,0)) ? SvPV(*s,na) : 0;
 
-    len = pack_MailSyncPref(&a, (CPTR)mybuf, 0xffff);
+    len = pack_MailSyncPref(&a, mybuf, 0xffff);
+
     RETVAL = newSVpv(mybuf, len);
+
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
@@ -2239,8 +2244,10 @@ PackSignaturePref(record, id)
 
 	a.signature = (s=hv_fetch(h,"signature",9,0)) ? SvPV(*s,na) : 0;
 
-    len = pack_MailSignaturePref(&a, (CPTR)mybuf, 0xffff);
+    len = pack_MailSignaturePref(&a, mybuf, 0xffff);
+
     RETVAL = newSVpv(mybuf, len);
+
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
@@ -2272,14 +2279,20 @@ SV *
 read(socket, len)
 	int	socket
 	int	len
+
+
 	CODE:
 	{
 	    int result;
+
+	    pi_buffer_t *mybuf;
+	    mybuf = pi_buffer_new(0xffff);
+
 	    if (len > sizeof(mybuf))
 	    	len = sizeof(mybuf);
 	    result = pi_read(socket, mybuf, len);
 	    if (result >=0) 
-	    	RETVAL = newSVpv(mybuf, result);
+	    	RETVAL = newSVpv(mybuf->data, result);
 	    else
 	    	RETVAL = &sv_undef;
 	}
@@ -2402,7 +2415,7 @@ DESTROY(db)
 
 int
 errno(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	CODE:
 		RETVAL = self->errnop;
 		self->errnop = 0;
@@ -2413,7 +2426,7 @@ MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::DBPtr
 
 SV *
 class(self, name=0)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	SV *	name
 	CODE:
 	{
@@ -2444,7 +2457,7 @@ class(self, name=0)
 
 Result
 close(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	CODE:
 	RETVAL = dlp_CloseDB(self->socket, self->handle);
 	self->handle=0;
@@ -2453,8 +2466,8 @@ close(self)
 
 Result
 setSortBlock(self, data)
-	PDA::Pilot::DLP::DB *	self
-	SV *	data
+	PDA::Pilot::DLP::DB *self
+	SV *data
 	CODE:
 	{
 		STRLEN len;
@@ -2468,7 +2481,7 @@ setSortBlock(self, data)
 
 SV *
 getAppBlock(self, len=0xffff, offset=0)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int len
 	int	offset
 	PPCODE:
@@ -2479,7 +2492,7 @@ getAppBlock(self, len=0xffff, offset=0)
 
 SV *
 getSortBlock(self, len=0xffff, offset=0)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int len
 	int	offset
 	PPCODE:
@@ -2490,8 +2503,8 @@ getSortBlock(self, len=0xffff, offset=0)
 
 Result
 setAppBlock(self, data)
-	PDA::Pilot::DLP::DB *	self
-	SV *	data
+	PDA::Pilot::DLP::DB *self
+	SV *data
 	CODE:
 	{
 		STRLEN len;
@@ -2505,7 +2518,7 @@ setAppBlock(self, data)
 
 Result
 purge(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	CODE:
 	RETVAL = dlp_CleanUpDatabase(self->socket, self->handle);
 	OUTPUT:
@@ -2513,7 +2526,7 @@ purge(self)
 
 Result
 resetFlags(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	CODE:
 	RETVAL = dlp_ResetSyncFlags(self->socket, self->handle);
 	OUTPUT:
@@ -2521,7 +2534,7 @@ resetFlags(self)
 
 Result
 deleteCategory(self, category)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int	category
 	CODE:
 	RETVAL = dlp_DeleteCategory(self->socket, self->handle, category);
@@ -2530,7 +2543,7 @@ deleteCategory(self, category)
 
 void
 newRecord(self, id=0, attr=0, cat=0)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	SV *	id
 	SV *	attr
 	SV *	cat
@@ -2559,7 +2572,7 @@ newRecord(self, id=0, attr=0, cat=0)
 
 void
 newResource(self, type=0, id=0)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	SV *	type
 	SV *	id
 	PPCODE:
@@ -2585,7 +2598,7 @@ newResource(self, type=0, id=0)
 
 void
 newAppBlock(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	PPCODE:
 	{
     	if (self->Class) {									
@@ -2605,7 +2618,7 @@ newAppBlock(self)
 
 void
 newSortBlock(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	PPCODE:
 	{
     	if (self->Class) {									
@@ -2625,7 +2638,7 @@ newSortBlock(self)
 
 void
 newPref(self, id=0, version=0, backup=0, creator=0)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	SV *	id
 	SV *	version
 	SV *	backup
@@ -2669,20 +2682,24 @@ newPref(self, id=0, version=0, backup=0, creator=0)
 
 void
 getRecord(self, index)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int	index
 	PPCODE:
 	{
 		int attr, category;
 		unsigned long id;
 		int size, result;
-	    result = dlp_ReadRecordByIndex(self->socket, self->handle, index, mybuf, &id, &size, &attr, &category);
-	    ReturnReadRecord(mybuf,size);
+
+		pi_buffer_t *mybuf;
+		mybuf = pi_buffer_new(0xffff);
+
+	    result = dlp_ReadRecordByIndex(self->socket, self->handle, index, mybuf, &id, &attr, &category);
+	    ReturnReadRecord(mybuf->data, size);
 	}
 
 Result
 moveCategory(self, fromcat, tocat)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int	fromcat
 	int	tocat
 	CODE:
@@ -2693,7 +2710,7 @@ moveCategory(self, fromcat, tocat)
 
 Result
 deleteRecord(self, id)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	unsigned long	id
 	CODE:
 	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 0, id);
@@ -2703,7 +2720,7 @@ deleteRecord(self, id)
 
 Result
 deleteRecords(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	CODE:
 	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 1, 0);
 	OUTPUT:
@@ -2711,7 +2728,7 @@ deleteRecords(self)
 
 Result
 resetNext(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	CODE:
 	RETVAL = dlp_ResetDBIndex(self->socket, self->handle);
 	OUTPUT:
@@ -2719,7 +2736,7 @@ resetNext(self)
 
 int
 getRecords(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	CODE:
 	{
 		int result = dlp_ReadOpenDBInfo(self->socket, self->handle, &RETVAL);
@@ -2733,7 +2750,7 @@ getRecords(self)
 
 void
 getRecordIDs(self, sort=0)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int	sort
 	PPCODE:
 	{
@@ -2766,46 +2783,58 @@ getRecordIDs(self, sort=0)
 
 void
 getRecordByID(self, id)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	unsigned long id
 	PPCODE:
 	{
-		int size, result, attr, category, index;
-	    result = dlp_ReadRecordById(self->socket, self->handle, id, mybuf, &index, &size, &attr, &category);
-	    ReturnReadRecord(mybuf,size);
+	    int size, result, attr, category, index;
+
+            pi_buffer_t *mybuf;
+            mybuf = pi_buffer_new(0xffff);
+
+	    result = dlp_ReadRecordById(self->socket, self->handle, id, mybuf, &index, &attr, &category);
+	    ReturnReadRecord(mybuf->data,size);
 	}
 
 void
 getNextModRecord(self, category=-1)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int	category
 	PPCODE:
 	{
-		int size, result, attr, index;
-		unsigned long id;
-		if (category == -1)
-	    	result = dlp_ReadNextModifiedRec(self->socket, self->handle, mybuf, &id, &index, &size, &attr, &category);
+	    int size, result, attr, index;
+	    unsigned long id;
+
+            pi_buffer_t *mybuf;
+            mybuf = pi_buffer_new(0xffff);
+
+	    if (category == -1)
+	    	result = dlp_ReadNextModifiedRec(self->socket, self->handle, mybuf, &id, &index, &attr, &category);
 	    else
-	    	result = dlp_ReadNextModifiedRecInCategory(self->socket, self->handle, category, mybuf, &id, &index, &size, &attr);
-	    ReturnReadRecord(mybuf,size);
+	    	result = dlp_ReadNextModifiedRecInCategory(self->socket, self->handle, category, mybuf, &id, &index, &attr);
+	    ReturnReadRecord(mybuf->data, size);
 	}
 
 void
 getNextRecord(self, category)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int	category
 	PPCODE:
 	{
-		int size, result, attr, index;
-		unsigned long id;
-	    result = dlp_ReadNextRecInCategory(self->socket, self->handle, category, mybuf, &id, &index, &size, &attr);
-	    ReturnReadRecord(mybuf,size);
+	   int size, result, attr, index;
+	    unsigned long id;
+
+            pi_buffer_t *mybuf;
+            mybuf = pi_buffer_new(0xffff);
+
+	    result = dlp_ReadNextRecInCategory(self->socket, self->handle, category, mybuf, &id, &index, &attr);
+	    ReturnReadRecord(mybuf->data, size);
 	}
 
 unsigned long
 setRecord(self, data)
-	PDA::Pilot::DLP::DB *	self
-	SV *	data
+	PDA::Pilot::DLP::DB *self
+	SV *data
 	CODE:
 	{
 		STRLEN len;
@@ -2826,11 +2855,11 @@ setRecord(self, data)
 
 unsigned long
 setRecordRaw(self, data, id, attr, category)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	unsigned long	id
 	int	attr
 	int	category
-	SV *	data
+	SV *data
 	CODE:
 	{
 		STRLEN len;
@@ -2849,32 +2878,40 @@ setRecordRaw(self, data, id, attr, category)
 
 void
 setResourceByID(self, type, id)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	Char4	type
 	int	id
 	PPCODE:
 	{
-		int size, result, index;
-	    result = dlp_ReadResourceByType(self->socket, self->handle, type, id, mybuf, &index, &size);
-	    ReturnReadResource(mybuf,size);
+	   int size, result, index;
+
+            pi_buffer_t *mybuf;
+            mybuf = pi_buffer_new(0xffff);
+
+	    result = dlp_ReadResourceByType(self->socket, self->handle, type, id, mybuf, &index);
+	    ReturnReadResource(mybuf->data, size);
 	}
 
 void
 getResource(self, index)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int	index
 	PPCODE:
 	{
-		int size, result, id;
-		Char4 type;
-	    result = dlp_ReadResourceByIndex(self->socket, self->handle, index, mybuf, &type, &id, &size);
-	    ReturnReadResource(mybuf,size);
+	    int size, result, id;
+	    Char4 type;
+
+            pi_buffer_t *mybuf;
+            mybuf = pi_buffer_new(0xffff);
+
+	    result = dlp_ReadResourceByIndex(self->socket, self->handle, index, mybuf, &type, &id);
+	    ReturnReadResource(mybuf->data, size);
 	}
 
 SV *
 setResource(self, data)
-	PDA::Pilot::DLP::DB *	self
-	SV *	data
+	PDA::Pilot::DLP::DB *self
+	SV *data
 	CODE:
 	{
 		STRLEN len;
@@ -2896,7 +2933,7 @@ setResource(self, data)
 
 Result
 deleteResource(self, type, id)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	Char4	type
 	int	id
 	CODE:
@@ -2906,7 +2943,7 @@ deleteResource(self, type, id)
 
 Result
 deleteResources(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	CODE:
 	RETVAL = dlp_DeleteResource(self->socket, self->handle, 1, 0, 0);
 	OUTPUT:
@@ -2914,7 +2951,7 @@ deleteResources(self)
 
 void
 getPref(self, id=0, backup=1)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::DB *self
 	int	id
 	int	backup
 	PPCODE:
@@ -2945,8 +2982,8 @@ getPref(self, id=0, backup=1)
 
 SV *
 setPref(self, data)
-	PDA::Pilot::DLP::DB *	self
-	SV *	data
+	PDA::Pilot::DLP::DB *self
+	SV *data
 	PPCODE:
 	{
 		Char4	creator;
@@ -2974,8 +3011,8 @@ setPref(self, data)
 
 SV *
 setPrefRaw(self, data, number, version, backup=1)
-	PDA::Pilot::DLP::DB *	self
-	SV *	data
+	PDA::Pilot::DLP::DB *self
+	SV *data
 	int	number
 	int	version
 	int	backup
@@ -3013,7 +3050,7 @@ MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLPPtr
 
 void
 DESTROY(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	if (self->socket)
 		pi_close(self->socket);
@@ -3021,7 +3058,7 @@ DESTROY(self)
 
 int
 errno(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 		RETVAL = self->errnop;
 		self->errnop = 0;
@@ -3030,7 +3067,7 @@ errno(self)
 
 SV *
 getTime(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	{
 		time_t t;
@@ -3046,7 +3083,7 @@ getTime(self)
 
 Result
 setTime(self, time)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	long	time
 	CODE:
 	RETVAL = dlp_SetSysDateTime(self->socket, time);
@@ -3055,7 +3092,7 @@ setTime(self, time)
 
 SV *
 getSysInfo(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	{
 		struct SysInfo si;
@@ -3076,7 +3113,7 @@ getSysInfo(self)
 
 SV *
 getCardInfo(self, cardno=0)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	int	cardno
 	CODE:
 	{
@@ -3103,7 +3140,7 @@ getCardInfo(self, cardno=0)
 
 int
 setUserInfo(self, info)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	UserInfo	&info
 	CODE:
 	RETVAL = dlp_WriteUserInfo(self->socket, &info);
@@ -3112,7 +3149,7 @@ setUserInfo(self, info)
 
 void
 getBattery(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	PPCODE:
 	{
 		int warn, critical, ticks, kind, AC;
@@ -3138,7 +3175,7 @@ getBattery(self)
 
 SV *
 getUserInfo(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	{
 		UserInfo info;
@@ -3151,7 +3188,7 @@ getUserInfo(self)
 
 void
 newPref(self, creator, id=0, version=0, backup=0)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	Char4	creator
 	SV *	id
 	SV *	version
@@ -3187,7 +3224,7 @@ newPref(self, creator, id=0, version=0, backup=0)
 
 Result
 delete(self, name, cardno=0)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	char *	name
 	int	cardno
 	CODE:
@@ -3201,7 +3238,7 @@ delete(self, name, cardno=0)
 
 SV *
 open(self, name, mode=0, cardno=0)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	char *	name
 	SV *	mode
 	int	cardno
@@ -3276,7 +3313,7 @@ open(self, name, mode=0, cardno=0)
 
 SV *
 create(self, name, creator, type, flags, version, cardno=0)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	char *	name
 	Char4	creator
 	Char4	type
@@ -3326,7 +3363,7 @@ create(self, name, creator, type, flags, version, cardno=0)
 
 void
 getPref(self, creator, id=0, backup=1)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	Char4	creator
 	int	id
 	int	backup
@@ -3340,8 +3377,8 @@ getPref(self, creator, id=0, backup=1)
 
 SV *
 setPref(self, data)
-	PDA::Pilot::DLP *	self
-	SV *	data
+	PDA::Pilot::DLP *self
+	SV *data
 	PPCODE:
 	{
 		Char4	creator;
@@ -3364,8 +3401,8 @@ setPref(self, data)
 
 SV *
 setPrefRaw(self, data, creator, number, version, backup=1)
-	PDA::Pilot::DLP *	self
-	SV *	data
+	PDA::Pilot::DLP *self
+	SV *data
 	Char4	creator
 	int	number
 	int	version
@@ -3389,7 +3426,7 @@ setPrefRaw(self, data, creator, number, version, backup=1)
 
 Result
 close(self, status=0)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	int	status
 	CODE:
 	RETVAL = dlp_EndOfSync(self->socket, status) || pi_close(self->socket);
@@ -3400,7 +3437,7 @@ close(self, status=0)
 
 Result
 abort(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	RETVAL = dlp_AbortSync(self->socket) || pi_close(self->socket);
 	if (!RETVAL)
@@ -3410,7 +3447,7 @@ abort(self)
 
 Result
 reset(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	RETVAL = dlp_ResetSystem(self->socket);
 	OUTPUT:
@@ -3418,7 +3455,7 @@ reset(self)
 
 Result
 getStatus(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	RETVAL = dlp_OpenConduit(self->socket);
 	OUTPUT:
@@ -3426,7 +3463,7 @@ getStatus(self)
 
 Result
 log(self, message)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	char *	message
 	CODE:
 	RETVAL = dlp_AddSyncLogEntry(self->socket,message);
@@ -3436,7 +3473,7 @@ log(self, message)
 
 Result
 dirty(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	RETVAL = dlp_ResetLastSyncPC(self->socket);
 	OUTPUT:
@@ -3444,7 +3481,7 @@ dirty(self)
 
 SV *
 getDBInfo(self, start, RAM=1, ROM=0, cardno=0)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	int	start
 	int	RAM
 	int	ROM
@@ -3452,6 +3489,7 @@ getDBInfo(self, start, RAM=1, ROM=0, cardno=0)
 	CODE:
 	{
 		DBInfo info;
+
 		int where = (RAM ? dlpDBListRAM : 0) | (ROM ? dlpDBListROM : 0);
 		int result = dlp_ReadDBList(self->socket, cardno, where, start, &info);
 		pack_dbinfo(RETVAL, info, result);
@@ -3461,7 +3499,7 @@ getDBInfo(self, start, RAM=1, ROM=0, cardno=0)
 
 SV *
 findDBInfo(self, start, name, creator, type, cardno=0)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	int	start
 	SV *	name
 	SV *	creator
@@ -3490,7 +3528,7 @@ findDBInfo(self, start, name, creator, type, cardno=0)
 
 SV *
 getFeature(self, creator, number)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	Char4	creator
 	int	number
 	CODE:
@@ -3510,7 +3548,7 @@ getFeature(self, creator, number)
 
 void
 getROMToken(self,token)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	Char4 token
 	PPCODE:
 	{
@@ -3529,11 +3567,11 @@ getROMToken(self,token)
 
 void
 callApplication(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	Char4	creator
 	Char4	type
 	int	action
-	SV *	data
+	SV *data
 	int	maxretlen
 	PPCODE:
 	{
@@ -3556,7 +3594,7 @@ callApplication(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 
 int
 tickle(self)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	CODE:
 	{
 		RETVAL = pi_tickle(self->socket);
@@ -3566,7 +3604,7 @@ tickle(self)
 
 int
 watchdog(self, interval)
-	PDA::Pilot::DLP *	self
+	PDA::Pilot::DLP *self
 	int interval
 	CODE:
 	{
@@ -3630,7 +3668,7 @@ MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::FilePtr
 
 int
 errno(self)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	CODE:
 		RETVAL = self->errnop;
 		self->errnop = 0;
@@ -3639,7 +3677,7 @@ errno(self)
 
 void
 DESTROY(self)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	CODE:
 	if (self->pf)
 		pi_file_close(self->pf);
@@ -3649,7 +3687,7 @@ DESTROY(self)
 
 SV *
 class(self, name=0)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	SV *	name
 	CODE:
 	{
@@ -3680,7 +3718,7 @@ class(self, name=0)
 
 int
 close(self)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	CODE:
 	if (self->pf) {
 		RETVAL = pi_file_close(self->pf);
@@ -3692,7 +3730,7 @@ close(self)
 
 SV *
 getAppBlock(self)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	PPCODE:
 	{
 	    int len, result;
@@ -3703,7 +3741,7 @@ getAppBlock(self)
 
 SV *
 getSortBlock(self)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	PPCODE:
 	{
 	    int len, result;
@@ -3715,7 +3753,7 @@ getSortBlock(self)
 
 SV *
 getRecords(self)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	CODE:
 	{
 		int len, result;
@@ -3731,7 +3769,7 @@ getRecords(self)
 
 SV *
 getResource(self, index)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	int	index
 	CODE:
 	{
@@ -3746,7 +3784,7 @@ getResource(self, index)
 
 SV *
 getRecord(self, index)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	int	index
 	PPCODE:
 	{
@@ -3760,7 +3798,7 @@ getRecord(self, index)
 
 SV *
 getRecordByID(self, id)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	unsigned long	id
 	CODE:
 	{
@@ -3775,7 +3813,7 @@ getRecordByID(self, id)
 
 int
 checkID(self, uid)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	unsigned long	uid
 	CODE:
 	RETVAL = pi_file_id_used(self->pf, uid);
@@ -3784,7 +3822,7 @@ checkID(self, uid)
 
 SV *
 getDBInfo(self)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	CODE:
 	{
 		DBInfo result;
@@ -3796,7 +3834,7 @@ getDBInfo(self)
 
 int
 setDBInfo(self, info)
-	PDA::Pilot::File *	self
+	PDA::Pilot::File *self
 	DBInfo	info
 	CODE:
 	RETVAL = pi_file_set_info(self->pf, &info);
@@ -3805,8 +3843,8 @@ setDBInfo(self, info)
 
 int
 setAppBlock(self, data)
-	PDA::Pilot::File *	self
-	SV *	data
+	PDA::Pilot::File *self
+	SV *data
 	CODE:
 	{
 	    STRLEN len;
@@ -3820,8 +3858,8 @@ setAppBlock(self, data)
 
 int
 setSortBlock(self, data)
-	PDA::Pilot::File *	self
-	SV *	data
+	PDA::Pilot::File *self
+	SV *data
 	CODE:
 	{
 	    STRLEN len;
@@ -3835,8 +3873,8 @@ setSortBlock(self, data)
 
 int
 addResource(self, data, type, id)
-	PDA::Pilot::File *	self
-	SV *	data
+	PDA::Pilot::File *self
+	SV *data
 	Char4	type
 	int	id
 	CODE:
@@ -3853,8 +3891,8 @@ addResource(self, data, type, id)
 
 int
 addRecord(self, data)
-	PDA::Pilot::File *	self
-	SV *	data
+	PDA::Pilot::File *self
+	SV *data
 	CODE:
 	{
 	    STRLEN len;
@@ -3871,8 +3909,8 @@ addRecord(self, data)
 
 int
 addRecordRaw(self, data, uid, attr, category)
-	PDA::Pilot::File *	self
-	SV *	data
+	PDA::Pilot::File *self
+	SV *data
 	unsigned long	uid
 	int	attr
 	int	category
@@ -3891,21 +3929,20 @@ addRecordRaw(self, data, uid, attr, category)
 
 int
 install(self, socket, cardno)
-	PDA::Pilot::File *	self
-	PDA::Pilot::DLP *	socket
+	PDA::Pilot::File *self
+	PDA::Pilot::DLP *socket
 	int	cardno
 	CODE:
-	RETVAL = pi_file_install(self->pf, socket->socket, cardno);
+	RETVAL = pi_file_install(self->pf, socket->socket, cardno, progress_func report_progress);
 	OUTPUT:
 	RETVAL
 
 int
 retrieve(self, socket, cardno)
-	PDA::Pilot::File *	self
-	PDA::Pilot::DLP *	socket
+	PDA::Pilot::File *self
+	PDA::Pilot::DLP *socket
 	int	cardno
 	CODE:
-	RETVAL = pi_file_retrieve(self->pf, socket->socket, cardno);
+	RETVAL = pi_file_retrieve(self->pf, socket->socket, cardno, progress_func report_progress);
 	OUTPUT:
 	RETVAL
-
