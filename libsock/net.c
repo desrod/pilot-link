@@ -162,7 +162,7 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 		bytes = next->read(ps, msg, 1);
 		if (bytes > 0) {
 			if (msg[0] == 0x90) {
-				/* Cause the header bytesing to be skipped */
+				/* Cause the header bytes to be skipped */
 				LOG (PI_DBG_NET, PI_DBG_LVL_INFO,
 				     "NET RX: Headerless packet\n");
 				total_bytes = PI_NET_HEADER_LEN;

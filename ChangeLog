@@ -1,3 +1,30 @@
+2002-01-08  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/socket.c: re-org code
+	(pi_version): get version from cmp or fake it for net
+
+	* libsock/slp.c (slp_rx): make states match palm documentation and
+	correct problem with maximal (1024 bytes) padp packets
+
+	* libsock/serial.c (pi_serial_accept): do the handshaking via the
+	cmp protocol and the command protocol queue
+
+	* libsock/padp.c (padp_tx): use PI_PADP_MTU
+	(padp_rx): ditto
+
+	* libsock/net.c (net_rx): fix comment
+
+	* include/pi-socket.h: add cmp options
+
+	* include/pi-slp.h: define PI_SLP_MTU
+
+	* include/pi-serial.h: make the rate a long
+
+	* include/pi-padp.h: define PI_PADP_MTU
+
+	* include/pi-cmp.h: remove old cmp struct and add cmp data, add
+	protos and defines
+
 2002-01-06  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/net.c (net_getsockopt): allow type to be set

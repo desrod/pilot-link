@@ -100,7 +100,6 @@ struct pi_protocol *padp_protocol (void)
  *
  ***********************************************************************/
 int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
-/* @-predboolint@ */
 {
 	struct pi_protocol *prot, *next;
 	struct pi_padp_data *data;
@@ -142,7 +141,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 
 		retries = xmitRetries;
 		do {
-			unsigned char padp_buf[PI_SLP_MTU - 12];
+			unsigned char padp_buf[PI_PADP_MTU];
 			int type, socket, size;
 
 			type = PI_SLP_TYPE_PADP;
@@ -158,7 +157,8 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 			pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TXID, 
 				      &data->txid, &size);
 
-			tlen = (len > PI_SLP_MTU - 12) ? PI_SLP_MTU - 12 : len;
+			tlen = (len > PI_PADP_MTU - PI_PADP_HEADER_LEN) 
+				? PI_PADP_MTU - PI_PADP_HEADER_LEN : len;
 
 			padp.type = data->type & 0xff;
 			padp.flags = flags | (len == tlen ? LAST : 0);
@@ -303,7 +303,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 	int offset = 0;
 	int ouroffset = 0;
 	time_t endtime;
-	unsigned char padp_buf[PI_SLP_MTU - 12];
+	unsigned char padp_buf[PI_PADP_MTU];
 
 	endtime = time(NULL) + recStartTimeout / 1000;
 
@@ -342,14 +342,11 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 			return -1;
 		}
 
-		data_len = next->read(ps, padp_buf, PI_SLP_MTU - 12);
-
+		data_len = next->read(ps, padp_buf, PI_PADP_MTU);
+		
 		padp.type = get_byte(&padp_buf[PI_PADP_OFFSET_TYPE]);
 		padp.flags = get_byte(&padp_buf[PI_PADP_OFFSET_FLGS]);
 		padp.size = get_short(&padp_buf[PI_PADP_OFFSET_SIZE]);
-
-		CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf, 0));
-		CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf));
 
 		size = sizeof(type);
 		/* FIXME: error checking */
@@ -399,7 +396,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 
 	for (;;) {
 		int type, socket, size;
-		unsigned char npadp_buf[PI_SLP_MTU - 12];
+		unsigned char npadp_buf[PI_PADP_HEADER_LEN];
 		At(got data);
 
 		CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf, 0));
@@ -430,7 +427,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 		CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(npadp_buf, 1));
 		CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(npadp_buf));
 
-		next->write(ps, npadp_buf, 4);
+		next->write(ps, npadp_buf, PI_PADP_HEADER_LEN);
 		At(sent Ack);
 
 		/* calculate length and offset - remove  */
@@ -665,8 +662,8 @@ void padp_dump(unsigned char *data)
 	type = get_byte (&data[PI_PADP_OFFSET_TYPE]);
 	s = get_short(&data[PI_PADP_OFFSET_SIZE]);
 
-	if (s > PI_SLP_MTU - 12)
-		s = PI_SLP_MTU - 12;
+	if (s > PI_PADP_MTU - PI_PADP_HEADER_LEN)
+		s = PI_PADP_MTU - PI_PADP_HEADER_LEN;
 	if (type != padAck)
 		dumpdata(PI_DBG_PADP, &data[PI_PADP_HEADER_LEN], s);
 }

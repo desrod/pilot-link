@@ -1,9 +1,10 @@
 /*
- * socket.c:  Berkeley sockets style interface to Pilot SLP/PADP
+ * socket.c:  Berkeley sockets style interface to Pilot
  *
  * Copyright (c) 1996, D. Jeff Dionne.
  * Copyright (c) 1997-1999, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
+ * Copyright (c) 2000-2001, JP Rosevear
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -45,83 +46,88 @@
 #include "pi-syspkt.h"
 #include "pi-debug.h"
 
-#ifdef WIN32
-/* An implementation of alarm for windows*/
-#include <process.h>
-static long alm_countdown = -1;
-static void *alm_tid = 0;
-
-/***********************************************************************
- *
- * Function:    alarm_thread
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void alarm_thread(void *unused)
+/* Linked List of Sockets */
+struct pi_socket_list
 {
-	long av;
+	struct pi_socket *ps;
+	struct pi_socket_list *next;
+};
 
-	Sleep(1000L);
-	av = InterlockedDecrement(&alm_countdown);
-	if (av == 0) {
-		raise(SIGALRM);
-	}
-	if (av <= 0) {
-		alm_tid = 0;
-		ExitThread(0);
-	}
-}
-
-/***********************************************************************
- *
- * Function:    alarm
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-unsigned alarm(unsigned sec)
-{
-	long ret = alm_countdown;
-
-	if (sec) {
-		alm_countdown = sec;
-		if (!alm_tid) {
-			unsigned long t;
-
-			//not multi thread safe -- fine if you just call alarm from one thread
-			alm_tid =
-			    CreateThread(0, 0,
-					 (LPTHREAD_START_ROUTINE)
-					 alarm_thread, 0, 0, &t);
-		}
-	} else {
-		alm_countdown = -1;
-	}
-	return ret > 0 ? ret : 0;
-}
-#endif
-
-static struct pi_socket *psl = (struct pi_socket *) 0;
-
-void installexit(void);
-
-extern int dlp_trace;
-
-static RETSIGTYPE pi_serial_onalarm(int signo);
+static struct pi_socket_list *psl = NULL;
+static struct pi_socket_list *watch_list = NULL;
 
 /* Automated tickling interval */
 static int interval = 0;
-static int busy = 0;
 
+
+/* Linked List Code */
+static struct pi_socket_list *
+ps_list_append (struct pi_socket_list *list, struct pi_socket *ps) 
+{
+	struct pi_socket_list *elem, *new_elem;
+	
+	new_elem = malloc(sizeof(struct pi_socket_list));
+	new_elem->ps = ps;
+	new_elem->next = NULL;
+
+	if (list == NULL)
+		return new_elem;
+	
+	elem = list;
+	while (elem->next != NULL)
+		elem = elem->next;
+	
+	elem->next = new_elem;
+
+	return list;
+}
+
+static struct pi_socket_list *
+ps_list_prepend (struct pi_socket_list *list, struct pi_socket *ps) 
+{
+	struct pi_socket_list *new_elem;
+	
+	new_elem = malloc(sizeof(struct pi_socket_list));
+	new_elem->ps = ps;
+	new_elem->next = list;
+
+	return new_elem;
+}
+
+static struct pi_socket *
+ps_list_find (struct pi_socket_list *list, int sd) 
+{
+	struct pi_socket_list *elem;
+	
+	for (elem = list; elem != NULL; elem = elem->next) {
+		if (elem->ps->sd == sd)
+			return elem->ps;
+	}
+
+	return NULL;
+}
+
+static struct pi_socket_list *
+ps_list_remove (struct pi_socket_list *list, int sd) 
+{
+	struct pi_socket_list *elem, *new_list = list, *prev_elem = NULL;
+
+	for (elem = list; elem != NULL; elem = elem->next) {
+		if (elem && elem->ps->sd == sd) {
+			if (prev_elem == NULL)
+				new_list = elem->next;
+			else
+				prev_elem->next = elem->next;
+			free(elem);
+			break;
+		}
+				
+	}
+
+	return new_list;
+}
+
+/* Protocol Queue */
 static void
 protocol_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 {
@@ -188,7 +194,8 @@ protocol_queue_find_next (struct pi_socket *ps, int level)
 	return NULL;
 }
 
-struct pi_protocol *pi_protocol (int pi_sd, int level)
+struct pi_protocol *
+pi_protocol (int pi_sd, int level)
 {
 	struct pi_socket *ps;
 
@@ -200,7 +207,8 @@ struct pi_protocol *pi_protocol (int pi_sd, int level)
 	return protocol_queue_find(ps, level);
 }
 
-struct pi_protocol *pi_protocol_next (int pi_sd, int level)
+struct pi_protocol *
+pi_protocol_next (int pi_sd, int level)
 {
 	struct pi_socket *ps;
 
@@ -210,6 +218,175 @@ struct pi_protocol *pi_protocol_next (int pi_sd, int level)
 	}
 
 	return protocol_queue_find_next(ps, level);
+}
+
+/* Environment Code */
+static void
+env_check (void) 
+{
+	if (getenv("PILOT_DEBUG")) {
+		int types = 0, done;
+		char *debug, *b, *e;
+		
+		debug = strdup(getenv("PILOT_DEBUG"));
+
+		b = debug;
+		done = 0;
+		while (!done) {
+			e = strchr(b, ' ');
+			if (e)
+				*e = '\0';
+			else
+				done = 1;
+			
+			if (!strcmp(b, "SYS"))
+				types |= PI_DBG_SYS;
+			else if (!strcmp(b, "DEV"))
+				types |= PI_DBG_DEV;
+			else if (!strcmp(b, "SLP"))
+				types |= PI_DBG_SLP;
+			else if (!strcmp(b, "PADP"))
+				types |= PI_DBG_PADP;
+			else if (!strcmp(b, "DLP"))
+				types |= PI_DBG_DLP;
+			else if (!strcmp(b, "NET"))
+				types |= PI_DBG_NET;
+			else if (!strcmp(b, "CMP"))
+				types |= PI_DBG_CMP;
+			else if (!strcmp(b, "SOCK"))
+				types |= PI_DBG_SOCK;
+			else if (!strcmp(b, "API"))
+				types |= PI_DBG_API;
+			else if (!strcmp(b, "USER"))
+				types |= PI_DBG_USER;
+			e++;
+			b = e;
+		}
+		pi_debug_set_types(types);
+
+		free(debug);
+	}
+	if (getenv("PILOT_DEBUG_LEVEL")) {
+		const char *debug;
+		int level = 0;
+		
+		debug = getenv("PILOT_DEBUG_LEVEL");
+		if (!strcmp(debug, "NONE"))
+			level |= PI_DBG_LVL_NONE;
+		else if (!strcmp(debug, "ERR"))
+			level |= PI_DBG_LVL_ERR;
+		else if (!strcmp(debug, "WARN"))
+			level |= PI_DBG_LVL_WARN;
+		else if (!strcmp(debug, "INFO"))
+			level |= PI_DBG_LVL_INFO;
+		else if (!strcmp(debug, "DEBUG"))
+			level |= PI_DBG_LVL_DEBUG;
+
+		pi_debug_set_level (level);
+	}
+	
+	if (getenv("PILOT_LOG")) {
+		const char *logfile;
+		
+		logfile = getenv("PILOT_LOGFILE");
+		if (logfile == NULL)
+			pi_debug_set_file("PiDebug.log");
+		else
+			pi_debug_set_file(logfile);
+	}
+}
+
+/* Alarm Handling Code */
+
+#ifdef WIN32
+/* An implementation of alarm for windows*/
+#include <process.h>
+static long alm_countdown = -1;
+static void *alm_tid = 0;
+
+void
+alarm_thread(void *unused)
+{
+	long av;
+
+	Sleep(1000L);
+	av = InterlockedDecrement(&alm_countdown);
+	if (av == 0) {
+		raise(SIGALRM);
+	}
+	if (av <= 0) {
+		alm_tid = 0;
+		ExitThread(0);
+	}
+}
+
+unsigned
+alarm(unsigned sec)
+{
+	long ret = alm_countdown;
+
+	if (sec) {
+		alm_countdown = sec;
+		if (!alm_tid) {
+			unsigned long t;
+
+			//not multi thread safe -- fine if you just call alarm from one thread
+			alm_tid =
+			    CreateThread(0, 0,
+					 (LPTHREAD_START_ROUTINE)
+					 alarm_thread, 0, 0, &t);
+		}
+	} else {
+		alm_countdown = -1;
+	}
+	return ret > 0 ? ret : 0;
+}
+#endif
+
+static RETSIGTYPE
+onalarm(int signo)
+{
+	struct pi_socket_list *l;
+
+	signal(SIGALRM, onalarm);
+	
+	for (l = watch_list; l != NULL; l = l->next) {
+		struct pi_socket *ps = l->ps;
+			
+		if (!ps->connected)
+			continue;
+
+		if (pi_tickle(ps->sd) < 0) {
+			LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, 
+			    "SOCKET Socket %d is busy during tickle\n", ps->sd);
+			alarm(1);
+		} else {
+			LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO,
+			    "SOCKET Tickling socket %d\n", ps->sd);
+			alarm(interval);
+		}
+	}
+}
+
+/* Exit Handling Code */
+static void
+onexit(void)
+{
+	struct pi_socket_list *l;
+
+	for (l = psl; l != NULL; l = l->next)
+		pi_close(l->ps->sd);
+}
+
+static void
+installexit(void)
+{
+	static int installedexit = 0;
+
+	if (!installedexit)
+		atexit(onexit);
+
+	installedexit = 1;
 }
 
 
@@ -228,6 +405,8 @@ int pi_socket(int domain, int type, int protocol)
 {
 	struct pi_socket *ps;
 	struct pi_protocol *prot;
+
+	env_check ();
 	
 	if (protocol == 0) {
 		if (type == PI_SOCK_STREAM)
@@ -272,10 +451,12 @@ int pi_socket(int domain, int type, int protocol)
 		break;
 	}
 
-	/* The initialization protocol queue */
+	/* The command protocol queue */
 	switch (protocol) {
 	case PI_PF_PADP:
 	case PI_PF_SLP:
+		prot = cmp_protocol ();
+		protocol_cmd_queue_add (ps, prot);
 		prot = padp_protocol ();
 		protocol_cmd_queue_add (ps, prot);
 		prot = slp_protocol ();
@@ -283,6 +464,7 @@ int pi_socket(int domain, int type, int protocol)
 		ps->cmd = PI_CMD_CMP;
 		break;
 	case PI_PF_NET:
+		printf ("incorrect protocol\n");
 		prot = net_protocol ();
 		protocol_cmd_queue_add (ps, prot);
 		ps->cmd = PI_CMD_NET;
@@ -307,83 +489,12 @@ int pi_socket(int domain, int type, int protocol)
 	ps->command 	= 1;
 	ps->broken 	= 0;
 	ps->initiator 	= 0;
-	ps->minorversion = 0;
-	ps->majorversion = 0;
-	ps->version 	= 0;
 	ps->dlprecord 	= 0;
 
 #ifdef OS2
 	ps->os2_read_timeout = 60;
 	ps->os2_write_timeout = 60;
 #endif
-	if (getenv("PILOT_DEBUG")) {
-		int types = 0, done;
-		char *debug, *b, *e;
-		
-		debug = strdup(getenv("PILOT_DEBUG"));
-
-		b = debug;
-		done = 0;
-		while (!done) {
-			e = strchr(b, ' ');
-			if (e)
-				*e = '\0';
-			else
-				done = 1;
-			
-			if (!strcmp(b, "SYS"))
-				types |= PI_DBG_SYS;
-			else if (!strcmp(b, "DEV"))
-				types |= PI_DBG_DEV;
-			else if (!strcmp(b, "SLP"))
-				types |= PI_DBG_SLP;
-			else if (!strcmp(b, "PADP"))
-				types |= PI_DBG_PADP;
-			else if (!strcmp(b, "DLP"))
-				types |= PI_DBG_DLP;
-			else if (!strcmp(b, "NET"))
-				types |= PI_DBG_NET;
-			else if (!strcmp(b, "SOCK"))
-				types |= PI_DBG_SOCK;
-			else if (!strcmp(b, "API"))
-				types |= PI_DBG_API;
-			else if (!strcmp(b, "USER"))
-				types |= PI_DBG_USER;
-			e++;
-			b = e;
-		}
-		pi_debug_set_types(types);
-
-		free(debug);
-	}
-	if (getenv("PILOT_DEBUG_LEVEL")) {
-		const char *debug;
-		int level = 0;
-		
-		debug = getenv("PILOT_DEBUG_LEVEL");
-		if (!strcmp(debug, "NONE"))
-			level |= PI_DBG_LVL_NONE;
-		else if (!strcmp(debug, "ERR"))
-			level |= PI_DBG_LVL_ERR;
-		else if (!strcmp(debug, "WARN"))
-			level |= PI_DBG_LVL_WARN;
-		else if (!strcmp(debug, "INFO"))
-			level |= PI_DBG_LVL_INFO;
-		else if (!strcmp(debug, "DEBUG"))
-			level |= PI_DBG_LVL_DEBUG;
-
-		pi_debug_set_level (level);
-	}
-	
-	if (getenv("PILOT_LOG")) {
-		const char *logfile;
-		
-		logfile = getenv("PILOT_LOGFILE");
-		if (logfile == NULL)
-			pi_debug_set_file("PiDebug.log");
-		else
-			pi_debug_set_file(logfile);
-	}
 
 	installexit();
 
@@ -455,15 +566,7 @@ struct pi_socket *pi_socket_copy(struct pi_socket *ps)
  ***********************************************************************/
 void pi_socket_recognize(struct pi_socket *ps)
 {
-	struct pi_socket *p;
-
-	if (!psl)
-		psl = ps;
-	else {
-		for (p = psl; p->next; p = p->next);
-
-		p->next = ps;
-	}
+	psl = ps_list_append (psl, ps);
 }
 
 /***********************************************************************
@@ -810,65 +913,12 @@ int pi_close(int pi_sd)
 
 	result = ps->device->close (ps);
 	if (result == 0) {
-		
-		if (ps == psl) {
-			psl = psl->next;
-		} else {
-			struct pi_socket *p;
-
-			for (p = psl; p; p = p->next) {
-				if (ps == p->next) {
-					p->next = p->next->next;
-					break;
-				}
-			}
-		}
+		psl = ps_list_remove (psl, pi_sd);
+		watch_list = ps_list_remove (watch_list, pi_sd);
 		free(ps);
 	}
 
 	return result;
-}
-
-/***********************************************************************
- *
- * Function:    pi_nexit
- *
- * Summary:     Install an atexit handler that closes open sockets
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void onexit(void)
-{
-	struct pi_socket *p, *n;
-
-	for (p = psl; p; p = n) {
-		n = p->next;
-			pi_close(p->sd);
-	}
-}
-
-/***********************************************************************
- *
- * Function:    installexit
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void installexit(void)
-{
-	static int installedexit = 0;
-
-	if (!installedexit)
-		atexit(onexit);
-
-	installedexit = 1;
 }
 
 /***********************************************************************
@@ -939,36 +989,36 @@ int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
 int pi_version(int pi_sd)
 {
 	struct pi_socket *ps;
-
+	int size, vers = 0x0000;
+	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
+	
+	/* Enter command state */
+	ps->command = 1;
 
-	return ps->version;
-}
-
-/***********************************************************************
- *
- * Function:    pi_socket
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-struct pi_socket *find_pi_socket(int sd)
-{
-	struct pi_socket *p;
-
-	for (p = psl; p; p = p->next) {
-		if (p->sd == sd)
-			return p;
+	/* Get the version */
+	switch (ps->cmd) {
+	case PI_CMD_CMP:
+		size = sizeof(vers);
+		pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_VERS, &vers, &size);
+		break;
+	case PI_CMD_NET:
+		vers = 0x0101;
+		break;
 	}
 
-	return 0;
+	/* Exit command state */
+	ps->command = 0;
+
+	return vers;
+}
+
+struct pi_socket *find_pi_socket(int sd)
+{
+	return ps_list_find (psl, sd);
 }
 
 /***********************************************************************
@@ -991,49 +1041,10 @@ int pi_watchdog(int pi_sd, int newinterval)
 		return -1;
 	}
 
-	ps->tickle = 1;
-	signal(SIGALRM, pi_serial_onalarm);
+	watch_list = ps_list_append (watch_list, ps);
+	signal(SIGALRM, onalarm);
 	interval = newinterval;
 	alarm(interval);
+
 	return 0;
-}
-
-/***********************************************************************
- *
- * Function:    pi_serial_onalarm
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static RETSIGTYPE pi_serial_onalarm(int signo)
-{
-	struct pi_socket *p, *n;
-
-	signal(SIGALRM, pi_serial_onalarm);
-	
-	printf ("pi_serial_onalarm\n");
-	if (busy) {
-		LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO,
-		    "SOCKET World is busy. Rescheduling.\n");
-		alarm(1);
-	} else {
-		for (p = psl; p; p = n) {
-			n = p->next;
-			if (p->connected) {
-				if (pi_tickle(p->sd) == -1) {
-					LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, 
-					    "SOCKET Socket %d is busy during tickle\n", p->sd);
-					alarm(1);
-				} else {
-					LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO,
-					    "SOCKET Tickling socket %d\n", p->sd);
-					alarm(interval);
-				}
-			}
-		}
-	}
 }

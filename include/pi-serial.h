@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 		/* Baud rate info */
-		int rate;		/* Current port baud rate                         */
+		long rate;		/* Current port baud rate                         */
 		int establishrate;	/* Baud rate to use after link is established                     */
 		int establishhighrate;	/* Boolean: try to establish rate higher than the device publishes*/
 

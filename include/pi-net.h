@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #define PI_NET_HEADER_LEN  6
+#define PI_NET_MTU         0xffff
 
 #define PI_NET_OFFSET_TYPE 0
 #define PI_NET_OFFSET_TXID 1

@@ -124,16 +124,12 @@ extern "C" {
 
 		struct pi_skb *txq;
 		struct pi_skb *rxq;
-		struct pi_socket *next;
 
 		int connected;		/* true on connected or accepted socket                            */
 		int command;		/* true when socket in command state                               */
 		int broken;		/* sth. went wrong so badly we cannot use this socket anymore      */
 		int accept_to;		/* timeout value for call to accept()                              */
-		int majorversion;
-		int minorversion;
 		int tickle;
-		int version;		/* In form of 0xAABB where AA is major version and BB is minor version  */
 		int dlprecord;		/* Index used for some DLP functions */
 
 #ifdef OS2

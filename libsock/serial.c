@@ -32,6 +32,7 @@
 #include <signal.h>
 #include <fcntl.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
@@ -311,9 +312,9 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 	struct pi_socket *accept = NULL;
-
+	int size;
+	
 	if (ps->type == PI_SOCK_STREAM) {
-		struct cmp c;
 		struct timeval tv;
 		
 		/* Wait for data */
@@ -324,56 +325,31 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 
 		accept = pi_socket_copy(ps);
 
-		switch (ps->cmd) {
+		switch (accept->cmd) {
 		case PI_CMD_CMP:
-			if (cmp_rx(ps, &c) < 0)
-				return -1;	/* Failed to establish connection, errno already set */
+			if (cmp_rx_handshake(accept, data->establishrate, data->establishhighrate) < 0)
+				return -1;
 
-			if ((c.version & 0xFF00) == 0x0100) {
-				if ((unsigned long) data->establishrate >
-				    c.baudrate) {
-					if (!data->establishhighrate) {
-						fprintf(stderr,
-							"Rate %d too high, dropping to %ld\n",
-							data->establishrate,
-							c.baudrate);
-						data->establishrate = c.baudrate;
-					}
-				}
-
-				data->rate = data->establishrate;
-				ps->version = c.version;
-
-				if (cmp_init(ps, data->rate) < 0)
-					goto fail;
-
-				/* We always reconfigure our port, no matter what */
-				if (data->impl.changebaud(ps) < 0)
-					goto fail;
-
-				/* Palm device needs some time to reconfigure its port */
-#ifdef WIN32
-				Sleep(100);
-#else
-				tv.tv_sec = 0;
-				tv.tv_usec = 50000;
-				select(0, 0, 0, 0, &tv);
-#endif
-			} else {
-				cmp_abort(ps, 0x80);	/* 0x80 means the comm version wasn't compatible */
-
-				fprintf(stderr,
-					"pi_socket connection failed due to comm version mismatch\n");
-				fprintf(stderr,
-					" (expected version 01xx, got %4.4X)\n",
-					c.version);
-
-				errno = ECONNREFUSED;
+			size = sizeof(data->rate);
+			pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
+				      &data->rate, &size);
+			
+			/* We always reconfigure our port, no matter what */
+			if (data->impl.changebaud(accept) < 0)
 				goto fail;
-			}
+			
+			/* Palm device needs some time to reconfigure its port */
+#ifdef WIN32
+			Sleep(100);
+#else
+			tv.tv_sec = 0;
+			tv.tv_usec = 50000;
+			select(0, 0, 0, 0, &tv);
+#endif
+
 			break;
 		case PI_CMD_NET:
-			if (net_rx_handshake(ps) < 0)
+			if (net_rx_handshake(accept) < 0)
 				goto fail;
 			break;
 		}

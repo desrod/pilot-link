@@ -172,9 +172,10 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 {
 	struct pi_protocol *prot, *next;
 	struct pi_slp_data *data;
-	int i, v;
+	unsigned char slp_buf[PI_SLP_MTU];
+	int i, checksum, b1, b2, b3;
 	int state, expect, packet_len, bytes, total_bytes;
-	unsigned char *cur, *tmp;
+	unsigned char *cur;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
@@ -187,85 +188,75 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 	state = 0;
 	packet_len = 0;
 	total_bytes = 0;
-	cur = buf;
+	cur = slp_buf;
 	for (;;) {
 		switch (state) {		
 		case 0:
-			expect = 1;
+			expect = 3;
 			state++;
 			break;
 
 		case 1:
-			v = (0xff & (int)buf[PI_SLP_OFFSET_SIG1]);
-			if (v == PI_SLP_SIG_BYTE1) {
+			b1 = (0xff & (int)slp_buf[PI_SLP_OFFSET_SIG1]);
+			b2 = (0xff & (int)slp_buf[PI_SLP_OFFSET_SIG2]);
+			b3 = (0xff & (int)slp_buf[PI_SLP_OFFSET_SIG3]);
+			if (b1 == PI_SLP_SIG_BYTE1
+			    && b2 == PI_SLP_SIG_BYTE2
+			    && b3 == PI_SLP_SIG_BYTE3) {
 				state++;
-				cur++;
-				expect = 1;
+				expect = PI_SLP_HEADER_LEN - 3;
 			} else {
-				printf (">>> Unexpected byte 0x%.2x\n", buf[PI_SLP_OFFSET_SIG1]);
-			}			
+				slp_buf[PI_SLP_OFFSET_SIG1] = slp_buf[PI_SLP_OFFSET_SIG2];
+				slp_buf[PI_SLP_OFFSET_SIG2] = slp_buf[PI_SLP_OFFSET_SIG3];
+				expect = 1;
+				cur--;
+				LOG(PI_DBG_SLP, PI_DBG_LVL_WARN,
+				    "SLP RX Unexpected signature 0x%.2x 0x%.2x 0x%.2x\n",
+				    b1, b2, b3);
+			}
 			break;
 
 		case 2:
-			v = (0xff & (int)buf[PI_SLP_OFFSET_SIG2]);
-			if (v == PI_SLP_SIG_BYTE2) {			
-				state++;
-				cur++;
-				expect = 1;
-			}
-			break;
-
-		case 3:
-			v = (0xff & (int)buf[PI_SLP_OFFSET_SIG3]);
-			if (v == PI_SLP_SIG_BYTE3) {
-				/* OK.  we think we're sync'ed, so go for the rest
-				   of the header */
-				state++;
-				cur++;
-				expect = 7;
-			}
-			break;
-
-		case 4:
 			/* Addition check sum for header */
-			for (v = i = 0; i < 9; i++)
-				v += buf[i];
+			for (checksum = i = 0; i < 9; i++)
+				checksum += slp_buf[i];
 
 			/* read in the whole SLP header. */
-			if ((v & 0xff) == buf[PI_SLP_OFFSET_SUM]) {
+			if ((checksum & 0xff) == slp_buf[PI_SLP_OFFSET_SUM]) {
 				state++;
-				packet_len = get_short(&buf[PI_SLP_OFFSET_SIZE]);
-				expect = packet_len + PI_SLP_FOOTER_LEN;
-				cur += 7;
+				packet_len = get_short(&slp_buf[PI_SLP_OFFSET_SIZE]);
+				expect = packet_len;
 			} else {
+				LOG(PI_DBG_SLP, PI_DBG_LVL_WARN, "SLP RX Header Checksum failed\n");
 				return -1;
 			}
 			break;
-
-		case 5:
+		case 3:
+			state++;
+			expect = PI_SLP_FOOTER_LEN;
+			break;
+		case 4:
 			/* that should be the whole packet. */
-			v = crc16(buf, PI_SLP_HEADER_LEN + packet_len);
-			if (v != get_short(&buf[PI_SLP_HEADER_LEN + packet_len])) {
+			checksum = crc16(slp_buf, PI_SLP_HEADER_LEN + packet_len);
+			if (checksum != get_short(&slp_buf[PI_SLP_HEADER_LEN + packet_len])) {
 				LOG(PI_DBG_SLP, PI_DBG_LVL_ERR,
 				    "CRC16 check failed: computed=0x%.4x received=0x%.4x\n", 
-				    v, get_short(&buf[packet_len]));
+				    checksum, get_short(&slp_buf[PI_SLP_HEADER_LEN + packet_len]));
 				return -1;
 			}
 			
 			/* FIXME: Handle LOOP packets */
 
 			/* Track the info so getsockopt will work */
-			data->last_dest = get_byte(&buf[PI_SLP_OFFSET_DEST]);
-			data->last_src = get_byte(&buf[PI_SLP_OFFSET_SRC]);
-			data->last_type = get_byte(&buf[PI_SLP_OFFSET_TYPE]);
-			data->last_txid = get_byte(&buf[PI_SLP_OFFSET_TXID]);
+			data->last_dest = get_byte(&slp_buf[PI_SLP_OFFSET_DEST]);
+			data->last_src = get_byte(&slp_buf[PI_SLP_OFFSET_SRC]);
+			data->last_type = get_byte(&slp_buf[PI_SLP_OFFSET_TYPE]);
+			data->last_txid = get_byte(&slp_buf[PI_SLP_OFFSET_TXID]);
 
-			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(buf, 0));
-			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(buf));
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf, 0));
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf));
 
-			/* Remove the header */
-			cur = buf + PI_SLP_HEADER_LEN;
-			memmove (buf, cur, packet_len);
+			memcpy(buf, &slp_buf[PI_SLP_HEADER_LEN], packet_len);
 			goto done;
 			break;
 
@@ -273,14 +264,13 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 			break;
 		}
 
-		if (total_bytes + expect > len)
+		if (total_bytes + expect > len + PI_SLP_HEADER_LEN + PI_SLP_FOOTER_LEN)
 			return -1;
-		tmp = cur;
 		do {
-			bytes = next->read(ps, tmp, expect);
+			bytes = next->read(ps, cur, expect);
 			total_bytes += bytes;
 			expect -= bytes;
-			tmp += bytes;
+			cur += bytes;
 		} while (expect > 0);
 	}
 

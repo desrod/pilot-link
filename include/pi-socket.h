@@ -51,11 +51,18 @@ enum PiOptSLP {
 
 enum PiOptPADP {
 	PI_PADP_TYPE,
-	PI_PADP_LASTTYPE,
+	PI_PADP_LASTTYPE
+};
+
+enum PiOptCMP {
+	PI_CMP_TYPE,
+	PI_CMP_FLAGS,
+	PI_CMP_VERS,
+	PI_CMP_BAUD,
 };
 
 enum PiOptNet {
-	PI_NET_TYPE,
+	PI_NET_TYPE
 };
 	
 #define PI_SLP_SPEED		0x0001
