@@ -99,8 +99,12 @@ void install_ToDo(int sd, int db, struct ToDo todo)
 	char  duedate[DATE_STR_MAX];
 
 	printf("Indefinite:  %i\n", todo.indefinite);
-	if (todo.indefinite == 0)
+	/* Assume DATE_STR_MAX is at least 40 or so. */
+	if (todo.indefinite == 0) {
 		strftime(duedate, DATE_STR_MAX, "%a %b %d %H:%M:%S %Z %Y", &todo.due);
+	} else {
+		strncpy(duedate,"<none>",DATE_STR_MAX);
+	}
 	printf("Due Date:    %s\n", duedate);
 	printf("Priority:    %i\n", todo.priority);
 	printf("Complete:    %i\n", todo.complete);
