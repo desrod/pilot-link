@@ -1,4 +1,5 @@
 man_MANS =			\
+	addresses.1		\
 	dlpsh.1			\
 	ietf2datebook.1		\
 	install-datebook.1	\

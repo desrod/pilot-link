@@ -1,0 +1,42 @@
+.TH addresses 1 "Palm Computing Device Tools" "Free Software Foundation" \" -*- nroff -*-
+
+.SH NAME
+.B addreses
+\- Dumps the Palm AddressBook entries to STDOUT in a simple format
+
+.SH SYNOPSIS
+
+Redirect to a specified output file
+
+.B addresses
+-p\ <port> > MyAddresses.txt
+
+Output to STDOUT (the screen)
+
+.B addresses
+-p\ <port>
+
+.SH DESCRIPTION
+.B addresses
+will connect to your Palm device and dump the current AddressDB.pdb entries
+to STDOUT (generally the screen) or, if redirected with the '>' character,
+to a file of your choosing.
+ 
+.SS OPTIONS
+none
+
+.SH USAGE
+The program will read Address data from the Palm and output format suitable
+for the other programs to import as required. 
+
+.SH KNOWN BUGS
+.BR addresses
+has no known bugs.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
+.SH AUTHOR
+.B addresses
+was written by Kenneth Albanowski
