@@ -25,12 +25,12 @@
 #endif
 #include "getopt.h"
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>		/* free() */
-#include <ctype.h>
+// #include <stdio.h>
+// #include <stdlib.h>		/* free() */
+// #include <ctype.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
+// #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-serial.h"
 #include "pi-header.h"
@@ -517,8 +517,11 @@ char *timestr(time_t t)
  ***********************************************************************/
 void handle_user_commands(int sd)
 {
-
 #ifdef HAVE_READLINE
+
+/* A safer alternative
+	char 	*line = (char *)malloc(256*sizeof(char)),
+ */
 	char 	*line,
 		*prompt = "dlpsh> ";
 #else
@@ -541,18 +544,12 @@ void handle_user_commands(int sd)
 
 	argc = 0;
 	
-	/* Changing input? BAD BAD BAD... */
+	/* Changing input? BAD BAD BAD... -DD */
 	argv[0] = strtoke(line, " \t\n", "\"'");
 #else
-	
-	int hist = 256;
 	printf("dlpsh> ");
 	
-	/* This line will throw a warning, but that's because 
-	   'hist' is undefined when HAVE_READLINE is defined, 
-	   you can safely ignore it for now. -DD
-	 */
-	if (fgets(buf, hist, stdin) == NULL)
+	if (fgets(buf, 256, stdin) == NULL)
 		break;
 
 	argc = 0;
@@ -562,7 +559,7 @@ void handle_user_commands(int sd)
 	while (argv[argc] != NULL) {
 		argc++;
 
-		/* Tsk, tsk. Changing the input again! */
+		/* Tsk, tsk. Changing the input again! -DD */
 		argv[argc] = strtoke(NULL, " \t\n", "\"'");
 	}
 

@@ -26,7 +26,10 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-int pilot_connect(const char *port);
+int pilot_connect(const char *port, struct PilotUser *User,  
+		  struct SysInfo *Sys, struct NetSyncInfo *Net, 
+		  struct CardInfo *Card);  
+
 static void Help(char *progname);
 
 struct option options[] = {
@@ -44,27 +47,29 @@ static const char *optstring = "hp:u:i:o:a:n:l:";
 
 int main(int argc, char *argv[])
 {
-	int c;
-	int sd = -1;
-	char *progname = argv[0];
-	char *port = NULL;
-	char *user = NULL;
-	char *userid = NULL;
-	char *hostname = NULL;
-	char *address = NULL;
-	char *netmask = NULL;
-	char *netsync = NULL;
-	struct PilotUser User;
-	struct SysInfo Sys;
-	struct CardInfo Card;
-	struct NetSyncInfo Net;
+	int 	count,
+		sd 		= -1,
+		opterr;
+	char 	*progname 	= argv[0],
+		*port 		= NULL,
+		*user 		= NULL,
+		*userid 	= NULL,
+		*hostname 	= NULL,
+		*address 	= NULL,
+		*netmask 	= NULL,
+		*netsync 	= NULL;
+
+	struct 	PilotUser 	User;
+	struct 	SysInfo 	Sys;
+	struct 	CardInfo 	Card;
+	struct 	NetSyncInfo 	Net;
+
 	unsigned long romversion;
-	int opterr;
 
 	opterr = 0;
 
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch (c) {
+	while ((count = getopt(argc, argv, optstring)) != -1) {
+		switch (count) {
 
 		  case 'h':
 			  Help(progname);
@@ -115,14 +120,12 @@ int main(int argc, char *argv[])
 			    ("ERROR: You forgot to specify a valid numeric UserID\n");
 			exit(1);
 		}
-		sd = pilot_connect(port);
+		sd = pilot_connect(port, &User, &Sys, &Net, &Card);
 
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
 			exit(1);
 		} else {
-			dlp_ReadUserInfo(sd, &User);
-			dlp_ReadSysInfo(sd, &Sys);
 
 			Card.card = -1;
 			Card.more = 1;
@@ -158,10 +161,12 @@ int main(int argc, char *argv[])
 			}
 
 			printf("   Palm username: %s\n", User.username);
-			printf("   Palm UserID  : %ld \n", User.userID);
-			printf
-			    ("\n   Values read through ReadSysInfo:\n   ROM Version: 0x%8.8lX, locale: 0x%8.8lX, name: '%s'\n",
-			     Sys.romVersion, Sys.locale, Sys.name);
+			printf("   Palm UserID  : %ld \n\n", User.userID);
+
+			printf("   Values read through ReadSysInfo:\n"
+			       "   ROM Version: 0x%8.8lX, locale: 0x%8.8lX, name: '%s'\n", 
+				Sys.romVersion, Sys.locale, Sys.name);
+
 			dlp_ReadFeature(sd, makelong("psys"), 1,
 					&romversion);
 			printf
@@ -196,10 +201,11 @@ int main(int argc, char *argv[])
 				       netsync, Net.hostName, Net.hostAddress,
 				       Net.hostSubnetMask);
 			}
-			dlp_AddSyncLogEntry(sd,
-					    "install-user, exited normally.\nThank you for using pilot-link.\n");
+			dlp_AddSyncLogEntry(sd, "install-user, exited normally.\n"
+						"Thank you for using pilot-link.\n");
 			dlp_EndOfSync(sd, 0);
 			pi_close(sd);
+			return 0;
 		}
 	}
 	return 0;

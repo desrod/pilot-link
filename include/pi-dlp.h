@@ -63,21 +63,27 @@ extern "C" {
 	};
 
 	struct CardInfo {
-		int card;
-		int version;
-		time_t creation;
-		unsigned long romSize, ramSize, ramFree;
-		char name[128];
-		char manufacturer[128];
+		int 	card,
+			version;
+			int more;
 
-		int more;
+		time_t 	creation;
+
+		unsigned long romSize, 
+			ramSize, 
+			ramFree;
+
+		char 	name[128],
+			manufacturer[128];
+
+
 	};
 
 	struct NetSyncInfo {
-		int lanSync;
-		char hostName[256];			/* Null terminated string */
-		char hostAddress[40];			/* Null terminated string */
-		char hostSubnetMask[40];		/* Null terminated string */
+		int 	lanSync;
+		char 	hostName[256];			/* Null terminated string */
+		char 	hostAddress[40];		/* Null terminated string */
+		char 	hostSubnetMask[40];		/* Null terminated string */
 	};
 
 	enum dlpDBFlags {
@@ -118,10 +124,10 @@ extern "C" {
 	};
 
 	enum dlpEndStatus {
-		dlpEndCodeNormal 	= 0,		/* Normal					*/
-		dlpEndCodeOutOfMemory,			/* End due to low memory on Palm		*/
-		dlpEndCodeUserCan,			/* Cancelled by user				*/
-		dlpEndCodeOther				/* dlpEndCodeOther and higher mean "Anything else"	*/
+		dlpEndCodeNormal 	= 0,		/* Normal					 */
+		dlpEndCodeOutOfMemory,			/* End due to low memory on Palm		 */
+		dlpEndCodeUserCan,			/* Cancelled by user				 */
+		dlpEndCodeOther				/* dlpEndCodeOther and higher == "Anything else" */
 	};
 
 	enum dlpDBList {

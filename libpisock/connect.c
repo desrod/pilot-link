@@ -23,16 +23,20 @@
 #include <string.h>
 
 #include "pi-socket.h"
-#include "pi-header.h"
 #include "pi-dlp.h"
+#include "pi-header.h"
 
 /* Declare prototypes */
-int pilot_connect(const char *port);
+int pilot_connect(const char *port, struct PilotUser *User, 
+		  struct SysInfo *Sys, struct NetSyncInfo *Net, 
+		  struct CardInfo *Card);
 
-int pilot_connect(const char *port) 
+int pilot_connect(const char *port, struct PilotUser *User, 
+                  struct SysInfo *Sys, struct NetSyncInfo *Net, 
+                  struct CardInfo *Card)
 {
-	int sd;
-	struct pi_sockaddr addr;
+	int 	sd;
+	struct 	pi_sockaddr addr;
 
 	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
 		perror("   Reason: pi_socket");
@@ -74,6 +78,11 @@ int pilot_connect(const char *port)
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
+
+	dlp_ReadUserInfo(sd, User);
+	dlp_ReadSysInfo(sd, Sys);
+	dlp_ReadNetSyncInfo(sd, Net);
+	dlp_ReadStorageInfo(sd, 0, Card);
 
 	return sd;
 }

@@ -1,10 +1,19 @@
-2001-12-19
+2001-12-23  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libsock/connect.c: Fill pointers for &User, &Net, etc. 
+	
+	* getopt.h: Updated to the current version, corrects warnings on
+	  some builds.
+
+	* install-user.c: Converted to read &User, &Sys, &Net. 
+
+2001-12-19  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* dlpsh.c: Minor segfault problem fixed in strncpy(); 
 
 	* A few missing buglets from the last commit, fixed. 
 
-2001-12-18
+2001-12-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* misc: Lots of cleanups, new 'Berkeley' indenting, renamed some
 	  types to be more 'human'.
