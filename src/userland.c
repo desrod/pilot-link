@@ -28,7 +28,7 @@
 #include "pi-dlp.h"
 
 static char *port = NULL;
-static int quiet = 0;
+int userland_quiet = 0;
 
 static void callback(poptContext pc,
 	int reason,
@@ -48,7 +48,7 @@ struct poptOption userland_common_options[] = {
 	{ NULL,0,POPT_ARG_CALLBACK,callback,0,NULL,NULL},
 	{ "port",    'p', POPT_ARG_STRING, &port,  0 , "Use device <port> to communicate with Palm", "<port>"},
 	{ "version",  0 , POPT_ARG_NONE,    NULL, 'v', "Display version information", NULL},
-	{ "quiet",   'q', POPT_ARG_NONE,  &quiet,  0 , "Suppress 'Hit HotSync button' message", NULL},
+	{ "quiet",   'q', POPT_ARG_NONE,  &userland_quiet,  0 , "Suppress 'Hit HotSync button' message", NULL},
 	POPT_TABLEEND
 } ;
 
@@ -76,7 +76,7 @@ int userland_connect()
 		return result;
 	}
 
-	if (!quiet && isatty(fileno(stdout))) {
+	if (!userland_quiet && isatty(fileno(stdout))) {
 		printf("\n   Listening to port: %s\n\n"
 			"   Please press the HotSync button now... ",
 			port);
@@ -95,7 +95,7 @@ int userland_connect()
 		return -1;
 	}
 
-	if (!quiet && isatty(fileno(stdout))) {
+	if (!userland_quiet && isatty(fileno(stdout))) {
 		printf("connected!\n\n");
 	}
 

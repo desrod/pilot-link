@@ -23,7 +23,6 @@
 
 #include <popt.h>
 
-
 /*
  * This file defines general stuff for conduits -- common option processing,
  * perhaps some utility functions, etc. It prescribes how some of the code
@@ -71,7 +70,7 @@ extern void userland_badoption(poptContext pc, int optc);
  */
 
 extern struct poptOption userland_common_options[];
-
+extern int userland_quiet;
 
 
 #endif
