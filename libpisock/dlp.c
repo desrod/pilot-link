@@ -528,7 +528,14 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	}
 	if (bytes < 4) {
 		/* packet is probably incomplete */
-		return PI_ERR_DLP_COMMAND;
+#if DEBUG
+		LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
+			"dlp_response_read: response too short (%d bytes)\n",
+			bytes));
+		if (bytes)
+			dumpdata(dlp_buf->data, (size_t)dlp_buf->used);
+#endif
+		return pi_set_error(sd, PI_ERR_DLP_COMMAND);
 	}
 
 	response = dlp_response_new (dlp_buf->data[0] & 0x7f, dlp_buf->data[1]);
