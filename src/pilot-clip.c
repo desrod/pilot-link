@@ -111,41 +111,21 @@ static int SetClip(int socket, int type, void *data, int length)
 	return 1;
 }
 
-static void display_help(const char *progname)
-{
-	printf("   Get or Set the Palm Clipboard contents from STDOUT/STDIN\n\n");
-	printf("   Usage: %s -p <port> -g | -s <value>\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -g, --get               Get the contents of the clipboard\n");
-	printf("     -s, --set <value>       Set the value <value> in the clipboard\n\n");
-	printf("   Examples: %s -p serial:/dev/ttyUSB0 -g\n", progname);
-	printf("             %s -p serial:/dev/ttyUSB0 -s \"Put this in the clipboard\"\n\n", progname);
-
-	return;
-}
 
 int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		sd 		= -1,
-		getset          = -1,
 		ret;
 
-	const char
-                *progname 	= argv[0];
+	enum { mode_none, mode_set='s', mode_get='g' } mode = mode_none;
 
-	char 	buffer[0xffff],
-		*port		= NULL;
+	char 	buffer[0xffff];
 
 	poptContext po;
 
 	struct poptOption options[] = {
-        	{"port",	'p', POPT_ARG_STRING, &port, 0,  "Use device <port> to communicate with Palm"},
-	        {"help",	'h', POPT_ARG_NONE, NULL,   'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL,   'v', "Display version information"},
+		USERLAND_RESERVED_OPTIONS
 	        {"get",		'g', POPT_ARG_NONE, NULL,   'g', "Get the contents of the clipboard"},
         	{"set",		's', POPT_ARG_NONE, NULL,   's', "Set the value <value> in the clipboard"},
 	         POPT_AUTOHELP
@@ -153,35 +133,37 @@ int main(int argc, const char *argv[])
 	};
 
 	po = poptGetContext("pilot-clip", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"\n\n"
+	"   Get or Set the Palm Clipboard contents from STDOUT/STDIN.\n"
+	"   Must provide one of -g or -s.\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
-
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 'g':
-			getset = 0;
-			break;
 		case 's':
-			getset = 1;
+		case 'g':
+			if (mode != mode_none) {
+				fprintf(stderr,"   ERROR: Use only one of --get or --set.\n");
+				return 1;
+			}
+			mode = c;
 			break;
 		default:
-			display_help(progname);
-			return 0;
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n", c);
+			return 1;
 		}
 	}
-	if (getset < 0) {
-		display_help(progname);
-		fprintf(stderr, "ERROR: You must specify whether to "
+	if (mode_none == mode) {
+		fprintf(stderr, "   ERROR: You must specify whether to "
 				"\"Get\" or \"Set\" the clipboard\n");
 		return -1;
 	}
 
-	sd = pilot_connect(port);
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 
@@ -189,7 +171,7 @@ int main(int argc, const char *argv[])
 		goto error_close;
 
 
-	if (getset == 1) {
+	if (mode == mode_set) {
 		ret = read(fileno(stdin), buffer, 0xffff);
 		if (ret >= 0) {
 			buffer[ret++] = 0;
