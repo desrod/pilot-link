@@ -1,0 +1,20 @@
+TODO (suggestions):
+* use btree instead of linked list for sorting
+* better parsing (instead heavy use of string functions)
+* more powerful expressions in assignments/updates/conditions
+* Portability (had been developed under Linux, relies on built-in
+  string functions like index(), assume 1 byte char, assume enum = int)
+* write more test cases to ensure functionality really works (sorting,
+  beginTime/endTime
+* merge multiple headers when reading from multiple files
+* reconstruct header when not present but possible
+* Add access variable for exceptions & processing for time lists
+* real sync (slow & fast sync)
+* more sanity checks, and switchable per command line option
+* check & remove duplicates
+* Datebk3/Datebk4 extensions (and keeping of position number in windat)
+* exit on warn_message to be switchable per command line option
+* csv: Outlook quoting (twice double-quote to quote double-quote, and linefeeds
+  are not quoted => need to be able to read multiple lines)
+* Read in Outlook export date format (which is localized, not iso-formatted)
+

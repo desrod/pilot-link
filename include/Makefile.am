@@ -26,6 +26,8 @@ c_headers = 			\
 	pi-sync.h		\
 	pi-sys.h		\
 	pi-syspkt.h		\
+	pi-notepad.h		\
+	pi-palmpix.h		\
 	pi-todo.h		\
 	pi-usb.h		\
 	pi-util.h		\

@@ -1,0 +1,150 @@
+#!/bin/sh
+
+PILOT_DATEBOOK='../pilot-datebook -q'
+SUCCESS="Passed"
+FAILED="Failed"
+
+
+
+##########################################################################
+IN1_FILE=update_in1.txt
+TEST1='advanceUnit=0'
+OUT1_FILE=update_out1.txt
+EXPECT1_FILE=update_expect1.txt
+
+echo -n "Test1 (${TEST1}): "
+
+cat > ${IN1_FILE} <<EOI
+UNTIMED_EVENT <5849139> on <12 may 1997>:
+category=2 (Birthday)
+*1971 Geburtstag
+REPEAT from <12 may 1997> until <forever>: <yearly> on <may 12>
+ALARM <2 days before>
+NOTE:
+##@@B@@@@
+
+APPOINTMENT <5849151> from <12 dec 1997 11:00> to <12 dec 1997 12:00>:
+Internal Meeting
+ALARM <5 min before>
+
+APPOINTMENT <5849146> from <13 dec 1997 16:45> to <13 dec 1997 17:50>:
+External Meeting
+
+EOI
+
+
+cat > ${EXPECT1_FILE} <<EOI
+UNTIMED_EVENT <5849139> on <12 may 1997>:
+category=2 ()
+*1971 Geburtstag
+REPEAT from <12 may 1997> until <forever>: <yearly> on <may 12>
+ALARM <2 min before>
+NOTE:
+##@@B@@@@
+
+APPOINTMENT <5849151> from <12 dec 1997 11:00> to <12 dec 1997 12:00>:
+Internal Meeting
+ALARM <5 min before>
+
+APPOINTMENT <5849146> from <13 dec 1997 16:45> to <13 dec 1997 17:50>:
+External Meeting
+
+EOI
+
+${PILOT_DATEBOOK} -r longtxt -f ${IN1_FILE} -u "${TEST1}" -w longtxt -f ${OUT1_FILE}
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+diff ${EXPECT1_FILE} ${OUT1_FILE}
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+#rm ${IN1_FILE} ${EXPECT1_FILE} ${OUT1_FILE}
+rm ${EXPECT1_FILE} ${OUT1_FILE}
+
+
+##########################################################################
+IN2_FILE=${IN1_FILE}
+TEST2='advanceUnit+=2'
+OUT2_FILE=update_out2.txt
+EXPECT2_FILE=update_expect2.txt
+
+echo -n "Test2 (${TEST2}): "
+
+cat > ${EXPECT2_FILE} <<EOI
+UNTIMED_EVENT <5849139> on <12 may 1997>:
+category=2 ()
+*1971 Geburtstag
+REPEAT from <12 may 1997> until <forever>: <yearly> on <may 12>
+ALARM <2 unknown_unit before>
+NOTE:
+##@@B@@@@
+
+APPOINTMENT <5849151> from <12 dec 1997 11:00> to <12 dec 1997 12:00>:
+Internal Meeting
+ALARM <5 days before>
+
+APPOINTMENT <5849146> from <13 dec 1997 16:45> to <13 dec 1997 17:50>:
+External Meeting
+
+EOI
+
+${PILOT_DATEBOOK} -r longtxt -f ${IN2_FILE} -u "${TEST2}" -w longtxt -f ${OUT2_FILE}
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+diff ${EXPECT2_FILE} ${OUT2_FILE}
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+#rm ${IN2_FILE} ${EXPECT2_FILE} ${OUT2_FILE}
+rm ${EXPECT2_FILE} ${OUT2_FILE}
+
+
+##########################################################################
+IN3_FILE=${IN1_FILE}
+TEST3='advanceUnit-=1'
+OUT3_FILE=update_out3.txt
+EXPECT3_FILE=update_expect3.txt
+
+echo -n "Test3 (${TEST3}): "
+
+cat > ${EXPECT3_FILE} <<EOI
+UNTIMED_EVENT <5849139> on <12 may 1997>:
+category=2 ()
+*1971 Geburtstag
+REPEAT from <12 may 1997> until <forever>: <yearly> on <may 12>
+ALARM <2 hours before>
+NOTE:
+##@@B@@@@
+
+APPOINTMENT <5849151> from <12 dec 1997 11:00> to <12 dec 1997 12:00>:
+Internal Meeting
+ALARM <5 unknown_unit before>
+
+APPOINTMENT <5849146> from <13 dec 1997 16:45> to <13 dec 1997 17:50>:
+External Meeting
+
+EOI
+
+${PILOT_DATEBOOK} -r longtxt -f ${IN3_FILE} -u "${TEST3}" -w longtxt -f ${OUT3_FILE}
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+diff ${EXPECT3_FILE} ${OUT3_FILE}
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+rm ${IN3_FILE} ${EXPECT3_FILE} ${OUT3_FILE}

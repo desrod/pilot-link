@@ -33,6 +33,9 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 
+/* Prototypes */
+int pilot_connect(char *port);
+
 /* For various protocol versions, set to 0 to not test those versions */
 #define DLP_1_1 1
 #define DLP_1_2 1

@@ -1,3 +1,26 @@
+2002-06-28  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* NEW CONDUITS: read-palmpix, read-notepad (Angus Ainslie)
+
+	* src/pilot-datebook: New datebook replacement (Matthias Hessler)
+
+	* configure.in: pilot-datebook pokes added
+
+	* src/Makefile.in: pilot-datebook pokes added
+
+	* src/pilot-addresses.c: Fixed a field-order error between 0.9.5 and
+	  0.10.99 CSV export files. Fixed the -i/-c discrepancy again. 
+
+	* bindings/Java/Jni.c: s/s.name/s.prodID/
+
+	* libpisock/usb.c: Fixed missing prototype for pi_socket_init()
+		
+	* libpisock/socket.c: ditto
+
+	* libpisock/serial.c: ditto
+
+	* libpisock/inet.c: ditto	
+
 2002-06-28  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/dlp.c: oops, remove old dlp_exec function

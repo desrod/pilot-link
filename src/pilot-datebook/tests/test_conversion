@@ -1,0 +1,192 @@
+#!/bin/sh
+
+PILOTLINK_DIR=..
+PILOT_DATEBOOK=${PILOTLINK_DIR}/pilot-datebook
+FLAGS=-q
+ORIG_LONGTXT=test_datebookDB.txt
+ORIG_PDB=test_datebookDB.pdb
+SUCCESS="Passed"
+FAILED="Failed"
+
+# Assuming this will always work, and write a pdb file where:
+# * all unused gap bytes are set to 0
+echo -n "Preparing test: "
+${PILOT_DATEBOOK} ${FLAGS}  -r longtxt -f ${ORIG_LONGTXT}  -w pdb -f ${ORIG_PDB}
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f ${ORIG_PDB}  -w pdb -f clean_pdb.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+# Double-check that pdb contains correct content
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f clean_pdb.pdb  -w longtxt -f clean_longtxt.txt
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+diff ${ORIG_LONGTXT} clean_longtxt.txt
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+
+# Now test whether reading pdb and writing pdb really creates bit-identical
+# results
+echo -n "pdb test: "
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f clean_pdb.pdb  -w pdb -f pdb_test.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+cmp -cl clean_pdb.pdb pdb_test.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+
+# longtxt
+# Now test whether reading pdb, then writing longtxt, then reading longtxt and
+# writing pdb creates bit-identical results
+echo -n "longtxt test 1: "
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f clean_pdb.pdb  -w longtxt -f longtxt_test1.txt
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+${PILOT_DATEBOOK} ${FLAGS}  -r longtxt -f longtxt_test1.txt  -w pdb -f longtxt_test1.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+cmp -cl clean_pdb.pdb longtxt_test1.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+# Now test whether reading original pdb, then writing longtxt, then reading
+# longtxt and writing pdb creates bit-identical results to directly written pdb
+echo -n "longtxt test 2: "
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f ${ORIG_PDB}  -w longtxt -f longtxt_test2.txt
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+${PILOT_DATEBOOK} ${FLAGS}  -r longtxt -f longtxt_test2.txt  -w pdb -f longtxt_test2.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+cmp -cl clean_pdb.pdb longtxt_test2.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+
+# windat
+# Now test whether reading pdb, then writing windat, then reading windat and
+# writing pdb creates bit-identical results
+echo -n "windat test 1: "
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f clean_pdb.pdb  -w windat -f windat_test1.txt > /dev/null
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+${PILOT_DATEBOOK} ${FLAGS}  -r windat -f windat_test1.txt  -w pdb -f windat_test1.pdb > /dev/null
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+# Have to ignore first 52 bytes since creation, modification, backup time
+# database flags, name, and modification number are not stored in windat format
+cmp -cli 52 clean_pdb.pdb windat_test1.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+# Now test whether reading original pdb, then writing windat, then reading
+# windat and writing pdb creates bit-identical results to directly written pdb
+echo -n "windat test 2: "
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f ${ORIG_PDB}  -w windat -f windat_test2.txt > /dev/null
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+${PILOT_DATEBOOK} ${FLAGS}  -r windat -f windat_test2.txt  -w pdb -f windat_test2.pdb > /dev/null
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+# Have to ignore first 52 bytes since creation, modification, backup time
+# database flags, name, and modification number are not stored in windat format
+cmp -cli 52 clean_pdb.pdb windat_test2.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+
+# shorttxt
+# Now test whether reading original pdb, then writing shorttxt, then reading
+# shorttxt and writing pdb, then reading pdb and writing shorttxt creates
+# bit-identical results to firstly written shorttxt
+# (shorttxt is a loosy format, therefore can not compare pdb's)
+echo -n "shorttxt test 1: "
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f ${ORIG_PDB}  -w shorttxt -f shorttxt_clean.txt
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+${PILOT_DATEBOOK} ${FLAGS}  -r shorttxt -f shorttxt_clean.txt  -w pdb -f shorttxt_test1.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f shorttxt_test1.pdb -w shorttxt -f shorttxt_test1.txt
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+cmp -cl shorttxt_clean.txt shorttxt_test1.txt
+#diff shorttxt_clean.txt shorttxt_test1.txt
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+
+# Clean up
+echo -n "Cleaning up: "
+rm clean_pdb.pdb pdb_test.pdb ${ORIG_PDB} clean_longtxt.txt \
+    longtxt_test1.txt longtxt_test1.pdb \
+    longtxt_test2.txt longtxt_test2.pdb \
+    windat_test1.txt windat_test1.pdb \
+    windat_test2.txt windat_test2.pdb \
+    shorttxt_clean.txt shorttxt_test1.txt shorttxt_test1.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi

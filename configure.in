@@ -629,6 +629,7 @@ include/pi-version.h
 src/Makefile
 src/prc/Makefile
 src/pix/Makefile
+src/pilot-datebook/Makefile
 bindings/Makefile
 bindings/Perl/Makefile.PL
 bindings/Java/Makefile

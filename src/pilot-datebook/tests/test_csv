@@ -1,0 +1,48 @@
+#!/bin/sh
+
+PILOTLINK_DIR=..
+PILOT_DATEBOOK=${PILOTLINK_DIR}/pilot-datebook
+FLAGS=-q
+ORIG_LONGTXT=test_datebookDB.txt
+ORIG_PDB=test_datebookDB.pdb
+SUCCESS="Passed"
+FAILED="Failed"
+
+fail()
+{
+	echo $FAILED
+	exit 1
+}
+ok()
+{
+	echo $SUCCESS
+}
+
+
+# Now test whether reading original pdb, then writing csv, then reading ??
+# Assuming this will always work, and write a pdb file where:
+# * all unused gap bytes are set to 0
+echo -n "Preparing test: "
+${PILOT_DATEBOOK} ${FLAGS}  -r longtxt -f ${ORIG_LONGTXT}  -w pdb -f ${ORIG_PDB} \
+	|| fail && ok
+
+# csv and writing longtxt, then reading pdb and writing longtxt creates
+# bit-identical results to firstly written csv
+# (csv is a loosy format (does not store exceptions), therefore can not
+# compare pdb's)
+echo -n "csv test 1: "
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f ${ORIG_PDB}  -w csv -f csv_clean.txt \
+	|| fail
+${PILOT_DATEBOOK} ${FLAGS}  -r csv -f csv_clean.txt  -w pdb -f csv_test1.pdb \
+	|| fail
+${PILOT_DATEBOOK} ${FLAGS}  -r pdb -f csv_test1.pdb -w csv -f csv_test1.txt \
+	|| fail
+#cmp -cl csv_clean.txt csv_test1.txt
+diff csv_clean.txt csv_test1.txt || fail && ok
+
+
+# Clean up
+echo -n "Cleaning up: "
+rm \
+    csv_clean.txt csv_test1.txt csv_test1.pdb ${ORIG_PDB} \
+	|| fail && ok

@@ -4,7 +4,7 @@ else
 CXX_DIR =
 endif
 
-SUBDIRS=prc pix
+SUBDIRS=prc pix pilot-datebook
 
 INCLUDES = 			\
 	-Iinclude		\
@@ -53,6 +53,8 @@ bin_PROGRAMS = 		\
 	pilot-xfer	\
 	read-expenses	\
 	read-ical	\
+	read-notepad	\
+	read-palmpix	\
 	read-todos	\
 	reminders
 
@@ -258,6 +260,18 @@ read_expenses_LDADD = 				\
 read_ical_SOURCES = \
 	read-ical.c
 read_ical_LDADD = 				\
+	@LIBOBJS@				\
+	$(top_builddir)/libpisock/libpisock.la
+
+read_notepad_SOURCES = \
+	read-notepad.c
+read_notepad_LDADD = 				\
+	@LIBOBJS@				\
+	$(top_builddir)/libpisock/libpisock.la
+
+read_palmpix_SOURCES = \
+	read-palmpix.c
+read_palmpix_LDADD = 				\
 	@LIBOBJS@				\
 	$(top_builddir)/libpisock/libpisock.la
 

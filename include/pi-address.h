@@ -8,13 +8,11 @@
 extern "C" {
 #endif
 
-	enum { entryLastname, entryFirstname, entryCompany,
-		entryPhone1, entryPhone2, entryPhone3, entryPhone4,
-		    entryPhone5,
-		entryAddress, entryCity, entryState, entryZip,
-		    entryCountry, entryTitle,
-		entryCustom1, entryCustom2, entryCustom3, entryCustom4,
-		entryNote
+	enum { entryLastname, entryFirstname, entryCompany, entryTitle,
+	       entryPhone1, entryPhone2, entryPhone3, entryPhone4,
+	       entryPhone5, entryAddress, entryCity, entryState, entryZip,
+	       entryCountry, entryCustom1, entryCustom2, entryCustom3,
+	       entryCustom4, entryNote
 	};
 
 	struct Address {

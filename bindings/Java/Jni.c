@@ -1122,7 +1122,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pdapilot_Dlp_readSysInfo
    setIntField( env, output, "romVersion", s.romVersion);
    setIntField( env, output, "locale", s.locale);
    // is s.name 0 delimited, the old code used s.namelength?
-   setStringField( env, output, "name", env->NewStringUTF( s.name));
+   setStringField( env, output, "name", env->NewStringUTF( s.prodID));
    return output;
    }
 /*

@@ -58,6 +58,8 @@
 #include "pi-syspkt.h"
 #include "pi-debug.h"
 
+int pi_socket_init(struct pi_socket *ps);
+
 /* Linked List of Sockets */
 struct pi_socket_list
 {

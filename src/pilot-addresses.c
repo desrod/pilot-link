@@ -44,14 +44,18 @@ int pilot_connect(const char *port);
 static void print_help(char *progname);
 
 /* Yet more hair: reorganize fields to match visible appearence */
+/* 
 int realentry[19] =
-    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+    { 0, 1, 2, 14, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 3, 15, 16, 17, 18 };
+*/
+int realentry[19] = 
+    { 0, 1, 2, 13, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18 };
 
 char *tableheads[22] = { 
-	"Last name", "First name", "Company", "Work", "Home", "Fax",
-	"Other", "E-mail", "Address", "City", "State", "Zip Code",
-	"Country", "Title", "Custom 1", "Custom 2", "Custom 3", "Custom 4",
-	"Note", "Main", "Pager", "Mobile"
+	"Last name", "First name", "Company", "Title", "Work", "Home",
+	"Fax", "Other", "E-mail", "Address", "City", "State", "Zip Code",
+	"Country", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Note",
+	"Main", "Pager", "Mobile"
 };
 
 static const char *optstring = "hvDTeqp:t:d:i:arw";
@@ -66,7 +70,7 @@ struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"tdelim",	required_argument, NULL, 't'},
 	{"delcat",	required_argument, NULL, 'd'},
-	{"install",	required_argument, NULL, 'i'},
+	{"install",	required_argument, NULL, 'c'},
 	{"augment",	no_argument,       NULL, 'a'},
 	{"read",        required_argument, NULL, 'r'},
 	{"write",	required_argument, NULL, 'w'},
@@ -472,7 +476,7 @@ static void print_help(char *progname)
 	       "     -a                augment records with additional information\n"
 	       "     -e                escape special chcters with backslash\n"
 	       "     -p port           use device file <port> to communicate with Palm\n"
-	       "     -i category       install to category <category> by default\n"
+	       "     -c category       install to category <category> by default\n"
 	       "     -d category       delete old Palm records in <category>\n"
 	       "     -D                delete all Palm records in all categories\n"
 	       "     -r file           read records from <file> and install them to Palm\n"

@@ -69,6 +69,8 @@ static int pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name,
 
 static int pi_inet_close(struct pi_socket *ps);
 
+int pi_socket_init(struct pi_socket *ps);
+
 /* Protocol Functions */
 static struct pi_protocol *pi_inet_protocol_dup (struct pi_protocol *prot)
 {
@@ -387,8 +389,8 @@ pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	if (sd < 0)
 		goto fail;
 
-	pi_socket_setsd (acpt, sd);
-	pi_socket_init (acpt);
+	pi_socket_setsd(acpt, sd);
+	pi_socket_init(acpt);
 
 	switch (acpt->cmd) {
 	case PI_CMD_CMP:

@@ -1,0 +1,77 @@
+#!/bin/sh
+
+PILOTLINK_DIR=..
+PILOT_DATEBOOK=${PILOTLINK_DIR}/pilot-datebook
+PILOT_XFER=${PILOTLINK_DIR}/pilot-xfer
+FLAGS=-q
+PILOT_DEV=/dev/pilot
+SUCCESS="Passed"
+FAILED="Failed"
+
+# Assuming this will always work, and write a pdb file where all unused gap
+# bytes are set to 0
+echo -n "Preparing test: Reading DatebookDB.pdb via pilot-xfer: "
+${PILOT_XFER} -f DatebookDB
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+mv DatebookDB.pdb clean_pdb.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+# Now test whether reading hotsync and writing pdb really creates bit-identical
+# results to pilot-xfer
+echo -n "pdb test: "
+${PILOT_DATEBOOK} ${FLAGS} -r hotsync -w pdb ${PILOT_DEV} pdb_test.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+cmp -cl clean_pdb.pdb pdb_test.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+# Now test whether reading hotsync, then writing longtxt, then reading longtxt and
+# writing pdb creates bit-identical results
+echo -n "longtxt test 1: "
+${PILOT_DATEBOOK} ${FLAGS} -r hotsync -w longtxt ${PILOT_DEV} longtxt_test1.txt
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+${PILOT_DATEBOOK} ${FLAGS} -r longtxt -w pdb longtxt_test1.txt longtxt_test1.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+fi
+cmp -cl clean_pdb.pdb longtxt_test1.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+# Not comparing different longtxt results, since they will differ
+# (pdb format will not store miscFlags and index = Palm OS 2.0 stuff)
+
+echo -n "Cleaning up: "
+rm clean_pdb.pdb pdb_test.pdb \
+    longtxt_test1.txt longtxt_test1.pdb
+if [ $? -ne 0 ]; then
+	echo "${FAILED}"
+	exit 1
+else
+	echo "${SUCCESS}"
+fi
+
+echo "End of hotsync testing."

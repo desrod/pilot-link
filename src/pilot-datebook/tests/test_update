@@ -1,0 +1,103 @@
+#!/bin/sh
+
+./test_update_uid
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_attributes
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_category
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_untimed
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_begin
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_beginDate
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_end
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_endDate
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+
+./test_update_alarm
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_advance
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_advanceUnit
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+
+./test_update_repeatType
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_repeatForever
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_repeatEnd
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_repeatEndDate
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_repeatFrequency
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_repeatWeekdays
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+# repeatDay, repeatWeekstart not yet implemented
+
+# Only fools would update repeatExceptionNum directly!
+# repeatException
+
+./test_update_description
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+./test_update_note
+if [ $? -ne 0 ]; then
+	exit 1
+fi

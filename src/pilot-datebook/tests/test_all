@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e  # abort when a command returns non-zero
+
+echo Testing updates:
+./test_update
+
+echo
+echo Testing complex update:
+./test_update_complex
+
+echo
+echo Testing some sorting:
+./test_sort_beginDate
+./test_sort_endDate
+
+echo
+echo Testing data conversion:
+./test_conversion
+./test_csv
+

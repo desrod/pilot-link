@@ -43,7 +43,9 @@ libpisock_la_SOURCES =  \
 	memo.c		\
 	money.c		\
 	net.c		\
+	notepad.c	\
 	padp.c		\
+	palmpix.c	\
 	pi-file.c	\
 	pi-header.c	\
 	serial.c	\

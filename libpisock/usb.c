@@ -55,6 +55,8 @@ static int pi_usb_setsockopt(struct pi_socket *ps, int level, int option_name,
 				const void *option_value, int *option_len);
 static int pi_usb_close(struct pi_socket *ps);
 
+int pi_socket_init(struct pi_socket *ps);
+
 /* Protocol Functions */
 static struct pi_protocol *pi_usb_protocol_dup (struct pi_protocol *prot)
 {
