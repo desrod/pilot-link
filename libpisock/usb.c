@@ -740,7 +740,7 @@ pi_usb_dev_t known_devices[] = {
 	},
 };
 
-static pi_usb_dev_t override_device = { 0 };
+static pi_usb_dev_t override_device;
 
 int
 USB_check_device (pi_usb_data_t *dev, u_int16_t vendor, u_int16_t product)
@@ -874,7 +874,7 @@ static int
 USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe)
 {
 	int i, ret;
-	palm_ext_connection_info_t ci = { 0 };
+	palm_ext_connection_info_t ci;
 	u_int32_t flags = dev->dev.flags;
 
 	ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
