@@ -1,6 +1,8 @@
 2001-11-05  David A. Desrosiers <hacker at gnu-designs dot com>
 	
-	* install-user.c: Slowly moving stuff over to getopt_long()
+	* install-user.c: Slowly moving stuff over to getopt_long(), added
+	  ability to push NetLanSync data from the desktop via args, cleaned
+	  up strcpy() call, layout changes (eye candy). More coming.
 
 	* libsock/connect.c: moving out redundant code into external objects
 

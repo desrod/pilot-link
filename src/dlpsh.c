@@ -134,7 +134,7 @@ int user_fn(int sd, int argc, char **argv)
 		switch (c) {
 		case 'n':
 			fl_name = 1;
-			strcpy(nU.username, optarg);
+			strncpy(nU.username, optarg, sizeof(nU.username)-1);
 			break;
 		case 'i':
 			fl_uid = 1;
@@ -173,7 +173,7 @@ int user_fn(int sd, int argc, char **argv)
 	}
 
 	if (fl_name)
-		strcpy(U.username, nU.username);
+		strncpy(U.username, nU.username, sizeof(U.username)-1);
 	if (fl_uid)
 		U.userID = nU.userID;
 	if (fl_vid)

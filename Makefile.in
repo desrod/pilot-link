@@ -390,7 +390,6 @@ install-user.o: install-user.c include/pi-source.h include/pi-config.h \
  include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
  include/pi-dlp.h include/pi-header.h
 kittykiller.o: kittykiller.c
-m.o: m.c
 memos.o: memos.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/i18n.h \

@@ -67,7 +67,7 @@ void usage(void)
 	fprintf(stderr, "   -a       = dump app_info segment of the database(s)\n");
 	fprintf(stderr, "   -s       = dump sort_info block of database(s)\n");
 	fprintf(stderr, "   -l       = list all records in the database(s)\n");
-	fprintf(stderr, "  -r #     = dump a record (# is an index, or eg ode0' or a uid 1234')\n");
+	fprintf(stderr, "   -r #     = dump a record (# is an index, or eg 'code0' or a uid 1234')\n");
 	fprintf(stderr, "   -v       = dump all data and all records, very verbose\n\n");
 	fprintf(stderr, "   -R, -V as -r, -v, but also dump resources to files\n\n");
 	exit(1);

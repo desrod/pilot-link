@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 			  break;
 		  case 'd':
 			  /* optarg is name of directory to create and store memos in */
-			  strcpy(dirname, optarg);
+			  strncpy(dirname, optarg, sizeof(dirname));
 			  mode = MEMO_DIRECTORY;
 			  break;
 		  case 'c':
@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
 	}
 
 	addr.pi_family = PI_AF_SLP;
-	strcpy(device, addr.pi_device);
+	strncpy(device, addr.pi_device, sizeof(device));
 
 	if (filename[0] == '\0') {
 		if (!
