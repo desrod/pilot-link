@@ -1,4 +1,69 @@
 --------------------------------------------------------------------------
+pilot-link 0.11.8, "Asphyxia", 06-17-2003
+--------------------------------------------------------------------------
+More code cleanups in this release, minor typos fixed here and there, and
+more reduction of the codebase in general. Things are going to get smaller,
+faster, and more functional with each of these releases.
+
+Major Features:
+        * pilot-foto conduit to fetch/convert photos taken with a Palm
+          Zire71 camera device
+	* Completely new Java bindings, rewritten from the ground-up by John
+	  Mitchell (thanks John!)
+
+Other Features:
+        * A few new manpages
+
+Bug Fixes:
+        * Removed TCL detection in configure for now, will return later with
+          a proper autoconf'y m4 macro from the TEA project
+	* Fixed a small leak in the socket code (serial.c/socket.c)
+	* Removed CoPilot ROM support from pi-getrom/pi-getram. POSE
+	  supercedes it, and should be used instead.
+	* Solaris libpng fix (Simon Burr)
+	* Fixed the pilot-addresses segfault problem on some platforms
+	* BSD gnugetopt cleanup to counter unsetting $LIBS accidentally (Joe
+	  Marcus Clarke)
+	* Perl5 errors when building under a debug build of Perl (Johathan
+	  Mark)
+	* Cleaned up the HAVE_SYS_TIME_H calls, pushed into a convenience
+	  header for now
+
+Known Problems:
+        * install-datebook needs proper parsing for spurious arguments
+	* Resources which exceed the Palm recommendation of 64k will cause
+	  odd behavior in pilot-link. This can be easily fixed by increasing
+	  DLP_BUF_SIZE, but this isn't really good to do.
+	* sync-plan has some issues with events, need testers to verify.
+	* Syncronizing on FreeBSD with USB Palm devices is still flaky, but
+	  we believe the issue to be inside the BSD USB stack, and not
+	  within pilot-link itself. Can anyone concur/refute this assertion
+	  and help us test it further?
+	* If you are doing a Network HotSync backup, and communication is
+	  interrupted, your local copy of the last database accessed will be
+	  truncated. One proposal to working around this has been floated,
+	  but not implemented or tested yet.
+
+What's Coming Soon:
+	* VFS support was implemented with 29 of the VFS functions needed to
+	  read, write, and query external storage cards on Palm handhelds,
+	  but it was not deployed in this release. It should arrive in 0.12
+	  of pilot-link, only a few releases away.
+	* Conduit compression/rewrites. Many of the conduits will be
+	  collapsed into singular conduits, and others will be rolled into
+	  static versions using Perl for code reduction and portability
+	  reasons.
+	* iCal and LDIF support for Calendar and AddressBook input and
+	  output
+	
+The goal of the next few releases of pilot-link is to reduce the number of
+lines of actual code used, and compress the redundancy into singular
+entities. This means that similar or like code will be repurposed as much as
+possible across all of the libraries and conduits, reducing the cruft and
+maintenance required to update it for new features.
+
+
+--------------------------------------------------------------------------
 pilot-link 0.11.7, "What's up Doc?", 1-05-2003
 --------------------------------------------------------------------------
 The last release had a few small errors in it, namely the changing of the
