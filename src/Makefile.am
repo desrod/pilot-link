@@ -58,6 +58,7 @@ bin_PROGRAMS = 		\
 	pilot-foto	\
 	pilot-prc	\
 	pilot-schlep	\
+	pilot-treofoto	\
 	pilot-wav	\
 	pilot-xfer	\
 	read-expenses	\
@@ -294,6 +295,12 @@ pilot_schlep_SOURCES = 		\
 pilot_schlep_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
+pilot_treofoto_SOURCES = 		\
+	$(getopt_sources)	\
+	pilot-treofoto.c
+pilot_treofoto_LDADD = 		\
+	$(top_builddir)/libpisock/libpisock.la
+
 pilot_wav_SOURCES = 		\
 	$(getopt_sources)	\
 	pilot-wav.c
@@ -415,6 +422,7 @@ EXTRA_DIST = 			\
 	pilot-mail.c		\
 	pilot-prc.c		\
 	pilot-schlep.c		\
+	pilot-treofoto.c	\
 	pilot-wav.c		\
 	pilot-xfer.c		\
 	read-expenses.c		\
