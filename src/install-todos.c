@@ -29,20 +29,22 @@
 #include "pi-todo.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 void install_ToDos(int sd, int db, char *filename);
 
-static void display_help(char *progname);
-
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
-	{"help",        no_argument,       NULL, 'h'},
 	{"port",        required_argument, NULL, 'p'},
+	{"help",        no_argument,       NULL, 'h'},
+        {"version",     no_argument,       NULL, 'v'},   
 	{"filename",    required_argument, NULL, 'f'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
-static const char *optstring = "hp:f:";
+static const char *optstring = "p:hvf:";
 
 void install_ToDos(int sd, int db, char *filename)
 {
@@ -118,16 +120,17 @@ void install_ToDos(int sd, int db, char *filename)
 
 static void display_help(char *progname)
 {
-        printf("   Updates the Palm ToDo list with entries from a local file\n\n");
-        printf("   Usage: %s -p <port> -f <filename>\n", progname);
-        printf("   Options:\n");
-        printf("     -p <port>       Use device file <port> to communicate with Palm\n");
-        printf("     -f <filename>   A local file with formatted ToDo tasklist entries\n");
-        printf("     -h              Display this information\n\n");
-        printf("   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n", progname);
-        printf("   The format of this file is a simple line-by-line ToDo task entry.\n");
-        printf("   For each new line in the local file, a new task is created in the\n");
-        printf("   ToDo database on the Palm.\n\n");
+	printf("   Updates the Palm ToDo list with entries from a local file\n\n");
+	printf("   Usage: %s -p <port> -f <filename>\n", progname);
+	printf("   Options:\n");
+	printf("   -p, --port <port>         Use device file <port> to communicate with Palm\n");
+	printf("   -h, --help                Display help information for %s\n", progname);
+	printf("   -v, --version             Display %s version information\n", progname);
+	printf("   -f, --filename <filename> A local file with formatted ToDo entries\n\n");
+	printf("   Examples: %s -p /dev/pilot -f $HOME/MyTodoList.txt\n\n", progname);
+	printf("   The format of this file is a simple line-by-line ToDo task entry.\n");
+	printf("   For each new line in the local file, a new task is created in the\n");
+	printf("   ToDo database on the Palm.\n\n");
 
         exit(0);
 }
@@ -142,7 +145,7 @@ int main(int argc, char *argv[])
 		*port 		= NULL;
 	struct 	PilotUser User;
 
-	while ((c = getopt(argc, argv, optstring)) != -1) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
 		  case 'h':
@@ -154,26 +157,29 @@ int main(int argc, char *argv[])
 		  case 'f':
 			  filename = optarg;
 			  break;
+                  case 'v':
+                          display_splash(progname);
+                          exit(0);
 		}
 	}
 	
 	if (filename == NULL) {
-		printf
-		    ("\nERROR: You must specify a filename to read ToDo entries from. Please see\n"
-		     " %s -h for more detailed information on how to use this syntax.\n", progname);
+		printf("\n");
+		printf("   ERROR: You must specify a filename to read ToDo entries from.\n");
+		printf("   Please see %s --help for more information.\n\n", progname);
 		exit(1);
 	}
 
 	if (argc < 2 && !getenv("PILOTPORT")) {
-		print_splash(progname);
+		display_splash(progname);
 	} else if (port == NULL && getenv("PILOTPORT")) {
 		port = getenv("PILOTPORT");
 	}
 
 	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+		printf("\n");
+		printf("   ERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n\n");
 		exit(1);
 	} else if (port != NULL) {
 		
@@ -201,14 +207,13 @@ int main(int argc, char *argv[])
 		dlp_CloseDB(sd, db);
 	
 		/* Tell the user who it is, with a different PC id. */
-		User.lastSyncPC = 0x00010000;
+		User.lastSyncPC 	= 0x00010000;
 		User.successfulSyncDate = time(NULL);
-		User.lastSyncDate = User.successfulSyncDate;
+		User.lastSyncDate 	= User.successfulSyncDate;
 	
 		dlp_AddSyncLogEntry(sd, "Wrote ToDo list entries to Palm.\nThank you for using pilot-link.\n");
 	
 		/* All of the following code is now unnecessary, but harmless */
-	
 		dlp_EndOfSync(sd, 0);
 		pi_close(sd);
 	}
