@@ -1,3 +1,8 @@
+2001-03-14  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/Makefile.in: set the .so version to 4:0:1 as per libtool
+	rules
+
 2001-03-12  JP Rosevear  <jpr@ximian.com>
 
 	* scripts/tarball.c (main): fixes to make it work again, what a
