@@ -363,7 +363,7 @@ u_flush(pi_socket_t *ps, int flags)
 		data->buf_size = 0;
 
 		/* flush pending data */
-		if ((fl = fcntl(ps->sd, O_GETFL, 0)) != -1) {
+		if ((fl = fcntl(ps->sd, F_GETFL, 0)) != -1) {
 			fcntl(ps->sd, F_SETFL, fl | O_NONBLOCK);
 			while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
 				;
