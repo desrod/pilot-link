@@ -8,6 +8,8 @@
 
 	* dlpsh.c: Removed the 'Filename' garbage
 
+	* libsock/connect.c: Removed tabs, replaced with spaces
+
 2002-01-22  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Squashed a warning about cross-compiling
