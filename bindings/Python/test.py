@@ -1,7 +1,9 @@
+#!/usr/bin/env python
+
 import pisock
 import sys   
 
-port = "/dev/florb"
+port = "/dev/pilot"
 
 print "Press HotSync now"
 sd = pisock.pilot_connect(port)
