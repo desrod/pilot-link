@@ -376,14 +376,14 @@ int main(int argc, char *argv[])
    
    sd = pilot_connect(port);
 
-   if (sd < 0)
+   if( sd < 0 )
      goto error;   
    
    if (dlp_ReadUserInfo(sd, &User) < 0)
      goto error_close;
    
    /* Open the NotePad database, store access handle in db */
-   if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "npadDB", &db) < 0) 
+   if( dlp_OpenDB(sd, 0, 0x80 | 0x40, "npadDB", &db ) < 0) 
      {
 	puts("Unable to open NotePadDB");
 	dlp_AddSyncLogEntry(sd, "Unable to open NotePadDB.\n");
@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
 	  len;
 	struct 	NotePad n;
 	
-	if (port) 
+	if( sd ) 
 	  {
 	     len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
 				       &attr, &category);
@@ -432,13 +432,13 @@ int main(int argc, char *argv[])
      }
    
 
-   if (port) 
+   if( sd ) 
      {
 	/* Close the database */
-	dlp_CloseDB(sd, db);
-	dlp_AddSyncLogEntry(sd, "Successfully read NotePad from Palm.\n"
+	dlp_CloseDB( sd, db );
+	dlp_AddSyncLogEntry( sd, "Successfully read NotePad from Palm.\n"
 			    "Thank you for using pilot-link.");
-	dlp_EndOfSync(sd, 0);
+	dlp_EndOfSync( sd, 0 );
 	pi_close(sd);
      } 
 /*   else if (filename) 
