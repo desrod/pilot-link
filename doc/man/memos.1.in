@@ -1,79 +1,144 @@
-.\" 
-.\" 
-.TH "memos" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBmemos\fR \- Read or Write Memopad entries to STDOUT or files.
-
-
-.SH "SYNOPSIS"
-\fBmemos\fR [\fB\-p\fR <\fIport\fR>] [\fB\-V\fR] [\fIoptions\fR]
-
-
-.SH "DESCRIPTION"
-\fBmemos\fR is used to read your Palm Memos database and read/write the
-entries to STDOUT, or to individual files on disk, in a directory you
-specify, one memo per file in that named directory.
-
-
-.SH "OPTIONS"
-.TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld. If this
-is not specified, will look for the \fI$PILOTPORT\fR environment variable.  
-If both are not found or supplied, \fBinstall\-expenses\fR will fall back to
-/dev/pilot.
-   
-   
-.TP 
-\fB\-h\fR, \fB\-\-help\fR
-Display the help synopsis for \fBmemos\fR.
-
-
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version of \fBmemos\fR.
-
-
-.TP 
+.\" -*- coding: us-ascii -*-
+.TH memos 1 "@VERSION@"  
+.SH NAME
+memos \- Manipulate Memo entries from a file or your Palm device. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fImemos\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-v\fR|\fB\-\-verbose\fR]
+[\fB\-d\fR|\fB\-\-delete\fR]
+[\fB\-f\fR|\fB\-\-file\fR
+\fBfile\fR] [\fB\-s\fR|\fB\-\-save\fR \fB
+dir
+\fR]
+[\fB\-c\fR|\fB\-\-category\fR \fBSTRING\fR]
+[\fB\-r\fR|\fB\-\-regex\fR \fBSTRING\fR]
+.SH DESCRIPTION
+By default, the contents of your Palm's memo database will be
+written
+to standard output as a standard UNIX mailbox (mbox-format) file, with
+each
+memo as a separate message. The subject of each message will be the
+category.
+.PP
+If '-s' is specified, than instead of being written to standard
+output,
+will be saved in subdirectories of \fBdir\fR. Each
+subdirectory
+will be the name of a category on the Palm, and will contain the memos
+in that
+category. Each memo's filename will be the first line (up to the first
+40
+characters) of the memo. Control chcters, slashes, and equal signs
+that would otherwise appear in filenames are converted after the
+fashion of
+MIME's quoted-printable encoding. Note that if you have two memos in
+the
+same category whose first lines are identical, one of them will be
+overwritten.
+.PP
+If '-f' is specified, the specified file will be treated as a memo
+database from which to read memos, rather than HotSyncing from the
+Palm.
+.SH OPTIONS
+.SS "MEMOS OPTIONS"
 \fB\-V\fR, \fB\-\-verbose\fR
-Verbose, with \-d, print each filename when written to disk.
-
-.TP 
-\fB\-d\fR, \fB\-\-delete\fR
-Delete memo named by number <\fInum\fR>.
-
-
-.TP 
-\fB\-f\fR, \fB\-\-file\fR [\fIfile\fR] ..    
-Use <file> as input file (instead of MemoDB.pdb).
-
-.TP 
-\fB\-s\fR, \fB\-\-save\fR <\fIdir\fR>
-Save memos in <dir> instead of writing to STDOUT.
-
-.TP 
-\fB\-c\fR, \fB\-\-category\fR <\fIcat\fR>
+.RS 
+Verbose, with -d, print each filename when written to disk.
+.RE
+.PP
+\fB\-d\fR,
+\fB\-\-delete\fR \fBNUMBER\fR
+.RS 
+Delete memo named by number \fBnum\fR.
+.RE
+.PP
+\fB\-f\fR,
+\fB\-\-file\fR \fBfile\fR.
+.RS 
+Use <\fBfile\fR> as input file (instead of
+MemoDB.pdb).
+.RE
+.PP
+\fB\-s\fR,
+\fB\-\-save\fR \fBdir\fR.
+.RS 
+Save memos in \fBdir\fR instead of writing to
+STDOUT.
+.RE
+.PP
+\fB\-c\fR,
+\fB\-\-category\fR \fBcat\fR.
+.RS 
 Only create memos in this category.
-
-.TP 
-\fB\-r\fR, \fB\-\-regex\fR [\fIregex\fR]
+.RE
+.PP
+\fB\-r\fR,
+\fB\-\-regex\fR \fBregex\fR.
+.RS 
 Select memos saved by regular expression on the title.
-
-.SH "USAGE"
-Connect to a target Palm handheld and read/write to/from the Memo application database (MemoDB.pdb).
-
-.SH "BUGS"
-.PP 
-\fBKNOWN BUGS\fR
-.IP 
-\fBmemos\fR has no known bugs at this time.
-
-.PP 
-\fBREPORTING BUGS\fR
-.IP 
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBmemos\fR was written by Kenneth Albanowski.b
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fImemos\fR will look for the
+\fB$PILOTPORT\fR environment variable. If
+neither are
+found or supplied, \fImemos\fR will
+print the usage information.
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fImemos\fR and exit without
+connecting.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fImemos\fR and
+exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH AUTHOR
+\fImemos\fR was written by Kenneth Albanowski.
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
 .SH "SEE ALSO"
-\fBinstall\-memo\fR(1),
-\fBpilot\-link\fR(7)
+\fIinstall-memo\fR (1),
+\fIpilot-link\fR (7).

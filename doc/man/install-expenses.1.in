@@ -1,92 +1,196 @@
-.\" 
-.\" 
-.TH "install-expenses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBinstall\-expenses\fR \- Install an expense record from various parameters and arguments passed at connection time.
-.SH "SYNOPSIS"
-\fBinstall\-expenses\fR [\fB\-p\fR <\fIport\fR>] [\fB\-qrt\fR] [\fB\-c\fR <\fIcategory\fR>] [<\fIfilename\fR>]
-
-
-.SH "DESCRIPTION"
-\fBinstall\-expenses\fR allows a Palm handheld with the Expense application to have expense records synchronized to it from the commandline. You can pass any of the fields (except categories, currently) to \fBinstall\-expenses\fR and create new expense records on your Palm handheld.
-
-
-.SH "OPTIONS"
-.TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found or supplied, \fBinstall\-expenses\fR will fall back to /dev/pilot
-
-
-.TP 
+.\" -*- coding: us-ascii -*-
+.TH install-expenses 1 "@VERSION@"  
+.SH NAME
+install-expenses \- Install an expense record from various parameters and arguments passed at connection time. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIinstall-expenses\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-t\fR|\fB\-\-ptype\fR \fBSTRING\fR]
+[\fB\-e\fR|\fB\-\-etype\fR \fBSTRING\fR]
+[\fB\-a\fR|\fB\-\-amount\fR \fBSTRING\fR]
+[\fB\-V\fR|\fB\-\-vendor\fR \fBSTRING\fR]
+[\fB\-i\fR|\fB\-\-city\fR \fBSTRING\fR]
+[\fB\-g\fR|\fB\-\-guests\fR \fBNUMBER\fR]
+[\fB\-n\fR|\fB\-\-note\fR \fBSTRING\fR]
+[\fB\-c\fR|\fB\-\-category\fR \fBSTRING\fR]
+[\fB\-\-replace\fR]
+.SH DESCRIPTION
+\fIinstall-expenses\fR allows a Palm handheld with the
+Expense application to have expense records synchronized to it from
+the commandline. You can pass any of the fields (except categories,
+currently)
+to \fIinstall-expenses\fR and create new expense
+records on
+your Palm handheld.
+.SH OPTIONS
+.SS "INSTALL-EXPENSES OPTIONS"
+\fB\-t\fR,
+\fB\-\-ptype\fR \fBSTRING\fR
+.RS 
+Add entries to the "Payment Type" field. These can be in the
+form of
+"Cash", "Cheque" and others. See the Expense application on your
+Palm
+device for full details on payment types.
+.PP
+Note that the long name for this option has been renamed
+since 0.11.8.
+.RE
+.PP
+\fB\-e\fR,
+\fB\-\-etype\fR \fBSTRING\fR
+.RS 
+Add entries to the "Expense Type" field. These can be in the
+form of
+Airfare, Meals, and Others. See the Expense application on your
+Palm device
+for full details on expense types.
+.RE
+.PP
+\fB\-a\fR,
+\fB\-\-amount\fR \fBSTRING\fR
+.RS 
+Add currency amount entries to the "Amount" field. These can
+be in
+the form of 1.00 or "$10.00" and so on. See the Expense
+application on your
+Palm device for full details on amount types.
+.RE
+.PP
+\fB\-V\fR,
+\fB\-\-vendor\fR \fBSTRING\fR
+.RS 
+Add entries to the "Vendor" field. These are free-form
+values, and
+can be the name of a restaurant, an airline, or any other text
+value you
+wish to use.
+.RE
+.PP
+\fB\-g\fR,
+\fB\-\-guests\fR \fBDIGIT\fR
+.RS 
+Add the number of attendees to the expense record, identified
+by
+\fBDIGIT\fR. If you ate lunch with four (4)
+additional people, you would put five (5) here, a numeric value.
+.RE
+.PP
+\fB\-i\fR,
+\fB\-\-city\fR \fBSTRING\fR
+.RS 
+Add entries to the "City" field in the expense record. These
+are
+free-form values, and can be the name of the location, city, or
+town
+that the expense record occured in.
+.RE
+.PP
+\fB\-n\fR,
+\fB\-\-note\fR \fBSTRING\fR
+.RS 
+Add a "Note" entry to the expense record. These are free-form
+values, and can be some notes related to the expense entry.
+.RE
+.PP
+\fB\-c\fR,
+\fB\-\-category\fR \fBSTRING\fR
+.RS 
+Install entries into the named category defined here. See the
+Expense application on your Palm device for full details on
+using these categories.
+.RE
+.PP
+\fB\-\-replace\fR
+.RS 
+Replace the entry found in the named category identified by
+the \fB\-\-category\fR option
+.PP
+Note that the short name for this option has been removed
+since
+0.11.8
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIinstall-expenses\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIinstall-expenses\fR will
+print the usage information.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
+\fB\-\-version\fR
+.RS 
+Display version information for \fIinstall-expenses\fR
+and exit without connecting. 
+.RE
+.SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
-Display the help synopsis for \fBinstall\-expenses\fR
-
-
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version information for \fBinstall\-expenses\fR
-
-
-.TP 
-\fB\-t\fR, \fB\-\-ttype\fR <\fIttype\fR>
-Add entries to the "Payment Type" field. These can be in the form of Cash, Check, and Others. See the Expense application on your Palm device for full details on payment types.
-
-
-.TP 
-\fB\-e\fR, \fB\-\-etype\fR <\fIetype\fR>
-Add entries to the "Expense Type" field. These can be in the form of Airfare, Meals, and Others. See the Expense application on your Palm device for full details on expense types.
-
-
-.TP 
-\fB\-a\fR, \fB\-\-amount\fR <\fIamount\fR>
-Add dollar amount entries to the "Amount" field. These can be in the form of 1.00 or "$10.00" and so on. See the Expense application on your Palm device for full details on amount types.
-
-
-.TP 
-\fB\-V\fR, \fB\-\-vendor\fR <\fIvendor\fR>
-Add entries to the "Vendor" field. These are free\-form values, and can be the name of a restaurant, an airline, or any other text value you wish to use.
-
-
-.TP 
-\fB\-g\fR, \fB\-\-guests\fR <\fInum\fR>
-Add the number of attendees to the expense record, identified by <\fInum\fR>. If you ate lunch with four (4) additional people, you would put five (5) here, a numeric value.
-
-
-.TP 
-\fB\-i\fR, \fB\-\-city\fR <\fIcity\fR>
-Add entries to the "City" field in the expense record. These are free\-form values, and can be the name of the location, city, or town that the expense record occured in. 
-
-
-.TP 
-\fB\-n\fR, \fB\-\-note\fR <\fInote\fR>
-Add a "Note" entry to the expense record. These are free\-form values, and can be some notes related to the expense entry.
-
-
-.TP 
-\fB\-c\fR, \fB\-\-category\fR <\fIcategory\fR>
-Create entries into the named category defined here. See the Expense application on your Palm device for full details on using these categories.
-
-
-.TP 
-\fB\-r\fR, \fB\-\-replace\fR <\fIcategory\fR>
-Replace the entry found in the named category identified by <\fIcategory\fR>.
-
-
-.SH "USAGE"
-The program will connect to the Palm handheld, and install entries into the Expense application based on values passed to \fBinstall\-expenses\fR arguments.
-
-
-.SH "BUGS"
+.RS 
+Display the help synopsis for
+\fIinstall-expenses\fR and exit without
+connecting.
+.RE
 .PP
-\fBKNOWN BUGS\fR
-.IP
-\fBinstall\-expenses\fR has no known bugs at this time.
-
+\fB\-\-usage\fR
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH USAGE
+The program will connect to the Palm handheld, and install entries
+into the Expense application based on values passed to
+\fIinstall-expenses\fR arguments.
+.SH EXAMPLE
+\fIinstall-expenses\fR
+\fI-p\fR \fB/dev/pilot\fR
+\fI-c\fR Unfiled
+\fI-t\fR Cash \fI-e\fR Meals
+\fI-a\fR 10.00 \fI-V\fR McDonalds
+\fI-g\fR 21 \fI-l\fR "San Francisco"
+\fI-N\fR "This is a note"
 .PP
-\fBREPORTING BUGS\fR
-.IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBinstall\-expenses\fR was written by community authors, the original author is unknown.
+Installs a new expense; you are recording having 21 guests at
+McDonalds
+in the city of San Francisco for a meal which cost 10.00 units of your
+default currency and you added a simple note. The expense will take
+the default date - today.
+.SH AUTHOR
+\fIinstall-expenses\fR was written by community
+authors, the original author is unknown.
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
 .SH "SEE ALSO"
-read\-expenses(1)
+\fIread-expenses\fR (1),
+\fIpilot-link\fR (7).

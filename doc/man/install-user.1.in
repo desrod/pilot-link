@@ -1,67 +1,105 @@
-.\" 
-.\" 
-.TH "install-user" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBinstall\-user\fR \- reads or sets a Palm User and UserID on a Palm Device.
-
-
-.SH "SYNOPSIS"
-\fBinstall\-user\fR [\fB\-p\fR <\fIport\fR>] [\fB\-u\fR <\fIusername\fR>] [\fB\-i\fR <\fIuserid\fR>]
-
-
-.SH "DESCRIPTION"
-\fBinstall\-user\fR allows the user to read or change the User and UserID 
-information on the Palm handheld.
-
-
-.SH "OPTIONS"
-.TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld.
-If this is not specified, will look for the \fI$PILOTPORT\fR environment
-variable. If both are not found or supplied, \fBinstall\-expenses\fR will
-fall back to /dev/pilot.
-  
-  
-.TP 
-\fB\-h\fR, \fB\-\-help\fR
-Display the help synopsis for \fBinstall\-user\fR.
-
-
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version of \fBinstall\-user\fR.
-
-
-.TP 
-\fB\-u\fR, \fB\-\-user\fR <\fIusername\fR>
-Set the username, use quotes for spaces in the username, as in "John Q. Public".
-
-
-.TP 
-\fB\-i\fR, \fB\-\-id\fR <\fIuserid\fR>
-Set the 5\-digit numeric UserID on the device (used for many Palm
+.\" -*- coding: us-ascii -*-
+.TH install-user 1 "@VERSION@"  
+.SH NAME
+install-user \- Reads or sets a Palm User and UserID on a Palm Device. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIinstall-user\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-u\fR|\fB\-\-user\fR \fBusername\fR]
+[\fB\-i\fR|\fB\-\-id\fR \fBuserid\fR]
+[\fB\-l\fR|\fB\-\-list\fR]
+.SH DESCRIPTION
+\fIinstall-user\fR allows the user to read or change
+the User and UserID information on the Palm handheld.
+.SH OPTIONS
+.SS "INSTALL-USER OPTIONS"
+\fB\-u\fR,
+\fB\-\-user\fR \fBusername\fR
+.RS 
+Set the username, use quotes for spaces in the username, as
+in "John Q. Public".
+.RE
+.PP
+\fB\-i\fR,
+\fB\-\-id\fR \fBuserid\fR
+.RS 
+Set the 5-digit numeric UserID on the device (used for many
+Palm
 application registration methods).
-
-
-.SH "USAGE"
-The program will connect to a target Palm handheld, and read or set the Palm
-UserName specified or display the Palm username and UserID if none is
-specified.
-
-
-.SH "BUGS"
+.RE
 .PP
-\fBKNOWN BUGS\fR
-.IP
-\fBinstall\-user\fR has no known bugs at this time.
-
+\fB\-l\fR, \fB\-\-list\fR
+.RS 
+List the current username and ID (default)
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIinstall-user\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIinstall-user\fR will
+print the usage information.
+.RE
 .PP
-\fBREPORTING BUGS\fR
-.IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBinstall\-user\fR was originally written by D. Jeff Dionne <\fIjeff@RyeHam.ee.ryerson.ca\fR>.
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fIinstall-user\fR and exit
+without connecting.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fIinstall-user\fR
+and
+exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH USAGE
+The program will connect to a target Palm handheld, and read or set
+the Palm UserName specified or display the Palm username and UserID if
+none is specified.
+.SH AUTHOR
+\fIinstall-user\fR was originally written by
+D. Jeff Dionne <jeff@RyeHam.ee.ryerson.ca>.
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
 .SH "SEE ALSO"
-\fBinstall\-netsync\fR(1),
-\fBdlpsh\fR(1)
+\fIinstall-netsync\fR (1),
+\fIdlpsh\fR (1),
+\fIpilot-link\fR (7).

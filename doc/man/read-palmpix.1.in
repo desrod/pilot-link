@@ -1,95 +1,169 @@
-.\" 
-.\" 
-.TH "read-palmpix" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBread\-palmpix\fR \- Convert all pictures in the files given or found via 
-connecting to a Palm handheld if no files are given. The default output type is 
-Portable Pixmap (.ppm).
-
-
-.SH "SYNOPSIS"
-\fBread\-palmpix\fR \-p <\fIport\fR> \-n <\fIpixname\fR> \-t <\fItype\fR>
-
-
-.SH "DESCRIPTION"
-\fBread\-palmpix\fR allows a Kodak PalmPix camera user to extract the images
-from their Palm handheld and convert them to Portable Network Graphic (.png)
-or Portable Pixmap (.ppm) files on their system.
-
-
-.SH "OPTIONS"
-.TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld.
-If this is not specified, will look for the \fI$PILOTPORT\fR environment
-variable. If both are not found or supplied, \fBread\-palmpix\fR will
-fall back to /dev/pilot.
-
-.TP
-\fB\-b\fR, \fB\-\-bias [num]\fR
-lighten or darken the image.
-.br
-num   0..50   darken image
-.br
-num   50..100 lighten image
-
-
-.TP
+.\" -*- coding: us-ascii -*-
+.TH read-palmpix 1 "@VERSION@"  
+.SH NAME
+read-palmpix \- Convert all pictures in the files given or found on a Palm handheld. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIread-palmpix\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-s\fR|\fB\-\-stretch\fR]
+[\fB\-c\fR|\fB\-\-colour\fR]
+[\fB\-t\fR|\fB\-\-type\fR [\fBppm|png\fR]]
+[\fB\-b\fR|\fB\-\-bias\fR \fBbias\fR]
+[\fB\-l\fR|\fB\-\-list\fR]
+[\fB\-n\fR|\fB\-\-name\fR \fBname\fR]
+[\fBfile\fR] ...
+.PP
+\fIread-palmpix\fR Image1.pdb Image2.pdb
+Image3.pdb
+.SH DESCRIPTION
+\fIread-palmpix\fR allows a Kodak PalmPix camera user
+to extract the images from their Palm handheld and convert them to
+Portable Network Graphic (.png) or Portable Pixmap (.ppm) files on
+their system. The default output type is Portable Pixmap (.ppm).
+.SH OPTIONS
+.SS "READ-PALMPIX OPTIONS"
+\fB\-b\fR,
+\fB\-\-bias\fR \fBbias\fR
+.RS 
+lighten or darken the image (0..49 darken, 51..100
+lighten)
+.RE
+.PP
 \fB\-c\fR, \fB\-\-colour\fR
-Colour correct the output colours. This is probably not neccessary for
-most photos.
-
-
-.TP 
-\fB\-h\fR, \fB\-\-help\fR
-Display the help synopsis for \fBread\-palmpix\fR.
-
-
-.TP 
-\fB\-s\fR, \fB\-\-stretch\fR
-Do a histogram stretch of the colour planes.
-
-
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version of \fBread\-palmpix\fR.
-
-
-.TP 
+.RS 
+Do a simple colour correction. The colour correction code
+makes a
+histogram from the image. Using the histogram it then makes up a
+couple
+of colour tables to try and balance the colours. It also clips
+the
+top and bottom colours to produce better perceived contrast.
+.RE
+.PP
 \fB\-l\fR, \fB\-\-list\fR
-List picture information found on the Palm handheld instead of converting
-the entries found to image files.
-
-
-.TP 
-\fB\-n\fR, \fB\-\-name\fR <\fIpixname\fR> 
-Convert only \fIpixname\fR to an image file, and output to a .ppm or .png.
-
-
-.TP 
-\fB\-t\fR, \fB\-\-type\fR <\fItype\fR>
-Specify the output picture type. Can be either "png" or "ppm".
-
-
-.SH "USAGE"
-The program will connect to the target Palm handheld, and read the images
-found in the Kodak PalmPix image database (\fIArchImage.pdb\fR), and allow
-the user to view the list of images and image details, or to select one or
-all of them, and convert them to Portable Network Graphic (.png) or Portable
-Pixmap (.ppm) files to be viewed or printed at the desktop. If no options
-are specified, all of the images on the device will be converted to ppm
-files by default.
-
-
-.SH "BUGS"
+.RS 
+List picture information found on the Palm handheld instead
+of converting the entries found to image files.
+.RE
 .PP
-\fBKNOWN BUGS\fR
-.IP
-None Known
-
+\fB\-n\fR, \fB\-\-name\fR
+<\fBpixname\fR>
+.RS 
+Convert only \fBpixname\fR to STDOUT, and output
+as
+\fBtype\fR: .ppm or .png.
+.RE
 .PP
-\fBREPORTING BUGS\fR
-.IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBread\-palmpix \fR was originally written by Angus Ainslie <\fIangusa at deltatee.com\fR>, and updated by John Marshall <\fIjmarshall@acm.org\fR> to include core pilot\-link functionality.
+\fB\-s\fR, \fB\-\-stretch\fR
+.RS 
+Do a histogram stretch on the colour planes
+.RE
+.PP
+\fB\-t\fR,
+\fB\-\-type\fR \fB[ppm|png]\fR
+.RS 
+Specify the output picture type. Can be either "png" or
+"ppm".
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIread-palmpix\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIread-palmpix\fR will
+print the usage information.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fIread-palmpix\fR
+and exit without connecting.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fIread-palmpix\fR
+and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH USAGE
+If a filelist is not given, connects to the target Palm handheld,
+and
+reads the images found in the Kodak PalmPix image database
+(\fBArchImage.pdb\fR), and allows the user to view the
+list
+of images and image details, or to select one or all of them, and
+convert
+them to Portable Network Graphic (.png) or Portable Pixmap (.ppm)
+files to
+be viewed or printed at the desktop.
+.PP
+If no options are specified, all of the images on the device will
+be converted to ppm files by default.
+.PP
+If a filelist is given, convert all listed files previously fetched
+via pilot-xfer. See \fIBUGS\fR - a single file argument
+is
+ignored, a list will work.
+.SH AUTHOR
+\fIread-palmpix \fRwas originally written by
+Angus Ainslie <angusa at deltatee.com>, and updated by
+John Marshall <jmarshall@acm.org> to include core
+pilot-link functionality.
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH BUGS
+.SS "KNOWN BUGS"
+\fIread-palmpix\fR's colour correction is nearly as
+good as Kodak's own, but Kodak has deprecated the PalmPix device,
+so it
+is not likely that there will be any updates to their software in
+the
+future, so this may be as good as it gets. A simple method to
+improve
+the look of colours is to do a histogram equalization in your
+favourite
+image editor.
+.PP
+\fIread-palmpix\fR command DOES read from a file,
+but only if you specify a LIST of files. If only one file is
+given, the
+command tries reading from \fB$PILOTPORT\fR.
+.SS "REPORTING BUGS"
+Report bugs at
+\fIhttp://bugs.pilot-link.org/\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIpilot-link\fR (7)

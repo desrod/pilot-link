@@ -1,42 +1,52 @@
-.\" 
-.\" 
-.TH "ietf2datebook" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBietf2datebook\fR \- Converts IETF agenda format to \fBinstall\-datebook\fR format
-
-
-.SH "SYNOPSIS"
-\fBietf2datebook\fR < ietf\-agenda > datebook.txt
-
-
-.SH "DESCRIPTION"
-\fBietf2datebook\fR converts IETF (\fIhttp://www.ietf.org\fR) agenda to format suitable for the \fBinstall\-datebook\fR program. The agenda file is given to it as standard input and the output file is sent to standard output. Please remove all headers and footers from the agenda file before giving it to \fBietf2datebook\fR.
-
-
-.SH "OPTIONS"
+.\" -*- coding: us-ascii -*-
+.TH ietf2datebook 1 "@VERSION@"  
+.SH NAME
+ietf2datebook \- Converts IETF agenda format to install-datebook format 
+.SH SECTION
+pilot-link: Tools
+.SH SYNOPSIS
+\fIietf2datebook\fR < ietf-agenda > datebook.txt
+.SH DESCRIPTION
+\fIietf2datebook\fR is a Perl script that converts IETF
+(\fBhttp://www.ietf.org\fR) agenda to format suitable
+for the
+\fBinstall\-datebook\fR program. The agenda file is
+given to it as standard
+input and the output file is sent to standard output. Please remove
+all headers and footers from
+the agenda file before giving it to
+\fIietf2datebook\fR.
+.SH OPTIONS
 none
-
-
-.SH "USAGE"
-The program will read IETF agenda from its stdin and output format suitable
-for the \fBinstall\-datebook\fR program to STDOUT. 
-
-
-.SH "BUGS"
+.SH USAGE
+The program will read IETF agenda from its stdin and output format
+suitable
+for the \fIinstall-datebook\fR program to STDOUT.
+.SH AUTHOR
+\fIietf2datebook\fR was written by Tero Kivinen
+<kivinen@iki.fi>
 .PP
-\fBKNOWN BUGS\fR
-.IP
-This might not work if the IETF changes the format of their agenda file.
-
+This manual page was written by Neil Williams <linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
 .PP
-\fBREPORTING BUGS\fR
-.IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBietf2datebook\fR was written by Tero Kivinen <\fIkivinen@iki.fi\fR>
-
-
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
 .SH "SEE ALSO"
-\fBread\-ical\fR(1),
-\fBpilot\-xfer\fR(1),
-\fBietf2datebook\fR(1).
+\fIread-ical\fR(1),
+\fIpilot-xfer\fR(1),
+\fIinstall-datebook\fR(1),
+\fIpilot-link\fR (7).

@@ -1,65 +1,124 @@
-.\" 
-.\" 
-.TH "install-datebook" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBinstall\-datebook\fR \- installs a new datebook entry onto your Palm 
-handheld.
-
-
-.SH "SYNOPSIS"
-\fBinstall\-datebook\fR [\fIcommon\-options\fR] \-r <\fIfilename\fR>
-.LP 
-
-.SH "DESCRIPTION"
-\fBinstall\-datebook\fR allows the user to create one or more datebook entries from a text file.
-.LP 
-The format of the text file contains one datebook entry per line, containing four tab separated fields. 
-The fields are start date/time, end date/time, alarm settings, and the description of datebook entry. 
-This program doesn't yet support repeated entries. 
-The date and time must be in format understand by \fIparsedate.y\fR. 
-At the very least, the following two formats are understood:
-.IP 
+.\" -*- coding: us-ascii -*-
+.TH install-datebook 1 "@VERSION@"  
+.SH NAME
+install-datebook \- installs a new datebook entry onto your Palm handheld. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIinstall-datebook\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-r\fR|\fB\-\-read\fR
+\fBfile\fR] 
+.SH DESCRIPTION
+\fIinstall-datebook\fR allows the user to create one or
+more datebook entries from one or more source files.
+.PP
+The format of the source file contains one datebook entry per line,
+containing four tab separated fields. The fields are start date/time,
+end
+date/time, alarm settings, and the description of datebook entry. This
+program doesn't yet support repeated entries. The date and time must
+be in
+format understood by \fBparsedate.y\fR. At the very
+least,
+the following two formats are understood:
+.PP
 August 11, 1997 0800 GMT+300
-
+.PP
 1997/08/11 08:22:33 GMT+300
-.LP 
-If either one of the date and time fields is empty, the entry is installed without time. If the alarm field is empty, the entry is installed without setting any alarms. The alarm field can contain numbers followed by "m" (minutes), "h" (hours), or "d" (days).
-
-Here are some example lines ([__TAB__] = tab, [__NL__] = newline in these examples):
-.IP 
-1997/08/11 0800 GMT+300 [__TAB__] 1997/08/11 0900 GMT+300 [__TAB__] [__TAB__] IETF
-Registration [__NL__]
-
-August 11, 1997 0900 GMT+300 [__TAB__] August 11, 1997 0930 GMT+300 [__TAB__]
-2m [__TAB__] Introductions [__NL__]
-.SH "OPTIONS"
-.TP
-See \fBpilot-link\fR(7) for details on the common options.
-
-.TP
-\fB\-\-read\fR, \fB\-r\fR <\fIfilename\fR>
-Read the given \fIfilename\fR and add those entries to the datebook. 
-
-
-
-
-.SH "USAGE"
-The program will connect to the target Palm device, and create Datebook entries based on the datebook\-formatted file given on the commandline onto the Palm handheld (into the DatebookDB.pdb file).
-
-
-.SH "BUGS"
 .PP
-\fBKNOWN BUGS\fR
-.IP
-If no timezone is given, \fBinstall\-datebook\fR will assume the time is in GMT and it will convert it to localtime. If you don't want to create timezone entries for all begin and end times, set the TZ environment variable to GMT before running this program.
-
+If either one of the date and time fields is empty, the entry is
+installed without time. If the alarm field is empty, the entry is
+installed without setting any alarms. The alarm field can contain
+numbers
+followed by "m" (minutes), "h" (hours), or "d" (days).
+.SH OPTIONS
+.SS "INSTALL-DATEBOOK OPTIONS"
+\fB\-r\fR, \fB\-\-read\fR
+.RS 
+Read entries from \fBfile\fR.
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIinstall-datebook\fR will look for the
+\fB$PILOTPORT\fR environment variable. If
+neither are found, \fIinstall-datebook\fR
+will print the usage information.
+.RE
 .PP
-\fBREPORTING BUGS\fR
-.IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBinstall\-datebook\fR was written by Tero Kivinen <\fIkivinen@iki.fi\fR>. This program was based on \fBinstall\-todos\fR program written by Robert A. Kaplan <\fIkaplan@openmarket.com\fR>.
-
-
+\fB\-\-version\fR
+.RS 
+Display the copyright information,version number, licence
+details
+and build details and exit without connecting.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.SS "HELP OPTIONS"
+\fB\-?\fR, \fB\-\-help\fR
+.RS 
+Show the help message and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH USAGE
+The program will connect to the target Palm device, and create
+Datebook entries based on the datebook-formatted file given on the
+commandline onto the Palm handheld (into the DatebookDB.pdb file).
+.SH EXAMPLES
+([__TAB__] = tab, [__NL__] = newline in these examples):
+.PP
+1997/08/11 0800 GMT+300 [__TAB__] 1997/08/11 0900 GMT+300 [__TAB__]
+[__TAB__] IETF Registration [__NL__]
+.PP
+August 11, 1997 0900 GMT+300 [__TAB__] August 11, 1997 0930 GMT+300
+[__TAB__] 2m [__TAB__] Introductions [__NL__]
+.SH AUTHOR
+\fIinstall-datebook\fR was written by Tero Kivinen
+<kivinen@iki.fi>. This program was based on
+\fIinstall-todos\fR program written by Robert A. Kaplan
+<kaplan@openmarket.com>.
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH BUGS
+.SS "KNOWN BUGS"
+If no timezone is given, \fIinstall-datebook\fR will
+assume the time is in GMT and it will convert it to localtime. If
+you
+don't want to create timezone entries for all begin and end times,
+set
+the TZ environment variable to GMT before running this program.
+.SS "REPORTING BUGS"
+Report bugs at
+\fIhttp://bugs.pilot-link.org/\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
 .SH "SEE ALSO"
-\fBinstall\-todos\fR(1)
+\fIinstall-todos\fR(1),
+\fIpilot-link\fR (7).

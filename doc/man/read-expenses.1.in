@@ -1,82 +1,107 @@
-.\" 
-.\" 
-.TH "read-expenses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBread-expenses\fR \- Connect to the Palm handheld and dump the Expense application data in a simple format
-
-
-.SH "SYNOPSIS"
-If you have expense entries saved on your Palm in the ExpenseDB.pdb file,
-you can dump them to a simple text format, and redirect that to a file/pipe,
-or STDOUT (the default) using \fBread-expenses\fR. The syntax is:
-
-\fBread-expenses\fR [\fB\-p\fR <\fIport\fR>] 
-
+.\" -*- coding: us-ascii -*-
+.TH read-expenses 1 "@VERSION@"  
+.SH NAME
+read-expenses \- Export Palm Expense application data in a text format. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIread-expenses\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-w\fR|\fB\-\-write\fR]
+.SH DESCRIPTION
+\fIread-expenses\fR is used to output the Expense data
+in a simple text format, which can be used to import into any other
+application you wish, such as Excel or other application.
+.PP
+If you have expense entries saved on your Palm in the ExpenseDB.pdb
+file, you can export them to a simple text format, and redirect that
+to a
+file/pipe, or STDOUT (the default) using \fIread-expenses\fR.
+.PP
 The output data will resemble something like the following:
+.PP
+.nf
 
-.br
-Category: Unfiled
-.br
-  Type:   5
-.br
-  Payment:   7
-.br
-  Currency:  23
-.br
-  Amount: 400.00
-.br
-  Vendor: Super Salads
-.br
-  City: Westerly
-.br
-  Attendees: Joe, Mary, Bob
-.br
-  Note: Some simple note text
-.br
-  Date: Fri May  9 00:00:00 2004
-
-
-
-.SH "DESCRIPTION"
-\fBread-expenses\fR is used to output the Expense data in a simple text
-format, which can be used to import into any other application you wish,
-such as Excel or other application.
-
-
-.SH "OPTIONS"
-.TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld.
-If this is not specified, will look for the \fI$PILOTPORT\fR environment
-variable. If both are not found or supplied, \fBinstall\-expenses\fR will
-fall back to /dev/pilot.
-   
-   
-.TP 
-\fB\-h\fR, \fB\-\-help\fR
-Display the help synopsis for \fBpi\-getram\fR.
-
-
-.TP 
+         Category: Unfiled
+         Type:   5
+         Payment:   7
+         Currency:  23
+         Amount: 400.00
+         Vendor: Super Salads
+         City: Westerly
+         Attendees: Joe, Mary, Bob
+         Note: Some simple note text
+         Date: Fri May  9 00:00:00 2004
+      
+.fi
+.SH OPTIONS
+.SS "READ-EXPENSES OPTION"
+\fB\-w\fR, \fB\-\-write\fR
+.RS 
+Write out the expense data
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIread-expenses\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIread-expenses\fR will
+print the usage information.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBpi\-getram\fR.
-
-
-.SH "USAGE"
-Connect to a target Palm handheld and dump the Expense data.
-
-
-.SH "BUGS"
+.RS 
+Display version of \fIread-expenses\fR
+and exit without connecting.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fIread-expenses\fR
+and exit without connecting.
+.RE
 .PP
-\fBKNOWN BUGS\fR
-.IP
-\fBread-expenses\fR has no known bugs at this time.
-
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH AUTHOR
+\fIread-expenses\fR was originally written by
+Kenneth Albanowski.
 .PP
-\fBREPORTING BUGS\fR
-.IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBread-expenses\fR was originally written by Kenneth Albanowski.
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
 .SH "SEE ALSO"
-\fBpilot\-link\fR(7)
+\fIpilot-link\fR (7)
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIinstall-expenses\fR (1),
+\fIpilot-link\fR (7).

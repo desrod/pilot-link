@@ -1,82 +1,144 @@
-.\" 
-.\" 
-.TH "install-todo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBinstall\-todo\fR \- Updates the Palm ToDo list with one new entry.
-
-.SH "SYNOPSIS"
-\fBinstall\-todo\fR [\fB\-p\fR <\fIport\fR>] [\fB\-P\fR <\fIpriority\fR>] [\fB\-d\fR <\fIduedate\fR>] [\fB\-c\fR] [\fB\-n\fR <\fInote\fR>] [\fB\-f\fR <\fIfilename\fR>]
-
-.SH "DESCRIPTION"
-\fBinstall\-todo\fR allows the user to install one new ToDo list entry with 
-specified paramters passed to \fBinstall\-todo\fR and add a Note entry using 
-text found in a filename <\fIfilename\fR> passed to \fBinstall\-todo\fR.
-
-.SH "OPTIONS"
-.TP
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld.
-If this is not specified, will look for the \fI$PILOTPORT\fR environment
-variable. If both are not found or supplied, \fBinstall\-expenses\fR will
-fall back to /dev/pilot.
-
-
-.TP 
-\fB\-h\fR, \fB\-\-help\fR
-Display the help synopsis for \fBinstall\-hinote\fR.
-
-
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version of \fBinstall\-hinote\fR.
-
-
-.TP 
-\fB\-P\fR, \fB\-\-priority\fR <\fIpriority\fR>
-Specify the priority of the ToDo entry (defaults to a priority of 1) 
-
-\fBNOTE:\fR this value has changed from the default of 4 to the default of 1, 
-just as a new ToDo entry on the Palm would set it.
-
-
-.TP 
-\fB\-d\fR, \fB\-\-due\fR <\fIduedate\fR>
-The due Date MM/DD/YYYY (defaults to blank, no due date if this is not 
-specified).
-
-
-.TP 
+.\" -*- coding: us-ascii -*-
+.TH install-todo 1 "@VERSION@"  
+.SH NAME
+install-todo \- Updates the Palm ToDo list with one new entry.
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIinstall-todo\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-P\fR|\fB\-\-priority\fR
+[\fB1|2|3|4|5\fR]]
+[\fB\-d\fR|\fB\-\-due\fR \fBmm/dd/yyyy\fR]
+[\fB\-c\fR|\fB\-\-completed\fR]
+[\fB\-D\fR|\fB\-\-description\fR [\fBtitle\fR]]
+[\fB\-n\fR|\fB\-\-note\fR \fBnote\fR]
+[\fB\-f\fR|\fB\-\-file\fR \fBfilename\fR]
+.SH DESCRIPTION
+\fIinstall-todo\fR allows the user to install one new
+ToDo list entry with specified paramters passed to
+\fIinstall-todo\fR and add a Note entry using text
+found in a filename <\fBfilename\fR> passed to
+\fIinstall-todo\fR.
+.SH OPTIONS
+.SS "INSTALL-TODO OPTIONS"
+\fB\-P\fR,
+\fB\-\-priority\fR=\fBpriority\fR
+.RS 
+Specify the priority of the ToDo entry (defaults to a
+priority of 1).
+.PP
+\fINOTE:\fR this value has changed from the
+default
+of 4 to the default of 1, just as a new ToDo entry on the Palm
+would
+set it.
+.RE
+.PP
+\fB\-d\fR,
+\fB\-\-due\fR \fBduedate\fR
+.RS 
+The due Date MM/DD/YYYY (defaults to blank, no due date if
+this is
+not specified).
+.RE
+.PP
 \fB\-c\fR, \fB\-\-completed\fR
-Mark the item complete (the default is to mark the item as incomplete, as the 
-Palm would do it).
-
-
-.TP 
-\fB\-n\fR, \fB\-\-note\fR <\fInote\fR>
+.RS 
+Mark the item complete (the default is to mark the item as
+incomplete, as the Palm would do it).
+.RE
+.PP
+\fB\-D\fR,
+\fB\-\-description\fR \fBtitle\fR
+.RS 
+The title of the ToDo entry
+.RE
+.PP
+\fB\-n\fR, \fB\-\-note\fR
+\fBnote\fR
+.RS 
 The Note text you wish to add to this ToDo entry, if any.
-
-
-.TP 
-\fB\-f\fR, \fB\-\-file\fR <\fIfilename\fR>
+.RE
+.PP
+\fB\-f\fR,
+\fB\-\-file\fR \fBfilename\fR
+.RS 
 A local filename containing the Note text.
-
-.SH "USAGE"
-The program will connect to a target Palm handheld, and creates the ToDo
-entry to the Palm ToDo application, using the specified parameters and
-input from the supplied file passed as arguments on the commandline.
-
-.SH "BUGS"
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIinstall-todo\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIinstall-todo\fR will
+print the usage information.
+.RE
 .PP
-\fBKNOWN BUGS\fR
-.IP
-\fBinstall\-todo\fR has no known bugs at this time.
-
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
 .PP
-\fBREPORTING BUGS\fR
-.IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBinstall\-todo\fR was originally written by Martin Fick, based on code in 
-install\-todos by Robert A. Kaplan.
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fIinstall-todo\fR and exit
+without connecting.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fIinstall-todo\fR
+and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH USAGE
+The program will connect to a target Palm handheld, and creates the
+ToDo entry to the Palm ToDo application, using the specified
+parameters and input from the supplied file passed as arguments on
+the commandline.
+.SH EXAMPLE
+\fIinstall-todo\fR
+\fB\-p\fR
+\fB/dev/pilot\fR
+\fB\-n\fR
+\fB\&'Buy Milk'\fR
+\fB\-D\fR
+\fB\&'Go shopping, see note for items'\fR
+.SH AUTHOR
+\fIinstall-todo\fR was originally written by
+Martin Fick, based on code in \fIinstall-todos\fR by
+Robert A. Kaplan.
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
 .SH "SEE ALSO"
-\fBinstall\-todos\fR(1)
+\fIpilot-link\fR (7).

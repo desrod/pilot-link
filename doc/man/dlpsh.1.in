@@ -1,67 +1,164 @@
-.TH "dlpsh" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBdlpsh\fR is a command "shell" for executing DLP (Desktop Link Protocol) commands to a Palm handheld.
-
-
-.SH "SYNOPSIS"
-\fBdlpsh\fR [\fB\-p\fR <port>]
-
-
-.SH "DESCRIPTION"
-\fBdlpsh\fR allows the user to connect to a Palm handheld and execute arbitrary DLP commands. Once connected, the user may execute most of the built\-in \fBDLP\fR commands. (See \fBBUILT\-IN COMMANDS\fR below for more detail on currently supported options).
-
-.br 
+.\" -*- coding: us-ascii -*-
+.TH dlpsh 1 "@VERSION@"  
+.SH NAME
+dlpsh \- An interactive Desktop Link Protocol (DLP) Shell for your Palm device. 
+.SH SECTION
+pilot-link: Tools
+.SH SYNOPSIS
+\fIdlpsh\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-c\fR|\fB\-\-command\fR \fBSTRING\fR]
+[\fB\-i\fR|\fB\-\-interactive\fR]
+.SH OPTIONS
+.SS "DLPSH OPTIONS"
+\fB\-c\fR,
+\fB\-\-command STRING\fR
+.RS 
+Execute \fBcmd\fR and exit immediately.
+.RE
+.PP
+\fB\-i\fR, \fB\-\-interactive\fR
+.RS 
+Enter interactive mode.
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIdlpsh\fR will look for the
+\fB$PILOTPORT\fR environment variable. If
+neither are found, \fIdlpsh\fR will print the
+usage
+information.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 
+Display the copyright information,version number, licence
+details
+and build details and exit without connecting.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.SS "HELP OPTIONS"
+\fB\-?\fR, \fB\-\-help\fR
+.RS 
+Show the help message and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH DESCRIPTION
+\fBdlpsh\fR allows the user to connect to a Palm
+handheld and execute arbitrary DLP commands.
+.PP
+dlpsh can query many different types of information from your Palm
+device, such as username, memory capacity, set the time, as well as
+other useful functions.
+.PP
+Once connected, the user may execute most of the
+built-in \fIDLP\fR commands. (See \fIBUILT-IN
+COMMANDS
+\fRbelow for more detail on currently supported
+options).
+.PP
 The connection to the Pilot is kept alive by sending a
-\fIPadTickle\fR packet to the Pilot after a small period of non\-activity. (7 seconds by default)
-
-
-.SH "BUILT\-IN COMMANDS"
-There are many options available while connected to your Palm handheld via \fBdlpsh\fR, including the following. 
-
-.TP 
+\fBPadTickle\fR packet to the Pilot after a small
+period of non-activity. (7 seconds by default)
+.SH "BUILT-IN COMMANDS"
+There are many options available while connected to your Palm
+handheld
+via \fBdlpsh\fR, including the following.
+.PP
 \fBuser\fR
-Print the currently set User information, including Username, UserID, PCid, and ViewerID. You may also set these values from this command as well. Use 'user --help' while connected to see details on how to set or change these values.
-
-.TP 
+.RS 
+Print the currently set User information, including Username,
+UserID, PCid, and ViewerID. You may also set these values from this
+command as well. Use 'user --help' while connected to see details
+on how to set or change these values.
+.RE
+.PP
 \fBls\fR
-Used with \-l and \-r to provide long and RAM and ROM file lists, similar to the Unix 'ls' command. This does not yet allow you to narrow your listing to a certain range of files. It will simply list them all.
-
-.TP 
+.RS 
+Used with \fB\-l\fR and \fB\-r\fR to provide
+long and RAM and ROM file lists, similar to the Unix
+\&'ls' command. This does not yet allow you
+to
+narrow your listing to a certain range of files. It will simply
+list them all.
+.RE
+.PP
 \fBdf\fR
-Display how much RAM and ROM is free on your device, again similar to the Unix 'df' command. This does not accept arguments at this time.
-
-.TP 
+.RS 
+Display how much RAM and ROM is free on your device, again
+similar
+to the Unix 'df' command. This does not
+accept
+arguments at this time.
+.RE
+.PP
 \fBtime\fR
-Set the time on the Palm from the currently-set desktop time. This does not work on OS version 3.3, due to a bug in PalmOS at that time. 
-
-.TP 
+.RS 
+Set the time on the Palm from the currently-set desktop time.
+This
+does not work on OS version 3.3, due to a bug in PalmOS at that
+time.
+.RE
+.PP
 \fBrm\fR
-Remove a file and delete it entirely from the Palm device. This is an irrevocable process, and you cannot "undelete" a file, once it has been deleted with this command.
-
-.TP 
+.RS 
+Remove a file and delete it entirely from the Palm device. This
+is
+an irrevokable process, and you cannot "undelete" a file, once it
+has been
+deleted with this command.
+.RE
+.PP
 \fBquit\fR
+.RS 
 Exit the DLP Protocol Shell
-
-
-.SH "OPTIONS"
-While in \fBdlpsh\fR, you can always invoke 'help' or <option> \-\-help to get further information on that option.
-
-
-.SH "USAGE"
-The program will connect to your Palm handheld and give the user an interactive prompt (a "shell") for executing commands across the DLP \fIHotSync\fR protocol.
-
-
-.SH "BUGS"
-.PP 
-\fBKNOWN BUGS\fR
-    
-.IP 
-\fBdlpsh\fR has no known bugs at this time.
-   
-.PP 
-\fBREPORTING BUGS\fR
-   
-.IP 
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBdlpsh\fR was originally written by Chris Stevens <\fIstevens@rpi.edu\fR> and Damien Neil <\fIneild@rpi.edu\fR>
+.RE
+.SH OPTIONS
+While in \fBdlpsh\fR, you can always invoke 'help'
+or \fB\-\-help\fR to get further information on that
+option.
+.SH USAGE
+The program will connect to your Palm handheld and give the user an
+interactive prompt (a "shell") for executing commands across the DLP
+\fIHotSync\fR protocol.
+.SH AUTHOR
+\fBdlpsh\fR was originally written by Chris Stevens
+<stevens@rpi.edu> and Damien Neil
+<neild@rpi.edu>
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIpilot-link\fR (7)

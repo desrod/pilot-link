@@ -1,87 +1,152 @@
-.\" 
-.\" 
-.TH "install-netsync" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
-.SH "NAME"
-\fBinstall\-netsync\fR \- reads or sets the Network Preferences information on 
-a Palm Device.
-
-
-.SH "SYNOPSIS"
-\fBinstall\-netsync\fR [\fB\-p\fR <\fIport\fR>] [\fB\-e\fR] [\fB\-n\fR <\fIhostname\fR>] [\fB\-i\fR <\fIip\fR>] [\fB\-m\fR <\fInetmask\fR>]
-
-
-.SH "DESCRIPTION"
-\fBinstall\-netsync\fR allows the user to read or change the Network 
-Preferences stored on the Palm.
-
-
-.SH "OPTIONS"
-.TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld.
-If this is not specified, will look for the \fI$PILOTPORT\fR environment  
-variable. If both are not found or supplied, \fBinstall\-expenses\fR will
-fall back to /dev/pilot.
-   
-   
-.TP 
-\fB\-h\fR, \fB\-\-help\fR
-Display the help synopsis for \fBinstall\-netsync\fR.
-
-
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version of \fBinstall\-netsync\fR.
-
-
-.TP 
+.\" -*- coding: us-ascii -*-
+.TH install-netsync 1 "@VERSION@"  
+.SH NAME
+install-netsync \- reads or sets the Network Preferences information on a Palm Device. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIinstall-netsync\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-e\fR|\fB\-\-enable\fR]
+[\fB\-d\fR|\fB\-\-disable\fR]
+[\fB\-n\fR|\fB\-\-name\fR \fBname\fR]
+[\fB\-a\fR|\fB\-\-address\fR \fBaddress\fR]
+[\fB\-m\fR|\fB\-\-mask\fR \fBnetmask\fR]
+.SH DESCRIPTION
+\fIinstall-netsync\fR allows the user to read or change
+the Network Preferences stored on the Palm.
+.SH OPTIONS
+.SS "INSTALL-NETSYNC OPTIONS"
 \fB\-e\fR, \fB\-\-enable\fR
-Enable the LanSync operation (Used for performing a "Network" HotSync
-(synronize across the Internet for example) instead of "Local" HotSync).
-
-
-.TP 
-\fB\-n\fR, \fB\-\-name\fR  <\fIhostname\fR>
-Sets the hostname of the remote machine you wish to connect to via "Network"
-HotSync. This is \fBnot\fR the hostname of the Palm device itself.
-
-
-.TP 
-\fB\-i\fR, \fB\-\-ip\fR <\fIip\fR>
-Set the IP address of the remote machine you wish to connect to via
-"Network" HotSync. This is \fBnot\fR the IP address of the Palm device
-itself. In most cases the Palm will be assigned an IP address automatically
-by your desktop or server-side configuration.
-
-
-.TP 
-\fB\-m\fR, \fB\-\-mask\fR <\fInetmask\fR>
-Set the netmask of the remote machine you wish to connect to via "Network"
-HotSync. This is \fBnot\fR the netmask address of the Palm device itself, it
-should be assigned a netmask value at connection time, based on your desktop
-or server-side configuration.
-
-
-.SH "USAGE"
+.RS 
+Enable the LanSync operation (Used for performing a "Network"
+HotSync (synronize across the Internet for example) instead of
+"Local" HotSync).
+.RE
+.PP
+\fB\-d\fR, \fB\-\-disable\fR
+.RS 
+Disable the LANSync setting on the Palm
+.RE
+.PP
+\fB\-a\fR,
+\fB\-\-address\fR=\fBaddress\fR
+.RS 
+IP address of the remote machine to which you want to
+connect. 
+.RE
+.PP
+\fB\-n\fR,
+\fB\-\-name\fR \fBhostname\fR
+.RS 
+Sets the hostname of the remote machine you wish to connect
+to via
+"Network" HotSync. This is \fInot\fR the hostname
+of the
+Palm device itself.
+.RE
+.PP
+\fB\-i\fR,
+\fB\-\-ip\fR \fBip\fR
+.RS 
+Set the IP
+address of the remote machine you wish to connect to via
+"Network" HotSync. This is \fInot\fR the IP
+address
+of the Palm device itself. In most cases the Palm will be
+assigned an IP
+address automatically by your desktop or server-side
+configuration.
+.RE
+.PP
+\fB\-m\fR,
+\fB\-\-mask\fR \fBnetmask\fR
+.RS 
+Set the netmask of the remote machine you wish to connect to
+via
+"Network" HotSync. This is \fInot\fR the netmask
+address
+of the Palm device itself, it should be assigned a netmask value
+at
+connection time, based on your desktop or server-side
+configuration.
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to
+communicate
+with the Palm handheld. If this is not specified,
+\fIinstall-netsync\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIinstall-netsync\fR will
+print the usage information.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fIinstall-netsync\fR and exit
+without connecting.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fIinstall-netsync\fR
+and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH USAGE
 The program will connect to a target Palm handheld, and read and
-display or set the Network Preferences information specified or display the
-Network Preferences stored on the Palm device.
-
-
-.SH "BUGS"
+display or set the Network Preferences information specified or
+display the Network Preferences stored on the Palm device.
+.SH EXAMPLE
+\fB\-p\fR
+\fB/dev/pilot\fR
+\fB\-H\fR
+\fB"localhost"\fR
+\fB\-a\fR
+\fB127.0.0.1\fR
+\fB\-n\fR
+\fB255.255.255.0\fR
+.SH AUTHOR
+\fIinstall-netsync\fR was created from the original
+\fIinstall-user\fR application originally written by D.
+Jeff Dionne <jeff@RyeHam.ee.ryerson.ca>, and was split
+into a separate conduit by JP Rosevear <jpr@ximian.com>.
 .PP
-\fBKNOWN BUGS\fR
-.IP
-\fBinstall\-netsync\fR has no known bugs at this time.
-
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
 .PP
-\fBREPORTING BUGS\fR
-.IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
-.SH "AUTHOR"
-\fBinstall\-netsync\fR was created from the original \fBinstall\-user\fR 
-application originally written by D. Jeff Dionne 
-<\fIjeff@RyeHam.ee.ryerson.ca\fR>, and was split into a separate conduit by 
-JP Rosevear <\fIjpr@ximian.com\fR>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
 .SH "SEE ALSO"
-\fBinstall\-user\fR(1)
+\fIinstall-user\fR(1),
+\fIpilot-link\fR (7).
