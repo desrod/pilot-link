@@ -1,3 +1,8 @@
+2003-10-06 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pilot-wav.c: New conduit to sync Voice Memo files from
+	  Tungsten devices (David Turner).
+
 2003-10-05 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* First pass at VFS functionality
