@@ -7,6 +7,8 @@
 	
 	* tools/Python/setup.py: Incremented version
 
+	* install-hinote: PILOTPORT conversion, flattened
+
 2002-02-08  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/socket.c (ps_list_remove): update the prev_elem each
