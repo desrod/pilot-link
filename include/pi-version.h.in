@@ -1,3 +1,5 @@
+#define HOST_OS "@host_os@"
+
 #ifndef _PILOT_VERSION_H_
 #define _PILOT_VERSION_H_
 
