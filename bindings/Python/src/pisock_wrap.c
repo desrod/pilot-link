@@ -337,7 +337,7 @@ SWIG_GetPtr(char *c, void **ptr, char *t)
   if (*c != '_') {
     *ptr = (void *) 0;
     if (strcmp(c,"NULL") == 0) return (char *) 0;
-    else c;
+    else return c;
   }
   c++;
   /* Extract hex value from pointer */
@@ -518,7 +518,6 @@ extern int pi_read(int ,void *,int );
 extern int pi_write(int ,void *,int );
 extern int pi_getsockname(int ,struct sockaddr *,int *);
 extern int pi_getsockpeer(int ,struct sockaddr *,int *);
-extern int pi_setmaxspeed(int ,int ,int );
 extern int pi_getsockopt(int ,int ,int ,void *,int *);
 extern int pi_version(int );
 extern int pi_tickle(int );
@@ -1007,21 +1006,6 @@ static PyObject *_wrap_pi_getsockpeer(PyObject *self, PyObject *args) {
     o = PyInt_FromLong((long) (*_arg2));
     _resultobj = t_output_helper(_resultobj, o);
 }
-    return _resultobj;
-}
-
-static PyObject *_wrap_pi_setmaxspeed(PyObject *self, PyObject *args) {
-    PyObject * _resultobj;
-    int  _result;
-    int  _arg0;
-    int  _arg1;
-    int  _arg2;
-
-    self = self;
-    if(!PyArg_ParseTuple(args,"iii:pi_setmaxspeed",&_arg0,&_arg1,&_arg2)) 
-        return NULL;
-    _result = (int )pi_setmaxspeed(_arg0,_arg1,_arg2);
-    _resultobj = Py_BuildValue("i",_result);
     return _resultobj;
 }
 
@@ -4013,21 +3997,21 @@ static PyObject *_wrap_pi_file_merge(PyObject *self, PyObject *args) {
     return _resultobj;
 }
 
-static PyObject *_wrap_PalmHeader(PyObject *self, PyObject *args) {
+static PyObject *_wrap_print_splash(PyObject *self, PyObject *args) {
     PyObject * _resultobj;
     char * _arg0;
 
     self = self;
-    if(!PyArg_ParseTuple(args,"s:PalmHeader",&_arg0)) 
+    if(!PyArg_ParseTuple(args,"s:print_splash",&_arg0)) 
         return NULL;
-    PalmHeader(_arg0);
+    print_splash(_arg0);
     Py_INCREF(Py_None);
     _resultobj = Py_None;
     return _resultobj;
 }
 
 static PyMethodDef _pisockMethods[] = {
-	 { "PalmHeader", _wrap_PalmHeader, METH_VARARGS },
+	 { "print_splash", _wrap_print_splash, METH_VARARGS },
 	 { "pi_file_merge", _wrap_pi_file_merge, METH_VARARGS },
 	 { "pi_file_install", _wrap_pi_file_install, METH_VARARGS },
 	 { "pi_file_retrieve", _wrap_pi_file_retrieve, METH_VARARGS },
@@ -4101,7 +4085,6 @@ static PyMethodDef _pisockMethods[] = {
 	 { "pi_tickle", _wrap_pi_tickle, METH_VARARGS },
 	 { "pi_version", _wrap_pi_version, METH_VARARGS },
 	 { "pi_getsockopt", _wrap_pi_getsockopt, METH_VARARGS },
-	 { "pi_setmaxspeed", _wrap_pi_setmaxspeed, METH_VARARGS },
 	 { "pi_getsockpeer", _wrap_pi_getsockpeer, METH_VARARGS },
 	 { "pi_getsockname", _wrap_pi_getsockname, METH_VARARGS },
 	 { "pi_write", _wrap_pi_write, METH_VARARGS },
