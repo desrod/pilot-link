@@ -1,3 +1,10 @@
+2002-08-06  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pilot-xfer.c: Fixing output to be more "reasonable", fixed -q
+	  (quiet) option. This needs work.
+
+	* src/install-todos: Fixed segfault when passing -f
+
 2002-08-02  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-addresses.c: Fixed field length ordering to exactly

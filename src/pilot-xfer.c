@@ -420,7 +420,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			continue;
 		} else if (rom == 2 && !creator_is_PalmOS(info.creator)) {
 			if (!quiet)
-				printf("\rNon-OS file, skipping '%s'\n", info.name);
+				printf("Non-OS file, skipping '%s'\n", info.name);
 			continue;
 		}
 
@@ -443,11 +443,15 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		}
 
 		if (only_changed) {
-			fprintf(stdout, "Synchronizing %-42s\n", name); 
-		} else {
+			fprintf(stdout, "\rSynchronizing %-42s\n", name); 
+		} else if (!quiet) {
 			printf("\rBacking up %-42s", name);
 			fflush(stdout);
-		} 
+
+		} else {
+			printf(".");
+			fflush(stdout);
+		}
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
 		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
@@ -460,7 +464,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
-		} else if (stat(name, &sbuf) == 0) {
+		} else if (stat(name, &sbuf) == 0 && !quiet) {
 			printf("[%7ld bytes | %-6.1f kb total]", 
 				sbuf.st_size, (float)totalsize/1024);
 			totalsize += sbuf.st_size;
@@ -490,7 +494,6 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			printf("Exiting on error, stopped before removing files.\n");
 			exit(1);
 		}
-
 
 		for (i = 0; i < ofile_total; i++)
 			if (orig_files[i] != NULL) {
