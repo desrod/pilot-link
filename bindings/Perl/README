@@ -1,16 +1,16 @@
-
-This is an (functional yet still experimental) piece of code to interface
-Perl 5 to the pilot-link library. To use it, you will need to perform these
+This is a functional (yet always experimental) set of modules to interface
+Perl to the pilot-link library. To use it, you will need to perform these
 steps:
 
-	perl Makefile.PL
+	perl ./Makefile.PL
 	make
 
 If everything is working, you can execute a "make test". If that proves
-successful, execute a "make install UNINST=1" as root to install this
-interface system-wide.
+successful, execute a "make install UNINST=1" as the superuser (root in most
+cases) to install this interface into a system-wide location.
 
 	make test
+	su - root
 	make install UNINST=1
 
 For additional documentation, please read test.pl.
