@@ -270,10 +270,12 @@ ssize_t
 net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 {
 	int 	bytes;
-
+#if 1
+	int		offset,
+			remain;
+#endif
 	pi_protocol_t	*prot,
 			*next;
-
 	pi_net_data_t *data;
 	unsigned char *buf;
 
@@ -299,12 +301,38 @@ net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	memcpy(&buf[PI_NET_HEADER_LEN], msg, len);
 
 	/* Write the header and body */
+#if 1
+	// TEST TEST TEST: trying to fix USB send problems. If connected over
+	// USB, do the following:
+	// - send the 6 bytes of header first
+	// - split the rest of data into 4k chunks and send it by chunks
+	// This is what Palm Desktop does on Windows for the Zire 72
+	bytes = next->write(ps, buf, PI_NET_HEADER_LEN, flags);
+	if (bytes < PI_NET_HEADER_LEN)
+	{
+		free(buf);
+		return bytes;
+	}
+	offset = 0;
+	remain = len;
+	while (remain > 0)
+	{
+		int tosend = (remain > 4096) ? 4096 : remain;
+		bytes = next->write(ps, &buf[PI_NET_HEADER_LEN + offset], tosend, flags);
+		if (bytes < tosend)
+		{
+			free(buf);
+			return bytes;
+		}
+		remain -= bytes;
+	}
+#else
 	bytes = next->write(ps, buf, PI_NET_HEADER_LEN + len, flags);
 	if (bytes < (int)(PI_NET_HEADER_LEN + len)) {
 		free(buf);
 		return bytes;
 	}
-
+#endif
 	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1, ps->sd));
 	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, dumpdata((char *)msg, len));
 	
