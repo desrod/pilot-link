@@ -20,7 +20,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,19 +28,7 @@
 #include "pi-expense.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-
-static void display_help(const char *progname)
-{
-	printf("   Export Palm Expense application database data into text format\n\n");
-	printf("   Usage: %s -p <port>\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n\n", progname);
-	printf("   Examples: %s -p serial:/dev/ttyUSB0\n\n", progname);
-
-	return;
-}
+#include "userland.h"
 
 int main(int argc, const char *argv[])
 {
@@ -51,10 +38,6 @@ int main(int argc, const char *argv[])
 		po_err		= -1,
 		sd 		= -1;
 
-	const char
-                *progname 	= argv[0],
-		*port 		= NULL;
-
 	char buffer[0xffff];
 	char buffer2[0xffff];
 	pi_buffer_t *recbuf;
@@ -62,58 +45,58 @@ int main(int argc, const char *argv[])
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo tai;
 	struct 	ExpensePref tp;
-	
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-        	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	        POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+		USERLAND_RESERVED_OPTIONS
+	        POPT_TABLEEND
 	};
-	
+
 	po = poptGetContext("read-expenses", argc, argv, options, 0);
-	
-	while ((po_err = poptGetNextOpt(po)) >= 0) {
-		switch (po_err) {
-		case 'h':
-                        display_help(progname);
-                        return 0;
-                case 'v':
-                        print_splash(progname);
-                        return 0;
-		default:
-			display_help(progname);
-			return 0;
-		}
+	poptSetOtherOptionHelp(po,"\n\n"
+		"   Export Palm Expense application database data into text format\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
 	}
 
-        sd = pilot_connect(port);
+	while ((po_err = poptGetNextOpt(po)) >= 0) {
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",po_err);
+		return 1;
+	}
+
+	if (po_err < -1) {
+		plu_badoption(po,po_err);
+	}
+
+        sd = plu_connect();
         if (sd < 0)
                 goto error;
 
-        if (dlp_ReadUserInfo(sd, &User) < 0)
+        if (dlp_ReadUserInfo(sd, &User) < 0) {
                 goto error_close;
+	}
 
-	
+
 	/* Note that under PalmOS 1.x, you can only read preferences before
-	   the DB is opened 
+	   the DB is opened
 	 */
 	ret = dlp_ReadAppPreference(sd, Expense_Creator, Expense_Pref, 1,
 				  0xffff, buffer, 0, 0);
-		
+
 	/* Open the Expense database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ExpenseDB", &db) < 0) {
-		printf("Unable to open ExpenseDB");
+		fprintf(stderr,"   ERROR: Unable to open ExpenseDB on Palm.\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open ExpenseDB.\n");
-		exit(EXIT_FAILURE);
+		goto error_close;
 	}
-		
+
 	if (ret >= 0) {
 		unpack_ExpensePref(&tp, buffer, 0xffff);
 		i = pack_ExpensePref(&tp, buffer2, 0xffff);
-		
+
 #ifdef DEBUG
 		fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
 		dumpdata(buffer, ret);
@@ -133,7 +116,7 @@ int main(int argc, const char *argv[])
 		}
 		printf("\n\n");
 	}
-		
+
 	ret = dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
 	unpack_ExpenseAppInfo(&tai, buffer, 0xffff);
 #ifdef DEBUG
@@ -156,7 +139,7 @@ int main(int argc, const char *argv[])
 	printf(" Currency 4, name '%s', symbol '%s', rate '%s'\n\n",
 		tai.currencies[3].name, tai.currencies[3].symbol,
 		tai.currencies[3].rate);
-	
+
 	recbuf = pi_buffer_new (0xffff);
 
 	for (i = 0;; i++) {
@@ -183,7 +166,7 @@ int main(int argc, const char *argv[])
 		dumpdata(buffer, len);
 		fprintf(stderr, "New length %d, data:\n", ret);
 		dumpdata(buffer2, ret);
-#endif 
+#endif
 		printf("Category: %s\n", tai.category.name[category]);
 		printf("  Type: %3d\n  Payment: %3d\n  Currency: %3d\n",
 			t.type, t.payment, t.currency);
@@ -199,8 +182,8 @@ int main(int argc, const char *argv[])
 
 		free_Expense(&t);
 	}
-	pi_buffer_free(recbuf);	
-		
+	pi_buffer_free(recbuf);
+
 	/* Close the database */
 	dlp_CloseDB(sd, db);
 
@@ -211,7 +194,7 @@ int main(int argc, const char *argv[])
 
 error_close:
         pi_close(sd);
-        
+
 error:
         return -1;
 }
