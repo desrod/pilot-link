@@ -39,6 +39,7 @@
 %module pisock
 %{
 #include <time.h>
+#include "pi-args.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
@@ -62,13 +63,16 @@ static PyObject *Error;
 %}
 
 %include typemaps.i
+%include ../../include/pi-args.h
 
+ 
 // initialize a buffer for use later
 %init %{
     __dlp_buf = (void *)PyMem_Malloc(DLPMAXBUF);
     Error = PyErr_NewException("pisock.error", NULL, NULL);
     PyDict_SetItemString(d, "error", Error);
 %}
+
 
 //
 //  Socket stuff (from pi-socket.h)
@@ -573,7 +577,7 @@ extern DLPERROR dlp_ReadDBList (int sd, int cardno, int flags, int start,
 extern DLPERROR dlp_FindDBInfo (int sd, int cardno, int start, const char *ALLOWNULL,
 				unsigned long STR4,
 				unsigned long STR4, struct DBInfo *OUTPUT);
-extern DLPERROR dlp_OpenDB (int sd, int cardno, int mode, char * name, int *OUTPUT);
+extern DLPERROR dlp_OpenDB (int sd, int cardno, int mode, PI_CONST char * name, int *OUTPUT);
 extern DLPERROR dlp_CloseDB (int sd, int dbhandle);
 extern DLPERROR dlp_CloseDB_All (int sd);
 extern DLPERROR dlp_DeleteDB (int sd, int cardno, const char * name);
@@ -799,17 +803,20 @@ extern PIERROR pi_file_read_record_by_id (struct pi_file *pf, recordid_t INPUT, 
 					  size_t *OUTBUFLEN, int *OUTPUT, int *OUTPUT,
 					  int *OUTPUT);
 extern PIERROR pi_file_id_used (struct pi_file *pf, recordid_t INPUT);
-extern struct pi_file *pi_file_create (char *name, struct DBInfo *INPUT);
-extern PIERROR pi_file_set_info (struct pi_file *pf, struct DBInfo *INPUT);
+extern pi_file_t *pi_file_create (const char *name, const struct DBInfo *INPUT);
+extern PIERROR pi_file_set_info (struct pi_file *pf, const struct DBInfo *INPUT);
 extern PIERROR pi_file_set_app_info (struct pi_file *pf, void *INBUF, size_t INBUFLEN);
 extern PIERROR pi_file_set_sort_info (struct pi_file *pf, void *INBUF, size_t INBUFLEN);
 extern PIERROR pi_file_append_resource (struct pi_file *pf, void *INBUF, size_t INBUFLEN,
 					unsigned long STR4, int id);
 extern PIERROR pi_file_append_record (struct pi_file *pf, void *INBUF, size_t INBUFLEN,
 				      int attr, int category, recordid_t INPUT);
-extern PIERROR pi_file_retrieve (struct pi_file *pf, int socket, int cardno);
-extern PIERROR pi_file_install (struct pi_file *pf, int socket, int cardno);
-extern PIERROR pi_file_merge (struct pi_file *pf, int socket, int cardno);
+extern PIERROR pi_file_retrieve (pi_file_t *pf, int socket, int cardno, 
+				 progress_func PROGRESSFUNC);
+extern PIERROR pi_file_install (pi_file_t *pf, int socket, int cardno,
+				progress_func PROGRESSFUNC);
+extern PIERROR pi_file_merge (pi_file_t *pf, int socket, int cardno,
+			      progress_func PROGRESSFUNC);
 
 // pi-inet / pi-inetserial
 // pi-padp

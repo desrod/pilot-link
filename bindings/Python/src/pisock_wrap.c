@@ -686,20 +686,22 @@ SWIG_Python_InstallConstants(PyObject *d, swig_const_info constants[]) {
 #define  SWIGTYPE_p_recordid_t swig_types[0] 
 #define  SWIGTYPE_p_ssize_t swig_types[1] 
 #define  SWIGTYPE_p_size_t swig_types[2] 
-#define  SWIGTYPE_p_pi_file swig_types[3] 
-#define  SWIGTYPE_p_SysInfo swig_types[4] 
-#define  SWIGTYPE_p_CardInfo swig_types[5] 
-#define  SWIGTYPE_p_unsigned_long swig_types[6] 
-#define  SWIGTYPE_p_time_t swig_types[7] 
-#define  SWIGTYPE_p_DBInfo swig_types[8] 
-#define  SWIGTYPE_p_p_void swig_types[9] 
-#define  SWIGTYPE_p_p_char swig_types[10] 
-#define  SWIGTYPE_p_PilotUser swig_types[11] 
-#define  SWIGTYPE_p_pi_buffer_t swig_types[12] 
-#define  SWIGTYPE_p_sockaddr swig_types[13] 
-#define  SWIGTYPE_p_NetSyncInfo swig_types[14] 
-#define  SWIGTYPE_p_int swig_types[15] 
-static swig_type_info *swig_types[17];
+#define  SWIGTYPE_p_progress_func swig_types[3] 
+#define  SWIGTYPE_p_pi_file_t swig_types[4] 
+#define  SWIGTYPE_p_pi_file swig_types[5] 
+#define  SWIGTYPE_p_SysInfo swig_types[6] 
+#define  SWIGTYPE_p_CardInfo swig_types[7] 
+#define  SWIGTYPE_p_unsigned_long swig_types[8] 
+#define  SWIGTYPE_p_time_t swig_types[9] 
+#define  SWIGTYPE_p_DBInfo swig_types[10] 
+#define  SWIGTYPE_p_p_void swig_types[11] 
+#define  SWIGTYPE_p_p_char swig_types[12] 
+#define  SWIGTYPE_p_PilotUser swig_types[13] 
+#define  SWIGTYPE_p_pi_buffer_t swig_types[14] 
+#define  SWIGTYPE_p_sockaddr swig_types[15] 
+#define  SWIGTYPE_p_NetSyncInfo swig_types[16] 
+#define  SWIGTYPE_p_int swig_types[17] 
+static swig_type_info *swig_types[19];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -712,6 +714,7 @@ static swig_type_info *swig_types[17];
 #define SWIG_name    "_pisock"
 
 #include <time.h>
+#include "pi-args.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
@@ -760,7 +763,7 @@ extern DLPERROR dlp_ReadStorageInfo(int,int,struct CardInfo *);
 extern DLPERROR dlp_ReadSysInfo(int,struct SysInfo *);
 extern DLPERROR dlp_ReadDBList(int,int,int,int,pi_buffer_t *);
 extern DLPERROR dlp_FindDBInfo(int,int,int,char const *,unsigned long,unsigned long,struct DBInfo *);
-extern DLPERROR dlp_OpenDB(int,int,int,char *,int *);
+extern DLPERROR dlp_OpenDB(int,int,int,char const *,int *);
 
 static PyObject* t_output_helper(PyObject* target, PyObject* o) {
     PyObject*   o2;
@@ -836,15 +839,15 @@ extern PIERROR pi_file_read_record(struct pi_file *,int,void **,size_t *,int *,i
 extern PIERROR pi_file_get_entries(struct pi_file *,int *);
 extern PIERROR pi_file_read_record_by_id(struct pi_file *,recordid_t,void **,size_t *,int *,int *,int *);
 extern PIERROR pi_file_id_used(struct pi_file *,recordid_t);
-extern struct pi_file *pi_file_create(char *,struct DBInfo *);
-extern PIERROR pi_file_set_info(struct pi_file *,struct DBInfo *);
+extern pi_file_t *pi_file_create(char const *,struct DBInfo const *);
+extern PIERROR pi_file_set_info(struct pi_file *,struct DBInfo const *);
 extern PIERROR pi_file_set_app_info(struct pi_file *,void *,size_t);
 extern PIERROR pi_file_set_sort_info(struct pi_file *,void *,size_t);
 extern PIERROR pi_file_append_resource(struct pi_file *,void *,size_t,unsigned long,int);
 extern PIERROR pi_file_append_record(struct pi_file *,void *,size_t,int,int,recordid_t);
-extern PIERROR pi_file_retrieve(struct pi_file *,int,int,progress_func);
-extern PIERROR pi_file_install(struct pi_file *,int,int,progress_func);
-extern PIERROR pi_file_merge(struct pi_file *,int,int,progress_func);
+extern PIERROR pi_file_retrieve(pi_file_t *,int,int,progress_func);
+extern PIERROR pi_file_install(pi_file_t *,int,int,progress_func);
+extern PIERROR pi_file_merge(pi_file_t *,int,int,progress_func);
 
 
 #define PYCFUNC(x) static PyObject *x (PyObject *self, PyObject *args)
@@ -1691,7 +1694,7 @@ static PyObject *_wrap_dlp_OpenDB(PyObject *self, PyObject *args) {
     
     arg5 = &temp5;
     if(!PyArg_ParseTuple(args,(char *)"iiis:dlp_OpenDB",&arg1,&arg2,&arg3,&arg4)) goto fail;
-    result = dlp_OpenDB(arg1,arg2,arg3,arg4,arg5);
+    result = dlp_OpenDB(arg1,arg2,arg3,(char const *)arg4,arg5);
     
     {
         if (result < 0) {
@@ -3627,7 +3630,7 @@ static PyObject *_wrap_pi_file_create(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     char *arg1 ;
     struct DBInfo *arg2 = (struct DBInfo *) 0 ;
-    struct pi_file *result;
+    pi_file_t *result;
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"sO:pi_file_create",&arg1,&obj1)) goto fail;
@@ -3659,9 +3662,9 @@ static PyObject *_wrap_pi_file_create(PyObject *self, PyObject *args) {
         if (DGETLONG(obj1,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
         arg2 = &temp;
     }
-    result = (struct pi_file *)pi_file_create(arg1,arg2);
+    result = (pi_file_t *)pi_file_create((char const *)arg1,(struct DBInfo const *)arg2);
     
-    resultobj = SWIG_NewPointerObj((void *) result, SWIGTYPE_p_pi_file, 0);
+    resultobj = SWIG_NewPointerObj((void *) result, SWIGTYPE_p_pi_file_t, 0);
     return resultobj;
     fail:
     return NULL;
@@ -3706,7 +3709,7 @@ static PyObject *_wrap_pi_file_set_info(PyObject *self, PyObject *args) {
         if (DGETLONG(obj1,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
         arg2 = &temp;
     }
-    result = pi_file_set_info(arg1,arg2);
+    result = pi_file_set_info(arg1,(struct DBInfo const *)arg2);
     
     {
         int *res_pointer, res;
@@ -3888,15 +3891,20 @@ static PyObject *_wrap_pi_file_append_record(PyObject *self, PyObject *args) {
 
 static PyObject *_wrap_pi_file_retrieve(PyObject *self, PyObject *args) {
     PyObject *resultobj;
-    struct pi_file *arg1 = (struct pi_file *) 0 ;
+    pi_file_t *arg1 = (pi_file_t *) 0 ;
     int arg2 ;
     int arg3 ;
+    progress_func arg4 ;
     PIERROR result;
+    progress_func *argp4 ;
     PyObject * obj0 = 0 ;
+    PyObject * obj3 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"Oii:pi_file_retrieve",&obj0,&arg2,&arg3)) goto fail;
-    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_retrieve(arg1,arg2,arg3,NULL);
+    if(!PyArg_ParseTuple(args,(char *)"OiiO:pi_file_retrieve",&obj0,&arg2,&arg3,&obj3)) goto fail;
+    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    if ((SWIG_ConvertPtr(obj3,(void **) &argp4, SWIGTYPE_p_progress_func,SWIG_POINTER_EXCEPTION) == -1)) SWIG_fail;
+    arg4 = *argp4; 
+    result = pi_file_retrieve(arg1,arg2,arg3,arg4);
     
     {
         int *res_pointer, res;
@@ -3918,15 +3926,20 @@ static PyObject *_wrap_pi_file_retrieve(PyObject *self, PyObject *args) {
 
 static PyObject *_wrap_pi_file_install(PyObject *self, PyObject *args) {
     PyObject *resultobj;
-    struct pi_file *arg1 = (struct pi_file *) 0 ;
+    pi_file_t *arg1 = (pi_file_t *) 0 ;
     int arg2 ;
     int arg3 ;
+    progress_func arg4 ;
     PIERROR result;
+    progress_func *argp4 ;
     PyObject * obj0 = 0 ;
+    PyObject * obj3 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"Oii:pi_file_install",&obj0,&arg2,&arg3)) goto fail;
-    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_install(arg1,arg2,arg3,NULL);
+    if(!PyArg_ParseTuple(args,(char *)"OiiO:pi_file_install",&obj0,&arg2,&arg3,&obj3)) goto fail;
+    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    if ((SWIG_ConvertPtr(obj3,(void **) &argp4, SWIGTYPE_p_progress_func,SWIG_POINTER_EXCEPTION) == -1)) SWIG_fail;
+    arg4 = *argp4; 
+    result = pi_file_install(arg1,arg2,arg3,arg4);
     
     {
         int *res_pointer, res;
@@ -3948,15 +3961,20 @@ static PyObject *_wrap_pi_file_install(PyObject *self, PyObject *args) {
 
 static PyObject *_wrap_pi_file_merge(PyObject *self, PyObject *args) {
     PyObject *resultobj;
-    struct pi_file *arg1 = (struct pi_file *) 0 ;
+    pi_file_t *arg1 = (pi_file_t *) 0 ;
     int arg2 ;
     int arg3 ;
+    progress_func arg4 ;
     PIERROR result;
+    progress_func *argp4 ;
     PyObject * obj0 = 0 ;
+    PyObject * obj3 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"Oii:pi_file_merge",&obj0,&arg2,&arg3)) goto fail;
-    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_merge(arg1,arg2,arg3,NULL);
+    if(!PyArg_ParseTuple(args,(char *)"OiiO:pi_file_merge",&obj0,&arg2,&arg3,&obj3)) goto fail;
+    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    if ((SWIG_ConvertPtr(obj3,(void **) &argp4, SWIGTYPE_p_progress_func,SWIG_POINTER_EXCEPTION) == -1)) SWIG_fail;
+    arg4 = *argp4; 
+    result = pi_file_merge(arg1,arg2,arg3,arg4);
     
     {
         int *res_pointer, res;
@@ -4073,6 +4091,8 @@ static PyMethodDef SwigMethods[] = {
 static swig_type_info _swigt__p_recordid_t[] = {{"_p_recordid_t", 0, "recordid_t *", 0},{"_p_recordid_t"},{0}};
 static swig_type_info _swigt__p_ssize_t[] = {{"_p_ssize_t", 0, "ssize_t *", 0},{"_p_ssize_t"},{0}};
 static swig_type_info _swigt__p_size_t[] = {{"_p_size_t", 0, "size_t *", 0},{"_p_size_t"},{0}};
+static swig_type_info _swigt__p_progress_func[] = {{"_p_progress_func", 0, "progress_func *", 0},{"_p_progress_func"},{0}};
+static swig_type_info _swigt__p_pi_file_t[] = {{"_p_pi_file_t", 0, "pi_file_t *", 0},{"_p_pi_file_t"},{0}};
 static swig_type_info _swigt__p_pi_file[] = {{"_p_pi_file", 0, "struct pi_file *", 0},{"_p_pi_file"},{0}};
 static swig_type_info _swigt__p_SysInfo[] = {{"_p_SysInfo", 0, "struct SysInfo *", 0},{"_p_SysInfo"},{0}};
 static swig_type_info _swigt__p_CardInfo[] = {{"_p_CardInfo", 0, "struct CardInfo *", 0},{"_p_CardInfo"},{0}};
@@ -4091,6 +4111,8 @@ static swig_type_info *swig_types_initial[] = {
 _swigt__p_recordid_t, 
 _swigt__p_ssize_t, 
 _swigt__p_size_t, 
+_swigt__p_progress_func, 
+_swigt__p_pi_file_t, 
 _swigt__p_pi_file, 
 _swigt__p_SysInfo, 
 _swigt__p_CardInfo, 
