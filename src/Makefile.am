@@ -11,7 +11,7 @@ endif
 INCLUDES = 			\
 	-I/usr/include		\
 	-I$(top_srcdir)/include \
-	$(POPT_FLAGS)		\
+	$(POPT_INCLUDES)	\
 	$(PNG_CFLAGS)		\
 	$(TCL_INCLUDES)		\
 	$(RL_CFLAGS)

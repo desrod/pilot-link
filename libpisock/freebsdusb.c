@@ -37,6 +37,7 @@
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-usb.h"
+#include "pi-error.h"
 
 #ifdef HAVE_SYS_IOCTL_COMPAT_H
 #include <sys/ioctl_compat.h>
