@@ -1,4 +1,4 @@
-#ifndef _PILOT_MEMO_H_
+#ifndef _PILOT_MEMO_H_		/* -*- C++ -*- */
 #define _PILOT_MEMO_H_
 
 #ifdef __cplusplus
@@ -17,7 +17,7 @@ struct MemoAppInfo {
                                  purposes. Those from the Pilot are between 0 & 127.
                                  Those from the PC are between 128 & 255. I'm not
                                  sure what role lastUniqueID plays. */
-  
+  int sortOrder; /* New for 2.0 memo application, 0 is manual, 1 is alphabetical. */
 };
 
 extern void free_Memo(struct Memo *);
@@ -39,51 +39,59 @@ struct memoAppInfo_t : public appInfo_t
      
      void *pack(void) 
      {
-	  uchar_t *ret = new uchar_t [MEMO_APP_INFO_SIZE];
+	  unsigned char *ret = new unsigned char [MEMO_APP_INFO_SIZE];
 	  baseAppInfoPack(ret);
 	  return ret;
      }
 };
 
-class memo_t
+class memoList_t;		// Forward declaration for older compilers
+
+class memo_t : public baseApp_t
 {
-   protected:
+     friend memoList_t;
+     
      char *_text;
      int _size;
      
-   public:
-     memo_t(void) { _text = NULL; _size = 0; }
-     memo_t(void *buf) { unpack(buf, true); }
-     void unpack(void *text, bool firstTime = false) {
-	  if (firstTime == false && _text)
-	       delete _text;
-	       
-	  _size = strlen((const char *) text) + 1;
-	  _text = new char [_size];
+     memo_t *_next;
 	  
-	  (void) strcpy(_text, (const char *) text);
-     }
-     ~memo_t() { delete [] _text; }
+     void *internalPack(unsigned char *);
 
-     void *pack(int *i) 
+   public:
+     memo_t(void) : baseApp_t() { _text = NULL; _size = 0; }
+     memo_t(void *buf) : baseApp_t() { unpack(buf, true); }
+     memo_t(void *buf, int attr, recordid_t id, int category)
+	  : baseApp_t(attr, id, category)
      {
-	  *i = _size;
-	  char *ret = new char [_size];
-	  return strcpy(ret, _text);
+	       unpack(buf, true);
      }
+     memo_t(const memo_t &);
 
-     void *pack(void *buf, int *i) 
-     {
-	  if (*i < _size)
-	       return NULL;
+     void unpack(void *, bool  = false);
+     ~memo_t() { if (_text) delete _text; }
 
-	  *i = _size;
-	  return strcpy((char *) buf, _text);
-     }
+     void *pack(int *i);
+     void *pack(void *, int *);
 
      const char *text(void) const { return _text; }
 };
 
+class memoList_t 
+{
+     memo_t *_head;
+     
+   public:
+     memoList_t(void) : _head(NULL) { }
+     ~memoList_t();
+     
+     memo_t *first() { return _head; }
+     memo_t *next(memo_t *ptr) { return ptr->_next; }
+
+     void merge(memo_t &);
+     void merge(memoList_t &);
+};
+     
 #endif /*__cplusplus*/
 
 #endif /* _PILOT_MEMO_H_ */

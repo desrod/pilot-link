@@ -26,8 +26,8 @@ int syspkt_tx(struct pi_socket *ps, unsigned char *msg, int length)
   fprintf(stderr,"-----------------\n");
 #endif
 
-  ps->laddr.port = msg[0];
-  ps->raddr.port = msg[1];
+  ps->laddr.pi_port = msg[0];
+  ps->raddr.pi_port = msg[1];
   ps->protocol = msg[2];
   /*ps->xid = msg[3];*/
   
@@ -60,8 +60,8 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
   
   rlen = skb->len-12;
   
-  buf[0] = ps->laddr.port;
-  buf[1] = ps->raddr.port;
+  buf[0] = ps->laddr.pi_port;
+  buf[1] = ps->raddr.pi_port;
   buf[2] = ps->protocol;
   buf[3] = ps->xid;
  

@@ -1,3 +1,19 @@
+Mar 4, 1997 	Kenneth Albanowski 0.6.1
+
+	Perl5 support nearly complete. Documentation less so.
+	Python support nearly complete. Documentation less so.
+    Scott's C++ and uchar_t cleanup.
+	DLP ResetDBIndex now resets emulated category iterator.
+	Fixed lib/serial variable definition. Really.
+	Fixed long-standing bug in terminating card manufacturer's name.
+	Fixed socket code leaking file descriptors and double closing.
+	Modified socket code to return separate fd from pi_accept().
+	Added suffixes and .cc definition to makefiles.
+	Applied Mark Eichin's <eichin@cygnus.com> configure and makefile
+	    portability patches.
+	Applied David Warren's <dsw@comfortably-numb.asd.sgi.com> makefile and
+	    socket portability patches.
+
 Apr 28, 1997	Kenneth Albanowski 0.6.0
 
 	Primary feature: optional C++ support. If you have a C++ compiler, you'll

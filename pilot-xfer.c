@@ -56,9 +56,9 @@ void Connect(void) {
     exit(1);
   }
 
-  addr.sa_family = PI_AF_SLP;
-  addr.port = 3;
-  strcpy(addr.device,device);
+  addr.pi_family = PI_AF_SLP;
+  addr.pi_port = 3;
+  strcpy(addr.pi_device,device);
   
   ret = pi_bind(sd, &addr, sizeof(addr));
   if(ret == -1) {

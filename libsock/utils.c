@@ -36,7 +36,7 @@ int crc16(unsigned char *ptr, int count)
   return (crc & 0xFFFF);
 }
 
-#ifdef NeXT
+#ifndef HAVE_STRDUP
 char * strdup(const char *string)
 {
     size_t length;
@@ -66,7 +66,13 @@ char * printlong (unsigned long val)
 
 unsigned long makelong (char * c)
 {
-  return get_long(c);
+  char c2[4];
+  int l = strlen(c);
+  if (l>=4)
+    return get_long(c);
+  memset(c2, ' ', 4);
+  memcpy(c2, c, l);
+  return get_long(c2);
 }
 
 void dumpline (const unsigned char *buf, int len, int addr)

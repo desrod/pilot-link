@@ -49,6 +49,15 @@ char * dlp_errorlist[] = {
   "Bad argument size"
 };
 
+char * dlp_strerror(int error) {
+  if (error<0)
+    error = -error;
+  if (error>sizeof(dlp_errorlist))
+    return "Unknown error";
+  else
+    return dlp_errorlist[error];
+}
+
 int dlp_trace = 0;
 
 #ifndef NO_DLP_TRACE
@@ -296,7 +305,7 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c)
   
   len2 = get_byte(dlp_buf+25+4);
   memcpy(c->manuf, dlp_buf+26+4+len1, len2);
-  c->name[len2] = '\0';
+  c->manuf[len2] = '\0';
   
 #ifdef DLP_TRACE
   if (dlp_trace) {  
@@ -1172,8 +1181,10 @@ int dlp_ResetLastSyncPC(int sd)
 int dlp_ResetDBIndex(int sd, int dbhandle)
 {
   int result;
-  
-  set_byte(dlp_buf,    dbhandle);
+  struct pi_socket * ps;
+
+  if ((ps = find_pi_socket(sd)))
+    ps->dlprecord=0;
 
   Trace(ResetDBIndex);
 
@@ -1192,7 +1203,7 @@ int dlp_ResetDBIndex(int sd, int dbhandle)
 
 
 int dlp_ReadRecordIDList(int sd, int dbhandle, int sort, 
-                         int start, int max, recordid_t * IDs)
+                         int start, int max, recordid_t * IDs, int *count)
 {
   int result, i, ret;
   unsigned int nbytes;
@@ -1231,6 +1242,9 @@ int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
 
   for (i = 0, p = dlp_buf+2; i < ret; i++, p+=4)
     IDs[i] = get_long(p);
+  
+  if (count)
+    *count = i;
   
   return nbytes;
 }
@@ -1782,7 +1796,7 @@ int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void* buffer,
 }
 
 
-int dlp_ReadAppPreference(int sd, int fHandle, unsigned long creator, int id, int backup,
+int dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
                           int maxsize, void* buffer, int * size, int * version)
 {
   int result;
@@ -1870,7 +1884,7 @@ int dlp_ReadAppPreference(int sd, int fHandle, unsigned long creator, int id, in
   return get_short(dlp_buf+4);
 }
 
-int dlp_WriteAppPreference(int sd, int fHandle, unsigned long creator, int id, int backup,
+int dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
                           int version, void * buffer, int size)
 {
   int result;

@@ -10,7 +10,7 @@ static inline int pair(const unsigned int x, const unsigned int y)
 addressAppInfo_t::addressAppInfo_t(void *ai) 
      : appInfo_t(ai) 
 {
-     uchar_t *ptr = ((uchar_t *) ai) + BASE_APP_INFO_SIZE;
+     unsigned char *ptr = ((unsigned char *) ai) + BASE_APP_INFO_SIZE;
  
      _dirtyFieldLabels = get_long(ptr);
 
@@ -33,11 +33,11 @@ addressAppInfo_t::addressAppInfo_t(void *ai)
 
 void *addressAppInfo_t::pack(void) 
 {
-     uchar_t *buffer = new uchar_t [ADDRESS_APP_INFO_SIZE];
+     unsigned char *buffer = new unsigned char [ADDRESS_APP_INFO_SIZE];
      
      baseAppInfoPack(buffer);
      
-     uchar_t *ptr = buffer + BASE_APP_INFO_SIZE;
+     unsigned char *ptr = buffer + BASE_APP_INFO_SIZE;
      
      set_long(ptr, _dirtyFieldLabels);
 
@@ -53,6 +53,20 @@ void *addressAppInfo_t::pack(void)
      return buffer;
 }
 
+address_t::address_t(const address_t &oldCopy) 
+{
+     (void) memcpy(this, &oldCopy, sizeof(address_t));
+
+     int len;
+     
+     for (short int i = 0; i < 19; i++)
+	  if (oldCopy._entry[i]) {
+	       len = strlen(oldCopy._entry[i]);
+	       _entry[i] = new char [len + 1];
+	       (void) strcpy(_entry[i], oldCopy._entry[i]);
+	  }
+}
+
 void address_t::unpack(void *buf, bool firstTime) 
 {
      int i;
@@ -62,7 +76,7 @@ void address_t::unpack(void *buf, bool firstTime)
 	       if (_entry[i])
 		    delete _entry[i];
 
-     uchar_t *ptr = ((uchar_t *) buf) + 1;
+     unsigned char *ptr = ((unsigned char *) buf) + 1;
 
      _whichPhone = hi(get_byte(ptr));
      _phoneLabels[4] = lo(get_byte(ptr));
@@ -94,13 +108,13 @@ address_t::~address_t(void)
 	       delete _entry[i];
 }
 
-void *address_t::internalPack(uchar_t *buf) 
+void *address_t::internalPack(unsigned char *buf) 
 {
-     uchar_t offset = 0;
+     unsigned char offset = 0;
      int len;
      recordid_t contents = 0;
 
-     uchar_t *ptr = buf + 9;
+     unsigned char *ptr = buf + 9;
      
      for (short int i = 0; i < 19; i++) {
 	  if (_entry[i]) {
@@ -146,7 +160,7 @@ void *address_t::pack(int *len)
 	  if (_entry[i] && _entry[i][0] != '\0')
 	       *len += strlen(_entry[i]) + 1;
      
-     uchar_t *ret = new uchar_t [*len];
+     unsigned char *ret = new unsigned char [*len];
      return internalPack(ret);
 }
  
@@ -163,5 +177,34 @@ void *address_t::pack(void *buf, int *len)
  
      *len = totalLength;
  
-     return internalPack((uchar_t *) buf);
+     return internalPack((unsigned char *) buf);
+}
+
+// We can't just point to the data, as it might be deleted.  Make a copy
+void addressList_t::merge(address_t &address) 
+{
+     address._next = _head;
+     _head = new address_t(address);
+}
+ 
+// We can't just point to the data in the list, as it might get deleted on
+// us. We need to make a real copy
+void addressList_t::merge(addressList_t &list) 
+{
+     address_t *newguy;
+ 
+     for (address_t *ptr = list._head; ptr != NULL; ptr = ptr->_next) {
+          newguy = new address_t(ptr);
+          newguy->_next = _head;
+          _head = newguy;
+     }
+}
+ 
+addressList_t::~addressList_t(void) {
+     address_t *ptr, *next;
+ 
+     for (ptr = _head; ptr != NULL; ptr = next) {
+          next = ptr->_next;
+          delete ptr;
+     }
 }

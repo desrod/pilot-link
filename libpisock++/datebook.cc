@@ -9,22 +9,53 @@
 appointmentAppInfo_t::appointmentAppInfo_t(void *ai) 
      : appInfo_t(ai) 
 {
-     uchar_t *ptr = ((uchar_t *) ai) + BASE_APP_INFO_SIZE;
+     unsigned char *ptr = ((unsigned char *) ai) + BASE_APP_INFO_SIZE;
 
      _startOfWeek = get_byte(ptr);
 }
 
 void *appointmentAppInfo_t::pack(void) 
 {
-     uchar_t *buffer = new uchar_t [APPOINTMENT_APP_INFO_SIZE];
+     unsigned char *buffer = new unsigned char [APPOINTMENT_APP_INFO_SIZE];
      
      baseAppInfoPack(buffer);
      
-     uchar_t *ptr = buffer + BASE_APP_INFO_SIZE;
+     unsigned char *ptr = buffer + BASE_APP_INFO_SIZE;
      
      set_byte(ptr, _startOfWeek);
      
      return buffer;
+}
+
+appointment_t::appointment_t(const appointment_t &oldCopy) 
+{
+     (void) memcpy(this, &oldCopy, sizeof(appointment_t));
+
+     // Now fix up any pointers manually
+     int len;
+
+     if (oldCopy._description) {
+	  len = strlen(oldCopy._description);
+	  _description = new char [len + 1];
+	  (void) strcpy(_description, oldCopy._description);
+     }
+
+     if (oldCopy._note) {
+	  len = strlen(oldCopy._note);
+	  _note = new char [len + 1];
+	  (void) strcpy(_note, oldCopy._note);
+     }
+
+     if (oldCopy._repeatEnd) {
+	  _repeatEnd = new tm;
+	  (void) memcpy(_repeatEnd, oldCopy._repeatEnd, sizeof(tm));
+     }
+
+     if (_numExceptions) {
+	  _exceptions = new tm[_numExceptions];
+	  (void) memcpy(_exceptions, oldCopy._exceptions,
+			_numExceptions * sizeof(tm));
+     }
 }
 
 void appointment_t::unpack(void *buf, bool firstTime) 
@@ -42,7 +73,7 @@ void appointment_t::unpack(void *buf, bool firstTime)
 	       delete _note;
      }
      
-     uchar_t *ptr = (uchar_t *) buf;
+     unsigned char *ptr = (unsigned char *) buf;
 
      unsigned short int d;
      
@@ -57,8 +88,8 @@ void appointment_t::unpack(void *buf, bool firstTime)
      
      (void) memcpy(&_end, &_begin, sizeof(tm));
      
-     _end.tm_hour = get_byte(((uchar_t *) buf) + 2);
-     _end.tm_min = get_byte(((uchar_t *) buf) + 3);
+     _end.tm_hour = get_byte(((unsigned char *) buf) + 2);
+     _end.tm_min = get_byte(((unsigned char *) buf) + 3);
 
      if (get_short(buf) == 0xffff) {
 	  _begin.tm_hour = 0;
@@ -157,9 +188,9 @@ void appointment_t::unpack(void *buf, bool firstTime)
      _next = NULL;
 }
 
-void *appointment_t::internalPack(uchar_t *buf) 
+void *appointment_t::internalPack(unsigned char *buf) 
 {
-     uchar_t *ptr = buf;
+     unsigned char *ptr = buf;
      
      set_byte(ptr, _begin.tm_hour);
      set_byte(++ptr, _begin.tm_min);
@@ -242,7 +273,7 @@ void *appointment_t::pack(int *len)
      if (_description)
 	  *len += strlen(_description) + 1;
 
-     uchar_t *ret = new uchar_t [*len];
+     unsigned char *ret = new unsigned char [*len];
      return internalPack(ret);
 }
 
@@ -267,7 +298,7 @@ void *appointment_t::pack(void *buf, int *len)
 
      *len = totalLength;
 
-     return internalPack((uchar_t *) buf);
+     return internalPack((unsigned char *) buf);
 }
 
 appointment_t::~appointment_t(void) 
@@ -282,16 +313,8 @@ appointment_t::~appointment_t(void)
 	  delete _description;
 }
 
-appointmentList_t::appointmentList_t(appointment_t *head, bool lf = true) 
-     : _head(head), _shouldFreeList(lf)
-{}
-
 appointmentList_t::~appointmentList_t() 
 {
-     if (_shouldFreeList == false)
-	  return;
-
-     // I own the space, free it up
      appointment_t *next;
      
      for (appointment_t *head = _head; head != NULL; head = next) {
@@ -299,3 +322,24 @@ appointmentList_t::~appointmentList_t()
 	  delete head;
      }
 }
+
+// We can't just point to the data, as it might be deleted.  Make a copy
+void appointmentList_t::merge(appointment_t &appointment) 
+{
+     appointment._next = _head;
+     _head = new appointment_t(appointment);
+}
+ 
+// We can't just point to the data in the list, as it might get deleted on
+// us. We need to make a real copy
+void appointmentList_t::merge(appointmentList_t &list) 
+{
+     appointment_t *newguy;
+ 
+     for (appointment_t *ptr = list._head; ptr != NULL; ptr = ptr->_next) {
+          newguy = new appointment_t(ptr);
+          newguy->_next = _head;
+          _head = newguy;
+     }
+}
+     

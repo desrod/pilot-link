@@ -288,6 +288,8 @@ void unpack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * r
 
 void pack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * record, int * len) {
   int i;
+  unsigned char * start = record;
+  
   set_short(record, ai->renamedcategories);
   record += 2;
   for(i=0;i<16;i++) {
@@ -301,4 +303,8 @@ void pack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * rec
   set_byte(record, 0); /* gapfil */
   set_short(record+1, 0); /* gapfil */
   set_byte(record+3, ai->startOfWeek);
+  record+=4;
+  
+  if (len)
+    *len = (record-start);
 }

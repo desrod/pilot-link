@@ -30,6 +30,9 @@ mandir = @mandir@
 srcdir = ./
 VPATH = ./
 
+PURELINK =
+PURIFY =
+
 CC = gcc
 CXX = g++
 CFLAGS = -g -O2 -fno-strength-reduce -Wall -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
@@ -54,18 +57,21 @@ EXT = .EXE
 SUBMAKE_COMM = $(MAKE) -C libsock -f Makefile.os2
 SUBMAKE_COMM_CC = $(MAKE) -C libcc -f Makefile.os2
 
+.SUFFIXES: .out .o .cc .c .e .r .f .y .l .s .p
+
+.cc.o: ; $(CXX) $(CXXFLAGS) -c $*.cc
+
 CCEXECS = ccexample$(EXT)
 
 EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) pilot-schlep$(EXT)\
 		install-memo$(EXT) install-user$(EXT)\
 		install-todos$(EXT) pilot-addresses$(EXT)\
 		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT)\
-		sync-memodir$(EXT) sync-ical$(EXT)\
+		sync-memodir$(EXT) sync-ical$(EXT) $(CCEXECS) \
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
 		getrom$(EXT) \
-		test-connector$(EXT) test-acceptor$(EXT) \
-		$(CCEXECS)
+		test-connector$(EXT) test-acceptor$(EXT)
 
 PILIBS = libpisock.a
 PICCLIBS = $(PILIBS) libpicc.a
@@ -93,7 +99,7 @@ install: $(EXECS) installdirs libpisock.a
 	for h in include/*.h $(srcdir)/include/*.h; do \
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
 	done
-	for p in pix/*.gif pix/*.xbm; do \
+	for p in $(srcdir)/pix/*.gif $(srcdir)/pix/*.xbm; do \
 		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
 	done
 	$(INSTALL_DATA) libpisock.a $(libdir)/libpisock.a
@@ -117,85 +123,85 @@ uninstall: $(EXECS)
 	-rmdir $(libdir)
 
 install-memo$(EXT): $(PILIBS) install-memo.o
-	$(CC) $(CFLAGS) install-memo.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) install-memo.o $(PILIBS) -o $@ $(LIBS)
 
 install-todos$(EXT): $(PILIBS) install-todos.o
-	$(CC) $(CFLAGS) install-todos.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) install-todos.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-addresses$(EXT): $(PILIBS) pilot-addresses.o
-	$(CC) $(CFLAGS) pilot-addresses.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-addresses.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-dedupe$(EXT): $(PILIBS) pilot-dedupe.o
-	$(CC) $(CFLAGS) pilot-dedupe.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-dedupe.o $(PILIBS) -o $@ $(LIBS)
 
 install-user$(EXT): $(PILIBS) install-user.o
-	$(CC) $(CFLAGS) install-user.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) install-user.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-xfer$(EXT): $(PILIBS) pilot-xfer.o
-	$(CC) $(CFLAGS) pilot-xfer.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-xfer.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-schlep$(EXT): $(PILIBS) pilot-schlep.o
-	$(CC) $(CFLAGS) pilot-schlep.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-schlep.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-mail$(EXT): $(PILIBS) pilot-mail.o parsedate.o
-	$(CC) $(CFLAGS) pilot-mail.o parsedate.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-mail.o parsedate.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-file$(EXT): $(PILIBS) pilot-file.o
-	$(CC) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-debug.o: $(PILIBS) pilot-debug.c Makefile
-	$(CC) $(CFLAGS) $(TCLDEFS) $(TKDEFS) -c pilot-debug.c
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) $(TCLDEFS) $(TKDEFS) -c pilot-debug.c
 
 pd-tty.o: $(PILIBS) pd-tty.c Makefile
-	$(CC) $(CFLAGS) $(TCLDEFS) $(TKDEFS) $(RLDEFS) -c pd-tty.c
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) $(TCLDEFS) $(TKDEFS) $(RLDEFS) -c pd-tty.c
 
 pilot-debug$(EXT): $(PILIBS) pilot-debug.o pd-tty.o
-	$(CC) $(CFLAGS) pilot-debug.o pd-tty.o $(PILIBS) -o $@ $(TKLIBS) $(TCLLIBS) $(RLLIBS) $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-debug.o pd-tty.o $(PILIBS) -o $@ $(TKLIBS) $(TCLLIBS) $(RLLIBS) $(LIBS)
 
 reminders$(EXT): $(PILIBS) reminders.o
-	$(CC) $(CFLAGS) reminders.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) reminders.o $(PILIBS) -o $@ $(LIBS)
 
 memos$(EXT): $(PILIBS) memos.o
-	$(CC) $(CFLAGS) memos.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) memos.o $(PILIBS) -o $@ $(LIBS)
 
 read-todos$(EXT): $(PILIBS) read-todos.o
-	$(CC) $(CFLAGS) read-todos.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) read-todos.o $(PILIBS) -o $@ $(LIBS)
 
 read-expenses$(EXT): $(PILIBS) read-expenses.o
-	$(CC) $(CFLAGS) read-expenses.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) read-expenses.o $(PILIBS) -o $@ $(LIBS)
 
 read-ical$(EXT): $(PILIBS) read-ical.o
-	$(CC) $(CFLAGS) read-ical.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) read-ical.o $(PILIBS) -o $@ $(LIBS)
 
 sync-memodir$(EXT): $(PILIBS) sync-memodir.o
-	$(CC) $(CFLAGS) sync-memodir.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) sync-memodir.o $(PILIBS) -o $@ $(LIBS)
 
 sync-ical$(EXT): $(PILIBS) sync-ical.o
-	$(CC) $(CFLAGS) sync-ical.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) sync-ical.o $(PILIBS) -o $@ $(LIBS)
 
 addresses$(EXT): $(PILIBS) addresses.o
-	$(CC) $(CFLAGS) addresses.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) addresses.o $(PILIBS) -o $@ $(LIBS)
 
 test-connector$(EXT): $(PILIBS) test-connector.o
-	$(CC) $(CFLAGS) test-connector.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) test-connector.o $(PILIBS) -o $@ $(LIBS)
 
 test-acceptor$(EXT): $(PILIBS) test-acceptor.o
-	$(CC) $(CFLAGS) test-acceptor.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) test-acceptor.o $(PILIBS) -o $@ $(LIBS)
 
 dlpsh$(EXT): $(PILIBS) dlpsh.o
-	$(CC) $(CFLAGS) dlpsh.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) dlpsh.o $(PILIBS) -o $@ $(LIBS)
 
 debugsh$(EXT): $(PILIBS) debugsh.o
-	$(CC) $(CFLAGS) debugsh.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) debugsh.o $(PILIBS) -o $@ $(LIBS)
 
 ccexample$(EXT): $(PICCLIBS) ccexample.o
-	$(CXX) $(CXXFLAGS) ccexample.o $(PICCLIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CXX) $(CXXFLAGS) ccexample.o $(PICCLIBS) -o $@ $(LIBS)
 
 validate$(EXT): $(PICCLIBS) validate.o
-	$(CXX) $(CXXFLAGS) validate.o $(PICCLIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CXX) $(CXXFLAGS) validate.o $(PICCLIBS) -o $@ $(LIBS)
 
 getrom$(EXT): $(PILIBS) getrom.o
-	$(CC) $(CFLAGS) getrom.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) getrom.o $(PILIBS) -o $@ $(LIBS)
 
 parsedate.c: parsedate.y
 	@echo Expect six shift/reduce conflicts

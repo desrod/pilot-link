@@ -33,6 +33,7 @@ extern "C" {
 # define RETSIGTYPE void
 # define HAVE_SIGACTION
 # define HAVE_DUP2
+# define HAVE_SYS_SELECT_H
 #else
 # include "pi-config.h"
 #endif
@@ -58,6 +59,7 @@ struct pi_mac {
   int fd;
   int state;
   int expect;
+  int ref;
   struct pi_skb *rxb;
   unsigned char *buf;
 };
@@ -71,7 +73,7 @@ struct pi_socket {
   unsigned char nextid;
   int sd;
   int initiator;
-  struct pi_mac mac;
+  struct pi_mac *mac;
 #ifndef OS2
 # ifndef SGTTY
    struct termios tco;
@@ -84,7 +86,8 @@ struct pi_socket {
   struct pi_socket *next;
   int rate;          /* Current port baud rate */
   int establishrate; /* Baud rate to use after link is established */
-  int connected;
+  int connected; /* true on connected or accepted socket */
+  int accepted;  /* only true on accepted socket */
   int majorversion;
   int minorversion;
   int version; /* In form of 0xAABB where AA is major version and BB is minor version */

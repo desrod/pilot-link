@@ -82,12 +82,13 @@ class appointmentAppInfo_t : public appInfo_t
      appointmentAppInfo_t(void *);
 
      int startOfWeek(void) const { return _startOfWeek; }
+
      void *pack(void);
 };
 
 class appointmentList_t;	// Forward declaration
 
-class appointment_t
+class appointment_t : public baseApp_t
 {
    public:
      enum repeatType_t {
@@ -123,11 +124,20 @@ class appointment_t
 
      appointment_t *_next;
 
-     void *internalPack(uchar_t *);
+     void *internalPack(unsigned char *);
      
    public:
-     appointment_t(void *buf) { unpack(buf, true); }
-     appointment_t(void) { memset(this, '\0', sizeof(appointment_t)); }
+     appointment_t(void) : baseApp_t() {
+	  (void) memset(this, '\0', sizeof(appointment_t));
+     }
+     appointment_t(void *buf) : baseApp_t() { unpack(buf, true); }
+     appointment_t(void *buf, int attr, recordid_t id, int category)
+	  : baseApp_t(attr, id, category)
+	  {
+	       unpack(buf, true);
+	  }
+     appointment_t(const appointment_t &);
+     
      ~appointment_t(void) ;
 
      void unpack(void *, bool = false);
@@ -159,19 +169,16 @@ class appointment_t
 class appointmentList_t 
 {
      appointment_t *_head;
-     const bool _shouldFreeList;
      
    public:
-     appointmentList_t(appointment_t *, bool);
-     appointmentList_t(bool f = true) : _head(NULL), _shouldFreeList(f) { }
+     appointmentList_t(void) : _head(NULL) { }
      ~appointmentList_t();
      
      appointment_t *first() { return _head; }
      appointment_t *next(appointment_t *ptr) { return ptr->_next; }
-     void add(appointment_t *ptr) {
-	  ptr->_next = _head;
-	  _head = ptr;
-     }
+ 
+     void merge(appointment_t &);
+     void merge(appointmentList_t &);
 };
 
 #endif /* __cplusplus */

@@ -1,5 +1,5 @@
 
-CCOBJS = datebook.o address.o todo.o appInfo.o
+CCOBJS = datebook.o address.o todo.o appInfo.o memo.o
 
 cclib = libpicc.a
 
@@ -18,6 +18,10 @@ AR = ar
 ARFLAGS = -cur
 RANLIB = ar -s
 RM = rm -f
+
+.SUFFIXES: .out .o .cc .c .e .r .f .y .l .s .p
+
+.cc.o: ; $(CXX) $(CXXFLAGS) -c $*.cc
 
 all: $(cclib)
 
@@ -38,5 +42,7 @@ address.o: address.cc ../include/pi-address.h ../include/pi-appinfo.h \
 appInfo.o: appInfo.cc ../include/pi-appinfo.h ../include/pi-macros.h
 datebook.o: datebook.cc ../include/pi-datebook.h \
  ../include/pi-appinfo.h ../include/pi-macros.h
+memo.o: memo.cc ../include/pi-memo.h ../include/pi-appinfo.h \
+ ../include/pi-macros.h
 todo.o: todo.cc ../include/pi-todo.h ../include/pi-appinfo.h \
  ../include/pi-macros.h

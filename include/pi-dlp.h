@@ -124,6 +124,9 @@ enum dlpErrors {
   dlpErrUnknown = -128
 };
 
+extern char * dlp_errorlist[];
+extern char * dlp_strerror(int error);
+
 extern int dlp_GetSysDateTime(int sd, time_t * t);
 
   /* Get the time on the Pilot and return it as a local time_t value. */
@@ -244,7 +247,7 @@ extern int dlp_ResetDBIndex(int sd, int dbhandle);
  /* Reset NextModified position to beginning */
 
 extern int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
-                         int start, int max, recordid_t * IDs);
+                         int start, int max, recordid_t * IDs, int *count);
                          
 extern int dlp_WriteRecord(int sd, int dbhandle, int flags,
                  recordid_t recID, int catID, void *data, int length, recordid_t * NewID);
@@ -315,10 +318,10 @@ extern int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i);
                         
   /* PalmOS 2.0 only */
 
-extern int dlp_ReadAppPreference(int sd, int fHandle, unsigned long creator, int id, int backup,
+extern int dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
                           int maxsize, void* buffer, int * size, int * version);
 
-extern int dlp_WriteAppPreference(int sd, int fHandle, unsigned long creator, int id, int backup,
+extern int dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
                           int version, void * buffer, int size);
 
 struct RPC_params;

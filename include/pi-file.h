@@ -32,7 +32,7 @@ extern int pi_file_read_record (struct pi_file *pf, int idx,
 			 void **bufp, int *sizep, int *attrp, int * catp, pi_uid_t *uidp);
 extern int pi_file_get_entries (struct pi_file *pf, int * entries);			 
 extern int pi_file_read_record_by_id (struct pi_file *pf, pi_uid_t uid,
-			       void **bufp, int *sizep,
+			       void **bufp, int *sizep, int *idxp,
 			       int *attrp, int * catp);
 extern int pi_file_id_used (struct pi_file *pf, pi_uid_t uid);
 

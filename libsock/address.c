@@ -162,5 +162,6 @@ void pack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, int
   for(i=19;i<22;i++)
     strcpy(ai->phonelabels[i-19+5],ai->labels[i]);
   
-  *len = (pos-record);
+  if (len)
+    *len = (pos-record);
 }

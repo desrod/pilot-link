@@ -316,10 +316,8 @@ int main(int argc, char *argv[])
   char * deletecategory = 0;
   int mode = 0;
   int c;
-#ifdef sun
   extern char* optarg;
   extern int optind;
-#endif
 
   progname = argv[0];
 
@@ -360,9 +358,9 @@ int main(int argc, char *argv[])
     exit(1);
   }
     
-  addr.sa_family = PI_AF_SLP;
-  addr.port = 3;
-  strcpy(addr.device,argv[1]);
+  addr.pi_family = PI_AF_SLP;
+  addr.pi_port = 3;
+  strcpy(addr.pi_device,argv[1]);
   
   ret = pi_bind(sd, &addr, sizeof(addr));
   if(ret == -1) {

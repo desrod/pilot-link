@@ -4,7 +4,6 @@
 #include <sys/time.h> /* for struct tm */
 
 typedef unsigned long recordid_t;
-typedef unsigned char uchar_t;		/* MUST GO!!! */
 
 #ifndef __cplusplus
 

@@ -27,8 +27,8 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
   slp->_be  = 0xbe;
   slp->_ef  = 0xef;
   slp->_ed  = 0xed;
-  slp->dest = ps->raddr.port;
-  slp->src  = ps->laddr.port;
+  slp->dest = ps->raddr.pi_port;
+  slp->src  = ps->laddr.pi_port;
   slp->type = ps->protocol;
   slp->dlen = htons(len);
   slp->id   = ps->xid;
@@ -67,113 +67,113 @@ int slp_rx(struct pi_socket *ps)
   int v;
   struct pi_skb *skb;
 
-  if (!ps->mac.state) {
-    ps->mac.expect = 1;
-    ps->mac.state = 1;
-    ps->mac.rxb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
-    ps->mac.rxb->next = (struct pi_skb *)0;
-    ps->mac.buf = ps->mac.rxb->data;
+  if (!ps->mac->state) {
+    ps->mac->expect = 1;
+    ps->mac->state = 1;
+    ps->mac->rxb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
+    ps->mac->rxb->next = (struct pi_skb *)0;
+    ps->mac->buf = ps->mac->rxb->data;
     return 0;
   }
 
-  v = 0xff & (int) *ps->mac.buf;
+  v = 0xff & (int) *ps->mac->buf;
 
-  switch(ps->mac.state) {
+  switch(ps->mac->state) {
 
   case 1:
     if (v == 0xbe) { 
-      ps->mac.state++;
-      ps->mac.expect = 1;
-      ps->mac.buf++;
+      ps->mac->state++;
+      ps->mac->expect = 1;
+      ps->mac->buf++;
     }
-    else ps->mac.expect = 1;
+    else ps->mac->expect = 1;
     break;
 
   case 2:
     if (v == 0xef) { 
-      ps->mac.state++;
-      ps->mac.expect = 1;
-      ps->mac.buf++;
+      ps->mac->state++;
+      ps->mac->expect = 1;
+      ps->mac->buf++;
     }
     break;
 
   case 3:
     if (v == 0xed) { 
     /* OK.  we think we're sync'ed, so go for the rest of the header */
-      ps->mac.state++;
-      ps->mac.expect = 7;
-      ps->mac.buf++;
+      ps->mac->state++;
+      ps->mac->expect = 7;
+      ps->mac->buf++;
     }
     break;
 
   case 4:
     /* read in the whole SLP header. */
-    for (v = i = 0; i<9; i++) v += ps->mac.rxb->data[i];
+    for (v = i = 0; i<9; i++) v += ps->mac->rxb->data[i];
 
-    dph(ps->mac.rxb->data);
+    dph(ps->mac->rxb->data);
 
-    if ((v & 0xff) == ps->mac.rxb->data[9]) {
-      ps->mac.state++;
-      ps->mac.rxb->len = 12+ get_short(&ps->mac.rxb->data[6]);
-      ps->mac.expect = ps->mac.rxb->len - 10;
-      ps->mac.buf += 7;
+    if ((v & 0xff) == ps->mac->rxb->data[9]) {
+      ps->mac->state++;
+      ps->mac->rxb->len = 12+ get_short(&ps->mac->rxb->data[6]);
+      ps->mac->expect = ps->mac->rxb->len - 10;
+      ps->mac->buf += 7;
     }
     break;
 
   case 5:
     /* that should be the whole packet. */
-    v = crc16(ps->mac.rxb->data, ps->mac.rxb->len - 2);
+    v = crc16(ps->mac->rxb->data, ps->mac->rxb->len - 2);
 
     if ((v == 
-	get_short(&ps->mac.rxb->data[ps->mac.rxb->len - 2]))
+	get_short(&ps->mac->rxb->data[ps->mac->rxb->len - 2]))
 #if 0
 	|| (0xbeef == 
-	get_short(&ps->mac.rxb->data[ps->mac.rxb->len - 2]))
+	get_short(&ps->mac->rxb->data[ps->mac->rxb->len - 2]))
 #endif
 	) {
 
-      ps->xid = ps->mac.rxb->data[8];
-      ps->laddr.port = ps->mac.rxb->data[3];
-      ps->raddr.port = ps->mac.rxb->data[4];
-      ps->protocol = ps->mac.rxb->data[5];
+      ps->xid = ps->mac->rxb->data[8];
+      ps->laddr.pi_port = ps->mac->rxb->data[3];
+      ps->raddr.pi_port = ps->mac->rxb->data[4];
+      ps->protocol = ps->mac->rxb->data[5];
       
       /* hack to ignore LOOP packets... */
 
-      if (ps->mac.rxb->data[5] == PI_PF_LOOP) {
-	ps->mac.expect = 1;
-	ps->mac.state = 1;
-	ps->mac.rxb->next = (struct pi_skb *)0;
-	ps->mac.buf = ps->mac.rxb->data;
+      if (ps->mac->rxb->data[5] == PI_PF_LOOP) {
+	ps->mac->expect = 1;
+	ps->mac->state = 1;
+	ps->mac->rxb->next = (struct pi_skb *)0;
+	ps->mac->buf = ps->mac->rxb->data;
       } else {
-	if (!ps->rxq) ps->rxq = ps->mac.rxb;
+	if (!ps->rxq) ps->rxq = ps->mac->rxb;
 	else {
 
 	  for (skb = ps->rxq; skb->next; skb=skb->next);
-	  skb->next = ps->mac.rxb;
+	  skb->next = ps->mac->rxb;
 	}
-	ps->mac.state = 0;
+	ps->mac->state = 0;
       }
       ps->rx_packets++;
     } else {
 #ifdef DEBUG
-      fprintf(stderr,"my crc=0x%.4x your crc=0x%.4x\n", v, get_short((&ps->mac.rxb->data[ps->mac.rxb->len - 2])));
+      fprintf(stderr,"my crc=0x%.4x your crc=0x%.4x\n", v, get_short((&ps->mac->rxb->data[ps->mac->rxb->len - 2])));
 #endif
     }
-    slp_dump(ps->mac.rxb,0);
+    slp_dump(ps->mac->rxb,0);
     break;
 
   default:
     break;
   }
 
-  if (ps->mac.state && (!ps->mac.expect)) {
+  if (ps->mac->state && (!ps->mac->expect)) {
 
 #ifdef DEBUG
-    fprintf(stderr, "SLP RX: error, state %d \n",ps->mac.state);
+    fprintf(stderr, "SLP RX: error, state %d \n",ps->mac->state);
 #endif
 
-    ps->mac.state = ps->mac.expect = 1;
-    ps->mac.buf = ps->mac.rxb->data;
+    ps->mac->state = ps->mac->expect = 1;
+    ps->mac->buf = ps->mac->rxb->data;
     ps->rx_errors++;
   }
 

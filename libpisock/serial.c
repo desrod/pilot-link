@@ -35,6 +35,9 @@
 #endif /* OS2 */
 
 #ifndef OS2
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
 
 #ifndef SGTTY
 
@@ -113,26 +116,26 @@ static int calcrate(int baudrate) {
 int pi_device_open(char *tty, struct pi_socket *ps)
 {
 
-#ifndef SGTTY
   int i;
+#ifndef SGTTY
   struct termios tcn;
 #else
   struct sgttyb tcn;
 #endif
 
-  if ((ps->mac.fd = open(tty, O_RDWR | O_NONBLOCK )) == -1) {
+  if ((ps->mac->fd = open(tty, O_RDWR | O_NONBLOCK )) == -1) {
     return -1;     /* errno already set */
   }
 
-  if (!isatty(ps->mac.fd)) {
-    close(ps->mac.fd);
+  if (!isatty(ps->mac->fd)) {
+    close(ps->mac->fd);
     errno = EINVAL;
     return -1;
   }
 
 #ifndef SGTTY
   /* Set the tty to raw and to the correct speed */
-  tcgetattr(ps->mac.fd,&tcn);
+  tcgetattr(ps->mac->fd,&tcn);
 
   ps->tco = tcn;
 
@@ -152,10 +155,10 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   tcn.c_cc[VMIN] = 1;
   tcn.c_cc[VTIME] = 0;
   
-  tcsetattr(ps->mac.fd,TCSANOW,&tcn);
+  tcsetattr(ps->mac->fd,TCSANOW,&tcn);
 #else
   /* Set the tty to raw and to the correct speed */
-  ioctl(ps->mac.fd, TIOCGETP, &tcn);
+  ioctl(ps->mac->fd, TIOCGETP, &tcn);
 
   ps->tco = tcn;
 
@@ -163,26 +166,30 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   tcn.sg_ispeed = calcrate(ps->rate);
   tcn.sg_ospeed = calcrate(ps->rate);
   
-  ioctl(ps->mac.fd, TIOCSETN, &tcn);
+  ioctl(ps->mac->fd, TIOCSETN, &tcn);
 #endif
 
-  if ((i = fcntl(ps->mac.fd, F_GETFL, 0))!=-1) {
+  if ((i = fcntl(ps->mac->fd, F_GETFL, 0))!=-1) {
     i &= ~O_NONBLOCK;
-    fcntl(ps->mac.fd, F_SETFL, i);
+    fcntl(ps->mac->fd, F_SETFL, i);
   }
 
-  if (ps->sd)
+  if (ps->sd) {
+    int orig = ps->mac->fd;
 #ifdef HAVE_DUP2
-    ps->mac.fd = dup2(ps->mac.fd, ps->sd);
+    ps->mac->fd = dup2(ps->mac->fd, ps->sd);
 #else
 #ifdef F_DUPFD
     close(ps->sd);
-    ps->mac.fd = fcntl(ps->mac.fd, F_DUPFD, ps->sd);
+    ps->mac->fd = fcntl(ps->mac->fd, F_DUPFD, ps->sd);
 #else
     close(ps->sd);
-    ps->mac.fd = dup(ps->mac.fd); /* Unreliable */
+    ps->mac->fd = dup(ps->mac->fd); /* Unreliable */
 #endif
 #endif
+    if (ps->mac->fd != orig)
+      close(orig);
+  }
 
 #ifndef NO_SERIAL_TRACE
   if(ps->debuglog) {
@@ -192,7 +199,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   }
 #endif
 
-  return ps->mac.fd;
+  return ps->mac->fd;
 }
 
 /* Linux versions "before 2.1.8 or so" fail to flush hardware FIFO on port close */
@@ -220,12 +227,12 @@ int pi_device_changebaud(struct pi_socket *ps)
   struct termios tcn;
 
   /* Set the tty to the new speed */
-  tcgetattr(ps->mac.fd,&tcn);
+  tcgetattr(ps->mac->fd,&tcn);
 
   tcn.c_cflag =  CREAD | CLOCAL | CS8;
   (void)cfsetspeed(&tcn, calcrate(ps->rate));
 
-  tcsetattr(ps->mac.fd,TCSADRAIN,&tcn);
+  tcsetattr(ps->mac->fd,TCSADRAIN,&tcn);
 
 #ifdef sleeping_beauty
   sleep(1);
@@ -234,12 +241,12 @@ int pi_device_changebaud(struct pi_socket *ps)
 #else
   struct sgttyb tcn;
 
-  ioctl(ps->mac.fd, TIOCGETP, &tcn);
+  ioctl(ps->mac->fd, TIOCGETP, &tcn);
 
   tcn.sg_ispeed = calcrate(ps->rate);
   tcn.sg_ospeed = calcrate(ps->rate);
   
-  ioctl(ps->mac.fd, TIOCSETN, &tcn);
+  ioctl(ps->mac->fd, TIOCSETN, &tcn);
 #endif
 
   return 0;
@@ -256,15 +263,15 @@ int pi_device_close(struct pi_socket *ps)
   sleep(1);
 #endif
 
-  tcsetattr(ps->mac.fd,TCSADRAIN, &ps->tco);
+  tcsetattr(ps->mac->fd,TCSADRAIN, &ps->tco);
 #else
 
-  ioctl(ps->mac.fd, TIOCSETP, &ps->tco);
+  ioctl(ps->mac->fd, TIOCSETP, &ps->tco);
 
 #endif
 
-  result = close(ps->mac.fd);
-  ps->mac.fd = 0;
+  result = close(ps->mac->fd);
+  ps->mac->fd = 0;
 
 #ifndef NO_SERIAL_TRACE
   if (ps->debugfd)
@@ -329,7 +336,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
 	}
       return(-1);
     }
-  ps->mac.fd=fd;
+  ps->mac->fd=fd;
   pi_device_changebaud(ps);
   pi_socket_set_timeout(ps,-1,600);
   
@@ -352,7 +359,7 @@ int pi_device_changebaud(struct pi_socket *ps)
   baudrate = ps->rate;
 
   param_length=sizeof(baudrate);
-  rc=DosDevIOCtl(ps->mac.fd, /* file decsriptor */
+  rc=DosDevIOCtl(ps->mac->fd, /* file decsriptor */
 		 IOCTL_ASYNC, /*asyncronous change */
 		 ASYNC_SETBAUDRATE, /* set the baudrate */
 		 &baudrate, /* pointer to the baudrate */
@@ -366,7 +373,7 @@ int pi_device_changebaud(struct pi_socket *ps)
   if (!rc)   /* but only if the previous operation succeeded */
     {
       param_length = 3; /* 3 bytes for line control */
-      rc=DosDevIOCtl(ps->mac.fd, /* file decsriptor */
+      rc=DosDevIOCtl(ps->mac->fd, /* file decsriptor */
 		     IOCTL_ASYNC, /*asyncronous change */
 		     ASYNC_SETLINECTRL, /* set the line controls */
 		     linctrl, /* pointer to the configuration */
@@ -413,7 +420,7 @@ int pi_device_close(struct pi_socket *ps)
     close(ps->debugfd);  
 #endif
 
-  DosClose(ps->mac.fd);
+  DosClose(ps->mac->fd);
   return(0);
 }
 
@@ -437,7 +444,7 @@ int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
     return(0);
 
   ret_len=sizeof(DCBINFO);
-  rc=DosDevIOCtl(ps->mac.fd, /* file decsriptor */
+  rc=DosDevIOCtl(ps->mac->fd, /* file decsriptor */
 		 IOCTL_ASYNC, /*asyncronous change */
 		 ASYNC_GETDCBINFO, /* get device control block info */
 		 NULL, /*  */
@@ -479,7 +486,7 @@ int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 	}
     }
   param_length=sizeof(DCBINFO);
-  rc=DosDevIOCtl(ps->mac.fd, /* file decsriptor */
+  rc=DosDevIOCtl(ps->mac->fd, /* file decsriptor */
 		 IOCTL_ASYNC, /*asyncronous change */
 		 ASYNC_SETDCBINFO, /* get device control block info */
 		 &devinfo, /* parameters to set  */
@@ -542,9 +549,9 @@ int pi_socket_send(struct pi_socket *ps)
     ps->txq = skb->next;
 
 #ifdef OS2
-    rc=DosWrite(ps->mac.fd,skb->data,skb->len,(unsigned long *)&nwrote);
+    rc=DosWrite(ps->mac->fd,skb->data,skb->len,(unsigned long *)&nwrote);
 #else
-    write(ps->mac.fd,skb->data,skb->len);
+    write(ps->mac->fd,skb->data,skb->len);
 #endif
 #ifndef NO_SERIAL_TRACE
     if (ps->debuglog)
@@ -581,7 +588,7 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
   struct timeval t;
   
   FD_ZERO(&ready);
-  FD_SET(ps->mac.fd, &ready);
+  FD_SET(ps->mac->fd, &ready);
 #endif
 
   /* FIXME: if timeout == 0, wait forever for packet, otherwise wait till
@@ -598,23 +605,23 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
 #endif /* #ifdef OS2 */
 
   pi_socket_flush(ps);              /* We likely want to be in sync with tx */
-  if (!ps->mac.expect) slp_rx(ps);  /* let SLP know we want a packet */
+  if (!ps->mac->expect) slp_rx(ps);  /* let SLP know we want a packet */
 
-  while (ps->mac.expect) {
-    buf = ps->mac.buf;
+  while (ps->mac->expect) {
+    buf = ps->mac->buf;
 
-    while (ps->mac.expect) {
+    while (ps->mac->expect) {
 #ifdef OS2
-      rc=DosRead(ps->mac.fd,buf,ps->mac.expect,(unsigned long *)&r);
+      rc=DosRead(ps->mac->fd,buf,ps->mac->expect,(unsigned long *)&r);
       if (rc)
 #else /* #ifdef OS2 */
       ready2 = ready;
       t.tv_sec = timeout/10;
       t.tv_usec = (timeout % 10) * 100000;
-      select(ps->mac.fd+1,&ready2,0,0,&t);
+      select(ps->mac->fd+1,&ready2,0,0,&t);
       /* If data is available in time, read it */
-      if(FD_ISSET(ps->mac.fd,&ready2))
-        r = read(ps->mac.fd, buf, ps->mac.expect);
+      if(FD_ISSET(ps->mac->fd,&ready2))
+        r = read(ps->mac->fd, buf, ps->mac->expect);
       else
 #endif /* #ifdef OS2 */
       {
@@ -622,8 +629,8 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
 #ifdef DEBUG
         fprintf(stderr, "Serial RX: timeout\n");
 #endif
-        ps->mac.state = ps->mac.expect = 1;
-        ps->mac.buf = ps->mac.rxb->data;
+        ps->mac->state = ps->mac->expect = 1;
+        ps->mac->buf = ps->mac->rxb->data;
         ps->rx_errors++;
         return 0;
       }
@@ -636,7 +643,7 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
 #endif
       ps->rx_bytes += r;
       buf += r;
-      ps->mac.expect -= r;
+      ps->mac->expect -= r;
     }
     slp_rx(ps);
   }

@@ -981,7 +981,7 @@ int proc_port(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   
   if (argc<2) {
   	if(port)
-		Tcl_SetResult(interp, laddr.device, TCL_STATIC);
+		Tcl_SetResult(interp, laddr.pi_device, TCL_STATIC);
 	return TCL_OK;
   }
   
@@ -998,8 +998,8 @@ int proc_port(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   
   port = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP);
   
-  laddr.sa_family = PI_AF_SLP;
-  strcpy(laddr.device,argv[1]);
+  laddr.pi_family = PI_AF_SLP;
+  strcpy(laddr.pi_device,argv[1]);
   
   if (pi_bind(port, &laddr, sizeof(laddr))==-1) {
     Say("Unable to open port '");
@@ -1017,7 +1017,7 @@ int proc_port(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   Tcl_RegisterChannel(interp, channel); /* And register it to TCL */
   Tcl_CreateChannelHandler(channel, TCL_READABLE, Read_Pilot, (ClientData)port);
   
-  Tcl_SetResult(interp, laddr.device, TCL_STATIC);
+  Tcl_SetResult(interp, laddr.pi_device, TCL_STATIC);
   return TCL_OK;
 }
 

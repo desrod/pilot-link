@@ -72,7 +72,7 @@ class addressAppInfo_t : public appInfo_t
 
 class addressList_t;	// Forward declaration
 
-class address_t
+class address_t : public baseApp_t
 {
      int _phoneLabels[5];
      int _whichPhone;
@@ -83,7 +83,7 @@ class address_t
      
      address_t *_next;
 
-     void *internalPack(uchar_t *);
+     void *internalPack(unsigned char *);
      
    public:
      enum labelTypes_t {
@@ -94,6 +94,13 @@ class address_t
 
      address_t(void *buf) { unpack(buf, true); }
      address_t(void) { memset(this, '\0', sizeof(address_t)); }
+     address_t(void *buf, int attr, recordid_t id, int category)
+	  : baseApp_t(attr, id, category)
+	  {
+	       unpack(buf, true);
+	  }
+     address_t(const address_t &);
+     
      ~address_t(void);
 
      char *entry(labelTypes_t idx) { return _entry[idx]; }
@@ -108,19 +115,16 @@ class address_t
 class addressList_t 
 {
      address_t *_head;
-     const bool _shouldFreeList;
      
    public:
-     addressList_t(address_t *, bool);
-     addressList_t(bool f = true) : _head(NULL), _shouldFreeList(f) { }
+     addressList_t(void) : _head(NULL) { }
      ~addressList_t();
      
      address_t *first() { return _head; }
      address_t *next(address_t *ptr) { return ptr->_next; }
-     void add(address_t *ptr) {
-	  ptr->_next = _head;
-	  _head = ptr;
-     }
+
+     void merge(address_t &);
+     void merge(addressList_t &);
 };
 
 #endif /* __cplusplus */

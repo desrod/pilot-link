@@ -175,7 +175,7 @@ pi_file_open (char *name)
   file_size = ftell (pf->f);
   fseek (pf->f, 0, SEEK_SET);
 
-  if (fread (buf, PI_HDR_SIZE, 1, pf->f) != 1) {
+  if (fread (buf, PI_HDR_SIZE, 1, pf->f) != (size_t)1) {
     fprintf (stderr, "%s: can't read header\n", name);
     goto bad;
   }
@@ -243,7 +243,7 @@ pi_file_open (char *name)
       goto bad;
     
     for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
-      if (fread (buf, pf->ent_hdr_size, 1, pf->f) != 1)
+      if (fread (buf, pf->ent_hdr_size, 1, pf->f) != (size_t)1)
 	  goto bad;
 
       p = buf;
@@ -295,7 +295,7 @@ pi_file_open (char *name)
     if ((pf->app_info = malloc (pf->app_info_size)) == NULL)
       goto bad;
     fseek(pf->f, app_info_offset, SEEK_SET);
-    if (fread (pf->app_info, 1, pf->app_info_size, pf->f) != pf->app_info_size)
+    if (fread (pf->app_info, 1, pf->app_info_size, pf->f) != (size_t)pf->app_info_size)
       goto bad;
   }
 
@@ -305,7 +305,7 @@ pi_file_open (char *name)
     if ((pf->sort_info = malloc (pf->sort_info_size)) == NULL)
       goto bad;
     fseek(pf->f, sort_info_offset, SEEK_SET);
-    if (fread(pf->sort_info, 1, pf->sort_info_size, pf->f) != pf->sort_info_size)
+    if (fread(pf->sort_info, 1, pf->sort_info_size, pf->f) != (size_t)pf->sort_info_size)
       goto bad;
   }
 
@@ -428,7 +428,7 @@ pi_file_read_resource (struct pi_file *pf, int idx,
     return (-1);
 
   fseek (pf->f, pf->entries[idx].offset, SEEK_SET);
-  if (fread (pf->rbuf, 1, entp->size, pf->f) != entp->size)
+  if (fread (pf->rbuf, 1, entp->size, pf->f) != (size_t)entp->size)
     return (-1);
 
   if (bufp)
@@ -468,7 +468,7 @@ pi_file_read_record (struct pi_file *pf, int idx,
     return (-1);
 
   fseek (pf->f, pf->entries[idx].offset, SEEK_SET);
-  if (fread (pf->rbuf, 1, entp->size, pf->f) != entp->size)
+  if (fread (pf->rbuf, 1, entp->size, pf->f) != (size_t)entp->size)
     return (-1);
 
   if (bufp)
@@ -487,14 +487,17 @@ pi_file_read_record (struct pi_file *pf, int idx,
 
 int
 pi_file_read_record_by_id (struct pi_file *pf, pi_uid_t uid,
-			   void **bufp, int *sizep, int *attrp, int *catp)
+			   void **bufp, int *sizep, int *idxp, int *attrp, int *catp)
 {
   int idx;
   struct pi_file_entry *entp;
 
   for (idx = 0, entp = pf->entries; idx < pf->nentries; idx++, entp++) {
-    if (entp->uid == uid)
+    if (entp->uid == uid) {
+      if (idxp)
+        *idxp = idx;
       return (pi_file_read_record (pf, idx, bufp, sizep, attrp, catp, &uid));
+    }
   }
 
   return (-1);
@@ -769,10 +772,10 @@ pi_file_close_for_write (struct pi_file *pf)
   /* This may just be packing */
   fwrite( "\0\0", 1, 2, f);
   
-  if (pf->app_info && (fwrite (pf->app_info, 1, pf->app_info_size, f) != pf->app_info_size))
+  if (pf->app_info && (fwrite (pf->app_info, 1, pf->app_info_size, f) != (size_t)pf->app_info_size))
     goto bad;
 
-  if (pf->sort_info && (fwrite (pf->sort_info, 1, pf->sort_info_size, f) != pf->sort_info_size))
+  if (pf->sort_info && (fwrite (pf->sort_info, 1, pf->sort_info_size, f) != (size_t)pf->sort_info_size))
     goto bad;
     
 
@@ -850,6 +853,7 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
   int flags;
   int version;
   void * buffer;
+  int freeai = 0;
   
   version = pi_version(socket);
   
@@ -863,15 +867,35 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
     flags |= 0x8000; /* Rewrite an open DB */
     reset = 1; /* To be on the safe side */
   }
+#ifdef DEBUG
   printf("Flags = %8.8X, name = '%s'\n", flags, pf->info.name);
+#endif
   
   /* Create DB*/
   if(dlp_CreateDB(socket, pf->info.creator, pf->info.type, cardno,
                        flags, pf->info.version,
                        pf->info.name, &db)<0)
-   return -1;
+    return -1;
     
+  
   pi_file_get_app_info(pf, &buffer, &l);
+  
+  /* Compensate for bug in OS 2.x Memo */
+  if((version > 0x0100) && (strcmp(pf->info.name, "MemoDB")==0) && (l>0) && (l<282))
+  {
+      /* Justification: The appInfo structure was accidentally lengthend in OS 2.0,
+         but the Memo application does not check that it is long enough, hence the
+         shorter block from OS 1.x will cause the 2.0 Memo application to lock up
+         if the sort preferences are modified. This code detects the installation
+         of a short app info block on a 2.0 machine, and lengthens it. This 
+         transformation will never lose information. */
+
+      void * b2 = calloc(1, 282);
+      memcpy(b2, buffer, l);
+      buffer = b2;
+      l = 282;
+      freeai = 1;
+  }
   
   /* All system updates seen to have the 'ptch' type, so trigger a reboot on those */
   if (pf->info.creator == pi_mktag('p','t','c','h'))
@@ -882,6 +906,9 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
       
   if(l>0)
     dlp_WriteAppBlock(socket, db, buffer, l);
+  
+  if (freeai)
+    free(buffer);
    
   /* Resource or record? */
   if(pf->info.flags & dlpDBFlagResource)

@@ -44,10 +44,18 @@ void unpack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int len
   memcpy(ai->CategoryID, record, 16);
   record += 16;
   ai->lastUniqueID = get_byte(record);
+  record += 4;
+  if (len >= 282) {
+    record += 2;
+    ai->sortOrder = get_byte(record);
+  } else {
+    ai->sortOrder = 0;
+  }
 }
 
 void pack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int * len) {
   int i;
+  unsigned char * start = record;
   set_short(record, ai->renamedcategories);
   record += 2;
   for(i=0;i<16;i++) {
@@ -60,6 +68,13 @@ void pack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int * len
   record ++;
   set_byte(record, 0); /* gapfil */
   set_short(record+1, 0); /* gapfil */
+  record += 3;
+  set_short(record, 0); /* gapfil new for 2.0 */
+  record += 2;
+  set_byte(record, ai->sortOrder); /* new for 2.0 */
+  record++;
+  set_byte(record, 0); /* gapfil new for 2.0 */
+  record++;
   
-  *len = 2+(16*16)+16+2+2;
+  *len = (record-start);
 }

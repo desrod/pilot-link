@@ -15,7 +15,7 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 
-#ifdef OS2
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
 
@@ -118,8 +118,8 @@ int main(int argc, char *argv[])
     exit(1);
   }
     
-  laddr.sa_family = PI_AF_SLP;
-  strcpy(laddr.device,argv[1]);
+  laddr.pi_family = PI_AF_SLP;
+  strcpy(laddr.pi_device,argv[1]);
   
   pi_bind(sd, &laddr, sizeof(laddr));
   

@@ -5,17 +5,10 @@ appInfo_t::appInfo_t(const void *ap)
 {
      _renamedCategories = get_short(ap);
 
-     uchar_t *ptr = ((uchar_t *) ap) + 2;
+     unsigned char *ptr = ((unsigned char *) ap) + 2;
      
-#if 1
      (void) memcpy(_categoryName, ptr, 256);
      ptr += 256;
-#else
-     for (short int i = 0; i < 16; i++) {
-	  (void) memcpy(_categoryName[i], ptr, 16);
-	  ptr += 16;
-     }
-#endif
 
      (void) memcpy(_categoryID, ptr, 16);
 
@@ -82,20 +75,14 @@ bool appInfo_t::removeCategory(charConst_t category)
      return false;
 }
 
-void appInfo_t::baseAppInfoPack(uchar_t *buffer) 
+void appInfo_t::baseAppInfoPack(unsigned char *buffer) 
 {
      set_short(buffer, _renamedCategories);
 
-     uchar_t *ptr = ((uchar_t *) buffer) + 2;
-#if 1
+     unsigned char *ptr = ((unsigned char *) buffer) + 2;
+
      (void) memcpy(ptr, _categoryName, 256);
      ptr += 256;
-#else
-     for (short i = 0; i < 16; i++) {
-	  (void) memcpy(ptr, _categoryName[i], 16);
-	  ptr += 16;
-     }
-#endif
 
      (void) memcpy(ptr, _categoryID, 16);
 

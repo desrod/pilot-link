@@ -4,7 +4,7 @@
 todoAppInfo_t::todoAppInfo_t(void *ap) 
      : appInfo_t(ap)
 {
-     uchar_t *ptr = ((uchar_t *) ap) + BASE_APP_INFO_SIZE;
+     unsigned char *ptr = ((unsigned char *) ap) + BASE_APP_INFO_SIZE;
      
      _dirty = get_short(ptr);
      
@@ -14,11 +14,11 @@ todoAppInfo_t::todoAppInfo_t(void *ap)
 
 void *todoAppInfo_t::pack(void) 
 {
-     uchar_t *buffer = new uchar_t [TODO_APP_INFO_SIZE];
+     unsigned char *buffer = new unsigned char [TODO_APP_INFO_SIZE];
 
      baseAppInfoPack(buffer);
 
-     uchar_t *ptr = buffer + BASE_APP_INFO_SIZE;
+     unsigned char *ptr = buffer + BASE_APP_INFO_SIZE;
 
      set_short(ptr, _dirty);
 
@@ -26,6 +26,30 @@ void *todoAppInfo_t::pack(void)
      set_short(ptr, _sortByPriority);
 
      return buffer;
+}
+
+todo_t::todo_t(const todo_t &oldCopy) 
+{
+     (void) memcpy(this, &oldCopy, sizeof(todo_t));
+
+     int len;
+
+     if (oldCopy._due) {
+	  _due = new tm;
+	  (void) memcpy(_due, oldCopy._due, sizeof(tm));
+     }
+
+     if (oldCopy._description) {
+	  len = strlen(oldCopy._description);
+	  _description = new char [len + 1];
+	  (void) strcpy(_description, oldCopy._description);
+     }
+
+     if (oldCopy._note) {
+	  len = strlen(oldCopy._note);
+	  _note = new char [len + 1];
+	  (void) strcpy(_note, oldCopy._note);
+     }
 }
 
 void todo_t::unpack(void *buf, bool firstTime) 
@@ -57,7 +81,7 @@ void todo_t::unpack(void *buf, bool firstTime)
      } else
 	  _due = NULL;
 
-     uchar_t *ptr = ((uchar_t *)buf) + 2;
+     unsigned char *ptr = ((unsigned char *)buf) + 2;
      _priority = get_byte(ptr);
 
      ptr++;
@@ -82,16 +106,16 @@ void todo_t::unpack(void *buf, bool firstTime)
 	  _note = NULL;
 }
 
-void *todo_t::internalPack(uchar_t *buffer) 
+void *todo_t::internalPack(unsigned char *buffer) 
 {
      if (_due)
 	  setBufTm(buffer, _due);
      else
 	  *buffer = *(buffer + 1) = 0xff;
      
-     uchar_t *ptr = buffer + 2;
+     unsigned char *ptr = buffer + 2;
      
-     *ptr = (uchar_t) _priority;
+     *ptr = (unsigned char) _priority;
      if (_complete)
 	  *ptr |= 0x80;
 
@@ -128,7 +152,7 @@ void *todo_t::pack(int *len)
      // There is a null byte, whether or not there is a description
      ++(*len);
      
-     uchar_t *ret = new uchar_t [*len];
+     unsigned char *ret = new unsigned char [*len];
 
      return internalPack(ret);
 }
@@ -158,5 +182,34 @@ void *todo_t::pack(void *buffer, int *len)
 
      *len = totalLength;
 
-     return internalPack((uchar_t *) buffer);
+     return internalPack((unsigned char *) buffer);
+}
+
+// We can't just point to the data, as it might be deleted.  Make a copy
+void todoList_t::merge(todo_t &todo) 
+{
+     todo._next = _head;
+     _head = new todo_t(todo);
+}
+ 
+// We can't just point to the data in the list, as it might get deleted on
+// us. We need to make a real copy
+void todoList_t::merge(todoList_t &list) 
+{
+     todo_t *newguy;
+ 
+     for (todo_t *ptr = list._head; ptr != NULL; ptr = ptr->_next) {
+          newguy = new todo_t(ptr);
+          newguy->_next = _head;
+          _head = newguy;
+     }
+}
+ 
+todoList_t::~todoList_t(void) {
+     todo_t *ptr, *next;
+ 
+     for (ptr = _head; ptr != NULL; ptr = next) {
+          next = ptr->_next;
+          delete ptr;
+     }
 }

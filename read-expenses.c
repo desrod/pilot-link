@@ -37,9 +37,9 @@ int main(int argc, char *argv[])
     exit(1);
   }
     
-  addr.sa_family = PI_AF_SLP;
-  addr.port = 3;
-  strcpy(addr.device,argv[1]);
+  addr.pi_family = PI_AF_SLP;
+  addr.pi_port = 3;
+  strcpy(addr.pi_device,argv[1]);
   
   ret = pi_bind(sd, &addr, sizeof(addr));
   if(ret == -1) {
@@ -65,10 +65,8 @@ int main(int argc, char *argv[])
   /* Tell user (via Pilot) that we are starting things up */
   dlp_OpenConduit(sd);
 
-  if (pi_version(sd) < 0x0101) 
-    /* For rather annoying reasons, you must read PalmOS 1.0 preferences _before_
-       you open the DB! */
-    ret = dlp_ReadAppPreference(sd, db, Expense_Creator, Expense_Pref, 1, 0xffff, buffer, 0, 0);
+  /* Note that under PalmOS 1.x, you can only read preferences before the DB is opened */
+  ret = dlp_ReadAppPreference(sd, Expense_Creator, Expense_Pref, 1, 0xffff, buffer, 0, 0);
   
   /* Open the ToDo database, store access handle in db */
   if(dlp_OpenDB(sd, 0, 0x80|0x40, "ExpenseDB", &db) < 0) {
@@ -77,9 +75,6 @@ int main(int argc, char *argv[])
     exit(1);
   }
   
-  if (pi_version(sd) >= 0x0101)
-    ret = dlp_ReadAppPreference(sd, db, Expense_Creator, Expense_Pref, 1, 0xffff, buffer, 0, 0);
-    
   if (ret >= 0) {
     unpack_ExpensePrefs(&tp, buffer, 0);
     pack_ExpensePrefs(&tp, buffer2, &i);

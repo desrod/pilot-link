@@ -29,10 +29,8 @@ int main(int argc, char *argv[])
   int i;
   unsigned char check;
   struct pi_socket ps;
-#ifdef sun
   extern char* optarg;
   extern int optind;
-#endif
   int rom;
 
   progname = argv[0];
@@ -40,6 +38,7 @@ int main(int argc, char *argv[])
   if (argc < 2)
     Help();
   
+  ps.mac = calloc(1, sizeof(struct pi_mac));
   ps.rate = 38400;
   ps.sd = 0;
   if (pi_device_open(argv[1], &ps) == -1) {
@@ -64,7 +63,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
   
   for(i=0;i < 128;i++) {
         do {
-          l = read(ps.mac.fd, buf, 1);
+          l = read(ps.mac->fd, buf, 1);
           if (l<1)
             continue;
   	} while (buf[0] != '*');
@@ -73,7 +72,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
   	
   	p = 0;
   	do {
-  	  l = read(ps.mac.fd, buf+p, 4096-p);
+  	  l = read(ps.mac->fd, buf+p, 4096-p);
   	  if (l<0) {
   	    perror("Unable to read sync byte");
   	  }
@@ -81,7 +80,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
   	} while( p<4096);
   	
   	check = 0xff;
-  	if (read(ps.mac.fd, buf+4096, 1)<0) {
+  	if (read(ps.mac->fd, buf+4096, 1)<0) {
   	  perror("Unable to read checksum byte");
   	  goto error;
   	}
@@ -98,7 +97,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
   	
   	buf[4096] = '+';
   	
-  	write(ps.mac.fd, buf+4096, 1);
+  	write(ps.mac->fd, buf+4096, 1);
   }
   printf("\nSuccessful!\n");
 

@@ -7,9 +7,7 @@
  */
 
 #include <stdio.h>
-#ifdef __EMX__
 #include <sys/types.h>
-#endif
 #include <sys/stat.h>
 #include <signal.h>
 #include "pi-source.h"
@@ -41,9 +39,9 @@ void Connect(void) {
     exit(1);
   }
 
-  addr.sa_family = PI_AF_SLP;
-  addr.port = 3;
-  strcpy(addr.device,device);
+  addr.pi_family = PI_AF_SLP;
+  addr.pi_port = 3;
+  strcpy(addr.pi_device,device);
   
   ret = pi_bind(sd, &addr, sizeof(addr));
   if(ret == -1) {
@@ -175,11 +173,8 @@ void Help(void)
 int main(int argc, char *argv[])
 {
   int c;
-#ifdef sun
   extern char* optarg;
   extern int optind;
-#endif
-
 
   progname = argv[0];
 

@@ -251,10 +251,8 @@ int main(int argc, char *argv[])
   "";
 #endif
 
-#ifdef sun
   extern char* optarg;
   extern int optind;
-#endif
 
   if (getenv("SENDMAIL"))
     sendmail = getenv("SENDMAIL");
@@ -345,9 +343,9 @@ int main(int argc, char *argv[])
   
   lost = dupe = rec = sent = 0;
   
-  addr.sa_family = PI_AF_SLP;
-  addr.port = 3;
-  strcpy(addr.device, port);
+  addr.pi_family = PI_AF_SLP;
+  addr.pi_port = 3;
+  strcpy(addr.pi_device, port);
   
   ret = pi_bind(sd, &addr, sizeof(addr));
   if(ret == -1) {
@@ -398,12 +396,12 @@ int main(int argc, char *argv[])
   p.filtersubject = 0;
   
   if (pi_version(sd) > 0x0100) {
-    if (dlp_ReadAppPreference(sd, db, makelong("mail"), 1, 1, 0xffff, buffer, 0, 0)>=0) {
+    if (dlp_ReadAppPreference(sd, makelong("mail"), 1, 1, 0xffff, buffer, 0, 0)>=0) {
       printf("Got local backup mail preferences\n"); /* 2 for remote prefs */
       unpack_MailPrefs(&p, buffer, 0);
     } else {
       printf("Unable to get mail preferences, trying current\n");
-      if (dlp_ReadAppPreference(sd, db, makelong("mail"), 1, 1, 0xffff, buffer, 0, 0)>=0) {
+      if (dlp_ReadAppPreference(sd, makelong("mail"), 1, 1, 0xffff, buffer, 0, 0)>=0) {
         printf("Got local current mail preferences\n"); /* 2 for remote prefs */
         unpack_MailPrefs(&p, buffer, 0);
       } else
@@ -413,7 +411,7 @@ int main(int argc, char *argv[])
     if (tai.signature)
       free(tai.signature);
       
-    if (dlp_ReadAppPreference(sd, db, makelong("mail"), 3, 1, 0xffff, buffer, 0, 0)>0) {
+    if (dlp_ReadAppPreference(sd, makelong("mail"), 3, 1, 0xffff, buffer, 0, 0)>0) {
       tai.signature=strdup(buffer);
     }
 

@@ -53,10 +53,12 @@ int pi_socket(int domain, int type, int protocol)
     errno = err;
     return -1;
   }
+  ps->mac = calloc(1, sizeof(struct pi_mac));
   ps->type = type;
   ps->protocol = protocol;
   ps->connected = 0;
-  ps->mac.fd = 0;
+  ps->mac->fd = 0;
+  ps->mac->ref = 1;
   ps->xid = 0;
   ps->initiator = 0;
   ps->minorversion = 0;
@@ -86,11 +88,7 @@ int pi_socket(int domain, int type, int protocol)
 #endif
 
   if(type == PI_SOCK_STREAM) {
-#ifdef __sgi
     ps->establishrate = 9600; /* Default PADP connection rate */
-#else
-    ps->establishrate = 9600 /*19200*/; /* Default PADP connection rate */
-#endif
     if (getenv("PILOTRATE"))
     	ps->establishrate = atoi(getenv("PILOTRATE"));
     ps->rate = 9600; /* Mandatory CMP conncetion rate */
@@ -122,7 +120,7 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
     return -1;
   }
 
-  if (pi_device_open(addr->device, ps) == -1) {
+  if (pi_device_open(addr->pi_device, ps) == -1) {
     return -1;     /* errno already set */
   }
 
@@ -158,6 +156,7 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
       return -1;
     }
   }
+  ps->connected = 1;
   
   ps->initiator = 1; /* We initiated the link */
   
@@ -175,7 +174,7 @@ int pi_bind(int pi_sd, struct pi_sockaddr *addr, int addrlen)
     return -1;
   }
   
-  if (pi_device_open(addr->device, ps) == -1) {
+  if (pi_device_open(addr->pi_device, ps) == -1) {
     return -1;     /* errno already set */
   }
   
@@ -202,52 +201,68 @@ int pi_listen(int pi_sd, int backlog)
 
 int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
 {
-  struct pi_socket *ps;
+  struct pi_socket *ps, *accept;
   struct cmp c;
 
   if (!(ps = find_pi_socket(pi_sd))) {
     errno = ESRCH;
     return -1;
   }
+  
+  accept = malloc(sizeof(struct pi_socket));
+  memcpy(accept, ps, sizeof(struct pi_socket));
 
-  if(ps->type == PI_SOCK_STREAM) {
-
-    pi_socket_read(ps, 200);
-    if(cmp_rx(ps, &c) < 0)
-      return -1; /* Failed to establish connection, errno already set */
+  if(accept->type == PI_SOCK_STREAM) {
+    pi_socket_read(accept, 200);
+    if(cmp_rx(accept, &c) < 0)
+      goto fail; /* Failed to establish connection, errno already set */
     
     if ((c.version & 0xFF00) == 0x0100) {
-      if(ps->establishrate > c.baudrate) {
+      if((unsigned long) accept->establishrate > c.baudrate) {
 #ifdef DEBUG
         fprintf(stderr,"Rate %d too high, dropping to %ld\n",ps->establishrate,c.baudrate);
 #endif
-        ps->establishrate = c.baudrate;
+        accept->establishrate = c.baudrate;
       }
-      ps->rate = ps->establishrate;
-      ps->version = c.version;
-      if(cmp_init(ps, ps->rate)<0)
-        return -1;
-      if(ps->rate != 9600) {
-        pi_socket_flush(ps);
-        pi_device_changebaud(ps);
+      accept->rate = accept->establishrate;
+      accept->version = c.version;
+      if(cmp_init(accept, accept->rate)<0)
+        goto fail;
+      pi_socket_flush(accept);
+      if(accept->rate != 9600) {
+        pi_device_changebaud(accept);
       }
-      ps->connected = 1;
-      ps->dlprecord = 0;
+      accept->connected = 1;
+      accept->dlprecord = 0;
     }else {
       cmp_abort(ps, 0x80); /* 0x80 means the comm version wasn't compatible*/
-      pi_device_close(ps);
 
       fprintf(stderr, "pi_socket connection failed due to comm version mismatch\n");
       fprintf(stderr, " (expected version 01xx, got %4.4X)\n", c.version);
 
       errno = ECONNREFUSED;
-      return -1;
+      goto fail;
     }
+  } else {
+    accept->connected = 1;
   }
   
-  ps->initiator = 0; /* We accepted the link, we did not initiate it */
+  accept->sd = dup(ps->sd);
+
+  if (!psl) psl = accept;
+  else {
+    struct pi_socket *p;
+    for (p = psl; p->next; p=p->next);
+      p->next = accept;
+  }
   
-  return pi_sd; /* FIXME: return different socket */
+  accept->mac->ref++; /* Keep mac around even if the bound socket is closed */
+  accept->initiator = 0; /* We accepted the link, we did not initiate it */
+  
+  return accept->sd;
+fail:
+  free(accept);
+  return -1;
 }
 
 /* Send msg on a connected socket */
@@ -345,12 +360,20 @@ int pi_close(int pi_sd)
         dlp_EndOfSync(pi_sd, 0);  /* then end sync, with clean status */
   }
   
-  if(ps->mac.fd) { /* If device was opened */
-    pi_socket_flush(ps);
-    pi_device_close(ps);
-  }
-  if(ps->sd) /* If device originally had a /dev/null handle */
+  if(ps->sd && (ps->sd != ps->mac->fd)) /* If device still has a /dev/null handle */
     close(ps->sd); /* Close /dev/null handle */
+    
+  if(ps->mac->fd) { /* If device was opened */
+    if (ps->connected) {
+      pi_socket_flush(ps); /* Flush the device, and set baud rate back to the initial setting */
+      ps->rate = 9600; 
+      pi_device_changebaud(ps);
+    }
+    if (--(ps->mac->ref) == 0) { /* If no-one is using the device, close it */
+      pi_device_close(ps);
+      free(ps->mac);
+    }
+  }
 
   if (ps == psl) {
     psl = psl->next;

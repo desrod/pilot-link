@@ -26,9 +26,9 @@ extern "C" {
 #define PI_PilotSocketRemoteUI  2
 
 struct pi_sockaddr {
-  unsigned short sa_family;
-  unsigned short port;
-  char device[12];
+  unsigned short pi_family;
+  unsigned short pi_port;
+  char pi_device[12];
 };
 
 struct pi_skb;

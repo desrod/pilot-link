@@ -62,7 +62,7 @@ void memos(pi_file *pf)
      int nentries;
      pi_file_get_entries(pf, &nentries);
      
-     uchar_t *buf, packedBuf[0xffff];
+     unsigned char *buf, packedBuf[0xffff];
      int size, attrs, cat;
      recordid_t uid;
      
@@ -122,7 +122,7 @@ void todos(pi_file *pf)
      int nentries;
      pi_file_get_entries(pf, &nentries);
      
-     uchar_t *buf, packedBuf[0xffff];
+     unsigned char *buf, packedBuf[0xffff];
      int size, attrs, cat;
      recordid_t uid;
      tm *due;
@@ -216,6 +216,7 @@ void prettyPrintRepeat(appointment_t *appt)
 			cout << days[i];
 		   }
 	      }
+	      cout << endl;
 	      break;
 	 case appointment_t::monthlyByDay:
 	      cout << "It repeats on the ";
@@ -277,7 +278,7 @@ void datebook(pi_file *pf)
      int nentries;
      pi_file_get_entries(pf, &nentries);
 
-     uchar_t *buf;
+     unsigned char *buf;
      int size, attrs, cat;
      recordid_t uid;
      tm *timePtr;
@@ -368,7 +369,7 @@ void addresses(pi_file *pf)
      int nentries;
      pi_file_get_entries(pf, &nentries);
      
-     uchar_t *buf, packedBuf[0xffff];
+     unsigned char *buf, packedBuf[0xffff];
      int size, attrs, cat;
      recordid_t uid;
      address_t address;

@@ -68,10 +68,8 @@ int user_fn(int sd, int argc, char **argv) {
   char fl_name = 0, fl_uid = 0, fl_vid = 0, fl_pid = 0;
   int c, ret;
 
-#ifdef sun
   extern char* optarg;
   extern int optind;
-#endif
 
   optind = 0;
   while ((c = getopt(argc, argv, "n:i:v:p:h")) != -1) {
@@ -323,9 +321,9 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  addr.sa_family = PI_AF_SLP;
-  addr.port = 3;
-  strcpy(addr.device, argv[1]);
+  addr.pi_family = PI_AF_SLP;
+  addr.pi_port = 3;
+  strcpy(addr.pi_device, argv[1]);
 
   ret = pi_bind(sd, &addr, sizeof(addr));
   if (ret == -1) {
@@ -341,8 +339,8 @@ int main(int argc, char **argv) {
 
   printf("Connecting to Pilot at %s...", argv[1]); fflush(stdout);
 
-  ret = pi_accept(sd, &addr, NULL);
-  if (ret == -1) {
+  sd = pi_accept(sd, &addr, NULL);
+  if (sd == -1) {
     perror("pi_accept");
     exit(1);
   }

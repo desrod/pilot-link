@@ -48,9 +48,9 @@ int main(int argc, char *argv[])
     exit(1);
   }
     
-  addr.sa_family = PI_AF_SLP;
-  addr.port = 3;
-  strcpy(addr.device,"/dev/ptyp9"); /* Bogus PTY allocation */
+  addr.pi_family = PI_AF_SLP;
+  addr.pi_port = 3;
+  strcpy(addr.pi_device,"/dev/ptyp9"); /* Bogus PTY allocation */
   
   ret = pi_bind(sd, &addr, sizeof(addr));
   if(ret == -1) {

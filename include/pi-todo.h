@@ -57,19 +57,32 @@ class todoAppInfo_t : public appInfo_t
      void *pack(void);
 };
 
-class todo_t 
+class todoList_t;
+
+class todo_t : public baseApp_t
 {
+     friend todoList_t;
+     
      struct tm *_due;		// Non-NULL if there is a due date
      int _priority;		// A priority in the range 1-5
      bool _complete;		// true if the event was completed
      char *_description;	// The line that shows up in a ToDo list
      char *_note;		// Non-NULL if there is a note
 
-     void *internalPack(uchar_t *);
+     todo_t *_next;
+     
+     void *internalPack(unsigned char *);
      
    public:
-     todo_t(void *buf) { unpack(buf, true); }
-     todo_t(void) { memset(this, '\0', sizeof(todo_t)); }
+     todo_t(void) : baseApp_t() { memset(this, '\0', sizeof(todo_t)); }
+     todo_t(void *buf) : baseApp_t() { unpack(buf, true); }
+     todo_t(void *buf, int attr, recordid_t id, int category)
+	  : baseApp_t(attr, id, category)
+	  {
+	       unpack(buf, true);
+	  }
+     todo_t(const todo_t &);
+     
      ~todo_t() {
 	  if (_due) delete _due;
 	  if (_description) delete _description;
@@ -87,6 +100,22 @@ class todo_t
      void *pack(void *, int *);
 };
 
+class todoList_t 
+{
+     todo_t *_head;
+
+  public:
+     todoList_t(void) : _head(NULL) { }
+     ~todoList_t(void);
+
+     todo_t *first() { return _head; }
+     todo_t *next(todo_t *ptr) { return ptr->_next; }
+
+     void merge(todo_t &);
+     void merge(todoList_t &);
+};
+     
+     
 #endif /*__cplusplus*/
 
 #endif /* _PILOT_TODO_H_ */
