@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
 	}
 
 	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-	unpack_MailAppInfo(&tai, buffer, 0xffff);
+	unpack_MailAppInfo(&tai, (unsigned char *)buffer, 0xffff);
 
 	setbuf(stderr, 0);
 
@@ -365,7 +365,7 @@ int main(int argc, char *argv[])
 		    (sd, makelong("mail"), 1, 1, 0xffff, buffer, 0,
 		     0) >= 0) {
 			printf("Got local backup mail preferences\n");	/* 2 for remote prefs */
-			unpack_MailSyncPref(&p, buffer, 0xffff);
+			unpack_MailSyncPref(&p, (unsigned char *)buffer, 0xffff);
 		} else {
 			printf
 			    ("Unable to get mail preferences, trying current\n");
@@ -373,7 +373,7 @@ int main(int argc, char *argv[])
 			    (sd, makelong("mail"), 1, 1, 0xffff, buffer, 0,
 			     0) >= 0) {
 				printf("Got local current mail preferences\n");	/* 2 for remote prefs */
-				unpack_MailSyncPref(&p, buffer, 0xffff);
+				unpack_MailSyncPref(&p, (unsigned char *)buffer, 0xffff);
 			} else
 				printf
 				    ("Couldn't get any mail preferences.\n");
@@ -382,7 +382,7 @@ int main(int argc, char *argv[])
 		if (dlp_ReadAppPreference
 		    (sd, makelong("mail"), 3, 1, 0xffff, buffer, 0,
 		     0) > 0) {
-			unpack_MailSignaturePref(&sig, buffer, 0xffff);
+			unpack_MailSignaturePref(&sig, (unsigned char *)buffer, 0xffff);
 		}
 
 	}
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 			    || (attr & dlpRecAttrArchived))
 				continue;
 
-			unpack_Mail(&t, buffer, len);
+			unpack_Mail(&t, (unsigned char *)buffer, len);
 
 			sendf = popen(sendmail, "w");
 
@@ -637,7 +637,7 @@ int main(int argc, char *argv[])
 			} else
 				buffer[l] = 0;
 
-			msg = (char *) buffer;
+			msg = (char *)buffer;
 			h = 1;
 			for (;;) {
 				if (getpopstring(popfd, msg) < 0) {
@@ -695,7 +695,7 @@ int main(int argc, char *argv[])
 
 			t.body = strdup(buffer);
 
-			len = pack_Mail(&t, buffer, 0xffff);
+			len = pack_Mail(&t, (unsigned char *)buffer, 0xffff);
 
 			if (dlp_WriteRecord
 			    (sd, db, 0, 0, 0, buffer, len, 0) > 0) {
@@ -820,7 +820,7 @@ int main(int argc, char *argv[])
 
 			t.body = strdup(msg);
 
-			len = pack_Mail(&t, buffer, 0xffff);
+			len = pack_Mail(&t, (unsigned char *)buffer, 0xffff);
 
 			if (dlp_WriteRecord
 			    (sd, db, 0, 0, 0, buffer, len, 0) > 0) {
