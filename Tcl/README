@@ -1,0 +1,7 @@
+
+This is an experimental piece of code to bind the pilot-link library to Tcl.
+You must have tcl 8.0b1 installed, and you'll need to figure out how to
+properly build a dynamically loadable library (if that is even possible).
+The included Makefile is only likely to work on ELF systems.
+
+Currently only a very few commands are bound. test.tcl demonstrates them.

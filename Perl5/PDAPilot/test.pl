@@ -39,6 +39,8 @@ print "Battery voltage is $b[0], (warning marker $b[1], critical marker $b[2])\n
 
 $db = $dlp->Open("MemoDB");
 
+print "db class is ", ref $db, "\n";
+
 @r = $db->GetRecord(0);
 
 print "Memo record 0 has ID $r[2], attribue $r[3], category $r[4]\n";
@@ -52,6 +54,10 @@ $app = $db->GetAppBlock;
 $app = PDA::Pilot::Memo::UnpackAppBlock($app);
 
 print "Categories: @{$app->{categoryName}}\n";
+
+#@r = $db->GetResource(0);
+
+#print "Resource: @r, error: ", ($db->errno()),"\n";
 
 undef $db; # Close database
 

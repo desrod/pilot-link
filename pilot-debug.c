@@ -38,6 +38,9 @@ int usetk;
 #ifndef TCL_ACTIVE
 # define TCL_ACTIVE TCL_READABLE
 #endif
+#ifndef TCL_RELEASE_LEVEL
+# define TCL_RELEASE_LEVEL 2
+#endif
 
 /*
  * The following variable is a special hack that is needed in order for
@@ -1013,8 +1016,12 @@ int proc_port(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   }
   
   fd = port;
-                        
+
+#if (TCL_MAJOR_VERSION<8) || (TCL_RELEASE_LEVEL<1)
   channel = Tcl_MakeFileChannel((ClientData)fd, 0, TCL_READABLE);
+#else
+  channel = Tcl_MakeFileChannel(fd, TCL_READABLE);
+#endif
   Tcl_RegisterChannel(interp, channel); /* And register it to TCL */
   Tcl_CreateChannelHandler(channel, TCL_READABLE, Read_Pilot, (ClientData)port);
   

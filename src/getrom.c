@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
   ps.mac = calloc(1, sizeof(struct pi_mac));
   ps.rate = 38400;
   ps.sd = 0;
-  if (pi_device_open(argv[1], &ps) == -1) {
+  if (pi_serial_device_open(argv[1], &ps) == -1) {
     perror("Unable to open port");
     exit(0);
   }
@@ -106,7 +106,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
 error:
   close(rom);
           
-  pi_device_close(&ps);
+  ps.device_close(&ps);
   
   exit(0);
 }

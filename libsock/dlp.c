@@ -1099,6 +1099,8 @@ int dlp_RPC(int sd, struct RPC_params * p, unsigned long * result)
     if(p->param[i].data)
       memcpy(c, p->param[i].data, p->param[i].size);
     c += p->param[i].size;
+    if(p->param[i].size & 1)
+      *c++ = 0;
   }
 
   pi_write(sd, dlp_buf, c-dlp_buf);
@@ -1121,10 +1123,9 @@ int dlp_RPC(int sd, struct RPC_params * p, unsigned long * result)
       A0 = get_long(dlp_buf+12);
       c = dlp_buf+18;
       for(i=p->args-1;i>=0;i--) {
-        c+=2;
         if(p->param[i].byRef && p->param[i].data)
-          memcpy(p->param[i].data, c, p->param[i].size);
-        c += p->param[i].size;
+          memcpy(p->param[i].data, c+2, p->param[i].size);
+        c += 2 + ((p->param[i].size+1)& ~1);
       }
     }
   }

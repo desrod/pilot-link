@@ -2,6 +2,8 @@ TYPEMAP
 PDA::Pilot::File *	T_PTROBJ
 PDA::Pilot::DLP *	T_PTROBJ
 PDA::Pilot::DLP::DB *	T_PTROBJ
+PDA::Pilot::DLP::ResourceDB *	T_PTROBJ
+PDA::Pilot::DLP::RecordDB *	T_PTROBJ
 DlpDB	T_PTROBJ
 DBInfo	T_DBInfo
 UserInfo	T_UserInfo

@@ -14,6 +14,7 @@
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
+#include "pi-net.h"
 #include "pi-padp.h"
 #include "pi-cmp.h"
 #include "pi-dlp.h"
@@ -126,7 +127,7 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
     return -1;
   }
 
-  if (pi_device_open(addr->pi_device, ps) == -1) {
+  if (pi_serial_device_open(addr->pi_device, ps) == -1) {
     return -1;     /* errno already set */
   }
 
@@ -147,13 +148,13 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
       if(c.flags & 0x80) {
         /* Change baud rate */
         ps->rate = c.baudrate;
-        pi_device_changebaud(ps);
+        ps->device_changebaud(ps);
       }
       return 0;
 
     } else if(c.type == 3) {
       /* CMP abort packet -- the other side didn't like us */
-      pi_device_close(ps);
+      ps->device_close(ps);
 
 #ifdef DEBUG
       fprintf(stderr,"Received CMP abort from client\n");
@@ -180,8 +181,16 @@ int pi_bind(int pi_sd, struct pi_sockaddr *addr, int addrlen)
     return -1;
   }
   
-  if (pi_device_open(addr->pi_device, ps) == -1) {
-    return -1;     /* errno already set */
+  if (addr->pi_device[0] == ':') {
+    memmove(addr->pi_device, addr->pi_device+1, strlen(addr->pi_device));
+    if (pi_net_device_open(addr->pi_device, ps) == -1) {
+      return -1;     /* errno already set */
+    }
+  }
+  else {
+    if (pi_serial_device_open(addr->pi_device, ps) == -1) {
+      return -1;     /* errno already set */
+    }
   }
   
   ps->laddr = *addr;
@@ -219,7 +228,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
   memcpy(accept, ps, sizeof(struct pi_socket));
 
   if(accept->type == PI_SOCK_STREAM) {
-    pi_socket_read(accept, 200);
+    accept->device_read(accept, 200);
     if(cmp_rx(accept, &c) < 0)
       goto fail; /* Failed to establish connection, errno already set */
     
@@ -236,7 +245,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
         goto fail;
       pi_socket_flush(accept);
       if(accept->rate != 9600) {
-        pi_device_changebaud(accept);
+        accept->device_changebaud(accept);
       }
       accept->connected = 1;
       accept->dlprecord = 0;
@@ -404,10 +413,10 @@ int pi_close(int pi_sd)
     if (ps->connected) {
       pi_socket_flush(ps); /* Flush the device, and set baud rate back to the initial setting */
       ps->rate = 9600; 
-      pi_device_changebaud(ps);
+      ps->device_changebaud(ps);
     }
     if (--(ps->mac->ref) == 0) { /* If no-one is using the device, close it */
-      pi_device_close(ps);
+      ps->device_close(ps);
       free(ps->mac);
     }
   }
@@ -539,5 +548,11 @@ struct pi_socket *find_pi_socket(int sd)
     if (p->sd == sd) return p;
   }
 
+  return 0;
+}
+
+int pi_socket_flush(struct pi_socket *ps)
+{
+  while (ps->device_write(ps));
   return 0;
 }

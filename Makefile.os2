@@ -72,7 +72,7 @@ EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) pilot-schl
 		sync-memodir$(EXT) sync-ical$(EXT) $(CCEXECS) \
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
-		getrom$(EXT) \
+		getrom$(EXT) pi-port$(EXT)\
 		test-connector$(EXT) test-acceptor$(EXT)
 
 PERLEXECS = pilot-undelete
@@ -152,6 +152,9 @@ pilot-schlep$(EXT): $(PILIBS) pilot-schlep.o
 
 pilot-mail$(EXT): $(PILIBS) pilot-mail.o parsedate.o
 	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-mail.o parsedate.o $(PILIBS) -o $@ $(LIBS)
+
+pi-port$(EXT): $(PILIBS) pi-port.o
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pi-port.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-file$(EXT): $(PILIBS) pilot-file.o
 	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)

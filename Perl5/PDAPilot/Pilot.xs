@@ -219,6 +219,8 @@ typedef struct DLPDB {
 	int errno;
 } PDA__Pilot__DLP__DB;
 
+typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__ResourceDB;
+typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__RecordDB;
 typedef struct DBInfo DBInfo;
 typedef struct PilotUser UserInfo;
 typedef unsigned long Char4;
@@ -1462,6 +1464,8 @@ errno(self)
 	CODE:
 		RETVAL = self->errno;
 		self->errno = 0;
+	OUTPUT:
+	RETVAL
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::DBPtr
 
@@ -1475,18 +1479,6 @@ Close(self)
 	RETVAL
 
 Result
-Autopack(self, setting=1, creator=0, name=0)
-	PDA::Pilot::DLP::DB *	self
-	int	setting
-	Char4	creator
-	char *	name
-	CODE:
-	if (setting) {
-	}
-	OUTPUT:
-	RETVAL
-
-Result
 SetSortBlock(self, block)
 	PDA::Pilot::DLP::DB *	self
 	SV *	block
@@ -1496,81 +1488,6 @@ SetSortBlock(self, block)
 		void * c = SvPV(block, len);
 		RETVAL = dlp_WriteSortBlock(self->socket, self->handle, c, len);
 	}
-	OUTPUT:
-	RETVAL
-
-Result
-Purge(self)
-	PDA::Pilot::DLP::DB *	self
-	CODE:
-	RETVAL = dlp_CleanUpDatabase(self->socket, self->handle);
-	OUTPUT:
-	RETVAL
-
-Result
-ResetFlags(self)
-	PDA::Pilot::DLP::DB *	self
-	CODE:
-	RETVAL = dlp_ResetSyncFlags(self->socket, self->handle);
-	OUTPUT:
-	RETVAL
-
-Result
-DeleteCategory(self, category)
-	PDA::Pilot::DLP::DB *	self
-	int	category
-	CODE:
-	RETVAL = dlp_DeleteCategory(self->socket, self->handle, category);
-	OUTPUT:
-	RETVAL
-
-void
-GetRecord(self, index)
-	PDA::Pilot::DLP::DB *	self
-	int	index
-	PPCODE:
-	{
-		int attr, category;
-		unsigned long id;
-		int size, result;
-	    result = dlp_ReadRecordByIndex(self->socket, self->handle, index, mybuf, &id, &size, &attr, &category);
-	    ReturnReadRecord(mybuf,size);
-	}
-
-Result
-MoveCategory(self, fromcat, tocat)
-	PDA::Pilot::DLP::DB *	self
-	int	fromcat
-	int	tocat
-	CODE:
-	RETVAL = dlp_MoveCategory(self->socket, self->handle, fromcat, tocat);
-	OUTPUT:
-	RETVAL
-
-
-Result
-DeleteRecord(self, id)
-	PDA::Pilot::DLP::DB *	self
-	unsigned long	id
-	CODE:
-	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 0, id);
-	OUTPUT:
-	RETVAL
-
-
-Result
-DeleteRecords(self)
-	PDA::Pilot::DLP::DB *	self
-	CODE:
-	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 1, 0);
-	OUTPUT:
-	RETVAL
-
-Result
-ResetNext(self)
-	PDA::Pilot::DLP::DB *	self
-	CODE:
-	RETVAL = dlp_ResetDBIndex(self->socket, self->handle);
 	OUTPUT:
 	RETVAL
 
@@ -1624,10 +1541,87 @@ SetAppBlock(self, block)
 	OUTPUT:
 	RETVAL
 
+MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::RecordDBPtr
+
+Result
+Purge(self)
+	PDA::Pilot::DLP::RecordDB *	self
+	CODE:
+	RETVAL = dlp_CleanUpDatabase(self->socket, self->handle);
+	OUTPUT:
+	RETVAL
+
+Result
+ResetFlags(self)
+	PDA::Pilot::DLP::RecordDB *	self
+	CODE:
+	RETVAL = dlp_ResetSyncFlags(self->socket, self->handle);
+	OUTPUT:
+	RETVAL
+
+Result
+DeleteCategory(self, category)
+	PDA::Pilot::DLP::RecordDB *	self
+	int	category
+	CODE:
+	RETVAL = dlp_DeleteCategory(self->socket, self->handle, category);
+	OUTPUT:
+	RETVAL
+
+void
+GetRecord(self, index)
+	PDA::Pilot::DLP::RecordDB *	self
+	int	index
+	PPCODE:
+	{
+		int attr, category;
+		unsigned long id;
+		int size, result;
+		printf("Entered getrecord\n");
+	    result = dlp_ReadRecordByIndex(self->socket, self->handle, index, mybuf, &id, &size, &attr, &category);
+	    ReturnReadRecord(mybuf,size);
+	}
+
+Result
+MoveCategory(self, fromcat, tocat)
+	PDA::Pilot::DLP::RecordDB *	self
+	int	fromcat
+	int	tocat
+	CODE:
+	RETVAL = dlp_MoveCategory(self->socket, self->handle, fromcat, tocat);
+	OUTPUT:
+	RETVAL
+
+
+Result
+DeleteRecord(self, id)
+	PDA::Pilot::DLP::RecordDB *	self
+	unsigned long	id
+	CODE:
+	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 0, id);
+	OUTPUT:
+	RETVAL
+
+
+Result
+DeleteRecords(self)
+	PDA::Pilot::DLP::RecordDB *	self
+	CODE:
+	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 1, 0);
+	OUTPUT:
+	RETVAL
+
+Result
+ResetNext(self)
+	PDA::Pilot::DLP::RecordDB *	self
+	CODE:
+	RETVAL = dlp_ResetDBIndex(self->socket, self->handle);
+	OUTPUT:
+	RETVAL
 
 int
 Records(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::RecordDB *	self
 	CODE:
 	{
 		int result = dlp_ReadOpenDBInfo(self->socket, self->handle, &RETVAL);
@@ -1641,7 +1635,7 @@ Records(self)
 
 void
 RecordIDs(self, sort=0)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::RecordDB *	self
 	int	sort
 	PPCODE:
 	{
@@ -1674,7 +1668,7 @@ RecordIDs(self, sort=0)
 
 void
 GetRecordByID(self, id)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::RecordDB *	self
 	unsigned long id
 	PPCODE:
 	{
@@ -1685,7 +1679,7 @@ GetRecordByID(self, id)
 
 void
 GetNextChanged(self, category=-1)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::RecordDB *	self
 	int	category
 	PPCODE:
 	{
@@ -1700,7 +1694,7 @@ GetNextChanged(self, category=-1)
 
 void
 GetNextInCategory(self, category)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::RecordDB *	self
 	int	category
 	PPCODE:
 	{
@@ -1712,7 +1706,7 @@ GetNextInCategory(self, category)
 
 unsigned long
 SetRecord(self, data, id, attr, category)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::RecordDB *	self
 	unsigned long	id
 	int	attr
 	int	category
@@ -1731,9 +1725,11 @@ SetRecord(self, data, id, attr, category)
 	OUTPUT:
 	RETVAL
 
+MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::ResourceDBPtr
+
 void
 GetResourceByID(self, type, id)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::ResourceDB *	self
 	Char4	type
 	int	id
 	PPCODE:
@@ -1745,7 +1741,7 @@ GetResourceByID(self, type, id)
 
 void
 GetResource(self, index)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::ResourceDB *	self
 	int	index
 	PPCODE:
 	{
@@ -1757,7 +1753,7 @@ GetResource(self, index)
 
 SV *
 SetResource(self, data, type, id)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::ResourceDB *	self
 	SV *	data
 	Char4	type
 	int	id
@@ -1778,7 +1774,7 @@ SetResource(self, data, type, id)
 
 Result
 DeleteResource(self, type, id)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::ResourceDB *	self
 	Char4	type
 	int	id
 	CODE:
@@ -1788,11 +1784,12 @@ DeleteResource(self, type, id)
 
 Result
 DeleteResources(self)
-	PDA::Pilot::DLP::DB *	self
+	PDA::Pilot::DLP::ResourceDB *	self
 	CODE:
 	RETVAL = dlp_DeleteResource(self->socket, self->handle, 1, 0, 0);
 	OUTPUT:
 	RETVAL
+
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLPPtr
 
@@ -1810,6 +1807,8 @@ errno(self)
 	CODE:
 		RETVAL = self->errno;
 		self->errno = 0;
+	OUTPUT:
+	RETVAL
 
 SV *
 GetTime(self)
@@ -1947,11 +1946,12 @@ Delete(self, name, cardno=0)
 	RETVAL
 
 SV *
-Open(self, name, mode=dlpOpenReadWrite, cardno=0)
+Open(self, name, mode=dlpOpenReadWrite, cardno=0, raw=0)
 	PDA::Pilot::DLP *	self
 	int	cardno
 	int	mode
 	char *	name
+	int	raw
 	CODE:
 	{
 		int handle;
@@ -1960,6 +1960,8 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0)
 			self->errno = result;
 			RETVAL = &sv_undef;
 		} else {
+			SV ** c = 0;
+			int type;
 			PDA__Pilot__DLP__DB * x = malloc(sizeof(PDA__Pilot__DLP__DB));
 			SV * sv = newSViv((IV)(void*)x);
 			SvREFCNT_inc(ST(0));
@@ -1969,7 +1971,64 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0)
 			x->errno = 0;
 			RETVAL = newRV(sv);
 			SvREFCNT_dec(sv);
-			sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::DBPtr",0));
+			type = dlp_ReadResourceByIndex(x->socket, x->handle, 0, 0, 0, 0, 0);
+			if (!raw) {
+				HV * h = perl_get_hv("PDA::Pilot::Classes", FALSE);
+				if (h)
+					c = hv_fetch(h, name, strlen(name), 0);
+			}
+			if ( type == -13) { /* record database */
+				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
+				                     gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));
+			} else {
+				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
+				                     gv_stashpv("PDA::Pilot::DLP::ResourceDBPtr",0));
+			}
+		}
+	}
+    OUTPUT:
+    RETVAL
+
+SV *
+Create(self, name, creator, type, flags, version, cardno=0, raw=0)
+	PDA::Pilot::DLP *	self
+	char *	name
+	Char4	creator
+	Char4	type
+	int	flags
+	int	version
+	int	cardno
+	int raw
+	CODE:
+	{
+		int handle;
+		int result = dlp_CreateDB(self->socket, creator, type, cardno, flags, version, name, &handle);
+		if (result<0) {
+			self->errno = result;
+			RETVAL = &sv_undef;
+		} else {
+			SV ** c = 0;
+			PDA__Pilot__DLP__DB * x = malloc(sizeof(PDA__Pilot__DLP__DB));
+			SV * sv = newSViv((IV)(void*)x);
+			SvREFCNT_inc(ST(0));
+			x->connection = ST(0);
+			x->socket = self->socket;
+			x->handle = handle;
+			x->errno = 0;
+			RETVAL = newRV(sv);
+			SvREFCNT_dec(sv);
+			if (!raw) {
+				HV * h = perl_get_hv("PDA::Pilot::Classes", FALSE);
+				if (h)
+					c = hv_fetch(h, name, strlen(name), 0);
+			}
+			if ( flags & dlpDBFlagResource) { /* resource database */
+				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
+				                     gv_stashpv("PDA::Pilot::DLP::ResourceDBPtr",0));
+			} else {
+				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
+				                     gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));
+			}
 		}
 	}
     OUTPUT:
@@ -2198,6 +2257,8 @@ errno(self)
 	CODE:
 		RETVAL = self->errno;
 		self->errno = 0;
+	OUTPUT:
+	RETVAL
 
 void
 DESTROY(self)

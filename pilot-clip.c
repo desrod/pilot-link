@@ -4,9 +4,6 @@
  * See the file COPYING for details.
  */
  
- /* Unfortunatly, SetClip is broken at the moment, so you can only retrieve
-    text from the Pilot. I've no idea why Set is broken. */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "pi-source.h"
@@ -60,8 +57,7 @@ int SetClip(int socket, int type, void * data, int length)
   char * b = data;
   unsigned long handle, ptr;
 
-  printf("Sorry, set is broken\n");
-#if 0
+
   /* MemHandleNew */
   PackRPC(&p, 0xA01E, RPC_PtrReply, RPC_Long(length), RPC_End);
   err = dlp_RPC(socket, &p, &handle);
@@ -82,14 +78,15 @@ int SetClip(int socket, int type, void * data, int length)
   PackRPC(&p, 0xA026, RPC_IntReply, RPC_Long(ptr), RPC_Ptr(b, length), RPC_Long(length), RPC_End);
   err = dlp_RPC(socket, &p, 0);
 
+  length--;
+  
   /* ClipboardAddItem */
   PackRPC(&p, 0xA10A, RPC_IntReply, RPC_Byte(type), RPC_Long(ptr), RPC_Short(length), RPC_End);
   err = dlp_RPC(socket, &p, 0);
 
-  /* MemHandleFree */
-  PackRPC(&p, 0xA02B, RPC_IntReply, RPC_Long(handle), RPC_End);
+  /* MemPtrFree */
+  PackRPC(&p, 0xA012, RPC_IntReply, RPC_Long(ptr), RPC_End);
   err = dlp_RPC(socket, &p, 0);
-#endif  
   return 1;
 }
  
@@ -144,8 +141,10 @@ int main(int argc, char *argv[])
   if (strcmp(argv[2], "-s")==0) {
     ret = read(fileno(stdin), buffer, 0xffff);
     dumpdata(buffer, ret);
-    if (ret>=0) 
+    if (ret>=0) {
+      buffer[ret++] = 0;
       SetClip(sd, 0, buffer, ret);
+    }
   } else {
     char * b;
     ret = 0;

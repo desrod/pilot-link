@@ -83,7 +83,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
         break;
       
       At("Reading Ack");
-      pi_socket_read(ps, xmitTimeout);
+      ps->device_read(ps, xmitTimeout);
 
       if(ps->rxq) {
         struct pi_skb *skb;
@@ -195,7 +195,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     }
   
     if (!ps->rxq) {
-      pi_socket_read(ps, recStartTimeout);
+      ps->device_read(ps, recStartTimeout);
       continue;
     }
 
@@ -216,7 +216,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
       }
       fprintf(stderr,"Wrong packet type on queue\n");
       free(skb);
-      pi_socket_read(ps, recStartTimeout);
+      ps->device_read(ps, recStartTimeout);
       continue;
     }
     break;
@@ -279,7 +279,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
         }
         
         if(!ps->rxq) {
-          pi_socket_read(ps, recSegTimeout);
+          ps->device_read(ps, recSegTimeout);
           continue;
         }
         
@@ -300,7 +300,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
           }
           fprintf(stderr,"Wrong packet type on queue\n");
           free(skb);
-          pi_socket_read(ps, recSegTimeout);
+          ps->device_read(ps, recSegTimeout);
           continue;
         }
         At(got good packet);

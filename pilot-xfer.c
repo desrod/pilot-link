@@ -190,7 +190,10 @@ void Fetch(char * dbname)
     exit(1);
   }
   	
-  dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info);
+  if (dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info)<0) {
+    printf("Unable to locate database '%s', fetch skipped.\n", dbname);
+    return;
+  }
         
   strcpy(name, dbname);
   if (info.flags & dlpDBFlagResource)

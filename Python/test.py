@@ -38,6 +38,11 @@ b = dlp.RPC(rpc)
 
 print "Battery results through Python RPC:", b
 
+rpc = pdapilot.PackRPC(0xA220, "i", ("&*", "s", "s", "s"), 
+                                 ("Woo woo!", 8, 100, 0))
+
+dlp.RPC(rpc)
+
 db = dlp.Open("MemoDB")
 
 r = db.GetRecord(0)

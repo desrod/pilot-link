@@ -50,7 +50,7 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
   int rlen =0;
   
   if (!ps->rxq)
-    pi_socket_read(ps, 1);
+    ps->device_read(ps, 1);
   
   if (!ps->rxq)
     return 0;
@@ -471,6 +471,8 @@ int sys_RPC(int sd, int socket, int trap, long * D0, long * A0, int params, stru
     if(param[i].data)
       memcpy(c, param[i].data, param[i].size);
     c += param[i].size;
+    if (param[i].size & 1)
+      *c++ = 0;
   }
   
   if (socket == 3)
@@ -492,11 +494,9 @@ int sys_RPC(int sd, int socket, int trap, long * D0, long * A0, int params, stru
     *A0 = get_long(buf+12);
     c = buf+18;
     for(i=params-1;i>=0;i--) {
-      c++;
-      param[i].size = get_byte(c); c++;
       if(param[i].byRef && param[i].data)
-        memcpy(param[i].data, c, param[i].size);
-      c += param[i].size;
+        memcpy(param[i].data, c+2, param[i].size);
+      c += 2 + ((get_byte(c+1) + 1)& ~1);
     }
   }
   return 0;

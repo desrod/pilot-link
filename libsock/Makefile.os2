@@ -1,4 +1,4 @@
-SOCKOBJS = socket.o serial.o slp.o padp.o \
+SOCKOBJS = socket.o serial.o net.o slp.o padp.o \
        dlp.o cmp.o syspkt.o
 
 FILEOBJS = pi-file.o
@@ -58,6 +58,9 @@ mail.o: mail.c ../include/pi-source.h   \
 memo.o: memo.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-memo.h
+net.o: net.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-net.h ../include/pi-slp.h
 padp.o: padp.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-padp.h ../include/pi-slp.h ../include/pi-serial.h
@@ -72,8 +75,8 @@ slp.o: slp.c ../include/pi-source.h   \
  ../include/pi-slp.h
 socket.o: socket.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-serial.h ../include/pi-padp.h ../include/pi-cmp.h \
- ../include/pi-dlp.h ../include/pi-syspkt.h
+ ../include/pi-serial.h ../include/pi-net.h ../include/pi-padp.h \
+ ../include/pi-cmp.h ../include/pi-dlp.h ../include/pi-syspkt.h
 sync.o: sync.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-sync.h

@@ -1,3 +1,20 @@
+Jun 8, 1997 	Kenneth Albanowski 0.6.6
+
+	Added highly experimental networked connections. The concept is to run
+		pi-port on a machine with a serial port, and have the real pilot
+		utilities connect to this server via TCP/IP. The current code is
+		supposed to work, but unfortunately is broken at the moment.
+	Added experimental Tcl 8.0b1 binding.
+	Modified Perl5 binding slightly, towards eventual goal of automatic
+		app-specific record packing and unpacking.
+	Modified Python test code slightly to demonstrate changing the Pilot's display
+		during HotSync.
+	Added CreateDB to Perl5 binding.
+	pilot-debug patched to compile under Tcl8.0b1.
+	pilot-xfer now properly fails if it cannot find a database to fetch.
+	Fixed odd-data length problem in RPC code so pilot-clip can now
+		successfully set the clipboard.
+
 Jun 1, 1997 	Kenneth Albanowski 0.6.5
 	Patches for OS/2 supplied by Mike Jarabek <jarabemj@mcmail.CIS.McMaster.CA>.
 

@@ -801,7 +801,7 @@ int pi_file_retrieve(struct pi_file * pf, int socket, int cardno)
   int db;
   int l,j;
   unsigned char buffer[0xffff];
-  if(dlp_OpenDB(socket, cardno, dlpOpenRead, pf->info.name, &db)<0)
+  if(dlp_OpenDB(socket, cardno, dlpOpenRead|dlpOpenSecret, pf->info.name, &db)<0)
     return -1;
     
   l = dlp_ReadAppBlock(socket, db, 0, buffer, 0xffff);

@@ -113,7 +113,7 @@ static int calcrate(int baudrate) {
 # define O_NONBLOCK 0
 #endif
 
-int pi_device_open(char *tty, struct pi_socket *ps)
+int pi_serial_device_open(char *tty, struct pi_socket *ps)
 {
 
   int i;
@@ -204,6 +204,11 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   }
 #endif
 
+  ps->device_close = pi_serial_device_close;
+  ps->device_read = pi_serial_device_read;
+  ps->device_write = pi_serial_device_write;
+  ps->device_changebaud = pi_serial_device_changebaud;
+  
   return ps->mac->fd;
 }
 
@@ -226,7 +231,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
 # define sleeping_beauty
 #endif
 
-int pi_device_changebaud(struct pi_socket *ps)
+int pi_serial_device_changebaud(struct pi_socket *ps)
 {
 #ifndef SGTTY
   struct termios tcn;
@@ -259,7 +264,7 @@ int pi_device_changebaud(struct pi_socket *ps)
 
 
 
-int pi_device_close(struct pi_socket *ps)
+int pi_serial_device_close(struct pi_socket *ps)
 {
   int result;
 #ifndef SGTTY
@@ -288,7 +293,7 @@ int pi_device_close(struct pi_socket *ps)
 #endif /* not OS2 */
 
 #ifdef OS2
-int pi_device_open(char *tty, struct pi_socket *ps)
+int pi_serial_device_open(char *tty, struct pi_socket *ps)
 {
   int rc;
   HFILE fd;
@@ -355,7 +360,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   return(fd);  
 }
 
-int pi_device_changebaud(struct pi_socket *ps)
+int pi_serial_device_changebaud(struct pi_socket *ps)
 {
   int param_length;
   int rc, baudrate;
@@ -418,7 +423,7 @@ int pi_device_changebaud(struct pi_socket *ps)
   return(0);
 }
 
-int pi_device_close(struct pi_socket *ps)
+int pi_serial_device_close(struct pi_socket *ps)
 {
 #ifndef NO_SERIAL_TRACE
   if (ps->debugfd)
@@ -538,7 +543,7 @@ error:
 #endif /* OS2 */
 
 
-int pi_socket_send(struct pi_socket *ps)
+int pi_serial_device_write(struct pi_socket *ps)
 {
   struct pi_skb *skb;
   int nwrote, len;
@@ -585,13 +590,7 @@ int pi_socket_send(struct pi_socket *ps)
   return 0;
 }
 
-int pi_socket_flush(struct pi_socket *ps)
-{
-  while (pi_socket_send(ps));
-  return 0;
-}
-
-int pi_socket_read(struct pi_socket *ps, int timeout)
+int pi_serial_device_read(struct pi_socket *ps, int timeout)
 {
   int r;
   unsigned char *buf;

@@ -103,6 +103,10 @@ struct pi_socket {
   int tx_errors;
   int rx_errors;
   char last_tid;
+  int (*device_close)(struct pi_socket*);
+  int (*device_changebaud)(struct pi_socket*);
+  int (*device_write)(struct pi_socket*);
+  int (*device_read)(struct pi_socket*, int);
 #ifdef OS2
   unsigned short os2_read_timeout;
   unsigned short os2_write_timeout;
@@ -117,7 +121,7 @@ struct pi_socket {
 
 #include "pi-args.h"
 
-extern int pi_device_open PI_ARGS((char *, struct pi_socket *ps));
+extern int pi_socket_flush PI_ARGS((struct pi_socket *ps));
 extern struct pi_socket *find_pi_socket PI_ARGS((int sd));
 extern int crc16 PI_ARGS((unsigned char *ptr, int count));
 extern char * printlong PI_ARGS((unsigned long val));
