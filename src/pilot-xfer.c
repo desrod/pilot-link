@@ -468,9 +468,8 @@ static void Backup(char *dirname, unsigned long int flags, int rom,
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("\nFailed, unable to back up database %s\n", name);
 
-		} else if (stat(name, &sbuf) == 0) {
+		} else if ((flags & BACKUP) && stat(name, &sbuf) == 0) {
 			fprintf(stdout, "[%7ld bytes/%4d kb total]", sbuf.st_size, totalsize/1024);
-			fflush(stdout);
 			totalsize += sbuf.st_size;
 		}
 
