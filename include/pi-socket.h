@@ -9,7 +9,7 @@ extern "C" {
 
 #define PILOT_LINK_VERSION 0
 #define PILOT_LINK_MAJOR 7
-#define PILOT_LINK_MINOR 3
+#define PILOT_LINK_MINOR 4
 
 #define PI_AF_SLP 0x0051        /* arbitrary, for completeness, just in case */
 #define PI_AF_INETSLP 0x0054    
@@ -56,7 +56,7 @@ extern int pi_write PI_ARGS((int pi_sd, void *msg, int len));
 extern int pi_getsockname PI_ARGS((int pi_sd, struct sockaddr * addr, int * namelen));
 extern int pi_getsockpeer PI_ARGS((int pi_sd, struct sockaddr * addr, int * namelen));
 
-extern unsigned int pi_version PI_ARGS((int pi_sd));
+extern int pi_version PI_ARGS((int pi_sd));
 
 extern int pi_tickle PI_ARGS((int pi_sd));
 extern int pi_watchdog PI_ARGS((int pi_sd, int interval));

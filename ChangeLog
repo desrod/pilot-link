@@ -1,3 +1,44 @@
+Jul 13, 1997	Kenneth Albanowski 0.7.4
+
+	Configuration changes:
+	  - Integrated libtool 1.0 (thanks, Gord!)
+	  - Automatic detection of GNU readline 2.0 and 2.1 (or later).
+	  - libtool removed entirely from C++ section
+	  - Itcl automatically detected, and tcl/tk from an itcl installation
+	    will be detected. Itcl is not currently used, however.
+	  - Adjusted to (re)support OS/2 compilation.
+	  - Revised OS/2 makefiles by Mike Jarabek.
+	Pisocket library changes:
+	  - Fixed up a few headers to use PI_ARGS.
+	  - Added compareTm function to compare tm's.
+	Utilities:
+	  - pilot-debug can now automatically utilise GNU readline 2.0 or 2.1
+	    for decent line-editing support, and in theory anything past 2.1
+	    should work as well.
+	  - pilot-mail includes patches by Diego Zamboni <diegoz@labsec.Corp.Sun.COM>
+	    to support reading of MH mail folders. (Note: this code does not
+	    support file or folder locking, or non-contiguous message numbers.)
+	Perl 5 binding changes:
+	  - various dlp constants are now exported by PDA::Pilot.
+	  - CompareTm function exportable which takes two tm style listrefs
+	    and returns <0, 0, or >0.
+	  - Fixed nasty bugs on packing appointments with alarms (alarm wouldn't
+	    trigger properly), and on appointments without descriptions
+	    (Datebook would crash).
+	  - Modified typemap so module will not fail on earlier versions of Perl.
+	Python binding changes:
+	  - SetRecord now takes an optional second argument. If a non-zero integer,
+	    the record will not be packed, and only the "raw" attribute will
+	    be used.
+	Tcl binding changes:
+	  - Large chunks rewritten to increase functionality.
+	  - Small, subtle, incomprehensible, and potentially bug-ridden chunks rewritten
+	    to make channel code compatible with versions of Tcl prior to 8.0.
+	  - "make test" should work.
+	  - GetRecord and SetRecord commands supported, with packer support.
+	  - Only memo records currently have packer support. Databases without defined
+	    packers cannot be read.
+
 Jul 6, 1997 	Kenneth Albanowski 0.7.3
 
 	Heavily modifed Python binding to use OO approach to record manipulation

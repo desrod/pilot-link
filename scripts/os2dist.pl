@@ -14,11 +14,13 @@
           '@cclib@', 'libpicc.a', '@libcclib@', 'libcc/libpicc.a',
           '@ccexecs@', '$(CCEXECS)',
 	  '@LDFLAGS@', '',
-	  '@WITHTCL@', '',
-	  '@WITHTK@', '',
-	  '@WITHPYTHON@', '',
-	  '@WITHPERL5@', '',
-	  '@WITHCXX', '$(WITHCXX)'
+	  '@WITHTCL@', 'WITHOUTTCL',
+	  '@WITHTK@', 'WITHOUTTK',
+	  '@WITHPYTHON@', 'WITHOUTPYTHON',
+	  '@WITHPERL5@', 'WITHOUTPERL5',
+	  '@TCLTKLIBS@', '',
+      '@TCLTKFLAGS@', '',
+	  '@WITHCXX@', 'WITHCXX'
         );
         
 $defs{'@srcdir@'} = './';
@@ -30,6 +32,8 @@ while(<>) {
       s/$k/$defs{$k}/g;
     }
     s/\.la/.a/g;
+    s/^LIBTOOL = (.*)$/LIBTOOL =/;
+    s/^LIBTOOLLINK = (.*)$/LIBTOOLLINK =/;
 	print;
 }
 
@@ -41,6 +45,7 @@ while(<>) {
     foreach $k (keys %defs) {
       s/$k/$defs{$k}/g;
     }
+    s#\.la#.a# if /^all:/;
 	s#../include/pi-config.h# #g;
 	s#unixserial#os2serial#g;
 	s#O = lo#O = o#g;
@@ -54,6 +59,5 @@ while(<>) {
       s/$k/$defs{$k}/g;
     }
 	s#../include/pi-config.h# #g;
-	s#O = lo#O = o#g;
 	print;
 }

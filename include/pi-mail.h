@@ -53,7 +53,7 @@ struct MailPrefs {
   char * filtersubject;
 };
 
-enum { mailSyncAll, mailSyncSend, mailSyncFilter } MailSyncType;
+enum MailSyncType { mailSyncAll, mailSyncSend, mailSyncFilter };
 
 extern void free_Mail PI_ARGS((struct Mail *));
 extern void free_MailAppInfo PI_ARGS((struct MailAppInfo *));

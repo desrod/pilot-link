@@ -7,12 +7,12 @@
 extern "C" {
 #endif
 
-extern int pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen);
-extern int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen);
+extern int pi_serial_connect PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
+extern int pi_serial_bind PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
 
-extern int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr * addr, int addrlen);
+extern int pi_serial_open PI_ARGS((struct pi_socket *ps, struct pi_sockaddr * addr, int addrlen));
 
-extern int pi_serial_flush(struct pi_socket *ps);
+extern int pi_serial_flush PI_ARGS((struct pi_socket *ps));
 
 
 #ifdef __cplusplus

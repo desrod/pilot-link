@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <io.h>
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
@@ -23,7 +24,7 @@
 #define INCL_DOSFILEMGR    /* File System values */
 #define INCL_DOSDEVIOCTL   /* DosDevIOCtl values */
 #define INCL_DOSDEVICES    /* DosDevice   values */
-/*#include <os2.h>*/
+#include <os2.h>
 
 static int so_changebaud(struct pi_socket *ps);
 static int so_close(struct pi_socket *ps);
@@ -32,7 +33,7 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 static int so_write(struct pi_socket *ps);
 static int so_read(struct pi_socket *ps, int timeout);
 
-int pi_serial_device_open(struct pi_socket *ps, struct pi_sockaddr * addr, int addrlen)
+int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr * addr, int addrlen)
 {
   int rc;
   HFILE fd;
@@ -92,8 +93,11 @@ int pi_serial_device_open(struct pi_socket *ps, struct pi_sockaddr * addr, int a
       return(-1);
     }
     
-  ps->mac->fd=fd;
-  pi_device_changebaud(ps);
+  ps->mac->fd=_imphandle(fd);         /* Let EMX know about this handle */
+  ps->mac->fd=dup2(ps->mac->fd, ps->sd); /* Substitute serial connection for
+                                            original NUL handle */
+  
+  so_changebaud(ps);
   pi_socket_set_timeout(ps,-1,600);
 
   ps->serial_close = so_close;

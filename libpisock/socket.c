@@ -372,7 +372,7 @@ int pi_getsockpeer(int pi_sd, struct sockaddr * addr, int * namelen)
   return 0;
 }
 
-unsigned int pi_version(int pi_sd)
+int pi_version(int pi_sd)
 {
   struct pi_socket *ps;
 

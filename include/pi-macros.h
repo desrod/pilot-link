@@ -11,6 +11,7 @@ extern "C" {
 
 extern double get_float PI_ARGS((void *));
 extern void set_float PI_ARGS((void *, double));
+extern int compareTm PI_ARGS((struct tm *a, struct tm *b));
 
 #ifdef __cplusplus
 }

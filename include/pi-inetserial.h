@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-extern int pi_inetserial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen);
-extern int pi_inetserial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen);
+extern int pi_inetserial_connect PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
+extern int pi_inetserial_bind PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
 
-extern int pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr, int addrlen);
+extern int pi_inetserial_open PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
 
 #ifdef __cplusplus
 }

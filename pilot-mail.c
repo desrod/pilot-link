@@ -4,6 +4,10 @@
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
+ *
+ * Modifications by Diego Zamboni to allow it to read mail from an MH-style
+ * mailbox into the Pilot.
+ *
  */
 
 #define PILOTPORT	""
@@ -14,6 +18,7 @@
 #define SENDMAIL	"/usr/lib/sendmail -t -i"
 #define POPKEEP 	"keep"
 #define DISPOSE		"keep"
+#define TOPILOT_MHDIR   ""
 
 /* Todo: truncation, filtering, priority, notification */
 
@@ -34,6 +39,22 @@
 #include <netdb.h>
 
 extern time_t parsedate(char * p);
+
+void markline(char *msg) {
+    while((*msg)!='\n' && (*msg)!=0 ) {
+	msg++;
+    }
+    (*msg)=0;
+}
+
+int openmhmsg(char *dir, int num) {
+    char filename[1000];
+
+
+    sprintf(filename, "%s/%d", dir, num);
+
+    return open(filename, O_RDONLY);
+}
 
 /* Fold into RFC822 style*/
 void fprintfold(FILE * f, char * t)
@@ -158,9 +179,9 @@ void header(struct Mail * m, char * t)
 }
 
 
-void Help(char *argv[])
+void Help(char * progname)
 {
-  fprintf(stderr,"usage:%s [options]\n",argv[0]);
+  fprintf(stderr,"usage: %s [options]\n",progname);
   fprintf(stderr,"\n      <-p port> Serial port [PILOTPORT]");
   fprintf(stderr,"\n                   (defaults to '%s')", PILOTPORT);
   fprintf(stderr,"\n      <-h host> POP3 host (if empty, mail won't be received) [POPHOST]");
@@ -177,6 +198,8 @@ void Help(char *argv[])
   fprintf(stderr,"\n                   (defaults to '%s')", POPKEEP);
   fprintf(stderr,"\n      <-d keep|delete|file> Disposition of sent mail [PILOTDISPOSE]");
   fprintf(stderr,"\n                   (defaults to '%s')", DISPOSE);
+  fprintf(stderr,"\n      <-m mhdir> MH directory to download to Pilot [TOPILOT_MHDIR]");
+  fprintf(stderr,"\n                   (defaults to '%s')", TOPILOT_MHDIR);
   fprintf(stderr, "\n\nAll options may be specified via the environment variable named in brackets.\n");
   exit(0);
 }
@@ -202,6 +225,7 @@ int main(int argc, char *argv[])
   int popfd;
   struct hostent * hostent;
   int c;
+  char * progname = argv[0];
   
   char * from_address = 
 #ifdef PILOTFROM
@@ -251,6 +275,12 @@ int main(int argc, char *argv[])
 #else
   "";
 #endif
+  char * mh_dir =
+#ifdef TOPILOT_MHDIR
+  TOPILOT_MHDIR;
+#else
+  "";
+#endif
 
   extern char* optarg;
   extern int optind;
@@ -272,12 +302,12 @@ int main(int argc, char *argv[])
     pop_pass = getenv("POPPASS");
   if (getenv("PILOTPORT"))
     port = getenv("PILOTPORT");
-    
+  if (getenv("TOPILOT_MHDIR"))
+    mh_dir = getenv("TOPILOT_MHDIR");
+     
   signal(SIGINT, sigint);
 
-  optind = 0;
-  
-  while ((c = getopt(argc, argv, "s:p:d:f:h:u:p:h:P:k:")) != EOF) {
+  while ((c = getopt(argc, argv, "s:p:d:f:h:u:p:h:P:k:m:")) != EOF) {
     switch (c) {
       case 's':
         sendmail = optarg;
@@ -303,8 +333,11 @@ int main(int argc, char *argv[])
       case 'k':
         pop_keep = optarg;
         break;
+      case 'm':
+	mh_dir = optarg;
+	break;
       case 'H': case '?': default:
-        Help(argv);
+        Help(progname);
     }
   }
   argc -= optind;
@@ -312,26 +345,26 @@ int main(int argc, char *argv[])
   
   if (!strlen(port)) {
     fprintf(stderr, "Port must be set.\n\n");
-    Help(argv);
+    Help(progname);
   }
   
   
   if (!strlen(pop_host) && !strlen(sendmail)) {
     fprintf(stderr, "At least one of -h or -s must be set.\n\n");
-    Help(argv);
+    Help(progname);
   }
   
   if (strlen(pop_host)) {
     if (!strlen(pop_user)) {
       fprintf(stderr, "-u must be set to receive mail.\n\n");
-      Help(argv);
+      Help(progname);
     } else if (!strlen(pop_keep) || (strcmp(pop_keep, "keep") && strcmp(pop_keep,"delete"))) {
       fprintf(stderr, "-k must have an argument of 'keep' or 'delete'.\n\n");
-      Help(argv);
+      Help(progname);
     } 
   }
 
-  if ( !strlen( pop_pass ) )
+  if ( !strlen( pop_pass ) && strlen( pop_host ) )
     {
       pop_pass = getpass( "POP password: " );
     }
@@ -341,7 +374,7 @@ int main(int argc, char *argv[])
                              strcmp(dispose,"delete") &&
                              strcmp(dispose,"file"))) {
       fprintf(stderr, "-d must have an argument of 'keep', 'delete', or 'file'.\n\n");
-      Help(argv);
+      Help(progname);
     }
   }
   
@@ -727,6 +760,120 @@ int main(int argc, char *argv[])
 endpop:  
   close(popfd);
   
+  }
+
+  if (strlen(mh_dir)) {
+
+      fprintf(stderr, "Reading directory %s... ", mh_dir);
+      fflush(stderr);
+
+  /* MH directory reading section */
+  
+  for(i=1;1;i++) {
+    int len;
+    char * msg;
+    int h;
+    struct Mail t;
+    int mhmsg;
+    
+    t.to = 0;
+    t.from = 0;
+    t.cc = 0;
+    t.bcc = 0;
+    t.subject = 0;
+    t.replyTo = 0;
+    t.sentTo = 0;
+    t.body = 0;
+    t.dated = 0;
+    
+    if((mhmsg=openmhmsg(mh_dir, i))<0) {
+	break;
+    }
+
+    fprintf(stderr, "%d ", i);
+    fflush(stderr);
+
+    /* Read the message */
+    len=0;
+    while((len<sizeof(buffer)) && 
+	  ((l=read(mhmsg, (char*)(buffer+len), (sizeof(buffer)-len)))>0)) {
+	len+=l;
+    }
+    buffer[len]=0;
+
+    if(l<0) {
+	perror("Error while reading message");
+	goto endmh;
+    }
+
+    msg = buffer;
+    h = 1;
+    while(h==1) {
+      markline(msg);
+      
+      if ((msg[0] == 0) && (msg[1] == 0)) {
+          break; /* End of message */
+      }
+      
+      if (msg[0] == 0) {
+          h = 0;
+          header(&t, 0);
+      } else 
+          header(&t, msg);
+      msg += strlen(msg)+1;
+    }
+
+    /* When we get here, we are done with the headers */
+    if((*msg)==0) {
+	/* Empty message */
+	h=1;
+    }
+
+    /* Well, we've now got the message. I bet _you_ feel happy with yourself. */
+    
+    if (h) {
+      /* Oops, incomplete message, still reading headers */
+      fprintf(stderr, "Incomplete message %d\n", i);
+      free_Mail(&t);
+      continue;
+    }
+
+    if (strlen(msg) > p.truncate) {
+	/* We could truncate it, but we won't for now */
+	fprintf(stderr, "Message %d too large (%ld bytes)\n", i, (long)strlen(msg));
+	free_Mail(&t);
+	continue;
+    }
+    
+    t.body = strdup(msg);
+    
+    pack_Mail(&t, buffer, &len);
+    
+    if (dlp_WriteRecord(sd, db, 0, 0, 0, buffer, len, 0)>0) {
+      rec++;
+      if (strcmp(pop_keep,"delete")==0) { 
+	  char filename[1000];
+	  sprintf(filename, "%s/%d", mh_dir, i);
+	  close(mhmsg);
+	  if(unlink(filename)) {
+	      fprintf(stderr, "Error deleting message %d\n", i);
+	      dupe++;
+	  }
+	  continue;
+      } else
+        dupe++;
+    } else {
+      fprintf(stderr,"Error writing message to Pilot\n");
+    }
+    
+    free_Mail(&t);
+
+    close(mhmsg);
+  }
+  
+endmh:  
+  fprintf(stderr, "\n");
+
   }
 
 end:  

@@ -27,6 +27,13 @@ T_CHAR4
 		    $var = makelong(c);
 		}
 	}
+T_PTROBJ
+	if (sv_derived_from($arg, \"${ntype}\")) {
+		IV tmp = SvIV((SV*)SvRV($arg));
+		$var = ($type) tmp;
+	}
+	else
+		croak(\"$var is not of type ${ntype}\")
 
 OUTPUT
 T_DBInfo
@@ -47,3 +54,5 @@ T_RESULT
 		self->errno = $var;
 	} else
 		sv_setsv($arg, &sv_yes);
+T_PTROBJ
+	sv_setref_pv($arg, \"${ntype}\", (void*)$var);

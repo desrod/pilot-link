@@ -61,7 +61,7 @@ TKINTERP = piwish$(PACKAGE_VERSION).$(TK_VERSION)
 WITHTCL = $(TCLINTERP)
 WITHTK = $(TKINTERP)
 
-INTERPS = @WITHTCL@ @WITHTK@
+INTERPS = $(@WITHTCL@) $(@WITHTK@)
 
 PACKLIB = $(PACKAGES)/pdapilot$(PACKAGE_VERSION)
 
@@ -100,10 +100,10 @@ $(LIB): $(OBJS) Makefile
 		-export-dynamic -rpath $(PACKAGES) \
 		-o $(LIB) $(OBJS) -L$(libdir) -lpisock
 
-test: $(LIB)
-	$(TclSh) test.tcl
+test: $(TCLINTERP) $(LIB)
+	$(TCLINTERP) test.tcl
 
 clean:
-	$(RM) *.o *.a *.lo *.la core a.out *.so $(INTERPS)
+	$(RM) *.o *.a *.lo *.la core a.out *.so pitclsh* piwish*
 	$(RM) -r .libs
 	$(RM) *~

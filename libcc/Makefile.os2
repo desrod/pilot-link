@@ -34,7 +34,7 @@ LIBTOOL = @LIBTOOL@
 .cc.lo:
 	$(LIBTOOL) --mode=compile $(CXX) $(CXXFLAGS) -c $<
 
-all: libpicc.la
+all: libpicc.a
 
 libpicc.la: $(CCOBJS)
 	$(LIBTOOL) --mode=link $(CXX) $(CXXFLAGS) \
@@ -51,27 +51,27 @@ clean:
 	$(RM) -r .libs
 
 depend:
-	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -MM -I../include *.cc | perl -pne 's/\.o/.lo/g' >> Makefile.in
+	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -MM -I../include *.cc >> Makefile.in
 
 #Dependencies
-address.lo: address.cc ../include/pi-source.h   \
+address.o: address.cc ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-address.h ../include/pi-address.hxx \
  ../include/pi-appinfo.hxx
-appInfo.lo: appInfo.cc ../include/pi-source.h   \
+appInfo.o: appInfo.cc ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-appinfo.hxx
-datebook.lo: datebook.cc ../include/pi-source.h   \
+datebook.o: datebook.cc ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-datebook.h ../include/pi-datebook.hxx \
  ../include/pi-appinfo.hxx
-iambicExpense.lo: iambicExpense.cc ../include/pi-source.h \
+iambicExpense.o: iambicExpense.cc ../include/pi-source.h \
    ../include/pi-socket.h ../include/pi-args.h \
  ../include/pi-macros.h ../include/pi-iambicExpense.h \
  ../include/pi-iambicExpense.hxx ../include/pi-appinfo.hxx
-memo.lo: memo.cc ../include/pi-source.h   \
+memo.o: memo.cc ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-memo.h ../include/pi-memo.hxx ../include/pi-appinfo.hxx
-todo.lo: todo.cc ../include/pi-source.h   \
+todo.o: todo.cc ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-todo.h ../include/pi-todo.hxx ../include/pi-appinfo.hxx

@@ -40,6 +40,8 @@ $ui = $dlp->GetUserInfo;
 
 print "Battery voltage is $b[0], (warning marker $b[1], critical marker $b[2])\n";
 
+$dlp->Tickle;
+
 if (1) {
 $db = $dlp->Open("MemoDB");
 

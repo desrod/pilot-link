@@ -18,11 +18,11 @@ AM_PROG_LIBTOOL
 AC_PROG_RANLIB
 AC_PROG_YACC
 
-WITHTCL=""
-WITHCXX=""
-WITHTK=""
-WITHPERL5=""
-WITHPYTHON=""
+WITHTCL="WITHOUTTCL"
+WITHCXX="WITHOUTCXX"
+WITHTK="WITHOUTTK"
+WITHPERL5="WITHOUTPERL5"
+WITHPYTHON="WITHOUTPYTHON"
 
 AC_ARG_WITH(cpp,      [  --with-cpp[=c++ compiler]  use C++     [default=yes]])
 
@@ -84,10 +84,10 @@ EXT=''
 CXXLIBS=''
 if test $ac_cv_prog_cxx_works = yes; then
   ccexecs='$(CCEXECS)'
-  cclib='libpicc.la'
-  libcclib='libcc/libpicc.la'
+  cclib='libpicc.a'
+  libcclib='libcc/libpicc.a'
   SUBMAKE_COMM_CC='cd libcc ; $(MAKE) '
-  WITHCXX='$(WITHCXX)'
+  WITHCXX='WITHCXX'
 else
   CXX=''
   CXXFLAGS=''
@@ -123,6 +123,49 @@ if test $ac_cv_prog_cxx_works = yes; then
 fi
 AC_CHECK_LIB(m, ldexp, LIBS="$LIBS -lm")
 AC_CHECK_LIB(PW, alloca, LIBS="$LIBS -lPW")
+
+AC_ARG_WITH(readline21,      [  --with-readline21    use readline 2.1 [default=yes]])
+AC_ARG_WITH(readline20,      [  --with-readline20    use readline 2.0 [default=yes]])
+
+ac_save_LIBS="$LIBS"
+LIBS="$LIBS -lreadline"
+AC_TRY_LINK(,[(void)readline(0);], RLLIBS="-lreadline",
+LIBS="$LIBS -ltermcap"
+AC_TRY_LINK(,[(void)readline(0);], RLLIBS="-lreadline -ltermcap"))
+LIBS="$ac_save_LIBS"
+
+AC_MSG_CHECKING(for readline)
+if test "x$with_readline21" = "x" || test "x$with_readline21" = "xyes"; then
+	ac_save_LIBS="$LIBS"
+	LIBS="$LIBS $RLLIBS"
+	AC_TRY_LINK([#include <stdio.h>
+	#include <readline/readline.h>], [rl_callback_read_char();], [RLDEFS="-DREADLINE_2_1"
+		with_readline20='no'
+		AC_MSG_RESULT(2.1)])
+	LIBS="$ac_save_LIBS"
+fi
+if test "x$with_readline20" = "x" || test "x$with_readline20" = "xyes"; then
+	ac_save_LIBS="$LIBS"
+	LIBS="$LIBS $RLLIBS"
+	AC_TRY_LINK([#include <stdio.h>
+	#include <readline/readline.h>], [
+extern void rl_deprep_terminal(void);
+extern int rl_getc(FILE * stream);
+extern void rl_gather_tyi(void);
+
+rl_deprep_terminal();
+(void)rl_getc(stdin);
+rl_gather_tyi();], RLDEFS="-DREADLINE_2_0"; AC_MSG_RESULT(2.0))
+	LIBS="$ac_save_LIBS"
+fi
+
+if test "x$RLDEFS" = "x"; then
+	AC_MSG_RESULT(none)
+fi
+
+AC_SUBST(RLLIBS)
+AC_SUBST(RLDEFS)
+
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -163,10 +206,10 @@ fi
 
 dnl Check packages
 AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl     [default=yes]])
+AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use Itcl    [default=yes]])
 AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk      [default=yes]])
 AC_ARG_WITH(python,   [  --with-python=pylibbase use Python  [default=yes]])
 AC_ARG_WITH(perl5,    [  --with-perl5=perl5exec  use Perl5   [default=yes]])
-#AC_ARG_WITH(readline, [  --with-readline         use Readline 2.0])
 
 if test "x$with_perl5" = "xno"; then
 	PERL5=''
@@ -180,11 +223,9 @@ fi
 
 changequote(, )dnl
 if test "x$PERL5" != "x"; then
-	WITHPERL5='$(WITHPERL5)'
 	case `$PERL5 -e 'print $]'` in
-		*5.*) ;;
-		*)	PERL5=''
-			WITHPERL5='' ;;
+		*5.*) WITHPERL5='WITHPERL5' ;;
+		*)	PERL5='' ;;
 	esac
 fi
 changequote([, ])dnl
@@ -193,9 +234,13 @@ if test "x$PERL5" = "x"; then
 	PERL5="/usr/bin/perl"
 fi
 
+itcl=''
 if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
 	for tcl_path in /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local /usr /usr/local/tcl7.4; do
-		if test -f $tcl_path/lib/tclConfig.sh ; then
+		if test -f $tcl_path/lib/tclConfig.sh; then
+			with_tcl=$tcl_path; break
+		elif test -f $tcl_path/lib/itcl/tclConfig.sh; then
+			itcl='/itcl'
 			with_tcl=$tcl_path; break
 		fi
 	done
@@ -204,8 +249,11 @@ if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
 		echo "Please give directory (such as /usr/local) as argument to --with-tcl=dir."
 		with_tcl=no
 	fi
+else
+	if test -f $with_tcl/lib/itcl/tclConfig.sh; then
+		itcl='/itcl'
+	fi
 fi 
-
 
 AC_MSG_CHECKING(for Tcl)
 TCL_VERSION=""
@@ -229,23 +277,65 @@ if test "x$with_tcl" = "x"; then
 elif test "x$with_tcl" = "xno"; then
 	AC_MSG_RESULT(not used)
 else
-	if test ! -f $with_tcl/lib/tclConfig.sh; then
-		AC_MSG_RESULT(Unable to find $with_tcl/tclConfig.sh)
+	tclConfig="$with_tcl/lib$itcl/tclConfig.sh"
+	if test ! -f $tclConfig; then
+		AC_MSG_RESULT(Unable to find tclConfig.sh)
 	else
-		. $with_tcl/lib/tclConfig.sh
-		AC_MSG_RESULT(version $TCL_VERSION from $with_tcl)
-		TCL_INC="-I$TCL_PREFIX/include"
+		. $tclConfig
+		AC_MSG_RESULT(version $TCL_VERSION from $tclConfig)
+		TCL_INC="-I$TCL_PREFIX/include$itcl"
 		TCL_BIN="$TCL_EXEC_PREFIX/bin"
 		TCLLIBS="$TCL_LIB_SPEC $TCL_LIBS"
 		TCLTKLIBS="$TCLLIBS"
 		TCLTK_LIBS="\$(TCL_LIB_SPEC) \$(TCL_LIBS)"
 		TCLTK_FLAGS="-DTCL \$(TCL_INC)"
 		TCLTKFLAGS="-DTCL $TCL_INC"
-		WITHTCL='$(WITHTCL)'
+		WITHTCL='WITHTCL'
 		
+		if test "x$with_itcl" = "xyes" || test "x$with_itcl" = "x"; then
+			for itcl_path in $with_tcl; do
+				if test -f $itcl_path/lib$itcl/itclConfig.sh; then
+					with_itcl=$itcl_path; break
+				fi
+			done
+			if test "x$with_itcl" = "xyes"; then
+				echo "Unable to find Itcl base installation directory."
+				echo "Please give directory (such as /usr/local/itcl2.2) as argument to --with-itcl=dir."
+				with_itcl=no
+			fi
+		fi 
+
+		AC_MSG_CHECKING(for Itcl)
+		if test "x$with_itcl" = "x"; then
+			AC_MSG_RESULT(not found)
+		elif test "x$with_itcl" = "xno"; then
+			AC_MSG_RESULT(not used)
+		else
+			itclConfig="$with_itcl/lib$itcl/itclConfig.sh"
+			if test ! -f $itclConfig; then
+				AC_MSG_RESULT(Unable to find itclConfig.sh)
+			else
+				. $itclConfig
+				AC_MSG_RESULT(version $ITCL_VERSION from $itclConfig)
+				ITCL_INC="-I$TK_PREFIX/include$itcl"
+				#TK_BIN="$TK_EXEC_PREFIX/bin"
+				#TKLIBS="$TK_LIB_SPEC $TCL_LIB_SPEC $TK_LIBS"
+				#TCLTK_LIBS="\$(TK_LIB_SPEC) \$(TCL_LIB_SPEC) \$(TK_LIBS)"
+				#TCLTK_FLAGS="$TCLTK_FLAGS -DTK \$(TK_INC)"
+				#TCLTKLIBS="$TKLIBS"
+				#WITHTK='WITHTK'
+				if test "x$ITCL_INC" = "x$TCL_INC"; then
+					ITCL_INC=" #same as TCL_INC"
+				#	TCLTKFLAGS="-DTCL -DTK $TCL_INC"
+				#else
+				#	TCLTKFLAGS="-DTCL -DTK $TCL_INC $TK_INC"
+				fi
+			fi
+		fi
+
 		if test "x$with_tk" = "xyes" || test "x$with_tk" = "x"; then
 			for tk_path in $with_tcl; do
-				if test -f $tk_path/lib/tkConfig.sh ; then
+				if test -f $tk_path/lib$itcl/tkConfig.sh; then
 					with_tk=$tk_path; break
 				fi
 			done
@@ -262,18 +352,19 @@ else
 		elif test "x$with_tk" = "xno"; then
 			AC_MSG_RESULT(not used)
 		else
-			if test ! -f $with_tk/lib/tkConfig.sh; then
-				AC_MSG_RESULT(Unable to find $with_tk/tkConfig.sh)
+			tkConfig="$with_tk/lib$itcl/tkConfig.sh"
+			if test ! -f $tkConfig; then
+				AC_MSG_RESULT(Unable to find tkConfig.sh)
 			else
-				. $with_tk/lib/tkConfig.sh
-				AC_MSG_RESULT(version $TK_VERSION from $with_tk)
-				TK_INC="-I$TK_PREFIX/include"
+				. $tkConfig
+				AC_MSG_RESULT(version $TK_VERSION from $tkConfig)
+				TK_INC="-I$TK_PREFIX/include$itcl"
 				TK_BIN="$TK_EXEC_PREFIX/bin"
 				TKLIBS="$TK_LIB_SPEC $TCL_LIB_SPEC $TK_LIBS"
 				TCLTK_LIBS="\$(TK_LIB_SPEC) \$(TCL_LIB_SPEC) \$(TK_LIBS)"
 				TCLTK_FLAGS="$TCLTK_FLAGS -DTK \$(TK_INC)"
 				TCLTKLIBS="$TKLIBS"
-				WITHTK='$(WITHTK)'
+				WITHTK='WITHTK'
 				if test "x$TK_INC" = "x$TCL_INC"; then
 					TK_INC=" #same as TCL_INC"
 					TCLTKFLAGS="-DTCL -DTK $TCL_INC"
@@ -282,8 +373,12 @@ else
 				fi
 			fi
 		fi
+
+
 	fi
 fi
+
+TCL_PACKAGE_PATH=`echo $TCL_PACKAGE_PATH | sed 's/ .*//'`
 
 AC_SUBST(TCL_VERSION)
 AC_SUBST(TCL_LIBS)
@@ -352,7 +447,7 @@ else
 		PYTHONBASE=$with_python
 		PYTHONLIBDIR=$with_python/lib/python$PYTHONVER
 		PYTHONINCDIR=$with_python/include/python$PYTHONVER
-		WITHPYTHON='$(WITHPYTHON)'
+		WITHPYTHON='WITHPYTHON'
 	fi
 fi
 AC_SUBST(PYTHONBASE)
@@ -399,4 +494,4 @@ LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTLIBOBJS)
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTALLOCA)
-AC_OUTPUT(libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile)
+AC_OUTPUT(libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL)

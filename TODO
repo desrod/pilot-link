@@ -1,0 +1,21 @@
+
+Things to-do (in order of importance, highest = most important):
+	Pisocket library:
+	  - Add progress callbacks so that you can find out how far a file
+	    transfer has gone (this is complex, as you also need to instrument
+	    PADP and perhaps SLP transmissions, receptions, and calculating
+	    exactly how many bytes is needed to transfer a file won't be fun.)
+	  - Check RPC code (something broken on large-endian machines?)
+	Tcl binding:
+	  - Add Tcl 8 specific code to allow retrieval of raw records, and optionally
+	    use Tcl routines for packing and unpacking.
+	  - Add all dlp functions.
+	  - Clean up the channel code rats nest. Somehow. (Separate source file?)
+	Perl binding:
+	  - Change record representation from string to object to match Python
+	    implementation.
+	  - Add packers.
+	  - Document.
+	Python binding:
+	  - Add packers.
+	  - Document.

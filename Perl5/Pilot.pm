@@ -21,9 +21,33 @@ require AutoLoader;
 	PI_SOCK_RAW
 	PI_SOCK_SEQPACKET
 	PI_SOCK_STREAM
+	dlpOpenRead
+	dlpOpenWrite
+    dlpOpenExclusive
+    dlpOpenSecret
+    dlpOpenReadWrite
+	dlpEndCodeNormal
+    dlpEndCodeOutOfMemory
+    dlpEndCodeUserCan
+    dlpEndCodeOther
+ 	dlpRecAttrDeleted
+    dlpRecAttrDirty
+    dlpRecAttrBusy
+    dlpRecAttrSecret
+    dlpRecAttrArchived
+ 	dlpDBFlagResource
+	dlpDBFlagReadOnly
+	dlpDBFlagAppInfoDirty
+	dlpDBFlagBackup
+	dlpDBFlagOpen
+	dlpDBFlagNewer
+	dlpDBFlagReset
+	dlpDBListRAM
+	dlpDBListROM
 );
 # Other items we are prepared to export if requested
 @EXPORT_OK = qw(
+	CompareTm
 );
 
 sub AUTOLOAD {
@@ -113,6 +137,13 @@ sub PackPref {
 	}
 }
 
+sub CompareTm {
+	my(@a) = @{$_[0]};
+	my(@b) = @{$_[1]};
+	return ($a[5] <=> $b[5]) || ($a[4] <=> $b[4]) || ($a[3] <=> $b[3]) ||
+	       ($a[2] <=> $b[2]) || ($a[1] <=> $b[1]) || ($a[0] <=> $b[0]);
+}
+
 # Autoload methods go after __END__, and are processed by the autosplit program.
 
 1;
@@ -121,6 +152,9 @@ __END__
 =head1
 
 Commands include:
+
+B<Notice!> This information is out of date, and potentially quite
+misleading.
 
 =over 4
 

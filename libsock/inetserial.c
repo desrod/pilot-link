@@ -19,6 +19,10 @@
 #include "pi-syspkt.h"
 #include "pi-padp.h"
 
+#ifdef OS2
+#include <sys/select.h>
+#endif
+
 static int n_changebaud(struct pi_socket *ps);
 static int n_close(struct pi_socket *ps);
 static int n_write(struct pi_socket *ps);
@@ -115,9 +119,6 @@ static int n_write(struct pi_socket *ps)
   char buffer[4];
 #ifndef NO_SERIAL_TRACE
   int i;
-#endif
-#ifdef OS2
-  int rc;
 #endif
 
   if (ps->txq) {

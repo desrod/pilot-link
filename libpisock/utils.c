@@ -138,3 +138,20 @@ void set_float(void * buffer, double value) {
 	set_byte(buf+6, sign);
 	set_byte(buf+7, 0);
 }
+
+int compareTm(struct tm *a, struct tm *b)
+{
+	int d;
+	d = a->tm_year - b->tm_year;
+	if (d) return d;
+	d = a->tm_mon - b->tm_mon;
+	if (d) return d;
+	d = a->tm_mday - b->tm_mday;
+	if (d) return d;
+	d = a->tm_hour - b->tm_hour;
+	if (d) return d;
+	d = a->tm_min - b->tm_min;
+	if (d) return d;
+	d = a->tm_sec - b->tm_sec;
+	return d;
+}

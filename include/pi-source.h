@@ -23,6 +23,7 @@
 # include <unistd.h>
 # include <string.h>
 # include <stdlib.h>
+# include <sys/socket.h>
 /*# include <netinet/in.h>*/
 # include <dirent.h>
 # include <errno.h>
@@ -68,6 +69,8 @@ struct pi_mac {
   unsigned char *buf;
 };
 
+struct sockaddr;
+
 struct pi_socket {
   struct sockaddr *laddr;
   int laddrlen;
@@ -107,18 +110,18 @@ struct pi_socket {
   int tx_errors;
   int rx_errors;
   char last_tid;
-  int (*socket_connect)(struct pi_socket*, struct sockaddr*, int);
-  int (*socket_listen)(struct pi_socket*, int);
-  int (*socket_accept)(struct pi_socket*, struct sockaddr*, int*);
-  int (*socket_close)(struct pi_socket*);
-  int (*socket_tickle)(struct pi_socket*);
-  int (*socket_bind)(struct pi_socket*, struct sockaddr*, int);
-  int (*socket_send)(struct pi_socket*, void * buf, int len, unsigned int flags);
-  int (*socket_recv)(struct pi_socket*, void * buf, int len, unsigned int flags);
-  int (*serial_close)(struct pi_socket*);
-  int (*serial_changebaud)(struct pi_socket*);
-  int (*serial_write)(struct pi_socket*);
-  int (*serial_read)(struct pi_socket*, int);
+  int (*socket_connect) PI_ARGS((struct pi_socket*, struct sockaddr*, int));
+  int (*socket_listen) PI_ARGS((struct pi_socket*, int));
+  int (*socket_accept) PI_ARGS((struct pi_socket*, struct sockaddr*, int*));
+  int (*socket_close) PI_ARGS((struct pi_socket*));
+  int (*socket_tickle) PI_ARGS((struct pi_socket*));
+  int (*socket_bind) PI_ARGS((struct pi_socket*, struct sockaddr*, int));
+  int (*socket_send) PI_ARGS((struct pi_socket*, void * buf, int len, unsigned int flags));
+  int (*socket_recv) PI_ARGS((struct pi_socket*, void * buf, int len, unsigned int flags));
+  int (*serial_close) PI_ARGS((struct pi_socket*));
+  int (*serial_changebaud) PI_ARGS((struct pi_socket*));
+  int (*serial_write) PI_ARGS((struct pi_socket*));
+  int (*serial_read) PI_ARGS((struct pi_socket*, int));
 #ifdef OS2
   unsigned short os2_read_timeout;
   unsigned short os2_write_timeout;

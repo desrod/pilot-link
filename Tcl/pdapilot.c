@@ -19,6 +19,11 @@
 #include <pi-source.h>
 #include <pi-socket.h>
 #include <pi-dlp.h>
+#include <pi-memo.h>
+
+#if TCL_MAJOR_VERSION >= 8
+# define Objects
+#endif
 
 struct tcl_e {char *name; long value;};
 
@@ -55,13 +60,6 @@ static struct tcl_e types[] = {
 	{"SEQPACKET", PI_SOCK_SEQPACKET},
 	{0,0}};
 
-static struct tcl_e ports[] = {
-	{"DLP", PI_PilotSocketDLP},
-	{"Console", PI_PilotSocketConsole},
-	{"Debugger", PI_PilotSocketDebugger},
-	{"RemoteUI", PI_PilotSocketRemoteUI},
-	{0,0}};
-
 static int
 PisockCloseProc(ClientData instanceData, Tcl_Interp* interp);
 static int
@@ -70,9 +68,15 @@ static int
 PisockOutputProc(ClientData instanceData, char *buf, int toWrite, int *errorCodePtr);
 static void
 PisockWatchProc(ClientData instanceData, int mask);
+#if TCL_MAJOR_VERSION >=8
 static int
 PisockGetHandleProc(ClientData instanceData, int direction, ClientData *handlePtr);
-
+#else
+static Tcl_File
+OldPisockGetHandleProc(ClientData instanceData, int direction);
+static int
+PisockReadyProc(ClientData instanceData, int mask);
+#endif
 
 static Tcl_ChannelType pisockChannelType = {
     "pisock",                              /* Type name. */
@@ -84,8 +88,14 @@ static Tcl_ChannelType pisockChannelType = {
     NULL,                               /* Set option proc. */
     NULL,                   /* Get option proc. */
     PisockWatchProc,                       /* Initialize notifier. */
+#if TCL_MAJOR_VERSION < 8
+    PisockReadyProc,
+    OldPisockGetHandleProc,                   /* Get OS handles out of channel. */
+#else
     PisockGetHandleProc,                   /* Get OS handles out of channel. */
+#endif    
 };
+
 
 typedef void (Tcl_PisockAcceptProc)(ClientData,Tcl_Channel);
 
@@ -112,6 +122,66 @@ typedef struct AcceptCallback {
     Tcl_Interp *interp;                 /* Interpreter in which to run it. */
 } AcceptCallback;
 
+typedef  void (*packcmd) _ANSI_ARGS_((Tcl_Interp*, char*, char *, int*));
+typedef  void (*unpackcmd) _ANSI_ARGS_((Tcl_Interp*, char*, int));
+
+struct Packer {
+	char *name;
+	packcmd pack, packai, packsi;
+	unpackcmd unpack, unpackai, unpacksi;
+};
+
+void MemoUnpackCmd(Tcl_Interp * interp, char * buf, int len)
+{
+	struct Memo m;
+	
+	unpack_Memo(&m, buf, len);
+
+	Tcl_AppendElement(interp, m.text);
+	free_Memo(&m);
+}
+
+void MemoPackCmd(Tcl_Interp * interp, char * rec, char * buf, int * len)
+{
+	struct Memo m;
+	
+	m.text = rec;
+	
+	pack_Memo(&m, buf, len);
+}
+
+struct { char * name; packcmd pack, packai, packsi; unpackcmd unpack, unpackai, unpacksi; }
+	DBPackers[] = {
+	{ "MemoDB", MemoPackCmd,0,0,MemoUnpackCmd,0,0},
+	{ 0, 0,0,0,0,0,0},
+};
+
+struct Packer * pack = 0;
+int packers = 0;
+
+void register_sock(int sock) {
+	int i;
+	if (packers==0) {
+		packers = sock+5;
+		pack = malloc(sizeof(struct Packer)*packers);
+		for(i=0;i<packers;i++) {
+			memset((void*)&pack[i], 0, sizeof(struct Packer));
+		}
+	} else if (sock >= packers) {
+		packers = sock+10;
+		pack = realloc(pack, sizeof(struct Packer)*packers);
+		for(i=sock;i<packers;i++) {
+			memset((void*)&pack[i], 0, sizeof(struct Packer));
+		}
+	}
+	memset((void*)&pack[sock], 0, sizeof(struct Packer));
+}
+
+#if TCL_MAJOR_VERSION < 8
+# define statePtr_fd Tcl_GetFile((ClientData)statePtr->fd, TCL_UNIX_FD)
+#else
+# define statePtr_fd statePtr->fd
+#endif
 
 static void     AcceptCallbackProc _ANSI_ARGS_((ClientData callbackData,
                     Tcl_Channel chan));
@@ -122,6 +192,15 @@ static void     PisockAcceptCallbacksDeleteProc _ANSI_ARGS_((
 static void     PisockServerCloseProc _ANSI_ARGS_((ClientData callbackData));
 static void     UnregisterPisockServerInterpCleanupProc _ANSI_ARGS_((
                     Tcl_Interp *interp, AcceptCallback *acceptCallbackPtr));
+
+
+void
+Tcl_AppendInt(Tcl_Interp * interp, int result)
+{
+	char buffer[20];
+	sprintf(buffer, "%d", result);
+	Tcl_AppendElement(interp, buffer);
+}
 
         /* ARGSUSED */
 static void
@@ -172,7 +251,8 @@ RegisterPisockServerInterpCleanup(interp, acceptCallbackPtr)
     }
     hPtr = Tcl_CreateHashEntry(hTblPtr, (char *) acceptCallbackPtr, &new);
     if (!new) {
-        panic("RegisterPisockServerCleanup: damaged accept record table");
+        fprintf(stderr,"RegisterPisockServerCleanup: damaged accept record table");
+        abort();
     }
     Tcl_SetHashValue(hPtr, (ClientData) acceptCallbackPtr);
 }
@@ -219,7 +299,7 @@ PisockCloseProc(instanceData, interp)
      * delete them here.
      */
 
-    Tcl_DeleteFileHandler(statePtr->fd);
+    Tcl_DeleteFileHandler(statePtr_fd);
 
     if (pi_close(statePtr->fd) < 0) {
         errorCode = errno;
@@ -295,15 +375,21 @@ PisockWatchProc(instanceData, mask)
 {
     PisockState *statePtr = (PisockState *) instanceData;
 
+#if TCL_MAJOR_VERSION >=8
     if (mask) {
-        Tcl_CreateFileHandler(statePtr->fd, mask,
+        Tcl_CreateFileHandler(statePtr_fd, mask,
                 (Tcl_FileProc *) Tcl_NotifyChannel,
                 (ClientData) statePtr->channel);
     } else {
-        Tcl_DeleteFileHandler(statePtr->fd);
+        Tcl_DeleteFileHandler(statePtr_fd);
     }
+#else
+    Tcl_WatchFile(Tcl_GetFile((ClientData)statePtr->fd, TCL_UNIX_FD), mask);
+#endif
+        
 }
 
+#if TCL_MAJOR_VERSION >= 8
         /* ARGSUSED */
 static int
 PisockGetHandleProc(instanceData, direction, handlePtr)
@@ -316,13 +402,36 @@ PisockGetHandleProc(instanceData, direction, handlePtr)
     *handlePtr = (ClientData)statePtr->fd;
     return TCL_OK;
 }
+#else
+        /* ARGSUSED */
+static Tcl_File
+OldPisockGetHandleProc(instanceData, direction)
+    ClientData instanceData;    /* The socket state. */
+    int direction;              /* Not used. */
+{
+    PisockState *statePtr = (PisockState *) instanceData;
 
+    return Tcl_GetFile((ClientData)statePtr->fd, TCL_UNIX_FD);
+}
+
+static int
+PisockReadyProc(instanceData, mask)
+ClientData instanceData;
+int mask;
+{
+	PisockState *statePtr = (PisockState *) instanceData;
+	    
+	return Tcl_FileReady(Tcl_GetFile((ClientData)statePtr->fd, TCL_UNIX_FD), mask);
+}
+
+#endif
 
 static int
 WaitForConnect(statePtr, errorCodePtr)
     PisockState *statePtr;         /* State of the socket. */
     int *errorCodePtr;          /* Where to store errors? */
 {
+#if 0
     int timeOut;                /* How long to wait. */
     int state;                  /* Of calling TclWaitForFile. */
     int flags;                  /* fcntl flags for the socket. */
@@ -332,7 +441,6 @@ WaitForConnect(statePtr, errorCodePtr)
      * to complete before reading.
      */
 
-#if 0
     if (statePtr->flags & TCP_ASYNC_CONNECT) {
         if (statePtr->flags & TCP_ASYNC_SOCKET) {
             timeOut = 0;
@@ -379,7 +487,6 @@ AcceptCallbackProc(callbackData, chan)
     AcceptCallback *acceptCallbackPtr;
     Tcl_Interp *interp;
     char *script;
-    char portBuf[10];
     int result;
 
     acceptCallbackPtr = (AcceptCallback *) callbackData;
@@ -444,7 +551,7 @@ PisockAccept(data, mask)
     PisockState *sockState;                /* Client data of server socket. */
     int newsock;                        /* The new client socket */
     PisockState *newSockState;             /* State for new socket. */
-    int len;                            /* For accept interface */
+    /*int len;*/                            /* For accept interface */
     char channelName[20];
 
     sockState = (PisockState *) data;
@@ -453,6 +560,7 @@ PisockAccept(data, mask)
     if (newsock < 0) {
         return;
     }
+    register_sock(newsock);
 
     /*
      * Set close-on-exec flag to prevent the newly accepted socket from
@@ -482,8 +590,8 @@ PisockAccept(data, mask)
 }
 
 
-
-static long tcl_enum(Tcl_Interp *interp, Tcl_Obj *object, struct tcl_e * e)
+#ifdef Objects
+static long tcl_enumobj(Tcl_Interp *interp, Tcl_Obj *object, struct tcl_e * e)
 {
 	int i;
 	long result;
@@ -496,8 +604,23 @@ static long tcl_enum(Tcl_Interp *interp, Tcl_Obj *object, struct tcl_e * e)
 	Tcl_GetLongFromObj(interp, object, &result);
 	return result;
 }
+#endif
 
-static int tcl_socket(Tcl_Interp *interp, Tcl_Obj *object)
+static int tcl_enum(Tcl_Interp *interp, char *str, struct tcl_e * e)
+{
+	int i;
+	int result;
+	for(i=0;e[i].name;i++) {
+		if (strcmp(e[i].name, str)==0)
+			return e[i].value;
+	}
+	result = 0;
+	Tcl_GetInt(interp, str, &result);
+	return result;
+}
+
+#ifdef Objects
+static int tcl_socketobj(Tcl_Interp *interp, Tcl_Obj *object)
 {
 	int fd= 0;
 	Tcl_Channel c = Tcl_GetChannel(interp, Tcl_GetStringFromObj(object,0), 0);
@@ -505,6 +628,23 @@ static int tcl_socket(Tcl_Interp *interp, Tcl_Obj *object)
 		Tcl_GetIntFromObj(interp, object, &fd);
 	} else {
 		Tcl_GetChannelHandle(c, TCL_WRITABLE, (ClientData)&fd);
+	}
+	return fd;
+}
+#endif
+
+static int tcl_socket(Tcl_Interp *interp, char * arg)
+{
+	int fd= 0;
+	Tcl_Channel c = Tcl_GetChannel(interp, arg, 0);
+	if (!c) {
+		Tcl_GetInt(interp, arg, &fd);
+	} else {
+#if TCL_MAJOR_VERSION >= 8
+		Tcl_GetChannelHandle(c, TCL_WRITABLE, (ClientData)&fd);
+#else
+		return (int)Tcl_GetFileInfo(Tcl_GetChannelFile(c, TCL_WRITABLE), 0);
+#endif
 	}
 	return fd;
 }
@@ -518,7 +658,6 @@ CreateSocket(Tcl_Interp * interp, int protocol, char * remote, int server)
 	int sock;
 	int type;
 	int domain = PI_AF_SLP;
-	char channelName[20];
 	struct pi_sockaddr * addr = 0;
 	int alen = 0;
 	
@@ -532,6 +671,8 @@ CreateSocket(Tcl_Interp * interp, int protocol, char * remote, int server)
 	
 	sock = pi_socket(domain, type, protocol);
 	printf("Called pi_socket\n");
+	
+	register_sock(sock);
 
 	statePtr->fd = sock;
 
@@ -543,7 +684,7 @@ CreateSocket(Tcl_Interp * interp, int protocol, char * remote, int server)
 		strcpy(addr->pi_device, device);
 		addr->pi_family = PI_AF_SLP;
 	}
-	printf("addr = %d\n", (long)addr);
+	printf("addr = %ld\n", (long)addr);
 
 	if (server) {
 		result = pi_bind(sock, (struct sockaddr*)addr, alen);
@@ -561,9 +702,6 @@ ClientSocket(Tcl_Interp * interp, int protocol, char * remote)
 {
 	PisockState *statePtr;
 	
-	int result;
-	int sock;
-	int type;
 	char channelName[20];
 	
 	statePtr = CreateSocket(interp, protocol, remote, 0);
@@ -587,9 +725,6 @@ ServerSocket(Tcl_Interp * interp, int protocol, char * remote,
 {
 	PisockState *statePtr;
 	
-	int result;
-	int sock;
-	int type;
 	char channelName[20];
 	
 	statePtr = CreateSocket(interp, protocol, remote, 1);
@@ -600,7 +735,8 @@ ServerSocket(Tcl_Interp * interp, int protocol, char * remote,
                 
 	statePtr->acceptProc = acceptProc;
 	statePtr->acceptProcData = (ClientData)acceptProcData;
-   Tcl_CreateFileHandler(statePtr->fd, TCL_READABLE, PisockAccept,
+	
+   Tcl_CreateFileHandler(statePtr_fd, TCL_READABLE, PisockAccept,
            (ClientData) statePtr);
 
     sprintf(channelName, "pisock%d", statePtr->fd);
@@ -618,9 +754,8 @@ OpenSocketCmd(notUsed, interp, argc, argv)
     int argc;				/* Number of arguments. */
     char **argv;			/* Argument strings. */
 {
-    int a, server, port;
+    int a, server;
     char *arg, *copyScript, *host, *script;
-    char *myaddr = NULL;
     int protocol = PI_PF_PADP;
     int async = 0;
     Tcl_Channel chan;
@@ -689,7 +824,7 @@ OpenSocketCmd(notUsed, interp, argc, argv)
 	host = argv[a];
 	a++;
     } else {
-wrongNumArgs:
+/*wrongNumArgs:*/
 	Tcl_AppendResult(interp, "wrong # args: should be either:\n",
 		argv[0],
                 " ?-myprotocol protocol? ?-async? host\n",
@@ -746,23 +881,25 @@ wrongNumArgs:
 }
 
 static int
-socketCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST objv[])
+socketCmd(ClientData clientData, Tcl_Interp * interp, int argc, char * argv[])
 {
 	PisockState *statePtr;
 	
 	int result;
 	int x,y,z;
 	char channelName[40];
-	if (objc != 4) {
+	if (argc != 4) {
 		Tcl_SetResult(interp, "Usage: x, y, z", TCL_STATIC);
 		return TCL_ERROR;
 	}
 	
-	x = tcl_enum(interp, objv[1], domains);
-	y = tcl_enum(interp, objv[2], types);
-	z = tcl_enum(interp, objv[3], protocols);
+	x = tcl_enum(interp, argv[1], domains);
+	y = tcl_enum(interp, argv[2], types);
+	z = tcl_enum(interp, argv[3], protocols);
 	
 	result = pi_socket(x,y,z);
+	
+	register_sock(result);
 
     statePtr = (PisockState *) ckalloc((unsigned) sizeof(PisockState));
     statePtr->flags = 0;
@@ -801,25 +938,24 @@ socketCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST 
 }
 
 static int
-bindCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST objv[])
+bindCmd(ClientData clientData, Tcl_Interp * interp, int argc, char * argv[])
 {
 	int result;
 	int s;
-	int port, family;
+	int family;
 	char * device;
 	struct pi_sockaddr * addr = 0;
 	int alen = 0;
-	if (objc != 5) {
-		Tcl_SetResult(interp, "Usage: socket family device port", TCL_STATIC);
+	if (argc != 4) {
+		Tcl_SetResult(interp, "Usage: socket family device", TCL_STATIC);
 		return TCL_ERROR;
 	}
 	
-	Tcl_GetIntFromObj(interp, objv[1], &s);
-	family = tcl_enum(interp, objv[2], domains);
+	Tcl_GetInt(interp, argv[1], &s);
+	family = tcl_enum(interp, argv[2], domains);
 	
 	if (family == PI_AF_SLP) {
-		device = Tcl_GetStringFromObj(objv[3], 0);
-		port = tcl_enum(interp, objv[4], ports);
+		device = argv[3];
 		alen = strlen(device)+1+4;
 		addr = (struct pi_sockaddr*)malloc(alen);
 		strcpy(addr->pi_device, device);
@@ -836,37 +972,48 @@ bindCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST ob
 		return TCL_ERROR;
 	}
 	else {
-		Tcl_SetIntObj(Tcl_GetObjResult(interp), result);
+		Tcl_AppendInt(interp, result);
 		return TCL_OK;
 	}
 }
 
 static int
-OpenConduitCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST objv[])
+OpenConduitCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 {
-	if (objc != 2) {
+	if (argc != 2) {
 		Tcl_SetResult(interp, "Usage: Status socket", TCL_STATIC);
 		return TCL_ERROR;
 	}
-	dlp_OpenConduit(tcl_socket(interp, objv[1]));
+	dlp_OpenConduit(tcl_socket(interp, argv[1]));
 	return TCL_OK;
 }
 
+int invalid_socket(Tcl_Interp*interp, int sock)
+{
+	if ((sock < 0) || (sock >= packers) || (pi_version(sock)==-1)) {
+		Tcl_SetResult(interp, "Invalid socket", TCL_STATIC);
+		return 1;
+	}
+	return 0;
+}
+
 static int
-OpenDBCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST objv[])
+OpenDBCmd(ClientData clientData, Tcl_Interp * interp, int argc, char*argv[])
 {
 	int result;
 	int handle;
 	int cardno=0,mode=0x80|0x40;
+	int sock;
+	int i;
 	char * name;
-	if ((objc < 3 )|| (objc > 5)) {
+	if ((argc < 3 )|| (argc > 5)) {
 		Tcl_SetResult(interp, "Usage: Open socket name [card [mode]]", TCL_STATIC);
 		return TCL_ERROR;
 	}
-	if (objc>=3)
-		Tcl_GetIntFromObj(interp, objv[3], &cardno);
-	if (objc>=4) {
-		char * modestr = Tcl_GetStringFromObj(objv[4],0);
+	if (argc>=3)
+		Tcl_GetInt(interp, argv[3], &cardno);
+	if (argc>=4) {
+		char * modestr = argv[4];
 		mode = 0;
 		if (strchr(modestr, 'S') || strchr(modestr,'s'))
 			mode |= dlpOpenSecret;
@@ -877,81 +1024,218 @@ OpenDBCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST 
 		if (strchr(modestr, 'R') || strchr(modestr,'r'))
 			mode |= dlpOpenRead;
 	}
-	name = Tcl_GetStringFromObj(objv[2],0);
-	result = dlp_OpenDB(tcl_socket(interp, objv[1]), cardno, mode, name, &handle);
+	name = argv[2];
+	sock = tcl_socket(interp, argv[1]);
+	if (invalid_socket(interp, sock))
+		return TCL_ERROR;
+
+	result = dlp_OpenDB(sock, cardno, mode, name, &handle);
 	printf("Result = %d, name = '%s', mode = %x, card = %d, handle = %d\n", 
 		result, name, mode, cardno, handle);
-	
+
 	if (result<0) {
 		Tcl_SetResult(interp, dlp_strerror(result), TCL_STATIC);
 		return TCL_ERROR;
 	}
+
+	for(i=0; DBPackers[i].name && strcmp(DBPackers[i].name, name); i++)
+		;
+
+	memset(&pack[sock], 0, sizeof(struct Packer));
 	
-	Tcl_SetIntObj(Tcl_GetObjResult(interp), handle);
+	if (DBPackers[i].name) {
+		pack[sock].name = DBPackers[i].name;
+		pack[sock].pack = DBPackers[i].pack;
+		pack[sock].unpack = DBPackers[i].unpack;
+		pack[sock].packai = DBPackers[i].packai;
+		pack[sock].unpackai = DBPackers[i].unpackai;
+		pack[sock].packsi = DBPackers[i].packsi;
+		pack[sock].unpacksi = DBPackers[i].unpacksi;
+	}
+	
+	Tcl_AppendInt(interp, handle);
 	return TCL_OK;
 }
 
+#ifdef Objects
+Tcl_Obj *
+InvokeFunc(Tcl_Interp * interp, Tcl_Obj * cmd, Tcl_Obj * record)
+{
+	Tcl_Obj * l = Tcl_NewListObj(0,0);
+	int err;
+	Tcl_ListObjAppendElement(interp, l, cmd);
+	Tcl_ListObjAppendElement(interp, l, record);
+	
+	err = Tcl_EvalObj(interp, l);
+	Tcl_DecrRefCount(l);
+	if (err != TCL_OK)
+		return 0;
+	
+	l = Tcl_GetObjResult(interp);
+	Tcl_IncrRefCount(l);
+	return l;
+}
+#endif
+
 static int
-GetRecordCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST objv[])
+GetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 {
 	int result;
 	int handle;
 	int index;
+	int sock;
 	int len,attr,cat;
 	recordid_t id;
-	Tcl_Obj * newObj[5];
 	
-	if (objc != 4 ) {
-		Tcl_SetResult(interp, "Usage: GetRecord socket db index", TCL_STATIC);
+	if (argc != 4 ) {
+		Tcl_SetResult(interp, "Usage: GetRecord socket dbhandle index", TCL_STATIC);
 		return TCL_ERROR;
 	}
 	
-	Tcl_GetIntFromObj(interp, objv[3], &index);
-	Tcl_GetIntFromObj(interp, objv[2], &handle);
-	result = dlp_ReadRecordByIndex(tcl_socket(interp, objv[1]), handle, index, buf, &id, &len, &attr, &cat);
+	Tcl_GetInt(interp, argv[3], &index);
+	Tcl_GetInt(interp, argv[2], &handle);
+	
+	sock = tcl_socket(interp, argv[1]);
+	if (invalid_socket(interp, sock))
+		return TCL_ERROR;
+	if (!pack[sock].unpack) {
+		Tcl_SetResult(interp, "An unpacker must be defined", TCL_STATIC);
+		return TCL_ERROR;
+	}
+	
+	result = dlp_ReadRecordByIndex(tcl_socket(interp, argv[1]), handle, index, buf, &id, &len, &attr, &cat);
 	
 	if (result<0) {
 		Tcl_SetResult(interp, dlp_strerror(result), TCL_STATIC);
 		return TCL_ERROR;
 	}
 	
-	newObj[0] = Tcl_NewStringObj(buf, len);
-	newObj[1] = Tcl_NewIntObj(id);
-	newObj[2] = Tcl_NewIntObj(index);
-	newObj[3] = Tcl_NewIntObj(attr);
-	newObj[4] = Tcl_NewIntObj(cat);
-	
-	Tcl_SetListObj(Tcl_GetObjResult(interp), 5, newObj);
+	pack[sock].unpack(interp, buf, len);
+	Tcl_AppendInt(interp, index);
+	Tcl_AppendInt(interp, id);
+	Tcl_AppendInt(interp, attr);
+	Tcl_AppendInt(interp, cat);
+
 	return TCL_OK;
 }
 
 static int
-AddSyncLogEntryCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST objv[])
+SetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 {
-	if (objc != 3) {
-		Tcl_SetResult(interp, "Usage: Log socket text", TCL_STATIC);
+	int result;
+	int handle;
+	int index;
+	int sock;
+	int len,attr,cat;
+	recordid_t id;
+	
+	if (argc != 7 ) {
+		Tcl_SetResult(interp, "Usage: SetRecord socket dbhandle record id attr cat", TCL_STATIC);
 		return TCL_ERROR;
 	}
-	dlp_AddSyncLogEntry(tcl_socket(interp, objv[1]), Tcl_GetStringFromObj(objv[2],0));
+	
+	Tcl_GetInt(interp, argv[2], &handle);
+	
+	sock = tcl_socket(interp, argv[1]);
+	if (invalid_socket(interp, sock))
+		return TCL_ERROR;
+	if (!pack[sock].pack) {
+		Tcl_SetResult(interp, "An unpacker must be defined", TCL_STATIC);
+		return TCL_ERROR;
+	}
+	
+	Tcl_GetInt(interp, argv[4], &index); id = index;
+	Tcl_GetInt(interp, argv[5], &attr);
+	Tcl_GetInt(interp, argv[6], &cat);
+
+	pack[sock].pack(interp, argv[3], buf, &len);
+	
+	result = dlp_WriteRecord(sock, handle, attr, id, cat, buf, len, &id);
+	
+	free(buf);
+	
+	if (result<0) {
+		Tcl_SetResult(interp, dlp_strerror(result), TCL_STATIC);
+		return TCL_ERROR;
+	}
+	
+	Tcl_AppendInt(interp, (int)id);
+
 	return TCL_OK;
 }
 
-static struct { char * name; Tcl_ObjCmdProc *proc; int export;} doprocs[] = {
-	{"GetRecord", GetRecordCmd, 1},
-	{"Open", OpenDBCmd, 1},
-	{"Status", OpenConduitCmd, 1},
-	{"Log", AddSyncLogEntryCmd, 1},
+static int
+AddSyncLogEntryCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
+{
+	if (argc != 3) {
+		Tcl_SetResult(interp, "Usage: Log socket text", TCL_STATIC);
+		return TCL_ERROR;
+	}
+	dlp_AddSyncLogEntry(tcl_socket(interp, argv[1]), argv[2]);
+	return TCL_OK;
+}
+
+static int
+PackersCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
+{
+	int sock;
+	int i;
+	if ((argc < 2) || (argc>3)) {
+		Tcl_SetResult(interp, "Usage: Packers socket [-none|dbname]", TCL_STATIC);
+		return TCL_ERROR;
+	}
+	
+	sock = tcl_socket(interp, argv[1]);
+	if (invalid_socket(interp, sock))
+		return TCL_ERROR;
+		
+	if (argc==2) {
+		Tcl_SetResult(interp, pack[sock].name ? pack[sock].name : "-none", TCL_STATIC);
+		return TCL_OK;
+	}
+	
+	memset(&pack[sock], 0, sizeof(struct Packer));
+	
+	if ((argc==3) && (argv[2][0] == '-') && (strcmp(argv[2], "-none")==0)) {
+		pack[sock].name = "-none";
+		return TCL_OK;
+	}
+	
+	for(i=0; DBPackers[i].name && strcmp(DBPackers[i].name, argv[2]); i++)
+		;
+
+	if (DBPackers[i].name) {
+		pack[sock].name = DBPackers[i].name;
+		pack[sock].pack = DBPackers[i].pack;
+		pack[sock].unpack = DBPackers[i].unpack;
+		pack[sock].packai = DBPackers[i].packai;
+		pack[sock].unpackai = DBPackers[i].unpackai;
+		pack[sock].packsi = DBPackers[i].packsi;
+		pack[sock].unpacksi = DBPackers[i].unpacksi;
+		return TCL_OK;
+	}
+	
+	Tcl_SetResult(interp, "Unknown packer dbname", TCL_STATIC);
+	return TCL_ERROR;
+}
+
+
+#ifdef Objects
+static struct { char * name; Tcl_ObjCmdProc *proc; } oprocs[] = {
 	{0,0}
 };
+#endif
 
-static struct { char * name; Tcl_CmdProc *proc; int export;} procs[] = {
-	{"Open", OpenSocketCmd, 1},
-	{0,0}
-};
-
-static struct { char * name; Tcl_ObjCmdProc *proc; int export;} oprocs[] = {
-	{"socket", socketCmd, 0},
-	{"bind", bindCmd, 0},
+static struct { char * name; Tcl_CmdProc *proc; } procs[] = {
+	{"dlpOpen", OpenDBCmd},
+	{"piOpen", OpenSocketCmd},
+	{"dlpLog", AddSyncLogEntryCmd},
+	{"dlpStatus", OpenConduitCmd},
+	{"piSocket", socketCmd},
+	{"piBind", bindCmd},
+	{"dlpGetRecord", GetRecordCmd},
+	{"dlpPackers", PackersCmd},
+	{"dlpSetRecord", SetRecordCmd},
 	{0,0}
 };
 
@@ -961,14 +1245,12 @@ int Pdapilot_Init(Tcl_Interp *interp) {
 	for(i=0;procs[i].name;i++) {
 		Tcl_CreateCommand(interp, procs[i].name, procs[i].proc, 0, 0);
 	}
+
+#ifdef Objects
 	for(i=0;oprocs[i].name;i++) {
 		Tcl_CreateObjCommand(interp, oprocs[i].name, oprocs[i].proc, 0, 0);
 	}
-	Tcl_VarEval(interp, "namespace export Dlp", 0);
-	
-	for(i=0;doprocs[i].name;i++) {
-		Tcl_CreateObjCommand(interp, doprocs[i].name, doprocs[i].proc, 0, 0);
-	}
+#endif
 	
 	Tcl_PkgProvide(interp, "Pdapilot", PACKAGE_VERSION);
 

@@ -1,6 +1,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "patchlevel.h"
 
 #include "pi-macros.h"
 #include "pi-file.h"
@@ -152,6 +153,46 @@ int arg;
 	break;
     case 'Z':
 	break;
+	case 'd': 
+#define DoName(x) if (strEQ(name, STRINGIFY(x))) return x
+
+		if (strlen(name)>3) {
+			switch (name[3]) {
+			case 'O':
+				DoName(dlpOpenRead);
+				DoName(dlpOpenWrite);
+				DoName(dlpOpenExclusive);
+				DoName(dlpOpenSecret);
+				DoName(dlpOpenReadWrite);
+				break;
+			case 'E':
+				DoName(dlpEndCodeNormal);
+				DoName(dlpEndCodeOutOfMemory);
+				DoName(dlpEndCodeUserCan);
+				DoName(dlpEndCodeOther);
+				break;
+			case 'R':
+				DoName(dlpRecAttrDeleted);
+				DoName(dlpRecAttrDirty);
+				DoName(dlpRecAttrBusy);
+				DoName(dlpRecAttrSecret);
+				DoName(dlpRecAttrArchived);
+				break;
+   			case 'D':
+				DoName(dlpDBFlagResource);
+				DoName(dlpDBFlagReadOnly);
+				DoName(dlpDBFlagAppInfoDirty);
+				DoName(dlpDBFlagBackup);
+				DoName(dlpDBFlagOpen);
+				DoName(dlpDBFlagNewer);
+				DoName(dlpDBFlagReset);
+				
+				DoName(dlpDBListRAM);
+				DoName(dlpDBListROM);
+				break;
+			}
+		}
+		break;
     }
     errno = EINVAL;
     return 0;
@@ -197,6 +238,10 @@ struct tm * avtotm (AV * av, struct tm * t) {
 #ifndef newRV_noinc   
 static SV * rv;
 #define newRV_noinc(s) ((rv=newRV(s)), SvREFCNT_dec(s), rv)
+#endif
+
+#if (PATCHLEVEL < 3) || ((PATCHLEVEL == 3) && (SUBVERSION < 16))
+#define sv_derived_from(x, y) sv_isobject((x))
 #endif
 
 extern char * printlong _((unsigned long val));
@@ -665,6 +710,9 @@ Unpack(record, ...)
 	    	(a.advanceUnits == 1) ? (60*60) :     /* Hours */
 	    	(a.advanceUnits == 2) ? (60*60*24) :  /* Days */
 	    	0), 0);
+	    if (a.advanceUnits > 2) {
+	    	warn("Invalid advance unit %d encountered", a.advanceUnits);
+	    }
     }
     if (a.repeatType) {
         HV * repeat = newHV();
@@ -716,8 +764,10 @@ Pack(record)
     a.event = (s = hv_fetch(h, "event", 5, 0)) ? SvIV(*s) : 0;
     if (s= hv_fetch(h, "begin", 5, 0)) 
     	avtotm((AV*)SvRV(*s), &a.begin);
-    else
-    	memset(&a.begin, '\0', sizeof(struct tm));
+    else {
+      memset(&a.begin, '\0', sizeof(struct tm));
+      croak("appointments must contain a begin date");
+    }
     if (s= hv_fetch(h, "end", 3, 0)) 
     	avtotm((AV*)SvRV(*s), &a.end);
     else
@@ -725,8 +775,25 @@ Pack(record)
 
 	if ((s = hv_fetch(h, "alarm", 5, 0)) && SvRV(*s) && (SvTYPE(SvRV(*s))==SVt_PVHV)) {
 		HV * h2 = (HV*)SvRV(*s);
+		I32 u;
 	    a.advance = (s = hv_fetch(h2, "advance", 7, 0)) ? SvIV(*s) : 0;
-	    a.advanceUnits = (s = hv_fetch(h2, "units", 5, 0)) ? SvIV(*s) : 0;
+	    u = (s = hv_fetch(h2, "units", 5, 0)) ? SvIV(*s) : 0;
+	    switch (u) {
+	    case 60:
+	    	u = 0;
+	    	break;
+	    case 60*60:
+	    	u = 1;
+	    	break;
+	    case 60*60*24:
+	    	u = 2;
+	    	break;
+	    default:
+	    	croak("Invalid advance unit %d encountered", u);
+	    }
+	    a.advanceUnits = u;
+	    if (a.advance > 254)
+	    	warn("Alarm advance value %d out of range", a.advance);
 	    a.alarm = 1;
     } else {
     	a.alarm = 0;
@@ -766,6 +833,8 @@ Pack(record)
     }    	
 
     a.description = (s = hv_fetch(h, "description", 11, 0)) ? SvPV(*s,na) : 0;
+    if (!a.description)
+      croak("appointments must contain a description");
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
     pack_Appointment(&a, (unsigned char*)mybuf, &len);
@@ -2736,6 +2805,27 @@ Call(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 		} else
 			PUSHs(&sv_undef);
 	}
+
+int
+Tickle(self)
+	PDA::Pilot::DLP *	self
+	CODE:
+	{
+		RETVAL = pi_tickle(self->socket);
+	}
+	OUTPUT:
+	RETVAL
+
+int
+Watchdog(self, interval)
+	PDA::Pilot::DLP *	self
+	int interval
+	CODE:
+	{
+		RETVAL = pi_watchdog(self->socket, interval);
+	}
+	OUTPUT:
+	RETVAL
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::File
 

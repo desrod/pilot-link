@@ -822,15 +822,19 @@ SetRec(self, args)
 {
 	unsigned long id=0;
 	unsigned long newid;
+	int raw=0;
 	int index, length, attr=0, category=0;
 	char * data;
 	PyObject * h, *i;
 	int result;
 
-	if (!PyArg_ParseTuple(args, "O", &h))
+	if (!PyArg_ParseTuple(args, "O|i", &h, &raw))
 		return NULL;
-		
-	i = PyObject_CallMethod(h, "pack", "O", self);
+	
+	if (raw) 
+		i = PyObject_GetAttrString(h, "raw");
+	else
+		i = PyObject_CallMethod(h, "pack", "O", self);
 	data = PyString_AsString(i);
 	length = PyString_Size(i);
 

@@ -20,6 +20,10 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 
+#ifdef OS2
+#include <sys/select.h>
+#endif
+
 static int pi_serial_listen(struct pi_socket *ps, int backlog);
 static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen);
 static int pi_serial_send(struct pi_socket *ps, void *msg, int len, unsigned int flags);

@@ -1,7 +1,8 @@
 /* pd-tty.c: Text asynchronous input/output support for pilot-debug. 
  *           Currently includes interfaces to STDIO (using plus-patch style
- *           handlers), readline 2.0 (using internal hack to simulate
- *           co-routine), and Tk (using a standard text widget.)
+ *           handlers), readline 2.0 (using hack of readline internals to
+ *           simulate co-routine), readline 2.1 (using callback mechanism)
+ *           and Tk (using a standard text widget.)
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
@@ -40,7 +41,97 @@ extern Tcl_Interp * interp;
 extern int tty;			/* Non-zero means standard input is a
 				 * terminal-like device.  Zero means it's*/
 
-#ifdef READLINE_2_0
+#if defined(READLINE_2_1)
+
+#include <readline/readline.h>
+#include <readline/history.h>
+
+static Tcl_DString command;
+
+static int mode = 0;
+
+static void Readable(ClientData d, int mask) {
+	mode = 1;
+	rl_callback_read_char();
+}
+
+
+static void Exit(ClientData d) {
+	rl_callback_handler_remove();
+	if (mode)
+		puts("");
+}
+
+
+static void execline(char * line)
+{
+   int gotPartial = 0;
+   char * cmd;
+
+   if (line == 0) {
+      char buf[20];
+      int exitCode = 0;
+      sprintf(buf, "exit %d", exitCode);
+      Tcl_Eval(interp, buf);
+      return;
+   }
+   (void) Tcl_DStringAppend(&command, line, -1);
+   cmd = Tcl_DStringAppend(&command, "\n", -1);
+      
+   add_history(line);
+      
+   if (!Tcl_CommandComplete(cmd)) {
+      gotPartial = 1;
+   } else {
+      int code;
+      gotPartial = 0;
+      mode = 0;
+      code = Tcl_RecordAndEval(interp, cmd, TCL_EVAL_GLOBAL);
+         
+      Tcl_DStringFree(&command);
+      if (*interp->result != 0) {
+         Tcl_Channel chan;
+         if (code != TCL_OK) {
+            chan = Tcl_GetChannel(interp, "stderr", NULL);
+         } else {
+            chan = Tcl_GetChannel(interp, "stdout", NULL);
+         }
+         if (chan) {
+            Tcl_Write(chan, interp->result, -1);
+            Tcl_Write(chan, "\n", 1);
+         }
+      }
+      Tcl_ResetResult(interp);
+   }
+
+   rl_callback_handler_install( gotPartial ? "> " : "pilot-debug> ", execline);
+}
+
+void do_readline(void)
+{
+   char buf[20];
+   int exitCode = 0;
+   Tcl_Channel in = Tcl_GetStdChannel(TCL_STDIN);
+   
+   Tcl_SetChannelOption(interp, in, "-blocking", "off");
+   
+   Tcl_CreateChannelHandler(in, TCL_READABLE, Readable, 0);
+   
+   rl_callback_handler_install( "pilot-debug> ", execline );
+
+   Tcl_CreateExitHandler((Tcl_ExitProc *) Exit, (ClientData) 0);
+
+   while (Tcl_DoOneEvent(0)) {
+   }
+
+   sprintf(buf, "exit %d", exitCode);
+   Tcl_Eval(interp, buf);
+   return;
+
+}
+
+#endif
+#if !defined(READLINE_2_1) && defined(READLINE_2_0)
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -54,11 +145,13 @@ static volatile int readable = 0;
 
 static Tcl_DString command;
 
-void Readable(ClientData d, int mask) { readable = 1; }
-
-void Exit(ClientData d) { rl_deprep_terminal(); }
-
 static int mode = 0;
+
+static void Readable(ClientData d, int mask) { readable = 1; }
+
+static void Exit(ClientData d) {
+	rl_deprep_terminal(); 
+}
 
 void do_readline(void)
 {
@@ -70,6 +163,8 @@ void do_readline(void)
    Tcl_SetChannelOption(interp, in, "-blocking", "off");
    
    Tcl_CreateChannelHandler(in, TCL_READABLE, Readable, 0);
+
+   Tcl_CreateExitHandler((Tcl_ExitProc *) Exit, (ClientData) 0);
    
    for(;;) {
       char * line = readline(gotPartial ? "> " : "pilot-debug> ");
@@ -151,7 +246,8 @@ void rl_gather_tyi(void)
    }
    return;
 }
-#else
+#endif
+#if !defined(READLINE_2_1) && !defined(READLINE_2_0)
 
 static void
 StdinProc(ClientData clientData, int mask);
@@ -381,7 +477,7 @@ defaultPrompt:
 
 
 
-#endif /*!USE_READLINE_2_0*/
+#endif /*!USE_READLINE_2_0 and 2_1*/
 
 void display(char * text, char * tag, int type)
 {
@@ -429,93 +525,15 @@ void display(char * text, char * tag, int type)
       printf("%c", text[i]);
       if (text[i] == '\n') {
         mode = 0; 
+#ifdef READLINE_2_1
+        rl_forced_update_display(); /* Bring the prompt back */
+#else       
 #ifdef READLINE_2_0
         rl_forced_update_display(); /* Bring the prompt back */
 #else
 	Prompt(interp, gotPartial);
 #endif        
+#endif
       }
    }
 }
-
-
-#if 0
-int SayInteractive(char * text)
-{
-	Tcl_DString d;
-	
-	if (!Interactive)
-	  return 0;
-	
-	Tcl_DStringInit(&d);
-
-#ifdef TK
-	if (usetk) {
-		Tcl_DStringAppendElement(&d, ".f.t");
-		Tcl_DStringAppendElement(&d, "insert");
-		Tcl_DStringAppendElement(&d, "insert");
-		Tcl_DStringAppendElement(&d, text);
-		Tcl_Eval(interp, Tcl_DStringValue(&d));
-		Tcl_DStringFree(&d);
-		Tcl_DStringAppendElement(&d, ".f.t");	
-		Tcl_DStringAppendElement(&d, "see");
-		Tcl_DStringAppendElement(&d, "insert");
-		Tcl_Eval(interp, Tcl_DStringValue(&d));
-		Tcl_DStringFree(&d);
-	} else {
-#endif
-		Tcl_DStringAppendElement(&d, "puts");
-		Tcl_DStringAppendElement(&d, text);
-		Tcl_Eval(interp, Tcl_DStringValue(&d));
-		Tcl_DStringFree(&d);
-
-#ifdef TK
-	}
-#endif
-	Tcl_Eval(interp, Tcl_DStringValue(&d));
-	Tcl_DStringFree(&d);
-	
-	return 0;
-}
-
-int Say(char * text)
-{
-	Tcl_DString d;
-	
-	if (Interactive) {
-		Tcl_DStringInit(&d);
-#ifdef TK
-		if (usetk) {
-			Tcl_DStringAppendElement(&d, ".f.t");
-			Tcl_DStringAppendElement(&d, "insert");
-			Tcl_DStringAppendElement(&d, "insert");
-			Tcl_DStringAppendElement(&d, text);
-			Tcl_Eval(interp, Tcl_DStringValue(&d));
-			Tcl_DStringFree(&d);
-			Tcl_DStringAppendElement(&d, ".f.t");	
-			Tcl_DStringAppendElement(&d, "see");
-			Tcl_DStringAppendElement(&d, "insert");
-			Tcl_Eval(interp, Tcl_DStringValue(&d));
-			Tcl_DStringFree(&d);
-		} else {
-#endif
-			Tcl_DStringAppendElement(&d, "puts");
-			Tcl_DStringAppendElement(&d, text);
-			Tcl_Eval(interp, Tcl_DStringValue(&d));
-			Tcl_DStringFree(&d);
-
-#ifdef TK
-		}
-#endif
-	} else 
-	        Tcl_AppendResult(interp, text, NULL);
-	
-	return 0;
-}
-
-int Error(char * text)
-{
-	Tcl_SetResult(interp, text, TCL_STATIC);
-	return TCL_ERROR;
-}
-#endif
