@@ -14,17 +14,14 @@ dnl Deny config/build as root
 dnl ******************************
 if test $UID = 0; then 
 	echo ""
-	echo "ERROR: Please do not configure or build this software as root.."
+	echo "   WARNING: Please do not configure or build this software as root.."
 	echo ""
-	echo "You should not need to be the root user, or superuser to build or"
-	echo "configure software. You will only need to use the root user to"
-	echo "install the software to its final destination, not to build it."
+	echo "   You should not need to be the root user, or superuser to build or"
+	echo "   configure software. You will only need to use the root user to"
+	echo "   install the software to its final destination, not to build it."
 	echo ""
-	echo "Create a normal user, or log in as a normal user, and re-run the"
-	echo "configuration from the beginning. There are potential dangers to"
-	echo "configuring or building software as root, so the rule is, don't."
+	echo "   You probably want to build this as a normal user, not root."
 	echo ""
-	exit 1
 fi
 
 
