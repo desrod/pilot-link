@@ -75,11 +75,11 @@ extern "C" {
 	extern int pi_file_id_used
 	    PI_ARGS((pi_file_t * pf, pi_uid_t uid));
 	extern pi_file_t *pi_file_create
-	    PI_ARGS((char *name, struct DBInfo * info));
+	    PI_ARGS((const char *name, const struct DBInfo * info));
 
 	/* may call these any time before close (even multiple times) */
 	extern int pi_file_set_info
-	    PI_ARGS((pi_file_t * pf, struct DBInfo * infop));
+	    PI_ARGS((pi_file_t * pf, const struct DBInfo * infop));
 	extern int pi_file_set_app_info
 	    PI_ARGS((pi_file_t * pf, void *data, size_t size));
 	extern int pi_file_set_sort_info

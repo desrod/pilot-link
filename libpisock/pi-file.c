@@ -839,7 +839,7 @@ pi_file_id_used(pi_file_t *pf, pi_uid_t uid)
  *
  ***********************************************************************/
 pi_file_t *
-pi_file_create(char *name, struct DBInfo *info)
+pi_file_create(const char *name, const struct DBInfo *info)
 {
 	pi_file_t *pf;
 
@@ -865,7 +865,7 @@ pi_file_create(char *name, struct DBInfo *info)
 
 	return (pf);
 
-      bad:
+bad:
 	pi_file_free(pf);
 	return (NULL);
 }
@@ -884,7 +884,7 @@ pi_file_create(char *name, struct DBInfo *info)
  *
  ***********************************************************************/
 int
-pi_file_set_info(pi_file_t *pf, struct DBInfo *ip)
+pi_file_set_info(pi_file_t *pf, const struct DBInfo *ip)
 {
 	if (!pf->for_writing)
 		return (-1);
