@@ -602,14 +602,15 @@ char *strtoke(char *str, char *ws, char *delim)
 static void Help(char *progname)
 {
 	printf("   An interactive DLP Protocol Shell for your Palm device\n\n"
-	       "   Usage: %s -p <port>\n\n"
+	       "   Usage: %s -p <port>\n"
 	       "   Options:\n"
 	       "     -p <port>    Use device file <port> to communicate with Palm\n"
-	       "     -h           Display this information\n\n"
+	       "     -h           Display this information\n"
+	       "     -v           Display the version information\n\n"
 	       "   dlpsh can query many different types of information from your Palm\n"
-	       "   device, such as user memory capacity, and setting the time, as well as\n"
-	       "   other useful functions. While in dlpsh, type 'help' for more options.\n\n"
-	       "   Example: %s -p /dev/pilot\n\n", progname, progname);
+	       "   device, such as user, memory capacity, set the time, as well as\n"
+	       "   other useful functions.\n\n"
+	       "   While in dlpsh, type 'help' for more options.\n\n", progname);
 	return;
 }
 
@@ -621,12 +622,13 @@ int main(int argc, char *argv[])
 	char 	*progname 	= argv[0],
 		*port 		= NULL;
 	
-	static const char *optstring = "hp:";
+	static const char *optstring = "hp:v";
 	
 	struct option options[] = {
-		{"help", no_argument,       NULL, 'h'},
-		{"port", required_argument, NULL, 'p'},
-		{NULL,   0,                 NULL, 0}
+		{"help",    no_argument,       NULL, 'h'},
+		{"port",    required_argument, NULL, 'p'},
+		{"version", no_argument,       NULL, 'v'},
+		{NULL,   0,                   NULL, 0}
 	};
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
@@ -637,6 +639,9 @@ int main(int argc, char *argv[])
 		  case 'p':
 			  port = optarg;
 			  break;
+		  case 'v':
+			  PalmHeader(progname);
+			  exit(0);
 		}
 	}
 

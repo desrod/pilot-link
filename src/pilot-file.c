@@ -381,20 +381,20 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 static void Help(char *progname)
 {
 	printf("   Dump application and header information from your local PRC/PDB files\n\n"
-	       "   Usage: %s [options] file\n\n"
+	       "   Usage: %s [options] file\n"
 	       "   Options:\n"
-	       "     -H                Dump the header of the database(s)\n"
-	       "     -a                Dump app_info segment of the database(s)\n"
-	       "     -s                Dump sort_info block of database(s)\n"
+	       "     -H --header       Dump the header of the database(s)\n"
+	       "     -a --appinfo      Dump app_info segment of the database(s)\n"
+	       "     -s --sortinfo     Dump sort_info block of database(s)\n"
 	       "     -l                List all records in the database(s)\n"
 	       "     -r <num>          Dump a record (<num> is an index, or eg 'code0' or a uid '1234')\n"
 	       "     -R <num>          As above but also dump resources to files\n"
-	       "     -d                Dump all data and all records, very verbose\n"
-	       "     -D                As above but also dump resources to files\n"
+	       "     -d  --dump        Dump all data and all records, very verbose\n"
+	       "     -D  --dump-res    As above but also dump resources to files\n"
 	       "     -h, --help        Display this information\n"
 	       "     -v, --version     Display version information\n\n"
-	       "   Examples: %s -l Foo.prc\n"
-	       "             %s -H -a Bar.pdb\n\n", progname, progname, progname);
+	       "        Examples: %s -l Foo.prc\n"
+	       "                  %s -H -a Bar.pdb\n\n", progname, progname, progname);
 	return;
 }
 
@@ -414,16 +414,16 @@ int main(int argc, char **argv)
 		*progname 	= argv[0];
 	struct 	pi_file *pf;
 	struct 	DBInfo info;
-		
+
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
 		case 'h':
 			Help(progname);
-			return 0;
+			exit(0);
 		case 'v':
 			PalmHeader(progname);
-			return 0;
+			exit(0);
 		case 'H':
 			hflag = 1;
 			break;
@@ -435,7 +435,6 @@ int main(int argc, char **argv)
 			break;
 		case 'D':
 			filedump = 1;
-			/* FALLTHROUGH */
 		case 'd':
 			dflag = 1;
 			break;
@@ -444,7 +443,6 @@ int main(int argc, char **argv)
 			break;
 		case 'R':
 			filedump = 1;
-			/* FALLTHROUGH */
 		case 'r':
 			rflag = 1;
 			rkey = optarg;
@@ -452,7 +450,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (optind > 0) {
+	if (optind > 1) {
 		name = argv[optind];
 	} else {
 		Help(progname);
