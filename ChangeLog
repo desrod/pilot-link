@@ -1,3 +1,8 @@
+2004-04-18 David A. Desrosiers <hacker at gnu-designs dot com>
+
+        * src/pilot-xfer.c: Some ugly changes to pilot-xfer.c, will throw
+          most of this away soon.
+
 2004-04-16  Nicholas Piper  <nick@nickpiper.co.uk>
 
 	* libpisock/versamail.c: Handling of attachment meta-data. We
