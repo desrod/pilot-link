@@ -207,10 +207,11 @@ char
 {
 	if (error < 0)
 		error = -error;
+	
 	if ((unsigned int) error >= (sizeof(dlp_errorlist)/(sizeof(char *))))
 		return "Unknown error";
-	else
-		return dlp_errorlist[error];
+	
+	return dlp_errorlist[error];
 }
 
 
@@ -231,9 +232,11 @@ struct dlpArg
 	struct dlpArg *arg;
 	
 	arg = malloc(sizeof (struct dlpArg));
+
 	if (arg != NULL) {
 		arg->id = id;
 		arg->len = len;
+		arg->data = NULL;
 
 		if (len > 0) {
 			arg->data = malloc (len);
@@ -241,8 +244,6 @@ struct dlpArg
 				free(arg);
 				arg = NULL;
 			}
-		} else {
-			arg->data = NULL;
 		}
 	}	
 	
@@ -264,9 +265,11 @@ struct dlpArg
 void
 dlp_arg_free (struct dlpArg *arg)
 {
-	if (arg->data != NULL)
-		free (arg->data);
-	free (arg);
+	if (arg != NULL) {
+		if (arg->data != NULL)
+			free (arg->data);
+		free (arg);
+	}
 }
 
 
@@ -333,16 +336,14 @@ dlp_request_new (enum dlpFunctions cmd, int argc, ...)
 	if (req != NULL) {
 		req->cmd = cmd;
 		req->argc = argc;
+		req->argv = NULL;
 
 		if (argc) {
 			req->argv = malloc (sizeof (struct dlpArg *) * argc);
 			if (req->argv == NULL) {
 				free(req);
-				req = NULL;
-				goto done;
+				return NULL;
 			}
-		} else {
-			req->argv = NULL;
 		}
 	
 		va_start (ap, argc);
@@ -355,15 +356,15 @@ dlp_request_new (enum dlpFunctions cmd, int argc, ...)
 			if (req->argv[i] == NULL) {
 				for (j = 0; j < i; j++)
 					dlp_arg_free(req->argv[j]);
+				free(req->argv);
 				free(req);
+				req = NULL;
 				break;
 			}
-				
 		}
 		va_end (ap);
 	}
 	
-done:
 	return req;	
 }
 
@@ -391,20 +392,18 @@ dlp_request_new_with_argid (enum dlpFunctions cmd, int argid, int argc, ...)
 	req = malloc (sizeof (struct dlpRequest));
 
 	if (req != NULL) {
-
 		req->cmd = cmd;
 		req->argc = argc;
+		req->argv = NULL;
+
 		if (argc) {
 			req->argv = malloc (sizeof (struct dlpArg *) * argc);
 			if (req->argv == NULL) {
 				free(req);
-				req = NULL;
-				goto done;
+				return NULL;
 			}
-		} else {
-			req->argv = NULL;
 		}
-	
+
 		va_start (ap, argc);
 		for (i = 0; i < argc; i++) {
 			size_t len;
@@ -414,14 +413,15 @@ dlp_request_new_with_argid (enum dlpFunctions cmd, int argid, int argc, ...)
 			if (req->argv[i] == NULL) {
 				for (j = 0; j < i; j++)
 					dlp_arg_free(req->argv[j]);
+				free(req->argv);
 				free(req);
+				req = NULL;
 				break;
 			}
 		}
 		va_end (ap);
 	}
 
-done:
 	return req;
 }
 
@@ -448,17 +448,20 @@ struct dlpResponse
 
 		res->cmd = cmd;
 		res->err = dlpErrNoError;
-	
 		res->argc = argc;
+		res->argv = NULL;
+
 		if (argc) {
 			res->argv = malloc (sizeof (struct dlpArg *) * argc);
 			if (res->argv == NULL) {
 				free(res);
-				res = NULL;
+				return NULL;
 			}
-		} else {
-			res->argv = NULL;
-		}	
+			/* zero-out argv so that in case of error during
+			   response read, dlp_response_free() won't try to
+			   free uninitialized ptrs */
+			memset(res->argv, 0, sizeof (struct dlpArg *) * argc);
+		}
 	}
 	
 	return res;
@@ -482,7 +485,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	struct dlpResponse *response;
 	unsigned char *buf;
 	short argid;
-	int i,j;
+	int i;
 	ssize_t bytes;
 	size_t len;
 	pi_buffer_t *dlp_buf;
@@ -502,6 +505,8 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	response = dlp_response_new (dlp_buf->data[0] & 0x7f, dlp_buf->data[1]);
 	*res = response;
 
+	/* note that in case an error occurs, we do not deallocate the response
+	   since callers already do it under all circumstances */
 	if (response == NULL) {
 		pi_buffer_free (dlp_buf);
 		return -1;
@@ -513,8 +518,21 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	for (i = 0; i < response->argc; i++) {
 		argid = get_byte (buf) & 0x7f;
 		if (get_byte(buf) & PI_DLP_ARG_FLAG_LONG) {
-			len = get_long (&buf[2]);
-			buf += 6;
+			if (pi_version(sd) < 0x0104) {
+				/* we received a response from a device indicating that
+				   it would have transmitted a >64k data block but DLP
+				   versions prior to 1.4 don't have this capacity. In
+				   this case (as observed on a T3), there is NO length
+				   stored after the argid, it goes straigt to the data
+				   contents. We need to report that the data is too large
+				   to be transferred.
+				*/
+				pi_buffer_free (dlp_buf);
+				return -131;
+			} else {
+				len = get_long (&buf[2]);
+				buf += 6;
+			}
 		} else if (get_byte(buf) & PI_DLP_ARG_FLAG_SHORT) {
 			len = get_short (&buf[2]);
 			buf += 4;
@@ -526,9 +544,6 @@ dlp_response_read (struct dlpResponse **res, int sd)
 		
 		response->argv[i] = dlp_arg_new (argid, len);
 		if (response->argv[i] == NULL) {
-			for (j = 0; j < i; j++)
-				dlp_arg_free (response->argv[j]);
-			free (response);
 			pi_buffer_free (dlp_buf);
 			return -1;
 		}
@@ -632,12 +647,13 @@ dlp_request_free (struct dlpRequest *req)
 	if (req == NULL)
 		return;
 
-	for (i = 0; i < req->argc; i++)
-		if (req->argv[i] != NULL)
-			dlp_arg_free (req->argv[i]);
-
-	if (req->argv != NULL)
+	if (req->argv != NULL) {
+		for (i = 0; i < req->argc; i++) {
+			if (req->argv[i] != NULL)
+				dlp_arg_free (req->argv[i]);
+		}
 		free (req->argv);
+	}
 
 	free (req);
 }
@@ -662,12 +678,13 @@ dlp_response_free (struct dlpResponse *res)
 	if (res == NULL)
 		return;
 	
-	for (i = 0; i < res->argc; i++)
-		if (res->argv[i] != NULL)
-			dlp_arg_free (res->argv[i]);
-	
-	if (res->argv != NULL)
+	if (res->argv != NULL) {
+		for (i = 0; i < res->argc; i++) {
+			if (res->argv[i] != NULL)
+				dlp_arg_free (res->argv[i]);
+		}
 		free (res->argv);
+	}
 
 	free (res);	
 }
@@ -690,6 +707,11 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 	int bytes;
 	*res = NULL;
 	
+	if (req == NULL) {
+		errno = -ENOMEM;
+		return -1;
+	}
+
 	if (dlp_request_write (req, sd) < req->argc) {
 		errno = -EIO;
 		return -1;
@@ -1757,7 +1779,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		set_long(DLP_REQUEST_DATA(req, 0, 18), 0);
 
 		if (length + 22 > DLP_BUF_SIZE) {
-			fprintf(stderr, "Data too large\n");
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     "DLP CallApplication: data too large (>64k)"));
 			return -131;
 		}
 		memcpy(DLP_REQUEST_DATA(req, 0, 22), data, length);
@@ -1804,7 +1827,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		set_short(DLP_REQUEST_DATA(req, 0, 6), length);
 
 		if (length + 8 > DLP_BUF_SIZE) {
-			fprintf(stderr, "Data too large\n");
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     "DLP CallApplication: data too large (>64k)"));
 			return -131;
 		}
 		memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
@@ -2073,6 +2097,12 @@ dlp_OpenConduit(int sd)
 	dlp_request_free(req);	
 	dlp_response_free(res);
 	
+	/* if this was not done yet, this will read and cache the DLP version
+	   that the Palm is running. We need this when reading responses during
+	   record/resource transfers */
+	if (result >= 0)
+		pi_version(sd);
+
 	return result;
 }
 
@@ -2600,7 +2630,7 @@ dlp_GetROMToken(int sd, unsigned long token, char *buffer, size_t *size)
 	}
 #endif
 
-	PackRPC(&p, 0xa340, RPC_IntReply,		// sysTrapHwrGetROMToken
+	PackRPC(&p, 0xa340, RPC_IntReply,		/* sysTrapHwrGetROMToken */
 		RPC_Short(0),
 		RPC_Long(token),
 		RPC_LongPtr(&buffer_ptr),
@@ -2628,7 +2658,7 @@ dlp_GetROMToken(int sd, unsigned long token, char *buffer, size_t *size)
 	if( buffer ) {
 	  buffer[*size] = 0;
 
-	  PackRPC(&p, 0xa026, RPC_IntReply,		// sysTrapMemMove
+	  PackRPC(&p, 0xa026, RPC_IntReply,		/* sysTrapMemMove */
 		  RPC_Ptr(buffer, *size),
 		  RPC_Long(buffer_ptr),
 		  RPC_Long((unsigned long) *size), 
@@ -2824,7 +2854,8 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 		memcpy(DLP_REQUEST_DATA(req, 0, 12), data, length);
 	} else {
 		if ((length + 8) > DLP_BUF_SIZE) {
-			fprintf(stderr, "Data too large\n");
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     "DLP WriteRecord: data too large (>64k)"));
 			return -131;
 		}
 		req = dlp_request_new(dlpFuncWriteRecord, 1, 8 + length);
@@ -3278,7 +3309,8 @@ dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	set_short(DLP_REQUEST_DATA(req, 0, 2), length);
 
 	if (length + 10 > DLP_BUF_SIZE) {
-		fprintf(stderr, "Data too large\n");
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "DLP WriteAppBlock: data too large (>64k)"));
 		return -131;
 	}
 	memcpy(DLP_REQUEST_DATA(req, 0, 4), data, length);
@@ -3374,7 +3406,8 @@ dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	set_short(DLP_REQUEST_DATA(req, 0, 2), length);
 
 	if (length + 10 > DLP_BUF_SIZE) {
-		fprintf(stderr, "Data too large\n");
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "DLP WriteSortBlock: data too large (>64k)"));
 		return -131;
 	}
 	memcpy(DLP_REQUEST_DATA(req, 0, 4), data, length);
@@ -3762,7 +3795,8 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 		set_byte(DLP_REQUEST_DATA(req, 0, 11), 0); 	/* Reserved */
 
 		if (size + 12 > DLP_BUF_SIZE) {
-			fprintf(stderr, "Data too large\n");
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     "DLP WriteAppPreferenceV2: data too large (>64k)"));
 			return -131;
 		}
 		memcpy(DLP_REQUEST_DATA(req, 0, 12), buffer, size);
