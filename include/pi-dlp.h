@@ -23,12 +23,21 @@
  * It provides equivalents to Palm Conduit Development Kit (CDK)'s SyncXXX functions, as
  * well as a number of convenience functions that are not found in the CDK.
  *
- * Once a device is connected and you have a socket number, you can start using DLP calls
- * to talk to it.
+ * Once you have a socket number and a device is connected, you can start using DLP calls
+ * to talk with the device. All DLP calls are @b synchronous: they are immediately sent to the device
+ * and the current thread is blocked until either a response is received, or an error
+ * occurs.
+ *
+ * It is a good pratice to always check errors returned by DLP calls. Usually, if the
+ * value is nagative, it is an error code. If the error is #PI_ERR_DLP_PALMOS, an
+ * error code was returned by the device itself: you can get this error code by calling
+ * pi_palmos_error() on the current socket. Besides all the Palm OS error code defined in
+ * Palm's documentation, there are a few values between #dlpErrNoError and #dlpErrUnknown
+ * which are error returned by the DLP layer itself on the device.
  *
  * The DLP protocol is the low level protocol that HotSync uses. Over the years, there have
  * been several iterations of DLP. Pre-Palm OS 5 devices have DLP 1.2 or lower. Palm OS 5
- * devices have DLP 1.3 or 1.4. Cobalt (Palm OS 6) uses DLP 2.1.
+ * devices have DLP 1.3 or 1.4 (Palm OS 5.2 and up). Cobalt (Palm OS 6) uses DLP 2.1.
  *
  * Devices with DLP 1.4 and later are known to support transfers of large records and
  * resources (of size bigger than 64k). This is the case of the Tapwave Zodiac, for
@@ -38,7 +47,7 @@
  * using DLP 1.2 whereas they really support DLP 1.3.
  *
  * Depending on which devices you plan on being compatible with, you should adjust
- * PI_DLP_VERSION_MAJOR and PI_DLP_VERSION_MINOR. If you want to support devices up to and
+ * #PI_DLP_VERSION_MAJOR and #PI_DLP_VERSION_MINOR. If you want to support devices up to and
  * including Palm OS 5, setting your DLP version to 1.4 is a good idea. If you want to be
  * able to connect to Palm OS 6, you need to set your DLP version to 2.1.
  */
@@ -74,6 +83,24 @@ extern "C" {
 #define DLP_BUF_SIZE 0xffff			/**< Kept for compatibility, applications should avoid using this value. */
 
 #define sysFileTSlotDriver	'libs'		/**< file type for slot driver libraries */
+
+/** @name Internal definitions used to assemble DLP calls */
+/*@{*/
+#define PI_DLP_OFFSET_CMD  0
+#define PI_DLP_OFFSET_ARGC 1
+#define PI_DLP_OFFSET_ARGV 2
+
+#define PI_DLP_ARG_TINY_LEN  0x000000FFL
+#define PI_DLP_ARG_SHORT_LEN 0x0000FFFFL
+#define PI_DLP_ARG_LONG_LEN  0xFFFFFFFFL
+
+#define PI_DLP_ARG_FLAG_TINY  0x00
+#define PI_DLP_ARG_FLAG_SHORT 0x80
+#define PI_DLP_ARG_FLAG_LONG  0x40
+#define PI_DLP_ARG_FLAG_MASK  0xC0
+
+#define PI_DLP_ARG_FIRST_ID 0x20
+/*@}*/
 
 /** @name VFS file attribute definitions */
 /*@{*/
@@ -397,7 +424,7 @@ enum dlpFunctions {
 	dlpLastFunc
 };
 
-/** Database flags in DBInfo structure and also for dlp_CreateDB() */
+/** @brief Database flags in DBInfo structure and also for dlp_CreateDB() */
 enum dlpDBFlags {
 	dlpDBFlagResource 	= 0x0001,	/**< Resource database */
 	dlpDBFlagReadOnly 	= 0x0002,	/**< Database is read only */
@@ -424,13 +451,13 @@ enum dlpDBFlags {
 	dlpDBFlagFixedUp	= 0x4000	/**< Temp flag used to clear DB on write (Palm OS 6.0 and later) */
 };
 
-/** Misc. flags in DBInfo structure */
+/** @brief Misc. flags in DBInfo structure */
 enum dlpDBMiscFlags {
 	dlpDBMiscFlagExcludeFromSync = 0x80,	/**< DLP 1.1 and later: exclude this database from sync */
 	dlpDBMiscFlagRamBased 	= 0x40		/**< DLP 1.2 and later: this database is in RAM */
 };
 
-/** Database record attributes */
+/** @brief Database record attributes */
 enum dlpRecAttributes {
 	dlpRecAttrDeleted 	= 0x80,		/**< Tagged for deletion during next sync */
 	dlpRecAttrDirty 	= 0x40,		/**< Record modified */
@@ -439,7 +466,7 @@ enum dlpRecAttributes {
 	dlpRecAttrArchived 	= 0x08		/**< Tagged for archival during next sync */
 };
 
-/** Mode flags used in dlp_OpenDB() */
+/** @brief Mode flags used in dlp_OpenDB() */
 enum dlpOpenFlags {
 	dlpOpenRead 		= 0x80,		/**< Open database for reading */
 	dlpOpenWrite 		= 0x40,		/**< Open database for writing */
@@ -448,24 +475,25 @@ enum dlpOpenFlags {
 	dlpOpenReadWrite 	= 0xC0		/**< Open database for reading and writing (equivalent to (#dlpOpenRead | #dlpOpenWrite)) */
 };
 
+/** @brief Flags for dlp_VFSFileOpen() */
 enum dlpVFSOpenFlags {
-	dlpVFSOpenExclusive 	= 0x1,
-	dlpVFSOpenRead 		= 0x2,
-	dlpVFSOpenWrite 	= 0x5 		/* implies exclusive */,
-	dlpVFSOpenReadWrite 	= 0x7 		/* read | write */,
+	dlpVFSOpenExclusive 	= 0x1,		/**< For dlp_VFSFileOpen(). Exclusive access */
+	dlpVFSOpenRead 		= 0x2,		/**< For dlp_VFSFileOpen(). Read only */
+	dlpVFSOpenWrite 	= 0x5, 		/**< For dlp_VFSFileOpen(). Write only. Implies exclusive */
+	dlpVFSOpenReadWrite 	= 0x7, 		/**< For dlp_VFSFileOpen(). Read | write */
 
 	/* Remainder are aliases and special cases not for VFSFileOpen */
-	vfsModeExclusive 	= dlpVFSOpenExclusive,
-	vfsModeRead 		= dlpVFSOpenRead,
-	vfsModeWrite 		= dlpVFSOpenWrite,
-	vfsModeReadWrite	= vfsModeRead | vfsModeWrite,
-	vfsModeCreate 		= 0x8 		/* Create file if it doesn't exist. Handled in VFS layer */,
-	vfsModeTruncate 	= 0x10 		/* Truncate to 0 bytes on open. Handled in VFS layer */,
-	vfsModeLeaveOpen 	= 0x20 		/* Leave file open even if foreground task closes. */
+	vfsModeExclusive 	= dlpVFSOpenExclusive,	/**< Alias to #dlpVFSOpenExclusive */
+	vfsModeRead 		= dlpVFSOpenRead,	/**< Alias to #dlpVFSOpenRead */
+	vfsModeWrite 		= dlpVFSOpenWrite,	/**< Alias to #dlpVFSOpenWrite */
+	vfsModeReadWrite	= vfsModeRead | vfsModeWrite,	/**< Alias to #dlpVFSOpenReadWrite */
+	vfsModeCreate 		= 0x8 		/**< For dlp_VFSFileOpen(). Create file if it doesn't exist. */,
+	vfsModeTruncate 	= 0x10 		/**< For dlp_VFSFileOpen(). Truncate to 0 bytes on open. */,
+	vfsModeLeaveOpen 	= 0x20 		/**< For dlp_VFSFileOpen(). Leave file open even if foreground task closes. */
 
 } ;
 
-/** End status values for dlp_EndOfSync() */
+/** @brief End status values for dlp_EndOfSync() */
 enum dlpEndStatus {
 	dlpEndCodeNormal 	= 0,		/**< Normal termination */
 	dlpEndCodeOutOfMemory,			/**< End due to low memory on device */
@@ -473,7 +501,7 @@ enum dlpEndStatus {
 	dlpEndCodeOther				/**< dlpEndCodeOther and higher == "Anything else" */
 };
 
-/** Flags passed to dlp_ReadDBList() */
+/** @brief Flags passed to dlp_ReadDBList() */
 enum dlpDBList {
 	dlpDBListRAM 		= 0x80,		/**< List RAM databases */
 	dlpDBListROM 		= 0x40,		/**< List ROM databases */
@@ -491,65 +519,87 @@ enum dlpFindDBSrchFlags {
 	dlpFindDBSrchFlagOnlyLatest	= 0x40
 };
 
-/* After a DLP transaction, there may be a DLP or Palm OS error
- * if the result code is PI_ERR_DLP_PALMOS. In this case, use
- * pi_palmos_error(sd) to obtain the error code. It can be in the
- * DLP error range (0 > error < dlpErrLastError), or otherwise
+/** @brief Error codes returned by DLP transactions
+ *
+ * After a DLP transaction, there may be a DLP or Palm OS error
+ * if the result code is #PI_ERR_DLP_PALMOS. In this case, use
+ * pi_palmos_error() to obtain the error code. It can be in the
+ * DLP error range (0 > error < #dlpErrLastError), or otherwise
  * in the Palm OS error range (see Palm OS header files for
  * definitions, in relation with each DLP call)
  */
 enum dlpErrors {
-	dlpErrNoError 		= 0,
-	dlpErrSystem,		/* 0x0001 */
-	dlpErrIllegalReq,	/* 0x0002 */
-	dlpErrMemory,		/* 0x0003 */
-	dlpErrParam,		/* 0x0004 */
-	dlpErrNotFound,		/* 0x0005 */
-	dlpErrNoneOpen,		/* 0x0006 */
-	dlpErrAlreadyOpen,	/* 0x0007 */
-	dlpErrTooManyOpen,	/* 0x0008 */
-	dlpErrExists,		/* 0x0009 */
-	dlpErrOpen,			/* 0x000a */
-	dlpErrDeleted,		/* 0x000b */
-	dlpErrBusy,			/* 0x000c */
-	dlpErrNotSupp,		/* 0x000d */
-	dlpErrUnused1,		/* 0x000e */
-	dlpErrReadOnly,		/* 0x000f */
-	dlpErrSpace,		/* 0x0010 */
-	dlpErrLimit,		/* 0x0011 */
-	dlpErrSync,			/* 0x0012 */
-	dlpErrWrapper,		/* 0x0013 */
-	dlpErrArgument,		/* 0x0014 */
-	dlpErrSize,			/* 0x0015 */
+	dlpErrNoError = 0,	/**< No error */
+	dlpErrSystem,		/**< System error (0x0001) */
+	dlpErrIllegalReq,	/**< Illegal request, not supported by this version of DLP (0x0002) */
+	dlpErrMemory,		/**< Not enough memory (0x0003) */
+	dlpErrParam,		/**< Invalid parameter (0x0004) */
+	dlpErrNotFound,		/**< File or database not found (0x0005) */
+	dlpErrNoneOpen,		/**< No file opened (0x0006) */
+	dlpErrAlreadyOpen,	/**< File already open (0x0007) */
+	dlpErrTooManyOpen,	/**< Too many open files (0x0008) */
+	dlpErrExists,		/**< File already exists (0x0009) */
+	dlpErrOpen,		/**< Can't open file (0x000a) */
+	dlpErrDeleted,		/**< File deleted (0x000b) */
+	dlpErrBusy,		/**< Record busy (0x000c) */
+	dlpErrNotSupp,		/**< Call not supported (0x000d) */
+	dlpErrUnused1,		/**< @e Unused (0x000e) */
+	dlpErrReadOnly,		/**< File is read-only (0x000f) */
+	dlpErrSpace,		/**< Not enough space left on device (0x0010) */
+	dlpErrLimit,		/**< Limit reached (0x0011) */
+	dlpErrSync,		/**< Sync error (0x0012) */
+	dlpErrWrapper,		/**< Wrapper error (0x0013) */
+	dlpErrArgument,		/**< Invalid argument (0x0014) */
+	dlpErrSize,		/**< Invalid size (0x0015) */
 
-	dlpErrUnknown = 127
+	dlpErrUnknown = 127	/**< Unknown error (0x007F) */
 };
 
+/** @brief Internal DLP argument structure */
 struct dlpArg {
-	int 	id_;	/* ObjC has a type id */
-	size_t	len;
-	char *data;
+	int 	id_;		/**< Argument ID (start at #PI_DLP_ARG_FIRST_ID) */
+	size_t	len;		/**< Argument length */
+	char *data;		/**< Argument data */
 };
 
+/** @brief Internal DLP command request structure */
 struct dlpRequest {
-	enum dlpFunctions cmd;
-
-	int argc;
-	struct dlpArg **argv;
+	enum dlpFunctions cmd;	/**< Command ID */
+	int argc;		/**< Number of arguments */
+	struct dlpArg **argv;	/**< Ptr to arguments */
 };
 
+/** @brief Internal DLP command response structure */
 struct dlpResponse {
-	enum dlpFunctions cmd;
-	enum dlpErrors err;
-
-	int argc;
-	struct dlpArg **argv;
+	enum dlpFunctions cmd;	/**< Command ID as returned by device. If not the same than requested command, this is an error */
+	enum dlpErrors err;	/**< DLP error (see #dlpErrors enum) */
+	int argc;		/**< Number of response arguments */
+	struct dlpArg **argv;	/**< Response arguments */
 };
+
 
 /* @name Functions internally used by dlp.c */
 /*@{*/
-extern time_t dlp_ptohdate(unsigned const char *data);
-extern void dlp_htopdate(time_t time, unsigned char *data);
+
+/** @brief Convert a Palm OS date to a local date
+ *
+ * Local dates are using the local machine's timezone. If the Palm OS date
+ * is undefined, the local date is set to @c 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT)
+ *
+ * @param data Ptr to a time/date data block returned by Palm OS
+ * @return converted date
+ */
+extern time_t dlp_ptohdate PI_ARGS((unsigned const char *data));
+
+/** @brief Convert a date to Palm OS date
+ *
+ * If the local date is @c 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT) the Palm OS date
+ * is set to undefined. Otherwise the date is converted from local time to Palm OS
+ *
+ * @param time The date to convert
+ * @param data Ptr to an 8 byte buffer to hold the Palm OS date
+ */
+extern void dlp_htopdate PI_ARGS((time_t time, unsigned char *data));
 
 extern struct dlpArg * dlp_arg_new PI_ARGS((int id_, size_t len));
 extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
@@ -737,7 +787,7 @@ extern int dlp_ResetSystem PI_ARGS((int sd));
 
 /** @brief Add an entry into the HotSync log on the device
  *
- * Move to the next line with \n, as usual. You may invoke this
+ * Move to the next line with \\n, as usual. You may invoke this
  * command once or more before calling dlp_EndOfSync(), but it is
  * not required.
  *
@@ -764,52 +814,117 @@ extern int dlp_OpenConduit PI_ARGS((int sd));
  * will call this for you if you don't. After the device receives this
  * command, it will terminate the connection.
  *
-   Status: dlpEndCodeNormal, dlpEndCodeOutOfMemory, dlpEndCodeUserCan, or
-   dlpEndCodeOther
+ * @param sd Socket number
+ * @param status End of sync status (see #dlpEndStatus enum)
+ * @return A negative value if an error occured (see pi-error.h)
  */
 extern int dlp_EndOfSync PI_ARGS((int sd, int status));
 
-/* Terminate HotSync _without_ notifying Palm. This will cause the
-   Palm to time out, and should (if I remember right) lose any
-   changes to unclosed databases. _Never_ use under ordinary
-   circumstances. If the sync needs to be aborted in a reasonable
-   manner, use EndOfSync with a non-zero status.
+/** @brief Terminate HotSync _without_ notifying Palm.
+ *
+ * This will cause the Palm to time out, and should (if I remember right)
+ * lose any changes to unclosed databases. _Never_ use under ordinary
+ * circumstances. If the sync needs to be aborted in a reasonable
+ * manner, use EndOfSync with a non-zero status.
+ *
+ * @param sd Socket number
+ * @return A negative value if an error occured (see pi-error.h)
  */
 extern int dlp_AbortSync PI_ARGS((int sd));
 
-/* Return info about an opened database. Currently the only information
-   returned is the number of records in the database.
+/** @brief Return the number of records in an opened database.
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param records On return, number of records in the database
+ * @return A negative value if an error occured (see pi-error.h)
  */
 extern int dlp_ReadOpenDBInfo
 	PI_ARGS((int sd, int dbhandle, int *records));
 
+/** @brief Move all records from a category to another category
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param fromcat Category to move from (0-15)
+ * @param tocat Category to move to (0-15)
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_MoveCategory
-	PI_ARGS((int sd, int handle, int fromcat, int tocat));
+	PI_ARGS((int sd, int dbhandle, int fromcat, int tocat));
 
-/* Tell the pilot who it is. */
+/** @brief Change the device user information
+ *
+ * @param sd Socket number
+ * @param user New user info
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_WriteUserInfo
-	PI_ARGS((int sd, struct PilotUser * User));
+	PI_ARGS((int sd, struct PilotUser *user));
 
-/* Ask the pilot who it is. */
+/** @brief Read the device user information
+ *
+ * @param sd Socket number
+ * @param user Returned user info
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ReadUserInfo
-	PI_ARGS((int sd, struct PilotUser * User));
+	PI_ARGS((int sd, struct PilotUser *user));
 
-/* Convenience function to reset lastSyncPC in the UserInfo to 0 */
+/** @brief Convenience function to reset lastSyncPC in the UserInfo to 0
+ *
+ * @param sd Socket number
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ResetLastSyncPC PI_ARGS((int sd));
 
+/** @brief Read a database's AppInfo block
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param offset Offset to start reading from (0 based)
+ * @param reqbytes Number of bytes to read (pass -1 to read all data from @p offset to the end of the AppInfo block)
+ * @param retbuf Buffer allocated using pi_buffer_new(). On return contains the data from the AppInfo block
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ReadAppBlock
-	PI_ARGS((int sd, int fHandle, int offset, int reqbytes,
+	PI_ARGS((int sd, int dbhandle, int offset, int reqbytes,
 		pi_buffer_t *retbuf));
 
+/** @brief Write a database's AppInfo block
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param dbuf Pointer to the new AppInfo data.
+ * @param dlen Length of the new AppInfo data. If 0, the AppInfo block is removed.
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_WriteAppBlock
-	PI_ARGS((int sd,int fHandle,PI_CONST void *dbuf,size_t dlen));
+	PI_ARGS((int sd,int dbhandle,PI_CONST void *dbuf,size_t dlen));
 
+/** @brief Read a database's SortInfo block
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param offset Offset to start reading from (0 based)
+ * @param reqbytes Number of bytes to read (pass -1 to read all data from @p offset to the end of the SortInfo block)
+ * @param retbuf Buffer allocated using pi_buffer_new(). On return contains the data from the SortInfo block
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ReadSortBlock
-	PI_ARGS((int sd, int fHandle, int offset, int reqbytes,
+	PI_ARGS((int sd, int dbhandle, int offset, int reqbytes,
 		pi_buffer_t *retbuf));
 
+/** @brief Write a database's SortInfo block
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param dbuf Pointer to the new SortInfo data.
+ * @param dlen Length of the new SortInfo data. If 0, the SortInfo block is removed.
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_WriteSortBlock
-	PI_ARGS((int sd, int fHandle, PI_CONST void *dbuf,
+	PI_ARGS((int sd, int dbhandle, PI_CONST void *dbuf,
 		size_t dlen));
 
 /* Reset NextModified position to beginning */
@@ -876,10 +991,16 @@ extern int dlp_ReadRecordByIndex
 	PI_ARGS((int sd, int fHandle, int recindex, pi_buffer_t *buffer,
 		recordid_t *recuid, int *attr, int *category));
 
-/* Deletes all records in the opened database which are marked as
-   archived or deleted.
+/** @brief Clean up a database by removing deleted/archived records
+ *
+ * Delete all records in the opened database which are marked as
+ * archived or deleted.
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @return A negative value if an error occured (see pi-error.h)
  */
-extern int dlp_CleanUpDatabase PI_ARGS((int sd, int fHandle));
+extern int dlp_CleanUpDatabase PI_ARGS((int sd, int dbhandle));
 
 /* For record databases, reset all dirty flags. For both record and
    resource databases, set the last sync time to now.
