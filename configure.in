@@ -23,8 +23,8 @@ dnl ******************************
 dnl Pilot Link Library Version
 dnl ******************************
 PISOCK_CURRENT=6
-PISOCK_REVISION=0
-PISOCK_AGE=1
+PISOCK_REVISION=2
+PISOCK_AGE=0
 
 AC_SUBST(PISOCK_CURRENT)
 AC_SUBST(PISOCK_REVISION)

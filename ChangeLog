@@ -4,6 +4,10 @@
 	
 2002-07-19  JP Rosevear  <jpr@ximian.com>
 
+	* configure.in: correct libpisock library versioning
+	
+2002-07-19  JP Rosevear  <jpr@ximian.com>
+
 	* libpisock/unixserial.c: Update for LOG changes
 
 	* libpisock/sys.c: ditto
