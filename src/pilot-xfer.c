@@ -605,7 +605,7 @@ static int fetch_progress(int sd, pi_file_t *pf, int total, int xfer, int record
 	fprintf(stdout,"\r   Fetching '%s' ... (%d bytes)",filename,xfer);
 	fflush(stdout);
 
-	if (dlp_OpenConduit(sd) < 0) {
+	if (!pi_socket_connected(sd)) {
 		return PI_TRANSFER_STOP;
 	} else {
 		return PI_TRANSFER_CONTINUE;
@@ -1137,7 +1137,7 @@ static int install_progress(int sd, pi_file_t *pf, int total, int xfer, int reco
 	fprintf(stdout,"\r   Installing '%s' ... (%d bytes)",filename,xfer);
 	fflush(stdout);
 
-	if (dlp_OpenConduit(sd) < 0) {
+	if (!pi_socket_connected(sd)) {
 		return PI_TRANSFER_STOP;
 	} else {
 		return PI_TRANSFER_CONTINUE;
