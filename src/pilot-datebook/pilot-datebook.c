@@ -24,7 +24,6 @@
 
 #include "pilot-datebook.h"
 #include "pilot-datebook-data.h"
-#include "pilot-datebook-job.h"
 
 /* Name used to call this program */
 char * progname;

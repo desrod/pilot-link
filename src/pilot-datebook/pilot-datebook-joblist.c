@@ -22,11 +22,7 @@
 #include "getopt.h"
 #include <string.h>
 
-#include "pilot-datebook-joblist.h"
 #include "pilot-datebook.h"
-#include "pilot-datebook-io.h"
-#include "pilot-datebook-sort.h"
-#include "pilot-datebook-hotsync.h"
 
 /* Internally used 'global' variables
  * (joblist_abort_all() needs access to this to close all open files)

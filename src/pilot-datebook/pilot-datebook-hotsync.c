@@ -20,7 +20,6 @@
  */
  
 #include <string.h>
-#include "pilot-datebook-data.h"
 #include "pilot-datebook-hotsync.h"
 
 

@@ -20,10 +20,6 @@
  */
 
 #include "pilot-datebook.h"
-#include "pilot-datebook-data.h"
-#include "pilot-datebook-io.h"
-#include "pilot-datebook-sort.h"
-#include "pilot-datebook-update.h"
 
 
 /***********************************************************************

@@ -20,16 +20,6 @@
  */
  
 #include "pilot-datebook-io.h"
-#include "pilot-datebook-data.h"
-
-#include "pilot-datebook-hotsync.h"
-#include "pilot-datebook-pdb.h"
-#include "pilot-datebook-csv.h"
-#include "pilot-datebook-windat.h"
-#include "pilot-datebook-longtxt.h"
-#include "pilot-datebook-shorttxt.h"
-#include "pilot-datebook-remind.h"
-#include "pilot-datebook-ical.h"
 
 /* IO dispatcher functions */
 

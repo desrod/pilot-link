@@ -9,8 +9,6 @@
 #ifndef _PILOT_DATEBOOK_JOB
 #define _PILOT_DATEBOOK_JOB
 
-#include "pilot-datebook-data.h"
-
 #include "pilot-datebook-compare.h"
 #include "pilot-datebook-io.h"
 #include "pilot-datebook-sort.h"
