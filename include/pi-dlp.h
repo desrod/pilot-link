@@ -64,13 +64,6 @@ extern "C" {
 #include "pi-macros.h"		/* For recordid_t */
 #include "pi-buffer.h"		/* For pi_buffer_t */
 
-/* Note: All of these functions return an integer that if greater
-   then zero is the number of bytes in the result, zero if there was
-   no result, or less then zero if an error occured. Any return
-   fields will be set to zero if an error occurs. All calls to dlp_*
-   functions should check for a return value less then zero.
- */
-
 /* version of the DLP protocol supported in this version */
 /* Hint for existing versions:
  * 1.2: Palm OS 4 / Palm OS 5 (OS 5 should be 1.3 but incorrectly reports 1.2)
@@ -102,58 +95,15 @@ extern "C" {
 #define PI_DLP_ARG_FIRST_ID 0x20
 /*@}*/
 
-/** @name VFS file attribute definitions */
+/** @name VFS definitions */
 /*@{*/
-#define vfsFileAttrReadOnly     (0x00000001UL)	/**< File is read only */
-#define vfsFileAttrHidden       (0x00000002UL)	/**< File is hidden */
-#define vfsFileAttrSystem       (0x00000004UL)	/**< File is a system file */
-#define vfsFileAttrVolumeLabel  (0x00000008UL)	/**< File is the volume label */
-#define vfsFileAttrDirectory    (0x00000010UL)	/**< File is a directory */
-#define vfsFileAttrArchive      (0x00000020UL)	/**< File is archived */
-#define vfsFileAttrLink         (0x00000040UL)	/**< File is a link to another file */
-/*@}*/
-
-/** @name Constants for dlp_VFSFileGetDate() and dlp_VFSFileSetDate() */
-/*@{*/
-#define vfsFileDateCreated 	1		/**< The date the file was created. */
-#define vfsFileDateModified 	2		/**< The date the file was last modified. */
-#define vfsFileDateAccessed 	3		/**< The date the file was last accessed. */
-/*@}*/
-
 #define vfsMountFlagsUseThisFileSystem	0x01	/**< Mount/Format the volume with the filesystem specified */
-
-#define vfsMAXFILENAME 256
-
-/** @name VFS file iterator definitions */
-/*@{*/
-#define vfsIteratorStart	0L
-#define vfsIteratorStop		((unsigned long)0xffffffffL)
-/*@}*/
-
-/* constant for an invalid volume reference, guaranteed not to represent a
-   valid one.  Use it like you would use NULL for a FILE*. */
-#define vfsInvalidVolRef 0
-
-/* constant for an invalid file reference, guaranteed not to represent a
-   valid one.  Use it like you would use NULL for a FILE*. */
-#define vfsInvalidFileRef	0L
-
-/** @name Constants for dlp_VFSFileSeek() */
-/*@{*/
-#define vfsOriginBeginning	0		/**< From the beginning (first data byte of file) */
-#define vfsOriginCurrent	1		/**< from the current position */
-#define vfsOriginEnd		2		/**< From the end of file (one position beyond last data byte, only negative offsets are legally allowed) */
+#define vfsMAXFILENAME		256		/**< The maximum size of a filename in a VFS volume */
+#define vfsInvalidVolRef	0		/**< constant for an invalid volume reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
+#define vfsInvalidFileRef	0L		/**< constant for an invalid file reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
 /*@}*/
 
 typedef unsigned long FileRef;			/**< Type for file references when working with VFS files and directories. */
-
-
-/** @name Volume attributes as found in VFSInfo.attributes */
-/*@{*/
-#define vfsVolAttrSlotBased	(0x00000001UL)
-#define vfsVolAttrReadOnly	(0x00000002UL)	/**< Volume is read-only */
-#define vfsVolAttrHidden	(0x00000004UL)
-/*@}*/
 
 /** @brief Information retrieved by dlp_VFSDirEntryEnumerate() */
 struct VFSDirInfo {
@@ -161,18 +111,21 @@ struct VFSDirInfo {
 	char name[vfsMAXFILENAME];		/**< File or directory name */
 };
 
-typedef struct VFSAnyMountParamTag {
+/** @brief Information used to format a volume with dlp_VFSVolumeFormat() */
+struct VFSAnyMountParam {
 	unsigned short volRefNum;
 	unsigned short reserved;
 	unsigned long  mountClass;
-} VFSAnyMountParamType;
+};
 
-struct VFSSlotMountParamTag {
-	VFSAnyMountParamType vfsMountParam;
+/** @brief Information used to format a volume with dlp_VFSVolumeFormat() */
+struct VFSSlotMountParam {
+	struct VFSAnyMountParam vfsMountParam;
 	unsigned short slotLibRefNum;
 	unsigned short slotRefNum;
 };
 
+/** @brief Information about a VFS volume, returned by dlp_VFSVolumeInfo() */
 struct VFSInfo {
 	/* 0: read-only etc. */
 	unsigned long   attributes;
@@ -412,59 +365,62 @@ enum dlpFunctions {
 	dlpFuncVFSFileResize,			/* 0x5b */
 	dlpFuncVFSFileSize,			/* 0x5c */
 
-	/* DLP 1.4-TW functions added here (Palm OS 5/TapWave) */
+	/* DLP 1.4 functions added here (Palm OS 5.2+, ie Tapwave Zodiac) */
 	dlpFuncExpSlotMediaType,		/* 0x5d */
-	dlpFuncWriteRecordEx,			/* 0x5e - function to write >64k records in TapWave */
-	dlpFuncWriteResourceEx,			/* 0x5f - function to write >64k resources in TapWave */
-	dlpFuncReadRecordEx,			/* 0x60 - function to read >64k records by index in TapWave */
+	dlpFuncWriteRecordEx,			/* 0x5e - function to write >64k records in Tapwave */
+	dlpFuncWriteResourceEx,			/* 0x5f - function to write >64k resources in Tapwave */
+	dlpFuncReadRecordEx,			/* 0x60 - function to read >64k records by index in Tapwave */
 	dlpFuncUnknown1,			/* 0x61 (may be bogus definition in tapwave headers, is listed as dlpFuncReadRecordStream)*/
 	dlpFuncUnknown3,			/* 0x62 */
 	dlpFuncUnknown4,			/* 0x63 */
-	dlpFuncReadResourceEx,			/* 0x64 - function to read resources >64k by index in TapWave */
+	dlpFuncReadResourceEx,			/* 0x64 - function to read resources >64k by index in Tapwave */
 	dlpLastFunc
 };
 
-/** @brief Database flags in DBInfo structure and also for dlp_CreateDB() */
-enum dlpDBFlags {
-	dlpDBFlagResource 	= 0x0001,	/**< Resource database */
-	dlpDBFlagReadOnly 	= 0x0002,	/**< Database is read only */
-	dlpDBFlagAppInfoDirty 	= 0x0004,	/**< AppInfo data has been modified */
-	dlpDBFlagBackup 	= 0x0008,	/**< Database should be backed up during HotSync */
-	dlpDBFlagHidden		= 0x0100,	/**< Database is hidden */
-	dlpDBFlagLaunchable	= 0x0200,	/**< Database is launchable data (show in Launcher, launch app by Creator) */
-	dlpDBFlagRecyclable	= 0x0400,	/**< Database will be deleted shortly */
-	dlpDBFlagBundle		= 0x0800,	/**< Database is bundled with others having same creator (i.e. for Beam) */
-	dlpDBFlagOpen 		= 0x8000,	/**< Database is currently open */
+/** @name Database and record attributes */
+/*@{*/
+	/** @brief Database flags in DBInfo structure and also for dlp_CreateDB() */
+	enum dlpDBFlags {
+		dlpDBFlagResource 	= 0x0001,	/**< Resource database */
+		dlpDBFlagReadOnly 	= 0x0002,	/**< Database is read only */
+		dlpDBFlagAppInfoDirty 	= 0x0004,	/**< AppInfo data has been modified */
+		dlpDBFlagBackup 	= 0x0008,	/**< Database should be backed up during HotSync */
+		dlpDBFlagHidden		= 0x0100,	/**< Database is hidden */
+		dlpDBFlagLaunchable	= 0x0200,	/**< Database is launchable data (show in Launcher, launch app by Creator) */
+		dlpDBFlagRecyclable	= 0x0400,	/**< Database will be deleted shortly */
+		dlpDBFlagBundle		= 0x0800,	/**< Database is bundled with others having same creator (i.e. for Beam) */
+		dlpDBFlagOpen 		= 0x8000,	/**< Database is currently open */
 
-	/* v2.0 specific */
-	dlpDBFlagNewer 		= 0x0010,	/**< Newer version may be installed over open DB (Palm OS 2.0 and later) */
-	dlpDBFlagReset 		= 0x0020,	/**< Reset after installation (Palm OS 2.0 and later) */
+		/* v2.0 specific */
+		dlpDBFlagNewer 		= 0x0010,	/**< Newer version may be installed over open DB (Palm OS 2.0 and later) */
+		dlpDBFlagReset 		= 0x0020,	/**< Reset after installation (Palm OS 2.0 and later) */
 
-	/* v3.0 specific */
-	dlpDBFlagCopyPrevention = 0x0040,	/**< Database should not be beamed or sent (Palm OS 3.0 and later) */
-	dlpDBFlagStream 	= 0x0080,	/**< Database is a file stream (Palm OS 3.0 and later) */
+		/* v3.0 specific */
+		dlpDBFlagCopyPrevention = 0x0040,	/**< Database should not be beamed or sent (Palm OS 3.0 and later) */
+		dlpDBFlagStream 	= 0x0080,	/**< Database is a file stream (Palm OS 3.0 and later) */
 
-	/* OS 6+ */
-	dlpDBFlagSchema		= 0x1000,	/**< Schema database (Palm OS 6.0 and later) */
-	dlpDBFlagSecure		= 0x2000,	/**< Secure database (Palm OS 6.0 and later) */
-	dlpDBFlagExtended	= dlpDBFlagSecure, /**< Set if Schema not set and DB is Extended (Palm OS 6.0 and later) */
-	dlpDBFlagFixedUp	= 0x4000	/**< Temp flag used to clear DB on write (Palm OS 6.0 and later) */
-};
+		/* OS 6+ */
+		dlpDBFlagSchema		= 0x1000,	/**< Schema database (Palm OS 6.0 and later) */
+		dlpDBFlagSecure		= 0x2000,	/**< Secure database (Palm OS 6.0 and later) */
+		dlpDBFlagExtended	= dlpDBFlagSecure, /**< Set if Schema not set and DB is Extended (Palm OS 6.0 and later) */
+		dlpDBFlagFixedUp	= 0x4000	/**< Temp flag used to clear DB on write (Palm OS 6.0 and later) */
+	};
 
-/** @brief Misc. flags in DBInfo structure */
-enum dlpDBMiscFlags {
-	dlpDBMiscFlagExcludeFromSync = 0x80,	/**< DLP 1.1 and later: exclude this database from sync */
-	dlpDBMiscFlagRamBased 	= 0x40		/**< DLP 1.2 and later: this database is in RAM */
-};
+	/** @brief Misc. flags in DBInfo structure */
+	enum dlpDBMiscFlags {
+		dlpDBMiscFlagExcludeFromSync = 0x80,	/**< DLP 1.1 and later: exclude this database from sync */
+		dlpDBMiscFlagRamBased 	= 0x40		/**< DLP 1.2 and later: this database is in RAM */
+	};
 
-/** @brief Database record attributes */
-enum dlpRecAttributes {
-	dlpRecAttrDeleted 	= 0x80,		/**< Tagged for deletion during next sync */
-	dlpRecAttrDirty 	= 0x40,		/**< Record modified */
-	dlpRecAttrBusy 		= 0x20,		/**< Record locked (in use) */
-	dlpRecAttrSecret 	= 0x10,		/**< Record is secret */
-	dlpRecAttrArchived 	= 0x08		/**< Tagged for archival during next sync */
-};
+	/** @brief Database record attributes */
+	enum dlpRecAttributes {
+		dlpRecAttrDeleted 	= 0x80,		/**< Tagged for deletion during next sync */
+		dlpRecAttrDirty 	= 0x40,		/**< Record modified */
+		dlpRecAttrBusy 		= 0x20,		/**< Record locked (in use) */
+		dlpRecAttrSecret 	= 0x10,		/**< Record is secret */
+		dlpRecAttrArchived 	= 0x08		/**< Tagged for archival during next sync */
+	};
+/*@}*/
 
 /** @brief Mode flags used in dlp_OpenDB() */
 enum dlpOpenFlags {
@@ -474,24 +430,6 @@ enum dlpOpenFlags {
 	dlpOpenSecret 		= 0x10,		/**< Show secret records */
 	dlpOpenReadWrite 	= 0xC0		/**< Open database for reading and writing (equivalent to (#dlpOpenRead | #dlpOpenWrite)) */
 };
-
-/** @brief Flags for dlp_VFSFileOpen() */
-enum dlpVFSOpenFlags {
-	dlpVFSOpenExclusive 	= 0x1,		/**< For dlp_VFSFileOpen(). Exclusive access */
-	dlpVFSOpenRead 		= 0x2,		/**< For dlp_VFSFileOpen(). Read only */
-	dlpVFSOpenWrite 	= 0x5, 		/**< For dlp_VFSFileOpen(). Write only. Implies exclusive */
-	dlpVFSOpenReadWrite 	= 0x7, 		/**< For dlp_VFSFileOpen(). Read | write */
-
-	/* Remainder are aliases and special cases not for VFSFileOpen */
-	vfsModeExclusive 	= dlpVFSOpenExclusive,	/**< Alias to #dlpVFSOpenExclusive */
-	vfsModeRead 		= dlpVFSOpenRead,	/**< Alias to #dlpVFSOpenRead */
-	vfsModeWrite 		= dlpVFSOpenWrite,	/**< Alias to #dlpVFSOpenWrite */
-	vfsModeReadWrite	= vfsModeRead | vfsModeWrite,	/**< Alias to #dlpVFSOpenReadWrite */
-	vfsModeCreate 		= 0x8 		/**< For dlp_VFSFileOpen(). Create file if it doesn't exist. */,
-	vfsModeTruncate 	= 0x10 		/**< For dlp_VFSFileOpen(). Truncate to 0 bytes on open. */,
-	vfsModeLeaveOpen 	= 0x20 		/**< For dlp_VFSFileOpen(). Leave file open even if foreground task closes. */
-
-} ;
 
 /** @brief End status values for dlp_EndOfSync() */
 enum dlpEndStatus {
@@ -519,6 +457,73 @@ enum dlpFindDBSrchFlags {
 	dlpFindDBSrchFlagOnlyLatest	= 0x40
 };
 
+/** @name Expansion Mgr and VFS Mgr constants */
+/*@{*/
+	/** @brief Expansion card capabilities, as returned by dlp_ExpCardInfo() */
+	enum dlpExpCardCapabilities {
+		dlpExpCapabilityHasStorage	= 0x00000001,	/**< Card supports reading (and maybe writing) */
+		dlpExpCapabilityReadOnly	= 0x00000002,	/**< Card is read-only */
+		dlpExpCapabilitySerial		= 0x00000004	/**< Card supports dumb serial interface */
+	};
+
+	/** @brief VFS volume attributes as found in the @a attributes member of a VFSInfo structure */
+	enum dlpVFSVolumeAttributes {
+		vfsVolAttrSlotBased	= 0x00000001,	/**< Volume is inserted is an expansion slot */
+		vfsVolAttrReadOnly	= 0x00000002,	/**< Volume is read-only */
+		vfsVolAttrHidden	= 0x00000004	/**< Volume is hidden */
+	};
+
+	/** @brief Constants for dlp_VFSFileSeek() */
+	enum dlpVFSSeekConstants {
+		vfsOriginBeginning	= 0,		/**< From the beginning (first data byte of file) */
+		vfsOriginCurrent	= 1,		/**< from the current position */
+		vfsOriginEnd		= 2		/**< From the end of file (one position beyond last data byte, only negative offsets are legally allowed) */
+	};
+
+	/** @brief Flags for dlp_VFSFileOpen() */
+	enum dlpVFSOpenFlags {
+		dlpVFSOpenExclusive 	= 0x01,		/**< For dlp_VFSFileOpen(). Exclusive access */
+		dlpVFSOpenRead 		= 0x02,		/**< For dlp_VFSFileOpen(). Read only */
+		dlpVFSOpenWrite 	= 0x05, 	/**< For dlp_VFSFileOpen(). Write only. Implies exclusive */
+		dlpVFSOpenReadWrite 	= 0x07,		/**< For dlp_VFSFileOpen(). Read | write */
+
+		/* Remainder are aliases and special cases not for VFSFileOpen */
+		vfsModeExclusive 	= dlpVFSOpenExclusive,	/**< Alias to #dlpVFSOpenExclusive */
+		vfsModeRead 		= dlpVFSOpenRead,	/**< Alias to #dlpVFSOpenRead */
+		vfsModeWrite 		= dlpVFSOpenWrite,	/**< Alias to #dlpVFSOpenWrite */
+		vfsModeReadWrite	= vfsModeRead | vfsModeWrite,	/**< Alias to #dlpVFSOpenReadWrite */
+		vfsModeCreate 		= 0x08 		/**< For dlp_VFSFileOpen(). Create file if it doesn't exist. */,
+		vfsModeTruncate 	= 0x10 		/**< For dlp_VFSFileOpen(). Truncate to 0 bytes on open. */,
+		vfsModeLeaveOpen 	= 0x20 		/**< For dlp_VFSFileOpen(). Leave file open even if foreground task closes. */
+
+	} ;
+
+	/** @brief VFS file attribute constants */
+	enum dlpVFSFileAttributeConstants {
+		vfsFileAttrReadOnly	= 0x00000001,	/**< File is read only */
+		vfsFileAttrHidden	= 0x00000002,	/**< File is hidden */
+		vfsFileAttrSystem	= 0x00000004,	/**< File is a system file */
+		vfsFileAttrVolumeLabel	= 0x00000008,	/**< File is the volume label */
+		vfsFileAttrDirectory	= 0x00000010,	/**< File is a directory */
+		vfsFileAttrArchive	= 0x00000020,	/**< File is archived */
+		vfsFileAttrLink		= 0x00000040	/**< File is a link to another file */
+	};
+
+	/** @brief Constants for dlp_VFSFileGetDate() and dlp_VFSFileSetDate() */
+	enum dlpVFSDateConstants {
+		vfsFileDateCreated	= 1,		/**< The date the file was created. */
+		vfsFileDateModified	= 2,		/**< The date the file was last modified. */
+		vfsFileDateAccessed	= 3		/**< The date the file was last accessed. */
+	};
+
+	/** @brief VFS file iterator constants */
+	enum dlpVFSFileIteratorConstants {
+		vfsIteratorStart	= 0,		/** < Indicates that iterator is beginning */
+		vfsIteratorStop		= ((unsigned long)0xffffffffL) /**< Indicate that iterator has gone through all items */
+	};
+/*@}*/
+
+
 /** @brief Error codes returned by DLP transactions
  *
  * After a DLP transaction, there may be a DLP or Palm OS error
@@ -534,7 +539,7 @@ enum dlpErrors {
 	dlpErrIllegalReq,	/**< Illegal request, not supported by this version of DLP (0x0002) */
 	dlpErrMemory,		/**< Not enough memory (0x0003) */
 	dlpErrParam,		/**< Invalid parameter (0x0004) */
-	dlpErrNotFound,		/**< File or database not found (0x0005) */
+	dlpErrNotFound,		/**< File, database or record not found (0x0005) */
 	dlpErrNoneOpen,		/**< No file opened (0x0006) */
 	dlpErrAlreadyOpen,	/**< File already open (0x0007) */
 	dlpErrTooManyOpen,	/**< Too many open files (0x0008) */
@@ -1071,16 +1076,64 @@ extern int dlp_DeleteResource
 	PI_ARGS((int sd, int dbhandle, int all, unsigned long restype,
 		int resID));
 
+/** @brief Iterate through modified records in database
+ *
+ * Return subsequent modified records on each call. Use dlp_ResetDBIndex()
+ * prior to starting iterations. Once all the records have been seen,
+ * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
+ * #dlpErrNotFound.
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
+ * @param recuid If not NULL, contains the record unique ID on return
+ * @param recindex If not NULL, contains the record index on return
+ * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
+ * @param category If not NULL, contains the record category on return
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ReadNextModifiedRec
-	PI_ARGS((int sd, int fHandle, pi_buffer_t *buffer, recordid_t * id_,
+	PI_ARGS((int sd, int dbhandle, pi_buffer_t *buffer, recordid_t *recuid,
 		int *recindex, int *attr, int *category));
 
+/** @brief Iterate through modified records in category
+ *
+ * Return subsequent modified records on each call. Use dlp_ResetDBIndex()
+ * prior to starting iterations. Once all the records have been seen,
+ * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
+ * #dlpErrNotFound.
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param category The category to iterate into
+ * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
+ * @param recuid If not NULL, contains the record unique ID on return
+ * @param recindex If not NULL, contains the record index on return
+ * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ReadNextModifiedRecInCategory
-	PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
-		recordid_t * id_, int *recindex, int *attr));
+	PI_ARGS((int sd, int dbhandle, int category, pi_buffer_t *buffer,
+		recordid_t *recuid, int *recindex, int *attr));
 
+/** @brief Iterate through records in category
+ *
+ * Return subsequent records on each call. Use dlp_ResetDBIndex()
+ * prior to starting iterations. Once all the records have been seen,
+ * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
+ * #dlpErrNotFound.
+ *
+ * @param sd Socket number
+ * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+ * @param category The category to iterate into
+ * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
+ * @param recuid If not NULL, contains the record unique ID on return
+ * @param recindex If not NULL, contains the record index on return
+ * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ReadNextRecInCategory
-	PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
+	PI_ARGS((int sd, int dbhandle, int category, pi_buffer_t *buffer,
 		recordid_t *recuid, int *recindex, int *attr));
 
 /** @brief Read a record using its unique ID
@@ -1332,106 +1385,420 @@ extern int dlp_FindDBByTypeCreator
 		 int latest, int *cardno, unsigned long *localid, int *dbhandle,
 		 struct DBInfo *info, struct DBSizeInfo *size));
 
-/* Palm OS 4.0 only */
+/** @brief Enumerate expansion slots
+ *
+ * Supported on Palm OS 4.0 and later. Expansion slots are physical slots
+ * present on the device. To check whether a card is inserted in a slot,
+ * use dlp_ExpCardPresent().
+ *
+ * @param sd Socket number
+ * @param numSlots On input, maximum number of slots that can be returned in the slotRefs array. On return, the actual number of slot references returned in @p slotRefs.
+ * @param slotRefs On return, @p numSlots slot references
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ExpSlotEnumerate
 	PI_ARGS((int sd, int *numSlots, int *slotRefs));
 
+/** @brief Checks whether a card is inserted in a slot
+ *
+ * Supported on Palm OS 4.0 and later. Returns >=0 if a card
+ * is inserted in the slot.
+ *
+ * @param sd Socket number
+ * @param slotRef The slot reference as returned by dlp_ExpSlotEnumerate().
+ * @return A negative value if an error occured (see pi-error.h), >=0 if a card is inserted
+ */
 extern int dlp_ExpCardPresent
-	PI_ARGS((int sd, int SlotRef));
+	PI_ARGS((int sd, int slotRef));
 
+/** @brief Get information about a removable card inserted in an expansion slot
+ *
+ * Supported on Palm OS 4.0 and later. The info strings are returned in a
+ * single malloc()'ed buffer as a suite of nul-terminated string, one
+ * after the other.
+ *
+ * @param sd Socket number
+ * @param slotRef The slot reference as returned by dlp_ExpSlotEnumerate().
+ * @param flags If not NULL, the card flags (see #dlpExpCardCapabilities enum)
+ * @param numStrings On return, the number of strings found in the @p strings array
+ * @param strings If not NULL, ptr to a char*. If there are strings to return, this function allocates a buffer to hold the strings. You are responsible for free()'ing the buffer once you're done with it.
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ExpCardInfo
-	PI_ARGS((int sd, int SlotRef, unsigned long *flags,
+	PI_ARGS((int sd, int slotRef, unsigned long *flags,
 		 int *numStrings, char **strings));
 
+/** @brief Get the default storage directory for a given file type
+ *
+ * Supported on Palm OS 4.0 and later. Return the default directory
+ * for a file type. File types as expressed as MIME types, for
+ * example "image/jpeg", or as a simple file extension (i.e. ".jpg")
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param name MIME type to get the default directory for
+ * @param dir A buffer to hold the default path
+ * @param len On input, the length of the @p dir buffer. On return, contains the length of the path string (including the nul terminator)
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSGetDefaultDir
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *name,char *dir, int *len));
 
+/** @brief Import a VFS file to a database on the handheld
+ *
+ * Supported on Palm OS 4.0 and later. The file is converted to a
+ * full fledged database and stored in the handheld's RAM.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param pathNameP Path of the file to transfer to the handheld
+ * @param cardno On return, card number the database was created on (usually 0)
+ * @param localid On return, LocalID of the database that was created
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSImportDatabaseFromFile
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *pathNameP,
 		 int *cardno, unsigned long *localid));
 
+/** @brief Export a database to a VFS file
+ *
+ * Supported on Palm OS 4.0 and later. The database is converted to a
+ * .prc, .pdb or .pqa file on the VFS volume.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param pathNameP Path of the file to create on the VFS volume
+ * @param cardno Card number the database resides on (usually 0)
+ * @param localid LocalID of the database to export
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSExportDatabaseToFile
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *pathNameP,
 		int cardno, unsigned int localid));
 
+/** @brief Create a new file on a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param name Full path of the file to create
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileCreate
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
 
+/** @brief Open an existing file on a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param path Full path of the file to open
+ * @param openMode Open mode flags (see #dlpVFSOpenFlags enum)
+ * @param outFileRef On return, file reference to the open file
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileOpen
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *path, int openMode,
 		FileRef *outFileRef));
 
+/** @brief Close an open VFS file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File reference obtained from dlp_VFSFileOpen()
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileClose
 	PI_ARGS((int sd, FileRef afile));
 
+/** @brief Write data to an open file
+ *
+ * Supported on Palm OS 4.0 and later. Will return the number of bytes
+ * written if successful.
+ *
+ * @param sd Socket number
+ * @param afile File reference obtained from dlp_VFSFileOpen()
+ * @param data Ptr to the data to write
+ * @param len Length of the data to write
+ * @return A negative value if an error occured (see pi-error.h), the number of bytes written otherwise.
+ */
 extern int dlp_VFSFileWrite
 	PI_ARGS((int sd, FileRef afile, unsigned char *data, size_t len));
 
+/** @brief Read data from an open file
+ *
+ * Supported on Palm OS 4.0 and later. Will return the total number of bytes
+ * actually read.
+ *
+ * @param sd Socket number
+ * @param afile File reference obtained from dlp_VFSFileOpen()
+ * @param data Buffer allocated using pi_buffer_new(). Buffer is being emptied first with pi_buffer_clear(). On return contains the data read from the file.
+ * @param numBytes Number of bytes to read from the file.
+ * @return A negative value if an error occured (see pi-error.h), or the total number of bytes read
+ */
 extern int dlp_VFSFileRead
 	PI_ARGS((int sd, FileRef afile, pi_buffer_t *data, size_t numBytes));
 
+/** @brief Delete an existing file from a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param name Full access path to the file to delete
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileDelete
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
 
+/** @brief Rename an existing file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @note This function can NOT be used to move a file from one place
+ * to another. You can only rename a file that will stay in the same
+ * directory.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param name Full access path to the file to rename
+ * @param newname New file name, without the rest of the access path
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileRename
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *name,
 		PI_CONST char *newname));
 
+/** @brief Checks whether the current position is at the end of file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File reference obtained from dlp_VFSFileOpen()
+ * @return A negative value if an error occured (see pi-error.h). 0 if not at EOF, >0 if at EOF.
+ */
 extern int dlp_VFSFileEOF
 	PI_ARGS((int sd, FileRef afile));
 
+/** @brief Return the current seek position in an open file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File reference obtained from dlp_VFSFileOpen()
+ * @param position On return, current absolute position in the file
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileTell
-	PI_ARGS((int sd, FileRef afile,int *position));
+	PI_ARGS((int sd, FileRef afile, int *position));
 
+/** @brief Return the attributes of an open file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File reference obtained from dlp_VFSFileOpen()
+ * @param attributes On return, file attributes (see #dlpVFSFileAttributeConstants enum)
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileGetAttributes
 	PI_ARGS((int sd, FileRef afile, unsigned long *attributes));
 
+/** @brief Change the attributes of an open file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File reference obtained from dlp_VFSFileOpen()
+ * @param attributes n-New file attributes (see #dlpVFSFileAttributeConstants enum)
+ * @return A negative value if an error occured (see pi-error.h).
+ */
 extern int dlp_VFSFileSetAttributes
 	PI_ARGS((int sd, FileRef afile, unsigned long attributes));
 
+/** @brief Return one of the dates associated with an open file or directory
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+ * @param which The date you want (see #dlpVFSDateConstants enum)
+ * @param date On return, the requested date
+ * @return A negative value if an error occured (see pi-error.h).
+ */
 extern int dlp_VFSFileGetDate
 	PI_ARGS((int sd, FileRef afile, int which, time_t *date));
 
+/** @brief Change one of the dates for an open file or directory
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+ * @param which The date you want to change (see #dlpVFSDateConstants enum)
+ * @param date The new date to set
+ * @return A negative value if an error occured (see pi-error.h).
+ */
 extern int dlp_VFSFileSetDate
 	PI_ARGS((int sd, FileRef afile, int which, time_t date));
 
+/** @brief Create a new directory on a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param path Full path for the directory to create
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSDirCreate
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *path));
 
+/** @brief Iterate through the entries in a directory
+ *
+ * Supported on Palm OS 4.0 and later. At the beginning you set
+ * @p dirIterator to #vfsIteratorStart, then call this function
+ * repeatedly until it returns an error code of the iterator becomes
+ * #vfsIteratorStop.
+ *
+ * @param sd Socket number
+ * @param dirRefNum Directory reference obtained from dlp_VFSFileOpen()
+ * @param dirIterator Ptr to an iterator. Start with #vfsIteratorStart
+ * @param maxDirItems On input, the max number of VFSDirInfo structures stored in @p dirItems. On output, the actual number of items.
+ * @param dirItems Preallocated array that contains a number of VFSDirInfo structures on return.
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSDirEntryEnumerate
 	PI_ARGS((int sd, FileRef dirRefNum, unsigned long *dirIterator,
 		int *maxDirItems, struct VFSDirInfo *dirItems));
 
+/** @brief Format a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param flags Format flags (undocumented for now)
+ * @param fsLibRef File system lib ref (undocumented for now)
+ * @param param Slot mount parameters (undocumented for now)
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSVolumeFormat
 	PI_ARGS((int sd, unsigned char flags, int fsLibRef,
-		struct VFSSlotMountParamTag *param));
+		struct VFSSlotMountParam *param));
 
+/** @brief Returns a list of connected VFS volumes
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param numVols On input, the maximum number of volume references that can be returned. On output, the actual number of volume references
+ * @param volRefs On output, @p numVols volume references
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSVolumeEnumerate
 	PI_ARGS((int sd, int *numVols, int *volRefs));
 
+/** @brief Returns information about a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param volInfo On return, volume information
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSVolumeInfo
 	PI_ARGS((int sd, int volRefNum, struct VFSInfo *volInfo));
 
+/** @brief Return the label (name) of a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param len On input, the maximum size of the name buffer. On output, the name length (including the ending nul byte)
+ * @param name On output, the nul-terminated volume name
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSVolumeGetLabel
 	PI_ARGS((int sd, int volRefNum, int *len, char *name));
 
+/** @brief Change the label (name) of a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param name New volume name
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSVolumeSetLabel
 	PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
 
+/** @brief Return the total and used size of a VFS volume
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+ * @param volSizeUsed On return, number of bytes used on the volume
+ * @param volSizeTotal On return, total size of the volume in bytes
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSVolumeSize
 	PI_ARGS((int sd, int volRefNum, long *volSizeUsed,
 		long *volSizeTotal));
 
+/** @brief Change the current seek position in an open file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+ * @param origin Where to seek from (see #dlpVFSSeekConstants enum)
+ * @param offset Seek offset
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileSeek
 	PI_ARGS((int sd, FileRef afile, int origin, int offset));
 
+/** @brief Resize an open file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+ * @param newSize New file size
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileResize
 	PI_ARGS((int sd, FileRef afile, int newSize));
 
+/** @brief Return the size of an open file
+ *
+ * Supported on Palm OS 4.0 and later.
+ *
+ * @param sd Socket number
+ * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+ * @param size On return, the actual size of the file
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_VFSFileSize
 	PI_ARGS((int sd, FileRef afile,int *size));
 
 /* DLP 1.4 only (Palm OS 5.2, seen on TapWave) */
+/** @brief Return the type of media supported by an expansion slot
+ *
+ * Supported on Palm OS 5.2 and later (DLP 1.4 and later).
+ *
+ * @param sd Socket number
+ * @param slotNum Slot ref to query (obtained from dlp_ExpSlotEnumerate())
+ * @param mediaType On return, the media type
+ * @return A negative value if an error occured (see pi-error.h)
+ */
 extern int dlp_ExpSlotMediaType
 	PI_ARGS((int sd, int slotNum, unsigned long *mediaType));
 

@@ -3717,7 +3717,7 @@ dlp_ResetSyncFlags(int sd, int dbandle)
  *
  ***************************************************************************/
 int
-dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
+dlp_ReadNextRecInCategory(int sd, int dbhandle, int category,
 			  pi_buffer_t *buffer, recordid_t *recuid, int *recindex,
 			  int *attr)
 {
@@ -3739,7 +3739,7 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadNextRecInCategory Emulating with: Handle: %d, "
 			 "Category: %d\n",
-		    fHandle, incategory));
+		    dbhandle, category));
 
 		if ((ps = find_pi_socket(sd)) == 0) {
 			errno = ESRCH;
@@ -3748,19 +3748,19 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 
 		for (;;) {
 			/* Fetch next modified record (in any category) */
-			rec = dlp_ReadRecordByIndex(sd, fHandle,
+			rec = dlp_ReadRecordByIndex(sd, dbhandle,
 						    ps->dlprecord, 0, 0,
 						    0, &cat);
 
 			if (rec < 0)
 				break;
 
-			if (cat != incategory) {
+			if (cat != category) {
 				ps->dlprecord++;
 				continue;
 			}
 
-			rec = dlp_ReadRecordByIndex(sd, fHandle,
+			rec = dlp_ReadRecordByIndex(sd, dbhandle,
 						    ps->dlprecord, buffer,
 						    recuid, attr, &cat);
 
@@ -3789,8 +3789,8 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
-	set_byte(DLP_REQUEST_DATA(req, 0, 1), incategory);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 1), category);
 
 	result = dlp_exec(sd, req, &res);
 
@@ -4065,8 +4065,8 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int prefID, int backup,
  *
  ***************************************************************************/
 int
-dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
-				  pi_buffer_t *buffer, recordid_t * recID,
+dlp_ReadNextModifiedRecInCategory(int sd, int dbhandle, int category,
+				  pi_buffer_t *buffer, recordid_t *recID,
 				  int *recindex, int *attr)
 {
 	int 	result,
@@ -4084,11 +4084,11 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadNextModifiedRecInCategory"
 			" Emulating with: Handle: %d, Category: %d\n",
-		    fHandle, incategory));
+		    dbhandle, category));
 
 		do {
 			/* Fetch next modified record (in any category) */
-			result = dlp_ReadNextModifiedRec(sd, fHandle, buffer,
+			result = dlp_ReadNextModifiedRec(sd, dbhandle, buffer,
 						recID, recindex, attr, &cat);
 
 			/* If none found, reset modified pointer so that
@@ -4104,7 +4104,7 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 			/* Loop until we fail to get a record or a record
 			 is found in the proper category */
 		}
-		while (result >= 0 && cat != incategory);
+		while (result >= 0 && cat != category);
 		
 		return result;
 	}
@@ -4113,8 +4113,8 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
-	set_byte(DLP_REQUEST_DATA(req, 0, 1), incategory);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 1), category);
 
 	result = dlp_exec(sd, req, &res);
 
@@ -4167,7 +4167,7 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
  *
  ***************************************************************************/
 int
-dlp_ReadNextModifiedRec(int sd, int fHandle, pi_buffer_t *buffer, recordid_t * recID,
+dlp_ReadNextModifiedRec(int sd, int dbhandle, pi_buffer_t *buffer, recordid_t * recID,
 			int *recindex, int *attr, int *category)
 {
 	int 	result,
@@ -4182,7 +4182,7 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, pi_buffer_t *buffer, recordid_t * r
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	
 	result = dlp_exec (sd, req, &res);
 
@@ -5427,10 +5427,9 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 
 	set_long (DLP_REQUEST_DATA (req, 0, 0), dirRefNum);
 	set_long (DLP_REQUEST_DATA (req, 0, 4), *dirIterator);
-	/*  FP: (DLP_BUF_SIZE - 99). this is the max return buffer size that
+	/*  FP: (0xFFFF - 99). this is the max return buffer size that
 		we are passing for the device to send its response, but I'm not
-		sure whether this is a magic value that shouldn't be changed.
-		If DLP_BUF_SIZE changes, the value below may become too large! */
+		sure whether this is a magic value that shouldn't be changed. */
 	set_long (DLP_REQUEST_DATA (req, 0, 8), 0xFF9C);
 
 	result = dlp_exec (sd, req, &res);
@@ -5505,7 +5504,7 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
  ***************************************************************************/
 int
 dlp_VFSVolumeFormat(int sd, unsigned char flags,
-	int fsLibRef, struct VFSSlotMountParamTag *param)
+	int fsLibRef, struct VFSSlotMountParam *param)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -5526,7 +5525,7 @@ dlp_VFSVolumeFormat(int sd, unsigned char flags,
 /* FIXME check sizes, list the mount params properly */
 	set_short(DLP_REQUEST_DATA(req, 0, 0), fsLibRef);
 	set_short(DLP_REQUEST_DATA(req, 0, 2),
-		 sizeof(struct VFSSlotMountParamTag));
+		 sizeof(struct VFSSlotMountParam));
 	set_byte(DLP_REQUEST_DATA(req, 0, 4), flags);
 	set_byte(DLP_REQUEST_DATA(req, 0, 4), 0); /* unused */
 
