@@ -252,21 +252,21 @@ struct pi_file *pi_file_open(char *name)
 	ip = &pf->info;
 
 	memcpy(ip->name, p, 32);
-	ip->flags = get_short(p + 32);
-	ip->version = get_short(p + 34);
-	ip->createDate = pilot_time_to_unix_time(get_long(p + 36));
-	ip->modifyDate = pilot_time_to_unix_time(get_long(p + 40));
-	ip->backupDate = pilot_time_to_unix_time(get_long(p + 44));
-	ip->modnum = get_long(p + 48);
-	app_info_offset = get_long(p + 52);
-	sort_info_offset = get_long(p + 56);
-	ip->type = get_long(p + 60);
-	ip->creator = get_long(p + 64);
-	pf->unique_id_seed = get_long(p + 68);
+	ip->flags 		= get_short(p + 32);
+	ip->version 		= get_short(p + 34);
+	ip->createDate 		= pilot_time_to_unix_time(get_long(p + 36));
+	ip->modifyDate 		= pilot_time_to_unix_time(get_long(p + 40));
+	ip->backupDate 		= pilot_time_to_unix_time(get_long(p + 44));
+	ip->modnum 		= get_long(p + 48);
+	app_info_offset 	= get_long(p + 52);
+	sort_info_offset 	= get_long(p + 56);
+	ip->type 		= get_long(p + 60);
+	ip->creator 		= get_long(p + 64);
+	pf->unique_id_seed 	= get_long(p + 68);
 
 	/* record list header */
 	pf->next_record_list_id = get_long(p + 72);
-	pf->nentries = get_short(p + 76);
+	pf->nentries 		= get_short(p + 76);
 
 #ifdef DEBUG
 	printf("pi_file_open:\n Name '%s', flags 0x%4.4X, version %d\n",
@@ -1282,6 +1282,14 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	/* Delete DB if it already exists */
 	dlp_DeleteDB(socket, cardno, pf->info.name);
 
+	 /* Judd - 25Nov99 - Graffiti hack We want to make sure that these 2
+	    flags get set for this one */
+
+	if (pf->info.creator == pi_mktag('g', 'r', 'a', 'f')) {
+		flags |= dlpDBFlagNewer;
+		flags |= dlpDBFlagReset;
+	}
+
 	/* Set up DB flags */
 	flags = pf->info.flags;
 
@@ -1294,9 +1302,48 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 #endif
 
 	/* Create DB */
-	if (dlp_CreateDB(socket, pf->info.creator, pf->info.type, cardno,
-			 flags, pf->info.version, pf->info.name, &db) < 0)
-		return -1;
+	if (dlp_CreateDB
+	    (socket, pf->info.creator, pf->info.type, cardno, flags,
+	     pf->info.version, pf->info.name, &db) < 0) {
+		int retry = 0;
+
+		/* Judd - 25Nov99 - Graffiti hack
+
+		   The dlpDBFlagNewer specifies that if a DB is open and
+		   cannot be deleted then it can be overwritten by a DB with
+		   a different name.  The creator ID of "graf" is what
+		   really identifies a DB, not the name.  We could call it
+		   JimBob and the palm would still find it and use it. */
+
+		if (strcmp(pf->info.name, "Graffiti ShortCuts ") == 0) {
+			strcpy(pf->info.name, "Graffiti ShortCuts");
+			retry = 1;
+		} else if (strcmp(pf->info.name, "Graffiti ShortCuts") ==
+			   0) {
+			strcpy(pf->info.name, "Graffiti ShortCuts ");
+			retry = 1;
+		} else if (pf->info.creator ==
+			   pi_mktag('g', 'r', 'a', 'f')) {
+			/* Yep, someone has named it JimBob */
+			strcpy(pf->info.name, "Graffiti ShortCuts");
+			retry = 1;
+		}
+
+		if (retry) {
+			/* Judd - 25Nov99 - Graffiti hack
+			   We changed the name, now we can try to write it
+			   again */
+			if (dlp_CreateDB
+			    (socket, pf->info.creator, pf->info.type,
+			     cardno, flags, pf->info.version,
+			     pf->info.name, &db) < 0) {
+				return -1;
+			}
+		} else {
+			return -1;
+		}
+	}
+
 
 
 	pi_file_get_app_info(pf, &buffer, &l);
