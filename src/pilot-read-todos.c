@@ -40,9 +40,9 @@ void print_unarchived(struct ToDoAppInfo *tai, struct ToDo *todo, int category)
 	printf("Priority: %d\n", todo->priority);
 	printf("Completed: %s\n", todo->complete ? "Yes" : "No");
 	if (todo->indefinite) {
-		printf("Due: No Date");
+		printf("Due: No Date\n");
 	} else {
-		printf("Due: %s", asctime(&todo->due));
+		printf("Due: %s\n", asctime(&todo->due));
 	}
 	if (todo->description)
 		printf("Description: %s\n", todo->description);
