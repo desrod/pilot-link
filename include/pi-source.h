@@ -84,6 +84,7 @@ struct pi_socket {
   int majorversion;
   int minorversion;
   int version; /* In form of 0xAABB where AA is major version and BB is minor version */
+  int dlprecord; /* Index used for some DLP functions */
   int tx_packets;
   int rx_packets;
   int tx_bytes;
@@ -107,6 +108,7 @@ extern int pi_device_open(char *, struct pi_socket *ps);
 extern struct pi_socket *find_pi_socket(int sd);
 extern int crc16(unsigned char *ptr, int count);
 extern char * printlong (unsigned long val);
+extern unsigned long makelong (char * c);
 extern void dumpline (const unsigned char *buf, int len, int addr);
 extern void dumpdata (const unsigned char * buf, int len);
 

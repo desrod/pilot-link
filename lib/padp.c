@@ -332,6 +332,8 @@ void padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx)
     stype = "TICKLE"; break;
   case padWake:
     stype = "WAKE"; break;
+  case padAbort:
+    stype = "ABORT"; break;
   default:
     stype = "LOOP"; break;
   }

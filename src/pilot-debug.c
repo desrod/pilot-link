@@ -212,9 +212,9 @@ void Read_Pilot(ClientData clientData, int mask) {
       	h = get_short(buf+16);
       	w = get_short(buf+18);
       	
-        block.width = w;
+        block.width = w+x1;
         block.height =h;
-        block.pitch = w;
+        block.pitch = w+x1;
         block.pixelSize = 1;
         block.offset[0] = 0;
         block.offset[1] = 0;
@@ -227,7 +227,7 @@ void Read_Pilot(ClientData clientData, int mask) {
         l = 0;
         for (y=0;y<h;y++) {
           l = 20 + (y*bytes);
-          for(x=0;x<w;x++) {
+          for(x=0;x<(w+x1);x++) {
             int mask = 1<<(7-(x%8));
             buffer[i++] = (buf[x/8+l] & mask) ? 0 : 0xff;
           }
@@ -238,7 +238,7 @@ void Read_Pilot(ClientData clientData, int mask) {
          	int b = 1<<(7-(i%8));
         	  buffer[i] = (buf[p] & b) ? 0 : 0xff;
         }*/
-        Tk_PhotoPutBlock(handle, &block, 32+sx-x1, 33+sy-y1, w, h);
+        Tk_PhotoPutBlock(handle, &block, 32+sx-x1, 33+sy-y1, w+x1, h);
       
         /*Tcl_VarEval(interp, "global show; set show(.remote) 1; update", NULL); */
         }

@@ -115,7 +115,9 @@ void unpack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int len
   ai->lastUniqueID = get_byte(record);
   record += 4;
   ai->dirty = get_short(record);
+  record += 2;
   ai->sortByPriority = get_byte(record);
+  record += 2;
 }
 
 void pack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int * len) {

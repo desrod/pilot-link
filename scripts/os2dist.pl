@@ -10,6 +10,7 @@ while(<>) {
 	s/\@CFLAGS\@/-g -O2 -fno-strength-reduce/g;
 	s/\@CWFLAG\@/-Wall/g;
 	s/\@CPLIB\@/cp/g;
+	s/\@YACC\@/bison -y/g;
 	s/^LIBS\s+=.*/$& -lsocket -los2/;
 	s/^EXT\s+=.*/EXT = .EXE/;
 	s/^SUBMAKE_COMM\s+=.*/SUBMAKE_COMM = \$(MAKE) -C lib -f Makefile.os2/;

@@ -588,18 +588,6 @@ int PackRPC(struct RPC_params * p, int trap, int reply, ...)
       p->param[i].size = type;
       p->param[i].data = c;
       p->param[i].invert = (int)va_arg(ap,int);
-      if(p->param[i].invert) {
-        if((p->param[i].invert == 2) && (p->param[i].size == 2)) {
-          int * b = c;
-          *b = htons(*b<<8);
-        } else if(p->param[i].size == 2) {
-          int * s = c;
-          *s = htons(*s);
-        } else {
-          long * l = c;
-          *l = htonl(*l);
-        }
-      }
     }
     i++;
   }
@@ -609,23 +597,16 @@ int PackRPC(struct RPC_params * p, int trap, int reply, ...)
   return 0;
 }
 
-unsigned long DoRPC(int sd, int socket, struct RPC_params * p, int * error)
+void UninvertRPC(struct RPC_params * p)
 {
   int j;
-  int err;
-  long D0=0,A0=0;
-
-  err = sys_RPC(sd, socket, p->trap, &D0, &A0, p->args, &p->param[0], p->reply);
-  
-  if (error)
-    *error = err;
   
   for(j=0;j<p->args;j++) {
       if(p->param[j].invert) {
         void * c = p->param[j].data;
         if((p->param[j].invert == 2) && (p->param[j].size == 2)) {
           int * s = c;
-          *s = ntohs(*s)>>8;
+          *s = htons(*s)>>8;
         } else if(p->param[j].size == 2) {
           int * s = c;
           *s = htons(*s);
@@ -635,6 +616,43 @@ unsigned long DoRPC(int sd, int socket, struct RPC_params * p, int * error)
         }
       }
   }
+}
+
+void InvertRPC(struct RPC_params * p)
+{
+  int j;
+  
+  for(j=0;j<p->args;j++) {
+      if(p->param[j].invert) {
+        void * c = p->param[j].data;
+        if((p->param[j].invert == 2) && (p->param[j].size == 2)) {
+          int * s = c;
+          *s = ntohs(*s)>>8;
+        } else if(p->param[j].size == 2) {
+          int * s = c;
+          *s = ntohs(*s);
+        } else {
+          long * l = c;
+          *l = ntohl(*l);
+        }
+      }
+  }
+}
+
+
+unsigned long DoRPC(int sd, int socket, struct RPC_params * p, int * error)
+{
+  int err;
+  long D0=0,A0=0;
+  
+  InvertRPC(p);
+
+  err = sys_RPC(sd, socket, p->trap, &D0, &A0, p->args, &p->param[0], p->reply);
+  
+  UninvertRPC(p);
+  
+  if (error)
+    *error = err;
   
   if(p->reply==RPC_PtrReply)
     return A0;

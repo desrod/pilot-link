@@ -1,4 +1,4 @@
-/* pilot-addresses.c:  Pilot address transfer utility
+/* pilot-dedupe.c:  Pilot utility to remove duplicate records
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.

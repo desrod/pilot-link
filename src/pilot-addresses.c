@@ -294,32 +294,6 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo * aai)
   return 0;
 }
 
-void deleterecords(int sd, int db, int cat) {
-	int rcat, rattr, i;
-	recordid_t id;
-	int del;
-	
-	/* The outermost loop is an abominable hack to assure all records
-	   worthy of deletion are actually deleted. It appears that
-	   deleting a record moves it to the end of the list, thus
-	   causing only half the records to be deleted. The loop should
-	   guarantee that all are deleted. */
-	do {
-	  del = 0;
-	  for(i=0;;i++) {
-	    if (dlp_ReadRecordByIndex(sd,db,i,0,&id,0,&rattr,&rcat)<0)
-	      break;
-	    if (rattr & (dlpRecAttrDeleted| dlpRecAttrArchived))
-	      continue;
-	  
-	    if (rcat == cat) {
-	      dlp_DeleteRecord(sd, db, 0, id);
-	      del++;
-	    }
-	  }
-	} while (del>0);
-}
-
 char * progname;
 
 void Help(void)
@@ -438,7 +412,7 @@ int main(int argc, char *argv[])
     }
     write_file(f, sd, db, &aai);
     if (deletecategory) 
-      deleterecords(sd, db, match_category(deletecategory,&aai));
+      dlp_DeleteCategory(sd, db, match_category(deletecategory,&aai));
     fclose(f);
   } else if (mode == 1) {
     FILE * f;
@@ -450,7 +424,7 @@ int main(int argc, char *argv[])
         continue;
       }
       if (deletecategory) 
-        deleterecords(sd, db, match_category(deletecategory,&aai));
+        dlp_DeleteCategory(sd, db, match_category(deletecategory,&aai));
       read_file(f, sd, db, &aai);
       fclose(f);
       optind++;

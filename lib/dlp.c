@@ -14,7 +14,7 @@
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
-
+#include "pi-syspkt.h"
 
 #define get_date(ptr) (dlp_ptohdate((ptr)))                        
 
@@ -49,21 +49,28 @@ char * dlp_errorlist[] = {
   "Bad argument size"
 };
 
-#ifdef DLP_TRACE
+int dlp_trace = 0;
+
+#ifndef NO_DLP_TRACE
+#define DLP_TRACE
 
 #define Trace(name) \
-  fprintf(stderr, "DLP %d: %s\n", sd, #name);
-#define Expect(count) \
+  if (dlp_trace)    \
+    fprintf(stderr, "DLP %d: %s\n", sd, #name);
+#define Expect(count)    \
   if (result < count) {  \
-    if (result < 0) \
-      fprintf(stderr, "Result: Error: %s (%d)\n", dlp_errorlist[-result], result); \
-    else { \
-      fprintf(stderr, "Result: Read %d bytes, expected at least %d\n", result, count); \
-      result = -128; \
-    } \
-    return result;      \
-  } else \
-    fprintf(stderr, "Result: No error, %d bytes\n", result);
+    if (result < 0) {    \
+      if (dlp_trace)     \
+        fprintf(stderr, "Result: Error: %s (%d)\n", dlp_errorlist[-result], result); \
+    } else {             \
+      if (dlp_trace)     \
+        fprintf(stderr, "Result: Read %d bytes, expected at least %d\n", result, count); \
+      result = -128;     \
+    }                    \
+    return result;       \
+  } else                 \
+    if (dlp_trace)       \
+      fprintf(stderr, "Result: No error, %d bytes\n", result);
   
 #else
 
@@ -108,7 +115,7 @@ int dlp_exec(int sd, int cmd, int arg,
   i = pi_read(sd, &exec_buf[0], DLP_BUF_SIZE);
 
   err = get_short(exec_buf+2);
-
+  
   if (err != 0) {
     errno = -EIO;
     return -err;
@@ -123,7 +130,7 @@ int dlp_exec(int sd, int cmd, int arg,
     return 0; 
     
   /* assume only one return block */
-  if (exec_buf[4] & 0xC0) { /* Long arg */
+  if ((exec_buf[4] & 0xC0) == 0xC0) { /* Long arg */
   	i = get_long(exec_buf+6);
   	
   	if (i>maxlen)
@@ -223,7 +230,9 @@ int dlp_GetSysDateTime(int sd, time_t * t)
   *t = dlp_ptohdate(buf);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "   Read: Time: %s", ctime(t));
+  if (dlp_trace) {
+    fprintf(stderr, "   Read: Time: %s", ctime(t));
+  }
 #endif
   
   return result;
@@ -238,7 +247,9 @@ int dlp_SetSysDateTime(int sd, time_t time)
   Trace(ReadSysInfo);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Wrote: Time: %s", ctime(&time));
+  if (dlp_trace) {
+    fprintf(stderr, "  Wrote: Time: %s", ctime(&time));
+  }
 #endif
   
   result = dlp_exec(sd, 0x14, 0x20, buf, 8, 0, 0);
@@ -259,7 +270,9 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c)
   Trace(ReadStorageInfo);
   
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Cardno: %d\n", cardno);
+  if (dlp_trace) {
+    fprintf(stderr, " Wrote: Cardno: %d\n", cardno);
+  }
 #endif  
   
   result = dlp_exec(sd, 0x15, 0x20, dlp_buf, 2, dlp_buf, 256+26);
@@ -286,13 +299,15 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c)
   c->name[len2] = '\0';
   
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: Cardno: %d, Card Version: %d, Creation time: %s",
-    c->cardno, c->version, ctime(&c->creation));
-  fprintf(stderr, "        Total ROM: %lu, Total RAM: %lu, Free RAM: %lu\n",
-    c->ROMsize, c->RAMsize, c->RAMfree);
-  fprintf(stderr, "        Card name: '%s'\n", c->name);
-  fprintf(stderr, "        Manufacturer name: '%s'\n", c->manuf);
-  fprintf(stderr, "        More: %s\n", c->more ? "Yes" : "No");
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Cardno: %d, Card Version: %d, Creation time: %s",
+      c->cardno, c->version, ctime(&c->creation));
+    fprintf(stderr, "        Total ROM: %lu, Total RAM: %lu, Free RAM: %lu\n",
+      c->ROMsize, c->RAMsize, c->RAMfree);
+    fprintf(stderr, "        Card name: '%s'\n", c->name);
+    fprintf(stderr, "        Manufacturer name: '%s'\n", c->manuf);
+    fprintf(stderr, "        More: %s\n", c->more ? "Yes" : "No");
+  }
 #endif
   
   return result;
@@ -316,10 +331,12 @@ int dlp_ReadSysInfo(int sd, struct SysInfo * s)
   memcpy(s->name, dlp_buf+10, s->namelength);
   s->name[s->namelength] = '\0';
 
-#ifdef DLP_TRACE  
-  fprintf(stderr, "  Read: ROM Version: 0x%8.8lX, Localization ID: 0x%8.8lX\n",
-    (unsigned long)s->ROMVersion, (unsigned long)s->localizationID);
-  fprintf(stderr, "        Name '%s'\n", s->name);
+#ifdef DLP_TRACE
+  if (dlp_trace) {    
+    fprintf(stderr, "  Read: ROM Version: 0x%8.8lX, Localization ID: 0x%8.8lX\n",
+      (unsigned long)s->ROMVersion, (unsigned long)s->localizationID);
+    fprintf(stderr, "        Name '%s'\n", s->name);
+  }
 #endif
   
   return result;
@@ -336,14 +353,16 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
   Trace(ReadDBList);
 
 #ifdef DLP_TRACE  
-  fprintf(stderr, " Wrote: Cardno: %d, Flags:", cardno);
-  if (flags & dlpDBListROM)
-    fprintf(stderr, " ROM");
-  if (flags & dlpDBListRAM)
-    fprintf(stderr, " RAM");
-  if (!flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X)\n", flags);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Cardno: %d, Start: %d, Flags:", cardno, start);
+    if (flags & dlpDBListROM)
+      fprintf(stderr, " ROM");
+    if (flags & dlpDBListRAM)
+      fprintf(stderr, " RAM");
+    if (!flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X)\n", flags);
+  }
 #endif
   
   result = dlp_exec(sd, 0x16, 0x20, dlp_buf, 4, dlp_buf, 48+32);
@@ -353,7 +372,7 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
   Expect(48);
   
   info->more = get_byte(dlp_buf+2);
-  if (pi_version(sd) > 0x0100)
+  if (pi_version(sd) > 0x0100) /* PalmOS 2.0 has additional flag */
     info->miscflags = get_byte(dlp_buf+5);
   else
     info->miscflags = 0;
@@ -369,32 +388,34 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
   strncpy(info->name, (char*)dlp_buf+48, 32);
   info->name[32] = '\0';
 
-#ifdef DLP_TRACE  
-  fprintf(stderr, "  Read: Name: '%s', Version: %d, More: %s\n",
-    info->name, info->version, info->more ? "Yes" : "No");
-  fprintf(stderr, "        Creator: '%s'", printlong(info->creator));
-  fprintf(stderr, ", Type: '%s', Flags:", printlong(info->type));
-  if (info->flags & dlpDBFlagResource)
-    fprintf(stderr, " Resource");
-  if (info->flags & dlpDBFlagReadOnly)
-    fprintf(stderr, " ReadOnly");
-  if (info->flags & dlpDBFlagAppInfoDirty)
-    fprintf(stderr, " AppInfoDirty");
-  if (info->flags & dlpDBFlagBackup)
-    fprintf(stderr, " Backup");
-  if (info->flags & dlpDBFlagReset)
-    fprintf(stderr, " Reset");
-  if (info->flags & dlpDBFlagNewer)
-    fprintf(stderr, " Newer");
-  if (info->flags & dlpDBFlagOpen)
-    fprintf(stderr, " Open");
-  if (!info->flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X)\n", info->flags);
-  fprintf(stderr, "        Modnum: %ld, Index: %d, Creation date: %s",
-    info->modnum, info->index, ctime(&info->crdate));
-  fprintf(stderr, "        Modification date: %s", ctime(&info->moddate));
-  fprintf(stderr, "        Backup date: %s", ctime(&info->backupdate));
+#ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Name: '%s', Version: %d, More: %s\n",
+      info->name, info->version, info->more ? "Yes" : "No");
+    fprintf(stderr, "        Creator: '%s'", printlong(info->creator));
+    fprintf(stderr, ", Type: '%s', Flags:", printlong(info->type));
+    if (info->flags & dlpDBFlagResource)
+      fprintf(stderr, " Resource");
+    if (info->flags & dlpDBFlagReadOnly)
+      fprintf(stderr, " ReadOnly");
+    if (info->flags & dlpDBFlagAppInfoDirty)
+      fprintf(stderr, " AppInfoDirty");
+    if (info->flags & dlpDBFlagBackup)
+      fprintf(stderr, " Backup");
+    if (info->flags & dlpDBFlagReset)
+      fprintf(stderr, " Reset");
+    if (info->flags & dlpDBFlagNewer)
+      fprintf(stderr, " Newer");
+    if (info->flags & dlpDBFlagOpen)
+      fprintf(stderr, " Open");
+    if (!info->flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X)\n", info->flags);
+    fprintf(stderr, "        Modnum: %ld, Index: %d, Creation date: %s",
+      info->modnum, info->index, ctime(&info->crdate));
+    fprintf(stderr, "        Modification date: %s", ctime(&info->moddate));
+    fprintf(stderr, "        Backup date: %s", ctime(&info->backupdate));
+  }
 #endif
     
   return result;
@@ -456,18 +477,20 @@ int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle)
   Trace(OpenDB);
 
 #ifdef DLP_TRACE  
-  fprintf(stderr, " Wrote: Cardno: %d, Name: '%s', Mode:", cardno, name);
-  if (mode & dlpOpenRead)
-    fprintf(stderr, " Read");
-  if (mode & dlpOpenWrite)
-    fprintf(stderr, " Write");
-  if (mode & dlpOpenExclusive)
-    fprintf(stderr, " Exclusive");
-  if (mode & dlpOpenSecret)
-    fprintf(stderr, " Secret");
-  if (!mode)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X)\n", mode);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Cardno: %d, Name: '%s', Mode:", cardno, name);
+    if (mode & dlpOpenRead)
+      fprintf(stderr, " Read");
+    if (mode & dlpOpenWrite)
+      fprintf(stderr, " Write");
+    if (mode & dlpOpenExclusive)
+      fprintf(stderr, " Exclusive");
+    if (mode & dlpOpenSecret)
+      fprintf(stderr, " Secret");
+    if (!mode)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X)\n", mode);
+  }
 #endif
   
   result = dlp_exec(sd, 0x17, 0x20, &dlp_buf[0], strlen(name)+3, &handle, 1);
@@ -477,7 +500,9 @@ int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle)
   *dbhandle = (int)handle;
 
 #ifdef DLP_TRACE  
-  fprintf(stderr, "  Read: Handle: %d\n", (int)handle);
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Handle: %d\n", (int)handle);
+  }
 #endif
   
   return result;
@@ -496,7 +521,9 @@ int dlp_DeleteDB(int sd, int card, const char * name)
   Trace(DeleteDB);
 
 #ifdef DLP_TRACE  
-  fprintf(stderr, " Wrote: Cardno: %d, Name: '%s'\n", card, name);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Cardno: %d, Name: '%s'\n", card, name);
+  }
 #endif
   
   result = dlp_exec(sd, 0x1A, 0x20, dlp_buf, 2+strlen(name)+1, 0, 0);
@@ -523,26 +550,28 @@ int dlp_CreateDB(int sd, long creator, long type, int cardno,
   Trace(CreateDB);
 
 #ifdef DLP_TRACE  
-  fprintf(stderr, " Wrote: Card: %d, version: %d, name '%s'\n", cardno, version, name);
-  fprintf(stderr, "        DB Flags:");
-  if (flags & dlpDBFlagResource)
-    fprintf(stderr, " Resource");
-  if (flags & dlpDBFlagReadOnly)
-    fprintf(stderr, " ReadOnly");
-  if (flags & dlpDBFlagAppInfoDirty)
-    fprintf(stderr, " AppInfoDirty");
-  if (flags & dlpDBFlagBackup)
-    fprintf(stderr, " Backup");
-  if (flags & dlpDBFlagReset)
-    fprintf(stderr, " Reset");
-  if (flags & dlpDBFlagNewer)
-    fprintf(stderr, " Newer");
-  if (flags & dlpDBFlagOpen)
-    fprintf(stderr, " Open");
-  if (!flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X), Creator: '%s'", flags, printlong(creator));
-  fprintf(stderr, ", Type: '%s'\n", printlong(type));
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Card: %d, version: %d, name '%s'\n", cardno, version, name);
+    fprintf(stderr, "        DB Flags:");
+    if (flags & dlpDBFlagResource)
+      fprintf(stderr, " Resource");
+    if (flags & dlpDBFlagReadOnly)
+      fprintf(stderr, " ReadOnly");
+    if (flags & dlpDBFlagAppInfoDirty)
+      fprintf(stderr, " AppInfoDirty");
+    if (flags & dlpDBFlagBackup)
+      fprintf(stderr, " Backup");
+    if (flags & dlpDBFlagReset)
+      fprintf(stderr, " Reset");
+    if (flags & dlpDBFlagNewer)
+      fprintf(stderr, " Newer");
+    if (flags & dlpDBFlagOpen)
+      fprintf(stderr, " Open");
+    if (!flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X), Creator: '%s'", flags, printlong(creator));
+    fprintf(stderr, ", Type: '%s'\n", printlong(type));
+  }
 #endif  
 
   result = dlp_exec(sd, 0x18, 0x20, dlp_buf, 14+strlen(name)+1, &handle, 1);
@@ -553,7 +582,9 @@ int dlp_CreateDB(int sd, long creator, long type, int cardno,
     *dbhandle = (int)handle;
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: Handle: %d\n", (int)handle);
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Handle: %d\n", (int)handle);
+  }
 #endif
 
   return result;
@@ -568,7 +599,9 @@ int dlp_CloseDB(int sd, int dbhandle)
   Trace(CloseDB);
 
 #ifdef DLP_TRACE  
-  fprintf(stderr, " Wrote: Handle: %d\n", dbhandle);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d\n", dbhandle);
+  }
 #endif
   
   result = dlp_exec(sd, 0x19, 0x20, &handle, 1, 0, 0);
@@ -607,13 +640,15 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type, int a
     set_long(dlp_buf+18, 0);
     memcpy(dlp_buf+22, data, length);
 
-    Trace(CallApplicationV20);
+    Trace(CallApplicationV2);
 
 #ifdef DLP_TRACE  
-    fprintf(stderr, " Wrote: Creator: '%s',", printlong(creator));
-    fprintf(stderr, " Type: '%s', Action code: %d, and %d bytes of data:\n",
-      printlong(type), action, length);
-    dumpdata(data, length);
+    if (dlp_trace) {  
+      fprintf(stderr, " Wrote: Creator: '%s',", printlong(creator));
+      fprintf(stderr, " Type: '%s', Action code: %d, and %d bytes of data:\n",
+        printlong(type), action, length);
+      dumpdata(data, length);
+    }
 #endif
 
     result = dlp_exec(sd, 0x28, 0x21, dlp_buf, 22 + length, dlp_buf, 0xffff);
@@ -631,9 +666,11 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type, int a
       memcpy(retdata, dlp_buf+16, result > maxretlen ? maxretlen : result);
   
 #ifdef DLP_TRACE  
-    fprintf(stderr, "  Read: Result: %d (0x%8.8X), and %d bytes:\n",
-      get_long(dlp_buf), get_long(dlp_buf+4), result);
-    dumpdata(dlp_buf+16,result);
+    if (dlp_trace) {  
+      fprintf(stderr, "  Read: Result: %d (0x%8.8X), and %d bytes:\n",
+        get_long(dlp_buf), get_long(dlp_buf+4), result);
+      dumpdata(dlp_buf+16,result);
+    }
 #endif
   
     return result;
@@ -647,10 +684,12 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type, int a
 
     Trace(CallApplicationV10);
 
-#ifdef DLP_TRACE  
-    fprintf(stderr, " Wrote: Creator: '%s', Action code: %d, and %d bytes of data:\n",
-      printlong(creator), action, length);
-    dumpdata(data, length);
+#ifdef DLP_TRACE
+    if (dlp_trace) {  
+      fprintf(stderr, " Wrote: Creator: '%s', Action code: %d, and %d bytes of data:\n",
+        printlong(creator), action, length);
+      dumpdata(data, length);
+    }
 #endif
 
     result = dlp_exec(sd, 0x28, 0x20 , dlp_buf, 8, dlp_buf, 0xffff);
@@ -668,9 +707,11 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type, int a
       memcpy(retdata, dlp_buf+6, result > maxretlen ? maxretlen : result);
   
 #ifdef DLP_TRACE  
-    fprintf(stderr, "  Read: Action: %d, Result: %d (0x%4.4X), and %d bytes:\n",
-      get_short(dlp_buf), get_short(dlp_buf+2), get_short(dlp_buf+2), result);
-    dumpdata(dlp_buf+6, result);
+    if (dlp_trace) {  
+      fprintf(stderr, "  Read: Action: %d, Result: %d (0x%4.4X), and %d bytes:\n",
+        get_short(dlp_buf), get_short(dlp_buf+2), get_short(dlp_buf+2), result);
+      dumpdata(dlp_buf+6, result);
+    }
 #endif
   
     return result;
@@ -699,8 +740,10 @@ int dlp_AddSyncLogEntry(int sd, char * entry)
   Trace(AddSyncLogEntry);
   
 #ifdef DLP_TRACE  
-  fprintf(stderr," Wrote: Entry:\n");
-  dumpdata(entry,strlen(entry));
+  if (dlp_trace) {  
+    fprintf(stderr," Wrote: Entry:\n");
+    dumpdata(entry,strlen(entry));
+  }
 #endif
 
   result = dlp_exec(sd, 0x2A, 0x20, (unsigned char*)entry, strlen(entry), 0, 0);
@@ -718,7 +761,9 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int * records)
   Trace(ReadOpenDBInfo);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d\n", dbhandle);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d\n", dbhandle);
+  }
 #endif
   
   set_byte(dlp_buf, (unsigned char)dbhandle);
@@ -730,7 +775,9 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int * records)
     *records = get_short(buf);
       
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: %d records\n", get_short(buf));
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: %d records\n", get_short(buf));
+  }
 #endif
   
   return result;
@@ -748,7 +795,9 @@ int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
   Trace(MoveCategory);
 
 #ifdef DLP_TRACE  
-  fprintf(stderr, " Wrote: Handle: %d, From: %d, To: %d\n", handle, fromcat, tocat);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, From: %d, To: %d\n", handle, fromcat, tocat);
+  }
 #endif
   
   result = dlp_exec(sd, 0x2C, 0x20, dlp_buf, 4, 0, 0);
@@ -797,8 +846,10 @@ int dlp_EndOfSync(int sd, int status)
 int dlp_AbortSync(int sd) {
   struct pi_socket * ps;
 
-#ifdef DLP_TRACE  
-  fprintf(stderr, "DLP %d: AbortSync\nResult: Whatever\n", sd);
+#ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, "DLP %d: AbortSync\nResult: Whatever\n", sd);
+  }
 #endif
   
   /* Set end-of-sync flag on socket so pi_close won't do a dlp_EndOfSync */
@@ -815,11 +866,13 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
   Trace(WriteUserInfo);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: UID: 0x%8.8lX, VID: 0x%8.8lX, PCID: 0x%8.8lX\n", 
-    User->userID, User->viewerID, User->lastSyncPC);
-  fprintf(stderr, "        Last sync date: %s", ctime(&User->lastSyncDate));
-  fprintf(stderr, "        Successful sync date: %s", ctime(&User->succSyncDate));
-  fprintf(stderr, "        User name '%s'\n", User->username);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: UID: 0x%8.8lX, VID: 0x%8.8lX, PCID: 0x%8.8lX\n", 
+      User->userID, User->viewerID, User->lastSyncPC);
+    fprintf(stderr, "        Last sync date: %s", ctime(&User->lastSyncDate));
+    fprintf(stderr, "        Successful sync date: %s", ctime(&User->succSyncDate));
+    fprintf(stderr, "        User name '%s'\n", User->username);
+  }
 #endif
   
   set_long(dlp_buf, User->userID);
@@ -861,17 +914,19 @@ int dlp_ReadUserInfo(int sd, struct PilotUser* User)
   memcpy(User->password, dlp_buf+30+userlen, User->passwordLen);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: UID: 0x%8.8lX, VID: 0x%8.8lX, PCID: 0x%8.8lX\n", 
-    User->userID, User->viewerID, User->lastSyncPC);
-  fprintf(stderr, "        Last sync date: %s", ctime(&User->lastSyncDate));
-  fprintf(stderr, "        Successful sync date: %s", ctime(&User->succSyncDate));
-  fprintf(stderr, "        User name '%s'", User->username);
-  if (User->passwordLen) {
-    fprintf(stderr, ", Password of %d bytes:\n", User->passwordLen);
-    dumpdata(User->password,User->passwordLen);
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: UID: 0x%8.8lX, VID: 0x%8.8lX, PCID: 0x%8.8lX\n", 
+      User->userID, User->viewerID, User->lastSyncPC);
+    fprintf(stderr, "        Last sync date: %s", ctime(&User->lastSyncDate));
+    fprintf(stderr, "        Successful sync date: %s", ctime(&User->succSyncDate));
+    fprintf(stderr, "        User name '%s'", User->username);
+    if (User->passwordLen) {
+      fprintf(stderr, ", Password of %d bytes:\n", User->passwordLen);
+      dumpdata(User->password,User->passwordLen);
+    }
+    else
+      fprintf(stderr, ", No password\n");
   }
-  else
-    fprintf(stderr, ", No password\n");
 #endif
 
   return result;
@@ -883,18 +938,14 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo * i)
   int p;
   
   if (pi_version(sd)<0x0101)
-    return -129;
+    return -129; /* This call only functions under PalmOS 2.0 */
 
   Trace(ReadNetSyncInfo);
 
-#ifdef DLP_TRACE
-#endif
-  
-  result = dlp_exec(sd, 0x35, 0x20, NULL, 0, dlp_buf, DLP_BUF_SIZE);
+  result = dlp_exec(sd, 0x36, 0x20, NULL, 0, dlp_buf, DLP_BUF_SIZE);
 
   Expect(24);
   
-  set_byte(dlp_buf, 0x80|0x40|0x20|0x10); /* Change all settings */
 
   i->active = get_byte(dlp_buf);
   p = 24;
@@ -907,6 +958,14 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo * i)
 
   memcpy(i->PCMask, dlp_buf+p, get_short(dlp_buf+22));
   p += get_short(dlp_buf+22);
+
+#ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Active: %d\n", get_byte(dlp_buf));
+    fprintf(stderr, "        PC hostname: '%s', address '%s', mask '%s'\n",
+      i->PCName, i->PCAddr, i->PCMask);
+  }
+#endif
 
   return result;
 }
@@ -922,6 +981,11 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i)
   Trace(WriteNetSyncInfo);
 
 #ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, "  Wrote: Active: %d\n", get_byte(dlp_buf));
+    fprintf(stderr, "        PC hostname: '%s', address '%s', mask '%s'\n",
+      i->PCName, i->PCAddr, i->PCMask);
+  }
 #endif
   
   set_byte(dlp_buf, 0x80|0x40|0x20|0x10); /* Change all settings */
@@ -941,32 +1005,144 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i)
   strcpy(dlp_buf+p, i->PCMask);
   p += strlen(i->PCMask)+1;
   
-  result = dlp_exec(sd, 0x36, 0x20, dlp_buf, p, dlp_buf, DLP_BUF_SIZE);
+  result = dlp_exec(sd, 0x37, 0x20, dlp_buf, p, dlp_buf, DLP_BUF_SIZE);
 
   Expect(0);
 
   return result;
 }
-              
+
+int dlp_RPC(int sd, struct RPC_params * p, unsigned long * result)
+{
+  int i;
+  unsigned char * c;
+  
+  /* RPC through DLP breaks all the rules and isn't well documented to boot */
+  
+  long D0=0,A0=0;
+  int err;
+  
+  dlp_buf[0] = 0x2D;
+  dlp_buf[1] = 1;
+  dlp_buf[2] = 0; /* Unknown filler */
+  dlp_buf[3] = 0;
+
+  InvertRPC(p);
+  
+  set_short(dlp_buf+4, p->trap);
+  set_long(dlp_buf+6, D0);
+  set_long(dlp_buf+10, A0);
+  set_short(dlp_buf+14, p->args);
+    
+  c = dlp_buf+16;
+  for(i=p->args-1;i>=0;i--) {
+    set_byte(c, p->param[i].byRef); c++;
+    set_byte(c, p->param[i].size); c++;
+    if(p->param[i].data)
+      memcpy(c, p->param[i].data, p->param[i].size);
+    c += p->param[i].size;
+  }
+
+  pi_write(sd, dlp_buf, c-dlp_buf);
+  
+  err = 0;
+  
+  if(p->reply) {
+    int l = pi_read(sd, dlp_buf, c-dlp_buf+2);
+ 
+    if (l < 0)
+      err = l;
+    else if (l < 6) 
+      err = -1;
+    else if (dlp_buf[0] != 0xAD)
+      err = -2;
+    else if (get_short(dlp_buf+2))
+      err = -get_short(dlp_buf+2);
+    else {
+      D0 = get_long(dlp_buf+8);
+      A0 = get_long(dlp_buf+12);
+      c = dlp_buf+18;
+      for(i=p->args-1;i>=0;i--) {
+        c+=2;
+        if(p->param[i].byRef && p->param[i].data)
+          memcpy(p->param[i].data, c, p->param[i].size);
+        c += p->param[i].size;
+      }
+    }
+  }
+  
+  UninvertRPC(p);
+  
+  if (result)
+    if(p->reply==RPC_PtrReply)
+      *result = A0;
+    else if (p->reply==RPC_IntReply)
+      *result = D0;
+  
+  return err;
+}
 
 int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num, unsigned long * feature)
 {
   int result;
   
-  if (pi_version(sd)<0x0101)
-    return -129;
+  if (pi_version(sd)<0x0101) {
+    struct RPC_params p;
+    
+    Trace(ReadFeatureV1);
 
-  Trace(ReadFeature);
+    if (feature) {
+      int val;
+      unsigned long result;
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Creator: '%s', Number: %d\n", 
-    printlong(creator), num);
+      if (dlp_trace) {  
+        fprintf(stderr, " Wrote: Creator: '%s', Number: %d\n", 
+          printlong(creator), num);
+      }
+#endif
+
+      *feature = 0x12345678;
+
+      PackRPC(&p, 0xA27B, RPC_IntReply, 
+         RPC_Long(creator), RPC_Short(num), RPC_LongPtr(feature), RPC_End);
+      
+      val = dlp_RPC(sd, &p, &result);
+      
+
+#ifdef DLP_TRACE
+      if (dlp_trace) {  
+        if (val < 0)
+          fprintf(stderr, "Result: Error: %s (%d)\n", dlp_errorlist[-val], val); 
+        else if (result)
+          fprintf(stderr, "FtrGet error 0x%8.8lX\n", (unsigned long)result);
+        else
+          fprintf(stderr, "  Read: Feature: 0x%8.8lX\n", (unsigned long)*feature);
+      }
+#endif
+      
+      if (val < 0)
+        return val;
+      if (result)
+        return -result;
+    }
+    
+    return 0;
+  }    
+
+  Trace(ReadFeatureV2);
+
+#ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Creator: '%s', Number: %d\n", 
+      printlong(creator), num);
+  }
 #endif
   
   set_long(dlp_buf, creator);
   set_short(dlp_buf+4, num);
   
-  result = dlp_exec(sd, 0x37, 0x20, dlp_buf, 6, dlp_buf, DLP_BUF_SIZE);
+  result = dlp_exec(sd, 0x38, 0x20, dlp_buf, 6, dlp_buf, DLP_BUF_SIZE);
 
   Expect(4);
 
@@ -974,7 +1150,9 @@ int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num, unsigned lo
     *feature = (unsigned long)get_long(dlp_buf);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: Feature: 0x%8.8lX\n", (unsigned long)get_long(dlp_buf));
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Feature: 0x%8.8lX\n", (unsigned long)get_long(dlp_buf));
+  }
 #endif
 
   return result;
@@ -1000,7 +1178,9 @@ int dlp_ResetDBIndex(int sd, int dbhandle)
   Trace(ResetDBIndex);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d\n", dbhandle);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d\n", dbhandle);
+  }
 #endif
   
   result = dlp_exec(sd, 0x30, 0x20, dlp_buf, 1, NULL, 0);
@@ -1026,8 +1206,10 @@ int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
   Trace(ReadRecordIDList);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Sort: %s, Start: %d, Max: %d\n",
-    dbhandle, sort ? "Yes" : "No", start, max);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Sort: %s, Start: %d, Max: %d\n",
+      dbhandle, sort ? "Yes" : "No", start, max);
+  }
 #endif
 
   nbytes = max * 4 + 2;
@@ -1041,8 +1223,10 @@ int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
   ret = get_short(dlp_buf);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Read: %d IDs:\n", ret);
-  dumpdata(dlp_buf+2, ret*4);
+  if (dlp_trace) {  
+    fprintf(stderr, " Read: %d IDs:\n", ret);
+      dumpdata(dlp_buf+2, ret*4);
+  }
 #endif
 
   for (i = 0, p = dlp_buf+2; i < ret; i++, p+=4)
@@ -1071,23 +1255,25 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
   Trace(WriteRecord);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, RecordID: 0x%8.8lX, Category: %d\n",
-    dbhandle, (unsigned long)recID, catID);
-  fprintf(stderr, "        Flags:");
-  if (flags & dlpRecAttrDeleted)
-    fprintf(stderr, " Deleted");
-  if (flags & dlpRecAttrDirty)
-    fprintf(stderr, " Dirty");
-  if (flags & dlpRecAttrBusy)
-    fprintf(stderr, " Busy");
-  if (flags & dlpRecAttrSecret)
-    fprintf(stderr, " Secret");
-  if (flags & dlpRecAttrArchived)
-    fprintf(stderr, " Archive");
-  if (!flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X), and %d bytes of data: \n", flags, length);
-  dumpdata(data, length);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, RecordID: 0x%8.8lX, Category: %d\n",
+      dbhandle, (unsigned long)recID, catID);
+    fprintf(stderr, "        Flags:");
+    if (flags & dlpRecAttrDeleted)
+      fprintf(stderr, " Deleted");
+    if (flags & dlpRecAttrDirty)
+      fprintf(stderr, " Dirty");
+    if (flags & dlpRecAttrBusy)
+      fprintf(stderr, " Busy");
+    if (flags & dlpRecAttrSecret)
+      fprintf(stderr, " Secret");
+    if (flags & dlpRecAttrArchived)
+      fprintf(stderr, " Archive");
+    if (!flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X), and %d bytes of data: \n", flags, length);
+    dumpdata(data, length);
+  }
 #endif
 
   result = dlp_exec(sd, 0x21, 0x20, dlp_buf, 8+length, buf, 4);
@@ -1101,7 +1287,9 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
       *NewID = 0;
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: Record ID: 0x%8.8lX\n", (unsigned long)get_long(buf));
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Record ID: 0x%8.8lX\n", (unsigned long)get_long(buf));
+  }
 #endif
       
   return result;
@@ -1119,8 +1307,10 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
   Trace(DeleteRecord);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, RecordID: %8.8lX, All: %s\n",
-    dbhandle, (unsigned long)recID, all ? "Yes" : "No");
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, RecordID: %8.8lX, All: %s\n",
+      dbhandle, (unsigned long)recID, all ? "Yes" : "No");
+  }
 #endif
   
   result = dlp_exec(sd, 0x22, 0x20, dlp_buf, 6, 0, 0);
@@ -1135,18 +1325,42 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
   int result;
   int flags = 0x40;
   
-  if (pi_version(sd) < 0x0101)
-    return -129;
+  if (pi_version(sd) < 0x0101) {
+    /* Emulate if not connected to PalmOS 2.0 */
+    int i,r,cat,attr;
+    recordid_t id;
+
+    Trace(DeleteCategoryV1);
+
+#ifdef DLP_TRACE
+    if (dlp_trace) {  
+      fprintf(stderr, " Emulating with: Handle: %d, Category: %d\n",
+        dbhandle, category & 0xff);
+    }
+#endif
+
+    for(i=0;dlp_ReadRecordByIndex(sd, dbhandle, i, NULL, &id, NULL, &attr, &cat)>=0;i++) {
+      if ((cat != category) || (attr & dlpRecAttrDeleted) || (attr & dlpRecAttrArchived)) 
+        continue;
+      r = dlp_DeleteRecord(sd, dbhandle, 0, id);
+      if (r<0)
+        return r;
+      i--; /* Sigh, deleting the record moves it to the end. */
+    }
+    return 0;
+  }
 
   set_byte(dlp_buf, dbhandle);
   set_byte(dlp_buf+1, flags);
   set_long(dlp_buf+2, category & 0xff);
   
-  Trace(DeleteCategory);
+  Trace(DeleteCategoryV2);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Category: %d\n",
-    dbhandle, category & 0xff);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Category: %d\n",
+      dbhandle, category & 0xff);
+  }
 #endif
   
   result = dlp_exec(sd, 0x22, 0x20, dlp_buf, 6, 0, 0);
@@ -1167,13 +1381,15 @@ int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, void
   set_long(dlp_buf+2, type);
   set_short(dlp_buf+6, id);
   set_short(dlp_buf+8, 0); /* Offset into record */
-  set_short(dlp_buf+10, DLP_BUF_SIZE); /* length to return */
+  set_short(dlp_buf+10, buffer ? DLP_BUF_SIZE : 0); /* length to return */
 
   Trace(ReadResourceByType);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Type: '%s', ID: %d\n",
-    fHandle, printlong(type), id);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Type: '%s', ID: %d\n",
+      fHandle, printlong(type), id);
+  }
 #endif
 
   result = dlp_exec(sd, 0x23, 0x21, dlp_buf, 12, dlp_buf, DLP_BUF_SIZE);
@@ -1181,9 +1397,11 @@ int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, void
   Expect(10);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
-    printlong(type), id, get_short(dlp_buf+6), result-10);
-  dumpdata(dlp_buf+10, result-10);
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
+      printlong(type), id, get_short(dlp_buf+6), result-10);
+    dumpdata(dlp_buf+10, result-10);
+  }
 #endif
   
   if (index)
@@ -1205,13 +1423,15 @@ int dlp_ReadResourceByIndex(int sd, int fHandle, int index, void* buffer,
   set_byte(dlp_buf+1, 0x00);
   set_short(dlp_buf+2, index);
   set_short(dlp_buf+4, 0); /* Offset into record */
-  set_short(dlp_buf+6, DLP_BUF_SIZE); /* length to return */
+  set_short(dlp_buf+6, buffer ? DLP_BUF_SIZE : 0); /* length to return */
 
   Trace(ReadResourceByIndex);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Index: %d\n",
-    fHandle, index);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Index: %d\n",
+      fHandle, index);
+  }
 #endif
 
   result = dlp_exec(sd, 0x23, 0x20, dlp_buf, 8, dlp_buf, DLP_BUF_SIZE);
@@ -1219,9 +1439,11 @@ int dlp_ReadResourceByIndex(int sd, int fHandle, int index, void* buffer,
   Expect(10);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
-    printlong(get_long(dlp_buf)), get_short(dlp_buf+4), index, result-10);
-  dumpdata(dlp_buf+10, result-10);
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
+      printlong(get_long(dlp_buf)), get_short(dlp_buf+4), index, result-10);
+    dumpdata(dlp_buf+10, result-10);
+  }
 #endif
 
   if (type) 
@@ -1251,9 +1473,11 @@ int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
   Trace(WriteResource);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Type: '%s', ID: %d, and %d bytes:\n",
-    printlong(type), id, length);
-  dumpdata(data, length);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Type: '%s', ID: %d, and %d bytes:\n",
+      printlong(type), id, length);
+    dumpdata(data, length);
+  }
 #endif
 
   result = dlp_exec(sd, 0x24, 0x20, dlp_buf, 10+length, NULL, 0);
@@ -1276,8 +1500,10 @@ int dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype, int
   Trace(DeleteResource);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Type: '%s', ID: %d, All: %s\n",
-    printlong(restype), resID, all ? "Yes" : "No");
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Type: '%s', ID: %d, All: %s\n",
+      printlong(restype), resID, all ? "Yes" : "No");
+  }
 #endif
   
   result = dlp_exec(sd, 0x25, 0x20, dlp_buf, 8, NULL, 0);
@@ -1300,8 +1526,10 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset,
   Trace(ReadAppBlock);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Offset: %d, Max Length: %d\n",
-    fHandle, offset, dlen);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Offset: %d, Max Length: %d\n",
+      fHandle, offset, dlen);
+  }
 #endif
   
   result = dlp_exec(sd, 0x1b, 0x20, dlp_buf, 6, dlp_buf, DLP_BUF_SIZE);
@@ -1312,9 +1540,11 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset,
     memcpy(dbuf, dlp_buf+2, result-2);
   
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: %d bytes:\n",
-   result-2);
-  dumpdata(dlp_buf+2, result-2);
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: %d bytes:\n",
+      result-2);
+    dumpdata(dlp_buf+2, result-2);
+  }
 #endif
   
   return result-2;
@@ -1332,9 +1562,11 @@ int dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@*/ void* data, int le
   Trace(WriteAppBlock);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, %d bytes:\n",
-    fHandle, length);
-  dumpdata(data, length);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, %d bytes:\n",
+      fHandle, length);
+    dumpdata(data, length);
+  }
 #endif
 
   result = dlp_exec(sd, 0x1c, 0x20, dlp_buf, length+4, NULL, 0);
@@ -1357,16 +1589,20 @@ int dlp_ReadSortBlock(int sd, int fHandle, int offset,
   Trace(ReadSortBlock);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Offset: %d, Max Length: %d\n",
-    fHandle, offset, dlen);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Offset: %d, Max Length: %d\n",
+      fHandle, offset, dlen);
+  }
 #endif
   
   result = dlp_exec(sd, 0x1d, 0x20, dlp_buf, 6, dlp_buf, DLP_BUF_SIZE);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, "  Read: %d bytes:\n",
-   result-2);
-  dumpdata(dlp_buf+2, result-2);
+  if (dlp_trace) {  
+    fprintf(stderr, "  Read: %d bytes:\n",
+      result-2);
+    dumpdata(dlp_buf+2, result-2);
+  }
 #endif
   
   if (dbuf)
@@ -1385,9 +1621,11 @@ int dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@*/ void* data, int l
   Trace(WriteSortBlock);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, %d bytes:\n",
-    fHandle, length);
-  dumpdata(data, length);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, %d bytes:\n",
+      fHandle, length);
+    dumpdata(data, length);
+  }
 #endif
 
   result = dlp_exec(sd, 0x1e, 0x20, dlp_buf, length+4, NULL, 0);
@@ -1405,7 +1643,9 @@ int dlp_CleanUpDatabase(int sd, int fHandle)
   Trace(CleanUpDatabase);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d\n", fHandle);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d\n", fHandle);
+  }
 #endif
 
   result = dlp_exec(sd, 0x26, 0x20, &handle, 1, NULL, 0);
@@ -1423,7 +1663,9 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
   Trace(ResetSyncFlags);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d\n", fHandle);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d\n", fHandle);
+  }
 #endif
   
   result = dlp_exec(sd, 0x27, 0x20, &handle, 1, NULL, 0);
@@ -1434,23 +1676,69 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
 }
 
 int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void* buffer,
-                          recordid_t* id, int* index, int* size, int* attr, int* category)
+                          recordid_t* id, int* index, int* size, int* attr)
 {
   int result;
 #ifdef DLP_TRACE
   int flags;
 #endif
 
-  if (pi_version(sd) < 0x0101)
-    return -129;
+  if (pi_version(sd) < 0x0101) {
+    /* Emulate for PalmOS 1.0 */
+    int cat;
+    int r;
+    struct pi_socket * ps;
 
-  Trace(ReadNextRecInCategory);
+    Trace(ReadNextRecInCategoryV1);
+
+#ifdef DLP_TRACE
+    if (dlp_trace) {  
+      fprintf(stderr, " Emulating with: Handle: %d, Category: %d\n", fHandle, incategory);
+    }
+#endif
+
+    if ((ps = find_pi_socket(sd))==0)
+      return -130;
+    
+    for(;;) {
+      /* Fetch next modified record (in any category) */
+      r = dlp_ReadRecordByIndex(sd, fHandle, ps->dlprecord, 0, 0, 0, 0, &cat);
+      
+      if (r<0)
+        break;
+      
+      if (cat != incategory) {
+        ps->dlprecord++;
+        continue;
+      }
+
+      r = dlp_ReadRecordByIndex(sd, fHandle, ps->dlprecord, buffer, id, size, attr, &cat);
+      
+      if (r >= 0) {
+        if (index)
+          *index = ps->dlprecord;
+        ps->dlprecord++;
+      } else {
+        /* If none found, reset modified pointer so that another search on a different
+           (or the same!) category will work */
+        ps->dlprecord = 0;
+      }
+      
+      break;
+    }
+    
+    return r;
+  }
+
+  Trace(ReadNextRecInCategoryV2);
 
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, incategory);
   
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Category: %d\n", fHandle, incategory);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Category: %d\n", fHandle, incategory);
+  }
 #endif
   
   result = dlp_exec(sd, 0x32, 0x20, dlp_buf, 2, dlp_buf, DLP_BUF_SIZE);
@@ -1458,23 +1746,25 @@ int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void* buffer,
   Expect(10);
 
 #ifdef DLP_TRACE
-  flags = get_byte(dlp_buf+8);
-  fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
-    (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
-  if (flags & dlpRecAttrDeleted)
-    fprintf(stderr, " Deleted");
-  if (flags & dlpRecAttrDirty)
-    fprintf(stderr, " Dirty");
-  if (flags & dlpRecAttrBusy)
-    fprintf(stderr, " Busy");
-  if (flags & dlpRecAttrSecret)
-    fprintf(stderr, " Secret");
-  if (flags & dlpRecAttrArchived)
-    fprintf(stderr, " Archive");
-  if (!flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
-  dumpdata(dlp_buf+10, result-10);
+  if (dlp_trace) {  
+    flags = get_byte(dlp_buf+8);
+    fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
+      (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
+    if (flags & dlpRecAttrDeleted)
+      fprintf(stderr, " Deleted");
+    if (flags & dlpRecAttrDirty)
+      fprintf(stderr, " Dirty");
+    if (flags & dlpRecAttrBusy)
+      fprintf(stderr, " Busy");
+    if (flags & dlpRecAttrSecret)
+      fprintf(stderr, " Secret");
+    if (flags & dlpRecAttrArchived)
+      fprintf(stderr, " Archive");
+    if (!flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
+    dumpdata(dlp_buf+10, result-10);
+  }
 #endif
 
   if (id)
@@ -1485,8 +1775,6 @@ int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void* buffer,
     *size = get_short(dlp_buf+6);
   if (attr)
     *attr = get_byte(dlp_buf+8);
-  if (category)
-    *category = get_byte(dlp_buf+9);
   if (buffer)    
     memcpy(buffer, dlp_buf+10, result-10);
     
@@ -1498,13 +1786,52 @@ int dlp_ReadAppPreference(int sd, int fHandle, unsigned long creator, int id, in
                           int maxsize, void* buffer, int * size, int * version)
 {
   int result;
+
+  if (pi_version(sd) < 0x0101) {
+    /* Emulate on PalmOS 1.0 */
+    int db;
+    int r;
+
+    Trace(ReadAppPreferenceV1);
+
 #ifdef DLP_TRACE
+    if (dlp_trace) {  
+      fprintf(stderr, "  Emulating with: Creator: '%s', Id: %d, Size: %d, Backup: %d\n", 
+                      printlong(creator), id, buffer ? maxsize : 0, backup ? 0x80 : 0);
+    }
 #endif
+    
+    r = dlp_OpenDB(sd, 0, dlpOpenRead, "System Preferences", &db);
+    if (r<0)
+      return r;
+    
+    r = dlp_ReadResourceByType(sd, db, creator, id, buffer, NULL, size);
+    
+    
+    if (r<0) {
+      dlp_CloseDB(sd, db);
+      return r;
+    }
 
-  if (pi_version(sd) < 0x0101)
-    return -129;
+    if (size)
+      *size -= 2;
+    
+    if (version)
+      *version = get_short(buffer);
+    
+    if (r>2) {
+      r-=2;
+      memmove(buffer, buffer+2, r);
+    } else {
+      r = 0;
+    }
+    
+    dlp_CloseDB(sd,db);
 
-  Trace(ReadAppPreference);
+    return r;
+  }
+
+  Trace(ReadAppPreferenceV2);
 
   set_long(dlp_buf, creator);
   set_short(dlp_buf+4, id);
@@ -1513,13 +1840,22 @@ int dlp_ReadAppPreference(int sd, int fHandle, unsigned long creator, int id, in
   set_byte(dlp_buf+9, 0); /* Reserved */
   
 #ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Creator: '%s', Id: %d, Size: %d, Backup: %d\n", 
+                printlong(creator), id, buffer ? maxsize : 0, backup ? 0x80 : 0);
+  }
 #endif
   
-  result = dlp_exec(sd, 0x33, 0x20, dlp_buf, 10, dlp_buf, DLP_BUF_SIZE);
+  result = dlp_exec(sd, 0x34, 0x20, dlp_buf, 10, dlp_buf, DLP_BUF_SIZE);
   
   Expect(6);
 
 #ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, " Read: Version: %d, Total size: %d, Read %d bytes:\n", 
+                   get_short(dlp_buf), get_short(dlp_buf+2), get_short(dlp_buf+4));
+    dumpdata(dlp_buf+6, get_short(dlp_buf+4));
+  }
 #endif
 
   if (version)
@@ -1538,13 +1874,39 @@ int dlp_WriteAppPreference(int sd, int fHandle, unsigned long creator, int id, i
                           int version, void * buffer, int size)
 {
   int result;
+
+  if (pi_version(sd) < 0x0101) {
+    /* Emulate on PalmOS 1.0 */
+    int db;
+    int r;
+
+    Trace(WriteAppPreferenceV1);
+
 #ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Creator: '%s', Id: %d, Version: %d, Backup: %d, and %d bytes:\n", 
+                    printlong(creator), id, version, backup ? 0x80 : 0, size);
+    dumpdata(buffer, size);
+  }
 #endif
+    
+    r = dlp_OpenDB(sd, 0, dlpOpenWrite, "System Preferences", &db);
+    if (r<0)
+      return r;
+      
+    if (buffer && size) {
+      memcpy(dlp_buf + 2, buffer, size);
+      set_short(dlp_buf, version);
+      r = dlp_WriteResource(sd, db, creator, id, dlp_buf, size);
+    } else
+      r = dlp_WriteResource(sd, db, creator, id, NULL, 0);
 
-  if (pi_version(sd) < 0x0101)
-    return -129;
+    dlp_CloseDB(sd, db);
+    
+    return r;
+  }
 
-  Trace(WriteAppPreference);
+  Trace(WriteAppPreferenceV2);
 
   set_long(dlp_buf, creator);
   set_short(dlp_buf+4, id);
@@ -1556,36 +1918,65 @@ int dlp_WriteAppPreference(int sd, int fHandle, unsigned long creator, int id, i
   memcpy(dlp_buf+12, buffer, size);
   
 #ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Creator: '%s', Id: %d, Version: %d, Backup: %d, and %d bytes:\n", 
+                    printlong(creator), id, version, backup ? 0x80 : 0, size);
+    dumpdata(buffer, size);
+  }
 #endif
   
-  result = dlp_exec(sd, 0x34, 0x20, dlp_buf, 12+size, NULL, 0);
+  result = dlp_exec(sd, 0x35, 0x20, dlp_buf, 12+size, NULL, 0);
   
   Expect(0);
-
-#ifdef DLP_TRACE
-#endif
 
   return result;
 }
 
 int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory, void* buffer,
-                          recordid_t* id, int* index, int* size, int* attr, int* category)
+                          recordid_t* id, int* index, int* size, int* attr)
 {
   int result;
 #ifdef DLP_TRACE
   int flags;
 #endif
 
-  if (pi_version(sd) < 0x0101)
-    return -129;
+  if (pi_version(sd) < 0x0101) {
+    /* Emulate for PalmOS 1.0 */
+    int cat;
+    int r;
 
-  Trace(ReadNextModifiedRecInCategory);
+    Trace(ReadNextModifiedRecInCategoryV1);
+
+#ifdef DLP_TRACE
+  if (dlp_trace) {  
+    fprintf(stderr, " Emulating with: Handle: %d, Category: %d\n", fHandle, incategory);
+  }
+#endif
+    
+    do {
+      /* Fetch next modified record (in any category) */
+      r = dlp_ReadNextModifiedRec(sd, fHandle, buffer, id, index, size, attr, &cat);
+    
+      /* If none found, reset modified pointer so that another search on a different
+         (or the same!) category will start from the beginning */
+      if (r < 0)
+        dlp_ResetDBIndex(sd, fHandle);
+          
+      /* Loop until we fail to get a record or a record is found in the proper category */
+    } while ((r >= 0) && (cat != incategory));
+    
+    return r;
+  }
+
+  Trace(ReadNextModifiedRecInCategoryV2);
 
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, incategory);
   
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Category: %d\n", fHandle, incategory);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Category: %d\n", fHandle, incategory);
+  }
 #endif
   
   result = dlp_exec(sd, 0x33, 0x20, dlp_buf, 2, dlp_buf, DLP_BUF_SIZE);
@@ -1593,23 +1984,25 @@ int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory, void*
   Expect(10);
 
 #ifdef DLP_TRACE
-  flags = get_byte(dlp_buf+8);
-  fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
-    (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
-  if (flags & dlpRecAttrDeleted)
-    fprintf(stderr, " Deleted");
-  if (flags & dlpRecAttrDirty)
-    fprintf(stderr, " Dirty");
-  if (flags & dlpRecAttrBusy)
-    fprintf(stderr, " Busy");
-  if (flags & dlpRecAttrSecret)
-    fprintf(stderr, " Secret");
-  if (flags & dlpRecAttrArchived)
-    fprintf(stderr, " Archive");
-  if (!flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
-  dumpdata(dlp_buf+10, result-10);
+  if (dlp_trace) {  
+    flags = get_byte(dlp_buf+8);
+    fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
+      (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
+    if (flags & dlpRecAttrDeleted)
+      fprintf(stderr, " Deleted");
+    if (flags & dlpRecAttrDirty)
+      fprintf(stderr, " Dirty");
+    if (flags & dlpRecAttrBusy)
+      fprintf(stderr, " Busy");
+    if (flags & dlpRecAttrSecret)
+      fprintf(stderr, " Secret");
+    if (flags & dlpRecAttrArchived)
+      fprintf(stderr, " Archive");
+    if (!flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
+    dumpdata(dlp_buf+10, result-10);
+  }
 #endif
 
   if (id)
@@ -1620,8 +2013,6 @@ int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory, void*
     *size = get_short(dlp_buf+6);
   if (attr)
     *attr = get_byte(dlp_buf+8);
-  if (category)
-    *category = get_byte(dlp_buf+9);
   if (buffer)    
     memcpy(buffer, dlp_buf+10, result-10);
     
@@ -1641,7 +2032,9 @@ int dlp_ReadNextModifiedRec(int sd, int fHandle, void* buffer,
   Trace(ReadNextModifiedRec);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d\n", fHandle);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d\n", fHandle);
+  }
 #endif
   
   result = dlp_exec(sd, 0x1f, 0x20, &handle, 1, dlp_buf, DLP_BUF_SIZE);
@@ -1649,23 +2042,25 @@ int dlp_ReadNextModifiedRec(int sd, int fHandle, void* buffer,
   Expect(10);
 
 #ifdef DLP_TRACE
-  flags = get_byte(dlp_buf+8);
-  fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
-    (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
-  if (flags & dlpRecAttrDeleted)
-    fprintf(stderr, " Deleted");
-  if (flags & dlpRecAttrDirty)
-    fprintf(stderr, " Dirty");
-  if (flags & dlpRecAttrBusy)
-    fprintf(stderr, " Busy");
-  if (flags & dlpRecAttrSecret)
-    fprintf(stderr, " Secret");
-  if (flags & dlpRecAttrArchived)
-    fprintf(stderr, " Archive");
-  if (!flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
-  dumpdata(dlp_buf+10, result-10);
+  if (dlp_trace) {  
+    flags = get_byte(dlp_buf+8);
+    fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
+      (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
+    if (flags & dlpRecAttrDeleted)
+      fprintf(stderr, " Deleted");
+    if (flags & dlpRecAttrDirty)
+      fprintf(stderr, " Dirty");
+    if (flags & dlpRecAttrBusy)
+      fprintf(stderr, " Busy");
+    if (flags & dlpRecAttrSecret)
+      fprintf(stderr, " Secret");
+    if (flags & dlpRecAttrArchived)
+      fprintf(stderr, " Archive");
+    if (!flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
+    dumpdata(dlp_buf+10, result-10);
+  }
 #endif
 
   if (id)
@@ -1696,12 +2091,14 @@ int dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void* buffer,
   set_byte(dlp_buf+1, 0x00);
   set_long(dlp_buf+2, id);
   set_short(dlp_buf+6, 0); /* Offset into record */
-  set_short(dlp_buf+8, DLP_BUF_SIZE); /* length to return */
+  set_short(dlp_buf+8, buffer ? DLP_BUF_SIZE : 0); /* length to return */
 
   Trace(ReadRecordById);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Record ID: 0x%8.8lX\n", fHandle, id);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Record ID: 0x%8.8lX\n", fHandle, id);
+  }
 #endif
   
   result = dlp_exec(sd, 0x20, 0x20, dlp_buf, 10, dlp_buf, DLP_BUF_SIZE);
@@ -1709,23 +2106,25 @@ int dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void* buffer,
   Expect(10);
 
 #ifdef DLP_TRACE
-  flags = get_byte(dlp_buf+8);
-  fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
-    (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
-  if (flags & dlpRecAttrDeleted)
-    fprintf(stderr, " Deleted");
-  if (flags & dlpRecAttrDirty)
-    fprintf(stderr, " Dirty");
-  if (flags & dlpRecAttrBusy)
-    fprintf(stderr, " Busy");
-  if (flags & dlpRecAttrSecret)
-    fprintf(stderr, " Secret");
-  if (flags & dlpRecAttrArchived)
-    fprintf(stderr, " Archive");
-  if (!flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
-  dumpdata(dlp_buf+10, result-10);
+  if (dlp_trace) {  
+    flags = get_byte(dlp_buf+8);
+    fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
+      (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
+    if (flags & dlpRecAttrDeleted)
+      fprintf(stderr, " Deleted");
+    if (flags & dlpRecAttrDirty)
+      fprintf(stderr, " Dirty");
+    if (flags & dlpRecAttrBusy)
+      fprintf(stderr, " Busy");
+    if (flags & dlpRecAttrSecret)
+      fprintf(stderr, " Secret");
+    if (flags & dlpRecAttrArchived)
+      fprintf(stderr, " Archive");
+    if (!flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
+    dumpdata(dlp_buf+10, result-10);
+  }
 #endif
   
   /*id = get_long(dlp_buf);*/
@@ -1755,12 +2154,14 @@ int dlp_ReadRecordByIndex(int sd, int fHandle, int index, void* buffer,
   set_byte(dlp_buf+1, 0x00);
   set_short(dlp_buf+2, index);
   set_short(dlp_buf+4, 0); /* Offset into record */
-  set_short(dlp_buf+6, DLP_BUF_SIZE); /* length to return */
+  set_short(dlp_buf+6, buffer ? DLP_BUF_SIZE : 0); /* length to return */
 
   Trace(ReadRecordByIndex);
 
 #ifdef DLP_TRACE
-  fprintf(stderr, " Wrote: Handle: %d, Index: %d\n", fHandle, index);
+  if (dlp_trace) {  
+    fprintf(stderr, " Wrote: Handle: %d, Index: %d\n", fHandle, index);
+  }
 #endif  
 
   result = dlp_exec(sd, 0x20, 0x21, dlp_buf, 8, dlp_buf, DLP_BUF_SIZE);
@@ -1768,23 +2169,25 @@ int dlp_ReadRecordByIndex(int sd, int fHandle, int index, void* buffer,
   Expect(10);
   
 #ifdef DLP_TRACE
-  flags = get_byte(dlp_buf+8);
-  fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
-    (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
-  if (flags & dlpRecAttrDeleted)
-    fprintf(stderr, " Deleted");
-  if (flags & dlpRecAttrDirty)
-    fprintf(stderr, " Dirty");
-  if (flags & dlpRecAttrBusy)
-    fprintf(stderr, " Busy");
-  if (flags & dlpRecAttrSecret)
-    fprintf(stderr, " Secret");
-  if (flags & dlpRecAttrArchived)
-    fprintf(stderr, " Archive");
-  if (!flags)
-    fprintf(stderr, " None");
-  fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
-  dumpdata(dlp_buf+10, result-10);
+  if (dlp_trace) {  
+    flags = get_byte(dlp_buf+8);
+    fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
+      (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
+    if (flags & dlpRecAttrDeleted)
+      fprintf(stderr, " Deleted");
+    if (flags & dlpRecAttrDirty)
+      fprintf(stderr, " Dirty");
+    if (flags & dlpRecAttrBusy)
+      fprintf(stderr, " Busy");
+    if (flags & dlpRecAttrSecret)
+      fprintf(stderr, " Secret");
+    if (flags & dlpRecAttrArchived)
+      fprintf(stderr, " Archive");
+    if (!flags)
+      fprintf(stderr, " None");
+    fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
+    dumpdata(dlp_buf+10, result-10);
+  }
 #endif
 
   if (id)

@@ -25,6 +25,16 @@ Usage notes:
   The default connection rate is 9600 baud. You are welcome to try higher
   baud rates (19200, 38400, or 57600) by setting the PILOTRATE environment
   variable.
+  
+  pilot-mail (which requires a PalmPilot with the new Mail application, as
+  well as sendmail and/or a POP3 server) is still in the experimental stage. 
+  Run with an argument of '-H' for help. While I don't expect it to lose
+  data, (and by default mail is kept on both sides, not deleted) I can not
+  and will not guarantee that you won't. Please back up your UNIX mailbox
+  and Pilot mailbox (via pilot-xfer) before experimenting.
+  
+  If you wish, you may easily change the default settings (pop host,
+  password, etc.) for pilot-mail by editing the top of pilot-mail.c.
 
 Debugging notes:
 

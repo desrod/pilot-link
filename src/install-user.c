@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   struct PilotUser U;
   struct SysInfo S;
   struct CardInfo C;
+  unsigned long romversion;
   int ret;
 
   if (argc < 2) {
@@ -76,6 +77,7 @@ int main(int argc, char *argv[])
        C.cardno, C.ROMsize, C.RAMsize, C.RAMfree);
     printf(" It is called '%s', and was made by '%s'.\n", C.name, C.manuf);
   }
+  
 
   if (argc == 2) {
     printf ("Pilot user %s\n",U.username);
@@ -88,8 +90,12 @@ int main(int argc, char *argv[])
     dlp_WriteUserInfo(sd, &U);
   }
   
-  printf( "ROM Version: 0x%8.8lX, locale: 0x%8.8lX, name: '%s'\n", 
+  printf( "Through ReadSysInfo: ROM Version: 0x%8.8lX, locale: 0x%8.8lX, name: '%s'\n", 
               S.ROMVersion, S.localizationID, S.name);
+
+  dlp_ReadFeature(sd, makelong("psys"), 1, &romversion);
+  
+  printf( "ROM Version through ReadFeature: 0x%8.8lX\n", romversion);
   
   pi_close(sd);
   exit(0);

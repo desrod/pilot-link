@@ -12,9 +12,9 @@ OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS)
 
 CC = @CC@
 CFLAGS = @CFLAGS@ @CWFLAG@ -I../include
-# -DNO_SERIAL_TRACE
-# -DDLP_TRACE
 # -DPADP_TRACE
+# -DNO_DLP_TRACE
+# -DNO_SERIAL_TRACE
 # -DDEBUG
 AR = ar
 ARFLAGS = @ARFLAGS@
@@ -45,7 +45,8 @@ datebook.o: datebook.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
  ../include/pi-datebook.h
 dlp.o: dlp.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-syspkt.h
 expense.o: expense.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
  ../include/pi-expense.h

@@ -10,6 +10,7 @@
 #define padWake   0x101
 #define padAck    2
 #define padTickle 4
+#define padAbort 8 /* PalmOS 2.0 only */
 
 #define FIRST 0x80
 #define LAST  0x40

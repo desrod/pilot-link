@@ -98,6 +98,9 @@ extern int sys_RPC(int sd, int socket, int trap, long * D0, long * A0, int param
 
 extern int RPC(int sd, int socket, int trap, int ret, ...);
 
+extern void InvertRPC(struct RPC_params * p);
+extern void UninvertRPC(struct RPC_params * p);
+
 extern int PackRPC(struct RPC_params * p, int trap, int reply, ...);
 
 extern unsigned long DoRPC(int sd, int socket, struct RPC_params * p, int * error);

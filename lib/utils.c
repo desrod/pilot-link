@@ -64,6 +64,11 @@ char * printlong (unsigned long val)
   return buf;
 }
 
+unsigned long makelong (char * c)
+{
+  return get_long(c);
+}
+
 void dumpline (const unsigned char *buf, int len, int addr)
 {
   int i;

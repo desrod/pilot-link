@@ -1,6 +1,8 @@
 #ifndef _PILOT_MAIL_H_
 #define _PILOT_MAIL_H_
 
+#include <sys/time.h>
+
 struct Mail {
   int read;
   int signature;
@@ -9,7 +11,8 @@ struct Mail {
   int priority;
   int addressing;
   
-  time_t time;
+  int dated;
+  struct tm date;
   
   char * subject;
   char * from;
@@ -31,13 +34,30 @@ struct MailAppInfo {
                                  sure what role lastUniqueID plays. */
   unsigned long dirtyfieldlabels; /* bitfield of same */
   int sortOrder;
-  unsigned long unsent; /* UniqueID of unsent message */
+  unsigned long unsentMessage; /* UniqueID of unsent message */
+  
+  char * signature;
 };
 
+struct MailPrefs {
+  int synctype;
+  int gethigh;
+  int getcontaining;
+  int truncate;
+  char * filterto;
+  char * filterfrom;
+  char * filtersubject;
+};
+
+enum { mailSyncAll, mailSyncSend, mailSyncFilter } MailSyncType;
+
 extern void free_Mail(struct Mail *);
+extern void free_MailAppInfo(struct MailAppInfo *);
+extern void free_MailPrefs(struct MailPrefs *);
 extern void unpack_Mail(struct Mail *, unsigned char * record, int len);
 extern void pack_Mail(struct Mail *, unsigned char * record, int * len);
 extern void unpack_MailAppInfo(struct MailAppInfo *, unsigned char * AppInfo, int len);
 extern void pack_MailAppInfo(struct MailAppInfo *, unsigned char * AppInfo, int * len);
+extern void unpack_MailPrefs(struct MailPrefs *, unsigned char * record, int len);
 
 #endif /* _PILOT_MAIL_H_ */

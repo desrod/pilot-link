@@ -22,6 +22,8 @@ static struct pi_socket *psl = (struct pi_socket *)0;
 
 void installexit(void);
 
+extern int dlp_trace;
+
 /* Create a local connection endpoint */
 
 int pi_socket(int domain, int type, int protocol)
@@ -60,6 +62,7 @@ int pi_socket(int domain, int type, int protocol)
   ps->minorversion = 0;
   ps->majorversion = 0;
   ps->version = 0;
+  ps->dlprecord = 0;
   
 #ifdef OS2
   ps->os2_read_timeout=60;
@@ -73,6 +76,12 @@ int pi_socket(int domain, int type, int protocol)
   if (getenv("PILOTLOG")) {
     if ((ps->debuglog = getenv("PILOTLOGFILE"))==0)
       ps->debuglog = "PiDebug.log";
+  }
+#endif
+
+#ifndef NO_DLP_TRACE
+  if (getenv("PILOTDLP")) {
+    dlp_trace=1;
   }
 #endif
 
@@ -223,6 +232,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
         pi_device_changebaud(ps);
       }
       ps->connected = 1;
+      ps->dlprecord = 0;
     }else {
       cmp_abort(ps, 0x80); /* 0x80 means the comm version wasn't compatible*/
       pi_device_close(ps);
@@ -324,7 +334,7 @@ int pi_close(int pi_sd)
   if (ps->type == PI_SOCK_STREAM) {
     if (ps->connected & 1) /* If socket is connected */
       if (!(ps->connected & 2)) /* And it wasn't end-of-synced */
-        dlp_EndOfSync(pi_sd, 0);  /* Then do it now, with clean status */
+        dlp_EndOfSync(pi_sd, 0);  /* then end sync, with clean status */
   }
   
   if(ps->mac.fd) { /* If device was opened */
@@ -354,7 +364,7 @@ int pi_close(int pi_sd)
 void pi_onexit(void)
 {
   struct pi_socket *p, *n;
-
+  
   for (p=psl; p; p=n ) {
     n = p->next;
     pi_close(p->sd);

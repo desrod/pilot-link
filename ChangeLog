@@ -1,3 +1,22 @@
+Apr 13, 1997	Kenneth Albanowski 0.5.6
+
+    New pilot-mail excutable to directly support transmission and reception
+       of internet mail through the Pilot Mail application present on newer
+       Pilots. (Requires POP3 for reception and/or sendmail for transmission.)
+    Fixed nasty bug in "long" DLP argument recognition. Please do not use 0.5.5.
+    PalmOS 2.0 DLP functions DeleteCategory, ReadNextModifiedInCategory,
+       ReadNextRecInCategory, ReadFeature, ReadAppPreference and
+       WriteAppPreference are now emulated for 1.0 Pilots, and may be freely
+       used where you like, regardless of OS version. (Untested)
+    PalmOS 2.0 DLP functions repaired. (None would have worked in 0.5.5)
+    Removed extraneous category parameter from dlp_ReadNext*Category functions.
+    Added DLP function dlp_RPC, which allows invoking arbitrary system traps
+       during HotSync.
+    Fixed pilot-debug mirroring to display entire updated rectangle.
+    Fixed uncaught decoding problem in unpack_ToDoAppInfo.
+    DLP trace is now compiled in by default, but only activated if the
+       PILOTDLP environment variable exists.
+
 Apr 4, 1997		Kenneth Albanowski 0.5.5
 
     Added Ron Nicholson's <rhn@waltz.engr.sgi.com> patch for user-id setting
@@ -19,8 +38,8 @@ Apr 4, 1997		Kenneth Albanowski 0.5.5
        supported (though not yet tested):
     Updated CMP logic to match 2.0 versioning (extended CMP still to-do).
     Updated DLP decoding to decode long args (buffering and encoding rewrite to-do).
-    Added v2.0 ReadFeature, DeleteCategory, ReadNextInCategory,  
-        ReadNextModifiedInCategory, ReadAppPreference and WriteAppPreference
+    Added v2.0 ReadFeature, DeleteCategory, ReadNextRecInCategory,  
+        ReadNextModifiedRecInCategory, ReadAppPreference and WriteAppPreference
         DLP functions. (emulation for 1.0 Pilots to-do).
     Added v2.0 ReadNetSyncInfo and WriteNetSyncInfo functions (no 1.0 emulation
         possible.)
