@@ -1,5 +1,12 @@
 2002-07-16  JP Rosevear  <jpr@ximian.com>
 
+	* configure.in (set_compile_warnings): use the more standard
+	--enable-compiler-warnings
+
+	* autogen.sh: don't enable compiler warnings by default
+
+2002-07-16  JP Rosevear  <jpr@ximian.com>
+	
 	* configure.in: don't enable extra warnings by default and add
 	pedantic when we do
 
