@@ -151,12 +151,12 @@ case "$host" in
 	*linux*)
 		AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
 		usb_type=linux
-		msg_usb="yes, linux"
+		msg_usb="yes, Linux"
 	;;
 	*freebsd*)
 		AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
 		usb_type=freebsd
-		msg_usb="yes, freebsd"
+		msg_usb="yes, FreeBSD"
 	;;
 esac
 AM_CONDITIONAL(WITH_LINUXUSB, test x$usb_type = xlinux)
