@@ -437,11 +437,11 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		}
 		rbuf = read(ps->sd, &buf->data[buf->used], len);
 		if (rbuf > 0) {
-			buf->used += rbuf;
 			if (flags == PI_MSG_PEEK) {
-				memcpy(data->buf, buf, rbuf);
+				memcpy(data->buf, buf->data + buf->used, rbuf);
 				data->buf_size = rbuf;
 			}
+			buf->used += rbuf;
 		}
 	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
