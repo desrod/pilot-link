@@ -484,7 +484,6 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 	if (protocol == PI_PF_DLP && autodetect) {
 		if (dev_prot->read (ps, &byte_buf, 1, PI_MSG_PEEK) > 0) {
 			int found = 0;
-
 			while (!found) {
 				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 				    "SOCK Peeked and found 0x%.2x, ", byte));
@@ -504,6 +503,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 					found = 1;
 					break;
 				default:
+					byte_buf.used = 0;
 					if (dev_prot->read (ps, &byte_buf, 1,
 						PI_MSG_PEEK) < 0) {
 						protocol = PI_PF_PADP;
