@@ -15,6 +15,13 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
+ * TODO: 
+ * - Handle support for "editing" memos that already exist, with the same
+ *   title as an existing memo on the device. If you want to install a memo
+ *   with the title 'foo' and the contents 'bar', more than once, it should
+ *   alert you to that condition, and allow you to replace/append that
+ *   entry, or possibly create a new entry 'foo_1' for an incremented
+ *   version. Should we just replace identical/duplicate entries by default?
  */
 
 #ifdef HAVE_CONFIG_H
@@ -29,7 +36,6 @@
 #include <errno.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-memo.h"
 #include "pi-header.h"
@@ -38,6 +44,7 @@
 static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
+int casecmp(const char *s1, const char *s2);
 
 struct option options[] = {
 	{"port"   ,     required_argument, NULL, 'p'},
@@ -49,7 +56,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "p:hvc:rt:";
+static const char *optstring = "p:hvc:rt";
 
 static void display_help(char *progname)
 {
@@ -57,25 +64,36 @@ static void display_help(char *progname)
 	printf("   Usage: %s -p <port> [-rt] [-c category] file [file] ...\n\n", 
 		progname);
 	printf("   Options:\n");
-	printf("     -r = replace all memos in specified category\n");
-	printf("     -t = use filename as memo title\n\n");
+        printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+        printf("     -h, --help              Display help information for pilot-xfer\n");
+        printf("     -v, --version           Display pilot-xfer version information\n"); 
+	printf("     -c, --category          Place the memo entry in this category (must exist)\n");
+	printf("     -r, --replace           Replace all memos in specified category\n");
+	printf("     -t, --title             Use the filename as the title of the Memo entry\n\n");
 
 	return;
 }
 
+int casecmp(const char *s1, const char *s2)
+{
+    while (*s1 && *s2 && tolower(*s1++) == tolower(*s2++)) {}
+    return tolower(*s1) - tolower(*s2);
+}
+
 int main(int argc, char *argv[])
 {
-	int 	add_title	= 0,
-		category,
-		c,		/* switch */
-		db,
+	int	c,		/* switch */
+		sd		= -1,
 		i		= 0,
 		j		= 0,
+		add_title	= 0,
+		category,
+		db,
 		ReadAppBlock, 
-		memo_size,
 		preamble,
-		replace_category= 0,
-		sd		= -1;
+		replace_category= 0;
+
+	size_t	memo_size;
 	
 	char 	*port		= NULL,
 		*memo_buf,
@@ -152,7 +170,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "   button at least once, to create a MemoDB.pdb file on your Palm,\n");
 		fprintf(stderr, "   then sync again.\n\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open MemoDB.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	ReadAppBlock = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
@@ -160,22 +178,26 @@ int main(int argc, char *argv[])
 
 	if (category_name) {
 		category = -1;	/* invalid category */
-		for (i = 0; i < 16; i++)
-			if (!strcasecmp
-			    (mai.category.name[i], category_name)) {
+
+		for (i = 0; i < 16; i++) {
+			if (!casecmp(mai.category.name[i], category_name)) {
 				category = i;
 				break;
 			}
-		if (category < 0) {
-			printf("Category %s not found on Palm\n", category_name);
-			exit(2);
 		}
 
-		if (replace_category)
-			dlp_DeleteCategory(sd, db, category);
+		if (category < 0) {
+			printf("   Category '%s' did not exist on the Palm, "
+			       "entry created in 'Unfiled'.\n\n",
+				category_name);
+			category = 0;
+		}
 
-	} else
-		category = 0;	/* unfiled */
+		if (replace_category) {
+			dlp_DeleteCategory(sd, db, category);
+		}
+
+	} 
 
 	for (j = 0; j < argc; j++) {
 
@@ -197,7 +219,9 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "   size.\n\n");
 
 		} else if ((sbuf.st_size < 4096) && (sbuf.st_size > 0)) {
-			fprintf(stderr, "   %s was syncronized successfully to your Palm device\n\n", argv[j]);
+			fprintf(stderr, 
+				"   Created new Memo entry with the contents of file '%s' on your Palm.\n\n", 
+				argv[j]);
 		}
 
 		preamble = add_title ? strlen(argv[j]) + 1 : 0;
@@ -205,7 +229,7 @@ int main(int argc, char *argv[])
 		memo_buf = malloc(memo_size + preamble + 1);
 		if (memo_buf == NULL) {
 			perror("malloc()");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		if (preamble)
@@ -215,8 +239,7 @@ int main(int argc, char *argv[])
 
 		memo_buf[memo_size + preamble] = '\0';
 
-		dlp_WriteRecord(sd, (unsigned char) db, 0, 0, category,
-				(unsigned char *) memo_buf, -1, 0);
+		dlp_WriteRecord(sd, db, 0, 0, category, memo_buf, -1, 0);
 		free(memo_buf);
 		fclose(f);
 	}
