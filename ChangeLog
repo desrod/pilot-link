@@ -1,5 +1,23 @@
 2002-01-18  JP Rosevear  <jpr@ximian.com>
 
+	* pi-nredir.c (main): don't write log info since the other end
+	closed the connection
+
+2002-01-18  JP Rosevear  <jpr@ximian.com>
+	
+	* reminders.c (main): convert to getopt_long and tidy
+
+	* money2qif.c (main): ditto
+
+2002-01-18  JP Rosevear  <jpr@ximian.com>
+	
+	* install-netsync.c (Help): tidy help message
+
+	* libsock/inet.c (pi_inet_bind): accept net:any as an address and
+	allow for port to be specified, ie net:any: 13333
+
+	* pi-csd.c (main): add getopt_long handling
+
 	* dlpsh.c (main): add getopt_long handling
 
 2002-01-18  JP Rosevear  <jpr@ximian.com>
