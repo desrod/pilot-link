@@ -448,7 +448,7 @@ void output_picture( int type, struct NotePad n )
 	
      }
    else
-     fprintf (stderr, "%s: can't write to %s\n", progname, fname);
+     fprintf (stderr, "Can't write to %s\n", fname);
    
    free_NotePad( &n );
 }
@@ -486,8 +486,6 @@ int main(int argc, const char *argv[])
 
    pc = poptGetContext("read-notepad", argc, argv, options, 0);
 
-
-   progname = argv[0];
 
    while ((c = poptGetNextOpt(pc)) >= 0) {
 	switch (c) {
