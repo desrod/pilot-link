@@ -33,6 +33,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "pi-socket.h"
 #include "pi-file.h"
@@ -968,7 +969,12 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 	long used,total,freespace;
 	char rpath[vfsMAXFILENAME];
 	int rpathlen = vfsMAXFILENAME;
+	const char *basename;
 	FileRef file;
+	long attributes;
+	char *filebuffer;
+	int fd,writesize,offset;
+	size_t readsize;
 
 	struct stat sbuf;
 
@@ -995,6 +1001,11 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 		fprintf(stderr,"   Unable to open '%s'!\n", localfile);
 		return;
 	}
+	if (S_IFREG != (sbuf.st_mode & S_IFREG))
+	{
+		fprintf(stderr,"   Not a regular file.\n");
+		return;
+	}
 
 	if (dlp_VFSVolumeSize(sd,volume,&used,&total)<0) {
 		fprintf(stderr,"   Unable to get volume size.\n");
@@ -1010,7 +1021,101 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 			(unsigned long)sbuf.st_size, freespace);
 		return;
 	}
+#define APPEND_BASENAME \
+			basename = strrchr(localfile,'/'); \
+			if (NULL == basename) basename = localfile; \
+			if (rpath[rpathlen-1] != '/') { \
+				rpath[rpathlen++]='/'; \
+				rpath[rpathlen]=0; \
+			} \
+			strncat(rpath,basename,vfsMAXFILENAME-rpathlen-1);
 
+	if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenRead,&file) < 0)
+	{
+		/* Target doesn't exist. If it ends with a /, try to
+		   create the directory and then act as if the existing
+		   directory was given as target. If it doesn't, carry
+		   on, it's a regular file to create. */
+		if ('/' == rpath[rpathlen-1]) {
+			/* directory, doesn't exist. */
+			if (dlp_VFSDirCreate(sd,volume,rpath) < 0) {
+				fprintf(stderr,"  Could not create destination directory.\n");
+				return;
+			}
+			APPEND_BASENAME
+		}
+	}
+	else
+	{
+		/* Exists, and may be a directory, or a filename. If it's
+		   a filename, that's fine as long as we're installing
+		   just a single file. */
+		if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
+		{
+			fprintf(stderr,"   Could not get attributes for destination.\n");
+			(void) dlp_VFSFileClose(sd,file);
+			return;
+		}
+
+		if (attributes & vfsFileAttrDirectory) {
+			APPEND_BASENAME
+			dlp_VFSFileClose(sd,file);
+			/* Now for sure it's a filename in a directory. */
+		}
+		else {
+			dlp_VFSFileClose(sd,file);
+		}
+	}
+#undef APPEND_BASENAME
+
+	if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenWrite | vfsModeTruncate,&file) < 0) {
+		if (dlp_VFSFileCreate(sd,volume,rpath) < 0) {
+			fprintf(stderr,"  Cannot create destination file '%s'.\n",rpath);
+			return;
+		}
+		if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenWrite | vfsModeTruncate,&file) < 0) {
+			fprintf(stderr,"  Cannot open destination file '%s'.\n",rpath);
+			return;
+		}
+	}
+
+	fd = open(localfile,O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr,"  Cannot open local file for reading.\n");
+		dlp_VFSFileClose(sd,file);
+		return;
+	}
+#define FBUFSIZ 64
+	filebuffer = (char *)malloc(FBUFSIZ);
+	if (NULL == filebuffer) {
+		fprintf(stderr,"  Cannot allocate memory for file copy.\n");
+		dlp_VFSFileClose(sd,file);
+		close(fd);
+		return;
+	}
+
+	writesize = 0;
+	while (writesize >= 0) {
+		readsize = read(fd,filebuffer,FBUFSIZ);
+		if (readsize <= 0) break;
+		offset=0;
+		while (readsize > 0) {
+			fprintf(stderr,"* Writing %ld bytes.\n",readsize);
+			writesize = dlp_VFSFileWrite(sd,file,filebuffer+offset,readsize);
+			fprintf(stderr,"* Wrote %d bytes.\n",writesize);
+			if (writesize < 0) {
+				fprintf(stderr,"  Error while writing file.\n");
+				break;
+			}
+			readsize -= writesize;
+			totalsize += writesize;
+			offset += writesize;
+		}
+	}
+
+	free(filebuffer);
+	dlp_VFSFileClose(sd,file);
+	close(fd);
 
 	printf("(%lu bytes, %ld KiB total)\n\n",
 		(unsigned long)sbuf.st_size, (totalsize == 0)
@@ -1186,12 +1291,12 @@ static void PrintFileInfo(const char *path, FileRef file)
 	time_t date;
 	char *s;
 	(void) dlp_VFSFileSize(sd,file,&size);
-	(void) dlp_VFSFileGetDate(sd,file,vfsFileDateModified,&date);
+	(void) dlp_VFSFileGetDate(sd,file,vfsFileDateAccessed,&date);
 	/* Adjust for Palm epoch (1/1/1904) vs UNIX epoch (1/1/1970). */
-	/* date -= 2082848400; */
+	date += 2082852000;
 	s = ctime(&date);
 	s[24]=0;
-	printf("   %8d %s %s\n",size,s,path);
+	printf("   %8d %s %ld %s\n",size,s,(long) date,path);
 }
 
 /***********************************************************************
