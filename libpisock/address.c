@@ -28,6 +28,12 @@
 #include "pi-dlp.h"
 #include "pi-address.h"
 
+/**
+ * free_Address:
+ * @a: Address structure
+ * 
+ * Free the members of an address structure
+ **/
 void free_Address(struct Address *a)
 {
 	int i;
@@ -41,17 +47,17 @@ void free_Address(struct Address *a)
 #define lo(x) ((x) & 0x0f)
 #define pair(x,y) (((x) << 4) | (y))
 
-/***********************************************************************
- *
- * Function:    unpack_Address
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * unpack_Address:
+ * @a: Address structure to fill in
+ * @buffer: Buffer containing address record data
+ * @len: Buffer length
+ * 
+ * Fill in the address structure based on the raw record data
+ * 
+ * Return value: 0 on error, the length of the data used from the
+ * buffer otherwise
+ **/
 int unpack_Address(struct Address *a, unsigned char *buffer, int len)
 {
 	unsigned long contents;
@@ -98,17 +104,18 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
 	return (buffer - start);
 }
 
-/***********************************************************************
- *
- * Function:    pack_Address
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * pack_Address:
+ * @a: Address structure
+ * @record: Buffer to fill with address record information
+ * @len: Length of buffer
+ * 
+ * Fill in the raw address record data based on the address structure
+ * 
+ * Return value: The length of the buffer required if record is NULL,
+ * OR 0 on error, the length of the data used from the buffer
+ * otherwise
+ **/
 int pack_Address(struct Address *a, unsigned char *record, int len)
 {
 	unsigned char *start = record;
@@ -162,17 +169,18 @@ int pack_Address(struct Address *a, unsigned char *record, int len)
 	return (buffer - start);
 }
 
-/***********************************************************************
- *
- * Function:    unpack_AddressAppInfo
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * unpack_AddressAppInfo:
+ * @ai: AddressAppInfo structure to fill in
+ * @record: Buffer containing address app info record data
+ * @len: Buffer length
+ * 
+ * Fill in the app info structure based on the raw app info data
+ * 
+ * Return value: The necessary length of the buffer if record is NULL,
+ * OR 0 on error, the length of the data used from the buffer
+ * otherwise
+ **/
 int
 unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 		      int len)
@@ -213,17 +221,18 @@ unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 	return (record - start);
 }
 
-/***********************************************************************
- *
- * Function:    pack_AddressAppInfo
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * pack_AddressAppInfo:
+ * @ai: AddressAppInfo structure
+ * @record: Buffer to fill with address app info information
+ * @len: Length of buffer
+ * 
+ * Fill in the raw app info record data based on the app info structure
+ * 
+ * Return value: The length of the buffer required if record is NULL,
+ * OR 0 on error, the length of the data used from the buffer
+ * otherwise
+ **/
 int
 pack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 		    int len)

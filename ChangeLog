@@ -16,6 +16,16 @@
 
 	* libsock/slp.c: ditto
 
+	* libsock/cmp.c: ditto
+
+	* libsock/datebook.c: ditto
+
+	* libsock/address.c: ditto
+
+	* libsock/util.c: ditto
+
+	* libsock/inetserial.c: ditto
+
 2001-05-22  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* Makefile.in/Makefile.os2: Fixed the "double-header" install

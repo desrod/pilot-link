@@ -28,17 +28,15 @@
 #include "pi-cmp.h"
 #include "pi-serial.h"
 
-/***********************************************************************
- *
- * Function:    cmp_rx
- *
- * Summary:     Receive CMP packets
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * cmp_rx:
+ * @ps: Socket information
+ * @c: cmp structure to fill in
+ * 
+ * Receive CMP packets
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int cmp_rx(struct pi_socket *ps, struct cmp *c)
 {
 	int l;
@@ -74,17 +72,15 @@ int cmp_rx(struct pi_socket *ps, struct cmp *c)
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:    cmp_init
- *
- * Summary:     Initialize the socket for CMP transmission
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * cmp_init:
+ * @ps: Socket information
+ * @baudrate: Baud rate to transmit at
+ * 
+ * Initialize the socket for CMP transmission
+ * 
+ * Return value: Number of packets transmitted
+ **/
 int cmp_init(struct pi_socket *ps, int baudrate)
 {
 	unsigned char cmpbuf[10];
@@ -103,17 +99,15 @@ int cmp_init(struct pi_socket *ps, int baudrate)
 	return padp_tx(ps, cmpbuf, 10, padData);
 }
 
-/***********************************************************************
- *
- * Function:    cmp_abort
- *
- * Summary:     Abort a CMP session in progress
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * cmp_abort:
+ * @ps: Socket information
+ * @reason: Reason for abort
+ * 
+ * Abort a CMP session in progress
+ * 
+ * Return value: Number of packets transmitted
+ **/
 int cmp_abort(struct pi_socket *ps, int reason)
 {
 	unsigned char cmpbuf[10];
@@ -128,17 +122,15 @@ int cmp_abort(struct pi_socket *ps, int reason)
 	return padp_tx(ps, cmpbuf, 10, padData);
 }
 
-/***********************************************************************
- *
- * Function:    cmp_wakeup
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * cmp_wakeup:
+ * @ps: Socket information
+ * @maxbaud: Maximum baud to listen at
+ * 
+ * Wakeup the CMP listener
+ * 
+ * Return value: Number of packets transmitted
+ **/
 int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 {
 	unsigned char cmpbuf[200];
@@ -154,17 +146,13 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 	return padp_tx(ps, cmpbuf, 10, padWake);
 }
 
-/***********************************************************************
- *
- * Function:    cmp_dump
- *
- * Summary:     Dump the CMP packet frames
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * cmp_dump:
+ * @cmp: Raw CMP data
+ * @rxtx: Receive/transmit flag (0 for receive)
+ * 
+ * Dump the CMP packet frames
+ **/
 void cmp_dump(unsigned char *cmp, int rxtx)
 {
 #ifdef DEBUG

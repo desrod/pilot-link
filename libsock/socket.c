@@ -946,17 +946,7 @@ int pi_watchdog(int pi_sd, int newinterval)
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:    pi_serial_onalarm
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/* Handle SIGALRM, tickle every socket */
 static RETSIGTYPE pi_serial_onalarm(int signo)
 {
 	struct pi_socket *p, *n;

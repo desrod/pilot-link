@@ -49,17 +49,16 @@ static int n_close(struct pi_socket *ps);
 static int n_write(struct pi_socket *ps);
 static int n_read(struct pi_socket *ps, int timeout);
 
-/***********************************************************************
- *
- * Function:    pi_inetserial_open
- *
- * Summary:     Open up a socket outbound for network connectivity
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * pi_inetserial_open:
+ * @ps: Socket information
+ * @addr: Address information
+ * @addrlen: Unused parameter
+ * 
+ * Open up a socket outbound for network connectivity
+ * 
+ * Return value: The file descriptor
+ **/
 int
 pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr,
 		   int addrlen)
@@ -117,17 +116,7 @@ pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr,
 	return ps->mac->fd;
 }
 
-/***********************************************************************
- *
- * Function:    n_changebaud
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/* Change the speed of the socket */
 static int n_changebaud(struct pi_socket *ps)
 {
 	char buffer[20];
@@ -141,17 +130,7 @@ static int n_changebaud(struct pi_socket *ps)
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:    n_close
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/* Close the open socket/file descriptor */
 static int n_close(struct pi_socket *ps)
 {
 	int result;
@@ -173,17 +152,7 @@ static int n_close(struct pi_socket *ps)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    n_write
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/* Write to the open socket/file descriptor */
 static int n_write(struct pi_socket *ps)
 {
 	struct pi_skb *skb;
@@ -230,17 +199,7 @@ static int n_write(struct pi_socket *ps)
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:    n_read
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/* Read incoming data from the socket/file descriptor */
 static int n_read(struct pi_socket *ps, int timeout)
 {
 	int r;
