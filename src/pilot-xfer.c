@@ -971,21 +971,22 @@ static void palm_install_internal(const char *filename)
 static void
 palm_install_VFS(const char *localfile, const char *vfspath)
 {
-	static unsigned long	totalsize				= 0;
-	long					volume					= -1;
-	long					used,
-							total,
-							freespace;
-	char					rpath[vfsMAXFILENAME];
-	int						rpathlen				= vfsMAXFILENAME;
-	const char				*basename;
-	FileRef					file;
-	long					attributes;
-	char					*filebuffer;
-	int						fd,
-							writesize,
-							offset;
-	size_t					readsize;
+	static unsigned long
+					totalsize = 0;
+	long			volume = -1;
+	long			used,
+					total,
+					freespace;
+	char			rpath[vfsMAXFILENAME];
+	int				rpathlen = vfsMAXFILENAME;
+	const char		*basename;
+	FileRef			file;
+	long			attributes;
+	char			*filebuffer;
+	int				fd,
+					writesize,
+					offset;
+	size_t			readsize;
 
 	struct stat				sbuf;
 
@@ -1325,6 +1326,9 @@ print_volumeinfo(const char *buf, long volume, struct VFSInfo *info)
 	printf(" filesystem ");
 	switch(info->mediaType)
 	{
+		case pi_mktag('m','m','c','d'):
+			printf("on MultiMediaCard");
+			break;
 		case pi_mktag('s','d','i','g'):
 			printf("on SD card");
 			break;
