@@ -3,7 +3,7 @@
  * read-palmpix.c:  PalmPix image convertor
  *
  * Copyright 2001 John Marshall <jmarshall@acm.org>
- * Copyright 2002 Angus Ainslie <angusa@deltatee.com>
+ * Copyright 2002-2004 Angus Ainslie <angusa@deltatee.com>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -53,11 +53,14 @@ struct option options[] = {
 	{"version", 	no_argument,        NULL, 'v'},
 	{"name",	required_argument,  NULL, 'n'},
 	{"list",	no_argument,        NULL, 'l'},
+	{"colour",	no_argument,        NULL, 'c'},
+	{"stretch",	no_argument,        NULL, 's'},
 	{"type",        required_argument,  NULL, 't'},
+	{"bias",        required_argument,  NULL, 'b'},
 	{NULL,		no_argument,        NULL, 0}
 };
 
-static const char optstring[] = "p:hvln:t:";
+static const char optstring[] = "p:hvln:t:b:cs";
 
 
 /***********************************************************************
@@ -480,11 +483,16 @@ static void display_help(const char *progname)
 	printf("   Usage: %s [-p port] [-l | -n pixname] [file]...\n\n", progname);
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+    printf("     -b, --bias [num],       lighten or darken the image\n");
+    printf("                             0..50   darken image\n");
+    printf("                             50..100 lighten image\n");
+	printf("     -c, --colour            Do a simple colour correction\n");
 	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -t, --type,             Specify picture output type (ppm or png)\n");
-	printf("     -l, --list,             List picture information instead of converting\n");
+    printf("     -l, --list,             List picture information instead of converting\n");
 	printf("     -n, --name [name]       Convert only <name>, and output to STDOUT as type\n\n");
+	printf("     -s, --stretch,          Do a histogram stretch on the colour planes\n");
+	printf("     -t, --type,             Specify picture output type (ppm or png)\n");
+	printf("     -v, --version           Display %s version information\n", progname);
 	
 	return;
 }
@@ -494,7 +502,9 @@ int main (int argc, char **argv) {
 	int 	c, 	/* switch */
 	sd	= -1, 
 	nfileargs,
-	output_type = PALMPIX_OUT_PPM;
+	output_type = PALMPIX_OUT_PPM,
+	bias = 50,
+	flags = 0;
 
 	int (*action) (const struct PalmPixHeader *, struct PalmPixState *,
 		int, const char *) = write_all;
@@ -514,9 +524,24 @@ int main (int argc, char **argv) {
         	case 'v':
 	        	print_splash(progname);
 		        return 0;
+        	case 's':
+	        	flags |= PALMPIX_HISTOGRAM_STRETCH;
+		        break;
+        	case 'c':
+	        	flags |= PALMPIX_COLOUR_CORRECTION;
+		        break;
         	case 'p':
         		free(port);
 	        	port = strdup(optarg);
+        		break;
+        	case 'b':
+	        	bias = atoi( optarg );
+			    if( bias < 0 || bias > 100 )
+				 {
+					fprintf( stderr, "Bad bias\n" );
+					exit( EXIT_FAILURE );
+				 }
+			   
         		break;
         	case 'l':
 	        	action = list;
@@ -598,7 +623,9 @@ int main (int argc, char **argv) {
 			int n = 0;
      
 			s.state.output_type = output_type;
-     
+		    s.state.bias = bias;
+		    s.state.flags = flags;
+		   
 			dlp_ReadOpenDBInfo (sd, db, &n);
 			s.state.getrecord = getrecord_pi_socket;
 			s.sd = sd;
