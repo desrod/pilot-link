@@ -223,11 +223,13 @@ void Backup(char * dirname, int only_changed, int remove_deleted)
         if(skip == 1)
           continue;
 
-	if (stat(name, &statb) == 0) {
-	  if (info.modifyDate == statb.st_mtime) {
-	    printf("No change, skipping '%s'.\n", info.name);
-	    RemoveFromList(name, orig_files, ofile_total);
-	    continue;
+	if (only_changed) {
+	  if (stat(name, &statb) == 0) {
+	    if (info.modifyDate == statb.st_mtime) {
+	      printf("No change, skipping '%s'.\n", info.name);
+	      RemoveFromList(name, orig_files, ofile_total);
+	      continue;
+	    }
 	  }
 	}
 

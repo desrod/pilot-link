@@ -1,3 +1,9 @@
+Dec 20,  1997	Kenneth Albanowski 0.8.10
+	Library changes:
+	  - Bug affecting address book sorting corrected
+	Utility changes:
+	  - pilot-xfer mistake corrected (-b acted like -u).
+
 Dec 14,  1997	Kenenth Albanowski 0.8.9
 	Configuration changed:
 	  - added Python configuration patches by Bill Janssen

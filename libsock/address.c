@@ -93,12 +93,12 @@ int pack_Address(struct Address * a, unsigned char * record, int len) {
 
   phoneflag = 0;
   contents = 0;
-  offset = 0; /* FIXME: Check to see if this really should default to zero */
+  offset = 0;
 
   for(v=0;v<19;v++) {
     if(a->entry[v] && strlen(a->entry[v])) {
       if(v==entryCompany)
-        offset = (unsigned char)(buffer-record);
+        offset = (unsigned char)(buffer-record)-8;
       contents |= (1 << v);
       l = strlen(a->entry[v])+1;
       memcpy(buffer,a->entry[v],l);
