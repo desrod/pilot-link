@@ -1,3 +1,11 @@
+2002-05-29  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/socket.c: Adjust size of realloc protocol_queue_add (jhmark) 
+
+	* src/pilot-xfer.c: Added -x/--exec option to allow intermediate
+	  scripts to be executed "during" the sync. Fixed typo in 'Usage'
+	  (Greg Alexander)
+
 2002-05-10  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisync/Makefile.am: Fixed multiple definitions of

@@ -67,6 +67,7 @@ struct option options[] = {
 	{"list",        no_argument,       NULL, 'l'},
 	{"Listall",     no_argument,       NULL, 'L'},
 	{"archive",     required_argument, NULL, 'a'},
+	{"exec",	required_argument, NULL, 'x'},
 	{"Flash",       no_argument,       NULL, 'F'},
 	{"Osflash",     no_argument,       NULL, 'O'},
 	{"Illegal",     no_argument,       NULL, 'I'},
@@ -75,7 +76,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "-hvp:b:u:s:Sr:i:m:f:d:e:P:lLa:FOIqc";
+static const char *optstring = "-hvp:b:u:s:Sr:i:m:f:d:e:P:lLa:x:FOIqc";
 
 int	novsf	= 0;
 
@@ -968,7 +969,7 @@ static void print_help(char *progname)
 {
 	printf("   Sync, backup, install, delete and more from your Palm device.\n"
 	       "   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
-	       "   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n"
+	       "   Usage: %s [-p port] [ -F|-O -I -q|-c ] command(s)\n"
 	       "   Options:\n"
 	       "     -p <port>    Use device file <port> to communicate with Palm\n"
 	       "     -h           Display this information (--port)\n"
@@ -996,6 +997,8 @@ static void print_help(char *progname)
 	printf("                           (currently %d.%d.%d%s)\n"
 	       "     -a           modifies -s to archive deleted files in specified\n"
 	       "                  directory. (--archive)\n"
+	       "     -x           executes a shell command for intermediate processing.\n"
+	       "                  (--exec)\n"
 	       "     -F           modifies -b, -u, and -s, to back up non-OS db\'s from Flash\n"
 	       "                  ROM. (--Flash)\n"
 	       "     -O           modifies -b, -u, and -s, to back up OS db 's from Flash\n"
@@ -1097,6 +1100,12 @@ int main(int argc, char *argv[])
 			break;
 		case 'a':
 			archive_dir = optarg;
+			break;
+		case 'x':
+			if (system(optarg)) {
+				fprintf(stderr,"system() failed, aborting.\n");
+				return -1;
+			}
 			break;
 		case 'F':
 			do_rom = !do_rom;
