@@ -1,3 +1,202 @@
+2005-02-12 01:53  warp
+
+	* libpisock/libusb.c: Some warning cleanup.
+
+2005-02-11 19:12  fpillet
+
+	* include/pi-dlp.h: document a bug in HotSync for
+	  dlp_VFSDirEntryEnumerate()
+
+2005-02-11 18:33  fpillet
+
+	* libpisock/debug.c, libpisock/dlp.c, include/pi-debug.h,
+	  include/pi-source.h: more constness where possible
+
+2005-02-11 15:27  fpillet
+
+	* libpisock/dlp.c: removed comments, updated dlp_WriteRecord proto
+
+2005-02-11 04:12  fpillet
+
+	* include/pi-dlp.h: minor tweaks, constified data passed to
+	  dlp_WriteRecord
+
+2005-02-10 13:55  fpillet
+
+	* bindings/Python/src/: pi-socket.i, pisock.py, pisock_wrap.c:
+	  mapped additional socket functions
+
+2005-02-10 13:49  fpillet
+
+	* bindings/Python/src/: pi-dlp-maps.i, pi-dlp.i, pisock.py,
+	  pisock_wrap.c: updated Python bindings, need to get rid of
+	  pilot_connect() and map the new plu_() stuff instead
+
+2005-02-10 12:09  nicholas
+
+	* bindings/Python/src/: pi-dlp.i, pisock_wrap.c: Add missing file,
+	  and regenerate pisock_wrap.c
+
+2005-02-10 05:04  fpillet
+
+	* include/: pi-args.h, pi-cmp.h, pi-dlp.hxx, pi-error.h, pi-file.h,
+	  pi-header.h, pi-inet.h, pi-macros.h, pi-net.h, pi-padp.h,
+	  pi-serial.h, pi-slp.h, pi-sockaddr.h, pi-socket.h, pi-source.h,
+	  pi-sync.h, pi-sys.h, pi-syspkt.h, pi-usb.h: more doxyfication,
+	  all-around pass to add missing license information
+
+2005-02-10 03:22  fpillet
+
+	* libpisock/pi-buffer.c: removed docs here as the documentation is
+	  in pi-buffer.h. pi_buffer_clear() now shrinks buffer to a
+	  reasonable size if it's too big
+
+2005-02-10 03:21  fpillet
+
+	* include/pi-buffer.h: more docs
+
+2005-02-10 03:14  fpillet
+
+	* include/pi-buffer.h: doxyfied pi-buffer.h
+
+2005-02-09 13:29  fpillet
+
+	* bindings/Python/src/pi-dlp-maps.i: updated maps to include new
+	  flags
+
+2005-02-09 13:14  fpillet
+
+	* include/pi-error.h: updated tab size
+
+2005-02-09 13:14  fpillet
+
+	* include/pi-socket.h: started doxyfication of pi-socket.h
+
+2005-02-09 13:13  fpillet
+
+	* src/pilot-xfer.c: updated pilot-xfer to use the new transfer
+	  callback format
+
+2005-02-09 13:12  fpillet
+
+	* include/pi-file.h, libpisock/pi-file.c: modified transfer
+	  progress callback to pass a pi_progress_t instead of a bunch of
+	  arguments
+
+2005-02-09 11:25  fpillet
+
+	* src/install-hinote.c: removed unused variable buf
+
+2005-02-09 06:51  fpillet
+
+	* include/pi-error.h: proper doxyfication of pi-error.h
+
+2005-02-09 06:40  fpillet
+
+	* include/pi-dlp.h: reorganized and created groups so as to make
+	  doxy documentation clear and straightforward
+
+2005-02-09 06:19  fpillet
+
+	* include/pi-dlp.h, libpisock/dlp.c: completed pi-dlp.h
+	  doxyfication
+
+2005-02-08 12:06  fpillet
+
+	* libpisock/pi-file.c: Set dlpDBMiscFlagRamBased in pi_file_open()
+	  since we can't install a database to ROM, so if the database is
+	  going to be installed it will be in RAM
+
+2005-02-08 10:12  fpillet
+
+	* include/pi-dlp.h, libpisock/dlp.c: even more doxygen
+
+2005-02-08 06:29  fpillet
+
+	* libpisock/dlp.c: renamed some parameters, added a check to
+	  dlp_htopdate for zero dates
+
+2005-02-08 06:28  fpillet
+
+	* include/pi-dlp.h: more [d]oxygen for us
+
+2005-02-07 18:43  fpillet
+
+	* include/pi-dlp.h: Properly documenting for Doxygenation
+
+2005-02-07 18:38  fpillet
+
+	* include/pi-dlp.h, libpisock/dlp.c: Properly documenting for
+	  Doxygenation
+
+2005-02-07 06:12  fpillet
+
+	* bindings/Python/src/pisock_wrap.c: prevent python bindings from
+	  creating a DB with the Open flag
+
+2005-02-07 06:02  fpillet
+
+	* bindings/Python/src/pisock_wrap.c: added missing db flags from
+	  dlp_ReadDBList
+
+2005-02-05 04:11  fpillet
+
+	* libpisock/darwinusb.c: try several device configurations if one
+	  fails
+
+2005-02-04 10:18  desrod
+
+	* doc/: man/pilot-link.7.in, xml/pilot-link.xml: Fixing minor
+	  typos, closes Debian bug 289234
+
+2005-02-04 10:10  desrod
+
+	* doc/: man/pilot-xfer.1.in, xml/pilot-xfer.xml: Closing Debian bug
+	  293474
+
+2005-02-04 10:00  desrod
+
+	* doc/man/pilot-xfer.1.in: Fixed mistake with @VERSION@ macro being
+	  prematurely expanded
+
+2005-02-04 10:00  desrod
+
+	* doc/: man/pilot-link.7.in, xml/pilot-link.xml: Fixed small
+	  omission, closes Debian bug 293225. Also cleaned up conduit
+	  formatting.
+
+2005-02-04 09:21  desrod
+
+	* doc/: man/pilot-xfer.1.in, xml/pilot-xfer.xml: Fix small typo,
+	  closes upstream Debian bug 283593
+
+2005-02-02 12:21  desrod
+
+	* libpisock/contact.c: Slightly cleaner version of the FreeBSD 4.x
+	  fix
+
+2005-02-02 10:25  desrod
+
+	* bindings/Python/src/pisock_wrap.c: Updated to reflect change of
+	  dlpDBFlagClipping to dlpDBFlagLaunchable, for properly detecting
+	  PQA resources.
+
+2005-02-02 07:20  adridg
+
+	* configure.ac: Do it right
+
+2005-02-01 02:06  adridg
+
+	* configure.ac, libpisock/contact.c: For 4-stable (Fernan's mail)
+
+2005-01-31 01:20  desrod
+
+	* configure.ac: Bumping to -pre3 for new changes
+
+2005-01-31 00:57  desrod
+
+	* ChangeLog: Updating ChangeLog
+
 2005-01-31 00:55  desrod
 
 	* configure.ac: Updated for latest manpage additions
