@@ -9,7 +9,7 @@ extern "C" {
 
 	struct CategoryAppInfo {
 		unsigned int renamed[16];	/* Boolean array of categories with changed names */
-		char 	name[16][16];		/* 16 categories of 15 characters+nul each */
+		char name[16][16];		/* 16 categories of 15 characters+nul each */
 		unsigned char ID[16];
 		unsigned char lastUniqueID;	/* Each category gets a unique ID, for sync tracking
 						   purposes. Those from the Palm are between 0 & 127.
@@ -19,11 +19,11 @@ extern "C" {
 	};
 
 	extern int unpack_CategoryAppInfo
-		PI_ARGS((struct CategoryAppInfo *, unsigned char *AppInfo,
-			int len));
+	    PI_ARGS((struct CategoryAppInfo *, unsigned char *AppInfo,
+		     int len));
 	extern int pack_CategoryAppInfo
-		PI_ARGS((struct CategoryAppInfo *, unsigned char *AppInfo,
-			int len));
+	    PI_ARGS((struct CategoryAppInfo *, unsigned char *AppInfo,
+		     int len));
 
 #ifdef __cplusplus
 }

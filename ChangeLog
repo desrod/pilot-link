@@ -1,3 +1,11 @@
+2002-06-28  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock++/Makefile.am: don't build iambicExpense.cc
+
+	* libpisock++/iambicExpense.cc: kill at request of author
+
+	* Revert format only changes to the headers, remove dead headers
+
 2002-06-24  JP Rosevear  <jpr@ximian.com>
 
 	* tests/dlp-test.c (main): add tests for the remaining 1.1 DLP

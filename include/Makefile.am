@@ -10,7 +10,6 @@ c_headers = 			\
 	pi-file.h		\
 	pi-header.h		\
 	pi-hinote.h		\
-	pi-iambicExpense.h	\
 	pi-inet.h		\
 	pi-macros.h		\
 	pi-mail.h		\
@@ -43,7 +42,6 @@ cxx_header_DATA = \
 	pi-appinfo.hxx		\
 	pi-datebook.hxx		\
 	pi-dlp.hxx		\
-	pi-iambicExpense.hxx	\
 	pi-memo.hxx		\
 	pi-todo.hxx
 if WITH_CXX

@@ -15,20 +15,19 @@ extern "C" {
 	};
 
 	struct Pilot_breakpoint {
-		int 	enabled;
 		unsigned long address;
+		int enabled;
 	};
 
 	struct Pilot_state {
-		int 	reset,
-			exception,
-			trap_rev,
-			instructions[30];
-
+		struct Pilot_registers regs;
+		int reset;
+		int exception;
+		int instructions[30];
+		struct Pilot_breakpoint breakpoint[6];
 		unsigned long func_start, func_end;
-		char 	func_name[32];
-		struct 	Pilot_registers regs;
-		struct 	Pilot_breakpoint breakpoint[6];
+		char func_name[32];
+		int trap_rev;
 	};
 
 	struct Pilot_watch {
@@ -38,17 +37,17 @@ extern "C" {
 	};
 
 	struct RPC_param {
-		int 	byRef,	
-			size,
-			invert,
-			arg;
-		void 	*data;
+		int byRef;
+		int size;
+		int invert;
+		int arg;
+		void *data;
 	};
 
 	struct RPC_params {
-		int 	trap,
-			reply,
-			args;
+		int trap;
+		int reply;
+		int args;
 		struct RPC_param param[20];
 	};
 
@@ -59,6 +58,7 @@ extern "C" {
 
 	extern int sys_UnpackRegisters
 	    PI_ARGS((void *buffer, struct Pilot_registers * r));
+
 
 	extern int sys_Continue
 	    PI_ARGS((int sd, struct Pilot_registers * r,

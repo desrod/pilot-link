@@ -9,7 +9,6 @@ libpisock___la_SOURCES = 	\
 	appInfo.cc	\
 	datebook.cc	\
 	dlp.cc		\
-	iambicExpense.cc\
 	memo.cc		\
 	todo.cc
 
