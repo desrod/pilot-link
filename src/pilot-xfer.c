@@ -128,6 +128,9 @@ int 	numexclude = 0;
 #define UPDATE (1<<1)
 #define SYNC (1<<2)
 
+static int findVFSPath(int verbose, const char *path, long *volume,
+	char *rpath, int *rpathlen);
+
 /***********************************************************************
  *
  * Function:    MakeExcludeList
@@ -888,16 +891,16 @@ static void Restore(char *dirname)
 
 /***********************************************************************
  *
- * Function:    Install
+ * Function:    InstallInternal
  *
  * Summary:     Push file(s) to the Palm
  *
- * Parameters:  None
+ * Parameters:  filename --> local filesystem path for file to install.
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Install(char *filename)
+static void InstallInternal(const char *filename)
 {
 	static int totalsize;
 
@@ -953,6 +956,89 @@ static void Install(char *filename)
 	pi_file_close(f);
 }
 
+/***********************************************************************
+ *
+ * Function:    InstallInternal
+ *
+ * Summary:     Push file(s) to the Palm
+ *
+ * Parameters:  filename --> local filesystem path for file to install.
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void InstallVFS(const char *localfile, const char *vfspath)
+{
+	static int totalsize = 0;
+	long volume = -1;
+	long used,total,freespace;
+	char rpath[vfsMAXFILENAME];
+	int rpathlen = vfsMAXFILENAME;
+	FileRef file;
+
+	struct stat sbuf;
+
+	if (NULL == vfspath) {
+		/* how the heck did we get here then? */
+		fprintf(stderr,"\n   No VFS path given.\n");
+		return;
+	}
+
+	if (dlp_OpenConduit(sd) < 0) {
+                fprintf(stderr, "\nExiting on cancel, some files were not"
+			       "installed\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0) {
+		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n",vfspath);
+		return;
+	}
+
+	fprintf(stderr, "   Installing '%s'... ", localfile);
+
+	if (stat(localfile, &sbuf) < 0) {
+		fprintf(stderr,"   Unable to open '%s'!\n", localfile);
+		return;
+	}
+
+	if (dlp_VFSVolumeSize(sd,volume,&used,&total)<0) {
+		fprintf(stderr,"   Unable to get volume size.\n");
+		return;
+	}
+	/* Calculate free space but leave last 64k free on card */
+	freespace  = total - used - 65536 ;
+
+	if (sbuf.st_size > freespace) {
+		fprintf(stderr, "\n\n");
+		fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
+		fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
+			(unsigned long)sbuf.st_size, freespace);
+		return;
+	}
+
+
+	printf("(%lu bytes, %ld KiB total)\n\n",
+		(unsigned long)sbuf.st_size, (totalsize == 0)
+		? (long)sbuf.st_size/1024
+		: totalsize/1024);
+	totalsize += sbuf.st_size;
+}
+
+static void Install(palm_media_t media_type,const char *localfile)
+{
+	switch(media_type) {
+	case palm_media_ram :
+	case palm_media_rom :
+	case palm_media_flash :
+		InstallInternal(localfile);
+		break;
+	case palm_media_vfs :
+		InstallVFS(localfile,vfsdir);
+		break;
+	/* No default - want warning for unhandled media types */
+	}
+}
 
 /***********************************************************************
  *
@@ -1175,15 +1261,9 @@ static void PrintDir(long volume, const char *path, FileRef dir)
 
 /***********************************************************************
  *
- * Function:    FindVFSRoot
+ * Function:    FindVFSRoot_clumsy
  *
- * Summary:     Twofold: if @p list_root is non-zero, list the "fake root"
- *              directory containing all the VFS volumes. Sets @p match
- *              equal to the VFS volume matching @p root_component (if any).
- *              Acceptable root components are /slotX/ for slot indicators
- *              or /volumename/ for for identifying VFS volumes by their
- *              volume name (note: do not include that "/" in the root
- *              component).
+ * Summary:     For internal use only. May contain live weasels.
  *
  * Parameters:  root_component --> root path to search for.
  *              list_root      --> list contents? (otherwise just search)
@@ -1196,7 +1276,7 @@ static void PrintDir(long volume, const char *path, FileRef dir)
  *                match is set.
  *
  ***********************************************************************/
-static int findVFSRoot(const char *root_component, int list_root, long *match)
+static int findVFSRoot_clumsy(const char *root_component, int list_root, long *match)
 {
 	int volume_count=16;
 	int volumes[16];
@@ -1235,10 +1315,8 @@ static int findVFSRoot(const char *root_component, int list_root, long *match)
 				matched_volume = volumes[i];
 				break;
 			}
-
-			continue;
 		}
-		PrintVolumeInfo(buf,volumes[i],&info);
+		else PrintVolumeInfo(buf,volumes[i],&info);
 	}
 
 	if (matched_volume >= 0) {
@@ -1252,6 +1330,75 @@ static int findVFSRoot(const char *root_component, int list_root, long *match)
 		return 1;
 	}
 	return -1;
+}
+
+/***********************************************************************
+ *
+ * Function:    FindVFSPath
+ *
+ * Summary:     Twofold: if @p verbose is non-zero, list the "fake root"
+ *              directory containing all the VFS volumes. Otherwise
+ *              search the VFS volumes for @p path. Sets @p volume
+ *              equal to the VFS volume matching @p path (if any) and
+ *              fills buffer @p rpath with the path to the file relative
+ *              to the volume.
+ *
+ *              Acceptable root components are /slotX/ for slot indicators
+ *              or /volumename/ for for identifying VFS volumes by their
+ *              volume name. In the special case that there is only one
+ *              VFS volume, no root component need be specified, and
+ *              "/DCIM/" will map to "/slot1/DCIM/".
+ *
+ * Parameters:  verbose        --> list root instead of searching.
+ *              path           --> path to search for.
+ *              volume         <-> volume containing path.
+ *              rpath          <-> buffer for path relative to volume.
+ *              rpathlen       <-> in: length of buffer; out: length of
+ *                                 relative path.
+ *
+ * Returns:     -2 on VFSVolumeEnumerate error,
+ *              -1 if no match was found,
+ *              0 if a match was found.
+ *
+ ***********************************************************************/
+static int findVFSPath(int verbose, const char *path, long *volume,
+	char *rpath, int *rpathlen)
+{
+	char *s;
+	int r;
+
+	if ((NULL == path) || (NULL == rpath) || (NULL == rpathlen)) return -1;
+	if (*rpathlen < strlen(path)) return -1;
+
+	memset(rpath,0,*rpathlen);
+	if ('/'==path[0]) strncpy(rpath,path+1,*rpathlen-1);
+	else strncpy(rpath,path,*rpathlen-1);
+	s = strchr(rpath,'/');
+	if (NULL != s) *s=0;
+
+
+	r = findVFSRoot_clumsy(rpath,verbose,volume);
+	if (verbose) return 1;
+	if (r < 0) return r;
+
+	if (0 == r) {
+		/* Path includes slot/volume label. */
+		r = strlen(rpath);
+		if ('/'==path[0]) ++r; /* adjust for stripped / */
+		memset(rpath,0,*rpathlen);
+		strncpy(rpath,path+r,*rpathlen-1);
+	} else {
+		/* Path without slot label */
+		memset(rpath,0,*rpathlen);
+		strncpy(rpath,path,*rpathlen-1);
+	}
+
+	if (!rpath[0]) {
+		rpath[0]='/';
+		rpath[1]=0;
+	}
+	*rpathlen = strlen(rpath);
+	return 0;
 }
 
 /***********************************************************************
@@ -1273,12 +1420,12 @@ static void ListVFSDir(long volume, const char *path)
 	unsigned long attributes;
 
 	if (dlp_VFSFileOpen(sd,volume,path,dlpVFSOpenRead,&file) < 0) {
-		printf("   No such file or directory.\n");
+		printf("   %s: No such file or directory.\n",path);
 		return;
 	}
 
 	if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0) {
-		printf("   Cannot get attributes.\n");
+		printf("   %s: Cannot get attributes.\n",path);
 		return;
 	}
 
@@ -1312,8 +1459,8 @@ static void ListVFSDir(long volume, const char *path)
 static void ListVFS()
 {
 	char root_component[vfsMAXFILENAME];
+	int rootlen = vfsMAXFILENAME;
 	int list_root = 0;
-	char *s;
 	long matched_volume = -1;
 	int r;
 
@@ -1322,51 +1469,22 @@ static void ListVFS()
 	if (NULL == vfsdir) vfsdir="/";
 	if (0 == strcmp(vfsdir,"/")) list_root = 1;
 
-	/* Need to match the first directory in the name with a slot or
-	   volume name, so isolate that component. Copy the VFS dir, NUL out
-	   first "/" */
-	memset(root_component,0,vfsMAXFILENAME);
-	if ('/'==vfsdir[0]) strncpy(root_component,vfsdir+1,vfsMAXFILENAME-1);
-	else strncpy(root_component,vfsdir,vfsMAXFILENAME-1);
-	s = strchr(root_component,'/');
-	if (NULL != s) *s=0;
-
-
 	/* Find the given directory. Will list the VFS root dir if the
 	   requested dir is "/" */
 	printf("   Directory of %s...\n",vfsdir);
-	r = findVFSRoot(root_component,list_root,&matched_volume);
+
+	r = findVFSPath(list_root,vfsdir,&matched_volume,root_component,&rootlen);
+	if (list_root) return;
+
 
 	/* Failures and "/" mean we can quit now. */
 	if (-2 == r) {
 		printf("   Not ready reading drive C:\n");
 		return;
 	}
-	if (list_root) return;
-
 	if (r < 0) {
 		printf("   No such directory, list directory / for slot names.\n");
 		return;
-	}
-
-	/* Now adjust root_component so that the pair matched_volume +
-	   root_component points to a volume + file by (possibly) stripping
-	   the first component. */
-	if (0 == r) {
-		/* Path includes slot/volume label. */
-		r = strlen(root_component);
-		if ('/'==vfsdir[0]) ++r; /* adjust for stripped / */
-		memset(root_component,0,vfsMAXFILENAME);
-		strncpy(root_component,vfsdir+r,vfsMAXFILENAME-1);
-	} else {
-		/* Path without slot label */
-		memset(root_component,0,vfsMAXFILENAME);
-		strncpy(root_component,vfsdir,vfsMAXFILENAME-1);
-	}
-
-	if (!root_component[0]) {
-		root_component[0]='/';
-		root_component[1]=0;
 	}
 
 	/* printf("   Reading card dir %s on volume %ld\n",root_component,matched_volume); */
@@ -1698,7 +1816,7 @@ int main(int argc, char *argv[])
 			break;
 		case palm_op_install:
 			Connect();
-			Install(dbname);
+			Install(media_type,dbname);
 			break;
 		case palm_op_restore:
 			Connect();
