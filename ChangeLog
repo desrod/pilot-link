@@ -1,10 +1,33 @@
+2001-11-10  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* pilot-schlep.c: Carwash with a wax. Moved the functions into
+	  main().
+
+	* install-todos.c: Pulled out the excess noise in main(), cleaning
+	  house. Why doesn't this use the same format as read-todos?!
+
+2001-12-10  David A. Desrosiers <hacker at gnu-designs dot com>
+		
+	* libsock/connect.c: Changed the 'Connected..' strings to be
+	  fprintf() and not printf() so redirection properly works for
+	  'reminders' and other apps without capturing those strings to the
+	  output files.
+
 2001-12-08  David A. Desrosiers <hacker at gnu-designs dot com>
 
+	* addresses.c: Yes, I was bored. Added a '-f' "fancy" option as 
+	  well as cleaned up the argument parsing and $PILOTPORT test
+
+	* dlpsh.c: fixed the $PILOTPORT parsing, cleaning house, missing
+	  return on main, Help() formatting
+
+	* hinote.c: Directory permission problem fixed. Images will fail for
+	  now. Added fromtmbuf/recvtmbuf dates, queried To: values from
+	  User.username, fixed output
+
 	* install-user: More of the same. Cleaned up the $PILOTPORT 
-	  parsing goop, moved things around, and made the -h and 
-	  lack of any options make logical sense. Changed some of the
-	  options around a bit too, -n for netmask, -o for hostname
-	  (can't recycle -h on that one)
+	  parsing, moved things around, made options more logical. Renamed
+	  some of the options (-n, -o), s/&U/&User/, same with &C, &S, &N
 
 2001-12-08  JP Rosevear  <jpr@ximian.com>
 

@@ -19,6 +19,7 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -28,161 +29,188 @@
 #include "pi-todo.h"
 #include "pi-header.h"
 
+void install_ToDos(int sd, int db, char *filename);
+
+int pilot_connect(const char *port);
+static void Help(char *progname);
+
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"port",        required_argument, NULL, 'p'},
+	{"filename",    required_argument, NULL, 'f'},
+	{NULL,          0,                 NULL, 0}
+};
+
+static const char *optstring = "hp:f:";
+
 int main(int argc, char *argv[])
 {
-        struct PilotUser U;
-        struct ToDo todo;
-        struct pi_sockaddr addr;
-        int ToDo_size;
+	int c;
+        int db;
+        int sd = -1;
+	struct PilotUser User;
+        char *progname = argv[0];
+	char *filename = NULL;
+	char *port = NULL;
+
+	while ((c = getopt(argc, argv, optstring)) != -1) {
+		switch (c) {
+
+		  case 'h':
+			  Help(progname);
+			  exit(0);
+		  case 'p':
+			  port = optarg;
+			  break;
+		  case 'f':
+			  filename = optarg;
+			  break;
+		  default:
+		}
+	}
+	
+	if (filename == NULL) {
+		printf
+		    ("\nERROR: You must specify a filename to read ToDo entries from. Please see\n"
+		     " %s -h for more detailed information on how to use this syntax.\n", progname);
+		exit(1);
+	}
+
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
+	}
+
+	if (port == NULL && argc > 1) {
+		printf
+		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+		exit(1);
+	} else if (port != NULL) {
+		
+		sd = pilot_connect(port);
+
+		/* Did we get a valid socket descriptor back? */
+		if (dlp_OpenConduit(sd) < 0) {
+			exit(1);
+		}
+		
+		/* Tell user (via Palm) that we are starting things up */
+		dlp_OpenConduit(sd);
+	
+		/* Open the ToDo Pad's database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
+			puts("Unable to open ToDoDB");
+			dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
+			exit(1);
+		}
+
+		/* Actually do the install here, passed a filename */
+		install_ToDos(sd, db, filename);
+		
+		/* Close the database */
+		dlp_CloseDB(sd, db);
+	
+		/* Tell the user who it is, with a different PC id. */
+		User.lastSyncPC = 0x00010000;
+		User.successfulSyncDate = time(NULL);
+		User.lastSyncDate = User.successfulSyncDate;
+		dlp_WriteUserInfo(sd, &User);
+	
+		dlp_AddSyncLogEntry(sd, "Wrote ToDo list entries to Palm.\nThank you for using pilot-link.\n");
+	
+		/* All of the following code is now unnecessary, but harmless */
+	
+		dlp_EndOfSync(sd, 0);
+		pi_close(sd);
+		exit(0);
+	}
+	return 0;
+}
+
+void install_ToDos(int sd, int db, char *filename)
+{
+	int ToDo_size;
         int cLen;
         int count;
-        int db;
         int filelen;
-        int i; 
-        int ret;
-        int sd;
+        struct ToDo todo;
         char *begPtr;
         char *cPtr;
-        char *device = argv[1];  
         char *file_text;
-        char *progname = argv[0];
         char note_text[] = "";
         unsigned char ToDo_buf[0xffff];
-        FILE *f;
-
-	PalmHeader(progname);
-
-#ifndef NOTHAPPENING
-	if (argc < 3) {
-		fprintf(stderr, "   Usage: %s %s file [file] ...\n\n",
-			argv[0], TTYPrompt);
-		exit(2);
-	}
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
+        FILE *f;	
+				
+	f = fopen(filename, "r");
+	if (f == NULL) {
+		perror("fopen");
 		exit(1);
 	}
 
-	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, device);
+	fseek(f, 0, SEEK_END);
+	filelen = ftell(f);
+	fseek(f, 0, SEEK_SET);
 
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
+	file_text = (char *) malloc(filelen + 1);
+	if (file_text == NULL) {
+		perror("malloc()");
 		exit(1);
 	}
 
-	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-	     device);
+	fread(file_text, filelen, 1, f);
 
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
+	/* printf("file: %s\n",file_text); */
 
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			device);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
+	cPtr = file_text;
+	begPtr = cPtr;
+	cLen = 0;
+	count = 0;
+	while (count < filelen) {
+		count++;
+		/* printf("c:%c.\n",*cPtr); */
+		if (*cPtr == '\n') {
+			todo.description = begPtr;
+			/* replace CR with terminator */
+			*cPtr = '\0';
 
-	fprintf(stderr, "Connected...\n");
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
+			todo.priority = 4;
+			todo.complete = 1;
+			todo.indefinite = 1;
+			/* now = time(0);
+			   todo.due = *localtime(&now); */
+			todo.note = note_text;
+			ToDo_size =
+			    pack_ToDo(&todo, ToDo_buf,
+				      sizeof(ToDo_buf));
+			printf("Description: %s\n", todo.description);
 
-	/* Tell user (via Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
-
-	/* Open the ToDo Pad's database, store access handle in db */
-	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-		puts("Unable to open ToDoDB");
-		dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
-		exit(1);
-	}
-#endif
-	for (i = 2; i < argc; i++) {
-
-		f = fopen(argv[i], "r");
-		if (f == NULL) {
-			perror("fopen");
-			exit(1);
-		}
-
-		fseek(f, 0, SEEK_END);
-		filelen = ftell(f);
-		fseek(f, 0, SEEK_SET);
-
-		file_text = (char *) malloc(filelen + 1);
-		if (file_text == NULL) {
-			perror("malloc()");
-			exit(1);
-		}
-
-		fread(file_text, filelen, 1, f);
-
-		/* printf("file: %s\n",file_text); */
-
-		cPtr = file_text;
-		begPtr = cPtr;
-		cLen = 0;
-		count = 0;
-		while (count < filelen) {
-			count++;
-			/* printf("c:%c.\n",*cPtr); */
-			if (*cPtr == '\n') {
-				todo.description = begPtr;
-				/* replace CR with terminator */
-				*cPtr = '\0';
-
-				todo.priority = 4;
-				todo.complete = 1;
-				todo.indefinite = 1;
-				/* now = time(0);
-				   todo.due = *localtime(&now); */
-				todo.note = note_text;
-				ToDo_size =
-				    pack_ToDo(&todo, ToDo_buf,
-					      sizeof(ToDo_buf));
-				printf("desc: %s\n", todo.description);
-
-				/* printf("todobuf: %s\n",ToDo_buf);       */
-				dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf,
-						ToDo_size, 0);
-				cPtr++;
-				begPtr = cPtr;
-				cLen = 0;
-			} else {
-				cLen++;
-				cPtr++;
-			}
+			/* printf("todobuf: %s\n",ToDo_buf);       */
+			dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf,
+					ToDo_size, 0);
+			cPtr++;
+			begPtr = cPtr;
+			cLen = 0;
+		} else {
+			cLen++;
+			cPtr++;
 		}
 	}
+	return;
+}
 
-	/* Close the database */
-	dlp_CloseDB(sd, db);
-
-	/* Tell the user who it is, with a different PC id. */
-	U.lastSyncPC = 0x00010000;
-	U.successfulSyncDate = time(NULL);
-	U.lastSyncDate = U.successfulSyncDate;
-	dlp_WriteUserInfo(sd, &U);
-
-	dlp_AddSyncLogEntry(sd, "Wrote ToDo to Palm.\n");
-
-	/* All of the following code is now unnecessary, but harmless */
-
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-
-	return 0;
+static void Help(char *progname)
+{
+	printf("   Updates the Palm ToDo list with entries from a local file\n\n"
+	       "   Usage: %s -p <port> -f <filename>\n"
+	       "   Options:\n"
+	       "     -p <port>           Use device file <port> to communicate with Palm\n"
+	       "     -f <filename>       A local file with formatted ToDo tasklist entries\n"
+	       "     -h                  Display this information\n\n"
+	       "   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n"
+	       "   The format of this file is a simple line-by-line ToDo task entry.\n"
+	       "   For each new line in the local file, a new task is created in the\n"
+	       "   ToDo database on the Palm.\n\n", progname, progname);
+	return;
 }
