@@ -134,7 +134,7 @@ static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 	memcpy(new_data->buf, data->buf, data->buf_size);
 	new_data->buf_size 	= data->buf_size;
 	new_data->ref           = data->ref;
-	*(new_data->ref)++;
+	(*(new_data->ref))++;
 #ifndef WIN32
 #ifndef OS2
 	new_data->tco = data->tco;
@@ -378,14 +378,13 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 		goto fail;
 	
 	accept = pi_socket_copy(ps);
+	data = accept->device->data;
+	data->timeout = accept->accept_to * 1000;
+
 	pi_socket_init(accept);
-	
 	if (ps->type == PI_SOCK_STREAM) {
-		struct 	pi_serial_data *data = (struct pi_serial_data *)accept->device->data;
 		struct timeval tv;
 
-		data->timeout = accept->accept_to * 1000;
-		
 		switch (accept->cmd) {
 		case PI_CMD_CMP:
 			if (cmp_rx_handshake(accept, data->establishrate, data->establishhighrate) < 0)
@@ -415,10 +414,10 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 			break;
 		}
 
-		data->timeout = 0;
 		accept->dlprecord = 0;
 	}
 
+	data->timeout = 0;
 	accept->command = 0;
 	accept->state 	= PI_SOCK_CONAC;
 
@@ -512,7 +511,7 @@ static int pi_serial_close(struct pi_socket *ps)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 
-	*(data->ref)--;
+	(*(data->ref))--;
 
 	if (ps->sd)
 		data->impl.close (ps);
