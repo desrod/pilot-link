@@ -10,7 +10,7 @@ $lib = "-L$libdir -lpisock";
 
 WriteMakefile(
     'NAME'       => 'PDA::Pilot',
-    'VERSION'    => '0.11',
+    'VERSION'    => '@PILOT_LINK_VERS@.@PILOT_LINK_MAJOR@.@PILOT_LINK_MINOR@',
     'LIBS'       => $lib,
     'XSPROTOARG' => '-noprototypes',
     'INC'        => '-I../../include',

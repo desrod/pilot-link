@@ -3,6 +3,9 @@
         * src/memos.c: Removed redundant call to print_splash(), fixed
           print_help() options string (akkana@shallowsky.com)
 
+	* bindings/Perl/Makefile.PL.in: Fixed autoconf propagation for
+	  version
+
 2002-07-16  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in (set_compile_warnings): use the more standard
