@@ -30,6 +30,7 @@ install-datebook
 install-expenses
 install-hinote
 install-memo
+install-netsync
 install-todos
 install-user
 memos

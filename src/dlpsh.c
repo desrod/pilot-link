@@ -590,7 +590,7 @@ int main(int argc, char *argv[])
 	char 	*progname = argv[0],
 		*port = NULL;
 
-	while ((c = getopt(argc, argv, optstring)) != -1) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
 		  case 'h':
