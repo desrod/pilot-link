@@ -1,5 +1,9 @@
 2002-01-24  JP Rosevear  <jpr@ximian.com>
 
+	* pilot-link.m4.in: fix version configure check
+
+2002-01-24  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/socket.c (protocol_queue_destroy): increment the index
 	rather than decrement
 	(pi_close): check if the device close was strictly less than 0

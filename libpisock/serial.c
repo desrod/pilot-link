@@ -369,7 +369,7 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	struct 	pi_socket *accept = NULL;
 
 	/* Wait for data */
-	if (data->impl.poll(ps, 0) < 0) {
+	if (data->impl.poll(ps, ps->accept_to) < 0) {
 		errno = ETIMEDOUT;
 		goto fail;
 	}
