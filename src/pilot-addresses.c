@@ -51,11 +51,11 @@ char *tableheads[21] = {
 	"First name", 	/* 1	*/
 	"Title", 	/* 2	*/
 	"Company", 	/* 3	*/
-	"Work", 	/* 4	*/
-	"Home",		/* 5	*/
-	"Fax", 		/* 6	*/
-	"Other", 	/* 7	*/
-	"E-mail", 	/* 8	*/
+	"Phone1", 	/* 4	*/
+	"Phone2",	/* 5	*/
+	"Phone3", 	/* 6	*/
+	"Phone4", 	/* 7	*/
+	"Phone5", 	/* 8	*/
 	"Address", 	/* 9	*/
 	"City", 	/* 10	*/
 	"State",	/* 11	*/
@@ -334,19 +334,6 @@ int write_field(FILE * out, char *source, int more)
 	putc('"', out);
 
 	putc(tabledelims[more], out);
-#if 0
-	if (more == 1)
-		putc(',', out);
-
-	else if (more == 2)
-		putc(';', out);
-
-	else if (more == 3)
-		putc('\t', out);
-
-	else if (more == 0)
-		putc('\n', out);
-#endif
 	return 0;
 }
 
@@ -524,31 +511,6 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 			continue;
 		unpack_Address(&addr, buf->data, buf->used);
 
-/* Simplified system */
-#if 0
-		write_field(out, "Category", 1);
-		write_field(out, aai->category.name[category], -1);
-
-		for (j = 0; j < 19; j++) {
-			if (addr.entry[j]) {
-				putc(',', out);
-				putc('\n', out);
-				if ((j >= 4) && (j <= 8))
-					write_field(out,
-						    aai->phoneLabels[addr.phoneLabel
-								     [j - 4]], 1);
-				else
-					write_field(out, aai->labels[j],
-						    1);
-				write_field(out, addr.entry[j], -1);
-			}
-		pi_tickle(ps->sd);
-		}
-		putc('\n', out);
-#endif
-
-/* Complex system */
-#if 1
 		if (tableformat || (augment && (category || addr.showPhone))) {
 			if (tableformat)
 				write_field(out,
@@ -566,17 +528,6 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		}
 
 		for (j = 0; j < 19; j++) {
-#ifdef NOT_ALL_LABELS
-			if (augment && (j >= 4) && (j <= 8))
-				if (addr.phoneLabel[j - 4] != j - 4)
-					write_field(out,
-						    aai->phoneLabels[addr.phoneLabel
-								     [j -4]], 2);
-			if (addr.entry[realentry[j]])
-				write_field(out, addr.entry[realentry[j]],
-					    tabledelim);
-
-#else			/* print the phone labels if there is something in the field */
 			if (addr.entry[realentry[j]]) {
 				if (augment && (j >= 4) && (j <= 8))
 					write_field(out,
@@ -584,16 +535,12 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 								     [j - 4]], 2);
 				write_field(out, addr.entry[realentry[j]],
 					    tabledelim);
-			}
-#endif
-			else
+			} else
 				write_field(out, "", tabledelim);
 		}
 
 		sprintf((char *)buf->data, "%d", (attribute & dlpRecAttrSecret) ? 1 : 0);
 		write_field(out, (char *)buf->data, 0);
-
-#endif
 	}
 	pi_buffer_free (buf);
 	printf("done.\n");
