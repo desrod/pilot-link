@@ -31,16 +31,16 @@
 typedef enum
 {
 	db_unknown = 0,
-	db_contacts521,
-	db_contacts528
+	db_contacts10,
+	db_contacts11
 }
-db_devtype_t;
+pbooktype_t;
 
-const char *dbdevnames[] =
+const char *pbooknames[] =
 {
-	"Unknown device",
-	"Tungsten E/T3",
-	"Zire 31/72"
+	"Unknown version",
+	"Contacts 1.0",
+	"Contacts 1.1/1.2"
 };
 
 
@@ -102,7 +102,7 @@ main (const int argc, const char **argv)
 	unsigned char buf[0xffff];
 	unsigned char *data;
 	size_t len;
-	db_devtype_t dbtype;
+	pbooktype_t dbtype;
 
 	if (argc != 2)
 	{
@@ -135,18 +135,18 @@ main (const int argc, const char **argv)
 
 	if (len == 1092)
 	{
-		dbtype = db_contacts521;
+		dbtype = db_contacts10;
 		clabels = 49;
 	}
 	else if (len == 1156)
 	{
-		dbtype = db_contacts528;
+		dbtype = db_contacts11;
 		clabels = 53;
 	}
 	else
 		dbtype = db_unknown;
 
-	printf ("Data Length: %zu (%s)\n", len, dbdevnames[dbtype]);
+	printf ("Data Length: %zu (%s)\n", len, pbooknames[dbtype]);
 
 	if (dbtype == db_unknown || len < 278+26)
 		/* something's wrong */
