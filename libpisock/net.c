@@ -153,8 +153,8 @@ pi_protocol_t
 		prot->setsockopt 	= net_setsockopt;
 
 		data->type 		= PI_NET_TYPE_DATA;
-		data->split_writes = 1;
-		data->write_chunksize = 4096;
+		data->split_writes	= 1;	    /* write packet header and data separately */
+		data->write_chunksize	= 4096;	    /* and push data in 4k chunks. Required for some USB devices */
 		data->txid 		= 0x00;
 		prot->data 		= data;
 	}
