@@ -774,18 +774,19 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, struct RPC_params * p,
 			unsigned long *result));
 
+	/* Palm OS 4.0 only */
 	extern int dlp_ExpSlotEnumerate
-		PI_ARGS((int sd, int * numSlots, int *firstRef));
+		PI_ARGS((int sd, int *numSlots, int *slotRefs));
 
 	extern int dlp_ExpCardPresent
 		PI_ARGS((int sd, int SlotRef));
 
 	extern int dlp_ExpCardInfo
 		PI_ARGS((int sd, int SlotRef, unsigned long *flags,
-			 int *len));
+			 int *numStrings, char **strings));
 
 	extern int dlp_VFSGetDefaultDir
-		PI_ARGS((int sd, int volRefNum,const char *name,char *dir, int *len));
+		PI_ARGS((int sd, int volRefNum, const char *name,char *dir, int *len));
 
 	extern int dlp_VFSImportDatabaseFromFile
 		PI_ARGS((int sd, int volRefNum, const char *pathNameP, 
@@ -799,7 +800,7 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, int volRefNum,const char *name));
 
 	extern int dlp_VFSFileOpen
-		PI_ARGS((int sd, int volRefNum, const char *name, int openMode,
+		PI_ARGS((int sd, int volRefNum, const char *path, int openMode,
 			FileRef *outFileRef));
 
 	extern int dlp_VFSFileClose
@@ -826,10 +827,10 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, FileRef afile,int *position));
 
 	extern int dlp_VFSFileGetAttributes
-		PI_ARGS((int sd, FileRef afile, long *attributes));
+		PI_ARGS((int sd, FileRef afile, unsigned long *attributes));
 
 	extern int dlp_VFSFileSetAttributes
-		PI_ARGS((int sd, FileRef afile, long attributes));
+		PI_ARGS((int sd, FileRef afile, unsigned long attributes));
 
 	extern int dlp_VFSFileGetDate
 		PI_ARGS((int sd, FileRef afile, int which, time_t *date));
@@ -838,31 +839,31 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, FileRef afile, int which, time_t date));
 
 	extern int dlp_VFSDirCreate
-		PI_ARGS((int sd, int volRefNum, const char *name));
+		PI_ARGS((int sd, int volRefNum, const char *path));
 
 	extern int dlp_VFSDirEntryEnumerate
-		PI_ARGS((int sd, FileRef dirRefNum, unsigned long *dirIlterate, 
-			int *maxcount, struct VFSDirInfo *data));
+		PI_ARGS((int sd, FileRef dirRefNum, unsigned long *dirIterator, 
+			int *maxDirItems, struct VFSDirInfo *dirItems));
 
 	extern int dlp_VFSVolumeFormat
 		PI_ARGS((int sd, unsigned char flags, int fsLibRef, 
 			struct VFSSlotMountParamTag *param));
 
 	extern int dlp_VFSVolumeEnumerate
-		PI_ARGS((int sd, int *len, int *firstRef));
+		PI_ARGS((int sd, int *numVols, int *volRefs));
 
 	extern int dlp_VFSVolumeInfo
-		PI_ARGS((int sd, int volRefNum, struct VFSInfo *v));
+		PI_ARGS((int sd, int volRefNum, struct VFSInfo *volInfo));
 
 	extern int dlp_VFSVolumeGetLabel
 		PI_ARGS((int sd, int volRefNum, int *len, char *name));
 
 	extern int dlp_VFSVolumeSetLabel
-		PI_ARGS((int sd, int volRefNum, char *name));
+		PI_ARGS((int sd, int volRefNum, const char *name));
 
 	extern int dlp_VFSVolumeSize
-		PI_ARGS((int sd, int volRefNum, long *volumeSizeUsed, 
-			long *volumeSizeTotal));
+		PI_ARGS((int sd, int volRefNum, long *volSizeUsed, 
+			long *volSizeTotal));
 
 	extern int dlp_VFSFileSeek
 		PI_ARGS((int sd, FileRef afile, int origin, int offset));

@@ -88,6 +88,16 @@
 #define DLP_REQUEST_DATA(req, arg, offset) &req->argv[arg]->data[offset]
 #define DLP_RESPONSE_DATA(res, arg, offset) &res->argv[arg]->data[offset]
 
+/* FIXME: keep a static with the current version of the dlp protocol */
+#if 0
+#define	RequireDLPVersion(major,minor)	if (dlp_version.major<(major)) || \
+												(dlp_version.major==(major) && dlp_version.minor<(minor))) \
+												return -1
+#else
+#define	RequireDLPVersion(major,minor)
+#endif
+
+
 /* Define prototypes */
 #ifdef PI_DEBUG
 static void record_dump (char *data);
@@ -231,7 +241,7 @@ struct dlpArg
 		arg->len = len;
 
 		if (len > 0) {
-			arg->data = malloc (sizeof (unsigned char) * len);
+			arg->data = malloc (len);
 			if (arg->data == NULL) {
 				free(arg);
 				arg = NULL;
@@ -523,8 +533,8 @@ dlp_response_read (struct dlpResponse **res, int sd)
 
 	if (response->argc == 0)
 		return 0;
-	else
-		return response->argv[0]->len;
+
+	return response->argv[0]->len;
 }
 
 
@@ -4149,23 +4159,30 @@ static void record_dump (char *data)
  *
  * Function:    dlp_ExpSlotEnumerate
  *
- * Summary:     
+ * Summary:     Get the number of expansion slots on the device
+ * 				Available only in version 1.3 and later of the protocol
+ * 				(Palm OS 4.0 and later)
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> Socket descriptor as returned by pilot_connect().
+ * 				numSlots	<-> on input, the maximum number of slot refs that
+ * 								can be stored in the slotRefs array.
+ * 								On output, the number of slots on the device
+ * 				slotRefs	<-- an array of int with the ref of each slot
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
+dlp_ExpSlotEnumerate(int sd, int *numSlots, int *slotRefs)
 {
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-/*FIXME Check dlp version everywhere */
-
-	Trace(VFSSlotEnumerate);
+	RequireDLPVersion(1,3);
+	Trace(dlp_ExpSlotEnumerate);
 	
 	req = dlp_request_new(dlpFuncExpSlotEnumerate, 0);
 
@@ -4182,21 +4199,26 @@ dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
 			 "DLP ExpSlotEnumerate %d\n", slots));
 
 		if (slots) {
-			for (i = 0; i < slots && i < *len; i++) {
-				firstRef[i] =
+			for (i = 0; i < slots && i < *numSlots; i++) {
+				slotRefs[i] =
 			  	get_short(DLP_RESPONSE_DATA (res, 0,
 					 2 + (2 * i)));
 
 				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-				 "  %d Slot-Refnum %d\n", i, firstRef[i]));
+				 "  %d Slot-Refnum %d\n", i, slotRefs[i]));
 			}
 		}
 
-		*len = slots;
+		*numSlots = slots;
 	}
 	 
 	dlp_response_free(res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)
+		result = 0;				// no error
+
 	return result;
 }
 
@@ -4205,31 +4227,42 @@ dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
  *
  * Function:    dlp_ExpCardPresent
  *
- * Summary:     
+ * Summary:     Check whether there is an expansion card in a slot
+ * 				Available only in version 1.3 and later of the protocol
+ * 				(Palm OS 4.0 and later)
  *
- * Parameters:  FIXME
+ * Parameters:  sd		--> socket descriptor as returned by pilot_connect().
+ * 				slotRef	--> slot ref as returned by dlp_ExpCardInfo()
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error, card is present
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_ExpCardPresent(int sd, int SlotRef)
+dlp_ExpCardPresent(int sd, int slotRef)
 {
 	int 	result;
-        struct dlpRequest *req;
-        struct dlpResponse *res;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
 
-	Trace(VFSExpCardPresent);
+	RequireDLPVersion(1,3);
+	Trace(dlp_ExpCardPresent);
 
-	req = dlp_request_new(dlpFuncExpCardPresent, 1, 2);
+	req = dlp_request_new (dlpFuncExpCardPresent, 1, 2);
 
-	set_short(DLP_REQUEST_DATA(req, 0, 0), SlotRef);
+	set_short(DLP_REQUEST_DATA(req, 0, 0), slotRef);
 
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 
 	dlp_request_free(req);
 	dlp_response_free(res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)
+		result = 0;				// no error
+
 	return result;
 }
 
@@ -4238,23 +4271,36 @@ dlp_ExpCardPresent(int sd, int SlotRef)
  *
  * Function:    dlp_ExpCardInfo
  *
- * Summary:     
+ * Summary:     Return information about one connected expansion card
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor 
+ * 				slotRef		--> slot ref as returned by dlp_ExpCardInfo()
+ *				flags		<-- card capabilities (see ExpansionMgr.h in
+ *								Palm OS headers)
+ *				numStrings  <-- number of packed information strings
+ *				strings		<-- if strings was not NULL and numStrings>0,
+ *								the function returns a new buffer with
+ *								the packed strings. It is the caller's
+ *								responsibility to free() the buffer.
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
+ *				strings buffer can be NULL in case of malloc error
  *
  ***********************************************************************/
 int
-dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *len)
+dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *numStrings,
+				char **strings)
 {
-	int 	result;
-        struct dlpRequest *req;
-        struct dlpResponse *res;
+	int result;
+	struct dlpRequest* req;
+	struct dlpResponse* res;
 
-	Trace(ExpCardInfo);
+	RequireDLPVersion(1,3);
+	Trace(dlp_ExpCardInfo);
 
-	req = dlp_request_new(dlpFuncExpCardInfo, 1, 2);
+	req = dlp_request_new (dlpFuncExpCardInfo, 1, 2);
 
 	set_short(DLP_REQUEST_DATA(req, 0, 0), SlotRef);
 
@@ -4264,17 +4310,32 @@ dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *len)
 	
 	if (result >= 0) {
 		*flags = get_long(DLP_RESPONSE_DATA (res, 0, 0));
-		*len = get_byte(DLP_RESPONSE_DATA (res, 0, 4));
+		*numStrings = get_byte(DLP_RESPONSE_DATA (res, 0, 4));
 
-		/* FIXME Read and return packed strings */
+		if (strings && *numStrings) {
+			int i, len, sz = 0;
+			char *p = DLP_RESPONSE_DATA (res, 0, 8);
+
+			for (i=0; i < *numStrings; i++, sz+=len, p+=len)
+				len = strlen (p) + 1;
+
+			*strings = (char *) malloc (sz);
+			if (*strings)
+				memcpy (*strings, DLP_RESPONSE_DATA (res, 0, 8), sz);
+		}
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			 "DLP ExpCardInfo Flags: %lu Length: %d\n",
-			 *flags, *len));
+			 "DLP ExpCardInfo flags: 0x%08lx numStrings: %d\n",
+			 *flags, *numStrings));
 	}
-	
+
 	dlp_response_free(res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)
+		result = 0;				// no error
+
 	return result;
 }
 
@@ -4283,23 +4344,36 @@ dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *len)
  *
  * Function:    dlp_VFSGetDefaultDir
  *
- * Summary:     
+ * Summary:		Return the default location of the given volume for files
+ *				of a particular type
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				volRefNum   --> volume reference number returned from
+ *								dlp_VFSVolumeEnumerate()
+ *				type		--> file type. can be either a MIME type
+ *								(ie "image/jpeg") or a file extension
+ *								(ie ".jpg")
+ *				dir			<-> a buffer to hold the returned path
+ *				len			<-> on input, the maximum size of the dir
+ *								buffer. on output, the effective size
+ *								(counting the nul terminator)
  * 
- * Returns:     
+ * Returns:     -2		dir buffer size < required size
+ *				-1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
 dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir,
 	int *len)
 {
-	int 	result,
-		buflen;
+	int result, buflen;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(VFSGetDefaultDir);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSGetDefaultDir);
 	
 	req = dlp_request_new(dlpFuncVFSGetDefaultDir,
 		1, 2 + (strlen(type) + 1));
@@ -4315,14 +4389,13 @@ dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir,
 		buflen = get_short(DLP_RESPONSE_DATA (res, 0, 0));
 		
 		if (*len < buflen + 1)
-			return -1;
+			return -2;
 		
-		if (buflen) {
+		if (buflen)
 			strncpy(dir, DLP_RESPONSE_DATA (res, 0, 2), 
 				(size_t)buflen);
-		} else {
-			strcpy(dir,"");
-		}
+		else
+			dir[0] = '\0';
 		
 		*len = buflen;
 		
@@ -4332,6 +4405,11 @@ dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir,
 	
 	dlp_response_free(res);
 	
+	if (result < -2)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)
+		result = 0;				// no error
+
 	return result;
 }
 
@@ -4354,8 +4432,9 @@ dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-
-	Trace(VFSImportDatabaseFromFile);
+	
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSImportDatabaseFromFile);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Import file <%s>%d\n", path));
@@ -4384,6 +4463,11 @@ dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
 	
 	dlp_response_free(res);
 
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4407,7 +4491,8 @@ dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(VFSExportDatabaseToFile);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSExportDatabaseToFile);
 	
 	req = dlp_request_new(dlpFuncVFSExportDatabaseToFile,
 		1, 8 + (strlen(path) + 1));
@@ -4422,6 +4507,11 @@ dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
 	dlp_request_free(req);
 	dlp_response_free(res);
 
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4430,32 +4520,43 @@ dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
  *
  * Function:    dlp_VFSFileCreate
  *
- * Summary:     
+ * Summary:     Create a new file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				volRefNum   --> volume reference number returned from
+ *								dlp_VFSVolumeEnumerate()
+ *				path		--> full path of the file to create
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSFileCreate(int sd, int volRefNum,const char *name)
+dlp_VFSFileCreate(int sd, int volRefNum, const char *name)
 {
 	int 	result;
-        struct dlpRequest *req;
-        struct dlpResponse *res;
-
-	Trace(VFSFileCreate);
-
-        req = dlp_request_new(dlpFuncVFSFileCreate, 1, 2 + (strlen(name) + 1));
-
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
-	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
-
-        result = dlp_exec(sd, req, &res);
-
-	dlp_request_free(req);
-	dlp_response_free(res);
+	struct dlpRequest *req;
+	struct dlpResponse *res;
 	
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSFileCreate);
+
+	req = dlp_request_new (dlpFuncVFSFileCreate, 1, 2 + (strlen(name) + 1));
+
+	set_short (DLP_REQUEST_DATA (req, 0, 0), volRefNum);
+	strcpy (DLP_REQUEST_DATA (req, 0, 2), name);
+
+	result = dlp_exec (sd, req, &res);
+
+	dlp_request_free (req);
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4464,47 +4565,60 @@ dlp_VFSFileCreate(int sd, int volRefNum,const char *name)
  *
  * Function:    dlp_VFSFileOpen
  *
- * Summary:     
+ * Summary:     Open a file or directory and return a FileRef to it
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				volRefNum   --> volume reference number returned from
+ *								dlp_VFSVolumeEnumerate()
+ *				path		--> access path to the file or directory
+ *				openMode	--> open mode, use constants from Palm SDK
+ *				fileRef		<-- returned file reference
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode, 
+dlp_VFSFileOpen(int sd, int volRefNum, const char *path, int openMode, 
 	    FileRef *fileRef)
 {
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-	
-	Trace(VFSFileOpen);
-	
+
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSFileOpen);
+
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Open File %s Mode: %x VFSRef 0x%x\n",
-		name, openMode,volRefNum));
+		path, openMode,volRefNum));
 	
-	req = dlp_request_new(dlpFuncVFSFileOpen, 1, 4 + (strlen(name) + 1));
-	
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
-	set_short(DLP_REQUEST_DATA(req, 0, 2), openMode);
-	strcpy(DLP_REQUEST_DATA(req, 0, 4), name);
-	
-	result = dlp_exec(sd, req, &res);
+	req = dlp_request_new (dlpFuncVFSFileOpen, 1, 4 + (strlen (path) + 1));
 
-	dlp_request_free(req);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), volRefNum);
+	set_short (DLP_REQUEST_DATA (req, 0, 2), openMode);
+	strcpy (DLP_REQUEST_DATA (req, 0, 4), path);
+
+	result = dlp_exec (sd, req, &res);
+
+	dlp_request_free (req);
 	
 	if (result >= 0) {
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		     "OpenFileRef: 0x%x\n",
-			get_long(DLP_RESPONSE_DATA (res, 0, 0))));
-		
+			get_long (DLP_RESPONSE_DATA (res, 0, 0))));
+
 		*fileRef = get_long(DLP_RESPONSE_DATA (res, 0, 0));
 	}
 	
 	dlp_response_free(res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4513,34 +4627,43 @@ dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode,
  *
  * Function:    dlp_VFSFileClose
  *
- * Summary:     
+ * Summary:     Close an open file or directory
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file or directory reference obtained
+ *								from dlp_VFSFileOpen()
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
 dlp_VFSFileClose(int sd, FileRef fileRef)
 {
 	int 	result;
-
-        struct dlpRequest *req;
-        struct dlpResponse *res;
-
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileClose);
 
-	req = dlp_request_new(dlpFuncVFSFileClose, 1, 4);
+	req = dlp_request_new (dlpFuncVFSFileClose, 1, 4);
 
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
 
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 
-	dlp_request_free(req);
-	dlp_response_free(res);
+	dlp_request_free (req);
+	dlp_response_free (res);
 	
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Closed FileRef: %x\n", fileRef));
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
 
 	return result;
 }
@@ -4550,11 +4673,16 @@ dlp_VFSFileClose(int sd, FileRef fileRef)
  *
  * Function:    dlp_VFSFileWrite
  *
- * Summary:     
+ * Summary:     Write data to an open file
  *
- * Parameters:  FIXME
- * 
- * Returns:     
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				data		--> data buffer to write
+ *				len			--> number of bytes to write
+ *
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
@@ -4562,44 +4690,49 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
 {
 	int 	result;
 	struct dlpRequest *req;
-	struct dlpResponse *res;
+	struct dlpResponse *res = NULL;
 	
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileWrite);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Write to FileRef: %x bytes %d\n", fileRef, len));
 	
-	req = dlp_request_new(dlpFuncVFSFileWrite, 1, 8);
-	
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
-	set_long(DLP_REQUEST_DATA(req, 0, 4), len);
-	
-	result = dlp_exec(sd, req, &res);
-	
-	dlp_request_free(req);
-	
+	req = dlp_request_new (dlpFuncVFSFileWrite, 1, 8);
+
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
+	set_long (DLP_REQUEST_DATA (req, 0, 4), len);
+
+	result = dlp_exec (sd, req, &res);
+
+	dlp_request_free (req);
+
 	if (result >= 0) {
-#if 1
-		/* FIXME Do we need size checks? */
-		if (pi_write(sd, data, len) < (int)len) {
-	
+		result = pi_write (sd, data, len);
+		if (result < (int)len) {
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     "send failed %d\n", result));
-			
-			return -1;
 		} else {
-/*			respondlength = pi_read(sd, data, len);
-			result = get_short(DLP_RESPONSE_DATA (res, 0, 2));
+			dlp_response_free (res);
+			res = NULL;
+
+			result = dlp_response_read (&res, sd);
 			
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "send success (%d) res %d!\n", len, result));
-*/
+			if (result >= 0) {
+				result = get_short(DLP_RESPONSE_DATA (res, 0, 2));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+					"send success (%d) res %d!\n", len, result));
+			}
 		} 
-#endif
 	}
 
-	dlp_response_free(res);
-	
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4608,56 +4741,60 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
  *
  * Function:    dlp_VFSFileRead
  *
- * Summary:     
+ * Summary:     Read data from an open file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				data		<-- buffer to hold the data
+ *				len			<-> on input, number of bytes to read
+ *								on output, actual number of bytes read
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
 dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, size_t *len)
 {
-	int 	result,
-		respondlength;
+	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileRead);
 	
-	req = dlp_request_new(dlpFuncVFSFileRead, 0);
+	req = dlp_request_new (dlpFuncVFSFileRead, 1, 8);
 	
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
-	set_long(DLP_REQUEST_DATA(req, 0, 4), *len);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
+	set_long (DLP_REQUEST_DATA (req, 0, 4), *len);
 	
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 	
-	dlp_request_free(req);
+	dlp_request_free (req);
 
-	if (result>=0) {
-		/* FIXME We must read properly */
-		size_t	at = 0;
-		size_t	rest;
-		rest	= *len;
-	
+	if (result >= 0) {
+		size_t rest = *len;
+		*len = 0;
 		do {
-			respondlength=pi_read(sd, &data[at], rest);
-	
-			if (respondlength > 0) {
-				rest -= respondlength;
-				at += respondlength;
-			}
-		} while ((at<(*len)) && (respondlength >= 0));
+			result = pi_read(sd, &data[*len], rest);
+			if (result <= 0)
+				break;
+			rest -= result;
+			*len += result;
+		} while (rest > 0);
 
-		if (len)
-			*len = get_long(DLP_RESPONSE_DATA (res, 0, 0));
-		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		     "Readbytes: %d\n", len));
 	}
 
 	dlp_response_free(res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4666,33 +4803,42 @@ dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, size_t *len)
  *
  * Function:    dlp_VFSFileDelete
  *
- * Summary:     
+ * Summary:     Delete a closed file or directory
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				volRefNum   --> as returned by dlp_VFSVolumeEnumerate()
+ *				path		--> complete file access path
  * 
- * Returns:     
- *
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
+ * 
  ***********************************************************************/
 int
-dlp_VFSFileDelete(int sd, int volRefNum, const char *name)
+dlp_VFSFileDelete(int sd, int volRefNum, const char *path)
 {
 	int 	result;
-	
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(VFSFileDelete);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSFileDelete);
 	
-	req = dlp_request_new(dlpFuncVFSFileDelete, 1, 2 + (strlen(name) + 1));
+	req = dlp_request_new (dlpFuncVFSFileDelete, 1, 2 + (strlen (path) + 1));
 	
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
-	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), volRefNum);
+	strcpy (DLP_REQUEST_DATA (req, 0, 2), path);
 	
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 
-	dlp_request_free(req);
-	dlp_response_free(res);
-	
+	dlp_request_free (req);
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4701,39 +4847,50 @@ dlp_VFSFileDelete(int sd, int volRefNum, const char *name)
  *
  * Function:    dlp_VFSFileRename
  *
- * Summary:     
+ * Summary:     Rename an existing file or directory
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				volRefNum   --> as returned by dlp_VFSVolumeEnumerate()
+ *				path		--> complete file access path
+ *				newname		--> new file name (without the access path)
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSFileRename(int sd, int volRefNum, const char *name, 
+dlp_VFSFileRename(int sd, int volRefNum, const char *path, 
 		      const char *newname)
 {
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(VFSFileRename);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSFileRename);
 	
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		"Rename file %s to %s\n", name, newname));
+		"Rename file %s to %s\n", path, newname));
 	
-	req = dlp_request_new(dlpFuncVFSFileRename,
-		1, 4 + (strlen(name) + 1) + (strlen(newname) + 1));
+	req = dlp_request_new (dlpFuncVFSFileRename,
+		1, 4 + (strlen (path) + 1) + (strlen (newname) + 1));
 	
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
-	set_short(DLP_REQUEST_DATA(req, 0, 2), 2);
-	strcpy(DLP_REQUEST_DATA(req, 0, 4), name);
-	strcpy(DLP_REQUEST_DATA(req, 0, 4 + (strlen(name) + 1)), newname);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), volRefNum);
+	set_short (DLP_REQUEST_DATA (req, 0, 2), 2);
+	strcpy (DLP_REQUEST_DATA (req, 0, 4), path);
+	strcpy (DLP_REQUEST_DATA (req, 0, 4 + (strlen(path) + 1)), newname);
 	
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 
-	dlp_request_free(req);
-	dlp_response_free(res);
-	
+	dlp_request_free (req);
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4742,31 +4899,39 @@ dlp_VFSFileRename(int sd, int volRefNum, const char *name,
  *
  * Function:    dlp_VFSFileEOF
  *
- * Summary:     
+ * Summary:     Checks whether the current position is at the end of file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
 dlp_VFSFileEOF(int sd, FileRef fileRef)
 {
 	int 	result;
-	
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileEOF);
+
+	req = dlp_request_new (dlpFuncVFSFileEOF, 1, 4);
 	
-	req = dlp_request_new(dlpFuncVFSFileEOF, 1, 4);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
 	
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	result = dlp_exec (sd, req, &res);
 	
-	result = dlp_exec(sd, req, &res);
-	
-	dlp_request_free(req);
-	dlp_response_free(res);
+	dlp_request_free (req);
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
 
 	return result;
 }
@@ -4776,36 +4941,45 @@ dlp_VFSFileEOF(int sd, FileRef fileRef)
  *
  * Function:    dlp_VFSFileTell
  *
- * Summary:     
+ * Summary:     Return the current seek position in an open file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				position	<-- current position
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
 dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
 {
 	int 	result;
-	
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-	
+
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileTell);
 	
 	req = dlp_request_new(dlpFuncVFSFileTell, 1, 4);
 
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
 
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 	
-	dlp_request_free(req);
+	dlp_request_free (req);
 
 	if (result >= 0) {
-		*position=get_long(DLP_RESPONSE_DATA(res, 0, 0));
+		*position = get_long (DLP_RESPONSE_DATA (res, 0, 0));
 	}
 	
-	dlp_response_free(res);
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
 
 	return result;
 }
@@ -4815,36 +4989,45 @@ dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
  *
  * Function:    dlp_VFSFileGetAttributes
  *
- * Summary:     
+ * Summary:     Return the attributes of an open file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				attributes	<-- file attributes (see Palm SDK's VFSMgr.h)
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSFileGetAttributes (int sd, FileRef fileRef, long *attributes)
+dlp_VFSFileGetAttributes (int sd, FileRef fileRef, unsigned long *attributes)
 {
 	int	result;
-	
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileGetAttributes);
 	
-	req = dlp_request_new(dlpFuncVFSFileGetAttributes, 1, 4);
+	req = dlp_request_new (dlpFuncVFSFileGetAttributes, 1, 4);
 	
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
 	
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 	
-	dlp_request_free(req);
+	dlp_request_free (req);
 
 	if (result >= 0) {
-		*attributes=get_long(DLP_RESPONSE_DATA (res, 0, 0));
+		*attributes = get_long (DLP_RESPONSE_DATA (res, 0, 0));
 	}
-	
+
 	dlp_response_free(res);	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
 
 	return result;
 }
@@ -4854,31 +5037,41 @@ dlp_VFSFileGetAttributes (int sd, FileRef fileRef, long *attributes)
  *
  * Function:    dlp_VFSFileSetAttributes
  *
- * Summary:     
+ * Summary:     Change the attributes of an open file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				attributes	--> new file attributes (see Palm SDK's VFSMgr.h)
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSFileSetAttributes(int sd, FileRef fileRef, long attributes)
+dlp_VFSFileSetAttributes(int sd, FileRef fileRef, unsigned long attributes)
 {
 	int	result;
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileSetAttributes);
 	
-	req = dlp_request_new(dlpFuncVFSFileSetAttributes, 1, 8);
+	req = dlp_request_new (dlpFuncVFSFileSetAttributes, 1, 8);
 	
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
-	set_long(DLP_REQUEST_DATA(req, 0, 4), attributes);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
+	set_long (DLP_REQUEST_DATA (req, 0, 4), attributes);
 	
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 
-	dlp_request_free(req);
-	dlp_response_free(res);
+	dlp_request_free (req);
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
 
 	return result;
 }
@@ -4888,11 +5081,18 @@ dlp_VFSFileSetAttributes(int sd, FileRef fileRef, long attributes)
  *
  * Function:    dlp_VFSFileGetDate
  *
- * Summary:     
+ * Summary:     Return one of the dates associated with an open file or
+ *				directory (creation, modification or last access)
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				whichDate   --> which date you want (vfsFileDateCreated,
+ *								vfsFileDateModified or vfsFileDateAccessed)
+ *				date		<-- the date
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
@@ -4902,19 +5102,20 @@ dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileGetDate);
 	
-	req = dlp_request_new(dlpFuncVFSFileGetDate, 1, 6);
+	req = dlp_request_new (dlpFuncVFSFileGetDate, 1, 6);
 
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
-	set_short(DLP_REQUEST_DATA(req, 0, 4), which);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
+	set_short (DLP_REQUEST_DATA (req, 0, 4), which);
 
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 
-	dlp_request_free(req);
+	dlp_request_free (req);
 	
 	if (result >= 0) {
-		*date = get_long(DLP_RESPONSE_DATA (res, 0, 0) - 2082852000);
+		*date = get_long (DLP_RESPONSE_DATA (res, 0, 0)) - 2082852000;
 	
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		     "Requested date(%d): %d / %x calc %d / %x\n",which,
@@ -4923,8 +5124,13 @@ dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
 		     *date,*date));
 	}
 	
-	dlp_response_free(res);
-	
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4933,11 +5139,18 @@ dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
  *
  * Function:    dlp_VFSFileSetDate
  *
- * Summary:     
+ * Summary:     Change one of the dates for an open file or directory
+ *				(created, modified or last access)
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				whichDate   --> which date you want (vfsFileDateCreated,
+ *								vfsFileDateModified or vfsFileDateAccessed)
+ *				date		--> the date
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
@@ -4947,6 +5160,7 @@ dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSFileSetDate);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -4957,16 +5171,20 @@ dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 	
 	req = dlp_request_new(dlpFuncVFSFileSetDate, 1, 10);
 
-/* FIXME do we really do the date this way? */
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
-	set_short(DLP_REQUEST_DATA(req, 0, 4), which);
-	set_long(DLP_REQUEST_DATA(req, 0, 6), date + 2082852000);
+	set_long (DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_short (DLP_REQUEST_DATA(req, 0, 4), which);
+	set_long (DLP_REQUEST_DATA(req, 0, 6), date + 2082852000);
 
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 
-	dlp_request_free(req);
-	dlp_response_free(res);	
-	
+	dlp_request_free (req);
+	dlp_response_free (res);	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -4975,33 +5193,42 @@ dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
  *
  * Function:    dlp_VFSDirCreate
  *
- * Summary:     
+ * Summary:     Create a new directory on a VFS volume
  *
- * Parameters:  FIXME
- * 
- * Returns:     
+ * Parameters:  sd			--> socket descriptor 
+ *				volRefNum   --> as returned by dlp_VFSVolumeEnumerate()
+ *				path		--> full path of directory to create
+ *
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSDirCreate(int sd, int volRefNum, const char *name)
+dlp_VFSDirCreate(int sd, int volRefNum, const char *path)
 {
 	int 	result;
-	
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(VFSDirCreate);
-	
-	req = dlp_request_new(dlpFuncVFSDirCreate, 1, 2 + (strlen(name) + 1));
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSDirCreate);
 
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
-	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
-	
-	result = dlp_exec(sd, req, &res);
+	req = dlp_request_new (dlpFuncVFSDirCreate, 1, 2 + (strlen(path) + 1));
 
-	dlp_request_free(req);
-	dlp_response_free(res);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), volRefNum);
+	strcpy (DLP_REQUEST_DATA (req, 0, 2), path);
 	
+	result = dlp_exec (sd, req, &res);
+
+	dlp_request_free (req);
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5010,18 +5237,27 @@ dlp_VFSDirCreate(int sd, int volRefNum, const char *name)
  *
  * Function:    dlp_VFSDirEntryEnumerate
  *
- * Summary:     
+ * Summary:     Iterate through the entries in a directory
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor 
+ *				dirRefNum   --> FileRef obtained from dlp_VFSFileOpen()
+ *				dirIterator <-> iterator we use to navigate in the dirs.
+ *								start with vfsIteratorStart
+ *				maxDirItems	<-> on input, the max. number of VFSDirInfo
+ *								structs that can be filled at once.
+ *								on output, the actual number of items
+ *				data		<-- `maxDirItems' directory items
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
 dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum, 
-	unsigned long *dirIlterate, int *maxcount, struct VFSDirInfo *data)
+	unsigned long *dirIterator, int *maxDirItems, struct VFSDirInfo *data)
 {
-	int 	result,
+	int result,
 		entries,
 		from,
 		at,
@@ -5029,40 +5265,45 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 		count;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-	
+
+	RequireDLPVersion(1,3);
 	Trace(dlp_VFSDirEntryEnumerate);
 
-	req = dlp_request_new(dlpFuncVFSDirEntryEnumerate, 1, 12);
+	req = dlp_request_new (dlpFuncVFSDirEntryEnumerate, 1, 12);
 	
-	set_long(DLP_REQUEST_DATA(req, 0, 0), dirRefNum);
-	set_long(DLP_REQUEST_DATA(req, 0, 4), *dirIlterate);
-	set_long(DLP_REQUEST_DATA(req, 0, 8), 0xFF9C);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), dirRefNum);
+	set_long (DLP_REQUEST_DATA (req, 0, 4), *dirIterator);
+	/*  FP: (DLP_BUF_SIZE - 99). this is the max return buffer size that
+		we are passing for the device to send its response, but I'm not
+		sure whether this is a magic value that shouldn't be changed.
+		If DLP_BUF_SIZE changes, the value below may become too large! */
+	set_long (DLP_REQUEST_DATA (req, 0, 8), 0xFF9C);
+
+	result = dlp_exec (sd, req, &res);
 	
-	result = dlp_exec(sd, req, &res);
-	
-	dlp_request_free(req);
+	dlp_request_free (req);
 	
 	if (result >= 0) {
-		*dirIlterate = get_long(DLP_RESPONSE_DATA (res, 0, 0));
+		*dirIterator = get_long (DLP_RESPONSE_DATA (res, 0, 0));
 		if (result) {
-			entries = get_long(DLP_RESPONSE_DATA (res, 0, 4));
+			entries = get_long (DLP_RESPONSE_DATA (res, 0, 4));
 		} else {
 			entries = 0;
 		}
 	
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		     "%d results returnd (ilterator: %d)\n", entries,
-		     *dirIlterate));
+		     *dirIterator));
 	
 		from  = 8;
 		count = 0;
 	
 		for (at = 0; at < entries; at++) {
-			if ((*maxcount)>at) {
+			if ((*maxDirItems) > at) {
 				data[at].attr = 
 					get_long(DLP_RESPONSE_DATA (res,
 					 0, 0) + from);
-				strncpy(data[at].name,
+				strncpy (data[at].name,
 					 DLP_RESPONSE_DATA(res, 0, from + 4),
 					vfsMAXFILENAME);
 				data[at].name[vfsMAXFILENAME-1] = 0;
@@ -5072,21 +5313,23 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 			/* Zero terminated string. Strings that have an
 			 even length will be null terminated and have a
 			 pad byte. */
-			slen=strlen(DLP_RESPONSE_DATA(res, 0, from + 4)) + 1;
-			if (slen%2)
+			slen = strlen (DLP_RESPONSE_DATA(res, 0, from + 4)) + 1;
+			if (slen & 1)
 				slen++;	/* make even stringlen + NULL */
-	
-			if ((slen+4)%2)
-				slen++;
 	
 			/* 6 = 4 (attr) + 1 (NULL)  -+ 1 (PADDING) */
 			from += slen + 4;
 		}
-		*maxcount = count;
+		*maxDirItems = count;
 	}
 	
-	dlp_response_free(res);
-	
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;  
 }
 
@@ -5110,6 +5353,7 @@ dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1,3);
 	Trace(VFSVolumeFormat);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -5134,7 +5378,12 @@ dlp_VFSVolumeFormat(int sd, unsigned char flags,
 
 	dlp_request_free(req);
 	dlp_response_free(res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5143,51 +5392,63 @@ dlp_VFSVolumeFormat(int sd, unsigned char flags,
  *
  * Function:    dlp_VFSVolumeEnumerate
  *
- * Summary:     
+ * Summary:     Returns a list of connected VFS volumes
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor 
+ *				numVols		<-> on input, the maximum number of volume
+ *								references that can be returned. On output,
+ *								the actual number of volume references
+ *				volRefs		<-- an array of volume references
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSVolumeEnumerate(int sd, int *len, int *firstRef)
+dlp_VFSVolumeEnumerate(int sd, int *numVols, int *volRefs)
 {
 	int	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(VFSVolumeEnumerate);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSVolumeEnumerate);
+
+	req = dlp_request_new (dlpFuncVFSVolumeEnumerate, 0);
 	
-	req = dlp_request_new(dlpFuncVFSVolumeEnumerate, 0);
+	result = dlp_exec (sd, req, &res);
 	
-	result = dlp_exec(sd, req, &res);
-	
-	dlp_request_free(req);
-	
+	dlp_request_free (req);
+
 	if (result >= 0) {
 		int vols, i;
 		
-		vols = get_short(DLP_RESPONSE_DATA (res, 0, 0));
+		vols = get_short (DLP_RESPONSE_DATA (res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			"DLP VFSVolumeEnumerate %d\n", vols));
 		if (vols) {
-			for (i = 0; i < vols && i < *len; i++) {
-				firstRef[i] =
-				  get_short(DLP_RESPONSE_DATA (res,
+			for (i = 0; i < vols && i < *numVols; i++) {
+				volRefs[i] =
+				  get_short (DLP_RESPONSE_DATA (res,
 					 0, 2 + (2 * i)));
 
 				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-				 "  %d Volume-Refnum %d\n", i, firstRef[i]));
+				 "  %d Volume-Refnum %d\n", i, volRefs[i]));
 			}
 		}
 
-		*len = vols;
+		*numVols = vols;
 	}
-	
+
 	dlp_response_free (res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5196,56 +5457,65 @@ dlp_VFSVolumeEnumerate(int sd, int *len, int *firstRef)
  *
  * Function:    dlp_VFSVolumeInfo
  *
- * Summary:     
+ * Summary:     Returns information about one VFS volume
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor 
+ *				volRefNum   --> as returned by dlp_VFSVolumeEnumerate()
+ *				volInfo		<-- volume information
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *v)
+dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *volInfo)
 {
 	int 	result;
-	
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-	
-	Trace(VFSVolumeInfo);
 
-	req = dlp_request_new(dlpFuncVFSVolumeInfo, 1, 2);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSVolumeInfo);
 
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	req = dlp_request_new (dlpFuncVFSVolumeInfo, 1, 2);
 
-	result = dlp_exec(sd, req, &res);
+	set_short (DLP_REQUEST_DATA(req, 0, 0), volRefNum);
 
-	dlp_request_free(req);
+	result = dlp_exec (sd, req, &res);
+
+	dlp_request_free (req);
 	
 	if (result >= 0) {
-		v->attributes	= get_long(DLP_RESPONSE_DATA (res, 0, 0));
-		v->fsType	= get_long(DLP_RESPONSE_DATA (res, 0, 4));  
-		v->fsCreator	= get_long(DLP_RESPONSE_DATA (res, 0, 8));
-		v->mountClass	= get_long(DLP_RESPONSE_DATA (res, 0, 12));
-		v->slotLibRefNum= get_short(DLP_RESPONSE_DATA (res, 0, 16));
-		v->slotRefNum	= get_short(DLP_RESPONSE_DATA (res, 0, 18));
-		v->mediaType	= get_long(DLP_RESPONSE_DATA (res, 0, 20));
-		v->reserved	= get_long(DLP_RESPONSE_DATA (res, 0, 24));      
-		
+		volInfo->attributes		= get_long (DLP_RESPONSE_DATA (res, 0, 0));
+		volInfo->fsType			= get_long (DLP_RESPONSE_DATA (res, 0, 4));  
+		volInfo->fsCreator		= get_long (DLP_RESPONSE_DATA (res, 0, 8));
+		volInfo->mountClass		= get_long (DLP_RESPONSE_DATA (res, 0, 12));
+		volInfo->slotLibRefNum  = get_short (DLP_RESPONSE_DATA (res, 0, 16));
+		volInfo->slotRefNum		= get_short (DLP_RESPONSE_DATA (res, 0, 18));
+		volInfo->mediaType		= get_long (DLP_RESPONSE_DATA (res, 0, 20));
+		volInfo->reserved		= get_long (DLP_RESPONSE_DATA (res, 0, 24));      
+
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		     "VFSVolumeInfo: fstype '%s' ", printlong(v->fsType)));
+		     "VFSVolumeInfo: fstype '%s' ", printlong(volInfo->fsType)));
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		     "fscreator: '%s'\nSlotlibref %d Slotref %d\n", 
-		     printlong(v->fsCreator),
-		     v->slotLibRefNum,
-		     v->slotRefNum));
+		     printlong(volInfo->fsCreator),
+		     volInfo->slotLibRefNum,
+		     volInfo->slotRefNum));
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		     "Media: '%s'\n", printlong(v->mediaType)));
+		     "Media: '%s'\n", printlong(volInfo->mediaType)));
 	}
 	
 	dlp_response_free(res);
 	
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5254,11 +5524,17 @@ dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *v)
  *
  * Function:    dlp_VFSVolumeGetLabel
  *
- * Summary:     
+ * Summary:     Return the label (name) of a VFS volume
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor 
+ *				volRefNum   --> as returned by dlp_VFSVolumeEnumerate()
+ *				len			<-> on input, the maximum size of the name
+ *								buffer. on output, the used size
+ *				name		<-- the volume name
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
@@ -5268,15 +5544,16 @@ dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
-	Trace(VFSVolumeGetLabel);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSVolumeGetLabel);
 
-	req = dlp_request_new(dlpFuncVFSVolumeGetLabel, 1, 2);
+	req = dlp_request_new (dlpFuncVFSVolumeGetLabel, 1, 2);
 
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), volRefNum);
 	
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 	
-	dlp_request_free(req);
+	dlp_request_free (req);
 
 	if (result >= 0) {
 		strncpy(name, DLP_RESPONSE_DATA(res, 0, 0),
@@ -5288,7 +5565,12 @@ dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
 	}
 	
 	dlp_response_free(res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5297,33 +5579,43 @@ dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
  *
  * Function:    dlp_VFSVolumeSetLabel
  *
- * Summary:     
+ * Summary:     Change the label (name) of a VFS volume
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor 
+ *				volRefNum   --> as returned by dlp_VFSVolumeEnumerate()
+ *				name		--> the new volume name
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSVolumeSetLabel(int sd, int volRefNum, char *name)
+dlp_VFSVolumeSetLabel(int sd, int volRefNum, const char *name)
 {
 	int 	result;
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
-	Trace(VFSVolumeSetLabel);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSVolumeSetLabel);
 
-	req = dlp_request_new(dlpFuncVFSVolumeSetLabel, 1,
+	req = dlp_request_new (dlpFuncVFSVolumeSetLabel, 1,
 			2 + (strlen(name) + 1));
 
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
-	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
-	
-	result = dlp_exec(sd, req, &res);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), volRefNum);
+	strcpy (DLP_REQUEST_DATA (req, 0, 2), name);
 
-	dlp_response_free(res);
+	result = dlp_exec (sd, req, &res);
+
+	dlp_response_free (res);
 	dlp_request_free (req);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5332,42 +5624,53 @@ dlp_VFSVolumeSetLabel(int sd, int volRefNum, char *name)
  *
  * Function:    dlp_VFSVolumeSize
  *
- * Summary:     
+ * Summary:     Return the total and used size of a VFS volume
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor 
+ *				volRefNum   --> as returned by dlp_VFSVolumeEnumerate()
+ *				volSizeUsed <-- number of bytes used on the volume
+ *				volSizeTotal<-- total size of the volume
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSVolumeSize(int sd, int volRefNum, long *volumeSizeUsed,
-	long *volumeSizeTotal)
+dlp_VFSVolumeSize(int sd, int volRefNum, long *volSizeUsed,
+	long *volSizeTotal)
 {
 	int 	result;
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
-	Trace(VFSVolumeSize);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSVolumeSize);
 
-	req = dlp_request_new(dlpFuncVFSVolumeSize, 1, 2);
+	req = dlp_request_new (dlpFuncVFSVolumeSize, 1, 2);
 
-	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), volRefNum);
 
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 
-	dlp_request_free(req);
+	dlp_request_free (req);
 	
 	if (result >= 0) {
-		*volumeSizeUsed = get_long(DLP_RESPONSE_DATA (res, 0, 0));
-		*volumeSizeTotal = get_long(DLP_RESPONSE_DATA (res, 0, 4));
+		*volSizeUsed = get_long (DLP_RESPONSE_DATA (res, 0, 0));
+		*volSizeTotal = get_long (DLP_RESPONSE_DATA (res, 0, 4));
 	
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		     "DLP VFS Volume Size total: %d used: %d\n",
-		     *volumeSizeTotal, *volumeSizeUsed));
+		     *volSizeTotal, *volSizeUsed));
 	}
-	
-	dlp_response_free(res);
-	
+
+	dlp_response_free (res);
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5376,38 +5679,48 @@ dlp_VFSVolumeSize(int sd, int volRefNum, long *volumeSizeUsed,
  *
  * Function:    dlp_VFSFileSeek
  *
- * Summary:     
+ * Summary:     Change the current seek position in an open file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				origin		--> seek origin (use vfsOriginXXX from pi-dlp.h)
+ *				offset		--> offset relative to the chosen origin
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
 dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
 {
 	int 	result;
-	
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
-	Trace(VFSFileSeek);
+	RequireDLPVersion(1,3);
+	Trace(dlp_VFSFileSeek);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Seek %x to offset %d from origin %d\n",
 			fileRef,offset,origin));
 	
-	req = dlp_request_new(dlpFuncVFSFileSeek, 1, 10);
+	req = dlp_request_new (dlpFuncVFSFileSeek, 1, 10);
 	
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
-	set_short(DLP_REQUEST_DATA(req, 0, 4), origin);
-	set_long(DLP_REQUEST_DATA(req, 0, 6), offset); 
-	
-	result = dlp_exec(sd, req, &res);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
+	set_short (DLP_REQUEST_DATA (req, 0, 4), origin);
+	set_long (DLP_REQUEST_DATA (req, 0, 6), offset); 
+
+	result = dlp_exec (sd, req, &res);
 
 	dlp_request_free (req);
 	dlp_response_free (res);
-		
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5416,9 +5729,11 @@ dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
  *
  * Function:    dlp_VFSFileResize
  *
- * Summary:     
+ * Summary:     Resize an open file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				newSize		--> the new file size
  * 
  * Returns:     
  *
@@ -5430,7 +5745,7 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
-	Trace(VFSFileResize);
+	Trace(dlp_VFSFileResize);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Resize %x to %d bytes\n", fileRef, newSize));
@@ -5445,6 +5760,11 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 	dlp_request_free (req);
 	dlp_response_free (res);
 	
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
 
@@ -5453,38 +5773,47 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
  *
  * Function:    dlp_VFSFileSize
  *
- * Summary:     
+ * Summary:     Return the size of an open file
  *
- * Parameters:  FIXME
+ * Parameters:  sd			--> socket descriptor
+ *				fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ *				size		<-- the size of the file
  * 
- * Returns:     
+ * Returns:     -1		dlp error (see errno)
+ *				0		no error
+ *				>0		Palm OS error code
  *
  ***********************************************************************/
 int
-dlp_VFSFileSize(int sd, FileRef fileRef,int *size)
+dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 {
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(dlp_VFSFileSize);
+	Trace (dlp_VFSFileSize);
 	
-	req = dlp_request_new(dlpFuncVFSFileSize, 1, 4);
+	req = dlp_request_new (dlpFuncVFSFileSize, 1, 4);
 	
-	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
 	
-	result = dlp_exec(sd, req, &res);
+	result = dlp_exec (sd, req, &res);
 	
-	dlp_request_free(req);
+	dlp_request_free (req);
 	
 	if (result >= 0) {
 		*size = get_long (DLP_RESPONSE_DATA (res, 0, 0));
-	
+
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			"DLP VFS File Size: %d\n", *size));
 	}
 	
 	dlp_response_free (res);
-	
+
+	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
 	return result;
 }
