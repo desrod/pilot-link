@@ -399,8 +399,9 @@ sync_MergeToPilot_fast (SyncHandler *sh, int dbhandle)
 	while (sh->ForEachModified (sh, &drecord) == 0 && drecord) {
 		if (drecord->recID != 0) {
 			precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+			precord->recID = drecord->recID;
 			result = dlp_ReadRecordById (sh->sd, dbhandle, 
-						     drecord->recID,
+						     precord->recID,
 						     precord->buffer, 
 						     NULL, &precord->len, 
 						     &precord->flags,
@@ -430,8 +431,9 @@ sync_MergeToPilot_slow (SyncHandler *sh, int dbhandle)
 	while (sh->ForEach (sh, &drecord) == 0 && drecord) {
 		if (drecord->recID != 0) {
 			precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+			precord->recID = drecord->recID;
 			result = dlp_ReadRecordById (sh->sd, dbhandle, 
-						     drecord->recID,
+						     precord->recID,
 						     precord->buffer, 
 						     NULL, &precord->len, 
 						     &precord->flags, 

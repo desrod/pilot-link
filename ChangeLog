@@ -1,3 +1,9 @@
+2000-10-28    <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_MergeToPilot_slow): Manually set
+	the id of the record
+	(sync_MergeToPilot_fast): ditto
+
 2000-10-20  David A. Desrosiers <hacker@linuxcare.com>
 
 	* Cleaned up some more "ascii art". Nice small
