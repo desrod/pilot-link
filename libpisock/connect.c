@@ -171,7 +171,7 @@ int pilot_connect(char *port)
 	}
 
 	if (isatty(fileno(stdout))) {
-		printf("Connected\n\n");
+		printf("connected!\n\n");
 		fflush(NULL);
 	}
 
