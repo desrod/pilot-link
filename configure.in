@@ -682,6 +682,8 @@ esac
 AC_OUTPUT([
 	Makefile
 	pilot-link.m4
+	pilot-link.pc
+	pilot-link-pp.pc
 	libpisock/Makefile
 	libpisync/Makefile
 	libpisock++/Makefile
