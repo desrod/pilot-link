@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 		
 			if (strcmp(argv[2], "-s") == 0) {
 				ret = read(fileno(stdin), buffer, 0xffff);
-				dumpdata(buffer, ret);
+//				dumpdata(buffer, ret);
 				if (ret >= 0) {
 					buffer[ret++] = 0;
 					SetClip(sd, 0, buffer, ret);

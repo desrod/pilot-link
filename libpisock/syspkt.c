@@ -62,6 +62,8 @@ int syspkt_tx(struct pi_socket *ps, void *m, int length)
 
 	/* ps->xid = msg[3]; */
 
+	/* FIXME: use setsockopt to set the id */
+#if 0
 	if ((!ps->xid) || (ps->xid == 0xff))
 		ps->xid = 0x11;	/* some random # */
 	ps->xid++;
@@ -76,11 +78,10 @@ int syspkt_tx(struct pi_socket *ps, void *m, int length)
 	nskb->type = msg[2];
 	nskb->id = ps->xid;
 
+	/* FIXME: transmit a buffer properly */
 	memcpy(&nskb->data[10], msg + 4, length - 4);
 	slp_tx(ps, nskb, length - 4);
-
-	pi_serial_flush(ps);
-
+#endif
 	return 0;
 }
 
@@ -102,7 +103,7 @@ int syspkt_rx(struct pi_socket *ps, void *b, int len)
 	int rlen = 0;
 
 	if (!ps->rxq)
-		ps->serial_read(ps, 100);
+//		ps->serial_read(ps, 100);
 
 	if (!ps->rxq)
 		return 0;

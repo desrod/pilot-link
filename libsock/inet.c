@@ -34,25 +34,119 @@
 
 #include <stdio.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-inet.h"
-#include "pi-slp.h"
+#include "pi-cmp.h"
+#include "pi-net.h"
 #include "pi-syspkt.h"
-#include "pi-padp.h"
 #include "pi-dlp.h"
 
-static int pi_net_listen(struct pi_socket *ps, int backlog);
-static int pi_net_accept(struct pi_socket *ps, struct sockaddr *addr,
+static int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr,
+			  int addrlen);
+static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, 
+		       int addrlen);
+static int pi_inet_listen(struct pi_socket *ps, int backlog);
+static int pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr,
 			 int *addrlen);
-static int pi_net_send(struct pi_socket *ps, void *msg, int len,
-		       unsigned int flags);
-static int pi_net_recv(struct pi_socket *ps, void *msg, int len,
-		       unsigned int flags);
-static int pi_net_tickle(struct pi_socket *ps);
-static int pi_net_close(struct pi_socket *ps);
+static int pi_inet_read(struct pi_socket *ps, unsigned char *msg, int len, int flags);
+static int pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags);
+static int pi_inet_getsockopt(struct pi_socket *ps, int level, int option_name, 
+			      void *option_value, int *option_len);
+static int pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name, 
+			      const void *option_value, int *option_len);
 
-extern int dlp_trace;
+static int pi_inet_close(struct pi_socket *ps);
+
+/* Protocol Functions */
+static struct pi_protocol *pi_inet_protocol_dup (struct pi_protocol *prot)
+{
+	struct pi_protocol *new_prot;
+	
+	new_prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
+	new_prot->level = prot->level;
+	new_prot->dup = prot->dup;
+	new_prot->read = prot->read;
+	new_prot->write = prot->write;
+	new_prot->getsockopt = prot->getsockopt;
+	new_prot->setsockopt = prot->setsockopt;
+	new_prot->data = NULL;
+
+	return new_prot;
+}
+
+static struct pi_protocol *pi_inet_protocol (struct pi_device *dev)
+{	
+	struct pi_protocol *prot;
+	struct pi_inet_data *data;
+	
+	data = dev->data;
+	
+	prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
+	prot->level = PI_LEVEL_DEV;
+	prot->dup = pi_inet_protocol_dup;
+	prot->read = pi_inet_read;
+	prot->write = pi_inet_write;
+	prot->getsockopt = pi_inet_getsockopt;
+	prot->setsockopt = pi_inet_setsockopt;
+	prot->data = NULL;
+	
+	return prot;
+}
+
+/* Device Functions */
+static struct pi_device *pi_inet_device_dup (struct pi_device *dev)
+{
+	struct pi_device *new_dev;
+	struct pi_inet_data *new_data, *data;
+	
+	new_dev = (struct pi_device *)malloc (sizeof (struct pi_device));
+	new_dev->dup = dev->dup;
+	new_dev->protocol = dev->protocol;	
+	new_dev->bind = dev->bind;
+	new_dev->listen = dev->listen;
+	new_dev->accept = dev->accept;
+	new_dev->connect = dev->connect;
+	new_dev->close = dev->close;
+	
+	new_data = (struct pi_inet_data *)malloc (sizeof (struct pi_inet_data));
+	data = (struct pi_inet_data *)dev->data;
+	new_data->timeout = data->timeout;
+	new_data->rx_bytes = 0;
+	new_data->rx_errors = 0;
+	new_data->tx_bytes = 0;
+	new_data->tx_errors = 0;
+	new_dev->data = new_data;
+	
+	return new_dev;
+}
+
+struct pi_device *pi_inet_device (int type) 
+{
+	struct pi_device *dev;
+	struct pi_inet_data *data;
+	
+	dev = (struct pi_device *)malloc (sizeof (struct pi_device));
+	data = (struct pi_inet_data *)malloc (sizeof (struct pi_inet_data));
+
+	dev->dup = pi_inet_device_dup;
+	dev->protocol = pi_inet_protocol;	
+	dev->bind = pi_inet_bind;
+	dev->listen = pi_inet_listen;
+	dev->accept = pi_inet_accept;
+	dev->connect = pi_inet_connect;
+	dev->close = pi_inet_close;
+	
+	data->timeout = 0;
+	data->rx_bytes = 0;
+	data->rx_errors = 0;
+	data->tx_bytes = 0;
+	data->tx_errors = 0;
+	dev->data = data;
+	
+	return dev;
+}
 
 /***********************************************************************
  *
@@ -65,103 +159,79 @@ extern int dlp_trace;
  * Returns:     Nothing
  *
  ***********************************************************************/
-int
+static int
 pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
+	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct sockaddr_in serv_addr;
-	char msg1[22] = "\x90\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
-                        "\x08\x01\x00\x00\x00\x00\x00\x00\x00";
-	char msg2[50] = "\x92\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
-                        "\x24\xff\xff\xff\xff\x00\x3c\x00\x3c\x40\x00\x00\x00"
-                        "\x01\x00\x00\x00\xc0\xa8\xa5\x1e\x04\x01\x00\x00\x00"
-                        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	char msg3[8]  = "\x93\x00\x00\x00\x00\x00\x00\x00";
-	char buffer[200];
+	int sd;
+	char *device = paddr->pi_device + 4;
 
-	ps->mac->fd = socket(AF_INET, SOCK_STREAM, 0);
-
-	if (ps->sd) {
-		int orig = ps->mac->fd;
-
-#ifdef HAVE_DUP2
-		ps->mac->fd = dup2(ps->mac->fd, ps->sd);
-#else
-#ifdef F_DUPFD
-		close(ps->sd);
-		ps->mac->fd = fcntl(ps->mac->fd, F_DUPFD, ps->sd);
-#else
-		close(ps->sd);
-		ps->mac->fd = dup(ps->mac->fd);	/* Unreliable */
-#endif
-#endif
-		if (ps->mac->fd != orig)
-			close(orig);
-	}
-
-	if (addr->sa_family == AF_INET) {
-		memcpy(&serv_addr, addr, addrlen);
-	} else {
-		struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
-		char *device = paddr->pi_device + 1;
-
-		memset(&serv_addr, 0, sizeof(serv_addr));
-		serv_addr.sin_family = AF_INET;
-		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-		serv_addr.sin_port = htons(14238);
-		if (strlen(device) > 1) {
-			if ((serv_addr.sin_addr.s_addr =
-			     inet_addr(device)) == -1) {
-				struct hostent *hostent =
-				    gethostbyname(device);
-
-				if (!hostent) {
-					fprintf(stderr,
-						"Unable to resolve host '%s'",
-						device);
-					return -1;
-				}
-				memcpy((char *) &serv_addr.sin_addr.s_addr,
-				       hostent->h_addr, hostent->h_length);
+	/* Figure out the addresses to allow */
+	memset(&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	if (strlen(device) > 1) {
+		serv_addr.sin_addr.s_addr = inet_addr(device);
+		if (serv_addr.sin_addr.s_addr == INADDR_NONE) {
+			struct hostent *hostent = gethostbyname(device);
+		
+			if (!hostent) {
+				LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
+				    "DEV CONNECT Inet: Unable to determine host\n");
+				return -1;
 			}
+			
+			memcpy((char *) &serv_addr.sin_addr.s_addr,
+			       hostent->h_addr, hostent->h_length);
 		}
+	} else {
+		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	}
+	serv_addr.sin_port = htons(14238);
+
+	sd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sd < 0) {
+		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
+		    "DEV CONNECT Inet: Unable to create socket\n");
+		return -1;
 	}
 
-	if (connect
-	    (ps->mac->fd, (struct sockaddr *) &serv_addr,
-	     sizeof(serv_addr))
-	    < 0)
+	if (pi_socket_setsd (ps, sd) < 0)
 		return -1;
 
-	ps->socket_listen = pi_net_listen;
-	ps->socket_accept = pi_net_accept;
-	ps->socket_send = pi_net_send;
-	ps->socket_recv = pi_net_recv;
-	ps->socket_tickle = pi_net_tickle;
-	ps->socket_close = pi_net_close;
-
-	ps->initiator = 1;
-
-	ps->connected = 1;
-
-	ps->version = 0x0101;
-
-	pi_net_send(ps, msg1, 22, 0);
-	pi_net_recv(ps, buffer, 200, 0);
-	pi_net_send(ps, msg2, 50, 0);
-	pi_net_recv(ps, buffer, 200, 0);
-	pi_net_send(ps, msg3, 8, 0);
-
-#ifndef NO_SERIAL_TRACE
-	if (ps->debuglog) {
-		ps->debugfd =
-		    open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND,
-			 0666);
-		/* This sequence is magic used by my trace analyzer - kja */
-		write(ps->debugfd, "\0\2\0\0\0\0\0\0\0\0", 10);
+	if (connect (ps->sd, (struct sockaddr *) &serv_addr,
+		     sizeof(serv_addr)) < 0) {
+		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
+		    "DEV CONNECT Inet: Unable to connect\n");
+		return -1;
 	}
-#endif
+	
+	ps->raddr = malloc(addrlen);
+	memcpy(ps->raddr, addr, addrlen);
+	ps->raddrlen = addrlen;
+	ps->laddr = malloc(addrlen);
+	memcpy(ps->laddr, addr, addrlen);
+	ps->laddrlen = addrlen;
 
+	switch (ps->cmd) {
+	case PI_CMD_CMP:
+		if (cmp_tx_handshake(ps) < 0)
+			goto fail;
+		break;
+	case PI_CMD_NET:
+		if (net_tx_handshake(ps) < 0)
+			goto fail;
+		break;
+	}
+	ps->state = PI_SOCK_CONIN;
+	ps->command = 0;
+
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CONNECT Inet: Connected\n");
 	return 0;
+
+ fail:
+	pi_close (ps->sd);
+	return -1;
 }
 
 /***********************************************************************
@@ -175,62 +245,40 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
+static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
-	int opt, optlen;
+	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct sockaddr_in serv_addr;
+	int opt, optlen, sd;
+	char *device = paddr->pi_device + 4;
 
-	ps->mac->fd = socket(AF_INET, SOCK_STREAM, 0);
+	/* Figure out the addresses to allow */
+	memset(&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	if (strlen(device) > 1) {
+		serv_addr.sin_addr.s_addr = inet_addr(device);
+		if (serv_addr.sin_addr.s_addr == INADDR_NONE) {
+			struct hostent *hostent = gethostbyname(device);
+		
+			if (!hostent)
+				return -1;
 
-	if (ps->sd) {
-		int orig = ps->mac->fd;
-
-#ifdef HAVE_DUP2
-		ps->mac->fd = dup2(ps->mac->fd, ps->sd);
-#else
-#ifdef F_DUPFD
-		close(ps->sd);
-		ps->mac->fd = fcntl(ps->mac->fd, F_DUPFD, ps->sd);
-#else
-		close(ps->sd);
-		ps->mac->fd = dup(ps->mac->fd);	/* Unreliable */
-#endif
-#endif
-		if (ps->mac->fd != orig)
-			close(orig);
-		else {
-			puts("Unable to duplicate socket");
-			exit(1);
+			memcpy((char *) &serv_addr.sin_addr.s_addr,
+			       hostent->h_addr, hostent->h_length);
 		}
-	}
-
-	if (addr->sa_family == AF_INET) {
-		memcpy(&serv_addr, addr, addrlen);
 	} else {
-		struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
-		char *device = paddr->pi_device + 1;
-
-		memset(&serv_addr, 0, sizeof(serv_addr));
-		serv_addr.sin_family = AF_INET;
 		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-		serv_addr.sin_port = htons(14238);
-		if (strlen(device) > 1) {
-			if ((serv_addr.sin_addr.s_addr =
-			     inet_addr(device)) == -1) {
-				struct hostent *hostent =
-				    gethostbyname(device);
-
-				if (!hostent) {
-					fprintf(stderr,
-						"Unable to resolve host '%s'",
-						device);
-					return -1;
-				}
-				memcpy((char *) &serv_addr.sin_addr.s_addr,
-				       hostent->h_addr, hostent->h_length);
-			}
-		}
 	}
+	serv_addr.sin_port = htons(14238);
+
+	sd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sd < 0) {
+		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
+		    "DEV BIND Inet: Unable to create socket\n");
+		return -1;
+	}	
+	if (pi_socket_setsd (ps, sd) < 0)
+		return -1;
 
 	opt = 1;
 	optlen = sizeof(opt);
@@ -248,39 +296,22 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	}
 #endif
 
-	if (bind(ps->sd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
-	    < 0)
+	if (bind(ps->sd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 		return -1;
 
-#ifndef NO_SERIAL_TRACE
-	if (ps->debuglog) {
-		ps->debugfd =
-		    open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND,
-			 0666);
-		/* This sequence is magic used by my trace analyzer - kja */
-		write(ps->debugfd, "\0\2\0\0\0\0\0\0\0\0", 10);
-	}
-#endif
-
-	ps->socket_listen = pi_net_listen;
-	ps->socket_accept = pi_net_accept;
-	ps->socket_send = pi_net_send;
-	ps->socket_recv = pi_net_recv;
-	ps->socket_tickle = pi_net_tickle;
-	ps->socket_close = pi_net_close;
-
-	ps->initiator = 0;
-
-	ps->connected = 1;
-
-	ps->version = 0x0101;
+	ps->raddr = malloc(addrlen);
+	memcpy(ps->raddr, addr, addrlen);
+	ps->raddrlen = addrlen;
+	ps->laddr = malloc(addrlen);
+	memcpy(ps->laddr, addr, addrlen);
+	ps->laddrlen = addrlen;
 
 	return 0;
 }
 
 /***********************************************************************
  *
- * Function:    pi_net_listen
+ * Function:    pi_inet_listen
  *
  * Summary:     Wait for an incoming connection
  *
@@ -289,14 +320,20 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int pi_net_listen(struct pi_socket *ps, int backlog)
+static int pi_inet_listen(struct pi_socket *ps, int backlog)
 {
-	return listen(ps->sd, backlog);
+	int result;
+	
+	result = listen(ps->sd, backlog);
+	if (result == 0)
+		ps->state = PI_SOCK_LISTN;
+
+	return result;
 }
 
 /***********************************************************************
  *
- * Function:    pi_net_accept
+ * Function:    pi_inet_accept
  *
  * Summary:     Accept an incoming connection
  *
@@ -306,45 +343,47 @@ static int pi_net_listen(struct pi_socket *ps, int backlog)
  *
  ***********************************************************************/
 static int
-pi_net_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
+pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
-	struct pi_socket *a;
-	char msg1[50] = "\x12\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
-                        "\x24\xff\xff\xff\xff\x3c\x00\x3c\x00\x00\x00\x00\x00"
-                        "\x00\x00\x00\x00\xc0\xa8\xa5\x1f\x04\x27\x00\x00\x00"
-                        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	char msg2[46] = "\x13\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
-                        "\x20\xff\xff\xff\xff\x00\x3c\x00\x3c\x00\x00\x00\x00"
-                        "\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-                        "\x00\x00\x00\x00\x00\x00\x00";
-	char buffer[200];
+	struct pi_socket *acpt = NULL;
 
-	a = malloc(sizeof(struct pi_socket));
-	memcpy(a, ps, sizeof(struct pi_socket));
-
-	a->sd = accept(ps->sd, addr, addrlen);
-	if (a->sd < 0)
+ 	acpt->sd = accept(ps->sd, addr, addrlen);
+	if (acpt->sd < 0)
 		goto fail;
 
-	pi_net_recv(a, buffer, 200, 0);
-	pi_net_send(a, msg1, 50, 0);
-	pi_net_recv(a, buffer, 200, 0);
-	pi_net_send(a, msg2, 46, 0);
-	pi_net_recv(a, buffer, 200, 0);
+	acpt = pi_socket_copy(ps);
+	pi_socket_init (acpt);
 
-	pi_socket_recognize(a);
+	switch (acpt->cmd) {
+	case PI_CMD_CMP:
+		if (cmp_rx_handshake(acpt, 57600, 0) < 0)
+			return -1;
+		break;
+	case PI_CMD_NET:
+		if (net_rx_handshake(acpt) < 0)
+			return -1;
+		break;
+	}
 
-	a->connected = 1;
+	acpt->state = PI_SOCK_CONAC;
+	acpt->command = 0;
+	acpt->dlprecord = 0;
 
-	return a->sd;
-      fail:
-	free(a);
+	pi_socket_recognize(acpt);
+
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV ACCEPT Accepted\n");
+
+	return acpt->sd;
+
+ fail:
+	if (acpt)
+		pi_close (acpt->sd);
 	return -1;
 }
 
 /***********************************************************************
  *
- * Function:    pi_net_send
+ * Function:    pi_inet_write
  *
  * Summary:     Send msg on a connected socket
  *
@@ -354,49 +393,28 @@ pi_net_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
  *
  ***********************************************************************/
 static int
-pi_net_send(struct pi_socket *ps, void *msg, int len, unsigned int flags)
+pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 {
-	int n, l;
-	unsigned char buf[6];
+	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+	int total, nwrote;
 
-	buf[0] = 1;
-	buf[1] = ps->xid;
-	set_long(buf + 2, len);
-
-	l = 0;
-	while (l < 6) {
-		n = write(ps->sd, buf + l, 6 - l);
-		if (n > 0)
-			l += n;
-		if (n < 0)
-			return n;
+	total = len;
+	while (total > 0) {
+		nwrote = write(ps->sd, msg, len);
+		if (nwrote < 0)
+			return -1;
+		total -= nwrote;
 	}
+	data->tx_bytes += len;
 
-	l = 0;
-	while (l < len) {
-		n = write(ps->sd, (char *) msg + l, len - l);
-		if (n > 0)
-			l += n;
-		if (n < 0)
-			return n;
-	}
-
-#ifndef NO_SERIAL_TRACE
-	if (ps->debuglog) {
-		buf[0] = 4;
-		buf[1] = 0;
-		set_long(buf + 2, len);
-		write(ps->debugfd, buf, 6);
-		write(ps->debugfd, msg, len);
-	}
-#endif
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX Inet Bytes: %d\n", len);
 
 	return len;
 }
 
 /***********************************************************************
  *
- * Function:    pi_net_recv
+ * Function:    pi_inet_read
  *
  * Summary:     Receive message on a connected socket
  *
@@ -406,93 +424,68 @@ pi_net_send(struct pi_socket *ps, void *msg, int len, unsigned int flags)
  *
  ***********************************************************************/
 static int
-pi_net_recv(struct pi_socket *ps, void *msg, int len, unsigned int flags)
+pi_inet_read(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 {
-	int n, l;
-	int rlen;
-	unsigned char buf[6];
+	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+	fd_set ready;
+	struct timeval t;
+	int r, fl = 0;
 
-	l = 0;
-	while (l < 6) {
-		n = read(ps->sd, buf + l, 6 - l);
-		if (n > 0)
-			l += n;
-		if (n <= 0)
-			return n;
+	switch (flags) {
+	case PI_MSG_PEEK:
+		fl = MSG_PEEK;
 	}
+	
+	FD_ZERO(&ready);
+	FD_SET(ps->sd, &ready);
 
-	rlen = get_long(buf + 2);
-
-	if (len > rlen)
-		len = rlen;
-
-	l = 0;
-	while (l < len) {
-		n = read(ps->sd, (char *) msg + l, len - l);
-		if (n > 0)
-			l += n;
-		if (n < 0)
-			return n;
-		if (n == 0) {
-			len = l;
-			break;
-		}
-	}
-
-	if (l < rlen) {
-		char discard;
-
-		while (l < rlen) {
-			n = read(ps->sd, &discard, 1);
-			if (n > 0)
-				l += n;
-			if (n < 0)
-				return n;
-			if (n == 0)
-				break;
-		}
-	}
-
-	if (ps->initiator)
-		ps->xid = buf[1];
+	/* If timeout == 0, wait forever for packet, otherwise wait till
+	   timeout milliseconds */
+	if (data->timeout == 0)
+		select(ps->sd + 1, &ready, 0, 0, 0);
 	else {
-		ps->xid++;
-		if (ps->xid == 0xff)
-			ps->xid = 1;
+		t.tv_sec = data->timeout / 1000;
+		t.tv_usec = (data->timeout % 1000) * 1000;
+		select(ps->sd + 1, &ready, 0, 0, &t);
 	}
-
-#ifndef NO_SERIAL_TRACE
-	if (ps->debuglog) {
-		buf[0] = 3;
-		buf[1] = 0;
-		set_long(buf + 2, len);
-		write(ps->debugfd, buf, 6);
-		write(ps->debugfd, msg, len);
+	/* If data is available in time, read it */
+	if (FD_ISSET(ps->sd, &ready))
+		r = recv(ps->sd, msg, len, fl);
+	else {
+		/* otherwise throw out any current packet and return */
+		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Inet timeout\n");
+		data->rx_errors++;
+		return 0;
 	}
-#endif
+	data->rx_bytes += r;
 
-	return len;
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Inet Bytes: %d\n", r);
+
+	return r;
 }
 
-/***********************************************************************
- *
- * Function:    pi_net_tickle
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int pi_net_tickle(struct pi_socket *ps)
+static int
+pi_inet_getsockopt(struct pi_socket *ps, int level, int option_name, 
+		   void *option_value, int *option_len)
 {
-	return -1;
+	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+
+	return 0;
 }
+
+static int
+pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name, 
+		   const void *option_value, int *option_len)
+{
+	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+
+	return 0;
+}
+
 
 /***********************************************************************
  *
- * Function:    pi_net_close
+ * Function:    pi_inet_close
  *
  * Summary:     Close a connection, destroy the socket
  *
@@ -501,20 +494,16 @@ static int pi_net_tickle(struct pi_socket *ps)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int pi_net_close(struct pi_socket *ps)
+static int pi_inet_close(struct pi_socket *ps)
 {
-	if (ps->type == PI_SOCK_STREAM) {
-		if (ps->connected & 1)				/* If socket is connected 		*/
-			if (!(ps->connected & 2))		/* And it wasn't end-of-synced 		*/
-				dlp_EndOfSync(ps->sd, 0);	/* then end sync, with clean status 	*/
-	}
+	/* Close sd handle */
+	if (ps->sd)
+		close(ps->sd);
 
-	close(ps->sd);
-
-#ifndef NO_SERIAL_TRACE
-	if (ps->debugfd)
-		close(ps->debugfd);
-#endif
+	if (ps->laddr)
+		free(ps->laddr);
+	if (ps->raddr)
+		free(ps->raddr);
 
 	return 0;
 }

@@ -128,8 +128,9 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 	
+		printf("Trying to connect\n");
 		ret = pi_connect(sd2, (struct sockaddr *) &addr2, sizeof(addr2));
-	
+		printf("Connected\n");
 		if (ret < 0) {
 			perror("Unable to connect to PC");
 			exit(1);

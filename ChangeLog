@@ -1,7 +1,196 @@
 2002-01-11  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/serial.c: handle buffer
+
+	* libsock/inet.c: match new tx/rx protos and obey peek flag
+
+	* libsock/unixserial.c: ditto
+
+	* libsock/cmp.c: match new tx/rx protos and pass flags down the
+	chain
+
+	* libsock/slp.c: ditto
+
+	* libsock/padp.c: ditto
+
+	* libsock/net.c: ditto
+
+	* include/pi-source.h: update protos, remove padp trace stuff
+
+	* include/pi-socket.h: add PI_PF_DLP and PI_MSG_PEEK for
+	autodetection
+
+	* include/pi-cmp.h: update protos
+	
+	* include/pi-slp.h: ditto
+
+	* include/pi-serial.h: ditto
+
+	* include/pi-net.h: ditto
+
+	* include/pi-debug.h: include config.h instead of pi-config.h
+
+2002-01-11  JP Rosevear  <jpr@ximian.com>
+
 	* configure.in: fix itcl typo
 
+
+2002-01-10  JP Rosevear  <jpr@ximian.com>
+
+	* include/pi-source.h: add state defines
+
+	* libsock/*.c: use them everywhere
+
+
+2002-01-10  JP Rosevear  <jpr@ximian.com>
+	
+	* libsock/unixserial.c (s_open): use pi_socket_setsd and don't
+	keep our own fd around
+
+	* libsock/inet.c (pi_inet_connect): use pi_socket_setsd and don't
+	keep our own fd around
+	(pi_inet_bind): ditto
+
+	* libsock/socket.c (pi_socket_setsd): makes the socket descriptor
+	refer to the new descriptor passed in
+
+	* include/pi-socket.h: add proto
+
+	* include/pi-serial.h: remove fd member
+
+	* include/pi-inet.h: remove fd member
+
+2002-01-10  JP Rosevear  <jpr@ximian.com>
+	
+	* libsock/socket.c (protocol_queue_build): add device protocol
+	(pi_connect): call above after device is determined
+	(pi_bind): ditto
+
+	* include/Makefile.am (c_header_DATA): remove pi-inetserial.h
+
+	* include/pi-source.h: remove unused tickle member
+
+2002-01-09  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/inet.c (pi_inet_accept): accept to the socket descriptor
+	(pi_inet_write): write to the sd
+	(pi_inet_read): read from the sd
+
+2002-01-09  JP Rosevear  <jpr@ximian.com>
+	
+	* pi-getram.c: merge from head
+
+	* pi-nredir.c: update for new net code
+
+	* libsock/unixserial.c: improve logging messages
+
+	* libsock/socket.c: build the proctocol queue during binding or
+	connecting so we can first determine the device type
+
+	* libsock/slp.c (slp_rx): kill warning
+
+	* libsock/serial.c (pi_serial_device): choose impl based on type
+	passed in
+	(pi_serial_connect): switch over to cmp handshaking
+
+	* libsock/net.c (net_rx): return the correct packet length
+	(net_tx_handshake): implement server-client handshake
+
+	* libsock/inet.c: convert to a generic device
+
+	* libsock/cmp.c (cmp_tx_handshake): implement
+	(cmp_wakeup): properly wakeup
+
+	* libsock/Makefile.am: build inet.c again
+
+	* include/pi-socket.h: rename PI_LEVEL_SOCKET to PI_LEVEL_DEV
+
+	* include/pi-serial.h: update proto
+
+	* include/pi-net.h: new proto
+
+	* include/pi-inet.h: update to be a device
+
+ 2002-01-08  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/socket.c: re-org code
+	(pi_version): get version from cmp or fake it for net
+
+	* libsock/slp.c (slp_rx): make states match palm documentation and
+	correct problem with maximal (1024 bytes) padp packets
+
+	* libsock/serial.c (pi_serial_accept): do the handshaking via the
+	cmp protocol and the command protocol queue
+
+	* libsock/padp.c (padp_tx): use PI_PADP_MTU
+	(padp_rx): ditto
+
+	* libsock/net.c (net_rx): fix comment
+
+	* include/pi-socket.h: add cmp options
+
+	* include/pi-slp.h: define PI_SLP_MTU
+
+	* include/pi-serial.h: make the rate a long
+
+	* include/pi-padp.h: define PI_PADP_MTU
+
+	* include/pi-cmp.h: remove old cmp struct and add cmp data, add
+	protos and defines
+
+2002-01-06  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/net.c (net_getsockopt): allow type to be set
+	(net_setsockopt): ditto
+	(net_tx): use data type for packet
+
+	* libsock/socket.c (pi_serial_onalarm): use log functions
+	(pi_tickle): send proper tickle commands based on command type
+
+	* libsock/serial.c: remove tickle stuff
+	(pi_serial_connect): set socket command field
+	(pi_serial_accept): ditto
+
+	* libsock/debug.c (pi_log): flush the stream immediately
+
+	* include/pi-source.h: rename init stuff to cmd, chuck accepted
+	field
+
+	* include/pi-socket.h: s/PI_INIT/PI_CMD/ and add net options enum
+
+	* include/pi-net.h: add packet type defines and type field to data
+
+	* dlpsh.c: merge from main line
+
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/socket.c: look for API type
+
+	* libsock/pi-file.c (pi_file_append_record): use LOG
+
+	* libsock/net.c (net_rx): make reading a little more sane
+
+	* include/pi-debug.h: add API type
+
+	* configure.in: define DEBUG here when appropriate
+
+	* acconfig.h: add DEBUG
+
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+	
+	* libsock/connect.c (pilot_connect): switch back to _NET for
+	testing
+
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+	
+	* Merge from the main line
+
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+	
+	* include/pi-debug.h: add CMP type
+
+	* libsock/*.c: use new debugging commands
+	
 2002-01-05  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: use AC_PATH_PROGS rather than AC_PATH_PROG in the
@@ -199,7 +388,44 @@
 	* configure.in (msg_perl): fix perl check to allow for all 5.x
 	versions
 
-2001-12-5   David A. Desrosiers <hacker at gnu-designs dot com>
+2001-12-06  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/utils.c (dumpline): take debug type
+	(dumpdata): ditto
+
+	* libsock/net.c: convert to new logging functions
+	
+	* libsock/padp.c: ditto
+
+	* libsock/slp.c: ditto
+
+	* libsock/dlp.c: start converting over to new logging functions
+
+	* libsock/Makefile.am (INCLUDES): compile new files
+
+	* include/pi-source.h: no longer need the serial trace info,
+	modify protos
+
+	* include/pi-slp.h: new protos
+
+	* include/pi-padp.h: new protos, tidy
+
+	* include/pi-net.h: new protos
+
+	* libsock/socket.c: let env vars set the debugging types, level
+	and log files
+
+	* libsock/debug.c (pi_debug_get_types): get the debugging type
+	flags
+	(pi_debug_set_types): set same
+	(pi_debug_get_level): get debug level
+	(pi_debug_set_level): set same
+	(pi_debug_set_file): set the file to write debug output to
+	(pi_log): log debugging info
+
+	* include/pi-debug.h: debugging functionality
+	
+2001-12-05   David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* dlpsh.c: major updates, moved things around, cleaning house.
 	  Fixed an include problem, merged with HAVE_READLINE updates.
@@ -221,6 +447,27 @@
 
 	* Makefile.am: conditionally compile tcl/tk dependant apps,
 	include readline cflags and libs
+
+2001-12-01  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/test.c (main): default to using PI_PF_NET protocol
+
+	* libsock/socket.c (pi_socket): set up a separate initialization
+	protocol
+
+	* libsock/serial.c (pi_serial_accept): use various types of
+	handshaking depending on the init value is set to
+
+	* libsock/cmp.c (cmp_dump): additional info
+
+	* libsock/Makefile.am: compile new file
+
+	* libsock/net.c: Move the net sync type protocol in to its own
+	file and make it a pi protocol
+
+2001-11-29  JP Rosevear  <jpr@ximian.com>
+
+	* First cut of the new protocol queue rewrite
 
 2001-11-28  David A. Desrosiers <hacker at gnu-designs dot com>
 

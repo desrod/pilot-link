@@ -2338,10 +2338,10 @@ openPort(port)
 	CODE:
 	{
 		struct pi_sockaddr a;
-		int socket = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP);
+		int socket = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP);
 		
 		strcpy(a.pi_device, port);
-		a.pi_family = PI_AF_SLP;
+		a.pi_family = PI_AF_PILOT;
 		pi_bind(socket, (struct sockaddr*)&a, sizeof(a));
 		
 		pi_listen(socket, 1);

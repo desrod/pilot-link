@@ -17,15 +17,16 @@ libpisock_la_SOURCES =  \
 	connect.c	\
 	cmp.c		\
 	datebook.c	\
+	debug.c		\
 	dlp.c		\
 	expense.c	\
 	hinote.c	\
 	inet.c		\
-	inetserial.c	\
 	mail.c		\
 	md5.c		\
 	memo.c		\
 	money.c		\
+	net.c		\
 	padp.c		\
 	pi-file.c	\
 	pi-header.c	\

@@ -28,7 +28,6 @@ bin_PROGRAMS = 		\
 	addresses	\
 	debugsh		\
 	dlpsh		\
-	getrom		\
 	hinotes		\
 	install-datebook\
 	install-expenses \
@@ -42,7 +41,6 @@ bin_PROGRAMS = 		\
 	pi-getram	\
 	pi-getrom	\
 	pi-nredir	\
-	pi-port		\
 	pilot-addresses	\
 	pilot-clip	\
 	pilot-dedupe	\
@@ -101,11 +99,11 @@ dlpsh_LDADD = 					\
 	$(RL_LIBS)				\
 	$(top_builddir)/libsock/libpisock.la
 
-getrom_SOURCES = \
-	getrom.c
-getrom_LDADD = 					\
-	@LIBOBJS@				\
-	$(top_builddir)/libsock/libpisock.la
+#getrom_SOURCES = \
+#	getrom.c
+#getrom_LDADD = 					\
+#	@LIBOBJS@				\
+#	$(top_builddir)/libsock/libpisock.la
 
 hinotes_SOURCES = \
 	hinotes.c
@@ -186,11 +184,11 @@ pi_nredir_LDADD = 				\
 	@LIBOBJS@				\
 	$(top_builddir)/libsock/libpisock.la
 
-pi_port_SOURCES = \
-	pi-port.c
-pi_port_LDADD = 				\
-	@LIBOBJS@				\
-	$(top_builddir)/libsock/libpisock.la
+#pi_port_SOURCES = \
+#	pi-port.c
+#pi_port_LDADD = 				\
+#	@LIBOBJS@				\
+#	$(top_builddir)/libsock/libpisock.la
 
 pilot_addresses_SOURCES = \
 	pilot-addresses.c

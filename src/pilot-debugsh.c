@@ -56,12 +56,12 @@ int main(int argc, char *argv[])
 		exit(2);
 	}
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP))) {
-		perror("pi_socket");
-		exit(1);
-	}
+//	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP))) {
+//		perror("pi_socket");
+//		exit(1);
+//	}
 
-	laddr.pi_family = PI_AF_SLP;
+//	laddr.pi_family = PI_AF_SLP;
 	strcpy(laddr.pi_device, argv[1]);
 
 	pi_bind(sd, (struct sockaddr *) &laddr, sizeof(laddr));
@@ -166,8 +166,8 @@ void read_pilot(int sd)
 	char 	buf[4096];
 	int 	l = pi_read(sd, buf, 4096);
 	
-	printf("From Palm:");
-	dumpdata((unsigned char *) buf, l);
+	printf("From Palm %d:", l);
+//	dumpdata((unsigned char *) buf, l);
 
 	if (buf[2] == 0) {			/* SysPkt command 	*/
 		if (buf[0] == 1) {		/* Console 		*/

@@ -47,6 +47,7 @@
 #endif
 #endif
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 
@@ -301,38 +302,38 @@ unsigned long makelong(char *c)
 	return get_long(c2);
 }
 
-void dumpline(const unsigned char *buf, int len, int addr)
+void dumpline(int type, const unsigned char *buf, int len, int addr)
 {
 	int 	i;
 
-	fprintf(stderr, "%.4x  ", addr);
+	pi_log(type, PI_DBG_LVL_NONE, "  %.4x  ", addr);
 
 	for (i = 0; i < 16; i++) {
 
 		if (i < len)
-			fprintf(stderr, "%.2x ",
-				0xff & (unsigned int) buf[i]);
+			pi_log(type, PI_DBG_LVL_NONE, "%.2x ",
+			       0xff & (unsigned int) buf[i]);
 		else
-			fprintf(stderr, "   ");
+			pi_log(type, PI_DBG_LVL_NONE, "   ");
 	}
 
-	fprintf(stderr, "  ");
+	pi_log(type, PI_DBG_LVL_NONE, "  ");
 
 	for (i = 0; i < len; i++) {
 		if (isprint(buf[i]) && (buf[i] >= 32) && (buf[i] <= 126))
-			fprintf(stderr, "%c", buf[i]);
+			pi_log(type, PI_DBG_LVL_NONE, "%c", buf[i]);
 		else
-			fprintf(stderr, ".");
+			pi_log(type, PI_DBG_LVL_NONE, ".");
 	}
-	fprintf(stderr, "\n");
+	pi_log(type, PI_DBG_LVL_NONE, "\n");
 }
 
-void dumpdata(const unsigned char *buf, int len)
+void dumpdata(int type, const unsigned char *buf, int len)
 {
 	int 	i;
 
 	for (i = 0; i < len; i += 16) {
-		dumpline(buf + i, ((len - i) > 16) ? 16 : len - i, i);
+		dumpline(type, buf + i, ((len - i) > 16) ? 16 : len - i, i);
 	}
 }
 

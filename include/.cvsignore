@@ -1,3 +1,4 @@
 Makefile
 Makefile.in
+pi-sockaddr.h
 pi-version.h
