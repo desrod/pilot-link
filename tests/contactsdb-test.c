@@ -29,6 +29,7 @@
 #include "pi-header.h"
 #include "pi-appinfo.h"
 
+#undef PRINT_USELESS_CRAP
 
 #define hi(x) (((x) >> 4) & 0x0f)
 #define lo(x) ((x) & 0x0f)
@@ -49,6 +50,76 @@ const char *pbooknames[] =
 	"Contacts 1.1/1.2"
 };
 
+char *contacts_fields[] =
+{
+	"Last name",
+	"First name",
+	"Company",
+	"Title",
+	"Phone 1",
+	"Phone 2",
+	"Phone 3",
+	"Phone 4",
+	"Phone 5",
+	"Phone 6",
+	"Phone 7",
+	"Messaging 1",
+	"Messaging 2",
+	"Website",
+	"Custom 1",
+	"Custom 2",
+	"Custom 3",
+	"Custom 4",
+	"Custom 5",
+	"Custom 6",
+	"Custom 7",
+	"Custom 8",
+	"Custom 9",
+	"Address 1",
+	"City",
+	"State",
+	"Zip",
+	"Country",
+	"Address 2",
+	"City",
+	"State",
+	"Zip",
+	"Country",
+	"Address 3",
+	"City",
+	"State",
+	"Zip",
+	"Country",
+	"Note"
+};
+
+char *contacts_phones[] =
+{
+	"Phone (Work)",
+	"Phone (Home)",
+	"Phone (Fax)",
+	"Phone (Other)",
+	"Email",
+	"Phone (Main)",
+	"Phone (Pager)",
+	"Phone (Mobile)"
+};
+
+char *contacts_ims[] =
+{
+	"IM",
+	"AIM",
+	"MSN IM",
+	"Yahoo IM",
+	"ICQ"
+};
+
+char *contacts_addrs[] =
+{
+	"Addr (Work)",
+	"Addr (Home)",
+	"Addr (Other)"
+};
 
 /* This is ugly, but it works */
 void
@@ -208,6 +279,10 @@ void
 print_record (int recid, int attr, int category, pi_buffer_t *buf)
 {
 	size_t ofs = 0;
+	int phonelabels[8];
+	int addrlabels[3];
+	int imlabels[2];
+	char *l;
 	uint32_t contents1, contents2;
 	int i;
 	char *s;
@@ -236,33 +311,53 @@ print_record (int recid, int attr, int category, pi_buffer_t *buf)
 	/*
 	 * The first 17 bytes are a header 
 	 */
-	printf (" Phone labels: { %i, %i, %i, %i, %i, %i, %i } (showing [%i])\n",
-			lo(get_byte(buf->data + 3)),
-			hi(get_byte(buf->data + 3)),
-			lo(get_byte(buf->data + 2)),
-			hi(get_byte(buf->data + 2)),
-			lo(get_byte(buf->data + 1)),
-			hi(get_byte(buf->data + 1)),
-			lo(get_byte(buf->data)),
-			hi(get_byte(buf->data)));
-	printf (" Address labels: { %i, %i, %i }\n",
-			lo(get_byte(buf->data + 5)),
-			hi(get_byte(buf->data + 5)),
-			lo(get_byte(buf->data + 4)));
+	phonelabels[0] = lo(get_byte(buf->data + 3));
+	phonelabels[1] = hi(get_byte(buf->data + 3));
+	phonelabels[2] = lo(get_byte(buf->data + 2));
+	phonelabels[3] = hi(get_byte(buf->data + 2));
+	phonelabels[4] = lo(get_byte(buf->data + 1));
+	phonelabels[5] = hi(get_byte(buf->data + 1));
+	phonelabels[6] = lo(get_byte(buf->data));
+	phonelabels[7] = hi(get_byte(buf->data));
+
+	addrlabels[0] = lo(get_byte(buf->data + 5));
+	addrlabels[1] = hi(get_byte(buf->data + 5));
+	addrlabels[2] = lo(get_byte(buf->data + 4));
 	/* high nybble of data[4] unused */
 
+	imlabels[0] = lo(get_byte(buf->data + 7));
+	imlabels[1] = hi(get_byte(buf->data + 7));
 	/* data[6] unused */
-
-	printf (" IM labels: { %i, %i }\n",
-			lo(get_byte(buf->data + 7)),
-			hi(get_byte(buf->data + 7)));
 
 	contents1 = get_long(buf->data + 8);
 	contents2 = get_long(buf->data + 12);
+
+#if PRINT_USELESS_CRAP	
+	printf (" Phone labels: { %i, %i, %i, %i, %i, %i, %i } (showing [%i])\n",
+			phonelabels[0],
+			phonelabels[1],
+			phonelabels[2],
+			phonelabels[3],
+			phonelabels[4],
+			phonelabels[5],
+			phonelabels[6],
+			phonelabels[7]);
+
+	printf (" Address labels: { %i, %i, %i }\n",
+			addrlabels[0],
+			addrlabels[1],
+			addrlabels[2]);
+
+	printf (" IM labels: { %i, %i }\n",
+			imlabels[0],
+			imlabels[1]);
+
 	printf (" Record contents: 0x%08x 0x%08x\n", contents1, contents2);
 
 	/* + 17 to make it absolute */
 	printf (" Offset to Company: 0x%04x\n", get_byte(buf->data + 16) + 17);
+
+#endif /* PRINT_USELESS_CRAP */
 
 	ofs += 17;
 
@@ -273,16 +368,21 @@ print_record (int recid, int attr, int category, pi_buffer_t *buf)
 			/* This isn't safe, should probably be checking record length */
 			s = buf->data + ofs;
 			ofs += strlen(s) + 1;
-			printf (" Field %i: %s\n", i, s);
+
+			/* Special cases are annoying.. */
+			if (i > 3 && i < 11)
+				l = contacts_phones[phonelabels[i - 4]];
+			else if (i == 11 || i == 12)
+				l = contacts_ims[imlabels[i - 11]];
+			else if (i == 23)
+				l = contacts_addrs[addrlabels[i - 23]];
+			else
+				l = contacts_fields[i];
+
+			printf (" %-15s: %s\n", l, s);
+
 			contents1 ^= (1 << i);
 		}
-	}
-
-	if (contents1 != 0)
-	{
-		/* we cleared all of the bits we recognize */
-		printf (" Unknown fields in contents1: 0x%08x\n", contents1);
-		goto broken;
 	}
 
 	for (i = 0; i < 11; i++)
@@ -292,7 +392,13 @@ print_record (int recid, int attr, int category, pi_buffer_t *buf)
 			/* This isn't safe, should probably be checking record length */
 			s = buf->data + ofs;
 			ofs += strlen(s) + 1;
-			printf (" Field %i: %s\n", i + 28, s);
+			if (i == 0 || i == 5)
+				l = contacts_addrs[addrlabels[i==0? 1: 2]];
+			else
+				l = contacts_fields[i + 28];
+
+			printf (" %-15s: %s\n", l, s);
+
 			contents2 ^= (1 << i);
 		}
 	}
@@ -303,7 +409,7 @@ print_record (int recid, int attr, int category, pi_buffer_t *buf)
 
 		ofs += 4;
 
-		printf (" Birthday: %i-%02i-%02i",
+		printf (" Birthday       : %i-%02i-%02i",
 				((bday & 0xfe00) >> 9) + 1904,
 				((bday & 0x01e0) >> 4) - 1,
 				bday & 0x001f);
@@ -314,7 +420,7 @@ print_record (int recid, int attr, int category, pi_buffer_t *buf)
 			int reminder = (int)get_byte(buf->data + ofs);
 
 			ofs++;
-			printf (" (reminder %i days before)", reminder);
+			printf (" (%i day reminder)", reminder);
 			contents2 ^= 0x2000;
 		}
 		puts ("");
@@ -322,18 +428,14 @@ print_record (int recid, int attr, int category, pi_buffer_t *buf)
 		contents2 ^= 0x1800;
 	}
 
-
-	if (contents2 != 0)
-	{
-		/* we cleared all of the bits we recognize */
-		printf (" Unknown fields in contents2: 0x%08x\n", contents2);
+	/* we cleared all of the bits we recognize */
+	if (contents1 != 0 || contents2 != 0)
 		goto broken;
-	}
 
 	if (ofs < buf->used)
 	{
 		/* Under Contacts 1.0, this is probably actually an error */
-		printf ("Picture: %zu bytes\n", buf->used - ofs);
+		printf (" Picture        : %zu bytes\n", buf->used - ofs);
 	}
 
 	puts ("");
