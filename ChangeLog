@@ -1,5 +1,11 @@
 2000-10-28    <jpr@helixcode.com>
 
+	* Makefile.in: install pix dir properly
+
+2000-10-28    <jpr@helixcode.com>
+
+	* tests/.cvsignore: shush
+
 	* libcc/.cvsignore: ditto
 
 2000-10-28    <jpr@helixcode.com>

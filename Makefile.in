@@ -135,7 +135,7 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	for m in man/*.7; do \
 		$(INSTALL_DATA) $$m $(mandir7)/`basename $$m`; \
 	done
-	for p in $(srcdir)/pix/*.gif $(srcdir)/pix/*.xbm; do \
+	for p in $(srcdir)/tools/pix/*.gif $(srcdir)/tools/pix/*.xbm; do \
 		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
 	done
 	$(LIBTOOL) -n --finish $(libdir)
@@ -279,10 +279,10 @@ Perl5 Perl: FORCE
 
 Tcl: FORCE
 	cd $(SUBDIRS)/Tcl; $(MAKE)
-	
+
 Java: FORCE
 	cd $(SUBDIRS)/Java; $(MAKE)
-	
+
 check test tests: FORCE
 	cd tests; $(MAKE) tests
 
