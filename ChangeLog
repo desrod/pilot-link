@@ -1,3 +1,8 @@
+2001-12-06  JP Rosevear  <jpr@ximian.com>
+
+	* configure.in (msg_perl): fix perl check to allow for all 5.x
+	versions
+
 2001-12-5   David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* dlpsh.c: major updates, moved things around, cleaning house.
