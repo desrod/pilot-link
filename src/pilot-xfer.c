@@ -29,17 +29,10 @@
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/errno.h>
 #include <unistd.h>
-#if TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
+#include <sys/time.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>
@@ -316,9 +309,19 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 	char 	**orig_files = 0;
 	DIR 	*dir;
 
-	Connect();
+ 	if (access(dirname, F_OK) == -1) {
+		mkdir(dirname, 0700); 
+		return;
+	} else if (access(dirname, R_OK|W_OK|X_OK) != 0) {
+		fprintf(stderr, "\n");
+		perror("   ERROR");
+		fprintf(stderr, "   Unable to write to %s, check "
+			"ownership and permissions.\n\n", dirname);
+		exit(1);
+	} else {
+		Connect();
+	}
 
-	mkdir(dirname, 0700);
 	if (archive_dir)
 		mkdir(archive_dir, 0700);
 
@@ -364,7 +367,6 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			long modtime;
 		}; 
 		*/
-		
 
 		int 	skip = 0,
 			x;
@@ -381,8 +383,9 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		}
 
 		if (dlp_OpenConduit(sd) < 0) {
+			printf("\n");
 			printf("Exiting on cancel, all data was not backed " 
-			       "up.\nStopped before backing up '%s'.\n",
+			       "up.\nStopped before backing up '%s'.\n\n",
 				info.name);
 			exit(1);
 		}
@@ -465,7 +468,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 
 		RemoveFromList(name, orig_files, ofile_total);
 	}
-
+		
 	if (orig_files) {
 		int 	dirname_len = strlen(dirname);
 		char 	newname[256];
@@ -650,14 +653,22 @@ static void Restore(char *dirname)
 		i,
 		j,
 		max,
-		size;
+		size,
+		save_errno 	= errno;
 	DIR 	*dir;
 	struct 	dirent *dirent;
 	struct 	DBInfo info;
 	struct 	db **db 	= NULL;
 	struct 	pi_file *f;
 		
-	dir = opendir(dirname);
+	if ((dir = opendir(dirname)) == NULL) {
+		fprintf(stderr, "\n");
+		perror("   ERROR");
+		fprintf(stderr, "   opendir() failed. Cannot open directory %s.\n", dirname);
+		fprintf(stderr, "   Does the directory exist?\n\n");
+		errno = save_errno;
+		exit(1);
+	}
 
 	/* Find out how many directory entries exist, so that we can
 	   allocate the buffer.  We avoid scandir() for maximum portability.
@@ -677,7 +688,7 @@ static void Restore(char *dirname)
 	dbcount = 0;
 	rewinddir(dir);
 
-	while ((dirent = readdir(dir))) {
+	while ((dirent = readdir(dir)) != NULL) {
 
 		if (dirent->d_name[0] == '.')
 			continue;
