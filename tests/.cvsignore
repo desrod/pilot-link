@@ -2,6 +2,7 @@ Makefile
 Makefile.in
 .deps
 .libs
+contactsdb-test
 dlp-test
 packers
 versamail-test

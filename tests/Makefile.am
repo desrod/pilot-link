@@ -2,10 +2,16 @@ INCLUDES = 			\
 	-I../include		\
 	-I$(top_srcdir)/include
 
-noinst_PROGRAMS =	\
-	dlp-test	\
-	versamail-test	\
+noinst_PROGRAMS =		\
+	contactsdb-test		\
+	dlp-test		\
+	versamail-test		\
 	vfs-test
+
+contactsdb_test_SOURCES =	\
+	contactsdb-test.c
+contactsdb_test_LDADD =		\
+	$(top_builddir)/libpisock/libpisock.la
 
 dlp_test_SOURCES =	\
 	dlp-test.c
