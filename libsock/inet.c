@@ -432,10 +432,23 @@ pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 	int 	total,
 		nwrote;
 	struct 	pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+	struct 	timeval t;
+	fd_set 	ready;
 
+	FD_ZERO(&ready);
+	FD_SET(ps->sd, &ready);
 
 	total = len;
 	while (total > 0) {
+		if (data->timeout == 0)
+			select(ps->sd + 1, 0, &ready, 0, 0);
+		else {
+			t.tv_sec 	= data->timeout / 1000;
+			t.tv_usec 	= (data->timeout % 1000) * 1000;
+			select(ps->sd + 1, 0, &ready, 0, &t);
+		}
+		if (!FD_ISSET(ps->sd, &ready))
+			return -1;
 		nwrote = write(ps->sd, msg, len);
 		if (nwrote < 0)
 			return -1;

@@ -1,5 +1,12 @@
 2002-03-07  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/unixserial.c (s_write): obey the timeout for writes as
+	well
+
+	* libsock/inet.c (pi_inet_write): ditto
+	
+2002-03-07  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/connect.c (pilot_connect): if the port is null and the
 	PILOTPORT env var is null, try using /dev/pilot
 
