@@ -102,6 +102,9 @@ do
              if [ "$OSTYPE" = "darwin" ]; then
                 echo "Running glibtoolize... ($MACHTYPE)"
                 glibtoolize --force --copy
+	     else
+		echo "Running libtoolize..."
+		libtoolize --force --copy
              fi
           else
             echo "Running libtoolize..."

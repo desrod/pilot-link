@@ -505,6 +505,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
 		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
 
+		totalsize += sbuf.st_size;
 		printf("   [+][%-4d]", filecount);
 		printf("[%s] %s '%s'", crid, synctext, info.name);
 		
