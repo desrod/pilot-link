@@ -48,5 +48,5 @@ pilot_datebook_LDADD =			\
 EXTRA_DIST =			\
 	getopt.h		\
 	getopt.c		\
-	getopt1.c		\
+	getopt1.c
 
