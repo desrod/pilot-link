@@ -1215,6 +1215,7 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	if ((result = dlp_FindDBByName(socket, cardno, pf->info.name,
 			NULL, NULL, NULL, &size_info)) < 0)
 		goto fail;
+
 	total_size = size_info.totalBytes + size_info.appBlockSize;
 
 	if ((result = dlp_OpenDB (socket, cardno, dlpOpenRead | dlpOpenSecret,
@@ -1229,6 +1230,8 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 
 	if (size_info.appBlockSize) {
 		result = dlp_ReadAppBlock(socket, db, 0, DLP_BUF_SIZE, buffer);
+		if (result < 0)
+			goto fail;
 		if (result > 0) {
 			pi_file_set_app_info(pf, buffer->data, (size_t)result);
 			written = result;
