@@ -35,11 +35,6 @@
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 int cancel = 0;
 
 struct option options[] = {
@@ -51,7 +46,7 @@ struct option options[] = {
 
 static const char *optstring = "p:hvc";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Retrieves the RAM image from your Palm device\n\n");
 	printf("   Usage: %s -p <port> [pilot.ram]\n\n", progname);

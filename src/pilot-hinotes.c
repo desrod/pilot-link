@@ -31,11 +31,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 /* constants to determine how to produce memos */
 #define MEMO_MBOX_STDOUT 0
 #define MEMO_DIRECTORY 1
@@ -156,7 +151,7 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 	fclose(fd);
 }
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Syncronize your Hi-Notes database with your desktop machine\n\n");
 	printf("   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n", progname);

@@ -27,11 +27,6 @@
 #include "pi-file.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 #ifdef sun
 extern char *optarg;
 extern int optind;
@@ -327,7 +322,7 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 	printf("\n");
 }
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Usage: %s [-s] -p|-u dir file\n", progname);
 	printf("     -s           Do not obey or generate a 'sort' list\n\n");

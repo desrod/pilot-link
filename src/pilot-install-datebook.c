@@ -34,9 +34,9 @@
 #include "pi-datebook.h"
 
 /* Declare prototypes */
-static void display_help(char *progname);
+static void display_help(const char *progname);
 void print_splash(char *progname);
-int pilot_connect(char *port);
+int pilot_connect(const char *porg);
 extern time_t parsedate(char *p);
 
 struct option options[] = {
@@ -49,7 +49,7 @@ struct option options[] = {
 
 static const char *optstring = "p:hvr:";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Installs new Datebook entries onto your Palm handheld device\n\n");
 	printf("   Usage: %s -p <port> -r [file]\n\n", progname);

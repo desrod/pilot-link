@@ -30,11 +30,6 @@
 #include "pi-hinote.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -45,7 +40,7 @@ struct option options[] = {
 
 static const char *optstring = "p:hvc:";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Install local files into your Hi-Notes database on your Palm device\n\n");
 	printf("   Usage: %s -p /dev/pilot -c [category] <file> <file> ..n\n\n", progname);

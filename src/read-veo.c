@@ -46,16 +46,6 @@
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
-/* Declare prototypes */
-static void display_help (char *progname);
-void print_splash (char *progname);
-int pilot_connect (char *port);
-int Decode (unsigned char *inP, unsigned char *outP, short w);
-int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row);
-void WritePicture (int sd, int db, int type, char *name, char *progname,
-				   long flags);
-int protect_files (char *name, char *extension);
-
 struct option options[] =
 {
 	 {"help", no_argument, NULL, 'h'},

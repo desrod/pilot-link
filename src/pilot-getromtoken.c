@@ -27,11 +27,6 @@
 #include "pi-source.h"
 #include "pi-syspkt.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -54,7 +49,7 @@ static const char *optstring = "p:hvu:i:t:";
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Reads a ROM token from a Palm Handheld device\n\n");
 	printf("   Usage: %s -p <port> -t <romtoken>\n\n", progname);

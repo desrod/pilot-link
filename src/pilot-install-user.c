@@ -26,11 +26,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -54,7 +49,7 @@ static const char *optstring = "p:hvu:i:";
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Assigns your Palm device a Username and unique UserID\n\n");
 	printf("   Usage: %s -p <port> -u \"User name\" -i <userid>\n", progname);

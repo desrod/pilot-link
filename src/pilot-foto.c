@@ -40,9 +40,9 @@
 #include "pi-foto.h"
 
 /* Declare prototypes */
-static void display_help(char *progname);
+static void display_help(const char *progname);
 void print_splash(char *progname);
-int pilot_connect(char *port);
+int pilot_connect(const char *porg);
 int get_jpg_info(FILE *in, char *type, unsigned short *version, 
 		 int *height, int *width);
 int do_list(int sd);
@@ -91,7 +91,7 @@ static const char *optstring = "p:hi:ld:Df:Fvc:";
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
    printf("   Installs and Fetches Palm 'Foto' Image files\n");
    printf("   Converts Palm 'Foto' (*.jpg.pdb) Image files to jpg\n\n");

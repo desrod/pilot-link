@@ -30,11 +30,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -61,7 +56,7 @@ static char
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n\n");
 	printf("   Usage: %s -p <port>\n\n", progname);
@@ -87,7 +82,7 @@ int main(int argc, char *argv[])
 		db,
 		i,
 		sd 		= -1;
-	char 	*progname 	= argv[0],
+	const char 	*progname 	= argv[0],
 		*port 		= NULL;
 	unsigned char buffer[0xffff];
 

@@ -29,9 +29,9 @@
 #include "pi-dlp.h"
 
 /* Declare prototypes */
-static void display_help(char *progname);
+static void display_help(const char *progname);
 void print_splash(char *progname);
-int pilot_connect(char *port);
+int pilot_connect(const char *porg);
 
 struct option options[] = {
 	{"port",	required_argument, NULL, 'p'},
@@ -42,7 +42,7 @@ struct option options[] = {
 
 static const char *optstring = "p:hv";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Exports any records marked as \"Archived\" on your Palm to CSV format\n\n");
 	printf("   Usage: %s -p <port>\n\n", progname);

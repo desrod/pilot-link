@@ -18,6 +18,8 @@
  *
  */
 
+#include "popt.h"
+
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,11 +31,6 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
 
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
@@ -47,9 +44,10 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
+
 static const char *optstring = "p:hvedn:i:m:";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Assigns your Palm device NetSync information\n\n");
 	printf("   Usage: %s -p <port> -n <hostname> -i <ip> -m <subnet>\n\n", progname);
@@ -82,6 +80,22 @@ int main(int argc, char *argv[])
 	struct 	NetSyncInfo 	Net;
 
 	struct in_addr addr;
+
+	struct poptOption long_options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm"},
+		{"version", 'v', POPT_ARG_NONE, NULL, 0, "Display version information"},
+        	{"enable", 'e', POPT_ARG_NONE, &enable, 0, "Enables LANSync on the Palm"},
+        	{"disable", 'd', POPT_ARG_NONE, &enable, 0, "Disable the LANSync setting on the Palm"},
+        	{"name", 'n', POPT_ARG_STRING, &hostname, 0, "The hostname of the desktop you are syncing with"},
+        	{"ip", 'i', POPT_ARG_STRING, &address, 0, "IP address of the machine you connect your Palm to"},
+        	{"mask", 'm', POPT_ARG_STRING, &netmask, 0, "The subnet mask of the network your Palm is on"},
+		POPT_AUTOHELP
+        	{ NULL, 0, 0, NULL, 0 }
+	};
+
+	poptContext pc;
+	pc = poptGetContext("install-netsync", argc, (const char **) argv, long_options, 0);
+	setlinebuf(stdout);
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {

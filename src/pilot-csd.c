@@ -45,11 +45,6 @@
 #include "pi-slp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
@@ -253,7 +248,7 @@ fetch_host(char *hostname, size_t hostlen, struct in_addr *address,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Connection Service Daemon for Palm Devices\n\n");
 	printf("   Usage: %s -H <hostname> -a <ip> -n <subnet>\n\n", progname);

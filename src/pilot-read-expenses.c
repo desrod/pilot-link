@@ -30,11 +30,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -44,7 +39,7 @@ struct option options[] = {
 
 static const char *optstring = "p:hv";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Export Palm Expense application database data into text format\n\n");
 	printf("   Usage: %s -p <port>\n\n", progname);

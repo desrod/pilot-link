@@ -42,17 +42,7 @@
 #endif
 #endif
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
 char *progname;
-
-int protect_files(char *name, char *extension);
-void write_ppm( FILE *f, struct NotePad *n );
-void output_picture( int type, struct NotePad n );
-void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category );
-void write_png_v2( FILE *f, struct NotePad *n );
 
 #ifdef HAVE_PNG
 void write_png( FILE *f, struct NotePad *n );
@@ -81,7 +71,7 @@ static const char *optstring = "hvp:lt:";
  * Return:      Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Syncronize your NotePad database with your desktop machine\n\n");
 	printf("   Usage: %s -p /dev/pilot [options]\n\n", progname);

@@ -32,7 +32,7 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-static void display_help(char *progname);
+static void display_help(const char *progname);
 
 struct option options[] = {
 	{"port", 	required_argument,  NULL, 'p'},
@@ -43,12 +43,6 @@ struct option options[] = {
 	{"file",	required_argument,  NULL, 'f'},
 	{NULL, 		0,                  NULL, 0}
 };
-
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-char *tclquote(char *in);
 
 static const char *optstring = "p:hvdt:f:";
 
@@ -98,7 +92,7 @@ char *tclquote(char *in)
 	return buffer;
 }
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Dumps the DatebookDB and/or ToDo applications to ical format\n\n");
 	printf("   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n\n", progname);

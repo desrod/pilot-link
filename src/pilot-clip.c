@@ -28,11 +28,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -127,7 +122,7 @@ static int SetClip(int socket, int type, void *data, int length)
 	return 1;
 }
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Get or Set the Palm Clipboard contents from STDOUT/STDIN\n\n");
 	printf("   Usage: %s -p <port> -g | -s <value>\n\n", progname);

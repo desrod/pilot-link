@@ -39,11 +39,6 @@
 
 char *progname;
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
         {"help",        no_argument,       NULL, 'h'},
         {"version",     no_argument,       NULL, 'v'},
@@ -199,7 +194,7 @@ write_memo_in_directory(char *dirname, struct Memo m,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Manipulate MemoDB.pdb entries from a file or your Palm device\n\n");
 	printf("   Usage: memos -p <port> [-V] [options]\n\n");

@@ -38,14 +38,6 @@
 
 #define DATE_STR_MAX 1000
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-char *read_file(char *filename);
-void install_ToDo(int sd, int db, struct ToDo todo);
-void install(char *port, struct ToDo todo);
-
 struct option options[] = {
         {"port",        required_argument, NULL, 'p'},
         {"help",        no_argument,       NULL, 'h'},
@@ -147,7 +139,7 @@ void install_ToDo(int sd, int db, struct ToDo todo)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Updates the Palm ToDo list with a single new entry\n\n");
 	printf("   Usage: %s [-pdycnft] command(s) [item]\n", progname);

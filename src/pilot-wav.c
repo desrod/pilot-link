@@ -35,9 +35,9 @@
 #include "pi-source.h"
 
 /* Declare prototypes */
-static void display_help(char *progname);
+static void display_help(const char *progname);
 void print_splash(char *progname);
-int pilot_connect(char *port);
+int pilot_connect(const char *porg);
 long write_header(FILE *out);
 long write_data(char *buffer, int index, int size, long dataChunkSize, FILE *out);
 int pdb_to_wav(char *filename);
@@ -387,7 +387,7 @@ int pdb_to_wav(char *filename)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Decodes Palm Voice Memo files to wav files you can read\n\n");
 	printf("   Usage: %s -p <port> [options] file\n", progname);

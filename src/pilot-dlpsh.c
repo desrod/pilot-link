@@ -44,9 +44,9 @@
 struct pi_socket *ticklish_pi_socket;
 
 /* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
+static void display_help(const char *progname);
+void print_splash(const char *progname);
+int pilot_connect(const char *port);
 
 
 /* FIXME: This isn't really ideal, passing a struct in is 
@@ -261,7 +261,7 @@ int ls_fn(int sd, int argc, char *argv[])
 
 		if (lflag == 1) {
 			tag = htonl(info.type);			
-			printf("  More: 0x%x        Flags: 0x%-4x             Type: %.4s\n",
+			printf("  More: 0x%x       Flags: 0x%-4x             Type: %.4s\n",
 				info.more, info.flags, (char *) &tag);
 			tag = htonl(info.creator);
 			printf("  Creator: %c%c%c%c    Modification Number: %-4ld Version: %-2d\n",
@@ -595,8 +595,6 @@ void handle_user_commands(int sd)
 
 #ifdef HAVE_READLINE
 		line = readline(prompt);
-		if (!line != NULL)
-			break;
 		if (*line)	/* skip blanks */
 			add_history(line);
 
@@ -698,7 +696,7 @@ char *strtoke(char *str, char *ws, char *delim)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   An interactive Desktop Link Protocol (DLP) Shell for your Palm device\n\n");
 	printf("   Usage: %s -p <port>\n", progname);

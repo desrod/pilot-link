@@ -27,9 +27,9 @@
 #include "pi-expense.h"
 
 /* Declare prototypes */
-static void display_help(char *progname);
+static void display_help(const char *progname);
 void print_splash(char *progname);
-int pilot_connect(char *port);
+int pilot_connect(const char *porg);
 
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
@@ -96,7 +96,7 @@ char *expenseTypes[] =
 	NULL
 };
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Install Expense application entries to your Palm device\n\n");
 	printf("   Usage: %s [-qrt] [-c category] -p <port> file [file] ...\n", progname);

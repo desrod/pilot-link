@@ -31,11 +31,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -58,7 +53,7 @@ static const char *optstring = "p:hva:";
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n");
 	printf("   Usage: %s -p <port> -a AccountName\n", progname);

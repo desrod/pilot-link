@@ -41,7 +41,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
 int read_csvline(FILE *f);
 
-static void display_help(char *progname);
+static void display_help(const char *progname);
 
 int realentry[21] = 
     { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20 };
@@ -614,7 +614,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n", progname);
 	printf("             [-d category] -r|-w [<file>]\n\n");

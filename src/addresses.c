@@ -30,11 +30,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -56,7 +51,7 @@ static const char *optstring = "p:hv";
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n");
 	printf("   Usage: addresses -p <port> [options]\n\n");
@@ -80,7 +75,7 @@ int main(int argc, char *argv[])
 		sd 		= -1;
 	
 	char 	*progname 	= argv[0],
-		*port 		= NULL;
+		*port		= NULL;
 	
 	struct 	AddressAppInfo aai;
 

@@ -39,9 +39,9 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
-static void display_help(char *progname);
+static void display_help(const char *progname);
 void print_splash(char *progname);
-int pilot_connect(char *port);
+int pilot_connect(const char *porg);
 
 void do_read(struct pi_socket *ps, int type, char *buffer, int length);
 
@@ -92,7 +92,7 @@ void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 	}
 }
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Reads incoming remote Palm data during a Network HotSync\n\n");
 	printf("   Usage: %s -p <port>\n\n", progname);

@@ -30,11 +30,6 @@
 #include "pi-source.h"
 #include "pi-file.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
@@ -398,7 +393,7 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Dump application and header information from your local PRC/PDB files\n\n");
 	printf("   Usage: %s [options] file\n\n", progname);

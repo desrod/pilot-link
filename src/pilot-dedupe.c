@@ -26,11 +26,6 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -211,7 +206,7 @@ static int DeDupe (int sd, char *dbname)
 	return 0;
 }
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Removes duplicate records from any Palm database\n\n");
 	printf("   Usage: %s -p <port> dbname [dbname] ..\n", progname);

@@ -40,12 +40,6 @@
 #include "pi-memo.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-int casecmp(const char *s1, const char *s2);
-
 struct option options[] = {
 	{"port"   ,     required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -58,7 +52,7 @@ struct option options[] = {
 
 static const char *optstring = "p:hvc:rt";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Installs a new Memo entry onto your Palm device\n\n");
 	printf("   Usage: %s -p <port> [-rt] [-c category] file [file] ...\n\n", 

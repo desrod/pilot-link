@@ -45,7 +45,7 @@
 
 /* Declare prototypes */
 void print_splash(char *progname);
-int pilot_connect(char *port);
+int pilot_connect(const char *porg);
 
 void markline(char *msg);
 int openmhmsg(char *dir, int num);

@@ -34,11 +34,6 @@
 #include "pi-file.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -49,7 +44,7 @@ struct option options[] = {
 
 static const char *optstring = "p:hvf:";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Syncronize your ToDo database with your desktop machine\n\n");
 	printf("   Usage: %s -p <port> [options]\n\n", progname);

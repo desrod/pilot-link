@@ -45,23 +45,7 @@
 #endif
 #endif
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
 const char *progname;
-int protect_files(char *name, char *extension);
-
-void write_png (FILE *f, const struct PalmPixState *state, const struct 
-	PalmPixHeader *header);
-void write_ppm (FILE *f, const struct PalmPixState *state, const struct 
-	PalmPixHeader *header);
-void write_png( FILE *f, const struct PalmPixState *state, const struct 
-	PalmPixHeader *header);
-void init_for_ppm (struct PalmPixState *state);
-void read_db (struct PalmPixState *state, int n, int (*action) 
-	(const struct PalmPixHeader *, struct PalmPixState *, int, 
-	const char *), const char *action_arg);
 
 struct option options[] = {
 	{"port", 	required_argument,  NULL, 'p'},
@@ -489,7 +473,7 @@ static int fail (const char *func) {
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname) 
+static void display_help(const char *progname) 
 {
 	printf("   Convert all pictures in the files given, or found via connecting to a\n");
 	printf("   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");

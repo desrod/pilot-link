@@ -1,4 +1,4 @@
-;/* 
+/* 
  * pilot-xfer.c:  Palm Database transfer utility
  *
  * (c) 1996, 1998, Kenneth Albanowski.
@@ -65,11 +65,6 @@ typedef struct {
   byte nextRecList[4];
   char nRec[2];
 } pdb_t;
-
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
 
 typedef enum { 
   palm_media_ram, 	/* media_type 0 */
@@ -1131,7 +1126,7 @@ static void palm_time(void)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Sync, backup, install, delete and more from your Palm device.\n");
 	printf("   This is the swiss-army-knife of the entire pilot-link suite.\n\n");

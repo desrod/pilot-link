@@ -40,10 +40,6 @@ struct option options[] = {
 
 static const char *optstring = "p:hvi:f:d";
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 static int Fetch(int sd, char *filename) 
@@ -139,7 +135,7 @@ static int Delete(int sd)
 	return 0;
 }
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Package up any arbitrary file and sync it to your Palm device\n\n");
 	printf("   Usage: %s -p <port> [options]\n\n", progname);

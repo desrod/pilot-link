@@ -37,11 +37,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 int cancel = 0;
 
 struct option options[] = {
@@ -53,7 +48,7 @@ struct option options[] = {
 
 static const char *optstring = "p:hv";
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Retrieves the ROM image from your Palm device\n\n");
 	printf("   Usage: %s -p <port> [pilot.rom]\n\n", progname);

@@ -28,11 +28,6 @@
 #include "pi-todo.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 void install_ToDos(int sd, int db, char *filename);
 
 struct option options[] = {
@@ -117,7 +112,7 @@ void install_ToDos(int sd, int db, char *filename)
 	return;
 }
 
-static void display_help(char *progname)
+static void display_help(const char *progname)
 {
 	printf("   Updates the Palm ToDo list with entries from a local file\n\n");
 	printf("   Usage: %s -p <port> -f <filename>\n", progname);
