@@ -32,6 +32,7 @@
 static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
+char *strdup(const char *s);
 
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
@@ -70,6 +71,7 @@ int main(int argc, char *argv[])
 	int 	c,		/* switch */
 		enable		= -1,
 		sd 		= -1;
+
 	char 	*progname 	= argv[0],
 		*port 		= NULL,
 		*hostname 	= NULL,
@@ -91,7 +93,7 @@ int main(int argc, char *argv[])
 			return 0;
 		case 'p':
 			free(port);
-			port = priv_strdup(optarg);
+			port = strdup(optarg);
 			break;
 		case 'e':
 			enable = 1;
@@ -101,15 +103,15 @@ int main(int argc, char *argv[])
 			break;
 		case 'n':
 			free(hostname);
-			hostname = priv_strdup(optarg);
+			hostname = strdup(optarg);
 			break;
 		case 'i':
 			free(address);
-			address = priv_strdup(optarg);
+			address = strdup(optarg);
 			break;
 		case 'm':
 			free(netmask);
-			netmask = priv_strdup(optarg); 
+			netmask = strdup(optarg); 
 			break;
 		default:
 			display_help(progname);
