@@ -2,13 +2,14 @@
 #ifndef _PILOT_CMP_H_
 #define _PILOT_CMP_H_
 
-#define CommVersion_1_0 0x01000000L
-#define CommVersion_2_0 0x01010000L
+#define CommVersion_1_0 0x0100L
+#define CommVersion_2_0 0x0101L
 
 struct cmp {
   unsigned char type;
   unsigned char flags;
-  unsigned long commversion;
+  unsigned int version;
+  int reserved;
   unsigned long baudrate;
 };
 

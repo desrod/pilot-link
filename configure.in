@@ -24,7 +24,7 @@ AC_STRUCT_TM
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(atexit strchr memcpy strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction)
+AC_CHECK_FUNCS(atexit strchr memcpy strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2)
 
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
   ac_cv_termios_cspeed,

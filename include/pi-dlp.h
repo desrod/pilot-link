@@ -29,6 +29,7 @@ struct SysInfo {
 struct DBInfo {
   int more;
   unsigned int flags;
+  unsigned int miscflags;
   unsigned long type,creator;
   unsigned int version;
   unsigned long modnum;
@@ -48,12 +49,23 @@ struct CardInfo {
 	int more;
 };
 
+struct NetSyncInfo {
+  int active;
+  char PCName[256]; /* Null terminated string */
+  char PCAddr[40]; /* Null terminated string */
+  char PCMask[40]; /* Null terminated string */
+};
+
 enum dlpDBFlags {
 	dlpDBFlagResource = 0x0001, /* Resource DB, instead of record DB */
 	dlpDBFlagReadOnly = 0x0002, /* DB is read only */
 	dlpDBFlagAppInfoDirty = 0x0004, /* AppInfo data has been modified */
 	dlpDBFlagBackup = 0x0008, /* DB is tagged for generic backup */
-	dlpDBFlagOpen = 0x8000 /* DB is currently open */
+	dlpDBFlagOpen = 0x8000, /* DB is currently open */
+	
+	/* v2.0 specific */
+	dlpDBFlagNewer = 0x0010, /* Newer version may be installed over open DB */
+	dlpDBFlagReset = 0x0020 /* Reset after installation */
 };
 
 enum dlpRecAttributes {
@@ -246,6 +258,8 @@ extern int dlp_WriteRecord(int sd, int dbhandle, int flags,
 
 extern int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID);
 
+extern int dlp_DeleteCategory(int sd, int dbhandle, int category); /* Only available in v2.0*/
+
 extern int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, void * buffer, 
                           int* index, int* size);
 
@@ -260,6 +274,16 @@ extern int dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long resty
 extern int dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer,
                           recordid_t * id, int * index, int * size, int * attr, int * category);
 
+extern int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory, void* buffer,
+                          recordid_t* id, int* index, int* size, int* attr, int* category);
+
+  /* V2.0 only */                        
+
+extern int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void* buffer,
+                          recordid_t* id, int* index, int* size, int* attr, int* category);
+                          
+  /* V2.0 only */                        
+                          
 extern int dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void * buffer, 
                           int * index, int * size, int * attr, int * category);
 
@@ -276,9 +300,35 @@ extern int dlp_ResetSyncFlags(int sd, int fHandle);
   /* For record databases, reset all dirty flags. For both record and
      resource databases, set the last sync time to now. */
 
-extern int dlp_CallApplication(int sd, unsigned long creator, int action,
+
+extern int dlp_CallApplication(int sd, unsigned long creator, unsigned long type, int action,
                         int length, void * data,
-                        int * resultptr,
-                        int * retlen, void * retdata);
+                        unsigned long * retcode, int maxretlen, int * retlen, void * retdata);
+  /* Supports longer retcode and data on v 2.0 Pilots */
+                                                
+extern int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num, 
+                           unsigned long * feature);
+
+  /* Read feature settting -- only valid for 2.0 Pilots */
+
+extern int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo * i);
+
+  /* 2.0 only */
+
+extern int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i);
+                        
+  /* 2.0 only */
+
+extern int dlp_ReadAppPreference(int sd, int fHandle, unsigned long creator, int id, int backup,
+                          int maxsize, void* buffer, int * size, int * version);
+
+  /* 2.0 only */
+
+                          
+extern int dlp_WriteAppPreference(int sd, int fHandle, unsigned long creator, int id, int backup,
+                          int version, void * buffer, int size);
+
+  /* 2.0 only */
+                                                    
                   
 #endif /*_PILOT_DLP_H_*/

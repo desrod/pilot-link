@@ -183,11 +183,11 @@ void Read_Pilot(ClientData clientData, int mask) {
   if (l < 6)
     return;
 
-  puts("From Pilot:");
-  dumpdata((unsigned char *)buf, l);
+  /*puts("From Pilot:");
+  dumpdata((unsigned char *)buf, l);*/
   
   if(buf[2] == 0) { /* SysPkt command */
-    if(buf[0] == 1) { /* Console */
+    if(buf[0] == 2) { /* UI */
       if ((!console) || debugger) {
               Say("Console active\n");
 	      console = 1;
@@ -195,6 +195,58 @@ void Read_Pilot(ClientData clientData, int mask) {
 	      SetModeLabel();
 	      Tcl_VarEval(interp, "checkin 25",NULL);
       }
+      if(buf[4] == 0x0c) { /* Screen update */
+#ifdef TK
+	if (usetk) {
+      	int i, x1, y1, sx, sy, w, h, bytes;
+      	int y,x;
+      	char buffer[8192];
+        Tk_PhotoImageBlock block;
+        Tk_PhotoHandle handle;
+      	
+      	bytes = get_short(buf+6);
+      	y1 = get_short(buf+8);
+      	x1 = get_short(buf+10);
+      	sy = get_short(buf+12);
+      	sx = get_short(buf+14);
+      	h = get_short(buf+16);
+      	w = get_short(buf+18);
+      	
+        block.width = w;
+        block.height =h;
+        block.pitch = w;
+        block.pixelSize = 1;
+        block.offset[0] = 0;
+        block.offset[1] = 0;
+        block.offset[2] = 0; 
+        block.pixelPtr = buffer;
+   
+        handle = Tk_FindPhoto("Case");
+ 
+        i = 0;
+        l = 0;
+        for (y=0;y<h;y++) {
+          l = 20 + (y*bytes);
+          for(x=0;x<w;x++) {
+            int mask = 1<<(7-(x%8));
+            buffer[i++] = (buf[x/8+l] & mask) ? 0 : 0xff;
+          }
+        }
+      
+        /*for(i=0;i<((l-20)*8);i++) {
+         	int p = i/8+20;
+         	int b = 1<<(7-(i%8));
+        	  buffer[i] = (buf[p] & b) ? 0 : 0xff;
+        }*/
+        Tk_PhotoPutBlock(handle, &block, 32+sx-x1, 33+sy-y1, w, h);
+      
+        /*Tcl_VarEval(interp, "global show; set show(.remote) 1; update", NULL); */
+        }
+#endif    	   
+	return;
+      }
+      
+    } else if(buf[0] == 1) { /* Console */
       if(buf[4] == 0x7f) { /* Message from Pilot */
       	int i;
 		
@@ -213,6 +265,7 @@ void Read_Pilot(ClientData clientData, int mask) {
         } else
 #endif
         Tcl_VarEval(interp,"Say \"",buf+6,"\"",NULL);
+        return;
       }
     } else if (buf[0] == 0) { /* Debug */
       if (!debugger) {
@@ -234,9 +287,11 @@ void Read_Pilot(ClientData clientData, int mask) {
           } else
 #endif
           Tcl_VarEval(interp,"Say \"",buf+6,"\"",NULL);
+          return;
     	}
     	else if (buf[4] == 0x8c) { /* Breakpoints set */
     	   Say("Breakpoint set\n");
+    	   return;
     	}
     	else if (buf[4] == 0x80) { /* State response */
     	
@@ -292,6 +347,7 @@ void Read_Pilot(ClientData clientData, int mask) {
     	   
     	   /* Show the state window if it is hidden */
     	   Tcl_VarEval(interp, "set show(.state) 1", NULL); 
+    	   return;
     	}
     }
   }
@@ -580,13 +636,23 @@ int proc_attach(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[
   return TCL_OK;
 }
 
+int proc_sendscreen(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+{
+  struct RPC_params p;
+
+  PackRPC(&p, 0xA0F1, RPC_IntReply, RPC_Short(0), RPC_Short(0), RPC_Short(160), RPC_Short(160), RPC_End);
+  DbgRPC(&p, 0);
+  
+  return TCL_OK;
+}
+
 int proc_coldboot(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
   struct RPC_params p;
 
   PackRPC(&p, 0xA08B, RPC_NoReply, RPC_Long(0),RPC_Long(0),RPC_Long(0),RPC_Long(0), RPC_End);
   DbgRPC(&p, 0);
-
+  
   /* And sever attachment */
   debugger = 0;
   console = 0;
@@ -671,6 +737,54 @@ int proc_battery(ClientData clientData, Tcl_Interp *interp, int argc, char *argv
 	Say((v <= critical) ? " power critical!\n" : (v <= warn) ? " power low\n" : "\n");
 	
 	return TCL_OK;
+}
+
+int proc_mirror(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+{
+  struct RPC_params p;
+  unsigned long addr;
+  int e1,e2;
+  int active;
+
+  if (!DbgAttachConsole(0))
+    return TCL_ERROR;
+    
+  
+  /* Fetch scrGlobals ptr */
+ PackRPC(&p,0xA026, RPC_IntReply, RPC_LongPtr(&addr), RPC_Long(356), RPC_Long(4), RPC_End);
+  e1=DbgRPC(&p, &e2);
+  
+  /* Fetch current drawnotify setting */
+ PackRPC(&p,0xA026, RPC_IntReply, RPC_BytePtr(&active), RPC_Long(addr+18), RPC_Long(1), RPC_End);
+  e1=DbgRPC(&p, &e2);
+
+  /*printf("addr=%d\nactive=%d\n", addr, active);*/
+
+  /* Change setting */
+  if (argc<2)
+    active = !active;
+  else
+   if (Tcl_GetBoolean(interp, argv[1], &active)!=TCL_OK)
+     return TCL_ERROR;
+  
+  /* Put it back */
+ PackRPC(&p,0xA026, RPC_IntReply, RPC_Long(addr+18), RPC_BytePtr(&active), RPC_Long(1), RPC_End);
+  e1=DbgRPC(&p, &e2);
+ 
+  if (Interactive) {
+    if (active)
+      Say("Mirroring is active.\n");
+    else
+      Say("Mirroring is inactive.\n");
+  }
+
+  if (active) {
+    /* Try to prod Pilot into immediately giving us a screen update */
+    PackRPC(&p,0xA0F1, RPC_IntReply, RPC_Short(0), RPC_Short(0), RPC_Short(160), RPC_Short(160), RPC_End);
+    e1=DbgRPC(&p, &e2);
+  }
+  
+  return TCL_OK;  
 }
 
 #define DB 0xFFFF0000
@@ -819,11 +933,10 @@ int proc_pen(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   
  /*printf("Pen %d, %d, %d\n", x, y, pen);*/
   
-  if (!DbgAttachConsole(1))
+ if (!DbgAttachConsole(0))
     return TCL_ERROR;
   
   sys_RemoteEvent(port, pen, x, y, 0, 0,0,0);
-  
   
   return TCL_OK;
 }
@@ -831,17 +944,26 @@ int proc_pen(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 /* Tcl procedure to simulate a key press -- primarily used by Remote UI bindings */
 int proc_key(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
-  struct RPC_params p;
+  /*struct RPC_params p;*/
   int key = argv[1][0];
   
   /* Transmit ASCII key to Pilot */
 
   /*printf("Key %d\n", key);*/
   
-  PackRPC(&p, 0xA12D, RPC_IntReply, RPC_Short(key),RPC_Short(0),RPC_Short(0x0), RPC_End);
+  /*PackRPC(&p, 0xA12D, RPC_IntReply, RPC_Short(key),RPC_Short(0),RPC_Short(0x0), RPC_End);
 
   if (key != 0)
-    DbgRPC(&p, 0);
+    DbgRPC(&p, 0);*/
+
+ if (!DbgAttachConsole(0))
+    return TCL_ERROR;
+ 
+ sys_RemoteEvent(port, 0, 0, 0, 1, 0, key, 0);
+  
+/*  int sd, int penDown, int x, int y, int keypressed,
+                         int keymod, int keyasc, int keycode)*/
+                         
   
   return TCL_OK;
 }
@@ -884,7 +1006,7 @@ int proc_port(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
     return TCL_ERROR;
   }
   
-  fd = pi_sdtofd(port);
+  fd = port;
                         
   channel = Tcl_MakeFileChannel((ClientData)fd, 0, TCL_READABLE);
   Tcl_RegisterChannel(interp, channel); /* And register it to TCL */
@@ -1357,6 +1479,7 @@ t <addr1> [<addr2>}\tTill: Resume execution until addr1 (if addr2 is supplied, w
 coldboot\n\
 warmboot\n\
 pushbutton <button number>\tSimulate button push\n\
+mirror [bool]\tContinually view the Pilot's screen in the Remote UI window (if bool supplied, can turn on or off mirroring, otherwise toggles)\n\
 getdisplay\tShow the Pilot's display in the Remote UI window\n\
 ");
   return TCL_OK;
@@ -1365,6 +1488,7 @@ getdisplay\tShow the Pilot's display in the Remote UI window\n\
 struct { char * name; Tcl_CmdProc * proc; } cmds[] = {
 	{ "coldboot",	proc_coldboot },
 	{ "warmboot",	proc_warmboot },
+	{ "sendscreen",	proc_sendscreen },
 	{ "pushbutton",	proc_pushbutton },
 	{ "pen",	proc_pen },
 	{ "key",	proc_key },
@@ -1373,6 +1497,7 @@ struct { char * name; Tcl_CmdProc * proc; } cmds[] = {
 	{ "attach",	proc_attach },
 	{ "transmit",	proc_transmit },
 	{ "getdisplay",	proc_getdisplay },
+	{ "mirror",     proc_mirror },
 	{ "battery",	proc_battery },
 	{ "port",	proc_port },
 	{ "help",	proc_help },
@@ -1648,12 +1773,16 @@ int main(int argc, char *argv[])
 	goto done;
     }
 
+   /* Tcl 7.5 did not support this command */
+#if (TCL_MAJOR_VERSION > 7) || (TCL_MINOR_VERSION > 5)
+
     /*
      * We're running interactively.  Source a user-specific startup
      * file if the application specified one and if the file exists.
      */
 
     Tcl_SourceRCFile(interp);
+#endif
     
     /*
      * Loop infinitely, waiting for commands to execute.  When there

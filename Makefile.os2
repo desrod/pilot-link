@@ -1,16 +1,17 @@
 
-## If you want to make pilot-debug, and have Tcl >= 7.6, then uncomment the
+## If you want to make pilot-debug, and have Tcl >= 7.5, then uncomment the
 ## following three lines and correct the library and include paths to match
 ## what is needed on your system
-##
-## You may uncomment the TK lines if you have Tk >= 4.2, though Tk is not
-## required, either for compilation or execution.
 
 #PDEXE = pilot-debug$(EXT)
-#TCLLIBS  = -L/usr/local/tcl8.0/lib -ltcl8.0 -ldl -lm
-#TCLDEFS  = -I/usr/local/tcl8.0/include
-#TKLIBS  = -L/usr/local/tcl8.0/lib -L/usr/X11/lib -ltk8.0 -lX11
-#TKDEFS  = -DTK -I/usr/local/tcl8.0/include
+#TCLLIBS  = -L/usr/local/tcl7.5/lib -ltcl7.5 -ldl -lm
+#TCLDEFS  = -I/usr/local/tcl7.5/include
+
+## You may uncomment the TK lines below if you have Tk >= 4.1, though Tk is
+## not required, either for compilation or execution.
+
+#TKLIBS  = -L/usr/local/tcl7.5/lib -L/usr/X11/lib -ltk4.1 -lX11
+#TKDEFS  = -DTK -I/usr/local/tcl7.5/include
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -38,7 +39,7 @@ CPLIB = cp
 EXT = .EXE
 SUBMAKE_COMM = $(MAKE) -C lib -f Makefile.os2
 
-EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) \
+EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) pilot-schlep$(EXT)\
 		install-memo$(EXT) install-user$(EXT)\
 		install-todos$(EXT) pilot-addresses$(EXT)\
 		read-ical$(EXT)\
@@ -104,6 +105,9 @@ install-user$(EXT): $(PILIBS) install-user.o
 
 pilot-xfer$(EXT): $(PILIBS) pilot-xfer.o
 	$(CC) $(CFLAGS) pilot-xfer.o $(PILIBS) -o $@ $(LIBS)
+
+pilot-schlep$(EXT): $(PILIBS) pilot-schlep.o
+	$(CC) $(CFLAGS) pilot-schlep.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-file$(EXT): $(PILIBS) pilot-file.o
 	$(CC) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)

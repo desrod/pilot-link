@@ -187,9 +187,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   
   Begin(padp_rx);
 
-  while(1) {
+  for(;;) {
     if(time(NULL)>endtime) {
-      fprintf(stderr,"start timeout\n");
       /* Start timeout, return error */
       errno = ETIMEDOUT;
       return -1;
@@ -227,7 +226,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   
   endtime = time(NULL) + recSegTimeout;
   
-  while(1) {
+  for(;;) {
   
     At(got data);
 
@@ -271,7 +270,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     } else  {
       endtime = time(NULL) + recSegTimeout;
       
-      while(1) {
+      for(;;) {
         if(time(NULL)>endtime) {
           fprintf(stderr,"segment timeout\n");
           /* Segment timeout, return error */

@@ -1292,7 +1292,7 @@ cat >> confdefs.h <<EOF
 EOF
 
 
-for ac_func in atexit strchr memcpy strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction
+for ac_func in atexit strchr memcpy strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1299: checking for $ac_func" >&5

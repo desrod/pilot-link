@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   int ret;
 
   if (argc < 2) {
-    fprintf(stderr,"usage:%s %s [User name]\n",argv[0],TTYPrompt);
+    fprintf(stderr,"usage:%s %s [User name [User ID]]\n",argv[0],TTYPrompt);
     exit(2);
   }
 
@@ -79,9 +79,11 @@ int main(int argc, char *argv[])
 
   if (argc == 2) {
     printf ("Pilot user %s\n",U.username);
+    printf("UserID %ld \n", U.userID );
   }
   else {
     strcpy(U.username, argv[2]);
+    if (argc == 4) { U.userID = atoi(argv[3]); }
     U.lastSyncDate = time( (time_t *)0);
     dlp_WriteUserInfo(sd, &U);
   }

@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     printf("Reading records...\n");
   
     l=0;
-    while(1) {
+    for(;;) {
       int attr;
       recordid_t id;
       int cat;

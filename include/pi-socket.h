@@ -48,11 +48,11 @@ extern int pi_write(int pi_sd, void *msg, int len);
 extern int pi_getsockname(int pi_sd, struct pi_sockaddr * addr, int * namelen);
 extern int pi_getsockpeer(int pi_sd, struct pi_sockaddr * addr, int * namelen);
 
+extern unsigned int pi_version(int pi_sd);
+
 extern int pi_tickle(int pi_sd);
 
 extern int pi_close(int pi_sd);
-
-extern int pi_sdtofd(int pi_sd);
 
 #endif /* _PILOT_SOCKET_H_ */
 

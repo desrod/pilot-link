@@ -123,14 +123,21 @@ int dlp_exec(int sd, int cmd, int arg,
     return 0; 
     
   /* assume only one return block */
-  if (exec_buf[4] & 0x80) {
+  if (exec_buf[4] & 0xC0) { /* Long arg */
+  	i = get_long(exec_buf+6);
+  	
+  	if (i>maxlen)
+  	  i = maxlen;
+  	  
+  	memcpy(result, &exec_buf[10], i);
+  } else if (exec_buf[4] & 0x80) { /* Short arg */
   	i = get_short(exec_buf+6);
   	
   	if (i>maxlen)
   	  i = maxlen;
   	  
   	memcpy(result, &exec_buf[8], i);
-  } else {
+  } else { /* Tiny arg */
   	i = (int)exec_buf[5];
 
   	if (i>maxlen)
@@ -346,6 +353,10 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
   Expect(48);
   
   info->more = get_byte(dlp_buf+2);
+  if (pi_version(sd) > 0x0100)
+    info->miscflags = get_byte(dlp_buf+5);
+  else
+    info->miscflags = 0;
   info->flags = get_short(dlp_buf+6);
   info->type = get_long(dlp_buf+8);
   info->creator = get_long(dlp_buf+12);
@@ -371,6 +382,10 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
     fprintf(stderr, " AppInfoDirty");
   if (info->flags & dlpDBFlagBackup)
     fprintf(stderr, " Backup");
+  if (info->flags & dlpDBFlagReset)
+    fprintf(stderr, " Reset");
+  if (info->flags & dlpDBFlagNewer)
+    fprintf(stderr, " Newer");
   if (info->flags & dlpDBFlagOpen)
     fprintf(stderr, " Open");
   if (!info->flags)
@@ -518,6 +533,10 @@ int dlp_CreateDB(int sd, long creator, long type, int cardno,
     fprintf(stderr, " AppInfoDirty");
   if (flags & dlpDBFlagBackup)
     fprintf(stderr, " Backup");
+  if (flags & dlpDBFlagReset)
+    fprintf(stderr, " Reset");
+  if (flags & dlpDBFlagNewer)
+    fprintf(stderr, " Newer");
   if (flags & dlpDBFlagOpen)
     fprintf(stderr, " Open");
   if (!flags)
@@ -572,44 +591,92 @@ int dlp_CloseDB_All(int sd)
   return result;
 }
 
-int dlp_CallApplication(int sd, unsigned long creator, int action, 
+int dlp_CallApplication(int sd, unsigned long creator, unsigned long type, int action, 
                         int length, void * data,
-                        int * resultptr,
-                        int * retlen, void * retdata)
+                        unsigned long * retcode, int maxretlen, int * retlen, void * retdata)
 {
   int result;
+  int version = pi_version(sd);
   
-  set_long(dlp_buf+0, creator);
-  set_short(dlp_buf+4, action);
-  set_short(dlp_buf+6, length);
-  
-  Trace(CallApplication);
-  
+  if (version >= 0x0101) { /* PalmOS 2.0 call encoding */
+    set_long(dlp_buf+0, creator);
+    set_long(dlp_buf+4, type);
+    set_short(dlp_buf+8, action);
+    set_long(dlp_buf+10, length);
+    set_long(dlp_buf+14, 0);
+    set_long(dlp_buf+18, 0);
+    memcpy(dlp_buf+22, data, length);
+
+    Trace(CallApplicationV20);
+
 #ifdef DLP_TRACE  
-  fprintf(stderr, " Wrote: Creator: '%s', Action code: %d, and %d bytes of data:\n",
-    printlong(creator), action, length);
-  dumpdata(data, length);
+    fprintf(stderr, " Wrote: Creator: '%s',", printlong(creator));
+    fprintf(stderr, " Type: '%s', Action code: %d, and %d bytes of data:\n",
+      printlong(type), action, length);
+    dumpdata(data, length);
 #endif
+
+    result = dlp_exec(sd, 0x28, 0x21, dlp_buf, 22 + length, dlp_buf, 0xffff);
   
-  result = dlp_exec(sd, 0x28, 0x21, dlp_buf, 8, dlp_buf, 0xffff);
+    Expect(16);
   
-  Expect(6);
-  
-  if (resultptr)
-    *resultptr = get_short(dlp_buf+2);
+    if (retcode)
+      *retcode = get_long(dlp_buf);
     
-  result -= 6;
+    result -= 16;
   
-  if (retlen && retdata)
-    memcpy(retdata, dlp_buf+6, result > *retlen ? *retlen : result);
+    if (retlen)
+      *retlen = result;
+    if (retdata)
+      memcpy(retdata, dlp_buf+16, result > maxretlen ? maxretlen : result);
   
 #ifdef DLP_TRACE  
-  fprintf(stderr, "  Read: Action: %d, Result: %d (0x%4.4X), and %d bytes:\n",
-    get_short(dlp_buf), get_short(dlp_buf+2), get_short(dlp_buf+2), result);
-  dumpdata(dlp_buf, result);
+    fprintf(stderr, "  Read: Result: %d (0x%8.8X), and %d bytes:\n",
+      get_long(dlp_buf), get_long(dlp_buf+4), result);
+    dumpdata(dlp_buf+16,result);
 #endif
   
-  return result;
+    return result;
+
+
+  } else { /* PalmOS 1.0 call encoding */
+    set_long(dlp_buf+0, creator);
+    set_short(dlp_buf+4, action);
+    set_short(dlp_buf+6, length);
+    memcpy(dlp_buf+6, data, length);
+
+    Trace(CallApplicationV10);
+
+#ifdef DLP_TRACE  
+    fprintf(stderr, " Wrote: Creator: '%s', Action code: %d, and %d bytes of data:\n",
+      printlong(creator), action, length);
+    dumpdata(data, length);
+#endif
+
+    result = dlp_exec(sd, 0x28, 0x20 , dlp_buf, 8, dlp_buf, 0xffff);
+  
+    Expect(6);
+  
+    if (retcode)
+      *retcode = get_short(dlp_buf+2);
+    
+    result -= 6;
+  
+    if (retlen)
+      *retlen = result;
+    if (retdata)
+      memcpy(retdata, dlp_buf+6, result > maxretlen ? maxretlen : result);
+  
+#ifdef DLP_TRACE  
+    fprintf(stderr, "  Read: Action: %d, Result: %d (0x%4.4X), and %d bytes:\n",
+      get_short(dlp_buf), get_short(dlp_buf+2), get_short(dlp_buf+2), result);
+    dumpdata(dlp_buf+6, result);
+#endif
+  
+    return result;
+
+  }  
+  
 }
 
 int dlp_ResetSystem(int sd)
@@ -810,6 +877,109 @@ int dlp_ReadUserInfo(int sd, struct PilotUser* User)
   return result;
 }
 
+int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo * i)
+{
+  int result;
+  int p;
+  
+  if (pi_version(sd)<0x0101)
+    return -129;
+
+  Trace(ReadNetSyncInfo);
+
+#ifdef DLP_TRACE
+#endif
+  
+  result = dlp_exec(sd, 0x35, 0x20, NULL, 0, dlp_buf, DLP_BUF_SIZE);
+
+  Expect(24);
+  
+  set_byte(dlp_buf, 0x80|0x40|0x20|0x10); /* Change all settings */
+
+  i->active = get_byte(dlp_buf);
+  p = 24;
+
+  memcpy(i->PCName, dlp_buf+p, get_short(dlp_buf+18));
+  p += get_short(dlp_buf+18);
+
+  memcpy(i->PCAddr, dlp_buf+p, get_short(dlp_buf+20));
+  p += get_short(dlp_buf+20);
+
+  memcpy(i->PCMask, dlp_buf+p, get_short(dlp_buf+22));
+  p += get_short(dlp_buf+22);
+
+  return result;
+}
+
+int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i)
+{
+  int result;
+  int p;
+  
+  if (pi_version(sd)<0x0101)
+    return -129;
+
+  Trace(WriteNetSyncInfo);
+
+#ifdef DLP_TRACE
+#endif
+  
+  set_byte(dlp_buf, 0x80|0x40|0x20|0x10); /* Change all settings */
+  set_byte(dlp_buf+1, i->active);
+  set_long(dlp_buf+2, 0);  /* Reserved1 */
+  set_long(dlp_buf+6, 0);  /* Reserved2 */
+  set_long(dlp_buf+10, 0); /* Reserved3 */
+  set_long(dlp_buf+14, 0); /* Reserved4 */
+  set_short(dlp_buf+18, strlen(i->PCName)+1);
+  set_short(dlp_buf+20, strlen(i->PCAddr)+1);
+  set_short(dlp_buf+22, strlen(i->PCMask)+1);
+  p = 24;
+  strcpy(dlp_buf+p, i->PCName);
+  p += strlen(i->PCName)+1;
+  strcpy(dlp_buf+p, i->PCAddr);
+  p += strlen(i->PCAddr)+1;
+  strcpy(dlp_buf+p, i->PCMask);
+  p += strlen(i->PCMask)+1;
+  
+  result = dlp_exec(sd, 0x36, 0x20, dlp_buf, p, dlp_buf, DLP_BUF_SIZE);
+
+  Expect(0);
+
+  return result;
+}
+              
+
+int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num, unsigned long * feature)
+{
+  int result;
+  
+  if (pi_version(sd)<0x0101)
+    return -129;
+
+  Trace(ReadFeature);
+
+#ifdef DLP_TRACE
+  fprintf(stderr, " Wrote: Creator: '%s', Number: %d\n", 
+    printlong(creator), num);
+#endif
+  
+  set_long(dlp_buf, creator);
+  set_short(dlp_buf+4, num);
+  
+  result = dlp_exec(sd, 0x37, 0x20, dlp_buf, 6, dlp_buf, DLP_BUF_SIZE);
+
+  Expect(4);
+
+  if (feature)
+    *feature = (unsigned long)get_long(dlp_buf);
+
+#ifdef DLP_TRACE
+  fprintf(stderr, "  Read: Feature: 0x%8.8lX\n", (unsigned long)get_long(dlp_buf));
+#endif
+
+  return result;
+}
+
 int dlp_ResetLastSyncPC(int sd)
 {
   struct PilotUser U;
@@ -951,6 +1121,32 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 #ifdef DLP_TRACE
   fprintf(stderr, " Wrote: Handle: %d, RecordID: %8.8lX, All: %s\n",
     dbhandle, (unsigned long)recID, all ? "Yes" : "No");
+#endif
+  
+  result = dlp_exec(sd, 0x22, 0x20, dlp_buf, 6, 0, 0);
+  
+  Expect(0);
+  
+  return result;
+}
+
+int dlp_DeleteCategory(int sd, int dbhandle, int category)
+{
+  int result;
+  int flags = 0x40;
+  
+  if (pi_version(sd) < 0x0101)
+    return -129;
+
+  set_byte(dlp_buf, dbhandle);
+  set_byte(dlp_buf+1, flags);
+  set_long(dlp_buf+2, category & 0xff);
+  
+  Trace(DeleteCategory);
+
+#ifdef DLP_TRACE
+  fprintf(stderr, " Wrote: Handle: %d, Category: %d\n",
+    dbhandle, category & 0xff);
 #endif
   
   result = dlp_exec(sd, 0x22, 0x20, dlp_buf, 6, 0, 0);
@@ -1236,6 +1432,202 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
   
   return result;
 }
+
+int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void* buffer,
+                          recordid_t* id, int* index, int* size, int* attr, int* category)
+{
+  int result;
+#ifdef DLP_TRACE
+  int flags;
+#endif
+
+  if (pi_version(sd) < 0x0101)
+    return -129;
+
+  Trace(ReadNextRecInCategory);
+
+  set_byte(dlp_buf, fHandle);
+  set_byte(dlp_buf+1, incategory);
+  
+#ifdef DLP_TRACE
+  fprintf(stderr, " Wrote: Handle: %d, Category: %d\n", fHandle, incategory);
+#endif
+  
+  result = dlp_exec(sd, 0x32, 0x20, dlp_buf, 2, dlp_buf, DLP_BUF_SIZE);
+  
+  Expect(10);
+
+#ifdef DLP_TRACE
+  flags = get_byte(dlp_buf+8);
+  fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
+    (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
+  if (flags & dlpRecAttrDeleted)
+    fprintf(stderr, " Deleted");
+  if (flags & dlpRecAttrDirty)
+    fprintf(stderr, " Dirty");
+  if (flags & dlpRecAttrBusy)
+    fprintf(stderr, " Busy");
+  if (flags & dlpRecAttrSecret)
+    fprintf(stderr, " Secret");
+  if (flags & dlpRecAttrArchived)
+    fprintf(stderr, " Archive");
+  if (!flags)
+    fprintf(stderr, " None");
+  fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
+  dumpdata(dlp_buf+10, result-10);
+#endif
+
+  if (id)
+    *id = get_long(dlp_buf);
+  if (index)
+    *index = get_short(dlp_buf+4);
+  if (size)
+    *size = get_short(dlp_buf+6);
+  if (attr)
+    *attr = get_byte(dlp_buf+8);
+  if (category)
+    *category = get_byte(dlp_buf+9);
+  if (buffer)    
+    memcpy(buffer, dlp_buf+10, result-10);
+    
+  return result-10;
+}
+
+
+int dlp_ReadAppPreference(int sd, int fHandle, unsigned long creator, int id, int backup,
+                          int maxsize, void* buffer, int * size, int * version)
+{
+  int result;
+#ifdef DLP_TRACE
+#endif
+
+  if (pi_version(sd) < 0x0101)
+    return -129;
+
+  Trace(ReadAppPreference);
+
+  set_long(dlp_buf, creator);
+  set_short(dlp_buf+4, id);
+  set_short(dlp_buf+6, buffer ? maxsize : 0);
+  set_byte(dlp_buf+8, backup ? 0x80 : 0);
+  set_byte(dlp_buf+9, 0); /* Reserved */
+  
+#ifdef DLP_TRACE
+#endif
+  
+  result = dlp_exec(sd, 0x33, 0x20, dlp_buf, 10, dlp_buf, DLP_BUF_SIZE);
+  
+  Expect(6);
+
+#ifdef DLP_TRACE
+#endif
+
+  if (version)
+    *version = get_short(dlp_buf);
+  if (size && !buffer)
+    *size = get_short(dlp_buf+2); /* Total size */
+  if (size && buffer)
+    *size = get_short(dlp_buf+4); /* Size returned */
+  if (buffer)
+    memcpy(buffer, dlp_buf+6, get_short(dlp_buf+4));
+    
+  return get_short(dlp_buf+4);
+}
+
+int dlp_WriteAppPreference(int sd, int fHandle, unsigned long creator, int id, int backup,
+                          int version, void * buffer, int size)
+{
+  int result;
+#ifdef DLP_TRACE
+#endif
+
+  if (pi_version(sd) < 0x0101)
+    return -129;
+
+  Trace(WriteAppPreference);
+
+  set_long(dlp_buf, creator);
+  set_short(dlp_buf+4, id);
+  set_short(dlp_buf+6, version);
+  set_short(dlp_buf+8, size);
+  set_byte(dlp_buf+10, backup ? 0x80 : 0);
+  set_byte(dlp_buf+11, 0); /* Reserved */
+  
+  memcpy(dlp_buf+12, buffer, size);
+  
+#ifdef DLP_TRACE
+#endif
+  
+  result = dlp_exec(sd, 0x34, 0x20, dlp_buf, 12+size, NULL, 0);
+  
+  Expect(0);
+
+#ifdef DLP_TRACE
+#endif
+
+  return result;
+}
+
+int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory, void* buffer,
+                          recordid_t* id, int* index, int* size, int* attr, int* category)
+{
+  int result;
+#ifdef DLP_TRACE
+  int flags;
+#endif
+
+  if (pi_version(sd) < 0x0101)
+    return -129;
+
+  Trace(ReadNextModifiedRecInCategory);
+
+  set_byte(dlp_buf, fHandle);
+  set_byte(dlp_buf+1, incategory);
+  
+#ifdef DLP_TRACE
+  fprintf(stderr, " Wrote: Handle: %d, Category: %d\n", fHandle, incategory);
+#endif
+  
+  result = dlp_exec(sd, 0x33, 0x20, dlp_buf, 2, dlp_buf, DLP_BUF_SIZE);
+  
+  Expect(10);
+
+#ifdef DLP_TRACE
+  flags = get_byte(dlp_buf+8);
+  fprintf(stderr, "  Read: ID: 0x%8.8lX, Index: %d, Category: %d\n        Flags:",
+    (unsigned long)get_long(dlp_buf), get_short(dlp_buf+4), (int)get_byte(dlp_buf+9));
+  if (flags & dlpRecAttrDeleted)
+    fprintf(stderr, " Deleted");
+  if (flags & dlpRecAttrDirty)
+    fprintf(stderr, " Dirty");
+  if (flags & dlpRecAttrBusy)
+    fprintf(stderr, " Busy");
+  if (flags & dlpRecAttrSecret)
+    fprintf(stderr, " Secret");
+  if (flags & dlpRecAttrArchived)
+    fprintf(stderr, " Archive");
+  if (!flags)
+    fprintf(stderr, " None");
+  fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags, result-10);
+  dumpdata(dlp_buf+10, result-10);
+#endif
+
+  if (id)
+    *id = get_long(dlp_buf);
+  if (index)
+    *index = get_short(dlp_buf+4);
+  if (size)
+    *size = get_short(dlp_buf+6);
+  if (attr)
+    *attr = get_byte(dlp_buf+8);
+  if (category)
+    *category = get_byte(dlp_buf+9);
+  if (buffer)    
+    memcpy(buffer, dlp_buf+10, result-10);
+    
+  return result-10;
+}
+
 
 int dlp_ReadNextModifiedRec(int sd, int fHandle, void* buffer,
                           recordid_t* id, int* index, int* size, int* attr, int* category)

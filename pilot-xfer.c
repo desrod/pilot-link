@@ -23,7 +23,22 @@ int sd = 0;
 char * device;
 char * progname;
 
+char * exclude[100];
+int numexclude = 0;
+
 RETSIGTYPE SigHandler(int signal);
+
+void MakeExcludeList(char *efile) {
+    char temp[1024];
+    FILE *f = fopen(efile,"r");
+
+    while((fgets(temp,sizeof(temp),f)) != NULL) {
+        if (temp[strlen(temp)-1] == '\n')
+            temp[strlen(temp)-1] = '\0';
+        printf("Will exclude: %s\n",temp);
+        exclude[numexclude++] = strdup(temp);
+    }
+}
 
 void Connect(void) {
   struct pi_sockaddr addr;
@@ -107,9 +122,11 @@ void Backup(char * dirname)
   mkdir(dirname,0700);
 
   i = 0;
-  while(1) {
+  for(;;) {
   	struct DBInfo info;
   	struct pi_file * f;
+        int x;
+        int skip = 0;
   	char name[256];
 
         if (dlp_OpenConduit(sd)<0) {
@@ -120,6 +137,17 @@ void Backup(char * dirname)
   	if( dlp_ReadDBList(sd, 0, 0x80, i, &info) < 0)
   		break;
   	i = info.index + 1;
+
+        for(x = 0; x < numexclude; x++) {
+            /* printf("Skipcheck:%s:%s:\n",exclude[x],info.name); */
+            if(strcmp(exclude[x],info.name) == 0) {
+                printf("Excluding '%s'...\n",info.name);
+                skip = 1;
+            }
+        }
+
+        if(skip == 1)
+            continue;
 
   	sprintf(name, "%s/%s", dirname, info.name);
   	if (info.flags & dlpDBFlagResource)
@@ -390,7 +418,7 @@ void List(void)
   printf("Reading list of databases...\n");
   
   i = 0;
-  while(1) {
+  for(;;) {
   	if( dlp_ReadDBList(sd, 0, 0x80, i, &info) < 0)
   		break;
   	i = info.index + 1;
@@ -417,7 +445,7 @@ void Purge(void)
   printf("Reading list of databases to purge...\n");
   
   i = 0;
-  while(1) {
+  for(;;) {
   	if( dlp_ReadDBList(sd, 0, 0x80, i, &info) < 0)
   		break;
   	i = info.index + 1;
@@ -454,6 +482,7 @@ void Help(void)
       printf("                           -i(nstall) filename \n");
       printf("                           -f(etch)   dbname   \n");
       printf("                           -d(elete)  dbname   \n");
+      printf("                           -e(xclude) filename\n");
       printf("                           -p(urge)\n");
       printf("                           -l(ist)\n");
       exit(0);
@@ -477,7 +506,7 @@ int main(int argc, char *argv[])
   device = argv[1];
   
   optind = 2;
-  while ((c = getopt(argc, argv, "b:r:i:f:d:plh")) != -1) {
+  while ((c = getopt(argc, argv, "b:e:r:i:f:d:plh")) != -1) {
     switch (c) {
     case 'b':
       Backup(optarg);
@@ -493,6 +522,9 @@ int main(int argc, char *argv[])
       break;
     case 'd':
       Delete(optarg);
+      break;
+    case 'e':
+      MakeExcludeList(optarg);
       break;
     case 'p':
       Purge();

@@ -12,23 +12,35 @@ Sorry for not providing decent information here. The basics are:
   4) run 'make install' if you feel the need.
      
 Note on pilot-debug: this program is a work-in-progress, and requires Tcl
-7.6 (or greater) and optionally Tk 4.2 (or greater). You'll need to modify
+7.5 (or greater) and optionally Tk 4.1 (or greater). You'll need to modify
 Makefile to compile it (the directions are right at the top.) Currently you
 must have installed pilot-link or run pilot-debug in the pilot-link
 directory if you want the fancy images for the Remote UI window.
 
 Usage notes:
 
-  read-ical and sync-ical only work if you have ical-2.x installed and
+  read-ical and sync-ical will only run if you have ical-2.x installed and
   in the path.
+  
+  The default connection rate is 9600 baud. You are welcome to try higher
+  baud rates (19200, 38400, or 57600) by setting the PILOTRATE environment
+  variable.
 
 Debugging notes:
 
   There are several defines mentioned in lib/Makefile that enabled different
-  types of debugging information. Possibly the most valuable is SERIAL_TRACE
-  which will generate a file called PiDebug.log in the current directory
-  containing a complete trace of all serial activity. Please try and mail me
-  (kjahds@kjahds.com) such a log if you are having low-level failures.
+  types of debugging information. 
+  
+  If you are having problems, it may help to generate a log of all serial
+  transactions, which I can then parse and attempt to understand. To
+  generate such a log, please set the PILOTLOG environment variable (it does
+  not matter to what you set it.) This will cause any program using
+  pilot-link to append to a log file called "PiDebug.log" in the current
+  directory. You may choose another name or directory via the PILOTLOGFILE
+  environment variable.
+  
+  Please mail me (kjahds@kjahds.com) such a log if you are having low-level
+  failures.
   
 Embedding information:
 

@@ -332,7 +332,7 @@ int sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void * dest)
       return done;
   
     if ((buf[4] == 0x81) && (result == todo+6)) {
-      memcpy(dest + done, buf+6, todo);
+      memcpy(((char *)dest) + done, buf+6, todo);
       done += todo;
     } else {
       return done;
@@ -365,7 +365,7 @@ int sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void * src)
   
     set_long(buf+6, addr);
     set_short(buf+10, len);
-    memcpy(buf+12, src+done, todo);
+    memcpy(buf+12, ((char *)src)+done, todo);
   
     pi_write(sd, buf, len+12);
   
@@ -512,7 +512,7 @@ int RPC(int sd, int socket, int trap, int reply, ...)
   long D0=0,A0=0;
 
   va_start(ap, reply);
-  while(1) {
+  for(;;) {
     int type = va_arg(ap, int);
     if(type == 0)
       break;
@@ -572,7 +572,7 @@ int PackRPC(struct RPC_params * p, int trap, int reply, ...)
   p->reply = reply;
 
   va_start(ap, reply);
-  while(1) {
+  for(;;) {
     int type = (int)va_arg(ap, int);
     if(type == 0)
       break;
@@ -613,7 +613,7 @@ unsigned long DoRPC(int sd, int socket, struct RPC_params * p, int * error)
 {
   int j;
   int err;
-  unsigned long D0=0,A0=0;
+  long D0=0,A0=0;
 
   err = sys_RPC(sd, socket, p->trap, &D0, &A0, p->args, &p->param[0], p->reply);
   

@@ -189,7 +189,7 @@ ls_fn(int sd, int argc, char **argv)
     flags = 0x40; /* dlpReadDBListFlagROM */
 
   start = 0;
-  while (1) {
+  for (;;) {
     struct DBInfo info;
     long tag;
 
@@ -276,7 +276,7 @@ void handle_user_commands(int sd) {
   int argc;
   int i;
 
-  while (1) {
+  for (;;) {
     printf("dlpsh> "); fflush(stdout);
     if(fgets(buf, 256, stdin) == NULL) break;
 

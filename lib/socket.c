@@ -19,7 +19,6 @@
 #include "pi-syspkt.h"
 
 static struct pi_socket *psl = (struct pi_socket *)0;
-static int pi_next_socket = 3;            /* FIXME: This should be a real fd */
 
 void installexit(void);
 
@@ -42,17 +41,39 @@ int pi_socket(int domain, int type, int protocol)
   ps = malloc(sizeof(struct pi_socket));
   memset(ps,0,sizeof(struct pi_socket));
 
+#ifdef OS2
+  if((ps->sd = open("NUL", O_RDWR))==-1) {
+#else
+  if((ps->sd = open("/dev/null", O_RDWR))==-1) {
+#endif
+    int err = errno; /* Save errno of open */
+    free(ps);
+    errno = err;
+    return -1;
+  }
   ps->type = type;
   ps->protocol = protocol;
   ps->connected = 0;
   ps->mac.fd = 0;
   ps->xid = 0;
   ps->initiator = 0;
+  ps->minorversion = 0;
+  ps->majorversion = 0;
   ps->version = 0;
   
 #ifdef OS2
   ps->os2_read_timeout=60;
   ps->os2_write_timeout=60;
+#endif
+
+#ifndef NO_SERIAL_TRACE
+  ps->debuglog = 0;
+  ps->debugfd = 0;
+  
+  if (getenv("PILOTLOG")) {
+    if ((ps->debuglog = getenv("PILOTLOGFILE"))==0)
+      ps->debuglog = "PiDebug.log";
+  }
 #endif
 
   if(type == PI_SOCK_STREAM) {
@@ -76,8 +97,8 @@ int pi_socket(int domain, int type, int protocol)
 
     p->next = ps;
   }
-
-  return (ps->sd = pi_next_socket++);
+  
+  return ps->sd;
 }
 
 /* Connect to a remote server */
@@ -112,8 +133,8 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
 
       if(c.flags & 0x80) {
         /* Change baud rate */
-      ps->rate = c.baudrate;
-      pi_device_changebaud(ps);
+        ps->rate = c.baudrate;
+        pi_device_changebaud(ps);
       }
       return 0;
 
@@ -185,9 +206,8 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
     pi_socket_read(ps, 200);
     if(cmp_rx(ps, &c) < 0)
       return -1; /* Failed to establish connection, errno already set */
-
-    if ((c.commversion == CommVersion_1_0) ||
-        (c.commversion == CommVersion_2_0)) {
+    
+    if ((c.version & 0xFF00) == 0x0100) {
       if(ps->establishrate > c.baudrate) {
 #ifdef DEBUG
         fprintf(stderr,"Rate %d too high, dropping to %ld\n",ps->establishrate,c.baudrate);
@@ -195,12 +215,12 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
         ps->establishrate = c.baudrate;
       }
       ps->rate = ps->establishrate;
-      ps->version = c.commversion;
+      ps->version = c.version;
       if(cmp_init(ps, ps->rate)<0)
         return -1;
       if(ps->rate != 9600) {
         pi_socket_flush(ps);
-       /* pi_device_changebaud(ps);*/
+        pi_device_changebaud(ps);
       }
       ps->connected = 1;
     }else {
@@ -208,7 +228,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
       pi_device_close(ps);
 
       fprintf(stderr, "pi_socket connection failed due to comm version mismatch\n");
-      fprintf(stderr, " (expected 0x%lx or 0x%lx, got 0x%lx)\n", CommVersion_1_0, CommVersion_2_0, c.commversion);
+      fprintf(stderr, " (expected version 01xx, got %4.4X)\n", c.version);
 
       errno = ECONNREFUSED;
       return -1;
@@ -311,6 +331,8 @@ int pi_close(int pi_sd)
     pi_socket_flush(ps);
     pi_device_close(ps);
   }
+  if(ps->sd) /* If device originally had a /dev/null handle */
+    close(ps->sd); /* Close /dev/null handle */
 
   if (ps == psl) {
     psl = psl->next;
@@ -388,10 +410,7 @@ int pi_getsockpeer(int pi_sd, struct pi_sockaddr * addr, int * namelen)
   return 0;
 }
 
-/* Sigh.  Connect can't return a real fd since we don't know the device yet.
-   Therefore, we need this uglyness so that ppl can use select() and friends */
-
-int pi_sdtofd(int pi_sd)
+unsigned int pi_version(int pi_sd)
 {
   struct pi_socket *ps;
 
@@ -399,8 +418,8 @@ int pi_sdtofd(int pi_sd)
     errno = ESRCH;
     return -1;
   }
-
-  return ps->mac.fd;
+  
+  return ps->version;
 }
 
 struct pi_socket *find_pi_socket(int sd)

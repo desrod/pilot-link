@@ -128,10 +128,10 @@ int main(int argc, char *argv[])
      reset your Pilot after finishing this example!) */
      
   FD_ZERO(&r);
-  FD_SET(pi_sdtofd(sd), &r);
+  FD_SET(sd, &r);
   FD_SET(fileno(stdin), &r);
   
-  max = pi_sdtofd(sd);
+  max = sd;
   if(fileno(stdin)>max)
   	max = fileno(stdin);
   	
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
   	if(select(max+1, &rin, 0, 0, 0)>=0) {
   		if(FD_ISSET(fileno(stdin),&rin)) {
   			read_user(sd);
-  		} else if(FD_ISSET(pi_sdtofd(sd),&rin)) {
+  		} else if(FD_ISSET(sd,&rin)) {
   			read_pilot(sd);
   		}
   	} else {

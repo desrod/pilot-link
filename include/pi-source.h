@@ -28,6 +28,7 @@
 # define TTYPrompt "com#"
 # define RETSIGTYPE void
 # define HAVE_SIGACTION
+# define HAVE_DUP2
 #else
 # include "pi-config.h"
 #endif
@@ -80,7 +81,9 @@ struct pi_socket {
   int rate;          /* Current port baud rate */
   int establishrate; /* Baud rate to use after link is established */
   int connected;
-  int version;
+  int majorversion;
+  int minorversion;
+  int version; /* In form of 0xAABB where AA is major version and BB is minor version */
   int tx_packets;
   int rx_packets;
   int tx_bytes;
@@ -91,6 +94,10 @@ struct pi_socket {
 #ifdef OS2
   unsigned short os2_read_timeout;
   unsigned short os2_write_timeout;
+#endif
+#ifndef NO_SERIAL_TRACE
+  char * debuglog;
+  int debugfd;
 #endif
 };
 

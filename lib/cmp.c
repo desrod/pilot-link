@@ -30,7 +30,8 @@ int cmp_rx(struct pi_socket *ps, struct cmp * c)
             
   c->type = get_byte(cmpbuf);
   c->flags = get_byte(cmpbuf+1);
-  c->commversion = get_long(cmpbuf+2);
+  c->version = get_short(cmpbuf+2);
+  c->reserved = get_short(cmpbuf+4);
   c->baudrate = get_long(cmpbuf+6);
 
   End(cmp_rx);
@@ -76,7 +77,8 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
   
   set_byte(cmpbuf+0, 1);
   set_byte(cmpbuf+1, 0);
-  set_long(cmpbuf+2, CommVersion_1_0);
+  set_short(cmpbuf+2, CommVersion_1_0);
+  set_short(cmpbuf+4, 0);
   set_long(cmpbuf+6, maxbaud);
 
   cmp_dump(cmpbuf, 1);

@@ -34,10 +34,6 @@
 #include <os2.h>
 #endif /* OS2 */
 
-#ifdef SERIAL_TRACE
-int debugh=0;
-#endif
-
 #ifndef OS2
 
 #ifndef SGTTY
@@ -98,11 +94,21 @@ static int calcrate(int baudrate) {
 #ifdef B115200
   else if(baudrate == 115200) return B115200;
 #endif
+#ifdef B230400
+  else if(baudrate == 230400) return B230400;
+#endif
+#ifdef B460800
+  else if(baudrate == 460800) return B460800;
+#endif
   else {
     printf("Unable to set baud rate %d\n", baudrate);
     abort(); /* invalid baud rate */
   }
 }
+
+#ifndef O_NONBLOCK
+# define O_NONBLOCK 0
+#endif
 
 int pi_device_open(char *tty, struct pi_socket *ps)
 {
@@ -114,7 +120,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   struct sgttyb tcn;
 #endif
 
-  if ((ps->mac.fd = open(tty, O_RDWR )) == -1) {
+  if ((ps->mac.fd = open(tty, O_RDWR | O_NONBLOCK )) == -1) {
     return -1;     /* errno already set */
   }
 
@@ -160,15 +166,53 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   ioctl(ps->mac.fd, TIOCSETN, &tcn);
 #endif
 
-#ifdef SERIAL_TRACE
-  if(debugh==0) {
-    debugh = open("PiDebug.log",O_WRONLY|O_CREAT|O_APPEND,0666);
-    write(debugh, "\0\1\0\0\0\0\0\0\0\0", 10);
+  if ((i = fcntl(ps->mac.fd, F_GETFL))!=-1) {
+    i &= ~O_NONBLOCK;
+    fcntl(ps->mac.fd, F_SETFL, i);
+  }
+
+  if (ps->sd)
+#ifdef HAVE_DUP2
+    ps->mac.fd = dup2(ps->mac.fd, ps->sd);
+#else
+#ifdef F_DUPFD
+    close(ps->sd);
+    ps->mac.fd = fcntl(ps->mac.fd, F_DUPFD, ps->sd);
+#else
+    close(ps->sd);
+    ps->mac.fd = dup(ps->mac.fd); /* Unreliable */
+#endif
+#endif
+
+#ifndef NO_SERIAL_TRACE
+  if(ps->debuglog) {
+    ps->debugfd = open(ps->debuglog,O_WRONLY|O_CREAT|O_APPEND,0666);
+    /* This sequence is magic used by my trace analyzer - kja */
+    write(ps->debugfd, "\0\1\0\0\0\0\0\0\0\0", 10);
   }
 #endif
 
   return ps->mac.fd;
 }
+
+/* Linux versions "before 2.1.8 or so" fail to flush hardware FIFO on port close */
+#ifdef linux
+# ifndef LINUX_VERSION_CODE
+#  include <linux/version.h>
+# endif
+# ifndef LINUX_VERSION_CODE
+#  define sleeping_beauty
+# else
+#  if (LINUX_VERSION_CODE < 0x020108)
+#   define sleeping_beauty
+#  endif
+# endif
+#endif
+
+/* Unspecified NetBSD versions fail to flush hardware FIFO on port close */
+#ifdef __NetBSD__
+# define sleeping_beauty
+#endif
 
 int pi_device_changebaud(struct pi_socket *ps)
 {
@@ -183,9 +227,7 @@ int pi_device_changebaud(struct pi_socket *ps)
 
   tcsetattr(ps->mac.fd,TCSADRAIN,&tcn);
 
-#ifdef linux
-  /* this pause seems necessary under Linux to let the serial
-     port realign itself */
+#ifdef sleeping_beauty
   sleep(1);
 #endif
 
@@ -203,16 +245,14 @@ int pi_device_changebaud(struct pi_socket *ps)
   return 0;
 }
 
+
+
 int pi_device_close(struct pi_socket *ps)
 {
   int result;
 #ifndef SGTTY
 
-#if 1 /*defined(linux)*/
-  /* Something isn't getting flushed somewhere. If this sleep is removed,
-     the Pilot never gets the final padp Ack.*/
-  /* And now it turns out NetBSD requires this pause too. I'm turning
-     it on for everyone now, until I find a proper solution. */
+#ifdef sleeping_beauty
   sleep(1);
 #endif
 
@@ -226,9 +266,9 @@ int pi_device_close(struct pi_socket *ps)
   result = close(ps->mac.fd);
   ps->mac.fd = 0;
 
-#ifdef SERIAL_TRACE
-  if (debugh)
-    close(debugh);  
+#ifndef NO_SERIAL_TRACE
+  if (ps->debugfd)
+    close(ps->debugfd);  
 #endif
 
   return result;
@@ -293,10 +333,11 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   pi_device_changebaud(ps);
   pi_socket_set_timeout(ps,-1,600);
   
-#ifdef SERIAL_TRACE
-  if (debugh==0) {
-    debugh = open("PiDebug.log",O_WRONLY|O_CREAT,0666);
-    write(debugh, "\0\1\0\0\0\0\0\0\0\0", 10);
+#ifndef NO_SERIAL_TRACE
+  if (ps->debuglog) {
+    ps->debugfd = open(ps->debuglog,O_WRONLY|O_CREAT,0666);
+    /* This sequence is magic used by my trace analyzer - kja */
+    write(ps->debugfd, "\0\1\0\0\0\0\0\0\0\0", 10);
   }
 #endif
   return(fd);  
@@ -367,9 +408,9 @@ int pi_device_changebaud(struct pi_socket *ps)
 
 int pi_device_close(struct pi_socket *ps)
 {
-#ifdef SERIAL_TRACE
-  if (debugh)
-    close(debugh);  
+#ifndef NO_SERIAL_TRACE
+  if (ps->debugfd)
+    close(ps->debugfd);  
 #endif
 
   DosClose(ps->mac.fd);
@@ -488,7 +529,7 @@ error:
 int pi_socket_send(struct pi_socket *ps)
 {
   struct pi_skb *skb;
-#ifdef SERIAL_TRACE
+#ifndef NO_SERIAL_TRACE
   int i;
 #endif
 #ifdef OS2
@@ -505,12 +546,12 @@ int pi_socket_send(struct pi_socket *ps)
 #else
     write(ps->mac.fd,skb->data,skb->len);
 #endif
-#ifdef SERIAL_TRACE
-    /*write(6,skb->data,skb->len);*/
-    for (i=0;i<skb->len;i++) {
-      write(debugh, "2", 1);
-      write(debugh, skb->data+i, 1);
-    }
+#ifndef NO_SERIAL_TRACE
+    if (ps->debuglog)
+      for (i=0;i<skb->len;i++) {
+        write(ps->debugfd, "2", 1);
+        write(ps->debugfd, skb->data+i, 1);
+      }
 #endif
     ps->tx_bytes += skb->len;
     free(skb);
@@ -530,7 +571,7 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
 {
   int r;
   unsigned char *buf;
-#ifdef SERIAL_TRACE
+#ifndef NO_SERIAL_TRACE
   int i;
 #endif
 #ifdef OS2
@@ -586,12 +627,12 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
         ps->rx_errors++;
         return 0;
       }
-#ifdef SERIAL_TRACE
-      /*write(7, buf, r);*/
-      for (i=0;i<r;i++) {
-        write(debugh, "1", 1);
-        write(debugh, buf+i, 1);
-      }
+#ifndef NO_SERIAL_TRACE
+      if (ps->debuglog)
+        for (i=0;i<r;i++) {
+          write(ps->debugfd, "1", 1);
+          write(ps->debugfd, buf+i, 1);
+        }
 #endif
       ps->rx_bytes += r;
       buf += r;

@@ -117,7 +117,7 @@ char * newarchivename(PilotRecord * r, LocalRecord * l) {
 	static char buf[256];
 	static int i = 1;
 	struct stat stbuf;
-	while(1) {
+	for(;;) {
 		sprintf(buf,"Memos/Archive/memo%d",i);
 		if(stat(buf,&stbuf)) {
 			break;

@@ -1,10 +1,10 @@
 SOCKOBJS = socket.o serial.o slp.o padp.o \
-       dlp.o cmp.o syspkt.o datebook.o memo.o address.o todo.o \
+       dlp.o cmp.o syspkt.o\
        sync.o pi-file.o
 
 FILEOBJS = pi-file.o
 
-APPOBJS = datebook.o memo.o address.o todo.o sync.o
+APPOBJS = datebook.o memo.o address.o todo.o expense.o mail.o sync.o
 
 UTILOBJS = utils.o
 
@@ -12,7 +12,7 @@ OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS)
 
 CC = @CC@
 CFLAGS = @CFLAGS@ @CWFLAG@ -I../include
-# -DSERIAL_TRACE
+# -DNO_SERIAL_TRACE
 # -DDLP_TRACE
 # -DPADP_TRACE
 # -DDEBUG
@@ -46,6 +46,12 @@ datebook.o: datebook.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-datebook.h
 dlp.o: dlp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h
+expense.o: expense.c ../include/pi-source.h ../include/pi-config.h \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-expense.h
+mail.o: mail.c ../include/pi-source.h ../include/pi-config.h \
+ ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-mail.h
 memo.o: memo.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
  ../include/pi-memo.h

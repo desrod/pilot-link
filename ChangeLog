@@ -1,3 +1,31 @@
+Apr 4, 1997		Kenneth Albanowski 0.5.5
+
+    Added Ron Nicholson's <rhn@waltz.engr.sgi.com> patch for user-id setting
+        in install-user.
+    Added Jason S Kohles's <robobob@xmission.com> patch for excluding databases
+        in pilot-xfer.
+    Added pilot-schlep utility that allows you to carry a single UNIX file
+        on your Pilot.
+    Pilot-debug now can receive, display, enable, and disable screen updates. 
+        (Type "mirror", then show the Remote UI window, and play with the Pilot.)
+    Modified socket code to provide real descriptors from pi_socket that
+        last through the bind, so they are directly selectable.
+    Serial trace is now compiled in by default, but only activated
+        if the PILOTLOG environment variable exists. (PILOTLOGFILE sets name.)
+    Fixed baud-rate over 9600 "problem". (Mea culpa, I had commented out a
+        call for testing purposes. My apologies.)
+    Fixed rbuf leak in lib/pi-file.c. (Thanks to Scott Grosch for noticing.)
+    With the gracious help of Palm, the following PalmOS 2.0 features are
+       supported (though not yet tested):
+    Updated CMP logic to match 2.0 versioning (extended CMP still to-do).
+    Updated DLP decoding to decode long args (buffering and encoding rewrite to-do).
+    Added v2.0 ReadFeature, DeleteCategory, ReadNextInCategory,  
+        ReadNextModifiedInCategory, ReadAppPreference and WriteAppPreference
+        DLP functions. (emulation for 1.0 Pilots to-do).
+    Added v2.0 ReadNetSyncInfo and WriteNetSyncInfo functions (no 1.0 emulation
+        possible.)
+    Added v2.0 extension for CallApplication DLP function. (still works on 1.0)
+
 Mar 22, 1997	Kenneth Albanowski 0.5.4
 	
 	Added installation (and uninstallation) support to Makefile.

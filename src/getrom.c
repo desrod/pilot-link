@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
     Help();
   
   ps.rate = 38400;
+  ps.sd = 0;
   if (pi_device_open(argv[1], &ps) == -1) {
     perror("Unable to open port");
     exit(0);

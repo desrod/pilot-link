@@ -348,6 +348,8 @@ pi_file_free (struct pi_file *pf)
     free (pf->entries);
   if (pf->file_name)
     free (pf->file_name);
+  if (pf->rbuf)
+    free(pf->rbuf);
   if (pf->tmpf)
     fclose (pf->tmpf);
   free (pf);
@@ -870,6 +872,9 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
   /* All system updates seen to have the 'ptch' type, so trigger a reboot on those */
   if (pf->info.creator == pi_mktag('p','t','c','h'))
     reset = 1; 
+   
+  if (pf->info.flags & dlpDBFlagReset)
+    reset = 1;
       
   if(l>0)
     dlp_WriteAppBlock(socket, db, buffer, l);
