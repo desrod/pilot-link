@@ -1,3 +1,10 @@
+2002-09-20  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: We should be testing for JAVA_HOME, not JAVABASE
+
+	* bindings/Java/Makefile.am: Ditto
+
+
 2002-09-17  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Added HOST_OS and removed the -fullwarn for Irix,
