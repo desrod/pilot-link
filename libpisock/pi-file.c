@@ -1232,7 +1232,7 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 		goto fail;
 	}
 
-	result = dlp_ReadAppBlock(socket, db, 0, buffer->data, DLP_BUF_SIZE);
+	result = dlp_ReadAppBlock(socket, db, 0, DLP_BUF_SIZE, buffer);
 	if (result > 0) {
 		pi_file_set_app_info(pf, buffer->data, (size_t)result);
 		written = result;
