@@ -6,6 +6,9 @@ more reduction of the codebase in general. Things are going to get smaller,
 faster, and more functional with each of these releases.
 
 Major Features:
+	* New timing loop so you don't have to hit HotSync on the Palm
+	  first, before launching your desktop conduits. This also work with
+	  gnome-pilot and J-Pilot as well.
         * pilot-foto conduit to fetch/convert photos taken with a Palm
           Zire71 camera device
 	* Completely new Java bindings, rewritten from the ground-up by John
@@ -15,9 +18,8 @@ Other Features:
         * A few new manpages
 
 Bug Fixes:
-        * Removed TCL detection in configure for now, will return later with
-          a proper autoconf'y m4 macro from the TEA project
-	* Fixed a small leak in the socket code (serial.c/socket.c)
+	* Fixed a small leak in the socket code (serial.c/socket.c) (Robert
+	  L Krawitz)
 	* Removed CoPilot ROM support from pi-getrom/pi-getram. POSE
 	  supercedes it, and should be used instead.
 	* Solaris libpng fix (Simon Burr)
@@ -26,8 +28,6 @@ Bug Fixes:
 	  Marcus Clarke)
 	* Perl5 errors when building under a debug build of Perl (Johathan
 	  Mark)
-	* Cleaned up the HAVE_SYS_TIME_H calls, pushed into a convenience
-	  header for now
 
 Known Problems:
         * install-datebook needs proper parsing for spurious arguments

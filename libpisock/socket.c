@@ -857,6 +857,7 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 	if (bind_return < 0) {
 		ps->device->free (ps->device);
 		ps->device = NULL;
+
 	}
 	return bind_return;
 }

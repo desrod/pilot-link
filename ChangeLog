@@ -1,3 +1,7 @@
+2003-07-01 David A. Desrosiers <hacker at gnu-designs dot com>
+	
+	* Minor cleanup for 0.11.8 release
+
 2003-07-01  JP Rosevear  <jpr@ximian.com>
 
 	* bindings/Tcl/Makefile.am: define package version

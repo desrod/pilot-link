@@ -10,6 +10,7 @@ man_MANS =			\
 	install-netsync.1	\
 	install-todo.1		\
 	install-user.1		\
+	memos.1			\
 	pi-getram.1		\
 	pi-getrom.1		\
 	pilot-addresses.1	\
@@ -17,8 +18,10 @@ man_MANS =			\
 	pilot-link.7		\
 	pilot-xfer.1		\
 	read-ical.1		\
+	read-expenses.1		\
 	read-notepad.1		\
-	read-palmpix.1
+	read-palmpix.1		\
+	read-todos.1
 
 EXTRA_DIST = 
 	$(man_MANS)

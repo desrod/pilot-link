@@ -81,4 +81,4 @@ maintainer-clean-local: $(PERL_CLEAN) $(PYTHON_CLEAN)
 dist-hook:
 	rm -rf `find $(distdir) -name CVS`
 
-EXTRA_DIST = Python Java Perl Tcl
+EXTRA_DIST = Python Java Perl
