@@ -20,7 +20,7 @@ VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 dnl ******************************
 dnl Pilot Link Library Version
 dnl ******************************
-PISOCK_CURRENT=4
+PISOCK_CURRENT=5
 PISOCK_REVISION=0
 PISOCK_AGE=0
 
@@ -615,5 +615,10 @@ echo "
   Java support........ : $msg_java	
   Python support...... : $msg_python	($PYTHONVER)
   Perl support........ : $msg_perl	($PERLVER)
-  
+
+  WARNING: This is a development version of pilot-link Do NOT install this
+           into a production location unless you know what you are doing. 
+
+           libpisock HAS been incremented to 5.0.0
+
 "

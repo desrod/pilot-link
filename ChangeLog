@@ -1,3 +1,7 @@
+2002-02-20  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* Increment/fix versions of libpisock, Python, Perl bindings
+
 2002-02-21  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libsock/pi-file.c: Removed "pretty-print" for release. Will return
