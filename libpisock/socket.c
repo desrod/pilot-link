@@ -27,16 +27,11 @@
 #include <config.h>
 #endif
 
-#ifdef WIN32
-#include <winsock.h>
-#include <io.h>
-#else
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
-#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
@@ -809,53 +804,6 @@ is_listener (pi_socket_t *ps)
 }
 
 /* Alarm Handling Code */
-
-#ifdef WIN32
-/* An implementation of alarm for windows*/
-#include <process.h>
-static long alm_countdown = -1;
-static void *alm_tid = 0;
-
-void
-alarm_thread(void *unused)
-{
-	long 	av;
-
-	Sleep(1000L);
-	av = InterlockedDecrement(&alm_countdown);
-	if (av == 0) {
-		raise(SIGALRM);
-	}
-	if (av <= 0) {
-		alm_tid = 0;
-		ExitThread(0);
-	}
-}
-
-unsigned
-alarm(unsigned sec)
-{
-	long 	ret = alm_countdown;
-
-	if (sec) {
-		alm_countdown = sec;
-		if (!alm_tid) {
-			unsigned long t;
-
-			/* not multi thread safe -- fine if you just
-                           call alarm from one thread */
-			alm_tid =
-			    CreateThread(0, 0,
-					 (LPTHREAD_START_ROUTINE)
-					 alarm_thread, 0, 0, &t);
-		}
-	} else {
-		alm_countdown = -1;
-	}
-	return ret > 0 ? ret : 0;
-}
-#endif
-
 static RETSIGTYPE
 onalarm(int signo)
 {

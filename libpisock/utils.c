@@ -27,31 +27,11 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
-
-#ifdef NeXT
-# include <stdlib.h>
-# include <assert.h>
-#endif
-
-#ifdef WIN32
-#include <winsock.h>
-#include <assert.h>
-#else
-#ifndef HAVE_INET_ATON
-# include <sys/param.h>
-#ifdef __EMX__
-# include <sys/types.h>
-# define INCL_DOSFILEMGR	/* File System values */
-# define INCL_MISC
-# include <os2.h>
-#endif
-# include <sys/types.h>
-# include <netinet/in.h>
-# include <arpa/inet.h>
-# include <ctype.h>
-#endif
-#endif
-# include <string.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <ctype.h>
+#include <string.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"

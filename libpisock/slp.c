@@ -25,10 +25,6 @@
 #include <config.h>
 #endif
 
-#ifdef WIN32
-#include <winsock.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>

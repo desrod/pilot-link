@@ -31,10 +31,6 @@
 #include <string.h>
 #include <errno.h>
 
-#ifdef WIN32
-#include <winsock.h>
-#include <io.h>
-#else
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -43,7 +39,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#endif
 
 #include "pi-debug.h"
 #include "pi-source.h"
@@ -383,19 +378,12 @@ pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 
 	opt = 1;
 	optlen = sizeof(opt);
-#ifdef WIN32
-	if (setsockopt
-	    (ps->sd, SOL_SOCKET, SO_REUSEADDR, (const char *) &opt,
-	     optlen) < 0) {
-		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
-	}
-#else
+
 	if (setsockopt
 	    (ps->sd, SOL_SOCKET, SO_REUSEADDR, (void *) &opt,
 	     (int)optlen) < 0) {
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
-#endif
 
 	if (bind(ps->sd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);

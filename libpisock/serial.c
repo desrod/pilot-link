@@ -30,19 +30,12 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <string.h>
-
-#ifdef WIN32
-#include <windows.h>
-#include <winsock.h>
-#include <io.h>
-#else
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>		/* Needed for Redhat 6.x machines */
 #include <unistd.h>
-#endif
 
 #include "pi-debug.h"
 #include "pi-source.h"
@@ -520,13 +513,9 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 					goto fail;
 					
 				/* Palm device needs some time to reconfigure its port */
-#ifdef WIN32
-				Sleep(100);
-#else
 				tv.tv_sec 	= 0;
 				tv.tv_usec 	= 50000;
 				select(0, 0, 0, 0, &tv);
-#endif
 				break;
 
 			case PI_CMD_NET:

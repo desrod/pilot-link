@@ -24,14 +24,9 @@
 #include <config.h>
 #endif
 
-#ifdef WIN32
-#include <winsock.h>
-#else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
