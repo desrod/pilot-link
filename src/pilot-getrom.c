@@ -56,7 +56,7 @@ static const char *optstring = "p:hv";
 static void display_help(char *progname)
 {
 	printf("   Retrieves the ROM image from your Palm device\n\n");
-	printf("   Usage: %s -p <port> [--copilot] [pilot.rom]\n\n", progname);
+	printf("   Usage: %s -p <port> [pilot.rom]\n\n", progname);
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n"); 
 	printf("     -h, --help              Display help information for %s\n", progname);   
