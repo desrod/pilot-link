@@ -151,9 +151,9 @@ pi_serial_protocol (pi_device_t *dev)
 
 	ASSERT (dev != NULL);
 	
-	data = dev->data;
-	
 	prot = (pi_protocol_t *) malloc(sizeof (pi_protocol_t));
+
+	data = (struct pi_serial_data *)(dev->data);
 
 	if (prot != NULL) {
 		prot->level 		= PI_LEVEL_DEV;
@@ -185,17 +185,9 @@ pi_serial_protocol (pi_device_t *dev)
 static void
 pi_serial_device_free (pi_device_t *dev) 
 {
-	struct pi_serial_data *data;
-
 	ASSERT (dev != NULL);
 
-	data = (struct pi_serial_data *)dev->data;
-
-	(*(data->ref))--;
-
-	if (*(data->ref) == 0)
-		free (data->ref);
-	free(data);
+	free(dev->data);
 	free(dev);
 }
 
@@ -218,50 +210,44 @@ pi_serial_device (int type)
 	struct 	pi_serial_data *data;
 	
 	dev = (pi_device_t *) malloc(sizeof (pi_device_t));
-	data = (struct pi_serial_data *)
-			malloc(sizeof (struct pi_serial_data));
+	if (dev == NULL)
+		return NULL;
 
-	if (dev != NULL && data != NULL) {
-		dev->free 		= pi_serial_device_free;
-		dev->protocol 		= pi_serial_protocol;	
-		dev->bind 		= pi_serial_bind;
-		dev->listen 		= pi_serial_listen;
-		dev->accept 		= pi_serial_accept;
-		dev->connect 		= pi_serial_connect;
-		dev->close 		= pi_serial_close;
-
-		switch (type) {
-			case PI_SERIAL_DEV:
-				pi_serial_impl_init (&data->impl);
-				break;
-			default:
-				pi_serial_impl_init (&data->impl);
-				break;
-		}
-	
-		data->buf_size 		= 0;
-		data->ref               = (int *)malloc (sizeof (int));
-		*(data->ref)            = 1;
-		data->rate 		= (speed_t)-1;
-		data->establishrate 	= (speed_t)-1;
-		data->establishhighrate = -1;
-		data->timeout 		= 0;
-		data->rx_bytes 		= 0;
-		data->rx_errors 	= 0;
-		data->tx_bytes 		= 0;
-		data->tx_errors 	= 0;
-
-		dev->data 		= data;
-
-	} else if (dev != NULL) {
+	data = (struct pi_serial_data *) malloc(sizeof (struct pi_serial_data));
+	if (data == NULL) {
 		free(dev);
-		dev = NULL;
+		return NULL;
+	}
 
-	} else if (data != NULL) {
-		free(data);
-		data = NULL;
+	dev->free 		= pi_serial_device_free;
+	dev->protocol 		= pi_serial_protocol;	
+	dev->bind 		= pi_serial_bind;
+	dev->listen 		= pi_serial_listen;
+	dev->accept 		= pi_serial_accept;
+	dev->connect 		= pi_serial_connect;
+	dev->close 		= pi_serial_close;
+
+	switch (type) {
+		case PI_SERIAL_DEV:
+			pi_serial_impl_init (&data->impl);
+			break;
+		default:
+			pi_serial_impl_init (&data->impl);
+			break;
 	}
 	
+	data->buf_size 		= 0;
+	data->rate 		= (speed_t)-1;
+	data->establishrate 	= (speed_t)-1;
+	data->establishhighrate = -1;
+	data->timeout 		= 0;
+	data->rx_bytes 		= 0;
+	data->rx_errors 	= 0;
+	data->tx_bytes 		= 0;
+	data->tx_errors 	= 0;
+
+	dev->data 		= data;
+
 	return dev;
 }
 
@@ -411,42 +397,44 @@ begin:
 		errno = save_errno;
 
 		if (errno == ENOENT) {
-			fprintf(stderr,
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					" The device %s does not exist..\n",
-					pa->pi_device);
-			fprintf(stderr,
+					pa->pi_device));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					" Possible solution:\n\n\tmknod %s c "
-					"<major> <minor>\n\n", pa->pi_device);
+					"<major> <minor>\n\n", pa->pi_device));
 		} else if (errno == EACCES) {
-			fprintf(stderr, "   Please check the "
-					"permissions on %s..\n", realport);
-			fprintf(stderr,
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
+					"   Please check the "
+					"permissions on %s..\n", realport));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					" Possible solution:\n\n\tchmod 0666 "
-					"%s\n\n", realport);
+					"%s\n\n", realport));
 		} else if (errno == ENODEV) {
 			while (count <= 5) {
 				if (isatty(fileno(stdout))) {
-					fprintf(stderr,
+					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 							"\r   Port not connected,"
-							" sleeping for 2 seconds, ");
-					fprintf(stderr,
+							" sleeping for 2 seconds, "));
+					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 							"%d retries..",
-							5-count);
+							5-count));
 				}
 				sleep(2);
 				count++;
 				goto begin;
 			}
-			fprintf(stderr,
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					"\n\n   Device not found on %s, \
-					Did you hit HotSync?\n\n", realport);	
+					Did you hit HotSync?\n\n", realport));	
 		} else if (errno == EISDIR) {
-			fprintf(stderr, " The port specified must"
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
+					" The port specified must"
 					" contain a device name, and %s was"
 					" a directory.\n"
 					"   Please change that to reference a"
 					" real device, and try"
-					" again\n\n", pa->pi_device);
+					" again\n\n", pa->pi_device));
 		}
 		return err;
 	}

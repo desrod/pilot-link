@@ -239,20 +239,17 @@ s_open(pi_socket_t *ps, struct pi_sockaddr *addr, socklen_t addrlen)
 static int
 s_close(pi_socket_t *ps)
 {
-	struct 	pi_serial_data *data =
-		(struct pi_serial_data *)ps->device->data;
-
 #ifdef sleeping_beauty
 	s_delay(2, 0);
 #endif
 
-	if (*(data->ref) == 0) {
-#ifndef SGTTY
-		tcsetattr(ps->sd, TCSADRAIN, &data->tco);
-#else
-		ioctl(ps->sd, TIOCSETP, &data->tco);
+#if 0		/* previous test would never allow this code to execute */
+ #ifndef SGTTY
+	tcsetattr(ps->sd, TCSADRAIN, &data->tco);
+ #else
+	ioctl(ps->sd, TIOCSETP, &data->tco);
+ #endif
 #endif
-	}
 	
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
 		"DEV CLOSE Serial Unix fd: %d\n", ps->sd));

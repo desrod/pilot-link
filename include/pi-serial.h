@@ -29,7 +29,7 @@ extern "C" {
 		size_t buf_size;
 		
 		/* I/O options */
-		int *ref;
+		/*int *ref;*/
 		
 #ifndef WIN32
 #ifndef OS2
