@@ -4,7 +4,7 @@
  * Documentation of the sync cases is at:
  * http://www.palmos.com/dev/tech/docs/conduits/win/CnComp_Conduits.html#926365
  *
- * Copyright (c) 2000, Helix Code Inc.
+ * Copyright (c) 2000-2001, Ximian Inc.
  *
  * Author: JP Rosevear <jpr@helixcode.com> 
  *
@@ -36,17 +36,28 @@ typedef enum {
 	BOTH
 } RecordModifier;
 
-typedef struct _PilotRecordList PilotRecordList;
+typedef struct _RecordQueueList RecordQueueList;
+typedef struct _RecordQueue RecordQueue;
 
-struct _PilotRecordList
+struct _RecordQueueList
 {
-	PilotRecord *record;
-	PilotRecordList *next;
+	DesktopRecord *drecord;
+	PilotRecord   *precord;
+
+	RecordQueueList *next;
+};
+
+struct _RecordQueue
+{
+	int count;
+	
+	RecordQueueList *rql;
 };
 
 
 #define PilotCheck(func)   if (rec_mod == PILOT || rec_mod == BOTH) if ((result = func) < 0) return result;
 #define DesktopCheck(func) if (rec_mod == DESKTOP || rec_mod == BOTH) if ((result = func) < 0) return result;
+#define ErrorCheck(func)   if ((result = func) < 0) return result;
 
 PilotRecord *
 sync_NewPilotRecord (int buf_size)
@@ -60,6 +71,23 @@ sync_NewPilotRecord (int buf_size)
 	
 	return precord;
 }
+
+PilotRecord *
+sync_CopyPilotRecord (const PilotRecord *precord)
+{
+	PilotRecord *new_record;
+	
+	new_record = sync_NewPilotRecord (sizeof (precord->buffer));
+
+	new_record->recID = precord->recID;
+	new_record->catID = precord->catID;
+	new_record->flags = precord->flags;
+	memcpy (new_record->buffer, precord->buffer, precord->len);
+	new_record->len = precord->len;
+
+	return new_record;
+}
+
 
 void
 sync_FreePilotRecord (PilotRecord *precord) 
@@ -81,23 +109,68 @@ sync_NewDesktopRecord (void)
 	return drecord;
 }
 
+DesktopRecord *
+sync_CopyDesktopRecord (const DesktopRecord *drecord)
+{
+	DesktopRecord *new_record;
+	
+	new_record = sync_NewDesktopRecord ();
+
+	*new_record = *drecord;
+
+	return new_record;
+}
+
 void
 sync_FreeDesktopRecord (DesktopRecord *drecord) 
 {
 	free (drecord);
 }
 
-void
-free_pilot_record_list (PilotRecordList *pl) 
+static void
+add_record_queue (RecordQueue *rq, PilotRecord *precord, DesktopRecord *drecord)
 {
-	PilotRecordList *l;
+	RecordQueueList *item;
+	
+	item = malloc (sizeof (RecordQueueList));
 
-	while (pl != NULL) {
-		l = pl;
-		pl = pl->next;
-		sync_FreePilotRecord (l->record);
-		free (l);
+	if (drecord != NULL) {
+		item->drecord = drecord;
+		item->precord = NULL;
+	} else {
+		item->drecord = NULL;
+		item->precord = sync_CopyPilotRecord (precord);
 	}
+	
+	if (rq) {
+		item->next = rq->rql;
+		rq->rql = item;
+	} else {
+		item->next = NULL;
+	}
+
+	rq->count++;
+}
+
+static int
+free_record_queue_list (SyncHandler *sh, RecordQueueList *rql) 
+{
+	RecordQueueList *item;
+	int result = 0;
+	
+	while (rql != NULL) {
+		item = rql;
+		rql = rql->next;
+
+		if (item->drecord)
+			ErrorCheck (sh->FreeMatch (sh, item->drecord));
+		if (item->precord)
+			sync_FreePilotRecord (item->precord);
+		
+		free (item);
+	}
+
+	return 0;
 }
 
 static int
@@ -105,14 +178,11 @@ delete_both (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 {
 	int result = 0;
 	
-	if (drecord != NULL) {
+	if (drecord != NULL)
 		DesktopCheck (sh->DeleteRecord (sh, drecord));
-	}
 	
-	
-	if (precord != NULL) {
+	if (precord != NULL)
 		PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
-	}
 
 	return result;
 }
@@ -150,13 +220,15 @@ close_db (SyncHandler *sh, int dbhandle)
 }
 
 static int
-sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord, RecordModifier rec_mod)
+sync_record (SyncHandler *sh, int dbhandle, 
+	     DesktopRecord *drecord, PilotRecord *precord, 
+	     RecordQueue *rq, RecordModifier rec_mod)
 {
 	int parch = 0, pdel = 0, pchange = 0;
 	int darch = 0, ddel = 0, dchange = 0;
 	int result = 0;
 	
-	/* The flags are calculated like this because the deleted and dirty
+	/* The state is calculated like this because the deleted and dirty
 	   pilot flags are not mutually exclusive */
 	if (precord) {
 		parch = precord->flags & dlpRecAttrArchived;
@@ -174,7 +246,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		DesktopCheck (sh->AddRecord (sh, precord));
 		
 	} else if (precord == NULL && drecord != NULL) {
-		DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+		add_record_queue (rq, NULL, drecord);
 		
 	} else if (parch && ddel) {
 		DesktopCheck (sh->ReplaceRecord (sh, drecord, precord));
@@ -186,11 +258,11 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		
 	} else if (parch && drecord == NULL) {
 		DesktopCheck (sh->AddRecord (sh, precord));
-		result = sh->Match (sh, precord, &drecord);
-		if (result != 0 || drecord == NULL)
+		ErrorCheck (sh->Match (sh, precord, &drecord));
+		if (drecord == NULL)
 			return -1;
 		DesktopCheck (sh->ArchiveRecord (sh, drecord, 1));
-		result = sh->FreeMatch (sh, drecord);
+		ErrorCheck (sh->FreeMatch (sh, drecord));
 
 	} else if (parch && pchange && !darch && dchange) {
 		int comp;
@@ -205,13 +277,13 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 						     precord->catID, precord->buffer,
 						     precord->len, &precord->recID));
 			DesktopCheck (sh->AddRecord (sh, precord));
-			DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+			add_record_queue (rq, NULL, drecord);
 			DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		}
 		
 	} else if (parch && !pchange && !darch && dchange) {
 		PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
-		DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+		add_record_queue (rq, NULL, drecord);
 		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 
 	} else if (pchange && darch && dchange) {
@@ -238,7 +310,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		if (comp != 0) {
 			DesktopCheck (sh->AddRecord (sh, precord));
 			drecord->recID = 0;
- 			DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+			add_record_queue (rq, NULL, drecord);
 		}
 		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
@@ -251,7 +323,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (pdel && dchange) {
-		DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+		add_record_queue (rq, NULL, drecord);
 		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (pdel && !dchange) {
@@ -264,7 +336,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		
 	} else if (!pchange && dchange) {
 		PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
-		DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+		add_record_queue (rq, NULL, drecord);
 		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (!pchange && ddel) {
@@ -272,7 +344,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 
 	}
-
+	
 	return result;
 }
 
@@ -347,91 +419,68 @@ sync_CopyFromPilot (SyncHandler *sh)
 }
 
 static int
+sync_MergeFromPilot_process (SyncHandler *sh, int dbhandle, RecordQueue *rq, RecordModifier rec_mod) 
+{
+	RecordQueueList *item;
+	int result = 0;
+	
+	for (item = rq->rql; item != NULL; item = item->next) {
+		if (item->drecord != NULL) {
+			store_record_on_pilot (sh, dbhandle, item->drecord, rec_mod);
+		} else {
+			PilotCheck (dlp_WriteRecord (sh->sd, dbhandle, 0, 0, 
+						     item->precord->catID, item->precord->buffer,
+						     item->precord->len, &item->precord->recID));
+		}
+	}
+	free_record_queue_list (sh, rq->rql);
+	
+	return result;
+}
+
+static int
 sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
-	PilotRecordList *pl = NULL;
-	PilotRecordList *l = NULL;
 	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
 	DesktopRecord *drecord = NULL;
+	RecordQueue rq = {0, NULL};
 	int result = 0;
 	
 	while (dlp_ReadNextModifiedRec (sh->sd, dbhandle, precord->buffer,
 					&precord->recID, NULL, &precord->len,
 					&precord->flags, &precord->catID) >= 0) {
-		PilotRecordList *elem = malloc (sizeof (PilotRecordList));
+		int count = rq.count;
+		
+		ErrorCheck (sh->Match (sh, precord, &drecord));
+		ErrorCheck (sync_record (sh, dbhandle, drecord, precord, &rq, rec_mod));
 
-		elem->record = precord;
-		elem->next = NULL;
-
-		if (pl == NULL) {
-			pl = l = elem;
-		} else {
-			l->next = elem;		
-			l = l->next;
-		}
-
-		precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+		if (drecord && rq.count != count)
+			ErrorCheck (sh->FreeMatch (sh, drecord));
 	}
 	sync_FreePilotRecord (precord);
 	
-	for (l = pl; l != NULL; l = l->next) {
-		precord = l->record;
+	result = sync_MergeFromPilot_process (sh, dbhandle, &rq, rec_mod);
 
-		result = sh->Match (sh, precord, &drecord);
-		DesktopCheck(result);
-		
-		result = sync_record (sh, dbhandle, drecord, precord, rec_mod);
-		DesktopCheck(result);
-
-		if (drecord) {
-			result = sh->FreeMatch (sh, drecord);
-			DesktopCheck(result);
-		}
-	}
-	
-	free_pilot_record_list (pl);
-	
 	return result;
 }
 
 static int
 sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
-	PilotRecordList *pl = NULL;
-	PilotRecordList *l = NULL;
 	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
 	DesktopRecord *drecord = NULL;
-	int index;
-	int parch, psecret;
+	RecordQueue rq = {0, NULL};
+	int index, parch, psecret;
 	int result = 0;
 
 	index = 0;
 	while (dlp_ReadRecordByIndex (sh->sd, dbhandle, index, precord->buffer, 
 				      &precord->recID, &precord->len, 
 				      &precord->flags, &precord->catID) > 0) {
-		PilotRecordList *elem = malloc (sizeof (PilotRecordList));
+		int count = rq.count;
 
-		elem->record = precord;
-		elem->next = NULL;
-
-		if (pl == NULL) {
-			pl = l = elem;
-		} else {
-			l->next = elem;		
-			l = l->next;
-		}
-
-		precord = sync_NewPilotRecord (DLP_BUF_SIZE);
-		index++;
-	}
-	sync_FreePilotRecord (precord);
-
-	for (l = pl; l != NULL; l = l->next) {
-		precord = l->record;
-
-		result = sh->Match (sh, precord, &drecord);
-		DesktopCheck(result);
-
+		ErrorCheck (sh->Match (sh, precord, &drecord));
+		
 		/* Since this is a slow sync, we must calculate the flags */
 		parch = precord->flags & dlpRecAttrArchived;
 		psecret = precord->flags & dlpRecAttrSecret;
@@ -452,14 +501,16 @@ sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 		if (psecret)
 			precord->flags = precord->flags | dlpRecAttrSecret;
 		
-		result = sync_record (sh, dbhandle, drecord, precord, rec_mod);
-		DesktopCheck(result);
+		ErrorCheck (sync_record (sh, dbhandle, drecord, precord, &rq, rec_mod));
 
-		if (drecord) {
-			result = sh->FreeMatch (sh, drecord);
-			DesktopCheck(result);
-		}
+		if (drecord && rq.count != count)
+			ErrorCheck (sh->FreeMatch (sh, drecord));
+
+		index++;
 	}
+	sync_FreePilotRecord (precord);
+
+	result =  sync_MergeFromPilot_process (sh, dbhandle, &rq, rec_mod);
 
 	return result;
 }
@@ -498,6 +549,7 @@ sync_MergeToPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
 	PilotRecord *precord = NULL;
 	DesktopRecord *drecord = NULL;
+	RecordQueue rq = {0, NULL};
 	int result = 0;
 	
 	while (sh->ForEachModified (sh, &drecord) == 0 && drecord) {
@@ -512,12 +564,14 @@ sync_MergeToPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 							 &precord->catID));
 		}
 		
-		DesktopCheck (sync_record (sh, dbhandle, drecord, precord, rec_mod));
+		ErrorCheck (sync_record (sh, dbhandle, drecord, precord, &rq, rec_mod));
 
 		if (precord)
 			free (precord);
 		precord = NULL;
 	}
+
+	result =  sync_MergeFromPilot_process (sh, dbhandle, &rq, rec_mod);
 	
 	return result;
 }
@@ -527,6 +581,7 @@ sync_MergeToPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
 	PilotRecord *precord = NULL;
 	DesktopRecord *drecord = NULL;
+	RecordQueue rq = {0, NULL};
 	int darch, dsecret;
 	int result = 0;
 	
@@ -562,12 +617,14 @@ sync_MergeToPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 		if (dsecret)
 			drecord->flags = drecord->flags | dlpRecAttrSecret;
 		
-		DesktopCheck (sync_record (sh, dbhandle, drecord, precord, rec_mod));
+		ErrorCheck (sync_record (sh, dbhandle, drecord, precord, &rq, rec_mod));
 
 		if (precord)
 			free (precord);
 		precord = NULL;
 	}
+
+	result =  sync_MergeFromPilot_process (sh, dbhandle, &rq, rec_mod);
 
 	return result;
 }

@@ -1,7 +1,7 @@
 /*
  * sync.h: Header for generic synchronization algorithm
  *
- * Copyright (c) 2000, Helix Code Inc.
+ * Copyright (c) 2000-2001, Ximian Inc.
  *
  * Author: JP Rosevear <jpr@helixcode.com> 
  *
@@ -75,9 +75,11 @@ struct _SyncHandler {
 };
 
 PilotRecord *sync_NewPilotRecord (int buf_size);
+PilotRecord *sync_CopyPilotRecord (const PilotRecord *precord);
 void sync_FreePilotRecord (PilotRecord *precord);
 	
-DesktopRecord *sync_NewDesktopRecord (void);	
+DesktopRecord *sync_NewDesktopRecord (void);
+DesktopRecord *sync_CopyDesktopRecord (const DesktopRecord *drecord);
 void sync_FreeDesktopRecord (DesktopRecord *drecord);
 
 int sync_CopyToPilot (SyncHandler *sh);

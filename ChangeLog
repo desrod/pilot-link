@@ -1,3 +1,21 @@
+2001-01-16  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/sync.c (sync_CopyPilotRecord): copies a pilot record
+	(sync_CopyDesktopRecord): copies a desktop record
+	(add_record_queue): add a pilot side operation to the queue
+	(free_record_queue): free a queu of operations
+	(delete_both): fix incorrect error check
+	(sync_record): Instead of actually doing pilot mods, add an op
+	to the queue
+	(sync_MergeFromPilot_process): Process the items in the queue
+	(sync_MergeFromPilot_fast): go back to processing the records as they
+	come in and processing the queue at the end
+	(sync_MergeFromPilot_slow): ditto
+	(sync_MergeToPilot_fast): process queue at the end
+	(sync_MergeToPilot_slow): ditto
+
+	* include/pi-sync.h: Add pilot and desktop record copy protos
+
 2001-01-12  JP Rosevear  <jpr@ximian.com>
 
 	* include/pi-sockaddr.h.in: Up the device name limit to 255
