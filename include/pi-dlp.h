@@ -483,6 +483,9 @@ typedef unsigned long FileRef;
 	extern char *dlp_errorlist[];
 	extern char *dlp_strerror(int error);
 
+	extern void dlp_set_protocol_version
+			PI_ARGS((int major, int minor));
+
 	/* Get the time on the Palm and return it as a local time_t value. */ 
 	extern int dlp_GetSysDateTime PI_ARGS((int sd, time_t *t));
 

@@ -172,25 +172,27 @@ char * exp_errorlist[] = {
 	"Incompatible API version"
 };
 
-int dlp_trace = 0;
+static int dlp_trace = 0;
+static int dlp_version_major = PI_DLP_VERSION_MAJOR;
+static int dlp_version_minor = PI_DLP_VERSION_MINOR;
 
 #ifdef PI_DEBUG
-#define Trace(name) \
-  LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP %s sd: %d\n", #name, sd));
-#define Expect(count)    \
-  if (result < count) {  \
-    if (result < 0) {    \
-      LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Error  %s (%d)\n", dlp_errorlist[-result], result)); \
-    } else {             \
-      LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Read %d bytes, expected at least %d\n", result, count)); \
-      result = -128;     \
-    }                    \
-    return result;       \
-  } else                 \
-      LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP RX %d bytes\n", result));
+	#define Trace(name) \
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP %s sd: %d\n", #name, sd));
+	#define Expect(count)    \
+		if (result < count) {  \
+			if (result < 0) {    \
+			  LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Error  %s (%d)\n", dlp_errorlist[-result], result)); \
+			} else {             \
+			  LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Read %d bytes, expected at least %d\n", result, count)); \
+			  result = -128;     \
+			}                    \
+			return result;       \
+		} else                 \
+		  LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP RX %d bytes\n", result));
 #else
-#define Trace(name)
-#define Expect(count)
+	#define Trace(name)
+	#define Expect(count)
 #endif
 
 #ifdef PI_DEBUG
@@ -213,6 +215,28 @@ static void record_dump (unsigned long recID, unsigned int recIndex, int flags,
 	dumpdata(data, (size_t)data_len);
 }
 #endif
+
+/***********************************************************************
+ *
+ * Function:	dlp_set_protocol_version
+ *
+ * Summary:		set the protocol version we should announce to the device
+ *				when it connects (see pi-dlp.h for details). This should
+ *				be done prior to connecting with device if you want to
+ *				change from the defaults.
+ *
+ * Parameters:	major	--> protocol major version
+ *				minor	-->	protocol minor version
+ *
+ * Returns:     nothing
+ *
+ ***********************************************************************/
+void
+dlp_set_protocol_version(int major, int minor)
+{
+	dlp_version_major = major;
+	dlp_version_minor = minor;
+}
 
 /***********************************************************************
  *
