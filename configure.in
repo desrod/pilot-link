@@ -282,6 +282,44 @@ AM_CONDITIONAL(WITH_FREEBSDUSB, test x$usb_type = xfreebsd)
 AM_CONDITIONAL(WITH_DARWINUSB, test x$usb_type = xdarwin)
 AC_SUBST(usb_libs)
 
+dnl *********************************
+dnl Check if using the included popt
+dnl *********************************
+
+AC_ARG_WITH(included-popt,
+[  --with-included-popt    use bundled popt library, not from system],
+[ 
+  case "$withval" in
+	yes)
+		INCLUDED_POPT=yes
+		;;
+	no)
+		INCLUDED_POPT=no
+		;;
+  esac ],
+)
+if test x"$INCLUDED_POPT" != x"yes"; then
+    AC_CHECK_LIB(popt, poptGetContext,
+		 INCLUDED_POPT=no, INCLUDED_POPT=yes)
+fi
+
+AC_MSG_CHECKING(whether to use included popt)
+if test x"$INCLUDED_POPT" = x"yes"; then
+    AC_MSG_RESULT(yes)
+    BUILD_POPT='$(POPT_OBJS)'  
+	POPTLIBS='$(POPT_OBJS)'
+    POPT_FLAGS="-I$srcdir/popt"
+else
+    AC_MSG_RESULT(no)
+	BUILD_POPT=""
+    POPTLIBS="-lpopt"
+fi
+AC_SUBST(INCLUDED_POPT)
+AC_SUBST(BUILD_POPT)
+AC_SUBST(POPTLIBS)
+AC_SUBST(POPT_FLAGS)
+
+
 dnl ******************************
 dnl Test for getopt
 dnl ******************************
@@ -727,6 +765,7 @@ echo "
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
+  Using internal popt..... : $INCLUDED_POPT
   ElectricFence checks.... : $msg_efence
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
