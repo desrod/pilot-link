@@ -9,6 +9,8 @@
 
 	* libpisock++/Makefile.am: Export LIBCXX into LDFLAGS (#768)
 
+	* libpisync/Makefile.am: Added pisock to LIBADD (#767)
+
 	* src/pilot-datebook/pilot-datebook-joblist.c: Incorrect types fixed
 	  (#773)
 
