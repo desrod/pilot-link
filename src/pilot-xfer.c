@@ -680,7 +680,7 @@ palm_fetch_internal(const char *dbname)
 	{
 		printf("Failed, unable to create file.\n");
 		return;
-	} else if (pi_file_retrieve(f, sd, 0, fetch_progress) < 0)
+	} else if (pi_file_retrieve(f, sd, 0, plu_quiet ? NULL : fetch_progress) < 0)
 	{
 		printf("Failed, unable to fetch database from the Palm.\n");
 	}
@@ -695,25 +695,127 @@ palm_fetch_internal(const char *dbname)
 	pi_file_close(f);
 }
 
+static int
+pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const char *vfspath, progress_func f)
+{
+	long         volume = -1;
+	char         rpath[vfsMAXFILENAME];
+	int          rpathlen = vfsMAXFILENAME;
+	FileRef      file;
+	long         attributes;
+	pi_buffer_t  *buffer;
+	ssize_t      readsize,writesize;
+	int          filesize;
+	int          original_filesize;
+	int          written_so_far;
+
+	enum { bad_parameters=-1,
+	       cancel=-2,
+	       bad_vfs_path=-3,
+	       bad_local_file=-4,
+	       insufficient_space=-5,
+	       internal_=-6
+	} ;
+
+
+	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0)
+	{
+		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n", vfspath);
+		return bad_vfs_path;
+	}
+
+	if (rpath[rpathlen-1] != '/') {
+		rpath[rpathlen] = '/';
+		rpathlen++;
+	}
+
+	strncat(rpath,basename,sizeof(rpath)-rpathlen-1);
+	rpathlen=strlen(rpath);
+
+	/* fprintf(stderr,"* Reading %s on volume %ld\n",rpath,volume); */
+
+	if (dlp_VFSFileOpen(socket,volume,rpath,dlpVFSOpenRead,&file) < 0) {
+		fprintf(stderr,"\n   Cannot open file '%s' on VFS.\n",rpath);
+		return bad_vfs_path;
+	}
+
+	if (dlp_VFSFileGetAttributes(socket,file,&attributes) < 0)
+	{
+		fprintf(stderr,"   Could not get attributes of VFS file.\n");
+		(void) dlp_VFSFileClose(socket,file);
+		return bad_vfs_path;
+	}
+
+	if (attributes & vfsFileAttrDirectory)
+	{
+		/* Clear case for later feature. */
+		fprintf(stderr,"   Cannot retrieve a directory.\n");
+		dlp_VFSFileClose(socket,file);
+		return bad_vfs_path;
+	}
+
+	dlp_VFSFileSize(socket,file,&filesize);
+	original_filesize = filesize;
+
+#define FBUFSIZ 65536
+	pi_file_t fake_file;
+	memset(&fake_file,0,sizeof(fake_file));
+	fake_file.file_name = /* const_cast */ (char *) basename;
+
+	buffer = pi_buffer_new(FBUFSIZ);
+	readsize = 0;
+	written_so_far = 0;
+	while ((filesize > 0) && (readsize >= 0))
+	{
+		int offset;
+
+		pi_buffer_clear(buffer);
+		readsize = dlp_VFSFileRead(socket,file,buffer,
+			( filesize > FBUFSIZ ? FBUFSIZ : filesize));
+
+		/* fprintf(stderr,"*  Read %ld bytes.\n",readsize); */
+
+		if (readsize <= 0) break;
+		filesize -= readsize;
+		offset=0;
+		while (readsize > 0)
+		{
+			writesize = write(fd,buffer->data+offset,readsize);
+			if (writesize < 0)
+			{
+				fprintf(stderr,"   Error while writing file.\n");
+				goto cleanup;
+			}
+
+			written_so_far += writesize;
+
+			if ((filesize > 0) || (readsize > 0)) {
+				if (f && (f(socket,&fake_file,original_filesize,
+					(int)written_so_far,0) == PI_TRANSFER_STOP)) {
+					written_so_far = cancel;
+					pi_set_error(socket,PI_ERR_FILE_ABORTED);
+					goto cleanup;
+				}
+			}
+
+			readsize -= writesize;
+			offset += writesize;
+		}
+	}
+cleanup:
+	pi_buffer_free(buffer);
+#undef FBUFSIZ
+	dlp_VFSFileClose(socket,file);
+
+	return written_so_far;
+}
+
 static void
 palm_fetch_VFS(const char *dbname, const char *vfspath)
 {
-	static unsigned long
-					totalsize = 0;
-
-	long			volume = -1;
-	char			rpath[vfsMAXFILENAME];
-	int				rpathlen = vfsMAXFILENAME;
-	FileRef			file;
-	long			attributes;
-	pi_buffer_t *buffer;
-	int				fd = -1,
-					offset;
-	ssize_t			readsize,writesize;
-	int		filesize;
-	int original_filesize;
-	int written_so_far;
-
+	static unsigned long totalsize = 0;
+	int fd = -1;
+	int filesize;
 
 	if (NULL == vfspath)
 	{
@@ -736,102 +838,26 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 		exit(EXIT_FAILURE);
 	}
 
-	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0)
-	{
-		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n", vfspath);
-		return;
-	}
-
 	fprintf(stdout, "   Fetching '%s'... ", dbname);
 	fflush(stdout);
-
-	if (rpath[rpathlen-1] != '/') {
-		rpath[rpathlen] = '/';
-		rpathlen++;
-	}
-
-	strncat(rpath,dbname,sizeof(rpath)-rpathlen-1);
-	rpathlen=strlen(rpath);
-
-	/* fprintf(stderr,"* Reading %s on volume %ld\n",rpath,volume); */
-
-	if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenRead,&file) < 0) {
-		fprintf(stderr,"\n   Cannot open file '%s' on VFS.\n",rpath);
-		/* unlink(dbname) ? */
-		return;
-	}
-
-	if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
-	{
-		fprintf(stderr,"   Could not get attributes of VFS file.\n");
-		(void) dlp_VFSFileClose(sd,file);
-		return;
-	}
-
-	if (attributes & vfsFileAttrDirectory)
-	{
-		/* Clear case for later feature. */
-		fprintf(stderr,"   Cannot retrieve a directory.\n");
-		dlp_VFSFileClose(sd,file);
-		return;
-	}
-
-	dlp_VFSFileSize(sd,file,&filesize);
-	original_filesize = filesize;
-
-	/* fprintf(stderr,"* Got attributes %lx.\n",attributes); */
 
 	/* Calculate basename, perhaps? */
 	fd = open(dbname,O_WRONLY | O_CREAT | O_TRUNC,0666);
 	if (fd < 0) {
 		fprintf(stderr,"\n   Cannot open local file for '%s'.\n",dbname);
-		dlp_VFSFileClose(sd,file);
 		return;
 	}
 
-#define FBUFSIZ 65536
-
-	buffer = pi_buffer_new(FBUFSIZ);
-	readsize = 0;
-	written_so_far = 0;
-	while ((filesize > 0) && (readsize >= 0))
-	{
-		pi_buffer_clear(buffer);
-		readsize = dlp_VFSFileRead(sd,file,buffer,
-			( filesize > FBUFSIZ ? FBUFSIZ : filesize));
-
-		/* fprintf(stderr,"*  Read %ld bytes.\n",readsize); */
-
-		if (readsize <= 0) break;
-		filesize -= readsize;
-		offset=0;
-		while (readsize > 0)
-		{
-			writesize = write(fd,buffer->data+offset,readsize);
-			if (writesize < 0)
-			{
-				fprintf(stderr,"   Error while writing file.\n");
-				break;
-			}
-			written_so_far += writesize;
-			readsize -= writesize;
-			totalsize += writesize;
-			offset += writesize;
-
-			if ((filesize > 0) || (readsize > 0)) {
-				fprintf(stdout, "\r   Fetching '%s'... (%d bytes)", dbname,written_so_far);
-				fflush(stdout);
-			}
-		}
+	if ((filesize = pi_file_retrieve_VFS(fd,dbname,sd,vfspath,plu_quiet ? NULL : fetch_progress)) < 0) {
+		fprintf(stderr,"   ERROR: pi_file_retrieve_VFS failed.\n");
+		/* is the semantics of unlink-open-file standard? */
+		unlink(dbname);
+	} else {
+		totalsize += filesize;
+		printf("   %ld KiB total.\n", totalsize/1024);
+		fflush(stdout);
 	}
-	pi_buffer_free(buffer);
-#undef FBUFSIZ
-	dlp_VFSFileClose(sd,file);
 	close(fd);
-
-	printf("\r   Fetching '%s'... (%lu bytes, %ld KiB total)\n",
-		dbname,
-		(unsigned long)original_filesize, totalsize/1024);
 }
 
 static void
