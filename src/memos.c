@@ -14,6 +14,29 @@
 #include "pi-memo.h"
 #include "pi-dlp.h"
 
+char * device = "/dev/pilot";
+
+/* Not yet actually used:
+ */
+void usage(void)
+{
+      printf("Usage: %s [%s]\n\n","memos",TTYPrompt);
+      printf("\n");
+      printf("The contents of your Pilot's memo database will be written to");
+      printf(" standard\n");
+      printf("output as a standard Unix mailbox (mbox-format) file, with each");
+      printf(" memo\n");
+      printf("as a separate message.  The subject of each message will be the");
+      printf(" category.\n");
+      printf("\n");
+      printf("The serial port to connect to may be specified by the");
+      printf(" PILOTPORT\n");
+      printf("environment variable instead of the command line. If not");
+      printf(" specified\n");
+      printf("anywhere, it will default to /dev/pilot.\n");
+      exit(0);
+}
+
 int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
@@ -25,10 +48,16 @@ int main(int argc, char *argv[])
   unsigned char buffer[0xffff];
   char appblock[0xffff];
   struct MemoAppInfo mai;
+  char *tmp;
 
   if (argc < 2) {
-    fprintf(stderr,"usage:%s %s\n",argv[0],TTYPrompt);
+    tmp = getenv("PILOTPORT");
+    if (tmp != NULL) {
+      device = tmp;
+    }
+/*    fprintf(stderr,"usage:%s %s\n",argv[0],TTYPrompt);
     exit(2);
+*/
   }
   if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
@@ -36,7 +65,9 @@ int main(int argc, char *argv[])
   }
     
   addr.pi_family = PI_AF_SLP;
-  strcpy(addr.pi_device,argv[1]);
+/*  strcpy(addr.pi_device,argv[1]);
+*/
+  strcpy(addr.pi_device,device);
   
   ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
@@ -88,9 +119,18 @@ int main(int argc, char *argv[])
   		
 	unpack_Memo(&m, buffer, len);
 	
-	printf("From your.pilot Tue Oct  1 07:56:25 1996\nReceived: Pilot@p by memo Tue Oct  1 07:56:25 1996\nTo: you@y\nDate: Thu, 31 Oct 1996 23:34:38 -0500\n");
+	printf("From your.pilot Tue Oct  1 07:56:25 1996\n");
+	printf("Received: Pilot@p by memo Tue Oct  1 07:56:25 1996\n");
+	printf("To: you@y\n");
+	printf("Date: Thu, 31 Oct 1996 23:34:38 -0500\n");
 	printf("Subject: ");
+	/*
+	 * print category name in brackets in subject field
+	 */
 	printf("[%s] ", mai.category.name[category]);
+	/*
+	 * print (at least part of) first line as part of subject:
+	 */
 	for(j=0;j<40;j++) {
 		if((!m.text[j]) || (m.text[j] == '\n'))
 			break;
@@ -113,4 +153,5 @@ int main(int argc, char *argv[])
   
   return 0;
 }
+
 

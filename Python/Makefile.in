@@ -7,7 +7,10 @@
 # the PYTHON installation and the python version.  Otherwise, set the
 # environment variables before using this Makefile.
 
-PYTHONHOME = @PYTHONBASE@
+PYTHON_PREFIX = @PYTHON_PREFIX@
+PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
+PYTHONINCDIR = @PYTHONINCDIR@
+PYTHONLIBDIR = @PYTHONLIBDIR@
 PYTHONVERSION = @PYTHONVER@
 
 prefix = @prefix@
@@ -17,11 +20,11 @@ libdir = @libdir@
 
 # The following lines should be left as is:
 VERSION=	$(PYTHONVERSION)
-pyinstalldir=	$(PYTHONHOME)
-installdir=	$(PYTHONHOME)
-exec_installdir=$(pyinstalldir)
-INCLUDEPY=	$(pyinstalldir)/include/python$(VERSION)
-LIBP=		$(exec_installdir)/lib/python$(VERSION)
+pyinstalldir=	$(PYTHON_PREFIX)
+installdir=	$(exec_prefix)
+exec_installdir=$(PYTHON_EXEC_PREFIX)
+INCLUDEPY=	$(PYTHONINCDIR)
+LIBP=		$(PYTHONLIBDIR)
 LIBPL=		$(LIBP)/config
 PYMAKE=		$(MAKE) -f $(LIBPL)/Makefile
 

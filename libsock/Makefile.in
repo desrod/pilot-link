@@ -143,7 +143,6 @@ pi-file.o pi-file.lo: pi-file.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-file.h \
  ../include/pi-dlp.h
-putenv.o putenv.lo: putenv.c
 serial.o serial.lo: serial.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h \

@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
   char buf[0xffff];
   int category;
   struct MemoAppInfo mai;
-  char *progname, *category_name, ch;
+  int ch;
+  char *progname, *category_name;
   int   preamble, quiet, replace_category, add_title;
 
   progname = argv[0];

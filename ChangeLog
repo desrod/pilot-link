@@ -1,3 +1,20 @@
+Dec 14,  1997	Kenenth Albanowski 0.8.9
+	Configuration changed:
+	  - added Python configuration patches by Bill Janssen
+	    <janssen@parc.xerox.com>.
+	Library changes:
+	  - Modified emulation of DLP NextRecInCat function.
+	Utility changes:
+	  - added GNU (glibc2) getopt, changed pilot-xfer to use long options.
+	  - install-memos getopt tweak
+	  - added patches by Jay Sekora <js@aq.org> to improve memos
+	  - added Ian Goldberg's sensible name escape patches for pilot-xfer
+	    (so that a database with a slash or equals in the name is translated
+	    to something safe.)
+	  - added slightly modified patches by Simon Burge
+	    <simonb@telstra.com.au> so that pilot-xfer does not have to back
+	    up the entire Pilot each time. (added sync and update modes).
+
 Dec  7,  1997	Kenneth Albanowski 0.8.8
 	Configuration changes:
 	  - add sa_len member to pi_sockaddr, to match OS

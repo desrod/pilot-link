@@ -7,12 +7,14 @@
  */
 
 #include <stdio.h>
+#include <time.h>
 #ifdef __EMX__
-#include <getopt.h>
 #include <sys/types.h>
 #endif
+#include "getopt.h"
 #include <sys/stat.h>
 #include <signal.h>
+#include <utime.h>
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-file.h"
@@ -39,6 +41,25 @@ void MakeExcludeList(char *efile) {
         printf("Will exclude: %s\n",temp);
         exclude[numexclude++] = strdup(temp);
     }
+}
+
+/* Protect = and / in filenames */
+static void protect_name(char *d, char *s)
+{
+    while(*s) {
+      switch(*s) {
+          case '/': *(d++) = '='; *(d++) = '2'; *(d++) = 'F'; break;
+          case '=': *(d++) = '='; *(d++) = '3'; *(d++) = 'D'; break;
+          case '\x0A': *(d++) = '='; *(d++) = '0'; *(d++) = 'A'; break;
+          case '\x0D': *(d++) = '='; *(d++) = '0'; *(d++) = 'D'; break;
+       /* If you feel the need:
+          case ' ': *(d++) = '='; *(d++) = '2'; *(d++) = '0'; break;
+        */
+          default: *(d++) = *s;
+      }
+      ++s;
+    }
+    *d = '\0';
 }
 
 void Connect(void) {
@@ -114,18 +135,60 @@ void VoidSyncFlags(void)
   } 
 }
 
-void Backup(char * dirname)
+void RemoveFromList(char *name, char **list, int max)
 {
   int i;
+
+  for (i = 0; i < max; i++) {
+    if (list[i] != NULL && strcmp(name, list[i]) == 0) {
+      free(list[i]);
+      list[i] = NULL;
+    }
+  }
+}
+
+void Backup(char * dirname, int only_changed, int remove_deleted)
+{
+  int i, ofile_total, ofile_len;
+  DIR * dir;
+  struct dirent * dirent;
+  char ** orig_files = 0;
   
   Connect();
   
   mkdir(dirname,0700);
 
+  /* Read original list of files in the backup dir */
+  ofile_total = 0;
+  ofile_len = 0;
+  
+  if (only_changed) {
+    dir = opendir(dirname);
+    while( (dirent = readdir(dir)) ) {
+      char name[256];
+      if (dirent->d_name[0] == '.')
+         continue;
+         
+      if (!orig_files) {
+        ofile_len += 256;
+      	orig_files = malloc(sizeof(char*) * ofile_len);
+      } else if (ofile_total >= ofile_len) {
+        ofile_len += 256;
+      	orig_files = realloc(orig_files, sizeof(char*) * ofile_len);
+      }
+
+      sprintf(name, "%s/%s", dirname, dirent->d_name);
+      orig_files[ofile_total++] = strdup(name);
+    }
+    closedir(dir);
+  }
+
   i = 0;
   for(;;) {
   	struct DBInfo info;
   	struct pi_file * f;
+	struct utimbuf times;
+	struct stat statb;
         int x;
         int skip = 0;
   	char name[256];
@@ -139,26 +202,38 @@ void Backup(char * dirname)
   		break;
   	i = info.index + 1;
 
-        for(x = 0; x < numexclude; x++) {
-            /* printf("Skipcheck:%s:%s:\n",exclude[x],info.name); */
-            if(strcmp(exclude[x],info.name) == 0) {
-                printf("Excluding '%s'...\n",info.name);
-                skip = 1;
-            }
-        }
+	strcpy(name, dirname);
+	strcat(name, "/");
+	protect_name(name + strlen(name), info.name);
 
-        if(skip == 1)
-            continue;
-
-  	sprintf(name, "%s/%s", dirname, info.name);
   	if (info.flags & dlpDBFlagResource)
   	  strcat(name,".prc");
   	else
   	  strcat(name,".pdb");
-  	  
+
+        for(x = 0; x < numexclude; x++) {
+          /* printf("Skipcheck:%s:%s:\n",exclude[x],info.name); */
+          if(strcmp(exclude[x],info.name) == 0) {
+            printf("Excluding '%s'...\n",name);
+	    RemoveFromList(name, orig_files, ofile_total);
+            skip = 1;
+          }
+        }
+
+        if(skip == 1)
+          continue;
+
+	if (stat(name, &statb) == 0) {
+	  if (info.modifyDate == statb.st_mtime) {
+	    printf("No change, skipping '%s'.\n", info.name);
+	    RemoveFromList(name, orig_files, ofile_total);
+	    continue;
+	  }
+	}
+
   	printf("Backing up '%s'... ", name);
   	fflush(stdout);
-  	
+
   	/* Ensure that DB-open flag is not kept */
   	info.flags &= 0xff;
   	
@@ -173,7 +248,32 @@ void Backup(char * dirname)
   	else
   	  printf("OK\n");
   	pi_file_close(f);
+  	
+  	/* Note: This is no guarantee that the times on the host system
+  	   actually match the GMT times on the Pilot. We only check to
+  	   see whether they are the same or different, and do not treat
+  	   them as real times. */
+  	   
+	times.actime = info.createDate;
+	times.modtime = info.modifyDate;
+	utime(name, &times);
+	
+	RemoveFromList(name, orig_files, ofile_total);
   }
+  
+  if (orig_files) {
+    for (i = 0; i < ofile_total; i++)
+      if (orig_files[i] != NULL) {
+        if (remove_deleted) {
+          printf("Removing '%s'.\n", orig_files[i]);
+          unlink(orig_files[i]);
+        }
+        free(orig_files[i]);
+      }
+    if (orig_files)
+      free(orig_files);
+  }
+
   printf("Backup done.\n");
 }
 
@@ -195,7 +295,7 @@ void Fetch(char * dbname)
     return;
   }
         
-  strcpy(name, dbname);
+  protect_name(name, dbname);
   if (info.flags & dlpDBFlagResource)
     strcat(name,".prc");
   else
@@ -513,6 +613,8 @@ void Help(void)
 {
       printf("Usage: %s [%s] command(s)\n\n",progname,TTYPrompt);
       printf("Where a command is one or more of: -b(ackup)  backupdir\n");
+      printf("                                   -u(pdate)  backupdir\n");
+      printf("                                   -s(ync)    backupdir\n");
       printf("                                   -r(estore) backupdir\n");
       printf("                                   -i(nstall) filename(s)\n");
       printf("                                   -m(erge)   filename(s)\n");
@@ -525,15 +627,34 @@ void Help(void)
       printf("The serial port to connect to may be specified by the PILOTPORT\n");
       printf("environment variable instead of the command line. If not specified\n");
       printf("anywhere, it will default to /dev/pilot.\n");
+      printf("\n");
+      printf(" -b backs up all databases to the directorym\n");
+      printf(" -u is the same as -b, except it only backs up changed or new db's\n");
+      printf(" -s is the same as -u, except it removes files if the database is\n");
+      printf("    deleted on the Pilot.\n");
       exit(0);
 }
+
+struct option options[] = {
+	{"backup", required_argument, 0, 'b'},
+	{"update", required_argument, 0, 'u'},
+	{"sync", required_argument, 0, 's'},
+	{"restore", required_argument, 0, 'r'},
+	{"install", required_argument, 0, 'i'},
+	{"merge", required_argument, 0, 'm'},
+	{"fetch", required_argument, 0, 'f'},
+	{"delete", required_argument, 0, 'd'},
+	{"exclude", required_argument, 0, 'e'},
+	{"purge", no_argument, 0, 'p'},
+	{"list", no_argument, 0, 'l'},
+	{0, 0, 0, 0}};
 
 int main(int argc, char *argv[])
 {
   int c;
   int lastmode = 0;
   char *tmp;
-#ifdef sun
+#if defined(sun) || defined(ultrix)
   extern char* optarg;
   extern int optind;
 #endif
@@ -555,11 +676,11 @@ int main(int argc, char *argv[])
   optind=1;
 #endif  
   while (argv[optind] != NULL) {
-    c = getopt(argc, argv, "b:e:r:i:m:f:d:plh");
+    c = getopt_long(argc, argv, "b:u:s:e:r:i:m:f:d:plh", options, 0);
     if (c == EOF) {
 	optarg=argv[optind++];
 	c = lastmode;
-	if (lastmode=='b' || lastmode=='r' || lastmode=='l' || lastmode=='p') {
+	if (lastmode=='b' || lastmode=='u' || lastmode=='s' || lastmode=='r' || lastmode=='l' || lastmode=='p') {
 	    fprintf(stderr, "'%c', only accepts one argument!\n", lastmode);
 	    continue;
 	}
@@ -570,7 +691,13 @@ int main(int argc, char *argv[])
     }
     switch (c) {
     case 'b':
-      Backup(optarg);
+      Backup(optarg, 0, 0);
+      break;
+    case 'u':
+      Backup(optarg, 1, 0);
+      break;
+    case 's':
+      Backup(optarg, 1, 1);
       break;
     case 'r':
       Restore(optarg);
@@ -610,4 +737,3 @@ int main(int argc, char *argv[])
   
   return 0;
 }
-

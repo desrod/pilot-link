@@ -92,6 +92,8 @@ TCLEXECS = pilot-debug$(EXT)
 
 PERLEXECS = pilot-undelete ietf2datebook sync-plan
 
+GETOPT = getopt.o getopt1.o
+
 EXECS = $(CEXECS) $(WITHOUTTCL) $(WITHCXX) $(WITHOUTPERL5)
 
 PILIB = libsock/libpisockdll.a
@@ -140,47 +142,47 @@ uninstall:
 	-$(LIBTOOL) $(RM) $(libdir)/libpicc.a
 	-rmdir $(libdir)
 
-install-memo$(EXT): $(PILIB) install-memo.o
-	$(CCLINK) install-memo.o $(PILIB) -o $@ $(LIBS)
+install-memo$(EXT): $(PILIB) $(GETOPT) install-memo.o
+	$(CCLINK) install-memo.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-install-datebook$(EXT): $(PILIB) install-datebook.o parsedate.o
-	$(CCLINK) install-datebook.o parsedate.o $(PILIB) -o $@ $(LIBS)
+install-datebook$(EXT): $(PILIB) $(GETOPT) install-datebook.o parsedate.o
+	$(CCLINK) install-datebook.o parsedate.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-install-todos$(EXT): $(PILIB) install-todos.o
-	$(CCLINK) install-todos.o $(PILIB) -o $@ $(LIBS)
+install-todos$(EXT): $(PILIB) $(GETOPT) install-todos.o
+	$(CCLINK) install-todos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-addresses$(EXT): $(PILIB) pilot-addresses.o
-	$(CCLINK) pilot-addresses.o $(PILIB) -o $@ $(LIBS)
+pilot-addresses$(EXT): $(PILIB) $(GETOPT) pilot-addresses.o
+	$(CCLINK) pilot-addresses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-dedupe$(EXT): $(PILIB) pilot-dedupe.o
-	$(CCLINK) pilot-dedupe.o $(PILIB) -o $@ $(LIBS)
+pilot-dedupe$(EXT): $(PILIB) $(GETOPT) pilot-dedupe.o
+	$(CCLINK) pilot-dedupe.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-install-user$(EXT): $(PILIB) install-user.o
-	$(CCLINK) install-user.o $(PILIB) -o $@ $(LIBS)
+install-user$(EXT): $(PILIB) $(GETOPT) install-user.o
+	$(CCLINK) install-user.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-xfer$(EXT): $(PILIB) pilot-xfer.o
-	$(CCLINK) pilot-xfer.o $(PILIB) -o $@ $(LIBS)
+pilot-xfer$(EXT): $(PILIB) $(GETOPT) pilot-xfer.o
+	$(CCLINK) pilot-xfer.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-schlep$(EXT): $(PILIB) pilot-schlep.o
-	$(CCLINK) pilot-schlep.o $(PILIB) -o $@ $(LIBS)
+pilot-schlep$(EXT): $(PILIB) $(GETOPT) pilot-schlep.o
+	$(CCLINK) pilot-schlep.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-mail$(EXT): $(PILIB) pilot-mail.o parsedate.o
-	$(CCLINK) pilot-mail.o parsedate.o $(PILIB) -o $@ $(LIBS)
+pilot-mail$(EXT): $(PILIB) $(GETOPT) pilot-mail.o parsedate.o
+	$(CCLINK) pilot-mail.o parsedate.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-port$(EXT): $(PILIB) pi-port.o
-	$(CCLINK) pi-port.o $(PILIB) -o $@ $(LIBS)
+pi-port$(EXT): $(PILIB) $(GETOPT) pi-port.o
+	$(CCLINK) pi-port.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-getrom$(EXT): $(PILIB) pi-getrom.o
-	$(CCLINK) pi-getrom.o $(PILIB) -o $@ $(LIBS)
+pi-getrom$(EXT): $(PILIB) $(GETOPT) pi-getrom.o
+	$(CCLINK) pi-getrom.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-getram$(EXT): $(PILIB) pi-getram.o
-	$(CCLINK) pi-getram.o $(PILIB) -o $@ $(LIBS)
+pi-getram$(EXT): $(PILIB) $(GETOPT) pi-getram.o
+	$(CCLINK) pi-getram.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-file$(EXT): $(PILIB) pilot-file.o
-	$(CCLINK) pilot-file.o $(PILIB) -o $@ $(LIBS)
+pilot-file$(EXT): $(PILIB) $(GETOPT) pilot-file.o
+	$(CCLINK) pilot-file.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-clip$(EXT): $(PILIB) pilot-clip.o
-	$(CCLINK) pilot-clip.o $(PILIB) -o $@ $(LIBS)
+pilot-clip$(EXT): $(PILIB) $(GETOPT) pilot-clip.o
+	$(CCLINK) pilot-clip.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
 pilot-debug.o: pilot-debug.c Makefile
 	$(CC) $(CFLAGS) -c pilot-debug.c
@@ -188,50 +190,50 @@ pilot-debug.o: pilot-debug.c Makefile
 pd-tty.o: pd-tty.c Makefile
 	$(CC) $(CFLAGS) -c pd-tty.c
 
-pilot-debug$(EXT): $(PILIB) pilot-debug.o pd-tty.o
-	$(CCLINK) pilot-debug.o pd-tty.o $(PILIB) -o $@ $(TCLTK_LIBS) $(RLLIBS) $(LIBS)
+pilot-debug$(EXT): $(PILIB) $(GETOPT) pilot-debug.o pd-tty.o
+	$(CCLINK) pilot-debug.o pd-tty.o $(PILIB) $(GETOPT) -o $@ $(TCLTK_LIBS) $(RLLIBS) $(LIBS)
 
-reminders$(EXT): $(PILIB) reminders.o
-	$(CCLINK) reminders.o $(PILIB) -o $@ $(LIBS)
+reminders$(EXT): $(PILIB) $(GETOPT) reminders.o
+	$(CCLINK) reminders.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-memos$(EXT): $(PILIB) memos.o
-	$(CCLINK) memos.o $(PILIB) -o $@ $(LIBS)
+memos$(EXT): $(PILIB) $(GETOPT) memos.o
+	$(CCLINK) memos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-read-todos$(EXT): $(PILIB) read-todos.o
-	$(CCLINK) read-todos.o $(PILIB) -o $@ $(LIBS)
+read-todos$(EXT): $(PILIB) $(GETOPT) read-todos.o
+	$(CCLINK) read-todos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-read-expenses$(EXT): $(PILIB) read-expenses.o
-	$(CCLINK) read-expenses.o $(PILIB) -o $@ $(LIBS)
+read-expenses$(EXT): $(PILIB) $(GETOPT) read-expenses.o
+	$(CCLINK) read-expenses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-read-ical$(EXT): $(PILIB) read-ical.o
-	$(CCLINK) read-ical.o $(PILIB) -o $@ $(LIBS)
+read-ical$(EXT): $(PILIB) $(GETOPT) read-ical.o
+	$(CCLINK) read-ical.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-addresses$(EXT): $(PILIB) addresses.o
-	$(CCLINK) addresses.o $(PILIB) -o $@ $(LIBS)
+addresses$(EXT): $(PILIB) $(GETOPT) addresses.o
+	$(CCLINK) addresses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-dlpsh$(EXT): $(PILIB) dlpsh.o
-	$(CCLINK) dlpsh.o $(PILIB) -o $@ $(LIBS)
+dlpsh$(EXT): $(PILIB) $(GETOPT) dlpsh.o
+	$(CCLINK) dlpsh.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-debugsh$(EXT): $(PILIB) debugsh.o
-	$(CCLINK) debugsh.o $(PILIB) -o $@ $(LIBS)
+debugsh$(EXT): $(PILIB) $(GETOPT) debugsh.o
+	$(CCLINK) debugsh.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-csd$(EXT): $(PILIB) pi-csd.o
-	$(CCLINK) pi-csd.o $(PILIB) -o $@ $(LIBS)
+pi-csd$(EXT): $(PILIB) $(GETOPT) pi-csd.o
+	$(CCLINK) pi-csd.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-nredir$(EXT): $(PILIB) pi-nredir.o
-	$(CCLINK) pi-nredir.o $(PILIB) -o $@ $(LIBS)
+pi-nredir$(EXT): $(PILIB) $(GETOPT) pi-nredir.o
+	$(CCLINK) pi-nredir.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-ccexample$(EXT): $(PILIB) $(PICCLIB) ccexample.o
-	$(CXXLINK) ccexample.o $(PILIB) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
+ccexample$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) ccexample.o
+	$(CXXLINK) ccexample.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-validate$(EXT): $(PILIB) $(PICCLIB) validate.o
-	$(CXXLINK) validate.o $(PILIB) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
+validate$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) validate.o
+	$(CXXLINK) validate.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-iambicexample$(EXT): $(PILIB) $(PICCLIB) iambicexample.o
-	$(CXXLINK) iambicexample.o $(PILIB) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
+iambicexample$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) iambicexample.o
+	$(CXXLINK) iambicexample.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-getrom$(EXT): $(PILIB) getrom.o
-	$(CCLINK) getrom.o $(PILIB) -o $@ $(LIBS)
+getrom$(EXT): $(PILIB) $(GETOPT) getrom.o
+	$(CCLINK) getrom.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
 parsedate.c: parsedate.y
 	@echo Expect six shift/reduce conflicts
@@ -324,6 +326,8 @@ dlpsh.o: dlpsh.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-padp.h \
  include/pi-dlp.h include/pi-serial.h
+getopt.o: getopt.c
+getopt1.o: getopt1.c getopt.h
 getrom.o: getrom.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-serial.h
@@ -401,10 +405,10 @@ pilot-schlep.o: pilot-schlep.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-file.h \
  include/pi-dlp.h
-pilot-xfer.o: pilot-xfer.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-file.h \
- include/pi-dlp.h
+pilot-xfer.o: pilot-xfer.c getopt.h include/pi-source.h \
+ include/pi-config.h include/pi-socket.h include/pi-args.h \
+ include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
+ include/pi-file.h include/pi-dlp.h
 read-expenses.o: read-expenses.c include/pi-source.h \
  include/pi-config.h include/pi-socket.h include/pi-args.h \
  include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \

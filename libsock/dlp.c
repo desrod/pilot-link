@@ -1836,7 +1836,9 @@ int dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void* buffer,
       } else {
         /* If none found, reset modified pointer so that another search on a different
            (or the same!) category will work */
-        ps->dlprecord = 0;
+        /* Freeow! Do _not_ reset, as the Pilot itself does not!
+          ps->dlprecord = 0;
+        */
       }
       
       break;
@@ -2079,8 +2081,11 @@ int dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory, void*
     
       /* If none found, reset modified pointer so that another search on a different
          (or the same!) category will start from the beginning */
-      if (r < 0)
-        dlp_ResetDBIndex(sd, fHandle);
+         
+      /* Working on same assumption as ReadNextRecInCat, elide this:
+        if (r < 0)
+          dlp_ResetDBIndex(sd, fHandle);
+      */
           
       /* Loop until we fail to get a record or a record is found in the proper category */
     } while ((r >= 0) && (cat != incategory));
