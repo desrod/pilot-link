@@ -446,15 +446,7 @@ fi
 dnl ******************************
 dnl readline checking
 dnl ******************************
-msg_readline=no
-AC_ARG_WITH(readline,      [  --with-readline         use readline               [default=yes]])
-if test "x$with_readline" != "xno"; then
-	VL_LIB_READLINE
-	if test "x$vl_cv_lib_readline" != "xno"; then
-		msg_readline="yes"
-		RL_LIBS="$vl_cv_lib_readline"
-	fi
-fi
+VL_LIB_READLINE
 
 dnl ******************************
 dnl Perl
