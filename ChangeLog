@@ -1,3 +1,24 @@
+2003-05-14 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pi-getrom.c: Deprecate CoPilot functions, use POSE
+
+	* src/pi-getram.c: Ditto
+
+	* src/pilot-xfer.c: arg cleanup, fixed --exclude
+
+	* src/memos.c: Removed redundant dreck
+
+	* src/read-todos.c: Minor visual cleanup
+
+	* src/*.c: Added missing default case in switch, minor cleanups,
+	  refactoring
+
+2003-04-07  JP Rosevear  <jpr@ximian.com>
+
+	* configure.in: the runtime logging option should not disable
+	symbols, check for gcc when enabling profiling, allow "error" for
+	compiling warnings to add -Werror
+
 2003-04-07 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Remove -Werror for now, breaks Python bindings
