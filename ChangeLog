@@ -1,3 +1,9 @@
+2003-02-20 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* Fixed a segfault issue with pilot-addresses, cleaned up some minor
+	  errors in the output of realentry[] and added a check for the
+	  existance of the file passed with -r
+
 2003-01-15 David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* Cleaned up some missing header declarations

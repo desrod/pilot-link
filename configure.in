@@ -322,6 +322,7 @@ LIBS="$LIBS -lreadline"
 
 	if test "x$RL_LIBS" = "x"; then
 		AC_MSG_RESULT(not found)
+		AC_MSG_ERROR([Development headers for readline were not found, please correct.])
 	else
 		AC_MSG_RESULT(found)
 	fi
@@ -425,10 +426,12 @@ if test "x$PERL" != "x"; then
 			use_perl=true
 		else
 			AC_MSG_RESULT($verstext [perl 5 not found])
+			AC_MSG_ERROR([Perl 5 or later not found, please correct.])
 			use_perl=false
 		fi
 	else
 		AC_MSG_RESULT($verstext [perl 5 not found])
+		AC_MSG_ERROR([Perl 5 or later not found, please correct.])
 	fi
 fi
 AM_CONDITIONAL(WITH_PERL, $use_perl)
