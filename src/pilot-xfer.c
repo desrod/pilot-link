@@ -1887,8 +1887,12 @@ int main(int argc, const char *argv[])
 		break;
 	}
 
-	/* actual operation */
+	/* userland_connect() prints diagnostics as needed, returns -1 on
+	   failure so just bail in that case. */
 	sd = userland_connect();
+	if (sd < 0) return 1;
+
+	/* actual operation */
 	switch(palm_operation) {
 	case palm_op_noop: /* handled above */
 		exit(1);
