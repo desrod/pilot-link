@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
@@ -43,6 +42,18 @@ struct option options[] = {
 
 static const char *optstring = "p:hvu:i:";
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments  
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Assigns your Palm device a Username and unique UserID\n\n");
@@ -104,7 +115,7 @@ int main(int argc, char *argv[])
 
 	if (!user && !userid) {
 		printf("   Palm user: %s\n", User.username);
-		printf("   UserID:    %u\n\n", User.userID);
+		printf("   UserID:    %ld\n\n", User.userID);
 		pi_close(sd);
 		return 0;
 	}
@@ -123,10 +134,10 @@ int main(int argc, char *argv[])
 	if (user)
 		printf("   Installed User Name: %s\n", User.username);
 	if (userid)
-		printf("   Installed User ID: %u\n", User.userID);
+		printf("   Installed User ID: %ld\n", User.userID);
 	printf("\n");
 	
-	if (dlp_AddSyncLogEntry(sd, "install-user, exited normally.\n"
+	if (dlp_AddSyncLogEntry(sd, "install-user exited normally.\n"
 				    "Thank you for using pilot-link.\n") < 0)
 		goto error_close;
 	
