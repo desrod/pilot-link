@@ -45,8 +45,10 @@ cxx_header_DATA = \
 	pi-iambicExpense.hxx	\
 	pi-memo.hxx		\
 	pi-todo.hxx
-
+if WITH_CXX
 cxx_headerdir=$(includedir)
+endif
+
 
 EXTRA_DIST = 			\
 	$(c_headers)		\
