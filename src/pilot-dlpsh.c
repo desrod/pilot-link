@@ -232,6 +232,7 @@ int ls_fn(int sd, int argc, char *argv[])
 		printf("%s\n", info.name);
 
 		if (lflag == 1) {
+			tag = htonl(info.type);			
 			printf("  More: 0x%x        Flags: 0x%-4x             Type: %.4s\n",
 				info.more, info.flags, (char *) &tag);
 			tag = htonl(info.creator);
