@@ -112,7 +112,9 @@ char *	port 	= NULL;
 char 	*exclude[MAXEXCLUDE];
 int 	numexclude = 0;
 
-
+#define BACKUP 1<<0
+#define UPDATE 1<<1
+#define SYNC 1<<2
 
 /***********************************************************************
  *
@@ -323,8 +325,8 @@ static int creator_is_PalmOS(long creator)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Backup(char *dirname, int only_changed, int remove_deleted,
-	    int rom, int unsaved, char *archive_dir)
+static void Backup(char *dirname, unsigned long int flags, int rom, 
+	int unsaved, char *archive_dir)
 {
 	int 	i,
 		ofile_len,
@@ -337,6 +339,8 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 	struct 	stat sbuf;
 
 	char 	**orig_files = 0;
+	char	*synctext = "Backing";
+
 	DIR 	*dir;
 
  	if (access(dirname, F_OK) == -1) {
@@ -358,7 +362,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 	ofile_total 	= 0;
 	ofile_len 	= 0;
 
-	if (only_changed) {
+	if (flags & UPDATE) {
 		dir = opendir(dirname);
 		while ((dirent = readdir(dir))) {
 			char name[256];
@@ -366,17 +370,11 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 			if (dirent->d_name[0] == '.')
 				continue;
 
-			if (!orig_files) {
+			if (ofile_total >= ofile_len) {
 				ofile_len += 256;
-				orig_files =
-				    malloc(sizeof(char *) * ofile_len);
-			} else if (ofile_total >= ofile_len) {
-				ofile_len += 256;
-				orig_files =
-				    realloc(orig_files,
-					    sizeof(char *) * ofile_len);
+				orig_files = realloc(orig_files, (sizeof 
+					(*orig_files)) * ofile_len);
 			}
-
 			sprintf(name, "%s/%s", dirname, dirent->d_name);
 			orig_files[ofile_total++] = strdup(name);
 		}
@@ -388,14 +386,6 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		struct 	DBInfo info;
 		struct 	pi_file *f;
 		struct 	utimbuf times;
-
-		/* This is supposed to be fixed on NeXT's Openstep 4.2.
-		   Anyone care to test this?
-		struct utimbuf {
-			long actime;
-			long modtime;
-		}; 
-		*/
 
 		int 	skip = 0,
 			x;
@@ -439,6 +429,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		if (rom == 1 && creator_is_PalmOS(info.creator)) {
 			printf("=== OS file, skipping '%s'.\n", info.name);
 			continue;
+
 		} else if (rom == 2 && !creator_is_PalmOS(info.creator)) {
 			printf("=== Non-OS file, skipping '%s'\n", info.name);
 			continue;
@@ -450,7 +441,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 			continue;
 		}
 
-		if (only_changed) {
+		if (flags & UPDATE) {
 			if (stat(name, &statb) == 0) {
 				if (info.modifyDate == statb.st_mtime) {
 					printf("No change, skipping %-35.30s\r", info.name);
@@ -459,15 +450,10 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 					continue;
 				}
 			}
+			synctext = "Syncronizing";
 		}
 
-		if (only_changed) {
-			printf("[%-3d] Synchronizing %-35.30s", filecount, name); 
-			fflush(stdout);
-		} else {
-			printf("[%-3d] Backing up %-35.30s", filecount, name);
-			fflush(stdout);
-		}
+		fprintf(stdout, "[%-3d] %s %-35.30s", filecount, synctext, name); 
 		filecount++;
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
@@ -481,8 +467,10 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("\nFailed, unable to back up database %s\n", name);
+
 		} else if (stat(name, &sbuf) == 0) {
-			printf("[%7ld bytes/%4d kb total]", sbuf.st_size, totalsize/1024);
+			fprintf(stdout, "[%7ld bytes/%4d kb total]", sbuf.st_size, totalsize/1024);
+			fflush(stdout);
 			totalsize += sbuf.st_size;
 		}
 
@@ -507,7 +495,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		int 	dirname_len = strlen(dirname);
 		char 	newname[256];
 
-		if (remove_deleted && dlp_OpenConduit(sd) < 0) {
+		if (flags & SYNC && dlp_OpenConduit(sd) < 0) {
 			/* If the connection has gone down here, there is
 			   probably a communication error. */
 			printf("\nExiting on error, stopped before removing files.\n");
@@ -516,8 +504,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 
 		for (i = 0; i < ofile_total; i++)
 			if (orig_files[i] != NULL) {
-				if (remove_deleted) {
-
+				if (flags & SYNC) {
 					if (archive_dir) {
 						printf("Archiving '%s'", orig_files[i]);
 						sprintf(newname, "%s/%s", archive_dir, &orig_files[i] [dirname_len + 1]);
@@ -1072,7 +1059,8 @@ static void Time(void)
 	dlp_ReadSysInfo(sd, &s);
 
 	if ((s.romVersion) == 0x03303000) {
-		dlp_AddSyncLogEntry(sd, "Syncing time will cause the device to\nhard-reset on PalmOS version 3.3!\n");
+		dlp_AddSyncLogEntry(sd, "Syncing time will cause the device \
+			to\nhard-reset on PalmOS version 3.3!\n");
 	} else {
 		dlp_GetSysDateTime(sd, &t2);
 		t1 = time(NULL);
@@ -1147,10 +1135,9 @@ static void display_help(char *progname)
 int main(int argc, char *argv[])
 {
 	int 	c,		/* switch */
-	 	do_rom 		= 0,
-		do_unsaved 	= 0,
-		timespent 	= 0,
-		last_c          = 0;
+	 	rom 		= 0,
+		unsaved 	= 0,
+		timespent 	= 0;
 
         time_t 	start,end;
 	
@@ -1158,6 +1145,8 @@ int main(int argc, char *argv[])
 		*progname 	= argv[0];
 
         start = time(NULL);
+
+	unsigned long int flags = 0;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -1171,23 +1160,14 @@ int main(int argc, char *argv[])
 		case 'p':
 			port = optarg;
 			break;
-
-		/* This means a field is unknown, could be multiple arg */
-		case 1:
-			if (last_c=='i') {
-				Install(optarg);
-			}
-			/* else { Unknown param, let it go by quietly } */
-			break;
-
 		case 'b':
-			Backup(optarg, 0, 0, do_rom, do_unsaved, archive_dir);
+			Backup(optarg, BACKUP, rom, unsaved, archive_dir);
 			break;
 		case 'u':
-			Backup(optarg, 1, 0, do_rom, do_unsaved, archive_dir);
+			Backup(optarg, UPDATE, rom, unsaved, archive_dir);
 			break;
 		case 's':
-			Backup(optarg, 1, 1, do_rom, do_unsaved, archive_dir);
+			Backup(optarg, UPDATE|SYNC, rom, unsaved, archive_dir);
 			break;
 		case 't':
 			Time();
@@ -1229,13 +1209,13 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 'F':
-			do_rom = !do_rom;
+			rom = !rom;
 			break;
 		case 'O':
-			do_rom = 2;
+			rom = 2;
 			break;
 		case 'I':
-			do_unsaved = 1;
+			unsaved = 1;
 			break;
 		case 'S':
 			novsf = 1;
@@ -1244,13 +1224,9 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		}
-
-		if (c > 1) {
-			last_c=c;
-		}
 	}
 
-	if (argc < 2) {
+	if (!port || argc <4) {
 		printf("ERROR: Insufficient number of arguments\n\n");
 		puts("Hit any key to continue..");
 		for( c = ' ' ; c != '\n' && c != EOF ; c = getchar() );
@@ -1258,7 +1234,8 @@ int main(int argc, char *argv[])
 	} else {
 		end=time(NULL);
 		timespent = (end-start);
-		printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
+		printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, 
+			(timespent/60)%60, timespent%60);
 	}
 	pi_close(sd);
 	return 0;
