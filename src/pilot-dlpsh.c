@@ -1,4 +1,4 @@
-/*
+;/*
  * dlpsh.c: DLP Command Shell
  *
  * (c) 1996, 2000, The pilot-link Team
@@ -47,6 +47,10 @@
 struct pi_socket *ticklish_pi_socket;
 
 /* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 int 	df_fn(int sd, int argc, char *argv[]),
 	exit_fn(int sd, int argc, char *argv[]),
 	help_fn(int sd, int argc, char *argv[]),
@@ -62,8 +66,6 @@ void exit_func(void);
 void handle_user_commands(int sd);
 
 typedef int (*cmd_fn_t) (int, int, char **);
-
-static void display_help(char *progname);
 
 struct Command {
 	char *name;
@@ -209,6 +211,7 @@ int ls_fn(int sd, int argc, char *argv[])
 	for (;;) {
 		struct DBInfo info;
 		long tag;
+		char *a = (char *)&tag;
 
 		/* The databases are numbered starting at 0.  The first 12
 		   are in ROM, and the rest are in RAM.  The high two bits
@@ -235,8 +238,8 @@ int ls_fn(int sd, int argc, char *argv[])
 			printf("  More: 0x%x        Flags: 0x%-4x             Type: %.4s\n",
 				info.more, info.flags, (char *) &tag);
 			tag = htonl(info.creator);
-			printf("  Creator: %s    Modification Number: %-4ld Version: %-2d\n",
-				(char *) &tag, info.modnum, info.version);
+			printf("  Creator: %c%c%c%c    Modification Number: %-4ld Version: %-2d\n",
+				a[0], a[1], a[2], a[3], info.modnum, info.version);
 			printf("  Created: %19s\n", timestr(info.createDate));
 			printf("  Backup : %19s\n", timestr(info.backupDate));
 			printf("  Modify : %19s\n\n", timestr(info.modifyDate));
@@ -606,16 +609,16 @@ char *strtoke(char *str, char *ws, char *delim)
 
 static void display_help(char *progname)
 {
-	printf("   An interactive DLP Protocol Shell for your Palm device\n\n");
+	printf("   An interactive Desktop Link Protocol (DLP) Shell for your Palm device\n\n");
 	printf("   Usage: %s -p <port>\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>    Use device file <port> to communicate with Palm\n");
-	printf("     -h           Display this information\n");
-	printf("     -v           Display the version information\n\n");
+	printf("   -p, --port <port>         Use device file <port> to communicate with Palm\n");
+	printf("   -h, --help                Display help information for %s\n", progname);
+	printf("   -v, --version             Display %s version information\n\n", progname);
 	printf("   dlpsh can query many different types of information from your Palm\n");
-	printf("   device, such as user, memory capacity, set the time, as well as\n");
+	printf("   device, such as username, memory capacity, set the time, as well as\n");
 	printf("   other useful functions.\n\n");
-	printf("   While in dlpsh, type 'help' for more options.\n\n");
+	printf("   While inside the dlpsh shell, type 'help' for more options.\n\n");
 
 	exit(0);
 }
@@ -627,15 +630,15 @@ int main(int argc, char *argv[])
 
 	char 	*progname 	= argv[0],
 		*port 		= NULL;
-	
-	static const char *optstring = "hp:v";
-	
+		
 	struct option options[] = {
-		{"help",    no_argument,       NULL, 'h'},
 		{"port",    required_argument, NULL, 'p'},
+		{"help",    no_argument,       NULL, 'h'},
 		{"version", no_argument,       NULL, 'v'},
-		{NULL,   0,                   NULL, 0}
+		{NULL,   0,                    NULL, 0}
 	};
+
+	static const char *optstring = "p:hv";
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -646,7 +649,7 @@ int main(int argc, char *argv[])
 			  port = optarg;
 			  break;
 		  case 'v':
-			  print_splash(progname);
+			  display_splash(progname);
 			  exit(0);
 		}
 	}	
