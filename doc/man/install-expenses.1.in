@@ -2,80 +2,78 @@
 .\" 
 .TH "install-expenses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBinstall\-expenses\fR \- Connect to the Palm handheld device and install an expense record from  various parameters and arguments passed at sync time.
+\fBinstall\-expenses\fR \- Install an expense record from various parameters and arguments passed at connection time.
 .SH "SYNOPSIS"
-\fBinstall\-expenses\fR [\fB\-qrt\fR] [\fB\-c\fR <\fIcategory\fR>] [\fB\-p\fR <\fIport\fR>] [<\fIfilename\fR>]
+\fBinstall\-expenses\fR [\fB\-p\fR <\fIport\fR>] [\fB\-qrt\fR] [\fB\-c\fR <\fIcategory\fR>] [<\fIfilename\fR>]
 
 
 .SH "DESCRIPTION"
-\fBinstall\-expenses\fR allows a Palm handheld with the Expense application to have expense records synchronized to it from the commandline. You can pass any of the fields (except categories, currently) to \fBinstall\-expenses\fR and create new expense records.
+\fBinstall\-expenses\fR allows a Palm handheld with the Expense application to have expense records synchronized to it from the commandline. You can pass any of the fields (except categories, currently) to \fBinstall\-expenses\fR and create new expense records on your Palm handheld.
 
 
 .SH "OPTIONS"
 .TP 
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+Use device file <\fIport\fR> to communicate with the Palm handheld. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found or supplied, \fBinstall\-expenses\fR will fall back to /dev/pilot
 
 
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
-Display help synopsis for \fBinstall\-expenses\fR
+Display the help synopsis for \fBinstall\-expenses\fR
 
 
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBinstall\-expenses\fR
+Display version information for \fBinstall\-expenses\fR
 
 
 .TP 
 \fB\-t\fR, \fB\-\-ttype\fR <\fIttype\fR>
-Add entries to the Payment Type field. These can be in the form of Cash, Check, and other. See the Expense application on your Palm device for full details.
+Add entries to the "Payment Type" field. These can be in the form of Cash, Check, and Others. See the Expense application on your Palm device for full details on payment types.
 
 
 .TP 
 \fB\-e\fR, \fB\-\-etype\fR <\fIetype\fR>
-Add entries to the Expense Type field. These can be in the form of Airfare,
-Meals, and others. See the Expense application on your Palm device for full
-details.
+Add entries to the "Expense Type" field. These can be in the form of Airfare, Meals, and Others. See the Expense application on your Palm device for full details on expense types.
 
 
 .TP 
 \fB\-a\fR, \fB\-\-amount\fR <\fIamount\fR>
-Add dollar amount entries to the Amount field. These can be in the form of 1.00 or "$10.00" and so on. See the Expense application on your Palm device for full details.
+Add dollar amount entries to the "Amount" field. These can be in the form of 1.00 or "$10.00" and so on. See the Expense application on your Palm device for full details on amount types.
 
 
 .TP 
 \fB\-V\fR, \fB\-\-vendor\fR <\fIvendor\fR>
-Add entries to the Vendor field. These are free\-form values, and can be the name of the restaurant, airline, or any other text value you wish. See the Expense application on your Palm device for full details.
+Add entries to the "Vendor" field. These are free\-form values, and can be the name of a restaurant, an airline, or any other text value you wish to use.
 
 
 .TP 
 \fB\-g\fR, \fB\-\-guests\fR <\fInum\fR>
-Add the number of attendees to the expense record, identified by <\fInum\fR>. 
+Add the number of attendees to the expense record, identified by <\fInum\fR>. If you ate lunch with four (4) additional people, you would put five (5) here, a numeric value.
 
 
 .TP 
 \fB\-i\fR, \fB\-\-city\fR <\fIcity\fR>
-Add entries to the City field in the expense record. These are free\-form values, and can be the name of the Location, City, or Town that the expense record occured in. See the Expense application on your Palm device for full details.
+Add entries to the "City" field in the expense record. These are free\-form values, and can be the name of the location, city, or town that the expense record occured in. 
 
 
 .TP 
 \fB\-n\fR, \fB\-\-note\fR <\fInote\fR>
-Add a note entry to the expense record. These are free\-form values, and can be some notes related to the expense entry. See the Expense application on your Palm device for full details.
+Add a "Note" entry to the expense record. These are free\-form values, and can be some notes related to the expense entry.
 
 
 .TP 
 \fB\-c\fR, \fB\-\-category\fR <\fIcategory\fR>
-Create entries into the named category defined here. See the Expense application on your Palm device for full details.
+Create entries into the named category defined here. See the Expense application on your Palm device for full details on using these categories.
 
 
 .TP 
 \fB\-r\fR, \fB\-\-replace\fR <\fIcategory\fR>
-Replace entry found in the named category identified by <\fIcategory\fR>.
+Replace the entry found in the named category identified by <\fIcategory\fR>.
 
 
 .SH "USAGE"
-The program will connect to the target Palm handheld device, and install entries into the Expense application based on values passed to \fBinstall\-expenses\fR as arguments.
+The program will connect to the Palm handheld, and install entries into the Expense application based on values passed to \fBinstall\-expenses\fR arguments.
 
 
 .SH "BUGS"

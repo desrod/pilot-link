@@ -2,7 +2,9 @@
 .\" 
 .TH "hinotes" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBhinotes\fR \- Syncronize your Hi\-Notes database with your desktop machine
+\fBhinotes\fR \- Syncronize your Hi\-Notes database with your desktop machine. 
+Hi-Notes must be installed on your Palm handheld (and at least one entry must 
+exist within Hi-Notes).
 
 
 .SH "SYNOPSIS"
@@ -10,22 +12,23 @@
 
 
 .SH "DESCRIPTION"
-By default, the contents of your Palm's memo database will be written to
-STDOUT as a standard Unix mailbox (in mbox\-format) file, with each memo as a
-separate message. The subject of each message will be set as the category.
+By default, the contents of your Palm's Hi-Notes database (Hi-NoteDB.pdb) 
+will be written to STDOUT as a standard Unix mailbox (in mbox\-format) file,
+with each memo as a separate message. The subject of each message will be set
+as the category. 
 
 .SH "OPTIONS"
 .TP 
 \fB\-d\fR <\fIdir\fR>
-Stores the memos in subdirectories of 
-<\fIdir\fR. Each subdirectory will contain the name of a category on the Palm where the record was stored, and will contain the memos found in that category.
+Stores the Hi-Note entries in subdirectories of <\fIdir\fR>. Each subdirectory 
+will contain the name of a category on the Palm where the record was stored, 
+and will contain the memos found in that category.
 
 Each memo's filename will be the first line (up to the first 40 characters) of the memo. Control characters, slashes, and equal signs ('=') that would otherwise appear in filenames are converted using the correct MIME's quoted\-printable encoding methods.
 
 
 .SH "USAGE"
-The program will dump your MemoPad database (MemoDB.pdb) from the Palm and
-output format suitable for the \fIHi\-Notes\fR application to use. 
+The program will dump your MemoPad database (MemoDB.pdb) from the Palm and output format suitable for the \fIHi\-Notes\fR application to use. 
 
 Please see \fIhttp://www.cyclos.com/\fR for more information on Hi\-Note.
 
@@ -41,6 +44,4 @@ Please see \fIhttp://www.cyclos.com/\fR for more information on Hi\-Note.
 .IP 
 Report bugs at \fIhttp://bugs.pilot\\-link.org/\fR
 .SH "AUTHOR"
-\fBhinotes\fR was written by Kenneth Albanowski, based on code by Bill
-\Goodman <\fIbgoodman@cyclos.com\fR> and modified by Michael Bravo
-\<\fImbravo@kronverk.spb.su\fR>
+\fBhinotes\fR was originally written by Kenneth Albanowski, based on code by Bill \Goodman <\fIbgoodman@cyclos.com\fR> and modified by Michael Bravo \<\fImbravo@kronverk.spb.su\fR>

@@ -1,6 +1,6 @@
 .TH "dlpsh" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBdlpsh\fR is a command shell for executing DLP (Desktop Link Protocol) commands on a Palm handheld device.
+\fBdlpsh\fR is a command "shell" for executing DLP (Desktop Link Protocol) commands to a Palm handheld.
 
 
 .SH "SYNOPSIS"
@@ -8,7 +8,7 @@
 
 
 .SH "DESCRIPTION"
-\fBdlpsh\fR allows the user to connect to a Palm handheld device and execute arbitrary Desktop Link Protocol (DLP) commands. Once connected, the user may execute any of the built\-in \fBDLP\fR commands. (See \fBBUILT\-IN COMMANDS\fR below).
+\fBdlpsh\fR allows the user to connect to a Palm handheld and execute arbitrary DLP commands. Once connected, the user may execute most of the built\-in \fBDLP\fR commands. (See \fBBUILT\-IN COMMANDS\fR below for more detail on currently supported options).
 
 .br 
 The connection to the Pilot is kept alive by sending a
@@ -16,27 +16,27 @@ The connection to the Pilot is kept alive by sending a
 
 
 .SH "BUILT\-IN COMMANDS"
-There are many options available to \fBdlpsh\fR, including the following. 
+There are many options available while connected to your Palm handheld via \fBdlpsh\fR, including the following. 
 
 .TP 
 \fBuser\fR
-Print the currently set User information
+Print the currently set User information, including Username, UserID, PCid, and ViewerID. You may also set these values from this command as well. Use 'user --help' while connected to see details on how to set or change these values.
 
 .TP 
 \fBls\fR
-Used with \-l and \-r to provide long and RAM and ROM file lists
+Used with \-l and \-r to provide long and RAM and ROM file lists, similar to the Unix 'ls' command. This does not yet allow you to narrow your listing to a certain range of files. It will simply list them all.
 
 .TP 
 \fBdf\fR
-Display how much RAM and ROM is free on your device
+Display how much RAM and ROM is free on your device, again similar to the Unix 'df' command. This does not accept arguments at this time.
 
 .TP 
 \fBtime\fR
-Set the time on the Palm from the desktop
+Set the time on the Palm from the currently-set desktop time. This does not work on OS version 3.3, due to a bug in PalmOS at that time. 
 
 .TP 
 \fBrm\fR
-Remove a file and delete it entirely from the Palm device
+Remove a file and delete it entirely from the Palm device. This is an irrevokable process, and you cannot "undelete" a file, once it has been deleted with this command.
 
 .TP 
 \fBquit\fR
@@ -48,7 +48,7 @@ While in \fBdlpsh\fR, you can always invoke 'help' or <option> \-\-help to get f
 
 
 .SH "USAGE"
-The program will connect to your Palm handheld device and give the user an interactive prompt for executing commands across the DLP \fIHotSync\fR protocol.
+The program will connect to your Palm handheld and give the user an interactive prompt (a "shell") for executing commands across the DLP \fIHotSync\fR protocol.
 
 
 .SH "BUGS"
@@ -64,4 +64,4 @@ The program will connect to your Palm handheld device and give the user an inter
 .IP 
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 .SH "AUTHOR"
-\fBdlpsh\fR was written by Chris Stevens <\fIstevens@rpi.edu\fR> and Damien Neil <\fIneild@rpi.edu\fR>
+\fBdlpsh\fR was originally written by Chris Stevens <\fIstevens@rpi.edu\fR> and Damien Neil <\fIneild@rpi.edu\fR>

@@ -2,7 +2,7 @@
 .\" 
 .TH "install-hinote" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBinstall\-hinote\fR \- installs a new Hi\-Note entry onto your Palm Device
+\fBinstall\-hinote\fR \- installs a new Hi\-Note entry onto your Palm handheld.
 
 
 .SH "SYNOPSIS"
@@ -10,7 +10,9 @@
 
 
 .SH "DESCRIPTION"
-\fBinstall\-hinote\fR allows the user to write one or more files as a new \fIHi\-Note\fR or into the Hi\-Notes Palm application itself, on the Palm handheld device. 
+\fBinstall\-hinote\fR allows the user to write one or more files as a new 
+\fIHi\-Note\fR or into the Hi\-Notes Palm application itself, on the Palm 
+handheld. 
 
 Please see \fIhttp://www.cyclos.com/\fR for more information on Hi\-Note.
 
@@ -18,27 +20,30 @@ Please see \fIhttp://www.cyclos.com/\fR for more information on Hi\-Note.
 .SH "OPTIONS"
 .TP 
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot
+Use device file <\fIport\fR> to communicate with the Palm handheld. If this
+is not specified, will look for the \fI$PILOTPORT\fR environment variable.  
+If both are not found or supplied, \fBinstall\-expenses\fR will fall back to
+/dev/pilot.
 
 
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
-Display help synopsis for \fBinstall\-hinote\fR
+Display the help synopsis for \fBinstall\-hinote\fR.
 
 
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBinstall\-hinote\fR
+Display version of \fBinstall\-hinote\fR.
 
 
 .TP 
 \fB\-c\fR, \fB\-\-category\fR <\fIcategory\fR>
-Write files to <\fIcategory\fR> in the Hi\-NOte application itself
+Write files to <\fIcategory\fR> in the Hi\-NOte application itself.
 
 
 .SH "USAGE"
-The program will connect to a target Palm handheld device, and writes the
-file or files given on the command line into the Hi\-Note application.
+The program will connect to a target Palm handheld, and writes the
+file or files given on the commandline into the Hi\-Note application.
 
 
 .SH "BUGS"
@@ -52,6 +57,6 @@ The Palm Device may have a maximum length on Hi\-Note sizes.
 .IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 .SH "AUTHOR"
-\fBinstall\-hinote\fR was written by Bill Goodman <\fIbgoodman@cyclos.com\fR>
+\fBinstall\-hinote\fR was written by Bill Goodman <\fIbgoodman@cyclos.com\fR>.
 .SH "SEE ALSO"
 \fBhinotes\fR(1)

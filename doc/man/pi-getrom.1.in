@@ -2,7 +2,8 @@
 .\" 
 .TH "pi-getrom" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBpi\-getrom\fR \- Retrieves the ROM image from your Palm device
+\fBpi\-getrom\fR \- Retrieves the ROM image from your Palm device for use in 
+debugging.
 
 
 .SH "SYNOPSIS"
@@ -10,56 +11,84 @@
 
 
 .SH "DESCRIPTION"
-\fBpi\-getrom\fR is used to fetch the ROM from your Palm handheld device for use in debugging Palm applications through the use of POSE, the \fIPalm OS Emulator application\fR
+\fBpi\-getrom\fR is used to fetch the ROM from your Palm handheld for use in
+debugging Palm applications through the use of POSE, the \fIPalm OS Emulator
+application\fR. 
+
+Note, because \fBpi\-getrom\fR uses the low-level RPC protocol to fetch the
+ROM image, and the new OS5 devices do not use this protocol, you currently
+cannot fetch an OS5 ROM image using this utility. This will be updated in a
+future release to handle fetching OS5 ROM images, using the debugger
+protocol.
 
 
 .SH "OPTIONS"
 .TP 
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+Use device file <\fIport\fR> to communicate with the Palm handheld. If this
+is not specified, will look for the \fI$PILOTPORT\fR environment variable.
+If both are not found or supplied, \fBinstall\-expenses\fR will fall back to
+/dev/pilot.
    
    
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
-Display help synopsis for \fBpi\-getrom\fR
+Display the help synopsis for \fBpi\-getrom\fR.
 
 
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBpi\-getrom\fR
+Display version of \fBpi\-getrom\fR.
 
 
 .TP 
 \fB\-\-copilot\fR
-format the ROM for use in the \fICoPilot\fR application, instead of the \fIPalm OS Emulator\fR (POSE) format
+format the ROM for use in the \fICoPilot\fR application, instead of the
+\fIPalm OS Emulator\fR (POSE) format. You may no longer need this option, as
+the xcopilot application has been deprecated and does not support current
+ROM images. This option will disappear in a future release, please do not
+rely on it.
 
 
 .TP 
 <\fIfilename\fR>
-Write the ROM image to this file
+Write the ROM image to the file named by <\fIfilename\fR>. If this is
+omitted, the filename will be written out as the rom version name as
+follows: 'pilot-$VERSION.rom', where an OS 3.5 image would be written as the
+filename of 'pilot-3.5.0.rom'.
 
 
 .SH "USAGE"
-Connect to a target Palm handheld device and fetch the ROM for use in debugging Palm applications through the use of POSE, the \fIPalm OS Emulator\fR or with \fICoPilot\fR
+Connect to a target Palm handheld and fetch the ROM for use in debugging
+Palm applications through the use of POSE, the \fIPalm OS Emulator\fR or
+with the \fICoPilot\fR application (deprecated).
 
 
 .SH "LICENSING"
-\fBWarning\fR: Please completely back up your Palm before using this program!
+\fBWarning\fR: Please completely back up your Palm before using this
+program! The developers of \fIpilot-link\fR are not responsible for any data
+loss that may occur from the use of this application.
 
-Use of this program may place you in violation of your license agreement with Palm, Inc. or OEM partners. Please read your Palm handbook ("Software License Agreement") before running this program.
+Use of this program MAY place you in violation of your license agreement
+with Palmsource, Inc. or other OEM partners. Please read your Palm
+documentation (specifically the "Software License Agreement") before running
+this program.
 
 
 .SH "BUGS"
 .PP
 \fBKNOWN BUGS\fR
 .IP
-\fBpi\-getrom\fR does not work with OS5 devices as yet, due to changes in the architecture and design of the Palm HotSync protocol and file type changes from m68k to ARM. Other than that, \fBpi\-getrom\fR has no known bugs
+\fBpi\-getrom\fR does not work with OS5 devices as yet, due to changes in
+the architecture and design of the Palm HotSync protocol and file type
+changes from m68k to ARM. Other than that, \fBpi\-getrom\fR has no known
+bugs at this time.
 
 .PP
 \fBREPORTING BUGS\fR
 .IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 .SH "AUTHOR"
-\fBpi\-getrom\fR was written by Kenneth Albanowski
+\fBpi\-getrom\fR was originally written by Kenneth Albanowski.
 .SH "SEE ALSO"
 \fBpi\-getram\fR(1)

@@ -2,7 +2,7 @@
 .\" 
 .TH "install-memo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBinstall\-memo\fR \- installs a new memo entry onto your Palm Computing Device
+\fBinstall\-memo\fR \- installs a new Memo Pad entry onto your Palm handheld.
 
 
 .SH "SYNOPSIS"
@@ -12,29 +12,33 @@
 
 .SH "DESCRIPTION"
 \fBinstall\-memo\fR allows the user to write one or more files as a new memo or memos,
-respectively, onto the Palm handheld device.
+respectively, onto the Palm handheld.
 
 
 .SH "OPTIONS"
 .TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file lt;\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR> 
+Use device file <\fIport\fR> to communicate with the Palm handheld.
+If this is not specified, will look for the \fI$PILOTPORT\fR environment
+variable. If both are not found or supplied, \fBinstall\-expenses\fR will
+fall back to /dev/pilot.
    
    
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
-Display help synopsis for \fBinstall\-memo\fR
+Display the help synopsis for \fBinstall\-memo\fR.
 
 
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBinstall\-memo\fR
+Display version of \fBinstall\-memo\fR.
 
 
 .TP 
 \fB\-c\fR, <\fIcategory\fR>
 Install memo(s) to category defined by <\fIcategory\fR> by default. Normally 
-\fBinstall\-memo\fR uses the \fIUnfiled\fR category as the default category if no category is chosen. 
+\fBinstall\-memo\fR uses the \fIUnfiled\fR category as the default category if 
+no category is chosen. 
 
 
 .TP 
@@ -45,20 +49,27 @@ option.
 
 .TP 
 \fB\-t\fR
-Use the filename as the title for the memo. (Normally, the title is the first line of 
-a memo if \fB\-t\fR is not specified.)
+Use the filename as the title for the memo. (Normally, the first line of a memo 
+is used as the title if one is not supplied with the \fB\-t\fR option).
 
 
 .SH "USAGE"
-The program will connect to the Palm handheld device, and write the file or
-files given on the command line into the MemoPad application on the Palm.
+The program will connect to the Palm handheld, and create memo entries for each
+file(s) given on the commandline into the Memo Pad application on the Palm.
 
 
 .SH "BUGS"
 .PP
 \fBKNOWN BUGS\fR
 .IP
-The Palm Device has a maximum length of 4,096 bytes (4k) on memopad entries, if you wish to retain the ability to edit the Memo on the Palm itself. You can create a MemoPad entry of 65,490 bytes in size (the absolute maximum) if you do not need to edit the Memo entry further on the Palm device itself.
+
+The Palm Device has a maximum length of 4,096 bytes (4k) on memopad entries, 
+if you wish to retain the ability to edit the Memo (add/remove/change data 
+within the memo) on the Palm itself. You can create a memo entry of 65,490 
+bytes in size (the absolute maximum) if you do not need to edit the memo entry 
+any further on the Palm device itself. Any memo larger than 4,096 bytes and 
+less than 65,490 bytes will not be editable on the Palm itself. Consider these 
+memo entries "read-only".
 
 This is not specifically a "bug", but a limitation in the PalmOS design itself. 
 
@@ -67,6 +78,6 @@ This is not specifically a "bug", but a limitation in the PalmOS design itself.
 .IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 .SH "AUTHOR"
-\fBinstall\-memo\fR was written by Damien P. Neil <\fIneild@rpi.edu\fR>
+\fBinstall\-memo\fR was originally written by Damien P. Neil <\fIneild@rpi.edu\fR>.
 .SH "SEE ALSO"
 \fBmemos\fR(1)

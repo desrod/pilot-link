@@ -2,55 +2,69 @@
 .\" 
 .TH "install-todo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBinstall\-todo\fR \- Updates the Palm ToDo list with one new entry
+\fBinstall\-todo\fR \- Updates the Palm ToDo list with one new entry.
 
 .SH "SYNOPSIS"
 \fBinstall\-todo\fR [\fB\-p\fR <\fIport\fR>] [\fB\-P\fR <\fIpriority\fR>] [\fB\-d\fR <\fIduedate\fR>] [\fB\-c\fR] [\fB\-n\fR <\fInote\fR>] [\fB\-f\fR <\fIfilename\fR>]
 
 .SH "DESCRIPTION"
-\fBinstall\-todo\fR allows the user to install one new ToDo list entry with specified paramters passed to \fBinstall\-todo\fR and add a Note entry using text found in a filename <\fIfilename\fR> passed to \fBinstall\-todo\fR
+\fBinstall\-todo\fR allows the user to install one new ToDo list entry with 
+specified paramters passed to \fBinstall\-todo\fR and add a Note entry using 
+text found in a filename <\fIfilename\fR> passed to \fBinstall\-todo\fR.
+
 .SH "OPTIONS"
-.TP 
+.TP
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot
+Use device file <\fIport\fR> to communicate with the Palm handheld.
+If this is not specified, will look for the \fI$PILOTPORT\fR environment
+variable. If both are not found or supplied, \fBinstall\-expenses\fR will
+fall back to /dev/pilot.
 
 
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
-Display help synopsis for \fBinstall\-hinote\fR
+Display the help synopsis for \fBinstall\-hinote\fR.
 
 
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBinstall\-hinote\fR
+Display version of \fBinstall\-hinote\fR.
 
 
 .TP 
 \fB\-P\fR, \fB\-\-priority\fR <\fIpriority\fR>
-Specify the priority of the ToDo entry (defaults to 4)
+Specify the priority of the ToDo entry (defaults to a priority of 1) 
+
+\fBNOTE:\fR this value has changed from the default of 4 to the default of 1, 
+just as a new ToDo entry on the Palm would set it.
 
 
 .TP 
 \fB\-d\fR, \fB\-\-due\fR <\fIduedate\fR>
-The due Date MM/DD/YYYY (defaults to blank, no due date)
+The due Date MM/DD/YYYY (defaults to blank, no due date if this is not 
+specified).
 
 
 .TP 
 \fB\-c\fR, \fB\-\-completed\fR
-Mark the item complete (default is incomplete)
+Mark the item complete (the default is to mark the item as incomplete, as the 
+Palm would do it).
 
 
 .TP 
 \fB\-n\fR, \fB\-\-note\fR <\fInote\fR>
-The Note text you wish to add to this ToDo entry
+The Note text you wish to add to this ToDo entry, if any.
 
 
 .TP 
 \fB\-f\fR, \fB\-\-file\fR <\fIfilename\fR>
-A local filename containing the Note text
+A local filename containing the Note text.
+
 .SH "USAGE"
-The program will connect to a target Palm handheld device, and writes the
-ToDo entry to the Palm ToDo List application, using the specified parameters and input from the supplied file passed as arguments
+The program will connect to a target Palm handheld, and creates the ToDo
+entry to the Palm ToDo application, using the specified parameters and
+input from the supplied file passed as arguments on the commandline.
+
 .SH "BUGS"
 .PP
 \fBKNOWN BUGS\fR
@@ -62,6 +76,7 @@ ToDo entry to the Palm ToDo List application, using the specified parameters and
 .IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 .SH "AUTHOR"
-\fBinstall\-todo\fR was written by Martin Fick, based on code in install\-todos by Robert A. Kaplan
+\fBinstall\-todo\fR was originally written by Martin Fick, based on code in 
+install\-todos by Robert A. Kaplan.
 .SH "SEE ALSO"
 \fBinstall\-todos\fR(1)

@@ -3,7 +3,8 @@
 .TH "pilot-xfer" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
 \fBpilot\-xfer\fR \- backup, sync, and restore databases from a Palm handheld
-device, such as those made from \fIPalm\fR, \fIHandspring\fR, \fIHandera\fR, \fITRGPro\fR, \fISony\fR or other Palm Compatible Handheld PDA device
+device, such as those made from \fIPalm\fR, \fIHandspring\fR, \fIHandera\fR, 
+\fITRGPro\fR, \fISony\fR or other PalmOS-based handheld.
 
 
 .SH "SYNOPSIS"
@@ -15,44 +16,54 @@ or
 \fBpilot\-xfer\fR [\fB\-p\fR <\fIport\fR>] [\fB\-r\fR <\fIdirectory\fR>]
 [\fB\-l\fR] [\fB\-L\fR] [\fB\-P\fR] [\fB\-f\fR <\fIdbname\fR>] [\fB\-d\fR <\fIdbname\fR>] [\fB\-i\fR <\fIdbname\fR>] [\fB\-m\fR <\fIfile\fR>] ...
 
-(Note that some options are not shown above and short option aliases are excluded for brevity. Please use  \fBpilot\-xfer\fR \-\-help to get the full list of available options)
+(Note that some options are not shown above and short option aliases are 
+excluded for brevity. Please use  \fBpilot\-xfer\fR \-\-help to get the 
+full list of available options).
 
 
 .SH "DESCRIPTION"
-\fBpilot\-xfer\fR allows the user to install databases contained in the standard .prc (Palm Resource Database), .pdb (Palm Record Database), and .pqa (Palm Query Application) formats onto a Palm, retrieve databases from the Palm, list the
-databases contained in a Palm, and backup or restore all of the databases at
-once, and many other powerful operations.
+\fBpilot\-xfer\fR allows the user to install databases contained in the 
+standard .prc (Palm Resource Database), .pdb (Palm Record Database), and .pqa 
+(Palm Query Application) formats onto a Palm, retrieve databases from the Palm, 
+list the databases contained in a Palm, and backup or restore all of the 
+databases at once, and many other powerful operations.
 
 
 .SH "OPTIONS"
 .TP 
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+Use device file <\fIport\fR> to communicate with the Palm handheld. If this is 
+not specified, will look for the \fI$PILOTPORT\fR environment variable. If both 
+are not found, will fall back to /dev/pilot.
   
   
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
-Display help synopsis for \fBinstall\-user\fR
+Display the help synopsis for \fBinstall\-user\fR.
 
 
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBinstall\-user\fR
+Display version of \fBinstall\-user\fR.
 
 
 .TP 
 \fB\-a\fR, \fB\-\-archive\fR <\fIdir\fR>
-Archives files which have been removed from the Palm to <\fIdir\fR> instead of just deleting (unlinking) them
+Archives files which have been removed from the Palm to <\fIdir\fR> instead of 
+just deleting (unlinking) them.
 
 
 .TP 
 \fB\-b\fR, \fB\-\-backup\fR <\fIdir\fR>
-Backs up the Palm into the specified directory (which will be created if it does not already exist). This operation must be specified after any \fB\-\-exclude\fR option.
+Backs up the Palm into the specified directory (which will be created if it 
+does not already exist). This operation must be specified after any 
+\fB\-\-exclude\fR option.
 
 
 .TP 
 \fB\-d\fR, \-\-delete <\fIdbname\fR>
-Delete the specified database(s) by name (without extension).  Obviously, be very careful with this one.
+Delete the specified database(s) by name (without extension).  Obviously, be 
+very careful with this one.
 
 
 .TP 
@@ -130,7 +141,7 @@ This will back up the UnsavedPreferences.pdb file from the Palm. Normally this f
 
 This also modifies the behavior of \fB\-\-backup\fR, \fB\-\-sync\fR, and \fB\-\-update\fR.
 .SH "USAGE"
-The program will connect to a target Palm handheld device and port, prompt the user to hit \fIHotSync\fR, and perform the requested options specified by the user on the commandline.
+The program will connect to a target Palm handheld and port, prompt the user to hit \fIHotSync\fR, and perform the requested options specified by the user on the commandline.
 
 
 .SH "EXAMPLES"
@@ -176,5 +187,3 @@ Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 Kenneth Albanowski and David H. Silber. Completely rewritten by David A. Desrosiers.
 .SH "SEE ALSO"
 \fBpilot\-link\fR(7)
-
-

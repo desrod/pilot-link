@@ -2,7 +2,7 @@
 .\" 
 .TH "pi-getram" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBpi\-getram\fR \- Retrieves the RAM image from your Palm device
+\fBpi\-getram\fR \- Retrieves the RAM image from your Palm device.
 
 
 .SH "SYNOPSIS"
@@ -10,37 +10,49 @@
 
 
 .SH "DESCRIPTION"
-\fBpi\-getram\fR is used to fetch the RAM from your Palm handheld device
+\fBpi\-getram\fR is used to fetch the current RAM image from your Palm handheld
+for use in debugging.
 
 
 .SH "OPTIONS"
 .TP 
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+Use device file <\fIport\fR> to communicate with the Palm handheld.
+If this is not specified, will look for the \fI$PILOTPORT\fR environment
+variable. If both are not found or supplied, \fBinstall\-expenses\fR will
+fall back to /dev/pilot.
    
    
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
-Display help synopsis for \fBpi\-getram\fR
+Display the help synopsis for \fBpi\-getram\fR.
 
 
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBpi\-getram\fR
+Display version of \fBpi\-getram\fR.
 
 
 .TP 
-\fB\-\-copilot\fR
-format the RAM for use in the \fICoPilot\fR application, instead of the \fIPalm OS Emulator\fR (POSE) format
+\fB\-c\fR, \fB\-\-copilot\fR
+Format the RAM for use in the \fICoPilot\fR application, instead of the
+\fIPalm OS Emulator\fR (POSE) format. You may no longer need this option, as
+the xcopilot application has been deprecated and does not support current
+ROM images. This option will disappear in a future release, please do not
+rely on it.
 
 
 .TP 
 <\fIfilename\fR>
-Write the RAM image to this file
+Write the RAM image to the file named by <\fIfilename\fR>. If this is
+omitted, the filename will be written out as the rom version name as
+follows: 'pilot-$VERSION.ram', where an OS 3.5 image would be written as the
+filename of 'pilot-3.5.0.ram'.
+
 
 
 .SH "USAGE"
-Connect to a target Palm handheld device and fetch the RAM from the device.
+Connect to a target Palm handheld and fetch the RAM from the device.
 
 
 .SH "BUGS"
@@ -54,6 +66,6 @@ Connect to a target Palm handheld device and fetch the RAM from the device.
 .IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 .SH "AUTHOR"
-\fBpi\-getram\fR was written by Kenneth Albanowski
+\fBpi\-getram\fR was originally written by Kenneth Albanowski.
 .SH "SEE ALSO"
 \fBpi\-getrom\fR(1)

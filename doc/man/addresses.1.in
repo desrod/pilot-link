@@ -1,14 +1,18 @@
 .TH "addresses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBaddresses\fR \- Dumps the Palm Address Book entries to STDOUT in a simple format
+\fBaddresses\fR \- Dumps the Palm Address Book entries to STDOUT in a simple 
+format.
 
 
 .SH "SYNOPSIS"
-Redirect to a specified output file
+Redirect to a specified output file:
 .br 
+
 \fBaddresses\fR [\fB\-p\fR <\fIport\fR>] > MyAddresses.txt
+  (Note the redirect) ^^^^^^^^^^^^^^^^^
 .IP 
-This will dump the Address Book from your Palm into the file MyAddresses.txt in the format that looks as follows: 
+This will dump the Address Book from your Palm into the file MyAddresses.txt 
+in the format that looks similar to the following format: 
 
 .br 
 Category: Personal Businesses
@@ -38,12 +42,13 @@ Title: Chief Annoyance Officer
 
 Output to STDOUT (the screen)
 .br 
+
 \fBaddresses\fR [\fB\-p\fR <\fIport\fR>]
 .IP 
-This will dump the same information to the screen (or wherever you may have STDOUT redirected on your system).
+This will dump the same information (shown above, in the same format as above) to the screen or wherever you may have directed STDOUT to on your system.
 .RP 
 .SH "DESCRIPTION"
-\fBaddresses\fR will connect to your Palm device and dump the current AddressDB.pdb entries to STDOUT (generally the screen) or, if redirected with the '>' character, it will redirect to a file of your choosing (called "MyAddresses.txt in this case, but may be called any other filename you wish).
+\fBaddresses\fR will connect to your Palm handheld and dump all entries found in the AddressDB.pdb (Address Book) file to STDOUT (generally the screen) or, if redirected with the '>' (greater-than) character, it will redirect to a file of your choosing (called "MyAddresses.txt in the above example, but may be called any other filename you wish).
 
 
 .SH "OPTIONS"
@@ -51,11 +56,14 @@ There is only one option (and it is, well, optional), and that is the '>' redire
 
 
 .SH "USAGE"
-The program will read Address data from the Palm and output format suitable for the other programs to import as required. You may redirect the output to a file or process, at your choosing.
+The program will read Address data from the Palm handheld and output a format suitable for the other programs to import as required. You may redirect the output to a file or process, at your choosing.
 
+\fBaddresses\fR [\fB\-p\fR <\fIport\fR>] > MyAddresses.txt   # redirect to a file (or process/pipe)
+.br
+\fBaddresses\fR [\fB\-p\fR <\fIport\fR>]                     # print to STDOUT/the screen
 
 .SH "AUTHOR"
-\fBaddresses\fR was written by Kenneth Albanowski
+\fBaddresses\fR was originally written by Kenneth Albanowski
 
 .SH "BUGS"
 .PP 

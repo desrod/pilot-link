@@ -2,33 +2,41 @@
 .\" 
 .TH "pilot-addresses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBpilot\-addresses\fR \- read and write address book databases to and from a Palm handheld device, such as those made from \fIPalm\fR, \fIHandspring\fR, \fIHandera\fR, \fITRGPro\fR, \fISony\fR or other Palm Compatible Handheld PDA device
+
+\fBpilot\-addresses\fR \- read and write address book databases to and from
+a Palm handheld, such as those made from \fIPalm\fR, \fIHandspring\fR,
+\fIHandera\fR, \fITRGPro\fR, \fISony\fR or other Palm handheld.
 
 
 .SH "SYNOPSIS"
 \fBpilot\-addresses\fR [\fB\-p\fR <\fIport\fR>] [\fB\-c\fR <\fIcategory\fR>] [\fB\-d\fR <\fIcategory\fR>] [\fB\-r\fR <\fIfile\fR> | \fB\-w\fR <\fIfile\fR>] 
 
-(Note that some options are not shown above)
+(Note that not all available options are shown above)
 
 
 .SH "DESCRIPTION"
-\fBpilot\-addresses\fR allows the user to read all entries in the Palm Address Book application, write new entries into the database, and delete a category or delete all entries in the database.
+\fBpilot\-addresses\fR allows the user to read all entries in the Palm
+Address Book application, write new entries into the database, and delete a
+category or delete all entries in the database.
 
 
 .SH "OPTIONS"
 .TP 
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+Use device file <\fIport\fR> to communicate with the Palm handheld.
+If this is not specified, will look for the \fI$PILOTPORT\fR environment
+variable. If both are not found or supplied, \fBinstall\-expenses\fR will
+fall back to /dev/pilot.
 
 
 .TP 
 \fB\-h\fR, \fB\-\-help\fR   
-Display help synopsis for \fBpilot\-addresses\fR
+Display the help synopsis for \fBpilot\-addresses\fR.
 
 
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Display version of \fBpilot\-addresses\fR
+Display version of \fBpilot\-addresses\fR.
 
 
 .TP 
@@ -50,11 +58,15 @@ Empty fields are not augmented.
 
 .TP 
 \fB\-c\fR, \fB\-\-category\fR <\fIcategory\fR>
-Install records to category <\fIcategory\fR> by default. Normally \fBpilot\-addresses\fR uses the \fIUnfiled\fR category by default. This option is overridden by the category specified in the record with the \fB\-a\fR option.
+Install records to category <\fIcategory\fR> by default. Normally
+\fBpilot\-addresses\fR uses the \fIUnfiled\fR category by default. This
+option is overridden by the category specified in the record with the
+\fB\-a\fR option.
 
 
 .TP 
 \fB\-d\fR, \fB\-\-delcat\fR <\fIcategory\fR>
+
 Delete all records in the specified category <\fIcategory\fR> before installing new records.
 
 
@@ -66,17 +78,24 @@ careful with this one.
 
 .TP 
 .B \fB\-e\fR, \fB\-\-escape\fR
-Escape all special characters with a backslash. This enables you to read and write entries with newline characters in a field or note.
+Escape all special characters with a backslash. This enables you to read and
+write entries with newline characters in a field or note.
 
 
 .TP 
 \fB\-r\fR, \fB\-\-read\fR <\fIfile\fR>
-Reads records from <\fIfile\fR> and install them to the Palm Address Book application. (Use the \fB\-w\fR <\fIfile\fR> option to get a sample "template file" for input records to see how the fields are laid out.)
+Reads records from <\fIfile\fR> and install them to the Palm Address Book
+application. (Use the \fB\-w\fR <\fIfile\fR> option to get a sample
+"template file" for input records to see how the fields are laid out).
 
 
 .TP 
 \fB\-t\fR, \fB\-\-tdelim\fR <\fIdelim\fR>
-Include category in each record, use the delimiter specified to separate all fields of a record. Delimiters are specified as follows: 3=tab, 2=;, 1=,. This overrides the default delimiter of comma between fields and semi\-colon between a field's augmented information. (Please note that this may generate confusing results when used with the \fB\-a\fR option.)
+Include category in each record, use the delimiter specified to separate all
+fields of a record. Delimiters are specified as follows: 3=tab, 2=;, 1=,.
+This overrides the default delimiter of comma between fields and semi\-colon
+between a field's augmented information. (Please note that this may generate
+confusing results when used with the \fB\-a\fR option.)
 
 
 .TP 
@@ -91,7 +110,8 @@ them into <\fIfile\fR>
 
 
 .SH "USAGE"
-The program will connect to a target device and port, prompt the user to HotSync, and perform the requested read or write operation specified by the user.
+The program will connect to the Palm handheld, and perform the requested
+read or write operation specified by the user.
 
 
 .SH "EXAMPLES"
@@ -104,12 +124,15 @@ or
 \fBpilot\-addresses\fR \fB\-p\fR /dev/pilot \fB\-w\fR addrbook.csv
 .LP 
 To read the address book records in the file addrbook.csv and install them
-on a Palm:
+onto the Palm:
 .IP 
 \fBpilot\-addresses\fR \fB\-r\fR addrbook.csv
+
 .LP 
-To read the address book records in the file addrbook.csv and place them into
-the Palm address book database category \fISpecial\fR after first deleting all current records in the \fISpecial\fR category on the palm:
+To read the address book records in the file addrbook.csv and place them
+into the Palm address book database category \fISpecial\fR after first
+deleting all current records in the \fISpecial\fR category on the palm:
+
 .IP 
 \fBpilot\-addresses\fR \fB\-c\fR Special \fB\-d\fR Special \fB\-r\fR addrbook.csv
 
@@ -123,11 +146,13 @@ the Palm address book database category \fISpecial\fR after first deleting all c
 .PP
 \fBREPORTING BUGS\fR
 .IP
-Report bugs at \fIhttp://bugs.pilot\-link.org/<fR
+Report bugs at \fIhttp://bugs.pilot\-link.org/
+
 .SH "AUTHOR"
-\fBpilot\-addresses\fR originally written by Kenneth Albanowski, manual page was written by Robert Wittig <\fIbob.wittig@gt.org\fR> and later updated by David A. Desrosiers <\fIhacker@gnu\-designs.com\fR>
+\fBpilot\-addresses\fR originally written by Kenneth Albanowski, this manual
+page was written by Robert Wittig <\fIbob.wittig@gt.org\fR> and later
+updated by David A. Desrosiers <\fIhacker@gnu\-designs.com\fR>
+
 .SH "SEE ALSO"
 \fBaddresses\fR(1)
 \fBpilot\-link\fR(7)
-
-
