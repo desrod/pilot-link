@@ -1,6 +1,17 @@
-The languages have been moved here to unclutter the top-level directory.
-Once pilot-link has successfully be converted over to using automake, this
-will be much easier to maintain, as well as drop in any new languages to add
-them to the package.
+	What you will find here is a series of "language bindings" which
+talk to the core pilot-link libraries and headers for implementation and
+public functions.
 
-							-The Management 
+	If you would like to write a perl script for example, that queries
+the data on your Palm device, the bindings in the ./Perl subdirectory will
+help you with that. Likewise for the ./Java ./Tcl, and ./Python locations.
+
+	Each of them contains a small bit of code that will allow you to
+"bind" to the pilot-link subsystem for your needs.
+	
+	If you have any code which uses these bindings, and you feel that
+others may be able to use it or benefit from it, we encourage you to
+consider contributing it to the pilot-link project for future releases.
+
+
+
