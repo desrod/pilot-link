@@ -141,7 +141,7 @@ case "$host" in
 		AC_CHECK_FUNC(inet_pton,,
 			[AC_CHECK_LIB(resolv,inet_pton,LIBS="-lresolv $LIBS")])
 		AC_CHECK_FUNC(pow,,
-			[AC_CHECK_LIB(pow,m,LIBS="-lm $LIBS")])
+			[AC_CHECK_LIB(m,pow,LIBS="-lm $LIBS")])
 	;;
 	*)
 	;;
