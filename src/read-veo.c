@@ -1072,10 +1072,12 @@ void WritePicture (int sd, int db, int type, char *name, char *progname, long fl
 
 		ColourCorrect (&v, redLUT, greenLUT, blueLUT, flags);
 
-		if (type == VEO_OUT_PNG)
-		  write_png (f, &v, flags);
-		else if (type == VEO_OUT_PPM)
+		if (type == VEO_OUT_PPM)
 		  write_ppm (f, &v, flags);
+#ifdef HAVE_PNG
+		else if (type == VEO_OUT_PNG)
+		  write_png (f, &v, flags);
+#endif
 
 		fclose (f);
 	 }
@@ -1146,7 +1148,7 @@ int main (int argc, char *argv[])
 #ifdef HAVE_PNG
 				  type = VEO_OUT_PNG;
 #else
-				  fprintf (stderr, "read-veo was built without png support\n");
+				  fprintf (stderr, "%s was built without png support\n", progname );
 #endif
 			   }
 			 else if (!strncmp ("ppm", optarg, 3))

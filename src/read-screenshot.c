@@ -461,9 +461,11 @@ void WritePictures (int sd, int db, int type )
 	  
 	  if( type == OUT_PPM )
 	    write_ppm( fname, &state );
+#ifdef HAVE_PNG
 	  else
 	    write_png( fname, &state );	    
-
+#endif
+	  
 	  pi_buffer_free (pixelBuf);
 //	  free( pixelBuf );
 	  free( state.pix_map );
@@ -510,7 +512,7 @@ int main (int argc, char *argv[])
 #ifdef HAVE_PNG
 				  type = OUT_PNG;
 #else
-				  fprintf (stderr, "read-veo was built without png support\n");
+				  fprintf (stderr, "%s was built without png support\n", progname);
 #endif
 			   }
 			 else if (!strncmp ("ppm", optarg, 3))
