@@ -57,17 +57,15 @@
 int
 pilot_connect(const char *port)
 {
-	int 	sd	= -1, 	/* Socket, formerly parent/client_socket	*/
+	int 	sd	= -1, 	/* Socket, formerly parent/client_socket */
 		result, 
 		count	= 0,
 		err	= 0;
+
 	struct 	pi_sockaddr addr;
 	struct 	stat attr;
 	struct  SysInfo sys_info;
-	char 	*defport = "/dev/pilot",
-		*buf = NULL;
-
-	setvbuf(stdout, buf, _IONBF, sizeof(buf));
+	char 	*defport = "/dev/pilot";
 
 	if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
 		fprintf(stderr, "   No $PILOTPORT specified and no -p "
@@ -78,7 +76,7 @@ pilot_connect(const char *port)
 	}
 
 	if (err) {
-		fprintf(stderr,
+		fprintf(stderr, 
 			"   ERROR: %s (%d)\n\n", strerror(errno), errno);
 		fprintf(stderr,
 			"   Error accessing: '%s'. Does '%s' exist?\n",
@@ -95,8 +93,8 @@ pilot_connect(const char *port)
 			port ? port : getenv("PILOTPORT"));
 		return -1;
 	}
-	begin:
 
+	begin:
 	if (port != NULL) {
 		addr.pi_family = PI_AF_PILOT;
 		strncpy(addr.pi_device, port, sizeof(addr.pi_device));
@@ -161,7 +159,8 @@ pilot_connect(const char *port)
 
 			fprintf(stderr, "   Unable to bind to port: %s\n", 
 				portname);
-	                fprintf(stderr, "   Please use --help for more "
+	                
+			fprintf(stderr, "   Please use --help for more 
 				"information\n\n");
 		} else
 			fprintf(stderr, "\n   No port specified\n");
@@ -170,8 +169,7 @@ pilot_connect(const char *port)
 
 	if (isatty(fileno(stdout))) {
 		printf("\n   Listening to port: %s\n\n"
-			"   Please press the HotSync "
-			"button now... ",
+			"   Please press the HotSync button now... ",
 			port ? port : getenv("PILOTPORT"));
 	}
 
