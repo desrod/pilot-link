@@ -154,9 +154,9 @@ extern "C" {
 	extern unsigned long makelong PI_ARGS((char *c));
 
 	extern void dumpline
-	    PI_ARGS((int type, const unsigned char *buf, int len, int addr));
+	    PI_ARGS((const unsigned char *buf, int len, int addr));
 	extern void dumpdata
-	    PI_ARGS((int type, const unsigned char *buf, int len));
+	    PI_ARGS((const unsigned char *buf, int len));
 
 #ifdef __cplusplus
 }

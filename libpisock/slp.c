@@ -442,5 +442,5 @@ void slp_dump(unsigned char *data)
 	int s;
 
 	s = get_short(&data[PI_SLP_OFFSET_SIZE]);
-	dumpdata(PI_DBG_SLP, &data[PI_SLP_HEADER_LEN], s);
+	dumpdata(&data[PI_SLP_HEADER_LEN], s);
 }

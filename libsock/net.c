@@ -326,5 +326,5 @@ void net_dump(unsigned char *data)
 	int s;
 
 	s = get_long(&data[PI_NET_OFFSET_SIZE]);
-	dumpdata(PI_DBG_NET, &data[PI_NET_HEADER_LEN], s);
+	dumpdata(&data[PI_NET_HEADER_LEN], s);
 }

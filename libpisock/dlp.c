@@ -925,7 +925,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			fprintf(stderr,
 				" Type: '%s', Action code: %d, and %d bytes of data:\n",
 				printlong(type), action, length);
-			dumpdata(PI_DBG_DLP, data, length);
+			dumpdata(data, length);
 		}
 #endif
 			fprintf(stderr, "Data too large\n");
@@ -952,7 +952,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 				"  Read: Result: %lu (0x%8.8lX), and %d bytes:\n",
 				get_long(dlp_buf), get_long(dlp_buf + 4),
 				result);
-			dumpdata(PI_DBG_DLP, dlp_buf + 16, result);
+			dumpdata(dlp_buf + 16, result);
 		}
 #endif
 
@@ -971,7 +971,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			fprintf(stderr,
 				" Wrote: Creator: '%s', Action code: %d, and %d bytes of data:\n",
 				printlong(creator), action, length);
-			dumpdata(PI_DBG_DLP, data, length);
+			dumpdata(data, length);
 
 #endif
 
@@ -997,7 +997,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 				"  Read: Action: %d, Result: %d (0x%4.4X), and %d bytes:\n",
 				get_short(dlp_buf), get_short(dlp_buf + 2),
 				get_short(dlp_buf + 2), result);
-			dumpdata(PI_DBG_DLP, dlp_buf + 6, result);
+			dumpdata(dlp_buf + 6, result);
 		}
 #endif
 			      dumpdata(DLP_RESPONSE_DATA(res, 0, 6), data_len));
@@ -1051,7 +1051,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 #ifdef DLP_TRACE
 	if (dlp_trace) {
 		fprintf(stderr, " Wrote: Entry:\n");
-		dumpdata(PI_DBG_DLP, (unsigned char *) entry, strlen(entry));
+		dumpdata((unsigned char *) entry, strlen(entry));
 	}
 #endif
 	
@@ -1326,7 +1326,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		if (User->passwordLength) {
 			fprintf(stderr, ", Password of %d bytes:\n",
 				User->passwordLength);
-			dumpdata(PI_DBG_DLP, (unsigned char *) User->password,
+			dumpdata((unsigned char *) User->password,
 				 User->passwordLength);
 		} else
 			fprintf(stderr, ", No password\n");
@@ -1739,7 +1739,7 @@ int dlp_ResetLastSyncPC(int sd)
 #ifdef DLP_TRACE
 	if (dlp_trace) {
 		fprintf(stderr, " Read: %d IDs:\n", ret);
-		dumpdata(PI_DBG_DLP, dlp_buf + 2, ret * 4);
+		dumpdata(dlp_buf + 2, ret * 4);
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 #endif
 		    "DLP ReadRecordIDList %d IDs:\n", ret));
@@ -1810,7 +1810,7 @@ int dlp_ResetLastSyncPC(int sd)
 			fprintf(stderr, " None");
 		fprintf(stderr, " (0x%2.2X), and %d bytes of data: \n",
 			flags, length);
-		dumpdata(PI_DBG_DLP, data, length);
+		dumpdata(data, length);
 	}
 #endif
 
@@ -1985,7 +1985,7 @@ int dlp_ResetLastSyncPC(int sd)
 			"  Read: Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
 			printlong(type), id, get_short(dlp_buf + 6),
 			result - 10);
-		dumpdata(PI_DBG_DLP, dlp_buf + 10, result - 10);
+		dumpdata(dlp_buf + 10, result - 10);
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 #endif
 		      dumpdata(DLP_RESPONSE_DATA(res, 0, 10), data_len));
@@ -2043,7 +2043,7 @@ int dlp_ResetLastSyncPC(int sd)
 			"  Read: Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
 			printlong(get_long(dlp_buf)),
 			get_short(dlp_buf + 4), index, result - 10);
-		dumpdata(PI_DBG_DLP, dlp_buf + 10, result - 10);
+		dumpdata(dlp_buf + 10, result - 10);
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 #endif
 		      dumpdata(DLP_RESPONSE_DATA(res, 0, 10), data_len));
@@ -2096,7 +2096,7 @@ int dlp_ResetLastSyncPC(int sd)
 		fprintf(stderr,
 			" Wrote: Type: '%s', ID: %d, and %d bytes:\n",
 			printlong(type), id, length);
-		dumpdata(PI_DBG_DLP, data, length);
+		dumpdata(data, length);
 	}
 #endif
 
@@ -2189,7 +2189,7 @@ int dlp_ResetLastSyncPC(int sd)
 #ifdef DLP_TRACE
 	if (dlp_trace) {
 		fprintf(stderr, "  Read: %d bytes:\n", result - 2);
-		dumpdata(PI_DBG_DLP, dlp_buf + 2, result - 2);
+		dumpdata(dlp_buf + 2, result - 2);
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 #endif
 		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2), data_len));
@@ -2229,7 +2229,7 @@ int dlp_ResetLastSyncPC(int sd)
 	if (dlp_trace) {
 		fprintf(stderr, " Wrote: Handle: %d, %d bytes:\n", fHandle,
 			length);
-		dumpdata(PI_DBG_DLP, data, length);
+		dumpdata(data, length);
 	}
 #endif
 
@@ -2279,7 +2279,7 @@ int dlp_ResetLastSyncPC(int sd)
 #ifdef DLP_TRACE
 	    if (dlp_trace) {
 		fprintf(stderr, "  Read: %d bytes:\n", result - 2);
-		dumpdata(PI_DBG_DLP, dlp_buf + 2, result - 2);
+		dumpdata(dlp_buf + 2, result - 2);
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 #endif
 		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2), data_len));
@@ -2321,7 +2321,7 @@ int dlp_ResetLastSyncPC(int sd)
 	if (dlp_trace) {
 		fprintf(stderr, " Wrote: Handle: %d, %d bytes:\n", fHandle,
 			length);
-		dumpdata(PI_DBG_DLP, data, length);
+		dumpdata(data, length);
 	}
 #endif
 
@@ -2517,7 +2517,7 @@ int
 			fprintf(stderr, " None");
 		fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags,
 			result - 10);
-		dumpdata(PI_DBG_DLP, dlp_buf + 10, result - 10);
+		dumpdata(dlp_buf + 10, result - 10);
 
 #endif
 
@@ -2628,7 +2628,7 @@ int
 			" Read: Version: %d, Total size: %d, Read %d bytes:\n",
 			get_short(dlp_buf), get_short(dlp_buf + 2),
 			get_short(dlp_buf + 4));
-		dumpdata(PI_DBG_DLP, dlp_buf + 6, get_short(dlp_buf + 4));
+		dumpdata(dlp_buf + 6, get_short(dlp_buf + 4));
 		
 #endif
 
@@ -2674,7 +2674,7 @@ int
 				" Wrote: Creator: '%s', Id: %d, Version: %d, Backup: %d, and %d bytes:\n",
 				printlong(creator), id, version,
 				backup ? 0x80 : 0, size);
-			dumpdata(PI_DBG_DLP, buffer, size);
+			dumpdata(buffer, size);
 		}
 #endif
 
@@ -2719,7 +2719,7 @@ int
 			" Wrote: Creator: '%s', Id: %d, Version: %d, Backup: %d, and %d bytes:\n",
 			printlong(creator), id, version, backup ? 0x80 : 0,
 			size);
-		dumpdata(PI_DBG_DLP, buffer, size);
+		dumpdata(buffer, size);
 		dlp_request_free(req);
 #endif
 
@@ -2829,7 +2829,7 @@ int
 			fprintf(stderr, " None");
 		fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags,
 			result - 10);
-		dumpdata(PI_DBG_DLP, dlp_buf + 10, result - 10);
+		dumpdata(dlp_buf + 10, result - 10);
 	}
 #endif
 
@@ -2906,7 +2906,7 @@ int
 			fprintf(stderr, " None");
 		fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags,
 			result - 10);
-		dumpdata(PI_DBG_DLP, dlp_buf + 10, result - 10);
+		dumpdata(dlp_buf + 10, result - 10);
 
 #endif
 
@@ -2991,7 +2991,7 @@ int
 			fprintf(stderr, " None");
 		fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags,
 			result - 10);
-		dumpdata(PI_DBG_DLP, dlp_buf + 10, result - 10);
+		dumpdata(dlp_buf + 10, result - 10);
 
 #endif
 
@@ -3074,7 +3074,7 @@ int
 			fprintf(stderr, " None");
 		fprintf(stderr, " (0x%2.2X), and %d bytes:\n", flags,
 			result - 10);
-		dumpdata(PI_DBG_DLP, dlp_buf + 10, result - 10);
+		dumpdata(dlp_buf + 10, result - 10);
 
 #endif
 	dlp_response_free(res);

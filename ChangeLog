@@ -1,5 +1,26 @@
 2002-01-14  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/dlp.c: reflect dumpdata changes
+
+	* libsock/net.c (net_dump): ditto
+
+	* libsock/padp.c (padp_dump): ditto
+
+	* libsock/slp.c (slp_dump): ditto
+
+	* pilot-clip.c (main): ditto
+
+	* pi-csd.c (main): ditto
+
+	* debugsh.c (read_pilot): ditto
+
+	* include/pi-source.h: remove type param from dumpline and
+	dumpdata
+
+	* include/Makefile.am: dist new headers
+
+2002-01-14  JP Rosevear  <jpr@ximian.com>
+	
 	* pi-nredir.c (main): connect properly with a net: address now
 
 	* libsock/cmp.c: implement free method

@@ -665,5 +665,5 @@ void padp_dump(unsigned char *data)
 	if (s > PI_PADP_MTU - PI_PADP_HEADER_LEN)
 		s = PI_PADP_MTU - PI_PADP_HEADER_LEN;
 	if (type != padAck)
-		dumpdata(PI_DBG_PADP, &data[PI_PADP_HEADER_LEN], s);
+		dumpdata(&data[PI_PADP_HEADER_LEN], s);
 }

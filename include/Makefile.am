@@ -6,6 +6,7 @@ c_header_DATA = \
 	pi-config-win32.h	\
 	pi-config.h		\
 	pi-datebook.h		\
+	pi-debug.h		\
 	pi-dlp.h		\
 	pi-expense.h		\
 	pi-file.h		\
@@ -18,6 +19,7 @@ c_header_DATA = \
 	pi-md5.h		\
 	pi-memo.h		\
 	pi-money.h		\
+	pi-net.h		\
 	pi-padp.h		\
 	pi-serial.h		\
 	pi-slp.h		\

@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 	      invalid:
 		if (!quiet)
 			fprintf(stderr, "invalid packet of %d bytes:\n", n);
-//		dumpdata(mesg, n);
+		dumpdata(mesg, n);
 	}
 
 	exit(0);

@@ -167,7 +167,7 @@ void read_pilot(int sd)
 	int 	l = pi_read(sd, buf, 4096);
 	
 	printf("From Palm %d:", l);
-//	dumpdata((unsigned char *) buf, l);
+	dumpdata((unsigned char *) buf, l);
 
 	if (buf[2] == 0) {			/* SysPkt command 	*/
 		if (buf[0] == 1) {		/* Console 		*/
