@@ -108,14 +108,14 @@ cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establis
 		return -1;
 	data = (struct pi_cmp_data *)prot->data;
 
-	/* Check for a proper cmp connection */
+	/* Read the cmp packet */
 	if (cmp_rx(ps, buf, PI_CMP_HEADER_LEN, 0) < 0)
-		return -1;	/* Failed to establish connection, errno already set */
+		return -1;
 
 	if ((data->version & 0xFF00) == 0x0100) {
 		if (establishrate > data->baudrate) {
 			if (establishhighrate) {
-				LOG(PI_DBG_CMP, PI_DBG_LVL_NONE, 
+				LOG(PI_DBG_CMP, PI_DBG_LVL_INFO, 
 				    "CMP Establishing higher rate %ul (%ul)\n",
 				    establishrate, data->baudrate);
 				data->baudrate = establishrate;
@@ -128,6 +128,8 @@ cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establis
 			return -1;
 	} else {
 		/* 0x80 means the comm version wasn't compatible */
+		LOG(PI_DBG_CMP, PI_DBG_LVL_ERR, "CMP Incompatible Version\n");
+
 		cmp_abort(ps, 0x80);
 		errno = ECONNREFUSED;
 		return -1;
@@ -327,7 +329,7 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 
 	data->type 	= PI_CMP_TYPE_WAKE;
 	data->flags 	= 0;
-	data->version 	= CommVersion_1_0;
+	data->version 	= PI_CMP_VERS_1_0;
 	data->baudrate 	= maxbaud;
 
 	return cmp_tx(ps, NULL, 0, 0);

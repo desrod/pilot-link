@@ -33,6 +33,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-file.h"
@@ -707,10 +708,6 @@ pi_file_read_record(struct pi_file *pf, int i,
 	if (pf->for_writing)
 		return (-1);
 
-#ifdef DEBUG
-	fprintf(stderr, "Reading record %d\n", i);
-#endif
-
 	if (pf->resource_flag)
 		return (-1);
 
@@ -719,10 +716,8 @@ pi_file_read_record(struct pi_file *pf, int i,
 
 	entp = &pf->entries[i];
 
-#ifdef DEBUG
-	fprintf(stderr, "record size is %d\n", entp->size);
-#endif
-
+	LOG (PI_DBG_API, PI_DBG_LVL_INFO,
+	     "FILE Read record %d bytes\n", i);
 
 	if (bufp) {
 		if (pi_file_set_rbuf_size(pf, entp->size) < 0)

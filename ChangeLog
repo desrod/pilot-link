@@ -1,3 +1,11 @@
+2002-01-30  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/cmp.c (cmp_wakeup): use new version define
+
+	* include/pi-cmp.h: tidy version defines
+
+	* libsock/pi-file.c (pi_file_read_record): using logging functions
+
 2002-01-29  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* install-memo.c: Fixed an error that reported the following:
