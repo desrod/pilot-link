@@ -3,7 +3,7 @@
 AC_INIT(include/pi-cmp.h)
 AM_CONFIG_HEADER(include/pi-config.h include/pi-sockaddr.h)
 
-AM_INIT_AUTOMAKE(pilot-link, 0.9.5cvs)
+AM_INIT_AUTOMAKE(pilot-link, 0.9.6cvs)
 
 dnl Check host type
 AC_CANONICAL_HOST
