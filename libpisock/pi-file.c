@@ -182,7 +182,7 @@ pi_file_t
 		
 	unsigned char buf[PI_HDR_SIZE];
 	unsigned char *p;
-	off_t offset, app_info_offset, sort_info_offset;
+	off_t offset, app_info_offset = 0, sort_info_offset = 0;
 
 	if ((pf = calloc(1, sizeof (pi_file_t))) == NULL)
 		return (NULL);
@@ -306,10 +306,11 @@ pi_file_t
 			     "FILE OPEN Entry: %d Size: %d\n",
 			     pf->nentries - i - 1, entp->size));
 
-			if (entp->size < 0) {
+			if (entp->size < 0 ||
+				(entp->offset + entp->size) > file_size) {
 				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 				 "FILE OPEN %s: Entry %d corrupt,"
-				 "giving up\n",
+				 " giving up\n",
 					name, pf->nentries - i - 1));
 				goto bad;
 			}
@@ -317,24 +318,25 @@ pi_file_t
 	}
 
 	if (sort_info_offset) {
-		pf->sort_info_size 	= offset - sort_info_offset;
-		offset 			= sort_info_offset;
-#ifdef DEBUG
-		printf("Sort info, size %d\n", pf->sort_info_size);
-#endif
+		pf->sort_info_size = offset - sort_info_offset;
+		offset = sort_info_offset;
 	}
 
 	if (app_info_offset) {
-		pf->app_info_size 	= offset - app_info_offset;
-		offset 			= app_info_offset;
-#ifdef DEBUG
-		printf("App info, size %d\n", pf->app_info_size);
-#endif
+		pf->app_info_size = offset - app_info_offset;
+		offset = app_info_offset;
 	}
 
-	if (pf->app_info_size < 0 || pf->sort_info_size < 0) {
+	if (pf->app_info_size < 0 ||
+		(sort_info_offset + pf->sort_info_size) > file_size ||
+		pf->sort_info_size < 0 ||
+		(app_info_offset + pf->app_info_size) > file_size) {
 		LOG ((PI_DBG_API, PI_DBG_LVL_ERR,
- 		     "FILE OPEN %s: bad header\n", name));
+ 		     "FILE OPEN %s: bad header "
+			 "(app_info @ %d size %d, "
+			 "sort_info @ %d size %d)\n", name,
+			 app_info_offset, pf->app_info_size,
+			 sort_info_offset, pf->sort_info_size));
 		goto bad;
 	}
 
