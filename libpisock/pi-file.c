@@ -27,8 +27,6 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1205,11 +1203,11 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 {
 	int 	db = -1,
 		j,
-		written 	= 0,
 		total_size,
 		result;
 	struct DBSizeInfo size_info;
 	pi_buffer_t *buffer = NULL;
+	pi_progress_t progress;
 
 	pi_reset_errors(socket);
 
@@ -1229,16 +1227,20 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 		goto fail;
 	}
 
+	memset(&progress, 0, sizeof(progress));
+	progress.type = PI_PROGRESS_RECEIVE_DB;
+	progress.data.db.pf = pf;
+	progress.data.db.size = size_info;
+	
 	if (size_info.appBlockSize) {
 		result = dlp_ReadAppBlock(socket, db, 0, DLP_BUF_SIZE, buffer);
 		if (result < 0)
 			goto fail;
 		if (result > 0) {
 			pi_file_set_app_info(pf, buffer->data, (size_t)result);
-			written = result;
-			if (report_progress
-				&& report_progress(socket, pf, total_size, 
-					written, 0) == PI_TRANSFER_STOP) {
+			progress.transferred_bytes += result;
+			if (report_progress && report_progress(socket,
+					&progress) == PI_TRANSFER_STOP) {
 				result = PI_ERR_FILE_ABORTED;
 				goto fail;
 			}
@@ -1260,11 +1262,11 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 				goto fail;
 			}
 
-			written += buffer->used;
+			progress.transferred_bytes += buffer->used;
+			progress.data.db.transferred_records++;
 
-			if (report_progress
-				&& report_progress(socket, pf, total_size,
-					written, j+1) == PI_TRANSFER_STOP) {
+			if (report_progress && report_progress(socket,
+					&progress) == PI_TRANSFER_STOP) {
 				result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 				goto fail;
 			}
@@ -1278,11 +1280,12 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 				&category)) < 0)
 			goto fail;
 
-		written += buffer->used;
+		progress.transferred_bytes += buffer->used;
+		progress.data.db.transferred_records++;
 
 		if (report_progress
-			&& report_progress(socket, pf, total_size,
-				written, j+1) == PI_TRANSFER_STOP) {
+			&& report_progress(socket,
+				&progress) == PI_TRANSFER_STOP) {
 			result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 			goto fail;
 		}
@@ -1354,14 +1357,22 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 		size = 0,
 		total_size;
 	void 	*buffer;
+	pi_progress_t	progress;
 
 	version = pi_version(socket);
+
+	memset(&progress, 0, sizeof(progress));
+	progress.type = PI_PROGRESS_SEND_DB;
+	progress.data.db.pf = pf;
+	progress.data.db.size.numRecords = pf->nentries;
+	progress.data.db.size.dataBytes = pf->app_info_size;
+	progress.data.db.size.appBlockSize = pf->app_info_size;
+	progress.data.db.size.maxRecSize = pi_maxrecsize(socket);
 
 	/* compute total size for progress reporting, and check that
 	   either records are 64k or less, or the handheld can accept
 	   large records. we do this prior to starting the install,
 	   to avoid messing the device up if we have to fail. */
-	total_size = pf->app_info_size;
 	for (j = 0; j < pf->nentries; j++) {
 		result =  (pf->info.flags & dlpDBFlagResource) ?
 			pi_file_read_resource(pf, j, 0, &size, 0, 0) :
@@ -1377,8 +1388,13 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 				" record/resource over 64K!\n"));
 			goto fail;
 		}
-		total_size += size;
+		progress.data.db.size.dataBytes += size;
 	}
+
+	progress.data.db.size.totalBytes =
+		progress.data.db.size.dataBytes +
+		pf->ent_hdr_size * pf->nentries +
+		PI_HDR_SIZE + 2;
 
 	/* Delete DB if it already exists */
 	dlp_DeleteDB(socket, cardno, pf->info.name);
@@ -1481,13 +1497,11 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 				free(buffer);
 			goto fail;
 		}
-		
 		if (freeai)
 			free(buffer);
-
-		if (report_progress
-			&& report_progress(socket, pf, (int)total_size,
-				(int)l, 0) == PI_TRANSFER_STOP) {
+		progress.transferred_bytes = l;
+		if (report_progress && report_progress(socket,
+				&progress) == PI_TRANSFER_STOP) {
 			result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 			goto fail;
 		}
@@ -1511,11 +1525,11 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 					size)) < 0)
 				goto fail;
 
-			l += size;
+			progress.transferred_bytes += size;
+			progress.data.db.transferred_records++;
 
-			if (report_progress
-				&& report_progress(socket, pf, (int)total_size,
-					(int)l, (int)j) == PI_TRANSFER_STOP) {
+			if (report_progress && report_progress(socket,
+					&progress) == PI_TRANSFER_STOP) {
 				result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 				goto fail;
 			}
@@ -1545,11 +1559,12 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 					buffer, size, 0)) < 0)
 				goto fail;
 
-			l += size;
+			progress.transferred_bytes += size;
+			progress.data.db.transferred_records++;
 
 			if (report_progress
-				&& report_progress(socket, pf, (int)total_size,
-					(int)l, (int)j) == PI_TRANSFER_STOP) {
+				&& report_progress(socket,
+					&progress) == PI_TRANSFER_STOP) {
 				result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 				goto fail;
 			}
@@ -1602,17 +1617,23 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 		j,
 		reset 	= 0,
 		version,
-		total_size = 0,
-		bytes_written = 0,
 		result;
 	void 	*buffer;
 	size_t	size;
+	pi_progress_t progress;
 	
 	version = pi_version(socket);
 
-	if (dlp_OpenDB
-	    (socket, cardno, dlpOpenReadWrite | dlpOpenSecret,
-	     pf->info.name, &db) < 0)
+	memset(&progress, 0, sizeof(progress));
+	progress.type = PI_PROGRESS_SEND_DB;
+	progress.data.db.pf = pf;
+	progress.data.db.size.numRecords = pf->nentries;
+	progress.data.db.size.dataBytes = pf->app_info_size;
+	progress.data.db.size.appBlockSize = pf->app_info_size;
+	progress.data.db.size.maxRecSize = pi_maxrecsize(socket);
+
+	if (dlp_OpenDB(socket, cardno, dlpOpenReadWrite | dlpOpenSecret,
+			pf->info.name, &db) < 0)
 		return pi_file_install(pf, socket, cardno, report_progress);
 
 	/* compute total size for progress reporting, and check that
@@ -1635,8 +1656,13 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 			result = pi_set_error(socket, PI_ERR_DLP_DATASIZE);
 			goto fail;
 		}
-		total_size += size;
+		progress.data.db.size.dataBytes += size;
 	}
+
+	progress.data.db.size.totalBytes =
+		progress.data.db.size.dataBytes +
+		pf->ent_hdr_size * pf->nentries +
+		PI_HDR_SIZE + 2;
 
 	/* All system updates seen to have the 'ptch' type, so trigger a
 	   reboot on those */
@@ -1663,11 +1689,11 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 			    (socket, db, type, id_, buffer, size)) < 0)
 				goto fail;
 
-			bytes_written += size;
+			progress.transferred_bytes += size;
+			progress.data.db.transferred_records++;
 
-			if (report_progress
-				&& report_progress(socket, pf, total_size,
-					bytes_written, j) == PI_TRANSFER_STOP) {
+			if (report_progress && report_progress(socket,
+					&progress) == PI_TRANSFER_STOP) {
 				result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 				goto fail;
 			}
@@ -1697,11 +1723,11 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 					buffer, size, 0)) < 0)
 				goto fail;
 
-			bytes_written += size;
+			progress.transferred_bytes += size;
+			progress.data.db.transferred_records++;
 
-			if (report_progress
-				&& report_progress(socket, pf, total_size,
-					bytes_written, j) == PI_TRANSFER_STOP) {
+			if (report_progress && report_progress(socket,
+					&progress) == PI_TRANSFER_STOP) {
 				result = PI_ERR_FILE_ABORTED;
 				goto fail;
 			}
