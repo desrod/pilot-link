@@ -1,4 +1,9 @@
-2001-11-10  David A. Desrosiers <hacker at gnu-designs dot com>
+2001-12-18
+
+	* read-ical.c: Reversed some changes to get it to build properly.
+	  Need to pare down main() in there, too large.
+
+2001-12-10  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* dlpsh.c: stupid mistake, s/return 0;//
 
@@ -14,8 +19,6 @@
 
 	* Other random cleanups, moving things around. A recurring theme.
 
-2001-12-10  David A. Desrosiers <hacker at gnu-designs dot com>
-		
 	* libsock/connect.c: Changed the 'Connected..' strings to be
 	  fprintf() and not printf() so redirection properly works for
 	  'reminders' and other apps without capturing those strings to the
