@@ -1,6 +1,6 @@
 /*
- * pilot-archive.c:  Output "Archived" records in CSV format to STDOUT
- *                   from ToDo application
+ * pilot-archive.c:  Output "Archived" records in human-readable format to 
+ *                   STDOUT from ToDo application
  *
  * Copyright (c) 2002, David A. Desrosiers
  *
@@ -47,7 +47,8 @@ int main(int argc, const char *argv[])
 
 	po = poptGetContext("pilot-archive", argc, argv, options, 0);
 	poptSetOtherOptionHelp(po,"\n\n"
-	"   Exports any ToDo records marked as \"Archived\" on your Palm to CSV format\n\n");
+	"   Exports any ToDo records marked as \"Archived\" on your Palm to\n"
+	"   human-readable format\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(po,stderr,0);
