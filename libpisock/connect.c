@@ -98,8 +98,7 @@ int pilot_connect(char *port)
 
 
 	if (result < 0) {
-		int 	save_errno = errno,
-			j;
+		int 	save_errno = errno;
 		char 	*portname;
 
 		portname = (port != NULL) ? port : getenv("PILOTPORT");
