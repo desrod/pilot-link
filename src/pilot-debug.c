@@ -237,9 +237,12 @@ void Read_Pilot(ClientData clientData, int mask) {
         block.offset[1] = 0;
         block.offset[2] = 0; 
         block.pixelPtr = buffer;
-   
+
+#if (TK_MAJOR_VERSION < 8) || ((TK_MAJOR_VERSION == 8) && (TK_RELEASE_LEVEL < 2))
         handle = Tk_FindPhoto("Case");
- 
+#else
+	handle = Tk_FindPhoto(interp, "Case");
+#endif 
         i = 0;
         l = 0;
         for (y=0;y<h;y++) {
@@ -861,7 +864,11 @@ int proc_getdisplay(ClientData clientData, Tcl_Interp *interp, int argc, char *a
   block.offset[1] = 0;
   block.offset[2] = 0; 
   
+#if (TK_MAJOR_VERSION < 8) || ((TK_MAJOR_VERSION == 8) && (TK_RELEASE_LEVEL < 2))
   handle = Tk_FindPhoto("Case");
+#else
+  handle = Tk_FindPhoto(interp,"Case");
+#endif
 
   for(l=0;l<160*160;l++) {
   	int p = l/8;

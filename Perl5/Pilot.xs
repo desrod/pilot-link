@@ -848,7 +848,7 @@ Unpack(record)
 			    e = newAV();
 			    hv_store(repeat, "days", 4, newRV_noinc((SV*)e), 0);
 			    for (i=0;i<7;i++)
-			    	av_push(e,newRV_noinc(newSViv(a.repeatDays[i])));
+			    	av_push(e,newSViv(a.repeatDays[i]));
 	   		}
 	   		hv_store(repeat, "weekstart", 9, newSViv(a.repeatWeekstart), 0);
 	   		if (!a.repeatForever)
@@ -984,7 +984,7 @@ Pack(record)
 		int i;
 		AV * a2 = (AV*)SvRV(*s);
 		if (av_len(a2)>-1) {
-		    a.exceptions = av_len(a2);
+		    a.exceptions = av_len(a2)+1;
 		    a.exception = malloc(sizeof(struct tm)*a.exceptions);
 		    for (i=0;i<a.exceptions;i++)
 		    	if ((s = av_fetch(a2, i, 0)) && SvOK(*s) && SvRV(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV))
@@ -2225,9 +2225,11 @@ int
 write(socket, msg)
 	int	socket
 	SV *	msg
-	CODE: {
+	CODE:
+	{
 	    STRLEN len;
-		RETVAL = pi_write(socket,SvPV(msg,len),len);
+	    SvPV(msg, len);
+		RETVAL = pi_write(socket,SvPV(msg,na),len);
 	}
 
 SV *
@@ -3485,7 +3487,7 @@ callApplication(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 		int result;
 		(void)SvPV(data,len);
 		result = dlp_CallApplication(self->socket, creator, 
-				    type, action, len, SvPV(data,len),
+				    type, action, len, SvPV(data,na),
 		                    &retcode, maxretlen, (int *)&len, mybuf);
 		EXTEND(sp, 2);
 		if (result >= 0) {

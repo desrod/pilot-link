@@ -1,3 +1,14 @@
+Sep  6, 1997	Kenneth Albanowski 0.8.5
+	Configuration changes:
+	  - added patch for libtool 1.0b to prevent extraneous 'n's.
+	Utility changes:
+	  - pilot-debug adjusted for release version of Tcl 8.0.
+	  - sync-plan massively updated to support syncing multiple plan
+	    database against a single Pilot, support for more then one Pilot,
+	    working repetitions, general bug fixes, etc.
+	Perl 5 binding changes:
+	  - Several bug fixes by Bharat.
+
 Aug 31, 1997	Kenneth Albanowski 0.8.4
 	Configuration changes:
 	  - libtool 1.0b included (which means you can say './libtool gdb pilot-mail')
