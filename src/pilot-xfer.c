@@ -320,8 +320,10 @@ static int palm_creator(unsigned long creator)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_backup(const char *dirname, unsigned long int flags,
-	int unsaved, const char *archive_dir)
+static void palm_backup(const char *dirname,
+	unsigned long int flags,
+	int unsaved,
+	const char *archive_dir)
 {
 
 	int	i		= 0,
@@ -408,7 +410,7 @@ static void palm_backup(const char *dirname, unsigned long int flags,
 			exit(EXIT_FAILURE);
 		}
 
-		if (dlp_ReadDBList(sd, 0, ((flags & MEDIA_MASK) ? 0x40 : 0x80), i, buffer) < 0)
+		if (dlp_ReadDBList(sd, 0, ((flags & MEDIA_MASK) ? dlpDBListROM : dlpDBListRAM), i, buffer) < 0)
 			break;
 
 		memcpy(&info, buffer->data, sizeof(struct DBInfo));
@@ -467,7 +469,7 @@ static void palm_backup(const char *dirname, unsigned long int flags,
 		}
 
 	        list_remove(name, orig_files, ofile_total);
-		if (stat(name, &sbuf) && (flags & UPDATE) == 0) {
+		if ((0 == stat(name, &sbuf)) && ((flags & UPDATE) == UPDATE)) {
 			if (info.modifyDate == sbuf.st_mtime) {
 				printf("   [-][unch] Unchanged, skipping %s\n",
 					name);
@@ -1681,7 +1683,6 @@ static void set_operation(int opt, palm_op_t *op, unsigned long int *flags)
 		break;
 	case 'r' :
 		*op = palm_op_restore;
-		*flags = BACKUP;
 		break;
 	case 'i' :
 		*op = palm_op_install;
