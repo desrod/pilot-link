@@ -56,6 +56,7 @@ bin_PROGRAMS = 		\
 	read-ical	\
 	read-notepad	\
 	read-palmpix	\
+	read-screenshot	\
 	read-todos	\
 	read-veo	\
 	reminders
@@ -324,6 +325,14 @@ read_palmpix_SOURCES = 		\
 read_palmpix_LDADD = 		\
 	$(PNG_LIBS) 		\
 	$(top_builddir)/libpisock/libpisock.la
+
+read_screenshot_SOURCES =	\
+        $(getopt_sources)	\
+        read-screenshot.c
+read_screenshot_LDADD =		\
+        $(PNG_LIBS)		\
+        $(top_builddir)/libpisock/libpisock.la	\
+        $(top_builddir)/popt/libpopt.la
 
 read_todos_SOURCES = 		\
 	$(getopt_sources)	\
