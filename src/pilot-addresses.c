@@ -556,6 +556,8 @@ int main(int argc, char *argv[])
 	if (sd < 0)
 		goto error;
 	
+        if (dlp_ReadUserInfo(sd, &User) < 0)
+                goto error_close;
 	
 	/* Open the MemoDB.pdb database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
@@ -640,6 +642,9 @@ int main(int argc, char *argv[])
 
 	return 0;
 
+error_close:
+        pi_close(sd);
+
 error:
-	return -1;
+        return -1;
 }
