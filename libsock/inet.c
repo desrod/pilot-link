@@ -374,10 +374,11 @@ static int
 pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
 	struct pi_socket *acpt = NULL;
+	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
 
 	acpt = pi_socket_copy(ps);
-	
-	acpt->sd = accept(ps->sd, addr, addrlen);
+
+ 	acpt->sd = accept(ps->sd, addr, addrlen);
 	if (acpt->sd < 0)
 		goto fail;
 
@@ -398,10 +399,12 @@ pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 
 	pi_socket_recognize(acpt);
 
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV ACCEPT Accepted\n");
+
 	return acpt->sd;
 
  fail:
-	if (accept)
+	if (acpt)
 		pi_close (acpt->sd);
 	return -1;
 }
@@ -425,7 +428,7 @@ pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len)
 
 	total = len;
 	while (total > 0) {
-		nwrote = write(data->fd, msg, len);
+		nwrote = write(ps->sd, msg, len);
 		if (nwrote < 0)
 			return -1;
 		total -= nwrote;
@@ -457,20 +460,21 @@ pi_inet_read(struct pi_socket *ps, unsigned char *msg, int len)
 	int r;
 
 	FD_ZERO(&ready);
-	FD_SET(data->fd, &ready);
+	FD_SET(ps->sd, &ready);
 
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX trying to read %d\n", data->fd);
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
 	if (data->timeout == 0)
-		select(data->fd + 1, &ready, 0, 0, 0);
+		select(ps->sd + 1, &ready, 0, 0, 0);
 	else {
 		t.tv_sec = data->timeout / 1000;
 		t.tv_usec = (data->timeout % 1000) * 1000;
-		select(data->fd + 1, &ready, 0, 0, &t);
+		select(ps->sd + 1, &ready, 0, 0, &t);
 	}
 	/* If data is available in time, read it */
-	if (FD_ISSET(data->fd, &ready))
-		r = read(data->fd, msg, len);
+	if (FD_ISSET(ps->sd, &ready))
+		r = read(ps->sd, msg, len);
 	else {
 		/* otherwise throw out any current packet and return */
 		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Inet timeout\n");

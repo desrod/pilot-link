@@ -1,5 +1,11 @@
 2002-01-09  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/inet.c (pi_inet_accept): accept to the socket descriptor
+	(pi_inet_write): write to the sd
+	(pi_inet_read): read from the sd
+
+2002-01-09  JP Rosevear  <jpr@ximian.com>
+	
 	* pi-getram.c: merge from head
 
 	* pi-nredir.c: update for new net code
