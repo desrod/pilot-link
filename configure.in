@@ -10,7 +10,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 dnl ******************************
 dnl Limit to a specific ac version
 dnl ******************************
-dnl AC_PREREQ(2.53)
+AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
 AC_SUBST(CFLAGS)
@@ -39,8 +39,8 @@ dnl ******************************
 dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
-PILOT_LINK_MAJOR=11
-PILOT_LINK_MINOR=9
+PILOT_LINK_MAJOR=12
+PILOT_LINK_MINOR=0
 PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
@@ -52,10 +52,10 @@ VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 
 dnl ******************************
 dnl Pilot Link Library Version 
-dnl libpisock.so
+dnl libpisock.so.CURRENT.AGE.REVISION
 dnl ******************************
 PISOCK_CURRENT=8
-PISOCK_REVISION=6
+PISOCK_REVISION=7
 PISOCK_AGE=0
 
 AC_SUBST(PISOCK_CURRENT)
@@ -123,7 +123,7 @@ AC_TYPE_SIGNAL
 
 AC_CHECK_HEADERS(
 	dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h 		\
-	netinet/in.h readline/history.h readline/readline.h stdint.h 	\
+	netinet/in.h regex.h readline/history.h readline/readline.h stdint.h 	\
 	stdlib.h string.h strings.h sys/ioctl_compat.h sys/ioctl.h 	\
 	sys/malloc.h sys/select.h sys/sockio.h sys/time.h sys/utsname.h \
 	unistd.h IOKit/IOBSD.h)
