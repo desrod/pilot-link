@@ -26,14 +26,12 @@
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <string.h>
-#include <ctype.h>
+#include <strings.h>
 #include <netinet/in.h>
 
-#include "pi-source.h"
+#include "pi-socket.h"
 #include "pi-dlp.h"
-#include "pi-serial.h"
 #include "pi-header.h"
 
 #ifdef HAVE_READLINE
@@ -84,6 +82,8 @@ struct Command command_list[] = {
 	{NULL, NULL}
 };
 
+static const char *optstring = "p:hv";
+
 /***********************************************************************
  *
  * Function:    df_fn
@@ -109,10 +109,14 @@ int df_fn(int sd, int argc, char *argv[])
 
 		printf("Filesystem           1k-blocks         Used   Available     Used     Total\n");
 		printf("Card0: ROM           %9lu", Card.romSize);
-                printf("          n/a   %9lu      n/a     %4luk\n", Card.romSize, Card.romSize/1024);
+                printf("          n/a   %9lu      n/a     %4luk\n", 
+			Card.romSize, Card.romSize/1024);
 
 		printf("Card0: RAM           %9lu", Card.ramSize);
-		printf("     %8lu    %8lu     %3ld%%     %4luk\n", (Card.ramSize - Card.ramFree), Card.ramFree, ((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
+		printf("     %8lu    %8lu     %3ld%%     %4luk\n", 
+			(Card.ramSize - Card.ramFree), Card.ramFree, 
+			((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, 
+			Card.ramSize/1024);
 
 		printf("Total (ROM + RAM)     %8lu     %8lu         n/a      n/a    %5luk\n\n", 
 			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree, 
@@ -120,6 +124,7 @@ int df_fn(int sd, int argc, char *argv[])
 	}
 	return 0;
 }
+
 
 /***********************************************************************
  *
@@ -146,6 +151,7 @@ int help_fn(int sd, int argc, char *argv[])
 
 	return 0;
 }
+
 
 /***********************************************************************
  *
@@ -256,6 +262,7 @@ int ls_fn(int sd, int argc, char *argv[])
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    rm_fn
@@ -294,10 +301,11 @@ int rm_fn(int sd, int argc, char *argv[])
 		printf("%s: remove error %d\n", name, ret);
 		return (0);
 	}
-	printf("Application %s successfully removed\n", name);
+	printf("File %s successfully removed\n", name);
 
 	return 0;
 }
+
 
 /***********************************************************************
  *
@@ -328,6 +336,7 @@ int time_fn(int sd, int argc, char *argv[])
 
 	return 0;
 }
+
 
 /***********************************************************************
  *
@@ -445,6 +454,7 @@ int user_fn(int sd, int argc, char *argv[])
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    timestr
@@ -467,8 +477,6 @@ char *timestr(time_t t)
 		tm.tm_hour, tm.tm_min, tm.tm_sec);
 	return (buf);
 }
-
-
 
 
 /***********************************************************************
@@ -546,20 +554,28 @@ void handle_user_commands(int sd)
 	printf("\n");
 }
 
-/* functions for builtin commands */
+
+/***********************************************************************
+ *
+ * Function:    exit_fn
+ *
+ * Summary:     Exit the DLP shell and write a log entry on the Palm
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int exit_fn(int sd, int argc, char *argv[])
 {
-#ifdef DEBUG
-	fprintf(stderr,
-		"\n\n================== EXITING ===================\n\n");
-#endif
 	printf("Exiting.\n");
-	dlp_AddSyncLogEntry(sd, "dlpsh, DLP Protocol Shell ended.\n"
+	dlp_AddSyncLogEntry(sd, "dlpsh, the DLP Protocol Shell ended.\n\n"
 				"Thank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	exit(0);
 }
+
 
 /***********************************************************************
  *
@@ -577,7 +593,6 @@ char *strtoke(char *str, char *ws, char *delim)
 	int 		inc;
 	static char 	*s,
 			*start;
-
 
 	if (str != NULL) {
 		s = str;
@@ -607,6 +622,18 @@ char *strtoke(char *str, char *ws, char *delim)
 	return start;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   An interactive Desktop Link Protocol (DLP) Shell for your Palm device\n\n");
@@ -623,6 +650,7 @@ static void display_help(char *progname)
 	return;
 }
 
+
 int main(int argc, char *argv[])
 {
 	int 	c,		/* switch */
@@ -637,8 +665,6 @@ int main(int argc, char *argv[])
 		{"version", no_argument,       NULL, 'v'},
 		{NULL,   0,                    NULL, 0}
 	};
-
-	static const char *optstring = "p:hv";
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
