@@ -408,7 +408,8 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 	int 	bytes, 
 		total_bytes, 
 		packet_len,
-		timeout;
+		timeout,
+		honor_rx_timeout;
 	size_t	size;
 	pi_protocol_t	*prot,
 			*next;
@@ -424,7 +425,11 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 	if (next == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
-	timeout = PI_NET_TIMEOUT;
+	size = sizeof(honor_rx_timeout);
+	pi_getsockopt(ps->sd, PI_LEVEL_SOCK, PI_SOCK_HONOR_RX_TIMEOUT,
+		&honor_rx_timeout, &size);
+
+	timeout = honor_rx_timeout ? PI_NET_TIMEOUT : 0;
 	size = sizeof(timeout);
 	pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
 		      &timeout, &size);
@@ -471,7 +476,7 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 		/* bytes in what's left of the header */
 		while (total_bytes < PI_NET_HEADER_LEN) {
 			bytes = next->read(ps, header,
-							   (size_t)(PI_NET_HEADER_LEN - total_bytes), flags);
+					(size_t)(PI_NET_HEADER_LEN - total_bytes), flags);
 			if (bytes <= 0) {
 				pi_buffer_free (header);
 				return bytes;

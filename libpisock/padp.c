@@ -400,9 +400,13 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 {
 	int 	bytes,
 		offset 		= 0,
-		ouroffset 	= 0;
-
-	size_t	total_bytes;
+		ouroffset 	= 0,
+		honor_rx_timeout,
+		type,
+		timeout;
+	unsigned char txid;
+	size_t	total_bytes,
+		size;
 	pi_protocol_t *next, *prot;
 	pi_padp_data_t *data;
 	struct 	padp padp;
@@ -417,6 +421,10 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 	next = pi_protocol_next(ps->sd, PI_LEVEL_PADP);
 	if (next == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
+	size = sizeof(honor_rx_timeout);
+	pi_getsockopt(ps->sd, PI_LEVEL_SOCK, PI_SOCK_HONOR_RX_TIMEOUT,
+		&honor_rx_timeout, &size);
 
 	padp_buf = pi_buffer_new (PI_PADP_HEADER_LEN + PI_PADP_MTU);
 	if (padp_buf == NULL) {
@@ -435,13 +443,8 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 	
 	endtime = time(NULL) + PI_PADP_RX_BLOCK_TO / 1000;
 
-	for (;;) {
-		int 	type,
-			timeout;
-		size_t	size;
-		unsigned char txid;
-		
-		if (time(NULL) > endtime) {
+	for (;;) {		
+		if (honor_rx_timeout && time(NULL) > endtime) {
 			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 				"PADP RX Timed out"));
 			/* Bad timeout breaks connection */
@@ -451,7 +454,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
 
-		timeout = PI_PADP_RX_BLOCK_TO + 2000;
+		timeout = honor_rx_timeout ? PI_PADP_RX_BLOCK_TO + 2000 : 0;
 		size = sizeof(timeout);
 		pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
 			      &timeout, &size);
@@ -547,11 +550,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 		endtime = time(NULL) + PI_PADP_RX_SEGMENT_TO / 1000;
 
 		for (;;) {
-			int type, timeout;
-			size_t size;
-			unsigned char txid;
-			
-			if (time(NULL) > endtime) {
+			if (honor_rx_timeout && time(NULL) > endtime) {
 				LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 					"PADP RX Segment Timeout"));
 
@@ -564,7 +563,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 			}
 
-			timeout = PI_PADP_RX_SEGMENT_TO + 2000;
+			timeout = honor_rx_timeout ? (PI_PADP_RX_SEGMENT_TO + 2000) : 0;
 			size = sizeof(timeout);
 			pi_setsockopt(ps->sd, PI_LEVEL_DEV,
 				 PI_DEV_TIMEOUT, &timeout, &size);
