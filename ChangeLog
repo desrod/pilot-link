@@ -2,6 +2,8 @@
 
 	* dlpsh.c: Minor segfault problem fixed in strncpy(); 
 
+	* A few missing buglets from the last commit, fixed. 
+
 2001-12-18
 
 	* misc: Lots of cleanups, new 'Berkeley' indenting, renamed some

@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 					recordid_t id;
 
 					int len =
-					    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, &category);
+					    dlp_ReadRecordByIndex(sd, db, index, buffer, &id, 0, &attr, &category);
 
 					if (len < 0)
 						break;
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			for (i = 0;; i++) {
+			for (index = 0;; index++) {
 				int 	j,
 					attr;
 				char 	id_buf[255];				
@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 				recordid_t id;
 
 				int len =
-				    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, 0);
+				    dlp_ReadRecordByIndex(sd, db, index, buffer, &id, 0, &attr, 0);
 
 				if (len < 0)
 					break;

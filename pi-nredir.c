@@ -46,11 +46,11 @@ static const char *optstring = "hp:";
 
 int main(int argc, char *argv[])
 {
-	int 	chara
+	int 	chara,
 		len,
 		ret,
 		sd = -1,
-		sd2 = -1, 	/* This is the network socket */
+		sd2 = -1; 	/* This is the network socket */
 
 	char 	buffer[0xffff],
 		*progname = argv[0],
