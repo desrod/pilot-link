@@ -21,7 +21,6 @@ c_header_DATA = \
 	pi-padp.h		\
 	pi-serial.h		\
 	pi-slp.h		\
-	pi-sockaddr-win32.h	\
 	pi-sockaddr.h		\
 	pi-socket.h		\
 	pi-source.h		\
