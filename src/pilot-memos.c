@@ -121,6 +121,9 @@ write_memo_in_directory(char *dirname, struct Memo m,
 	/* Should make sure category doesn't have slashes in it */
 	strncat(pathbuffer, mai.category.name[category], 60);
 
+	/* Should check if pathbuffer exists and is a directory */
+	mkdir(pathbuffer, 0700);
+
 	/* Should check if there were problems creating directory */
 	/* open the actual file to write */
 	strncat(pathbuffer, "/", 1);
@@ -209,13 +212,13 @@ int main(int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-	        {"verbose",	'v', POPT_ARG_VAL, &verbose, 1, "Verbose, with -s, print each filename when written"},
-        	{"delete",	'd', POPT_ARG_VAL, &delete,  1, "Delete memo named by number <num>"},
-                {"file",	'f', POPT_ARG_STRING, &filename, 0, "Use <file> as input file (instead of MemoDB.pdb)"},
-                {"save",	's', POPT_ARG_STRING, &dirname, 0, "Save memos in <dir> instead of writing to STDOUT"},
-	        {"category",	'c', POPT_ARG_STRING, &category_name, 0, "Only upload memos in this category"},
-                {"regex",	'r', POPT_ARG_STRING, &regex, 0, "Select memos saved by regular expression on title"},
-                POPT_TABLEEND
+		{"verbose",	'v', POPT_ARG_VAL, &verbose, 1, "Verbose, with -s, print each filename when written"},
+		{"delete",	'd', POPT_ARG_VAL, &delete,  1, "Delete memo named by number <num>"},
+		{"file",	'f', POPT_ARG_STRING, &filename, 0, "Use <file> as input file (instead of MemoDB.pdb)"},
+		{"save",	's', POPT_ARG_STRING, &dirname, 0, "Save memos in <dir> instead of writing to STDOUT"},
+		{"category",	'c', POPT_ARG_STRING, &category_name, 0, "Only upload memos in this category"},
+		{"regex",	'r', POPT_ARG_STRING, &regex, 0, "Select memos saved by regular expression on title"},
+		POPT_TABLEEND
 	};
 
 	po = poptGetContext("memos", argc, argv, options, 0);
@@ -249,8 +252,11 @@ int main(int argc, const char *argv[])
 		return -1;
 	}
 
+	if (dirname)
+		mode = MEMO_DIRECTORY;
+
 	if (c < -1)
-                plu_badoption(po, c);
+		plu_badoption(po, c);
 
 	if (regex) {
 		ret = regcomp(&title_pattern, regex, REG_NOSUB);
