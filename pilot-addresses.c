@@ -109,8 +109,7 @@ int read_field(char *dest, FILE * in)
 		c = inchar(in);
 
 		while (c != EOF) {
-			if (c == ',' || c == '\n') {
-//			if (c == '"') {
+			if (c == '"') {
 				c = inchar(in);
 				if (c != '"')
 					break;
