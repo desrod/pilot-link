@@ -8,6 +8,7 @@ AM_CONFIG_HEADER(config.h)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
 
+
 dnl ******************************
 dnl Deny config/build as root
 dnl ******************************
@@ -41,6 +42,7 @@ AC_SUBST(PILOT_LINK_MINOR)
 AC_SUBST(PILOT_LINK_PATCH)
 VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 
+
 dnl ******************************
 dnl Pilot Link Library Version
 dnl ******************************
@@ -52,6 +54,7 @@ AC_SUBST(PISOCK_CURRENT)
 AC_SUBST(PISOCK_REVISION)
 AC_SUBST(PISOCK_AGE)
 
+
 dnl ******************************
 dnl Pilot Link Sync Library Version
 dnl ******************************
@@ -62,6 +65,7 @@ PISYNC_AGE=0
 AC_SUBST(PISYNC_CURRENT)
 AC_SUBST(PISYNC_REVISION)
 AC_SUBST(PISYNC_AGE)
+
 
 dnl ******************************
 dnl Pilot Link C++ Library Version
@@ -135,6 +139,7 @@ if test $ac_cv_termios_cspeed = yes; then
   AC_DEFINE(TERMIOS_CSPEED, 1, [Define if we have termios(3) support])
 fi
 
+
 dnl ******************************
 dnl PNG Support
 dnl ******************************
@@ -177,6 +182,7 @@ LDFLAGS="$save_LDFLAGS"
 AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
 
+
 dnl ******************************
 dnl USB Support
 dnl ******************************
@@ -197,6 +203,7 @@ esac
 AM_CONDITIONAL(WITH_LINUXUSB, test x$usb_type = xlinux)
 AM_CONDITIONAL(WITH_FREEBSDUSB, test x$usb_type = xfreebsd)
 
+
 dnl ******************************
 dnl getopt
 dnl ******************************
@@ -206,6 +213,7 @@ getopt_getopt=yes
 AC_CHECK_HEADER([unistd.h], [AC_CHECK_FUNCS([getopt getopt_long], , unistd_getopt=no)], unistd_getopt=no)
 AC_CHECK_HEADER([getopt.h], [AC_CHECK_FUNCS([getopt getopt_long], , getopt_getopt=no)], getopt_getopt=no)
 AM_CONDITIONAL(NEED_GETOPT, test x$unistd_getopt = xno -a x$getopt_getopt = xno)
+
 
 dnl ******************************
 dnl iconv checking
@@ -276,6 +284,23 @@ else
 fi
 AC_SUBST(ICONV_CFLAGS)
 AC_SUBST(ICONV_LIBS)
+
+
+dnl ******************************
+dnl C++
+dnl ******************************
+use_cpp=false
+msg_cpp=no
+AC_ARG_WITH(cpp,      [  --with-cpp=cppexec      use C++ [default=yes]])
+if test "x$with_cpp" != "xno"; then
+	AC_PROG_CXX
+	use_cpp=true
+fi
+AM_CONDITIONAL(WITH_CXX, $use_cpp)
+if $use_cpp; then
+	msg_cpp=yes
+fi
+
 
 dnl ******************************
 dnl readline checking
@@ -374,20 +399,6 @@ fi
 AC_SUBST(RL_CFLAGS)
 AC_SUBST(RL_LIBS)
 
-dnl ******************************
-dnl C++
-dnl ******************************
-use_cpp=false
-msg_cpp=no
-AC_ARG_WITH(cpp,      [  --with-cpp=cppexec      use C++ [default=yes]])
-if test "x$with_cpp" != "xno"; then
-	AC_PROG_CXX
-	use_cpp=true
-fi
-AM_CONDITIONAL(WITH_CXX, $use_cpp)
-if $use_cpp; then
-	msg_cpp=yes
-fi
 
 dnl ******************************
 dnl Perl
@@ -428,6 +439,7 @@ if $use_perl; then
 fi
 AC_SUBST(PERL)
 
+
 dnl ******************************
 dnl Java
 dnl ******************************
@@ -457,6 +469,7 @@ AC_SUBST(JAVA)
 AC_SUBST(JAVAC)
 AC_SUBST(JAR)
 AC_SUBST(JAVABASE)	
+
 
 dnl ******************************
 dnl TCL/ITCL/TK
@@ -640,6 +653,7 @@ if test ! "x$TCL_VERSION" = "x"; then
 fi
 AC_SUBST(TCLEXECS)
 
+
 dnl ******************************
 dnl Python
 dnl ******************************
@@ -727,6 +741,7 @@ else
 	CFLAGS=`echo "$CFLAGS" | sed -e "s/-g //"`
 	CXXFLAGS=`echo "$CXXFLAGS" | sed -e "s/-g //"`
 fi
+
 
 dnl *************************************
 dnl Profiling information
