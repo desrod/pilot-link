@@ -20,9 +20,19 @@ import pisock
 
 port = "/dev/pilot"
 
+
 print "Press HotSync now"
 sd = pisock.pilot_connect(port)
-pisock.dlp_OpenConduit(sd)
+if sd == -1:
+    print "Unable to connect."
+    sys.exit(10)
+
+try:
+    pisock.dlp_OpenConduit(sd)
+except pisock.error, e:
+    print e
+    sys.exit(10)
+    
 print pisock.dlp_ReadUserInfo(sd)
 i = 0
 while True:

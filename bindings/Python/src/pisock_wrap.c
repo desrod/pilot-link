@@ -1116,6 +1116,7 @@ extern int pi_version(int);
 extern int pi_tickle(int);
 extern int pi_watchdog(int,int);
 extern int pi_close(int);
+extern int pi_error(int);
 
 typedef int DLPERROR;
 typedef int DLPDBERROR;
@@ -1890,6 +1891,24 @@ static PyObject *_wrap_pi_close(PyObject *self, PyObject *args) {
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)pi_close(arg1);
+    
+    resultobj = SWIG_From_int((int)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_pi_error(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    int arg1 ;
+    int result;
+    PyObject * obj0 = 0 ;
+    
+    if(!PyArg_ParseTuple(args,(char *)"O:pi_error",&obj0)) goto fail;
+    arg1 = (int)SWIG_As_int(obj0); 
+    if (PyErr_Occurred()) SWIG_fail;
+    result = (int)pi_error(arg1);
     
     resultobj = SWIG_From_int((int)result);
     return resultobj;
@@ -4946,6 +4965,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"pi_tickle", _wrap_pi_tickle, METH_VARARGS, NULL },
 	 { (char *)"pi_watchdog", _wrap_pi_watchdog, METH_VARARGS, NULL },
 	 { (char *)"pi_close", _wrap_pi_close, METH_VARARGS, NULL },
+	 { (char *)"pi_error", _wrap_pi_error, METH_VARARGS, NULL },
 	 { (char *)"dlp_strerror", _wrap_dlp_strerror, METH_VARARGS, NULL },
 	 { (char *)"dlp_GetSysDateTime", _wrap_dlp_GetSysDateTime, METH_VARARGS, NULL },
 	 { (char *)"dlp_SetSysDateTime", _wrap_dlp_SetSysDateTime, METH_VARARGS, NULL },

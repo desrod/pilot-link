@@ -102,3 +102,5 @@ extern int pi_tickle (int pi_sd);
 extern int pi_watchdog (int pi_sd, int interval);
 
 extern int pi_close (int pi_sd);
+
+extern int pi_error (int pi_sd);

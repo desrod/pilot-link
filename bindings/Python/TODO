@@ -1,9 +1,9 @@
 
 TODO for python-libpisock:
 
+  - add nicer error handling
   - try and make it so we can lose most of the .i files and include
     the headers directly
-  - expose the _pisock.error as pisock.error
   - clean up prc.py from Pyrite/Publisher/palmdb-xml and include it
   - shadow class for pi_file
   - shadow class for DLP connection

@@ -65,6 +65,10 @@ static PyObject *PIError;
   PyDict_SetItemString(d, "error", PIError);
 %}
 
+%pythoncode %{ 
+error = _pisock.error 
+%} 
+
 %include typemaps.i
 %include ../../include/pi-args.h
 

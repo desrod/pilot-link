@@ -30,6 +30,8 @@ except AttributeError:
 del types
 
 
+error = _pisock.error 
+
 
 pilot_connect = _pisock.pilot_connect
 PI_AF_PILOT = _pisock.PI_AF_PILOT
@@ -113,6 +115,8 @@ pi_tickle = _pisock.pi_tickle
 pi_watchdog = _pisock.pi_watchdog
 
 pi_close = _pisock.pi_close
+
+pi_error = _pisock.pi_error
 
 dlp_strerror = _pisock.dlp_strerror
 dlpDBFlagResource = _pisock.dlpDBFlagResource
