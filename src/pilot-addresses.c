@@ -344,10 +344,17 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 
 	struct 	Address addr;
 
-	printf("   Reading CSV entries, writing to Palm Address Book... ");
-	fflush(stdout);
+	int fields = 0; /* Number of fields in this entry */
+	int count = 0; /* Number of entries read */
+	const char *progress = "   Reading CSV entries, writing to Palm Address Book... ";
+
+	if (!plu_quiet) {
+		printf("%s",progress);
+		fflush(stdout);
+	}
 
 	while (!feof(f)) {
+		fields = 0;
 		l = getc(f);
 		if (feof(f) || (l<0)) {
 			break;
@@ -357,7 +364,6 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 			while (!feof(f) && (l!='\n') && (l>=0)) {
 				l = getc(f);
 			}
-			fprintf(stderr, "\n   Ignoring header.\n");
 			continue;
 		} else {
 			ungetc(l,f);
@@ -400,6 +406,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 				}
 				if (buf[0]) {
 					addr.entry[l2] = strdup(buf);
+					++fields;
 				} else {
 					addr.entry[l2] = NULL;
 				}
@@ -414,6 +421,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 			} else {
 				if (buf[0]) {
 					addr.entry[l2] = strdup(buf);
+					++fields;
 				} else {
 					addr.entry[l2] = NULL;
 				}
@@ -442,15 +450,25 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 			}
 		}
 
-		l = pack_Address(&addr, (unsigned char *) buf, sizeof(buf));
-
-		dlp_WriteRecord(sd, db, attribute, 0, category,
-				(unsigned char *) buf, l, 0);
+		if (fields>0) {
+			l = pack_Address(&addr, (unsigned char *) buf, sizeof(buf));
+			dlp_WriteRecord(sd, db, attribute, 0, category,
+					(unsigned char *) buf, l, 0);
+			++count;
+		}
 		free_Address(&addr);
+
+		if (!plu_quiet) {
+			printf("\r%s%d",progress,count);
+			fflush(stdout);
+		}
 
 	}
 
-	printf("done.\n");
+	if (!plu_quiet) {
+		printf("\r%s%d\n   Done.\n",progress,count);
+		fflush(stdout);
+	}
 	return 0;
 }
 
@@ -475,6 +493,9 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	struct 	Address addr;
 	pi_buffer_t *buf;
 
+	int count = 0;
+	const char *progress = "   Writing Palm Address Book entries to file... ";
+
 	/* Print out the header and fields with fields intact. Note we
 	   'ignore' the last field (Private flag) and print our own here, so
 	   we don't have to chop off the trailing comma at the end. Hacky. */
@@ -487,8 +508,11 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		fprintf(out,"### This in an augmented (non-standard) CSV file.\n");
 	}
 
-	printf("   Writing Palm Address Book entries to file... ");
-	fflush(stdout);
+	if (!plu_quiet) {
+		printf("%s",progress);
+		fflush(stdout);
+	}
+
 	buf = pi_buffer_new (0xffff);
 	for (i = 0;
 	     (j =
@@ -530,9 +554,19 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		write_field(out,
 			aai->category.name[category],
 			term_newline);
+
+		++count;
+		if (!plu_quiet) {
+			printf("\r%s%d",progress,count);
+			fflush(stdout);
+		}
 	}
 	pi_buffer_free (buf);
-	printf("done.\n");
+
+	if (!plu_quiet) {
+		printf("\r%s%d\n   Done.\n",progress,count);
+		fflush(stdout);
+	}
 	return 0;
 }
 
