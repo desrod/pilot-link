@@ -87,7 +87,7 @@ int unpack_Address(struct Address *addr, unsigned char *buffer, int len)
 	len 	-= 9;
 
 	/* if(flag & 0x1) { 
-	   addr->lastname = priv_strdup(buffer);
+	   addr->lastname = strdup(buffer);
 	   buffer += strlen(buffer) + 1;
 	   } else {
 	   addr->lastname = 0;
@@ -97,7 +97,7 @@ int unpack_Address(struct Address *addr, unsigned char *buffer, int len)
 		if (contents & (1 << v)) {
 			if (len < 1)
 				return 0;
-			addr->entry[v] = priv_strdup((char *) buffer);
+			addr->entry[v] = strdup((char *) buffer);
 			buffer += strlen((char *) buffer) + 1;
 			len -= strlen(addr->entry[v]) + 1;
 		} else {

@@ -837,7 +837,7 @@ struct pi_file *pi_file_create(char *name, struct DBInfo *info)
 	if ((pf = calloc(1, sizeof *pf)) == NULL)
 		return (NULL);
 
-	if ((pf->file_name = priv_strdup(name)) == NULL)
+	if ((pf->file_name = strdup(name)) == NULL)
 		goto bad;
 
 	pf->for_writing = 1;

@@ -119,7 +119,7 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 
 	if (len < 1)
 		return 0;
-	a->description = priv_strdup((char *) buffer);
+	a->description = strdup((char *) buffer);
 
 	buffer 	+= strlen(a->description) + 1;
 	len 	-= strlen(a->description) + 1;
@@ -129,7 +129,7 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 		a->description = 0;
 		return 0;
 	}
-	a->note = priv_strdup((char *) buffer);
+	a->note = strdup((char *) buffer);
 
 	buffer 	+= strlen(a->note) + 1;
 	len 	-= strlen(a->note) + 1;

@@ -118,46 +118,46 @@ char *dlp_errorlist[] = {
 	"Bad argument size"
 };
 
+/* Look at "Error codes" in VFSMgr.h in the Palm SDK for their
+   implementation */
 char * vfs_errorlist[] = {
 	"No error",
-	"Buffer too small",
-	"No error",
-	"Invalid file reference",
+	"Buffer Overflow",
 	"Generic file error",
-	"Resource is read only",
-	"Resource already exists",
-	"End of file",
+	"File reference is invalid",
+	"File still open",
+	"Permission denied",
 	"File or folder already exists",
-	"Volume reference is invalid",
-	"Volume is still mounted",
+	"FileEOF",
+	"File not found",
 	"volumereference is invalid",
-	"Invalid data",
-	"Unable to delete non-empty directory",
-	"Filename or path invalid",
-	"No space left on volume",
-	"Call not implemented",
-	"Directory required",
-	"Filename (not directory) required",
+	"Volume still mounted",
+	"No filesystem",
+	"Bad data",
+	"Non-empty directory",
+	"Invalid path or filename",
+	"Volume full - not enough space",
+	"Unimplemented",
 	"Not a directory",
-	"Filename truncated"
+	"Is a directory",
 	"Directory not found",
 	"Name truncated"
-char * exp_errorlist[] = {
+};
 
 /* Look at "Error codes" in ExpansionMgr.h in the Palm SDK for their
    implementation */
 char * exp_errorlist[] = {
-	"Slot reference number is bad",
+	"No error",
 	"Unsupported Operation",
-	"Read/write API not supported",
-	"Read/write API supported, but card is read only",
-	"Read/write API supported, but sector is bad",
-	"Read/write API supported, but sector is protected",
-	"Slot driver not open",
-	"Slot driver still opened",
-	"Unimplemented call",
-	"Enumeration list empty",
-	"API version is incompatible"
+	"Not enough Power",
+	"Card not present",
+	"Invalid slotreference number",
+	"Slot deallocated",
+	"Card no sector read/write",
+	"Card read only",
+	"Card bad sector",
+	"Protected sector",
+	"Not open (slot driver)",
 	"still open (slot driver)",
 	"Unimplemented",
 	"Enumeration empty",
@@ -872,7 +872,7 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    " Modification date: %s", ctime(&info->modifyDate)));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
-	
+		    " Backup date: %s", ctime(&info->backupDate)));
 	}
 
 	dlp_response_free (res);
@@ -936,6 +936,18 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	return -1;
 
       found:
+
+	return 0;
+}
+
+
+/***********************************************************************
+ *
+ * Function:	dlp_FindDBByName
+ *
+ * Summary:	Search for a database on the Palm by explicit name
+ *
+ * Parameters:	None
  *
  * Returns:	Nothing
  *
@@ -1028,6 +1040,17 @@ int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, in
 	}
 	
 	dlp_response_free(res);
+	
+	return result;	
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_FindDBByOpenHandle
+ *
+ * Summary:     Search for a database on the Palm by database handle
+ *
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1119,6 +1142,17 @@ int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *lo
 	}
 	
 	dlp_response_free(res);
+	
+	return result;	
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_FindDBByTypeCreator
+ *
+ * Summary:     Search for a database on the Palm by CreatorID
+ *
+ * Parameters:  None
  *
  * Returns:     Creator ID in 'result'
  *
@@ -1165,7 +1199,7 @@ int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, 
 		if (localid)
 			*localid = get_long(DLP_RESPONSE_DATA(res, 0, 2));
 		if (dbhandle)
-			info->miscFlags = get_byte(DLP_RESPONSE_DATA(res, 0, 11));
+			*dbhandle = get_long(DLP_RESPONSE_DATA(res, 0, 6));
 		
 		if (info) {
 			info->more = 0;
@@ -1432,7 +1466,6 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		set_long(DLP_REQUEST_DATA(req, 0, 14), 0);
 		set_long(DLP_REQUEST_DATA(req, 0, 18), 0);
 
-
 		if (length + 22 > DLP_BUF_SIZE) {
 			fprintf(stderr, "Data too large\n");
 			return -131;
@@ -1476,7 +1509,6 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		set_long(DLP_REQUEST_DATA(req, 0, 0), creator);
 		set_short(DLP_REQUEST_DATA(req, 0, 4), action);
 		set_short(DLP_REQUEST_DATA(req, 0, 6), length);
-
 
 		if (length + 8 > DLP_BUF_SIZE) {
 			fprintf(stderr, "Data too large\n");
@@ -2418,10 +2450,10 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
+	Trace(WriteRecord);
 
 	if (length == -1)
 		length = strlen((char *) data) + 1;
-
 
 	if (length + 8 > DLP_BUF_SIZE) {
 		fprintf(stderr, "Data too large\n");
@@ -3291,7 +3323,6 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 		set_byte(DLP_REQUEST_DATA(req, 0, 10), backup ? 0x80 : 0);
 		set_byte(DLP_REQUEST_DATA(req, 0, 11), 0); 	/* Reserved */
 
-
 		if (size + 12 > DLP_BUF_SIZE) {
 			fprintf(stderr, "Data too large\n");
 			return -131;
@@ -3651,7 +3682,7 @@ int dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP ExpSlotEnumerate %d\n", slots));
 
-				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "  %d Slot refnum %d\n", i, firstRef[i]));
+		if (slots) {
 			for (i = 0; i < slots && i < *len; i++) {
 				firstRef[i] =  get_short(DLP_RESPONSE_DATA (res, 0, 2 + (2 * i)));
 
@@ -3780,7 +3811,7 @@ int dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir, int
 		} else {
 			strcpy(dir,"");
 		}
-		     "Default directory is %s\n", dir));
+		
 		*len = buflen;
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -3925,7 +3956,7 @@ int dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode,
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-		"Open file %s, mode: %x VFSRef 0x%x\n",
+	
 	Trace(VFSFileOpen);
 	
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -3980,7 +4011,7 @@ int dlp_VFSFileClose(int sd, FileRef fileRef)
 
 	result = dlp_exec(sd, req, &res);
 
-		"Closed file ref: %x\n", fileRef));
+	dlp_request_free(req);
 	dlp_response_free(res);
 	
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -4007,7 +4038,7 @@ int dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, int len)
 		respondlength;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-		"Write to file ref: %x bytes %d\n", fileRef, len));
+	
 	Trace(dlp_VFSFileWrite);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -4467,7 +4498,7 @@ int dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 		if (result) {
 			entries = get_long(DLP_RESPONSE_DATA (res, 0, 4));
 		} else {
-		     "%d results returned (ilterator: %d)\n", entries,
+			entries = 0;
 		}
 	
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -4482,7 +4513,8 @@ int dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 				data[at].attr = get_long(DLP_RESPONSE_DATA (res, 0, 0) + from);
 				strncpy(data[at].name, DLP_RESPONSE_DATA(res, 0, from + 4),
 					vfsMAXFILENAME);
-			/* Even-length strings will be NUL terminated + pad byte. */
+				data[at].name[vfsMAXFILENAME-1] = 0;
+				count++;
 			}
 	
 			/* Zero terminated string. Strings that have an even length
@@ -4522,11 +4554,10 @@ int dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-		"VFSVolumeFormat version %x != 0101 \n",
+	
 	Trace(VFSVolumeFormat);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-
 		"VFSVolumeFormat Ver-check %x != 0101 \n",
 			pi_version(sd)));
 	

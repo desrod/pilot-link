@@ -1417,7 +1417,7 @@ int unpack_PalmPix (struct PalmPixState *s,
 	
 	for (k = 0; k < 4; k++) 
 	  {
-	     unsigned long nbytes, offset;
+	     long nbytes, offset;
 	     int32_t lastWord = 0;
 	     int j;
 	     

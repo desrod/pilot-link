@@ -33,10 +33,10 @@
 
 #ifdef WIN32
 #include <winsock.h>
-#include <fcntl.h>
 #include <io.h>
 #else
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>		/* Needed for Redhat 6.x machines */
@@ -217,6 +217,7 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	serv_addr.sin_port = htons(14238);
 
 	sd = socket(AF_INET, SOCK_STREAM, 0);
+	fcntl(sd, F_SETFL, O_NONBLOCK);
 	if (sd < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
 		    "DEV CONNECT Inet: Unable to create socket\n"));

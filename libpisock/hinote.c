@@ -58,7 +58,7 @@ int unpack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
 		return 0;
 	a->flags 	= buffer[0];
 	a->level 	= buffer[1];
-	a->text 	= priv_strdup((char *) &buffer[2]);
+	a->text 	= strdup((char *) &buffer[2]);
 	return strlen((char *) &buffer[2]) + 3;
 }
 

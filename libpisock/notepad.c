@@ -130,7 +130,7 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
    if( a->flags & NOTEPAD_FLAG_NAME )
      {
 /*	fprintf( stderr, "Getting Name\n" ); */
-	a->name = priv_strdup((char *) buffer);
+	a->name = strdup((char *) buffer);
    
 	buffer += strlen( a->name ) + 1;
 	

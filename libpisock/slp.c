@@ -29,8 +29,8 @@
 #include <winsock.h>
 #endif
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
@@ -43,9 +43,9 @@
 #include "pi-slp.h"
 
 static int slp_getsockopt(struct pi_socket *ps, int level, int option_name, 
-			  void *option_value, int *option_len);
+			  void *option_value, size_t *option_len);
 static int slp_setsockopt(struct pi_socket *ps, int level, int option_name, 
-			  const void *option_value, int *option_len);
+			  const void *option_value, size_t *option_len);
 
 static struct pi_protocol *slp_protocol_dup (struct pi_protocol *prot)
 {
@@ -326,7 +326,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 static int
 slp_getsockopt(struct pi_socket *ps, int level, int option_name, 
-	       void *option_value, int *option_len)
+	       void *option_value, size_t *option_len)
 {
 	struct 	pi_protocol *prot;
 	struct 	pi_slp_data *data;
@@ -402,7 +402,7 @@ slp_getsockopt(struct pi_socket *ps, int level, int option_name,
 
 static int
 slp_setsockopt(struct pi_socket *ps, int level, int option_name, 
-	       const void *option_value, int *option_len)
+	       const void *option_value, size_t *option_len)
 {
 	struct 	pi_protocol *prot;
 	struct 	pi_slp_data *data;

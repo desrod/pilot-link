@@ -86,19 +86,19 @@ int crc16(unsigned char *ptr, int count)
 	return (crc & 0xFFFF);
 }
 
+#ifndef HAVE_STRDUP
 /***********************************************************************
  *
- * Function:    priv_strdup
+ * Function:	strdup
  *
- * Summary:     Duplicate a string. strdup() isn't available on all
- *		platforms, so we provide our own here.
+ * Summary:	Duplicate a string
  *
- * Parameters:  None
+ * Parameters:	None   
  *
- * Returns:     String or NULL
+ * Returns:	String or NULL
  *
  ***********************************************************************/
-char *priv_strdup(const char *s)
+char *strdup(const char *s)
 {
         char *result;
         size_t size = strlen(s) + 1;
@@ -111,6 +111,7 @@ char *priv_strdup(const char *s)
 
         return result;
 }
+#endif
 
 #ifndef HAVE_PUTENV
 

@@ -157,7 +157,7 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 	int 	bytes;
 	struct 	pi_protocol *prot, *next;
 	struct 	pi_net_data *data;
-	unsigned char buf[PI_NET_HEADER_LEN];
+	unsigned char *buf;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
@@ -168,24 +168,26 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 		return -1;
 
 	/* Create the header */
+	buf = (unsigned char *) malloc(PI_NET_HEADER_LEN + len);
 	buf[PI_NET_OFFSET_TYPE] = data->type;
 	if (data->type == PI_NET_TYPE_TCKL)
 		buf[PI_NET_OFFSET_TXID] = 0xff;
 	else
 		buf[PI_NET_OFFSET_TXID] = data->txid;
 	set_long(&buf[PI_NET_OFFSET_SIZE], len);
+	memcpy(&buf[PI_NET_HEADER_LEN], msg, len);
 
 	/* Write the header and body */
-	bytes = next->write(ps, buf, PI_NET_HEADER_LEN, flags);
-	if (bytes < PI_NET_HEADER_LEN)
+	bytes = next->write(ps, buf, PI_NET_HEADER_LEN + len, flags);
+	if (bytes < (PI_NET_HEADER_LEN + len)) {
+		free(buf);
 		return bytes;
-	bytes = next->write(ps, msg, len, flags);
-	if (bytes < len)
-		return bytes;
+	}
 
 	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1));
 	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, dumpdata(msg, len));
 	
+	free(buf);
 	return len;
 }
 
