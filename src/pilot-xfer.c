@@ -453,7 +453,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		if (only_changed) {
 			if (stat(name, &statb) == 0) {
 				if (info.modifyDate == statb.st_mtime) {
-					printf("No change, skipping '%s'\r", info.name);
+					printf("No change, skipping %-35.30s\r", info.name);
 					RemoveFromList(name, orig_files, ofile_total);
 					fflush(stdout);
 					continue;
@@ -463,10 +463,11 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 
 		if (only_changed) {
 			printf("[%-3d] Synchronizing %-35.30s", filecount, name); 
+			fflush(stdout);
 		} else {
 			printf("[%-3d] Backing up %-35.30s", filecount, name);
+			fflush(stdout);
 		}
-		fflush(stdout);
 		filecount++;
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
@@ -481,7 +482,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("\nFailed, unable to back up database %s\n", name);
 		} else if (stat(name, &sbuf) == 0) {
-			printf("[%7ld bytes/%3d kb total]", sbuf.st_size, totalsize/1024);
+			printf("[%7ld bytes/%4d kb total]", sbuf.st_size, totalsize/1024);
 			totalsize += sbuf.st_size;
 		}
 
