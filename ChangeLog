@@ -1,5 +1,10 @@
 2002-01-05  JP Rosevear  <jpr@ximian.com>
 
+	* configure.in: use AC_PATH_PROGS rather than AC_PATH_PROG in the
+	python check
+
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+	
 	* tools/Perl5/Makefile.PL.in: look for library where its built
 
 	* tools/Makefile.am: roll rules to build perl and python from here

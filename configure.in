@@ -584,7 +584,7 @@ msg_python=no
 AC_ARG_WITH(python,   [  --with-python=pylibbase use Python  [default=yes]])
 
 if test "x$with_python" != "xno"; then
-        AC_PATH_PROG(PYTHON, [python2 python])
+        AC_PATH_PROGS(PYTHON, [python2 python])
 	if test "x$PYTHON" != "x"; then
 		use_python=true
 	fi
