@@ -1,3 +1,33 @@
+05-27-2001
+	
+	* Full VFS support in libpisock for pilot-xfer -b, dlpsh, and
+	  friends.
+
+	* install-hinote duplicate note detection, export of notes from
+	  Hi-NoteDB.pdb into desktop text files. Can we easily handle
+	  images?
+
+	* Notepad support? pilot-notepad? We have to logically bind the
+	  notes and images together as a "pair" which can be sync'd to the
+	  desktop and back to the Palm from the desktop.
+
+	* Argument handling needs gutted and rewritten from the ground up
+	  (getopt(), longopt(), getopt_long() and friends)
+
+	* Fix the broken readline support 
+
+	* Standard output format for the "4 Magic Buttons". XML? CSV? 
+
+	* File size reported on all pilot-xfer'style syncs, ala: 
+
+	  Backing up './Small Icon EditorSSle.prc'...(2192 bytes,  OK)
+	  Backing up './ScreenDepthSSle.prc'.........(34982 bytes, OK)
+
+	* pilot-xfer --daemon. Would be a good test to get it listening on a
+	  port in a non-scripted hacky way. All applications which return
+	  should have this functionality. Interactive applications should be
+	  left alone.
+
 10-15-2000
 
 	* Fix the C++ test(s) in ./configure, and roll all of this
