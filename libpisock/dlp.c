@@ -66,21 +66,6 @@
 #include "pi-syspkt.h"
 #include "pi-error.h"
 
-#define PI_DLP_OFFSET_CMD  0
-#define PI_DLP_OFFSET_ARGC 1
-#define PI_DLP_OFFSET_ARGV 2
-
-#define PI_DLP_ARG_TINY_LEN  0x000000FFL
-#define PI_DLP_ARG_SHORT_LEN 0x0000FFFFL
-#define PI_DLP_ARG_LONG_LEN  0xFFFFFFFFL
-
-#define PI_DLP_ARG_FLAG_TINY  0x00
-#define PI_DLP_ARG_FLAG_SHORT 0x80
-#define PI_DLP_ARG_FLAG_LONG  0x40
-#define PI_DLP_ARG_FLAG_MASK  0xC0
-
-#define PI_DLP_ARG_FIRST_ID 0x20
-
 #define DLP_REQUEST_DATA(req, arg, offset) &req->argv[arg]->data[offset]
 #define DLP_RESPONSE_DATA(res, arg, offset) &res->argv[arg]->data[offset]
 
@@ -894,8 +879,15 @@ void
 dlp_htopdate(time_t ti, unsigned char *data)
 {				/* @+ptrnegate@ */
 	int 	year;
-	const struct tm *t = localtime(&ti);
+	const struct tm *t;
 
+	if (ti == 0x83DAC000)	/* Fri Jan  1 00:00:00 1904 GMT */
+	{
+		memset(data, 0, 8);
+		return;
+	}
+
+	 t = localtime(&ti);
 	ASSERT(t != NULL);
 
 	year = t->tm_year + 1900;
@@ -1272,6 +1264,17 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 }
 
 
+/***************************************************************************
+ *
+ * Function:    dlp_FindDBInfo
+ *
+ * Summary:     Search for a database on the Palm
+ *
+ * Parameters:  None
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***************************************************************************/
 int
 dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 	       unsigned long type, unsigned long creator,
@@ -3415,7 +3418,7 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
  *
  ***************************************************************************/
 int
-dlp_ReadAppBlock(int sd, int fHandle, int offset, int reqbytes, pi_buffer_t *retbuf)
+dlp_ReadAppBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *retbuf)
 {
 	int 	result,
 		data_len;
@@ -3432,7 +3435,7 @@ dlp_ReadAppBlock(int sd, int fHandle, int offset, int reqbytes, pi_buffer_t *ret
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), offset);
 	set_short(DLP_REQUEST_DATA(req, 0, 4), reqbytes);
@@ -3478,7 +3481,7 @@ dlp_ReadAppBlock(int sd, int fHandle, int offset, int reqbytes, pi_buffer_t *ret
  *
  ***************************************************************************/
 int
-dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
+dlp_WriteAppBlock(int sd, int dbhandle, const /* @unique@ */ void *data,
       size_t length)
 {
 	int 	result;
@@ -3492,7 +3495,7 @@ dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), length);
 
@@ -3502,7 +3505,8 @@ dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 		pi_set_error(sd, PI_ERR_DLP_DATASIZE);
 		return -131;
 	}
-	memcpy(DLP_REQUEST_DATA(req, 0, 4), data, length);
+	if (length)
+		memcpy(DLP_REQUEST_DATA(req, 0, 4), data, length);
 
 	result = dlp_exec(sd, req, &res);
 
@@ -3527,7 +3531,7 @@ dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
  *
  ***************************************************************************/
 int
-dlp_ReadSortBlock(int sd, int fHandle, int offset, int reqbytes, pi_buffer_t *retbuf)
+dlp_ReadSortBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *retbuf)
 {
 	int 	result,
 		data_len;
@@ -3544,7 +3548,7 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, int reqbytes, pi_buffer_t *re
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), offset);
 	set_short(DLP_REQUEST_DATA(req, 0, 4), reqbytes);
@@ -3590,7 +3594,7 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, int reqbytes, pi_buffer_t *re
  *
  ***************************************************************************/
 int
-dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
+dlp_WriteSortBlock(int sd, int dbhandle, const /* @unique@ */ void *data,
 		       size_t length)
 {
 	int 	result;
@@ -3604,7 +3608,7 @@ dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), length);
 
@@ -3638,7 +3642,7 @@ dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
  *
  ***************************************************************************/
 int
-dlp_CleanUpDatabase(int sd, int fHandle)
+dlp_CleanUpDatabase(int sd, int dbhandle)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3651,7 +3655,7 @@ dlp_CleanUpDatabase(int sd, int fHandle)
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 
 	result = dlp_exec(sd, req, &res);
 	
