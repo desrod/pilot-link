@@ -208,7 +208,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 					flags = 0;
 					break;
 				} else {
-					fprintf(stderr, "\n   Weird packet (port speed problem?)\n");
+					fprintf(stderr, "\n   Unexpected packet (possible port speed problem? out of sync packet?)\n");
 					/* Got unknown packet */
 					/* Don't consume packet */
 					errno = EIO;
