@@ -52,8 +52,8 @@ static int so_read(struct pi_socket *ps, int timeout);
 int
 pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
-	HANDLE fd;
-	char *tty = addr->pi_device;
+	HANDLE 	fd;
+	char 	*tty 	= addr->pi_device;
 
 	/* open the device */
 	if ((!tty) || !strlen(tty))
@@ -99,7 +99,7 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
  ***********************************************************************/
 int so_changebaud(struct pi_socket *ps)
 {
-	HANDLE fd = (HANDLE) ps->mac->fd;
+	HANDLE 	fd 	= (HANDLE) ps->mac->fd;
 
 	return win_changebaud(fd, ps->rate);
 }
@@ -117,9 +117,9 @@ int so_changebaud(struct pi_socket *ps)
  ***********************************************************************/
 static int win_changebaud(HANDLE fd, int rate)
 {
-	BOOL rc;
+	BOOL 	rc;
 	COMMTIMEOUTS ctmoCommPort;
-	DCB dcbCommPort;
+	DCB 	dcbCommPort;
 
 	/* Initialize queue size */
 	SetupComm(fd, 4096, 4096);
@@ -302,10 +302,10 @@ static int so_read(struct pi_socket *ps, int timeout)
  ***********************************************************************/
 int win_peek(struct pi_socket *ps, int timeout)
 {
-	int 	time = timeout;
+	int 	time 		= timeout;
 	COMSTAT comstat;
-	DWORD error;
-	HANDLE hCommPort = (HANDLE) ps->mac->fd;
+	DWORD 	error;
+	HANDLE 	hCommPort 	= (HANDLE) ps->mac->fd;
 
 /*  win_changebaud(hCommPort, 9600);  */
 

@@ -40,21 +40,21 @@ int
 unpack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
 		       int len)
 {
-	int 	i,
-		r;
+	int 	idx,
+		rec;
 
 	if (len < 2 + 16 * 16 + 16 + 4)
 		return 0;
-	r = get_short(record);
-	for (i = 0; i < 16; i++) {
-		if (r & (1 << i))
-			ai->renamed[i] = 1;
+	rec = get_short(record);
+	for (idx = 0; idx < 16; idx++) {
+		if (rec & (1 << idx))
+			ai->renamed[idx] = 1;
 		else
-			ai->renamed[i] = 0;
+			ai->renamed[idx] = 0;
 	}
 	record += 2;
-	for (i = 0; i < 16; i++) {
-		memcpy(ai->name[i], record, 16);
+	for (idx = 0; idx < 16; idx++) {
+		memcpy(ai->name[idx], record, 16);
 		record += 16;
 	}
 	memcpy(ai->ID, record, 16);
@@ -79,8 +79,8 @@ int
 pack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
 		     int len)
 {
-	int 	i,
-		r;
+	int 	idx,
+		rec;
 	
 	unsigned char *start = record;
 
@@ -89,15 +89,15 @@ pack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
 	}
 	if (len < (2 + 16 * 16 + 16 + 4))
 		return 0;	/* not enough room */
-	r = 0;
-	for (i = 0; i < 16; i++) {
-		if (ai->renamed[i])
-			r |= (1 << i);
+	rec = 0;
+	for (idx = 0; idx < 16; idx++) {
+		if (ai->renamed[idx])
+			rec |= (1 << idx);
 	}
-	set_short(record, r);
+	set_short(record, rec);
 	record += 2;
-	for (i = 0; i < 16; i++) {
-		memcpy(record, ai->name[i], 16);
+	for (idx = 0; idx < 16; idx++) {
+		memcpy(record, ai->name[idx], 16);
 		record += 16;
 	}
 	memcpy(record, ai->ID, 16);

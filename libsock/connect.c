@@ -31,7 +31,8 @@ int pilot_connect(const char *port);
 
 int pilot_connect(const char *port) 
 {
-	int 	sd, result;
+	int 	sd, 
+		result;
 	struct 	pi_sockaddr addr;
 
 	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {

@@ -67,12 +67,12 @@
 int crc16(unsigned char *ptr, int count)
 {
 	int 	crc,
-		i;
+		idx;
 
 	crc = 0;
 	while (--count >= 0) {
 		crc = crc ^ (int) *ptr++ << 8;
-		for (i = 0; i < 8; ++i)
+		for (idx = 0; idx < 8; ++idx)
 			if (crc & 0x8000)
 				crc = crc << 1 ^ 0x1021;
 			else
@@ -95,8 +95,8 @@ int crc16(unsigned char *ptr, int count)
  ***********************************************************************/
 char *strdup(const char *string)
 {
-	size_t length;
-	char *result;
+	size_t 	length;
+	char 	*result;
 
 	assert(string != NULL);
 
@@ -136,9 +136,9 @@ extern char **environ;
  ***********************************************************************/
 int putenv(const char *string)
 {
-	const char *const name_end = strchr(string, '=');
-	register size_t size;
-	register char **ep;
+	const char 	*const name_end = strchr(string, '=');
+	register 	size_t size;
+	register 	char **ep;
 
 	if (name_end == NULL) {
 		/* Remove the variable from the environment.  */
@@ -201,16 +201,17 @@ int putenv(const char *string)
 int inet_aton(const char *cp, struct in_addr *addr)
 {
 	register u_long val;
-	register int base, n;
-	register char c;
-	u_int parts[4];
-	register u_int *pp = parts;
+	register int 	base;
+	register int	n;
+	register char 	c;
+	u_int 		parts[4];
+	register u_int 	*pp = parts;
 
 	for (;;) {
 		/* Collect number up to ``.''. Values are specified as for
 		   C: 0x=hex, 0=octal, other=decimal. */
-		val = 0;
-		base = 10;
+		val 	= 0;
+		base 	= 10;
 		if (*cp == '0') {
 			if (*++cp == 'x' || *cp == 'X')
 				base = 16, cp++;
@@ -292,8 +293,8 @@ char *printlong(unsigned long val)
 
 unsigned long makelong(char *c)
 {
-	char c2[4];
-	int l = strlen(c);
+	int 	l 	= strlen(c);
+	char 	c2[4];
 
 	if (l >= 4)
 		return get_long(c);
@@ -304,24 +305,24 @@ unsigned long makelong(char *c)
 
 void dumpline(const unsigned char *buf, int len, int addr)
 {
-	int 	i;
+	int 	idx;
 
 	pi_log(PI_DBG_NONE, PI_DBG_LVL_NONE, "  %.4x  ", addr);
 
-	for (i = 0; i < 16; i++) {
+	for (idx = 0; idx < 16; idx++) {
 
-		if (i < len)
+		if (idx < len)
 			pi_log(PI_DBG_NONE, PI_DBG_LVL_NONE, "%.2x ",
-			       0xff & (unsigned int) buf[i]);
+			       0xff & (unsigned int) buf[idx]);
 		else
 			pi_log(PI_DBG_NONE, PI_DBG_LVL_NONE, "   ");
 	}
 
 	pi_log(PI_DBG_NONE, PI_DBG_LVL_NONE, "  ");
 
-	for (i = 0; i < len; i++) {
-		if (isprint(buf[i]) && (buf[i] >= 32) && (buf[i] <= 126))
-			pi_log(PI_DBG_NONE, PI_DBG_LVL_NONE, "%c", buf[i]);
+	for (idx = 0; idx < len; idx++) {
+		if (isprint(buf[idx]) && (buf[idx] >= 32) && (buf[idx] <= 126))
+			pi_log(PI_DBG_NONE, PI_DBG_LVL_NONE, "%c", buf[idx]);
 		else
 			pi_log(PI_DBG_NONE, PI_DBG_LVL_NONE, ".");
 	}
@@ -330,20 +331,18 @@ void dumpline(const unsigned char *buf, int len, int addr)
 
 void dumpdata(const unsigned char *buf, int len)
 {
-	int 	i;
+	int 	idx;
 
-	for (i = 0; i < len; i += 16)
-		dumpline(buf + i, ((len - i) > 16) ? 16 : len - i, i);
+	for (idx = 0; idx < len; idx += 16)
+		dumpline(buf + idx, ((len - idx) > 16) ? 16 : len - idx, idx);
 }
 
 double get_float(void *buffer)
 {
 	unsigned char *buf = buffer;
-
-	/* Load values */
+	int 	exp 	= get_sshort(buf + 4),
+		sign 	= get_byte(buf + 6);
 	unsigned long frac = get_long(buf);
-	int exp = get_sshort(buf + 4);
-	int sign = get_byte(buf + 6);
 
 	return ldexp(sign ? (double) frac : -(double) frac, exp);
 }
@@ -352,16 +351,15 @@ void set_float(void *buffer, double value)
 {
 	int 	exp, 
 		sign;
-
 	unsigned char *buf = buffer;
 	unsigned long frac;
 
 	/* Take absolute */
 	if (value < 0) {
-		sign = 0;
-		value = -value;
+		sign 	= 0;
+		value 	= -value;
 	} else
-		sign = 0xFF;
+		sign 	= 0xFF;
 
 	/* Convert mantissa to 32-bit integer, and take exponent */
 	frac = (unsigned long) ldexp(frexp(value, &exp), 32);
@@ -376,25 +374,25 @@ void set_float(void *buffer, double value)
 
 int compareTm(struct tm *a, struct tm *b)
 {
-	int 	d;
+	int 	date;
 
-	d = a->tm_year - b->tm_year;
-	if (d)
-		return d;
-	d = a->tm_mon - b->tm_mon;
-	if (d)
-		return d;
-	d = a->tm_mday - b->tm_mday;
-	if (d)
-		return d;
-	d = a->tm_hour - b->tm_hour;
-	if (d)
-		return d;
-	d = a->tm_min - b->tm_min;
-	if (d)
-		return d;
-	d = a->tm_sec - b->tm_sec;
-	return d;
+	date = a->tm_year - b->tm_year;
+	if (date)
+		return date;
+	date = a->tm_mon - b->tm_mon;
+	if (date)
+		return date;
+	date = a->tm_mday - b->tm_mday;
+	if (date)
+		return date;
+	date = a->tm_hour - b->tm_hour;
+	if (date)
+		return date;
+	date = a->tm_min - b->tm_min;
+	if (date)
+		return date;
+	date = a->tm_sec - b->tm_sec;
+	return date;
 }
 
 #ifdef OS2
@@ -403,7 +401,7 @@ int compareTm(struct tm *a, struct tm *b)
    dist appears to be busted when called from inside a DLL. (MJJ) */
 char *getenv(const char *envar)
 {
-	APIRET rc;
+	APIRET 	rc;
 	unsigned char *envstring;
 
 	/* just call the OS/2 function directly */

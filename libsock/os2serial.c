@@ -62,10 +62,11 @@ static int so_read(struct pi_socket *ps, int timeout);
 int
 pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
-	int rc;
-	HFILE fd;
+	int 	rc,
+		filesize = 0;
+	HFILE 	fd;
 	unsigned long action;
-	int filesize = 0;
+
 	char *tty = addr->pi_device;
 
 	if ((!tty) || !strlen(tty))
@@ -118,17 +119,17 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 		return (-1);
 	}
 
-	ps->mac->fd = _imphandle(fd);			/* Let EMX know about this handle */
-	ps->mac->fd = dup2(ps->mac->fd, ps->sd);	/* Substitute serial connection for
-							   original NUL handle */
+	ps->mac->fd 		= _imphandle(fd);		/* Let EMX know about this handle */
+	ps->mac->fd 		= dup2(ps->mac->fd, ps->sd);	/* Substitute serial connection for
+								   original NUL handle */
 
 	so_changebaud(ps);
 	pi_socket_set_timeout(ps, -1, 60000);
 
-	ps->serial_close = so_close;
-	ps->serial_read = so_read;
-	ps->serial_write = so_write;
-	ps->serial_changebaud = so_changebaud;
+	ps->serial_close 	= so_close;
+	ps->serial_read 	= so_read;
+	ps->serial_write 	= so_write;
+	ps->serial_changebaud 	= so_changebaud;
 
 #ifndef NO_SERIAL_TRACE
 	if (ps->debuglog) {
@@ -161,8 +162,8 @@ struct STR_EXTSETBAUDRATE {
  ***********************************************************************/
 static int so_changebaud(struct pi_socket *ps)
 {
-	int param_length;
-	int rc;
+	int 	param_length,
+		rc;
 	unsigned char linctrl[3] = { 8, 0, 0 };
 	struct STR_EXTSETBAUDRATE extsetbaudrate;
 
@@ -265,9 +266,10 @@ static int
 pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 		      int write_timeout)
 {
-	int param_length, ret_len;
-	int rc;
-	int newtimeout;
+	int 	param_length,
+		ret_len,
+		rc,
+		newtimeout;
 	DCBINFO devinfo;
 
 	if ((ps->os2_read_timeout == read_timeout || read_timeout == -1)
@@ -362,13 +364,14 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
  ***********************************************************************/
 static int so_write(struct pi_socket *ps)
 {
-	struct pi_skb *skb;
-	int nwrote, len;
+	int 	nwrote,
+		len;
+	struct 	pi_skb *skb;
 
 #ifndef NO_SERIAL_TRACE
-	int i;
+	int 	idx;
 #endif
-	int rc;
+	int 	rc;
 
 	if (ps->txq) {
 
@@ -388,9 +391,9 @@ static int so_write(struct pi_socket *ps)
 		}
 #ifndef NO_SERIAL_TRACE
 		if (ps->debuglog)
-			for (i = 0; i < skb->len; i++) {
+			for (idx = 0; idx < skb->len; idx++) {
 				write(ps->debugfd, "2", 1);
-				write(ps->debugfd, skb->data + i, 1);
+				write(ps->debugfd, skb->data + idx, 1);
 			}
 #endif
 		ps->tx_bytes += skb->len;
@@ -416,13 +419,13 @@ static int so_write(struct pi_socket *ps)
  ***********************************************************************/
 static int so_read(struct pi_socket *ps, int timeout)
 {
-	int r;
+	int 	r;
 	unsigned char *buf;
 
 #ifndef NO_SERIAL_TRACE
-	int i;
+	int 	idx;
 #endif
-	int rc;
+	int 	rc;
 
 	/* FIXME: if timeout == 0, wait forever for packet, otherwise wait
 	   till timeout milli-seconds */
@@ -458,9 +461,9 @@ static int so_read(struct pi_socket *ps, int timeout)
 			}
 #ifndef NO_SERIAL_TRACE
 			if (ps->debuglog)
-				for (i = 0; i < r; i++) {
+				for (idx = 0; idx < r; idx++) {
 					write(ps->debugfd, "1", 1);
-					write(ps->debugfd, buf + i, 1);
+					write(ps->debugfd, buf + idx, 1);
 				}
 #endif
 			ps->rx_bytes += r;

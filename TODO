@@ -7,6 +7,9 @@ Major Issues
 ------------
 	Open/Pending
 	------------
+	- pilot-xfer does not test for the existance of the target directory
+	  when using '-b <dir>'. Critical. 
+
 	- read-expenses/install-expense doesn't return the string of Type
 	  for 'Train, Airplane', etc.
 

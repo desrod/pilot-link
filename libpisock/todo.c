@@ -89,25 +89,25 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 		return 0;
 	d = (unsigned short int) get_short(buffer);
 	if (d != 0xffff) {
-		a->due.tm_year = (d >> 9) + 4;
-		a->due.tm_mon = ((d >> 5) & 15) - 1;
-		a->due.tm_mday = d & 31;
-		a->due.tm_hour = 0;
-		a->due.tm_min = 0;
-		a->due.tm_sec = 0;
+		a->due.tm_year 	= (d >> 9) + 4;
+		a->due.tm_mon 	= ((d >> 5) & 15) - 1;
+		a->due.tm_mday 	= d & 31;
+		a->due.tm_hour 	= 0;
+		a->due.tm_min 	= 0;
+		a->due.tm_sec 	= 0;
 		a->due.tm_isdst = -1;
 		mktime(&a->due);
-		a->indefinite = 0;
+		a->indefinite 	= 0;
 	} else {
-		a->indefinite = 1;	/* a->due is invalid */
+		a->indefinite 	= 1;	/* a->due is invalid */
 	}
 
 	a->priority = get_byte(buffer + 2);
 	if (a->priority & 0x80) {
-		a->complete = 1;
-		a->priority &= 0x7f;
+		a->complete 	= 1;
+		a->priority 	&= 0x7f;
 	} else {
-		a->complete = 0;
+		a->complete 	= 0;
 	}
 
 	buffer += 3;
@@ -117,8 +117,8 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 		return 0;
 	a->description = strdup((char *) buffer);
 
-	buffer += strlen(a->description) + 1;
-	len -= strlen(a->description) + 1;
+	buffer 	+= strlen(a->description) + 1;
+	len 	-= strlen(a->description) + 1;
 
 	if (len < 1) {
 		free(a->description);
@@ -127,8 +127,8 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 	}
 	a->note = strdup((char *) buffer);
 
-	buffer += strlen(a->note) + 1;
-	len -= strlen(a->note) + 1;
+	buffer 	+= strlen(a->note) + 1;
+	len 	-= strlen(a->note) + 1;
 
 	return (buffer - start);	/* FIXME: return real length */
 }
@@ -146,8 +146,8 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
  ***********************************************************************/
 int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
 {
-	int pos;
-	int destlen = 3;
+	int 	pos,
+		destlen = 3;
 
 	if (a->description)
 		destlen += strlen(a->description);
@@ -207,14 +207,14 @@ int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
 int
 unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 {
-	int i;
+	int 	idx;
 	unsigned char *start = record;
 
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!i)
+	idx = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!idx)
 		return 0;
-	record += i;
-	len -= i;
+	record += idx;
+	len -= idx;
 	if (len < 4)
 		return 0;
 	ai->dirty = get_short(record);
@@ -238,16 +238,16 @@ unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 int
 pack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 {
-	int i;
+	int 	idx;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
+	idx = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return i + 4;
-	if (!i)
+		return idx + 4;
+	if (!idx)
 		return 0;
-	record += i;
-	len -= i;
+	record += idx;
+	len -= idx;
 	if (len < 4)
 		return 0;
 	set_short(record, ai->dirty);

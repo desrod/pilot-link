@@ -38,29 +38,29 @@ static int slp_setsockopt(struct pi_socket *ps, int level, int option_name,
 
 static struct pi_protocol *slp_protocol_dup (struct pi_protocol *prot)
 {
-	struct pi_protocol *new_prot;
-	struct pi_slp_data *data, *new_data;
+	struct 	pi_protocol *new_prot;
+	struct 	pi_slp_data *data, *new_data;
 	
-	new_prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level = prot->level;
-	new_prot->dup = prot->dup;
-	new_prot->free = prot->free;
-	new_prot->read = prot->read;
-	new_prot->write = prot->write;
-	new_prot->getsockopt = prot->getsockopt;
-	new_prot->setsockopt = prot->setsockopt;
+	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
+	new_prot->level 	= prot->level;
+	new_prot->dup 		= prot->dup;
+	new_prot->free 		= prot->free;
+	new_prot->read 		= prot->read;
+	new_prot->write 	= prot->write;
+	new_prot->getsockopt 	= prot->getsockopt;
+	new_prot->setsockopt 	= prot->setsockopt;
 
-	new_data = (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
-	data = (struct pi_slp_data *)prot->data;
-	new_data->dest = data->dest;
-	new_data->last_dest = data->last_dest;	
-	new_data->src = data->src;
-	new_data->last_src = data->last_src;
-	new_data->type = data->type;
-	new_data->last_type = data->last_type;
-	new_data->txid = data->txid;
-	new_data->last_txid = data->last_txid;
-	new_prot->data = new_data;
+	new_data 		= (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
+	data 			= (struct pi_slp_data *)prot->data;
+	new_data->dest 		= data->dest;
+	new_data->last_dest 	= data->last_dest;	
+	new_data->src 		= data->src;
+	new_data->last_src 	= data->last_src;
+	new_data->type 		= data->type;
+	new_data->last_type 	= data->last_type;
+	new_data->txid 		= data->txid;
+	new_data->last_txid 	= data->last_txid;
+	new_prot->data 		= new_data;
 
 	return new_prot;
 }
@@ -73,28 +73,28 @@ static void slp_protocol_free (struct pi_protocol *prot)
 
 struct pi_protocol *slp_protocol (void)
 {
-	struct pi_protocol *prot;
-	struct pi_slp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_slp_data *data;
 
-	prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	prot->level = PI_LEVEL_SLP;
-	prot->dup = slp_protocol_dup;
-	prot->free = slp_protocol_free;
-	prot->read = slp_rx;
-	prot->write = slp_tx;
-	prot->getsockopt = slp_getsockopt;
-	prot->setsockopt = slp_setsockopt;
+	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
+	prot->level 		= PI_LEVEL_SLP;
+	prot->dup 		= slp_protocol_dup;
+	prot->free 		= slp_protocol_free;
+	prot->read 		= slp_rx;
+	prot->write 		= slp_tx;
+	prot->getsockopt 	= slp_getsockopt;
+	prot->setsockopt 	= slp_setsockopt;
 
-	data = (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
-	data->dest = PI_PilotSocketDLP;
-	data->last_dest = -1;	
-	data->src = PI_PilotSocketDLP;
-	data->last_src = -1;
-	data->type = PI_SLP_TYPE_PADP;
-	data->last_type = -1;
-	data->txid = 0xfe;
-	data->last_txid = -1;
-	prot->data = data;
+	data 			= (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
+	data->dest 		= PI_PilotSocketDLP;
+	data->last_dest 	= -1;	
+	data->src 		= PI_PilotSocketDLP;
+	data->last_src 		= -1;
+	data->type 		= PI_SLP_TYPE_PADP;
+	data->last_type 	= -1;
+	data->txid 		= 0xfe;
+	data->last_txid 	= -1;
+	prot->data 		= data;
 	
 	return prot;
 }
@@ -112,13 +112,13 @@ struct pi_protocol *slp_protocol (void)
  ***********************************************************************/
 int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 {
-	struct pi_protocol *prot, *next;
-	struct pi_slp_data *data;
-	struct slp *slp;
+	int 	bytes;
+	struct 	pi_protocol *prot, *next;
+	struct 	pi_slp_data *data;
+	struct 	slp *slp;
 	unsigned char slp_buf[PI_SLP_MTU];
 	unsigned int i;
 	unsigned int n;
-	int bytes;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
@@ -292,8 +292,8 @@ static int
 slp_getsockopt(struct pi_socket *ps, int level, int option_name, 
 	       void *option_value, int *option_len)
 {
-	struct pi_protocol *prot;
-	struct pi_slp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_slp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
@@ -368,8 +368,8 @@ static int
 slp_setsockopt(struct pi_socket *ps, int level, int option_name, 
 	       const void *option_value, int *option_len)
 {
-	struct pi_protocol *prot;
-	struct pi_slp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_slp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
@@ -439,8 +439,8 @@ void slp_dump_header(unsigned char *data, int rxtx)
 
 void slp_dump(unsigned char *data)
 {
-	int s;
+	int 	size;
 
-	s = get_short(&data[PI_SLP_OFFSET_SIZE]);
-	dumpdata(&data[PI_SLP_HEADER_LEN], s);
+	size = get_short(&data[PI_SLP_OFFSET_SIZE]);
+	dumpdata(&data[PI_SLP_HEADER_LEN], size);
 }

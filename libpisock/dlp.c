@@ -110,8 +110,8 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
  /* @modifies *result, exec_buf;@ 	*/
  /* @-predboolint -boolops@ 		*/
 {
-	int i;
-	int err;
+	int 	idx,	
+		err;
 
 	exec_buf[0] = (unsigned char) cmd;
 	if (msg && arg && msglen) {
@@ -120,18 +120,18 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
 		exec_buf[2] = (unsigned char) (arg | 0x80);
 		exec_buf[3] = (unsigned char) 0;
 		set_short(exec_buf + 4, msglen);
-		i = msglen + 6;
+		idx = msglen + 6;
 	} else {
 		exec_buf[1] = (unsigned char) 0;
-		i = 2;
+		idx = 2;
 	}
 
-	if (pi_write(sd, &exec_buf[0], i) < i) {
+	if (pi_write(sd, &exec_buf[0], idx) < idx) {
 		errno = -EIO;
 		return -1;
 	}
 
-	i = pi_read(sd, &exec_buf[0], DLP_BUF_SIZE);
+	idx = pi_read(sd, &exec_buf[0], DLP_BUF_SIZE);
 
 	err = get_short(exec_buf + 2);
 
@@ -150,29 +150,29 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
 
 	/* assume only one return block */
 	if ((exec_buf[4] & 0xC0) == 0xC0) {	/* Long arg */
-		i = get_long(exec_buf + 6);
+		idx = get_long(exec_buf + 6);
 
-		if (i > maxlen)
-			i = maxlen;
+		if (idx > maxlen)
+			idx = maxlen;
 
-		memcpy(result, &exec_buf[10], i);
+		memcpy(result, &exec_buf[10], idx);
 	} else if (exec_buf[4] & 0x80) {	/* Short arg */
-		i = get_short(exec_buf + 6);
+		idx = get_short(exec_buf + 6);
 
-		if (i > maxlen)
-			i = maxlen;
+		if (idx > maxlen)
+			idx = maxlen;
 
-		memcpy(result, &exec_buf[8], i);
+		memcpy(result, &exec_buf[8], idx);
 	} else {		/* Tiny arg */
-		i = (int) exec_buf[5];
+		idx = (int) exec_buf[5];
 
-		if (i > maxlen)
-			i = maxlen;
+		if (idx > maxlen)
+			idx = maxlen;
 
-		memcpy(result, &exec_buf[6], i);
+		memcpy(result, &exec_buf[6], idx);
 	}
 
-	return i;
+	return idx;
 
 	
 	if (res->argv)
@@ -210,15 +210,15 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
  * Returns:     time_t struct to mktime
  *
  ***********************************************************************/
-	t.tm_sec = (int) data[6];
-	t.tm_min = (int) data[5];
-	t.tm_hour = (int) data[4];
-	t.tm_mday = (int) data[3];
-	t.tm_mon = (int) data[2] - 1;
-	t.tm_year = ((data[0] << 8) | data[1]) - 1900;
-	t.tm_wday = 0;
-	t.tm_yday = 0;
-	t.tm_isdst = -1;
+static time_t dlp_ptohdate(unsigned const char *data)
+{
+	struct tm t;
+
+	t.tm_sec 	= (int) data[6];
+	t.tm_min 	= (int) data[5];
+	t.tm_hour 	= (int) data[4];
+	t.tm_mday 	= (int) data[3];
+	t.tm_mon 	= (int) data[2] - 1;
 	t.tm_year 	= ((data[0] << 8) | data[1]) - 1900;
 	t.tm_wday 	= 0;
 	t.tm_yday 	= 0;
@@ -266,13 +266,13 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
  * Parameters:  None
  *
  * Returns:     Nothing
-	struct tm *t = localtime(&time);
-	int y;
+ *
+ ***********************************************************************/
 static void dlp_htopdate(time_t time, unsigned char *data)
 	if (!t)
 		abort();
 	int 	year;
-	y = t->tm_year + 1900;
+	struct 	tm *t = localtime(&time);
 
 	ASSERT(t != 0);
 
@@ -280,8 +280,8 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 
 	data[7] = (unsigned char) 0;	/* packing spacer */
 	data[6] = (unsigned char) t->tm_sec;
-	data[0] = (unsigned char) ((y >> 8) & 0xff);
-	data[1] = (unsigned char) ((y >> 0) & 0xff);
+	data[5] = (unsigned char) t->tm_min;
+	data[4] = (unsigned char) t->tm_hour;
 	data[3] = (unsigned char) t->tm_mday;
 	data[2] = (unsigned char) (t->tm_mon + 1);
 	data[0] = (unsigned char) ((year >> 8) & 0xff);
@@ -301,8 +301,8 @@ static void dlp_htopdate(time_t time, unsigned char *data)
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
+ *
 	unsigned char buf[8];
-	int result;
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -331,8 +331,8 @@ static void dlp_htopdate(time_t time, unsigned char *data)
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
+ *
 	unsigned char buf[8];
-	int result;
 {
 	dlp_htopdate(time, buf);
 	struct dlpRequest *req;
@@ -349,24 +349,23 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 	dlp_response_free(res);
 
 /*  
- *  Begin struct SI
- *
- *  Byte    number		byte(0)
- *  Byte    more		byte(1)
- *  Byte    unused		byte(2)
- *  Byte    count		byte(3)
- *  Byte    totalSize		byte(4)
- *  Byte    cardNo		byte(5)
- *  Word    cardVersion		short(6)
- *  DlpDateTimeType crDate	date(8)
- *  DWord   romSize		long(16)
- *  DWord   ramSize		long(20)
- *  DWord   freeRam		long(24)
- *  Byte    cardNameSize	byte(28)
- *  Byte    cardManufSize	byte(29)
- *  Char[0] cardNameAndManuf	byte(30)
- * 
- *  struct read access 
+   Begin struct SI
+ 
+   Byte    number		byte(0)
+   Byte    more			byte(1)
+   Byte    unused		byte(2)
+   Byte    count		byte(3)
+   Byte    totalSize		byte(4)
+   Byte    cardNo		byte(5)
+   Word    cardVersion		short(6)
+   DlpDateTimeType crDate	date(8)
+   DWord   romSize		long(16)
+   DWord   ramSize		long(20)
+   DWord   freeRam		long(24)
+   Byte    cardNameSize	byte(28)
+   Byte    cardManufSize	byte(29)
+   Char[0] cardNameAndManuf	byte(30)
+   struct read access 
  */
 
 #define SI_number(ptr)				get_byte((ptr)+0)
@@ -388,9 +387,10 @@ static void dlp_htopdate(time_t time, unsigned char *data)
  /* end struct SI */
 
 /* begin struct SIRequest
- *  Byte    cardNo		byte(0)
- *  Byte    unused		byte(1)
- * struct write access */
+   Byte    cardNo	byte(0)
+   Byte    unused	byte(1)
+   struct write access 
+ */
 #define SIRequest_cardNo(ptr,val)		set_byte((ptr)+0,(val))
 #define SIRequest_unused(ptr,val)		set_byte((ptr)+1,(val))
 #define sizeof_SIRequest		(2)
@@ -410,8 +410,9 @@ static void dlp_htopdate(time_t time, unsigned char *data)
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
-	int result;
-	int len1, len2;
+ *
+ ***********************************************************************/
+int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 
 	SIRequest_cardNo(dlp_buf, cardno);
 	SIRequest_unused(dlp_buf, 0);
@@ -426,14 +427,13 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 
 	Expect(sizeof_SI);
 
-	c->more = SI_more(dlp_buf) || (SI_count(dlp_buf) > 1);
-
-	c->card = SI_cardNo(dlp_buf);
-	c->version = SI_cardVersion(dlp_buf);
-	c->creation = SI_crDate(dlp_buf);
-	c->romSize = SI_romSize(dlp_buf);
-	c->ramSize = SI_ramSize(dlp_buf);
-	c->ramFree = SI_freeRam(dlp_buf);
+	c->more 	= SI_more(dlp_buf) || (SI_count(dlp_buf) > 1);
+	c->card 	= SI_cardNo(dlp_buf);
+	c->version 	= SI_cardVersion(dlp_buf);
+	c->creation 	= SI_crDate(dlp_buf);
+	c->romSize 	= SI_romSize(dlp_buf);
+	c->ramSize 	= SI_ramSize(dlp_buf);
+	c->ramFree 	= SI_freeRam(dlp_buf);
 
 	len1 = SI_cardNameSize(dlp_buf);
 	memcpy(c->name, ptr_SI_cardNameAndManuf(dlp_buf, 0), len1);
@@ -474,7 +474,7 @@ static void dlp_htopdate(time_t time, unsigned char *data)
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
-	int result;
+ *
 	struct dlpRequest *req;
 	Trace(ReadSysInfo);
 
@@ -482,12 +482,12 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 
 	Expect(10);
 
-	s->romVersion = get_long(dlp_buf);
-	s->locale = get_long(dlp_buf + 4);
+	s->romVersion 		= get_long(dlp_buf);
+	s->locale 		= get_long(dlp_buf + 4);
 	/* dlp_buf+8 is a filler byte */
-	s->nameLength = get_byte(dlp_buf + 9);
+	s->nameLength 		= get_byte(dlp_buf + 9);
 	memcpy(s->name, dlp_buf + 10, s->nameLength);
-	s->name[s->nameLength] = '\0';
+	s->name[s->nameLength] 	= '\0';
 	set_short (DLP_REQUEST_DATA (req, 0, 0), 0x0001);
 	LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
 	    "DLP Read ROM Version : 0x%8.8lX, Localization ID: 0x%8.8lX\n",
@@ -514,7 +514,7 @@ static void dlp_htopdate(time_t time, unsigned char *data)
  *		otherwise
  *
  ***********************************************************************/
-	int result;
+int
 
 	dlp_buf[0] = (unsigned char) flags;
 	dlp_buf[1] = (unsigned char) cardno;
@@ -547,17 +547,17 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 		info->miscFlags = get_byte(dlp_buf + 5);
 	else
 		info->miscFlags = 0;
-	info->flags = get_short(dlp_buf + 6);
-	info->type = get_long(dlp_buf + 8);
-	info->creator = get_long(dlp_buf + 12);
-	info->version = get_short(dlp_buf + 16);
-	info->modnum = get_long(dlp_buf + 18);
-	info->createDate = get_date(dlp_buf + 22);
-	info->modifyDate = get_date(dlp_buf + 30);
-	info->backupDate = get_date(dlp_buf + 38);
-	info->index = get_short(dlp_buf + 46);
+	info->flags 		= get_short(dlp_buf + 6);
+	info->type 		= get_long(dlp_buf + 8);
+	info->creator 		= get_long(dlp_buf + 12);
+	info->version 		= get_short(dlp_buf + 16);
+	info->modnum 		= get_long(dlp_buf + 18);
+	info->createDate 	= get_date(dlp_buf + 22);
+	info->modifyDate 	= get_date(dlp_buf + 30);
+	info->backupDate 	= get_date(dlp_buf + 38);
+	info->index 		= get_short(dlp_buf + 46);
 	strncpy(info->name, (char *) dlp_buf + 48, 32);
-	info->name[32] = '\0';
+	info->name[32] 		= '\0';
 
 #ifdef DLP_TRACE
 	if (dlp_trace) {
@@ -621,7 +621,7 @@ static void dlp_htopdate(time_t time, unsigned char *data)
  *
  ***********************************************************************/
 int
-	int i;
+	int 	idx;
 	       unsigned long type, unsigned long creator,
 	       struct DBInfo *info)
 {
@@ -630,21 +630,21 @@ int
 	/* This function does not match any DLP layer function, but is
 	   intended as a shortcut for programs looking for databases. It
 	   uses a fairly byzantine mechanism for ordering the RAM databases
-		i = start;
-		while (dlp_ReadDBList(sd, cardno, 0x80, i, info) > 0) {
+		idx = start;
+		while (dlp_ReadDBList(sd, cardno, 0x80, idx, info) > 0) {
 
 	if (start < 0x1000) {
 		i = start;
 		while (dlp_ReadDBList(sd, cardno, 0x80, i, info) >= 0) {
 			if (((!dbname)
 			     || (strcmp(info->name, dbname) == 0))
-			i = info->index + 1;
+			idx = info->index + 1;
 			    && ((!creator)
 				|| (info->creator == creator)))
 				goto found;
 			i = info->index + 1;
-	i = start & 0xFFF;
-	while (dlp_ReadDBList(sd, cardno, 0x40, i, info) > 0) {
+	idx = start & 0xFFF;
+	while (dlp_ReadDBList(sd, cardno, 0x40, idx, info) > 0) {
 	}
 
 	i = start & 0xFFF;
@@ -654,7 +654,7 @@ int
 							     || (info->
 								 creator ==
 								 creator)))
-		i = info->index + 1;
+		idx = info->index + 1;
 			info->index |= 0x1000;
 			goto found;
 		}
@@ -678,11 +678,11 @@ int
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
+ *
 	unsigned char handle;
-	int result;
 
-	dlp_buf[0] = (unsigned char) cardno;
-	dlp_buf[1] = (unsigned char) mode;
+	dlp_buf[0] 	= (unsigned char) cardno;
+	dlp_buf[1] 	= (unsigned char) mode;
 	strcpy((char *) dlp_buf + 2, name);
 {
 	int 	result;
@@ -735,10 +735,10 @@ int
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
+ *
 
-	dlp_buf[0] = (unsigned char) card;
-	dlp_buf[1] = (unsigned char) 0;
+	dlp_buf[0] 	= (unsigned char) card;
+	dlp_buf[1] 	= (unsigned char) 0;
 	strcpy((char *) dlp_buf + 2, name);
 {
 	int 	result;
@@ -773,8 +773,8 @@ int
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
+int
 	unsigned char handle;
-	int result;
 
 	set_long(dlp_buf, creator);
 	set_long(dlp_buf + 4, type);
@@ -849,8 +849,8 @@ int
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
+ *
 	unsigned char handle = (unsigned char) dbhandle;
-	int result;
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -869,7 +869,7 @@ int
 	dlp_response_free(res);
 	
 	return result;
-	int result;
+}
 {
 	Trace(CloseDB_all);
 	struct dlpRequest *req;
@@ -898,8 +898,8 @@ int
  ***********************************************************************/
 int
 dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
-	int result;
-	int version = pi_version(sd);
+	int 	result,	
+		    void *retdata)
 		data_len,
 		version = pi_version(sd);
 		set_long(dlp_buf + 0, creator);
@@ -1020,7 +1020,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
+ *
 {
 	Trace(ResetSystem);
 	struct dlpRequest *req;
@@ -1044,7 +1044,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
+ *
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1078,8 +1078,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
+ *
 	unsigned char buf[2];
-	int result;
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1119,7 +1119,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
+ *
 
 	set_byte(dlp_buf + 0, handle);
 	set_byte(dlp_buf + 1, fromcat);
@@ -1155,7 +1155,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
+ *
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1179,8 +1179,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
-	struct pi_socket *ps;
+ *
+ ***********************************************************************/
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
@@ -1215,7 +1215,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     Return value: A negative number on error, 0 otherwise
-	struct pi_socket *ps;
+ *
  ***********************************************************************/
 #ifdef DLP_TRACE
 	if (dlp_trace) {
@@ -1244,7 +1244,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
+ *
 
 	struct dlpRequest *req;
 	struct dlpResponse *res;
@@ -1291,8 +1291,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise 
-	int result;
-	int userlen;
+ *
+ ***********************************************************************/
 
 		userlen;
 	
@@ -1302,14 +1302,14 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
 	userlen = get_byte(dlp_buf + 28);
 
-	User->userID = get_long(dlp_buf);
-	User->viewerID = get_long(dlp_buf + 4);
-	User->lastSyncPC = get_long(dlp_buf + 8);
+	User->userID 		 = get_long(dlp_buf);
+	User->viewerID 		 = get_long(dlp_buf + 4);
+	User->lastSyncPC 	 = get_long(dlp_buf + 8);
 	User->successfulSyncDate = get_date(dlp_buf + 12);
-	User->lastSyncDate = get_date(dlp_buf + 20);
-	User->passwordLength = get_byte(dlp_buf + 29);
+	User->lastSyncDate 	 = get_date(dlp_buf + 20);
+	User->passwordLength 	 = get_byte(dlp_buf + 29);
 	memcpy(User->username, dlp_buf + 30, userlen);
-	User->username[userlen] = '\0';
+	User->username[userlen]  = '\0';
 	memcpy(User->password, dlp_buf + 30 + userlen,
 	       User->passwordLength);
 	
@@ -1350,8 +1350,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
-	int result;
-	int p;
+	int 	result,
+		p;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
@@ -1402,8 +1402,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
-	int p;
+ *
+		p;
 	int 	result,
 		str_offset = 24;
 	struct dlpRequest *req;
@@ -1459,15 +1459,14 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int i;
+	int 	idx,
+ ***********************************************************************/
+int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
+{
 	int 	i,
 	long 	D0 = 0,
 		A0 = 0;
 	unsigned char *c;
-
-	long D0 = 0, A0 = 0;
-	int err;
-
 	unsigned char dlp_buf[DLP_BUF_SIZE];
 
 	/* RPC through DLP breaks all the rules and isn't well documented to
@@ -1481,15 +1480,15 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
 	set_short(dlp_buf + 4, p->trap);
 	set_long(dlp_buf + 6, D0);
-	for (i = p->args - 1; i >= 0; i--) {
-		set_byte(c, p->param[i].byRef);
+	for (idx = p->args - 1; idx >= 0; idx--) {
+		set_byte(c, p->param[idx].byRef);
 
-		set_byte(c, p->param[i].size);
+		set_byte(c, p->param[idx].size);
 	for (i = p->args - 1; i >= 0; i--) {
-		if (p->param[i].data)
-			memcpy(c, p->param[i].data, p->param[i].size);
-		c += p->param[i].size;
-		if (p->param[i].size & 1)
+		if (p->param[idx].data)
+			memcpy(c, p->param[idx].data, p->param[idx].size);
+		c += p->param[idx].size;
+		if (p->param[idx].size & 1)
 		if (p->param[i].data)
 			memcpy(c, p->param[i].data, p->param[i].size);
 		c += p->param[i].size;
@@ -1512,11 +1511,11 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			err = -2;
 		else if (get_short(dlp_buf + 2))
 			err = -get_short(dlp_buf + 2);
-			for (i = p->args - 1; i >= 0; i--) {
-				if (p->param[i].byRef && p->param[i].data)
-					memcpy(p->param[i].data, c + 2,
-					       p->param[i].size);
-				c += 2 + ((p->param[i].size + 1) & ~1);
+			for (idx = p->args - 1; idx >= 0; idx--) {
+				if (p->param[idx].byRef && p->param[idx].data)
+					memcpy(p->param[idx].data, c + 2,
+					       p->param[idx].size);
+				c += 2 + ((p->param[idx].size + 1) & ~1);
 				if (p->param[i].byRef && p->param[i].data)
 					memcpy(p->param[i].data, c + 2,
 					       p->param[i].size);
@@ -1550,7 +1549,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  *		otherwise 
  *
  ***********************************************************************/
-	int result;
+int
 {
 	int 	result;
 		struct RPC_params p;
@@ -1648,13 +1647,13 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	struct PilotUser U;
-	int err;
+ *
+ ***********************************************************************/
 int dlp_ResetLastSyncPC(int sd)
-	if ((err = dlp_ReadUserInfo(sd, &U)) < 0)
+{
 	int 	err;
-	U.lastSyncPC = 0;
-	return dlp_WriteUserInfo(sd, &U);
+
+		return err;
 
 	User.lastSyncPC = 0;
 
@@ -1670,8 +1669,8 @@ int dlp_ResetLastSyncPC(int sd)
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
-	struct pi_socket *ps;
+ *
+ ***********************************************************************/
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
@@ -1707,7 +1706,9 @@ int dlp_ResetLastSyncPC(int sd)
  *		otherwise
  *
  ***********************************************************************/
-	int result, i, ret;
+	int 	result,
+		idx,
+		ret;
 	unsigned int nbytes;
 	unsigned char *p;
 
@@ -1743,11 +1744,11 @@ int dlp_ResetLastSyncPC(int sd)
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 #endif
 		    "DLP ReadRecordIDList %d IDs:\n", ret));
-	for (i = 0, p = dlp_buf + 2; i < ret; i++, p += 4)
-		IDs[i] = get_long(p);
+	for (idx = 0, p = dlp_buf + 2; idx < ret; idx++, p += 4)
+		IDs[idx] = get_long(p);
 
 	if (count)
-		*count = i;
+		*count = idx;
 
 	return nbytes;
 
@@ -1769,8 +1770,8 @@ int dlp_ResetLastSyncPC(int sd)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
+int
 	unsigned char buf[4];
-	int result;
 {
 	set_byte(dlp_buf, dbhandle);
 	set_byte(dlp_buf + 1, 0);
@@ -1849,8 +1850,8 @@ int dlp_ResetLastSyncPC(int sd)
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
-	int flags = all ? 0x80 : 0;
+ *
+ ***********************************************************************/
 
 	set_byte(dlp_buf, dbhandle);
 	set_byte(dlp_buf + 1, flags);
@@ -1888,8 +1889,8 @@ int dlp_ResetLastSyncPC(int sd)
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
-	int flags = 0x40;
+	int 	result,
+		flags = 0x40;
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1956,7 +1957,7 @@ int dlp_ResetLastSyncPC(int sd)
  *		otherwise
  *
  ***********************************************************************/
-	int result;
+	int 	result;
 
 	set_byte(dlp_buf, fHandle);
 	set_byte(dlp_buf + 1, 0x00);
@@ -2015,7 +2016,7 @@ int dlp_ResetLastSyncPC(int sd)
  *		otherwise
  *
  ***********************************************************************/
-	int result;
+	int 	result;
 
 	set_byte(dlp_buf, fHandle);
 	set_byte(dlp_buf + 1, 0x00);
@@ -2074,7 +2075,7 @@ int dlp_ResetLastSyncPC(int sd)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-	int result;
+int
 	struct dlpRequest *req;
 	set_byte(dlp_buf, dbhandle);
 	set_byte(dlp_buf + 1, 0);
@@ -2123,8 +2124,8 @@ int dlp_ResetLastSyncPC(int sd)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-	int result;
-	int flags = all ? 0x80 : 0;
+int
+dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 
 	set_byte(dlp_buf, dbhandle);
 	set_byte(dlp_buf + 1, flags);
@@ -2161,7 +2162,7 @@ int dlp_ResetLastSyncPC(int sd)
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
-	int result;
+	int 	result;
 
 	set_byte(dlp_buf, fHandle);
 	set_byte(dlp_buf + 1, 0x00);
@@ -2210,7 +2211,7 @@ int dlp_ResetLastSyncPC(int sd)
  *
  * Returns:     A negative number on error, 0 otherwise
  *
-	int result;
+ ***********************************************************************/
 	struct dlpRequest *req;
 	set_byte(dlp_buf, fHandle);
 	set_byte(dlp_buf + 1, 0x00);
@@ -2255,7 +2256,7 @@ int dlp_ResetLastSyncPC(int sd)
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
  *
-	int result;
+	int 	result;
 
 	set_byte(dlp_buf, fHandle);
 	set_byte(dlp_buf + 1, 0x00);
@@ -2302,7 +2303,7 @@ int dlp_ResetLastSyncPC(int sd)
  *
  * Returns:     A negative number on error, 0 otherwise
  *
-	int result;
+ ***********************************************************************/
 	struct dlpRequest *req;
 	set_byte(dlp_buf, fHandle);
 	set_byte(dlp_buf + 1, 0x00);
@@ -2346,7 +2347,7 @@ int dlp_ResetLastSyncPC(int sd)
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
+ *
 	unsigned char handle = fHandle;
 {
 	int 	result;
@@ -2378,7 +2379,7 @@ int dlp_ResetLastSyncPC(int sd)
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int result;
+ *
 	unsigned char handle = fHandle;
 {
 	int 	result;
@@ -2414,16 +2415,16 @@ int dlp_ResetLastSyncPC(int sd)
  *
  ***********************************************************************/
 int
-	int result;
+dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 
 #ifdef DLP_TRACE
-	int flags;
+	int 	flags;
 #endif
 {
 	int 	result;
 	struct dlpRequest *req;
-		int cat;
-		int r;
+	struct dlpResponse *res;
+
 	if (pi_version(sd) < 0x0101) {
 		/* Emulate for PalmOS 1.0 */
 		int 	cat,
@@ -2441,11 +2442,11 @@ int
 		    fHandle, incategory));
 
 		if ((ps = find_pi_socket(sd)) == 0)
-			r = dlp_ReadRecordByIndex(sd, fHandle,
+			return -130;
 						  ps->dlprecord, 0, 0, 0,
 						  0, &cat);
 			/* Fetch next modified record (in any category) */
-			if (r < 0)
+			rec = dlp_ReadRecordByIndex(sd, fHandle,
 						    ps->dlprecord, 0, 0, 0,
 						    0, &cat);
 
@@ -2453,11 +2454,11 @@ int
 				break;
 
 			if (cat != incategory) {
-			r = dlp_ReadRecordByIndex(sd, fHandle,
+				ps->dlprecord++;
 						  ps->dlprecord, buffer,
 						  id, size, attr, &cat);
 
-			if (r >= 0) {
+			rec = dlp_ReadRecordByIndex(sd, fHandle,
 						    ps->dlprecord, buffer,
 						    id, size, attr, &cat);
 
@@ -2475,7 +2476,7 @@ int
 
 				   ps->dlprecord = 0; */
 			}
-		return r;
+
 	}
 
 	Trace(ReadNextRecInCategoryV2);
@@ -2551,12 +2552,12 @@ int
  *		otherwise
  *
  ***********************************************************************/
-	int result;
+int
 {
 	int 	result;
 	struct dlpRequest *req;
-		int db;
-		int r;
+	struct dlpResponse *res;
+
 	if (pi_version(sd) < 0x0101) {
 		/* Emulate on PalmOS 1.0 */
 		int 	db,
@@ -2569,17 +2570,17 @@ int
 		}
 #endif
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		r = dlp_OpenDB(sd, 0, dlpOpenRead, "System Preferences",
+		    "DLP ReadAppPreference Emulating with: Creator: '%s', Id: %d, Size: %d, Backup: %d\n",
 		    printlong(creator), id,
-		if (r < 0)
-			return r;
+		    buffer ? maxsize : 0, backup ? 0x80 : 0));
+
 		rec = dlp_OpenDB(sd, 0, dlpOpenRead, "System Preferences",
-		r = dlp_ReadResourceByType(sd, db, creator, id, buffer,
+			       &db);
 		if (rec < 0)
 			return rec;
-		if (r < 0) {
+
 		rec = dlp_ReadResourceByType(sd, db, creator, id, buffer,
-			return r;
+					   NULL, size);
 
 		if (rec < 0) {
 			dlp_CloseDB(sd, db);
@@ -2588,16 +2589,16 @@ int
 
 		if (size)
 			*size -= 2;
-		if (r > 2) {
-			r -= 2;
-			memmove(buffer, ((char *) buffer) + 2, r);
 
-			r = 0;
+		if (version)
+			*version = get_short(buffer);
+
+		if (rec > 2) {
 			rec -= 2;
 			memmove(buffer, ((char *) buffer) + 2, rec);
 		} else {
 			rec = 0;
-		return r;
+		}
 	}
 
 	Trace(ReadAppPreferenceV2);
@@ -2659,12 +2660,12 @@ int
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-	int result;
+int
 {
 	int 	result;
 	struct dlpRequest *req;
-		int db;
-		int r;
+	struct dlpResponse *res;
+
 		/* Emulate on PalmOS 1.0 */
 		int 	db,
 			rec;
@@ -2678,23 +2679,23 @@ int
 		}
 #endif
 
-		r = dlp_OpenDB(sd, 0, dlpOpenWrite, "System Preferences",
+		unsigned char dlp_buf[DLP_BUF_SIZE];
 
-		if (r < 0)
-			return r;
+		Trace(WriteAppPreferenceV1);
+
 		rec = dlp_OpenDB(sd, 0, dlpOpenWrite, "System Preferences",
 			       &db);
 		if (rec < 0)
 			return rec;
-			r = dlp_WriteResource(sd, db, creator, id, dlp_buf,
+
 		if (buffer && size) {
 			memcpy(dlp_buf + 2, buffer, size);
-			r = dlp_WriteResource(sd, db, creator, id, NULL,
+			set_short(dlp_buf, version);
 			rec = dlp_WriteResource(sd, db, creator, id, dlp_buf,
 					      size);
 		} else
 			rec = dlp_WriteResource(sd, db, creator, id, NULL,
-		return r;
+					      0);
 	}
 
 	Trace(WriteAppPreferenceV2);
@@ -2748,16 +2749,16 @@ int
  *
  ***********************************************************************/
 int
-	int result;
+dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 
 #ifdef DLP_TRACE
-	int flags;
+	int 	flags;
 #endif
 {
 	int 	result;
 	struct dlpRequest *req;
-		int cat;
-		int r;
+	struct dlpResponse *res;
+
 	if (pi_version(sd) < 0x0101) {
 		/* Emulate for PalmOS 1.0 */
 		int 	cat,
@@ -2771,7 +2772,7 @@ int
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadNextModifiedRecInCategory Emulating with: Handle: %d, Category: %d\n",
-			r = dlp_ReadNextModifiedRec(sd, fHandle, buffer,
+		    fHandle, incategory));
 
 		do {
 			/* Fetch next modified record (in any category) */
@@ -2785,9 +2786,9 @@ int
 			/* Working on same assumption as ReadNextRecInCat, elide this:
 			   if (r < 0)
 			   dlp_ResetDBIndex(sd, fHandle);
-		while ((r >= 0) && (cat != incategory));
+			 */
 
-		return r;
+			/* Loop until we fail to get a record or a record is found in the proper category */
 	}
 			if (attr)
 	Trace(ReadNextModifiedRecInCategoryV2);
@@ -2864,8 +2865,8 @@ int
  *		otherwise
  *
  ***********************************************************************/
+	int 	result;
 	unsigned char handle = fHandle;
-	int result;
 
 #ifdef DLP_TRACE
 	int flags;
@@ -2942,10 +2943,10 @@ int
  *		otherwise
  *
  ***********************************************************************/
-	int result;
+	int 	result;
 
 #ifdef DLP_TRACE
-	int flags;
+	int 	flags;
 #endif
 
 	set_byte(dlp_buf, fHandle);
@@ -3026,10 +3027,10 @@ int
  * Parameter documentation by DHS.
  *
  ***********************************************************************/
-	int result;
+	int 	result;
 
 #ifdef DLP_TRACE
-	int flags;
+	int 	flags;
 #endif
 
 	set_byte(dlp_buf, fHandle);

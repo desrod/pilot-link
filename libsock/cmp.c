@@ -36,25 +36,25 @@ static int cmp_setsockopt(struct pi_socket *ps, int level, int option_name,
 
 static struct pi_protocol *cmp_protocol_dup (struct pi_protocol *prot)
 {
-	struct pi_protocol *new_prot;
-	struct pi_cmp_data *data, *new_data;
+	struct 	pi_protocol *new_prot;
+	struct 	pi_cmp_data *data, *new_data;
 	
 	new_prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level = prot->level;
-	new_prot->dup = prot->dup;
-	new_prot->free = prot->free;
-	new_prot->read = prot->read;
-	new_prot->write = prot->write;
-	new_prot->getsockopt = prot->getsockopt;
-	new_prot->setsockopt = prot->setsockopt;
+	new_prot->level 	= prot->level;
+	new_prot->dup 		= prot->dup;
+	new_prot->free 		= prot->free;
+	new_prot->read 		= prot->read;
+	new_prot->write 	= prot->write;
+	new_prot->getsockopt 	= prot->getsockopt;
+	new_prot->setsockopt 	= prot->setsockopt;
 
 	new_data = (struct pi_cmp_data *)malloc (sizeof (struct pi_cmp_data));
 	data = (struct pi_cmp_data *)prot->data;
-	new_data->type = data->type;
-	new_data->flags = data->type;
-	new_data->version = data->type;
-	new_data->baudrate = data->type;
-	new_prot->data = new_data;
+	new_data->type 		= data->type;
+	new_data->flags 	= data->type;
+	new_data->version 	= data->type;
+	new_data->baudrate 	= data->type;
+	new_prot->data 		= new_data;
 
 	return new_prot;
 }
@@ -67,24 +67,24 @@ static void cmp_protocol_free (struct pi_protocol *prot)
 
 struct pi_protocol *cmp_protocol (void)
 {
-	struct pi_protocol *prot;
-	struct pi_cmp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_cmp_data *data;
 
 	prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));	
-	prot->level = PI_LEVEL_CMP;
-	prot->dup = cmp_protocol_dup;
-	prot->free = cmp_protocol_free;
-	prot->read = cmp_rx;
-	prot->write = cmp_tx;
-	prot->getsockopt = cmp_getsockopt;
-	prot->setsockopt = cmp_setsockopt;
+	prot->level 		= PI_LEVEL_CMP;
+	prot->dup 		= cmp_protocol_dup;
+	prot->free 		= cmp_protocol_free;
+	prot->read 		= cmp_rx;
+	prot->write 		= cmp_tx;
+	prot->getsockopt 	= cmp_getsockopt;
+	prot->setsockopt 	= cmp_setsockopt;
 
 	data = (struct pi_cmp_data *)malloc (sizeof (struct pi_cmp_data));
-	data->type = 0;
-	data->flags = 0;
-	data->version = 0;
-	data->baudrate = 0;
-	prot->data = data;
+	data->type 	= 0;
+	data->flags 	= 0;
+	data->version 	= 0;
+	data->baudrate 	= 0;
+	prot->data 	= data;
 	
 	return prot;
 }
@@ -92,8 +92,8 @@ struct pi_protocol *cmp_protocol (void)
 int
 cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establishhighrate) 
 {
-	struct pi_protocol *prot;
-	struct pi_cmp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_cmp_data *data;
 	unsigned char buf[PI_CMP_HEADER_LEN];
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -132,8 +132,8 @@ cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establis
 int
 cmp_tx_handshake(struct pi_socket *ps) 
 {
-	struct pi_protocol *prot;
-	struct pi_cmp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_cmp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
@@ -161,10 +161,12 @@ cmp_tx_handshake(struct pi_socket *ps)
 
 int cmp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 {
-	struct pi_protocol *prot, *next;
-	struct pi_cmp_data *data;
+	int 	bytes,
+		type,
+		size;
+	struct 	pi_protocol *prot, *next;
+	struct 	pi_cmp_data *data;
 	unsigned char cmp_buf[PI_CMP_HEADER_LEN];
-	int bytes, type, size;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
@@ -207,9 +209,9 @@ int cmp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  ***********************************************************************/
 int cmp_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 {
-	struct pi_protocol *prot, *next;
-	struct pi_cmp_data *data;
-	int bytes;
+	int 	bytes;
+	struct 	pi_protocol *prot, *next;
+	struct 	pi_cmp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
@@ -225,10 +227,10 @@ int cmp_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 
 	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(msg, 0));
 
-	data->type = get_byte(&msg[PI_CMP_OFFSET_TYPE]);
-	data->flags = get_byte(&msg[PI_CMP_OFFSET_FLGS]);
-	data->version = get_short(&msg[PI_CMP_OFFSET_VERS]);
-	data->baudrate = get_long(&msg[PI_CMP_OFFSET_BAUD]);
+	data->type 	= get_byte(&msg[PI_CMP_OFFSET_TYPE]);
+	data->flags 	= get_byte(&msg[PI_CMP_OFFSET_FLGS]);
+	data->version 	= get_short(&msg[PI_CMP_OFFSET_VERS]);
+	data->baudrate 	= get_long(&msg[PI_CMP_OFFSET_BAUD]);
 
 	return 0;
 }
@@ -246,8 +248,8 @@ int cmp_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
  ***********************************************************************/
 int cmp_init(struct pi_socket *ps, int baudrate)
 {	
-	struct pi_protocol *prot;
-	struct pi_cmp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_cmp_data *data;
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
@@ -277,8 +279,8 @@ int cmp_init(struct pi_socket *ps, int baudrate)
  ***********************************************************************/
 int cmp_abort(struct pi_socket *ps, int reason)
 {
-	struct pi_protocol *prot;
-	struct pi_cmp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_cmp_data *data;
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
@@ -306,18 +308,18 @@ int cmp_abort(struct pi_socket *ps, int reason)
  ***********************************************************************/
 int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 {
-	struct pi_protocol *prot;
-	struct pi_cmp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_cmp_data *data;
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
 		return -1;
 	data = (struct pi_cmp_data *)prot->data;
 
-	data->type = PI_CMP_TYPE_WAKE;
-	data->flags = 0;
-	data->version = CommVersion_1_0;
-	data->baudrate = maxbaud;
+	data->type 	= PI_CMP_TYPE_WAKE;
+	data->flags 	= 0;
+	data->version 	= CommVersion_1_0;
+	data->baudrate 	= maxbaud;
 
 	return cmp_tx(ps, NULL, 0, 0);
 }
@@ -326,8 +328,8 @@ static int
 cmp_getsockopt(struct pi_socket *ps, int level, int option_name, 
 	       void *option_value, int *option_len)
 {
-	struct pi_protocol *prot;
-	struct pi_cmp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_cmp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
@@ -376,8 +378,8 @@ static int
 cmp_setsockopt(struct pi_socket *ps, int level, int option_name, 
 	       const void *option_value, int *option_len)
 {
-	struct pi_protocol *prot;
-	struct pi_padp_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_padp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)

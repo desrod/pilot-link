@@ -66,9 +66,9 @@ ps_list_append (struct pi_socket_list *list, struct pi_socket *ps)
 {
 	struct pi_socket_list *elem, *new_elem;
 	
-	new_elem = malloc(sizeof(struct pi_socket_list));
-	new_elem->ps = ps;
-	new_elem->next = NULL;
+	new_elem 	= malloc(sizeof(struct pi_socket_list));
+	new_elem->ps 	= ps;
+	new_elem->next 	= NULL;
 
 	if (list == NULL)
 		return new_elem;
@@ -87,9 +87,9 @@ ps_list_prepend (struct pi_socket_list *list, struct pi_socket *ps)
 {
 	struct pi_socket_list *new_elem;
 	
-	new_elem = malloc(sizeof(struct pi_socket_list));
-	new_elem->ps = ps;
-	new_elem->next = list;
+	new_elem 	= malloc(sizeof(struct pi_socket_list));
+	new_elem->ps 	= ps;
+	new_elem->next 	= list;
 
 	return new_elem;
 }
@@ -147,17 +147,17 @@ protocol_cmd_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 static struct pi_protocol *
 protocol_queue_find (struct pi_socket *ps, int level) 
 {
-	int i;
+	int 	idx;
 
 	if (ps->command) {
-		for (i = 0; i < ps->cmd_len; i++) {
-			if (ps->cmd_queue[i]->level == level)
-				return ps->cmd_queue[i];
+		for (idx = 0; idx < ps->cmd_len; idx++) {
+			if (ps->cmd_queue[idx]->level == level)
+				return ps->cmd_queue[idx];
 		}
 	} else {
-		for (i = 0; i < ps->queue_len; i++) {
-			if (ps->protocol_queue[i]->level == level)
-				return ps->protocol_queue[i];
+		for (idx = 0; idx < ps->queue_len; idx++) {
+			if (ps->protocol_queue[idx]->level == level)
+				return ps->protocol_queue[idx];
 		}
 	}
 
@@ -167,7 +167,7 @@ protocol_queue_find (struct pi_socket *ps, int level)
 static struct pi_protocol *
 protocol_queue_find_next (struct pi_socket *ps, int level) 
 {
-	int i;
+	int 	idx;
 
 	if (ps->command && ps->cmd_len == 0)
 		return NULL;
@@ -179,14 +179,14 @@ protocol_queue_find_next (struct pi_socket *ps, int level)
 		return ps->protocol_queue[0];
 	
 	if (ps->command) {
-		for (i = 0; i < ps->cmd_len - 1; i++) {
-			if (ps->cmd_queue[i]->level == level)
-				return ps->cmd_queue[i + 1];
+		for (idx = 0; idx < ps->cmd_len - 1; idx++) {
+			if (ps->cmd_queue[idx]->level == level)
+				return ps->cmd_queue[idx + 1];
 		}
 	} else {
-		for (i = 0; i < ps->queue_len - 1; i++) {
-			if (ps->protocol_queue[i]->level == level)
-				return ps->protocol_queue[i + 1];
+		for (idx = 0; idx < ps->queue_len - 1; idx++) {
+			if (ps->protocol_queue[idx]->level == level)
+				return ps->protocol_queue[idx + 1];
 		}
 	}
 
@@ -196,13 +196,13 @@ protocol_queue_find_next (struct pi_socket *ps, int level)
 static void
 protocol_queue_build (struct pi_socket *ps, int autodetect) 
 {
-	int protocol;
-	struct pi_protocol *prot, *dev_prot, *dev_cmd_prot;
+	int 	protocol;
+	struct 	pi_protocol *prot, *dev_prot, *dev_cmd_prot;
 	unsigned char byte;
 	
 	/* The device protocol */
-	dev_prot = ps->device->protocol (ps->device);
-	dev_cmd_prot = ps->device->protocol (ps->device);
+	dev_prot 	= ps->device->protocol (ps->device);
+	dev_cmd_prot 	= ps->device->protocol (ps->device);
 
 	protocol = ps->protocol;
 	
@@ -258,16 +258,19 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 	switch (protocol) {
 	case PI_PF_PADP:
 	case PI_PF_SLP:
-		prot = cmp_protocol ();
+		prot 	= cmp_protocol ();
 		protocol_cmd_queue_add (ps, prot);
-		prot = padp_protocol ();
+	
+		prot 	= padp_protocol ();
 		protocol_cmd_queue_add (ps, prot);
-		prot = slp_protocol ();
+	
+		prot 	= slp_protocol ();
 		protocol_cmd_queue_add (ps, prot);
+	
 		ps->cmd = PI_CMD_CMP;
 		break;
 	case PI_PF_NET:
-		prot = net_protocol ();
+		prot 	= net_protocol ();
 		protocol_cmd_queue_add (ps, prot);
 		ps->cmd = PI_CMD_NET;
 		break;
@@ -280,12 +283,12 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 static void
 protocol_queue_destroy (struct pi_socket *ps)
 {
-	int i;
+	int idx;
 	
-	for (i = 0; i < ps->queue_len; i--)
-		ps->protocol_queue[i]->free(ps->protocol_queue[i]);
-	for (i = 0; i < ps->cmd_len; i--)
-		ps->cmd_queue[i]->free(ps->cmd_queue[i]);
+	for (idx = 0; idx < ps->queue_len; idx--)
+		ps->protocol_queue[idx]->free(ps->protocol_queue[idx]);
+	for (idx = 0; idx < ps->cmd_len; idx--)
+		ps->cmd_queue[idx]->free(ps->cmd_queue[idx]);
 
 	if (ps->queue_len > 0)
 		free(ps->protocol_queue);
@@ -296,7 +299,7 @@ protocol_queue_destroy (struct pi_socket *ps)
 struct pi_protocol *
 pi_protocol (int pi_sd, int level)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -309,7 +312,7 @@ pi_protocol (int pi_sd, int level)
 struct pi_protocol *
 pi_protocol_next (int pi_sd, int level)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -325,13 +328,16 @@ static void
 env_check (void) 
 {
 	if (getenv("PILOT_DEBUG")) {
-		int types = 0, done;
-		char *debug, *b, *e;
+		int 	types = 0,
+			done;
+		char 	*debug,
+			*b,
+			*e;
 		
 		debug = strdup(getenv("PILOT_DEBUG"));
 
-		b = debug;
-		done = 0;
+		b 	= debug;
+		done 	= 0;
 		while (!done) {
 			e = strchr(b, ' ');
 			if (e)
@@ -367,8 +373,9 @@ env_check (void)
 		free(debug);
 	}
 	if (getenv("PILOT_DEBUG_LEVEL")) {
+		int 	level = 0;
 		const char *debug;
-		int level = 0;
+
 
 		debug = getenv("PILOT_DEBUG_LEVEL");
 		if (!strcmp(debug, "NONE"))
@@ -426,7 +433,7 @@ static void *alm_tid = 0;
 void
 alarm_thread(void *unused)
 {
-	long av;
+	long 	av;
 
 	Sleep(1000L);
 	av = InterlockedDecrement(&alm_countdown);
@@ -442,7 +449,7 @@ alarm_thread(void *unused)
 unsigned
 alarm(unsigned sec)
 {
-	long ret = alm_countdown;
+	long 	ret = alm_countdown;
 
 	if (sec) {
 		alm_countdown = sec;
@@ -523,7 +530,7 @@ installexit(void)
  ***********************************************************************/
 int pi_socket(int domain, int type, int protocol)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	env_check ();
 	
@@ -542,7 +549,7 @@ int pi_socket(int domain, int type, int protocol)
 #else
 	if ((ps->sd = open("/dev/null", O_RDWR)) == -1) {
 #endif
-		int err = errno;	/* Save errno of open */
+		int 	err = errno;	/* Save errno of open */
 
 		free(ps);
 		errno = err;
@@ -572,8 +579,8 @@ int pi_socket(int domain, int type, int protocol)
 	ps->dlprecord 	= 0;
 
 #ifdef OS2
-	ps->os2_read_timeout = 60;
-	ps->os2_write_timeout = 60;
+	ps->os2_read_timeout 	= 60;
+	ps->os2_write_timeout 	= 60;
 #endif
 
 	installexit();
@@ -597,8 +604,8 @@ int pi_socket(int domain, int type, int protocol)
  ***********************************************************************/
 struct pi_socket *pi_socket_copy(struct pi_socket *ps)
 {
+	int 	idx;
 	struct pi_socket *new_ps;
-	int i;
 	
 	new_ps = malloc(sizeof(struct pi_socket));
 	memcpy(new_ps, ps, sizeof(struct pi_socket));
@@ -612,18 +619,18 @@ struct pi_socket *pi_socket_copy(struct pi_socket *ps)
 	
 	new_ps->protocol_queue = NULL;
 	new_ps->queue_len = 0;
-	for (i = 0; i < ps->queue_len; i++) {
+	for (idx = 0; idx < ps->queue_len; idx++) {
 		struct pi_protocol *prot;
 		
-		prot = ps->protocol_queue[i]->dup (ps->protocol_queue[i]);
+		prot = ps->protocol_queue[idx]->dup (ps->protocol_queue[idx]);
 		protocol_queue_add(new_ps, prot);
 	}
 	new_ps->cmd_queue = NULL;
 	new_ps->cmd_len = 0;
-	for (i = 0; i < ps->cmd_len; i++) {
+	for (idx = 0; idx < ps->cmd_len; idx++) {
 		struct pi_protocol *prot;
 		
-		prot = ps->cmd_queue[i]->dup (ps->cmd_queue[i]);
+		prot = ps->cmd_queue[idx]->dup (ps->cmd_queue[idx]);
 		protocol_cmd_queue_add(new_ps, prot);
 	}
 	new_ps->device = ps->device->dup (ps->device);
@@ -635,7 +642,7 @@ struct pi_socket *pi_socket_copy(struct pi_socket *ps)
 
 int pi_socket_setsd(struct pi_socket *ps, int sd)
 {
-	int orig;
+	int 	orig;
 	
 	orig = sd;
 	
@@ -694,10 +701,10 @@ void pi_socket_recognize(struct pi_socket *ps)
  ***********************************************************************/
 int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 {
-	struct pi_socket *ps;
-	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
-	struct pi_sockaddr eaddr;
-	int paddrlen = addrlen;
+	int 	paddrlen = addrlen;
+	struct 	pi_socket *ps;
+	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
+	struct 	pi_sockaddr eaddr;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -744,10 +751,10 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
  ***********************************************************************/
 int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 {
-	struct pi_socket *ps;
-	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
-	struct pi_sockaddr eaddr;
-	int paddrlen = addrlen;
+	int 	paddrlen = addrlen;
+	struct 	pi_socket *ps;
+	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
+	struct 	pi_sockaddr eaddr;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -791,7 +798,7 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
  ***********************************************************************/
 int pi_listen(int pi_sd, int backlog)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -814,7 +821,7 @@ int pi_listen(int pi_sd, int backlog)
  ***********************************************************************/
 int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 		
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -843,7 +850,7 @@ int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
 int
 pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -873,8 +880,8 @@ int
 pi_getsockopt(int pi_sd, int level, int option_name, 
 	      void *option_value, int *option_len)
 {
-	struct pi_socket *ps;
-	struct pi_protocol *prot;
+	struct 	pi_socket *ps;
+	struct 	pi_protocol *prot;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -907,8 +914,8 @@ int
 pi_setsockopt(int pi_sd, int level, int option_name, 
 	      const void *option_value, int *option_len) 
 {
-	struct pi_socket *ps;
-	struct pi_protocol *prot;
+	struct 	pi_socket *ps;
+	struct 	pi_protocol *prot;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -938,7 +945,7 @@ pi_setsockopt(int pi_sd, int level, int option_name,
  ***********************************************************************/
 int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -967,7 +974,7 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
  ***********************************************************************/
 int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1026,10 +1033,13 @@ int pi_write(int pi_sd, void *msg, int len)
  ***********************************************************************/
 int pi_tickle(int pi_sd)
 {
+	int 	result,
+		type, 
+		size, 
+		len = 0;
+	char 	msg[1];
 	struct pi_socket *ps;
-	char msg[1];
-	int result, type, size, len = 0;
-	
+
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
@@ -1078,8 +1088,8 @@ int pi_tickle(int pi_sd)
  ***********************************************************************/
 int pi_close(int pi_sd)
 {
-	int result = 0;
-	struct pi_socket *ps;
+	int 	result = 0;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1127,7 +1137,7 @@ int pi_close(int pi_sd)
  ***********************************************************************/
 int pi_getsockname(int pi_sd, struct sockaddr *addr, int *namelen)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1154,7 +1164,7 @@ int pi_getsockname(int pi_sd, struct sockaddr *addr, int *namelen)
  ***********************************************************************/
 int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1181,8 +1191,10 @@ int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
  ***********************************************************************/
 int pi_version(int pi_sd)
 {
-	struct pi_socket *ps;
-	int size, vers = 0x0000;
+	int 	size, 
+		vers = 0x0000;
+	struct 	pi_socket *ps;
+
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1227,16 +1239,16 @@ struct pi_socket *find_pi_socket(int sd)
  ***********************************************************************/
 int pi_watchdog(int pi_sd, int newinterval)
 {
-	struct pi_socket *ps;
+	struct 	pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
 
-	watch_list = ps_list_append (watch_list, ps);
+	watch_list 	= ps_list_append (watch_list, ps);
 	signal(SIGALRM, onalarm);
-	interval = newinterval;
+	interval 	= newinterval;
 	alarm(interval);
 
 	return 0;

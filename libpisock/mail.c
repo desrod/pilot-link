@@ -138,21 +138,21 @@ void free_MailSignaturePref(struct MailSignaturePref *a)
  ***********************************************************************/
 int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
 {
+	int 	flags;
 	unsigned long d;
-	int flags;
 	unsigned char *start = buffer;
 
 	if (len < 6)
 		return 0;
 
 	d = (unsigned short int) get_short(buffer);
-	a->date.tm_year = (d >> 9) + 4;
-	a->date.tm_mon = ((d >> 5) & 15) - 1;
-	a->date.tm_mday = d & 31;
-	a->date.tm_hour = get_byte(buffer + 2);
-	a->date.tm_min = get_byte(buffer + 3);
-	a->date.tm_sec = 0;
-	a->date.tm_isdst = -1;
+	a->date.tm_year 	= (d >> 9) + 4;
+	a->date.tm_mon 		= ((d >> 5) & 15) - 1;
+	a->date.tm_mday 	= d & 31;
+	a->date.tm_hour 	= get_byte(buffer + 2);
+	a->date.tm_min 		= get_byte(buffer + 3);
+	a->date.tm_sec 		= 0;
+	a->date.tm_isdst 	= -1;
 	mktime(&a->date);
 
 	if (d)
@@ -162,15 +162,15 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
 
 	flags = get_byte(buffer + 4);
 
-	a->read = (flags & (1 << 7)) ? 1 : 0;
-	a->signature = (flags & (1 << 6)) ? 1 : 0;
-	a->confirmRead = (flags & (1 << 5)) ? 1 : 0;
-	a->confirmDelivery = (flags & (1 << 4)) ? 1 : 0;
-	a->priority = (flags & (3 << 2)) >> 2;
-	a->addressing = (flags & 3);
+	a->read 		= (flags & (1 << 7)) ? 1 : 0;
+	a->signature 		= (flags & (1 << 6)) ? 1 : 0;
+	a->confirmRead 		= (flags & (1 << 5)) ? 1 : 0;
+	a->confirmDelivery 	= (flags & (1 << 4)) ? 1 : 0;
+	a->priority 		= (flags & (3 << 2)) >> 2;
+	a->addressing 		= (flags & 3);
 
-	buffer += 6;
-	len -= 6;
+	buffer 	+= 6;
+	len 	-= 6;
 
 	if (len < 1)
 		return 0;
@@ -269,8 +269,8 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
  ***********************************************************************/
 int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
 {
+	int 	destlen = 6 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
 	unsigned char *start = buffer;
-	int destlen = 6 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
 
 	if (a->subject)
 		destlen += strlen(a->subject);
@@ -381,14 +381,14 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
 int
 unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 {
-	int i;
+	int 	idx;
 	unsigned char *start = record;
 
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!i)
-		return i;
-	record += i;
-	len -= i;
+	idx = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!idx)
+		return idx;
+	record += idx;
+	len -= idx;
 	if (len < 11)
 		return 0;
 	ai->dirty = get_short(record);
@@ -419,16 +419,16 @@ unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 int
 pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 {
-	int i;
+	int 	idx;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
+	idx = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return i + 11;
-	if (!i)
-		return i;
-	record += i;
-	len -= i;
+		return idx + 11;
+	if (!idx)
+		return idx;
+	record += idx;
+	len -= idx;
 	if (len < 8)
 		return 0;
 	set_short(record, ai->dirty);
@@ -514,8 +514,8 @@ unpack_MailSyncPref(struct MailSyncPref *a, unsigned char *record, int len)
 int
 pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record, int len)
 {
+	int 	destlen = 6 + 1 + 1 + 1;
 	unsigned char *start = record;
-	int destlen = 6 + 1 + 1 + 1;
 
 	if (ai->filterTo)
 		destlen += strlen(ai->filterTo);
@@ -603,8 +603,8 @@ int
 pack_MailSignaturePref(struct MailSignaturePref *ai, unsigned char *record,
 		       int len)
 {
+	int 	destlen = 1;
 	unsigned char *start = record;
-	int destlen = 1;
 
 	if (ai->signature)
 		destlen += strlen(ai->signature);

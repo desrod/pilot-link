@@ -46,39 +46,39 @@ unpack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 		return 0;
 
 	p = buffer;
-	a->flags = get_byte(p);
+	a->flags 	= get_byte(p);
 	p += 2;			/* gap */
-	a->checknum = get_short(p);
+	a->checknum 	= get_short(p);
 	p += 2;
-	a->amount = get_slong(p);
+	a->amount 	= get_slong(p);
 	p += 4;
-	a->total = get_slong(p);
+	a->total 	= get_slong(p);
 	p += 4;
-	a->amountc = get_sshort(p);
+	a->amountc 	= get_sshort(p);
 	p += 2;
-	a->totalc = get_sshort(p);
+	a->totalc 	= get_sshort(p);
 	p += 2;
 
-	a->second = get_sshort(p);
+	a->second 	= get_sshort(p);
 	p += 2;
-	a->minute = get_sshort(p);
+	a->minute 	= get_sshort(p);
 	p += 2;
-	a->hour = get_sshort(p);
+	a->hour 	= get_sshort(p);
 	p += 2;
-	a->day = get_sshort(p);
+	a->day 		= get_sshort(p);
 	p += 2;
-	a->month = get_sshort(p);
+	a->month 	= get_sshort(p);
 	p += 2;
-	a->year = get_sshort(p);
+	a->year 	= get_sshort(p);
 	p += 2;
-	a->wday = get_sshort(p);
+	a->wday 	= get_sshort(p);
 	p += 2;
 
-	a->repeat = get_byte(p);
+	a->repeat 	= get_byte(p);
 	p += 1;
-	a->flags2 = get_byte(p);
+	a->flags2 	= get_byte(p);
 	p += 1;
-	a->type = get_byte(p);
+	a->type 	= get_byte(p);
 	p += 1;
 
 	memcpy(a->reserved, p, 2);
@@ -108,9 +108,8 @@ unpack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
  ***********************************************************************/
 int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 {
+	int 	destlen = 46 + strlen(a->note) + 1;
 	unsigned char *p;
-
-	int destlen = 46 + strlen(a->note) + 1;
 
 	if (!buffer)
 		return destlen;
@@ -184,16 +183,17 @@ int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 int
 unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 {
-	int i, j;
+	int 	idx,
+		j;
 	unsigned char *p;
 
-	i = unpack_CategoryAppInfo(&a->category, buffer, len);
-	if (!i)
+	idx = unpack_CategoryAppInfo(&a->category, buffer, len);
+	if (!idx)
 		return 0;
 
-	p = (unsigned char *) (buffer + i);
+	p = (unsigned char *) (buffer + idx);
 
-	len -= i;
+	len -= idx;
 	if (len < 603)
 		return 0;
 
@@ -207,7 +207,7 @@ unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 		p += 20;
 	}
 
-	return i + 603;
+	return idx + 603;
 }
 
 /***********************************************************************
@@ -224,19 +224,20 @@ unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 int
 pack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 {
-	int i, j;
+	int 	idx,
+		j;
 	unsigned char *p;
 
-	i = pack_CategoryAppInfo(&a->category, buffer, len);
+	idx = pack_CategoryAppInfo(&a->category, buffer, len);
 
 	if (!buffer)
-		return i + 603;
-	if (!i)
-		return i;
+		return idx + 603;
+	if (!idx)
+		return idx;
 
-	p = (unsigned char *) (buffer + i);
-	len -= i;
-	if (i < 603)
+	p = (unsigned char *) (buffer + idx);
+	len -= idx;
+	if (idx < 603)
 		return 0;
 
 	for (j = 0; j < 20; j++) {
@@ -249,5 +250,5 @@ pack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 		p += 20;
 	}
 
-	return (i + 603);
+	return (idx + 603);
 }

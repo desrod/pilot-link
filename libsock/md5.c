@@ -41,13 +41,12 @@ void byteSwap(UINT32 * buf, unsigned words)
  */
 void MD5Init(struct MD5Context *ctx)
 {
-	ctx->buf[0] = 0x67452301;
-	ctx->buf[1] = 0xefcdab89;
-	ctx->buf[2] = 0x98badcfe;
-	ctx->buf[3] = 0x10325476;
-
-	ctx->bytes[0] = 0;
-	ctx->bytes[1] = 0;
+	ctx->buf[0] 	= 0x67452301;
+	ctx->buf[1] 	= 0xefcdab89;
+	ctx->buf[2] 	= 0x98badcfe;
+	ctx->buf[3] 	= 0x10325476;
+	ctx->bytes[0] 	= 0;
+	ctx->bytes[1] 	= 0;
 }
 
 /*
@@ -95,8 +94,8 @@ void MD5Update(struct MD5Context *ctx, UINT8 const *buf, unsigned len)
  */
 void MD5Final(UINT8 digest[16], struct MD5Context *ctx)
 {
-	int count = ctx->bytes[0] & 0x3f;	/* Number of bytes in ctx->in */
-	UINT8 *p = (UINT8 *) ctx->in + count;
+	int 	count = ctx->bytes[0] & 0x3f;	/* Number of bytes in ctx->in */
+	UINT8 	*p = (UINT8 *) ctx->in + count;
 
 	/* Set the first char of padding to 0x80.  There is always room. */
 	*p++ = 0x80;

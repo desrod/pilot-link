@@ -236,8 +236,8 @@ add_record_queue(RecordQueue * rq, PilotRecord * precord,
  ***********************************************************************/
 static int free_record_queue_list(SyncHandler * sh, RecordQueueList * rql)
 {
+	int 	result = 0;
 	RecordQueueList *item;
-	int result = 0;
 
 	while (rql != NULL) {
 		item = rql;
@@ -297,9 +297,9 @@ static int
 store_record_on_pilot(SyncHandler * sh, int dbhandle,
 		      DesktopRecord * drecord, RecordModifier rec_mod)
 {
+	int 	result = 0;
 	PilotRecord precord;
 	recordid_t id;
-	int result = 0;
 
 	memset(&precord, 0, sizeof(PilotRecord));
 
@@ -374,9 +374,13 @@ sync_record(SyncHandler * sh, int dbhandle,
 	    DesktopRecord * drecord, PilotRecord * precord,
 	    RecordQueue * rq, RecordModifier rec_mod)
 {
-	int parch = 0, pdel = 0, pchange = 0;
-	int darch = 0, ddel = 0, dchange = 0;
-	int result = 0;
+	int 	parch 	= 0,
+		pdel 	= 0,
+		pchange = 0,
+		darch 	= 0,
+		ddel 	= 0,
+		dchange = 0,
+		result 	= 0;
 
 	/* The state is calculated like this because the deleted and dirty
 	   pilot flags are not mutually exclusive */
@@ -526,10 +530,10 @@ sync_record(SyncHandler * sh, int dbhandle,
  ***********************************************************************/
 int sync_CopyToPilot(SyncHandler * sh)
 {
-	int dbhandle;
+	int 	dbhandle,
+		slow 	= 0,	
+		result 	= 0;
 	DesktopRecord *drecord = NULL;
-	int slow = 0;
-	int result = 0;
 
 	result = open_db(sh, &dbhandle);
 	if (result < 0)
@@ -572,12 +576,13 @@ int sync_CopyToPilot(SyncHandler * sh)
  ***********************************************************************/
 int sync_CopyFromPilot(SyncHandler * sh)
 {
-	int dbhandle;
-	int index;
+	int 	dbhandle,	
+		idx,	
+		slow 	= 0,
+		result 	= 0;
+
 	DesktopRecord *drecord = NULL;
 	PilotRecord *precord = sync_NewPilotRecord(DLP_BUF_SIZE);
-	int slow = 0;
-	int result = 0;
 
 	result = open_db(sh, &dbhandle);
 	if (result < 0)
@@ -593,15 +598,15 @@ int sync_CopyFromPilot(SyncHandler * sh)
 			goto cleanup;
 	}
 
-	index = 0;
+	idx = 0;
 	while (dlp_ReadRecordByIndex
-	       (sh->sd, dbhandle, index, precord->buffer, &precord->recID,
+	       (sh->sd, dbhandle, idx, precord->buffer, &precord->recID,
 		&precord->len, &precord->flags, &precord->catID) > 0) {
 		result = sh->AddRecord(sh, precord);
 		if (result < 0)
 			goto cleanup;
 
-		index++;
+		idx++;
 	}
 
 	result = sh->Post(sh, dbhandle);
@@ -627,8 +632,8 @@ static int
 sync_MergeFromPilot_process(SyncHandler * sh, int dbhandle,
 			    RecordQueue * rq, RecordModifier rec_mod)
 {
+	int 	result = 0;
 	RecordQueueList *item;
-	int result = 0;
 
 	for (item = rq->rql; item != NULL; item = item->next) {
 		if (item->drecord != NULL) {
@@ -662,10 +667,10 @@ static int
 sync_MergeFromPilot_fast(SyncHandler * sh, int dbhandle,
 			 RecordModifier rec_mod)
 {
-	PilotRecord *precord = sync_NewPilotRecord(DLP_BUF_SIZE);
-	DesktopRecord *drecord = NULL;
-	RecordQueue rq = { 0, NULL };
-	int result = 0;
+	int 	result = 0;
+	PilotRecord *precord 	= sync_NewPilotRecord(DLP_BUF_SIZE);
+	DesktopRecord *drecord 	= NULL;
+	RecordQueue rq 		= { 0, NULL };
 
 	while (dlp_ReadNextModifiedRec(sh->sd, dbhandle, precord->buffer,
 				       &precord->recID, NULL,
@@ -702,17 +707,20 @@ static int
 sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 			 RecordModifier rec_mod)
 {
-	PilotRecord *precord = sync_NewPilotRecord(DLP_BUF_SIZE);
-	DesktopRecord *drecord = NULL;
-	RecordQueue rq = { 0, NULL };
-	int index, parch, psecret;
-	int result = 0;
+	int 	idx,
+		parch, 
+		psecret,
+		result = 0;
 
-	index = 0;
+	PilotRecord *precord 	= sync_NewPilotRecord(DLP_BUF_SIZE);
+	DesktopRecord *drecord 	= NULL;
+	RecordQueue rq 		= { 0, NULL };
+
+	idx = 0;
 	while (dlp_ReadRecordByIndex
-	       (sh->sd, dbhandle, index, precord->buffer, &precord->recID,
+	       (sh->sd, dbhandle, idx, precord->buffer, &precord->recID,
 		&precord->len, &precord->flags, &precord->catID) > 0) {
-		int count = rq.count;
+		int 	count = rq.count;
 
 		ErrorCheck(sh->Match(sh, precord, &drecord));
 
@@ -744,7 +752,7 @@ sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 		if (drecord && rq.count == count)
 			ErrorCheck(sh->FreeMatch(sh, drecord));
 
-		index++;
+		idx++;
 	}
 	sync_FreePilotRecord(precord);
 
@@ -767,9 +775,9 @@ sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
  ***********************************************************************/
 int sync_MergeFromPilot(SyncHandler * sh)
 {
-	int dbhandle;
-	int slow = 0;
-	int result = 0;
+	int 	dbhandle,
+		slow 	= 0,
+		result 	= 0;
 
 	result = open_db(sh, &dbhandle);
 	if (result < 0)
@@ -812,10 +820,10 @@ static int
 sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle,
 		       RecordModifier rec_mod)
 {
-	PilotRecord *precord = NULL;
-	DesktopRecord *drecord = NULL;
-	RecordQueue rq = { 0, NULL };
-	int result = 0;
+	int 	result 		= 0;
+	PilotRecord *precord 	= NULL;
+	DesktopRecord *drecord 	= NULL;
+	RecordQueue rq 		= { 0, NULL };
 
 	while (sh->ForEachModified(sh, &drecord) == 0 && drecord) {
 		if (drecord->recID != 0) {
@@ -857,11 +865,13 @@ static int
 sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
 		       RecordModifier rec_mod)
 {
-	PilotRecord *precord = NULL;
-	DesktopRecord *drecord = NULL;
-	RecordQueue rq = { 0, NULL };
-	int darch, dsecret;
-	int result = 0;
+	int 	darch,
+		dsecret,
+		result 		= 0;
+	PilotRecord *precord 	= NULL;
+	DesktopRecord *drecord 	= NULL;
+	RecordQueue rq 		= { 0, NULL };
+
 
 	while (sh->ForEach(sh, &drecord) == 0 && drecord) {
 		if (drecord->recID != 0) {
@@ -924,9 +934,9 @@ sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
  ***********************************************************************/
 int sync_MergeToPilot(SyncHandler * sh)
 {
-	int dbhandle;
-	int slow = 0;
-	int result = 0;
+	int 	dbhandle,
+		slow 	= 0,
+		result 	= 0;
 
 	result = open_db(sh, &dbhandle);
 	if (result < 0)
@@ -967,9 +977,9 @@ int sync_MergeToPilot(SyncHandler * sh)
  ***********************************************************************/
 int sync_Synchronize(SyncHandler * sh)
 {
-	int dbhandle;
-	int slow = 0;
-	int result = 0;
+	int 	dbhandle,
+		slow 	= 0,
+		result 	= 0;
 
 	result = open_db(sh, &dbhandle);
 	if (result < 0)

@@ -37,20 +37,20 @@ static struct pi_protocol *net_protocol_dup (struct pi_protocol *prot)
 	struct pi_protocol *new_prot;
 	struct pi_net_data *data, *new_data;
 	
-	new_prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level = prot->level;
-	new_prot->dup = prot->dup;
-	new_prot->free = prot->free;
-	new_prot->read = prot->read;
-	new_prot->write = prot->write;
-	new_prot->getsockopt = prot->getsockopt;
-	new_prot->setsockopt = prot->setsockopt;
+	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
+	new_prot->level 	= prot->level;
+	new_prot->dup 		= prot->dup;
+	new_prot->free 		= prot->free;
+	new_prot->read 		= prot->read;
+	new_prot->write 	= prot->write;
+	new_prot->getsockopt 	= prot->getsockopt;
+	new_prot->setsockopt 	= prot->setsockopt;
 
-	new_data = (struct pi_net_data *)malloc (sizeof (struct pi_net_data));
-	data = (struct pi_net_data *)prot->data;
-	new_data->type = data->type;
-	new_data->txid = data->txid;
-	new_prot->data = new_data;
+	new_data 		= (struct pi_net_data *)malloc (sizeof (struct pi_net_data));
+	data 			= (struct pi_net_data *)prot->data;
+	new_data->type 		= data->type;
+	new_data->txid 		= data->txid;
+	new_prot->data 		= new_data;
 
 	return new_prot;
 }
@@ -63,22 +63,22 @@ static void net_protocol_free (struct pi_protocol *prot)
 
 struct pi_protocol *net_protocol (void)
 {
-	struct pi_protocol *prot;
-	struct pi_net_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_net_data *data;
 
-	prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));	
-	prot->level = PI_LEVEL_NET;
-	prot->dup = net_protocol_dup;
-	prot->free = net_protocol_free;
-	prot->read = net_rx;
-	prot->write = net_tx;
-	prot->getsockopt = net_getsockopt;
-	prot->setsockopt = net_setsockopt;
+	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));	
+	prot->level 		= PI_LEVEL_NET;
+	prot->dup 		= net_protocol_dup;
+	prot->free 		= net_protocol_free;
+	prot->read 		= net_rx;
+	prot->write 		= net_tx;
+	prot->getsockopt 	= net_getsockopt;
+	prot->setsockopt 	= net_setsockopt;
 
-	data = (struct pi_net_data *)malloc (sizeof (struct pi_net_data));
-	data->type = PI_NET_TYPE_DATA;
-	data->txid = 0x00;
-	prot->data = data;
+	data 			= (struct pi_net_data *)malloc (sizeof (struct pi_net_data));
+	data->type 		= PI_NET_TYPE_DATA;
+	data->txid 		= 0x00;
+	prot->data 		= data;
 	
 	return prot;
 }
@@ -140,10 +140,10 @@ net_tx_handshake(struct pi_socket *ps)
 int
 net_tx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 {
-	struct pi_protocol *prot, *next;
-	struct pi_net_data *data;
+	int 	bytes;
+	struct 	pi_protocol *prot, *next;
+	struct 	pi_net_data *data;
 	unsigned char buf[PI_NET_HEADER_LEN];
-	int bytes;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
@@ -178,10 +178,12 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 int
 net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 {
-	struct pi_protocol *prot, *next;
-	struct pi_net_data *data;
+	int 	bytes, 
+		total_bytes, 
+		packet_len;
+	struct 	pi_protocol *prot, *next;
+	struct 	pi_net_data *data;
 	unsigned char *cur;
-	int bytes, total_bytes, packet_len;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
@@ -257,8 +259,8 @@ static int
 net_getsockopt(struct pi_socket *ps, int level, int option_name, 
 	       void *option_value, int *option_len)
 {
-	struct pi_protocol *prot;
-	struct pi_net_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_net_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
@@ -286,8 +288,8 @@ static int
 net_setsockopt(struct pi_socket *ps, int level, int option_name, 
 	       const void *option_value, int *option_len)
 {
-	struct pi_protocol *prot;
-	struct pi_net_data *data;
+	struct 	pi_protocol *prot;
+	struct 	pi_net_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
@@ -323,8 +325,8 @@ void net_dump_header(unsigned char *data, int rxtx)
 
 void net_dump(unsigned char *data)
 {
-	int s;
+	int 	size;
 
-	s = get_long(&data[PI_NET_OFFSET_SIZE]);
-	dumpdata(&data[PI_NET_HEADER_LEN], s);
+	size = get_long(&data[PI_NET_OFFSET_SIZE]);
+	dumpdata(&data[PI_NET_HEADER_LEN], size);
 }

@@ -346,9 +346,9 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 
 	i = 0;
 	for (;;) {
-		struct DBInfo info;
-		struct pi_file *f;
-		struct utimbuf times;
+		struct 	DBInfo info;
+		struct 	pi_file *f;
+		struct 	utimbuf times;
 
 		/* This is supposed to be fixed on NeXT's Openstep 4.2.
 		   Anyone care to test this?
@@ -358,11 +358,11 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		}; 
 		*/
 		
-		struct stat statb;
-		int skip = 0;
-		int x;
-		char name[256];
 
+		int 	skip = 0,
+			x;
+		char 	name[256];
+		struct stat statb;
 
 		if (dlp_ReadDBList(sd, 0, (rom ? 0x40 : 0x80), i, &info) <
 		    0)
@@ -370,12 +370,12 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		i = info.index + 1;
 
 		if (quiet == 1) {
-			printf("[ %d ]\r", ++filecounter);
 			fflush(stdout);
 		}
 
 		if (dlp_OpenConduit(sd) < 0) {
-			printf("Exiting on cancel, all data was not backed up, halted before backing up '%s'.\n",
+			printf("Exiting on cancel, all data was not backed" 
+			       "up.\nHalted before backing up '%s'.\n",
 				info.name);
 			exit(1);
 		}
@@ -429,7 +429,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 			}
 		}
 
-		printf("Backing up '%s'... ", name);
+		fprintf(stderr, "Backing up '%s'... ", name);
 		fflush(stdout);
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
@@ -444,7 +444,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		if (pi_file_retrieve(f, sd, 0) < 0)
 			printf("Failed, unable to back up database\n");
 		else
-			printf("done.\n");
+			fprintf(stderr, "done.\n");
 		pi_file_close(f);
 
 		/* Note: This is no guarantee that the times on the host
@@ -807,7 +807,7 @@ void Install(char *filename)
 	if (pi_file_install(f, sd, 0) < 0)
 		printf("failed.\n");
 	else
-		printf("done.\n");
+		fprintf(stderr, "done.\n");
 	pi_file_close(f);
 
 	VoidSyncFlags();
@@ -894,8 +894,7 @@ void List(int rom)
 			break;
 		dbcount++;
 		i = info.index + 1;
-
-		printf("[%ld] \t%s\n", dbcount, info.name);
+		printf("%s\n", info.name);
 	}
 	printf("\nList done. %d files found.\n", dbcount);
 
@@ -954,7 +953,6 @@ void Purge(void)
 	}
 
 	VoidSyncFlags();
-
 	printf("Purge done.\n");
 }
 

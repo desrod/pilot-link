@@ -47,21 +47,19 @@ int sys_RPCerror;
  ***********************************************************************/
 int syspkt_tx(struct pi_socket *ps, void *m, int length)
 {
-	struct pi_skb *nskb;
+	struct 	pi_skb *nskb;
 	unsigned char *msg = m;
 
 #ifdef DEBUG
-	int i;
-        for(i=0;i<74;i++) fprintf(stderr, "-");
+	int 	idx;
+        for(idx = 0; idx < 74; idx++) fprintf(stderr, "-");
         fprintf(stderr, "\n");
 #endif
 
-	/* ps->laddr.pi_port = msg[0];
-	   ps->raddr.pi_port = msg[1];
-	   ps->protocol = msg[2]; XXX */
-
-	/* ps->xid = msg[3]; */
-
+	/* ps->laddr.pi_port 	= msg[0];
+	   ps->raddr.pi_port 	= msg[1];
+	   ps->protocol 	= msg[2]; XXX */
+	/* ps->xid 		= msg[3]; */
 	/* FIXME: use setsockopt to set the id */
 #if 0
 	if ((!ps->xid) || (ps->xid == 0xff))
@@ -73,10 +71,10 @@ int syspkt_tx(struct pi_socket *ps, void *m, int length)
 
 	nskb = (struct pi_skb *) malloc(sizeof(struct pi_skb));
 
-	nskb->source = msg[0];
-	nskb->dest = msg[1];
-	nskb->type = msg[2];
-	nskb->id = ps->xid;
+	nskb->source 	= msg[0];
+	nskb->dest 	= msg[1];
+	nskb->type 	= msg[2];
+	nskb->id 	= ps->xid;
 
 	/* FIXME: transmit a buffer properly */
 	memcpy(&nskb->data[10], msg + 4, length - 4);
@@ -98,9 +96,9 @@ int syspkt_tx(struct pi_socket *ps, void *m, int length)
  ***********************************************************************/
 int syspkt_rx(struct pi_socket *ps, void *b, int len)
 {
-	struct pi_skb *skb;
+	int 	rlen 	= 0;
+	struct 	pi_skb *skb;
 	unsigned char *buf = b;
-	int rlen = 0;
 
 	if (!ps->rxq)
 //		ps->serial_read(ps, 100);
@@ -108,7 +106,7 @@ int syspkt_rx(struct pi_socket *ps, void *b, int len)
 	if (!ps->rxq)
 		return 0;
 
-	skb = ps->rxq;
+	skb 	= ps->rxq;
 	ps->rxq = skb->next;
 
 	rlen = skb->len - 12;
@@ -138,21 +136,21 @@ int syspkt_rx(struct pi_socket *ps, void *b, int len)
  ***********************************************************************/
 int sys_UnpackState(void *buffer, struct Pilot_state *s)
 {
-	int i;
+	int 	idx;
 	unsigned char *data = buffer;
 
-	s->reset = get_short(data);
-	s->exception = get_short(data + 2);
+	s->reset 		= get_short(data);
+	s->exception 		= get_short(data + 2);
 	memcpy(s->func_name, data + 152, 32);
 	memcpy(s->instructions, data + 78, 30);
-	s->func_name[32 - 1] = 0;
-	s->func_start = get_long(data + 144);
-	s->func_end = get_long(data + 148);
+	s->func_name[32 - 1] 	= 0;
+	s->func_start 		= get_long(data + 144);
+	s->func_end 		= get_long(data + 148);
 	sys_UnpackRegisters(data + 4, &s->regs);
 
-	for (i = 0; i < 6; i++) {
-		s->breakpoint[i].address = get_long(data + 108 + i * 6);
-		s->breakpoint[i].enabled = get_byte(data + 112 + i * 6);
+	for (idx = 0; idx < 6; idx++) {
+		s->breakpoint[idx].address = get_long(data + 108 + idx * 6);
+		s->breakpoint[idx].enabled = get_byte(data + 112 + idx * 6);
 	}
 
 	s->trap_rev = get_short(data + 184);
@@ -190,10 +188,11 @@ int sys_UnpackRegisters(void *data, struct Pilot_registers *r)
 	r->A[4] = get_long(buffer + 48);
 	r->A[5] = get_long(buffer + 52);
 	r->A[6] = get_long(buffer + 56);
-	r->USP = get_long(buffer + 60);
-	r->SSP = get_long(buffer + 64);
-	r->PC = get_long(buffer + 68);
-	r->SR = get_short(buffer + 72);
+	r->USP  = get_long(buffer + 60);
+	r->SSP  = get_long(buffer + 64);
+	r->PC   = get_long(buffer + 68);
+
+	r->SR   = get_short(buffer + 72);
 
 	return 0;
 }
@@ -211,16 +210,17 @@ int sys_UnpackRegisters(void *data, struct Pilot_registers *r)
  ***********************************************************************/
 int sys_PackRegisters(void *data, struct Pilot_registers *r)
 {
+	int 	idx;
 	unsigned char *buffer = data;
-	int i;
 
-	for (i = 0; i < 8; i++)
-		set_long(buffer + i * 4, r->D[i]);
-	for (i = 0; i < 7; i++)
-		set_long(buffer + 32 + i * 4, r->A[i]);
+	for (idx = 0; idx < 8; idx++)
+		set_long(buffer + idx * 4, r->D[idx]);
+	for (idx = 0; idx < 7; idx++)
+		set_long(buffer + 32 + idx * 4, r->A[idx]);
 	set_long(buffer + 60, r->USP);
 	set_long(buffer + 64, r->SSP);
 	set_long(buffer + 68, r->PC);
+
 	set_short(buffer + 72, r->SR);
 
 	return 0;
@@ -239,15 +239,14 @@ int sys_PackRegisters(void *data, struct Pilot_registers *r)
  ***********************************************************************/
 int sys_Continue(int sd, struct Pilot_registers *r, struct Pilot_watch *w)
 {
-	char buf[94];
+	char 	buf[94];
 
-	buf[0] = 0;
-	buf[1] = 0;
-	buf[2] = 0;
-	buf[3] = 0;
-
-	buf[4] = 0x07;
-	buf[5] = 0;		/* gapfill */
+	buf[0] 	= 0;
+	buf[1] 	= 0;
+	buf[2] 	= 0;
+	buf[3] 	= 0;
+	buf[4] 	= 0x07;
+	buf[5] 	= 0;		/* gapfill */
 
 	if (!r)
 		return pi_write(sd, buf, 6);
@@ -275,7 +274,7 @@ int sys_Continue(int sd, struct Pilot_registers *r, struct Pilot_watch *w)
  ***********************************************************************/
 int sys_Step(int sd)
 {
-	char buf[94];
+	char 	buf[94];
 
 	buf[0] = 0;
 	buf[1] = 0;
@@ -301,8 +300,9 @@ int sys_Step(int sd)
  ***********************************************************************/
 int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
 {
-	char buf[94];
-	int i;
+	int 	idx;
+	char 	buf[94];
+
 
 	buf[0] = 0;
 	buf[1] = 0;
@@ -312,17 +312,17 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
 	buf[4] = 0x0c;
 	buf[5] = 0;		/* gapfill */
 
-	for (i = 0; i < 6; i++) {
-		set_long(buf + 6 + i * 6, b[i].address);
-		set_byte(buf + 10 + i * 6, b[i].enabled);
-		set_byte(buf + 11 + i * 6, 0);
+	for (idx = 0; idx < 6; idx++) {
+		set_long(buf + 6 + idx * 6, b[idx].address);
+		set_byte(buf + 10 + idx * 6, b[idx].enabled);
+		set_byte(buf + 11 + idx * 6, 0);
 	}
 
 	pi_write(sd, buf, 42);
 
-	i = pi_read(sd, buf, 6);
+	idx = pi_read(sd, buf, 6);
 
-	if ((i <= 0) || (buf[4] != (char) 0x8c))
+	if ((idx <= 0) || (buf[4] != (char) 0x8c))
 		return 0;
 	else
 		return 1;
@@ -341,8 +341,8 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
  ***********************************************************************/
 int sys_SetTrapBreaks(int sd, int *traps)
 {
-	char buf[94];
-	int i;
+	int 	idx;
+	char 	buf[94];
 
 	buf[0] = 0;
 	buf[1] = 0;
@@ -352,15 +352,15 @@ int sys_SetTrapBreaks(int sd, int *traps)
 	buf[4] = 0x11;
 	buf[5] = 0;		/* gapfill */
 
-	for (i = 0; i < 5; i++) {
-		set_short(buf + 6 + i * 2, traps[i]);
+	for (idx = 0; idx < 5; idx++) {
+		set_short(buf + 6 + idx * 2, traps[idx]);
 	}
 
 	pi_write(sd, buf, 16);
 
-	i = pi_read(sd, buf, 6);
+	idx = pi_read(sd, buf, 6);
 
-	if ((i <= 0) || (buf[4] != (char) 0x91))
+	if ((idx <= 0) || (buf[4] != (char) 0x91))
 		return 0;
 	else
 		return 1;
@@ -379,8 +379,8 @@ int sys_SetTrapBreaks(int sd, int *traps)
  ***********************************************************************/
 int sys_GetTrapBreaks(int sd, int *traps)
 {
-	char buf[94];
-	int i;
+	int 	idx;
+	char 	buf[94];
 
 	buf[0] = 0;
 	buf[1] = 0;
@@ -392,13 +392,13 @@ int sys_GetTrapBreaks(int sd, int *traps)
 
 	pi_write(sd, buf, 6);
 
-	i = pi_read(sd, buf, 16);
+	idx = pi_read(sd, buf, 16);
 
-	if ((i < 16) || (buf[4] != (char) 0x90))
+	if ((idx < 16) || (buf[4] != (char) 0x90))
 		return 0;
 
-	for (i = 0; i < 5; i++) {
-		traps[i] = get_short(buf + 6 + i * 2);
+	for (idx = 0; idx < 5; idx++) {
+		traps[idx] = get_short(buf + 6 + idx * 2);
 	}
 
 	return 1;
@@ -417,8 +417,8 @@ int sys_GetTrapBreaks(int sd, int *traps)
  ***********************************************************************/
 int sys_ToggleDbgBreaks(int sd)
 {
-	char buf[94];
-	int i;
+	int 	idx;
+	char 	buf[94];
 
 	buf[0] = 0;
 	buf[1] = 0;
@@ -430,9 +430,9 @@ int sys_ToggleDbgBreaks(int sd)
 
 	pi_write(sd, buf, 6);
 
-	i = pi_read(sd, buf, 7);
+	idx = pi_read(sd, buf, 7);
 
-	if ((i < 7) || (buf[4] != (char) 0x8d))
+	if ((idx < 7) || (buf[4] != (char) 0x8d))
 		return 0;
 
 	return get_byte(buf + 6);
@@ -451,7 +451,7 @@ int sys_ToggleDbgBreaks(int sd)
  ***********************************************************************/
 int sys_QueryState(int sd)
 {
-	char buf[6];
+	char 	buf[6];
 
 	buf[0] = 0;
 	buf[1] = 0;
@@ -478,13 +478,13 @@ int sys_QueryState(int sd)
 int
 sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
 {
-	int result;
+	int 	result;
 	unsigned char buf[0xffff];
 	unsigned long todo, done;
 
 	done = 0;
 	do {
-		todo = len;
+		todo 	= len;
 		if (todo > 256)
 			todo = 256;
 
@@ -531,7 +531,7 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
 int
 sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
 {
-	int result;
+	int 	result;
 	unsigned char buf[0xffff];
 	unsigned long todo, done;
 
@@ -585,7 +585,7 @@ int
 sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, int len,
 	 int caseinsensitive, void *data, unsigned long *found)
 {
-	int result;
+	int 	result;
 	unsigned char buf[0xffff];
 
 	buf[0] = 0;
@@ -631,7 +631,7 @@ int
 sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
 		int keymod, int keyasc, int keycode)
 {
-	char buf[20];
+	char 	buf[20];
 
 	buf[0] 	= 2;
 	buf[1] 	= 2;
@@ -673,8 +673,8 @@ int
 sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 	struct RPC_param *param, int reply)
 {
+	int 	idx;
 	unsigned char buf[4096];
-	int i;
 	unsigned char *c;
 
 	buf[0] = socket;	/* 0 for debug, 1 for console */
@@ -689,15 +689,15 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 	set_short(buf + 16, params);
 
 	c = buf + 18;
-	for (i = params - 1; i >= 0; i--) {
-		set_byte(c, param[i].byRef);
+	for (idx = params - 1; idx >= 0; idx--) {
+		set_byte(c, param[idx].byRef);
 		c++;
-		set_byte(c, param[i].size);
+		set_byte(c, param[idx].size);
 		c++;
-		if (param[i].data)
-			memcpy(c, param[i].data, param[i].size);
-		c += param[i].size;
-		if (param[i].size & 1)
+		if (param[idx].data)
+			memcpy(c, param[idx].data, param[idx].size);
+		c += param[idx].size;
+		if (param[idx].size & 1)
 			*c++ = 0;
 	}
 
@@ -719,10 +719,10 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 		*D0 = get_long(buf + 8);
 		*A0 = get_long(buf + 12);
 		c = buf + 18;
-		for (i = params - 1; i >= 0; i--) {
-			if (param[i].byRef && param[i].data)
-				memcpy(param[i].data, c + 2,
-				       param[i].size);
+		for (idx = params - 1; idx >= 0; idx--) {
+			if (param[idx].byRef && param[idx].data)
+				memcpy(param[idx].data, c + 2,
+				       param[idx].size);
 			c += 2 + ((get_byte(c + 1) + 1) & ~1);
 		}
 	}
@@ -742,11 +742,13 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
  ***********************************************************************/
 int RPC(int sd, int socket, int trap, int reply, ...)
 {
+	int 	idx = 0,
+		j,
+		RPC_arg[20];
 	va_list ap;
-	struct RPC_param p[20];
-	int RPC_arg[20];
-	int i = 0, j;
-	long D0 = 0, A0 = 0;
+	struct 	RPC_param p[20];
+	long 	D0 = 0,
+		A0 = 0;
 
 	va_start(ap, reply);
 	for (;;) {
@@ -755,22 +757,22 @@ int RPC(int sd, int socket, int trap, int reply, ...)
 		if (type == 0)
 			break;
 		if (type < 0) {
-			p[i].byRef = 0;
-			p[i].size = -type;
-			RPC_arg[i] = va_arg(ap, int);
+			p[idx].byRef 	= 0;
+			p[idx].size 	= -type;
+			RPC_arg[idx] 	= va_arg(ap, int);
 
-			p[i].data = &RPC_arg[i];
-			p[i].invert = 0;
+			p[idx].data 	= &RPC_arg[idx];
+			p[idx].invert 	= 0;
 		} else {
 			void *c = va_arg(ap, void *);
 
-			p[i].byRef = 1;
-			p[i].size = type;
-			p[i].data = c;
-			p[i].invert = va_arg(ap, int);
+			p[idx].byRef 	= 1;
+			p[idx].size 	= type;
+			p[idx].data 	= c;
+			p[idx].invert 	= va_arg(ap, int);
 
-			if (p[i].invert) {
-				if (p[i].size == 2) {
+			if (p[idx].invert) {
+				if (p[idx].size == 2) {
 					int *s = c;
 
 					*s = htons((short) *s);
@@ -781,14 +783,14 @@ int RPC(int sd, int socket, int trap, int reply, ...)
 				}
 			}
 		}
-		i++;
+		idx++;
 	}
 	va_end(ap);
 
 	sys_RPCerror =
-	    sys_RPC(sd, socket, trap, &D0, &A0, i, p, reply != 2);
+	    sys_RPC(sd, socket, trap, &D0, &A0, idx, p, reply != 2);
 
-	for (j = 0; j < i; j++) {
+	for (j = 0; j < idx; j++) {
 		if (p[j].invert) {
 			void *c = p[j].data;
 
@@ -823,8 +825,8 @@ int RPC(int sd, int socket, int trap, int reply, ...)
  ***********************************************************************/
 int PackRPC(struct RPC_params *p, int trap, int reply, ...)
 {
+	int 	idx = 0;
 	va_list ap;
-	int i = 0;
 
 	p->trap = trap;
 	p->reply = reply;
@@ -836,23 +838,23 @@ int PackRPC(struct RPC_params *p, int trap, int reply, ...)
 		if (type == 0)
 			break;
 		if (type < 0) {
-			p->param[i].byRef = 0;
-			p->param[i].size = -type;
-			p->param[i].arg = (int) va_arg(ap, int);
+			p->param[idx].byRef 	= 0;
+			p->param[idx].size 	= -type;
+			p->param[idx].arg 	= (int) va_arg(ap, int);
 
-			p->param[i].data = &p->param[i].arg;
-			p->param[i].invert = 0;
+			p->param[idx].data 	= &p->param[idx].arg;
+			p->param[idx].invert 	= 0;
 		} else {
 			void *c = (void *) va_arg(ap, void *);
 
-			p->param[i].byRef = 1;
-			p->param[i].size = type;
-			p->param[i].data = c;
-			p->param[i].invert = (int) va_arg(ap, int);
+			p->param[idx].byRef 	= 1;
+			p->param[idx].size 	= type;
+			p->param[idx].data 	= c;
+			p->param[idx].invert 	= (int) va_arg(ap, int);
 		}
-		i++;
+		idx++;
 	}
-	p->args = i;
+	p->args = idx;
 	va_end(ap);
 
 	return 0;
@@ -871,7 +873,7 @@ int PackRPC(struct RPC_params *p, int trap, int reply, ...)
  ***********************************************************************/
 void UninvertRPC(struct RPC_params *p)
 {
-	int j;
+	int 	j;
 
 	for (j = 0; j < p->args; j++) {
 		if (p->param[j].invert) {
@@ -908,7 +910,7 @@ void UninvertRPC(struct RPC_params *p)
  ***********************************************************************/
 void InvertRPC(struct RPC_params *p)
 {
-	int j;
+	int 	j;
 
 	for (j = 0; j < p->args; j++) {
 		if (p->param[j].invert) {
@@ -945,8 +947,9 @@ void InvertRPC(struct RPC_params *p)
  ***********************************************************************/
 unsigned long DoRPC(int sd, int socket, struct RPC_params *p, int *error)
 {
-	int err;
-	long D0 = 0, A0 = 0;
+	int 	err;
+	long 	D0 = 0,
+		A0 = 0;
 
 	InvertRPC(p);
 

@@ -23,7 +23,7 @@
 
 void PalmHeader(char *progname)
 {
-        char *patchlevel = "";
+        char 	*patchlevel = "";
 
 #ifdef PILOT_LINK_PATCH
         patchlevel = PILOT_LINK_PATCH;

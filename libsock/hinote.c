@@ -56,9 +56,9 @@ int unpack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
 {
 	if (len < 3)
 		return 0;
-	a->flags = buffer[0];
-	a->level = buffer[1];
-	a->text = strdup((char *) &buffer[2]);
+	a->flags 	= buffer[0];
+	a->level 	= buffer[1];
+	a->text 	= strdup((char *) &buffer[2]);
 	return strlen((char *) &buffer[2]) + 3;
 }
 
@@ -75,7 +75,7 @@ int unpack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
  ***********************************************************************/
 int pack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
 {
-	int destlen;
+	int 	destlen;
 
 	destlen = 3;
 	if (a->text)
@@ -112,20 +112,20 @@ int
 unpack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 		     int len)
 {
+	int 	idx,	
+		index;
 	unsigned char *start;
-	int i;
-	int index;
 
 	start = record;
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!i)
-		return i;
-	record += i;
-	len -= i;
+	idx = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!idx)
+		return idx;
+	record += idx;
+	len -= idx;
 	if (len < 48)
 		return 0;
-	for (index = 0; i < 48; i++)
-		ai->reserved[i] = *record++;
+	for (index = 0; idx < 48; idx++)
+		ai->reserved[idx] = *record++;
 	return (record - start);
 }
 
@@ -144,21 +144,21 @@ int
 pack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 		   int len)
 {
-	int i;
-	int index;
+	int 	idx,
+		index;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
-	if (i == 0)		/* category pack failed */
+	idx = pack_CategoryAppInfo(&ai->category, record, len);
+	if (idx == 0)		/* category pack failed */
 		return 0;
 	if (!record)
-		return i + 48;
-	record += i;
-	len -= i;
+		return idx + 48;
+	record += idx;
+	len -= idx;
 	if (len < 48)
 		return (record - start);
-	for (index = 0; i < 48; i++)
-		*record++ = ai->reserved[i];
+	for (index = 0; idx < 48; idx++)
+		*record++ = ai->reserved[idx];
 
 	return (record - start);
 }
