@@ -673,9 +673,10 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 	pi_buffer_t *buffer;
 	int				fd = -1,
 					offset;
-	size_t			readsize,writesize;
+	ssize_t			readsize,writesize;
+	int		filesize;
+	int original_filesize;
 
-	struct stat				sbuf;
 
 	if (NULL == vfspath)
 	{
@@ -715,7 +716,7 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 	strncat(rpath,dbname,sizeof(rpath)-rpathlen-1);
 	rpathlen=strlen(rpath);
 
-	fprintf(stderr,"* Reading %s on volume %ld\n",rpath,volume);
+	/* fprintf(stderr,"* Reading %s on volume %ld\n",rpath,volume); */
 
 	if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenRead,&file) < 0) {
 		fprintf(stderr,"\n   Cannot open file '%s' on VFS.\n",rpath);
@@ -738,8 +739,10 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 		return;
 	}
 
+	dlp_VFSFileSize(sd,file,&filesize);
+	original_filesize = filesize;
 
-	fprintf(stderr,"* Got attributes %lx.\n",attributes);
+	/* fprintf(stderr,"* Got attributes %lx.\n",attributes); */
 
 	/* Calculate basename, perhaps? */
 	fd = open(dbname,O_WRONLY | O_CREAT | O_TRUNC,0666);
@@ -749,17 +752,20 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 		return;
 	}
 
-#define FBUFSIZ 16384
+#define FBUFSIZ 65536
 
-	buffer = pi_buffer_new(64 * 1024);
+	buffer = pi_buffer_new(FBUFSIZ);
 	readsize = 0;
-	while (readsize >= 0)
+	while ((filesize > 0) && (readsize >= 0))
 	{
-		readsize = dlp_VFSFileRead(sd,file,buffer,FBUFSIZ);
+		pi_buffer_clear(buffer);
+		readsize = dlp_VFSFileRead(sd,file,buffer,
+			( filesize > FBUFSIZ ? FBUFSIZ : filesize));
 
-		fprintf(stderr,"*  Read %ld bytes.\n",readsize);
+		/* fprintf(stderr,"*  Read %ld bytes.\n",readsize); */
 
 		if (readsize <= 0) break;
+		filesize -= readsize;
 		offset=0;
 		while (readsize > 0)
 		{
@@ -775,12 +781,13 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 		}
 	}
 	pi_buffer_free(buffer);
+#undef FBUFSIZ
 
 	dlp_VFSFileClose(sd,file);
 	close(fd);
 
 	printf("(%lu bytes, %ld KiB total)\n",
-		(unsigned long)sbuf.st_size, totalsize/1024);
+		(unsigned long)original_filesize, totalsize/1024);
 }
 
 static void
