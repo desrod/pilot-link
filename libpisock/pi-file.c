@@ -1243,7 +1243,6 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno)
 	
 	unsigned char buffer[0xffff];
 
-	/* printf("\n"); */
 	start_time = (unsigned long) time(NULL);
 	if (dlp_OpenDB
 	    (socket, cardno, dlpOpenRead | dlpOpenSecret, pf->info.name,
@@ -1346,7 +1345,6 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 	void 	*buffer;
 
 	version = pi_version(socket);
-	/* printf("\n"); */
 
 	/* Delete DB if it already exists */
 	dlp_DeleteDB(socket, cardno, pf->info.name);
@@ -1529,7 +1527,6 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 					       start_time));
 #endif
 		}
-		printf("\n");
 	}
 
 	if (reset)
