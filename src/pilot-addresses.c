@@ -323,7 +323,6 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 {
 	int 	i	= -1,
 		l,
-		nf,
 		attribute,
 		category;
 	char 	buf[0xffff];
@@ -334,7 +333,22 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 	fflush(stdout);
 
 	while (!feof(f)) {
+		l = getc(f);
+		if (feof(f) || (l<0)) {
+			break;
+		}
+		if ('#' == l) {
+			/* skip remainder of line */
+			while (!feof(f) && (l!='\n') && (l>=0)) {
+				l = getc(f);
+			}
+			fprintf(stderr, "\n   Ignoring header.\n");
+			continue;
+		} else {
+			ungetc(l,f);
+		}
 		i = read_field(buf, f);
+		/* fprintf(stderr,"* Field=%s\n",buf); */
 
 		memset(&addr, 0, sizeof(addr));
 		addr.showPhone = 0;
@@ -366,6 +380,13 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 					addr.phoneLabel[l2 - 3] = match_phone(buf, aai);
 					i = read_field(buf, f);
 				}
+			} else {
+				if (buf[0]) {
+					addr.entry[l2] = strdup(buf);
+				} else {
+					addr.entry[l2] = NULL;
+				}
+
 			}
 
 			if (i == 0)
@@ -384,8 +405,9 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 
 		dlp_WriteRecord(sd, db, attribute, 0, category,
 				(unsigned char *) buf, l, 0);
+		free_Address(&addr);
 
-	} while (i >= 0);
+	}
 
 	printf("done.\n");
 	return 0;
