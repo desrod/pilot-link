@@ -124,6 +124,9 @@
 /* Define if you have the <sys/utsname.h> header file.  */
 #undef HAVE_SYS_UTSNAME_H
 
+/* Define if you have a good iconv  */
+#undef HAVE_ICONV
+
 #ifdef NeXT
 # include <libc.h>
 #endif

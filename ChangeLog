@@ -1,3 +1,17 @@
+2000-12-19  JP Rosevear  <jpr@helixcode.com>
+
+	* include/pi-config.h.in: List HAVE_ICONV
+
+	* configure.in: Check for an iconv implementation to do charset
+	conversion
+
+	* libsock/util.c (convert_ToPilotChar): Convert to pilot character
+	set (only does CP1252 devices right now)
+	(convert_FromPilotChar): Code to convert from pilot character set
+
+	* include/pi-util.h: New routines to convert to pilot
+	character set
+
 2000-12-08  JP Rosevear  <jpr@helixcode.com>
 
 	* libsock/sync.c (sync_record): When pilot record is archived and

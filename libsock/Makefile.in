@@ -10,7 +10,7 @@ PIHEADER = pi-header.$(O)
 
 APPOBJS = datebook.$(O) memo.$(O) address.$(O) todo.$(O) expense.$(O) mail.$(O) sync.$(O) appinfo.$(O) hinote.$(O)
 
-UTILOBJS = utils.$(O)
+UTILOBJS = utils.$(O) util.$(O)
 
 SERIAL = unixserial.$(O)
 
@@ -188,6 +188,7 @@ unixserial.o unixserial.lo: unixserial.c ../include/pi-source.h \
  ../include/pi-version.h ../include/pi-sockaddr.h \
  ../include/pi-macros.h ../include/pi-serial.h ../include/pi-slp.h \
  ../include/pi-syspkt.h ../include/pi-padp.h
+util.o util.lo: util.c ../include/pi-config.h ../include/pi-util.h
 utils.o utils.lo: utils.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h

@@ -113,7 +113,9 @@ esac
 
 dnl Checks for libraries.
 
-
+dnl ******************************
+dnl c++ lib checking
+dnl ******************************
 if test $ac_cv_prog_cxx_works = yes; then
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
@@ -125,6 +127,65 @@ fi
 AC_CHECK_LIB(m, ldexp, LIBS="$LIBS -lm")
 AC_CHECK_LIB(PW, alloca, LIBS="$LIBS -lPW")
 
+dnl ******************************
+dnl iconv checking
+dnl ******************************
+have_iconv=no
+AC_ARG_WITH(libiconv, [  --with-libiconv         Prefix where libiconv is installed])
+case $withval in
+/*)
+    ICONV_CFLAGS="-I$withval/include"
+    ICONV_LIBS="-L$withval/lib"
+    ;;
+esac
+
+save_CFLAGS="$CFLAGS"
+save_LDFLAGS="$LDFLAGS"
+CFLAGS="$CFLAGS $ICONV_CFLAGS"
+LDFLAGS="$LDFLAGS $ICONV_LIBS"
+AC_CHECK_LIB(iconv, libiconv, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"], [
+    AC_CHECK_FUNC(iconv, [
+	AC_CHECK_FUNCS(gnu_get_libc_version)
+	AC_MSG_CHECKING(if system iconv handles CP1252)
+	AC_TRY_RUN([
+#include <iconv.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_GNU_GET_LIBC_VERSION
+#include <gnu/libc-version.h>
+#endif
+
+int main (int argc, char **argv)
+{
+	const char *pc = "\x66\x66\x66\x66\x66\x66\x66\xA9";
+	const char *utf8 = "\x66\x66\x66\x66\x66\x66\x66\xC2\xA9";
+	char transbuf[10], *trans = transbuf;
+	iconv_t cd;
+	size_t pc_len = strlen (pc), utf8_len = 10;
+	size_t utf8_real_len = strlen (utf8);
+
+	cd = iconv_open ("UTF-8", "CP1252");
+	if (!cd)
+		exit (1);
+	if (iconv (cd, &pc, &pc_len, &trans, &utf8_len) == -1 || pc_len != 0)
+		exit (1);
+	if (memcmp (utf8, transbuf, utf8_real_len) != 0)
+		exit (1);
+
+	exit (0);
+}], AC_MSG_RESULT(yes); have_iconv=yes, [AC_MSG_RESULT(no);])])])
+CFLAGS="$save_CFLAGS"
+LDFLAGS="$save_LDFLAGS"
+
+if test "$have_iconv" = yes; then
+	AC_DEFINE(HAVE_ICONV)
+fi
+AC_SUBST(ICONV_CFLAGS)
+AC_SUBST(ICONV_LIBS)
+
+dnl ******************************
+dnl readline checking
+dnl ******************************
 AC_ARG_WITH(readline21,      [  --with-readline21    use readline 2.1 [default=yes]])
 AC_ARG_WITH(readline20,      [  --with-readline20    use readline 2.0 [default=yes]])
 
