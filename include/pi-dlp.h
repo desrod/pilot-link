@@ -195,9 +195,9 @@ extern "C" {
 		dlpFuncReadFeature,
 	
 		/* DLP 1.2 FUNCTIONS ADDED HERE (PalmOS v3.0) */
-		dlpFindDB,
+		dlpFuncFindDB,
 
-		dlpSetDBInfo,
+		dlpFuncSetDBInfo,
 	
 		dlpLastFunc
 
@@ -541,6 +541,12 @@ extern "C" {
 	extern int dlp_WriteAppPreference
 		PI_ARGS((int sd, unsigned long creator, int id, int backup,
 			int version, void *buffer, int size));
+
+	/* PalmOS 3.0 only */
+	extern int dlp_SetDBInfo
+	        PI_ARGS((int sd, int dbhandle, int flags, int clearFlags, unsigned int version,
+			 time_t createDate, time_t modifyDate, time_t backupDate, 
+			 unsigned long type, unsigned long creator));
 
 	struct RPC_params;
 

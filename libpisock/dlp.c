@@ -1294,6 +1294,53 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 
 /***********************************************************************
  *
+ * Function:    dlp_SetDBInfo
+ *
+ * Summary:     Set the database info, passing 0 for a param leaves it
+ *              unchanged.
+ *
+ * Parameters:  None
+ *
+ * Returns:     A negative number on error, the number of bytes read
+ *		otherwise
+ *
+ ***********************************************************************/
+int dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags, unsigned int version,
+		   time_t createDate, time_t modifyDate, time_t backupDate, 
+		   unsigned long type, unsigned long creator)
+{
+	int 	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+ 	
+	Trace(SetDBInfo);
+
+	if (pi_version(sd) < 0x0102)
+		return -129;
+
+	req = dlp_request_new(dlpFuncSetDBInfo, 1, 40);
+
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
+	set_short(DLP_REQUEST_DATA(req, 0, 2), clearFlags);
+	set_short(DLP_REQUEST_DATA(req, 0, 4), flags);
+	set_short(DLP_REQUEST_DATA(req, 0, 6), version);
+	set_date(DLP_REQUEST_DATA(req, 0, 8), createDate);
+	set_date(DLP_REQUEST_DATA(req, 0, 16), modifyDate);
+	set_date(DLP_REQUEST_DATA(req, 0, 24), backupDate);
+	set_long(DLP_REQUEST_DATA(req, 0, 32), type);
+	set_long(DLP_REQUEST_DATA(req, 0, 36), creator);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
  * Function:    dlp_MoveCategory
  *
  * Summary:     Move all records in a category to another category

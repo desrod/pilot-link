@@ -19,4 +19,6 @@ aclocal.m4
 Makefile
 Makefile.in
 pilot-link.m4
+pilot-link.pc
+pilot-link-pp.pc
 tags

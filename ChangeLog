@@ -1,3 +1,17 @@
+2003-07-02  JP Rosevear  <jpr@ximian.com>
+
+	* tests/dlp-test.c (main): test SetDBInfo
+
+	* include/pi-dlp.h: add proto
+
+	* libpisock/socket.c (ps_list_find_elem): return the list element
+	rather than the socket
+	(pi_version): improve implementation so we differentiate between
+	dlp 1.1 and higher, cache result
+	(ps_list_append): set the version to 0 by default
+
+	* libpisock/dlp.c (dlp_SetDBInfo): implement
+
 2003-07-01  JP Rosevear  <jpr@ximian.com>
 
 	* Makefile.am: only install the -pp pkgconfig file if c++ is

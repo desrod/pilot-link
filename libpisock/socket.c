@@ -64,6 +64,8 @@ int pi_socket_init(struct pi_socket *ps);
 struct pi_socket_list
 {
 	struct pi_socket *ps;
+	int version;
+	
 	struct pi_socket_list *next;
 };
 
@@ -84,6 +86,7 @@ ps_list_append (struct pi_socket_list *list, struct pi_socket *ps)
 
 	new_elem 	= malloc(sizeof(struct pi_socket_list));
 	new_elem->ps 	= ps;
+	new_elem->version = 0;
 	new_elem->next 	= NULL;
 
 	if (list == NULL)
@@ -108,6 +111,7 @@ ps_list_prepend (struct pi_socket_list *list, struct pi_socket *ps)
 
 	new_elem 	= malloc(sizeof(struct pi_socket_list));
 	new_elem->ps 	= ps;
+	new_elem->version = 0;
 	new_elem->next 	= list;
 
 	return new_elem;
@@ -122,6 +126,19 @@ ps_list_find (struct pi_socket_list *list, int sd)
 	for (elem = list; elem != NULL; elem = elem->next) {
 		if (elem->ps->sd == sd)
 			return elem->ps;
+	}
+
+	return NULL;
+}
+
+static struct pi_socket_list *
+ps_list_find_elem (struct pi_socket_list *list, int sd) 
+{
+	struct pi_socket_list *elem;
+	
+	for (elem = list; elem != NULL; elem = elem->next) {
+		if (elem->ps->sd == sd)
+			return elem;
 	}
 
 	return NULL;
@@ -1297,34 +1314,46 @@ int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
  ***********************************************************************/
 int pi_version(int pi_sd)
 {
-	int 	size, 
-		vers = 0x0000;
-	struct 	pi_socket *ps;
-
+	int 	size;
+	struct 	pi_socket_list *elem;
+	struct  SysInfo si;
 	
-	if (!(ps = find_pi_socket(pi_sd))) {
+	/* FIXME This is an ugly hack for versions because cmp doesn't
+	 * go beyond 1.1 in its versioning because ReadSysInfo
+	 * provides the dlp version in dlp 1.2 and higher */
+
+	if (!(elem = ps_list_find_elem (psl, pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
 	
+	if (elem->version != 0)
+		return elem->version;
+	
+	if (dlp_ReadSysInfo (elem->ps->sd, &si) < 0)
+		return 0x000;
+
+	if (si.dlpMajorVersion != 0) {
+		elem->version = (si.dlpMajorVersion << 8) | si.dlpMinorVersion;
+		
+		return elem->version;
+	}
+	
 	/* Enter command state */
-	ps->command = 1;
+	elem->ps->command = 1;
 
 	/* Get the version */
-	switch (ps->cmd) {
+	switch (elem->ps->cmd) {
 	case PI_CMD_CMP:
-		size = sizeof(vers);
-		pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_VERS, &vers, &size);
-		break;
-	case PI_CMD_NET:
-		vers = 0x0101;
+		size = sizeof(elem->version);
+		pi_getsockopt(elem->ps->sd, PI_LEVEL_CMP, PI_CMP_VERS, &elem->version, &size);
 		break;
 	}
 
 	/* Exit command state */
-	ps->command = 0;
+	elem->ps->command = 0;
 
-	return vers;
+	return elem->version;
 }
 
 struct pi_socket *find_pi_socket(int sd)

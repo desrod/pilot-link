@@ -289,6 +289,45 @@ main (int argc, char **argv)
 
 	/*********************************************************************
 	 *
+	 * Test: Database Info
+	 *
+	 * Direct Testing Functions:
+	 *   dlp_SetDBInfo
+	 *
+	 * Indirect Testing Functions:
+	 *   dlp_CreateDB
+	 *   dlp_ReadDBList
+	 *   dlp_CloseDB
+	 *   dlp_DeleteDB
+	 *
+	 *********************************************************************/
+#if DLP_1_2
+	result = dlp_CreateDB (sd, CREATOR, DATA, 0, 0, 1, "TestRecord", &handle);
+	CHECK_RESULT(dlp_CreateDB);
+	result = dlp_SetDBInfo (sd, handle, dlpDBFlagBackup, dlpDBFlagCopyPrevention, 0, 0, 0, 0, 0, 0);
+	CHECK_RESULT(dlp_SetDBInfo);
+	result = dlp_CloseDB (sd, handle);
+	CHECK_RESULT(dlp_CloseDB);
+	
+	dbi.more = 1;
+	for (i = 0; dbi.more != 0; i++) {
+		result = dlp_ReadDBList (sd, 0, dlpDBListRAM, i, &dbi);
+		CHECK_RESULT(dlp_ReadDBList);
+
+		if (!strcmp (dbi.name, "TestRecord")) {
+			if (dbi.flags != dlpDBFlagBackup) {
+				LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Database info mismatch\n"));
+				goto error;
+			}
+		}
+	}
+	
+	result = dlp_DeleteDB (sd, 0, "TestRecord");
+	CHECK_RESULT(dlp_DeleteDB);
+#endif
+
+	/*********************************************************************
+	 *
 	 * Test: App Preference
 	 *
 	 * Direct Testing Functions:
