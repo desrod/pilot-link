@@ -29,52 +29,6 @@
 #include "userland.h"
 
 
-char *paymentTypes[] =
-{
-	"amex",
-	"cash",
-	"check",
-	"creditcard",
-	"mastercard",
-	"prepaid",
-	"visa",
-	"unfiled",
-	NULL
-};
-
-
-char *expenseTypes[] =
-{
-	"airfare",
-	"breakfast",
-	"bus",
-	"businessmeals",
-	"carrental",
-	"dinner",
-	"entertainment",
-	"fax",
-	"gas",
-	"gifts",
-	"hotel",
-	"incidentals",
-	"laundry",
-	"limo",
-	"lodging",
-	"lunch",
-	"mileage",
-	"other",
-	"parking",
-	"postage",
-	"snack",
-	"subway",
-	"supplies",
-	"taxi",
-	"telephone",
-	"tips",
-	"tolls",
-	"train",
-	NULL
-};
 
 
 int main(int argc, const char *argv[])
@@ -92,6 +46,7 @@ int main(int argc, const char *argv[])
 		*expenseType	= NULL,
 		*paymentType	= NULL;
 	size_t size;
+	int found;
 
 	unsigned char buf[0xffff];
 	unsigned char *b;
@@ -116,6 +71,10 @@ int main(int argc, const char *argv[])
         	POPT_TABLEEND
 	};
 
+	/* Zero 'em out to be sure. */
+	theExpense.amount=theExpense.vendor=theExpense.city=
+	theExpense.attendees=theExpense.note = NULL ;
+
 	po = poptGetContext("install-expenses", argc, argv, options, 0);
 	poptSetOtherOptionHelp(po,"\n\n"
 		"   Install Expense application entries to your Palm device\n\n"
@@ -134,28 +93,45 @@ int main(int argc, const char *argv[])
 	}
 
 	theExpense.type = etBus;
-	for (i = 0; expenseType && expenseTypes[i] != NULL; i++)
+	found = 0;
+	for (i = 0; expenseType && ExpenseTypeNames[i] != NULL; i++)
 	{
-		if (strcasecmp(expenseType, expenseTypes[i]) == 0)
+		if (strcasecmp(expenseType, ExpenseTypeNames[i]) == 0)
 		{
 			theExpense.type = i;
+			found = 1;
 			break;
 		}
 	}
+	if (!found) {
+		fprintf(stderr,"   WARNING: Expense type '%s' not recognized, using 'Bus Fare'.\n",expenseType);
+	}
 
 	theExpense.payment = epCash;
-	for (i = 0; paymentType && paymentTypes[i] != NULL; i++)
+	found = 0;
+	for (i = 0; paymentType && ExpensePaymentNames[i] != NULL; i++)
 	{
-		if (strcasecmp(paymentType, paymentTypes[i]) == 0)
+		if (strcasecmp(paymentType, ExpensePaymentNames[i]) == 0)
 		{
 			theExpense.payment = i;
+			found = 1;
 			break;
 		}
+	}
+	if (!found) {
+		fprintf(stderr,"   WARNING: Payment type '%s' not recognized, using 'Cash'.\n", paymentType);
 	}
 
 	if (replace_category && (!category_name)) {
 		fprintf(stderr,
-			"   ERROR: expense category required when specifying replace\n");
+			"   ERROR: category required when specifying replace\n");
+		return 1;
+	}
+
+
+	if (!(theExpense.amount || theExpense.vendor || theExpense.city ||
+		theExpense.attendees ||theExpense.note)) {
+		fprintf(stderr,"   ERROR: Must specify at least one of amount, vendor, city, attendees or note.\n");
 		return 1;
 	}
 
@@ -202,7 +178,22 @@ int main(int argc, const char *argv[])
 	}
 
 		theExpense.currency 	= 0;
-		theExpense.attendees 	= "";
+
+		if (!theExpense.amount) {
+			theExpense.amount = "";
+		}
+		if (!theExpense.vendor) {
+			theExpense.vendor = "";
+		}
+		if (!theExpense.city) {
+			theExpense.city = "";
+		}
+		if (!theExpense.attendees) {
+			theExpense.attendees 	= "";
+		}
+		if (!theExpense.note) {
+			theExpense.note = "";
+		}
 
 		b = buf;
 
@@ -243,7 +234,7 @@ int main(int argc, const char *argv[])
 	User.lastSyncDate 	= User.successfulSyncDate;
 	dlp_WriteUserInfo(sd, &User);
 
-	dlp_AddSyncLogEntry(sd, "Wrote memo(s) to Palm.\n");
+	dlp_AddSyncLogEntry(sd, "Wrote expense entry to Palm.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	poptFreeContext(po);

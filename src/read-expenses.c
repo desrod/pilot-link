@@ -168,8 +168,10 @@ int main(int argc, const char *argv[])
 		dumpdata(buffer2, ret);
 #endif
 		printf("Category: %s\n", tai.category.name[category]);
-		printf("  Type: %3d\n  Payment: %3d\n  Currency: %3d\n",
-			t.type, t.payment, t.currency);
+		printf("  Type: %s (%3d)\n  Payment: %s (%3d)\n  Currency: %3d\n",
+			ExpenseTypeNames[t.type],t.type,
+			ExpensePaymentNames[t.payment],t.payment,
+			t.currency);
 		printf("  Amount: %s\n  Vendor: %s\n  City: %s\n",
 			t.amount ? t.amount : "<None>",
 			t.vendor ? t.vendor : "<None>",
