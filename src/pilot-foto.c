@@ -784,6 +784,7 @@ int main(int argc, const char *argv[])
 				return 1;
 			}
 			mode = c;
+			break;
 		default:
 			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
 			return 1;
