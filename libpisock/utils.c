@@ -69,7 +69,7 @@
  * Returns:     CRC + NULL
  *
  ***********************************************************************/
-unsigned short crc16(unsigned char *ptr, int count)
+int crc16(unsigned char *ptr, int count)
 {
 	int	crc,
 		i;
