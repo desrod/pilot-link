@@ -181,7 +181,7 @@ save_LDFLAGS="$LDFLAGS"
 CFLAGS="$CFLAGS $PNG_CFLAGS"
 LDFLAGS="$LDFLAGS $PNG_LIBS"
 
-AC_CHECK_LIB(png, main, [have_png=yes; PNG_LIBS="$PNG_LIBS -lpng"])
+AC_CHECK_LIB(png, main, [have_png=yes; PNG_LIBS="$PNG_LIBS -lpng"],[have_png=no],[-lm])
 if test "$have_png" = yes; then
 	AC_CHECK_HEADER(png.h, , have_png=no)
 	if test "$have_png" = yes; then
