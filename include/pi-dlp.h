@@ -29,6 +29,11 @@ extern "C" {
 #include "pi-buffer.h"		/* For pi_buffer_t */
 
 /* version of the DLP protocol supported in this version */
+/* Hint for existing versions:
+ * 1.2: Palm OS 4 / Palm OS 5 (OS 5 should be 1.3 but incorrectly reports 1.2)
+ * 1.4: TapWave Palm OS 5
+ * 2.1: Palm OS 6
+ */
 #define PI_DLP_VERSION_MAJOR 1
 #define PI_DLP_VERSION_MINOR 4
 
@@ -327,13 +332,13 @@ typedef unsigned long FileRef;
 
 		/* DLP 1.4-TW functions added here (Palm OS 5/TapWave) */
 		dlpFuncExpSlotMediaType,                /* 0x5d */
-		dlpFuncWriteRecordStream,               /* 0x5e (may be bogus definition in tapwave headers) */
-		dlpFuncWriteResourceEx,			/* 0x5f */
-		dlpFuncReadResourceStream,              /* 0x60 (may be bogus definition in tapwave headers) */
-		dlpFuncReadRecordStream,                /* 0x61 (may be bogus definition in tapwave headers)*/
-		dlp_unknown1,				/* 0x62 */
-		dlp_unknown2,				/* 0x63 */
-		dlpFuncReadResourceEx,			/* 0x64 */
+		dlpFuncWriteRecordEx,               /* 0x5e - function to write >64k records in TapWave */
+		dlpFuncWriteResourceEx,			/* 0x5f - function to write >64k resources in TapWave */
+		dlpFuncReadRecordEx,              /* 0x60 - function to read >64k records by index in TapWave */
+		dlpFuncUnknown1,                /* 0x61 (may be bogus definition in tapwave headers, is listed as dlpFuncReadRecordStream)*/
+		dlpFuncUnknown3,				/* 0x62 */
+		dlpFuncUnknown4,				/* 0x63 */
+		dlpFuncReadResourceEx,			/* 0x64 - function to read resources >64k by index in TapWave */
 		dlpLastFunc
 	};
 	

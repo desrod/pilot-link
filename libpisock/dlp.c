@@ -2786,7 +2786,9 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
  *
  * Summary:     Writes a record to database. If recID is 0, the device
  *		will create a new id and the variable the NewID pointer
- *		points to will be set to the new id.
+ *		points to will be set to the new id. If length is -1, function
+ *		will consider data as a string and write a data block of
+ *		(strlen + 1).
  *
  * Parameters:  None
  *
@@ -2795,7 +2797,7 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
  ***********************************************************************/
 int
 dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
-		int catID, void *data, size_t length, recordid_t * NewID)
+		int catID, void *data, size_t length, recordid_t *pNewRecID)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -2806,31 +2808,43 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	if (length == (size_t)-1)
 		length = strlen((char *) data) + 1;
 
-	if (length + 8 > DLP_BUF_SIZE) {
-		fprintf(stderr, "Data too large\n");
-		return -131;
-	}
-	req = dlp_request_new(dlpFuncWriteRecord, 1, 8 + length);
-	
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
-	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
-	set_long(DLP_REQUEST_DATA(req, 0, 2), recID);
-	set_byte(DLP_REQUEST_DATA(req, 0, 6), flags);
-	set_byte(DLP_REQUEST_DATA(req, 0, 7), catID);
+	if (pi_version(sd) >= 0x0104) {
+		req = dlp_request_new(dlpFuncWriteRecordEx, 1, 12 + length);
+		
+		set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x80);
+		set_long(DLP_REQUEST_DATA(req, 0, 2), recID);
+		set_byte(DLP_REQUEST_DATA(req, 0, 6), flags);
+		set_byte(DLP_REQUEST_DATA(req, 0, 7), catID);
+		set_long(DLP_REQUEST_DATA(req, 0, 8), 0);
 
-	memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
+		memcpy(DLP_REQUEST_DATA(req, 0, 12), data, length);
+	} else {
+		if ((length + 8) > DLP_BUF_SIZE) {
+			fprintf(stderr, "Data too large\n");
+			return -131;
+		}
+		req = dlp_request_new(dlpFuncWriteRecord, 1, 8 + length);
+
+		set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
+		set_long(DLP_REQUEST_DATA(req, 0, 2), recID);
+		set_byte(DLP_REQUEST_DATA(req, 0, 6), flags);
+		set_byte(DLP_REQUEST_DATA(req, 0, 7), catID);
+
+		memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
+	}
 
 	CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
 		 record_dump(DLP_RESPONSE_DATA(req, 0, 0)));
-	
+
 	result = dlp_exec(sd, req, &res);
 
 	dlp_request_free(req);
-	
+
 	if (result >= 0) {
-		if (NewID)
-			/* New record ID */
-			*NewID = get_long(DLP_RESPONSE_DATA(res, 0, 0));
+		if (pNewRecID)
+			*pNewRecID = get_long(DLP_RESPONSE_DATA(res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP WriteRecord Record ID: 0x%8.8lX\n",
@@ -3032,7 +3046,7 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 	Trace(ReadResourceByIndex);
 
 	/* TapWave (DLP 1.4) implements a `large' version of dlpFuncReadResource,
-	 * which can return records >64k
+	 * which can return resources >64k
 	 */
 	if (pi_version(sd) >= 0x0104) {
 		req = dlp_request_new (dlpFuncReadResourceEx, 1, 12);
@@ -4021,35 +4035,49 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 	recordid_t * id, int *attr, int *category)
 {
 	int 	result,
-		data_len;
+		data_len,
+		large = 0;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
 	Trace(ReadRecordByIndex);
 
-	req = dlp_request_new_with_argid(dlpFuncReadRecord, 0x21, 1, 8);
-	
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
-	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
-	set_short(DLP_REQUEST_DATA(req, 0, 2), index);
-	set_short(DLP_REQUEST_DATA(req, 0, 4), 0); /* Offset into record */
-	set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? buffer->allocated : 0);	/* length to return */
+	/* TapWave (DLP 1.4) implements a `large' version of dlpFuncReadRecord,
+	 * which can return records >64k
+	 */
+	if (pi_version(sd) >= 0x0104) {
+		req = dlp_request_new_with_argid(dlpFuncReadRecordEx, 0x21, 1, 12);
 
+		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
+		set_short(DLP_REQUEST_DATA(req, 0, 2), index);
+		set_long(DLP_REQUEST_DATA(req, 0, 4), 0); /* Offset into record */
+		set_long(DLP_REQUEST_DATA(req, 0, 8), pi_maxrecsize(sd));	/* length to return */
+		large = 1;
+	} else {
+		req = dlp_request_new_with_argid(dlpFuncReadRecord, 0x21, 1, 8);
+	
+		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
+		set_short(DLP_REQUEST_DATA(req, 0, 2), index);
+		set_short(DLP_REQUEST_DATA(req, 0, 4), 0); /* Offset into record */
+		set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? buffer->allocated : 0);	/* length to return */
+	}
 	result = dlp_exec(sd, req, &res);
 
 	dlp_request_free(req);
 	
 	if (result >= 0) {
-		data_len = res->argv[0]->len - 10;
+		data_len = res->argv[0]->len - (large ? 14 : 10);
 		if (id)
 			*id = get_long(DLP_RESPONSE_DATA(res, 0, 0));
 		if (attr)
-			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
+			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, large ? 12 : 8));
 		if (category)
-			*category = get_byte(DLP_RESPONSE_DATA(res, 0, 9));
+			*category = get_byte(DLP_RESPONSE_DATA(res, 0, large ? 13 : 9));
 		if (buffer) {
 			pi_buffer_clear (buffer);
-			pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, 10),
+			pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, large ? 14 : 10),
 				(size_t)data_len);
 		}
 
