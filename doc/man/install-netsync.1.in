@@ -1,0 +1,70 @@
+.\" 
+.\" 
+.TH "install-netsync" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBinstall\-netsync\fR \- reads or sets the Network Preferences information on a Palm Device
+
+
+.SH "SYNOPSIS"
+\fBinstall\-netsync\fR [\fB\-p\fR <\fIport\fR>] [\fB\-e\fR] [\fB\-n\fR <\fIhostname\fR>] [\fB\-i\fR <\fIip\fR>] [\fB\-m\fR <\fInetmask\fR>]
+
+
+.SH "DESCRIPTION"
+\fBinstall\-netsync\fR allows the user to read or change the Network Preferences stored on the
+Pilot
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+
+Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+   
+   
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBinstall\-netsync\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBinstall\-netsync\fR
+
+
+.TP 
+\fB\-e\fR, \fB\-\-enable\fR
+Enable the LanSync operation (Used for Network HotSync instead of Local HotSync)
+
+
+.TP 
+\fB\-n\fR, \fB\-\-name\fR  <\fIhostname\fR>
+Sets the hostname of the remote machine you wish to connect to. This is \fBnot\fR the hostname of the Palm device itself
+
+
+.TP 
+\fB\-i\fR, \fB\-\-ip\fR <\fIip\fR>
+Set the IP address of the remote machine you wish to connect to. This is \fBnot\fR the IP address of the Palm device itself
+
+
+.TP 
+\fB\-m\fR, \fB\-\-mask\fR <\fInetmask\fR>
+Set the netmask of the remote machine you wish to connect to. This is \fBnot\fR the netmask address of the Palm device itself
+
+
+.SH "USAGE"
+The program will connect to a target Palm handheld device, and read and display or set
+the Network Preferences information specified or display the Network Preferences stored on the Palm device
+
+
+.SH "SEE ALSO"
+\fBinstall\-user\fR(1)
+.SH "KNOWN BUGS"
+\fBinstall\-netsync\fR has no known bugs.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBinstall\-netsync\fR was created from the original \fBinstall\-user\fR application originally written by D. Jeff Dionne <\fIjeff@RyeHam.ee.ryerson.ca\fR>, and was split into a separate conduit by JP Rosevear <\fIjpr@ximian.com\fR>.

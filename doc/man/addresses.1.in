@@ -1,0 +1,68 @@
+.\" 
+.\" 
+.TH "addresses" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBaddresses\fR \- Dumps the Palm AddressBook entries to STDOUT in a simple format
+
+
+.SH "SYNOPSIS"
+Redirect to a specified output file
+.br 
+\fBaddresses\fR [\fB\-p\fR <\fIport\fR>] > MyAddresses.txt
+.IP 
+This will dump the Address Book from your Palm into the file MyAddresses.txt in the format that looks as follows: 
+
+.br 
+Category: Personal Businesses
+.br 
+Last name: Doe
+.br 
+First name: Jane
+.br 
+Company: Acme, Inc.
+.br 
+Work: +1 (800) GO\-ACME
+.br 
+Home: jdoe@acme.org
+.br 
+Address: 123 Main Street
+.br 
+City: Anywhere
+.br 
+State: CA
+.br 
+Zip Code: 01234\-5678
+.br 
+Country: USA
+.br 
+Title: Chief Annoyance Officer
+.LP 
+
+Output to STDOUT (the screen)
+.br 
+\fBaddresses\fR [\fB\-p\fR <\fIport\fR>]
+.IP 
+This will dump the same information to the screen (or wherever you may have STDOUT redirected on your system).
+.RP 
+.SH "DESCRIPTION"
+\fBaddresses\fR will connect to your Palm device and dump the current AddressDB.pdb entries to STDOUT (generally the screen) or, if redirected with the '>' character, it will redirect to a file of your choosing (called "MyAddresses.txt in this case, but may be called any other filename you wish).
+
+
+.SH "OPTIONS"
+There is only one option (and it is, well, optional), and that is the '>' redirection character to send the output to a file (or process) instead of STDOUT (generally "The Screen[tm]")
+
+
+.SH "USAGE"
+The program will read Address data from the Palm and output format suitable for the other programs to import as required. You may redirect the output to a file or process, at your choosing.
+
+
+.SH "KNOWN BUGS"
+\fBaddresses\fR has no known bugs.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBaddresses\fR was written by Kenneth Albanowski

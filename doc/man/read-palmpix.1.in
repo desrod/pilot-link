@@ -1,0 +1,61 @@
+.\" 
+.\" 
+.TH "read-palmpix" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBread\-palmpix\fR \- Convert all pictures in the files given or found via connecting to a Palm handheld if no files are given. The default output type is Portable Pixmap (.ppm).
+
+
+.SH "SYNOPSIS"
+\fBread\-palmpix\fR \-p <\fIport\fR> \-n <\fIpixname\fR> \-t <\fItype\fR>
+
+
+.SH "DESCRIPTION"
+\fBread\-palmpix\fR allows a Kodak PalmPix camera user to extract the images from their Palm handheld device and convert them to Portable Network Graphic (.png) or 
+Portable Pixmap (.ppm) files on their system.
+
+
+.SH "OPTIONS"
+.TP 
+.BI \-p\ \-\-port\  <port>\,
+Use device file \fIport\fR to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, it will fall back to /dev/pilot.
+
+
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBread\-palmpix\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBread\-palmpix\fR
+
+
+.TP 
+\fB\-l\fR, \fB\-\-list\fR
+List picture information found on the device instead of converting them to image files
+
+
+.TP 
+\fB\-n\fR, \fB\-\-name\fR <\fIpixname\fR> 
+Convert only \fIpixname\fR to an image file, and output to STDOUT as a .ppm or .png
+
+
+.TP 
+\fB\-t\fR, \fB\-\-type\fR <\fItype\fR>
+Specify the output picture type. Can be either "png" or "ppm".
+
+
+.SH "USAGE"
+The program will connect to the target Palm handheld device, and read the images found in the Kodak PalmPix image database (\fIArchImage.pdb\fR), and allow the user to view the list of images, or to select one or all of them, and convert them to Portable Network Graphic (.png) or Portable Pixmap (.ppm) files to be viewed or printed at the desktop. If no options are specified, all of the images on the device will be converted to ppm files.
+
+
+.SH "KNOWN BUGS"
+\fBread\-palmpix\fR's colour correction is not yet as good as Kodak's.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBread\-palmpix \fR was originally written by Angus Ainslie <\fIangusa@deltatee.com\fR>, and updated by John Marshall <\fIjmarshall@acm.org\fR>to include core pilot\-link functionality.

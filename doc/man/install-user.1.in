@@ -1,0 +1,57 @@
+.\" 
+.\" 
+.TH "install-user" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBinstall\-user\fR \- reads or sets a Palm User and UserID on a Palm Device
+
+
+.SH "SYNOPSIS"
+\fBinstall\-user\fR [\fB\-p\fR <\fIport\fR>] [\fB\-u\fR <\fIusername\fR>] [\fB\-i\fR <\fIuserid\fR>]
+
+
+.SH "DESCRIPTION"
+\fBinstall\-user\fR allows the user to read or change the User and UserID information on the Palm handheld device
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+  
+  
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBinstall\-user\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBinstall\-user\fR
+
+
+.TP 
+\fB\-u\fR, \fB\-\-user\fR <\fIusername\fR>
+Set the username, use quotes for spaces in the username, as in "John Q. Public"
+
+
+.TP 
+\fB\-i\fR, \fB\-\-id\fR <\fIuserid\fR>
+Set the 5\-digit numeric UserID on the device (used for many Palm application registration methods)
+
+
+.SH "USAGE"
+The program will connect to a target Palm handheld device, and read or set
+the Palm UserName specified or display the Palm username and UserID if none
+is specified.
+
+
+.SH "KNOWN BUGS"
+\fBinstall\-user\fR has no known bugs.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBinstall\-user\fR was originally written by D. Jeff Dionne <\fIjeff@RyeHam.ee.ryerson.ca\fR>

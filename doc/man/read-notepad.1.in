@@ -1,0 +1,55 @@
+.\" 
+.\" 
+.TH "read-notepad" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBread\-notepad\fR \- Connect to the Palm handheld device and list the record information found in the Palm Notepad application (found on OS4 and newer devices). Alternately, if no options are given, each record's image will be converted to files, using Portable Network Graphic (.png) or Portable Pixmap (.ppm) format. The default type is ppm.
+
+
+.SH "SYNOPSIS"
+\fBread\-notepad\fR [\fB\-p\fR <\fIport\fR>] [\fB\-\-list\fR] [\fB\-\-type\fR <\fItype\fR>]
+
+
+.SH "DESCRIPTION"
+\fBread\-notepad\fR allows a user running PalmOS 4.0 or later to read the data stored in the Palm Notepad application and extract the data into images and convert them to Portable Network Graphics (.png) or Portable Pixmap (.ppm) files.
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+
+
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBread\-notepad\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBread\-notepad\fR
+
+
+.TP 
+\fB\-l\fR, \fB\-\-list\fR
+List picture information found on the device instead of converting them to image files
+
+
+.TP 
+\fB\-t\fR, \fB\-\-type\fR <\fItype\fR>
+Specify the output picture type. Can be either "png" or "ppm".
+
+
+.SH "USAGE"
+The program will connect to the target Palm handheld device, and list or convert the records and images found in the Palm Notepad application to Portable Network Graphic (.png) or Portable Pixmap (.ppm) files.
+
+
+.SH "KNOWN BUGS"
+\fBread\-notepad\fR has no known bugs.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBread\-notepad\fR was written by Angus Ainslie <\fIangusa@deltatee.com\fR>.

@@ -1,0 +1,63 @@
+.\" 
+.\" 
+.TH "pi-getrom" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBpi\-getrom\fR \- Retrieves the ROM image from your Palm device
+
+
+.SH "SYNOPSIS"
+\fBpi\-getrom\fR [\fB\-p\fR <\fIport\fR>] [\fB\-\-copilot\fR] [\fIfilename\fR]
+
+
+.SH "DESCRIPTION"
+\fBpi\-getrom\fR is used to fetch the ROM from your Palm handheld device for use in debugging Palm applications through the use of POSE, the \fIPalm OS Emulator application\fR
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+   
+   
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBpi\-getrom\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBpi\-getrom\fR
+
+
+.TP 
+\fB\-\-copilot\fR
+format the ROM for use in the \fICoPilot\fR application, instead of the \fIPalm OS Emulator\fR (POSE) format
+
+
+.TP 
+<\fIfilename\fR>
+Write the ROM image to this file
+
+
+.SH "USAGE"
+Connect to a target Palm handheld device and fetch the ROM for use in debugging Palm applications through the use of POSE, the \fIPalm OS Emulator\fR or with \fICoPilot\fR
+
+
+.SH "LICENSING"
+\fBWarning\fR: Please completely back up your Palm before using this program!
+
+Use of this program may place you in violation of your license agreement with Palm, Inc. or OEM partners. Please read your Palm handbook ("Software License Agreement") before running this program.
+
+
+.SH "SEE ALSO"
+\fBpi\-getram\fR(1)
+.SH "KNOWN BUGS"
+\fBpi\-getrom\fR does not work with OS5 devices as yet, due to changes in the architecture and design of the Palm HotSync protocol and file type changes from m68k to ARM. Other than that, \fBpi\-getrom\fR has no known bugs
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBpi\-getrom\fR was written by Kenneth Albanowski

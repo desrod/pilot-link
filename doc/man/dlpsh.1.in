@@ -1,0 +1,63 @@
+.TH "dlpsh" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBdlpsh\fR is a command shell for executing DLP (Desktop Link Protocol) commands on a Palm handheld device.
+
+
+.SH "SYNOPSIS"
+\fBdlpsh\fR [\fB\-p\fR <port>]
+
+
+.SH "DESCRIPTION"
+\fBdlpsh\fR allows the user to connect to a Palm handheld device and execute arbitrary Desktop Link Protocol (DLP) commands. Once connected, the user may execute any of the built\-in \fBDLP\fR commands. (See \fBBUILT\-IN COMMANDS\fR below).
+
+.br 
+The connection to the Pilot is kept alive by sending a
+\fIPadTickle\fR packet to the Pilot after a small period of non\-activity. (7 seconds by default)
+
+
+.SH "BUILT\-IN COMMANDS"
+There are many options available to \fBdlpsh\fR, including the following. 
+
+.TP 
+\fBuser\fR
+Print the currently set User information
+
+.TP 
+\fBls\fR
+Used with \-l and \-r to provide long and RAM and ROM file lists
+
+.TP 
+\fBdf\fR
+Display how much RAM and ROM is free on your device
+
+.TP 
+\fBtime\fR
+Set the time on the Palm from the desktop
+
+.TP 
+\fBrm\fR
+Remove a file and delete it entirely from the Palm device
+
+.TP 
+\fBquit\fR
+Exit the DLP Protocol Shell
+
+
+.SH "OPTIONS"
+While in \fBdlpsh\fR, you can always invoke 'help' or <option> \-\-help to get further information on that option.
+
+
+.SH "USAGE"
+The program will connect to your Palm handheld device and give the user a prompt for executing commands.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "KNOWN BUGS"
+\fBdlpsh\fR has no known bugs.
+
+
+.SH "AUTHOR"
+\fBdlpsh\fR was written by Chris Stevens <stevens@rpi.edu> and Damien Neil <neild@rpi.edu>

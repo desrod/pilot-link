@@ -1,0 +1,58 @@
+.\" 
+.\" 
+.TH "install-datebook" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBinstall\-datebook\fR \- installs a new datebook entries onto your Palm handheld device
+
+
+.SH "SYNOPSIS"
+\fBinstall\-datebook\fR [\fB\-p\fR <\fIport\fR>] [<\fIfilename\fR> ...]
+.LP 
+For USB devices, you may use an alternate USB port specification as:
+
+.B \fBinstall\-datebook\fR [\fB\-p\fR usb:/dev/ttyUSBX] [<\fIfilename\fR> ...]
+
+On some hardware, this may result in up to a 60% increase in overall speed. This does not work on all hardware at this time, and the issues are being tracked to fix this. 
+
+
+.SH "DESCRIPTION"
+\fBinstall\-datebook\fR allows the user to write one or more datebook entries from one or more source files. Once \fBinstall\-datebook\fR is started, the user must invoke \fIHotSync\fR on the target device by pressing the \fIHotSync\fR button on the cradle or by tapping on the HotSync icon in the
+Palm launcher.
+.LP 
+The format of the source file contains one datebook entry on line, containing four tab separated fields. The fields are start date/time, end date/time, alarm settings, and the description of datebook entry. This program doesn't yet support repeted entries. The date and time must be in format understand by \fIparsedate.y\fR. At the very least, the following two formats are understood:
+.IP 
+August 11, 1997 0800 GMT+300
+
+1997/08/11 08:22:33 GMT+300
+.LP 
+If either one of the date and time fields is empty, the entry is installed without time. If the alarm field is empty, the entry is installed without setting any alarms. The alarm field can contain numbers followed by "m" (minutes), "h" (hours), or "d" (days).
+
+Here are some example lines (<TAB> = tab, <NL> = newline in these examples):
+.IP 
+1997/08/11 0800 GMT+300 <TAB> 1997/08/11 0900 GMT+300 <TAB> <TAB> IETF
+Registration <NL>
+
+August 11, 1997 0900 GMT+300 <TAB> August 11, 1997 0930 GMT+300 <TAB>
+2m <TAB> Introductions <NL>
+.SH "OPTIONS"
+none
+
+
+.SH "USAGE"
+The program will connect to the target Palm device, and write the datebook\-formatted file given on the command line onto the Palm into the DatebookDB.pdb file.
+
+
+.SH "KNOWN BUGS"
+If no timezone is given, \fBinstall\-datebook\fR will assume the time is in GMT and it will convert it to localtime. If you don't want to write timezone entries to all begin and end times, set the TZ environment variable to GMT before running this program.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBinstall\-datebook\fR was written by Tero Kivinen <\fIkivinen@iki.fi \fR>. This program was based on \fBinstall\-todos\fR program written by Robert A. Kaplan <\fIkaplan@openmarket.com\fR>.
+
+
+.SH "SEE ALSO"
+\fBinstall\-todos\fR(1)

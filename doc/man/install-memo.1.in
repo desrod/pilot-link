@@ -1,0 +1,68 @@
+.\" 
+.\" 
+.TH "install-memo" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBinstall\-memo\fR \- installs a new memo entry onto your Palm Computing Device
+
+
+.SH "SYNOPSIS"
+\fBinstall\-memo\fR [\fB\-p\fR <\fIport\fR>]
+[\fB\-rt\fR] [\fB\-c\fR <\fIcategory\fR>] [<\fIfilename\fR> ...]
+
+
+.SH "DESCRIPTION"
+\fBinstall\-memo\fR allows the user to write one or more files as a new memo or memos,
+respectively, onto the Palm handheld device.
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file lt;\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+   
+   
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBinstall\-memo\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBinstall\-memo\fR
+
+
+.TP 
+\fB\-c\fR, <\fIcategory\fR>
+Install memo(s) to category defined by <\fIcategory\fR> by default. Normally 
+\fBinstall\-memo\fR uses the \fIUnfiled\fR category as the default category if no category is chosen. 
+
+
+.TP 
+\fB\-r\fR, \fB\-\-replace\fR
+Replace all memos in the category specified by the \fB\-c\fR <\fIcategory\fR>
+option.
+
+
+.TP 
+\fB\-t\fR
+Use the filename as the title for the memo. (Normally, the title is the first line of 
+a memo if \fB\-t\fR is not specified.)
+
+
+.SH "USAGE"
+The program will connect to the Palm handheld device, and write the file or
+files given on the command line into the MemoPad application on the Palm.
+
+
+.SH "KNOWN BUGS"
+The Palm Device has a maximum length of 4,096 bytes (4k) on memopad entries, if you wish to retain the ability to edit the Memo on the Palm itself. You can create a MemoPad entry of 65,490 bytes in size (the absolute maximum) if you do not need to edit the Memo entry further on the Palm device itself.
+
+This is not specifically a "bug", but a limitation in the PalmOS design itself. 
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBinstall\-memo\fR was written by Damien P. Neil <\fIneild@rpi.edu\fR>

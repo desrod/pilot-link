@@ -1,6 +1,7 @@
 man_MANS =			\
 	addresses.1		\
 	dlpsh.1			\
+	hinotes.1		\
 	ietf2datebook.1		\
 	install-datebook.1	\
 	install-expenses.1	\
@@ -17,4 +18,7 @@ man_MANS =			\
 	read-notepad.1		\
 	read-palmpix.1
 
-EXTRA_DIST = $(man_MANS)
+EXTRA_DIST = 
+	$(man_MANS)
+
+	     

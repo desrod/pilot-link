@@ -1,0 +1,57 @@
+.\" 
+.\" 
+.TH "pi-getram" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBpi\-getram\fR \- Retrieves the RAM image from your Palm device
+
+
+.SH "SYNOPSIS"
+\fBpi\-getram\fR [\fB\-p\fR <\fIport\fR>] [\fB\-\-copilot\fR] [\fIramfile\fR]
+
+
+.SH "DESCRIPTION"
+\fBpi\-getram\fR is used to fetch the RAM from your Palm handheld device
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+   
+   
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBpi\-getram\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBpi\-getram\fR
+
+
+.TP 
+\fB\-\-copilot\fR
+format the RAM for use in the \fICoPilot\fR application, instead of the \fIPalm OS Emulator\fR (POSE) format
+
+
+.TP 
+<\fIfilename\fR>
+Write the RAM image to this file
+
+
+.SH "USAGE"
+Connect to a target Palm handheld device and fetch the RAM from the device.
+
+
+.SH "SEE ALSO"
+\fBpi\-getrom\fR(1)
+.SH "KNOWN BUGS"
+\fBpi\-getram\fR has no known bugs
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBpi\-getram\fR was written by Kenneth Albanowski

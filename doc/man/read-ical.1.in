@@ -1,0 +1,55 @@
+.\" 
+.\" 
+.TH "read-ical" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBread\-ical\fR \- coverts information on your Palm handheld device into an Ical\-formatted
+calendar
+
+
+.SH "SYNOPSIS"
+\fBread\-ical\fR [\fB\-p\fR <\fIport\fR>] <filename>
+
+
+.SH "DESCRIPTION"
+\fBread\-ical\fR allows the user to retrieve the contents of the ToDo and Datebook databases on a Palm handheld device, and convert their contents to an Ical calendar.
+
+Note that the calendar file named by <\fIfilename\fR> will be deleted, so do not use your main calendar. Instead, use a separate one for this purpose, and include it in your main calendar.
+
+As \fBread\-ical\fR works by passing a script to ical, the ical application must be in your $PATH.
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+
+
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBread\-ical\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBread\-ical\fR
+
+
+.TP 
+<\fIfilename\fR>
+This is the file to output the ical\-formatted data to.
+
+
+.SH "USAGE"
+The program will connect to a target device, retrieve the ToDo and Datebook databases (ToDoDB.pdb and DatebookDB.pdb respectively), then instruct \fIical\fR to write a calendar file based on the retrieved information.
+
+
+.SH "KNOWN BUGS"
+\fBread\-ical\fR has no known bugs.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBread\-ical\fR was written by Kenneth Albanowski

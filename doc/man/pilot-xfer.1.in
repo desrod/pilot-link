@@ -1,0 +1,176 @@
+.\" 
+.\" 
+.TH "pilot-xfer" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.SH "NAME"
+\fBpilot\-xfer\fR \- backup, sync, and restore databases from a Palm handheld
+device, such as those made from \fIPalm\fR, \fIHandspring\fR, \fIHandera\fR, \fITRGPro\fR, \fISony\fR or other Palm Compatible Handheld PDA device
+
+
+.SH "SYNOPSIS"
+\fBpilot\-xfer\fR [\fB\-p\fR <port>] [\fB\-e\fR <\fIfile\fR>]
+[\fB\-b\fR] [\fB\-u\fR] [\fB\-s\fR] <\fIdirectory\fR>
+
+or
+
+\fBpilot\-xfer\fR [\fB\-p\fR <\fIport\fR>] [\fB\-r\fR <\fIdirectory\fR>]
+[\fB\-l\fR] [\fB\-L\fR] [\fB\-P\fR] [\fB\-f\fR <\fIdbname\fR>] [\fB\-d\fR <\fIdbname\fR>] [\fB\-i\fR <\fIdbname\fR>] [\fB\-m\fR <\fIfile\fR>] ...
+
+(Note that some options are not shown above and short option aliases are excluded for brevity. Please use  \fBpilot\-xfer\fR \-\-help to get the full list of available options)
+
+
+.SH "DESCRIPTION"
+\fBpilot\-xfer\fR allows the user to install databases contained in the standard .prc (Palm Resource Database), .pdb (Palm Record Database), and .pqa (Palm Query Application) formats onto a Palm, retrieve databases from the Palm, list the
+databases contained in a Palm, and backup or restore all of the databases at
+once, and many other powerful operations.
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot.
+  
+  
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBinstall\-user\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBinstall\-user\fR
+
+
+.TP 
+\fB\-a\fR, \fB\-\-archive\fR <\fIdir\fR>
+Archives files which have been removed from the Palm to <\fIdir\fR> instead of just deleting (unlinking) them
+
+
+.TP 
+\fB\-b\fR, \fB\-\-backup\fR <\fIdir\fR>
+Backs up the Palm into the specified directory (which will be created if it does not already exist). This operation must be specified after any \fB\-\-exclude\fR option.
+
+
+.TP 
+\fB\-d\fR, \-\-delete <\fIdbname\fR>
+Delete the specified database(s) by name (without extension).  Obviously, be very careful with this one.
+
+
+.TP 
+\fB\-e\fR, \-\-exclude <\fIfile\fR>
+Reads a list of databases from <\fIfile\fR> and prevents \fB\-\-backup\fR, \fB\-\-sync\fR, or \fB\-\-update\fR from operating on the listed database(s).
+This option must be specified before the \fB\-\-backup\fR, \fB\-\-sync\fR, or
+\fB\-\-update\fR operation whose action it modifies.
+
+
+.TP 
+\fB\-f\fR, \-\-fetch <\fIdbname\fR>
+Fetch each specified database out of the Palm into the current directory.
+
+
+.TP 
+\fB\-F\fR, \fB\-\-Flash\fR
+Modifies the behavior of \fB\-\-backup\fR, \fB\-\-sync\fR, and \fB\-\-update\fR to back up non\-OS databases which have been stored in Flash ROM
+
+
+.TP 
+\fB\-i\fR, \-\-install <\fIfile\fR> [...]
+Install each specified file into the Palm. Wildcards are valid with this syntax and multiple files may be listed at once.
+
+
+.TP 
+\fB\-l\fR, \fB\-\-list\fR
+List the databases in the Palm, excluding OS\-specific databases.
+
+
+.TP 
+\fB\-L\fR, \fB\-\-Listall\fR
+List all of the databases on the Palm, including OS\-specific native databases.
+
+
+.TP 
+\fB\-m\fR, \fB\-\-merge\fR <\fIfile\fR> [...]
+Adds the records in each specified file into the corresponding Palm database.
+
+
+.TP 
+\fB\-O\fR, \-\-Osflash
+Modifies the behavior of \fB\-\-backup\fR, \fB\-\-sync\fR, and \fB\-\-update\fR to back up OS databases which are stored in Flash ROM
+
+
+.TP 
+\fB\-P\fR, \fB\-\-Purge\fR
+Purge any deleted data that hasn't been cleaned up by a sync (this is a safe
+operation, and will prevent your Palm from accumulating crud if you delete
+records but aren't syncing with a PIM.) The only information you can lose is 
+archived but un\-synced records.
+
+
+.TP 
+\fB\-r\fR, \fB\-\-restore\fR <\fIdir\fR>
+Installs all files contained in a directory into the Palm. (Use this to restore your Palm after a hard reset has cleared its memory, using your backup directory as a baseline.)
+
+
+.TP 
+\fB\-s\fR, \fB\-\-sync\fR <\fIdir\fR>
+Backs up the Palm into the specified directory (which will be created if it does not already exist). Any Palm databases which have not been modified or created since the versions stored in the specified directory will not be backed up.
+
+
+.B \fBNOTE\fR:
+Any Palm databases which have been deleted will have their corresponding backup file removed. This operation must be specified after any \fB\-\-exclude\fR option.
+
+
+.TP 
+\fB\-u\fR, \fB\-\-update\fR
+Backs up the Palm into the specified directory (which will be created if it does  not already exist). Any Palm databases which have not been modified or created since the versions stored in the specified directory will not be backed up. This operation must be specified after any \fB\-\-exclude\fR option.
+
+
+.TP 
+\fB\-I\fR, \fB\-\-Illegal\fR
+This will back up the UnsavedPreferences.pdb file from the Palm. Normally this file is not backed up by normal means (Palm Computing recommends that you do \fBnot\fR restore this file upon restoration of your device using \fB\-\-restore\fR
+
+This also modifies the behavior of \fB\-\-backup\fR, \fB\-\-sync\fR, and \fB\-\-update\fR.
+.SH "USAGE"
+The program will connect to a target Palm handheld device and port, prompt the user to hit \fIHotSync\fR, and perform the requested options specified by the user on the commandline.
+
+
+.SH "EXAMPLES"
+To performa a full backup of your Palm handheld: 
+
+# using long options
+.IP 
+\fBpilot\-xfer\fR \fB\-\-port\fR /dev/pilot \fB\-\-backup\fR $HOME/pilot/Backup
+.LP 
+or
+# over IrDA, using short options
+.IP 
+\fBpilot\-xfer\fR \fB\-p\fR /dev/ircomm0 \fB\-b\fR $HOME/pilot/Backup
+.LP 
+To restore that backup to a non\-standard serial port (for example, to a
+xcopilot or POSE session, assuming you have xcopilot or POSE configured
+properly for this operation, see the appropriate man pages for details on
+configuring your emulator):
+.IP 
+\fBpilot\-xfer\fR \fB\-p\fR /dev/ttyqe \fB\-\-restore\fR $HOME/pilot/Backup
+.LP 
+To fetch a file that is on your Palm handheld, such as the Palm Address Book database:
+.IP 
+\fBpilot\-xfer\fR \fB\-p\fR /dev/pilot \fB\-\-fetch\fR AddressDB
+.LP 
+
+
+.SH "SEE ALSO"
+\fBpilot\-link\fR(7)
+
+
+.SH "KNOWN BUGS"
+\fB\-\-backup\fR will currently truncate/corrupt pdb/prc files if communication is
+interrupted during sync. Ideally, this should restore the original file, or delete the corrupted version and restore the original version back into place.
+
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBpilot\-xfer\fR written by Kenneth Albanowski. This manual page was originally written by
+Kenneth Albanowski and David H. Silber. Completely rewritten by David A. Desrosiers.
