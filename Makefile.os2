@@ -77,15 +77,15 @@ WITHTCL = $(TCLEXECS)
 WITHCXX = $(CXXEXECS)
 WITHPERL5 = $(PERLEXECS)
 
-CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-prc$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
-		install-memo$(EXT) install-user$(EXT) install-datebook$(EXT)\
-		install-todos$(EXT) pilot-addresses$(EXT) pilot-clip$(EXT)\
-		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT) $(CCEXECS) \
-		reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
-		debugsh$(EXT) dlpsh$(EXT) \
-		getrom$(EXT) pi-getrom$(EXT) pi-getram$(EXT) pi-port$(EXT) \
-		pi-csd$(EXT) pi-nredir$(EXT) \
-		money2qif$(EXT) install-hinote$(EXT) hinotes$(EXT)
+CEXECS = addresses$(EXT) debugsh$(EXT) dlpsh$(EXT) getrom$(EXT) \
+         hinotes$(EXT) install-datebook$(EXT) install-hinote$(EXT) \
+         install-memo$(EXT) install-todos$(EXT) install-user$(EXT) \
+         memos$(EXT) money2qif$(EXT) pi-csd$(EXT) pi-getram$(EXT) \
+         pi-getrom$(EXT) pi-nredir$(EXT) pi-port$(EXT) pilot-addresses$(EXT) \
+         pilot-clip$(EXT) pilot-dedupe$(EXT) pilot-file$(EXT) \
+         pilot-mail$(EXT) pilot-prc$(EXT) pilot-schlep$(EXT) \
+         pilot-xfer$(EXT) read-expenses$(EXT) read-ical$(EXT) \
+         read-todos$(EXT) reminders$(EXT) @ccexecs@
 
 CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
 
@@ -121,10 +121,13 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	if test -n "$(PICCLIB)"; then \
 		$(INSTALL_DATA) $(PICCLIB) $(libdir)/libpicc.a; \
 	fi
+	for p in $(CEXECS); do \
+		$(STRIP) -s ".libs/$$p"; \
+	done        
 	for p in $(EXECS); do \
 		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
 	done
-	for h in include/*.h $(srcdir)/include/*.h include/*.hxx $(srcdir)/include/*.hxx; do \
+	for h in $(srcdir)/include/*.h include/*.hxx $(srcdir)/include/*.hxx; do \
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
 	done
 	for m in man/*.1; do \
@@ -136,15 +139,6 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	for p in $(srcdir)/pix/*.gif $(srcdir)/pix/*.xbm; do \
 		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
 	done
-	$(LIBTOOL) -n --finish $(libdir)
-
-install-strip: install
-	for p in $(CEXECS); do \
-		$(STRIP) -s ".libs/$$p"; \
-	done        
-	for p in $(EXECS); do \
-		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
-	done        
 	$(LIBTOOL) -n --finish $(libdir)
 
 uninstall:

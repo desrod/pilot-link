@@ -1,3 +1,29 @@
+2001-05-22  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* Makefile.in/Makefile.os2: Fixed the "double-header" install
+	  problem with the Makefile in the install stanza. Fixed the
+	  install-strip option, removed it, and pulled it into the install
+	  stanza, put in the proper order. It was backwards before. Added
+	  pilot-prc back in. Not sure how it got dropped out. (David A.
+	  Desrosiers)
+
+	* libsock/md5.c: Implemented md5.c and md5.h for the new password
+	  authentication scheme. (David A. Desrosiers)
+	
+	* include/md5.h: Same as above, legacy-free algorithm used here.
+	  (David A. Desrosiers)
+
+	* dlpsh.c: Fixed the visual layout of 'df' (David A. Desrosiers)
+
+	* pilot-prc: Minor fixes to get it to compile cleanly (missing
+	  protos, etc.) (David A. Desrosiers)
+
+	* libsock/winserial.c,libsock/serial.c: Error handling fixes on
+	  Win32 (Oliver Schmidt)
+
+	* pilot-xfer.c: Possible fix for 'time' on Next Openstep, commented
+	  out, need to test. (Juergen Sell)
+
 2001-05-20  David A. Desrosiers <hacker@gnu-designs.com>
 	
 	* Started the documenting of every function in the code, more

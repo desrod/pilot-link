@@ -64,7 +64,7 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if (fd == INVALID_HANDLE_VALUE) {
 		/* can't open */
-		errno = ENOENT;
+		errno = GetLastError();
 		return -1;
 	}
 
@@ -152,8 +152,6 @@ static int win_changebaud(HANDLE fd, int rate)
 
 	if (rc)
 		return 0;
-	else
-		return -1;
 }
 
 /***********************************************************************

@@ -45,7 +45,7 @@
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     Number of packets transmitted
  *
  ***********************************************************************/
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type)

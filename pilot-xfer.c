@@ -381,6 +381,15 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 		struct DBInfo info;
 		struct pi_file *f;
 		struct utimbuf times;
+
+		/* This is supposed to be fixed on NeXT's Openstep 4.2.
+		   Anyone care to test this?
+		struct utimbuf {
+			long actime;
+			long modtime;
+		}; 
+		*/
+		
 		struct stat statb;
 		int x;
 		int skip = 0;

@@ -32,9 +32,9 @@ PERL5 = @PERL5@
 
 CC = @CC@
 CXX = @CXX@
-CDEFS = -DLIBDIR=\"$(libdir)\" 
+CDEFS = -DLIBDIR=\"$(libdir)\"
 # -DDEBUG
-CFLAGS = -I./include -I$(srcdir)/include @CFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
+CFLAGS = -I./include -I$(srcdir)/include @CFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS) -DDEBUG
 CXXFLAGS = -I./include -I$(srcdir)/include @CXXFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
@@ -83,11 +83,15 @@ WITHTCL = $(TCLEXECS)
 WITHCXX = $(CXXEXECS)
 WITHPERL5 = $(PERLEXECS)
 
-CEXECS = addresses$(EXT) debugsh$(EXT) dlpsh$(EXT) getrom$(EXT) hinotes$(EXT) install-datebook$(EXT) install-hinote$(EXT) \
-         install-memo$(EXT) install-todos$(EXT) install-user$(EXT) memos$(EXT) money2qif$(EXT) pi-csd$(EXT) pi-getram$(EXT) \
-         pi-getrom$(EXT) pi-nredir$(EXT) pi-port$(EXT) pilot-addresses$(EXT) pilot-clip$(EXT) pilot-dedupe$(EXT) pilot-file$(EXT) \
-         pilot-mail$(EXT) pilot-prc$(EXT) pilot-schlep$(EXT) read-expenses$(EXT) read-ical$(EXT) read-todos$(EXT) reminders$(EXT) \
-	 @ccexecs@
+CEXECS = addresses$(EXT) debugsh$(EXT) dlpsh$(EXT) getrom$(EXT) \
+         hinotes$(EXT) install-datebook$(EXT) install-hinote$(EXT) \
+         install-memo$(EXT) install-todos$(EXT) install-user$(EXT) \
+         memos$(EXT) money2qif$(EXT) pi-csd$(EXT) pi-getram$(EXT) \
+         pi-getrom$(EXT) pi-nredir$(EXT) pi-port$(EXT) pilot-addresses$(EXT) \
+         pilot-clip$(EXT) pilot-dedupe$(EXT) pilot-file$(EXT) \
+         pilot-mail$(EXT) pilot-prc$(EXT) pilot-schlep$(EXT) \
+         pilot-xfer$(EXT) read-expenses$(EXT) read-ical$(EXT) \
+         read-todos$(EXT) reminders$(EXT) @ccexecs@
 
 CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
 
@@ -139,10 +143,10 @@ install-strip: install
 	for p in $(CEXECS); do \
 		$(STRIP) -s ".libs/$$p"; \
 	done        
-	for p in $(EXECS); do \
-		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
-	done        
-	$(LIBTOOL) -n --finish $(libdir)
+#	for p in $(EXECS); do \
+#		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
+#	done        
+#	$(LIBTOOL) -n --finish $(libdir)
 
 uninstall:
 	-for p in $(EXECS) $(PERLEXECS) $(CXXEXECS) $(TCLEXECS); do \

@@ -138,7 +138,9 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 			if (c.flags & 0x80) {
 				/* Change baud rate */
 				ps->rate = c.baudrate;
-				ps->serial_changebaud(ps);
+				if (ps->serial_changebaud(ps) < 0)
+					return -1;
+
 			}
 
 		} else if (c.type == 3) {
@@ -315,7 +317,8 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 			pi_serial_flush(accept);
 
 			/* We always reconfigure our port, no matter what */
-			accept->serial_changebaud(accept);
+			if (accept->serial_changebaud(accept) < 0)
+				goto fail;
 
 			/* Palm device needs some time to reconfigure its port */
 #ifdef WIN32

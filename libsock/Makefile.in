@@ -12,9 +12,11 @@ APPOBJS = datebook.$(O) memo.$(O) address.$(O) todo.$(O) expense.$(O) mail.$(O) 
 
 UTILOBJS = utils.$(O) util.$(O)
 
+MD5 = md5.$(O)
+
 SERIAL = unixserial.$(O)
 
-OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(PIHEADER) $(UTILOBJS) $(SERIAL)
+OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(PIHEADER) $(UTILOBJS) $(MD5) $(SERIAL)
 
 prefix = @prefix@
 exec_prefix = ${prefix}
@@ -136,6 +138,7 @@ mail.o mail.lo: mail.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
  ../include/pi-mail.h ../include/pi-appinfo.h
+md5.o md5.lo: md5.c ../include/md5.h
 memo.o memo.lo: memo.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \

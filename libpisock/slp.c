@@ -50,14 +50,14 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
 
 	slp = (struct slp *) nskb->data;
 
-	slp->_be = 0xbe;
-	slp->_ef = 0xef;
-	slp->_ed = 0xed;
-	slp->dest = nskb->dest;
-	slp->src = nskb->source;
-	slp->type = nskb->type;
-	slp->dlen = htons(len);
-	slp->id = nskb->id;
+	slp->_be 	= 0xbe;
+	slp->_ef 	= 0xef;
+	slp->_ed 	= 0xed;
+	slp->dest 	= nskb->dest;
+	slp->src 	= nskb->source;
+	slp->type 	= nskb->type;
+	slp->dlen 	= htons(len);
+	slp->id 	= nskb->id;
 
 	for (n = i = 0; i < 9; i++)
 		n += nskb->data[i];
