@@ -1,3 +1,7 @@
+2003-01-02 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Fixed a mixup with exit() vs exit;
+
 2002-12-25 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Fix C++ conftest problem when readline isn't found
