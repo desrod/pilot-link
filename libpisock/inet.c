@@ -392,7 +392,7 @@ pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 #else
 	if (setsockopt
 	    (ps->sd, SOL_SOCKET, SO_REUSEADDR, (void *) &opt,
-	     optlen) < 0) {
+	     (int)optlen) < 0) {
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
 #endif
