@@ -1,6 +1,8 @@
 #ifndef _PILOT_DATEBOOK_H_
 #define _PILOT_DATEBOOK_H_
 
+#include <time.h>
+
 #include "pi-args.h"
 #include "pi-appinfo.h"
 
