@@ -45,42 +45,40 @@
 typedef unsigned char byte;
 
 typedef struct {
-  byte data[4];
-  char attr;
-  byte id[3];
+	byte	data[4];
+	char	attr;
+	byte	id[3];
 } recInfo_t;
 
 typedef struct {
-  char name[32];
-  byte attr[2];
-  byte version[2];
-  byte cdate[4];
-  byte mdate[4];
-  byte backupdate[4];
-  byte modno[4];
-  byte appinfo[4];
-  byte sortinfo[4];
-  char dbType[4];
-  char dbCreator[4];
-  byte seed[4];
+	char	name[32];
+	byte	attr[2];
+	byte	version[2];
+	byte	cdate[4];
+	byte	mdate[4];
+	byte	backupdate[4];
+	byte	modno[4];
+	byte	appinfo[4];
+	byte	sortinfo[4];
+	char	dbType[4];
+	char	dbCreator[4];
+	byte	seed[4];
 
-
-
-  byte nextRecList[4];
-  char nRec[2];
+	byte	nextRecList[4];
+	char	nRec[2];
 } pdb_t;
 
 typedef enum {
-  palm_op_noop = 0,
-  palm_op_restore = 277, /* keep rest out of ASCII range */
-  palm_op_backup,
-  palm_op_update,
-  palm_op_sync,
-  palm_op_install,
-  palm_op_merge,
-  palm_op_fetch,
-  palm_op_delete,
-  palm_op_list
+	palm_op_noop = 0,
+	palm_op_restore = 277, /* keep rest out of ASCII range */
+	palm_op_backup,
+	palm_op_update,
+	palm_op_sync,
+	palm_op_install,
+	palm_op_merge,
+	palm_op_fetch,
+	palm_op_delete,
+	palm_op_list
 } palm_op_t;
 
 /* Flags specifying various bits of behavior. Should be
@@ -103,27 +101,34 @@ typedef enum {
 
 
 
-int 	sd 	= -1;
+int		sd	= -1;
 char    *vfsdir = NULL;
 
 #define MAXEXCLUDE 100
-char 	*exclude[MAXEXCLUDE];
-int 	numexclude = 0;
+char	*exclude[MAXEXCLUDE];
+int		numexclude = 0;
 
 
 
 static int findVFSPath(int verbose, const char *path, long *volume,
-	char *rpath, int *rpathlen);
+		char *rpath, int *rpathlen);
 
 
-const char *media_name(int m)
+const char
+*media_name(int m)
 {
-	switch (m) {
-	case MEDIA_RAM : return "RAM";
-	case MEDIA_ROM : return "OS";
-	case MEDIA_FLASH : return "Flash";
-	case MEDIA_VFS : return "VFS";
-	default : return NULL;
+	switch (m)
+	{
+		case MEDIA_RAM:
+			return "RAM";
+		case MEDIA_ROM:
+			return "OS";
+		case MEDIA_FLASH:
+			return "Flash";
+		case MEDIA_VFS:
+			return "VFS";
+		default:
+			return NULL;
 	}
 }
 
@@ -139,22 +144,25 @@ const char *media_name(int m)
  * Return:      Nothing
  *
  ***********************************************************************/
-static void make_excludelist(const char *efile)
+static void
+make_excludelist(const char *efile)
 {
-	char 	temp[1024];
+	char	temp[1024];
+	FILE	*f = fopen(efile, "r");
 
-	FILE 	*f = fopen(efile, "r");
-
-	if (!f) {
+	if (!f)
+	{
 		printf("   Unable to open exclude list file '%s'.\n", efile);
 		exit(EXIT_FAILURE);
 	}
 
-	while ((fgets(temp, sizeof(temp), f)) != NULL) {
+	while ((fgets(temp, sizeof(temp), f)) != NULL)
+	{
 		temp[strlen(temp) - 1] = '\0';
 		printf("Now excluding: %s\n", temp);
 		exclude[numexclude++] = strdup(temp);
-		if (numexclude == MAXEXCLUDE) {
+		if (numexclude == MAXEXCLUDE)
+		{
 			printf("Maximum number of exclusions reached [%d]\n", MAXEXCLUDE);
 			break;
 		}
@@ -174,7 +182,8 @@ static void make_excludelist(const char *efile)
  * Return:      Nothing
  *
  ***********************************************************************/
-static void protect_name(char *d, const char *s)
+static void
+protect_name(char *d, const char *s)
 {
 
 	/* Maybe even..
@@ -238,11 +247,13 @@ static void protect_name(char *d, const char *s)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void list_remove(char *name, char **list, int max)
+static void
+list_remove(char *name, char **list, int max)
 {
-	int i;
+	int		i;
 
-	for (i = 0; i < max; i++) {
+	for (i = 0; i < max; i++)
+	{
 		if (list[i] != NULL && strcmp(name, list[i]) == 0) {
 			list[i] = NULL;
 		}
@@ -268,11 +279,9 @@ static int palm_creator(unsigned long creator)
 		char    C[4];
 	} buf;
 
-	union buf;
-
-	int     n;
-
-	static long special_cases[] = {
+	union		buf;
+	int			n;
+	static long	special_cases[] = {
 		pi_mktag('p', 'p', 'p', '_'),
 		pi_mktag('u', '8', 'E', 'Z'),
 
@@ -306,67 +315,69 @@ static int palm_creator(unsigned long creator)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_backup(const char *dirname,
-	unsigned long int flags,
-	int unsaved,
-	const char *archive_dir)
+static void
+palm_backup(const char *dirname, unsigned long int flags, int unsaved,
+		const char *archive_dir)
 {
 
-	int	i		= 0,
-		ofile_len	= 0,
-		ofile_total	= 0,
-		filecount 	= 1,	/* File counts start at 1, of course */
-		failed		= 0,
-		skipped		= 0;
+	int			i			= 0,
+				ofile_len	= 0,
+				ofile_total	= 0,
+				filecount	= 1,	/* File counts start at 1, of course */
+				failed		= 0,
+				skipped		= 0;
+	static int	totalsize;
+	char		**orig_files = NULL,
+				*name,
+				synclog[70];
 
-	static int totalsize;
-
-	char 	**orig_files = NULL,
-		*name,
-		synclog[70];
-
-	const char *synctext = (flags & UPDATE) ? "Synchronizing" : "Backing up";
-
-	DIR 	*dir;
-	pi_buffer_t *buffer;
+	const char	*synctext = (flags & UPDATE) ? "Synchronizing" : "Backing up";
+	DIR			*dir;
+	pi_buffer_t	*buffer;
 
 	/* Check if the directory exists before writing to it. If it doesn't
 	   exist as a directory, and it isn't a file, create it. */
-	if (access(dirname, F_OK) == -1) {
+	if (access(dirname, F_OK) == -1)
+	{
 		fprintf(stderr, "   Creating directory '%s'...\n", dirname);
 		mkdir(dirname, 0700);
-
-	} else if (access(dirname, R_OK|W_OK|X_OK) != 0) {
+	} else if (access(dirname, R_OK|W_OK|X_OK) != 0)
+	{
 		fprintf(stderr, "\n");
 		fprintf(stderr, "   ERROR: %s\n", strerror(errno));
 		fprintf(stderr, "   Please check ownership and permissions"
-			" on %s.\n\n", dirname);
+				" on %s.\n\n", dirname);
 		return;
-
-	} else if (flags & UPDATE) {
-		if ((dir = opendir(dirname)) == NULL) {
+	} else if (flags & UPDATE)
+	{
+		if ((dir = opendir(dirname)) == NULL)
+		{
 			fprintf(stderr, "\n");
 			fprintf(stderr, "   ERROR: %s\n", strerror(errno));
 			fprintf(stderr, "   Does the directory %s exist?\n\n",
-				dirname);
+					dirname);
 			return;
 		} else {
-			struct 	dirent *dirent;
+			struct dirent	*dirent;
 
-			while ((dirent = readdir(dir))) {
-				int dirnamelen;
+			while ((dirent = readdir(dir)))
+			{
+				int		dirnamelen;
+
 				dirnamelen = strlen(dirname);
 
 				if (dirent->d_name[0] == '.')
 					continue;
 
-				if (ofile_total >= ofile_len) {
+				if (ofile_total >= ofile_len)
+				{
 					ofile_len += 256;
 					orig_files = realloc(orig_files,
 							(sizeof (char *)) * ofile_len);
 				}
 				name = malloc(dirnamelen + strlen (dirent->d_name) + 2);
-				if (name == NULL) {
+				if (name == NULL)
+				{
 					continue;
 				} else {
 					sprintf(name, "%s/%s", dirname, dirent->d_name);
@@ -380,23 +391,24 @@ static void palm_backup(const char *dirname,
 	buffer = pi_buffer_new (sizeof(struct DBInfo));
 	name = (char *)malloc(strlen(dirname) + 1 + 256);
 
-	for(;;) {
-		struct 	DBInfo info;
-		struct 	pi_file *f;
-		struct 	utimbuf times;
+	for (;;)
+	{
+		struct DBInfo	info;
+		struct pi_file	*f;
+		struct utimbuf	times;
+		int				skip	= 0;
+		int				excl	= 0;
+		struct stat		sbuf;
+		char			crid[5];
 
-		int 	skip 	= 0;
-		int 	excl	= 0;
-
-		struct 	stat sbuf;
-		char crid[5];
-
-		if (!pi_socket_connected(sd)) {
+		if (!pi_socket_connected(sd))
+		{
 			printf("\n   Connection broken - Exiting. All data was not backed up\n");
 			exit(EXIT_FAILURE);
 		}
 
-		if (dlp_ReadDBList(sd, 0, ((flags & MEDIA_MASK) ? dlpDBListROM : dlpDBListRAM), i, buffer) < 0)
+		if (dlp_ReadDBList(sd, 0, ((flags & MEDIA_MASK)
+						? dlpDBListROM : dlpDBListRAM), i, buffer) < 0)
 			break;
 
 		memcpy(&info, buffer->data, sizeof(struct DBInfo));
@@ -404,11 +416,12 @@ static void palm_backup(const char *dirname,
 
 		pi_untag(crid,info.creator);
 
-		if (dlp_OpenConduit(sd) < 0) {
+		if (dlp_OpenConduit(sd) < 0)
+		{
 			printf("\n   Exiting on cancel, all data was not backed up"
-			       "\n   Stopped before backing up: '%s'\n\n", info.name);
+					"\n   Stopped before backing up: '%s'\n\n", info.name);
 			sprintf(synclog, "\npilot-xfer was cancelled by the user "
-				"before backing up '%s'.", info.name);
+					"before backing up '%s'.", info.name);
 			dlp_AddSyncLogEntry(sd, synclog);
 			exit(EXIT_FAILURE);
 		}
@@ -417,29 +430,35 @@ static void palm_backup(const char *dirname,
 		strcat(name, "/");
 		protect_name(name + strlen(name), info.name);
 
-		if (palm_creator(info.creator)) {
+		if (palm_creator(info.creator))
+		{
 			printf("   [-][skip][%s] Skipping OS file '%s'.\n",
-				crid, info.name);
+					crid, info.name);
 			continue;
 		}
 
-		if (info.flags & dlpDBFlagResource) {
+		if (info.flags & dlpDBFlagResource)
+		{
 			strcat(name, ".prc");
-		} else if (info.flags & dlpDBFlagClipping) {
+		} else if (info.flags & dlpDBFlagClipping)
+		{
 			strcat(name, ".pqa");
 		} else {
 			strcat(name, ".pdb");
 		}
 
-		for (excl = 0; excl < numexclude; excl++) {
-			if (strcmp(exclude[excl], info.name) == 0) {
+		for (excl = 0; excl < numexclude; excl++)
+		{
+			if (strcmp(exclude[excl], info.name) == 0)
+			{
 				printf("   [-][excl] Excluding '%s'...\n", name);
 				list_remove(name, orig_files, ofile_total);
 				skip = 1;
 			}
 		}
 
-		if (info.creator == pi_mktag('a', '6', '8', 'k')) {
+		if (info.creator == pi_mktag('a', '6', '8', 'k'))
+		{
 			printf("   [-][a68k][PACE] Skipping '%s'\n", info.name);
 			skipped++;
 			continue;
@@ -449,16 +468,19 @@ static void palm_backup(const char *dirname,
 			continue;
 
 		if (!unsaved
-		    && strcmp(info.name, "Unsaved Preferences") == 0) {
+				&& strcmp(info.name, "Unsaved Preferences") == 0)
+		{
 			printf("   [-][unsv] Skipping '%s'\n", info.name);
 			continue;
 		}
 
-	        list_remove(name, orig_files, ofile_total);
-		if ((0 == stat(name, &sbuf)) && ((flags & UPDATE) == UPDATE)) {
-			if (info.modifyDate == sbuf.st_mtime) {
+			list_remove(name, orig_files, ofile_total);
+		if ((0 == stat(name, &sbuf)) && ((flags & UPDATE) == UPDATE))
+		{
+			if (info.modifyDate == sbuf.st_mtime)
+			{
 				printf("   [-][unch] Unchanged, skipping %s\n",
-					name);
+						name);
 				continue;
 			}
 		}
@@ -474,10 +496,12 @@ static void palm_backup(const char *dirname,
 
 		f = pi_file_create(name, &info);
 
-		if (f == 0) {
+		if (f == 0)
+		{
 			printf("\nFailed, unable to create file.\n");
 			break;
-		} else if (pi_file_retrieve(f, sd, 0, NULL) < 0) {
+		} else if (pi_file_retrieve(f, sd, 0, NULL) < 0)
+		{
 			printf("\n   [-][fail][%s] Failed, unable to retrieve '%s' from the Palm.",
 				crid, info.name);
 			failed++;
@@ -488,7 +512,7 @@ static void palm_backup(const char *dirname,
 			stat(name, &sbuf);
 			totalsize += sbuf.st_size;
 			printf(", %'ld bytes, %'ld KiB... ",
-				(long)sbuf.st_size, (long)totalsize/1024);
+					(long)sbuf.st_size, (long)totalsize/1024);
 			fflush(NULL);
 		}
 
@@ -496,28 +520,34 @@ static void palm_backup(const char *dirname,
 
 		printf("\n");
 
-		times.actime 	= info.createDate;
-		times.modtime 	= info.modifyDate;
+		times.actime	= info.createDate;
+		times.modtime	= info.modifyDate;
 		utime(name, &times);
 	}
 	pi_buffer_free(buffer);
 
-	if (orig_files) {
+	if (orig_files)
+	{
 		int     i = 0;
-		int 	dirname_len = strlen(dirname);
+		int		dirname_len = strlen(dirname);
 
-		for (i = 0; i < ofile_total; i++) {
-			if (orig_files[i] != NULL) {
-				if (flags & SYNC) {
-					if (archive_dir) {
+		for (i = 0; i < ofile_total; i++)
+		{
+			if (orig_files[i] != NULL)
+			{
+				if (flags & SYNC)
+				{
+					if (archive_dir)
+					{
 						printf("Archiving '%s'", orig_files[i]);
 
 						sprintf(name, "%s/%s", archive_dir,
 							&orig_files[i] [dirname_len + 1]);
 
-						if (rename (orig_files[i], name) != 0) {
+						if (rename (orig_files[i], name) != 0)
+						{
 							printf("rename(%s, %s) ", orig_files [i],
-								name);
+									name);
 							perror("failed");
 						}
 					} else {
@@ -536,10 +566,11 @@ static void palm_backup(const char *dirname,
 	printf("\n   %s backup complete.", media_name(flags & MEDIA_MASK));
 
 	printf(" %d files backed up, %d skipped, %d file%s failed.\n",
-		(filecount ? filecount - 1 : 0), skipped, failed, (failed == 1) ? "" : "s");
+			(filecount ? filecount - 1 : 0),
+			skipped, failed, (failed == 1) ? "" : "s");
 
 	sprintf(synclog, "%d files successfully backed up.\n\n"
-		"Thank you for using pilot-link.", filecount - 1);
+			"Thank you for using pilot-link.", filecount - 1);
 	dlp_AddSyncLogEntry(sd, synclog);
 }
 
@@ -555,25 +586,27 @@ static void palm_backup(const char *dirname,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_fetch(const char *dbname)
+static void
+palm_fetch(const char *dbname)
 {
-	struct 	DBInfo info;
-	char 	name[256],
-		synclog[512];
+	struct DBInfo	info;
+	char			name[256],
+					synclog[512];
+	struct pi_file	*f;
 
-	struct 	pi_file *f;
-
-	if (access(dbname, F_OK) == 0 && access(dbname, R_OK|W_OK) != 0) {
+	if (access(dbname, F_OK) == 0 && access(dbname, R_OK|W_OK) != 0)
+	{
 		fprintf(stderr, "\n   Unable to write to %s, check "
-			"ownership and permissions.\n\n", dbname);
+				"ownership and permissions.\n\n", dbname);
 		exit(EXIT_FAILURE);
 	}
 
 	printf("   Parsing list of files from handheld... ");
 	fflush(stdout);
-	if (dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info) < 0) {
+	if (dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info) < 0)
+	{
 		printf("\n   Unable to locate app/database '%s', ",
-			dbname);
+				dbname);
 		printf("fetch skipped.\n   Did you spell it correctly?\n\n");
 		return;
 	} else {
@@ -587,38 +620,41 @@ static void palm_fetch(const char *dbname)
 	   supposed to be the same file, so we will treat it as such to
 	   avoid confusion, remove the space.
 	 */
-	if (strcmp(name, "Graffiti ShortCuts ") == 0) {
+	if (strcmp(name, "Graffiti ShortCuts ") == 0)
 		strncpy(name, "Graffiti ShortCuts", sizeof(name));
-	}
 
-	if (info.flags & dlpDBFlagResource) {
+	if (info.flags & dlpDBFlagResource)
+	{
 		strcat(name, ".prc");
-        } else if (info.flags & dlpDBFlagClipping) {
+	} else if (info.flags & dlpDBFlagClipping)
+	{
 		strcat(name, ".pqa");
-        } else {
+	} else {
 		strcat(name, ".pdb");
-        }
+	}
 
 	printf("   Fetching %s... ", name);
 	fflush(stdout);
 
 	info.flags &= 0x2fd;
 
-	/* Write the file records to disk as 'dbname' 	*/
+	/* Write the file records to disk as 'dbname'	*/
 	f = pi_file_create(name, &info);
-	if (f == 0) {
+	if (f == 0)
+	{
 		printf("Failed, unable to create file.\n");
 		return;
-	} else if (pi_file_retrieve(f, sd, 0, NULL) < 0) {
+	} else if (pi_file_retrieve(f, sd, 0, NULL) < 0)
+	{
 		printf("Failed, unable to fetch database from the Palm.\n");
 	}
 
 	printf("complete.\n\n");
 
-        snprintf(synclog, sizeof(synclog)-1,
-				"File '%s' successfully fetched.\n\n"
-				"Thank you for using pilot-link.", name);
-        dlp_AddSyncLogEntry(sd, synclog);
+	snprintf(synclog, sizeof(synclog)-1,
+			"File '%s' successfully fetched.\n\n"
+			"Thank you for using pilot-link.", name);
+	dlp_AddSyncLogEntry(sd, synclog);
 
 	pi_file_close(f);
 }
@@ -637,13 +673,15 @@ static void palm_fetch(const char *dbname)
  ***********************************************************************/
 static void palm_delete(const char *dbname)
 {
-	struct 	DBInfo info;
+	struct DBInfo	info;
 
 	dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info);
 
 	printf("Deleting '%s'... ", dbname);
-	if (dlp_DeleteDB(sd, 0, dbname) >= 0) {
-		if (info.type == pi_mktag('b', 'o', 'o', 't')) {
+	if (dlp_DeleteDB(sd, 0, dbname) >= 0)
+	{
+		if (info.type == pi_mktag('b', 'o', 'o', 't'))
+		{
 			printf(" (rebooting afterwards) ");
 		}
 		printf("OK\n");
@@ -656,19 +694,19 @@ static void palm_delete(const char *dbname)
 }
 
 struct db {
-	int 	flags,
-		maxblock;
-
-	char 	name[256];
-
-	unsigned long creator, type;
+	int				flags,
+					maxblock;
+	char			name[256];
+	unsigned long	creator, type;
 };
 
-static int compare(struct db *d1, struct db *d2)
+static int
+compare(struct db *d1, struct db *d2)
 {
 	/* types of 'appl' sort later then other types */
 	if (d1->creator == d2->creator)
-		if (d1->type != d2->type) {
+		if (d1->type != d2->type)
+		{
 			if (d1->type == pi_mktag('a', 'p', 'p', 'l'))
 				return 1;
 			if (d2->type == pi_mktag('a', 'p', 'p', 'l'))
@@ -689,30 +727,33 @@ static int compare(struct db *d1, struct db *d2)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_restore(const char *dirname)
+static void
+palm_restore(const char *dirname)
 {
-	int 	dbcount 	= 0,
-		i,
-		j,
-		max,
-		save_errno 	= errno;
-	size_t	size;
-	DIR 	*dir;
-	struct 	dirent *dirent;
-	struct 	DBInfo info;
-	struct 	db **db 	= NULL;
-	struct 	pi_file *f;
-	struct  stat sbuf;
+	int				dbcount		= 0,
+					i,
+					j,
+					max,
+					save_errno	= errno;
+	size_t			size;
+	DIR				*dir;
+	struct dirent	*dirent;
+	struct DBInfo	info;
+	struct db		**db		= NULL;
+	struct pi_file	*f;
+	struct stat		sbuf;
 
 	struct  CardInfo Card;
 
 	Card.card = -1;
 	Card.more = 1;
 
-	if ((dir = opendir(dirname)) == NULL) {
+	if ((dir = opendir(dirname)) == NULL)
+	{
 		fprintf(stderr, "\n");
 		perror("   ERROR");
-		fprintf(stderr, "   opendir() failed. Cannot open directory %s.\n", dirname);
+		fprintf(stderr, "   opendir() failed. Cannot open directory %s.\n",
+				dirname);
 		fprintf(stderr, "   Does the directory exist?\n\n");
 		errno = save_errno;
 		exit(EXIT_FAILURE);
@@ -728,7 +769,8 @@ static void palm_restore(const char *dirname)
 
 	db = (struct db **) calloc(dbcount, sizeof(struct db *));
 
-	if (!db) {
+	if (!db)
+	{
 		printf("Unable to allocate memory for directory entry table\n");
 		exit(EXIT_FAILURE);
 	}
@@ -736,8 +778,8 @@ static void palm_restore(const char *dirname)
 	dbcount = 0;
 	rewinddir(dir);
 
-	while ((dirent = readdir(dir)) != NULL) {
-
+	while ((dirent = readdir(dir)) != NULL)
+	{
 		if (dirent->d_name[0] == '.')
 			continue;
 
@@ -747,23 +789,26 @@ static void palm_restore(const char *dirname)
 			dirent->d_name);
 
 		f = pi_file_open(db[dbcount]->name);
-		if (f == 0) {
+		if (f == 0)
+		{
 			printf("Unable to open '%s'!\n",
-			       db[dbcount]->name);
+				   db[dbcount]->name);
 			break;
 		}
 
 		pi_file_get_info(f, &info);
 
-		db[dbcount]->creator 	= info.creator;
-		db[dbcount]->type 	= info.type;
-		db[dbcount]->flags 	= info.flags;
-		db[dbcount]->maxblock 	= 0;
+		db[dbcount]->creator	= info.creator;
+		db[dbcount]->type		= info.type;
+		db[dbcount]->flags		= info.flags;
+		db[dbcount]->maxblock	= 0;
 
 		pi_file_get_entries(f, &max);
 
-		for (i = 0; i < max; i++) {
-			if (info.flags & dlpDBFlagResource) {
+		for (i = 0; i < max; i++)
+		{
+			if (info.flags & dlpDBFlagResource)
+			{
 				pi_file_read_resource(f, i, 0, &size, 0, 0);
 			} else {
 				pi_file_read_record(f, i, 0, &size, 0, 0, 0);
@@ -779,9 +824,12 @@ static void palm_restore(const char *dirname)
 
 	closedir(dir);
 
-	for (i = 0; i < dbcount; i++) {
-		for (j = i + 1; j < dbcount; j++) {
-			if (compare(db[i], db[j]) > 0) {
+	for (i = 0; i < dbcount; i++)
+	{
+		for (j = i + 1; j < dbcount; j++)
+		{
+			if (compare(db[i], db[j]) > 0)
+			{
 				struct db *temp = db[i];
 
 				db[i] = db[j];
@@ -790,7 +838,8 @@ static void palm_restore(const char *dirname)
 		}
 	}
 
-	for (i = 0; i < dbcount; i++) {
+	for (i = 0; i < dbcount; i++)
+	{
 
 		f = pi_file_open(db[i]->name);
 		if (f == 0) {
@@ -802,12 +851,14 @@ static void palm_restore(const char *dirname)
 
 		stat(db[i]->name, &sbuf);
 
-		while (Card.more) {
+		while (Card.more)
+		{
 			if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
 				break;
 		}
 
-		if (sbuf.st_size > Card.ramFree) {
+		if (sbuf.st_size > Card.ramFree)
+		{
 			fprintf(stderr, "\n\n");
 			fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
 			fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
@@ -815,7 +866,8 @@ static void palm_restore(const char *dirname)
 			exit(EXIT_FAILURE);
 		}
 
-		if (pi_file_install(f, sd, 0, NULL) < 0) {
+		if (pi_file_install(f, sd, 0, NULL) < 0)
+		{
 			printf("failed.\n");
 		} else {
 			printf("OK\n");
@@ -824,7 +876,8 @@ static void palm_restore(const char *dirname)
 		pi_file_close(f);
 	}
 
-	for (i = 0; i < dbcount; i++) {
+	for (i = 0; i < dbcount; i++)
+	{
 		free(db[i]);
 	}
 	free(db);
@@ -846,24 +899,24 @@ static void palm_restore(const char *dirname)
  ***********************************************************************/
 static void palm_install_internal(const char *filename)
 {
-	static int totalsize;
-
-	struct 	pi_file *f;
-	struct 	stat sbuf;
-
-	struct  CardInfo Card;
+	static int		totalsize;
+	struct pi_file	*f;
+	struct stat		sbuf;
+	struct CardInfo	Card;
 
 	Card.card = -1;
 	Card.more = 1;
 
 	f = pi_file_open(filename);
 
-	if (f == 0) {
+	if (f == 0)
+	{
 		printf("Unable to open '%s'!\n", filename);
 		return;
 	}
 
-	if (dlp_OpenConduit(sd) < 0) {
+	if (dlp_OpenConduit(sd) < 0)
+	{
 		fprintf(stderr, "\nExiting on cancel, some files were not "
 				"installed\n\n");
 		exit(EXIT_FAILURE);
@@ -873,12 +926,14 @@ static void palm_install_internal(const char *filename)
 
 	stat(filename, &sbuf);
 
-	while (Card.more) {
+	while (Card.more)
+	{
 		if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
 			break;
 	}
 
-	if (sbuf.st_size > Card.ramFree) {
+	if (sbuf.st_size > Card.ramFree)
+	{
 		fprintf(stderr, "\n\n");
 		fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
 		fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
@@ -886,10 +941,12 @@ static void palm_install_internal(const char *filename)
 		return;
 	}
 
-	if (pi_file_install(f, sd, 0, NULL) < 0) {
+	if (pi_file_install(f, sd, 0, NULL) < 0)
+	{
 		fprintf(stderr, "failed.\n");
 
-	} else if (stat(filename, &sbuf) == 0) {
+	} else if (stat(filename, &sbuf) == 0)
+	{
 		printf("(%lu bytes, %ld KiB total)\n\n",
 			(unsigned long)sbuf.st_size, (totalsize == 0)
 			? (long)sbuf.st_size/1024
@@ -911,42 +968,51 @@ static void palm_install_internal(const char *filename)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_install_VFS(const char *localfile, const char *vfspath)
+static void
+palm_install_VFS(const char *localfile, const char *vfspath)
 {
-	static unsigned long totalsize = 0;
-	long volume = -1;
-	long used,total,freespace;
-	char rpath[vfsMAXFILENAME];
-	int rpathlen = vfsMAXFILENAME;
-	const char *basename;
-	FileRef file;
-	long attributes;
-	char *filebuffer;
-	int fd,writesize,offset;
-	size_t readsize;
+	static unsigned long	totalsize				= 0;
+	long					volume					= -1;
+	long					used,
+							total,
+							freespace;
+	char					rpath[vfsMAXFILENAME];
+	int						rpathlen				= vfsMAXFILENAME;
+	const char				*basename;
+	FileRef					file;
+	long					attributes;
+	char					*filebuffer;
+	int						fd,
+							writesize,
+							offset;
+	size_t					readsize;
 
-	struct stat sbuf;
+	struct stat				sbuf;
 
-	if (NULL == vfspath) {
+	if (NULL == vfspath)
+	{
 		/* how the heck did we get here then? */
 		fprintf(stderr,"\n   No VFS path given.\n");
 		return;
 	}
 
-	if (dlp_OpenConduit(sd) < 0) {
-                fprintf(stderr, "\nExiting on cancel, some files were not"
-			       "installed\n\n");
+	if (dlp_OpenConduit(sd) < 0)
+	{
+		fprintf(stderr, "\nExiting on cancel, some files were not"
+				"installed\n\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0) {
-		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n",vfspath);
+	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0)
+	{
+		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n", vfspath);
 		return;
 	}
 
 	fprintf(stderr, "   Installing '%s'... ", localfile);
 
-	if (stat(localfile, &sbuf) < 0) {
+	if (stat(localfile, &sbuf) < 0)
+	{
 		fprintf(stderr,"   Unable to open '%s'!\n", localfile);
 		return;
 	}
@@ -956,31 +1022,35 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 		return;
 	}
 
-	if (dlp_VFSVolumeSize(sd,volume,&used,&total)<0) {
+	if (dlp_VFSVolumeSize(sd,volume,&used,&total)<0)
+	{
 		fprintf(stderr,"   Unable to get volume size.\n");
 		return;
 	}
+
 	/* Calculate free space but leave last 64k free on card */
 	freespace  = total - used - 65536 ;
 
-	if (sbuf.st_size > freespace) {
+	if (sbuf.st_size > freespace)
+	{
 		fprintf(stderr, "\n\n");
 		fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
 		fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
-			(unsigned long)sbuf.st_size, freespace);
+				(unsigned long)sbuf.st_size, freespace);
 		return;
 	}
 #define APPEND_BASENAME fd-=1; \
-			basename = strrchr(localfile,'/'); \
-			if (NULL == basename) basename = localfile; else basename++; \
+	basename = strrchr(localfile,'/'); \
+		if (NULL == basename) basename = localfile; else basename++; \
 			if (rpath[rpathlen-1] != '/') { \
 				rpath[rpathlen++]='/'; \
-				rpath[rpathlen]=0; \
+					rpath[rpathlen]=0; \
 			} \
-			strncat(rpath,basename,vfsMAXFILENAME-rpathlen-1); \
-			rpathlen = strlen(rpath);
+	strncat(rpath,basename,vfsMAXFILENAME-rpathlen-1); \
+		rpathlen = strlen(rpath);
 
 	fd = 0;
+
 	while (fd<2)
 	{
 		/* Don't retry by default. APPEND_BASENAME changes
@@ -995,17 +1065,21 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 			create the directory and then act as if the existing
 			directory was given as target. If it doesn't, carry
 			on, it's a regular file to create. */
-			if ('/' == rpath[rpathlen-1]) {
+			if ('/' == rpath[rpathlen-1])
+			{
 				/* directory, doesn't exist. Don't try to mkdir /. */
-				if ((rpathlen > 1) &&
-					(dlp_VFSDirCreate(sd,volume,rpath) < 0)) {
+				if ((rpathlen > 1)
+						&& (dlp_VFSDirCreate(sd,volume,rpath) < 0))
+				{
 					fprintf(stderr,"   Could not create destination directory.\n");
 					return;
 				}
 				APPEND_BASENAME
 			}
-			if (dlp_VFSFileCreate(sd,volume,rpath) < 0) {
-				fprintf(stderr,"   Cannot create destination file '%s'.\n",rpath);
+			if (dlp_VFSFileCreate(sd,volume,rpath) < 0)
+			{
+				fprintf(stderr,"   Cannot create destination file '%s'.\n",
+						rpath);
 				return;
 			}
 		}
@@ -1021,19 +1095,21 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 				return;
 			}
 
-			if (attributes & vfsFileAttrDirectory) {
+			if (attributes & vfsFileAttrDirectory)
+			{
 				APPEND_BASENAME
 				dlp_VFSFileClose(sd,file);
 				/* Now for sure it's a filename in a directory. */
-			}
-			else {
+			} else {
 				dlp_VFSFileClose(sd,file);
-				if ('/' == rpath[rpathlen-1]) {
+				if ('/' == rpath[rpathlen-1])
+				{
 					/* was expecting a directory */
 					fprintf(stderr,"   Destination is not a directory.\n");
 					return;
 				}
-				if (totalsize > 0) {
+				if (totalsize > 0)
+				{
 					fprintf(stderr,"   Must specify directory when installing multiple files.\n");
 					return;
 				}
@@ -1042,20 +1118,23 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 	}
 #undef APPEND_BASENAME
 
-	if (dlp_VFSFileOpen(sd,volume,rpath,0x7,&file) < 0) {
+	if (dlp_VFSFileOpen(sd,volume,rpath,0x7,&file) < 0)
+	{
 		fprintf(stderr,"   Cannot open destination file '%s'.\n",rpath);
 		return;
 	}
 
 	fd = open(localfile,O_RDONLY);
-	if (fd < 0) {
+	if (fd < 0)
+	{
 		fprintf(stderr,"   Cannot open local file for reading.\n");
 		dlp_VFSFileClose(sd,file);
 		return;
 	}
 #define FBUFSIZ 16384
 	filebuffer = (char *)malloc(FBUFSIZ);
-	if (NULL == filebuffer) {
+	if (NULL == filebuffer)
+	{
 		fprintf(stderr,"   Cannot allocate memory for file copy.\n");
 		dlp_VFSFileClose(sd,file);
 		close(fd);
@@ -1063,13 +1142,16 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 	}
 
 	writesize = 0;
-	while (writesize >= 0) {
+	while (writesize >= 0)
+	{
 		readsize = read(fd,filebuffer,FBUFSIZ);
 		if (readsize <= 0) break;
 		offset=0;
-		while (readsize > 0) {
+		while (readsize > 0)
+		{
 			writesize = dlp_VFSFileWrite(sd,file,filebuffer+offset,readsize);
-			if (writesize < 0) {
+			if (writesize < 0)
+			{
 				fprintf(stderr,"   Error while writing file.\n");
 				break;
 			}
@@ -1089,19 +1171,22 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 	totalsize += sbuf.st_size; */
 }
 
-static void palm_install(unsigned long int flags,const char *localfile)
+static void
+palm_install(unsigned long int flags,const char *localfile)
 {
-	switch(flags & MEDIA_MASK) {
-	case MEDIA_RAM :
-	case MEDIA_ROM :
-	case MEDIA_FLASH :
+	switch(flags & MEDIA_MASK)
+	{
+	case MEDIA_RAM:
+	case MEDIA_ROM:
+	case MEDIA_FLASH:
 		palm_install_internal(localfile);
 		break;
-	case MEDIA_VFS :
+	case MEDIA_VFS:
 		palm_install_VFS(localfile,vfsdir);
 		break;
-	default :
-		fprintf(stderr,"   ERROR: Unknown media type %lx\n",(flags & MEDIA_MASK));
+	default:
+		fprintf(stderr,"   ERROR: Unknown media type %lx\n",
+				(flags & MEDIA_MASK));
 		break;
 	}
 }
@@ -1118,13 +1203,15 @@ static void palm_install(unsigned long int flags,const char *localfile)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_merge(const char *filename)
+static void
+palm_merge(const char *filename)
 {
 	struct pi_file *f;
 
 	f = pi_file_open(filename);
 
-	if (f == 0) {
+	if (f == 0)
+	{
 		printf("Unable to open '%s'!\n", filename);
 		return;
 	}
@@ -1147,33 +1234,38 @@ static void palm_merge(const char *filename)
  * Function:    palm_list_internal
  *
  * Summary:     List the databases found on the Palm device's internal
- * 		memory.
+ *		memory.
  *
  * Parameters:  Media type
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_list_internal(unsigned long int flags)
+static void
+palm_list_internal(unsigned long int flags)
 {
-	int 	i		= 0,
-		j,
-		dbcount 	= 0;
-	struct 	DBInfo info;
-	char synclog[68];
-	pi_buffer_t *buffer;
+	int				i		= 0,
+					j,
+					dbcount	= 0;
+	struct DBInfo	info;
+	char			synclog[68];
+	pi_buffer_t		*buffer;
 
 	printf("   Reading list of databases in RAM%s...\n",
-		(flags & MEDIA_MASK) ? " and ROM" : "");
+			(flags & MEDIA_MASK) ? " and ROM" : "");
 
 	buffer = pi_buffer_new(sizeof(struct DBInfo));
 
-	for (;;) {
+	for (;;)
+	{
 		if (dlp_ReadDBList
-		    (sd, 0, ((flags & MEDIA_MASK) ? 0x40 : 0) | 0x80 | dlpDBListMultiple, i, buffer) < 0)
+				(sd, 0, ((flags & MEDIA_MASK) ? 0x40 : 0) | 0x80 |
+				 dlpDBListMultiple, i, buffer) < 0)
 			break;
-		for (j=0; j < (buffer->used / sizeof(struct DBInfo)); j++) {
-			memcpy(&info, buffer->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
+		for (j=0; j < (buffer->used / sizeof(struct DBInfo)); j++)
+		{
+			memcpy(&info, buffer->data + j * sizeof(struct DBInfo),
+					sizeof(struct DBInfo));
 			dbcount++;
 			i = info.index + 1;
 			printf("   %s\n", info.name);
@@ -1184,7 +1276,7 @@ static void palm_list_internal(unsigned long int flags)
 
 	printf("\n   List complete. %d files found.\n\n", dbcount);
 	sprintf(synclog, "List complete. %d files found..\n\nThank you for using pilot-link.",
-		dbcount);
+			dbcount);
 	dlp_AddSyncLogEntry(sd, synclog);
 }
 
@@ -1204,49 +1296,54 @@ static void palm_list_internal(unsigned long int flags)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void print_volumeinfo(const char *buf, long volume, struct VFSInfo *info)
+static void
+print_volumeinfo(const char *buf, long volume, struct VFSInfo *info)
 {
-	long size_used, size_total;
+	long	size_used,
+			size_total;
 
 	/* Only relevant when listing dir / */
 	printf("   /card%d\n",info->slotRefNum);
 	if (buf && (buf[0])) printf("   /%s\n",buf);
 	printf("      ");
-	switch(info->fsType) {
-	case pi_mktag('v','f','a','t') :
-		printf("VFAT");
-		break;
-	case pi_mktag('t','w','M','F') :
-		printf("Tapwave media");
-		break;
-	default:
-		/* This sortof-untag is gross, but useful */
-		printf("Unknown (type %c%c%c%c)",
-			(char)(info->mediaType >> 24) & 0xff,
-			(char)(info->mediaType >> 16) & 0xff,
-			(char)(info->mediaType >> 8) & 0xff,
-			(char)(info->mediaType) & 0xff);
+	switch(info->fsType)
+	{
+		case pi_mktag('v','f','a','t'):
+			printf("VFAT");
+			break;
+		case pi_mktag('t','w','M','F'):
+			printf("Tapwave media");
+			break;
+		default:
+			/* This sortof-untag is gross, but useful */
+			printf("Unknown (type %c%c%c%c)",
+					(char)(info->mediaType >> 24) & 0xff,
+					(char)(info->mediaType >> 16) & 0xff,
+					(char)(info->mediaType >> 8) & 0xff,
+					(char)(info->mediaType) & 0xff);
 	}
 	printf(" filesystem ");
-	switch(info->mediaType) {
-	case pi_mktag('s','d','i','g') :
-		printf("on SD card");
-		break;
-	case pi_mktag('T','F','F','S') :
-	case pi_mktag('t','w','M','F') :
-		printf("in internal memory");
-		break;
-	default:
-		/* This sortof-untag is gross, but useful */
-		printf("on unknown media (type %c%c%c%c)",
-			(char)(info->mediaType >> 24) & 0xff,
-			(char)(info->mediaType >> 16) & 0xff,
-			(char)(info->mediaType >> 8) & 0xff,
-			(char)(info->mediaType) & 0xff);
+	switch(info->mediaType)
+	{
+		case pi_mktag('s','d','i','g'):
+			printf("on SD card");
+			break;
+		case pi_mktag('T','F','F','S'):
+		case pi_mktag('t','w','M','F'):
+			printf("in internal memory");
+			break;
+		default:
+			/* This sortof-untag is gross, but useful */
+			printf("on unknown media (type %c%c%c%c)",
+					(char)(info->mediaType >> 24) & 0xff,
+					(char)(info->mediaType >> 16) & 0xff,
+					(char)(info->mediaType >> 8) & 0xff,
+					(char)(info->mediaType) & 0xff);
 	}
 	printf("\n");
 
-	if (dlp_VFSVolumeSize(sd,volume,&size_used,&size_total) >= 0) {
+	if (dlp_VFSVolumeSize(sd,volume,&size_used,&size_total) >= 0)
+	{
 		printf("      Used: %ld Total: %ld bytes.\n",size_used,size_total);
 	}
 }
@@ -1264,11 +1361,13 @@ static void print_volumeinfo(const char *buf, long volume, struct VFSInfo *info)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void print_fileinfo(const char *path, FileRef file)
+static void
+print_fileinfo(const char *path, FileRef file)
 {
-	int size;
-	time_t date;
-	char *s;
+	int		size;
+	time_t	date;
+	char	*s;
+
 	(void) dlp_VFSFileSize(sd,file,&size);
 	(void) dlp_VFSFileGetDate(sd,file,vfsFileDateModified,&date);
 	s = ctime(&date);
@@ -1291,19 +1390,21 @@ static void print_fileinfo(const char *path, FileRef file)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void print_dir(long volume, const char *path, FileRef dir)
+static void
+print_dir(long volume, const char *path, FileRef dir)
 {
-	unsigned long it = 0;
-	int max = 64;
-	struct VFSDirInfo infos[64];
-	int i;
-	FileRef file;
-	char buf[vfsMAXFILENAME];
-	int pathlen = strlen(path);
+	unsigned long		it						= 0;
+	int					max						= 64;
+	struct VFSDirInfo	infos[64];
+	int					i;
+	FileRef				file;
+	char				buf[vfsMAXFILENAME];
+	int					pathlen					= strlen(path);
 
 	/* Set up buf so it contains path with trailing / and
 	   buflen points to the terminating NUL. */
-	if (pathlen<1) {
+	if (pathlen<1)
+	{
 		printf("   NULL path.\n");
 		return;
 	}
@@ -1311,22 +1412,27 @@ static void print_dir(long volume, const char *path, FileRef dir)
 	memset(buf,0,vfsMAXFILENAME);
 	strncpy(buf,path,vfsMAXFILENAME-1);
 
-	if (buf[pathlen-1] != '/') {
+	if (buf[pathlen-1] != '/')
+	{
 		buf[pathlen]='/';
 		pathlen++;
 	}
 
-	if (pathlen>vfsMAXFILENAME-2) {
+	if (pathlen>vfsMAXFILENAME-2)
+	{
 		printf("   Path too long.\n");
 		return;
 	}
 
-	while (dlp_VFSDirEntryEnumerate(sd,dir,&it,&max,infos) >= 0) {
+	while (dlp_VFSDirEntryEnumerate(sd,dir,&it,&max,infos) >= 0)
+	{
 		if (max<1) break;
-		for (i = 0; i<max; i++) {
+		for (i = 0; i<max; i++)
+		{
 			memset(buf+pathlen,0,vfsMAXFILENAME-pathlen);
 			strncpy(buf+pathlen,infos[i].name,vfsMAXFILENAME-pathlen);
-			if (dlp_VFSFileOpen(sd,volume,buf,dlpVFSOpenRead,&file) < 0) {
+			if (dlp_VFSFileOpen(sd,volume,buf,dlpVFSOpenRead,&file) < 0)
+			{
 				printf("   %s: No such file or directory.\n",infos[i].name);
 			} else {
 				print_fileinfo(infos[i].name, file);
@@ -1354,17 +1460,19 @@ static void print_dir(long volume, const char *path, FileRef dir)
  *                match is set.
  *
  ***********************************************************************/
-static int findVFSRoot_clumsy(const char *root_component, int list_root, long *match)
+static int findVFSRoot_clumsy(const char *root_component, int list_root,
+		long *match)
 {
-	int volume_count=16;
-	int volumes[16];
-	struct VFSInfo info;
-	int i;
-	int buflen;
-	char buf[vfsMAXFILENAME];
-	long matched_volume = -1;
+	int				volume_count		= 16;
+	int				volumes[16];
+	struct VFSInfo	info;
+	int				i;
+	int				buflen;
+	char			buf[vfsMAXFILENAME];
+	long			matched_volume		= -1;
 
-	if (dlp_VFSVolumeEnumerate(sd,&volume_count,volumes) < 0) {
+	if (dlp_VFSVolumeEnumerate(sd,&volume_count,volumes) < 0)
+	{
 		return -2;
 	}
 
@@ -1373,36 +1481,44 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root, long *m
 	   device. If we're listing, print everything out, otherwise remain
 	   silent and just set matched_volume if there's a match in the
 	   first filename component. */
-	for (i = 0; i<volume_count; ++i) {
-		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0) continue;
+	for (i = 0; i<volume_count; ++i)
+	{
+		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0)
+			continue;
 
 		buflen=vfsMAXFILENAME;
 		buf[0]=0;
 		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,buf);
 
-		if (!list_root) {
+		if (!list_root)
+		{
 			/* Not listing, so just check matches and continue. */
-			if (0 == strcmp(root_component,buf)) {
+			if (0 == strcmp(root_component,buf))
+			{
 				matched_volume = volumes[i];
 				break;
 			}
 			/* volume label no longer important, overwrite */
 			sprintf(buf,"card%d",info.slotRefNum);
 
-			if (0 == strcmp(root_component,buf)) {
+			if (0 == strcmp(root_component,buf))
+			{
 				matched_volume = volumes[i];
 				break;
 			}
 		}
-		else print_volumeinfo(buf,volumes[i],&info);
+		else
+			print_volumeinfo(buf,volumes[i],&info);
 	}
 
-	if (matched_volume >= 0) {
+	if (matched_volume >= 0)
+	{
 		*match = matched_volume;
 		return 0;
 	}
 
-	if ((matched_volume < 0) && (1 == volume_count)) {
+	if ((matched_volume < 0) && (1 == volume_count))
+	{
 		/* Assume that with one card, just go look there. */
 		*match = volumes[0];
 		return 1;
@@ -1439,30 +1555,40 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root, long *m
  *              0 if a match was found.
  *
  ***********************************************************************/
-static int findVFSPath(int verbose, const char *path, long *volume,
-	char *rpath, int *rpathlen)
+static int
+findVFSPath(int verbose, const char *path, long *volume,
+		char *rpath, int *rpathlen)
 {
-	char *s;
-	int r;
+	char	*s;
+	int		r;
 
-	if ((NULL == path) || (NULL == rpath) || (NULL == rpathlen)) return -1;
-	if (*rpathlen < strlen(path)) return -1;
+	if ((NULL == path) || (NULL == rpath) || (NULL == rpathlen))
+		return -1;
+	if (*rpathlen < strlen(path))
+		return -1;
 
 	memset(rpath,0,*rpathlen);
-	if ('/'==path[0]) strncpy(rpath,path+1,*rpathlen-1);
-	else strncpy(rpath,path,*rpathlen-1);
+	if ('/'==path[0])
+		strncpy(rpath,path+1,*rpathlen-1);
+	else
+		strncpy(rpath,path,*rpathlen-1);
 	s = strchr(rpath,'/');
-	if (NULL != s) *s=0;
+	if (NULL != s)
+		*s=0;
 
 
 	r = findVFSRoot_clumsy(rpath,verbose,volume);
-	if (verbose) return 1;
-	if (r < 0) return r;
+	if (verbose)
+		return 1;
+	if (r < 0)
+		return r;
 
-	if (0 == r) {
+	if (0 == r)
+	{
 		/* Path includes card/volume label. */
 		r = strlen(rpath);
-		if ('/'==path[0]) ++r; /* adjust for stripped / */
+		if ('/'==path[0])
+			++r; /* adjust for stripped / */
 		memset(rpath,0,*rpathlen);
 		strncpy(rpath,path+r,*rpathlen-1);
 	} else {
@@ -1471,7 +1597,8 @@ static int findVFSPath(int verbose, const char *path, long *volume,
 		strncpy(rpath,path,*rpathlen-1);
 	}
 
-	if (!rpath[0]) {
+	if (!rpath[0])
+	{
 		rpath[0]='/';
 		rpath[1]=0;
 	}
@@ -1497,17 +1624,20 @@ static void palm_list_VFSDir(long volume, const char *path)
 	FileRef file;
 	unsigned long attributes;
 
-	if (dlp_VFSFileOpen(sd,volume,path,dlpVFSOpenRead,&file) < 0) {
+	if (dlp_VFSFileOpen(sd,volume,path,dlpVFSOpenRead,&file) < 0)
+	{
 		printf("   %s: No such file or directory.\n",path);
 		return;
 	}
 
-	if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0) {
+	if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
+	{
 		printf("   %s: Cannot get attributes.\n",path);
 		return;
 	}
 
-	if (vfsFileAttrDirectory == (attributes & vfsFileAttrDirectory)) {
+	if (vfsFileAttrDirectory == (attributes & vfsFileAttrDirectory))
+	{
 		/* directory */
 		print_dir(volume,path,file);
 	} else {
@@ -1534,33 +1664,39 @@ static void palm_list_VFSDir(long volume, const char *path)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_list_VFS()
+static void
+palm_list_VFS()
 {
-	char root_component[vfsMAXFILENAME];
-	int rootlen = vfsMAXFILENAME;
-	int list_root = 0;
-	long matched_volume = -1;
-	int r;
+	char	root_component[vfsMAXFILENAME];
+	int		rootlen							= vfsMAXFILENAME;
+	int		list_root						= 0;
+	long	matched_volume					= -1;
+	int		r;
 
 	/* Listing the root directory / has special handling. Detect that
 	   here. */
-	if (NULL == vfsdir) vfsdir="/";
-	if (0 == strcmp(vfsdir,"/")) list_root = 1;
+	if (NULL == vfsdir)
+		vfsdir="/";
+	if (0 == strcmp(vfsdir,"/"))
+		list_root = 1;
 
 	/* Find the given directory. Will list the VFS root dir if the
 	   requested dir is "/" */
 	printf("   Directory of %s...\n",vfsdir);
 
 	r = findVFSPath(list_root,vfsdir,&matched_volume,root_component,&rootlen);
-	if (list_root) return;
+	if (list_root)
+		return;
 
 
 	/* Failures and "/" mean we can quit now. */
-	if (-2 == r) {
+	if (-2 == r)
+	{
 		printf("   Not ready reading drive C:\n");
 		return;
 	}
-	if (r < 0) {
+	if (r < 0)
+	{
 		printf("   No such directory, list directory / for card names.\n");
 		return;
 	}
@@ -1581,20 +1717,22 @@ static void palm_list_VFS()
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_list(unsigned long int flags)
+static void
+palm_list(unsigned long int flags)
 {
-	switch(flags & MEDIA_MASK) {
-	case MEDIA_RAM :
-	case MEDIA_ROM :
-	case MEDIA_FLASH :
-		palm_list_internal(flags);
-		break;
-	case MEDIA_VFS :
-		palm_list_VFS();
-		break;
-	default :
-		fprintf(stderr,"   ERROR: Unknown media type %lx.\n",flags & MEDIA_MASK);
-		break;
+	switch(flags & MEDIA_MASK)
+	{
+		case MEDIA_RAM:
+		case MEDIA_ROM:
+		case MEDIA_FLASH:
+			palm_list_internal(flags);
+			break;
+		case MEDIA_VFS:
+			palm_list_VFS();
+			break;
+		default:
+			fprintf(stderr,"   ERROR: Unknown media type %lx.\n",flags & MEDIA_MASK);
+			break;
 	}
 }
 
@@ -1611,19 +1749,20 @@ static void palm_list(unsigned long int flags)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void palm_purge(void)
+static void
+palm_purge(void)
 {
-	int 	i	= 0,
-		h;
-	struct 	DBInfo info;
-	pi_buffer_t *buffer;
+	int				i	= 0,
+					h;
+	struct DBInfo	info;
+	pi_buffer_t		*buffer;
 
 	printf("Reading list of databases to purge...\n");
 
 	buffer = pi_buffer_new(sizeof(struct DBInfo));
 
-	for (;;) {
-
+	for (;;)
+	{
 		if (dlp_ReadDBList(sd, 0, 0x80, i, buffer) < 0)
 			break;
 
@@ -1636,9 +1775,10 @@ static void palm_purge(void)
 		printf("Purging deleted records from '%s'... ", info.name);
 
 		h = 0;
-		if ((dlp_OpenDB(sd, 0, 0x40 | 0x80, info.name, &h) >= 0) &&
-		    (dlp_CleanUpDatabase(sd, h) >= 0) &&
-		    (dlp_ResetSyncFlags(sd, h) >= 0)) {
+		if ((dlp_OpenDB(sd, 0, 0x40 | 0x80, info.name, &h) >= 0)
+				&& (dlp_CleanUpDatabase(sd, h) >= 0)
+				&& (dlp_ResetSyncFlags(sd, h) >= 0))
+		{
 			printf("OK\n");
 		} else {
 			printf("Failed\n");
@@ -1646,7 +1786,6 @@ static void palm_purge(void)
 
 		if (h != 0)
 			dlp_CloseDB(sd, h);
-
 	}
 
 	pi_buffer_free (buffer);
@@ -1656,25 +1795,23 @@ static void palm_purge(void)
 
 
 
-int main(int argc, const char *argv[])
+int
+main(int argc, const char *argv[])
 {
-	int 	optc,		/* switch */
-		unsaved 	= 0;
+	int					optc,			/* switch */
+						unsaved			= 0;
+	const char			*archive_dir    = NULL,
+		                *dirname        = NULL;
+	unsigned long int	sync_flags		= 0;
+	palm_op_t			palm_operation	= palm_op_noop;
+	const char			*gracias		= "   Thank you for using pilot-link.\n";
 
-	const char
-                *archive_dir    = NULL,
-                *dirname        = NULL;
+	const char			**rargv;		/* for scanning remaining arguments */
+	int					rargc;
+	poptContext			pc;
 
-	unsigned long int sync_flags = 0;
-	palm_op_t palm_operation     = palm_op_noop;
-
-	const char *gracias = "   Thank you for using pilot-link.\n";
-
-	const char **rargv; /* for scanning remaining arguments */
-	int rargc;
-	poptContext pc;
-
-	struct poptOption options[] = {
+	struct poptOption	options[]		=
+	{
 		USERLAND_RESERVED_OPTIONS
 
 		/* action indicators that take a <dir> argument */
@@ -1708,7 +1845,7 @@ int main(int argc, const char *argv[])
 		POPT_TABLEEND
 	};
 
-	const char *help_header_text =
+	const char			*help_header_text	=
 		"\n"
 		"   Sync, backup, install, delete and more from your Palm device.\n"
 		"   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
@@ -1733,75 +1870,81 @@ int main(int argc, const char *argv[])
 		"       --illegal instead of -I, --Illegal\n"
 		"       --list --rom instead of -L, --List, --Listall\n\n");
 
-	while ((optc = poptGetNextOpt(pc)) >= 0) {
-		switch (optc) {
-		/* Actions with a dir argument */
+	while ((optc = poptGetNextOpt(pc)) >= 0)
+	{
+		switch (optc)
+		{
+			/* Actions with a dir argument */
 
-		case palm_op_backup:
-		case palm_op_update:
-		case palm_op_sync:
-		case palm_op_restore:
-		case palm_op_install:
-		case palm_op_merge:
-		case palm_op_fetch:
-		case palm_op_delete:
-		case palm_op_list:
-			if (palm_op_noop != palm_operation) {
-				fprintf(stderr,"   ERROR: specify only one of -brsuimfdlL.\n");
+			case palm_op_backup:
+			case palm_op_update:
+			case palm_op_sync:
+			case palm_op_restore:
+			case palm_op_install:
+			case palm_op_merge:
+			case palm_op_fetch:
+			case palm_op_delete:
+			case palm_op_list:
+				if (palm_op_noop != palm_operation)
+				{
+					fprintf(stderr,"   ERROR: specify only one of -brsuimfdlL.\n");
+					return 1;
+				}
+				palm_operation = optc;
+				break;
+
+			/* Modifiers */
+			case MEDIA_VFS:
+			case MEDIA_ROM:
+			case MEDIA_FLASH:
+				if ((sync_flags & MEDIA_MASK) != 0)
+				{
+					fprintf(stderr,"   ERROR: specify only one media type (-DFO).\n");
+					return 1;
+				}
+				sync_flags |= optc;
+				break;
+
+			/* Misc */
+			case 'e':
+				make_excludelist(poptGetOptArg(pc));
+				break;
+			case 'x':
+				if (system(poptGetOptArg(pc)))
+				{
+					fprintf(stderr,"   ERROR: system() failed, aborting.\n");
+					return -1;
+				}
+				break;
+			default:
+				/* popt handles all other arguments internally by
+				   setting values, setting bits, etc., only options
+				   with field val != 0 come though here, and
+				   all of them should special processing. */
+				fprintf(stderr,"   ERROR: got option %d, arg %s\n", optc,
+						poptGetOptArg(pc));
 				return 1;
-			}
-			palm_operation = optc;
-			break;
-
-		/* Modifiers */
-
-		case MEDIA_VFS:
-		case MEDIA_ROM:
-		case MEDIA_FLASH:
-			if ((sync_flags & MEDIA_MASK) != 0) {
-				fprintf(stderr,"   ERROR: specify only one media type (-DFO).\n");
-				return 1;
-			}
-			sync_flags |= optc;
-			break;
-
-		/* Misc */
-
-		case 'e':
-			make_excludelist(poptGetOptArg(pc));
-			break;
-		case 'x':
-			if (system(poptGetOptArg(pc))) {
-				fprintf(stderr,"   ERROR: system() failed, aborting.\n");
-				return -1;
-			}
-			break;
-			break;
-		default:
-			/* popt handles all other arguments internally by
-			   setting values, setting bits, etc., only options
-			   with field val != 0 come though here, and
-			   all of them should special processing. */
-			fprintf(stderr,"   ERROR: got option %d, arg %s\n", optc, poptGetOptArg(pc));
-			return 1;
-			break;
+				break;
 		}
 	}
 
-	if (optc < -1) {
+	if (optc < -1)
+	{
 		/* an error occurred during option processing */
 		fprintf(stderr, "%s: %s\n",
-			poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-			poptStrerror(optc));
+				poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+				poptStrerror(optc));
 		return 1;
 	}
 
 	/* collect and count remaining arguments */
 	rargc = 0;
 	rargv = poptGetArgs(pc);
-	if (rargv) {
-		const char **s = rargv;
-		while (*s) {
+	if (rargv)
+	{
+		const char	**s	= rargv;
+		while (*s)
+		{
 			s++;
 			rargc++;
 		}
@@ -1809,102 +1952,126 @@ int main(int argc, const char *argv[])
 
 	/* sanity checking */
 
-	switch(palm_operation) {
+	switch(palm_operation)
+	{
 		struct stat sbuf;
-	case palm_op_backup:
-	case palm_op_restore:
-	case palm_op_update:
-	case palm_op_sync:
-		if (sync_flags & MEDIA_VFS) {
-			fprintf(stderr,"   ERROR: Cannot combine -burs with VFS (-D).\n\n");
-			return 1;
-		}
-		if (stat (dirname, &sbuf) == 0) {
-			if (!S_ISDIR (sbuf.st_mode)) {
-				fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
-					"   Please supply a directory name when performing a "
-					"backup or restore and try again.\n\n",
-					dirname);
+
+		case palm_op_backup:
+		case palm_op_restore:
+		case palm_op_update:
+		case palm_op_sync:
+			if (sync_flags & MEDIA_VFS)
+			{
+				fprintf(stderr,"   ERROR: Cannot combine -burs with VFS (-D).\n\n");
+				return 1;
+			}
+			if (stat (dirname, &sbuf) == 0)
+			{
+				if (!S_ISDIR (sbuf.st_mode))
+				{
+					fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
+							"   Please supply a directory name when performing a "
+							"backup or restore and try again.\n\n", dirname);
+					fprintf(stderr,gracias);
+					return 1;
+				}
+			}
+			/* FALLTHRU */
+		case palm_op_list:
+			if (rargc > 0)
+			{
+				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlL.\n");
 				fprintf(stderr,gracias);
 				return 1;
 			}
-		}
-		/* FALLTHRU */
-	case palm_op_list:
-		if (rargc > 0) {
-			fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlL.\n");
+			break;
+		case palm_op_noop:
+			fprintf(stderr,"   ERROR: Must specify one of -bursimfdl.\n");
 			fprintf(stderr,gracias);
 			return 1;
-		}
-		break;
-	case palm_op_noop:
-		fprintf(stderr,"   ERROR: Must specify one of -bursimfdl.\n");
-		fprintf(stderr,gracias);
-		return 1;
-		break;
-	case palm_op_install:
-	case palm_op_merge:
-	case palm_op_fetch:
-	case palm_op_delete:
-		if (rargc < 1) {
-			fprintf(stderr,"   ERROR: -imfd require additional arguments.\n");
-			return 1;
-		}
-		if ((MEDIA_VFS == (sync_flags & MEDIA_VFS)) &&
-			(palm_op_install != palm_operation)) {
-			fprintf(stderr,"   ERROR: cannot merge, fetch or delete with VFS.\n");
-			return 1;
-		}
-		break;
+			break;
+		case palm_op_install:
+		case palm_op_merge:
+		case palm_op_fetch:
+		case palm_op_delete:
+			if (rargc < 1)
+			{
+				fprintf(stderr,"   ERROR: -imfd require additional arguments.\n");
+				return 1;
+			}
+			if ((MEDIA_VFS == (sync_flags & MEDIA_VFS))
+					&& (palm_op_install != palm_operation))
+			{
+				fprintf(stderr,"   ERROR: cannot merge, fetch or delete with VFS.\n");
+				return 1;
+			}
+			break;
 	}
 
 	/* plu_connect() prints diagnostics as needed, returns -1 on
-	   failure so just bail in that case. */
+	failure so just bail in that case. */
 	sd = plu_connect();
 	if (sd < 0)
-	    return 1;
+		return 1;
 
 	/* actual operation */
-	switch(palm_operation) {
-	case palm_op_noop: /* handled above */
-		exit(1);
-		break;
-	case palm_op_backup:
-	case palm_op_update:
-	case palm_op_sync:
-		if (palm_op_backup == palm_operation) sync_flags |= BACKUP;
-		if (palm_op_update == palm_operation) sync_flags |= UPDATE;
-		if (palm_op_sync == palm_operation) sync_flags |= UPDATE | SYNC;
-		palm_backup(dirname, sync_flags, unsaved, archive_dir);
-		break;
-	case palm_op_restore:
-		palm_restore(dirname);
-		break;
-	case palm_op_merge:
-	case palm_op_install:
-	case palm_op_fetch:
-	case palm_op_delete:
-		while (rargv && *rargv) {
-			switch(palm_operation) {
-			case palm_op_merge: palm_merge(*rargv); break;
-			case palm_op_fetch: palm_fetch(*rargv); break;
-			case palm_op_delete: palm_delete(*rargv); break;
-			case palm_op_install: palm_install(sync_flags,*rargv); break;
-			default: /* impossible */ break;
+	switch(palm_operation)
+	{
+		case palm_op_noop: /* handled above */
+			exit(1);
+			break;
+		case palm_op_backup:
+		case palm_op_update:
+		case palm_op_sync:
+			if (palm_op_backup == palm_operation)
+				sync_flags |= BACKUP;
+			if (palm_op_update == palm_operation)
+				sync_flags |= UPDATE;
+			if (palm_op_sync == palm_operation)
+				sync_flags |= UPDATE | SYNC;
+			palm_backup(dirname, sync_flags, unsaved, archive_dir);
+			break;
+		case palm_op_restore:
+			palm_restore(dirname);
+			break;
+		case palm_op_merge:
+		case palm_op_install:
+		case palm_op_fetch:
+		case palm_op_delete:
+			while (rargv && *rargv)
+			{
+				switch(palm_operation)
+				{
+					case palm_op_merge:
+						palm_merge(*rargv);
+						break;
+					case palm_op_fetch:
+						palm_fetch(*rargv);
+						break;
+					case palm_op_delete:
+						palm_delete(*rargv);
+						break;
+					case palm_op_install:
+						palm_install(sync_flags,*rargv);
+						break;
+					default:
+						/* impossible */
+						break;
+				}
+				rargv++;
 			}
-			rargv++;
-		}
-		break;
-	case palm_op_list:
-		palm_list(sync_flags);
-		break;
+			break;
+		case palm_op_list:
+			palm_list(sync_flags);
+			break;
 	}
 
-	if (sync_flags & PURGE) palm_purge();
+	if (sync_flags & PURGE)
+		palm_purge();
 
 	pi_close(sd);
 	puts(gracias);
 	return 0;
 }
 
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
