@@ -180,6 +180,7 @@ install_user_LDADD = 		\
 memos_SOURCES = 		\
 	memos.c
 memos_LDADD = 			\
+	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 

@@ -1690,8 +1690,7 @@ int main(int argc, const char *argv[])
 
 	const char
                 *archive_dir    = NULL,
-                *dirname        = NULL,
-                *progname       = argv[0];
+                *dirname        = NULL;
 
 	unsigned long int sync_flags = 0;
 	palm_op_t palm_operation     = palm_op_noop;
