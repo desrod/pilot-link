@@ -98,18 +98,16 @@ do
       fi
       if grep "^AM_PROG_LIBTOOL" configure.in >/dev/null; then
 	if test -z "$NO_LIBTOOLIZE" ; then 
-          if [ -n "$OSTYPE" ]; then
-             if [ "$OSTYPE" = "darwin" ]; then
-                echo "Running glibtoolize... ($MACHTYPE)"
-                glibtoolize --force --copy
-	     else
-		echo "Running libtoolize..."
-		libtoolize --force --copy
-             fi
-          else
-            echo "Running libtoolize..."
-            libtoolize --force --copy
-          fi
+	    case "$OSTYPE" in
+		*darwin*)
+		    echo "Running glibtoolize... ($MACHTYPE)"
+		    glibtoolize --force --copy
+		;;
+		    *)
+		    echo "Running libtoolize..."
+		    libtoolize --force --copy
+		;;
+	    esac
 	fi
       fi
 
