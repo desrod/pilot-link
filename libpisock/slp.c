@@ -243,9 +243,9 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				slp_buf[PI_SLP_OFFSET_SIG2] = slp_buf[PI_SLP_OFFSET_SIG3];
 				expect = 1;
 				cur--;
-				LOG(PI_DBG_SLP, PI_DBG_LVL_WARN,
+				LOG((PI_DBG_SLP, PI_DBG_LVL_WARN,
 				    "SLP RX Unexpected signature 0x%.2x 0x%.2x 0x%.2x\n",
-				    b1, b2, b3);
+				    b1, b2, b3));
 			}
 			break;
 
@@ -259,12 +259,12 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				state++;
 				packet_len = get_short(&slp_buf[PI_SLP_OFFSET_SIZE]);
 				if (packet_len > len) {
-					LOG(PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Packet size exceed buffer\n");
+					LOG((PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Packet size exceed buffer\n"));
 					return -1;
 				}
 				expect = packet_len;
 			} else {
-				LOG(PI_DBG_SLP, PI_DBG_LVL_WARN, "SLP RX Header checksum failed\n");
+				LOG((PI_DBG_SLP, PI_DBG_LVL_WARN, "SLP RX Header checksum failed\n"));
 				return 0;
 			}
 			break;
@@ -283,10 +283,10 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					checksum = checksum | 0x00e0;
 			}
 			if (checksum != checksum_packet) {
-				LOG(PI_DBG_SLP, PI_DBG_LVL_ERR,
+				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR,
 				    "SLP RX Packet checksum failed: "
 				    "computed=0x%.4x received=0x%.4x\n",
-				    checksum, checksum_packet);
+				    checksum, checksum_packet));
 				return 0;
 			}
 			
@@ -310,7 +310,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		do {
 			bytes = next->read(ps, cur, expect, flags);
 			if (bytes < 0) {
-				LOG(PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Read Error\n");
+				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Read Error\n"));
 				return -1;
 			}			
 			total_bytes += bytes;
@@ -463,7 +463,7 @@ slp_setsockopt(struct pi_socket *ps, int level, int option_name,
  ***********************************************************************/
 void slp_dump_header(unsigned char *data, int rxtx)
 {	
-	LOG(PI_DBG_SLP, PI_DBG_LVL_NONE,
+	LOG((PI_DBG_SLP, PI_DBG_LVL_NONE,
 	    "SLP %s %d->%d type=%d txid=0x%.2x len=0x%.4x checksum=0x%.2x\n",
 	    rxtx ? "TX" : "RX",
 	    get_byte(&data[PI_SLP_OFFSET_DEST]),
@@ -471,7 +471,7 @@ void slp_dump_header(unsigned char *data, int rxtx)
 	    get_byte(&data[PI_SLP_OFFSET_TYPE]),
 	    get_byte(&data[PI_SLP_OFFSET_TXID]),
 	    get_short(&data[PI_SLP_OFFSET_SIZE]),
-	    get_byte(&data[PI_SLP_OFFSET_SUM]));
+	    get_byte(&data[PI_SLP_OFFSET_SUM])));
 }
 
 void slp_dump(unsigned char *data)

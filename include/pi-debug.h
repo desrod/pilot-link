@@ -26,6 +26,7 @@ extern "C" {
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include "pi-args.h"
 
 #define PI_DBG_NONE 0x000
@@ -75,12 +76,14 @@ extern void pi_log PI_ARGS((int type, int level, char *format, ...));
          expr;                                                  \
      } while (0);
 
-#define LOG(l, s, f...) pi_log(l, s, f)
+#define LOG(x) pi_log x
 
 #else
 #define ASSERT(expr)
-#define LOG(l, s, f, a...)
 #define CHECK(type, level, expr)
+
+#define LOG(x) 
+
 #endif
 
 #ifdef __cplusplus

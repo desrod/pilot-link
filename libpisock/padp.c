@@ -232,8 +232,8 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					   but the incomding data is the response to
 					   this transmission.  The ack was lost.
 					 */
-					LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
-					    "PADP TX Missing Ack\n");
+					LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
+					    "PADP TX Missing Ack\n"));
 					count += tlen;
 					goto done;
 				} else if (padp.type == (unsigned char) 4) {
@@ -245,8 +245,8 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					   && (txid == data->txid)) {
 					if (padp.flags & MEMERROR) {
 						/* OS 2.x enjoys sending erroneous memory errors */
-						LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
-						    "PADP TX Memory Error\n");
+						LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
+						    "PADP TX Memory Error\n"));
 						/* Mimimum failure: transmission failed due to lack of
 						   memory in reciever link layer, but connection is still
 						   active. This transmission was lost, but other
@@ -257,16 +257,16 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					}
 
 					/* Successful Ack */
-					buf = ((char *) buf) + tlen;
+					buf = buf + tlen;
 					len -= tlen;
 					count += tlen;
 					fl = 0;
 					break;
 				} else {
-					LOG(PI_DBG_PADP, PI_DBG_LVL_ERR,
+					LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 					    "PADP TX Unexpected packet "
 					    "(possible port speed problem? "
-					    "out of sync packet?)\n");
+					    "out of sync packet?)\n"));
 					padp_dump_header (buf, 1);
 					/* Got unknown packet */
 					errno = EIO;
@@ -278,7 +278,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		} while (--retries > 0);
 
 		if (retries == 0) {
-			LOG(PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP TX Timed out");
+			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP TX Timed out"));
 			errno = ETIMEDOUT;
 			ps->state = PI_SOCK_CONBK;
 			return -1;	/* Maximum failure: transmission
@@ -344,7 +344,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		unsigned char txid;
 		
 		if (time(NULL) > endtime) {
-			LOG(PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Timed out");
+			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Timed out"));
 			/* Bad timeout breaks connection */
 			errno 		= ETIMEDOUT;
 			ps->state 	= PI_SOCK_CONBK;	
@@ -361,7 +361,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			bytes = next->read(ps, padp_buf + total_bytes, 
 					   PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes, flags);
 			if (bytes < 0) {
-				LOG(PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Read Error\n");
+				LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Read Error\n"));
 				return -1;
 			}
 			total_bytes += bytes;
@@ -383,8 +383,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 		if (padp.flags & MEMERROR) {
 			if (txid == data->txid) {
-				LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
-				    "PADP RX Memory Error\n");
+				LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
+				    "PADP RX Memory Error\n"));
 				errno = EMSGSIZE;
 				ouroffset = -1;
 				goto done;
@@ -396,16 +396,16 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			continue;
 		} else if (padp.type == (unsigned char) 4) {
 			/* Tickle to avoid timeout */
-			LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
-			    "PADP RX Got Tickled\n");
+			LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
+			    "PADP RX Got Tickled\n"));
 			endtime = time(NULL) + PI_PADP_RX_BLOCK_TO / 1000;
 			continue;
 		} else if ((type != PI_SLP_TYPE_PADP) || (padp.type != padData)
 			   || (txid != data->txid)
 			   || !(padp.flags & FIRST)) {
-			LOG(PI_DBG_PADP, PI_DBG_LVL_ERR,
+			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 			    "PADP RX Wrong packet type on queue"
-			    "(possible port speed problem?)\n");
+			    "(possible port speed problem?)\n"));
 			continue;
 		}
 		break;
@@ -471,8 +471,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				unsigned char txid;
 				
 				if (time(NULL) > endtime) {
-					LOG(PI_DBG_PADP, PI_DBG_LVL_ERR,
-					    "PADP RX Segment Timeout");
+					LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
+					    "PADP RX Segment Timeout"));
 
 					/* Segment timeout, return error */
 					errno = ETIMEDOUT;
@@ -492,7 +492,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 							   PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes, 
 							   flags);
 					if (bytes < 0) {
-						LOG(PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Read Error");
+						LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Read Error"));
 						return -1;
 					}
 					total_bytes += bytes;
@@ -520,8 +520,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 				if (padp.flags & MEMERROR) {
 					if (txid == data->txid) {
-						LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
-						    "PADP RX Memory Error");
+						LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
+						    "PADP RX Memory Error"));
 						errno = EMSGSIZE;
 						ouroffset = -1;
 						goto done;
@@ -536,17 +536,17 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 					endtime = time(NULL) +
 						PI_PADP_RX_BLOCK_TO / 1000;
-					LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
-					    "PADP RX Got Tickled");
+					LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
+					    "PADP RX Got Tickled"));
 					continue;
 				} else
 				    if ((type != PI_SLP_TYPE_PADP)
 					|| (padp.type != padData)
 					|| (txid != data->txid)
 					|| (padp.flags & FIRST)) {
-					    LOG(PI_DBG_PADP, PI_DBG_LVL_ERR,
+					    LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 						"PADP RX Wrong packet type on queue"
-						"(possible port speed problem?)\n");
+						"(possible port speed problem?)\n"));
 					continue;
 				}
 				break;
@@ -656,13 +656,13 @@ void padp_dump_header(unsigned char *data, int rxtx)
 	flags = get_byte(&data[PI_PADP_OFFSET_FLGS]);
 	s = get_short(&data[PI_PADP_OFFSET_SIZE]);
 
-	LOG(PI_DBG_PADP, PI_DBG_LVL_NONE, 
+	LOG((PI_DBG_PADP, PI_DBG_LVL_NONE, 
 	    "PADP %s %c%c%c type=%s len=0x%.4x\n", 
 	    rxtx ? "TX" : "RX",
 	    (flags & FIRST) ? 'F' : ' ',
 	    (flags & LAST) ? 'L' : ' ',
 	    (flags & MEMERROR) ? 'M' : ' ',
-	    stype, s);
+	    stype, s));
 }
 
 /***********************************************************************

@@ -59,8 +59,9 @@
 #define DLP_RESPONSE_DATA(res, arg, offset) &res->argv[arg]->data[offset]
 
 /* Define prototypes */
+#ifdef PI_DEBUG
 static void record_dump (unsigned char *data);
-
+#endif
 
 
 char *dlp_errorlist[] = {
@@ -102,18 +103,18 @@ char *dlp_strerror(int error)
 		return dlp_errorlist[error];
 }
 
-  LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP %s sd: %d\n", #name, sd);
+int dlp_trace = 0;
 
 #ifdef PI_DEBUG
 #define Trace(name) \
-      LOG(PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Error  %s (%d)\n", dlp_errorlist[-result], result); \
+  LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP %s sd: %d\n", #name, sd));
 #define Expect(count)    \
-      LOG(PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Read %d bytes, expected at least %d\n", result, count); \
+  if (result < count) {  \
     if (result < 0) {    \
       LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Error  %s (%d)\n", dlp_errorlist[-result], result)); \
     } else {             \
       LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Read %d bytes, expected at least %d\n", result, count)); \
-      LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP RX %d bytes\n", result);
+      result = -128;     \
     }                    \
     return result;       \
   } else                 \
@@ -526,7 +527,7 @@ int dlp_GetSysDateTime(int sd, time_t * t)
 	result = dlp_exec(sd, req, &res);
 
 	dlp_request_free(req);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP GetSysDateTime %s", ctime(t));
+	
 	if (result >= 0) {
 		*t = dlp_ptohdate(DLP_RESPONSE_DATA (res, 0, 0));
 
@@ -615,18 +616,18 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 		memcpy(c->name, DLP_RESPONSE_DATA(res, 0, 30), len1);
 		c->name[len1] = '\0';
 
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		len2 = get_byte(DLP_RESPONSE_DATA(res, 0, 29));
 		memcpy(c->manufacturer, DLP_RESPONSE_DATA(res, 0, 30 + len1), len2);
-		    c->card, c->version, ctime(&c->creation));
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		c->manufacturer[len2] = '\0';
+
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    c->romSize, c->ramSize, c->ramFree);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "  Card name: '%s'\n", c->name);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "  Manufacturer name: '%s'\n", c->manufacturer);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "  More: %s\n", c->more ? "Yes" : "No");
+		    "DLP Read Cardno: %d, Card Version: %d, Creation time: %s",
+		    c->card, c->version, ctime(&c->creation)));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "  Total ROM: %lu, Total RAM: %lu, Free RAM: %lu\n",
+		    c->romSize, c->ramSize, c->ramFree));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "  Card name: '%s'\n", c->name));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "  Manufacturer name: '%s'\n", c->manufacturer));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -682,17 +683,17 @@ int dlp_ReadSysInfo(int sd, struct SysInfo *s)
 		} else {
 			s->dlpMajorVersion = 0;
 			s->dlpMinorVersion = 0;
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+			s->compatMajorVersion = 0;
 			s->compatMinorVersion = 0;
-		    s->romVersion, s->locale);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "  Product ID=0x%8.8lX\n", s->prodID);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    s->romVersion, s->locale));
-		    s->dlpMajorVersion, s->dlpMinorVersion);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		}
+
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    s->compatMajorVersion, s->compatMinorVersion);
+		    "DLP ReadSysInfo ROM Ver=0x%8.8lX Locale=0x%8.8lX\n",
+		    s->romVersion, s->locale));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "  Product ID=0x%8.8lX\n", s->prodID));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "  DLP Major Ver=0x%4.4lX DLP Minor Ver=0x%4.4lX\n",
 		    s->dlpMajorVersion, s->dlpMinorVersion));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "  Compat Major Ver=0x%4.4lX Compat Minor Vers=0x%4.4lX\n",
@@ -750,12 +751,12 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 		info->createDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 22));
 		info->modifyDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 30));
 		info->backupDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 38));
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		info->index 		= get_short(DLP_RESPONSE_DATA(res, 0, 46));
 		strncpy(info->name, DLP_RESPONSE_DATA(res, 0, 48), 32);
-		    info->name, info->version, info->more ? "Yes" : "No");
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "  Creator: '%s'", printlong(info->creator));
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		info->name[32] 		= '\0';
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "DLP ReadDBList Name: '%s', Version: %d, More: %s\n",
 		    info->name, info->version, info->more ? "Yes" : "No"));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "  Creator: '%s'", printlong(info->creator)));
@@ -767,15 +768,15 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 		    (info->flags & dlpDBFlagAppInfoDirty) ? "AppInfoDirty " : "",
 		    (info->flags & dlpDBFlagBackup) ? "Backup " : "",
 		    (info->flags & dlpDBFlagReset) ? "Reset " : "",
-		    (!info->flags) ? "None" : "");
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, " (0x%2.2X)\n", info->flags);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    (info->flags & dlpDBFlagNewer) ? "Newer " : "",
+		    (info->flags & dlpDBFlagCopyPrevention) ? "CopyPrevention " : "",
+		    (info->flags & dlpDBFlagStream) ? "Stream " : "",
 		    (info->flags & dlpDBFlagOpen) ? "Open " : "",
-		    info->modnum, info->index, ctime(&info->createDate));
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    " Modification date: %s", ctime(&info->modifyDate));
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, 
-		    " Backup date: %s", ctime(&info->backupDate));
+		    (!info->flags) ? "None" : ""));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, " (0x%2.2X)\n", info->flags));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "  Modnum: %ld, Index: %d, Creation date: %s",
+		    info->modnum, info->index, ctime(&info->createDate)));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    " Modification date: %s", ctime(&info->modifyDate)));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
@@ -876,8 +877,8 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 	result = dlp_exec(sd, req, &res);
 	
 	dlp_request_free(req);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP OpenDB Handle=%d", *dbhandle);
+	
+		    "DLP OpenDB Handle=%d", *dbhandle));
 		*dbhandle = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -956,8 +957,8 @@ dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	result = dlp_exec(sd, req, &res);
 	
 	dlp_request_free(req);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP CreateDB Handle=%d", *dbhandle);
+	
+		    "DLP CreateDB Handle=%d", *dbhandle));
 		*dbhandle = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -1072,11 +1073,11 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			       data_len > maxretlen ? maxretlen : data_len);
 
 
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP CallApplication Result: %lu (0x%8.8lX), and %d bytes:\n",
 		    get_long(DLP_RESPONSE_DATA(res, 0, 0)), 
 		    get_long(DLP_RESPONSE_DATA(res, 0, 4)),
-		    data_len);
+		    data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 		      dumpdata(DLP_RESPONSE_DATA(res, 0, 16), data_len));
 
@@ -1114,12 +1115,12 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 6),
 			       data_len > maxretlen ? maxretlen : data_len);
 
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP CallApplication Action: %d Result: %lu (0x%4.4lX), and %d bytes:\n",
 		    get_short(DLP_RESPONSE_DATA(res, 0, 0)), 
 		    get_short(DLP_RESPONSE_DATA(res, 0, 2)), 
 		    get_short(DLP_RESPONSE_DATA(res, 0, 2)),
-		    data_len);
+		    data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 		      dumpdata(DLP_RESPONSE_DATA(res, 0, 6), data_len));
 			      dumpdata(DLP_RESPONSE_DATA(res, 0, 6), data_len));
@@ -1184,8 +1185,8 @@ int dlp_AddSyncLogEntry(int sd, char *entry)
 	strcpy(DLP_REQUEST_DATA(req, 0, 0), entry);
 	
 	result = dlp_exec(sd, req, &res);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP AddSyncLogEntry Entry: \n  %s\n", entry);
+
+	dlp_request_free(req);	
 
 	if (result >= 0)
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -1224,9 +1225,9 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 
 	dlp_request_free(req);
 
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+	if (result >= 0) {
 		if (records)
-		    get_short(DLP_RESPONSE_DATA(res, 0, 0)));
+			*records = get_short(DLP_RESPONSE_DATA(res, 0, 0));
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadOpenDBInfo %d records\n", 
@@ -1265,9 +1266,9 @@ int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 	set_byte(DLP_REQUEST_DATA(req, 0, 3), 0);
 
 	result = dlp_exec(sd, req, &res);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+
 	dlp_request_free(req);	
-		    handle, fromcat, tocat);
+
 	if (result >= 0)
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP MoveCategory Handle: %d, From: %d, To: %d\n",
@@ -1447,15 +1448,15 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User)
 		User->lastSyncDate 	 = get_date(DLP_RESPONSE_DATA (res, 0, 20));
 		userlen                  = get_byte(DLP_RESPONSE_DATA (res, 0, 28));
 		User->passwordLength 	 = get_byte(DLP_RESPONSE_DATA (res, 0, 29));
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		memcpy(User->username, DLP_RESPONSE_DATA (res, 0, 30), userlen);
 		memcpy(User->password, DLP_RESPONSE_DATA (res, 0, 30 + userlen),
-		    User->userID, User->viewerID, User->lastSyncPC);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		       User->passwordLength);
+
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    ctime (&User->lastSyncDate), ctime (&User->successfulSyncDate));
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "DLP ReadUserInfo UID=0x%8.8lX VID=0x%8.8lX PCID=0x%8.8lX\n",
+		    User->userID, User->viewerID, User->lastSyncPC));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    User->username);
+		    "  Last Sync=%s  Last Successful Sync=%s",
 		    ctime (&User->lastSyncDate), ctime (&User->successfulSyncDate)));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "  Username=%s\n",
@@ -1511,11 +1512,11 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 		       get_short(DLP_RESPONSE_DATA(res, 0, 20)));
 		str_offset += get_short(DLP_RESPONSE_DATA(res, 0, 20));
 
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadNetSyncInfo Active: %d\n", i->lanSync ? 1 : 0);
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		i->hostSubnetMask[0] = '\0';
+		memcpy(i->hostSubnetMask, DLP_RESPONSE_DATA(res, 0, str_offset), 
+		       get_short(DLP_RESPONSE_DATA(res, 0, 22)));
 
-		    i->hostName, i->hostAddress, i->hostSubnetMask);
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadNetSyncInfo Active: %d\n", i->lanSync ? 1 : 0));
 		    i->hostName, i->hostAddress, i->hostSubnetMask));
 	}
@@ -1544,11 +1545,11 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 	struct dlpResponse *res;
 
 	if (pi_version(sd) < 0x0101)
-	LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-	    "DLP ReadNetSyncInfo Active: %d\n", i->lanSync ? 1 : 0);
-	LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		return -129;
 
-	    i->hostName, i->hostAddress, i->hostSubnetMask);
+	Trace(WriteNetSyncInfo);
+
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 	    "DLP ReadNetSyncInfo Active: %d\n", i->lanSync ? 1 : 0));
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 	    "  PC hostname: '%s', address '%s', mask '%s'\n",
@@ -1706,21 +1707,21 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 			RPC_Long(creator),
 			RPC_Short((unsigned short) num),
 			RPC_LongPtr(feature), RPC_End);
-			LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+
 		val = dlp_RPC(sd, &p, &result);
-			    dlp_errorlist[-val], val);
+
 		if (val < 0) {
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			    "DLP ReadFeature Error: %s (%d)\n",
-			LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+			    dlp_errorlist[-val], val));
 
-			    (unsigned long) result);
+			return val;
 		} else if (result) {
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			    "DLP ReadFeature FtrGet error 0x%8.8lX\n",
-			LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+			    (unsigned long) result));
 
-			    (unsigned long) *feature);
+			return (-(long) result);
 		} else {
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			    " DLP ReadFeature Feature: 0x%8.8lX\n",
@@ -1741,9 +1742,9 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 
 		dlp_request_free(req);
 		
-			LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		if (result >= 0) {
 			if (feature)
-			    (unsigned long) get_long(DLP_RESPONSE_DATA(res, 0, 0)));
+				*feature = (unsigned long) get_long(DLP_RESPONSE_DATA(res, 0, 0));
 			
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			    "DLP ReadFeature Feature: 0x%8.8lX\n",
@@ -1947,8 +1948,8 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 		ret = get_short(DLP_RESPONSE_DATA(res, 0, 0));
 		for (i = 0; i < ret; i++)
 			IDs[i] = get_long(DLP_RESPONSE_DATA(res, 0, 2 + (i * 4)));
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadRecordIDList %d IDs:\n", ret);
+
+		if (count)
 			*count = ret;
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -2030,9 +2031,9 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 
 	dlp_request_free(req);
 	
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+	if (result >= 0) {
 		if (NewID)
-		    get_long(DLP_RESPONSE_DATA(res, 0, 0)));
+			*NewID = get_long(DLP_RESPONSE_DATA(res, 0, 0));	/* New record ID */
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP WriteRecord Record ID: 0x%8.8lX\n",
@@ -2100,9 +2101,9 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 	if (pi_version(sd) < 0x0101) {
 		/* Emulate if not connected to PalmOS 2.0 */
 		int i, r, cat, attr;
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		recordid_t id;
 
-		    dbhandle, category & 0xff);
+		Trace(DeleteCategoryV1);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP DeleteCategory Emulating with: Handle: %d, Category: %d\n",
@@ -2182,10 +2183,10 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 		if (index)
 			*index = get_short(DLP_RESPONSE_DATA(res, 0, 6));
 		if (size)
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+			*size = get_short(DLP_RESPONSE_DATA(res, 0, 6));
 		if (buffer)
 			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
-		    get_short(DLP_RESPONSE_DATA(res, 0, 6)), data_len);
+		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadResourceByType  Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
 		    printlong(type), id, 
@@ -2243,11 +2244,11 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
 		if (id)
 			*id = get_short(DLP_RESPONSE_DATA(res, 0, 4));
 		if (size)
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+			*size = get_short(DLP_RESPONSE_DATA(res, 0, 8));
 		if (buffer)
 			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
 		
-		    index, data_len);
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadResourceByIndex Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
 		    printlong(get_long(DLP_RESPONSE_DATA(res, 0, 0))),
 		    get_short(DLP_RESPONSE_DATA(res, 0, 4)),
@@ -2377,8 +2378,8 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	dlp_request_free(req);
 	
 	if (result >= 0) {
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadAppBlock %d bytes\n", data_len);
+		data_len = res->argv[0]->len - 2;
+		if (dbuf)
 			memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2), data_len);
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -2468,8 +2469,8 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	dlp_request_free(req);
 	
 	if (result >= 0) {
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadSortBlock %d bytes\n", data_len);
+		data_len = res->argv[0]->len - 2;
+		if (dbuf)
 			memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2), data_len);
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -2615,9 +2616,9 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 		/* Emulate for PalmOS 1.0 */
 		int 	cat,
 			rec;
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+		struct pi_socket *ps;
 
-		    fHandle, incategory);
+		Trace(ReadNextRecInCategoryV1);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadNextRecInCategory Emulating with: Handle: %d, Category: %d\n",
@@ -2687,7 +2688,7 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 				*size = get_short(DLP_RESPONSE_DATA(res, 0, 6));
 			if (attr)
 				*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
-			LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+			if (buffer)
 				memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
 
 			flags = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
@@ -2699,7 +2700,7 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 			    (int) get_byte(DLP_RESPONSE_DATA(res, 0, 9)),
 			    (flags & dlpRecAttrDeleted) ? " Deleted" : "",
 			    (flags & dlpRecAttrDirty) ? " Dirty" : "",
-			    flags, data_len);
+			    (flags & dlpRecAttrBusy) ? " Busy" : "",
 			    (flags & dlpRecAttrSecret) ? " Secret" : "",
 			    (flags & dlpRecAttrArchived) ? " Archive" : "",
 			    (!flags) ? " None" : "",
@@ -2739,10 +2740,10 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 	if (pi_version(sd) < 0x0101) {
 		/* Emulate on PalmOS 1.0 */
 		int 	db,
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+			rec;
 
 		Trace(ReadAppPreferenceV1);
-		    buffer ? maxsize : 0, backup ? 0x80 : 0);
+
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadAppPreference Emulating with: Creator: '%s', Id: %d, Size: %d, Backup: %d\n",
 		    printlong(creator), id,
@@ -2801,11 +2802,11 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 			if (size && !buffer)
 				*size = get_short(DLP_RESPONSE_DATA(res, 0, 2));/* Total size */
 			if (size && buffer)
-			LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+				*size = data_len;	/* Size returned */
 			if (buffer)
 				memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 6), data_len);
 
-			    get_short(DLP_RESPONSE_DATA(res, 0, 4)));
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			    "DLP ReadAppPref Version: %d, Total size: %d, Read %d bytes:\n",
 			    get_short(DLP_RESPONSE_DATA(res, 0, 0)), 
 			    get_short(DLP_RESPONSE_DATA(res, 0, 2)),
@@ -2919,9 +2920,9 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 	if (pi_version(sd) < 0x0101) {
 		/* Emulate for PalmOS 1.0 */
 		int 	cat,
-		LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+			rec;
 
-		    fHandle, incategory);
+		Trace(ReadNextModifiedRecInCategoryV1);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadNextModifiedRecInCategory Emulating with: Handle: %d, Category: %d\n",
@@ -3150,6 +3151,7 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 	}
 
 	dlp_response_free(res);
+	
 	return data_len;
 }
 
@@ -3157,7 +3159,7 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 static void record_dump (unsigned char *data)
 {
 	int size, flags;
-	LOG(PI_DBG_DLP, PI_DBG_LVL_INFO,
+	
 	size = get_short(&data[6]);
 	flags = get_byte(&data[8]);
 
@@ -3168,10 +3170,10 @@ static void record_dump (unsigned char *data)
 	    get_short(&data[4]), get_byte(&data[9]),
 	    (flags & dlpRecAttrDeleted) ? " Deleted" : "",
 	    (flags & dlpRecAttrDirty) ? " Dirty" : "",
-	    flags, size);
+	    (flags & dlpRecAttrBusy) ? " Busy" : "",
 	    (flags & dlpRecAttrSecret) ? " Secret" : "",
 	    (flags & dlpRecAttrArchived) ? " Archive" : "",
-
+	    (!flags) ? " None" : "",
 	dlp_response_free (res);
 	
 	return result;

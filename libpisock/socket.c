@@ -98,6 +98,7 @@ ps_list_append (struct pi_socket_list *list, struct pi_socket *ps)
 	return list;
 }
 
+#if 0
 static struct pi_socket_list *
 ps_list_prepend (struct pi_socket_list *list, struct pi_socket *ps) 
 {
@@ -111,6 +112,7 @@ ps_list_prepend (struct pi_socket_list *list, struct pi_socket *ps)
 
 	return new_elem;
 }
+#endif
 
 static struct pi_socket *
 ps_list_find (struct pi_socket_list *list, int sd) 
@@ -257,25 +259,25 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 			int found = 0;
 
 			while (!found) {
-				LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO,
-				    "SOCK Peeked and found 0x%.2x, ", byte);
+				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+				    "SOCK Peeked and found 0x%.2x, ", byte));
 				
 				switch (byte) {
 				case PI_SLP_SIG_BYTE1:
 					protocol = PI_PF_PADP;
-					LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, "PADP/SLP\n");
+					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, "PADP/SLP\n"));
 					found = 1;
 					break;			
 				case PI_NET_SIG_BYTE1:
 				case 0x01:
 					protocol = PI_PF_NET;
-					LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, "NET\n");
+					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, "NET\n"));
 					found = 1;
 					break;
 				default:
 					if (dev_prot->read (ps, &byte, 1, PI_MSG_PEEK) < 0) {
 						protocol = PI_PF_PADP;
-						LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, "Default\n");
+						LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, "Default\n"));
 						found = 1;
 					}
 				}
@@ -540,12 +542,12 @@ onalarm(int signo)
 			continue;
 
 		if (pi_tickle(ps->sd) < 0) {
-			LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, 
-			    "SOCKET Socket %d is busy during tickle\n", ps->sd);
+			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, 
+			    "SOCKET Socket %d is busy during tickle\n", ps->sd));
 			alarm(1);
 		} else {
-			LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO,
-			    "SOCKET Tickling socket %d\n", ps->sd);
+			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+			    "SOCKET Tickling socket %d\n", ps->sd));
 			alarm(interval);
 		}
 	}
@@ -1136,7 +1138,7 @@ int pi_tickle(int pi_sd)
 		type, 
 		size, 
 		len = 0;
-	char 	msg[1];
+	unsigned char 	msg[1];
 	struct pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
@@ -1147,7 +1149,7 @@ int pi_tickle(int pi_sd)
 	if (!is_connected (ps))
 		return -1;
 
-	LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, "SOCKET Tickling socket %d\n", pi_sd);
+	LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, "SOCKET Tickling socket %d\n", pi_sd));
 
 	/* Enter command state */
 	ps->command = 1;

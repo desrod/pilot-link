@@ -115,9 +115,9 @@ cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establis
 	if ((data->version & 0xFF00) == 0x0100) {
 		if (establishrate > data->baudrate) {
 			if (establishhighrate) {
-				LOG(PI_DBG_CMP, PI_DBG_LVL_INFO, 
+				LOG((PI_DBG_CMP, PI_DBG_LVL_INFO, 
 				    "CMP Establishing higher rate %ul (%ul)\n",
-				    establishrate, data->baudrate);
+				    establishrate, data->baudrate));
 				data->baudrate = establishrate;
 			}
 		} else {
@@ -128,7 +128,7 @@ cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establis
 			return -1;
 	} else {
 		/* 0x80 means the comm version wasn't compatible */
-		LOG(PI_DBG_CMP, PI_DBG_LVL_ERR, "CMP Incompatible Version\n");
+		LOG((PI_DBG_CMP, PI_DBG_LVL_ERR, "CMP Incompatible Version\n"));
 
 		cmp_abort(ps, 0x80);
 		errno = ECONNREFUSED;
@@ -159,7 +159,7 @@ cmp_tx_handshake(struct pi_socket *ps)
 	case PI_CMP_TYPE_INIT:
 		return 0;
 	case PI_CMP_TYPE_ABRT:
-		LOG(PI_DBG_CMP, PI_DBG_LVL_NONE, "CMP Aborted by other end\n");
+		LOG((PI_DBG_CMP, PI_DBG_LVL_NONE, "CMP Aborted by other end\n"));
 		errno = -EIO;
 		return -1;
 	}
@@ -301,7 +301,7 @@ int cmp_abort(struct pi_socket *ps, int reason)
 	data->type = PI_CMP_TYPE_ABRT;
 	data->flags = reason;
 
-	LOG(PI_DBG_CMP, PI_DBG_LVL_NONE, "CMP ABORT\n");
+	LOG((PI_DBG_CMP, PI_DBG_LVL_NONE, "CMP ABORT\n"));
 
 	return cmp_tx (ps, NULL, 0, 0);
 }
@@ -444,13 +444,13 @@ void cmp_dump(unsigned char *cmp, int rxtx)
 		break;
 	}
 	
-	LOG(PI_DBG_CMP, PI_DBG_LVL_NONE,
-	    "CMP %s %s", rxtx ? "TX" : "RX", type);
-	LOG(PI_DBG_CMP, PI_DBG_LVL_NONE,
+	LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,
+	    "CMP %s %s", rxtx ? "TX" : "RX", type));
+	LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,
 	    "  Type: %2.2X Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
 	    get_byte(&cmp[PI_CMP_OFFSET_TYPE]), 
 	    get_byte(&cmp[PI_CMP_OFFSET_FLGS]),
 	    get_long(&cmp[PI_CMP_OFFSET_VERS]),
 	    get_long(&cmp[PI_CMP_OFFSET_BAUD]),
-	    get_long(&cmp[PI_CMP_OFFSET_BAUD]));
+	    get_long(&cmp[PI_CMP_OFFSET_BAUD])));
 }

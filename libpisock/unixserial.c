@@ -129,9 +129,9 @@ static int calcrate(int baudrate)
 		return B460800;
 #endif
 	else {
-		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR,
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 		    "DEV Serial CHANGEBAUD Unable to set baud rate %d\n",
-		    baudrate);
+		    baudrate));
 		abort();	/* invalid baud rate */
 	}
 }
@@ -364,7 +364,7 @@ static int s_close(struct pi_socket *ps)
 #endif
 	}
 	
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CLOSE Serial Unix fd: %d\n", ps->sd);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CLOSE Serial Unix fd: %d\n", ps->sd));
 
 	return close(ps->sd);
 }
@@ -390,12 +390,12 @@ static int s_poll(struct pi_socket *ps, int timeout)
 
 	if (!FD_ISSET(ps->sd, &ready)) {
 		/* otherwise throw out any current packet and return */
-		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV POLL Serial Unix timeout\n");
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV POLL Serial Unix timeout\n"));
 		data->rx_errors++;
 		errno = ETIMEDOUT;
 		return -1;
 	}
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV POLL Serial Unix Found data on fd: %d\n", ps->sd);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV POLL Serial Unix Found data on fd: %d\n", ps->sd));
 
 	return 0;
 }
@@ -443,7 +443,7 @@ static int s_write(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	/* hack to slow things down so that the Visor will work */
 	usleep(10 + len);
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX Unix Serial Bytes: %d\n", len);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX Unix Serial Bytes: %d\n", len));
 
 	return len;
 }
@@ -462,7 +462,7 @@ static int s_read_buf (struct pi_socket *ps, unsigned char *buf, int len)
 	if (data->buf_size > 0)
 		memcpy(data->buf, &data->buf[rbuf], data->buf_size);
 	
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Unix Serial Buffer Read %d bytes\n", rbuf);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Unix Serial Buffer Read %d bytes\n", rbuf));
 	
 	return rbuf;
 }
@@ -510,14 +510,14 @@ static int s_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			data->buf_size = rbuf;
 		}
 	} else {
-		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Unix Serial timeout\n");
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Unix Serial timeout\n"));
 		data->rx_errors++;
 		errno = ETIMEDOUT;
 		return -1;
 	}
 	data->rx_bytes += rbuf;
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Unix Serial Bytes: %d\n", rbuf);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Unix Serial Bytes: %d\n", rbuf));
 
 	return rbuf;
 }

@@ -250,8 +250,8 @@ struct pi_file *pi_file_open(char *name)
 	fseek(pf->f, 0, SEEK_SET);
 
 	if (fread(buf, PI_HDR_SIZE, 1, pf->f) != (size_t) 1) {
-		LOG (PI_DBG_API, PI_DBG_LVL_ERR,
- 		     "FILE OPEN %s: can't read header\n", name);
+		LOG ((PI_DBG_API, PI_DBG_LVL_ERR,
+ 		     "FILE OPEN %s: can't read header\n", name));
 		goto bad;
 	}
 
@@ -275,27 +275,27 @@ struct pi_file *pi_file_open(char *name)
 	pf->next_record_list_id = get_long(p + 72);
 	pf->nentries 		= get_short(p + 76);
 
-	LOG (PI_DBG_API, PI_DBG_LVL_INFO,
+	LOG ((PI_DBG_API, PI_DBG_LVL_INFO,
 	     "FILE OPEN Name: '%s' Flags: 0x%4.4X Version: %d\n",
-	     ip->name, ip->flags, ip->version);
-	LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
-	     "  Creation date: %s", ctime(&ip->createDate));
-	LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
-	     "  Modification date: %s", ctime(&ip->modifyDate));
-	LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
-	     "  Backup date: %s", ctime(&ip->backupDate));
-	LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
+	     ip->name, ip->flags, ip->version));
+	LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
+	     "  Creation date: %s", ctime(&ip->createDate)));
+	LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
+	     "  Modification date: %s", ctime(&ip->modifyDate)));
+	LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
+	     "  Backup date: %s", ctime(&ip->backupDate)));
+	LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 	     "  Appinfo Size: %d Sortinfo Size: %d\n",
-	     pf->app_info_size, pf->sort_info_size);
-	LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
-	     "  Type: '%s'", printlong(ip->type));
-	LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
+	     pf->app_info_size, pf->sort_info_size));
+	LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
+	     "  Type: '%s'", printlong(ip->type)));
+	LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 	     "  Creator: '%s' Seed: 0x%8.8lX\n", printlong(ip->creator),
-	     pf->unique_id_seed);
+	     pf->unique_id_seed));
 
 	if (pf->next_record_list_id != 0) {
-		LOG (PI_DBG_API, PI_DBG_LVL_ERR,
- 		     "FILE OPEN %s: this file is probably damaged\n", name);
+		LOG ((PI_DBG_API, PI_DBG_LVL_ERR,
+ 		     "FILE OPEN %s: this file is probably damaged\n", name));
 		goto bad;
 	}
 
@@ -308,8 +308,8 @@ struct pi_file *pi_file_open(char *name)
 	}
 
 	if (pf->nentries < 0) {
-		LOG (PI_DBG_API, PI_DBG_LVL_ERR,
- 		     "FILE OPEN %s: bad header\n", name);
+		LOG ((PI_DBG_API, PI_DBG_LVL_ERR,
+ 		     "FILE OPEN %s: bad header\n", name));
 		goto bad;
 	}
 
@@ -332,18 +332,18 @@ struct pi_file *pi_file_open(char *name)
 				entp->id 	= get_short(p + 4);
 				entp->offset 	= get_long(p + 6);
 
-				LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
+				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 				     "FILE OPEN Entry %d '%s' #%d @%X\n", i,
 				       printlong(entp->type), entp->id,
-				       entp->offset);
+				       entp->offset));
 			} else {
 				entp->offset 	= get_long(p);
 				entp->attrs 	= get_byte(p + 4);
 				entp->uid 	= get_treble(p + 5);
 
-				LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
+				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 				     "FILE OPEN Entry %d UID: 0x%8.8X Attrs: %2.2X Offset: @%X\n", i,
-				     (int) entp->uid, entp->attrs, entp->offset);
+				     (int) entp->uid, entp->attrs, entp->offset));
 			}
 		}
 
@@ -352,14 +352,14 @@ struct pi_file *pi_file_open(char *name)
 			entp->size 	= offset - entp->offset;
 			offset 		= entp->offset;
 
-			LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
+			LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 			     "FILE OPEN Entry: %d Size: %d\n",
-			     pf->nentries - i - 1, entp->size);
+			     pf->nentries - i - 1, entp->size));
 
 			if (entp->size < 0) {
-				LOG (PI_DBG_API, PI_DBG_LVL_DEBUG,
+				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 				     "FILE OPEN %s: Entry %d corrupt, giving up\n",
-					name, pf->nentries - i - 1);
+					name, pf->nentries - i - 1));
 				goto bad;
 			}
 		}
@@ -382,8 +382,8 @@ struct pi_file *pi_file_open(char *name)
 	}
 
 	if (pf->app_info_size < 0 || pf->sort_info_size < 0) {
-		LOG (PI_DBG_API, PI_DBG_LVL_ERR,
- 		     "FILE OPEN %s: bad header\n", name);
+		LOG ((PI_DBG_API, PI_DBG_LVL_ERR,
+ 		     "FILE OPEN %s: bad header\n", name));
 		goto bad;
 	}
 
@@ -730,8 +730,8 @@ pi_file_read_record(struct pi_file *pf, int i,
 
 	if (bufp) {
 		if (pi_file_set_rbuf_size(pf, entp->size) < 0) {
-			LOG(PI_DBG_API, PI_DBG_LVL_ERR,
-			    "FILE READ_RECORD Unable to set buffer size!\n");
+			LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+			    "FILE READ_RECORD Unable to set buffer size!\n"));
 			return (-1);
 		}
 		
@@ -739,16 +739,16 @@ pi_file_read_record(struct pi_file *pf, int i,
 
 		if (fread(pf->rbuf, 1, entp->size, pf->f) !=
 		    (size_t) entp->size) {
-			LOG(PI_DBG_API, PI_DBG_LVL_ERR,
-			    "FILE READ_RECORD Unable to read record!\n");
+			LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+			    "FILE READ_RECORD Unable to read record!\n"));
 			return (-1);
 		}
 		
 		*bufp = pf->rbuf;
 	}
 
-	LOG (PI_DBG_API, PI_DBG_LVL_INFO,
-	     "FILE READ_RECORD Record: %d Bytes: %d\n", i, entp->size);
+	LOG ((PI_DBG_API, PI_DBG_LVL_INFO,
+	     "FILE READ_RECORD Record: %d Bytes: %d\n", i, entp->size));
 
 	if (sizep)
 		*sizep = entp->size;
@@ -1333,8 +1333,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 		flags |= 0x8000;	/* Rewrite an open DB */
 		reset = 1;	/* To be on the safe side */
 	}
-	LOG(PI_DBG_API, PI_DBG_LVL_INFO,
-	    "FILE INSTALL Name: %s Flags: %8.8X\n", pf->info.name, flags);
+	LOG((PI_DBG_API, PI_DBG_LVL_INFO,
+	    "FILE INSTALL Name: %s Flags: %8.8X\n", pf->info.name, flags));
 
 	/* Create DB */
 	if (dlp_CreateDB
@@ -1422,8 +1422,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 		for (j = 0; j < pf->nentries; j++) {
 			if ((pi_file_read_resource(pf, j, 0, &size, 0, 0)
 			     == 0) && (size > 65536)) {
-				LOG(PI_DBG_API, PI_DBG_LVL_ERR,
-				    "FILE INSTALL Database contains resource over 64K!\n");
+				LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+				    "FILE INSTALL Database contains resource over 64K!\n"));
 				goto fail;
 			}
 		}
@@ -1460,8 +1460,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 
 			if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0)
 			      == 0)) && (size > 65536)) {
-				LOG(PI_DBG_API, PI_DBG_LVL_ERR,
-				    "FILE INSTALL Database contains resource over 64K!\n");
+				LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+				    "FILE INSTALL Database contains resource over 64K!\n"));
 				goto fail;
 			}
 		}

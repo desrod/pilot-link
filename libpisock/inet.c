@@ -203,8 +203,8 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 			struct hostent *hostent = gethostbyname(device);
 		
 			if (!hostent) {
-				LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
-				    "DEV CONNECT Inet: Unable to determine host\n");
+				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
+				    "DEV CONNECT Inet: Unable to determine host\n"));
 				return -1;
 			}
 			
@@ -218,8 +218,8 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
 	sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sd < 0) {
-		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
-		    "DEV CONNECT Inet: Unable to create socket\n");
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
+		    "DEV CONNECT Inet: Unable to create socket\n"));
 		return -1;
 	}
 
@@ -228,8 +228,8 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
 	if (connect (ps->sd, (struct sockaddr *) &serv_addr,
 		     sizeof(serv_addr)) < 0) {
-		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
-		    "DEV CONNECT Inet: Unable to connect\n");
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
+		    "DEV CONNECT Inet: Unable to connect\n"));
 		return -1;
 	}
 	
@@ -253,7 +253,7 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	ps->state = PI_SOCK_CONIN;
 	ps->command = 0;
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CONNECT Inet: Connected\n");
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CONNECT Inet: Connected\n"));
 	return 0;
 
  fail:
@@ -307,8 +307,8 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 	
 	sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sd < 0) {
-		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
-		    "DEV BIND Inet: Unable to create socket\n");
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
+		    "DEV BIND Inet: Unable to create socket\n"));
 		return -1;
 	}	
 	if (pi_socket_setsd (ps, sd) < 0)
@@ -333,7 +333,7 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 	if (bind(ps->sd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 		return -1;
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV BIND Inet Bound to %s\n", device);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV BIND Inet Bound to %s\n", device));
 
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
@@ -408,7 +408,7 @@ pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	acpt->command 	= 0;
 	acpt->dlprecord = 0;
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV ACCEPT Accepted\n");
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV ACCEPT Accepted\n"));
 
 	return acpt->sd;
 
@@ -459,7 +459,7 @@ pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 	}
 	data->tx_bytes += len;
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX Inet Bytes: %d\n", len);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX Inet Bytes: %d\n", len));
 
 	return len;
 }
@@ -506,13 +506,13 @@ pi_inet_read(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 		r = recv(ps->sd, msg, len, fl);
 	else {
 		/* otherwise throw out any current packet and return */
-		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Inet timeout\n");
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Inet timeout\n"));
 		data->rx_errors++;
 		return 0;
 	}
 	data->rx_bytes += r;
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Inet Bytes: %d\n", r);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Inet Bytes: %d\n", r));
 
 	return r;
 }

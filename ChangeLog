@@ -1,5 +1,36 @@
 2002-07-19  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/unixserial.c: Update for LOG changes
+
+	* libpisock/sys.c: ditto
+
+	* libpisock/socket.c: ditto
+
+	* libpisock/slp.c: ditto
+
+	* libpisock/pi-file.c: ditto
+
+	* libpisock/padp.c: ditto
+
+	* libpisock/net.c: ditto
+
+	* libpisock/linuxusb.c: ditto
+
+	* libpisock/inet.c: ditto
+
+	* libpisock/freebsdusb.c: ditto
+
+	* libpisock/dlp.c: ditto
+
+	* libpisock/cmp.c: ditto
+
+	* tests/dlp-test.c: change CHECK to CHECK_RESULT so we don't
+	conflict with the debug macro, reflect LOG define changes
+
+	* include/pi-debug.h: redefine LOG so it is not a variadic macro
+
+2002-07-19  JP Rosevear  <jpr@ximian.com>
+	
 	* include/pi-hinote.h: remove include of non-existant file and //
 	style comment
 

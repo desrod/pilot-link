@@ -221,13 +221,13 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 		/* Peek to see if it is a headerless packet */
 		bytes = next->read(ps, msg, 1, flags);
 		if (bytes > 0) {
-			LOG (PI_DBG_NET, PI_DBG_LVL_INFO,
-			     "NET RX: Checking for headerless packet %d\n", msg[0]);
+			LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
+			     "NET RX: Checking for headerless packet %d\n", msg[0]));
 
 			if (msg[0] == 0x90) {
 				/* Cause the header bytes to be skipped */
-				LOG (PI_DBG_NET, PI_DBG_LVL_INFO,
-				     "NET RX: Headerless packet\n");
+				LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
+				     "NET RX: Headerless packet\n"));
 				total_bytes = PI_NET_HEADER_LEN;
 				msg[PI_NET_OFFSET_TYPE] = PI_NET_TYPE_DATA;
 				msg[PI_NET_OFFSET_TXID] = 0x01;
@@ -338,12 +338,12 @@ net_setsockopt(struct pi_socket *ps, int level, int option_name,
 
 void net_dump_header(unsigned char *data, int rxtx)
 {
-	LOG(PI_DBG_NET, PI_DBG_LVL_NONE,
+	LOG((PI_DBG_NET, PI_DBG_LVL_NONE,
 	    "NET %s type=%d txid=0x%.2x len=0x%.4x\n",
 	    rxtx ? "TX" : "RX",
 	    get_byte(&data[PI_NET_OFFSET_TYPE]),
 	    get_byte(&data[PI_NET_OFFSET_TXID]),
-	    get_long(&data[PI_NET_OFFSET_SIZE]));
+	    get_long(&data[PI_NET_OFFSET_SIZE])));
 }
 
 void net_dump(unsigned char *data)

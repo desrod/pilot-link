@@ -1393,7 +1393,7 @@ int unpack_PalmPix (struct PalmPixState *s,
 	for (k = 0; k < 4; k++) 
 	  {
 	     unsigned long nbytes, offset;
-	     int16_t lastWord = 0;
+	     int32_t lastWord = 0;
 	     int j;
 	     
 	     for (nbytes = 0; nbytes < h->chansize[k]; recno++) 
@@ -1419,7 +1419,7 @@ int unpack_PalmPix (struct PalmPixState *s,
 	     
 	     for (j = 1; j < rawHeight; j++) 
 	       {
-		  uint16_t eaten;
+		  uint32_t eaten;
 		  DecodeRow (&raw[offset],
 			     &chan[k][rawWidth * (j - 1)],
 			     &chan[k][rawWidth * j],

@@ -225,8 +225,8 @@ sys_setsockopt(struct pi_socket *ps, int level, int option_name,
 
 void sys_dump_header(unsigned char *data, int rxtx)
 {
-	LOG(PI_DBG_SYS, PI_DBG_LVL_NONE,
-	    "SYS %s\n", rxtx ? "TX" : "RX");
+	LOG((PI_DBG_SYS, PI_DBG_LVL_NONE,
+	    "SYS %s\n", rxtx ? "TX" : "RX"));
 }
 
 void sys_dump(unsigned char *data, int len)
