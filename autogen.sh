@@ -120,13 +120,14 @@ find_program()
     program="$prog"
 }
 
-find_program "$AUTOCONF" autoconf 2.53
+# These statics should really be defined at the top
+find_program "$AUTOCONF" autoconf "2.53"
 AUTOCONF="$program"
-find_program "$AUTOHEADER" autoheader 2.53
+find_program "$AUTOHEADER" autoheader "2.53"
 AUTOHEADER="$program"
-find_program "$AUTOMAKE" automake 1.5 "1.6 1.7"
+find_program "$AUTOMAKE" automake "1.5 1.6 1.7 1.8"
 AUTOMAKE="$program"
-find_program "$ACLOCAL" aclocal 1.5 "1.6 1.7"
+find_program "$ACLOCAL" aclocal "1.5 1.6 1.7 1.8"
 ACLOCAL="$program"
 
 ($AUTOMAKE --version) < /dev/null > /dev/null 2>&1 || {
