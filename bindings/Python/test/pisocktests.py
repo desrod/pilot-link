@@ -19,24 +19,40 @@ class OnlineTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def testdlp_GetSysDateTime(self):
+        res = pisock.dlp_GetSysDateTime(sd)
+        print "GetSysDateTime: " + str(res)
+
     def testdlp_AddSyncLogEntry(self):
         pisock.dlp_AddSyncLogEntry(sd, "Python test.")
-
-    def testdlp_ReadUserInfo(self):
-        res = pisock.dlp_ReadUserInfo(sd)
-        assert res!=None and len(res)>3
-        print "ReadUserInfo: username='" + res['name'] + "'"
 
     def testdlp_ReadSysInfo(self):
         res = pisock.dlp_ReadSysInfo(sd)
         assert res!=None and res.has_key('romVersion')
         print "ReadSysInfo: romVersion=" + hex(res['romVersion']) + " locale=" + hex(res['locale']) + " name='" + res['name'] + "'"
 
+    def testdlp_ReadStorageInfo(self):
+        info = []
+        res = pisock.dlp_ReadStorageInfo(sd,0,info)
+        assert info.has_key('manufacturer')
+        print "ReadStorageInfo: card 0, romSize=" + str(res['romSize']) + ", ramSize=" + str(res['ramSize']) + ", ramFree=" + str(res['ramFree']) + ", manufacturer=" + res['manufacturer']
+
+    def testdlp_ReadUserInfo(self):
+        res = pisock.dlp_ReadUserInfo(sd)
+        assert res!=None and len(res)>3
+        print "ReadUserInfo: username='" + res['name'] + "'"
+
+    def testdlp_ReadFeature(self):
+        res = pisock.dlp_ReadFeature(sd,'psys',2)
+        assert res!=None
+        print "ReadFeature: processor type=" + hex(res)
+
     def testdlp_ReadDBList(self):
         res = pisock.dlp_ReadDBList(sd,0,pisock.dlpDBListRAM)
         assert len(res) > 3
         assert res[0].has_key('name')
         print "ReadDBList: " + str(len(res)) + " entries"
+
 
 class OfflineTestCase(unittest.TestCase):
     def setUp(self):
