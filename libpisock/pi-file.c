@@ -1203,25 +1203,30 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 {
 	int 	db = -1,
 		j,
-		total_size,
 		result,
 		old_device = 0;
+	struct DBInfo dbi;
 	struct DBSizeInfo size_info;
 	pi_buffer_t *buffer = NULL;
 	pi_progress_t progress;
 
 	pi_reset_errors(socket);
+	memset(&size_info, 0, sizeof(size_info));
+	memset(&dbi, 0, sizeof(dbi));
 
+	/* Try to get more info on the database to retrieve. Note that
+	 * with some devices like the Tungsten T3 and shadowed databases
+	 * like AddressDB, the size_info is -wrong-. It doesn't reflect
+	 * the actual contents of the database except for the number of records.
+	 * Also, this call doesn't work pre-OS 3.
+	 */
 	if ((result = dlp_FindDBByName(socket, cardno, pf->info.name,
-			NULL, NULL, NULL, &size_info)) < 0)
+			NULL, NULL, &dbi, &size_info)) < 0)
 	{
 		if (result != PI_ERR_DLP_UNSUPPORTED)
 			goto fail;
-		memset(&size_info, 0, sizeof(size_info));
 		old_device = 1;
 	}
-	else
-		total_size = size_info.totalBytes + size_info.appBlockSize;
 
 	if ((result = dlp_OpenDB (socket, cardno, dlpOpenRead | dlpOpenSecret,
 			pf->info.name, &db)) < 0)
@@ -1244,11 +1249,29 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	progress.type = PI_PROGRESS_RECEIVE_DB;
 	progress.data.db.pf = pf;
 	progress.data.db.size = size_info;
-	
-	if (size_info.appBlockSize || old_device) {
+
+	if (size_info.appBlockSize
+		|| (dbi.miscFlags & dlpDBMiscFlagRamBased)
+		|| old_device) {
+		/* what we're trying to do here is avoid trying to read an appBlock
+		 * from a ROM file, because this crashes on several devices.
+		 * Also, on several palmOne devices, the size info returned by the OS
+		 * is absolutely incorrect. This happens with some system shadow files
+		 * like AddressDB on T3, which actually do contain data and an appInfo
+		 * block but the system tells us there's no appInfo and nearly no data,
+		 * but still gives the accurate number of records. Seems to be bad
+		 * structure shadows in PACE.
+		 * In any case, the ultimate result is that:
+		 * 1. On devices pre-OS 3, we do always try to read the appInfo block
+		 *    because dlp_FindDBByName() is unsupported so we can't find out if
+		 *    there's an appInfo block
+		 * 2. On OS5+ devices, we're not sure that the appInfo size we have is
+		 *    accurate. But if we try reading an appInfo block in ROM it may
+		 *    crash the device
+		 * 3. Therefore, we only try to read the appInfo block if we are
+		 *    working on a RAM file or we are sure that a ROM file has appInfo.
+		 */
 		result = dlp_ReadAppBlock(socket, db, 0, DLP_BUF_SIZE, buffer);
-		if (result < 0 && !old_device)
-			goto fail;
 		if (result > 0) {
 			pi_file_set_app_info(pf, buffer->data, (size_t)result);
 			progress.transferred_bytes += result;
@@ -1367,8 +1390,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 		err1,
 		err2;
 	size_t	l,
-		size = 0,
-		total_size;
+		size = 0;
 	void 	*buffer;
 	pi_progress_t	progress;
 
@@ -1490,7 +1512,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 		void *b2 = calloc(1, 282);
 		memcpy(b2, buffer, (size_t)l);
 		buffer = b2;
-		total_size += 282 - l;
+		progress.data.db.size.appBlockSize = 282;
 		l = 282;
 		freeai = 1;
 	}
