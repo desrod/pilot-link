@@ -74,8 +74,13 @@ int main(int argc, char *argv[])
         };
 
         po = poptGetContext("install-memo", argc, (const char **) argv, options, 0);
-	poptSetOtherOptionHelp(po," [-p port] <memo options> -f filename\n\n"
+	poptSetOtherOptionHelp(po,"\n\n"
 		"    Adds a single memo from a file to the memo database.\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
         while ((po_err = poptGetNextOpt(po)) >= 0) {
 	}
