@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 		*memo_buf	= NULL,
 		*category_name	= NULL,
 		*filename	= NULL,
+		*tmp		= NULL,
 		buf[0xffff];
 
         struct 	PilotUser User;
@@ -108,22 +109,27 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+
+	/* When adding the title, we only want the filename, not the full path. */
+	tmp = strrchr (filename, '/');
+	if (tmp)
+		filename = tmp + 1;
+
 	memo_size = sbuf.st_size;
 	preamble = add_title ? strlen(filename) + 1 : 0;
-	memo_buf = malloc(memo_size + preamble + 16);
+	memo_buf = calloc(1, memo_size + preamble + 16);
 	if (!memo_buf) {
 		fprintf(stderr,"   ERROR: cannot allocate memory for memo (%s)\n",
 			strerror(errno));
 		return 1;
 	}
 
-	memset(memo_buf,0,memo_size+preamble+16);
 	if (preamble)
 		sprintf(memo_buf, "%s\n", filename);
-	fread(memo_buf + preamble+1, memo_size, 1, f);
+	fread(memo_buf + preamble, memo_size, 1, f);
 	fclose(f);
 
-	memo_size += preamble + 1;
+	memo_size += preamble;
 
 	if (memo_size > 65490) {
 		fprintf(stderr, "   ERROR:\n");
@@ -181,9 +187,6 @@ int main(int argc, char *argv[])
 	} else {
 		category = 0;	/* Unfiled */
 	}
-
-
-
 
 
 	dlp_WriteRecord(sd, db, 0, 0, category, memo_buf, -1, 0);
