@@ -20,22 +20,24 @@
  *
  */
 
+/* 12-27-2003:
+   FIXME: Crash when using the '-d MM/DD/YYYY' specifier */
+
 #include "getopt.h"
-#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-#define DATE_STR_MAX 1000
+#include "pi-socket.h"
+#include "pi-dlp.h"
+#include "pi-todo.h"
+#include "pi-header.h"
 
 #ifdef __GLIBC__
 #define _XOPEN_SOURCE /* glibc2 needs this */
 #endif
 
-#include "pi-source.h"
-#include "pi-socket.h"
-#include "pi-dlp.h"
-#include "pi-todo.h"
-#include "pi-header.h"
+#define DATE_STR_MAX 1000
 
 /* Declare prototypes */
 static void display_help(char *progname);
@@ -61,6 +63,18 @@ static const char *optstring = "p:hvd:P:cn:f:";
 
 char *strptime(const char *s, const char *format, struct tm *tm);
 
+
+/***********************************************************************
+ *
+ * Function:    read_file
+ *
+ * Summary:     
+ *
+ * Parameters:  
+ *
+ * Returns:     
+ *
+ ***********************************************************************/
 char *read_file(char *filename)
 {
 	FILE	*f;
@@ -88,6 +102,18 @@ char *read_file(char *filename)
 	return file_text;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    install_ToDo
+ *
+ * Summary:     
+ *
+ * Parameters:  
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void install_ToDo(int sd, int db, struct ToDo todo)
 {
 	int 	ToDo_size;
@@ -106,29 +132,38 @@ void install_ToDo(int sd, int db, struct ToDo todo)
 
 	ToDo_size = pack_ToDo(&todo, ToDo_buf, sizeof(ToDo_buf));
 
-	/* 
-	printf("todobuf: %s\n",ToDo_buf);
 	dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf, ToDo_size, 0);
-	*/
 
 	return;
 }
 
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
-	printf("   Updates the Palm ToDo list with one new entry\n\n");
+	printf("   Updates the Palm ToDo list with a single new entry\n\n");
 	printf("   Usage: %s [-pdycnft] command(s) [item]\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
-	printf("     -P <priority>  The Priority (default 4)\n");
-	printf("     -d <duedate>   The due Date MM/DD/YYYY (default blank)\n");
-	printf("     -c             Mark the item complete (default is incomplete)\n");
-	printf("     -n <note>      The Note\n");
-	printf("     -f <filename>  A local filename containing the Note text\n");
-	printf("     -h             Display this information\n\n");
+
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -P, --priority <value>  The Priority (default 4)\n");
+	printf("     -d, --due <duedate>     The due Date MM/DD/YYYY (default blank)\n");
+	printf("     -c, --completed         Mark the item complete (default is incomplete)\n");
+	printf("     -n, --note <note>       The Note text (single string)\n");
+	printf("     -f, --file <filename>   A local filename containing the Note text\n");
+	printf("     -h, --help              Display this information\n\n");
 	printf("   Examples:\n");
-	printf("     %s -y 1 'Buy Milk'\n", progname);
-	printf("     %s -p /dev/pilot -N ShoppingList.txt 'Go to supermarket'\n\n", progname);
+	printf("     %s -p /dev/pilot -n 'Buy Milk' 'Go shopping, see note for items'\n", progname);
+	printf("     %s -p /dev/pilot -f ShoppingList.txt 'Go to supermarket'\n\n", progname);
 
         return;
 }
@@ -146,25 +181,25 @@ int main(int argc, char *argv[])
 	struct 	ToDo todo;
 
 	/*  Setup some todo defaults */
-	todo.indefinite = 1;
-	todo.priority = 1;
-	todo.complete = 0;
+	todo.indefinite  = 1;
+	todo.priority    = 1;
+	todo.complete    = 0;
 	todo.description = "";
-	todo.note = "";
-	todo.due.tm_sec = 0;
-	todo.due.tm_min = 0;
+	todo.note        = "";
+	todo.due.tm_sec  = 0;
+	todo.due.tm_min  = 0;
 	todo.due.tm_hour = 0;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
-		case 'h': /* Help */
+		case 'h':
 			  display_help(progname);
 			  return 0;
 		case 'v':
                           print_splash(progname);
                           return 0;
-		case 'p': /* Port */
+		case 'p':
 			  port = optarg;
 			  break;
 		case 'P': /* Priority */
@@ -189,48 +224,39 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* Get Description */
+	if (argc < 2) {
+		printf("   Insufficient or invalid options supplied.\n");
+		printf("   Please use 'install-todo --help' for more info.\n\n");
+		exit(1);
+	}
+
 	if (optind < argc){
 		todo.description = argv[optind];
 	}
 
-	/* Look for other port settings */
-	if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
-	if (port == NULL) {
-		port = "/dev/pilot";
-	}
-
 	sd = pilot_connect(port);
 
-	/* Did we get a valid socket descriptor back? */
-	if (dlp_OpenConduit(sd) < 0) {
+        if (sd < 0)
 		exit(1);
-	}
 
-	/* Tell user (via Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
-
-	/* Open the ToDo Pad's database, store access handle in db */
+	/* Open the ToDo database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-		puts("Unable to open ToDoDB");
-		dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
+		puts("Unable to open ToDo Database");
+		dlp_AddSyncLogEntry(sd, "Unable to open ToDo Database.\n");
 		exit(1);
 	}
 
-	/* Actually do the install here */
 	install_ToDo(sd, db, todo);
 
-	/* Close the database */
 	dlp_CloseDB(sd, db);
 
 	/* Tell the user who it is, with a different PC id. */
 	User.lastSyncPC 	= 0x00010000;
-	User.successfulSyncDate = time(NULL);
-	User.lastSyncDate 	= User.successfulSyncDate;
+	User.lastSyncDate = User.successfulSyncDate = time(0);
+	dlp_WriteUserInfo(sd, &User);
 
-	dlp_AddSyncLogEntry(sd, "Wrote ToDo entry to Palm.\nThank you for using pilot-link.\n");
+	dlp_AddSyncLogEntry(sd, "Wrote ToDo entry to Palm.\n\n"
+		"Thank you for using pilot-link.\n");
 
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
