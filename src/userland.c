@@ -30,6 +30,7 @@
 #include "pi-dlp.h"
 #include "pi-source.h"
 
+static const char *env_pilotport = "PILOTPORT";
 
 int plu_connect()
 {
@@ -40,7 +41,7 @@ int plu_connect()
 
 	/* Determine here for better user feedback on unset port */
 	if (plu_port == NULL)
-		plu_port = getenv("PILOTPORT");
+		plu_port = getenv(env_pilotport);
 	if (plu_port == NULL) {
 		fprintf(stderr, "\n   Unable to determine port to bind\n"
 				"   Please use --help for more information\n\n");
@@ -220,5 +221,10 @@ int plu_getromversion(int sd, plu_romversion_t *d)
 	return 0;
 }
 
+int plu_portgiven()
+{
+	const char *port = getenv(env_pilotport);
+	return (port != NULL);
+}
 
 /* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */

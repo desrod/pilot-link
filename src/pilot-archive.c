@@ -1,5 +1,5 @@
 /*
- * pilot-archive.c:  Output "Archived" records in human-readable format to 
+ * pilot-archive.c:  Output "Archived" records in human-readable format to
  *                   STDOUT from ToDo application
  *
  * Copyright (c) 2002, David A. Desrosiers
@@ -50,7 +50,7 @@ int main(int argc, const char *argv[])
 	"   Exports any ToDo records marked as \"Archived\" on your Palm to\n"
 	"   human-readable format\n\n");
 
-	if (argc < 2) {
+	if ((argc < 2) && !plu_portgiven()) {
 		poptPrintUsage(po,stderr,0);
 		return 1;
 	}

@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	poptSetOtherOptionHelp(po,"\n\n"
 		"   Dumps the Palm AddressDB database into a generic text output format\n\n");
 
-	if (argc < 2) {
+	if ((argc < 2) && !plu_portgiven()) {
 		poptPrintUsage(po,stderr,0);
 		return 1;
 	}
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
 	if (po_err < -1)
 	    plu_badoption(po,po_err);
-	
+
 	sd = plu_connect();
 	if (sd < 0)
 		goto error;

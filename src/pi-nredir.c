@@ -66,7 +66,7 @@ int main(int argc, const char *argv[])
 	"   Examples arguments:\n"
 	"      -p /dev/pilot\n\n");
 
-	if (argc < 2) {
+	if ((argc < 2) && !plu_portgiven()) {
 		poptPrintUsage(po,stderr,1);
 		return 1;
 	}
