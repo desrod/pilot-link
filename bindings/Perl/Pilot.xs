@@ -3501,6 +3501,25 @@ getFeature(self, creator, number)
 
 
 void
+getROMToken(self,token)
+	PDA::Pilot::DLP *	self
+	Char4 token
+	PPCODE:
+	{
+		char buffer[50];
+		long long_token;
+		unsigned int size;
+		int result;
+
+		result = dlp_GetROMToken(self->socket, token, buffer, &size);
+
+		if (result==0) {
+			EXTEND(sp,1);
+			PUSHs(sv_2mortal(newSVpv(buffer, size)));
+		}
+	}
+
+void
 callApplication(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 	PDA::Pilot::DLP *	self
 	Char4	creator

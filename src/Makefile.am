@@ -42,6 +42,7 @@ bin_PROGRAMS = 		\
 	pi-csd		\
 	pi-getram	\
 	pi-getrom	\
+	pi-getromtoken	\
 	pi-nredir	\
 	pilot-addresses	\
 	pilot-clip	\
@@ -178,6 +179,12 @@ pi_getram_LDADD = 				\
 pi_getrom_SOURCES = \
 	pi-getrom.c
 pi_getrom_LDADD = 				\
+	@LIBOBJS@                               \
+	$(top_builddir)/libpisock/libpisock.la
+
+pi_getromtoken_SOURCES = \
+	pi-getromtoken.c
+pi_getromtoken_LDADD =				\
 	@LIBOBJS@				\
 	$(top_builddir)/libpisock/libpisock.la
 

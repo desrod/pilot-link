@@ -522,6 +522,9 @@ extern "C" {
 		PI_ARGS((int sd, unsigned long creator, unsigned int num,
 			unsigned long *feature));
 
+	extern int dlp_GetROMToken
+		PI_ARGS((int sd, unsigned long token, char *buffer, unsigned int *size));
+
 	/* PalmOS 2.0 only */
 	extern int dlp_ReadNetSyncInfo
 		PI_ARGS((int sd, struct NetSyncInfo * i));

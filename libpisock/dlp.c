@@ -1751,6 +1751,98 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 	}
 	
 }
+#endif				/* IFDEF _PILOT_SYSPKT_H */
+
+/***********************************************************************
+ *
+ * Parmeters:   None
+ *
+ * Summary:     Read a feature from Feature Manager on the Palm
+ *
+ * Parameters:  None
+ *
+ * Returns:     A negative number on error, the number of bytes read
+ *		otherwise 
+ *
+ ***********************************************************************/
+int
+dlp_GetROMToken(int sd, unsigned long token, char *buffer, unsigned int *size)
+{
+	unsigned long result;
+
+	struct RPC_params p;
+	unsigned long buffer_ptr;
+
+	Trace(GetROMToken);
+	
+#ifdef DLP_TRACE
+	if (dlp_trace) {
+	  fprintf(stderr,
+		  " Wrote: Token: '%s'\n",
+		  printlong(token));
+	}
+#endif
+
+	PackRPC(&p, 41792, RPC_IntReply,
+		RPC_Short(0),
+		RPC_Long(token),
+		RPC_LongPtr(&buffer_ptr),
+		RPC_ShortPtr(size), RPC_End);
+	
+	val = dlp_RPC(sd, &p, &result);
+
+#ifdef DLP_TRACE
+	if (dlp_trace) {
+	  if (val < 0)
+	    fprintf(stderr,
+		    "Result: Error: %s (%d)\n",
+		    dlp_errorlist[-val], val);
+	  else if (result)
+	    fprintf(stderr,
+		    "FtrGet error 0x%8.8lX\n",
+		    (unsigned long) result);
+	  else
+	    fprintf(stderr,
+		    "  Read: Buffer Ptr: 0x%8.8lX Size: %d\n",
+		    (unsigned long) buffer_ptr, *size);
+	}
+#endif		
+	
+	if( buffer ) {
+	  buffer[*size] = 0;
+
+	  PackRPC(&p, 0xa026, RPC_IntReply,
+		  RPC_Ptr(buffer, *size),
+		  RPC_Long(buffer_ptr),
+		  RPC_Long((unsigned long) *size), 
+		  RPC_End);
+	  
+	  val = dlp_RPC(sd, &p, &result);
+	}
+	
+#ifdef DLP_TRACE
+	if (dlp_trace) {
+	  if (val < 0)
+	    fprintf(stderr,
+		    "Result: Error: %s (%d)\n",
+		    dlp_errorlist[-val], val);
+	  else if (result)
+	    fprintf(stderr,
+		    "FtrGet error 0x%8.8lX\n",
+		    (unsigned long) result);
+	  else
+	    fprintf(stderr,
+		    "  Read: Buffer: %s\n", buffer);
+	}
+#endif	
+
+	if (val < 0)
+	  return val;
+	
+	if (result)
+	  return (-(long) result);
+	
+	return result;
 }
 
 /***********************************************************************
