@@ -1,53 +1,74 @@
 .TH INSTALL-DATEBOOK 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+
 .SH NAME
 install-datebook \- installs a new datebook entries in a Palm Device
+
 .SH SYNOPSIS
-.B install-date /dev/cua? filename [filename filename ...]
+For serial devices, the -p /dev/port is required, or you may use the
+$PILOTPORT environment variable:
+.br
+.B install-datebook -p /dev/ttySX filename [filename filename ...] 
+.LP
+For USB devices, the new USB port specification is:
+.br
+.B install-datebook -p usb:/dev/ttyUSBX filename [filename filename ...]
+.br
+
 .SH DESCRIPTION
 .B install-datebook
 allows the user to write one or more datebook entries from one or more
-source files. Once 
+source files. Once
 .B install-datebook
-is started, the user must invoke HotSync on the target device.
+is started, the user must invoke HotSync on the target device by pressing
+the HotSync button on the cradle or by tapping on the HotSync icon in the
+Palm launcher.
 .LP
-The format of source file contains one datebook entry on line,
-containing four tab separated fields. The fields are start date/time,
-end date/time, alarm settings, and the description of datebook entry.
-This program doesn't yet support repeted entries. The date and time
-must be in format understand by parsedate.y. At least following
+The format of the source file contains one datebook entry on line,
+containing four tab separated fields. The fields are start date/time, end
+date/time, alarm settings, and the description of datebook entry. This
+program doesn't yet support repeted entries. The date and time must be in
+format understand by parsedate.y. At the very least, the following two
 formats are understood:
 .LP
 August 11, 1997 0800 GMT+300
 .br
 1997/08/11 08:22:33 GMT+300
 .LP
-If the either one of the date and time fields is empty the entry is
-installed without time. If the alarm field is entry the entry is
-installed without alarms. Alarm field can contain number followed by
-"m" (minutes), "h" (hours), or "d" (days). Here are some complete
-example lines (" <TAB> "= tab, " <NL> " = newline):
-.LP
-1997/08/11 0800 GMT+300 <TAB> 1997/08/11 0900 GMT+300 <TAB> <TAB> IETF
-Registration <NL>
+If either one of the date and time fields is empty, the entry is installed
+without time. If the alarm field is empty, the entry is installed without
+setting any alarms. The alarm field can contain numbers followed by "m"
+(minutes), "h" (hours), or "d" (days).
 .br
-August 11, 1997 0900 GMT+300 <TAB> August 11, 1997 0930 GMT+300 <TAB>
+Here are some example lines ("<TAB>" = tab, "<NL>" = newline in these
+examples):
+.LP
+-> 1997/08/11 0800 GMT+300 <TAB> 1997/08/11 0900 GMT+300 <TAB> <TAB> IETF
+Registration <NL>
+.LP
+-> August 11, 1997 0900 GMT+300 <TAB> August 11, 1997 0930 GMT+300 <TAB>
 2m <TAB> Introductions <NL>
+
 .SS OPTIONS
 none
-.SH USEAGE
-The program will connect to a target, and write the file or files
-given on the command line.
+
+.SH USAGE
+The program will connect to the target Palm device, and write the
+datebook-formatted file given on the command line to the Palm into the
+DatebookDB.pdb file.
+
 .SH BUGS
-If no timezone is given to date the
+If no timezone is given,
 .B install-datebook
-will assume the time is in GMT and it will convert it to localtime. If
-you don\'t want to write timezone to all begin and end times set the
-TZ environment variable to GMT before running this program. 
+will assume the time is in GMT and it will convert it to localtime. If you
+don\'t want to write timezone entries to all begin and end times, set the TZ
+environment variable to GMT before running this program.
+
 .SH AUTHOR
 .B install-datebook
-was written by Tero Kivinen <kivinen@iki.fi>. This program was based
-on install-todos program written by Robert A. Kaplan. 
+was written by Tero Kivinen <kivinen@iki.fi>. This program was based on
+install-todos program written by Robert A. Kaplan.
+
 .SH SEE ALSO
-.BR read-ical (1),
-.BR pilot-xfer (1),
-.BR ietf2datebook (1).
+.br read-ical (1),
+.br pilot-xfer (1),
+.br ietf2datebook (1).
