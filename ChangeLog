@@ -2,6 +2,11 @@
 
 	* pilot-xfer.c: Minor cleanups
 
+2002-02-07  Judd Montgomery <judd at jpilot dot org>
+
+	* pilot-xfer.c: Fixed bug of pilot-xfer -i not accepting multiple
+	files as arguments (getopt_long change).
+
 2002-02-05  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/dlp.c: include <sys/types.h> before <netinet/in.h> for
