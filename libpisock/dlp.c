@@ -2976,7 +2976,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 			return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
-		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x80);
+		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x80);	// "data included"
 		set_long(DLP_REQUEST_DATA(req, 0, 2), recID);
 		set_byte(DLP_REQUEST_DATA(req, 0, 6), flags);
 		set_byte(DLP_REQUEST_DATA(req, 0, 7), catID);
@@ -2995,7 +2995,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 			return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
-		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
+		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x80);	// "data included"
 		set_long(DLP_REQUEST_DATA(req, 0, 2), recID);
 		set_byte(DLP_REQUEST_DATA(req, 0, 6), flags);
 		set_byte(DLP_REQUEST_DATA(req, 0, 7), catID);
