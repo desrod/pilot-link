@@ -34,6 +34,8 @@
 #include "pi-socket.h"
 #include "pi-net.h"
 
+#define PI_NET_TIMEOUT 10*1000
+
 static int net_getsockopt(struct pi_socket *ps, int level, int option_name, 
 			  void *option_value, int *option_len);
 static int net_setsockopt(struct pi_socket *ps, int level, int option_name, 
@@ -187,7 +189,9 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 {
 	int 	bytes, 
 		total_bytes, 
-		packet_len;
+		packet_len,
+		timeout,
+		size;
 	
 	struct 	pi_protocol *prot, *next;
 	struct 	pi_net_data *data;
@@ -202,8 +206,13 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 	if (next == NULL)
 		return -1;
 
+	timeout = PI_NET_TIMEOUT;
+	size = sizeof(timeout);
+	pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
+		      &timeout, &size);
+
 	total_bytes = 0;
-	if (data->txid == 0) {		
+	if (data->txid == 0) {	
 		/* Peek to see if it is a headerless packet */
 		bytes = next->read(ps, msg, 1, flags);
 		if (bytes > 0) {

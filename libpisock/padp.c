@@ -37,8 +37,10 @@
 #include "pi-padp.h"
 #include "pi-slp.h"
 
-#define xmitTimeout 2*1000
-#define xmitRetries 10
+#define PI_PADP_TX_TIMEOUT 2*1000
+#define PI_PADP_TX_RETRIES 10
+#define PI_PADP_RX_BLOCK_TO 30*1000
+#define PI_PADP_RX_SEGMENT_TO 30*1000
 
 static int padp_getsockopt(struct pi_socket *ps, int level, int option_name, 
 			   void *option_value, int *option_len);
@@ -149,15 +151,17 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 	do {
 
-		retries = xmitRetries;
+		retries = PI_PADP_TX_RETRIES;
 		do {
 			unsigned char padp_buf[PI_PADP_MTU];
 			int 	type,
 				socket,
+				timeout,
 				size;
 
 			type 	= PI_SLP_TYPE_PADP;
 			socket 	= PI_PilotSocketDLP;
+			timeout = PI_PADP_TX_TIMEOUT;
 			size 	= sizeof(type);
 			pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TYPE, 
 				      &type, &size);
@@ -165,6 +169,9 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				      &socket, &size);
 			pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_SRC, 
 				      &socket, &size);
+			size = sizeof(timeout);
+			pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
+				      &timeout, &size);
 			size = sizeof(data->txid);
 			pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TXID, 
 				      &data->txid, &size);
@@ -308,9 +315,6 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	return count;
 }
 
-#define recStartTimeout 30*1000
-#define recSegTimeout 30*1000
-
 /***********************************************************************
  *
  * Function:    padp_rx
@@ -334,7 +338,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	time_t endtime;
 	unsigned char padp_buf[PI_PADP_MTU];
 
-	endtime = time(NULL) + recStartTimeout / 1000;
+	endtime = time(NULL) + PI_PADP_RX_BLOCK_TO / 1000;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
@@ -355,6 +359,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	
 	for (;;) {
 		int 	type,
+			timeout,
 			size;
 		unsigned char txid;
 		
@@ -365,6 +370,11 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			ps->state 	= PI_SOCK_CONBK;	/* Bad timeout breaks connection */
 			return -1;
 		}
+
+		timeout = PI_PADP_RX_BLOCK_TO + 2000;
+		size = sizeof(timeout);
+		pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
+			      &timeout, &size);
 
 		data_len = next->read(ps, padp_buf, PI_PADP_MTU, flags);
 		if (data_len < 0)
@@ -401,7 +411,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			/* Tickle to avoid timeout */
 			LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
 			    "PADP RX Got Tickled\n");
-			endtime = time(NULL) + recStartTimeout / 1000;
+			endtime = time(NULL) + PI_PADP_RX_BLOCK_TO / 1000;
 			continue;
 		} else if ((type != PI_SLP_TYPE_PADP) || (padp.type != padData)
 			   || (txid != data->txid)
@@ -415,7 +425,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	}
 
 	/* OK, we got the expected begin-of-data packet */
-	endtime = time(NULL) + recSegTimeout / 1000;
+	endtime = time(NULL) + PI_PADP_RX_SEGMENT_TO / 1000;
 
 	for (;;) {
 		int type, socket, size;
@@ -467,10 +477,10 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		if (padp.flags & LAST) {
 			break;
 		} else {
-			endtime = time(NULL) + recSegTimeout / 1000;
+			endtime = time(NULL) + PI_PADP_RX_SEGMENT_TO / 1000;
 
 			for (;;) {
-				int type, size;
+				int type, timeout, size;
 				unsigned char txid;
 				
 				if (time(NULL) > endtime) {
@@ -483,6 +493,11 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					ps->state = PI_SOCK_CONBK;	/* Bad timeout breaks connection */
 					return -1;
 				}
+
+				timeout = PI_PADP_RX_SEGMENT_TO + 2000;
+				size = sizeof(timeout);
+				pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
+					      &timeout, &size);
 
 				data_len = next->read(ps, padp_buf, PI_SLP_MTU, flags);
 				if (data_len < 0)
@@ -524,9 +539,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				} else if (padp.type == (unsigned char) 4) {
 					/* Tickle to avoid timeout */
 
-					endtime =
-					    time(NULL) +
-					    recStartTimeout / 1000;
+					endtime = time(NULL) +
+						PI_PADP_RX_BLOCK_TO / 1000;
 					LOG(PI_DBG_PADP, PI_DBG_LVL_WARN,
 					    "PADP RX Got Tickled");
 					continue;

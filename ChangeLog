@@ -1,5 +1,21 @@
 2002-01-31  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/serial.c (pi_serial_setsockopt): these are device rather
+	than socket level options, add timeout
+	(pi_serial_getsockopt): ditto
+
+	* libsock/padp.c (padp_tx): set device timeout for reading
+	(padp_rx): ditto
+
+	* libsock/net.c (net_rx): set device timeout
+
+	* libsock/inet.c (pi_inet_getsockopt): implement timeout option
+	(pi_inet_setsockopt): ditto
+
+	* include/pi-socket.h: remove socket level and add device level
+
+2002-01-31  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/connect.c (pilot_connect): improve pi_bind error message
 
 2002-01-31  JP Rosevear  <jpr@ximian.com>

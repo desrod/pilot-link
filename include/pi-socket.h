@@ -34,11 +34,11 @@ enum PiOptLevels {
 	PI_LEVEL_DLP
 };
 
-enum PiOptSocket {
-	PI_SOCKET_RATE,
-	PI_SOCKET_ESTRATE,
-	PI_SOCKET_HIGHRATE,
-	PI_SOCKET_TIMEOUT
+enum PiOptDevice {
+	PI_DEV_RATE,
+	PI_DEV_ESTRATE,
+	PI_DEV_HIGHRATE,
+	PI_DEV_TIMEOUT
 };
 
 enum PiOptSLP {

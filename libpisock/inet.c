@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #ifdef WIN32
 #include <winsock.h>
@@ -505,8 +506,22 @@ pi_inet_getsockopt(struct pi_socket *ps, int level, int option_name,
 		   void *option_value, int *option_len)
 {
 	struct 	pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
-		
+
+	switch (option_name) {
+	case PI_DEV_TIMEOUT:
+		if (*option_len < sizeof (data->timeout))
+			goto error;
+		memcpy (option_value, &data->timeout,
+			sizeof (data->timeout));
+		*option_len = sizeof (data->timeout);
+		break;
+	}
+
 	return 0;
+	
+ error:
+	errno = EINVAL;
+	return -1;	
 }
 
 static int
@@ -515,7 +530,20 @@ pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name,
 {
 	struct 	pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
 
+	switch (option_name) {
+	case PI_DEV_TIMEOUT:
+		if (*option_len != sizeof (data->timeout))
+			goto error;
+		memcpy (&data->timeout, option_value,
+			sizeof (data->timeout));
+		break;
+	}
+
 	return 0;
+	
+ error:
+	errno = EINVAL;
+	return -1;
 }
 
 

@@ -436,25 +436,32 @@ pi_serial_getsockopt(struct pi_socket *ps, int level, int option_name,
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 
 	switch (option_name) {
-	case PI_SOCKET_RATE:
+	case PI_DEV_RATE:
 		if (*option_len < sizeof (data->rate))
 			goto error;
 		memcpy (option_value, &data->rate, sizeof (data->rate));
 		*option_len = sizeof (data->rate);
 		break;
-	case PI_SOCKET_ESTRATE:
+	case PI_DEV_ESTRATE:
 		if (*option_len < sizeof (data->establishrate))
 			goto error;
 		memcpy (option_value, &data->establishrate, 
 			sizeof (data->establishrate));
 		*option_len = sizeof (data->establishrate);
 		break;
-	case PI_SOCKET_HIGHRATE:
+	case PI_DEV_HIGHRATE:
 		if (*option_len < sizeof (data->establishhighrate))
 			goto error;
 		memcpy (option_value, &data->establishhighrate,
 			sizeof (data->establishhighrate));
 		*option_len = sizeof (data->establishhighrate);
+		break;
+	case PI_DEV_TIMEOUT:
+		if (*option_len < sizeof (data->timeout))
+			goto error;
+		memcpy (option_value, &data->timeout,
+			sizeof (data->timeout));
+		*option_len = sizeof (data->timeout);
 		break;
 	}
 
@@ -474,17 +481,23 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
 	/* FIXME: can't change stuff if already connected */
 
 	switch (option_name) {
-	case PI_SOCKET_ESTRATE:
+	case PI_DEV_ESTRATE:
 		if (*option_len != sizeof (data->establishrate))
 			goto error;
 		memcpy (&data->establishrate, option_value,
 			sizeof (data->establishrate));
 		break;
-	case PI_SOCKET_HIGHRATE:
+	case PI_DEV_HIGHRATE:
 		if (*option_len != sizeof (data->establishhighrate))
 			goto error;
 		memcpy (&data->establishhighrate, option_value,
 			sizeof (data->establishhighrate));
+		break;
+	case PI_DEV_TIMEOUT:
+		if (*option_len != sizeof (data->timeout))
+			goto error;
+		memcpy (&data->timeout, option_value,
+			sizeof (data->timeout));
 		break;
 	}
 
