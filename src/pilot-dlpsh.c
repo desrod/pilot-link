@@ -103,8 +103,10 @@ struct Command command_list[] = {
 	{"reopen", reopen_fn},
 	{"exit", exit_fn},
 	{"quit", exit_fn},
+	{"bye",  exit_fn},
 	{"rm",   rm_fn},
 	{"time", time_fn},
+	{"dtp",  time_fn},
 	{"user", user_fn},
 	{NULL, NULL}
 };
@@ -143,7 +145,7 @@ int df_fn(int sd, int argc, const char *argv[])
 			((Card.ramSize - Card.ramFree) * 100) / Card.ramSize,
 			Card.ramSize/1024);
 
-		printf("Total (ROM + RAM)     %8lu     %8lu         n/a      n/a    %5luk\n\n",
+		printf("Total (ROM + RAM)     %8lu     %8lu         n/a      n/a     %5luk\n\n",
 			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree,
 			(Card.romSize + Card.ramSize)/1024);
 	}
