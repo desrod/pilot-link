@@ -1,24 +1,28 @@
 .TH PILOT-LINK 7 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
 .SH NAME
-pilot-link \- a suite of tools for communicating with Palm Computing, Inc. 
-Palm Devices as well as the Handspring Visor, TRGPro, and other devices
-which conform to this standard (PalmOS licensed devices).
+.B pilot-link 
+\- a suite of tools for communicating with Palm handheld devices, such as
+those made from Palm, Handspring, Handera, TRGPro, Sony or other Palm
+Compatible Handheld PDA device
+
 .SH DESCRIPTION
 The
 .B pilot-link
 suite of tools contains a series of conduits for moving information to and
-from your Palm device and your desktop or workstation system.
+from your Palm device and your desktop or server/workstation system.
+
 .SH TARGET DEVICE
 All of the
 .B pilot-link
 programs will default to
 .B /dev/pilot
-as the default serial device used to communicate with a Palm. In general, if
-the environment variable
+as the default device used to communicate with a Palm. In general, if the
+environment variable
 .B $PILOTPORT
 is set, its value will override the default. A serial device specified on
-the command-line will be used regardless of any
-$PILOTPORT setting.
+the command-line will be used regardless of any 
+.B $PILOTPORT
+setting.
 .PP
 The default connection rate is 9600 baud. You are welcome to try higher baud
 rates (19200, 38400, 57600 or higher) by setting the
@@ -94,6 +98,12 @@ program that retrieves the RAM from Palm
 .B pi-getrom
 program that retrieves ROM from Palm (without getrom.prc)
 
+
+.TP
+.B pi-getromtoken
+program that retrieves the ROM tokens from the Palm, such as the serial
+number of the device, if available
+
 .TP
 .B pi-nredir
 program that accepts connections and redirects them via the Network
@@ -130,8 +140,8 @@ information
 import mail from POP3 mailbox into Palm's default Mail application, and send
 mail via sendmail. This has been replaced by
 .I pilot-mailsync 
-from Hollis Blanchard. Please see the CREDITS file for additional
-information on how to obtain this package.
+from Hollis Blanchard <\fIhollis@amulet.co.jp\fP>. Please see the CREDITS
+file for additional information on how to obtain this package.
 
 .TP
 .B pilot-schlep
@@ -159,6 +169,15 @@ export Palm Datebook and ToDo databases (DatebookDB.pdb and ToDoDB.pdb
 respectively) into an Ical calendar (ical is required)
 
 .TP
+.B read-notepad
+reads record information and images created with the Palm OS4 and later
+NotePad application
+
+.TP
+.B read-palmpix
+reads images created with the Kodak PalmPix "snap-on" camera
+
+.TP
 .B read-todos
 export Palm ToDo database into generic text format
 
@@ -175,12 +194,15 @@ including authenticating to the netplan server
 Some of these programs are not intended for general end-users. More detailed
 documentation on their usage can be obtained by reading the source of the
 application.
+
 .TP
 .B ccexample
 test program demonstrating C++ interface
+
 .TP
 .B iambicexample
 test program demonstrating C++ interface
+
 .TP
 .B validate
 experimental program to test C++ features    
@@ -191,52 +213,75 @@ The  most  current  version of the
 suite of tools can be found at the following web site:
 
 .RS
-.I http://www.gnu-designs.com/pilot-link/
+.I http://pilot-link.org/
 .RE
 .SH MAILING LIST
-The pilot-unix mailing list is maintained by Matthew Cravit. Its mandate
-is:
-.RS
+The original pilot-unix mailing list has been taken offline, and is now
+being hosted and maintained by David A. Desrosiers <\fIdesrod@gnu-designs.com\fP>.
+The original pilot-unix mailing list was maintained by Matthew Cravit. Its
+mandate is:
 
+.RS
 The pilot-unix mailing list is for discussion and idea-sharing for those
 interested in using your Palm PDA with UNIX systems. This includes people
 who are interested in helping to develop tools to allow the Palm to operate
 with UNIX, and possibly to develop an SDK for the Palm for Unix.
 .RE
 .PP
-For more information, including how to subscribe to the list, send mail
-containing the word 'INFO' to
-.IR pilot-unix-request@hcirisc.cs.binghamton.edu.
-The subject line does not matter. 
+For more information, including how to subscribe to the list, please visit
+the following page: 
+.BI http://www.pilot-link.org/mailman/listinfo/pilot-unix-ng
+pilot-link specific mailing lists are also available for Development,
+General, and Announce topics, at the following:
+
+.RS
+.I http://www.pilot-link.org/mailman/listinfo/pilot-link-devel
+.RE
+.RS
+.I http://www.pilot-link.org/mailman/listinfo/pilot-link-general
+.RE
+.RS
+.I http://www.pilot-link.org/mailman/listinfo/pilot-link-announce
+.RE
+
 .SH SEE ALSO
 .\"
 .\" Please list all pilot-link manual pages here, in alphabetic order.
 .\"
-.BR dlpsh(1) ,
-.BR ietf2datebook(1) ,
-.BR install-datebook(1) ,
-.BR install-hinote(1) ,
-.BR install-memo(1) ,
-.BR install-user(1) ,
-.BR pilot-xfer(1) ,
+.BR dlpsh.1(1) ,  
+.BR ietf2datebook.1(1) ,
+.BR install-datebook.1(1) ,
+.BR install-hinote.1(1) ,
+.BR install-memo.1(1) ,
+.BR install-netsync.1(1) ,
+.BR install-user.1(1) ,
+.BR pilot-addresses.1(1) ,
+.BR pilot-xfer.1(1) ,
 .BR read-ical(1) ,
+.BR read-notepad.1(1) ,
+.BR read-palmpix.1(1)
 
-.IR Pilot-HOWTO (http://www.orbits.com/Pilot/Pilot-HOWTO.html).
+David Silber <\fIpilot@orbits.com\fP> has written a Pilot HOWTO, which
+you can find at:
+.I http://www.sgmltools.org/HOWTO/Pilot-HOWTO/t1.html
+
 .SH AUTHOR
 Most of the
 .B pilot-link
 tools were written by Kenneth Albanowski.
-This manual page was written by David H. Silber, and updated for this version of 
+This manual page was written by David H. Silber <\fIpilot@orbits.com\fP>, and updated for this version of 
 .B pilot-link 
-by David A. Desrosiers.
+by David A. Desrosiers <\fIdesrod@gnu-designs.com\fP>.
 
 Current maintainer of pilot-link as of the authoring of this manpage is
-David A. Desrosiers.
+David A. Desrosiers <\fIdesrod@gnu-designs.com\fP>.
 
 Any questions or problems with 
 .B pilot-link
-should be directed at the
-.I pilot-unix
-mailing list. All patches should be sent to 
-.I pilot-link@gnu-designs.com 
-directly.
+should be directed at the various
+.B pilot-link 
+mailing lists. 
+
+.SH PATCHES 
+All patches should be sent to
+<\fIpilot-link@pilot-link.org\fP> directly.
