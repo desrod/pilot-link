@@ -17,7 +17,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +24,7 @@
 #include "pi-header.h"
 #include "pi-source.h"
 #include "pi-dlp.h"
+#include "userland.h"
 
 struct record {
 	struct record *next;
@@ -201,18 +201,6 @@ static int DeDupe (int sd, const char *dbname)
 	return 0;
 }
 
-static void display_help(const char *progname)
-{
-	printf("   Removes duplicate records from any Palm database\n\n");
-	printf("   Usage: %s -p <port> dbname [dbname] ..\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n\n", progname);
-	printf("   Examples: %s -p serial:/dev/ttyUSB0 AddressDb\n\n", progname);
-
-	return;
-}
 
 
 int main(int argc, const char *argv[])
@@ -221,51 +209,40 @@ int main(int argc, const char *argv[])
 		sd		= -1;
 
 	const char
-                *progname 	= argv[0],
-                *port 	        = NULL,
                 *db		= NULL;
 
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port",    'p', POPT_ARG_STRING, &port, 0,  "Use device file <port> to communicate with Palm", "port"},
-		{"help",    'h', POPT_ARG_NONE, NULL,   'h', "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL,   'v', "Show program version information", NULL},
+		USERLAND_RESERVED_OPTIONS
 		POPT_TABLEEND
 	};
 
 	pc = poptGetContext("pilot-dedupe", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc,"<database> ...\n\n"
+	"   Removes duplicate records from any Palm database\n\n"
+	"   Example arguments:\n"
+	"      -p serial:/dev/ttyUSB0 AddressDB ToDoDB\n\n");
 
-	while ((c = poptGetNextOpt(pc)) >= 0) {
-		switch (c) {
-
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		default:
-			display_help(progname);
-			return 0;
-		}
+	if (argc < 2) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
 	}
-
-	if (c < -1) {
-		/* an error occurred during option processing */
-		fprintf(stderr, "%s: %s\n",
-		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-		    poptStrerror(c));
+	while ((c = poptGetNextOpt(pc)) >= 0) {
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n", c);
 		return 1;
 	}
 
+	if (c < -1) {
+		plu_badoption(pc,c);
+	}
+
 	if(poptPeekArg(pc) == NULL) {
-		display_help(progname);
-		fprintf(stderr, "\tERROR: You must specify at least one database\n");
+		fprintf(stderr, "   ERROR: You must specify at least one database\n");
 		return -1;
 	}
 
-	sd = pilot_connect (port);
+	sd = plu_connect ();
 	if (sd < 0)
 		goto error;
 
