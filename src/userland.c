@@ -22,7 +22,7 @@
 #include "userland.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 #include "pi-header.h"
 #include "pi-socket.h"
@@ -103,4 +103,43 @@ int plu_findcategory(const struct CategoryAppInfo *info, const char *name)
 	return match_category;
 }
 
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+
+int plu_protect_files(char *name, const char *extension, const size_t namelength)
+{
+	char *save_name;
+	char c=1;
+
+	save_name = strdup( name );
+	if (NULL == save_name) {
+		fprintf(stderr,"   ERROR: No memory for filename %s%s\n",name,extension);
+		return -1;
+	}
+
+	/* 4 byes = _%02d and terminating NUL */
+	if (strlen(save_name) + strlen(extension) + 4 > namelength) {
+		fprintf(stderr,"   ERROR: Buffer for filename too small.\n");
+		free(save_name);
+		return -1;
+	}
+
+	snprintf(name,namelength,"%s%s",save_name,extension);
+
+	while ( access( name, F_OK ) == 0) {
+		snprintf( name, namelength, "%s_%02d%s", save_name, c, extension);
+		c++;
+
+		if (c >= 100) {
+			fprintf(stderr,"   ERROR: Could not generate filename (tried 100 times).\n");
+			free(save_name);
+			return 0;
+		}
+	}
+
+	free(save_name);
+	return 1;
+}
+
+
+
+
+/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */

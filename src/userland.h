@@ -41,6 +41,12 @@
  */
 
 
+/***********************************************************************
+ *
+ * Option-handling functions.
+ *
+ ***********************************************************************/
+
 /*
  * These are definitions for popt support in userland. Every conduit's
  * popt table should start with USERLAND_RESERVED_OPTIONS to insert
@@ -51,30 +57,11 @@
 	{NULL,0,POPT_ARG_INCLUDE_TABLE,plu_common_options,0,"Options common to all conduits.",NULL}, \
 	POPT_AUTOHELP
 
-
-/*
- * Connect to the Pilot specified by any --port option, respecting
- * the quiet flag as well. This is basically pilot_connect(), but
- * marginally cleaner.
- */
-
-extern int plu_connect();
-
-
 /*
  * Complain about a bad option and exit();
  */
 
 extern void plu_badoption(poptContext pc, int optc);
-
-
-/*
- * Look up a category name. Argument @p info is the category part of the
- * AppInfo block for the database, while @p name is the category to look up.
- * Returns the index of the category if found (0..15) or -1 if not.
- */
-
-extern int plu_findcategory(const struct CategoryAppInfo *info, const char *name);
 
 
 /*
@@ -92,6 +79,63 @@ void plu_popt_alias(poptContext pc,
  * that contains --bad-option.
  */
 void plu_set_badoption_help(const char *help);
+
+
+
+
+/***********************************************************************
+ *
+ * Connection functions.
+ *
+ ***********************************************************************/
+
+
+/*
+ * Connect to the Pilot specified by any --port option, respecting
+ * the quiet flag as well. This is basically pilot_connect(), but
+ * marginally cleaner.
+ */
+
+extern int plu_connect();
+
+
+/***********************************************************************
+ *
+ * Things to do once you're connected to the handheld.
+ *
+ ***********************************************************************/
+
+/*
+ * Look up a category name. Argument @p info is the category part of the
+ * AppInfo block for the database, while @p name is the category to look up.
+ * Returns the index of the category if found (0..15) or -1 if not.
+ */
+
+extern int plu_findcategory(const struct CategoryAppInfo *info, const char *name);
+
+
+/***********************************************************************
+ *
+ * File-handling functions on the PC.
+ *
+ ***********************************************************************/
+
+/*
+ * Function:	protect_files
+ *
+ * Summary:     Adjust output file name so as to not overwrite an exsisting
+ *              file.
+ *
+ * Parameters:  name        <-> buffer for filename
+ *              extension   --> file extension to add to name
+ *              namelength  --> size of buffer
+ *
+ * Returns:     1 file name protected (and stored in buffer name)
+ *              0 no alernate name found
+ *             -1 other failure
+ *
+ */
+int plu_protect_files(char *name, const char *extension, const size_t namelength);
 
 /*
  * We need to be able to refer to the table of common options.
