@@ -179,12 +179,6 @@ s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 #else
 	struct sgttyb tcn;
 #endif
-
-	if ((!tty) || !strlen(tty))
-		tty = getenv("PILOTPORT");
-	if (!tty)
-		tty = "<Null>";
-
 	if ((fd = open(tty, O_RDWR | O_NONBLOCK)) == -1) {
 		return -1;	/* errno already set */
 	}

@@ -696,9 +696,22 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
 	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
+	struct pi_sockaddr eaddr;
+	int paddrlen = addrlen;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
+		return -1;
+	}
+
+	if (paddr == NULL && getenv("PILOTPORT")) {
+		eaddr.pi_family = PI_AF_PILOT;
+		strncpy(eaddr.pi_device, getenv("PILOTPORT"),
+			sizeof(eaddr.pi_device));
+		paddr = &eaddr;
+		addrlen = sizeof(struct pi_sockaddr);
+	} else if (paddr == NULL) {
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -715,7 +728,7 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 	/* Build the protocol queue */
 	protocol_queue_build (ps, 0);
 	
-	return ps->device->connect (ps, addr, addrlen);
+	return ps->device->connect (ps, (struct sockaddr *)paddr, paddrlen);
 }
 
 /***********************************************************************
@@ -733,9 +746,22 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
 	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
+	struct pi_sockaddr eaddr;
+	int paddrlen = addrlen;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
+		return -1;
+	}
+
+	if (paddr == NULL && getenv("PILOTPORT")) {
+		eaddr.pi_family = PI_AF_PILOT;
+		strncpy(eaddr.pi_device, getenv("PILOTPORT"),
+			sizeof(eaddr.pi_device));
+		paddr = &eaddr;
+		addrlen = sizeof(struct pi_sockaddr);
+	} else if (paddr == NULL) {
+		errno = EINVAL;
 		return -1;
 	}
 	
@@ -749,7 +775,7 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 	else
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 
-	return ps->device->bind (ps, addr, addrlen);
+	return ps->device->bind (ps, (struct sockaddr *)paddr, paddrlen);
 }
 
 /***********************************************************************
@@ -1052,7 +1078,7 @@ int pi_tickle(int pi_sd)
  ***********************************************************************/
 int pi_close(int pi_sd)
 {
-	int result;
+	int result = 0;
 	struct pi_socket *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
@@ -1070,16 +1096,19 @@ int pi_close(int pi_sd)
 				ps->command = 0;
 		}
 	}
-
-	result = ps->device->close (ps);
-	if (result <= 0)
-		return result;
+	
+	if (ps->device != NULL) {
+		result = ps->device->close (ps);
+		if (result <= 0)
+			return result;
+	}
 	
 	psl = ps_list_remove (psl, pi_sd);
 	watch_list = ps_list_remove (watch_list, pi_sd);
 
 	protocol_queue_destroy(ps);
-	ps->device->free(ps->device);
+	if (ps->device != NULL)
+		ps->device->free(ps->device);
 	free(ps);
 
 	return result;

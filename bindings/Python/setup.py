@@ -9,8 +9,8 @@ setup(name = "python-libpisock",
       url = "http://www.pyrite.org/",
 
       ext_modules = [Extension("_pisock",["src/pisock_wrap.c"],
-                               include_dirs=['../../include'], # for debian
-                               library_dirs=['../../libsock/.libs'], # for debian
+                               include_dirs=['../../include'],
+                               library_dirs=[''],
                                libraries=['pisock'],
                                )
                      ],

@@ -19,33 +19,50 @@
  *
  */
 
+#ifndef HAVE_GETOPT_LONG
+#include "getopt.h"
+#else
+#include <getopt.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 
+#include "pi-header.h"
 #include "pi-source.h"
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 
 #include <termios.h>
 
-char *progname;
+int cancel = 0;
 
-/* Declare prototypes */
-void Help(void);
-RETSIGTYPE sighandler(int signo);
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
+	{"port",        required_argument, NULL, 'p'},
+	{"copilot",     no_argument,       NULL, 'c'},
+	{NULL,          0,                 NULL, 0}
+};
 
-void Help(void)
+static const char *optstring = "hvp:c";
+
+static void Help(char *progname)
 {
-	fprintf(stderr, "usage: %s %s [-c] [pilot.ram]\n", progname,
-		TTYPrompt);
-	fprintf(stderr,
-		"\nUse the -c flag if the RAM file will be used with Copilot.\n");
-	exit(2);
+	printf("   Retrieves the RAM image from your Palm device\n\n"
+	       "   Usage: %s -p <port> [--copilot] [pilot.ram]\n\n"
+	       "   Options:\n"
+	       "     -p <port>         Use device file <port> to communicate with Palm\n"
+	       "     -c, --copilot     Use to indicate the RAM file will be used with Copilot\n"
+	       "     -h, --help        Display this information\n\n"
+	       "     -v, --version     Display this information\n\n"
+	       "   Only the port option is required, the other options are... optional.\n\n"
+	       "   Examples: %s -p /dev/pilot myram\n"
+	       "             %s -p /dev/pilot --copilot\n\n",
+	       progname, progname, progname);
 }
 
-int cancel = 0;
-RETSIGTYPE sighandler(int signo)
+static RETSIGTYPE sighandler(int signo)
 {
 	cancel = 1;
 }
@@ -54,12 +71,12 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
-	int 	idx,
+	int 	count,
+		idx,
 		sd,
-		ret,
 		file,
 		j,
-		copilot,
+		copilot = 0,
 		majorVersion,
 		minorVersion,
 		bugfixVersion,
@@ -68,69 +85,47 @@ int main(int argc, char *argv[])
 
 	char 	name[256],
 		print[256],
-		*port = argv[1],
+		*progname = argv[0],
+		*port = NULL,
 		*filename;
 
 	struct 	RPC_params p;
-	struct 	pi_sockaddr addr;
 
 	unsigned long SRAMstart, SRAMlength, ROMversion, offset, left;
 	
+	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (count) {
 
-	progname = argv[0];
-
-	if (argc < 2)
-		Help();
-
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-		perror("pi_socket");
-		exit(1);
-	}
-
-	if (argc > 2) {
-		if (!strcmp(argv[2], "-c")) {
+		case 'h':
+			Help(progname);
+			return 0;
+		case 'v':
+			PalmHeader(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		case 'c':
 			copilot = 1;
-			if (argc > 3)
-				filename = argv[3];
-			else
-				filename = 0;
-		} else {
-			copilot = 0;
-			if (argc > 2)
-				filename = argv[2];
-			else
-				filename = 0;
+			break;
+		default:
 		}
-	} else {
-		copilot = 0;
-		filename = 0;
 	}
+	if (optind > 0)
+		filename = argv[optind];
+	else
+		filename = NULL;
 
-	addr.pi_family = PI_AF_PILOT;
-	strcpy(addr.pi_device, port);
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		perror("pi_bind");
-		exit(1);
+        printf("\tWarning: Please completely back up your Palm (with pilot-xfer -b)\n"
+	       "\t         before using this program!\n\n");
+	
+	sd = pilot_connect(port);
+	if (sd < 0) {
+		perror("\tERROR:");
+		fprintf(stderr, "\n");
+		return -1;
 	}
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		perror("pi_listen");
-		exit(1);
-	}
-
-        printf("   Warning: Please completely back up your Palm (with pilot-xfer -b)\n"
-	       "            before using this program!\n\n"
-	       "   Start HotSync (not getrom.prc) on your Palm.\n"
-	       "   Port: %s\n\n   Please press the HotSync button...\n", port);
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		perror("pi_accept");
-		exit(1);
-	}
+	
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
@@ -171,7 +166,7 @@ int main(int argc, char *argv[])
 							   2) ? "b" : "u"),
 			build);
 
-	printf("Generating %s\n", name);
+	printf("\tGenerating %s\n", name);
 
 	file = open(name, O_RDWR | O_CREAT, 0666);
 
@@ -212,7 +207,7 @@ int main(int argc, char *argv[])
 		if (len > 256)
 			len = 256;
 
-                printf("\r%ld of %ld bytes (%.2f%%)", offset, SRAMlength, perc);
+                printf("\r\t%ld of %ld bytes (%.2f%%)", offset, SRAMlength, perc);
 		fflush(stdout);
 		PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),
 			RPC_Long(offset + SRAMstart), RPC_Long(len),

@@ -27,100 +27,21 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-void *GetClip(int socket, int type, int *length);
-int SetClip(int socket, int type, void *data, int length);
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
 
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{"get",         no_argument,       NULL, 'g'},
-	{"set",         required_argument, NULL, 's'},
+	{"set",         no_argument,       NULL, 's'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
-static const char *optstring = "hp:gs:";
+static const char *optstring = "hvp:gs";
 
-int main(int argc, char *argv[])
-{
-	int 	count,
-		sd 		= -1,
-		ret;
-	char 	buffer[0xffff],
-		*progname 	= argv[0],
-		*port		= NULL,
-		*get		= NULL,
-		*set		= NULL;
-	
-
-	while ((count = getopt(argc, argv, optstring)) != -1) {
-		switch (count) {
-
-		  case 'h':
-			  Help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  case 'g':
-			  get = optarg;
-			  break;
-		  case 's':
-			  set = optarg;
-			  break;
-		  default:
-		}
-	}
-
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
-
-	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
-		exit(1);
-	} else if (port != NULL) {
-		sd = pilot_connect(port);
-		
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-		} else {
-
-			/* Tell user (via Palm) that we are starting things up */
-			dlp_OpenConduit(sd);
-		
-			if (strcmp(argv[2], "-s") == 0) {
-				ret = read(fileno(stdin), buffer, 0xffff);
-				dumpdata(buffer, ret);
-				if (ret >= 0) {
-					buffer[ret++] = 0;
-					SetClip(sd, 0, buffer, ret);
-				}
-			} else {
-				char *b;
-		
-				ret = 0;
-				b = GetClip(sd, 0, &ret);
-				if (ret > 0)
-					write(fileno(stdout), b, ret);
-			}
-		}
-	}
-	pi_close(sd);
-	return 0;
-}
-
-void *GetClip(int socket, int type, int *length)
+static void *GetClip(int socket, int type, int *length)
 {
 	int 	l,
 		err;
@@ -162,7 +83,7 @@ void *GetClip(int socket, int type, int *length)
 	return buffer;
 }
 
-int SetClip(int socket, int type, void *data, int length)
+static int SetClip(int socket, int type, void *data, int length)
 {
 	int 	err;
 	char 	*b = data;
@@ -205,7 +126,7 @@ int SetClip(int socket, int type, void *data, int length)
 
 static void Help(char *progname)
 {
-	printf("   Get and/or Set the contents of the Palm clipboard\n\n"
+	printf("   Get the clipboard contents to stdout or set the clipboard contents from stdin\n\n"
 	       "   Usage: %s -p <port> -g | -s <value>\n"
 	       "   Options:\n"
 	       "     -p <port>         Use device file <port> to communicate with Palm\n"
@@ -216,4 +137,83 @@ static void Help(char *progname)
 	       "             %s -p /dev/pilot -s \"Put this in the clipboard\"\n\n", 
 	       progname, progname, progname);
 	return;
+}
+
+int main(int argc, char *argv[])
+{
+	int 	count,
+		sd 		= -1,
+		getset          = -1,
+		ret;
+	char 	buffer[0xffff],
+		*progname 	= argv[0],
+		*port		= NULL;
+
+	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (count) {
+
+		case 'h':
+			Help(progname);
+			exit(0);
+		case 'v':
+			PalmHeader(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		case 'g':
+			getset = 0;
+			break;
+		case 's':
+			getset = 1;
+			break;
+		default:
+		}
+	}
+	if (getset < 0) {
+		Help(progname);
+		fprintf(stderr, "ERROR: You must specify whether to get or set the clipboard\n");
+		return -1;
+	}
+	
+	sd = pilot_connect(port);
+	if (sd < 0)
+		goto error;	
+
+	if (dlp_OpenConduit(sd) < 0)
+		goto error_close;
+
+
+	if (getset == 1) {
+		ret = read(fileno(stdin), buffer, 0xffff);
+		if (ret >= 0) {
+			buffer[ret++] = 0;
+			if (SetClip(sd, 0, buffer, ret) <= 0)
+				goto error_close;
+		}
+	} else {
+		char *b;
+		
+		ret = 0;
+		b = GetClip(sd, 0, &ret);
+		if (b == NULL)
+			goto error_close;
+		if (ret > 0)
+			write(fileno(stdout), b, ret);
+	}
+
+	if (pi_close(sd) < 0)
+		goto error;
+
+	return 0;
+
+
+ error_close:
+	pi_close(sd);
+	
+ error:
+	perror("\tERROR:");
+	fprintf(stderr, "\n");
+
+	return -1;	
 }

@@ -1,3 +1,24 @@
+2002-01-16  JP Rosevear  <jpr@ximian.com>
+
+	* tools/Java: Doug G.'s Java stuff
+
+	* tools/Makefile.am: python hack for compilation when builddir !=
+	srcdir, java enabling
+
+	* configure.in: fix java checks
+
+	* install-netsync.c: install netsync info
+
+	* pilot-schlep.c: do getopt_long and tidy
+	
+	* pi-getrom.c: ditto
+
+	* pi-getram.c: ditto
+
+	* pilot-clip.c: ditto
+
+	* install-user.c: ditto, and remove netsync stuff
+
 2002-01-16  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* *.c: Removed the global <getopt.h> dependancy

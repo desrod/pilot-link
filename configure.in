@@ -97,9 +97,9 @@ if test $ac_cv_termios_cspeed = yes; then
 fi
 
 dnl ******************************
-dnl getopt checking
+dnl getopt
 dnl ******************************
-AC_CHECK_FUNCS(getopt_long, , [LIBOBJS="$LIBOBJS getopt.o getopt1.o"] )
+LIBOBJS="$LIBOBJS getopt.o getopt1.o"
 AC_SUBST(LIBOBJS)
 
 dnl ******************************
@@ -284,8 +284,8 @@ else
 	fi
 fi
 
-AC_MSG_CHECKING(perl version)
 if test "x$PERL5" != "x"; then
+	AC_MSG_CHECKING(perl version)
 	verstxt=`$PERL5 -e 'print $]'`
         vers=`echo "$verstxt" | awk -F. '{ printf "%d", ($1 * 1000);}'`
 	if test "$vers" -ge 5000; then
@@ -312,72 +312,29 @@ dnl ******************************
 use_java=false
 msg_java=no
 AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java    [default=yes]])
-AC_MSG_CHECKING(for Java Development Kit)
-if test "x$with_java" = "xyes" || test "x$with_java" = "x" ; then
-	for java_path in /usr/local/java /usr/local /usr/java /usr; do
-		if test -f $java_path/bin/javac; then
-			with_java=$java_path; break
-		fi
-	done
-	if test "x$with_java" = "xyes"; then
-		echo "Unable to find Java base installation directory."
-		echo "Please give directory (such as /usr/local) as argument to --with-java=dir."
-		with_java=no
-	fi
-fi 
-if test "x$with_java" = "x"; then
-	with_java=no
-fi
-JAVABASE=''
 if test "x$with_java" != "xno"; then
-	# I'd like to check Java for version, but it doesn't seem to know how to do that. Odd.
-changequote(, )dnl
-	cat >test.java <<EOF
-	public class test { public static void main(String[] args) { 
-		System.out.println("present");
-	} }
-EOF
-changequote([, ])dnl
-	$with_java/bin/javac test.java
-	case `$with_java/bin/java test` in
-		*present*) AC_MSG_RESULT(found in $with_java) 
-			use_java=true
-			JAVABASE="$with_java"
-			javaos="$host_os"
-			case "$javaos" in
-			  linux-gnu) javaos="$javaos linux" ;;
-			  *solaris*) javaos="$javaos solaris sun" ;;
-			  sunos) javaos="$javaos sunos sun" ;;
-			esac
-			JAVAARCH="genunix"
-			for i in $javaos genunix; do
-			  if test -f "$JAVABASE/include/$i/byteorder_md.h"; then
-			    JAVAARCH="$i"
-			    break
-			  fi
-			done
-			JAVAMAJOR=1
-			if test -f "$JAVABASE/include/$JAVAARCH/jni_md.h"; then
-			  JAVAMINOR=1
-			else
-			  JAVAMINOR=0
-			fi
-			;;
-		*)	AC_MSG_RESULT(not found)
-			with_java=no ;;
-	esac
-	rm -f test.java test.class
-else
-	AC_MSG_RESULT(not found)
+	AC_PATH_PROG(JAVAC, javac, $PATH:$with_java/bin)
+	AC_PATH_PROG(JAVA, java, $PATH:$with_java/bin)
+	AC_PATH_PROG(JAR, jar, $PATH:$with_java/bin)
+fi
+if test "x$JAVA" != "x" && test "x$JAVAC" != "x" && test "x$JAR" != "x"; then
+	AC_MSG_CHECKING(for Java Development Kit)
+	JAVABASE=`echo "$JAVAC" | sed -e "s/\/bin\/javac//"`
+	if test -f "$JAVABASE/include/jni.h"; then
+		use_java=true
+		AC_MSG_RESULT(looks good) 
+	else
+		AC_MSG_RESULT(not useable) 
+	fi
 fi
 AM_CONDITIONAL(WITH_JAVA, $use_java)
 if $use_java; then
 	msg_java=yes
 fi
-AC_SUBST(JAVABASE)
-AC_SUBST(JAVAARCH)
-AC_SUBST(JAVAMAJOR)
-AC_SUBST(JAVAMINOR)
+AC_SUBST(JAVA)
+AC_SUBST(JAVAC)
+AC_SUBST(JAR)
+AC_SUBST(JAVABASE)	
 
 dnl ******************************
 dnl TCL/ITCL/TK
@@ -627,6 +584,7 @@ include/Makefile
 include/pi-version.h
 tools/Makefile
 tools/Perl5/Makefile.PL
+tools/Java/Makefile
 tests/Makefile
 man/Makefile
 ])
@@ -642,7 +600,7 @@ echo "
   ITCL support........ : $msg_itcl	($ITCL_VERSION)
   TK Support.......... : $msg_tk	($TK_VERSION)
 
-  Java support........ : $msg_java	($JAVAMAJOR.$JAVAMINOR)
+  Java support........ : $msg_java	
   Python support...... : $msg_python	($PYTHONVER)
   Perl support........ : $msg_perl	($PERLVER)
   

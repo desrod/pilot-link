@@ -19,29 +19,47 @@
  *
  */
 
+#ifndef HAVE_GETOPT_LONG
+#include "getopt.h"
+#else
+#include <getopt.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <termios.h>
 
+#include "pi-header.h"
 #include "pi-source.h"
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
-void Help(char *progname);
-RETSIGTYPE sighandler(int signo);
+int cancel = 0;
 
-void Help(char *progname)
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
+	{"port",        required_argument, NULL, 'p'},
+	{NULL,          0,                 NULL, 0}
+};
+
+static const char *optstring = "hvp:";
+
+static void Help(char *progname)
 {
-	fprintf(stderr, "   Usage: %s %s [pilot.rom]\n\n", progname,
-		TTYPrompt);
-	exit(2);
+	printf("   Retrieves the ROM image from your Palm device\n\n"
+	       "   Usage: %s -p <port> [--copilot] [pilot.rom]\n\n"
+	       "   Options:\n"
+	       "     -p <port>         Use device file <port> to communicate with Palm\n"
+	       "     -h, --help        Display this information\n\n"
+	       "     -v, --version     Display this information\n\n"
+	       "   Only the port option is required, the other options are... optional.\n\n"
+	       "   Examples: %s -p /dev/pilot myrom\n\n",
+	       progname, progname);
 }
 
-int cancel = 0;
-RETSIGTYPE sighandler(int signo)
+static RETSIGTYPE sighandler(int signo)
 {
 	cancel = 1;
 }
@@ -50,9 +68,9 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
-	int 	idx,
+	int 	count,
+		idx,
 		sd,
-		ret,
 		file,
 		majorVersion,
 		minorVersion,
@@ -63,67 +81,49 @@ int main(int argc, char *argv[])
 	char 	name[256],
 		print[256],
 		*progname 	= argv[0],
-		*device 	= argv[1];
+		*port 	        = NULL,
+		*filename;
 	
 	struct 	RPC_params p;
-	struct 	pi_sockaddr addr;
 	unsigned long ROMstart; 
 	unsigned long ROMlength;
 	unsigned long ROMversion;
 	unsigned long offset;
 	unsigned long left;
-	
 
-	PalmHeader(progname);
+	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (count) {
 
-	if (argc < 2)
-		Help(progname);
-
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-		perror("pi_socket");
-		exit(1);
+		case 'h':
+			Help(progname);
+			return 0;
+		case 'v':
+			PalmHeader(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		default:
+		}
 	}
+	if (optind > 0)
+		filename = argv[optind];
+	else
+		filename = NULL;
 
-	addr.pi_family = PI_AF_PILOT;
-	strcpy(addr.pi_device, device);
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-	     device);
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
 
 	printf("   Warning: Please completely back up your Palm (with pilot-xfer -b)\n"
 	       "            before using this program!\n\n"
 	       "   NOTICE: Use of this program may place you in violation\n"
 	       "           of your license agreement with Palm Computing.\n\n"
 	       "           Please read your Palm Computing handbook (\"Software\n"
-	       "           License Agreement\") before running this program.\n\n"
-	       "   Start HotSync (not getrom.prc) on your Palm.\n"
-	       "   Port: %s\n\n   Please press the HotSync button...\n", device);
+	       "           License Agreement\") before running this program.\n\n");
 
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			device);
-		perror("   pi_accept");
+	sd = pilot_connect(port);
+	if (sd < 0) {
+		perror("\tERROR:");
 		fprintf(stderr, "\n");
-		exit(1);
+		return -1;
 	}
 
 	/* Tell user (via Palm) that we are starting things up */
@@ -136,10 +136,10 @@ int main(int argc, char *argv[])
 
 	dlp_ReadFeature(sd, makelong("psys"), 1, &ROMversion);
 
-	if (argc < 3)
+	if (!filename)
 		strcpy(name, "pilot-");
 	else
-		strcpy(name, argv[2]);
+		strcpy(name, filename);
 
 	majorVersion =
 	    (((ROMversion >> 28) & 0xf) * 10) + ((ROMversion >> 24) & 0xf);
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 							   2) ? "b" : "u"),
 			build);
 
-	printf("Generating %s\n", name);
+	printf("\tGenerating %s\n", name);
 
 	file = open(name, O_RDWR | O_CREAT, 0666);
 
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
 		if (len > 256)
 			len = 256;
 
-		printf("\r%ld of %ld bytes (%.2f%%)", offset, ROMlength, perc);
+		printf("\r\t%ld of %ld bytes (%.2f%%)", offset, ROMlength, perc);
 
 		fflush(stdout);
 		PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),

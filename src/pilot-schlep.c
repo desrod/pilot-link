@@ -32,149 +32,115 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
 
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
-	{"install",     no_argument,       NULL, 'i'},
-	{"fetch",       no_argument,       NULL, 'f'},
+	{"install",     required_argument, NULL, 'i'},
+	{"fetch",       required_argument, NULL, 'f'},
 	{"delete",      no_argument,       NULL, 'd'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
-static const char *optstring = "hp:ifd";
+static const char *optstring = "hvp:i:f:d";
 
 /* Declare prototypes */
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
-
-int main(int argc, char *argv[])
+static int Fetch(int sd, char *filename) 
 {
-	int 	ch,
-		sd 		= -1,
-		segment 	= 4096,
-		Install 	= -1,
-		Fetch 		= -1,
-		Delete 		= -1;
-	char 	*progname 	= argv[0],
-		*port 		= NULL,
-		*install 	= NULL,
-		*fetch 		= NULL,
-		*delete 	= NULL;
+	int 	db,
+		idx,
+		l,
+		fd;
+	char 	buffer[0xffff];
+		
 
-	while ((ch = getopt(argc, argv, optstring)) != -1) {
-		switch (ch) {
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+	if (fd < 0)
+		return -1;
 
-		  case 'h':
-			  Help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  case 'i':
-			  install = optarg;
-			  Install = 1;
-			  break;
-		  case 'f':
-			  fetch = optarg;
-			  Fetch = 1;
-			  break;
-		  case 'd':
-			  delete = optarg;
-			  Delete = 1;
-			  break;
-		  default:
+	printf("\tFetching to %s ", filename);
+	fflush(stdout);
+	if (dlp_OpenDB(sd, 0, dlpOpenRead, "Schlep", &db) < 0)
+		return -1;
+
+	for (idx = 0; 
+	     (l = dlp_ReadResourceByType(sd, db, pi_mktag('D', 'A', 'T', 'A'),
+					 idx, buffer, 0, 0)) > 0; idx++) {
+		if (write(fd, buffer, l) < 0) {
+			printf("%d bytes read (Incomplete)\n\n", l);
+			close(fd);
+			return -1;
 		}
-	}
-		
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
+		printf(".");
+		fflush(stdout);
 	}
 
-	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
-		exit(1);
-	} else if (port != NULL) {
-		
-		sd = pilot_connect(port);
-
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-
-		/* Install here, not Fetch */
-		} else 	if (Install && Fetch == -1) {
-			int 	db,
-				j,
-				l;
-			unsigned long len;
-			char 	buffer[0xffff];
-		
-			/* Need to fix this, we should not require redirection */
-			if (isatty(fileno(stdin))) {
-				printf("Cannot install from tty, please redirect from file.\n");
-				exit(1);
-			}
-		
-			dlp_DeleteDB(sd, 0, "Schlep");
-			if (dlp_CreateDB
-			    (sd, pi_mktag('S', 'h', 'l', 'p'),
-			     pi_mktag('D', 'A', 'T', 'A'), 0, dlpDBFlagResource, 1,
-			     "Schlep", &db) < 0)
-				return 0;
-		
-			printf("\nPlease stand by... installing data");
-		
-			l = 0;
-			for (j = 0; (len = read(fileno(stdin), buffer, segment)) > 0; j++) {
-				if (dlp_WriteResource
-				    (sd, db, pi_mktag('D', 'A', 'T', 'A'), j, buffer,
-				     len) < 0)
-					break;
-				l += len;
-				fprintf(stderr, ".");
-			}
-			printf("\n%d bytes written\n", l);
-		
-			dlp_CloseDB(sd, db);
-		/* Fetch here, not Install */
-		} else if (Fetch && Install == -1) {
-			int 	db,
-				idx,
-				l;
-			char 	buffer[0xffff];
-		
-			if (dlp_OpenDB(sd, 0, dlpOpenRead, "Schlep", &db) < 0)
-				return 0;
-		
-			for (idx = 0;
-			     (l =
-			      dlp_ReadResourceByType(sd, db, pi_mktag('D', 'A', 'T', 'A'),
-						     idx, buffer, 0, 0)) > 0; idx++) {
-				write(fileno(stdout), buffer, l);
-				fprintf(stderr, ".");
-			}
-			printf("\nFile successfully retrieved, please verify.\n");
-
-		} else if (Delete && (Fetch == -1 && Install == -1)) {
-			dlp_DeleteDB(sd, 0, "Schlep");
-			printf("Delete successfully completed.\n");
-		}
-	dlp_AddSyncLogEntry(sd, "pilot-schlep, exited normally.\n"
-				"Thank you for using pilot-link.\n");
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-	}
+	close(fd);
+	printf("%d bytes read\n\n", l);
 	return 0;
 }
 
+static int Install(int sd, char *filename) 
+{
+	int 	db,
+		j,
+		l,
+		fd,
+		segment 	= 4096;
+	unsigned long len;
+	char 	buffer[0xffff];
+		
+	fd = open(filename, O_RDONLY);
+	if (fd < 0)
+		return -1;
+	
+	dlp_DeleteDB(sd, 0, "Schlep");
+
+	printf("\tInstalling %s ", filename);
+	fflush(stdout);
+	
+	if (dlp_CreateDB (sd, pi_mktag('S', 'h', 'l', 'p'),
+			  pi_mktag('D', 'A', 'T', 'A'), 0, 
+			  dlpDBFlagResource, 1, "Schlep", &db) < 0)
+		return -1;
+		
+	l = 0;
+	for (j = 0; (len = read(fd, buffer, segment)) > 0; j++) {
+		if (dlp_WriteResource (sd, db, pi_mktag('D', 'A', 'T', 'A'),
+				       j, buffer, len) < 0) {
+			printf("  %d bytes written (Incomplete)\n\n", l);
+			close(fd);
+			dlp_CloseDB(sd, db);
+			return -1;
+		}
+		l += len;
+		printf(".");
+		fflush(stdout);
+	}
+	close(fd);
+	printf("  %d bytes written\n\n", l);
+		
+	if (dlp_CloseDB(sd, db) < 0)
+		return -1;
+	
+	return 0;
+}
+
+static int Delete(int sd) 
+{
+	printf("\tDeleting... ");
+	fflush(stdout);
+	if (dlp_DeleteDB(sd, 0, "Schlep") < 0) {
+		printf("failed\n\n");
+		return 0;
+	}
+	printf("completed\n\n");
+	
+	return 0;
+}
 
 static void Help(char *progname)
 {
@@ -199,5 +165,94 @@ static void Help(char *progname)
 	       "   handle this type of capability, as well as handle multiple 'Schlep' files.\n\n", 
 		progname, progname, progname, progname, progname);
 	return;
+}
+
+int main(int argc, char *argv[])
+{
+	int 	ch,
+		sd 		= -1,
+
+		install 	= -1,
+		fetch 		= -1,
+		delete 		= -1;
+	char 	*progname 	= argv[0],
+		*port 		= NULL,
+		*filename 	= NULL;
+
+	while ((ch = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (ch) {
+
+		case 'h':
+			Help(progname);
+			exit(0);
+		case 'v':
+			PalmHeader(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		case 'i':
+			filename = optarg;
+			install = 1;
+			break;
+		case 'f':
+			filename = optarg;
+			fetch = 1;
+			break;
+		case 'd':
+			delete = 1;
+			break;
+		default:
+		}
+	}
+	
+	if (install + fetch + delete > -1) {
+		Help(progname);
+		fprintf(stderr, "ERROR: You must specify only one action\n");
+		return -1;
+	} else if (install + fetch + delete == -3) {
+		Help(progname);
+		fprintf(stderr, "ERROR: You must specify atleast one action\n");
+		return -1;
+	}
+		
+	sd = pilot_connect(port);
+	if (sd < 0)
+		goto error;
+	
+	if (dlp_OpenConduit(sd) < 0)
+		goto error_close;
+
+	if (install == 1) {
+		if (Install (sd, filename) < 0)
+			goto error_close;
+	} else if (fetch == 1) {
+		if (Fetch (sd, filename) < 0)
+			goto error_close;
+	} else if (delete == 1) {
+		if (Delete (sd) < 0)
+			goto error_close;
+	}
+	
+	if (dlp_AddSyncLogEntry(sd, "pilot-schlep, exited normally.\n"
+				"Thank you for using pilot-link.\n") < 0)
+		goto error_close;
+
+	if (dlp_EndOfSync(sd, 0) < 0)
+		goto error_close;
+
+	if (pi_close(sd) < 0)
+		goto error;
+
+	return 0;
+
+ error_close:
+	pi_close(sd);
+	
+ error:
+	perror("\tError");
+	fprintf(stderr, "\n");
+
+	return -1;
 }
 

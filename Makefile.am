@@ -33,6 +33,7 @@ bin_PROGRAMS = 		\
 	install-expenses \
 	install-hinote	\
 	install-memo	\
+	install-netsync	\
 	install-todos	\
 	install-user	\
 	memos		\
@@ -133,6 +134,12 @@ install_hinote_LDADD = 				\
 install_memo_SOURCES = \
 	install-memo.c
 install_memo_LDADD = 				\
+	@LIBOBJS@				\
+	$(top_builddir)/libsock/libpisock.la
+
+install_netsync_SOURCES = \
+	install-netsync.c
+install_netsync_LDADD = 			\
 	@LIBOBJS@				\
 	$(top_builddir)/libsock/libpisock.la
 

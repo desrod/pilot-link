@@ -29,54 +29,50 @@
 /* Declare prototypes */
 int pilot_connect(const char *port);
 
-/* Declare prototypes */
-int pilot_connect(const char *port);
-
 int pilot_connect(const char *port) 
 {
-	int 	sd;
+	int 	sd, result;
 	struct 	pi_sockaddr addr;
 
 	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-		perror("   Reason: pi_socket");
+		fprintf(stderr, "\n\tUnable to create socket '%s'\n", port ? port : "<NONE>");
 		return -1;
 	}
 
-	addr.pi_family = PI_AF_PILOT;
-	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
+	if (port != NULL) {
+		addr.pi_family = PI_AF_PILOT;
+		strncpy(addr.pi_device, port, sizeof(addr.pi_device));
+		result = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
+	} else {
+		result = pi_bind(sd, NULL, 0);		
+	}
 
-	if (pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
-		fprintf(stderr, "\n   Unable to bind to port '%s'\n", port);
-		perror("   Reason: pi_bind");
-		fprintf(stderr, "\n");
+	if (result < 0) {
+		fprintf(stderr, "\n\tUnable to bind to port '%s'\n", port ? port : "<NONE>");
 		pi_close(sd);
 		return -1;
 	}
 
-	fprintf(stderr, "\n   Connecting to port: %s\n\n   Please press the HotSync button now...\n",
-	     port);
+	fprintf(stderr, "\n\tListening to port: %s\n\n\tPlease press the HotSync button now... ",
+		port ? port : getenv("PILOTPORT"));
 
 	if (pi_listen(sd, 1) == -1) {
 		fprintf(stderr, "\n   Error listening on %s\n", port);
-		perror("   Reason: pi_listen");
-		fprintf(stderr, "\n");
 		pi_close(sd);
 		return -1;
 	}
 
 	sd = pi_accept(sd, 0, 0);
 	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n", port);
-		perror("   Reason: pi_accept");
-		fprintf(stderr, "\n");
+		fprintf(stderr, "\n\tError accepting data on %s\n", port);
 		pi_close(sd);
 		return -1;
 	}
 
-	fprintf(stderr, "   Connected...\n\n");
+	fprintf(stderr, "Connected\n\n");
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
-
+	
 	return sd;
 }

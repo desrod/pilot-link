@@ -1,8 +1,16 @@
+if WITH_JAVA
+JAVA_DIR=Java
+else
+JAVA_DIR=
+endif
+
+SUBDIRS = $(JAVA_DIR)
+
 #
 # Python Building
 #
 python-build: Python/setup.py
-	cd $(srcdir)/Python && $(PYTHON) setup.py build
+	cd $(srcdir)/Python && LD_LIBRARY_PATH=$(top_buildir)/libsock/.libs/ $(PYTHON) setup.py build
 
 python-install: python-build
 	cd $(srcdir)/Python && $(PYTHON) setup.py install
@@ -58,7 +66,7 @@ PERL5_MCLEAN =
 PERL5_CLEAN = 
 endif
 
-all-local: $(PERL5_ALL) $(PYTHON_ALL) 
+all-local: $(PERL5_ALL) $(PYTHON_ALL)
 
 install-exec-local: $(PYTHON_INSTALL) $(PERL5_INSTALL)
 
