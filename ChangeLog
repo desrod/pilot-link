@@ -1,5 +1,9 @@
 2002-01-05  JP Rosevear  <jpr@ximian.com>
 
+	* Merge from the main line
+
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+	
 	* include/pi-debug.h: add CMP type
 
 	* libsock/*.c: use new debugging commands

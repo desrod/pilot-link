@@ -78,8 +78,9 @@ do
     echo skipping $dr -- flagged as no auto-gen
   else
     echo processing $dr
-    macrodirs=`sed -n -e 's,AM_ACLOCAL_INCLUDE(\(.*\)),\1,gp' < $coin`
     ( cd $dr
+      aclocalinclude="$ACLOCAL_FLAGS"
+
       if grep "^AM_GNU_GETTEXT" configure.in >/dev/null; then
 	if grep "sed.*POTFILES" configure.in >/dev/null; then
 	  : do nothing -- we still have an old unmodified configure.in
@@ -98,6 +99,7 @@ do
 	  libtoolize --force --copy
 	fi
       fi
+
       echo "Running aclocal $aclocalinclude ..."
       aclocal $aclocalinclude || {
 	echo
@@ -109,6 +111,10 @@ do
 	exit 1
       }
 
+      if grep "^AM_CONFIG_HEADER" configure.in >/dev/null; then
+	echo "Running autoheader..."
+	autoheader || { echo "**Error**: autoheader failed."; exit 1; }
+      fi
       echo "Running automake --gnu $am_opt ..."
       automake --add-missing --gnu $am_opt ||
 	{ echo "**Error**: automake failed."; exit 1; }

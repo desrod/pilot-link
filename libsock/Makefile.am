@@ -1,5 +1,6 @@
-INCLUDES = \
-	-I$(top_srcdir)/include
+INCLUDES = 			\
+	-I$(top_srcdir)/include	\
+	$(ICONV_CFLAGS)
 
 noinst_PROGRAMS = test
 
@@ -42,6 +43,9 @@ libpisock_la_SOURCES =  \
 	util.c		\
 	utils.c
 
-libpisock_la_LDFLAGS = -export-dynamic -version-info 4:0:0
+libpisock_la_LIBADD = \
+	$(ICONV_LIBS)
+
+libpisock_la_LDFLAGS = -export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
 
 EXTRA_DIST = $(serial_FILES)
