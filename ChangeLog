@@ -1,7 +1,7 @@
 2002-08-15  JP Rosevear  <jpr@ximian.com>
 
 	* src/dlpsh.c (ls_fn): make sure tag is initialiazed and is based
-	on type properly
+	on type properly (from David H. Silber <pilot@silbersoft.com>)
 
 2002-08-10  Angus Ainslie  <angusa@deltatee.com>
 
