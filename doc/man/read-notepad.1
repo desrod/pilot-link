@@ -1,10 +1,10 @@
-.TH READ-NOTEPAD 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+.TH read-notepad 1 "Palm Computing Device Tools" "Free Software Foundation" \" -*- nroff -*-
 
 .SH NAME
 .B read-notepad 
 \- Connect to the Palm handheld device and list the record information found
 in the Notepad application. Alternately, if no options are given, each
-record's image will be converted to a Portable Network Graphic (.png) file.
+record's image will be converted to files, using .png or .ppm format.
 
 .SH SYNOPSIS
 .B read-notepad 
@@ -13,8 +13,9 @@ record's image will be converted to a Portable Network Graphic (.png) file.
 .SH DESCRIPTION
 .B read-notepad 
 allows a PalmOS 4.0 or later user to read the data stored in the Palm
-Notepad application and extract the data into images and convert them to .png
-files on their system.
+Notepad application and extract the data into images and convert them to
+Portable Network Graphics (.png) or Portable Pixmap (.ppm) files (determined
+by installed libraries at build time) on their system.
 
 .SS OPTIONS
 .TP
@@ -43,7 +44,7 @@ image files
 .SH USAGE
 The program will connect to the target Palm handheld device, and list or
 convert the records and images found in the Palm Notepad application to
-Portable Network Graphic (.png) files.
+Portable Network Graphic (.png) or Portable Pixmap (.ppm) files.
 
 .SH KNOWN BUGS
 .B read-notepad
