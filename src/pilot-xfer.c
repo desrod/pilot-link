@@ -780,7 +780,6 @@ static void Restore(char *dirname)
 				db[j] = temp;
 			}
 
-	Connect();
 
 	for (i = 0; i < dbcount; i++) {
 

@@ -44,6 +44,122 @@ extern "C" {
 
 #define DLP_BUF_SIZE 0xffff
 
+#define vfsFileAttrReadOnly     (0x00000001UL)
+#define vfsFileAttrHidden       (0x00000002UL)
+#define vfsFileAttrSystem       (0x00000004UL)
+#define vfsFileAttrVolumeLabel  (0x00000008UL)
+#define vfsFileAttrDirectory    (0x00000010UL)
+#define vfsFileAttrArchive      (0x00000020UL)
+#define vfsFileAttrLink         (0x00000040UL)
+
+/* Mount/Format the volume with the filesystem specified */
+#define vfsMountFlagsUseThisFileSystem	0x01
+
+/* file type for slot driver libraries */
+#define sysFileTSlotDriver	'libs'
+
+/* The date the file was created. */
+#define vfsFileDateCreated 	1
+
+/* The date the file was last modified. */
+#define vfsFileDateModified 	2
+
+/* The date the file was last accessed. */
+#define vfsFileDateAccessed 	3       	
+
+#define vfsMAXFILENAME 256
+
+#define vfsIteratorStart	0L
+#define vfsIteratorStop		0xffffffffL
+
+/* constant for an invalid volume reference, guaranteed not to represent a
+   valid one.  Use it like you would use NULL for a FILE*. */
+#define vfsInvalidVolRef 0	
+
+/* constant for an invalid file reference, guaranteed not to represent a
+   valid one.  Use it like you would use NULL for a FILE*. */
+#define vfsInvalidFileRef	0L
+
+/* from the beginning (first data byte of file) */
+#define vfsOriginBeginning	0
+
+/* from the current position */
+#define vfsOriginCurrent	1
+
+/* From the end of file (one position beyond last data byte, only negative
+   offsets are legally allowed) */
+#define vfsOriginEnd		2
+
+typedef unsigned long FileRef;
+
+/* Don't let anyone else open it */
+#define vfsModeExclusive	(0x0001U)
+
+/* Open for read access */
+#define vfsModeRead		(0x0002U)
+
+/* Open for write access, implies exclusive */
+#define vfsModeWrite		(0x0004U | vfsModeExclusive)
+
+/* create the file if it doesn't already exist.  Implemented in VFS layer,
+   no FS lib call will ever have to handle this. */
+#define vfsModeCreate		(0x0008U)
+
+/* Truncate file to 0 bytes after opening, removing all existing data. 
+   Implemented in VFS layer, no FS lib call will ever have to handle this.
+   */
+#define vfsModeTruncate		(0x0010U)
+
+/* open for read/write access */
+#define vfsModeReadWrite	(vfsModeWrite | vfsModeRead)
+
+/* Leave the file open even if when the foreground task closes */
+#define vfsModeLeaveOpen	(0x0020U)
+
+	struct VFSDirInfo {
+		unsigned long attr;
+		char name[vfsMAXFILENAME];
+	};
+	
+	typedef struct VFSAnyMountParamTag {
+		unsigned short volRefNum;
+		unsigned short reserved;
+		unsigned long  mountClass;
+	} VFSAnyMountParamType;
+	
+	struct VFSSlotMountParamTag {
+		VFSAnyMountParamType vfsMountParam;
+		unsigned short slotLibRefNum;
+		unsigned short slotRefNum;
+	};
+	
+	struct VFSInfo {
+		/* 0: read-only etc. */
+		unsigned long   attributes;
+
+		/* 4: Filesystem type for this volume (defined below) */
+		unsigned long   fsType;
+
+		/* 8: Creator code of filesystem driver for this volume. */
+		unsigned long   fsCreator;
+							
+		/* For slot based filesystems: (mountClass = VFSMountClass_SlotDriver)
+		   12: mount class that mounted this volume */
+		unsigned long   mountClass;
+		
+		/* 16: Library on which the volume is mounted */
+		int slotLibRefNum;
+
+		/* 18: ExpMgr slot number of card containing volume */
+		int slotRefNum;
+
+		/* 20: Type of card media (mediaMemoryStick, mediaCompactFlash, etc.) */
+		unsigned long   mediaType;
+
+		/* 24: reserved for future use (other mountclasses may need more space) */
+		unsigned long   reserved;
+	};
+
 	/* Note: All of these functions return an integer that if greater
 	   then zero is the number of bytes in the result, zero if there was
 	   no result, or less then zero if an error occured. Any return
@@ -208,8 +324,76 @@ extern "C" {
 
 		dlpFuncSetDBInfo,
 	
-		dlpLastFunc
+		/* DLP 1.3 FUNCTIONS ADDED HERE (PalmOS v4.0) */
+		dlpLoopBackTest,
 
+		dlpFuncExpSlotEnumerate,
+
+		dlpFuncExpCardPresent,
+
+		dlpFuncExpCardInfo,
+
+		dlpFuncVFSCustomControl,
+
+		dlpFuncVFSGetDefaultDir,
+
+		dlpFuncVFSImportDatabaseFromFile,
+
+		dlpFuncVFSExportDatabaseToFile,
+
+		dlpFuncVFSFileCreate,
+
+		dlpFuncVFSFileOpen,
+
+		dlpFuncVFSFileClose,
+
+		dlpFuncVFSFileWrite,
+
+		dlpFuncVFSFileRead,
+
+		dlpFuncVFSFileDelete,
+
+		dlpFuncVFSFileRename,
+
+		dlpFuncVFSFileEOF,
+
+		dlpFuncVFSFileTell,
+
+		dlpFuncVFSFileGetAttributes,
+
+		dlpFuncVFSFileSetAttributes,
+
+		dlpFuncVFSFileGetDate,
+
+		dlpFuncVFSFileSetDate,
+
+		dlpFuncVFSDirCreate,
+
+		dlpFuncVFSDirEntryEnumerate,
+
+		dlpFuncVFSGetFile,
+
+		dlpFuncVFSPutFile,
+
+		dlpFuncVFSVolumeFormat,
+
+		dlpFuncVFSVolumeEnumerate,
+
+		dlpFuncVFSVolumeInfo,
+
+		dlpFuncVFSVolumeGetLabel,
+
+		dlpFuncVFSVolumeSetLabel,
+
+		dlpFuncVFSVolumeSize,
+
+		dlpFuncVFSFileSeek,
+
+		dlpFuncVFSFileResize,
+
+		dlpFuncVFSFileSize,
+
+		dlpLastFunc
 	};
 	
 	enum dlpDBFlags {
@@ -569,16 +753,16 @@ extern "C" {
 			 unsigned long type, unsigned long creator));
 
 	extern int dlp_FindDBByName
-	        PI_ARGS((int sd, int cardno, char *name, int *localid, int *dbhandle,
+	        PI_ARGS((int sd, int cardno, char *name, unsigned long *localid, int *dbhandle,
 			 struct DBInfo *info, struct DBSizeInfo *size));
 
 	extern int dlp_FindDBByOpenHandle 
-	        PI_ARGS((int sd, int dbhandle, int *cardno, int *localid, 
+	        PI_ARGS((int sd, int dbhandle, int *cardno, unsigned long *localid, 
 			 struct DBInfo *info, struct DBSizeInfo *size));
 
 	extern int dlp_FindDBByTypeCreator
 	        PI_ARGS((int sd, unsigned long type, unsigned long creator, int start, 
-			 int latest, int *cardno, int *localid, int *dbhandle,
+			 int latest, int *cardno, unsigned long *localid, int *dbhandle,
 			 struct DBInfo *info, struct DBSizeInfo *size));
 
 	struct RPC_params;
@@ -586,6 +770,105 @@ extern "C" {
 	extern int dlp_RPC
 		PI_ARGS((int sd, struct RPC_params * p,
 			unsigned long *result));
+
+	extern int dlp_ExpSlotEnumerate
+		PI_ARGS((int sd, int * numSlots, int *firstRef));
+
+	extern int dlp_ExpCardPresent
+		PI_ARGS((int sd, int SlotRef));
+
+	extern int dlp_ExpCardInfo
+		PI_ARGS((int sd, int SlotRef, unsigned long *flags,
+			 int *len));
+
+	extern int dlp_VFSGetDefaultDir
+		PI_ARGS((int sd, int volRefNum,const char *name,char *dir, int *len));
+
+	extern int dlp_VFSImportDatabaseFromFile
+		PI_ARGS((int sd, int volRefNum, const char *pathNameP, 
+			 int *cardno, unsigned long *localid));
+
+	extern int dlp_VFSExportDatabaseToFile
+		PI_ARGS((int sd, int volRefNum, const char *pathNameP,
+			int cardno, unsigned int localid));
+
+	extern int dlp_VFSFileCreate
+		PI_ARGS((int sd, int volRefNum,const char *name));
+
+	extern int dlp_VFSFileOpen
+		PI_ARGS((int sd, int volRefNum, const char *name, int openMode,
+			FileRef *outFileRef));
+
+	extern int dlp_VFSFileClose
+		PI_ARGS((int sd, FileRef afile));
+
+	extern int dlp_VFSFileWrite
+		PI_ARGS((int sd, FileRef afile, unsigned char *data, int len));
+
+	extern int dlp_VFSFileRead
+		PI_ARGS((int sd, FileRef afile, unsigned char *data, int
+			*numBytes));
+
+	extern int dlp_VFSFileDelete
+		PI_ARGS((int sd, int volRefNum, const char *name));
+
+	extern int dlp_VFSFileRename
+		PI_ARGS((int sd, int volRefNum, const char *name,
+			const char *newname));
+
+	extern int dlp_VFSFileEOF
+		PI_ARGS((int sd, FileRef afile));
+
+	extern int dlp_VFSFileTell
+		PI_ARGS((int sd, FileRef afile,int *position));
+
+	extern int dlp_VFSFileGetAttributes
+		PI_ARGS((int sd, FileRef afile, long *attributes));
+
+	extern int dlp_VFSFileSetAttributes
+		PI_ARGS((int sd, FileRef afile, long attributes));
+
+	extern int dlp_VFSFileGetDate
+		PI_ARGS((int sd, FileRef afile, int which, time_t *date));
+
+	extern int dlp_VFSFileSetDate
+		PI_ARGS((int sd, FileRef afile, int which, time_t date));
+
+	extern int dlp_VFSDirCreate
+		PI_ARGS((int sd, int volRefNum, const char *name));
+
+	extern int dlp_VFSDirEntryEnumerate
+		PI_ARGS((int sd, FileRef dirRefNum, unsigned long *dirIlterate, 
+			int *maxcount, struct VFSDirInfo *data));
+
+	extern int dlp_VFSVolumeFormat
+		PI_ARGS((int sd, unsigned char flags, int fsLibRef, 
+			struct VFSSlotMountParamTag *param));
+
+	extern int dlp_VFSVolumeEnumerate
+		PI_ARGS((int sd, int *len, int *firstRef));
+
+	extern int dlp_VFSVolumeInfo
+		PI_ARGS((int sd, int volRefNum, struct VFSInfo *v));
+
+	extern int dlp_VFSVolumeGetLabel
+		PI_ARGS((int sd, int volRefNum, int *len, char *name));
+
+	extern int dlp_VFSVolumeSetLabel
+		PI_ARGS((int sd, int volRefNum, char *name));
+
+	extern int dlp_VFSVolumeSize
+		PI_ARGS((int sd, int volRefNum, long *volumeSizeUsed, 
+			long *volumeSizeTotal));
+
+	extern int dlp_VFSFileSeek
+		PI_ARGS((int sd, FileRef afile, int origin, int offset));
+
+	extern int dlp_VFSFileResize
+		PI_ARGS((int sd, FileRef afile, int newSize));
+
+	extern int dlp_VFSFileSize
+		PI_ARGS((int sd, FileRef afile,int *size));
 
 #ifdef __cplusplus
 }

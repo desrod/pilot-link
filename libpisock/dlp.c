@@ -94,7 +94,6 @@
 static void record_dump (unsigned char *data);
 #endif
 
-
 char *dlp_errorlist[] = {
 	"No error",
 	"General System error",
@@ -120,6 +119,49 @@ char *dlp_errorlist[] = {
 	"Bad argument size"
 };
 
+char * vfs_errorlist[] = {
+	"No error",
+	"Buffer too small",
+	"No error",
+	"Invalid file reference",
+	"Generic file error",
+	"Resource is read only",
+	"Resource already exists",
+	"End of file",
+	"File or folder already exists",
+	"Volume reference is invalid",
+	"Volume is still mounted",
+	"volumereference is invalid",
+	"Invalid data",
+	"Unable to delete non-empty directory",
+	"Filename or path invalid",
+	"No space left on volume",
+	"Call not implemented",
+	"Directory required",
+	"Filename (not directory) required",
+	"Not a directory",
+	"Filename truncated"
+	"Directory not found",
+	"Name truncated"
+char * exp_errorlist[] = {
+
+/* Look at "Error codes" in ExpansionMgr.h in the Palm SDK for their
+   implementation */
+char * exp_errorlist[] = {
+	"Slot reference number is bad",
+	"Unsupported Operation",
+	"Read/write API not supported",
+	"Read/write API supported, but card is read only",
+	"Read/write API supported, but sector is bad",
+	"Read/write API supported, but sector is protected",
+	"Slot driver not open",
+	"Slot driver still opened",
+	"Unimplemented call",
+	"Enumeration list empty",
+	"API version is incompatible"
+	"still open (slot driver)",
+	"Unimplemented",
+	"Enumeration empty",
 	"Incompatible API version"
 };
 
@@ -414,8 +456,12 @@ int dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 	if ((bytes=dlp_response_read (res, sd)) < 0) {
 		errno = -EIO;
 		return -1;
-		errno = -ENOMSG;
-		return -1;
+	}
+
+	/* Check to make sure the response is for this command */
+	if ((*res)->cmd != req->cmd) {
+		
+		/* The Tungsten T returns the wrong code for VFSVolumeInfo */
 		if (req->cmd != dlpFuncVFSVolumeInfo || (*res)->cmd != dlpFuncVFSVolumeSize) {
 			errno = -ENOMSG;
 			return -1;
@@ -891,7 +937,7 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	return -1;
 
       found:
-int dlp_FindDBByName (int sd, int cardno, char *name, int *localid, int *dbhandle,
+ *
  * Returns:	Nothing
  *
  ***********************************************************************/
@@ -983,7 +1029,7 @@ int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, in
 	}
 	
 	dlp_response_free(res);
-int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, int *localid, 
+ *
  * Returns:     Nothing
  *
  ***********************************************************************/
@@ -1075,7 +1121,7 @@ int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *lo
 	
 	dlp_response_free(res);
  *
-			     int latest, int *cardno, int *localid, int *dbhandle, 
+ * Returns:     Creator ID in 'result'
  *
  ***********************************************************************/
 int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, int start, 
@@ -3567,6 +3613,1270 @@ static void record_dump (unsigned char *data)
 	    (flags & dlpRecAttrSecret) ? " Secret" : "",
 	    (flags & dlpRecAttrArchived) ? " Archive" : "",
 	    (!flags) ? " None" : "",
+	    flags, size));
+	dumpdata(&data[10], size);
+}
+#endif
+
+/***********************************************************************
+ *
+ * Function:    dlp_ExpSlotEnumerate
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
+{
+	int 	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+/*FIXME Check dlp version everywhere */
+
+	Trace(VFSSlotEnumerate);
+	
+	req = dlp_request_new(dlpFuncExpSlotEnumerate, 0);
+
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		int slots, i;
+
+		slots = get_short(DLP_RESPONSE_DATA (res, 0, 0));
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP ExpSlotEnumerate %d\n", slots));
+
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "  %d Slot refnum %d\n", i, firstRef[i]));
+			for (i = 0; i < slots && i < *len; i++) {
+				firstRef[i] =  get_short(DLP_RESPONSE_DATA (res, 0, 2 + (2 * i)));
+
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "  %d Slot-Refnum %d\n", i, firstRef[i]));
+			}
+		}
+
+		*len = slots;
+	}
+	 
+	dlp_response_free(res);
+	
+	return result;
+}
+
+
+/***********************************************************************
+ *
+ * Function:    dlp_ExpCardPresent
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_ExpCardPresent(int sd, int SlotRef)
+{
+	int 	result;
+        struct dlpRequest *req;
+        struct dlpResponse *res;
+
+	Trace(VFSExpCardPresent);
+
+	req = dlp_request_new(dlpFuncExpCardPresent, 1, 2);
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), SlotRef);
+
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_ExpCardInfo
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *len)
+{
+	int 	result;
+        struct dlpRequest *req;
+        struct dlpResponse *res;
+
+	Trace(ExpCardInfo);
+
+	req = dlp_request_new(dlpFuncExpCardInfo, 1, 2);
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), SlotRef);
+
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		*flags = get_long(DLP_RESPONSE_DATA (res, 0, 0));
+		*len = get_byte(DLP_RESPONSE_DATA (res, 0, 4));
+
+		/* FIXME Read and return packed strings */
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP ExpCardInfo Flags: %lu Length: %d\n", *flags, *len));
+	}
+	
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSGetDefaultDir
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir, int *len)
+{
+	int 	result,
+		buflen;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(VFSGetDefaultDir);
+	
+	req = dlp_request_new(dlpFuncVFSGetDefaultDir, 1, 2 + (strlen(type) + 1));
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	strcpy(DLP_REQUEST_DATA(req, 0, 2), type);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		buflen = get_short(DLP_RESPONSE_DATA (res, 0, 0));
+		
+		if (*len < buflen + 1)
+			return -1;
+		
+		if (buflen) {
+			strncpy(dir, DLP_RESPONSE_DATA (res, 0, 2), buflen);
+		} else {
+			strcpy(dir,"");
+		}
+		     "Default directory is %s\n", dir));
+		*len = buflen;
+		
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "Default dir is %s\n", dir));
+	}
+	
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSImportDatabaseFromFile
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
+				  int *cardno, unsigned long *localid)
+{
+	int 	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+
+	Trace(VFSImportDatabaseFromFile);
+
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		"Import file <%s>%d\n", path));
+
+	req = dlp_request_new(dlpFuncVFSImportDatabaseFromFile, 1, 2 + (strlen(path) + 1));
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	strcpy(DLP_REQUEST_DATA(req, 0, 2), path);
+
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+
+	if (result >= 0) {
+		if (cardno)
+			*cardno = get_short(DLP_RESPONSE_DATA (res, 0, 0));
+		if (localid)
+			*localid = get_short(DLP_RESPONSE_DATA (res, 0, 2)); 
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "Database imported as: cardNo:%d dbID:%d\n", 
+		     get_short(DLP_RESPONSE_DATA (res, 0, 0)), 
+		     get_short(DLP_RESPONSE_DATA (res, 0, 2))));
+	}
+	
+	dlp_response_free(res);
+
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSExportDatabaseToFile
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path, 
+				int cardno, unsigned int localid)  
+{
+	int 	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(VFSExportDatabaseToFile);
+	
+	req = dlp_request_new(dlpFuncVFSExportDatabaseToFile, 1, 8 + (strlen(path) + 1));
+	
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	set_short(DLP_REQUEST_DATA(req, 0, 2), cardno);
+	set_long(DLP_REQUEST_DATA(req, 0, 4), localid);
+	strcpy(DLP_REQUEST_DATA(req, 0, 8), path);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+	dlp_response_free(res);
+
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileCreate
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileCreate(int sd, int volRefNum,const char *name)
+{
+	int 	result;
+        struct dlpRequest *req;
+        struct dlpResponse *res;
+
+	Trace(VFSFileCreate);
+
+        req = dlp_request_new(dlpFuncVFSFileCreate, 1, 2 + (strlen(name) + 1));
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
+
+        result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileOpen
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode, 
+		    FileRef *fileRef)
+{
+	int 	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+		"Open file %s, mode: %x VFSRef 0x%x\n",
+	Trace(VFSFileOpen);
+	
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		"Open File %s Mode: %x VFSRef 0x%x\n",
+		name, openMode,volRefNum));
+	
+	req = dlp_request_new(dlpFuncVFSFileOpen, 1, 4 + (strlen(name) + 1));
+	
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	set_short(DLP_REQUEST_DATA(req, 0, 2), openMode);
+	strcpy(DLP_REQUEST_DATA(req, 0, 4), name);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "OpenFileRef: 0x%x\n", get_long(DLP_RESPONSE_DATA (res, 0, 0))));
+		
+		*fileRef = get_long(DLP_RESPONSE_DATA (res, 0, 0));
+	}
+	
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileClose
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileClose(int sd, FileRef fileRef)
+{
+	int 	result;
+
+        struct dlpRequest *req;
+        struct dlpResponse *res;
+
+	Trace(dlp_VFSFileClose);
+
+	req = dlp_request_new(dlpFuncVFSFileClose, 1, 4);
+
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+
+	result = dlp_exec(sd, req, &res);
+
+		"Closed file ref: %x\n", fileRef));
+	dlp_response_free(res);
+	
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		"Closed FileRef: %x\n", fileRef));
+
+	return result;
+}
+
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileWrite
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, int len)
+{
+	int 	result,
+		respondlength;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+		"Write to file ref: %x bytes %d\n", fileRef, len));
+	Trace(dlp_VFSFileWrite);
+
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		"Write to FileRef: %x bytes %d\n", fileRef, len));
+	
+	req = dlp_request_new(dlpFuncVFSFileWrite, 1, 8);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_long(DLP_REQUEST_DATA(req, 0, 4), len);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+#if 1
+		/* FIXME Do we need size checks? */
+		if (pi_write(sd, data, len) < len) {
+	
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     "send failed %d\n", result));
+			
+			return -1;
+		} else {
+//			respondlength = pi_read(sd, data, len);
+//			result = get_short(DLP_RESPONSE_DATA (res, 0, 2));
+			
+//			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+//			     "send success (%d) res %d!\n", len, result));
+		} 
+#endif
+	}
+
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileRead
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, int *len)
+{
+	int 	result,
+		respondlength;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSFileRead);
+	
+	req = dlp_request_new(dlpFuncVFSFileRead, 0);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_long(DLP_REQUEST_DATA(req, 0, 4), *len);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+
+	if (result>=0) {
+		/* FIXME We must read properly */
+		int	rest,
+			at = 0;
+		rest	= *len;
+	
+		do {
+			respondlength=pi_read(sd, &data[at], rest);
+	
+			if (respondlength > 0) {
+				rest -= respondlength;
+				at += respondlength;
+			}
+		} while ((at<(*len)) && (respondlength >= 0));
+
+		if (len)
+			*len = get_long(DLP_RESPONSE_DATA (res, 0, 0));
+		
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "Readbytes: %d\n", len));
+	}
+
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileDelete
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileDelete(int sd, int volRefNum, const char *name)
+{
+	int 	result;
+	
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(VFSFileDelete);
+	
+	req = dlp_request_new(dlpFuncVFSFileDelete, 1, 2 + (strlen(name) + 1));
+	
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileRename
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileRename(int sd, int volRefNum, const char *name, 
+		      const char *newname)
+{
+	int 	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(VFSFileRename);
+	
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		"Rename file %s to %s\n", name, newname));
+	
+	req = dlp_request_new(dlpFuncVFSFileRename, 1, 4 + (strlen(name) + 1) + (strlen(newname) + 1));
+	
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	set_short(DLP_REQUEST_DATA(req, 0, 2), 2);
+	strcpy(DLP_REQUEST_DATA(req, 0, 4), name);
+	strcpy(DLP_REQUEST_DATA(req, 0, 4 + (strlen(name) + 1)), newname);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileEOF
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileEOF(int sd, FileRef fileRef)
+{
+	int 	result;
+	
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSFileEOF);
+	
+	req = dlp_request_new(dlpFuncVFSFileEOF, 1, 4);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+	dlp_response_free(res);
+
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileTell
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
+{
+	int 	result;
+	
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSFileTell);
+	
+	req = dlp_request_new(dlpFuncVFSFileTell, 1, 4);
+
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+
+	if (result >= 0) {
+		*position=get_long(DLP_RESPONSE_DATA(res, 0, 0));
+	}
+	
+	dlp_response_free(res);
+
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileGetAttributes
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileGetAttributes (int sd, FileRef fileRef, long *attributes)
+{
+	int	result;
+	
+	struct dlpRequest *req; 
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSFileGetAttributes);
+	
+	req = dlp_request_new(dlpFuncVFSFileGetAttributes, 1, 4);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+
+	if (result >= 0) {
+		*attributes=get_long(DLP_RESPONSE_DATA (res, 0, 0));
+	}
+	
+	dlp_response_free(res);	
+
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileSetAttributes
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileSetAttributes(int sd, FileRef fileRef, long attributes)
+{
+	int	result;
+	struct dlpRequest *req; 
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSFileSetAttributes);
+	
+	req = dlp_request_new(dlpFuncVFSFileSetAttributes, 1, 8);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_long(DLP_REQUEST_DATA(req, 0, 4), attributes);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);
+
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileGetDate
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
+{
+	int	result;
+	struct dlpRequest *req; 
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSFileGetDate);
+	
+	req = dlp_request_new(dlpFuncVFSFileGetDate, 1, 6);
+
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_short(DLP_REQUEST_DATA(req, 0, 4), which);
+
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		*date = get_long(DLP_RESPONSE_DATA (res, 0, 0) - 2082852000);
+	
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "Requested date(%d): %d / %x calc %d / %x\n",which,
+		     get_long(DLP_RESPONSE_DATA (res, 0, 0)),
+		     get_long(DLP_RESPONSE_DATA (res, 0, 0)),
+		     *date,*date));
+	}
+	
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileSetDate
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
+{
+	int	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSFileSetDate);
+
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		"Set date(%d): %d / %x calc %d / %x\n", which,
+		date, date,
+		date + 2082852000,
+		date + 2082852000));
+	
+	req = dlp_request_new(dlpFuncVFSFileSetDate, 1, 10);
+
+/* FIXME do we really do the date this way? */
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_short(DLP_REQUEST_DATA(req, 0, 4), which);
+	set_long(DLP_REQUEST_DATA(req, 0, 6), date + 2082852000);
+
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);	
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSDirCreate
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSDirCreate(int sd, int volRefNum, const char *name)
+{
+	int 	result;
+	
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(VFSDirCreate);
+	
+	req = dlp_request_new(dlpFuncVFSDirCreate, 1, 2 + (strlen(name) + 1));
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSDirEntryEnumerate
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum, 
+	unsigned long *dirIlterate, int *maxcount, struct VFSDirInfo *data)
+{
+	int 	result,
+		entries,
+		from,
+		at,
+		slen,
+		count;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSDirEntryEnumerate);
+
+	req = dlp_request_new(dlpFuncVFSDirEntryEnumerate, 1, 12);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), dirRefNum);
+	set_long(DLP_REQUEST_DATA(req, 0, 4), *dirIlterate);
+	set_long(DLP_REQUEST_DATA(req, 0, 8), 0xFF9C);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		*dirIlterate = get_long(DLP_RESPONSE_DATA (res, 0, 0));
+		if (result) {
+			entries = get_long(DLP_RESPONSE_DATA (res, 0, 4));
+		} else {
+		     "%d results returned (ilterator: %d)\n", entries,
+		}
+	
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "%d results returnd (ilterator: %d)\n", entries,
+		     *dirIlterate));
+	
+		from  = 8;
+		count = 0;
+	
+		for (at = 0; at < entries; at++) {
+			if ((*maxcount)>at) {
+				data[at].attr = get_long(DLP_RESPONSE_DATA (res, 0, 0) + from);
+				strncpy(data[at].name, DLP_RESPONSE_DATA(res, 0, from + 4),
+					vfsMAXFILENAME);
+			/* Even-length strings will be NUL terminated + pad byte. */
+			}
+	
+			/* Zero terminated string. Strings that have an even length
+			   will be null terminated and have a pad byte. */
+			slen=strlen(DLP_RESPONSE_DATA(res, 0, from + 4)) + 1;
+			if (slen%2)
+				slen++;		/* make even stringlen + NULL */
+	
+			if ((slen+4)%2)
+				slen++;
+	
+			/* 6 = 4 (attr) + 1 (NULL)  -+ 1 (PADDING) */
+			from += slen + 4;
+		}
+		*maxcount = count;
+	}
+	
+	dlp_response_free(res);
+	
+	return result;  
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSVolumeFormat
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSVolumeFormat(int sd, unsigned char flags,
+	int fsLibRef, struct VFSSlotMountParamTag *param)
+{
+	int 	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+		"VFSVolumeFormat version %x != 0101 \n",
+	Trace(VFSVolumeFormat);
+
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+
+		"VFSVolumeFormat Ver-check %x != 0101 \n",
+			pi_version(sd)));
+	
+	req = dlp_request_new(dlpFuncVFSVolumeFormat, 1, 4);
+/* FIXME check sizes, list the mount params properly */
+	set_short(DLP_REQUEST_DATA(req, 0, 0), fsLibRef);
+	set_short(DLP_REQUEST_DATA(req, 0, 2), sizeof(struct VFSSlotMountParamTag));
+	set_byte(DLP_REQUEST_DATA(req, 0, 4), flags);
+	set_byte(DLP_REQUEST_DATA(req, 0, 4), 0); /* unused */
+
+	set_short(DLP_REQUEST_DATA(req, 0, 6), param->vfsMountParam.volRefNum);
+	set_short(DLP_REQUEST_DATA(req, 0, 8), param->vfsMountParam.reserved); 
+	set_long(DLP_REQUEST_DATA(req, 0, 10), param->vfsMountParam.mountClass);
+	set_short(DLP_REQUEST_DATA(req, 0, 14), param->slotLibRefNum);
+	set_short(DLP_REQUEST_DATA(req, 0, 16), param->slotRefNum);   
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSVolumeEnumerate
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSVolumeEnumerate(int sd, int *len, int *firstRef)
+{
+	int	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(VFSVolumeEnumerate);
+	
+	req = dlp_request_new(dlpFuncVFSVolumeEnumerate, 0);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		int vols, i;
+		
+		vols = get_short(DLP_RESPONSE_DATA (res, 0, 0));
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP VFSVolumeEnumerate %d\n", vols));
+		if (vols) {
+			for (i = 0; i < vols && i < *len; i++) {
+				firstRef[i] =  get_short(DLP_RESPONSE_DATA (res, 0, 2 + (2 * i)));
+
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "  %d Volume-Refnum %d\n", i, firstRef[i]));
+			}
+		}
+
+		*len = vols;
+	}
+	
+	dlp_response_free (res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSVolumeInfo
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *v)
+{
+	int 	result;
+	
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(VFSVolumeInfo);
+
+	req = dlp_request_new(dlpFuncVFSVolumeInfo, 1, 2);
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		v->attributes	= get_long(DLP_RESPONSE_DATA (res, 0, 0));
+		v->fsType	= get_long(DLP_RESPONSE_DATA (res, 0, 4));  
+		v->fsCreator	= get_long(DLP_RESPONSE_DATA (res, 0, 8));
+		v->mountClass	= get_long(DLP_RESPONSE_DATA (res, 0, 12));
+		v->slotLibRefNum= get_short(DLP_RESPONSE_DATA (res, 0, 16));
+		v->slotRefNum	= get_short(DLP_RESPONSE_DATA (res, 0, 18));
+		v->mediaType	= get_long(DLP_RESPONSE_DATA (res, 0, 20));
+		v->reserved	= get_long(DLP_RESPONSE_DATA (res, 0, 24));      
+		
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "VFSVolumeInfo: fstype '%s' ", printlong(v->fsType)));
+		
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "fscreator: '%s'\nSlotlibref %d Slotref %d\n", 
+		     printlong(v->fsCreator),
+		     v->slotLibRefNum,
+		     v->slotRefNum));
+		
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "Media: '%s'\n", printlong(v->mediaType)));
+	}
+	
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSVolumeGetLabel
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
+{
+	int 	result;
+	struct dlpRequest *req; 
+	struct dlpResponse *res;
+	
+	Trace(VFSVolumeGetLabel);
+
+	req = dlp_request_new(dlpFuncVFSVolumeGetLabel, 1, 2);
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+
+	if (result >= 0) {
+		strncpy(name, DLP_RESPONSE_DATA(res, 0, 0), *len - 1);
+		*len = strlen(name);
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP VFSVolumeGetLabel %s\n", name));
+	}
+	
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSVolumeSetLabel
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSVolumeSetLabel(int sd, int volRefNum, char *name)
+{
+	int 	result;
+	struct dlpRequest *req; 
+	struct dlpResponse *res;
+	
+	Trace(VFSVolumeSetLabel);
+
+	req = dlp_request_new(dlpFuncVFSVolumeSetLabel, 1, 2 + (strlen(name) + 1));
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_response_free(res);
+	dlp_request_free (req);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSVolumeSize
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSVolumeSize(int sd, int volRefNum, long *volumeSizeUsed,
+		      long *volumeSizeTotal)
+{
+	int 	result;
+	struct dlpRequest *req; 
+	struct dlpResponse *res;
+	
+	Trace(VFSVolumeSize);
+
+	req = dlp_request_new(dlpFuncVFSVolumeSize, 1, 2);
+
+	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
+
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		*volumeSizeUsed = get_long(DLP_RESPONSE_DATA (res, 0, 0));
+		*volumeSizeTotal = get_long(DLP_RESPONSE_DATA (res, 0, 4));
+	
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		     "DLP VFS Volume Size total: %d used: %d\n",
+		     *volumeSizeTotal, *volumeSizeUsed));
+	}
+	
+	dlp_response_free(res);
+	
+	return result;
+}
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileSeek
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+
+int dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
+{
+	int 	result;
+	
+	struct dlpRequest *req; 
+	struct dlpResponse *res;
+	
+	Trace(VFSFileSeek);
+
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		"Seek %x to offset %d from origin %d\n",fileRef,offset,origin));
+	
+	req = dlp_request_new(dlpFuncVFSFileSeek, 1, 10);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_short(DLP_REQUEST_DATA(req, 0, 4), origin);
+	set_long(DLP_REQUEST_DATA(req, 0, 6), offset); 
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free (req);
+	dlp_response_free (res);
+		
+	return result;
+}
+
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileResize
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
+{
+	int 	result;
+	struct dlpRequest *req; 
+	struct dlpResponse *res;
+	
+	Trace(VFSFileResize);
+
+	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		"Resize %x to %d bytes\n", fileRef, newSize));
+	
+	req = dlp_request_new(dlpFuncVFSFileResize, 1, 8);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	set_long(DLP_REQUEST_DATA(req, 0, 4), newSize);
+	
+	result = dlp_exec(sd, req, &res);
+
+	dlp_request_free (req);
+	dlp_response_free (res);
+	
+	return result;
+}
+
+
+/***********************************************************************
+ *
+ * Function:    dlp_VFSFileSize
+ *
+ * Summary:     
+ *
+ * Parameters:  FIXME
+ * 
+ * Returns:     
+ *
+ ***********************************************************************/
+int dlp_VFSFileSize(int sd, FileRef fileRef,int *size)
+{
+	int 	result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+	
+	Trace(dlp_VFSFileSize);
+	
+	req = dlp_request_new(dlpFuncVFSFileSize, 1, 4);
+	
+	set_long(DLP_REQUEST_DATA(req, 0, 0), fileRef);
+	
+	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		*size = get_long (DLP_RESPONSE_DATA (res, 0, 0));
+	
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			"DLP VFS File Size: %d\n", *size));
+	}
+	
 	dlp_response_free (res);
 	
 	return result;
