@@ -43,17 +43,42 @@
 #include "pi-version.h"
 #include "pi-header.h"
 
+int pilot_connect(const char *port);
+
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
+	{"port",        required_argument, NULL, 'p'},
+	{"backup",      required_argument, NULL, 'b'},
+	{"update",      required_argument, NULL, 'u'},
+	{"sync",        required_argument, NULL, 's'},
+	{"restore",     required_argument, NULL, 'r'},
+	{"install",     required_argument, NULL, 'i'},
+	{"merge",       required_argument, NULL, 'm'},
+	{"fetch",       required_argument, NULL, 'f'},
+	{"delete",      required_argument, NULL, 'd'},
+	{"exclude",     required_argument, NULL, 'e'},
+	{"purge",       required_argument, NULL, 'P'},
+	{"list",        no_argument,       NULL, 'l'},
+	{"list-all",    no_argument,       NULL, 'L'},
+	{"archive",     required_argument, NULL, 'a'},
+	{"flash",       no_argument,       NULL, 'F'},
+	{"flash-os",    no_argument,       NULL, 'O'},
+	{"illegal",     no_argument,       NULL, 'I'},
+	{"quiet",       no_argument,       NULL, 'q'},
+	{"count",       no_argument,       NULL, 'c'},
+	{NULL,          0,                 NULL, 0}
+};
+
+static const char *optstring = "hvp:b:u:s:r:i:m:f:d:e:P:lLa:FOIqc";
+
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 int sd = 0;
-char *device = "/dev/pilot";
-char *progname;
+char *port = NULL;
 
 char *exclude[100];
 int numexclude = 0;
-
-int pilot_connect(char const *port);
-static void Help(char *progname);
 
 /***********************************************************************
  *
@@ -66,7 +91,7 @@ static void Help(char *progname);
  * Return:      Nothing
  *
  ***********************************************************************/
-void MakeExcludeList(char *efile)
+static void MakeExcludeList(char *efile)
 {
 	char temp[1024];
 	FILE *f = fopen(efile, "r");
@@ -143,53 +168,14 @@ static void protect_name(char *d, char *s)
  * Return:      Nothing
  *
  ***********************************************************************/
-void Connect(void)
+static void Connect(void)
 {
-        struct pi_sockaddr addr;
-        int ret;
+	if (sd != 0)
+		return;
 
-        if (sd != 0)
-                return;
-
-        if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-                perror("   pi_socket");
-                exit(1);
-        }
-
-        addr.pi_family = PI_AF_PILOT;
-        strcpy(addr.pi_device, device);
-
-        ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-        if (ret == -1) {
-                fprintf(stderr, "\n   Unable to bind to port %s\n",
-                        device);
-                perror("   pi_bind");
-                fprintf(stderr, "\n");
-                exit(1);
-        }
-
-        printf
-            ("   Port: %s\n\n   Please press the HotSync button now...\n",
-             device);
-
-        ret = pi_listen(sd, 1);
-        if (ret == -1) {
-                fprintf(stderr, "\n   Error listening on %s\n", device);
-                perror("   pi_listen");
-                fprintf(stderr, "\n"); 
-                exit(1);
-        }
-
-        sd = pi_accept(sd, 0, 0);
-        if (sd == -1) {
-                fprintf(stderr, "\n   Error accepting data on %s\n",
-                        device);
-                perror("   pi_accept");
-                fprintf(stderr, "\n"); 
-                exit(1);
-        }
-
-        fprintf(stderr, "Connected...\n");
+	sd = pilot_connect(port);
+	if (sd < 0)
+		exit(1);
 }
 
 
@@ -204,7 +190,7 @@ void Connect(void)
  * Returns:     Nothing
  *
  ***********************************************************************/ 
-void VoidSyncFlags(void)
+static void VoidSyncFlags(void)
 {
 	struct PilotUser U;
 
@@ -231,7 +217,7 @@ void VoidSyncFlags(void)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void RemoveFromList(char *name, char **list, int max)
+static void RemoveFromList(char *name, char **list, int max)
 {
 	int i;
 
@@ -254,7 +240,7 @@ void RemoveFromList(char *name, char **list, int max)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int creator_is_PalmOS(long creator)
+static int creator_is_PalmOS(long creator)
 {
 	union {
 		long L;
@@ -298,7 +284,7 @@ int creator_is_PalmOS(long creator)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
+static void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 	    int rom, int unsaved, char *archive_dir)
 {
 	struct dirent *dirent;
@@ -508,7 +494,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Fetch(char *dbname)
+static void Fetch(char *dbname)
 {
 	struct DBInfo info;
 	char name[256];
@@ -575,7 +561,7 @@ void Fetch(char *dbname)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Delete(char *dbname)
+static void Delete(char *dbname)
 {
 	struct DBInfo info;
 
@@ -634,7 +620,7 @@ static int compare(struct db *d1, struct db *d2)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Restore(char *dirname)
+static void Restore(char *dirname)
 {
 	DIR *dir;
 	struct dirent *dirent;
@@ -785,7 +771,7 @@ void Restore(char *dirname)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Install(char *filename)
+static void Install(char *filename)
 {
 	struct pi_file *f;
 
@@ -825,7 +811,7 @@ void Install(char *filename)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Merge(char *filename)
+static void Merge(char *filename)
 {
 	struct pi_file *f;
 
@@ -868,7 +854,7 @@ void Merge(char *filename)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void List(int rom)
+static void List(int rom)
 {
 	struct DBInfo info;
 	int i;
@@ -912,7 +898,7 @@ void List(int rom)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Purge(void)
+static void Purge(void)
 {
 	struct DBInfo info;
 	int i;
@@ -988,7 +974,7 @@ static void Help(char *progname)
 	       "                           by a sync\n\n"
  	       "   -l[ist]               = list all application and 3 rd party data on the Palm\n"
 	       "   -L[istall]            = list all data, internal and external on the Palm\n"
-	       "   -v[ersion]            = report the version of %s\n", progname, progname, progname);
+	       "   -v[ersion]            = report the version of %s\n", progname, progname);
 	printf("                           (currently %d.%d.%d%s)\n"
 	       "   -h[elp]               = reprint this usage screen\n\n"
 	       "   -a modifies -s to archive deleted files in specified directory.\n"
@@ -1010,253 +996,86 @@ static void Help(char *progname)
 	exit(0);
 }
 
-/***********************************************************************
- *
- * Function:    Version
- *
- * Summary:     Print the version splash
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void Version(void)
-{
-	PalmHeader(progname);
-	printf("   Type 'man 7 pilot-link' at your shell for more information.\n\n");
-	exit(0);
-}
-
-
-struct {
-	char *name;
-	int value;
-} longopt[] = {
-	  {"backup",  'b'}
-	, {"update",  'u'}
-	, {"sync",    's'}
-	, {"restore", 'r'}
-	, {"install", 'i'}
-	, {"merge",   'm'}
-	, {"fetch",   'f'}
-	, {"delete",  'd'}
-	, {"exclude", 'e'}
-	, {"purge",   'P'}
-	, {"list",    'l'}
-	, {"Listall", 'L'}
-	, {"version", 'v'}
-	, {"help",    'h'}
-	, {0, 0}
-};
-
 int main(int argc, char *argv[])
 {
+	int count;
 	char *archive_dir = NULL;
-	char *tmp;
-	int action;
 	int do_rom = 0;
 	int do_unsaved = 0;
-	int i;
-	int mode;
 	int timespent = 0;
 	int quiet = 0;
         time_t start,end;
+	char 	*progname 	= argv[0];
+
         start = time(NULL);
-	progname = argv[0];
 
-	if (argc < 2) {
-		Help(progname);
-	}
+	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (count) {
 
-	tmp = getenv("PILOTPORT");
-	if (tmp != NULL)
-		device = tmp;
-
-
-	/* Analyze arguments for errors */
-
-	if ((argc > 1)
-	    && (!strcmp(argv[1], "-p") || !strcmp(argv[1], "--port"))) {
-		argv++;
-		argc--;
-	}
-
-	mode = 'p';
-	action = 0;
-
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
-			/* If it is a long argument, convert it to the canonical short version */
-			if (argv[i][1] == '-') {
-				int j;
-
-				for (j = 0; longopt[j].name; j++)
-					if (!strcmp
-					    (longopt[j].name,
-					     argv[i] + 2)) {
-						argv[i][1] =
-						    longopt[j].value;
-						argv[i][2] = '\0';
-						break;
-					}
-			}
-			if (strlen(argv[i]) != 2) {
-				printf("%s: Unknown option '%s'\n",
-					argv[0], argv[i]);
-				Help(progname);
-			}
-
-			/* Check for commands that take a single argument */
-			else if (strchr("bus", argv[i][1])) {
-				mode = 0;
-				if (++i >= argc) {
-					printf("%s: Options '%s' requires argument\n",
-						argv[0], argv[i - 1]);
-					Help(progname);
-				}
-				action = 1;
-
-				/* Check for commands with unlimited arguments */
-			} else if (strchr("rimfde", argv[i][1])) {
-				mode = argv[i][1];
-				action = 1;
-				if (++i >= argc) {
-					printf("%s: Options '%s' requires argument\n",
-						argv[0], argv[i - 1]);
-					Help(progname);
-				}
-				/* Check for commands that take no arguments */
-			} else if (strchr("lLP", argv[i][1])) {
-				action = 1;
-				mode = 0;
-
-				/* Check for modifiers to -b -u -s */
-			} else if (strchr("FOIqc", argv[i][1])) {
-				/* nothing to do, yet... */
-
-				/* Check for options that take a single argument */
-			} else if (strchr("a", argv[i][1])) {
-				if (++i >= argc) {
-					printf("%s: Options '%s' requires argument\n",
-						argv[0], argv[i - 1]);
-					Help(progname);
-				}
-
-				/* Check for forcing commands */
-			} else if (argv[i][1] == 'v') {
-				Version();
-			} else if (argv[i][1] == 'h') {
-				Help(progname);
-
-			} else {
-				printf("%s: Unknown option '%s'\n",
-					argv[0], argv[i]);
-				Help(progname);
-			}
-		} else {
-			if (!mode) {
-				printf("%s: Must specify command before argument '%s'\n",
-					argv[0], argv[i]);
-				Help(progname);
-			}
-			if (mode != 'p')
-				action = 1;
-			if (strchr("busrep", mode))
-				mode = 0;
-		}
-	}
-	if (!action) {
-		printf("%s: Please give a command\n", argv[0]);
-		Help(progname);
-	}
-
-	/* Process arguments */
-
-	mode = 'p';
-
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
-			mode = 0;
-			if (strchr("abusrimfde", argv[i][1])) {
-				mode = argv[i][1];
-				i++;
-			} else
-				switch (argv[i][1]) {
-				case 'l':
-					List(0);
-					continue;
-				case 'L':
-					List(1);
-					continue;
-				case 'P':
-					Purge();
-					continue;
-				case 'F':
-					do_rom = !do_rom;	/* can be toggled */
-					continue;
-				case 'O':
-					do_rom = 2;
-					continue;
-				case 'I':
-					do_unsaved = 1;
-					continue;
-				case 'q':
-					quiet = 2;
-					continue;
-				case 'c':
-					quiet = 1;
-					continue;
-				default:
-					/* Shouldn't reach here */
-					Help(progname);
-				}
-		}
-		switch (mode) {
+		case 'h':
+			Help(progname);
+			return 0;
+		case 'v':
+			PalmHeader(progname);
+			return 0;
 		case 'p':
-			device = argv[i];
-			mode = 0;
-			break;
-		case 'a':
-			archive_dir = argv[i];
-			mode = 0;
+			port = optarg;
 			break;
 		case 'b':
-			Backup(argv[i], 0, 0, quiet, do_rom, do_unsaved,
-			       archive_dir);
-			mode = 0;
+			Backup(optarg, 0, 0, quiet, do_rom, do_unsaved, archive_dir);
 			break;
 		case 'u':
-			Backup(argv[i], 1, 0, quiet, do_rom, do_unsaved,
-			       archive_dir);
-			mode = 0;
+			Backup(optarg, 1, 0, quiet, do_rom, do_unsaved, archive_dir);
 			break;
 		case 's':
-			Backup(argv[i], 1, 1, quiet, do_rom, do_unsaved,
-			       archive_dir);
-			mode = 0;
+			Backup(optarg, 1, 1, quiet, do_rom, do_unsaved, archive_dir);
 			break;
 		case 'r':
-			Restore(argv[i]);
+			Restore(optarg);
 			break;
 		case 'i':
-			Install(argv[i]);
+			Install(optarg);
 			break;
 		case 'm':
-			Merge(argv[i]);
+			Merge(optarg);
 			break;
 		case 'f':
-			Fetch(argv[i]);
+			Fetch(optarg);
 			break;
 		case 'd':
-			Delete(argv[i]);
+			Delete(optarg);
 			break;
 		case 'e':
-			MakeExcludeList(argv[i]);
+			MakeExcludeList(optarg);
+			break;
+		case 'P':
+			Purge();
+			break;
+		case 'l':
+			List(0);
+			break;
+		case 'L':
+			List(1);
+			break;
+		case 'a':
+			archive_dir = optarg;
+			break;
+		case 'F':
+			do_rom = !do_rom;
+			break;
+		case 'O':
+			do_rom = 2;
+			break;
+		case 'I':
+			do_unsaved = 1;
+			break;
+		case 'q':
+			quiet = 2;
+			break;
+		case 'c':
+			quiet = 1;
 			break;
 		default:
-			/* Shouldn't reach here */
-			Help(progname);
 		}
 	}
 
@@ -1264,5 +1083,9 @@ int main(int argc, char *argv[])
         end=time(NULL);
         timespent = (end-start);
         printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
+
 	return 0;
 }
+
+
+

@@ -46,7 +46,7 @@ static void Help(char *progname)
 	       "   Options:\n"
 	       "     -p <port>         Use device file <port> to communicate with Palm\n"
 	       "     -e <hostname>     Enables LANSync on the Palm\n"
-	       "     -o <hostname>     The hostname of the desktop you are syncing with\n"
+	       "     -H <hostname>     The hostname of the desktop you are syncing with\n"
 	       "     -a <ip address>   IP address of the machine you connect your Palm to\n"
 	       "     -n <netmask>      The subnet mask of the network your Palm is on\n"
 	       "     -h, --help        Display this information\n\n"

@@ -1,3 +1,11 @@
+2002-01-16  JP Rosevear  <jpr@ximian.com>
+
+	* install-netsync.c: use -H to specify host
+
+	* pi-nredir.c: ditto
+
+	* pilot-xfer.c: switch to getopt_long and tidy
+
 2002-01-16  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* install-todos.c: Cleanup, formatting (ready for merge)

@@ -36,21 +36,19 @@
 int pilot_connect(const char *port);
 static void Help(char *progname);
 
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
-static const char *optstring = "hp:";
+static const char *optstring = "hvp:";
 
 int main(int argc, char *argv[])
 {
-	int 	ch,
+	int 	count,
 		len,
-		ret,
 		sd = -1,
 		sd2 = -1; 	/* This is the network socket */
 
@@ -61,88 +59,79 @@ int main(int argc, char *argv[])
 	struct 	pi_sockaddr 	addr;
 	struct 	NetSyncInfo 	Net;
 
-	while ((ch = getopt(argc, argv, optstring)) != -1) {
-		switch (ch) {
+	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (count) {
 
-		  case 'h':
-			  Help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  default:
+		case 'h':
+			Help(progname);
+			return 0;
+		case 'v':
+			PalmHeader(progname);
+			return 0;
+		case 'p':
+			port = optarg;
+			break;
+		default:
 		}
 	}
 
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
+	sd = pilot_connect(port);
+	if (sd < 0)
+		goto error;
 
-	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+	if (dlp_ReadNetSyncInfo(sd, &Net) < 0) {
+		fprintf(stderr,
+			"Unable to read network information, cancelling sync.\n");
 		exit(1);
-	} else if (port != NULL) {
-		
-		sd = pilot_connect(port);
-
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-		}
-
-		if (dlp_ReadNetSyncInfo(sd, &Net) < 0) {
-			fprintf(stderr,
-				"Unable to read network information, cancelling sync.\n");
-			exit(1);
-		}
-	
-		if (!Net.lanSync) {
-			fprintf(stderr,
-				"LANSync not enabled on your Palm, cancelling sync.\n");
-			exit(1);
-		}
-	
-		/* DEBUG log for this Network Hotsync session */
-		putenv("PILOTLOGFILE=PiDebugNet.log");
-	
-		sd2 = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET);
-		if (sd2 < 0) {
-			perror("Unable to get socket 2");
-			exit(1);
-		}
-		printf("Got socket 2\n");
-	
-		memset(&addr, 0, sizeof(addr));
-		addr.pi_family = PI_AF_PILOT;
-		strcpy(addr.pi_device, "net:");
-		strcpy(addr.pi_device + 4, Net.hostAddress);
-	
-		printf("Trying to connect\n");
-		ret = pi_connect(sd2, (struct sockaddr *) &addr, sizeof(addr));
-		printf("Connected\n");
-		if (ret < 0) {
-			perror("Unable to connect to PC");
-			exit(1);
-		}
-	
-		while ((len = pi_read(sd2, buffer, 0xffff)) > 0) {
-			pi_write(sd, buffer, len);
-			len = pi_read(sd, buffer, 0xffff);
-			if (len < 0)
-				break;
-			pi_write(sd2, buffer, len);
-		}
-		dlp_AddSyncLogEntry(sd, "pi-nredir, exited normally.\n"
-					"Thank you for using pilot-link.\n");
-		dlp_EndOfSync(sd, 0);
-		pi_close(sd);
-		close(sd2);
 	}
+	
+	if (!Net.lanSync) {
+		fprintf(stderr,
+			"LANSync not enabled on your Palm, cancelling sync.\n");
+		exit(1);
+	}
+	
+	sd2 = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET);
+	if (sd2 < 0)
+		goto error_close;
+	
+	memset(&addr, 0, sizeof(addr));
+	addr.pi_family = PI_AF_PILOT;
+	strcpy(addr.pi_device, "net:");
+	strcpy(addr.pi_device + 4, Net.hostAddress);
+	
+	printf("\tTrying %s... ", Net.hostAddress);
+	fflush(stdout);
+	if (pi_connect(sd2, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+		printf("Failed\n");
+		goto error;
+	}
+	printf("Connected\n");
+	
+	while ((len = pi_read(sd2, buffer, 0xffff)) > 0) {
+		pi_write(sd, buffer, len);
+		len = pi_read(sd, buffer, 0xffff);
+		if (len < 0)
+			break;
+		pi_write(sd2, buffer, len);
+	}
+	dlp_AddSyncLogEntry(sd, "pi-nredir, exited normally.\n"
+					"Thank you for using pilot-link.\n");
+	dlp_EndOfSync(sd, 0);
+
+	pi_close(sd);
+	pi_close(sd2);
+
 	return 0;
+
+ error_close:
+	pi_close(sd);
+
+ error:
+	perror("\tERROR:");
+	fprintf(stderr, "\n");
+
+	return -1;
 }
 
 static void Help(char *progname)
