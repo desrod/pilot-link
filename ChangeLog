@@ -1,5 +1,10 @@
 2003-07-01  JP Rosevear  <jpr@ximian.com>
 
+	* tcl.m4: remove the private header stuff and cygpath related
+	stuff for public headers
+
+2003-07-01  JP Rosevear  <jpr@ximian.com>
+	
 	* configure.in: subst TCL_INCLUDES
 
 	* bindings/Tcl/Makefile.am: include TCL_INCLUDES
