@@ -91,6 +91,9 @@ static pi_socket_list_t *watch_list = NULL;
 /* Automated tickling interval */
 static unsigned int interval = 0;
 
+/* Indicates that the exit function has already been installed. Made non-static
+ * so that library users can choose to not have an exit function installed */
+int pi_sock_installedexit = 0;
 
 /* Linked List Code */
 /***********************************************************************
@@ -898,12 +901,10 @@ onexit(void)
 static void
 installexit(void)
 {
-	static int installedexit = 0;
-
-	if (!installedexit)
+	if (!pi_sock_installedexit) {
 		atexit(onexit);
-
-	installedexit = 1;
+		pi_sock_installedexit = 1;
+	}
 }
 
 
