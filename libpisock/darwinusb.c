@@ -105,7 +105,10 @@
 /* Define this to make debug logs include USB debug info */
 #undef DEBUG_USB
 
-/* These values are somewhat tricky.  Don't mess with them. */
+/*
+ * These values are somewhat tricky.  Priming reads with a size of exactly one
+ * USB packet work best.  Probably best to leve these as they are
+ */
 #define MAX_AUTO_READ_SIZE	16384
 #define AUTO_READ_SIZE		64
 
@@ -113,21 +116,26 @@
 /* Hardware interface */
 static IONotificationPortRef usb_notify_port;
 static IOUSBInterfaceInterface **usb_interface;
-static IOUSBDeviceInterface **usb_device;
+static IOUSBDeviceInterface **usb_device;	/* kept for CLOSE_NOTIFICATION */
 static io_iterator_t usb_device_added_iter;
-static io_object_t usb_device_notification;
+static io_object_t usb_device_notification;	/* for device removal */
 
 static int usb_opened = 0;
-static int usb_in_pipe_ref = 0;
-static int usb_out_pipe_ref = 0;
-static int usb_auto_read_size = 0;
+static int usb_in_pipe_ref = 0;		/* endpoint for reads */
+static int usb_out_pipe_ref = 0;	/* endpoint for writes */
+
+
+static int usb_auto_read_size = 0;	/* != 0 for prime reads */
+
+/* these provide hints about the size of the next read */
 static int usb_read_ahead_size = 0;
 static int usb_last_read_ahead_size;
+
 static char usb_read_buffer[MAX_AUTO_READ_SIZE];
 
 static pthread_mutex_t read_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t read_queue_data_avail_cond = PTHREAD_COND_INITIALIZER;
-static char *read_queue = NULL;
+static char *read_queue = NULL;		/* stores completed reads */
 static int read_queue_size = 0;
 static int read_queue_used = 0;
 
