@@ -1,3 +1,8 @@
+2002-01-12  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* include/*hxx: Fix a missing 'class' declaration which causes libcc
+	  to fail on gcc 3.x
+
 2002-01-11  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/serial.c: handle buffer
@@ -246,8 +251,6 @@
 	* libcc/*.cc: Lack of consistant comments, fixed.
 
 	* tools/Python: All new Python bindings from Rob Tillotson
-
-	
 
 2001-12-31  David A. Desrosiers <hacker at gnu-designs dot com>
 
