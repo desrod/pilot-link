@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 		sent,
 		popfd;
 
-	struct	PilotUser U;
+	struct	PilotUser User;
 	struct	MailAppInfo tai;
 	struct 	MailSyncPref p;
 	struct 	MailSignaturePref sig;
@@ -338,7 +338,7 @@ int main(int argc, char *argv[])
 	memset(&p, '\0', sizeof(struct MailSyncPref));
 
 	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
+	dlp_ReadUserInfo(sd, &User);
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);

@@ -206,17 +206,17 @@ static void Connect(void)
  ***********************************************************************/ 
 static void VoidSyncFlags(void)
 {
-	struct 	PilotUser U;
+	struct 	PilotUser User;
 
 	Connect();
-	if (dlp_ReadUserInfo(sd, &U) >= 0) {
-		U.lastSyncPC = 0x00000000;	
+	if (dlp_ReadUserInfo(sd, &User) >= 0) {
+		User.lastSyncPC = 0x00000000;	
 		/* Hopefully unique constant, to tell any Desktop software
 		   that databases have been altered, and that a slow sync is
 		   necessary 
 		 */
-		U.lastSyncDate = U.successfulSyncDate = time(0);
-		dlp_WriteUserInfo(sd, &U);
+		User.lastSyncDate = User.successfulSyncDate = time(0);
+		dlp_WriteUserInfo(sd, &User);
 	}
 }
 
