@@ -1,3 +1,15 @@
+Oct  7,  1997	Kenneth Albanowski 0.8.7
+	Configuration changes:
+	  - install .hxx headers
+	  - use $(MAKE) instead of make
+	  - added latest libtool-1.0c
+	Utility changes:
+	  - pi-nredir deals with missing putenv or setenv
+	Perl 5 binding changes:
+	  - quote "index".
+	  - change usages of errno as a member to errnop
+	  - fix some leaking newRV()'s.
+
 Sep  14, 1997	Kenneth Albanowski 0.8.6
 	Configuration changes:
 	  - skip sys/select.h if it is not available
@@ -8,6 +20,7 @@ Sep  14, 1997	Kenneth Albanowski 0.8.6
 	  - corrected miscellaneous C warnings
 	Documentation changes:
 	  - added program list to README
+
 Sep  6, 1997	Kenneth Albanowski 0.8.5
 	Configuration changes:
 	  - added patch for libtool 1.0b to prevent extraneous 'n's.

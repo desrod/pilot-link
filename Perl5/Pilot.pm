@@ -150,7 +150,7 @@ sub new {
       $cat = "" unless defined($cat);
 
 	$self = bless { 
-		index => $index,
+		"index" => $index,
 		id => $id,
 		deleted => !!($attr & 0x80),
 		modified => !!($attr & 0x40),
@@ -175,7 +175,7 @@ package PDA::Pilot::Resource;
 
 sub new {
 	my($self,$data,$index,$type,$id) = @_;
-	$self = bless { index => $index, type => $type, id => $id}, 
+	$self = bless { "index" => $index, type => $type, id => $id}, 
 		(ref($self) || $self);
 	if (defined($data)) {
 		$self->Unpack($data);

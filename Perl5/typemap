@@ -51,7 +51,7 @@ T_CHAR4
 T_RESULT
 	if ($var < 0) {
 		sv_setsv($arg, &sv_no);
-		self->errno = $var;
+		self->errnop = $var;
 	} else
 		sv_setsv($arg, &sv_yes);
 T_PTROBJ

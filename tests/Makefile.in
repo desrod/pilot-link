@@ -107,7 +107,7 @@ distclean: clean
 
 clean:
 	$(RM) *.o *.a *.lo *.la core a.out test_s test_c install-prc$(EXT) pilot-debug$(EXT)
-	$(RM) -r .libs
+	$(RM) -rf .libs _libs
 	$(RM) $(CEXECS) $(TCLEXECS) $(CXXEXECS) $(PERLEXECS)
 	
 FORCE:

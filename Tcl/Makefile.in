@@ -105,5 +105,5 @@ test: $(TCLINTERP) $(LIB)
 
 clean:
 	$(RM) *.o *.a *.lo *.la core a.out *.so pitclsh* piwish*
-	$(RM) -r .libs
+	$(RM) -rf .libs _libs
 	$(RM) *~

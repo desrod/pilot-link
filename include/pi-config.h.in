@@ -49,6 +49,12 @@
 /* Define if you have the sigaction function. */
 #undef HAVE_SIGACTION
 
+/* Define if you have the putenv function. */
+#undef HAVE_PUTENV
+
+/* Define if you have the setenv function. */
+#undef HAVE_SETENV
+
 /* Define if you have the cispeed and cospeed members of struct termios */
 #undef TERMIOS_CSPEED
 
@@ -224,11 +230,19 @@
 # define atexit(x) on_exit((x),NULL)
 #endif
 
-#ifdef NeXT
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef HAVE_STRDUP
 char * strdup(const char *string);
 # ifndef bzero
 #  define bzero(b,len) memset(b,0,len)
 # endif
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #include <errno.h>

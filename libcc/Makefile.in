@@ -48,7 +48,7 @@ libpicc.a: $(CCOBJS)
 	
 clean:
 	$(RM) *.o *.a core a.out *.orig *.lo *.la
-	$(RM) -r .libs
+	$(RM) -rf .libs _libs
 
 depend:
 	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -MM -I../include *.cc >> Makefile.in

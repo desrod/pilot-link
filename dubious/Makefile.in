@@ -111,7 +111,7 @@ distclean: clean
 
 clean:
 	$(RM) *.o *.a *.lo *.la core a.out
-	$(RM) -r .libs
+	$(RM) -rf .libs _libs
 	$(RM) $(CEXECS) $(TCLEXECS) $(CXXEXECS) $(PERLEXECS) validate 
 
 #Depend information starts here. Do not edit the text beyond this point!

@@ -196,7 +196,7 @@ AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname)
+AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname putenv setenv)
 
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
   ac_cv_termios_cspeed,

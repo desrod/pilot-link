@@ -23,7 +23,7 @@ exec_installdir=$(pyinstalldir)
 INCLUDEPY=	$(pyinstalldir)/include/python$(VERSION)
 LIBP=		$(exec_installdir)/lib/python$(VERSION)
 LIBPL=		$(LIBP)/config
-PYMAKE=		make -f $(LIBPL)/Makefile
+PYMAKE=		$(MAKE) -f $(LIBPL)/Makefile
 
 # LIBSO is the location of platform-dependent dynamically linked 
 # extension libraries.  This can be handy when you need to build 

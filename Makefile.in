@@ -116,7 +116,7 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	for p in $(EXECS); do \
 		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
 	done
-	for h in include/*.h $(srcdir)/include/*.h; do \
+	for h in include/*.h $(srcdir)/include/*.h include/*.hxx $(srcdir)/include/*.hxx; do \
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
 	done
 	for m in man/*.1; do \
@@ -253,19 +253,19 @@ sync-plan: sync-plan.PL
 FORCE:
 
 Python:	FORCE
-	cd Python; make
+	cd Python; $(MAKE)
 
 Perl5 Perl: FORCE
-	cd Perl5; $(PERL5) Makefile.PL && make
+	cd Perl5; $(PERL5) Makefile.PL && $(MAKE)
 
 Tcl: FORCE
-	cd Tcl; make
+	cd Tcl; $(MAKE)
 	
 Java: FORCE
-	cd Java; make
+	cd Java; $(MAKE)
 	
 check test tests: FORCE
-	cd tests; make tests
+	cd tests; $(MAKE) tests
 
 strip: $(EXECS)
 	$(STRIP) $(EXECS)
@@ -290,17 +290,17 @@ distclean: clean depend os2
 	$(RM) libcc/Makefile
 	$(RM) config.log config.status config.cache libtool
 	$(RM) PiDebug.log
-	-cd Perl5 ; make realclean ; rm Makefile.PL
-	-cd Python ; make distclean
-	-cd Tcl ; make clean
-	-cd Java ; make distclean
-	-cd tests ; make distclean
+	-cd Perl5 ; $(MAKE) realclean ; rm Makefile.PL
+	-cd Python ; $(MAKE) distclean
+	-cd Tcl ; $(MAKE) clean
+	-cd Java ; $(MAKE) distclean
+	-cd tests ; $(MAKE) distclean
 	$(RM) *~ *.orig */*~ */*.orig
 	$(RM) Tcl/Makefile Perl5/Makefile.PL Perl5/Makefile Python/Makefile
 
 clean:
 	$(RM) *.o *.a *.lo *.la core a.out tarball test_s test_c install-prc$(EXT) pilot-debug$(EXT)
-	$(RM) -r .libs
+	$(RM) -rf .libs _libs
 	$(RM) $(CEXECS) $(TCLEXECS) $(CXXEXECS) $(PERLEXECS) validate 
 	$(RM) pilot.rom* pilot2.rom* sync-plan.ids.*
 	$(SUBMAKE_COMM) clean

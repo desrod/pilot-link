@@ -253,19 +253,19 @@ SV * newSVChar4 _((unsigned long arg));
 unsigned long SvChar4 _((SV *arg));
 
 typedef struct {
-	int errno;
+	int errnop;
 	struct pi_file * pf;
 	SV * Class;
 } PDA__Pilot__File;
 typedef struct DLP {
-	int errno;
+	int errnop;
 	int socket;
 } PDA__Pilot__DLP;
 typedef struct DLPDB {
 	SV *	connection;
 	int	socket;
 	int	handle;
-	int errno;
+	int errnop;
 	SV * dbname;
 	int dbmode;
 	int dbcard;
@@ -312,7 +312,7 @@ SvChar4(arg)
 	{										\
 		if (failure < 0)  {					\
 		   arg = &sv_undef;					\
-		   self->errno = failure;			\
+		   self->errnop = failure;			\
 		} else {							\
 			HV * i = newHV();									\
 			hv_store(i, "more", 4, newSViv(var.more), 0);		\
@@ -333,7 +333,7 @@ SvChar4(arg)
 	    	hv_store(i, "modifyDate", 10, newSViv(var.modifyDate), 0);		\
 	    	hv_store(i, "backupDate", 10, newSViv(var.backupDate), 0);		\
 	    	hv_store(i, "name", 4, newSVpv(var.name, 0), 0);				\
-			arg = newRV((SV*)i);											\
+			arg = newRV_noinc((SV*)i);										\
 		}	\
 	}
 
@@ -371,7 +371,7 @@ SvChar4(arg)
 	{	\
 		if (failure < 0)  {	\
 		   arg = &sv_undef;	\
-		   self->errno = failure;\
+		   self->errnop = failure;\
 		} else {	\
 			HV * i = newHV();	\
 			hv_store(i, "userID", 6, newSViv(var.userID), 0);	\
@@ -381,7 +381,7 @@ SvChar4(arg)
 	    	hv_store(i, "lastSyncDate", 12, newSViv(var.lastSyncDate), 0);	\
 	    	hv_store(i, "name", 4, newSVpv(var.username,0), 0);	\
 	    	hv_store(i, "password", 8, newSVpv(var.password,var.passwordLength), 0);	\
-			arg = newRV((SV*)i);	\
+			arg = newRV_noinc((SV*)i);	\
 		}	\
 	}
 
@@ -438,7 +438,7 @@ SvChar4(arg)
 	    		croak("Class not defined");						\
 	    	}													\
 		} else {												\
-	    	self->errno = result;								\
+	    	self->errnop = result;								\
 	    	PUSHs(&sv_undef);									\
 	    }
 
@@ -480,7 +480,7 @@ SvChar4(arg)
 	    		croak("Class not defined");						\
 	    	}													\
 		} else {												\
-	    	self->errno = result;								\
+	    	self->errnop = result;								\
 	    	PUSHs(&sv_undef);									\
 	    }
 
@@ -575,7 +575,7 @@ SvChar4(arg)
 	    		croak("Class not defined");						\
 	    	}													\
 		} else {												\
-	    	self->errno = result;								\
+	    	self->errnop = result;								\
 	    	PUSHs(&sv_undef);									\
 	    }
 
@@ -627,7 +627,7 @@ SvChar4(arg)
 	    		croak("Class not defined");						\
 	    	}													\
 		} else {												\
-	    	self->errno = result;								\
+	    	self->errnop = result;								\
 	    	PUSHs(&sv_undef);									\
 	    }
 
@@ -690,7 +690,7 @@ SvChar4(arg)
 	    	if (count != 1)										\
 	    		croak("Unable to create resource");				\
 		} else {												\
-	    	self->errno = result;								\
+	    	self->errnop = result;								\
 	    	PUSHs(&sv_undef);									\
 	    }
 
@@ -2339,7 +2339,7 @@ accept(socket)
 		} else {
 			PDA__Pilot__DLP * x = malloc(sizeof(PDA__Pilot__DLP));
 			SV * sv = newSViv((IV)(void*)x);
-			x->errno = 0;
+			x->errnop = 0;
 			x->socket = result;
 			RETVAL = newRV(sv);
 			SvREFCNT_dec(sv);
@@ -2368,8 +2368,8 @@ int
 errno(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
-		RETVAL = self->errno;
-		self->errno = 0;
+		RETVAL = self->errnop;
+		self->errnop = 0;
 	OUTPUT:
 	RETVAL
 
@@ -2689,7 +2689,7 @@ getRecords(self)
 		int result = dlp_ReadOpenDBInfo(self->socket, self->handle, &RETVAL);
 		if (result < 0) {
 			RETVAL = -1;
-			self->errno = result;
+			self->errnop = result;
 		}
 	}
 	OUTPUT:
@@ -2713,7 +2713,7 @@ getRecordIDs(self, sort=0)
 			result = dlp_ReadRecordIDList(self->socket, self->handle, sort, start,
 				0xFFFF/sizeof(recordid_t), id, &count);
 			if (result < 0) {
-				self->errno = result;
+				self->errnop = result;
 				break;
 			} else {
 				for(i=0;i<count;i++) {
@@ -2782,7 +2782,7 @@ setRecord(self, data)
 		result = dlp_WriteRecord(self->socket, self->handle, attr, id, category, c, len, &RETVAL);
 		if (result<0) {
 			RETVAL = 0;
-			self->errno = result;
+			self->errnop = result;
 		}
 	}
 	OUTPUT:
@@ -2805,7 +2805,7 @@ setRecordRaw(self, data, id, attr, category)
 		result = dlp_WriteRecord(self->socket, self->handle, attr, id, category, c, len, &RETVAL);
 		if (result<0) {
 			RETVAL = 0;
-			self->errno = result;
+			self->errnop = result;
 		}
 	}
 	OUTPUT:
@@ -2850,7 +2850,7 @@ setResource(self, data)
 		c = SvPV(data, len);
 		result = dlp_WriteResource(self->socket, self->handle, type, id, c, len);
 		if (result < 0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = newSVsv(&sv_undef);
 		} else
 			RETVAL = newSViv(result);
@@ -2929,7 +2929,7 @@ setPref(self, data)
     	if (pi_version(self->socket)< 0x101)
 		    r = dlp_OpenDB(self->socket, self->dbcard, self->dbmode, SvPV(self->dbname,na), &self->handle);
 		if (result < 0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			RETVAL = newSViv(result);
@@ -2965,7 +2965,7 @@ setPrefRaw(self, data, number, version, backup=1)
         }
 	    result = dlp_WriteAppPreference(self->socket, creator, number, backup, version, buf, len);
 		if (result < 0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			RETVAL = newSViv(result);
@@ -2987,8 +2987,8 @@ int
 errno(self)
 	PDA::Pilot::DLP *	self
 	CODE:
-		RETVAL = self->errno;
-		self->errno = 0;
+		RETVAL = self->errnop;
+		self->errnop = 0;
 	OUTPUT:
 	RETVAL
 
@@ -3000,7 +3000,7 @@ getTime(self)
 		time_t t;
 		int result = dlp_GetSysDateTime(self->socket, &t);
 		if (result < 0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = newSVsv(&sv_undef);
 		} else
 			RETVAL = newSViv(t);
@@ -3025,7 +3025,7 @@ getSysInfo(self)
 		struct SysInfo si;
 		int result = dlp_ReadSysInfo(self->socket, &si);
 		if (result < 0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			HV * i = newHV();
@@ -3047,7 +3047,7 @@ getCardInfo(self, cardno=0)
 		struct CardInfo c;
 		int result = dlp_ReadStorageInfo(self->socket, cardno, &c);
 		if (result < 0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			HV * i = newHV();
@@ -3203,7 +3203,7 @@ open(self, name, mode=0, cardno=0)
 		}
 		result = dlp_OpenDB(self->socket, cardno, nummode, name, &handle);
 		if (result<0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = &sv_undef;
 		} else {
 			int type;
@@ -3213,7 +3213,7 @@ open(self, name, mode=0, cardno=0)
 			x->connection = ST(0);
 			x->socket = self->socket;
 			x->handle = handle;
-			x->errno = 0;
+			x->errnop = 0;
 			x->dbname = newSVpv(name,0);
 			x->dbmode = nummode;
 			x->dbcard = cardno;
@@ -3252,7 +3252,7 @@ create(self, name, creator, type, flags, version, cardno=0)
 		int handle;
 		int result = dlp_CreateDB(self->socket, creator, type, cardno, flags, version, name, &handle);
 		if (result<0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = &sv_undef;
 		} else {
 			PDA__Pilot__DLP__DB * x = malloc(sizeof(PDA__Pilot__DLP__DB));
@@ -3261,7 +3261,7 @@ create(self, name, creator, type, flags, version, cardno=0)
 			x->connection = ST(0);
 			x->socket = self->socket;
 			x->handle = handle;
-			x->errno = 0;
+			x->errnop = 0;
 			x->dbname = newSVpv(name,0);
 			x->dbmode = dlpOpenRead|dlpOpenWrite|dlpOpenSecret;
 			x->dbcard = cardno;
@@ -3319,7 +3319,7 @@ setPref(self, data)
 	    buf = SvPV(data, len);
 	    result = dlp_WriteAppPreference(self->socket, creator, id, backup, version, buf, len);
 		if (result < 0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			RETVAL = newSViv(result);
@@ -3343,7 +3343,7 @@ setPrefRaw(self, data, creator, number, version, backup=1)
 	    buf = SvPV(data, len);
 	    result = dlp_WriteAppPreference(self->socket, creator, number, backup, version, buf, len);
 		if (result < 0) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			RETVAL = newSViv(result);
@@ -3463,7 +3463,7 @@ getFeature(self, creator, number)
 		int result;
 		if ((result = dlp_ReadFeature(self->socket, creator, number, &f))<0) {
 			RETVAL = newSVsv(&sv_undef);
-			self->errno = result;
+			self->errnop = result;
 		} else {
 			RETVAL = newSViv(f);
 		}
@@ -3528,7 +3528,7 @@ open(name)
 	CODE:
 	{
 		RETVAL = calloc(sizeof(PDA__Pilot__File),1);
-		RETVAL->errno = 0;
+		RETVAL->errnop = 0;
 		RETVAL->pf = pi_file_open(name);
 		{
 			HV * h = perl_get_hv("PDA::Pilot::DBClasses", 0);
@@ -3553,7 +3553,7 @@ create(name, info)
 	DBInfo	info
 	CODE:
 	RETVAL = calloc(sizeof(PDA__Pilot__File),1);
-	RETVAL->errno = 0;
+	RETVAL->errnop = 0;
 	RETVAL->pf = pi_file_create(name, &info);
 	{
 		HV * h = perl_get_hv("PDA::Pilot::DBClasses", 0);
@@ -3577,8 +3577,8 @@ int
 errno(self)
 	PDA::Pilot::File *	self
 	CODE:
-		RETVAL = self->errno;
-		self->errno = 0;
+		RETVAL = self->errnop;
+		self->errnop = 0;
 	OUTPUT:
 	RETVAL
 
@@ -3669,7 +3669,7 @@ getRecords(self)
 		int len, result;
 		result = pi_file_get_entries(self->pf, &len);
 		if (result) {
-			self->errno = result;
+			self->errnop = result;
 			RETVAL = &sv_undef;
 		} else
 			RETVAL = newSViv(len);

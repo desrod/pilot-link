@@ -64,8 +64,14 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
+#ifdef HAVE_SETENV
+  setenv("PILOTLOGFILE", "PiDebugNet.log", 1);
+#else
+# ifdef HAVE_PUTENV
   putenv("PILOTLOGFILE=PiDebugNet.log");
-  
+# endif
+#endif
+
   sd2 = pi_socket(AF_INET, PI_SOCK_STREAM, 0);
   if (sd2 <0 ) {
     perror("Unable to get socket 2");

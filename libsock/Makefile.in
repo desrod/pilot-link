@@ -81,7 +81,7 @@ libpisockdll.a: libpisock.a
 
 clean:
 	$(RM) *.o *.lo *.a *.la core a.out *.orig
-	$(RM) -r .libs
+	$(RM) -rf .libs _libs
 
 depend:
 	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -w -MM -I../include *.c | perl -pne 's/^(\S*)\.o/$$& $$1.lo/g' >> Makefile.in

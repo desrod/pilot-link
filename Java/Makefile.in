@@ -288,7 +288,7 @@ clean:
 	$(RM) *.o *.lo *.a *.la core a.out *.orig *.so *.class */*.class */*/*.class doConstants
 	$(RM) *~ */*~ */*/*~ Pdapilot/constants.java Pdapilot/constants.class doConstants
 	$(RM) $(STUBC) $(STUBH) $(JDKSPECIFIC)
-	$(RM) -r .libs
+	$(RM) -rf .libs _libs
 
 depend: $(JDKSPECIFIC)
 	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -w -MM -I../include *.c | perl -pne 's/^(\S*)\.o/$$& $$1.lo/g' >> Makefile.in ; $(JAVADEPS) *.java *.java */*.java */*/*.java  >> Makefile.in
