@@ -1,5 +1,9 @@
 2002-07-02  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/syspkt.c (sys_RPC): parse the return buffer correctly
+
+2002-07-02  JP Rosevear  <jpr@ximian.com>
+	
 	* libpisock/serial.c (pi_serial_connect): set the data rate to
 	57600 for a sys socket
 	(pi_serial_connect): set the baud rate for the device for all

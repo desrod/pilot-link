@@ -618,14 +618,14 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 
 		if (l < 0)
 			return l;
-		if (l < 6)
+		if (l < 2)
 			return -1;
-		if (buf[4] != 0x8a)
+		if (buf[0] != 0x8a)
 			return -2;
 
-		*D0 = get_long(buf + 8);
-		*A0 = get_long(buf + 12);
-		c = buf + 18;
+		*D0 = get_long(buf + 4);
+		*A0 = get_long(buf + 8);
+		c = buf + 14;
 		for (idx = params - 1; idx >= 0; idx--) {
 			if (param[idx].byRef && param[idx].data)
 				memcpy(param[idx].data, c + 2,
