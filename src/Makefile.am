@@ -29,6 +29,8 @@ INCLUDES = 			\
 CCEXECS =
 #endif
 
+noinst_LIBRARIES = libuserland.a
+
 bin_PROGRAMS = 		\
 	$(CCEXECS)	\
 	addresses	\
@@ -97,6 +99,12 @@ endif
 #ccexample_LDADD = 		\
 #	$(top_builddir)/libpisock++/libpisock++.la	\
 #	$(top_builddir)/libpisock/libpisock.la
+
+libuserland_a_SOURCES =		\
+	userland.c
+libuserland_a_LIBADD =		\
+	$(POPT_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
 
 addresses_SOURCES = 		\
 	addresses.c
