@@ -305,8 +305,9 @@ typedef struct DLPDB {
 	SV * Class;
 } PDA__Pilot__DLP__DB;
 
-/*typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__ResourceDB;
-typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__RecordDB;*/
+/* typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__ResourceDB;
+   typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__RecordDB;
+*/
 typedef struct DBInfo DBInfo;
 typedef struct PilotUser UserInfo;
 typedef unsigned long Char4;
@@ -2280,7 +2281,7 @@ read(socket, len)
 	    int result;
 
 	    pi_buffer_t *mybuf;
-	    mybuf = pi_buffer_new(0xffff);
+	    mybuf = pi_buffer_new(sizeof(struct DBInfo));
 
 	    if (len > sizeof(mybuf))
 	    	len = sizeof(mybuf);
@@ -2289,6 +2290,8 @@ read(socket, len)
 	    	RETVAL = newSVpv(mybuf->data, result);
 	    else
 	    	RETVAL = &sv_undef;
+
+	    pi_buffer_free(mybuf);
 	}
 	OUTPUT:
 	RETVAL
@@ -2685,10 +2688,12 @@ getRecord(self, index)
 		int size, result;
 
 		pi_buffer_t *mybuf;
-		mybuf = pi_buffer_new(0xffff);
+		mybuf = pi_buffer_new(sizeof(struct DBInfo));
 
-	    result = dlp_ReadRecordByIndex(self->socket, self->handle, index, mybuf, &id, &attr, &category);
-	    ReturnReadRecord(mybuf->data, size);
+		result = dlp_ReadRecordByIndex(self->socket, self->handle, index, mybuf, &id, &attr, &category);
+		ReturnReadRecord(mybuf->data, size);
+
+		pi_buffer_free(mybuf);
 	}
 
 Result
@@ -2784,10 +2789,12 @@ getRecordByID(self, id)
 	    int size, result, attr, category, index;
 
             pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(0xffff);
+            mybuf = pi_buffer_new(sizeof(struct DBInfo));
 
 	    result = dlp_ReadRecordById(self->socket, self->handle, id, mybuf, &index, &attr, &category);
 	    ReturnReadRecord(mybuf->data,size);
+
+	    pi_buffer_free(mybuf);
 	}
 
 void
@@ -2800,13 +2807,15 @@ getNextModRecord(self, category=-1)
 	    unsigned long id;
 
             pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(0xffff);
+            mybuf = pi_buffer_new(sizeof(struct DBInfo));
 
 	    if (category == -1)
 	    	result = dlp_ReadNextModifiedRec(self->socket, self->handle, mybuf, &id, &index, &attr, &category);
 	    else
 	    	result = dlp_ReadNextModifiedRecInCategory(self->socket, self->handle, category, mybuf, &id, &index, &attr);
 	    ReturnReadRecord(mybuf->data, size);
+
+	    pi_buffer_free(mybuf);
 	}
 
 void
@@ -2819,10 +2828,12 @@ getNextRecord(self, category)
 	    unsigned long id;
 
             pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(0xffff);
+            mybuf = pi_buffer_new(sizeof(struct DBInfo));
 
 	    result = dlp_ReadNextRecInCategory(self->socket, self->handle, category, mybuf, &id, &index, &attr);
 	    ReturnReadRecord(mybuf->data, size);
+
+	    pi_buffer_free(mybuf);
 	}
 
 unsigned long
@@ -2880,10 +2891,12 @@ setResourceByID(self, type, id)
 	   int size, result, index;
 
             pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(0xffff);
+            mybuf = pi_buffer_new(sizeof(struct DBInfo));
 
 	    result = dlp_ReadResourceByType(self->socket, self->handle, type, id, mybuf, &index);
 	    ReturnReadResource(mybuf->data, size);
+
+	    pi_buffer_free(mybuf);
 	}
 
 void
@@ -2896,10 +2909,12 @@ getResource(self, index)
 	    Char4 type;
 
             pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(0xffff);
+            mybuf = pi_buffer_new(sizeof(struct DBInfo));
 
 	    result = dlp_ReadResourceByIndex(self->socket, self->handle, index, mybuf, &type, &id);
 	    ReturnReadResource(mybuf->data, size);
+
+	    pi_buffer_free(mybuf);
 	}
 
 SV *
@@ -3482,11 +3497,15 @@ getDBInfo(self, start, RAM=1, ROM=0, cardno=0)
 	int	cardno
 	CODE:
 	{
-		DBInfo info;
+		struct DBInfo info;
+
+		pi_buffer_t *buffer = pi_buffer_new(sizeof(struct DBInfo));
 
 		int where = (RAM ? dlpDBListRAM : 0) | (ROM ? dlpDBListROM : 0);
-		int result = dlp_ReadDBList(self->socket, cardno, where, start, &info);
-		pack_dbinfo(RETVAL, info, result);
+		int result = dlp_ReadDBList(self->socket, cardno, where, start, buffer);
+		pack_dbinfo(RETVAL,(*(struct DBInfo *)(buffer->data)), result);
+
+		pi_buffer_free(buffer);
 	}
 	OUTPUT:
 	RETVAL
@@ -3501,7 +3520,7 @@ findDBInfo(self, start, name, creator, type, cardno=0)
 	int	cardno
 	CODE:
 	{
-		DBInfo info;
+		struct DBInfo info;
 		Char4 c,t;
 		int result;
 		if (SvOK(creator))
@@ -3870,7 +3889,7 @@ addResource(self, data, type, id)
 	PDA::Pilot::File *self
 	SV *data
 	Char4	type
-	int	id
+	int id
 	CODE:
 	{
 	    STRLEN len;
@@ -3906,8 +3925,8 @@ addRecordRaw(self, data, uid, attr, category)
 	PDA::Pilot::File *self
 	SV *data
 	unsigned long	uid
-	int	attr
-	int	category
+	int attr
+	int category
 	CODE:
 	{
 	    STRLEN len;
@@ -3925,9 +3944,9 @@ int
 install(self, socket, cardno)
 	PDA::Pilot::File *self
 	PDA::Pilot::DLP *socket
-	int	cardno
+	int cardno
 	CODE:
-	RETVAL = pi_file_install(self->pf, socket->socket, cardno, progress_func report_progress);
+	RETVAL = pi_file_install(self->pf, socket->socket, cardno, NULL);
 	OUTPUT:
 	RETVAL
 
@@ -3935,8 +3954,8 @@ int
 retrieve(self, socket, cardno)
 	PDA::Pilot::File *self
 	PDA::Pilot::DLP *socket
-	int	cardno
+	int cardno
 	CODE:
-	RETVAL = pi_file_retrieve(self->pf, socket->socket, cardno, progress_func report_progress);
+	RETVAL = pi_file_retrieve(self->pf, socket->socket, cardno, NULL);
 	OUTPUT:
 	RETVAL
