@@ -78,6 +78,7 @@ typedef enum {
 } palm_media_t;
 
 typedef enum { 
+  palm_op_restore,
   palm_op_backup, 
   palm_op_install, 
   palm_op_fetch,
@@ -109,7 +110,7 @@ struct option options[] = {
 	{"Flash",       no_argument,       NULL, 'F'},
 	{"Osflash",     no_argument,       NULL, 'O'},
 	{"Illegal",     no_argument,       NULL, 'I'},
-        {"verbose",     no_argument,       NULL, 'V'},
+	{"verbose",     no_argument,       NULL, 'V'},
 	{NULL,          0,                 NULL, 0},
 
 };
@@ -516,7 +517,6 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		filecount++;
 
 		f = pi_file_create(name, &info);
-		RemoveFromList(name, orig_files, ofile_total);
 
 		if (f == 0) {
 			printf("\nFailed, unable to create file.\n");
@@ -1230,7 +1230,8 @@ int main(int argc, char *argv[])
 			palm_operation = palm_op_settime;
 			break;
 		case 'r':
-			Restore(optarg);
+			dirname = optarg;
+			palm_operation = palm_op_restore;
 			break;
 		case 'i':
 			dbname = optarg;
@@ -1308,22 +1309,26 @@ int main(int argc, char *argv[])
 			Connect();
 			Install(dbname);
 			break;
+		case palm_op_restore:
+			Connect();
+			Restore(dirname);
+			break;
 		case palm_op_fetch:
 			Connect();
 			Fetch(dbname);
 			break;
-                case palm_op_list:
+		case palm_op_list:
 			Connect();
-                        List(media_type);
-                        break;
+			List(media_type);
+			break;
 		case palm_op_settime:
 			Connect();
 			palm_time();
 			break;
-                case palm_op_noop:
-                        printf("   Insufficient or invalid options supplied.\n");
-                        printf("   Please use 'pilot-xfer --help' for more info.\n\n");
-                        break;
+		case palm_op_noop:
+			printf("   Insufficient or invalid options supplied.\n");
+			printf("   Please use 'pilot-xfer --help' for more info.\n\n");
+			break;
         }
 
 	pi_close(sd);
