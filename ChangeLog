@@ -1,3 +1,7 @@
+2002-05-07  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* doc/Makefile.am: Added new docs to EXTRA_DIST
+
 2002-05-06  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-xfer.c: Fixed remaining PilotUser structs.
