@@ -44,6 +44,7 @@
 # define INCL_MISC
 # include <os2.h>
 #endif
+# include <sys/types.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <ctype.h>
