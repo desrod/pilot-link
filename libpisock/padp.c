@@ -265,8 +265,12 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				} else {
 					LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 					    "PADP TX Unexpected packet "
-					    "(possible port speed problem? "
+					    "possible port speed problem? "
 					    "out of sync packet?)\n"));
+
+					fprintf(stderr, "PADP TX Unexpected packet, "
+						"possible port speed problem?\n\n");
+
 					padp_dump_header (buf, 1);
 					/* Got unknown packet */
 					errno = EIO;
