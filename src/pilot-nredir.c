@@ -52,8 +52,13 @@ int main(int argc, const char *argv[])
 
 	poptContext po;
 
+	enum { mode_none=0, mode_net=257 }
+		run_mode = mode_none;
+
+
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
+		{"net", 'n', POPT_ARG_NONE, NULL, mode_net, "Redirect to net:"},
 	        POPT_TABLEEND
 	};
 
@@ -63,19 +68,36 @@ int main(int argc, const char *argv[])
 	"   This will bind your locally connected device to a network port, and\n"
 	"   redirect them through the network device to a listening server as\n"
 	"   specified in the LANSync Preferences panel on your Palm.\n\n"
-	"   Examples arguments:\n"
-	"      -p /dev/pilot\n\n");
+	"   Example arguments:\n"
+	"      -n -p /dev/pilot\n\n");
 
-	if ((argc < 2) && !plu_portgiven()) {
+	if (argc < 2) {
 		poptPrintUsage(po,stderr,1);
 		return 1;
 	}
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
-		return 1;
+		switch(c) {
+		case mode_net :
+			if (mode_none == run_mode) {
+				run_mode = c;
+			} else {
+				if (c != run_mode) {
+					fprintf(stderr,"   ERROR: Specify only one mode (-n)\n");
+					return 1;
+				}
+			}
+			break;
+		default:
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
+		}
 	}
 	if (c < -1) {
 		plu_badoption(po,c);
+	}
+	if (mode_none == run_mode) {
+		fprintf(stderr,"   ERROR: Must specify a mode (-n)\n");
+		return 1;
 	}
 
 	sd = plu_connect();
