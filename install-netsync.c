@@ -61,7 +61,7 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	ch,
 		enable          = 0,
 		sd 		= -1;
 	char 	*progname 	= argv[0],
@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
 
 	opterr = 0;
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((ch = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (ch) {
 
 		case 'h':
 			Help(progname);
@@ -99,12 +99,6 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	if (hostname == NULL && address == NULL && netmask == NULL) {
-		Help(progname);
-		fprintf(stderr, "ERROR: You must specify a hostname, address and netmask" 
-			"(or any combination of those)\n");
-		return -1;
-	}
 	
 	sd = pilot_connect(port);
 	if (sd < 0)
@@ -116,6 +110,13 @@ int main(int argc, char *argv[])
 	/* Read and write the LanSync data to the Palm device */
 	if (dlp_ReadNetSyncInfo(sd, &Net) < 0)
 		goto error_close;
+
+	if (!hostname && !address && !netmask) {
+		printf("   NetSync : LanSync: %d\n", Net.lanSync);
+		printf("   Hostname: %s\n", Net.hostName);
+		printf("   IP Addr : %s\n", Net.hostAddress);
+		printf("   Netmask : %s\n", Net.hostSubnetMask);
+	}
 	
 	if (enable)
 		Net.lanSync = 1;
