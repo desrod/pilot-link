@@ -224,7 +224,7 @@ static unsigned long unix_time_to_pilot_time(time_t t)
  * Returns:     Nothing
  *
  ***********************************************************************/
-struct pi_file *pi_file_open(char *name)
+struct pi_file *pi_file_open(const char *name)
 {
 	int 	i;
 	

@@ -3,6 +3,19 @@
 	* src/pilot-wav.c: New conduit to sync Voice Memo files from
 	  Tungsten devices (David Turner).
 
+	* bindings/Python/src/pisock_wrap.c: Fix uninitialized arg5
+
+	* include/pi-file.h: Change pi_file_open to const, it never changes
+	  anyway (closes Debian bug #43297)
+
+	* libpisock/pi-file.c: Ditto
+
+	* src/ccexample.cc: Fix iostream vs. iostream.h issues for non-Linux
+	  systems, deprecate iostream.h header
+
+	* src/read-ical.c: Fallout when no file is passed (closes Debian bug
+	  #176294)
+
 2003-10-05 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* First pass at VFS functionality

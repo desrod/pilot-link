@@ -163,6 +163,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (icalfile == NULL) {
+		display_help(progname);
+		fprintf(stderr, "ical filename not specified. Please use the -f option\n");
+		exit(1);
+	}
+
         sd = pilot_connect(port);
         if (sd < 0)
                 goto error;

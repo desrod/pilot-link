@@ -17,7 +17,7 @@ extern "C" {
 	/* most functions return -1 for error, 0 for ok */
 
 	/* read-only open */
-	extern struct pi_file *pi_file_open PI_ARGS((char *name));
+	extern struct pi_file *pi_file_open PI_ARGS((const char *name));
 
 	/* closes read or write handle */
 	extern int pi_file_close PI_ARGS((struct pi_file * pf));

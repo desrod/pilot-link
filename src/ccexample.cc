@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <iostream.h>
+#include <iostream>
 using namespace std;
 
 #include <unistd.h>

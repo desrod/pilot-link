@@ -341,7 +341,7 @@ SWIG_GetPtr(char *c, void **ptr, char *t)
   }
   c++;
   /* Extract hex value from pointer */
-  while (d = *c) {
+  while ((d = *c) != 0) {
     if ((d >= '0') && (d <= '9'))
       p = (p << 4) + (d - '0');
     else if ((d >= 'a') && (d <= 'f'))
@@ -570,7 +570,7 @@ extern DLPERROR dlp_ReadNetSyncInfo(int ,struct NetSyncInfo *);
 extern DLPERROR dlp_WriteNetSyncInfo(int ,struct NetSyncInfo *);
 extern DLPERROR dlp_ReadAppPreference(int ,unsigned long ,int ,int ,int ,void *,int *,int *);
 extern DLPERROR dlp_WriteAppPreference(int ,unsigned long ,int ,int ,int ,void *,int );
-extern struct pi_file *pi_file_open(char *);
+extern struct pi_file *pi_file_open(const char *);
 extern PIERROR pi_file_close(struct pi_file *);
 extern PIERROR pi_file_get_info(struct pi_file *,struct DBInfo *);
 extern PIERROR pi_file_get_app_info(struct pi_file *,void **,int *);
@@ -3912,7 +3912,7 @@ static PyObject *_wrap_pi_file_append_record(PyObject *self, PyObject *args) {
     int  _arg2;
     int  _arg3;
     int  _arg4;
-    recordid_t * _arg5;
+    recordid_t * _arg5 = NULL;
     PyObject * _argo0 = 0;
     int  __buflen;
     PyObject * _obj1 = 0;
