@@ -3,8 +3,13 @@
  *
  * (c) 2002, David A. Desrosiers <hacker at gnu-designs.com>
  *
+ *
  * (2002-01-26) dd
- * 	Initial release of Coding Guidelines
+ *      Initial release of Coding Guidelines
+ *
+ * (2002-05-04) dd
+ * 	Added some user-submitted suggestions to formatting and content,
+ * 	fixed a pilot-unix reference
  *
  */
 
@@ -395,9 +400,10 @@ Function Declarations
 	Each parameter should be declared (do not default to int). In
 	general the role of each variable in the function should be
 	described. This may either be done in the function comment or, if
-	each declaration is on its own line, in a comment on that line. Loop
-	counters called 'i', 'j', 'k' and so on, string pointers called 's',
-	and integral types called 'c' and used for characters are typically
+	each declaration is on its own line, in a comment on that line. 
+
+	Loop counters called 'i', 'j', 'k', string pointers called 's', and
+	integral types called 'c' when used for characters are typically
 	excluded.
 	
 	If a group of functions all have a similar parameter or local
@@ -534,11 +540,12 @@ Compound Statements
 ##################################################################
 
 Naming Classes
-
+--------------
 	* Use FirstLetterOfWordIsCaptilized style (Camel Notation)
 
-Naming Files
 
+Naming Files
+------------
 	* Use all lower case.
 
 	* Use - to separate words. eg. pilot-install.c
@@ -550,25 +557,38 @@ Naming Files
 	* Filenames must be less than 32 characters in length. This plays
 	  nice with older file systems like MacOS.
 
-General Formatting
 
+General Formatting
+------------------
 	* Use TABS with a size of 8 to make the code easily readable while
 	  not wasting too much space
 
-Miscellaneous
 
-	* Avoid magic numbers. The only magic numbers in use should be 1 and 0.
-
-Braces and Paranthesis
-
+Braces and Parenthesis
+----------------------
 	* Paranthesis should be right after a function name.  i.e.
 	  function() not function ()
 
 	* Paranthesis should have a space right after a keyword (if, while,
 	  for) eg: for (...)
 
+Miscellaneous
+-------------
+	* Avoid magic numbers. The only magic numbers in use should be 1 and
+	  0. There are some cases where this may not apply, such as: 
+
+	#define APPEND_CRLF 1
+	my_strcat(str, "Hello World", APPEND_CRLF);
+
+	Instead of using:
+	my_strcat(str, "Hello World", 1);
+
+	Numbers are only magic if its not readily apparent what they are
+	for.
+
+
 Appendices
 ----------
-[1] http://hcirisc.cs.binghamton.edu/mailman/listinfo/pilot-unix
+[1] http://pilot-link.org/listinfo/pilot-link-devel/
 [2] http://www.eskimo.com/~scs/C-faq/top.html
 [3] http://isbn.nu/0131103628

@@ -2,6 +2,8 @@
 
 	* doc/README.usb: Minor readability adjustments
 
+	* doc/CodingGuidelines: Small changes (user-submitted suggestions)
+
 2002-05-04  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/ccexample.cc: Fixed a namespace typing problem with gcc 3.x.x
