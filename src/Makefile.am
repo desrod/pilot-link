@@ -58,7 +58,6 @@ bin_PROGRAMS = 		\
 	pilot-dedupe	\
 	pilot-file	\
 	pilot-foto	\
-	pilot-prc	\
 	pilot-schlep	\
 	pilot-treofoto	\
 	pilot-wav	\
@@ -308,12 +307,6 @@ pilot_foto_LDADD = 		\
 #	$(top_builddir)/libpisock/libpisock.la
 ######################################################
 
-pilot_prc_SOURCES = 		\
-	pilot-prc.c
-pilot_prc_LDADD = 		\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
 
 pilot_schlep_SOURCES = 		\
 	pilot-schlep.c
@@ -457,7 +450,6 @@ EXTRA_DIST = 			\
 	pilot-file.c		\
 	pilot-foto.c		\
 	pilot-mail.c		\
-	pilot-prc.c		\
 	pilot-schlep.c		\
 	pilot-treofoto.c	\
 	pilot-wav.c		\
