@@ -34,11 +34,11 @@
 #include <sys/time.h>
 #include <time.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <signal.h>
 #include <utime.h>
 #include <string.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -891,7 +891,6 @@ static void Install(char *filename)
 		fprintf(stderr, "failed.\n");
 
 	} else if (stat(filename, &sbuf) == 0) {
-		totalsize += sbuf.st_size;
 		printf("\n\t(%7ld bytes, %3ld kb total)\n\n",
 			sbuf.st_size, totalsize/1024);
 		totalsize += sbuf.st_size;

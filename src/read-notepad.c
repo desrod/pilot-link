@@ -471,8 +471,7 @@ int main(int argc, char *argv[])
      }
    
 
-   if( sd ) 
-     {
+   if( sd ) {
 	/* Close the database */
 	dlp_CloseDB( sd, db );
 	dlp_AddSyncLogEntry( sd, "Successfully read NotePad from Palm.\n"
@@ -480,17 +479,13 @@ int main(int argc, char *argv[])
 	dlp_EndOfSync( sd, 0 );
 	pi_close(sd);
      } 
-/*   else if (filename) 
-     {
-	pi_file_close(pif);
-     }
-*/   
+
    return 0;
    
-   error_close:
-   pi_close(sd);
+error_close:
+	pi_close(sd);
    
 error:
-   return -1;
+	return -1;
    
 }

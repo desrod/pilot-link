@@ -313,6 +313,9 @@ int main(int argc, char *argv[])
 
 	return 0;
 
- error:
+error_close:
+        pi_close(sd);
+
+error:
 	return -1;
 }

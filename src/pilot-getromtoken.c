@@ -126,12 +126,9 @@ int main(int argc, char *argv[])
 
 	return 0;
 
- error_close:
+error_close:
 	pi_close(sd);
 	
- error:
-	perror("   ERROR:");
-	fprintf(stderr, "\n");
-
+error:
 	return -1;
 }

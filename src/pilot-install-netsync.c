@@ -155,9 +155,9 @@ int main(int argc, char *argv[])
 	
 	return 0;
 	
- error_close:
+error_close:
 	pi_close(sd);
 	
- error:
+error:
 	return -1;
 }

@@ -201,17 +201,14 @@ int main(int argc, char *argv[])
 
 	dlp_AddSyncLogEntry(sd, "Successfully wrote Hi-Note notes to Palm.\n"
 				"Thank you for using pilot-link.\n");
-	
-	/* All of the following code is now unnecessary, but harmless */
-
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	return 0;
 
- error_close:
-        pi_close(sd);
+error_close:
+	pi_close(sd);
 
- error:
-        return -1;
+error:
+	return -1;
 }
 

@@ -1,4 +1,4 @@
-;/*
+/*
  * dlpsh.c: DLP Command Shell
  *
  * (c) 1996, 2000, The pilot-link Team

@@ -229,9 +229,15 @@ int main(int argc, char *argv[])
 
 	dlp_AddSyncLogEntry(sd, "Wrote ToDo entry to Palm.\nThank you for using pilot-link.\n");
 
-	/* All of the following code is now unnecessary, but harmless */
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 
 	return 0;
+
+error_close:
+	pi_close(sd);
+
+error:
+	return -1;
+	
 }

@@ -303,4 +303,11 @@ int main(int argc, char *argv[])
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	return 0;
+	
+error_close:
+        pi_close(sd);
+
+error:
+        return -1;
+
 }

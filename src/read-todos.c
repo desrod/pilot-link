@@ -187,6 +187,7 @@ int main(int argc, char *argv[])
 					"Thank you for using pilot-link.");
 		dlp_EndOfSync(sd, 0);
 		pi_close(sd);
+
 	} else if (filename) {
 		pi_file_close(pif);
 	}

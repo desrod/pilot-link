@@ -291,17 +291,14 @@ int main(int argc, char *argv[])
 	dlp_WriteUserInfo(sd, &User);
 
 	dlp_AddSyncLogEntry(sd, "Wrote memo(s) to Palm.\n");
-
-	/* All of the following code is now unnecessary, but harmless */
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
-
 	return 0;
 
- error_close:
+error_close:
 	pi_close(sd);
 	
- error:
+error:
 	return -1;
 }
 

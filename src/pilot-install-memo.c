@@ -230,11 +230,12 @@ int main(int argc, char *argv[])
 				"Thank you for using pilot-link.\n");
 
 	dlp_EndOfSync(sd, 0);
+	pi_close(sd);
 	return 0;
  
- error_close:
+error_close:
 	pi_close(sd);
 	
- error:
+error:
 	return -1;
 }
