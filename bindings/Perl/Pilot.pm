@@ -72,13 +72,14 @@ require AutoLoader;
 	CompareTm
 );
 
-sub AUTOLOAD {
-    # This AUTOLOAD is used to 'autoload' constants from the constant()
-    # XS function.  If a constant is not found then control is passed
-    # to the AUTOLOAD in AutoLoader.
+# This AUTOLOAD is used to 'autoload' constants from the constant() XS
+# function.  If a constant is not found then control is passed to the
+# AUTOLOAD in AutoLoader.
 
-    # NOTE: THIS AUTOLOAD FUNCTION IS FLAWED (but is the best we can do for now).
-    # Avoid old-style ``&CONST'' usage. Either remove the ``&'' or add ``()''.
+# NOTE: THIS AUTOLOAD FUNCTION IS FLAWED (but is the best we can do for
+# now). Avoid old-style ``&CONST'' usage. Either remove the ``&'' or add
+# ``()''.
+sub AUTOLOAD {
     if (@_ > 0) {
 	$AutoLoader::AUTOLOAD = $AUTOLOAD;
 	goto &AutoLoader::AUTOLOAD;
@@ -103,8 +104,11 @@ sub AUTOLOAD {
 bootstrap PDA::Pilot;
 package PDA::Pilot::Block;
 
+#####################################################################
+#
 # Generic functions for "blocks", i.e., chunks of data from a Pilot.
-
+#
+#####################################################################
 sub new {
 	my($self,$data) = @_;
 	$self = bless {}, (ref($self) || $self);
@@ -116,38 +120,53 @@ sub new {
 	return $self;
 }
 
+#####################################################################
+#
+# Translate a "packed" block of binary data into a decent Perl 
+# representation
+#
+#####################################################################
 sub Unpack {
-
-# Translate a "packed" block of binary data into a decent Perl representation
-
 	my($self,$data) = @_;
 	$self->{raw} = $data;
 }
 
+
+#####################################################################
+#
+# Translate a Perl representation of a data block into a string of 
+# binary data
+#
+#####################################################################
 sub Pack {
-
-# Translate a Perl representation of a data block into a string of binary data
-
 	my($self) = @_;
 	return $self->{raw};
 }
 
-sub Raw {
-
+#####################################################################
+#
 # Just copy the "raw" item straight through
-
+#
+#####################################################################
+sub Raw {
 	my($self) = @_;
 	return $self->{raw};
 }
 
+#####################################################################
+#
+# Fill in a block with default Perl data
+#
+#####################################################################
 sub Fill {
 
-# Fill in a block with default Perl data
-
 }
 
+#####################################################################
+#
 # Copy a block
-
+#
+#####################################################################
 sub Clone {
 	my($self) = @_;
 	my($k,$v);
@@ -158,8 +177,11 @@ sub Clone {
 
 package PDA::Pilot::Record;
 
+#####################################################################
+#
 # A class to represent generic database records
-
+#
+#####################################################################
 @ISA = qw(PDA::Pilot::Block);
 
 sub new {
@@ -190,8 +212,11 @@ sub new {
 
 package PDA::Pilot::Resource;
 
+#####################################################################
+#
 # A class to represent generic database resources
-
+#
+#####################################################################
 @ISA = qw(PDA::Pilot::Block);
 
 sub new {
@@ -208,20 +233,23 @@ sub new {
 
 package PDA::Pilot::AppBlock;
 
+#####################################################################
 # A class to represent generic application-information blocks
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Block);
 
 package PDA::Pilot::SortBlock;
 
+#####################################################################
 # A class to represent generic sort-information blocks
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Block);
 
 package PDA::Pilot::Pref;
 
+#####################################################################
 # A class to represent generic preference blocks
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Block);
 
 sub new {
@@ -238,8 +266,9 @@ sub new {
 
 package PDA::Pilot::MemoRecord;
 
+#####################################################################
 # A class to represent records of the Memo application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Record);
 
 sub Pack {
@@ -255,8 +284,9 @@ sub Unpack {
 
 package PDA::Pilot::MemoAppBlock;
 
+#####################################################################
 # A class to represent records of the Memo application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::AppBlock);
 
 sub Pack {
@@ -272,8 +302,9 @@ sub Unpack {
 
 package PDA::Pilot::ToDoRecord;
 
+#####################################################################
 # A class to represent records of the ToDo application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Record);
 
 sub Pack {
@@ -289,8 +320,9 @@ sub Unpack {
 
 package PDA::Pilot::ToDoAppBlock;
 
+#####################################################################
 # A class to represent the app block of the ToDo application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::AppBlock);
 
 sub Pack {
@@ -306,8 +338,9 @@ sub Unpack {
 
 package PDA::Pilot::AddressRecord;
 
+#####################################################################
 # A class to represent records of the Address application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Record);
 
 sub Pack {
@@ -323,8 +356,9 @@ sub Unpack {
 
 package PDA::Pilot::AddressAppBlock;
 
+#####################################################################
 # A class to represent the app block of the Address application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::AppBlock);
 
 sub Pack {
@@ -340,8 +374,9 @@ sub Unpack {
 
 package PDA::Pilot::AppointmentRecord;
 
+#####################################################################
 # A class to represent records of the Appointment application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Record);
 
 sub Pack {
@@ -357,8 +392,9 @@ sub Unpack {
 
 package PDA::Pilot::AppointmentAppBlock;
 
+#####################################################################
 # A class to represent the app block of the Appointment application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::AppBlock);
 
 sub Pack {
@@ -374,8 +410,9 @@ sub Unpack {
 
 package PDA::Pilot::MailRecord;
 
+#####################################################################
 # A class to represent records of the Mail application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Record);
 
 sub Pack {
@@ -391,8 +428,9 @@ sub Unpack {
 
 package PDA::Pilot::MailAppBlock;
 
+#####################################################################
 # A class to represent the app block of the Mail application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::AppBlock);
 
 sub Pack {
@@ -408,8 +446,9 @@ sub Unpack {
 
 package PDA::Pilot::MailSyncPref;
 
+#####################################################################
 # A class to represent the sync pref of the Mail application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Pref);
 
 sub Pack {
@@ -425,8 +464,9 @@ sub Unpack {
 
 package PDA::Pilot::MailSignaturePref;
 
+#####################################################################
 # A class to represent the signature pref of the Mail application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Pref);
 
 sub Pack {
@@ -442,8 +482,9 @@ sub Unpack {
 
 package PDA::Pilot::ExpenseRecord;
 
+#####################################################################
 # A class to represent records of the Expense application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Record);
 
 sub Pack {
@@ -459,8 +500,9 @@ sub Unpack {
 
 package PDA::Pilot::ExpenseAppBlock;
 
+#####################################################################
 # A class to represent the app block of the Expense application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::AppBlock);
 
 sub Pack {
@@ -476,8 +518,9 @@ sub Unpack {
 
 package PDA::Pilot::ExpensePref;
 
+#####################################################################
 # A class to represent the pref of the Expense application
-
+#####################################################################
 @ISA = qw(PDA::Pilot::Pref);
 
 sub Pack {
@@ -493,8 +536,9 @@ sub Unpack {
 
 package PDA::Pilot::Database;
 
+#####################################################################
 # A class to specify which classes are used for generic database entries
-
+#####################################################################
 sub record { shift @_; PDA::Pilot::Record->new(@_) }
 sub resource { shift @_; PDA::Pilot::Resource->new(@_) }
 sub pref { shift @_; PDA::Pilot::Pref->new(@_) }
@@ -503,8 +547,9 @@ sub sortblock { shift @_; PDA::Pilot::SortBlock->new(@_) }
 
 package PDA::Pilot::MemoDatabase;
 
+#####################################################################
 # A class to specify which classes are used for Memo database entries
-
+#####################################################################
 @ISA=qw(PDA::Pilot::Database);
 
 sub record { shift @_; PDA::Pilot::MemoRecord->new(@_) }
@@ -594,7 +639,9 @@ package PDA::Pilot;
 				exps => 'PDA::Pilot::ExpenseDatabase'
 				);
 
+#####################################################################
 # Default classes
+#####################################################################
 $DBClasses{''} = 'PDA::Pilot::Database';
 $PrefClasses{''} = 'PDA::Pilot::Database';
 
@@ -605,7 +652,10 @@ sub CompareTm {
 	       ($a[2] <=> $b[2]) || ($a[1] <=> $b[1]) || ($a[0] <=> $b[0]);
 }
 
-# Autoload methods go after __END__, and are processed by the autosplit program.
+#####################################################################
+# Autoload methods go after __END__, and are processed by the 
+# autosplit program.
+#####################################################################
 
 1;
 __END__
