@@ -229,8 +229,8 @@ static struct {
 }
 acceptedDevices[] = {
 	/* Sony */
-	{0x054c, 0x0038},	// Sony S S320 and other Palm OS 3.5 devices
-	{0x054c, 0x0066},	// Sony T, SJ series, and other Palm OS 4.0 devices
+	{0x054c, 0x0038},	// Sony Palm OS 3.5 devices
+	{0x054c, 0x0066},	// Sony T, S320, SJ series, and other Palm OS 4.0 devices
 	{0x054c, 0x0095},	// Sony S360
 	{0x054c, 0x000a},	// Sony NR and other Palm OS 4.1 devices
 	{0x054c, 0x009a},	// Sony NR70V/U
