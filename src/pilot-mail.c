@@ -46,8 +46,8 @@
 /* Declare prototypes */
 void markline(char *msg);
 int openmhmsg(char *dir, int num);
-int getpopchar(int socket);
-int getpopstring(int socket, char *buf);
+unsigned int getpopchar(int socket);
+unsigned int getpopstring(int socket, char *buf);
 int getpopresult(int socket, char *buf);
 char *skipspace(char *c);
 void header(struct Mail *m, char *t);
@@ -81,7 +81,7 @@ int openmhmsg(char *dir, int num)
 	return open(filename, O_RDONLY);
 }
 
-int getpopchar(int socket)
+unsigned int getpopchar(int socket)
 {
 	int 	len;
 	char 	buf;
@@ -95,7 +95,7 @@ int getpopchar(int socket)
 	return buf;
 }
 
-int getpopstring(int socket, char *buf)
+unsigned int getpopstring(int socket, char *buf)
 {
 	int 	c;	/* switch */
 

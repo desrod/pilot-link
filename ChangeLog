@@ -7,6 +7,10 @@
 	  termlib, ncurses, etc. More portable. Added a fix for getopt on
 	  Mac OSX systems (check for unistd, Bill Janssen)
 
+	* src/pilot-mail.c: Fixed an error when characters between 128 and
+	  255 are received. Need to deprecate this soon, point to
+	  pilot-mailsync insted.
+
 2002-10-11  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/dlp.c (dlp_response_read): don't depend on the return
