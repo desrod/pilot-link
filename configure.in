@@ -314,9 +314,9 @@ use_java=false
 msg_java=no
 AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java    [default=yes]])
 if test "x$with_java" != "xno"; then
-	AC_PATH_PROG(JAVAC, javac, $with_java/bin:$PATH)
-	AC_PATH_PROG(JAVA, java, $with_java/bin:$PATH)
-	AC_PATH_PROG(JAR, jar, $with_java/bin:$PATH)
+	AC_PATH_PROG(JAVAC, javac, , $with_java/bin:$PATH)
+	AC_PATH_PROG(JAVA, java, , $with_java/bin:$PATH)
+	AC_PATH_PROG(JAR, jar, ,$with_java/bin:$PATH)
 fi
 if test "x$JAVA" != "x" && test "x$JAVAC" != "x" && test "x$JAR" != "x"; then
 	AC_MSG_CHECKING(for Java Development Kit)
