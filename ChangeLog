@@ -1,3 +1,8 @@
+2002-07-18  JP Rosevear  <jpr@ximian.com>
+
+	* bindings/Makefile.am: add dist hook to remove the CVS dirs from
+	the tarball
+
 2002-07-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Updated to default all bindings to off
