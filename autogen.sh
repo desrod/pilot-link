@@ -27,18 +27,6 @@ DIE=0
   }
 }
 
-#grep "^AM_GNU_GETTEXT" $srcdir/configure.ac >/dev/null && {
-#  grep "sed.*POTFILES" $srcdir/configure.ac >/dev/null || \
-#  (gettext --version) < /dev/null > /dev/null 2>&1 || {
-#    echo
-#    echo "**Error**: You must have \`gettext' installed to compile $PKG_NAME."
-#    echo "Get ftp://ftp.gnu.org/pub/gnu/gettext/gettext-0.11.5.tar.gz"
-#    echo "(or a newer version if it is available)"
-#    DIE=1
-#  }
-#}
-
-
 # usage: test_version program version
 # returns 0 if program >= version; returns 1 if not.
 test_version()
@@ -71,8 +59,6 @@ test_version()
         return 0
     fi
 }
-
-
 
 # usage: find_program preset program version "<other versions>"
 # sets "program" to the name of the program to use.
@@ -138,7 +124,6 @@ ACLOCAL="$program"
   DIE=1
   NO_AUTOMAKE=yes
 }
-
 
 # if no automake, don't bother testing for aclocal
 test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
