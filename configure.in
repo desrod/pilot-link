@@ -303,13 +303,13 @@ fi
 
 AC_MSG_CHECKING(whether to use included popt)
 if test "x$with_included_popt" = "xyes"; then
-	msg_popt="yes (included)"
+	msg_popt="Included"
     AC_MSG_RESULT(yes)
 	POPT_LIBS='$(top_builddir)/popt/libpopt.la'
-    POPT_INCLUDES="-I$srcdir/popt"
+    POPT_INCLUDES='-I$(top_srcdir)/popt'
 else
     AC_MSG_RESULT(no)
-	msg_popt="yes (system)"
+	msg_popt="System"
     POPT_LIBS="-lpopt"
 fi
 AM_CONDITIONAL(INCLUDED_POPT, test "x$with_included_popt" = "xyes")
@@ -754,7 +754,7 @@ AC_MSG_RESULT([
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
   ElectricFence checks.... : $msg_efence
-  Using internal popt..... : $msg_popt
+  Support for popt........ : $msg_popt
   Readline support........ : $msg_readline
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
