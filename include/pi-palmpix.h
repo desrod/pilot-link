@@ -26,6 +26,9 @@ struct PalmPixState {
    
    /* Set these to some permutation of 0,1,2 before using pixPixmap.  */
    int offset_r, offset_g, offset_b;
+
+   /* This specifies the png or ppm output */
+   int output_type;
    
    /* This will be filled in by pixPixmap.  */
    unsigned char *pixmap;
@@ -46,6 +49,10 @@ struct PalmPixHeader {
 enum {
    pixName = 0x01, pixThumbnail = 0x02, pixPixmap = 0x04
 };
+   
+/* picture output types */
+#define PALMPIX_OUT_PPM    1
+#define PALMPIX_OUT_PNG    2
    
 /* Returns the number of bytes from the buffer that were consumed, or 0 on
  * error (generally the record not in fact being a PalmPixHeader).  */

@@ -30,6 +30,16 @@
 #include "pi-palmpix.h"
 
 #include "getopt.h"
+#include "config.h"
+
+#ifdef HAVE_PNG
+#include "png.h"
+#if (PNG_LIBPNG_VER < 10201)
+ #define png_voidp_NULL (png_voidp)NULL
+ #define png_error_ptr_NULL (png_error_ptr)NULL
+#endif
+#endif
+
 
 const char *progname;
 int pilot_connect(const char *port);
@@ -42,11 +52,12 @@ struct option options[] = {
 	{"name",	required_argument, NULL, 'n'},
 	{"list",	no_argument, NULL, 'l'},
 	{"help",	no_argument, NULL, 'h'},     
+	{"type",        required_argument, NULL, 't'},
 	{"version",	no_argument, NULL, 'v'},    
 	{NULL,		no_argument, NULL, 0}
 };
 
-static const char optstring[] = "ln:p:hv";
+static const char optstring[] = "ln:p:hvt:";
 
 static void print_help(char *progname) 
 {
@@ -56,6 +67,8 @@ static void print_help(char *progname)
                "   Options:\n"
                "     -p <port>    Use device file <port> to communicate with Palm\n"
                "     -h           Display this information\n"
+	       "     --type, -t   specify picture output type\n"
+	       "                  either \"ppm\" or \"png\"\n"
                "     --list, -l   List picture information instead of converting\n"
 	       "     -n [name]    Convert only <pixname>, and output to stdout as .ppm\n\n", progname);
         return;
@@ -135,6 +148,67 @@ void
    
 }
 
+#ifdef HAVE_PNG
+void write_png( FILE *f, const struct PalmPixState *state,
+	        const struct PalmPixHeader *header)
+{
+   int i;  //,j,k = 0;
+   png_structp png_ptr;
+   png_infop info_ptr;
+//   png_bytep row;
+   
+   png_ptr = png_create_write_struct
+     ( PNG_LIBPNG_VER_STRING, png_voidp_NULL,  
+       png_error_ptr_NULL, png_error_ptr_NULL);
+
+   if(!png_ptr)
+     return;
+   
+   info_ptr = png_create_info_struct(png_ptr);
+   if( !info_ptr )
+     {
+	png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+	return;
+     }
+   
+   if( setjmp( png_jmpbuf( png_ptr )))
+     {
+	png_destroy_write_struct( &png_ptr, &info_ptr );
+	fclose( f );
+	return;
+     }
+   
+   png_init_io( png_ptr, f );
+   
+   png_set_IHDR( png_ptr, info_ptr, header->w, header->h,
+		8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_DEFAULT,  PNG_FILTER_TYPE_DEFAULT );
+
+   png_write_info( png_ptr, info_ptr );
+
+//   row = (png_bytep)malloc( width/8 * sizeof( png_byte ));
+   
+//   if( NULL == row )
+//     return;
+   
+   for( i=0; i<header->h; i++ )
+//     for( j=0; j<n->data[i].repeat; j++ )
+       {
+	  png_write_row( png_ptr, &state->pixmap[i*header->w*3] );
+	  png_write_flush( png_ptr );	  
+       }
+   
+   png_write_end(png_ptr, info_ptr);
+   
+//   free( row );
+
+//   row = NULL;
+
+   png_destroy_write_struct( &png_ptr, &info_ptr );
+   
+}
+#endif
+
 static int
   write_one (const struct PalmPixHeader *header, struct PalmPixState *state,
 	     int recno, const char *pixname)
@@ -147,9 +221,15 @@ static int
 	if (strcmp (state->pixname, pixname) == 0
 	    && unpack_PalmPix (state, header, recno,
 			       pixName | pixPixmap) != 0) 
-	  {
-	     
+	  {	     
+#ifdef HAVE_PNG
+	     if( state->output_type == PALMPIX_OUT_PPM )
+	       write_ppm( stdout, state, header);
+	     else if( state->output_type == PALMPIX_OUT_PNG )
+	       write_png( stdout, state, header);
+#else
 	     write_ppm (stdout, state, header);
+#endif
 	     free_PalmPix_data (state);
 	     
 	  }
@@ -175,14 +255,24 @@ static int
 	FILE *f;
 	
 	/* FIXME ought to use something like protect_filename here */
-	sprintf (fname, "%s.ppm", state->pixname);
+	if( state->output_type == PALMPIX_OUT_PPM )
+	  sprintf (fname, "%s_pp.ppm", state->pixname);
+	else if( state->output_type == PALMPIX_OUT_PNG )
+	  sprintf (fname, "%s_pp.png", state->pixname);
+	  
 	printf ("Generating %s...\n", fname);
 	
 	f = fopen (fname, "wb");
 	if (f) 
 	  {
-	     
+#ifdef HAVE_PNG	     
+	     if( state->output_type == PALMPIX_OUT_PPM )
+	       write_ppm(f, state, header);
+	     else if( state->output_type == PALMPIX_OUT_PNG )
+	       write_png(f, state, header);
+#else
 	     write_ppm (f, state, header);
+#endif
 	     fclose (f);
 	     
 	  }
@@ -255,8 +345,9 @@ int
   main (int argc, char **argv) 
 {
    int 	c, 	/* switch */
-	sd	= -1, 
-	nfileargs;
+     sd	= -1, 
+     nfileargs,
+     output_type = PALMPIX_OUT_PPM;
 
    int (*action) (const struct PalmPixHeader *, struct PalmPixState *,
 		  int, const char *) = write_all;
@@ -271,32 +362,53 @@ int
      {
 	switch (c) {
 	     
-	   case 'l':
-	     action = list;
-	     break;
+	 case 'l':
+	   action = list;
+	   break;
+	   
+	 case 'n':
+	   action = write_one;
+	   pixname = optarg;
+	   break;
+	   
+	 case 'p':
+	   port = optarg;
+	   break;
+	   
+	 case 'h':
+	   print_help(progname);
+	   return EXIT_SUCCESS;
+	   
+	 case 't':
+	   if( !strncmp( "png", optarg, 3 ))
+	     {
+#ifdef HAVE_PNG	     
+		output_type = PALMPIX_OUT_PNG;
+#else
+		fprintf( stderr, "read-palmpix was built without png support\n" );
+#endif
+	     }
+	   else if( !strncmp( "ppm", optarg, 3 ))
+	     {
+		output_type = PALMPIX_OUT_PPM;
+	     }
+	   else
+	     {
+		fprintf( stderr, "Unknown output type defaulting to ppm\n" );
+		output_type = PALMPIX_OUT_PPM;
+	     }
+	   
+	   break;
+
+	 case 'v':
+	   print_splash(progname);
+	   return EXIT_SUCCESS;
 	     
-	   case 'n':
-	     action = write_one;
-	     pixname = optarg;
-	     break;
-	     
-	   case 'p':
-	     port = optarg;
-	     break;
-	     
-	   case 'h':
-	     print_help(progname);
-	     return EXIT_SUCCESS;
-	     
-	   case 'v':
-	     print_splash(progname);
-	     return EXIT_SUCCESS;
-	     
-	   default:
-	     print_help(progname);
-	     return EXIT_FAILURE;
-	     
-	  }
+	 default:
+	   print_help(progname);
+	   return EXIT_FAILURE;
+	   
+	}
      }
    
   
@@ -323,6 +435,9 @@ int
 		       
 		       struct PalmPixState_pi_file s;
 		       int n = 0;
+		       
+		       s.state.output_type = output_type;
+		       
 		       pi_file_get_entries (f, &n);
 		       s.state.getrecord = getrecord_pi_file;
 		       s.f = f;
@@ -361,9 +476,11 @@ int
 	
 	if (dlp_OpenDB (sd, 0, dlpOpenRead, PalmPix_DB, &db) >= 0) 
 	  {
-	     
 	     struct PalmPixState_pi_socket s;
-	     int n = 0;
+   	     int n = 0;
+	     
+	     s.state.output_type = output_type;
+	     
 	     dlp_ReadOpenDBInfo (sd, db, &n);
 	     s.state.getrecord = getrecord_pi_socket;
 	     s.sd = sd;
