@@ -27,6 +27,21 @@ extern "C" {
 
 #include "pi-macros.h"		/* For recordid_t */
 
+#define PI_DLP_OFFSET_CMD  0
+#define PI_DLP_OFFSET_ARGC 1
+#define PI_DLP_OFFSET_ARGV 2
+#define PI_DLP_OFFSET_ARGV 2
+
+#define PI_DLP_ARG_TINY_LEN  0x000000FFL
+#define PI_DLP_ARG_SHORT_LEN 0x0000FFFFL
+#define PI_DLP_ARG_LONG_LEN  0xFFFFFFFFL
+
+#define PI_DLP_ARG_FLAG_TINY  0x00
+#define PI_DLP_ARG_FLAG_SHORT 0x80
+#define PI_DLP_ARG_FLAG_LONG  0xC0
+
+#define PI_DLP_ARG_FIRST_ID 0x20
+
 #define DLP_BUF_SIZE 0xffff
 
 	/* Note: All of these functions return an integer that if greater
@@ -44,10 +59,15 @@ extern "C" {
 	};
 
 	struct SysInfo {
-		int 	nameLength;
-		char 	name[128];
 		unsigned long romVersion;
 		unsigned long locale;
+		unsigned char prodIDLength;
+		char 	prodID[128];
+		unsigned short dlpMajorVersion;
+		unsigned short dlpMinorVersion;
+		unsigned short compatMajorVersion;
+		unsigned short compatMinorVersion;
+		unsigned long  maxRecSize;		
 	};
 
 	struct DBInfo {
@@ -86,6 +106,103 @@ extern "C" {
 		char 	hostSubnetMask[40];		/* Null terminated string */
 	};
 
+	enum dlpFunctions {
+		/* range reserved for internal use */
+		dlpReservedFunc = 0x0F,
+
+		/* DLP 1.0 FUNCTIONS START HERE (PalmOS v1.0) */
+		dlpFuncReadUserInfo,
+	
+		dlpFuncWriteUserInfo,
+	
+		dlpFuncReadSysInfo,
+	
+		dlpFuncGetSysDateTime,
+	
+		dlpFuncSetSysDateTime,
+	
+		dlpFuncReadStorageInfo,
+	
+		dlpFuncReadDBList,
+	
+		dlpFuncOpenDB,
+	
+		dlpFuncCreateDB,
+	
+		dlpFuncCloseDB,
+	
+		dlpFuncDeleteDB,
+	
+		dlpFuncReadAppBlock,
+	
+		dlpFuncWriteAppBlock,
+
+		dlpFuncReadSortBlock,
+
+		dlpFuncWriteSortBlock,
+
+		dlpFuncReadNextModifiedRec,
+
+		dlpFuncReadRecord,
+
+		dlpFuncWriteRecord,
+
+		dlpFuncDeleteRecord,
+
+		dlpFuncReadResource,
+
+		dlpFuncWriteResource,
+
+		dlpFuncDeleteResource,
+
+		dlpFuncCleanUpDatabase,
+
+		dlpFuncResetSyncFlags,
+
+		dlpFuncCallApplication,
+
+		dlpFuncResetSystem,
+	
+		dlpFuncAddSyncLogEntry,
+	
+		dlpFuncReadOpenDBInfo,
+	
+		dlpFuncMoveCategory,
+	
+		dlpProcessRPC,
+	
+		dlpFuncOpenConduit,
+	
+		dlpFuncEndOfSync,
+	
+		dlpFuncResetRecordIndex,
+	
+		dlpFuncReadRecordIDList,
+	
+		/* DLP 1.1 FUNCTIONS ADDED HERE (PalmOS v2.0 Personal, and Professional) */
+		dlpFuncReadNextRecInCategory,
+	
+		dlpFuncReadNextModifiedRecInCategory,
+	
+		dlpFuncReadAppPreference,
+	
+		dlpFuncWriteAppPreference,
+	
+		dlpFuncReadNetSyncInfo,
+	
+		dlpFuncWriteNetSyncInfo,
+
+		dlpFuncReadFeature,
+	
+		/* DLP 1.2 FUNCTIONS ADDED HERE (PalmOS v3.0) */
+		dlpFindDB,
+
+		dlpSetDBInfo,
+	
+		dlpLastFunc
+
+	};
+	
 	enum dlpDBFlags {
 		dlpDBFlagResource 	= 0x0001,	/* Resource DB, instead of record DB            */
 		dlpDBFlagReadOnly 	= 0x0002,	/* DB is read only                              */
@@ -136,30 +253,61 @@ extern "C" {
 	};
 
 	enum dlpErrors {
-		dlpErrNoError 		= -1,
-		dlpErrSystem 		= -2,
-		dlpErrMemory 		= -3,
-		dlpErrParam 		= -4,
-		dlpErrNotFound 		= -5,
-		dlpErrNoneOpen 		= -6,
-		dlpErrAlreadyOpen 	= -7,
-		dlpErrTooManyOpen 	= -8,
-		dlpErrExists 		= -9,
-		dlpErrOpen 		= -10,
-		dlpErrDeleted 		= -11,
-		dlpErrBusy 		= -12,
-		dlpErrNotSupp 		= -13,
-		dlpErrUnused1 		= -14,
-		dlpErrReadOnly 		= -15,
-		dlpErrSpace 		= -16,
-		dlpErrLimit 		= -17,
-		dlpErrSync 		= -18,
-		dlpErrWrapper 		= -19,
-		dlpErrArgument 		= -20,
-		dlpErrSize 		= -21,
+		dlpErrNoError 		= 0,
+		dlpErrSystem 		= -1,
+		dlpErrMemory 		= -2,
+		dlpErrParam 		= -3,
+		dlpErrNotFound 		= -4,
+		dlpErrNoneOpen 		= -5,
+		dlpErrAlreadyOpen 	= -6,
+		dlpErrTooManyOpen 	= -7,
+		dlpErrExists 		= -8,
+		dlpErrOpen 		= -8,
+		dlpErrDeleted 		= -10,
+		dlpErrBusy 		= -11,
+		dlpErrNotSupp 		= -12,
+		dlpErrUnused1 		= -13,
+		dlpErrReadOnly 		= -14,
+		dlpErrSpace 		= -15,
+		dlpErrLimit 		= -16,
+		dlpErrSync 		= -17,
+		dlpErrWrapper 		= -18,
+		dlpErrArgument 		= -19,
+		dlpErrSize 		= -20,
 		dlpErrUnknown 		= -128
 	};
 
+	struct dlpArg {
+		int id;
+
+		int len;		
+		unsigned char *data;
+	};
+
+	struct dlpRequest {
+		enum dlpFunctions cmd;
+		
+		int argc;
+		struct dlpArg **argv;
+	};
+
+	struct dlpResponse {
+		enum dlpFunctions cmd;
+		enum dlpErrors err;
+		
+		int argc;
+		struct dlpArg **argv;
+	};	
+
+	struct dlpArg * dlp_arg_new (int id, int len);
+	void dlp_arg_free (struct dlpArg *arg);
+	int dlp_arg_len (int argc, struct dlpArg **argv);
+	struct dlpRequest *dlp_request_new (enum dlpFunctions cmd, int argc, ...);
+	struct dlpResponse *dlp_response_new (enum dlpFunctions cmd, int argc);
+	int dlp_response_read (struct dlpResponse **res, int sd);
+	int dlp_request_write (struct dlpRequest *req, int sd);
+	void dlp_request_free (struct dlpRequest *req);
+	
 	extern char *dlp_errorlist[];
 	extern char *dlp_strerror(int error);
 

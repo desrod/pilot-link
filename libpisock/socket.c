@@ -175,7 +175,7 @@ ps_list_free (struct pi_socket_list *list)
 static void
 protocol_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 {
-	ps->protocol_queue = realloc(ps->protocol_queue, (sizeof(struct pi_protocol *)) * ps->queue_len + 1);
+	ps->protocol_queue = realloc(ps->protocol_queue, (sizeof(struct pi_protocol *)) * (ps->queue_len + 1));
 	ps->protocol_queue[ps->queue_len] = prot;
 	ps->queue_len++;
 }
@@ -183,7 +183,7 @@ protocol_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 static void
 protocol_cmd_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 {
-	ps->cmd_queue = realloc(ps->cmd_queue, (sizeof(struct pi_protocol *)) * ps->cmd_len + 1);
+	ps->cmd_queue = realloc(ps->cmd_queue, (sizeof(struct pi_protocol *)) * (ps->cmd_len + 1));
 	ps->cmd_queue[ps->cmd_len] = prot;
 	ps->cmd_len++;
 }
@@ -327,8 +327,8 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 		break;
 	}
 
-	protocol_queue_add (ps, dev_prot);
-	protocol_cmd_queue_add (ps, dev_cmd_prot);
+  	protocol_queue_add (ps, dev_prot);
+  	protocol_cmd_queue_add (ps, dev_cmd_prot);
 }
 
 static void
@@ -723,7 +723,7 @@ int pi_socket_setsd(struct pi_socket *ps, int sd)
 
 int pi_socket_init(struct pi_socket *ps)
 {
-	protocol_queue_build (ps, 1);
+  	protocol_queue_build (ps, 1);
 
 	return 0;
 }
