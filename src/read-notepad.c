@@ -40,10 +40,13 @@
 #endif
 #endif
 
+char *progname;
 
 int pilot_connect(const char *port);
 static void print_help(char *progname);
 void write_ppm( FILE *f, struct NotePad *n );
+void output_picture( int type, struct NotePad n );
+void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category );
 
 #ifdef HAVE_PNG
 void write_png( FILE *f, struct NotePad *n );
@@ -54,10 +57,11 @@ struct option options[] = {
 	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{"list",        no_argument,       NULL, 'l'},
+	{"type",        required_argument, NULL, 't'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:l";
+static const char *optstring = "hvp:lt:";
 
 static void print_help(char *progname)
 {
@@ -66,6 +70,8 @@ static void print_help(char *progname)
 	     "   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n"
 	     "     -p <port>      Use device file <port> to communicate with Palm\n"
 	     "     -l             List Notes on device\n" 
+	     "     -t             specify picture output type\n"
+	     "                    either \"ppm\" or \"png\"\n"
 	     "     -h             Display this information\n\n"
 	     "   Examples: %s -p /dev/pilot\n\n"
 	     , progname, progname);
@@ -95,8 +101,8 @@ void write_ppm( FILE *f, struct NotePad *n )
    else
      fprintf( f, "%s\n", fmt_date( n->createDate ));
 
-   // NotePad says that the width is only 152 but it encodes 160 bits 
-   // of data! - AA
+   /* NotePad says that the width is only 152 but it encodes 160 bits */
+   /* of data! - AA */
    fprintf( f, "%ld %ld\n255\n",
 	    n->body.width+8, n->body.height );
 
@@ -187,51 +193,139 @@ void write_png( FILE *f, struct NotePad *n )
 }
 #endif
 
+void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category )
+{
+   if( n.flags & NOTEPAD_FLAG_NAME )
+     printf( "Name: %s\n", n.name );
+   
+   printf( "Category: %s\n", nai.category.name[category] );
+   printf( "Created: %s\n", fmt_date( n.createDate ));
+   printf( "Changed: %s\n", fmt_date( n.changeDate ));
+   
+   if( n.flags & NOTEPAD_FLAG_ALARM )
+     printf( "Alarm set for: %s\n", fmt_date( n.alarmDate ));
+   else
+     printf( "Alarm set for: none\n" );
+   
+   printf( "Pictue: " );
+   
+   if( n.flags & NOTEPAD_FLAG_BODY )
+     printf( "yes\n" );
+   else
+     printf( "no\n" );
+}
+
+void output_picture( int type, struct NotePad n )
+{
+   char fname[FILENAME_MAX];
+   FILE *f;
+   char extension[8];
+   static int i = 1;
+   
+   if( type == NOTE_OUT_PNG )
+     sprintf( extension, "png" );
+   else if( type == NOTE_OUT_PPM )
+     sprintf( extension, "ppm" );
+   
+   if( n.flags & NOTEPAD_FLAG_NAME )
+     sprintf( fname, "%s.%s", n.name, extension );
+   else
+     sprintf( fname, "%4.4d.%s", i++, extension );
+   
+   printf ("Generating %s...\n", fname);
+   
+   f = fopen (fname, "wb");
+   if( f ) 
+     {
+	switch( type )
+	  {
+	   case NOTE_OUT_PPM:
+	     write_ppm( f, &n );
+	     break;
+	     
+	   case NOTE_OUT_PNG:
+#ifdef HAVE_PNG		       
+	     write_png( f, &n );
+#else
+	     fprintf( stderr, "read-notepad was built without png support\n" );
+#endif		       
+	     break;
+	  }
+	
+	fclose (f);
+	
+     }
+   else
+     fprintf (stderr, "%s: can't write to %s\n", progname, fname);
+   
+   free_NotePad( &n );
+}
+
 int main(int argc, char *argv[])
 {
-	int	c,	/* switch */
-		db,
-		i,
-		sd	= -1,
-		action 	= NOTEPAD_ACTION_OUTPUT;
+   int	c,	/* switch */
+     db,
+     i,
+     sd	= -1,
+     action 	= NOTEPAD_ACTION_OUTPUT;
    
-#ifdef HAVE_PNG
-   int type = NOTE_OUT_PNG;
-#else
    int type = NOTE_OUT_PPM;
-#endif
    
-	char 	*progname 	= argv[0],
-		*port 		= NULL,
-		*filename 	= NULL,
-		*ptr,
-		extension[8];
-
+   char     *port 		= NULL,
+     *filename 	= NULL,
+     *ptr;
+   
    struct 	PilotUser User;
    struct 	pi_file *pif 	= NULL;
    struct 	NotePadAppInfo nai;
    unsigned char buffer[0xffff];
-   
+
+   progname = argv[0];
+
    while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) 
      {
 	switch (c) {
-	   case 'h':
-	     print_help(progname);
-	     exit(0);
-	   case 'v':
-	     print_splash(progname);
-	     return 0;
-	   case 'p':
-	     port = optarg;
+	 case 'h':
+	   print_help(progname);
+	   exit(0);
+	 case 'v':
+	   print_splash(progname);
+	   return 0;
+	 case 'p':
+	   port = optarg;
+	   filename = NULL;
+	   break;
+	 case 't':
+	   if( !strncmp( "png", optarg, 3 ))
+	     {
+#ifdef HAVE_PNG	     
+		type = NOTE_OUT_PNG;
+#else
+		fprintf( stderr, "read-notepad was built without png support\n" );
+#endif
+	     }
+	   else if( !strncmp( "ppm", optarg, 3 ))
+	     {
+		type = NOTE_OUT_PPM;
+	     }
+	   else
+	     {
+		fprintf( stderr, "Unknown output type defaulting to ppm\n" );
+		type = NOTE_OUT_PPM;
+	     }
+	   
 	     filename = NULL;
-	     break;
-//	   case 'f':
-//	     filename = optarg;
-//	     break;
-	   case 'l':
-	     action = NOTEPAD_ACTION_LIST;
-	     break;
-	  }
+
+	   break;
+#ifdef 0	   
+	 case 'f':
+	   filename = optarg;
+	   break;
+#endif
+	 case 'l':
+	   action = NOTEPAD_ACTION_LIST;
+	   break;
+	}
      }
    
    sd = pilot_connect(port);
@@ -252,8 +346,8 @@ int main(int argc, char *argv[])
    dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
    
 #if 0
-   // Not going use this right now but it might come back 
-   // later - AA
+   /* Not going use this right now but it might come back */
+   /* later - AA */
    if (filename) 
      {
 	int 	len;
@@ -280,8 +374,6 @@ int main(int argc, char *argv[])
    
    for (i = 0;; i++) 
      {
-	char fname[FILENAME_MAX];
-	FILE *f;
 	int 	attr,
 	  category,
 	  len;
@@ -314,63 +406,15 @@ int main(int argc, char *argv[])
 	switch( action )
 	  {
 	   case NOTEPAD_ACTION_LIST:
-	     if( n.flags & NOTEPAD_FLAG_NAME )
-	       printf( "Name: %s\n", n.name );
-
-	     printf( "Category: %s\n", nai.category.name[category] );
-	     printf( "Created: %s\n", fmt_date( n.createDate ));
-	     printf( "Changed: %s\n", fmt_date( n.changeDate ));
-	       
-	     if( n.flags & NOTEPAD_FLAG_ALARM )
-	       printf( "Alarm set for: %s\n", fmt_date( n.alarmDate ));
-	     else
-	       printf( "Alarm set for: none\n" );
-	       
-	     printf( "Pictue: " );
-	     
-	     if( n.flags & NOTEPAD_FLAG_BODY )
-	       printf( "yes\n\n" );
-	     else
-	       printf( "no\n\n" );
-	       
+	     print_note_info( n, nai, category );
+	     printf( "\n" );
 	     break;
 	     
 	   case NOTEPAD_ACTION_OUTPUT:
-
-	     if( type == NOTE_OUT_PNG )
-	       sprintf( extension, "png" );
-	     else if( type == NOTE_OUT_PPM )
-	       sprintf( extension, "ppm" );
-	     
-	     if( n.flags & NOTEPAD_FLAG_NAME )
-	       sprintf( fname, "%s.%s", n.name, extension );
-	     else
-	       sprintf( fname, "%d.%s", i, extension );
-	     
-	     printf ("Generating %s...\n", fname);
-	     
-	     f = fopen (fname, "wb");
-	     if( f ) 
-	       {
-		  switch( type )
-		    {
-		     case NOTE_OUT_PPM:
-		       write_ppm( f, &n );
-		       break;
-		       
-		     case NOTE_OUT_PNG:
-		       write_png( f, &n );
-		       break;
-		    }
-		  		       
-		  fclose (f);
-		  
-	       }
-	     else
-	       fprintf (stderr, "%s: can't write to %s\n", progname, fname);
-	     
-	     free_NotePad( &n );
-
+	     print_note_info( n, nai, category );
+	     output_picture( type, n );
+	     printf( "\n" );
+	     break;
 	  }
      }
    
