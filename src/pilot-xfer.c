@@ -1,3 +1,4 @@
+/* ex: set tabstop=4 expandtab: */
 /*
  * pilot-xfer.c:  Palm Database transfer utility
  *
@@ -91,7 +92,6 @@ struct option options[] = {
 	{"update",      required_argument, NULL, 'u'},
 	{"sync",        required_argument, NULL, 's'},
 	{"time",        no_argument,       NULL, 't'},
-	{"novsf",       no_argument,       NULL, 'S'},
 	{"restore",     required_argument, NULL, 'r'},
 	{"install",     required_argument, NULL, 'i'},
 	{"merge",       required_argument, NULL, 'm'},
@@ -112,9 +112,7 @@ struct option options[] = {
 
 };
 
-static const char *optstring = "-p:hvb:u:s:tSr:i:m:f:d:e:PlLa:x:FOIVD:";
-
-int	novsf	= 0;
+static const char *optstring = "-p:hvb:u:s:tr:i:m:f:d:e:PlLa:x:FOIVD:";
 
 int 	sd 	= 0;
 char    *port 	= NULL;
@@ -877,9 +875,6 @@ static void Restore(char *dirname)
 		pi_file_close(f);
 	}
 
-	if (!novsf)
-		VoidSyncFlags();
-
 	for (i = 0; i < dbcount; i++) {
 		free(db[i]);
 	}
@@ -954,9 +949,6 @@ static void Install(char *filename)
 	}
 
 	pi_file_close(f);
-
-	if (!novsf)
-		VoidSyncFlags();
 }
 
 
@@ -979,6 +971,7 @@ static void Merge(char *filename)
 	Connect();
 
 	f = pi_file_open(filename);
+
 	if (f == 0) {
 		printf("Unable to open '%s'!\n", filename);
 		return;
@@ -993,9 +986,6 @@ static void Merge(char *filename)
 	pi_file_close(f);
 	free(f);
 
-	if (!novsf)
-		VoidSyncFlags();
-
 	printf("Merge done\n");
 }
 
@@ -1004,7 +994,8 @@ static void Merge(char *filename)
  *
  * Function:    ListInternal
  *
- * Summary:     List the databases found on the Palm device's internal memory.
+ * Summary:     List the databases found on the Palm device's internal
+ * 		memory.
  *
  * Parameters:  Media type
  *
@@ -1052,8 +1043,8 @@ static void ListInternal(palm_media_t media_type)
  *
  * Function:    List
  *
- * Summary:     List the databases found on the Palm device's given VFS volume.
- *              Uses the global vfsdir value.
+ * Summary:     List the databases found on the Palm device's given VFS
+ *              volume.  Uses the global vfsdir value.
  *
  * Parameters:  None
  *
@@ -1094,8 +1085,8 @@ static void PrintVolumeInfo(const char *buf, long volume, struct VFSInfo *info)
 		printf("<unknown>");
 	}
 	printf("\n");
-	if (dlp_VFSVolumeSize(sd,volume,&size_used,&size_total) >= 0)
-	{
+
+	if (dlp_VFSVolumeSize(sd,volume,&size_used,&size_total) >= 0) {
 		printf("      Used: %ld Total: %ld bytes.\n",size_used,size_total);
 	}
 }
@@ -1124,37 +1115,32 @@ static void PrintDir(long volume, const char *path, FileRef dir)
 
 	/* Set up buf so it contains path with trailing / and
 	   buflen points to the terminating NUL. */
-	if (pathlen<1)
-	{
+	if (pathlen<1) {
 		printf("   NULL path.\n");
 		return;
 	}
+
 	memset(buf,0,256);
 	strncpy(buf,path,255);
-	if (buf[pathlen-1] != '/')
-	{
+
+	if (buf[pathlen-1] != '/') {
 		buf[pathlen]='/';
 		pathlen++;
 	}
-	if (pathlen>254)
-	{
+
+	if (pathlen>254) {
 		printf("   Path too long.\n");
 		return;
 	}
 
-	while (dlp_VFSDirEntryEnumerate(sd,dir,&it,&max,infos) >= 0)
-	{
+	while (dlp_VFSDirEntryEnumerate(sd,dir,&it,&max,infos) >= 0) {
 		if (max<1) break;
-		for (i = 0; i<max; i++)
-		{
+		for (i = 0; i<max; i++) {
 			memset(buf+pathlen,0,256-pathlen);
 			strncpy(buf+pathlen,infos[i].name,255-pathlen);
-			if (dlp_VFSFileOpen(sd,volume,buf,dlpVFSOpenRead,&file) < 0)
-			{
+			if (dlp_VFSFileOpen(sd,volume,buf,dlpVFSOpenRead,&file) < 0) {
 				printf("   %s: No such file or directory.\n",infos[i].name);
-			}
-			else
-			{
+			} else {
 				PrintFileInfo(volume, infos[i].name, file);
 				dlp_VFSFileClose(sd,file);
 			}
@@ -1173,38 +1159,32 @@ static int findVFSRoot(const char *root_component, int list_root, long *match)
 	char buf[256];
 	long matched_volume = -1;
 
-	if (dlp_VFSVolumeEnumerate(sd,&volume_count,volumes) < 0)
-	{
+	if (dlp_VFSVolumeEnumerate(sd,&volume_count,volumes) < 0) {
 		return -2;
 	}
 
-	/* Here we scan the "root directory" of the Pilot.
-		We will fake out a bunch of directories pointing
-		to the various slots on the device. If we're listing,
-		print everything out, otherwise remain silent and
-		just set matched_volume if there's a match in the
-		first filename component. */
-
-	for (i = 0; i<volume_count; ++i)
-	{
+	/* Here we scan the "root directory" of the Pilot.  We will fake out
+	   a bunch of directories pointing to the various slots on the
+	   device. If we're listing, print everything out, otherwise remain
+	   silent and just set matched_volume if there's a match in the
+	   first filename component. */
+	for (i = 0; i<volume_count; ++i) {
 		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0) continue;
 
 		buflen=256;
 		buf[0]=0;
 		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,buf);
 
-		if (!list_root)
-		{
+		if (!list_root) {
 			/* Not listing, so just check matches and continue. */
-			if (0 == strcmp(root_component,buf))
-			{
+			if (0 == strcmp(root_component,buf)) {
 				matched_volume = volumes[i];
 				break;
 			}
 			/* volume label no longer important, overwrite */
 			sprintf(buf,"slot%d",info.slotRefNum);
-			if (0 == strcmp(root_component,buf))
-			{
+
+			if (0 == strcmp(root_component,buf)) {
 				matched_volume = volumes[i];
 				break;
 			}
@@ -1214,13 +1194,12 @@ static int findVFSRoot(const char *root_component, int list_root, long *match)
 		PrintVolumeInfo(buf,volumes[i],&info);
 	}
 
-	if (matched_volume >= 0)
-	{
+	if (matched_volume >= 0) {
 		*match = matched_volume;
 		return 0;
 	}
-	if ((matched_volume < 0) && (1 == volume_count))
-	{
+
+	if ((matched_volume < 0) && (1 == volume_count)) {
 		/* Assume that with one slot, just go look there. */
 		*match = volumes[0];
 		return 1;
@@ -1233,24 +1212,20 @@ static void ListVFSDir(long matched_volume, const char *path)
 	FileRef file;
 	unsigned long attributes;
 
-	if (dlp_VFSFileOpen(sd,matched_volume,path,dlpVFSOpenRead,&file) < 0)
-	{
+	if (dlp_VFSFileOpen(sd,matched_volume,path,dlpVFSOpenRead,&file) < 0) {
 		printf("   No such file or directory.\n");
 		return;
 	}
-	if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
-	{
+
+	if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0) {
 		printf("   Cannot get attributes.\n");
 		return;
 	}
 
-	if (vfsFileAttrDirectory == (attributes & vfsFileAttrDirectory))
-	{
+	if (vfsFileAttrDirectory == (attributes & vfsFileAttrDirectory)) {
 		/* directory */
 		PrintDir(matched_volume,path,file);
-	}
-	else
-	{
+	} else {
 		/* file */
 		PrintFileInfo(matched_volume,path,file);
 	}
@@ -1266,12 +1241,14 @@ static void ListVFS()
 	long matched_volume = -1;
 	int r;
 
-	/* Listing the root directory / has special handling. Detect that here. */
+	/* Listing the root directory / has special handling. Detect that
+	   here. */
 	if (NULL == vfsdir) vfsdir="/";
 	if (0 == strcmp(vfsdir,"/")) list_root = 1;
 
-	/* Need to match the first directory in the name with a slot or volume
-	   name, so isolate that component. Copy the VFS dir, NUL out first / */
+	/* Need to match the first directory in the name with a slot or
+	   volume name, so isolate that component. Copy the VFS dir, NUL out
+	   first "/" */
 	memset(root_component,0,256);
 	if ('/'==vfsdir[0]) strncpy(root_component,vfsdir+1,255);
 	else strncpy(root_component,vfsdir,255);
@@ -1279,42 +1256,39 @@ static void ListVFS()
 	if (NULL != s) *s=0;
 
 
-	/* Find the given directory. Will list the VFS root dir if
-	   the requested dir is / */
+	/* Find the given directory. Will list the VFS root dir if the
+	   requested dir is "/" */
 	printf("   Directory of %s...\n",vfsdir);
 	r = findVFSRoot(root_component,list_root,&matched_volume);
 
-	/* Failures and / mean we can quit now. */
-	if (-2 == r)
-	{
+	/* Failures and "/" mean we can quit now. */
+	if (-2 == r) {
 		printf("   Not ready reading drive C:\n");
 		return;
 	}
 	if (list_root) return;
-	if (r < 0)
-	{
+
+	if (r < 0) {
 		printf("   No such directory, list directory / for slot names.\n");
 		return;
 	}
 
-	/* Now adjust root_component so that the pair matched_volume + root_component
-	   points to a volume + file by (possibly) stripping the first component. */
-	if (0 == r)
-	{
+	/* Now adjust root_component so that the pair matched_volume +
+	   root_component points to a volume + file by (possibly) stripping
+	   the first component. */
+	if (0 == r) {
 		/* Path includes slot/volume label. */
 		r = strlen(root_component);
 		if ('/'==vfsdir[0]) ++r; /* adjust for stripped / */
 		memset(root_component,0,256);
 		strncpy(root_component,vfsdir+r,255);
-	}
-	else
-	{
+	} else {
 		/* Path without slot label */
 		memset(root_component,0,256);
 		strncpy(root_component,vfsdir,255);
-	}
-	if (!root_component[0])
-	{
+	} 
+
+	if (!root_component[0]) {
 		root_component[0]='/';
 		root_component[1]=0;
 	}
@@ -1327,7 +1301,7 @@ static void ListVFS()
  *
  * Function:    List
  *
- * Summary:     List the databases found on the Palm device.
+ * Summary:     List the databases found on the Palm device. 
  *              Dispatches to previous List*() functions.
  *
  * Parameters:  Media type
@@ -1405,9 +1379,6 @@ static void Purge(void)
 
 	pi_buffer_free (buffer);
 
-	if (!novsf)
-		VoidSyncFlags();
-
 	printf("Purge complete.\n");
 }
 
@@ -1477,7 +1448,6 @@ static void display_help(const char *progname)
 	printf("     -u, --update <dir>      Update <dir> with newer Palm data\n");
 	printf("     -s, --sync <dir>        Same as -u above, but removes local files if\n");
 	printf("                             data is removed from your Palm\n");
-	printf("     -S, --novsf             Do NOT reset the SyncFlags when sync completes\n");
 	printf("     -r, --restore <dir>     Restore backupdir to your Palm\n");
 	printf("     -i, --install [db] ..   Install local prc, pdb, pqa files to your Palm\n");
 	printf("     -m, --merge [file] ..   Adds the records in <file> into the corresponding\n");
@@ -1490,6 +1460,7 @@ static void display_help(const char *progname)
 	printf("                             by a sync\n");
 	printf("     -l, --list              List all application and 3rd party Palm data/apps\n");
 	printf("     -L, --List              List all data, internal and external on the Palm\n");
+	printf("     -D, --vfsdir <dir>      List files on specified VFS volume and directory\n");
 	printf("     -a, --archive           Modifies -s to archive deleted files in specified\n");
 	printf("                             directory.\n");
 	printf("     -x, --exec              Execute a shell command for intermediate processing\n");
@@ -1623,9 +1594,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'I':
 			unsaved = 1;
-			break;
-		case 'S':
-			novsf = 1;
 			break;
 		case 'D':
 			vfsdir = optarg;
