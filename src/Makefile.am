@@ -29,7 +29,7 @@ INCLUDES = 			\
 CCEXECS =
 #endif
 
-noinst_LIBRARIES = libpiuserland.a
+noinst_LTLIBRARIES = libpiuserland.la
 
 bin_PROGRAMS = 		\
 	$(CCEXECS)	\
@@ -100,8 +100,10 @@ endif
 #	$(top_builddir)/libpisock++/libpisock++.la	\
 #	$(top_builddir)/libpisock/libpisock.la
 
-libpiuserland_a_SOURCES =		\
+libpiuserland_la_SOURCES =		\
 	userland.c
+libpiuserland_la_LDFLAGS =		\
+	-static
 
 addresses_SOURCES = 		\
 	addresses.c
