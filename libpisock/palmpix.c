@@ -1351,7 +1351,7 @@ int unpack_PalmPix (struct PalmPixState *s,
      {
 	  
 	void *buffer;
-	int bufsize;
+	size_t bufsize;
 	if (s->getrecord (s, header_recno + 1, &buffer, &bufsize) == 0
 	        && bufsize == 32) 
 	  {

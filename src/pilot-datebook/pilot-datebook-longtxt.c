@@ -50,12 +50,12 @@ const char LONGTXT_HEADER_BACKUP_TIME_FORMAT[] = "backup_time=%s%s%s%s\n";
 const char LONGTXT_HEADER_INDEX_FORMAT[] = "index=%u\n";
 const char LONGTXT_HEADER_CATEGORY_HEADER1_FORMAT[] = "Categories\n";
 const char LONGTXT_HEADER_CATEGORY_HEADER2_FORMAT[] = "#\tID\tRenamed\tName\n";
-const char LONGTXT_HEADER_CATEGORY_ROW_FORMAT[] = "%d\t%u\t%s\t%s%s\n";
+const char LONGTXT_HEADER_CATEGORY_ROW_FORMAT[] = "%d\t%hhu\t%s\t%s%s\n";
 const char LONGTXT_HEADER_RENAMED_YES[] = "Yes";
 const char LONGTXT_HEADER_RENAMED_NO[] = "No";
 const char LONGTXT_HEADER_RENAMED_UNUSED[] = "(unused)";
 
-const char LONGTXT_HEADER_LAST_UNIQUE_ID_FORMAT[] = "Last unique ID=%u\n";
+const char LONGTXT_HEADER_LAST_UNIQUE_ID_FORMAT[] = "Last unique ID=%hhu\n";
 const char LONGTXT_HEADER_START_OF_WEEK_FORMAT[] = "Start of week: %d\n";
 const char LONGTXT_HEADER_NO_APP_INFO[] = "No application info found.\n";
 const char LONGTXT_HEADER_NO_SORT_INFO[] = "No sort info found.\n";
@@ -1138,7 +1138,7 @@ longtxt_read_row (struct longtxt_file_data * in_file, struct row_data * row)
 	  if(repeat_last_week == TRUE) {
 	    num_read = sscanf (repeatparam,
 			       LONGTXT_ROW_REPEAT_MONTHLY_LAST_WEEK_FORMAT,
-			       &buffer1,
+			       (char *)&buffer1,
 			       &day);
 	    if (num_read < 1
 		|| num_read > 2) {
@@ -2178,10 +2178,11 @@ longtxt_read_header (struct longtxt_file_data * in_file, struct header_data * he
       for(j=0;j<DATEBOOK_MAX_CATEGORIES;j++) {
 	longtxt_read_line(buffer, sizeof(buffer), in_file);
 	num_read = sscanf (buffer, LONGTXT_HEADER_CATEGORY_ROW_FORMAT,
-			   buffer1,
+			   (int *)buffer1,
 			   &((aai.category).ID[j]),
 			   buffer2,
-			   &((aai.category).name[j]));
+			   (char *)&((aai.category).name[j]),
+			   buffer3);
 	if (num_read != 4) {
 	  /* Allow category 0 to be without name (Unfiled) */
 	  if (j != 0 || num_read != 3) {

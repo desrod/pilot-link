@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 		i		= 0,
 		j		= 0,
 		add_title	= 0,
-		category,
+		category	= -1,
 		db,
 		ReadAppBlock, 
 		preamble,

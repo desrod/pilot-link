@@ -565,7 +565,7 @@ int main(int argc, char *argv[])
      {
 	int 	attr,
 		category,
-		len;
+		len = 0;
 
 	struct 	NotePad n;
 	

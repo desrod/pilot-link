@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	        *token 		= NULL;
 
 	long    long_token;
-	unsigned int size;
+	size_t	size;
 
 	char    buffer[50];
 	

@@ -15,7 +15,7 @@ struct PalmPixState {
    /* This callback should read record #RECNO into BUFFER and BUFSIZE,
     * and return 0 when successful, just like pi_file_read_record().  */
    int (*getrecord) PI_ARGS ((struct PalmPixState *self, int recno,
-   void **buffer, int *bufsize));
+   void **buffer, size_t *bufsize));
 
    /* This will be filled in by pixName.  */
    char pixname[33];

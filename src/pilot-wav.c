@@ -193,11 +193,12 @@ int fetch_wavs(int sd, char *dbname)
 	recordid_t id;
 	int 	index,
 		db,
-		size,
 		attr,
 		category,
 		ret,
 		start;
+
+	size_t	size;
 	
 	struct DBInfo info;
 	char creator[5];
@@ -324,11 +325,12 @@ int pdb_to_wav(char *filename)
         FILE *out;
         int 	index,
 		ret,
-		size,
 		attr,
 		cat;
         void *buffer;
         pi_uid_t uid;
+
+	size_t	size;
 
 	long wWaveLength;
         long formatChunkSize;

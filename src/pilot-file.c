@@ -182,7 +182,7 @@ static void dump_header(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 static void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 {
-	int 	app_info_size;
+	size_t 	app_info_size;
 	void 	*app_info;
 
 	if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
@@ -190,7 +190,7 @@ static void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 		return;
 	}
 
-	printf("app_info_size %d\n", app_info_size);
+	printf("app_info_size %zu\n", app_info_size);
 	dump(app_info, app_info_size);
 	printf("\n");
 }
@@ -209,7 +209,7 @@ static void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 static void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 {
-	int 	sort_info_size;
+	size_t 	sort_info_size;
 	void 	*sort_info;
 
 
@@ -218,7 +218,7 @@ static void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 		return;
 	}
 
-	printf("sort_info_size %d\n", sort_info_size);
+	printf("sort_info_size %zu\n", sort_info_size);
 	dump(sort_info, sort_info_size);
 	printf("\n");
 }
@@ -241,8 +241,8 @@ static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, in
 		cat,
 		entnum,		/* Number of the entry record */
 		id,
-		nentries, 	/* Number of entries in the list */
-		size;
+		nentries; 	/* Number of entries in the list */
+	size_t	size;
 	void 	*buf;
 	unsigned long type, uid;
 
@@ -257,7 +257,7 @@ static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, in
 				printf("error reading %d\n\n", entnum);
 				return;
 			}
-			printf("%d\t%d\t%s\t%d\n", entnum, size,
+			printf("%d\t%zu\t%s\t%d\n", entnum, size,
 			       printlong(type), id);
 			if (verbose) {
 				dump(buf, size);
@@ -284,7 +284,7 @@ static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, in
 				printf("error reading %d\n\n", entnum);
 				return;
 			}
-			printf("%d\t%d\t0x%x\t%d\t0x%lx\n", entnum, size,
+			printf("%d\t%zu\t0x%x\t%d\t0x%lx\n", entnum, size,
 			       attrs, cat, uid);
 			if (verbose) {
 				dump(buf, size);
@@ -313,8 +313,8 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 	int 	attrs,
 		cat,
 		id,
-		record,
-		size;
+		record;
+	size_t	size;
 	void 	*buf;
 	unsigned long type;
 	unsigned long uid;
@@ -343,7 +343,7 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 			}
 		}
 
-		printf("%d\t%d\t%s\t%d\n", record, size, printlong(type),
+		printf("%d\t%zu\t%s\t%d\n", record, size, printlong(type),
 		       id);
 		dump(buf, size);
 		if (filedump) {
@@ -378,7 +378,7 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 				return;
 			}
 		}
-		printf("%d\t%d\t0x%x\t%d\t0x%lx\n", record, size, attrs,
+		printf("%d\t%zu\t0x%x\t%d\t0x%lx\n", record, size, attrs,
 		       cat, uid);
 		dump(buf, size);
 	}

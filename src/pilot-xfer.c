@@ -841,8 +841,8 @@ static void Restore(char *dirname)
 	        if (sbuf.st_size > Card.ramFree) {
         	        fprintf(stderr, "\n\n");
                 	fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
-	                fprintf(stderr, "   We needed %ld and only had %lu available..\n\n",
-        	                sbuf.st_size, Card.ramFree);
+	                fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
+        	                (unsigned long)sbuf.st_size, Card.ramFree);
 			exit(EXIT_FAILURE);
         	}
 
@@ -914,8 +914,8 @@ static void Install(char *filename)
 	if (sbuf.st_size > Card.ramFree) {
 		fprintf(stderr, "\n\n");
 		fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
-		fprintf(stderr, "   We needed %ld and only had %lu available..\n\n", 
-			sbuf.st_size, Card.ramFree);
+		fprintf(stderr, "   We needed %lu and only had %lu available..\n\n", 
+			(unsigned long)sbuf.st_size, Card.ramFree);
 		return;
 	}
 
@@ -923,8 +923,8 @@ static void Install(char *filename)
 		fprintf(stderr, "failed.\n");
 
 	} else if (stat(filename, &sbuf) == 0) {
-		printf("(%ld bytes, %ld KiB total)\n\n",
-			sbuf.st_size, (totalsize == 0) 
+		printf("(%lu bytes, %ld KiB total)\n\n",
+			(unsigned long)sbuf.st_size, (totalsize == 0) 
 			? (long)sbuf.st_size/1024 
 			: totalsize/1024);
 		totalsize += sbuf.st_size;

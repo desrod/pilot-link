@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 
 	/* Read ToDoDB.pdb from disk */
 	} else if (filename) {
-		int 	len;
+		size_t 	len;
 
 		pif = pi_file_open(filename);
 		if (!pif) {
@@ -160,8 +160,9 @@ int main(int argc, char *argv[])
 
 	for (i = 0;; i++) {
 		int 	attr,
-			category,
-			len;
+			category;
+
+		size_t	len;
 
 		struct 	ToDo todo;
 

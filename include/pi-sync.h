@@ -44,7 +44,7 @@ extern "C" {
 		int catID;
 		int flags;
 		void *buffer;
-		int len;
+		size_t len;
 	};
 
 	struct _SyncHandler {

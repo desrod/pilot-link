@@ -252,7 +252,7 @@ int do_list(int sd)
    int index;
    unsigned char buffer[0xFFFF];
    recordid_t id;
-   int size;
+   size_t size;
    int attr;
    int category;
    int start;
@@ -330,7 +330,7 @@ int do_delete(int sd, char **delete_files, int all)
    int index;
    unsigned char buffer[0xFFFF];
    recordid_t id;
-   int size;
+   size_t size;
    int attr;
    int category;
    char log_text[256];
@@ -421,11 +421,11 @@ int do_fetch(int sd, char **fetch_files, int all)
    int found;
    int index,
      db,
-     size,
      attr,
      category,
      ret,
      start;
+   size_t size;
 
    struct DBInfo info;
    char creator[5];
@@ -568,6 +568,28 @@ int install_tux_with_name(int sd, char *name, int width, int height,
    return 0;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    unix_time_to_pilot_time
+ *
+ * Summary:     Convert Unix time to Palm time
+ *
+ * Parameters:  unix time
+ *
+ * Returns:     palm time
+ *
+ * FIXME:       This code is duplicated in many places
+ *
+ ***********************************************************************/
+#define PILOT_TIME_DELTA (unsigned)(2082844800)
+unsigned long
+unix_time_to_pilot_time(time_t t)
+{
+	return (unsigned long) ((unsigned long) t + PILOT_TIME_DELTA);
+}
+
+
 /***********************************************************************
  *
  * Function:    do_install
@@ -599,7 +621,7 @@ int do_install(int sd, char **install_files)
    int width, height;
    char type[5];
    unsigned short version;
-   long pdb_size;
+   long pdb_size = 0;
    long mod_time;
    long file_time;
 
@@ -728,7 +750,7 @@ int pdb_to_jpg(char *filename)
    int index;
    int ret;
    void *Pbuf;
-   int size;
+   size_t size;
    int total_size;
    int attr;
    int cat;

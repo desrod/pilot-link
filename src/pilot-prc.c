@@ -176,7 +176,7 @@ void dump_header(struct DBInfo *ip)
  ***********************************************************************/
 void dump_app_info(struct pi_file *pf)
 {
-	int 	app_info_size;
+	size_t 	app_info_size;
 	void 	*app_info;
 
 	if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
@@ -184,7 +184,7 @@ void dump_app_info(struct pi_file *pf)
 		return;
 	}
 
-	printf("app_info_size %d\n", app_info_size);
+	printf("app_info_size %zu\n", app_info_size);
 	dump(app_info, app_info_size);
 	printf("\n");
 }
@@ -202,7 +202,7 @@ void dump_app_info(struct pi_file *pf)
  ***********************************************************************/
 void dump_sort_info(struct pi_file *pf)
 {
-	int 	sort_info_size;
+	size_t 	sort_info_size;
 	void 	*sort_info;
 
 	if (pi_file_get_sort_info(pf, &sort_info, &sort_info_size) < 0) {
@@ -210,7 +210,7 @@ void dump_sort_info(struct pi_file *pf)
 		return;
 	}
 
-	printf("sort_info_size %d\n", sort_info_size);
+	printf("sort_info_size %zu\n", sort_info_size);
 	dump(sort_info, sort_info_size);
 	printf("\n");
 }
@@ -233,9 +233,10 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
 		entnum,
 		id,
 		nentries,
-		size,
-		vflag;
+		vflag = 0;	/* FIXME: knghtbrd: never assigned! */
 	
+	size_t	size;
+
 	unsigned long type, uid;
 
 	void 	*buf;
@@ -251,7 +252,7 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
 				printf("error reading %d\n\n", entnum);
 				return;
 			}
-			printf("%d\t%d\t%s\t%d\n", entnum, size,
+			printf("%d\t%zu\t%s\t%d\n", entnum, size,
 			       printlong(type), id);
 			if (vflag) {
 				dump(buf, size);
@@ -267,7 +268,7 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
 				printf("error reading %d\n\n", entnum);
 				return;
 			}
-			printf("%d\t%d\t0x%x\t%d\t0x%lx\n", entnum, size,
+			printf("%d\t%zu\t0x%x\t%d\t0x%lx\n", entnum, size,
 			       attrs, cat, uid);
 			if (vflag) {
 				dump(buf, size);
@@ -294,8 +295,8 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 {
 	int 	attrs,
 		cat,
-		id,
-		size;
+		id;
+	size_t	size;
 	unsigned long type, uid;
 	void 	*buf;
 
@@ -307,7 +308,7 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 			printf("error reading resource #%d\n\n", record);
 			return;
 		}
-		printf("%d\t%d\t%s\t%d\n", record, size, printlong(type),
+		printf("%d\t%zu\t%s\t%d\n", record, size, printlong(type),
 		       id);
 		dump(buf, size);
 	} else {
@@ -318,7 +319,7 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 			printf("error reading record #%d\n\n", record);
 			return;
 		}
-		printf("%d\t%d\t0x%x\t%d\t0x%lx\n", record, size, attrs,
+		printf("%d\t%zu\t0x%x\t%d\t0x%lx\n", record, size, attrs,
 		       cat, uid);
 		dump(buf, size);
 	}
@@ -344,13 +345,13 @@ static void display_help(char *progname)
 int main(int argc, char *argv[])
 {
 	int 	c,		/* switch */
-		hflag,
-		aflag,
-		sflag,
-		vflag,
-		lflag,
-		rflag,
-		rnum;
+		hflag = 0,
+		aflag = 0,
+		sflag = 0,
+		vflag = 0,
+		lflag = 0,
+		rflag = 0,
+		rnum = 0;
 
 	struct 	pi_file *pf;
 	struct 	DBInfo info;

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "pi-file.h"
 #include "pi-versamail.h"
@@ -42,8 +43,6 @@ int print_cat_info(struct CategoryAppInfo *ai)
 		   
 int print_versamail_app_info(int db, void *record, int size) {
    struct VersaMailAppInfo ai;
-   int i;
-   int r;
 
    printf("Category app info\n");//undo
    //hex_dump(record, size);//undo
@@ -54,14 +53,14 @@ int print_versamail_app_info(int db, void *record, int size) {
 }
 
 
-int print_versamail_record(void *record, int size, int attr, int idx) {
+void print_versamail_record(void *record, int size, int attr, int idx) {
   struct VersaMail mail;
   char datestr[255];
 
   unpack_VersaMail(&mail, record, size);
 
   printf("----\n");
-  printf("version: %d\n", mail.imapuid);
+  printf("version: %lu\n", mail.imapuid);
   strftime(datestr, 254, "%c", &(mail.date));
   //printf("date: %s\n", datestr);
   //printf("category: %d\n", mail.category);
@@ -85,7 +84,7 @@ int print_versamail_record(void *record, int size, int attr, int idx) {
   free_VersaMail(&mail);
 }
 
-int validate_versamail_packer(void *record, int size, int attr, int idx) {
+void validate_versamail_packer(void *record, int size, int attr, int idx) {
   struct VersaMail mail;
   char datestr[255];
   char *buffer;
@@ -172,11 +171,10 @@ int validate_versamail_packer(void *record, int size, int attr, int idx) {
 
 int main(int argc, char *argv[]) {
    struct pi_file *pi_fp;
-   int db;
    char *DBname;
    int r;
    int idx;
-   int size;
+   size_t size;
    int attr;
    int cat;
    pi_uid_t uid;
@@ -194,7 +192,7 @@ int main(int argc, char *argv[]) {
    if (r<0) {
      printf("Error reading app_info block\n");
    } else {
-     print_versamail_app_info(db, record, size);
+     print_versamail_app_info(r, record, size);
      printf("----------\n");
    }
 

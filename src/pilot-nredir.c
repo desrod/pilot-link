@@ -77,8 +77,9 @@ int main(int argc, char *argv[])
 		len,
 		sd 		= -1,
 		sd2 		= -1, /* This is the network socket */
-		state,
-		size; 	
+		state;
+
+	size_t	size; 	
 
 	char 	buffer[0xffff],
 		*progname = argv[0],

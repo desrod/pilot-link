@@ -493,10 +493,11 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 {
 	int 	i,
 		j,
-		l,
 		attribute,
 		category;
 	
+	size_t	l;
+
 	char 	buf[0xffff];
 	
 	struct 	Address addr;

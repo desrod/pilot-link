@@ -245,7 +245,6 @@ int main(int argc, char *argv[])
 		category,
 		db,
 		index,
-		len,
 		ret,
 		sd 		= -1,
 		verbose 	= 0,
@@ -254,6 +253,8 @@ int main(int argc, char *argv[])
 		bufsize 	= 1024,
 		match_category 	= -1,
 		title_matching 	= 0;
+
+	size_t	len;
 
 	unsigned char 	buffer[0xffff];
 	
@@ -337,8 +338,6 @@ int main(int argc, char *argv[])
 		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
 				 0xffff);
 	} else {
-		int len;
-
 		pif = pi_file_open(filename);
 		if (!pif) {
 			perror("pi_file_open");

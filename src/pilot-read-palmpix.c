@@ -106,7 +106,7 @@ struct PalmPixState_pi_file
  *
  ***********************************************************************/
 static int getrecord_pi_file (struct PalmPixState *vstate, int recno,
-	void **buf, int *bufsize)
+	void **buf, size_t *bufsize)
 {
  
 	struct PalmPixState_pi_file *state = 
@@ -148,7 +148,7 @@ struct PalmPixState_pi_socket
  *
  ***********************************************************************/
 static int getrecord_pi_socket (struct PalmPixState *vstate, int recno, 
-	void **buf, int *bufsize)
+	void **buf, size_t *bufsize)
 {
    
 	static char buffer[65536];
@@ -462,7 +462,7 @@ void read_db (struct PalmPixState *state, int n, int (*action)
 
 	for (i = 0; i < n; i++) {
 		void *buffer;
-		int bufsize;
+		size_t bufsize;
 		struct PalmPixHeader header;
 	
 		if (state->getrecord (state, i, &buffer, &bufsize) == 0
@@ -522,44 +522,44 @@ int main (int argc, char **argv) {
 	char *progname = argv[0];
    
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-	switch (c) {
+	        switch (c) {
 
-	case 'h':
-		display_help(progname);
-		return 0;
-	case 'v':
-		print_splash(progname);
-		return 0;
-	case 'p':
-		free(port);
-		port = strdup(optarg);
-		break;
-	case 'l':
-		action = list;
-		break;
-	case 'n':
-		action = write_one;
-		pixname = optarg;
-		break;
-	case 't':
-		if( !strncmp( "png", optarg, 3 )) {
+        	case 'h':
+        		display_help(progname);
+	        	return 0;
+        	case 'v':
+	        	print_splash(progname);
+		        return 0;
+        	case 'p':
+        		free(port);
+	        	port = strdup(optarg);
+        		break;
+        	case 'l':
+	        	action = list;
+		        break;
+        	case 'n':
+	        	action = write_one;
+		        pixname = optarg;
+        		break;
+	        case 't':
+		        if( !strncmp( "png", optarg, 3 )) {
 #ifdef HAVE_PNG	     
-			output_type = PALMPIX_OUT_PNG;
+        			output_type = PALMPIX_OUT_PNG;
 #else
-			fprintf( stderr, "read-palmpix was built without png support\n" );
+	        		fprintf( stderr, "read-palmpix was built without png support\n" );
 #endif
-		} else if( !strncmp( "ppm", optarg, 3 )) {
-			output_type = PALMPIX_OUT_PPM;
-		} else {
-			fprintf( stderr, "Unknown output type defaulting to ppm\n" );
-			output_type = PALMPIX_OUT_PPM;
-		}
-		break;
-	default:
-		display_help(progname);
-		return 0;
-	}
-}
+		        } else if( !strncmp( "ppm", optarg, 3 )) {
+			        output_type = PALMPIX_OUT_PPM;
+        		} else {
+        			fprintf( stderr, "Unknown output type defaulting to ppm\n" );
+        			output_type = PALMPIX_OUT_PPM;
+        		}
+        		break;
+	        default:
+        		display_help(progname);
+	        	return 0;
+                }
+        }
 	nfileargs = argc - optind - 1;
 
 	if (nfileargs > 0) {

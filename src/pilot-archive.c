@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 	unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 
 	for (i = 0;; i++) {
-		int attr, category, len;
+		int attr, category, len = 0;
 		struct ToDo todo;
 
 		if (port) {
