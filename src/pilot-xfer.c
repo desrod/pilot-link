@@ -499,7 +499,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		}
 
 		RemoveFromList(name, orig_files, ofile_total); 
-		if ((stat(name, &sbuf) && (flags & UPDATE) == 0)) {
+		if (stat(name, &sbuf) && (flags & UPDATE) == 0) {
 			if (info.modifyDate == sbuf.st_mtime) {
 				printf("   [-][unch] Unchanged, skipping %s\n",
 					name);
@@ -510,14 +510,11 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
 		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
 
-		totalsize += sbuf.st_size;
 		printf("   [+][%-4d]", filecount);
 		printf("[%s] %s '%s'", crid, synctext, info.name);
 		fflush(NULL);
 		
 		setlocale(LC_ALL, "");
-		printf(", %'ld bytes, %'ld KiB... ", 
-			(long)sbuf.st_size, (long)totalsize/1024);
 
 		f = pi_file_create(name, &info);
 
@@ -528,10 +525,19 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			printf("\n   [-][fail][%s] Failed, unable to retrieve %s from the Palm.\n", 
 				crid, info.name);
 			failed++;
-		} 
+			pi_file_close(f);
+		} else {
+			pi_file_close(f);		/* writes the file to disk so we can stat() it */
+			stat(name, &sbuf);
+			totalsize += sbuf.st_size;
+			printf(", %'ld bytes, %'ld KiB... ", 
+				(long)sbuf.st_size, (long)totalsize/1024);
+			fflush(NULL);
+		}
 
 		filecount++;
-		pi_file_close(f);
+
+			
 		printf("\n");
 
 		times.actime 	= info.createDate;
