@@ -3,8 +3,9 @@
  * darwinusb.c: I/O support for Darwin (Mac OS X) USB
  *
  * Copyright (c) 2004, Florent Pillet.
- * Modeled after linuxusb.c by Jeff Dionne and Kenneth Albanowski
  *
+ * libpisock interface modeled after linuxusb.c by Jeff Dionne and 
+ * Kenneth Albanowski
  * Some structures & defines extracted from Linux "visor.c",
  * which is Copyright (C) 1999 - 2003 Greg Kroah-Hartman (greg@kroah.com)
  *
@@ -44,10 +45,7 @@
  * Theory of operation
  *
  * Darwin IOKit is different from traditional unix i/o. It is much more
- * structured, and also more complex. Direct IOKit usage means a lot of C++
- * usage to go through the various hops required to talk to a device.
- *
- * [knghtbrd: Nah, that's fixed now, no C++ needed]
+ * structured, and also more complex.
  *
  * One of the strengths of IOKit is IOUSBLib which allows talking to USB
  * devices directly from userland code, without the need to write a driver.
@@ -107,7 +105,7 @@
 
 /*
  * These values are somewhat tricky.  Priming reads with a size of exactly one
- * USB packet work best.  Probably best to leve these as they are
+ * USB packet works best (no timeouts).  Probably best to leave these as they are.
  */
 #define MAX_AUTO_READ_SIZE	16384
 #define AUTO_READ_SIZE		64
@@ -121,21 +119,22 @@ static io_iterator_t usb_device_added_iter;
 static io_object_t usb_device_notification;	/* for device removal */
 
 static int usb_opened = 0;
-static int usb_in_pipe_ref = 0;		/* endpoint for reads */
-static int usb_out_pipe_ref = 0;	/* endpoint for writes */
+static int usb_in_pipe_ref = 0;				/* pipe for reads */
+static int usb_out_pipe_ref = 0;			/* pipe for writes */
 
 
-static int usb_auto_read_size = 0;	/* != 0 for prime reads */
+static int usb_auto_read_size = 0;			/* if != 0, prime reads to the input pipe to get data permanently */
 
 /* these provide hints about the size of the next read */
-static int usb_read_ahead_size = 0;
-static int usb_last_read_ahead_size;
+static int usb_read_ahead_size = 0;			/* when waiting for big chunks of data, used as a hint to make bigger read requests */
+static int usb_last_read_ahead_size;		/* also need this to properly compute the size of the next read */
+
 
 static char usb_read_buffer[MAX_AUTO_READ_SIZE];
 
 static pthread_mutex_t read_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t read_queue_data_avail_cond = PTHREAD_COND_INITIALIZER;
-static char *read_queue = NULL;		/* stores completed reads */
+static char *read_queue = NULL;				/* stores completed reads, grows by 64k chunks */
 static int read_queue_size = 0;
 static int read_queue_used = 0;
 
@@ -165,7 +164,7 @@ static IOReturn read_generic_connection_information (IOUSBDeviceInterface **dev,
 // Got them from linux/drivers/usb/serial/visor.h
 //
 #define	GENERIC_REQUEST_BYTES_AVAILABLE			0x01
-#define	GENERIC_CLOSE_NOTIFICATION			0x02
+#define	GENERIC_CLOSE_NOTIFICATION				0x02
 #define VISOR_GET_CONNECTION_INFORMATION		0x03
 #define PALM_GET_EXT_CONNECTION_INFORMATION		0x04
 
@@ -634,7 +633,7 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", kr));
 		}
-#if DEBUG_USB
+#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
 #endif
 	}
@@ -686,7 +685,7 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		// get the interface class and subclass
 		kr = (*usb_interface)->GetInterfaceClass (usb_interface, &intfClass);
 		kr = (*usb_interface)->GetInterfaceSubClass (usb_interface, &intfSubClass);
-#if DEBUG_USB
+#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface class %d, subclass %d\n", intfClass, intfSubClass));
 #endif
 
@@ -710,7 +709,7 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 			usb_interface = NULL;
 			continue;
 		}
-#if DEBUG_USB
+#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface has %d endpoints\n", intfNumEndpoints));
 #endif
 
@@ -725,7 +724,7 @@ try_pipes:
 			UInt16 maxPacketSize;
 
 			kr = (*usb_interface)->GetPipeProperties (usb_interface, pipeRef, &direction, &number, &transferType, &maxPacketSize, &interval);
-#if DEBUG_USB
+#ifdef DEBUG_USB
 			if (kr == kIOReturnSuccess)
 				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x\n",pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval));
 #endif
@@ -760,7 +759,7 @@ try_pipes:
 			}
 			else
 			{
-#if DEBUG_USB
+#ifdef DEBUG_USB
 				LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: USBConnection OPENED usb_in_pipe_ref=%d usb_out_pipe_ref=%d\n", usb_in_pipe_ref, usb_out_pipe_ref));
 #endif
 				usb_opened = 1;
@@ -802,7 +801,7 @@ control_request(IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, vo
 
 	kr = (*dev)->DeviceRequest (dev, &req);
 
-#if DEBUG_USB
+#ifdef DEBUG_USB
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: control_request(0x%02x) wLenDone=%d kr=0x%08lx\n", (int)request, req.wLenDone, kr));
 #endif
 
@@ -910,7 +909,7 @@ device_notification(void *refCon, io_service_t service, natural_t messageType, v
 		pthread_cond_broadcast (&read_queue_data_avail_cond);
 		pthread_mutex_unlock (&read_queue_mutex);
 
-#if DEBUG_USB
+#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: device_notification(): USBConnection CLOSED\n"));
 #endif
 	}
@@ -921,7 +920,7 @@ read_completion (void *refCon, IOReturn result, void *arg0)
 {
 	size_t bytes_read = (size_t) arg0;
 
-#if DEBUG_USB
+#ifdef DEBUG_USB
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read_completion callback with %d bytes result=0x%08lx\n", bytes_read,(long)result));
 #endif
 
@@ -979,7 +978,7 @@ prime_read()
 
 		//usb_last_read_ahead_size = MAX_AUTO_READ_SIZE;	// testing
 
-#if DEBUG_USB
+#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: prime_read() for %d bytes\n", usb_last_read_ahead_size));
 #endif
 
@@ -989,7 +988,7 @@ prime_read()
 
 		if (kr == kIOUSBPipeStalled)
 		{
-#if DEBUG_USB
+#ifdef DEBUG_USB
 			LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: stalled -- clearing stall and re-priming\n"));
 #endif
 			(*usb_interface)->ClearPipeStall (usb_interface, usb_in_pipe_ref);
@@ -1145,7 +1144,7 @@ u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 	if (!usb_opened)
 		return 0;
 
-#if DEBUG_USB
+#ifdef DEBUG_USB
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: darwin_usb_read(len=%d, timeout=%d, flags=%d)\n", len, timeout, flags));
 #endif
 
@@ -1216,7 +1215,7 @@ u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 		}
 	}
 
-#if DEBUG_USB
+#ifdef DEBUG_USB
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read done, len=%d, remaining bytes in queue=%d\n", len, read_queue_used));
 #endif
 	
