@@ -181,7 +181,6 @@ int main(int argc, char *argv[])
 		char buffer[256];
 		int len = left;
 		int j;
-//		double perc = (offset*100.0) / ROMlength;
 		double perc = ((double) offset / ROMlength) * 100.0;
 
 		if (len > 256)

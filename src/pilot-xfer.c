@@ -1044,7 +1044,7 @@ void Help(void)
 	fprintf(stderr, "   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n");
 	fprintf(stderr, "   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n");
 	fprintf(stderr, "   -I modifies -b, -u, and -s, to back up \"illegal\"\n");
-	fprintf(stderr, "      Unsaved Preferences.PDB (normally skipped, per Palm's recommendation).\n");
+	fprintf(stderr, "      Unsaved Preferences.prc (normally skipped, per Palm's recommendation).\n");
 	fprintf(stderr, "   -q makes all the backup options shut up about skipped files.\n");
 	fprintf(stderr, "   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n");
  	fprintf(stderr, "   The serial port used to connect to may be specified by the $PILOTPORT\n");

@@ -1,3 +1,12 @@
+2001-11-03  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* Makefile.os2: ..should not be in the cvs. It's created
+	  dynamically (or should be)
+
+2001-10-31  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* pilot-xfer.c: I thought I fixed this already. Gr. Typo in --help.
+
 2001-10-30  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* pi-getrom.c: updated to output percent completion, working on the
