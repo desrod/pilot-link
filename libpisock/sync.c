@@ -157,7 +157,9 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 			PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
 			DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		} else {
-			PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
+			PilotCheck (dlp_WriteRecord (sh->sd, dbhandle, 0, precord->recID, 
+						     precord->catID, precord->buffer,
+						     precord->len, NULL));
 			DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
 			DesktopCheck (sh->AddRecord (sh, precord));
 			DesktopCheck (sh->SetStatusCleared (sh, drecord));

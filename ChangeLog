@@ -1,3 +1,9 @@
+2000-12-07  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_record): When the pilot record is changed and
+	archived and the desktop record is changed and the changes are not
+	identical, keep the pilot record - don't delete it.
+
 2000-11-29  JP Rosevear  <jpr@helixcode.com>
 
 	* libsock/sync.c: Add error checking for all callbacks and dlp calls.
