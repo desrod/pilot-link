@@ -1270,12 +1270,10 @@ static void print_fileinfo(const char *path, FileRef file)
 	time_t date;
 	char *s;
 	(void) dlp_VFSFileSize(sd,file,&size);
-	(void) dlp_VFSFileGetDate(sd,file,vfsFileDateAccessed,&date);
-	/* Adjust for Palm epoch (1/1/1904) vs UNIX epoch (1/1/1970). */
-	date += 2082852000;
+	(void) dlp_VFSFileGetDate(sd,file,vfsFileDateModified,&date);
 	s = ctime(&date);
 	s[24]=0;
-	printf("   %8d %s %ld %s\n",size,s,(long) date,path);
+	printf("   %8d %s  %s\n",size,s,path);
 }
 
 /***********************************************************************
@@ -1771,7 +1769,7 @@ int main(int argc, const char *argv[])
 		" [-p  <port>] [--help] <options> <actions>\n"
 		"   Sync, backup, install, delete and more from your Palm device.\n"
 		"   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
-		"   Use one of -brsu or one or more of -dfimlLP; mix in -aexDFIOV.\n\n";
+		"   Use exactly one of -brsudfimlL; mix in -aexDFIOPV.\n\n";
 
 	const char *listalias = "--List";
 
