@@ -2304,7 +2304,7 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 #endif				/* IFDEF _PILOT_SYSPKT_H */
 
 int
-dlp_GetROMToken(int sd, unsigned long token, char *buffer, size_t *size)
+dlp_GetROMToken(int sd, unsigned long token, void *buffer, size_t *size)
 {
 	unsigned long result;
 
@@ -2350,7 +2350,7 @@ dlp_GetROMToken(int sd, unsigned long token, char *buffer, size_t *size)
 #endif		
 
 	if (buffer) {
-		buffer[*size] = 0;
+		((unsigned char *)buffer)[*size] = 0;
 
 		PackRPC(&p, 0xa026, RPC_IntReply,		/* sysTrapMemMove */
 		  RPC_Ptr(buffer, *size),
@@ -3206,8 +3206,7 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int prefID, int backup,
 		    printlong(creator), prefID,
 		    buffer ? maxsize : 0, backup ? 0x80 : 0));
 
-		result = dlp_OpenDB(sd, 0, dlpOpenRead, "System Preferences",
-			       &db);
+		result = dlp_OpenDB(sd, 0, dlpOpenRead, "System Preferences", &db);
 		if (result < 0)
 			return result;
 
@@ -3263,10 +3262,10 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int prefID, int backup,
 	
 	if (result > 0) {
 		data_len = get_short(DLP_RESPONSE_DATA(res, 0, 4));
-		if (version) *version =
-			 get_short(DLP_RESPONSE_DATA(res, 0, 0));
+		if (version)
+			*version = get_short(DLP_RESPONSE_DATA(res, 0, 0));
 		if (size && !buffer) *size =
-		 get_short(DLP_RESPONSE_DATA(res, 0, 2)); /* Total sz */
+			get_short(DLP_RESPONSE_DATA(res, 0, 2)); /* Total sz */
 		if (size && buffer)
 			*size = data_len;	/* Size returned */
 		if (buffer)
@@ -3293,7 +3292,7 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int prefID, int backup,
 
 int
 dlp_WriteAppPreference(int sd, unsigned long creator, int prefID, int backup,
-		       int version, void *buffer, size_t size)
+		       int version, const void *buffer, size_t size)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3965,7 +3964,7 @@ dlp_VFSFileClose(int sd, FileRef fileRef)
 }
 
 int
-dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
+dlp_VFSFileWrite(int sd, FileRef fileRef, const void *data, size_t len)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -4351,10 +4350,7 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 
 	set_long (DLP_REQUEST_DATA (req, 0, 0), dirRefNum);
 	set_long (DLP_REQUEST_DATA (req, 0, 4), *dirIterator);
-	/*  FP: (0xFFFF - 99). this is the max return buffer size that
-		we are passing for the device to send its response, but I'm not
-		sure whether this is a magic value that shouldn't be changed. */
-	set_long (DLP_REQUEST_DATA (req, 0, 8), 0xFF9C);
+	set_long (DLP_REQUEST_DATA (req, 0, 8), 8 + *maxDirItems * (4 + vfsMAXFILENAME));
 
 	result = dlp_exec (sd, req, &res);
 	
@@ -4368,7 +4364,7 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 			*dirIterator = vfsIteratorStop;
 			entries = 0;
 		}
-	
+
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		     "%d results returnd (ilterator: %d)\n", entries,
 		     *dirIterator));
@@ -4377,7 +4373,7 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 		count = 0;
 	
 		for (at = 0; at < entries; at++) {
-			if ((*maxDirItems) > at) {
+			if (*maxDirItems > at) {
 				data[at].attr = 
 					get_long(DLP_RESPONSE_DATA (res, 0, from));
 
