@@ -1,5 +1,7 @@
-/* 
+/*
  * install-expense.c: Palm expense installer
+ *
+ * Copyright (C) Boisy G. Pitre, year unknown - 2001 probably.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +19,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,13 +26,10 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-expense.h"
+#include "userland.h"
 
-/* Declare prototypes */
-static void display_help(const char *progname);
-void print_splash(const char *progname);
-int pilot_connect(const char *porg);
 
-char *paymentTypes[] = 
+char *paymentTypes[] =
 {
 	"amex",
 	"cash",
@@ -45,9 +43,9 @@ char *paymentTypes[] =
 };
 
 
-char *expenseTypes[] = 
+char *expenseTypes[] =
 {
-	"airfare", 
+	"airfare",
 	"breakfast",
 	"bus",
 	"businessmeals",
@@ -78,29 +76,6 @@ char *expenseTypes[] =
 	NULL
 };
 
-static void display_help(const char *progname)
-{
-	printf("   Install Expense application entries to your Palm device\n\n");
-	printf("   Usage: %s [-qrt] [-c category] -p <port> file [file] ...\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname); 
-	printf("     -v, --version           Display %s version information\n", progname);  
-	printf("     -t, --ttype <ptype>     Payment type (Cash, Check, etc.)\n");
-	printf("     -e, --etype <etype>     Expense type (Airfare, Hotel, etc.)\n");
-	printf("     -a, --amount [amount]   Payment amount\n");
-	printf("     -V, --vendor [vendor]   Expense vendor name (Joe's Restaurant)\n");
-	printf("     -g, --guests <guests>   Number of guests for this expense entry\n");
-	printf("     -i, --city [city]       Location/city for this expense entry\n");
-	printf("     -n, --note [note]       Notes for this expense entry\n");
-	printf("     -c, --category <cat>    Install entry into this category\n\n");
-	printf("     -r, --replace <cat>     Replace entry in this category\n\n");
-	printf("   Example:\n");
-	printf("     %s -p serial:/dev/ttyUSB0 -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n", progname);
-	printf("                      -g 21 -l \"San Francisco\" -N \"This is a note\"\n\n");
-
-	return;
-}
 
 int main(int argc, const char *argv[])
 {
@@ -112,114 +87,99 @@ int main(int argc, const char *argv[])
 		po_err		= -1,
 		replace_category = 0;
 
-	const char
-                *progname 	= argv[0];
-	
-	char 	*port		= NULL,
+	char
 		*category_name 	= NULL,
 		*expenseType	= NULL,
 		*paymentType	= NULL;
-	
+	size_t size;
+
 	unsigned char buf[0xffff];
-	
+	unsigned char *b;
+
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo eai;
-	struct 	Expense theExpense;	
-	
+	struct 	Expense theExpense;
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-        	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	        {"ptype", 	't', POPT_ARG_STRING, &paymentType, 't',"Payment type (Cash, Check, etc.)"},
-        	{"etype", 	'e', POPT_ARG_STRING, &expenseType, 'e', "Expense type (Airfare, Hotel, etc.)"},
+		USERLAND_RESERVED_OPTIONS
+	        {"ptype", 	't', POPT_ARG_STRING, &paymentType, 0,"Payment type (Cash, Check, etc.)"},
+        	{"etype", 	'e', POPT_ARG_STRING, &expenseType, 0, "Expense type (Airfare, Hotel, etc.)"},
 	        {"amount", 	'a', POPT_ARG_STRING, &theExpense.amount, 0, "Payment amount"},
         	{"vendor", 	'V', POPT_ARG_STRING, &theExpense.vendor, 0, "Expense vendor name (Joe's Restaurant)"},
 	        {"city", 	'i', POPT_ARG_STRING, &theExpense.city, 0, "Location/city for this expense entry"},
         	{"guests", 	'g', POPT_ARG_STRING, &theExpense.attendees, 0, "Number of guests for this expense entry"},
 	        {"note", 	'n', POPT_ARG_STRING, &theExpense.note, 0, "Notes for this expense entry"},
         	{"category", 	'c', POPT_ARG_STRING, &category_name, 0, "Install entry into this category"},
-                {"replace", 	'r', POPT_ARG_STRING, &category_name, 'r', "Replace entry in this category"},
-        	POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+                {"replace", 	0, POPT_ARG_VAL, &replace_category, 1, "Replace all entries in category by this one"},
+        	POPT_TABLEEND
 	};
-	
+
 	po = poptGetContext("install-expenses", argc, argv, options, 0);
-	
+	poptSetOtherOptionHelp(po,"\n\n"
+		"   Install Expense application entries to your Palm device\n\n"
+		"   Example arguments:\n"
+		"     %s -p serial:/dev/ttyUSB0 -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n"
+		"                      -g 21 -l \"San Francisco\" -N \"This is a note\"\n\n");
+
 	if (argc < 2) {
-                display_help(progname);
-                exit(1);
+		poptPrintUsage(po,stderr,0);
+		return 1;
         }
-	
+
 	 while ((po_err = poptGetNextOpt(po)) >= 0) {
-		switch (po_err) {
-		case 'h':
-                        display_help(progname);
-                        return 0;
-                case 'v':
-                        print_splash(progname);
-                        return 0;
-		case 'e':
-			theExpense.type = etBus;
-			for (i = 0; expenseTypes[i] != NULL; i++)
-			{
-				if (strcasecmp(expenseType, expenseTypes[i]) == 0)
-				{
-					theExpense.type = i;
-					break;
-				}
-			}
-			break;
-		case 't':
-			theExpense.payment = epCash;
-			for (i = 0; paymentTypes[i] != NULL; i++)
-			{
-				if (strcasecmp(paymentType, paymentTypes[i]) == 0)
-				{
-					theExpense.payment = i;
-					break;
-				}
-			}
-			break;
-		case 'r':
-			replace_category++;
-			break;
-		default:
-			display_help(progname);
-			return 0;
-		}
-	}
-	puts("Done checking args");
-	if (replace_category && (!category_name || category_name == NULL)) {
-		fprintf(stderr,
-			"%s: expense category required when specifying replace\n",
-			progname);
-		display_help(progname);
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",po_err);
+		return 1;
 	}
 
-	puts("Connect to pilot...");
-	
-	sd = pilot_connect(port);
+	theExpense.type = etBus;
+	for (i = 0; expenseType && expenseTypes[i] != NULL; i++)
+	{
+		if (strcasecmp(expenseType, expenseTypes[i]) == 0)
+		{
+			theExpense.type = i;
+			break;
+		}
+	}
+
+	theExpense.payment = epCash;
+	for (i = 0; paymentType && paymentTypes[i] != NULL; i++)
+	{
+		if (strcasecmp(paymentType, paymentTypes[i]) == 0)
+		{
+			theExpense.payment = i;
+			break;
+		}
+	}
+
+	if (replace_category && (!category_name)) {
+		fprintf(stderr,
+			"   ERROR: expense category required when specifying replace\n");
+		return 1;
+	}
+
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 
 	if (dlp_OpenConduit(sd) < 0)
 		goto error_close;
-	
+
 	dlp_ReadUserInfo(sd, &User);
 	dlp_OpenConduit(sd);
 
 	/* Open the Expense's database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, Expense_DB, &db) < 0) {
-		puts("Unable to open ExpenseDB");
+		fprintf(stderr,"   ERROR: Unable to open ExpenseDB on Palm.");
 		dlp_AddSyncLogEntry(sd, "Unable to open ExpenseDB.\n");
-		exit(EXIT_FAILURE);
+		goto error_close;
 	}
 
 	l = dlp_ReadAppBlock(sd, db, 0, buf, 0xffff);
 	unpack_ExpenseAppInfo(&eai, buf, l);
 
+	category = 0;	/* unfiled */
 	if (category_name) {
 		category = -1;	/* invalid category */
 		for (i = 0; i < 16; i++)
@@ -230,23 +190,21 @@ int main(int argc, const char *argv[])
 			}
 		if (category < 0) {
 			fprintf(stderr,
-				"%s: category %s not found on Palm\n",
-				progname, category_name);
-			exit(2);
+				"   ERROR: category %s not found on Palm\n",
+				category_name);
+			goto error_close;
 		}
 
-		if (replace_category)
+		if (replace_category) {
 			dlp_DeleteCategory(sd, db, category);
+		}
 
-	} else {
-		int 	size;
-		unsigned char buff[256], *b;
+	}
 
-		category 		= 0;	/* unfiled */
 		theExpense.currency 	= 0;
 		theExpense.attendees 	= "";
 
-		b = buff;
+		b = buf;
 
 		/* Date */
 		*(b++) 	= 0xc3;
@@ -272,10 +230,9 @@ int main(int argc, const char *argv[])
 		strcpy(b, theExpense.note);
 		b += strlen(theExpense.note) + 1;
 
-		size = b - buff;
+		size = b - buf;
 		dlp_WriteRecord(sd, (unsigned char)db, 0, 0, category,
-				(unsigned char *)buff, size, 0);
-	}
+				(unsigned char *)buf, size, 0);
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);
@@ -294,7 +251,7 @@ int main(int argc, const char *argv[])
 
 error_close:
 	pi_close(sd);
-	
+
 error:
 	return -1;
 }
