@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "pi-header.h"
+
 char *plu_port = NULL;
 int plu_quiet = 0;
 static char *badoption_help = NULL;
