@@ -14,6 +14,7 @@ man_MANS =			\
 	pi-getram.1		\
 	pi-getrom.1		\
 	pilot-addresses.1	\
+	pilot-archive.1		\
 	pilot-foto.1		\
 	pilot-link.7		\
 	pilot-xfer.1		\
