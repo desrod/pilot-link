@@ -51,8 +51,7 @@ int main(int argc, const char *argv[])
                 *file_arg;
 
 	char    *file_text,
-		*cat 		= NULL,
-		buf[0xffff];
+		*cat 		= NULL;
 	pi_buffer_t *appblock;
 
 	unsigned char note_buf[0x8000];
