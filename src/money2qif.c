@@ -44,6 +44,8 @@ int main(int argc, const char *argv[])
 		*port 		= NULL,
 		*account 	= NULL;
 
+	int match_category;
+
 	struct 	MoneyAppInfo mai;
 	pi_buffer_t *buffer;
 
@@ -102,11 +104,9 @@ int main(int argc, const char *argv[])
 	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
 	unpack_MoneyAppInfo(&mai, buffer->data, 0xffff);
 
-	for (index = 0; index < 16; index++)
-		if (!strcmp(mai.category.name[index], account))
-			break;
+	match_category = plu_findcategory(&mai.category,account,PLU_CAT_NOFLAGS);
 
-	if (index < 16) {
+	if (index >= 0) {
 
 		printf("!Type:Bank\n");
 
@@ -127,8 +127,9 @@ int main(int argc, const char *argv[])
 			    || (attr & dlpRecAttrArchived))
 				continue; 	/* Skip deleted records */
 
-			if (strcmp(mai.category.name[category], account))
+			if (match_category != category) {
 				continue;
+			}
 
 			unpack_Transaction(&t, buffer->data, buffer->used);
 

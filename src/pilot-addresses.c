@@ -371,7 +371,8 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 		addr.showPhone = 0;
 
 		if (i == 2) {
-			category = plu_findcategory(&aai->category,buf);
+			category = plu_findcategory(&aai->category,buf,
+				PLU_CAT_CASE_INSENSITIVE | PLU_CAT_DEFAULT_UNFILED);
 			i = read_field(buf, f);
 			if (i == 2) {
 				addr.showPhone = match_phone(buf, aai);
@@ -563,7 +564,7 @@ int main(int argc, const char *argv[])
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		/* these are the mode-setters. delete-all does it through
-		 * popt hooks, since it doesn't take an argument. 
+		 * popt hooks, since it doesn't take an argument.
 		 *
 		 * Special case is that you can mix -w and -d to write the
 		 * file and then delete a category.
@@ -634,11 +635,13 @@ int main(int argc, const char *argv[])
 	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
 	unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
 
-	if (defaultcategoryname)
+	if (defaultcategoryname) {
 		defaultcategory =
-		    plu_findcategory(&aai.category,defaultcategoryname);
-	else
+		    plu_findcategory(&aai.category,defaultcategoryname,
+		    	PLU_CAT_CASE_INSENSITIVE | PLU_CAT_DEFAULT_UNFILED);
+	} else {
 		defaultcategory = 0;	/* Unfiled */
+	}
 
 	switch(run_mode) {
 		FILE *f;
@@ -657,9 +660,10 @@ int main(int argc, const char *argv[])
 			goto error_close;
 		}
 		write_file(f, sd, db, &aai);
-		if (deletecategory)
+		if (deletecategory) {
 			dlp_DeleteCategory(sd, db,
-				plu_findcategory(&aai.category,deletecategory));
+				plu_findcategory(&aai.category,deletecategory,PLU_CAT_CASE_INSENSITIVE | PLU_CAT_WARN_UNKNOWN));
+		}
 		fclose(f);
 		break;
 	case mode_read:
@@ -682,7 +686,7 @@ int main(int argc, const char *argv[])
 		break;
 	case mode_delete:
 		dlp_DeleteCategory(sd, db,
-				plu_findcategory (&aai.category,deletecategory));
+				plu_findcategory (&aai.category,deletecategory,PLU_CAT_CASE_INSENSITIVE | PLU_CAT_WARN_UNKNOWN));
 		break;
 	case mode_delete_all:
 		for (i = 0; i < 16; i++)

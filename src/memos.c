@@ -298,13 +298,8 @@ int main(int argc, const char *argv[])
 
 	unpack_MemoAppInfo(&mai, (unsigned char *) appblock, 0xffff);
 
-	if (category_name[0] != '\0') {
-		for (index = 0, match_category = -1; index < 16; index += 1) {
-			if ((strlen(mai.category.name[index]) > 0)
-			    && (strcmp(mai.category.name[index], category_name)
-				== 0))
-				match_category = index;
-		}
+	if (category_name && category_name[0] != '\0') {
+		match_category = plu_findcategory(&mai.category,category_name, PLU_CAT_NOFLAGS);
 		if (match_category < 0) {
 			fprintf(stderr,"   ERROR: Can't find specified Memo category \"%s\".\n",
 				category_name);

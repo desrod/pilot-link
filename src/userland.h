@@ -109,9 +109,25 @@ extern int plu_connect();
  * Look up a category name. Argument @p info is the category part of the
  * AppInfo block for the database, while @p name is the category to look up.
  * Returns the index of the category if found (0..15) or -1 if not.
+ *
+ * The flags passed to findcategory are a bitwise or of enums; the meanings are:
+ *
+ *   NOFLAGS          : Match case-sensitive, return -1 if not found, do not
+ *                      match numbers as category numbers, do not complain.
+ *   CASE_INSENSITIVE : Match in a case-insensitive fashion.
+ *   DEFAULT_UNFILED  : Return 0 (unfiled) instead of -1 on no-match.
+ *   MATCH_NUMBERS    : Match number strings 0 .. 15 as categories 0 .. 15.
+ *   WARN_UNKNOWN     : Complain on stderr if category not found.
  */
+typedef enum {
+	PLU_CAT_NOFLAGS = 0,
+	PLU_CAT_CASE_INSENSITIVE = 0x0001,
+	PLU_CAT_DEFAULT_UNFILED = 0x0002,
+	PLU_CAT_MATCH_NUMBERS = 0x0004,
+	PLU_CAT_WARN_UNKNOWN = 0x0008
+	} plu_findcategory_flags_t;
 
-extern int plu_findcategory(const struct CategoryAppInfo *info, const char *name);
+extern int plu_findcategory(const struct CategoryAppInfo *info, const char *name, int flags);
 
 typedef struct {
 	/* Numeric parts of the ROM version */

@@ -23,10 +23,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "pi-header.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
+#include "pi-source.h"
 
 
 int plu_connect()
@@ -95,16 +97,51 @@ int plu_connect()
 }
 
 
-int plu_findcategory(const struct CategoryAppInfo *info, const char *name)
+int plu_findcategory(const struct CategoryAppInfo *info, const char *name, int flags)
 {
 	int index, match_category;
 
 	match_category = -1;
 	for (index = 0; index < 16; index += 1) {
-		if ((info->name[index][0]) &&
-			(strncasecmp(info->name[index], name, 15) == 0)) {
-			match_category = index;
-			break;
+		if (info->name[index][0]) {
+			if (flags & PLU_CAT_CASE_INSENSITIVE) {
+				if (strncasecmp(info->name[index], name, 15) == 0) {
+					match_category = index;
+					break;
+				}
+			} else {
+				if (strncmp(info->name[index],name,15) == 0) {
+					match_category = index;
+					break;
+				}
+			}
+		}
+	}
+
+	if ((match_category == -1)  && (flags & PLU_CAT_MATCH_NUMBERS)) {
+		while (isspace(*name)) {
+			name++;
+		}
+		if (isdigit(*name)) {
+			match_category = atoi(name);
+		}
+
+		if ((match_category < 0) || (match_category > 15)) {
+			match_category = -1;
+		}
+	}
+
+	if (flags & PLU_CAT_WARN_UNKNOWN) {
+		if (match_category == -1) {
+			fprintf(stderr,"   WARNING: Unknown category '%s'%s.\n",
+				name,
+				(flags & PLU_CAT_DEFAULT_UNFILED) ? ", using 'Unfiled'" : "");
+		}
+	}
+
+	if (flags & PLU_CAT_DEFAULT_UNFILED) {
+		if (match_category == -1) {
+			match_category = 0;
 		}
 	}
 
