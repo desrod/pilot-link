@@ -463,7 +463,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		if (only_changed) {
 			fprintf(stdout, "Synchronizing %-35s\n", name); 
 		} else {
-			/* printf("Backing up %-35s", name); */
+			printf("Backing up %-35s", name);
 			fflush(stdout);
 		}
 
@@ -479,13 +479,11 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
 		} else if (stat(name, &sbuf) == 0) {
-			/* 
 			printf("\n\t(%7ld bytes, %3d kb total)\n\n", 
 				sbuf.st_size, totalsize/1024);
-			*/
 			totalsize += sbuf.st_size;
 		} else {
-			/* printf("\n"); */
+			printf("\n");
 		}
 
 		pi_file_close(f);

@@ -55,8 +55,7 @@ static void display_help(char *progname)
 	printf("     -h --help         Display this information\n");
 	printf("     -v --version      Display version information\n\n");
 	printf("   Examples: \n");
-	printf("      %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n", progname);
-	printf("      %s -p /dev/pilot -o Host -a 192.168.1.1 -n 255.255.255.0\n\n", progname);
+	printf("      %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n\n", progname);
 
 	return;
 }
