@@ -47,11 +47,11 @@ int sys_RPCerror;
  ***********************************************************************/
 int syspkt_tx(struct pi_socket *ps, void *m, int length)
 {
-	int i;
 	struct pi_skb *nskb;
 	unsigned char *msg = m;
 
 #ifdef DEBUG
+	int i;
         for(i=0;i<74;i++) fprintf(stderr, "-");
         fprintf(stderr, "\n");
 #endif

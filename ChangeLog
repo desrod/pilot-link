@@ -1,3 +1,25 @@
+2001-06-18  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* Makefile.in: Changed the 'strip -s' target to 'strip' to properly
+	  strip the binaries on a SunOS/Sparc target (now that I have one to
+	  test code upon!). (David A. Desrosiers)
+	
+	* libsock/padp.c: Relocated some variables inside the DEBUG stanza
+	  to eliminate some warnings. (David A. Desrosiers)
+
+	* libsock/syspkt.c: Same as above. (David A. Desrosiers)
+
+	* scripts/pback.pl: Add a "-q" (quiet) option to make pback less
+          interactive (for use from scripts), and fix up a few comments that
+          were inadvertently changed from "Pilot" to "Palm" during one of
+          the source cleanup passes (pback did, and still does, work with a
+          ~/Pilot directory, but several of the comments were changed to
+          refer to a non-existent Palm directory). (Carl Jacobsen)
+
+	* scripts/todolist.pl: Add a "-N" option to display notes attached
+	  to ToDo entries, and clean up the usage statement just a bit.
+	  (Carl Jacobsen)
+
 2001-06-06  Peter Williams  <peterw@ximian.com>
  
  	* libsock/unixserial.c (s_write): Only free() skb after we access

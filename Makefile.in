@@ -123,7 +123,7 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 		$(INSTALL_DATA) $(PICCLIB) $(libdir)/libpicc.la; \
 	fi
 	for p in $(CEXECS); do \
-		$(STRIP) -s ".libs/$$p"; \
+		$(STRIP) ".libs/$$p"; \
 	done        
 	for p in $(EXECS); do \
 		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \

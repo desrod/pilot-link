@@ -9,7 +9,7 @@
 #	Coming Week:	todolist -d6 -p -r
 # ...of course just plain "todolist" is always good...
 #
-# Version 1.7.  Written by Carl Jacobsen (carl@ucsd.edu)
+# Version 1.9.  Written by Carl Jacobsen (carl@ucsd.edu)
 #
 # Note: this script's notion of "today" is based upon the modification time
 #	on the specified ToDo database, and this is what is used in deciding
@@ -20,8 +20,7 @@
 #
 # TODO:
 #	Biggest limitations at this point are:
-#	* Notes are not shown (an "N" will appear at the end of the line
-#	  to indicate that a note is attached).
+#	* Display of notes is primitive (and optional).
 #	* No options to control display of specific priorities or categories.
 #	* Might want something to search for words in description.
 
@@ -34,8 +33,10 @@ my $todoname = PDA::Pilot::ToDoDatabase::dbname();
 my $todofile = '~/Pilot/RAM/' . $todoname . '.pdb';
 
 
+my $opts = '-c -d[S,][E] -p -s -r -w -N -u -P -n -f ToDoDB.pdb_filename';
+
 my $Usage = <<EOT;
-Usage: $prog_name [ -c -d[S,][E] -p -s -r -w -u -P -n -f ToDoDB.pdb_filename ]
+Usage: $prog_name [ $opts ]
 Function:
      Displays a ToDo list summary, from a PalmOS ToDo database file
 Options:
@@ -47,6 +48,7 @@ Options:
      -s		Show secret ("Private") records (normally suppressed),
      -r		Show relative dates (Mon, Tue, etc.) where possible,
      -w		Wrap long descriptions to multiple lines (normally truncated),
+     -N		Show notes,
      -u		Don't Uppercase "Unfiled" (normally done to make more obvious),
      -P		Sort by priority-then-due-date (normally the other way around),
      -n		Don't filter output through PAGER (default pages if terminal),
@@ -74,6 +76,7 @@ my $show = {
      past_due    => 1,
      secret      => 0,
      relative    => 0,
+     notes       => 0,
      wrap        => 0,
      up_unfiled  => 1,
      page_output => 1,
@@ -115,6 +118,7 @@ while (@ARGV) {
      elsif (/^-p$/) { $show->{past_due}    = 0; }
      elsif (/^-s$/) { $show->{secret}      = 1; }
      elsif (/^-r$/) { $show->{relative}    = 1; }
+     elsif (/^-N$/) { $show->{notes}       = 1; }
      elsif (/^-w$/) { $show->{wrap}        = 1; }
      elsif (/^-u$/) { $show->{up_unfiled}  = 0; }
      elsif (/^-P$/) { $show->{priority1st} = 1; }
@@ -134,21 +138,18 @@ while (@ARGV) {
 
      } elsif (/^--$/) {			# international sign for end of opts...
 	  last;
-     } elsif (/^-./ and /^-\\?\??$/) {	# if usage requested (-?, -\?, etc.) ...
-	  print $Usage;
-	  exit 0;
-     } elsif (/^--help$/i) {		# if usage requested (GNU-style) ...
+     } elsif (/^-(-help|[\\?]{1,2})$/i) { # usage requested (--help, -?, -\?)...
 	  print $Usage;
 	  exit 0;
      } elsif (/^-/) {			# unknown option...
 	  die "$prog_name: don't understand \"$_\".",
-	      "  Try \"$prog_name -\\?\" for help.\n";
+	      "  Try \"$prog_name --help\" for help.\n";
      } else {
 	  unshift @ARGV, $_;		# reached first non-option argument...
 	  last;
      }
 }
-die "$prog_name: too many arguments.  Try \"$prog_name -\\?\" for help.\n"
+die "$prog_name: too many arguments.  Try \"$prog_name --help\" for help.\n"
      if @ARGV;
 
 # Translate past_due flag into a start_date...
@@ -382,6 +383,12 @@ sub print_todos
 	  if ($show->{wrap}) {	# if wrapping descript, print remaining parts
 	       shift @desc;
 	       print map { $descIndent . $_ . "\n" } @desc;
+	  }
+	  if ($show->{notes} and defined $todo->{note} and $todo->{note} ne ''){
+	       (my $note = $todo->{note}) =~ s/\n+$//s;
+	       print ">-- Note -->\n";
+	       print $note, "\n";
+	       print "<-- ---- --<\n";
 	  }
      }
 }

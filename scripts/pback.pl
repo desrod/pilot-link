@@ -4,7 +4,7 @@
 # This script is meant to make using pilot-xfer on a daily basis as
 # painless as possible.  You set the PILOTPORT and PILOTRATE environment
 # variables (or hack the copies in the setup section, below), and create
-# a "Palm" directory under your home directory, and then you can type:
+# a "Pilot" directory under your home directory, and then you can type:
 #
 #	pback sync
 #
@@ -17,7 +17,7 @@
 # This allows one to HotSync in a way more closely resembling Palm's own
 # Install and HotSync programs.
 #
-# Version 1.7.  Written by Carl Jacobsen (carl@ucsd.edu)
+# Version 1.8.  Written by Carl Jacobsen (carl@ucsd.edu)
 
 use strict;
 use Cwd;
@@ -26,8 +26,8 @@ use File::Compare;
 (my $prog_name = $0) =~ s#.*/##;
 
 my $Usage = <<EOT;
-Usage: $prog_name COMMAND
-   or: $prog_name install file...
+Usage: $prog_name [ -q ] COMMAND
+   or: $prog_name [ -q ] install file...
 Where COMMAND is one of:
      sync
 	  Synchronizes backup of both RAM and non-OS Flash DBs (by
@@ -92,11 +92,13 @@ foreach my $dir (map { "$base/$_" } @dirs) {
 
 # - - - - - - - - - - - - - - - - - - - - Parse command line, do requested work
 
-# Unadvertised debugging option...
-
 my $pilot_xfer = 'pilot-xfer';
-if (@ARGV and $ARGV[0] eq '-x') {
-     $pilot_xfer = 'pilot-xfer.debug';
+my $quiet      = 0;
+
+while (@ARGV) {
+     if    ($ARGV[0] eq '-x') { $pilot_xfer = 'pilot-xfer.debug'; }
+     elsif ($ARGV[0] eq '-q') { $quiet      = 1;                  }
+     else                     { last;                             }
      shift;
 }
 
@@ -110,13 +112,16 @@ if ($cmd eq 'install') {
      my $got = 0;
      foreach my $file (@ARGV) {
 	  if (-f $file) {
-	       cmd('cp', '-pi', $file, "$base/$dirInst");
+	       my @cpcmd = ('cp', '-pi', $file, "$base/$dirInst");
+	       $cpcmd[1] =~ s/i//  if $quiet;
+	       cmd(@cpcmd);
 	       $got = 1;
 	  } else {
 	       warn "$prog_name: can't find $file\n";
 	  }
      }
-     print qq[File(s) copied.  Do "$prog_name sync" to transfer.\n]  if $got;
+     print qq[File(s) copied.  Do "$prog_name sync" to transfer.\n]
+	  if $got and not $quiet;
 
      exit 0;
 } else {
@@ -124,7 +129,7 @@ if ($cmd eq 'install') {
 	  if @ARGV;
 }
 
-# All remaining commands are relative to Palm dir, so go there...
+# All remaining commands are relative to Pilot dir, so go there...
 
 chdir $base  or die "$prog_name: can't chdir $base: $!\n";
 
@@ -189,11 +194,12 @@ sub newcopydir
 {
      my $dir = shift;
      my $no_copy_opt = shift;
+     my $max_copies = 50;
 
      die qq($prog_name: <newcopydir> can't see directory "$dir"\n)
 	  unless -d $dir;
 
-     foreach my $n (reverse 0..20) {
+     foreach my $n (reverse 0..$max_copies) {
 	  my($current, $older) = ( "$dir,$n", "$dir," . ($n + 1) );
 	  $current = $dir  if $n == 0;
 
@@ -224,7 +230,7 @@ sub cmd
 {
      my @cmd = @_;
 
-     print "+ @cmd\n";
+     print "+ @cmd\n"  unless $quiet;
 
      system @cmd;
 }

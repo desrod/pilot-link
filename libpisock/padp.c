@@ -50,7 +50,6 @@
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 /* @-predboolint@ */
 {
-	int i;
 	int flags = FIRST;
 	int tlen;
 	int count = 0;
@@ -61,6 +60,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 	int retries;
 
 #ifdef DEBUG
+	int i;
 	for(i=0;i<74;i++) fprintf(stderr, "-");
 	fprintf(stderr, "\n");
 #endif
