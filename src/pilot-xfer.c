@@ -37,8 +37,8 @@
 #include "pi-socket.h"
 #include "pi-file.h"
 #include "pi-header.h"
+#include "pi-util.h"
 
-#define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 /* unsigned char typedef byte; */
 typedef unsigned char byte;
@@ -82,7 +82,6 @@ typedef enum {
   palm_op_install,
   palm_op_fetch,
   palm_op_list,
-  palm_op_settime,
   palm_op_noop
 } palm_op_t;
 
@@ -93,7 +92,6 @@ struct option options[] = {
 	{"backup",      required_argument, NULL, 'b'},
 	{"update",      required_argument, NULL, 'u'},
 	{"sync",        required_argument, NULL, 's'},
-	{"time",        no_argument,       NULL, 't'},
 	{"restore",     required_argument, NULL, 'r'},
 	{"install",     required_argument, NULL, 'i'},
 	{"merge",       required_argument, NULL, 'm'},
@@ -114,7 +112,7 @@ struct option options[] = {
 
 };
 
-static const char *optstring = "-p:hvb:u:s:tr:i:m:f:d:e:PlLa:x:FOIVD:";
+static const char *optstring = "-p:hvb:u:s:r:i:m:f:d:e:PlLa:x:FOIVD:";
 
 int 	sd 	= 0;
 char    *port 	= NULL;
@@ -451,11 +449,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		memcpy(&info, buffer->data, sizeof(struct DBInfo));
 		i = info.index + 1;
 
-		crid[0] = (info.creator & 0xFF000000) >> 24;
-		crid[1] = (info.creator & 0x00FF0000) >> 16;
-		crid[2] = (info.creator & 0x0000FF00) >> 8;
-		crid[3] = (info.creator & 0x000000FF);
-		crid[4] = '\0';
+		pi_untag(crid,info.creator);
 
 		if (dlp_OpenConduit(sd) < 0) {
 			printf("\n   Exiting on cancel, all data was not backed up"
@@ -1152,7 +1146,7 @@ static void PrintVolumeInfo(const char *buf, long volume, struct VFSInfo *info)
 	if (buf && (buf[0])) printf("   /%s\n",buf);
 	printf("      ");
 	switch(info->fsType) {
-	case 0x76666174 /* vfat */ :
+	case pi_mktag('v','f','a','t') :
 		printf("VFAT");
 		break;
 	default:
@@ -1160,7 +1154,7 @@ static void PrintVolumeInfo(const char *buf, long volume, struct VFSInfo *info)
 	}
 	printf(" filesysytem on ");
 	switch(info->mediaType) {
-	case 0x73646967 /* sdig */ :
+	case pi_mktag('s','d','i','g') :
 		printf("SD card");
 		break;
 	default:
@@ -1192,7 +1186,9 @@ static void PrintFileInfo(const char *path, FileRef file)
 	time_t date;
 	char *s;
 	(void) dlp_VFSFileSize(sd,file,&size);
-	(void) dlp_VFSFileGetDate(sd,file,0,&date);
+	(void) dlp_VFSFileGetDate(sd,file,vfsFileDateModified,&date);
+	/* Adjust for Palm epoch (1/1/1904) vs UNIX epoch (1/1/1970). */
+	/* date -= 2082848400; */
 	s = ctime(&date);
 	s[24]=0;
 	printf("   %8d %s %s\n",size,s,path);
@@ -1577,46 +1573,6 @@ static void Purge(void)
 }
 
 
-/***********************************************************************
- *
- * Function:    palm_time
- *
- * Summary:     Sync time
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void palm_time(void)
-{
-	time_t  t1,
-		t2;
-	char    synclog[60],
-		timebuf[63];
-	struct	tm *tm_ptr;
-	struct  SysInfo sys;
-
-	dlp_ReadSysInfo(sd, &sys);
-
-	if ((sys.romVersion) == 0x03303000) {
-		dlp_AddSyncLogEntry(sd, "Syncing time will cause the device \
-			to\nhard-reset on PalmOS version 3.3!\n");
-	} else {
-		dlp_GetSysDateTime(sd, &t2);
-		t1 = time(NULL);
-		tm_ptr = localtime(&t2);
-		dlp_SetSysDateTime(sd, t1);
-
-		strftime(timebuf, 63, "   Palm time was successfully set to: "
-			"%m/%d/%Y %X %p\n\n", tm_ptr);
-
-		printf(timebuf);
-		sprintf(synclog, "Time sync successful.\n\nThank you for using pilot-link.");
-		dlp_AddSyncLogEntry(sd, synclog);
-	}
-}
-
 
 /***********************************************************************
  *
@@ -1654,11 +1610,11 @@ static void display_help(const char *progname)
 	printf("                             by a sync\n");
 	printf("     -l, --list              List all application and 3rd party Palm data/apps\n");
 	printf("     -L, --List              List all data, internal and external on the Palm\n");
-	printf("     -D, --vfsdir <dir>      List files on specified VFS volume and directory\n");
 	printf("     -a, --archive           Modifies -s to archive deleted files in specified\n");
 	printf("                             directory.\n");
 	printf("     -x, --exec              Execute a shell command for intermediate processing\n");
-	printf("     -t, --time              Sync the time on the Palm with the desktop time\n");
+	printf("     -D, --vfsdir <dir>      List or install specified VFS volume and directory\n");
+	printf("                             instead of internal memory.\n");
 	printf("     -F, --Flash             Modifies -b, -u, and -s, to back up non-OS db's\n");
 	printf("                             from Flash ROM\n");
 	printf("     -O, --Osflash           Modifies -b, -u, and -s, to back up OS db 's from\n");
@@ -1733,9 +1689,6 @@ int main(int argc, char *argv[])
 			sync_flags = UPDATE|SYNC;
 			if (verbose)
 				printf("Option -s with value: %s\n", optarg);
-			break;
-		case 't':
-			palm_operation = palm_op_settime;
 			break;
 		case 'r':
 			dirname = optarg;
@@ -1829,10 +1782,6 @@ int main(int argc, char *argv[])
 		case palm_op_list:
 			Connect();
 			List(media_type);
-			break;
-		case palm_op_settime:
-			Connect();
-			palm_time();
 			break;
 		case palm_op_noop:
 			printf("   Insufficient or invalid options supplied.\n");
