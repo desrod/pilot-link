@@ -13,9 +13,6 @@ dnl ******************************
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AC_SUBST(CFLAGS)
-AC_SUBST(CXXFLAGS)
-
 
 dnl ******************************
 dnl Pilot Link Version
@@ -97,6 +94,33 @@ AC_PROG_INSTALL
 AC_PROG_F77(g77 g77-3.2 g77-3.3 fl32 f77 fort77 xlf f90 xlf90)
 AM_PROG_LIBTOOL
 AC_PROG_YACC
+
+
+dnl ******************************
+dnl Defaults for GCC
+dnl ******************************
+if test "x$GCC" = "xyes"; then
+	CFLAGS=${CFLAGS:-"-g -Wall"}
+	CXXFLAGS=${CFLAGS:-"-g -Wall"}
+fi
+
+
+dnl ******************************
+dnl Use fink on MacOS X, if found
+dnl ******************************
+
+case "$host" in
+        *darwin*)
+		AC_MSG_CHECKING(for fink support)
+		if test -d "/sw/lib" -a -d "/sw/include"; then
+			CPPFLAGS="$CPPFLAGS -I/sw/include"
+			LDFLAGS="$LDFLAGS -L/sw/lib"
+			AC_MSG_RESULT(yes)
+		else
+			AC_MSG_RESULT(no)
+		fi
+        ;;
+esac
 
 
 dnl ******************************
@@ -385,21 +409,6 @@ dnl ******************************
 msg_readline=no
 AC_ARG_WITH(readline,      [  --with-readline         use readline               [default=yes]])
 if test "x$with_readline" != "xno"; then
-
-
-dnl ***************
-dnl For OSX builds
-dnl ***************
-save_CFLAGS="$CFLAGS"
-save_LDFLAGS="$LDFLAGS"
-
-case "$host" in
-        *darwin*)
-		CFLAGS="$CFLAGS -L/sw/lib"
-		LDFLAGS="$LDFLAGS -I/sw/include"  
-		echo "CFLAGS is set to $CFLAGS"
-        ;;
-esac
 
 AC_CHECK_LIB(termcap, tgoto, [
 	AC_CHECK_LIB(readline, readline, [
@@ -722,6 +731,7 @@ echo "
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
   ElectricFence checks.... : $msg_efence
+  CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
   CXXFLAGS................ : $CXXFLAGS
 
