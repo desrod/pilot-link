@@ -35,7 +35,7 @@ endif
 #
 
 Perl/Makefile: Perl/Makefile.PL
-	cd Perl && $(PERL5) Makefile.PL
+	cd Perl && $(PERL) Makefile.PL
 
 perl-build: Perl/Makefile
 	cd Perl && $(MAKE)

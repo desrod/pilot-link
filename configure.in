@@ -1,4 +1,4 @@
-# This is free software, licensed under the GNU Public License V2.
+;# This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
 AC_INIT(include/pi-cmp.h)
 AM_CONFIG_HEADER(config.h)
@@ -137,7 +137,7 @@ dnl ******************************
 dnl iconv checking
 dnl ******************************
 have_iconv=no
-AC_ARG_WITH(libiconv, [  --with-libiconv         Prefix where libiconv is installed])
+AC_ARG_WITH(libiconv, [  --with-libiconv             Prefix where libiconv is installed])
 case $withval in
 /*)
     ICONV_CFLAGS="-I$withval/include"
@@ -207,7 +207,7 @@ dnl ******************************
 dnl readline checking
 dnl ******************************
 msg_readline=no
-AC_ARG_WITH(readline,      [  --with-readline    use readline [default=yes]])
+AC_ARG_WITH(readline,      [  --with-readline             use readline [default=yes]])
 if test "x$with_readline" != "xno"; then
 	AC_MSG_CHECKING(for readline)
 
@@ -300,7 +300,7 @@ dnl C++
 dnl ******************************
 use_cpp=false
 msg_cpp=no
-AC_ARG_WITH(cpp,      [  --with-cpp[=c++ compiler]  use C++     [default=yes]])
+AC_ARG_WITH(cpp,      [  --with-cpp=[c++exec]        use C++      [default=no]], ,with_cpp=no)
 if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
 	use_cpp=true
@@ -313,48 +313,48 @@ fi
 dnl ******************************
 dnl Perl
 dnl ******************************
-use_perl5=false
+use_perl=false
 msg_perl=no
-AC_ARG_WITH(perl5,    [  --with-perl5=perl5exec  use Perl5   [default=yes]])
-if test "x$with_perl5" = "xno"; then
-	PERL5=''
+AC_ARG_WITH(perl,    [  --with-perl=perlexec        use Perl     [default=no]], , with_perl=no)
+if test "x$with_perl" = "xno"; then
+	PERL=''
 else
-	if test "x$with_perl5" != "xyes" && test "x$with_perl5" != "x"; then
-		PERL5="$with_perl5"
+	if test "x$with_perl" != "xyes" && test "x$with_perl" != "x"; then
+		PERL="$with_perl"
 	else
-		AC_PATH_PROG(PERL5, perl)
+		AC_PATH_PROG(PERL, perl)
 	fi
 fi
 
-if test "x$PERL5" != "x"; then
+if test "x$PERL" != "x"; then
 	AC_MSG_CHECKING(perl version)
-	verstxt=`$PERL5 -e 'print $]'`
+	verstxt=`$PERL -e 'print $]'`
         vers=`echo "$verstxt" | awk -F. '{ printf "%d", ($1 * 1000);}'`
 	if test "$vers" -ge 5000; then
 		if test "$vers" -lt 6000; then
 			AC_MSG_RESULT($verstxt)
 			PERLVER=$verstxt
-			use_perl5=true
+			use_perl=true
 		else
 			AC_MSG_RESULT($verstext [perl 5 not found])
-			use_perl5=false
+			use_perl=false
 		fi
 	else
 		AC_MSG_RESULT($verstext [perl 5 not found])
 	fi
 fi
-AM_CONDITIONAL(WITH_PERL, $use_perl5)
-if $use_perl5; then
+AM_CONDITIONAL(WITH_PERL, $use_perl)
+if $use_perl; then
 	msg_perl=yes
 fi
-AC_SUBST(PERL5)
+AC_SUBST(PERL)
 
 dnl ******************************
 dnl Java
 dnl ******************************
 use_java=false
 msg_java=no
-AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java    [default=yes]])
+AC_ARG_WITH(java,     [  --with-java=jdkbase         use Java     [default=no]], , with_java=no)
 if test "x$with_java" != "xno"; then
 	AC_PATH_PROG(JAVAC, javac, , $with_java/bin:$PATH)
 	AC_PATH_PROG(JAVA, java, , $with_java/bin:$PATH)
@@ -389,9 +389,9 @@ msg_itcl=no
 use_tk=false
 msg_tk=no
 
-AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl     [default=yes]])
-AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use ITcl    [default=yes]])
-AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk      [default=yes]])
+AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir       use Tcl      [default=no]],  , with_tcl=no)
+AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir      use ITcl     [default=no]],  , with_itcl=no)
+AC_ARG_WITH(tk,       [  --with-tk=tkbasedir         use Tk       [default=no]],  , with_tk=no)
 if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
 		for tcl_path in /usr /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.4 /usr/local/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
 		if test -f $tcl_path/lib/tclConfig.sh; then
@@ -566,7 +566,7 @@ dnl Python
 dnl ******************************
 use_python=false
 msg_python=no
-AC_ARG_WITH(python,   [  --with-python=pylibbase use Python  [default=yes]])
+AC_ARG_WITH(python,   [  --with-python=pybase        use Python   [default=no]],  , with_python=no)
 
 if test "x$with_python" != "xno"; then
         AC_PATH_PROGS(PYTHON, [python2 python])
@@ -596,7 +596,7 @@ dnl *************************************
 dnl Runtime debugging
 dnl *************************************
 AC_ARG_ENABLE(debug,
-	      [  --disable-debug  Squash runtime debugging],
+	      [  --disable-debug             Shunt runtime debugging],
 	      set_debug=no)
 
 if test "$set_debug" != "no"; then
@@ -608,7 +608,7 @@ dnl Extra warnings
 dnl *************************************
 set_compile_warnings=no
 AC_ARG_ENABLE(compile-warnings,
-	      [  --enable-compile-warnings  Compiler warnings],
+	      [  --enable-compile-warnings   Enable verbose compiler warnings],
 	      set_compile_warnings=yes)
 
 if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
@@ -665,11 +665,11 @@ echo "
   PNG support......... : $msg_png
   Readline support.... : $msg_readline
 
-  TCL support......... : $msg_tcl	($TCL_VERSION)
-  ITCL support........ : $msg_itcl	($ITCL_VERSION)
-  TK Support.......... : $msg_tk	($TK_VERSION)
+  TCL support......... : $msg_tcl	$TCL_VERSION
+  ITCL support........ : $msg_itcl	$ITCL_VERSION
+  TK Support.......... : $msg_tk	$TK_VERSION
 
   Java support........ : $msg_java	
-  Python support...... : $msg_python	($PYTHONVER)
-  Perl support........ : $msg_perl	($PERLVER)
+  Python support...... : $msg_python	$PYTHONVER
+  Perl support........ : $msg_perl	$PERLVER
 "

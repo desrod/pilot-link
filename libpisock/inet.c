@@ -279,7 +279,8 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 		sd;
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	sockaddr_in serv_addr;
-	char 	*device = paddr->pi_device + 4, *port;
+	char 	*device = paddr->pi_device + 4, 
+		*port	= NULL;
 
 	/* Figure out the addresses to allow */
 	memset(&serv_addr, 0, sizeof(serv_addr));

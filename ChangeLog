@@ -1,3 +1,12 @@
+2002-07-18  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Updated to default all bindings to off
+
+	* autogen.sh: Fixed PKG_NAME (was blank)
+
+	* bindings/Makefile.am: s/PERL5/PERL/ since we're already testing
+	  for the version in configure
+
 2002-07-17  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-datebook/Makefile.am: Removed trailing space
