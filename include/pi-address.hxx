@@ -46,12 +46,12 @@ class address_t : public baseApp_t
 	  custom2, custom3, custom4, note
      };
 
-     address_t(void *buf) { unpack(buf, 1); }
+     address_t(void *buf) { unpack(buf); }
      address_t(void) { memset(this, '\0', sizeof(address_t)); }
      address_t(void *buf, int attr, recordid_t id, int category)
 	  : baseApp_t(attr, id, category)
 	  {
-	       unpack(buf, 1);
+	       unpack(buf);
 	  }
      address_t(const address_t &);
      
@@ -60,7 +60,7 @@ class address_t : public baseApp_t
      char *entry(labelTypes_t idx) { return _entry[idx]; }
      int whichPhone(void) const { return _whichPhone; }
      
-     void unpack(void *, int = 0);
+     void unpack(void *);
 
      void *pack(int *);
      void *pack(void *, int *);

@@ -401,6 +401,29 @@ int SetBreakpoint(int bp, unsigned long address, int enabled) {
 	return 0;
 }
 
+
+int majorVersion, minorVersion, stateVersion, buildVersion;
+  
+void DbgGetDeviceVersion(void) {  
+  struct RPC_params p;
+  int result;
+  unsigned long ROMversion;
+
+  ROMversion = 0x12345678;
+
+  PackRPC(&p, 0xA27B, RPC_IntReply, 
+         RPC_Long(makelong("psys")), RPC_Short(1), RPC_LongPtr(&ROMversion), RPC_End);
+      
+  DoRPC(port, 1, &p, &result);
+    
+  majorVersion = (((ROMversion >> 28) & 0xf) * 10)+ ((ROMversion >> 24) & 0xf);
+  minorVersion = (((ROMversion >> 20) & 0xf) * 10)+ ((ROMversion >> 16) & 0xf);
+  stateVersion = ((ROMversion >> 12) & 0xf);
+  buildVersion = (((ROMversion >> 8) & 0xf) * 10)+(((ROMversion >> 4) & 0xf) * 10)+ (ROMversion  & 0xf);
+}
+                              
+
+
 /* Attempt to verify a connection to either the debugger or console */
 int DbgAttach(int verify)
 {
@@ -474,6 +497,7 @@ int DbgAttachDebugger(int verify)
   }
   return debugger;
 }
+
 
 int DbgAttachConsole(int verify)
 {
@@ -751,23 +775,42 @@ int proc_battery(ClientData clientData, Tcl_Interp *interp, int argc, char *argv
 	return TCL_OK;
 }
 
+
 int proc_mirror(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
   struct RPC_params p;
   unsigned long addr;
   int e1,e2;
   int active;
+  
+  int scrGlobals, doDrawNotify;
 
   if (!DbgAttachConsole(0))
     return TCL_ERROR;
-    
+
+
+  DbgGetDeviceVersion();
+  
+  switch (majorVersion) {
+  case 1:
+  	scrGlobals = 356;
+  	doDrawNotify = 18;
+  	break;
+  case 2:
+  	scrGlobals = 356;
+  	doDrawNotify = 18;
+  	break;
+  default:
+    Say("I don't know how to change mirroring on this device version\n");
+    return TCL_ERROR;
+  }
   
   /* Fetch scrGlobals ptr */
- PackRPC(&p,0xA026, RPC_IntReply, RPC_LongPtr(&addr), RPC_Long(356), RPC_Long(4), RPC_End);
+ PackRPC(&p,0xA026, RPC_IntReply, RPC_LongPtr(&addr), RPC_Long(scrGlobals), RPC_Long(4), RPC_End);
   e1=DbgRPC(&p, &e2);
   
   /* Fetch current drawnotify setting */
- PackRPC(&p,0xA026, RPC_IntReply, RPC_BytePtr(&active), RPC_Long(addr+18), RPC_Long(1), RPC_End);
+ PackRPC(&p,0xA026, RPC_IntReply, RPC_BytePtr(&active), RPC_Long(addr+doDrawNotify), RPC_Long(1), RPC_End);
   e1=DbgRPC(&p, &e2);
 
   /*printf("addr=%d\nactive=%d\n", addr, active);*/
@@ -780,7 +823,7 @@ int proc_mirror(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[
      return TCL_ERROR;
   
   /* Put it back */
- PackRPC(&p,0xA026, RPC_IntReply, RPC_Long(addr+18), RPC_BytePtr(&active), RPC_Long(1), RPC_End);
+ PackRPC(&p,0xA026, RPC_IntReply, RPC_Long(addr+doDrawNotify), RPC_BytePtr(&active), RPC_Long(1), RPC_End);
   e1=DbgRPC(&p, &e2);
  
   if (Interactive) {

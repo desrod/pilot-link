@@ -102,6 +102,8 @@ try:
 except pdapilot.error:
 	0
 
+db.close()
+
 db = dlp.open("MemoDB")
 
 print "Class: ", db.Class

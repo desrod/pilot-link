@@ -37,11 +37,11 @@ class todo_t : public baseApp_t
      
    public:
      todo_t(void) : baseApp_t() { memset(this, '\0', sizeof(todo_t)); }
-     todo_t(void *buf) : baseApp_t() { unpack(buf, 1); }
+     todo_t(void *buf) : baseApp_t() { unpack(buf); }
      todo_t(void *buf, int attr, recordid_t id, int category)
 	  : baseApp_t(attr, id, category)
 	  {
-	       unpack(buf, 1);
+	       unpack(buf);
 	  }
      todo_t(const todo_t &);
      
@@ -57,7 +57,7 @@ class todo_t : public baseApp_t
      int priority(void) const { return _priority; }
      int complete(void) const { return _complete; }
      int completed(void) const { return _complete; }
-     void unpack(void *, int = 0);
+     void unpack(void *);
      void *pack(int *);
      void *pack(void *, int *);
 };

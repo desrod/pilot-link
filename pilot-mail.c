@@ -56,39 +56,6 @@ int openmhmsg(char *dir, int num) {
     return open(filename, O_RDONLY);
 }
 
-/* Fold into RFC822 style*/
-void fprintfold(FILE * f, char * t)
-{
-  while(*t) {
-    if ((*t == '\r') || (*t == '\n')) {
-      fprintf(f, "\r\n ");
-    }
-    else {
-      putc(*t, f);
-    }
-    t++;
-  }
-}
-
-/* Translate into sendmail body style */
-void fprintbody(FILE * f, char * t)
-{
-  int c = 1;
-  while(*t) {
-    if ((*t == '\r') || (*t == '\n')) {
-      fprintf(f,"\r\n");
-      c = 0;
-    }
-    else {
-      if ((c == 0) && (*t == '.'))
-        putc('.', f);
-      putc(*t, f);
-      c++;
-    }
-    t++;
-  }
-}
-
 int getpopchar(int socket)
 {
   unsigned char buf;
@@ -524,43 +491,33 @@ int main(int argc, char *argv[])
   	  exit(1);
   	}
 	
-	if (from_address) {
+	if (from_address && from_address[0]) {
 	  fprintf(sendf,"From: ");
 	  fprintf(sendf, from_address);
-	  fprintf(sendf,"\r\n");
+	  fprintf(sendf,"\n");
 	}
 
 	if (t.to) {
-	  fprintf(sendf,"To: ");
-	  fprintfold(sendf,t.to);
-	  fprintf(sendf,"\r\n");
+	  fprintf(sendf,"To: %s\n", t.to);
 	}
 	if (t.cc) {
-	  fprintf(sendf,"Cc: ");
-	  fprintfold(sendf,t.cc);
-	  fprintf(sendf,"\r\n");
+	  fprintf(sendf,"Cc: %s\n", t.cc);
 	}
 	if (t.bcc) {
-	  fprintf(sendf,"Bcc: ");
-	  fprintfold(sendf,t.bcc);
-	  fprintf(sendf,"\r\n");
+	  fprintf(sendf,"Bcc: %s\n", t.bcc);
 	}
 	if (t.replyTo) {
-	  fprintf(sendf,"Reply-To: ");
-	  fprintfold(sendf,t.replyTo);
-	  fprintf(sendf,"\r\n");
+	  fprintf(sendf,"Reply-To: %s\n", t.replyTo);
 	}
 	if (t.subject) {
-	  fprintf(sendf,"Subject: ");
-	  fprintfold(sendf,t.subject);
-	  fprintf(sendf,"\r\n");
+	  fprintf(sendf,"Subject: %s\n", t.subject);
 	}
-	fprintf(sendf, "X-mailer: pilot-mail-%d.%d.%d\r\n", PILOT_LINK_VERSION,PILOT_LINK_MAJOR,PILOT_LINK_MINOR);
-	fprintf(sendf,"\r\n"); /* Separate header */
+	fprintf(sendf, "X-mailer: pilot-mail-%d.%d.%d\n", PILOT_LINK_VERSION,PILOT_LINK_MAJOR,PILOT_LINK_MINOR);
+	fprintf(sendf,"\n"); /* Separate header */
 	
 	if (t.body) {
-	  fprintbody(sendf,t.body);
-	  fprintf(sendf,"\r\n");
+	  fputs(t.body, sendf);
+	  fprintf(sendf,"\n");
 	}
 	if (t.signature && sig.signature) {
 	  char * c = sig.signature;
@@ -570,10 +527,10 @@ int main(int argc, char *argv[])
 	     strncmp(c,"--",2) &&
 	     strncmp(c,"__",2)
 	    ) {
-	    fprintf(sendf,"\r\n-- \r\n");
+	    fprintf(sendf,"\n-- \n");
 	  }
-	  fprintbody(sendf,sig.signature);
-	  fprintf(sendf,"\r\n");
+	  fputs(sig.signature, sendf);
+	  fprintf(sendf,"\n");
 	}
 
 	if (pclose(sendf) == 0) {

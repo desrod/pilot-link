@@ -33,6 +33,48 @@ static RETSIGTYPE pi_serial_onalarm(int signo);
 static int interval=0;
 static int busy=0;
 
+
+static int default_socket_connect(struct pi_socket * ps, struct sockaddr * addr, int flag)
+{
+	errno = ENOSYS;
+	return -1;
+}
+static int default_socket_listen(struct pi_socket * ps, int flag)
+{
+	errno = ENOSYS;
+	return -1;
+}
+static int default_socket_accept(struct pi_socket * ps, struct sockaddr * addr, int *flag)
+{
+	errno = ENOSYS;
+	return -1;
+}
+static int default_socket_close(struct pi_socket * ps)
+{
+	return 0;
+}
+static int default_socket_tickle(struct pi_socket * ps)
+{
+	errno = ENOSYS;
+	return -1;
+}
+static int default_socket_bind(struct pi_socket * ps, struct sockaddr * addr, int flag)
+{
+	errno = ENOSYS;
+	return -1;
+}
+static int default_socket_send(struct pi_socket * ps, void * buf, int len, unsigned int flags)
+{
+	errno = ENOSYS;
+	return -1;
+}
+static int default_socket_recv(struct pi_socket * ps, void * buf, int len, unsigned int flags)
+{
+	errno = ENOSYS;
+	return -1;
+}
+
+
 /* Create a local connection endpoint */
 
 int pi_socket(int domain, int type, int protocol)
@@ -82,6 +124,16 @@ int pi_socket(int domain, int type, int protocol)
   ps->dlprecord = 0;
   ps->busy = 0;
   
+  ps->socket_connect = default_socket_connect;
+  ps->socket_listen = default_socket_listen;
+  ps->socket_accept = default_socket_accept;
+  ps->socket_close = default_socket_close;
+  ps->socket_tickle = default_socket_tickle;
+  ps->socket_bind = default_socket_bind;
+  ps->socket_send = default_socket_send;
+  ps->socket_recv = default_socket_recv;
+  
+
 #ifdef OS2
   ps->os2_read_timeout=60;
   ps->os2_write_timeout=60;

@@ -2,7 +2,7 @@
 O = o
 
 SOCKOBJS = socket.$(O) serial.$(O) inetserial.$(O) slp.$(O) padp.$(O) \
-       dlp.$(O) cmp.$(O) syspkt.$(O) inet.$(O)
+       dlp.$(O) cmp.$(O) syspkt.$(O) inet.$(O) money.$(O)
 
 FILEOBJS = pi-file.$(O)
 
@@ -51,7 +51,7 @@ libpisock.a: $(OBJS)
 
 libpisock.la: $(OBJS)
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) \
-		-export-dynamic -rpath $(libdir) -version-info 3:0:0 \
+		-export-dynamic -rpath $(libdir) -version-info 3:1:0 \
 		-o libpisock.la $(OBJS)
 
 # OS/2 dll build rules,  This is somewhat of a hack.
@@ -130,6 +130,10 @@ memo.o memo.lo: memo.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
  ../include/pi-memo.h ../include/pi-appinfo.h
+money.o money.lo: money.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-money.h ../include/pi-appinfo.h
 os2serial.o os2serial.lo: os2serial.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h \

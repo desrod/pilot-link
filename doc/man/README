@@ -1,0 +1,13 @@
+I have finally started on something that I have been meaning to do for quite
+a while, which is to write (or fix) manual pages for the pilot-link suite of
+programs.
+
+Each manual page created should be referenced from the SEE ALSO section of
+the pilot-link(7) manual.
+
+Each manual page created should reference the manual pages of other related
+programs and pilot-link(7) in its SEE ALSO section.
+
+David H. Silber
+April 19, 1998
+

@@ -1,3 +1,41 @@
+
+May 11,  1998	Kenneth Albanowski 0.8.13
+
+	This version is an unchanged re-release of 0.8.12, which was not
+	released properly. (0.8.12 archives actually contain 0.8.11, mea culpa.)
+
+May  7,  1998	Kenneth Albanowski 0.8.12
+
+	Not much work has gone into pilot-link since the previous release, the
+	main changes being several patches that have been applied:
+
+	David Warren's <dsw@comfortably-numb.engr.sgi.com> fix for reminds.c.
+
+	Dag Nygren's <dag@newtech.fi> tickles for sync-plan.
+
+	Russell Nelson's <nelson@crynwr.com> patches for pilot-mail.
+
+	Bodo Bellut's <bodo@garfield.ping.de> patch for pi-file to better catch
+	errors.
+ 
+	Jay Sekora's <js@aq.org> improved memos and pilot-addresses.
+	
+	Rik Harris's <Rik.Harris@fulcrum.com.au> patch to get pi-port working.
+	
+	Fixed libsock/socket.c to not crash on unbound/unconnected socket.	
+	
+	Added Rui Oliveira's <rco@di.uminho.pt> MoneyManager code.
+	
+	Removed Java bin build directory stuff, it was broken.
+
+	Also, I've decided that getopt() was a complete loss where pilot-xfer is
+	concerned, so it now has manual argument processing. I rather expect the
+	new code is buggy, too, but at least it will be the same bugs for
+	everyone.
+	
+	Lastly, I've added the latest release of libtool, 1.2. This should fix
+	some problems, but might well cause others. Let me know, of course.
+
 Feb 27,  1998	Kenneth Albanowski 0.8.11
 
 	Sorry, no time for detail:

@@ -59,11 +59,29 @@ appointment_t::appointment_t(const appointment_t &oldCopy)
      }
 }
 
-void appointment_t::unpack(void *buf, int firstTime) 
+void appointment_t::blank(void) 
+{
+     _untimed = _hasAlarm = _advance = 0;
+     _repeatType = none;
+     _repeatOn = 0;
+     _numExceptions = 0;
+     _exceptions = NULL;
+     _description = _note = NULL;
+     _next = NULL;
+     _repeatEnd = NULL;
+}
+
+void appointment_t::unpack(void *buf
+#if 0
+, int firstTime 
+#endif
+)
 {
      // If we unpack more than once, we need to free up any old data first
      // so that we don't leak memory
+#if 0
      if (!firstTime) {
+#endif
 	  if (_repeatEnd != NULL)
 	       delete _repeatEnd;
 	  if (_numExceptions != 0)
@@ -72,7 +90,9 @@ void appointment_t::unpack(void *buf, int firstTime)
 	       delete _description;
 	  if (_note)
 	       delete _note;
+#if 0
      }
+#endif
      
      unsigned char *ptr = (unsigned char *) buf;
 
@@ -337,9 +357,6 @@ int appointment_t::operator>(const appointment_t &right)
 // I doubt this works properly.  I haven't done any testing yet.
 int appointment_t::operator==(const appointment_t &right) 
 {
-#if 1
-     return memcmp(this, &right, sizeof(appointment_t));
-#else
      tm a, b;
 
      (void) memcpy(&a, &_begin, sizeof(tm));
@@ -375,7 +392,6 @@ int appointment_t::operator==(const appointment_t &right)
 	return 0;
 
      return 0;
-#endif
 }
 
 appointmentList_t::~appointmentList_t() 

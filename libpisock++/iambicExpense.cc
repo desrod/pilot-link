@@ -167,9 +167,8 @@ static char *getString(unsigned char **buf)
  * miles traveled.
  */
 
-void iambicExpense_t::unpack(void *buf, int firstTimeThrough) 
+void iambicExpense_t::unpack(void *buf) 
 {
-     if (firstTimeThrough == 0) {
 	  if (_paidby)
 	       delete _paidby;
 	  if (_payee)
@@ -178,7 +177,6 @@ void iambicExpense_t::unpack(void *buf, int firstTimeThrough)
 	       delete _type;
 	  if (_note)
 	       delete _note;
-     }
      
      unsigned char *ptr = (unsigned char *) buf;
      

@@ -1,36 +1,164 @@
-.TH PILOT-XFER 1 "USR Pilot tools" "FSF" \" -*- nroff -*-
+.TH PILOT-XFER 1 "3Com Pilot Tools" "FSF" \" -*- nroff -*-
 .SH NAME
-pilot-xfer \- backup and restore databases to and from a USR Pilot
+pilot-xfer \- backup and restore databases to and from a 3Com Pilot
 .SH SYNOPSIS
-.B pilot-xfer /dev/cua? [commands]
-.SH DESCRIPTION
-This manual page
-documents the application
-.BR pilot-xfer .
 .B pilot-xfer
-allows the user to install databases contained in the stadnard .prc and .pdb
+.RI [ serial-device ]
+.RB [ --exclude
+.IR file ]
+.B --backup
+|
+.B --update
+|
+.B --sync
+.I directory
+.PP
+or
+.PP
+.B pilot-xfer
+.RI [ serial-device ]
+[
+.BI --restore\  directory
+|
+.B --list
+|
+.B --purge
+|
+.B --fetch
+.IR dbname\  ...
+|
+.B --delete
+.IR dbname\  ...
+|
+.B --install
+.IR file\  ...
+|
+.B --merge
+.IR file\  ...
+] ...
+.PP
+(Note that short option aliases are excluded for clarity.)
+.SH DESCRIPTION
+.\" This manual page
+.\" documents the application
+.\" .BR pilot-xfer .
+.B pilot-xfer
+allows the user to install databases contained in the standard .prc and .pdb
 formats into a Pilot, retrieve databases from a Pilot, list the databases
 contained in a Pilot, and backup or restore all of the databases at once.
 Once the user has executed
 .B pilot-xfer
 the user must invoke HotSync on the target device.
-.SS OPTIONS
-Several options exist, including "-b dir" which backs up the Pilot into the
-specified directory (which will be created if it does not already exist),
-"-r dir" which installs all files contained in a directory into the Pilot
-(use this to restore your Pilot after a hard reset has cleared its memory),
-"-i file" will install a file into the Pilot, and "-f dbname" will fetch a
-database out of the Pilot. "-l" will list the databases in the Pilot.
-
-"-p" purges any data that hasn't been cleaned up be a sync (this is a safe
+.SH TARGET DEVICE
+The default serial device used to communicate with a Pilot is
+.BR /dev/pilot .
+If the environment variable
+.B PILOTPORT
+is set, its value will override the default.
+A serial device specified on the command-line will be used regardless of any
+PILOTPORT setting.
+.SH OPTIONS
+Several options exist, including
+.TP
+.BI \-b\  dir ,\ \-\-backup\  dir
+Backs up the Pilot into the
+specified directory (which will be created if it does not already exist).
+This operation must be specified
+.I after
+any
+.B exclude
+option.
+.TP
+.BI \-d\  dbname\  [...],\ \-\-delete\  dbname\  [...]
+Delete the specified database(s).  Obviously, be careful with this one.
+.TP
+.BI \-e\ file ,\ \-\-exclude\   file
+Reads a list of databases from
+.IR file .
+Prevents
+.BR backup ,
+.BR sync ,
+or
+.B update
+from operating on the listed database(s).
+This option must be specified before the
+.BR backup ,
+.BR sync ,
+or
+.B update
+operation whose action it modifies.
+.TP
+.BI \-f\  dbname\  [...],\ \-\-fetch\  dbname\  [...]
+Fetch each specified database out of the Pilot into the current directory.
+.TP
+.B \-h, \-\-help
+Displays a reminder list of 
+.IR pilot-xfer 's
+usage and exits.
+.TP
+.BI \-i\  file\  [...],\ \-\-install\  file\ [...]
+Install each specified file into the Pilot.
+.TP
+.B \-l, \-\-list
+List the databases in the Pilot.
+.TP
+.BI \-m\  file\  [...],\ \-\-merge\  file\  [...]
+Adds the records in each specified file into the corresponding Pilot database.
+.TP
+.B \-p, \-\-purge
+Purge any deleted data that hasn't been cleaned up by a sync (this is a safe
 operation, and will prevent your Pilot from accumulating crud if you delete
-records but aren't syncing with the PIM. The only information you can lose is
-archived but un-synced records.)
-
-"-d dbname" lets you delete a particular database. Obviously, be careful
-with this one.
+records but aren't syncing with the PIM.
+The only information you can lose is archived but un-synced records.)
+.TP
+.BI \-r\  dir ,\ \-\-restore\  dir
+Installs all files contained in a directory into the Pilot.
+(Use this to restore your Pilot after a hard reset has cleared its memory.)
+.TP
+.BI \-s\  dir ,\ \-\-sync\  dir
+Backs up the Pilot into the
+specified directory (which will be created if it does not already exist).
+Any Pilot databases which have not been modified or created since the versions
+stored in the specified directory will not be backed up.
+Any Pilot databases which have been deleted will have their corresponding backup
+file removed.
+This operation must be specified
+.I after
+any
+.B exclude
+option.
+.TP
+.BI \-u\  dir ,\ \-\-update\  dir
+Backs up the Pilot into the
+specified directory (which will be created if it does not already exist).
+Any Pilot databases which have not been modified or created since the versions
+stored in the specified directory will not be backed up.
+This operation must be specified
+.I after
+any
+.B exclude
+option.
+.TP
+.B \-v, \-\-version
+Displays the version of
+.I pilot-link
+from which this program was installed and exits.
 .SH USAGE
-The program will connect to a target, and perform the quested database options.
+The program will connect to a target, prompt the user to HotSync,
+and perform the requested database options.
+.SH EXAMPLES
+To backup a Pilot:
+.RS
+pilot-xfer --backup /home/pilot/Backup
+.RE
+To restore that backup to a non-standard serial port (for example, to a
+xcopilot):
+.RS
+pilot-xfer /dev/ttyqe --restore /home/pilot/Backup
+.RE
+.SH SEE ALSO
+.BR pilot-link(7) .
 .SH AUTHOR
 .B pilot-xfer
-was written by Kenneth Albanowski
+was written by Kenneth Albanowski.
+This manual page was written by (Kenneth Albanowski?) and David H. Silber.

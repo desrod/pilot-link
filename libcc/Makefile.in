@@ -1,7 +1,7 @@
 
 O = o
 
-CCOBJS = datebook.$(O) address.$(O) todo.$(O) appInfo.$(O) memo.$(O) iambicExpense.$(O)
+CCOBJS = datebook.$(O) address.$(O) todo.$(O) appInfo.$(O) memo.$(O) iambicExpense.$(O) dlp.$(O)
 
 prefix = @prefix@
 exec_prefix = ${prefix}
@@ -68,6 +68,10 @@ datebook.o: datebook.cc ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h \
  ../include/pi-datebook.h ../include/pi-appinfo.h \
  ../include/pi-appinfo.hxx ../include/pi-datebook.hxx
+dlp.o: dlp.cc ../include/pi-source.h ../include/pi-config.h \
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.hxx \
+ ../include/pi-dlp.h
 iambicExpense.o: iambicExpense.cc ../include/pi-source.h \
  ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
  ../include/pi-version.h ../include/pi-sockaddr.h \

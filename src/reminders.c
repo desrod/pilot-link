@@ -155,8 +155,8 @@ int main(int argc, char *argv[])
 			/* On the chosen days of the week */
 			printf("REM ");
 			for(k=0;k<7;k++)
-				if(a.repeatDays[i])
-					printf("%s ", Weekday[i]);
+				if(a.repeatDays[k])
+					printf("%s ", Weekday[k]);
 
 			if(a.repeatFrequency>1) {
 				/* if the week is equal to the starting week mod x */

@@ -1,11 +1,11 @@
-
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 libdir = @libdir@
 pixdir = ${libdir}/pix
 includedir = @includedir@
-mandir = @mandir@/man1
+mandir1 = @mandir@/man1
+mandir7 = @mandir@/man7
 srcdir = ./
 VPATH = ./
 
@@ -84,7 +84,8 @@ CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
 		getrom$(EXT) pi-getrom$(EXT) pi-getram$(EXT) pi-port$(EXT) \
-		pi-csd$(EXT) pi-nredir$(EXT) 
+		pi-csd$(EXT) pi-nredir$(EXT) \
+		money2qif$(EXT)
 
 CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
 
@@ -108,7 +109,7 @@ libcc/libpicc.a: FORCE
 	$(SUBMAKE_COMM_CC) libpicc.a
 
 installdirs:
-	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir) $(mandir)
+	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir) $(mandir1) $(mandir7)
 
 install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	$(INSTALL_DATA) $(PILIB) $(libdir)/libpisockdll.a
@@ -122,7 +123,10 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
 	done
 	for m in man/*.1; do \
-		$(INSTALL_DATA) $$m $(mandir)/`basename $$m`; \
+		$(INSTALL_DATA) $$m $(mandir1)/`basename $$m`; \
+	done
+	for m in man/*.7; do \
+		$(INSTALL_DATA) $$m $(mandir7)/`basename $$m`; \
 	done
 	for p in $(srcdir)/pix/*.gif $(srcdir)/pix/*.xbm; do \
 		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
@@ -160,8 +164,11 @@ pilot-dedupe$(EXT): $(PILIB) $(GETOPT) pilot-dedupe.o
 install-user$(EXT): $(PILIB) $(GETOPT) install-user.o
 	$(CCLINK) install-user.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-xfer$(EXT): $(PILIB) $(GETOPT) pilot-xfer.o
-	$(CCLINK) pilot-xfer.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
+money2qif$(EXT): $(PILIB) $(GETOPT) money2qif.o
+	$(CCLINK) money2qif.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
+
+pilot-xfer$(EXT): $(PILIB) pilot-xfer.o
+	$(CCLINK) pilot-xfer.o $(PILIB) -o $@ $(LIBS)
 
 pilot-schlep$(EXT): $(PILIB) $(GETOPT) pilot-schlep.o
 	$(CCLINK) pilot-schlep.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
@@ -349,6 +356,10 @@ install-user.o: install-user.c include/pi-source.h include/pi-config.h \
 memos.o: memos.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-memo.h \
+ include/pi-appinfo.h include/pi-dlp.h
+money2qif.o: money2qif.c include/pi-source.h include/pi-config.h \
+ include/pi-socket.h include/pi-args.h include/pi-version.h \
+ include/pi-sockaddr.h include/pi-macros.h include/pi-money.h \
  include/pi-appinfo.h include/pi-dlp.h
 parsedate.o: parsedate.c
 pd-tty.o: pd-tty.c include/pi-source.h include/pi-config.h \

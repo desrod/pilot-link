@@ -30,6 +30,7 @@ void sigint(int num)
 
 void do_read(struct pi_socket * ps, int type, char * buffer, int length)
 {
+  int len;
   fprintf(stderr, "A %d byte packet of type %d has been received from the network\n", length, type);
   dumpdata(buffer, length);
   if (type == 0 ) {
@@ -39,10 +40,11 @@ void do_read(struct pi_socket * ps, int type, char * buffer, int length)
     nskb->source = buffer[0];
     nskb->dest = buffer[1];
     nskb->type = buffer[2];
-    nskb->id = buffer[3];
+    len=get_short(buffer+3);
+    nskb->id = buffer[5];
     
-    memcpy(&nskb->data[10], buffer+4, length-4);
-    slp_tx(ps, nskb, length-4);
+    memcpy(&nskb->data[10], buffer+7, len);
+    slp_tx(ps, nskb, len);
 
   } else if (type == 1 ) {
 
@@ -161,7 +163,7 @@ int main(int argc, char *argv[])
           int blen;
           while(l >= 4 && (l >= (blen = get_short(buffer+2))+4 )) {
             fprintf(stderr, "l = %d, blen = %d\n", l, blen);
-            do_read(ps, get_short(buffer),buffer+4,blen);
+            do_read(ps, get_short(buffer),buffer+7,blen);
             l = l-blen-4;
             if (l>blen) {
               memmove(buffer,buffer+4+blen,l);

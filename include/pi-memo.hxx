@@ -30,15 +30,15 @@ class memo_t : public baseApp_t
 
    public:
      memo_t(void) : baseApp_t() { _text = NULL; _size = 0; }
-     memo_t(void *buf) : baseApp_t() { unpack(buf, 1); }
+     memo_t(void *buf) : baseApp_t() { unpack(buf); }
      memo_t(void *buf, int attr, recordid_t id, int category)
 	  : baseApp_t(attr, id, category)
      {
-	       unpack(buf, 1);
+	       unpack(buf);
      }
      memo_t(const memo_t &);
 
-     void unpack(void *, int = 0);
+     void unpack(void *);
      ~memo_t() { if (_text) delete _text; }
 
      void *pack(int *i);

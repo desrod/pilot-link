@@ -11,6 +11,8 @@
 #include "pi-dlp.h"
 #include "pi-address.h"
 
+#define PILOTPORT "/dev/pilot"
+
 /* Yet more hair: reorganize fields to match visible appearence */
 
 int realentry[19] =   { 0, 1, 13, 2, 
@@ -298,7 +300,17 @@ char * progname;
 
 void Help(void)
 {
-  fprintf(stderr,"usage:%s %s [-c category] [-d category] [-a] [-e] -r|-w file\n",progname,TTYPrompt);
+  fprintf(stderr,
+    "usage:%s [-aeq] [-p port] [-c category] [-d category] -r|-w file\n",
+    progname);
+  fprintf(stderr, "  -q          = do not prompt for HotSync button press\n");
+  fprintf(stderr, "  -a          = augment records with additional information\n");
+  fprintf(stderr, "  -e          = escape special characters with backslash\n");
+  fprintf(stderr, "  -p port     = use device file <port> to communicate with Pilot\n");
+  fprintf(stderr, "  -c category = install to category <category> by default\n");
+  fprintf(stderr, "  -d category = DELETE old Pilot records in <category>\n");
+  fprintf(stderr, "  -r file     = read records from <file> and install them to Pilot\n");
+  fprintf(stderr, "  -w file     = get records from Pilot and write them to <file>\n");
   exit(2);
 }
 
@@ -314,6 +326,7 @@ int main(int argc, char *argv[])
   struct AddressAppInfo aai;
   char * defaultcategoryname = 0;
   char * deletecategory = 0;
+  int quiet = 0;
   int mode = 0;
   int c;
   extern char* optarg;
@@ -321,14 +334,26 @@ int main(int argc, char *argv[])
 
   progname = argv[0];
 
-  if (argc < 4)
+  if (getenv("PILOTPORT")) {
+    strcpy(addr.pi_device,getenv("PILOTPORT"));
+  } else {
+    strcpy(addr.pi_device,PILOTPORT);
+  }
+  
+  if (argc < 3)
     Help();
 
-  optind = 2;
-  while (((c = getopt(argc, argv, "ed:c:arw")) != -1) && (mode == 0)) {
+  while (((c = getopt(argc, argv, "eqp:d:c:arw")) != -1) && (mode == 0)) {
     switch (c) {
     case 'a':
       augment = 1;
+      break;
+    case 'q':
+      quiet = 1;
+      break;
+    case 'p':
+      /* optarg is name of port to use instead of $PILOTPORT or /dev/pilot */
+      strcpy(addr.pi_device,optarg);
       break;
     case 'd':
       deletecategory = optarg;
@@ -353,13 +378,18 @@ int main(int argc, char *argv[])
   if (mode == 0)
     Help();
   
+  if (!quiet) {
+    fprintf(stderr,
+      "Please insert Pilot in cradle on %s and press HotSync button.\n",
+      addr.pi_device);
+  }
+  
   if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
     exit(1);
   }
     
   addr.pi_family = PI_AF_SLP;
-  strcpy(addr.pi_device,argv[1]);
   
   ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
@@ -446,3 +476,4 @@ int main(int argc, char *argv[])
   
   return 0;
 }
+

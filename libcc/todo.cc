@@ -54,18 +54,14 @@ todo_t::todo_t(const todo_t &oldCopy)
      }
 }
 
-void todo_t::unpack(void *buf, int firstTime) 
+void todo_t::unpack(void *buf) 
 {
-     // If we unpack more than once, we need to free up any old data first
-     // so that we don't leak memory
-     if (!firstTime) {
 	  if (_due)
 	       delete _due;
 	  if (_description)
 	       delete _description;
 	  if (_note)
 	       delete _note;
-     }
 	  
      unsigned short d = get_short(buf);
      if (d != 0xffff) {

@@ -571,6 +571,10 @@ sub HashPilotRecord {
 
 
 sub doafterplan {
+
+	$ticklecount = 0;	# Reset ticklecount
+	$doticklecount = 100;	# Tickle every 100 loop
+
 	my($db,$socket,$control) = @_;
 	print "After stuff:\n";
 
@@ -619,6 +623,13 @@ sub doafterplan {
 	print "Pilot loop\n";	
 
 	foreach (keys %pilotID) {
+
+# Tickle the pilot so it will not time out during this
+	$ticklecount++;
+	if ($ticklecount >= $doticklecount) {
+		$dlp->tickle();
+		$ticklecount = 0;
+	}
 	
 		# Pilot records originally downloaded from a different Plan database
 		# are off-limits during this pass.
@@ -838,6 +849,14 @@ sub doafterplan {
 	print "Plan loop\n";
 
 	foreach (keys %planRecord) {
+
+# Tickle the pilot so it will not time out during this
+	$ticklecount++;
+	if ($ticklecount >= $doticklecount) {
+		$dlp->tickle();
+		$ticklecount = 0;
+	}
+
 		print "Plan record: ",PrintPlanRecord($planRecord{$_}),"\n";
 		my($record) = $planRecord{$_};
 		my($pid) = $planRecord{$_}->{pilotid};
@@ -1023,6 +1042,14 @@ sub doafterplan {
 
 	foreach (keys %pilotID) {
 
+# Tickle the pilot so it will not time out during this
+	$ticklecount++;
+	if ($ticklecount >= $doticklecount) {
+		$dlp->tickle();
+		$ticklecount = 0;
+	}
+
+	
 		# Pilot records originally downloaded from a different Plan database
 		# are off-limits during this pass.
 		
@@ -1062,6 +1089,13 @@ sub doafterplan {
 	print "Plan delete loop\n";
 
 	foreach (keys %planRecord) {
+
+# Tickle the pilot so it will not time out during this
+	$ticklecount++;
+	if ($ticklecount >= $doticklecount) {
+		$dlp->tickle();
+		$ticklecount = 0;
+	}
 	
 		my($record) = $planRecord{$_};
 		my($pid) = $planRecord{$_}->{pilotid};

@@ -1,3 +1,6 @@
 
  The files in this directory are old and either useless, deprecated,
  dangerous, or so lacking in features or implementation as to be worthless.
+
+ In the case of two sync- utilities, further development is not needed or
+ intended, the style used in sync-plan being preferred.

@@ -48,11 +48,11 @@ class iambicExpense_t : public baseApp_t
      iambicExpense_t(void) : baseApp_t() {
 	  (void) memset(this, '\0', sizeof(iambicExpense_t));
      }
-     iambicExpense_t(void *buf) : baseApp_t() { unpack(buf, 1); }
+     iambicExpense_t(void *buf) : baseApp_t() { unpack(buf); }
      iambicExpense_t(void *buf, int attr, recordid_t id, int category)
 	  : baseApp_t(attr, id, category)
      {
-	  unpack(buf, 1);
+	  unpack(buf);
      }
      iambicExpense_t(const iambicExpense_t &);
      
@@ -69,7 +69,7 @@ class iambicExpense_t : public baseApp_t
      double exchangeRate(void) const { return _exchangeRate; }
      const tm *date(void) const { return &_date; }
 
-     void unpack(void *, int = 0);
+     void unpack(void *);
      
      // We don't let you pack one of these, but we must provide the name
      void *pack(int *a) { return NULL; }

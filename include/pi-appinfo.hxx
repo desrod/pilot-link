@@ -62,7 +62,7 @@ class baseApp_t
      // virtual functions
      virtual ~baseApp_t(void) {}
      
-     virtual void unpack(void *, int = 0) = 0;
+     virtual void unpack(void *) = 0;
      virtual void *pack(int *) = 0;
      virtual void *pack(void *, int *) = 0;
 

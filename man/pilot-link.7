@@ -1,0 +1,148 @@
+.TH PILOT-LINK 7 "3Com Pilot Tools" "FSF" \" -*- nroff -*-
+.SH NAME
+pilot-link \- a suite of tools for communicating with 3Com Pilots
+.SH DESCRIPTION
+The
+.B pilot-link
+suite of tools are generally conduits for moving information to and from
+3Com Pilots.
+.SH TARGET DEVICE
+Most (all?) of the
+.B pilot-link
+programs default to
+.B /dev/pilot
+as the serial device used to communicate with a Pilot.
+In general, if the environment variable
+.B PILOTPORT
+is set, its value will override the default.
+A serial device specified on the command-line will be used regardless of any
+PILOTPORT setting.
+.PP
+The default connection rate is 9600 baud.
+You are welcome to try higher baud rates (19200, 38400, or 57600) by setting the
+.B PILOTRATE
+environment variable, but various machines have various limitations.
+(Be careful about 38400 on a Linux box if you've been using setserial to change
+the multiplier.)
+.SH USAGE
+Here is a list of programs from the
+.B pilot-link
+README file:
+.TP
+addresses: dump Pilot address book into generic format
+.TP
+debugsh: command-line interface to Pilot debug monitor
+.TP
+dlpsh: command-line interface to Pilot HotSync protocol
+.TP
+getrom: program to fetch ROM using getrom.prc or getrom2.prc
+.TP
+getrom.prc:  Pilot program to help dump a 512K ROM
+.TP
+getrom2.prc: Pilot program to help dump a 1024K ROM (used for PalmOS 2.x)
+.TP
+ietf2datebook: convert IETF calendar to format used by install-datebook
+.TP
+install-datebook: import datebook records from a text format into Pilot
+.TP
+install-memo: import memo records from a text format into Pilot
+.TP
+install-todos: import todo records from a text format into Pilot
+.TP
+install-user: modify user name settings (and report lots of into) about Pilot
+.TP
+memos: export memos from Pilot in mailbox format
+.TP
+pi-csd: must be running to accept Network HotSync(tm) connects
+.TP
+pi-getram: program that retrieves RAM from Pilot
+.TP
+pi-getrom: program that retrieves ROM from Pilot (without getrom.prc)
+.TP
+pi-nredir: program that accepts connections and redirects them via the Network
+HotSync(tm) protocol
+.TP
+pi-port: experimental program to separate serial layer from pilot-link
+.TP
+pilot-addresses: import and export address book
+.TP
+pilot-clip: experimental program to import and export data from Pilot clipboard
+.TP
+pilot-debug: graphical and command-line program to interface with Pilot debug
+monitor
+.TP
+pilot-dedupe: strips duplicate records from Pilot databases
+.TP
+pilot-file: disect .prc and .pdb files
+.TP
+pilot-mail: import mail from POP3 mailbox into Pilot Pro's Mail application,
+and send mail via sendmail 
+.TP
+pilot-schlep: store a single file on the Pilot
+.TP
+pilot-undelete: turn archived records into normal records
+.TP
+pilot-xfer: back up, restore, install & delete Pilot databases (This is a
+very useful program)
+.TP
+read-expenses: export Pilot Pro expense database into text format
+.TP
+read-ical: export Pilot datebook and todo databases into an Ical calendar
+(ical is required)
+.TP
+read-todos: export Pilot todo database into generic text format
+.TP
+reminders: export Pilot datebook into a 'remind' data file
+.TP
+sync-plan: completely synchronize the Pilot datebook with the Plan calendar
+via netplan                                               
+.SH USAGE II
+These programs are not intended for end-users.
+Perhaps they should be documented elsewhere.
+.TP
+ccexample: test program demonstrating C++ interface
+.TP
+iambicexample: test program demonstrating C++ interface
+.TP
+validate: experimental program to test C++ features    
+.SH OBTAINING
+The  most  current  version of the
+.I pilot-link
+suite of tools can be found at the following FTP site:
+.RS
+ftp://ryeham.ee.ryerson.ca/pub/PalmOS/
+.RE
+.SH MAILING LIST
+The pilot-unix mailing list is maintained by Matthew Cravit. Its mandate is: 
+.RS
+The pilot-unix mailing list is for discussion and idea-sharing for those
+interested in using the US Robotics Pilot PDAs with UNIX systems. This
+includes people who are interested in helping to develop tools to allow the
+Pilot to operate with UNIX, and possibly to develop an SDK for the Pilot
+for Unix.
+.RE
+.PP
+For more information, including how to subscribe to the list, send mail
+containing the word ``INFO'' to
+.IR pilot-unix-request@lists.best.com .
+The subject line does not matter. 
+.SH SEE ALSO
+.\"
+.\" Please list all pilot-link manual pages here, in alphabetic order.
+.\"
+.BR dlpsh(1) ,
+.BR ietf2datebook(1) ,
+.BR install-datebook(1) ,
+.BR install-memo(1) ,
+.BR install-user(1) ,
+.BR pilot-xfer(1) ,
+.BR read-ical(1) ,
+.IR Pilot-HOWTO (http://www.orbits.com/Pilot/Pilot-HOWTO.html).
+.SH AUTHOR
+Most of the
+.B pilot-link
+tools were written by Kenneth Albanowski.
+This manual page was written by David H. Silber, generally from the information
+in the
+.B pilot-link
+README file by Kenneth Albanowski.

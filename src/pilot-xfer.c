@@ -1,9 +1,17 @@
 /* pilot-xfer.c:  Pilot Database transfer utility
  *
- * (c) 1996, Kenneth Albanowski.
+ * (c) 1996, 1998, Kenneth Albanowski.
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
+ */
+
+/* A few minor modifications, done April 19, 1998 by David H. Silber:
+ *  Implemented a ``--version'' (or `-v') option to indicate which version
+ *    of pilot-link a particular executable is from.
+ *  Added a ``--help'' alias for the `-h' option.
+ *  Added error checking to prevent ``Segmentation fault (core dumped)''
+ *    when an unreadable exclude file is specified.
  */
 
 #include <stdio.h>
@@ -19,6 +27,7 @@
 #include "pi-socket.h"
 #include "pi-file.h"
 #include "pi-dlp.h"
+#include "pi-version.h"
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -34,6 +43,12 @@ RETSIGTYPE SigHandler(int signal);
 void MakeExcludeList(char *efile) {
     char temp[1024];
     FILE *f = fopen(efile,"r");
+
+    /*  If the Exclude file cannot be opened, ... */
+    if(!f) {
+      fprintf(stderr, "Unable to open exclude list file '%s'.\n", efile);
+      exit(1);
+    }
 
     while((fgets(temp,sizeof(temp),f)) != NULL) {
         if (temp[strlen(temp)-1] == '\n')
@@ -83,7 +98,8 @@ void Connect(void) {
   
   ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
-    fprintf(stderr, "Unable to bind to port '%s'.\n(Please see '%s -h' for information setting the port).\n", device, progname);
+    fprintf(stderr, "Unable to bind to port '%s'.\n", device);
+    fprintf(stderr, "(Please see 'man %s' or '%s --help' for information on setting the port).\n", progname, progname);
     exit(1);
   }
     
@@ -193,14 +209,15 @@ void Backup(char * dirname, int only_changed, int remove_deleted)
         int skip = 0;
   	char name[256];
 
-        if (dlp_OpenConduit(sd)<0) {
-	  puts("Exiting on cancel, all data _not_ backed up.");
-          exit(1);
-        }
         
   	if( dlp_ReadDBList(sd, 0, 0x80, i, &info) < 0)
   		break;
   	i = info.index + 1;
+
+        if (dlp_OpenConduit(sd)<0) {
+	  fprintf(stderr, "Exiting on cancel, all data _not_ backed up, stopped before backing up '%s'.\n", info.name);
+          exit(1);
+        }
 
 	strcpy(name, dirname);
 	strcat(name, "/");
@@ -213,6 +230,7 @@ void Backup(char * dirname, int only_changed, int remove_deleted)
 
         for(x = 0; x < numexclude; x++) {
           /* printf("Skipcheck:%s:%s:\n",exclude[x],info.name); */
+printf("Skipcheck:%s:%s:\n",exclude[x],info.name);
           if(strcmp(exclude[x],info.name) == 0) {
             printf("Excluding '%s'...\n",name);
 	    RemoveFromList(name, orig_files, ofile_total);
@@ -288,7 +306,7 @@ void Fetch(char * dbname)
   Connect();
 
   if (dlp_OpenConduit(sd)<0) {
-    puts("Exiting on cancel, all data _not_ backed up.");
+    fprintf(stderr, "Exiting on cancel, stopped before fetching '%s'.\n", dbname);
     exit(1);
   }
   	
@@ -329,7 +347,7 @@ void Delete(char * dbname)
   Connect();
 
   if (dlp_OpenConduit(sd)<0) {
-    puts("Exiting on cancel, all data _not_ backed up.");
+    fprintf(stderr, "Exiting on cancel, stopped before deleting '%s'.\n", dbname);
     exit(1);
   }
 
@@ -457,7 +475,7 @@ void Restore(char * dirname)
   for (i=0;i<dbcount;i++) {
 
 	if ( dlp_OpenConduit(sd) < 0) {
-	   puts("Exiting on cancel. All data not restored.");
+	   fprintf(stderr, "Exiting on cancel, all data not restored, stopped before restoing '%s'.\n", db[i]->name);
 	   exit(1);
 	}
 
@@ -487,7 +505,7 @@ void Install(char * filename)
   Connect();
 
   if ( dlp_OpenConduit(sd) < 0) {
-    puts("Exiting on cancel. All data not restored.");
+    fprintf(stderr, "Exiting on cancel, stopped before installing '%s'.\n", filename);
     exit(1);
   }
 
@@ -516,7 +534,7 @@ void Merge(char * filename)
   Connect();
 
   if ( dlp_OpenConduit(sd) < 0) {
-    puts("Exiting on cancel. All data not restored.");
+    fprintf(stderr, "Exiting on cancel, stopped before merging '%s'.\n", filename);
     exit(1);
   }
 
@@ -540,7 +558,7 @@ void Merge(char * filename)
   printf("Merge done\n");
 }
 
-void List(void)
+void List(int rom)
 {
   struct DBInfo info;
   int i;
@@ -548,15 +566,18 @@ void List(void)
   Connect();
 
   if ( dlp_OpenConduit(sd) < 0) {
-    puts("Exiting on cancel. All data not restored.");
+    fprintf(stderr, "Exiting on cancel, stopped before listing databases.\n");
     exit(1);
   }
   
-  printf("Reading list of databases...\n");
+  if (rom)
+	printf("Reading list of databases in RAM and ROM...\n");
+  else
+	printf("Reading list of databases in RAM...\n");
   
   i = 0;
   for(;;) {
-  	if( dlp_ReadDBList(sd, 0, 0x80, i, &info) < 0)
+  	if( dlp_ReadDBList(sd, 0, (rom ? 0x80|0x40 : 0x80), i, &info) < 0)
   		break;
   	i = info.index + 1;
   	
@@ -575,7 +596,7 @@ void Purge(void)
   Connect();
 
   if ( dlp_OpenConduit(sd) < 0) {
-    puts("Exiting on cancel. All data not restored.");
+    fprintf(stderr, "Exiting on cancel, stopped before purging databases.\n");
     exit(1);
   }
   
@@ -613,7 +634,7 @@ void Purge(void)
 
 void Help(void)
 {
-      printf("Usage: %s [%s] command(s)\n\n",progname,TTYPrompt);
+      printf("Usage: %s [-p port] command(s)\n\n",progname);
       printf("Where a command is one or more of: -b(ackup)  backupdir\n");
       printf("                                   -u(pdate)  backupdir\n");
       printf("                                   -s(ync)    backupdir\n");
@@ -622,44 +643,67 @@ void Help(void)
       printf("                                   -m(erge)   filename(s)\n");
       printf("                                   -f(etch)   dbname(s)\n");
       printf("                                   -d(elete)  dbname(s)\n");
-      printf("                                   -e(xclude) filename(s)\n");
-      printf("                                   -p(urge)\n");
+      printf("                                   -e(xclude) filename\n");
+      printf("                                   -P(urge)\n");
       printf("                                   -l(ist)\n");
+      printf("                                   -L(istall)\n");
+      printf("                                   -v(ersion)\n");
+      printf("                                   -h(elp)\n");
       printf("\n");
       printf("The serial port to connect to may be specified by the PILOTPORT\n");
       printf("environment variable instead of the command line. If not specified\n");
       printf("anywhere, it will default to /dev/pilot.\n");
       printf("\n");
-      printf(" -b backs up all databases to the directorym\n");
+      printf("The baud rate to connect with may be specified by the PILOTRATE\n");
+      printf("environment variable. If not specified, it will default to 9600.\n");
+      printf("Please use caution setting it to higher values, as several types\n");
+      printf("of workstations have problems with higher rates.\n");
+      printf("\n");
+      printf(" -b backs up all databases to the directory.\n");
       printf(" -u is the same as -b, except it only backs up changed or new db's\n");
       printf(" -s is the same as -u, except it removes files if the database is\n");
       printf("    deleted on the Pilot.\n");
       exit(0);
 }
 
-struct option options[] = {
-	{"backup", required_argument, 0, 'b'},
-	{"update", required_argument, 0, 'u'},
-	{"sync", required_argument, 0, 's'},
-	{"restore", required_argument, 0, 'r'},
-	{"install", required_argument, 0, 'i'},
-	{"merge", required_argument, 0, 'm'},
-	{"fetch", required_argument, 0, 'f'},
-	{"delete", required_argument, 0, 'd'},
-	{"exclude", required_argument, 0, 'e'},
-	{"purge", no_argument, 0, 'p'},
-	{"list", no_argument, 0, 'l'},
-	{0, 0, 0, 0}};
+void Version(void)
+{
+#ifdef PILOT_LINK_PATCH
+      printf("This is %s, from pilot-link version %d.%d.%d (patch # %s).\n",
+        progname, PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
+        PILOT_LINK_PATCH);
+#else
+      printf("This is %s, from pilot-link version %d.%d.%d.\n", progname,
+        PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR);
+#endif
+      printf("Enter: ``man 7 pilot-link\'\' at the shell prompt for more information.\n");
+      exit(0);
+}
+
+struct { char * name; int value; } longopt[] = {
+	{"backup", 'b'},
+	{"update", 'u'},
+	{"sync", 's'},
+	{"restore", 'r'},
+	{"install", 'i'},
+	{"merge", 'm'},
+	{"fetch", 'f'},
+	{"delete", 'd'},
+	{"exclude", 'e'},
+	{"purge", 'P'},
+	{"list", 'l'},
+	{"listall", 'L'},
+	{"version", 'v'},
+	{"help", 'h'},
+	{ 0, 0}
+};
 
 int main(int argc, char *argv[])
 {
-  int c;
-  int lastmode = 0;
+  int mode;
   char *tmp;
-#if defined(sun) || defined(ultrix)
-  extern char* optarg;
-  extern int optind;
-#endif
+  int i;
+  int action;
 
 
   progname = argv[0];
@@ -671,68 +715,153 @@ int main(int argc, char *argv[])
   tmp = getenv("PILOTPORT");
   if (tmp != NULL)
     device = tmp;
-  
-  optind=1;
+   
 
-  while (argv[optind] != NULL) {
-    c = getopt_long(argc, argv, "b:u:s:e:r:i:m:f:d:plh", options, 0);
-    if (c == EOF) {
-	optarg=argv[optind++];
-	c = lastmode;
-	if (lastmode=='b' || lastmode=='u' || lastmode=='s' || lastmode=='r' || lastmode=='l' || lastmode=='p') {
-	    fprintf(stderr, "'%c', only accepts one argument!\n", lastmode);
-	    continue;
-	}
-	if (c == 0) {
-	  device = optarg;
-	  continue;
-	}
-    }
-    switch (c) {
-    case 'b':
-      Backup(optarg, 0, 0);
-      break;
-    case 'u':
-      Backup(optarg, 1, 0);
-      break;
-    case 's':
-      Backup(optarg, 1, 1);
-      break;
-    case 'r':
-      Restore(optarg);
-      break;
-    case 'i':
-      Install(optarg);
-      break;
-    case 'm':
-      Merge(optarg);
-      break;
-    case 'f':
-      Fetch(optarg);
-      break;
-    case 'd':
-      Delete(optarg);
-      break;
-    case 'e':
-      MakeExcludeList(optarg);
-      break;
-    case 'p':
-      Purge();
-      break;
-    case 'l':
-      List();
-      break;
-    default:
-      break;
-    case 'h': case '?':
-      Help();
-    }
-    lastmode=c;
+  /* Analyze arguments for errors */
+  
+  if ((argc>1) && (!strcmp(argv[1], "-p") || !strcmp(argv[1], "--port"))) {
+  	argv++;
+  	argc--;
   }
-  if (lastmode==0)
-    Help();
+  
+  mode = 'p';
+  action = 0;
+  
+  for(i=1;i<argc;i++) {
+  	if (argv[i][0] == '-') {
+  		/* If it is a long argument, convert it to the canonical short version */
+  		if (argv[i][1] == '-') {
+  			int j;
+  			for (j=0;longopt[j].name;j++)
+  				if (!strcmp(longopt[j].name, argv[i]+2)) {
+  					argv[i][1] = longopt[j].value;
+  					argv[i][2] = '\0';
+  					break;
+  				}
+  		}
+  		if (strlen(argv[i])!=2) {
+  			fprintf(stderr, "%s: Unknown option '%s'\n", argv[0], argv[i]);
+  			Help();
+  		}
+  		
+  		/* Check for commands that take a single argument */
+  		else if (strchr("bus", argv[i][1])) {
+  			mode = 0;
+  			if (++i >= argc) {
+  				fprintf(stderr, "%s: Options '%s' requires argument\n", argv[0], argv[i-1]);
+  				Help();
+  			}
+  			action = 1;
+	  			
+	  	/* Check for commands with unlimited arguments */
+  		} else if (strchr("rimfde", argv[i][1])) {
+  			mode = argv[i][1];
+  			action = 1;
+  			if (++i >= argc) {
+  				fprintf(stderr, "%s: Options '%s' requires argument\n", argv[0], argv[i-1]);
+  				Help();
+  			}
+
+  		/* Check for commands that take no arguments */
+  		} else if (strchr("lLP", argv[i][1])) {
+  			action = 1;
+  			mode = 0;
+  		
+  		/* Check for forcing commands */
+  		} else if (argv[i][1] == 'v') {
+  			Version();
+  		} else if (argv[i][1] == 'h') {
+  			Help();
+  		
+  		} else {
+  			fprintf(stderr, "%s: Unknown option '%s'\n", argv[0], argv[i]);
+  			Help();
+  		}
+  	} else {
+  		if (!mode) {
+  			fprintf(stderr, "%s: Must specify command before argument '%s'\n", argv[0], argv[i]);
+  			Help();
+  		}
+  		if (mode != 'p')
+  			action = 1;
+  		if (strchr("busrep", mode))
+  			mode = 0;
+  	}
+  }
+  if (!action) {
+  	fprintf(stderr, "%s: Please give a command\n", argv[0]);
+  	Help();
+  }
+  
+  /* Process arguments */
+  
+  mode = 'p';
+  
+  for(i=1;i<argc;i++) {
+  	if (argv[i][0] == '-') {
+  		mode = 0;
+  		if (strchr("busrimfde", argv[i][1])) {
+  			mode = argv[i][1];
+  			i++;
+  		} else
+  		switch(argv[i][1]) {
+  		    case 'l':
+  		    	List(0);
+  		    	continue;
+  		    case 'L':
+  		    	List(1);
+  		    	continue;
+  		    case 'P':
+  		    	Purge();
+  		    	continue;
+  		    default:
+  		    	/* Shouldn't reach here */
+  		    	Help();
+  		}
+  	} 
+  	switch(mode) {
+  	    case 'p':
+  	    	device = argv[i];
+  		mode = 0;
+  		break;
+  	    case 'b':
+  	    	Backup(argv[i], 0, 0);
+  	    	mode = 0;
+  	    	break;
+  	    case 'u':
+  	    	Backup(argv[i], 1, 0);
+  	    	mode = 0;
+  	    	break;
+  	    case 's':
+  	    	Backup(argv[i], 1, 1);
+  	    	mode = 0;
+  	    	break;
+  	    case 'r':
+  	    	Restore(argv[i]);
+  	    	break;
+  	    case 'i':
+  	    	Install(argv[i]);
+  	    	break;
+  	    case 'm':
+  	    	Merge(argv[i]);
+  	    	break;
+  	    case 'f':
+  	    	Fetch(argv[i]);
+  	    	break;
+  	    case 'd':
+  	    	Delete(argv[i]);
+  	    	break;
+  	    case 'e':
+  	    	MakeExcludeList(argv[i]);
+  	    	break;
+  	    default:
+	    	/* Shouldn't reach here */
+  	    	Help();
+  	}
+  }
   
   Disconnect();
   
   return 0;
 }
+

@@ -2,9 +2,9 @@
 #include "pi-source.h"
 #include "pi-memo.h"
 
-void memo_t::unpack(void *text, int firstTime) 
+void memo_t::unpack(void *text) 
 {
-     if (!firstTime && _text)
+     if (_text)
 	  delete _text;
      
      _size = strlen((const char *) text) + 1;

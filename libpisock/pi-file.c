@@ -42,6 +42,7 @@
  * 4		next record list id (normally 0, or ptr to extended hdr)
  * 2		num records for this header
  * Hypothetically plus 2 more bytes if an extended or perhaps secondary header (not supported)
+ * (In practice, this value is never set, instead it usually indicates a damaged file.)
  *
  * if the low bit of attr is on, then next thing is a list of resource entry
  * descriptors:
@@ -159,7 +160,6 @@ pi_file_open (char *name)
   unsigned char *p;
   int file_size;
   unsigned long offset, app_info_offset, sort_info_offset;
-  int total_hdr_size;
   int i;
   struct pi_file_entry *entp;
 
@@ -211,7 +211,7 @@ pi_file_open (char *name)
 #endif
   
   if (pf->next_record_list_id != 0) {
-    fprintf (stderr, "%s: extended format not supported\n", name);
+    fprintf (stderr, "%s: this file is probably damaged.\n", name);
     goto bad;
   }
 	
@@ -223,16 +223,8 @@ pi_file_open (char *name)
     pf->ent_hdr_size = PI_RECORD_ENT_SIZE;
   }
 
-  if (pf->app_info_size < 0 || pf->sort_info_size < 0 || pf->nentries < 0) {
+  if (pf->nentries < 0) {
     fprintf (stderr, "%s: bad header\n", name);
-    goto bad;
-  }
-
-  total_hdr_size = PI_HDR_SIZE + pf->app_info_size + pf->sort_info_size
-    + pf->nentries * pf->ent_hdr_size;
-
-  if (total_hdr_size > file_size) {
-    fprintf (stderr, "%s: file too short\n", name);
     goto bad;
   }
 
@@ -270,6 +262,10 @@ pi_file_open (char *name)
 #ifdef DEBUG
       printf("Entry %d, size %d\n",pf->nentries-i-1, entp->size);
 #endif
+      if (entp->size < 0) {
+        fprintf(stderr, "%s: Entry %d corrupt, giving up\n", name, pf->nentries-i-1);
+        goto bad;
+      }
     }
   }
   
@@ -287,6 +283,11 @@ pi_file_open (char *name)
 #ifdef DEBUG
     printf("App info, size %d\n",pf->app_info_size);
 #endif
+  }
+
+  if (pf->app_info_size < 0 || pf->sort_info_size < 0) {
+    fprintf (stderr, "%s: bad header\n", name);
+    goto bad;
   }
 
   if (pf->app_info_size == 0)
