@@ -9,6 +9,9 @@
 
 	* Fixed a few typos in the above mass conversion (thanks Andreas)
 
+	* pilot-debug.c: Remove internal extern, use <math.h> properly,
+	  which should exist on Sun machines anyway
+
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: set use_python to false when appropriate, same for

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <math.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <string.h>
@@ -59,8 +60,6 @@ int usetk;
 
 /* The following variable is a special hack that is needed in order for Sun
    shared libraries to be used for Tcl. */
-
-extern int matherr();
 int *tclDummyMathPtr = (int *) matherr;
 
 int done 	= 0;
