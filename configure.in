@@ -747,8 +747,6 @@ AC_OUTPUT([
 	src/Makefile
 	src/prc/Makefile
 	src/pix/Makefile
-	src/pilot-datebook/Makefile
-	src/pilot-datebook/tests/Makefile
 	bindings/Makefile
 	bindings/Perl/Makefile.PL
 	bindings/Python/setup.py
