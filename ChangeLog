@@ -1,5 +1,10 @@
 2002-07-03  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/usb.c (pi_usb_accept): don't actually set the
+	baudrate, just use dummy values
+	
+2002-07-03  JP Rosevear  <jpr@ximian.com>
+
 	* libpisock/usb.c (pi_usb_accept): handle a cmp connection
 
 2002-07-02  JP Rosevear  <jpr@ximian.com>
