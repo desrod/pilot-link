@@ -108,6 +108,11 @@ NOTICE: Use of this program may place you in violation of your license\n\
   minorVersion = (((ROMversion >> 20) & 0xf) * 10)+ ((ROMversion >> 16) & 0xf);
   state = ((ROMversion >> 12) & 0xf);
   build = (((ROMversion >> 8) & 0xf) * 10)+(((ROMversion >> 4) & 0xf) * 10)+ (ROMversion  & 0xf);
+
+  /* As Steve said, "Bummer." */
+  if ((majorVersion == 3) && (minorVersion == 0) && (ROMlength == 0x100000)) {
+  	ROMlength = 0x200000;
+  }
   
   sprintf(name+strlen(name), "%d.%d", majorVersion, minorVersion);
   if (state!=3)
@@ -152,12 +157,12 @@ NOTICE: Use of this program may place you in violation of your license\n\
   	else
   	  write(file, buffer, len);
   	offset += len;
-  	if(cancel || !(i++%4))
+  	if(cancel || !(i++%8))
   		if (cancel || (dlp_OpenConduit(sd)<0)) {
   			printf("\nCancelled!\n");
   			goto cancel;
   		}
-  	if(!(i%8)) {
+  	if(!(i%16)) {
           sprintf(print, "%ld", offset);
           PackRPC(&p, 0xA220, RPC_IntReply, RPC_Ptr(print, strlen(print)), RPC_Short(strlen(print)), RPC_Short(92), RPC_Short(28), RPC_End);
           /*err =*/  dlp_RPC(sd, &p, 0);

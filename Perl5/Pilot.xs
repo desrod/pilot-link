@@ -1,3 +1,14 @@
+
+/* Pilot.xs:  Interface pilot-link library with Perl.
+ *
+ * Copyright (C) 1997, 1998, Kenneth Albanowski
+ *
+ * This is free software, licensed under either the GNU Library Public
+ * License V2, or the same terms as Perl itself, at your choice. See the file
+ * COPYING.LIB for details on the GNU LGPL, and Artistic for information on    
+ * Perl's Artistic License.
+ */
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -3638,28 +3649,25 @@ close(self)
 SV *
 getAppBlock(self)
 	PDA::Pilot::File *	self
-	CODE:
+	PPCODE:
 	{
 	    int len, result;
 	    void * buf;
 		result = pi_file_get_app_info(self->pf, &buf, &len);
 		ReturnReadAI(buf, len);
 	}
-	OUTPUT:
-	RETVAL
 
 SV *
 getSortBlock(self)
 	PDA::Pilot::File *	self
-	CODE:
+	PPCODE:
 	{
 	    int len, result;
 	    void * buf;
 		result = pi_file_get_sort_info(self->pf, &buf, &len);
 		ReturnReadSI(buf, len);
 	}
-	OUTPUT:
-	RETVAL
+
 
 SV *
 getRecords(self)
@@ -3696,7 +3704,7 @@ SV *
 getRecord(self, index)
 	PDA::Pilot::File *	self
 	int	index
-	CODE:
+	PPCODE:
 	{
 	    int len, result, attr, category;
 	    unsigned long id;
@@ -3704,8 +3712,7 @@ getRecord(self, index)
 		result = pi_file_read_record(self->pf, index, &buf, &len, &attr, &category, &id);
 		ReturnReadRecord(buf,len);
 	}
-	OUTPUT:
-	RETVAL
+
 
 SV *
 getRecordByID(self, id)

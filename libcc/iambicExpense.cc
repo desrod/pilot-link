@@ -1,3 +1,13 @@
+
+/* iambicExpense.cc:
+ *
+ * Copyright (c) 1997, 1998, Scott Grosch
+ *
+ * This is free software, licensed under the GNU Library Public License V2.
+ * See the file COPYING.LIB for details.
+ */
+
+
 #include <ctype.h>		// isspace
 #include <stdio.h>		// sprintf
 #include <stdlib.h>		// strtoul

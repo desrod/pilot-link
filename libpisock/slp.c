@@ -3,8 +3,8 @@
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
  *
- * This is free software, licensed under the GNU Public License V2.
- * See the file COPYING for details.
+ * This is free software, licensed under the GNU Library Public License V2.
+ * See the file COPYING.LIB for details.
  */
 
 #include <stdio.h>

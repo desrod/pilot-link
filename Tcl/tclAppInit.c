@@ -23,7 +23,7 @@
 extern int matherr();
 int *tclDummyMathPtr = (int *) matherr;
 
-EXTERN int		Pdapilot_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int		Pitcl_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 #ifdef TCL_TEST
 EXTERN int		Tcltest_Init _ANSI_ARGS_((Tcl_Interp *interp));
@@ -81,7 +81,7 @@ Tcl_AppInit(interp)
     if (Tcl_Init(interp) == TCL_ERROR) {
 	return TCL_ERROR;
     }
-    if (Pdapilot_Init(interp) == TCL_ERROR) {
+    if (Pitcl_Init(interp) == TCL_ERROR) {
 	return TCL_ERROR;
     }
 

@@ -1240,7 +1240,7 @@ static struct { char * name; Tcl_CmdProc *proc; } procs[] = {
 	{0,0}
 };
 
-int Pdapilot_Init(Tcl_Interp *interp) {
+int Pitcl_Init(Tcl_Interp *interp) {
 	int i;
 	
 	for(i=0;procs[i].name;i++) {
@@ -1253,7 +1253,7 @@ int Pdapilot_Init(Tcl_Interp *interp) {
 	}
 #endif
 	
-	Tcl_PkgProvide(interp, "Pdapilot", PACKAGE_VERSION);
+	Tcl_PkgProvide(interp, "Pitcl", PACKAGE_VERSION);
 
 	return TCL_OK;
 }

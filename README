@@ -165,6 +165,17 @@ Embedding information:
   For all normal operations, simply include the obvious files (pi-file for
   .pdb and .prc file access, pi-dlp for DLP sync functions, etc.). pi-macros
   contains the portable byte-access routines.
+
+License notes:
+
+  The utility programs (pilot-xfer, sync-plan, etc.) are licensed for use
+  under the GPL. For more information, please see COPYING. The librarys
+  (libpisock and libcc) and the interpreter bindings (Perl, Python, Java,
+  and Tcl) are licensed for use under the LGPL. For more information, please
+  see COPYING.LIB.
+  
+  All contained source is the copyright of its author(s). Please see the
+  copyright notices in the individual files for more information.
   
 Happy Hacking,
 Kenneth Albanowski <kjahds@kjahds.com>

@@ -1,4 +1,12 @@
 
+/* todo.cc:
+ *
+ * Copyright (c) 1997, 1998, Scott Grosch
+ *
+ * This is free software, licensed under the GNU Library Public License V2.
+ * See the file COPYING.LIB for details.
+ */
+
 #include "pi-source.h"
 #include <string.h>
 #include "pi-todo.h"

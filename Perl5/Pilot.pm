@@ -1,3 +1,13 @@
+
+# Pilot.pm:  Interface pilot-link library with Perl.
+#
+# Copyright (C) 1997, 1998, Kenneth Albanowski
+#
+# This is free software, licensed under either the GNU Library Public
+# License V2, or the same terms as Perl itself, at your choice. See the file
+# COPYING.LIB for details on the GNU LGPL, and Artistic for information on 
+# Perl's Artistic License.
+
 package PDA::Pilot;
 
 require Exporter;

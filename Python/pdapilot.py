@@ -1,3 +1,11 @@
+# pdapilot.py:  Interface pilot-link library with Python.
+#
+# Copyright (C) 1997, 1998, Kenneth Albanowski
+#
+# This is free software, licensed the GNU Library Public License V2.
+# See the file COPYING.LIB for details.
+
+
 import _pdapilot
 from _pdapilot import *
 

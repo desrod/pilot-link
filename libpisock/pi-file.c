@@ -3,8 +3,8 @@
  * Pace Willisson <pace@blitz.com> December 1996
  * Additions by Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Public License V2.
- * See the file COPYING for details.
+ * This is free software, licensed under the GNU Library Public License V2.
+ * See the file COPYING.LIB for details.
  *
  * the following is extracted from the combined wisdom of
  * PDB by Kevin L. Flynn

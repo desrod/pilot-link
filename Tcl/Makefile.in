@@ -51,9 +51,9 @@ LIBTOOL = @LIBTOOL@
 
 CCLINK = $(LIBTOOL) --mode=link $(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS)
 
-OBJS = pdapilot.lo
+OBJS = pitcl.lo
 
-LIB = pdapilot$(PACKAGE_VERSION).$(TCL_VERSION).la
+LIB = libpitcl$(PACKAGE_VERSION).$(TCL_VERSION).la
 
 TCLINTERP = pitclsh$(PACKAGE_VERSION).$(TCL_VERSION)
 TKINTERP = piwish$(PACKAGE_VERSION).$(TK_VERSION)
@@ -63,7 +63,7 @@ WITHTK = $(TKINTERP)
 
 INTERPS = $(@WITHTCL@) $(@WITHTK@)
 
-PACKLIB = $(PACKAGES)/pdapilot$(PACKAGE_VERSION)
+PACKLIB = $(PACKAGES)/pitcl$(PACKAGE_VERSION)
 
 .SUFFIXES: .out .o .lo .cc .c .e .r .f .y .l .s .p
 
@@ -83,7 +83,7 @@ installdirs:
 
 install: installdirs $(LIB)
 	$(INSTALL_DATA) $(LIB) $(PACKAGES)/$(LIB)
-	echo 'package ifneeded Pdapilot $(PACKAGE_VERSION).$(TCL_VERSION) [list load "[file join [file dirname $$dir] pdapilot$(PACKAGE_VERSION).$(TCL_VERSION).so]" Pdapilot]' >> $(PACKLIB)/pkgIndex.tcl 
+	echo 'package ifneeded PiTcl $(PACKAGE_VERSION).$(TCL_VERSION) [list load "[file join [file dirname $$dir] libpitcl$(PACKAGE_VERSION).$(TCL_VERSION).so]" PiTcl]' >> $(PACKLIB)/pkgIndex.tcl 
 	$(INSTALL_PROGRAM) $(TCLINTERP) $(TCL_BIN)/$(TCLINTERP)
 	$(INSTALL_PROGRAM) $(TKINTERP) $(TCL_BIN)/$(TKINTERP)
 	$(LIBTOOL) -n --finish $(PACKAGES)

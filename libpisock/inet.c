@@ -1,8 +1,8 @@
 /* inet.c: Interface layer to TCP/IP NetSync connections
  *
  * Copyright (c) 1997, Kenneth Albanowski
- * This is free software, licensed under the GNU Public License V2.
- * See the file COPYING for details.
+ * This is free software, licensed under the GNU Library Public License V2.
+ * See the file COPYING.LIB for details.
  */
 
 #include <sys/types.h>
@@ -92,7 +92,11 @@ int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
   ps->socket_close = pi_net_close;
 
   ps->initiator = 1;
-
+  
+  ps->connected = 1;
+  
+  ps->version = 0x0101;
+  
   pi_net_send(ps, msg1, 22, 0);
   pi_net_recv(ps, buffer, 200, 0);
   pi_net_send(ps, msg2, 50, 0);
@@ -185,6 +189,10 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
   ps->socket_close = pi_net_close;
 
   ps->initiator = 0;
+  
+  ps->connected = 1;
+
+  ps->version = 0x0101;
 
   return 0;
 }

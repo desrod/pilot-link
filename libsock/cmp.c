@@ -1,8 +1,8 @@
 /* cmp.c:  Pilot CMP protocol
  *
  * (c) 1996, Kenneth Albanowski.
- * This is free software, licensed under the GNU Public License V2.
- * See the file COPYING for details.
+ * This is free software, licensed under the GNU Library Public License V2.
+ * See the file COPYING.LIB for details.
  */
 
 #include <stdio.h>

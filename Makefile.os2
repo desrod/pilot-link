@@ -431,7 +431,7 @@ read-ical.o: read-ical.c include/pi-source.h include/pi-config.h \
 read-todos.o: read-todos.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-todo.h \
- include/pi-appinfo.h include/pi-dlp.h
+ include/pi-appinfo.h include/pi-dlp.h include/pi-file.h
 reminders.o: reminders.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-datebook.h \

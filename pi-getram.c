@@ -1,4 +1,4 @@
-/* pi-getrom:  Fetch RAM image from Pilot
+/* pi-getram:  Fetch RAM image from Pilot
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
@@ -62,18 +62,24 @@ int main(int argc, char *argv[])
   }
   
   port = argv[1];
-  if (strcmp(argv[2], "-c")==0) {
-  	copilot=1;
-  	if (argc > 3)
-	  	filename = argv[3];
-	else
-		filename = 0;
+  
+  if (argc>2) {
+	if (!strcmp(argv[2], "-c")) {
+		copilot=1;
+	  	if (argc > 3)
+			filename = argv[3];
+		else
+			filename = 0;
+	} else {
+	  	copilot=0;
+	  	if (argc> 2)
+			filename = argv[2];
+		else
+			filename = 0;
+	}
   } else {
-  	copilot=0;
-  	if (argc> 2)
-	  	filename = argv[2];
-	else
-		filename = 0;
+  	copilot = 0;
+  	filename = 0;
   }
     
   addr.pi_family = PI_AF_SLP;

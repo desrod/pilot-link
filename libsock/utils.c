@@ -3,8 +3,8 @@
  * Portions Copyright (c) 1996, D. Jeff Dionne.
  * Portions Copyright (c) 1996, Kenneth Albanowski
  *
- * This is free software, licensed under the GNU Public License V2.
- * See the file COPYING for details.
+ * This is free software, licensed under the GNU Library Public License V2.
+ * See the file COPYING.LIB for details.
  */
 
 #include <stdio.h>
@@ -83,8 +83,7 @@ extern char **environ;
 
 /* Put STRING, which is of the form "NAME=VALUE", in the environment.  */
 int
-putenv (string)
-     const char *string;
+putenv (const char *string)
 {
   const char *const name_end = strchr (string, '=');
   register size_t size;
@@ -139,9 +138,7 @@ putenv (string)
 
 #ifndef HAVE_INET_ATON
 int
-inet_aton(cp, addr)
-        register const char *cp;
-        struct in_addr *addr;
+inet_aton(const char *cp, struct in_addr * addr)
 {
         register u_long val;
         register int base, n;
