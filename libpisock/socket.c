@@ -552,6 +552,13 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 							found = 1;
 						}
 					}
+					else
+					{
+						protocol = PI_PF_PADP;
+						LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+							"Default\n"));
+						found = 1;
+					}
 					break;
 				}
 			}
