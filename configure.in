@@ -295,9 +295,9 @@ AC_ARG_WITH(included-popt,
 if test "x$with_included_popt" != "xyes"; then
 	dnl Determine if system popt is good enough
 	AC_CHECK_HEADER(popt.h,
-					AC_CHECK_LIB(popt, poptStrippedArgv,,
-								 [with_included_popt="yes"]),
-					[with_included_popt="yes"]
+		AC_CHECK_LIB(popt, poptStrippedArgv,,
+			[with_included_popt="yes"]),
+		[with_included_popt="yes"]
 	)
 fi
 
