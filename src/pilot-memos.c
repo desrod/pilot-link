@@ -61,71 +61,79 @@ void write_memo_in_directory(char *dirname, struct Memo m,
  * Returns:     Nothing
  *
  ***********************************************************************/
-void
-Help(void)
+void Help(void)
 {
-	PalmHeader(progname);
-
 	fprintf(stderr, "   Usage: %s [options]", progname);
 	fprintf(stderr, "\n\n   Options:\n");
-	fprintf(stderr, "    -q          = quiet, do not prompt for HotSync button press\n");
-	fprintf(stderr, "    -v          = with -d, print each filename as it's written\n");
-	fprintf(stderr, "    -Q          = do not announce which files are opened\n");
-	fprintf(stderr, "    -p port     = use device file <port> to communicate with Palm\n");
-	fprintf(stderr, "    -f file     = use <file> as memo database file (rather than hotsyncing)\n");
-	fprintf(stderr, "    -d dir      = save memos in <dir> instead of writing to STDOUT\n");
-	fprintf(stderr, "    -c category = only upload memos in this category\n");
-	fprintf(stderr, "    -t regexp   = select memos to be saved by title\n");
-	fprintf(stderr, "    -h|-?       = print this usage summary\n\n");
-	fprintf(stderr, "   By default, the contents of your Palm's memo database will be written\n");
-	fprintf(stderr, "   to standard output as a standard Unix mailbox (mbox-format) file, with\n");
-	fprintf(stderr, "   each memo as a separate message.  The subject of each message will be the\n");
-	fprintf(stderr, "   category.\n\n");
-	fprintf(stderr, "   If `-d' is specified, than instead of being written to standard output,\n");
-	fprintf(stderr, "   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n");
-	fprintf(stderr, "   name of a category on the Palm, and will contain the memos in that\n");
-	fprintf(stderr, "   category.  Each memo's filename will be the first line (up to the first\n");
-	fprintf(stderr, "   40 characters) of the memo.  Control characters, slashes, and equal\n");
-	fprintf(stderr, "   signs that would otherwise appear in filenames are converted after the\n");
-	fprintf(stderr, "   fashion of MIME's quoted-printable encoding.  Note that if you have two\n");
-	fprintf(stderr, "   memos in the same category whose first lines are identical, one of them\n");
-	fprintf(stderr, "   will be overwritten.\n\n");
-	fprintf(stderr, "   The serial port to connect to may be specified by the PILOTPORT environment\n");
-	fprintf(stderr, "   variable instead of by `-p' on the command line. If not specified anywhere,\n");
-	fprintf(stderr, "   it will default to /dev/pilot.\n\n");
-	fprintf(stderr, "   If -f' is specified, the specified file will be treated as a memo database\n");
-	fprintf(stderr, "   from which to read memos, rather than HotSyncing from the Palm.\n\n");
+	fprintf(stderr,"    -q          = quiet, do not prompt for HotSync button press\n");
+	fprintf(stderr,"    -v          = with -d, print each filename as it's written\n");
+	fprintf(stderr,"    -Q          = do not announce which files are opened\n");
+	fprintf(stderr,"    -D          = delete the memo named by <number>\n");
+	fprintf(stderr,"    -p port     = use device file <port> to communicate with Palm\n");
+	fprintf(stderr,"    -f file     = use <file> as memo database file (rather than hotsyncing)\n");
+	fprintf(stderr,"    -d dir      = save memos in <dir> instead of writing to STDOUT\n");
+	fprintf(stderr,"    -c category = only upload memos in this category\n");
+	fprintf(stderr,"    -t regexp   = select memos to be saved by title\n");
+	fprintf(stderr,"    -h|-?       = print this usage summary\n\n");
+	fprintf(stderr,"   By default, the contents of your Palm's memo database will be written\n");
+	fprintf(stderr,"   to standard output as a standard Unix mailbox (mbox-format) file, with\n");
+	fprintf(stderr,"   each memo as a separate message.  The subject of each message will be the\n");
+	fprintf(stderr,"   category.\n\n");
+	fprintf(stderr,"   If `-d' is specified, than instead of being written to standard output,\n");
+	fprintf(stderr,"   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n");
+	fprintf(stderr,"   name of a category on the Palm, and will contain the memos in that\n");
+	fprintf(stderr,"   category.  Each memo's filename will be the first line (up to the first\n");
+	fprintf(stderr,"   40 characters) of the memo.  Control characters, slashes, and equal\n");
+	fprintf(stderr,"   signs that would otherwise appear in filenames are converted after the\n");
+	fprintf(stderr,"   fashion of MIME's quoted-printable encoding.  Note that if you have two\n");
+	fprintf(stderr,"   memos in the same category whose first lines are identical, one of them\n");
+	fprintf(stderr,"   will be overwritten.\n\n");
+	fprintf(stderr,"   The serial port to connect to may be specified by the PILOTPORT environment\n");
+	fprintf(stderr,"   variable instead of by `-p' on the command line. If not specified anywhere,\n");
+	fprintf(stderr,"   it will default to /dev/pilot.\n\n");
+	fprintf(stderr,"   If -f' is specified, the specified file will be treated as a memo database\n");
+	fprintf(stderr,"   from which to read memos, rather than HotSyncing from the Palm.\n\n");
 	exit(0);
 }
 
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
-	int db;
-	int sd = 0;
-	int i;
 	struct PilotUser U;
-	int ret;
-	unsigned char buffer[0xffff];
-	char appblock[0xffff];
 	struct MemoAppInfo mai;
+	struct pi_file *pif = NULL;
+	struct Memo m;
 
+	int attr;
+	int c;
+	int category;
+	int db;
+	int i;
+	int len;
+	int ret;
+	int sd = 0;
 	int quiet = 0;
 	int verbose = 0;
+	int delete = 0;
 	int mode = MEMO_MBOX_STDOUT;
-	char dirname[MAXDIRNAMELEN] = "";
-	int c;
+	int bufsize = 1024;
+	int match_category = -1;
+	int title_matching = 0;
+
+	unsigned char buffer[0xffff];
 	extern char *optarg;
 	extern int optind;
-	int title_matching = 0;
-	regex_t title_pattern;
+
+	char appblock[0xffff];
+	char dirname[MAXDIRNAMELEN] = "";
 	char *buf = NULL;
-	int bufsize = 1024;
-	char filename[MAXDIRNAMELEN + 1], *ptr;
-	struct pi_file *pif = NULL;
 	char *device = argv[1];
 	char category_name[MAXDIRNAMELEN + 1] = "";
-	int match_category = -1;
+	char filename[MAXDIRNAMELEN + 1], *ptr;
+
+	regex_t title_pattern;
+	recordid_t id;
+
 	progname = argv[0];
 
 	if (argc < 2) {
@@ -138,51 +146,55 @@ int main(int argc, char *argv[])
 		strcpy(addr.pi_device, PILOTPORT);
 	}
 
-	while (((c = getopt(argc, argv, "vqp:d:f:c:t:h?")) != -1)) {
+	while (((c = getopt(argc, argv, "vqQDp:d:f:c:t:h?")) != -1)) {
 		switch (c) {
-		case 'v':
-			verbose = 1;
-			break;
-		case 'q':
-			quiet = 1;
-			break;
-		case 'Q':
-			verbose = 0;
-			break;
-		case 'p':
-			/* optarg is name of port to use instead of
-			   $PILOTPORT or /dev/pilot */
-			strcpy(addr.pi_device, optarg);
-			break;
-		case 'f':
-			/* optarg is name of file to use instead of hotsyncing */
-			strncpy(filename, optarg, MAXDIRNAMELEN);
-			filename[MAXDIRNAMELEN] = '\0';
-			break;
-		case 'd':
-			/* optarg is name of directory to create and store memos in */
-			strcpy(dirname, optarg);
-			mode = MEMO_DIRECTORY;
-			break;
-		case 'c':
-			/* optarg is name of category to fetch memos of */
-			strncpy(category_name, optarg, MAXDIRNAMELEN);
-			filename[MAXDIRNAMELEN] = '\0';
-			break;
-		case 't':
-			/* optarg is a query to select memos by title */
-			ret = regcomp(&title_pattern, optarg, REG_NOSUB);
-			buf = (char *)malloc(bufsize);
-			if (ret) {
-				regerror(ret, &title_pattern, buf, bufsize);
-				fprintf(stderr, "%s\n", buf);
-				exit(1);
-			}
-			title_matching = 1;
-			break;
-		case 'h':
-		case '?':
-			Help();
+		  case 'v':
+			  verbose = 1;
+			  break;
+		  case 'q':
+			  quiet = 1;
+			  break;
+		  case 'Q':
+			  verbose = 0;
+			  break;
+		  case 'D':
+			  delete = 1;
+			  break;
+		  case 'p':
+			  /* optarg is name of port to use instead of
+			     $PILOTPORT or /dev/pilot */
+			  strcpy(addr.pi_device, optarg);
+			  break;
+		  case 'f':
+			  /* optarg is name of file to use instead of hotsyncing */
+			  strncpy(filename, optarg, MAXDIRNAMELEN);
+			  filename[MAXDIRNAMELEN] = '\0';
+			  break;
+		  case 'd':
+			  /* optarg is name of directory to create and store memos in */
+			  strcpy(dirname, optarg);
+			  mode = MEMO_DIRECTORY;
+			  break;
+		  case 'c':
+			  /* optarg is name of category to fetch memos of */
+			  strncpy(category_name, optarg, MAXDIRNAMELEN);
+			  filename[MAXDIRNAMELEN] = '\0';
+			  break;
+		  case 't':
+			  /* optarg is a query to select memos by title */
+			  ret = regcomp(&title_pattern, optarg, REG_NOSUB);
+			  buf = (char *) malloc(bufsize);
+			  if (ret) {
+				  regerror(ret, &title_pattern, buf,
+					   bufsize);
+				  fprintf(stderr, "%s\n", buf);
+				  exit(1);
+			  }
+			  title_matching = 1;
+			  break;
+		  case 'h':
+		  case '?':
+			  Help();
 		}
 	}
 
@@ -194,7 +206,6 @@ int main(int argc, char *argv[])
 	strcpy(device, addr.pi_device);
 
 	if (filename[0] == '\0') {
-
 		if (!
 		    (sd =
 		     pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
@@ -212,8 +223,9 @@ int main(int argc, char *argv[])
 		}
 
 		if (!quiet) {
-			fprintf(stderr, "   Port: %s\n\n   Please press the HotSync button now...\n",
-			     device);
+			fprintf(stderr,
+				"   Port: %s\n\n   Please press the HotSync button now...\n",
+				device);
 		}
 
 		ret = pi_listen(sd, 1);
@@ -277,39 +289,44 @@ int main(int argc, char *argv[])
 	unpack_MemoAppInfo(&mai, (unsigned char *) appblock, 0xffff);
 
 	if (category_name[0] != '\0') {
-        	for (i = 0, match_category = -1;  i < 16;  i += 1) {
-			if ((strlen(mai.category.name[i]) > 0) && (strcmp(mai.category.name[i], category_name) == 0))
+		for (i = 0, match_category = -1; i < 16; i += 1) {
+			if ((strlen(mai.category.name[i]) > 0)
+			    && (strcmp(mai.category.name[i], category_name)
+				== 0))
 				match_category = i;
-			}
+		}
 		if (match_category < 0) {
-			fprintf(stderr, "Can't find Memo category \"%s\".\n", category_name);
-			dlp_AddSyncLogEntry(sd, "Can't find specified memo category.\n");
+			fprintf(stderr,
+				"Can't find Memo category \"%s\".\n",
+				category_name);
+			dlp_AddSyncLogEntry(sd,
+					    "Can't find specified memo category.\n");
 			exit(1);
 		};
 	}
- 
+
 	for (i = 0;; i++) {
-		struct Memo m;
-		int attr;
-		int category;
-		int len;
 
 		if (filename[0] == '\0') {
 			if (match_category >= 0) {
-				len = 
-				    dlp_ReadNextRecInCategory (sd, db, match_category, 
-							       buffer, 0, 0, 0, &attr);
+				len = dlp_ReadNextRecInCategory(sd, db,
+							        match_category,
+							        buffer, &id,
+							        0, 0,
+							        &attr);
 				category = match_category;
 			} else {
-				len =
-				    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
-							  &category);
+				len = dlp_ReadRecordByIndex(sd, db, i,
+							    buffer, &id, 0,
+							    &attr,
+							    &category);
 			}
 			if (len < 0)
 				break;
 		} else {
 			if (pi_file_read_record
-			    (pif, i, (void *) &ptr, &len, &attr, &category, 0))
+			    (pif, i, (void *) &ptr, &len, &attr, &category,
+			     0))
 				break;
 			memcpy(buffer, ptr, len);
 		}
@@ -323,24 +340,32 @@ int main(int argc, char *argv[])
 
 		/* Skip memos whose title does not match with the query */
 		if (title_matching) {
-			for (len = 0; m.text[len] && m.text[len] != '\n'; len++);
+			for (len = 0; m.text[len] && m.text[len] != '\n';
+			     len++);
 			if (bufsize < len + 1)
-				buf = (char *)realloc(buf, len + 1);
+				buf = (char *) realloc(buf, len + 1);
 			strncpy(buf, m.text, len);
 			buf[len] = '\0';
-			if (regexec(&title_pattern, buf, 0, NULL, 0) == REG_NOMATCH)
+			if (regexec(&title_pattern, buf, 0, NULL, 0) ==
+			    REG_NOMATCH)
 				continue;
 		}
 
 		switch (mode) {
-		case MEMO_MBOX_STDOUT:
-			write_memo_mbox(m, mai, category);
-			break;
-		case MEMO_DIRECTORY:
-			write_memo_in_directory(dirname, m, mai, category,
-						verbose);
-			break;
+		  case MEMO_MBOX_STDOUT:
+			  write_memo_mbox(m, mai, category);
+			  break;
+		  case MEMO_DIRECTORY:
+			  write_memo_in_directory(dirname, m, mai,
+						  category, verbose);
+			  break;
 		}
+	}
+
+	if (delete && (filename[0] == '\0')) {
+		if (verbose)
+			fprintf(stderr, "Deleting record %d.\n", (int) id);
+		dlp_DeleteRecord(sd, db, 0, id);
 	}
 
 	if (title_matching) {
@@ -351,9 +376,7 @@ int main(int argc, char *argv[])
 	if (filename[0] == '\0') {
 		/* Close the database */
 		dlp_CloseDB(sd, db);
-
 		dlp_AddSyncLogEntry(sd, "Read memos from Palm.\n");
-
 		pi_close(sd);
 	} else {
 		pi_file_close(pif);
@@ -372,8 +395,7 @@ int main(int argc, char *argv[])
  * Returns:     Nothing
  *
  ***********************************************************************/
-void
-write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
+void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 {
 	int j;
 

@@ -118,14 +118,15 @@ void
 fetch_host(char *hostname, int hostlen, struct in_addr *address,
 	   struct in_addr *mask)
 {
-	int s, n, i;
 	struct ifconf ifc;
 	struct ifreq *ifr, ifreqaddr, ifreqmask;
 	struct hostent *hent;
+	int i;
+	int n;
+	int s;
 
 #ifdef HAVE_GETHOSTNAME
 	/* Get host name the easy way */
-
 	gethostname(hostname, hostlen);
 #else
 # ifdef HAVE_UNAME
@@ -260,20 +261,18 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 
 int main(int argc, char *argv[])
 {
-	int sockfd;
-	struct sockaddr_in serv_addr, cli_addr;
-	unsigned int clilen;
-	unsigned char mesg[1026];
-	fd_set rset;
-	int n;
-	struct in_addr raddress;
-
-	char *progname = argv[0];
-	extern char *optarg;
-	extern int optind;
-
-	struct hostent *hent;
-	int quiet = 0;
+        struct hostent *hent;
+        struct in_addr raddress;
+        struct sockaddr_in serv_addr, cli_addr; 
+        int n;
+        int quiet = 0;
+        int sockfd;
+        char *progname = argv[0];
+        extern char *optarg;
+        extern int optind;
+        fd_set rset;
+        unsigned char mesg[1026];
+        unsigned int clilen; 
 
 	memset(&address, 0, sizeof(address));
 	memset(&netmask, 0, sizeof(netmask));

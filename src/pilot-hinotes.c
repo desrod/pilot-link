@@ -51,24 +51,22 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int i;
 	struct PilotUser U;
+	struct HiNoteAppInfo mai;
+	int c;
+	int db;
+	int i;
+	int mode = MEMO_MBOX_STDOUT;
+	int quiet = 0;
 	int ret;
+	int sd;
 	unsigned char buffer[0xffff];
 	char appblock[0xffff];
-	struct HiNoteAppInfo mai;
-
-	int quiet = 0;
-	int mode = MEMO_MBOX_STDOUT;
+	char *device = argv[1];
 	char dirname[MAXDIRNAMELEN] = "";
-	int c;
+	char *progname = argv[0];
 	extern char *optarg;
 	extern int optind;
-
-	char *progname = argv[0];
-	char *device = argv[1];
 
 	PalmHeader(progname);
 

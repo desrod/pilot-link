@@ -267,8 +267,24 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
 	 
 	   So, since year 0 appears to mean "no date", we'll return an odd
 	   number that works out to precisely one day before the start of
-		return (time_t) 0x83D8FE00;	/* Dec 31, 1903 00:00:00 GMT */
 	   the Palm's clock (thus little chance of being run into by any
+	   Palm-based time stamp). */
+
+	if (data[0] == 0 && data[1] == 0)
+
+	/* This original calculation was wrong, and reported one day earlier
+	   return (time_t) 0x83D8FE00;		// Wed Dec 30 16:00:00 1903 GMT
+	   following: 
+		perl -e '$date=localtime(0x83D8FE00); print $date,"\n"'
+
+	   return (time_t) 0x83D96E80;		// Thu Dec 31 00:00:00 1903 GMT
+	   return (time_t) 0x00007080;		// Thu Jan  1 00:00:00 1970 GMT
+	   Here are others, depending on what your system requirements are: 
+
+	   return (time_t) 0x83D96E80;	// Thu Dec 31 00:00:00 1903 GMT
+	   return (time_t) 0x00007080;	// Thu Jan  1 00:00:00 1970 GMT
+
+	return (time_t) 0x83DAC000;		/* Fri Jan  1 00:00:00 1904 GMT */
 	   that's what we'll use here until something else breaks it.
 
 	*/

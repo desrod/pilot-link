@@ -33,17 +33,17 @@
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
-	char *filename, *ptr;
-	struct pi_file *pif = NULL;
-	int db;
-	int sd;
-	int i;
 	struct PilotUser U;
-	int ret;
-	unsigned char buffer[0xffff];
+	struct pi_file *pif = NULL;
 	struct ToDoAppInfo tai;
+	int db;
+	int i;
+	int ret;
+	int sd;
+	unsigned char buffer[0xffff];
 	char *progname = argv[0];
 	char *device = argv[1];
+	char *filename, *ptr;
 
 	PalmHeader(progname);
 
@@ -146,8 +146,8 @@ int main(int argc, char *argv[])
 
 	for (i = 0;; i++) {
 		struct ToDo t;
-		int attr, category;
-
+		int attr;
+		int category;
 		int len;
 
 		if (device) {

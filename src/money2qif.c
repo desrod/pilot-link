@@ -32,17 +32,17 @@
 
 int main(int argc, char *argv[])
 {
-	struct pi_sockaddr addr;
 	int db;
-	int sd;
 	int i;
+	int sd;
+	int ret;
+	struct pi_sockaddr addr;
+	struct PilotUser U;
+	struct MoneyAppInfo mai;
 	char *nl;
 	char *progname = argv[0];
 	char *device = argv[1];
-	struct PilotUser U;
-	int ret;
 	unsigned char buffer[0xffff];
-	struct MoneyAppInfo mai;
 
 	PalmHeader(progname);
 
@@ -117,7 +117,8 @@ int main(int argc, char *argv[])
 
 		for (i = 0;; i++) {
 			struct Transaction t;
-			int attr, category;
+			int attr;
+			int category;
 
 			int len =
 			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,

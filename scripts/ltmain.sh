@@ -3473,7 +3473,7 @@ static const void *lt_preloaded_setup() {
       link_command=`$echo "X$link_command" | $Xsed -e 's%@OUTPUT@%'"$output_objdir/$outputname"'%g'`
 
       # Delete the old output files.
-      $run $rm $output $output_objdir/$outputname $output_objdir/lt-$outputname
+      $run $rm $output $output_objdir/$outputname $output_objdir/$outputname
 
       $show "$link_command"
       $run eval "$link_command" || exit $?
@@ -3599,7 +3599,7 @@ else
 
 	if test "$fast_install" = yes; then
 	  echo >> $output "\
-  program=lt-'$outputname'$exeext
+  program='$outputname'$exeext
   progdir=\"\$thisdir/$objdir\"
 
   if test ! -f \"\$progdir/\$program\" || \\
@@ -4717,7 +4717,7 @@ relink_command=\"$relink_command\""
 
 	  rmfiles="$rmfiles $objdir/$name $objdir/${name}S.${objext}"
 	  if test "$fast_install" = yes && test -n "$relink_command"; then
-	    rmfiles="$rmfiles $objdir/lt-$name"
+	    rmfiles="$rmfiles $objdir/$name"
 	  fi
 	fi
 	;;

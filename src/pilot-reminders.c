@@ -35,11 +35,11 @@ char *Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "se
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int i;
 	struct PilotUser U;
+	int db;
+	int i;
 	int ret;
+	int sd;
 	unsigned char buffer[0xffff];
 	char *progname = argv[0];
 	char *device = argv[1];
@@ -107,9 +107,9 @@ int main(int argc, char *argv[])
 	printf("PUSH-OMIT-CONTEXT\n");
 	printf("CLEAR-OMIT-CONTEXT\n");
 	for (i = 0;; i++) {
-		int j;
 		struct Appointment a;
 		int attr;
+		int j;
 		char delta[80];
 		char satisfy[256];
 

@@ -34,15 +34,16 @@
 
 int main(int argc, char *argv[])
 {
+	int len;
+	int ret;
+	int sd;
+	int sd2;
 	struct sockaddr_in addr2;
 	struct pi_sockaddr addr;
-	int sd, sd2;
 	struct NetSyncInfo N;
 	char buffer[0xffff];
 	char *progname = argv[0];
 	char *device = argv[1];
-	int len;
-	int ret;
 
 	PalmHeader(progname);
 

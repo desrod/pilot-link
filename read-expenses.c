@@ -33,15 +33,15 @@
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int i;
 	struct PilotUser U;
-	int ret;
-	unsigned char buffer[0xffff];
-	unsigned char buffer2[0xffff];
 	struct ExpenseAppInfo tai;
 	struct ExpensePref tp;
+	int db;
+	int i;
+	int ret;
+	int sd;
+	unsigned char buffer[0xffff];
+	unsigned char buffer2[0xffff];
 	char *progname = argv[0];
 	char *device = argv[1];
 
@@ -160,7 +160,8 @@ int main(int argc, char *argv[])
 
 	for (i = 0;; i++) {
 		struct Expense t;
-		int attr, category;
+		int attr;
+		int category;
 
 		int len =
 		    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,

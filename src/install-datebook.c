@@ -33,20 +33,20 @@ extern time_t parsedate(char *p);
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int i;
-	int Appointment_size;
-	unsigned char Appointment_buf[0xffff];
-	struct Appointment appointment;
-	FILE *f;
 	struct PilotUser U;
-	int ret;
+	struct Appointment appointment;
+	int Appointment_size;
+	int db;
+	int fieldno;
 	int filelen;
+	int i;
+	int ret;
+	int sd;
 	char *cPtr;
 	char *file_text;
 	char *fields[4];
-	int fieldno;
+	unsigned char Appointment_buf[0xffff];
+	FILE *f;
 
 	if (argc < 3) {
 		fprintf(stderr, "usage:%s %s file [file] ...\n", argv[0],

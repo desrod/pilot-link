@@ -123,7 +123,8 @@ int user_fn(int sd, int argc, char **argv)
 {
 	struct PilotUser U, nU;
 	char fl_name = 0, fl_uid = 0, fl_vid = 0, fl_pid = 0;
-	int c, ret;
+	int c;
+	int ret;
 
 	extern char *optarg;
 	extern int optind;
@@ -268,7 +269,6 @@ int df_fn(int sd, int argc, char **argv)
  ***********************************************************************/
 int time_fn(int sd, int argc, char **argv)
 {
-
 	int s;
 	time_t ltime;
 	struct tm *tm_ptr;
@@ -302,9 +302,12 @@ int time_fn(int sd, int argc, char **argv)
  ***********************************************************************/
 int ls_fn(int sd, int argc, char **argv)
 {
-	int c, ret;
+	int c;
+	int cardno;
+	int flags;
+	int ret;
+	int start;
 	int lflag = 0;
-	int cardno, flags, start;
 	int rom_flag = 0;
 
 #ifdef sun
@@ -400,8 +403,8 @@ int ls_fn(int sd, int argc, char **argv)
  ***********************************************************************/
 int rm_fn(int sd, int argc, char **argv)
 {
-	int ret;
 	int cardno;
+	int ret;
 	char *name;
 
 	if (argc != 2) {
@@ -447,7 +450,7 @@ void handle_user_commands(int sd)
 
         char *argv[32];
         int argc;
-        int i;
+	int i;
 
         for (;;) {
                 fflush(stdout);
@@ -495,8 +498,8 @@ int main(int argc, char **argv)
 {
 	struct pi_sockaddr addr;
 
-	int sd;
 	int ret;
+	int sd;
 	char *progname = argv[0];
 	char *device = argv[1];
 
@@ -601,7 +604,8 @@ void exit_func(void)
  ***********************************************************************/
 char *strtoke(char *str, char *ws, char *delim)
 {
-	static char *s, *start;
+	static char *s;
+	static char *start;
 	int i;
 
 	if (str != NULL) {

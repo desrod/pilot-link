@@ -93,6 +93,7 @@ Tweaks/Enhancements
 
 	- Python bindings: Add packers. Document.
 
+	- Collapse: read-todos/install-todos, memos/install-memos, etc.
 
 New Features
 ------------

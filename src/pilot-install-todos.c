@@ -30,25 +30,25 @@
 
 int main(int argc, char *argv[])
 {
-	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int i;
-	int ToDo_size;
-	unsigned char ToDo_buf[0xffff];
-	struct ToDo todo;
-	FILE *f;
-	struct PilotUser U;
-	int ret;
-	int filelen;
-	char note_text[] = "";
-	char *cPtr;
-	char *begPtr;
-	char *file_text;
-	char *progname = argv[0];
-	char *device = argv[1];
-	int cLen;
-	int count;
+        struct PilotUser U;
+        struct ToDo todo;
+        struct pi_sockaddr addr;
+        int ToDo_size;
+        int cLen;
+        int count;
+        int db;
+        int filelen;
+        int i; 
+        int ret;
+        int sd;
+        char *begPtr;
+        char *cPtr;
+        char *device = argv[1];  
+        char *file_text;
+        char *progname = argv[0];
+        char note_text[] = "";
+        unsigned char ToDo_buf[0xffff];
+        FILE *f;
 
 	PalmHeader(progname);
 

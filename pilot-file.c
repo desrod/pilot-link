@@ -81,9 +81,9 @@ char *rkey;
 int main(int argc, char **argv)
 {
 	struct pi_file *pf;
+	struct DBInfo info;
 	int c;
 	char *name;
-	struct DBInfo info;
 
 	progname = argv[0];
 
@@ -191,7 +191,9 @@ char *iso_time_str(time_t t)
  ***********************************************************************/
 void dump(void *buf, int n)
 {
-	int i, j, c;
+	int c;
+	int i;
+	int j;
 
 	for (i = 0; i < n; i += 16) {
 		printf("%04x: ", i);
@@ -323,14 +325,14 @@ void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void list_records(struct pi_file *pf, struct DBInfo *ip)
 {
+	int attrs;
+	int cat;
 	int entnum;
+	int id;
+	int nentries;
 	int size;
 	unsigned long type, uid;
-	int id;
 	void *buf;
-	int nentries;
-	int attrs, cat;
-
 
 	pi_file_get_entries(pf, &nentries);
 
@@ -395,11 +397,14 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void dump_record(struct pi_file *pf, struct DBInfo *ip)
 {
+	int attrs;
+	int cat;
+	int id;
+	int record;
 	int size;
-	unsigned long type, uid;
-	int record, id;
+	unsigned long type;
+	unsigned long uid;
 	void *buf;
-	int attrs, cat;
 
 	if (ip->flags & dlpDBFlagResource) {
 		printf("entries\n");

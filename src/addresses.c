@@ -57,12 +57,12 @@ RETSIGTYPE SigHandler(int signal)
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
+	struct PilotUser U;
+	struct AddressAppInfo aai;
 	int db;
 	int i;
-	struct PilotUser U;
 	int ret;
 	unsigned char buffer[0xffff];
-	struct AddressAppInfo aai;
 	char *progname = argv[0];
 	char *port = argv[1];
 
@@ -137,7 +137,8 @@ int main(int argc, char *argv[])
 
 	for (i = 0;; i++) {
 		struct Address a;
-		int attr, category;
+		int attr;
+		int category;
 		int j;
 
 		int len =

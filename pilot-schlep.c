@@ -131,8 +131,8 @@ int segment = 4096;
 void Install(void)
 {
 	unsigned long len;
-	int j;
 	int db;
+	int j;
 	int l;
 	char buffer[0xffff];
 

@@ -38,12 +38,12 @@ void Help(char *progname)
 }
 
 struct record {
+	struct record *next;
 	unsigned long id;
 	char *data;
-	int len;
 	int cat;
 	int index;
-	struct record *next;
+	int len;
 };
 
 /***********************************************************************
@@ -61,7 +61,8 @@ int compare_r(const void *av, const void *bv)
 {
 	struct record *a = *(struct record **) av;
 	struct record *b = *(struct record **) bv;
-	int i, o;
+	int i;
+	int o;
 
 	if (a->cat < b->cat)
 		o = -1;
@@ -89,16 +90,16 @@ struct record *records = 0;
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int l;
-	struct PilotUser U;
-	int ret;
-	char buf[0xffff];
-	char *progname = argv[0];
-	char *device = argv[1];
-	int i;
+	struct PilotUser U; 
 	struct record *r;
+	int db;
+	int i;
+	int l;
+	int ret;
+	int sd;
+	char *device = argv[1];  
+	char *progname = argv[0];
+	char buf[0xffff];
 
 #ifdef sun
 	extern char *optarg;
@@ -158,9 +159,10 @@ int main(int argc, char *argv[])
 
 	for (i = 2; i < argc; i++) {
 		struct record **sortidx;
-		int dupe = 0;
-		int j, k;
 		int count;
+		int dupe = 0;
+		int j;
+		int k;
 
 		/* Open the database, store access handle in db */
 		printf("Opening %s\n", argv[i]);
@@ -177,8 +179,8 @@ int main(int argc, char *argv[])
 		count = 0;
 		for (;;) {
 			int attr;
-			recordid_t id;
 			int cat;
+			recordid_t id;
 			int len =
 			    dlp_ReadRecordByIndex(sd, db, l,
 						  (unsigned char *) buf,

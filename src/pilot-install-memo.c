@@ -45,22 +45,25 @@ int usage(char *progname)
 
 int main(int argc, char *argv[])
 {
-	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int i;
-	int l;
-	int memo_size;
-	char *memo_buf;
-	FILE *f;
-	struct PilotUser U;
-	int ret;
-	char buf[0xffff];
+        struct pi_sockaddr addr;
+        struct PilotUser U;
+        struct MemoAppInfo mai;
+	int add_title;
 	int category;
-	struct MemoAppInfo mai;
 	int ch;
+	int db;
+	int i; 
+	int l; 
+	int memo_size;
+	int preamble;
+	int quiet;
+	int replace_category;
+	int ret;
+	int sd;
+	char *memo_buf;
 	char *progname, *category_name;
-	int preamble, quiet, replace_category, add_title;
+	char buf[0xffff];
+	FILE *f;
 
 	progname = argv[0];
 	category_name = NULL;

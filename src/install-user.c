@@ -34,13 +34,13 @@
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr addr;
-	int sd;
 	struct PilotUser U;
 	struct SysInfo S;
 	struct CardInfo C;
 	struct NetSyncInfo N;
-	unsigned long romversion;
 	int ret;
+	int sd;
+	unsigned long romversion;
 	char *progname = argv[0];
 	char *device = argv[1];
 

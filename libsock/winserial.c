@@ -152,6 +152,9 @@ static int win_changebaud(HANDLE fd, int rate)
 
 	if (rc)
 		return 0;
+
+	errno = GetLastError();
+	return -1;
 }
 
 /***********************************************************************

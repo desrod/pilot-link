@@ -135,9 +135,9 @@ void sig(int signal)
 int main(int argc, char *argv[])
 {
 	struct pi_sockaddr laddr;
+	int max;
 	int sd;
 	fd_set r, rin;
-	int max;
 	char *progname = argv[0];
 
 	PalmHeader(progname);

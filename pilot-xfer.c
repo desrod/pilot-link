@@ -335,11 +335,13 @@ int creator_is_PalmOS(long creator)
 void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 	    int rom, int unsaved, char *archive_dir)
 {
-	int i, ofile_total, ofile_len;
-	DIR *dir;
 	struct dirent *dirent;
-	char **orig_files = 0;
 	int filecounter = 0;
+	int i;
+	int ofile_len;
+	int ofile_total;
+	char **orig_files = 0;
+	DIR *dir;
 
 	Connect();
 
@@ -391,8 +393,8 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		*/
 		
 		struct stat statb;
-		int x;
 		int skip = 0;
+		int x;
 		char name[256];
 
 
@@ -642,9 +644,8 @@ void Delete(char *dbname)
 struct db {
 	char name[256];
 	int flags;
-	unsigned long creator;
-	unsigned long type;
 	int maxblock;
+	unsigned long creator, type;
 };
 
 int compare(struct db *d1, struct db *d2)
@@ -677,9 +678,12 @@ void Restore(char *dirname)
 	struct dirent *dirent;
 	struct DBInfo info;
 	struct db **db = NULL;
-	int dbcount = 0;
-	int i, j, max, size;
 	struct pi_file *f;
+	int dbcount = 0;
+	int i;
+	int j;
+	int max;
+	int size;
 
 	dir = opendir(dirname);
 
@@ -1098,15 +1102,14 @@ struct {
 
 int main(int argc, char *argv[])
 {
-	int mode;
+	char *archive_dir = NULL;
 	char *tmp;
-	int i;
 	int action;
-	int quiet = 0;
 	int do_rom = 0;
 	int do_unsaved = 0;
-	char *archive_dir = NULL;
-
+	int i;
+	int mode;
+	int quiet = 0;
 
 	progname = argv[0];
 

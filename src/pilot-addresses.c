@@ -243,9 +243,12 @@ int defaultcategory = 0;
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 {
 	struct Address a;
-	int i, l;
+	int attribute;
+	int category;
+	int i;
+	int l;
 	char buf[0xffff];
-	int category, attribute;
+
 
 	do {
 		i = read_field(buf, in);
@@ -334,9 +337,13 @@ int tablehead = 0;
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 {
 	struct Address a;
-	int i, j, l;
+	int attribute;
+	int category;
+	int i;
+	int j;
+	int l;
 	char buf[0xffff];
-	int category, attribute;
+
 
 	if (tablehead) {
 		write_field(out, "Category", tabledelim);
@@ -478,23 +485,23 @@ void Version(void)
 
 int main(int argc, char *argv[])
 {
-	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int l;
-	struct PilotUser U;
-	int ret;
-	char buf[0xffff];
 	struct AddressAppInfo aai;
+	struct PilotUser U;
+	struct pi_sockaddr addr;
+	int c;
+	int deleteallcategories = 0;
+	int db;
+	int l;
+	int mode = 0;
+	int quiet = 0;
+	int ret;
+	int sd;
 	char *defaultcategoryname = 0;
 	char *deletecategory = 0;
 	char *progname = argv[0];
+	char buf[0xffff];
+/*	char *device = argv[1]; */
 
-/*   char *device = argv[1]; */
-	int deleteallcategories = 0;
-	int quiet = 0;
-	int mode = 0;
-	int c;
 	extern char *optarg;
 	extern int optind;
 

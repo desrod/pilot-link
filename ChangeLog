@@ -1,3 +1,27 @@
+2001-07-21  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* Makefile.os2.in: Forgot to add this back to the cvs (David A.
+	  Desrosiers)
+
+	* include/pi-version.h: Added the "-cvs" patch argument. People are
+	  running around with rogue 0.9.6 versions from the cvs, calling
+	  them released versions. (David A. Desrosiers)
+
+	* General declaration reorg. Preparing for extraction into Connect()
+	  library (David A. Desrosiers)
+	
+	* memos.c: -D argument to delete memos from the Palm (Bill Janssen)
+
+	* libsock/winserial.c: General fixes for Win32 systems returning an
+	  invalid argument. (Oliver Schmidt)
+
+	* libsock/dlp.c: epoch fixes/additions, fixed incorrect date
+	  returned. (David A. Desrosiers)
+
+2001-07-17  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* scripts/ltmain.sh: 'program=lt-'$name' crept in. Cleaned.
+
 2001-07-12  David A. Desrosiers <hacker@gnu-designs.com>
 	
 	* include/i18n.h: Oops! 
