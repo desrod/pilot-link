@@ -575,7 +575,8 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	if (kr != kIOReturnSuccess)
 		return kr;
 
-	if (deviceClass != kUSBCompositeClass)
+	if (deviceClass != kUSBCompositeClass ||
+		(vendor==VENDOR_HANDSPRING && product==0x0200))
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: trying to configure device\n"));
 
@@ -621,6 +622,7 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 		/* PalmConnect USB is a serial <-> USB adapter. Even though it shows up
 		 * as a USB device, it really requires talking using a serial protocol
 		 */
+		*pipe_info_retrieved = 0;
 		return kIOReturnSuccess;
 	}
 
