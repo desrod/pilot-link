@@ -38,18 +38,11 @@
 #include "pi-file.h"
 #include "pi-socket.h"
 #include "pi-foto.h"
+#include "userland.h"
 
 /* Declare prototypes */
-static void display_help(const char *progname);
-void print_splash(const char *progname);
-int pilot_connect(const char *porg);
 int get_jpg_info(FILE *in, char *type, unsigned short *version,
 		 int *height, int *width);
-int do_list(int sd);
-int do_delete(int sd, char **delete_files, int all);
-int do_fetch(int sd, char **fetch_files, int all);
-int do_install(int sd, char **install_files);
-int pdb_to_jpg(char *filename);
 int memcpy_tux_record(unsigned char *dest);
 int install_tux_with_name(int sd, char *name, int width, int height,
 	long pdb_size, long mod_time, long file_time);
@@ -63,41 +56,6 @@ int install_tux_with_name(int sd, char *name, int width, int height,
 #endif
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Uh, the -help, of course
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-   printf("   Installs and Fetches Palm 'Foto' Image files\n");
-   printf("   Converts Palm 'Foto' (*.jpg.pdb) Image files to jpg\n\n");
-   printf("   Usage: %s -p <port> [options] file\n", progname);
-   printf("   Options:\n");
-   printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-   printf("     -h --help         Display this information\n");
-   printf("     -d --delete       Delete a jpg file on the handheld\n");
-   printf("     -D --delete-all   Delete ALL jpg files on the handheld\n");
-   printf("     -i --install      Install a jpg file\n");
-   printf("     -l --list         List all photos and thumbnails\n");
-   printf("     -v --version      Display version information\n");
-   printf("     -f --fetch        fetch files from the Palm\n");
-   printf("     -F --fetchall     fetch ALL jpg files from the Palm\n");
-   printf("     -c [file]         convert [file].jpg.pdb files to jpg\n\n");
-   printf("   Examples: \n");
-   printf("      %s -p /dev/pilot -f\n", progname);
-   printf("      %s -i MyImage.jpg\n", progname);
-   printf("      %s -i *.jpg\n", progname);
-   printf("      %s -f MyImage\n", progname);
-   printf("      %s -c MyImage.jpg.pdb\n\n", progname);
-   return;
-}
 
 /***********************************************************************
  *
@@ -306,7 +264,7 @@ int do_list(int sd)
  * Returns:     0 on success, -1 if can't open PhotosDB-Foto
  *
  ***********************************************************************/
-int do_delete(int sd, char **delete_files, int all)
+int do_delete(int sd, const char **delete_files, int all)
 {
    int i;
    int ret;
@@ -400,7 +358,7 @@ int do_delete(int sd, char **delete_files, int all)
  * Returns:     0 on success
  *
  ***********************************************************************/
-int do_fetch(int sd, char **fetch_files, int all)
+int do_fetch(int sd, const char **fetch_files, int all)
 {
 	FILE *out;
 	recordid_t id;
@@ -572,7 +530,7 @@ int install_tux_with_name(int sd, char *name, int width, int height,
  * Returns:     0 on sucess, -1 on failure
  *
  ***********************************************************************/
-int do_install(int sd, char **install_files)
+int do_install(int sd, const char **install_files)
 {
    int n, ret, i;
    struct pi_file *pf;
@@ -711,7 +669,7 @@ int do_install(int sd, char **install_files)
  * Returns:     0 on sucess, -1 on failure
  *
  ***********************************************************************/
-int pdb_to_jpg(char *filename)
+int pdb_to_jpg(const char *filename)
 {
    struct pi_file *pi_fp;
    struct DBInfo info;
@@ -770,124 +728,130 @@ int pdb_to_jpg(char *filename)
  ***********************************************************************/
 int main(int argc, const char *argv[])
 {
-	int c, fetch, convert;
-	int i;
+	int c;
 	int sd = 0;
-	int install_flag, delete_flag, fetch_flag;
-	int install_i, delete_i, fetch_i;
-	char *port = NULL;
-	const char *progname = argv[0];
-	char *delete_files[512];
-	char *install_files[512];
-	char *fetch_files[512];
-	char *convert_file = NULL;
-	char *parg;
-
 	poptContext po;
+	const char **args = NULL;
+
+	enum { mode_none,
+		mode_delete = 'd',
+		mode_delete_all = 'D',
+		mode_install = 'i',
+		mode_list = 'l',
+		mode_fetch = 'f',
+		mode_fetch_all = 'F',
+		mode_convert = 'c'} mode = mode_none;
 
 	struct poptOption options[] = {
-        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help",	'h', POPT_ARG_NONE, NULL,   'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL,   'v', "Display version information"},
-	        {"delete",	'd', POPT_ARG_STRING, NULL, 'd', "Delete a jpg file on the handheld"},
-        	{"delall",	'D', POPT_ARG_NONE, NULL,   'D', "Delete ALL jpg files on the handheld"},
-	        {"install",	'i', POPT_ARG_STRING, NULL, 'i', "Install a jpg file"},
-        	{"list",	'l', POPT_ARG_NONE, NULL,   'l', "List all photos and thumbnails"},
-	        {"fetch",	'f', POPT_ARG_STRING, NULL, 'f', "Fetch files from the Palm"},
-        	{"fetchall",	'F', POPT_ARG_NONE, NULL,   'F', "Fetch ALL jpg files from the Palm"},
-	        {"convert",	'c', POPT_ARG_STRING, &convert_file, 'c', "convert [file].jpg.pdb files to jpg"},
-                POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+		USERLAND_RESERVED_OPTIONS
+	        {"delete",	'd', POPT_ARG_NONE, NULL, 'd', "Delete a jpg file on the handheld"},
+        	{"delete-all",	 0 , POPT_ARG_NONE, NULL, 'D', "Delete ALL jpg files on the handheld"},
+	        {"install",	'i', POPT_ARG_NONE, NULL, 'i', "Install a jpg file"},
+        	{"list",	'l', POPT_ARG_NONE, NULL, 'l', "List all photos and thumbnails"},
+	        {"fetch",	'f', POPT_ARG_NONE, NULL, 'f', "Fetch files from the Palm"},
+        	{"fetch-all",	'F', POPT_ARG_NONE, NULL, 'F', "Fetch ALL jpg files from the Palm"},
+	        {"convert",	'c', POPT_ARG_NONE, NULL, 'c', "convert [file].jpg.pdb files to jpg"},
+                POPT_TABLEEND
 	};
 
-	fetch = convert = FALSE;
+	po = poptGetContext("pilot-foto", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"\n\n"
+		"   Installs and Fetches Palm 'Foto' Image files\n"
+		"   Converts Palm 'Foto' (*.jpg.pdb) Image files to jpg\n\n"
+		"   Example arguments: \n"
+		"      -p /dev/pilot -f\n"
+		"      -i MyImage.jpg\n"
+		"      -i *.jpg\n"
+		"      -f MyImage\n"
+		"      -c MyImage.jpg.pdb\n\n");
 
-	if (argc == 1) {
-	display_help(progname);
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
 	}
 
-	install_i = delete_i = fetch_i = 0;
-	delete_flag = install_flag = fetch_flag = 0;
-
-   	/* Run through the args far enough to see if a connection is required */
-	for (i=0; i<argc; i++) {
-		if ( (!strcmp(argv[i], "-D")) ||
-		(!strcmp(argv[i], "-d")) ||
-		(!strcmp(argv[i], "-F")) ||
-		(!strcmp(argv[i], "-f")) ||
-		(!strcmp(argv[i], "-l")) ||
-		(!strcmp(argv[i], "-i")) ) {
-
-	 		break;
+	while ((c = poptGetNextOpt(po)) >= 0) {
+		switch(c) {
+		case 'd':
+		case 'D':
+		case 'i':
+		case 'l':
+		case 'f':
+		case 'F':
+		case 'c':
+			if (mode != mode_none) {
+				fprintf(stderr,"   ERROR: Specify only mode (delete, install, list, fetch, convert).\n");
+				return 1;
+			}
+			mode = c;
+		default:
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
 		}
 	}
 
-	po = poptGetContext("pilot-foto", argc, argv, options, 0);
-
-	while ((c = poptGetNextOpt(po)) >= 0) {
-		switch (c) {
-		case 'h':
-			display_help(progname);
-		return 0;
-		case 'D':
-			sd = pilot_connect(port);
-			if (sd<=0)
-		 		exit(-1);
-			do_delete(sd, NULL, 1);
-		break;
-		case 'd':
-			delete_files[delete_i++] = poptGetOptArg(po);
-		break;
-		case 'i':
-			install_files[install_i++] = poptGetOptArg(po);
-		break;
-		case 'l':
-			sd = pilot_connect(port);
-			if (sd<=0)
-		 		exit(-1);
-			do_list(sd);
-		break;
-		case 'v':
-			print_splash(progname);
-		return 0;
-		case 'c':
-			pdb_to_jpg(convert_file);
-		break;
-		case 'F':
-			sd = pilot_connect(port);
-			if (sd<=0)
-		 		exit(-1);
-			do_fetch(sd, NULL, 1);
-		break;
-		case 'f':
-			fetch_files[fetch_i++] = poptGetOptArg(po);
-		break;
-		default:
-			display_help(progname);
-		return 0;
-      		}
+	if (c < -1) {
+		plu_badoption(po,c);
 	}
 
-   	if(delete_i)
-	{
-		sd = pilot_connect(port);
-		if (sd<=0)
-		 	exit(-1);
-		do_delete(sd, delete_files, 0);
+	args = poptGetArgs(po);
+
+	switch(mode) {
+	case mode_none:
+		fprintf(stderr,"   ERROR: Specify a mode (delete, install, list, fetch, convert).\n");
+		return 1;
+	case mode_convert:
+		while (*args) {
+			pdb_to_jpg(*args++);
+		}
+		return 0;
+	default:
+		/* The rest all need a connect to the pilot */
+		break;
 	}
-	if(install_i)
-	{
-		sd = pilot_connect(port);
-		if (sd<=0)
-		 	exit(-1);
-		do_install(sd, install_files);
+
+	sd = plu_connect();
+	if (sd < 0) {
+		return 1;
 	}
-	if(fetch_i)
-	{
-		sd = pilot_connect(port);
-		if (sd<=0)
-		 	exit(-1);
-		do_fetch(sd, fetch_files, 0);
+
+	switch(mode) {
+	case mode_none:
+	case mode_convert:
+		/* impossible */
+		break;
+	case mode_delete_all:
+		if (*args) {
+			/* It's an error here to protect users from an accidental --delete vs.
+			 * --delete-all confusion. The other -all actions don't destroy data.
+			 */
+			fprintf(stderr,"   ERROR: With --delete-all, do not specify files.\n");
+			pi_close(sd);
+			return 1;
+		}
+		do_delete(sd,NULL,1);
+		break;
+	case mode_list:
+		if (*args) {
+			fprintf(stderr,"   WARNING: With --list, do not specify files.\n");
+		}
+		do_list(sd);
+		break;
+	case mode_fetch_all:
+		if (*args) {
+			fprintf(stderr,"   WARNING: With --fetch-all, do not specify files.\n");
+		}
+		do_fetch(sd,NULL,1);
+		break;
+	case mode_delete:
+		do_delete(sd,args,0);
+		break;
+	case mode_fetch:
+		do_fetch(sd,args,0);
+		break;
+	case mode_install:
+		do_install(sd,args);
+		break;
 	}
 
 	if (sd) {
