@@ -647,6 +647,12 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type, int a
     set_long(dlp_buf+10, length);
     set_long(dlp_buf+14, 0);
     set_long(dlp_buf+18, 0);
+    
+    if (length+22 > DLP_BUF_SIZE) {
+    	fprintf(stderr, "Data too large\n");
+    	return -131;
+    }
+    
     memcpy(dlp_buf+22, data, length);
 
     Trace(CallApplicationV2);
@@ -1263,6 +1269,11 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
   
   if(length == -1)
   	length = strlen((char*)data)+1;
+
+  if (length+8 > DLP_BUF_SIZE) {
+    fprintf(stderr, "Data too large\n");
+    return -131;
+  }
   	
   memcpy(dlp_buf+8, data, length);
 
@@ -1482,6 +1493,12 @@ int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
   set_long(dlp_buf+2, type);
   set_short(dlp_buf+6, id);
   set_short(dlp_buf+8, length);
+		fprintf(stderr, "Data too large\n");
+  if (length+10 > DLP_BUF_SIZE) {
+    fprintf(stderr, "Data too large\n");
+    return -131;
+  }
+
   memcpy(dlp_buf+10, data, length);
   
   Trace(WriteResource);
@@ -1571,6 +1588,12 @@ int dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@*/ void* data, int le
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, 0x00);
   set_short(dlp_buf+2, length);
+	
+  if (length+4 > DLP_BUF_SIZE) {
+    fprintf(stderr, "Data too large\n");
+    return -131;
+  }
+  
   memcpy(dlp_buf+4, data, length);
 		fprintf(stderr, "Data too large\n");
   Trace(WriteAppBlock);
@@ -1630,6 +1653,12 @@ int dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@*/ void* data, int l
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, 0x00);
   set_short(dlp_buf+2, length);
+	
+  if (length+4 > DLP_BUF_SIZE) {
+    fprintf(stderr, "Data too large\n");
+    return -131;
+  }
+  
   memcpy(dlp_buf+4, data, length);
 		fprintf(stderr, "Data too large\n");
   Trace(WriteSortBlock);
@@ -1928,6 +1957,11 @@ int dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
   set_short(dlp_buf+8, size);
   set_byte(dlp_buf+10, backup ? 0x80 : 0);
   set_byte(dlp_buf+11, 0); /* Reserved */
+  
+  if (size+12 > DLP_BUF_SIZE) {
+    fprintf(stderr, "Data too large\n");
+    return -131;
+  }
   
   memcpy(dlp_buf+12, buffer, size);
   

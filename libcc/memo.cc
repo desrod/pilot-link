@@ -74,4 +74,3 @@ memoList_t::~memoList_t(void) {
 	  delete ptr;
      }
 }
-

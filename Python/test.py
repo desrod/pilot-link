@@ -31,6 +31,13 @@ b = dlp.Battery()
 
 print "Battery voltage is ", b[0], " (warning marker is ", b[1],", critical marker ", b[2], ")\n"
 
+rpc = pdapilot.PackRPC(0xA0B6, "i", ("b", "&s", "&s", "&s", "&b", "&b"),
+                                    (0,   0,    0,    0,    0,    0))
+
+b = dlp.RPC(rpc)
+
+print "Battery results through Python RPC:", b
+
 db = dlp.Open("MemoDB")
 
 r = db.GetRecord(0)

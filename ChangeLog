@@ -1,7 +1,19 @@
+May 18, 1997	Kenneth Albanowski 0.6.3
+
+    Serial code uses PILOTPORT environment variable if a port isn't specified (but
+    	note that the included utilities do not yet make use of this.)
+	Perl 5 module now supports GetAppPref and SetAppPref functions (only the
+		former is tested.)
+	Removed 'bool' from Perl 5 code.
+	Python SetAppPref function modified to match Perl calling sequence.
+	Added RPC calls to Python interface (check out test.py).
+	Revised various DLP functions to check for overlarge input buffers.
+	New C++ code revision.
+
 May 11, 1997	Kenneth Albanowski 0.6.2
 
     Added pilot-undelete utility to un-archive records. Needs Perl 5.
-	Added pilot-clip to retrieve (not yet sucessfully set) the pilot's clipboard.
+	Added pilot-clip to retrieve (can not yet set) the pilot's clipboard.
 	Repaired Python SetRecord and SetResource, which were broken.
 	Added Unpack, Pack, PackAppBlock & UnpackAppBlock methods to Python DLP
 	    object. (These automatically route to MemoUnpack, TodoUnpack, etc.)

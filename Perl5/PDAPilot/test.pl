@@ -25,6 +25,12 @@ print "Now press the HotSync button\n";
 
 $dlp = PDA::Pilot::Accept($socket);
 
+@pref = $dlp->GetAppPref('mail', 3);
+
+@pref = "Not available" if not defined $pref[0];
+
+print "Mail preferences: @pref\n";
+
 $ui = $dlp->GetUserInfo;
 
 @b = $dlp->Battery;

@@ -1477,7 +1477,7 @@ Close(self)
 Result
 Autopack(self, setting=1, creator=0, name=0)
 	PDA::Pilot::DLP::DB *	self
-	bool	setting
+	int	setting
 	Char4	creator
 	char *	name
 	CODE:
@@ -1976,27 +1976,48 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0)
     RETVAL
 
 void
-GetAppPref(self, creator, number, backup=1, raw=0)
+GetAppPref(self, creator, number, backup=1)
 	PDA::Pilot::DLP *	self
 	Char4	creator
 	int	number
 	int	backup
-	int raw
 	PPCODE:
 	{
+	    int len, version, result;
+	    result = dlp_ReadAppPreference(self->socket, creator, number, backup, 0xFFFF, mybuf, &len, &version);
+	    
+	    if (result >=0) {
+		    EXTEND(sp, 4);
+	    	PUSHs(sv_2mortal(newSVpv(mybuf,len)));
+		    if (GIMME != G_SCALAR) {
+		    	PUSHs(sv_2mortal(newSVChar4(creator)));
+		    	PUSHs(sv_2mortal(newSViv(number)));
+		    	PUSHs(sv_2mortal(newSViv(version)));
+		    }
+		} else {
+	    	PUSHs(&sv_undef);
+	    	self->errno = result;
+	    }
 	}
 
-void
-SetAppPref(self, data, creator, number, version, backup=1, raw=0)
+SV *
+SetAppPref(self, data, creator, number, version, backup=1)
 	PDA::Pilot::DLP *	self
 	SV *	data
 	Char4	creator
 	int	number
 	int	version
 	int	backup
-	int raw
 	PPCODE:
 	{
+	    int len, version, result;
+	    void * buf = SvPV(data, len);
+	    result = dlp_WriteAppPreference(self->socket, creator, number, backup, version, buf, len);
+		if (result < 0) {
+			self->errno = result;
+			RETVAL = newSVsv(&sv_undef);
+		} else
+			RETVAL = newSViv(result);
 	}
 
 

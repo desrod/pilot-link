@@ -123,6 +123,11 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   struct sgttyb tcn;
 #endif
 
+  if ((!tty) || !strlen(tty))
+    tty = getenv("PILOTPORT");
+  if (!tty)
+    tty = "<Null>";
+
   if ((ps->mac->fd = open(tty, O_RDWR | O_NONBLOCK )) == -1) {
     return -1;     /* errno already set */
   }

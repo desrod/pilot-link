@@ -1,11 +1,9 @@
-
-#include "pi-source.h"
-
 #include <ctype.h>		// isspace
 #include <stdio.h>		// sprintf
 #include <stdlib.h>		// strtoul
 #include <string.h>		// strcpy
 #include <math.h>		// floor
+#include "pi-source.h"
 #include "pi-iambicExpense.h"
 
 /*
@@ -171,7 +169,7 @@ static char *getString(unsigned char **buf)
 
 void iambicExpense_t::unpack(void *buf, int firstTimeThrough) 
 {
-     if (!firstTimeThrough) {
+     if (firstTimeThrough == 0) {
 	  if (_paidby)
 	       delete _paidby;
 	  if (_payee)
@@ -233,7 +231,7 @@ void iambicExpense_t::unpack(void *buf, int firstTimeThrough)
      _flags = *ptr++;
      
      if (_flags & hasExchangeRate)
-	  _exchangeRate = getDouble(&ptr, 1);
+	  _exchangeRate = getDouble(&ptr, true);
      else
 	  _exchangeRate = 1.0;
      
@@ -297,3 +295,4 @@ iambicExpense_t::~iambicExpense_t()
      if (_note)
 	  delete _note;
 }
+

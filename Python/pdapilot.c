@@ -1,4 +1,5 @@
 #include "Python.h"
+#include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-memo.h"
@@ -33,6 +34,16 @@ staticforward PyTypeObject PiFile_Type;
 
 typedef struct {
 	PyObject_HEAD
+
+	struct RPC_params * p;
+} RpcObject;
+
+staticforward PyTypeObject Rpc_Type;
+
+#define RpcObject_Check(v) ((v)->ob_type == &Rpc_Type)
+
+typedef struct {
+	PyObject_HEAD
 	void * buffer;
 	int socket;
 } DlpObject;
@@ -63,6 +74,15 @@ PiFile_dealloc(self)
 	Py_XDECREF(self->UnpackAppBlock);
 	if (self->pf)
 		pi_file_close(self->pf);
+	PyMem_DEL(self);
+}
+
+static void
+Rpc_dealloc(self)
+	RpcObject *self;
+{
+	if (self->p)
+		free(self->p);
 	PyMem_DEL(self);
 }
 
@@ -104,13 +124,32 @@ PiFile_getattr(self, name)
 staticforward PyTypeObject PiFile_Type = {
         PyObject_HEAD_INIT(&PyType_Type)
         0,			/*ob_size*/
-        "PiFile",		/*tp_name*/
+        "pdapilot.file",		/*tp_name*/
 	sizeof(PiFileObject),	/*tp_basicsize*/
         0,			/*tp_itemsize*/
 				/* methods */
 	(destructor)PiFile_dealloc,	/*tp_dealloc*/
 	0,			/*tp_print*/
 	(getattrfunc)PiFile_getattr,	/*tp_getattr*/
+	0,			/*tp_setattr*/
+	0,			/*tp_compare*/
+	0,			/*tp_repr*/
+	0,			/*tp_as_number*/
+	0,			/*tp_as_sequence*/
+	0,			/*tp_as_mapping*/
+	0,			/*tp_hash*/
+};
+
+staticforward PyTypeObject Rpc_Type = {
+        PyObject_HEAD_INIT(&PyType_Type)
+        0,			/*ob_size*/
+        "pdapilot.rpc",		/*tp_name*/
+	sizeof(RpcObject),	/*tp_basicsize*/
+        0,			/*tp_itemsize*/
+				/* methods */
+	(destructor)Rpc_dealloc,	/*tp_dealloc*/
+	0,			/*tp_print*/
+	0,			/*tp_getattr*/
 	0,			/*tp_setattr*/
 	0,			/*tp_compare*/
 	0,			/*tp_repr*/
@@ -1116,7 +1155,7 @@ GetAppPref(self, args)
 	
 	Dlp_CheckError(result);
 	
-	return Py_BuildValue("(s#i)", self->buffer, length, version);
+	return Py_BuildValue("(s#O&ii)", self->buffer, length, &BuildChar4, creator, id, version);
 }
 
 static PyObject *
@@ -1128,7 +1167,7 @@ SetAppPref(self, args)
 	int id, length, version, backup, result;
 	char * data;
 
-	if (!PyArg_ParseTuple(args, "O&is#ii", &ParseChar4, &creator, &id, &data, &length, &version, &backup))
+	if (!PyArg_ParseTuple(args, "s#O&iii", &data, &length, &ParseChar4, &creator, &id, &version, &backup))
 		return NULL;
 
 	result = dlp_WriteAppPreference(self->socket, creator, id, backup,
@@ -2144,6 +2183,138 @@ TodoPackAppBlock(self, args)
 	return result;
 }
 
+static PyObject *
+RPCPack(self, args)
+	PyObject *self;
+	PyObject *args;
+{
+	long trap;
+	char * reply;
+	int r;
+	PyTupleObject *rpcargs, *rpctypes;
+	RpcObject * result;
+	int i;
+	
+	if (!PyArg_ParseTuple(args, "lzO!O!", &trap, &reply, &PyTuple_Type, &rpctypes, &PyTuple_Type, &rpcargs))
+		return NULL;
+
+
+	if (PyTuple_Size(rpcargs) != PyTuple_Size(rpctypes)) {
+		PyErr_SetString(Error, "types and arguments must match");
+		return NULL;
+	}
+
+	for(i=0;i<PyList_Size(rpcargs);i++) {
+		PyObject * type = PyTuple_GetItem(rpctypes, i);
+		PyObject * value = PyTuple_GetItem(rpcargs, i);
+		if (!PyString_Check(type)) {
+			PyErr_SetString(Error, "type must be string");
+			return NULL;
+		} else if (!PyInt_Check(value) && !PyString_Check(value)) {
+			PyErr_SetString(Error, "argument must be string or integer");
+			return NULL;
+		}
+	}
+	
+	result = PyObject_NEW(RpcObject, &Rpc_Type);
+	result->p = malloc(sizeof(struct RPC_params));
+	/*result->rpcargs = rpcargs;
+	Py_INCREF(rpcargs);*/
+
+	result->p->trap = trap;
+	
+	if ((reply == 0) || (strlen(reply)==0))
+		r = RPC_NoReply;
+	else
+		switch (reply[0]) {
+			case 'i': case 'l': case 's': case 'b': case 'c':
+				r = RPC_IntReply;
+				break;
+			case 'p': case 'h': case '*': case '&':
+				r = RPC_PtrReply;
+				break;
+			default:
+				r = RPC_NoReply;
+		}
+		
+	result->p->reply = r;
+	for(i=0;i<PyTuple_Size(rpcargs);i++) {
+		char * type = PyString_AsString(PyTuple_GetItem(rpctypes, i));
+		PyObject * value = PyTuple_GetItem(rpcargs, i);
+		char * data = 0;
+		int len = 0;
+		unsigned long arg;
+		int ref=0;
+		if (type[0] == '&') {
+			result->p->param[i].byRef = 1;	
+			type++;
+		} else 
+			result->p->param[i].byRef = 0;	
+		result->p->param[i].invert = 0;
+		result->p->param[i].data = &result->p->param[i].arg;
+
+		switch(type[0]) {
+		case '*': case 'p':
+			result->p->param[i].data = malloc(PyString_Size(value)+1);
+			memcpy(result->p->param[i].data, PyString_AsString(value), PyString_Size(value)+1);
+			result->p->param[i].size = PyString_Size(value);
+			result->p->param[i].invert = 0;
+			break;
+		case 'b': case 'c':
+			result->p->param[i].arg = PyInt_AsLong(value);
+			result->p->param[i].size = 2;
+			result->p->param[i].invert = 2;
+			break;
+		case 's':
+			result->p->param[i].arg = PyInt_AsLong(value);
+			result->p->param[i].size = 2;
+			result->p->param[i].invert = 1;
+			break;
+		case 'i': case 'l': 
+			result->p->param[i].arg = PyInt_AsLong(value);
+			result->p->param[i].size = 4;
+			result->p->param[i].invert = 1;
+			break;
+		}
+	}
+	result->p->args = i;
+	
+	return (PyObject*)result;
+}
+
+static PyObject *
+DlpRPC(self, args)
+	DlpObject *self;
+	PyObject *args;
+{
+	long trap;
+	char * reply;
+	int r;
+	RpcObject * rpc;
+	int i;
+	int err;
+	long result;
+	PyObject * out;
+	
+	if (!PyArg_ParseTuple(args, "O!", &Rpc_Type, &rpc))
+		return NULL;
+	
+	err = dlp_RPC(self->socket, rpc->p, &result);
+
+	out = PyTuple_New(rpc->p->args);
+	
+	for(i=0;i<rpc->p->args;i++) {
+		struct RPC_param * p = &rpc->p->param[i];
+		if (p->invert == 0) {
+			PyTuple_SetItem(out, i, PyString_FromStringAndSize(p->data,p->size));
+		} else {
+			PyTuple_SetItem(out, i, PyInt_FromLong(p->arg));
+		}
+	}
+	
+	return Py_BuildValue("(liO)", result, err, out);
+}
+
 static PyMethodDef PiFile_methods[] = {
 	{"Records",	FileRecords, 1},
 	{"CheckID",	FileCheckID, 1},
@@ -2187,6 +2358,7 @@ static PyMethodDef Dlp_methods[] = {
 	{"GetDBInfo",	GetDBInfo, 1},
 	{"FindDBInfo",	FindDBInfo, 1},
 	{"Call",	CallApp, 1},
+	{"RPC",		DlpRPC, 1},
 	{NULL,	NULL}
 };
 
@@ -2241,6 +2413,7 @@ static PyMethodDef Methods[] = {
 	{"TodoUnpackAppBlock",	TodoUnpackAppBlock, 1},
 	{"TodoPack",	TodoPack, 1},
 	{"TodoPackAppBlock",	TodoPackAppBlock, 1},
+	{"PackRPC",	RPCPack, 1},
 	{NULL, NULL}
 };
 
