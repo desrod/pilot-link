@@ -30,6 +30,8 @@ except AttributeError:
 del types
 
 
+
+pilot_connect = _pisock.pilot_connect
 PI_AF_PILOT = _pisock.PI_AF_PILOT
 PI_PF_DEV = _pisock.PI_PF_DEV
 PI_PF_SLP = _pisock.PI_PF_SLP
@@ -76,8 +78,6 @@ PI_PilotSocketConsole = _pisock.PI_PilotSocketConsole
 PI_PilotSocketDebugger = _pisock.PI_PilotSocketDebugger
 PI_PilotSocketRemoteUI = _pisock.PI_PilotSocketRemoteUI
 
-pilot_connect = _pisock.pilot_connect
-
 pi_socket = _pisock.pi_socket
 
 pi_connect = _pisock.pi_connect
@@ -113,6 +113,8 @@ pi_tickle = _pisock.pi_tickle
 pi_watchdog = _pisock.pi_watchdog
 
 pi_close = _pisock.pi_close
+
+dlp_strerror = _pisock.dlp_strerror
 dlpDBFlagResource = _pisock.dlpDBFlagResource
 dlpDBFlagReadOnly = _pisock.dlpDBFlagReadOnly
 dlpDBFlagAppInfoDirty = _pisock.dlpDBFlagAppInfoDirty
@@ -140,6 +142,7 @@ dlpEndCodeUserCan = _pisock.dlpEndCodeUserCan
 dlpEndCodeOther = _pisock.dlpEndCodeOther
 dlpDBListRAM = _pisock.dlpDBListRAM
 dlpDBListROM = _pisock.dlpDBListROM
+dlpDBListMultiple = _pisock.dlpDBListMultiple
 dlpErrNoError = _pisock.dlpErrNoError
 dlpErrSystem = _pisock.dlpErrSystem
 dlpErrMemory = _pisock.dlpErrMemory
@@ -162,8 +165,6 @@ dlpErrWrapper = _pisock.dlpErrWrapper
 dlpErrArgument = _pisock.dlpErrArgument
 dlpErrSize = _pisock.dlpErrSize
 dlpErrUnknown = _pisock.dlpErrUnknown
-
-dlp_strerror = _pisock.dlp_strerror
 
 dlp_GetSysDateTime = _pisock.dlp_GetSysDateTime
 
@@ -207,7 +208,11 @@ dlp_ReadUserInfo = _pisock.dlp_ReadUserInfo
 
 dlp_ResetLastSyncPC = _pisock.dlp_ResetLastSyncPC
 
+dlp_ReadAppBlock = _pisock.dlp_ReadAppBlock
+
 dlp_WriteAppBlock = _pisock.dlp_WriteAppBlock
+
+dlp_ReadSortBlock = _pisock.dlp_ReadSortBlock
 
 dlp_WriteSortBlock = _pisock.dlp_WriteSortBlock
 
@@ -293,10 +298,6 @@ pi_file_install = _pisock.pi_file_install
 
 pi_file_merge = _pisock.pi_file_merge
 cvar = _pisock.cvar
-dlp_ReadAppBlock = _pisock.dlp_ReadAppBlock
-
-dlp_ReadSortBlock = _pisock.dlp_ReadSortBlock
-
 dlp_ReadRecordIDList = _pisock.dlp_ReadRecordIDList
 
 
