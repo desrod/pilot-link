@@ -93,6 +93,21 @@ char *expenseTypes[] =
 	NULL
 };
 
+static void Help(char *progname)
+{
+	printf("Usage: %s [-qrt] [-c category] -p <port> file [file] ...\n",
+		progname);
+	printf("       -q = do not prompt for HotSync button press\n");
+	printf("       -t = payment type\n");
+	printf("       -e = expense type\n");
+	printf("       -a = payment amount\n");
+	printf("       -v = vendor\n");
+	printf("       -g = attendees\n");
+	printf("       -l = city\n");
+	printf("       -n = note\n");
+	exit(2);
+}
+
 int main(int argc, char *argv[])
 {
 	int 	db,
@@ -307,17 +322,3 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-static void Help(char *progname)
-{
-	printf("Usage: %s [-qrt] [-c category] -p <port> file [file] ...\n",
-		progname);
-	printf("       -q = do not prompt for HotSync button press\n");
-	printf("       -t = payment type\n");
-	printf("       -e = expense type\n");
-	printf("       -a = payment amount\n");
-	printf("       -v = vendor\n");
-	printf("       -g = attendees\n");
-	printf("       -l = city\n");
-	printf("       -n = note\n");
-	exit(2);
-}

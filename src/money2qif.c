@@ -45,6 +45,23 @@ struct option options[] = {
 
 static const char *optstring = "hp:a:";
 
+static void Help(char *progname)
+{
+	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n"
+	       "   Usage: %s -p <port> -a Account\n\n"
+	       "   Options:\n"
+	       "     -p <port>           Use device file <port> to communicate with Palm\n"
+	       "     -a Account          The name of the Account category in MicroMoney\n"
+	       "     -h                  Display this information\n\n"
+	       "   Examples: %s -p /dev/pilot -a BancGlobal\n\n"
+	       "   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n"
+	       "   on MicroMoney.\n\n"	       
+	       "   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n"
+	       "   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n"
+	       "   pilot-link yet.\n\n", progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	ch,
@@ -181,21 +198,4 @@ int main(int argc, char *argv[])
 				"Thank you for using pilot-link.\n");
 	pi_close(sd);
 	exit(0);
-}
-
-static void Help(char *progname)
-{
-	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n"
-	       "   Usage: %s -p <port> -a Account\n\n"
-	       "   Options:\n"
-	       "     -p <port>           Use device file <port> to communicate with Palm\n"
-	       "     -a Account          The name of the Account category in MicroMoney\n"
-	       "     -h                  Display this information\n\n"
-	       "   Examples: %s -p /dev/pilot -a BancGlobal\n\n"
-	       "   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n"
-	       "   on MicroMoney.\n\n"	       
-	       "   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n"
-	       "   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n"
-	       "   pilot-link yet.\n\n", progname, progname);
-	return;
 }

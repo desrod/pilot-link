@@ -90,64 +90,6 @@ struct Command command_list[] = {
 	{NULL,   NULL}
 };
 
-int main(int argc, char *argv[])
-{
-	int 	c,
-		sd = -1;
-
-	char 	*progname = argv[0],
-		*port = NULL;
-
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch (c) {
-
-		  case 'h':
-			  Help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  default:
-		}
-	}
-
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
-
-	if (port == NULL && argc > 1) {
-		printf("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		       "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
-		exit(1);
-	} else if (port != NULL) {
-
-		sd = pilot_connect(port);
-		
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-		} else {
-			printf("\nWelcome to the DLP Shell\n"
-			       "Type 'help' for additional information\n\n");
-
-			/* Stayin' alive, stayin' alive...
-			   Normally we tickle to keep the port open and listening, 
-			   but since we're removing PADP support, we have to find
-			   another way to do this cleanly. Maybe pilot_connect() 
-			   has to go... 
-			*/			
-			pi_watchdog(sd, TICKLE_INTERVAL);
-
-			handle_user_commands(sd);
-
-			return 0;
-		}
-	}
-	return 0;
-}
-
 /***********************************************************************
  *
  * Function:    df_fn
@@ -638,4 +580,62 @@ static void Help(char *progname)
 	       "   other useful functions. While in dlpsh, type 'help' for more options.\n\n"
 	       "   Example: %s -p /dev/pilot\n\n", progname, progname);
 	return;
+}
+
+int main(int argc, char *argv[])
+{
+	int 	c,
+		sd = -1;
+
+	char 	*progname = argv[0],
+		*port = NULL;
+
+	while ((c = getopt(argc, argv, optstring)) != -1) {
+		switch (c) {
+
+		  case 'h':
+			  Help(progname);
+			  exit(0);
+		  case 'p':
+			  port = optarg;
+			  break;
+		  default:
+		}
+	}
+
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
+	}
+
+	if (port == NULL && argc > 1) {
+		printf("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		       "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+		exit(1);
+	} else if (port != NULL) {
+
+		sd = pilot_connect(port);
+		
+		/* Did we get a valid socket descriptor back? */
+		if (dlp_OpenConduit(sd) < 0) {
+			exit(1);
+		} else {
+			printf("\nWelcome to the DLP Shell\n"
+			       "Type 'help' for additional information\n\n");
+
+			/* Stayin' alive, stayin' alive...
+			   Normally we tickle to keep the port open and listening, 
+			   but since we're removing PADP support, we have to find
+			   another way to do this cleanly. Maybe pilot_connect() 
+			   has to go... 
+			*/			
+			pi_watchdog(sd, TICKLE_INTERVAL);
+
+			handle_user_commands(sd);
+
+			return 0;
+		}
+	}
+	return 0;
 }

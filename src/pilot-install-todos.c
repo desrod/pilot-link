@@ -45,6 +45,86 @@ struct option options[] = {
 
 static const char *optstring = "hp:f:";
 
+void install_ToDos(int sd, int db, char *filename)
+{
+	int 	ToDo_size,
+		cLen		= 0,
+		idx		= 0,
+		filelen;
+        char 	*file_text 	= NULL,
+		*cPtr 		= file_text,
+		*begPtr 	= cPtr,
+		note_text[] 	= "";
+        unsigned char ToDo_buf[0xffff];
+        struct 	ToDo todo;
+        FILE 	*f;	
+				
+	f = fopen(filename, "r");
+	if (f == NULL) {
+		perror("fopen");
+		exit(1);
+	}
+
+	fseek(f, 0, SEEK_END);
+	filelen = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	file_text = (char *) malloc(filelen + 1);
+	if (file_text == NULL) {
+		perror("malloc()");
+		exit(1);
+	}
+
+	fread(file_text, filelen, 1, f);
+
+	while (idx < filelen) {
+		idx++;
+		/* printf("c:%c.\n",*cPtr); */
+		if (*cPtr == '\n') {
+			todo.description = begPtr;
+			/* replace CR with terminator */
+			*cPtr = '\0';
+
+			todo.priority = 4;
+			todo.complete = 1;
+			todo.indefinite = 1;
+			/* now = time(0);
+			   todo.due = *localtime(&now); */
+			todo.note = note_text;
+			ToDo_size =
+			    pack_ToDo(&todo, ToDo_buf,
+				      sizeof(ToDo_buf));
+			printf("Description: %s\n", todo.description);
+
+			/* printf("todobuf: %s\n",ToDo_buf);       */
+			dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf,
+					ToDo_size, 0);
+			cPtr++;
+			begPtr = cPtr;
+			cLen = 0;
+		} else {
+			cLen++;
+			cPtr++;
+		}
+	}
+	return;
+}
+
+static void Help(char *progname)
+{
+	printf("   Updates the Palm ToDo list with entries from a local file\n\n"
+	       "   Usage: %s -p <port> -f <filename>\n"
+	       "   Options:\n"
+	       "     -p <port>       Use device file <port> to communicate with Palm\n"
+	       "     -f <filename>   A local file with formatted ToDo tasklist entries\n"
+	       "     -h              Display this information\n\n"
+	       "   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n"
+	       "   The format of this file is a simple line-by-line ToDo task entry.\n"
+	       "   For each new line in the local file, a new task is created in the\n"
+	       "   ToDo database on the Palm.\n\n", progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	ch,
@@ -128,84 +208,4 @@ int main(int argc, char *argv[])
 		pi_close(sd);
 	}
 	return 0;
-}
-
-void install_ToDos(int sd, int db, char *filename)
-{
-	int 	ToDo_size,
-		cLen		= 0,
-		idx		= 0,
-		filelen;
-        char 	*file_text 	= NULL,
-		*cPtr 		= file_text,
-		*begPtr 	= cPtr,
-		note_text[] 	= "";
-        unsigned char ToDo_buf[0xffff];
-        struct 	ToDo todo;
-        FILE 	*f;	
-				
-	f = fopen(filename, "r");
-	if (f == NULL) {
-		perror("fopen");
-		exit(1);
-	}
-
-	fseek(f, 0, SEEK_END);
-	filelen = ftell(f);
-	fseek(f, 0, SEEK_SET);
-
-	file_text = (char *) malloc(filelen + 1);
-	if (file_text == NULL) {
-		perror("malloc()");
-		exit(1);
-	}
-
-	fread(file_text, filelen, 1, f);
-
-	while (idx < filelen) {
-		idx++;
-		/* printf("c:%c.\n",*cPtr); */
-		if (*cPtr == '\n') {
-			todo.description = begPtr;
-			/* replace CR with terminator */
-			*cPtr = '\0';
-
-			todo.priority = 4;
-			todo.complete = 1;
-			todo.indefinite = 1;
-			/* now = time(0);
-			   todo.due = *localtime(&now); */
-			todo.note = note_text;
-			ToDo_size =
-			    pack_ToDo(&todo, ToDo_buf,
-				      sizeof(ToDo_buf));
-			printf("Description: %s\n", todo.description);
-
-			/* printf("todobuf: %s\n",ToDo_buf);       */
-			dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf,
-					ToDo_size, 0);
-			cPtr++;
-			begPtr = cPtr;
-			cLen = 0;
-		} else {
-			cLen++;
-			cPtr++;
-		}
-	}
-	return;
-}
-
-static void Help(char *progname)
-{
-	printf("   Updates the Palm ToDo list with entries from a local file\n\n"
-	       "   Usage: %s -p <port> -f <filename>\n"
-	       "   Options:\n"
-	       "     -p <port>       Use device file <port> to communicate with Palm\n"
-	       "     -f <filename>   A local file with formatted ToDo tasklist entries\n"
-	       "     -h              Display this information\n\n"
-	       "   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n"
-	       "   The format of this file is a simple line-by-line ToDo task entry.\n"
-	       "   For each new line in the local file, a new task is created in the\n"
-	       "   ToDo database on the Palm.\n\n", progname, progname);
-	return;
 }

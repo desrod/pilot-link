@@ -45,6 +45,21 @@ struct option options[] = {
 static const char *optstring = "hp:c:";
 
 
+static void Help(char *progname)
+{
+	printf
+	    ("   Install local files into your Hi-Notes database on your Palm device\n\n"
+	     "   Usage: %s -p /dev/pilot -c [category] <file> <file> ..n\n\n" 
+	     "   Options:\n"
+	     "     -p <port>      Use device file <port> to communicate with Palm\n"
+	     "     -c category    Write files to <category> in the Hi-NOte application\n"
+	     "     -h             Display this information\n\n"
+	     "   Examples: %s -p /dev/pilot -c 1 ~/Palm/Note1.txt ~/Note2.txt\n\n"
+	     "   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n",
+	     progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	db,
@@ -215,20 +230,4 @@ int main(int argc, char *argv[])
 		pi_close(sd);
 	}
 	return 0;
-}
-
-
-static void Help(char *progname)
-{
-	printf
-	    ("   Install local files into your Hi-Notes database on your Palm device\n\n"
-	     "   Usage: %s -p /dev/pilot -c [category] <file> <file> ..n\n\n" 
-	     "   Options:\n"
-	     "     -p <port>      Use device file <port> to communicate with Palm\n"
-	     "     -c category    Write files to <category> in the Hi-NOte application\n"
-	     "     -h             Display this information\n\n"
-	     "   Examples: %s -p /dev/pilot -c 1 ~/Palm/Note1.txt ~/Note2.txt\n\n"
-	     "   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n",
-	     progname, progname);
-	return;
 }

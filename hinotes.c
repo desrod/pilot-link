@@ -58,120 +58,6 @@ struct option options[] = {
 
 static const char *optstring = "hp:d:";
 
-int main(int argc, char *argv[])
-{
-
-	int 	c,
-		db,
-		i,
-		sd = -1,
-		mode = MEMO_MBOX_STDOUT;
-
-	char 	appblock[0xffff],
-		dirname[MAXDIRNAMELEN] = "",
-		*progname = argv[0],
-		*port = NULL;
-
-	struct 	HiNoteAppInfo mai;
-	struct 	PilotUser User;
-
-	unsigned char buffer[0xffff];
-
-	while (((c = getopt(argc, argv, optstring)) != -1)) {
-		switch (c) {
-		  case 'h':
-			  Help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  case 'd':
-			  /* Name of directory to create and store memos in */
-			  strncpy(dirname, optarg, sizeof(dirname));
-			  mode = MEMO_DIRECTORY;
-			  break;
-		  default:
-		}
-	}
-
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
-
-	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
-		exit(1);
-	} else if (port != NULL) {
-
-		sd = pilot_connect(port);
-
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-		}
-
-		/* Tell user (via Palm) that we are starting things up */
-		dlp_ReadUserInfo(sd, &User);
-		dlp_OpenConduit(sd);
-
-		/* Open the Memo Pad's database, store access handle in db */
-		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "Hi-NoteDB", &db) < 0) {
-			printf("Unable to open Hi-NoteDB. Is Hi-Notes installed?\n"
-			       "You must run Hi-Notes and create at least one entry first.\n");
-			dlp_AddSyncLogEntry(sd,
-					    "Unable to locate or open Hi-NoteDB.\nFile not found.\n");
-			exit(1);
-		}
-
-		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
-				 0xffff);
-		unpack_HiNoteAppInfo(&mai, (unsigned char *) appblock,
-				     0xffff);
-
-		for (i = 0;; i++) {
-			int 	attr,
-				category;
-			struct 	HiNoteNote m;
-				
-			int len =
-			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
-						  &attr,
-						  &category);
-
-			if (len < 0)
-				break;
-
-			/* Skip deleted records */
-			if ((attr & dlpRecAttrDeleted)
-			    || (attr & dlpRecAttrArchived))
-				continue;
-
-			unpack_HiNoteNote(&m, buffer, len);
-			switch (mode) {
-			  case MEMO_MBOX_STDOUT:
-				  write_memo_mbox(User, m, mai, category);
-				  break;
-			  case MEMO_DIRECTORY:
-				  write_memo_in_directory(dirname, m, mai,
-							  category);
-				  break;
-			}
-		}
-	}
-
-	/* Close the Hi-Note database and write out to the Palm logfile */
-	dlp_CloseDB(sd, db);
-	dlp_AddSyncLogEntry(sd, "Successfully read Hi-Notes from Palm.\nThank you for using pilot-link.\n");
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-	return 0;
-}
-
-
 void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 		     struct HiNoteAppInfo mai, int category)
 {
@@ -304,4 +190,117 @@ static void Help(char *progname)
 	     "   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n",
 	     progname, progname);
 	return;
+}
+
+int main(int argc, char *argv[])
+{
+
+	int 	c,
+		db,
+		i,
+		sd = -1,
+		mode = MEMO_MBOX_STDOUT;
+
+	char 	appblock[0xffff],
+		dirname[MAXDIRNAMELEN] = "",
+		*progname = argv[0],
+		*port = NULL;
+
+	struct 	HiNoteAppInfo mai;
+	struct 	PilotUser User;
+
+	unsigned char buffer[0xffff];
+
+	while (((c = getopt(argc, argv, optstring)) != -1)) {
+		switch (c) {
+		  case 'h':
+			  Help(progname);
+			  exit(0);
+		  case 'p':
+			  port = optarg;
+			  break;
+		  case 'd':
+			  /* Name of directory to create and store memos in */
+			  strncpy(dirname, optarg, sizeof(dirname));
+			  mode = MEMO_DIRECTORY;
+			  break;
+		  default:
+		}
+	}
+
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
+	}
+
+	if (port == NULL && argc > 1) {
+		printf
+		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		     "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
+		exit(1);
+	} else if (port != NULL) {
+
+		sd = pilot_connect(port);
+
+		/* Did we get a valid socket descriptor back? */
+		if (dlp_OpenConduit(sd) < 0) {
+			exit(1);
+		}
+
+		/* Tell user (via Palm) that we are starting things up */
+		dlp_ReadUserInfo(sd, &User);
+		dlp_OpenConduit(sd);
+
+		/* Open the Memo Pad's database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "Hi-NoteDB", &db) < 0) {
+			printf("Unable to open Hi-NoteDB. Is Hi-Notes installed?\n"
+			       "You must run Hi-Notes and create at least one entry first.\n");
+			dlp_AddSyncLogEntry(sd,
+					    "Unable to locate or open Hi-NoteDB.\nFile not found.\n");
+			exit(1);
+		}
+
+		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
+				 0xffff);
+		unpack_HiNoteAppInfo(&mai, (unsigned char *) appblock,
+				     0xffff);
+
+		for (i = 0;; i++) {
+			int 	attr,
+				category;
+			struct 	HiNoteNote m;
+				
+			int len =
+			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+						  &attr,
+						  &category);
+
+			if (len < 0)
+				break;
+
+			/* Skip deleted records */
+			if ((attr & dlpRecAttrDeleted)
+			    || (attr & dlpRecAttrArchived))
+				continue;
+
+			unpack_HiNoteNote(&m, buffer, len);
+			switch (mode) {
+			  case MEMO_MBOX_STDOUT:
+				  write_memo_mbox(User, m, mai, category);
+				  break;
+			  case MEMO_DIRECTORY:
+				  write_memo_in_directory(dirname, m, mai,
+							  category);
+				  break;
+			}
+		}
+	}
+
+	/* Close the Hi-Note database and write out to the Palm logfile */
+	dlp_CloseDB(sd, db);
+	dlp_AddSyncLogEntry(sd, "Successfully read Hi-Notes from Palm.\nThank you for using pilot-link.\n");
+	dlp_EndOfSync(sd, 0);
+	pi_close(sd);
+	return 0;
 }

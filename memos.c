@@ -49,6 +49,168 @@ void write_memo_in_directory(char *dirname, struct Memo m,
 			     struct MemoAppInfo mai, int category,
 			     int verbose);
 
+/***********************************************************************
+ *
+ * Function:    write_memo_mbox
+ *
+ * Summary:     Write a memo entry to MailDB database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
+{
+	int 	j;
+
+	printf("From Your.Palm Tue Oct 1 07:56:25 1996\n"
+	       "Received: Palm@p by memo Tue Oct 1 07:56:25 1996\n"
+	       "To: you@y\n"
+	       "Date: Thu, 31 Oct 1996 23:34:38 -0500\n"
+	       "Subject: ");
+
+	/* print category name in brackets in subject field */
+	printf("[%s] ", mai.category.name[category]);
+
+	/* print (at least part of) first line as part of subject: */
+	for (j = 0; j < 40; j++) {
+		if ((!m.text[j]) || (m.text[j] == '\n'))
+			break;
+		printf("%c", m.text[j]);
+	}
+	if (j == 40)
+		printf("...\n");
+	else
+		printf("\n");
+	printf("\n");
+	puts(m.text);
+}
+
+/***********************************************************************
+ *
+ * Function:    write_memo_in_directory
+ *
+ * Summary:     Writes each memo into /$DIR/$CATEGORY/$FILENAME form
+ *              after the user specifies the -d /dir/name argument  
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void
+write_memo_in_directory(char *dirname, struct Memo m,
+			struct MemoAppInfo mai, int category, int verbose)
+{
+	int 	j;
+	char 	pathbuffer[MAXDIRNAMELEN + (128 * 3)] = "",
+		tmp[5] = "";
+	FILE *fd;
+
+	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
+	mkdir(dirname, 0700);
+
+	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
+
+	/* create a directory for the category */
+	strncat(pathbuffer, dirname, MAXDIRNAMELEN);
+	strncat(pathbuffer, "/", 1);
+
+	/* SHOULD MAKE SURE CATEGORY DOESN'T HAVE SLASHES IN IT */
+	strncat(pathbuffer, mai.category.name[category], 60);
+
+	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
+	mkdir(pathbuffer, 0700);
+
+	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
+	/* open the actual file to write */
+	strncat(pathbuffer, "/", 1);
+	for (j = 0; j < 40; j++) {
+		if ((!m.text[j]) || (m.text[j] == '\n'))
+			break;
+		if (m.text[j] == '/') {
+			strncat(pathbuffer, "=2F", 3);
+			continue;
+		}
+		if (m.text[j] == '=') {
+			strncat(pathbuffer, "=3D", 3);
+			continue;
+		}
+#ifdef OS2
+		if (m.text[j] == ':') {
+			strncat(pathbuffer, "=3A", 3);
+			continue;
+		}
+#endif
+		/* escape if it's an ISO8859 control chcter (note: some
+		   are printable on the Palm) */
+		if ((m.text[j] | 0x7f) < ' ') {
+			tmp[0] = '\0';
+			sprintf(tmp, "=%2X", (unsigned char) m.text[j]);
+		} else {
+			tmp[0] = m.text[j];
+			tmp[1] = '\0';
+		}
+		strcat(pathbuffer, tmp);
+	}
+
+	if (verbose) {
+		printf("Writing %s\n", pathbuffer);
+	}
+
+	if (!(fd = fopen(pathbuffer, "w"))) {
+		printf("%s: can't open file \"%s\" for writing\n",
+			progname, pathbuffer);
+		exit(1);
+	}
+	fputs(m.text, fd);
+	fclose(fd);
+}
+
+/***********************************************************************
+ *
+ * Function:    Help
+ *
+ * Summary:     Outputs the program arguments and params
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void Help(char *progname)
+{
+	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n"
+	       "   Usage: memos [-p <port> | -f MemoDB] [options]\n\n"
+	       "   Options:\n"
+	       "    -q          = quiet, do not prompt for HotSync button press\n"
+	       "    -v          = verbose, with -d, print each filename as it's written\n" 
+	       "    -Q          = do not announce which files are opened\n"
+	       "    -D          = delete the memo named by <number>\n"
+	       "    -p port     = use device file <port> to communicate with Palm\n"
+	       "    -f file     = use <file> as memo database file (rather than hotsyncing)\n"
+	       "    -d dir      = save memos in <dir> instead of writing to STDOUT\n"
+	       "    -c category = only upload memos in this category\n"
+	       "    -t regexp   = select memos to be saved by title\n" 
+	       "    -h|-?       = print this usage summary\n\n"
+	       "   By default, the contents of your Palm's memo database will be written to\n"
+	       "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
+	       "   memo as a separate message.  The subject of each message will be the\n"
+	       "   category.\n\n"
+	       "   If '-d' is specified, than instead of being written to standard output,\n"
+	       "   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n"
+	       "   name of a category on the Palm, and will contain the memos in that\n"
+	       "   category.  Each memo's filename will be the first line (up to the first\n"
+	       "   40 chcters) of the memo.  Control chcters, slashes, and equal signs\n"
+	       "   that would otherwise appear in filenames are converted after the fashion\n" 
+	       "   of MIME's quoted-printable encoding.  Note that if you have two memos in\n" 
+	       "   the same category whose first lines are identical, one of them will be\n"   
+	       "   overwritten.\n\n"
+	       "   If '-f' is specified, the specified file will be treated as a memo\n"
+	       "   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
+	return;
+}
 
 int main(int argc, char *argv[])
 {
@@ -291,167 +453,4 @@ int main(int argc, char *argv[])
 		pi_file_close(pif);
 	}
 	return 0;
-}
-
-/***********************************************************************
- *
- * Function:    write_memo_mbox
- *
- * Summary:     Write a memo entry to MailDB database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
-{
-	int 	j;
-
-	printf("From Your.Palm Tue Oct 1 07:56:25 1996\n"
-	       "Received: Palm@p by memo Tue Oct 1 07:56:25 1996\n"
-	       "To: you@y\n"
-	       "Date: Thu, 31 Oct 1996 23:34:38 -0500\n"
-	       "Subject: ");
-
-	/* print category name in brackets in subject field */
-	printf("[%s] ", mai.category.name[category]);
-
-	/* print (at least part of) first line as part of subject: */
-	for (j = 0; j < 40; j++) {
-		if ((!m.text[j]) || (m.text[j] == '\n'))
-			break;
-		printf("%c", m.text[j]);
-	}
-	if (j == 40)
-		printf("...\n");
-	else
-		printf("\n");
-	printf("\n");
-	puts(m.text);
-}
-
-/***********************************************************************
- *
- * Function:    write_memo_in_directory
- *
- * Summary:     Writes each memo into /$DIR/$CATEGORY/$FILENAME form
- *              after the user specifies the -d /dir/name argument  
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void
-write_memo_in_directory(char *dirname, struct Memo m,
-			struct MemoAppInfo mai, int category, int verbose)
-{
-	int 	j;
-	char 	pathbuffer[MAXDIRNAMELEN + (128 * 3)] = "",
-		tmp[5] = "";
-	FILE *fd;
-
-	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
-	mkdir(dirname, 0700);
-
-	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
-
-	/* create a directory for the category */
-	strncat(pathbuffer, dirname, MAXDIRNAMELEN);
-	strncat(pathbuffer, "/", 1);
-
-	/* SHOULD MAKE SURE CATEGORY DOESN'T HAVE SLASHES IN IT */
-	strncat(pathbuffer, mai.category.name[category], 60);
-
-	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
-	mkdir(pathbuffer, 0700);
-
-	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
-	/* open the actual file to write */
-	strncat(pathbuffer, "/", 1);
-	for (j = 0; j < 40; j++) {
-		if ((!m.text[j]) || (m.text[j] == '\n'))
-			break;
-		if (m.text[j] == '/') {
-			strncat(pathbuffer, "=2F", 3);
-			continue;
-		}
-		if (m.text[j] == '=') {
-			strncat(pathbuffer, "=3D", 3);
-			continue;
-		}
-#ifdef OS2
-		if (m.text[j] == ':') {
-			strncat(pathbuffer, "=3A", 3);
-			continue;
-		}
-#endif
-		/* escape if it's an ISO8859 control chcter (note: some
-		   are printable on the Palm) */
-		if ((m.text[j] | 0x7f) < ' ') {
-			tmp[0] = '\0';
-			sprintf(tmp, "=%2X", (unsigned char) m.text[j]);
-		} else {
-			tmp[0] = m.text[j];
-			tmp[1] = '\0';
-		}
-		strcat(pathbuffer, tmp);
-	}
-
-	if (verbose) {
-		printf("Writing %s\n", pathbuffer);
-	}
-
-	if (!(fd = fopen(pathbuffer, "w"))) {
-		printf("%s: can't open file \"%s\" for writing\n",
-			progname, pathbuffer);
-		exit(1);
-	}
-	fputs(m.text, fd);
-	fclose(fd);
-}
-
-/***********************************************************************
- *
- * Function:    Help
- *
- * Summary:     Outputs the program arguments and params
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void Help(char *progname)
-{
-	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n"
-	       "   Usage: memos [-p <port> | -f MemoDB] [options]\n\n"
-	       "   Options:\n"
-	       "    -q          = quiet, do not prompt for HotSync button press\n"
-	       "    -v          = verbose, with -d, print each filename as it's written\n" 
-	       "    -Q          = do not announce which files are opened\n"
-	       "    -D          = delete the memo named by <number>\n"
-	       "    -p port     = use device file <port> to communicate with Palm\n"
-	       "    -f file     = use <file> as memo database file (rather than hotsyncing)\n"
-	       "    -d dir      = save memos in <dir> instead of writing to STDOUT\n"
-	       "    -c category = only upload memos in this category\n"
-	       "    -t regexp   = select memos to be saved by title\n" 
-	       "    -h|-?       = print this usage summary\n\n"
-	       "   By default, the contents of your Palm's memo database will be written to\n"
-	       "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
-	       "   memo as a separate message.  The subject of each message will be the\n"
-	       "   category.\n\n"
-	       "   If '-d' is specified, than instead of being written to standard output,\n"
-	       "   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n"
-	       "   name of a category on the Palm, and will contain the memos in that\n"
-	       "   category.  Each memo's filename will be the first line (up to the first\n"
-	       "   40 chcters) of the memo.  Control chcters, slashes, and equal signs\n"
-	       "   that would otherwise appear in filenames are converted after the fashion\n" 
-	       "   of MIME's quoted-printable encoding.  Note that if you have two memos in\n" 
-	       "   the same category whose first lines are identical, one of them will be\n"   
-	       "   overwritten.\n\n"
-	       "   If '-f' is specified, the specified file will be treated as a memo\n"
-	       "   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
-	return;
 }

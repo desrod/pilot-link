@@ -25,6 +25,11 @@
 	
 	* libsock/*.c: layout, formatting, type changes
 
+	* addresses.c debugsh.c dlpsh.c getrom.c hinotes.c 
+	  install-datebook.c install-expenses.c install-hinote.c 
+	  install-memo.c install-todos.c memos.c money2qif.c: main() to 
+	  bottom, Help() up one. 
+
 2002-01-16  JP Rosevear  <jpr@ximian.com>
 
 	* install-user.c (Help): remove bogus info

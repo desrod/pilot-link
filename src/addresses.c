@@ -47,6 +47,22 @@ struct option options[] = {
 
 static const char *optstring = "hp:f";
 
+static void Help(char *progname)
+{
+	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n"
+               "   Usage: %s -p <port> [options]\n\n"
+	       "   Options:\n"
+	       "   -p <port>      Use device file <port> to communicate with Palm\n"
+	       "   -f             Use the new \"fancy\" index card output format\n"
+	       "   -h             Display this information\n\n"
+	       "   Only the port option is required, the other options are... optional.\n\n"
+	       "   Example: %s -p /dev/pilot\n\n"
+	       "   You can redirect the output of %s to a file instead of the default\n"
+	       "   STDOUT by using redirection and pipes as necessary.\n\n"
+	       "   Example: %s -p /dev/pilot -f > MyAddresses.txt\n\n", progname, progname, progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	ch,
@@ -183,21 +199,4 @@ int main(int argc, char *argv[])
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	return 0;
-}
-
-
-static void Help(char *progname)
-{
-	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n"
-               "   Usage: %s -p <port> [options]\n\n"
-	       "   Options:\n"
-	       "   -p <port>      Use device file <port> to communicate with Palm\n"
-	       "   -f             Use the new \"fancy\" index card output format\n"
-	       "   -h             Display this information\n\n"
-	       "   Only the port option is required, the other options are... optional.\n\n"
-	       "   Example: %s -p /dev/pilot\n\n"
-	       "   You can redirect the output of %s to a file instead of the default\n"
-	       "   STDOUT by using redirection and pipes as necessary.\n\n"
-	       "   Example: %s -p /dev/pilot -f > MyAddresses.txt\n\n", progname, progname, progname, progname);
-	return;
 }
