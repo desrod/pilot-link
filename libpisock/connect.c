@@ -38,6 +38,7 @@ int pilot_connect(char *port)
 		err	= 0;
 	struct 	pi_sockaddr addr;
 	struct 	stat attr;			/* Device attributes			*/
+	struct  SysInfo sys_info;
 	char 	*defport = "/dev/pilot";	/* Default port if none specified 	*/
 
 	if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
@@ -108,8 +109,11 @@ int pilot_connect(char *port)
 
 	fprintf(stderr, "Connected\n\n");
 
-	/* Tell user (via Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
+	if (dlp_ReadSysInfo (sd, &sys_info) < 0) {
+		fprintf(stderr, "\n   Error read system info on %s\n", port);
+		pi_close(sd);
+		return -1;
+	}
 
 	return sd;
 }

@@ -10,7 +10,7 @@ setup(name = "python-libpisock",
 
       ext_modules = [Extension("_pisock",["src/pisock_wrap.c"],
                                include_dirs=['../../include'],
-                               library_dirs=[],
+                               library_dirs=['../../libpisock/.libs'],
                                libraries=['pisock'],
                                )
                      ],

@@ -1,3 +1,20 @@
+2002-04-25  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/connect.c (pilot_connect): read the system info
+
+	* libpisock/dlp.c (dlp_ReadSysInfo): write a dlp version of 1.3
+	out when reading system info
+
+	* libpisock/net.c (net_rx_handshake): make buffers unsigned chars
+	(net_tx_handshake): ditto
+	(net_tx): print correct debugging info
+
+	* bindings/Python/setup.py: fix compilation (but only when build
+	dir == src dir)
+
+	* src/install-user.c (main): exit nicely when we are just printing
+	out the user info
+
 2002-04-20  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Remove the warning about libpisock and development
