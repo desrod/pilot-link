@@ -48,7 +48,7 @@ int pilot_connect(char *port)
 	}
 
 	if (err) {
-		perror("   ERROR:");
+		perror("   ERROR");
 		fprintf(stderr, "   Error accessing: '%s'. Does '%s' exist?\n",
 		       port, port);
 		fprintf(stderr, "   Please use --help for more information\n\n");
@@ -79,8 +79,10 @@ int pilot_connect(char *port)
 		if (portname) {
 			fprintf(stderr, "\n");
 			errno = save_errno;
+			perror("   ERROR"); 
 			fprintf(stderr, "   Unable to bind to port '%s'\n",
 				portname);
+	                fprintf(stderr, "   Please use --help for more information\n\n");
 		} else
 			fprintf(stderr, "\n   No port specified\n");
 		pi_close(sd);

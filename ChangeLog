@@ -1,3 +1,18 @@
+2002-04-12  David A. Desrosiers <hacker at gnu-designs dot com>
+
+        * bindings/Python/setup.py: Fixed libdir
+
+        * bindings/Python/src/pisock.i: Removed references to PalmHeader()
+          and pi_setmaxspeed so the module will properly import.
+
+        * bindings/Python/src/pisock_wrap.c: Updated with swig.
+
+        * src/pilot-xfer.c: Fixed a bug in Restore() when the directory is
+          missing, fixed a permission problem when the target directory is
+          not writable. This needs a better solution.
+
+        * libpisock/connect.c: Added some minor cleanups, perror()
+
 2002-04-02  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/memos.c: oops, forgot some braces
