@@ -525,7 +525,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			printf("\nFailed, unable to create file.\n");
 			break;
 		} else if (pi_file_retrieve(f, sd, 0, NULL) < 0) {
-			printf("\n   [-][fail][%s] Failed, unable to retrieve %s from the Palm.\n", 
+			printf("\n   [-][fail][%s] Failed, unable to retrieve '%s' from the Palm.", 
 				crid, info.name);
 			failed++;
 			pi_file_close(f);
