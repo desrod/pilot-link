@@ -126,6 +126,11 @@ typedef unsigned long FileRef;
 /* Leave the file open even if when the foreground task closes */
 #define vfsModeLeaveOpen	(0x0020U)
 
+/* Volume attributes as found in VFSInfo.attributes */
+#define vfsVolAttrSlotBased	(0x00000001UL)
+#define vfsVolAttrReadOnly	(0x00000002UL)
+#define vfsVolAttrHidden	(0x00000004UL)
+
 	struct VFSDirInfo {
 		unsigned long attr;
 		char name[vfsMAXFILENAME];
@@ -142,7 +147,7 @@ typedef unsigned long FileRef;
 		unsigned short slotLibRefNum;
 		unsigned short slotRefNum;
 	};
-	
+
 	struct VFSInfo {
 		/* 0: read-only etc. */
 		unsigned long   attributes;
