@@ -1,5 +1,9 @@
-2002-03-15  JP Rosevear  <jpr@ximian.com>
+2002-03-15  JP Rosevear  <jpr@ximian.co>m
 
+	* pilot-link.m4.in: remove unneccessary checks, error on failure
+
+2002-03-15  JP Rosevear  <jpr@ximian.com>
+	
 	* src/pix/Makefile.am: install pix
 
 2002-03-15  JP Rosevear  <jpr@ximian.com>
