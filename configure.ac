@@ -449,6 +449,15 @@ AC_SUBST(ICONV_LIBS)
 
 
 dnl ******************************
+dnl Threading support
+dnl ******************************
+msg_threads=no
+PILOT_LINK_THREADS_SUPPORT
+if $use_threads; then
+	msg_threads=yes
+fi
+
+dnl ******************************
 dnl C++
 dnl ******************************
 msg_cxx=no
@@ -805,6 +814,7 @@ AC_MSG_RESULT([
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
+  Thread-safe libpisock... : $msg_threads
   ElectricFence checks.... : $msg_efence
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
