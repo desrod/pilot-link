@@ -277,8 +277,11 @@ dlp_response_read (struct dlpResponse **res, int sd)
 			buf += 2;
 		}
 		
-		     
-	return bytes;
+		response->argv[i] = dlp_arg_new (argid, len);
+		memcpy (response->argv[i]->data, buf, len);
+		buf += len;
+	}
+
 	if (response->argc == 0)
 		return 0;
 	else
@@ -361,8 +364,8 @@ dlp_response_free (struct dlpResponse *res)
 	if (res->argv)
 		free (res->argv);
 	free (res);	
+}
 
-	int bytes;
 int dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 {
 	int bytes;

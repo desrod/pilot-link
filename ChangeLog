@@ -1,3 +1,7 @@
+2002-07-28  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/dlp.c: Temporary fix for J-Pilot issues
+
 2002-07-23  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* doc/man/pilot-link.7: Minor troff typo that breaks man2html
