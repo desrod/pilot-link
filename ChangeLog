@@ -1,3 +1,10 @@
+2001-05-15  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* pilot-addresses.c: Fix to make it possible to store the adresses
+	  to csv from palm, edit them in gnumeric, and then upload them into
+	  palm again. (Field while be terminated by "," OR "\n") (Thomas
+	  Guettler)
+
 2001-05-13  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* memos.c: Added an additional fix to the -t handling in the
