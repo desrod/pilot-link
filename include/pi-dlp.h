@@ -299,17 +299,22 @@ extern "C" {
 		struct dlpArg **argv;
 	};	
 
-	struct dlpArg * dlp_arg_new (int id, int len);
-	void dlp_arg_free (struct dlpArg *arg);
-	int dlp_arg_len (int argc, struct dlpArg **argv);
-	struct dlpRequest *dlp_request_new (enum dlpFunctions cmd, int argc, ...);
-	struct dlpRequest * dlp_request_new_with_argid (enum dlpFunctions cmd, int argid, int argc, ...);
-	struct dlpResponse *dlp_response_new (enum dlpFunctions cmd, int argc);
-	int dlp_response_read (struct dlpResponse **res, int sd);
-	int dlp_request_write (struct dlpRequest *req, int sd);
-	void dlp_request_free (struct dlpRequest *req);
-	void dlp_response_free (struct dlpResponse *req);
-	
+	extern struct dlpArg * dlp_arg_new PI_ARGS((int id, int len));
+	extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
+	extern int dlp_arg_len PI_ARGS((int argc, struct dlpArg **argv));
+	extern struct dlpRequest *dlp_request_new 
+	        PI_ARGS((enum dlpFunctions cmd, int argc, ...));
+	extern struct dlpRequest * dlp_request_new_with_argid 
+	        PI_ARGS((enum dlpFunctions cmd, int argid, int argc, ...));
+	extern struct dlpResponse *dlp_response_new
+	        PI_ARGS((enum dlpFunctions cmd, int argc));
+	extern int dlp_response_read PI_ARGS((struct dlpResponse **res, int sd));
+	extern int dlp_request_write PI_ARGS((struct dlpRequest *req, int sd));
+	extern void dlp_request_free PI_ARGS((struct dlpRequest *req));
+	extern void dlp_response_free PI_ARGS((struct dlpResponse *req));
+
+	extern int dlp_exec PI_ARGS((int sd, struct dlpRequest *req, struct dlpResponse **res));
+
 	extern char *dlp_errorlist[];
 	extern char *dlp_strerror(int error);
 

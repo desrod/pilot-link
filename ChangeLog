@@ -1,5 +1,11 @@
 2002-06-28  JP Rosevear  <jpr@ximian.com>
 
+	* include/pi-dlp.h: tidy protos
+
+	* libpisock/dlp.c: rename dlp_exec_new to dlp_exec
+
+2002-06-28  JP Rosevear  <jpr@ximian.com>
+	
 	* NEWS: update
 
 	* pilot-link.m4.in: handle nano version when doing configuration

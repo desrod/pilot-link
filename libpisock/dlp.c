@@ -51,10 +51,6 @@
 /* Define prototypes */
 static void record_dump (unsigned char *data);
 
-int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen, 
-             unsigned char *result, int maxlen);
-int dlp_exec_new(int sd, struct dlpRequest *req, struct dlpResponse **res);
-
 char *dlp_errorlist[] = {
 	"No error",
 	"General System error",
@@ -411,7 +407,7 @@ int dlp_exec(int sd, int cmd, int arg,const unsigned char *msg, int msglen,
 
 	
 	if (res->argv)
-int dlp_exec_new(int sd, struct dlpRequest *req, struct dlpResponse **res)
+		free (res->argv);
 	free (res);	
 {
 	int bytes;
@@ -570,7 +566,7 @@ int dlp_GetSysDateTime(int sd, time_t * t)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	result = dlp_exec_new(sd, req, &res);
+	Trace(GetSysDateTime);
 
 	req = dlp_request_new(dlpFuncGetSysDateTime, 0);
 	
@@ -609,7 +605,7 @@ int dlp_SetSysDateTime(int sd, time_t time)
 
 	Trace(SetSysDateTime);
 
-	result = dlp_exec_new(sd, req, &res);
+	req = dlp_request_new(dlpFuncSetSysDateTime, 1, 8);
 	
 	dlp_htopdate(time, DLP_REQUEST_DATA(req, 0, 0));
 
@@ -644,7 +640,7 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 	Trace(ReadStorageInfo);
 
 	req = dlp_request_new(dlpFuncReadStorageInfo, 1, 2);
-	result = dlp_exec_new(sd, req, &res);
+	
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), cardno);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 
@@ -710,7 +706,7 @@ int dlp_ReadSysInfo(int sd, struct SysInfo *s)
 	Trace(ReadSysInfo);
 
 	req = dlp_request_new (dlpFuncReadSysInfo, 1, 4);
-	result = dlp_exec_new(sd, req, &res);
+
 	set_short (DLP_REQUEST_DATA (req, 0, 0), 0x0001);
 	set_short (DLP_REQUEST_DATA (req, 0, 2), 0x0003);
 	
@@ -779,7 +775,7 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 
 	req = dlp_request_new (dlpFuncReadDBList, 1, 4);
 	
-	result = dlp_exec_new (sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), (unsigned char) flags);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), (unsigned char) cardno);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), start);
 
@@ -920,7 +916,7 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 
 	req = dlp_request_new(dlpFuncOpenDB, 1, 2 + (strlen(name) + 1));
 
-	result = dlp_exec_new(sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), cardno);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), mode);
 	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
 
@@ -961,7 +957,7 @@ int dlp_DeleteDB(int sd, int card, const char *name)
 
 	req = dlp_request_new(dlpFuncDeleteDB, 1, 2 + (strlen(name) + 1));
 
-	result = dlp_exec_new(sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), card);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
 
@@ -1000,7 +996,7 @@ dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	set_long(DLP_REQUEST_DATA(req, 0, 4), type);
 	set_byte(DLP_REQUEST_DATA(req, 0, 8), cardno);
 	set_byte(DLP_REQUEST_DATA(req, 0, 9), 0);
-	result = dlp_exec_new(sd, req, &res);
+	set_short(DLP_REQUEST_DATA(req, 0, 10), flags);
 	set_short(DLP_REQUEST_DATA(req, 0, 12), version);
 	strcpy(DLP_REQUEST_DATA(req, 0, 14), name);
 
@@ -1039,7 +1035,7 @@ int dlp_CloseDB(int sd, int dbhandle)
 
 	Trace(CloseDB);
 
-	result = dlp_exec_new(sd, req, &res);
+	req = dlp_request_new(dlpFuncCloseDB, 1, 1);
 
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), (unsigned char) dbhandle);
 
@@ -1057,7 +1053,7 @@ int dlp_CloseDB_All(int sd)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	result = dlp_exec_new(sd, req, &res);
+	Trace(CloseDB_All);
 
 	req = dlp_request_new_with_argid(dlpFuncCloseDB, 0x21, 0);
 
@@ -1108,7 +1104,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
 		if (length + 22 > DLP_BUF_SIZE) {
 			fprintf(stderr, "Data too large\n");
-		result = dlp_exec_new(sd, req, &res);
+			return -131;
 		}
 		memcpy(DLP_REQUEST_DATA(req, 0, 22), data, length);
 
@@ -1151,7 +1147,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
 		if (length + 8 > DLP_BUF_SIZE) {
 			fprintf(stderr, "Data too large\n");
-		result = dlp_exec_new(sd, req, &res);
+			return -131;
 		}
 		memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
 
@@ -1199,7 +1195,7 @@ int dlp_ResetSystem(int sd)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	result = dlp_exec_new(sd, req, &res);
+	Trace(ResetSystems);
 
 	req = dlp_request_new(dlpFuncResetSystem, 0);
 
@@ -1230,7 +1226,7 @@ int dlp_AddSyncLogEntry(int sd, char *entry)
 
 	Trace(AddSyncLogEntry);
 
-	result = dlp_exec_new(sd, req, &res);
+	req = dlp_request_new(dlpFuncAddSyncLogEntry, 1, strlen(entry) + 1);
 	
 	strcpy(DLP_REQUEST_DATA(req, 0, 0), entry);
 	
@@ -1267,7 +1263,7 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 
 	Trace(ReadOpenDBInfo);
 
-	result = dlp_exec_new(sd, req, &res);
+	req = dlp_request_new(dlpFuncReadOpenDBInfo, 1, 1);
 	
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	
@@ -1311,7 +1307,7 @@ int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 	req = dlp_request_new(dlpFuncMoveCategory, 1, 4);
 
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), handle);
-	result = dlp_exec_new(sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 1), fromcat);
 	set_byte(DLP_REQUEST_DATA(req, 0, 2), tocat);
 	set_byte(DLP_REQUEST_DATA(req, 0, 3), 0);
 
@@ -1346,7 +1342,7 @@ int dlp_OpenConduit(int sd)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	result = dlp_exec_new(sd, req, &res);
+	Trace(OpenConduit);
 
 	req = dlp_request_new(dlpFuncOpenConduit, 0);
 
@@ -1382,7 +1378,7 @@ int dlp_EndOfSync(int sd, int status)
 	if (ps == 0)
 		return 1;	/* General system error */
 
-	result = dlp_exec_new(sd, req, &res);
+	req = dlp_request_new(dlpFuncEndOfSync, 1, 2);
 
 	set_short(DLP_REQUEST_DATA(req, 0, 0), status);
 
@@ -1451,7 +1447,7 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
 	set_long(DLP_REQUEST_DATA(req, 0, 4), User->viewerID);
 	set_long(DLP_REQUEST_DATA(req, 0, 8), User->lastSyncPC);
 	set_date(DLP_REQUEST_DATA(req, 0, 12), User->lastSyncDate);
-	result = dlp_exec_new (sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 20), 0xff);
 	set_byte(DLP_REQUEST_DATA(req, 0, 21), len);
 	strcpy(DLP_REQUEST_DATA(req, 0, 22), User->username);
 
@@ -1482,7 +1478,7 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	result = dlp_exec_new (sd, req, &res);
+	Trace(ReadUserInfo);
 	
 	req = dlp_request_new (dlpFuncReadUserInfo, 0);
 	
@@ -1539,7 +1535,7 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 	Trace(ReadNetSyncInfo);
 
 	if (pi_version(sd) < 0x0101)
-	result = dlp_exec_new (sd, req, &res);
+		return -129;	/* This call only functions under PalmOS 2.0 */
 
 	req = dlp_request_new(dlpFuncReadNetSyncInfo, 0);
 	
@@ -1620,7 +1616,7 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 
 	strcpy(DLP_REQUEST_DATA(req, 0, str_offset), i->hostName);
 	str_offset += strlen(i->hostName) + 1;
-	result = dlp_exec_new(sd, req, &res);
+	strcpy(DLP_REQUEST_DATA(req, 0, str_offset), i->hostAddress);
 	str_offset += strlen(i->hostAddress) + 1;
 	strcpy(DLP_REQUEST_DATA(req, 0, str_offset), i->hostSubnetMask);
 
@@ -1784,7 +1780,7 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 		Trace(ReadFeatureV2);
 
 		req = dlp_request_new(dlpFuncReadFeature, 1, 6);
-		result = dlp_exec_new(sd, req, &res);
+
 		set_long(DLP_REQUEST_DATA(req, 0, 0), creator);
 		set_short(DLP_REQUEST_DATA(req, 0, 4), num);
 
@@ -1855,7 +1851,7 @@ int dlp_ResetDBIndex(int sd, int dbhandle)
 	if ((ps = find_pi_socket(sd)))
 		ps->dlprecord = 0;
 
-	result = dlp_exec_new(sd, req, &res);
+	req = dlp_request_new(dlpFuncResetRecordIndex, 1, 1);
 
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	
@@ -1892,7 +1888,7 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 	req = dlp_request_new(dlpFuncReadRecordIDList, 1, 6);
 		
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
-	result = dlp_exec_new(sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 1), sort ? 0x80 : 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), start);
 	set_short(DLP_REQUEST_DATA(req, 0, 4), max);
 
@@ -1981,7 +1977,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	}
 #endif
 
-	result = dlp_exec_new(sd, req, &res);
+	memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
 
 	CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, record_dump(DLP_RESPONSE_DATA(req, 0, 0)));
 	
@@ -2026,7 +2022,7 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 
 	req = dlp_request_new(dlpFuncDeleteRecord, 1, 6);
 
-	result = dlp_exec_new(sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), flags);
 	set_long(DLP_REQUEST_DATA(req, 0, 2), recID);
 
@@ -2087,7 +2083,7 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 
 		req = dlp_request_new(dlpFuncDeleteRecord, 1, 6);
 		
-		result = dlp_exec_new(sd, req, &res);
+		set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), flags);
 		set_long(DLP_REQUEST_DATA(req, 0, 2), category & 0xff);
 		
@@ -2128,7 +2124,7 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_long(DLP_REQUEST_DATA(req, 0, 2), type);
-	result = dlp_exec_new(sd, req, &res);
+	set_short(DLP_REQUEST_DATA(req, 0, 6), id);
 	set_short(DLP_REQUEST_DATA(req, 0, 8), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 10), buffer ? DLP_BUF_SIZE : 0);
 
@@ -2187,7 +2183,7 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
 	
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
-	result = dlp_exec_new(sd, req, &res);
+	set_short(DLP_REQUEST_DATA(req, 0, 2), index);
 	set_short(DLP_REQUEST_DATA(req, 0, 4), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? DLP_BUF_SIZE : 0);
 
@@ -2253,7 +2249,7 @@ dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
 
 	if (length + 10 > DLP_BUF_SIZE) {
 		fprintf(stderr, "Data too large\n");
-	result = dlp_exec_new(sd, req, &res);
+		return -131;
 	}
 	memcpy(DLP_REQUEST_DATA(req, 0, 10), data, length);
 
@@ -2291,7 +2287,7 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 	req = dlp_request_new(dlpFuncDeleteResource, 1, 8);
 
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
-	result = dlp_exec_new(sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 1), flags);
 	set_long(DLP_REQUEST_DATA(req, 0, 2), restype);
 	set_short(DLP_REQUEST_DATA(req, 0, 6), resID);
 
@@ -2327,7 +2323,7 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	req = dlp_request_new(dlpFuncReadAppBlock, 1, 6);
 	
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
-	result = dlp_exec_new(sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), offset);
 	set_short(DLP_REQUEST_DATA(req, 0, 4), dlen);
 
@@ -2381,7 +2377,7 @@ int dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 
 	if (length + 10 > DLP_BUF_SIZE) {
 		fprintf(stderr, "Data too large\n");
-	result = dlp_exec_new(sd, req, &res);
+		return -131;
 	}
 	memcpy(DLP_REQUEST_DATA(req, 0, 4), data, length);
 
@@ -2418,7 +2414,7 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	req = dlp_request_new(dlpFuncReadSortBlock, 1, 6);
 	
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
-	result = dlp_exec_new(sd, req, &res);
+	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), offset);
 	set_short(DLP_REQUEST_DATA(req, 0, 4), dlen);
 
@@ -2472,7 +2468,7 @@ int dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 
 	if (length + 10 > DLP_BUF_SIZE) {
 		fprintf(stderr, "Data too large\n");
-	result = dlp_exec_new(sd, req, &res);
+		return -131;
 	}
 	memcpy(DLP_REQUEST_DATA(req, 0, 4), data, length);
 
@@ -2504,7 +2500,7 @@ int dlp_CleanUpDatabase(int sd, int fHandle)
 
 	Trace(CleanUpDatabase);
 
-	result = dlp_exec_new(sd, req, &res);
+	req = dlp_request_new(dlpFuncCleanUpDatabase, 1, 1);
 
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 
@@ -2536,7 +2532,7 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
 
 	Trace(ResetSyncFlags);
 
-	result = dlp_exec_new(sd, req, &res);
+	req = dlp_request_new(dlpFuncResetSyncFlags, 1, 1);
 
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 
@@ -2628,7 +2624,7 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 		Trace(ReadNextRecInCategoryV2);
 
 		req = dlp_request_new(dlpFuncReadNextRecInCategory, 1, 2);
-		result = dlp_exec_new(sd, req, &res);
+		
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), incategory);
 
@@ -2745,7 +2741,7 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 		
 		set_long(DLP_REQUEST_DATA(req, 0, 0), creator);
 		set_short(DLP_REQUEST_DATA(req, 0, 4), id);
-		result = dlp_exec_new(sd, req, &res);
+		set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? maxsize : 0);
 		set_byte(DLP_REQUEST_DATA(req, 0, 8), backup ? 0x80 : 0);
 		set_byte(DLP_REQUEST_DATA(req, 0, 9), 0); /* Reserved */
 
@@ -2840,7 +2836,7 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 
 		if (size + 12 > DLP_BUF_SIZE) {
 			fprintf(stderr, "Data too large\n");
-		result = dlp_exec_new (sd, req, &res);
+			return -131;
 		}
 		memcpy(DLP_REQUEST_DATA(req, 0, 12), buffer, size);
 
@@ -2911,7 +2907,7 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 		Trace(ReadNextModifiedRecInCategoryV2);
 
 		req = dlp_request_new(dlpFuncReadNextModifiedRecInCategory, 1, 2);
-		result = dlp_exec_new(sd, req, &res);
+
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), incategory);
 
@@ -2968,7 +2964,7 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
 
 	Trace(ReadNextModifiedRec);
 	
-	result = dlp_exec_new (sd, req, &res);
+	req = dlp_request_new (dlpFuncReadNextModifiedRec, 1, 1);
 	
 	result = dlp_exec (sd, req, &res);
 
@@ -3026,7 +3022,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 	
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
-	result = dlp_exec_new(sd, req, &res);
+	set_long(DLP_REQUEST_DATA(req, 0, 2), id); 
 	set_short(DLP_REQUEST_DATA(req, 0, 6), 0); /* Offset into record */
 	set_short(DLP_REQUEST_DATA(req, 0, 8), buffer ? DLP_BUF_SIZE : 0);	/* length to return */
 
@@ -3084,7 +3080,7 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 	
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
-	result = dlp_exec_new(sd, req, &res);
+	set_short(DLP_REQUEST_DATA(req, 0, 2), index);
 	set_short(DLP_REQUEST_DATA(req, 0, 4), 0);	/* Offset into record */
 	set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? DLP_BUF_SIZE : 0);	/* length to return */
 
