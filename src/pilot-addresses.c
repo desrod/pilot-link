@@ -77,11 +77,9 @@ char *tableheads[21] = {
 
 int 	tableformat 	= 0,
 	tabledelim 	= -1,
-	encodechars 	= 0,
 	augment 	= 0,
 	tablehead 	= 0,
 	defaultcategory = 0;
-
 
 
 
@@ -102,7 +100,7 @@ int inchar(FILE * in)
 	int 	c;	/* switch */
 
 	c = getc(in);
-	if (encodechars && c == '\\') {
+	if (c == '\\') {
 		c = getc(in);
 		switch (c) {
 		case 'b':
@@ -235,7 +233,6 @@ int read_field(char *dest, FILE *in, size_t length)
  ***********************************************************************/
 void outchar(char c, FILE * out)
 {
-	if (encodechars) {
 		switch (c) {
 		case '"':
 			putc('"', out);
@@ -273,11 +270,6 @@ void outchar(char c, FILE * out)
 			putc(c, out);
 			break;
 		}
-	} else {
-		putc(c, out);
-		if (c == '"')
-			putc('"', out);
-	}
 }
 
 
@@ -545,7 +537,6 @@ int main(int argc, const char *argv[])
 		USERLAND_RESERVED_OPTIONS
 	        {"delete-all",	 0 , POPT_ARG_NONE, &run_mode,  mode_delete_all, "Delete all Palm records in all categories"},
         	{"titles",	'T', POPT_ARG_NONE, &tablehead,           0, "Write header with titles"},
-	        {"escape",	'e', POPT_ARG_NONE, &encodechars,         0, "Escape special chcters with backslash"},
 	        {"delimiter",	't', POPT_ARG_INT,  &tabledelim,          0, "Include category, use delimiter (3=tab, 2=;, 1=,)"},
         	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,'d', "Delete old Palm records in <category>", "category"},
 	        {"category",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to", "category"},
