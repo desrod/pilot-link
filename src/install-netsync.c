@@ -1,4 +1,4 @@
-/* 
+/*
  * install-netsync.c:  Palm Network Information Installer
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,7 +17,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,30 +27,9 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "userland.h"
 
 poptContext po;
-
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments  
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname) {
-		printf("Assigns your Palm device NetSync information\n\n");
-
-		poptPrintHelp(po, stderr, 0);
-
-		printf("\n  Examples:\n");
-		printf("      %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n", progname);
-
-		exit(EXIT_SUCCESS);
-}
 
 int main(int argc, char *argv[])
 {
@@ -59,56 +37,33 @@ int main(int argc, char *argv[])
 		sd 	= -1,
 		po_err	= -1;
 
-	char *progname 	= argv[0];
-
-	const char *port	= NULL,
+	const char
 		*hostname 	= NULL,
 		*address 	= NULL,
 		*netmask 	= NULL;
 
 	const struct poptOption options[] = {
-		{ "port",    'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
-		{ "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
-		{ "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
-		{ "enable",  'e', POPT_ARG_NONE,   0, 'e', "Enables LANSync on the Palm"},
-		{ "disable", 'd', POPT_ARG_NONE,   0, 'd', "Disable the LANSync setting on the Palm"},
-		{ "name",    'n', POPT_ARG_STRING, &hostname, 0, "The hostname of the remote machine you sync with", "<name>"},   
+		USERLAND_RESERVED_OPTIONS
+		{ "enable",  'e', POPT_ARG_VAL,    &enable, 1, "Enables LANSync on the Palm"},
+		{ "disable", 'd', POPT_ARG_VAL,    &enable, 0, "Disable the LANSync setting on the Palm"},
+		{ "name",    'n', POPT_ARG_STRING, &hostname, 0, "The hostname of the remote machine you sync with", "<name>"},
 		{ "address", 'a', POPT_ARG_STRING, &address, 0, "IP address of the remote machine you connect to", "<address>"},
 		{ "mask",    'm', POPT_ARG_STRING, &netmask, 0, "Subnet mask of the network your Palm is on", "<netmask>"},
-		POPT_AUTOHELP
-		{ NULL, 0, 0, NULL, 0 }
+		POPT_TABLEEND
 	};
 
 	struct 	NetSyncInfo 	Net;
 	struct in_addr addr;
 
 	po = poptGetContext("install-netsync", argc, (const char **) argv, options, 0);
+	poptSetOtherOptionHelp(po," [-p port] <netsync options>\n\n"
+		"   Assigns your Palm device NetSync information\n\n"
+		"   Example:\n"
+		"      -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n");
 
-	if (argc < 2) {
-		display_help(progname);
-		exit(1);
+	while ((po_err = poptGetNextOpt(po)) >= 0) {
 	}
-
-	while ((po_err = poptGetNextOpt(po)) != -1) {
-		switch (po_err) {
-
-		case 'h':
-			poptPrintHelp(po, stderr, 0);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 'e':
-			enable = 1;
-			break;
-		case 'd':
-			enable = 0;
-			break;
-		default:
-			poptPrintHelp(po, stderr, 0);
-			return 0;
-		}
-	}
+	if (po_err < -1) userland_badoption(po,po_err);
 
 	/* FIXME: Take the user-supplied IP or hostname and reverse it to
 	   get the other component, which reduces the complexity of this by
@@ -125,7 +80,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	sd = pilot_connect(port);
+	sd = userland_connect();
 	if (sd < 0)
 		goto error;
 
@@ -161,18 +116,18 @@ int main(int argc, char *argv[])
 	if (dlp_AddSyncLogEntry(sd, "install-netsync, exited normally.\n"
 				"Thank you for using pilot-link.\n") < 0)
 		goto error_close;
-	
+
 	if (dlp_EndOfSync(sd, 0) < 0)
 		goto error_close;
 
 	if (pi_close(sd) < 0)
 		goto error;
-	
+
 	return 0;
-	
+
 error_close:
 	pi_close(sd);
-	
+
 error:
 	return -1;
 }
