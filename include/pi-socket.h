@@ -246,12 +246,12 @@ typedef struct pi_socket_list
 /** @name Low-level data transfers */
 /*@{*/
 	extern int pi_send
-	    PI_ARGS((int pi_sd, void *msg, size_t len, int flags));
+	    PI_ARGS((int pi_sd, PI_CONST void *msg, size_t len, int flags));
 	extern ssize_t pi_recv
 	    PI_ARGS((int pi_sd, pi_buffer_t *msg, size_t len, int flags));
 
 	extern ssize_t pi_read PI_ARGS((int pi_sd, pi_buffer_t *msg, size_t len));
-	extern ssize_t pi_write PI_ARGS((int pi_sd, void *msg, size_t len));
+	extern ssize_t pi_write PI_ARGS((int pi_sd, PI_CONST void *databuf, size_t datasize));
 	extern void pi_flush PI_ARGS((int pi_sd, int flags));
 /*@}*/
 

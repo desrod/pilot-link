@@ -1313,7 +1313,7 @@ pi_setsockopt(int pi_sd, int level, int option_name,
  *
  ***********************************************************************/
 int
-pi_send(int pi_sd, void *msg, size_t len, int flags)
+pi_send(int pi_sd, const void *msg, size_t len, int flags)
 {
 	pi_socket_t *ps;
 
@@ -1387,7 +1387,7 @@ pi_read(int pi_sd, pi_buffer_t *msg, size_t len)
  *
  ***********************************************************************/
 ssize_t
-pi_write(int pi_sd, void *msg, size_t len)
+pi_write(int pi_sd, const void *msg, size_t len)
 {
 	return pi_send(pi_sd, msg, len, 0);
 }
