@@ -34,6 +34,11 @@
 #include <sys/select.h>
 #endif
 
+/* Declare prototypes */
+void read_user(int sd);
+void read_pilot(int sd);
+void sig(int signal);
+
 int 	done = 0;
 
 void read_user(int sd)
@@ -130,25 +135,16 @@ void sig(int signal)
 int main(int argc, char *argv[])
 {
 	int 	max,
-		sd;
+		sd = -1;
 	
 	struct pi_sockaddr laddr;
 
 	fd_set r, rin;
-	char *progname = argv[0];
 
 	if (argc < 2) {
 		fprintf(stderr, "   Usage: %s %s\n\n", argv[0], TTYPrompt);
 		exit(2);
 	}
-
-//	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP))) {
-//		perror("pi_socket");
-//		exit(1);
-//	}
-
-//	laddr.pi_family = PI_AF_SLP;
-	strcpy(laddr.pi_device, argv[1]);
 
 	pi_bind(sd, (struct sockaddr *) &laddr, sizeof(laddr));
 

@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include "pi-version.h"
 
+void PalmHeader(char *progname);
+
 void PalmHeader(char *progname)
 {
         char 	*patchlevel = "";

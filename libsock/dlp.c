@@ -42,6 +42,11 @@
 static /* @checked@ */ unsigned char dlp_buf[DLP_BUF_SIZE];
 static /* @checked@ */ unsigned char exec_buf[DLP_BUF_SIZE];
 
+/* Define prototypes */
+int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen, 
+             unsigned char *result, int maxlen);
+
+
 char *dlp_errorlist[] = {
 	"No error",
 	"General System error",
@@ -101,14 +106,8 @@ int dlp_trace = 0;
       fprintf(stderr, "Result: No error, %d bytes\n", result);
 #endif
 
-int
-dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
-	 int msglen, unsigned char
-	 /* @out@ 	*/
-	 /* @null@ 	*/
-	 *result, int maxlen)
- /* @modifies *result, exec_buf;@ 	*/
- /* @-predboolint -boolops@ 		*/
+int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen, 
+	     unsigned char *result, int maxlen)
 {
 	int 	idx,	
 		err;

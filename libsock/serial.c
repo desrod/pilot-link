@@ -1,4 +1,3 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * serial.c: Interface layer to serial HotSync connections
  *
@@ -18,6 +17,8 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  */
 
 #ifdef WIN32
@@ -360,7 +361,7 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	}
 	
 	accept = pi_socket_copy(ps);
-	pi_socket_init (accept);
+	pi_socket_init(accept);
 	
 	if (ps->type == PI_SOCK_STREAM) {
 		struct timeval tv;

@@ -1,4 +1,3 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * inet.c: Interface layer to TCP/IP NetSync connections
  *
@@ -19,6 +18,8 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * -*- Mode: C; tab-width: 28; indent-tabs-mode: t; c-basic-offset: 28 -*- 
  */
 
 #ifdef WIN32

@@ -1,6 +1,14 @@
+2002-01-18  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* General warning cleanup in libsock/* and . 
+	
+	* Makefile.in: Make sure . is built first, then tools
+
+	* Editor macro placement 
+
 2002-01-18  JP Rosevear  <jpr@ximian.com>
 
-	* pilot-link.m4.in: committ accidentally erased bit
+	* pilot-link.m4.in: commit accidentally erased bit
 
 2002-01-18  JP Rosevear  <jpr@ximian.com>
 	

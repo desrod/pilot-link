@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
  */
 
 #ifdef WIN32
@@ -32,7 +33,12 @@
 #include "pi-slp.h"
 #include "pi-serial.h"
 
+/* Declare prototypes */
 int sys_RPCerror;
+int sys_PackRegisters(void *data, struct Pilot_registers *r);
+int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
+                    int * version, long * date, long * romsize, long * ramsize,
+                    long * freeram);
 
 /***********************************************************************
  *
