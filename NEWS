@@ -2,7 +2,12 @@ Pilot-Link 0.10.99, "Woodstock", 03-20-2002
 -------------------------------------------
 
 This is a development release, primarily to test the new usb device
-support.
+support.  Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1),
+except for the Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or
+usb/tts/0).  Note that you must hit the sync button prior to running
+the app right now for USB devices.  It is recommended that a kernel >
+2.4.16 be used due to problems that existed in earlier drivers (may
+get a kernel oops).
 
 Major Features:
 
@@ -16,11 +21,11 @@ Other Features:
 	* Complete Autoconf/Automake setup
 	* C++ library is now shared and installed
 	* Source tree re-organization
+	* Runtime logging
 
 Bug Fixes:
 
 	* Expense Preferences no pack/unpack correctly
-	* 
 	* Dozens of minor bug fixes
 
 Known Problems:
