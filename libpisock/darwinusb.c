@@ -104,8 +104,7 @@
 #undef DEBUG_USB
 /*#define DEBUG_USB 1*/
 
-/*
- * These values are somewhat tricky.  Priming reads with a size of exactly one
+/* These values are somewhat tricky.  Priming reads with a size of exactly one
  * USB packet works best (no timeouts).  Probably best to leave these as they are.
  */
 #define MAX_AUTO_READ_SIZE	4096
@@ -295,7 +294,7 @@ static void		device_notification (usb_connection_t *connexion, io_service_t serv
 static void		read_completion (usb_connection_t *connexion, IOReturn result, void *arg0);
 static int		accepts_device (unsigned short vendor, unsigned short product);
 static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int *port_number, int *input_pipe_number, int *output_pipe_number, int *pipe_info_retrieved);
-static IOReturn	find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved);
+static IOReturn	find_interfaces (usb_connection_t *usb, IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved);
 static int		prime_read (usb_connection_t *connexion);
 static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
@@ -382,39 +381,39 @@ start_listening(void)
 
 	// Now done with the master_port
 	mach_port_deallocate (mach_task_self(), masterPort);
-	
+
 	return 0;
 }
 
 static void
-stop_listening(void)
+stop_listening(usb_connection_t *c)
 {
 #ifdef DEBUG_USB
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stop_listening\n"));
 #endif
 
-	if (usb.device_notification)
+	if (c->device_notification)
 	{
 		// do this first to not get caught in a loop if called from device_notification()
-		IOObjectRelease (usb.device_notification);
-		usb.device_notification = NULL;
+		IOObjectRelease (c->device_notification);
+		c->device_notification = NULL;
 	}
 
-	if (usb.opened && usb.device)
-		control_request (usb.device, 0xc2, GENERIC_CLOSE_NOTIFICATION, NULL, 0x12);
+	if (c->opened && c->device)
+		control_request (c->device, 0xc2, GENERIC_CLOSE_NOTIFICATION, NULL, 0x12);
 
-	if (usb.interface)
+	if (c->interface)
 	{
-		(*usb.interface)->USBInterfaceClose (usb.interface);
-		(*usb.interface)->Release (usb.interface);
-		usb.interface = NULL;
+		(*c->interface)->USBInterfaceClose (c->interface);
+		(*c->interface)->Release (c->interface);
+		c->interface = NULL;
 	}
 
-	if (usb.device)
+	if (c->device)
 	{
-		(*usb.device)->USBDeviceClose (usb.device);
-		(*usb.device)->Release (usb.device);
-		usb.device = NULL;
+		(*c->device)->USBDeviceClose (c->device);
+		(*c->device)->Release (c->device);
+		c->device = NULL;
 	}
 
 	if (usb_device_added_iter)
@@ -429,9 +428,9 @@ stop_listening(void)
 		usb_notify_port = NULL;
 	}
 
-	usb.opened = 0;
-	usb.in_pipe_ref = 0;
-	usb.out_pipe_ref = 0;
+	c->opened = 0;
+	c->in_pipe_ref = 0;
+	c->out_pipe_ref = 0;
 }
 
 static void *
@@ -455,7 +454,7 @@ usb_thread_run(void *foo)
 		usb_run_loop = 0;
 		pthread_mutex_unlock(&usb_run_loop_mutex);
 
-		stop_listening();
+		stop_listening(&usb);
 	}
 	else
 	{
@@ -552,7 +551,7 @@ device_added (void *refCon, io_iterator_t iterator)
 			continue;
 		}
 
-		kr = find_interfaces(dev, vendor, product, port_number, input_pipe_number, output_pipe_number, pipe_info_retrieved);
+		kr = find_interfaces(&usb, dev, vendor, product, port_number, input_pipe_number, output_pipe_number, pipe_info_retrieved);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to find interfaces (kr=0x%08x)\n", kr));
@@ -585,7 +584,13 @@ device_added (void *refCon, io_iterator_t iterator)
 }
 
 static IOReturn
-configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int *port_number, int *input_pipe_number, int *output_pipe_number, int *pipe_info_retrieved)
+configure_device(IOUSBDeviceInterface **di,
+				 unsigned short vendor,
+				 unsigned short product,
+				 int *port_number,
+				 int *input_pipe_number,
+				 int *output_pipe_number,
+				 int *pipe_info_retrieved)
 {
 	UInt8 numConf, conf, deviceClass;
 	IOReturn kr;
@@ -596,7 +601,7 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	 * reconfiguring them as we did before is what caused some Sony devices to
 	 * refuse talking to us.
 	 */
-	kr = (*dev)->GetDeviceClass (dev, &deviceClass);
+	kr = (*di)->GetDeviceClass (di, &deviceClass);
 	if (kr != kIOReturnSuccess)
 		return kr;
 
@@ -604,7 +609,7 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: trying to configure device\n"));
 
-		kr = (*dev)->GetNumberOfConfigurations (dev, &numConf);
+		kr = (*di)->GetNumberOfConfigurations (di, &numConf);
 		if (!numConf)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: device has zero configurations!\n"));
@@ -616,7 +621,7 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 		 */
 		for (conf=0; conf < numConf; conf++)
 		{
-			kr = (*dev)->GetConfigurationDescriptorPtr(dev, 0, &confDesc);
+			kr = (*di)->GetConfigurationDescriptorPtr(di, 0, &confDesc);
 			if (kr)
 			{
 				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get config descriptor for index %d (err=%08x numConf=%d)\n",
@@ -624,7 +629,7 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 				continue;
 			}
 
-			kr = (*dev)->SetConfiguration(dev, confDesc->bConfigurationValue);
+			kr = (*di)->SetConfiguration(di, confDesc->bConfigurationValue);
 			if (kr == kIOReturnSuccess)
 				break;
 
@@ -659,9 +664,9 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	 * seen on USB but not synchronizing) and in this case we
 	 * return a kIOReturnNotReady code.
 	 */
-	kr = read_generic_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
+	kr = read_generic_connection_information (di, port_number, input_pipe_number, output_pipe_number);
 	if (kr != kIOReturnSuccess && kr != kIOReturnNotReady)
-		kr = read_visor_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
+		kr = read_visor_connection_information (di, port_number, input_pipe_number, output_pipe_number);
 	if (kr == kIOReturnNotReady)
 		return kr;
 	*pipe_info_retrieved = (kr == kIOReturnSuccess);
@@ -673,7 +678,7 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	if (vendor != VENDOR_TAPWAVE)
 	{
 		unsigned char ba[2];
-		kr = control_request (dev, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, &ba[0] , 2);
+		kr = control_request (di, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, &ba[0] , 2);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", kr));
@@ -685,7 +690,14 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 }
 
 static IOReturn
-find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved)
+find_interfaces(usb_connection_t *c,
+				IOUSBDeviceInterface **di,
+				unsigned short vendor,
+				unsigned short product,
+				int port_number,
+				int input_pipe_number,
+				int output_pipe_number,
+				int pipe_info_retrieved)
 {
 	IOReturn kr;
 	io_iterator_t iterator;
@@ -704,7 +716,7 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 	request.bInterfaceProtocol = kIOUSBFindInterfaceDontCare;
 	request.bAlternateSetting = kIOUSBFindInterfaceDontCare;
 
-	kr = (*dev)->CreateInterfaceIterator (dev, &request, &iterator);
+	kr = (*di)->CreateInterfaceIterator (di, &request, &iterator);
 
 	while ((usbInterface = IOIteratorNext (iterator)))
 	{
@@ -717,38 +729,38 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		}
 
 		/* we have the interface plugin: we now need the interface interface */
-		res = (*plugInInterface)->QueryInterface (plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID *) &usb.interface);
+		res = (*plugInInterface)->QueryInterface (plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID *) &c->interface);
 		(*plugInInterface)->Release (plugInInterface);			/* done with this */
-		if (res || usb.interface == NULL)
+		if (res || c->interface == NULL)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: couldn't create an IOUSBInterfaceInterface (%08x)\n", (int) res));
 			continue;
 		}
 
 		/* get the interface class and subclass */
-		kr = (*usb.interface)->GetInterfaceClass (usb.interface, &intfClass);
-		kr = (*usb.interface)->GetInterfaceSubClass (usb.interface, &intfSubClass);
+		kr = (*c->interface)->GetInterfaceClass (c->interface, &intfClass);
+		kr = (*c->interface)->GetInterfaceSubClass (c->interface, &intfSubClass);
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface class %d, subclass %d\n", intfClass, intfSubClass));
 
 		/* Now open the interface. This will cause the pipes to be instantiated that are
 		 * associated with the endpoints defined in the interface descriptor.
 		 */
-		kr = (*usb.interface)->USBInterfaceOpen (usb.interface);
+		kr = (*c->interface)->USBInterfaceOpen (c->interface);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to open interface (%08x)\n", kr));
-			(*usb.interface)->Release (usb.interface);
-			usb.interface = NULL;
+			(*c->interface)->Release (c->interface);
+			c->interface = NULL;
 			continue;
 		}
 
-		kr = (*usb.interface)->GetNumEndpoints (usb.interface, &intfNumEndpoints);
+		kr = (*c->interface)->GetNumEndpoints (c->interface, &intfNumEndpoints);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get number of endpoints (%08x)\n", kr));
-			(*usb.interface)->USBInterfaceClose (usb.interface);
-			(*usb.interface)->Release (usb.interface);
-			usb.interface = NULL;
+			(*c->interface)->USBInterfaceClose (c->interface);
+			(*c->interface)->Release (c->interface);
+			c->interface = NULL;
 			continue;
 		}
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface has %d endpoints\n", intfNumEndpoints));
@@ -767,29 +779,29 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: checking for pipe_info sent by device with timeout %dms\n"));
 				for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
 				{
-					kr = (*usb.interface)->GetPipeProperties (usb.interface, pipeRef, &direction, &number,
+					kr = (*c->interface)->GetPipeProperties (c->interface, pipeRef, &direction, &number,
 										  &transferType, &maxPacketSize, &interval);
 					if (kr != kIOReturnSuccess)
 						continue;
 					if (direction == kUSBIn)
 					{
-						UInt32 size = sizeof(usb.read_buffer)-1;
+						UInt32 size = sizeof(c->read_buffer)-1;
 						LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: trying pipe %d type=%d\n", pipeRef, (int)transferType));
 						if (transferType == kUSBBulk)
-							kr = (*usb.interface)->ReadPipeTO (usb.interface, pipeRef, &usb.read_buffer, &size, reqTimeout, 250);
+							kr = (*c->interface)->ReadPipeTO (c->interface, pipeRef, &c->read_buffer, &size, reqTimeout, 250);
 						else
-							kr = (*usb.interface)->ReadPipe (usb.interface, pipeRef, &usb.read_buffer, &size);
+							kr = (*c->interface)->ReadPipe (c->interface, pipeRef, &c->read_buffer, &size);
 
 						if (kr == kIOReturnSuccess && size >= 8)
 						{
 							/* got something!! */
 							LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: got %d bytes there!\n", (int)size));
-							CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(usb.read_buffer, size));
-							if (!memcmp(usb.read_buffer, "VNDR10", 6))
+							CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(c->read_buffer, size));
+							if (!memcmp(c->read_buffer, "VNDR10", 6))
 							{
 								/* VNDR version 1.0 */
 								palm_ext_connection_info ci;
-								memcpy(&ci, &usb.read_buffer[6], sizeof(ci));
+								memcpy(&ci, &c->read_buffer[6], sizeof(ci));
 								decode_generic_connection_information(&ci, &port_number, &input_pipe_number, &output_pipe_number);
 								preambleFound = 1;
 								break;
@@ -809,14 +821,14 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		 * 4. Finally of this failed, forget about the transfer size and take the first ones that
 		 *    come (i.e. Tungsten W has a 64 bytes IN pipe and a 32 bytes OUT pipe).
 		 */
-		for (pass=1; pass <= 4 && (usb.in_pipe_ref==0 || usb.out_pipe_ref==0); pass++)
+		for (pass=1; pass <= 4 && (c->in_pipe_ref==0 || c->out_pipe_ref==0); pass++)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pass %d looking for pipes, port_number=0x%02x, input_pipe_number=0x%02x, output_pipe_number=0x%02x\n",
 				pass, port_number, input_pipe_number, output_pipe_number));
 
 			for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
 			{
-				kr = (*usb.interface)->GetPipeProperties (usb.interface, pipeRef, &direction, &number,
+				kr = (*c->interface)->GetPipeProperties (c->interface, pipeRef, &direction, &number,
 									  &transferType, &maxPacketSize, &interval);
 				if (kr != kIOReturnSuccess)
 				{
@@ -827,7 +839,7 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x\n",
 						pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval));
 
-					if (usb.in_pipe_ref == 0 &&
+					if (c->in_pipe_ref == 0 &&
 					    direction == kUSBIn &&
 					    transferType == kUSBBulk)
 					{
@@ -835,9 +847,9 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 							(pass == 2 && port_number != 0xff && number == port_number) ||
 							(pass == 3 && maxPacketSize == 64) ||
 							 pass == 4)
-							usb.in_pipe_ref = pipeRef;
+							c->in_pipe_ref = pipeRef;
 					}
-					else if (usb.out_pipe_ref == 0 &&
+					else if (c->out_pipe_ref == 0 &&
 							 direction == kUSBOut &&
 							 transferType == kUSBBulk)
 					{
@@ -845,29 +857,29 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 							(pass == 2 && port_number != 0xff && number == port_number) ||
 							(pass == 3 && maxPacketSize == 64) ||
 							 pass == 4)
-							usb.out_pipe_ref = pipeRef;
+							c->out_pipe_ref = pipeRef;
 					}
 				}
 			}
 		}
 
-		if (usb.in_pipe_ref && usb.out_pipe_ref)
+		if (c->in_pipe_ref && c->out_pipe_ref)
 		{
 			/* Just like with service matching notifications, we need to create an event source and add it
 			 * to our run loop in order to receive async completion notifications.
 			 */
 			CFRunLoopSourceRef runLoopSource;
-			kr = (*usb.interface)->CreateInterfaceAsyncEventSource (usb.interface, &runLoopSource);
+			kr = (*c->interface)->CreateInterfaceAsyncEventSource (c->interface, &runLoopSource);
 			if (kr != kIOReturnSuccess)
 			{
 				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: Unable to create async event source (%08x)\n", kr));
 			}
 			else
 			{
-				LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: USBConnection OPENED usb.in_pipe_ref=%d usb.out_pipe_ref=%d\n", usb.in_pipe_ref, usb.out_pipe_ref));
-				usb.opened = 1;
+				LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: USBConnection OPENED c->in_pipe_ref=%d c->out_pipe_ref=%d\n", c->in_pipe_ref, c->out_pipe_ref));
+				c->opened = 1;
 				CFRunLoopAddSource (CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
-				prime_read(&usb);
+				prime_read(c);
 				break;
 			}
 		}
@@ -875,14 +887,14 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: couldn't find any suitable pipes pair on this interface\n"));
 
 		// if we didn't find two suitable pipes, close the interface
-		(*usb.interface)->USBInterfaceClose (usb.interface);
-		(*usb.interface)->Release (usb.interface);
-		usb.interface = NULL;
-		usb.in_pipe_ref = 0;
-		usb.out_pipe_ref = 0;
+		(*c->interface)->USBInterfaceClose (c->interface);
+		(*c->interface)->Release (c->interface);
+		c->interface = NULL;
+		c->in_pipe_ref = 0;
+		c->out_pipe_ref = 0;
 	}
 
-	return usb.interface==NULL ? -1 : kIOReturnSuccess;
+	return c->interface==NULL ? -1 : kIOReturnSuccess;
 }
 
 static IOReturn
@@ -1039,7 +1051,7 @@ device_notification(usb_connection_t *c, io_service_t service, natural_t message
 	if (messageType == kIOMessageServiceIsTerminated)
 	{
 		c->opened = 0;		// so that stop_listening() does'nt try to send the control_request
-		stop_listening();
+		stop_listening(c);
 
 		// In case the reading thread is waiting for data,
 		// we need to raise the usb_data_available cond once.
