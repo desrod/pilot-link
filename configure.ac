@@ -166,6 +166,7 @@ AC_CHECK_HEADERS(
 	netinet/in.h regex.h stdint.h stdlib.h string.h strings.h	\
 	sys/ioctl_compat.h sys/ioctl.h 	sys/malloc.h sys/select.h	\
 	sys/sockio.h sys/time.h sys/utsname.h unistd.h IOKit/IOBSD.h)
+AC_CHECK_HEADERS(ifaddrs.h)
 
 AC_CHECK_FUNCS(
 	atexit cfmakeraw cfsetispeed cfsetospeed cfsetspeed dup2 	\
