@@ -51,11 +51,16 @@ int pilot_connect(char *port);
 const char *progname;
 int protect_files(char *name, char *extension);
 
-void write_png (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
-void write_ppm (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
-void write_png( FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
+void write_png (FILE *f, const struct PalmPixState *state, const struct 
+	PalmPixHeader *header);
+void write_ppm (FILE *f, const struct PalmPixState *state, const struct 
+	PalmPixHeader *header);
+void write_png( FILE *f, const struct PalmPixState *state, const struct 
+	PalmPixHeader *header);
 void init_for_ppm (struct PalmPixState *state);
-void read_db (struct PalmPixState *state, int n, int (*action) (const struct PalmPixHeader *, struct PalmPixState *, int, const char *), const char *action_arg);
+void read_db (struct PalmPixState *state, int n, int (*action) 
+	(const struct PalmPixHeader *, struct PalmPixState *, int, 
+	const char *), const char *action_arg);
 
 struct option options[] = {
 	{"port", 	required_argument,  NULL, 'p'},
@@ -69,28 +74,36 @@ struct option options[] = {
 
 static const char optstring[] = "p:hvln:t:";
 
-static void display_help(char *progname) 
-{
-	printf("   Convert all pictures in the files given, or found via connecting to a\n");
-	printf("   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");
-	printf("   Usage: %s [-p port] [-l | -n pixname] [file]...\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -t, --type,             Specify picture output type (ppm or png)\n");
-	printf("     -l, --list,             List picture information instead of converting\n");
-	printf("     -n, --name [name]       Convert only <name>, and output to STDOUT as type\n\n");
-	
-	return;
-}
 
+/***********************************************************************
+ *
+ * Function:    PalmPixState_pi_file
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 struct PalmPixState_pi_file
 {
 	struct PalmPixState state;
 	struct pi_file *f;
 };
 
+
+/***********************************************************************
+ *
+ * Function:    getrecord_pi_file
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int getrecord_pi_file (struct PalmPixState *vstate, int recno,
 	void **buf, int *bufsize)
 {
@@ -102,6 +115,18 @@ static int getrecord_pi_file (struct PalmPixState *vstate, int recno,
 		NULL, NULL);
 }
 
+
+/***********************************************************************
+ *
+ * Function:    PalmPixState_pi_socket
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 struct PalmPixState_pi_socket
 {
 	struct PalmPixState state;
@@ -109,6 +134,18 @@ struct PalmPixState_pi_socket
 		db;
 };
 
+
+/***********************************************************************
+ *
+ * Function:    getrecord_pi_socket
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int getrecord_pi_socket (struct PalmPixState *vstate, int recno, 
 	void **buf, int *bufsize)
 {
@@ -124,6 +161,18 @@ static int getrecord_pi_socket (struct PalmPixState *vstate, int recno,
 		NULL, bufsize, NULL, NULL) == *bufsize);
 }
 
+
+/***********************************************************************
+ *
+ * Function:    fmt_date
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static const char *fmt_date (const struct PalmPixHeader *h)
 {
 	static char buf[24];
@@ -134,6 +183,18 @@ static const char *fmt_date (const struct PalmPixHeader *h)
 	return buf;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    init_for_ppm
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void init_for_ppm (struct PalmPixState *state)
 {
 	state->offset_r = 0;
@@ -141,6 +202,18 @@ void init_for_ppm (struct PalmPixState *state)
 	state->offset_b = 2;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    write_ppm
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void write_ppm (FILE *f, const struct PalmPixState *state, 
 	const struct PalmPixHeader *header)
 {
@@ -150,6 +223,18 @@ void write_ppm (FILE *f, const struct PalmPixState *state,
 	fwrite (state->pixmap, header->w * header->h * 3, 1, f);
 }
 
+
+/***********************************************************************
+ *
+ * Function:    write_png
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 #ifdef HAVE_PNG
 void write_png( FILE *f, const struct PalmPixState *state,
 	        const struct PalmPixHeader *header)
@@ -197,6 +282,18 @@ void write_png( FILE *f, const struct PalmPixState *state,
 }
 #endif
 
+
+/***********************************************************************
+ *
+ * Function:    protect_files
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int protect_files(char *name, char *extension)
 {
 	char *save_name, c = 1;
@@ -226,6 +323,18 @@ int protect_files(char *name, char *extension)
 	return( 1 );
 }
 
+
+/***********************************************************************
+ *
+ * Function:    write_one
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int write_one (const struct PalmPixHeader *header, 
 	struct PalmPixState *state, int recno, const char *pixname)
 {
@@ -253,6 +362,18 @@ static int write_one (const struct PalmPixHeader *header,
 	return recno;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    write_all
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int write_all (const struct PalmPixHeader *header, 
 	struct PalmPixState *state, int recno, const char *ignored)
 {
@@ -296,6 +417,18 @@ static int write_all (const struct PalmPixHeader *header,
 	return recno;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    list
+ *
+ * Summary:
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int list (const struct PalmPixHeader *h, struct PalmPixState *state,
 	int recno, const char *ignored)
 {
@@ -309,6 +442,17 @@ static int list (const struct PalmPixHeader *h, struct PalmPixState *state,
 }
 
 
+/***********************************************************************
+ *
+ * Function:    read_db
+ *
+ * Summary:     
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void read_db (struct PalmPixState *state, int n, int (*action) 
 	(const struct PalmPixHeader *, struct PalmPixState *, 
 	int, const char *), const char *action_arg)
@@ -330,6 +474,34 @@ void read_db (struct PalmPixState *state, int n, int (*action)
 static int fail (const char *func) {
 	perror (func);
 	return -1;
+}
+
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void display_help(char *progname) 
+{
+	printf("   Convert all pictures in the files given, or found via connecting to a\n");
+	printf("   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");
+	printf("   Usage: %s [-p port] [-l | -n pixname] [file]...\n\n", progname);
+	printf("   Options:\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -t, --type,             Specify picture output type (ppm or png)\n");
+	printf("     -l, --list,             List picture information instead of converting\n");
+	printf("     -n, --name [name]       Convert only <name>, and output to STDOUT as type\n\n");
+	
+	return;
 }
 
 
