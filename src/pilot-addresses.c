@@ -537,11 +537,11 @@ int main(int argc, const char *argv[])
         	{"titles",	'T', POPT_ARG_NONE, &tablehead,           0, "Write header with titles"},
 	        {"escape",	'e', POPT_ARG_NONE, &encodechars,         0, "Escape special chcters with backslash"},
 	        {"delimiter",	't', POPT_ARG_INT,  &tabledelim,          0, "Include category, use delimiter (3=tab, 2=;, 1=,)"},
-        	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,'d', "Delete old Palm records in <category>"},
-	        {"category",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to"},
+        	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,'d', "Delete old Palm records in <category>", "category"},
+	        {"category",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to", "category"},
         	{"augment",	'a', POPT_ARG_NONE, &augment,             0, "Augment records with additional information"},
-	        {"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm"},
-        	{"write",	'w', POPT_ARG_STRING, &wrFilename, 'w', "Get records from Palm and write them to <file>"},
+	        {"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm", "file"},
+        	{"write",	'w', POPT_ARG_STRING, &wrFilename, 'w', "Get records from Palm and write them to <file>", "file"},
 	        POPT_TABLEEND
 	};
 
