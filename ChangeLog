@@ -1,3 +1,22 @@
+2003-07-21  Angus Ainslie  <angusa@deltatee.com>
+
+	* src/read-veo.c: Added veo traveler decoder
+	
+	* src/Makefile.in: added compile options for read-veo.c
+	
+	* include/pi-veo.h: veo traveler data structures
+	
+	* include/Makefile.in: added pi-veo.h references
+	
+	* libpisock/veo.c: veo header decode routines
+	
+	* libpisock/Makefile.in: veo.c references
+	
+	* doc/man/read-veo.1.in: new manpage for read-veo
+	
+	* doc/man/read-palmpix.1.in: spelling corrections - colour
+	adjustment suggestion
+
 2003-07-18  JP Rosevear  <jpr@ximian.com>
 
 	* tests/dlp-test.c (main): update FindDBBy calls

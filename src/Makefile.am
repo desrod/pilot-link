@@ -55,6 +55,7 @@ bin_PROGRAMS = 		\
 	read-notepad	\
 	read-palmpix	\
 	read-todos	\
+	read-veo	\
 	reminders
 
 if WITH_PERL
@@ -316,6 +317,13 @@ read_todos_SOURCES = 		\
 	$(getopt_sources)	\
 	read-todos.c
 read_todos_LDADD = 				\
+	$(top_builddir)/libpisock/libpisock.la
+
+read_veo_SOURCES = 		\
+	$(getopt_sources)	\
+	read-veo.c
+read_veo_LDADD = 				\
+	$(PNG_LIBS) 				\
 	$(top_builddir)/libpisock/libpisock.la
 
 reminders_SOURCES = 		\

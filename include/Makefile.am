@@ -31,6 +31,7 @@ c_headers = 			\
 	pi-todo.h		\
 	pi-usb.h		\
 	pi-util.h		\
+	pi-veo.h		\
 	pi-version.h
 
 c_privheaders = 		\

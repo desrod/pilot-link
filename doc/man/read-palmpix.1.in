@@ -22,7 +22,7 @@ or Portable Pixmap (.ppm) files on their system.
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
 Use device file <\fIport\fR> to communicate with the Palm handheld.
 If this is not specified, will look for the \fI$PILOTPORT\fR environment
-variable. If both are not found or supplied, \fBinstall\-expenses\fR will
+variable. If both are not found or supplied, \fBread\-palmpix\fR will
 fall back to /dev/pilot.
 
 
@@ -69,7 +69,8 @@ files by default.
 \fBread\-palmpix\fR's colour correction is not yet as good as Kodak's own,
 but Kodak has deprecated the PalmPix device, so it is not likely that there
 will be any updates to their software in the future, so this may be as good
-as it gets.
+as it gets. A simple method to improve the look of colours is to do a
+histogram equalization in your favourite image editor.
 
 
 .PP
@@ -77,4 +78,4 @@ as it gets.
 .IP
 Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
 .SH "AUTHOR"
-\fBread\-palmpix \fR was originally written by Angus Ainslie <\fIangusa@deltatee.com\fR>, and updated by John Marshall <\fIjmarshall@acm.org\fR> to include core pilot\-link functionality.
+\fBread\-palmpix \fR was originally written by Angus Ainslie <\fIangusa at deltatee.com\fR>, and updated by John Marshall <\fIjmarshall@acm.org\fR> to include core pilot\-link functionality.

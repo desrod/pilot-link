@@ -55,7 +55,8 @@ libpisock_la_SOURCES =  \
 	syspkt.c	\
 	todo.c		\
 	util.c		\
-	utils.c
+	utils.c		\
+	veo.c
 
 libpisock_la_LIBADD = \
 	$(ICONV_LIBS)

@@ -1,0 +1,66 @@
+.\" 
+.\" 
+.TH "read-veo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.SH "NAME"
+\fBread\-veo\fR \- Convert all pictures found via connecting to a Palm
+handheld. The output type is Portable Pixmap (.ppm).
+
+
+.SH "SYNOPSIS"
+\fBread\-veo\fR \-p <\fIport\fR> 
+
+
+.SH "DESCRIPTION"
+\fBread\-veo\fR allows a Veo traveler camera user to extract the images
+from their Palm handheld and convert them to Portable Pixmap (.ppm) files on
+their system.
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld.
+If this is not specified, will look for the \fI$PILOTPORT\fR environment
+variable. If both are not found or supplied, \fBread\-veo\fR will
+fall back to /dev/pilot.
+
+
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display the help synopsis for \fBread\-veo\fR.
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBread\-veo\fR.
+
+
+.TP 
+\fB\-l\fR, \fB\-\-list\fR
+List picture information found on the Palm handheld instead of converting
+the entries found to image files.
+
+
+.SH "USAGE"
+The program will connect to the target Palm handheld, and read the images
+found in the Veo Traveler image databases, and allow the user to view the
+list of images or to convert all of them to Portable Pixmap (.ppm) files to
+be viewed or printed at the desktop. If no options are specified, all of the
+images on the device will be converted to ppm files by default.
+
+
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBread\-veo\fR does no colour correction or intensity adjustment. A simple
+step to improve the look of colours is to do a histogram equalization in
+your favourite image editor. This may get added in the future.
+
+
+.PP
+\fBREPORTING BUGS\fR
+.IP
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+.SH "AUTHOR"
+\fBread\-veo \fR was written by Angus Ainslie <\fIangusa at deltatee.com\fR>.
