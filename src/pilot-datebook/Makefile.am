@@ -9,21 +9,37 @@ bin_PROGRAMS = 				\
 pilot_datebook_SOURCES = 		\
 	parsedate.y			\
 	pilot-datebook.c		\
+	pilot-datebook.h		\
 	pilot-datebook-compare.c	\
+	pilot-datebook-compare.h	\
 	pilot-datebook-csv.c		\
+	pilot-datebook-csv.h		\
 	pilot-datebook-data.c		\
+	pilot-datebook-data.h		\
 	pilot-datebook-hotsync.c	\
+	pilot-datebook-hotsync.h	\
 	pilot-datebook-ical.c		\
+	pilot-datebook-ical.h		\
 	pilot-datebook-io.c		\
+	pilot-datebook.h		\
 	pilot-datebook-job.c		\
+	pilot-datebook-job.h		\
 	pilot-datebook-joblist.c	\
+	pilot-datebook-joblist.h	\
 	pilot-datebook-longtxt.c	\
+	pilot-datebook-longtxt.h	\
 	pilot-datebook-pdb.c		\
+	pilot-datebook-pdb.h		\
 	pilot-datebook-remind.c		\
+	pilot-datebook-remind.h		\
 	pilot-datebook-shorttxt.c	\
+	pilot-datebook-shorttxt.h	\
 	pilot-datebook-sort.c		\
+	pilot-datebook-sort.h
 	pilot-datebook-update.c		\
-	pilot-datebook-windat.c	
+	pilot-datebook-update.h		\
+	pilot-datebook-windat.c		\	
+	pilot-datebook-windat.h
 
 pilot_datebook_LDADD =			\
 	@LIBOBJS@			\

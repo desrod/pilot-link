@@ -34,6 +34,8 @@
 
 	* src/ietf2datebook.PL: Cleaned up perl 
 
+	* src/pilot-datebook/Makefile.am: Fixed missing headers
+
 	* doc/man/pi-getrom.1: New manpage
 
 	* doc/man/pi-getram.1: Ditto
