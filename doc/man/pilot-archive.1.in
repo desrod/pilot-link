@@ -40,10 +40,9 @@ Display version of \fBpilot\-archive\fR
 
 
 .SH "USAGE"
-Connect to a target Palm handheld and fetch image files from the device
-which match the CreatorID 'Foto' and convert them to .jpg format files.
-Alternately, it can convert local files with the same CreatorID to .jpg
-files as well
+Connect to a target Palm handheld and return the "archived" (deleted)
+records in your ToDo database in a common, generic CSV format, which can be
+used to create "archive" files on the desktop.
 
 \fBpilot\-archive\fR only speaks to the ToDoDB.pdb file at this time, but
 adding support for the other applications is very trivial. Just look at the
