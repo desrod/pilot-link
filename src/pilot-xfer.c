@@ -443,7 +443,8 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 		if (info.flags & dlpDBFlagResource)
 		{
 			strcat(name, ".prc");
-		} else if (info.flags & dlpDBFlagClipping)
+		} else if ((info.flags & dlpDBFlagLaunchable) &&
+				   info.type == pi_mktag('p','q','a',' '))
 		{
 			strcat(name, ".pqa");
 		} else {
@@ -664,7 +665,8 @@ palm_fetch_internal(const char *dbname)
 	if (info.flags & dlpDBFlagResource)
 	{
 		strcat(name, ".prc");
-	} else if (info.flags & dlpDBFlagClipping)
+	} else if ((info.flags & dlpDBFlagLaunchable) &&
+			   info.type == pi_mktag('p','q','a',' ')) 
 	{
 		strcat(name, ".pqa");
 	} else {
