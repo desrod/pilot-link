@@ -1,3 +1,6 @@
+Mar  9, 1997	Kenneth Albanowski 0.5.3
+	To help gdb, expanded syspkt support.
+
 Mar  2, 1997	Kenneth Albanowski 0.5.2
 
 	Added Pilot-debug executable -- you'll need to modify Makefile to

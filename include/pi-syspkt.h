@@ -11,7 +11,7 @@ struct Pilot_registers {
 
 struct Pilot_breakpoint {
 	unsigned long address;
-	int enabled, installed;
+	int enabled;
 };
 
 struct Pilot_state {
@@ -62,6 +62,8 @@ extern int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len);
 extern int sys_Continue(int sd, struct Pilot_continue * c);
 
 extern int sys_QueryState(int sd);
+extern int sys_ReadMemory(int sd, unsigned long addr, int len, void * buf);
+extern int sys_WriteMemory(int sd, unsigned long addr, int len, void * buf);
 
 extern int sys_SetBreakpoints(int sd, struct Pilot_breakpoint * b);
 

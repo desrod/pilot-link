@@ -75,47 +75,26 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
 
 int sys_UnpackState(void * buffer, struct Pilot_state * s)
 {
+  int i;
   unsigned char * data = buffer;
-// printf("\n%s:%x:d84> current state:\n",
-//	    		sidename[slp->side], slp->pid);
+  
   s->reset = get_short(data);
   s->exception = get_short(data+2);
   memcpy(s->func_name, data+152, 32);
+  memcpy(s->instructions, data+78, 30);
   s->func_name[32-1] = 0;
+  s->func_start = get_long(data+144);
+  s->func_end = get_long(data+148);
   sys_UnpackRegisters(data+4, &s->regs);
+
+  for (i=0;i<6;i++) {
+    s->breakpoint[i].address = get_long(data+108+i*6);
+    s->breakpoint[i].enabled = get_byte(data+112+i*6);
+  }
+  
+  s->trap_rev = get_short(data+184);
   
   return 0;
-/*	    	printf("  Just reset: %s, exception: %4.4x\n",
-	    		get_short(slp->data+2) ? "yes" : "no", 
-	    		get_short(slp->data+4));
-	    	for (i=0;i<8;i++) {
-	    		printf("  D%d: %8.8X",
-	    			i, get_long(slp->data+6+i*4));
-	    		if (i<7)
-	    			printf("    A%d: %8.8X",
-	    				i, get_long(slp->data+38+i*4));
-	    		printf("\n");
-	    	}
-	    	printf("  USP: %8.8X    SSP: %8.8X\n",
-	    		get_long(slp->data+66), get_long(slp->data+70));
-	    	printf("  PC:  %8.8X    SR:  %4.4X\n",
-	    		get_long(slp->data+74), get_short(slp->data+78));
-	    	printf("  Instructions at PC:\n");
-	    	dumpdata(slp->data+80, 15*2);
-	    	printf("  Breakpoints:\n");
-	    	for (i=0;i<6;i++) {
-	    		printf("    #%d: @ %8.8X, Enabled: %s, installed %s\n",
-	    			i,
-	    			get_long(slp->data+110+i*6),
-	    			get_byte(slp->data+114+i*6) ? "yes" : "no",
-	    			get_byte(slp->data+115+i*6) ? "yes" : "no");
-	    	}
-	    	printf("  Start address of function: %8.8X, end address: %8.8X\n",
-	    		get_long(slp->data+146), get_long(slp->data+150));
-	    	printf("  Function name '%.32s'\n", slp->data+154);
-	    	printf("  Trap table revision: %x\n", get_short(slp->data+186));
-	    	break;
-*/
 }
 
 int sys_UnpackRegisters(void * data, struct Pilot_registers * r)
@@ -197,11 +176,18 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint * b)
   
   for (i=0;i<6;i++) {
     set_long(buf+6+i*6, b[i].address);
-    set_byte(buf+7+i*6, b[i].enabled);
-    set_byte(buf+8+i*6, b[i].installed);
+    set_byte(buf+10+i*6, b[i].enabled);
+    set_byte(buf+11+i*6, 0);
   }
   
-  return pi_write(sd, buf, 42);
+  pi_write(sd, buf, 42);
+  
+  i = pi_read(sd, buf, 6);
+
+  if ((i<=0) || (buf[4] != (char)0x8c))
+    return 0;
+  else
+    return 1;
 }
 
 int sys_QueryState(int sd)
@@ -217,6 +203,68 @@ int sys_QueryState(int sd)
   buf[5] = 0; /*gapfil*/
   
   return pi_write(sd, buf, 6);
+}
+
+int sys_ReadMemory(int sd, unsigned long addr, int len, void * dest)
+{
+  int result;
+  unsigned char buf[0xffff];
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0x01;
+  buf[5] = 0; /*gapfil*/
+  
+  set_long(buf+6, addr);
+  set_short(buf+10, len);
+  
+  pi_write(sd, buf, 12);
+  
+  result = pi_read(sd, buf, len+6);
+  
+  if (result<0)
+    return result;
+  
+  if ((buf[4] == 0x81) && (result == len+6)) {
+    memcpy(dest, buf+6, len);
+    return len;
+  } else {
+    return 0;
+  }
+}
+
+int sys_WriteMemory(int sd, unsigned long addr, int len, void * src)
+{
+  int result;
+  unsigned char buf[0xffff];
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0x02;
+  buf[5] = 0; /*gapfil*/
+  
+  set_long(buf+6, addr);
+  set_short(buf+10, len);
+  memcpy(buf+12, src, len);
+  
+  pi_write(sd, buf, len+12);
+  
+  result = pi_read(sd, buf, 6);
+  
+  if (result<0)
+    return result;
+  
+  if ((buf[4] == 0x82) && (result == len+6)) {
+    return len;
+  } else {
+    return 0;
+  }
 }
 
 
