@@ -91,10 +91,11 @@ struct Command command_list[] = {
 
 int main(int argc, char *argv[])
 {
-	int c;
-	int sd = -1;
-	char *progname = argv[0];
-	char *port = NULL;
+	int 	c,
+		sd = -1;
+
+	char 	*progname = argv[0],
+		*port = NULL;
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch (c) {
@@ -126,8 +127,8 @@ int main(int argc, char *argv[])
 		if (dlp_OpenConduit(sd) < 0) {
 			exit(1);
 		} else {
-			printf
-			    ("\nWelcome to the DLP Shell\nType 'help' for additional information\n\n");
+			printf("\nWelcome to the DLP Shell\n"
+			       "Type 'help' for additional information\n\n");
 
 			/* Stayin' alive, stayin' alive...
 			   Normally we tickle to keep the port open and listening, 
@@ -196,11 +197,11 @@ int help_fn(int sd, int argc, char *argv[])
 {
 
 /* Let's figure out a better way to do this to automagically 
-   "self-document" arguments, maybe with cproto later on. 
+   "self-document" arguments
 
-	int i;
-	for (i = 0; command_list[i].name != NULL; i++) {
-		printf("%s\t\n", command_list[i].name);
+	int inc;
+	for (inc = 0; command_list[inc].name != NULL; inc++) {
+		printf("%s\t\n", command_list[inc].name);
 	}
 */
 
@@ -229,13 +230,13 @@ int help_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int ls_fn(int sd, int argc, char *argv[])
 {
-	int c;
-	int cardno;
-	int flags;
-	int ret;
-	int start;
-	int lflag = 0;
-	int rom_flag = 0;
+	int 	c,
+		cardno,
+		flags,
+		ret,
+		start,
+		lflag = 0,
+		rom_flag = 0;
 
 #ifdef sun
 	extern char *optarg;
@@ -325,9 +326,10 @@ int ls_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int rm_fn(int sd, int argc, char *argv[])
 {
-	int cardno;
-	int ret;
-	char *name;
+	int 	cardno,
+		ret;
+
+	char 	*name;
 
 	if (argc != 2) {
 		printf("Delete the database or application on your Palm device by name\n\n"
@@ -365,10 +367,11 @@ int rm_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int time_fn(int sd, int argc, char *argv[])
 {
-	int s;
-	time_t ltime;
-	struct tm *tm_ptr;
-	char c, timebuf[80];
+	int 	s;
+	time_t 	ltime;
+	struct 	tm *tm_ptr;
+	char 	c,
+		timebuf[80];
 
 	time(&ltime);
 
@@ -382,7 +385,6 @@ int time_fn(int sd, int argc, char *argv[])
 		 tm_ptr);
 	printf(timebuf);
 	return 0;
-
 }
 
 /***********************************************************************
@@ -399,16 +401,20 @@ int time_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int user_fn(int sd, int argc, char *argv[])
 {
-	struct PilotUser User, nUser;
-	char fl_name = 0, fl_uid = 0, fl_vid = 0, fl_pid = 0;
-	int c;
-	int ret;
-	char *optarg = NULL;
+	struct 	PilotUser User, nUser;
 
-        optind = 0;
+	char 	fl_name = 0,
+		fl_uid = 0,
+		fl_vid = 0, 
+		fl_pid = 0;
+	
+	int 	chara,
+		ret;
 
-	while ((c = getopt(argc, argv, "n:i:v:p:h")) != -1) {
-		switch (c) {
+	optind = 0;
+
+	while ((chara = getopt(argc, argv, "n:i:v:p:h")) != -1) {
+		switch (chara) {
 		  case 'n':
 			  fl_name = 1;
 			  strncpy(nUser.username, optarg, sizeof(nUser.username));
@@ -513,53 +519,64 @@ void handle_user_commands(int sd)
 {
 
 #ifdef HAVE_READLINE
-	char *line;
-	char *prompt = "dlpsh> ";
+	char 	*line,
+		*prompt = "dlpsh> ";
 #else
-	char buf[256];
+	char 	buf[256];
 #endif
 
-	char *argv[32];
-	int argc;
-	int i;
+	char 	*argv[32];
+	int 	argc,
+		inc;
 
 	for (;;) {
 		fflush(stdout);
 
 #ifdef HAVE_READLINE
-		line = readline(prompt);
-		if (line && *line)	/* skip blanks */
-			add_history(line);
-		if (!line)
-			break;
+	line = readline(prompt);
+	if (line && *line)	/* skip blanks */
+		add_history(line);
+	if (!line)
+		break;
 
-		argc = 0;
-		argv[0] = strtoke(line, " \t\n", "\"'");
+	argc = 0;
+	
+	/* Changing input? BAD BAD BAD... */
+	argv[0] = strtoke(line, " \t\n", "\"'");
 #else
-		printf("dlpsh> ");
-		if (fgets(buf, 256, stdin) == NULL)
-			break;
+	
+	int hist = 256;
+	printf("dlpsh> ");
+	
+	/* This line will throw a warning, but that's because 
+	   'hist' is undefined when HAVE_READLINE is defined, 
+	   you can safely ignore it for now. -DD
+	 */
+	if (fgets(buf, hist, stdin) == NULL)
+		break;
 
-		argc = 0;
-		argv[0] = strtoke(buf, " \t\n", "\"'");
+	argc = 0;
+	argv[0] = strtoke(buf, " \t\n", "\"'");
 #endif
 
-		while (argv[argc] != NULL) {
-			argc++;
-			argv[argc] = strtoke(NULL, " \t\n", "\"'");
-		}
+	while (argv[argc] != NULL) {
+		argc++;
 
-		if (argc == 0)
-			continue;
+		/* Tsk, tsk. Changing the input again! */
+		argv[argc] = strtoke(NULL, " \t\n", "\"'");
+	}
 
-		for (i = 0; command_list[i].name != NULL; i++) {
-			if (strcasecmp(argv[0], command_list[i].name) == 0) {
-				command_list[i].func(sd, argc, argv);
-			}
+	if (argc == 0)
+		continue;
+
+	for (inc = 0; command_list[inc].name != NULL; inc++) {
+		if (strcasecmp(argv[0], command_list[inc].name) == 0) {
+			command_list[inc].func(sd, argc, argv);
 		}
+	}
 
 #ifdef HAVE_READLINE
-		free(line);
+	free(line);
 #endif
 	}
 	printf("\n");
@@ -573,11 +590,11 @@ int exit_fn(int sd, int argc, char *argv[])
 		"\n\n================== EXITING ===================\n\n");
 #endif
 	printf("Exiting.\n");
-	dlp_AddSyncLogEntry(sd, "dlpsh, DLP Protocol Shell ended.\nThank you for using pilot-link.\n");
+	dlp_AddSyncLogEntry(sd, "dlpsh, DLP Protocol Shell ended.\n"
+				"Thank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	exit(0);
-
 }
 
 /***********************************************************************
@@ -593,16 +610,17 @@ int exit_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 char *strtoke(char *str, char *ws, char *delim)
 {
-	static char *s;
-	static char *start;
-	int i;
+	int 		inc;
+	static char 	*s,
+			*start;
+
 
 	if (str != NULL) {
 		s = str;
 	}
 
-	i = strspn(s, ws);
-	s += i;
+	inc = strspn(s, ws);
+	s += inc;
 	start = s;
 
 	if (*s == '\0') {
@@ -610,12 +628,12 @@ char *strtoke(char *str, char *ws, char *delim)
 	} else if (strchr(delim, *s) != NULL) {
 		start++;
 		s = strchr(s + 1, *s);
-		s[i] = '\0';
+		s[inc] = '\0';
 		s++;
 	} else {
-		i = strcspn(s, ws);
-		s[i] = '\0';
-		s += i + 1;
+		inc = strcspn(s, ws);
+		s[inc] = '\0';
+		s += inc + 1;
 	}
 
 	return start;
