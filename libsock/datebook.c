@@ -188,7 +188,7 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 		on = get_byte(p2);
 		p2++;
 		a->repeatDay = (enum DayOfMonthType) 0;
-		for (i; = 0; i < 7; i++)
+		for (i = 0; i < 7; i++)
 			a->repeatDays[i] = 0;
 
 		if (a->repeatType == repeatMonthlyByDay)
