@@ -520,6 +520,20 @@ static void Fetch(char *dbname)
 	struct 	DBInfo info;
 	char 	name[256];
 	struct 	pi_file *f;
+	char    *tmpPtr = dbname;
+
+	/* If the file extension is supplied, Fetch also, don't error */
+	while ((*tmpPtr != '\0') && (tmpPtr <= dbname + 256)) ++tmpPtr;
+	tmpPtr = tmpPtr -4;
+
+	if (*tmpPtr == '.') {
+		++tmpPtr;
+		if (*tmpPtr == 'p' || *tmpPtr == 'P') {
+			--tmpPtr;
+			*tmpPtr = '\0';
+		}
+	}
+
 
 	Connect();
 
@@ -557,7 +571,7 @@ static void Fetch(char *dbname)
 	}
 
 	if (pi_file_retrieve(f, sd, 0) < 0)
-		printf("Failed, unable to back up database\n");
+		printf("Failed, unable to fetch database\n");
 	else
 		printf("OK\n");
 	pi_file_close(f);
