@@ -1,5 +1,15 @@
 2001-05-25  David A. Desrosiers <hacker@gnu-designs.com>
 
+	* reminders.c: Cleaned up ANSI warning about newlines [trigdate]
+	  (David A. Desrosiers)
+	
+	* dlpsh.c: Fixed a bug with 81 \n's instead of 81 -'s, removed
+	  (David A. Desrosiers)
+
+	* dlpsh.c: Addition of 'userID = %08lx (%i)', etc. fixes
+
+2001-05-25  David A. Desrosiers <hacker@gnu-designs.com>
+
 	* include/md5.h: Renamed md5.h to pi-md5.h to be more in line with
 	  the current include/* naming scheme.
 

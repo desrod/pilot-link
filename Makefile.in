@@ -34,7 +34,7 @@ CC = @CC@
 CXX = @CXX@
 CDEFS = -DLIBDIR=\"$(libdir)\"
 # -DDEBUG
-CFLAGS = -I./include -I$(srcdir)/include @CFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS) -DDEBUG
+CFLAGS = -I./include -I$(srcdir)/include @CFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
 CXXFLAGS = -I./include -I$(srcdir)/include @CXXFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@

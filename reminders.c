@@ -241,28 +241,10 @@ int main(int argc, char *argv[])
 				if (a.repeatFrequency > 1) {
 
 					snprintf(satisfy, 256,
-						"SATISFY
-						[(trigdate()>=date(%d,%d,%d))
-						&& (!isomitted(trigdate()))
-						&&
-						(((monnum(trigdate())-1+year(trigdate())*12)%%%d)
-						== ((%d+%d*12)%%%d))] ",
-						a.begin.tm_year + 1900,
-						a.begin.tm_mon + 1,
-						a.begin.tm_mday,
-						a.repeatFrequency,
-						a.begin.tm_year + 1900,
-						a.begin.tm_mon,
-						a.repeatFrequency);
+						"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate())) && (((monnum(trigdate())-1+year(trigdate())*12)%%%d) == ((%d+%d*12)%%%d))]", a.begin.tm_year + 1900, a.begin.tm_mon + 1, a.begin.tm_mday, a.repeatFrequency, a.begin.tm_year + 1900, a.begin.tm_mon, a.repeatFrequency);
 				} else {
 					snprintf(satisfy, 256,
-						"SATISFY
-						[(trigdate()>=date(%d,%d,%d))
-						&& (!isomitted(trigdate()))]
-						",
-						a.begin.tm_year + 1900,
-						a.begin.tm_mon + 1,
-						a.begin.tm_mday);
+						"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate()))]", a.begin.tm_year + 1900, a.begin.tm_mon + 1, a.begin.tm_mday);
 				}
 			} else if (a.repeatType == repeatYearly) {
 				/* On one day each year */
@@ -273,23 +255,10 @@ int main(int argc, char *argv[])
 
 					/* if the year is equal to the starting year, mod x */
 					snprintf(satisfy, 256,
-						"SATISFY
-						[(trigdate()>=date(%d,%d,%d))
-						&& (!isomitted(trigdate()))
-						&& ((year(trigdate())%%%d)
-						== (%d%%%d))] ",
-						a.begin.tm_year + 1900,
-						a.begin.tm_mon + 1,
-						a.begin.tm_mday,
-						a.repeatFrequency,
-						a.begin.tm_year + 1900,
-						a.repeatFrequency);
+						"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate())) && ((year(trigdate())%%%d) == (%d%%%d))]", a.begin.tm_year + 1900, a.begin.tm_mon + 1, a.begin.tm_mday, a.repeatFrequency, a.begin.tm_year + 1900, a.repeatFrequency);
 				} else {
 					snprintf(satisfy, 256,
-						"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate()))]",
-						a.begin.tm_year + 1900,
-						a.begin.tm_mon + 1,
-						a.begin.tm_mday);
+						"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate()))]", a.begin.tm_year + 1900, a.begin.tm_mon + 1, a.begin.tm_mday);
 				}
 			}
 

@@ -32,7 +32,7 @@
  *
  * Function:    unpack_CategoryAppInfo
  *
- * Summary:     
+ * Summary:     Unpack the AppInfo block into the structure
  *
  * Parmeters:   None
  *
@@ -71,7 +71,7 @@ unpack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
  *
  * Function:    pack_CategoryAppInfo
  *
- * Summary:     
+ * Summary:     Pack the AppInfo structure 
  *
  * Parmeters:   None
  *

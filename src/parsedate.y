@@ -94,7 +94,6 @@ static time_t	yyRelSeconds;
 
 
 extern struct tm	*localtime();
-
 static void		date_error();
 %}
 

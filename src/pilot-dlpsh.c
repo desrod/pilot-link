@@ -35,7 +35,7 @@
 int sd;
 struct pi_socket *ticklish_pi_socket;
 
-/* Prototypes */
+/* Declare prototypes */
 int user_fn(int sd, int argc, char **argv);
 int ls_fn(int sd, int argc, char **argv);
 int df_fn(int sd, int argc, char **argv);
@@ -157,9 +157,9 @@ int user_fn(int sd, int argc, char **argv)
 
 	if (fl_name + fl_uid + fl_vid + fl_pid == 0) {
 		printf("username = \"%s\"\n", U.username);
-		printf
-		    ("userID = %08lx   viewerID = %08lx    PCid = %08lx\n",
-		     U.userID, U.viewerID, U.lastSyncPC);
+		printf("userID = %08lx (%i)   viewerID = %08lx (%i)   PCid = %08lx (%i)\n",
+			U.userID, (int)U.userID, U.viewerID, (int)U.viewerID, U.lastSyncPC,
+			(int)U.lastSyncPC);
 		return 0;
 	}
 
@@ -192,7 +192,7 @@ int user_fn(int sd, int argc, char **argv)
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     String containing the proper time
  *
  ***********************************************************************/
 char *timestr(time_t t)
@@ -294,7 +294,7 @@ int time_fn(int sd, int argc, char **argv)
  ***********************************************************************/
 int ls_fn(int sd, int argc, char **argv)
 {
-	int c, k, ret;
+	int c, ret;
 	int lflag = 0;
 	int cardno, flags, start;
 	int rom_flag = 0;
@@ -358,17 +358,13 @@ int ls_fn(int sd, int argc, char **argv)
 			printf("Type '%.4s'; ", (char *) &tag);
 			tag = htonl(info.creator);
 			printf("  CreatorID '%.4s';", (char *) &tag);
-			printf(" Version %d; ", info.version);
-			printf(" modnum %ld;\n  ", info.modnum);
+			printf(" Version %d;\n ", info.version);
+			printf(" modnum %ld; ", info.modnum);
 			printf("Created %s; ", timestr(info.createDate));
 			printf("Modified %s;\n  ",
 			       timestr(info.modifyDate));
 			printf("Backed up %s; ", timestr(info.backupDate));
-			printf("\n ");
-			for (k = 0; k < 81; k++) { 
-				printf("\n"); 
-			}
-			printf("\n");
+			printf("\n\n");
 		}
 
 		if (info.index < start) {
@@ -569,7 +565,7 @@ void exit_func(void)
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     Input string minus path delimiters (ala basepath)
  *
  ***********************************************************************/
 char *strtoke(char *str, char *ws, char *delim)
