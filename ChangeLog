@@ -1,5 +1,13 @@
 2002-01-16  JP Rosevear  <jpr@ximian.com>
 
+	* tools/Java/test.java: forgotten files
+
+	* tools/Java/doConstants.c: ditto
+
+	* tools/Java/README: ditto
+
+2002-01-16  JP Rosevear  <jpr@ximian.com>
+	
 	* tools/Java: Doug G.'s Java stuff
 
 	* tools/Makefile.am: python hack for compilation when builddir !=
