@@ -65,14 +65,6 @@ typedef int (*cmd_fn_t) (int, int, char **);
 int pilot_connect(const char *port);
 static void Help(char *progname);
 
-static const char *optstring = "hp:";
-
-struct option options[] = {
-	{"help", no_argument,       NULL, 'h'},
-	{"port", required_argument, NULL, 'p'},
-	{NULL,   0,                 NULL, 0}
-};
-
 struct Command {
 	char *name;
 	cmd_fn_t func;
@@ -165,26 +157,43 @@ int help_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int ls_fn(int sd, int argc, char *argv[])
 {
-	int 	c,
+	static const char *ls_optstring = "lrh";
+	
+	struct option ls_options[] = {
+		{"long", no_argument,       NULL, 'l'},
+		{"rom",  no_argument,       NULL, 'r'},
+		{"help", no_argument,       NULL, 'h'},
+		{NULL,   0,                 NULL, 0}
+	};
+	
+	int 	ch,
 		cardno,
 		flags,
 		ret,
 		start,
-		lflag = 0,
-		rom_flag = 0;
-
-	while ((c = getopt(argc, argv, "lr")) != -1) {
-		switch (c) {
+		lflag 		= 0,
+		rom_flag 	= 0;
+	
+	optind = 0;
+		
+	while ((ch = getopt_long(argc, argv, ls_optstring, ls_options, NULL)) != -1) {
+		switch (ch) {
 		  case 'r':
 			  rom_flag = 1;
 			  break;
 		  case 'l':
 			  lflag = 1;
 			  break;
-		  default:
-			  printf(" Usage: ls -l -r\n"
-				 "   -l        = list all RAM databases using \"expanded\" format\n"
-				 "   -r        = list all ROM databases and applications\n\n");
+		  case 'h':
+			  
+			  printf("   List all files and databases stored on your Palm device\n\n"
+			         "   Usage: ls [options]\n"
+				 "   Options:\n"
+				 "     -l --long      List all RAM databases using \"expanded\" format\n"
+				 "     -r --rom       List all ROM databases and applications\n\n"
+				 "     -h             Display this information\n\n"
+				 "     Typing 'ls' on it's own will use the 'simple' listing format\n\n"
+				 "     Example: ls -lr\n\n");
 			  return 0;
 		}
 	}
@@ -218,10 +227,9 @@ int ls_fn(int sd, int argc, char *argv[])
 			return -1;
 		}
 
-
 		printf("%s\n", info.name);
 
-		if (lflag) {
+		if (lflag == 1) {
 			printf("       More: 0x%x     Flags: 0x%-4x             Type: %.4s\n",
 				info.more, info.flags, (char *) &tag);
 			tag = htonl(info.creator);
@@ -240,7 +248,6 @@ int ls_fn(int sd, int argc, char *argv[])
 
 		start = info.index + 1;
 	}
-
 	return 0;
 }
 
@@ -262,9 +269,12 @@ int rm_fn(int sd, int argc, char *argv[])
 
 	char 	*name;
 
+
 	if (argc != 2) {
-		printf("Delete the database or application on your Palm device by name\n\n"
-		       "Usage: rm <dbname>\n");
+		printf("   Delete a application or database from your Palm device\n\n"
+		       "   Usage: rm <dbname>\n"
+		       "   Please note that no extension is required on 'dbname'\n\n"
+		       "   Example: rm Address\n\n");
 		return (0);
 	}
 
@@ -328,21 +338,32 @@ int time_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int user_fn(int sd, int argc, char *argv[])
 {
-	struct 	PilotUser User, nUser;
-
-	char 	fl_name = 0,
-		fl_uid = 0,
-		fl_vid = 0, 
-		fl_pid = 0;
 	
+	static const char *user_optstring = "u:i:v:p:h";
+	
+	struct option user_options[] = {
+		{"user",   required_argument,  NULL, 'u'},
+		{"id",     required_argument,  NULL, 'i'},
+		{"viewid", required_argument,  NULL, 'v'},
+		{"pcid",   required_argument,  NULL, 'p'},
+		{"help",   no_argument,        NULL, 'h'},
+		{NULL,     0,                  NULL, 0}
+	};
+
 	int 	ch,
-		ret;
+		ret,
+		fl_name 	= 0,
+		fl_uid 		= 0,
+		fl_vid 		= 0, 
+		fl_pid 		= 0;
+	
+	struct 	PilotUser User, nUser;
 
 	optind = 0;
 
-	while ((ch = getopt(argc, argv, "n:i:v:p:h")) != -1) {
+	while ((ch = getopt_long(argc, argv, user_optstring, user_options, NULL)) != -1) {
 		switch (ch) {
-		  case 'n':
+		  case 'u':
 			  fl_name = 1;
 			  strncpy(nUser.username, optarg, sizeof(nUser.username));
 			  break;
@@ -359,10 +380,16 @@ int user_fn(int sd, int argc, char *argv[])
 			  nUser.lastSyncPC = strtoul(optarg, NULL, 16);
 			  break;
 		  case 'h':
-			  printf(" Usage: user -n \"John Q. Public\" (full username in quotes)\n"
-				 "             -i <UserID>\n"
-				 "             -v <ViewerID>\n"
-				 "             -p <PCid>\n");
+			  printf("   View or set user-specific Palm information\n\n"
+			         "   Usage: user [options]\n"
+				 "   Options:\n"
+				 "     -u <Username>    Set Username on the Palm device (use double-quotes)\n"
+				 "     -i <UserID>      Set the numeric UserID on the Palm device\n"
+				 "     -v <ViewerID>    Set the numeric ViewerID on the Palm device\n"
+				 "     -p <PCid>        Set the numeric PCID on the Palm device\n\n"
+				 "     -h               Display this information\n\n"
+				 "     Typing 'user' on it's own will display the currently stored User info\n\n"
+				 "     Example: user -u \"John Q. Public\" -i 12345 -v 54321 -p 98765\n\n");
 			  return 0;
 		}
 	}
@@ -374,10 +401,10 @@ int user_fn(int sd, int argc, char *argv[])
 	}
 
 	if (fl_name + fl_uid + fl_vid + fl_pid == 0) {
-		printf(" Username = \"%s\"\n"
-		       " UserID   = %08lx (%i)\n"
-		       " ViewerID = %08lx (%i)\n"
-		       " PCid     = %08lx (%i)\n", User.username,
+		printf("   Username = \"%s\"\n"
+		       "   UserID   = %08lx (%i)\n"
+		       "   ViewerID = %08lx (%i)\n"
+		       "   PCid     = %08lx (%i)\n", User.username,
 		       User.userID, (int) User.userID,
 		       User.viewerID, (int) User.viewerID,
 		       User.lastSyncPC, (int) User.lastSyncPC);
@@ -386,17 +413,25 @@ int user_fn(int sd, int argc, char *argv[])
 
 	if (fl_name)
 		strncpy(User.username, nUser.username, sizeof(User.username));
+		printf("   Username = \"%s\"\n", User.username);
 	if (fl_uid)
 		User.userID = nUser.userID;
+		printf("   UserID   = %08lx (%i)\n", User.userID, 
+			(int) User.userID);
 	if (fl_vid)
 		User.viewerID = nUser.viewerID;
+		printf("   ViewerID = %08lx (%i)\n", User.viewerID, 
+			(int) User.viewerID);
 	if (fl_pid)
 		User.lastSyncPC = nUser.lastSyncPC;
+		printf("   PCid     = %08lx (%i)\n", User.lastSyncPC, 
+			(int) User.lastSyncPC);
 
 	User.successfulSyncDate = time(NULL);
 	User.lastSyncDate = User.successfulSyncDate;
 
 	ret = dlp_WriteUserInfo(sd, &User);
+	
 	if (ret < 0) {
 		printf("dlp_WriteUserInfo: err %d\n", ret);
 		return -1;
@@ -579,15 +614,22 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	c,
-		sd = -1;
+	int 	ch,
+		sd 		= -1;
 
-	char 	*progname = argv[0],
-		*port = NULL;
+	char 	*progname 	= argv[0],
+		*port 		= NULL;
+	
+	static const char *optstring = "hp:";
+	
+	struct option options[] = {
+		{"help", no_argument,       NULL, 'h'},
+		{"port", required_argument, NULL, 'p'},
+		{NULL,   0,                 NULL, 0}
+	};
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (c) {
-
+	while ((ch = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (ch) {
 		  case 'h':
 			  Help(progname);
 			  exit(0);
