@@ -656,15 +656,19 @@ AC_SUBST(PYTHON)
 dnl *************************************
 dnl ElectricFence (optional)
 dnl *************************************
+use_efence=false
 msg_efence=no
 AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking], [AC_CHECK_LIB(efence,malloc)
-if test "$ac_cv_lib_efence_malloc" = yes; then
-	use_efence=true
-	LIBS="$LIBS -lefence"
-else
-	use_efence=false
-        AC_MSG_WARN([Unable to locate ElectricFence library!])
-fi])
+
+if test "x$with_efence" != "xno"; then
+	if test "$ac_cv_lib_efence_malloc" = yes; then
+		use_efence=true
+		LIBS="$LIBS -lefence"
+	else
+		use_efence=false
+	        AC_MSG_WARN([Unable to locate ElectricFence library!])
+	fi])
+fi
 
 if $use_efence; then
 	msg_efence=yes
