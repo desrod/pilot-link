@@ -53,24 +53,25 @@
  ***********************************************************************/
 int pilot_connect(char *port)
 {
-	int 	parent_sd	= -1, 	/* Client socket, formerly sd */
-		client_sd	= -1,	/* Parent socket, formerly sd2 */
+	int 	parent_sd	= -1, 	/* Client socket, formerly sd	*/
+		client_sd	= -1,	/* Parent socket, formerly sd2	*/
 		result, 
 		err	= 0;
 	struct 	pi_sockaddr addr;
-	struct 	stat attr;			/* Device attributes			*/
+	struct 	stat attr;
 	struct  SysInfo sys_info;
-	char 	*defport = "/dev/pilot";	/* Default port if none specified 	*/
+	char 	*defport = "/dev/pilot";
 
 	if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
-		fprintf(stderr, "No $PILOTPORT specified and no -p <port> given.\n"
-			"Defaulting to '%s'\n\n", defport);
+		fprintf(stderr, "   No $PILOTPORT specified and no -p "
+			"<port> given.\n"
+			"   Defaulting to '%s'\n", defport);
 		port = defport;
 		err = stat(port, &attr);
 	}
 
 	if (err) {
-		perror("   ERROR");
+		fprintf(stderr, "   ERROR: %s (%d)\n\n", strerror(errno), errno);
 		fprintf(stderr, "   Error accessing: '%s'. Does '%s' exist?\n",
 		       port, port);
 		fprintf(stderr, "   Please use --help for more information\n\n");
@@ -101,12 +102,35 @@ int pilot_connect(char *port)
 		if (portname) {
 			fprintf(stderr, "\n");
 			errno = save_errno;
-			perror("   ERROR");
-			fprintf(stderr, "   Are you sure the device %s exists?\n", portname);
-			fprintf(stderr, "   Correct permissions to read and write to %s? (%d)\n\n", portname, save_errno);
-			fprintf(stderr, "   Unable to bind to port '%s'\n",
+			fprintf(stderr, "   ERROR: %s (%d)\n\n", strerror(errno), 
+				errno);
+
+			if (errno == 2) {
+				fprintf(stderr, "   The device %s does not exist..\n",
+					portname);
+				fprintf(stderr, "   Possible solution:\n\n\tmknod %s c "
+					"<major> <minor>\n\n", portname);
+
+			} else if (errno == 13) {
+				fprintf(stderr, "   Please check the "
+					"permissions on %s..\n", portname);
+				fprintf(stderr, "   Possible solution:\n\n\tchmod 0666 "
+					"%s\n\n", portname);
+
+			} else if (errno == 19) {
+				fprintf(stderr, "   Press the HotSync button first and "
+					"relaunch this conduit..\n\n");
+			} else if (errno == 21) {
+				fprintf(stderr, "   The port specified must contain a "
+					"device name, and %s was a directory.\n"
+					"   Please change that to reference a real "
+					"device, and try again\n\n", portname);
+			}
+
+			fprintf(stderr, "   Unable to bind to port: %s\n", 
 				portname);
-	                fprintf(stderr, "   Please use --help for more information\n\n");
+	                fprintf(stderr, "   Please use --help for more "
+				"information\n\n");
 		} else
 			fprintf(stderr, "\n   No port specified\n");
 		pi_close(parent_sd);
@@ -115,7 +139,8 @@ int pilot_connect(char *port)
 	}
 
 	fprintf(stderr,
-		"\n   Listening to port: %s\n\n   Please press the HotSync button now... ",
+		"\n   Listening to port: %s\n\n   Please press the HotSync "
+		"button now... ",
 		port ? port : getenv("PILOTPORT"));
 
 	if (pi_listen(parent_sd, 1) == -1) {
