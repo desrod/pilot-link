@@ -1,5 +1,11 @@
 2002-07-03  JP Rosevear  <jpr@ximian.com>
 
+	* configure.in: check for stdint.h and inttypes.h
+
+	* libpisock/palmpix.c: include stdint.h or inttypes.h as necessary
+
+2002-07-03  JP Rosevear  <jpr@ximian.com>
+	
 	* libpisock/usb.c (pi_usb_accept): don't actually set the
 	baudrate, just use dummy values
 	

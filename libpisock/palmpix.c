@@ -18,14 +18,23 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
- 
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <string.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 
-/* FIXME: if you don't have stdint.h, try inttypes.h instead.  This really
-    should just go away or at least get autoconfiscated.  */
+/* FIXME: What other platforms might have differing requirements? */
+#if HAVE_STDINT_H
+#include <stdint.h>
+#else
+#if HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+#endif
 
 #include "pi-macros.h"
 #include "pi-palmpix.h"

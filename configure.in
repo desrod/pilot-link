@@ -10,7 +10,7 @@ PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=10
 PILOT_LINK_MINOR=99
 PILOT_LINK_NANO=1
-PILOT_LINK_PATCH=1
+PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
 AC_SUBST(PILOT_LINK_MAJOR)
@@ -73,7 +73,7 @@ AC_STRUCT_TM
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
 
-AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h)
+AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h stdint.h)
 AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname putenv)
 
 dnl Find optional libraries (borrowed from Tcl)
