@@ -2108,7 +2108,7 @@ static PyObject *_wrap_dlp_ReadDBList(PyObject *self, PyObject *args) {
     int arg2 ;
     int arg3 ;
     int arg4 ;
-    pi_buffer_t *arg5 = (pi_buffer_t *) 0 ;
+    pi_buffer_t *arg5 = (pi_buffer_t *) 0;
     DLPERROR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
@@ -2171,8 +2171,15 @@ static PyObject *_wrap_dlp_ReadDBList(PyObject *self, PyObject *args) {
                 "flagReset", !!(info.flags & dlpDBFlagReset),
                 "flagCopyPrevention", !!(info.flags & dlpDBFlagCopyPrevention),
                 "flagStream", !!(info.flags & dlpDBFlagStream),
-                "flagExcludeFromSync", !!(info.miscFlags & dlpDBMiscFlagExcludeFromSync));
-                Py_INCREF(o);
+				"flagSchema", !!(info.flags & dlpDBFlagSchema),
+				"flagSecure", !!(info.flags & dlpDBFlagSecure),
+				"flagExtended", !!(info.flags & dlpDBFlagExtended),
+				"flagFixedUp", !!(info.flags & dlpDBFlagFixedUp),
+				
+                "flagExcludeFromSync", !!(info.miscFlags & dlpDBMiscFlagExcludeFromSync),
+				"flagRAMBased", !!(info.miscFlags & dlpDBMiscFlagRamBased));
+                
+				Py_INCREF(o);
                 PyList_SET_ITEM(resultobj, j, o);
             }
         }
