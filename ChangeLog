@@ -1,5 +1,9 @@
 2000-11-28  JP Rosevear  <jpr@helixcode.com>
 
+	* doc/syncabs.sgml: Update design docs
+
+2000-11-28  JP Rosevear  <jpr@helixcode.com>
+
 	* libsock/sync.c (store_record_on_pilot): the prepare callback now
 	provides the pilot record structure to be filled out, free prepare
 	is no longer used - this is because the pilot record struct can

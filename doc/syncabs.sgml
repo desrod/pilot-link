@@ -82,7 +82,7 @@
 	<title>Callbacks</title>
 
 	<para>This a a walkthrough of sync abs conduit's
-	  fifteen callbacks. Their purpose, importance, usage by the various
+	  fourteen callbacks. Their purpose, importance, usage by the various
 	  types of synchronization processes (Fast/Slow sync, copy to/from
 	  remote) and how they should behave.</para>
 
@@ -153,7 +153,7 @@
 		<varlistentry>
 		  <term>Needed by</term>
 		  <listitem>
-		    <para>all</para>
+		    <para>All</para>
 		  </listitem>
 		</varlistentry>
 	      </variablelist>
@@ -202,7 +202,7 @@
 		<varlistentry>
 		  <term>Needed by</term>
 		  <listitem>
-		    <para>all</para>
+		    <para>All</para>
 		  </listitem>
 		</varlistentry>
 	      </variablelist>
@@ -271,7 +271,61 @@
 		<varlistentry>
 		  <term>Needed by</term>
 		  <listitem>
-		    <para>FastSync, SlowSync</para>
+		    <para>Fast sync, Slow sync, Merge to pilot, Copy to pilot</para>
+		  </listitem>
+		</varlistentry>
+	      </variablelist>
+	    </listitem>
+
+	    <listitem>
+	      <funcsynopsis>
+		<funcprototype>
+		  <funcdef>int <function>(*SetStatusCleared)</function></funcdef>
+		  <paramdef>SyncHandler *<parameter>sh</parameter></paramdef>
+		  <paramdef>DesktopRecord *<parameter>dr</parameter></paramdef>
+		</funcprototype>
+	      </funcsynopsis>
+	      <variablelist>
+		<varlistentry>
+		  <term>Description</term>
+		  <listitem>
+		    <para>Indicates that the status of the record (usually that
+                    it has been changed in some way) should be cleared - usually
+                    this is done when the record has been synchronized while iterating
+                    over the pilot records.</para>
+		  </listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>Parameters</term>
+		  <listitem>
+		    <variablelist>
+		      <varlistentry
+			<term><parameter>sh</parameter></term>
+			<listitem>
+			  <para>pointer to the <type>SyncHandler</type>
+                          controlling this synchronization</para>
+			</listitem>
+		      </varlistentry>
+		      <varlistentry>
+			<term><parameter>local</parameter></term>
+			<listitem>
+			  <para>A <type>DesktopRecord</type>* pointing to
+			  the record whose status should be cleared.</para>
+			</listitem>
+		      </varlistentry>
+		    </variablelist>
+		  </listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>Returns</term>
+		  <listitem>
+		    <para>0 on success, negative value on error</para>
+		  </listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>Needed by</term>
+		  <listitem>
+		    <para>Fast sync, Slow sync, Merge to pilot, Copy to pilot</para>
 		  </listitem>
 		</varlistentry>
 	      </variablelist>
@@ -519,60 +573,6 @@
 	    <listitem>
 	      <funcsynopsis>
 		<funcprototype>
-		  <funcdef>int <function>(*AddArchiveRecord)</function></funcdef>
-		  <paramdef>SyncHandler *<parameter>sh</parameter></paramdef>
-		  <paramdef>PilotRecord* <parameter>pr</parameter></paramdef>
-		</funcprototype>
-	      </funcsynopsis>
-	      <variablelist>
-		<varlistentry>
-		  <term>Description</term>
-		  <listitem>
-		    <para>Unknown</para>
-		  </listitem>
-		</varlistentry>
-		<varlistentry>
-		  <term>Parameters</term>
-		  <listitem>
-		    <variablelist>
-		      <varlistentry>
-			<term><parameter>sh</parameter></term>
-			<listitem>
-			  <para>pointer to the <type>SyncHandler</type>
-                          controlling this synchronization</para>
-			</listitem>
-		      </varlistentry>
-		      <varlistentry>
-			<term><parameter>pr</parameter></term>
-			<listitem>
-			  <para> pointer to a pilot record whose information
-                          is to be archived. The method should copy all the
-			  information needed, and either immediately
-			  archive the record, or queue it for
-			  archival.</para>
-			</listitem>
-		      </varlistentry>
-		    </variablelist>
-		  </listitem>
-		</varlistentry>
-		<varlistentry>
-		  <term>Returns</term>
-		  <listitem>
-		    <para>0 on success, negative value on error</para>
-		  </listitem>
-		</varlistentry>
-		<varlistentry>
-		  <term>Needed by</term>
-		  <listitem>
-		    <para>FastSync, SlowSync, Copy To Remote, Copy From Remote</para>
-		  </listitem>
-		</varlistentry>
-	      </variablelist>
-	    </listitem>
-
-	    <listitem>
-	      <funcsynopsis>
-		<funcprototype>
 		  <funcdef>int <function>(*ReplaceRecord)</function></funcdef>
 		  <paramdef>SyncHandler *<parameter>sh</parameter></paramdef>
 		  <paramdef>DesktopRecord* <parameter>dr</parameter></paramdef>
@@ -690,18 +690,17 @@
 	    <listitem>
 	      <funcsynopsis>
 		<funcprototype>
-		  <funcdef>int <function>(*DeleteArchiveRecord)</function></funcdef>
+		  <funcdef>int <function>(*ArchiveRecord)</function></funcdef>
 		  <paramdef>SyncHandler *<parameter>sh</parameter></paramdef>
-		  <paramdef>DesktopRecord* <parameter>dr</parameter></paramdef>
+		  <paramdef>DesktopRecord *<parameter>dr</parameter></paramdef>
+		  <paramdef>int <parameter>archive</parameter></paramdef>
 		</funcprototype>
 	      </funcsynopsis>
 	      <variablelist>
 		<varlistentry>
 		  <term>Description</term>
 		  <listitem>
-		    <para>This method takes the
-		    <parameter>dr</parameter> record, and removes it
-		    from the desktop archive.</para>
+		    <para>Sets whether or not a record is archived.</para>
 		  </listitem>
 		</varlistentry>
 		<varlistentry>
@@ -718,8 +717,15 @@
 		      <varlistentry>
 			<term><parameter>dr</parameter></term>
 			<listitem>
-			  <para> pointer to a desktop record that should be
-                          deleted from the archive. </para>
+			  <para>The a pointer to the desktop record 
+                          whose "archiveness" is to be set.</para>
+			</listitem>
+		      </varlistentry>
+		      <varlistentry>
+			<term><parameter>archive</parameter></term>
+			<listitem>
+			  <para>0 if the record should be marked as archived,
+                          1 otherwise.</para>
 			</listitem>
 		      </varlistentry>
 		    </variablelist>
@@ -728,13 +734,13 @@
 		<varlistentry>
 		  <term>Returns</term>
 		  <listitem>
-		    <para>0 on success, a negative value for failure.</para>
+		    <para>0 on success, negative value on error</para>
 		  </listitem>
 		</varlistentry>
 		<varlistentry>
 		  <term>Needed by</term>
 		  <listitem>
-		    <para>FastSync and SlowSync.</para>
+		    <para>FastSync, SlowSync, Copy To Remote, Copy From Remote</para>
 		  </listitem>
 		</varlistentry>
 	      </variablelist>
@@ -874,21 +880,19 @@
 	    <listitem>
 	      <funcsynopsis>
 		<funcprototype>
-		  <funcdef>gint  <function>(*Transmit)</function></funcdef>
+		  <funcdef>gint  <function>(*Prepare)</function></funcdef>
 		  <paramdef>SyncHandler *<parameter>sh</parameter></paramdef>
 		  <paramdef>DesktopRecord* <parameter>dr</parameter></paramdef>
-		  <paramdef>PilotRecord** <parameter>pr</parameter></paramdef>
+		  <paramdef>PilotRecord* <parameter>pr</parameter></paramdef>
 		</funcprototype>
 	      </funcsynopsis>
 	      <variablelist>
 		<varlistentry>
 		  <term>Description</term>
 		  <listitem>
-		    <para>From a given desktop record, create a
-		    <type>PilotRecord</type> record ready for to be 
-		    store on the pilot.  The memory allocated is
-		    should be freed during a subsequent 
-                    <function>FreePrepare</function> call.</para>
+		    <para>From a given desktop record, fill in the given
+		    <type>PilotRecord</type> record so it can be stored 
+		    on the pilot.</para>
 		  </listitem>
 		</varlistentry>
 		<varlistentry>
@@ -916,8 +920,8 @@
 			<term><parameter>pr</parameter></term>
 			<listitem>
 			  <para>A pointer to a 
-                          <type>PilotRecord</type>*,
-			  in which this methods should create a pilot record
+                          <type>PilotRecord</type>,
+			  which this method should fill out the pilot record
                           version of the desktop record.</para>
 			</listitem>
 		      </varlistentry>
@@ -939,69 +943,6 @@
 	      </variablelist>
 	    </listitem>
 
-	    <listitem>
-	      <funcsynopsis>
-		<funcprototype>
-		  <funcdef>int <function>(*FreePrepare)</function></funcdef>
-		  <paramdef>SyncHandler *<parameter>sh</parameter></paramdef>
-		  <paramdef>PilotRecord* <parameter>pr</parameter></paramdef>
-		</funcprototype>
-	      </funcsynopsis>
-	      <variablelist>
-		<varlistentry>
-		  <term>Description</term>
-		  <listitem>
-		    <para>Free memory allocated by a call to
-		  <function>Prepare</function>. Unless
-		  <function>Prepare</function> returns NULL, this
-		  method is called to free all resources allocated to
-		  the pilot record. As with
-		  <function>MatchRecord</function>/<function>FreeMatch</function>,
-		  the allocation/freeing is pairwise, so after a
-		  successfull <function>Prepare</function> call,
-		  <function>FreePrepare</function> will be called
-		  <emphasis>before</emphasis> another
-		  <function>Prepare</function> is called.</para>
-		</listitem>
-	      </varlistentry>
-	      <varlistentry>
-		<term>Parameters</term>
-		<listitem>
-		  <variablelist>
-		    <varlistentry>
-		      <term><parameter>sh</parameter></term>
-		      <listitem>
-			<para>pointer to the <type>SyncHandler</type>
-                          controlling this synchronization</para>
-		      </listitem>
-		    </varlistentry>
-		    <varlistentry>
-		      <term><parameter>pr</parameter></term>
-		      <listitem>
-			<para>A pointer to a 
-                          <type>PilotRecord</type>*,
-			  in which this methods should create a pilot record
-                          version of the desktop record.</para>
-		      </listitem>
-		    </varlistentry>
-		  </variablelist>
-		</listitem>
-	      </varlistentry>
-	      <varlistentry>
-		<term>Returns</term>
-		<listitem>
-		  <para>0 on success, negative value on error</para>
-		</listitem>
-	      </varlistentry>
-	      <varlistentry>
-		<term>Needed by</term>
-		<listitem>
-		  <para>FastSync, SlowSync, Copy To Remote</para>
-		</listitem>
-	      </varlistentry>
-	    </variablelist>
-	  </listitem>
-	  
 	</orderedlist>
       </sect2>
     </sect1>
