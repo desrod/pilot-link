@@ -676,6 +676,7 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 	ssize_t			readsize,writesize;
 	int		filesize;
 	int original_filesize;
+	int written_so_far;
 
 
 	if (NULL == vfspath)
@@ -705,8 +706,8 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 		return;
 	}
 
-
-	fprintf(stderr, "   Fetching '%s'... ", dbname);
+	fprintf(stdout, "   Fetching '%s'... ", dbname);
+	fflush(stdout);
 
 	if (rpath[rpathlen-1] != '/') {
 		rpath[rpathlen] = '/';
@@ -756,6 +757,7 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 
 	buffer = pi_buffer_new(FBUFSIZ);
 	readsize = 0;
+	written_so_far = 0;
 	while ((filesize > 0) && (readsize >= 0))
 	{
 		pi_buffer_clear(buffer);
@@ -775,18 +777,24 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 				fprintf(stderr,"   Error while writing file.\n");
 				break;
 			}
+			written_so_far += writesize;
 			readsize -= writesize;
 			totalsize += writesize;
 			offset += writesize;
+
+			if ((filesize > 0) || (readsize > 0)) {
+				fprintf(stdout, "\r   Fetching '%s'... (%d bytes)", dbname,written_so_far);
+				fflush(stdout);
+			}
 		}
 	}
 	pi_buffer_free(buffer);
 #undef FBUFSIZ
-
 	dlp_VFSFileClose(sd,file);
 	close(fd);
 
-	printf("(%lu bytes, %ld KiB total)\n",
+	printf("\r   Fetching '%s'... (%lu bytes, %ld KiB total)\n",
+		dbname,
 		(unsigned long)original_filesize, totalsize/1024);
 }
 
@@ -1138,6 +1146,7 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 					writesize,
 					offset;
 	size_t			readsize;
+	size_t			written_so_far;
 
 	struct stat				sbuf;
 
@@ -1161,7 +1170,8 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 		return;
 	}
 
-	fprintf(stderr, "   Installing '%s'... ", localfile);
+	fprintf(stdout, "   Installing '%s'... ", localfile);
+	fflush(stdout);
 
 	if (stat(localfile, &sbuf) < 0)
 	{
@@ -1283,7 +1293,7 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 		dlp_VFSFileClose(sd,file);
 		return;
 	}
-#define FBUFSIZ 16384
+#define FBUFSIZ 65536
 	filebuffer = (char *)malloc(FBUFSIZ);
 	if (NULL == filebuffer)
 	{
@@ -1294,6 +1304,7 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 	}
 
 	writesize = 0;
+	written_so_far = 0;
 	while (writesize >= 0)
 	{
 		readsize = read(fd,filebuffer,FBUFSIZ);
@@ -1310,6 +1321,12 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 			readsize -= writesize;
 			totalsize += writesize;
 			offset += writesize;
+			written_so_far += writesize;
+
+			if ((writesize>0) || (readsize > 0)) {
+				fprintf(stdout, "\r   Installing '%s'... (%lu bytes)", localfile,written_so_far);
+				fflush(stdout);
+			}
 		}
 	}
 
@@ -1317,7 +1334,8 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 	dlp_VFSFileClose(sd,file);
 	close(fd);
 
-	printf("(%lu bytes, %ld KiB total)\n",
+	printf("\r   Installing '%s'... (%lu bytes, %ld KiB total)\n",
+		localfile,
 		(unsigned long)sbuf.st_size, totalsize/1024);
 	/* Advancing totalsize already done by write loop.
 	totalsize += sbuf.st_size; */
