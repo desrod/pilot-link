@@ -65,7 +65,7 @@ int appInfo_t::addCategory(charConst_t category)
 		    if (_categoryName[i][0] != '\0' && _categoryID[j] > id)
 			 id = _categoryID[j];
 
-	       if (++id == 256) {
+	       if (++id >= 255) {
 		    id = 127;
 
 		    do {
