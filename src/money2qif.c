@@ -87,8 +87,7 @@ int main(int argc, char *argv[])
 
 	struct 	MoneyAppInfo mai;
 
-	
-	unsigned char buffer[0xffff];
+	pi_buffer_t *buffer;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -127,9 +126,11 @@ int main(int argc, char *argv[])
 		dlp_AddSyncLogEntry(sd, "Unable to open MoneyDB.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	buffer = pi_buffer_new (0xffff);
 	
-	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-	unpack_MoneyAppInfo(&mai, buffer, 0xffff);
+	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
+	unpack_MoneyAppInfo(&mai, buffer->data, 0xffff);
 	
 	for (index = 0; index < 16; index++)
 		if (!strcmp(mai.category.name[index], account))
@@ -142,18 +143,16 @@ int main(int argc, char *argv[])
 		for (index = 0;; index++) {
 			int 	attr,
 				category;
-
 			struct 	Transaction t;
 	
 			int len =
-				dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0,
+				dlp_ReadRecordByIndex(sd, db, index, buffer, 0,
 						      &attr,
 						      &category);
 	
 			if (len < 0)
 				break;
 	
-				
 			if ((attr & dlpRecAttrDeleted)
 			    || (attr & dlpRecAttrArchived))
 				continue; 	/* Skip deleted records */
@@ -161,7 +160,7 @@ int main(int argc, char *argv[])
 			if (strcmp(mai.category.name[category], account))
 				continue;
 	
-			unpack_Transaction(&t, buffer, len);
+			unpack_Transaction(&t, buffer->data, buffer->used);
 	
 			printf("D%02d/%02d/%2d\n", t.month, t.day,
 			       t.year - 1900);
@@ -186,6 +185,8 @@ int main(int argc, char *argv[])
 	
 		}
 	}
+
+	pi_buffer_free (buffer);
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);

@@ -207,7 +207,9 @@ int ls_fn(int sd, int argc, char *argv[])
 		ret,
 		start		= 0,
 		lflag 		= 0,
-		rom_flag 	= 0;
+		rom_flag 	= 0,
+		i;
+	pi_buffer_t *buf;
 	
 	optind = 0;
 		
@@ -239,6 +241,8 @@ int ls_fn(int sd, int argc, char *argv[])
 	else
 		flags = 0x40;	/* dlpReadDBListFlagROM */
 
+	buf = pi_buffer_new (32 * sizeof (struct DBInfo));
+	
 	for (;;) {
 		struct DBInfo info;
 		long tag;
@@ -252,38 +256,47 @@ int ls_fn(int sd, int argc, char *argv[])
 		   entries, so it will return database number 12.  Then,
 		   we'll ask for 13, etc, until we get the NotFound error
 		   return. */
-		ret = dlp_ReadDBList(sd, cardno, flags, start, &info);
+		ret = dlp_ReadDBList(sd, cardno, flags | dlpDBListMultiple, start, buf);
 
-		if (ret == -5 /* dlpRespErrNotFound */ )
+		if (ret == -5 /* dlpRespErrNotFound */ ) 
 			break;
 
 		if (ret < 0) {
 			printf("dlp_ReadDBList: err %d\n", ret);
+			pi_buffer_free (buf);
 			return -1;
 		}
 
-		printf("%s\n", info.name);
+		for (i = 0; i < (buf->used / sizeof(struct DBInfo)); i++) {
+			memcpy (&info, buf->data + (i * sizeof(struct DBInfo)), sizeof (struct DBInfo));
 
-		if (lflag == 1) {
-			tag = htonl(info.type);			
-			printf("  More: 0x%x       Flags: 0x%-4x             Type: %.4s\n",
-				info.more, info.flags, (char *) &tag);
-			tag = htonl(info.creator);
-			printf("  Creator: %c%c%c%c    Modification Number: %-4ld Version: %-2d\n",
-				a[0], a[1], a[2], a[3], info.modnum, info.version);
-			printf("  Created: %19s\n", timestr(info.createDate));
-			printf("  Backup : %19s\n", timestr(info.backupDate));
-			printf("  Modify : %19s\n\n", timestr(info.modifyDate));
+			printf("%s\n", info.name);
+
+			if (lflag == 1) {
+				tag = htonl(info.type);			
+				printf("  More: 0x%x       Flags: 0x%-4x             Type: %.4s\n",
+					info.more, info.flags, (char *) &tag);
+				tag = htonl(info.creator);
+				printf("  Creator: %c%c%c%c    Modification Number: %-4ld Version: %-2d\n",
+					a[0], a[1], a[2], a[3], info.modnum, info.version);
+				printf("  Created: %19s\n", timestr(info.createDate));
+				printf("  Backup : %19s\n", timestr(info.backupDate));
+				printf("  Modify : %19s\n\n", timestr(info.modifyDate));
+			}
+			
+			if (info.index < start) {
+				/* avoid looping forever if we get confused */
+				printf("error: index backs up\n");
+				break;
+			}
 		}
-
-		if (info.index < start) {
-			/* avoid looping forever if we get confused */
-			printf("error: index backs up\n");
+		
+		if (info.index < start) 
 			break;
-		}
 
 		start = info.index + 1;
 	}
+	pi_buffer_free (buf);
 	return 0;
 }
 

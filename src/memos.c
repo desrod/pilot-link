@@ -251,8 +251,8 @@ int main(int argc, char *argv[])
 
 	size_t	len;
 
-	unsigned char 	buffer[0xffff];
-	
+	pi_buffer_t *buffer;
+
 	char 	appblock[0xffff],
 		dirname[MAXDIRNAMELEN] = "",
 		*buf 		= NULL,
@@ -366,6 +366,8 @@ int main(int argc, char *argv[])
 		};
 	}
 
+	buffer = pi_buffer_new (0xffff);
+
 	for (index = 0;; index++) {
 
 		if (filename[0] == '\0') {
@@ -373,12 +375,11 @@ int main(int argc, char *argv[])
 				len = dlp_ReadNextRecInCategory(sd, db,
 							        match_category,
 							        buffer, &id,
-							        0, 0,
-							        &attr);
+							        0, &attr);
 				category = match_category;
 			} else {
 				len = dlp_ReadRecordByIndex(sd, db, index,
-							    buffer, &id, 0,
+							    buffer, &id,
 							    &attr,
 							    &category);
 			}
@@ -389,7 +390,8 @@ int main(int argc, char *argv[])
 			    (pif, index, (void *) &ptr, &len, &attr, &category,
 			     0))
 				break;
-			memcpy(buffer, ptr, len);
+			memcpy(buffer->data, ptr, len);
+			buffer->used = len;
 		}
 
 		/* Skip deleted records */
@@ -403,7 +405,7 @@ int main(int argc, char *argv[])
 				continue;
 		} 
 
-		unpack_Memo(&m, buffer, len);
+		unpack_Memo(&m, buffer->data, buffer->used);
 
 		/* Skip memos whose title does not match with the query */
 		if (title_matching) {
@@ -428,6 +430,8 @@ int main(int argc, char *argv[])
 			  break;
 		}
 	}
+
+	pi_buffer_free (buffer);
 
 	if (delete && (filename[0] == '\0')) {
 		if (verbose)

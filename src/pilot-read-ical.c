@@ -126,6 +126,7 @@ int main(int argc, char *argv[])
 		*pubtext 	= NULL,
 		*progname 	= argv[0];
 	struct ToDoAppInfo tai;
+	pi_buffer_t *recbuf;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -188,15 +189,16 @@ int main(int argc, char *argv[])
 				 0xffff);
 		unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 		
+		recbuf = pi_buffer_new (0xffff);
+		
 		for (i = 0;; i++) {
 			int 	attr,
 				category;
 			char 	id_buf[255];
 			struct 	ToDo t;
 			recordid_t id;
-
-			int len =
-			    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, &category);
+			
+			int len = dlp_ReadRecordByIndex(sd, db, i, recbuf, &id, &attr, &category);
 
 			if (len < 0)
 				break;
@@ -206,7 +208,7 @@ int main(int argc, char *argv[])
 			    || (attr & dlpRecAttrArchived))
 				continue;
 
-			unpack_ToDo(&t, buffer, len);
+			unpack_ToDo(&t, recbuf->data, recbuf->used);
 
 			fprintf(ical, "set n [notice]\n");
 
@@ -222,6 +224,7 @@ int main(int argc, char *argv[])
 
 			free_ToDo(&t);
 		}
+		pi_buffer_free(recbuf);
 
 		/* Close the database */
 		dlp_CloseDB(sd, db);
@@ -238,6 +241,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	recbuf = pi_buffer_new (0xffff);
+
 	for (i = 0;; i++) {
 		int 	j,
 			attr;
@@ -246,7 +251,7 @@ int main(int argc, char *argv[])
 		recordid_t id;
 
 		int len =
-		    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, 0);
+		    dlp_ReadRecordByIndex(sd, db, i, recbuf, &id, &attr, 0);
 
 		if (len < 0)
 			break;
@@ -256,7 +261,7 @@ int main(int argc, char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 
-		unpack_Appointment(&a, buffer, len);
+		unpack_Appointment(&a, recbuf->data, recbuf->used);
 
 		if (a.event) {
 			fprintf(ical, "set i [notice]\n");
@@ -378,6 +383,8 @@ int main(int argc, char *argv[])
 		free_Appointment(&a);
 
 	}
+
+	pi_buffer_free (recbuf);
 
 	fprintf(ical, "cal save [cal main]\n");
 	fprintf(ical, "exit\n");

@@ -495,12 +495,8 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		j,
 		attribute,
 		category;
-	
-	size_t	l;
-
-	char 	buf[0xffff];
-	
 	struct 	Address addr;
+	pi_buffer_t *buf;
 		
 	/* Print out the header and fields with fields intact. Note we
 	   'ignore' the last field (Private flag) and print our own here, so
@@ -516,16 +512,17 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 
 	printf("   Writing Palm Address Book entries to file... ");
 	fflush(stdout);
+	buf = pi_buffer_new (0xffff);
 	for (i = 0;
 	     (j =
-	      dlp_ReadRecordByIndex(sd, db, i, (unsigned char *) buf, 0,
-				    &l, &attribute, &category)) >= 0;
+	      dlp_ReadRecordByIndex(sd, db, i, buf, 0,
+				    &attribute, &category)) >= 0;
 	     i++) {
 
 
 		if (attribute & dlpRecAttrDeleted)
 			continue;
-		unpack_Address(&addr, (unsigned char *) buf, l);
+		unpack_Address(&addr, buf->data, buf->used);
 
 /* Simplified system */
 #if 0
@@ -593,11 +590,12 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 				write_field(out, "", tabledelim);
 		}
 
-		sprintf(buf, "%d", (attribute & dlpRecAttrSecret) ? 1 : 0);
-		write_field(out, buf, 0);
+		sprintf((char *)buf->data, "%d", (attribute & dlpRecAttrSecret) ? 1 : 0);
+		write_field(out, (char *)buf->data, 0);
 
 #endif
 	}
+	pi_buffer_free (buf);
 	printf("done.\n");
 	return 0;
 }

@@ -2,6 +2,7 @@
 #define _PILOT_SYSPKT_H
 
 #include "pi-args.h"
+#include "pi-buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +22,7 @@ extern "C" {
 	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
 		 size_t len, int flags));
 	extern int sys_rx
-	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
+	  PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf,
 		 size_t len, int flags));
 
 	extern void sys_dump_header

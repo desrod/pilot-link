@@ -139,14 +139,18 @@ static int getrecord_pi_socket (struct PalmPixState *vstate, int recno,
 {
    
 	static char buffer[65536];
+    static pi_buffer_t fakebuf;
    
 	struct PalmPixState_pi_socket *state =
 		(struct PalmPixState_pi_socket *) vstate;
    
 	*buf = buffer;
+    fakebuf.data = buffer;
+    fakebuf.allocated = 0;
+    fakebuf.used = 0;
 
-	return !(dlp_ReadRecordByIndex (state->sd, state->db, recno, buffer,
-		NULL, bufsize, NULL, NULL) == *bufsize);
+	return dlp_ReadRecordByIndex (state->sd, state->db, recno, &fakebuf,
+		NULL, NULL, NULL) < 0 ? 1 : 0;
 }
 
 

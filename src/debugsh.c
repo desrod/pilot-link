@@ -106,27 +106,29 @@ void read_user(int sd)
 
 void read_pilot(int sd)
 {
-	char 	buf[4096];
+	pi_buffer_t *buf = pi_buffer_new (4096);
 	int 	l = pi_read(sd, buf, 4096);
 	
 	printf("From Palm %d:", l);
 	if (l < 0)
 		exit(EXIT_FAILURE);
 	
-	dumpdata((unsigned char *) buf, l);
+	dumpdata(buf->data, l);
 
-	if (buf[2] == 0) {			/* SysPkt command 	*/
-		if (buf[0] == 1) {		/* Console 		*/
-			if (buf[4] == 0x7f) {	/* Message from Palm 	*/
+	if (buf->data[2] == 0) {			/* SysPkt command 	*/
+		if (buf->data[0] == 1) {		/* Console 		*/
+			if (buf->data[4] == 0x7f) {	/* Message from Palm 	*/
 				int i;
 
 				for (i = 6; i < l; i++)
-					if (buf[i] == '\r')
-						buf[i] = '\n';
-				printf("%s", buf + 6);
+					if (buf->data[i] == '\r')
+						buf->data[i] = '\n';
+				printf("%s", buf->data + 6);
 			}
 		}
 	}
+
+	pi_buffer_free (buf);
 
 	if (!done) {
 		printf("debugsh>");

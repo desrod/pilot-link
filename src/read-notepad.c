@@ -481,7 +481,7 @@ int main(int argc, char *argv[])
    
    struct 	PilotUser User;
    struct 	NotePadAppInfo nai;
-   unsigned char buffer[0xffff];
+   pi_buffer_t *buffer;
 
    progname = argv[0];
 
@@ -547,9 +547,11 @@ int main(int argc, char *argv[])
 	exit(EXIT_FAILURE);
      }
    
-   dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+   buffer = pi_buffer_new (0xffff);
+ 
+   dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
    
-   unpack_NotePadAppInfo( &nai, buffer, 0xffff);
+   unpack_NotePadAppInfo( &nai, buffer->data, 0xffff);
    
    for (i = 0;; i++) 
      {
@@ -561,18 +563,20 @@ int main(int argc, char *argv[])
 	
 	if( sd ) 
 	  {
-	     len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+	     len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0,
 				       &attr, &category);
 	     
 	     if (len < 0)
 	       break;
 	  }
+	else
+		pi_buffer_clear(buffer);
 	
 	/* Skip deleted records */
 	if ((attr & dlpRecAttrDeleted) || (attr & dlpRecAttrArchived))
 	  continue;
 	
-	unpack_NotePad( &n, buffer, len);
+	unpack_NotePad( &n, buffer->data, buffer->used);
 
 	switch( action )
 	  {
@@ -598,6 +602,8 @@ int main(int argc, char *argv[])
 	dlp_EndOfSync( sd, 0 );
 	pi_close(sd);
      } 
+
+   pi_buffer_free (buffer);
 
    return 0;
    

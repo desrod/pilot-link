@@ -68,10 +68,8 @@ int main (int argc, char **argv)
 		numStrings;
 	char *strings;
 	FileRef fileRef;
-	size_t dataLen;
 	unsigned long fileAttrs;
-	unsigned char *buf1,
-		*buf2;
+	unsigned char *buf1;
 
 	time_t t1, t2;
 	char name[255],
@@ -270,6 +268,9 @@ int main (int argc, char **argv)
 			result = dlp_VFSFileOpen (sd, refs[i], TEST_VFS_FILE, 0x0007 /* read-write */, &fileRef);
 			CHECK_RESULT(dlp_VFSFileOpen);
 			if (result == 0) {
+				pi_buffer_t *fileBuf =
+					pi_buffer_new (BIG_FILE_SIZE);
+
 				LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Opened file %s\n", TEST_VFS_FILE));
 
 				strcpy (name, "a test string written to a file\n");
@@ -290,15 +291,14 @@ int main (int argc, char **argv)
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Seeked to beginning of file\n", j));
 					}
 
-					dataLen = strlen (name);
-					result = dlp_VFSFileRead (sd, fileRef, (unsigned char *)oldName, &dataLen);
+					result = dlp_VFSFileRead (sd, fileRef, fileBuf, strlen(name));
 					CHECK_RESULT(dlp_VFSFileRead);
-					if (dataLen != strlen (name)) {
+					if (fileBuf->used != strlen (name)) {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* ERROR: File read: read %d instead of the expected %d\n", len, strlen (name)));
-					} else if (memcmp (name, oldName, dataLen)) {
-						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* ERROR: File read: read data mismatch\n", len, strlen (name)));
-						dumpdata (name, dataLen);
-						dumpdata (oldName, dataLen);
+					} else if (memcmp (name, fileBuf->data, fileBuf->used)) {
+						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* ERROR: File read: read data mismatch\n", fileBuf->used, strlen (name)));
+						dumpdata (name, fileBuf->used);
+						dumpdata (fileBuf->data, fileBuf->used);
 					} else {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* File read: successfully read the data back\n"));
 					}
@@ -309,8 +309,7 @@ int main (int argc, char **argv)
 				   file and read it back them compare */
 				LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Please wait, writing %ld bytes of data to the file...\n", (long)BIG_FILE_SIZE));
 				buf1 = (unsigned char *)malloc (BIG_FILE_SIZE);
-				buf2 = (unsigned char *)malloc (BIG_FILE_SIZE+6);   /* +6 because of a known issue in net_rx (bug #612) */
-				if (buf1 && buf2) {
+				if (buf1) {
 					result = dlp_VFSFileWrite (sd, fileRef, buf1, BIG_FILE_SIZE);
 					CHECK_RESULT(dlp_VFSFileWrite);
 					if (result == 0) {
@@ -319,11 +318,10 @@ int main (int argc, char **argv)
 						result = dlp_VFSFileSeek (sd, fileRef, vfsOriginCurrent, -BIG_FILE_SIZE);
 						CHECK_RESULT(dlp_VFSFileSeek);
 
-						dataLen = BIG_FILE_SIZE;
-						result = dlp_VFSFileRead (sd, fileRef, buf2, &dataLen);
+						result = dlp_VFSFileRead (sd, fileRef, fileBuf, BIG_FILE_SIZE);
 						CHECK_RESULT(dlp_VFSFileRead);
 						if (result == 0) {
-							if (dataLen != BIG_FILE_SIZE || memcmp (buf1, buf2, dataLen))
+							if (fileBuf->used != BIG_FILE_SIZE || memcmp (buf1, fileBuf->data, BIG_FILE_SIZE))
 								LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* ERROR, data differs!\n"));
 							else
 								LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Successful, all bytes are the same...\n"));
@@ -332,8 +330,7 @@ int main (int argc, char **argv)
 				}
 				if (buf1)
 					free (buf1);
-				if (buf2)
-					free (buf2);
+				pi_buffer_free (fileBuf);
 
 				result = dlp_VFSFileEOF (sd, fileRef);
 				if (result == 0x2A07) {

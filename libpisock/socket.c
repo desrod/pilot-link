@@ -83,9 +83,6 @@ int pi_socket_init(pi_socket_t *ps);
 static int is_connected (pi_socket_t *ps);
 static int is_listener (pi_socket_t *ps);
 
-/* Linked List of Sockets */
-pi_socket_list_t pi_socket_list;
-
 /* GLOBALS */
 static pi_socket_list_t *psl = NULL;
 static pi_socket_list_t *watch_list = NULL;
@@ -468,12 +465,15 @@ static void
 protocol_queue_build (pi_socket_t *ps, int autodetect) 
 {
 	int 	protocol;
-
 	pi_protocol_t	*prot,
 			*dev_prot,
 			*dev_cmd_prot;
-
 	unsigned char byte;
+	pi_buffer_t byte_buf;
+
+	byte_buf.data = &byte;
+	byte_buf.allocated = 1;
+	byte_buf.used = 0;
 	
 	/* The device protocol */
 	dev_prot 	= ps->device->protocol (ps->device);
@@ -482,7 +482,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 	protocol = ps->protocol;
 	
 	if (protocol == PI_PF_DLP && autodetect) {
-		if (dev_prot->read (ps, &byte, 1, PI_MSG_PEEK) > 0) {
+		if (dev_prot->read (ps, &byte_buf, 1, PI_MSG_PEEK) > 0) {
 			int found = 0;
 
 			while (!found) {
@@ -504,7 +504,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 					found = 1;
 					break;
 				default:
-					if (dev_prot->read (ps, &byte, 1,
+					if (dev_prot->read (ps, &byte_buf, 1,
 						PI_MSG_PEEK) < 0) {
 						protocol = PI_PF_PADP;
 						LOG((PI_DBG_SOCK,
@@ -1395,7 +1395,7 @@ pi_send(int pi_sd, void *msg, size_t len, int flags)
  *
  ***********************************************************************/
 ssize_t
-pi_recv(int pi_sd, void *msg, size_t len, int flags)
+pi_recv(int pi_sd, pi_buffer_t *msg, size_t len, int flags)
 {
 	pi_socket_t *ps;
 
@@ -1422,11 +1422,10 @@ pi_recv(int pi_sd, void *msg, size_t len, int flags)
  *
  ***********************************************************************/
 ssize_t
-pi_read(int pi_sd, void *msg, size_t len)
+pi_read(int pi_sd, pi_buffer_t *msg, size_t len)
 {
 	return pi_recv(pi_sd, msg, len, 0);
 }
-
 
 /***********************************************************************
  *
@@ -1613,7 +1612,8 @@ pi_getsockpeer(int pi_sd, struct sockaddr *addr, size_t *namelen)
  *
  * Function:    pi_version
  *
- * Summary:     
+ * Summary:     return the device's DLP version as a unsigned short
+ *		(0xMMmm with MM=major, mm=minor)
  *
  * Parameters:  None
  *
@@ -1640,11 +1640,11 @@ pi_version(int pi_sd)
 		return elem->version;
 	
 	if (dlp_ReadSysInfo (elem->ps->sd, &si) < 0)
-		return 0x000;
+		return 0x0000;
 
 	if (si.dlpMajorVersion != 0) {
 		elem->version = (si.dlpMajorVersion << 8) | si.dlpMinorVersion;
-		
+		elem->maxrecsize = si.maxRecSize;		
 		return elem->version;
 	}
 	
@@ -1657,6 +1657,7 @@ pi_version(int pi_sd)
 		size = sizeof(elem->version);
 		pi_getsockopt(elem->ps->sd, PI_LEVEL_CMP,
 			PI_CMP_VERS, &elem->version, &size);
+		elem->maxrecsize = DLP_BUF_SIZE;
 		break;
 	}
 
@@ -1664,6 +1665,35 @@ pi_version(int pi_sd)
 	elem->ps->command = 0;
 
 	return elem->version;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_maxrecsize
+ *
+ * Summary:     return the device's maximum record size, usually 0xffff
+ *		but it goes much higher with Palm OS 5+ devices
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+unsigned long
+pi_maxrecsize(int pi_sd)
+{
+	pi_socket_list_t *elem;
+
+	if (!(elem = ps_list_find_elem (psl, pi_sd))) {
+		errno = ESRCH;
+		return -1;
+	}
+
+	/* pi_version will read necessary info from device */
+	if (pi_version(pi_sd) == 0x0000)
+		return DLP_BUF_SIZE;
+
+	return elem->maxrecsize;
 }
 
 pi_socket_t *

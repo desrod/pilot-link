@@ -2,6 +2,7 @@
 #define _PILOT_NET_H_
 
 #include "pi-args.h"
+#include "pi-buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +38,7 @@ extern "C" {
 	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
 		 int flags));
 	extern int net_rx
-	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
+	    PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf, size_t expect,
 		 int flags));
 
 	extern void net_dump_header

@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
 
 	char buffer[0xffff];
 	char buffer2[0xffff];
+	pi_buffer_t *recbuf;
 
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo tai;
@@ -155,14 +156,16 @@ int main(int argc, char *argv[])
 	printf(" Currency 4, name '%s', symbol '%s', rate '%s'\n\n",
 		tai.currencies[3].name, tai.currencies[3].symbol,
 		tai.currencies[3].rate);
-		
+	
+	recbuf = pi_buffer_new (0xffff);
+
 	for (i = 0;; i++) {
 		int 	attr,
 			category;
 		struct Expense t;
 
 		int len =
-		    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
+		    dlp_ReadRecordByIndex(sd, db, i, recbuf, 0, &attr,
 					  &category);
 
 		if (len < 0)
@@ -173,7 +176,7 @@ int main(int argc, char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 
-		unpack_Expense(&t, buffer, len);
+		unpack_Expense(&t, recbuf->data, recbuf->used);
 		ret = pack_Expense(&t, buffer2, 0xffff);
 #ifdef DEBUG
 		fprintf(stderr, "Orig length %d, data:\n", len);
@@ -195,7 +198,8 @@ int main(int argc, char *argv[])
 		printf("\n");
 
 		free_Expense(&t);
-	}		
+	}
+	pi_buffer_free(recbuf);	
 		
 	/* Close the database */
 	dlp_CloseDB(sd, db);

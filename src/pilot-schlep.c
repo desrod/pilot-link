@@ -48,7 +48,7 @@ static int Fetch(int sd, char *filename)
 		i,
 		l,
 		fd;
-	char 	buffer[0xffff];
+	pi_buffer_t *buffer;
 		
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (fd < 0)
@@ -59,10 +59,11 @@ static int Fetch(int sd, char *filename)
 	if (dlp_OpenDB(sd, 0, dlpOpenRead, "Schlep", &db) < 0)
 		return -1;
 
+	buffer = pi_buffer_new (0xffff);
 	for (i = 0; 
 	     (l = dlp_ReadResourceByType(sd, db, pi_mktag('D', 'A', 'T', 'A'),
-					 i, buffer, 0, 0)) > 0; i++) {
-		if (write(fd, buffer, l) < 0) {
+					 i, buffer, 0)) > 0; i++) {
+		if (write(fd, buffer->data, l) < 0) {
 			printf("%d bytes read (Incomplete)\n\n", l);
 			close(fd);
 			return -1;
@@ -70,6 +71,7 @@ static int Fetch(int sd, char *filename)
 		printf(".");
 		fflush(stdout);
 	}
+	pi_buffer_free(buffer);
 
 	close(fd);
 	printf("%d bytes read\n\n", l);

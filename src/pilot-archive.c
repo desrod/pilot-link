@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
 		*port 		= NULL;
 
 	struct 	ToDoAppInfo tai;
+	pi_buffer_t *buffer;
 
-	unsigned char buffer[0xffff];
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -97,16 +97,18 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+	buffer = pi_buffer_new (0xffff);
 
-	unpack_ToDoAppInfo(&tai, buffer, 0xffff);
+	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
+
+	unpack_ToDoAppInfo(&tai, buffer->data, 0xffff);
 
 	for (i = 0;; i++) {
 		int attr, category, len = 0;
 		struct ToDo todo;
 
 		if (port) {
-			len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+			len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 
 				&attr, &category);
 
 			if (len < 0)
@@ -116,7 +118,7 @@ int main(int argc, char *argv[])
 		/* Only if records are marked as "Archive to Desktop" */
 		if (attr & dlpRecAttrArchived) {
 
-			unpack_ToDo(&todo, buffer, len);
+			unpack_ToDo(&todo, buffer->data, buffer->used);
 
 			printf("\"Category\", ");
 			printf("\"%s\", ", tai.category.name[category]);
@@ -147,6 +149,8 @@ int main(int argc, char *argv[])
 			free_ToDo(&todo);
 		}
 	}
+
+	pi_buffer_free (buffer);
 
 	dlp_CloseDB(sd, db);
 	dlp_AddSyncLogEntry(sd, "Successfully printed archived records\n"

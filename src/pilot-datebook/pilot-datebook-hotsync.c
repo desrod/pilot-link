@@ -745,8 +745,7 @@ hotsync_read_header (struct hotsync_file_data * in_file, struct header_data * he
 void
 hotsync_read_specific_row (struct hotsync_file_data * in_file, struct row_data * row, int record_num)
 {
-  unsigned char buffer[0xffff];
-  int buffer_len = 0;
+  pi_buffer_t *buffer;
 
   struct Appointment a;
   int attributes;
@@ -764,8 +763,9 @@ hotsync_read_specific_row (struct hotsync_file_data * in_file, struct row_data *
 		  record_num, in_file->num_recs);
 
   /* Read from file */
+  buffer = pi_buffer_new (0xffff);
   if (dlp_ReadRecordByIndex(in_file->socket, in_file->database,
-			    record_num, buffer, &uid, &buffer_len,
+			    record_num, buffer, &uid, 
 			    &attributes, &category) < 0) {
     warn_message("Can not read record <%d> from input file\n\n", record_num);
     setRowIsValid(row, FALSE);
@@ -773,7 +773,7 @@ hotsync_read_specific_row (struct hotsync_file_data * in_file, struct row_data *
   else {
     /* Convert data */
     /* (ensure to later free appointment data after usage) */
-    unpack_Appointment(&a, buffer, buffer_len);
+    unpack_Appointment(&a, buffer->data, buffer->used);
     
     /* Set datebook data */
     setRowRecordNum(row, record_num);
@@ -783,6 +783,7 @@ hotsync_read_specific_row (struct hotsync_file_data * in_file, struct row_data *
     setRowAppointment(row, a);
     setRowIsValid(row, TRUE);
   }
+  pi_buffer_free (buffer);
 
 
 

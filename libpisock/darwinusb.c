@@ -1137,12 +1137,17 @@ u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 
 
 static int
-u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
+u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
 
 	if (!usb_opened)
 		return 0;
+
+	if (pi_buffer_expect (buf, len) == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 
 #ifdef DEBUG_USB
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: darwin_usb_read(len=%d, timeout=%d, flags=%d)\n", len, timeout, flags));
@@ -1197,7 +1202,7 @@ u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 
 		if (len)
 		{
-			memcpy(buf, read_queue, len);
+			pi_buffer_append (buf, read_queue, len);
 
 			if (flags != PI_MSG_PEEK)
 			{

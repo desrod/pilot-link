@@ -2,6 +2,7 @@
 #define _PILOT_SERIAL_H_
 
 #include "pi-args.h"
+#include "pi-buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +18,7 @@ extern "C" {
 		ssize_t (*write) PI_ARGS((pi_socket_t *ps,
 			unsigned char *buf, size_t len, int flags));
 		ssize_t (*read) PI_ARGS((pi_socket_t *ps,
-			unsigned char *buf, size_t len, int flags));
+			pi_buffer_t *buf, size_t expect, int flags));
 		int (*poll) PI_ARGS((pi_socket_t *ps, int timeout));
 	};
 

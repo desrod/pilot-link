@@ -9,6 +9,7 @@ extern "C" {
 
 #include "pi-version.h"
 #include "pi-sockaddr.h"
+#include "pi-buffer.h"
 
 #define PI_AF_PILOT             0x00
 
@@ -26,7 +27,8 @@ extern "C" {
 #define PI_CMD_NET 0x02
 #define PI_CMD_SYS 0x03
 
-#define PI_MSG_PEEK 0x01
+#define PI_MSG_PEEK 	0x01
+#define	PI_MSG_REALLOC	0x02
 
 enum PiOptLevels {
 	PI_LEVEL_DEV,
@@ -111,8 +113,10 @@ typedef struct pi_socket {
 typedef struct pi_socket_list
 {
 	pi_socket_t *ps;
-	int version;
-	
+
+	int version;		/* version of the DLP protocol */
+	unsigned long maxrecsize;/* max record size on the device */
+
 	struct pi_socket_list *next;
 } pi_socket_list_t;
 
@@ -136,9 +140,9 @@ typedef struct pi_socket_list
 	extern int pi_send
 	    PI_ARGS((int pi_sd, void *msg, size_t len, int flags));
 	extern ssize_t pi_recv
-	    PI_ARGS((int pi_sd, void *msg, size_t len, int flags));
+	    PI_ARGS((int pi_sd, pi_buffer_t *msg, size_t len, int flags));
 
-	extern ssize_t pi_read PI_ARGS((int pi_sd, void *msg, size_t len));
+	extern ssize_t pi_read PI_ARGS((int pi_sd, pi_buffer_t *msg, size_t len));
 	extern ssize_t pi_write PI_ARGS((int pi_sd, void *msg, size_t len));
 
 	extern int pi_getsockname
@@ -154,6 +158,7 @@ typedef struct pi_socket_list
 		     const void *option_value, size_t *option_len));
 
 	extern int pi_version PI_ARGS((int pi_sd));
+	extern unsigned long pi_maxrecsize PI_ARGS((int pi_sd));
 
 	extern int pi_tickle PI_ARGS((int pi_sd));
 	extern int pi_watchdog PI_ARGS((int pi_sd, int interval));

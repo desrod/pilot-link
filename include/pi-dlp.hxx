@@ -173,16 +173,13 @@ class DLP
      }
 
      int readResourceByType(const int handle, const unsigned long type,
-			    const int id, void *buffer, int *idx,
-			    size_t *size) const {
-	  return dlp_ReadResourceByType(_sd, handle, type, id, buffer, idx,
-					size);
+			    const int id, pi_buffer_t *buffer, int *idx) const {
+	  return dlp_ReadResourceByType(_sd, handle, type, id, buffer, idx);
      }
 
-     int readResourceByIndex(const int handle, const int idx, void *buffer,
-			     unsigned long *type, int *id, size_t *size) const {
-	  return dlp_ReadResourceByIndex(_sd, handle, idx, buffer, type,
-					 id, size);
+     int readResourceByIndex(const int handle, const int idx, pi_buffer_t *buffer,
+			     unsigned long *type, int *id) const {
+	  return dlp_ReadResourceByIndex(_sd, handle, idx, buffer, type, id);
      }
 
      int writeResource(const int handle, const unsigned long type,
@@ -195,36 +192,34 @@ class DLP
 	  return dlp_DeleteResource(_sd, handle, all, restype, resID);
      }
 
-     int readNextModifiedRec(const int handle, void *buffer, recordid_t *id,
-			     int *idx, size_t *size, int *attr, int *cat) const {
-	  return dlp_ReadNextModifiedRec(_sd, handle, buffer, id, idx, size,
-					 attr, cat);
+     int readNextModifiedRec(const int handle, pi_buffer_t *buffer, recordid_t *id,
+			     int *idx, int *attr, int *cat) const {
+	  return dlp_ReadNextModifiedRec(_sd, handle, buffer, id, idx, attr, cat);
      }
 
      int readNextModifiedRecInCategory(const int handle, const int incat,
-				       void *buffer, recordid_t *id, int *idx,
-				       size_t *size, int *attr) const {
+				       pi_buffer_t *buffer, recordid_t *id, int *idx,
+				       int *attr) const {
 	  return dlp_ReadNextModifiedRecInCategory(_sd, handle, incat, buffer,
-						   id, idx, size, attr);
+						   id, idx, attr);
      }
 
-     int readNextRecInCategory(const int handle, const int incat, void *buffer,
-			       recordid_t *id, int *idx, size_t *size,
+     int readNextRecInCategory(const int handle, const int incat, pi_buffer_t *buffer,
+			       recordid_t *id, int *idx,
 			       int *attr) const {
-	  return dlp_ReadNextRecInCategory(_sd, handle, incat, buffer, id, idx,
-					   size, attr);
+	  return dlp_ReadNextRecInCategory(_sd, handle, incat, buffer, id, idx, attr);
      }
 
-     int readRecordById(const int handle, const recordid_t id, void *buffer,
-			int *idx, size_t *size, int *attr, int *category) const {
-	  return dlp_ReadRecordById(_sd, handle, id, buffer, idx, size, attr,
+     int readRecordById(const int handle, const recordid_t id, pi_buffer_t *buffer,
+			int *idx, int *attr, int *category) const {
+	  return dlp_ReadRecordById(_sd, handle, id, buffer, idx, attr,
 				    category);
      }
 
-     int readRecordByIndex(const int handle, const int idx, void *buffer,
-			   recordid_t *id, size_t *size, int *attr,
+     int readRecordByIndex(const int handle, const int idx, pi_buffer_t *buffer,
+			   recordid_t *id, int *attr,
 			   int *category) const {
-	  return dlp_ReadRecordByIndex(_sd, handle, idx, buffer, id, size,
+	  return dlp_ReadRecordByIndex(_sd, handle, idx, buffer, id,
 				       attr, category);
      }
 

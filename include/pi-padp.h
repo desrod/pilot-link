@@ -49,7 +49,7 @@ extern "C" {
 			int flags));
 
 	extern int padp_rx
-	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
+	    PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf, size_t expect,
 			int flags));
 
 	extern void padp_dump_header

@@ -114,7 +114,6 @@ void free_VersaMail(struct VersaMail *a) {
 #define CONVERT_TIME_T_UNIX_TO_PALM(t) (t=t+2082844800)
 
 int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
-  unsigned long d;
   time_t date_t;
   struct tm *date_tm;
   unsigned char *start = buffer;

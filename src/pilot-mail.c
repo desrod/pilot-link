@@ -42,9 +42,9 @@
 #include "pi-mail.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "pi-buffer.h"
 
 /* Declare prototypes */
-void print_splash(char *progname);
 int pilot_connect(const char *porg);
 
 void markline(char *msg);
@@ -220,9 +220,8 @@ static void display_help(char *progname, char *port, char *pop_host, char *pop_u
 	printf("      ** Please use pilot-mailsync instead. Consult **\n");
 	printf("      ** the manpages for additional information... **\n");
 	printf("      ************************************************\n\n");
-
-	return 0;
 }
+
 int main(int argc, char *argv[])
 {
 	int 	c,		/* switch */
@@ -448,20 +447,18 @@ int main(int argc, char *argv[])
 
 	if (strlen(sendmail)) {
 		/* sendmail transmission section */
+		pi_buffer_t *recbuf = pi_buffer_new(0xffff);
 
 		/* Iterate over messages in Outbox */
 		for (i = 0;; i++) {
 			struct 	Mail t;
-			int 	attr,
-				size;
+			int 	attr;
 			recordid_t id;
 			FILE *sendf;
 
 			int len =
-			    dlp_ReadNextRecInCategory(sd, db, 1, buffer,
-						      &id, 0, &size,
-
-						      &attr);
+			    dlp_ReadNextRecInCategory(sd, db, 1, recbuf,
+						      &id, 0, &attr);
 
 			if (len < 0)
 				break;
@@ -471,7 +468,7 @@ int main(int argc, char *argv[])
 			    || (attr & dlpRecAttrArchived))
 				continue;
 
-			unpack_Mail(&t, (unsigned char *)buffer, len);
+			unpack_Mail(&t, recbuf->data, recbuf->used);
 
 			sendf = popen(sendmail, "w");
 
@@ -536,13 +533,13 @@ int main(int argc, char *argv[])
 				} else {
 					/* Rewrite into Filed category */
 					dlp_WriteRecord(sd, db, attr, id,
-							3, buffer, size,
-							0);
+							3, recbuf->data, recbuf->used, 0);
 				}
 			}
 
 			free_Mail(&t);
 		}
+		pi_buffer_free (recbuf);
 	}
 
 	if (strlen(pop_host)) {

@@ -497,23 +497,27 @@ int Decode (unsigned char *inP, unsigned char *outP, short w)
 static int
   GetPicData (uint32_t flags, int r, struct Veo *v, unsigned char *row)
 {
-   int attr, category, i, len;
-   /* The compressed record can be upto twice as large as the
-    * uncompressed record ??? */
-   unsigned char tmpRow[5120];
+   int attr, category, len;
+   pi_buffer_t *tmpRow;
 
    if (!v->sd)
 	 return (-1);
 
    /* Each record contains four rows of bayer data */
-   len = dlp_ReadRecordByIndex (v->sd, v->db, 1 + r / 4, tmpRow, 0, 0,
+   /* The compressed record can be upto twice as large as the
+    * uncompressed record ??? */
+   tmpRow = pi_buffer_new (5120);
+
+   len = dlp_ReadRecordByIndex (v->sd, v->db, 1 + r / 4, tmpRow, 0, 
 								&attr, &category);
 
    if (len < 0)
 	 return 0;
 
-   Decode (tmpRow, row, v->width);
+   Decode (tmpRow->data, row, v->width);
 
+   pi_buffer_free(tmpRow);
+ 
    return (len);
 }
 
@@ -1032,10 +1036,9 @@ void WritePicture (int sd, int db, int type, char *name, char *progname, long fl
    char fname[FILENAME_MAX];
    FILE *f;
    char extension[8];
-   static int i = 1, len;
+   static int len;
    struct Veo v;
-   unsigned char inBuf[2560];
-   unsigned char outBuf[2560];
+   pi_buffer_t *inBuf;
    int attr, category;
 
    if (type == VEO_OUT_PNG)
@@ -1056,9 +1059,11 @@ void WritePicture (int sd, int db, int type, char *name, char *progname, long fl
 	 {
 		if (sd)
 		  {
+             inBuf = pi_buffer_new (2560);
 			 len =
-			   dlp_ReadRecordByIndex (sd, db, 0, inBuf, 0, 0, &attr, &category);
-			 unpack_Veo (&v, inBuf, len);
+			   dlp_ReadRecordByIndex (sd, db, 0, inBuf, 0, &attr, &category);
+			 unpack_Veo (&v, inBuf->data, inBuf->used);
+             pi_buffer_free (inBuf);
 			 v.sd = sd;
 			 v.db = db;
 		  }
@@ -1093,6 +1098,7 @@ int main (int argc, char *argv[])
 	 bias = 50;
    long flags = 0;
    struct DBInfo info;
+   pi_buffer_t *buf;
 
    char *progname = argv[0], *port = NULL, *picname = NULL;
 
@@ -1164,10 +1170,12 @@ int main (int argc, char *argv[])
    if (dlp_ReadUserInfo (sd, &User) < 0)
 	 goto error_close;
 
+   buf = pi_buffer_new (sizeof (struct DBInfo));
    for (;;)
 	 {
-		if (dlp_ReadDBList (sd, 0, 0x80, i, &info) < 0)
+		if (dlp_ReadDBList (sd, 0, 0x80, i, buf) < 0)
 		  break;
+        memcpy (&info, buf->data, sizeof(struct DBInfo));
 		i = info.index + 1;
 		if (info.type == pi_mktag ('E', 'Z', 'V', 'I')
 			&& info.creator == pi_mktag ('O', 'D', 'I', '2'))
@@ -1206,7 +1214,7 @@ int main (int argc, char *argv[])
 			   }
 		  }
 	 }
-
+    pi_buffer_free(buf);
    if (sd)
 	 {
 		dlp_AddSyncLogEntry (sd,

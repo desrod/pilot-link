@@ -70,15 +70,22 @@ main (int argc, char **argv)
 	unsigned char pref1[256], pref2[256];
 	unsigned char ablock1[256], ablock2[256];
 	unsigned char sblock1[256], sblock2[256];
-	unsigned char ires1[256], ires2[256];
-	unsigned char dres1[256], dres2[256];
-	unsigned char record1[256], record2[256], record3[256], record4[256];
+	unsigned char ires1[256];
+	unsigned char dres1[256];
+	unsigned char record1[256], record2[256], record3[256];
 	recordid_t rid1, rid2, rid3, rlist[4];
 	int index, id, count;
 	unsigned long type;
 	int cardno;
 	int i;
+	pi_buffer_t *record4,
+		*dres2,
+		*ires2;
 
+	record4 = pi_buffer_new (sizeof(record1));
+	ires2 = pi_buffer_new (sizeof (ires1));
+	dres2 = pi_buffer_new (sizeof (dres1));
+	
 	sd = pilot_connect (argv[1]);
 
 	t1 = time (NULL);
@@ -247,8 +254,9 @@ main (int argc, char **argv)
 	 *********************************************************************/
 	dbi.more = 1;
 	for (i = 0; dbi.more != 0; i++) {
-		result = dlp_ReadDBList (sd, 0, dlpDBListRAM | dlpDBListROM, i, &dbi);
+		result = dlp_ReadDBList (sd, 0, dlpDBListRAM | dlpDBListROM, i, record4);
 		CHECK_RESULT(dlp_ReadDBList);
+		memcpy(&dbi, record4->data, sizeof(struct DBInfo));
 	}
 
 	/*********************************************************************
@@ -465,21 +473,21 @@ main (int argc, char **argv)
 	}
 	
 	/* Try reading the records in various ways */
-	result = dlp_ReadRecordById (sd, handle, rid1, record4, &index, NULL, NULL, NULL);
+	result = dlp_ReadRecordById (sd, handle, rid1, record4, &index, NULL, NULL);
 	CHECK_RESULT(dlp_ReadRecordById);
-	if (memcmp(record1, record4, sizeof(record1) != 0)) {
+	if (memcmp(record1, record4->data, sizeof(record1) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Record by Id mismatch\n"));
 		goto error;
 	}
-	result = dlp_ReadRecordByIndex (sd, handle, index, record4, NULL, NULL, NULL, NULL);
+	result = dlp_ReadRecordByIndex (sd, handle, index, record4, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadRecordByIndex);
-	if (memcmp(record1, record4, sizeof(record1) != 0)) {
+	if (memcmp(record1, record4->data, sizeof(record1) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Record by index mismatch\n"));
 		goto error;
 	}
-	result = dlp_ReadNextModifiedRec (sd, handle, record4, NULL, NULL, NULL, NULL, NULL);
+	result = dlp_ReadNextModifiedRec (sd, handle, record4, NULL, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadNextModifiedRec);
-	if (memcmp(record2, record4, sizeof(record2) != 0)) {
+	if (memcmp(record2, record4->data, sizeof(record2) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Next modified record mismatch\n"));
 		goto error;
 	}
@@ -489,9 +497,9 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_ResetDBIndex)
 
 	/* This is a DLP 1.1 call, but pilot-link has a 1.0 implementation */
-	result = dlp_ReadNextRecInCategory (sd, handle, 3, record4, NULL, NULL, NULL, NULL);
+	result = dlp_ReadNextRecInCategory (sd, handle, 3, record4, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadNextRecInCategory)
-	if (memcmp(record3, record4, sizeof(record3) != 0)) {
+	if (memcmp(record3, record4->data, sizeof(record3) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST dlp_ReadNextRecInCategory mismatch\n"));
 		goto error;
 	}
@@ -501,9 +509,9 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_ResetDBIndex)
 
 	/* This is a DLP 1.1 call, but pilot-link has a 1.0 implementation */
-	result = dlp_ReadNextModifiedRecInCategory (sd, handle, 2, record4, NULL, NULL, NULL, NULL);
+	result = dlp_ReadNextModifiedRecInCategory (sd, handle, 2, record4, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadNextModifiedRecInCategory)
-	if (memcmp(record2, record4, sizeof(record2) != 0)) {
+	if (memcmp(record2, record4->data, sizeof(record2) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST dlp_ReadNextModifiedRecInCategory mismatch\n"));
 		goto error;
 	}
@@ -515,9 +523,9 @@ main (int argc, char **argv)
 	/* Move a category and try to read the record back in */
 	result = dlp_MoveCategory (sd, handle, 1, 4);
 	CHECK_RESULT(dlp_MoveCategory)
-	result = dlp_ReadNextRecInCategory (sd, handle, 4, record4, NULL, NULL, NULL, NULL);
+	result = dlp_ReadNextRecInCategory (sd, handle, 4, record4, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadNextRecInCategory)
-	if (memcmp(record1, record4, sizeof(record1) != 0)) {
+	if (memcmp(record1, record4->data, sizeof(record1) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST dlp_ReadNextRecInCategory mismatch\n"));
 		goto error;
 	}
@@ -525,21 +533,21 @@ main (int argc, char **argv)
 	/* Delete records in various ways */
 	result = dlp_DeleteRecord (sd, handle, 0, rid1);
 	CHECK_RESULT(dlp_DeleteRecord <Single>);
-	result = dlp_ReadRecordById (sd, handle, rid1, record4, NULL, NULL, NULL, NULL);
+	result = dlp_ReadRecordById (sd, handle, rid1, record4, NULL, NULL, NULL);
 	if (result >= 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Deleted record could still be read\n"));
 		goto error;
 	}
 	result = dlp_DeleteCategory (sd, handle, 3);
 	CHECK_RESULT(dlp_DeleteCategory);
-	result = dlp_ReadRecordById (sd, handle, rid3, record4, NULL, NULL, NULL, NULL);
+	result = dlp_ReadRecordById (sd, handle, rid3, record4, NULL, NULL, NULL);
 	if (result >= 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Deleted category could still be read\n"));
 		goto error;
 	}
 	result = dlp_DeleteRecord (sd, handle, 1, 0);
 	CHECK_RESULT(dlp_DeleteRecord <All>);
-	result = dlp_ReadRecordById (sd, handle, rid2, record4, NULL, NULL, NULL, NULL);
+	result = dlp_ReadRecordById (sd, handle, rid2, record4, NULL, NULL, NULL);
 	if (result >= 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Deleted all record could still be read\n"));
 		goto error;
@@ -567,9 +575,7 @@ main (int argc, char **argv)
 	 *
 	 *********************************************************************/
 	memset (ires1, '\0', sizeof (ires1));
-	memset (ires2, '\0', sizeof (ires2));
 	memset (dres1, '\0', sizeof (dres1));
-	memset (dres2, '\0', sizeof (dres2));
 	ires1[3] = 'T';
 	dres1[4] = 'T';
 
@@ -583,15 +589,15 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_WriteResource);
 
 	/* Read in the resources by various methods */
-	result = dlp_ReadResourceByType (sd, handle, INFO, 1, ires2, &index, NULL);
+	result = dlp_ReadResourceByType (sd, handle, INFO, 1, ires2, &index);
 	CHECK_RESULT(dlp_ReadResourceByType)
-	if (memcmp(ires1, ires2, sizeof(ires1) != 0)) {
+	if (memcmp(ires1, ires2->data, sizeof(ires1) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Resource by type mismatch\n"));
 		goto error;
 	}
-	result = dlp_ReadResourceByIndex (sd, handle, index, ires2, &type, &id, NULL);
+	result = dlp_ReadResourceByIndex (sd, handle, index, ires2, &type, &id);
 	CHECK_RESULT(dlp_ReadResourceByIndex)
-	if (memcmp(ires1, ires2, sizeof(ires1) != 0)) {
+	if (memcmp(ires1, ires2->data, sizeof(ires1) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Resource by index mismatch\n"));
 		goto error;
 	}
@@ -607,14 +613,14 @@ main (int argc, char **argv)
 	/* Delete resources by the various methods */
 	result = dlp_DeleteResource (sd, handle, 0, INFO, 1);
 	CHECK_RESULT(dlp_DeleteResource <Single>)
-	result = dlp_ReadResourceByType (sd, handle, INFO, 1, ires2, &index, NULL);
+	result = dlp_ReadResourceByType (sd, handle, INFO, 1, ires2, &index);
 	if (result >= 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Deleted resource could still be read\n"));
 		goto error;
 	}
 	result = dlp_DeleteResource (sd, handle, 1, INFO, 1);
 	CHECK_RESULT(dlp_DeleteResource <All>)
-	result = dlp_ReadResourceByType (sd, handle, DATA, 0, dres2, &index, NULL);
+	result = dlp_ReadResourceByType (sd, handle, DATA, 0, dres2, &index);
 	if (result >= 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Deleted all resource could still be read\n"));
 		goto error;
@@ -662,12 +668,12 @@ main (int argc, char **argv)
 	result = dlp_OpenDB (sd, 0, dlpOpenReadWrite, "TestRecord", &handle);
 	CHECK_RESULT(dlp_OpenDB);
 
-	result = dlp_ReadRecordById (sd, handle, rid1, record4, NULL, NULL, NULL, NULL);
+	result = dlp_ReadRecordById (sd, handle, rid1, record4, NULL, NULL, NULL);
 	if (result >= 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Cleaned up record could still be read\n"));
 		goto error;
 	}
-	result = dlp_ReadNextModifiedRec (sd, handle, record4, NULL, NULL, NULL, NULL, NULL);
+	result = dlp_ReadNextModifiedRec (sd, handle, record4, NULL, NULL, NULL, NULL);
 	if (result >= 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Modified recorded could still be read\n"));
 		goto error;
@@ -711,7 +717,9 @@ main (int argc, char **argv)
 
  error:
 	pi_close (sd);
-
+	pi_buffer_free (record4);
+	pi_buffer_free (ires2);
+	pi_buffer_free (dres2);
 	return 0;
 }
 

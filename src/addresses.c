@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 	
 	struct 	AddressAppInfo aai;
 
-	unsigned char buffer[0xffff];
+	pi_buffer_t *buffer;
 	
         while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
                 switch (c) {
@@ -119,8 +119,10 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-	unpack_AddressAppInfo(&aai, buffer, 0xffff);
+	buffer = pi_buffer_new (0xffff);
+	
+	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
+	unpack_AddressAppInfo(&aai, buffer->data, 0xffff);
 	
 	for (index = 0;; index++) {
 		int 	i,
@@ -130,7 +132,7 @@ int main(int argc, char *argv[])
 		struct 	Address addr;
 
 		int len =
-		    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0, &attr,
+		    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, &attr,
 					  &category);
 	
 		if (len < 0)
@@ -141,7 +143,7 @@ int main(int argc, char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 	
-		unpack_Address(&addr, buffer, len);
+		unpack_Address(&addr, buffer->data, buffer->used);
 
 		printf("Category: %s\n", aai.category.name[category]);
 
@@ -162,6 +164,8 @@ int main(int argc, char *argv[])
 		printf("\n");
 		free_Address(&addr);
 	}
+
+	pi_buffer_free (buffer);
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);

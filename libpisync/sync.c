@@ -579,6 +579,7 @@ int sync_CopyFromPilot(SyncHandler * sh)
 		i,	
 		slow 	= 0,
 		result 	= 0;
+	pi_buffer_t *recbuf;
 
 	DesktopRecord *drecord = NULL;
 	PilotRecord *precord = sync_NewPilotRecord(DLP_BUF_SIZE);
@@ -598,21 +599,27 @@ int sync_CopyFromPilot(SyncHandler * sh)
 	}
 
 	i = 0;
-	while (dlp_ReadRecordByIndex
-	       (sh->sd, dbhandle, i, precord->buffer, &precord->recID,
-		&precord->len, &precord->flags, &precord->catID) > 0) {
+	recbuf = pi_buffer_new(DLP_BUF_SIZE);
+	while (dlp_ReadRecordByIndex(sh->sd, dbhandle, i, recbuf, &precord->recID,
+		   &precord->flags, &precord->catID) > 0) {
+		precord->len = recbuf->used;
+		if (precord->len > DLP_BUF_SIZE)
+			precord->len = DLP_BUF_SIZE;
+		memcpy(precord->buffer, recbuf->data, precord->len);
 		result = sh->AddRecord(sh, precord);
-		if (result < 0)
+		if (result < 0) {
+			pi_buffer_free(recbuf);
 			goto cleanup;
+		}
 
 		i++;
 	}
+	pi_buffer_free (recbuf);
 
 	result = sh->Post(sh, dbhandle);
 
-      cleanup:
+cleanup:
 	close_db(sh, dbhandle);
-
 	return result;
 }
 
@@ -670,13 +677,17 @@ sync_MergeFromPilot_fast(SyncHandler * sh, int dbhandle,
 	PilotRecord *precord 	= sync_NewPilotRecord(DLP_BUF_SIZE);
 	DesktopRecord *drecord 	= NULL;
 	RecordQueue rq 		= { 0, NULL };
-
-	while (dlp_ReadNextModifiedRec(sh->sd, dbhandle, precord->buffer,
+	pi_buffer_t *recbuf = pi_buffer_new(DLP_BUF_SIZE);
+	
+	while (dlp_ReadNextModifiedRec(sh->sd, dbhandle, recbuf,
 				       &precord->recID, NULL,
-				       &precord->len, &precord->flags,
+				       &precord->flags,
 				       &precord->catID) >= 0) {
 		int count = rq.count;
-
+		precord->len = recbuf->used;
+		if (precord->len > DLP_BUF_SIZE)
+			precord->len = DLP_BUF_SIZE;
+		memcpy(precord->buffer, recbuf->data, precord->len);
 		ErrorCheck(sh->Match(sh, precord, &drecord));
 		ErrorCheck(sync_record
 			   (sh, dbhandle, drecord, precord, &rq, rec_mod));
@@ -684,6 +695,7 @@ sync_MergeFromPilot_fast(SyncHandler * sh, int dbhandle,
 		if (drecord && rq.count == count)
 			ErrorCheck(sh->FreeMatch(sh, drecord));
 	}
+	pi_buffer_free(recbuf);
 	sync_FreePilotRecord(precord);
 
 	result = sync_MergeFromPilot_process(sh, dbhandle, &rq, rec_mod);
@@ -710,17 +722,24 @@ sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 		parch, 
 		psecret,
 		result = 0;
+	pi_buffer_t *recbuf;
 
 	PilotRecord *precord 	= sync_NewPilotRecord(DLP_BUF_SIZE);
 	DesktopRecord *drecord 	= NULL;
 	RecordQueue rq 		= { 0, NULL };
 
 	i = 0;
+	recbuf = pi_buffer_new(DLP_BUF_SIZE);
 	while (dlp_ReadRecordByIndex
-	       (sh->sd, dbhandle, i, precord->buffer, &precord->recID,
-		&precord->len, &precord->flags, &precord->catID) > 0) {
+	       (sh->sd, dbhandle, i, recbuf, &precord->recID,
+			&precord->flags, &precord->catID) > 0) {
 		int 	count = rq.count;
 
+		precord->len = recbuf->used;
+		if (precord->len > DLP_BUF_SIZE)
+			precord->len = DLP_BUF_SIZE;
+		memcpy(precord->buffer, recbuf->data, precord->len);
+		
 		ErrorCheck(sh->Match(sh, precord, &drecord));
 
 		/* Since this is a slow sync, we must calculate the flags */
@@ -753,6 +772,8 @@ sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 
 		i++;
 	}
+	pi_buffer_free(recbuf);
+
 	sync_FreePilotRecord(precord);
 
 	result = sync_MergeFromPilot_process(sh, dbhandle, &rq, rec_mod);
@@ -823,6 +844,7 @@ sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle,
 	PilotRecord *precord 	= NULL;
 	DesktopRecord *drecord 	= NULL;
 	RecordQueue rq 		= { 0, NULL };
+	pi_buffer_t *recbuf = pi_buffer_new(DLP_BUF_SIZE);
 
 	while (sh->ForEachModified(sh, &drecord) == 0 && drecord) {
 		if (drecord->recID != 0) {
@@ -830,10 +852,14 @@ sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle,
 			precord->recID = drecord->recID;
 			PilotCheck(dlp_ReadRecordById(sh->sd, dbhandle,
 						      precord->recID,
-						      precord->buffer,
-						      NULL, &precord->len,
+						      recbuf,
+						      NULL,
 						      &precord->flags,
 						      &precord->catID));
+			precord->len = recbuf->used;
+			if (precord->len > DLP_BUF_SIZE)
+				precord->len = DLP_BUF_SIZE;
+			memcpy(precord->buffer, recbuf->data, precord->len);
 		}
 
 		ErrorCheck(sync_record
@@ -843,6 +869,7 @@ sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle,
 			sync_FreePilotRecord (precord);
 		precord = NULL;
 	}
+	pi_buffer_free(recbuf);
 
 	result = sync_MergeFromPilot_process(sh, dbhandle, &rq, rec_mod);
 
@@ -870,7 +897,7 @@ sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
 	PilotRecord *precord 	= NULL;
 	DesktopRecord *drecord 	= NULL;
 	RecordQueue rq 		= { 0, NULL };
-
+	pi_buffer_t *recbuf = pi_buffer_new(DLP_BUF_SIZE);
 
 	while (sh->ForEach(sh, &drecord) == 0 && drecord) {
 		if (drecord->recID != 0) {
@@ -878,10 +905,14 @@ sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
 			precord->recID = drecord->recID;
 			PilotCheck(dlp_ReadRecordById(sh->sd, dbhandle,
 						      precord->recID,
-						      precord->buffer,
-						      NULL, &precord->len,
+						      recbuf,
+						      NULL,
 						      &precord->flags,
 						      &precord->catID));
+			precord->len = recbuf->used;
+			if (precord->len > DLP_BUF_SIZE)
+				precord->len = DLP_BUF_SIZE;
+			memcpy(precord->buffer, recbuf->data, precord->len);
 		}
 
 		/* Since this is a slow sync, we must calculate the flags */
@@ -913,6 +944,7 @@ sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
 			sync_FreePilotRecord (precord);
 		precord = NULL;
 	}
+	pi_buffer_free(recbuf);
 
 	result = sync_MergeFromPilot_process(sh, dbhandle, &rq, rec_mod);
 

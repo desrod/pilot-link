@@ -52,7 +52,7 @@
 static int u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(pi_socket_t *ps);
 static int u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
-static int u_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
+static int u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_poll(pi_socket_t *ps, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
@@ -229,7 +229,7 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
  *
  ***********************************************************************/
 static int
-u_read_buf (pi_socket_t *ps, unsigned char *buf, size_t len) 
+u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len) 
 {
 	unsigned int 	rbuf;
 	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
@@ -237,7 +237,11 @@ u_read_buf (pi_socket_t *ps, unsigned char *buf, size_t len)
 	rbuf = data->buf_size;
 	if (rbuf > len)
 		rbuf = len;
-	memcpy(buf, data->buf, rbuf);
+
+	if (pi_buffer_append (buf, data->buf, rbuf) == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 	data->buf_size -= rbuf;
 	
 	if (data->buf_size > 0)
@@ -262,7 +266,7 @@ u_read_buf (pi_socket_t *ps, unsigned char *buf, size_t len)
  *
  ***********************************************************************/
 static int
-u_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	unsigned int 	rbuf;
 	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
@@ -275,6 +279,11 @@ u_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	if (data->buf_size > 0)
 		return u_read_buf(ps, buf, len);
 	
+	if (pi_buffer_expect (buf, len) == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
+
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
 	if (data->timeout == 0)
@@ -288,10 +297,13 @@ u_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	if (FD_ISSET(ps->sd, &ready)) {
 		if (flags == PI_MSG_PEEK && len > 256)
 			len = 256;
-		rbuf = read(ps->sd, buf, len);
-		if (rbuf > 0 && flags == PI_MSG_PEEK) {
-			memcpy(data->buf, buf, rbuf);
-			data->buf_size = rbuf;
+		rbuf = read(ps->sd, buf->data + buf->used, len);
+		if (rbuf > 0) {
+			buf->used += len;
+			if (flags == PI_MSG_PEEK) {
+				memcpy(data->buf, buf, rbuf);
+				data->buf_size = rbuf;
+			}
 		}
 	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,

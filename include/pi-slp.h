@@ -2,6 +2,7 @@
 #define _PILOT_PADP_SLP_H_
 
 #include "pi-args.h"
+#include "pi-buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,7 +68,7 @@ extern "C" {
 	extern int slp_tx
 	    PI_ARGS((pi_socket_t * ps, unsigned char *buf, size_t len, int flags));
 	extern int slp_rx
-	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len, int flags));
+	    PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags));
 
 	extern void slp_dump_header
 	    PI_ARGS((unsigned char *data, int rxtx));

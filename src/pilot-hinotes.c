@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 	struct 	HiNoteAppInfo mai;
 	struct 	PilotUser User;
 
-	unsigned char buffer[0xffff];
+	pi_buffer_t *buffer;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -258,18 +258,20 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
+		dlp_ReadAppBlock(sd, db, 0, appblock,
 				 0xffff);
 		unpack_HiNoteAppInfo(&mai, (unsigned char *) appblock,
 				     0xffff);
+
+		buffer = pi_buffer_new (0xffff);
 
 		for (i = 0;; i++) {
 			int 	attr,
 				category;
 			struct 	HiNoteNote m;
-				
+			
 			int len =
-			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+			    dlp_ReadRecordByIndex(sd, db, i, buffer, NULL,
 						  &attr,
 						  &category);
 
@@ -281,7 +283,7 @@ int main(int argc, char *argv[])
 			    || (attr & dlpRecAttrArchived))
 				continue;
 
-			unpack_HiNoteNote(&m, buffer, len);
+			unpack_HiNoteNote(&m, buffer->data, buffer->used);
 			switch (mode) {
 			  case MEMO_MBOX_STDOUT:
 				  write_memo_mbox(User, m, mai, category);

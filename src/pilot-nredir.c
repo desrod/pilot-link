@@ -76,10 +76,11 @@ int main(int argc, char *argv[])
 
 	size_t	size; 	
 
-	char 	buffer[0xffff],
-		*progname = argv[0],
+	char	*progname = argv[0],
 		*port = NULL;
-	
+
+	pi_buffer_t *buffer;
+
 	struct 	pi_sockaddr 	addr;
 	struct 	NetSyncInfo 	Net;
 
@@ -134,14 +135,20 @@ int main(int argc, char *argv[])
 	}
 	printf("Connected\n");
 	
+	buffer = pi_buffer_new (0xffff);
+
 	while ((len = pi_read(sd2, buffer, 0xffff)) > 0) {
 		pi_write(sd, buffer, len);
+		buffer->used = 0;
 		len = pi_read(sd, buffer, 0xffff);
 		if (len < 0)
 			break;
-		pi_write(sd2, buffer, len);
+		pi_write(sd2, buffer->data, len);
+		buffer->used = 0;
 	}
-
+	
+	pi_buffer_free (buffer);
+	
 	state = PI_SOCK_CONEN;
 	size = sizeof (state);
 	pi_setsockopt (sd, PI_LEVEL_SOCK, PI_SOCK_STATE, &state, &size);

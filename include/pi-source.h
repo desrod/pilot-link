@@ -64,6 +64,7 @@ extern "C" {
 
 #include "pi-socket.h"
 #include "pi-macros.h"
+#include "pi-buffer.h"
 
 #define PI_SOCK_LISTN  0x01  /* Listener */
 #define PI_SOCK_CONAC  0x02  /* Connected by accepting */
@@ -79,8 +80,8 @@ extern "C" {
 		void (*free)
 			PI_ARGS((struct pi_protocol *));
 		ssize_t	(*read)
-			PI_ARGS((pi_socket_t *ps, unsigned char *buf,
-				size_t len, int flags));
+			PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf,
+				size_t expect, int flags));
 		ssize_t	(*write)
 			PI_ARGS((pi_socket_t *ps, unsigned char *buf,
 				size_t len, int flags));

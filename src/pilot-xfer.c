@@ -370,6 +370,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 	const char *synctext = (flags & UPDATE) ? "Syncronizing" : "Backing up";
 
 	DIR 	*dir;
+	pi_buffer_t *buffer;
 
 	/* Check if the directory exists before writing to it. If it doesn't
 	   exist as a directory, and it isn't a file, create it. */
@@ -419,6 +420,8 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		}
 	}
 
+	buffer = pi_buffer_new (sizeof(struct DBInfo));
+
 	for(;;) {
 		struct 	DBInfo info;
 		struct 	pi_file *f;
@@ -431,9 +434,10 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		struct 	stat sbuf;
 		char crid[5];
 	
-		if (dlp_ReadDBList(sd, 0, (media_type ? 0x40 : 0x80), i, &info) < 0)
+		if (dlp_ReadDBList(sd, 0, (media_type ? 0x40 : 0x80), i, buffer) < 0)
 			break;
 
+		memcpy(&info, buffer->data, sizeof(struct DBInfo));
 		i = info.index + 1;
 
 		crid[0] = (info.creator & 0xFF000000) >> 24;
@@ -448,6 +452,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			sprintf(synclog, "\npilot-xfer was cancelled by the user "
 				"before backing up '%s'.", info.name);
 			dlp_AddSyncLogEntry(sd, synclog);
+			pi_buffer_free(buffer);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -532,6 +537,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		times.modtime 	= info.modifyDate;
 		utime(name, &times);
 	}
+	pi_buffer_free(buffer);
 		
 	if (orig_files) {
 		int     i = 0;
@@ -997,21 +1003,26 @@ static void List(palm_media_t media_type)
 	struct 	DBInfo info;
 	char	text[10],
 		synclog[68];
+	pi_buffer_t *buffer;
 	
 	printf("DEBUG: media_type: %d\n", media_type);
 
 	media_type == 1 ? sprintf(text, " and ROM") : sprintf(text, "%s", "");
 	printf("   Reading list of databases in RAM%s...\n", text);
 	
+	buffer = pi_buffer_new(sizeof(struct DBInfo));
+	
 	for (;;) {
 		if (dlp_ReadDBList
-		    (sd, 0, (media_type ? 0x80 | 0x40 : 0x80), i, &info) < 0)
+		    (sd, 0, (media_type ? 0x80 | 0x40 : 0x80), i, buffer) < 0)
 			break;
+		memcpy(&info, buffer->data, sizeof(struct DBInfo));
 		dbcount++;
 		i = info.index + 1;
 		printf("   %s\n", info.name);
 		fflush(stdout);
 	}
+	pi_buffer_free(buffer);
 	
 	printf("\n   List complete. %d files found.\n\n", dbcount);
 	sprintf(synclog, "List complete. %d files found..\n\nThank you for using pilot-link.",
@@ -1037,15 +1048,20 @@ static void Purge(void)
 	int 	i	= 0,
 		h;
 	struct 	DBInfo info;
+	pi_buffer_t *buffer;
 
 	Connect();
 
 	printf("Reading list of databases to purge...\n");
 
+	buffer = pi_buffer_new(sizeof(struct DBInfo));
+
 	for (;;) {
-		if (dlp_ReadDBList(sd, 0, 0x80, i, &info) < 0)
+		
+		if (dlp_ReadDBList(sd, 0, 0x80, i, buffer) < 0)
 			break;
 
+		memcpy (&info, buffer->data, sizeof(struct DBInfo));
 		i = info.index + 1;
 
 		if (info.flags & 1)
@@ -1066,6 +1082,8 @@ static void Purge(void)
 			dlp_CloseDB(sd, h);
 
 	}
+
+	pi_buffer_free (buffer);
 
 	if (!novsf)
 		VoidSyncFlags();

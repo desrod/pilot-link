@@ -90,10 +90,11 @@ static int DeDupe (int sd, char *dbname)
 		j,
 		k,
 		l;
-	char buf[0xffff];
 	struct record *r,
 		      **sortidx,
 		      *records = NULL;
+	pi_buffer_t *buffer;
+	char buf[200];
 
 	/* Open the database, store access handle in db */
 	printf("Opening %s\n", dbname);
@@ -106,15 +107,16 @@ static int DeDupe (int sd, char *dbname)
 
 	l 	= 0;
 	c 	= 0;
+	buffer = pi_buffer_new (0xffff);
 	for (;;) {
 		int 	attr,
 			cat;
 		recordid_t id;
 		int len =
 			dlp_ReadRecordByIndex(sd, db, l,
-					      (unsigned char *) buf,
+					      buffer,
 					      &id,
-					      0, &attr, &cat);
+					      &attr, &cat);
 
 		l++;
 
@@ -131,8 +133,8 @@ static int DeDupe (int sd, char *dbname)
 		r = (struct record *)
 			malloc(sizeof(struct record));
 
-		r->data 	= (char *) malloc(len);
-		memcpy(r->data, buf, len);
+		r->data 	= (char *) malloc(buffer->used);
+		memcpy(r->data, buffer->data, buffer->used);
 		r->len 		= len;
 		r->cat 		= cat;
 		r->id 		= id;
@@ -142,6 +144,8 @@ static int DeDupe (int sd, char *dbname)
 		records 	= r;
 
 	}
+
+	pi_buffer_free (buffer);
 
 	sortidx = malloc(sizeof(struct record *) * c);
 

@@ -2,6 +2,7 @@
 #define _PILOT_CMP_H_
 
 #include "pi-args.h"
+#include "pi-buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,8 +44,8 @@ extern "C" {
 	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
 		size_t len, int flags));
 	extern int cmp_rx
-	  PI_ARGS((pi_socket_t *ps, unsigned char *msg,
-		size_t len, int flags));
+	  PI_ARGS((pi_socket_t *ps, pi_buffer_t *msg,
+		size_t expect, int flags));
 
 	extern int cmp_init
 	  PI_ARGS((pi_socket_t *ps, speed_t baudrate));

@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		sd 		= -1;
 	const char 	*progname 	= argv[0],
 		*port 		= NULL;
-	unsigned char buffer[0xffff];
+	pi_buffer_t *buffer;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -118,7 +118,9 @@ int main(int argc, char *argv[])
 	
 	printf("PUSH-OMIT-CONTEXT\n");
 	printf("CLEAR-OMIT-CONTEXT\n");
-	
+
+	buffer = pi_buffer_new (0xffff);
+
 	for (i = 0;; i++) {
 		int 	attr,
 			j;
@@ -126,11 +128,7 @@ int main(int argc, char *argv[])
 			satisfy[256];
 		struct 	Appointment a;
 	
-		int len =
-			dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
-					      0);
-	
-		if (len < 0)
+		if (dlp_ReadRecordByIndex(sd, db, i, buffer, 0, &attr, 0) < 0)
 			break;
 	
 		/* Skip deleted records */
@@ -138,7 +136,7 @@ int main(int argc, char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 	
-		unpack_Appointment(&a, buffer, len);
+		unpack_Appointment(&a, buffer->data, buffer->used);
 	
 		strcpy(delta, "+7 ");
 		satisfy[0] = 0;
@@ -315,6 +313,7 @@ int main(int argc, char *argv[])
 	
 	}
 	printf("POP-OMIT-CONTEXT\n");
+	pi_buffer_free(buffer);
 	
 	/* Close the database */
 	dlp_CloseDB(sd, db);

@@ -95,8 +95,9 @@ static int pi_file_close_for_write(pi_file_t *pf);
 static void pi_file_free(pi_file_t *pf);
 /* static unsigned long unix_time_to_pilot_time(time_t t); */
 
-int file_size;
-unsigned long start_time;
+static int file_size;
+static unsigned long start_time;
+
 void display_rate(int record, int records, int written, int elapsed);
 
 void display_rate(int record, int records, int written, int elapsed)
@@ -1239,30 +1240,41 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno)
 		l,
 		j,
 		written 	= 0;
-	size_t	size = 0;
-	
-	unsigned char buffer[0xffff];
+	pi_buffer_t *buffer;
 
 	start_time = (unsigned long) time(NULL);
-	if (dlp_OpenDB
-	    (socket, cardno, dlpOpenRead | dlpOpenSecret, pf->info.name,
-	     &db) < 0)
+
+	if (dlp_OpenDB (socket, cardno, dlpOpenRead | dlpOpenSecret, pf->info.name, &db) < 0)
 		return -1;
 
-	l = dlp_ReadAppBlock(socket, db, 0, buffer, 0xffff);
+	buffer = pi_buffer_new (DLP_BUF_SIZE);
+	if (buffer == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
+
+	l = dlp_ReadAppBlock(socket, db, 0, buffer->data, buffer->allocated);
 	if (l > 0)
-		pi_file_set_app_info(pf, buffer, (size_t)l);
+		pi_file_set_app_info(pf, buffer->data, (size_t)l);
 
-	if (dlp_ReadOpenDBInfo(socket, db, &l) < 0)
+	if (dlp_ReadOpenDBInfo(socket, db, &l) < 0) {
+		pi_buffer_free (buffer);
 		return -1;
+	}
 
-	if (pf->info.flags & dlpDBFlagResource)
-
+	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < l; j++) {
 			int 	id;
 			unsigned long type;
 
-			written += size;
+			if ((dlp_ReadResourceByIndex(socket, db, j, buffer, &type, &id) < 0)
+			    || (pi_file_append_resource (pf, buffer->data, buffer->used, type, id) < 0)) {
+				pi_buffer_free (buffer);
+				dlp_CloseDB(socket, db);
+				return -1;
+			}
+			
+			written += buffer->used;
 
 /* FIXME - need to add callbacks for this info, not print here -DD */
 #ifdef FILEDEBUG
@@ -1270,50 +1282,42 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno)
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
 #endif
+		}
+	} else for (j = 0; j < l; j++) {
+		int 	attr,
+			category;
+		unsigned long id;
 
-			if ((dlp_ReadResourceByIndex
-			     (socket, db, j, buffer, &type, &id,
-			      &size) < 0)
-			    ||
-			    (pi_file_append_resource
-			     (pf, buffer, size, type, id) < 0)) {
-				dlp_CloseDB(socket, db);
-				return -1;
-			}
-	} else
-		for (j = 0; j < l; j++) {
-			int 	attr,
-				category;
-			unsigned long id;
+		if ((dlp_ReadRecordByIndex
+		     (socket, db, j, buffer, &id, &attr,
+		      &category) < 0)) {
+			dlp_CloseDB(socket, db);
+			return -1;
+		}
 
-			if ((dlp_ReadRecordByIndex
-			     (socket, db, j, buffer, &id, &size, &attr,
-			      &category) < 0)) {
-				dlp_CloseDB(socket, db);
-				return -1;
-			}
-
-			written += size;
+		written += buffer->used;
 
 /* FIXME - need to add callbacks for this info, not print here -DD  */
 #ifdef FILEDEBUG
-			display_rate(j + 1, l, written,
-				     (int) ((unsigned long) time(NULL) -
-					    start_time));
+		display_rate(j + 1, l, written,
+			     (int) ((unsigned long) time(NULL) -
+				    start_time));
 #endif
 
-			/* There is no way to restore records with these
-			   attributes, so there is no use in backing them up
-			 */
-			if (attr &
-			    (dlpRecAttrArchived | dlpRecAttrDeleted))
-				continue;
-			if (pi_file_append_record
-			    (pf, buffer, size, attr, category, id) < 0) {
-				dlp_CloseDB(socket, db);
-				return -1;
-			}
+		/* There is no way to restore records with these
+		   attributes, so there is no use in backing them up
+		 */
+		if (attr &
+		    (dlpRecAttrArchived | dlpRecAttrDeleted))
+			continue;
+		if (pi_file_append_record
+		    (pf, buffer->data, buffer->used, attr, category, id) < 0) {
+			dlp_CloseDB(socket, db);
+			pi_buffer_free (buffer);
+			return -1;
 		}
+	}
+
 	return dlp_CloseDB(socket, db);
 }
 
@@ -1410,8 +1414,6 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 		}
 	}
 
-
-
 	pi_file_get_app_info(pf, &buffer, &l);
 
 	/* Compensate for bug in OS 2.x Memo */
@@ -1452,7 +1454,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < pf->nentries; j++) {
 			if ((pi_file_read_resource(pf, j, 0, &size, 0, 0)
-			     == 0) && (size > 65536)) {
+			     == 0) && (size > 65536 && pi_version(socket) < 0x0104)) {
 				LOG((PI_DBG_API, PI_DBG_LVL_ERR,
 				    "FILE INSTALL Database contains"
 					" resource over 64K!\n"));
@@ -1492,7 +1494,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 			size_t size;
 
 			if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0)
-			      == 0)) && (size > 65536)) {
+			      == 0)) && (size > 65536 && pi_version(socket) < 0x0104)) {
 				LOG((PI_DBG_API, PI_DBG_LVL_ERR,
 				    "FILE INSTALL Database contains"
 					" resource over 64K!\n"));

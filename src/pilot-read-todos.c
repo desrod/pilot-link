@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
 	struct 	pi_file *pif 	= NULL;
 	struct 	ToDoAppInfo tai;
 	unsigned char buffer[0xffff];
+    pi_buffer_t *recbuf;
 	
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
@@ -153,6 +154,8 @@ int main(int argc, char *argv[])
 
 	unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 
+    recbuf = pi_buffer_new (0xffff);
+    
 	for (i = 0;; i++) {
 		int 	attr,
 			category;
@@ -163,7 +166,7 @@ int main(int argc, char *argv[])
 
 		if (port) {
 			len =
-			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+			    dlp_ReadRecordByIndex(sd, db, i, recbuf, 0, 
 						  &attr, &category);
 
 			if (len < 0)
@@ -175,7 +178,8 @@ int main(int argc, char *argv[])
 			     0))
 				break;
 
-			memcpy(buffer, ptr, len);
+            pi_buffer_clear(recbuf);
+            pi_buffer_append(recbuf, ptr, len);
 		}
 
 		/* Skip deleted records */
@@ -183,7 +187,7 @@ int main(int argc, char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 
-		unpack_ToDo(&todo, buffer, len);
+		unpack_ToDo(&todo, recbuf->data, recbuf->used);
 
 		printf("Category: %s\n", tai.category.name[category]);
 		printf("Priority: %d\n", todo.priority);
@@ -206,6 +210,8 @@ int main(int argc, char *argv[])
 		free_ToDo(&todo);
 	}
 
+    pi_buffer_free (recbuf);
+  
 	if (port) {
 		/* Close the database */
 		dlp_CloseDB(sd, db);

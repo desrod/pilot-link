@@ -184,8 +184,8 @@ cmp_rx_handshake(pi_socket_t *ps, unsigned long establishrate,
 {
 	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
-
-	unsigned char buf[PI_CMP_HEADER_LEN];
+	pi_buffer_t *buf;
+	int bytes;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
@@ -193,8 +193,17 @@ cmp_rx_handshake(pi_socket_t *ps, unsigned long establishrate,
 	data = (struct pi_cmp_data *)prot->data;
 
 	/* Read the cmp packet */
-	if (cmp_rx(ps, buf, PI_CMP_HEADER_LEN, 0) < 0)
+	buf = pi_buffer_new (PI_CMP_HEADER_LEN);
+	if (buf == NULL) {
+		errno = ENOMEM;
 		return -1;
+	}
+	
+	bytes = cmp_rx(ps, buf, PI_CMP_HEADER_LEN, 0);
+
+	pi_buffer_free (buf);
+	if (bytes < 0)
+		return bytes;
 
 	if ((data->version & 0xFF00) == 0x0100) {
 		if (establishrate > data->baudrate) {
@@ -332,7 +341,7 @@ cmp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
  *
  ***********************************************************************/
 int
-cmp_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
+cmp_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 {
 	int 	bytes;
 
@@ -344,6 +353,7 @@ cmp_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
 		return -1;
+
 	data = (struct pi_cmp_data *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_CMP);
 	if (next == NULL)
@@ -353,12 +363,12 @@ cmp_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	if (bytes < 10)
 		return -1;
 
-	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(msg, 0));
+	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(msg->data, 0));
 
-	data->type 	= get_byte(&msg[PI_CMP_OFFSET_TYPE]);
-	data->flags 	= get_byte(&msg[PI_CMP_OFFSET_FLGS]);
-	data->version 	= get_short(&msg[PI_CMP_OFFSET_VERS]);
-	data->baudrate 	= get_long(&msg[PI_CMP_OFFSET_BAUD]);
+	data->type 	= get_byte(&msg->data[PI_CMP_OFFSET_TYPE]);
+	data->flags 	= get_byte(&msg->data[PI_CMP_OFFSET_FLGS]);
+	data->version 	= get_short(&msg->data[PI_CMP_OFFSET_VERS]);
+	data->baudrate 	= get_long(&msg->data[PI_CMP_OFFSET_BAUD]);
 
 	return 0;
 }

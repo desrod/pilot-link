@@ -60,7 +60,7 @@ static int pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr,
 static int pi_inet_listen(pi_socket_t *ps, int backlog);
 static int pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr,
 			 size_t *addrlen);
-static int pi_inet_read(pi_socket_t *ps, unsigned char *msg, size_t len, int flags);
+static int pi_inet_read(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags);
 static int pi_inet_write(pi_socket_t *ps, unsigned char *msg, size_t len, int flags);
 static int pi_inet_getsockopt(pi_socket_t *ps, int level, int option_name, 
 			      void *option_value, size_t *option_len);
@@ -546,7 +546,7 @@ pi_inet_write(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
  *
  ***********************************************************************/
 static int
-pi_inet_read(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
+pi_inet_read(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 {
 	int 	r, 
 		fl 	= 0;
@@ -554,10 +554,13 @@ pi_inet_read(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	fd_set 	ready;
 	struct 	timeval t;
 
-	switch (flags) {
-	case PI_MSG_PEEK:
-		fl = MSG_PEEK;
+	if (pi_buffer_expect (msg, len) == NULL) {
+		errno = ENOMEM;
+		return -1;
 	}
+
+	if (flags == PI_MSG_PEEK)
+		fl = MSG_PEEK;
 	
 	FD_ZERO(&ready);
 	FD_SET(ps->sd, &ready);
@@ -571,20 +574,22 @@ pi_inet_read(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 		t.tv_usec 	= (data->timeout % 1000) * 1000;
 		select(ps->sd + 1, &ready, 0, 0, &t);
 	}
+
 	/* If data is available in time, read it */
-	if (FD_ISSET(ps->sd, &ready))
-		r = recv(ps->sd, msg, len, fl);
-	else {
-		/* otherwise throw out any current packet and return */
-		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Inet timeout\n"));
-		data->rx_errors++;
-		return 0;
+	if (FD_ISSET(ps->sd, &ready)) {
+		r = recv(ps->sd, msg->data + msg->used, len, fl);
+
+		data->rx_bytes += r;
+		msg->used += r;
+
+		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Inet Bytes: %d\n", r));
+		return r;
 	}
-	data->rx_bytes += r;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Inet Bytes: %d\n", r));
-
-	return r;
+	/* otherwise throw out any current packet and return */
+	LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Inet timeout\n"));
+	data->rx_errors++;
+	return 0;
 }
 
 

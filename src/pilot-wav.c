@@ -189,7 +189,6 @@ long write_data(char *buffer, int index, int size, long dataChunkSize, FILE *out
 int fetch_wavs(int sd, char *dbname)
 {
 	FILE *out;
-	char buffer[65536];
 	recordid_t id;
 	int 	index,
 		db,
@@ -198,41 +197,43 @@ int fetch_wavs(int sd, char *dbname)
 		ret,
 		start;
 
-	size_t	size;
-	
 	struct DBInfo info;
 	char creator[5];
 	char type[5];
-
+	pi_buffer_t *buffer;
+	
         int booldb = TRUE;
-	int reinit;
         
         long wWaveLength;
         long formatChunkSize;
         long dataChunkSize;
 
         start = 0;
-	while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, &info) > 0) {
-                start = info.index + 1;
-                creator[0] = (info.creator & 0xFF000000) >> 24;
-                creator[1] = (info.creator & 0x00FF0000) >> 16;
-                creator[2] = (info.creator & 0x0000FF00) >> 8;
-                creator[3] = (info.creator & 0x000000FF);
-                creator[4] = '\0';
-		type[0] = (info.type & 0xFF000000) >> 24;
-                type[1] = (info.type & 0x00FF0000) >> 16;
-                type[2] = (info.type & 0x0000FF00) >> 8;
-                type[3] = (info.type & 0x000000FF);
-                type[4] = '\0';
 
-                if (!strcmp(dbname, "all")) {
+	buffer = pi_buffer_new (65536);
+
+	while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, buffer) > 0) {
+		memcpy(&info, buffer->data, sizeof(struct DBInfo));
+		start = info.index + 1;
+		creator[0] = (info.creator & 0xFF000000) >> 24;
+		creator[1] = (info.creator & 0x00FF0000) >> 16;
+		creator[2] = (info.creator & 0x0000FF00) >> 8;
+		creator[3] = (info.creator & 0x000000FF);
+		creator[4] = '\0';
+		type[0] = (info.type & 0xFF000000) >> 24;
+		type[1] = (info.type & 0x00FF0000) >> 16;
+		type[2] = (info.type & 0x0000FF00) >> 8;
+		type[3] = (info.type & 0x000000FF);
+		type[4] = '\0';
+
+		if (!strcmp(dbname, "all")) {
 			booldb = FALSE;
 		} else {
 			booldb = strcmp(info.name, dbname);
 		}
 
                 if (!(strcmp(creator, "Vpad") || strcmp(type, "strm") || booldb)) {
-		        for(reinit = 0; reinit <= 65536; reinit++) buffer[reinit] = 0;
+		       			memset (buffer->data, 0, buffer->allocated); 
                         printf("Fetching '%s' (Creator ID '%s')... ",
                                info.name, creator);
                         ret =
@@ -257,12 +258,12 @@ int fetch_wavs(int sd, char *dbname)
                         dataChunkSize = 0;
                         ret = 1;
                         while (ret > 0) {
-                                ret =
+								ret =
                                     dlp_ReadRecordByIndex
                                     PI_ARGS((sd, db, index, buffer, &id,
-                                             &size, &attr, &category));
+                                             &attr, &category));
 				if (ret > 0) {
-                                  dataChunkSize = write_data(buffer, index, size, dataChunkSize, out);
+                                  dataChunkSize = write_data(buffer->data, index, buffer->used, dataChunkSize, out);
 				}
 				index++;
                         }
@@ -276,6 +277,7 @@ int fetch_wavs(int sd, char *dbname)
                         printf("OK\n");
                 }
         }
+		pi_buffer_free(buffer);
         return 0;
 }
 

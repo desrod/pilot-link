@@ -26,6 +26,7 @@ extern "C" {
 #include <unistd.h>
 
 #include "pi-macros.h"		/* For recordid_t */
+#include "pi-buffer.h"		/* For pi_buffer_t */
 
 /* version of the DLP protocol supported in this version */
 #define PI_DLP_VERSION_MAJOR 1
@@ -41,7 +42,8 @@ extern "C" {
 
 #define PI_DLP_ARG_FLAG_TINY  0x00
 #define PI_DLP_ARG_FLAG_SHORT 0x80
-#define PI_DLP_ARG_FLAG_LONG  0xC0
+#define PI_DLP_ARG_FLAG_LONG  0x40
+#define PI_DLP_ARG_FLAG_MASK  0xC0
 
 #define PI_DLP_ARG_FIRST_ID 0x20
 
@@ -325,10 +327,13 @@ typedef unsigned long FileRef;
 
 		/* DLP 1.4-TW functions added here (Palm OS 5/TapWave) */
 		dlpFuncExpSlotMediaType,                /* 0x5d */
-		dlpFuncWriteResourceStream,             /* 0x5e */
-		dlpFuncWriteRecordStream,               /* 0x5f */
-		dlpFuncReadResourceStream,              /* 0x60 */
-		dlpFuncReadRecordStream,                /* 0x61 */
+		dlpFuncWriteRecordStream,               /* 0x5e (may be bogus definition in tapwave headers) */
+		dlpFuncWriteResourceEx,			/* 0x5f */
+		dlpFuncReadResourceStream,              /* 0x60 (may be bogus definition in tapwave headers) */
+		dlpFuncReadRecordStream,                /* 0x61 (may be bogus definition in tapwave headers)*/
+		dlp_unknown1,				/* 0x62 */
+		dlp_unknown2,				/* 0x63 */
+		dlpFuncReadResourceEx,			/* 0x64 */
 		dlpLastFunc
 	};
 	
@@ -350,7 +355,8 @@ typedef unsigned long FileRef;
 	};
 
 	enum dlpDBMiscFlags {
-		dlpDBMiscFlagExcludeFromSync = 0x80
+		dlpDBMiscFlagExcludeFromSync = 0x80,	/* defined for DLP 1.1 */
+		dlpDBMiscFlagRamBased = 0x40	/* defined for DLP 1.2 */
 	};
 
 	enum dlpRecAttributes {
@@ -376,9 +382,10 @@ typedef unsigned long FileRef;
 		dlpEndCodeOther				/* dlpEndCodeOther and higher == "Anything else" */
 	};
 
-	enum dlpDBList {
+	enum dlpDBList {					/* flags passed to dlp_ReadDBList */
 		dlpDBListRAM 		= 0x80,
-		dlpDBListROM 		= 0x40
+		dlpDBListROM 		= 0x40,
+		dlpDBListMultiple	= 0x20		/* defined for DLP 1.2 */
 	};
 
 	enum dlpFindDBOptFlags {
@@ -442,17 +449,19 @@ typedef unsigned long FileRef;
 	extern struct dlpArg * dlp_arg_new PI_ARGS((int id, size_t len));
 	extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
 	extern int dlp_arg_len PI_ARGS((int argc, struct dlpArg **argv));
+
 	extern struct dlpRequest *dlp_request_new 
 	        PI_ARGS((enum dlpFunctions cmd, int argc, ...));
 	extern struct dlpRequest * dlp_request_new_with_argid 
 	        PI_ARGS((enum dlpFunctions cmd, int argid, int argc, ...));
+	extern void dlp_request_free PI_ARGS((struct dlpRequest *req));
+
 	extern struct dlpResponse *dlp_response_new
 	        PI_ARGS((enum dlpFunctions cmd, int argc));
 	extern ssize_t dlp_response_read PI_ARGS((struct dlpResponse **res,
 		int sd));
 	extern ssize_t dlp_request_write PI_ARGS((struct dlpRequest *req,
 		int sd));
-	extern void dlp_request_free PI_ARGS((struct dlpRequest *req));
 	extern void dlp_response_free PI_ARGS((struct dlpResponse *req));
 
 	extern int dlp_exec PI_ARGS((int sd, struct dlpRequest *req,
@@ -473,10 +482,14 @@ typedef unsigned long FileRef;
 	/* Read the system information block. */
 	extern int dlp_ReadSysInfo PI_ARGS((int sd, struct SysInfo * s));
 
-	/* flags must contain dlpDBListRAM and/or dlpDBListROM */
+	/* flags must contain dlpDBListRAM and/or dlpDBListROM
+	 * and can optionally contain dlpDBListMultiple (will be honored
+	 * if the OS supports it). Returns one or more DBInfo structs
+	 * packed in the pi_buffer_t
+	 */
 	extern int dlp_ReadDBList
 		PI_ARGS((int sd, int cardno, int flags, int start, 
-			struct DBInfo * info));
+			pi_buffer_t *info));
 
 	extern int dlp_FindDBInfo
 		PI_ARGS((int sd, int cardno, int start, const char *dbname,
@@ -494,7 +507,7 @@ typedef unsigned long FileRef;
 	   ShowSecret 	= 0x10
 	 */
 	extern int dlp_OpenDB
-		PI_ARGS((int sd, int cardno, int mode, char *name,
+		PI_ARGS((int sd, int cardno, int mode, PI_CONST char *name,
 			int *dbhandle));
 
 	/* Close an opened database using the handle returned by OpenDB. */
@@ -609,11 +622,11 @@ typedef unsigned long FileRef;
 
 	extern int dlp_ReadResourceByType
 		PI_ARGS((int sd, int fHandle, unsigned long type, int id,
-			void *buffer, int *index, size_t *size));
+			pi_buffer_t *buffer, int *index));
 
 	extern int dlp_ReadResourceByIndex
-		PI_ARGS((int sd, int fHandle, int index, void *buffer,
-			unsigned long *type, int *id, size_t *size));
+		PI_ARGS((int sd, int fHandle, int index, pi_buffer_t *buffer,
+			unsigned long *type, int *id));
 
 	extern int dlp_WriteResource
 		PI_ARGS((int sd, int dbhandle, unsigned long type, int id, 
@@ -624,24 +637,24 @@ typedef unsigned long FileRef;
 			int resID));
 
 	extern int dlp_ReadNextModifiedRec
-		PI_ARGS((int sd, int fHandle, void *buffer, recordid_t * id,
-			int *index, size_t *size, int *attr, int *category));
+		PI_ARGS((int sd, int fHandle, pi_buffer_t *buffer, recordid_t * id,
+			int *index, int *attr, int *category));
 
 	extern int dlp_ReadNextModifiedRecInCategory
-		PI_ARGS((int sd, int fHandle, int incategory, void *buffer,
-			recordid_t * id, int *index, size_t *size, int *attr));
+		PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
+			recordid_t * id, int *index, int *attr));
 
 	extern int dlp_ReadNextRecInCategory
-		PI_ARGS((int sd, int fHandle, int incategory, void *buffer,
-			recordid_t * id, int *index, size_t *size, int *attr));
+		PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
+			recordid_t * id, int *index, int *attr));
 
 	extern int dlp_ReadRecordById
-		PI_ARGS((int sd, int fHandle, recordid_t id, void *buffer,
-			int *index, size_t *size, int *attr, int *category));
+		PI_ARGS((int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
+			int *index, int *attr, int *category));
 
 	extern int dlp_ReadRecordByIndex
-		PI_ARGS((int sd, int fHandle, int ind, void *buffer,
-			recordid_t * id, size_t *size, int *attr,
+		PI_ARGS((int sd, int fHandle, int ind, pi_buffer_t *buffer,
+			recordid_t * id, int *attr,
 			int *category));
 
 	/* Deletes all records in the opened database which are marked as
@@ -692,7 +705,7 @@ typedef unsigned long FileRef;
 			 unsigned long type, unsigned long creator));
 
 	extern int dlp_FindDBByName
-	        PI_ARGS((int sd, int cardno, char *name, unsigned long *localid, int *dbhandle,
+	        PI_ARGS((int sd, int cardno, PI_CONST char *name, unsigned long *localid, int *dbhandle,
 			 struct DBInfo *info, struct DBSizeInfo *size));
 
 	extern int dlp_FindDBByOpenHandle 
@@ -746,8 +759,7 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, FileRef afile, unsigned char *data, size_t len));
 
 	extern int dlp_VFSFileRead
-		PI_ARGS((int sd, FileRef afile, unsigned char *data, size_t 
-			*numBytes));
+		PI_ARGS((int sd, FileRef afile, pi_buffer_t *data, size_t numBytes));
 
 	extern int dlp_VFSFileDelete
 		PI_ARGS((int sd, int volRefNum, const char *name));
@@ -810,7 +822,7 @@ typedef unsigned long FileRef;
 	extern int dlp_VFSFileSize
 		PI_ARGS((int sd, FileRef afile,int *size));
 
-	/* DLP 1.4 only (Palm OS 5.2) */
+	/* DLP 1.4 only (Palm OS 5.2, seen on TapWave) */
 	extern int dlp_ExpSlotMediaType 
 		PI_ARGS((int sd, int slotNum, unsigned long *mediaType));
 

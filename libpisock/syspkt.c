@@ -42,8 +42,9 @@
 #include "pi-slp.h"
 #include "pi-serial.h"
 
+static int sys_RPCerror;
+
 /* Declare prototypes */
-int sys_RPCerror;
 int sys_PackRegisters(void *data, struct Pilot_registers *r);
 int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
@@ -235,29 +236,38 @@ int
 sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
 {
 	int 	idx;
-	char 	buf[94];
+	pi_buffer_t *buf;
 
-	buf[0] = 0;
-	buf[1] = 0;
-	buf[2] = 0;
-	buf[3] = 0;
-	buf[4] = 0x0c;
-	buf[5] = 0;		/* gapfill */
-
-	for (idx = 0; idx < 6; idx++) {
-		set_long(buf + 6 + idx * 6, b[idx].address);
-		set_byte(buf + 10 + idx * 6, b[idx].enabled);
-		set_byte(buf + 11 + idx * 6, 0);
+	buf = pi_buffer_new (94);
+	if (buf == NULL) {
+		errno = ENOMEM;
+		return -1;
 	}
 
-	pi_write(sd, buf, 42);
+	buf->data[0] = 0;
+	buf->data[1] = 0;
+	buf->data[2] = 0;
+	buf->data[3] = 0;
+	buf->data[4] = 0x0c;
+	buf->data[5] = 0;		/* gapfill */
+
+	for (idx = 0; idx < 6; idx++) {
+		set_long(buf->data + 6 + idx * 6, b[idx].address);
+		set_byte(buf->data + 10 + idx * 6, b[idx].enabled);
+		set_byte(buf->data + 11 + idx * 6, 0);
+	}
+
+	pi_write(sd, buf->data, 42);
 
 	idx = pi_read(sd, buf, 6);
 
-	if ((idx <= 0) || (buf[4] != (char) 0x8c))
+	if (idx <= 0 || buf->data[4] != (unsigned char) 0x8c) {
+		pi_buffer_free (buf);
 		return 0;
-	else
-		return 1;
+	}
+	
+	pi_buffer_free (buf);
+	return 1;
 }
 
 /***********************************************************************
@@ -275,27 +285,36 @@ int
 sys_SetTrapBreaks(int sd, int *traps)
 {
 	int 	idx;
-	char 	buf[94];
+	pi_buffer_t *buf;
 
-	buf[0] = 0;
-	buf[1] = 0;
-	buf[2] = 0;
-	buf[3] = 0;
-	buf[4] = 0x11;
-	buf[5] = 0;		/* gapfill */
-
-	for (idx = 0; idx < 5; idx++) {
-		set_short(buf + 6 + idx * 2, traps[idx]);
+	buf = pi_buffer_new (32);
+	if (buf == NULL) {
+		errno = ENOMEM;
+		return -1;
 	}
 
-	pi_write(sd, buf, 16);
+	buf->data[0] = 0;
+	buf->data[1] = 0;
+	buf->data[2] = 0;
+	buf->data[3] = 0;
+	buf->data[4] = 0x11;
+	buf->data[5] = 0;		/* gapfill */
+
+	for (idx = 0; idx < 5; idx++) {
+		set_short(buf->data + 6 + idx * 2, traps[idx]);
+	}
+
+	pi_write(sd, buf->data, 16);
 
 	idx = pi_read(sd, buf, 6);
 
-	if ((idx <= 0) || (buf[4] != (char) 0x91))
+	if ((idx <= 0) || (buf->data[4] != (unsigned char) 0x91)) {
+		pi_buffer_free (buf);
 		return 0;
-	else
-		return 1;
+	}
+
+	pi_buffer_free (buf);
+	return 1;
 }
 
 /***********************************************************************
@@ -313,26 +332,35 @@ int
 sys_GetTrapBreaks(int sd, int *traps)
 {
 	int 	idx;
-	char 	buf[94];
+	pi_buffer_t *buf;
 
-	buf[0] = 0;
-	buf[1] = 0;
-	buf[2] = 0;
-	buf[3] = 0;
-	buf[4] = 0x10;
-	buf[5] = 0;		/* gapfill */
+	buf = pi_buffer_new (32);
+	if (buf == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 
-	pi_write(sd, buf, 6);
+	buf->data[0] = 0;
+	buf->data[1] = 0;
+	buf->data[2] = 0;
+	buf->data[3] = 0;
+	buf->data[4] = 0x10;
+	buf->data[5] = 0;		/* gapfill */
+
+	pi_write(sd, buf->data, 6);
 
 	idx = pi_read(sd, buf, 16);
 
-	if ((idx < 16) || (buf[4] != (char) 0x90))
+	if ((idx < 16) || (buf->data[4] != (unsigned char) 0x90)) {
+		pi_buffer_free (buf);
 		return 0;
-
-	for (idx = 0; idx < 5; idx++) {
-		traps[idx] = get_short(buf + 6 + idx * 2);
 	}
 
+	for (idx = 0; idx < 5; idx++) {
+		traps[idx] = get_short(buf->data + 6 + idx * 2);
+	}
+
+	pi_buffer_free (buf);
 	return 1;
 }
 
@@ -352,23 +380,36 @@ int
 sys_ToggleDbgBreaks(int sd)
 {
 	int 	idx;
-	char 	buf[94];
+	pi_buffer_t *buf;
+	unsigned char byte;
 
-	buf[0] = 0;
-	buf[1] = 0;
-	buf[2] = 0;
-	buf[3] = 0;
-	buf[4] = 0x0d;
-	buf[5] = 0;		/* gapfill */
+	buf = pi_buffer_new (32);
+	if (buf == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 
-	pi_write(sd, buf, 6);
+	buf->data[0] = 0;
+	buf->data[1] = 0;
+	buf->data[2] = 0;
+	buf->data[3] = 0;
+	buf->data[4] = 0x0d;
+	buf->data[5] = 0;		/* gapfill */
+
+	pi_write(sd, buf->data, 6);
 
 	idx = pi_read(sd, buf, 7);
 
-	if ((idx < 7) || (buf[4] != (char) 0x8d))
+	if ((idx < 7) || (buf->data[4] != (unsigned char) 0x8d)) {
+		pi_buffer_free (buf);
 		return 0;
+	}
 
-	return get_byte(buf + 6);
+	byte = get_byte(buf->data + 6);
+
+	pi_buffer_free (buf);
+
+	return byte;
 }
 
 
@@ -413,8 +454,14 @@ int
 sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
 {
 	int 	result;
-	unsigned char buf[0xffff];
 	unsigned long todo, done;
+	pi_buffer_t *buf;
+
+	buf = pi_buffer_new (0xFFFF);
+	if (buf == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 
 	done = 0;
 	do {
@@ -422,31 +469,36 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
 		if (todo > 256)
 			todo = 256;
 
-		buf[0] = 0;
-		buf[1] = 0;
-		buf[2] = 0;
-		buf[3] = 0;
-		buf[4] = 0x01;
-		buf[5] = 0;	/* gapfill */
+		buf->data[0] = 0;
+		buf->data[1] = 0;
+		buf->data[2] = 0;
+		buf->data[3] = 0;
+		buf->data[4] = 0x01;
+		buf->data[5] = 0;	/* gapfill */
 
-		set_long(buf + 6, addr + done);
-		set_short(buf + 10, todo);
+		set_long(buf->data + 6, addr + done);
+		set_short(buf->data + 10, todo);
 
-		pi_write(sd, buf, 12);
+		pi_write(sd, buf->data, 12);
 
 		result = pi_read(sd, buf, todo + 6);
 
-		if (result < 0)
+		if (result < 0) {
+			pi_buffer_free (buf);
 			return done;
+		}
 
-		if ((buf[4] == 0x81)
+		if ((buf->data[4] == 0x81)
 		    && ((unsigned int) result == todo + 6)) {
-			memcpy(((char *) dest) + done, buf + 6, todo);
+			memcpy(((char *) dest) + done, buf->data + 6, todo);
 			done += todo;
 		} else {
+			pi_buffer_free (buf);
 			return done;
 		}
 	} while (done < len);
+
+	pi_buffer_free (buf);
 	return done;
 }
 
@@ -466,8 +518,14 @@ int
 sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
 {
 	int 	result;
-	unsigned char buf[0xffff];
 	unsigned long todo, done;
+	pi_buffer_t *buf;
+
+	buf = pi_buffer_new (0xFFFF);
+	if (buf == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 
 	done = 0;
 	do {
@@ -475,31 +533,36 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
 		if (todo > 256)
 			todo = 256;
 
-		buf[0] = 0;
-		buf[1] = 0;
-		buf[2] = 0;
-		buf[3] = 0;
-		buf[4] = 0x02;
-		buf[5] = 0;	/* gapfill */
+		buf->data[0] = 0;
+		buf->data[1] = 0;
+		buf->data[2] = 0;
+		buf->data[3] = 0;
+		buf->data[4] = 0x02;
+		buf->data[5] = 0;	/* gapfill */
 
-		set_long(buf + 6, addr);
-		set_short(buf + 10, len);
-		memcpy(buf + 12, ((char *) src) + done, todo);
+		set_long(buf->data + 6, addr);
+		set_short(buf->data + 10, len);
+		memcpy(buf->data + 12, (char *)src + done, todo);
 
-		pi_write(sd, buf, len + 12);
+		pi_write(sd, buf->data, len + 12);
 
 		result = pi_read(sd, buf, 6);
 
-		if (result < 0)
+		if (result < 0) {
+			pi_buffer_free (buf);
 			return done;
+		}
 
-		if ((buf[4] == 0x82)
-		    && ((unsigned int) result == todo + 6)) {
+		if ((buf->data[4] == (unsigned char)0x82)
+		    && ((unsigned long) result == todo + 6)) {
 			;
 		} else {
+			pi_buffer_free (buf);
 			return done;
 		}
 	} while (done < len);
+	
+	pi_buffer_free (buf);
 	return done;
 }
 
@@ -520,32 +583,45 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, size_t len,
 	 int caseinsensitive, void *data, unsigned long *found)
 {
 	int 	result;
-	unsigned char buf[0xffff];
+	unsigned char byte;
+	pi_buffer_t *buf;
 
-	buf[0] = 0;
-	buf[1] = 0;
-	buf[2] = 0;
-	buf[3] = 0;
-	buf[4] = 0x11;
-	buf[5] = 0;		/* gapfill */
+	buf = pi_buffer_new (len + 17);
+	if (buf == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 
-	set_long(buf + 6, startaddr);
-	set_long(buf + 10, stopaddr);
-	set_short(buf + 14, len);
-	set_byte(buf + 16, caseinsensitive);
-	memcpy(buf + 17, data, len);
+	buf->data[0] = 0;
+	buf->data[1] = 0;
+	buf->data[2] = 0;
+	buf->data[3] = 0;
+	buf->data[4] = 0x11;
+	buf->data[5] = 0;		/* gapfill */
 
-	pi_write(sd, buf, len + 17);
+	set_long(buf->data + 6, startaddr);
+	set_long(buf->data + 10, stopaddr);
+	set_short(buf->data + 14, len);
+	set_byte(buf->data + 16, caseinsensitive);
+	memcpy(buf->data + 17, data, len);
+
+	pi_write(sd, buf->data, len + 17);
 
 	result = pi_read(sd, buf, 12);
 
-	if (result < 0)
+	if (result < 0) {
+		pi_buffer_free (buf);
 		return result;
+	}
 
 	if (found)
-		*found = get_long(buf + 6);
+		*found = get_long(buf->data + 6);
 
-	return get_byte(buf + 10);
+	byte = get_byte(buf->data + 10);
+	
+	pi_buffer_free (buf);
+	
+	return byte;
 }
 
 
@@ -600,21 +676,27 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 	struct RPC_param *param, int reply)
 {
 	int 	idx;
-	unsigned char buf[4096];
 	unsigned char *c;
+	pi_buffer_t *buf;
 
-	buf[0] = socket;	/* 0 for debug, 1 for console */
-	buf[1] = socket;
-	buf[2] = 0;
-	buf[4] = 0x0a;
-	buf[5] = 0;
+	buf = pi_buffer_new (4096);
+	if (buf == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 
-	set_short(buf + 6, trap);
-	set_long(buf + 8, *D0);
-	set_long(buf + 12, *A0);
-	set_short(buf + 16, params);
+	buf->data[0] = socket;	/* 0 for debug, 1 for console */
+	buf->data[1] = socket;
+	buf->data[2] = 0;
+	buf->data[4] = 0x0a;
+	buf->data[5] = 0;
 
-	c = buf + 18;
+	set_short(buf->data + 6, trap);
+	set_long(buf->data + 8, *D0);
+	set_long(buf->data + 12, *A0);
+	set_short(buf->data + 16, params);
+
+	c = buf->data + 18;
 	for (idx = params - 1; idx >= 0; idx--) {
 		set_byte(c, param[idx].byRef);
 		c++;
@@ -628,23 +710,29 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 	}
 
 	if (socket == 3)
-		set_short(buf + 4, c - buf - 6);
+		set_short(buf->data + 4, c - buf->data - 6);
 
-	pi_write(sd, buf + 4,(size_t)(c - buf - 4));
+	pi_write(sd, buf->data + 4,(size_t)(c - buf->data - 4));
 
 	if (reply) {
 		int l = pi_read(sd, buf, 4096);
 
-		if (l < 0)
+		if (l < 0) {
+			pi_buffer_free (buf);
 			return l;
-		if (l < 2)
+		}
+		if (l < 2) {
+			pi_buffer_free (buf);
 			return -1;
-		if (buf[0] != 0x8a)
+		}
+		if (buf->data[0] != (unsigned char)0x8a) {
+			pi_buffer_free (buf);
 			return -2;
+		}
 
-		*D0 = get_long(buf + 4);
-		*A0 = get_long(buf + 8);
-		c = buf + 14;
+		*D0 = get_long(buf->data + 4);
+		*A0 = get_long(buf->data + 8);
+		c = buf->data + 14;
 		for (idx = params - 1; idx >= 0; idx--) {
 			if (param[idx].byRef && param[idx].data)
 				memcpy(param[idx].data, c + 2,
@@ -652,6 +740,8 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 			c += 2 + ((get_byte(c + 1) + 1) & ~1);
 		}
 	}
+	
+	pi_buffer_free (buf);
 	return 0;
 }
 

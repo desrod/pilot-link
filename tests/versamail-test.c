@@ -86,7 +86,6 @@ void print_versamail_record(void *record, int size, int attr, int idx) {
 
 void validate_versamail_packer(void *record, int size, int attr, int idx) {
   struct VersaMail mail;
-  char datestr[255];
   char *buffer;
   int len;
   int i;
@@ -105,7 +104,7 @@ void validate_versamail_packer(void *record, int size, int attr, int idx) {
   printf("  attachment count: %d\n", mail.attachmentCount);
   
   if (0) {
-    printf("uid: %d\n", mail.imapuid);
+    printf("uid: %d\n", (int)mail.imapuid);
     printf("size: %d\n", mail.msgSize);
     printf("unknown1: %d\n", mail.unknown1);
     printf("unknown2: %d\n", mail.unknown2);

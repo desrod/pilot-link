@@ -230,7 +230,7 @@ sys_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
  *
  ***********************************************************************/
 int
-sys_rx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+sys_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	pi_protocol_t	*next,
 			*prot;
@@ -241,6 +241,7 @@ sys_rx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
 		return -1;
+
 	data = (pi_sys_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SYS);
 	if (next == NULL)
@@ -248,8 +249,8 @@ sys_rx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 
 	data_len = next->read(ps, buf, len, flags);
 
-	CHECK(PI_DBG_SYS, PI_DBG_LVL_INFO, sys_dump_header(buf, 0));
-	CHECK(PI_DBG_SYS, PI_DBG_LVL_DEBUG, sys_dump(buf, data_len));
+	CHECK(PI_DBG_SYS, PI_DBG_LVL_INFO, sys_dump_header(buf->data, 0));
+	CHECK(PI_DBG_SYS, PI_DBG_LVL_DEBUG, sys_dump(buf->data, data_len));
 
 	return data_len;
 }

@@ -55,6 +55,7 @@ libpisock_la_SOURCES =  \
 	notepad.c	\
 	padp.c		\
 	palmpix.c	\
+	pi-buffer.c	\
 	pi-file.c	\
 	pi-header.c	\
 	serial.c	\

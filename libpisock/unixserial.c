@@ -124,13 +124,13 @@ static int s_close(pi_socket_t *ps);
 static int s_changebaud(pi_socket_t *ps);
 static ssize_t s_write(pi_socket_t *ps, unsigned char *buf, size_t len,
 	int flags);
-static ssize_t s_read(pi_socket_t *ps, unsigned char *buf, size_t len,
+static ssize_t s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len,
 	int flags);
 static int s_poll(pi_socket_t *ps, int timeout);
 
 static speed_t calcrate(speed_t baudrate);
 void pi_serial_impl_init (struct pi_serial_impl *impl);
-static size_t s_read_buf (pi_socket_t *ps, unsigned char *buf,
+static size_t s_read_buf (pi_socket_t *ps, pi_buffer_t *buf,
 	size_t len);
 
 #ifdef sleeping_beauty
@@ -364,13 +364,13 @@ s_write(pi_socket_t *ps, unsigned char *buf, size_t len,
  *
  * Summary:     read from data buffer
  *
- * Parameters:	pi_socket_t*, unsigned char* to buf, buf length
+ * Parameters:	pi_socket_t*, pi_buffer_t* to buf, length to get
  *
  * Returns:     number of bytes read
  *
  ***********************************************************************/
 static size_t
-s_read_buf (pi_socket_t *ps, unsigned char *buf, size_t len) 
+s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len) 
 {
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
@@ -379,7 +379,7 @@ s_read_buf (pi_socket_t *ps, unsigned char *buf, size_t len)
 	if (rbuf > len)
 		rbuf = len;
 
-	memcpy(buf, data->buf, rbuf);
+	pi_buffer_append (buf, data->buf, rbuf);
 	data->buf_size -= rbuf;
 	
 	if (data->buf_size > 0)
@@ -398,13 +398,13 @@ s_read_buf (pi_socket_t *ps, unsigned char *buf, size_t len)
  *
  * Summary:     Read incoming data from the socket/file descriptor
  *
- * Parameters:	pi_socket_t*, unsigned char* to buf, buf length, flags
+ * Parameters:	pi_socket_t*, pi_buffer_t* to buf, expect length, flags
  *
  * Returns:     number of bytes read or -1 on error
  *
  ***********************************************************************/
 static ssize_t
-s_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	unsigned int rbuf;
 	struct 	pi_serial_data *data =
@@ -431,10 +431,17 @@ s_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	if (FD_ISSET(ps->sd, &ready)) {
 		if (flags == PI_MSG_PEEK && len > 256)
 			len = 256;
-		rbuf = read(ps->sd, buf, len);
-		if (rbuf > 0 && flags == PI_MSG_PEEK) {
-			memcpy(data->buf, buf, rbuf);
-			data->buf_size = rbuf;
+		if (pi_buffer_expect (buf, len) == NULL) {
+			errno = ENOMEM;
+			return -1;
+		}
+		rbuf = read(ps->sd, &buf->data[buf->used], len);
+		if (rbuf > 0) {
+			buf->used += rbuf;
+			if (flags == PI_MSG_PEEK) {
+				memcpy(data->buf, buf, rbuf);
+				data->buf_size = rbuf;
+			}
 		}
 	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,

@@ -250,19 +250,20 @@ int do_list(int sd)
    size_t offset;
    int db;
    int index;
-   unsigned char buffer[0xFFFF];
    recordid_t id;
-   size_t size;
    int attr;
    int category;
    int start;
    struct DBInfo info;
    char creator[5];
    char type[5];
+   struct pi_buffer_t *buffer;
 
    printf("Searching for photos\n");
    start = 0;
-   while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, &info) > 0) {
+   buffer = pi_buffer_new (0xffff);
+   while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, buffer) > 0) {
+	  memcpy (&info, buffer->data, sizeof (struct DBInfo));
       start = info.index + 1;
       creator[0] = (info.creator & 0xFF000000) >> 24;
       creator[1] = (info.creator & 0x00FF0000) >> 16;
@@ -285,21 +286,25 @@ int do_list(int sd)
    ret = dlp_OpenDB(sd, 0, dlpOpenReadWrite, "PhotosDB-Foto", &db);
    if (ret < 0) {
       fprintf(stderr, "Unable to open PhotosDB-Foto\n");
+	  pi_buffer_free (buffer);
       return -1;
    }
 
    for (index=0; index<65535; index++) {
       ret = dlp_ReadRecordByIndex(sd, db, index, buffer,
-				  &id, &size, &attr, &category);
-      if (ret < 0) break;
-      if (size < 40) continue;
-      offset = ((buffer[38] << 8) | buffer[39]) + 40;
-      jpg_name_size = size - offset;
+				  &id, &attr, &category);
+      if (ret < 0)
+		  	break;
+      if (buffer->used < 40)
+		  	continue;
+      offset = ((buffer->data[38] << 8) | buffer->data[39]) + 40;
+      jpg_name_size = buffer->used - offset;
       if (jpg_name_size>255) jpg_name_size = 255;
-      memcpy(jpg_name, buffer + offset, jpg_name_size);
+      memcpy(jpg_name, buffer->data + offset, jpg_name_size);
       jpg_name[jpg_name_size]='\0';
       fprintf(stderr, "Thumbnail %s\n", jpg_name);
    }
+   pi_buffer_free(buffer);
 
    dlp_CloseDB(sd, db);
 
@@ -328,12 +333,11 @@ int do_delete(int sd, char **delete_files, int all)
    size_t offset;
    int db;
    int index;
-   unsigned char buffer[0xFFFF];
    recordid_t id;
-   size_t size;
    int attr;
    int category;
    char log_text[256];
+   struct pi_buffer_t *buffer;
 
    if ((!all) && (!delete_files)) return -1;
 
@@ -361,34 +365,36 @@ int do_delete(int sd, char **delete_files, int all)
       printf("Deleted all thumbnails\n");
       dlp_AddSyncLogEntry(sd, "Deleted all thumbnails\n");
    } else {
+	  buffer = pi_buffer_new (0xffff);
       for (index=0; index<65535; index++) {
-	 ret = dlp_ReadRecordByIndex(sd, db, index, buffer,
-				     &id, &size, &attr, &category);
-	 if (ret < 0) break;
-	 if (size < 40) continue;
-	 offset = ((buffer[38] << 8) | buffer[39]) + 40;
-	 /* printf("offset = 0x%x\n", offset); */
-	 jpg_name_size = size - offset;
-	 if (jpg_name_size>255) jpg_name_size = 255;
-	 memcpy(jpg_name, buffer + offset, jpg_name_size);
-	 jpg_name[jpg_name_size]='\0';
-	 /* printf("found jpg named = %s\n", jpg_name); */
-	 for (i=0; delete_files[i]; i++) {
-	    if (!strcmp(jpg_name, delete_files[i])) {
-	       ret = dlp_DeleteRecord(sd, db, 0, id);
-	       if (ret < 0) {
-		  fprintf(stderr, "Unable to delete thumbnail %s\n", delete_files[i]);
-	       } else {
-		  fprintf(stderr, "Deleted thumbnail %s\n", delete_files[i]);
-		  sprintf(log_text, "Deleted thumbnail %s\n", delete_files[i]);
-		  dlp_AddSyncLogEntry(sd, log_text);
-	       }
-	       /* need to decrement index because we just deleted one record */
-	       index--;
-	       break;
-	    }
-	 }
+		 ret = dlp_ReadRecordByIndex(sd, db, index, buffer,
+						 &id, &attr, &category);
+		 if (ret < 0) break;
+		 if (buffer->used < 40) continue;
+		 offset = ((buffer->data[38] << 8) | buffer->data[39]) + 40;
+		 /* printf("offset = 0x%x\n", offset); */
+		 jpg_name_size = buffer->used - offset;
+		 if (jpg_name_size>255) jpg_name_size = 255;
+		 memcpy(jpg_name, buffer->data + offset, jpg_name_size);
+		 jpg_name[jpg_name_size]='\0';
+		 /* printf("found jpg named = %s\n", jpg_name); */
+		 for (i=0; delete_files[i]; i++) {
+			if (!strcmp(jpg_name, delete_files[i])) {
+			   ret = dlp_DeleteRecord(sd, db, 0, id);
+			   if (ret < 0) {
+			  fprintf(stderr, "Unable to delete thumbnail %s\n", delete_files[i]);
+			   } else {
+			  fprintf(stderr, "Deleted thumbnail %s\n", delete_files[i]);
+			  sprintf(log_text, "Deleted thumbnail %s\n", delete_files[i]);
+			  dlp_AddSyncLogEntry(sd, log_text);
+			   }
+			   /* need to decrement index because we just deleted one record */
+			   index--;
+			   break;
+			}
+		 }
       }
+	  pi_buffer_free (buffer);
    }
 
    dlp_ResetSyncFlags(sd, db);
@@ -415,7 +421,6 @@ int do_delete(int sd, char **delete_files, int all)
 int do_fetch(int sd, char **fetch_files, int all)
 {
    FILE *out;
-   char buffer[65536];
    recordid_t id;
    int i;
    int found;
@@ -425,16 +430,18 @@ int do_fetch(int sd, char **fetch_files, int all)
      category,
      ret,
      start;
-   size_t size;
 
    struct DBInfo info;
    char creator[5];
    char type[5];
+   pi_buffer_t *buffer;
 
    if ((!all) && (!fetch_files)) return -1;
 
    start = 0;
-   while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, &info) > 0) {
+   buffer = pi_buffer_new (65536);
+   while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, buffer) > 0) {
+	  memcpy(&info, buffer->data, sizeof(struct DBInfo));
       start = info.index + 1;
       creator[0] = (info.creator & 0xFF000000) >> 24;
       creator[1] = (info.creator & 0x00FF0000) >> 16;
@@ -477,11 +484,11 @@ int do_fetch(int sd, char **fetch_files, int all)
 	 index = 0;
 	 ret = 1;
 	 while (ret > 0) {
-	    ret = dlp_ReadRecordByIndex PI_ARGS
-	      ((sd, db, index, buffer, &id, &size, &attr, &category));
+		 ret = dlp_ReadRecordByIndex PI_ARGS
+	      ((sd, db, index, buffer, &id, &attr, &category));
 	    index++;
-	    if ((ret > 0) && (size > 8)) {
-	       fwrite(buffer + 8, size - 8, 1, out);
+	    if ((ret > 0) && (buffer->used > 8)) {
+	       fwrite(buffer->data + 8, buffer->used - 8, 1, out);
 	    }
 	 }
 	 dlp_CloseDB(sd, db);
@@ -489,6 +496,7 @@ int do_fetch(int sd, char **fetch_files, int all)
 	 printf("OK\n");
       }
    }
+   pi_buffer_free(buffer);
    return 0;
 }
 
