@@ -14,6 +14,40 @@
 #include "datebook.h"
 #include "dlp.h"
 
+char * tclquote(char * in)
+{
+  static char * buffer = 0;
+  char * out;
+  char * pos;
+  int len;
+  
+  len = 3;
+  pos = in;
+  while(*pos) {
+    if((*pos == '\\') || (*pos == '"') || (*pos == '[') || (*pos == '$'))
+      len++;
+    len++;
+    pos++;
+  }
+  
+  if (buffer)
+    free(buffer);
+  buffer = malloc(len);
+  out = buffer;
+
+  pos = in;
+  *out++ = '"';
+  while(*pos) {
+    if((*pos == '\\') || (*pos == '"') || (*pos == '[') || (*pos == '$'))
+      *out++ = '\\';
+    *out++=*pos++;
+  }
+  *out++ = '"';
+  *out++ = '\0';
+  
+  return buffer;
+}
+
 void main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
@@ -95,7 +129,7 @@ void main(int argc, char *argv[])
 	unpack_ToDo(&t, buffer, len);
 	
 	fprintf(ical,"set n [notice]\n");
-	fprintf(ical,"$n text \"%s\"\n", t.description);
+	fprintf(ical,"$n text %s\n", tclquote(t.description));
 	fprintf(ical,"$n date [date today]\n");
 	fprintf(ical,"$n todo 1\n");
 	fprintf(ical,"$n option Priority %d\n", t.priority);
@@ -150,7 +184,7 @@ void main(int argc, char *argv[])
 	  fprintf(ical,"$i length %d\n", end-start+1);
 	}
 	
-	fprintf(ical,"$i text \"%s\"\n", a.description);
+	fprintf(ical,"$i text %s\n", tclquote(a.description));
 	
 	fprintf(ical,"set begin [date make %d %d %d]\n", a.begin.tm_mday,a.begin.tm_mon+1,a.begin.tm_year+1900);
 	

@@ -18,6 +18,7 @@
 # include <string.h>
 # include <stdlib.h>
 # include <netinet/in.h>
+# include <dirent.h>
 # define TTYPrompt "com#"
 
 #else
@@ -132,6 +133,10 @@ void dumpdata (char * buf, int len);
                        ((ptr)[1] << 16) | \
                        ((ptr)[2] << 8)  | \
                        ((ptr)[3] << 0))
+
+#define get_treble(ptr) (((ptr)[0] << 16) | \
+                         ((ptr)[1] << 8)  | \
+                         ((ptr)[2] << 0))
                        
 #define get_short(ptr) (((ptr)[0] << 8)  | \
                         ((ptr)[1] << 0))
@@ -142,6 +147,10 @@ void dumpdata (char * buf, int len);
 		          ((ptr)[1] = ((val) >> 16) & 0xff), \
 		          ((ptr)[2] = ((val) >> 8) & 0xff), \
 		          ((ptr)[3] = ((val) >> 0) & 0xff))
+
+#define set_treble(ptr,val) (((ptr)[0] = ((val) >> 16) & 0xff), \
+		             ((ptr)[1] = ((val) >> 8) & 0xff), \
+		             ((ptr)[2] = ((val) >> 0) & 0xff))
                        
 #define set_short(ptr,val) (((ptr)[0] = ((val) >> 8) & 0xff), \
 		            ((ptr)[1] = ((val) >> 0) & 0xff))

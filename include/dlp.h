@@ -11,7 +11,7 @@
    return value less then zero. */
    
 struct PilotUser {
-  long userID, viewerID, lastSyncPC;
+  unsigned long userID, viewerID, lastSyncPC;
   time_t succSyncDate, lastSyncDate;
   char username[128];
   int passwordLen;
@@ -19,20 +19,20 @@ struct PilotUser {
 };
 
 struct SysInfo {
-  long ROMVersion;
-  long localizationID;
+  unsigned long ROMVersion;
+  unsigned long localizationID;
   int namelength;
   char name[128];
 };
 
 struct DBInfo {
   int more;
-  int flags;
-  long type,creator;
-  int version;
-  long modnum;
+  unsigned int flags;
+  unsigned long type,creator;
+  unsigned int version;
+  unsigned long modnum;
   time_t crdate,moddate,backupdate;
-  int index;
+  unsigned int index;
   char name[34];
 };
 
@@ -50,6 +50,13 @@ enum dlpRecAttributes {
 	dlpRecAttrBusy    = 0x20, /* record locked  */
 	dlpRecAttrSecret  = 0x10, /* record is secret*/
 	dlpRecAttrArchived= 0x08 /* tagged for archival during next sync*/
+};
+
+enum dlpOpenFlags {
+        dlpOpenRead = 0x80,
+        dlpOpenWrite = 0x40,
+        dlpOpenExclusive = 0x20,
+        dlpOpenSecret = 0x10,
 };
 
 enum dlpEndStatus {
@@ -154,14 +161,23 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User);
 
  /* Ask the pilot who it is. */
 
-int dlp_ReadAppBlock(int sd, unsigned char fHandle, short offset,
+int dlp_ReadAppBlock(int sd, int fHandle, int offset,
                            unsigned char *dbuf, int dlen);
 
-int dlp_WriteAppBlock(int sd, unsigned char fHandle, unsigned char *dbuf,
+int dlp_WriteAppBlock(int sd, int fHandle, const unsigned char *dbuf,
                             int dlen);
 
-int dlp_WriteRecord(int sd, unsigned char dbhandle, unsigned char flags,
-                 long recID, short catID, char *data, int length, long * NewID);
+int dlp_ReadSortBlock(int sd, int fHandle, int offset,
+                           unsigned char *dbuf, int dlen);
+
+int dlp_WriteSortBlock(int sd, int fHandle, const unsigned char *dbuf,
+                            int dlen);
+
+int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
+                         int start, int max, unsigned long * IDs);
+                         
+int dlp_WriteRecord(int sd, int dbhandle, int flags,
+                 unsigned long recID, int catID, unsigned char *data, int length, long * NewID);
 
  /* Write a new record to an open database. 
       Flags: 0 or dlpRecAttrSecret
@@ -173,30 +189,34 @@ int dlp_WriteRecord(int sd, unsigned char dbhandle, unsigned char flags,
       
       NewID: storage for returned ID, or null. */
 
-int dlp_ReadResourceByType(int sd, unsigned char fHandle, unsigned long type, int id, char* buffer, 
+int dlp_DeleteRecord(int sd, int dbhandle, int all, unsigned long recID);
+
+int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, unsigned char* buffer, 
                           int* index, int* size);
 
-int dlp_ReadResourceByIndex(int sd, unsigned char fHandle, short index, char* buffer,
+int dlp_ReadResourceByIndex(int sd, int fHandle, int index, unsigned char* buffer,
                           unsigned long* type, int * id, int* size);
 
-int dlp_WriteResource(int sd, unsigned char dbhandle, long type, int id,
-                 const char *data, int length);
+int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
+                 const unsigned char *data, int length);
 
-int dlp_ReadNextModifiedRec(int sd, unsigned char fHandle, unsigned char *buffer,
-                          int * id, int * index, int * size, int * attr, int * category);
+int dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype, int resID);
 
-int dlp_ReadRecordById(int sd, unsigned char fHandle, long id, char * buffer, 
+int dlp_ReadNextModifiedRec(int sd, int fHandle, unsigned char *buffer,
+                          unsigned long * id, int * index, int * size, int * attr, int * category);
+
+int dlp_ReadRecordById(int sd, int fHandle, unsigned long id, unsigned char * buffer, 
                           int * index, int * size, int * attr, int * category);
 
-int dlp_ReadRecordByIndex(int sd, unsigned char fHandle, short index, char * buffer, 
+int dlp_ReadRecordByIndex(int sd, int fHandle, int index, unsigned char * buffer, 
                           long * id, int * size, int * attr, int * category);
 
-int dlp_CleanUpDatabase(int sd, unsigned char fHandle);
+int dlp_CleanUpDatabase(int sd, int fHandle);
 
   /* Deletes all records in the opened database which are marked as archived
      or deleted. */
 
-int dlp_ResetSyncFlags(int sd, unsigned char fHandle);
+int dlp_ResetSyncFlags(int sd, int fHandle);
 
   /* For record databases, reset all dirty flags. For both record and
      resource databases, set the last sync time to now. */

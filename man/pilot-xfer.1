@@ -1,0 +1,28 @@
+.TH PILOT-XFER 1 "USR Pilot tools" "FSF" \" -*- nroff -*-
+.SH NAME
+pilot-xfer \- backup and restore databases to and from a USR Pilot
+.SH SYNOPSIS
+.B pilot-xfer /dev/cua? [commands]
+.SH DESCRIPTION
+This manual page
+documents the application
+.BR pilot-xfer .
+.B pilot-xfer
+allows the user to install databases contained in the stadnard .prc and .pdb
+formats into a Pilot, retrieve databases from a Pilot, list the databases
+contained in a Pilot, and backup or restore all of the databases at once.
+Once the user has executed
+.B pilot-xfer
+the user must invoke HotSync on the target device.
+.SS OPTIONS
+Several optionss exist, including "-b dir" which backs up the Pilot into
+the specified directory (which will be created if it does not already exist), "-r dir"
+which installs all files contained in a directory into the Pilot (use this to
+restore your Pilot after a hard reset has cleared its memory), "-i file" will install
+a file into the Pilot, and "-f dbname" will fetch a database out of the Pilot. "-l" will
+list the databases in the Pilot.
+.SH USAGE
+The program will connect to a target, and perform the quested database options.
+.SH AUTHOR
+.B pilot-xfer
+was written by Kenneth Albanowski

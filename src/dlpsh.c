@@ -15,6 +15,7 @@ struct pi_socket *ticklish_pi_socket;
 
 /* Prototypes */
 int user_fn(int sd, int argc, char **argv);
+int ls_fn(int sd, int argc, char **argv);
 int help_fn(int sd, int argc, char **argv);
 int exit_fn(int sd, int argc, char **argv);
 char *strtoke(char *str, char *ws, char *delim);
@@ -31,6 +32,7 @@ struct Command {
 
 struct Command command_list[] = {
   { "user", user_fn },
+  { "ls", ls_fn },
   { "help", help_fn },
   { "quit", exit_fn },
   { "exit", exit_fn },
@@ -129,6 +131,109 @@ int user_fn(int sd, int argc, char **argv) {
   if (ret < 0) {
     printf("dlp_WriteUserInfo: err %d\n", ret);
     return -1;
+  }
+
+  return 0;
+}
+
+char *
+timestr (time_t t)
+{
+  struct tm tm;
+  static char buf[50];
+
+  tm = *localtime (&t);
+  sprintf (buf, "%04d-%02d-%02d %02d:%02d:%02d",
+	   tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+	   tm.tm_hour, tm.tm_min, tm.tm_sec);
+  return (buf);
+}
+
+int 
+ls_fn(int sd, int argc, char **argv) 
+{
+  int c, ret;
+  int lflag = 0;
+  int cardno, flags, start;
+  int rom_flag = 0;
+
+#ifdef sun
+  extern char* optarg;
+  extern int optind;
+#endif
+
+  optind = 0;
+  while ((c = getopt(argc, argv, "lr")) != -1) {
+    switch (c) {
+    case 'r':
+      rom_flag = 1;
+      break;
+    case 'l':
+      lflag = 1;
+      break;
+    default:
+      printf("Usage: ls\n");
+      printf ("         -l    long format\n");
+      printf ("         -r    list rom instead of ram\n");
+      return 0;
+    }
+  }
+
+  cardno = 0;
+  if (rom_flag == 0)
+    flags = 0x80; /* dlpReadDBListFlagRAM */
+  else
+    flags = 0x40; /* dlpReadDBListFlagROM */
+
+  start = 0;
+  while (1) {
+    struct DBInfo info;
+    long tag;
+
+    alarm(TICKLE_INTERVAL);
+
+    /*
+     * The databases are numbered starting at 0.  The first 12 are in
+     * ROM, and the rest are in RAM.  The high two bits of the flags
+     * byte control wheter you see the ROM entries, RAM entries or both.
+     * start is the lowest index you want.  So, we start with 0, but
+     * usually we want to see ram entries, so it will return database
+     * number 12.  Then, we'll ask for 13, etc, until we get the NotFound
+     * error return.
+     */
+    ret = dlp_ReadDBList (sd, cardno, flags, start, &info);
+
+    if (ret == -5 /* dlpRespErrNotFound */)
+      break;
+
+    if (ret < 0) {
+      printf("dlp_ReadDBList: err %d\n", ret);
+      return -1;
+    }
+
+    printf ("%.32s\n", info.name);
+    if (lflag) {
+      printf ("  more 0x%x; ", info.more);
+      printf ("flags 0x%x; ", info.flags);
+      tag = htonl (info.type);
+      printf ("type '%.4s'; ", (char *)&tag);
+      tag = htonl (info.creator);
+      printf ("creator '%.4s'; ", (char *)&tag);
+      printf ("version %d; ", info.version);
+      printf ("modnum %ld\n", info.modnum);
+      printf ("  cr %s; ", timestr (info.crdate));
+      printf ("mod %s; ", timestr (info.moddate));
+      printf ("backup %s; ", timestr (info.backupdate));
+      printf ("\n");
+    }
+
+    if (info.index < start) {
+      /* avoid looping forever if we get confused */
+      printf ("error: index backs up\n");
+      break;
+    }
+
+    start = info.index + 1;
   }
 
   return 0;

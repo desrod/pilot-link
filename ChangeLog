@@ -1,3 +1,50 @@
+Dec 22, 1996    Kenneth Albanowski 0.4.0
+
+    Removed {install,retrieve}-{pdb,prc} packages, replaced with
+       pilot-xfer, which also includes general backup and listing functions. 
+    Integrated Pace Willisson's pi-file code, replacing prc.c & pdb.c. (This
+       new code, along with pilot-xfer, is intended to be production
+       quality, and should be used as the basis for all attempts to
+       manipulate Pilot files, as well as the stock mechanism for backing
+       up a Pilot via Unix.)
+    Added Pace's pdump, modified and renamed to pilot-file, which is used for
+      dumping and exploring .pdb and .prc files.
+    Wrote and tested sync.c abstract synchronization layer. All but category
+      synchronization and the detail of when to use which sync type is implemented.
+    Fleshed out sync-memodir program which can now successfully synchronize a
+      Pilot with a "memo directory", a directory containing text files.
+    (sync-ical is still useless stub)
+    Integrated Bill Sommerfeld's patches for read-ical, padp, and syspkt.
+    
+    -- Removed sync code based on Palm algorithms, pending approval from
+       Palm/USR. What remains is sufficient to overwrite one side with
+       another, and to serve as a framework if people who have not seen Palm
+       code want to implement their own algorithms.
+       
+       Quoting from lib/sync.c:
+       
+       * Revised revision: all sections of code directly derived (albeit in a
+       * paraphased manner) from code in the Palm Conduit SDK, _which are not
+       * blatently obvious and irreducible_ have been temporarily removed until
+       * word is obtained from Palm that the code may be publically released.
+       *
+       * The issue that needs to be resolved is whether Palm Computing Inc. will
+       * allow the public distribution of source code derived from source code in
+       * their Pilot PC Conduit SDK. The licensing information that I recieved
+       * with the PC and Mac SDKs is not sufficient to resolve this question.
+       *
+       * In keeping with the sprit of the EU practice for reverse engineering, the
+       * interface that I have designed to plug into the Palm algorithms has been
+       * retained.
+
+Dec 10, 1996	Kenneth Albanowski 0.3.3
+
+    Did more work on sync stuff, added sync-memodir.
+    Added dlp_DeletedRecord, dlp_DeletedResource, and dlp_ReadRecordIDList.
+    Pausing problems on some machines (other then Linux) still unsolved.
+    Added 'ls' command to dlpsh.
+    Turned 9600 limit back on for SGI.
+
 Dec 1, 1996		Kenneth Albanowski 0.3.2
 
     Converted package to use autoconf for configuration.

@@ -46,7 +46,8 @@ static int cfsetspeed(struct termios * t,int speed) {
   t->c_ospeed=speed;
 #else
   t->c_cflag|=speed;
-#endif  
+#endif
+  return 0;
 }
 #endif
 #endif

@@ -6,6 +6,10 @@
  * See the file COPYING for details.
  */
 
+/*@+matchanyintegral@*/
+/*@-predboolint@*/
+/*@-boolops@*/ 
+ 
 #include <stdio.h>
 #include "pi-socket.h"
 #include "dlp.h"
@@ -15,33 +19,38 @@
 #define set_date(ptr,val) (dlp_htopdate((val),(ptr)))                        
 
 #define DLP_BUF_SIZE 0xffff
-static unsigned char dlp_buf[DLP_BUF_SIZE];
-static unsigned char exec_buf[DLP_BUF_SIZE];
+static /*@checked@*/ unsigned char dlp_buf[DLP_BUF_SIZE];
+static /*@checked@*/ unsigned char exec_buf[DLP_BUF_SIZE];
 
-int dlp_exec(int sd, int cmd, int arg, void *msg, int msglen, 
-             void *result, int maxlen)
+int dlp_exec(int sd, int cmd, int arg, 
+             const unsigned char /*@null@*/ *msg, int msglen, 
+             unsigned char /*@out@*/ /*@null@*/ *result, int maxlen)
+ /*@modifies *result, exec_buf;@*/
+ /*@-predboolint -boolops@*/
 {
   int i;
   int err;
   
-  exec_buf[0] = cmd;
-  if (arg && msg && msglen) {
+  exec_buf[0] = (unsigned char)cmd;
+  if (msg && arg && msglen) {
     memcpy(&exec_buf[6], msg, msglen);
-    exec_buf[1] = 1;
-    exec_buf[2] = arg | 0x80;
-    exec_buf[3] = 0;
+    exec_buf[1] = (unsigned char)1;
+    exec_buf[2] = (unsigned char)(arg | 0x80);
+    exec_buf[3] = (unsigned char)0;
     set_short(exec_buf+4, msglen);
     i = msglen+6;
   } else {
-    memcpy(exec_buf, msg, msglen);
-    exec_buf[1] = 0;
+    exec_buf[1] = (unsigned char)0;
     i = 2;
   }
 
 #ifdef DEBUG
   fprintf(stderr,"Sending dlp command\n");
 #endif
-  pi_write(sd, &exec_buf[0], i);
+  if (pi_write(sd, &exec_buf[0], i)<i) {
+    errno = -EIO;
+    return -1;
+  }
 
 #ifdef DEBUG
   fprintf(stderr,"Reading dlp response\n");
@@ -50,17 +59,17 @@ int dlp_exec(int sd, int cmd, int arg, void *msg, int msglen,
 
   err = get_short(exec_buf+2);
 
-  if (err) {
+  if (err != 0) {
     errno = -EIO;
     return -err;
   }
 
-  if (exec_buf[0] != (cmd | 0x80)) { /* received wrong response */
+  if (exec_buf[0] != (unsigned char)(cmd | 0x80)) { /* received wrong response */
     errno = -ENOMSG;
     return -1;
   }
   
-  if ((exec_buf[1] == 0) || (result==0)) /* no return blocks or buffers */
+  if ((exec_buf[1] == (unsigned char)0) || (result==0)) /* no return blocks or buffers */
     return 0; 
     
   /* assume only one return block */
@@ -72,7 +81,7 @@ int dlp_exec(int sd, int cmd, int arg, void *msg, int msglen,
   	  
   	memcpy(result, &exec_buf[8], i);
   } else {
-  	i = exec_buf[5];
+  	i = (int)exec_buf[5];
 
   	if (i>maxlen)
   	  i = maxlen;
@@ -92,38 +101,44 @@ static time_t dlp_ptohdate(unsigned const char * data)
 {
         struct tm t;
         
-        t.tm_sec = data[6];
-        t.tm_min = data[5];
-        t.tm_hour = data[4];
-        t.tm_mday = data[3];
-        t.tm_mon = data[2]-1;
-        t.tm_year = ((data[0]<<8) | data[1])-1900;
+        t.tm_sec   = (int)data[6];
+        t.tm_min   = (int)data[5];
+        t.tm_hour  = (int)data[4];
+        t.tm_mday  = (int)data[3];
+        t.tm_mon   = (int)data[2]-1;
+        t.tm_year  = ((data[0]<<8) | data[1])-1900;
+        t.tm_wday  = 0;
+        t.tm_yday  = 0;
         t.tm_isdst = -1;
         
         return mktime(&t);
 }
 
-static void dlp_htopdate(time_t time, unsigned char * data)
+static void dlp_htopdate(time_t time, unsigned char * data) /*@+ptrnegate@*/
 {
         struct tm * t = localtime(&time);
+        int y;
+
+        if (!t)
+          abort();
         
-        int y = t->tm_year+1900;
+        y = t->tm_year+1900;
         
-        data[7] = 0; /* packing spacer */
-        data[6] = t->tm_sec;
-        data[5] = t->tm_min;
-        data[4] = t->tm_hour;
-        data[3] = t->tm_mday;
-        data[2] = t->tm_mon+1;
-        data[0] = (y >> 8) & 0xff;
-        data[1] = (y >> 0) & 0xff;
+        data[7] = (unsigned char)0; /* packing spacer */
+        data[6] = (unsigned char)t->tm_sec;
+        data[5] = (unsigned char)t->tm_min;
+        data[4] = (unsigned char)t->tm_hour;
+        data[3] = (unsigned char)t->tm_mday;
+        data[2] = (unsigned char)(t->tm_mon+1);
+        data[0] = (unsigned char)((y >> 8) & 0xff);
+        data[1] = (unsigned char)((y >> 0) & 0xff);
         
         return;
 }
 
 int dlp_GetSysDateTime(int sd, time_t * t)
 {
-  char buf[8];
+  unsigned char buf[8];
   int result = dlp_exec(sd, 0x13, 0x20, 0, 0, buf, 8);
   
   if(result == 8)
@@ -136,7 +151,7 @@ int dlp_GetSysDateTime(int sd, time_t * t)
 
 int dlp_SetSysDateTime(int sd, time_t time)
 {
-  char buf[8];
+  unsigned char buf[8];
   dlp_htopdate(time, buf);
   
   return dlp_exec(sd, 0x14, 0x20, buf, 8, 0, 0);
@@ -152,7 +167,7 @@ int dlp_ReadSysInfo(int sd, struct SysInfo * s)
     /* dlp_buf+8 is a filler byte */
     s->namelength = get_byte(dlp_buf+9);
     memcpy(s->name, dlp_buf+10, s->namelength);
-    s->name[s->namelength] = 0;
+    s->name[s->namelength] = '\0';
   }
   
   return result;
@@ -182,7 +197,7 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
   info->backupdate = get_date(dlp_buf+38);
   info->index = get_short(dlp_buf+46);
   strncpy(info->name, dlp_buf+48, 32);
-  info->name[32] = 0;
+  info->name[32] = '\0';
     
   return result;
 }
@@ -238,7 +253,7 @@ int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle)
   result = dlp_exec(sd, 0x17, 0x20, &dlp_buf[0], strlen(name)+3, &handle, 1);
   
   if(result == 1)
-    *dbhandle = handle;
+    *dbhandle = (int)handle;
   else
     *dbhandle = 0;
   
@@ -248,8 +263,8 @@ int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle)
 int dlp_DeleteDB(int sd, int card, const char * name)
 {
   
-  dlp_buf[0] = card;
-  dlp_buf[1] = 0;
+  dlp_buf[0] = (unsigned char)card;
+  dlp_buf[1] = (unsigned char)0;
   strcpy(dlp_buf+2, name);
   
   return dlp_exec(sd, 0x1A, 0x20, dlp_buf, 2+strlen(name)+1, 0, 0);
@@ -272,7 +287,7 @@ int dlp_CreateDB(int sd, long creator, long type, int cardno,
   result = dlp_exec(sd, 0x18, 0x20, dlp_buf, 14+strlen(name)+1, &handle, 1);
   
   if(result==1)
-    *dbhandle = handle;
+    *dbhandle = (int)handle;
   else
     *dbhandle = 0;
 
@@ -282,7 +297,7 @@ int dlp_CreateDB(int sd, long creator, long type, int cardno,
 
 int dlp_CloseDB(int sd, int dbhandle)
 {
-  unsigned char handle = dbhandle;
+  unsigned char handle = (unsigned char)dbhandle;
   
   return dlp_exec(sd, 0x19, 0x20, &handle, 1, 0, 0);
 }
@@ -301,18 +316,20 @@ int dlp_ResetSystem(int sd)
 
 int dlp_AddSyncLogEntry(int sd, char * entry)
 {
-
-  return dlp_exec(sd, 0x2A, 0x20, entry, strlen(entry), 0, 0);
+  return dlp_exec(sd, 0x2A, 0x20, (unsigned char*)entry, strlen(entry), 0, 0);
 }
 
 int dlp_ReadOpenDBInfo(int sd, int dbhandle, int * records)
 {
-  char buf[2];
-  int result = dlp_exec(sd, 0x2B, 0x20, &dbhandle, 1, &buf[0], 2);
+  unsigned char buf[2];
+  int result;
+  
+  set_byte(dlp_buf, (unsigned char)dbhandle);
+  result = dlp_exec(sd, 0x2B, 0x20, dlp_buf, 1, buf, 2);
   
   if (records)
     if (result == 2)
-      *records = (buf[0] << 8) | buf[1];
+      *records = get_short(buf);
     else
       *records = 0;
   
@@ -326,11 +343,12 @@ int dlp_OpenConduit(int sd)
 
 int dlp_EndOfSync(int sd, int status)
 {
-  unsigned short int code = htons(status);
   int result;
   struct pi_socket * ps;
   
-  result = dlp_exec(sd, 0x2F, 0x20, &code, 2, 0, 0);
+  set_short(dlp_buf, status);
+  
+  result = dlp_exec(sd, 0x2F, 0x20, dlp_buf, 2, 0, 0);
   
   /* Messy code to set end-of-sync flag on socket 
      so pi_close won't do it for us */
@@ -348,9 +366,7 @@ int dlp_AbortSync(int sd) {
   if ( (ps = find_pi_socket(sd)) )
     ps->connected |= 2;
 
-  pi_close(sd);
-  
-  return 0;
+  return pi_close(sd);
 }
 
 int dlp_WriteUserInfo(int sd, struct PilotUser *User)
@@ -382,17 +398,35 @@ int dlp_ReadUserInfo(int sd, struct PilotUser* User)
     User->lastSyncDate = get_date(dlp_buf+20);
     User->passwordLen = get_byte(dlp_buf+29);
     memcpy(User->username, dlp_buf+30, userlen);
-    User->username[userlen] = 0;
+    User->username[userlen] = '\0';
     memcpy(User->password, dlp_buf+30+userlen, User->passwordLen);
   }
 
   return result;
 }
 
-int dlp_WriteRecord(int sd, unsigned char dbhandle, unsigned char flags,
-                 long recID, short catID, char* data, int length, long* NewID)
+int dlp_ReadRecordIDList(int sd, int dbhandle, int sort, 
+                         int start, int max, unsigned long * IDs)
 {
-  char buf[4];
+  int result;
+  
+  set_byte(dlp_buf,    dbhandle);
+  set_byte(dlp_buf+1,  sort?0x80:0);
+  set_short(dlp_buf+2, start);
+  set_short(dlp_buf+4, max);
+  
+  result = dlp_exec(sd, 0x20, 0x20, dlp_buf, 6, (unsigned char*)IDs, max*4);
+  
+  if(result>=0)
+    return result/4;
+  else
+    return result;
+}
+
+int dlp_WriteRecord(int sd, int dbhandle, int flags,
+                 unsigned long recID, int catID, unsigned char* data, int length, long* NewID)
+{
+  unsigned char buf[4];
   int result;
 
   set_byte(dlp_buf, dbhandle);
@@ -417,7 +451,22 @@ int dlp_WriteRecord(int sd, unsigned char dbhandle, unsigned char flags,
   return result;
 }
 
-int dlp_ReadResourceByType(int sd, unsigned char fHandle, unsigned long type, int id, char* buffer, 
+int dlp_DeleteRecord(int sd, int dbhandle, int all, unsigned long recID)
+{
+  int result;
+  int flags = all ? 0x80 : 0;
+
+  set_byte(dlp_buf, dbhandle);
+  set_byte(dlp_buf+1, flags);
+  set_long(dlp_buf+2, recID);
+  
+  result = dlp_exec(sd, 0x22, 0x20, dlp_buf, 6, 0, 0);
+  
+  return result;
+}
+
+
+int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, unsigned char* buffer, 
                           int* index, int* size)
 {
   int result;
@@ -445,7 +494,7 @@ int dlp_ReadResourceByType(int sd, unsigned char fHandle, unsigned long type, in
     return result;
 }
 
-int dlp_ReadResourceByIndex(int sd, unsigned char fHandle, short index, char* buffer,
+int dlp_ReadResourceByIndex(int sd, int fHandle, int index, unsigned char* buffer,
                           unsigned long* type, int * id, int* size)
 {
   int result;
@@ -474,8 +523,8 @@ int dlp_ReadResourceByIndex(int sd, unsigned char fHandle, short index, char* bu
     return result;
 }
 
-int dlp_WriteResource(int sd, unsigned char dbhandle, long type, int id,
-                 const char* data, int length)
+int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
+                 const unsigned char* data, int length)
 {
   set_byte(dlp_buf, dbhandle);
   set_byte(dlp_buf+1, 0);
@@ -487,7 +536,22 @@ int dlp_WriteResource(int sd, unsigned char dbhandle, long type, int id,
   return dlp_exec(sd, 0x24, 0x20, dlp_buf, 10+length, NULL, 0);
 }
 
-int dlp_ReadAppBlock(int sd, unsigned char fHandle, short offset,
+int dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype, int resID)
+{
+  int result;
+  int flags = all ? 0x80 : 0;
+
+  set_byte(dlp_buf, dbhandle);
+  set_byte(dlp_buf+1, flags);
+  set_long(dlp_buf+2, restype);
+  set_short(dlp_buf+6, resID);
+  
+  result = dlp_exec(sd, 0x25, 0x20, dlp_buf, 8, NULL, 0);
+  
+  return result;
+}
+
+int dlp_ReadAppBlock(int sd, int fHandle, int offset,
                            unsigned char* dbuf, int dlen)
 {
   int result;
@@ -508,30 +572,64 @@ int dlp_ReadAppBlock(int sd, unsigned char fHandle, short offset,
     return result;
 }
 
-int dlp_WriteAppBlock(int sd, unsigned char fHandle, unsigned char* dbuf, int dlen)
+int dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@*/ unsigned char* data, int length)
 {
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, 0x00);
-  set_short(dlp_buf+2, dlen);
-  memcpy(dlp_buf+4, dbuf, dlen);
+  set_short(dlp_buf+2, length);
+  memcpy(dlp_buf+4, data, length);
 
-  return dlp_exec(sd, 0x1c, 0x20, dlp_buf, dlen+4, NULL, 0);
+  return dlp_exec(sd, 0x1c, 0x20, dlp_buf, length+4, NULL, 0);
 }
 
-int dlp_CleanUpDatabase(int sd, unsigned char fHandle)
+int dlp_ReadSortBlock(int sd, int fHandle, int offset,
+                           unsigned char* dbuf, int dlen)
 {
-  return dlp_exec(sd, 0x26, 0x20, &fHandle, sizeof(fHandle), NULL, 0);
+  int result;
+  
+  set_byte(dlp_buf, fHandle);
+  set_byte(dlp_buf+1, 0x00);
+  set_short(dlp_buf+2, offset);
+  set_short(dlp_buf+4, dlen);
+  
+  result = dlp_exec(sd, 0x1d, 0x20, dlp_buf, 6, dlp_buf, DLP_BUF_SIZE);
+  
+  if(result >= 2) {
+    if (dbuf)
+      memcpy(dbuf, dlp_buf+2, result-2);
+    return result-2;
+  }
+  else
+    return result;
 }
 
-int dlp_ResetSyncFlags(int sd, unsigned char fHandle)
+int dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@*/ unsigned char* data, int length)
 {
-  return dlp_exec(sd, 0x27, 0x20, &fHandle, sizeof(fHandle), NULL, 0);
+  set_byte(dlp_buf, fHandle);
+  set_byte(dlp_buf+1, 0x00);
+  set_short(dlp_buf+2, length);
+  memcpy(dlp_buf+4, data, length);
+
+  return dlp_exec(sd, 0x1e, 0x20, dlp_buf, length+4, NULL, 0);
 }
 
-int dlp_ReadNextModifiedRec(int sd, unsigned char fHandle, unsigned char* buffer,
-                          int* id, int* index, int* size, int* attr, int* category)
+int dlp_CleanUpDatabase(int sd, int fHandle)
 {
-  int result = dlp_exec(sd, 0x1f, 0x20, &fHandle, sizeof(fHandle), dlp_buf, DLP_BUF_SIZE);
+  unsigned char handle = fHandle;
+  return dlp_exec(sd, 0x26, 0x20, &handle, 1, NULL, 0);
+}
+
+int dlp_ResetSyncFlags(int sd, int fHandle)
+{
+  unsigned char handle = fHandle;
+  return dlp_exec(sd, 0x27, 0x20, &handle, 1, NULL, 0);
+}
+
+int dlp_ReadNextModifiedRec(int sd, int fHandle, unsigned char* buffer,
+                          unsigned long* id, int* index, int* size, int* attr, int* category)
+{
+  unsigned char handle = fHandle;
+  int result = dlp_exec(sd, 0x1f, 0x20, &handle, 1, dlp_buf, DLP_BUF_SIZE);
 
   if (result >= 10) {
     if (id)
@@ -553,7 +651,7 @@ int dlp_ReadNextModifiedRec(int sd, unsigned char fHandle, unsigned char* buffer
     return result;
 }
 
-int dlp_ReadRecordById(int sd, unsigned char fHandle, long id, char* buffer, 
+int dlp_ReadRecordById(int sd, int fHandle, unsigned long id, unsigned char* buffer, 
                           int* index, int* size, int* attr, int* category)
 {
   int result;
@@ -585,7 +683,7 @@ int dlp_ReadRecordById(int sd, unsigned char fHandle, long id, char* buffer,
     return result;
 }
 
-int dlp_ReadRecordByIndex(int sd, unsigned char fHandle, short index, char* buffer,
+int dlp_ReadRecordByIndex(int sd, int fHandle, int index, unsigned char* buffer,
                           long* id, int* size, int* attr, int* category)
 {
   int result;

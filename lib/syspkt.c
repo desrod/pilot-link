@@ -147,6 +147,7 @@ int RPC(int sd, int trap, int ret, ...)
 {
   va_list ap;
   struct RPC_param p[20];
+  int RPC_arg[20];
   int i=0,j;
   long D0=0,A0=0;
 
@@ -158,7 +159,8 @@ int RPC(int sd, int trap, int ret, ...)
     if(type < 0) {
       p[i].byRef = 0;
       p[i].size = -type;
-      p[i].data = &va_arg(ap,int);
+      RPC_arg[i] = va_arg(ap,int);
+      p[i].data = &RPC_arg[i];
       p[i].invert = 0;
     } else {
       void * c = va_arg(ap,void*);

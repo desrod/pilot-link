@@ -1,9 +1,9 @@
-OBJS = socket.o serial.o slp.o padp.o prc.o pdb.o utils.o \
+OBJS = socket.o serial.o slp.o padp.o utils.o \
        dlp.o cmp.o syspkt.o datebook.o memo.o address.o todo.o \
-       sync.o
+       sync.o pi-file.o
 
 CC = gcc
-CFLAGS = -Wall -O2 -g -I../include
+CFLAGS = @CFLAGS@ -Wall -I../include
 # -DDEBUG
 # -DTRACE
 AR = ar -cur
@@ -36,10 +36,8 @@ memo.o: memo.c ../include/pi-socket.h   \
  ../include/dlp.h ../include/memo.h
 padp.o: padp.c ../include/pi-socket.h   \
  ../include/padp.h ../include/slp.h ../include/pi-serial.h
-pdb.o: pdb.c ../include/pdb.h ../include/dlp.h ../include/pi-socket.h \
-  
-prc.o: prc.c ../include/prc.h ../include/dlp.h ../include/pi-socket.h \
-  
+pi-file.o: pi-file.c ../include/pi-socket.h   \
+ ../include/pi-file.h ../include/dlp.h
 serial.o: serial.c ../include/pi-socket.h   \
  ../include/pi-serial.h ../include/slp.h
 slp.o: slp.c ../include/pi-socket.h   \

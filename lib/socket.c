@@ -57,7 +57,7 @@ int pi_socket(int domain, int type, int protocol)
 #endif
 
   if(type == SOCK_STREAM) {
-#ifdef XXX__sgi
+#ifdef __sgi
     ps->establishrate = 9600; /* Default PADP connection rate */
 #else
     ps->establishrate = 19200; /* Default PADP connection rate */

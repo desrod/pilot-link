@@ -19,7 +19,10 @@
 #define xmitTimeout 4
 #define xmitRetries 14
 
+/*@+matchanyintegral@*/
+
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
+/*@-predboolint@*/
 {
   int flags = FIRST;
   int tlen;
@@ -35,17 +38,17 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 #endif
 
   if (type == padWake) {
-    ps->xid = 0xff;
+    ps->xid = (unsigned char)0xff;
   }
 
-  if(ps->xid == 0)
-    ps->xid = 0x11; /* some random # */
+  if(ps->xid == (unsigned char)0)
+    ps->xid = (unsigned char)0x11; /* some random # */
 
   if(ps->initiator) {
-    if(ps->xid >= 0xfe)
-      ps->nextid = 1; /* wrap */
+    if(ps->xid >= (unsigned char)0xfe)
+      ps->nextid = (unsigned char)1; /* wrap */
     else
-      ps->nextid = ps->xid+1;
+      ps->nextid = ps->xid+(unsigned char)1;
   } else {
     ps->nextid = ps->xid;
   }
@@ -94,7 +97,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 
         padp_dump(skb, &padp, 0);
         
-        if ((slp->type == 2) && (padp.type == padData) && 
+        if ((slp->type == (unsigned char)2) && (padp.type == (unsigned char)padData) && 
             (slp->id == ps->xid) && (len==0)) {
           fprintf(stderr,"Missing ack\n");
           /* Incoming padData from response to this transmission.
@@ -103,9 +106,10 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
           return 0;
         } 
 
-        if ((slp->type == 2) && (padp.type == padAck) && (slp->id == ps->xid)) {
+        if ((slp->type == (unsigned char)2) && 
+            (padp.type == (unsigned char)padAck) && (slp->id == ps->xid)) {
           /* Got correct Ack */
-          flags = padp.flags;
+          flags = (unsigned char)padp.flags;
 
           /* Consume packet */
           ps->rxq = skb->next;
@@ -120,7 +124,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
                           transmissions will be received. */
           } else {
             /* Successful Ack */
-            (char *) msg += tlen;
+            msg = ((char *)msg) + tlen;
             len -= tlen;
             count += tlen;
             flags = 0;
