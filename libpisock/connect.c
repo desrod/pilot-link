@@ -170,8 +170,10 @@ int pilot_connect(char *port)
 		return -1;
 	}
 
-	if (isatty(fileno(stdout)))
+	if (isatty(fileno(stdout))) {
 		printf("Connected\n\n");
+		fflush(NULL);
+	}
 
 	if (dlp_ReadSysInfo(client_sd, &sys_info) < 0) {
 		fprintf(stderr, "\n   Error read system info on %s\n", port);
