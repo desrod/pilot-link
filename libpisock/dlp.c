@@ -66,8 +66,25 @@
 #include "pi-syspkt.h"
 #include "pi-error.h"
 
-#define get_date(ptr) (dlp_ptohdate((ptr)))
+#define PI_DLP_OFFSET_CMD  0
+#define PI_DLP_OFFSET_ARGC 1
+#define PI_DLP_OFFSET_ARGV 2
 
+#define PI_DLP_ARG_TINY_LEN  0x000000FFL
+#define PI_DLP_ARG_SHORT_LEN 0x0000FFFFL
+#define PI_DLP_ARG_LONG_LEN  0xFFFFFFFFL
+
+#define PI_DLP_ARG_FLAG_TINY  0x00
+#define PI_DLP_ARG_FLAG_SHORT 0x80
+#define PI_DLP_ARG_FLAG_LONG  0x40
+#define PI_DLP_ARG_FLAG_MASK  0xC0
+
+#define PI_DLP_ARG_FIRST_ID 0x20
+
+#define DLP_REQUEST_DATA(req, arg, offset) &req->argv[arg]->data[offset]
+#define DLP_RESPONSE_DATA(res, arg, offset) &res->argv[arg]->data[offset]
+
+#define get_date(ptr) (dlp_ptohdate((ptr)))
 #define set_date(ptr,val) (dlp_htopdate((val),(ptr)))
 
 #define	RequireDLPVersion(sd,major,minor)	\
@@ -1255,17 +1272,6 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 }
 
 
-/***************************************************************************
- *
- * Function:    dlp_FindDBInfo
- *
- * Summary:     Search for a database on the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 	       unsigned long type, unsigned long creator,
@@ -1274,12 +1280,6 @@ dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 	int 	i,
 		j;
 	pi_buffer_t *buf;
-
-	/* This function does not match any DLP layer function, but is
-	   intended as a shortcut for programs looking for databases. It
-	   uses a fairly byzantine mechanism for ordering the RAM databases
-	   before the ROM ones.  You must feed the "index" slot from the
-	   returned info in as start the next time round. */
 
 	pi_reset_errors(sd);
 
