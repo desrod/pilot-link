@@ -4,9 +4,8 @@
 #define PILOT_LINK_VERSION @PILOT_LINK_VERS@
 #define PILOT_LINK_MAJOR @PILOT_LINK_MAJOR@
 #define PILOT_LINK_MINOR @PILOT_LINK_MINOR@
-
-/* If releasing a version without a patch number, make sure that this is not
-   defined, simply leave blank quotes. */
+#define PILOT_LINK_NANO @PILOT_LINK_MINOR@
 
 #define PILOT_LINK_PATCH "@PILOT_LINK_PATCH@"
+
 #endif	/* _PILOT_VERSION_H_ */

@@ -1,5 +1,16 @@
 2002-06-28  JP Rosevear  <jpr@ximian.com>
 
+	* NEWS: update
+
+	* pilot-link.m4.in: handle nano version when doing configuration
+	check
+
+	* configure.in: bump version
+
+	* include/pi-version.h.in: handle a nano version as well
+
+2002-06-28  JP Rosevear  <jpr@ximian.com>
+	
 	* bindings/Perl/Pilot.xs: reflect name->prodID renaming in SysInfo
 
 	* bindings/Python/src/pisock_wrap.c: ditto

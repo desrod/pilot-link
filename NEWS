@@ -1,3 +1,33 @@
+Pilot-Link 0.10.99.1, "Altamont", 06-28-2002
+--------------------------------------------
+
+This is a development release, primarily to test the new usb device support. 
+Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the
+Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or usb/tts/0).  Note that
+you must hit the sync button prior to running the app right now for USB
+devices.  It is recommended that a kernel > 2.4.16 be used due to problems
+that existed in earlier drivers (may get a kernel oops).
+
+Major Features:
+	* DLP argument parsing re-write
+	* Better usb device support e.g. usb:/dev/ttyUSB1 
+	
+Other Features:
+	* Allow sync to proceed even if OS 4.x device has password set
+	* Split out generic conduit library to libpisync
+	* DLP regression test
+
+Bug Fixes:
+	* Compile perl, python modules with correct lib dir
+	* Lots of minor bug fixes, reorganization
+
+Known Problems (Please see doc/TODO for more details):
+	* os2serial.c and winserial.c files are not yet ported to the new
+	  USB, serial, and Net protocol "recipes"
+	* The "sys" protocol is not well tested
+	* TCL/TK bindings are out of commission
+	* PDB files with space filler records are not yet handled properly
+
 Pilot-Link 0.10.99, "Woodstock", 03-20-2002
 -------------------------------------------
 
