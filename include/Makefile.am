@@ -40,6 +40,7 @@ c_headers = 			\
 	pi-version.h
 
 c_privheaders = 		\
+	pi-userland.h		\
 	pi-version.h.in
 
 c_header_DATA = $(c_headers)
@@ -58,9 +59,7 @@ cxx_header_DATA = $(cxx_headers)
 cxx_headerdir=$(includedir)
 endif
 
-
 EXTRA_DIST = 			\
 	$(c_headers)		\
 	$(c_privheaders)	\
 	$(cxx_headers)
-
