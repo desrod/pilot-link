@@ -20,7 +20,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -29,6 +28,7 @@
 #include "pi-header.h"
 #include "pi-source.h"
 #include "pi-file.h"
+#include "userland.h"
 
 /***********************************************************************
  *
@@ -110,31 +110,31 @@ static void dump_header(struct pi_file *pf, struct DBInfo *ip)
 	printf("flags.........: 0x%x", ip->flags);
 	if (ip->flags & dlpDBFlagNewer)
 		printf(" NEWER");
-	
+
 	if (ip->flags & dlpDBFlagReset)
 		printf(" RESET");
-	
+
 	if (ip->flags & dlpDBFlagResource)
 		printf(" RESOURCE");
-	
+
 	if (ip->flags & dlpDBFlagReadOnly)
 		printf(" READ_ONLY");
-	
+
 	if (ip->flags & dlpDBFlagAppInfoDirty)
 		printf(" APP-INFO-DIRTY");
-	
+
 	if (ip->flags & dlpDBFlagBackup)
 		printf(" BACKUP");
-	
+
 	if (ip->flags & dlpDBFlagCopyPrevention)
 		printf(" COPY-PREVENTION");
-	
+
 	if (ip->flags & dlpDBFlagStream)
 		printf(" STREAM");
-	
+
 	if (ip->flags & dlpDBFlagOpen)
 		printf(" OPEN");
-	
+
 	printf("\n");
 	printf("version.......: %d\n", ip->version);
 	printf("creation_time.: %s\n", iso_time_str(ip->createDate));
@@ -359,37 +359,6 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 }
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Dump application and header information from your local PRC/PDB files\n\n");
-	printf("   Usage: %s [options] file\n\n", progname);
-	printf("   Options:\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -H --header             Dump the header of the database(s)\n");
-	printf("     -a --appinfo            Dump app_info segment of the database(s)\n");
-	printf("     -s --sortinfo           Dump sort_info block of database(s)\n");
-	printf("     -l, --list              List all records in the database(s)\n");
-	printf("     -r, --record <num>      Dump a record by index ('code0') or uid ('1234')\n");
-	printf("     -R, --dump-rec <num>    Same as above but also dump records to files\n");
-	printf("     -d, --dump              Dump all data and all records, very verbose\n");
-	printf("     -D, --dump-res          Same as above but also dump resources to files\n\n");
-	printf("        Examples: %s -l Foo.prc\n", progname);
-	printf("                  %s -H -a Bar.pdb\n\n", progname);
-
-	return;
-}
 
 
 int main(int argc, const char **argv)
@@ -399,7 +368,7 @@ int main(int argc, const char **argv)
 		aflag 		= 0,
 		sflag 		= 0,
 		dflag 		= 0,
-		lflag 		= 0, 
+		lflag 		= 0,
 		rflag 		= 0,
 		filedump 	= 0;
 
@@ -409,95 +378,87 @@ int main(int argc, const char **argv)
 	char 	*name,
 		*rkey           = NULL;
 
+	char **rargv = NULL;
+
 	struct 	pi_file *pf;
 	struct 	DBInfo info;
-	
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-        	{"help",	'h', POPT_ARG_NONE, NULL,   'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL,   'v', "Display version information"},
-        	{"header",	'H', POPT_ARG_STRING, NULL, 'H', "Dump the header of the database(s)"},
-	        {"appinfo",	'a', POPT_ARG_NONE, NULL,   'a', "Dump app_info segment of the database(s)"},
-        	{"sortinfo",	's', POPT_ARG_NONE, NULL,   's', "Dump sort_info block of database(s)"},
-	        {"list",	'l', POPT_ARG_NONE, NULL,   'l', "List all records in the database(s)"},
-        	{"record",	'r', POPT_ARG_NONE, NULL,   'r', "Dump a record by index ('code0') or uid ('1234')"},
-	        {"dump-rec",	'R', POPT_ARG_NONE, NULL,   'R', "Same as above but also dump records to files"},
-        	{"dump",	'd', POPT_ARG_NONE, NULL,   'd', "Dump all data and all records, very verbose"},
-	        {"dump-res",	'D', POPT_ARG_NONE, NULL,   'D', "Same as above but also dump resources to files"},
-        	  POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+		USERLAND_RESERVED_OPTIONS
+        	{"header",	'H', POPT_ARG_NONE, &hflag, 0, "Dump the header of the database(s)"},
+	        {"appinfo",	'a', POPT_ARG_NONE, &aflag, 0, "Dump app_info segment of the database(s)"},
+        	{"sortinfo",	's', POPT_ARG_NONE, &sflag, 0, "Dump sort_info block of database(s)"},
+	        {"list",	'l', POPT_ARG_NONE, &lflag, 0, "List all records in the database(s)"},
+        	{"record",	'r', POPT_ARG_STRING, &rkey,  0, "Dump a record by index ('code0') or uid ('1234')"},
+	        {"to-file",	'f', POPT_ARG_NONE, &filedump,  0, "Same as above but also dump records to files"},
+        	{"dump",	'd', POPT_ARG_NONE, &dflag, 0, "Dump all data and all records, very verbose"},
+        	  POPT_TABLEEND
 	};
 
 	po = poptGetContext("pilot-file", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"<filename> ...\n\n"
+	"   Dump application and header information from your local PRC/PDB files\n\n"
+	"   Example arguments:\n"
+	"      -l Foo.prc\n"
+	"      -H -a Bar.pdb\n\n");
+
+	plu_popt_alias(po,"dump-rec",0,"--bad-option --to-file --record");
+	plu_popt_alias(po,NULL,'R',"--bad-option --to-file --record");
+	plu_popt_alias(po,"dump-res",0,"--bad-option --to-file --dump");
+	plu_popt_alias(po,NULL,'D',"--bad-option --to-file --dump");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		switch (c) {
-			
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 'H':
-			printf("H val: %s\n", poptGetOptArg(po));
-			hflag = 1;
-			break;
-		case 'a':
-			aflag = 1;
-			break;
-		case 's':
-			sflag = 1;
-			break;
-		case 'D':
-			filedump = 1;
-		case 'd':
-			dflag = 1;
-			break;
-		case 'l':
-			lflag = 1;
-			break;
-		case 'R':
-			filedump = 1;
-		case 'r':
-			rflag = 1;
-			rkey = optarg;
-			break;
-		default:
-			display_help(progname);
-			return 0;
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
+	}
+
+	if (c < -1) {
+		plu_badoption(po,c);
+	}
+
+	if (rkey) {
+		rflag = 1;
+	}
+
+	rargv = poptGetArgs(po);
+	if (!rargv || !rargv[0]) {
+		fprintf(stderr,"   ERROR: Must provide one or more filenames.\n");
+		return 1;
+	}
+
+	while (*rargv) {
+		name = *rargv++;
+
+		if ((pf = pi_file_open(name)) == NULL) {
+			fprintf(stderr, "   ERROR: Can't open '%s' Does '%s' exist?\n\n",
+				name, name);
+			continue;
 		}
+
+		pi_file_get_info(pf, &info);
+
+		if (hflag || dflag)
+			dump_header(pf, &info);
+
+		if (aflag || dflag)
+			dump_app_info(pf, &info);
+
+		if (sflag || dflag)
+			dump_sort_info(pf, &info);
+
+		if (lflag || dflag)
+			list_records(pf, &info, filedump, dflag);
+
+		if (rflag)
+			dump_record(pf, &info, rkey, filedump);
 	}
-
-	if (optind < 1) {
-		display_help(progname);
-		fprintf(stderr, "   ERROR: You must specify a file\n");
-		return -1;
-	}
-	
-	if ((pf = pi_file_open(name)) == NULL) {
-		fprintf(stderr, "   ERROR: Can't open '%s' Does '%s' exist?\n\n", 
-			name, name);
-		return -1;
-	}
-
-	pi_file_get_info(pf, &info);
-
-	if (hflag || dflag)
-		dump_header(pf, &info);
-
-	if (aflag || dflag)
-		dump_app_info(pf, &info);
-
-	if (sflag || dflag)
-		dump_sort_info(pf, &info);
-
-	if (lflag || dflag)
-		list_records(pf, &info, filedump, dflag);
-
-	if (rflag)
-		dump_record(pf, &info, rkey, filedump);
 
 	return 0;
 }
