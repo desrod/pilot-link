@@ -898,6 +898,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 	}
 	else
 	{
+		CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(&ci, sizeof(ci)));
 		ci.num_ports >>= 8;				/* number of ports is little-endian */
 		if (ci.num_ports > 8)
 			ci.num_ports = 8;
@@ -940,6 +941,7 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 {
 	int i;
 
+	CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(ci, sizeof(*ci)));
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: decode_generic_connection_information num_ports=%d, endpoint_numbers_different=%d\n", ci->num_ports, ci->endpoint_numbers_different));
 	if (ci->num_ports == 0)
 		return -1;
