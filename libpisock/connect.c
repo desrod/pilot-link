@@ -23,7 +23,9 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
+#ifdef HAVE_IFADDRS_H
 #include <ifaddrs.h>
+#endif
 #include <unistd.h>
 #include <sys/stat.h>
 
