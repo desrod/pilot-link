@@ -23,7 +23,8 @@ extern "C" {
 	typedef struct pi_net_data 
 	{
 		int type;
-
+		int split_writes;				/* set to 0 or <> 0 (see net_tx() function) */
+		size_t write_chunksize;			/* set to 0 or a chunk size value (i.e. 4096) (see net_tx() function) */
 		unsigned char txid;
 	} pi_net_data_t;
 

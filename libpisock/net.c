@@ -82,6 +82,8 @@ static pi_protocol_t
 
 		data 			= (pi_net_data_t *)prot->data;
 		new_data->type 		= data->type;
+		new_data->split_writes	= data->split_writes;
+		new_data->write_chunksize	= data->write_chunksize;
 		new_data->txid 		= data->txid;
 		new_prot->data 		= new_data;
 	}
@@ -151,6 +153,8 @@ pi_protocol_t
 		prot->setsockopt 	= net_setsockopt;
 
 		data->type 		= PI_NET_TYPE_DATA;
+		data->split_writes = 0;
+		data->write_chunksize = 0;
 		data->txid 		= 0x00;
 		prot->data 		= data;
 	}
@@ -269,11 +273,10 @@ net_tx_handshake(pi_socket_t *ps)
 ssize_t
 net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 {
-	int 	bytes;
-#if 1
-	int		offset,
-			remain;
-#endif
+	int 	bytes,
+			offset,
+			remain,
+			tosend;
 	pi_protocol_t	*prot,
 			*next;
 	pi_net_data_t *data;
@@ -300,39 +303,53 @@ net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 	set_long(&buf[PI_NET_OFFSET_SIZE], len);
 	memcpy(&buf[PI_NET_HEADER_LEN], msg, len);
 
-	/* Write the header and body */
-#if 1
-	// TEST TEST TEST: trying to fix USB send problems. If connected over
-	// USB, do the following:
-	// - send the 6 bytes of header first
-	// - split the rest of data into 4k chunks and send it by chunks
-	// This is what Palm Desktop does on Windows for the Zire 72
-	bytes = next->write(ps, buf, PI_NET_HEADER_LEN, flags);
-	if (bytes < PI_NET_HEADER_LEN)
+	/* Write the header and body, possibly in one write, or in two,
+	 * or in more, depending on the current options. Crucial options
+	 * here are `split_writes' and `write_chunksize' in this protocol's
+	 * data (use net_setsockopt() to set them).
+	 */
+	if (data->split_writes)
 	{
-		free(buf);
-		return bytes;
+		/* Bugfix for USB send problems. If connected over
+		 * USB, do the following:
+		 * - send the 6 bytes of header first
+		 * - split the rest of data into chunks if the write_chunksize opt is set
+		 * This is what Palm Desktop does on Windows for the Zire 72
+		 * (uses split writes and 4k chunks)
+		 * -- FP
+		 */
+		bytes = next->write(ps, buf, PI_NET_HEADER_LEN, flags);
+		if (bytes < PI_NET_HEADER_LEN)
+		{
+			free(buf);
+			return bytes;
+		}
+		offset = PI_NET_HEADER_LEN;
+		remain = len;
 	}
-	offset = 0;
-	remain = len;
+	else
+	{
+		offset = 0;
+		remain = PI_NET_HEADER_LEN + len;
+	}
+
 	while (remain > 0)
 	{
-		int tosend = (remain > 4096) ? 4096 : remain;
-		bytes = next->write(ps, &buf[PI_NET_HEADER_LEN + offset], tosend, flags);
+		if (data->write_chunksize)
+			tosend = (remain > data->write_chunksize) ? data->write_chunksize : remain;
+		else
+			tosend = remain;
+
+		bytes = next->write(ps, &buf[offset], tosend, flags);
 		if (bytes < tosend)
 		{
 			free(buf);
 			return bytes;
 		}
 		remain -= bytes;
+		offset += bytes;
 	}
-#else
-	bytes = next->write(ps, buf, PI_NET_HEADER_LEN + len, flags);
-	if (bytes < (int)(PI_NET_HEADER_LEN + len)) {
-		free(buf);
-		return bytes;
-	}
-#endif
+
 	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1, ps->sd));
 	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, dumpdata((char *)msg, len));
 	
@@ -567,7 +584,33 @@ net_setsockopt(pi_socket_t *ps, int level, int option_name,
 			}
 			memcpy (&data->type, option_value,
 				sizeof (data->type));
-			*option_len = sizeof (data->type);
+			break;
+		
+		/* this option, when set to != 0, instructs NET to separately
+		 * write the NET header and the data block. Data can be further
+		 * sent in chunks by also setting PI_NET_WRITE_CHUNKSIZE below.
+		 */
+		case PI_NET_SPLIT_WRITES:
+			if (*option_len != sizeof (data->split_writes)) {
+				errno = EINVAL;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
+			}
+			memcpy (&data->split_writes, option_value,
+				sizeof(data->split_writes));
+			break;
+
+		/* this option, when set to != 0, instructs NET to write the
+		 * packet data in chunks of the given maximum size. If
+		 * PI_NET_SPLIT_WRITES is not set, and this option is set, we
+		 * chunk the whole write (including the NET header)
+		 */
+		case PI_NET_WRITE_CHUNKSIZE:
+			if (*option_len != sizeof (data->write_chunksize)) {
+				errno = EINVAL;
+				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
+			}
+			memcpy (&data->write_chunksize, option_value,
+				sizeof(data->write_chunksize));
 			break;
 	}
 

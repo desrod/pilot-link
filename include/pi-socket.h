@@ -74,7 +74,9 @@ enum PiOptCMP {
 };
 
 enum PiOptNet {
-	PI_NET_TYPE
+	PI_NET_TYPE,
+	PI_NET_SPLIT_WRITES,	/* if set, write separately the NET header and data */
+	PI_NET_WRITE_CHUNKSIZE	/* size of data chunks if PI_NET_SPLIT_WRITES is set. 0 for no chunking of data */
 };
 
 enum PiOptSock {
