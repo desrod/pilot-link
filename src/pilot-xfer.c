@@ -978,10 +978,6 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 
 	struct stat sbuf;
 
-	fprintf(stderr,"Rabid coelecanths have been set upon your handheld.\n"
-		"Expect it to melt in 3-5 minutes.\n\n");
-	return;
-
 	if (NULL == vfspath) {
 		/* how the heck did we get here then? */
 		fprintf(stderr,"\n   No VFS path given.\n");
@@ -1000,8 +996,6 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 	}
 
 	fprintf(stderr, "   Installing '%s'... ", localfile);
-	fprintf(stderr,"* volume=%d rpath=%s local=%s\n",
-		volume,rpath,localfile);
 
 	if (stat(localfile, &sbuf) < 0) {
 		fprintf(stderr,"   Unable to open '%s'!\n", localfile);
@@ -1034,7 +1028,8 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 				rpath[rpathlen++]='/'; \
 				rpath[rpathlen]=0; \
 			} \
-			strncat(rpath,basename,vfsMAXFILENAME-rpathlen-1);
+			strncat(rpath,basename,vfsMAXFILENAME-rpathlen-1); \
+			rpathlen = strlen(rpath);
 
 	fd = 0;
 	while (fd<2)
@@ -1077,15 +1072,22 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 				return;
 			}
 
-			fprintf(stderr,"* Got attrib %lx on %s\n",attributes,rpath);
 			if (attributes & vfsFileAttrDirectory) {
 				APPEND_BASENAME
 				dlp_VFSFileClose(sd,file);
 				/* Now for sure it's a filename in a directory. */
-				fprintf(stderr,"* Using %s\n",rpath);
 			}
 			else {
 				dlp_VFSFileClose(sd,file);
+				if ('/' == rpath[rpathlen-1]) {
+					/* was expecting a directory */
+					fprintf(stderr,"   Destination is not a directory.\n");
+					return;
+				}
+				if (totalsize > 0) {
+					fprintf(stderr,"   Must specify directory when installing multiple files.\n");
+					return;
+				}
 			}
 		}
 	}
@@ -1102,7 +1104,7 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 		dlp_VFSFileClose(sd,file);
 		return;
 	}
-#define FBUFSIZ 64
+#define FBUFSIZ 16384
 	filebuffer = (char *)malloc(FBUFSIZ);
 	if (NULL == filebuffer) {
 		fprintf(stderr,"  Cannot allocate memory for file copy.\n");
@@ -1117,9 +1119,7 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 		if (readsize <= 0) break;
 		offset=0;
 		while (readsize > 0) {
-			fprintf(stderr,"* Writing %ld bytes.\n",readsize);
 			writesize = dlp_VFSFileWrite(sd,file,filebuffer+offset,readsize);
-			fprintf(stderr,"* Wrote %d bytes.\n",writesize);
 			if (writesize < 0) {
 				fprintf(stderr,"  Error while writing file.\n");
 				break;
