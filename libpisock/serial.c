@@ -376,7 +376,7 @@ pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	struct 	pi_serial_data *data =
 			(struct pi_serial_data *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
-	int err;
+	int err, count = 0;
 
 	if (ps->type == PI_SOCK_STREAM) {
 		if (data->establishrate == (speed_t) -1) {
@@ -401,9 +401,54 @@ pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 		data->establishrate = data->rate = 57600;
 	}
 
-	if ((err = data->impl.open(ps, pa, addrlen)) < 0)
-		return err;	/* errno already set */
+begin:
+	if ((err = data->impl.open(ps, pa, addrlen)) < 0) {
+		int 	save_errno = errno;
+		char	realport[50];
+		
+		realpath(pa->pi_device, realport);
+		errno = save_errno;
 
+		if (errno == ENOENT) {
+			fprintf(stderr,
+					" The device %s does not exist..\n",
+					pa->pi_device);
+			fprintf(stderr,
+					" Possible solution:\n\n\tmknod %s c "
+					"<major> <minor>\n\n", pa->pi_device);
+		} else if (errno == EACCES) {
+			fprintf(stderr, "   Please check the "
+					"permissions on %s..\n", realport);
+			fprintf(stderr,
+					" Possible solution:\n\n\tchmod 0666 "
+					"%s\n\n", realport);
+		} else if (errno == ENODEV) {
+			while (count <= 5) {
+				if (isatty(fileno(stdout))) {
+					fprintf(stderr,
+							"\r   Port not connected,"
+							" sleeping for 2 seconds, ");
+					fprintf(stderr,
+							"%d retries..",
+							5-count);
+				}
+				sleep(2);
+				count++;
+				goto begin;
+			}
+			fprintf(stderr,
+					"\n\n   Device not found on %s, \
+					Did you hit HotSync?\n\n", realport);	
+		} else if (errno == EISDIR) {
+			fprintf(stderr, " The port specified must"
+					" contain a device name, and %s was"
+					" a directory.\n"
+					"   Please change that to reference a"
+					" real device, and try"
+					" again\n\n", pa->pi_device);
+		}
+		return err;
+	}
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
 	ps->raddrlen 	= addrlen;

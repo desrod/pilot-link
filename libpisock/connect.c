@@ -58,11 +58,9 @@ int
 pilot_connect(const char *port)
 {
 	int 	sd	= -1, 	/* Socket, formerly parent/client_socket */
-		result, 
-		count	= 0;
+		result;
 
 	struct 	pi_sockaddr addr;
-	struct 	stat attr;
 	struct  SysInfo sys_info;
 	char 	*defport = "/dev/pilot";
 
@@ -80,63 +78,17 @@ pilot_connect(const char *port)
 		return -1;
 	}
 
-	begin:
 	addr.pi_family = PI_AF_PILOT;
 	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
 	result = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
 
 	if (result < 0) {
-		int 	save_errno = errno;
-		char	realport[50];
-		
-		realpath(port, realport);
-		errno = save_errno;
-
-		if (errno == ENOENT) {
-			fprintf(stderr,
-					" The device %s does not exist..\n",
-					port);
-			fprintf(stderr,
-					" Possible solution:\n\n\tmknod %s c "
-					"<major> <minor>\n\n", port);
-		} else if (errno == EACCES) {
-			fprintf(stderr, "   Please check the "
-					"permissions on %s..\n", realport);
-			fprintf(stderr,
-					" Possible solution:\n\n\tchmod 0666 "
-					"%s\n\n", realport);
-		} else if (errno == ENODEV) {
-			while (count <= 5) {
-				if (isatty(fileno(stdout))) {
-					fprintf(stderr,
-							"\r   Port not connected,"
-							" sleeping for 2 seconds, ");
-					fprintf(stderr,
-							"%d retries..",
-							5-count);
-				}
-				sleep(2);
-				count++;
-				goto begin;
-			}
-			fprintf(stderr,
-					"\n\n   Device not found on %s, \
-					Did you hit HotSync?\n\n", realport);	
-		} else if (errno == EISDIR) {
-			fprintf(stderr, " The port specified must"
-					" contain a device name, and %s was"
-					" a directory.\n"
-					"   Please change that to reference a"
-					" real device, and try"
-					" again\n\n", port);
-		}
-		
 		fprintf(stderr, "   Unable to bind to port: %s\n", 
 				port);
 
 		fprintf(stderr, "   Please use --help for more "
 				"information\n\n");
-		return -1;
+		return result;
 	}
 
 	if (isatty(fileno(stdout))) {
