@@ -1,9 +1,13 @@
+2002-01-16  JP Rosevear  <jpr@ximian.com>
+
+	* configure.in: check for java stuff in the given path first
+
 2002-01-16  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: typo
 
 2002-01-16  JP Rosevear  <jpr@ximian.com>
-
+	
 	* tools/Java/test.java: forgotten files
 
 	* tools/Java/doConstants.c: ditto

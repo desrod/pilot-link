@@ -4,3 +4,4 @@ Makefile.in
 doConstants
 pilot-link.jar
 test.class
+.libs
