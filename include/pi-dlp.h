@@ -363,7 +363,10 @@ typedef unsigned long FileRef;
 		dlpDBFlagReadOnly 	= 0x0002,	/* DB is read only                              */
 		dlpDBFlagAppInfoDirty 	= 0x0004,	/* AppInfo data has been modified               */
 		dlpDBFlagBackup 	= 0x0008,	/* DB is tagged for generic backup              */
-		dlpDBFlagClipping 	= 0x0200,	/* DB is a Palm Query Application (PQA)         */
+		dlpDBFlagHidden		= 0x0100,	/* DB is hidden                                 */
+		dlpDBFlagLaunchable	= 0x0200,	/* DB is launchable data (show in Launcher, launch app by Creator) */
+		dlpDBFlagRecyclable	= 0x0400,	/* DB will be deleted shortly                   */
+		dlpDBFlagBundle		= 0x0800,	/* DB is bundled with others having same creator (i.e. for Beam) */
 		dlpDBFlagOpen 		= 0x8000,	/* DB is currently open                         */
 
 		/* v2.0 specific */
@@ -372,7 +375,13 @@ typedef unsigned long FileRef;
 
 		/* v3.0 specific */
 		dlpDBFlagCopyPrevention = 0x0040,	/* DB should not be beamed                      */
-		dlpDBFlagStream 	= 0x0080	/* DB implements a file stream                  */
+		dlpDBFlagStream 	= 0x0080,	/* DB implements a file stream                  */
+
+		/* OS 6+ */
+		dlpDBFlagSchema		= 0x1000,	/* DB is Schema database                        */
+		dlpDBFlagSecure		= 0x2000,	/* DB is Secure database                        */
+		dlpDBFlagExtended	= dlpDBFlagSecure, /* Set if Schema not set and DB is Extended  */
+		dlpDBFlagFixedUp	= 0x4000	/* temp flag used to clear DB on write          */
 	};
 
 	enum dlpDBMiscFlags {
