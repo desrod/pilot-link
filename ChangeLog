@@ -18,12 +18,17 @@
 
 	* src/pi-getromtoken.c: GetROMToken sample conduit (Owen Stenseth)
 
-	* src/install-hinote.c: s/cat/category/ in struct option
+	* src/install-hinote.c: s/cat/category/ in struct option, converted
+	  to getopt_long
 	
 	* src/install-netsync.c: More intuitive options used, -i ip, 
 	  -m mask, -n hostname
 
 	* src/install-user.c: Ditto
+
+	* src/read-palmpix.c: getopt_long fixes
+
+	* src/read-notepad.c: Ditto
 
 	* doc/man/pilot-addresses.1: Updated manpage
 	

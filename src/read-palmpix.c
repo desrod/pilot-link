@@ -38,6 +38,29 @@ void write_ppm (FILE *f, const struct PalmPixState *state, const struct PalmPixH
 void init_for_ppm (struct PalmPixState *state);
 void read_db (struct PalmPixState *state, int n, int (*action) (const struct PalmPixHeader *, struct PalmPixState *, int, const char *), const char *action_arg);
 
+struct option options[] = {
+	{"name",	required_argument, NULL, 'n'},
+	{"list",	no_argument, NULL, 'l'},
+	{"help",	no_argument, NULL, 'h'},     
+	{"version",	no_argument, NULL, 'v'},    
+	{NULL,		no_argument, NULL, 0}
+};
+
+static const char optstring[] = "ln:p:hv";
+
+static void print_help(char *progname) 
+{
+        printf("   Convert all pictures in the files given, or found via connecting to a\n"
+	       "   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n"
+               "   Usage: %s [-p port] [-l | -n pixname] [file]...\n"
+               "   Options:\n"
+               "     -p <port>    Use device file <port> to communicate with Palm\n"
+               "     -h           Display this information\n"
+               "     --list, -l   List picture information instead of converting\n"
+	       "     -n [name]    Convert only <pixname>, and output to stdout as .ppm\n\n", progname);
+        return;
+}
+
 struct PalmPixState_pi_file
 {
    struct PalmPixState state;
@@ -218,30 +241,6 @@ void
 }
 
 
-static const char shortopts[] = "ln:p:hv";
-
-static struct option longopts[] = {
-     {"name", required_argument, NULL, 'n' },
-     {"list", no_argument, NULL, 'l' },
-     {"help", no_argument, NULL, 'h' },     
-     {"version", no_argument, NULL, 'v' },    
-     {NULL, no_argument, NULL, 0}
-};
-
-
-static void print_help(char *progname) 
-{
-        printf("   Convert all pictures in the files given, or found via connecting to a\n"
-	       "   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n"
-               "   Usage: %s [-p port] [-l | -n pixname] [file]...\n"
-               "   Options:\n"
-               "     -p <port>    Use device file <port> to communicate with Palm\n"
-               "     -h           Display this information\n"
-               "     --list, -l   List picture information instead of converting\n"
-	       "     -n [name]    Convert only <pixname>, and output to stdout as .ppm\n\n", progname);
-        return;
-}
-
 
 
 static int
@@ -255,20 +254,22 @@ static int
 int
   main (int argc, char **argv) 
 {
-   int sd, c, longind, nfileargs;
+   int 	c, 	/* switch */
+	sd	= -1, 
+	nfileargs;
+
    int (*action) (const struct PalmPixHeader *, struct PalmPixState *,
 		  int, const char *) = write_all;
-   const char *pixname = NULL;
-   char *port = NULL;
+
+   const char 	*pixname 	= NULL;
+   char 	*port 		= NULL;
    struct 	PilotUser User;
    
    char *progname = argv[0];
    
-   while ((c = getopt_long (argc, argv, 
-			    shortopts, longopts, &longind)) != EOF)
+   while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
      {
-	switch (c) 
-	  {
+	switch (c) {
 	     
 	   case 'l':
 	     action = list;

@@ -34,14 +34,12 @@
 int pilot_connect(const char *port);
 static void print_help(char *progname);
 
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"port",        required_argument, NULL, 'p'},
 	{"category",    required_argument, NULL, 'c'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
 static const char *optstring = "hp:c:";
 
@@ -87,8 +85,7 @@ int main(int argc, char *argv[])
 	struct 	HiNoteAppInfo mai;
 	struct 	HiNoteNote note;
 		
-	
-	while (((c = getopt(argc, argv, optstring)) != -1)) {
+	while (((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)) {
 		switch (c) {
 		  case 'h':
 			  print_help(progname);

@@ -189,11 +189,11 @@ void write_png( FILE *f, struct NotePad *n )
 
 int main(int argc, char *argv[])
 {
-   int 	c,
-     db,
-     i,
-     sd 		= -1,
-     action = NOTEPAD_ACTION_OUTPUT;
+	int	c,	/* switch */
+		db,
+		i,
+		sd	= -1,
+		action 	= NOTEPAD_ACTION_OUTPUT;
    
 #ifdef HAVE_PNG
    int type = NOTE_OUT_PNG;
@@ -201,11 +201,12 @@ int main(int argc, char *argv[])
    int type = NOTE_OUT_PPM;
 #endif
    
-   char 	*progname 	= argv[0],
-     *port 		= NULL,
-     *filename 	= NULL,
-     *ptr,
-     extension[8];
+	char 	*progname 	= argv[0],
+		*port 		= NULL,
+		*filename 	= NULL,
+		*ptr,
+		extension[8];
+
    struct 	PilotUser User;
    struct 	pi_file *pif 	= NULL;
    struct 	NotePadAppInfo nai;
@@ -213,8 +214,7 @@ int main(int argc, char *argv[])
    
    while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) 
      {
-	switch (c) 
-	  {
+	switch (c) {
 	   case 'h':
 	     print_help(progname);
 	     exit(0);
