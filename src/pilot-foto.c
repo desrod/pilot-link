@@ -299,15 +299,14 @@ int do_list(int sd)
 		  	continue;
       offset = ((buffer->data[38] << 8) | buffer->data[39]) + 40;
       jpg_name_size = buffer->used - offset;
-      if (jpg_name_size>255) jpg_name_size = 255;
+      if (jpg_name_size >= sizeof(jpg_name))
+		  	jpg_name_size = sizeof(jpg_name) - 1;
       memcpy(jpg_name, buffer->data + offset, jpg_name_size);
       jpg_name[jpg_name_size]='\0';
       fprintf(stderr, "Thumbnail %s\n", jpg_name);
    }
    pi_buffer_free(buffer);
-
    dlp_CloseDB(sd, db);
-
    return 0;
 }
 
@@ -420,84 +419,84 @@ int do_delete(int sd, char **delete_files, int all)
  ***********************************************************************/
 int do_fetch(int sd, char **fetch_files, int all)
 {
-   FILE *out;
-   recordid_t id;
-   int i;
-   int found;
-   int index,
-     db,
-     attr,
-     category,
-     ret,
-     start;
+	FILE *out;
+	recordid_t id;
+	int i;
+	int found;
+	int index,
+		db,
+		attr,
+		category,
+		ret,
+		start;
+	
+	struct DBInfo info;
+	char creator[5];
+	char type[5];
+	pi_buffer_t *buffer;
+	
+	if ((!all) && (!fetch_files)) return -1;
+	
+	start = 0;
+	buffer = pi_buffer_new (65536);
+	while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, buffer) > 0) {
+		memcpy(&info, buffer->data, sizeof(struct DBInfo));
+		start = info.index + 1;
+		creator[0] = (info.creator & 0xFF000000) >> 24;
+		creator[1] = (info.creator & 0x00FF0000) >> 16;
+		creator[2] = (info.creator & 0x0000FF00) >> 8;
+		creator[3] = (info.creator & 0x000000FF);
+		creator[4] = '\0';
+		type[0] = (info.type & 0xFF000000) >> 24;
+		type[1] = (info.type & 0x00FF0000) >> 16;
+		type[2] = (info.type & 0x0000FF00) >> 8;
+		type[3] = (info.type & 0x000000FF);
+		type[4] = '\0';
+		if ((!strcmp(creator, "Foto")) &&
+			(!strcmp(type, "Foto")) &&
+			(info.flags & dlpDBFlagStream)) {
+			if (!all) {
+				/* Need to see if this is in the list */
+				found=0;
+				for (i=0; fetch_files[i]; i++) {
+					if (!strcmp(fetch_files[i], info.name)) {
+						found=1;
+						break;
+					}
+				}
+				if (!found) continue;
+			}
 
-   struct DBInfo info;
-   char creator[5];
-   char type[5];
-   pi_buffer_t *buffer;
+			printf("Fetching '%s' (Creator ID '%s')...", info.name, creator);
 
-   if ((!all) && (!fetch_files)) return -1;
+			ret = dlp_OpenDB(sd, 0, dlpOpenRead, info.name, &db);
+			if (ret < 0) {
+				fprintf(stderr, "Unable to open %s\n", info.name);
+				continue;
+			}
+			
+			out = fopen(info.name, "wb");
+			if (!out) {
+				fprintf(stderr, "Failed, unable to create file %s\n", info.name);
+				dlp_CloseDB(sd, db);
+				continue;
+			}
+			
+			index = 0;
+			do {
+				ret = dlp_ReadRecordByIndex(sd, db, index, buffer, &id, &attr, &category);
+				index++;
+				if (ret > 0 && buffer->used > 8)
+					fwrite(buffer->data + 8, buffer->used - 8, 1, out);
+			} while (ret > 0);
 
-   start = 0;
-   buffer = pi_buffer_new (65536);
-   while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, buffer) > 0) {
-	  memcpy(&info, buffer->data, sizeof(struct DBInfo));
-      start = info.index + 1;
-      creator[0] = (info.creator & 0xFF000000) >> 24;
-      creator[1] = (info.creator & 0x00FF0000) >> 16;
-      creator[2] = (info.creator & 0x0000FF00) >> 8;
-      creator[3] = (info.creator & 0x000000FF);
-      creator[4] = '\0';
-      type[0] = (info.type & 0xFF000000) >> 24;
-      type[1] = (info.type & 0x00FF0000) >> 16;
-      type[2] = (info.type & 0x0000FF00) >> 8;
-      type[3] = (info.type & 0x000000FF);
-      type[4] = '\0';
-      if ((!strcmp(creator, "Foto")) &&
-	  (!strcmp(type, "Foto")) &&
-	  (info.flags & dlpDBFlagStream)) {
-	 if (!all) {
-	    /* Need to see if this is in the list */
-	    found=0;
-	    for (i=0; fetch_files[i]; i++) {
-	       if (!strcmp(fetch_files[i], info.name)) {
-		  found=1;
-		  break;
-	       }
-	    }
-	    if (!found) continue;
-	 }
-	 printf("Fetching '%s' (Creator ID '%s')...", info.name, creator);
-	 ret = dlp_OpenDB(sd, 0, dlpOpenRead, info.name, &db);
-	 if (ret < 0) {
-	    fprintf(stderr, "Unable to open %s\n", info.name);
-	    continue;
-	 }
-
-	 out = fopen(info.name, "w");
-	 if (!out) {
-	    fprintf(stderr, "Failed, unable to create file %s\n", info.name);
-	    dlp_CloseDB(sd, db);
-	    continue;
-	 }
-
-	 index = 0;
-	 ret = 1;
-	 while (ret > 0) {
-		 ret = dlp_ReadRecordByIndex PI_ARGS
-	      ((sd, db, index, buffer, &id, &attr, &category));
-	    index++;
-	    if ((ret > 0) && (buffer->used > 8)) {
-	       fwrite(buffer->data + 8, buffer->used - 8, 1, out);
-	    }
-	 }
-	 dlp_CloseDB(sd, db);
-	 fclose(out);
-	 printf("OK\n");
-      }
-   }
-   pi_buffer_free(buffer);
-   return 0;
+			dlp_CloseDB(sd, db);
+			fclose(out);
+			printf("OK\n");
+		}
+	}
+	pi_buffer_free(buffer);
+	return 0;
 }
 
 /***********************************************************************
