@@ -1,5 +1,4 @@
 package org.gnu.pilotlink;
-import java.util.*;
 
 public class RawRecord extends Record {
 	private byte[] buffer;
@@ -9,7 +8,8 @@ public class RawRecord extends Record {
 		setCategory(cat);
 		setAttribs(attr);
 		setSize(sz);
-		setId(i);		
+		setId(i);	
+		//System.out.println("Attribs: "+attr);
 	}
 	public RawRecord(byte[] b, int sz, int attr, int cat) {
 		this(b,0,sz,attr,cat);

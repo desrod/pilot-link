@@ -1,0 +1,46 @@
+<project name="pilog-link" default="dist" basedir=".">
+	<description>simple example build file</description>
+	<property name="dist" location="dist" />
+	
+	<target name="init">
+		<tstamp />				
+	    <mkdir dir="${dist}"/>	
+		<buildnumber file="build"/>
+		<property file="build"/>
+        <echo>
+          Actual build ${build.number} of Version ${build.version}
+        </echo>
+        <echo file="org/gnu/pilotlink/Version.java" append="false">
+    	package org.gnu.pilotlink;
+        public class Version {
+          public static String VERSION="${build.version}";
+          public static long BUILD=${build.number};
+        }
+        </echo>
+	</target>
+	
+	<target name="compile" depends="init">
+	                <javac srcdir="." destdir="." target="1.5" includes="**/**.java" debug="on"/>
+	</target>
+	
+	 <target name="jar" depends="compile" description="generate the library jar" >
+		    <jar jarfile="${dist}/pilot-link-${build.version}.jar" >
+		    	<fileset dir="." includes="**/*.class"/>
+		   	</jar>
+		  	
+	</target>
+	<target name="dist" depends="jar" description="Generate the jar and .zip">
+			<zip destfile="${dist}/javabindings-${build.version}-${build.number}.zip" basedir="." excludes="*.jar,*.class"/>
+	</target>
+	<target name="clean" description="clean up">
+			<delete dir="${dist}" />
+			<delete>
+				<fileset dir="." includes="**/*/*.class"/>
+			</delete>
+	</target>
+	
+	<target name="lib" description="compile c-library">
+		<exec dir="." executeable="make"/>
+	</target>
+
+</project>

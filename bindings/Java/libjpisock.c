@@ -19,7 +19,7 @@
 #include <pi-memo.h>
 #include "libjpisock.h"
 
-#define MAX_RESOURCE_SIZE 0xffff
+#define MAX_RESOURCE_SIZE 65536
 
 int pilot_connect(JNIEnv * env, const char *port);
 static void postPilotLinkException(JNIEnv *, const char *, int, int);
@@ -47,8 +47,6 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_connect
 
     iResult = pilot_connect(env, prt);
     if (prt != NULL) free(prt);
-    
-    
     return iResult;
 }
 
@@ -58,24 +56,52 @@ ReadAppInfo
 JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
   (JNIEnv *env, jobject obj, jint handle, jint db)
 {
+/*
+    unsigned char buffer[MAX_RESOURCE_SIZE];
+
+	int size=dlp_ReadAppBlock(handle,db, 0,buffer,MAX_RESOURCE_SIZE);
+
+	//printf("STill alive...\n");
+	//fflush(stdout);
+	jclass appinfo_cls=env->FindClass("org/gnu/pilotlink/RawAppInfo");
+	if (appinfo_cls==NULL) {
+		printf("Class not found! Sysinfo!\n");
+		return NULL;
+	}
+	//printf("STill alive...\n");
+	fflush(stdout);
+	jmethodID appinfo_mid=env->GetMethodID(appinfo_cls, "<init>","([B)V");
+	if (appinfo_mid==NULL) {
+		printf("Problem mid!\n");
+		fflush(stdout);
+		return NULL;
+	}
+	//printf("STill alive...\n");
+	//fflush(stdout);
+    jbyteArray array=env->NewByteArray(size);
+    env->SetByteArrayRegion(array,0,(jint)size,(jbyte*)buffer);
+	jobject appinfo=env->NewObject(appinfo_cls, appinfo_mid, array);
+
+	return appinfo;
+*/
 
     jclass      jClass_appInfo = NULL;
     jobject     jObject_appInfo = NULL;
     jmethodID   jMethod_appInfo = NULL;
-    char pBuffer[0xffff];
+    jbyte * pBuffer = NULL;
     int bProceed = 1;
     int iNumBytesRead = 0;
 
-    /*if (bProceed) {
-      
-        pBuffer = (jbyte *)malloc(0xffff);
+    if (bProceed) {
+        /* Allocate memory for maximum data size */
+        pBuffer = (jbyte *)malloc(MAX_RESOURCE_SIZE);
         if (pBuffer == NULL) {
             postJavaException(env,
                 "org/gnu/pilotlink/PilotLinkException",
                 "Unable to allocate buffer for app-info block");
             bProceed = 0;
         }
-    }*/
+    }
     if (bProceed) {
         /* Read app-info block && verify successful read */
         iNumBytesRead = dlp_ReadAppBlock(handle, db, 0, pBuffer, MAX_RESOURCE_SIZE);
@@ -84,7 +110,6 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
             postPilotLinkException(env, "Unable to read app-block", iNumBytesRead, errno);
             bProceed = 0;
         }
-
     }
     if (bProceed) {
         /* Look up RawAppInfo class */
@@ -95,7 +120,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
         }
     }
     if (bProceed) {
-        /* Look up constructor method with char array argument */
+        /* Look up constructor method with byte array argument */
         jMethod_appInfo = env->GetMethodID(jClass_appInfo, "<init>","([B)V");
         if (jMethod_appInfo == NULL) {
             /* pending NoSuchMethodException in env */
@@ -103,13 +128,12 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
         }
     }
     if (bProceed) {
-	
         jbyteArray jArray_buffer = env->NewByteArray(iNumBytesRead);
-        env->SetByteArrayRegion(jArray_buffer, 0, (jint)iNumBytesRead, (const jbyte*)pBuffer);
+        env->SetByteArrayRegion(jArray_buffer, 0, (jint)iNumBytesRead, pBuffer);
         jObject_appInfo = env->NewObject(jClass_appInfo, jMethod_appInfo, jArray_buffer);
     }
 
-   /* if (pBuffer != NULL) free(pBuffer);*/
+    if (pBuffer != NULL) free(pBuffer);
     return jObject_appInfo;
 }
 /*
@@ -117,6 +141,35 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
 */
 JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readSysInfo
   (JNIEnv *env, jobject obj, jint handle) {
+/*
+	struct SysInfo s;
+	s.prodID[s.prodIDLength]=0;
+	int r=dlp_ReadSysInfo(handle,&s);
+
+	jstring prod=env->NewStringUTF(s.prodID);
+
+	//printf("STill alive...\n");
+	fflush(stdout);
+	jclass sysinfo_cls=env->FindClass("org/gnu/pilotlink/SysInfo");
+	if (sysinfo_cls==NULL) {
+		printf("Class not found! Sysinfo!\n");
+		return NULL;
+	}
+	//printf("STill alive...\n");
+	fflush(stdout);
+	jmethodID sysinfo_mid=env->GetMethodID(sysinfo_cls, "<init>","(Ljava/lang/String;JJSSSSJ)V");
+	if (sysinfo_mid==NULL) {
+		printf("Problem mid!\n");
+		fflush(stdout);
+		return NULL;
+	}
+	//printf("STill alive...\n");
+	fflush(stdout);
+	jobject sysinfo=env->NewObject(sysinfo_cls, sysinfo_mid, prod, s.romVersion, s.locale, s.dlpMajorVersion, s.dlpMinorVersion,s.compatMajorVersion,s.compatMinorVersion,s.maxRecSize);
+	printf("Returning from getsysinfo...\n");
+	fflush(stdout);
+	return sysinfo;
+*/
     jclass      jClass_sysInfo = NULL;
     jobject     jObject_sysInfo = NULL;
     jmethodID   jMethod_sysInfo = NULL;
@@ -179,6 +232,57 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readSysInfo
   */
 JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readUserInfo
   (JNIEnv *env, jobject obj, jint handler) {
+/*
+   struct PilotUser U;
+   dlp_ReadUserInfo(handler, &U);
+   U.username[127]=0;
+   U.password[U.passwordLength]=0;
+
+   printf("Last sync-->%ld\n",U.lastSyncDate);
+   printf("Last ssync->%ld\n",U.successfulSyncDate);
+  jstring str_name=env->NewStringUTF(U.username);
+  if (str_name==NULL) {
+	return NULL;
+ }
+  jstring str_pw=env->NewStringUTF(U.password);
+  if (str_pw==NULL) {
+     return NULL;
+  }
+  jlong vid=U.viewerID;
+  jlong uid=U.userID;
+  jlong lspc=U.lastSyncPC;
+
+  jclass calclass=env->FindClass("java/util/Date");
+  if (calclass==NULL) {
+      return NULL;
+  }
+
+  jmethodID cal_mid=env->GetMethodID(calclass,"<init>","(J)V");
+  if (cal_mid==NULL){
+     return NULL;
+  }
+
+  jobject lsd_date=env->NewObject(calclass,cal_mid,U.lastSyncDate*1000);
+  jobject sucd_date=env->NewObject(calclass,cal_mid,U.successfulSyncDate*1000);
+
+  jclass usercls=env->FindClass("org/gnu/pilotlink/User");
+  if (usercls==NULL) {
+    printf("USERCLASS not found!\n");
+    return NULL;
+  } else {
+    printf("ok...\n");
+  }
+  jmethodID umid=env->GetMethodID(usercls,"<init>","(Ljava/lang/String;Ljava/lang/String;JJJLjava/util/Date;Ljava/util/Date;)V");
+  if (umid==NULL) {
+     printf("MethodID not found!\n");
+     return NULL;
+  } else {
+     printf("ok...\n");
+  }
+  //printf("Returning from getuserinfo...\n");
+  jobject u=env->NewObject(usercls,umid,str_name,str_pw,uid,vid,lspc,lsd_date, sucd_date);
+  return u;
+*/
 
     jclass      jClass_user = NULL;
     jobject     jObject_user = NULL;
@@ -245,6 +349,10 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readUserInfo
   */
 JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_writeUserInfo
   (JNIEnv *env, jobject obj, jint so, jobject user) {
+/*
+    printf("Not implemented yet...sorry\n");
+*/
+    /* Now it IS implemented... ;-) */
     jclass      jClass_user = NULL;
     jmethodID   jMethod_user = NULL;
     struct PilotUser rUserInfo;
@@ -339,6 +447,11 @@ JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_writeUserInfo
  */
 JNIEXPORT int JNICALL Java_org_gnu_pilotlink_PilotLink_writeAppBlock
 	(JNIEnv *env, jobject obj, jint handle, jint dbhandle, jbyteArray data, jint length) {
+/*
+		char buffer[MAX_RESOURCE_SIZE];
+		env->GetByteArrayRegion(data,0,length,(jbyte*)buffer);
+		return dlp_WriteAppBlock(handle,dbhandle,buffer,length);
+*/
     jbyte * buffer;
     int iResult = 0;
 
@@ -439,6 +552,58 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteDB
     return ret;
 }
 
+
+JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getAppInfoBlock(JNIEnv *env,jobject obj, jint handle,jstring jdbname) {
+	int db;
+	    const char * dbname = env->GetStringUTFChars(jdbname, NULL);
+	    char * dbn = (char *)malloc(strlen(dbname) + 1);
+	    if (dbn != NULL) strcpy(dbn, dbname);
+	    env->ReleaseStringUTFChars(jdbname, dbname);
+	if (dlp_OpenDB(handle,0,0x80|0x40,dbn,&db)<0) {
+	
+		printf("Fehler!");
+		return NULL;
+	}
+	jbyte buff[0xffff];
+	int l=dlp_ReadAppBlock(handle,db,0,&buff,0xffff);
+	printf("read app-Block of size %d\n",l);
+	fflush(stdout);
+
+    jclass      jClass_appInfo = NULL;
+    jobject     jObject_appInfo = NULL;
+    jmethodID   jMethod_appInfo = NULL;
+    int bProceed = 1;
+    int iNumBytesRead = 0;
+
+    if (bProceed) {
+        /* Look up RawAppInfo class */
+        jClass_appInfo = env->FindClass("org/gnu/pilotlink/RawAppInfo");
+        if (jClass_appInfo == NULL) {
+            /* pending ClassNotFoundException in env */
+            bProceed = 0;
+        }
+    }
+    if (bProceed) {
+        /* Look up constructor method with byte array argument */
+        jMethod_appInfo = env->GetMethodID(jClass_appInfo, "<init>","([B)V");
+        if (jMethod_appInfo == NULL) {
+            /* pending NoSuchMethodException in env */
+            bProceed = 0;
+        }
+    }
+    if (bProceed) {
+        jbyteArray jArray_buffer = env->NewByteArray(l);
+        env->SetByteArrayRegion(jArray_buffer, 0, (jint)l, buff);
+        jObject_appInfo = env->NewObject(jClass_appInfo, jMethod_appInfo, jArray_buffer);
+    }
+
+	dlp_CloseDB(handle,db);
+    return jObject_appInfo;
+
+
+	
+}
+
 /*
    openDB
 */
@@ -454,7 +619,7 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_openDB
     env->ReleaseStringUTFChars(jdbname, dbname);
 
     if (dbn != NULL) {
-        int ret=dlp_OpenDB(handle,0x40|0x80,dlpOpenReadWrite,dbn,&db);
+        int ret=dlp_OpenDB(handle,0,dlpOpenReadWrite,dbn,&db);
         if (ret < 0) {
 /*
             printf("Error opening db %s: %d\n",dbn, ret);
@@ -469,7 +634,6 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_openDB
             "org/gnu/pilotlink/PilotLinkException",
             "Unable to create working copy of database name");
     }
-
     return db;
 }
 
@@ -493,104 +657,120 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordCount
 */
 JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordByIndex
   (JNIEnv *env, jobject obj, jint handle , jint db , jint idx) {
-    jbyte * buffer;
+
+    jbyte buffer[MAX_RESOURCE_SIZE];
+    recordid_t id;
+    jint size, attr, category;
+    //printf("Getting record..\n");
+    int ret = dlp_ReadRecordByIndex(handle, db, idx, buffer,
+        &id, &size, &attr, &category);
+    if (ret<0) {
+	    postPilotLinkException(env,"Error reading database by index",ret,errno);
+        return NULL;
+    }
+	  //printf("getting class!\n");
+	  jclass rcls=env->FindClass("org/gnu/pilotlink/RawRecord");
+	  if (rcls==NULL) {
+		  return NULL;
+	  }
+	  jmethodID rid=env->GetMethodID(rcls,"<init>","([BJIII)V");
+	  if (rid==NULL) {
+		  printf("jmethodID is null!\n");
+		  return NULL;
+	  }
+	  jbyteArray array=env->NewByteArray(size);
+	  env->SetByteArrayRegion(array,0,size,buffer);
+	  jobject record=env->NewObject(rcls, rid, array, (jlong)id,size,attr,category );
+	  return record;
+
+
+    /*jbyte * buffer;
     jobject jObject_RawRecord = NULL;
 
     if ((buffer = (jbyte *)malloc(MAX_RESOURCE_SIZE)) != NULL) {
 
-        recordid_t id_;
-        size_t iRecSize;
-	jint iRecAttr, iRecCategory;
+        recordid_t id;
+        jint iRecSize, iRecAttr, iRecCategory;
         jclass jClass_RawRecord;
         jmethodID jMethod_RawRecord;
 
         int iResult = dlp_ReadRecordByIndex(handle, db, idx, buffer,
-            &id_, &iRecSize, &iRecAttr, &iRecCategory);
+            &id, &iRecSize, &iRecAttr, &iRecCategory);
         if (iResult < 0) {
             postPilotLinkException(env, "Could not read database record by index",
                 iResult, errno);
         } else if ((jClass_RawRecord = env->FindClass(
             "org/gnu/pilotlink/RawRecord")) == NULL) {
-            /* Pending ClassNotFoundException in env */
+            
         } else if ((jMethod_RawRecord = env->GetMethodID(jClass_RawRecord,
             "<init>", "([BJIII)V")) == NULL) {
-            /* Pending NoSuchMethodException in env */
+            
         } else {
             jbyteArray jArray_buffer = env->NewByteArray(iRecSize);
             env->SetByteArrayRegion(jArray_buffer, 0, iRecSize, buffer);
             jObject_RawRecord = env->NewObject(jClass_RawRecord, jMethod_RawRecord,
-                jArray_buffer, (jlong)id_, (jint)iRecSize, (jint)iRecAttr, (jint)iRecCategory);
+                jArray_buffer, (jlong)id, (jint)iRecSize, (jint)iRecAttr, (jint)iRecCategory);
         }
         free(buffer);
     } else {
-        /* Unable to create copy - memory heap may be corrupted */
         postJavaException(env,
             "org/gnu/pilotlink/PilotLinkException",
             "Unable to allocate buffer for record data");
     }
-    return jObject_RawRecord;
+    return jObject_RawRecord;*/
 }
 
 /*
-  deleteRecordByIndex
+  deleteRecordById
 */
-JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteRecordByIndex
-  (JNIEnv *env, jobject obj, jint handle, jint db, jint idx) {
-  return 0;
+JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteRecordById
+  (JNIEnv *env, jobject obj, jint handle, jint db, jlong id) {
+	  int ret=dlp_DeleteRecord(handle,db,0,id);
+	  if (ret<0) {
+		  postPilotLinkException(env,"Deletition not possible!",ret,errno);
+	  }
+	  return ret;
 }
 
 /* Write Record
 */
 JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_writeRecord
   (JNIEnv *env, jobject obj, jint handle, jint db, jobject record) {
-    jclass jClass_Record;
-    jmethodID jMethod_Record[6];
 
-    int iResult = 0;
+	  jlong id=0;
+	  jclass cls=env->GetObjectClass(record);
+	  jmethodID mid=env->GetMethodID(cls,"getCategory","()I");
 
-    /* Get object class for record - should not fail */
-    jClass_Record = env->GetObjectClass(record);
+	  if (mid==NULL) { printf("Error getting mid!"); return -1; }
+	  jint cat=env->CallIntMethod(record,mid);
 
-    /* Get all object methods for the class */
-    if ((jMethod_Record[0] = env->GetMethodID(jClass_Record, "getSize", "()I")) != NULL &&
-        (jMethod_Record[1] = env->GetMethodID(jClass_Record, "getBuffer", "()[B")) != NULL &&
-        (jMethod_Record[2] = env->GetMethodID(jClass_Record, "getAttribs", "()I")) != NULL &&
-        (jMethod_Record[3] = env->GetMethodID(jClass_Record, "getId", "()J")) != NULL &&
-        (jMethod_Record[4] = env->GetMethodID(jClass_Record, "getCategory", "()I")) != NULL &&
-        (jMethod_Record[5] = env->GetMethodID(jClass_Record, "setId", "(J)V")) != NULL) {
+	  jmethodID mid2=env->GetMethodID(cls,"getId","()J");
 
-        /* Find out size of buffer && allocate memory && copy data into temp. buffer */
-        jint iSize = env->CallIntMethod(record, jMethod_Record[0]);
-        jbyte * buffer = (jbyte *)malloc(iSize * sizeof(jbyte));
-        if (buffer != NULL) {
-            recordid_t iNewID = 0;
+	  id=env->CallLongMethod(record,mid2, NULL);
+	  if (id==0) {
+		  printf("Creating new entry!\n");
+	  }
 
-            jbyteArray jArray_buffer = (jbyteArray)env->CallObjectMethod(record, jMethod_Record[1]);
-            env->GetByteArrayRegion(jArray_buffer, 0, iSize, buffer);
-            iResult = dlp_WriteRecord(handle, db, 
-                env->CallLongMethod(record, jMethod_Record[2]),
-                env->CallLongMethod(record, jMethod_Record[3]),
-                env->CallLongMethod(record, jMethod_Record[4]),
-                buffer, iSize, &iNewID);
-            if (iResult < 0) {
-                postPilotLinkException(env, "Could not write database record",
-                    iResult, errno);
-            } else {
-                /* Assign new ID for record */
-                env->CallVoidMethod(record, jMethod_Record[5], (jlong)iNewID);
-            }
-            free(buffer);
-        } else {
-            /* Unable to create copy - memory heap may be corrupted */
-            postJavaException(env,
-                "org/gnu/pilotlink/PilotLinkException",
-                "Unable to allocate buffer for record data");
-        }
-    } else {
-        /* Pending NoSuchMethodException in env */
-    }
+	  mid=env->GetMethodID(cls,"getAttribs","()I");
+	  jint attr=env->CallIntMethod(record,mid);
 
-    return iResult;
+	  mid=env->GetMethodID(cls,"getSize","()I");
+	  jint size=env->CallIntMethod(record,mid);
+      printf("Got size: %d\n",size);
+	  char buffer[MAX_RESOURCE_SIZE];
+	  mid=env->GetMethodID(cls,"getBuffer","()[B");
+	  jbyteArray arr=(jbyteArray)env->CallObjectMethod(record,mid);
+	  env->GetByteArrayRegion(arr,0,size,(jbyte*)buffer);
+	  recordid_t i=0;
+	  int ret=dlp_WriteRecord(handle,db,attr, id, cat, buffer,size,&i);
+	  if (id==0 && ret>0) {
+		  mid=env->GetMethodID(cls,"setId","(J)V");
+		  env->CallVoidMethod(record,mid,(jlong)i);
+	  }
+	  return ret;
+
+
+   
 }
 
 /*CloseDB*/
@@ -652,6 +832,17 @@ int pilot_connect(JNIEnv * env, const char *port)
 
                 /* Moved err check inside if() block - err only meaningful here */
                 if (err) {
+                        /*  *BAD* practice - cannot recover from within Java if exit() here.
+                            Should create && throw exception instead.
+                         */
+/*
+                        fprintf(stderr, "   ERROR: %s (%d)\n\n", strerror(errno), errno);
+                        fprintf(stderr, "   Error accessing: '%s'. Does '%s' exist?\n",
+                            port, port);
+                        //fprintf(stderr, "   Please use --help for more information\n\n");
+                        exit(1);
+*/
+
                         /* Throw an exception - FileNotFoundException seems appropriate here */
                         postJavaException(env, "java/io/FileNotFoundException", strerror(errno));
                         bProceed = 0;
@@ -662,6 +853,11 @@ int pilot_connect(JNIEnv * env, const char *port)
 
         /* Check bProceed to account for previous exceptions */
         if (bProceed && !(parent_sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
+/*
+                fprintf(stderr, "\n   Unable to create socket '%s'\n",
+                        port ? port : getenv("PILOTPORT"));
+                return -1;
+*/
                 /* Throw exception here to inform nature of connection failure. */
                 const char * sTemplate = "Unable to create socket '%s'";
                 char * sMessage = (char *)malloc(strlen(sTemplate) + strlen(port) + 1);
@@ -675,10 +871,19 @@ int pilot_connect(JNIEnv * env, const char *port)
 
         /* Check bProceed to account for previous exceptions */
         if (bProceed) {
+/* Removed check for port != NULL, since port was validated before */
+/*
+                if (port != NULL) {
+*/
                         addr.pi_family = PI_AF_PILOT;
                         strncpy(addr.pi_device, port, sizeof(addr.pi_device));
                         result =
                             pi_bind(parent_sd, (struct sockaddr *) &addr, sizeof(addr));
+/*
+                } else {
+                        result = pi_bind(parent_sd, NULL, 0);
+                }
+*/
         }
 
         if (bProceed && result < 0) {
@@ -794,7 +999,7 @@ int pilot_connect(JNIEnv * env, const char *port)
                         bProceed = 0;
                 } else {
                     int so_timeout = 16;
-                    size_t sizeof_so_timeout = sizeof(so_timeout);
+                    int sizeof_so_timeout = sizeof(so_timeout);
 
                     pi_setsockopt(client_sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
                         &so_timeout, &sizeof_so_timeout);
@@ -840,7 +1045,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getResourceByIndex
 
     unsigned long iRsrcType;    /* Resource type */
     int iRsrcID;                /* Resource ID */
-    size_t iRsrcSize;              /* Actual resource size */
+    int iRsrcSize;              /* Actual resource size */
     jbyte * pRsrcData;          /* Buffer for resource data */
     int iResult;                /* Result of library call */
     jobject pRecordObject = NULL;

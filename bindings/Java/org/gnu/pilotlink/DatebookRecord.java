@@ -1,5 +1,6 @@
 package org.gnu.pilotlink;
-import java.util.*;
+import java.util.Date;
+import java.util.GregorianCalendar;
 public class DatebookRecord extends Record {
     byte buffer[]=new byte[65535]; //max buffer
     //Statics
@@ -33,9 +34,9 @@ public class DatebookRecord extends Record {
     private int repType;
     private int repDay;
     private int repWeekstart;
+    private int dist;
+    
     private Date repExceptions[];
-    int repFreq=0;
-    int dist=0;
     
     private boolean[] repDays;
     
@@ -87,16 +88,22 @@ public class DatebookRecord extends Record {
         }
         GregorianCalendar cal=new GregorianCalendar();
         cal.setTime(sd);
-        if (cal.get(cal.HOUR_OF_DAY)!=0 && cal.get(cal.MINUTE)!=0) {
+        if (cal.get(GregorianCalendar.HOUR_OF_DAY)!=0 && cal.get(GregorianCalendar.MINUTE)!=0) {
             hasTime=true;
         }
         
         //CLUMSY: getting buffer once to calc size
-        getBuffer();
+        //getBuffer();
+	setSize(getBuffer().length);
     }
     //Constructor
     public DatebookRecord(Record raw) {
         super(raw);        
+    }
+    public DatebookRecord() {
+	    startDate=new Date();
+	    resetVars();
+	    endDate=new Date();
     }
     
     private void resetVars() {
@@ -112,7 +119,7 @@ public class DatebookRecord extends Record {
         repDay=0;
         repWeekstart=0;
 
-        repFreq=0;
+        repAdvance=0;
         dist=0;
         repDays= new boolean[] { false, false ,false, false, false, false, false };
         hasNote=false;
@@ -174,7 +181,7 @@ public class DatebookRecord extends Record {
                 repeatEnd=Record.getDateAt(arr,idx);
             }
             idx+=2;
-            repFreq=arr[idx];
+            repAdvance=arr[idx];
             idx++;
             int on=arr[idx];
             if (repType==REP_MONTHLY_BY_DAY) {
@@ -212,8 +219,6 @@ public class DatebookRecord extends Record {
         int bytecount=0;
         
         
-        GregorianCalendar cal=new GregorianCalendar();
-        cal.setTime(startDate);
         if (!hasTime) {
             buffer[0]=(byte)0xff;
             buffer[1]=(byte)0xff;
@@ -248,7 +253,7 @@ public class DatebookRecord extends Record {
                 Record.setIntAt(buffer,dist-1, bytecount);
             }
             bytecount+=2;
-            buffer[bytecount]=(byte)repFreq;
+            buffer[bytecount]=(byte)repAdvance;
             bytecount++;
             if (repType==REP_MONTHLY_BY_DAY) {
                 buffer[bytecount]=(byte)repDay;
@@ -282,7 +287,7 @@ public class DatebookRecord extends Record {
         for (int i=0; i<bytecount; i++) {
             ret[i]=buffer[i];
         }
-        setSize(bytecount);
+        
         return ret;
     }
     
@@ -332,42 +337,86 @@ public class DatebookRecord extends Record {
     
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
+	
+	setSize(getBuffer().length);
     }
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+	if (endDate!=null)
+		hasTime=true;
+    
+	setSize(getBuffer().length);
     }
+    
+    public void setRepeated(boolean r) {
+	    isRepeated=r;
+    }
+    
+    public void setRepeatForever(boolean r) {
+	    repeatForever=r;
+    }
+    
     public void setRepeatEnd(Date repeatEnd) {
         this.repeatEnd = repeatEnd;
+	if (repeatEnd!=null) {
+		setRepeatForever(false);
+	}
+	setSize(getBuffer().length);
     }
     public void setDescription(String description) {
         this.description = description;
+	if (description!=null) {
+		hasDescription=true;
+	} else {
+		hasDescription=false;
+	}
+	setSize(getBuffer().length);
     }
     public void setNote(String note) {
         this.note = note;
+	if (note!=null) {
+		hasNote=true;
+	} else {
+		hasNote=false;
+	}
+	setSize(getBuffer().length);
     }
+    
+    public void setAlarm(boolean a) {
+	    hasAlarm=a;
+    }
+    
     public void setAlarmAdvance(int alarmAdvance) {
         this.alarmAdvance = alarmAdvance;
+	setSize(getBuffer().length);
     }
     public void setAlarmUnits(int alarmUnits) {
         this.alarmUnits = alarmUnits;
+	setSize(getBuffer().length);
     }
     public void setRepAdvance(int repAdvance) {
         this.repAdvance = repAdvance;
+	setSize(getBuffer().length);
     }
     public void setRepType(int repType) {
         this.repType = repType;
+	setSize(getBuffer().length);
     }
     public void setRepDay(int repDay) {
         this.repDay = repDay;
+	setSize(getBuffer().length);
     }
     public void setRepWeekstart(int repWeekstart) {
         this.repWeekstart = repWeekstart;
+	setSize(getBuffer().length);
     }
     public void setRepExceptions(Date repExceptions[]) {
         this.repExceptions = repExceptions;
+	setSize(getBuffer().length);
     }
     public void setRepDays(boolean[] repDays) {
         this.repDays = repDays;
+	setSize(getBuffer().length);
     }
     
 }

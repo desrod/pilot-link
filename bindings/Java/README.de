@@ -1,4 +1,4 @@
-Feb 2004,    Stephan Bösebeck & John Mitchell
+Feb 2003,    Stephan Bösebeck & John Mitchell
 
 Ich hab diese Pilotlink unterstützung für Java geschrieben, weil ich die ursprüngliche Version von David Goodenough nicht mit Java 1.4 ans laufen bekommen hab und alle anderen Java Unterstüztungen für Palm auf Windows aufsetzen bzw. JComm benötigen.
 Ich bin die Sache auch etwas anders angegangen:
@@ -21,11 +21,6 @@ normalerweise sind folgende Schritte nötig:
 - Installation über configure --with-java normalerweise
 - bei make install werden die Lib und pilot-link.jar entsprchend installeirt
 - test.java zum ausprobieren der Schnittstelle. (Bitte code vorher lesen!)
-
-TESTING:
-Wie schon erwähnt, bitte einen genaueren Blick in die Datei test.java werfen. Ausserdem rate ich dringend dazu, vorher ein Backup der Daten vom Palm zu machen (man weiss ja nie).
-In der test.java sind einige Booleans gesetzt, die Teile der Tests ein- oder ausschalten (insbesondere den Schreibzugriff!). In der Datei sind eigentlich genügend beispiele für den Umgang mit der Lib. 
-
 
 Bei Fragen, Wünschen oder Anregungen, Mail an mich.
 

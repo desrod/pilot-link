@@ -41,6 +41,14 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink
+ * Method:    getAppInfoBlock
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getAppInfoBlock
+  (JNIEnv *, jobject, jint, jstring);
+
+/*
+ * Class:     org_gnu_pilotlink_PilotLink
  * Method:    writeUserInfo
  * Signature: (ILorg/gnu/pilotlink/User;)V
  */
@@ -50,9 +58,17 @@ JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_writeUserInfo
 /*
  * Class:     org_gnu_pilotlink_PilotLink
  * Method:    createDB
+ * Signature: (IJLjava/lang/String;J)I
+ */
+JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_createDB__IJLjava_lang_String_2J
+  (JNIEnv *, jobject, jint, jlong, jstring, jlong);
+
+/*
+ * Class:     org_gnu_pilotlink_PilotLink
+ * Method:    createDB
  * Signature: (IJLjava/lang/String;JII)I
  */
-JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_createDB
+JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_createDB__IJLjava_lang_String_2JII
   (JNIEnv *, jobject, jint, jlong, jstring, jlong, jint, jint);
 
 /*
@@ -100,8 +116,8 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordByIndex
  * Method:    deleteRecordByIndex
  * Signature: (III)I
  */
-JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteRecordByIndex
-  (JNIEnv *, jobject, jint, jint, jint);
+JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteRecordById
+  (JNIEnv *, jobject, jint, jint, jlong);
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink

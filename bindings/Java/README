@@ -19,16 +19,7 @@ There is a problem opening more than one db at a time. The lib gives back Errorc
 INSTALLATION:
 Normally just do a "configure --with-java" in the Pilot-Link dir. Then you will get a pilotlink.jar and a lib, which will be installed in JAVA_HOME.
 For testing an as an example, there is a test.java which can be used to demonstrate the funktionality of the bindings. Take a look at the test.java, before you try it...
-
 By default, the port the test.java connects ist /dev/usb/tts/1 (Devfs), you can either change it in source or start the testclass with the port as param.
-
-TESTING:
-I wrote a test.java where you can test all of the funktionality with your palm. I recommend doing a backup of your data on the palm before trying!
-Take a look at the code, the first several lines in the class test are booleans where you can switch on/off parts of the test. Try them out.
-
-FTB3Pro:
-As a special feature there is support for the (german) FahrtenbuchPro 3 from dealit. It can be considered as an example on how easy it is to add funktionality without coding C! This part of the test wil (of course) only work, if you have this software on your Palm!
-
 
 Stephan Bösebeck (stephan_boesebeck@web.de)
 John Mitchell (jfm@minioak.com)
