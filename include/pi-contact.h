@@ -1,6 +1,8 @@
 #ifndef _PILOT_CONTACT_H_
 #define _PILOT_CONTACT_H_
 
+#include <time.h>
+
 #include <pi-args.h>
 #include <pi-appinfo.h>
 
