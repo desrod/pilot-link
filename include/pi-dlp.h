@@ -30,7 +30,6 @@ extern "C" {
 #define PI_DLP_OFFSET_CMD  0
 #define PI_DLP_OFFSET_ARGC 1
 #define PI_DLP_OFFSET_ARGV 2
-#define PI_DLP_OFFSET_ARGV 2
 
 #define PI_DLP_ARG_TINY_LEN  0x000000FFL
 #define PI_DLP_ARG_SHORT_LEN 0x0000FFFFL
@@ -236,162 +235,162 @@ typedef unsigned long FileRef;
 		dlpReservedFunc = 0x0F,
 
 		/* DLP 1.0 FUNCTIONS START HERE (PalmOS v1.0) */
-		dlpFuncReadUserInfo,
+		dlpFuncReadUserInfo,			/* 0x10 */
 	
-		dlpFuncWriteUserInfo,
-	
-		dlpFuncReadSysInfo,
-	
-		dlpFuncGetSysDateTime,
-	
-		dlpFuncSetSysDateTime,
-	
-		dlpFuncReadStorageInfo,
-	
-		dlpFuncReadDBList,
-	
-		dlpFuncOpenDB,
-	
-		dlpFuncCreateDB,
-	
-		dlpFuncCloseDB,
-	
-		dlpFuncDeleteDB,
-	
-		dlpFuncReadAppBlock,
-	
-		dlpFuncWriteAppBlock,
+		dlpFuncWriteUserInfo,			/* 0x11 */
 
-		dlpFuncReadSortBlock,
-
-		dlpFuncWriteSortBlock,
-
-		dlpFuncReadNextModifiedRec,
-
-		dlpFuncReadRecord,
-
-		dlpFuncWriteRecord,
-
-		dlpFuncDeleteRecord,
-
-		dlpFuncReadResource,
-
-		dlpFuncWriteResource,
-
-		dlpFuncDeleteResource,
-
-		dlpFuncCleanUpDatabase,
-
-		dlpFuncResetSyncFlags,
-
-		dlpFuncCallApplication,
-
-		dlpFuncResetSystem,
+		dlpFuncReadSysInfo,				/* 0x12 */
 	
-		dlpFuncAddSyncLogEntry,
+		dlpFuncGetSysDateTime,			/* 0x13 */
 	
-		dlpFuncReadOpenDBInfo,
+		dlpFuncSetSysDateTime,			/* 0x14 */
 	
-		dlpFuncMoveCategory,
+		dlpFuncReadStorageInfo,			/* 0x15 */
 	
-		dlpProcessRPC,
+		dlpFuncReadDBList,				/* 0x16 */
 	
-		dlpFuncOpenConduit,
+		dlpFuncOpenDB,					/* 0x17 */
 	
-		dlpFuncEndOfSync,
+		dlpFuncCreateDB,				/* 0x18 */
 	
-		dlpFuncResetRecordIndex,
+		dlpFuncCloseDB,					/* 0x19 */
 	
-		dlpFuncReadRecordIDList,
+		dlpFuncDeleteDB,				/* 0x1a */
+	
+		dlpFuncReadAppBlock,			/* 0x1b */
+	
+		dlpFuncWriteAppBlock,			/* 0x1c */
+
+		dlpFuncReadSortBlock,			/* 0x1d */
+
+		dlpFuncWriteSortBlock,			/* 0x1e */
+
+		dlpFuncReadNextModifiedRec,		/* 0x1f */
+
+		dlpFuncReadRecord,				/* 0x20 */
+
+		dlpFuncWriteRecord,				/* 0x21 */
+
+		dlpFuncDeleteRecord,			/* 0x22 */
+
+		dlpFuncReadResource,			/* 0x23 */
+
+		dlpFuncWriteResource,			/* 0x24 */
+
+		dlpFuncDeleteResource,			/* 0x25 */
+
+		dlpFuncCleanUpDatabase,			/* 0x26 */
+
+		dlpFuncResetSyncFlags,			/* 0x27 */
+
+		dlpFuncCallApplication,			/* 0x28 */
+
+		dlpFuncResetSystem,				/* 0x29 */
+	
+		dlpFuncAddSyncLogEntry,			/* 0x2a */
+	
+		dlpFuncReadOpenDBInfo,			/* 0x2b */
+	
+		dlpFuncMoveCategory,			/* 0x2c */
+	
+		dlpProcessRPC,					/* 0x2d */
+	
+		dlpFuncOpenConduit,				/* 0x2e */
+	
+		dlpFuncEndOfSync,				/* 0x2f */
+	
+		dlpFuncResetRecordIndex,		/* 0x30 */
+	
+		dlpFuncReadRecordIDList,		/* 0x31 */
 	
 		/* DLP 1.1 FUNCTIONS ADDED HERE (PalmOS v2.0 Personal, and Professional) */
-		dlpFuncReadNextRecInCategory,
+		dlpFuncReadNextRecInCategory,   /* 0x32 */
 	
-		dlpFuncReadNextModifiedRecInCategory,
+		dlpFuncReadNextModifiedRecInCategory,   /* 0x33 */
 	
-		dlpFuncReadAppPreference,
+		dlpFuncReadAppPreference,		/* 0x34 */
 	
-		dlpFuncWriteAppPreference,
+		dlpFuncWriteAppPreference,		/* 0x35 */
 	
-		dlpFuncReadNetSyncInfo,
+		dlpFuncReadNetSyncInfo,			/* 0x36 */
 	
-		dlpFuncWriteNetSyncInfo,
+		dlpFuncWriteNetSyncInfo,		/* 0x37 */
 
-		dlpFuncReadFeature,
+		dlpFuncReadFeature,				/* 0x38 */
 	
 		/* DLP 1.2 FUNCTIONS ADDED HERE (PalmOS v3.0) */
-		dlpFuncFindDB,
+		dlpFuncFindDB,					/* 0x39 */
 
-		dlpFuncSetDBInfo,
+		dlpFuncSetDBInfo,				/* 0x3a */
 	
 		/* DLP 1.3 FUNCTIONS ADDED HERE (PalmOS v4.0) */
-		dlpLoopBackTest,
+		dlpLoopBackTest,				/* 0x3b */
 
-		dlpFuncExpSlotEnumerate,
+		dlpFuncExpSlotEnumerate,		/* 0x3c */
 
-		dlpFuncExpCardPresent,
+		dlpFuncExpCardPresent,			/* 0x3d */
 
-		dlpFuncExpCardInfo,
+		dlpFuncExpCardInfo,				/* 0x3e */
 
-		dlpFuncVFSCustomControl,
+		dlpFuncVFSCustomControl,		/* 0x3f */
 
-		dlpFuncVFSGetDefaultDir,
+		dlpFuncVFSGetDefaultDir,		/* 0x40 */
 
-		dlpFuncVFSImportDatabaseFromFile,
+		dlpFuncVFSImportDatabaseFromFile,   /* 0x41 */
 
-		dlpFuncVFSExportDatabaseToFile,
+		dlpFuncVFSExportDatabaseToFile, /* 0x42 */
 
-		dlpFuncVFSFileCreate,
+		dlpFuncVFSFileCreate,			/* 0x43 */
 
-		dlpFuncVFSFileOpen,
+		dlpFuncVFSFileOpen,				/* 0x44 */
 
-		dlpFuncVFSFileClose,
+		dlpFuncVFSFileClose,			/* 0x45 */
 
-		dlpFuncVFSFileWrite,
+		dlpFuncVFSFileWrite,			/* 0x46 */
 
-		dlpFuncVFSFileRead,
+		dlpFuncVFSFileRead,				/* 0x47 */
 
-		dlpFuncVFSFileDelete,
+		dlpFuncVFSFileDelete,			/* 0x48 */
 
-		dlpFuncVFSFileRename,
+		dlpFuncVFSFileRename,			/* 0x49 */
 
-		dlpFuncVFSFileEOF,
+		dlpFuncVFSFileEOF,				/* 0x4a */
 
-		dlpFuncVFSFileTell,
+		dlpFuncVFSFileTell,				/* 0x4b */
 
-		dlpFuncVFSFileGetAttributes,
+		dlpFuncVFSFileGetAttributes,	/* 0x4c */
 
-		dlpFuncVFSFileSetAttributes,
+		dlpFuncVFSFileSetAttributes,	/* 0x4d */
 
-		dlpFuncVFSFileGetDate,
+		dlpFuncVFSFileGetDate,			/* 0x4e */
 
-		dlpFuncVFSFileSetDate,
+		dlpFuncVFSFileSetDate,			/* 0x4f */
 
-		dlpFuncVFSDirCreate,
+		dlpFuncVFSDirCreate,			/* 0x50 */
 
-		dlpFuncVFSDirEntryEnumerate,
+		dlpFuncVFSDirEntryEnumerate,	/* 0x51 */
 
-		dlpFuncVFSGetFile,
+		dlpFuncVFSGetFile,				/* 0x52 */
 
-		dlpFuncVFSPutFile,
+		dlpFuncVFSPutFile,				/* 0x53 */
 
-		dlpFuncVFSVolumeFormat,
+		dlpFuncVFSVolumeFormat,			/* 0x54 */
 
-		dlpFuncVFSVolumeEnumerate,
+		dlpFuncVFSVolumeEnumerate,		/* 0x55 */
 
-		dlpFuncVFSVolumeInfo,
+		dlpFuncVFSVolumeInfo,			/* 0x56 */
 
-		dlpFuncVFSVolumeGetLabel,
+		dlpFuncVFSVolumeGetLabel,		/* 0x57 */
 
-		dlpFuncVFSVolumeSetLabel,
+		dlpFuncVFSVolumeSetLabel,		/* 0x58 */
 
-		dlpFuncVFSVolumeSize,
+		dlpFuncVFSVolumeSize,			/* 0x59 */
 
-		dlpFuncVFSFileSeek,
+		dlpFuncVFSFileSeek,				/* 0x5a */
 
-		dlpFuncVFSFileResize,
+		dlpFuncVFSFileResize,			/* 0x5b */
 
-		dlpFuncVFSFileSize,
+		dlpFuncVFSFileSize,				/* 0x5c */
 
 		dlpLastFunc
 	};
