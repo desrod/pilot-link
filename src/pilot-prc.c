@@ -18,14 +18,12 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
-#include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-header.h"
 
@@ -39,15 +37,13 @@ extern char *optarg;
 extern int optind;
 #endif
 
-void dump_header(struct pi_file *pf, struct DBInfo *ip);
-void dump_app_info(struct pi_file *pf, struct DBInfo *ip);
-void dump_sort_info(struct pi_file *pf, struct DBInfo *ip);
+void dump_header(struct DBInfo *ip);
+void dump_app_info(struct pi_file *pf);
+void dump_sort_info(struct pi_file *pf);
 void list_records(struct pi_file *pf, struct DBInfo *ip);
 void dump_record(struct pi_file *pf, struct DBInfo *ip, int record);
 char *iso_time_str(time_t t);
 void dump(void *buf, int size);
-
-int hflag, aflag, sflag, vflag, lflag, rflag, rnum;
 
 static const char *optstring = "hasvlr:";
 
@@ -123,7 +119,7 @@ void dump(void *buf, int n)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void dump_header(struct pi_file *pf, struct DBInfo *ip)
+void dump_header(struct DBInfo *ip)
 {
 	printf("name: \"%s\"\n", ip->name);
 	printf("flags: 0x%x", ip->flags);
@@ -178,7 +174,7 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
+void dump_app_info(struct pi_file *pf)
 {
 	int 	app_info_size;
 	void 	*app_info;
@@ -204,7 +200,7 @@ void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
+void dump_sort_info(struct pi_file *pf)
 {
 	int 	sort_info_size;
 	void 	*sort_info;
@@ -237,7 +233,8 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
 		entnum,
 		id,
 		nentries,
-		size;
+		size,
+		vflag;
 	
 	unsigned long type, uid;
 
@@ -346,7 +343,14 @@ static void display_help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	c;		/* switch */
+	int 	c,		/* switch */
+		hflag,
+		aflag,
+		sflag,
+		vflag,
+		lflag,
+		rflag,
+		rnum;
 
 	struct 	pi_file *pf;
 	struct 	DBInfo info;
@@ -362,23 +366,23 @@ int main(int argc, char *argv[])
 		switch (c) {
 			
 		case 'h':
-			hflag = 1;
+			hflag = 1;		/* Header flag    */
 			break;
 		case 'a':
-			aflag = 1;
+			aflag = 1;		/* AppInfo flag   */
 			break;
 		case 's':
-			sflag = 1;
+			sflag = 1;		/* SortInfo flag  */
 			break;
 		case 'v':
-			vflag = 1;
+			vflag = 1;		/* Verbosity flag */
 			break;
 		case 'l':
-			lflag = 1;
+			lflag = 1;		/* List records   */
 			break;
 		case 'r':
-			rflag = 1;
-			rnum = atoi(optarg);
+			rflag = 1;      	/* Dump records   */
+			rnum = atoi(optarg);	/* Record number  */
 			break;
 		default:
 			display_help(progname);
@@ -396,22 +400,22 @@ int main(int argc, char *argv[])
 
 	if ((pf = pi_file_open(name)) == NULL) {
 		fprintf(stderr, "can't open %s\n", name);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (pi_file_get_info(pf, &info) < 0) {
 		fprintf(stderr, "can't get info\n\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (hflag || vflag)
-		dump_header(pf, &info);
+		dump_header(&info);
 
 	if (aflag || vflag)
-		dump_app_info(pf, &info);
+		dump_app_info(pf);
 
 	if (sflag || vflag)
-		dump_sort_info(pf, &info);
+		dump_sort_info(pf);
 
 	if (lflag || vflag)
 		list_records(pf, &info);
