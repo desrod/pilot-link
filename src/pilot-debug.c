@@ -1442,7 +1442,7 @@ static int proc_port(ClientData clientData, Tcl_Interp * interp, int argc,
 
         fd = port;
 
-#if (TCL_MAJOR_VERSION<8 || (TCL_MAJOR_VERSION==8 && TCL_MINOR_VERSION <4))
+#if (TCL_MAJOR_VERSION<8 || (TCL_MAJOR_VERSION==8 && TCL_MINOR_VERSION <3))
         channel = Tcl_MakeFileChannel((ClientData) fd, 0, TCL_READABLE);
 #else
         channel = Tcl_MakeFileChannel((ClientData) fd, TCL_READABLE);
@@ -2129,14 +2129,14 @@ Tcl_AppInit(myinterp)
     Tcl_Interp *myinterp;		/* Interpreter for application. */
 {
     int i;
-    
+
     interp=myinterp;
-  
+
     if (Tcl_Init(interp) == TCL_ERROR) {
 	return TCL_ERROR;
     }
 #ifdef TK
-    if (usetk) {    
+    if (usetk) {
         if (Tk_Init(interp) == TCL_ERROR) {
           return TCL_ERROR;
         }
@@ -2150,7 +2150,7 @@ Tcl_AppInit(myinterp)
   for (i=0;cmds[i].name;i++) {
     Tcl_CreateCommand(interp, cmds[i].name, cmds[i].proc, 0, NULL);
   }
-  
+
   Tcl_VarEval(interp,"\
 proc Say {text} {
 	global Interactive
@@ -2183,7 +2183,6 @@ proc noninteractive {args} {
 }
 
 set Interactive 1
-
 
 proc bgerror {msg} {
 	Say $msg
