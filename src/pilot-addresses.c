@@ -758,24 +758,36 @@ int main(int argc, const char *argv[])
 	switch(run_mode) {
 		FILE *f;
 		int i;
+		int old_quiet;
 	case mode_none:
 		/* impossible */
 		fprintf(stderr,"%s",mode_error);
 		break;
 	case mode_write:
 		/* FIXME - Must test for existing file first! DD 2002/03/18 */
-		f = fopen(wrFilename, "w");
+		if (strcmp(wrFilename,"-") == 0) {
+			f = stdout;
+			old_quiet = plu_quiet;
+			plu_quiet = 1;
+		} else {
+			f = fopen(wrFilename, "w");
+		}
 		if (f == NULL) {
 			sprintf(buf, "%s: %s", progname, wrFilename);
 			perror(buf);
 			goto error_close;
 		}
 		write_file(f, sd, db, &aai, writehuman);
+		if (f == stdout) {
+			plu_quiet = old_quiet;
+		}
 		if (deletecategory) {
 			dlp_DeleteCategory(sd, db,
 				plu_findcategory(&aai.category,deletecategory,PLU_CAT_CASE_INSENSITIVE | PLU_CAT_WARN_UNKNOWN));
 		}
-		fclose(f);
+		if (f != stdout) {
+			fclose(f);
+		}
 		break;
 	case mode_read:
 		f = fopen(rdFilename, "r");
