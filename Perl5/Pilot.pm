@@ -62,7 +62,56 @@ bootstrap PDA::Pilot;
 @PDA::Pilot::DLP::ResourceDBPtr::ISA = qw(PDA::Pilot::DLP::DBPtr);
 @PDA::Pilot::DLP::RecordDBPtr::ISA = qw(PDA::Pilot::DLP::DBPtr);
 
-#%PDA::Pilot::Classes = ( MemoDB => "PDA::Pilot::MemoClass" );
+%DBPackers = ( 
+	MemoDB => [	\&PDA::Pilot::Memo::Unpack, \&PDA::Pilot::Memo::Pack, 
+				\&PDA::Pilot::Memo::UnpackAppBlock, \&PDA::Pilot::Memo::PackAppBlock],
+	ToDoDB => [	\&PDA::Pilot::ToDo::Unpack, \&PDA::Pilot::ToDo::Pack, 
+				\&PDA::Pilot::ToDo::UnpackAppBlock, \&PDA::Pilot::ToDo::PackAppBlock],
+	AddressDB => [	\&PDA::Pilot::Address::Unpack, \&PDA::Pilot::Address::Pack, 
+					\&PDA::Pilot::Address::UnpackAppBlock, \&PDA::Pilot::Address::PackAppBlock],
+	MailDB => [	\&PDA::Pilot::Mail::Unpack, \&PDA::Pilot::Mail::Pack, 
+					\&PDA::Pilot::Mail::UnpackAppBlock, \&PDA::Pilot::Mail::PackAppBlock],
+	DatebookDB => [	\&PDA::Pilot::Appointment::Unpack, \&PDA::Pilot::Appointment::Pack, 
+					\&PDA::Pilot::Appointment::UnpackAppBlock, \&PDA::Pilot::Appointment::PackAppBlock],
+	 );
+
+%UnpackPref = ();
+
+sub UnpackPref {
+	my($data, $creator, $number, $version) = @_;
+	my($func);
+	
+	print "UnpackPref, data = |$data|, creator = |$creator|, number = |$number|, version = |$version|\n";
+	
+	if (exists $UnpackPref{$creator}) {
+		$func = $UnpackPref{$creator}->{$number} || $UnpackPref{$creator}->{default};
+	}
+	$func ||= $UnpackPref{default};
+	if ($func) {
+		&$func(@_);
+	} else {
+		$data;
+	}
+}
+
+%PackPref = ();
+
+sub PackPref {
+	my($data, $creator, $number, $version) = @_;
+	my($func);
+
+	print "PackPref, data = |$data|, creator = |$creator|, number = |$number|, version = |$version|\n";
+	
+	if (exists $PackPref{$creator}) {
+		$func = $PackPref{$creator}->{$number} || $PackPref{$creator}->{default};
+	}
+	$func ||= $PackPref{default};
+	if ($func) {
+		&$func(@_);
+	} else {
+		$data;
+	}
+}
 
 # Autoload methods go after __END__, and are processed by the autosplit program.
 

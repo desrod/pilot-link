@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 
 use PDA::Pilot;
 use Getopt::Std;

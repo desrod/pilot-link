@@ -13,7 +13,12 @@
           '@ARFLAGS@', '-cur',
           '@cclib@', 'libpicc.a', '@libcclib@', 'libcc/libpicc.a',
           '@ccexecs@', '$(CCEXECS)',
-	  '@LDFLAGS@', ''
+	  '@LDFLAGS@', '',
+	  '@WITHTCL@', '',
+	  '@WITHTK@', '',
+	  '@WITHPYTHON@', '',
+	  '@WITHPERL5@', '',
+	  '@WITHCXX', '$(WITHCXX)'
         );
         
 $defs{'@srcdir@'} = './';

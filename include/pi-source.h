@@ -1,9 +1,6 @@
 #ifndef _PILOT_SOURCE_H_
 #define _PILOT_SOURCE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifdef NeXT
 # include <sys/types.h>
@@ -44,6 +41,10 @@ extern "C" {
 # include <sgtty.h>
 #else
 # include <termios.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #include "pi-socket.h"

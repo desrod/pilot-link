@@ -339,7 +339,7 @@ int sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void * dest)
     if (result<0)
       return done;
   
-    if ((buf[4] == 0x81) && (result == todo+6)) {
+    if ((buf[4] == 0x81) && ((unsigned int)result == todo+6)) {
       memcpy(((char *)dest) + done, buf+6, todo);
       done += todo;
     } else {
@@ -382,7 +382,7 @@ int sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void * src)
     if (result<0)
       return done;
    
-    if ((buf[4] == 0x82) && (result == todo+6)) {
+    if ((buf[4] == 0x82) && ((unsigned int)result == todo+6)) {
       ;
     } else {
       return done;

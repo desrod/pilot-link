@@ -1,9 +1,8 @@
-# Generated automatically from Makefile.PL.in by configure.
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 
-if (! -e "../libtool") {
+if (! -e "../libtool" or ! -e "../libsock/libpisock.la") {
    	die "pilot-link must be installed before PDA::Pilot can be built\n";
 }
 

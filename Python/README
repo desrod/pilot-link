@@ -1,4 +1,68 @@
 
+New, as of 0.7.3: the module has been completely overhauled to support a
+more robust installation process ('make install' might just work!) and the
+actual interface has been substantially modified to automatically pack and
+unpack records.
+
+Note that currently only packing/unpacking is implemented for Memos, ToDos,
+and two of the Mail preferences, but extending this is merely a SMOP.
+
+I'll try and give a slight taste of how it now works. 
+
+   socket = pdapilot.OpenPort('/dev/cua3') # Shorthand for open serial
+                                           # connection, returns an integer
+
+   dlp = pdapilot.Accept(port) # Returns a new object when the connection succeeds
+   
+   db = dlp.Open('MemoDB')  # Open the database, return yet another object
+   
+   print db.Class      # Shows that pdapilot.Memo has been chosen.  You
+                       # could deactivate packing by switching to a more
+                       # primitive class: db.Class = pdapilot.RecordDatabase
+   
+   r = db.GetRecord(0) # Get the first record, returning an object
+                       # of pdapilot.Memo.Record class. r.raw is the record
+                       # contents, r.text contains the unpacked text, and
+                       # r.id, r.attr, & r.category contain the obvious.
+   
+   print r # Dump the record to show what it contains
+   
+   r.text = r.text + "Hello world!" # append text to record
+   
+   db.SetRecord(r) # Write record to database. Since it contains the
+                   # original ID number, this overwrites the original record
+                   # with this new one.
+
+   r2 = db.NewRecord() # Construct a new blank record with appropriate
+                       # attributes for the Memo database.
+                       # This record could also have been constructed via
+                       # pdapilot.Memo.Record()
+
+   r2.text = 'Hello again!'
+   
+   r2.id = 0 # Must set ID
+   
+   db.SetRecord(r2) # Append record (since ID is zero, a new ID will be assigned)
+   
+   r3 = pdapilot.Database.Record() # Construct new blank record that is not
+                                   #  specific to Memo
+   
+   r3.raw = "Foo\0" # Access the raw record. Actually, all of the "r"
+                    # objects have contained a raw attribute. Note that
+                    # changes to the raw attribute are not automatically
+                    # mirrored in the unpacked slots (and vice versa).
+                    # Changes to the raw data will not be respected when the
+                    # block is repacked.
+
+   r4 = db.NewAppBlock() # Returns an empty pdapilot.Memo.AppBlock object
+   
+   print r4.categoryname # print out the categories
+   
+   print r4.pack() # Show what the packed record looks like (this incidentally updates r4.raw)
+   
+---
+
+
 This is an experimental piece of code to interface Python to the pilot-link
 library. To use it, you will have to figure out how to link and install the
 .c file so that your Python installation can use it. The included Makefile

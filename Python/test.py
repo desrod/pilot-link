@@ -1,6 +1,6 @@
 
 try:
-	import pdapilot
+	import pdapiot
 except:
 	import sys
 	sys.path.append('./.libs/')
@@ -23,8 +23,7 @@ socket = pdapilot.OpenPort(port)
 #
 #socket = pdapilot.socket(pdapilot.PI_AF_SLP, pdapilot.PI_SOCK_STREAM, pdapilot.PI_PF_PADP);
 #
-#pdapilot.Bind(socket, {'family': pdapilot.PI_AF_SLP, 'port': pdapilot.PI_PilotSocketDLP,
-#	'device': port})
+#pdapilot.Bind(socket, {'family': pdapilot.PI_AF_SLP, 'device': port})
 #
 #pdapilot.Listen(socket,1)
 
@@ -45,34 +44,57 @@ b = dlp.RPC(rpc)
 
 print "Battery results through Python RPC:", b
 
-rpc = pdapilot.PackRPC(0xA220, "i", ("&*", "s", "s", "s"), 
-                                 ("Woo woo!", 8, 100, 0))
+# Looks like this broke. Oh well.
+#rpc = pdapilot.PackRPC(0xA220, "i", ("&*", "s", "s", "s"), 
+#                                 ("Woo woo!", 8, 100, 0))
+#
+#dlp.RPC(rpc)
 
-dlp.RPC(rpc)
+print "At open"
+
+p = dlp.GetAppPref(pdapilot.Mail.creator, 1)
+
+print p
+print "Repacked: ", `p.pack()`
+
+p = dlp.GetAppPref(pdapilot.Mail.creator, 3)
+
+print p
+print "Repacked: ", `p.pack()`
+
+# Construct a blank preference object
+p = dlp.NewAppPref(pdapilot.Mail.creator, 1)
+print p
+
+p = dlp.GetAppPrefRaw(pdapilot.Mail.creator, 1)
+print p
 
 db = dlp.Open("MemoDB")
 
+print "Class: ", db.Class
+
+print "At getrecord"
+
 r = db.GetRecord(0)
 
-print "Memo record 0 has ID ", r[2], " attribue ", r[3], ", and category ",r[4],"\n";
+print "Memo: ", r
 
-r2 = pdapilot.MemoUnpack(r[0]);
+x = db.NewRecord()
+x.text = 'a-aFooFoo!'
+x.id = None
+print x.pack()
+print x
 
-print "Contents: '", r2["text"], "'\n";
+db.SetRecord(x)
 
-r3 = db.Unpack(r[0])
+print "New memo: ", x
 
-print "Contents (through default unpacker):", r3
+r = db.GetAppBlock()
+print "Got app block", r
 
-app = db.GetAppBlock()
+r = db.NewAppBlock()
 
-app2 = pdapilot.MemoUnpackAppBlock(app)
-
-print "Categories are", app2["category"],"\n"
-
-app3 = db.UnpackAppBlock(app)
-
-print "Categories (through default unpacker) are:", app3
+print "New app block: ", r
 
 del db # Close database
 

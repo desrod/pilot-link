@@ -2,6 +2,7 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
+#include "pi-mail.h"
 #include "pi-memo.h"
 #include "pi-todo.h"
 #include "pi-socket.h"
@@ -12,8 +13,8 @@ extern unsigned long makelong (char * c);
 
 static PyObject * Error;
 
-static PyObject * DBPackers;
-static PyObject * PrefPackers;
+static PyObject * DBClasses;
+static PyObject * PrefClasses;
 
 static PyMethodDef PiFile_methods[];
 
@@ -24,8 +25,8 @@ static PyMethodDef DlpDB_methods[];
 typedef struct {
 	PyObject_HEAD
 	struct pi_file	*pf;
-
-	PyObject *Pack, *Unpack, *PackAppBlock, *UnpackAppBlock;
+	
+	PyObject *Class;
 } PiFileObject;
 
 staticforward PyTypeObject PiFile_Type;
@@ -53,7 +54,7 @@ typedef struct {
 	DlpObject * socket;
 	int handle;
 	
-	PyObject *Pack, *Unpack, *PackAppBlock, *UnpackAppBlock;
+	PyObject *Class;
 } DlpDBObject;
 
 staticforward PyTypeObject Dlp_Type;
@@ -68,10 +69,7 @@ static void
 PiFile_dealloc(self)
 	PiFileObject *self;
 {
-	Py_XDECREF(self->Pack);
-	Py_XDECREF(self->Unpack);
-	Py_XDECREF(self->PackAppBlock);
-	Py_XDECREF(self->UnpackAppBlock);
+	Py_XDECREF(self->Class);
 	if (self->pf)
 		pi_file_close(self->pf);
 	PyMem_DEL(self);
@@ -101,10 +99,7 @@ static void
 DlpDB_dealloc(self)
 	DlpDBObject *self;
 {
-	Py_XDECREF(self->Pack);
-	Py_XDECREF(self->Unpack);
-	Py_XDECREF(self->PackAppBlock);
-	Py_XDECREF(self->UnpackAppBlock);
+	Py_XDECREF(self->Class);
 	if (self->handle)
 		dlp_CloseDB(self->socket->socket, self->handle);
 	if (self->socket)
@@ -114,10 +109,36 @@ DlpDB_dealloc(self)
 
 static PyObject *
 PiFile_getattr(self, name)
-	PyObject * self;
+	PiFileObject * self;
 	char * name;
 {
+	if ((name[0] == 'C') && (strcmp(name, "Class")==0)) {
+		Py_INCREF(self->Class);
+		return self->Class;
+	}
 	return Py_FindMethod(PiFile_methods, (PyObject *)self, name);
+}
+
+int
+PiFile_setattr(self, name, v)
+	PiFileObject * self;
+	char * name;
+	PyObject * v;
+{
+	if ((name[0] == 'C') && (strcmp(name, "Class")==0)) {
+		if (!v)  {
+			PyErr_SetString(PyExc_AttributeError,
+				"class attribute may not be deleted");
+			return -1;
+		}
+		Py_DECREF(self->Class);
+		self->Class = v;
+		Py_INCREF(self->Class);
+		return 0;
+	}
+	PyErr_SetString(PyExc_AttributeError,
+		"attribute not settable");
+	return -1;
 }
 
 
@@ -131,7 +152,7 @@ staticforward PyTypeObject PiFile_Type = {
 	(destructor)PiFile_dealloc,	/*tp_dealloc*/
 	0,			/*tp_print*/
 	(getattrfunc)PiFile_getattr,	/*tp_getattr*/
-	0,			/*tp_setattr*/
+	(setattrfunc)PiFile_setattr,	/*tp_setattr*/
 	0,			/*tp_compare*/
 	0,			/*tp_repr*/
 	0,			/*tp_as_number*/
@@ -191,7 +212,33 @@ DlpDB_getattr(self, name)
 	DlpDBObject * self;
 	char * name;
 {
+	if ((name[0] == 'C') && (strcmp(name, "Class")==0)) {
+		Py_INCREF(self->Class);
+		return self->Class;
+	}
 	return Py_FindMethod(DlpDB_methods, (PyObject *)self, name);
+}
+
+int
+DlpDB_setattr(self, name, v)
+	DlpDBObject * self;
+	char * name;
+	PyObject * v;
+{
+	if ((name[0] == 'C') && (strcmp(name, "Class")==0)) {
+		if (!v)  {
+			PyErr_SetString(PyExc_AttributeError,
+				"class attribute may not be deleted");
+			return -1;
+		}
+		Py_DECREF(self->Class);
+		self->Class = v;
+		Py_INCREF(self->Class);
+		return 0;
+	}
+	PyErr_SetString(PyExc_AttributeError,
+		"attribute not settable");
+	return -1;
 }
 
 staticforward PyTypeObject DlpDB_Type = {
@@ -204,7 +251,7 @@ staticforward PyTypeObject DlpDB_Type = {
 	(destructor)DlpDB_dealloc,	/*tp_dealloc*/
 	0,			/*tp_print*/
 	(getattrfunc)DlpDB_getattr,	/*tp_getattr*/
-	0,			/*tp_setattr*/
+	(setattrfunc)DlpDB_setattr,	/*tp_setattr*/
 	0,			/*tp_compare*/
 	0,			/*tp_repr*/
 	0,			/*tp_as_number*/
@@ -457,10 +504,10 @@ BuildChar4(v)
 	void *v;
 {
 	char * l = printlong(*(unsigned long*)v);
-	if (	(isalpha(l[0]) || (l[0] == ' ')) &&
-		(isalpha(l[1]) || (l[1] == ' ')) &&
-		(isalpha(l[2]) || (l[2] == ' ')) &&
-		(isalpha(l[3]) || (l[3] == ' ')))
+	if (	(isalpha(l[0]) || (l[0] == ' ') || (l[0] == '_')) &&
+		(isalpha(l[1]) || (l[1] == ' ') || (l[1] == '_')) &&
+		(isalpha(l[2]) || (l[2] == ' ') || (l[2] == '_')) &&
+		(isalpha(l[3]) || (l[3] == ' ') || (l[3] == '_')))
 		return PyString_FromString(l);
 	else
 		return PyInt_FromLong(*(unsigned long*)v);
@@ -516,10 +563,10 @@ OpenDB(self, args)
 {
 	int mode = dlpOpenReadWrite, cardno = 0;
 	char * name;
-	int result, handle;
+	int result, handle, raw = 0;
 	PyObject * packer;
 	DlpDBObject * obj;
-	if (!PyArg_ParseTuple(args, "s|ii", &name, &mode, &cardno))
+	if (!PyArg_ParseTuple(args, "s|iii", &name, &mode, &cardno, &raw))
 		return NULL;
 
 	result = dlp_OpenDB(self->socket, cardno, mode, name, &handle);
@@ -531,17 +578,22 @@ OpenDB(self, args)
 	obj->handle = handle;
 	Py_INCREF(self);
 	
-	obj->Pack = obj->Unpack = obj->PackAppBlock = obj->UnpackAppBlock = 0;
-	packer = PyDict_GetItemString(DBPackers, name);
-	if (packer && PyTuple_Check(packer)) {
-		PyArg_ParseTuple(packer, "|OOOO",
-			&obj->Pack, &obj->Unpack,
-			&obj->PackAppBlock, &obj->UnpackAppBlock);
-		Py_XINCREF(obj->Pack);
-		Py_XINCREF(obj->Unpack);
-		Py_XINCREF(obj->PackAppBlock);
-		Py_XINCREF(obj->UnpackAppBlock);
+	obj->Class = 0;
+	packer = PyDict_GetItemString(DBClasses, name);
+	if (!packer)
+		packer = PyDict_GetItemString(DBClasses, "");
+	if (!packer) {
+		PyErr_SetString(PyExc_ValueError, "pdapilot.DBClasses must contain a default");
+		dlp_CloseDB(self->socket, handle);
+		free(obj);
+		return NULL;
 	}
+	if (packer) {
+		obj->Class = packer;
+		Py_XINCREF(packer);
+	}
+	
+	printf("Done with openDB\n");
 	
 	return (PyObject*)obj;
 }
@@ -554,11 +606,12 @@ CreateDB(self, args)
 	char * name;
 	long creator, type;
 	int cardno=0, flags, version=1;
+	int raw=0;
 	int result;
 	int handle;
 	DlpDBObject * obj;
 	PyObject * packer;
-	if (!PyArg_ParseTuple(args, "sO&li|ii", &name, &ParseChar4, &creator, &type, &flags, &version, &cardno))
+	if (!PyArg_ParseTuple(args, "sO&li|iii", &name, &ParseChar4, &creator, &type, &flags, &version, &cardno, &raw))
 		return NULL;
 
 	result = dlp_CreateDB(self->socket, creator, type, cardno, 
@@ -571,83 +624,37 @@ CreateDB(self, args)
 	obj->handle = handle;
 	Py_INCREF(self);
 
-	obj->Pack = obj->Unpack = obj->PackAppBlock = obj->UnpackAppBlock = 0;
-	packer = PyDict_GetItemString(DBPackers, name);
+	/*obj->Pack = obj->Unpack = obj->PackAppBlock = obj->UnpackAppBlock = 
+		obj->PackSortBlock = obj->UnpackSortBlock = 0;*/
+	obj->Class = 0;
+	packer = PyDict_GetItemString(DBClasses, name);
+	if (!packer)
+		packer = PyDict_GetItemString(DBClasses, "");
+	if (!packer) {
+		PyErr_SetString(PyExc_ValueError, "pdapilot.DBClasses must contain a default");
+		dlp_CloseDB(self->socket, handle);
+		free(obj);
+		return NULL;
+	}
+	if (packer) {
+		obj->Class = packer;
+		Py_XINCREF(packer);
+	}
+	/*packer = PyDict_GetItemString(DBPackers, name);
 	if (packer && PyTuple_Check(packer)) {
-		PyArg_ParseTuple(packer, "|OOOO",
-			&obj->Pack, &obj->Unpack,
-			&obj->PackAppBlock, &obj->UnpackAppBlock);
+		PyArg_ParseTuple(packer, "|OOOOOO",
+			&obj->Unpack, &obj->Pack,
+			&obj->UnpackAppBlock, &obj->PackAppBlock,
+			&obj->UnpackSortBlock, &obj->PackSortBlock);
 		Py_XINCREF(obj->Pack);
 		Py_XINCREF(obj->Unpack);
 		Py_XINCREF(obj->PackAppBlock);
 		Py_XINCREF(obj->UnpackAppBlock);
-	}
+		Py_XINCREF(obj->PackSortBlock);
+		Py_XINCREF(obj->UnpackSortBlock);
+	}*/
 
 	return (PyObject*)obj;
-}
-
-static PyObject *
-DBUnpack(self, args)
-	DlpDBObject *self;
-	PyObject *args;
-{
-	PyObject * incoming;
-	
-	if (!self->Unpack)
-		if (!PyArg_ParseTuple(args, "O", &incoming))
-			return NULL;
-		else
-			return incoming;
-	else
-		return PyEval_CallObject(self->Unpack, args);
-}
-
-static PyObject *
-DBPack(self, args)
-	DlpDBObject *self;
-	PyObject *args;
-{
-	PyObject * incoming;
-	
-	if (!self->Pack)
-		if (!PyArg_ParseTuple(args, "O", &incoming))
-			return NULL;
-		else
-			return incoming;
-	else
-		return PyEval_CallObject(self->Pack, args);
-}
-
-static PyObject *
-DBPackAppBlock(self, args)
-	DlpDBObject *self;
-	PyObject *args;
-{
-	PyObject * incoming;
-	
-	if (!self->PackAppBlock)
-		if (!PyArg_ParseTuple(args, "O", &incoming))
-			return NULL;
-		else
-			return incoming;
-	else
-		return PyEval_CallObject(self->PackAppBlock, args);
-}
-
-static PyObject *
-DBUnpackAppBlock(self, args)
-	DlpDBObject *self;
-	PyObject *args;
-{
-	PyObject * incoming;
-	
-	if (!self->UnpackAppBlock)
-		if (!PyArg_ParseTuple(args, "O", &incoming))
-			return NULL;
-		else
-			return incoming;
-	else
-		return PyEval_CallObject(self->UnpackAppBlock, args);
 }
 
 static PyObject *
@@ -744,6 +751,7 @@ NextModRec(self, args)
 	unsigned long id;
 	int index, length, attr, category=-1;
 	int result;
+	PyObject * ret, *c, *callargs;
 	if (!PyArg_ParseTuple(args, "|i", &category))
 		return NULL;
 	
@@ -754,7 +762,11 @@ NextModRec(self, args)
 	
 	DlpDB_CheckError(result);
 	
-	return Py_BuildValue("(s#ilii)", self->socket->buffer, length, index, (long)id, attr, category);
+	c = PyObject_GetAttrString(self->Class, "Record");
+	callargs = Py_BuildValue("(s#Oilii)", self->socket->buffer, result, self, index, (long)id, attr, category);
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 static PyObject *
@@ -765,13 +777,19 @@ NextCatRec(self, args)
 	unsigned long id;
 	int index, length, attr, category;
 	int result;
+	PyObject * ret, *callargs, *c;
 	if (!PyArg_ParseTuple(args, "i", &category))
 		return NULL;
 	
 	result = dlp_ReadNextRecInCategory(self->socket->socket, self->handle, index, self->socket->buffer, &id, &index, &length, &attr);
 	
 	DlpDB_CheckError(result);
-	return Py_BuildValue("(s#ilii)", self->socket->buffer, length, index, (long)id, attr, category);
+
+	c = PyObject_GetAttrString(self->Class, "Record");
+	callargs = Py_BuildValue("(s#Oilii)", self->socket->buffer, result, self, index, (long)id, attr, category);
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 static PyObject *
@@ -782,6 +800,7 @@ GetRec(self, args)
 	unsigned long id;
 	int index, length, attr, category;
 	int result;
+	PyObject * ret, *c, *callargs;
 	if (!PyArg_ParseTuple(args, "i", &index))
 		return NULL;
 	
@@ -789,7 +808,11 @@ GetRec(self, args)
 	
 	DlpDB_CheckError(result);
 	
-	return Py_BuildValue("(s#ilii)", self->socket->buffer, length, index, (long)id, attr, category);
+	c = PyObject_GetAttrString(self->Class, "Record");
+	callargs = Py_BuildValue("(s#Oilii)", self->socket->buffer, result, self, index, (long)id, attr, category);
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 static PyObject *
@@ -797,19 +820,39 @@ SetRec(self, args)
 	DlpDBObject *self;
 	PyObject *args;
 {
-	unsigned long id;
+	unsigned long id=0;
 	unsigned long newid;
-	int index, length, attr, category;
+	int index, length, attr=0, category=0;
 	char * data;
+	PyObject * h, *i;
 	int result;
-	if (!PyArg_ParseTuple(args, "s#lii", &data, &length, &id, &attr, &category))
+
+	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
+		
+	i = PyObject_CallMethod(h, "pack", "O", self);
+	data = PyString_AsString(i);
+	length = PyString_Size(i);
+
+	if (!(i=PyObject_GetAttrString(h, "id")))
+		{ PyErr_SetString(PyExc_ValueError, "The record's .id attribute must be set");
+			return NULL; } 
+	else if (i == Py_None) 
+		id = 0;
+	else
+		id = PyInt_AsLong(i);
+	if (i=PyObject_GetAttrString(h, "attr")) attr = PyInt_AsLong(i);
+	if (i=PyObject_GetAttrString(h, "category")) category = PyInt_AsLong(i);
 	
-	result = dlp_WriteRecord(self->socket->socket, self->handle, attr, id, category, data, length, &newid);
+	dlp_WriteRecord(self->socket->socket, self->handle, attr, id, category, data, length, &newid);
 	
 	DlpDB_CheckError(result);
 	
-	return Py_BuildValue("l", (long)newid);
+	i = Py_BuildValue("l", (long)newid);
+	PyObject_SetAttrString(h, "id", i);
+	Py_INCREF(i);
+	
+	return i;
 }
 
 static PyObject *
@@ -821,9 +864,25 @@ SetRsc(self, args)
 	int id, length;
 	char * data;
 	int result;
-	if (!PyArg_ParseTuple(args, "s#O&i", &data, &length, &ParseChar4, &type, &id))
+	PyObject *h, *i;
+	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
-	
+		
+	i = PyObject_CallMethod(h, "pack", "O", self);
+	data = PyString_AsString(i);
+	length = PyString_Size(i);
+
+	if (!(i=PyObject_GetAttrString(h, "id")) || (i == Py_None))
+		{ PyErr_SetString(PyExc_ValueError, "The resource's .id attribute must be set"); 
+			return NULL; } 
+	else
+		id = PyInt_AsLong(i);
+	if (!(i=PyObject_GetAttrString(h, "type")) || (i == Py_None))
+		{ PyErr_SetString(PyExc_ValueError, "The resource's .type attribute must be set"); 
+			return NULL; } 
+	else
+		type = ParseChar4(i);
+
 	result = dlp_WriteResource(self->socket->socket, self->handle, type, id, data, length);
 
 	DlpDB_CheckError(result);
@@ -838,6 +897,7 @@ GetRecById(self, args)
 {
 	unsigned long id;
 	int index, result, length, attr, category;
+	PyObject *ret, *c, *callargs;
 	if (!PyArg_ParseTuple(args, "l", &id))
 		return NULL;
 	
@@ -845,7 +905,11 @@ GetRecById(self, args)
 	
 	DlpDB_CheckError(result);
 
-	return Py_BuildValue("(s#ilii)", self->socket->buffer, length, index, (long)id, attr, category);
+	c = PyObject_GetAttrString(self->Class, "Record");
+	callargs = Py_BuildValue("(s#Oilii)", self->socket->buffer, result, self, index, (long)id, attr, category);
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 static PyObject *
@@ -856,6 +920,7 @@ GetRsc(self, args)
 	unsigned long type;
 	int id, length, index;
 	int result;
+	PyObject *ret, *c, *callargs;
 	if (!PyArg_ParseTuple(args, "i", &index))
 		return NULL;
 	
@@ -863,7 +928,11 @@ GetRsc(self, args)
 	
 	DlpDB_CheckError(result);
 
-	return Py_BuildValue("(s#ili)", self->socket->buffer, length, index, (long)type, id);
+	c = PyObject_GetAttrString(self->Class, "Resource");
+	callargs = Py_BuildValue("(s#OO&i)", self->socket->buffer, result, self, &BuildChar4, &type, id);
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 static PyObject *
@@ -874,6 +943,7 @@ GetRscById(self, args)
 	unsigned long type;
 	int id, length, index;
 	int result;
+	PyObject *ret, *c, *callargs;
 	if (!PyArg_ParseTuple(args, "O&i", &ParseChar4, &type, &id))
 		return NULL;
 	
@@ -881,7 +951,11 @@ GetRscById(self, args)
 
 	DlpDB_CheckError(result);	
 
-	return Py_BuildValue("(s#ili)", self->socket->buffer, length, index, (long)type, id);
+	c = PyObject_GetAttrString(self->Class, "Resource");
+	callargs = Py_BuildValue("(s#OO&i)", self->socket->buffer, result, self, &BuildChar4, &type, id);
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 
@@ -939,20 +1013,95 @@ RecordIDs(self, args)
 }
 
 static PyObject *
+BlankAppBlock(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	PyObject *ret;
+	PyObject *c, *callargs;
+	if (!PyArg_ParseTuple(args, ""))
+		return NULL;
+	
+	c = PyObject_GetAttrString(self->Class, "AppBlock");
+	callargs = Py_BuildValue("()");
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+static PyObject *
+BlankSortBlock(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	PyObject *ret;
+	PyObject *c, *callargs;
+	if (!PyArg_ParseTuple(args, ""))
+		return NULL;
+	
+	c = PyObject_GetAttrString(self->Class, "SortBlock");
+	callargs = Py_BuildValue("()");
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+static PyObject *
+BlankRecord(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	PyObject *ret;
+	PyObject *c, *callargs;
+	if (!PyArg_ParseTuple(args, ""))
+		return NULL;
+	
+	c = PyObject_GetAttrString(self->Class, "Record");
+	callargs = Py_BuildValue("()");
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+static PyObject *
+BlankResource(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	PyObject *ret;
+	PyObject *c, *callargs;
+	if (!PyArg_ParseTuple(args, ""))
+		return NULL;
+	
+	c = PyObject_GetAttrString(self->Class, "Resource");
+	callargs = Py_BuildValue("()");
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+
+static PyObject *
 GetAppBlock(self, args)
 	DlpDBObject *self;
 	PyObject *args;
 {
 	int records;
 	int length=0xffff,offset=0, result;
+	PyObject *ret;
+	PyObject *c, *callargs;
 	if (!PyArg_ParseTuple(args, "|ii", &length, &offset))
 		return NULL;
 	
 	result = dlp_ReadAppBlock(self->socket->socket, self->handle, offset, self->socket->buffer, length);
 	
 	Dlp_CheckError(result);
-
-	return Py_BuildValue("s#", self->socket->buffer, length);
+	
+	c = PyObject_GetAttrString(self->Class, "AppBlock");
+	callargs = Py_BuildValue("(s#O)", self->socket->buffer, result, self);
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 static PyObject *
@@ -962,9 +1111,16 @@ SetAppBlock(self, args)
 {
 	char * data;
 	int length,result;
-	if (!PyArg_ParseTuple(args, "s#", &data, &length));
+	PyObject * h, *i, *c;
+	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
-	
+		
+	h = PyObject_CallMethod(h, "pack", "O", self);
+	data = PyString_AsString(h);
+	length = PyString_Size(h);
+
+	fprintf(stderr, "App block to write:\n");
+	dumpdata(data,length);
 	result = dlp_WriteAppBlock(self->socket->socket, self->handle, data, length);
 	
 	Dlp_CheckError(result);
@@ -979,6 +1135,7 @@ GetSortBlock(self, args)
 {
 	int records;
 	int length=0xffff,offset=0, result;
+	PyObject *ret, *c, *callargs;
 	if (!PyArg_ParseTuple(args, "|ii", &length, &offset))
 		return NULL;
 	
@@ -986,7 +1143,11 @@ GetSortBlock(self, args)
 	
 	Dlp_CheckError(result);
 	
-	return Py_BuildValue("s#", self->socket->buffer, length);
+	c = PyObject_GetAttrString(self->Class, "SortBlock");
+	callargs = Py_BuildValue("(s#O)", self->socket->buffer, result, self);
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 static PyObject *
@@ -996,9 +1157,14 @@ SetSortBlock(self, args)
 {
 	char * data;
 	int length, result;
-	if (!PyArg_ParseTuple(args, "s#", &data, &length));
+	PyObject *h, *i;
+	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
-	
+		
+	i = PyObject_CallMethod(h, "pack", "O", self);
+	data = PyString_AsString(i);
+	length = PyString_Size(i);
+
 	result = dlp_WriteSortBlock(self->socket->socket, self->handle, data, length);
 	
 	Dlp_CheckError(result);
@@ -1144,16 +1310,89 @@ GetAppPref(self, args)
 	unsigned long creator;
 	int id, backup=1;
 	int length, version, result;
+	PyObject * ret, *p1, *p2, *f, *callargs;
 	
 	if (!PyArg_ParseTuple(args, "O&i|i", &ParseChar4, &creator, &id, &backup))
 		return NULL;
-
+	
 	result = dlp_ReadAppPreference(self->socket, creator, id, backup,
 		0xffff, self->buffer, &length, &version);
 	
 	Dlp_CheckError(result);
 	
-	return Py_BuildValue("(s#O&ii)", self->buffer, length, &BuildChar4, creator, id, version);
+	if (p1 = PyDict_GetItem(PrefClasses, PyTuple_GetItem(args, 0))) {
+		if (p2 = PyDict_GetItem(p1, PyTuple_GetItem(args, 1))) 
+			f = p2;
+		else
+			if (p2 = PyDict_GetItemString(p1, ""))
+				f = p2;
+	} else if (p1 = PyDict_GetItemString(PrefClasses, ""))
+			f = p1;
+
+	if (!f) {
+		PyErr_SetString(PyExc_ValueError, "pdapilot.PrefClasses does not contain a default");
+		return NULL;
+	}
+
+	callargs = Py_BuildValue("(s#OO&iii)", self->buffer, length, self, &BuildChar4, (void*)&creator, id, version, backup, 0, 0);
+	ret = PyEval_CallObject(f, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+static PyObject *
+GetAppPrefRaw(self, args)
+	DlpObject *self;
+	PyObject *args;
+{
+	unsigned long creator;
+	int id, backup=1;
+	int length, version, result;
+	PyObject * ret, *p1, *p2, *f, *callargs;
+	
+	if (!PyArg_ParseTuple(args, "O&i|i", &ParseChar4, &creator, &id, &backup))
+		return NULL;
+	
+	result = dlp_ReadAppPreference(self->socket, creator, id, backup,
+		0xffff, self->buffer, &length, &version);
+	
+	Dlp_CheckError(result);
+	
+	return Py_BuildValue("s#O&iii", self->buffer, length,  &BuildChar4, (void*)&creator, id, version, backup);
+}
+
+static PyObject *
+BlankAppPref(self, args)
+	DlpObject *self;
+	PyObject *args;
+{
+	unsigned long creator;
+	int id;
+	int length, version, result;
+	PyObject * ret, *p1, *p2, *f, *callargs;
+	
+	if (!PyArg_ParseTuple(args, "O&i|i", &ParseChar4, &creator, &id))
+		return NULL;
+	
+	if (p1 = PyDict_GetItem(PrefClasses, PyTuple_GetItem(args, 0))) {
+		if (p2 = PyDict_GetItem(p1, PyTuple_GetItem(args, 1))) 
+			f = p2;
+		else
+			if (p2 = PyDict_GetItemString(p1, ""))
+				f = p2;
+	} else if (p1 = PyDict_GetItemString(PrefClasses, ""))
+			f = p1;
+
+	if (!f) {
+		PyErr_SetString(PyExc_ValueError, "pdapilot.PrefClasses does not contain a default");
+		return NULL;
+	}
+
+	Py_INCREF(Py_None);
+	callargs = Py_BuildValue("(OOO&i)", Py_None, self, &BuildChar4, (void*)&creator, id);
+	ret = PyEval_CallObject(f, callargs);
+	Py_DECREF(callargs);
+	return ret;
 }
 
 static PyObject *
@@ -1162,12 +1401,47 @@ SetAppPref(self, args)
 	PyObject *args;
 {
 	unsigned long creator;
-	int id, length, version, backup, result;
+	int id=0, length, version=0, backup=1, result;
 	char * data;
+	PyObject *h, *i;
+
+	if (!PyArg_ParseTuple(args, "O", &h))
+		return NULL;
+		
+	i = PyObject_CallMethod(h, "pack", "O", self);
+	data = PyString_AsString(i);
+	length = PyString_Size(i);
+
+	if (!(i=PyObject_GetAttrString(h, "creator")) || (i == Py_None)) 
+		{ PyErr_SetString(PyExc_ValueError, "The pref's .creator attribute must be set");
+			return NULL; } 
+	else
+		creator = ParseChar4(i);
+	if (i=PyObject_GetAttrString(h, "id")) id = PyInt_AsLong(i);
+	if (i=PyObject_GetAttrString(h, "version")) version = PyInt_AsLong(i);
+	if (i=PyObject_GetAttrString(h, "backup")) backup = PyInt_AsLong(i);
+	
+	result = dlp_WriteAppPreference(self->socket, creator, id, backup,
+		version, data, length);
+		
+	Dlp_CheckError(result);
+
+	return Py_BuildValue("i", result);
+}
+
+static PyObject *
+SetAppPrefRaw(self, args)
+	DlpObject *self;
+	PyObject *args;
+{
+	unsigned long creator;
+	int id=0, length, version=0, backup=1, result;
+	char * data;
+	PyObject *h, *i;
 
 	if (!PyArg_ParseTuple(args, "s#O&iii", &data, &length, &ParseChar4, &creator, &id, &version, &backup))
 		return NULL;
-
+		
 	result = dlp_WriteAppPreference(self->socket, creator, id, backup,
 		version, data, length);
 		
@@ -1557,16 +1831,19 @@ OpenFile(self, args)
 	retval = PyObject_NEW(PiFileObject, &PiFile_Type);
 	retval->pf = pf;
 
-	retval->Pack = retval->Unpack = retval->PackAppBlock = retval->UnpackAppBlock = 0;
-	packer = PyDict_GetItemString(DBPackers, name);
-	if (packer && PyTuple_Check(packer)) {
-		PyArg_ParseTuple(packer, "|OOOO",
-			&retval->Pack, &retval->Unpack,
-			&retval->PackAppBlock, &retval->UnpackAppBlock);
-		Py_XINCREF(retval->Pack);
-		Py_XINCREF(retval->Unpack);
-		Py_XINCREF(retval->PackAppBlock);
-		Py_XINCREF(retval->UnpackAppBlock);
+	retval->Class = 0;
+	packer = PyDict_GetItemString(DBClasses, name);
+	if (!packer)
+		packer = PyDict_GetItemString(DBClasses, "");
+	if (!packer) {
+		PyErr_SetString(PyExc_ValueError, "pdapilot.DBClasses must contain a default");
+		pi_file_close(retval->pf);
+		free(retval);
+		return NULL;
+	}
+	if (packer) {
+		retval->Class = packer;
+		Py_XINCREF(packer);
 	}
 
 	return (PyObject*)retval;
@@ -1598,18 +1875,20 @@ CreateFile(self, args)
 	retval = PyObject_NEW(PiFileObject, &PiFile_Type);
 	retval->pf = pf;
 
-	retval->Pack = retval->Unpack = retval->PackAppBlock = retval->UnpackAppBlock = 0;
-	packer = PyDict_GetItemString(DBPackers, name);
-	if (packer && PyTuple_Check(packer)) {
-		PyArg_ParseTuple(packer, "|OOOO",
-			&retval->Pack, &retval->Unpack,
-			&retval->PackAppBlock, &retval->UnpackAppBlock);
-		Py_XINCREF(retval->Pack);
-		Py_XINCREF(retval->Unpack);
-		Py_XINCREF(retval->PackAppBlock);
-		Py_XINCREF(retval->UnpackAppBlock);
+	retval->Class = 0;
+	packer = PyDict_GetItemString(DBClasses, name);
+	if (!packer)
+		packer = PyDict_GetItemString(DBClasses, "");
+	if (!packer) {
+		PyErr_SetString(PyExc_ValueError, "pdapilot.DBClasses must contain a default");
+		pi_file_close(retval->pf);
+		free(retval);
+		return NULL;
 	}
-
+	if (packer) {
+		retval->Class = packer;
+		Py_XINCREF(packer);
+	}
 
 	return (PyObject*)retval;
 }
@@ -1672,8 +1951,13 @@ FileGetRec(self, args)
 	
 	if (pi_file_read_record(self->pf, index, &c, &length, &attr, &category, &id)==-1)
 		return Py_BuildValue("");
-	else
-		return Py_BuildValue("(s#ilii)", c, length, index, (long)id, attr, category);
+	else	{
+		PyObject * cl = PyObject_GetAttrString(self->Class, "Record");
+		PyObject * callargs = Py_BuildValue("(s#Oilii)", c, length, self, index, (long)id, attr, category);
+		PyObject * ret = PyEval_CallObject(cl, callargs);
+		Py_DECREF(callargs);
+		return ret;
+	}
 }
 
 static PyObject *
@@ -1690,8 +1974,13 @@ FileGetRecById(self, args)
 	
 	if (pi_file_read_record_by_id(self->pf, id, &c, &length, &index, &attr, &category)==-1)
 		return Py_BuildValue("");
-	else
-		return Py_BuildValue("(s#ilii)", c, length, index, (long)id, attr, category);
+	else {
+		PyObject * cl = PyObject_GetAttrString(self->Class, "Record");
+		PyObject * callargs = Py_BuildValue("(s#Oilii)", c, length, self, index, (long)id, attr, category);
+		PyObject * ret = PyEval_CallObject(cl, callargs);
+		Py_DECREF(callargs);
+		return ret;
+	}
 }
 
 static PyObject *
@@ -1745,8 +2034,13 @@ FileGetAppBlock(self, args)
 	if (pi_file_get_app_info(self->pf, &c, &length)==-1) {
 		PyErr_SetFromErrno(Error);
 		return NULL;
-	} else
-		return Py_BuildValue("s#", c, length);
+	} else	{
+		PyObject *	cl = PyObject_GetAttrString(self->Class, "AppBlock");
+		PyObject * callargs = Py_BuildValue("(s#O)", c, length, self);
+		PyObject * ret = PyEval_CallObject(cl, callargs);
+		Py_DECREF(callargs);
+		return ret;
+	}
 }
 
 static PyObject *
@@ -1756,9 +2050,14 @@ FileSetAppBlock(self, args)
 {
 	char * c;
 	int length;
-	if (!PyArg_ParseTuple(args, "s#", &c, &length))
+	PyObject *h, *i;
+	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
-	
+		
+	h = PyObject_CallMethod(h, "pack", "O", self);
+	c = PyString_AsString(h);
+	length = PyString_Size(h);
+
 	if (pi_file_set_app_info(self->pf, c, length)==-1) {
 		PyErr_SetFromErrno(Error);
 		return NULL;
@@ -1779,8 +2078,13 @@ FileGetSortBlock(self, args)
 	if (pi_file_get_sort_info(self->pf, &c, &length)==-1) {
 		PyErr_SetFromErrno(Error);
 		return NULL;
-	} else
-		return Py_BuildValue("s#", c, length);
+	} else {
+		PyObject *	cl = PyObject_GetAttrString(self->Class, "SortBlock");
+		PyObject * callargs = Py_BuildValue("(s#O)", c, length, self);
+		PyObject * ret = PyEval_CallObject(cl, callargs);
+		Py_DECREF(callargs);
+		return ret;
+	}
 }
 
 static PyObject *
@@ -1790,8 +2094,13 @@ FileSetSortBlock(self, args)
 {
 	char * c;
 	int length;
-	if (!PyArg_ParseTuple(args, "s#", &c, &length))
+	PyObject *h, *i;
+	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
+		
+	h = PyObject_CallMethod(h, "pack", "O", self);
+	c = PyString_AsString(h);
+	length = PyString_Size(h);
 	
 	if (pi_file_set_sort_info(self->pf, c, length)==-1) {
 		PyErr_SetFromErrno(Error);
@@ -1814,8 +2123,13 @@ FileGetRsc(self, args)
 	
 	if (pi_file_read_resource(self->pf, index, &c, &length, &type, &id)==-1)
 		return Py_BuildValue("");
-	else
-		return Py_BuildValue("(s#ili)", c, length, index, (long)type, id);
+	else {
+		PyObject * cl = PyObject_GetAttrString(self->Class, "Resource");
+		PyObject * callargs = Py_BuildValue("(s#OO&i)", c, length, self, &BuildChar4, &type, id);
+		PyObject * ret = PyEval_CallObject(cl, callargs);
+		Py_DECREF(callargs);
+		return ret;
+	}
 }
 
 static PyObject *
@@ -1823,13 +2137,28 @@ FileAddRec(self, args)
 	PiFileObject *self;
 	PyObject *args;
 {
-	unsigned long id;
+	unsigned long id=0;
 	unsigned long newid;
-	int length, attr, category;
+	int length, attr=0, category=0;
 	char * data;
 	int result;
-	if (!PyArg_ParseTuple(args, "s#lii", &data, &length, &id, &attr, &category))
+	PyObject *h, *i;
+	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
+		
+	i = PyObject_CallMethod(h, "pack", "O", self);
+	data = PyString_AsString(i);
+	length = PyString_Size(i);
+
+	if (!(i=PyObject_GetAttrString(h, "id")))
+		{ PyErr_SetString(PyExc_ValueError, "The record's .id attribute must be set");
+			return NULL; } 
+	else if (i == Py_None) 
+		id = 0;
+	else
+		id = PyInt_AsLong(i);
+	if (i=PyObject_GetAttrString(h, "attr")) attr = PyInt_AsLong(i);
+	if (i=PyObject_GetAttrString(h, "category")) category = PyInt_AsLong(i);
 	
 	if (pi_file_append_record(self->pf, data, length, attr, category, id)==-1) {
 		PyErr_SetFromErrno(Error);
@@ -1848,8 +2177,24 @@ FileAddRsc(self, args)
 	int id, length;
 	char * data;
 	int result;
-	if (!PyArg_ParseTuple(args, "s#lii", &data, &length, &type, &id))
+	PyObject *h, *i;
+	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
+		
+	i = PyObject_CallMethod(h, "pack", "O", self);
+	data = PyString_AsString(i);
+	length = PyString_Size(i);
+
+	if (!(i=PyObject_GetAttrString(h, "id")) || (i == Py_None))
+		{ PyErr_SetString(PyExc_ValueError, "The resource's .id attribute must be set"); 
+			return NULL; } 
+	else
+		id = PyInt_AsLong(i);
+	if (!(i=PyObject_GetAttrString(h, "type")) || (i == Py_None))
+		{ PyErr_SetString(PyExc_ValueError, "The resource's .type attribute must be set"); 
+			return NULL; } 
+	else
+		type = ParseChar4(i);
 	
 	if (pi_file_append_resource(self->pf, data, length, type, id)==-1) {
 		PyErr_SetFromErrno(Error);
@@ -1897,26 +2242,97 @@ FileRetrieve(self, args)
 	return Py_BuildValue("");
 }
 
+
+static PyObject *
+FileBlankAppBlock(self, args)
+	PiFileObject *self;
+	PyObject *args;
+{
+	PyObject *ret;
+	PyObject *c, *callargs;
+	if (!PyArg_ParseTuple(args, ""))
+		return NULL;
+	
+	c = PyObject_GetAttrString(self->Class, "AppBlock");
+	callargs = Py_BuildValue("()");
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+static PyObject *
+FileBlankSortBlock(self, args)
+	PiFileObject *self;
+	PyObject *args;
+{
+	PyObject *ret;
+	PyObject *c, *callargs;
+	if (!PyArg_ParseTuple(args, ""))
+		return NULL;
+	
+	c = PyObject_GetAttrString(self->Class, "SortBlock");
+	callargs = Py_BuildValue("()");
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+static PyObject *
+FileBlankRecord(self, args)
+	PiFileObject *self;
+	PyObject *args;
+{
+	PyObject *ret;
+	PyObject *c, *callargs;
+	if (!PyArg_ParseTuple(args, ""))
+		return NULL;
+	
+	c = PyObject_GetAttrString(self->Class, "Record");
+	callargs = Py_BuildValue("()");
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+static PyObject *
+FileBlankResource(self, args)
+	PiFileObject *self;
+	PyObject *args;
+{
+	PyObject *ret;
+	PyObject *c, *callargs;
+	if (!PyArg_ParseTuple(args, ""))
+		return NULL;
+	
+	c = PyObject_GetAttrString(self->Class, "Resource");
+	callargs = Py_BuildValue("()");
+	ret = PyEval_CallObject(c, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
 static PyObject *
 MemoUnpack(self, args)
 	PyObject *self;
 	PyObject *args;
 {
+	struct Memo m;
+
 	char * data;
 	int length;
-	struct Memo m;
-	PyObject * result;
+	PyObject * result, *dict;
 	
-	if (!PyArg_ParseTuple(args, "s#", &data, &length))
+	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
 		return NULL;
 	
 	unpack_Memo(&m, data, length);
 	
-	result = Py_BuildValue("{ss}", "text", m.text);
+	PyDict_SetItemString(dict, "text", PyString_FromString(m.text));
 	
 	free_Memo(&m);
 	
-	return result;
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 static PyObject *
@@ -1927,21 +2343,22 @@ MemoPack(self, args)
 	char * data;
 	int length;
 	struct Memo m;
-	PyObject * o, *e;
+	PyObject *dict, *result, *e;
 	
-	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &o))
+	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
 		return NULL;
 	
 	data = malloc(0xffff);
+	memset(&m, 0, sizeof(m));
 	
-	m.text = (e=PyDict_GetItemString(o, "text")) ? PyString_AsString(e) : 0;
+	m.text = (e=PyDict_GetItemString(dict, "text")) ? PyString_AsString(e) : 0;
 	
 	pack_Memo(&m, data, &length);
 	
-	o = Py_BuildValue("s#", data, length);
-	free(data);
+	result = Py_BuildValue("s#", data, length);
 	
-	return o;
+	free(data);
+	return result;
 }
 
 static PyObject *
@@ -1951,11 +2368,11 @@ MemoUnpackAppBlock(self, args)
 {
 	char * data;
 	int length;
-	PyObject *names, *ids;
+	PyObject *names, *ids, *h, *raw, *dict;
 	struct MemoAppInfo m;
 	int i;
 	
-	if (!PyArg_ParseTuple(args, "s#", &data, &length))
+	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
 		return NULL;
 	
 	unpack_MemoAppInfo(&m, data, length);
@@ -1967,13 +2384,14 @@ MemoUnpackAppBlock(self, args)
 	ids = PyList_New(16);
 	for (i=0;i<16;i++)
 		PyList_SetItem(ids, i, PyInt_FromLong(m.CategoryID[i]));	
+
+	PyDict_SetItemString(dict, "categoryname", names);
+	PyDict_SetItemString(dict, "categoryID", ids);
+	PyDict_SetItemString(dict, "lastID", PyInt_FromLong(m.lastUniqueID));
+	PyDict_SetItemString(dict, "sortOrder", PyInt_FromLong(m.sortOrder));
 	
-	return Py_BuildValue("{sOsOsisi}", 
-		"category", names,
-		"categoryID", ids,
-		"lastID",	m.lastUniqueID,
-		"sortOrder",	m.sortOrder
-		 );
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 static PyObject *
@@ -1986,15 +2404,16 @@ MemoPackAppBlock(self, args)
 	PyObject *names, *ids;
 	struct MemoAppInfo m;
 	int i;
-	PyObject *result, *o, *e, *c;
-	
-	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &o))
+	PyObject *dict, *e, *c, *result;
+
+	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
 		return NULL;
 	
-	data = malloc(0xFFFF);
+	data = calloc(0xFFFF, 1);
+	memset(&m, 0, sizeof(m));
 	
 	i = 0;
-	if (e=PyDict_GetItemString(o, "category")) {
+	if (e=PyDict_GetItemString(dict, "categoryname")) {
 		for(i=0;i<16;i++) {
 			c = PyList_GetItem(e, i);
 			if (c)
@@ -2007,7 +2426,7 @@ MemoPackAppBlock(self, args)
 		m.CategoryName[i][0] = '\0';
 
 	i = 0;
-	if (e=PyDict_GetItemString(o, "categoryID")) {
+	if (e=PyDict_GetItemString(dict, "categoryID")) {
 		for(i=0;i<16;i++) {
 			c = PyList_GetItem(e, i);
 			if (c)
@@ -2019,14 +2438,15 @@ MemoPackAppBlock(self, args)
 	for(;i<16;i++)
 		m.CategoryID[i] = 0;
 
-	m.sortOrder = (e=PyDict_GetItemString(o, "sortOrder")) ? PyInt_AsLong(e) : 0;
-	m.lastUniqueID = (e=PyDict_GetItemString(o, "lastID")) ? PyInt_AsLong(e) : 0;
+	m.sortOrder = (e=PyDict_GetItemString(dict, "sortOrder")) ? PyInt_AsLong(e) : 0;
+	m.lastUniqueID = (e=PyDict_GetItemString(dict, "lastID")) ? PyInt_AsLong(e) : 0;
 	
 	pack_MemoAppInfo(&m, data, &length);
 	
 	result = Py_BuildValue("s#", data, length);
-	
 	free(data);
+	
+	fprintf(stderr,"Returning from MemoPackAppBlock\n");
 	return result;
 }
 
@@ -2038,24 +2458,30 @@ TodoUnpack(self, args)
 	char * data;
 	int length;
 	struct ToDo m;
-	PyObject * result;
+	PyObject * result, *dict;
 	
-	if (!PyArg_ParseTuple(args, "s#", &data, &length))
+	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
 		return NULL;
 	
 	unpack_ToDo(&m, data, length);
 	
-	result = Py_BuildValue("{sOsisiszsz}", 
-		"due", m.indefinite ? Py_BuildValue("") : BuildTm(&m.due),
+	PyDict_SetItemString(dict, "due", m.indefinite ? Py_BuildValue("") : BuildTm(&m.due));
+	PyDict_SetItemString(dict, "priority", PyInt_FromLong(m.priority));
+	PyDict_SetItemString(dict, "complete", PyInt_FromLong(m.complete));
+	PyDict_SetItemString(dict, "description", m.description ? PyString_FromString(m.description) : Py_BuildValue(""));
+	PyDict_SetItemString(dict, "description", m.note ? PyString_FromString(m.note) : Py_BuildValue(""));
+	
+	/*result = Py_BuildValue("{sOsisiszsz}", 
+		"due", ,
 		"priority",m.priority,
 		"complete",m.complete,
 		"description", m.description,
 		"note", m.note
-		);
+		);*/
 	
 	free_ToDo(&m);
 	
-	return result;
+	return Py_BuildValue("");
 }
 
 static PyObject *
@@ -2066,9 +2492,9 @@ TodoPack(self, args)
 	char * data;
 	int length;
 	struct ToDo m;
-	PyObject * o, *e;
+	PyObject * dict, *e, *o;
 	
-	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &o))
+	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
 		return NULL;
 	
 	data = malloc(0xffff);
@@ -2100,11 +2526,11 @@ TodoUnpackAppBlock(self, args)
 {
 	char * data;
 	int length;
-	PyObject *names, *ids;
+	PyObject *names, *ids, *dict;
 	struct ToDoAppInfo m;
 	int i;
 	
-	if (!PyArg_ParseTuple(args, "s#", &data, &length))
+	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
 		return NULL;
 	
 	unpack_ToDoAppInfo(&m, data, length);
@@ -2117,13 +2543,21 @@ TodoUnpackAppBlock(self, args)
 	for (i=0;i<16;i++)
 		PyList_SetItem(ids, i, PyInt_FromLong(m.CategoryID[i]));	
 	
-	return Py_BuildValue("{sOsOsisisi}", 
+	PyDict_SetItemString(dict, "categoryname", names);
+	PyDict_SetItemString(dict, "categoryID", ids);
+	PyDict_SetItemString(dict, "lastID", PyInt_FromLong(m.lastUniqueID));
+	PyDict_SetItemString(dict, "sortByPriority", PyInt_FromLong(m.sortByPriority));
+	PyDict_SetItemString(dict, "dirty", PyInt_FromLong(m.dirty));
+
+	/*return Py_BuildValue("{sOsOsisisi}", 
 		"category", names,
 		"categoryID", ids,
 		"lastID",	m.lastUniqueID,
 		"sortByPriority",	m.sortByPriority,
 		"dirty",	m.dirty
-		 );
+		 );*/
+	
+	return Py_BuildValue("");
 }
 
 static PyObject *
@@ -2144,7 +2578,7 @@ TodoPackAppBlock(self, args)
 	data = malloc(0xFFFF);
 	
 	i = 0;
-	if (e=PyDict_GetItemString(o, "category")) {
+	if (e=PyDict_GetItemString(o, "categoryname")) {
 		for(i=0;i<16;i++) {
 			c = PyList_GetItem(e, i);
 			if (c)
@@ -2182,6 +2616,99 @@ TodoPackAppBlock(self, args)
 }
 
 static PyObject *
+MailUnpackPref(self, args)
+	PyObject *self;
+	PyObject *args;
+{
+
+	char * data;
+	int length;
+	int id;
+	PyObject * result, *dict;
+	
+	if (!PyArg_ParseTuple(args, "Os#i", &dict, &data, &length, &id))
+		return NULL;
+		
+	if (id == 1) {
+		struct MailPrefs m;
+		unpack_MailPrefs(&m, data, length);
+		
+		PyDict_SetItemString(dict, "synctype", PyInt_FromLong(m.synctype));
+		PyDict_SetItemString(dict, "gethigh", PyInt_FromLong(m.gethigh));
+		PyDict_SetItemString(dict, "getcontaining", PyInt_FromLong(m.getcontaining));
+		PyDict_SetItemString(dict, "truncate", PyInt_FromLong(m.truncate));
+		PyDict_SetItemString(dict, "filterto", Py_BuildValue("z", m.filterto));
+		PyDict_SetItemString(dict, "filterfrom", Py_BuildValue("z", m.filterfrom));
+		PyDict_SetItemString(dict, "filtersubject", Py_BuildValue("z", m.filtersubject));
+	
+		free_MailPrefs(&m);
+	} else if (id == 3) {
+		PyDict_SetItemString(dict, "signature", PyString_FromString(data));
+	}
+	
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+static PyObject *
+MailPackPref(self, args)
+	PyObject *self;
+	PyObject *args;
+{
+	char * data;
+	int length;
+	int id;
+	PyObject *dict, *result, *e;
+	
+	if (!PyArg_ParseTuple(args, "O!i", &PyDict_Type, &dict, &id))
+		return NULL;
+		
+	data = 0;
+	length = 0;
+	
+	if (id == 3) {
+		e = PyDict_GetItemString(dict, "signature");
+		if (e) 
+			length = PyString_Size(e); 
+		data = malloc(length+1);
+		if (length)
+			memcpy(data, PyString_AsString(e), length);
+		data[length] = 0;
+		length++;
+	}
+	/*else if (id == 1) {  	Oops, I never wrote pack_MailPrefs...
+		struct MailPrefs m;
+	
+		data = malloc(0xffff);
+		memset(&m, 0, sizeof(m));
+	
+		m.synctype = PyInt_AsLong(PyDict_GetItemString(dict, "synctype"));
+		m.gethigh = PyInt_AsLong(PyDict_GetItemString(dict, "gethigh"));
+		m.getcontaining = PyInt_AsLong(PyDict_GetItemString(dict, "getcontaining"));
+		m.truncate = PyInt_AsLong(PyDict_GetItemString(dict, "truncate"));
+		m.filterto = PyString_AsString(PyDict_GetItemString(dict, "filterto"));
+		m.filterfrom = PyString_AsString(PyDict_GetItemString(dict, "filterfrom"));
+		m.filtersubject = PyString_AsString(PyDict_GetItemString(dict, "filtersubject"));
+	
+		pack_MailPrefs(&m, data, &length);
+	}*/
+	else {
+		e = PyDict_GetItemString(dict, "raw");
+		Py_XINCREF(e);
+		return e;
+	}
+	
+	
+	result = Py_BuildValue("s#", data, length);
+	
+	if (data)	
+		free(data);
+
+	return result;
+}
+
+
+static PyObject *
 RPCPack(self, args)
 	PyObject *self;
 	PyObject *args;
@@ -2189,7 +2716,7 @@ RPCPack(self, args)
 	long trap;
 	char * reply;
 	int r;
-	PyTupleObject *rpcargs, *rpctypes;
+	PyObject *rpcargs, *rpctypes;
 	RpcObject * result;
 	int i;
 	
@@ -2330,6 +2857,10 @@ static PyMethodDef PiFile_methods[] = {
 	{"Install",	FileInstall, 1},
 	{"Retrieve",	FileRetrieve, 1},
 	{"Close",	FileClose, 1},
+{"NewAppBlock", FileBlankAppBlock, 1},
+{"NewSortBlock", FileBlankSortBlock, 1},
+{"NewRecord", FileBlankRecord, 1},
+{"NewResource", FileBlankResource, 1},
 	{NULL,	NULL}
 };
 
@@ -2351,7 +2882,10 @@ static PyMethodDef Dlp_methods[] = {
 	{"GetUserInfo",	GetUserInfo, 1},
 	{"SetUserInfo",	SetUserInfo, 1},
 	{"GetAppPref",	GetAppPref, 1},
+	{"NewAppPref",	BlankAppPref, 1},
 	{"SetAppPref",	SetAppPref, 1},
+	{"GetAppPrefRaw",	GetAppPrefRaw, 1},
+	{"SetAppPrefRaw",	SetAppPrefRaw, 1},
 	{"GetFeature",	GetFeature, 1},
 	{"GetDBInfo",	GetDBInfo, 1},
 	{"FindDBInfo",	FindDBInfo, 1},
@@ -2385,12 +2919,14 @@ static PyMethodDef DlpDB_methods[] = {
 	{"Purge",	Purge, 1},
 	{"ResetNext",	ResetNext, 1},
 	{"ResetFlags",	ResetFlags, 1},
-	{"Unpack",	DBUnpack, 1},
-	{"Pack",	DBPack, 1},
-	{"UnpackAppBlock",	DBUnpackAppBlock, 1},
-	{"PackAppBlock",	DBPackAppBlock, 1},
+{"NewAppBlock", BlankAppBlock, 1},
+{"NewSortBlock", BlankSortBlock, 1},
+{"NewRecord", BlankRecord, 1},
+{"NewResource", BlankResource, 1},
 	{NULL,	NULL}
 };
+
+
 
 static PyMethodDef Methods[] = {
 	{"Socket",	Socket, 1},
@@ -2407,44 +2943,39 @@ static PyMethodDef Methods[] = {
 	{"MemoUnpackAppBlock",	MemoUnpackAppBlock, 1},
 	{"MemoPack",	MemoPack, 1},
 	{"MemoPackAppBlock",	MemoPackAppBlock, 1},
-	{"TodoUnpack",	TodoUnpack, 1},
-	{"TodoUnpackAppBlock",	TodoUnpackAppBlock, 1},
-	{"TodoPack",	TodoPack, 1},
-	{"TodoPackAppBlock",	TodoPackAppBlock, 1},
+	{"ToDoUnpack",	TodoUnpack, 1},
+	{"ToDoUnpackAppBlock",	TodoUnpackAppBlock, 1},
+	{"ToDoPack",	TodoPack, 1},
+	{"ToDoPackAppBlock",	TodoPackAppBlock, 1},
+	{"MailUnpackPref",	MailUnpackPref, 1},
+	{"MailPackPref",	MailPackPref, 1},
 	{"PackRPC",	RPCPack, 1},
 	{NULL, NULL}
 };
+
+static PyMethodDef MemoAppBlock_methods[] = {
+	{"unpack",	MemoUnpackAppBlock, 1},
+	{NULL, NULL}
+};
+
 
 #define SetDictInt(string,ch) \
         PyDict_SetItemString(d,string,PyInt_FromLong((long) (ch)));
 
 void
-initpdapilot()
+init_pdapilot()
 {
 	PyObject *m, *d, *main, *t;
-	main = m = Py_InitModule("pdapilot", Methods);
+	main = m = Py_InitModule("_pdapilot", Methods);
 	d = PyModule_GetDict(m);
 	Error = PyString_FromString("pdapilot.error");
 	PyDict_SetItemString(d, "error", Error);
 	
-	DBPackers = PyDict_New();
-	PyDict_SetItemString(d, "DBPackers", DBPackers);
-	
-	t = PyTuple_New(4);
-	PyTuple_SetItem(t, 0, PyDict_GetItemString(d, "MemoPack"));
-	PyTuple_SetItem(t, 1, PyDict_GetItemString(d, "MemoUnpack"));
-	PyTuple_SetItem(t, 2, PyDict_GetItemString(d, "MemoPackAppBlock"));
-	PyTuple_SetItem(t, 3, PyDict_GetItemString(d, "MemoUnpackAppBlock"));
-	PyDict_SetItemString(DBPackers, "MemoDB", t);
-	Py_DECREF(t);
+	DBClasses = PyDict_New();
+	PyDict_SetItemString(d, "DBClasses", DBClasses);
 
-	t = PyTuple_New(4);
-	PyTuple_SetItem(t, 0, PyDict_GetItemString(d, "TodoPack"));
-	PyTuple_SetItem(t, 1, PyDict_GetItemString(d, "TodoUnpack"));
-	PyTuple_SetItem(t, 2, PyDict_GetItemString(d, "TodoPackAppBlock"));
-	PyTuple_SetItem(t, 3, PyDict_GetItemString(d, "TodoUnpackAppBlock"));
-	PyDict_SetItemString(DBPackers, "ToDoDB", t);
-	Py_DECREF(t);
+	PrefClasses = PyDict_New();
+	PyDict_SetItemString(d, "PrefClasses", PrefClasses);
 
 	SetDictInt("PI_AF_SLP", PI_AF_SLP);
 

@@ -1,53 +1,53 @@
+# Generated automatically from Makefile.in by configure.
 
 PACKAGE_VERSION = 1.0
 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
-bindir = @bindir@
-libdir = @libdir@
+prefix = /usr/pilot
+exec_prefix = ${prefix}
+bindir = ${exec_prefix}/bin
+libdir = ${exec_prefix}/lib
 pixdir = ${libdir}/pix
-includedir = @includedir@
-mandir = @mandir@/man1
-srcdir = ../@srcdir@
-VPATH = ../@srcdir@
+includedir = ${prefix}/include
+mandir = ${prefix}/man/man1
+srcdir = ../.
 
-TCL_BIN = @TCL_BIN@
-TCL_VERSION = @TCL_VERSION@
+TCL_BIN = /usr/local/tcl8.0/bin
+TCL_VERSION = 8.0
 
-TK_VERSION = @TK_VERSION@
-TCL_SH = @TCL_BIN@/tclsh@TCL_VERSION@
+TK_VERSION = 8.0
+TCL_SH = /usr/local/tcl8.0/bin/tclsh8.0
 
-TCLTK_FLAGS = @TCLTKFLAGS@
+TCLTK_FLAGS = -DTCL -DTK -I/usr/local/tcl8.0/include
 
-TCL_LIBS = @TCLLIBS@
-TK_LIBS = @TKLIBS@
+TCL_LIBS = -L/usr/local/tcl8.0/lib -ltcl8.0 -ldl  -lm
+TK_LIBS = -L/usr/local/tcl8.0/lib -ltk8.0 -L/usr/local/tcl8.0/lib -ltcl8.0 -L/usr/X11R6/lib -lX11 -ldl  -lm
 
-PACKAGES = @TCL_PACKAGE_PATH@
+PACKAGES = /usr/local/tcl8.0/lib
 
 top_builddir = ..
 
-CC = @CC@
+CC = gcc
 CDEFS = -DPACKAGE_VERSION=\"$(PACKAGE_VERSION)\" -DLIBDIR=\"$(libdir)\"
-CFLAGS = -I../include -I$(srcdir)/include @CFLAGS@ @CWFLAG@ $(CDEFS) $(TCLTK_FLAGS)
+CFLAGS = -I../include -I$(srcdir)/include -g -O2 -Wall $(CDEFS) $(TCLTK_FLAGS)
 # -DDEBUG
-LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
+LDFLAGS = 
+LIBS =  -lm
 # -lefence
 
 
-INSTALL = $(LIBTOOL) @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA = @INSTALL_DATA@
-YACC = @YACC@
-RANLIB = @RANLIB@
+INSTALL = $(LIBTOOL) /usr/bin/ginstall -c
+INSTALL_PROGRAM = ${INSTALL}
+INSTALL_DATA = ${INSTALL} -m 644
+YACC = bison -y
+RANLIB = ranlib
 RM = rm -f
 STRIP = strip
 SHELL = /bin/sh
-CPLIB = @CPLIB@
-EXT = @EXT@
-SUBMAKE_COMM = @SUBMAKE_COMM@
-SUBMAKE_COMM_CC = @SUBMAKE_COMM_CC@
-LIBTOOL = @LIBTOOL@
+CPLIB = cp
+EXT = 
+SUBMAKE_COMM = cd libsock ; $(MAKE) 
+SUBMAKE_COMM_CC = cd libcc ; $(MAKE) 
+LIBTOOL = $(top_builddir)/libtool
 
 CCLINK = $(LIBTOOL) --mode=link $(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS)
 
@@ -61,7 +61,7 @@ TKINTERP = piwish$(PACKAGE_VERSION).$(TK_VERSION)
 WITHTCL = $(TCLINTERP)
 WITHTK = $(TKINTERP)
 
-INTERPS = @WITHTCL@ @WITHTK@
+INTERPS = $(WITHTCL) $(WITHTK)
 
 PACKLIB = $(PACKAGES)/pdapilot$(PACKAGE_VERSION)
 

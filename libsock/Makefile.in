@@ -23,7 +23,7 @@ VPATH = @srcdir@
 top_builddir = ..
 
 CC = @CC@
-CFLAGS = @CFLAGS@ @CWFLAG@ -I../include -I$(srcdir)/../include
+CFLAGS = -I../include -I$(srcdir)/../include @CFLAGS@ @CWFLAG@
 # -DPADP_TRACE
 # -DDEBUG
 # -DNO_DLP_TRACE
@@ -55,7 +55,7 @@ libpisock.la: $(OBJS)
 		-o libpisock.la $(OBJS)
 
 clean:
-	$(RM) *.o *.lo *.a core a.out *.orig
+	$(RM) *.o *.lo *.a *.la core a.out *.orig
 	$(RM) -r .libs
 
 depend:

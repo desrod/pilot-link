@@ -23,7 +23,7 @@ VPATH = ../
 top_builddir = ..
 
 CC = gcc
-CFLAGS = -g -O2 -fno-strength-reduce -Wall -I../include -I$(srcdir)/../include
+CFLAGS = -I../include -I$(srcdir)/../include -g -O2 -fno-strength-reduce -Wall
 # -DPADP_TRACE
 # -DDEBUG
 # -DNO_DLP_TRACE
@@ -55,7 +55,7 @@ libpisock.la: $(OBJS)
 		-o libpisock.la $(OBJS)
 
 clean:
-	$(RM) *.o *.lo *.a core a.out *.orig
+	$(RM) *.o *.lo *.a *.la core a.out *.orig
 	$(RM) -r .libs
 
 depend:

@@ -231,10 +231,10 @@ newSVChar4(arg)
 	unsigned long arg;
 {
 	char * c = printlong(arg);
-	if(	(isalpha(c[0]) || (c[0] == ' ')) &&
-		(isalpha(c[1]) || (c[1] == ' ')) &&
-		(isalpha(c[2]) || (c[2] == ' ')) &&
-		(isalpha(c[3]) || (c[3] == ' ')))
+	if(	(isalpha(c[0]) || (c[0] == ' ') || (c[0] == '_')) &&
+		(isalpha(c[1]) || (c[1] == ' ') || (c[0] == '_')) &&
+		(isalpha(c[2]) || (c[2] == ' ') || (c[0] == '_')) &&
+		(isalpha(c[3]) || (c[3] == ' ') || (c[0] == '_')))
 		return newSVpv(c,4);
 	else
 		return newSViv(arg);
@@ -247,7 +247,7 @@ SvChar4(arg)
 	if (SvIOKp(arg))
 		return SvIV(arg);
 	else {
-		int len;
+		STRLEN len;
 		char * c = SvPV(arg, len);
 		if (len != 4)
 			croak("Char4 argument a string that isn't four bytes long");
@@ -355,11 +355,140 @@ DoFunc(arg, func)
 		croak("argument is not a hash reference"); \
 	}
 
+#define PackRecord \
+	    {	\
+	    	if (self->Pack) {	\
+	    		int count;		\
+	        	PUSHMARK(sp);	\
+	          	XPUSHs(data);	\
+		    	XPUSHs(sv_2mortal(newSViv(attr)));	\
+		    	XPUSHs(sv_2mortal(newSViv(category)));	\
+	    		PUTBACK;	\
+	    		count = perl_call_sv((SV*)self->Pack, G_SCALAR);	\
+	    		SPAGAIN;	\
+	    		if (count!=1)	\
+	    			croak("Pack function failed");\
+	    		data = POPs;\
+	    		PUTBACK;\
+	        }\
+	        else if (SvROK(data) && (SvTYPE(SvRV(data))==SVt_PVHV)) {	\
+	    		SV ** s = hv_fetch((HV*)SvRV(data), "raw", 3, 0);	\
+	    		if (s)	\
+	    			data = *s;	\
+	    		else	\
+	    			croak("Unable to pack record");	\
+	    	}	\
+	    }
+
+
+#define DoPackAI(data) \
+	    {	\
+	    	if (self->PackAI) {	\
+	    		int count;		\
+	        	PUSHMARK(sp);	\
+	          	XPUSHs(data);	\
+	    		PUTBACK;	\
+	    		count = perl_call_sv((SV*)self->PackAI, G_SCALAR);	\
+	    		SPAGAIN;	\
+	    		if (count!=1)	\
+	    			croak("PackAI function failed");\
+	    		data = POPs;\
+	    		PUTBACK;\
+	        } \
+	        else if (SvROK(data) && (SvTYPE(SvRV(data))==SVt_PVHV)) {	\
+	    		SV ** s = hv_fetch((HV*)SvRV(data), "raw", 3, 0);	\
+	    		if (s)	\
+	    			data = *s;	\
+	    		else	\
+	    			croak("Unable to pack app block");	\
+	    	}	\
+	    }
+
+#define DoUnpackAI(RETVAL, buf, size) \
+	    {	\
+	    	HV * h = newHV();	\
+	    	RETVAL = newRV_noinc((SV*)h);	\
+	    	hv_store(h, "raw", 3, newSVpv(buf, size), 0);	\
+	    	if (self->UnpackAI) {	\
+	    		int count;		\
+	        	PUSHMARK(sp);	\
+	          	XPUSHs(RETVAL);	\
+	    		PUTBACK;	\
+	    		count = perl_call_sv((SV*)self->UnpackAI, G_SCALAR);	\
+	    		SPAGAIN;	\
+	    		if (count!=1)	\
+	    			croak("UnpackAI function failed");\
+	    		RETVAL = POPs;\
+	    		PUTBACK;\
+	        }\
+	    }
+
+#define DoPackSI(data) \
+	    {	\
+	    	if (self->PackSI) {	\
+	    		int count;		\
+	        	PUSHMARK(sp);	\
+	          	XPUSHs(data);	\
+	    		PUTBACK;	\
+	    		count = perl_call_sv((SV*)self->PackSI, G_SCALAR);	\
+	    		SPAGAIN;	\
+	    		if (count!=1)	\
+	    			croak("PackSI function failed");\
+	    		data = POPs;\
+	    		PUTBACK;\
+	        }\
+	        else if (SvROK(data) && (SvTYPE(SvRV(data))==SVt_PVHV)) {	\
+	    		SV ** s = hv_fetch((HV*)SvRV(data), "raw", 3, 0);	\
+	    		if (s)	\
+	    			data = *s;	\
+	    		else	\
+	    			croak("Unable to pack sort block");	\
+	    	}	\
+	    }
+
+#define DoUnpackSI(RETVAL, buf, size) \
+	    {	\
+	    	HV * h = newHV();	\
+	    	RETVAL = newRV_noinc((SV*)h);	\
+	    	hv_store(h, "raw", 3, newSVpv(buf, size), 0);	\
+	    	if (self->UnpackSI) {	\
+	    		int count;		\
+	        	PUSHMARK(sp);	\
+	          	XPUSHs(RETVAL);	\
+	    		PUTBACK;	\
+	    		count = perl_call_sv((SV*)self->UnpackSI, G_SCALAR);	\
+	    		SPAGAIN;	\
+	    		if (count!=1)	\
+	    			croak("UnpackSI function failed");\
+	    		RETVAL = POPs;\
+	    		PUTBACK;\
+	        }\
+	    }
+
+
 #define ReturnReadRecord(buf,size) \
 	    if (result >=0) {	\
+	    	int scalar = (GIMME == G_SCALAR);	\
+	    	/*HV * h = newHV();	\
+	    	SV * result = newRV_noinc((SV*)h);	\
+	    	int count; \
+	    	hv_store(h, "raw", 3, newSVpv(buf, size), 0);	\
+	    	if (self->Unpack) {	\
+	        	PUSHMARK(sp);	\
+	          	XPUSHs(result);	\
+		    	XPUSHs(sv_2mortal(newSViv(attr)));	\
+		    	XPUSHs(sv_2mortal(newSViv(category)));	\
+	    		PUTBACK;	\
+	    		count = perl_call_sv((SV*)self->Unpack, G_SCALAR);	\
+	    		SPAGAIN;	\
+	    		if (count!=1)	\
+	    			croak("Unpack function failed");\
+	    		result = POPs;\
+	    		PUTBACK;\
+	        }*/\
 	    	EXTEND(sp, 5);	\
-		    PUSHs(sv_2mortal(newSVpv(buf,size)));	\
-		    if (GIMME != G_SCALAR) {	\
+		    PUSHs(newSVpv(buf, size)); \
+		    if (!scalar) {	\
 		    	PUSHs(sv_2mortal(newSViv(index)));	\
 		    	PUSHs(sv_2mortal(newSViv(id)));	\
 		    	PUSHs(sv_2mortal(newSViv(attr)));	\
@@ -370,8 +499,51 @@ DoFunc(arg, func)
 	    	PUSHs(&sv_undef);	\
 	    }
 
+#define PackResource \
+	    {	\
+	    	if (self->Pack) {	\
+	    		int count;		\
+	        	PUSHMARK(sp);	\
+	          	XPUSHs(data);	\
+	          	XPUSHs(sv_2mortal(newSVChar4(type)));	\
+	          	XPUSHs(sv_2mortal(newSViv(id)));	\
+	    		PUTBACK;	\
+	    		count = perl_call_sv((SV*)self->Pack, G_SCALAR);	\
+	    		SPAGAIN;	\
+	    		if (count!=1)	\
+	    			croak("Pack function failed");\
+	    		data = POPs;\
+	    		PUTBACK;\
+	        }\
+	        else if (SvROK(data) && (SvTYPE(SvRV(data))==SVt_PVHV)) {	\
+	    		SV ** s = hv_fetch((HV*)SvRV(data), "raw", 3, 0);	\
+	    		if (s)	\
+	    			data = *s;	\
+	    		else	\
+	    			croak("Unable to pack resource");	\
+	    	}	\
+	    }
+
 #define ReturnReadResource(buf,size) \
 	    if (result >=0) {	\
+	    	int scalar = (GIMME == G_SCALAR);	\
+	    	/*HV * h = newHV();	\
+	    	SV * result = newRV_noinc((SV*)h);	\
+	    	int count; \
+	    	hv_store(h, "raw", 3, newSVpv(buf, size), 0);	\
+	    	if (self->Unpack) {	\
+	        	PUSHMARK(sp);	\
+	          	XPUSHs(result);	\
+	          	XPUSHs(sv_2mortal(newSVChar4(type)));	\
+	          	XPUSHs(sv_2mortal(newSViv(id)));	\
+	    		PUTBACK;	\
+	    		count = perl_call_sv((SV*)self->Unpack, G_SCALAR);	\
+	    		SPAGAIN;	\
+	    		if (count!=1)	\
+	    			croak("Unpack function failed");\
+	    		result = POPs;\
+	    		PUTBACK;\
+	        }*/\
 		    EXTEND(sp, 4);	\
 	    	PUSHs(sv_2mortal(newSVpv(buf, size)));	\
 		    if (GIMME != G_SCALAR) {	\
@@ -384,6 +556,55 @@ DoFunc(arg, func)
 	    	self->errno = result;\
 	    }
 
+/*void
+Packers(self, mode)
+	PDA::Pilot::DLP::DB *	self
+	SV *	mode
+	CODE:
+	{
+		HV * h;
+		AV * a = 0;
+		if (SvROK(mode) && (SvTYPE(SvRV(mode))==SVt_PVAV)) {
+			a = (AV*)SvRV(mode);
+		} else if (SvTRUE(mode)) {
+			h = perl_get_hv("PDA::Pilot::DBPackers", 0);
+			if (h) {
+				STRLEN len;
+				SV ** s;
+				(void)SvPV(mode, len);
+				s = hv_fetch(h, SvPV(mode, na), len, 0);
+				if (s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV))
+					a = (AV*)SvRV(*s);
+				else
+					croak("Unknown DB packer type");
+			}
+		}
+
+		if (self->Pack) { SvREFCNT_dec(self->Pack); self->Pack = 0; }
+		if (self->Unpack) { SvREFCNT_dec(self->Unpack); self->Unpack = 0; }
+		if (self->PackAI) { SvREFCNT_dec(self->PackAI); self->PackAI = 0; }
+		if (self->UnpackAI) { SvREFCNT_dec(self->UnpackAI); self->UnpackAI = 0; }
+		if (self->PackSI) { SvREFCNT_dec(self->PackSI); self->PackSI = 0; }
+		if (self->UnpackSI) { SvREFCNT_dec(self->UnpackSI); self->UnpackSI = 0; }
+		
+		if (a) {
+			SV ** c;
+			c = av_fetch(a, 0, 0);
+			if (c && SvOK(*c)) { self->Unpack = *c; SvREFCNT_inc(*c); }
+			c = av_fetch(a, 1, 0);
+			if (c && SvOK(*c)) { self->Pack = *c; SvREFCNT_inc(*c); }
+			c = av_fetch(a, 2, 0);
+			if (c && SvOK(*c)) { self->UnpackAI = *c; SvREFCNT_inc(*c); }
+			c = av_fetch(a, 3, 0);
+			if (c && SvOK(*c)) { self->PackAI = *c; SvREFCNT_inc(*c); }
+			c = av_fetch(a, 4, 0);
+			if (c && SvOK(*c)) { self->UnpackSI = *c; SvREFCNT_inc(*c); }
+			c = av_fetch(a, 5, 0);
+			if (c && SvOK(*c)) { self->PackSI = *c; SvREFCNT_inc(*c); }
+		}
+	}
+*/
+
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot
 
 double
@@ -394,19 +615,39 @@ constant(name,arg)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Appointment
 
 SV *
-Unpack(record)
+Unpack(record, ...)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     int i;
     AV * e;
-    HV * ret;
+    HV * ret, *h;
     struct Appointment a;
-    (void)SvPV(record, len);
-    unpack_Appointment(&a, SvPV(record, len), len);
     
-    ret = newHV();
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_Appointment(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack appointment");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_Appointment(&a, SvPV(record, len), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
+    (void)SvPV(record, len);
+    unpack_Appointment(&a, (unsigned char*)SvPV(record, len), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
+    
     hv_store(ret, "event", 5, newSViv(a.event), 0);
     hv_store(ret, "begin", 5, newRV_noinc((SV*)tmtoav(&a.begin)), 0);
     
@@ -453,7 +694,6 @@ Unpack(record)
     
     free_Appointment(&a);
     
-    RETVAL = newRV_noinc((SV*)ret);
     }
     OUTPUT:
     RETVAL
@@ -470,7 +710,8 @@ Pack(record)
     struct Appointment a;
     
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
 
     a.event = (s = hv_fetch(h, "event", 5, 0)) ? SvIV(*s) : 0;
     if (s= hv_fetch(h, "begin", 5, 0)) 
@@ -527,12 +768,13 @@ Pack(record)
     a.description = (s = hv_fetch(h, "description", 11, 0)) ? SvPV(*s,na) : 0;
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
-    pack_Appointment(&a, mybuf, &len);
+    pack_Appointment(&a, (unsigned char*)mybuf, &len);
     
     if (a.exception)
 		free(a.exception);
     
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -543,16 +785,35 @@ UnpackAppBlock(record)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     AV * e;
     HV * ret;
     int i;
     struct AppointmentAppInfo a;
-    SvPV(record, len);
-    unpack_AppointmentAppInfo(&a, SvPV(record, len), len);
 
-    ret = newHV();
-    
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_AppointmentAppInfo(&a, (unsigned char*)SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack appointment app block");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_AppointmentAppInfo(&a, (unsigned char*)SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
+    (void)SvPV(record, len);
+    unpack_AppointmentAppInfo(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
+
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
     e = newAV();
@@ -573,8 +834,6 @@ UnpackAppBlock(record)
 
     hv_store(ret, "startOfWeek", 11, newSViv(a.startOfWeek), 0);
 
-    RETVAL = newRV_noinc((SV*)ret);
-
     }
     OUTPUT:
     RETVAL
@@ -592,7 +851,8 @@ PackAppBlock(record)
     struct AppointmentAppInfo a;
     
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
     
     if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
 	    a.renamedcategories = SvIV(*s);
@@ -626,9 +886,10 @@ PackAppBlock(record)
 	else
 		a.startOfWeek = 0;
 
-    pack_AppointmentAppInfo(&a, mybuf, &len);
+    pack_AppointmentAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -636,19 +897,40 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::ToDo
 
 SV *
-Unpack(record)
+Unpack(record, ...)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     int i;
     AV * e;
     HV * ret;
     struct ToDo a;
+
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_ToDo(&a, (unsigned char*)SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack todo");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_ToDo(&a, (unsigned char*)SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
     (void)SvPV(record, len);
-    unpack_ToDo(&a, SvPV(record, len), len);
-    
-    ret = newHV();
+    unpack_ToDo(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
+
+
     hv_store(ret, "indefinite", 10, newSViv(a.indefinite), 0);
     hv_store(ret, "due", 3, newRV_noinc((SV*)tmtoav(&a.due)), 0);  
     hv_store(ret, "priority", 8, newSViv(a.priority), 0);
@@ -660,7 +942,6 @@ Unpack(record)
     
     free_ToDo(&a);
     
-    RETVAL = newRV_noinc((SV*)ret);
     }
     OUTPUT:
     RETVAL
@@ -676,7 +957,8 @@ Pack(record)
     struct ToDo a;
 
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+ 	else {
 
     a.indefinite = (s = hv_fetch(h, "indefinite", 10, 0)) ? SvIV(*s) : 0;
     a.priority = (s = hv_fetch(h, "priority", 8, 0)) ? SvIV(*s) : 0;
@@ -689,9 +971,10 @@ Pack(record)
     a.description = (s = hv_fetch(h, "description", 11, 0)) ? SvPV(*s,na) : 0;
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
-    pack_ToDo(&a, mybuf, &len);
+    pack_ToDo(&a, (unsigned char*)mybuf, &len);
     
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -702,16 +985,35 @@ UnpackAppBlock(record)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     AV * e;
     HV * ret;
     int i;
     struct ToDoAppInfo a;
-    SvPV(record, len);
-    unpack_ToDoAppInfo(&a, SvPV(record, len), len);
 
-    ret = newHV();
-    
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_ToDoAppInfo(&a, (unsigned char*)SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack todo app block");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_ToDoAppInfo(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
+    (void)SvPV(record, len);
+    unpack_ToDoAppInfo(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
+
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
     e = newAV();
@@ -734,8 +1036,6 @@ UnpackAppBlock(record)
 
     hv_store(ret, "sortByPriority", 14, newSViv(a.sortByPriority), 0);
 
-    RETVAL = newRV_noinc((SV*)ret);
-
     }
     OUTPUT:
     RETVAL
@@ -753,7 +1053,8 @@ PackAppBlock(record)
     struct ToDoAppInfo a;
     
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
     
     if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
 	    a.renamedcategories = SvIV(*s);
@@ -785,9 +1086,10 @@ PackAppBlock(record)
     a.dirty = (s = hv_fetch(h, "dirty", 5, 0)) ? SvIV(*s) : 0;
     a.sortByPriority = (s = hv_fetch(h, "sortByPriority", 14, 0)) ? SvIV(*s) : 0;
 
-    pack_ToDoAppInfo(&a, mybuf, &len);
+    pack_ToDoAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -795,19 +1097,38 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Address
 
 SV *
-Unpack(record)
+Unpack(record, ...)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     int i;
     AV * e;
     HV * ret;
     struct Address a;
-    (void)SvPV(record, len);
-    unpack_Address(&a, SvPV(record, len), len);
 
-    ret = newHV();
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_Address(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack address");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_Address(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
+    (void)SvPV(record, len);
+    unpack_Address(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
 
     e = newAV();
     hv_store(ret, "phoneLabel", 10, newRV_noinc((SV*)e), 0);
@@ -825,7 +1146,6 @@ Unpack(record)
     
     free_Address(&a);
     
-    RETVAL = newRV_noinc((SV*)ret);
     }
     OUTPUT:
     RETVAL
@@ -843,7 +1163,8 @@ Pack(record)
     struct Address a;
 
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
 
     if ((s = hv_fetch(h, "phoneLabel", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
     	for (i=0;i<5;i++)
@@ -859,9 +1180,10 @@ Pack(record)
 		for (i=0;i<19;i++)
 			a.entry[i] = 0;
 
-    pack_Address(&a, mybuf, &len);
+    pack_Address(&a, (unsigned char*)mybuf, &len);
     
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -872,15 +1194,34 @@ UnpackAppBlock(record)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     AV * e;
     HV * ret;
     int i;
     struct AddressAppInfo a;
-    SvPV(record, len);
-    unpack_AddressAppInfo(&a, SvPV(record, len), len);
-    
-    ret = newHV();
+
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_AddressAppInfo(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack address app block");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_AddressAppInfo(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
+    (void)SvPV(record, len);
+    unpack_AddressAppInfo(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
     
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
@@ -919,8 +1260,6 @@ UnpackAppBlock(record)
     	av_push(e, newSVpv(a.phonelabels[i],0));
     }
 
-    RETVAL = newRV_noinc((SV*)ret);
-
     }
     OUTPUT:
     RETVAL
@@ -938,7 +1277,8 @@ PackAppBlock(record)
     struct AddressAppInfo a;
     
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
     
     if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
 	    a.renamedcategories = SvIV(*s);
@@ -983,9 +1323,10 @@ PackAppBlock(record)
 		for (i=0;i<8;i++) a.phonelabels[i][0] = 0;
 	for (i=0;i<8;i++) a.phonelabels[i][15] = 0;
 
-    pack_AddressAppInfo(&a, mybuf, &len);
+    pack_AddressAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -993,24 +1334,42 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Memo
 
 SV *
-Unpack(record)
+Unpack(record, ...)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     int i;
     AV * e;
     HV * ret;
     struct Memo a;
+
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_Memo(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack memo");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_Memo(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
     (void)SvPV(record, len);
-    unpack_Memo(&a, SvPV(record, len), len);
-    
-    ret = newHV();
+    unpack_Memo(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
+
     hv_store(ret, "text", 4, newSVpv(a.text,0), 0);
 
     free_Memo(&a);
-
-    RETVAL = newRV_noinc((SV*)ret);
     }
     OUTPUT:
     RETVAL
@@ -1020,22 +1379,24 @@ Pack(record)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     SV ** s;
     HV * h;
     struct Memo a;
     
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
     
     if ((s = hv_fetch(h, "text", 4, 0)))
 	    a.text = SvPV(*s,na);
 	else
 		a.text = 0;
     
-    pack_Memo(&a, mybuf, &len);
+    pack_Memo(&a, (unsigned char*)mybuf, &len);
     
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -1045,15 +1406,34 @@ UnpackAppBlock(record)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     AV * e;
     HV * ret;
     int i;
     struct MemoAppInfo a;
-    SvPV(record, len);
-    unpack_MemoAppInfo(&a, SvPV(record, len), len);
-    
-    ret = newHV();
+
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_MemoAppInfo(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack memo app block");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_MemoAppInfo(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
+    (void)SvPV(record, len);
+    unpack_MemoAppInfo(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
 
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
@@ -1075,8 +1455,6 @@ UnpackAppBlock(record)
 
     hv_store(ret, "sortOrder", 9, newSViv(a.sortOrder), 0);
 
-    RETVAL = newRV_noinc((SV*)ret);
-
     }
     OUTPUT:
     RETVAL
@@ -1094,7 +1472,8 @@ PackAppBlock(record)
     struct MemoAppInfo a;
     
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
     
     if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
 	    a.renamedcategories = SvIV(*s);
@@ -1128,9 +1507,10 @@ PackAppBlock(record)
 	else
 		a.sortOrder = 0;
     
-    pack_MemoAppInfo(&a, mybuf, &len);
+    pack_MemoAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -1138,19 +1518,39 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Mail
 
 SV *
-Unpack(record)
+Unpack(record, ...)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     int i;
     AV * e;
     HV * ret;
     struct Mail a;
+
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_Mail(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack mail");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_Mail(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
     (void)SvPV(record, len);
-    unpack_Mail(&a, SvPV(record, len), len);
+    unpack_Mail(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
     
-    ret = newHV();
     if (a.subject) hv_store(ret, "subject", 7, newSVpv(a.subject,0), 0);
     if (a.from) hv_store(ret, "from", 4, newSVpv(a.from,0), 0);
     if (a.to) hv_store(ret, "to", 2, newSVpv(a.to,0), 0);
@@ -1171,7 +1571,6 @@ Unpack(record)
 		hv_store(ret, "date", 4, newRV_noinc((SV*)tmtoav(&a.date)), 0);
 
     free_Mail(&a);
-    RETVAL = newRV_noinc((SV*)ret);
     }
     OUTPUT:
     RETVAL
@@ -1181,13 +1580,14 @@ Pack(record)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     SV ** s;
     HV * h;
     struct Mail a;
     
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
     
     a.subject = (s = hv_fetch(h, "subject", 7, 0)) ? SvPV(*s,na) : 0;
     a.from = (s = hv_fetch(h, "from", 4, 0)) ? SvPV(*s,na) : 0;
@@ -1208,9 +1608,10 @@ Pack(record)
     a.dated = (s = hv_fetch(h, "date", 4, 0)) ? 1 : 0;
     if (s) avtotm((AV*)SvRV(*s), &a.date);
 
-    pack_Mail(&a, mybuf, &len);
+    pack_Mail(&a, (unsigned char*)mybuf, &len);
     
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -1220,15 +1621,34 @@ UnpackAppBlock(record)
     SV * record
     CODE:
     {
-    int len;
+    STRLEN len;
     AV * e;
     HV * ret;
     int i;
     struct MailAppInfo a;
-    SvPV(record, len);
-    unpack_MailAppInfo(&a, SvPV(record, len), len);
-    
-    ret = newHV();
+
+    /*if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_MailAppInfo(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack mail app block");
+    	}
+    	RETVAL = record;
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_MailAppInfo(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}*/
+    (void)SvPV(record, len);
+    unpack_MailAppInfo(&a, (unsigned char*)SvPV(record, na), len);
+	ret = newHV();
+	RETVAL = newRV_noinc((SV*)ret);
 
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
@@ -1254,8 +1674,6 @@ UnpackAppBlock(record)
     hv_store(ret, "dirtyfieldlabels", 16, newSViv(a.dirtyfieldlabels), 0);
     hv_store(ret, "unsentMessage", 13, newSViv(a.unsentMessage), 0);
 
-    RETVAL = newRV_noinc((SV*)ret);
-
     }
     OUTPUT:
     RETVAL
@@ -1273,7 +1691,8 @@ PackAppBlock(record)
     struct MailAppInfo a;
     
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
-    	croak("record is not a hash reference");
+    	RETVAL = record;
+    else {
     
     if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
 	    a.renamedcategories = SvIV(*s);
@@ -1310,9 +1729,10 @@ PackAppBlock(record)
 	a.dirtyfieldlabels = (s=hv_fetch(h,"dirtyfieldlabels",16,0)) ? SvIV(*s) : 0;
 	a.unsentMessage = (s=hv_fetch(h,"unsentMessage",13,0)) ? SvIV(*s) : 0;
 
-    pack_MailAppInfo(&a, mybuf, &len);
+    pack_MailAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+    }
     }
     OUTPUT:
     RETVAL
@@ -1332,7 +1752,7 @@ Write(socket, msg)
 	int	socket
 	SV *	msg
 	CODE: {
-	    int len;
+	    STRLEN len;
 		RETVAL = pi_write(socket,SvPV(msg,len),len);
 	}
 
@@ -1394,7 +1814,7 @@ Bind(socket, sockaddr)
 	    	a->pi_family = (s = hv_fetch(h, "family", 6, 0)) ? SvIV(*s) : 0;
 			RETVAL = pi_bind(socket, (struct sockaddr*)a, sizeof(struct pi_sockaddr)+strlen(name));
 		} else {
-			int len;
+			STRLEN len;
 			void * c = SvPV(sockaddr, len);
 			RETVAL = pi_bind(socket, (struct sockaddr*)c, len);
 		}
@@ -1451,6 +1871,12 @@ void
 DESTROY(db)
 	PDA::Pilot::DLP::DB *	db
 	CODE:
+	/*if (db->Pack) SvREFCNT_dec(db->Pack);
+	if (db->Unpack) SvREFCNT_dec(db->Unpack);
+	if (db->PackAI) SvREFCNT_dec(db->PackAI);
+	if (db->UnpackAI) SvREFCNT_dec(db->UnpackAI);
+	if (db->PackSI) SvREFCNT_dec(db->PackSI);
+	if (db->UnpackSI) SvREFCNT_dec(db->UnpackSI);*/
 	if (db->handle)
 		dlp_CloseDB(db->socket, db->handle);
 	SvREFCNT_dec(db->connection);
@@ -1477,13 +1903,15 @@ Close(self)
 	RETVAL
 
 Result
-SetSortBlock(self, block)
+SetSortBlock(self, data)
 	PDA::Pilot::DLP::DB *	self
-	SV *	block
+	SV *	data
 	CODE:
 	{
-		int len;
-		void * c = SvPV(block, len);
+		STRLEN len;
+		void * c;
+		/*DoPackSI(data);*/
+		c = SvPV(data, len);
 		RETVAL = dlp_WriteSortBlock(self->socket, self->handle, c, len);
 	}
 	OUTPUT:
@@ -1497,8 +1925,10 @@ GetAppBlock(self, len=0xffff, offset=0)
 	CODE:
 	{
 		int result = dlp_ReadAppBlock(self->socket, self->handle, offset, mybuf, len);
-		if (result >= 0)
+		if (result >= 0) {
 			RETVAL = newSVpv(mybuf, result);
+			/*DoUnpackAI(RETVAL, mybuf, result);*/
+		}
 		else {
 			RETVAL = &sv_undef;
 			self->errno = result;
@@ -1515,8 +1945,10 @@ GetSortBlock(self, len=0xffff, offset=0)
 	CODE:
 	{
 		int result = dlp_ReadSortBlock(self->socket,self->handle, offset, mybuf, len);
-		if (result >= 0)
+		if (result >= 0) {
 			RETVAL = newSVpv(mybuf, result);
+			/*DoUnpackSI(RETVAL, mybuf, result);*/
+		}
 		else {
 			RETVAL = &sv_undef;
 			self->errno = result;
@@ -1526,18 +1958,20 @@ GetSortBlock(self, len=0xffff, offset=0)
 	RETVAL
 
 Result
-SetAppBlock(self, block)
+SetAppBlock(self, data)
 	PDA::Pilot::DLP::DB *	self
-	SV *	block
+	SV *	data
 	CODE:
 	{
-		int len;
+		STRLEN len;
 		void * c;
-		c = SvPV(block, len);
+		/*DoPackAI(data);*/
+		c = SvPV(data, len);
 		RETVAL = dlp_WriteAppBlock(self->socket, self->handle, c, len);
 	}
 	OUTPUT:
 	RETVAL
+
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::RecordDBPtr
 
@@ -1575,7 +2009,6 @@ GetRecord(self, index)
 		int attr, category;
 		unsigned long id;
 		int size, result;
-		printf("Entered getrecord\n");
 	    result = dlp_ReadRecordByIndex(self->socket, self->handle, index, mybuf, &id, &size, &attr, &category);
 	    ReturnReadRecord(mybuf,size);
 	}
@@ -1711,8 +2144,10 @@ SetRecord(self, data, id, attr, category)
 	SV *	data
 	CODE:
 	{
-		int len, result;
+		STRLEN len;
+		int result;
 		void * c;
+		/*PackRecord;*/
 		c = SvPV(data, len);
 		result = dlp_WriteRecord(self->socket, self->handle, attr, id, category, c, len, &RETVAL);
 		if (result<0) {
@@ -1757,8 +2192,10 @@ SetResource(self, data, type, id)
 	int	id
 	CODE:
 	{
-		int len, result;
+		STRLEN len;
+		int result;
 		void * c;
+		/*PackResource;*/
 		c = SvPV(data, len);
 		result = dlp_WriteResource(self->socket, self->handle, type, id, c, len);
 		if (result < 0) {
@@ -1944,12 +2381,11 @@ Delete(self, name, cardno=0)
 	RETVAL
 
 SV *
-Open(self, name, mode=dlpOpenReadWrite, cardno=0, raw=0)
+Open(self, name, mode=dlpOpenReadWrite, cardno=0)
 	PDA::Pilot::DLP *	self
-	int	cardno
-	int	mode
 	char *	name
-	int	raw
+	int	mode
+	int	cardno
 	CODE:
 	{
 		int handle;
@@ -1958,7 +2394,6 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0, raw=0)
 			self->errno = result;
 			RETVAL = &sv_undef;
 		} else {
-			SV ** c = 0;
 			int type;
 			PDA__Pilot__DLP__DB * x = malloc(sizeof(PDA__Pilot__DLP__DB));
 			SV * sv = newSViv((IV)(void*)x);
@@ -1967,29 +2402,50 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0, raw=0)
 			x->socket = self->socket;
 			x->handle = handle;
 			x->errno = 0;
+			/*x->Pack = x->Unpack = 0;
+			x->PackAI = x->UnpackAI = 0;
+			x->PackSI = x->UnpackSI = 0;*/
 			RETVAL = newRV(sv);
 			SvREFCNT_dec(sv);
 			type = dlp_ReadResourceByIndex(x->socket, x->handle, 0, 0, 0, 0, 0);
-			if (!raw) {
-				HV * h = perl_get_hv("PDA::Pilot::Classes", FALSE);
-				if (h)
-					c = hv_fetch(h, name, strlen(name), 0);
-			}
-			
+
 			if ( type == -13) { /* record database */
-				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
-				                     gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));
+				sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));
 			} else {
-				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
-				                     gv_stashpv("PDA::Pilot::DLP::ResourceDBPtr",0));
+				sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::ResourceDBPtr",0));
 			}
+
+			/*if (!raw) {
+				HV * h = perl_get_hv("PDA::Pilot::DBPackers", 0);
+				if (h) {
+					SV ** s = hv_fetch(h, name, strlen(name), 0);
+					if (*s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
+						AV * a = (AV*)SvRV(*s);
+						if (a) {
+							SV ** c;
+							c = av_fetch(a, 0, 0);
+							if (c && SvOK(*c)) { x->Unpack = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 1, 0);
+							if (c && SvOK(*c)) { x->Pack = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 2, 0);
+							if (c && SvOK(*c)) { x->UnpackAI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 3, 0);
+							if (c && SvOK(*c)) { x->PackAI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 4, 0);
+							if (c && SvOK(*c)) { x->UnpackSI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 5, 0);
+							if (c && SvOK(*c)) { x->PackSI = *c; SvREFCNT_inc(*c); }
+						}
+					}
+				}
+			}*/
 		}
 	}
     OUTPUT:
     RETVAL
 
 SV *
-Create(self, name, creator, type, flags, version, cardno=0, raw=0)
+Create(self, name, creator, type, flags, version, cardno=0)
 	PDA::Pilot::DLP *	self
 	char *	name
 	Char4	creator
@@ -1997,7 +2453,6 @@ Create(self, name, creator, type, flags, version, cardno=0, raw=0)
 	int	flags
 	int	version
 	int	cardno
-	int raw
 	CODE:
 	{
 		int handle;
@@ -2006,7 +2461,6 @@ Create(self, name, creator, type, flags, version, cardno=0, raw=0)
 			self->errno = result;
 			RETVAL = &sv_undef;
 		} else {
-			SV ** c = 0;
 			PDA__Pilot__DLP__DB * x = malloc(sizeof(PDA__Pilot__DLP__DB));
 			SV * sv = newSViv((IV)(void*)x);
 			SvREFCNT_inc(ST(0));
@@ -2016,22 +2470,42 @@ Create(self, name, creator, type, flags, version, cardno=0, raw=0)
 			x->errno = 0;
 			RETVAL = newRV(sv);
 			SvREFCNT_dec(sv);
-			if (!raw) {
-				HV * h = perl_get_hv("PDA::Pilot::Classes", FALSE);
-				if (h)
-					c = hv_fetch(h, name, strlen(name), 0);
-			}
+
 			if ( flags & dlpDBFlagResource) { /* resource database */
-				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
-				                     gv_stashpv("PDA::Pilot::DLP::ResourceDBPtr",0));
+				sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::ResourceDBPtr",0));
 			} else {
-				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
-				                     gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));
+				sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));
 			}
+			/*if (!raw) {
+				HV * h = perl_get_hv("PDA::Pilot::DBPackers", 0);
+				if (h) {
+					SV ** s = hv_fetch(h, name, strlen(name), 0);
+					if (*s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
+						AV * a = (AV*)SvRV(*s);
+						if (a) {
+							SV ** c;
+							c = av_fetch(a, 0, 0);
+							if (c && SvOK(*c)) { x->Unpack = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 1, 0);
+							if (c && SvOK(*c)) { x->Pack = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 2, 0);
+							if (c && SvOK(*c)) { x->UnpackAI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 3, 0);
+							if (c && SvOK(*c)) { x->PackAI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 4, 0);
+							if (c && SvOK(*c)) { x->UnpackSI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 5, 0);
+							if (c && SvOK(*c)) { x->PackSI = *c; SvREFCNT_inc(*c); }
+						}
+					}
+				}
+			}*/
 		}
 	}
     OUTPUT:
     RETVAL
+
+
 
 void
 GetAppPref(self, creator, number, backup=1)
@@ -2042,15 +2516,35 @@ GetAppPref(self, creator, number, backup=1)
 	PPCODE:
 	{
 	    int len, version, result;
+	    SV * c, n, v;
 	    result = dlp_ReadAppPreference(self->socket, creator, number, backup, 0xFFFF, mybuf, &len, &version);
 	    
 	    if (result >=0) {
+	    	SV * result = sv_2mortal(newSVpv(mybuf,len));
+	    	int scalar = (GIMME == G_SCALAR);
+	    	/*if (!raw && perl_get_cv("PDA::Pilot::UnpackPref", 0)) {
+	    		int count;
+	        	PUSHMARK(sp);
+	          	XPUSHs(result);
+		    	XPUSHs(sv_2mortal(newSVChar4(creator)));
+		    	XPUSHs(sv_2mortal(newSViv(number)));
+		    	XPUSHs(sv_2mortal(newSViv(version)));
+		    	XPUSHs(sv_2mortal(newSViv(backup)));
+	    		PUTBACK;
+	    		count = perl_call_pv("PDA::Pilot::UnpackPref", G_SCALAR);
+	    		SPAGAIN;
+	    		if (count!=1)
+	    			croak("Unpack pref function failed");
+	    		result = POPs;
+	    		PUTBACK;
+	    	}*/
 		    EXTEND(sp, 4);
-	    	PUSHs(sv_2mortal(newSVpv(mybuf,len)));
-		    if (GIMME != G_SCALAR) {
+	    	PUSHs(result);
+		    if (!scalar) {
 		    	PUSHs(sv_2mortal(newSVChar4(creator)));
 		    	PUSHs(sv_2mortal(newSViv(number)));
 		    	PUSHs(sv_2mortal(newSViv(version)));
+		    	PUSHs(sv_2mortal(newSViv(backup)));
 		    }
 		} else {
 	    	PUSHs(&sv_undef);
@@ -2068,14 +2562,33 @@ SetAppPref(self, data, creator, number, version, backup=1)
 	int	backup
 	PPCODE:
 	{
-	    int len, version, result;
-	    void * buf = SvPV(data, len);
+	    STRLEN len;
+	    int version, result;
+	    void * buf;
+    	/*if (!raw && perl_get_cv("PDA::Pilot::PackPref", 0)) {
+    		int count;
+        	PUSHMARK(sp);
+          	XPUSHs(data);
+	    	XPUSHs(sv_2mortal(newSVChar4(creator)));
+	    	XPUSHs(sv_2mortal(newSViv(number)));
+	    	XPUSHs(sv_2mortal(newSViv(version)));
+	    	XPUSHs(sv_2mortal(newSViv(backup)));
+    		PUTBACK;
+    		count = perl_call_pv("PDA::Pilot::PackPref", G_SCALAR);
+    		SPAGAIN;
+    		if (count!=1)
+    			croak("Pack pref function failed");
+    		data = POPs;
+    		PUTBACK;
+    	}*/
+	    buf = SvPV(data, len);
 	    result = dlp_WriteAppPreference(self->socket, creator, number, backup, version, buf, len);
 		if (result < 0) {
 			self->errno = result;
 			RETVAL = newSVsv(&sv_undef);
-		} else
+		} else {
 			RETVAL = newSViv(result);
+		}
 	}
 
 
@@ -2209,7 +2722,8 @@ Call(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 	PPCODE:
 	{
 		unsigned long retcode;
-		int len, result;
+		STRLEN len;
+		int result;
 		(void)SvPV(data,len);
 		result = dlp_CallApplication(self->socket, creator, type, action, len, SvPV(data,len),
 		                    &retcode, maxretlen, &len, mybuf);
@@ -2230,9 +2744,33 @@ Open(name)
 	char *	name
 	CODE:
 	{
-		RETVAL = malloc(sizeof(PDA__Pilot__File));
+		RETVAL = calloc(sizeof(PDA__Pilot__File),1);
 		RETVAL->errno = 0;
 		RETVAL->pf = pi_file_open(name);
+			/*if (!raw) {
+				HV * h = perl_get_hv("PDA::Pilot::DBPackers", 0);
+				if (h) {
+					SV ** s = hv_fetch(h, name, strlen(name), 0);
+					if (*s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
+						AV * a = (AV*)SvRV(*s);
+						if (a) {
+							SV ** c;
+							c = av_fetch(a, 0, 0);
+							if (c && SvOK(*c)) { RETVAL->Unpack = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 1, 0);
+							if (c && SvOK(*c)) { RETVAL->Pack = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 2, 0);
+							if (c && SvOK(*c)) { RETVAL->UnpackAI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 3, 0);
+							if (c && SvOK(*c)) { RETVAL->PackAI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 4, 0);
+							if (c && SvOK(*c)) { RETVAL->UnpackSI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 5, 0);
+							if (c && SvOK(*c)) { RETVAL->PackSI = *c; SvREFCNT_inc(*c); }
+						}
+					}
+				}
+			}*/
 	}
 	OUTPUT:
 	RETVAL
@@ -2242,9 +2780,33 @@ Create(name, info)
 	char *	name
 	DBInfo	info
 	CODE:
-	RETVAL = malloc(sizeof(PDA__Pilot__File));
+	RETVAL = calloc(sizeof(PDA__Pilot__File),1);
 	RETVAL->errno = 0;
 	RETVAL->pf = pi_file_create(name, &info);
+			/*if (!raw) {
+				HV * h = perl_get_hv("PDA::Pilot::DBPackers", 0);
+				if (h) {
+					SV ** s = hv_fetch(h, name, strlen(name), 0);
+					if (*s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
+						AV * a = (AV*)SvRV(*s);
+						if (a) {
+							SV ** c;
+							c = av_fetch(a, 0, 0);
+							if (c && SvOK(*c)) { RETVAL->Unpack = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 1, 0);
+							if (c && SvOK(*c)) { RETVAL->Pack = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 2, 0);
+							if (c && SvOK(*c)) { RETVAL->UnpackAI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 3, 0);
+							if (c && SvOK(*c)) { RETVAL->PackAI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 4, 0);
+							if (c && SvOK(*c)) { RETVAL->UnpackSI = *c; SvREFCNT_inc(*c); }
+							c = av_fetch(a, 5, 0);
+							if (c && SvOK(*c)) { RETVAL->PackSI = *c; SvREFCNT_inc(*c); }
+						}
+					}
+				}
+			}*/
 	OUTPUT:
 	RETVAL
 
@@ -2263,6 +2825,12 @@ void
 DESTROY(self)
 	PDA::Pilot::File *	self
 	CODE:
+	/*if (self->Pack) SvREFCNT_dec(self->Pack);
+	if (self->Unpack) SvREFCNT_dec(self->Unpack);
+	if (self->PackAI) SvREFCNT_dec(self->PackAI);
+	if (self->UnpackAI) SvREFCNT_dec(self->UnpackAI);
+	if (self->PackSI) SvREFCNT_dec(self->PackSI);
+	if (self->UnpackSI) SvREFCNT_dec(self->UnpackSI);	*/
 	if (self->pf)
 		pi_file_close(self->pf);
 	free(self);
@@ -2289,8 +2857,10 @@ GetAppBlock(self)
 		result = pi_file_get_app_info(self->pf, &buf, &len);
 		if (result)
 		    RETVAL = &sv_undef;
-		else
-		    RETVAL = newSVpv(buf, len);
+		else {
+		    /*DoUnpackAI(RETVAL, buf, len);*/
+			RETVAL = newSVpv(buf, len);
+		}
 	}
 	OUTPUT:
 	RETVAL
@@ -2306,8 +2876,10 @@ GetSortBlock(self)
 		if (result) {
 			self->errno = result;
 		    RETVAL = &sv_undef;
-		} else
-		    RETVAL = newSVpv(buf, len);
+		} else {
+		    /*DoUnpackSI(RETVAL, buf, len);*/
+			RETVAL = newSVpv(buf, len);
+		}
 	}
 	OUTPUT:
 	RETVAL
@@ -2404,26 +2976,30 @@ SetDBInfo(self, info)
 	RETVAL
 
 int
-SetAppBlock(self, info)
+SetAppBlock(self, data)
 	PDA::Pilot::File *	self
-	SV *	info
+	SV *	data
 	CODE:
 	{
-	    int len;
-	    char * c = SvPV(info, len);
+	    STRLEN len;
+	    char * c;
+	    /*DoPackAI(data);*/
+	    c = SvPV(data, len);
 		RETVAL = pi_file_set_app_info(self->pf, c, len);
     }
 	OUTPUT:
 	RETVAL
 
 int
-SetSortBlock(self, info)
+SetSortBlock(self, data)
 	PDA::Pilot::File *	self
-	SV *	info
+	SV *	data
 	CODE:
 	{
 	    int len;
-	    char * c = SvPV(info, len);
+	    char * c;
+	    /*DoPackSI(data);*/
+	    c = SvPV(data, len);
 		RETVAL = pi_file_set_sort_info(self->pf, c, len);
     }
 	OUTPUT:
@@ -2437,8 +3013,11 @@ AddResource(self, data, type, id)
 	int	id
 	CODE:
 	{
-	    int len, result;
-	    void * buf = SvPV(data, len);
+	    STRLEN len;
+	    int result;
+	    void * buf;
+	    /*PackResource;*/
+	    buf = SvPV(data, len);
 		RETVAL = pi_file_append_resource(self->pf, buf, len, type, id);
 	}
 	OUTPUT:
@@ -2453,8 +3032,11 @@ AddRecord(self, data, uid, attr, category)
 	int	category
 	CODE:
 	{
-	    int len, result;
-	    void * buf = SvPV(data, len);
+	    STRLEN len;
+	    int result;
+	    void * buf;
+	    /*PackRecord;*/
+	    buf = SvPV(data, len);
 		RETVAL = pi_file_append_record(self->pf, buf, len, attr, category, uid);
 	}
 	OUTPUT:
@@ -2480,3 +3062,4 @@ Retrieve(self, socket, cardno)
 	RETVAL = pi_file_retrieve(self->pf, socket->socket, cardno);
 	OUTPUT:
 	RETVAL
+

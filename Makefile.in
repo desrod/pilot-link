@@ -21,19 +21,15 @@ top_builddir = .
 PURELINK =
 PURIFY =
 
-TCL_LIBS = @TCL_LIBS@
-TCL_LIB_SPEC = @TCL_LIB_SPEC@
-TCL_INC = @TCL_INC@
-TK_LIBS = @TK_LIBS@
-TK_LIB_SPEC = @TK_LIB_SPEC@
-TK_INC = @TK_INC@
-TCLTK_LIBS = @TCLTK_LIBS@
+TCLTK_LIBS = @TCLTKLIBS@
+TCLTK_FLAGS = @TCLTKFLAGS@
 
 CC = @CC@
 CXX = @CXX@
-CFLAGS = @CFLAGS@ @CWFLAG@ $(RLDEFS) -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
+CDEFS = -DLIBDIR=\"$(libdir)\" 
 # -DDEBUG
-CXXFLAGS = @CXXFLAGS@ @CWFLAG@ $(RLDEFS) -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
+CFLAGS = -I./include -I$(srcdir)/include @CFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
+CXXFLAGS = -I./include -I$(srcdir)/include @CXXFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 # -lefence
@@ -67,11 +63,12 @@ CXXLINK = $(LIBTOOL) --mode=link $(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFL
 .cc.o:
 	$(CXX) $(CXXFLAGS) -c $<
 
-CCEXECS = ccexample$(EXT) iambicexample$(EXT)
 
-TCLEXECS = @TCLEXECS@
+WITHTCL = $(TCLEXECS)
+WITHCXX = $(CXXEXECS)
+WITHPERL5 = $(PERLEXECS)
 
-EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
+CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
 		install-memo$(EXT) install-user$(EXT)\
 		install-todos$(EXT) pilot-addresses$(EXT) pilot-clip$(EXT)\
 		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT)\
@@ -79,10 +76,15 @@ EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
 		getrom$(EXT) pi-port$(EXT) \
-		test-connector$(EXT) test-acceptor$(EXT) $(TCLEXECS)
+		test-connector$(EXT) test-acceptor$(EXT)
 
+CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
+
+TCLEXECS = pilot-debug$(EXT)
 
 PERLEXECS = pilot-undelete
+
+EXECS = $(CEXECS) @WITHTCL@ @WITHCXX@ @WITHPERL5@
 
 PILIB = libsock/libpisock.la
 PICCLIB = @libcclib@
@@ -103,10 +105,6 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	fi
 	for p in $(EXECS); do \
 		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
-		$(STRIP) $(bindir)/$$p; \
-	done
-	for p in $(EXECS) $(PERLEXECS); do \
-		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
 	done
 	for h in include/*.h $(srcdir)/include/*.h; do \
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
@@ -120,7 +118,7 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	$(LIBTOOL) -n --finish $(libdir)
 
 uninstall: $(EXECS)
-	-for p in $(EXECS) $(PERLEXECS) pilot-debug; do \
+	-for p in $(EXECS) $(PERLEXECS) $(CXXEXECS) $(TCLEXECS); do \
 		$(RM) $(bindir)/$$p; \
 	done
 	-rmdir $(bindir)
@@ -227,19 +225,36 @@ parsedate.c: parsedate.y
 	$(YACC) parsedate.y
 	mv y.tab.c parsedate.c
 
+pilot-undelete: pilot-undelete.pl
+	echo '#!@PERL5@' > pilot-undelete
+	cat pilot-undelete.pl >> pilot-undelete
+	chmod +x pilot-undelete
+
+FORCE:
+
+Python:	FORCE
+	cd Python; make
+
+Perl5 Perl: FORCE
+	cd Perl5; @PERL5@ Makefile.PL && make
+
+Tcl: FORCE
+	cd Tcl; make
+
 strip: $(EXECS)
 	$(STRIP) $(EXECS)
 
 distclean: clean
 	@-p4 edit Makefile.os2 */Makefile.os2 */Makefile.in 2>&1 >> /dev/null
+	@-chmod +w Makefile.os2 */Makefile.os2 */Makefile.in 2>&1 >> /dev/null
 	$(SUBMAKE_COMM) depend
 	$(SUBMAKE_COMM_CC) depend
 	$(RM) Makefile libsock/Makefile libsock/Makefile.in~ include/pi-config.h
 	$(RM) libcc/Makefile libcc/Makefile.in~
-	$(RM) config.log config.status config.cache
-	$(RM) PiDebug.log 
+	$(RM) config.log config.status config.cache libtool
+	$(RM) PiDebug.log
 	-cd Perl5 ; make realclean
-	-cd Python ; make clean
+	-cd Python ; make distclean
 	-cd Tcl ; make clean
 	$(RM) *~ *.orig */*~ */*.orig
 	perl scripts/os2dist.pl
@@ -248,8 +263,8 @@ distclean: clean
 clean:
 	$(RM) *.o *.a *.lo *.la core a.out test_s test_c install-prc$(EXT) pilot-debug$(EXT)
 	$(RM) -r .libs
-	$(RM) $(EXECS) validate
-	$(RM) pilot.rom pilot2.rom libtool
+	$(RM) $(CEXECS) $(TCLEXECS) $(CXXEXECS) $(PERLEXECS) validate
+	$(RM) pilot.rom pilot2.rom
 	$(SUBMAKE_COMM) clean
 	$(SUBMAKE_COMM_CC) clean
 	

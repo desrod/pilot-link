@@ -20,15 +20,6 @@
 #include <pi-socket.h>
 #include <pi-dlp.h>
 
-Tcl_Namespace *
-Tcl_CreateNamespace(Tcl_Interp *interp, char *name, ClientData clientData, Tcl_NamespaceDeleteProc *deleteProc);
-Tcl_Namespace *
-Tcl_FindNamespace(Tcl_Interp *interp, char *name, Tcl_Namespace *contextNsPtr, int flags);
-int
-Tcl_PushCallFrame(Tcl_Interp *interp, Tcl_CallFrame *callFramePtr, Tcl_Namespace *namespacePtr, int isProcCallFrame);
-void
-Tcl_PopCallFrame(Tcl_Interp *interp);
-
 struct tcl_e {char *name; long value;};
 
 char buf[0xffff];
@@ -966,48 +957,20 @@ static struct { char * name; Tcl_ObjCmdProc *proc; int export;} oprocs[] = {
 
 int Pdapilot_Init(Tcl_Interp *interp) {
 	int i;
-	Tcl_Namespace  * namespacePtr;
-	Tcl_CallFrame frame;
 	
-	namespacePtr = Tcl_FindNamespace(interp, "Pi", 0, TCL_GLOBAL_ONLY);
-	
-	if (!namespacePtr)
-	   namespacePtr = Tcl_CreateNamespace(interp, "Pi", (ClientData) NULL,
-	                       (Tcl_NamespaceDeleteProc *) NULL);
-	                      
-	Tcl_PushCallFrame(interp, &frame, namespacePtr,
-            /*isProcCallFrame*/ 0);
-
 	for(i=0;procs[i].name;i++) {
 		Tcl_CreateCommand(interp, procs[i].name, procs[i].proc, 0, 0);
-		if (procs[i].export)
-			Tcl_VarEval(interp, "namespace export ", procs[i].name, 0);
 	}
 	for(i=0;oprocs[i].name;i++) {
 		Tcl_CreateObjCommand(interp, oprocs[i].name, oprocs[i].proc, 0, 0);
-		if (oprocs[i].export)
-			Tcl_VarEval(interp, "namespace export ", oprocs[i].name, 0);
 	}
 	Tcl_VarEval(interp, "namespace export Dlp", 0);
 	
- Tcl_PopCallFrame(interp);
-
-	namespacePtr = Tcl_FindNamespace(interp, "Pi::Dlp", 0, TCL_GLOBAL_ONLY);
-	
-	if (!namespacePtr)
-	   namespacePtr = Tcl_CreateNamespace(interp, "Pi::Dlp", (ClientData) NULL,
-	                       (Tcl_NamespaceDeleteProc *) NULL);
-	                      
-	Tcl_PushCallFrame(interp, &frame, namespacePtr,
-            /*isProcCallFrame*/ 0);
-
 	for(i=0;doprocs[i].name;i++) {
 		Tcl_CreateObjCommand(interp, doprocs[i].name, doprocs[i].proc, 0, 0);
-		if (doprocs[i].export)
-			Tcl_VarEval(interp, "namespace export ", doprocs[i].name, 0);
 	}
 	
- Tcl_PopCallFrame(interp);
+	Tcl_PkgProvide(interp, "Pdapilot", PACKAGE_VERSION);
 
 	return TCL_OK;
 }

@@ -14,12 +14,12 @@ top_builddir = ..
 
 CC = @CC@
 CXX = @CXX@
-CFLAGS = @CFLAGS@ @CWFLAG@ -I../include -I$(srcdir)/../include
+CFLAGS = -I../include -I$(srcdir)/../include @CFLAGS@ @CWFLAG@
 # -DPADP_TRACE
 # -DNO_DLP_TRACE
 # -DNO_SERIAL_TRACE
 # -DDEBUG
-CXXFLAGS = @CXXFLAGS@ @CWFLAG@ -I../include -I$(srcdir)/../include
+CXXFLAGS = -I../include -I$(srcdir)/../include @CXXFLAGS@ @CWFLAG@
 AR = ar
 ARFLAGS = @ARFLAGS@
 RANLIB = @RANLIB@
@@ -38,7 +38,7 @@ all: libpicc.la
 
 libpicc.la: $(CCOBJS)
 	$(LIBTOOL) --mode=link $(CXX) $(CXXFLAGS) \
-		-export-dynamic -rpath $(libdir) -version-info 0:0:0 \
+		-export-dynamic -static -rpath $(libdir) -version-info 0:0:0 \
 		-o libpicc.la $(CCOBJS)
 
 libpicc.a: $(CCOBJS)

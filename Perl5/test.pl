@@ -1,4 +1,4 @@
-sub FooBar { return $_[0] . "x" };
+sub FooBar { print "Foo: $_[0]\n"; $x = $_[0]; $x =~ s/[aeiou]/\U$&/g; return $x };
 
 use PDA::Pilot;
 
@@ -25,6 +25,8 @@ $socket = PDA::Pilot::OpenPort($port);
 print "Now press the HotSync button\n";
 
 $dlp = PDA::Pilot::Accept($socket);
+
+$PDA::Pilot::UnpackPref{mail}->{3} = sub { $_[0] . "x"};
 
 @pref = $dlp->GetAppPref('mail', 3);
 

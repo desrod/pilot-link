@@ -33,7 +33,7 @@ PYMAKE=		make -f $(LIBPL)/Makefile
 LIBSO=		`$(PYMAKE) -s echodestshared`
 
 # Put your module name here:
-MODULE=pdapilot
+MODULE=_pdapilot
 
 # Put the object files for your module here:
 OBS=$(MODULE).o
@@ -46,7 +46,7 @@ CFLAGS=-O -I../include
 
 # If you have any Python modules, include them here, so that they
 # can get installed.
-PYMODULES=
+PYMODULES=pdapilot
 
 build:
 	if [ "$(MODULE)" != your-module ]; then \
@@ -58,17 +58,9 @@ build:
 		asharedmodule; \
 	fi
 
-# Normally we don't install .py files:
 install: installso installpyc
 
-# But sometimes we may want to:
-installpy: install
-	for m in $(PYMODULES) the-end; do \
-	  if [ "$$m" != the-end ]; then \
-	    cp $$m.py $(installdir)/lib/python$(VERSION)/; \
-	  fi; \
-	done
-
+uninstall: uninstallso uninstallpyc
 
 installso: build
 	if [ "$(MODULE)" != your-module ]; then \
@@ -80,12 +72,30 @@ installpyc:
 	for m in $(PYMODULES) the-end; do \
 	  if [ "$$m" != the-end ]; then \
 	    python -c "import $$m"; \
+	    cp $$m.py $(installdir)/lib/python$(VERSION)/; \
 	    cp $$m.pyc $(installdir)/lib/python$(VERSION)/; \
 	  fi; \
 	done
 
-clean::
-	-rm -f *.o *.so *~ *# so_locations
+uninstallpyc:
+	for m in $(PYMODULES) the-end; do \
+	  if [ "$$m" != the-end ]; then \
+	    rm -f $(installdir)/lib/python$(VERSION)/$$m.py; \
+	    rm -f $(installdir)/lib/python$(VERSION)/$$m.pyc; \
+	  fi; \
+	done
 
-distclean:
+
+uninstallso:
+	if [ "$(MODULE)" != your-module ]; then \
+		rm -f $(LIBP)/sharedmodules/$(MODULE).so;	\
+	fi
+
+test:
+	python test.py
+
+clean::
+	-rm -f *.o *.so *.pyc *~ *# so_locations
+
+distclean: clean
 	rm Makefile

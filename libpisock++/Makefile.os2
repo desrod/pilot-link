@@ -14,12 +14,12 @@ top_builddir = ..
 
 CC = gcc
 CXX = gcc
-CFLAGS = -g -O2 -fno-strength-reduce -Wall -I../include -I$(srcdir)/../include
+CFLAGS = -I../include -I$(srcdir)/../include -g -O2 -fno-strength-reduce -Wall
 # -DPADP_TRACE
 # -DNO_DLP_TRACE
 # -DNO_SERIAL_TRACE
 # -DDEBUG
-CXXFLAGS = -g -O2 -fno-strength-reduce -Wall -I../include -I$(srcdir)/../include
+CXXFLAGS = -I../include -I$(srcdir)/../include -g -O2 -fno-strength-reduce -Wall
 AR = ar
 ARFLAGS = -cur
 RANLIB = ar -s
@@ -38,7 +38,7 @@ all: libpicc.la
 
 libpicc.la: $(CCOBJS)
 	$(LIBTOOL) --mode=link $(CXX) $(CXXFLAGS) \
-		-export-dynamic -rpath $(libdir) -version-info 0:0:0 \
+		-export-dynamic -static -rpath $(libdir) -version-info 0:0:0 \
 		-o libpicc.la $(CCOBJS)
 
 libpicc.a: $(CCOBJS)

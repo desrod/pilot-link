@@ -1,3 +1,22 @@
+Jul 6, 1997 	Kenneth Albanowski 0.7.3
+
+	Heavily modifed Python binding to use OO approach to record manipulation
+		and packing. Read the README and test.py files in the Python
+		directory for more information.
+	Added 'struct sockaddr;' reference to pi-socket.h to allow use by code
+		that has not pulled in the full set of socket headers.
+	Added to configure the --with-cpp and --with-perl5 options to allow
+		choice (or avoidance, via '--without') of the C++ compiler and Perl
+		5 interpreter, respectively. ('onfigure --help' for list.)
+	Once library is built, interpreter bindings may be built via 'make Perl5',
+		'make Tcl', or 'make Python'.
+	Changed configure interpreter selection to try to choose newer interpreter
+		versions over older ones.
+	Removed shared library generation from C++ library (it has too much of a
+		chance of breaking.)
+	Reversed -I directives in Makefiles so that current headers come before
+		installed headers.
+
 Jun 29, 1997	Kenneth Albanowski 0.7.2
 
 	Complete reimplemenation of library production, using version 0.9h of

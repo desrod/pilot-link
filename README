@@ -13,10 +13,10 @@ Sorry for not providing decent information here. The basics are:
      
 Note on pilot-debug: this program is a work-in-progress, and requires Tcl
 7.5 (or greater) and optionally Tk 4.1 (or greater) and/or Readline 2.0.
-You'll need to modify Makefile to compile it (the directions are right at
-the top.) You must have install pilot-link or else run pilot-debug in the
-pilot-link source directory if you want the fancy images for the Remote UI
-window.
+You'll need to modify Makefile to to use Readline 2.0, and if your Tcl or Tk
+aren't in standard places, you'll need to wiggle configure or the Makefile.
+You must have install pilot-link or else run pilot-debug in the pilot-link
+source directory if you want the fancy images for the Remote UI window.
 
 Usage notes:
 
@@ -27,7 +27,9 @@ Usage notes:
   
   The default connection rate is 9600 baud. You are welcome to try higher
   baud rates (19200, 38400, or 57600) by setting the PILOTRATE environment
-  variable.
+  variable, but various machines have various limitations. (Be careful about
+  38400 on a Linux box if you've been using setserial to change the
+  multiplier.)
   
   pilot-mail (which requires a PalmPilot with the new Mail application, as
   well as sendmail and/or a POP3 server) is still in the experimental stage. 

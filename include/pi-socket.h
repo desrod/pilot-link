@@ -9,7 +9,7 @@ extern "C" {
 
 #define PILOT_LINK_VERSION 0
 #define PILOT_LINK_MAJOR 7
-#define PILOT_LINK_MINOR 2
+#define PILOT_LINK_MINOR 3
 
 #define PI_AF_SLP 0x0051        /* arbitrary, for completeness, just in case */
 #define PI_AF_INETSLP 0x0054    
@@ -38,6 +38,8 @@ struct pi_skb;
 struct pi_mac;
 
 struct pi_socket;
+
+struct sockaddr;
 
 extern int pi_socket PI_ARGS((int domain, int type, int protocol));
 extern int pi_connect PI_ARGS((int pi_sd, struct sockaddr *remote_addr, int addrlen));
