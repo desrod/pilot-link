@@ -14,7 +14,7 @@
 #include <float.h>
 #endif
 #include <math.h>
-#include <values.h>
+#include <float.h>
 
 #include "findme.h"
 #include "poptint.h"
