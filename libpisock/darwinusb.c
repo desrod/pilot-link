@@ -553,7 +553,7 @@ device_added (void *refCon, io_iterator_t iterator)
 static IOReturn
 configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, UInt8 *inputPipeNumber, UInt8 *outputPipeNumber)
 {
-	UInt8 numConf;
+	UInt8 numConf, conf;
 	IOReturn kr;
 	IOUSBConfigurationDescriptorPtr confDesc;
 
@@ -562,21 +562,31 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 
 	kr = (*dev)->GetNumberOfConfigurations (dev, &numConf);
 	if (!numConf)
+	{
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: device has zero configurations!\n"));
 		return -1;
-
-	kr = (*dev)->GetConfigurationDescriptorPtr(dev, 0, &confDesc);
-	if (kr)
-	{
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get config descriptor for index %d (err = %08x)\n", 0, kr));
-		return kr;
 	}
 
-	kr = (*dev)->SetConfiguration(dev, confDesc->bConfigurationValue);
-	if (kr)
+	/* try all possible configurations if the first one fails
+	 * (shouldn't happen in most cases though)
+	 */
+	for (conf=0; conf < numConf; conf++)
 	{
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to set configuration to value %d (err=%08x)\n", (int)confDesc->bConfigurationValue, kr));
-		return kr;
+		kr = (*dev)->GetConfigurationDescriptorPtr(dev, 0, &confDesc);
+		if (kr)
+		{
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get config descriptor for index %d (err=%08x numConf=%d)\n", 0, kr, (int)numConf));
+			continue;
+		}
+
+		kr = (*dev)->SetConfiguration(dev, confDesc->bConfigurationValue);
+		if (kr == kIOReturnSuccess)
+			break;
+
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to set configuration to value %d (err=%08x numConf=%d)\n", (int)confDesc->bConfigurationValue, kr, (int)numConf));
 	}
+	if (conf == numConf)
+		return kr;
 
 	/*
 	 * Device specific magic incantations
