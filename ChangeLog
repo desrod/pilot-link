@@ -1,3 +1,9 @@
+2002-10-02  JP Rosevear  <jpr@ximian.com>
+
+	* src/Makefile.am: dist getopt sources
+
+	* src/pilot-datebook/Makefile.am: ditto
+
 2002-09-28  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* include/pi-datebook.hxx: Remove use of antiquated <iostream.h>
@@ -17,8 +23,13 @@
 
 2002-09-26  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/dlp.c (dlp_response_read): base the arg type on ANDing
+	with the byte value for the argid instead of guessing the argid
+	
+2002-09-26  JP Rosevear  <jpr@ximian.com>
+
 	* libpisock/dlp.c (dlp_CallApplication): check result before using
-	response
+	response (Owen Stenseth <owen@bonemachine.org>)
 
 2002-09-25  David A. Desrosiers <hacker at gnu-designs dot com>
 
