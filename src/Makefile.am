@@ -1,4 +1,4 @@
-SUBDIRS=prc pix pilot-datebook
+SUBDIRS=prc pix
 
 if ENABLE_USERLAND
 
