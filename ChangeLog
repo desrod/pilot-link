@@ -1,3 +1,13 @@
+2001-06-06  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* Fixed/reverted the mess with the GPL vs. LGPL headers in a slew of
+	  files. I made a mistake back in October 2000 and put the wrong
+	  banners in the wrong files.
+
+	* tools/Perl5/Artistic: Removed, it's not used anywhere
+
+	* libsock/dlp-backup.c: Removed, redundant file
+
 2001-05-28  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* tools/Perl5/Pilot.xs: Fixed tabbing out of order
