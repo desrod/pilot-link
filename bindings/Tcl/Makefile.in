@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -117,7 +117,11 @@ VERSION = @VERSION@
 WISH_PROG = @WISH_PROG@
 YACC = @YACC@
 
-INCLUDES =  	-I../../include				-I$(top_srcdir)/include			-DPACKAGE_VERSION=\"1.0\"		$(TCL_INCLUDES)
+INCLUDES = \
+	-I../../include			\
+	-I$(top_srcdir)/include		\
+	-DPACKAGE_VERSION=\"1.0\"	\
+	$(TCL_INCLUDES)
 
 
 bin_PROGRAMS = pitclsh
@@ -125,15 +129,21 @@ lib_LTLIBRARIES = libpitcl.la
 
 libpitcl_la_SOURCES = pitcl.c
 
-libpitcl_la_LIBADD =  	$(TCL_LIB_SPEC)					$(top_builddir)/libpisock/libpisock.la
+libpitcl_la_LIBADD = \
+	$(TCL_LIB_SPEC)				\
+	$(top_builddir)/libpisock/libpisock.la
 
 
-libpitcl_la_LDFLAGS =  	-export-dynamic -version-info 0:0:0
+libpitcl_la_LDFLAGS = \
+	-export-dynamic -version-info 0:0:0
 
 
 pitclsh_SOURCES = tclAppInit.c
 
-pitclsh_LDADD =  	$(TCL_LIB_SPEC)					$(top_builddir)/libpisock/libpisock.la		libpitcl.la
+pitclsh_LDADD = \
+	$(TCL_LIB_SPEC)				\
+	$(top_builddir)/libpisock/libpisock.la	\
+	libpitcl.la
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../config.h
@@ -163,7 +173,7 @@ DIST_COMMON =  README Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DEP_FILES =  .deps/pitcl.P .deps/tclAppInit.P
 SOURCES = $(libpitcl_la_SOURCES) $(pitclsh_SOURCES)
@@ -285,7 +295,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
