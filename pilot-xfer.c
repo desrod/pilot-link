@@ -81,7 +81,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:b:u:s:r:i:m:f:d:e:P:lLa:FOIqc";
+static const char *optstring = "-hvp:b:u:s:r:i:m:f:d:e:P:lLa:FOIqc";
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -1078,6 +1078,11 @@ int main(int argc, char *argv[])
 		if (c > 1) {
 			last_c=c;
 		}
+	}
+
+	if (argc < 2) {
+		Help(progname);
+		printf("Insufficient number of arguments\n");
 	}
 
 	pi_close(sd);
