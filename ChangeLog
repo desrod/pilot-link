@@ -45,8 +45,8 @@
 
         * src/install-expenses.c: Code cleanup, added getopt_long()
 
-        * src/install-todo.c: Added new ToDo conduit from Robert A. Kaplan,
-	  code cleanup
+        * src/install-todo.c: Added new ToDo conduit from Martin Fick, code
+	  cleanup
 
         * src/install-todos.c: Expanded display_help() slightly
 

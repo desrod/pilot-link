@@ -1,7 +1,8 @@
 /*
  * install-todolist.c:  Palm ToDo list installer
  *
- * Copyright 1996, Robert A. Kaplan
+ * Copyright 2002, Martin Fick, based on code in install-todos by Robert A.
+ * 		   Kaplan
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
