@@ -27,10 +27,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "pi-macros.h"
 #include "pi-debug.h"
 #include "pi-socket.h"
-#include "pi-source.h"
 #include "pi-dlp.h"
 
 /* Prototypes */
@@ -48,18 +46,20 @@ int pilot_connect(char *port);
 	goto error; \
   }
 
-int
-main (int argc, char **argv)
+int main (int argc, char **argv)
 {
-	int sd;
-	int result;
+	int 	i,
+		sd,
+		result,
+		refs[255],
+		ref_length,
+		len;
+
 	time_t t1;
 	char name[255];
-	int refs[255];
-	int ref_length, len;
+
 	unsigned long flags;
-	int i;
-	
+
 	sd = pilot_connect (argv[1]);
 
 	t1 = time (NULL);
