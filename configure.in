@@ -528,6 +528,14 @@ AC_SUBST(JAVAC)
 AC_SUBST(JAR)
 AC_SUBST(JAVABASE)	
 
+dnl ******************************
+dnl TCL/ITCL/TK
+dnl ******************************
+
+echo "Checking your Tcl/Tk installation"
+PILOT_LINK INIT
+PILOT_LINK_PATH_TCLCONFIG
+
 
 dnl ******************************
 dnl Python
@@ -682,7 +690,6 @@ AC_OUTPUT([
 	doc/man/pi-getram.1
 	doc/man/pi-getrom.1
 	doc/man/pilot-addresses.1
-	doc/man/pilot-foto.1
 	doc/man/pilot-link.7
 	doc/man/pilot-xfer.1
 	doc/man/read-ical.1
@@ -713,6 +720,8 @@ echo "
 
   External Language Support
   -------------------------.
+  TCL support............. : $msg_tcl	$TCL_VERSION   
+  TK Support.............. : $msg_tk	$TK_VERSION
   Java support............ : $msg_java	
   Python support.......... : $msg_python	$PYTHONVER
   Perl support............ : $msg_perl	$PERL_VERSION
