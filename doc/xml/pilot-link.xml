@@ -95,7 +95,7 @@
          <para>install-netsync</para>
          <para>reads or sets the Network Preferences information on a Palm
             Device. Modifies the "Network Preference" settings and reports
-            additional intormation about the Palm, such as the IP, hostname,
+            additional information about the Palm, such as the IP, hostname,
             and other information as they are set on the Palm.
          </para>
       </refsect2>
@@ -110,7 +110,7 @@
       <refsect2>
          <para>install-user</para>
          <para>Reads or sets a Palm User and UserID on a Palm Device. Modifies
-            the "User Preference" settings and reports additional intormation
+            the "User Preference" settings and reports additional information
             about the Palm, such as the Username and UserID as they are set on
             the Palm
          </para>

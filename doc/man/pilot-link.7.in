@@ -72,7 +72,7 @@ install-netsync
 .PP
 reads or sets the Network Preferences information on a Palm
 Device. Modifies the "Network Preference" settings and reports
-additional intormation about the Palm, such as the IP, hostname,
+additional information about the Palm, such as the IP, hostname,
 and other information as they are set on the Palm.
 .SS 
 install-todo
@@ -86,7 +86,7 @@ Updates the Palm ToDo list with entries from a local file.
 install-user
 .PP
 Reads or sets a Palm User and UserID on a Palm Device. Modifies
-the "User Preference" settings and reports additional intormation
+the "User Preference" settings and reports additional information
 about the Palm, such as the Username and UserID as they are set on
 the Palm
 .SS 
