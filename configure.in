@@ -701,7 +701,7 @@ echo "
   Options detected/selected 
   -------------------------.
   pilot-link version...... : $VERSION
-  libpisock version....... : $PISOCK_CURRENT.$PISOCK_REVISION.$PISOCK_AGE
+  libpisock version....... : $PISOCK_CURRENT.$PISOCK_AGE.$PISOCK_REVISION
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
