@@ -1,4 +1,4 @@
-/* ex: set tabstop=8 expandtab: */
+/* ex: set tabstop=4 expandtab: */
 /* 
  * pilot-xfer.c:  Palm Database transfer utility
  *
@@ -28,16 +28,13 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <signal.h>
 #include <utime.h>
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
 
-#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-file.h"
-#include "pi-dlp.h"
 #include "pi-version.h"
 #include "pi-header.h"
 
@@ -71,7 +68,23 @@ typedef struct {
 static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
-void packInt(byte* dest, unsigned long l, int size);
+
+typedef enum { 
+  palm_media_ram, 	/* media_type 0 */
+  palm_media_rom, 	/* media_type 1 */
+  palm_media_flash 	/* media_type 2 */
+} palm_media_t;
+
+typedef enum { 
+  backup, 
+  install, 
+  fetch,
+  list,
+  set_palm_time,
+  no_operation
+} palm_op_t;
+
+char *strndup(const char *s, size_t n);
 
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
@@ -96,25 +109,26 @@ struct option options[] = {
 	{"Flash",       no_argument,       NULL, 'F'},
 	{"Osflash",     no_argument,       NULL, 'O'},
 	{"Illegal",     no_argument,       NULL, 'I'},
+        {"verbose",     no_argument,       NULL, 'V'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "-p:hvb:u:s:tSr:i:m:f:d:e:PlLa:x:FOI";
+static const char *optstring = "-p:hvb:u:s:tSr:i:m:f:d:e:PlLa:x:FOIV";
 
 int	novsf	= 0;
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
-int 	sd 	= 0;
+int 	sd 	= -1;
 char *	port 	= NULL;
 
 #define MAXEXCLUDE 100
 char 	*exclude[MAXEXCLUDE];
 int 	numexclude = 0;
 
-#define BACKUP 1<<0
-#define UPDATE 1<<1
-#define SYNC 1<<2
+#define BACKUP (1<<0)
+#define UPDATE (1<<1)
+#define SYNC (1<<2)
 
 /***********************************************************************
  *
@@ -141,7 +155,7 @@ static void MakeExcludeList(char *efile)
 		if (temp[strlen(temp) - 1] == '\n')
 			temp[strlen(temp) - 1] = '\0';
 		printf("Now excluding: %s\n", temp);
-		exclude[numexclude++] = strdup(temp);
+		exclude[numexclude++] = strndup(temp, sizeof(temp));
 		if (numexclude == MAXEXCLUDE) {
 			printf("Maximum number of exclusions reached [%d]\n", MAXEXCLUDE);
 			break;
@@ -216,7 +230,7 @@ static void Connect(void)
  {
 	if (sd != 0)
 		return;
-  
+
 	sd = pilot_connect(port);
 	if (sd < 0)
 		exit(1);
@@ -237,14 +251,12 @@ static void VoidSyncFlags(void)
 {
 	struct 	PilotUser User;
 
-	Connect();
-
-	if (dlp_ReadUserInfo(sd, &User) >= 0) {
-		User.lastSyncPC = 0x00000000;	
+	if (dlp_ReadUserInfo(sd, &User) == 0) {
 		/* Hopefully unique constant, to tell any Desktop software
 		   that databases have been altered, and that a slow sync is
 		   necessary 
 		 */
+		User.lastSyncPC = 0x00000000;	
 		User.lastSyncDate = User.successfulSyncDate = time(0);
 		dlp_WriteUserInfo(sd, &User);
 	}
@@ -267,8 +279,8 @@ static void RemoveFromList(char *name, char **list, int max)
 
 	for (i = 0; i < max; i++) {
 		if (list[i] != NULL && strcmp(name, list[i]) == 0) {
-			free(list[i]);
 			list[i] = NULL;
+			free(list[i]);
 		}
 	}
 }
@@ -290,23 +302,25 @@ static int creator_is_PalmOS(long creator)
 		long 	L;
 		char 	C[4];
 	} buf;
+	
+	union buf;
 
 	int 	n;
 
-	static long special_cases[] = {
-		pi_mktag('p', 'p', 'p', '_'),
-		pi_mktag('u', '8', 'E', 'Z'),
-	};
+        static long special_cases[] = {
+                pi_mktag('p', 'p', 'p', '_'),
+                pi_mktag('u', '8', 'E', 'Z'),
+  
+                /* These cause a reset/crash on OS5 when accessed       */
+                pi_mktag('P', 'M', 'H', 'a'),   /* Phone Link Update    */
+                pi_mktag('P', 'M', 'N', 'e'),   /* Ditto                */
+                pi_mktag('F', 'n', 't', '1'),   /* Hires font resource  */
+                pi_mktag('m', 'o', 'd', 'm'),
+        };       
 
-	/* Test for special cases -- PalmOS CRIDs outside of lowercase alpha
-	   range */
-	for (n = 0; n < sizeof(special_cases) / sizeof(long); n++)
-
-		if (creator == special_cases[n])
-			return 1;
-
-	/* Test for all lowercase alpha -- range reserved by PalmOS */
-	buf.L = creator;
+        for (n = 0; n < sizeof(special_cases) / sizeof(long); n++)
+                if (creator == special_cases[n])
+                        return 1;
 
 	for (n = 0; n < 4; n++)
 		if (buf.C[n] < 'a' || buf.C[n] > 'z')
@@ -319,19 +333,21 @@ static int creator_is_PalmOS(long creator)
  *
  * Function:    Backup
  *
- * Summary:     Build a filelist and back up the Palm to destination
+ * Summary:     Build a file list and back up the Palm to destination
  *
  * Parameters:  None
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Backup(char *dirname, unsigned long int flags, int rom, 
-	int unsaved, char *archive_dir)
+static void Backup(char *dirname, unsigned long int flags, palm_media_t 
+	media_type, int unsaved, char *archive_dir)
 {
-	int 	i,
-		ofile_len,
-		ofile_total,
+
+	int 	i		= 0,
+		ofile_len	= 0,
+		ofile_total	= 0,
+		save_errno	= errno,
 		filecount 	= 0;	
 
 	static int totalsize;
@@ -339,50 +355,63 @@ static void Backup(char *dirname, unsigned long int flags, int rom,
 	struct 	dirent *dirent;
 	struct 	stat sbuf;
 
-	char 	**orig_files = 0;
-	char	*synctext = "Backing";
+	char 	**orig_files = 0,
+		synclog[70];
+
+	const char *synctext = (flags & UPDATE) ? "Syncronizing" : "Backing up";
 
 	DIR 	*dir;
 
- 	if (access(dirname, F_OK) == -1) {
-		mkdir(dirname, 0700);
-	} else if (access(dirname, R_OK|W_OK|X_OK) != 0) {
-		fprintf(stderr, "\n");
-		perror("   ERROR");
-		fprintf(stderr, "   Unable to write to %s\n", dirname);
-		fprintf(stderr, "   Please check ownership and permissions.\n\n");
-		exit(1);
-	} 
-
-	Connect();
-
-	if (archive_dir)
-		mkdir(archive_dir, 0700);
-
-	/* Read original list of files in the backup dir */
 	ofile_total 	= 0;
 	ofile_len 	= 0;
 
-	if (flags & UPDATE) {
-		dir = opendir(dirname);
-		while ((dirent = readdir(dir))) {
-			char name[256];
+ 	if (access(dirname, F_OK) == -1) {
+		mkdir(dirname, 0700);
 
-			if (dirent->d_name[0] == '.')
-				continue;
+	} else if (archive_dir) {
+		mkdir(archive_dir, 0700);
+		
+	} else if (access(dirname, R_OK|W_OK|X_OK) != 0) {
+		fprintf(stderr, "\n");
+		fprintf(stderr, "   ERROR: %s\n", strerror(errno));
+		fprintf(stderr, "   Please check ownership and permissions"
+			" on %s.\n\n", dirname);
+		return;
 
-			if (ofile_total >= ofile_len) {
-				ofile_len += 256;
-				orig_files = realloc(orig_files, (sizeof 
-					(*orig_files)) * ofile_len);
+	} else if (flags & UPDATE) {
+		if ((dir = opendir(dirname)) == NULL) {
+			fprintf(stderr, "\n");
+			fprintf(stderr, "   ERROR: %s\n", strerror(errno));
+			fprintf(stderr, "   Does the directory %s exist?\n\n", 
+				dirname);
+			errno = save_errno;
+			return;
+		} else {
+			while ((dirent = readdir(dir))) {
+				char *name; 
+				int dirnamelen;
+				dirnamelen = strlen(dirname);
+	
+				if (dirent->d_name[0] == '.')
+					continue;
+	
+				if (ofile_total >= ofile_len) {
+					ofile_len += 256;
+					orig_files = realloc(orig_files, (sizeof 
+						(char *)) * ofile_len);
+				}
+				name = malloc(dirnamelen + strlen (dirent->d_name) + 2); 
+				if (name == NULL) {
+					continue;
+				} else {
+					sprintf (name, "%s/%s", dirname, dirent->d_name);
+					orig_files[ofile_total++] = name;
+				}
 			}
-			sprintf(name, "%s/%s", dirname, dirent->d_name);
-			orig_files[ofile_total++] = strdup(name);
+			closedir(dir);
 		}
-		closedir(dir);
 	}
 
-	i = 0;
 	for (;;) {
 		struct 	DBInfo info;
 		struct 	pi_file *f;
@@ -394,127 +423,150 @@ static void Backup(char *dirname, unsigned long int flags, int rom,
 		char 	name[256];
 		struct 	stat statb;
 
-		if (dlp_ReadDBList(sd, 0, (rom ? 0x40 : 0x80), i, &info) <
-		    0)
+		if (dlp_ReadDBList(sd, 0, (media_type ? 0x40 : 0x80), i, &info) < 0)
 			break;
+
 		i = info.index + 1;
 
 		if (dlp_OpenConduit(sd) < 0) {
-			printf("\nExiting on cancel, all data was not backed " 
-			       "up.\nStopped before backing up '%s'.\n\n",
-				info.name);
-			fflush(stdout);
-			exit(1);
+			printf("\n   Exiting on cancel, all data was not backed up" 
+			       "\n   Stopped before backing up: %s\n\n", info.name);
+			return;
 		}
+		
+		/* We do this to unbuffer stdout, fixes the printf() problem */
+		/*
+		printf("\x1B[K\r");
+		setvbuf(stdout, Buffer, _IONBF, sizeof(Buffer));
+		*/
 
 		strncpy(name, dirname, sizeof(name));
 		strcat(name, "/");
 		protect_name(name + strlen(name), info.name);
 
-		if (info.flags & dlpDBFlagResource)
+		if (info.flags & dlpDBFlagResource) {
 			strcat(name, ".prc");
-		else if (!(info.flags & dlpDBFlagClipping))
+		} else if (!(info.flags & dlpDBFlagClipping)) {
 			strcat(name, ".pdb");
-
+		}
+		
 		for (x = 0; x < numexclude; x++) {
 			if (strcmp(exclude[x], info.name) == 0) {
-				fprintf(stdout, "=== Excluding '%s'...\n", name);
+				printf("=== Excluding '%s'...\n", name);
+				fflush(stdout);
 				RemoveFromList(name, orig_files, ofile_total);
 				skip = 1;
 			}
 		}
 
-		if (skip == 1)
-			continue;
-
                 if (info.creator == pi_mktag('a', '6', '8', 'k')) {
-			printf("\n=== Skipping ARMlet '%s'\n", info.name);
-			continue;
-                }
-
-		if (rom == 1 && creator_is_PalmOS(info.creator)) {
-			printf("=== OS file, skipping '%s'.\n", info.name);
-			continue;
-
-		} else if (rom == 2 && !creator_is_PalmOS(info.creator)) {
-			printf("=== Non-OS file, skipping '%s'\n", info.name);
+			/* printf("=== Skipping ARMlet '%s'\n", info.name);
+			fflush(stdout); */
 			continue;
 		}
+
+		switch (media_type) { 
+			case palm_media_ram:
+				break;
+				
+			case palm_media_rom:
+				if (creator_is_PalmOS(info.creator)) {
+					printf("=== Non-OS file, skipping '%s'\n\n", 
+						info.name);
+					fflush(stdout);
+					continue;
+				}
+				break;
+				
+			case palm_media_flash:
+               			if ((info.creator == pi_mktag('P', 'M', 'H', 'a')) ||
+					(info.creator == pi_mktag('P', 'M', 'N', 'e')) ||
+					(info.creator == pi_mktag('F', 'n', 't', '1')) ||
+					(info.creator == pi_mktag('m', 'o', 'd', 'm'))) {
+					printf("\n=== Crash file, skipping '%s'.\n\n", 
+						info.name);
+					fflush(stdout);
+					continue;
+				}
+				
+				if (!creator_is_PalmOS(info.creator)) {
+					printf("=== OS file, skipping '%s'.\n\n", 
+						info.name);
+					fflush(stdout);
+					continue;
+					
+				}
+				break;
+		}
+
+		if (skip == 1)
+			continue;
 
 		if (!unsaved
 		    && strcmp(info.name, "Unsaved Preferences") == 0) {
 			printf("=== Skipping '%s'\n", info.name);
+			fflush(stdout);
 			continue;
 		}
 
 		if (flags & UPDATE) {
 			if (stat(name, &statb) == 0) {
 				if (info.modifyDate == statb.st_mtime) {
-					printf("No change, skipping %-35.30s\r", info.name);
-					RemoveFromList(name, orig_files, ofile_total);
+					printf("=== Unchanged, skipping %s\n\n", 
+						name);
 					fflush(stdout);
+					RemoveFromList(name, orig_files, ofile_total); 
 					continue;
 				}
 			}
-			synctext = "Syncronizing";
 		}
-
-		fprintf(stdout, "    [%-3d] %s %-35.30s", filecount, synctext, name); 
-		filecount++;
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
 		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
 
-		f = pi_file_create(name, &info);
-		if (f == 0) {
-			printf("\nFailed, unable to create file\n");
-			break;
-		}
-
-		if (pi_file_retrieve(f, sd, 0) < 0) {
-			printf("\nFailed, unable to back up database %s\n", name);
-
-		} else if ((flags & BACKUP) && stat(name, &sbuf) == 0) {
-			fprintf(stdout, "[%7ld bytes/%4d kb total]", sbuf.st_size, totalsize/1024);
+		if ((flags & BACKUP) && (stat(name, &sbuf) == 0)) {
+			printf("   [%-3d] %s '%s' (%ld bytes, %d KiB total)\n", 
+				filecount, synctext, name, sbuf.st_size, totalsize/1024);
+			fflush(stdout);
+			filecount++;
 			totalsize += sbuf.st_size;
+                        RemoveFromList(name, orig_files, ofile_total);
 		}
 
-		fputs("\x1B[K\r", stdout);
-		fflush(stdout);
+		f = pi_file_create(name, &info);
+
+		if (f == 0) {
+			printf("\nFailed, unable to create file.\n");
+			break;
+		} else if (pi_file_retrieve(f, sd, 0) < 0) {
+			printf("\n=== Failed, unable to retrieve %s from the Palm.\n", name);
+			fflush(stdout);
+		} 
 
 		pi_file_close(f);
-
-		/* Note: This is no guarantee that the times on the host
-		   system actually match the GMT times on the Palm. We only
-		   check to see whether they are the same or different, and
-		   do not treat them as real times. */
 
 		times.actime 	= info.createDate;
 		times.modtime 	= info.modifyDate;
 		utime(name, &times);
-
-		RemoveFromList(name, orig_files, ofile_total);
 	}
 		
 	if (orig_files) {
 		int 	dirname_len = strlen(dirname);
 		char 	newname[256];
 
-		if (flags & SYNC && dlp_OpenConduit(sd) < 0) {
-			/* If the connection has gone down here, there is
-			   probably a communication error. */
-			printf("\nExiting on error, stopped before removing files.\n");
-			exit(1);
-		}
-
-		for (i = 0; i < ofile_total; i++)
+		for (i = 0; i < ofile_total; i++) {
 			if (orig_files[i] != NULL) {
 				if (flags & SYNC) {
 					if (archive_dir) {
 						printf("Archiving '%s'", orig_files[i]);
-						sprintf(newname, "%s/%s", archive_dir, &orig_files[i] [dirname_len + 1]);
+
+						sprintf(newname, "%s/%s", archive_dir, 
+							&orig_files[i] [dirname_len + 1]);
+						
 						if (rename (orig_files[i], newname) != 0) {
-							printf("rename(%s, %s) ", orig_files [i], newname);
+							printf("rename(%s, %s) ", orig_files [i], 
+								newname);
+							
 							perror("failed");
 						}
 					} else {
@@ -524,15 +576,18 @@ static void Backup(char *dirname, unsigned long int flags, int rom,
 				}
 				free(orig_files[i]);
 			}
-		if (orig_files)
-			free(orig_files);
+		}
 	}
 
-	printf("%s backup complete.\n",
-	       (rom == 2 ? "\nOS" : (rom == 1 ? "\nFlash" : "\nRAM")));
+	printf("%s backup complete.",
+	       (media_type == 2 ? "\n   OS" : (media_type == 1 ? "\n   Flash" : "\n   RAM")));
 
-	dlp_AddSyncLogEntry(sd, "Backup successful.\nThank you for using pilot-link.\n");
+	printf(" %d files backed up.\n", filecount - 1);
+	sprintf(synclog, "%d files successfully backed up.\n\nThank you for using pilot-link.",
+		filecount - 1);
+	dlp_AddSyncLogEntry(sd, synclog);
 }
+
 
 /***********************************************************************
  *
@@ -550,37 +605,22 @@ static void Fetch(char *dbname)
 	struct 	DBInfo info;
 	char 	name[256];
 	struct 	pi_file *f;
-	char    *tmpPtr = dbname;
-
-	/* FIXME: Need to handle users who pass no extension on the 
-	          target filename, such as: '-f AddressDB' instead of 
-		  using '-f AddressDB.pdb' */
 
 	if (access(dbname, F_OK) == 0 && access(dbname, R_OK|W_OK) != 0) {
-		fprintf(stderr, "\n");
-		fprintf(stderr, "   Unable to write to %s, check "
+		fprintf(stderr, "\n   Unable to write to %s, check "
 			"ownership and permissions.\n\n", dbname);
 		exit(1);
 	}
 
-	/* removes .pxx from the end of supplied dbname for the case where
-	   user wants ThisDB and specifies it as ThisDB.prc, etc */
-	while (*tmpPtr != '\0' && tmpPtr <= dbname + 265) tmpPtr++;
-	if (*(tmpPtr - 4) == '.') {
-		if (*(tmpPtr - 8) != '.' || /* handle special case .pdf.prc */ 
-			(*(tmpPtr - 7) != 'p' && *(tmpPtr - 7) != 'P')) {
-			if (*(tmpPtr - 3) == 'p' || *(tmpPtr - 3) == 'P') { 
-				*(tmpPtr - 4) = '\0';
-			}
-		}
-	}
-
-	Connect();
-
+	printf("   Parsing list of files from handheld... ");
+	fflush(stdout);
 	if (dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info) < 0) {
-		printf("Unable to locate database '%s', fetch skipped.\n",
-		       dbname);
+		printf("\n   Unable to locate app/database '%s', ", 
+			dbname);
+		printf("fetch skipped.\n   Did you spell it correctly?\n\n");
 		return;
+	} else {
+		printf("done.\n");
 	}
 
 	protect_name(name, dbname);
@@ -594,30 +634,28 @@ static void Fetch(char *dbname)
 		strncpy(name, "Graffiti ShortCuts", sizeof(name));
 	}
 
-	if (info.flags & dlpDBFlagResource)
+	if (info.flags & dlpDBFlagResource) {
 		strcat(name, ".prc");
-	else if (!(info.flags & dlpDBFlagClipping))
+	} else if (!(info.flags & dlpDBFlagClipping)) {
 		strcat(name, ".pdb");
+	}
 
-
-	printf("Fetching '%s'... ", name);
+	printf("   Fetching %s... ", name);
 	fflush(stdout);
 
 	info.flags &= 0x2fd;
 
+	/* Write the file records to disk as 'dbname' 	*/
 	f = pi_file_create(name, &info);
 	if (f == 0) {
-		printf("Failed, unable to create file\n");
+		printf("Failed, unable to create file.\n");
 		return;
+	} else if (pi_file_retrieve(f, sd, 0) < 0) {
+		printf("Failed, unable to fetch database from the Palm.\n");
 	}
 
-	if (pi_file_retrieve(f, sd, 0) < 0)
-		printf("Failed, unable to fetch database\n");
-	else
-		printf("OK\n");
+	printf("complete.\n\n");	
 	pi_file_close(f);
-
-	printf("Fetch complete.\n");
 }
 
 /***********************************************************************
@@ -777,15 +815,16 @@ static void Restore(char *dirname)
 
 	closedir(dir);
 
-	for (i = 0; i < dbcount; i++)
-		for (j = i + 1; j < dbcount; j++)
+	for (i = 0; i < dbcount; i++) {
+		for (j = i + 1; j < dbcount; j++) {
 			if (compare(db[i], db[j]) > 0) {
 				struct db *temp = db[i];
 
 				db[i] = db[j];
 				db[j] = temp;
 			}
-
+		}
+	}
 
 	for (i = 0; i < dbcount; i++) {
 
@@ -812,10 +851,12 @@ static void Restore(char *dirname)
 	                return;
         	}
 
-		if (pi_file_install(f, sd, 0) < 0)
+		if (pi_file_install(f, sd, 0) < 0) {
 			printf("failed.\n");
-		else
+		} else {
 			printf("OK\n");
+		}
+
 		pi_file_close(f);
 	}
 
@@ -834,7 +875,7 @@ static void Restore(char *dirname)
  *
  * Function:    Install
  *
- * Summary:     Push file(s) to the Palm from filelist
+ * Summary:     Push file(s) to the Palm
  *
  * Parameters:  None
  *
@@ -853,8 +894,6 @@ static void Install(char *filename)
         Card.card = -1;
         Card.more = 1;
 
-	Connect();
-
 	f = pi_file_open(filename);
 
 	if (f == 0) {
@@ -867,8 +906,7 @@ static void Install(char *filename)
 		exit(1);
 	}
 
-	fprintf(stderr, "Installing %-35s", filename);
-	fflush(stdout);
+	fprintf(stderr, "   Installing %-35s", filename);
 
 	stat(filename, &sbuf);
 
@@ -889,10 +927,8 @@ static void Install(char *filename)
 		fprintf(stderr, "failed.\n");
 
 	} else if (stat(filename, &sbuf) == 0) {
-		/*
 		printf("\n\t(%7ld bytes, %3d kb total)\n\n",
 			sbuf.st_size, totalsize/1024);
-		*/
 		totalsize += sbuf.st_size;
 	}
 	
@@ -926,7 +962,6 @@ static void Merge(char *filename)
 		return;
 	}
 
-
 	printf("Merging %s... ", filename);
 	fflush(stdout);
 	if (pi_file_merge(f, sd, 0) < 0)
@@ -952,31 +987,33 @@ static void Merge(char *filename)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void List(int rom)
+static void List(palm_media_t media_type)
 {
-	int 	i,
+	int 	i		= 0,
 		dbcount 	= 0; 
 	struct 	DBInfo info;
+	char	text[10],
+		synclog[68];
+	
+	printf("DEBUG: media_type: %d\n", media_type);
 
-	Connect();
-
-	if (rom)
-		printf("Reading list of databases in RAM and ROM...\n");
-	else
-		printf("Reading list of databases in RAM...\n");
-
-	i = 0;
-
+	media_type == 1 ? sprintf(text, " and ROM") : sprintf(text, "%s", "");
+	printf("   Reading list of databases in RAM%s...\n", text);
+	
 	for (;;) {
 		if (dlp_ReadDBList
-		    (sd, 0, (rom ? 0x80 | 0x40 : 0x80), i, &info) < 0)
+		    (sd, 0, (media_type ? 0x80 | 0x40 : 0x80), i, &info) < 0)
 			break;
 		dbcount++;
 		i = info.index + 1;
-		printf("%s\n", info.name);
+		printf("   %s\n", info.name);
+		fflush(stdout);
 	}
-	printf("\nList complete. %d files found.\n", dbcount);
-
+	
+	printf("\n   List complete. %d files found.\n\n", dbcount);
+	sprintf(synclog, "List complete. %d files found..\n\nThank you for using pilot-link.",
+		dbcount);
+	dlp_AddSyncLogEntry(sd, synclog);
 }
 
 /***********************************************************************
@@ -1033,17 +1070,10 @@ static void Purge(void)
 }
 
 
-void packInt(byte* dest, unsigned long l, int size) {
-	int i;
-	for( i=size; i-->0; ) {
-		dest[i] = l & 0x000000ff;
-		l >>= 8;
-	}
-}
 
 /***********************************************************************
  *
- * Function:    Time
+ * Function:    palm_time
  *
  * Summary:     Sync time
  *
@@ -1052,13 +1082,14 @@ void packInt(byte* dest, unsigned long l, int size) {
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Time(void)
+static void palm_time(void)
 {
-	time_t  t1,t2;
-	char    text[24];
+	time_t  t1,
+		t2;
+	char    synclog[60],
+		timebuf[63];
+	struct	tm *tm_ptr;
 	struct  SysInfo s;
-
-	Connect();
 
 	dlp_ReadSysInfo(sd, &s);
 
@@ -1068,11 +1099,19 @@ static void Time(void)
 	} else {
 		dlp_GetSysDateTime(sd, &t2);
 		t1 = time(NULL);
+		tm_ptr = localtime(&t2);
 		dlp_SetSysDateTime(sd, t1);
-		sprintf(text,"Time sync successful.\n");
-		dlp_AddSyncLogEntry(sd, text);
+
+		strftime(timebuf, 63, "   Palm time was successfully set to: "
+			"%m/%d/%Y %X %p\n\n", tm_ptr);
+
+		printf(timebuf);
+		fflush(stdout);
+		sprintf(synclog, "Time sync successful.\n\nThank you for using pilot-link.");
+		dlp_AddSyncLogEntry(sd, synclog);
 	}
 }
+
 
 /***********************************************************************
  *
@@ -1089,11 +1128,11 @@ static void display_help(char *progname)
 {
 	printf("   Sync, backup, install, delete and more from your Palm device.\n");
 	printf("   This is the swiss-army-knife of the entire pilot-link suite.\n\n");
-	printf("   Usage: %s [-p port] [ -F|-O -I -q|-c ] command(s)\n", progname);
+	printf("   Usage: pilot-xfer [-p port] [ -F|-O -I -q|-c ] command(s)\n");
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -h, --help              Display help information for pilot-xfer\n");
+	printf("     -v, --version           Display pilot-xfer version information\n");
 	printf("     -b, --backup <dir>      Back up your Palm to <dir>\n");
 	printf("     -u, --update <dir>      Update <dir> with newer Palm data\n");
 	printf("     -s, --sync <dir>        Same as -u above, but removes local files if\n");
@@ -1138,21 +1177,31 @@ static void display_help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	c,		/* switch */
-	 	rom 		= 0,
+	int 	optc,		/* switch */
 		unsaved 	= 0,
-		timespent 	= 0;
+		last_optc	= 0,
+                verbose         = 0;
 
-        time_t 	start,end;
-	
 	char 	*archive_dir 	= NULL,
+		*dirname	= NULL,
+		*dbname		= NULL,
 		*progname 	= argv[0];
 
-        start = time(NULL);
+	unsigned long int sync_flags = backup;
+	palm_media_t media_type      = palm_media_ram;
+	palm_op_t palm_operation     = no_operation;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (c) {
+	while ((optc = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (optc) {
 
+		case 1:
+			if (last_optc == 'i') {
+				Install(optarg);
+			}
+			break;
+                case 'V':
+                        verbose = 1;
+                        break;
 		case 'h':
 			display_help(progname);
 			return 0;
@@ -1161,30 +1210,46 @@ int main(int argc, char *argv[])
 			return 0;
 		case 'p':
 			port = optarg;
+                        if (verbose)
+                                printf("Option -p with value: %s\n", optarg);
 			break;
 		case 'b':
-			Backup(optarg, BACKUP, rom, unsaved, archive_dir);
+			dirname = optarg;
+			palm_operation = backup;
+			sync_flags = BACKUP;
+                        if (verbose)
+                                printf("Option -b with value: %s\n", optarg);
 			break;
 		case 'u':
-			Backup(optarg, UPDATE, rom, unsaved, archive_dir);
+			dirname = optarg;
+			palm_operation = backup;
+			sync_flags = UPDATE;
+                        if (verbose) 
+                                printf("Option -u with value: %s\n", optarg);
 			break;
 		case 's':
-			Backup(optarg, UPDATE|SYNC, rom, unsaved, archive_dir);
+			dirname = optarg;
+			palm_operation = backup;
+			sync_flags = UPDATE|SYNC;
+			if (verbose)
+				printf("Option -u with value: %s\n", optarg);
 			break;
 		case 't':
-			Time();
+			palm_operation = set_palm_time;
 			break;
 		case 'r':
 			Restore(optarg);
 			break;
 		case 'i':
-			Install(optarg);
+			dbname = optarg;
+			palm_operation = install;
 			break;
 		case 'm':
 			Merge(optarg);
 			break;
 		case 'f':
-			Fetch(optarg);
+			dbname = optarg;
+			palm_operation = fetch;
 			break;
 		case 'd':
 			Delete(optarg);
@@ -1196,10 +1261,12 @@ int main(int argc, char *argv[])
 			Purge();
 			break;
 		case 'l':
-			List(0);
+			media_type = palm_media_ram;
+                        palm_operation = list;
 			break;
 		case 'L':
-			List(1);
+			media_type = palm_media_rom;
+			palm_operation = list;
 			break;
 		case 'a':
 			archive_dir = optarg;
@@ -1211,10 +1278,10 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 'F':
-			rom = !rom;
+			media_type = palm_media_flash;
 			break;
 		case 'O':
-			rom = 2;
+			media_type = palm_media_rom;
 			break;
 		case 'I':
 			unsaved = 1;
@@ -1223,23 +1290,42 @@ int main(int argc, char *argv[])
 			novsf = 1;
 			break;
 		default:
-			display_help(progname);
-			return 0;
+			break;
+		}
+
+		if (optc > 1) {
+			last_optc = optc;
 		}
 	}
 
-	if (!port || argc <4) {
-		printf("ERROR: Insufficient number of arguments\n\n");
-		puts("Hit any key to continue..");
-		for( c = ' ' ; c != '\n' && c != EOF ; c = getchar() );
-		display_help(progname);
-	} else {
-		end=time(NULL);
-		timespent = (end-start);
-		printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, 
-			(timespent/60)%60, timespent%60);
-	}
-	pi_close(sd);
-	return 0;
+	switch (palm_operation) {
+		case backup: 
+			Connect();
+			Backup(dirname, sync_flags, media_type, unsaved, archive_dir);		
+			break;
+		case install:
+			Connect();
+			Install(dbname);
+			break;
+		case fetch:
+			Connect();
+			Fetch(dbname);
+			break;
+                case list:
+			Connect();
+                        List(media_type);
+                        break;
+		case set_palm_time:
+			Connect();
+			palm_time();
+			break;
+                case no_operation:
+                        printf("   Insufficient or invalid options supplied.\n");
+                        printf("   Please use 'pilot-xfer --help' for more info.\n\n");
+                        break;
+        }
 
+	pi_close(sd);
+	printf("   Thank you for using pilot-link.\n");
+	return 0;
 }
