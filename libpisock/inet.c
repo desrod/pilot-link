@@ -448,7 +448,7 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 		split = 0,
 		chunksize = 0;
 	size_t	len;
-	kde_socklen_t l = 0;
+	pl_socklen_t l = 0;
 	
 	if (addrlen)
 		l = *addrlen;

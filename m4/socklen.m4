@@ -63,7 +63,7 @@ AC_DEFUN([AC_CHECK_SOCKLEN_T],
       ])
       AC_MSG_RESULT($kde_cv_socklen_t_equiv)
    fi
-   AC_DEFINE_UNQUOTED(kde_socklen_t, $kde_cv_socklen_t_equiv,
+   AC_DEFINE_UNQUOTED(pl_socklen_t, $kde_cv_socklen_t_equiv,
                      [type to use in place of socklen_t if not defined])
 ])
 
