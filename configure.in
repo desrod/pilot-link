@@ -164,9 +164,11 @@ dnl ******************************
 dnl getopt
 dnl ******************************
 dnl use our included getopt if the system doesn't have getopt() or getopt_long()
-system_getopt=yes
-AC_CHECK_HEADER([getopt.h], [AC_CHECK_FUNCS([getopt getopt_long], , system_getopt=no)], system_getopt=no)
-AM_CONDITIONAL(NEED_GETOPT, test x$system_getopt = xno)
+unistd_getopt=yes
+getopt_getopt=yes
+AC_CHECK_HEADER([unistd.h], [AC_CHECK_FUNCS([getopt getopt_long], , unistd_getopt=no)], unistd_getopt=no)
+AC_CHECK_HEADER([getopt.h], [AC_CHECK_FUNCS([getopt getopt_long], , getopt_getopt=no)], getopt_getopt=no)
+AM_CONDITIONAL(NEED_GETOPT, test x$unistd_getopt = xno -a x$getopt_getopt = xno)
 
 dnl ******************************
 dnl iconv checking

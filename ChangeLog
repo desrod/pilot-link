@@ -4,7 +4,8 @@
 	  targets (Ben Darnell, Mike Frysinger)
 	
 	* configure.in: Added a better test for readline support through
-	  termlib, ncurses, etc. More portable.
+	  termlib, ncurses, etc. More portable. Added a fix for getopt on
+	  Mac OSX systems (check for unistd, Bill Janssen)
 
 2002-10-11  JP Rosevear  <jpr@ximian.com>
 
