@@ -35,7 +35,7 @@ dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=11
-PILOT_LINK_MINOR=8
+PILOT_LINK_MINOR=9
 PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
@@ -50,7 +50,7 @@ dnl Pilot Link Library Version
 dnl libpisock.so
 dnl ******************************
 PISOCK_CURRENT=8
-PISOCK_REVISION=5
+PISOCK_REVISION=6
 PISOCK_AGE=0
 
 AC_SUBST(PISOCK_CURRENT)
