@@ -315,7 +315,7 @@
          </para>
          <blockquote>
             <para>
-               Display version of <emphasis>install-xfer</emphasis>
+               Display version of <emphasis>pilot-xfer</emphasis>
                and exit without connecting.
             </para>
          </blockquote>
@@ -333,7 +333,7 @@
          </para>
          <blockquote>
             <para>
-               Display the help synopsis for <emphasis>install-xfer</emphasis>
+               Display the help synopsis for <emphasis>pilot-xfer</emphasis>
                and exit without connecting.
             </para>
          </blockquote>

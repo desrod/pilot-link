@@ -1,5 +1,5 @@
 .\" -*- coding: us-ascii -*-
-.TH pilot-xfer 1 "@VERSION@"  
+.TH pilot-xfer 1 "0.12.0-pre3"  
 .SH NAME
 pilot-xfer \- Backup, sync, and restore databases from a Palm handheld device. 
 .SH SECTION
@@ -235,7 +235,7 @@ print the usage information.
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIinstall-xfer\fR
+Display version of \fIpilot-xfer\fR
 and exit without connecting.
 .RE
 .PP
@@ -246,7 +246,7 @@ Suppress 'Hit HotSync button' message
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIinstall-xfer\fR
+Display the help synopsis for \fIpilot-xfer\fR
 and exit without connecting.
 .RE
 .PP
