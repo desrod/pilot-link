@@ -184,6 +184,7 @@ install_todo_LDADD =            \
 install_user_SOURCES = 		\
 	install-user.c
 install_user_LDADD = 		\
+	libuserland.a		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 

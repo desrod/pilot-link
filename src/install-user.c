@@ -1,4 +1,4 @@
-/* 
+/*
  * install-user.c:  Palm Username installer
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,7 +17,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,44 +25,21 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-const char *port	= NULL,
+#include "userland.h"
+
+const char
 	*user		= NULL,
 	*userid		= NULL;
 
 
 const struct poptOption options[] = {
-        { "port",    'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
-        { "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
-        { "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
-        { "user",    'u', POPT_ARG_STRING, &user, 0, "Set the username, use quotes for spaces (see example)", "<username>"},
-        { "id",      'i', POPT_ARG_STRING, &userid, 0, "A 5-digit numeric UserID, required for PalmOS", "<userid>"},
-        POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
+	USERLAND_RESERVED_OPTIONS
+	{ "user",    'u', POPT_ARG_STRING, &user, 0, "Set the username, use quotes for spaces (see example)", "<username>"},
+	{ "id",      'i', POPT_ARG_STRING, &userid, 0, "A 5-digit numeric UserID, required for PalmOS", "<userid>"},
+	POPT_TABLEEND
 };
 
 poptContext po;
-
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments  
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname) {
-                printf("Assigns your Palm device a Username and unique UserID\n\n");
-
-                poptPrintHelp(po, stderr, 0);
-
-                printf("\n  Examples: \n");
-		printf("      %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
-			progname);
-                exit(1);
-}
 
 int main(int argc, char *argv[])
 {
@@ -72,28 +48,19 @@ int main(int argc, char *argv[])
 
 	struct 	PilotUser 	User;
 
-	const char *progname	= argv[0];
-
         po = poptGetContext("install-user", argc, (const char **) argv, options, 0);
-  
-        if (argc < 2) {
-                display_help(progname);
-                exit(1);
-        }
+	poptSetOtherOptionHelp(po, " [-p port] [-u user] [-i id]\n\n"
+		"   Assigns your Palm device a Username and unique UserID\n\n"
+		"   Example:\n"
+		"      -p /dev/pilot -u david -i 1\n\n");
 
-        while ((po_err = poptGetNextOpt(po)) != -1) {
-                switch (po_err) {
-
-		case 'v':
-			print_splash(progname);
-			return 0;
-		default:
-			poptPrintHelp(po, stderr, 0);
-			return 0;
-		}
+        while ((po_err = poptGetNextOpt(po)) >= 0) {
+		/* Everything is handled by popt magic */
 	}
 
-	sd = pilot_connect(port);
+	if (po_err < -1) userland_badoption(po,po_err);
+
+	sd = userland_connect();
 	if (sd < 0)
 		goto error;
 
@@ -112,7 +79,7 @@ int main(int argc, char *argv[])
 
 	if (user)
 		strncpy(User.username, user, sizeof(User.username) - 1);
-	
+
 	User.lastSyncDate = time(NULL);
 
 	if (dlp_WriteUserInfo(sd, &User) < 0)
@@ -123,11 +90,11 @@ int main(int argc, char *argv[])
 	if (userid)
 		printf("   Installed User ID: %lu\n", User.userID);
 	printf("\n");
-	
+
 	if (dlp_AddSyncLogEntry(sd, "install-user exited normally.\n"
 				    "Thank you for using pilot-link.\n") < 0)
 		goto error_close;
-	
+
 	if (dlp_EndOfSync(sd, 0) < 0)
 		goto error_close;
 
@@ -138,7 +105,7 @@ int main(int argc, char *argv[])
 
 error_close:
 	pi_close(sd);
-	
+
 error:
 	return -1;
 }
