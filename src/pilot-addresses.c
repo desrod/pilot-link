@@ -441,10 +441,10 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 
 #else			/* print the phone labels if there is something in the field */
 			if (a.entry[realentry[j]]) {
-				if (augment && (j >= 4) && (j <= 8))
+				if (augment && (j >= 3) && (j <= 7))
 					write_field(out,
 						    aai->phoneLabels[a.phoneLabel
-								     [j - 4]], 2);
+								     [j - 3]], 2);
 				write_field(out, a.entry[realentry[j]],
 					    tabledelim);
 			}
