@@ -931,6 +931,22 @@ pi_getsockopt(int pi_sd, int level, int option_name,
 		return -1;
 	}
 
+	if (level == PI_LEVEL_SOCK) {
+		switch (option_name) {
+		case PI_SOCK_STATE:
+			if (*option_len < sizeof (ps->rate))
+				goto error;
+			memcpy (option_value, &ps->rate, sizeof (ps->rate));
+			*option_len = sizeof (ps->rate);
+			break;
+		}
+		return 0;
+
+	error:
+		errno = EINVAL;
+		return -1;
+	}
+
 	prot = protocol_queue_find (ps, level);
 	
 	if (prot == NULL || prot->level != level) {
@@ -965,6 +981,22 @@ pi_setsockopt(int pi_sd, int level, int option_name,
 		return -1;
 	}
 
+	if (level == PI_LEVEL_SOCK) {
+		switch (option_name) {
+		case PI_SOCK_STATE:
+			if (*option_len != sizeof (ps->state))
+				goto error;
+			memcpy (&ps->state, option_value,
+				sizeof (ps->state));
+			break;
+		}
+		return 0;
+
+	error:
+		errno = EINVAL;
+		return -1;
+	}
+		
 	prot = protocol_queue_find (ps, level);
 	
 	if (prot == NULL || prot->level != level) {

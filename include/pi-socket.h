@@ -31,7 +31,8 @@ enum PiOptLevels {
 	PI_LEVEL_PADP,
 	PI_LEVEL_NET,
 	PI_LEVEL_CMP,
-	PI_LEVEL_DLP
+	PI_LEVEL_DLP,
+	PI_LEVEL_SOCK
 };
 
 enum PiOptDevice {
@@ -67,6 +68,10 @@ enum PiOptCMP {
 enum PiOptNet {
 	PI_NET_TYPE
 };
+
+enum PiOptSock {
+	PI_SOCK_STATE
+};
 	
 #define PI_SLP_SPEED		0x0001
 
@@ -75,11 +80,7 @@ enum PiOptNet {
 #define PI_PilotSocketDebugger	0
 #define PI_PilotSocketRemoteUI	2
 
-#ifdef WIN32
-#include "pi-sockaddr-win32.h"
-#else
 #include "pi-sockaddr.h"
-#endif
 
 
 	struct pi_socket;

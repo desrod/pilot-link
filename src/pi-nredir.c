@@ -62,7 +62,9 @@ int main(int argc, char *argv[])
 	int 	c,		/* switch */
 		len,
 		sd 		= -1,
-		sd2 		= -1; 	/* This is the network socket */
+		sd2 		= -1, /* This is the network socket */
+		state,
+		size; 	
 
 	char 	buffer[0xffff],
 		*progname = argv[0],
@@ -127,6 +129,11 @@ int main(int argc, char *argv[])
 		pi_write(sd2, buffer, len);
 	}
 
+	state = PI_SOCK_CONEN;
+	size = sizeof (state);
+	pi_setsockopt (sd, PI_LEVEL_SOCK, PI_SOCK_STATE, &state, &size);
+	pi_setsockopt (sd2, PI_LEVEL_SOCK, PI_SOCK_STATE, &state, &size);
+	
 	pi_close(sd);
 	pi_close(sd2);
 
