@@ -1,36 +1,34 @@
 Pilot-Link 0.10.99, "Woodstock", 03-20-2002
 -------------------------------------------
 
-This is a development release, primarily to test the new usb device
-support.  Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1),
-except for the Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or
-usb/tts/0).  Note that you must hit the sync button prior to running
-the app right now for USB devices.  It is recommended that a kernel >
-2.4.16 be used due to problems that existed in earlier drivers (may
-get a kernel oops).
+This is a development release, primarily to test the new usb device support. 
+Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the
+Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or usb/tts/0).  Note that
+you must hit the sync button prior to running the app right now for USB
+devices.  It is recommended that a kernel > 2.4.16 be used due to problems
+that existed in earlier drivers (may get a kernel oops).
 
 Major Features:
-
-	* Support for new USB devices (like the m500)
-	* Updated Java and Python bindings
+	* Support for new USB devices (like the Palm m500 and Sony
+	  PEG-N710C)
+	* Updated Java bindings (David Goodenough)
+	* Updated Python bindings (Rob Tillotson)
 	* Application cleanup for consistency
 
 Other Features:
-
 	* Generic device and protocol implementations
 	* Complete Autoconf/Automake setup
-	* C++ library is now shared and installed
-	* Source tree re-organization
-	* Runtime logging
+	* C++ library is now shared (.so) and installed
+	* Complete source tree re-organization
+	* Runtime debug logging down to the packet level
 
 Bug Fixes:
+	* Expense Preferences now pack/unpack correctly
+	* Dozens of minor bug fixes, code reformatting, reordanization
 
-	* Expense Preferences no pack/unpack correctly
-	* Dozens of minor bug fixes
-
-Known Problems:
-	
-	* os2serial.c and winserial.c files are not yet ported
+Known Problems (Please see doc/TODO for more details):
+	* os2serial.c and winserial.c files are not yet ported to the new
+	  USB, serial, and Net protocol "recipes"
 	* The "sys" protocol is not well tested
 	* TCL/TK bindings are out of commission
-	* PDB files with space filler records are not handled properly
+	* PDB files with space filler records are not yet handled properly
