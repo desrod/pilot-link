@@ -46,8 +46,6 @@ int pilot_connect(char *port);
   if (result < 0) { \
 	LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "VFSTEST " #func " failed (%d)\n", result)); \
 	goto error; \
-  } else if (result > 0) { \
-	LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "VFSTEST " #func " failed (0x%04x)\n", result)); \
   }
 
 #define TEST_VFS_DIR			"/vfs-test"
@@ -164,7 +162,7 @@ int main (int argc, char **argv)
 	ref_length = sizeof (refs) / sizeof (refs[0]);
 	result = dlp_VFSVolumeEnumerate (sd, &ref_length, refs);
 	CHECK_RESULT(dlp_VFSVolumeEnumerate);
-	if (result != 0)
+	if (result < 0)
 		goto error;
 
 	for (i = 0; i < ref_length; i++) {
@@ -175,7 +173,7 @@ int main (int argc, char **argv)
 
 		result = dlp_VFSVolumeInfo (sd, refs[i], &vfs);
 		CHECK_RESULT(dlp_VFSVolumeInfo);
-		if (result == 0) {
+		if (result >= 0) {
 			name[0] = 0;
 			if (vfs.attributes & 0x00000004)
 				strcpy (name, "hidden ");
@@ -190,7 +188,7 @@ int main (int argc, char **argv)
 
 		result = dlp_VFSVolumeSize (sd, refs[i], &used, &total);
 		CHECK_RESULT(dlp_VFSVolumeSize);
-		if (result == 0) {
+		if (result >= 0) {
 			LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* volume used: %ld / %ld bytes\n", used, total));
 		}
 
@@ -198,18 +196,18 @@ int main (int argc, char **argv)
 		len = sizeof (name);
 		result = dlp_VFSVolumeGetLabel (sd, refs[i], &len, name);
 		CHECK_RESULT(dlp_VFSVolumeGetLabel);
-		if (result == 0) {
+		if (result >= 0) {
 			LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* volume label: '%s'\n", name));
 		}
 		strcpy (oldName, name);
 
 		result = dlp_VFSVolumeSetLabel (sd, refs[i], "Test");
 		CHECK_RESULT(dlp_VFSVolumeSetLabel);
-		if (result == 0) {
+		if (result >= 0) {
 			len = sizeof (name);
 			result = dlp_VFSVolumeGetLabel (sd, refs[i], &len, name);
 			CHECK_RESULT(dlp_VFSVolumeGetLabel);
-			if (result == 0) {
+			if (result >= 0) {
 				if (strcmp("Test", name)) {
 					LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "* ERROR: Label change mismatch\n"));
 				} else {
@@ -225,12 +223,12 @@ int main (int argc, char **argv)
 		len = sizeof (name);
 		result = dlp_VFSGetDefaultDir (sd, refs[i], ".prc", name, &len);
 		CHECK_RESULT(dlp_VFSGetDefaultDir);
-		if (result == 0) {
+		if (result >= 0) {
 			LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Listing directory contents at '%s'\n", name));
 
 			result = dlp_VFSFileOpen (sd, refs[i], name, 0x0007 /* vfsModeReadWrite */, &fileRef);
 			CHECK_RESULT(dlp_VFSFileOpen);
-			if (result == 0) {
+			if (result >= 0) {
 				unsigned long dirIterator = vfsIteratorStart;
 				do {
 					struct VFSDirInfo dirItems[16];
@@ -241,7 +239,7 @@ int main (int argc, char **argv)
 					result = dlp_VFSDirEntryEnumerate (sd, fileRef, &dirIterator, &dirCount, dirItems);
 					CHECK_RESULT(dlp_VFSDirEntryEnumerate);
 
-					if (result == 0) {
+					if (result >= 0) {
 						for (j = 0; j < dirCount; j++) {
 							LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "\t'%s' attrs = 0x%08lx\n", dirItems[j].name, dirItems[j].attr));
 						}
@@ -257,7 +255,7 @@ int main (int argc, char **argv)
 		/* directory creation test */
 		result = dlp_VFSDirCreate (sd, refs[i], "/vfs-test");
 		CHECK_RESULT(dlp_VFSDirCreate);
-		if (result == 0) {
+		if (result >= 0) {
 			LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Created directory %s\n", TEST_VFS_DIR));
 
 			/* file access tests */
@@ -267,7 +265,7 @@ int main (int argc, char **argv)
 
 			result = dlp_VFSFileOpen (sd, refs[i], TEST_VFS_FILE, 0x0007 /* read-write */, &fileRef);
 			CHECK_RESULT(dlp_VFSFileOpen);
-			if (result == 0) {
+			if (result >= 0) {
 				pi_buffer_t *fileBuf =
 					pi_buffer_new (BIG_FILE_SIZE);
 
@@ -276,18 +274,18 @@ int main (int argc, char **argv)
 				strcpy (name, "a test string written to a file\n");
 				result = dlp_VFSFileWrite (sd, fileRef, (unsigned char *)name, strlen (name));
 				CHECK_RESULT(dlp_VFSFileWrite);
-				if (result == 0) {
+				if (result >= 0) {
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Wrote small string to file %s\n", TEST_VFS_FILE));
 
 					result = dlp_VFSFileTell (sd, fileRef, &j);
 					CHECK_RESULT(dlp_VFSFileTell);
-					if (result == 0) {
+					if (result >= 0) {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Current seek position: %d\n", j));
 					}
 
 					result = dlp_VFSFileSeek (sd, fileRef, vfsOriginBeginning, 0);
 					CHECK_RESULT(dlp_VFSFileSeek);
-					if (result == 0) {
+					if (result >= 0) {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Seeked to beginning of file\n", j));
 					}
 
@@ -312,7 +310,7 @@ int main (int argc, char **argv)
 				if (buf1) {
 					result = dlp_VFSFileWrite (sd, fileRef, buf1, BIG_FILE_SIZE);
 					CHECK_RESULT(dlp_VFSFileWrite);
-					if (result == 0) {
+					if (result >= 0) {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Successful, now reading it back...\n"));
 
 						result = dlp_VFSFileSeek (sd, fileRef, vfsOriginCurrent, -BIG_FILE_SIZE);
@@ -320,7 +318,7 @@ int main (int argc, char **argv)
 
 						result = dlp_VFSFileRead (sd, fileRef, fileBuf, BIG_FILE_SIZE);
 						CHECK_RESULT(dlp_VFSFileRead);
-						if (result == 0) {
+						if (result >= 0) {
 							if (fileBuf->used != BIG_FILE_SIZE || memcmp (buf1, fileBuf->data, BIG_FILE_SIZE))
 								LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* ERROR, data differs!\n"));
 							else
@@ -333,9 +331,9 @@ int main (int argc, char **argv)
 				pi_buffer_free (fileBuf);
 
 				result = dlp_VFSFileEOF (sd, fileRef);
-				if (result == 0x2A07) {
+				if (pi_palmos_error(sd) == 0x2A07) {
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* File EOF: YES\n"));
-				} else if (result == 0) {
+				} else if (result >= 0) {
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* File EOF: NO\n"));
 				} else {
 					CHECK_RESULT(dlp_VFSFileEOF);
@@ -343,13 +341,13 @@ int main (int argc, char **argv)
 				
 				result = dlp_VFSFileSize (sd, fileRef, &len);
 				CHECK_RESULT(dlp_VFSFileSize);
-				if (result == 0) {
+				if (result >= 0) {
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* File size: %d bytes\n", len));
 				}
 
 				result = dlp_VFSFileGetAttributes (sd, fileRef, &fileAttrs);
 				CHECK_RESULT(dlp_VFSFileGetAttributes);
-				if (result == 0) {
+				if (result >= 0) {
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* File attributes: 0x%08lx\n", fileAttrs));
 				}
 				
@@ -372,27 +370,27 @@ int main (int argc, char **argv)
 				
 				result = dlp_VFSFileSize (sd, fileRef, &len);
 				CHECK_RESULT(dlp_VFSFileGetSize);
-				if (result == 0) {
+				if (result >= 0) {
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* File size after resize: %d\n", len));
 				}
 
 				result = dlp_VFSFileGetDate (sd, fileRef, vfsFileDateCreated, &t1);
 				CHECK_RESULT(dlp_VFSFileGetDate);
-				if (result == 0) {
+				if (result >= 0) {
 					ctime_r (&t1, name);
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Date created: %s", name));
 				}
 
 				result = dlp_VFSFileGetDate (sd, fileRef, vfsFileDateModified, &t2);
 				CHECK_RESULT(dlp_VFSFileGetDate);
-				if (result == 0) {
+				if (result >= 0) {
 					ctime_r (&t2, name);
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Date modified: %s", name));
 				}
 
 				result = dlp_VFSFileGetDate (sd, fileRef, vfsFileDateAccessed, &t2);
 				CHECK_RESULT(dlp_VFSFileGetDate);
-				if (result == 0) {
+				if (result >= 0) {
 					ctime_r (&t2, name);
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Date accessed: %s", name));
 				}
@@ -400,10 +398,10 @@ int main (int argc, char **argv)
 				t1 -= 3600 * 24;
 				result = dlp_VFSFileSetDate (sd, fileRef, vfsFileDateCreated, t1);
 				CHECK_RESULT(dlp_VFSFileSetDate);
-				if (result == 0) {
+				if (result >= 0) {
 					result = dlp_VFSFileGetDate (sd, fileRef, vfsFileDateCreated, &t2);
 					CHECK_RESULT(dlp_VFSFileGetDate);
-					if (result == 0) {
+					if (result >= 0) {
 						if (t1 == t2)
 							LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* dlp_VFSFileSetDate successful\n"));
 						else
@@ -413,20 +411,20 @@ int main (int argc, char **argv)
 
 				result = dlp_VFSFileClose (sd, fileRef);
 				CHECK_RESULT(dlp_VFSFileClose);
-				if (result == 0) {
+				if (result >= 0) {
 					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Closed file %s\n", TEST_VFS_FILE));
 				}
 			}
 
 			result = dlp_VFSFileRename (sd, refs[i], TEST_VFS_FILE, TEST_VFS_FILE2_SHORT);
 			CHECK_RESULT(dlp_VFSFileRename);
-			if (result == 0) {
+			if (result >= 0) {
 				LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Renamed file %s to %s\n", TEST_VFS_FILE, TEST_VFS_FILE2_SHORT));
 			}
 
 			result = dlp_VFSFileDelete (sd, refs[i], TEST_VFS_FILE2);
 			CHECK_RESULT(dlp_VFSFileDelete);
-			if (result == 0) {
+			if (result >= 0) {
 				LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Deleted file %s\n", TEST_VFS_FILE2));
 			}
 		}
