@@ -1069,25 +1069,27 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		}
 		memcpy(DLP_REQUEST_DATA(req, 0, 22), data, length);
 
-		data_len = res->argv[0]->len - 16;
+		result = dlp_exec(sd, req, &res);
+
+		dlp_request_free(req);
+
+		if (result >= 0) {
+			data_len = res->argv[0]->len - 16;
+			
+			if (retcode)
+				*retcode = get_long(DLP_RESPONSE_DATA(res, 0, 0));
+			if (retlen)
+				*retlen = data_len;
+			if (retdata)
+				memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 16),
+				       data_len > maxretlen ? maxretlen : data_len);
+			
+
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     "DLP CallApplication Result: %lu (0x%8.8lX), and %d bytes:\n",
+			     get_long(DLP_RESPONSE_DATA(res, 0, 0)), 
+			     get_long(DLP_RESPONSE_DATA(res, 0, 4)),
 			     data_len));
-		if (retcode)
-			*retcode = get_long(DLP_RESPONSE_DATA(res, 0, 0));
-		if (retlen)
-			*retlen = data_len;
-		if (retdata)
-			memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 16),
-			       data_len > maxretlen ? maxretlen : data_len);
-
-
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP CallApplication Result: %lu (0x%8.8lX), and %d bytes:\n",
-		    get_long(DLP_RESPONSE_DATA(res, 0, 0)), 
-		    get_long(DLP_RESPONSE_DATA(res, 0, 4)),
-		    data_len));
-		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 16), data_len));
-
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 			      dumpdata(DLP_RESPONSE_DATA(res, 0, 16), data_len));
 		}
@@ -1112,24 +1114,28 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		}
 		memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
 
-		data_len = res->argv[0]->len - 6;
-		if (retcode)
-			*retcode = get_short(DLP_RESPONSE_DATA(res, 0, 2));
-		if (retlen)
-			*retlen = data_len;
+		result = dlp_exec(sd, req, &res);
 
-		if (retdata)
-			memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 6),
-			       data_len > maxretlen ? maxretlen : data_len);
+		dlp_request_free(req);
 
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP CallApplication Action: %d Result: %lu (0x%4.4lX), and %d bytes:\n",
-		    get_short(DLP_RESPONSE_DATA(res, 0, 0)), 
-		    get_short(DLP_RESPONSE_DATA(res, 0, 2)), 
-		    get_short(DLP_RESPONSE_DATA(res, 0, 2)),
-		    data_len));
-		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 6), data_len));
+		if (result >= 0) {
+			data_len = res->argv[0]->len - 6;
+			if (retcode)
+				*retcode = get_short(DLP_RESPONSE_DATA(res, 0, 2));
+			if (retlen)
+				*retlen = data_len;
+			
+			if (retdata)
+				memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 6),
+				       data_len > maxretlen ? maxretlen : data_len);
+			
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     "DLP CallApplication Action: %d Result: %lu (0x%4.4lX), and %d bytes:\n",
+			     get_short(DLP_RESPONSE_DATA(res, 0, 0)), 
+			     get_short(DLP_RESPONSE_DATA(res, 0, 2)), 
+			     get_short(DLP_RESPONSE_DATA(res, 0, 2)),
+			     data_len));
+			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 			      dumpdata(DLP_RESPONSE_DATA(res, 0, 6), data_len));
 		}
 		

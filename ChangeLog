@@ -1,3 +1,8 @@
+2002-09-26  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/dlp.c (dlp_CallApplication): check result before using
+	response
+
 2002-09-25  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Python/src/pisock.i: Fix for 'name' and 'nameLength'
