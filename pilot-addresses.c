@@ -320,7 +320,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 
 		l = pack_Address(&a, (unsigned char *) buf, sizeof(buf));
 #ifdef DEBUG
-		dumpdata(buf, l);
+/* 		dumpdata(buf, l); */
 #endif
 		dlp_WriteRecord(sd, db, attribute, 0, category,
 				(unsigned char *) buf, l, 0);
