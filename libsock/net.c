@@ -109,8 +109,6 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len)
 	unsigned char buf[6];
 	int result;
 	
-	printf ("NET TX\n");
-
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
@@ -153,8 +151,6 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 	unsigned char buf[6];
 	int rlen;
 
-	printf ("NET RX\n");
-	
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;

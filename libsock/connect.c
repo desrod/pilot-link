@@ -28,24 +28,23 @@
 int pilot_connect(const char *port)
 {
 	int sd;
-	int ret;
 	struct PilotUser U;
 	struct pi_sockaddr addr;
 
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET))) {
 		perror("   Reason: pi_socket");
-		return 0;
+		return 1;
 	}
 
 	addr.pi_family = PI_AF_PILOT;
 	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
 
 	if (pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
-		printf("\n   Unable to bind to port %s\n", port);
+		printf("\n   Unable to bind to port '%s'\n", port);
 		perror("   Reason: pi_bind");
 		printf("\n");
 		pi_close(sd);
-		return 0;
+		return 1;
 	}
 
 	printf
@@ -57,7 +56,7 @@ int pilot_connect(const char *port)
 		perror("   Reason: pi_listen");
 		printf("\n");
 		pi_close(sd);
-		return 0;
+		return 1;
 	}
 
 	if (pi_accept(sd, 0, 0) == -1) {
@@ -65,7 +64,7 @@ int pilot_connect(const char *port)
 		perror("   Reason: pi_accept");
 		printf("\n");
 		pi_close(sd);
-		return 0;
+		return 1;
 	}
 
 	printf("   Connected...\n");
