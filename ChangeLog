@@ -1,5 +1,7 @@
 2002-07-23  David A. Desrosiers <hacker at gnu-designs dot com>
 
+	* doc/man/pilot-link.7: Minor troff typo that breaks man2html
+
 	* src/pilot-datebook/pilot-datebook-update.c: Fixed indenting,
 	  function comments, GPL banner, copyright
 
