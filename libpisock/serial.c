@@ -95,6 +95,7 @@ pi_serial_protocol_dup (pi_protocol_t *prot)
 		new_prot->free 		= prot->free;
 		new_prot->read 		= prot->read;
 		new_prot->write 	= prot->write;
+		new_prot->flush		= prot->flush;
 		new_prot->getsockopt 	= prot->getsockopt;
 		new_prot->setsockopt 	= prot->setsockopt;
 		new_prot->data 		= NULL;
