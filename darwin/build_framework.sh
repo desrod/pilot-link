@@ -4,7 +4,7 @@
 #
 what=libpisock
 libs=../libpisock/.libs/libpisock.a
-linkflags="-framework System -framework IOKit -liconv -lgcc"
+linkflags="-framework Carbon -framework System -framework IOKit -liconv -lgcc"
 incs=../include
 
 rm -Rf $what.framework
@@ -17,8 +17,9 @@ libtool -dynamic \
 
 cp $incs/*.h $what.framework/Versions/A/Headers/
 
-cd $what.framework
-ln -sf Versions/A Versions/Current
+cd $what.framework/Versions
+ln -sf A Current
+cd ..
 ln -sf Versions/Current/Headers Headers
 ln -sf Versions/Current/$what $what
 cd ..
