@@ -367,6 +367,7 @@ install-todos.o: install-todos.c include/pi-source.h \
 install-user.o: install-user.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h
+kittykiller.o: kittykiller.c
 memos.o: memos.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-memo.h \

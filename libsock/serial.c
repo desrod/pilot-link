@@ -1,16 +1,21 @@
 /* serial.c: Interface layer to serial HotSync connections
  *
  * Copyright (c) 1996, 1997, D. Jeff Dionne & Kenneth Albanowski
- * Copyright (c) 1998, 1999, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
  */
 
+#ifdef WIN32
+#include <windows.h>
+#include <winsock.h>
+#include <io.h>
+#else
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#endif
 #include <stdio.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -27,6 +32,11 @@
 #include <sys/select.h>
 #endif
 
+
+#ifdef WIN32
+extern int win_peek(struct pi_socket *ps, int timeout);
+#endif
+
 static int pi_serial_listen(struct pi_socket *ps, int backlog);
 static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen);
 static int pi_serial_send(struct pi_socket *ps, void *msg, int len, unsigned int flags);
@@ -40,11 +50,12 @@ int pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
   struct cmp c;
   struct pi_sockaddr * pa = (struct pi_sockaddr*)addr;
+  char * rate_env;
 
   if(ps->type == PI_SOCK_STREAM) {
     if (ps->establishrate == -1) {
-      char * rate_env = getenv("PILOTRATE");
       ps->establishrate = 9600; /* Default PADP connection rate */
+      rate_env = getenv("PILOTRATE");
       if (rate_env) {
         if (rate_env[0] == 'H')
         { /* Establish high rate */
@@ -58,16 +69,21 @@ int pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
         }
       }
     }
-    ps->rate = 9600; /* Mandatory CMP connection rate */
+    ps->rate = 9600; /* Mandatory CMP conncetion rate */
   } else if(ps->type == PI_SOCK_RAW) {
     ps->establishrate = ps->rate = 57600; /* Mandatory SysPkt connection rate */
   }
 
   if ((addr->sa_family == PI_AF_INETSLP) || 
       ((addr->sa_family == PI_AF_SLP) && (pa->pi_device[0] == ':'))) {
+#ifdef _PILOT_INETSERIAL_H_
     if (pi_inetserial_open(ps, addr, addrlen) == -1) {
       return -1;     /* errno already set */
     }
+#else
+	errno = EINVAL;
+	return -1;
+#endif
   }
   else {
     if (pi_serial_open(ps, pa, addrlen) == -1) {
@@ -129,10 +145,12 @@ int pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
   struct pi_sockaddr * pa = (struct pi_sockaddr*)addr;
+  char * rate_env;
+
   if(ps->type == PI_SOCK_STREAM) {
     if (ps->establishrate == -1) {
-      char * rate_env = getenv("PILOTRATE");
       ps->establishrate = 9600; /* Default PADP connection rate */
+      rate_env = getenv("PILOTRATE");
       if (rate_env) {
         if (rate_env[0] == 'H')
         { /* Establish high rate */
@@ -153,9 +171,14 @@ int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
   if ((addr->sa_family == PI_AF_INETSLP) || 
       ((addr->sa_family == PI_AF_SLP) && (pa->pi_device[0] == ':'))) {
+#ifdef _PILOT_INETSERIAL_H_
     if (pi_inetserial_open(ps, addr, addrlen) == -1) {
       return -1;     /* errno already set */
     }
+#else
+	errno = EINVAL;
+	return -1;
+#endif
   }
   else {
     if (pi_serial_open(ps, pa, addrlen) == -1) {
@@ -180,34 +203,52 @@ int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
   return 0;
 }
 
-/* Wait for an incoming connection */
 
+/* Prepare for incoming connections */
 static int pi_serial_listen(struct pi_socket *ps, int backlog)
 {
-  return 0;
+  return ps->serial_changebaud(ps);  /* ps->rate has been set by bind */
 }
+
 
 /* Accept an incoming connection */
 
 static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
   struct pi_socket *accept;
+  struct timeval tv; 
   struct cmp c;
+  int rc;
 
   accept = malloc(sizeof(struct pi_socket));
   memcpy(accept, ps, sizeof(struct pi_socket));
 
   if(accept->type == PI_SOCK_STREAM) {
-    accept->serial_read(accept, 200);
+#ifdef WIN32
+  rc = win_peek(ps, accept->accept_to);  /* Wait for data on the CommPort. */
+  if (rc < 0) {
+    errno = ETIMEDOUT;
+    goto fail;
+  }
+
+#else
+  accept->serial_read(accept, accept->accept_to);
+#endif
+
+    if (accept->rx_errors > 0) {
+      errno = ETIMEDOUT;
+      goto fail;
+    }
+
     if(cmp_rx(accept, &c) < 0)
       goto fail; /* Failed to establish connection, errno already set */
-    if ((c.version & 0xFF00) == 0x0100) {
 
+    if ((c.version & 0xFF00) == 0x0100) {
       if((unsigned long) accept->establishrate > c.baudrate) {
-      	if (!accept->establishhighrate) {
-	        fprintf(stderr,"Rate %d too high, dropping to %ld\n",ps->establishrate,c.baudrate);
-	        accept->establishrate = c.baudrate;
-	}
+        if (!accept->establishhighrate) {
+          fprintf(stderr,"Rate %d too high, dropping to %ld\n",ps->establishrate,c.baudrate);
+          accept->establishrate = c.baudrate;
+  }
       }
 
       accept->rate = accept->establishrate;
@@ -215,18 +256,21 @@ static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *ad
       if(cmp_init(accept, accept->rate)<0)
         goto fail;
       pi_serial_flush(accept);
-      if(accept->rate != 9600) {
-        accept->serial_changebaud(accept);
-      } else {
-        /* Apparently the device reconfigures its serial port even if the
-           baud rate is unchanged, so we'll need to pause a little so that
-           the next transmitted packet won't be lost */
-        struct timeval tv;
-        tv.tv_sec = 0;
-        tv.tv_usec = 50000;
-        select(0, 0, 0, 0, &tv);
-      }
+
+      /* We always reconfigure our port, no matter what */
+      accept->serial_changebaud(accept);
+
+      /* Palm device needs some time to reconfigure its port */
+#ifdef WIN32
+      Sleep(100);
+#else
+      tv.tv_sec = 0;
+      tv.tv_usec = 50000;
+      select(0,0,0,0, &tv);
+#endif
+
       accept->connected = 1;
+      accept->accepted = 1;
       accept->dlprecord = 0;
     }else {
       cmp_abort(ps, 0x80); /* 0x80 means the comm version wasn't compatible*/
@@ -239,6 +283,7 @@ static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *ad
     }
   } else {
     accept->connected = 1;
+    accept->accepted = 1;
   }
   
   accept->sd = dup(ps->sd);
@@ -266,7 +311,11 @@ static int pi_serial_send(struct pi_socket *ps, void *msg, int len, unsigned int
   if (ps->type == PI_SOCK_STREAM)
     return padp_tx(ps, msg, len, padData);
   else
+#ifdef _PILOT_SYSPKT_H
     return syspkt_tx(ps, msg, len);
+#else
+	return -1;
+#endif
 }
 
 /* Recv msg on a connected socket */
@@ -276,7 +325,11 @@ static int pi_serial_recv(struct pi_socket *ps, void *msg, int len, unsigned int
   if (ps->type == PI_SOCK_STREAM)
     return padp_rx(ps, msg, len);
   else
+#ifdef _PILOT_SYSPKT_H
     return syspkt_rx(ps, msg, len);
+#else
+	return -1;
+#endif
 }
 
 static int pi_serial_tickle(struct pi_socket *ps)
@@ -303,10 +356,15 @@ static int pi_serial_tickle(struct pi_socket *ps)
 
 static int pi_serial_close(struct pi_socket * ps)
 {
+  #ifdef DEBUG
+  fprintf(stderr, "pi_serial_close\n");
+  fprintf(stderr, "connected: %d\n", ps->connected);
+  #endif
   if (ps->type == PI_SOCK_STREAM) {
-    if (ps->connected & 1) /* If socket is connected */
-      if (!(ps->connected & 2)) /* And it wasn't end-of-synced */
-        dlp_EndOfSync(ps->sd, 0);  /* then end sync, with clean status */
+    if (!(ps->broken)) /* If connection is not broken */
+      if (ps->connected & 1) /* And the socket is connected */
+        if (!(ps->connected & 2)) /* And it wasn't end-of-synced */
+          dlp_EndOfSync(ps->sd, 0);  /* then end sync, with clean status */
   }
   
   if(ps->sd && (ps->sd != ps->mac->fd)) /* If device still has a /dev/null handle */
@@ -314,10 +372,16 @@ static int pi_serial_close(struct pi_socket * ps)
     
   if(ps->mac->fd) { /* If device was opened */
     if (ps->connected) {
-      pi_serial_flush(ps); /* Flush the device, and set baud rate back to the initial setting */
+      if (!(ps->broken))
+        pi_serial_flush(ps); /* Flush the device, and set baud rate back to the initial setting */
       ps->rate = 9600; 
       ps->serial_changebaud(ps);
     }
+
+    ps->connected = 0;
+    ps->accepted = 0;
+    ps->broken = -1;  /* Ban any future PADP traffic */
+
     if (--(ps->mac->ref) == 0) { /* If no-one is using the device, close it */
       ps->serial_close(ps);
       free(ps->mac);

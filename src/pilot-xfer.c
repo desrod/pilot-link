@@ -230,7 +230,6 @@ void Backup(char * dirname, int only_changed, int remove_deleted)
 
         for(x = 0; x < numexclude; x++) {
           /* printf("Skipcheck:%s:%s:\n",exclude[x],info.name); */
-printf("Skipcheck:%s:%s:\n",exclude[x],info.name);
           if(strcmp(exclude[x],info.name) == 0) {
             printf("Excluding '%s'...\n",name);
 	    RemoveFromList(name, orig_files, ofile_total);

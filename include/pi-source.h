@@ -24,7 +24,6 @@
 # include <unistd.h>
 # include <string.h>
 # include <stdlib.h>
-/*# include <netinet/in.h>*/
 # include <dirent.h>
 # include <errno.h>
 # include <assert.h>
@@ -35,13 +34,31 @@
 # define HAVE_SYS_SELECT_H
 # define HAVE_STRDUP
 #else
-# include "pi-config.h"
+#ifdef WIN32
+# include <time.h>
+# include <string.h>
+# include <stdlib.h>
+# include <errno.h>
+# define RETSIGTYPE void
+# define SIGALRM 14
+# define ENOMSG 1024
+# define EMSGSIZE 1025
+# define ETIMEDOUT 1026
+# define ECONNREFUSED 1027
+# define EOPNOTSUPP 1028
+#define HAVE_DUP2
+
+#else
+#include "pi-config.h"
+#endif
 #endif
 
+#ifndef WIN32
 #ifdef SGTTY
 # include <sgtty.h>
 #else
 # include <termios.h>
+#endif
 #endif
 
 #ifdef __cplusplus
@@ -83,6 +100,7 @@ struct pi_socket {
   int sd;
   int initiator;
   struct pi_mac *mac;
+#ifndef WIN32
 #ifndef OS2
 # ifndef SGTTY
    struct termios tco;
@@ -90,14 +108,17 @@ struct pi_socket {
    struct sgttyb tco;
 # endif
 #endif
+#endif
   struct pi_skb *txq;
   struct pi_skb *rxq;
   struct pi_socket *next;
   int rate;          /* Current port baud rate */
   int establishrate; /* Baud rate to use after link is established */
-  int establishhighrate; /* Boolean: try to establish rate higher then the device publishes */
+  int establishhighrate; /* Boolean: try to establish rate higher than the device publishes */
   int connected; /* true on connected or accepted socket */
   int accepted;  /* only true on accepted socket */
+  int broken;    /* sth. went wrong so badly we cannot use this socket anymore */
+  int accept_to;  /* timeout value for call to accept() */
   int majorversion;
   int minorversion;
   int tickle;

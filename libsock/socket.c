@@ -1,6 +1,6 @@
 /* socket.c:  Berkeley sockets style interface to Pilot SLP/PADP
  *
- * (c) 1996, D. Jeff Dionne.
+ * Copyright (c) 1996, D. Jeff Dionne.
  * Copyright (c) 1997-1999, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  *
@@ -8,9 +8,14 @@
  * See the file COPYING.LIB for details.
  */
 
+#ifdef WIN32
+#include <winsock.h>
+#include <io.h>
+#else
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#endif
 #include <stdio.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -23,6 +28,40 @@
 #include "pi-cmp.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
+
+
+#ifdef WIN32
+/*An implementation of alarm for windows*/
+#include <process.h>
+static long alm_countdown = -1;
+static void* alm_tid = 0;
+void alarm_thread(void* unused) {
+  long av;
+  Sleep(1000L);
+  av = InterlockedDecrement(&alm_countdown);
+  if(av == 0) {
+    raise(SIGALRM);
+  }
+  if(av <= 0) {
+    alm_tid = 0;
+    ExitThread(0);
+  }
+}
+unsigned alarm(unsigned sec) {
+  long ret = alm_countdown;
+  if(sec) {
+    alm_countdown = sec;
+    if(!alm_tid) {
+      unsigned long t;
+      //not multi thread safe -- fine if you just call alarm from one thread
+      alm_tid = CreateThread(0,0,(LPTHREAD_START_ROUTINE) alarm_thread,0,0,&t);
+    }
+  } else {
+    alm_countdown = -1;
+  }
+  return ret > 0 ? ret : 0;
+}
+#endif
 
 static struct pi_socket *psl = (struct pi_socket *)0;
 
@@ -39,42 +78,42 @@ static int busy=0;
 
 static int default_socket_connect(struct pi_socket * ps, struct sockaddr * addr, int flag)
 {
-	errno = ENOSYS;
-	return -1;
+  errno = ENOSYS;
+  return -1;
 }
 static int default_socket_listen(struct pi_socket * ps, int flag)
 {
-	errno = ENOSYS;
-	return -1;
+  errno = ENOSYS;
+  return -1;
 }
 static int default_socket_accept(struct pi_socket * ps, struct sockaddr * addr, int *flag)
 {
-	errno = ENOSYS;
-	return -1;
+  errno = ENOSYS;
+  return -1;
 }
 static int default_socket_close(struct pi_socket * ps)
 {
-	return 0;
+  return 0;
 }
 static int default_socket_tickle(struct pi_socket * ps)
 {
-	errno = ENOSYS;
-	return -1;
+  errno = ENOSYS;
+  return -1;
 }
 static int default_socket_bind(struct pi_socket * ps, struct sockaddr * addr, int flag)
 {
-	errno = ENOSYS;
-	return -1;
+  errno = ENOSYS;
+  return -1;
 }
 static int default_socket_send(struct pi_socket * ps, void * buf, int len, unsigned int flags)
 {
-	errno = ENOSYS;
-	return -1;
+  errno = ENOSYS;
+  return -1;
 }
 static int default_socket_recv(struct pi_socket * ps, void * buf, int len, unsigned int flags)
 {
-	errno = ENOSYS;
-	return -1;
+  errno = ENOSYS;
+  return -1;
 }
 
 
@@ -103,7 +142,7 @@ int pi_socket(int domain, int type, int protocol)
 
   ps = calloc(sizeof(struct pi_socket), 1);
 
-#ifdef OS2
+#if defined( OS2 ) || defined( WIN32 )
   if((ps->sd = open("NUL", O_RDWR))==-1) {
 #else
   if((ps->sd = open("/dev/null", O_RDWR))==-1) {
@@ -117,6 +156,8 @@ int pi_socket(int domain, int type, int protocol)
   ps->type = type;
   ps->protocol = protocol;
   ps->connected = 0;
+  ps->accepted = 0;
+  ps->broken = 0;
   ps->mac->fd = 0;
   ps->mac->ref = 1;
   ps->xid = 0xff;
@@ -207,7 +248,11 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
   if (conn == serial)
     return pi_serial_connect(ps, addr, addrlen);
   else if (conn == inet)
+#ifdef _PILOT_INET_H_
     return pi_inet_connect(ps, addr, addrlen);
+#else
+  return -1;
+#endif
     
   return -1;
 }
@@ -241,7 +286,11 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
   if (conn == serial)
     return pi_serial_bind(ps, addr, addrlen);
   else if (conn == inet)
+#ifdef _PILOT_INET_H_
     return pi_inet_bind(ps, addr, addrlen);
+#else
+  return -1;
+#endif
 
   return -1;
 }
@@ -271,6 +320,22 @@ int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
     return -1;
   }
   
+  ps->accept_to = 0;
+  
+  return ps->socket_accept(ps, addr, addrlen);
+}
+
+int pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
+{
+  struct pi_socket *ps;
+
+  if (!(ps = find_pi_socket(pi_sd))) {
+    errno = ESRCH;
+    return -1;
+  }
+  
+  ps->accept_to = timeout;
+  
   return ps->socket_accept(ps, addr, addrlen);
 }
 
@@ -285,7 +350,7 @@ int pi_setmaxspeed(int pi_sd, int speed, int overclock)
   }
   
   if (ps->connected) {
-    errno = EISCONN;
+    errno = EBUSY;  /* EISCONN might be better, but is not available on all OSes. */
     return -1;
   }
   

@@ -60,7 +60,7 @@ extern int compareTm PI_ARGS((struct tm *a, struct tm *b));
                                 ((signed char)(get_byte((ptr))))\
                                 )
 
-#define set_long(ptr,val) ((((unsigned char*)(ptr))[0] = (((unsigned long)(val)) >> 24) & 0xff), \
+#define set_long(ptr,val) ((((unsigned char*)(ptr))[0] = (unsigned char)(((unsigned long)(val)) >> 24) & 0xff), \
 		          (((unsigned char*)(ptr))[1] = (((unsigned long)(val)) >> 16) & 0xff), \
 		          (((unsigned char*)(ptr))[2] = (((unsigned long)(val)) >> 8) & 0xff), \
 		          (((unsigned char*)(ptr))[3] = (((unsigned long)(val)) >> 0) & 0xff))
@@ -71,7 +71,7 @@ extern int compareTm PI_ARGS((struct tm *a, struct tm *b));
                             (val)\
                            )))
 
-#define set_treble(ptr,val) ((((unsigned char*)(ptr))[0] = (((unsigned long)(val)) >> 16) & 0xff), \
+#define set_treble(ptr,val) ((((unsigned char*)(ptr))[0] = (unsigned char)(((unsigned long)(val)) >> 16) & 0xff), \
 		             (((unsigned char*)(ptr))[1] = (((unsigned long)(val)) >> 8) & 0xff), \
 		             (((unsigned char*)(ptr))[2] = (((unsigned long)(val)) >> 0) & 0xff))
 
@@ -168,10 +168,10 @@ inline void set_long(void *buf, const unsigned long val)
 {
      unsigned char *ptr = (unsigned char *) buf;
 
-     *ptr = (val >> 24) & 0xff;
-     *(++ptr) = (val >> 16) & 0xff;
-     *(++ptr) = (val >> 8) & 0xff;
-     *(++ptr) = val & 0xff;
+     *ptr = (unsigned char)((val >> 24) & 0xff);
+     *(++ptr) = (unsigned char)((val >> 16) & 0xff);
+     *(++ptr) = (unsigned char)((val >> 8) & 0xff);
+     *(++ptr) = (unsigned char)(val & 0xff);
 }
 
 inline void set_slong(void *buf, const signed long val) 
@@ -190,9 +190,9 @@ inline void set_treble(void *buf, const unsigned long val)
 {
      unsigned char *ptr = (unsigned char *) buf;
      
-     *ptr = (val >> 16) & 0xff;
-     *(++ptr) = (val >> 8) & 0xff;
-     *(++ptr) = val & 0xff;
+     *ptr = (unsigned char)((val >> 16) & 0xff);
+     *(++ptr) = (unsigned char)((val >> 8) & 0xff);
+     *(++ptr) = (unsigned char)(val & 0xff);
 }
 
 inline void set_streble(void *buf, const signed long val) 

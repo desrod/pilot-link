@@ -1,15 +1,24 @@
 /* inet.c: Interface layer to TCP/IP NetSync connections
  *
  * Copyright (c) 1997, Kenneth Albanowski
+ * Copyright (c) 1999, Tilo Christ
+ * Copyright (c) 1999, John Franks
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
  */
 
+#ifdef WIN32
+#include <winsock.h>
+#include <fcntl.h>
+#include <io.h>
+#else
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#endif
+
 #include <stdio.h>
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -166,9 +175,15 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
   opt=1;
   optlen=sizeof(opt);
+#ifdef WIN32
+  if (setsockopt(ps->sd, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, optlen)<0) {
+    return -1;
+  }
+#else
   if (setsockopt(ps->sd, SOL_SOCKET, SO_REUSEADDR, (void*)&opt, optlen)<0) {
     return -1;
   }
+#endif
 
   if (bind(ps->sd, (struct sockaddr*)&serv_addr, sizeof(serv_addr))<0)
     return -1;
@@ -298,7 +313,7 @@ static int pi_net_recv(struct pi_socket *ps, void *msg, int len, unsigned int fl
     n = read(ps->sd, buf+l, 6-l);
     if (n>0)
       l += n;
-    if (n<0)
+    if (n <= 0)
       return n;
   }
   
@@ -314,6 +329,10 @@ static int pi_net_recv(struct pi_socket *ps, void *msg, int len, unsigned int fl
       l += n;
     if (n<0)
       return n;
+    if (n==0) {
+	len = l;
+	break;
+    }
   }
 
   if (l<rlen) {
@@ -324,6 +343,8 @@ static int pi_net_recv(struct pi_socket *ps, void *msg, int len, unsigned int fl
         l += n;
       if (n<0)
         return n;
+      if (n==0)
+        break;
     }
   }
 

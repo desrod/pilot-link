@@ -1,6 +1,8 @@
 /* cmp.c:  Pilot CMP protocol
  *
- * (c) 1996, Kenneth Albanowski.
+ * Copyright (c) 1996, Kenneth Albanowski.
+ * Copyright (c) 1999, Tilo Christ
+ *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
  */
@@ -20,7 +22,16 @@ int cmp_rx(struct pi_socket *ps, struct cmp * c)
   Begin(cmp_rx);
   
   if(!ps->rxq)
-    ps->serial_read(ps, 200);
+  {
+    ps->serial_read(ps, ps->accept_to);
+
+    if (ps->rx_errors > 0) {
+      errno = ETIMEDOUT;
+      return -1;
+    }
+
+  }
+
   l = padp_rx(ps, cmpbuf, 10);
   
   if( l < 10)

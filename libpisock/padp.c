@@ -4,6 +4,7 @@
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
  *
  * Mostly rewritten by Kenneth Albanowski.
+ * Adjusted timeout values and better error handling by Tilo Christ.
  *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
@@ -17,8 +18,8 @@
 #include "pi-slp.h"
 #include "pi-serial.h"
 
-#define xmitTimeout 4*10
-#define xmitRetries 14*10
+#define xmitTimeout 2*1000
+#define xmitRetries 10
 
 /*@+matchanyintegral@*/
 
@@ -37,6 +38,9 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 #ifdef DEBUG
   fprintf(stderr,"-----------------\n");
 #endif
+
+  if (ps->broken)   /* Don't use an unavailable connection */
+    return -1;
 
   if (type == padWake) {
     ps->xid = (unsigned char)0xff;
@@ -177,8 +181,9 @@ keepwaiting:
     
     if( retries == 0) {
       errno = ETIMEDOUT;
-	      count = -1;
-	      goto done;
+      ps->broken = -1;
+/*	      count = -1;
+	      goto done; */
       return -1; /* Maximum failure: transmission failed, and 
                     the connection must be presumed dead */
     }
@@ -197,9 +202,9 @@ done:
   return count;
 }
 
-#define recStartTimeout 45*10
-#define recSegTimeout 45*10
 
+#define recStartTimeout 30*1000
+#define recSegTimeout 30*1000
 
 int padp_rx(struct pi_socket *ps, void *buf, int len)
 {
@@ -214,7 +219,10 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   int offset = 0;
   int ouroffset = 0;
   time_t endtime;
-  endtime = time(NULL)+recStartTimeout;
+  endtime = time(NULL) + recStartTimeout / 1000;
+
+  if (ps->broken)   /* Don't use a broken connection */
+    return -1;
 
   if(!ps->initiator) {
     if(ps->xid >= 0xfe)
@@ -232,12 +240,13 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
       /* Start timeout, return error */
       errno = ETIMEDOUT;
       ouroffset = -1;
+      ps->broken = -1;  /* Bad timeout breaks connection */
       goto done;
       return -1;
     }
   
     if (!ps->rxq) {
-      ps->serial_read(ps, recStartTimeout);
+      ps->serial_read(ps, recStartTimeout + 2000);
       continue;
     }
 
@@ -274,7 +283,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     if (padp.type == (unsigned char)4) {
       /* Tickle to avoid timeout */
 
-      endtime = time(NULL)+recStartTimeout;
+      endtime = time(NULL) + recStartTimeout / 1000;
       fprintf(stderr,"Got tickled\n");
 
       /* Consume packet */
@@ -287,14 +296,14 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     if ((slp->type != 2) || (padp.type != padData) || 
         (slp->id != ps->xid) || !(padp.flags & FIRST)) {
       if(padp.type == padTickle) {
-        endtime = time(NULL)+recStartTimeout;
+        endtime = time(NULL) + recStartTimeout / 1000;
         fprintf(stderr,"Got tickled\n");
       }
       fprintf(stderr,"Wrong packet type on queue\n");
       ps->rxq = skb->next;
       
       free(skb);
-      ps->serial_read(ps, recStartTimeout);
+      ps->serial_read(ps, recStartTimeout + 2000);
       continue;
     }
     break;
@@ -302,7 +311,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   
   /* OK, we got the expected begin-of-data packet */
   
-  endtime = time(NULL) + recSegTimeout;
+  endtime = time(NULL) + recSegTimeout / 1000;
   
   for(;;) {
   
@@ -350,7 +359,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     if (padp.flags & LAST) {
       break;
     } else  {
-      endtime = time(NULL) + recSegTimeout;
+      endtime = time(NULL) + recSegTimeout / 1000;
       
       for(;;) {
         if(time(NULL)>endtime) {
@@ -358,12 +367,13 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
           /* Segment timeout, return error */
           errno = ETIMEDOUT;
       ouroffset = -1;
+          ps->broken = -1;  /* Bad timeout breaks connection */
       goto done;
           return -1;
         }
         
         if(!ps->rxq) {
-          ps->serial_read(ps, recSegTimeout);
+          ps->serial_read(ps, recSegTimeout + 2000);
           continue;
         }
         
@@ -400,7 +410,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
         if (padp.type == (unsigned char)4) {
           /* Tickle to avoid timeout */
 
-          endtime = time(NULL)+recStartTimeout;
+          endtime = time(NULL) + recStartTimeout / 1000;
           fprintf(stderr,"Got tickled\n");
 
           /* Consume packet */
@@ -413,14 +423,14 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
         if ((slp->type != 2) || (padp.type != padData) || 
             (slp->id != ps->xid) || (padp.flags & FIRST)) {
           if(padp.type == padTickle) {
-            endtime = time(NULL)+recSegTimeout;
+            endtime = time(NULL) + recSegTimeout / 1000;
             fprintf(stderr,"Got tickled\n");
           }
           fprintf(stderr,"Wrong packet type on queue\n");
           ps->rxq = skb->next;
           
           free(skb);
-          ps->serial_read(ps, recSegTimeout);
+          ps->serial_read(ps, recSegTimeout + 2000);
           continue;
         }
         At(got good packet);

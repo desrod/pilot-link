@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
   }
   
   j = dlp_ReadAppBlock(sd, db, 0, (unsigned char *)buf, 0xffff);
-  unpack_HiNoteAppInfo(&mai, (unsigned char *)buf, j);	//! should check result
+  unpack_HiNoteAppInfo(&mai, (unsigned char *)buf, j);	/* should check result */
 
   category = 0;
   

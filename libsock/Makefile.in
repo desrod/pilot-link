@@ -186,3 +186,7 @@ unixserial.o unixserial.lo: unixserial.c ../include/pi-source.h \
 utils.o utils.lo: utils.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h
+winserial.o winserial.lo: winserial.c ../include/pi-source.h ../include/pi-config.h \
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h \
+ ../include/pi-serial.h ../include/pi-slp.h ../include/pi-padp.h

@@ -5,11 +5,17 @@
  * See the file COPYING.LIB for details.
  */
 
+#ifdef WIN32
+#include <winsock.h>
+#include <io.h>
+#include <fcntl.h>
+#else
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#endif
 #include <stdio.h>
 #include "pi-source.h"
 #include "pi-socket.h"

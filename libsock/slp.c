@@ -7,6 +7,10 @@
  * See the file COPYING.LIB for details.
  */
 
+
+#ifdef WIN32
+#include <winsock.h>
+#endif
 #include <stdio.h>
 #include "pi-source.h"
 #include "pi-socket.h"

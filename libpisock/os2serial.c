@@ -99,7 +99,7 @@ int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr * addr, int addrlen)
                                             original NUL handle */
   
   so_changebaud(ps);
-  pi_socket_set_timeout(ps,-1,600);
+  pi_socket_set_timeout(ps,-1,60000);
 
   ps->serial_close = so_close;
   ps->serial_read = so_read;
@@ -359,11 +359,11 @@ static int so_read(struct pi_socket *ps, int timeout)
   int rc;
 
   /* FIXME: if timeout == 0, wait forever for packet, otherwise wait till
-     timeout tenth-of-seconds */
+     timeout milli-seconds */
 
   /* for OS2, timeout of 0 is almost forever, only 1.8 hours */
   /* if no timeout is set at all, the timeout defaults to 1 minute */
-  rc=pi_socket_set_timeout(ps,timeout,-1);
+  rc=pi_socket_set_timeout(ps,timeout / 100,-1);
   if (rc==-1)
     {
       fprintf(stderr,"error setting timeout, old timeout used\n");

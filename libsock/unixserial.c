@@ -255,12 +255,6 @@ static int s_changebaud(struct pi_socket *ps)
 
   tcsetattr(ps->mac->fd,TCSADRAIN,&tcn);
 
-#ifdef sleeping_beauty
-  tv.tv_sec = 0;
-  tv.tv_usec = 50000;
-  select(0,0,0,0, &tv);
-#endif
-
 #else
   struct sgttyb tcn;
 
@@ -270,6 +264,12 @@ static int s_changebaud(struct pi_socket *ps)
   tcn.sg_ospeed = calcrate(ps->rate);
   
   ioctl(ps->mac->fd, TIOCSETN, &tcn);
+#endif
+
+#ifdef sleeping_beauty
+  tv.tv_sec = 0;
+  tv.tv_usec = 50000;
+  select(0,0,0,0, &tv);
 #endif
 
   return 0;
@@ -352,8 +352,8 @@ static int s_read(struct pi_socket *ps, int timeout)
   FD_ZERO(&ready);
   FD_SET(ps->mac->fd, &ready);
 
-  /* FIXME: if timeout == 0, wait forever for packet, otherwise wait till
-     timeout tenth-of-seconds */
+  /* If timeout == 0, wait forever for packet, otherwise wait till
+     timeout milliseconds */
 
   pi_serial_flush(ps);              /* We likely want to be in sync with tx */
   if (!ps->mac->expect) slp_rx(ps);  /* let SLP know we want a packet */
@@ -363,9 +363,15 @@ static int s_read(struct pi_socket *ps, int timeout)
 
     while (ps->mac->expect) {
       ready2 = ready;
-      t.tv_sec = timeout/10;
-      t.tv_usec = (timeout % 10) * 100000;
+      
+      if (timeout == 0)
+        select(ps->mac->fd+1,&ready2,0,0,0);
+      else
+      {
+        t.tv_sec = timeout/1000;
+        t.tv_usec = (timeout % 1000) * 1000;
       select(ps->mac->fd+1,&ready2,0,0,&t);
+      }
       /* If data is available in time, read it */
       if(FD_ISSET(ps->mac->fd,&ready2))
         r = read(ps->mac->fd, buf, ps->mac->expect);

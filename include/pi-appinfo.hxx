@@ -5,7 +5,7 @@
 
 #include "pi-macros.h"
 
-const BASE_APP_INFO_SIZE = 278;	// All apps take up 278 bytes of the same stuff
+const int BASE_APP_INFO_SIZE = 278;	// All apps take up 278 bytes of the same stuff
 
 typedef char category_t[16][16];
 typedef const char *const charConst_t;

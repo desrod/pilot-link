@@ -28,7 +28,11 @@ extern "C" {
 #define PI_PilotSocketDebugger  0
 #define PI_PilotSocketRemoteUI  2
 
+#ifdef WIN32
+#include "pi-sockaddr-win32.h"
+#else
 #include "pi-sockaddr.h"
+#endif
 
 struct pi_skb;
 
@@ -43,6 +47,8 @@ extern int pi_connect PI_ARGS((int pi_sd, struct sockaddr *remote_addr, int addr
 extern int pi_bind PI_ARGS((int pi_sd, struct sockaddr *my_addr, int addrlen));
 extern int pi_listen PI_ARGS((int pi_sd, int backlog));
 extern int pi_accept PI_ARGS((int pi_sd, struct sockaddr *remote_addr, int *addrlen));
+
+extern int pi_accept_to PI_ARGS((int pi_sd, struct sockaddr *addr, int *addrlen, int timeout));
 
 extern int pi_send PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
 extern int pi_recv PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));

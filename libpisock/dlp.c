@@ -9,6 +9,10 @@
 /*@+matchanyintegral@*/
 /*@-predboolint@*/
 /*@-boolops@*/ 
+
+#ifdef WIN32
+#include <winsock.h> /* for hton* */
+#endif
  
 #include <stdio.h>
 #include "pi-source.h"
@@ -58,7 +62,7 @@ char * dlp_strerror(int error) {
     return dlp_errorlist[error];
 	if ((unsigned int) error >= (sizeof(dlp_errorlist)/(sizeof(char *))))
 		return "Unknown error";
-int dlp_trace = 0;
+const int dlp_trace = 0;
 		return dlp_errorlist[error];
 #ifndef NO_DLP_TRACE
 #define DLP_TRACE
@@ -909,6 +913,13 @@ int dlp_EndOfSync(int sd, int status)
  * Returns:     A negative number on error, 0 otherwise
   int result;
   struct pi_socket * ps;
+
+  ps = find_pi_socket(sd);
+  if (ps == 0)
+    return 1;  /* General system error */
+
+  if ((ps->broken) || (!(ps->connected & 1)) || (ps->connected & 2))
+    return 1;  /* Don't end sync on an unavailable socket */
   
   set_short(dlp_buf, status);
 
@@ -921,8 +932,7 @@ int dlp_EndOfSync(int sd, int status)
   /* Messy code to set end-of-sync flag on socket 
      so pi_close won't do it for us */
   if (result == 0)
-    if ( (ps = find_pi_socket(sd)) )
-      ps->connected |= 2;
+    ps->connected |= 2;
   
   return result;
 }
@@ -1098,6 +1108,7 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i)
   return result;
 	dlp_request_free(req);
 	dlp_response_free(res);
+	
 int dlp_RPC(int sd, struct RPC_params * p, unsigned long * result)
  * Returns:     A negative number on error, 0 otherwise
   int i;
@@ -1194,7 +1205,7 @@ int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num, unsigned lo
       *feature = 0x12345678;
 
       PackRPC(&p, 0xA27B, RPC_IntReply, 
-         RPC_Long(creator), RPC_Short(num), RPC_LongPtr(feature), RPC_End);
+         RPC_Long(creator), RPC_Short((unsigned short)num), RPC_LongPtr(feature), RPC_End);
       
       val = dlp_RPC(sd, &p, &result);
       
@@ -1213,7 +1224,7 @@ int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num, unsigned lo
       if (val < 0)
         return val;
       if (result)
-        return -result;
+        return (-(long)result);
     }
     
     return 0;
@@ -1246,6 +1257,8 @@ int dlp_ReadFeature(int sd, unsigned long creator, unsigned int num, unsigned lo
 
   return result;
 
+#endif   /* IFDEF _PILOT_SYSPKT_H */
+	}
 
 int dlp_ResetLastSyncPC(int sd)
  * Returns:     A negative number on error, 0 otherwise

@@ -46,7 +46,7 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_CACHE_CHECK([whether C++ compiler ($CXX $CXFLAGS $LDFLAGS) works],
   ac_cv_prog_cxx_works,
-[AC_TRY_COMPILE([#include <stdio.h>], [class a { public: int b; a::a(void); };
+[AC_TRY_COMPILE([#include <stdio.h>], [class a { public: int b; a(void); };
 a b; ],
   ac_cv_prog_cxx_works=yes,ac_cv_prog_cxx_works=no)])
 AC_LANG_RESTORE
@@ -278,8 +278,8 @@ changequote([, ])dnl
 			javaos="$host_os"
 			case "$javaos" in
 			  linux-gnu) javaos="$javaos linux" ;;
-			  solaris) javaos="$javaos sunos sun" ;;
-			  sunos) javaos="$javaos solaris sun" ;;
+			  *solaris*) javaos="$javaos solaris sun" ;;
+			  sunos) javaos="$javaos sunos sun" ;;
 			esac
 			JAVAARCH="genunix"
 			for i in $javaos genunix; do

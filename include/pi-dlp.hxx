@@ -38,7 +38,7 @@ class DLP
      int findDBInfo(const int cardno, const int start,
 		    strConst_t dbname, const unsigned long type,
 		    const unsigned long creator, struct DBInfo *info) const {
-	  return dlp_FindDBInfo(_sd, cardno, start, dbname, type, creator,
+	  return dlp_FindDBInfo(_sd, cardno, start, (char*)dbname, type, creator,
 				info);
      }
 
@@ -50,7 +50,7 @@ class DLP
      int openDB(const int cardno, const int mode, strConst_t name,
 		int *db) const {
 
-	  return dlp_OpenDB(_sd, cardno, mode, name, db);
+	  return dlp_OpenDB(_sd, cardno, mode, (char*)name, db);
      }
 
      // Close an opened database using the handle returned by openDB
@@ -81,7 +81,7 @@ class DLP
       * calling endOfSync, but it's not required
       */
      int addSyncLogEntry(strConst_t entry) const {
-	  return dlp_AddSyncLogEntry(_sd, entry);
+	  return dlp_AddSyncLogEntry(_sd, (char*)entry);
      }
 
      /*
@@ -160,7 +160,7 @@ class DLP
      int writeRecord(const int handle, const int flags, const recordid_t recID,
 		     const int catID, const void *data, const int length,
 		     recordid_t *newID) const {
-	  return dlp_WriteRecord(_sd, handle, flags, recID, catID, data,
+	  return dlp_WriteRecord(_sd, handle, flags, recID, catID, (void*)data,
 				 length, newID);
      }
 

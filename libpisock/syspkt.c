@@ -7,6 +7,11 @@
  * See the file COPYING.LIB for details.
  */
 
+
+#ifdef WIN32
+#include <winsock.h>
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -58,7 +63,7 @@ int syspkt_rx(struct pi_socket *ps, void *b, int len)
   int rlen =0;
   
   if (!ps->rxq)
-    ps->serial_read(ps, 1);
+    ps->serial_read(ps, 100);
   
   if (!ps->rxq)
     return 0;
@@ -539,7 +544,7 @@ int RPC(int sd, int socket, int trap, int reply, ...)
       if(p[i].invert) {
         if(p[i].size == 2) {
           int * s = c;
-          *s = htons(*s);
+          *s = htons((short)*s);
         } else {
           int * l = c;
           *l = htonl(*l);
@@ -557,7 +562,7 @@ int RPC(int sd, int socket, int trap, int reply, ...)
         void * c = p[j].data;
         if(p[j].size == 2) {
           int * s = c;
-          *s = htons(*s);
+          *s = htons((short)*s);
         } else {
           int * l = c;
           *l = htonl(*l);
@@ -614,10 +619,10 @@ void UninvertRPC(struct RPC_params * p)
         void * c = p->param[j].data;
         if((p->param[j].invert == 2) && (p->param[j].size == 2)) {
           int * s = c;
-          *s = htons(*s)>>8;
+          *s = htons((short)*s)>>8;
         } else if(p->param[j].size == 2) {
           int * s = c;
-          *s = htons(*s);
+          *s = htons((short)*s);
         } else {
           long * l = c;
           *l = htonl(*l);

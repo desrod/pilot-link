@@ -17,6 +17,10 @@
 # include <assert.h>
 #endif
 
+#ifdef WIN32
+#include <winsock.h>
+#include <assert.h>
+#else
 #ifndef HAVE_INET_ATON
 # include <sys/param.h>
 #ifdef __EMX__
@@ -28,6 +32,7 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <ctype.h>
+#endif
 #endif
 
 #include "pi-source.h"
@@ -297,7 +302,7 @@ void set_float(void * buffer, double value) {
 		sign=0xFF;
 	
 	/* Convert mantissa to 32-bit integer, and take exponent */
-	frac = ldexp(frexp(value, &exp), 32);
+  frac = (unsigned long)ldexp(frexp(value, &exp), 32);
 	exp -= 32;
 	
 	/* Store values in buffer */
