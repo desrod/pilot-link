@@ -1204,7 +1204,8 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	int 	db = -1,
 		j,
 		total_size,
-		result;
+		result,
+		old_device = 0;
 	struct DBSizeInfo size_info;
 	pi_buffer_t *buffer = NULL;
 	pi_progress_t progress;
@@ -1213,9 +1214,14 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 
 	if ((result = dlp_FindDBByName(socket, cardno, pf->info.name,
 			NULL, NULL, NULL, &size_info)) < 0)
-		goto fail;
-
-	total_size = size_info.totalBytes + size_info.appBlockSize;
+	{
+		if (result != PI_ERR_DLP_UNSUPPORTED)
+			goto fail;
+		memset(&size_info, 0, sizeof(size_info));
+		old_device = 1;
+	}
+	else
+		total_size = size_info.totalBytes + size_info.appBlockSize;
 
 	if ((result = dlp_OpenDB (socket, cardno, dlpOpenRead | dlpOpenSecret,
 			pf->info.name, &db)) < 0)
@@ -1227,14 +1233,21 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 		goto fail;
 	}
 
+	if (old_device) {
+		int nrec;
+		if ((result = dlp_ReadOpenDBInfo(socket, db, &nrec)) < 0)
+				goto fail;
+		size_info.numRecords = nrec;
+	}
+
 	memset(&progress, 0, sizeof(progress));
 	progress.type = PI_PROGRESS_RECEIVE_DB;
 	progress.data.db.pf = pf;
 	progress.data.db.size = size_info;
 	
-	if (size_info.appBlockSize) {
+	if (size_info.appBlockSize || old_device) {
 		result = dlp_ReadAppBlock(socket, db, 0, DLP_BUF_SIZE, buffer);
-		if (result < 0)
+		if (result < 0 && !old_device)
 			goto fail;
 		if (result > 0) {
 			pi_file_set_app_info(pf, buffer->data, (size_t)result);
