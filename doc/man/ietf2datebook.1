@@ -1,28 +1,41 @@
-.TH INSTALL-DATEBOOK 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+.TH IETF2DATEBOOK 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+
 .SH NAME
-ietf2datebook \- Converts IETF agenda format to install-datebook format
+.B ietf2datebook 
+\- Converts IETF agenda format to install-datebook format
+
 .SH SYNOPSIS
 .B ietf2datebook < ietf-agenda > datebook.txt
+
 .SH DESCRIPTION
 .B ietf2datebook
-converts IETF (www.ietf.org) agenda to format suitable to
+converts IETF (www.ietf.org) agenda to format suitable for the 
 .B install-datebook
-program. The agenda file is given to it as standard
-input and the output file is sent to standard output. Remove all
-headers and footers from the agenda file before giving it to
+program. The agenda file is given to it as standard input and the output
+file is sent to standard output. Remove all headers and footers from the
+agenda file before giving it to
 .B ietf2datebook.
+
 .SS OPTIONS
 none
-.SH USEAGE
-The program will read IETF agenda from its stdin and output format
-suitable to
+
+.SH USAGE
+The program will read IETF agenda from its stdin and output format suitable
+for the
 .B install-datebook
 program to stdout. 
-.SH BUGS
-This might not work if IETF change the format of their agenda file. 
+
+.SH KNOWN BUGS
+This might not work if the IETF changes the format of their agenda file.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
 .SH AUTHOR
 .B ietf2datebook
-was written by Tero Kivinen <kivinen@iki.fi>. 
+was written by Tero Kivinen <\fIkivinen@iki.fi\fP>. 
+
 .SH SEE ALSO
 .BR read-ical (1),
 .BR pilot-xfer (1),

@@ -1,6 +1,8 @@
-.TH INSTALL-USER 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+.TH INSTALL-MEMO 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
 .SH NAME
-install-memo \- installs a new memo in a Palm Computing Device
+.B install-memo 
+\- installs a new memo in a Palm Computing Device
+
 .SH SYNOPSIS
 .B install-memo 
 .RB [ -c 
@@ -9,17 +11,31 @@ install-memo \- installs a new memo in a Palm Computing Device
 .RI -p\  <port>
 filename [filename filename ...]
 .PP
+
 .SH DESCRIPTION
-This manual page
-documents the small application
-.BR install-memo .
 .B install-memo
 allows the user to write one or more files as a new memo or memos,
-respectively, on the Pilot connected to the specified callout
-device.  Once 
-.B install-memo
-is started, the user must invoke HotSync on the target device.
+respectively, onto the Palm handheld device.
+
 .SS OPTIONS
+.TP
+.BI \-p\ \--port\  <port> ,
+Use device file
+.I port
+to communicate with the Palm handheld device. If this is not specified, will
+look for the $PILOTPORT environment variable. If both are not found, will
+fall back to /dev/pilot.
+   
+.TP
+.BI \-h\ \--help\,
+Display help synopsis for
+.B install-memo
+
+.TP
+.BI \-v\ \--version\,
+Display version of
+.B install-memo
+
 .TP
 .BI \-c\  category
 Install memo(s) to category 
@@ -29,26 +45,35 @@ by default. Normally
 uses 
 .I Unfiled 
 as the default category. 
+
 .TP
 .B -q
 Causes 
 .B install-memo
 to be quiet and not prompt you to press the HotSync button.
+
 .TP
 .B -r
 Replace all memos in the category specified by the  
 .BI \-c\  category 
 option.
+
 .TP
 .B -t
 Use the filename as the title for the memo. (The title is the first line of 
 a memo.)
 
-.SH USEAGE
-The program will connect to a target, and write the file or files
-given on the command line.
-.SH BUGS
+.SH USAGE
+The program will connect to the Palm handheld device, and write the file or
+files given on the command line into the MemoPad application on the Palm.
+
+.SH KNOWN BUGS
 The Palm Device may have a maximum length on memo sizes.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
 .SH AUTHOR
 .B install-memo
-was written by Damien P. Neil
+was written by Damien P. Neil <\fIneild@rpi.edu\fP>
