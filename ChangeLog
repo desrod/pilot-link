@@ -1,8 +1,21 @@
+2002-03-20  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/padp.c (padp_tx): only check for a memory error after
+	we ensure the packet it the correct ack, return the proper length
+	count when the data response arrives instead of the ack, add
+	logging, use PADP_MTU for buffer size
+	(padp_rx): remove excessive read calls, add logging, use PADP_MTU
+	for buffer size
+
+	* libpisock/slp.c (slp_rx): correctly check for when packet length
+	exceeds buffer length, add some logging
+
 2002-03-19  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/padp.c (padp_rx): ensure that all bytes are read in
 
-	* libpisock/slp.c (slp_rx): return 0 on bad checksum (header or packet)
+	* libpisock/slp.c (slp_rx): return 0 on bad checksum (header or
+	packet)
 	
 2002-03-19  JP Rosevear  <jpr@ximian.com>
 

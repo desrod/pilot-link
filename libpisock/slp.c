@@ -258,6 +258,10 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			if ((checksum & 0xff) == slp_buf[PI_SLP_OFFSET_SUM]) {
 				state++;
 				packet_len = get_short(&slp_buf[PI_SLP_OFFSET_SIZE]);
+				if (packet_len > len) {
+					LOG(PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Packet size exceed buffer\n");
+					return -1;
+				}
 				expect = packet_len;
 			} else {
 				LOG(PI_DBG_SLP, PI_DBG_LVL_WARN, "SLP RX Header checksum failed\n");
@@ -302,13 +306,13 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		default:
 			break;
 		}
-
-		if (total_bytes + expect > len + PI_SLP_HEADER_LEN + PI_SLP_FOOTER_LEN)
-			return -1;
+		
 		do {
 			bytes = next->read(ps, cur, expect, flags);
-			if (bytes < 0)
+			if (bytes < 0) {
+				LOG(PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Read Error\n");
 				return -1;
+			}			
 			total_bytes += bytes;
 			expect -= bytes;
 			cur += bytes;
