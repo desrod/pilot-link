@@ -1,4 +1,22 @@
 --------------------------------------------------------------------------
+pilot-link 0.11.9, "Anoxia", 07-04-2003
+--------------------------------------------------------------------------
+Continuing with the theme of removing the unnecessary code and adding
+features, along comes "Anoxia" (no oxygen), the next release of pilot-link.
+
+Major Features:
+	* New DLP 1.2 function, SetDBInfo, which allows you to update or
+	  change the fields in the AppInfo block. 
+
+Other Features:
+	* No additional features at this time
+
+Bug Fixes:
+	* Minor bug in pilot-xfer that caused screen output to get corrupted
+	  in certain conditions
+
+
+--------------------------------------------------------------------------
 pilot-link 0.11.8, "Asphyxia", 06-17-2003
 --------------------------------------------------------------------------
 More code cleanups in this release, minor typos fixed here and there, and
