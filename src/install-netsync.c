@@ -42,21 +42,21 @@ struct option options[] = {
 
 static const char *optstring = "hvp:en:i:m:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Assigns your Palm device NetSync information\n\n"
-	       "   Usage: %s -p <port> -H <hostname> -a <ip> -n <subnet>\n\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -e                Enables LANSync on the Palm\n"
-	       "     -n <name>         The hostname of the desktop you are syncing with\n"
-	       "     -i, --ip <ip>     IP address of the machine you connect your Palm to\n"
-	       "     -m <mask>         The subnet mask of the network your Palm is on\n"
-	       "     -h, --help        Display this information\n"
-	       "     -v, --version     Display version information\n\n"
-	       "   Examples: %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
-	       progname, progname);
-	return;
+	printf("   Assigns your Palm device NetSync information\n\n");
+	printf("   Usage: %s -p <port> -H <hostname> -a <ip> -n <subnet>\n\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -e                Enables LANSync on the Palm\n");
+	printf("     -n <name>         The hostname of the desktop you are syncing with\n");
+	printf("     -i, --ip <ip>     IP address of the machine you connect your Palm to\n");
+	printf("     -m <mask>         The subnet mask of the network your Palm is on\n");
+	printf("     -h, --help        Display this information\n");
+	printf("     -v, --version     Display version information\n\n");
+	printf("   Examples: %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n", progname);
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);

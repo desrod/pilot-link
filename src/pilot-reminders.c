@@ -31,7 +31,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -46,22 +46,23 @@ char 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
 	*Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", 
 			"aug", "sep", "oct", "nov", "dec"};
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n"
-	       "   Please see http://www.roaringpenguin.com/remind.html for more\n"
-	       "   information on the Remind Calendar Program.\n\n"
-	       "   Usage: %s -p <port>\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -h, --help        Display this information\n"
-	       "     -v, --version     Display version information\n\n"
-	       "   Examples:\n"
-	       "     %s -p /dev/pilot   # Exports to STDOUT\n"
-	       "     %s -p /dev/pilot > ~/Palm/remind.file\n\n"
-	       "   Your Datebook database will be written to STDOUT as it is converted\n"
-	       "   unless redirected to a file.\n\n", progname, progname, progname);
-	return;
+	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n");
+	printf("   Please see http://www.roaringpenguin.com/remind.html for more\n");
+	printf("   information on the Remind Calendar Program.\n\n");
+	printf("   Usage: %s -p <port>\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help        Display this information\n");
+	printf("     -v, --version     Display version information\n\n");
+	printf("   Examples:\n");
+	printf("     %s -p /dev/pilot   # Exports to STDOUT\n", progname);
+	printf("     %s -p /dev/pilot > ~/Palm/remind.file\n\n", progname);
+	printf("   Your Datebook database will be written to STDOUT as it is converted\n");
+	printf("   unless redirected to a file.\n\n");
+	
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);

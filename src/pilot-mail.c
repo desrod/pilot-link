@@ -60,7 +60,7 @@ int pilot_connect(const char *port);
 /* This should be a struct, maybe later, we're killing this anyway. Passing
    this many things in is silly, but its cleaner than the previous. -DD 
  */
-static void print_help(char *progname, char *port, char *from_address, char *pop_host,
+static void display_help(char *progname, char *port, char *from_address, char *pop_host,
 		 char *pop_user, char *pop_pass, char *sendmail, char *pop_keep,
 		 char *pilot_dispose, char *topilot_mhdir);
 
@@ -186,42 +186,41 @@ char *getvars(char *name, char *xdefault)
 	return s;
 }
 
-static void print_help(char *progname, char *port, char *pop_host, char *pop_user, 
+static void display_help(char *progname, char *port, char *pop_host, char *pop_user, 
 		 char *pop_pass, char *from_address, char *pop_keep, 
 		 char *pilot_dispose, char *topilot_mhdir, char *sendmail)
 {
-	printf("   Send and receive mail to and from your Palm device using POP3\n\n"
-	       "   Usage: %s -p <port> [options]\n\n"
-	       "     -p <port>            Use device file <port> to communicate with Palm\n"
-	       "                          [$PILOTPORT is currently: '%s']\n\n"
-	       "     -h                   Display this information\n"
-	       "     -H host              POP3 host (if empty, mail won't be received)\n"
-	       "                          [$POPHOST is currently: '%s']\n\n"
-	       "     -u user              POP3 user name\n"
-	       "                          [$POPUSER is currently: '%s']\n\n"
-	       "     -P pass              POP3 password\n"
-	       "                          [$POPPASS is currently: '%s']\n\n"
-	       "     -f address           Outgoing 'From:' line\n"
-	       "                          [$PILOTFROM is currently: '%s']\n\n"
-	       "     -k keep|delete       Keep mail on POP server\n"
-	       "                          [$POPKEEP is currently: '%s']\n\n"
-	       "     -d keep|delete|file  Disposition of sent mail\n"
-	       "                          [$PILOTDISPOSE is currently: '%s']\n\n"
-	       "     -m mhdir             MH directory to download to Palm\n"
-	       "                          [$TOPILOT_MHDIR is currently: '%s']\n\n"
-	       "     -s command           Sendmail command (if empty, mail won't be sent)\n"
-	       "                          [$SENDMAIL is currently: '%s']\n\n"
-	       "   All options may be specified by setting the environment variable named in\n"
-	       "   brackets.\n\n"
-	       "      ********************************************* **\n"
-	       "      ** NOTE!! This is being deprecated soon. This **\n"
-	       "      ** means that this application is going away! **\n"
-	       "      ** Please use pilot-mailsync instead. Consult **\n"
-	       "      ** the manpages for additional information... **\n"
-	       "      ************************************************\n\n", progname, port, 
-		pop_host, pop_user, pop_pass, from_address, pop_keep, pilot_dispose, topilot_mhdir, 
-		sendmail);
-	return;
+	printf("   Send and receive mail to and from your Palm device using POP3\n\n");
+	printf("   Usage: %s -p <port> [options]\n\n", progname);
+	printf("     -p <port>            Use device file <port> to communicate with Palm\n");
+	printf("                          [$PILOTPORT is currently: '%s']\n\n", port);
+	printf("     -h                   Display this information\n");
+	printf("     -H host              POP3 host (if empty, mail won't be received)\n");
+	printf("                          [$POPHOST is currently: '%s']\n\n", pop_host);
+	printf("     -u user              POP3 user name\n");
+	printf("                          [$POPUSER is currently: '%s']\n\n", pop_user);
+	printf("     -P pass              POP3 password\n");
+	printf("                          [$POPPASS is currently: '%s']\n\n", pop_pass);
+	printf("     -f address           Outgoing 'From:' line\n");
+	printf("                          [$PILOTFROM is currently: '%s']\n\n", from_address);
+	printf("     -k keep|delete       Keep mail on POP server\n");
+	printf("                          [$POPKEEP is currently: '%s']\n\n", pop_keep);
+	printf("     -d keep|delete|file  Disposition of sent mail\n");
+	printf("                          [$PILOTDISPOSE is currently: '%s']\n\n", pilot_dispose);
+	printf("     -m mhdir             MH directory to download to Palm\n");
+	printf("                          [$TOPILOT_MHDIR is currently: '%s']\n\n", topilot_mhdir);
+	printf("     -s command           Sendmail command (if empty, mail won't be sent)\n");
+	printf("                          [$SENDMAIL is currently: '%s']\n\n", sendmail);
+	printf("   All options may be specified by setting the environment variable named in\n");
+	printf("   brackets.\n\n");
+	printf("      ********************************************* **\n");
+	printf("      ** NOTE!! This is being deprecated soon. This **\n");
+	printf("      ** means that this application is going away! **\n");
+	printf("      ** Please use pilot-mailsync instead. Consult **\n");
+	printf("      ** the manpages for additional information... **\n");
+	printf("      ************************************************\n\n");
+
+	exit(0);
 }
 int main(int argc, char *argv[])
 {
@@ -263,7 +262,7 @@ int main(int argc, char *argv[])
 			sendmail = optarg;
 			break;
 		case 'h':
-			print_help(progname, port, pop_host, pop_user, pop_pass, 
+			display_help(progname, port, pop_host, pop_user, pop_pass, 
 			     from_address, pop_keep, pilot_dispose, 
 			     topilot_mhdir, sendmail);
 			break;

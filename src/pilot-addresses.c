@@ -41,7 +41,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 /* Yet more hair: reorganize fields to match visible appearence */
 /* 
@@ -130,7 +130,6 @@ int inchar(FILE * in)
 int read_field(char *dest, FILE * in)
 {
 	int 	c;
-	char * _p = dest;
 
 	do {			/* Absorb whitespace */
 		c = getc(in);
@@ -468,24 +467,25 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	return 0;
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n"
-	       "             [-d category] -r|-w [<file>]\n\n"
-	       "     -t delim          include category, use delimiter (3=tab, 2=;, 1=,)\n"
-	       "     -T                write header with titles\n"
-	       "     -q                do not prompt for HotSync button press\n"
-	       "     -a                augment records with additional information\n"
-	       "     -e                escape special chcters with backslash\n"
-	       "     -p port           use device file <port> to communicate with Palm\n"
-	       "     -c category       install to category <category> by default\n"
-	       "     -d category       delete old Palm records in <category>\n"
-	       "     -D                delete all Palm records in all categories\n"
-	       "     -r file           read records from <file> and install them to Palm\n"
-	       "     -w file           get records from Palm and write them to <file>\n"
-	       "     -h, --help        Display this information\n"
-	       "     -v, --version     Display version information\n\n", progname);
-	return;
+	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n", progname);
+	printf("             [-d category] -r|-w [<file>]\n\n");
+	printf("     -t delim          include category, use delimiter (3=tab, 2=;, 1=,)\n");
+	printf("     -T                write header with titles\n");
+	printf("     -q                do not prompt for HotSync button press\n");
+	printf("     -a                augment records with additional information\n");
+	printf("     -e                escape special chcters with backslash\n");
+	printf("     -p port           use device file <port> to communicate with Palm\n");
+	printf("     -c category       install to category <category> by default\n");
+	printf("     -d category       delete old Palm records in <category>\n");
+	printf("     -D                delete all Palm records in all categories\n");
+	printf("     -r file           read records from <file> and install them to Palm\n");
+	printf("     -w file           get records from Palm and write them to <file>\n");
+	printf("     -h, --help        Display this information\n");
+	printf("     -v, --version     Display version information\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
 	       && (mode == 0)) {
 		switch (c) {
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);

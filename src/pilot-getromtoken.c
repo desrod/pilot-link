@@ -48,23 +48,22 @@ struct option options[] = {
 
 static const char *optstring = "hvp:u:i:t:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Reads a ROM token from a Palm Handheld device\n\n"
-	       "   Usage: %s -p <port> -t <romtoken>\n\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -t <token>        A ROM token to read (i.e. snum)\n"
-	       "     -h, --help        Display this information\n"
-	       "     -v, --version     Display version information\n\n"
-	       "   Example: %s -p /dev/pilot -t snum\n\n"
-	       "   Other tokens you may currently extract are:\n"
-	       "       adcc:  Entropy for internal A->D convertor calibration\n"
-	       "       irda:  Present only on memory card w/IrDA support\n"
-               "       snum:  Device serial number (from Memory Card Flash ID)\n\n",
-		progname, progname);
+	printf("   Reads a ROM token from a Palm Handheld device\n\n");
+	printf("   Usage: %s -p <port> -t <romtoken>\n\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -t <token>        A ROM token to read (i.e. snum)\n");
+	printf("     -h, --help        Display this information\n");
+	printf("     -v, --version     Display version information\n\n");
+	printf("   Example: %s -p /dev/pilot -t snum\n\n", progname);
+	printf("   Other tokens you may currently extract are:\n");
+	printf("       adcc:  Entropy for internal A->D convertor calibration\n");
+	printf("       irda:  Present only on memory card w/IrDA support\n");
+	printf("       snum:  Device serial number (from Memory Card Flash ID)\n\n");
 
-	return;
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -86,7 +85,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);
@@ -101,7 +100,7 @@ int main(int argc, char *argv[])
 	}
 	
 	if(token == NULL) {
-		print_help(progname);
+		display_help(progname);
 		return 0;
 	}
 

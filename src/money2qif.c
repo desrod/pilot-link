@@ -43,22 +43,23 @@ struct option options[] = {
 
 static const char *optstring = "hvp:a:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n"
-	       "   Usage: %s -p <port> -a AccountName\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -a --account      The name of the Account category in MicroMoney\n"
-	       "     -h, --help        Display this information\n"
-	       "     -v, --version     Display version information\n\n"
-	       "   Examples: %s -p /dev/pilot -a BankGlobal\n\n"
-	       "   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n"
-	       "   on MicroMoney.\n\n"	       
-	       "   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n"
-	       "   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n"
-	       "   pilot-link.\n\n", progname, progname);
-	return;
+	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n");
+	printf("   Usage: %s -p <port> -a AccountName\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -a --account      The name of the Account category in MicroMoney\n");
+	printf("     -h, --help        Display this information\n");
+	printf("     -v, --version     Display version information\n\n");
+	printf("   Examples: %s -p /dev/pilot -a BankGlobal\n\n", progname);
+	printf("   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n");
+	printf("   on MicroMoney.\n\n");
+	printf("   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n");
+	printf("   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n");
+	printf("   pilot-link.\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);

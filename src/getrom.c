@@ -31,9 +31,9 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
-void print_help(char *progname);
+void display_help(char *progname);
 
-void print_help(char *progname)
+void display_help(char *progname)
 {
 	fprintf(stderr, "   Usage: %s [-2] %s\n\n", progname, TTYPrompt);
 	exit(2);
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	extern 	int optind;
 	
 	if (argc < 2)
-		print_help(progname);
+		display_help(progname);
 
 	if (strcmp(argv[1], "-2") == 0) {
 		version = 2;

@@ -64,7 +64,7 @@ void handle_user_commands(int sd);
 typedef int (*cmd_fn_t) (int, int, char **);
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct Command {
 	char *name;
@@ -133,15 +133,16 @@ int df_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int help_fn(int sd, int argc, char *argv[])
 {
-	printf("The current built-in commands are:\n\n"
-	       "   user           print the currently set User information\n"
-	       "   ls             used with -l and -r to provide long and ROM file lists\n"
-	       "   df             display how much RAM and ROM is free on your device\n"
-	       "   time,dtp       Desktop-to-Palm, set the time on the Palm from the desktop\n"
-	       "   rm             remove a file, delete it entirely from the Palm device\n"
-	       "   help           You Are Here(tm)\n"
-	       "   quit,exit      exit the DLP Protocol Shell\n\n"
-	       "Use '<command> -help' for more granular syntax and switches\n\n");
+	printf("The current built-in commands are:\n\n");
+	printf("   user           print the currently set User information\n");
+	printf("   ls             used with -l and -r to provide long and ROM file lists\n");
+	printf("   df             display how much RAM and ROM is free on your device\n");
+	printf("   time,dtp       Desktop-to-Palm, set the time on the Palm from the desktop\n");
+	printf("   rm             remove a file, delete it entirely from the Palm device\n");
+	printf("   help           You Are Here(tm)\n");
+	printf("   quit,exit      exit the DLP Protocol Shell\n\n");
+	printf("Use '<command> -help' for more granular syntax and switches\n\n");
+
 	return 0;
 }
 
@@ -381,16 +382,16 @@ int user_fn(int sd, int argc, char *argv[])
 			  nUser.lastSyncPC = strtoul(optarg, NULL, 16);
 			  break;
 		  case 'h':
-			  printf("   View or set user-specific Palm information\n\n"
-			         "   Usage: user [options]\n"
-				 "   Options:\n"
-				 "     -u <Username>    Set Username on the Palm device (use double-quotes)\n"
-				 "     -i <UserID>      Set the numeric UserID on the Palm device\n"
-				 "     -v <ViewerID>    Set the numeric ViewerID on the Palm device\n"
-				 "     -p <PCid>        Set the numeric PCID on the Palm device\n\n"
-				 "     -h               Display this information\n\n"
-				 "     Typing 'user' on it's own will display the currently stored User info\n\n"
-				 "     Example: user -u \"John Q. Public\" -i 12345 -v 54321 -p 98765\n\n");
+			  printf("   View or set user-specific Palm information\n\n");
+			  printf("   Usage: user [options]\n");
+			  printf("   Options:\n");
+			  printf("     -u <Username>    Set Username on the Palm device (use double-quotes)\n");
+			  printf("     -i <UserID>      Set the numeric UserID on the Palm device\n");
+			  printf("     -v <ViewerID>    Set the numeric ViewerID on the Palm device\n");
+			  printf("     -p <PCid>        Set the numeric PCID on the Palm device\n\n");
+			  printf("     -h               Display this information\n\n");
+			  printf("     Typing 'user' on it's own will display the currently stored User info\n\n");
+			  printf("     Example: user -u \"John Q. Public\" -i 12345 -v 54321 -p 98765\n\n");
 			  return 0;
 		}
 	}
@@ -603,19 +604,20 @@ char *strtoke(char *str, char *ws, char *delim)
 	return start;
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   An interactive DLP Protocol Shell for your Palm device\n\n"
-	       "   Usage: %s -p <port>\n"
-	       "   Options:\n"
-	       "     -p <port>    Use device file <port> to communicate with Palm\n"
-	       "     -h           Display this information\n"
-	       "     -v           Display the version information\n\n"
-	       "   dlpsh can query many different types of information from your Palm\n"
-	       "   device, such as user, memory capacity, set the time, as well as\n"
-	       "   other useful functions.\n\n"
-	       "   While in dlpsh, type 'help' for more options.\n\n", progname);
-	return;
+	printf("   An interactive DLP Protocol Shell for your Palm device\n\n");
+	printf("   Usage: %s -p <port>\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>    Use device file <port> to communicate with Palm\n");
+	printf("     -h           Display this information\n");
+	printf("     -v           Display the version information\n\n");
+	printf("   dlpsh can query many different types of information from your Palm\n");
+	printf("   device, such as user, memory capacity, set the time, as well as\n");
+	printf("   other useful functions.\n\n");
+	printf("   While in dlpsh, type 'help' for more options.\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -638,7 +640,7 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'h':
-			  print_help(progname);
+			  display_help(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;

@@ -43,7 +43,7 @@ int verbose = 0;
 char *progname;
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct option options[] = {
         {"help",        no_argument,       NULL, 'h'},
@@ -193,7 +193,7 @@ write_memo_in_directory(char *dirname, struct Memo m,
 
 /***********************************************************************
  *
- * Function:    print_help
+ * Function:    display_help
  *
  * Summary:     Outputs the program arguments and params
  *
@@ -202,36 +202,37 @@ write_memo_in_directory(char *dirname, struct Memo m,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n"
-	       "   Usage: memos [options]\n"
-	       "   Options:\n"
-               "     -p <port>      Use device file <port> to communicate with Palm\n"
-               "     -h --help      Display this information\n"
-	       "     -v --version   Display version information\n"
-	       "     -V             Verbose, with -d, print each filename as it's written\n" 
-	       "     -d <num>       Delete the memo named by <number>\n"
-	       "     -f file        Use <file> as memo database file (rather than HotSync)\n"
-	       "     -s <dir>       Save memos in <dir> instead of writing to STDOUT\n"
-	       "     -c category    Only upload memos in this category\n"
-	       "     -r regexp      Select memos to be saved by regular expression on title\n\n"
-	       "   By default, the contents of your Palm's memo database will be written to\n"
-	       "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
-	       "   memo as a separate message.  The subject of each message will be the\n"
-	       "   category.\n\n"
-	       "   If '-s' is specified, than instead of being written to standard output,\n"
-	       "   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n"
-	       "   name of a category on the Palm, and will contain the memos in that\n"
-	       "   category.  Each memo's filename will be the first line (up to the first\n"
-	       "   40 chcters) of the memo.  Control chcters, slashes, and equal signs\n"
-	       "   that would otherwise appear in filenames are converted after the fashion\n" 
-	       "   of MIME's quoted-printable encoding.  Note that if you have two memos in\n" 
-	       "   the same category whose first lines are identical, one of them will be\n"   
-	       "   overwritten.\n\n"
-	       "   If '-f' is specified, the specified file will be treated as a memo\n"
-	       "   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
-	return;
+	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n");
+	printf("   Usage: memos [options]\n");
+	printf("   Options:\n");
+	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
+	printf("     -h --help      Display this information\n");
+	printf("     -v --version   Display version information\n");
+	printf("     -V             Verbose, with -d, print each filename as it's written\n");
+	printf("     -d <num>       Delete the memo named by <number>\n");
+	printf("     -f file        Use <file> as memo database file (rather than HotSync)\n");
+	printf("     -s <dir>       Save memos in <dir> instead of writing to STDOUT\n");
+	printf("     -c category    Only upload memos in this category\n");
+	printf("     -r regexp      Select memos to be saved by regular expression on title\n\n");
+	printf("   By default, the contents of your Palm's memo database will be written to\n");
+	printf("   standard output as a standard Unix mailbox (mbox-format) file, with each\n");
+	printf("   memo as a separate message.  The subject of each message will be the\n");
+	printf("   category.\n\n");
+	printf("   If '-s' is specified, than instead of being written to standard output,\n");
+	printf("   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n");
+	printf("   name of a category on the Palm, and will contain the memos in that\n");
+	printf("   category.  Each memo's filename will be the first line (up to the first\n");
+	printf("   40 chcters) of the memo.  Control chcters, slashes, and equal signs\n");
+	printf("   that would otherwise appear in filenames are converted after the fashion\n");
+	printf("   of MIME's quoted-printable encoding.  Note that if you have two memos in\n");
+	printf("   the same category whose first lines are identical, one of them will be\n");
+	printf("   overwritten.\n\n");
+	printf("   If '-f' is specified, the specified file will be treated as a memo\n");
+	printf("   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -307,7 +308,7 @@ int main(int argc, char *argv[])
 			  title_matching = 1;
 			  break;
 		  case 'h':
-			  print_help(progname);
+			  display_help(progname);
 			  exit(0);
 		}
 	}

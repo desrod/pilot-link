@@ -43,7 +43,7 @@
 char *progname;
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 void write_ppm( FILE *f, struct NotePad *n );
 void output_picture( int type, struct NotePad n );
 void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category );
@@ -63,19 +63,19 @@ struct option options[] = {
 
 static const char *optstring = "hvp:lt:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf
-	    ("   Syncronize your NotePad database with your desktop or server machine\n"
-	     "   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n"
-	     "     -p <port>      Use device file <port> to communicate with Palm\n"
-	     "     -l             List Notes on device\n" 
-	     "     -t             specify picture output type\n"
-	     "                    either \"ppm\" or \"png\"\n"
-	     "     -h             Display this information\n\n"
-	     "   Examples: %s -p /dev/pilot\n\n"
-	     , progname, progname);
-	return;
+	printf("   Syncronize your NotePad database with your desktop or server machine\n");
+	printf("   Usage: %s -p /dev/pilot [options]\n\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
+	printf("     -l             List Notes on device\n");
+	printf("     -t             specify picture output type\n");
+	printf("                    either \"ppm\" or \"png\"\n");
+	printf("     -h             Display this information\n\n");
+	printf("   Examples: %s -p /dev/pilot\n\n", progname);
+
+	exit(0);
 }
 
 static const char *fmt_date ( noteDate_t d )
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
      {
 	switch (c) {
 	 case 'h':
-	   print_help(progname);
+	   display_help(progname);
 	   exit(0);
 	 case 'v':
 	   print_splash(progname);

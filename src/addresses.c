@@ -34,7 +34,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -45,19 +45,20 @@ struct option options[] = {
 
 static const char *optstring = "hvp:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n"
-               "   Usage: %s -p <port> [options]\n\n"
-	       "   Options:\n"
-	       "   -p <port>      Use device file <port> to communicate with Palm\n"
-	       "   -h             Display this information\n\n"
-	       "   Only the port option is required, the other options are... optional.\n\n"
-	       "   Example: %s -p /dev/pilot\n\n"
-	       "   You can redirect the output of %s to a file instead of the default\n"
-	       "   STDOUT by using redirection and pipes as necessary.\n\n"
-	       "   Example: %s -p /dev/pilot -f > MyAddresses.txt\n\n", progname, progname, progname, progname);
-	return;
+	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n");
+	printf("   Usage: %s -p <port> [options]\n\n", progname);
+	printf("   Options:\n");
+	printf("   -p <port>      Use device file <port> to communicate with Palm\n");
+	printf("   -h             Display this information\n\n");
+	printf("   Only the port option is required, the other options are... optional.\n\n");
+	printf("   Example: %s -p /dev/pilot\n\n", progname);
+	printf("   You can redirect the output of %s to a file instead of the default\n", progname);
+	printf("   STDOUT by using redirection and pipes as necessary.\n\n");
+	printf("   Example: %s -p /dev/pilot -f > MyAddresses.txt\n\n", progname);
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
                 switch (c) {
 
                   case 'h':
-                          print_help(progname);
+                          display_help(progname);
                           exit(0);
                   case 'v':
                           print_splash(progname);

@@ -32,7 +32,7 @@
 void install_ToDos(int sd, int db, char *filename);
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 /* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
@@ -113,19 +113,20 @@ void install_ToDos(int sd, int db, char *filename)
 	return;
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Updates the Palm ToDo list with entries from a local file\n\n"
-	       "   Usage: %s -p <port> -f <filename>\n"
-	       "   Options:\n"
-	       "     -p <port>       Use device file <port> to communicate with Palm\n"
-	       "     -f <filename>   A local file with formatted ToDo tasklist entries\n"
-	       "     -h              Display this information\n\n"
-	       "   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n"
-	       "   The format of this file is a simple line-by-line ToDo task entry.\n"
-	       "   For each new line in the local file, a new task is created in the\n"
-	       "   ToDo database on the Palm.\n\n", progname, progname);
-	return;
+	printf("   Updates the Palm ToDo list with entries from a local file\n\n");
+	printf("   Usage: %s -p <port> -f <filename>\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -f <filename>   A local file with formatted ToDo tasklist entries\n");
+	printf("     -h              Display this information\n\n");
+	printf("   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n", progname);
+	printf("   The format of this file is a simple line-by-line ToDo task entry.\n");
+	printf("   For each new line in the local file, a new task is created in the\n");
+	printf("   ToDo database on the Palm.\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -142,7 +143,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		  case 'h':
-			  print_help(progname);
+			  display_help(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;

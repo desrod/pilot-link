@@ -72,7 +72,8 @@ static void display_help(char *progname)
         printf("                  either \"ppm\" or \"png\"\n");
         printf("     --list, -l   List picture information instead of converting\n");
         printf("     -n [name]    Convert only <pixname>, and output to stdout as .ppm\n\n");
-        return;
+	
+	exit(0);
 }
 
 struct PalmPixState_pi_file

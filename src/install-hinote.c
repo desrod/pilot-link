@@ -32,7 +32,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -44,19 +44,18 @@ struct option options[] = {
 static const char *optstring = "hp:c:";
 
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf
-	    ("   Install local files into your Hi-Notes database on your Palm device\n\n"
-	     "   Usage: %s -p /dev/pilot -c [category] <file> <file> ..n\n\n" 
-	     "   Options:\n"
-	     "     -p <port>      Use device file <port> to communicate with Palm\n"
-	     "     -c category    Write files to <category> in the Hi-NOte application\n"
-	     "     -h             Display this information\n\n"
-	     "   Examples: %s -p /dev/pilot -c 1 ~/Palm/Note1.txt ~/Note2.txt\n\n"
-	     "   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n",
-	     progname, progname);
-	return;
+	printf("   Install local files into your Hi-Notes database on your Palm device\n\n");
+	printf("   Usage: %s -p /dev/pilot -c [category] <file> <file> ..n\n\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
+	printf("     -c category    Write files to <category> in the Hi-NOte application\n");
+	printf("     -h             Display this information\n\n");
+	printf("   Examples: %s -p /dev/pilot -c 1 ~/Palm/Note1.txt ~/Note2.txt\n\n", progname);
+	printf("   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -88,7 +87,7 @@ int main(int argc, char *argv[])
 	while (((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)) {
 		switch (c) {
 		  case 'h':
-			  print_help(progname);
+			  display_help(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;

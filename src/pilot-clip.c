@@ -126,20 +126,20 @@ static int SetClip(int socket, int type, void *data, int length)
 	return 1;
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Get the clipboard contents to stdout or set the clipboard contents from stdin\n\n"
-	       "   Usage: %s -p <port> -g | -s <value>\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -g --get          Get the contents of the clipboard\n"
-	       "     -s <value>        Set the value <value> in the clipboard\n"
-	       "     -h --help         Display this information\n"
-	       "     -v --version      Display version information\n\n"
-	       "   Examples: %s -p /dev/pilot -g\n"
-	       "             %s -p /dev/pilot -s \"Put this in the clipboard\"\n\n", 
-	       progname, progname, progname);
-	return;
+	printf("   Get the clipboard contents to stdout or set the clipboard contents from stdin\n\n");
+	printf("   Usage: %s -p <port> -g | -s <value>\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -g --get          Get the contents of the clipboard\n");
+	printf("     -s <value>        Set the value <value> in the clipboard\n");
+	printf("     -h --help         Display this information\n");
+	printf("     -v --version      Display version information\n\n");
+	printf("   Examples: %s -p /dev/pilot -g\n", progname);
+	printf("             %s -p /dev/pilot -s \"Put this in the clipboard\"\n\n", progname);
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			exit(0);
 		case 'v':
 			print_splash(progname);
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (getset < 0) {
-		print_help(progname);
+		display_help(progname);
 		fprintf(stderr, "ERROR: You must specify whether to "
 				"\"Get\" or \"Set\" the clipboard\n");
 		return -1;

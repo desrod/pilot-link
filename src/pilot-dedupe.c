@@ -209,18 +209,18 @@ static int DeDupe (int sd, char *dbname)
 	return 0;
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Removes duplicate records from any Palm database\n\n"
-	       "   Usage: %s -p <port> dbname [dbname ...]\n"
-	       "                       -o <hostname> -a <ip> -n <subnet>\n\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -h, --help        Display this information\n"
-	       "     -v, --version     Display version information\n\n"
-	       "   Examples: %s -p /dev/pilot AddressDb\n\n",
-	       progname, progname);
-	return;
+	printf("   Removes duplicate records from any Palm database\n\n");
+	printf("   Usage: %s -p <port> dbname [dbname ...]\n", progname);
+	printf("                       -o <hostname> -a <ip> -n <subnet>\n\n");
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help        Display this information\n");
+	printf("     -v, --version     Display version information\n\n");
+	printf("   Examples: %s -p /dev/pilot AddressDb\n\n", progname);
+
+	exit(0);
 }
 
 
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind < 0) {
-		print_help(progname);
+		display_help(progname);
 		fprintf(stderr, "\tERROR: You must specify atleast one database\n");
 		return -1;		
 	}

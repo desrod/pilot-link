@@ -30,7 +30,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -41,20 +41,20 @@ struct option options[] = {
 
 static const char *optstring = "hvp:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Accept connection and redirect via Network Hotsync Protocol\n\n"
-	       "   Usage: %s -p <port>\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -h                Display this information\n"
-	       "      -v --version     Display version information\n"
-	       "   Examples: %s -p /dev/pilot\n\n"
-	       "   This will bind your locally connected device to a network port,and\n"
-	       "   redirect them through the network device to a listening server as\n"
-	       "   specified in the LANSync Preferences panel on your Palm.\n\n",
-	       progname, progname);
-	return;
+	printf("   Accept connection and redirect via Network Hotsync Protocol\n\n");
+	printf("   Usage: %s -p <port>\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -h                Display this information\n");
+	printf("     -v --version      Display version information\n");
+	printf("   Examples: %s -p /dev/pilot\n\n", progname);
+	printf("   This will bind your locally connected device to a network port,and\n");
+	printf("   redirect them through the network device to a listening server as\n");
+	printf("   specified in the LANSync Preferences panel on your Palm.\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			exit(0);
 		case 'v':
 			print_splash(progname);

@@ -30,7 +30,7 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 #ifdef sun
 extern char *optarg;
@@ -327,18 +327,19 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 	printf("\n");
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Usage: %s [-s] -p|-u dir file\n"
-	       "     -s           Do not obey or generate a 'sort' list\n\n"
-	       "     -p           Pack the contents of a directory into the named file\n"
-	       "     -u           Unpack the contents of the named file into a directory\n"
-	       "     -h           Display this information\n\n"
-	       "   Contents of directory may include files like these:\n"
-	       "     tSTRx12CD[.bin] (a resource with hex index)\n"
-	       "     tSTR10000[.bin] (a reousrce with decimal index)\n"
-	       "     sort            (a file containing the names of other files)\n\n", progname);
-	return;
+	printf("   Usage: %s [-s] -p|-u dir file\n", progname);
+	printf("     -s           Do not obey or generate a 'sort' list\n\n");
+	printf("     -p           Pack the contents of a directory into the named file\n");
+	printf("     -u           Unpack the contents of the named file into a directory\n");
+	printf("     -h           Display this information\n\n");
+	printf("   Contents of directory may include files like these:\n");
+	printf("     tSTRx12CD[.bin] (a resource with hex index)\n");
+	printf("     tSTR10000[.bin] (a reousrce with decimal index)\n");
+	printf("     sort            (a file containing the names of other files)\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -380,12 +381,12 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind >= argc)
-		print_help(progname);
+		display_help(progname);
 
 	name = argv[optind++];
 
 	if (optind != argc)
-		print_help(progname);
+		display_help(progname);
 
 	if ((pf = pi_file_open(name)) == NULL) {
 		fprintf(stderr, "can't open %s\n", name);

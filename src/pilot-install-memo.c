@@ -48,13 +48,13 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("Usage: %s -p <port> [-qrt] [-c category] file [file] ...\n"
-	       "       -r = replace all memos in specified category\n"
-	       "       -t = use filename as memo title\n", progname);
+	printf("Usage: %s -p <port> [-qrt] [-c category] file [file] ...\n", progname);
+	printf("       -r = replace all memos in specified category\n");
+	printf("       -t = use filename as memo title\n");
 
-	return;
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 			add_title++;
 			break;
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			break;
 			exit(0);
 		
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 	if (replace_category && !category_name) {
 		printf("%s: memo category required when specifying replace\n",
 			progname);
-		print_help(progname);
+		display_help(progname);
 	}
 	
 	sd = pilot_connect(port);

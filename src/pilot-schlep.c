@@ -144,29 +144,29 @@ static int Delete(int sd)
 	return 0;
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Package up any arbitrary file and sync it to your Palm device\n\n"
-	       "   Usage: %s -p <port> [options]\n"
-	       "   Options:\n"
-	       "     -p <port>      Use device file <port> to communicate with Palm\n"
-	       "     -i < filename  Pack up and install the arbitrary file to your Palm\n"
-	       "     -f > filename  Unpack the arbitrary file from your Palm device\n"
-	       "     -d             Delete the packaged 'Schlep' file from your Palm device\n"
-	       "     -h             Display this information\n\n"
-	       "   Examples:\n"
-	       "   To package up and store a file for later retrieval on your Palm:\n"
-	       "             %s -p /dev/pilot -i < InstallThis.zip\n\n"
-	       "   To unpack a file that has been stored on your Palm device with %s:\n"
-	       "             %s -p /dev/pilot -f > RetrieveThis.pdf\n\n"
-	       "   Please notice that you must use redirection to Install or Fetch files\n"
-	       "   using %s. Currently the stored name and file type is not\n"             
-	       "   queried so you can potentially Install a PDF file, and retrieve it as a\n"
-	       "   ZIP file.  You must take care to remember what type of file you are\n"
-	       "   installing and fetching. This will be updated in a later release to\n"
-	       "   handle this type of capability, as well as handle multiple 'Schlep' files.\n\n", 
-		progname, progname, progname, progname, progname);
-	return;
+	printf("   Package up any arbitrary file and sync it to your Palm device\n\n");
+	printf("   Usage: %s -p <port> [options]\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
+	printf("     -i < filename  Pack up and install the arbitrary file to your Palm\n");
+	printf("     -f > filename  Unpack the arbitrary file from your Palm device\n");
+	printf("     -d             Delete the packaged 'Schlep' file from your Palm device\n");
+	printf("     -h             Display this information\n\n");
+	printf("   Examples:\n");
+	printf("   To package up and store a file for later retrieval on your Palm:\n");
+	printf("             %s -p /dev/pilot -i < InstallThis.zip\n\n", progname);
+	printf("   To unpack a file that has been stored on your Palm device with %s:\n", progname);
+	printf("             %s -p /dev/pilot -f > RetrieveThis.pdf\n\n", progname);
+	printf("   Please notice that you must use redirection to Install or Fetch files\n");
+	printf("   using %s. Currently the stored name and file type is not\n", progname);    
+	printf("   queried so you can potentially Install a PDF file, and retrieve it as a\n");
+	printf("   ZIP file.  You must take care to remember what type of file you are\n");
+	printf("   installing and fetching. This will be updated in a later release to\n");
+	printf("   handle this type of capability, as well as handle multiple 'Schlep' files.\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			exit(0);
 		case 'v':
 			print_splash(progname);
@@ -209,11 +209,11 @@ int main(int argc, char *argv[])
 	}
 	
 	if (install + fetch + delete > -1) {
-		print_help(progname);
+		display_help(progname);
 		fprintf(stderr, "ERROR: You must specify only one action\n");
 		return -1;
 	} else if (install + fetch + delete == -3) {
-		print_help(progname);
+		display_help(progname);
 		fprintf(stderr, "ERROR: You must specify at least one action\n");
 		return -1;
 	}

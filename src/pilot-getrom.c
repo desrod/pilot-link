@@ -49,17 +49,16 @@ struct option options[] = {
 
 static const char *optstring = "hvp:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Retrieves the ROM image from your Palm device\n\n"
-	       "   Usage: %s -p <port> [--copilot] [pilot.rom]\n\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -h, --help        Display this information\n\n"
-	       "     -v, --version     Display this information\n\n"
-	       "   Only the port option is required, the other options are... optional.\n\n"
-	       "   Examples: %s -p /dev/pilot myrom\n\n",
-	       progname, progname);
+	printf("   Retrieves the ROM image from your Palm device\n\n");
+	printf("   Usage: %s -p <port> [--copilot] [pilot.rom]\n\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help        Display this information\n\n");
+	printf("     -v, --version     Display this information\n\n");
+	printf("   Only the port option is required, the other options are... optional.\n\n");
+	printf("   Examples: %s -p /dev/pilot myrom\n\n", progname);
 }
 
 static void sighandler(int signo)
@@ -101,7 +100,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);

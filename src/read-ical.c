@@ -34,7 +34,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct option options[] = {
 	{"help", 	no_argument,        NULL, 'h'},
@@ -97,20 +97,21 @@ char *tclquote(char *in)
 	return buffer;
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Dumps the DatebookDB and/or ToDo applications to ical format\n\n"
-	       "   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n"
-	       "   Options:\n"
-	       "   Note: calfile will be overwritten!\n"
-	       "   -p <port> Use device file <port> to communicate with Palm\n"
-	       "   -d             Datebook only, no ToDos\n"
-	       "   -t pubtext     Replace text of items not starting with a bullet\n"
-	       "                  with pubtext\n"
-	       "   -f filename    Write the ical formatted file to this filename\n"
-	       "   -h             Display this information\n"
-	       "   -v             Display version information\n\n", progname);
-	return;
+	printf("   Dumps the DatebookDB and/or ToDo applications to ical format\n\n");
+	printf("   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n", progname);
+	printf("   Options:\n");
+	printf("   Note: calfile will be overwritten!\n");
+	printf("   -p <port> Use device file <port> to communicate with Palm\n");
+	printf("   -d             Datebook only, no ToDos\n");
+	printf("   -t pubtext     Replace text of items not starting with a bullet\n");
+	printf("                  with pubtext\n");
+	printf("   -f filename    Write the ical formatted file to this filename\n");
+	printf("   -h             Display this information\n");
+	printf("   -v             Display version information\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -135,7 +136,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		  case 'h':
-			  print_help(progname);
+			  display_help(progname);
 			  exit(0);
 		  case 'v':
 			  print_splash(progname);

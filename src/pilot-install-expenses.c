@@ -28,7 +28,7 @@
 #include "pi-expense.h"
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 /* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
@@ -94,7 +94,7 @@ char *expenseTypes[] =
 	NULL
 };
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
 	printf("Usage: %s [-qrt] [-c category] -p <port> file [file] ...\n",
 		progname);
@@ -106,7 +106,8 @@ static void print_help(char *progname)
 	printf("       -g = attendees\n");
 	printf("       -l = city\n");
 	printf("       -n = note\n");
-	exit(2);
+	
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -195,14 +196,14 @@ int main(int argc, char *argv[])
 	if (argc < 1) {
 		fprintf(stderr, "%s: insufficient number of arguments\n",
 			progname);
-		print_help(progname);
+		display_help(progname);
 	}
 
 	if (replace_category && !category_name) {
 		fprintf(stderr,
 			"%s: expense category required when specifying replace\n",
 			progname);
-		print_help(progname);
+		display_help(progname);
 	}
 
 	if (!quiet)
@@ -255,11 +256,12 @@ int main(int argc, char *argv[])
 
 	} else {
 		int 	size;
-		char 	buff[256], *b;
+		char 	buff[256], 
+			*b;
 
 		category 		= 0;	/* unfiled */
 		theExpense.currency 	= 0;
-		theExpense.attendees 	= "Northern Alliance";
+		theExpense.attendees 	= "";
 
 		b = buff;
 

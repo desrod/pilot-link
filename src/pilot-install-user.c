@@ -40,22 +40,22 @@ struct option options[] = {
 
 static const char *optstring = "hvp:u:i:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Assigns your Palm device a Username and unique UserID\n\n"
-	       "   Usage: %s -p <port> -u \"User name\" -i <userid>\n"
-	       "                       -o <hostname> -a <ip> -n <subnet>\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -u <username>     Set the username, use quotes for spaces (see example)\n"
-	       "     -i <userid>       A 5-digit numeric UserID, required for PalmOS\n"
-	       "     -h --help         Display this information\n"
-	       "     -v --version      Display version information\n\n"
-	       "   Examples: \n"
-	       "      %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n"
-	       "      %s -p /dev/pilot -o Host -a 192.168.1.1 -n 255.255.255.0\n\n",
-	       progname, progname, progname);
-	return;
+	printf("   Assigns your Palm device a Username and unique UserID\n\n");
+	printf("   Usage: %s -p <port> -u \"User name\" -i <userid>\n", progname);
+	printf("                       -o <hostname> -a <ip> -n <subnet>\n");
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -u <username>     Set the username, use quotes for spaces (see example)\n");
+	printf("     -i <userid>       A 5-digit numeric UserID, required for PalmOS\n");
+	printf("     -h --help         Display this information\n");
+	printf("     -v --version      Display version information\n\n");
+	printf("   Examples: \n");
+	printf("      %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n", progname);
+	printf("      %s -p /dev/pilot -o Host -a 192.168.1.1 -n 255.255.255.0\n\n", progname);
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			exit(0);
 		case 'v':
 			print_splash(progname);

@@ -42,7 +42,7 @@
 void do_read(struct pi_socket *ps, int type, char *buffer, int length);
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -92,15 +92,17 @@ void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 	}
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Reads incoming remote Palm data during a Network HotSync\n\n"
-	       "   Usage: %s -p <port>\n"
-	       "   Options:\n"
-	       "     -p <port>      Use device file <port> to communicate with Palm\n"
-	       "     -h             Display this information\n"	       "     -v --version   Display version information\n\n"
-	       "   Examples: %s -p /dev/pilot\n\n", progname, progname);
-	return;
+	printf("   Reads incoming remote Palm data during a Network HotSync\n\n");
+	printf("   Usage: %s -p <port>\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
+	printf("     -h             Display this information\n");
+	printf("     -v --version   Display version information\n\n");
+	printf("   Examples: %s -p /dev/pilot\n\n", progname);
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -122,7 +124,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		  case 'h':
-			  print_help(progname);
+			  display_help(progname);
 			  exit(0);
 		  case 'v':
 			  print_splash(progname);

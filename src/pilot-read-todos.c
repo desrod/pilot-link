@@ -32,7 +32,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -44,20 +44,20 @@ struct option options[] = {
 
 static const char *optstring = "hvp:f:";
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf
-	    ("   Syncronize your ToDo database with your desktop or server machine\n"
-	     "   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n"
-	     "     -p <port>      Use device file <port> to communicate with Palm\n"
-	     "     -f <filename>  Save ToDO entries in <filename> instead of writing to STDOUT\n"
-	     "     -h             Display this information\n\n"
-	     "   Examples: %s -p /dev/pilot -d ~/Palm\n\n"
-	     "   By default, the contents of your Palm's memo database will be written to\n"
-	     "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
-	     "   memo as a separate message.  The subject of each message will be the\n"
-	     "   category.\n\n", progname, progname);
-	return;
+	printf("   Syncronize your ToDo database with your desktop or server machine\n");
+	printf("   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n", progname);
+	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
+	printf("     -f <filename>  Save ToDO entries in <filename> instead of writing to STDOUT\n");
+	printf("     -h             Display this information\n\n");
+	printf("   Examples: %s -p /dev/pilot -d ~/Palm\n\n", progname);
+	printf("   By default, the contents of your Palm's memo database will be written to\n");
+	printf("   standard output as a standard Unix mailbox (mbox-format) file, with each\n");
+	printf("   memo as a separate message.  The subject of each message will be the\n");
+	printf("   category.\n\n");
+	
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'h':
-			  print_help(progname);
+			  display_help(progname);
 			  exit(0);
                   case 'v':
 			  print_splash(progname);

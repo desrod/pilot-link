@@ -378,24 +378,25 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 	printf("\n");
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Dump application and header information from your local PRC/PDB files\n\n"
-	       "   Usage: %s [options] file\n"
-	       "   Options:\n"
-	       "     -H --header       Dump the header of the database(s)\n"
-	       "     -a --appinfo      Dump app_info segment of the database(s)\n"
-	       "     -s --sortinfo     Dump sort_info block of database(s)\n"
-	       "     -l                List all records in the database(s)\n"
-	       "     -r <num>          Dump a record (<num> is an index, or eg 'code0' or a uid '1234')\n"
-	       "     -R <num>          As above but also dump resources to files\n"
-	       "     -d --dump         Dump all data and all records, very verbose\n"
-	       "     -D --dump-res     As above but also dump resources to files\n"
-	       "     -h --help         Display this information\n"
-	       "     -v, --version     Display version information\n\n"
-	       "        Examples: %s -l Foo.prc\n"
-	       "                  %s -H -a Bar.pdb\n\n", progname, progname, progname);
-	return;
+	printf("   Dump application and header information from your local PRC/PDB files\n\n");
+	printf("   Usage: %s [options] file\n", progname);
+	printf("   Options:\n");
+	printf("     -H --header       Dump the header of the database(s)\n");
+	printf("     -a --appinfo      Dump app_info segment of the database(s)\n");
+	printf("     -s --sortinfo     Dump sort_info block of database(s)\n");
+	printf("     -l                List all records in the database(s)\n");
+	printf("     -r <num>          Dump a record (<num> is an index, or eg 'code0' or a uid '1234')\n");
+	printf("     -R <num>          As above but also dump resources to files\n");
+	printf("     -d --dump         Dump all data and all records, very verbose\n");
+	printf("     -D --dump-res     As above but also dump resources to files\n");
+	printf("     -h --help         Display this information\n");
+	printf("     -v, --version     Display version information\n\n");
+	printf("        Examples: %s -l Foo.prc\n", progname);
+	printf("                  %s -H -a Bar.pdb\n\n", progname);
+
+	exit(0);
 }
 
 
@@ -418,7 +419,7 @@ int main(int argc, char **argv)
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			exit(0);
 		case 'v':
 			print_splash(progname);
@@ -452,7 +453,7 @@ int main(int argc, char **argv)
 	if (optind > 1) {
 		name = argv[optind];
 	} else {
-		print_help(progname);
+		display_help(progname);
 		fprintf(stderr, "ERROR: You must specify a file\n");
 		return -1;
 	}

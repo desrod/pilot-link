@@ -968,7 +968,7 @@ static void Purge(void)
 
 /***********************************************************************
  *
- * Function:    print_help
+ * Function:    display_help
  *
  * Summary:     Print out the --help options and arguments
  *
@@ -977,65 +977,61 @@ static void Purge(void)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf("   Sync, backup, install, delete and more from your Palm device.\n"
-	       "   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
-	       "   Usage: %s [-p port] [ -F|-O -I -q|-c ] command(s)\n"
-	       "   Options:\n"
-	       "     -p <port>    Use device file <port> to communicate with Palm\n"
-	       "     -h, --help   Display this information\n"
-	       "     -b <dir>     Copy the contents of your palm to <dir> (--backup)\n"
-	       "     -u <dir>     Update <dir> with newer Palm data (--update)\n"
-	       "     -s <dir>     Same as -u above, but removes local files if data\n"
-	       "                  is removed from your Palm (--sync)\n"
-	       "     -S --novsf   Do _NOT_ reset the SyncFlags when sync completes\n"
-	       "     -r <dir>     Restore backupdir to your Palm (--restore)\n"
-	       "     -i dbname(s) Install local[prc | pdb] files to your Palm (--install)\n"
-	       "     -m file(s)   Adds the records in <file> into the corresponding Palm\n"
-	       "                  database (--merge)\n"
-	       "     -f dbname(s) Retrieve dbname(s) from your Palm (--fetch)\n"
-	       "     -d dbname(s) Delete (permanently) dbname(s) from your Palm (--delete)\n"
-	       "     -e filename  Exclude dbname(s) listed by <filename> from being included\n"
-	       "                  by -backup, -sync, or -update. (--exclude)\n"
-	       "     -P           Purge any deleted data that hasn't been cleaned up by a\n"
-	       "                  sync (--Purge)\n"
-	       "     -l           List all application and 3 rd party data on the Palm\n"
-	       "                  (--list)\n"
-	       "     -L           List all data, internal and external on the Palm\n"
-	       "                  (--Listall)\n"
-	       "     -v           Report the version of %s (--version)\n", progname, progname);
+	printf("   Sync, backup, install, delete and more from your Palm device.\n");
+	printf("   This is the swiss-army-knife of the entire pilot-link suite.\n\n");
+	printf("   Usage: %s [-p port] [ -F|-O -I -q|-c ] command(s)\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>    Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help   Display this information\n");
+	printf("     -b <dir>     Copy the contents of your palm to <dir> (--backup)\n");
+	printf("     -u <dir>     Update <dir> with newer Palm data (--update)\n");
+	printf("     -s <dir>     Same as -u above, but removes local files if data\n");
+	printf("                  is removed from your Palm (--sync)\n");
+	printf("     -S --novsf   Do _NOT_ reset the SyncFlags when sync completes\n");
+	printf("     -r <dir>     Restore backupdir to your Palm (--restore)\n");
+	printf("     -i dbname(s) Install local[prc | pdb] files to your Palm (--install)\n");
+	printf("     -m file(s)   Adds the records in <file> into the corresponding Palm\n");
+	printf("                  database (--merge)\n");
+	printf("     -f dbname(s) Retrieve dbname(s) from your Palm (--fetch)\n");
+	printf("     -d dbname(s) Delete (permanently) dbname(s) from your Palm (--delete)\n");
+	printf("     -e filename  Exclude dbname(s) listed by <filename> from being included\n");
+	printf("                  by -backup, -sync, or -update. (--exclude)\n");
+	printf("     -P           Purge any deleted data that hasn't been cleaned up by a\n");
+	printf("                  sync (--Purge)\n");
+	printf("     -l           List all application and 3 rd party data on the Palm\n");
+	printf("                  (--list)\n");
+	printf("     -L           List all data, internal and external on the Palm\n");
+	printf("                  (--Listall)\n");
+	printf("     -v           Report the version of %s (--version)\n", progname);
+	printf("                           (currently %d.%d.%d%s)\n", PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
+	printf("     -a           modifies -s to archive deleted files in specified\n");
+	printf("                  directory. (--archive)\n");
+	printf("     -x           executes a shell command for intermediate processing.\n");
+	printf("                  (--exec)\n");
+	printf("     -F           modifies -b, -u, and -s, to back up non-OS db\'s from Flash\n");
+	printf("                  ROM. (--Flash)\n");
+	printf("     -O           modifies -b, -u, and -s, to back up OS db 's from Flash\n");
+	printf("                  ROM. (--Osflash)\n");
+	printf("     -I           modifies -b, -u, and -s, to back up the \'illegal\' database\n");
+	printf("                  Unsaved Preferences.prc (normally skipped, per Palm's\n");
+	printf("                  recommendation). (--Illegal)\n");
+	printf("     -q           makes all the backup options shut up about skipped files.\n");
+	printf("                  (--quiet)\n");
+	printf("     -c           does same as '-q', but counts files(\"[nnn]...\") as they\n");
+	printf("                  are processed. (--count)\n\n");
+	printf("   The serial port used to connect to may be specified by the $PILOTPORT\n");
+	printf("   environment variable in your shell instead of the command line.  If it is\n");
+	printf("   not specified anywhere, it will default to /dev/pilot.\n\n");
+	printf("   Additionally, the baud rate to connect with may be specified by the\n");
+	printf("   $PILOTRATE environment variable.If not specified, it will default to\n");
+	printf("   a safe rate of 9600.\n\n");
+	printf("   Please use caution setting $PILOTRATE to higher values, as several types\n");
+	printf("   of workstations have problems with higher baud rates.  Always consult the\n");
+	printf("   man page(s) for additional usage of these options as well as details on\n");
+	printf("   the results of combining other parameters together.\n\n");
 
-	printf("                           (currently %d.%d.%d%s)\n"
-	       "     -a           modifies -s to archive deleted files in specified\n"
-	       "                  directory. (--archive)\n"
-	       "     -x           executes a shell command for intermediate processing.\n"
-	       "                  (--exec)\n"
-	       "     -F           modifies -b, -u, and -s, to back up non-OS db\'s from Flash\n"
-	       "                  ROM. (--Flash)\n"
-	       "     -O           modifies -b, -u, and -s, to back up OS db 's from Flash\n"
-	       "                  ROM. (--Osflash)\n"
-	       "     -I           modifies -b, -u, and -s, to back up the \'illegal\' database\n"
-	       "                  Unsaved Preferences.prc (normally skipped, per Palm's\n"
-	       "                  recommendation). (--Illegal)\n"
-	       "     -q           makes all the backup options shut up about skipped files.\n"
-	       "                  (--quiet)\n"
-	       "     -c           does same as '-q', but counts files(\"[nnn]...\") as they\n"
-	       "                  are processed. (--count)\n\n"
-
- 	       "   The serial port used to connect to may be specified by the $PILOTPORT\n"
-	       "   environment variable in your shell instead of the command line.  If it is\n"
-	       "   not specified anywhere, it will default to /dev/pilot.\n\n"
-
-	       "   Additionally, the baud rate to connect with may be specified by the\n"
-	       "   $PILOTRATE environment variable.If not specified, it will default to\n"
-	       "   a safe rate of 9600.\n\n"
-
-	       "   Please use caution setting $PILOTRATE to higher values, as several types\n"
-	       "   of workstations have problems with higher baud rates.  Always consult the\n"
-	       "   man page(s) for additional usage of these options as well as details on\n"
-	       "   the results of combining other parameters together.\n\n",
-		   PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
 	exit(0);
 }
 
@@ -1066,7 +1062,7 @@ int main(int argc, char *argv[])
 			/* else { Unknown param, let it go by quietly } */
 			break;
 		case 'h':
-			print_help(progname);
+			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);

@@ -33,7 +33,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void print_help(char *progname);
+static void display_help(char *progname);
 
 /* constants to determine how to produce memos */
 #define MEMO_MBOX_STDOUT 0
@@ -156,38 +156,37 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 	fclose(fd);
 }
 
-static void print_help(char *progname)
+static void display_help(char *progname)
 {
-	printf
-	    ("   Syncronize your Hi-Notes database with your desktop or server machine\n\n"
-	     "   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n"
-	     "     -p <port>      Use device file <port> to communicate with Palm\n"
-	     "     -d directory   Save memos in <dir> instead of writing to STDOUT\n"
-	     "     -h             Display this information\n\n"
-	     "   Examples: %s -p /dev/pilot -d ~/Palm\n\n"
-	     "   By default, the contents of your Palm's memo database will be written to\n"
-	     "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
-	     "   memo as a separate message.  The subject of each message will be the\n"
-	     "   category.\n\n"
-	     "   The memos will be written to STDOUT unless the '-d' option is specified.\n"
-	     "   Using '-d' will be save the memos in subdirectories of <dir>.  Each\n"
-	     "   subdirectory will contain the name of a category on the Palm where the\n"
-	     "   record was stored, and will contain the memos found in that category. \n\n"
-	     "   Each memo's filename will be the first line (up to the first 40\n"
-	     "   chcters) of the memo.  Control chcters, slashes, and equal signs\n"
-	     "   that would otherwise appear in filenames are converted after the fashion\n"
-	     "   of MIME's quoted-printable encoding.\n\n"
-	     "   -- WARNING -- WARNING -- WARNING -- WARNING -- WARNING -- WARNING --\n"
-	     "   Note that if you have two memos in the same category whose first lines\n"
-	     "   are identical, one of them will be OVERWRITTEN! This is unavoidable at\n"
-	     "   the present time, but may be fixed in a future release. Also, please note\n"
-	     "   that syncronizing Hi-Note images is not supported at this time, only text.\n\n"
-	     "   The serial port to connect to may be specified by the $PILOTPORT\n"
-	     "   environment variable instead of by -p' on the command line. If not\n"
-	     "   specified anywhere it will default to /dev/pilot.\n\n"
-	     "   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n",
-	     progname, progname);
-	return;
+	printf("   Syncronize your Hi-Notes database with your desktop or server machine\n\n");
+	printf("   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n", progname);
+	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
+	printf("     -d directory   Save memos in <dir> instead of writing to STDOUT\n");
+        printf("     -h             Display this information\n\n");
+        printf("   Examples: %s -p /dev/pilot -d ~/Palm\n\n", progname);
+        printf("   By default, the contents of your Palm's memo database will be written to\n");
+        printf("   standard output as a standard Unix mailbox (mbox-format) file, with each\n");
+        printf("   memo as a separate message.  The subject of each message will be the\n");
+        printf("   category.\n\n");
+        printf("   The memos will be written to STDOUT unless the '-d' option is specified.\n");
+        printf("   Using '-d' will be save the memos in subdirectories of <dir>.  Each\n");
+        printf("   subdirectory will contain the name of a category on the Palm where the\n");
+        printf("   record was stored, and will contain the memos found in that category. \n\n");
+        printf("   Each memo's filename will be the first line (up to the first 40\n");
+        printf("   chcters) of the memo.  Control chcters, slashes, and equal signs\n");
+        printf("   that would otherwise appear in filenames are converted after the fashion\n");
+        printf("   of MIME's quoted-printable encoding.\n\n");
+        printf("   -- WARNING -- WARNING -- WARNING -- WARNING -- WARNING -- WARNING --\n");
+        printf("   Note that if you have two memos in the same category whose first lines\n");
+        printf("   are identical, one of them will be OVERWRITTEN! This is unavoidable at\n");
+        printf("   the present time, but may be fixed in a future release. Also, please note\n");
+        printf("   that syncronizing Hi-Note images is not supported at this time, only text.\n\n");
+        printf("   The serial port to connect to may be specified by the $PILOTPORT\n");
+        printf("   environment variable instead of by -p' on the command line. If not\n");
+        printf("   specified anywhere it will default to /dev/pilot.\n\n");
+        printf("   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n");
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -212,7 +211,7 @@ int main(int argc, char *argv[])
 	while (((c = getopt(argc, argv, optstring)) != -1)) {
 		switch (c) {
 		  case 'h':
-			  print_help(progname);
+			  display_help(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;
