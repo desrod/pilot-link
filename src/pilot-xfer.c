@@ -47,10 +47,15 @@
 #include "pi-version.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{"backup",      required_argument, NULL, 'b'},
 	{"update",      required_argument, NULL, 'u'},
 	{"sync",        required_argument, NULL, 's'},
@@ -74,14 +79,14 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "-hvp:b:u:s:Sr:i:m:f:d:e:PlLa:x:FOIqc";
+static const char *optstring = "-p:hvb:u:s:Sr:i:m:f:d:e:PlLa:x:FOIqc";
 
 int	novsf	= 0;
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
-int sd = 0;
-char *port = NULL;
+int 	sd 	= 0;
+char *	port 	= NULL;
 
 #define MAXEXCLUDE 100
 char 	*exclude[MAXEXCLUDE];
@@ -689,6 +694,12 @@ static void Restore(char *dirname)
 	struct 	DBInfo info;
 	struct 	db **db 	= NULL;
 	struct 	pi_file *f;
+	struct  stat sbuf;
+
+        struct  CardInfo Card;
+
+        Card.card = -1;
+        Card.more = 1;
 		
 	if ((dir = opendir(dirname)) == NULL) {
 		fprintf(stderr, "\n");
@@ -800,6 +811,22 @@ static void Restore(char *dirname)
 		}
 		printf("Restoring %s... ", db[i]->name);
 		fflush(stdout);
+
+	        stat(db[i]->name, &sbuf);
+ 
+	        while (Card.more) {  
+        	        if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
+	                        break;
+	        }
+
+	        if (sbuf.st_size > Card.ramFree) {
+        	        fprintf(stderr, "\n\n");
+                	fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
+	                fprintf(stderr, "   We needed %ld and only had %lu available..\n\n",
+        	                sbuf.st_size, Card.ramFree);
+	                return;
+        	}
+
 		if (pi_file_install(f, sd, 0) < 0)
 			printf("failed.\n");
 		else
@@ -836,6 +863,11 @@ static void Install(char *filename)
 	struct 	pi_file *f;
 	struct 	stat sbuf;
 
+        struct  CardInfo Card;
+
+        Card.card = -1;
+        Card.more = 1;
+
 	Connect();
 
 	f = pi_file_open(filename);
@@ -853,8 +885,24 @@ static void Install(char *filename)
 	fprintf(stderr, "Installing %-35s", filename);
 	fflush(stdout);
 
+	stat(filename, &sbuf);
+
+        while (Card.more) {
+                if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
+                        break;
+	}
+
+	if (sbuf.st_size > Card.ramFree) {
+		fprintf(stderr, "\n\n");
+		fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
+		fprintf(stderr, "   We needed %ld and only had %lu available..\n\n", 
+			sbuf.st_size, Card.ramFree);
+		return;
+	}
+
 	if (pi_file_install(f, sd, 0) < 0) {
 		fprintf(stderr, "failed.\n");
+
 	} else if (stat(filename, &sbuf) == 0) {
 		totalsize += sbuf.st_size;
 		printf("[%7ld bytes | %3ld total]\n", sbuf.st_size, totalsize);
@@ -996,6 +1044,40 @@ static void Purge(void)
 	printf("Purge complete.\n");
 }
 
+
+typedef unsigned char byte;
+
+typedef struct {
+  byte data[4];
+  char attr;
+  byte id[3];
+} recInfo_t;
+
+typedef struct {
+  char name[32];
+  byte attr[2];
+  byte version[2];
+  byte cdate[4];
+  byte mdate[4];
+  byte backupdate[4];
+  byte modno[4];
+  byte appinfo[4];
+  byte sortinfo[4];
+  char dbType[4];
+  char dbCreator[4];
+  byte seed[4];
+  byte nextRecList[4];
+  char nRec[2];
+} pdb_t;
+
+void packInt( byte* dest, unsigned long l, int size ) {
+	int i;
+	for( i=size; i-->0; ) {
+		dest[i] = l & 0x000000ff;
+		l >>= 8;
+	}
+}
+
 /***********************************************************************
  *
  * Function:    display_help
@@ -1013,44 +1095,39 @@ static void display_help(char *progname)
 	printf("   This is the swiss-army-knife of the entire pilot-link suite.\n\n");
 	printf("   Usage: %s [-p port] [ -F|-O -I -q|-c ] command(s)\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>    Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help   Display this information\n");
-	printf("     -b <dir>     Copy the contents of your palm to <dir> (--backup)\n");
-	printf("     -u <dir>     Update <dir> with newer Palm data (--update)\n");
-	printf("     -s <dir>     Same as -u above, but removes local files if data\n");
-	printf("                  is removed from your Palm (--sync)\n");
-	printf("     -S --novsf   Do _NOT_ reset the SyncFlags when sync completes\n");
-	printf("     -r <dir>     Restore backupdir to your Palm (--restore)\n");
-	printf("     -i dbname(s) Install local[prc | pdb] files to your Palm (--install)\n");
-	printf("     -m file(s)   Adds the records in <file> into the corresponding Palm\n");
-	printf("                  database (--merge)\n");
-	printf("     -f dbname(s) Retrieve dbname(s) from your Palm (--fetch)\n");
-	printf("     -d dbname(s) Delete (permanently) dbname(s) from your Palm (--delete)\n");
-	printf("     -e filename  Exclude dbname(s) listed by <filename> from being included\n");
-	printf("                  by -backup, -sync, or -update. (--exclude)\n");
-	printf("     -P           Purge any deleted data that hasn't been cleaned up by a\n");
-	printf("                  sync (--Purge)\n");
-	printf("     -l           List all application and 3 rd party data on the Palm\n");
-	printf("                  (--list)\n");
-	printf("     -L           List all data, internal and external on the Palm\n");
-	printf("                  (--Listall)\n");
-	printf("     -v           Report the version of %s (--version)\n", progname);
-	printf("                           (currently %d.%d.%d%s)\n", PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
-	printf("     -a           modifies -s to archive deleted files in specified\n");
-	printf("                  directory. (--archive)\n");
-	printf("     -x           executes a shell command for intermediate processing.\n");
-	printf("                  (--exec)\n");
-	printf("     -F           modifies -b, -u, and -s, to back up non-OS db\'s from Flash\n");
-	printf("                  ROM. (--Flash)\n");
-	printf("     -O           modifies -b, -u, and -s, to back up OS db 's from Flash\n");
-	printf("                  ROM. (--Osflash)\n");
-	printf("     -I           modifies -b, -u, and -s, to back up the \'illegal\' database\n");
-	printf("                  Unsaved Preferences.prc (normally skipped, per Palm's\n");
-	printf("                  recommendation). (--Illegal)\n");
-	printf("     -q           makes all the backup options shut up about skipped files.\n");
-	printf("                  (--quiet)\n");
-	printf("     -c           does same as '-q', but counts files(\"[nnn]...\") as they\n");
-	printf("                  are processed. (--count)\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -b, --backup <dir>      Back up your Palm to <dir>\n");
+	printf("     -u, --update <dir>      Update <dir> with newer Palm data\n");
+	printf("     -s, --sync <dir>        Same as -u above, but removes local files if\n");
+	printf("                             data is removed from your Palm\n");
+	printf("     -S, --novsf             Do NOT reset the SyncFlags when sync completes\n");
+	printf("     -r, --restore <dir>     Restore backupdir to your Palm\n");
+	printf("     -i, --install [db] ..   Install local prc, pdb, pqa files to your Palm\n");
+	printf("     -m, --merge [file] ..   Adds the records in <file> into the corresponding\n");
+	printf("                             Palm database\n");
+	printf("     -f, --fetch [db]        Retrieve [db] from your Palm\n");
+	printf("     -d, --delete [db]       Delete (permanently) [db] from your Palm\n");
+	printf("     -e, --exclude [db]      Exclude [db] from being included by -b, -s, or -u\n");
+	printf("     -P, --Purge             Purge any deleted data that hasn't been cleaned up\n");
+	printf("                             by a sync\n");
+	printf("     -l, --list              List all application and 3rd party Palm data/apps\n");
+	printf("     -L, --List              List all data, internal and external on the Palm\n");
+	printf("     -a, --archive           Modifies -s to archive deleted files in specified\n");
+	printf("                             directory.\n");
+	printf("     -x, --exec              Execute a shell command for intermediate processing\n");
+	printf("     -F, --Flash             Modifies -b, -u, and -s, to back up non-OS db's\n");
+	printf("                             from Flash ROM\n");
+	printf("     -O, --Osflash           Modifies -b, -u, and -s, to back up OS db 's from\n");
+	printf("                             Flash ROM\n");
+	printf("     -I, --Illegal           Modifies -b, -u, and -s, to back up the 'illegal'\n");
+	printf("                             database Unsaved Preferences.prc (normally skipped,\n");
+	printf("                             per Palm's recommendation)\n");
+	printf("     -q, --quiet             Makes all the backup options quiet about skipped\n");
+	printf("                             files\n");
+	printf("     -c, --count             Does same as '-q', but counts files(\"[nnn]...\") as\n");
+	printf("                             they are processed\n\n");
 	printf("   The serial port used to connect to may be specified by the $PILOTPORT\n");
 	printf("   environment variable in your shell instead of the command line.  If it is\n");
 	printf("   not specified anywhere, it will default to /dev/pilot.\n\n");
@@ -1095,7 +1172,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;
