@@ -254,7 +254,7 @@ struct dlpArg
 {
 	struct dlpArg *arg;
 	
-	arg = malloc(sizeof (struct dlpArg));
+	arg = (struct dlpArg *)malloc(sizeof (struct dlpArg));
 
 	if (arg != NULL) {
 		arg->id = id;
@@ -322,11 +322,9 @@ dlp_arg_len (int argc, struct dlpArg **argv)
 		else if (arg->len < PI_DLP_ARG_SHORT_LEN &&
 		         (arg->id & PI_DLP_ARG_FLAG_LONG) == 0)
 			len += 4;
-		else if (arg->len < PI_DLP_ARG_LONG_LEN) 
-			len += 6;
 		else
-			return -1;
-		
+			len += 6;
+
 		len += arg->len;
 	}
 
@@ -354,7 +352,7 @@ dlp_request_new (enum dlpFunctions cmd, int argc, ...)
 	int 	i,
 		j;
 	
-	req = malloc (sizeof (struct dlpRequest));
+	req = (struct dlpRequest *)malloc (sizeof (struct dlpRequest));
 
 	if (req != NULL) {
 		req->cmd = cmd;
@@ -362,7 +360,7 @@ dlp_request_new (enum dlpFunctions cmd, int argc, ...)
 		req->argv = NULL;
 
 		if (argc) {
-			req->argv = malloc (sizeof (struct dlpArg *) * argc);
+			req->argv = (struct dlpArg **) malloc (sizeof (struct dlpArg *) * argc);
 			if (req->argv == NULL) {
 				free(req);
 				return NULL;
@@ -412,7 +410,7 @@ dlp_request_new_with_argid (enum dlpFunctions cmd, int argid, int argc, ...)
 	int	i,
 		j;
 	
-	req = malloc (sizeof (struct dlpRequest));
+	req = (struct dlpRequest *) malloc (sizeof (struct dlpRequest));
 
 	if (req != NULL) {
 		req->cmd = cmd;
@@ -420,7 +418,7 @@ dlp_request_new_with_argid (enum dlpFunctions cmd, int argid, int argc, ...)
 		req->argv = NULL;
 
 		if (argc) {
-			req->argv = malloc (sizeof (struct dlpArg *) * argc);
+			req->argv = (struct dlpArg **) malloc (sizeof (struct dlpArg *) * argc);
 			if (req->argv == NULL) {
 				free(req);
 				return NULL;
@@ -465,7 +463,7 @@ struct dlpResponse
 {
 	struct dlpResponse *res;
 	
-	res = malloc (sizeof (struct dlpResponse));
+	res = (struct dlpResponse *) malloc (sizeof (struct dlpResponse));
 
 	if (res != NULL) {
 
@@ -475,7 +473,7 @@ struct dlpResponse
 		res->argv = NULL;
 
 		if (argc) {
-			res->argv = malloc (sizeof (struct dlpArg *) * argc);
+			res->argv = (struct dlpArg **) malloc (sizeof (struct dlpArg *) * argc);
 			if (res->argv == NULL) {
 				free(res);
 				return NULL;
@@ -522,6 +520,10 @@ dlp_response_read (struct dlpResponse **res, int sd)
 		pi_buffer_free (dlp_buf);
 		return bytes;
 	}
+	if (bytes < 4) {
+		/* packet is probably incomplete */
+		return PI_ERR_DLP_COMMAND;
+	}
 
 	response = dlp_response_new (dlp_buf->data[0] & 0x7f, dlp_buf->data[1]);
 	*res = response;
@@ -536,6 +538,8 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	response->err = get_short (&dlp_buf->data[2]);
 	pi_set_palmos_error(sd, (int)response->err);
 
+	/* FIXME: add bounds checking to make sure we don't access past
+	 * the end of the buffer in case the data is corrupt */
 	buf = dlp_buf->data + 4;
 	for (i = 0; i < response->argc; i++) {
 		argid = get_byte (buf) & 0x3f;
@@ -738,7 +742,7 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 	/* Check to make sure the response is for this command */
 	if ((*res)->cmd != req->cmd) {
 		
-		/* The Tungsten T returns the wrong code for VFSVolumeInfo */
+		/* The Palm m130 and Tungsten T return the wrong code for VFSVolumeInfo */
 		if (req->cmd != dlpFuncVFSVolumeInfo ||
 				(*res)->cmd != dlpFuncVFSVolumeSize) {
 			errno = -ENOMSG;
@@ -3413,17 +3417,21 @@ dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 
 	dlp_request_free(req);
 	
-	if (result > 0) {
-		data_len = res->argv[0]->len - 2;
-		if (dbuf)
-			memcpy (dbuf, DLP_RESPONSE_DATA(res, 0, 2),
-				(size_t)data_len);
-		
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadAppBlock %d bytes\n", data_len));
-		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
-			(size_t)data_len));
+	if (result >= 0) {
+		if (result < 2)
+			data_len = PI_ERR_DLP_COMMAND;
+		else {
+			data_len = res->argv[0]->len - 2;
+			if (dbuf && data_len)
+				memcpy (dbuf, DLP_RESPONSE_DATA(res, 0, 2),
+					(size_t)data_len);
+			
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+				"DLP ReadAppBlock %d bytes\n", data_len));
+			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
+				  dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
+				(size_t)data_len));
+		}
 	} else {
 		data_len = result;
 	}
@@ -3517,17 +3525,21 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 
 	dlp_request_free(req);
 	
-	if (result > 0) {
-		data_len = res->argv[0]->len - 2;
-		if (dbuf)
-			memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2), 
-				(size_t)data_len);
-		
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadSortBlock %d bytes\n", data_len));
-		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
-			(size_t)data_len));
+	if (result >= 0) {
+		if (result < 2)
+			data_len = PI_ERR_DLP_COMMAND;
+		else {
+			data_len = res->argv[0]->len - 2;
+			if (dbuf)
+				memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2), 
+					(size_t)data_len);
+			
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+				"DLP ReadSortBlock %d bytes\n", data_len));
+			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
+				  dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
+				(size_t)data_len));
+		}
 	} else {
 		data_len = result;
 	}
