@@ -54,7 +54,11 @@
 #define PI_ERR_DLP_COMMAND			-305		/* command error (the device returned an invalid response) */
 
 /* FILE level error */
-#define PI_ERR_FILE_INVALID			-400		/* invalid prc/pdb/pqa file */
+#define PI_ERR_FILE_INVALID			-400		/* invalid prc/pdb/pqa/pi_file file */
+#define PI_ERR_FILE_ERROR			-401		/* generic error when reading/writing file */
+#define	PI_ERR_FILE_ABORTED			-402		/* file transfer was aborted by progress callback
+												   see pi_file_retrieve(), pi_file_install(), pi_file_merge() */
+#define PI_ERR_FILE_NOT_FOUND		-403		/* record or resource not found */
 
 /* GENERIC errors */
 #define PI_ERR_GENERIC_MEMORY		-500		/* not enough memory */
