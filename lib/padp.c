@@ -24,8 +24,10 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
   int flags = FIRST;
   int tlen;
   int count = 0;
-  struct padp *padp;
-  struct pi_skb *nskb;
+
+  struct padp padp;
+
+  struct pi_skb* nskb;
   int retries;
   char buf[64];
 
@@ -62,15 +64,15 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 
       memcpy(&nskb->data[14], msg, tlen);
 
-      padp = (struct padp *)(&nskb->data[10]);
-      padp->type = type & 0xff;
+      padp.type = type &0xff;
+      padp.flags = flags | (len == tlen ? LAST : 0);
+      padp.size = (flags ? len : count);
 
-      padp->size = htons(flags ? len : count);
+      set_byte((unsigned char*)(&nskb->data[10]), padp.type);
+      set_byte((unsigned char*)(&nskb->data[11]), padp.flags);
+      set_short((unsigned char*)(&nskb->data[12]), padp.size);
 
-      padp->flags = flags | (len==tlen ? LAST : 0);
-      
-      
-      padp_dump(nskb,padp,1);
+      padp_dump(nskb, &padp, 1);
       
       slp_tx(ps, nskb, tlen + 4);
       
@@ -84,12 +86,16 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
         struct pi_skb *skb;
         struct slp * slp;
         skb = ps->rxq;
+
         slp = (struct slp*)skb->data;
-        padp = (struct padp*)(&skb->data[10]);
+
+        padp.type = get_byte((unsigned char*)(&skb->data[10]));
+        padp.flags = get_byte((unsigned char*)(&skb->data[11]));
+        padp.size = get_short((unsigned char*)(&skb->data[12]));
+
+        padp_dump(skb, &padp, 0);
         
-        padp_dump(skb, padp, 0);
-        
-        if ((slp->type == 2) && (padp->type == padData) && 
+        if ((slp->type == 2) && (padp.type == padData) && 
             (slp->id == ps->xid) && (len==0)) {
           fprintf(stderr,"Missing ack\n");
           /* Incoming padData from response to this transmission.
@@ -97,21 +103,22 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
           /* Don't consume packet, and return success. */
           return 0;
         } 
-        
-        if ((slp->type == 2) && (padp->type == padAck) && (slp->id == ps->xid)) {
+
+        if ((slp->type == 2) && (padp.type == padAck) && (slp->id == ps->xid)) {
           /* Got correct Ack */
-          flags = padp->flags;
+          flags = padp.flags;
+
           /* Consume packet */
           ps->rxq = skb->next;
           free(skb);
               
-          if(flags & MEMERROR) {
+          if (flags & MEMERROR) {
             fprintf(stderr,"Out of memory\n");
             errno = EMSGSIZE;
             return -1; /* Mimimum failure: transmission failed due to lack of
                           memory in reciever link layer, but connection is still
-                          active. This transmission was lost, but other transmissions
-                          will be recieved. */
+                          active. This transmission was lost, but other
+                          transmissions will be received. */
           } else {
             /* Successful Ack */
             (char *) msg += tlen;
@@ -152,10 +159,12 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 
 int padp_rx(struct pi_socket *ps, void *buf, int len)
 {
-  struct padp *padp;
   struct pi_skb *skb;
+  struct padp padp;
+
   struct pi_skb *nskb;
-  struct padp *npadp;
+  struct padp npadp;
+
   struct slp * slp;
   char trans_id;
   int rlen = 0;
@@ -195,11 +204,14 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     ps->rxq = skb->next;
 
     slp = (struct slp*)(skb->data);
-    padp = (struct padp *)(&skb->data[10]);
 
-    if ((slp->type != 2) || (padp->type != padData) || 
-        (slp->id != ps->xid) || !(padp->flags & FIRST)) {
-      if(padp->type == padTickle) {
+    padp.type = get_byte((unsigned char*)(&skb->data[10]));
+    padp.flags = get_byte((unsigned char*)(&skb->data[11]));
+    padp.size = get_short((unsigned char*)(&skb->data[12]));
+
+    if ((slp->type != 2) || (padp.type != padData) || 
+        (slp->id != ps->xid) || !(padp.flags & FIRST)) {
+      if(padp.type == padTickle) {
         endtime = time(NULL)+recStartTimeout;
         fprintf(stderr,"Got tickled\n");
       }
@@ -219,17 +231,21 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   
     At(got data);
 
-    padp_dump(skb, padp, 0);
+    padp_dump(skb, &padp, 0);
 
     /* Ack the packet */
     
     nskb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
-    npadp = (struct padp *)(&nskb->data[10]);
-    npadp->type = padAck;
-    npadp->size = padp->size;
-    npadp->flags = padp->flags;
-  
-    padp_dump(nskb,npadp,1);
+
+    npadp.type = padAck;
+    npadp.flags = padp.flags;
+    npadp.size = padp.size;
+
+    set_byte((unsigned char*)(&nskb->data[10]), npadp.type);
+    set_byte((unsigned char*)(&nskb->data[11]), npadp.flags);
+    set_short((unsigned char*)(&nskb->data[12]), npadp.size);
+
+    padp_dump(nskb, &npadp, 1);
   
     slp_tx(ps, nskb, 4);
     pi_socket_flush(ps); /* It's an Ack, so flush it already */
@@ -237,27 +253,22 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     
     /* calculate length and offset */
     
-    offset = ((padp->flags & FIRST) ? 0 : ntohs(padp->size));
+    offset = ((padp.flags & FIRST) ? 0 : padp.size);
     data_len = get_short(&skb->data[6])-4;
     
     /* If packet was out of order, ignore it */
     
-    if(offset != ouroffset) {
-      continue;
+    if(offset == ouroffset) {
+      At(storing block);
+      memcpy((unsigned char*)buf + ouroffset, &skb->data[14], data_len);
+    	
+      ouroffset += data_len;
+      free(skb);
     }
     
-    At(storing block);
-    memcpy((unsigned char*)buf + ouroffset, &skb->data[14], data_len);
-    	
-    ouroffset += data_len;
-    
-
-    if(padp->flags & LAST) {
-      free(skb);
+    if (padp.flags & LAST) {
       break;
     } else  {
-      free(skb);
-
       endtime = time(NULL) + recSegTimeout;
       
       while(1) {
@@ -277,11 +288,14 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
         ps->rxq = skb->next;
       
         slp = (struct slp*)(skb->data);
-        padp = (struct padp *)(&skb->data[10]);
+
+        padp.type = get_byte((unsigned char*)(&skb->data[10]));
+        padp.flags = get_byte((unsigned char*)(&skb->data[11]));
+        padp.size = get_short((unsigned char*)(&skb->data[12]));
       
-        if ((slp->type != 2) || (padp->type != padData) || 
-            (slp->id != ps->xid) || (padp->flags & FIRST)) {
-          if(padp->type == padTickle) {
+        if ((slp->type != 2) || (padp.type != padData) || 
+            (slp->id != ps->xid) || (padp.flags & FIRST)) {
+          if(padp.type == padTickle) {
             endtime = time(NULL)+recSegTimeout;
             fprintf(stderr,"Got tickled\n");
           }
@@ -303,10 +317,11 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   return ouroffset;
 }
 
-int padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
+int padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx)
 {
 #ifdef DEBUG
   int i;
+  int s;
   char *stype;
 
   switch(padp->type) {
@@ -322,23 +337,22 @@ int padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
     stype = "LOOP"; break;
   }
 
-  fprintf(stderr,"PADP %s %s %c%c len=0x%.4x\n",
-    stype,
+  fprintf(stderr,"PADP %s %s %c%c%c len=0x%.4x\n",
+	  stype,
 	  rxtx ? "TX" : "RX" ,
 	  (padp->flags & FIRST) ? 'F' : ' ',
 	  (padp->flags & LAST) ? 'L' : ' ',
-	  ntohs(padp->size));
+          (padp->flags & MEMERROR) ? 'M' : ' ',
+	  padp->size);
 
+  s = padp->size;
+  if(s>1024) s=1024;
   if (!(padp->type == padAck)) {
-    for (i=0; i < (ntohs(padp->size) & 0x3ff); i += 16) {
+    for (i=0; i < s; i += 16) {
       dumpline(&skb->data[14 + i],
-	       ((ntohs(padp->size) - i) < 16) ? ntohs(padp->size) - i : 16,
+	       ((padp->size - i) < 16) ? padp->size - i : 16,
 	       i);
     }
   }
 #endif
 }
-
-
-
-

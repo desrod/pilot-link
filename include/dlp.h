@@ -25,6 +25,17 @@ struct SysInfo {
   char name[128];
 };
 
+struct DBInfo {
+  int more;
+  int flags;
+  long type,creator;
+  int version;
+  long modnum;
+  time_t crdate,moddate,backupdate;
+  int index;
+  char name[34];
+};
+
 enum dlpDBFlags {
 	dlpDBFlagResource = 0x0001, /* Resource DB, instead of record DB */
 	dlpDBFlagReadOnly = 0x0002, /* DB is read only */
@@ -60,6 +71,11 @@ int dlp_SetSysDateTime(int sd, time_t time);
 int dlp_ReadSysInfo(int sd, struct SysInfo * s);
 
   /* Read the system information block. */
+
+int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * info);
+
+int dlp_FindDBInfo(int sd, int cardno, int start, char * dbname, unsigned long type,
+                               unsigned long creator, struct DBInfo * info);
   
 int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle);
 
@@ -156,6 +172,12 @@ int dlp_WriteRecord(int sd, unsigned char dbhandle, unsigned char flags,
       length: length of record. If -1, then strlen will be used on data
       
       NewID: storage for returned ID, or null. */
+
+int dlp_ReadResourceByType(int sd, unsigned char fHandle, unsigned long type, int id, char* buffer, 
+                          int* index, int* size);
+
+int dlp_ReadResourceByIndex(int sd, unsigned char fHandle, short index, char* buffer,
+                          unsigned long* type, int * id, int* size);
 
 int dlp_WriteResource(int sd, unsigned char dbhandle, long type, int id,
                  const char *data, int length);

@@ -69,33 +69,6 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
 
 }
 
-#if 0
-int padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
-{
-#ifdef DEBUG
-  int i;
-
-  fprintf(stderr,"PADP %s %s %c%c len=0x%.4x\n",
-	  ((padp->type == padData) ? "DATA" : 
-	   (padp->type == padAck) ? "ACK " : 
-	   (padp->type == padTickle) ? "TCKL" :
-	   "LOOP"),
-	  rxtx ? "TX" : "RX" ,
-	  (padp->flags & FIRST) ? 'F' : ' ',
-	  (padp->flags & LAST) ? 'L' : ' ',
-	  ntohs(padp->size));
-
-  if (!(padp->type == padAck)) {
-    for (i=0; i < (ntohs(padp->size) & 0x3ff); i += 16) {
-      dumpline(&skb->data[14 + i],
-	       ((ntohs(padp->size) - i) < 16) ? ntohs(padp->size) - i : 16,
-	       i);
-    }
-  }
-#endif
-}
-#endif
-
 int sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed, 
                        int keymod, int keyasc, int keycode)
 {

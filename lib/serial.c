@@ -104,10 +104,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   tcn.c_oflag = 0;
   tcn.c_iflag = IGNBRK | IGNPAR;
 
-  if (ps->protocol == PF_PADP)
-    tcn.c_cflag = CREAD | CLOCAL | calcrate(9600) | CS8 ;
-  else
-    tcn.c_cflag = CREAD | CLOCAL | calcrate(57600) | CS8 ;
+  tcn.c_cflag = CREAD | CLOCAL | calcrate(ps->rate) | CS8 ;
 
   tcn.c_lflag = NOFLSH;
 
@@ -149,9 +146,7 @@ int pi_device_changebaud(struct pi_socket *ps)
   ioctl(ps->mac.fd,TCGETS,&tcn);
 #endif
 
-  tcn.c_cflag &= ~CBAUD;
-
-  tcn.c_cflag |= calcrate(ps->rate);
+  tcn.c_cflag =  CREAD | CLOCAL | calcrate(ps->rate) | CS8;
 
 #ifdef POSIX
   tcsetattr(ps->mac.fd,TCSADRAIN,&tcn);
@@ -243,26 +238,24 @@ int pi_device_open(char *tty, struct pi_socket *ps)
 	}
       return(-1);
     }
-  /* set it to 9600 baud */
   ps->mac.fd=fd;
-  if (ps->protocol == PF_PADP)
-    pi_device_changebaud(ps,9600);
-  else
-    pi_device_changebaud(ps,57600);
+  pi_device_changebaud(ps);
+  pi_socket_set_timeout(ps,-1,60);
   return(fd);  
 }
 
-int pi_device_changebaud(struct pi_socket *ps, int baudrate)
+int pi_device_changebaud(struct pi_socket *ps)
 {
   int param_length;
-  int rc;
+  int rc, baudrate;
+  
+  baudrate = ps->rate;
 
-  /* set it to baudrate */
   param_length=sizeof(baudrate);
   rc=DosDevIOCtl(ps->mac.fd, /* file decsriptor */
 		 IOCTL_ASYNC, /*asyncronous change */
 		 ASYNC_SETBAUDRATE, /* set the baudrate */
-		 &baudrate, /* pointer the the baudrate */
+		 &baudrate, /* pointer to the baudrate */
 		 param_length, /* length of the previous parameter */
 		 (unsigned long *)&param_length, /* max length of data ret */
 		 NULL, /* data to be sent */
@@ -288,11 +281,9 @@ int pi_device_changebaud(struct pi_socket *ps, int baudrate)
 	}
       return(-1);
     }
-#ifdef OS2
   /* this pause seems necessary under OS2 to let the serial
      port realign itself */
   sleep(1);
-#endif
 #ifdef OS2_DEBUG
   fprintf(stderr,"set baudrate to %d\n",baudrate);
 #endif
@@ -303,6 +294,113 @@ int pi_device_close(struct pi_socket *ps)
 {
   DosClose(ps->mac.fd);
 }
+
+
+/* 
+ * values for read_timeout and write_timeout 
+ * 0           = infinite timeout
+ * 1 to 65535  = timeout in seconds
+ * -1          = dont change timeout
+ */
+int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout, 
+			  int write_timeout)
+{
+  int param_length, ret_len;
+  int rc;
+  int newtimeout;
+  DCBINFO devinfo;
+
+  if ((ps->os2_read_timeout==read_timeout || read_timeout==-1) && 
+      (ps->os2_write_timeout==write_timeout || write_timeout==-1))
+    return(0);
+
+  ret_len=sizeof(DCBINFO);
+  rc=DosDevIOCtl(ps->mac.fd, /* file decsriptor */
+		 IOCTL_ASYNC, /*asyncronous change */
+		 ASYNC_GETDCBINFO, /* get device control block info */
+		 NULL, /*  */
+		 0, /* length of the previous parameter */
+		 NULL, /* max length of data ret */
+		 &devinfo, /* data to be recieved */
+		 ret_len, /* length of data */
+		 (unsigned long *)&ret_len); /* length of data returned */
+  if (rc)
+    goto error;
+
+  if (read_timeout!=-1)
+    {
+      if (read_timeout==0)
+	{
+      devinfo.usReadTimeout=65535;
+    }
+      else
+	{
+	  newtimeout=read_timeout * 10 -0.1;
+	  if (newtimeout>65535)
+	    newtimeout=65535;
+	  devinfo.usReadTimeout=newtimeout;
+	}
+    }
+  if (write_timeout==-1)
+    {
+      if (write_timeout==0)
+	{
+	  devinfo.fbTimeout |=0x01;
+	}
+      else
+	{
+	  devinfo.fbTimeout &= 0xFE;
+	  newtimeout=write_timeout*10;
+	  if (newtimeout>65535)
+	    newtimeout=65535;
+	  devinfo.usWriteTimeout=newtimeout;
+	}
+    }
+  param_length=sizeof(DCBINFO);
+  rc=DosDevIOCtl(ps->mac.fd, /* file decsriptor */
+		 IOCTL_ASYNC, /*asyncronous change */
+		 ASYNC_SETDCBINFO, /* get device control block info */
+		 &devinfo, /* parameters to set  */
+		 param_length, /* length of the previous parameter */
+		 (unsigned long *)&param_length, /* max length of parameters */
+		 NULL, /* data to be recieved */
+		 0, /* length of data */
+		 NULL); /* length of data returned */
+
+
+       
+error:
+  if (rc)
+    {
+      switch (rc)
+	{
+	case    1:         /* ERROR_INVALID_FUNCTION */
+	  errno=ENOTTY;
+	  break;
+	case    6:         /* ERROR_INVALID_HANDLE */
+	  errno=EBADF;
+	  break;
+	case    87:        /* ERROR_INVALID_PARAMETER */
+	  errno=EINVAL;
+	  break;
+	default:
+	  errno=-ENOMSG;
+	  break;
+	}
+      return(-1);
+    }
+  if (read_timeout!=-1)
+    ps->os2_read_timeout=read_timeout;
+  if (write_timeout!=-1)
+    ps->os2_write_timeout=write_timeout;
+#ifdef OS2_DEBUG
+  fprintf(stderr,"set read_timeout to %d\n",read_timeout);
+  fprintf(stderr,"set write_timeout to %d\n",write_timeout);
+#endif
+  return(0);
+}  
+
+
 #endif /* OS2 */
 
 
@@ -352,12 +450,20 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
   
   FD_ZERO(&ready);
   FD_SET(ps->mac.fd, &ready);
-  t.tv_sec = timeout;
-  t.tv_usec = 0;
 #endif
 
   /* FIXME: if timeout == 0, wait forever for packet, otherwise wait till
-     timeout seconds -- NOT IMPLEMENTED FOR OS/2! */
+     timeout seconds */
+
+#ifdef OS2
+  /* for OS2, timeout of 0 is almost forever, only 1.8 hours */
+  /* if no timeout is set at all, the timeout defaults to 1 minute */
+  rc=pi_socket_set_timeout(ps,timeout,-1);
+  if (rc==-1)
+    {
+      fprintf(stderr,"error setting timeout, old timeout used\n");
+    }
+#endif /* #ifdef OS2 */
 
   pi_socket_flush(ps);              /* We likely want to be in sync with tx */
   if (!ps->mac.expect) slp_rx(ps);  /* let SLP know we want a packet */
@@ -368,13 +474,18 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
     while (ps->mac.expect) {
 #ifdef OS2
       rc=DosRead(ps->mac.fd,buf,ps->mac.expect,(unsigned long *)&r);
-#else
+      if (rc)
+#else /* #ifdef OS2 */
       ready2 = ready;
+      t.tv_sec = timeout;
+      t.tv_usec = 0;
       select(ps->mac.fd+1,&ready2,0,0,&t);
       /* If data is available in time, read it */
       if(FD_ISSET(ps->mac.fd,&ready2))
         r = read(ps->mac.fd, buf, ps->mac.expect);
-      else {
+      else
+#endif /* #ifdef OS2 */
+      {
         /* otherwise throw out any current packet and return */
 #ifdef DEBUG
         fprintf(stderr, "Serial RX: timeout\n");
@@ -384,7 +495,6 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
         ps->rx_errors++;
         return 0;
       }
-#endif
 #ifdef DEBUG
       write(7, buf, r);
 #endif
@@ -396,3 +506,4 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
   }
   return 0;
 }
+

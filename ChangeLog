@@ -1,3 +1,15 @@
+Nov 25, 1996    Kenneth Albanowski 0.3.1
+
+    Integrated Ulrich Hertlein's SunOS patches (in slightly changed form).
+    Integrated Matthew Schnee's final OS/2 patches (in slightly changed form).
+    Added install-pdb, retrieve-prc, and retrieve-pdb.
+    Added read-ical, which converts the Pilot's datebook and todo list
+      into an Ical 2.x calendar.
+    Renamed todos to read-todos to avoid conflict with common utility.
+    Added Robert A. Kaplan's install-todos (slightly modified and renamed.)
+    Got rid of CBAUD and memmove, defined ENOMSG if not present.
+    Fixed PADP bug where unexpected packet in padp_rx would cause infinite loop.
+
 Nov 12, 1996	Kenneth Albanowski 0.3.0
 
     Integrated David Morgan's mktime and indefinite todo patch

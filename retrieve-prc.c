@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include "prc.h"
+#include "dlp.h"
 #include "pi-socket.h"
 
 static unsigned char User[] = { 0x10, 0};
@@ -21,11 +22,13 @@ main(int argc, char *argv[])
   int i;
   char *buf;
   int ret;
+  struct DBInfo info;
+  char fname[128];
 
   unsigned char userid[64];
 
   if (argc < 3) {
-    fprintf(stderr,"usage:%s /dev/cua? app.prc [app.prc] ...\n",argv[0]);
+    fprintf(stderr,"usage:%s /dev/cua? dbname [dbname] ...\n",argv[0]);
     exit(2);
   }
 
@@ -63,9 +66,11 @@ main(int argc, char *argv[])
   /* Tell user (via Pilot) that we are starting things up */
   dlp_OpenConduit(sd);
 
-  for (i=2; i<argc; i++) LoadPRC(sd,argv[i], 0);
-
-  dlp_ResetSystem(sd,0);
+  for (i=2; i<argc; i++) {
+    strcpy(fname, argv[i]);
+    strcat(fname, ".prc");
+    RetrievePRC(sd, argv[i], fname, 0);
+  }
   
   dlp_EndOfSync(sd, 0);
 

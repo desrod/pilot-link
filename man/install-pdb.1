@@ -1,0 +1,23 @@
+.TH INSTALL-PDB 1 "USR Pilot tools" "FSF" \" -*- nroff -*-
+.SH NAME
+install-pdb \- installs .pdb files in a USR Pilot
+.SH SYNOPSIS
+.B install-pdb /dev/cua? file.pdb [file.pdb] ...
+.SH DESCRIPTION
+This manual page
+documents the small application
+.BR install-pdb .
+.B install-pdb
+allows the user to send one or more Pilot databases to the Pilot connected 
+on the specified callout device.  Once executing
+.B install-pdb
+the user must invoke HotSync on the target device.
+.SS OPTIONS
+none
+.SH USEAGE
+The program will connect to a target, and install the specifed Pilot
+database(s).
+.SH AUTHOR
+.B install-pdb
+was written by Kenneth Albanowski, based on work by 
+D. Jeff Dionne.

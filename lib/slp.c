@@ -51,6 +51,7 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
 
   dph(nskb->data);
   slp_dump(nskb,1);
+
   ps->tx_packets++;
   return 0;
 }

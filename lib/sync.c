@@ -48,14 +48,14 @@ struct SyncAbs {
 
 void SyncRecord(struct PilotRecord * remote, struct SyncAbs * s) {
   long local;
-  if( remote->attr & Archived ) {
-    if(!s->MatchRecord(remote->id,&local)) {
+  if( remote->attr & dlpRecAttrArchived ) {
+    if(!s->MatchRecord(remote->ID,&local)) {
       s->AppendArchive(remote);
     } else {
       if(!s->IsModified(local)) {
         s->AppendArchive(remote);
         s->SetArchive(local,0);
-        s->SetStatus(local,Pending);
+        s->SetStatus(local,dlpRecAttrPending);
       } else {
         if(s->NoStatus(local)) {
           s->UseBackupStatus(remote);

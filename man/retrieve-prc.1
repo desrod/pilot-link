@@ -1,0 +1,26 @@
+.TH RETRIEVE-PRC 1 "USR Pilot tools" "FSF" \" -*- nroff -*-
+.SH NAME
+retrieve-prc \- retreive .prc files from a USR Pilot
+.SH SYNOPSIS
+.B install-prc /dev/cua? database [database] ...
+.SH DESCRIPTION
+This manual page
+documents the small application
+.BR retrieve-prc .
+.B retrieve-prc
+allows the user to retrieve one or more Pilot databases from the Pilot connected 
+on the specified callout device.  Once executing
+.B retrieve-prc
+the user must invoke HotSync on the target device.
+
+Each database named on the command line will be retrieve and stored in
+a file of the same name with ".prc" appended.
+.SS OPTIONS
+none
+.SH USEAGE
+The program will connect to a target, and retrieve the specifed Pilot
+database(s).
+.SH AUTHOR
+.B retrieve-prc
+was written by Kenneth Albanowski, based on work by 
+D. Jeff Dionne.

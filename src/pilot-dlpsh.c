@@ -15,6 +15,10 @@
 
 #define TICKLE_INTERVAL 7
 
+#ifdef sun
+#define strtoul(str,ptr,base)	(unsigned long) strtol(str,ptr,base)
+#endif
+
 int socket_descriptor;
 struct pi_socket *ticklish_pi_socket;
 
@@ -65,6 +69,11 @@ int user_fn(int sd, int argc, char **argv) {
   struct PilotUser U, nU;
   char fl_name = 0, fl_uid = 0, fl_vid = 0, fl_pid = 0;
   int i, c, ret;
+
+#ifdef sun
+  extern char* optarg;
+  extern int optind;
+#endif
 
   optind = 0;
   while ((c = getopt(argc, argv, "n:i:v:p:h")) != -1) {
@@ -225,7 +234,11 @@ int main(int argc, char **argv) {
   sigaction(SIGTERM, &sigact, NULL);
 
   socket_descriptor = sd;
+#ifdef sun
+  on_exit(exit_func,NULL);
+#else
   atexit(exit_func);
+#endif
 
   handle_user_commands(sd);
   exit(0);
@@ -249,6 +262,7 @@ void exit_func(void) {
 #ifdef DEBUG
   fprintf(stderr, "\n\n================== EXITING ===================\n\n\n");
 #endif
+  alarm(0);
   dlp_EndOfSync(socket_descriptor, 0);
   pi_close(socket_descriptor);
 }

@@ -2,6 +2,9 @@
 #define _PILOT_PADP_H_
 
 #include <pi-socket.h>
+#ifdef OS2
+#include <time.h>
+#endif
 
 #define padData   1
 #define padWake   0x101
@@ -18,8 +21,10 @@ struct padp {
   unsigned short size;
 };
 
+#define SIZEOF_PADP 4
+
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type);
 int padp_rx(struct pi_socket *ps, void *buf, int len);
-int padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx);
+int padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx);
 
 #endif /* _PILOT_PADP_H_ */

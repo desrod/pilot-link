@@ -125,6 +125,7 @@ main(int argc, char *argv[])
   if(dlp_OpenDB(sd, 0, 0x80|0x40, "DatebookDB", &db) < 0) {
     puts("Unable to open DatebookDB");
     dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
+    pi_close(sd);
     exit(1);
   }
 

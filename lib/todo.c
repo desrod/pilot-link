@@ -50,7 +50,41 @@ void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
   a->note = strdup(buffer+3+strlen(buffer+3)+1);
 }
 
-void pack_ToDo(struct ToDo *, unsigned char * record, int * len);
+void pack_ToDo(struct ToDo *a, unsigned char * buf, int * len) {
+  int pos;
+
+  if (a->indefinite) {
+    buf[0] = 0xff;
+    buf[1] = 0xff;
+  } else {
+    set_short(buf, ((a->due.tm_year - 4) << 9) |
+                   ((a->due.tm_mon  + 1) << 5) |
+                   a->due.tm_mday);
+  }
+  buf[2] = a->priority;
+  if(a->complete) {
+    buf[2] |= 0x80;
+  }
+  
+  pos = 3;
+  if(a->description) {
+    strcpy(buf+pos, a->description);
+    pos += strlen(a->description)+1;
+  } else {
+    buf[pos++] = 0;
+  }
+  
+  if(a->note) {
+    strcpy(buf+pos, a->note);
+    pos += strlen(a->note)+1;
+  } else {
+    buf[pos++] = 0;
+  }
+  
+  if (len)
+    *len = pos;
+}
+
                   
 void unpack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int len) {
   int i;

@@ -1,7 +1,7 @@
-#ifndef _PILOT_PRC_H_
-#define _PILOT_PRC_H_
+#ifndef _PILOT_PDB_H_
+#define _PILOT_PDB_H_
 
-typedef struct prc {
+typedef struct pdb {
   char AppName[32];     /* Application Name, NULL terminated string */
   int prcversion;       /* Guess: The version of .prc format used   */
   int version;          /* File version, as set during creation     */
@@ -12,23 +12,24 @@ typedef struct prc {
   long Creator;         /* File 'creator'                           */
   char PrcMagic2[8];    /* More constant bytes, same for all files  */
   int NumSections;      /* Number of sections in this file          */
-} prc_t;
+} pdb_t;
 
-#define SIZEOF_PRC 78
+#define SIZEOF_PDB 78
 
 /* In my opinion, both "Magic" chunks are simply unused fields that weren't
    cleared to nulls by the Mac tools. - KJA */
 
 /* Section header */
 typedef struct sect {
-  long Type;     /* Section "type" name  */
-  int ID;        /* ID number of section */
   long Offset;
-} sect_t;
+  unsigned char Attr;
+  unsigned char Category;
+  long ID;
+} pdb_sect_t;
 
-#define SIZEOF_SECT 10
+#define SIZEOF_PDB_SECT 8
 
-int LoadPRC(int handle, char * filename, int cardno);
-int RetrievePRC(int handle, char * dbname, char * filename, int cardno);
+int LoadPDB(int sd, char * fname, int cardno);
+int RetrievePDB(int sd, char * dname, char * fname, int cardno);
 
 #endif

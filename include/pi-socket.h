@@ -1,16 +1,19 @@
 #ifndef _PILOT_SOCKET_H_
 #define _PILOT_SOCKET_H_
 
-#ifdef bsdi
+#include <errno.h>
 #include <termios.h>
-#else
-#include <termio.h>
-#endif
 
 #ifdef __EMX__
 #define OS2
 #include <sys/param.h> /* for htonl .. */
 #define ENOMSG 150
+#define strcasecmp stricmp
+#define strncasecmp strnicmp
+#endif
+
+#ifndef ENOMSG
+#define ENOMSG 1024
 #endif
 
 #define AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
@@ -67,7 +70,8 @@ struct pi_socket {
   struct pi_skb *txq;
   struct pi_skb *rxq;
   struct pi_socket *next;
-  int rate;
+  int rate;          /* Current port baud rate */
+  int establishrate; /* Baud rate to use after link is established */
   int connected;
   int tx_packets;
   int rx_packets;
@@ -76,6 +80,10 @@ struct pi_socket {
   int tx_errors;
   int rx_errors;
   char last_tid;
+#ifdef OS2
+  unsigned short os2_read_timeout;
+  unsigned short os2_write_timeout;
+#endif
 };
 
 int pi_socket(int domain, int type, int protocol);

@@ -48,17 +48,23 @@ int pi_socket(int domain, int type, int protocol)
   ps->xid = 0;
   ps->initiator = 0;
   
-  if(type == SOCK_STREAM) 
-#ifdef __sgi
-    ps->rate = 9600; /* Default PADP connection rate */
-#else
-    ps->rate = 19200; /* Default PADP connection rate */
+#ifdef OS2
+  ps->os2_read_timeout=60;
+  ps->os2_write_timeout=60;
 #endif
-  else if(type == SOCK_RAW)
-    ps->rate = 57600; /* Mandatory SysPkt connection rate */
-    
-  installexit();
 
+  if(type == SOCK_STREAM) {
+#ifdef __sgi
+    ps->establishrate = 9600; /* Default PADP connection rate */
+#else
+    ps->establishrate = 19200; /* Default PADP connection rate */
+#endif
+    ps->rate = 9600; /* Mandatory CMP conncetion rate */
+  } else if(type == SOCK_RAW) {
+    ps->establishrate = ps->rate = 57600; /* Mandatory SysPkt connection rate */
+  }
+  
+  installexit();
 
   if (!psl) psl = ps;
   else {
@@ -178,13 +184,14 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
     if(cmp_rx(ps, &c) < 0)
       return -1; /* Failed to establish connection, errno already set */
 
-    if(c.commversion == OurCommVersion) {
-      if(ps->rate > c.baudrate) {
+    if (c.commversion == OurCommVersion) {
+      if(ps->establishrate > c.baudrate) {
 #ifdef DEBUG
-        fprintf(stderr,"Rate %d too high, dropping to %d\n",ps->rate,c.baudrate);
+        fprintf(stderr,"Rate %d too high, dropping to %d\n",ps->establishrate,c.baudrate);
 #endif
-        ps->rate = c.baudrate;
+        ps->establishrate = c.baudrate;
       }
+      ps->rate = ps->establishrate;
       if(cmp_init(ps, ps->rate)<0)
         return -1;
       if(ps->rate != 9600) {
@@ -192,7 +199,6 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
         pi_device_changebaud(ps);
       }
       ps->connected = 1;
-
     }else {
       cmp_abort(ps, 0x80); /* 0x80 means the comm version wasn't compatible*/
       pi_device_close(ps);
@@ -337,7 +343,11 @@ int installexit(void)
   static installedexit = 0;
   
   if (!installedexit)
+#ifdef sun
+    on_exit(pi_onexit,NULL);
+#else
     atexit(pi_onexit);
+#endif
     
   installedexit = 1;
 }
@@ -396,7 +406,7 @@ struct pi_socket *find_pi_socket(int sd)
   struct pi_socket *p;
 
   for (p=psl; p; p=p->next) {
-    if (p->sd = sd) return p;
+    if (p->sd == sd) return p;
   }
 
   return 0;
