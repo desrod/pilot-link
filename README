@@ -297,7 +297,8 @@ system to use USB-enabled Palm handheld devices.
 FreeBSD Notes
 -------------
 Please see doc/README.freebsd for more detailed information on setting up
-pilot-link to work with FreeBSD systems.
+pilot-link to work with FreeBSD systems. In FreeBSD, you may have to set
+your ACLOCAL_FLAGS="-I /usr/local/share/aclocal/" before running autogen.sh.
 
 
 Embedding information
