@@ -623,6 +623,8 @@ struct dlpResponse {
 	 * During the handshake phase, the device and the desktop exchange the
 	 * version of the DLP protocol both support. If the device's DLP version
 	 * is higher than the desktop's, the device usually refuses to connect.
+	 *
+	 * @note Call this function prior to accepting or initiating a connection.
 	 * 
 	 * @param major Protocol major version
 	 * @param minor Protocol minor version
@@ -1120,7 +1122,7 @@ struct dlpResponse {
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern int dlp_WriteAppBlock
-		PI_ARGS((int sd,int dbhandle,PI_CONST void *dbuf,size_t dlen));
+		PI_ARGS((int sd, int dbhandle, PI_CONST void *dbuf, size_t dlen));
 
 	/** @brief Read a database's SortInfo block
 	 *
@@ -1316,7 +1318,7 @@ struct dlpResponse {
 	 */
 	extern int dlp_WriteRecord
 		PI_ARGS((int sd, int dbhandle, int flags, recordid_t recID,
-			int catID, void *data, size_t length,
+			int catID, PI_CONST void *data, size_t length,
 			recordid_t *newRecID));
 
 	/** @brief Delete an existing record from a database
