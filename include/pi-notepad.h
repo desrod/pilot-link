@@ -59,9 +59,9 @@ typedef struct {
    unsigned long bodyLen;
    unsigned long width;
    unsigned long height;
-   unsigned long l1;        // 1 ul x ?
-   unsigned long l2;        // 1 ul y ?
-   unsigned long dataLen;    // length of dataRecs in bytes
+   unsigned long l1;		/* 1 ul x ?			*/
+   unsigned long l2;		/* 1 ul y ?			*/
+   unsigned int dataLen;	/* length of dataRecs in bytes	*/
 } body_t;
    
 typedef struct {

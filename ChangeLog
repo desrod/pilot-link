@@ -5,6 +5,8 @@
 
 	* include/pi-dlp.h: Added dlp_GetROMToken patch (Owen Stenseth)
 
+	* include/pi-notepad.h: Changed dataLen to unsigned int
+
 	* libpisock/dlp.c: Ditto (Owen Stenseth)
 
 	* libpisock/sys.c: Fixed error warnings
