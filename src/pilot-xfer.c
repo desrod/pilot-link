@@ -130,9 +130,8 @@ static void MakeExcludeList(char *efile)
 	char 	temp[1024];
 	FILE 	*f = fopen(efile, "r");
 
-	/*  If the Exclude file cannot be opened, ... */
 	if (!f) {
-		printf("Unable to open exclude list file '%s'.\n", efile);
+		printf("   Unable to open exclude list file '%s'.\n", efile);
 		exit(1);
 	}
 
@@ -162,6 +161,7 @@ static void MakeExcludeList(char *efile)
  ***********************************************************************/
 static void protect_name(char *d, char *s)
 {
+
 	while (*s) {
 		switch (*s) {
 		case '/':
@@ -184,9 +184,13 @@ static void protect_name(char *d, char *s)
 			*(d++) = '0';
 			*(d++) = 'D';
 			break;
-			/* If you feel the need:
-			   case ' ': *(d++) = '='; *(d++) = '2'; *(d++) = '0'; break;
-			 */
+		/* If you feel the need: 
+		case ' ': 
+			*(d++) = '='; 
+			*(d++) = '2'; 
+			*(d++) = '0'; 
+			break; 
+		*/
 		default:
 			*(d++) = *s;
 		}
@@ -271,7 +275,7 @@ static void RemoveFromList(char *name, char **list, int max)
  *
  * Function:    creator_is_PalmOS
  *
- * Summary:     Nothing
+ * Summary:     Skip Palm files which match the internal Palm CreatorID
  *
  * Parameters:  None
  *
@@ -292,16 +296,13 @@ static int creator_is_PalmOS(long creator)
 
 
 	/* Test for special cases -- PalmOS CRIDs outside of lowercase alpha
-	   range 
-	 */
-
+	   range */
 	for (n = 0; n < sizeof(special_cases) / sizeof(long); n++)
 
 		if (creator == special_cases[n])
 			return 1;
 
 	/* Test for all lowercase alpha -- range reserved by PalmOS */
-
 	buf.L = creator;
 
 	for (n = 0; n < 4; n++)
@@ -314,6 +315,7 @@ static int creator_is_PalmOS(long creator)
 /***********************************************************************
  *
  * Function:    Backup
+ *
  * Summary:     Build a filelist and back up the Palm to destination
  *
  * Parameters:  None
@@ -425,7 +427,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 
 		for (x = 0; x < numexclude; x++) {
 			if (strcmp(exclude[x], info.name) == 0) {
-				fprintf(stdout, "Excluding '%s'...\n", name);
+				fprintf(stdout, "== Excluding '%s'...\n", name);
 				RemoveFromList(name, orig_files, ofile_total);
 				skip = 1;
 			}
@@ -435,16 +437,16 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 			continue;
 
 		if (rom == 1 && creator_is_PalmOS(info.creator)) {
-			printf("OS file, skipping '%s'.\n", info.name);
+			printf("== OS file, skipping '%s'.\n", info.name);
 			continue;
 		} else if (rom == 2 && !creator_is_PalmOS(info.creator)) {
-			printf("Non-OS file, skipping '%s'\n", info.name);
+			printf("== Non-OS file, skipping '%s'\n", info.name);
 			continue;
 		}
 
 		if (!unsaved
 		    && strcmp(info.name, "Unsaved Preferences") == 0) {
-			printf("\nSkipping '%s'\n", info.name);
+			printf("== Skipping '%s'\n", info.name);
 			continue;
 		}
 
@@ -780,16 +782,6 @@ static void Restore(char *dirname)
 
 	closedir(dir);
 
-#ifdef DEBUG
-	printf("Unsorted:\n");
-	for (i = 0; i < dbcount; i++) {
-		printf("%d: %s\n", i, db[i]->name);
-		printf("  maxblock: %d\n", db[i]->maxblock);
-		printf("  creator: '%s'\n", printlong(db[i]->creator));
-		printf("  type: '%s'\n", printlong(db[i]->type));
-	}
-#endif
-
 	for (i = 0; i < dbcount; i++)
 		for (j = i + 1; j < dbcount; j++)
 			if (compare(db[i], db[j]) > 0) {
@@ -798,15 +790,6 @@ static void Restore(char *dirname)
 				db[i] = db[j];
 				db[j] = temp;
 			}
-#ifdef DEBUG
-	printf("Sorted:\n");
-	for (i = 0; i < dbcount; i++) {
-		printf("%d: %s\n", i, db[i]->name);
-		printf("  maxblock: %d\n", db[i]->maxblock);
-		printf("  creator: '%s'\n", printlong(db[i]->creator));
-		printf("  type: '%s'\n", printlong(db[i]->type));
-	}
-#endif
 
 	Connect();
 
@@ -1061,6 +1044,7 @@ void packInt(byte* dest, unsigned long l, int size) {
 		l >>= 8;
 	}
 }
+
 /***********************************************************************
  *
  * Function:    Time
