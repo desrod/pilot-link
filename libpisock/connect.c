@@ -109,19 +109,19 @@ int pilot_connect(char *port)
 			realpath(portname, realport);
 			errno = save_errno;
 
-			if (errno == 2) {
+			if (errno == ENOENT) {
 				fprintf(stderr, "   The device %s does not exist..\n",
 					portname);
 				fprintf(stderr, "   Possible solution:\n\n\tmknod %s c "
 					"<major> <minor>\n\n", portname);
 
-			} else if (errno == 13) {
+			} else if (errno == EACCES) {
 				fprintf(stderr, "   Please check the "
 					"permissions on %s..\n", realport);
 				fprintf(stderr, "   Possible solution:\n\n\tchmod 0666 "
 					"%s\n\n", realport);
 
-			} else if (errno == 19) {
+			} else if (errno == ENODEV) {
 				while (count <= 5) {
 					fprintf(stderr, "\r   Port not connected, sleeping for 2 seconds, ");
 					fprintf(stderr, "%d retries..", 5-count);
@@ -131,7 +131,7 @@ int pilot_connect(char *port)
 				}
 				fprintf(stderr, "\n\n   Device not found on %s, Did you hit HotSync?\n\n", realport);
 
-			} else if (errno == 21) {
+			} else if (errno == EISDIR) {
 				fprintf(stderr, "   The port specified must contain a "
 					"device name, and %s was a directory.\n"
 					"   Please change that to reference a real "
