@@ -36,6 +36,15 @@ int plu_connect()
 
 	struct  SysInfo sys_info;
 
+	/* Determine here for better user feedback on unset port */
+	if (plu_port == NULL)
+		plu_port = getenv("PILOTPORT");
+	if (plu_port == NULL) {
+		fprintf(stderr, "\n   Unable to determine port to bind\n"
+				"   Please use --help for more information\n\n");
+		return -1;
+	}
+
 	if ((sd = pi_socket(PI_AF_PILOT,
 			PI_SOCK_STREAM, PI_PF_DLP)) < 0) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n", plu_port);
@@ -45,12 +54,9 @@ int plu_connect()
 	result = pi_bind(sd, plu_port);
 
 	if (result < 0) {
-		if (plu_port == NULL)
-			fprintf(stderr, "   No port specified\n");
-		else
-			fprintf(stderr, "   Unable to bind to port: %s\n", plu_port);
-
-		fprintf(stderr, "   Please use --help for more information\n\n");
+		fprintf(stderr, "   Unable to bind to port: %s\n"
+				"   Please use --help for more information\n\n",
+				plu_port);
 		return result;
 	}
 
@@ -58,6 +64,7 @@ int plu_connect()
 		printf("\n   Listening to port: %s\n\n"
 			"   Please press the HotSync button now... ",
 			plu_port);
+		fflush(stdout);
 	}
 
 	if (pi_listen(sd, 1) < 0) {

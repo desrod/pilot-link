@@ -84,6 +84,7 @@ pilot_connect(const char *port)
 		printf("\n   Listening to port: %s\n\n"
 			"   Please press the HotSync button now... ",
 			port);
+		fflush(stdout);
 	}
 
 	if (pi_listen(sd, 1) < 0) {
