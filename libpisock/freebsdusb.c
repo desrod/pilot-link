@@ -285,6 +285,8 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	total 		= len;
 	write_len 	= len;
 
+	/* FIXME: there is no timeout handling in the original freebsdusb code! */
+
 	while (total > 0) {
 		FD_ZERO(&ready);
 		FD_SET(ps->sd, &ready);
@@ -335,96 +337,58 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 static ssize_t
 u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
-        struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
-        int bytes_want = 0;
-        int rlen = 0;
-        int bytes_read = 0;
-        unsigned char *pbuf_pos = NULL;
-        fd_set ready;
+	struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
+	int	rlen,
+		bytes_read = 0;
+	fd_set ready;
+	
+	if (flags == PI_MSG_PEEK && len > 256)
+		len = 256;
+	
+	if (pi_buffer_expect (buf, len) == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 
-        if (flags == PI_MSG_PEEK && len > MAX_BUF)
-                len = MAX_BUF;
+	/* first extract anything we had in the "peek" buffer */
+	if (data->buf_size > 0) {
+		bytes_read = len > data->buf_size ? data->buf_size : len;
+		len -= bytes_read;
+		pi_buffer_append(buf, data->buf, bytes_read);
+		if (flags != PI_MSG_PEEK) {
+			data->buf_size -= bytes_read;
+			memcpy(data->buf, data->buf + bytes_read, data->buf_size);
+		}
+		if (!len)
+			return bytes_read;
+	}
 
-        if (data->buf_size > 0) {
-                /* copy buffered data to storage */
-                if (len <= data->buf_size) {
-                        memcpy(buf, data->pos, len);
-                        if (flags != PI_MSG_PEEK) {
-                                data->pos += len;
-                                data->buf_size -= len;
-                        }
-                        bytes_read = len;
-                } else {
-                        memcpy(buf, data->pos, data->buf_size);
-                        bytes_read += data->buf_size;
-                        data->buf_size = 0;
-                }
-        } else if (data->buf_size == 0 && bytes_read < len) {
-                /* reset data buffer */
-                data->pos = data->buf;
-                /* offset storage to no overwrite data copied the buffer */
-                pbuf_pos = buf->data + bytes_read;
-                bytes_want = len - bytes_read;
-                do {
-                        if (bytes_want >= MAX_BUF) {
-                                /* check to see if device is ready for read */
-                                FD_ZERO(&ready);
-                                FD_SET(ps->sd, &ready);
-                                if (!FD_ISSET(ps->sd, &ready)) {
-                                        LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
-                                            "DEV RX USB FreeBSD timeout\n"));
-                                        errno = ETIMEDOUT;
-                                        return -1;
-                                }
-                                /* read directly into storage */
-                                rlen = read(ps->sd, pbuf_pos, MAX_BUF);
-                                if (rlen < 0)
-                                        return -1;
-                                bytes_read += rlen;
-                                bytes_want -= rlen;
-                                pbuf_pos += rlen;
-                        } else if (bytes_want < MAX_BUF) {
-                                /* check to see if device is ready for read */
-                                FD_ZERO(&ready);
-                                FD_SET(ps->sd, &ready);
-                                if (!FD_ISSET(ps->sd, &ready)) {
-                                        LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
-                                            "DEV RX USB FreeBSD timeout\n"));
-                                        errno = ETIMEDOUT;
-                                        return -1;
-                                }
-                                /* read to buffer */
-                                rlen = read(ps->sd, data->pos, MAX_BUF);
-                                if (rlen < 0)
-                                        return -1;
-                                if (rlen >= bytes_want) {
-                                        memcpy(pbuf_pos, data->pos,
-                                               bytes_want);
-                                        data->pos += bytes_want;
-                                        data->buf_size = rlen - bytes_want;
-                                        bytes_read += bytes_want;
-                                        bytes_want = 0;
-                                } else {
-                                        memcpy(pbuf_pos, data->pos, rlen);
-                                        bytes_want -= rlen;
-                                        bytes_read += rlen;
-                                        pbuf_pos += rlen;
-                                }
-                        }
-                } while (bytes_want > 0);
-                if (flags == PI_MSG_PEEK) {
-                        /* copy back to the buffer since we are only peeking */
-                        memcpy(data->buf, buf, bytes_read);
-                        data->buf_size = bytes_read;
-                        data->pos = data->buf;
+	/* FIXME: there is no timeout handling in the original freebsdusb code! */
 
+	/* check to see if device is ready for read */
+	FD_ZERO(&ready);
+	FD_SET(ps->sd, &ready);
+	if (!FD_ISSET(ps->sd, &ready)) {
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
+			 "DEV RX USB FreeBSD timeout\n"));
+		errno = ETIMEDOUT;
+		return -1;
+	}
 
-                }
-        }
-        LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-            "DEV RX USB FreeBSD Bytes: %d:%d\n", bytes_read,
-            bytes_read + data->buf_size));
+	/* read data to pre-sized buffer */
+	rlen = read(ps->sd, &buf->data[buf->used], len);
+	if (rlen > 0) {
+		if (flags == PI_MSG_PEEK) {
+			memcpy(data->buf, buf->data + buf->used, rlen);
+			data->buf_size = rlen;
+		}
+		buf->used += rlen;
+		bytes_read += rlen;
+	}
 
-        return bytes_read;
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+		 "DEV RX USB FreeBSD Bytes: %d:%d\n", bytes_read,
+		 bytes_read + data->buf_size));
+
+	return bytes_read;
 }
-
