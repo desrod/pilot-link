@@ -1556,6 +1556,9 @@ struct dlpResponse {
 	 * repeatedly until it returns an error code of the iterator becomes
 	 * #vfsIteratorStop.
 	 *
+	 * @bug On some early OS 5 devices like Tungsten T and Sony NX70, NX73 this
+	 * call crashes the device. Seems to be a bug in HotSync.
+	 *
 	 * @param sd Socket number
 	 * @param dirRefNum Directory reference obtained from dlp_VFSFileOpen()
 	 * @param dirIterator Ptr to an iterator. Start with #vfsIteratorStart
