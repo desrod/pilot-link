@@ -7,6 +7,7 @@ endif
 SUBDIRS=prc pix pilot-datebook
 
 INCLUDES = 			\
+	-I/usr/include		\
 	-I$(top_srcdir)/include \
 	$(PNG_CFLAGS)		\
 	$(TCL_INCLUDES)		\
@@ -42,6 +43,7 @@ bin_PROGRAMS = 		\
 	pilot-addresses	\
 	pilot-archive	\
 	pilot-clip	\
+	pilot-debug	\
 	pilot-dedupe	\
 	pilot-file	\
 	pilot-foto	\
@@ -229,14 +231,15 @@ pilot_clip_SOURCES = 		\
 pilot_clip_LDADD = 				\
 	$(top_builddir)/libpisock/libpisock.la
 
-#pilot_debug_SOURCES = 		\
-#	pd-tty.c		\
-#	pilot-debug.c
-#pilot_debug_LDADD = 				\
-#	$(TCL_LIBS)				\
-#	$(TCL_INCLUDES)				\
-#	$(RL_LIBS)				\
-#	$(top_builddir)/libpisock/libpisock.la
+pilot_debug_SOURCES = 		\
+	pd-tty.c		\
+	pilot-debug.c
+pilot_debug_LDADD = 		\
+	$(TCL_LIBS)		\
+	$(TCL_LIB_FLAG)		\
+	$(TCL_INCLUDES)		\
+	$(RL_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
 
 pilot_dedupe_SOURCES = 		\
 	$(getopt_sources)	\

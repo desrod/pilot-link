@@ -36,7 +36,7 @@ AC_DEFUN(PILOT_LINK_PATH_TCLCONFIG, [
 
     use_tcl=false
 
-    AC_ARG_WITH(tcl, [  --with-tcl=tclconfig	use TCL], with_tclconfig=${withval}, with_tclconfig=no)
+    AC_ARG_WITH(tcl, [  --with-tcl=tclconfig    use TCL], with_tclconfig=${withval}, with_tclconfig=no)
 
     if test x"${with_tclconfig}" != xno ; then
 	AC_MSG_CHECKING([for Tcl configuration])
@@ -47,7 +47,7 @@ AC_DEFUN(PILOT_LINK_PATH_TCLCONFIG, [
 		if test -f "${with_tclconfig}/tclConfig.sh" ; then
 		    ac_cv_c_tclconfig=`(cd ${with_tclconfig}; pwd)`
 		else
-		    AC_MSG_ERROR([${with_tclconfig} directory doesn't contain tclConfig.sh])
+		    AC_MSG_ERROR([${with_tclconfig}, but directory doesn't contain tclConfig.sh])
 		fi
 	    fi
 
@@ -408,7 +408,7 @@ AC_DEFUN(PILOT_LINK_TCL_64BIT_FLAGS, [
 AC_DEFUN(PILOT_LINK_PUBLIC_TCL_HEADERS, [
     AC_MSG_CHECKING([for Tcl public headers])
 
-    AC_ARG_WITH(tclinclude, [  --with-tclinclude       directory containing the public Tcl header files], with_tclinclude=${withval})
+    AC_ARG_WITH(tclinclude, [  --with-tclinclude       public Tcl header dir], with_tclinclude=${withval})
 
     AC_CACHE_VAL(ac_cv_c_tclh, [
 	# Use the value from --with-tclinclude, if it was given
@@ -426,11 +426,11 @@ AC_DEFUN(PILOT_LINK_PUBLIC_TCL_HEADERS, [
 
 	    eval "temp_includedir=${includedir}"
 	    list="`ls -d ${temp_includedir}      2>/dev/null` \
+		`ls -d ${TCL_PREFIX}             2>/dev/null` \
 		`ls -d ${TCL_PREFIX}/include     2>/dev/null` \
-		`ls -d ${TCL_BIN_DIR}/../include 2>/dev/null` \
-		`ls -d ${TCL_SRC_DIR}/generic    2>/dev/null`"
+		`ls -d ${TCL_BIN_DIR}/../include 2>/dev/null`"
 	    if test "${PILOT_LINK_PLATFORM}" != "windows" -o "$GCC" = "yes"; then
-		list="$list /usr/local/include /usr/include"
+		list="/usr/local/include /usr/include $list"
 	    fi
 	    for i in $list ; do
 		if test -f "$i/tcl.h" ; then
@@ -444,12 +444,17 @@ AC_DEFUN(PILOT_LINK_PUBLIC_TCL_HEADERS, [
     # Print a message based on how we determined the include path
 
     if test x"${ac_cv_c_tclh}" = x ; then
-	AC_MSG_ERROR([tcl.h not found.  Please specify its location with --with-tclinclude])
+	AC_MSG_ERROR([tcl.h not found.
+
+           Please specify its location with --with-tclinclude=<path>       
+           Where <path> is the directory containing tcl.h for your 
+           tcl version, such as --with-tclinclude=/usr/include/tcl/   
+])
     else
 	AC_MSG_RESULT([${ac_cv_c_tclh}])
     fi
 
-    TCL_INCLUDES=-I\"${ac_cv_c_tclh}\"
+    TCL_INCLUDES=-I${ac_cv_c_tclh}
 
     AC_SUBST(TCL_INCLUDES)
 ])
