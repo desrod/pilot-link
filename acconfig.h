@@ -1,0 +1,3 @@
+#undef HAVE_ICONV
+#undef HAVE_SA_LEN
+#undef TERMIOS_CSPEED
