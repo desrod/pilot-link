@@ -41,10 +41,22 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
+	{"hostname",    required_argument, NULL, 'H'},
+	{"address",     required_argument, NULL, 'a'},
+	{"netmask",     required_argument, NULL, 'n'},
+	{"quiet",       required_argument, NULL, 'q'},
+	{NULL,          0,                 NULL, 0}
+};
+
+static const char *optstring = "hvp:H:a:n:q";
+
 char hostname[130];
 struct in_addr address, netmask;
-	
+
 #ifdef HAVE_SA_LEN
 #ifndef max
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -62,6 +74,7 @@ struct in_addr address, netmask;
 # endif
 #endif
 
+
 /***********************************************************************
  *
  * Function:    fetch_host
@@ -73,7 +86,7 @@ struct in_addr address, netmask;
  * Returns:     Nothing
  *
  ***********************************************************************/
-void
+static void
 fetch_host(char *hostname, int hostlen, struct in_addr *address,
 	   struct in_addr *mask)
 {
@@ -218,7 +231,6 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 #endif				/* defined(SIOCGIFCONF) && defined(SIOCGIFFLAGS) */
 }
 
-
 /***********************************************************************
  *
  * Function:    Help
@@ -232,25 +244,18 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
  ***********************************************************************/
 static void Help(char *progname)
 {
-	printf("   Usage:%s [options]\n\n", progname);
-	printf("   -h       <hostname> Name of host, used for verification\n");
-	if (strlen(hostname))
-		printf("            (currently '%s')\n", hostname);
-	else
-		printf("                         (no default)\n");
-	printf("   -a       <address> IP address of host\n");
-	if (address.s_addr)
-		printf("            (currently '%s')\n", inet_ntoa(address));
-	else
-		printf("            (no default)\n");
-	printf("   -s       <address> Subnet mask of IP address\n");
-	if (netmask.s_addr)
-		printf("            (currently '%s')\n", inet_ntoa(netmask));
-	else
-		printf("            (no default)\n");
-	printf("   -q       Quiet: turn off status messages\n\n");
-	printf("   Note: Currently the subnet mask is not used by %s.\n\n", progname);
-	exit(0);
+	printf("   Connection Service Daemon for Palm Devices\n\n"
+	       "   Usage: %s -H <hostname> -a <ip> -n <subnet>\n\n"
+	       "   Options:\n"
+	       "     -H <hostname>     The hostname used for verification\n"
+	       "     -a <ip address>   IP address of the host\n"
+	       "     -n <netmask>      The subnet mask of the address\n"
+	       "     -q, --quiet       Turn off status messages\n"
+	       "     -h, --help        Display this information\n"
+	       "     -v, --version     Display version information\n\n"
+	       "   Examples: %s -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
+	       progname, progname);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -258,7 +263,7 @@ int main(int argc, char *argv[])
         struct hostent *hent;
         struct in_addr raddress;
         struct sockaddr_in serv_addr, cli_addr; 
-        int n;
+        int count, n;
         int quiet = 0;
         int sockfd;
         char *progname = argv[0];
@@ -273,9 +278,16 @@ int main(int argc, char *argv[])
 
 	fetch_host(hostname, 128, &address, &netmask);
 
-	while ((n = getopt(argc, argv, "h:s:a:q")) != EOF) {
-		switch (n) {
+	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (count) {
+
 		case 'h':
+			Help(progname);
+			return 0;
+		case 'v':
+			PalmHeader(progname);
+			return 0;
+		case 'H':
 			strcpy(hostname, optarg);
 			break;
 		case 'a':
@@ -292,114 +304,28 @@ int main(int argc, char *argv[])
 				}
 			}
 			break;
-		case 's':
+		case 'n':
 			if (!inet_aton(optarg, &netmask))
 				Help(progname);
 			break;
 		case 'q':
 			quiet = 1;
 			break;
-		case 'H':
-		case '?':
 		default:
-			Help(progname);
 		}
 	}
 
 	/* cannot execute without address and hostname */
-	if ((address.s_addr == 0) || (strlen(hostname) == 0))
+	if ((address.s_addr == 0) || (strlen(hostname) == 0)) {
 		Help(progname);
-
+		return -1;
+	}
+	
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockfd < 0) {
 		perror("Unable to get socket");
 		exit(1);
 	}
-
-	memset(&serv_addr, 0, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(14237);
-
-	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
-	    < 0) {
-		perror("Unable to bind socket");
-		exit(1);
-	}
-
-	if (!quiet) {
-		fprintf(stderr,
-			"%s(%d): Connection Service Daemon for Palm Computing(tm) device active.\n",
-			progname, getpid());
-		fprintf(stderr,
-			"%s(%d): Accepting connection requests for '%s' at %s",
-			progname, getpid(), hostname, inet_ntoa(address));
-		fprintf(stderr, " with mask %s.\n", inet_ntoa(netmask)
-		    );
-	}
-	for (;;) {
-		clilen = sizeof(cli_addr);
-		FD_ZERO(&rset);
-		FD_SET(sockfd, &rset);
-		if (select(sockfd + 1, &rset, 0, 0, 0) < 0) {
-			perror("select failure");
-			exit(1);
-		}
-		n = recvfrom(sockfd, mesg, 1024, 0,
-			     (struct sockaddr *) &cli_addr, &clilen);
-
-		if (n < 0) {
-			continue;
-		}
-
-		mesg[n] = 0;
-
-		if (!quiet) {
-			hent =
-			    gethostbyaddr((char *) &cli_addr.sin_addr.
-					  s_addr, 4, AF_INET);
-			memcpy(&raddress, &cli_addr.sin_addr.s_addr, 4);
-
-			fprintf(stderr, "%s(%d): Connection from %s[%s], ",
-				progname,
-				getpid(), hent ? hent->h_name : "",
-				inet_ntoa(raddress));
-		}
-
-		if (get_short(mesg) != 0xFADE)
-			goto invalid;
-
-		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
-			struct in_addr ip, mask;
-			unsigned char *name = mesg + 12;
-
-			memcpy(&ip, mesg + 4, 4);
-			memcpy(&mask, mesg + 8, 4);
-
-			if (!quiet) {
-				fprintf(stderr, "req '%s', %s", name,
-					inet_ntoa(ip));
-				fprintf(stderr, ", %s", inet_ntoa(mask));
-			}
-
-			if (strcmp(hostname, name) == 0) {
-				if (!quiet)
-					fprintf(stderr, " = accept.\n");
-
-				set_byte(mesg + 2, 0x02);
-				memcpy(mesg + 4, &address, 4);	/* address is already in Motorola byte order */
-				n = sendto(sockfd, mesg, n, 0,
-					   (struct sockaddr *) &cli_addr,
-					   clilen);
-				if (n < 0) {
-					perror("sendto error");
-				}
-				continue;
-			}
-			if (!quiet)
-				fprintf(stderr, " = reject.\n");
-			continue;
-		}
 
 	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;

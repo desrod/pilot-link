@@ -261,12 +261,12 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 		sd;
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	sockaddr_in serv_addr;
-	char 	*device = paddr->pi_device + 4;
+	char 	*device = paddr->pi_device + 4, *port;
 
 	/* Figure out the addresses to allow */
 	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
-	if (strlen(device) > 1) {
+	if (strlen(device) > 1 && strncmp(device, "any", 3)) {
 		serv_addr.sin_addr.s_addr = inet_addr(device);
 		if (serv_addr.sin_addr.s_addr == INADDR_NONE) {
 			struct hostent *hostent = gethostbyname(device);
@@ -280,8 +280,12 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 	} else {
 		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	}
-	serv_addr.sin_port = htons(14238);
-
+	if ((port = strchr(device, ':')) != NULL) {
+		serv_addr.sin_port = htons(atoi(++port));
+	} else {
+		serv_addr.sin_port = htons(14238);
+	}
+	
 	sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sd < 0) {
 		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
@@ -309,6 +313,8 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 
 	if (bind(ps->sd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 		return -1;
+
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV BIND Inet Bound to %s\n", device);
 
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);

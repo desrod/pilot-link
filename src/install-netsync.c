@@ -42,16 +42,16 @@ static const char *optstring = "hvp:eH:a:n:l:";
 static void Help(char *progname)
 {
 	printf("   Assigns your Palm device NetSync information\n\n"
-	       "   Usage: %s -p <port> -o <hostname> -a <ip> -n <subnet>\n\n"
+	       "   Usage: %s -p <port> -H <hostname> -a <ip> -n <subnet>\n\n"
 	       "   Options:\n"
 	       "     -p <port>         Use device file <port> to communicate with Palm\n"
 	       "     -e <hostname>     Enables LANSync on the Palm\n"
 	       "     -H <hostname>     The hostname of the desktop you are syncing with\n"
 	       "     -a <ip address>   IP address of the machine you connect your Palm to\n"
 	       "     -n <netmask>      The subnet mask of the network your Palm is on\n"
-	       "     -h, --help        Display this information\n\n"
-	       "     -v, --version     Display this information\n\n"
-	       "   Examples: %s -p /dev/pilot -o \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
+	       "     -h, --help        Display this information\n"
+	       "     -v, --version     Display version information\n\n"
+	       "   Examples: %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
 	       progname, progname);
 	return;
 }
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 			Help(progname);
 			return 0;
 		case 'v':
-			Help(progname);
+			PalmHeader(progname);
 			return 0;
 		case 'p':
 			port = optarg;
