@@ -1,7 +1,8 @@
-Pilot-Link 0.10.99, 03-20-2002
-------------------------------
+Pilot-Link 0.10.99, "Woodstock", 03-20-2002
+-------------------------------------------
 
-This is a development release.
+This is a development release, primarily to test the new usb device
+support.
 
 Major Features:
 
@@ -19,6 +20,7 @@ Other Features:
 Bug Fixes:
 
 	* Expense Preferences no pack/unpack correctly
+	* 
 	* Dozens of minor bug fixes
 
 Known Problems:

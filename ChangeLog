@@ -2,6 +2,10 @@
 
 	* NEWS: update
 
+2002-03-20  JP Rosevear  <jpr@ximian.com>
+
+	* NEWS: update
+
 	* configure.in: bump version to 0.10.99
 
 	* bindings/Perl/Makefile.PL.in: Bump version
