@@ -18,6 +18,76 @@ aren't in standard places, you'll need to wiggle configure or the Makefile.
 You must have install pilot-link or else run pilot-debug in the pilot-link
 source directory if you want the fancy images for the Remote UI window.
 
+Basic program list, in no particular order:
+
+    addresses: dump Pilot address book into generic format
+
+    ccexample: test program demonstrating C++ interface
+    
+    debugsh: command-line interface to Pilot debug monitor
+
+    dlpsh: command-line interface to Pilot HotSync protocol
+
+    getrom: program to fetch ROM using getrom.prc or getrom2.prc
+
+    getrom.prc:  Pilot program to help dump a 512K ROM 
+    getrom2.prc: Pilot program to help dump a 1024K ROM (used for OS 2.x)
+    
+    iambicexample: test program demonstrating C++ interface
+
+    ietf2datebook: convert IETF calendar to format used by install-datebook
+
+    install-datebook: import datebook records from a text format into Pilot
+
+    install-memo: import memo records from a text format into Pilot
+
+    install-todos: import todo records from a text format into Pilot
+
+    install-user: modify user name settings (and report lots of into) about Pilot
+
+    memos: export memos from Pilot in mailbox format
+
+    pi-csd: must be running to accept Network HotSync(tm) connects
+    
+    pi-getram: program that retrieves RAM from Pilot
+    
+    pi-getrom: program that retrieves ROM from Pilot (without getrom.prc)
+    
+    pi-nredir: program that accepts connections and redirects them via the Network HotSync(tm) protocol
+    
+    pi-port: experimental program to separate serial layer from pilot-link
+
+    pilot-addresses: import and export address book
+
+    pilot-clip: experimental program to import and export data from Pilot clipboard
+    
+    pilot-debug: graphical and command-line program to interface with Pilot debug monitor
+    
+    pilot-dedupe: strips duplicate records from Pilot databases
+
+    pilot-file: disect .prc and .pdb files
+
+    pilot-mail: import mail from POP3 mailbox into Pilot Pro's Mail application,
+                and send mail via sendmail
+
+    pilot-schlep: store a single file on the Pilot
+     
+    pilot-undelete: turn archived records into normal records
+
+    pilot-xfer: back up, restore, install & delete Pilot databases (This is a very useful program)
+
+    read-expenses: export Pilot Pro expense database into text format
+
+    read-ical: export Pilot datebook and todo databases into an Ical calendar (ical is required)
+    
+    read-todos: export Pilot todo database into generic text format
+
+    reminders: export Pilot datebook into a 'remind' data file
+
+    sync-plan: completely synchronize the Pilot datebook with the Plan calendar via netplan
+    
+    validate: experimental program to test C++ features
+
 Usage notes:
 
   read-ical and sync-ical will only run if you have ical-2.x installed and

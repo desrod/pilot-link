@@ -121,5 +121,5 @@ error:
           
   ps.serial_close(&ps);
   
-  exit(0);
+  return 0;
 }

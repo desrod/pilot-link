@@ -155,5 +155,6 @@ int main(int argc, char *argv[])
   
   printf("\nExiting...\n");
   pi_close(sd);
-  exit(0);
+  
+  return 0;
 }

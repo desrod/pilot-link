@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   struct pi_sockaddr addr;
   extern char* optarg;
   extern int optind;
-  int err;
+  /*int err;*/
   int ret;
   int file;
   unsigned long ROMstart, ROMlength, ROMversion, offset, left;
@@ -93,9 +93,9 @@ NOTICE: Use of this program may place you in violation of your license\n\
   dlp_OpenConduit(sd);
   
   PackRPC(&p, 0xA23E, RPC_IntReply, RPC_Long(0xFFFFFFFF), RPC_End);
-  err = dlp_RPC(sd, &p, &ROMstart);
+  /*err =*/  dlp_RPC(sd, &p, &ROMstart);
   PackRPC(&p, 0xA23E, RPC_IntReply, RPC_Long(ROMstart), RPC_End);
-  err = dlp_RPC(sd, &p, &ROMlength);
+  /*err =*/  dlp_RPC(sd, &p, &ROMlength);
   
   dlp_ReadFeature(sd, makelong("psys"), 1, &ROMversion);
   
@@ -122,11 +122,11 @@ NOTICE: Use of this program may place you in violation of your license\n\
   lseek(file, offset, SEEK_SET);
 
   PackRPC(&p, 0xA164, RPC_IntReply, RPC_Byte(1), RPC_End);
-  err = dlp_RPC(sd, &p, 0);
+  /*err =*/  dlp_RPC(sd, &p, 0);
 
   sprintf(print, "Downloading byte %ld", offset);
   PackRPC(&p, 0xA220, RPC_IntReply, RPC_Ptr(print, strlen(print)), RPC_Short(strlen(print)), RPC_Short(0), RPC_Short(28), RPC_End);
-  err = dlp_RPC(sd, &p, 0);
+  /*err =*/  dlp_RPC(sd, &p, 0);
 
   signal(SIGINT, sighandler);
   left = ROMlength - offset;
@@ -134,14 +134,23 @@ NOTICE: Use of this program may place you in violation of your license\n\
   while(left>0) {
   	char buffer[256];
   	int len = left;
+  	int j;
   	if (len>256)
   		len=256;
   	printf("\r%ld of %ld bytes", offset, ROMlength);
   	fflush(stdout);
   	PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len), RPC_Long(offset+ROMstart), RPC_Long(len), RPC_End);
-  	err = dlp_RPC(sd, &p, 0);
+  	/*err =*/  dlp_RPC(sd, &p, 0);
   	left -= len;
-  	write(file, buffer, len);
+  	/* If the buffer only contains zeros, skip instead of writing, so
+  	   that the file will be holey. */
+  	for(j=0;j<len;j++)
+  	  if (buffer[j])
+  	    break;
+  	if (j==len)
+  	  lseek(file, len, SEEK_CUR);
+  	else
+  	  write(file, buffer, len);
   	offset += len;
   	if(cancel || !(i++%4))
   		if (cancel || (dlp_OpenConduit(sd)<0)) {
@@ -151,7 +160,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
   	if(!(i%8)) {
           sprintf(print, "%ld", offset);
           PackRPC(&p, 0xA220, RPC_IntReply, RPC_Ptr(print, strlen(print)), RPC_Short(strlen(print)), RPC_Short(92), RPC_Short(28), RPC_End);
-          err = dlp_RPC(sd, &p, 0);
+          /*err =*/  dlp_RPC(sd, &p, 0);
         }
   }
   printf("\r%ld of %ld bytes\n", offset, ROMlength);
@@ -162,5 +171,5 @@ cancel:
   
   pi_close(sd);  
   
-  exit(0);
+  return 0;
 }

@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
   dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
   unpack_ToDoAppInfo(&tai, buffer, 0xffff);
   
-  for (i=0;1;i++) {
+  for (i=0;;i++) {
   	struct ToDo t;
   	int attr, category;
   	                           
@@ -108,6 +108,6 @@ int main(int argc, char *argv[])
   dlp_AddSyncLogEntry(sd, "Read todos from Pilot.\n");
 
   pi_close(sd);  
-  exit(0);
+  return 0;
 }
 

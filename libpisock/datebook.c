@@ -91,7 +91,7 @@ int unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) 
 
   /* buffer+7 is gapfil */
 	
-	p2 = (char*)buffer+8;
+	p2 = (unsigned char*)buffer+8;
 	
 #define alarmFlag 64
 #define repeatFlag 32
@@ -117,7 +117,7 @@ int unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) 
 	if (iflags & repeatFlag)
 		{
 		int i,	on;
-		a->repeatType = get_byte(p2); p2+=2;
+		a->repeatType = (enum repeatTypes)get_byte(p2); p2+=2;
 		d = (unsigned short int)get_short(p2); p2+=2;
 		if(d==0xffff)
 			a->repeatForever=1; /* repeatEnd is invalid */
@@ -134,12 +134,12 @@ int unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) 
 		}
 		a->repeatFrequency = get_byte(p2); p2++;
 		on = get_byte(p2); p2++;
-		a->repeatDay = 0;
+		a->repeatDay = (enum DayOfMonthType)0;
 		for(i=0;i<7;i++)
 			a->repeatDays[i] = 0;
 			
 		if (a->repeatType == repeatMonthlyByDay)
-			a->repeatDay = on;
+			a->repeatDay = (enum DayOfMonthType)on;
 		else if (a->repeatType == repeatWeekly)
 			for(i=0;i<7;i++)
 				a->repeatDays[i] = !!(on & (1<<i));
@@ -148,10 +148,10 @@ int unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) 
 		}
 	else {
 		int i;
-		a->repeatType = 0;
+		a->repeatType = (enum repeatTypes)0;
 		a->repeatForever = 1; /* repeatEnd is invalid */
 		a->repeatFrequency = 0;
-		a->repeatDay = 0;
+		a->repeatDay = (enum DayOfMonthType)0;
 		for(i=0;i<7;i++)
 		  a->repeatDays[i] = 0;
 		a->repeatWeekstart = 0;

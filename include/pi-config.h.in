@@ -184,6 +184,10 @@
 # include <sys/utsname.h>
 #endif
 
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+
 #if defined(HAVE_DIRENT_H) && !defined(NeXT)
 # include <dirent.h>
 # define NAMLEN(dirent) strlen((dirent)->d_name)

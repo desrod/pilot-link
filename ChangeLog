@@ -1,3 +1,13 @@
+Sep  14, 1997	Kenneth Albanowski 0.8.6
+	Configuration changes:
+	  - skip sys/select.h if it is not available
+	Utility changes:
+	  - added pi-getram utility to fetch RAM image. (Use -c switch if fetching for Copilot).
+	  - added holey files to pi-getrom
+	All:
+	  - corrected miscellaneous C warnings
+	Documentation changes:
+	  - added program list to README
 Sep  6, 1997	Kenneth Albanowski 0.8.5
 	Configuration changes:
 	  - added patch for libtool 1.0b to prevent extraneous 'n's.

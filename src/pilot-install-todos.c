@@ -146,5 +146,6 @@ printf("desc: %s\n",todo.description);
   
   dlp_EndOfSync(sd,0);
   pi_close(sd);
-  exit(0);
+  
+  return 0;
 }

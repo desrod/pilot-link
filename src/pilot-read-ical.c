@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
   dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
   unpack_ToDoAppInfo(&tai, buffer, 0xffff);
   
-  for (i=0;1;i++) {
+  for (i=0;;i++) {
   	struct ToDo t;
   	int attr, category;
   	recordid_t id;
@@ -189,6 +189,7 @@ int main(int argc, char *argv[])
 	fprintf(ical,"cal add $n\n");
 	
 	free_ToDo(&t);
+	
   }
 
   /* Close the database */
@@ -205,9 +206,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
   
-  
-
-  for (i=0;1;i++) {
+  for (i=0;;i++) {
   	int j;
   	struct Appointment a;
   	int attr;

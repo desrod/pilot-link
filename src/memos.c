@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
   dlp_ReadAppBlock(sd, db, 0, (unsigned char *)appblock, 0xffff);
   unpack_MemoAppInfo(&mai, (unsigned char *)appblock, 0xffff);
 
-  for (i=0;1;i++) {
+  for (i=0;;i++) {
   	struct Memo m;
   	int attr;
   	int category;
@@ -111,6 +111,6 @@ int main(int argc, char *argv[])
 
   pi_close(sd);  
   
-  exit(0);
+  return 0;
 }
 

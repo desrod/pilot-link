@@ -153,5 +153,6 @@ int main(int argc, char *argv[])
   }
   
   pi_close(sd);
-  exit(0);
+  
+  return 0;
 }

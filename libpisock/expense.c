@@ -59,8 +59,8 @@ int unpack_Expense(struct Expense * a, unsigned char * buffer, int len)
   a->date.tm_isdst = -1;
   mktime(&a->date);
   
-  a->type = get_byte(buffer+2);
-  a->payment = get_byte(buffer+3);
+  a->type = (enum ExpenseType)get_byte(buffer+2);
+  a->payment = (enum ExpensePayment)get_byte(buffer+3);
   a->currency = get_byte(buffer+4);
   
   buffer += 6;
@@ -219,7 +219,7 @@ int unpack_ExpenseAppInfo(struct ExpenseAppInfo * ai, unsigned char * record, in
   record+=i;
   len-=i;
   if (len < 2+(16+4+8)*4);
-  ai->sortOrder = get_byte(record);
+  ai->sortOrder = (enum ExpenseSort)get_byte(record);
   record += 2;
   for(i=0;i<4;i++) {
     memcpy(ai->currencies[i].name, record, 16);
@@ -280,7 +280,7 @@ int unpack_ExpensePref(struct ExpensePref * p, unsigned char * record, int len)
   record++;
   p->allowQuickFill = get_byte(record);
   record++;
-  p->unitOfDistance = get_byte(record);
+  p->unitOfDistance = (enum ExpenseDistance)get_byte(record);
   record += 2;
   for(i=0;i<7;i++) {
     p->currencies[i] = get_byte(record);

@@ -341,7 +341,8 @@ int main(int argc, char **argv) {
   atexit(exit_func);
 
   handle_user_commands(sd);
-  exit(0);
+  
+  return 0;
 }
 
 void sigexit(int sig) {

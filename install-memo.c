@@ -134,5 +134,6 @@ int main(int argc, char *argv[])
   
   dlp_EndOfSync(sd,0);
   pi_close(sd);
-  exit(0);
+  
+  return 0;
 }

@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
   fprintf(stderr, " Currency 4, name '%s', symbol '%s', rate '%s'\n",
   	tai.currencies[3].name, tai.currencies[3].symbol, tai.currencies[3].rate);
   
-  for (i=0;1;i++) {
+  for (i=0;;i++) {
   	struct Expense t;
   	int attr, category;
   	                           

@@ -203,6 +203,6 @@ int main(int argc, char *argv[])
   
   Disconnect();
   
-  exit(0);
+  return 0;
 }
 

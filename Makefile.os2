@@ -83,7 +83,7 @@ CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)
 		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT) $(CCEXECS) \
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
-		getrom$(EXT) pi-getrom$(EXT) pi-port$(EXT) \
+		getrom$(EXT) pi-getrom$(EXT) pi-getram$(EXT) pi-port$(EXT) \
 		pi-csd$(EXT) pi-nredir$(EXT) 
 
 CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
@@ -172,6 +172,9 @@ pi-port$(EXT): $(PILIB) pi-port.o
 
 pi-getrom$(EXT): $(PILIB) pi-getrom.o
 	$(CCLINK) pi-getrom.o $(PILIB) -o $@ $(LIBS)
+
+pi-getram$(EXT): $(PILIB) pi-getram.o
+	$(CCLINK) pi-getram.o $(PILIB) -o $@ $(LIBS)
 
 pilot-file$(EXT): $(PILIB) pilot-file.o
 	$(CCLINK) pilot-file.o $(PILIB) -o $@ $(LIBS)
@@ -345,6 +348,9 @@ pd-tty.o: pd-tty.c include/pi-source.h include/pi-config.h \
 pi-csd.o: pi-csd.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-macros.h \
  include/pi-dlp.h include/pi-serial.h include/pi-slp.h
+pi-getram.o: pi-getram.c include/pi-source.h include/pi-config.h \
+ include/pi-socket.h include/pi-args.h include/pi-macros.h \
+ include/pi-syspkt.h include/pi-dlp.h
 pi-getrom.o: pi-getrom.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-macros.h \
  include/pi-syspkt.h include/pi-dlp.h

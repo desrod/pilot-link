@@ -327,7 +327,7 @@ void pi_onexit(void)
 
 void installexit(void)
 {
-  static installedexit = 0;
+  static int installedexit = 0;
   
   if (!installedexit)
     atexit(pi_onexit);

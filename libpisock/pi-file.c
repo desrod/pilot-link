@@ -408,13 +408,10 @@ int
 pi_file_read_resource (struct pi_file *pf, int idx,
 		       void **bufp, int *sizep, unsigned long *type, int *idp)
 {
-  struct DBInfo *ip;
   struct pi_file_entry *entp;
 
   if (pf->for_writing)
     return (-1);
-
-  ip = &pf->info;
 
   if (!pf->resource_flag)
     return (-1);
@@ -448,7 +445,6 @@ int
 pi_file_read_record (struct pi_file *pf, int idx,
 		     void **bufp, int *sizep, int *attrp, int *catp, pi_uid_t *uidp)
 {
-  struct DBInfo *ip;
   struct pi_file_entry *entp;
 
   if (pf->for_writing)
@@ -457,8 +453,6 @@ pi_file_read_record (struct pi_file *pf, int idx,
 #ifdef DEBUG
   fprintf(stderr, "Reading record %d\n", idx);
 #endif  
-
-  ip = &pf->info;
 
   if (pf->resource_flag)
     return (-1);
@@ -625,13 +619,10 @@ pi_file_set_sort_info (struct pi_file *pf, void *data, int size)
 static struct pi_file_entry *
 pi_file_append_entry (struct pi_file *pf)
 {
-  struct DBInfo *ip;
   int new_count;
   int new_size;
   struct pi_file_entry *new_entries;
   struct pi_file_entry *entp;
-
-  ip = &pf->info;
 
   if (pf->nentries >= pf->nentries_allocated) {
     if (pf->nentries_allocated == 0)

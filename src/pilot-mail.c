@@ -498,7 +498,7 @@ int main(int argc, char *argv[])
   /* sendmail transmission section */
 
   /* Iterate over messages in Outbox */
-  for (i=0;1;i++) {
+  for (i=0;;i++) {
   	struct Mail t;
   	int attr;
   	int size;
@@ -642,7 +642,7 @@ int main(int argc, char *argv[])
     goto endpop;
   }
   
-  for(i=1;1;i++) {
+  for(i=1;;i++) {
     int len;
     char * msg;
     int h;
@@ -683,7 +683,7 @@ int main(int argc, char *argv[])
     } else
       buffer[l] = 0;
     
-    msg = buffer;
+    msg = (char*)buffer;
     h = 1;
     for(;;) {
       if (getpopstring(popfd, msg) < 0) {
@@ -775,7 +775,7 @@ endpop:
 
   /* MH directory reading section */
   
-  for(i=1;1;i++) {
+  for(i=1;;i++) {
     int len;
     char * msg;
     int h;
@@ -812,7 +812,7 @@ endpop:
 	goto endmh;
     }
 
-    msg = buffer;
+    msg = (char*)buffer;
     h = 1;
     while(h==1) {
       markline(msg);
@@ -900,6 +900,6 @@ end:
   dlp_AddSyncLogEntry(sd, buffer);
 
   pi_close(sd);
-  exit(0);
+  return 0;
 }
 

@@ -100,5 +100,5 @@ int main(int argc, char *argv[])
   dlp_AbortSync(sd);
   close(sd2);
 
-  exit(0);
+  return 0;
 }
