@@ -23,7 +23,6 @@
 #include <config.h>
 #endif
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,6 +32,7 @@
 #include "pi-notepad.h"
 #include "pi-file.h"
 #include "pi-header.h"
+#include "userland.h"
 
 #ifdef HAVE_PNG
 #include "png.h"
@@ -47,39 +47,13 @@ void write_png( FILE *f, struct NotePad *n );
 #endif
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     
- *
- * Parameters:  None
- *
- * Return:      Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Syncronize your NotePad database with your desktop machine\n\n");
-	printf("   Usage: %s -p /dev/pilot [options]\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n\n", progname);
-	printf("     -l                      List Notes on device\n");
-	printf("     -t [png|ppm]            Specify picture output type\n");
-	printf("                             either \"ppm\" or \"png\"\n\n");
-	printf("   Examples: %s -p /dev/pilot -l -t png\n\n", progname);
-
-	return;
-}
 
 
 /***********************************************************************
  *
  * Function:    fmt_date
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -88,12 +62,12 @@ static void display_help(const char *progname)
  ***********************************************************************/
 static const char *fmt_date ( noteDate_t d )
 {
-   
+
    static char buf[24];
    sprintf (buf, "%d-%02d-%02d %02d:%02d:%02d",
 	    d.year, d.month, d.day, d.hour, d.min, d.sec);
    return buf;
-   
+
 }
 
 
@@ -101,7 +75,7 @@ static const char *fmt_date ( noteDate_t d )
  *
  * Function:    write_ppm
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -113,9 +87,9 @@ void write_ppm( FILE *f, struct NotePad *n )
    int i,j,k,datapoints = 0;
    unsigned long black = 0;
    unsigned long white = 0xFFFFFFFF;
-   
+
    fprintf( f, "P6\n# " );
-   
+
    if( n->name != NULL )
      fprintf( f, "%s (created on %s)\n", n->name, fmt_date( n->createDate ));
    else
@@ -130,10 +104,10 @@ void write_ppm( FILE *f, struct NotePad *n )
      for( i=0; i<n->body.dataLen/2; i++ )
        {
 	  datapoints += n->data[i].repeat;
-	  
+
 	  for( j=0; j<n->data[i].repeat; j++ )
 	    {
-	    
+
 	       for( k=0; k<8; k++ )
 		 {
 		    if( n->data[i].data & 1<<(7-k) )
@@ -161,7 +135,7 @@ void write_ppm( FILE *f, struct NotePad *n )
 		 fwrite( &white, 3, 1, f );
 	    }
        }
-   
+
 }
 
 
@@ -169,7 +143,7 @@ void write_ppm( FILE *f, struct NotePad *n )
  *
  * Function:    write_png
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -183,32 +157,32 @@ void write_png( FILE *f, struct NotePad *n )
    png_structp png_ptr;
    png_infop info_ptr;
    png_bytep row;
-   
+
    width = n->body.width + 8;
-   
+
    png_ptr = png_create_write_struct
-     ( PNG_LIBPNG_VER_STRING, png_voidp_NULL,  
+     ( PNG_LIBPNG_VER_STRING, png_voidp_NULL,
        png_error_ptr_NULL, png_error_ptr_NULL);
 
    if(!png_ptr)
      return;
-   
+
    info_ptr = png_create_info_struct(png_ptr);
    if( !info_ptr )
      {
 	png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
 	return;
      }
-   
+
    if( setjmp( png_jmpbuf( png_ptr )))
      {
 	png_destroy_write_struct( &png_ptr, &info_ptr );
 	fclose( f );
 	return;
      }
-   
+
    png_init_io( png_ptr, f );
-   
+
    png_set_IHDR( png_ptr, info_ptr, width, n->body.height,
 		1, PNG_COLOR_TYPE_GRAY, PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_DEFAULT,  PNG_FILTER_TYPE_DEFAULT );
@@ -216,10 +190,10 @@ void write_png( FILE *f, struct NotePad *n )
    png_write_info( png_ptr, info_ptr );
 
    row = (png_bytep)malloc( width/8 * sizeof( png_byte ));
-   
+
    if( NULL == row )
      return;
-   
+
    if( n->body.dataType == NOTEPAD_DATA_BITS )
      for( i=0, k=0; i<n->body.dataLen/2; i++ )
        for( j=0; j<n->data[i].repeat; j++ )
@@ -230,7 +204,7 @@ void write_png( FILE *f, struct NotePad *n )
 	      {
 		 png_write_row( png_ptr, row );
 		 k = 0;
-		 png_write_flush(png_ptr);	  
+		 png_write_flush(png_ptr);
 	      }
 	 }
    else
@@ -246,15 +220,15 @@ void write_png( FILE *f, struct NotePad *n )
 	       png_write_flush(png_ptr);
 	    }
        }
-   
+
    png_write_end(png_ptr, info_ptr);
-   
+
    free( row );
 
    row = NULL;
 
    png_destroy_write_struct( &png_ptr, &info_ptr );
-   
+
 }
 #endif
 
@@ -263,7 +237,7 @@ void write_png( FILE *f, struct NotePad *n )
  *
  * Function:    write_png_v2
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -287,7 +261,7 @@ void write_png_v2( FILE *f, struct NotePad *n )
  *
  * Function:    print_note_info
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -298,7 +272,7 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
 {
    if( n.flags & NOTEPAD_FLAG_NAME )
      printf( "Name: %s\n", n.name );
-   
+
    printf( "Category: %s\n", nai.category.name[category] );
    printf( "Created: %s\n", fmt_date( n.createDate ));
    printf( "Changed: %s\n", fmt_date( n.changeDate ));
@@ -307,14 +281,14 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
      printf( "Alarm set for: %s\n", fmt_date( n.alarmDate ));
    else
      printf( "Alarm set for: none\n" );
-   
+
    printf( "Picture: " );
-   
+
    if( n.flags & NOTEPAD_FLAG_BODY )
      printf( "yes\n" );
    else
      printf( "no\n" );
-   
+
    printf( "Picture version: %ld\n", n.body.dataType );
 
 }
@@ -324,7 +298,7 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
  *
  * Function:    protect_files
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -333,37 +307,37 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
  ***********************************************************************/
 int protect_files( char *name, char *extension )
 {
-   char *save_name, 
+   char *save_name,
 	c = 1;
-   
+
    save_name = strdup( name );
-   
+
    if( NULL == save_name )
      {
 	printf( "Failed to generate filename %s%s\n", name, extension );
 	return( 0 );
      }
-	
+
    sprintf( name, "%s%s", save_name, extension );
-   
+
    while( access( name, F_OK ) == 0 )
      {
 	sprintf( name, "%s_%02d%s", save_name, c, extension );
 
 	c++;
-	
+
 	if( c == 'z' + 1 )
 	  c = 'A';
-	
+
 	if( c == 'Z' + 1 )
 	  {
 	     printf( "Failed to generate filename %s\n", name );
 	     return( 0 );
 	  }
      }
-   
+
    free( save_name );
-   
+
    return( 1 );
 }
 
@@ -372,7 +346,7 @@ int protect_files( char *name, char *extension )
  *
  * Function:    output_picture
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -385,7 +359,7 @@ void output_picture( int type, struct NotePad n )
    FILE *f;
    char extension[8];
    static int i = 1;
-   
+
    if( n.body.dataType == NOTEPAD_DATA_PNG )
      type = NOTE_OUT_PNG;
 
@@ -395,7 +369,7 @@ void output_picture( int type, struct NotePad n )
 	  sprintf( extension, ".png" );
 	else if( type == NOTE_OUT_PPM )
 	  sprintf( extension, ".ppm" );
-	
+
 	sprintf( fname, "%s", n.name );
      }
    else
@@ -404,16 +378,16 @@ void output_picture( int type, struct NotePad n )
 	  sprintf( extension, "_np.png" );
 	else if( type == NOTE_OUT_PPM )
 	  sprintf( extension, "_np.ppm" );
-	
+
 	sprintf( fname, "%4.4d", i++ );
      }
-        	
+
    protect_files( fname, extension );
-   
+
    printf ("Generating %s...\n", fname);
-   
+
    f = fopen (fname, "wb");
-   if( f ) 
+   if( f )
      {
 	switch( n.body.dataType )
 	  {
@@ -429,13 +403,13 @@ void output_picture( int type, struct NotePad n )
 		case NOTE_OUT_PPM:
 		  write_ppm( f, &n );
 		  break;
-	     
+
 		case NOTE_OUT_PNG:
-#ifdef HAVE_PNG		       
+#ifdef HAVE_PNG
 		  write_png( f, &n );
 #else
 		  fprintf( stderr, "read-notepad was built without png support\n" );
-#endif		       
+#endif
 		  break;
 	       }
 	     break;
@@ -443,13 +417,13 @@ void output_picture( int type, struct NotePad n )
 	   default:
 	     fprintf( stderr, "Picture version is unknown - unable to convert\n" );
 	  }
-	
+
 	fclose (f);
-	
+
      }
    else
      fprintf (stderr, "Can't write to %s\n", fname);
-   
+
    free_NotePad( &n );
 }
 
@@ -461,14 +435,12 @@ int main(int argc, const char *argv[])
      i,
      sd	= -1,
      action 	= NOTEPAD_ACTION_OUTPUT;
-   
+
    int type = NOTE_OUT_PPM;
-   
+
    const char
-        *progname       = argv[0],
-        *port 		= NULL,
 	*typename	= NULL;
-   
+
    struct 	PilotUser User;
    struct 	NotePadAppInfo nai;
    pi_buffer_t *buffer;
@@ -476,101 +448,94 @@ int main(int argc, const char *argv[])
    poptContext pc;
 
    struct poptOption options[] = {
-        {"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
-        {"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display help information", NULL},
-        {"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
-        {NULL, 'l', POPT_ARG_VAL, &action, NOTEPAD_ACTION_LIST, "List Notes on device", NULL},
-        {"type", 't', POPT_ARG_STRING, NULL, 't', "Specify picture output type, either \"ppm\" or \"png\"", "type"},
+   	USERLAND_RESERVED_OPTIONS
+        {"list", 'l', POPT_ARG_VAL, &action, NOTEPAD_ACTION_LIST, "List Notes on device", NULL},
+        {"type", 't', POPT_ARG_STRING, &typename, 0, "Specify picture output type, either \"ppm\" or \"png\"", "type"},
         POPT_TABLEEND
    };
 
-   pc = poptGetContext("read-notepad", argc, argv, options, 0);
+	pc = poptGetContext("read-notepad", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc,"\n\n"
+		"   Copy or list your NotePad database.\n\n");
 
 
-   while ((c = poptGetNextOpt(pc)) >= 0) {
-	switch (c) {
-	 case 'h':
-	   display_help(progname);
-	   return 0;
-	 case 'v':
-	   print_splash(progname);
-	   return 0;
-	 case 't':
-	   typename = poptGetOptArg(pc);
-	   if( !strncmp( "png", typename, 3 ))
-	     {
-#ifdef HAVE_PNG	     
+	if (argc<2) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pc)) >= 0) {
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
+	}
+	if (c < -1) {
+		plu_badoption(pc,c);
+	}
+
+	if( !strncmp( "png", typename, 3 ))
+	{
+#ifdef HAVE_PNG
 		type = NOTE_OUT_PNG;
 #else
-		fprintf( stderr, "read-notepad was built without png support\n" );
+		fprintf( stderr, "   WARNING: read-notepad was built without png support,\n"
+			"            using ppm instead.\n" );
+		type = NOTE_OUT_PPM;
 #endif
-	     }
-	   else if( !strncmp( "ppm", typename, 3 ))
-	     {
-		type = NOTE_OUT_PPM;
-	     }
-	   else
-	     {
-		fprintf( stderr, "Unknown output type defaulting to ppm\n" );
-		type = NOTE_OUT_PPM;
-	     }
-	   
-	   break;
 	}
-   }
-   if (c < -1) {
-	   /* an error occurred during option processing */
-	   fprintf(stderr, "%s: %s\n",
-	       poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-	       poptStrerror(c));
-	   return 1;
-   }
+	else if( !strncmp( "ppm", typename, 3 ))
+	{
+		type = NOTE_OUT_PPM;
+	}
+	else
+	{
+		fprintf( stderr, "   WARNING: Unknown output type defaulting to ppm\n" );
+		type = NOTE_OUT_PPM;
+	}
 
-   sd = pilot_connect(port);
+	sd = plu_connect();
 
    if( sd < 0 )
-     goto error;   
-   
+     goto error;
+
    if (dlp_ReadUserInfo(sd, &User) < 0)
      goto error_close;
-   
+
    /* Open the NotePad database, store access handle in db */
-   if( dlp_OpenDB(sd, 0, 0x80 | 0x40, "npadDB", &db ) < 0) 
+   if( dlp_OpenDB(sd, 0, 0x80 | 0x40, "npadDB", &db ) < 0)
      {
-	puts("Unable to open NotePadDB");
+	fprintf(stderr,"   ERROR: Unable to open NotePadDB on Palm.\n");
 	dlp_AddSyncLogEntry(sd, "Unable to open NotePadDB.\n");
 	exit(EXIT_FAILURE);
      }
-   
+
    buffer = pi_buffer_new (0xffff);
- 
+
    dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
-   
+
    unpack_NotePadAppInfo( &nai, buffer->data, 0xffff);
-   
-   for (i = 0;; i++) 
+
+   for (i = 0;; i++)
      {
 	int 	attr,
 		category,
 		len = 0;
 
 	struct 	NotePad n;
-	
-	if( sd ) 
+
+	if( sd )
 	  {
 	     len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0,
 				       &attr, &category);
-	     
+
 	     if (len < 0)
 	       break;
 	  }
 	else
 		pi_buffer_clear(buffer);
-	
+
 	/* Skip deleted records */
 	if ((attr & dlpRecAttrDeleted) || (attr & dlpRecAttrArchived))
 	  continue;
-	
+
 	unpack_NotePad( &n, buffer->data, buffer->used);
 
 	switch( action )
@@ -579,15 +544,19 @@ int main(int argc, const char *argv[])
 	     print_note_info( n, nai, category );
 	     printf( "\n" );
 	     break;
-	     
+
 	   case NOTEPAD_ACTION_OUTPUT:
-	     print_note_info( n, nai, category );
+	     if (!plu_quiet) {
+	        print_note_info( n, nai, category );
+	     }
 	     output_picture( type, n );
-	     printf( "\n" );
+	     if (!plu_quiet) {
+	        printf( "\n" );
+	     }
 	     break;
 	  }
      }
-   
+
 
    if( sd ) {
 	/* Close the database */
@@ -596,18 +565,18 @@ int main(int argc, const char *argv[])
 			    "Thank you for using pilot-link.");
 	dlp_EndOfSync( sd, 0 );
 	pi_close(sd);
-     } 
+     }
 
    pi_buffer_free (buffer);
 
    return 0;
-   
+
 error_close:
 	pi_close(sd);
-   
+
 error:
 	return -1;
-   
+
 }
 
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
