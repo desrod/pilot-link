@@ -84,15 +84,6 @@ endif
 bin_SCRIPTS =		\
 	$(PERLSCRIPTS)
 
-#
-# Add in the getopt sources if we need them
-#
-if NEED_GETOPT
-getopt_sources = getopt.h getopt.c getopt1.c
-else
-getopt_sources = 
-endif
-
 #ccexample_SOURCES = 		\
 #	$(getopt_sources)	\
 #	ccexample.cc
@@ -129,12 +120,10 @@ dlpsh_LDADD = 			\
 #	$(top_builddir)/libpisock/libpisock.la
 
 hinotes_SOURCES = 		\
-	$(getopt_sources)	\
 	hinotes.c
 hinotes_LDADD = $(POPT_LIBS) $(top_builddir)/libpisock/libpisock.la
 
 install_datebook_SOURCES = 	\
-	$(getopt_sources)	\
 	install-datebook.c 	\
 	parsedate.y
 install_datebook_LDADD = 	\
@@ -142,14 +131,12 @@ install_datebook_LDADD = 	\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_expenses_SOURCES = 	\
-	$(getopt_sources)	\
 	install-expenses.c
 install_expenses_LDADD = 	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_hinote_SOURCES = 	\
-	$(getopt_sources)	\
 	install-hinote.c
 install_hinote_LDADD = 		\
 	$(POPT_LIBS)		\
@@ -164,6 +151,7 @@ install_memo_LDADD = 		\
 install_netsync_SOURCES = 	\
 	install-netsync.c
 install_netsync_LDADD = 	\
+	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
@@ -189,56 +177,48 @@ install_user_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 memos_SOURCES = 		\
-	$(getopt_sources)	\
 	memos.c
 memos_LDADD = 			\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 money2qif_SOURCES = 		\
-	$(getopt_sources)	\
 	money2qif.c
 money2qif_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pi_csd_SOURCES = 		\
-	$(getopt_sources)	\
 	pi-csd.c
 pi_csd_LDADD = 			\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pi_getram_SOURCES = 		\
-	$(getopt_sources)	\
 	pi-getram.c
 pi_getram_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pi_getrom_SOURCES = 		\
-	$(getopt_sources)	\
 	pi-getrom.c
 pi_getrom_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pi_getromtoken_SOURCES = 	\
-	$(getopt_sources)	\
 	pi-getromtoken.c
 pi_getromtoken_LDADD =		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pi_nredir_SOURCES = 		\
-	$(getopt_sources)	\
 	pi-nredir.c
 pi_nredir_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 #pi_port_SOURCES = 		\
-#	$(getopt_sources)	\
 #	pi-port.c
 #pi_port_LDADD = 		\
 #	$(POPT_LIBS)		\
@@ -251,14 +231,12 @@ pilot_addresses_LDADD = 	\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_archive_SOURCES =		\
-        $(getopt_sources)       \
         pilot-archive.c
 pilot_archive_LDADD =           \
 	$(POPT_LIBS)		\
         $(top_builddir)/libpisock/libpisock.la
 
 pilot_clip_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-clip.c
 pilot_clip_LDADD = 		\
 	$(POPT_LIBS)		\
@@ -276,14 +254,12 @@ pilot_clip_LDADD = 		\
 #	$(top_builddir)/libpisock/libpisock.la
 
 pilot_dedupe_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-dedupe.c
 pilot_dedupe_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_file_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-file.c
 pilot_file_LDADD = 		\
 	$(POPT_LIBS)		\
@@ -335,6 +311,7 @@ pilot_wav_LDADD = 		\
 pilot_xfer_SOURCES = 		\
 	pilot-xfer.c
 pilot_xfer_LDADD = 		\
+	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
@@ -365,7 +342,6 @@ read_palmpix_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_screenshot_SOURCES =	\
-        $(getopt_sources)	\
         read-screenshot.c
 read_screenshot_LDADD =		\
 	$(POPT_LIBS)		\
@@ -373,14 +349,12 @@ read_screenshot_LDADD =		\
         $(top_builddir)/libpisock/libpisock.la
 
 read_todos_SOURCES = 		\
-	$(getopt_sources)	\
 	read-todos.c
 read_todos_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_veo_SOURCES = 		\
-	$(getopt_sources)	\
 	read-veo.c
 read_veo_LDADD = 		\
 	$(POPT_LIBS)		\
@@ -388,7 +362,6 @@ read_veo_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 reminders_SOURCES = 		\
-	$(getopt_sources)	\
 	reminders.c
 reminders_LDADD = 		\
 	$(POPT_LIBS)		\
@@ -462,4 +435,8 @@ EXTRA_DIST = 			\
 	read-veo.c		\
 	reminders.c		\
 	validate.cc
+
+# Magic to update Makefile from Makefile.am
+$(srcdir)/Makefile.in : $(srcdir)/Makefile.am
+	( cd $(top_srcdir) && automake src/Makefile )
 
