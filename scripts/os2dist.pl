@@ -12,7 +12,8 @@
           '@CXXLIBS@', '-lstdcpp',
           '@ARFLAGS@', '-cur',
           '@cclib@', 'libpicc.a', '@libcclib@', 'libcc/libpicc.a',
-          '@ccexecs@', '$(CCEXECS)'
+          '@ccexecs@', '$(CCEXECS)',
+	  '@LDFLAGS@', ''
         );
         
 $defs{'@srcdir@'} = './';

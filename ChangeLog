@@ -1,3 +1,6 @@
+Jun 1, 1997 	Kenneth Albanowski 0.6.5
+	Patches for OS/2 supplied by Mike Jarabek <jarabemj@mcmail.CIS.McMaster.CA>.
+
 May 25, 1997	Kenneth Albanowski 0.6.4
 
 	Added pi_watchdog function to automatically tickle sockets.

@@ -38,7 +38,7 @@ CXX = gcc
 CFLAGS = -g -O2 -fno-strength-reduce -Wall -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
 # -DDEBUG
 CXXFLAGS = -g -O2 -fno-strength-reduce -Wall -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
-LDFLAGS = @LDFLAGS@
+LDFLAGS = 
 LIBS = -lsocket -los2
 # -lefence
 CXXLIBS = -lstdcpp

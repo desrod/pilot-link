@@ -5,8 +5,16 @@
 
 typedef unsigned long recordid_t;
 
-double get_float PI_ARGS((void * buffer));
-void set_float PI_ARGS((void * buffer, double value));
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern double get_float PI_ARGS((void *));
+extern void set_float PI_ARGS((void *, double));
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifndef __cplusplus
 
