@@ -180,14 +180,11 @@ static pi_protocol_t
 static void
 pi_inet_device_free (pi_device_t *dev) 
 {
-
 	ASSERT (dev != NULL);
 
 	if (dev != NULL) {
-		if (dev->data != NULL) {
+		if (dev->data != NULL)
 			free(dev->data);
-			dev->data = NULL;
-		}
 		free(dev);
 	}
 }
@@ -209,7 +206,7 @@ pi_device_t
 {
 	pi_device_t *dev = NULL;
 	pi_inet_data_t *data = NULL;
-	
+
 	dev = (pi_device_t *)malloc (sizeof (pi_device_t));
 	if (dev != NULL) {
 		data = (pi_inet_data_t *)malloc (sizeof (pi_inet_data_t));
@@ -219,7 +216,7 @@ pi_device_t
 		}
 	}
 
-	if ( (dev != NULL) && (data != NULL) ) {
+	if (dev != NULL && data != NULL) {
 
 		dev->free 	= pi_inet_device_free;
 		dev->protocol 	= pi_inet_protocol;	
@@ -611,20 +608,18 @@ pi_inet_getsockopt(pi_socket_t *ps, int level, int option_name,
 	pi_inet_data_t *data = (pi_inet_data_t *)ps->device->data;
 
 	switch (option_name) {
-	case PI_DEV_TIMEOUT:
-		if (*option_len < sizeof (data->timeout))
-			goto error;
-		memcpy (option_value, &data->timeout,
-			sizeof (data->timeout));
-		*option_len = sizeof (data->timeout);
-		break;
+		case PI_DEV_TIMEOUT:
+			if (*option_len != sizeof (data->timeout)) {
+				errno = EINVAL;
+				return -1;
+			}
+			memcpy (option_value, &data->timeout,
+				sizeof (data->timeout));
+			*option_len = sizeof (data->timeout);
+			break;
 	}
 
 	return 0;
-	
- error:
-	errno = EINVAL;
-	return -1;	
 }
 
 
@@ -646,19 +641,17 @@ pi_inet_setsockopt(pi_socket_t *ps, int level, int option_name,
 	pi_inet_data_t *data = (pi_inet_data_t *)ps->device->data;
 
 	switch (option_name) {
-	case PI_DEV_TIMEOUT:
-		if (*option_len != sizeof (data->timeout))
-			goto error;
-		memcpy (&data->timeout, option_value,
-			sizeof (data->timeout));
-		break;
+		case PI_DEV_TIMEOUT:
+			if (*option_len != sizeof (data->timeout)) {
+				errno = EINVAL;
+				return -1;
+			}
+			memcpy (&data->timeout, option_value,
+				sizeof (data->timeout));
+			break;
 	}
 
 	return 0;
-	
- error:
-	errno = EINVAL;
-	return -1;
 }
 
 
