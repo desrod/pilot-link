@@ -1,0 +1,1 @@
+void PalmHeader(char *progname);
