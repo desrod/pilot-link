@@ -94,7 +94,8 @@ unsigned alarm(unsigned sec)
 		if (!alm_tid) {
 			unsigned long t;
 
-			//not multi thread safe -- fine if you just call alarm from one thread
+			/* not multi thread safe -- fine if you just
+                           call alarm from one thread */
 			alm_tid =
 			    CreateThread(0, 0,
 					 (LPTHREAD_START_ROUTINE)

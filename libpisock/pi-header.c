@@ -23,7 +23,6 @@
 
 void PalmHeader(char *progname)
 {
-	int k;
         char *patchlevel = "";
 
 #ifdef PILOT_LINK_PATCH

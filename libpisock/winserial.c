@@ -135,16 +135,16 @@ static int win_changebaud(HANDLE fd, int rate)
 	dcbCommPort.DCBlength 		= sizeof(DCB);
 	GetCommState(fd, &dcbCommPort);
 	dcbCommPort.BaudRate 		= rate;
-	dcbCommPort.fOutxCtsFlow 	= (rate > 9600) ? TRUE : FALSE;		// CTS output flow control 
-	dcbCommPort.fOutxDsrFlow 	= 0;					// DSR output flow control 
-	dcbCommPort.fDtrControl 	= DTR_CONTROL_ENABLE;			// DTR flow control type 
-	dcbCommPort.fRtsControl 	= (rate > 9600) ? RTS_CONTROL_HANDSHAKE : RTS_CONTROL_ENABLE;	// RTS flow control type 
-	dcbCommPort.fTXContinueOnXoff 	= 0;					// XOFF continues Tx 
-	dcbCommPort.fOutX 		= 0;					// XON/XOFF out flow control 
-	dcbCommPort.fInX 		= 0;					// XON/XOFF in flow control 
+	dcbCommPort.fOutxCtsFlow 	= (rate > 9600) ? TRUE : FALSE;		/* CTS output flow control */
+	dcbCommPort.fOutxDsrFlow 	= 0;					/* DSR output flow control */
+	dcbCommPort.fDtrControl 	= DTR_CONTROL_ENABLE;			/* DTR flow control type */
+	dcbCommPort.fRtsControl 	= (rate > 9600) ? RTS_CONTROL_HANDSHAKE : RTS_CONTROL_ENABLE;	/* RTS flow control type */
+	dcbCommPort.fTXContinueOnXoff 	= 0;					/* XOFF continues Tx */
+	dcbCommPort.fOutX 		= 0;					/* XON/XOFF out flow control */
+	dcbCommPort.fInX 		= 0;					/* XON/XOFF in flow control */
 	dcbCommPort.ByteSize 		= 8;
-	dcbCommPort.Parity 		= NOPARITY;				// no parity
-	dcbCommPort.StopBits 		= 0;					// 1 stop bit
+	dcbCommPort.Parity 		= NOPARITY;				/* no parity */
+	dcbCommPort.StopBits 		= 0;					/* 1 stop bit */
 
 	rc = SetCommState(fd, &dcbCommPort);
 
