@@ -291,6 +291,7 @@ if test "x$PERL5" != "x"; then
 	if test "$vers" -ge 5000; then
 		if test "$vers" -lt 6000; then
 			AC_MSG_RESULT($verstxt)
+			PERLVER=$verstxt
 			use_perl5=true
 		else
 			AC_MSG_RESULT($verstext [perl 5 not found])
@@ -387,12 +388,12 @@ use_itcl=false
 msg_itcl=no
 use_tk=false
 msg_tk=no
-itcl=''
+
 AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl     [default=yes]])
-AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use Itcl    [default=yes]])
+AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use ITcl    [default=yes]])
 AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk      [default=yes]])
 if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
-	for tcl_path in /usr /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
+		for tcl_path in /usr /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.4 /usr/local/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
 		if test -f $tcl_path/lib/tclConfig.sh; then
 			with_tcl=$tcl_path; break
 		elif test -f $tcl_path/lib/itcl/tclConfig.sh; then
@@ -636,10 +637,18 @@ man/Makefile
 ])
 
 echo "
-	 Iconv support:   $msg_iconv
-      Readline support:   $msg_readline
-	   C++ support:	  $msg_cpp
-   TCL/ITCL/TK support:   $msg_tcl/$msg_itcl/$msg_tk
-	  Java support:   $msg_java
-	Python support:	  $msg_python
-	  Perl support:	  $msg_perl"
+  pilot-link $VERSION
+  
+  C++ support......... : $msg_cpp
+  Iconv support....... : $msg_iconv
+  Readline support.... : $msg_readline
+
+  TCL support......... : $msg_tcl	($TCL_VERSION)
+  ITCL support........ : $msg_itcl  <<<- Why is this broken?
+  TK Support.......... : $msg_tk	($TK_VERSION)
+
+  Java support........ : $msg_java	($JAVAMAJOR.$JAVAMINOR)
+  Python support...... : $msg_python	($PYTHONVER)
+  Perl support........ : $msg_perl	($PERLVER)
+  
+"
