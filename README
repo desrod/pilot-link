@@ -84,9 +84,6 @@ Debugging notes:
 ---------------
 	Please see doc/README.debugging for more detailed information.
 	
-	Please report any bugs you find or if you are having low-level
-	failures to the bugtracker at http://bugs.pilot-link.org
-  
 Embedding information:
 ---------------------
 	As of 0.5.0, the headers in pilot-link have been rearranged slightly
