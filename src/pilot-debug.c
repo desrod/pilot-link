@@ -29,7 +29,6 @@
 #include <errno.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 
@@ -58,9 +57,11 @@ int usetk;
 #define TCL_RELEASE_LEVEL 8
 #endif
 
+#ifdef SUNOS
 /* The following variable is a special hack that is needed in order for Sun
    shared libraries to be used for Tcl. */
 int *tclDummyMathPtr = (int *) matherr;
+#endif
 
 int done 	= 0;
 int Interactive = 1;
@@ -275,6 +276,7 @@ Read_Pilot(ClientData clientData, int mask)
 			int 	y,
 				x;
 			char 	buffer[8192];
+
 			Tk_PhotoImageBlock block;
 			Tk_PhotoHandle handle;
 
@@ -1609,54 +1611,15 @@ Tcl_AppInit(myinterp)
   }
 
   Tcl_VarEval(interp,"\
-proc Say {text} {
-	global Interactive
-	if {$Interactive} {
-	  puts "$text"
-	} else {
-	  upvar result result
-	  set result "$result$text"
-	}
-}
-
-proc interactive {args} {
-	global Interactive
-	global errorInfo
-	set hold $Interactive
-	set Interactive 1
-	set code [catch $args message]
-	set Interactive $hold
-	error $message $errorInfo $code
-}
-
-proc noninteractive {args} {
-	global Interactive
-	global errorInfo
-	set hold $Interactive
-	set Interactive 0
-	set code [catch $args message]
-	set Interactive $hold
-	error $message $errorInfo $code
-}
-
-set Interactive 1
-
-proc bgerror {msg} {
-	Say $msg
-}
-
-proc checkup {} {
-	catch {noninteractive battery}
-	after 10000 checkup
-}
-
-after 1000 checkup
-
-proc checkupin {time} {
-	after $time {catch {noninteractive battery}}
-}
-
-",NULL);     
+proc Say {text} {\
+	global Interactive\
+	if {$Interactive} {\
+	  puts $text\
+	} else {\
+	  upvar result result\
+	  set result $result$text\
+	}\
+}",NULL);     
 
   Tcl_LinkVar(interp, "Interactive", (char*)&Interactive, TCL_LINK_INT);
 
@@ -1668,49 +1631,58 @@ proc checkupin {time} {
     Tcl_VarEval(interp,"set tkdbg 0", NULL);
 #endif
 
-  Say("Welcome to pilot-debug!\n\n\
-       Type 'help' for further information.\n\
-       Type 'exit' to quit the application\n\n");
-  
+static char welcomeScript[] = 
+	"Welcome to pilot-debug!\n\n"
+	"\tType 'help' for further information.\n"
+	"\tType 'exit' to quit the application\n\n";
+
+Say(welcomeScript);
+
 #if 0
-  Say("\tWelcome to pilot-debug!\n\n\
+static char welcomeScriptDebug[] = 
+	"\tWelcome to pilot-debug!\n\n"
 
-Please connect your Palm and start console or debugging mode.\n\n\
+	"Please connect your Palm and start console or debugging mode.\n\n"
 
-(Console mode is a background task that can respond to a few commands,\n
-most importantly RPC which lets any function on the Palm be invoked. The\n
-Palm operates as usual while console mode is active, except that since\n
-the serial port is held open, HotSync and other applications that use\n
-the serial port will not work. Debug mode is activated on demand or when\n
-the Palm crashes. In debug mode, the CPU is halted, and no commands may\n
-be executed, except via a debugging console like this one.)\n\n\
+	"(Console mode is a background task that can respond to a few\n"
+	"commands, most importantly RPC which lets any function on the Palm\n"
+	"be invoked. The Palm operates as usual while console mode is active,\n"
+	"except that since the serial port is held open, HotSync and other\n"
+	"applications that use the serial port will not work. Debug mode is\n"
+	"activated on demand or when the Palm crashes. In debug mode, the CPU\n"
+	"is halted, and no commands may be executed, except via a debugging\n"
+	"console like this one.)\n\n"
 
-In the absence of special utilities, the console can be started by the\n
-".2" shortcut, and debugging via ".1". To clear either mode,\n
-reboot via the reset button. If console mode is active, you may also\n
-reboot via the "coldboot" or "warmboot" commands.\n\n\
+	"In the absence of special utilities, the console can be started by\n"
+	"the ".2\" shortcut, and debugging via \".1\". To clear either mode,\n"
+	"reboot via the reset button. If console mode is active, you may also\n"
+	"reboot via the "coldboot" or "warmboot" commands.\n\n"
 
-The Remote UI window lets you manipulate the Palm if console mode is\n
-active. By clicking the mouse button on the screen or buttons, you can\n
-simulate pen taps, and if you type anything while the window has the\n
-focus, the Palm will receive the keystrokes.\n\n\
+	"The Remote UI window lets you manipulate the Palm if console mode is\n"
+	"active. By clicking the mouse button on the screen or buttons, you\n"
+	"can simulate pen taps, and if you type anything while the window has\n"
+	"the focus, the Palm will receive the keystrokes.\n\n"
 
-The Remote Console window is specifically for the transmission and\n
-reception of console packets. Pressing Return on a line will transmit\n
-it, and any incoming packets will be displayed here in addition to the\n
-Debug Console.\n\n\
+	"The Remote Console window is specifically for the transmission and\n"
+	"reception of console packets. Pressing Return on a line will\n"
+	"transmit it, and any incoming packets will be displayed here in\n"
+	"addition to the Debug Console.\n\n"
 
-The Remote State window shows the current Palm CPU state. It is only\n
-updated on request or when the Palm halts.\n\n\
+	"The Remote State window shows the current Palm CPU state. It is only\n"
+	"updated on request or when the Palm halts.\n\n"
 
+	"The Debugging Console window is the primary interface for\n"
+	"pilot-debug.  Pressing Return on a line that contains text will\n"
+	"execute that line as a Tcl command. (Try 'expr 3+4'.) All of the\n"
+	"usual Tcl and Tk commands are available, as well as some\n"
+	"special-purpose ones, including 'help', 'coldboot', 'warmboot',\n"
+	"'attach', 't', and 'g', (the last one continues after the Palm\n"
+	"halts.)\n\n"
 
-The Debugging Console window is the primary interface for pilot-debug.\n
-Pressing Return on a line that contains text will execute that line as\n
-a Tcl command. (Try 'expr 3+4'.) All of the usual Tcl and Tk commands\n
-are available, as well as some special-purpose ones, including 'help',\n
-'coldboot', 'warmboot', 'attach', 't', and 'g', (the last one continues\n
-after the Palm halts.)\n\n\ Execute 'help' for the list of commands\n
-currently implemented.\n\n\ "); 
+	"Execute 'help' for the list of commands currently implemented.\n\n";
+
+Say(welcomeScriptDebug);
+
 #endif
 
     /* Specify a user-specific startup file to invoke if the application is
@@ -1720,26 +1692,27 @@ currently implemented.\n\n\ ");
 
     Tcl_SetVar(interp, "tcl_rcFileName", "~/.pdebugrc", TCL_GLOBAL_ONLY);
 
-    Tcl_VarEval(interp,"\
-      set tcl_prompt1 myprompt
-      proc myprompt {} {
-        puts -nonewline "pilot-debug> "
-      }
+
+	static char debugPrompt[] = 
+		"set tcl_prompt1 myprompt"
+		"proc myprompt {} {"
+		"puts -nonewline \"pilot-debug> \""
+		"}";
       
-    ",NULL);
+   Tcl_VarEval(interp, debugPrompt, NULL);
 
     /* Deal with command-line arguments */
+	static char commandArgs[] =
+		"if {$argc > 0} {"
+			"set p [lindex $argv 0]"
+			"set argv [lrange $argv 1 end]"
+			"port $p"
+		"} else {"
+			"Say \"As you have not entered a serial port on the command like, you might like to"
+			"set one with 'port /dev/something'\n\n\""
+		"}";
 
-    Tcl_VarEval(interp,"\
-      if {$argc > 0} {
-        set p [lindex $argv 0]
-        set argv [lrange $argv 1 end]
-        port $p
-      } else {
-        Say "As you have not entered a serial port on the command like, you might like to \
-set one with 'port /dev/something'\\n\\n"
-      }
-    ",NULL);
+   Tcl_VarEval(interp, commandArgs, NULL);
         
     return TCL_OK;
 }
