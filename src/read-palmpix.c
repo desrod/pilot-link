@@ -1,3 +1,4 @@
+/* ex: set tabstop=4 expandtab: */
 /* 
  * read-palmpix.c:  PalmPix image convertor
  *
@@ -530,7 +531,8 @@ int main (int argc, char **argv) {
 		print_splash(progname);
 		return 0;
 	case 'p':
-		port = optarg;
+		free(port);
+		port = strdup(optarg);
 		break;
 	case 'l':
 		action = list;
