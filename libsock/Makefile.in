@@ -1,42 +1,33 @@
+prefix 		= @prefix@
+exec_prefix 	= ${prefix}
+libdir 		= @libdir@
+srcdir 		= @srcdir@
+VPATH 		= @srcdir@
+O 		= lo
+SOCKOBJS 	= socket.$(O) serial.$(O) inetserial.$(O) slp.$(O) padp.$(O) \
+		  dlp.$(O) cmp.$(O) syspkt.$(O) inet.$(O) money.$(O)
+FILEOBJS 	= pi-file.$(O)
+PIHEADER 	= pi-header.$(O)
+APPOBJS 	= datebook.$(O) memo.$(O) address.$(O) todo.$(O) \
+		  expense.$(O) mail.$(O) sync.$(O) appinfo.$(O) hinote.$(O)
+UTILOBJS 	= utils.$(O) util.$(O)
+MD5 		= md5.$(O)
+SERIAL 		= unixserial.$(O)
+OBJS 		= $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(PIHEADER) $(UTILOBJS) $(MD5) $(SERIAL)
+top_builddir 	= ..
 
-O = lo
+CC 		= @CC@
+CFLAGS 		= -I../include -I$(srcdir)/../include @CFLAGS@ @CWFLAG@
 
-SOCKOBJS = socket.$(O) serial.$(O) inetserial.$(O) slp.$(O) padp.$(O) \
-       dlp.$(O) cmp.$(O) syspkt.$(O) inet.$(O) money.$(O)
-
-FILEOBJS = pi-file.$(O)
-
-PIHEADER = pi-header.$(O)
-
-APPOBJS = datebook.$(O) memo.$(O) address.$(O) todo.$(O) expense.$(O) mail.$(O) sync.$(O) appinfo.$(O) hinote.$(O)
-
-UTILOBJS = utils.$(O) util.$(O)
-
-MD5 = md5.$(O)
-
-SERIAL = unixserial.$(O)
-
-OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(PIHEADER) $(UTILOBJS) $(MD5) $(SERIAL)
-
-prefix = @prefix@
-exec_prefix = ${prefix}
-libdir = @libdir@
-srcdir = @srcdir@
-VPATH = @srcdir@
-
-top_builddir = ..
-
-CC = @CC@
-CFLAGS = -I../include -I$(srcdir)/../include @CFLAGS@ @CWFLAG@
 # -DPADP_TRACE
 # -DDEBUG
 # -DNO_DLP_TRACE
 # -DNO_SERIAL_TRACE
-AR = ar
-ARFLAGS = @ARFLAGS@
-RANLIB = @RANLIB@
-RM = rm -f
-LIBTOOL = @LIBTOOL@
+AR 		= ar
+ARFLAGS 	= @ARFLAGS@
+RANLIB 		= @RANLIB@
+RM 		= rm -f
+LIBTOOL 	= @LIBTOOL@
 
 .SUFFIXES: .c .lo .o
 
@@ -93,82 +84,83 @@ depend:
 #Dependencies
 address.o address.lo: address.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-address.h ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-address.h ../include/pi-appinfo.h
 appinfo.o appinfo.lo: appinfo.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-appinfo.h
 cmp.o cmp.lo: cmp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-padp.h \
- ../include/pi-cmp.h ../include/pi-serial.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-padp.h ../include/pi-cmp.h ../include/pi-serial.h
 datebook.o datebook.lo: datebook.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-datebook.h ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-datebook.h ../include/pi-appinfo.h
 dlp.o dlp.lo: dlp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-syspkt.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-syspkt.h
 expense.o expense.lo: expense.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-expense.h ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-expense.h ../include/pi-appinfo.h
 hinote.o hinote.lo: hinote.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-hinote.h ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-hinote.h ../include/pi-appinfo.h
 inet.o inet.lo: inet.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-inet.h \
- ../include/pi-slp.h ../include/pi-syspkt.h ../include/pi-padp.h \
- ../include/pi-dlp.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-inet.h ../include/pi-slp.h ../include/pi-syspkt.h \
+ ../include/pi-padp.h ../include/pi-dlp.h
 inetserial.o inetserial.lo: inetserial.c ../include/pi-source.h \
  ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
  ../include/pi-version.h ../include/pi-sockaddr.h \
- ../include/pi-macros.h ../include/pi-serial.h \
+ ../include/pi-macros.h ../include/i18n.h ../include/pi-serial.h \
  ../include/pi-inetserial.h ../include/pi-slp.h ../include/pi-syspkt.h \
  ../include/pi-padp.h
 mail.o mail.lo: mail.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-mail.h ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-mail.h ../include/pi-appinfo.h
 md5.o md5.lo: md5.c ../include/pi-md5.h
 memo.o memo.lo: memo.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-memo.h ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-memo.h ../include/pi-appinfo.h
 money.o money.lo: money.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-money.h ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-money.h ../include/pi-appinfo.h
 os2serial.o os2serial.lo: os2serial.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
  ../include/pi-serial.h ../include/pi-slp.h ../include/pi-syspkt.h \
  ../include/pi-padp.h
 padp.o padp.lo: padp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-padp.h \
- ../include/pi-slp.h ../include/pi-serial.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-padp.h ../include/pi-slp.h ../include/pi-serial.h
 pi-file.o pi-file.lo: pi-file.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-file.h \
- ../include/pi-dlp.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-file.h ../include/pi-dlp.h
 pi-header.o pi-header.lo: pi-header.c ../include/pi-version.h
 serial.o serial.lo: serial.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
  ../include/pi-serial.h ../include/pi-inetserial.h \
  ../include/pi-padp.h ../include/pi-cmp.h ../include/pi-dlp.h \
  ../include/pi-syspkt.h
 slp.o slp.lo: slp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-slp.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-slp.h
 socket.o socket.lo: socket.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
  ../include/pi-serial.h ../include/pi-inetserial.h \
  ../include/pi-inet.h ../include/pi-padp.h ../include/pi-cmp.h \
  ../include/pi-dlp.h ../include/pi-syspkt.h
@@ -176,23 +168,23 @@ sync.o sync.lo: sync.c ../include/pi-dlp.h ../include/pi-args.h \
  ../include/pi-macros.h ../include/pi-sync.h
 syspkt.o syspkt.lo: syspkt.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
  ../include/pi-syspkt.h ../include/pi-slp.h ../include/pi-serial.h
 todo.o todo.lo: todo.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-todo.h ../include/pi-appinfo.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
+ ../include/pi-dlp.h ../include/pi-todo.h ../include/pi-appinfo.h
 unixserial.o unixserial.lo: unixserial.c ../include/pi-source.h \
  ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
  ../include/pi-version.h ../include/pi-sockaddr.h \
- ../include/pi-macros.h ../include/pi-serial.h ../include/pi-slp.h \
- ../include/pi-syspkt.h ../include/pi-padp.h
+ ../include/pi-macros.h ../include/i18n.h ../include/pi-serial.h \
+ ../include/pi-slp.h ../include/pi-syspkt.h ../include/pi-padp.h
 util.o util.lo: util.c ../include/pi-config.h ../include/pi-util.h \
  ../include/pi-args.h
 utils.o utils.lo: utils.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h
 winserial.o winserial.lo: winserial.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
  ../include/pi-serial.h ../include/pi-slp.h ../include/pi-padp.h

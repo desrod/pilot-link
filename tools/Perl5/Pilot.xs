@@ -330,394 +330,394 @@ SvChar4(arg)
 	}
 }
 
-#define pack_dbinfo(arg, var, failure)		\
-	{										\
-		if (failure < 0)  {					\
-		   arg = &sv_undef;					\
-		   self->errnop = failure;			\
-		} else {							\
-			HV * i = newHV();									\
-			hv_store(i, "more", 4, newSViv(var.more), 0);		\
-	    	hv_store(i, "flagReadOnly", 12, newSViv((var.flags & dlpDBFlagReadOnly)!=0), 0);		\
-	    	hv_store(i, "flagResource", 12, newSViv((var.flags & dlpDBFlagResource)!=0), 0);		\
-	    	hv_store(i, "flagBackup", 10, newSViv((var.flags & dlpDBFlagBackup)!=0), 0);			\
-	    	hv_store(i, "flagOpen", 8, newSViv((var.flags & dlpDBFlagOpen)!=0), 0);					\
-	    	hv_store(i, "flagAppInfoDirty", 16, newSViv((var.flags & dlpDBFlagAppInfoDirty)!=0), 0);\
-	    	hv_store(i, "flagNewer", 9, newSViv((var.flags & dlpDBFlagNewer)!=0), 0);				\
-	    	hv_store(i, "flagReset", 9, newSViv((var.flags & dlpDBFlagReset)!=0), 0);				\
-         hv_store(i, "flagCopyPrevention", 18, newSViv((var.flags & dlpDBFlagCopyPrevention)!=0), 0); \
-         hv_store(i, "flagStream", 10, newSViv((var.flags & dlpDBFlagStream)!=0), 0);                    \
-	    	hv_store(i, "flagExcludeFromSync", 19, newSViv((var.miscFlags & dlpDBMiscFlagExcludeFromSync)!=0), 0);	\
-	    	hv_store(i, "type", 4, newSVChar4(var.type), 0);				\
-	    	hv_store(i, "creator", 7, newSVChar4(var.creator), 0);			\
-	    	hv_store(i, "version", 7, newSViv(var.version), 0);				\
-	    	hv_store(i, "modnum", 6, newSViv(var.modnum), 0);				\
-	    	hv_store(i, "index", 5, newSViv(var.index), 0);					\
-	    	hv_store(i, "createDate", 10, newSViv(var.createDate), 0);		\
-	    	hv_store(i, "modifyDate", 10, newSViv(var.modifyDate), 0);		\
-	    	hv_store(i, "backupDate", 10, newSViv(var.backupDate), 0);		\
-	    	hv_store(i, "name", 4, newSVpv(var.name, 0), 0);				\
-			arg = newRV_noinc((SV*)i);										\
-		}	\
-	}
-
-#define unpack_dbinfo(arg, var)										\
-	if ((SvTYPE(arg) == SVt_RV) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {	\
-	    HV * i = (HV*)SvRV(arg);									\
-	    SV ** s;													\
-	    var.more = (s = hv_fetch(i, "more", 4, 0)) ? SvIV(*s) : 0;	\
-	    var.flags = 												\
-	    	(((s = hv_fetch(i, "flagReadOnly", 12, 0)) && SvTRUE(*s)) ? dlpDBFlagReadOnly : 0)|		\
-	    	(((s = hv_fetch(i, "flagResource", 12, 0)) && SvTRUE(*s)) ? dlpDBFlagResource : 0)|		\
-	    	(((s = hv_fetch(i, "flagBackup", 10, 0)) && SvTRUE(*s)) ? dlpDBFlagBackup : 0)|			\
-	    	(((s = hv_fetch(i, "flagOpen", 8, 0)) && SvTRUE(*s)) ? dlpDBFlagOpen : 0)	|			\
-	    	(((s = hv_fetch(i, "flagAppInfoDirty", 16, 0)) && SvTRUE(*s)) ? dlpDBFlagAppInfoDirty : 0)	|\
-	    	(((s = hv_fetch(i, "flagNewer", 9, 0)) && SvTRUE(*s)) ? dlpDBFlagNewer : 0)	|			\
-	    	(((s = hv_fetch(i, "flagReset", 9, 0)) && SvTRUE(*s)) ? dlpDBFlagReset : 0) |		\
-         (((s = hv_fetch(i, "flagCopyPrevention", 18, 0)) && SvTRUE(*s)) ? dlpDBFlagCopyPrevention : 0) |\
-         (((s = hv_fetch(i, "flagStream", 10, 0)) && SvTRUE(*s)) ? dlpDBFlagStream : 0) |                \
-	    	0;\
-	    var.miscFlags = \
-	    	 (((s = hv_fetch(i, "flagExcludeFromSync", 19, 0)) && SvTRUE(*s)) ? dlpDBMiscFlagExcludeFromSync : 0);	\
-	    var.type = (s = hv_fetch(i, "type", 4, 0)) ? SvChar4(*s) : 0;	\
-	    var.creator = (s = hv_fetch(i, "creator", 7, 0)) ? SvChar4(*s) : 0;	\
-	    var.version = (s = hv_fetch(i, "version", 7, 0)) ? SvIV(*s) : 0;	\
-	    var.modnum = (s = hv_fetch(i, "modnum", 6, 0)) ? SvIV(*s) : 0;	\
-	    var.index = (s = hv_fetch(i, "index", 5, 0)) ? SvIV(*s) : 0;	\
-	    var.createDate = (s = hv_fetch(i, "createDate", 10, 0)) ? SvIV(*s) : 0;	\
-	    var.modifyDate = (s = hv_fetch(i, "modifyDate", 10, 0)) ? SvIV(*s) : 0;	\
-	    var.backupDate = (s = hv_fetch(i, "backupDate", 10, 0)) ? SvIV(*s) : 0;	\
-	    if ((s = hv_fetch(i, "name", 4, 0)) ? SvPV(*s,na) : 0)	\
-	    	strcpy(var.name, SvPV(*s, na));	\
-	} else	{\
-		croak("argument is not a hash reference"); \
-	}
-
-#define pack_userinfo(arg, var, failure)	\
-	{	\
-		if (failure < 0)  {	\
-		   arg = &sv_undef;	\
+#define pack_dbinfo(arg, var, failure)\
+	{\
+		if (failure < 0)  {\
+		   arg = &sv_undef;\
 		   self->errnop = failure;\
-		} else {	\
-			HV * i = newHV();	\
-			hv_store(i, "userID", 6, newSViv(var.userID), 0);	\
-	    	hv_store(i, "viewerID", 8, newSViv(var.viewerID), 0);	\
-	    	hv_store(i, "lastSyncPC", 10, newSViv(var.lastSyncPC), 0);	\
-	    	hv_store(i, "successfulSyncDate", 18, newSViv(var.successfulSyncDate), 0);	\
-	    	hv_store(i, "lastSyncDate", 12, newSViv(var.lastSyncDate), 0);	\
-	    	hv_store(i, "name", 4, newSVpv(var.username,0), 0);	\
-	    	hv_store(i, "password", 8, newSVpv(var.password,var.passwordLength), 0);	\
-			arg = newRV_noinc((SV*)i);	\
-		}	\
+		} else {\
+			HV * i = newHV();\
+			hv_store(i, "more", 4, newSViv(var.more), 0);\
+	    	hv_store(i, "flagReadOnly", 12, newSViv((var.flags & dlpDBFlagReadOnly)!=0), 0);\
+	    	hv_store(i, "flagResource", 12, newSViv((var.flags & dlpDBFlagResource)!=0), 0);\
+	    	hv_store(i, "flagBackup", 10, newSViv((var.flags & dlpDBFlagBackup)!=0), 0);\
+	    	hv_store(i, "flagOpen", 8, newSViv((var.flags & dlpDBFlagOpen)!=0), 0);\
+	    	hv_store(i, "flagAppInfoDirty", 16, newSViv((var.flags & dlpDBFlagAppInfoDirty)!=0), 0);\
+	    	hv_store(i, "flagNewer", 9, newSViv((var.flags & dlpDBFlagNewer)!=0), 0);\
+	    	hv_store(i, "flagReset", 9, newSViv((var.flags & dlpDBFlagReset)!=0), 0);\
+         hv_store(i, "flagCopyPrevention", 18, newSViv((var.flags & dlpDBFlagCopyPrevention)!=0), 0);\
+         hv_store(i, "flagStream", 10, newSViv((var.flags & dlpDBFlagStream)!=0), 0);\
+	    	hv_store(i, "flagExcludeFromSync", 19, newSViv((var.miscFlags & dlpDBMiscFlagExcludeFromSync)!=0), 0);\
+	    	hv_store(i, "type", 4, newSVChar4(var.type), 0);\
+	    	hv_store(i, "creator", 7, newSVChar4(var.creator), 0);\
+	    	hv_store(i, "version", 7, newSViv(var.version), 0);\
+	    	hv_store(i, "modnum", 6, newSViv(var.modnum), 0);\
+	    	hv_store(i, "index", 5, newSViv(var.index), 0);\
+	    	hv_store(i, "createDate", 10, newSViv(var.createDate), 0);\
+	    	hv_store(i, "modifyDate", 10, newSViv(var.modifyDate), 0);\
+	    	hv_store(i, "backupDate", 10, newSViv(var.backupDate), 0);\
+	    	hv_store(i, "name", 4, newSVpv(var.name, 0), 0);\
+			arg = newRV_noinc((SV*)i);\
+		}\
 	}
 
-#define unpack_userinfo(arg, var)	\
-	if ((SvTYPE(arg) == SVt_RV) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {	\
-	    HV * i = (HV*)SvRV(arg);	\
-	    SV ** s;	\
-	    var.userID = (s = hv_fetch(i, "userID", 6, 0)) ? SvIV(*s) : 0;	\
-	    var.viewerID = (s = hv_fetch(i, "viewerID", 8, 0)) ? SvIV(*s) : 0;	\
-	    var.lastSyncPC = (s = hv_fetch(i, "lastSyncPC", 10, 0)) ? SvIV(*s) : 0;	\
-	    var.lastSyncDate = (s = hv_fetch(i, "lastSyncDate", 12, 0)) ? SvIV(*s) : 0;	\
-	    var.successfulSyncDate = (s = hv_fetch(i, "successfulSyncDate", 18, 0)) ? SvIV(*s) : 0;	\
-	    if ((s = hv_fetch(i, "name", 4, 0)) ? SvPV(*s,na) : 0)	\
-	    	strcpy(var.username, SvPV(*s, na));	\
+#define unpack_dbinfo(arg, var)\
+	if ((SvTYPE(arg) == SVt_RV) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {\
+	    HV * i = (HV*)SvRV(arg);\
+	    SV ** s;\
+	    var.more = (s = hv_fetch(i, "more", 4, 0)) ? SvIV(*s) : 0;\
+	    var.flags =\
+	    	(((s = hv_fetch(i, "flagReadOnly", 12, 0)) && SvTRUE(*s)) ? dlpDBFlagReadOnly : 0)|\
+	    	(((s = hv_fetch(i, "flagResource", 12, 0)) && SvTRUE(*s)) ? dlpDBFlagResource : 0)|\
+	    	(((s = hv_fetch(i, "flagBackup", 10, 0)) && SvTRUE(*s)) ? dlpDBFlagBackup : 0)|\
+	    	(((s = hv_fetch(i, "flagOpen", 8, 0)) && SvTRUE(*s)) ? dlpDBFlagOpen : 0)	|\
+	    	(((s = hv_fetch(i, "flagAppInfoDirty", 16, 0)) && SvTRUE(*s)) ? dlpDBFlagAppInfoDirty : 0)	|\
+	    	(((s = hv_fetch(i, "flagNewer", 9, 0)) && SvTRUE(*s)) ? dlpDBFlagNewer : 0)	|\
+	    	(((s = hv_fetch(i, "flagReset", 9, 0)) && SvTRUE(*s)) ? dlpDBFlagReset : 0) |\
+         (((s = hv_fetch(i, "flagCopyPrevention", 18, 0)) && SvTRUE(*s)) ? dlpDBFlagCopyPrevention : 0) |\
+         (((s = hv_fetch(i, "flagStream", 10, 0)) && SvTRUE(*s)) ? dlpDBFlagStream : 0) |\
+	    	0;\
+	    var.miscFlags =\
+	    	 (((s = hv_fetch(i, "flagExcludeFromSync", 19, 0)) && SvTRUE(*s)) ? dlpDBMiscFlagExcludeFromSync : 0);\
+	    var.type = (s = hv_fetch(i, "type", 4, 0)) ? SvChar4(*s) : 0;\
+	    var.creator = (s = hv_fetch(i, "creator", 7, 0)) ? SvChar4(*s) : 0;\
+	    var.version = (s = hv_fetch(i, "version", 7, 0)) ? SvIV(*s) : 0;\
+	    var.modnum = (s = hv_fetch(i, "modnum", 6, 0)) ? SvIV(*s) : 0;\
+	    var.index = (s = hv_fetch(i, "index", 5, 0)) ? SvIV(*s) : 0;\
+	    var.createDate = (s = hv_fetch(i, "createDate", 10, 0)) ? SvIV(*s) : 0;\
+	    var.modifyDate = (s = hv_fetch(i, "modifyDate", 10, 0)) ? SvIV(*s) : 0;\
+	    var.backupDate = (s = hv_fetch(i, "backupDate", 10, 0)) ? SvIV(*s) : 0;\
+	    if ((s = hv_fetch(i, "name", 4, 0)) ? SvPV(*s,na) : 0)\
+	    	strcpy(var.name, SvPV(*s, na));\
 	} else	{\
-		croak("argument is not a hash reference"); \
+		croak("argument is not a hash reference");\
 	}
 
-#define PackAI	 											\
-	    {													\
-	    	HV * h;											\
-	    	if (SvRV(data) &&	 							\
-	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {	\
-	    		int count;									\
-	        	PUSHMARK(sp);								\
-	          	XPUSHs(data);								\
-		    	PUTBACK;									\
-		    	count = perl_call_method("Pack", G_SCALAR);	\
-		    	SPAGAIN;									\
-		    	if (count != 1)								\
-		    		croak("Unable to pack app block");		\
-		    	data = POPs;								\
-		    	PUTBACK;									\
-	        }												\
-	        else {											\
-		    		croak("Unable to pack app block");		\
-	        }												\
+#define pack_userinfo(arg, var, failure)\
+	{\
+		if (failure < 0)  {\
+		   arg = &sv_undef;\
+		   self->errnop = failure;\
+		} else {\
+			HV * i = newHV();\
+			hv_store(i, "userID", 6, newSViv(var.userID), 0);\
+	    	hv_store(i, "viewerID", 8, newSViv(var.viewerID), 0);\
+	    	hv_store(i, "lastSyncPC", 10, newSViv(var.lastSyncPC), 0);\
+	    	hv_store(i, "successfulSyncDate", 18, newSViv(var.successfulSyncDate), 0);\
+	    	hv_store(i, "lastSyncDate", 12, newSViv(var.lastSyncDate), 0);\
+	    	hv_store(i, "name", 4, newSVpv(var.username,0), 0);\
+	    	hv_store(i, "password", 8, newSVpv(var.password,var.passwordLength), 0);\
+			arg = newRV_noinc((SV*)i);\
+		}\
+	}
+
+#define unpack_userinfo(arg, var)\
+	if ((SvTYPE(arg) == SVt_RV) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {\
+	    HV * i = (HV*)SvRV(arg);\
+	    SV ** s;\
+	    var.userID = (s = hv_fetch(i, "userID", 6, 0)) ? SvIV(*s) : 0;\
+	    var.viewerID = (s = hv_fetch(i, "viewerID", 8, 0)) ? SvIV(*s) : 0;\
+	    var.lastSyncPC = (s = hv_fetch(i, "lastSyncPC", 10, 0)) ? SvIV(*s) : 0;\
+	    var.lastSyncDate = (s = hv_fetch(i, "lastSyncDate", 12, 0)) ? SvIV(*s) : 0;\
+	    var.successfulSyncDate = (s = hv_fetch(i, "successfulSyncDate", 18, 0)) ? SvIV(*s) : 0;\
+	    if ((s = hv_fetch(i, "name", 4, 0)) ? SvPV(*s,na) : 0)\
+	    	strcpy(var.username, SvPV(*s, na));\
+	} else	{\
+		croak("argument is not a hash reference");\
+	}
+
+#define PackAI\
+	    {\
+	    	HV * h;\
+	    	if (SvRV(data) &&\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {\
+	    		int count;\
+	        	PUSHMARK(sp);\
+	          	XPUSHs(data);\
+		    	PUTBACK;\
+		    	count = perl_call_method("Pack", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to pack app block");\
+		    	data = POPs;\
+		    	PUTBACK;\
+	        }\
+	        else {\
+		    		croak("Unable to pack app block");\
+	        }\
 	    }
 
-#define ReturnReadAI(buf,size) 									\
-	    if (result >=0) {										\
-	    	if (self->Class) {									\
-	    		int count;										\
-	    		PUSHMARK(sp);									\
-	    		XPUSHs(self->Class);							\
-	    		XPUSHs(newSVpv(buf, size));						\
-		    	PUTBACK;										\
-		    	count = perl_call_method("appblock", G_SCALAR);	\
-		    	SPAGAIN;										\
-		    	if (count != 1)									\
-		    		croak("Unable to create appblock");			\
-	    	}													\
-	    	else {												\
-	    		croak("Class not defined");						\
-	    	}													\
-		} else {												\
-	    	self->errnop = result;								\
-	    	PUSHs(&sv_undef);									\
+#define ReturnReadAI(buf,size)\
+	    if (result >=0) {\
+	    	if (self->Class) {\
+	    		int count;\
+	    		PUSHMARK(sp);\
+	    		XPUSHs(self->Class);\
+	    		XPUSHs(newSVpv(buf, size));\
+		    	PUTBACK;\
+		    	count = perl_call_method("appblock", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to create appblock");\
+	    	}\
+	    	else {\
+	    		croak("Class not defined");\
+	    	}\
+		} else {\
+	    	self->errnop = result;\
+	    	PUSHs(&sv_undef);\
 	    }
 
-#define PackSI	 											\
-	    {													\
-	    	HV * h;											\
-	    	if (SvRV(data) &&	 							\
-	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {	\
-	    		int count;									\
-	        	PUSHMARK(sp);								\
-	          	XPUSHs(data);								\
-		    	PUTBACK;									\
-		    	count = perl_call_method("Pack", G_SCALAR);	\
-		    	SPAGAIN;									\
-		    	if (count != 1)								\
-		    		croak("Unable to pack sort block");		\
-		    	data = POPs;								\
-		    	PUTBACK;									\
-	        }												\
-	        else {											\
-		    		croak("Unable to pack sort block");		\
-	        }												\
+#define PackSI\
+	    {\
+	    	HV * h;\
+	    	if (SvRV(data) &&\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {\
+	    		int count;\
+	        	PUSHMARK(sp);\
+	          	XPUSHs(data);\
+		    	PUTBACK;\
+		    	count = perl_call_method("Pack", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to pack sort block");\
+		    	data = POPs;\
+		    	PUTBACK;\
+	        }\
+	        else {\
+		    		croak("Unable to pack sort block");\
+	        }\
 	    }
 
-#define ReturnReadSI(buf,size) 									\
-	    if (result >=0) {										\
-	    	if (self->Class) {									\
-	    		int count;										\
-	    		PUSHMARK(sp);									\
-	    		XPUSHs(self->Class);							\
-	    		XPUSHs(newSVpv(buf, size));						\
-		    	PUTBACK;										\
+#define ReturnReadSI(buf,size)\
+	    if (result >=0) {\
+	    	if (self->Class) {\
+	    		int count;\
+	    		PUSHMARK(sp);\
+	    		XPUSHs(self->Class);\
+	    		XPUSHs(newSVpv(buf, size));\
+		    	PUTBACK;\
 		    	count = perl_call_method("sortblock", G_SCALAR);\
-		    	SPAGAIN;										\
-		    	if (count != 1)									\
-		    		croak("Unable to create sortblock");		\
-	    	}													\
-	    	else {												\
-	    		croak("Class not defined");						\
-	    	}													\
-		} else {												\
-	    	self->errnop = result;								\
-	    	PUSHs(&sv_undef);									\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to create sortblock");\
+	    	}\
+	    	else {\
+	    		croak("Class not defined");\
+	    	}\
+		} else {\
+	    	self->errnop = result;\
+	    	PUSHs(&sv_undef);\
 	    }
 
-#define PackRecord 											\
-	    {													\
-	    	HV * h;											\
-	    	if (SvRV(data) &&	 							\
-	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {	\
-	    		int count;									\
-	    		SV ** s;									\
-	    		if (!(s = hv_fetch(h, "id", 2, 0)) || !SvOK(*s))	\
-	    			croak("record must contain id");		\
-    			id = SvIV(*s);								\
-    			attr = 0;									\
+#define PackRecord\
+	    {\
+	    	HV * h;\
+	    	if (SvRV(data) &&\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {\
+	    		int count;\
+	    		SV ** s;\
+	    		if (!(s = hv_fetch(h, "id", 2, 0)) || !SvOK(*s))\
+	    			croak("record must contain id");\
+    			id = SvIV(*s);\
+    			attr = 0;\
 	    		if (!(s = hv_fetch(h, "secret", 6, 0)) || !SvOK(*s))\
-	    			croak("record must contain secret");			\
-    			attr |= SvIV(*s) ? dlpRecAttrSecret : 0;			\
-	    		if (!(s = hv_fetch(h, "deleted", 7, 0)) || !SvOK(*s))	\
-	    			croak("record must contain deleted");			\
-    			attr |= SvIV(*s) ? dlpRecAttrDeleted : 0;			\
-	    		if (!(s = hv_fetch(h, "modified", 8, 0)) || !SvOK(*s))	\
-	    			croak("record must contain modified");			\
-    			attr |= SvIV(*s) ? dlpRecAttrDirty : 0;				\
-	    		if (!(s = hv_fetch(h, "busy", 4, 0)) || !SvOK(*s))	\
-	    			croak("record must contain busy");			\
-    			attr |= SvIV(*s) ? dlpRecAttrBusy : 0;				\
-	    		if (!(s = hv_fetch(h, "archived", 8, 0)) || !SvOK(*s))	\
-	    			croak("record must contain archived");			\
-    			attr |= SvIV(*s) ? dlpRecAttrArchived : 0;			\
-	    		if (!(s = hv_fetch(h, "category", 8, 0)) || !SvOK(*s))	\
-	    			croak("record must contain category");	\
-    			category = SvIV(*s);						\
-	        	PUSHMARK(sp);								\
-	          	XPUSHs(data);								\
-		    	PUTBACK;									\
-		    	count = perl_call_method("Pack", G_SCALAR);	\
-		    	SPAGAIN;									\
-		    	if (count != 1)								\
-		    		croak("Unable to pack record");			\
-		    	data = POPs;								\
-		    	PUTBACK;									\
-	        }												\
-	        else {											\
-		    		croak("Unable to pack record");			\
-	        }												\
+	    			croak("record must contain secret");\
+    			attr |= SvIV(*s) ? dlpRecAttrSecret : 0;\
+	    		if (!(s = hv_fetch(h, "deleted", 7, 0)) || !SvOK(*s))\
+	    			croak("record must contain deleted");\
+    			attr |= SvIV(*s) ? dlpRecAttrDeleted : 0;\
+	    		if (!(s = hv_fetch(h, "modified", 8, 0)) || !SvOK(*s))\
+	    			croak("record must contain modified");\
+    			attr |= SvIV(*s) ? dlpRecAttrDirty : 0;\
+	    		if (!(s = hv_fetch(h, "busy", 4, 0)) || !SvOK(*s))\
+	    			croak("record must contain busy");\
+    			attr |= SvIV(*s) ? dlpRecAttrBusy : 0;\
+	    		if (!(s = hv_fetch(h, "archived", 8, 0)) || !SvOK(*s))\
+	    			croak("record must contain archived");\
+    			attr |= SvIV(*s) ? dlpRecAttrArchived : 0;\
+	    		if (!(s = hv_fetch(h, "category", 8, 0)) || !SvOK(*s))\
+	    			croak("record must contain category");\
+    			category = SvIV(*s);\
+	        	PUSHMARK(sp);\
+	          	XPUSHs(data);\
+		    	PUTBACK;\
+		    	count = perl_call_method("Pack", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to pack record");\
+		    	data = POPs;\
+		    	PUTBACK;\
+	        }\
+	        else {\
+		    		croak("Unable to pack record");\
+	        }\
 	    }
 
-#define PackRaw												\
-	    {													\
-	    	HV * h;											\
-	    	if (SvRV(data) &&	 							\
-	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {	\
-	    		int count;									\
-	        	PUSHMARK(sp);								\
-	          	XPUSHs(data);								\
-		    	PUTBACK;									\
-		    	count = perl_call_method("Raw", G_SCALAR);	\
-		    	SPAGAIN;									\
-		    	if (count != 1)	{							\
-		    		SV ** s = hv_fetch(h, "raw", 3, 0);		\
-		    		if (s)									\
-		    			data = *s;							\
-		    	} else {									\
-			    	data = POPs;							\
-			    	PUTBACK;								\
-			    }											\
-	        }												\
+#define PackRaw\
+	    {\
+	    	HV * h;\
+	    	if (SvRV(data) &&\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {\
+	    		int count;\
+	        	PUSHMARK(sp);\
+	          	XPUSHs(data);\
+		    	PUTBACK;\
+		    	count = perl_call_method("Raw", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)	{\
+		    		SV ** s = hv_fetch(h, "raw", 3, 0);\
+		    		if (s)\
+		    			data = *s;\
+		    	} else {\
+			    	data = POPs;\
+			    	PUTBACK;\
+			    }\
+	        }\
 	    }
 
-#define ReturnReadRecord(buf,size) 								\
-	    if (result >=0) {										\
-	    	if (self->Class) {									\
-	    		int count;										\
-	    		SV * ret;										\
-	    		PUSHMARK(sp);									\
-	    		XPUSHs(self->Class);							\
-	    		XPUSHs(newSVpv(buf, size));						\
-		    	XPUSHs(sv_2mortal(newSViv(id)));				\
-		    	XPUSHs(sv_2mortal(newSViv(attr)));				\
-		    	XPUSHs(sv_2mortal(newSViv(category)));			\
-		    	XPUSHs(sv_2mortal(newSViv(index)));				\
-		    	PUTBACK;										\
-		    	count = perl_call_method("record", G_SCALAR);	\
-		    	SPAGAIN;										\
-		    	if (count != 1)									\
-		    		croak("Unable to create record");			\
-		    	ret = POPs;										\
-		    	PUTBACK;										\
-		    	PUSHs(ret);										\
-	    	}													\
-	    	else {												\
-	    		croak("Class not defined");						\
-	    	}													\
-		} else {												\
-	    	self->errnop = result;								\
-	    	PUSHs(&sv_undef);									\
+#define ReturnReadRecord(buf,size)\
+	    if (result >=0) {\
+	    	if (self->Class) {\
+	    		int count;\
+	    		SV * ret;\
+	    		PUSHMARK(sp);\
+	    		XPUSHs(self->Class);\
+	    		XPUSHs(newSVpv(buf, size));\
+		    	XPUSHs(sv_2mortal(newSViv(id)));\
+		    	XPUSHs(sv_2mortal(newSViv(attr)));\
+		    	XPUSHs(sv_2mortal(newSViv(category)));\
+		    	XPUSHs(sv_2mortal(newSViv(index)));\
+		    	PUTBACK;\
+		    	count = perl_call_method("record", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to create record");\
+		    	ret = POPs;\
+		    	PUTBACK;\
+		    	PUSHs(ret);\
+	    	}\
+	    	else {\
+	    		croak("Class not defined");\
+	    	}\
+		} else {\
+	    	self->errnop = result;\
+	    	PUSHs(&sv_undef);\
 	    }
 
-#define PackResource 											\
-	    {														\
-	    	HV * h;												\
-	    	if (SvRV(data) &&	 								\
-	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {		\
-	    		int count;										\
-	    		SV ** s;										\
+#define PackResource\
+	    {\
+	    	HV * h;\
+	    	if (SvRV(data) &&\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {\
+	    		int count;\
+	    		SV ** s;\
 	    		if (!(s = hv_fetch(h, "id", 2, 0)) || !SvOK(*s))\
-	    			croak("record must contain id");			\
-    			id = SvIV(*s);									\
-	    		if (!(s = hv_fetch(h, "type", 4, 0)) || !SvOK(*s))	\
-	    			croak("record must contain type");			\
-    			type = SvChar4(*s);								\
-	        	PUSHMARK(sp);									\
-	          	XPUSHs(data);									\
-		    	PUTBACK;										\
-		    	count = perl_call_method("Pack", G_SCALAR);		\
-		    	SPAGAIN;										\
-		    	if (count != 1)									\
-		    		croak("Unable to pack resource");			\
-		    	data = POPs;									\
-		    	PUTBACK;										\
-	        }													\
-	        else {												\
-		    		croak("Unable to pack resource");			\
-	        }													\
+	    			croak("record must contain id");\
+    			id = SvIV(*s);\
+	    		if (!(s = hv_fetch(h, "type", 4, 0)) || !SvOK(*s))\
+	    			croak("record must contain type");\
+    			type = SvChar4(*s);\
+	        	PUSHMARK(sp);\
+	          	XPUSHs(data);\
+		    	PUTBACK;\
+		    	count = perl_call_method("Pack", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to pack resource");\
+		    	data = POPs;\
+		    	PUTBACK;\
+	        }\
+	        else {\
+		    		croak("Unable to pack resource");\
+	        }\
 	    }
 
-#define ReturnReadResource(buf,size) 							\
-	    if (result >=0) {										\
-	    	if (self->Class) {									\
-	    		int count;										\
-	    		PUSHMARK(sp);									\
-	    		XPUSHs(self->Class);							\
-	    		XPUSHs(newSVpv(buf, size));						\
-		    	XPUSHs(sv_2mortal(newSVChar4(type)));			\
-		    	XPUSHs(sv_2mortal(newSViv(id)));				\
-		    	XPUSHs(sv_2mortal(newSViv(index)));				\
-		    	PUTBACK;										\
-		    	count = perl_call_method("resource", G_SCALAR);	\
-		    	SPAGAIN;										\
-		    	if (count != 1)									\
-		    		croak("Unable to create resource");			\
-	    	}													\
-	    	else {												\
-	    		croak("Class not defined");						\
-	    	}													\
-		} else {												\
-	    	self->errnop = result;								\
-	    	PUSHs(&sv_undef);									\
+#define ReturnReadResource(buf,size)\
+	    if (result >=0) {\
+	    	if (self->Class) {\
+	    		int count;\
+	    		PUSHMARK(sp);\
+	    		XPUSHs(self->Class);\
+	    		XPUSHs(newSVpv(buf, size));\
+		    	XPUSHs(sv_2mortal(newSVChar4(type)));\
+		    	XPUSHs(sv_2mortal(newSViv(id)));\
+		    	XPUSHs(sv_2mortal(newSViv(index)));\
+		    	PUTBACK;\
+		    	count = perl_call_method("resource", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to create resource");\
+	    	}\
+	    	else {\
+	    		croak("Class not defined");\
+	    	}\
+		} else {\
+	    	self->errnop = result;\
+	    	PUSHs(&sv_undef);\
 	    }
 
-#define PackPref	 											\
-	    {														\
-	    	HV * h;												\
-	    	if (SvRV(data) &&	 								\
-	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {		\
-	    		int count;										\
-	    		SV ** s;										\
+#define PackPref\
+	    {\
+	    	HV * h;\
+	    	if (SvRV(data) &&\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {\
+	    		int count;\
+	    		SV ** s;\
 	    		if (!(s = hv_fetch(h, "id", 2, 0)) || !SvOK(*s))\
-	    			croak("record must contain id");			\
-    			id = SvIV(*s);									\
-	    		if (!(s = hv_fetch(h, "creator", 7, 0)) || !SvOK(*s))	\
-	    			croak("record must contain type");			\
-    			creator = SvChar4(*s);							\
-	    		if (!(s = hv_fetch(h, "version", 7, 0)) || !SvOK(*s))	\
-	    			croak("record must contain type");			\
-    			version = SvIV(*s);								\
-	    		if (!(s = hv_fetch(h, "backup", 6, 0)) || !SvOK(*s))	\
-	    			croak("record must contain type");			\
-    			backup = SvIV(*s);								\
-   	        	PUSHMARK(sp);									\
-	          	XPUSHs(data);									\
-		    	PUTBACK;										\
-		    	count = perl_call_method("Pack", G_SCALAR);		\
-		    	SPAGAIN;										\
-		    	if (count != 1)									\
-		    		croak("Unable to pack resource");			\
-		    	data = POPs;									\
-		    	PUTBACK;										\
-	        }													\
-	        else {												\
-		    		croak("Unable to pack resource");			\
-	        }													\
+	    			croak("record must contain id");\
+    			id = SvIV(*s);\
+	    		if (!(s = hv_fetch(h, "creator", 7, 0)) || !SvOK(*s))\
+	    			croak("record must contain type");\
+    			creator = SvChar4(*s);\
+	    		if (!(s = hv_fetch(h, "version", 7, 0)) || !SvOK(*s))\
+	    			croak("record must contain type");\
+    			version = SvIV(*s);\
+	    		if (!(s = hv_fetch(h, "backup", 6, 0)) || !SvOK(*s))\
+	    			croak("record must contain type");\
+    			backup = SvIV(*s);\
+   	        	PUSHMARK(sp);\
+	          	XPUSHs(data);\
+		    	PUTBACK;\
+		    	count = perl_call_method("Pack", G_SCALAR);\
+		    	SPAGAIN;\
+		    	if (count != 1)\
+		    		croak("Unable to pack resource");\
+		    	data = POPs;\
+		    	PUTBACK;\
+	        }\
+	        else {\
+		    		croak("Unable to pack resource");\
+	        }\
 	    }
 
-#define ReturnReadPref(buf,size)	 							\
-	    if (result >=0) {										\
-			HV * h = perl_get_hv("PDA::Pilot::PrefClasses", 0);	\
-			SV ** s;											\
-    		int count;											\
-			if (!h)												\
-				croak("PrefClasses doesn't exist");				\
-			s = hv_fetch(h, printlong(creator), 4, 0);			\
-			if (!s)												\
-				s = hv_fetch(h, "", 0, 0);						\
-			if (!s)												\
-				croak("Default PrefClass not defined");			\
-    		PUSHMARK(sp);										\
-    		XPUSHs(newSVsv(*s));								\
-    		XPUSHs(newSVpv(buf, size));							\
-	    	XPUSHs(sv_2mortal(newSVChar4(creator)));			\
-	    	XPUSHs(sv_2mortal(newSViv(id)));					\
-	    	XPUSHs(sv_2mortal(newSViv(version)));				\
-	    	XPUSHs(sv_2mortal(newSViv(backup)));				\
-	    	PUTBACK;											\
-	    	count = perl_call_method("pref", G_SCALAR);			\
-	    	SPAGAIN;											\
-	    	if (count != 1)										\
-	    		croak("Unable to create resource");				\
-		} else {												\
-	    	self->errnop = result;								\
-	    	PUSHs(&sv_undef);									\
+#define ReturnReadPref(buf,size)\
+	    if (result >=0) {\
+			HV * h = perl_get_hv("PDA::Pilot::PrefClasses", 0);\
+			SV ** s;\
+    		int count;\
+			if (!h)\
+				croak("PrefClasses doesn't exist");\
+			s = hv_fetch(h, printlong(creator), 4, 0);\
+			if (!s)\
+				s = hv_fetch(h, "", 0, 0);\
+			if (!s)\
+				croak("Default PrefClass not defined");\
+    		PUSHMARK(sp);\
+    		XPUSHs(newSVsv(*s));\
+    		XPUSHs(newSVpv(buf, size));\
+	    	XPUSHs(sv_2mortal(newSVChar4(creator)));\
+	    	XPUSHs(sv_2mortal(newSViv(id)));\
+	    	XPUSHs(sv_2mortal(newSViv(version)));\
+	    	XPUSHs(sv_2mortal(newSViv(backup)));\
+	    	PUTBACK;\
+	    	count = perl_call_method("pref", G_SCALAR);\
+	    	SPAGAIN;\
+	    	if (count != 1)\
+	    		croak("Unable to create resource");\
+		} else {\
+	    	self->errnop = result;\
+	    	PUSHs(&sv_undef);\
 	    }
 
 void doUnpackCategory(HV * self, struct CategoryAppInfo * c)
@@ -3055,9 +3055,9 @@ getSysInfo(self)
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			HV * i = newHV();
-			hv_store(i, "romVersion", 10, newSViv(si.romVersion), 0);	\
-	    	hv_store(i, "locale", 6, newSViv(si.locale), 0);	\
-	    	hv_store(i, "name", 4, newSVpv(si.name, si.nameLength), 0);	\
+			hv_store(i, "romVersion", 10, newSViv(si.romVersion), 0);\
+	    	hv_store(i, "locale", 6, newSViv(si.locale), 0);\
+	    	hv_store(i, "name", 4, newSVpv(si.name, si.nameLength), 0);\
 			RETVAL = newRV((SV*)i);
 		}
 	}
@@ -3077,14 +3077,14 @@ getCardInfo(self, cardno=0)
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			HV * i = newHV();
-			hv_store(i, "card", 6, newSViv(c.card), 0);	\
-	    	hv_store(i, "version", 7, newSViv(c.version), 0);	\
-	    	hv_store(i, "created", 8, newSViv(c.creation), 0);	\
-	    	hv_store(i, "romSize", 7, newSViv(c.romSize), 0);	\
-	    	hv_store(i, "ramSize", 7, newSViv(c.ramSize), 0);	\
-	    	hv_store(i, "ramFree", 7, newSViv(c.ramFree), 0);	\
-	    	hv_store(i, "name", 4, newSVpv(c.name,0), 0);	\
-	    	hv_store(i, "manufacturer", 12, newSVpv(c.manufacturer,0), 0);	\
+			hv_store(i, "card", 6, newSViv(c.card), 0);\
+	    	hv_store(i, "version", 7, newSViv(c.version), 0);\
+	    	hv_store(i, "created", 8, newSViv(c.creation), 0);\
+	    	hv_store(i, "romSize", 7, newSViv(c.romSize), 0);\
+	    	hv_store(i, "ramSize", 7, newSViv(c.ramSize), 0);\
+	    	hv_store(i, "ramFree", 7, newSViv(c.ramFree), 0);\
+	    	hv_store(i, "name", 4, newSVpv(c.name,0), 0);\
+	    	hv_store(i, "manufacturer", 12, newSVpv(c.manufacturer,0), 0);\
 			RETVAL = newRV((SV*)i);
 		}
 	}

@@ -1,126 +1,128 @@
-05-27-2001
+06-24-2001
 	
-	* Full VFS support in libpisock for pilot-xfer -b, dlpsh, and
-	  friends.
+	- Revamp of the TODO list for better readability; Major, Minor,
+	  Tweak, Feature. The remainder below illustrates this: 
 
-	* install-hinote duplicate note detection, export of notes from
+Major Issues
+------------
+	Open/Pending
+	------------
+	- USB syncronization with m50x devices. DLP changes to facilitate
+	  these fixes. Document. 
+
+	- Fix the broken readline() support 	
+
+	- Need to clean up the OS/2 defines, or remove them entirely. This
+	  requires that the ./configure be reversed into configure.in/auto*
+	  scripts. The 'p4' stuff should be tweaked, and ${HOST} detected
+	  upon ./configure.
+
+	- Check RPC code (something broken on large-endian machines?)
+
+	- Fix DLP to understand multiple return arguments.
+
+	Fixed/Closed
+	------------
+	- Java code needs to be cleaned up. Any volunteers? I could learn
+	  this, but it would slow down releases (thanks to David Goodenough
+	  for taking on this task!)
+
+	- Fix the C++ test(s) in ./configure, and roll all of this back into
+	  autogen.sh/automake scripts.
+
+Minor Issues
+------------
+	Open/Pending
+	------------
+	- install-hinote duplicate note detection, export of notes from
 	  Hi-NoteDB.pdb into desktop text files. Can we easily handle
 	  images?
 
-	* Notepad support? pilot-notepad? We have to logically bind the
+	- Argument handling needs gutted and rewritten from the ground up
+	  (getopt(), longopt(), getopt_long() and friends)
+
+	- Review pilot-mail. Do we need this? Can we depricate this, and
+	  begin the transition over to Hollis' work on pilot-mailsync?
+
+	- manpages. I know, nobody wants to do them, but we need to clearly
+	  document some of the obscure options that some of the pilot-link
+	  binaries offer (such as 'ls -l' in dlpsh). This also includes
+	  active examples of some of the complicated options.
+
+	- Should we nuke addresses from the package? The functionality it
+	  provides is already in pilot-addresses.
+
+	- Add progress callbacks to libpisock so that you can find out how
+	  far a file transfer has gone (this is complex, as you also need to
+	  instrument PADP and perhaps SLP transmissions, receptions, and
+	  calculating exactly how many bytes is needed to transfer a file
+	  won't be fun.)
+
+
+
+Tweaks/Enhancements
+-------------------
+	- Remove the pi_bind, pi_listen, pi_accept from all relevant files,
+	  and create a function pi_error() which will return the proper
+	  responses. Additionally, remove PalmHeader() and stick that in
+	  it's own function which will report --version calls.
+
+	- Start to condense the install-* binaries into one binary called
+	  pilot-install.
+
+	- Merge install-*.c into pilot-install. Too much duplicated code in there.
+	  Symlink the rest of the apps to pilot-install, and just test argv[0] to
+	  run the proper functions.
+
+	- 'pilot-xfer -f Foo' to pull 'Foo.prc' from your Palm works.
+	  Additional option to pull by CrID would be nice as well (and
+	  faster, since we can use the DLP equivalent of
+	  DmOpenDatabaseByTypeCreator())
+
+	- Add 'reada()/writea()' socket calls that allocate the return
+	  buffer (important for NetSync, as results larger then 64K are
+	  possible).
+
+	- Add Tcl 8 specific code to allow retrieval of raw records, and
+	  optionally use Tcl routines for packing and unpacking; Add all dlp
+	  functions, clean up the channel code rats nest. Somehow. (Separate
+	  source file?)
+
+	- Perl bindingss: Change record representation from string to object
+	  to match Python implementation. Add packers. Document.
+
+	- Python bindings: Add packers. Document.
+
+
+New Features
+------------
+	- Deal with the m100 API to Notepad. Has anyone taken a look at the
+	  data structures and come up with a way we can replicate them, to
+	  read records? Ideally the images should be $(NAME).png, and the
+	  text associated with it should be $(NAME).txt.
+
+	- Notepad support? pilot-notepad? We have to logically bind the
 	  notes and images together as a "pair" which can be sync'd to the
 	  desktop and back to the Palm from the desktop.
 
-	* Argument handling needs gutted and rewritten from the ground up
-	  (getopt(), longopt(), getopt_long() and friends)
+	- Standard output format for the "4 Magic Buttons". XML? CSV? 
+	
+	- Full VFS support in libpisock for pilot-xfer -b, dlpsh, and friends.
 
-	* Fix the broken readline support 
+	- TRGPro CF direct writes (Card 1?) 
 
-	* Standard output format for the "4 Magic Buttons". XML? CSV? 
+	- Write iambicExpense.c
 
-	* File size reported on all pilot-xfer'style syncs, ala: 
+	- Teach sync-plan about the other repetition types that are
+	  convertable from Plan to Pilot.
 
-	  Backing up './Small Icon EditorSSle.prc'...(2192 bytes,  OK)
-	  Backing up './ScreenDepthSSle.prc'.........(34982 bytes, OK)
+	- Clean up pilot-xfer a bit more, add a -ntp <palm|desktop> option
+	  to sync the time from/to the desktop from/to the Palm.
 
-	* pilot-xfer --daemon. Would be a good test to get it listening on a
+	- pilot-xfer --daemon. Would be a good test to get it listening on a
 	  port in a non-scripted hacky way. All applications which return
 	  should have this functionality. Interactive applications should be
 	  left alone.
 
-10-15-2000
-
-	* Fix the C++ test(s) in ./configure, and roll all of this
-	  back into autogen.sh/automake scripts. 
-
-        * Clean up pilot-xfer a bit more, add a -ntp <palm|desktop>
-          option to sync the time from/to the desktop from/to the Palm.
-
-        * Start to condense the install-* binaries into one binary
-          called pilot-install.
-
-        * Review pilot-mail. Do we need this? Can we depricate this, and
-          begin the transition over to Hollis' work on pilot-mailsync?  
-
-        * Deal with the m100 API to Notepad. Has anyone taken a look at
-          the data structures and come up with a way we can replicate
-          them, to read records? Ideally the images should be
-          $(NAME).png, and the text associated with it should be
-          $(NAME).txt.
-
-        * Manpages manpages manpages. Online documentation would be nice
-          too, but that can come later.
-
-        * Remove the pi_bind, pi_listen, pi_accept from all relevant
-          files, and create a function pi_error() which will return the
-          proper responses. Additionally, remove PalmHeader() and stick
-          that in it's own function which will report --version calls.
-
-        * Add progress callbacks to libpisock so that you can find out
-          how far a file transfer has gone (this is complex, as you also
-          need to instrument PADP and perhaps SLP transmissions,
-          receptions, and calculating exactly how many bytes is needed
-          to transfer a file won't be fun.)
-
-        * Check RPC code (something broken on large-endian machines?)
-
-        * Add reada socket calls that allocate the return buffer
-          (important for NetSync, as results larger then 64K are
-          possible).
-
-        * Fix DLP to understand multiple return arguments.
-
-        * Write iambicExpense.c
-
-        * Teach sync-plan about the other repetition types that are
-          convertable from Plan to Pilot.
-
-        * Add Tcl 8 specific code to allow retrieval of raw records, and
-          optionally use Tcl routines for packing and unpacking.
-             - Add all dlp functions.
-             - Clean up the channel code rats nest. Somehow. (Separate
-               source file?)
-
-        * Perl bindings
-             - Change record representation from string to object to
-               match Python implementation.
-             - Add packers.
-             - Document.
-
-        * Python binding:
-             - Add packers.
-             - Document.
-
-	* Java code needs to be cleaned up. Any volunteers? I could
-          learn this, but it would slow down releases.
-
-	* pilot-xfer -f will only fetch pdb files.  There's no way to
-          individually pluck a file (with a prc|PRC extension) from the
-          Palm. pilot-schlep does it, but that binary should be
-          depricated.
-
-        * Should we nuke addresses from the package? The functionality
-          it provides is already in pilot-addresses.
-
-        * pilot-schlep should ideally be nuked as well, and the -f
-          option of it rolled into pilot-xfer to provide the option
-          above. (pilot-schlep /dev/irnine -f > ExtractedProg.prc)
-
-	* Merge install-*.c into pilot-install. Too much duplicated code
-          in there. Symlink the rest of the apps to pilot-install, and
-          just test argv[0] to run the proper functions.
-
-	* Need to clean up the OS/2 defines, or remove them entirely.  
-          This requires that the ./configure be reversed into
-          configure.in/auto* scripts. Not hard, just takes a bit of
-          testing. We need this anyway, so we can rebuild configure as
-          we add/remove options. The 'p4' stuff should be tweaked, and
-          ${HOST} detected upon ./configure.
-
-	* manpages. I know, nobody wants to do them, but we need to
-          clearly document some of the obscure options that some of the
-          pilot-link binaries offer (such as 'ls -l' in dlpsh). This
-          also includes active examples of some of the complicated
-          options.
-
-	* TRGPro CF direct writes (Card 1?) 
+	- File size reported on all pilot-xfer'style syncs, ala:
+	  Backing up './Small Icon EditorSSle.prc'...(2192 bytes, OK)

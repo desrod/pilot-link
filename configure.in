@@ -6,17 +6,26 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(include/pi-cmp.h)
 AC_CONFIG_AUX_DIR(scripts)
 
-
 dnl Check host type
 AC_CANONICAL_HOST
 
+dnl Enumerate the sets of available languages
+ALL_LINGUAS="en"
 
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_ISC_POSIX
 AM_PROG_LIBTOOL
-AC_PROG_RANLIB
 AC_PROG_YACC
+
+AC_PATH_PROG(RANLIB, ranlib)
+AC_PATH_PROG(STRIP, strip)
+AC_PATH_PROG(GZIP, [gzip compress])
+AC_PATH_PROG(CAT, cat)
+AC_PATH_PROG(LINT, lint)
+AC_PATH_PROG(RM, rm)
+
 
 WITHTCL="WITHOUTTCL"
 WITHCXX="WITHOUTCXX"
@@ -147,7 +156,7 @@ AC_CHECK_LIB(iconv, libiconv, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"]
     AC_CHECK_FUNC(iconv, [
 	AC_CHECK_FUNCS(gnu_get_libc_version)
 	AC_MSG_CHECKING(if system iconv handles CP1252)
-	AC_TRY_RUN([
+	AC_TRY_COMPILE([
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
@@ -225,9 +234,9 @@ if test "x$RLDEFS" = "x"; then
 	AC_MSG_RESULT(none)
 fi
 
+AC_DEFINE(HAVE_LIBREADLINE) 
 AC_SUBST(RLLIBS)
 AC_SUBST(RLDEFS)
-
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -636,4 +645,9 @@ LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTLIBOBJS)
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTALLOCA)
-AC_OUTPUT(libsock/Makefile $cc_m Makefile tools/empty tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile)
+
+dnl These are the only lines required to internationalize the package.
+dnl (OK, not quite, the AC_OUTPUT has also some parts.)
+AM_GNU_GETTEXT
+
+AC_OUTPUT(libsock/Makefile $cc_m Makefile Makefile.os2 tools/empty tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile)

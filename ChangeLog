@@ -1,3 +1,46 @@
+2001-07-12  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* TODO: New layout and format, more conducive to allowing others to
+	  see where the most help is needed, sorted by severity.
+
+2001-06-24  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* pilot-xfer.c: Removed the "orphaned" -B/-U/-S options which never
+	  had the proper code to work, in an unreachable segment, also the
+	  -F/-O options should be working, and the -I option should once
+	  again be properly parsed (Carl Jacobsen, Brian Bock)
+
+2001-06-20  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* parsedate.y: Added missing <string.h> include that caused problems
+	  on IA64 builds (David A. Desrosiers)
+
+	* tools/Perl5/Pilot.xs: Fixed the annoying line continuation. This
+	  is not the Palm SDK and their darn variable width fonts!! (David
+	  A. Desrosiers)
+
+	* Beginnings of the autoconfiscation and NLS support (translators
+	  needed!) (David A. Desrosiers)
+
+	* memos.c: Added an argument to allow the uploading of only one
+	  category to the Palm MemoDB database (Bill Janssen)
+
+	* Makefile.in, libsock/Makefile.in: A few fixes and general cleanups
+	  in readiness for the NLS and autoconfiscation process to begin. 
+	  Removed another "double-header-install" problem, also added the
+	  ability to gzip the manpages into place when installed. Added an
+	  'install-man' target. MAJOR restructuring!! (David A. Desrosiers)
+
+	* include/pi-version.h: Incremented version numbering (David A.
+	  Desrosiers)
+
+	* autogen.sh: Added aclocal to create the m4 macros
+
+	* dlpsh.c: Added full readline and history support, YAY! (David A.
+	  Desrosiers)
+
+	* pilot-debug.c: Fixes for changes in Tcl/Tk. This will soon go away. 
+
 2001-06-18  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* Makefile.in: Changed the 'strip -s' target to 'strip' to properly

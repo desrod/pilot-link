@@ -74,6 +74,7 @@ Help(void)
 	fprintf(stderr, "    -p port     = use device file <port> to communicate with Palm\n");
 	fprintf(stderr, "    -f file     = use <file> as memo database file (rather than hotsyncing)\n");
 	fprintf(stderr, "    -d dir      = save memos in <dir> instead of writing to STDOUT\n");
+	fprintf(stderr, "    -c category = only upload memos in this category\n");
 	fprintf(stderr, "    -t regexp   = select memos to be saved by title\n");
 	fprintf(stderr, "    -h|-?       = print this usage summary\n\n");
 	fprintf(stderr, "   By default, the contents of your Palm's memo database will be written\n");
@@ -123,7 +124,8 @@ int main(int argc, char *argv[])
 	char filename[MAXDIRNAMELEN + 1], *ptr;
 	struct pi_file *pif = NULL;
 	char *device = argv[1];
-
+	char category_name[MAXDIRNAMELEN + 1] = "";
+	int match_category = -1;
 	progname = argv[0];
 
 	if (argc < 2) {
@@ -136,7 +138,7 @@ int main(int argc, char *argv[])
 		strcpy(addr.pi_device, PILOTPORT);
 	}
 
-	while (((c = getopt(argc, argv, "vqp:d:f:t:h?")) != -1)) {
+	while (((c = getopt(argc, argv, "vqp:d:f:c:t:h?")) != -1)) {
 		switch (c) {
 		case 'v':
 			verbose = 1;
@@ -161,6 +163,11 @@ int main(int argc, char *argv[])
 			/* optarg is name of directory to create and store memos in */
 			strcpy(dirname, optarg);
 			mode = MEMO_DIRECTORY;
+			break;
+		case 'c':
+			/* optarg is name of category to fetch memos of */
+			strncpy(category_name, optarg, MAXDIRNAMELEN);
+			filename[MAXDIRNAMELEN] = '\0';
 			break;
 		case 't':
 			/* optarg is a query to select memos by title */
@@ -269,23 +276,40 @@ int main(int argc, char *argv[])
 
 	unpack_MemoAppInfo(&mai, (unsigned char *) appblock, 0xffff);
 
+	if (category_name[0] != '\0') {
+        	for (i = 0, match_category = -1;  i < 16;  i += 1) {
+			if ((strlen(mai.category.name[i]) > 0) && (strcmp(mai.category.name[i], category_name) == 0))
+				match_category = i;
+			}
+		if (match_category < 0) {
+			fprintf(stderr, "Can't find Memo category \"%s\".\n", category_name);
+			dlp_AddSyncLogEntry(sd, "Can't find specified memo category.\n");
+			exit(1);
+		};
+	}
+ 
 	for (i = 0;; i++) {
 		struct Memo m;
 		int attr;
 		int category;
-
 		int len;
 
 		if (filename[0] == '\0') {
-			len =
-			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
-						  &attr, &category);
+			if (match_category >= 0) {
+				len = 
+				    dlp_ReadNextRecInCategory (sd, db, match_category, 
+							       buffer, 0, 0, 0, &attr);
+				category = match_category;
+			} else {
+				len =
+				    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
+							  &category);
+			}
 			if (len < 0)
 				break;
 		} else {
 			if (pi_file_read_record
-			    (pif, i, (void *) &ptr, &len, &attr, &category,
-			     0))
+			    (pif, i, (void *) &ptr, &len, &attr, &category, 0))
 				break;
 			memcpy(buffer, ptr, len);
 		}

@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include <time.h>
+#include <string.h>
 
 int date_lex();
 

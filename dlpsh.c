@@ -22,6 +22,8 @@
 
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>             /* free() */
+#include <ctype.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -29,6 +31,11 @@
 #include "pi-dlp.h"
 #include "pi-serial.h"
 #include "pi-header.h"
+
+#ifdef READLINE_2_1
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
 
 #define TICKLE_INTERVAL 7
 
@@ -47,6 +54,7 @@ char *strtoke(char *str, char *ws, char *delim);
 void exit_func(void);
 void sigexit(int sig);
 char *timestr(time_t t);
+
 void handle_user_commands(int sd);
 
 typedef int (*cmd_fn_t) (int, int, char **);
@@ -429,35 +437,58 @@ int rm_fn(int sd, int argc, char **argv)
  ***********************************************************************/
 void handle_user_commands(int sd)
 {
-	char buf[256];
-	char *argv[32];
-	int argc;
-	int i;
 
-	for (;;) {
+#ifdef READLINE_2_1
+	char *line;
+	static const char *prompt = "dlpsh> ";
+#else
+        char buf[256];
+#endif
+
+        char *argv[32];
+        int argc;
+        int i;
+
+        for (;;) {
+                fflush(stdout);
+
+#ifdef READLINE_2_1
+                line = readline(prompt);
+                if (line && *line)      	/* skip blanks */
+                        add_history(line);
+                if (!line)
+                        break;
+
+                argc = 0;
+                argv[0] = strtoke(line, " \t\n", "\"'");
+#else 
 		printf("dlpsh> ");
-		fflush(stdout);
 		if (fgets(buf, 256, stdin) == NULL)
 			break;
 
-		argc = 0;
-		argv[0] = strtoke(buf, " \t\n", "\"'");
+                argc = 0;
+                argv[0] = strtoke(buf, " \t\n", "\"'");
+#endif
 
-		while (argv[argc] != NULL) {
-			argc++;
-			argv[argc] = strtoke(NULL, " \t\n", "\"'");
-		}
+                while (argv[argc] != NULL) {
+                        argc++;
+                        argv[argc] = strtoke(NULL, " \t\n", "\"'");
+                }
 
-		if (argc == 0)
-			continue;
+                if (argc == 0)
+                        continue;
 
-		for (i = 0; command_list[i].name != NULL; i++) {
-			if (strcasecmp(argv[0], command_list[i].name) == 0) {
-				command_list[i].func(sd, argc, argv);
-			}
-		}
-	}
-	printf("\n");
+                for (i = 0; command_list[i].name != NULL; i++) {
+                        if (strcasecmp(argv[0], command_list[i].name) == 0) {
+                                command_list[i].func(sd, argc, argv);
+                        }
+                }
+
+#ifdef READLINE_2_1
+		free(line);
+#endif
+        }
+        printf("\n");
 }
 
 int main(int argc, char **argv)

@@ -26,6 +26,7 @@
 # include <dirent.h>
 # include <errno.h>
 # include <assert.h>
+
 # define TTYPrompt "com#"
 # define RETSIGTYPE void
 # define HAVE_SIGACTION
@@ -66,6 +67,10 @@ extern "C" {
 
 #include "pi-socket.h"
 #include "pi-macros.h"
+
+#ifdef HAVE_GETTEXT
+#include "i18n.h"
+#endif 	/* HAVE_GETTEXT */
 
 #define PI_SLP_MTU 1038
 

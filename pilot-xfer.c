@@ -332,8 +332,8 @@ int creator_is_PalmOS(long creator)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
-	    int quiet, int do_rom, int unsaved, char *archive_dir)
+void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
+	    int rom, int unsaved, char *archive_dir)
 {
 	int i, ofile_total, ofile_len;
 	DIR *dir;
@@ -465,8 +465,8 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 		printf("Backing up '%s'... ", name);
 		fflush(stdout);
 
-		/* Ensure that DB-open flag is not kept */
-		info.flags &= 0x2fd;
+		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
+		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
 
 		f = pi_file_create(name, &info);
 		if (f == 0) {
@@ -1028,12 +1028,6 @@ void Help(void)
 	fprintf(stderr, "                           included by -backup, -sync, or -update.\n");
 	fprintf(stderr, "   -P[urge]              = purge any deleted data that hasn't been cleaned up\n");
 	fprintf(stderr, "                           by a sync\n\n");
- 	fprintf(stderr, "   -B[ackup]             = backup your Palm, clearing the read-only bits on all\n");
-	fprintf(stderr, "                           backed up databases\n");
-	fprintf(stderr, "   -U                    = update but clear the read-only bit upon sync\n");
-	fprintf(stderr, "   -S[ync]               = sync your Palm with a directory, clearing the\n");
-	fprintf(stderr, "                           read-only bit in the process for all sync'd\n");
-	fprintf(stderr, "                           databases\n\n");
  	fprintf(stderr, "   -l[ist]               = list all application and 3 rd party data on the Palm\n");
 	fprintf(stderr, "   -L[istall]            = list all data, internal and external on the Palm\n");
 	fprintf(stderr, "   -v[ersion]            = report the version of %s\n",
@@ -1045,7 +1039,7 @@ void Help(void)
 	fprintf(stderr, "   -a modifies -s to archive deleted files in specified directory.\n");
 	fprintf(stderr, "   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n");
 	fprintf(stderr, "   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n");
-	fprintf(stderr, "   -I modifies -b|-B, -u|-U, and -s|-S, to back up \"illegal\"\n");
+	fprintf(stderr, "   -I modifies -b, -u, and -s, to back up \"illegal\"\n");
 	fprintf(stderr, "      Unsaved Preferences.PDB (normally skipped, per Palm's recommendation).\n");
 	fprintf(stderr, "   -q makes all the backup options shut up about skipped files.\n");
 	fprintf(stderr, "   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n");
@@ -1160,7 +1154,7 @@ int main(int argc, char *argv[])
 			}
 
 			/* Check for commands that take a single argument */
-			else if (strchr("busBRS", argv[i][1])) {
+			else if (strchr("bus", argv[i][1])) {
 				mode = 0;
 				if (++i >= argc) {
 					fprintf(stderr,
@@ -1186,7 +1180,7 @@ int main(int argc, char *argv[])
 				mode = 0;
 
 				/* Check for modifiers to -b -u -s */
-			} else if (strchr("FOUqc", argv[i][1])) {
+			} else if (strchr("FOIqc", argv[i][1])) {
 				/* nothing to do, yet... */
 
 				/* Check for options that take a single argument */
@@ -1235,7 +1229,7 @@ int main(int argc, char *argv[])
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] == '-') {
 			mode = 0;
-			if (strchr("aBRSbusrimfde", argv[i][1])) {
+			if (strchr("abusrimfde", argv[i][1])) {
 				mode = argv[i][1];
 				i++;
 			} else
@@ -1279,32 +1273,17 @@ int main(int argc, char *argv[])
 			mode = 0;
 			break;
 		case 'b':
-			Backup(argv[i], 0, 0, 0, quiet, do_rom, do_unsaved,
+			Backup(argv[i], 0, 0, quiet, do_rom, do_unsaved,
 			       archive_dir);
 			mode = 0;
 			break;
 		case 'u':
-			Backup(argv[i], 1, 0, 0, quiet, do_rom, do_unsaved,
+			Backup(argv[i], 1, 0, quiet, do_rom, do_unsaved,
 			       archive_dir);
 			mode = 0;
 			break;
 		case 's':
-			Backup(argv[i], 1, 1, 0, quiet, do_rom, do_unsaved,
-			       archive_dir);
-			mode = 0;
-			break;
-		case 'B':
-			Backup(argv[i], 0, 0, 1, quiet, do_rom, do_unsaved,
-			       archive_dir);
-			mode = 0;
-			break;
-		case 'R':
-			Backup(argv[i], 1, 0, 1, quiet, do_rom, do_unsaved,
-			       archive_dir);
-			mode = 0;
-			break;
-		case 'S':
-			Backup(argv[i], 1, 1, 1, quiet, do_rom, do_unsaved,
+			Backup(argv[i], 1, 1, quiet, do_rom, do_unsaved,
 			       archive_dir);
 			mode = 0;
 			break;
