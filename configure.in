@@ -791,6 +791,24 @@ AC_OUTPUT([
 	bindings/Java/Makefile
 	doc/Makefile
 	doc/man/Makefile
+	doc/man/addresses.1
+	doc/man/dlpsh.1
+	doc/man/hinotes.1
+	doc/man/ietf2datebook.1
+	doc/man/install-datebook.1
+	doc/man/install-expenses.1
+	doc/man/install-hinote.1
+	doc/man/install-memo.1
+	doc/man/install-netsync.1
+	doc/man/install-user.1
+	doc/man/pi-getram.1
+	doc/man/pi-getrom.1
+	doc/man/pilot-addresses.1
+	doc/man/pilot-link.7
+	doc/man/pilot-xfer.1
+	doc/man/read-ical.1
+	doc/man/read-notepad.1
+	doc/man/read-palmpix.1
 	tests/Makefile
 ])
 

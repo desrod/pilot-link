@@ -1,7 +1,14 @@
-2003-01-02 David A. Desrosiers <hacker at gnu-designs dot com>
+2003-01-05 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Added doc/man/*.in files for automagic generation
+
+	* doc/man/*.?.in: Converted all manpages over to a cleaner format,
+	  added a couple of missing manpages, added @VERSION@ to the header
+
+2003-01-04 David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* configure.in: $UID doesn't work on Solaris, geteuid() does, we'll
-	  use that in 0.11.8 instead.
+	  use that in 0.11.8 instead, bump to 0.11.7, change $PREFIX default
 
 	* libpisock/dlp.c: Minor patch to add \n in PI_LOG events
 
