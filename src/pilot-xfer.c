@@ -457,7 +457,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
 		} else if (stat(name, &sbuf) == 0) {
-			printf("[%7ld bytes | %3ld kb total]\n", 
+			printf("\n\t(%7ld bytes, %3ld kb total)\n\n", 
 				sbuf.st_size, totalsize/1024);
 			totalsize += sbuf.st_size;
 		} else {
@@ -893,7 +893,9 @@ static void Install(char *filename)
 
 	} else if (stat(filename, &sbuf) == 0) {
 		totalsize += sbuf.st_size;
-		printf("[%7ld bytes | %3ld total]\n", sbuf.st_size, totalsize);
+		printf("\n\t(%7ld bytes, %3ld kb total)\n\n",
+			sbuf.st_size, totalsize/1024);
+		totalsize += sbuf.st_size;
 	}
 	
 	pi_file_close(f);
