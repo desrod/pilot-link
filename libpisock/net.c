@@ -65,7 +65,6 @@ static pi_protocol_t
 		new_data = (pi_net_data_t *)malloc (sizeof (pi_net_data_t));
 		if (new_data == NULL) {
 			free(new_prot);
-			new_prot == NULL;
 		}
 	}
 

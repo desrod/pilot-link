@@ -61,8 +61,9 @@
 /* Declare function prototypes */
 static pi_socket_list_t *ps_list_append (pi_socket_list_t *list,
 	pi_socket_t *ps);
+/* knghtbrd: unused
 static pi_socket_list_t *ps_list_prepend (pi_socket_list_t *list,
-	pi_socket_t *ps);
+	pi_socket_t *ps); */
 static pi_socket_t *ps_list_find (pi_socket_list_t *list,
 	int pi_sd);
 static pi_socket_list_t *ps_list_find_elem (pi_socket_list_t *list,
@@ -149,6 +150,7 @@ ps_list_append (pi_socket_list_t *list, pi_socket_t *ps)
  * Returns:     pi_socket_list_t *, or NULL if operation failed
  *
  ***********************************************************************/
+/* knghtbrd: unused
 static pi_socket_list_t *
 ps_list_prepend (pi_socket_list_t *list, pi_socket_t *ps) 
 {
@@ -165,7 +167,7 @@ ps_list_prepend (pi_socket_list_t *list, pi_socket_t *ps)
 	}
 
 	return new_elem;
-}
+}*/
 
 
 /***********************************************************************

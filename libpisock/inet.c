@@ -514,7 +514,7 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	
 	acpt = pi_socket_copy(ps);
 	
- 	sd = accept(ps->sd, addr, addrlen);
+ 	sd = accept(ps->sd, addr, (socklen_t *)addrlen);
 	if (sd < 0)
 		goto fail;
 

@@ -66,7 +66,7 @@ pilot_connect(char *port)
 	struct 	stat attr;
 	struct  SysInfo sys_info;
 	char 	*defport = "/dev/pilot",
-		*buf;
+		*buf = NULL;
 
 	setvbuf(stdout, buf, _IONBF, sizeof(buf));
 
