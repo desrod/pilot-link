@@ -237,15 +237,14 @@ USB_close (void)
  *
  ***********************************************************************/
 
-#define MAX_READ_SIZE	4096
+#define MAX_READ_SIZE	16384
 #define AUTO_READ_SIZE	64
 static char				*RD_buffer = NULL;
 static size_t			RD_buffer_size;
 static size_t			RD_buffer_used;
 static pthread_mutex_t	RD_buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t	RD_buffer_available_cond = PTHREAD_COND_INITIALIZER;
-static int				RD_read_size;
-static int				RD_last_read_size;
+static int				RD_wanted;
 static int				RD_running = 0;
 static char				RD_usb_buffer[MAX_READ_SIZE];
 static pthread_t		RD_thread = 0;
@@ -253,16 +252,16 @@ static pthread_t		RD_thread = 0;
 static void
 RD_do_read (int timeout)
 {
-	int	bytes_read;
+	int	bytes_read, read_size;
 
-	RD_last_read_size = RD_read_size & ~63;		/* 64 byte chunks. */
-	if (RD_last_read_size < AUTO_READ_SIZE)
-		RD_last_read_size = AUTO_READ_SIZE;
-	else if (RD_last_read_size > MAX_READ_SIZE)
-		RD_last_read_size = MAX_READ_SIZE;
+	read_size = RD_wanted - RD_buffer_used;
+	if (read_size < AUTO_READ_SIZE)
+		read_size = AUTO_READ_SIZE;
+	else if (read_size > MAX_READ_SIZE)
+		read_size = MAX_READ_SIZE;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Reading: len: %d, timeout: %d.\n", RD_last_read_size, timeout));
-	bytes_read = usb_bulk_read (USB_handle, USB_in_endpoint, RD_usb_buffer, RD_last_read_size, timeout);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Reading: len: %d, timeout: %d.\n", read_size, timeout));
+	bytes_read = usb_bulk_read (USB_handle, USB_in_endpoint, RD_usb_buffer, read_size, timeout);
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d\n", __FILE__, __LINE__, __FUNCTION__, bytes_read));
 	if (bytes_read < 0) {
 		if (bytes_read == -ENODEV) {
@@ -385,6 +384,7 @@ static int
 u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 {
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
+	int ret;
 
 	if (!RD_running)
 		return -1;
@@ -393,12 +393,12 @@ u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 	if (len <= 0)
 		return 0;
 
-	len = usb_bulk_write (USB_handle, USB_out_endpoint, buf, len, timeout);
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Wrote: %d.\n", len));
-	if (len > 0)
-		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata (buf, len));
+	ret = usb_bulk_write (USB_handle, USB_out_endpoint, buf, len, timeout);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Wrote: %d.\n", ret));
+	if (ret > 0)
+		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata (buf, ret));
 
-	return len;
+	return ret;
 }
 
 static int
@@ -437,9 +437,8 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 			when.tv_sec++;
 		}
 
+		RD_wanted = len;
 		do {
-			RD_read_size = len - RD_buffer_used;
-
 			last_used = RD_buffer_used;
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
 			if (timeout) {
@@ -460,7 +459,7 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
 		} while (RD_buffer_used < len);
 
-		RD_read_size = 0;
+		RD_wanted = 0;
 	}
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
