@@ -464,9 +464,9 @@ else
 				#WITHTK='WITHTK'
 				if test "x$ITCL_INC" = "x$TCL_INC"; then
 					ITCL_INC=" #same as TCL_INC"
-					TCLTKFLAGS="-DTCL -DTK -FOO $TCL_INC $DEBIANTCL"
+					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
 				else
-					TCLTKFLAGS="-DTCL -DTK -FOO $TCL_INC $DEBIANTCL $TK_INC"
+					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL $TK_INC"
 				fi
 			fi
 		fi
@@ -505,9 +505,9 @@ else
 				WITHTK='WITHTK'
 				if test "x$TK_INC" = "x$TCL_INC"; then
 					TK_INC=" #same as TCL_INC"
-					TCLTKFLAGS="-DTCL -DTK -FOO $TCL_INC $DEBIANTCL"
+					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
 				else
-					TCLTKFLAGS="-DTCL -DTK -FOO $TCL_INC $DEBIANTCL $TK_INC"
+					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL $TK_INC"
 				fi
 			fi
 		fi
