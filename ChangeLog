@@ -1,5 +1,12 @@
 2002-03-19  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/slp.c (slp_dump_header): print out checksum correctly
+
+	* libpisock/dlp.c (dlp_exec): check for an error from the read
+	call
+
+2002-03-19  JP Rosevear  <jpr@ximian.com>
+	
 	* libpisock/socket.c: include pi-sys.h
 
 2002-03-19  JP Rosevear  <jpr@ximian.com>

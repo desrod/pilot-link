@@ -460,7 +460,7 @@ slp_setsockopt(struct pi_socket *ps, int level, int option_name,
 void slp_dump_header(unsigned char *data, int rxtx)
 {	
 	LOG(PI_DBG_SLP, PI_DBG_LVL_NONE,
-	    "SLP %s %d->%d type=%d txid=0x%.2x len=0x%.4x\n checksum=0x%.2",
+	    "SLP %s %d->%d type=%d txid=0x%.2x len=0x%.4x checksum=0x%.2x\n",
 	    rxtx ? "TX" : "RX",
 	    get_byte(&data[PI_SLP_OFFSET_DEST]),
 	    get_byte(&data[PI_SLP_OFFSET_SRC]),

@@ -137,7 +137,9 @@ int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen,
 	}
 
 	i = pi_read(sd, &exec_buf[0], DLP_BUF_SIZE);
-
+	if (i < 0)
+		return -1;
+	
 	err = get_short(exec_buf + 2);
 
 	if (err != 0) {
