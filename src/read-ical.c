@@ -87,13 +87,13 @@ int main(int argc, const char *argv[])
 		i,
 		read_todos 	= -1;
 	FILE 	*ical = NULL;
-	unsigned char buffer[0xffff];
 	char 	cmd[255],
 		*ptext 		= NULL,
 		*icalfile 	= NULL,
 		*pubtext 	= NULL;
 	struct ToDoAppInfo tai;
-	pi_buffer_t *recbuf;
+	pi_buffer_t *recbuf,
+	    *appblock;
 
 	poptContext pc;
 
@@ -164,9 +164,10 @@ int main(int argc, const char *argv[])
 			goto error_close;
 		}
 
-		dlp_ReadAppBlock(sd, db, 0, buffer,
-				 0xffff);
-		unpack_ToDoAppInfo(&tai, buffer, 0xffff);
+		appblock = pi_buffer_new(0xffff);
+		dlp_ReadAppBlock(sd, db, 0, 0xffff, appblock);
+		unpack_ToDoAppInfo(&tai, appblock->data, appblock->used);
+		pi_buffer_free(appblock);
 
 		recbuf = pi_buffer_new (0xffff);
 

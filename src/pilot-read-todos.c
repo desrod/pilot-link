@@ -48,9 +48,9 @@ int main(int argc, const char *argv[])
 	struct 	PilotUser User;
 	struct 	pi_file *pif 	= NULL;
 	struct 	ToDoAppInfo tai;
-	unsigned char buffer[0xffff];
 
-	pi_buffer_t *recbuf;
+	pi_buffer_t    *recbuf,
+        *appblock;
 
 	poptContext po;
 
@@ -91,6 +91,7 @@ int main(int argc, const char *argv[])
 	}
 
 	/* Read ToDoDB.pdb from the Palm directly */
+    appblock = pi_buffer_new(0xffff);
 	if (!filename) {
 		sd = plu_connect();
 		if (sd < 0)
@@ -107,7 +108,7 @@ int main(int argc, const char *argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+		dlp_ReadAppBlock(sd, db, 0, appblock->allocated, appblock);
 
 	/* Read ToDoDB.pdb from disk */
 	} else {
@@ -121,11 +122,11 @@ int main(int argc, const char *argv[])
 		}
 
 		pi_file_get_app_info(pif, (void *) &ptr, &len);
-
-		memcpy(buffer, ptr, len);
+        pi_buffer_append(appblock, ptr, len);
 	}
 
-	unpack_ToDoAppInfo(&tai, buffer, 0xffff);
+	unpack_ToDoAppInfo(&tai, appblock->data, appblock->used);
+    pi_buffer_free(appblock);
 
 	recbuf = pi_buffer_new (0xffff);
 

@@ -591,6 +591,8 @@ int main(int argc, const char *argv[])
 		*rdFilename		= NULL,
 		buf[0xffff];
 
+	pi_buffer_t *appblock;
+
 	struct 	AddressAppInfo 	aai;
 	struct 	PilotUser 	User;
 
@@ -697,8 +699,10 @@ int main(int argc, const char *argv[])
 		goto error_close;
 	}
 
-	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-	unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
+	appblock = pi_buffer_new(0xffff);
+	l = dlp_ReadAppBlock(sd, db, 0, 0xffff, appblock);
+	unpack_AddressAppInfo(&aai, appblock->data, l);
+	pi_buffer_free(appblock);
 
 	if (defaultcategoryname) {
 		defaultcategory =

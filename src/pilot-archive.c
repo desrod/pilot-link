@@ -73,9 +73,9 @@ int main(int argc, const char *argv[])
 
 	buffer = pi_buffer_new (0xffff);
 
-	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
+	dlp_ReadAppBlock(sd, db, 0, buffer->allocated, buffer);
 
-	unpack_ToDoAppInfo(&tai, buffer->data, 0xffff);
+	unpack_ToDoAppInfo(&tai, buffer->data, buffer->used);
 
 	for (i = 0;; i++) {
 		int attr, category, len = 0;

@@ -384,7 +384,6 @@ int main (int argc, const char *argv[])
                 *ptype;
 
 	struct PilotUser User;
-	unsigned char buffer[0xffff];
 
 	poptContext po;
 
@@ -442,8 +441,6 @@ int main (int argc, const char *argv[])
 		dlp_AddSyncLogEntry (sd, "Unable to open Screen Shot database.\n");
 		goto error_close;
 	}
-
-	dlp_ReadAppBlock (sd, db, 0, buffer, 0xffff);
 
 	WritePictures (sd, db, type );
 

@@ -40,7 +40,8 @@ int main(int argc, const char *argv[])
 
 	char buffer[0xffff];
 	char buffer2[0xffff];
-	pi_buffer_t *recbuf;
+	pi_buffer_t	*recbuf,
+		*appblock;
 
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo tai;
@@ -117,8 +118,10 @@ int main(int argc, const char *argv[])
 		printf("\n\n");
 	}
 
-	ret = dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-	unpack_ExpenseAppInfo(&tai, buffer, 0xffff);
+	appblock = pi_buffer_new(0xffff);
+	ret = dlp_ReadAppBlock(sd, db, 0, 0xffff, appblock);
+	unpack_ExpenseAppInfo(&tai, appblock->data, appblock->used);
+	pi_buffer_free(appblock);
 #ifdef DEBUG
 	i = pack_ExpenseAppInfo(&tai, buffer2, 0xffff);
 	printf("Orig length %d, new length %d, orig data:\n", ret, i);
