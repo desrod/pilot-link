@@ -201,6 +201,20 @@ void write_png( FILE *f, struct NotePad *n )
 }
 #endif
 
+void write_png_v2( FILE *f, struct NotePad *n )
+{
+   int i;
+   
+   if( n->body.dataType != NOTEPAD_DATA_PNG )
+     {
+	fprintf( stderr, "Bad data Type" );
+	return;
+     }
+
+   fwrite( n->data, n->body.dataLen, 1, f );
+   fflush( f );
+}
+
 void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category )
 {
    if( n.flags & NOTEPAD_FLAG_NAME )
@@ -209,7 +223,7 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
    printf( "Category: %s\n", nai.category.name[category] );
    printf( "Created: %s\n", fmt_date( n.createDate ));
    printf( "Changed: %s\n", fmt_date( n.changeDate ));
-   
+
    if( n.flags & NOTEPAD_FLAG_ALARM )
      printf( "Alarm set for: %s\n", fmt_date( n.alarmDate ));
    else
@@ -221,6 +235,9 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
      printf( "yes\n" );
    else
      printf( "no\n" );
+   
+   printf( " Picture version: %ld\n", n.body.dataType );
+
 }
 
 int protect_files( char *name, char *extension )
@@ -265,13 +282,16 @@ void output_picture( int type, struct NotePad n )
    char extension[8];
    static int i = 1;
    
+   if( n.body.dataType == NOTEPAD_DATA_PNG )
+     type = NOTE_OUT_PNG;
+
    if( n.flags & NOTEPAD_FLAG_NAME )
      {
 	if( type == NOTE_OUT_PNG )
 	  sprintf( extension, ".png" );
 	else if( type == NOTE_OUT_PPM )
 	  sprintf( extension, ".ppm" );
-   
+	
 	sprintf( fname, "%s", n.name );
      }
    else
@@ -280,10 +300,10 @@ void output_picture( int type, struct NotePad n )
 	  sprintf( extension, "_np.png" );
 	else if( type == NOTE_OUT_PPM )
 	  sprintf( extension, "_np.ppm" );
-   
+	
 	sprintf( fname, "%4.4d", i++ );
      }
-   
+        	
    protect_files( fname, extension );
    
    printf ("Generating %s...\n", fname);
@@ -291,18 +311,28 @@ void output_picture( int type, struct NotePad n )
    f = fopen (fname, "wb");
    if( f ) 
      {
-	switch( type )
+	switch( n.body.dataType )
 	  {
-	   case NOTE_OUT_PPM:
-	     write_ppm( f, &n );
+	   case NOTEPAD_DATA_PNG:
+	     fprintf( stderr, "Notepad data version 2 defaulting to png output.\n" );
+	     write_png_v2( f, &n );
 	     break;
+
+	   case NOTEPAD_DATA_BITS:
+	     switch( type )
+	       {
+		case NOTE_OUT_PPM:
+		  write_ppm( f, &n );
+		  break;
 	     
-	   case NOTE_OUT_PNG:
+		case NOTE_OUT_PNG:
 #ifdef HAVE_PNG		       
-	     write_png( f, &n );
+		  write_png( f, &n );
 #else
-	     fprintf( stderr, "read-notepad was built without png support\n" );
+		  fprintf( stderr, "read-notepad was built without png support\n" );
 #endif		       
+		  break;
+	       }
 	     break;
 	  }
 	
