@@ -1,3 +1,7 @@
+2002-01-29  JP Rosevear  <jpr@ximian.com>
+
+	* doc/logging.txt: Basic loggin how-to
+
 2002-01-28  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/dlp.c: convert Trace and Expect to logging functions

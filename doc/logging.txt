@@ -1,0 +1,33 @@
+LOGGING
+
+In order to debug problems, libpisock by default contains runtime
+debugging (pass the --disable-debug configure option to disable).
+
+The runtime debugging is controlled by four different environment
+variables: PILOT_DEBUG, PILOT_DEBUG_LEVEL, PILOT_LOG, PILOT_LOGFILE.
+
+PILOT_DEBUG controls what types of information are displayed. The options are:
+	    
+	    DEV	     Device I/O
+	    SLP	     Serial Link Protocol
+	    PADP     Packet Assembly/Disassembly Protocol
+	    CMP	     Connection Management Protocol
+	    NET      Network Sync Protocol
+	    SOCK     Socket Commands
+	    API	     API (datebook, todo, etc)
+	    USER     User apps	    
+	    
+You can specify multiple types of information, ie PILOT_DEBUG="DEV SLP PADP".
+
+PILOT_DEBUG_LEVEL controls the level of information displayed for each
+type. The options are:
+
+	    NONE     No information
+	    ERR	     Critical errors
+	    WARN     Non-critical errors
+	    INFO     General information
+	    DEBUG    Verbose debugging info
+
+If PILOT_LOG is set, the information will be written to the file
+"PiDebug.log", this can be overridden by setting PILOT_LOGFILE to the
+desired file name.
