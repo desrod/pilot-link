@@ -121,8 +121,7 @@ static struct pi_device *pi_usb_device_dup (struct pi_device *dev)
 	new_data->impl 		= data->impl;
 	memcpy(new_data->buf, data->buf, data->buf_size);
 	new_data->buf_size 	= data->buf_size;
-	new_data->ref           = data->ref;
-	(*(new_data->ref))++;
+	new_data->ref           = NULL;
 	new_data->timeout 	= data->timeout;
 	new_dev->data 		= new_data;
 	
@@ -131,7 +130,9 @@ static struct pi_device *pi_usb_device_dup (struct pi_device *dev)
 
 static void pi_usb_device_free (struct pi_device *dev) 
 {
-	free(dev->data);
+	struct pi_usb_data *data = (struct pi_usb_data *)dev->data;
+
+	free(data);
 	free(dev);
 }
 
@@ -162,7 +163,7 @@ struct pi_device *pi_usb_device (int type)
 	}
 	
 	data->buf_size 		= 0;
-	data->ref               = (int *)malloc (sizeof (int));
+	data->ref               = NULL;
 	data->timeout 		= 0;
 	dev->data 		= data;
 	
@@ -376,8 +377,6 @@ pi_usb_setsockopt(struct pi_socket *ps, int level, int option_name,
 static int pi_usb_close(struct pi_socket *ps)
 {
 	struct pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
-
-	(*(data->ref))--;
 
 	if (ps->sd)
 		data->impl.close (ps);

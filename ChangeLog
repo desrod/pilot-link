@@ -1,5 +1,12 @@
 2002-08-15  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/usb.c (pi_usb_device_dup): make the ref null, since we
+	don't currently use it
+	(pi_usb_device): set the ref to null
+	(pi_usb_close): don't dec the ref count
+
+2002-08-15  JP Rosevear  <jpr@ximian.com>
+	
 	* src/dlpsh.c (ls_fn): make sure tag is initialiazed and is based
 	on type properly (from David H. Silber <pilot@silbersoft.com>)
 
