@@ -358,7 +358,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 	int	i		= 0,
 		ofile_len	= 0,
 		ofile_total	= 0,
-		filecount 	= 0,
+		filecount 	= 1,	/* File counts start at 1, of course */
 		failed		= 0,
 		skipped		= 0;	
 
@@ -513,12 +513,11 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		totalsize += sbuf.st_size;
 		printf("   [+][%-4d]", filecount);
 		printf("[%s] %s '%s'", crid, synctext, info.name);
+		fflush(NULL);
 		
 		setlocale(LC_ALL, "");
 		printf(", %'ld bytes, %'ld KiB... ", 
 			(long)sbuf.st_size, (long)totalsize/1024);
-
-		filecount++;
 
 		f = pi_file_create(name, &info);
 
@@ -530,6 +529,8 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 				crid, info.name);
 			failed++;
 		} 
+
+		filecount++;
 		pi_file_close(f);
 		printf("\n");
 
