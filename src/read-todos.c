@@ -200,9 +200,8 @@ int main(int argc, const char *argv[])
 
 	for (i = 0;; i++) {
 		int 	attr,
-			category;
-
-		size_t	len;
+			category,
+			len;
 
 		struct 	ToDo todo;
 
