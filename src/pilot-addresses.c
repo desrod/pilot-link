@@ -750,8 +750,10 @@ int main(int argc, const char *argv[])
 		fclose(f);
 		break;
 	case mode_delete:
-		dlp_DeleteCategory(sd, db,
-				plu_findcategory (&aai.category,deletecategory,PLU_CAT_CASE_INSENSITIVE | PLU_CAT_WARN_UNKNOWN));
+		i = plu_findcategory (&aai.category,deletecategory,PLU_CAT_CASE_INSENSITIVE | PLU_CAT_WARN_UNKNOWN);
+		if (i>=0) {
+			dlp_DeleteCategory(sd, db, i);
+		}
 		break;
 	case mode_delete_all:
 		for (i = 0; i < 16; i++)
