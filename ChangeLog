@@ -1,3 +1,14 @@
+2001-03-01  John Marshall  <john_marshall@palm.com>
+
+        * configure.in (AC_OUTPUT): Add tools/empty to AC_OUTPUT so that
+          it isn't asked to create more than one parent directory at once.
+
+        * empty.in: New file.
+
+        * Makefile.in: Delete generated "empty" file in distclean.
+
+        * configure: Regenerate.
+
 2001-03-01 David A. Desrosiers
 
         * Addition of CopyPrevention and Stream flags to various interfaces 

@@ -313,7 +313,7 @@ distclean: clean depend
 	-cd $(SUBDIRS)/Java ; $(MAKE) distclean
 	-cd tests ; $(MAKE) distclean
 	$(RM) *~ *.orig */*~ */*.orig
-	$(RM) $(SUBDIRS)/Tcl/Makefile $(SUBDIRS)/Perl5/Makefile.PL $(SUBDIRS)/Perl5/Makefile $(SUBDIRS)/Python/Makefile
+	$(RM) $(SUBDIRS)/Tcl/Makefile $(SUBDIRS)/Perl5/Makefile.PL $(SUBDIRS)/Perl5/Makefile $(SUBDIRS)/Python/Makefile $(SUBDIRS)/empty
 
 clean:
 	$(RM) *.o *.a *.lo *.la core a.out tarball test_s test_c install-prc$(EXT) pilot-debug$(EXT)

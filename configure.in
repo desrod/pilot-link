@@ -636,4 +636,4 @@ LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTLIBOBJS)
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTALLOCA)
-AC_OUTPUT(libsock/Makefile $cc_m Makefile tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile)
+AC_OUTPUT(libsock/Makefile $cc_m Makefile tools/empty tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile)
