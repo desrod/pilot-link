@@ -144,10 +144,9 @@ AC_TYPE_SIGNAL
 
 AC_CHECK_HEADERS(
 	dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h 		\
-	netinet/in.h regex.h readline/history.h readline/readline.h stdint.h 	\
-	stdlib.h string.h strings.h sys/ioctl_compat.h sys/ioctl.h 	\
-	sys/malloc.h sys/select.h sys/sockio.h sys/time.h sys/utsname.h \
-	unistd.h IOKit/IOBSD.h)
+	netinet/in.h regex.h stdint.h stdlib.h string.h strings.h	\
+	sys/ioctl_compat.h sys/ioctl.h 	sys/malloc.h sys/select.h	\
+	sys/sockio.h sys/time.h sys/utsname.h unistd.h IOKit/IOBSD.h)
 
 AC_CHECK_FUNCS(
 	atexit cfmakeraw cfsetispeed cfsetospeed cfsetspeed dup2 	\
@@ -424,16 +423,18 @@ dnl C++
 dnl ******************************
 use_cpp=false
 msg_cpp=no
+LIBCXX=
 
 AC_ARG_WITH(cpp,      [  --with-cpp=cppexec      use C++                    [default=yes]])
 
 if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
+	save_LIBS="$LIBS"
+	AC_CHECK_LIB(stdc++, main,LIBCXX=stdc++,
+		     AC_MSG_ERROR([Cannot find a Standard C++ library.]))
+	LIBS="$save_LIBS"
 	use_cpp=true
 fi
-
-AC_CHECK_LIB(stdc++, main,, AC_MSG_ERROR([Cannot find a Standard C++ library.]))
-LIBCXX=stdc++
 AC_SUBST(LIBCXX)
 
 AM_CONDITIONAL(WITH_CXX, $use_cpp)
@@ -442,28 +443,18 @@ if $use_cpp; then
 	CXXFLAGS="$CXXFLAGS -Wno-deprecated"
 fi
 
-
 dnl ******************************
 dnl readline checking
 dnl ******************************
 msg_readline=no
 AC_ARG_WITH(readline,      [  --with-readline         use readline               [default=yes]])
 if test "x$with_readline" != "xno"; then
-
-AC_CHECK_LIB(termcap, tgoto, [
-	AC_CHECK_LIB(readline, readline, [
-	RL_LIBS="-lreadline -ltermcap"
-	LIBS="$ac_save_LIBS"
-	AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
-	msg_readline=yes
-	AC_CHECK_LIB(readline, add_history,
-AC_DEFINE(HAVE_READLINE_HISTORY_H),,"-ltermcap")
-	], RL_LIBS="", "-ltermcap")  
-], RL_LIBS="")
+	VL_LIB_READLINE
+	if test "x$vl_cv_lib_readline" != "xno"; then
+		msg_readline="yes"
+		RL_LIBS="$vl_cv_lib_readline"
+	fi
 fi
-
-AC_SUBST(RL_LIBS)
-
 
 dnl ******************************
 dnl Perl

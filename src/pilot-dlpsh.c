@@ -600,6 +600,8 @@ void handle_user_commands(int sd)
 
 #ifdef HAVE_LIBREADLINE
 		line = readline(prompt);
+		if (line == NULL)	/* user pressed ^d or so */
+			break;
 		if (*line)	/* skip blanks */
 			add_history(line);
 
