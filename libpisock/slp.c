@@ -199,19 +199,24 @@ slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 			*next;
 	struct 	pi_slp_data *data;
 	struct 	slp *slp;
-	unsigned char slp_buf[PI_SLP_HEADER_LEN + PI_SLP_MTU +
-		PI_SLP_FOOTER_LEN];
+	unsigned char *slp_buf;
 	unsigned int	i,
 			n;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
+
 	data = (struct pi_slp_data *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SLP);
 	if (next == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
-	
+
+	slp_buf = (unsigned char *) malloc (PI_SLP_HEADER_LEN + PI_SLP_MTU +
+		PI_SLP_FOOTER_LEN);
+	if (slp_buf == NULL)
+		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
+
 	slp = (struct slp *) slp_buf;
 
 	/* Header values */
@@ -243,6 +248,8 @@ slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 		CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf, 1));
 		CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf));
 	}
+	
+	free (slp_buf);
 
 	return bytes;
 }
