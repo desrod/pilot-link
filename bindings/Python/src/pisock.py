@@ -74,6 +74,8 @@ PI_CMP_FLAGS = _pisock.PI_CMP_FLAGS
 PI_CMP_VERS = _pisock.PI_CMP_VERS
 PI_CMP_BAUD = _pisock.PI_CMP_BAUD
 PI_NET_TYPE = _pisock.PI_NET_TYPE
+PI_NET_SPLIT_WRITES = _pisock.PI_NET_SPLIT_WRITES
+PI_NET_WRITE_CHUNKSIZE = _pisock.PI_NET_WRITE_CHUNKSIZE
 PI_SOCK_STATE = _pisock.PI_SOCK_STATE
 PI_PilotSocketDLP = _pisock.PI_PilotSocketDLP
 PI_PilotSocketConsole = _pisock.PI_PilotSocketConsole
@@ -91,6 +93,8 @@ pi_listen = _pisock.pi_listen
 pi_accept = _pisock.pi_accept
 
 pi_accept_to = _pisock.pi_accept_to
+
+pi_socket_connected = _pisock.pi_socket_connected
 
 pi_send = _pisock.pi_send
 
@@ -110,6 +114,8 @@ pi_getsockopt = _pisock.pi_getsockopt
 
 pi_version = _pisock.pi_version
 
+pi_maxrecsize = _pisock.pi_maxrecsize
+
 pi_tickle = _pisock.pi_tickle
 
 pi_watchdog = _pisock.pi_watchdog
@@ -117,6 +123,14 @@ pi_watchdog = _pisock.pi_watchdog
 pi_close = _pisock.pi_close
 
 pi_error = _pisock.pi_error
+
+pi_set_error = _pisock.pi_set_error
+
+pi_palmos_error = _pisock.pi_palmos_error
+
+pi_set_palmos_error = _pisock.pi_set_palmos_error
+
+pi_reset_errors = _pisock.pi_reset_errors
 
 dlp_strerror = _pisock.dlp_strerror
 dlpDBFlagResource = _pisock.dlpDBFlagResource

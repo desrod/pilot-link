@@ -63,7 +63,9 @@ enum PiOptCMP {
 };
 
 enum PiOptNet {
-        PI_NET_TYPE
+        PI_NET_TYPE,
+		PI_NET_SPLIT_WRITES,		/**< if set, write separately the NET header and data */
+		PI_NET_WRITE_CHUNKSIZE		/**< size of data chunks if PI_NET_SPLIT_WRITES is set. 0 for no chunking of data */
 };
 
 enum PiOptSock {
@@ -81,8 +83,9 @@ extern int pi_connect (int pi_sd, const char *port);
 extern int pi_bind (int pi_sd, const char *port);
 extern int pi_listen (int pi_sd, int backlog);
 extern int pi_accept (int pi_sd, struct sockaddr *OUTPUT, size_t *OUTPUT);
-
 extern int pi_accept_to (int pi_sd, struct sockaddr *OUTPUT, size_t *OUTPUT, int timeout);
+
+extern int pi_socket_connected(int pi_sd);
 
 extern ssize_t pi_send (int pi_sd, void *msg, size_t len, int flags);
 extern ssize_t pi_recv (int pi_sd, pi_buffer_t *msg, size_t len, int flags);
@@ -97,6 +100,7 @@ extern int pi_setsockopt (int pi_sd, int level, int option_name, const void *opt
 extern int pi_getsockopt (int pi_sd, int level, int option_name, void * option_value, size_t * option_len);
 
 extern int pi_version (int pi_sd);
+extern unsigned long pi_maxrecsize (int pi_sd);
 
 extern int pi_tickle (int pi_sd);
 extern int pi_watchdog (int pi_sd, int interval);
@@ -104,3 +108,10 @@ extern int pi_watchdog (int pi_sd, int interval);
 extern int pi_close (int pi_sd);
 
 extern int pi_error (int pi_sd);
+extern int pi_set_error (int pi_sd, int error_code);
+
+extern int pi_palmos_error(int pi_sd);
+extern int pi_set_palmos_error(int pi_sd, int error_code);
+
+extern void pi_reset_errors(int pi_sd);
+

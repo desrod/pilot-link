@@ -739,6 +739,7 @@ extern int pi_bind(int,char const *);
 extern int pi_listen(int,int);
 extern int pi_accept(int,struct sockaddr *,size_t *);
 extern int pi_accept_to(int,struct sockaddr *,size_t *,int);
+extern int pi_socket_connected(int);
 extern ssize_t pi_send(int,void *,size_t,int);
 extern ssize_t pi_recv(int,pi_buffer_t *,size_t,int);
 extern int pi_read(int,pi_buffer_t *,size_t);
@@ -748,10 +749,15 @@ extern int pi_getsockpeer(int,struct sockaddr *,size_t *);
 extern int pi_setsockopt(int,int,int,void const *,size_t *);
 extern int pi_getsockopt(int,int,int,void *,size_t *);
 extern int pi_version(int);
+extern unsigned long pi_maxrecsize(int);
 extern int pi_tickle(int);
 extern int pi_watchdog(int,int);
 extern int pi_close(int);
 extern int pi_error(int);
+extern int pi_set_error(int,int);
+extern int pi_palmos_error(int);
+extern int pi_set_palmos_error(int,int);
+extern void pi_reset_errors(int);
 
 typedef int DLPERROR;
 typedef int DLPDBERROR;
@@ -1039,6 +1045,21 @@ static PyObject *_wrap_pi_accept_to(PyObject *self, PyObject *args) {
 }
 
 
+static PyObject *_wrap_pi_socket_connected(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    int arg1 ;
+    int result;
+    
+    if(!PyArg_ParseTuple(args,(char *)"i:pi_socket_connected",&arg1)) goto fail;
+    result = (int)pi_socket_connected(arg1);
+    
+    resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
 static PyObject *_wrap_pi_send(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
@@ -1264,6 +1285,21 @@ static PyObject *_wrap_pi_version(PyObject *self, PyObject *args) {
 }
 
 
+static PyObject *_wrap_pi_maxrecsize(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    int arg1 ;
+    unsigned long result;
+    
+    if(!PyArg_ParseTuple(args,(char *)"i:pi_maxrecsize",&arg1)) goto fail;
+    result = (unsigned long)pi_maxrecsize(arg1);
+    
+    resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
 static PyObject *_wrap_pi_tickle(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
@@ -1319,6 +1355,67 @@ static PyObject *_wrap_pi_error(PyObject *self, PyObject *args) {
     result = (int)pi_error(arg1);
     
     resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_pi_set_error(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    int arg1 ;
+    int arg2 ;
+    int result;
+    
+    if(!PyArg_ParseTuple(args,(char *)"ii:pi_set_error",&arg1,&arg2)) goto fail;
+    result = (int)pi_set_error(arg1,arg2);
+    
+    resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_pi_palmos_error(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    int arg1 ;
+    int result;
+    
+    if(!PyArg_ParseTuple(args,(char *)"i:pi_palmos_error",&arg1)) goto fail;
+    result = (int)pi_palmos_error(arg1);
+    
+    resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_pi_set_palmos_error(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    int arg1 ;
+    int arg2 ;
+    int result;
+    
+    if(!PyArg_ParseTuple(args,(char *)"ii:pi_set_palmos_error",&arg1,&arg2)) goto fail;
+    result = (int)pi_set_palmos_error(arg1,arg2);
+    
+    resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_pi_reset_errors(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    int arg1 ;
+    
+    if(!PyArg_ParseTuple(args,(char *)"i:pi_reset_errors",&arg1)) goto fail;
+    pi_reset_errors(arg1);
+    
+    Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
     return NULL;
@@ -4007,6 +4104,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"pi_listen", _wrap_pi_listen, METH_VARARGS },
 	 { (char *)"pi_accept", _wrap_pi_accept, METH_VARARGS },
 	 { (char *)"pi_accept_to", _wrap_pi_accept_to, METH_VARARGS },
+	 { (char *)"pi_socket_connected", _wrap_pi_socket_connected, METH_VARARGS },
 	 { (char *)"pi_send", _wrap_pi_send, METH_VARARGS },
 	 { (char *)"pi_recv", _wrap_pi_recv, METH_VARARGS },
 	 { (char *)"pi_read", _wrap_pi_read, METH_VARARGS },
@@ -4016,10 +4114,15 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"pi_setsockopt", _wrap_pi_setsockopt, METH_VARARGS },
 	 { (char *)"pi_getsockopt", _wrap_pi_getsockopt, METH_VARARGS },
 	 { (char *)"pi_version", _wrap_pi_version, METH_VARARGS },
+	 { (char *)"pi_maxrecsize", _wrap_pi_maxrecsize, METH_VARARGS },
 	 { (char *)"pi_tickle", _wrap_pi_tickle, METH_VARARGS },
 	 { (char *)"pi_watchdog", _wrap_pi_watchdog, METH_VARARGS },
 	 { (char *)"pi_close", _wrap_pi_close, METH_VARARGS },
 	 { (char *)"pi_error", _wrap_pi_error, METH_VARARGS },
+	 { (char *)"pi_set_error", _wrap_pi_set_error, METH_VARARGS },
+	 { (char *)"pi_palmos_error", _wrap_pi_palmos_error, METH_VARARGS },
+	 { (char *)"pi_set_palmos_error", _wrap_pi_set_palmos_error, METH_VARARGS },
+	 { (char *)"pi_reset_errors", _wrap_pi_reset_errors, METH_VARARGS },
 	 { (char *)"dlp_strerror", _wrap_dlp_strerror, METH_VARARGS },
 	 { (char *)"dlp_GetSysDateTime", _wrap_dlp_GetSysDateTime, METH_VARARGS },
 	 { (char *)"dlp_SetSysDateTime", _wrap_dlp_SetSysDateTime, METH_VARARGS },
@@ -4177,6 +4280,8 @@ static swig_const_info swig_const_table[] = {
 { SWIG_PY_INT,     (char *)"PI_CMP_VERS", (long) PI_CMP_VERS, 0, 0, 0},
 { SWIG_PY_INT,     (char *)"PI_CMP_BAUD", (long) PI_CMP_BAUD, 0, 0, 0},
 { SWIG_PY_INT,     (char *)"PI_NET_TYPE", (long) PI_NET_TYPE, 0, 0, 0},
+{ SWIG_PY_INT,     (char *)"PI_NET_SPLIT_WRITES", (long) PI_NET_SPLIT_WRITES, 0, 0, 0},
+{ SWIG_PY_INT,     (char *)"PI_NET_WRITE_CHUNKSIZE", (long) PI_NET_WRITE_CHUNKSIZE, 0, 0, 0},
 { SWIG_PY_INT,     (char *)"PI_SOCK_STATE", (long) PI_SOCK_STATE, 0, 0, 0},
 { SWIG_PY_INT,     (char *)"PI_PilotSocketDLP", (long) 3, 0, 0, 0},
 { SWIG_PY_INT,     (char *)"PI_PilotSocketConsole", (long) 1, 0, 0, 0},
