@@ -19,8 +19,8 @@ extern "C" {
 #define PI_SOCK_STREAM		0x0010
 #define PI_SOCK_RAW		0x0030
 
-#define PI_INIT_CMP 0x01
-#define PI_INIT_NET 0x02
+#define PI_CMD_CMP 0x01
+#define PI_CMD_NET 0x02
 
 enum PiOptLevels {
 	PI_LEVEL_SOCKET,
@@ -52,6 +52,10 @@ enum PiOptSLP {
 enum PiOptPADP {
 	PI_PADP_TYPE,
 	PI_PADP_LASTTYPE,
+};
+
+enum PiOptNet {
+	PI_NET_TYPE,
 };
 	
 #define PI_SLP_SPEED		0x0001

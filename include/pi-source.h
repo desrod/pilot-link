@@ -111,14 +111,14 @@ extern "C" {
 		int raddrlen;
 		int type;
 		int protocol;
-		int init;
+		int cmd;
 		int sd;
 		int initiator;
 
 		struct pi_protocol **protocol_queue;
 		int queue_len;
-		struct pi_protocol **init_queue;
-		int init_len;
+		struct pi_protocol **cmd_queue;
+		int cmd_len;
 
 		struct pi_device *device;
 
@@ -126,17 +126,15 @@ extern "C" {
 		struct pi_skb *rxq;
 		struct pi_socket *next;
 
-		int connected;		/* true on connected or accepted socket                                 */
-		int accepted;		/* only true on accepted socket                                         */
-		int broken;		/* sth. went wrong so badly we cannot use this socket anymore           */
-		int accept_to;		/* timeout value for call to accept()                                   */
+		int connected;		/* true on connected or accepted socket                            */
+		int command;		/* true when socket in command state                               */
+		int broken;		/* sth. went wrong so badly we cannot use this socket anymore      */
+		int accept_to;		/* timeout value for call to accept()                              */
 		int majorversion;
 		int minorversion;
 		int tickle;
 		int version;		/* In form of 0xAABB where AA is major version and BB is minor version  */
 		int dlprecord;		/* Index used for some DLP functions */
-
-		char last_tid;
 
 #ifdef OS2
 		unsigned short os2_read_timeout;

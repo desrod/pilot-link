@@ -1,4 +1,4 @@
-/* 
+/*
  * dlpsh.c: DLP Command Shell
  *
  * (c) 1996, 2000, The pilot-link Team
@@ -20,19 +20,26 @@
  */
 
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#ifndef HAVE_GETOPT_LONG
+#include "getopt.h"
+#else
 #include <getopt.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>		/* free() */
 #include <ctype.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-serial.h"
 #include "pi-header.h"
 
-#ifdef READLINE_2_1
+#ifdef HAVE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
@@ -42,31 +49,31 @@
 struct pi_socket *ticklish_pi_socket;
 
 /* Declare prototypes */
-int user_fn(int sd, int argc, char **argv);
-int ls_fn(int sd, int argc, char **argv);
-int df_fn(int sd, int argc, char **argv);
-int time_fn(int sd, int argc, char **argv);
-int rm_fn(int sd, int argc, char **argv);
-int help_fn(int sd, int argc, char **argv);
-int exit_fn(int sd, int argc, char **argv);
-char *strtoke(char *str, char *ws, char *delim);
-void exit_func(void);
-void sigexit(int sig);
-char *timestr(time_t t);
+int 	df_fn(int sd, int argc, char *argv[]),
+	exit_fn(int sd, int argc, char *argv[]),
+	help_fn(int sd, int argc, char *argv[]),
+	ls_fn(int sd, int argc, char *argv[]),
+	rm_fn(int sd, int argc, char *argv[]),
+	time_fn(int sd, int argc, char *argv[]),
+	user_fn(int sd, int argc, char *argv[]);
 
+char 	*strtoke(char *str, char *ws, char *delim),
+	*timestr(time_t t);
+
+void exit_func(void);
 void handle_user_commands(int sd);
 
 typedef int (*cmd_fn_t) (int, int, char **);
 
-int pilot_connect(char const *port);
+int pilot_connect(const char *port);
 static void Help(char *progname);
 
 static const char *optstring = "hp:";
 
 struct option options[] = {
-	{"help", no_argument, NULL, 'h'},
+	{"help", no_argument,       NULL, 'h'},
 	{"port", required_argument, NULL, 'p'},
-	{NULL, 0, NULL, 0}
+	{NULL,   0,                 NULL, 0}
 };
 
 struct Command {
@@ -75,176 +82,74 @@ struct Command {
 };
 
 struct Command command_list[] = {
-	{"user", user_fn},
-	{"ls", ls_fn},
-	{"df", df_fn},
-	{"time", time_fn},
-	{"rm", rm_fn},
+	{"df",   df_fn},  
 	{"help", help_fn},
+	{"ls",   ls_fn},  
+	{"exit", exit_fn},
 	{"quit", exit_fn},
-	{NULL, NULL}
+	{"rm",   rm_fn},
+	{"time", time_fn},
+	{"dtp",	 time_fn},
+	{"user", user_fn},
+	{NULL,   NULL}
 };
 
-/* functions for builtin commands */
-int exit_fn(int sd, int argc, char **argv)
+int main(int argc, char *argv[])
 {
-#ifdef DEBUG
-	fprintf(stderr,
-		"\n\n================== EXITING ===================\n\n");
-#endif
-	printf("Exiting.\n");
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
+	int 	c,
+		sd = -1;
 
-	sigexit(0);
-	return 0;
-}
+	char 	*progname = argv[0],
+		*port = NULL;
 
-/***********************************************************************
- *
- * Function:    help_fn
- *
- * Summary:     Handle the parsing of -h inside dlpsh>
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int help_fn(int sd, int argc, char **argv)
-{
-
-/* Let's figure out a better way to do this to automagically 
-   "self-document" arguments, maybe with cproto later on. 
-
-	int i;
-	for (i = 0; command_list[i].name != NULL; i++) {
-		printf("%s\t\n", command_list[i].name);
-	}
-*/
-
-	printf("Built-in commands:\n\n"
-	       "user     = print the currently set User information\n"
-	       "ls       = used with -l and -r to provide long and ROM file lists\n"
-	       "df       = display how much RAM and ROM is free on your device\n"
-	       "time     = set the time on the Palm using the desktop time\n"
-	       "rm       = remove a file, delete it entirely from the Palm device\n"
-	       "help     = You Are Here(tm)\n"
-	       "quit     = exit the DLP Protocol Shell\n\n"
-	       "Use '<command> -help' for more granular syntax and switches\n\n");
-	return 0;
-}
-
-/***********************************************************************
- *
- * Function:    user_fn
- *
- * Summary:     Set the username, UserID and PCID on the device, 
- *		similar to install-user, but interactive
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int user_fn(int sd, int argc, char **argv)
-{
-	struct PilotUser U, nU;
-	char fl_name = 0, fl_uid = 0, fl_vid = 0, fl_pid = 0;
-	int c;
-	int ret;
-
-	extern char *optarg;
-	extern int optind;
-
-	optind = 0;
-	while ((c = getopt(argc, argv, "n:i:v:p:h")) != -1) {
+	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch (c) {
-		  case 'n':
-			  fl_name = 1;
-			  strncpy(nU.username, optarg, sizeof(nU.username));
-			  break;
-		  case 'i':
-			  fl_uid = 1;
-			  nU.userID = strtoul(optarg, NULL, 16);
-			  break;
-		  case 'v':
-			  fl_vid = 1;
-			  nU.viewerID = strtoul(optarg, NULL, 16);
-			  break;
-		  case 'p':
-			  fl_pid = 1;
-			  nU.lastSyncPC = strtoul(optarg, NULL, 16);
-			  break;
+
 		  case 'h':
-		  case '?':
-			  printf(" Usage: user -n <Username>\n"
-				 "             -i <UserID>\n"
-				 "             -v <ViewerID>\n"
-				 "             -p <PCid>\n");
-			  return 0;
+			  Help(progname);
+			  exit(0);
+		  case 'p':
+			  port = optarg;
+			  break;
+		  default:
 		}
 	}
 
-	ret = dlp_ReadUserInfo(sd, &U);
-	if (ret < 0) {
-		printf("dlp_ReadUserInfo: err %d\n", ret);
-		return -1;
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
 	}
 
-	if (fl_name + fl_uid + fl_vid + fl_pid == 0) {
-		printf(" Username = \"%s\"\n"
-		       " UserID   = %08lx (%i)\n"
-		       " ViewerID = %08lx (%i)\n"
-		       " PCid     = %08lx (%i)\n", U.username,
-		       U.userID, (int) U.userID,
-		       U.viewerID, (int) U.viewerID,
-		       U.lastSyncPC, (int) U.lastSyncPC);
-		return 0;
+	if (port == NULL && argc > 1) {
+		printf("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		       "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+		exit(1);
+	} else if (port != NULL) {
+
+		sd = pilot_connect(port);
+		
+		/* Did we get a valid socket descriptor back? */
+		if (dlp_OpenConduit(sd) < 0) {
+			exit(1);
+		} else {
+			printf("\nWelcome to the DLP Shell\n"
+			       "Type 'help' for additional information\n\n");
+
+			/* Stayin' alive, stayin' alive...
+			   Normally we tickle to keep the port open and listening, 
+			   but since we're removing PADP support, we have to find
+			   another way to do this cleanly. Maybe pilot_connect() 
+			   has to go... 
+			*/			
+			pi_watchdog(sd, TICKLE_INTERVAL);
+
+			handle_user_commands(sd);
+
+			return 0;
+		}
 	}
-
-	if (fl_name)
-		strncpy(U.username, nU.username, sizeof(U.username));
-	if (fl_uid)
-		U.userID = nU.userID;
-	if (fl_vid)
-		U.viewerID = nU.viewerID;
-	if (fl_pid)
-		U.lastSyncPC = nU.lastSyncPC;
-
-	U.successfulSyncDate = time(NULL);
-	U.lastSyncDate = U.successfulSyncDate;
-
-	ret = dlp_WriteUserInfo(sd, &U);
-	if (ret < 0) {
-		printf("dlp_WriteUserInfo: err %d\n", ret);
-		return -1;
-	}
-
 	return 0;
-}
-
-/***********************************************************************
- *
- * Function:    timestr
- *
- * Summary:     Build an ISO-compliant time string for use later
- *
- * Parmeters:   None
- *
- * Returns:     String containing the proper time
- *
- ***********************************************************************/
-char *timestr(time_t t)
-{
-	struct tm tm;
-	static char buf[50];
-
-	tm = *localtime(&t);
-	sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d",
-		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-		tm.tm_hour, tm.tm_min, tm.tm_sec);
-	return (buf);
 }
 
 /***********************************************************************
@@ -252,73 +157,60 @@ char *timestr(time_t t)
  * Function:    df_fn
  *
  * Summary:     Simple dump of CardInfo, which includes the RAM/ROM 
- * 		and manufacturer
+ * 		amounts free and used. 
  *
  * Parmeters:   None
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-int df_fn(int sd, int argc, char **argv)
+int df_fn(int sd, int argc, char *argv[])
 {
-	struct CardInfo C;
-	int i;
+	struct CardInfo Card;
 
-	C.card = -1;
-	C.more = 1;
+	Card.card = -1;
+	Card.more = 1;
 
-	while (C.more) {
-		if (dlp_ReadStorageInfo(sd, C.card + 1, &C) < 0)
+	while (Card.more) {
+		if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
 			break;
 
-		printf(" ROM      : %lu bytes  (%luk) \n"
-		       " RAM      : %lu bytes  (%luk) \n"
-		       " Free RAM : %lu bytes  (%luk) \n ", C.romSize,
-		       (C.romSize / 1024), C.ramSize, (C.ramSize / 1024),
-		       C.ramFree, (C.ramFree / 1024));
-
-		for (i = 0; i < 33; i++)
-			printf("-");
-		printf("\n");
-		printf(" Total    : %lu bytes (%luk) \n\n",
-		       (C.romSize + C.ramSize),
-		       ((C.romSize + C.ramSize) / 1024));
+		printf("Filesystem           1k-blocks      Used   Available     Used     Total\n");
+		printf("Card0:ROM              %7lu", Card.romSize);
+                printf("       n/a     %7lu      n/a     %4luk\n", Card.romSize, Card.romSize/1024);
+		printf("Card0:RAM              %7lu   %7lu     %7lu     %3ld%%     %4luk\n", 
+			Card.ramSize, (Card.ramSize - Card.ramFree), Card.ramFree, 
+			((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
+		printf("Total (ROM + RAM)     %8lu   %7lu         n/a      n/a    %5luk\n\n", 
+			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree, 
+			(Card.romSize + Card.ramSize)/1024);
 	}
 	return 0;
 }
 
 /***********************************************************************
  *
- * Function:    time_fn
+ * Function:    help_fn
  *
- * Summary:     ntpdate-style function for setting Palm time from
- *		desktop clock
+ * Summary:     Handle the parsing of -h inside 'dlpsh>'
  *
  * Parmeters:   None
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-int time_fn(int sd, int argc, char **argv)
+int help_fn(int sd, int argc, char *argv[])
 {
-	int s;
-	time_t ltime;
-	struct tm *tm_ptr;
-	char c, timebuf[80];
-
-	time(&ltime);
-
-	tm_ptr = localtime(&ltime);
-
-	c = *asctime(tm_ptr);
-	s = dlp_SetSysDateTime(sd, ltime);
-
-	strftime(timebuf, 80,
-		 "Now setting Palm time from desktop to: %a %b %d %H:%M:%S %Z %Y\n",
-		 tm_ptr);
-	printf(timebuf);
+	printf("The current built-in commands are:\n\n"
+	       "   user           print the currently set User information\n"
+	       "   ls             used with -l and -r to provide long and ROM file lists\n"
+	       "   df             display how much RAM and ROM is free on your device\n"
+	       "   time,dtp       Desktop-to-Palm, set the time on the Palm from the desktop\n"
+	       "   rm             remove a file, delete it entirely from the Palm device\n"
+	       "   help           You Are Here(tm)\n"
+	       "   quit,exit      exit the DLP Protocol Shell\n\n"
+	       "Use '<command> -help' for more granular syntax and switches\n\n");
 	return 0;
-
 }
 
 /***********************************************************************
@@ -332,15 +224,15 @@ int time_fn(int sd, int argc, char **argv)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int ls_fn(int sd, int argc, char **argv)
+int ls_fn(int sd, int argc, char *argv[])
 {
-	int c;
-	int cardno;
-	int flags;
-	int ret;
-	int start;
-	int lflag = 0;
-	int rom_flag = 0;
+	int 	c,
+		cardno,
+		flags,
+		ret,
+		start,
+		lflag = 0,
+		rom_flag = 0;
 
 #ifdef sun
 	extern char *optarg;
@@ -393,22 +285,19 @@ int ls_fn(int sd, int argc, char **argv)
 			return -1;
 		}
 
-		printf("%.32s\n", info.name);
-                if (lflag) { 
-                        printf("  more 0x%x; ", info.more);
-                        printf("Flags 0x%x; ", info.flags);
-                        tag = htonl(info.type);
-                        printf("Type '%.4s'; ", (char *) &tag);
-                        tag = htonl(info.creator);
-                        printf("  CreatorID '%.4s';", (char *) &tag);
-                        printf(" Version %d;\n ", info.version);
-                        printf(" modnum %ld; ", info.modnum);
-                        printf("Created %s; ", timestr(info.createDate));
-                        printf("Modified %s;\n  ",
-                               timestr(info.modifyDate));
-                        printf("Backed up %s; ", timestr(info.backupDate));
-                        printf("\n\n");
-                }  
+
+		printf("  Filename: \"%s\"\n", info.name);
+
+		if (lflag) {
+			printf("       More: 0x%x     Flags: 0x%-4x             Type: %.4s\n",
+				info.more, info.flags, (char *) &tag);
+			tag = htonl(info.creator);
+			printf("  CreatorID: %s    Modification Number: %-4ld Version: %-2d\n",
+				(char *) &tag, info.modnum, info.version);
+			printf("Created: %19s\n", timestr(info.createDate));
+			printf("Backup : %19s\n", timestr(info.backupDate));
+			printf("Modify : %19s\n\n", timestr(info.modifyDate));
+		}
 
 		if (info.index < start) {
 			/* avoid looping forever if we get confused */
@@ -433,11 +322,12 @@ int ls_fn(int sd, int argc, char **argv)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int rm_fn(int sd, int argc, char **argv)
+int rm_fn(int sd, int argc, char *argv[])
 {
-	int cardno;
-	int ret;
-	char *name;
+	int 	cardno,
+		ret;
+
+	char 	*name;
 
 	if (argc != 2) {
 		printf("Delete the database or application on your Palm device by name\n\n"
@@ -456,9 +346,157 @@ int rm_fn(int sd, int argc, char **argv)
 		printf("%s: remove error %d\n", name, ret);
 		return (0);
 	}
+	printf("Application %s successfully removed\n", name);
 
-	return (0);
+	return 0;
 }
+
+/***********************************************************************
+ *
+ * Function:    time_fn
+ *
+ * Summary:     ntpdate-style function for setting Palm time from
+ *		desktop clock
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+int time_fn(int sd, int argc, char *argv[])
+{
+	int 	s;
+	time_t 	ltime;
+	struct 	tm *tm_ptr;
+	char 	timebuf[80];
+
+	time(&ltime);
+	tm_ptr = localtime(&ltime);
+
+	strftime(timebuf, 80, "Now setting Palm time from desktop to: "
+			      "%a %b %d %H:%M:%S %Z %Y\n", tm_ptr);
+	printf(timebuf);
+	s = dlp_SetSysDateTime(sd, ltime);
+
+	return 0;
+}
+
+/***********************************************************************
+ *
+ * Function:    user_fn
+ *
+ * Summary:     Set the username, UserID and PCID on the device, 
+ *		similar to install-user, but interactive
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+int user_fn(int sd, int argc, char *argv[])
+{
+	struct 	PilotUser User, nUser;
+
+	char 	fl_name = 0,
+		fl_uid = 0,
+		fl_vid = 0, 
+		fl_pid = 0;
+	
+	int 	ch,
+		ret;
+
+	optind = 0;
+
+	while ((ch = getopt(argc, argv, "n:i:v:p:h")) != -1) {
+		switch (ch) {
+		  case 'n':
+			  fl_name = 1;
+			  strncpy(nUser.username, optarg, sizeof(nUser.username));
+			  break;
+		  case 'i':
+			  fl_uid = 1;
+			  nUser.userID = strtoul(optarg, NULL, 16);
+			  break;
+		  case 'v':
+			  fl_vid = 1;
+			  nUser.viewerID = strtoul(optarg, NULL, 16);
+			  break;
+		  case 'p':
+			  fl_pid = 1;
+			  nUser.lastSyncPC = strtoul(optarg, NULL, 16);
+			  break;
+		  case 'h':
+			  printf(" Usage: user -n \"John Q. Public\" (full username in quotes)\n"
+				 "             -i <UserID>\n"
+				 "             -v <ViewerID>\n"
+				 "             -p <PCid>\n");
+			  return 0;
+		}
+	}
+
+	ret = dlp_ReadUserInfo(sd, &User);
+	if (ret < 0) {
+		printf("dlp_ReadUserInfo: err %d\n", ret);
+		return -1;
+	}
+
+	if (fl_name + fl_uid + fl_vid + fl_pid == 0) {
+		printf(" Username = \"%s\"\n"
+		       " UserID   = %08lx (%i)\n"
+		       " ViewerID = %08lx (%i)\n"
+		       " PCid     = %08lx (%i)\n", User.username,
+		       User.userID, (int) User.userID,
+		       User.viewerID, (int) User.viewerID,
+		       User.lastSyncPC, (int) User.lastSyncPC);
+		return 0;
+	}
+
+	if (fl_name)
+		strncpy(User.username, nUser.username, sizeof(User.username));
+	if (fl_uid)
+		User.userID = nUser.userID;
+	if (fl_vid)
+		User.viewerID = nUser.viewerID;
+	if (fl_pid)
+		User.lastSyncPC = nUser.lastSyncPC;
+
+	User.successfulSyncDate = time(NULL);
+	User.lastSyncDate = User.successfulSyncDate;
+
+	ret = dlp_WriteUserInfo(sd, &User);
+	if (ret < 0) {
+		printf("dlp_WriteUserInfo: err %d\n", ret);
+		return -1;
+	}
+
+	return 0;
+}
+
+/***********************************************************************
+ *
+ * Function:    timestr
+ *
+ * Summary:     Build an ISO-compliant time string for use later
+ *
+ * Parmeters:   None
+ *
+ * Returns:     String containing the proper time
+ *
+ ***********************************************************************/
+char *timestr(time_t t)
+{
+	struct tm tm;
+	static char buf[50];
+
+	tm = *localtime(&t);
+	sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d",
+		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+		tm.tm_hour, tm.tm_min, tm.tm_sec);
+	return (buf);
+}
+
+
+
 
 /***********************************************************************
  *
@@ -473,111 +511,82 @@ int rm_fn(int sd, int argc, char **argv)
  ***********************************************************************/
 void handle_user_commands(int sd)
 {
+#ifdef HAVE_READLINE
 
-#ifdef READLINE_2_1
-	char *line;
-	static const char *prompt = "dlpsh> ";
+/* A safer alternative
+	char 	*line = (char *)malloc(256*sizeof(char)),
+ */
+	char 	*line,
+		*prompt = "dlpsh> ";
 #else
-	char buf[256];
+	char 	buf[256];
 #endif
 
-	char *argv[32];
-	int argc;
-	int i;
+	char 	*argv[32];
+	int 	argc,
+		inc;
 
 	for (;;) {
 		fflush(stdout);
 
-#ifdef READLINE_2_1
-		line = readline(prompt);
-		if (line && *line)	/* skip blanks */
-			add_history(line);
-		if (!line)
-			break;
+#ifdef HAVE_READLINE
+	line = readline(prompt);
+	if (line && *line)	/* skip blanks */
+		add_history(line);
+	if (!line)
+		break;
 
-		argc = 0;
-		argv[0] = strtoke(line, " \t\n", "\"'");
+	argc = 0;
+	
+	/* Changing input? BAD BAD BAD... -DD */
+	argv[0] = strtoke(line, " \t\n", "\"'");
 #else
-		printf("dlpsh> ");
-		if (fgets(buf, 256, stdin) == NULL)
-			break;
+	printf("dlpsh> ");
+	
+	if (fgets(buf, 256, stdin) == NULL)
+		break;
 
-		argc = 0;
-		argv[0] = strtoke(buf, " \t\n", "\"'");
+	argc = 0;
+	argv[0] = strtoke(buf, " \t\n", "\"'");
 #endif
 
-		while (argv[argc] != NULL) {
-			argc++;
-			argv[argc] = strtoke(NULL, " \t\n", "\"'");
+	while (argv[argc] != NULL) {
+		argc++;
+
+		/* Tsk, tsk. Changing the input again! -DD */
+		argv[argc] = strtoke(NULL, " \t\n", "\"'");
+	}
+
+	if (argc == 0)
+		continue;
+
+	for (inc = 0; command_list[inc].name != NULL; inc++) {
+		if (strcasecmp(argv[0], command_list[inc].name) == 0) {
+			command_list[inc].func(sd, argc, argv);
 		}
+	}
 
-		if (argc == 0)
-			continue;
-
-		for (i = 0; command_list[i].name != NULL; i++) {
-			if (strcasecmp(argv[0], command_list[i].name) == 0) {
-				command_list[i].func(sd, argc, argv);
-			}
-		}
-
-#ifdef READLINE_2_1
-		free(line);
+#ifdef HAVE_READLINE
+	free(line);
 #endif
 	}
 	printf("\n");
 }
 
-int main(int argc, char **argv)
+/* functions for builtin commands */
+int exit_fn(int sd, int argc, char *argv[])
 {
-	int c;
-	int sd = -1;
-	char *progname = argv[0];
-	char *port = NULL;
-	/* 
-	extern int opterr;
-	opterr = 0;
-	*/
-	
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch (c) {
-
-		  case 'h':
-			  Help(progname);
-			  exit(0);
-		  case 'p':
-			  port = optarg;
-			  break;
-		  case ':':
-		}
-	}
-
-	if (port == NULL) {
-		printf("ERROR: You forgot to specify a valid port\n\n");
-		Help(progname);
-		exit(1);
-	} else {
-		sd = pilot_connect(port);
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-		} else {
-			printf
-			    ("\nWelcome to the DLP Shell\nType 'help' for additional information\n\n");
-
-			/* Stayin' alive, stayin' alive... */
-//			pi_watchdog(sd, TICKLE_INTERVAL);
-
-			handle_user_commands(sd);
-
-			return 0;
-		}
-	}
-}
-void sigexit(int sig)
-{
+#ifdef DEBUG
+	fprintf(stderr,
+		"\n\n================== EXITING ===================\n\n");
+#endif
+	printf("Exiting.\n");
+	dlp_AddSyncLogEntry(sd, "dlpsh, DLP Protocol Shell ended.\n"
+				"Thank you for using pilot-link.\n");
+	dlp_EndOfSync(sd, 0);
+	pi_close(sd);
 	exit(0);
 }
-
 
 /***********************************************************************
  *
@@ -592,16 +601,17 @@ void sigexit(int sig)
  ***********************************************************************/
 char *strtoke(char *str, char *ws, char *delim)
 {
-	static char *s;
-	static char *start;
-	int i;
+	int 		inc;
+	static char 	*s,
+			*start;
+
 
 	if (str != NULL) {
 		s = str;
 	}
 
-	i = strspn(s, ws);
-	s += i;
+	inc = strspn(s, ws);
+	s += inc;
 	start = s;
 
 	if (*s == '\0') {
@@ -609,12 +619,12 @@ char *strtoke(char *str, char *ws, char *delim)
 	} else if (strchr(delim, *s) != NULL) {
 		start++;
 		s = strchr(s + 1, *s);
-		s[i] = '\0';
+		s[inc] = '\0';
 		s++;
 	} else {
-		i = strcspn(s, ws);
-		s[i] = '\0';
-		s += i + 1;
+		inc = strcspn(s, ws);
+		s[inc] = '\0';
+		s += inc + 1;
 	}
 
 	return start;
@@ -622,10 +632,14 @@ char *strtoke(char *str, char *ws, char *delim)
 
 static void Help(char *progname)
 {
-	PalmHeader(progname);
-	printf
-	    ("   An interactive DLP Protocol Shell for querying various\n"
-	     "   types of information from your Palm device, such as user\n"
-	     "   memory capacity, and setting the time, as well as others\n\n"
-	     "   Example: %s -p /dev/pilot\n\n", progname);
+	printf("   An interactive DLP Protocol Shell for your Palm device\n\n"
+	       "   Usage: %s -p <port>\n\n"
+	       "   Options:\n"
+	       "     -p <port>    Use device file <port> to communicate with Palm\n"
+	       "     -h           Display this information\n\n"
+	       "   dlpsh can query many different types of information from your Palm\n"
+	       "   device, such as user memory capacity, and setting the time, as well as\n"
+	       "   other useful functions. While in dlpsh, type 'help' for more options.\n\n"
+	       "   Example: %s -p /dev/pilot\n\n", progname, progname);
+	return;
 }

@@ -47,6 +47,7 @@ static struct pi_protocol *net_protocol_dup (struct pi_protocol *prot)
 
 	new_data = (struct pi_net_data *)malloc (sizeof (struct pi_net_data));
 	data = (struct pi_net_data *)prot->data;
+	new_data->type = data->type;
 	new_data->txid = data->txid;
 	new_prot->data = new_data;
 
@@ -67,6 +68,7 @@ struct pi_protocol *net_protocol (void)
 	prot->setsockopt = net_setsockopt;
 
 	data = (struct pi_net_data *)malloc (sizeof (struct pi_net_data));
+	data->type = PI_NET_TYPE_DATA;
 	data->txid = 0x00;
 	prot->data = data;
 	
@@ -106,8 +108,8 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len)
 	struct pi_protocol *prot, *next;
 	struct pi_net_data *data;
 	unsigned char buf[6];
-	int result;
-	
+	int bytes;
+
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
@@ -116,20 +118,25 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len)
 	if (next == NULL)
 		return -1;
 
-	buf[PI_NET_OFFSET_TYPE] = 0x01;
-	buf[PI_NET_OFFSET_TXID] = data->txid;
+	/* Create the header */
+	buf[PI_NET_OFFSET_TYPE] = data->type;
+	if (data->type == PI_NET_TYPE_TCKL)
+		buf[PI_NET_OFFSET_TXID] = 0xff;
+	else
+		buf[PI_NET_OFFSET_TXID] = data->txid;
 	set_long(&buf[PI_NET_OFFSET_SIZE], len);
+
+	/* Write the header and body */
+	bytes = next->write(ps, buf, PI_NET_HEADER_LEN);
+	if (bytes < PI_NET_HEADER_LEN)
+		return bytes;
+	bytes = next->write(ps, msg, len);
+	if (bytes < len)
+		return bytes;
 
 	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1));
 	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(buf));
 	
-	result = next->write(ps, buf, PI_NET_HEADER_LEN);
-	if (result < 0)
-		return result;
-	result = next->write(ps, msg, len);
-	if (result < 0)
-		return result;
-
 	return len;
 }
 
@@ -139,7 +146,7 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 	struct pi_protocol *prot, *next;
 	struct pi_net_data *data;
 	unsigned char *cur;
-	int read, total_read, packet_len;
+	int bytes, total_bytes, packet_len;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
@@ -149,44 +156,44 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 	if (next == NULL)
 		return -1;
 
-	total_read = 0;
+	total_bytes = 0;
 	if (data->txid == 0) {		
 		/* Peek to see if it is a headerless packet */
-		read = next->read(ps, msg, 1);
-		if (read > 0) {
+		bytes = next->read(ps, msg, 1);
+		if (bytes > 0) {
 			if (msg[0] == 0x90) {
-				/* Cause the header reading to be skipped */
+				/* Cause the header bytesing to be skipped */
 				LOG (PI_DBG_NET, PI_DBG_LVL_INFO,
 				     "NET RX: Headerless packet\n");
-				total_read = PI_NET_HEADER_LEN;
-				msg[PI_NET_OFFSET_TYPE] = 0x01;
+				total_bytes = PI_NET_HEADER_LEN;
+				msg[PI_NET_OFFSET_TYPE] = PI_NET_TYPE_DATA;
 				msg[PI_NET_OFFSET_TXID] = 0x01;
 				set_long (&msg[PI_NET_OFFSET_SIZE], 21);
 			} else {
-				total_read += read;
+				total_bytes += bytes;
 			}
 		} else {
-			return read;
+			return bytes;
 		}
 	}
 	
-	/* Read in what's left of the header */
-	while (total_read < PI_NET_HEADER_LEN) {
-		read = next->read(ps, msg + total_read, PI_NET_HEADER_LEN - total_read);
-		if (read <= 0)
-			return read;
-		total_read += read;
+	/* Bytes in what's left of the header */
+	while (total_bytes < PI_NET_HEADER_LEN) {
+		bytes = next->read(ps, msg + total_bytes, PI_NET_HEADER_LEN - total_bytes);
+		if (bytes <= 0)
+			return bytes;
+		total_bytes += bytes;
 	}
 
-	/* Read in the rest of the packet */
+	/* Bytes in the rest of the packet */
 	packet_len = get_long(&msg[PI_NET_OFFSET_SIZE]);
-	while (total_read < PI_NET_HEADER_LEN + packet_len) {
-		read = next->read(ps, msg + total_read, 
-				  PI_NET_HEADER_LEN + packet_len - total_read);
-		if (read <= 0)
-			return read;
-		else if (read > 0)
-			total_read += read;
+	while (total_bytes < PI_NET_HEADER_LEN + packet_len) {
+		bytes = next->read(ps, msg + total_bytes, 
+				  PI_NET_HEADER_LEN + packet_len - total_bytes);
+		if (bytes <= 0)
+			return bytes;
+		else if (bytes > 0)
+			total_bytes += bytes;
 	}
 
 	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(msg, 0));
@@ -220,6 +227,16 @@ net_getsockopt(struct pi_socket *ps, int level, int option_name,
 		return -1;
 	data = (struct pi_net_data *)prot->data;
 
+	switch (option_name) {
+	case PI_NET_TYPE:
+		if (*option_len < sizeof (data->type))
+			goto error;
+		memcpy (option_value, &data->type,
+			sizeof (data->type));
+		*option_len = sizeof (data->type);
+		break;
+	}
+	
 	return 0;
 	
  error:
@@ -238,6 +255,16 @@ net_setsockopt(struct pi_socket *ps, int level, int option_name,
 	if (prot == NULL)
 		return -1;
 	data = (struct pi_net_data *)prot->data;
+
+	switch (option_name) {
+	case PI_NET_TYPE:
+		if (*option_len != sizeof (data->type))
+			goto error;
+		memcpy (&data->type, option_value,
+			sizeof (data->type));
+		*option_len = sizeof (data->type);
+		break;
+	}
 
 	return 0;
 	

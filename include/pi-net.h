@@ -13,8 +13,13 @@ extern "C" {
 #define PI_NET_OFFSET_TXID 1
 #define PI_NET_OFFSET_SIZE 2
 
+#define PI_NET_TYPE_DATA 0x01
+#define PI_NET_TYPE_TCKL 0x02
+
 	struct pi_net_data 
 	{
+		int type;
+
 		unsigned char txid;
 	};
 

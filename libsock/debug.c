@@ -53,4 +53,6 @@ void pi_log (int type, int level, char *format, ...)
 	va_start(ap, format);
 	vfprintf(debug_file, format, ap);
 	va_end(ap);
+
+	fflush(debug_file);
 }

@@ -131,11 +131,11 @@ protocol_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 }
 
 static void
-protocol_init_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
+protocol_cmd_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 {
-	ps->init_queue = realloc(ps->init_queue, (sizeof(struct pi_protocol *)) * ps->init_len + 1);
-	ps->init_queue[ps->init_len] = prot;
-	ps->init_len++;
+	ps->cmd_queue = realloc(ps->cmd_queue, (sizeof(struct pi_protocol *)) * ps->cmd_len + 1);
+	ps->cmd_queue[ps->cmd_len] = prot;
+	ps->cmd_len++;
 }
 
 static struct pi_protocol *
@@ -143,15 +143,15 @@ protocol_queue_find (struct pi_socket *ps, int level)
 {
 	int i;
 
-	if (ps->connected) {
+	if (ps->command) {
+		for (i = 0; i < ps->cmd_len; i++) {
+			if (ps->cmd_queue[i]->level == level)
+				return ps->cmd_queue[i];
+		}
+	} else {
 		for (i = 0; i < ps->queue_len; i++) {
 			if (ps->protocol_queue[i]->level == level)
 				return ps->protocol_queue[i];
-		}
-	} else {
-		for (i = 0; i < ps->init_len; i++) {
-			if (ps->init_queue[i]->level == level)
-				return ps->init_queue[i];
 		}
 	}
 
@@ -162,29 +162,29 @@ static struct pi_protocol *
 protocol_queue_find_next (struct pi_socket *ps, int level) 
 {
 	int i;
-	
-	if (ps->connected && ps->queue_len == 0)
-		return NULL;
-	else if (!ps->connected && ps->init_len == 0)
-		return NULL;
 
-	if (ps->connected && level == 0)
+	if (ps->command && ps->cmd_len == 0)
+		return NULL;
+	else if (!ps->command && ps->queue_len == 0)
+		return NULL;
+	if (ps->command && level == 0)
+		return ps->cmd_queue[0];
+	else if (!ps->command && level == 0)
 		return ps->protocol_queue[0];
-	else if (!ps->connected && level == 0)
-		return ps->init_queue[0];
 	
-	if (ps->connected) {
+	if (ps->command) {
+		for (i = 0; i < ps->cmd_len - 1; i++) {
+			if (ps->cmd_queue[i]->level == level)
+				return ps->cmd_queue[i + 1];
+		}
+	} else {
 		for (i = 0; i < ps->queue_len - 1; i++) {
 			if (ps->protocol_queue[i]->level == level)
 				return ps->protocol_queue[i + 1];
 		}
-	} else {
-		for (i = 0; i < ps->init_len - 1; i++) {
-			if (ps->init_queue[i]->level == level)
-				return ps->init_queue[i + 1];
-		}
 	}
 	
+	printf ("Command/Next Not Found\n");
 	return NULL;
 }
 
@@ -254,8 +254,8 @@ int pi_socket(int domain, int type, int protocol)
 	/* Build the protocol queues */
 	ps->protocol_queue = NULL;
 	ps->queue_len = 0;
-	ps->init_queue = NULL;
-	ps->init_len = 0;
+	ps->cmd_queue = NULL;
+	ps->cmd_len = 0;
 
 	/* The connected protocol queue */
 	switch (protocol) {
@@ -277,15 +277,15 @@ int pi_socket(int domain, int type, int protocol)
 	case PI_PF_PADP:
 	case PI_PF_SLP:
 		prot = padp_protocol ();
-		protocol_init_queue_add (ps, prot);
+		protocol_cmd_queue_add (ps, prot);
 		prot = slp_protocol ();
-		protocol_init_queue_add (ps, prot);
-		ps->init = PI_INIT_CMP;
+		protocol_cmd_queue_add (ps, prot);
+		ps->cmd = PI_CMD_CMP;
 		break;
 	case PI_PF_NET:
 		prot = net_protocol ();
-		protocol_init_queue_add (ps, prot);
-		ps->init = PI_INIT_NET;
+		protocol_cmd_queue_add (ps, prot);
+		ps->cmd = PI_CMD_NET;
 		break;
 	}
 
@@ -294,7 +294,7 @@ int pi_socket(int domain, int type, int protocol)
 	prot = ps->device->protocol (ps->device);
 	protocol_queue_add (ps, prot);
 	prot = ps->device->protocol (ps->device);
-	protocol_init_queue_add (ps, prot);
+	protocol_cmd_queue_add (ps, prot);
 
 	/* Initialize the rest of the fields */
 	ps->laddr 	= NULL;
@@ -304,7 +304,7 @@ int pi_socket(int domain, int type, int protocol)
 	ps->type 	= type;
 	ps->protocol 	= protocol;
 	ps->connected 	= 0;
-	ps->accepted 	= 0;
+	ps->command 	= 1;
 	ps->broken 	= 0;
 	ps->initiator 	= 0;
 	ps->minorversion = 0;
@@ -427,13 +427,13 @@ struct pi_socket *pi_socket_copy(struct pi_socket *ps)
 		prot = ps->protocol_queue[i]->dup (ps->protocol_queue[i]);
 		protocol_queue_add(new_ps, prot);
 	}
-	new_ps->init_queue = NULL;
-	new_ps->init_len = 0;
-	for (i = 0; i < ps->init_len; i++) {
+	new_ps->cmd_queue = NULL;
+	new_ps->cmd_len = 0;
+	for (i = 0; i < ps->cmd_len; i++) {
 		struct pi_protocol *prot;
 		
-		prot = ps->init_queue[i]->dup (ps->init_queue[i]);
-		protocol_init_queue_add(new_ps, prot);
+		prot = ps->cmd_queue[i]->dup (ps->cmd_queue[i]);
+		protocol_cmd_queue_add(new_ps, prot);
 	}
 	new_ps->device = ps->device->dup (ps->device);
 	
@@ -749,14 +749,42 @@ int pi_write(int pi_sd, void *msg, int len)
 int pi_tickle(int pi_sd)
 {
 	struct pi_socket *ps;
-
+	char msg[1];
+	int result, type, size, len = 0;
+	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
 
-//	return ps->socket_tickle(ps);
-	return 0;
+	if (!ps->connected)
+		return -1;
+
+	LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, "SOCKET Tickling socket %d\n", pi_sd);
+
+	/* Enter command state */
+	ps->command = 1;
+	
+	/* Set the type to "tickle" */
+	switch (ps->cmd) {
+	case PI_CMD_CMP:
+		type = padTickle;
+		size = sizeof(type);
+		pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &type, &size);
+		break;
+	case PI_CMD_NET:
+		type = PI_NET_TYPE_TCKL;
+		size = sizeof(type);
+		pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_TYPE, &type, &size);
+		break;
+	}
+
+	result = ps->cmd_queue[0]->write (ps, msg, len);	
+
+	/* Exit command state */
+	ps->command = 0;
+
+	return result;
 }
 
 /***********************************************************************
@@ -986,28 +1014,26 @@ static RETSIGTYPE pi_serial_onalarm(int signo)
 	struct pi_socket *p, *n;
 
 	signal(SIGALRM, pi_serial_onalarm);
-
+	
+	printf ("pi_serial_onalarm\n");
 	if (busy) {
-#ifdef DEBUG
-		fprintf(stderr, "world is busy. Rescheduling.\n");
-#endif
+		LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO,
+		    "SOCKET World is busy. Rescheduling.\n");
 		alarm(1);
-	} else
+	} else {
 		for (p = psl; p; p = n) {
 			n = p->next;
 			if (p->connected) {
-#ifdef DEBUG
-				fprintf(stderr, "Tickling socket %d\n",
-					p->sd);
-#endif
 				if (pi_tickle(p->sd) == -1) {
-#ifdef DEBUG
-					fprintf(stderr,
-						" but socket is busy. Rescheduling.\n");
-#endif
+					LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, 
+					    "SOCKET Socket %d is busy during tickle\n", p->sd);
 					alarm(1);
-				} else
+				} else {
+					LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO,
+					    "SOCKET Tickling socket %d\n", p->sd);
 					alarm(interval);
+				}
 			}
 		}
+	}
 }

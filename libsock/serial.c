@@ -60,14 +60,6 @@ static int pi_serial_getsockopt(struct pi_socket *ps, int level, int option_name
 				void *option_value, int *option_len);
 static int pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name, 
 				const void *option_value, int *option_len);
-
-/* Tickle needs to be fixed, currently does not seem to work over USB
-   because it needs PADP, and USB on 4.0 devices doesn't appear to use
-   PADP any longer. Hrm.. 
-
-   static int pi_serial_tickle(struct pi_socket *ps);
-*/
-
 static int pi_serial_close(struct pi_socket *ps);
 
 static struct pi_protocol *pi_serial_protocol (struct pi_device *dev);
@@ -221,12 +213,13 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	ps->laddrlen = addrlen;
 
 	if (ps->type == PI_SOCK_STREAM) {
-		switch (ps->init) {
-		case PI_INIT_CMP:
-		case PI_INIT_NET:
+		switch (ps->cmd) {
+		case PI_CMD_CMP:
+		case PI_CMD_NET:
 		}
 	}
 	ps->connected = 1;
+	ps->command = 0;
 	ps->initiator = 1;	/* We initiated the link */
 
 	return 0;
@@ -331,8 +324,8 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 
 		accept = pi_socket_copy(ps);
 
-		switch (ps->init) {
-		case PI_INIT_CMP:
+		switch (ps->cmd) {
+		case PI_CMD_CMP:
 			if (cmp_rx(ps, &c) < 0)
 				return -1;	/* Failed to establish connection, errno already set */
 
@@ -379,20 +372,20 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 				goto fail;
 			}
 			break;
-		case PI_INIT_NET:
+		case PI_CMD_NET:
 			if (net_rx_handshake(ps) < 0)
 				goto fail;
 			break;
 		}
 
 		accept->connected = 1;
-		accept->accepted = 1;
+		accept->command = 0;
 		accept->dlprecord = 0;
 	} else {
 		accept = pi_socket_copy(ps);
 
 		accept->connected = 1;
-		accept->accepted = 1;
+		accept->command = 0;
 	}
 
 	accept->initiator = 0;	/* We accepted the link, we did not initiate
@@ -472,41 +465,6 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_serial_tickle
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int pi_serial_tickle(struct pi_socket *ps)
-{
-	if (ps->type == PI_SOCK_STREAM) {
-		struct padp pd;
-		int type, size;
-
-		if (!ps->connected)
-			return -1;
-		pd.type = padTickle;
-		pd.flags = 0x00;
-		pd.size = 0x00;
-
-		type = padTickle;
-		size = sizeof(type);
-		pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, 
-			      &type, &size);
-
-		return padp_tx(ps, (void *) &pd, 0);
-	} else {
-		errno = EOPNOTSUPP;
-		return -1;
-	}
-}
 
 /***********************************************************************
  *

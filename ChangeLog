@@ -1,3 +1,27 @@
+2002-01-06  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/net.c (net_getsockopt): allow type to be set
+	(net_setsockopt): ditto
+	(net_tx): use data type for packet
+
+	* libsock/socket.c (pi_serial_onalarm): use log functions
+	(pi_tickle): send proper tickle commands based on command type
+
+	* libsock/serial.c: remove tickle stuff
+	(pi_serial_connect): set socket command field
+	(pi_serial_accept): ditto
+
+	* libsock/debug.c (pi_log): flush the stream immediately
+
+	* include/pi-source.h: rename init stuff to cmd, chuck accepted
+	field
+
+	* include/pi-socket.h: s/PI_INIT/PI_CMD/ and add net options enum
+
+	* include/pi-net.h: add packet type defines and type field to data
+
+	* dlpsh.c: merge from main line
+
 2002-01-05  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/socket.c: look for API type
