@@ -1,0 +1,10 @@
+- SD Card info details
+
+- Mail, Todo and Expense conduits not implemented
+
+- File manipulation (install, retrieve files)
+
+- Category and Sort app blocks can't be read (although app blocks in general
+  can be)
+
+- Preferences cannot be read.
