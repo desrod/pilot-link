@@ -54,7 +54,7 @@ int realentry[21] =
 char *tableheads[21] = {
 	"Last name",	/* 0 	*/
 	"First name", 	/* 1	*/
-	"Title", 	/* 2	*/
+	"Title", 	/* 2	(real entry 13)*/
 	"Company", 	/* 3	*/
 	"Phone1", 	/* 4	*/
 	"Phone2",	/* 5	*/
@@ -75,8 +75,8 @@ char *tableheads[21] = {
 	"Category"	/* 20	*/
 };
 
-int 	tableformat 	= 0,
-	tabledelim 	= -1,
+int
+	tabledelim 	= term_comma,
 	augment 	= 0,
 	defaultcategory = 0;
 
@@ -186,9 +186,7 @@ int read_field(char *dest, FILE *in, size_t length)
 		}
 	} else {
 		while (c != EOF) {
-			if (c == ',' || c == '\n'
-			    || (tableformat
-				&& c == tabledelims[tabledelim])) {
+			if ((c == '\n') || (c == tabledelims[tabledelim])) {
 				break;
 			}
 			*dest++ = c;
@@ -342,6 +340,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 		attribute,
 		category;
 	char 	buf[0xffff];
+	int showPhone = -1;
 
 	struct 	Address addr;
 
@@ -368,13 +367,15 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 
 		memset(&addr, 0, sizeof(addr));
 		addr.showPhone = 0;
+		showPhone = -1; /* None specified this record */
 
-		if (i == term_semi) {
+		if ((i == term_semi) && (tabledelim != term_semi)) {
+			/* This is an augmented entry */
 			category = plu_findcategory(&aai->category,buf,
 				PLU_CAT_CASE_INSENSITIVE | PLU_CAT_DEFAULT_UNFILED);
 			i = read_field(buf, f, sizeof(buf));
 			if (i == term_semi) {
-				addr.showPhone = match_phone(buf, aai);
+				showPhone = match_phone(buf, aai);
 				i = read_field(buf, f, sizeof(buf));
 			}
 		} else {
@@ -390,11 +391,25 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 			int l2 = realentry[l];
 
 			if ((l2 >= 3) && (l2 <= 7)) {
-				if (i != term_semi || tableformat)
+				if ((i != term_semi) || (tabledelim == term_semi)) {
 					addr.phoneLabel[l2 - 3] = l2 - 3;
+				}
 				else {
 					addr.phoneLabel[l2 - 3] = match_phone(buf, aai);
 					i = read_field(buf, f, sizeof(buf));
+				}
+				if (buf[0]) {
+					addr.entry[l2] = strdup(buf);
+				} else {
+					addr.entry[l2] = NULL;
+				}
+			} else if (19 <= l2) {
+				if (19 == l2) {
+					attribute = (atoi(buf) ? dlpRecAttrSecret : 0);
+				}
+				if (20 == l2) {
+					category = plu_findcategory(&aai->category,buf,
+						PLU_CAT_CASE_INSENSITIVE | PLU_CAT_DEFAULT_UNFILED);
 				}
 			} else {
 				if (buf[0]) {
@@ -411,10 +426,20 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 			i = read_field(buf, f, sizeof(buf));
 		}
 
-		attribute = (atoi(buf) ? dlpRecAttrSecret : 0);
 
 		while (i > 0) {	/* Too many fields in record */
 			i = read_field(buf, f, sizeof(buf));
+		}
+
+		if (showPhone >= 0) {
+			/* Find which label matches the category to display */
+			addr.showPhone = 0;
+			for (i=0; i<5; ++i) {
+				if (showPhone == addr.phoneLabel[i]) {
+					addr.showPhone = i;
+					break;
+				}
+			}
 		}
 
 		l = pack_Address(&addr, (unsigned char *) buf, sizeof(buf));
@@ -454,11 +479,13 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	   'ignore' the last field (Private flag) and print our own here, so
 	   we don't have to chop off the trailing comma at the end. Hacky. */
 	fprintf(out, "# ");
-	for (j = 0; j < 19; j++) {
+	for (j = 0; j < 21; j++) {
 		write_field(out, tableheads[j],
-			    tabledelim);
+			    j<20 ? tabledelim : term_newline);
 	}
-	write_field(out, "Private", term_newline);
+	if (augment) {
+		fprintf(out,"### This in an augmented (non-standard) CSV file.\n");
+	}
 
 	printf("   Writing Palm Address Book entries to file... ");
 	fflush(stdout);
@@ -474,7 +501,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 			continue;
 		unpack_Address(&addr, buf->data, buf->used);
 
-		if (tableformat || (augment && category) || (augment && addr.showPhone)) {
+		if (augment && (category || addr.showPhone)) {
 			write_field(out,
 					aai->category.name[category],
 					term_semi);
@@ -492,12 +519,17 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 				}
 				write_field(out, addr.entry[realentry[j]],
 					    tabledelim);
-			} else
+			} else {
 				write_field(out, "", tabledelim);
+			}
 		}
 
 		sprintf((char *)buf->data, "%d", (attribute & dlpRecAttrSecret) ? 1 : 0);
-		write_field(out, (char *)buf->data, term_newline);
+		write_field(out, (char *)buf->data, tabledelim);
+
+		write_field(out,
+			aai->category.name[category],
+			term_newline);
 	}
 	pi_buffer_free (buf);
 	printf("done.\n");
@@ -610,12 +642,6 @@ int main(int argc, const char *argv[])
 
 	/* The first implies that -t was given; the second that it wasn't,
 	   so use default, and the third if handles weird values. */
-	if ((tabledelim > 0) && (tabledelim < sizeof(tabledelim))) {
-		tableformat = 1;
-	}
-	if (tabledelim == -1) {
-		tabledelim = 1;
-	}
 	if ((tabledelim < 0) || (tabledelim > sizeof(tabledelim))) {
 		fprintf(stderr,"   ERROR: Invalid delimiter number %d (use 0-%d).\n",
 			tabledelim,(int)(sizeof(tabledelim)));
