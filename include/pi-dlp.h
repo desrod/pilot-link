@@ -80,7 +80,7 @@ extern "C" {
 #define vfsMAXFILENAME 256
 
 #define vfsIteratorStart	0L
-#define vfsIteratorStop		0xffffffffL
+#define vfsIteratorStop		((unsigned long)0xffffffffL)
 
 /* constant for an invalid volume reference, guaranteed not to represent a
    valid one.  Use it like you would use NULL for a FILE*. */

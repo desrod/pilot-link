@@ -18,11 +18,14 @@ extern "C" {
 }
 #endif
 #ifndef __cplusplus
-#define get_long(ptr) ((unsigned long)\
-                       ((((unsigned char*)(ptr))[0] << 24) | \
-                       (((unsigned char*)(ptr))[1] << 16) | \
-                       (((unsigned char*)(ptr))[2] << 8)  | \
-                       (((unsigned char*)(ptr))[3])))
+#define get_long(ptr) \
+        (unsigned long) ( \
+        (((unsigned long)((unsigned char *)(ptr))[0]) << 24) | \
+        (((unsigned long)((unsigned char *)(ptr))[1]) << 16) | \
+        (((unsigned long)((unsigned char *)(ptr))[2]) << 8) | \
+        (((unsigned long)((unsigned char *)(ptr))[3]) ) )
+
+
 #define get_treble(ptr) ((unsigned long)\
                         ((((unsigned char*)(ptr))[0] << 16) | \
                          (((unsigned char*)(ptr))[1] << 8)  | \
