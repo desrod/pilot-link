@@ -555,6 +555,7 @@ int main(int argc, char *argv[])
 	  fprintfold(sendf,t.subject);
 	  fprintf(sendf,"\r\n");
 	}
+	fprintf(sendf, "X-mailer: pilot-mail-%d.%d.%d\r\n", PILOT_LINK_VERSION,PILOT_LINK_MAJOR,PILOT_LINK_MINOR);
 	fprintf(sendf,"\r\n"); /* Separate header */
 	
 	if (t.body) {
@@ -562,7 +563,15 @@ int main(int argc, char *argv[])
 	  fprintf(sendf,"\r\n");
 	}
 	if (t.signature && sig.signature) {
-	  fprintf(sendf,"\r\n-- \r\n");
+	  char * c = sig.signature;
+	  while ((*c == '\r') || (*c == '\n'))
+	  	c++;
+	  if(
+	     strncmp(c,"--",2) &&
+	     strncmp(c,"__",2)
+	    ) {
+	    fprintf(sendf,"\r\n-- \r\n");
+	  }
 	  fprintbody(sendf,sig.signature);
 	  fprintf(sendf,"\r\n");
 	}
@@ -883,7 +892,7 @@ end:
   /* Close the database */
   dlp_CloseDB(sd, db);
 
-  sprintf(buffer, "Finished transferring mail. %d message%s sent, %d message%s receieved.\n",
+  sprintf(buffer, "Finished transferring mail. %d message%s sent, %d message%s received.\n",
     sent, (sent == 1) ? "" : "s", rec, (rec == 1) ? "" : "s");
   if (lost || dupe)
     sprintf(buffer+strlen(buffer), "(And %d lost, %d duplicated. Sorry.)\n", lost, dupe);

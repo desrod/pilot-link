@@ -16,7 +16,7 @@ public class CategoryAppBlock extends AppBlock {
 	public native void unpack(byte[] data);
 	public native byte[] pack();
 	
-	void fill() {
+	public void fill() {
 		categoryRenamed = new boolean[16];
 		categoryLastUniqueID = 0;
 		categoryName = new String[16];

@@ -179,7 +179,14 @@ void fetch_host(char * hostname, int hostlen, struct in_addr *address, struct in
     if (ioctl(s, SIOCGIFNETMASK, (char *)&ifreqmask) < 0)
       break;
 
+/*
+ * NetBSD probably falls into the same camp - need to check
+ */
+#if defined (__FreeBSD__) || defined (__NetBSD__)
+    b = (struct sockaddr_in*)&ifreqmask.ifr_addr;
+#else
     b = (struct sockaddr_in*)&ifreqmask.ifr_netmask;
+#endif
 
     if ((mask->s_addr == 0) && (address->s_addr != 0)) {
       if ((b->sin_addr.s_addr & a->sin_addr.s_addr) == (b->sin_addr.s_addr & address->s_addr)) {

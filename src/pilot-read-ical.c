@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 	fprintf(ical,"$n todo 1\n");
 	fprintf(ical,"$n option Priority %d\n", t.priority);
         sprintf(id_buf, "%lx", id);
-        fprintf(ical,"$i option PilotRecordId %s\n", id_buf);
+        fprintf(ical,"$n option PilotRecordId %s\n", id_buf);
 	fprintf(ical,"$n done %d\n", t.complete ? 1 : 0);
 	fprintf(ical,"cal add $n\n");
 	
@@ -251,12 +251,12 @@ int main(int argc, char *argv[])
 	  } else if(a.repeatType == repeatMonthlyByDate) {
 	    fprintf(ical,"$i month_day %d $begin %d\n",a.begin.tm_mon+1,a.repeatFrequency);
 	  } else if(a.repeatType == repeatMonthlyByDay) {
-	    if (a.repeatOn>=domLastSun) {
-	      fprintf(ical,"$i month_last_week_day %d 1 $begin %d\n", a.repeatOn % 7 + 1,
+	    if (a.repeatDay>=domLastSun) {
+	      fprintf(ical,"$i month_last_week_day %d 1 $begin %d\n", a.repeatDay % 7 + 1,
 	                                                    a.repeatFrequency);
 	    } else {
-	      fprintf(ical,"$i month_week_day %d %d $begin %d\n", a.repeatOn % 7 + 1,
-	                                                    a.repeatOn / 7 + 1,
+	      fprintf(ical,"$i month_week_day %d %d $begin %d\n", a.repeatDay % 7 + 1,
+	                                                    a.repeatDay / 7 + 1,
 	                                                    a.repeatFrequency);
 	    }
 	  } else if(a.repeatType == repeatWeekly) {
@@ -268,8 +268,8 @@ int main(int argc, char *argv[])
 	     */
 	    if (a.repeatFrequency > 1) {
 		int ii, found;
-		for (ii = 1, found = 0; ii < 128; ii <<= 1) {
-		    if (a.repeatOn & i)
+		for (ii = 0, found = 0; ii < 7; ii++) {
+		    if (a.repeatDays[i])
 			found++;
 		}
 		if (found > 1)
@@ -278,20 +278,9 @@ int main(int argc, char *argv[])
 		fprintf(ical,"$i dayrepeat %d $begin\n", a.repeatFrequency * 7);
 	    } else {
 		fprintf(ical,"$i weekdays ");
-		if(a.repeatOn & 1)
-		  fprintf(ical,"1 ");
-		if(a.repeatOn & 2)
-		  fprintf(ical,"2 ");
-		if(a.repeatOn & 4)
-		  fprintf(ical,"3 ");
-		if(a.repeatOn & 8)
-		  fprintf(ical,"4 ");
-		if(a.repeatOn & 16)
-		  fprintf(ical,"5 ");
-		if(a.repeatOn & 32)
-		  fprintf(ical,"6 ");
-		if(a.repeatOn & 64)
-		  fprintf(ical,"7 ");
+		for (i=0;i<7;i++)
+		  if (a.repeatDays[i])
+		    fprintf(ical,"%d ", i+1);
 		fprintf(ical,"\n");
 	    }
 	  } else if(a.repeatType == repeatYearly) {

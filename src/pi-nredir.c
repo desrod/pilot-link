@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  setenv("PILOTLOGFILE","PiDebugNet.log",1);
+  putenv("PILOTLOGFILE=PiDebugNet.log");
   
   sd2 = pi_socket(AF_INET, PI_SOCK_STREAM, 0);
   if (sd2 <0 ) {

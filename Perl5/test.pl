@@ -1,6 +1,7 @@
 sub FooBar { print "Foo: $_[0]\n"; $x = $_[0]; $x =~ s/[aeiou]/\U$&/g; return $x };
 
 use PDA::Pilot;
+use Data::Dumper;
 
 if ($ARGV[0]) {
 	$port = $ARGV[0];
@@ -38,6 +39,10 @@ $ui = $dlp->getUserInfo;
 
 @b = $dlp->getBattery;
 
+$i = $dlp->getDBInfo(0);
+
+print Dumper($i);
+
 print "Battery voltage is $b[0], (warning marker $b[1], critical marker $b[2])\n";
 
 $dlp->tickle;
@@ -50,7 +55,24 @@ $r = $db->getRecord(0);
 
 print "Contents: '$r->{text}'\n";
 
-use Data::Dumper;
+$app = $db->getAppBlock;
+
+print Dumper($app);
+
+print "Categories: @{$app->{categoryName}}\n";
+
+print Dumper($db->getPref(0));
+print Dumper($db->getPref(1));
+
+$db->close();
+
+$db = $dlp->open("DatebookDB");
+
+print "db class is ", ref $db, "\n";
+
+$r = $db->getRecord(0);
+
+print "Contents: ", Dumper($r);
 
 $app = $db->getAppBlock;
 
@@ -58,9 +80,42 @@ print Dumper($app);
 
 print "Categories: @{$app->{categoryName}}\n";
 
-#@r = $db->getResource(0);
+$db->close();
 
-#print "Resource: @r, error: ", ($db->errno()),"\n";
+$db = $dlp->open("MailDB");
+
+if ($db) {
+
+	print "db class is ", ref $db, "\n";
+	
+	$r = $db->getRecord(0);
+
+	print "Contents: ", Dumper($r);
+	
+	$app = $db->getAppBlock;
+	
+	print Dumper($app);
+	
+	print "Categories: @{$app->{categoryName}}\n";
+	
+	$db->close();
+}
+
+$db = $dlp->open("ExpenseDB");
+if ($db) {
+	
+	print "db class is ", ref $db, "\n";
+	
+	$r = $db->getRecord(0);
+	
+	print "Contents: ", Dumper($r);
+	
+	$app = $db->getAppBlock;
+	
+	print Dumper($app);
+	
+	print "Categories: @{$app->{categoryName}}\n";
+}
 
 undef $db; # Close database
 

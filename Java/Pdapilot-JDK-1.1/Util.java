@@ -2,7 +2,7 @@ package Pdapilot;
 
 public class Util {
 	static public String prettyPrint(byte[] b)
-		{ return prettyPrint(new String(b,0)); }
+		{ return prettyPrint(new String(b,0,b.length)); }
 	static public String prettyPrint(Object o) {
 		if (o == null) {
 			return "null";
@@ -30,4 +30,8 @@ public class Util {
 		}
 		return out.toString();
 	}
+    static public String readLine() throws java.io.IOException {
+        java.io.BufferedReader dis = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+        return dis.readLine();
+    }
 }

@@ -857,7 +857,17 @@ SetRec(self, args)
 		id = 0;
 	else
 		id = PyInt_AsLong(i);
-	if (i=PyObject_GetAttrString(h, "attr")) attr = PyInt_AsLong(i);
+	attr = 0;
+	if ((i=PyObject_GetAttrString(h, "deleted")) && PyInt_AsLong(i))
+		attr |= 0x80;
+	if ((i=PyObject_GetAttrString(h, "modified")) && PyInt_AsLong(i))
+		attr |= 0x40;
+	if ((i=PyObject_GetAttrString(h, "busy")) && PyInt_AsLong(i))
+		attr |= 0x20;
+	if ((i=PyObject_GetAttrString(h, "secret")) && PyInt_AsLong(i))
+		attr |= 0x10;
+	if ((i=PyObject_GetAttrString(h, "archived")) && PyInt_AsLong(i))
+		attr |= 0x08;
 	if (i=PyObject_GetAttrString(h, "category")) category = PyInt_AsLong(i);
 	
 	dlp_WriteRecord(self->socket->socket, self->handle, attr, id, category, data, length, &newid);
@@ -1765,10 +1775,16 @@ static PyObject *
 BuildDBInfo(i)
 	struct DBInfo * i;
 {
-	return Py_BuildValue("{sisisisOsOsisislslslslss}",
+	return Py_BuildValue("{sisisisisisisisisisOsOsisislslslslss}",
 		"more", i->more,
-		"flags", i->flags,
-		"miscFlags", i->miscFlags,
+		"flagResource", !!(i->flags & dlpDBFlagResource),
+		"flagReadOnly", !!(i->flags & dlpDBFlagReadOnly),
+		"flagAppInfoDirty", !!(i->flags & dlpDBFlagAppInfoDirty),
+		"flagBackup", !!(i->flags & dlpDBFlagBackup),
+		"flagOpen", !!(i->flags & dlpDBFlagOpen),
+		"flagNewer", !!(i->flags & dlpDBFlagNewer),
+		"flagReset", !!(i->flags & dlpDBFlagReset),
+		"flagExcludeFromSync", !!(i->miscFlags & dlpDBMiscFlagExcludeFromSync),
 		"type", BuildChar4(&i->type),
 		"creator", BuildChar4(&i->creator),
 		"version", i->version,
@@ -1789,8 +1805,19 @@ static int ParseDBInfo(d, i)
 	
 	memset(i, '\0', sizeof(struct DBInfo));
 	
-	i->flags = (e=PyDict_GetItemString(d, "flags")) ? PyInt_AsLong(e) : 0;
-	i->miscFlags = (e=PyDict_GetItemString(d, "miscFlags")) ? PyInt_AsLong(e) : 0;
+	i->flags = 0
+		| (((e=PyDict_GetItemString(d, "flagResource")) && PyInt_AsLong(e)) ? dlpDBFlagResource : 0)
+		| (((e=PyDict_GetItemString(d, "flagReadOnly")) && PyInt_AsLong(e)) ? dlpDBFlagReadOnly : 0)
+		| (((e=PyDict_GetItemString(d, "flagAppInfoDirty")) && PyInt_AsLong(e)) ? dlpDBFlagAppInfoDirty : 0)
+		| (((e=PyDict_GetItemString(d, "flagBackup")) && PyInt_AsLong(e)) ? dlpDBFlagBackup : 0)
+		| (((e=PyDict_GetItemString(d, "flagOpen")) && PyInt_AsLong(e)) ? dlpDBFlagOpen : 0)
+		| (((e=PyDict_GetItemString(d, "flagNewer")) && PyInt_AsLong(e)) ? dlpDBFlagNewer : 0)
+		| (((e=PyDict_GetItemString(d, "flagReset")) && PyInt_AsLong(e)) ? dlpDBFlagReset : 0)
+	;
+	
+	i->miscFlags = 0
+		| (((e=PyDict_GetItemString(d, "flagExcludeFromSync")) && PyInt_AsLong(e)) ? dlpDBMiscFlagExcludeFromSync : 0)
+	;
 	e=PyDict_GetItemString(d, "type");
 	if (e) {
 		if (ParseChar4(e, &i->type)==0)
@@ -2289,7 +2316,18 @@ FileAddRec(self, args)
 		id = 0;
 	else
 		id = PyInt_AsLong(i);
-	if (i=PyObject_GetAttrString(h, "attr")) attr = PyInt_AsLong(i);
+	attr = 0;
+	if ((i=PyObject_GetAttrString(h, "deleted")) && PyInt_AsLong(i))
+		attr |= 0x80;
+	if ((i=PyObject_GetAttrString(h, "modified")) && PyInt_AsLong(i))
+		attr |= 0x40;
+	if ((i=PyObject_GetAttrString(h, "busy")) && PyInt_AsLong(i))
+		attr |= 0x20;
+	if ((i=PyObject_GetAttrString(h, "secret")) && PyInt_AsLong(i))
+		attr |= 0x10;
+	if ((i=PyObject_GetAttrString(h, "archived")) && PyInt_AsLong(i))
+		attr |= 0x08;
+	/*if (i=PyObject_GetAttrString(h, "attr")) attr = PyInt_AsLong(i);*/
 	if (i=PyObject_GetAttrString(h, "category")) category = PyInt_AsLong(i);
 	
 	if (pi_file_append_record(self->pf, data, length, attr, category, id)==-1) {

@@ -1,3 +1,7 @@
+use Config;
+print $Config{startperl}, "\n";
+print <DATA>;
+__DATA__;
 
 use PDA::Pilot;
 use Getopt::Std;
@@ -11,18 +15,18 @@ if (not getopts('p:d:',\%opts) or not exists $opts{p} or not exists $opts{d}) {
 	exit;
 }
 
-$socket = PDA::Pilot::OpenPort($opts{p});
+$socket = PDA::Pilot::openPort($opts{p});
 
 print "Please start HotSync on port $opts{p} now.\n";
 
-$dlp = PDA::Pilot::Accept($socket);
+$dlp = PDA::Pilot::accept($socket);
 
 if (defined $dlp) {
 	print "\nConnection established. Opening $opts{d}...\n";
 	
-	$dlp->Status;
+	$dlp->getStatus;
 	
-	$db = $dlp->Open($opts{d}, 0x40|0x80);
+	$db = $dlp->open($opts{d}, "rwsx");
 	
 	if (defined $db) {
 		print "\nDatabase opened.\n";
@@ -30,26 +34,26 @@ if (defined $dlp) {
 		$i = 0;
 		$c = 0;
 		for(;;) {
-			$r = $db->GetRecord($i);
+			$r = $db->getRecord($i);
 			last if not defined($r); #no more records
-			if ($r->{attr} & 0x08) {
+			if ($r->{archived}) {
 				print "Record $i is archived, un-archiving.\n";
-				#Archived
-				$r->{attr} &= ~0x88; # Clear deleted and archived attribute
-				$db->SetRecord($r); # Re-store record
+				$r->{archived} = 0;
+				$r->{deleted} = 0;
+				$db->setRecord($r); # Re-store record
 				
 				$c++;
 			}
 			$i++;
 		}
 		
-		$db->Close;
+		$db->close;
 		print "Done. $c record", ($c == 1 ? "" : "s"), " unarchived.\n";
 	} else {
 		print "Unable to open database\n";
 	}
 	
-	$dlp->Close;
+	$dlp->close;
 }
-PDA::Pilot::Close($socket);
+PDA::Pilot::close($socket);
 exit(0);

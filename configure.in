@@ -273,6 +273,25 @@ changequote([, ])dnl
 		*present*) AC_MSG_RESULT(found in $with_java) 
 			WITHJAVA='WITHJAVA'
 			JAVABASE="$with_java"
+			javaos="$host_os"
+			case "$javaos" in
+			  linux-gnu) javaos="$javaos linux" ;;
+			  solaris) javaos="$javaos sunos sun" ;;
+			  sunos) javaos="$javaos solaris sun" ;;
+			esac
+			JAVAARCH="genunix"
+			for i in $javaos genunix; do
+			  if test -f "$JAVABASE/include/$i/byteorder_md.h"; then
+			    JAVAARCH="$i"
+			    break
+			  fi
+			done
+			JAVAMAJOR=1
+			if test -f "$JAVABASE/include/$JAVAARCH/jni_md.h"; then
+			  JAVAMINOR=1
+			else
+			  JAVAMINOR=0
+			fi
 			;;
 		*)	AC_MSG_RESULT(not found)
 			with_java=no ;;
@@ -282,6 +301,9 @@ else
 	AC_MSG_RESULT(not found)
 fi
 AC_SUBST(JAVABASE)
+AC_SUBST(JAVAARCH)
+AC_SUBST(JAVAMAJOR)
+AC_SUBST(JAVAMINOR)
 
 if test "x$PERL5" = "x"; then
 	PERL5="/usr/bin/perl"

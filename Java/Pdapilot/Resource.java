@@ -23,6 +23,6 @@ public class Resource extends Block {
 
 		public String toString() {
 			return "<generic resource, type "+type+", id "+id+", index "+index+
-				", raw '"+Util.prettyPrint(new String(raw,0))+"'>";
+				", raw '"+Util.prettyPrint(raw)+"'>";
 		}
 }

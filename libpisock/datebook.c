@@ -14,6 +14,12 @@
 #include "pi-dlp.h"
 #include "pi-datebook.h"
 
+char * DatebookAlarmTypeNames[] =
+	{ "Minutes", "Hours", "Days", NULL };
+
+char * DatebookRepeatTypeNames[] =
+	{ "None", "Daily", "Weekly", "MonthlyByDay", "MonthlyByDate", "Yearly", NULL };
+
 /* dom1stSun = REM Sun 1  
  dom1stMon = Rem Mon 1 
  dom2ndSun = REM Sun 8 
@@ -110,6 +116,7 @@ int unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) 
 		
 	if (iflags & repeatFlag)
 		{
+		int i,	on;
 		a->repeatType = get_byte(p2); p2+=2;
 		d = (unsigned short int)get_short(p2); p2+=2;
 		if(d==0xffff)
@@ -126,15 +133,27 @@ int unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) 
 			a->repeatForever = 0;
 		}
 		a->repeatFrequency = get_byte(p2); p2++;
-		a->repeatOn = get_byte(p2); p2++;
+		on = get_byte(p2); p2++;
+		a->repeatDay = 0;
+		for(i=0;i<7;i++)
+			a->repeatDays[i] = 0;
+			
+		if (a->repeatType == repeatMonthlyByDay)
+			a->repeatDay = on;
+		else if (a->repeatType == repeatWeekly)
+			for(i=0;i<7;i++)
+				a->repeatDays[i] = !!(on & (1<<i));
 		a->repeatWeekstart = get_byte(p2); p2++;
 		p2++;
 		}
 	else {
+		int i;
 		a->repeatType = 0;
 		a->repeatForever = 1; /* repeatEnd is invalid */
 		a->repeatFrequency = 0;
-		a->repeatOn = 0;
+		a->repeatDay = 0;
+		for(i=0;i<7;i++)
+		  a->repeatDays[i] = 0;
 		a->repeatWeekstart = 0;
 	}
 
@@ -236,8 +255,19 @@ int pack_Appointment(struct Appointment *a,
     }
     
     if (a->repeatType) {
+    	int on,i;
 
         iflags |= repeatFlag;
+        
+        if (a->repeatType == repeatMonthlyByDay)
+            on = a->repeatDay;
+        else if (a->repeatType == repeatWeekly) {
+            on = 0;
+	    for (i=0;i<7;i++)
+	         if (a->repeatDays[i])
+	             on |= 1<<i;
+	} else
+	    on = 0;
 
     	set_byte(pos, a->repeatType);
     	set_byte(pos+1, 0);
@@ -253,7 +283,7 @@ int pack_Appointment(struct Appointment *a,
         pos+=2;
         
         set_byte(pos, a->repeatFrequency); pos++;
-        set_byte(pos, a->repeatOn); pos++;
+        set_byte(pos, on); pos++;
         set_byte(pos, a->repeatWeekstart); pos++;
         set_byte(pos, 0); pos++;
     }
@@ -301,7 +331,7 @@ int unpack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * re
     return 0;
   record += i;
   len -= i;
-  if (len<4)
+  if (len<2)
     return 0;
   ai->startOfWeek = get_byte(record);
   return i+2;

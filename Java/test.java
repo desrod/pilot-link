@@ -8,12 +8,11 @@ public class test {
 			Pdapilot.constants.PILOT_LINK_VERSION + "." +
 			Pdapilot.constants.PILOT_LINK_MAJOR + "." +
 			Pdapilot.constants.PILOT_LINK_MINOR);
-		
+			
 		System.out.print("Port to use [/dev/cua3]? ");
 		System.out.flush();
-		java.io.DataInputStream dis = new java.io.DataInputStream(System.in);
 		
-		String port = dis.readLine();
+		String port = Pdapilot.Util.readLine();
 		if (port.equals("")) {
 			port = "/dev/cua3";
 		}
@@ -21,7 +20,6 @@ public class test {
 		
 		Pdapilot.Socket x = new Pdapilot.Socket(port);
 		Pdapilot.Dlp y = x.accept();
-		
 		
 		System.out.println(y.getTime().toString());
 		System.out.println(y.getUserInfo().toString());
@@ -43,7 +41,7 @@ public class test {
 		}
 	
 		
-		Pdapilot.DB z = y.open(new Pdapilot.todo.Database());
+		Pdapilot.DB z = y.open(new Pdapilot.appointment.Database());
 		
 		Pdapilot.RecordID ids[] = z.getRecordIDs(false, 0, 0xffff);
 		for (int i=0;i<ids.length;i++) {
@@ -53,10 +51,20 @@ public class test {
 		
 		System.out.println(z.getAppBlock().toString());
 
-		System.out.println(z.getPref(0).toString());
-		//System.out.println(z.getPref(1).toString());
-		//System.out.println(z.getPref(2).toString());
-		//System.out.println(z.getPref(3).toString());
+		Pdapilot.Pref p;
+
+		p = z.getPref(0);
+		if (p != null)
+			System.out.println(p.toString());
+		p = z.getPref(1);
+		if (p != null)
+			System.out.println(p.toString());
+		p = z.getPref(2);
+		if (p != null)
+			System.out.println(p.toString());
+		p = z.getPref(3);
+		if (p != null)
+			System.out.println(p.toString());
 		
 		for (int i=0;;i++) {
 			Pdapilot.Record q = (Pdapilot.Record)z.getRecord(i);
@@ -65,6 +73,13 @@ public class test {
 			System.out.println("Record #" + i +": " + q.toString() );
 			//z.setRecord(q);
 		}
+		
+		Pdapilot.expense.Record newRecord = new Pdapilot.expense.Record();
+		newRecord.payment = Pdapilot.expense.payment.Check;
+		
+		System.out.println(newRecord);
+		
+		y.close(Pdapilot.end.Normal);
 		
 		System.out.println("Done!");
 	}

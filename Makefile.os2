@@ -28,6 +28,8 @@ RLLIBS =
 # -DREADLINE_2_1 if GNU readline 2.1 (or later) is available.
 RLDEFS = 
 
+PERL5 = @PERL5@
+
 CC = gcc
 CXX = gcc
 CDEFS = -DLIBDIR=\"$(libdir)\" 
@@ -75,7 +77,7 @@ WITHCXX = $(CXXEXECS)
 WITHPERL5 = $(PERLEXECS)
 
 CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
-		install-memo$(EXT) install-user$(EXT)\
+		install-memo$(EXT) install-user$(EXT) install-datebook$(EXT)\
 		install-todos$(EXT) pilot-addresses$(EXT) pilot-clip$(EXT)\
 		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT)\
 		sync-memodir$(EXT) sync-ical$(EXT) $(CCEXECS) \
@@ -89,17 +91,19 @@ CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
 
 TCLEXECS = pilot-debug$(EXT)
 
-PERLEXECS = pilot-undelete
+PERLEXECS = pilot-undelete ietf2datebook
 
 EXECS = $(CEXECS) $(WITHOUTTCL) $(WITHCXX) $(WITHOUTPERL5)
 
 PILIB = libsock/libpisockdll.a
 PICCLIB = libcc/libpicc.a
 
-all: submake $(EXECS)
+all: $(EXECS)
 
-submake $(PILIB) $(PICCLIB):
+$(PILIB): FORCE
 	$(SUBMAKE_COMM) libpisockdll.a
+
+libcc/libpicc.a: FORCE
 	$(SUBMAKE_COMM_CC) libpicc.a
 
 installdirs:
@@ -107,7 +111,7 @@ installdirs:
 
 install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	$(INSTALL_DATA) $(PILIB) $(libdir)/libpisockdll.a
-	if test -f $(PICCLIB); then \
+	if test -n "$(PICCLIB)"; then \
 		$(INSTALL_DATA) $(PICCLIB) $(libdir)/libpicc.a; \
 	fi
 	for p in $(EXECS); do \
@@ -116,7 +120,7 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	for h in include/*.h $(srcdir)/include/*.h; do \
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
 	done
-	for m in $(srcdir)/man/*; do \
+	for m in man/*.1; do \
 		$(INSTALL_DATA) $$m $(mandir)/`basename $$m`; \
 	done
 	for p in $(srcdir)/pix/*.gif $(srcdir)/pix/*.xbm; do \
@@ -139,6 +143,9 @@ uninstall:
 
 install-memo$(EXT): $(PILIB) install-memo.o
 	$(CCLINK) install-memo.o $(PILIB) -o $@ $(LIBS)
+
+install-datebook$(EXT): $(PILIB) install-datebook.o parsedate.o
+	$(CCLINK) install-datebook.o parsedate.o $(PILIB) -o $@ $(LIBS)
 
 install-todos$(EXT): $(PILIB) install-todos.o
 	$(CCLINK) install-todos.o $(PILIB) -o $@ $(LIBS)
@@ -241,10 +248,13 @@ parsedate.c: parsedate.y
 	$(YACC) parsedate.y
 	mv y.tab.c parsedate.c
 
-pilot-undelete: pilot-undelete.pl
-	echo '#!@PERL5@' > pilot-undelete
-	cat pilot-undelete.pl >> pilot-undelete
+pilot-undelete: pilot-undelete.PL
+	$(PERL5) pilot-undelete.PL > pilot-undelete
 	chmod +x pilot-undelete
+
+ietf2datebook: ietf2datebook.PL
+	$(PERL5) ietf2datebook.PL > ietf2datebook
+	chmod +x ietf2datebook
 
 FORCE:
 
@@ -252,7 +262,7 @@ Python:	FORCE
 	cd Python; make
 
 Perl5 Perl: FORCE
-	cd Perl5; @PERL5@ Makefile.PL && make
+	cd Perl5; $(PERL5) Makefile.PL && make
 
 Tcl: FORCE
 	cd Tcl; make
@@ -318,6 +328,10 @@ dlpsh.o: dlpsh.c include/pi-source.h include/pi-config.h \
 getrom.o: getrom.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-macros.h \
  include/pi-serial.h
+install-datebook.o: install-datebook.c include/pi-source.h \
+ include/pi-config.h include/pi-socket.h include/pi-args.h \
+ include/pi-macros.h include/pi-dlp.h include/pi-datebook.h \
+ include/pi-appinfo.h
 install-memo.o: install-memo.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-macros.h \
  include/pi-dlp.h include/pi-memo.h include/pi-appinfo.h

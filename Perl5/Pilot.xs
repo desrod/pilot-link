@@ -7,6 +7,7 @@
 #include "pi-file.h"
 #include "pi-datebook.h"
 #include "pi-memo.h"
+#include "pi-expense.h"
 #include "pi-address.h"
 #include "pi-todo.h"
 #include "pi-mail.h"
@@ -305,36 +306,51 @@ SvChar4(arg)
 	}
 }
 
-#define pack_dbinfo(arg, var, failure)	\
-	{	\
-		if (failure < 0)  {	\
-		   arg = &sv_undef;	\
-		   self->errno = failure;\
-		} else {	\
-			HV * i = newHV();	\
-			hv_store(i, "more", 4, newSViv(var.more), 0);	\
-	    	hv_store(i, "flags", 5, newSViv(var.flags), 0);	\
-	    	hv_store(i, "miscFlags", 9, newSViv(var.miscFlags), 0);	\
-	    	hv_store(i, "type", 4, newSVChar4(var.type), 0);	\
-	    	hv_store(i, "creator", 7, newSVChar4(var.creator), 0);	\
-	    	hv_store(i, "version", 7, newSViv(var.version), 0);	\
-	    	hv_store(i, "modnum", 6, newSViv(var.modnum), 0);	\
-	    	hv_store(i, "index", 5, newSViv(var.index), 0);	\
-	    	hv_store(i, "createDate", 10, newSViv(var.createDate), 0);	\
-	    	hv_store(i, "modifyDate", 10, newSViv(var.modifyDate), 0);	\
-	    	hv_store(i, "backupDate", 10, newSViv(var.backupDate), 0);	\
-	    	hv_store(i, "name", 4, newSVpv(var.name, 0), 0);	\
-			arg = newRV((SV*)i);	\
+#define pack_dbinfo(arg, var, failure)		\
+	{										\
+		if (failure < 0)  {					\
+		   arg = &sv_undef;					\
+		   self->errno = failure;			\
+		} else {							\
+			HV * i = newHV();									\
+			hv_store(i, "more", 4, newSViv(var.more), 0);		\
+	    	hv_store(i, "flagReadOnly", 12, newSViv((var.flags & dlpDBFlagReadOnly)!=0), 0);		\
+	    	hv_store(i, "flagResource", 12, newSViv((var.flags & dlpDBFlagResource)!=0), 0);		\
+	    	hv_store(i, "flagBackup", 10, newSViv((var.flags & dlpDBFlagBackup)!=0), 0);			\
+	    	hv_store(i, "flagOpen", 8, newSViv((var.flags & dlpDBFlagOpen)!=0), 0);					\
+	    	hv_store(i, "flagAppInfoDirty", 16, newSViv((var.flags & dlpDBFlagAppInfoDirty)!=0), 0);\
+	    	hv_store(i, "flagNewer", 9, newSViv((var.flags & dlpDBFlagNewer)!=0), 0);				\
+	    	hv_store(i, "flagReset", 9, newSViv((var.flags & dlpDBFlagReset)!=0), 0);				\
+	    	hv_store(i, "flagExcludeFromSync", 19, newSViv((var.miscFlags & dlpDBMiscFlagExcludeFromSync)!=0), 0);	\
+	    	hv_store(i, "type", 4, newSVChar4(var.type), 0);				\
+	    	hv_store(i, "creator", 7, newSVChar4(var.creator), 0);			\
+	    	hv_store(i, "version", 7, newSViv(var.version), 0);				\
+	    	hv_store(i, "modnum", 6, newSViv(var.modnum), 0);				\
+	    	hv_store(i, "index", 5, newSViv(var.index), 0);					\
+	    	hv_store(i, "createDate", 10, newSViv(var.createDate), 0);		\
+	    	hv_store(i, "modifyDate", 10, newSViv(var.modifyDate), 0);		\
+	    	hv_store(i, "backupDate", 10, newSViv(var.backupDate), 0);		\
+	    	hv_store(i, "name", 4, newSVpv(var.name, 0), 0);				\
+			arg = newRV((SV*)i);											\
 		}	\
 	}
 
-#define unpack_dbinfo(arg, var)	\
+#define unpack_dbinfo(arg, var)										\
 	if ((SvTYPE(arg) == SVt_RV) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {	\
-	    HV * i = (HV*)SvRV(arg);	\
-	    SV ** s;	\
+	    HV * i = (HV*)SvRV(arg);									\
+	    SV ** s;													\
 	    var.more = (s = hv_fetch(i, "more", 4, 0)) ? SvIV(*s) : 0;	\
-	    var.flags = (s = hv_fetch(i, "flags", 5, 0)) ? SvIV(*s) : 0;	\
-	    var.miscFlags = (s = hv_fetch(i, "miscFlags", 9, 0)) ? SvIV(*s) : 0;	\
+	    var.flags = 												\
+	    	(((s = hv_fetch(i, "flagReadOnly", 12, 0)) && SvTRUE(*s)) ? dlpDBFlagReadOnly : 0)|		\
+	    	(((s = hv_fetch(i, "flagResource", 12, 0)) && SvTRUE(*s)) ? dlpDBFlagResource : 0)|		\
+	    	(((s = hv_fetch(i, "flagBackup", 10, 0)) && SvTRUE(*s)) ? dlpDBFlagBackup : 0)|			\
+	    	(((s = hv_fetch(i, "flagOpen", 8, 0)) && SvTRUE(*s)) ? dlpDBFlagOpen : 0)	|			\
+	    	(((s = hv_fetch(i, "flagAppInfoDirty", 16, 0)) && SvTRUE(*s)) ? dlpDBFlagAppInfoDirty : 0)	|\
+	    	(((s = hv_fetch(i, "flagNewer", 9, 0)) && SvTRUE(*s)) ? dlpDBFlagNewer : 0)	|			\
+	    	(((s = hv_fetch(i, "flagReset", 9, 0)) && SvTRUE(*s)) ? dlpDBFlagReset : 0) |		\
+	    	0;\
+	    var.miscFlags = \
+	    	 (((s = hv_fetch(i, "flagExcludeFromSync", 19, 0)) && SvTRUE(*s)) ? dlpDBMiscFlagExcludeFromSync : 0);	\
 	    var.type = (s = hv_fetch(i, "type", 4, 0)) ? SvChar4(*s) : 0;	\
 	    var.creator = (s = hv_fetch(i, "creator", 7, 0)) ? SvChar4(*s) : 0;	\
 	    var.version = (s = hv_fetch(i, "version", 7, 0)) ? SvIV(*s) : 0;	\
@@ -476,9 +492,22 @@ SvChar4(arg)
 	    		if (!(s = hv_fetch(h, "id", 2, 0)) || !SvOK(*s))	\
 	    			croak("record must contain id");		\
     			id = SvIV(*s);								\
-	    		if (!(s = hv_fetch(h, "attr", 4, 0)) || !SvOK(*s))	\
-	    			croak("record must contain attr");		\
-    			attr = SvIV(*s);							\
+    			attr = 0;									\
+	    		if (!(s = hv_fetch(h, "secret", 6, 0)) || !SvOK(*s))\
+	    			croak("record must contain secret");			\
+    			attr |= SvIV(*s) ? dlpRecAttrSecret : 0;			\
+	    		if (!(s = hv_fetch(h, "deleted", 7, 0)) || !SvOK(*s))	\
+	    			croak("record must contain deleted");			\
+    			attr |= SvIV(*s) ? dlpRecAttrDeleted : 0;			\
+	    		if (!(s = hv_fetch(h, "modified", 8, 0)) || !SvOK(*s))	\
+	    			croak("record must contain deleted");			\
+    			attr |= SvIV(*s) ? dlpRecAttrDirty : 0;				\
+	    		if (!(s = hv_fetch(h, "busy", 4, 0)) || !SvOK(*s))	\
+	    			croak("record must contain deleted");			\
+    			attr |= SvIV(*s) ? dlpRecAttrBusy : 0;				\
+	    		if (!(s = hv_fetch(h, "archived", 8, 0)) || !SvOK(*s))	\
+	    			croak("record must contain deleted");			\
+    			attr |= SvIV(*s) ? dlpRecAttrArchived : 0;			\
 	    		if (!(s = hv_fetch(h, "category", 8, 0)) || !SvOK(*s))	\
 	    			croak("record must contain category");	\
     			category = SvIV(*s);						\
@@ -723,6 +752,30 @@ void doPackCategory(HV * self, struct CategoryAppInfo * c)
 			c->renamed[i] = 0;
 }
 
+int SvList(SV * arg, char **list)
+{
+	int i;
+	char * str = SvPV(arg, na);
+	for (i=0;list[i];i++)
+		if (strcasecmp(list[i], str)==0)
+			return i;
+	if (SvPOKp(arg)) {
+		croak("Invalid value");
+	}
+	return SvIV(arg);
+}
+
+SV * newSVlist(int value, char **list)
+{
+	int i;
+	for (i=0;list[i];i++)
+		;
+	if (value < i)
+		return newSVpv(list[value], 0);
+	else
+		return newSViv(value);
+}
+
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot
 
 double
@@ -792,12 +845,19 @@ Unpack(record)
         HV * repeat = newHV();
         hv_store(ret, "repeat", 6, newRV_noinc((SV*)repeat), 0);
         
-   		hv_store(repeat, "type", 4, newSViv(a.repeatType), 0);
-   		hv_store(repeat, "forever", 7, newSViv(a.repeatForever), 0);
+   		hv_store(repeat, "type", 4, newSVpv(DatebookRepeatTypeNames[a.repeatType],0), 0);
    		hv_store(repeat, "frequency", 9, newSViv(a.repeatFrequency), 0);
-   		hv_store(repeat, "on", 2, newSViv(a.repeatOn), 0);
+   		if (a.repeatType == repeatMonthlyByDay)
+   			hv_store(repeat, "day", 3, newSViv(a.repeatDay), 0);
+   		else if (a.repeatType == repeatWeekly) {
+		    e = newAV();
+		    hv_store(repeat, "days", 4, newRV_noinc((SV*)e), 0);
+		    for (i=0;i<7;i++)
+		    	av_push(e,newRV_noinc(newSViv(a.repeatDays[i])));
+   		}
    		hv_store(repeat, "weekstart", 9, newSViv(a.repeatWeekstart), 0);
-   		hv_store(repeat, "end", 3, newRV_noinc((SV*)tmtoav(&a.repeatEnd)),0);
+   		if (!a.repeatForever)
+   			hv_store(repeat, "end", 3, newRV_noinc((SV*)tmtoav(&a.repeatEnd)),0);
     }
     
     if (a.exceptions) {
@@ -863,7 +923,14 @@ Pack(record)
 	    	u = 2;
 	    	break;
 	    default:
-	    	croak("Invalid advance unit %d encountered", u);
+	    	if (strEQ(SvPV(*s, na), "minutes"))
+	    		u = 0;
+	    	else if (strEQ(SvPV(*s, na), "hours"))
+	    		u = 1;
+	    	else if (strEQ(SvPV(*s, na), "days"))
+	    		u = 2;
+	    	else
+		    	croak("Invalid advance unit %d encountered", u);
 	    }
 	    a.advanceUnits = u;
 	    if (a.advance > 254)
@@ -875,20 +942,38 @@ Pack(record)
     	a.advanceUnits = 0;
     }    	
 
+
 	if ((s = hv_fetch(h, "repeat", 6, 0)) && SvRV(*s) && (SvTYPE(SvRV(*s))==SVt_PVHV)) {
 		HV * h2 = (HV*)SvRV(*s);
-	    a.repeatType = (s = hv_fetch(h2, "type", 4, 0)) ? SvIV(*s) : 0;
-	    a.repeatForever = (s = hv_fetch(h2, "forever", 7, 0)) ? SvIV(*s) : 0;
+		int i;
+	    a.repeatType = (s = hv_fetch(h2, "type", 4, 0)) ? SvList(*s, DatebookRepeatTypeNames) : 0;
 	    a.repeatFrequency = (s = hv_fetch(h2, "frequency", 9, 0)) ? SvIV(*s) : 0;
-	    a.repeatOn = (s = hv_fetch(h2, "on", 2, 0)) ? SvIV(*s) : 0;
+	    a.repeatDay = 0;
+	    for(i=0;i<7;i++)
+	    	a.repeatDays[i] = 0;
+	    if (a.repeatType == repeatMonthlyByDay ) {
+	    	a.repeatDay = (s = hv_fetch(h2, "day", 3, 0)) ? SvIV(*s) : 0;
+	    } else if (a.repeatType == repeatWeekly) {
+			if ((s = hv_fetch(h, "days", 4, 0)) && SvRV(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
+				int i;
+				AV * a2 = (AV*)SvRV(*s);
+			    for (i=0;i<7;i++)
+			    	if ((s = av_fetch(a2, i, 0)))
+			    		a.repeatDays[i] = SvIV(*s);
+			}
+	    }
 	    a.repeatWeekstart = (s = hv_fetch(h2, "weekstart", 9, 0)) ? SvIV(*s) : 0;
-	    if (s = hv_fetch(h2, "end", 3, 0)) 
+	    if (s = hv_fetch(h2, "end", 3, 0))  {
 	    	avtotm((AV*)SvRV(*s), &a.repeatEnd);
+	    	a.repeatForever = 0;
+	    } else {
+	    	a.repeatForever = 1;
+	    }
     } else {
     	a.repeatType = 0;
     	a.repeatForever = 0;
     	a.repeatFrequency = 0;
-    	a.repeatOn = 0;
+    	a.repeatDay = 0;
     	a.repeatWeekstart = 0;
     	memset(&a.repeatEnd,'\0', sizeof(struct tm));
     }    	
@@ -962,6 +1047,7 @@ UnpackAppBlock(record)
 	doUnpackCategory(ret, &a.category);
 	
     hv_store(ret, "startOfWeek", 11, newSViv(a.startOfWeek), 0);
+    printf("startOfWeek = %d\n", a.startOfWeek);
 
     }
     OUTPUT:
@@ -1492,7 +1578,7 @@ UnpackAppBlock(record)
 
     doUnpackCategory(ret, &a.category);
 
-    hv_store(ret, "sortByAlpha", 9, newSViv(a.sortByAlpha), 0);
+    hv_store(ret, "sortByAlpha", 11, newSViv(a.sortByAlpha), 0);
 
     }
     OUTPUT:
@@ -1517,7 +1603,7 @@ PackAppBlock(record)
     doPackCategory(h, &a.category);
     
 		
-    if ((s = hv_fetch(h, "sortByAlpha", 9, 0)))
+    if ((s = hv_fetch(h, "sortByAlpha", 11, 0)))
 	    a.sortByAlpha = SvIV(*s);
 	else
 		a.sortByAlpha = 0;
@@ -1526,6 +1612,298 @@ PackAppBlock(record)
 
     RETVAL = newSVpv(mybuf, len);
 
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
+    }
+    }
+    OUTPUT:
+    RETVAL
+
+MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Expense
+
+SV *
+Unpack(record)
+    SV * record
+    CODE:
+    {
+    STRLEN len;
+    int i;
+    HV * ret;
+    struct Expense e;
+
+    if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_Expense(&e, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack memo");
+    	}
+    	RETVAL = SvREFCNT_inc(record);
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_Expense(&e, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}
+
+	hv_store(ret, "date", 4, newRV_noinc((SV*)tmtoav(&e.date)), 0);
+	hv_store(ret, "type", 4, newSVlist(e.type,ExpenseTypeNames),0);
+	hv_store(ret, "payment", 7, newSVlist(e.payment,ExpensePaymentNames),0);
+	hv_store(ret, "currency", 8, newSViv(e.currency),0);
+	if (e.amount)
+	    hv_store(ret, "amount", 6, newSVpv(e.amount,0), 0);
+    if (e.vendor)
+	    hv_store(ret, "vendor", 6, newSVpv(e.vendor,0), 0);
+    if (e.city)
+	    hv_store(ret, "city", 4, newSVpv(e.city,0), 0);
+    if (e.note)
+	    hv_store(ret, "note", 4, newSVpv(e.note,0), 0);
+    if (e.attendees)
+    	hv_store(ret, "attendees", 9, newSVpv(e.attendees,0), 0);
+
+    free_Expense(&e);
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+Pack(record)
+    SV * record
+    CODE:
+    {
+    STRLEN len;
+    SV ** s;
+    HV * h;
+    struct Expense e;
+    
+    if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
+    	RETVAL = record;
+    else {
+
+    if ((s = hv_fetch(h, "type", 4, 0)))
+    	e.type = SvList(*s,ExpenseTypeNames);
+    else
+    	croak("must have type");
+    if ((s = hv_fetch(h, "payment", 7, 0)))
+    	e.payment = SvList(*s,ExpensePaymentNames);
+    else
+    	croak("must have payment");
+    if ((s = hv_fetch(h, "currency", 8, 0)))
+    	e.currency = SvIV(*s);
+    else
+    	croak("must have currency");
+    
+    if (s = hv_fetch(h, "date", 4, 0)) avtotm((AV*)SvRV(*s), &e.date);
+
+    if ((s = hv_fetch(h, "amount", 6, 0))) e.amount = SvPV(*s,na);
+	else e.amount = 0;
+    if ((s = hv_fetch(h, "vendor", 6, 0))) e.vendor = SvPV(*s,na);
+	else e.vendor = 0;
+    if ((s = hv_fetch(h, "city", 4, 0))) e.city = SvPV(*s,na);
+	else e.city = 0;
+    if ((s = hv_fetch(h, "attendess", 9, 0))) e.attendees = SvPV(*s,na);
+	else e.attendees = 0;
+    if ((s = hv_fetch(h, "note", 4, 0))) e.note = SvPV(*s,na);
+	else e.note = 0;
+    
+    len = pack_Expense(&e, (unsigned char*)mybuf, 0xffff);
+    
+    RETVAL = newSVpv(mybuf, len);
+    
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
+
+
+    }
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+UnpackAppBlock(record)
+    SV * record
+    CODE:
+    {
+    STRLEN len;
+    HV * ret;
+    AV * a;
+    int i;
+    struct ExpenseAppInfo e;
+
+    if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_ExpenseAppInfo(&e, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack memo app block");
+    	}
+    	RETVAL = SvREFCNT_inc(record);
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_ExpenseAppInfo(&e, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}
+
+	hv_store(ret, "sortOrder", 9, newSVlist(e.sortOrder,ExpenseSortNames),0);
+	a = newAV();
+	hv_store(ret, "currencies", 10, newRV_noinc((SV*)a), 0);
+	for (i=0;i<4;i++) {
+		HV * h = newHV();
+		hv_store(h, "name", 4, newSVpv(e.currencies[i].name, 0), 0);
+		hv_store(h, "symbol", 6, newSVpv(e.currencies[i].symbol, 0), 0);
+		hv_store(h, "rate", 4, newSVpv(e.currencies[i].rate, 0), 0);
+		av_store(a, i, (SV*)newRV_noinc((SV*)h));
+	}
+
+    doUnpackCategory(ret, &e.category);
+
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+PackAppBlock(record)
+    SV * record
+    CODE:
+    {
+    int i;
+    int len;
+    SV ** s;
+    HV * h;
+    AV * av;
+    struct ExpenseAppInfo e;
+    
+    if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
+    	RETVAL = record;
+    else {
+
+    doPackCategory(h, &e.category);
+
+	e.sortOrder = (s = hv_fetch(h, "sortOrder", 9, 0)) ? SvList(*s, ExpenseSortNames) : 0;
+	if ((s=hv_fetch(h, "currencies", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV)) {
+		for(i=0;i<4;i++) {
+			HV * hv;
+			if ((s=av_fetch(av, i, 0)) && SvRV(*s) && (SvTYPE(hv=(HV*)SvRV(*s))==SVt_PVHV)) {
+				if (s = hv_fetch(hv, "name", 4, 0)) {
+					strncpy(e.currencies[i].name, SvPV(*s, na), 16);
+					e.currencies[i].name[15] = 0;
+				}
+				if (s = hv_fetch(hv, "symbol", 6, 0)) {
+					strncpy(e.currencies[i].symbol, SvPV(*s, na), 4);
+					e.currencies[i].symbol[3] = 0;
+				}
+				if (s = hv_fetch(hv, "rate", 4, 0)) {
+					strncpy(e.currencies[i].rate, SvPV(*s, na), 8);
+					e.currencies[i].rate[7] = 0;
+				}
+			}
+		}
+	} else
+		for(i=0;i<4;i++) {
+			e.currencies[i].symbol[0] = 0;
+			e.currencies[i].name[0] = 0;
+			e.currencies[i].rate[0] = 0;
+		}
+	
+    len = pack_ExpenseAppInfo(&e, (unsigned char*)mybuf, 0xffff);
+
+    RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
+    }
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+UnpackPref(record)
+    SV * record
+    CODE:
+    {
+    STRLEN len;
+    AV * e;
+    HV * ret;
+    int i;
+    struct ExpensePref a;
+
+    if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_ExpensePref(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack mail pref");
+    	}
+    	RETVAL = SvREFCNT_inc(record);
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_ExpensePref(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}
+
+    hv_store(ret, "unitOfDistance", 14, newSVlist(a.unitOfDistance, ExpenseDistanceNames), 0);
+    hv_store(ret, "currentCategory", 15, newSViv(a.currentCategory), 0);
+    hv_store(ret, "defaultCategory", 15, newSViv(a.defaultCategory), 0);
+    hv_store(ret, "noteFont", 8, newSViv(a.noteFont), 0);
+    hv_store(ret, "showAllCategories", 17, newSViv(a.showAllCategories), 0);
+    hv_store(ret, "showCurrency", 12, newSViv(a.showCurrency), 0);
+    hv_store(ret, "saveBackup", 10, newSViv(a.saveBackup), 0);
+    hv_store(ret, "allowQuickFill", 14, newSViv(a.allowQuickFill), 0);
+    e = newAV();
+    for (i=0;i<7;i++)
+		av_store(e, i, newSViv(a.currencies[i]));
+	hv_store(ret, "currencies", 10, (SV*)newRV_noinc((SV*)e), 0);
+
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+PackPref(record, id)
+    SV * record
+    int	id
+    CODE:
+    {
+    int i;
+    int len;
+    SV ** s;
+    HV * h;
+    AV * av;
+    struct ExpensePref a;
+    
+    if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
+    	RETVAL = record;
+    else {
+
+	a.unitOfDistance = (s = hv_fetch(h, "unitOfDistance", 14, 0)) ? SvList(*s, ExpenseDistanceNames) : 0;
+	a.currentCategory = (s=hv_fetch(h,"currentCategory",15,0)) ? SvIV(*s) : 0;
+	a.defaultCategory = (s=hv_fetch(h,"defaultCategory",15,0)) ? SvIV(*s) : 0;
+	a.noteFont = (s=hv_fetch(h,"noteFont",8,0)) ? SvIV(*s) : 0;
+	a.showAllCategories = (s=hv_fetch(h,"showAllCategories",17,0)) ? SvIV(*s) : 0;
+	a.showCurrency = (s=hv_fetch(h,"showCurrency",12,0)) ? SvIV(*s) : 0;
+	a.saveBackup = (s=hv_fetch(h,"saveBackup",10,0)) ? SvIV(*s) : 0;
+	a.allowQuickFill = (s=hv_fetch(h,"allowQuickFill",14,0)) ? SvIV(*s) : 0;
+	
+	if ((s=hv_fetch(h, "currencies", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV)) {
+		for(i=0;i<7;i++)
+			a.currencies[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
+	} else
+		for(i=0;i<7;i++)
+			a.currencies[i] = 0;
+		
+    len = pack_ExpensePref(&a, (unsigned char*)mybuf, 0xffff);
+    RETVAL = newSVpv(mybuf, len);
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
@@ -1664,14 +2042,10 @@ UnpackAppBlock(record)
 	    unpack_MailAppInfo(&a, SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
 	}
-    /*(void)SvPV(record, len);
-    unpack_MailAppInfo(&a, (unsigned char*)SvPV(record, na), len);
-	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);*/
 
     doUnpackCategory(ret, &a.category);
 
-    hv_store(ret, "sortOrder", 9, newSViv(a.sortOrder), 0);
+    hv_store(ret, "sortOrder", 9, newSVlist(a.sortOrder, MailSortTypeNames), 0);
 
     hv_store(ret, "dirty", 5, newSViv(a.dirty), 0);
     hv_store(ret, "unsentMessage", 13, newSViv(a.unsentMessage), 0);
@@ -1700,7 +2074,7 @@ PackAppBlock(record)
     doPackCategory(h, &a.category);
     
     if ((s = hv_fetch(h, "sortOrder", 9, 0)))
-	    a.sortOrder = SvIV(*s);
+	    a.sortOrder = SvList(*s, MailSortTypeNames);
 	else
 		a.sortOrder = 0;
 
@@ -1711,6 +2085,155 @@ PackAppBlock(record)
 
     RETVAL = newSVpv(mybuf, len);
 
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
+    }
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+UnpackSyncPref(record)
+    SV * record
+    CODE:
+    {
+    STRLEN len;
+    AV * e;
+    HV * ret;
+    int i;
+    struct MailSyncPref a;
+
+    if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_MailSyncPref(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack mail pref");
+    	}
+    	RETVAL = SvREFCNT_inc(record);
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_MailSyncPref(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}
+
+    hv_store(ret, "syncType", 8, newSVlist(a.syncType, MailSyncTypeNames), 0);
+    hv_store(ret, "getHigh", 7, newSViv(a.getHigh), 0);
+    hv_store(ret, "getContaining", 13, newSViv(a.getContaining), 0);
+    hv_store(ret, "truncate", 8, newSViv(a.truncate), 0);
+  
+    if (a.filterTo)  
+	    hv_store(ret, "filterTo", 8, newSVpv(a.filterTo, 0), 0);
+    if (a.filterFrom)  
+	    hv_store(ret, "filterFrom", 10, newSVpv(a.filterFrom, 0), 0);
+    if (a.filterSubject)  
+	    hv_store(ret, "filterSubject", 13, newSVpv(a.filterSubject, 0), 0);
+
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+PackSyncPref(record, id)
+    SV * record
+    int	id
+    CODE:
+    {
+    int i;
+    int len;
+    SV ** s;
+    HV * h;
+    AV * av;
+    struct MailSyncPref a;
+    
+    if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
+    	RETVAL = record;
+    else {
+
+    if ((s = hv_fetch(h, "syncType", 8, 0)))
+	    a.syncType = SvList(*s, MailSyncTypeNames);
+	else
+		a.syncType = 0;
+
+	a.getHigh = (s=hv_fetch(h,"getHigh",7,0)) ? SvIV(*s) : 0;
+	a.getContaining = (s=hv_fetch(h,"getContaining",13,0)) ? SvIV(*s) : 0;
+	a.truncate = (s=hv_fetch(h,"truncate",8,0)) ? SvIV(*s) : 0;
+
+	a.filterTo = (s=hv_fetch(h,"filterTo",8,0)) ? SvPV(*s,na) : 0;
+	a.filterFrom = (s=hv_fetch(h,"filterFrom",10,0)) ? SvPV(*s,na) : 0;
+	a.filterSubject = (s=hv_fetch(h,"filterSubject",13,0)) ? SvPV(*s,na) : 0;
+
+    len = pack_MailSyncPref(&a, (unsigned char*)mybuf, 0xffff);
+    RETVAL = newSVpv(mybuf, len);
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
+    }
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+UnpackSignaturePref(record)
+    SV * record
+    CODE:
+    {
+    STRLEN len;
+    AV * e;
+    HV * ret;
+    int i;
+    struct MailSignaturePref a;
+
+    if (SvRV(record)) {
+    	SV ** raw;
+    	ret = (HV*)SvRV(record);
+    	raw = hv_fetch(ret, "raw", 3, 0);
+    	if (raw) {
+		    (void)SvPV(*raw, len);
+		    unpack_MailSignaturePref(&a, SvPV(*raw, na), len);
+    	} else {
+    		croak("Unable to unpack mail pref");
+    	}
+    	RETVAL = SvREFCNT_inc(record);
+    } else {
+	    ret = newHV();
+	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    (void)SvPV(record, len);
+	    unpack_MailSignaturePref(&a, SvPV(record, na), len);
+	    RETVAL = newRV_noinc((SV*)ret);
+	}
+
+  
+    if (a.signature)  
+	    hv_store(ret, "signature", 9, newSVpv(a.signature, 0), 0);
+
+    }
+    OUTPUT:
+    RETVAL
+
+SV *
+PackSignaturePref(record, id)
+    SV * record
+    int	id
+    CODE:
+    {
+    int i;
+    int len;
+    SV ** s;
+    HV * h;
+    AV * av;
+    struct MailSignaturePref a;
+    
+    if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
+    	RETVAL = record;
+    else {
+
+	a.signature = (s=hv_fetch(h,"signature",9,0)) ? SvPV(*s,na) : 0;
+
+    len = pack_MailSignaturePref(&a, (unsigned char*)mybuf, 0xffff);
+    RETVAL = newSVpv(mybuf, len);
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
@@ -2668,15 +3191,44 @@ delete(self, name, cardno=0)
 	RETVAL
 
 SV *
-open(self, name, mode=dlpOpenReadWrite, cardno=0)
+open(self, name, mode=0, cardno=0)
 	PDA::Pilot::DLP *	self
 	char *	name
-	int	mode
+	SV *	mode
 	int	cardno
 	CODE:
 	{
 		int handle;
-		int result = dlp_OpenDB(self->socket, cardno, mode, name, &handle);
+		int nummode;
+		int result;
+		if (!mode)
+			nummode = dlpOpenRead|dlpOpenWrite|dlpOpenSecret;
+		else {
+			char *c;
+			int len;
+			nummode = SvIV(mode);
+			if (SvPOKp(mode)) {
+				c = SvPV(mode, len);
+				while (*c) {
+					switch (*c) {
+					case 'r':
+						nummode |= dlpOpenRead;
+						break;
+					case 'w':
+						nummode |= dlpOpenWrite;
+						break;
+					case 'x':
+						nummode |= dlpOpenExclusive;
+						break;
+					case 's':
+						nummode |= dlpOpenSecret;
+						break;
+					}
+					c++;
+				}
+			}
+		}
+		result = dlp_OpenDB(self->socket, cardno, nummode, name, &handle);
 		if (result<0) {
 			self->errno = result;
 			RETVAL = &sv_undef;
@@ -2690,7 +3242,7 @@ open(self, name, mode=dlpOpenReadWrite, cardno=0)
 			x->handle = handle;
 			x->errno = 0;
 			x->dbname = newSVpv(name,0);
-			x->dbmode = mode;
+			x->dbmode = nummode;
 			x->dbcard = cardno;
 			RETVAL = newRV(sv);
 			SvREFCNT_dec(sv);
@@ -2882,7 +3434,7 @@ dirty(self)
 	RETVAL
 
 SV *
-getDBInfo(self, start, RAM, ROM, cardno=0)
+getDBInfo(self, start, RAM=1, ROM=0, cardno=0)
 	PDA::Pilot::DLP *	self
 	int	start
 	int	RAM

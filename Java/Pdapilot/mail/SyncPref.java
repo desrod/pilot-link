@@ -4,7 +4,7 @@ package Pdapilot.mail;
 import java.io.*;
 
 public class SyncPref extends Pdapilot.Pref {
-	public int syncType;
+	public sync syncType;
 	public boolean getHigh;
 	public boolean getContaining, truncate;
 	public String filterTo, filterFrom, filterSubject;

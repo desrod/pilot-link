@@ -21,7 +21,7 @@ public class AppBlock extends Pdapilot.CategoryAppBlock {
 	public native void unpack(byte[] data);
 	public native byte[] pack();
 	
-	void fill() {
+	public void fill() {
 		sortByCompany = false;
 		country = 0;
 		label = new String[22];

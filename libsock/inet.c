@@ -257,7 +257,7 @@ static int pi_net_send(struct pi_socket *ps, void *msg, int len, unsigned int fl
   
   l = 0;
   while (l<len) {
-    n = write(ps->sd, msg+l, len-l);
+    n = write(ps->sd, (char *)msg+l, len-l);
     if (n>0)
       l += n;
     if (n<0)
@@ -301,7 +301,7 @@ static int pi_net_recv(struct pi_socket *ps, void *msg, int len, unsigned int fl
   
   l = 0;
   while (l<len) {
-    n = read(ps->sd, msg+l, len-l);
+    n = read(ps->sd, (char *)msg+l, len-l);
     if (n>0)
       l += n;
     if (n<0)

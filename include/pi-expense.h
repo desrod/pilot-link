@@ -11,6 +11,11 @@ extern "C" {
 #define Expense_Creator makelong("exps")
 #define Expense_DB "ExpenseDB"
 
+extern char * ExpenseSortNames[];
+extern char * ExpenseDistanceNames[];
+extern char * ExpensePaymentNames[];
+extern char * ExpenseTypeNames[];
+                                
 enum ExpenseSort {
 	esDate, esType
 };
@@ -57,7 +62,7 @@ struct ExpenseAppInfo {
 
 #define Expense_Pref 1
 
-struct ExpensePrefs {
+struct ExpensePref {
   int currentCategory;
   int defaultCategory;
   int noteFont;
@@ -72,8 +77,8 @@ struct ExpensePrefs {
 extern void free_Expense PI_ARGS((struct Expense *));
 extern int unpack_Expense PI_ARGS((struct Expense *, unsigned char * record, int len));
 extern int pack_Expense PI_ARGS((struct Expense *, unsigned char * record, int len));
-extern int unpack_ExpensePrefs PI_ARGS((struct ExpensePrefs *, unsigned char * record, int len));
-extern int pack_ExpensePrefs PI_ARGS((struct ExpensePrefs *, unsigned char * record, int len));
+extern int unpack_ExpensePref PI_ARGS((struct ExpensePref *, unsigned char * record, int len));
+extern int pack_ExpensePref PI_ARGS((struct ExpensePref *, unsigned char * record, int len));
 extern int unpack_ExpenseAppInfo PI_ARGS((struct ExpenseAppInfo *, unsigned char * AppInfo, int len));
 extern int pack_ExpenseAppInfo PI_ARGS((struct ExpenseAppInfo *, unsigned char * AppInfo, int len));
 

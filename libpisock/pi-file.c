@@ -386,10 +386,10 @@ pi_file_set_rbuf_size (struct pi_file *pf, int size)
 
   if (size > pf->rbuf_size) {
     if (pf->rbuf_size == 0) {
-      new_size = 64*1024;
+      new_size = size+2048;
       rbuf = malloc (new_size);
     } else {
-      new_size = size;
+      new_size = size+2048;
       rbuf = realloc (pf->rbuf, new_size);
     }
 
@@ -424,15 +424,15 @@ pi_file_read_resource (struct pi_file *pf, int idx,
 
   entp = &pf->entries[idx];
 
-  if (pi_file_set_rbuf_size (pf, entp->size) < 0)
-    return (-1);
-
-  fseek (pf->f, pf->entries[idx].offset, SEEK_SET);
-  if (fread (pf->rbuf, 1, entp->size, pf->f) != (size_t)entp->size)
-    return (-1);
-
-  if (bufp)
+  if (bufp) {
+    if (pi_file_set_rbuf_size (pf, entp->size) < 0)
+      return (-1);
+    fseek (pf->f, pf->entries[idx].offset, SEEK_SET);
+    if (fread (pf->rbuf, 1, entp->size, pf->f) != (size_t)entp->size)
+      return (-1);
     *bufp = pf->rbuf;
+  }
+  
   if (sizep)
     *sizep = entp->size;
   if (type)
@@ -453,6 +453,10 @@ pi_file_read_record (struct pi_file *pf, int idx,
 
   if (pf->for_writing)
     return (-1);
+    
+#ifdef DEBUG
+  fprintf(stderr, "Reading record %d\n", idx);
+#endif  
 
   ip = &pf->info;
 
@@ -463,16 +467,21 @@ pi_file_read_record (struct pi_file *pf, int idx,
     return (-1);
 
   entp = &pf->entries[idx];
+  
+#ifdef DEBUG
+  fprintf(stderr, "record size is %d\n", entp->size);
+#endif  
 
-  if (pi_file_set_rbuf_size (pf, entp->size) < 0)
-    return (-1);
 
-  fseek (pf->f, pf->entries[idx].offset, SEEK_SET);
-  if (fread (pf->rbuf, 1, entp->size, pf->f) != (size_t)entp->size)
-    return (-1);
-
-  if (bufp)
+  if (bufp) {
+    if (pi_file_set_rbuf_size (pf, entp->size) < 0)
+      return (-1);
+    fseek (pf->f, pf->entries[idx].offset, SEEK_SET);
+    if (fread (pf->rbuf, 1, entp->size, pf->f) != (size_t)entp->size)
+      return (-1);
     *bufp = pf->rbuf;
+  }
+  
   if (sizep)
     *sizep = entp->size;
   if (attrp)
@@ -824,7 +833,7 @@ int pi_file_retrieve(struct pi_file * pf, int socket, int cardno)
     }
   else
     for(j=0;j<l;j++) {
-  	  unsigned long id;
+	  unsigned long id;
   	  int size;
   	  int attr;
   	  int category;
@@ -912,7 +921,15 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
     free(buffer);
    
   /* Resource or record? */
-  if(pf->info.flags & dlpDBFlagResource)
+  if(pf->info.flags & dlpDBFlagResource) {
+    for(j=0;j<pf->nentries;j++) {
+      int size;
+      if( (pi_file_read_resource(pf, j, 0, &size, 0, 0)==0) &&
+          (size > 65536)) {
+	fprintf(stderr, "Database contains resource over 64K!\n");
+        goto fail;
+      }
+    }
     for(j=0;j<pf->nentries;j++) {
       unsigned long type;
       int id;
@@ -926,7 +943,15 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
       if (type == pi_mktag ('b','o','o','t')) 
         reset = 1;
     }
-  else
+  } else {
+    for(j=0;j<pf->nentries;j++) {
+      int size;
+      if( ((pi_file_read_record(pf, j, 0, &size, 0, 0, 0)==0)) &&
+          (size > 65536)) {
+	fprintf(stderr, "Database contains record over 64K!\n");
+        goto fail;
+      }
+    }
     for(j=0;j<pf->nentries;j++) {
       unsigned long id;
       int size;
@@ -940,6 +965,7 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
       if(dlp_WriteRecord(socket, db, attr, id, category, buffer, size, 0)<0)
         goto fail;
     }
+  }
   
   if(reset)
     dlp_ResetSystem(socket);
@@ -973,7 +999,15 @@ int pi_file_merge(struct pi_file * pf, int socket, int cardno)
     reset = 1;
       
   /* Resource or record? */
-  if(pf->info.flags & dlpDBFlagResource)
+  if(pf->info.flags & dlpDBFlagResource) {
+    for(j=0;j<pf->nentries;j++) {
+      int size;
+      if( (pi_file_read_resource(pf, j, 0, &size, 0, 0)==0) &&
+          (size > 65536)) {
+	fprintf(stderr, "Database contains resource over 64K!\n");
+        goto fail;
+      }
+    }
     for(j=0;j<pf->nentries;j++) {
       unsigned long type;
       int id;
@@ -987,7 +1021,15 @@ int pi_file_merge(struct pi_file * pf, int socket, int cardno)
       if (type == pi_mktag ('b','o','o','t')) 
         reset = 1;
     }
-  else
+  } else {
+    for(j=0;j<pf->nentries;j++) {
+      int size;
+      if( ((pi_file_read_record(pf, j, 0, &size, 0, 0, 0)==0)) &&
+          (size > 65536)) {
+	fprintf(stderr, "Database contains record over 64K!\n");
+        goto fail;
+      }
+    }
     for(j=0;j<pf->nentries;j++) {
       unsigned long id;
       int size;
@@ -1001,6 +1043,7 @@ int pi_file_merge(struct pi_file * pf, int socket, int cardno)
       if(dlp_WriteRecord(socket, db, attr, 0, category, buffer, size, 0)<0)
         goto fail;
     }
+  }
   
   if(reset)
     dlp_ResetSystem(socket);

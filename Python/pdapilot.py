@@ -53,13 +53,38 @@ class RecordBlock (Block):
 		if id != None:
 			self.id = id
 		if attr != None:
-			self.attr= attr
+			if attr & 0x80:
+				self.deleted = 1
+			else:
+				self.deleted = 0
+			if attr & 0x40:
+				self.modified = 1
+			else:
+				self.mofified = 0
+			if attr & 0x20:
+				self.busy = 1
+			else:
+				self.busy = 0
+			if attr & 0x10:
+				self.secret = 1
+			else:
+				self.secret = 0
+			if attr & 0x08:
+				self.archived = 1
+			else:
+				self.archived = 0
 		if category != None:
 			self.category = category
 		if contents != None:
 			self.unpack(contents, dlpdb)
 		else:
 			self.fill()
+	def fill(self):
+		self.deleted = 0
+		self.modified = 0
+		self.busy = 0
+		self.secret = 0
+		self.archived = 0
 
 class AppBlock (Block):
 	""" AppBlock is intended to keep any methods common to most app blocks
@@ -91,6 +116,7 @@ class Memo (RecordDatabase):
 	class Record (RecordBlock):
 		def fill(self):
 			self.text = ''
+			RecordBlock.fill(self)
 		
 		def pack(self, dlpdb=None):
 			self.raw = _pdapilot.MemoPack(self.__dict__)
@@ -120,6 +146,7 @@ class ToDo (RecordDatabase):
 			self.note = None
 			self.description = None
 			self.due = None
+			RecordBlock.fill(self)
 		
 		def pack(self, dlpdb=None):
 			self.raw = _pdapilot.ToDoPack(self.__dict__)

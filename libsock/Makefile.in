@@ -51,7 +51,7 @@ libpisock.a: $(OBJS)
 
 libpisock.la: $(OBJS)
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) \
-		-export-dynamic -rpath $(libdir) -version-info 1:0:0 \
+		-export-dynamic -rpath $(libdir) -version-info 2:0:0 \
 		-o libpisock.la $(OBJS)
 
 # OS/2 dll build rules,  This is somewhat of a hack.

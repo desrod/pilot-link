@@ -16,7 +16,7 @@ public class Block {
 			this.unpack(contents);
 		}
 		
-		void fill() {
+		public void fill() {
 		}
 		
 		public byte[] pack() {
@@ -28,7 +28,7 @@ public class Block {
 		}
 		
 		public String describe() {
-			return "raw='" + Util.prettyPrint(new String(raw, 0));
+			return "raw='" + Util.prettyPrint(raw);
 		}
 
 	public String toString() {

@@ -14,6 +14,9 @@
 #include "pi-dlp.h"
 #include "pi-mail.h"
 
+char * MailSortTypeNames[] = { "Date", "Type", NULL };
+char * MailSyncTypeNames[] = { "All", "Send", "Filter", NULL };
+
 void free_Mail(struct Mail * a) {
   if (a->from)
     free(a->from);

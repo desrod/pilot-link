@@ -2447,6 +2447,25 @@ EOF
 		*present*) echo "$ac_t""found in $with_java" 1>&6 
 			WITHJAVA='WITHJAVA'
 			JAVABASE="$with_java"
+			javaos="$host_os"
+			case "$javaos" in
+			  linux-gnu) javaos="$javaos linux" ;;
+			  solaris) javaos="$javaos sunos sun" ;;
+			  sunos) javaos="$javaos solaris sun" ;;
+			esac
+			JAVAARCH="genunix"
+			for i in $javaos genunix; do
+			  if test -f "$JAVABASE/include/$i/byteorder_md.h"; then
+			    JAVAARCH="$i"
+			    break
+			  fi
+			done
+			JAVAMAJOR=1
+			if test -f "$JAVABASE/include/$JAVAARCH/jni_md.h"; then
+			  JAVAMINOR=1
+			else
+			  JAVAMINOR=0
+			fi
 			;;
 		*)	echo "$ac_t""not found" 1>&6
 			with_java=no ;;
@@ -2455,6 +2474,9 @@ EOF
 else
 	echo "$ac_t""not found" 1>&6
 fi
+
+
+
 
 
 if test "x$PERL5" = "x"; then
@@ -2483,7 +2505,7 @@ else
 fi 
 
 echo $ac_n "checking for Tcl""... $ac_c" 1>&6
-echo "configure:2487: checking for Tcl" >&5
+echo "configure:2509: checking for Tcl" >&5
 TCL_VERSION=""
 TCL_LIBS=""
 TCL_LIB_SPEC=""
@@ -2534,7 +2556,7 @@ else
 		fi 
 
 		echo $ac_n "checking for Itcl""... $ac_c" 1>&6
-echo "configure:2538: checking for Itcl" >&5
+echo "configure:2560: checking for Itcl" >&5
 		if test "x$with_itcl" = "x"; then
 			echo "$ac_t""not found" 1>&6
 		elif test "x$with_itcl" = "xno"; then
@@ -2576,7 +2598,7 @@ echo "configure:2538: checking for Itcl" >&5
 		fi 
 		
 		echo $ac_n "checking for Tk""... $ac_c" 1>&6
-echo "configure:2580: checking for Tk" >&5
+echo "configure:2602: checking for Tk" >&5
 		if test "x$with_tk" = "x"; then
 			echo "$ac_t""not found" 1>&6
 		elif test "x$with_tk" = "xno"; then
@@ -2652,7 +2674,7 @@ if test "x$with_python" = "xyes" || test "x$with_python" = "x" ; then
 fi 
 
 echo $ac_n "checking for Python""... $ac_c" 1>&6
-echo "configure:2656: checking for Python" >&5
+echo "configure:2678: checking for Python" >&5
 
 PYTHONBASE=''
 PYTHONLIBDIR=''
@@ -2687,7 +2709,7 @@ fi
 
 
 echo $ac_n "checking for maximum warnings compiler flag""... $ac_c" 1>&6
-echo "configure:2691: checking for maximum warnings compiler flag" >&5
+echo "configure:2713: checking for maximum warnings compiler flag" >&5
 if eval "test \"`echo '$''{'ac_cv_cwflag'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2887,6 +2909,9 @@ s%@RLDEFS@%$RLDEFS%g
 s%@CPP@%$CPP%g
 s%@PERL5@%$PERL5%g
 s%@JAVABASE@%$JAVABASE%g
+s%@JAVAARCH@%$JAVAARCH%g
+s%@JAVAMAJOR@%$JAVAMAJOR%g
+s%@JAVAMINOR@%$JAVAMINOR%g
 s%@TCL_VERSION@%$TCL_VERSION%g
 s%@TCL_LIBS@%$TCL_LIBS%g
 s%@TCL_LIB_SPEC@%$TCL_LIB_SPEC%g

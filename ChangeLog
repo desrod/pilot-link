@@ -1,3 +1,36 @@
+Aug 9, 1997		Kenneth Albanowski 0.8.1
+	Configuration changes:
+	  - A few tweaks for Java and OS/2.
+	Pisocket library changes:
+	  - For datebook packer code: repeatOn split into repeatDay and repeatDays.
+	  - Fixed pi-file crash on records larger then 64K. (Note that the Pilot
+	    itself cannot deal with records larger then 64K!)
+	  - pi-csd now tries to cope better with missing ifr_netmask.
+	  - pi-nredir: setenv scrapped.
+	  - pilot-mail: Added x-mailer header, and avoid preprending dashes to
+	    signature if it already has them.
+	  - pilot-xfer: tried to fix optind. Again.
+	  - read-ical: oops.
+	  - 
+	Utility changes:
+	  - Added installdatebook and ietf2datebook, both provided by Tero
+	    Kivinen <kivinen@ssh.fi>
+	Java binding changes:
+	  - Now compiles with JDK 1.1.
+	  - All standard Pilot databases support with complete packer/unpacker
+	    support.
+	  - File access added.
+	  - All enumeration record values changed over to enumeration objects.
+	  - All bit-fields replaced with individual items.
+	Perl 5 binding changes:
+	  - All enumeration record values changed over to text values.
+	  - Support for mail preferences added.
+	  - Expense database supported.
+	  - All bit-fields replaced with individual items.
+	  - Open command accepts text mode ("rxws") as well as numeric.
+	Python binding changes:
+	  - All enumeration record values changed over to text values.
+
 Aug 4, 1997 	Kenneth Albanowski 0.8.0
 
 	Configuration changes:

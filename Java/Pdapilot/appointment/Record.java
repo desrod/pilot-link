@@ -8,27 +8,19 @@ import java.io.*;
 
 public class Record extends Pdapilot.Record {
 
-	final static int RepeatNone = 0;
-	final static int RepeatDaily = 1;
-	final static int RepeatWeekly = 2;
-	final static int RepeatMonthlyByDay = 3;
-	final static int RepeatMonthlyByDate = 4;
-	final static int RepeatYearly = 5;
-
 	public java.util.Date[] exceptions;
 	public String description;
 	public String note;
 	public boolean alarm;
 	public int advance;
-	public int advanceUnits;
-	public int repeatType;
+	public time advanceUnits;
+	public repeat repeatType;
 	public java.util.Date repeatEnd;
 	public int repeatFrequency;
 	public boolean[] repeatWeekdays;
 	public int repeatDay;
 	public int repeatWeekStart;
 	public java.util.Date begin, end;
-	public boolean event;
 
 		public Record() {
 			super();
@@ -47,8 +39,8 @@ public class Record extends Pdapilot.Record {
 			note = null;
 			alarm = false;
 			advance = 0;
-			advanceUnits = 0;
-			repeatType = 0;
+			advanceUnits = time.Minutes;
+			repeatType = repeat.None;
 			repeatEnd = null;
 			repeatFrequency = 1;
 			repeatDay = 0;
@@ -57,14 +49,12 @@ public class Record extends Pdapilot.Record {
 				repeatWeekdays[i] = false;
 			begin = new java.util.Date();
 			end = new java.util.Date();
-			event = false;
 		}
 		
         public String describe() {
         	StringBuffer c = new StringBuffer("start=");
         	c.append(begin.toString());
-        	c.append(", end="+end.toString());
-        	c.append(", event="+event);
+        	c.append(", end="+Pdapilot.Util.prettyPrint(end));
         	c.append(", note="+((note == null) ? "(null)" : note));
         	c.append(", description="+((description == null) ? "(null)" : description));
         	c.append(", exceptions=[");

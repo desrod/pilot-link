@@ -33,11 +33,10 @@ public class Record extends Pdapilot.Record {
 		}
 		
         public String describe() {
-            return "id "+id+", index "+index+", attr "+attr+", category "+
-          category+", description '"+ Util.prettyPrint(description)+
+            return  "description '"+ Util.prettyPrint(description)+
           ", note '"+ Util.prettyPrint(note)+
           ", due "+ Util.prettyPrint(due) +
           ", complete " + complete +
-          ", priority " + priority + "'";
+          ", priority " + priority + "', "+super.describe();
         }
 }

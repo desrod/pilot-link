@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #ifdef __EMX__
+#include <getopt.h>
 #include <sys/types.h>
 #endif
 #include <sys/stat.h>
@@ -548,10 +549,14 @@ int main(int argc, char *argv[])
   if (tmp != NULL)
     device = tmp;
   
-  optind++;
+#ifdef __EMX__
+  optmode = GETOPT_KEEP;
+#else
+  optind=1;
+#endif  
   while (argv[optind] != NULL) {
     c = getopt(argc, argv, "b:e:r:i:m:f:d:plh");
-    if (c == -1) {
+    if (c == EOF) {
 	optarg=argv[optind++];
 	c = lastmode;
 	if (lastmode=='b' || lastmode=='r' || lastmode=='l' || lastmode=='p') {

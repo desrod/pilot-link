@@ -151,22 +151,12 @@ int main(int argc, char *argv[])
 					a.begin.tm_mday);
 			}
 		} else if(a.repeatType == repeatWeekly) {
+			int k;
 			/* On the chosen days of the week */
 			printf("REM ");
-			if(a.repeatOn & 1)
-				printf("Sun ");
-			if(a.repeatOn & 2)
-				printf("Mon ");
-			if(a.repeatOn & 4)
-				printf("Tue ");
-			if(a.repeatOn & 8)
-				printf("Wed ");
-			if(a.repeatOn & 16)
-				printf("Thu ");
-			if(a.repeatOn & 32)
-				printf("Fri ");
-			if(a.repeatOn & 64)
-				printf("Sat ");
+			for(k=0;k<7;k++)
+				if(a.repeatDays[i])
+					printf("%s ", Weekday[i]);
 
 			if(a.repeatFrequency>1) {
 				/* if the week is equal to the starting week mod x */
@@ -192,13 +182,13 @@ int main(int argc, char *argv[])
 			int day;
 			int weekday;
 			
-			if(a.repeatOn>=domLastSun) {
+			if(a.repeatDay>=domLastSun) {
 				day = 1;
-				weekday = a.repeatOn % 7;
+				weekday = a.repeatDay % 7;
 				printf("REM %s %d -7 ", Weekday[weekday], day);
 			} else {
-				day = a.repeatOn / 7 * 7 + 1;
-				weekday = a.repeatOn % 7;
+				day = a.repeatDay / 7 * 7 + 1;
+				weekday = a.repeatDay % 7;
 				printf("REM %s %d ", Weekday[weekday], day);
 			}
 

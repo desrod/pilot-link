@@ -2,8 +2,8 @@
 package Pdapilot;
 
 public class DBInfo {
-	public int flags;
-	public int miscFlags;
+	public boolean flagReadOnly, flagResource, flagBackup, flagOpen;
+	public boolean flagAppInfoDirty, flagNewer, flagReset, flagExcludeFromSync;
 	public Char4 creator, type;
 	public int version;
 	public int modnum;
@@ -16,7 +16,11 @@ public class DBInfo {
 	
 	public String toString() {
 		return "<Pdapilot.DBInfo name '"+name+"', version "+version+
-			", flags "+flags+", miscFlags "+miscFlags+", creator "+creator.toString()+
+			", flagReadOnly="+flagReadOnly+", flagResource="+flagResource+
+			", flagOpen="+flagOpen+", flagBackup="+flagBackup+
+			", flagAppInfoDirty="+flagAppInfoDirty+", flagNewer="+flagNewer+
+			", flagReset="+flagReset+", flagExcludeFromSync="+flagExcludeFromSync+
+			", creator "+creator.toString()+
 			", type "+type.toString()+", modnum "+modnum+
 			", createDate " + ((createDate==null) ? "null" : createDate.toString())+
 			", modifiyDate " + ((modifyDate==null) ? "null" : modifyDate.toString())+

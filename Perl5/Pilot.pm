@@ -143,7 +143,15 @@ package PDA::Pilot::Record;
 
 sub new {
 	my($self,$data,$id,$attr,$cat,$index) = @_;
-	$self = bless { index => $index, id => $id, attr => $attr, category => $cat}, 
+	$self = bless { 
+		index => $index,
+		id => $id,
+		deleted => !!($attr & 0x80),
+		modified => !!($attr & 0x40),
+		busy => !!($attr & 0x20),
+		secret => !!($attr & 0x10),
+		archived => !!($attr & 0x08),
+		category => $cat}, 
 		(ref($self) || $self);
 	if (defined($data)) {
 		$self->Unpack($data);
@@ -371,6 +379,91 @@ sub Unpack {
 	PDA::Pilot::Mail::UnpackAppBlock($self);
 }
 
+package PDA::Pilot::MailSyncPref;
+
+# A class to represent the sync pref of the Mail application
+
+@ISA = qw(PDA::Pilot::Pref);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Mail::PackSyncPref($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Mail::UnpackSyncPref($self);
+}
+
+package PDA::Pilot::MailSignaturePref;
+
+# A class to represent the signature pref of the Mail application
+
+@ISA = qw(PDA::Pilot::Pref);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Mail::PackSignaturePref($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Mail::UnpackSignaturePref($self);
+}
+
+package PDA::Pilot::ExpenseRecord;
+
+# A class to represent records of the Expense application
+
+@ISA = qw(PDA::Pilot::Record);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Expense::Pack($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Expense::Unpack($self);
+}
+
+package PDA::Pilot::ExpenseAppBlock;
+
+# A class to represent the app block of the Expense application
+
+@ISA = qw(PDA::Pilot::AppBlock);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Expense::PackAppBlock($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Expense::UnpackAppBlock($self);
+}
+
+package PDA::Pilot::ExpensePref;
+
+# A class to represent the pref of the Expense application
+
+@ISA = qw(PDA::Pilot::Pref);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Expense::PackPref($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Expense::UnpackPref($self);
+}
+
 package PDA::Pilot::Database;
 
 # A class to specify which classes are used for generic database entries
@@ -425,8 +518,37 @@ package PDA::Pilot::MailDatabase;
 
 sub record { shift @_; PDA::Pilot::MailRecord->new(@_) }
 sub appblock { shift @_; PDA::Pilot::MailAppBlock->new(@_) }
+sub pref {
+	shift @_;
+	my($data,$creator,$id) = @_;
+	if (($id == 1) || ($id == 2)) {
+		PDA::Pilot::MailSyncPref->new(@_);
+	} elsif ($id == 3) {
+		PDA::Pilot::MailSignaturePref->new(@_);
+	} else {
+		PDA::Pilot::Database->pref(@_);
+	}
+}
 sub creator { 'mail' }
 sub dbname { 'MailDB' }
+
+package PDA::Pilot::ExpenseDatabase;
+
+@ISA=qw(PDA::Pilot::Database);
+
+sub record { shift @_; PDA::Pilot::ExpenseRecord->new(@_) }
+sub appblock { shift @_; PDA::Pilot::ExpenseAppBlock->new(@_) }
+sub pref {
+	shift @_;
+	my($data,$creator,$id) = @_;
+	if ($id == 1) {
+		PDA::Pilot::ExpensePref->new(@_);
+	} else {
+		PDA::Pilot::Database->pref(@_);
+	}
+}
+sub creator { 'exps' }
+sub dbname { 'ExpenseDB' }
 
 package PDA::Pilot;
 
@@ -434,12 +556,15 @@ package PDA::Pilot;
 				ToDoDB => 'PDA::Pilot::ToDoDatabase',
 				AddressDB => 'PDA::Pilot::AddressDatabase',
 				DatebookDB => 'PDA::Pilot::AppointmentDatabase',
-				MailDB => 'PDA::Pilot::MailDatabase');
+				MailDB => 'PDA::Pilot::MailDatabase',
+				ExpenseDB => 'PDA::Pilot::ExpenseDatabase'
+				);
 %PrefClasses = (	memo => 'PDA::Pilot::MemoDatabase',
 					todo => 'PDA::Pilot::ToDoDatabase',
 					mail => 'PDA::Pilot::MailDatabase',
 					date => 'PDA::Pilot::AppointmentDatabase',
-					addr => 'PDA::Pilot::AddressDatabase'
+					addr => 'PDA::Pilot::AddressDatabase',
+					exps => 'PDA::Pilot::ExpenseDatabase'
 					);
 
 # Default classes

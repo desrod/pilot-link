@@ -71,7 +71,7 @@ int pack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int len) {
   record += i;
   len -= i;
   if (len<4)
-    return 0; /*not enough room*/
+    return (record-start);
   set_short(record, 0); /* gapfil new for 2.0 */
   record += 2;
   set_byte(record, ai->sortByAlpha); /* new for 2.0 */

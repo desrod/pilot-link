@@ -7,8 +7,9 @@ import java.io.*;
  */
 
 public class Record extends Block {
-		public int index, attr, category;
+		public int index, category;
 		public RecordID id;
+		public boolean deleted, modified, busy, secret, archived;
 		
 		public Record() {
 			super();
@@ -17,13 +18,25 @@ public class Record extends Block {
 		public Record(byte[] contents, RecordID id, int index, int attr, int category) {
 			this.id = id;
 			this.index = index;
-			this.attr = attr;
+			this.deleted = ((attr & 0x80)!=0) ? true : false;
+			this.modified = ((attr & 0x40)!=0) ? true : false;
+			this.busy = ((attr & 0x20)!=0) ? true : false;
+			this.secret = ((attr & 0x10)!=0) ? true : false;
+			this.archived = ((attr & 0x08)!=0) ? true : false;
 			this.category = category;
 			this.unpack(contents);
 		}
 		
+		public void Fill() {
+			this.deleted = false;
+			this.modified = false;
+			this.busy = false;
+			this.secret = false;
+			this.archived = false;
+		}
+		
 		public String describe() {
-			return " id "+id+", index "+index+", attr "+attr+", category "+
-				category;
+			return " id "+id+", index "+index+", deleted "+deleted+", modified "+modified+
+			", busy "+busy+", secret "+secret+", archived "+archived+", category "+ category;
 		}
 }

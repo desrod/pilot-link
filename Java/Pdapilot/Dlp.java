@@ -106,6 +106,14 @@ public class Dlp extends Socket {
 			}
 		}
 
+		public void close(end status) throws DlpException, IOException {
+			/* This method must be idempotent */
+			if (this.socket != 0) {
+				dlp_EndOfSync(status.getValue());
+				super.close();
+			}
+		}
+
 		public void reset() throws DlpException {
 			dlp_ResetSystem();
 		}
@@ -122,6 +130,21 @@ public class Dlp extends Socket {
 		public DB open(String name, int mode, int card) throws DlpException {
 			int handle = this.dlp_OpenDB(card, mode, name);
 			return new DB(this, handle, name, mode, card);
+		}
+
+		public DB open(String name, String mode) throws DlpException { return this.open(name,mode,0); }
+		public DB open(String name, String mode, int card) throws DlpException {
+			int imode = 0;
+			if (mode.indexOf('r')>=0)
+				imode |= constants.dlpOpenRead;
+			if (mode.indexOf('w')>=0)
+				imode |= constants.dlpOpenWrite;
+			if (mode.indexOf('s')>=0)
+				imode |= constants.dlpOpenSecret;
+			if (mode.indexOf('x')>=0)
+				imode |= constants.dlpOpenExclusive;
+			int handle = this.dlp_OpenDB(card, imode, name);
+			return new DB(this, handle, name, imode, card);
 		}
 		
 		public DB create(String name, Char4 creator, Char4 type, int flags, int version) throws DlpException

@@ -8,6 +8,9 @@
 extern "C" {
 #endif
 
+extern char * DatebookAlarmTypeNames[];
+extern char * DatebookRepeatTypeNames[];
+
 enum alarmTypes {advMinutes, advHours, advDays};
 
 enum repeatTypes {
@@ -19,6 +22,11 @@ enum repeatTypes {
    repeatYearly
 };
 
+/* This enumeration normally isn't of much use, as you can get just as useful
+   results by taking the value mod 7 to get the day of the week, and div 7
+   to get the week value, with week 4 (of 0) meaning the last, be it fourth
+   or fifth. */
+   
 enum  DayOfMonthType{
        dom1stSun, dom1stMon, dom1stTue, dom1stWen, dom1stThu, dom1stFri, dom1stSat,
        dom2ndSun, dom2ndMon, dom2ndTue, dom2ndWen, dom2ndThu, dom2ndFri, dom2ndSat,
@@ -29,25 +37,26 @@ enum  DayOfMonthType{
 };
 
 struct Appointment {
-	int event;            /* Is this a timeless event? */
-	struct tm begin, end; /* When does this appointment start and end? */
+	int event;               /* Is this a timeless event? */
+	struct tm begin, end;    /* When does this appointment start and end? */
 	
-	int alarm;            /* Should an alarm go off? */
-	int advance;          /* How far in advance should it be? */
-	int advanceUnits;     /* What am I measuring the advance in? */
+	int alarm;               /* Should an alarm go off? */
+	int advance;             /* How far in advance should it be? */
+	int advanceUnits;        /* What am I measuring the advance in? */
 	
-	int repeatType;       /* How should I repeat this appointment, if at all? */
-	int repeatForever;    /* Do the repetitions end at some date? */
-	struct tm repeatEnd;  /* What date to they end on? */
-	int repeatFrequency;       /* Should I skip an interval for each repetition? */
-	int repeatOn;         /* What things are the targets of repetition? */
-	int repeatWeekstart;  /* What day did the user decide starts the week? */
+	enum repeatTypes repeatType;  /* How should I repeat this appointment, if at all? */
+	int repeatForever;       /* Do the repetitions end at some date? */
+	struct tm repeatEnd;     /* What date do they end on? */
+	int repeatFrequency;     /* Should I skip an interval for each repetition? */
+	enum DayOfMonthType repeatDay;/* for repeatMonthlyByDay */
+	int repeatDays[7];       /* for repeatWeekly */
+	int repeatWeekstart;     /* What day did the user decide starts the week? */
 	
-	int exceptions;       /* How many repetitions are their to be ignored? */
-	struct tm * exception; /* What are they? */
+	int exceptions;          /* How many repetitions are their to be ignored? */
+	struct tm * exception;   /* What are they? */
 	
-	char * description;   /* What is the description of this appointment? */
-	char * note;          /* Is there a note to go along with it? */
+	char * description;      /* What is the description of this appointment? */
+	char * note;             /* Is there a note to go along with it? */
 };
 
 struct AppointmentAppInfo {

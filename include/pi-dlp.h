@@ -72,6 +72,10 @@ enum dlpDBFlags {
 	dlpDBFlagReset = 0x0020 /* Reset after installation */
 };
 
+enum dlpDBMiscFlags {
+	dlpDBMiscFlagExcludeFromSync = 0x80
+};
+
 enum dlpRecAttributes {
 	dlpRecAttrDeleted = 0x80, /* tagged for deletion during next sync */
 	dlpRecAttrDirty   = 0x40, /* record modified */

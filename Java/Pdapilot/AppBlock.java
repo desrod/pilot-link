@@ -15,6 +15,6 @@ public class AppBlock extends Block {
 		}
 		
 		public String describe() {
-			return "raw='"+Util.prettyPrint(new String(raw,0))+"'";
+			return "raw='"+Util.prettyPrint(raw)+"'";
 		}
 }

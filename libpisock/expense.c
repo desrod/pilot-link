@@ -14,6 +14,20 @@
 #include "pi-dlp.h"
 #include "pi-expense.h"
 
+char * ExpenseSortNames[] =
+    { "Date", "Type", NULL };
+char * ExpenseDistanceNames[] =
+    { "Miles", "Kilometers", NULL };
+char * ExpensePaymentNames[] =
+    { "AmEx", "Cash", "Check", "CreditCard", "MasterCard", "Prepaid", "VISA", "Unfiled" };
+char * ExpenseTypeNames[] =
+    { "Airfare", "Breakfast", "Bus", "Business Meals", "Car Rental", "Dinner",
+    "Entertainment", "Fax", "Gas", "Gifts", "Hotel", "Incidentals", "Laundry",
+    "Limo", "Lodging", "Lunch", "Mileage", "Other", "Parking", "Postage",
+    "Snack", "Subway", "Supplies", "Taxi", "Telephone", "Tips", "Tolls",
+    "Train"
+};
+
 void free_Expense(struct Expense * a) {
   if (a->note)
     free(a->note);
@@ -248,7 +262,7 @@ int pack_ExpenseAppInfo(struct ExpenseAppInfo * ai, unsigned char * record, int 
   return (record-start);
 }
 
-int unpack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int len)
+int unpack_ExpensePref(struct ExpensePref * p, unsigned char * record, int len)
 {
   int i;
   unsigned char * start = record;
@@ -275,7 +289,7 @@ int unpack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int len
   return (record - start);
 }
 
-int pack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int len)
+int pack_ExpensePref(struct ExpensePref * p, unsigned char * record, int len)
 {
   int i;
   unsigned char * start = record;

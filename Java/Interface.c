@@ -2,6 +2,7 @@
 #include "Pdapilot_Database.h"
 #include "Pdapilot_Record.h"
 #include "Pdapilot_Pref.h"
+#include "Pdapilot_Dlp.h"
 #include "Pdapilot_AppBlock.h"
 #include "Pdapilot_SortBlock.h"
 #include "Pdapilot_Resource.h"
@@ -18,13 +19,26 @@
 #include "Pdapilot_address_AppBlock.h"
 #include "Pdapilot_appointment_Record.h"
 #include "Pdapilot_appointment_AppBlock.h"
+#include "Pdapilot_appointment_repeat.h"
+#include "Pdapilot_appointment_time.h"
 #include "Pdapilot_mail_Record.h"
 #include "Pdapilot_mail_AppBlock.h"
 #include "Pdapilot_mail_SyncPref.h"
 #include "Pdapilot_mail_SignaturePref.h"
+#include "Pdapilot_mail_sort.h"
+#include "Pdapilot_mail_sync.h"
+#include "Pdapilot_expense_Record.h"
+#include "Pdapilot_expense_AppBlock.h"
+#include "Pdapilot_expense_Pref.h"
+#include "Pdapilot_expense_type.h"
+#include "Pdapilot_expense_payment.h"
+#include "Pdapilot_expense_distance.h"
+#include "Pdapilot_expense_sort.h"
+#include "Pdapilot_expense_CustomCurrency.h"
 #include "Pdapilot_RecordID.h"
 #include "Pdapilot_Char4.h"
 #include "Pdapilot_DBInfo.h"
+#include "Pdapilot_File.h"
 #include "java_util_Date.h"
 
 #include "pi-source.h"
@@ -36,8 +50,23 @@
 #include "pi-datebook.h"
 #include "pi-todo.h"
 #include "pi-mail.h"
+#include "pi-expense.h"
+#include "pi-file.h"
 
 #include <signal.h>
+
+#if (JAVAMAJOR>1) || (JAVAMINOR>0)
+# define NEW
+#else
+# define OLD
+#endif
+
+#ifdef OLD
+# define javaint_t long
+#else
+# define javaint_t int32_t
+#endif
+
 
 /** Sun should be ashamed for the 1.0 JNI!
  */
@@ -107,7 +136,7 @@ static long getObjectArrayLength(struct HArrayOfObject *b)
 		"getObjectArrayLength", "([Ljava/lang/Object;)I", b);
 }
 
-Hjava_util_Date * makeJavaDate(time_t v) {
+static Hjava_util_Date * makeJavaDate(time_t v) {
 	if (v < 18000) {
 		return 0;
 	} else {
@@ -120,40 +149,40 @@ Hjava_util_Date * makeJavaDate(time_t v) {
 	
 }	
 
-Hjava_util_Date * makeJavaDateTm(struct tm * tm) {
+static Hjava_util_Date * makeJavaDateTm(struct tm * tm) {
 	return (Hjava_util_Date*)execute_java_constructor(0, "java/util/Date", 0, 
 		"(IIIIII)",
 		tm->tm_year, tm->tm_mon, tm->tm_mday,
 		tm->tm_hour, tm->tm_min, tm->tm_sec);
 }	
 
-HPdapilot_Char4 * makeJavaChar4(long id) {
+static HPdapilot_Char4 * makeJavaChar4(long id) {
 	return (HPdapilot_Char4*)execute_java_constructor(
 		0, "Pdapilot/Char4", 0, 
 		"(I)", id);
 }
 
-int getJavaChar4(HPdapilot_Char4 * id) {
+static unsigned long getJavaChar4(HPdapilot_Char4 * id) {
 	if (id)
 		return unhand(id)->value;
 	else
 		return 0;
 }
 
-HPdapilot_RecordID * makeJavaRecordID(long id) {
+static HPdapilot_RecordID * makeJavaRecordID(long id) {
 	return (HPdapilot_RecordID*)execute_java_constructor(
 		0, "Pdapilot/RecordID", 0, 
 		"(I)", id);
 }
 
-int getJavaRecordID(HPdapilot_RecordID * id) {
+static int getJavaRecordID(HPdapilot_RecordID * id) {
 	if (id)
 		return unhand(id)->value;
 	else
 		return 0;
 }
 
-time_t readJavaDate(Hjava_util_Date * date) {
+static time_t readJavaDate(Hjava_util_Date * date) {
 	struct tm tm;
 
 	tm.tm_year = (int)execute_java_dynamic_method(0, (HObject*)date, "getYear", "()I");
@@ -166,7 +195,7 @@ time_t readJavaDate(Hjava_util_Date * date) {
 	return mktime(&tm);
 }
 
-struct tm * readJavaDateTm(Hjava_util_Date * date) {
+static struct tm * readJavaDateTm(Hjava_util_Date * date) {
 	static struct tm tm;
 	
 	tm.tm_year = (int)execute_java_dynamic_method(0, (HObject*)date, "getYear", "()I");
@@ -179,7 +208,7 @@ struct tm * readJavaDateTm(Hjava_util_Date * date) {
 	return &tm;
 }
 
-extern long Pdapilot_calls_pi_socket(struct HPdapilot_calls*self, long domain, long type, long protocol)
+extern javaint_t Pdapilot_calls_pi_socket(struct HPdapilot_calls*self, javaint_t domain, javaint_t type, javaint_t protocol)
 {
 	int result = pi_socket(domain, type, protocol);
 	if (result<0)
@@ -187,11 +216,11 @@ extern long Pdapilot_calls_pi_socket(struct HPdapilot_calls*self, long domain, l
 	return result;
 }
 
-extern long Pdapilot_calls_pi_bind(struct HPdapilot_calls*self, long socket, struct Hjava_lang_String * address)
+extern javaint_t Pdapilot_calls_pi_bind(struct HPdapilot_calls*self, javaint_t socket, struct Hjava_lang_String * address)
 {
-	long len = javaStringLength(address)+3;
+	javaint_t len = javaStringLength(address)+3;
 	struct pi_sockaddr * a = malloc(len);
-	long result;
+	javaint_t result;
 	a->pi_family = PI_AF_SLP;
 	javaString2CString(address, a->pi_device, len-2);
 	result = pi_bind(socket, (struct sockaddr*)a, len);
@@ -201,7 +230,7 @@ extern long Pdapilot_calls_pi_bind(struct HPdapilot_calls*self, long socket, str
 	return result;
 }
 
-extern long Pdapilot_calls_pi_listen(struct HPdapilot_calls*self, long socket, long backlog)
+extern javaint_t Pdapilot_calls_pi_listen(struct HPdapilot_calls*self, javaint_t socket, javaint_t backlog)
 {
 	int result = pi_listen(socket, backlog);
 	if (result<0)
@@ -210,7 +239,7 @@ extern long Pdapilot_calls_pi_listen(struct HPdapilot_calls*self, long socket, l
 	
 }
 
-extern long Pdapilot_calls_pi_accept(struct HPdapilot_calls*self, long socket)
+extern javaint_t Pdapilot_calls_pi_accept(struct HPdapilot_calls*self, javaint_t socket)
 {
 	int result=pi_accept(socket, 0, 0);
 	if (result<0)
@@ -218,7 +247,7 @@ extern long Pdapilot_calls_pi_accept(struct HPdapilot_calls*self, long socket)
 	return result;
 }
 
-extern long Pdapilot_calls_pi_read(struct HPdapilot_calls*self, long socket, HArrayOfByte *b, long len)
+extern javaint_t Pdapilot_calls_pi_read(struct HPdapilot_calls*self, javaint_t socket, HArrayOfByte *b, javaint_t len)
 {
 	int result=pi_read(socket, unhand(b)->body, len);
 	if (result<0)
@@ -226,7 +255,7 @@ extern long Pdapilot_calls_pi_read(struct HPdapilot_calls*self, long socket, HAr
 	return result;
 }
 
-extern long Pdapilot_calls_pi_write(struct HPdapilot_calls*self, long socket, HArrayOfByte * b, long len)
+extern javaint_t Pdapilot_calls_pi_write(struct HPdapilot_calls*self, javaint_t socket, HArrayOfByte * b, javaint_t len)
 {
 	int result=pi_write(socket, unhand(b)->body, len);
 	if (result<0)
@@ -234,7 +263,7 @@ extern long Pdapilot_calls_pi_write(struct HPdapilot_calls*self, long socket, HA
 	return result;
 }
 
-extern long Pdapilot_calls_pi_close(struct HPdapilot_calls * self, long socket)
+extern javaint_t Pdapilot_calls_pi_close(struct HPdapilot_calls * self, javaint_t socket)
 {
 	int result=pi_close(socket);
 	if (result<0)
@@ -242,7 +271,7 @@ extern long Pdapilot_calls_pi_close(struct HPdapilot_calls * self, long socket)
 	return result;
 }
 
-extern long Pdapilot_calls_pi_version(struct HPdapilot_calls * self, long socket)
+extern javaint_t Pdapilot_calls_pi_version(struct HPdapilot_calls * self, javaint_t socket)
 {
 	int result=pi_version(socket);
 	if (result<0)
@@ -250,7 +279,7 @@ extern long Pdapilot_calls_pi_version(struct HPdapilot_calls * self, long socket
 	return result;
 }
 
-extern long Pdapilot_calls_pi_watchdog(struct HPdapilot_calls * self, long socket, long interval)
+extern javaint_t Pdapilot_calls_pi_watchdog(struct HPdapilot_calls * self, javaint_t socket, javaint_t interval)
 {
 	int result=pi_watchdog(socket, interval);
 	if (result<0)
@@ -258,7 +287,7 @@ extern long Pdapilot_calls_pi_watchdog(struct HPdapilot_calls * self, long socke
 	return result;
 }
 
-extern long Pdapilot_calls_pi_tickle(struct HPdapilot_calls * self, long socket)
+extern javaint_t Pdapilot_calls_pi_tickle(struct HPdapilot_calls * self, javaint_t socket)
 {
 	int result=pi_tickle(socket);
 	if (result<0)
@@ -266,7 +295,7 @@ extern long Pdapilot_calls_pi_tickle(struct HPdapilot_calls * self, long socket)
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_OpenDB(struct HPdapilot_calls * self, long socket, long card, long mode, Hjava_lang_String * name)
+extern javaint_t Pdapilot_calls_dlp_OpenDB(struct HPdapilot_calls * self, javaint_t socket, javaint_t card, javaint_t mode, Hjava_lang_String * name)
 {
 	int handle;
 	int result = dlp_OpenDB(socket, card, mode, makeCString(name), &handle);
@@ -277,7 +306,7 @@ extern long Pdapilot_calls_dlp_OpenDB(struct HPdapilot_calls * self, long socket
 	return handle;
 }
 
-extern long Pdapilot_calls_dlp_CreateDB(struct HPdapilot_calls * self, long socket, HPdapilot_Char4 * creator, HPdapilot_Char4 * type, long card, long flags, long version, Hjava_lang_String * name)
+extern javaint_t Pdapilot_calls_dlp_CreateDB(struct HPdapilot_calls * self, javaint_t socket, HPdapilot_Char4 * creator, HPdapilot_Char4 * type, javaint_t card, javaint_t flags, javaint_t version, Hjava_lang_String * name)
 {
 	int handle;
 	int result = dlp_CreateDB(socket, unhand(creator)->value, unhand(creator)->value, card, flags, version, makeCString(name), &handle);
@@ -288,7 +317,7 @@ extern long Pdapilot_calls_dlp_CreateDB(struct HPdapilot_calls * self, long sock
 	return handle;
 }
 
-extern long Pdapilot_calls_dlp_DeleteDB(struct HPdapilot_calls * self, long socket, long card, Hjava_lang_String * name)
+extern javaint_t Pdapilot_calls_dlp_DeleteDB(struct HPdapilot_calls * self, javaint_t socket, javaint_t card, Hjava_lang_String * name)
 {
 	int result = dlp_DeleteDB(socket, card, makeCString(name));
 	if (result < 0) {
@@ -297,7 +326,7 @@ extern long Pdapilot_calls_dlp_DeleteDB(struct HPdapilot_calls * self, long sock
 	return result;
 }
 
-extern Hjava_util_Date * Pdapilot_calls_dlp_GetSysDateTime(struct HPdapilot_calls * self, long socket)
+extern Hjava_util_Date * Pdapilot_calls_dlp_GetSysDateTime(struct HPdapilot_calls * self, javaint_t socket)
 {
 	time_t t;
 	int result = dlp_GetSysDateTime(socket, &t);
@@ -310,7 +339,7 @@ extern Hjava_util_Date * Pdapilot_calls_dlp_GetSysDateTime(struct HPdapilot_call
 }
 
 
-extern long Pdapilot_calls_dlp_SetSysDateTime(struct HPdapilot_calls * self, long socket, Hjava_util_Date * date)
+extern javaint_t Pdapilot_calls_dlp_SetSysDateTime(struct HPdapilot_calls * self, javaint_t socket, Hjava_util_Date * date)
 {
 	time_t t;
 	int result;
@@ -324,7 +353,7 @@ extern long Pdapilot_calls_dlp_SetSysDateTime(struct HPdapilot_calls * self, lon
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_AddSyncLogEntry(struct HPdapilot_calls * self, long socket, Hjava_lang_String * entry)
+extern javaint_t Pdapilot_calls_dlp_AddSyncLogEntry(struct HPdapilot_calls * self, javaint_t socket, Hjava_lang_String * entry)
 {
 	int result = dlp_AddSyncLogEntry(socket, makeCString(entry));
 	if (result < 0)
@@ -332,7 +361,7 @@ extern long Pdapilot_calls_dlp_AddSyncLogEntry(struct HPdapilot_calls * self, lo
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_ResetSystem(struct HPdapilot_calls * self, long socket)
+extern javaint_t Pdapilot_calls_dlp_ResetSystem(struct HPdapilot_calls * self, javaint_t socket)
 {
 	int result = dlp_ResetSystem(socket);
 	if (result < 0)
@@ -340,7 +369,7 @@ extern long Pdapilot_calls_dlp_ResetSystem(struct HPdapilot_calls * self, long s
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_EndOfSync(struct HPdapilot_calls * self, long socket, long status)
+extern javaint_t Pdapilot_calls_dlp_EndOfSync(struct HPdapilot_calls * self, javaint_t socket, javaint_t status)
 {
 	int result = dlp_EndOfSync(socket, status);
 	if (result < 0)
@@ -348,7 +377,7 @@ extern long Pdapilot_calls_dlp_EndOfSync(struct HPdapilot_calls * self, long soc
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_MoveCategory(struct HPdapilot_calls * self, long socket, long handle, long from, long to)
+extern javaint_t Pdapilot_calls_dlp_MoveCategory(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t from, javaint_t to)
 {
 	int result = dlp_MoveCategory(socket, handle, from, to);
 	if (result < 0)
@@ -356,7 +385,7 @@ extern long Pdapilot_calls_dlp_MoveCategory(struct HPdapilot_calls * self, long 
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_DeleteRecord(struct HPdapilot_calls * self, long socket, long handle, long all, HPdapilot_RecordID * id)
+extern javaint_t Pdapilot_calls_dlp_DeleteRecord(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t all, HPdapilot_RecordID * id)
 {
 	int result = dlp_DeleteRecord(socket, handle, all, getJavaRecordID(id));
 	if (result < 0)
@@ -364,7 +393,7 @@ extern long Pdapilot_calls_dlp_DeleteRecord(struct HPdapilot_calls * self, long 
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_DeleteCategory(struct HPdapilot_calls * self, long socket, long handle, long category)
+extern javaint_t Pdapilot_calls_dlp_DeleteCategory(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t category)
 {
 	int result = dlp_DeleteCategory(socket, handle, category);
 	if (result < 0)
@@ -372,7 +401,7 @@ extern long Pdapilot_calls_dlp_DeleteCategory(struct HPdapilot_calls * self, lon
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_ReadOpenDBInfo(struct HPdapilot_calls * self, long socket, long handle)
+extern javaint_t Pdapilot_calls_dlp_ReadOpenDBInfo(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle)
 {
 	int count;
 	int result = dlp_ReadOpenDBInfo(socket, handle, &count);
@@ -381,7 +410,7 @@ extern long Pdapilot_calls_dlp_ReadOpenDBInfo(struct HPdapilot_calls * self, lon
 	return count;
 }
 
-extern long Pdapilot_calls_dlp_DeleteResource(struct HPdapilot_calls * self, long socket, long handle, long all, HPdapilot_Char4 * type, long id)
+extern javaint_t Pdapilot_calls_dlp_DeleteResource(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t all, HPdapilot_Char4 * type, javaint_t id)
 {
 	int result = dlp_DeleteResource(socket, handle, all, unhand(type)->value, id);
 	if (result < 0)
@@ -389,7 +418,7 @@ extern long Pdapilot_calls_dlp_DeleteResource(struct HPdapilot_calls * self, lon
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_ResetSyncFlags(struct HPdapilot_calls * self, long socket, long handle)
+extern javaint_t Pdapilot_calls_dlp_ResetSyncFlags(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle)
 {
 	int result = dlp_ResetSyncFlags(socket, handle);
 	if (result < 0)
@@ -397,7 +426,7 @@ extern long Pdapilot_calls_dlp_ResetSyncFlags(struct HPdapilot_calls * self, lon
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_CleanUpDatabase(struct HPdapilot_calls * self, long socket, long handle)
+extern javaint_t Pdapilot_calls_dlp_CleanUpDatabase(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle)
 {
 	int result = dlp_CleanUpDatabase(socket, handle);
 	if (result < 0)
@@ -406,7 +435,7 @@ extern long Pdapilot_calls_dlp_CleanUpDatabase(struct HPdapilot_calls * self, lo
 }
 
 
-extern HPdapilot_CardInfo * Pdapilot_calls_dlp_ReadStorageInfo(struct HPdapilot_calls * self, long socket, long card)
+extern HPdapilot_CardInfo * Pdapilot_calls_dlp_ReadStorageInfo(struct HPdapilot_calls * self, javaint_t socket, javaint_t card)
 {
 	HPdapilot_CardInfo * output = NULL;
 	struct CardInfo c;
@@ -432,7 +461,7 @@ extern HPdapilot_CardInfo * Pdapilot_calls_dlp_ReadStorageInfo(struct HPdapilot_
 	return output;
 }
 
-extern HPdapilot_SysInfo * Pdapilot_calls_dlp_ReadSysInfo(struct HPdapilot_calls * self, long socket)
+extern HPdapilot_SysInfo * Pdapilot_calls_dlp_ReadSysInfo(struct HPdapilot_calls * self, javaint_t socket)
 {
 	HPdapilot_SysInfo * output = NULL;
 	struct SysInfo s;
@@ -450,7 +479,7 @@ extern HPdapilot_SysInfo * Pdapilot_calls_dlp_ReadSysInfo(struct HPdapilot_calls
 	return output;
 }
 
-extern HPdapilot_DBInfo * Pdapilot_calls_dlp_ReadDBList(struct HPdapilot_calls * self, long socket, long card, long flags, long start)
+extern HPdapilot_DBInfo * Pdapilot_calls_dlp_ReadDBList(struct HPdapilot_calls * self, javaint_t socket, javaint_t card, javaint_t flags, javaint_t start)
 {
 	HPdapilot_DBInfo * output = NULL;
 	struct DBInfo i;
@@ -465,11 +494,17 @@ extern HPdapilot_DBInfo * Pdapilot_calls_dlp_ReadDBList(struct HPdapilot_calls *
 	output = (HPdapilot_DBInfo*)execute_java_constructor(0,
 		 "Pdapilot/DBInfo", 0, "()");
 		 
-	unhand(output)->flags = i.flags;
+	unhand(output)->flagReadOnly = !!(i.flags & dlpDBFlagReadOnly);
+	unhand(output)->flagResource = !!(i.flags & dlpDBFlagResource);
+	unhand(output)->flagBackup = !!(i.flags & dlpDBFlagBackup);
+	unhand(output)->flagOpen = !!(i.flags & dlpDBFlagOpen);
+	unhand(output)->flagAppInfoDirty = !!(i.flags & dlpDBFlagAppInfoDirty);
+	unhand(output)->flagNewer = !!(i.flags & dlpDBFlagNewer);
+	unhand(output)->flagReset = !!(i.flags & dlpDBFlagReset);
+	unhand(output)->flagExcludeFromSync = !!(i.miscFlags & dlpDBMiscFlagExcludeFromSync);
 	unhand(output)->index = i.index;
 	unhand(output)->version = i.version;
 	unhand(output)->modnum = i.modnum;
-	unhand(output)->miscFlags = i.miscFlags;
 	unhand(output)->type = makeJavaChar4(i.type);
 	unhand(output)->creator = makeJavaChar4(i.creator);
 	unhand(output)->createDate = makeJavaDate(i.createDate);
@@ -483,7 +518,7 @@ extern HPdapilot_DBInfo * Pdapilot_calls_dlp_ReadDBList(struct HPdapilot_calls *
 	return output;
 }
 
-extern HPdapilot_UserInfo * Pdapilot_calls_dlp_ReadUserInfo(struct HPdapilot_calls * self, long socket)
+extern HPdapilot_UserInfo * Pdapilot_calls_dlp_ReadUserInfo(struct HPdapilot_calls * self, javaint_t socket)
 {
 	HPdapilot_UserInfo * output = NULL;
 	struct PilotUser u;
@@ -508,7 +543,7 @@ extern HPdapilot_UserInfo * Pdapilot_calls_dlp_ReadUserInfo(struct HPdapilot_cal
 	return output;
 }
 
-extern long Pdapilot_calls_dlp_WriteUserInfo(struct HPdapilot_calls * self, long socket, HPdapilot_UserInfo * user)
+extern javaint_t Pdapilot_calls_dlp_WriteUserInfo(struct HPdapilot_calls * self, javaint_t socket, HPdapilot_UserInfo * user)
 {
 	struct PilotUser u;
 	int result;
@@ -530,7 +565,7 @@ extern long Pdapilot_calls_dlp_WriteUserInfo(struct HPdapilot_calls * self, long
 }
 
 
-extern HPdapilot_NetInfo * Pdapilot_calls_dlp_ReadNetSyncInfo(struct HPdapilot_calls * self, long socket)
+extern HPdapilot_NetInfo * Pdapilot_calls_dlp_ReadNetSyncInfo(struct HPdapilot_calls * self, javaint_t socket)
 {
 	HPdapilot_NetInfo * output = NULL;
 	struct NetSyncInfo i;
@@ -550,7 +585,7 @@ extern HPdapilot_NetInfo * Pdapilot_calls_dlp_ReadNetSyncInfo(struct HPdapilot_c
 	return output;
 }
 
-extern long Pdapilot_calls_dlp_WriteNetSyncInfo(struct HPdapilot_calls * self, long socket, HPdapilot_NetInfo * info)
+extern javaint_t Pdapilot_calls_dlp_WriteNetSyncInfo(struct HPdapilot_calls * self, javaint_t socket, HPdapilot_NetInfo * info)
 {
 	struct NetSyncInfo i;
 	int result;
@@ -567,7 +602,7 @@ extern long Pdapilot_calls_dlp_WriteNetSyncInfo(struct HPdapilot_calls * self, l
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_OpenConduit(struct HPdapilot_calls * self, long socket)
+extern javaint_t Pdapilot_calls_dlp_OpenConduit(struct HPdapilot_calls * self, javaint_t socket)
 {
 	int result = dlp_OpenConduit(socket);
 	if (result == dlpErrSync)
@@ -577,7 +612,7 @@ extern long Pdapilot_calls_dlp_OpenConduit(struct HPdapilot_calls * self, long s
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_CloseDB(struct HPdapilot_calls * self, long socket, long handle)
+extern javaint_t Pdapilot_calls_dlp_CloseDB(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle)
 {
 	int result;
 	result = dlp_CloseDB(socket, handle);
@@ -586,7 +621,7 @@ extern long Pdapilot_calls_dlp_CloseDB(struct HPdapilot_calls * self, long socke
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_ResetDBIndex(struct HPdapilot_calls * self, long socket, long handle)
+extern javaint_t Pdapilot_calls_dlp_ResetDBIndex(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle)
 {
 	int result;
 	result = dlp_ResetDBIndex(socket, handle);
@@ -595,7 +630,7 @@ extern long Pdapilot_calls_dlp_ResetDBIndex(struct HPdapilot_calls * self, long 
 	return result;
 }
 
-extern Hjava_lang_String * Pdapilot_calls_dlp_strerror(struct HPdapilot_calls *self, long error)
+extern Hjava_lang_String * Pdapilot_calls_dlp_strerror(struct HPdapilot_calls *self, javaint_t error)
 {
 	char * result = dlp_strerror(error);
 	if (!result)
@@ -603,7 +638,7 @@ extern Hjava_lang_String * Pdapilot_calls_dlp_strerror(struct HPdapilot_calls *s
 	return makeJavaString(result, strlen(result));
 }
 
-extern HPdapilot_Record * Pdapilot_calls_dlp_ReadRecordByIndex(struct HPdapilot_calls * self, long socket, long handle, long index, HPdapilot_Database * dbClass)
+extern HPdapilot_Record * Pdapilot_calls_dlp_ReadRecordByIndex(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t index, HPdapilot_Database * dbClass)
 {
 	int attr, cat;
 	recordid_t id;
@@ -618,7 +653,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadRecordByIndex(struct HPdapilot_
 		memcpy(unhand(a)->body, buffer, len);
 		output = (HPdapilot_Record*)execute_java_dynamic_method(0, (HObject*)dbClass, 
 			"newRecord", "([BLPdapilot/RecordID;III)LPdapilot/Record;",
-			a, makeJavaRecordID(id), (long)index, (long)attr, (long)cat);
+			a, makeJavaRecordID(id), (javaint_t)index, (javaint_t)attr, (javaint_t)cat);
 	} else if (result != -5) {
 		throwDlpException(result);
 	}
@@ -628,7 +663,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadRecordByIndex(struct HPdapilot_
 	return output;
 }
 
-extern HArrayOfByte * Pdapilot_calls_dlp_CallApplication(struct HPdapilot_calls * self, long socket, HPdapilot_Char4 * creator, long type, long action, HArrayOfByte * outgoing_data, HArrayOfInt * retcode)
+extern HArrayOfByte * Pdapilot_calls_dlp_CallApplication(struct HPdapilot_calls * self, javaint_t socket, HPdapilot_Char4 * creator, javaint_t type, javaint_t action, HArrayOfByte * outgoing_data, HArrayOfInt * retcode)
 {
 	char * buffer = malloc(0xffff);
 	int len;
@@ -650,7 +685,7 @@ extern HArrayOfByte * Pdapilot_calls_dlp_CallApplication(struct HPdapilot_calls 
 	return incoming_data;
 }
 
-extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextModifiedRec(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_Database * dbClass)
+extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextModifiedRec(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_Database * dbClass)
 {
 	int attr, cat, index;
 	recordid_t id;
@@ -665,7 +700,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextModifiedRec(struct HPdapilo
 		memcpy(unhand(a)->body, buffer, len);
 		output = (HPdapilot_Record*)execute_java_dynamic_method(0, (HObject*)dbClass, 
 			"newRecord", "([BLPdapilot/RecordID;III)LPdapilot/Record;",
-			a, makeJavaRecordID(id), (long)index, (long)attr, (long)cat);
+			a, makeJavaRecordID(id), (javaint_t)index, (javaint_t)attr, (javaint_t)cat);
 	} else if (result != -5) {
 		throwDlpException(result);
 	}
@@ -675,7 +710,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextModifiedRec(struct HPdapilo
 	return output;
 }
 
-extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextModifiedRecInCategory(struct HPdapilot_calls * self, long socket, long handle, long cat, HPdapilot_Database * dbClass)
+extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextModifiedRecInCategory(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t cat, HPdapilot_Database * dbClass)
 {
 	int attr, index;
 	recordid_t id;
@@ -690,7 +725,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextModifiedRecInCategory(struc
 		memcpy(unhand(a)->body, buffer, len);
 		output = (HPdapilot_Record*)execute_java_dynamic_method(0, (HObject*)dbClass, 
 			"newRecord", "([BLPdapilot/RecordID;III)LPdapilot/Record;",
-			a, makeJavaRecordID(id), (long)index, (long)attr, (long)cat);
+			a, makeJavaRecordID(id), (javaint_t)index, (javaint_t)attr, (javaint_t)cat);
 	} else if (result != -5) {
 		throwDlpException(result);
 	}
@@ -700,7 +735,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextModifiedRecInCategory(struc
 	return output;
 }
 
-extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextRecInCategory(struct HPdapilot_calls * self, long socket, long handle, long cat, HPdapilot_Database * dbClass)
+extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextRecInCategory(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t cat, HPdapilot_Database * dbClass)
 {
 	int attr, index;
 	recordid_t id;
@@ -715,7 +750,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextRecInCategory(struct HPdapi
 		memcpy(unhand(a)->body, buffer, len);
 		output = (HPdapilot_Record*)execute_java_dynamic_method(0, (HObject*)dbClass, 
 			"newRecord", "([BLPdapilot/RecordID;III)LPdapilot/Record;",
-			a, makeJavaRecordID(id), (long)index, (long)attr, (long)cat);
+			a, makeJavaRecordID(id), (javaint_t)index, (javaint_t)attr, (javaint_t)cat);
 	} else if (result != -5) {
 		throwDlpException(result);
 	}
@@ -725,7 +760,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadNextRecInCategory(struct HPdapi
 	return output;
 }
 
-extern HPdapilot_AppBlock * Pdapilot_calls_dlp_ReadAppBlock(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_Database * dbClass)
+extern HPdapilot_AppBlock * Pdapilot_calls_dlp_ReadAppBlock(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_Database * dbClass)
 {
 	char * buffer = malloc(0xffff);
 	int len;
@@ -750,7 +785,7 @@ extern HPdapilot_AppBlock * Pdapilot_calls_dlp_ReadAppBlock(struct HPdapilot_cal
 	return output;
 }
 
-extern HPdapilot_Pref * Pdapilot_calls_dlp_ReadAppPreference(struct HPdapilot_calls * self, long socket, HPdapilot_Char4 * creator, long id, long backup, HPdapilot_Database * dbClass)
+extern HPdapilot_Pref * Pdapilot_calls_dlp_ReadAppPreference(struct HPdapilot_calls * self, javaint_t socket, HPdapilot_Char4 * creator, javaint_t id, javaint_t backup, HPdapilot_Database * dbClass)
 {
 	char * buffer = malloc(0xffff);
 	int len, version;
@@ -774,7 +809,7 @@ extern HPdapilot_Pref * Pdapilot_calls_dlp_ReadAppPreference(struct HPdapilot_ca
 	return output;
 }
 
-extern long Pdapilot_calls_dlp_ReadFeature(struct HPdapilot_calls * self, long socket, HPdapilot_Char4 * creator, long id)
+extern javaint_t Pdapilot_calls_dlp_ReadFeature(struct HPdapilot_calls * self, javaint_t socket, HPdapilot_Char4 * creator, javaint_t id)
 {
 	long feature;
 	
@@ -786,7 +821,7 @@ extern long Pdapilot_calls_dlp_ReadFeature(struct HPdapilot_calls * self, long s
 	return feature;
 }
 
-extern HArrayOfObject * Pdapilot_calls_dlp_ReadRecordIDList(struct HPdapilot_calls * self, long socket, long handle, long sort, long start, long max)
+extern HArrayOfObject * Pdapilot_calls_dlp_ReadRecordIDList(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t sort, javaint_t start, javaint_t max)
 {
 	recordid_t * l = malloc(sizeof(recordid_t)*max);
 	int count;
@@ -812,7 +847,7 @@ extern HArrayOfObject * Pdapilot_calls_dlp_ReadRecordIDList(struct HPdapilot_cal
 	return output;
 }
 
-extern HPdapilot_SortBlock * Pdapilot_calls_dlp_ReadSortBlock(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_Database * dbClass)
+extern HPdapilot_SortBlock * Pdapilot_calls_dlp_ReadSortBlock(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_Database * dbClass)
 {
 	char * buffer = malloc(0xffff);
 	int len;
@@ -837,7 +872,7 @@ extern HPdapilot_SortBlock * Pdapilot_calls_dlp_ReadSortBlock(struct HPdapilot_c
 	return output;
 }
 
-extern HPdapilot_Record * Pdapilot_calls_dlp_ReadRecordByID(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_RecordID * id, HPdapilot_Database * dbClass)
+extern HPdapilot_Record * Pdapilot_calls_dlp_ReadRecordByID(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_RecordID * id, HPdapilot_Database * dbClass)
 {
 	int attr, cat;
 	char * buffer = malloc(0xffff);
@@ -852,7 +887,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadRecordByID(struct HPdapilot_cal
 		memcpy(unhand(a)->body, buffer, len);
 		output = (HPdapilot_Record*)execute_java_dynamic_method(0, (HObject*)dbClass, 
 			"newRecord", "([BLPdapilot/RecordID;III)LPdapilot/Record;",
-			a, id, (long)index, (long)attr, (long)cat);
+			a, id, (javaint_t)index, (javaint_t)attr, (javaint_t)cat);
 	} else if (result != -5) {
 		throwDlpException(result);
 	}
@@ -862,7 +897,7 @@ extern HPdapilot_Record * Pdapilot_calls_dlp_ReadRecordByID(struct HPdapilot_cal
 	return output;
 }
 
-extern HPdapilot_Resource * Pdapilot_calls_dlp_ReadResourceByType(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_Char4 * type, long id, HPdapilot_Database * dbClass)
+extern HPdapilot_Resource * Pdapilot_calls_dlp_ReadResourceByType(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_Char4 * type, javaint_t id, HPdapilot_Database * dbClass)
 {
 	char * buffer = malloc(0xffff);
 	int len;
@@ -876,7 +911,7 @@ extern HPdapilot_Resource * Pdapilot_calls_dlp_ReadResourceByType(struct HPdapil
 		memcpy(unhand(a)->body, buffer, len);
 		output = (HPdapilot_Resource*)execute_java_dynamic_method(0, (HObject*)dbClass, 
 			"newResource", "([BLPdapilot/Char4;II)LPdapilot/Resource;",
-			a, type, (long)id, (long)index);
+			a, type, (javaint_t)id, (javaint_t)index);
 	} else if (result != -5) {
 		throwDlpException(result);
 	}
@@ -886,7 +921,7 @@ extern HPdapilot_Resource * Pdapilot_calls_dlp_ReadResourceByType(struct HPdapil
 	return output;
 }
 
-extern HPdapilot_Resource * Pdapilot_calls_dlp_ReadResourceByIndex(struct HPdapilot_calls * self, long socket, long handle, long index, HPdapilot_Database * dbClass)
+extern HPdapilot_Resource * Pdapilot_calls_dlp_ReadResourceByIndex(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, javaint_t index, HPdapilot_Database * dbClass)
 {
 	long type;
 	char * buffer = malloc(0xffff);
@@ -901,7 +936,7 @@ extern HPdapilot_Resource * Pdapilot_calls_dlp_ReadResourceByIndex(struct HPdapi
 		memcpy(unhand(a)->body, buffer, len);
 		output = (HPdapilot_Resource*)execute_java_dynamic_method(0, (HObject*)dbClass, 
 			"newResource", "([BLPdapilot/Char4;II)LPdapilot/Resource;",
-			a, makeJavaChar4(type), (long)id, (long)index);
+			a, makeJavaChar4(type), (javaint_t)id, (javaint_t)index);
 	} else if (result != -5) {
 		throwDlpException(result);
 	}
@@ -911,7 +946,7 @@ extern HPdapilot_Resource * Pdapilot_calls_dlp_ReadResourceByIndex(struct HPdapi
 	return output;
 }
 
-extern long Pdapilot_calls_dlp_WriteRecord(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_Record * record)
+extern javaint_t Pdapilot_calls_dlp_WriteRecord(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_Record * record)
 {
 	int attr, cat;
 	HArrayOfByte * b;
@@ -925,7 +960,12 @@ extern long Pdapilot_calls_dlp_WriteRecord(struct HPdapilot_calls * self, long s
 		return 0;
 	
 	id = getJavaRecordID(unhand(record)->id);
-	attr = unhand(record)->attr;
+	attr = 0;
+	attr |= unhand(record)->deleted ? 0x80 : 0;
+	attr |= unhand(record)->modified ? 0x40 : 0;
+	attr |= unhand(record)->busy ? 0x20 : 0;
+	attr |= unhand(record)->secret ? 0x10 : 0;
+	attr |= unhand(record)->archived ? 0x08 : 0;
 	cat = unhand(record)->category;
 	buffer = unhand(b)->body;
 	len = getArrayLength(b);
@@ -941,12 +981,12 @@ extern long Pdapilot_calls_dlp_WriteRecord(struct HPdapilot_calls * self, long s
 	return 0;
 }
 
-extern long Pdapilot_calls_dlp_WriteAppPreference(struct HPdapilot_calls * self, long socket, HPdapilot_Pref * pref)
+extern javaint_t Pdapilot_calls_dlp_WriteAppPreference(struct HPdapilot_calls * self, javaint_t socket, HPdapilot_Pref * pref)
 {
 	HArrayOfByte * b;
 	char * buffer;
 	int len;
-	long creator;
+	javaint_t creator;
 	int id, version;
 	int result;
 	int backup;
@@ -970,7 +1010,7 @@ extern long Pdapilot_calls_dlp_WriteAppPreference(struct HPdapilot_calls * self,
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_WriteAppBlock(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_AppBlock * appblock)
+extern javaint_t Pdapilot_calls_dlp_WriteAppBlock(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_AppBlock * appblock)
 {
 	HArrayOfByte * b;
 	char * buffer;
@@ -992,7 +1032,7 @@ extern long Pdapilot_calls_dlp_WriteAppBlock(struct HPdapilot_calls * self, long
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_WriteSortBlock(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_SortBlock * sortblock)
+extern javaint_t Pdapilot_calls_dlp_WriteSortBlock(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_SortBlock * sortblock)
 {
 	HArrayOfByte * b;
 	char * buffer;
@@ -1014,13 +1054,13 @@ extern long Pdapilot_calls_dlp_WriteSortBlock(struct HPdapilot_calls * self, lon
 	return result;
 }
 
-extern long Pdapilot_calls_dlp_WriteResource(struct HPdapilot_calls * self, long socket, long handle, HPdapilot_Resource * resource)
+extern javaint_t Pdapilot_calls_dlp_WriteResource(struct HPdapilot_calls * self, javaint_t socket, javaint_t handle, HPdapilot_Resource * resource)
 {
 	char * buffer;
 	HArrayOfByte * b;
 	int len;
-	long type;
-	long id;
+	javaint_t type;
+	javaint_t id;
 	int result;
 
 	b = (HArrayOfByte*)execute_java_dynamic_method(0, (HObject*)resource, "pack", "()[B");
@@ -1383,17 +1423,21 @@ extern void Pdapilot_appointment_Record_unpack(struct HPdapilot_appointment_Reco
 	struct Appointment a;
 	int i;
 	unpack_Appointment(&a, unhand(b)->body, getArrayLength(b));
-
+	
 	unhand(self)->note = a.note ? makeJavaString(a.note, strlen(a.note)) : 0;
 	unhand(self)->description = a.description ? makeJavaString(a.description, strlen(a.description)) : 0;
-	
-	unhand(self)->event = a.event;
+
 	unhand(self)->begin = makeJavaDateTm(&a.begin);
-	unhand(self)->end = makeJavaDateTm(&a.end);
+	unhand(self)->end = a.event ? 0 : makeJavaDateTm(&a.end);
 
 	unhand(self)->alarm = a.alarm;
 	unhand(self)->advance = a.advance;
-	unhand(self)->advanceUnits = (a.advanceUnits == 0) ? 60 : (a.advanceUnits == 1) ? 60*60 : (a.advanceUnits == 2) ? 60*60*26 : 0;
+	unhand(self)->advanceUnits = (HPdapilot_appointment_time*)
+		execute_java_static_method(0, FindClass(0, "Pdapilot/appointment/time",1),
+		"get", "(I)LPdapilot/appointment/time;", (long)a.advanceUnits);
+	if (!unhand(self)->advanceUnits)
+		return;
+	/*(a.advanceUnits == 0) ? 60 : (a.advanceUnits == 1) ? 60*60 : (a.advanceUnits == 2) ? 60*60*26 : 0;*/
 
 	if (a.exceptions) {
 		if (!(unhand(self)->exceptions = makeDateArray(a.exceptions)))
@@ -1402,13 +1446,20 @@ extern void Pdapilot_appointment_Record_unpack(struct HPdapilot_appointment_Reco
 			unhand(unhand(self)->exceptions)->body[i] = (HObject*)makeJavaDateTm(&a.exception[i]);
 	}
 
-	unhand(self)->repeatDay = a.repeatOn;
+	unhand(self)->repeatDay = a.repeatDay;
 	unhand(self)->repeatWeekStart = a.repeatWeekstart;
-	unhand(self)->repeatType = a.repeatType;
+	/*unhand(self)->repeatType = a.repeatType;*/
+
+	unhand(self)->repeatType = (HPdapilot_appointment_repeat*)
+		execute_java_static_method(0, FindClass(0, "Pdapilot/appointment/repeat",1),
+		"get", "(I)LPdapilot/appointment/repeat;", (long)a.repeatType);
+	if (!unhand(self)->repeatType)
+		return;
+
 	if (!(unhand(self)->repeatWeekdays = makeIntArray(7)))
 		return;
 	for(i=0;i<7;i++)
-		unhand(unhand(self)->repeatWeekdays)->body[i] = !!(a.repeatOn & (1<<i));
+		unhand(unhand(self)->repeatWeekdays)->body[i] = a.repeatDays[i];
 
 	unhand(self)->repeatEnd = a.repeatForever ? 0 : makeJavaDateTm(&a.repeatEnd);
 
@@ -1426,34 +1477,27 @@ extern HArrayOfByte* Pdapilot_appointment_Record_pack(struct HPdapilot_appointme
 	a.note = unhand(self)->note ? makeCString(unhand(self)->note) : 0;
 	a.description = unhand(self)->description ? makeCString(unhand(self)->description) : 0;
 	
-	a.event = unhand(self)->event;
 	a.begin = *readJavaDateTm(unhand(self)->begin);
-	a.end = *readJavaDateTm(unhand(self)->end);
+	if (unhand(self)->end) {
+		a.end = *readJavaDateTm(unhand(self)->end);
+		a.event = 1;
+	} else {
+		a.event = 0;
+	}
 
 	a.alarm = unhand(self)->alarm;
 	a.advance = unhand(self)->advance;
-	switch (unhand(self)->advanceUnits) {
-	case 60:
-		a.advanceUnits = 0;
-		break;
-	case 60*60:
-		a.advanceUnits = 1;
-		break;
-	case 60*60*24:
-		a.advanceUnits = 2;
-		break;
-	/*default:
-		throw*/
-	}
+	a.advanceUnits = (long)execute_java_dynamic_method(0, (HObject*)unhand(self)->advanceUnits, 
+			"getValue", "()I");
 	
-	a.repeatType = unhand(self)->repeatType;
+	a.repeatType = (long)execute_java_dynamic_method(0, (HObject*)unhand(self)->repeatType, 
+			"getValue", "()I");
+	
 	if (a.repeatType == repeatWeekly) {
-		a.repeatOn = 0;
 		for(i=0;i<7;i++)
-			if (unhand(unhand(self)->repeatWeekdays)->body[i])
-				a.repeatOn |= 1<<i;
+			a.repeatDays[i] = unhand(unhand(self)->repeatWeekdays)->body[i];
 	} else {
-		a.repeatOn = unhand(self)->repeatDay;
+		a.repeatDay = unhand(self)->repeatDay;
 	}
 	a.repeatWeekstart = unhand(self)->repeatWeekStart;
 	
@@ -1598,7 +1642,9 @@ extern void Pdapilot_mail_AppBlock_unpack(struct HPdapilot_mail_AppBlock * self,
 	doUnpackCategories((HPdapilot_CategoryAppBlock*)self, &a.category);
 	
 	unhand(self)->dirty = a.dirty;
-	unhand(self)->sortOrder = a.sortOrder;
+	unhand(self)->sortOrder = (HPdapilot_mail_sort*)
+		execute_java_static_method(0, FindClass(0, "Pdapilot/mail/sort",1),
+		"get", "(I)LPdapilot/mail/sort;", (long)a.sortOrder);
 	unhand(self)->unsentMessage = a.unsentMessage ? makeJavaRecordID(a.unsentMessage) : 0;
 
 }
@@ -1609,8 +1655,11 @@ extern HArrayOfByte* Pdapilot_mail_AppBlock_pack(struct HPdapilot_mail_AppBlock 
 	HArrayOfByte * output;
 	
 	struct MailAppInfo a;
+
+	doPackCategories((HPdapilot_CategoryAppBlock*)self, &a.category);
 	
-	a.sortOrder = unhand(self)->sortOrder;
+	a.sortOrder = (long)execute_java_dynamic_method(0, 
+		(HObject*)unhand(self)->sortOrder, "getValue", "()I");
 	a.dirty = unhand(self)->dirty;
 	a.unsentMessage = unhand(self)->unsentMessage ? getJavaRecordID(unhand(self)->unsentMessage) : 0;
 	
@@ -1634,7 +1683,9 @@ extern void Pdapilot_mail_SyncPref_unpack(struct HPdapilot_mail_SyncPref * self,
 	
 	unhand(self)->raw = b;
 	
-	unhand(self)->syncType = a.syncType;
+	unhand(self)->syncType = (HPdapilot_mail_sync*)
+		execute_java_static_method(0, FindClass(0, "Pdapilot/mail/sync",1),
+		"get", "(I)LPdapilot/mail/sync;", (long)a.syncType);
 	unhand(self)->getHigh = a.getHigh;
 	unhand(self)->getContaining = a.getContaining;
 	unhand(self)->truncate = a.truncate;
@@ -1651,7 +1702,8 @@ extern HArrayOfByte* Pdapilot_mail_SyncPref_pack(struct HPdapilot_mail_SyncPref 
 	
 	struct MailSyncPref a;
 	
-	a.syncType = unhand(self)->syncType;
+	a.syncType = (long)execute_java_dynamic_method(0, 
+		(HObject*)unhand(self)->syncType, "getValue", "()I");
 	a.getHigh = unhand(self)->getHigh;
 	a.getContaining = unhand(self)->getContaining;
 	a.truncate = unhand(self)->truncate;
@@ -1702,4 +1754,589 @@ extern HArrayOfByte* Pdapilot_mail_SignaturePref_pack(struct HPdapilot_mail_Sign
 	free(buffer);
 	
 	return output;
+}
+
+/* expense */
+extern void Pdapilot_expense_Record_unpack(struct HPdapilot_expense_Record * self,  struct HArrayOfByte *b)
+{
+	struct Expense a;
+	unpack_Expense(&a, unhand(b)->body, getArrayLength(b));
+
+	unhand(self)->date = makeJavaDateTm(&a.date);
+
+	unhand(self)->type = (HPdapilot_expense_type*)
+		execute_java_static_method(0, FindClass(0, "Pdapilot/expense/type",1),
+		"get", "(I)LPdapilot/expense/type;", (long)a.type);
+
+	unhand(self)->payment = (HPdapilot_expense_payment*)
+		execute_java_static_method(0, FindClass(0, "Pdapilot/expense/payment",1),
+		"get", "(I)LPdapilot/expense/payment;", (long)a.payment);
+	
+	unhand(self)->amount = a.amount ? makeJavaString(a.amount, strlen(a.amount)) : 0;
+	unhand(self)->vendor = a.vendor ? makeJavaString(a.vendor, strlen(a.vendor)) : 0;
+	unhand(self)->city = a.city ? makeJavaString(a.city, strlen(a.city)) : 0;
+	unhand(self)->attendees = a.attendees ? makeJavaString(a.attendees, strlen(a.attendees)) : 0;
+	unhand(self)->note = a.note ? makeJavaString(a.note, strlen(a.note)) : 0;
+	
+	free_Expense(&a);
+}
+
+
+extern HArrayOfByte* Pdapilot_expense_Record_pack(struct HPdapilot_expense_Record * self){
+	char * buffer = malloc(0xffff);
+	int len;
+	HArrayOfByte * output;
+	
+	struct Expense a;
+
+        a.date = *readJavaDateTm(unhand(self)->date);
+	  
+	a.currency = unhand(self)->currency;
+
+	a.type = (long)execute_java_dynamic_method(0, 
+		(HObject*)unhand(self)->type, "getValue", "()I");
+
+	a.payment = (long)execute_java_dynamic_method(0, 
+		(HObject*)unhand(self)->payment, "getValue", "()I");
+	
+	a.amount = unhand(self)->amount ? makeCString(unhand(self)->amount) : 0;
+	a.vendor = unhand(self)->vendor ? makeCString(unhand(self)->vendor) : 0;
+	a.city = unhand(self)->city ? makeCString(unhand(self)->city) : 0;
+	a.attendees = unhand(self)->attendees ? makeCString(unhand(self)->attendees) : 0;
+	a.note = unhand(self)->note ? makeCString(unhand(self)->note) : 0;
+	
+	len = pack_Expense(&a, buffer, 0xffff);
+	
+	output = getByteArray(len);
+	memcpy(unhand(output)->body, buffer, len);
+	
+	unhand(self)->raw = output;
+	
+	free(buffer);
+	
+	return output;
+}
+
+extern void Pdapilot_expense_AppBlock_unpack(struct HPdapilot_expense_AppBlock * self,  struct HArrayOfByte *b)
+{
+	int i;
+	struct ExpenseAppInfo a;
+	stack_item l;
+
+	unpack_ExpenseAppInfo(&a, unhand(b)->body, getArrayLength(b));
+	
+	unhand(self)->raw = b;
+	
+	l.i = 4;
+	
+	unhand(self)->currencies = (HArrayOfObject*)MultiArrayAlloc(1,
+		FindClass(0, "Pdapilot/expense/CustomCurrency",1),
+		&l);
+
+	if (!unhand(self)->currencies)
+		return;
+	
+	for(i=0;i<4;i++) {
+		struct ExpenseCustomCurrency * ecc;
+		HPdapilot_expense_CustomCurrency * c = 
+			(HPdapilot_expense_CustomCurrency*)execute_java_constructor(0, 
+				"Pdapilot/expense/CustomCurrency", 0, "()");
+		unhand(unhand(self)->currencies)->body[i] = (HObject*)c;
+		ecc = &a.currencies[i];
+		unhand(c)->symbol = ecc->symbol ? makeJavaString(ecc->symbol, strlen(ecc->symbol)) : 0;
+		unhand(c)->name = ecc->name ? makeJavaString(ecc->name, strlen(ecc->name)) : 0;
+		unhand(c)->rate = ecc->rate ? makeJavaString(ecc->rate, strlen(ecc->rate)) : 0;
+	}	
+
+	doUnpackCategories((HPdapilot_CategoryAppBlock*)self, &a.category);
+	
+	unhand(self)->sortOrder = (HPdapilot_expense_sort*)
+		execute_java_static_method(0, FindClass(0, "Pdapilot/expense/sort",1),
+		"get", "(I)LPdapilot/expense/sort;", (long)a.sortOrder);;
+	
+}
+
+extern HArrayOfByte* Pdapilot_expense_AppBlock_pack(struct HPdapilot_expense_AppBlock * self){
+	char * buffer = malloc(0xffff);
+	int len;
+	int i;
+	HArrayOfByte * output;
+	
+	struct ExpenseAppInfo a;
+	
+	a.sortOrder = (long)execute_java_dynamic_method(0, 
+		(HObject*)unhand(self)->sortOrder, "getValue", "()I");
+
+	if (unhand(self)->currencies)
+		for(i=0;i<4;i++) {
+			HPdapilot_expense_CustomCurrency * c = 
+				(HPdapilot_expense_CustomCurrency*)
+				unhand(unhand(self)->currencies)->body[i];
+			if (unhand(c)->name)
+				javaString2CString(unhand(c)->name, a.currencies[i].name, 16);
+			else
+				a.currencies[i].name[0] = 0;
+			if (unhand(c)->symbol)
+				javaString2CString(unhand(c)->symbol, a.currencies[i].symbol, 4);
+			else
+				a.currencies[i].symbol[0] = 0;
+			if (unhand(c)->rate)
+				javaString2CString(unhand(c)->rate, a.currencies[i].rate, 8);
+			else
+				a.currencies[i].rate[0] = 0;
+		}	
+
+	doPackCategories((HPdapilot_CategoryAppBlock*)self, &a.category);
+	
+	len = pack_ExpenseAppInfo(&a, buffer, 0xffff);
+	
+	output = getByteArray(len);
+	memcpy(unhand(output)->body, buffer, len);
+	
+	unhand(self)->raw = output;
+	
+	free(buffer);
+	
+	return output;
+}
+
+extern void Pdapilot_expense_Pref_unpack(struct HPdapilot_expense_Pref * self,  struct HArrayOfByte *b)
+{
+	struct ExpensePref a;
+	int i;
+
+	unpack_ExpensePref(&a, unhand(b)->body, getArrayLength(b));
+	
+	unhand(self)->raw = b;
+	
+	unhand(self)->currentCategory = a.currentCategory;
+	unhand(self)->defaultCategory = a.defaultCategory;
+	unhand(self)->currentCategory = a.noteFont;
+	unhand(self)->showAllCategories = a.showAllCategories;
+	unhand(self)->showCurrency = a.showCurrency;
+	unhand(self)->saveBackup = a.saveBackup;
+	unhand(self)->allowQuickFill = a.allowQuickFill;
+	unhand(self)->unitOfDistance = (HPdapilot_expense_distance*)
+		execute_java_static_method(0, FindClass(0, "Pdapilot/expense/distance",1),
+		"get", "(I)LPdapilot/expense/distance;", (long)a.unitOfDistance);
+
+	unhand(self)->currencies = makeIntArray(7);
+	for (i=0;i<7;i++)
+		unhand(unhand(self)->currencies)->body[i] = a.currencies[i];
+
+}
+
+extern HArrayOfByte* Pdapilot_expense_Pref_pack(struct HPdapilot_expense_Pref * self){
+	char * buffer = malloc(0xffff);
+	int len;
+	int i;
+	HArrayOfByte * output;
+	
+	struct ExpensePref a;
+	
+	a.currentCategory = unhand(self)->currentCategory;
+	a.defaultCategory = unhand(self)->defaultCategory;
+	a.noteFont = unhand(self)->currentCategory;
+	a.showAllCategories = unhand(self)->showAllCategories;
+	a.showCurrency = unhand(self)->showCurrency;
+	a.saveBackup = unhand(self)->saveBackup;
+	a.allowQuickFill = unhand(self)->allowQuickFill;
+	a.unitOfDistance = (long)execute_java_dynamic_method(0, 
+		(HObject*)unhand(self)->unitOfDistance, "getValue", "()I");
+
+	for (i=0;i<7;i++)
+		a.currencies[i] = unhand(unhand(self)->currencies)->body[i];
+	
+	len = pack_ExpensePref(&a, buffer, 0xffff);
+	
+	output = getByteArray(len);
+	memcpy(unhand(output)->body, buffer, len);
+	
+	unhand(self)->raw = output;
+	
+	free(buffer);
+	
+	return output;
+}
+
+extern void Pdapilot_File_pi_file_create(struct HPdapilot_File * self,struct Hjava_lang_String * name,struct HPdapilot_DBInfo * info)
+{
+	struct pi_file * pf;
+	struct DBInfo dbInfo;
+	dbInfo.flags = 
+		(unhand(info)->flagReadOnly ? dlpDBFlagReadOnly : 0) |
+		(unhand(info)->flagResource ? dlpDBFlagResource : 0) |
+		(unhand(info)->flagBackup ? dlpDBFlagBackup : 0) |
+		(unhand(info)->flagOpen ? dlpDBFlagOpen : 0) |
+		(unhand(info)->flagAppInfoDirty ? dlpDBFlagAppInfoDirty : 0) |
+		(unhand(info)->flagNewer ? dlpDBFlagNewer : 0) |
+		(unhand(info)->flagReset ? dlpDBFlagReset : 0);
+	dbInfo.miscFlags = (unhand(info)->flagExcludeFromSync ? dlpDBMiscFlagExcludeFromSync : 0);
+	dbInfo.version = unhand(info)->version;
+	dbInfo.modnum = unhand(info)->modnum;
+	dbInfo.type = getJavaChar4(unhand(info)->type);
+	dbInfo.creator = getJavaChar4(unhand(info)->creator);
+	dbInfo.createDate = readJavaDate(unhand(info)->createDate);
+	dbInfo.modifyDate = readJavaDate(unhand(info)->modifyDate);
+	dbInfo.backupDate = readJavaDate(unhand(info)->backupDate);
+	javaString2CString(unhand(info)->name, dbInfo.name, 34);
+	
+	unhand(self)->_pf = 0;
+	pf = pi_file_create(makeCString(name), &dbInfo);
+	if (!pf) {
+		throwIOException(errno);
+		return;
+	}
+	unhand(self)->_pf = (javaint_t)pf;
+}
+
+extern void Pdapilot_File_pi_file_open(struct HPdapilot_File * self,struct Hjava_lang_String * name)
+{
+	struct pi_file * pf = pi_file_open(makeCString(name));
+	unhand(self)->_pf = 0;
+	if (!pf) {
+		throwIOException(errno);
+		return;
+	}
+	unhand(self)->_pf = (javaint_t)pf;
+}
+
+extern void Pdapilot_File_pi_file_close(struct HPdapilot_File * self)
+{
+	if (unhand(self)->_pf) {
+		pi_file_close((struct pi_file*)(unhand(self)->_pf));
+		unhand(self)->_pf = 0;
+	}
+}
+
+extern void Pdapilot_File_pi_file_install(struct HPdapilot_File * self, javaint_t socket, javaint_t cardno)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	int result = pi_file_install(pf, socket, cardno);
+	
+	if (result<0) {
+		throwIOException(errno);
+	}
+}
+
+extern void Pdapilot_File_pi_file_retrieve(struct HPdapilot_File * self, javaint_t socket, javaint_t cardno)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	int result = pi_file_retrieve(pf, socket, cardno);
+	
+	if (result<0) {
+		throwIOException(errno);
+	}
+}
+
+extern void Pdapilot_File_pi_file_merge(struct HPdapilot_File * self, javaint_t socket, javaint_t cardno)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	int result = pi_file_merge(pf, socket, cardno);
+	
+	if (result<0) {
+		throwIOException(errno);
+	}
+}
+
+extern javaint_t Pdapilot_File_pi_file_get_entries(struct HPdapilot_File * self)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	int entries;
+	int result = pi_file_get_entries(pf, &entries);
+	
+	if (result < 0) {
+		throwIOException(errno);
+		return 0;
+	}
+	
+	return entries;
+}
+
+extern struct HPdapilot_Record *Pdapilot_File_pi_file_read_record(struct HPdapilot_File * self, javaint_t index ,struct HPdapilot_Database * dbClass)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	int attr, cat;
+	recordid_t id;
+	int len;
+	void * buffer;
+	HPdapilot_Record * output = NULL;
+	
+	int result = pi_file_read_record(pf, index, &buffer, &len, &attr, &cat, &id);
+	
+	if (result >= 0) {
+		HArrayOfByte * a = getByteArray(len);
+		memcpy(unhand(a)->body, buffer, len);
+		output = (HPdapilot_Record*)execute_java_dynamic_method(0, (HObject*)dbClass, 
+			"newRecord", "([BLPdapilot/RecordID;III)LPdapilot/Record;",
+			a, makeJavaRecordID(id), (javaint_t)index, (javaint_t)attr, (javaint_t)cat);
+	} else {
+		throwIOException(errno);
+		return 0;
+	}
+	
+	return output;
+}
+
+extern struct HPdapilot_Resource *Pdapilot_File_pi_file_read_resource(struct HPdapilot_File * self, javaint_t index ,struct HPdapilot_Database * dbClass)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	int id;
+	unsigned long type;
+	int len;
+	void * buffer;
+	HPdapilot_Resource * output = NULL;
+	
+	int result = pi_file_read_resource(pf, index, &buffer, &len, &type, &id);
+	
+	if (result >= 0) {
+		HArrayOfByte * a = getByteArray(len);
+		memcpy(unhand(a)->body, buffer, len);
+		output = (HPdapilot_Resource*)execute_java_dynamic_method(0, (HObject*)dbClass, 
+			"newResource", "([BLPdapilot/Char4;II)LPdapilot/Resource;",
+			a, type, (javaint_t)id, (javaint_t)index);
+	} else {
+		throwIOException(errno);
+		return 0;
+	}
+	
+	return output;
+}
+
+extern struct HPdapilot_Record *Pdapilot_File_pi_file_read_record_by_id(struct HPdapilot_File * self, struct HPdapilot_RecordID * jid ,struct HPdapilot_Database * dbClass)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	int attr, cat, index;
+	recordid_t id = getJavaRecordID(jid);
+	int len;
+	void * buffer;
+	HPdapilot_Record * output = NULL;
+	
+	int result = pi_file_read_record_by_id(pf, id, &buffer, &len, &index, &attr, &cat);
+	
+	if (result >= 0) {
+		HArrayOfByte * a = getByteArray(len);
+		memcpy(unhand(a)->body, buffer, len);
+		output = (HPdapilot_Record*)execute_java_dynamic_method(0, (HObject*)dbClass, 
+			"newRecord", "([BLPdapilot/RecordID;III)LPdapilot/Record;",
+			a, makeJavaRecordID(id), (javaint_t)index, (javaint_t)attr, (javaint_t)cat);
+	} else  {
+		throwIOException(errno);
+		return 0;
+	}
+	
+	return output;
+}
+
+extern struct HPdapilot_DBInfo * Pdapilot_File_pi_file_get_info(struct HPdapilot_File * self)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	struct HPdapilot_DBInfo * output;
+	struct DBInfo i;
+	
+	if (pi_file_get_info(pf, &i)<0) {
+		throwIOException(errno);
+		return 0;
+	}
+	
+	output = (HPdapilot_DBInfo*)execute_java_constructor(0,
+		 "Pdapilot/DBInfo", 0, "()");
+		 
+	unhand(output)->flagReadOnly = !!(i.flags & dlpDBFlagReadOnly);
+	unhand(output)->flagResource = !!(i.flags & dlpDBFlagResource);
+	unhand(output)->flagBackup = !!(i.flags & dlpDBFlagBackup);
+	unhand(output)->flagOpen = !!(i.flags & dlpDBFlagOpen);
+	unhand(output)->flagAppInfoDirty = !!(i.flags & dlpDBFlagAppInfoDirty);
+	unhand(output)->flagNewer = !!(i.flags & dlpDBFlagNewer);
+	unhand(output)->flagReset = !!(i.flags & dlpDBFlagReset);
+	unhand(output)->flagExcludeFromSync = !!(i.miscFlags & dlpDBMiscFlagExcludeFromSync);
+	unhand(output)->index = i.index;
+	unhand(output)->version = i.version;
+	unhand(output)->modnum = i.modnum;
+	unhand(output)->type = makeJavaChar4(i.type);
+	unhand(output)->creator = makeJavaChar4(i.creator);
+	unhand(output)->createDate = makeJavaDate(i.createDate);
+	unhand(output)->modifyDate = makeJavaDate(i.modifyDate);
+	unhand(output)->backupDate = makeJavaDate(i.backupDate);
+	unhand(output)->name = makeJavaString(i.name, strlen(i.name));
+	unhand(output)->card = 0;
+
+	unhand(output)->more = i.more;
+
+	return output;
+}
+
+extern void Pdapilot_File_pi_file_set_info(struct HPdapilot_File * self, struct HPdapilot_DBInfo * info)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	struct DBInfo dbInfo;
+	dbInfo.flags = 
+		(unhand(info)->flagReadOnly ? dlpDBFlagReadOnly : 0) |
+		(unhand(info)->flagResource ? dlpDBFlagResource : 0) |
+		(unhand(info)->flagBackup ? dlpDBFlagBackup : 0) |
+		(unhand(info)->flagOpen ? dlpDBFlagOpen : 0) |
+		(unhand(info)->flagAppInfoDirty ? dlpDBFlagAppInfoDirty : 0) |
+		(unhand(info)->flagNewer ? dlpDBFlagNewer : 0) |
+		(unhand(info)->flagReset ? dlpDBFlagReset : 0);
+	dbInfo.miscFlags = (unhand(info)->flagExcludeFromSync ? dlpDBMiscFlagExcludeFromSync : 0);
+	dbInfo.version = unhand(info)->version;
+	dbInfo.modnum = unhand(info)->modnum;
+	dbInfo.type = getJavaChar4(unhand(info)->type);
+	dbInfo.creator = getJavaChar4(unhand(info)->creator);
+	dbInfo.createDate = readJavaDate(unhand(info)->createDate);
+	dbInfo.modifyDate = readJavaDate(unhand(info)->modifyDate);
+	dbInfo.backupDate = readJavaDate(unhand(info)->backupDate);
+	javaString2CString(unhand(info)->name, dbInfo.name, 34);
+	
+	if (pi_file_set_info(pf, &dbInfo)<0)
+		throwIOException(errno);
+}
+
+extern void Pdapilot_File_pi_file_set_app_info(struct HPdapilot_File * self, struct HPdapilot_AppBlock * appblock)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	HArrayOfByte * b;
+	char * buffer;
+	int len;
+	int result;
+	
+	b = (HArrayOfByte*)execute_java_dynamic_method(0, (HObject*)appblock, "pack", "()[B");
+	if (!b)
+		return;
+	
+	buffer = unhand(b)->body;
+	len = getArrayLength(b);
+	
+	result = pi_file_set_app_info(pf, buffer, len);
+	
+	if (result < 0)
+		throwIOException(errno);
+}
+
+extern struct HPdapilot_AppBlock *Pdapilot_File_pi_file_get_app_info(struct HPdapilot_File * self, HPdapilot_Database * dbClass)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	void * buffer;
+	int len;
+	HPdapilot_AppBlock * output;
+	
+	int result = pi_file_get_app_info(pf, &buffer, &len);
+	
+	if (result >= 0) {
+		HArrayOfByte * a;
+		len = result;
+		a = getByteArray(len);
+		memcpy(unhand(a)->body, buffer, len);
+		output = (HPdapilot_AppBlock*)execute_java_dynamic_method(0, (HObject*)dbClass, 
+			"newAppBlock", "([B)LPdapilot/AppBlock;",
+			a);
+	} else {
+		throwIOException(errno);
+		return 0;
+	}
+	
+	return output;
+}
+
+
+extern struct HPdapilot_SortBlock *Pdapilot_File_pi_file_get_sort_info(struct HPdapilot_File * self, HPdapilot_Database * dbClass)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	void * buffer;
+	int len;
+	HPdapilot_SortBlock * output;
+	
+	int result = pi_file_get_app_info(pf, &buffer, &len);
+	
+	if (result >= 0) {
+		HArrayOfByte * a;
+		len = result;
+		a = getByteArray(len);
+		memcpy(unhand(a)->body, buffer, len);
+		output = (HPdapilot_SortBlock*)execute_java_dynamic_method(0, (HObject*)dbClass, 
+			"newSortBlock", "([B)LPdapilot/SortBlock;",
+			a);
+	} else {
+		throwIOException(errno);
+		return 0;
+	}
+	
+	return output;
+}
+
+extern void Pdapilot_File_pi_file_set_sort_info(struct HPdapilot_File * self, struct HPdapilot_SortBlock * sortblock)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	HArrayOfByte * b;
+	char * buffer;
+	int len;
+	int result;
+	
+	b = (HArrayOfByte*)execute_java_dynamic_method(0, (HObject*)sortblock, "pack", "()[B");
+	if (!b)
+		return;
+	
+	buffer = unhand(b)->body;
+	len = getArrayLength(b);
+	
+	result = pi_file_set_sort_info(pf, buffer, len);
+	
+	if (result < 0)
+		throwIOException(errno);
+}
+
+extern void Pdapilot_File_pi_file_append_record(struct HPdapilot_File * self, HPdapilot_Record * record)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	int attr, cat;
+	HArrayOfByte * b;
+	char * buffer;
+	int len;
+	recordid_t id;
+	int result;
+	
+	b = (HArrayOfByte*)execute_java_dynamic_method(0, (HObject*)record, "pack", "()[B");
+	if (!b)
+		return;
+	
+	id = getJavaRecordID(unhand(record)->id);
+	attr = 0;
+	attr |= unhand(record)->deleted ? 0x80 : 0;
+	attr |= unhand(record)->modified ? 0x40 : 0;
+	attr |= unhand(record)->busy ? 0x20 : 0;
+	attr |= unhand(record)->secret ? 0x10 : 0;
+	attr |= unhand(record)->archived ? 0x08 : 0;
+	cat = unhand(record)->category;
+	buffer = unhand(b)->body;
+	len = getArrayLength(b);
+	
+	result = pi_file_append_record(pf, buffer, len, attr, cat, id);
+	
+	if (result < 0)
+		throwIOException(errno);
+}
+
+extern void Pdapilot_File_pi_file_append_resource(struct HPdapilot_File * self, HPdapilot_Resource * resource)
+{
+	struct pi_file * pf = (struct pi_file*)unhand(self)->_pf;
+	char * buffer;
+	HArrayOfByte * b;
+	int len;
+	javaint_t type;
+	javaint_t id;
+	int result;
+
+	b = (HArrayOfByte*)execute_java_dynamic_method(0, (HObject*)resource, "pack", "()[B");
+	if (!b)
+		return;
+	
+	type = unhand(unhand(resource)->type)->value;
+	id = unhand(resource)->id;
+	buffer = unhand(b)->body;
+	len = getArrayLength(b);
+	
+	result = pi_file_append_resource(pf, buffer, len, type, id);
+	
+	if (result < 0)
+		throwIOException(errno);
 }

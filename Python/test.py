@@ -31,31 +31,7 @@ print "Now press the HotSync button"
 
 dlp = pdapilot.accept(socket)
 
-db = dlp.open('MailDB')
-
-appinfo = db.getAppBlock()
-
-print 'App block:', appinfo
-
-r = db.getRecord(0)
-
-print 'Record 0:', r
-
-s = db.getPref(1)
-
-print 'Pref 1:', s
-
-s = db.getPref(3)
-
-print 'Pref 3:', s
-
-r = db.getRecord(1)
-
-print 'Record 1:', r
-
-q = db.newPref(1)
-
-print 'Blank pref 1:', q
+print dlp.getDBInfo(0)
 
 ui = dlp.getUserInfo()
 
@@ -77,24 +53,54 @@ print "Battery results through Python RPC:", b
 
 print "At open"
 
-p = dlp.getPref(pdapilot.Mail.creator, 1)
+try:
+	db = dlp.open('MailDB')
+	
+	appinfo = db.getAppBlock()
+	
+	print 'App block:', appinfo
+	
+	r = db.getRecord(0)
+	
+	print 'Record 0:', r
+	
+	s = db.getPref(1)
 
-print p
-print "Repacked: ", `p.pack()`
+	print 'Pref 1:', s
+	
+	s = db.getPref(3)
+	
+	print 'Pref 3:', s
+	
+	r = db.getRecord(1)
+	
+	print 'Record 1:', r
+	
+	q = db.newPref(1)
+	
+	print 'Blank pref 1:', q
+	
+	
+	p = dlp.getPref(pdapilot.Mail.creator, 1)
+	
+	print p
+	print "Repacked: ", `p.pack()`
+	
+	p = dlp.getPref(pdapilot.Mail.creator, 3)
+	
+	print p
+	print "Repacked: ", `p.pack()`
+	
+	# Construct a blank preference object
+	p = dlp.newPref(pdapilot.Mail.creator, 1)
+	print p
 
-p = dlp.getPref(pdapilot.Mail.creator, 3)
+	p = dlp.getPrefRaw(pdapilot.Mail.creator, 1)
+	print p
 
-print p
-print "Repacked: ", `p.pack()`
-
-# Construct a blank preference object
-p = dlp.newPref(pdapilot.Mail.creator, 1)
-print p
-
-p = dlp.getPrefRaw(pdapilot.Mail.creator, 1)
-print p
-
-db.close()
+	db.close()
+except pdapilot.error:
+	0
 
 db = dlp.open("MemoDB")
 

@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   unsigned char buffer[0xffff];
   unsigned char buffer2[0xffff];
   struct ExpenseAppInfo tai;
-  struct ExpensePrefs tp;
+  struct ExpensePref tp;
   
   if (argc < 2) {
     fprintf(stderr,"usage:%s %s\n",argv[0],TTYPrompt);
@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
   }
   
   if (ret >= 0) {
-    unpack_ExpensePrefs(&tp, buffer, 0xffff);
-    i = pack_ExpensePrefs(&tp, buffer2, 0xffff);
+    unpack_ExpensePref(&tp, buffer, 0xffff);
+    i = pack_ExpensePref(&tp, buffer2, 0xffff);
     fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
     dumpdata(buffer, ret);
     fprintf(stderr, "New prefs, %d bytes:\n", ret);

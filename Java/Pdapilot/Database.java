@@ -38,6 +38,27 @@ public class Database {
 		Pdapilot.memo.Database memo = new Pdapilot.memo.Database();
 		Pdapilot.Database.dbClasses.put(memo.dbname(), memo);
 		Pdapilot.Database.prefClasses.put(memo.creator(), memo);
+
+		Pdapilot.todo.Database todo = new Pdapilot.todo.Database();
+		Pdapilot.Database.dbClasses.put(todo.dbname(), todo);
+		Pdapilot.Database.prefClasses.put(todo.creator(), todo);
+
+		Pdapilot.mail.Database mail = new Pdapilot.mail.Database();
+		Pdapilot.Database.dbClasses.put(mail.dbname(), mail);
+		Pdapilot.Database.prefClasses.put(mail.creator(), mail);
+
+		Pdapilot.appointment.Database appointment = new Pdapilot.appointment.Database();
+		Pdapilot.Database.dbClasses.put(appointment.dbname(), appointment);
+		Pdapilot.Database.prefClasses.put(appointment.creator(), appointment);
+
+		Pdapilot.expense.Database expense = new Pdapilot.expense.Database();
+		Pdapilot.Database.dbClasses.put(expense.dbname(), expense);
+		Pdapilot.Database.prefClasses.put(expense.creator(), expense);
+
+		Pdapilot.address.Database address = new Pdapilot.address.Database();
+		Pdapilot.Database.dbClasses.put(address.dbname(), address);
+		Pdapilot.Database.prefClasses.put(address.creator(), address);
+
     }
 
 }

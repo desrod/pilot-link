@@ -99,12 +99,36 @@ int test_memo() {
     printf("1: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoAppBlock));
   }
 
+  /* Unpacker should return count of bytes used */
+  l = unpack_MemoAppInfo(&mai, MemoAppBlock, sizeof(MemoAppBlock)+1);
+  if (l != sizeof(MemoAppBlock)) {
+    errors++;
+    printf("2: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoAppBlock));
+  }
+
   /* Unpacker should return failure if the block is too small to contain data */
   l = unpack_MemoAppInfo(&mai, MemoAppBlock, sizeof(MemoAppBlock)-10);
   if (l != 0) {
     errors++;
-    printf("2: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+    printf("3: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
   }
+
+  /* Unpacker should return failure if the block is too small to contain data */
+  /* Note: -1 isn't used, because four bytes _can_ be subtracted, to account for
+     the new data in OS 2.0 */
+  l = unpack_MemoAppInfo(&mai, MemoAppBlock, sizeof(MemoAppBlock)-5);
+  if (l != 0) {
+    errors++;
+    printf("4: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+  }
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_MemoAppInfo(&mai, MemoAppBlock, sizeof(MemoAppBlock));
+  if (l != sizeof(MemoAppBlock)) {
+    errors++;
+    printf("5: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoAppBlock));
+  }
+  
   if (
      (mai.sortByAlpha == 0) ||
      strcmp(mai.category.name[0],"Unfiled") ||
@@ -159,14 +183,14 @@ int test_memo() {
      0
      ) {
      errors++;
-     printf("3: unpack_MemoAppInfo generated incorrect information\n");
+     printf("6: unpack_MemoAppInfo generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_MemoAppInfo(&mai, 0, 0);
   if (l != sizeof(MemoAppBlock)) {
     errors++;
-    printf("4: pack_MemoAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MemoAppBlock));
+    printf("7: pack_MemoAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MemoAppBlock));
   }
   
   reset_block(target,8192);
@@ -175,11 +199,11 @@ int test_memo() {
   l = pack_MemoAppInfo(&mai, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("5: pack_MemoAppInfo packed into too small buffer (got %d)\n", l);
+    printf("8: pack_MemoAppInfo packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(6, target,8192, 128, 1, "pack_MemoAppInfo"))
+  if (check_block(9, target,8192, 128, 1, "pack_MemoAppInfo"))
     errors++;
 
   reset_block(target,8192);
@@ -188,16 +212,16 @@ int test_memo() {
   l = pack_MemoAppInfo(&mai, target+128, 8192-256);
   if (l != sizeof(MemoAppBlock)) {
     errors++;
-    printf("7: pack_MemoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoAppBlock));
+    printf("10: pack_MemoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoAppBlock));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(8, target,8192, 128, l, "pack_MemoAppInfo"))
+  if (check_block(11, target,8192, 128, l, "pack_MemoAppInfo"))
     errors++;
     
   if (memcmp(target+128, MemoAppBlock, sizeof(MemoAppBlock))) {
     errors++;
-    printf("9: pack_MemoAppInfo generated incorrect information. Got:\n");
+    printf("12: pack_MemoAppInfo generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(MemoAppBlock, sizeof(MemoAppBlock));
@@ -208,7 +232,7 @@ int test_memo() {
   l = unpack_Memo(&m, MemoRecord, sizeof(MemoRecord)+10);
   if (l != sizeof(MemoRecord)) {
     errors++;
-    printf("10: unpack_Memo returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoRecord));
+    printf("13: unpack_Memo returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoRecord));
   }
 
   if (
@@ -216,14 +240,14 @@ int test_memo() {
      strcmp(m.text,"aaMakefile\x0aREADME\x0alicense.terms\x0apilotlink.c\x0atest.tcl*\x0a")
      ) {
      errors++;
-     printf("11: unpack_Memo generated incorrect information\n");
+     printf("14: unpack_Memo generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_Memo(&m, 0, 0);
   if (l != sizeof(MemoRecord)) {
     errors++;
-    printf("12: pack_MemoRecord returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MemoRecord));
+    printf("15: pack_MemoRecord returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MemoRecord));
   }
   
   reset_block(target,8192);
@@ -232,11 +256,11 @@ int test_memo() {
   l = pack_Memo(&m, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("13: pack_MemoRecord packed into too small buffer (got %d)\n", l);
+    printf("16: pack_MemoRecord packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(14, target, 8192, 128, 1, "pack_Memo"))
+  if (check_block(17, target, 8192, 128, 1, "pack_Memo"))
     errors++;
 
   reset_block(target,8192);
@@ -245,16 +269,16 @@ int test_memo() {
   l = pack_Memo(&m, target+128, 8192-256);
   if (l != sizeof(MemoRecord)) {
     errors++;
-    printf("15: pack_MemoRecord returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoRecord));
+    printf("18: pack_MemoRecord returned incorrect length (got %d, expected %d)\n", l, sizeof(MemoRecord));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(16, target,8192, 128, l, "pack_Memo"))
+  if (check_block(19, target,8192, 128, l, "pack_Memo"))
     errors++;
     
   if (memcmp(target+128, MemoRecord, sizeof(MemoRecord))) {
     errors++;
-    printf("17: pack_Memo generated incorrect information. Got:\n");
+    printf("20: pack_Memo generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(MemoRecord, sizeof(MemoRecord));
@@ -325,12 +349,34 @@ int test_address() {
     printf("1: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressAppBlock));
   }
 
+  /* Unpacker should return count of bytes used */
+  l = unpack_AddressAppInfo(&mai, AddressAppBlock, sizeof(AddressAppBlock)+1);
+  if (l != sizeof(AddressAppBlock)) {
+    errors++;
+    printf("2: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressAppBlock));
+  }
+
   /* Unpacker should return failure if the block is too small to contain data */
   l = unpack_AddressAppInfo(&mai, AddressAppBlock, sizeof(AddressAppBlock)-10);
   if (l != 0) {
     errors++;
-    printf("2: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+    printf("3: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
   }
+
+  /* Unpacker should return failure if the block is too small to contain data */
+  l = unpack_AddressAppInfo(&mai, AddressAppBlock, sizeof(AddressAppBlock)-1);
+  if (l != 0) {
+    errors++;
+    printf("4: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+  }
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_AddressAppInfo(&mai, AddressAppBlock, sizeof(AddressAppBlock));
+  if (l != sizeof(AddressAppBlock)) {
+    errors++;
+    printf("5: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressAppBlock));
+  }
+  
   if (
      strcmp(mai.category.name[0],"Unfiled") ||
      strcmp(mai.category.name[1],"Business") ||
@@ -384,14 +430,14 @@ int test_address() {
      0
      ) {
      errors++;
-     printf("3: unpack_AddressAppInfo generated incorrect information\n");
+     printf("6: unpack_AddressAppInfo generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_AddressAppInfo(&mai, 0, 0);
   if (l != sizeof(AddressAppBlock)) {
     errors++;
-    printf("4: pack_AddressAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(AddressAppBlock));
+    printf("7: pack_AddressAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(AddressAppBlock));
   }
   
   reset_block(target,8192);
@@ -400,11 +446,11 @@ int test_address() {
   l = pack_AddressAppInfo(&mai, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("5: pack_AddressAppInfo packed into too small buffer (got %d)\n", l);
+    printf("8: pack_AddressAppInfo packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(6, target,8192, 128, 1, "pack_AddressAppInfo"))
+  if (check_block(9, target,8192, 128, 1, "pack_AddressAppInfo"))
     errors++;
 
   reset_block(target,8192);
@@ -413,16 +459,16 @@ int test_address() {
   l = pack_AddressAppInfo(&mai, target+128, 8192-256);
   if (l != sizeof(AddressAppBlock)) {
     errors++;
-    printf("7: pack_AddressAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressAppBlock));
+    printf("10: pack_AddressAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressAppBlock));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(8, target,8192, 128, l, "pack_AddressAppInfo"))
+  if (check_block(11, target,8192, 128, l, "pack_AddressAppInfo"))
     errors++;
     
   if (memcmp(target+128, AddressAppBlock, sizeof(AddressAppBlock))) {
     errors++;
-    printf("9: pack_AddressAppInfo generated incorrect information. Got:\n");
+    printf("12: pack_AddressAppInfo generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(AddressAppBlock, sizeof(AddressAppBlock));
@@ -433,7 +479,7 @@ int test_address() {
   l = unpack_Address(&m, AddressRecord, sizeof(AddressRecord)+10);
   if (l != sizeof(AddressRecord)) {
     errors++;
-    printf("10: unpack_Address returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressRecord));
+    printf("13: unpack_Address returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressRecord));
   }
 
   if (
@@ -452,14 +498,14 @@ int test_address() {
      0
      ) {
      errors++;
-     printf("11: unpack_Address generated incorrect information\n");
+     printf("14: unpack_Address generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_Address(&m, 0, 0);
   if (l != sizeof(AddressRecord)) {
     errors++;
-    printf("12: pack_Address returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(AddressRecord));
+    printf("15: pack_Address returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(AddressRecord));
   }
   
   reset_block(target,8192);
@@ -468,11 +514,11 @@ int test_address() {
   l = pack_Address(&m, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("13: pack_Address packed into too small buffer (got %d)\n", l);
+    printf("16: pack_Address packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(14, target, 8192, 128, 1, "pack_Address"))
+  if (check_block(17, target, 8192, 128, 1, "pack_Address"))
     errors++;
 
   reset_block(target,8192);
@@ -481,16 +527,16 @@ int test_address() {
   l = pack_Address(&m, target+128, 8192-256);
   if (l != sizeof(AddressRecord)) {
     errors++;
-    printf("15: pack_Address returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressRecord));
+    printf("18: pack_Address returned incorrect length (got %d, expected %d)\n", l, sizeof(AddressRecord));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(16, target,8192, 128, l, "pack_Address"))
+  if (check_block(19, target,8192, 128, l, "pack_Address"))
     errors++;
     
   if (memcmp(target+128, AddressRecord, sizeof(AddressRecord))) {
     errors++;
-    printf("17: pack_Address generated incorrect information. Got:\n");
+    printf("20: pack_Address generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(AddressRecord, sizeof(AddressRecord));
@@ -544,12 +590,34 @@ int test_appointment() {
     printf("1: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentAppBlock));
   }
 
+  /* Unpacker should return count of bytes used */
+  l = unpack_AppointmentAppInfo(&mai, AppointmentAppBlock, sizeof(AppointmentAppBlock)+1);
+  if (l != sizeof(AppointmentAppBlock)) {
+    errors++;
+    printf("2: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentAppBlock));
+  }
+
   /* Unpacker should return failure if the block is too small to contain data */
   l = unpack_AppointmentAppInfo(&mai, AppointmentAppBlock, sizeof(AppointmentAppBlock)-10);
   if (l != 0) {
     errors++;
-    printf("2: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+    printf("3: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
   }
+
+  /* Unpacker should return failure if the block is too small to contain data */
+  l = unpack_AppointmentAppInfo(&mai, AppointmentAppBlock, sizeof(AppointmentAppBlock)-1);
+  if (l != 0) {
+    errors++;
+    printf("4: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+  }
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_AppointmentAppInfo(&mai, AppointmentAppBlock, sizeof(AppointmentAppBlock));
+  if (l != sizeof(AppointmentAppBlock)) {
+    errors++;
+    printf("5: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentAppBlock));
+  }
+
   if (
 /*     strcmp(mai.category.name[0],"Unfiled") ||
      strcmp(mai.category.name[1],"Business") ||
@@ -603,14 +671,14 @@ int test_appointment() {
      0
      ) {
      errors++;
-     printf("3: unpack_AppointmentAppInfo generated incorrect information\n");
+     printf("6: unpack_AppointmentAppInfo generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_AppointmentAppInfo(&mai, 0, 0);
   if (l != sizeof(AppointmentAppBlock)) {
     errors++;
-    printf("4: pack_AppointmentAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(AppointmentAppBlock));
+    printf("7: pack_AppointmentAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(AppointmentAppBlock));
   }
   
   reset_block(target,8192);
@@ -619,11 +687,11 @@ int test_appointment() {
   l = pack_AppointmentAppInfo(&mai, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("5: pack_AppointmentAppInfo packed into too small buffer (got %d)\n", l);
+    printf("8: pack_AppointmentAppInfo packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(6, target,8192, 128, 1, "pack_AppointmentAppInfo"))
+  if (check_block(9, target,8192, 128, 1, "pack_AppointmentAppInfo"))
     errors++;
 
   reset_block(target,8192);
@@ -632,16 +700,16 @@ int test_appointment() {
   l = pack_AppointmentAppInfo(&mai, target+128, 8192-256);
   if (l != sizeof(AppointmentAppBlock)) {
     errors++;
-    printf("7: pack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentAppBlock));
+    printf("10: pack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentAppBlock));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(8, target,8192, 128, l, "pack_AppointmentAppInfo"))
+  if (check_block(11, target,8192, 128, l, "pack_AppointmentAppInfo"))
     errors++;
     
   if (memcmp(target+128, AppointmentAppBlock, sizeof(AppointmentAppBlock))) {
     errors++;
-    printf("9: pack_AppointmentAppInfo generated incorrect information. Got:\n");
+    printf("12: pack_AppointmentAppInfo generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(AppointmentAppBlock, sizeof(AppointmentAppBlock));
@@ -652,7 +720,7 @@ int test_appointment() {
   l = unpack_Appointment(&m, AppointmentRecord, sizeof(AppointmentRecord)+10);
   if (l != sizeof(AppointmentRecord)) {
     errors++;
-    printf("10: unpack_Appointment returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentRecord));
+    printf("13: unpack_Appointment returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentRecord));
   }
 
   if (
@@ -671,14 +739,14 @@ int test_appointment() {
      0
      ) {
      errors++;
-     printf("11: unpack_Appointment generated incorrect information\n");
+     printf("14: unpack_Appointment generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_Appointment(&m, 0, 0);
   if (l != sizeof(AppointmentRecord)) {
     errors++;
-    printf("12: pack_Appointment returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(AppointmentRecord));
+    printf("15: pack_Appointment returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(AppointmentRecord));
   }
   
   reset_block(target,8192);
@@ -687,11 +755,11 @@ int test_appointment() {
   l = pack_Appointment(&m, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("13: pack_Appointment packed into too small buffer (got %d)\n", l);
+    printf("16: pack_Appointment packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(14, target, 8192, 128, 1, "pack_Appointment"))
+  if (check_block(17, target, 8192, 128, 1, "pack_Appointment"))
     errors++;
 
   reset_block(target,8192);
@@ -700,16 +768,16 @@ int test_appointment() {
   l = pack_Appointment(&m, target+128, 8192-256);
   if (l != sizeof(AppointmentRecord)) {
     errors++;
-    printf("15: pack_Appointment returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentRecord));
+    printf("18: pack_Appointment returned incorrect length (got %d, expected %d)\n", l, sizeof(AppointmentRecord));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(16, target,8192, 128, l, "pack_Appointment"))
+  if (check_block(19, target,8192, 128, l, "pack_Appointment"))
     errors++;
     
   if (memcmp(target+128, AppointmentRecord, sizeof(AppointmentRecord))) {
     errors++;
-    printf("17: pack_Appointment generated incorrect information. Got:\n");
+    printf("20: pack_Appointment generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(AppointmentRecord, sizeof(AppointmentRecord));
@@ -757,12 +825,34 @@ int test_todo() {
     printf("1: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoAppBlock));
   }
 
+  /* Unpacker should return count of bytes used */
+  l = unpack_ToDoAppInfo(&mai, ToDoAppBlock, sizeof(ToDoAppBlock)+1);
+  if (l != sizeof(ToDoAppBlock)) {
+    errors++;
+    printf("2: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoAppBlock));
+  }
+
   /* Unpacker should return failure if the block is too small to contain data */
   l = unpack_ToDoAppInfo(&mai, ToDoAppBlock, sizeof(ToDoAppBlock)-10);
   if (l != 0) {
     errors++;
-    printf("2: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+    printf("3: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
   }
+
+  /* Unpacker should return failure if the block is too small to contain data */
+  l = unpack_ToDoAppInfo(&mai, ToDoAppBlock, sizeof(ToDoAppBlock)-1);
+  if (l != 0) {
+    errors++;
+    printf("4: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+  }
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_ToDoAppInfo(&mai, ToDoAppBlock, sizeof(ToDoAppBlock));
+  if (l != sizeof(ToDoAppBlock)) {
+    errors++;
+    printf("5: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoAppBlock));
+  }
+
   if (
 /*     strcmp(mai.category.name[0],"Unfiled") ||
      strcmp(mai.category.name[1],"Business") ||
@@ -816,14 +906,14 @@ int test_todo() {
      0
      ) {
      errors++;
-     printf("3: unpack_ToDoAppInfo generated incorrect information\n");
+     printf("6: unpack_ToDoAppInfo generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_ToDoAppInfo(&mai, 0, 0);
   if (l != sizeof(ToDoAppBlock)) {
     errors++;
-    printf("4: pack_ToDoAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(ToDoAppBlock));
+    printf("7: pack_ToDoAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(ToDoAppBlock));
   }
   
   reset_block(target,8192);
@@ -832,11 +922,11 @@ int test_todo() {
   l = pack_ToDoAppInfo(&mai, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("5: pack_ToDoAppInfo packed into too small buffer (got %d)\n", l);
+    printf("8: pack_ToDoAppInfo packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(6, target,8192, 128, 1, "pack_ToDoAppInfo"))
+  if (check_block(9, target,8192, 128, 1, "pack_ToDoAppInfo"))
     errors++;
 
   reset_block(target,8192);
@@ -845,16 +935,16 @@ int test_todo() {
   l = pack_ToDoAppInfo(&mai, target+128, 8192-256);
   if (l != sizeof(ToDoAppBlock)) {
     errors++;
-    printf("7: pack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoAppBlock));
+    printf("10: pack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoAppBlock));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(8, target,8192, 128, l, "pack_ToDoAppInfo"))
+  if (check_block(11, target,8192, 128, l, "pack_ToDoAppInfo"))
     errors++;
     
   if (memcmp(target+128, ToDoAppBlock, sizeof(ToDoAppBlock))) {
     errors++;
-    printf("9: pack_ToDoAppInfo generated incorrect information. Got:\n");
+    printf("12: pack_ToDoAppInfo generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(ToDoAppBlock, sizeof(ToDoAppBlock));
@@ -865,7 +955,7 @@ int test_todo() {
   l = unpack_ToDo(&m, ToDoRecord, sizeof(ToDoRecord)+10);
   if (l != sizeof(ToDoRecord)) {
     errors++;
-    printf("10: unpack_ToDo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoRecord));
+    printf("13: unpack_ToDo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoRecord));
   }
 
   if (
@@ -884,14 +974,14 @@ int test_todo() {
      0
      ) {
      errors++;
-     printf("11: unpack_ToDo generated incorrect information\n");
+     printf("14: unpack_ToDo generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_ToDo(&m, 0, 0);
   if (l != sizeof(ToDoRecord)) {
     errors++;
-    printf("12: pack_ToDo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(ToDoRecord));
+    printf("15: pack_ToDo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(ToDoRecord));
   }
   
   reset_block(target,8192);
@@ -900,11 +990,11 @@ int test_todo() {
   l = pack_ToDo(&m, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("13: pack_ToDo packed into too small buffer (got %d)\n", l);
+    printf("16: pack_ToDo packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(14, target, 8192, 128, 1, "pack_ToDo"))
+  if (check_block(17, target, 8192, 128, 1, "pack_ToDo"))
     errors++;
 
   reset_block(target,8192);
@@ -913,16 +1003,16 @@ int test_todo() {
   l = pack_ToDo(&m, target+128, 8192-256);
   if (l != sizeof(ToDoRecord)) {
     errors++;
-    printf("15: pack_ToDo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoRecord));
+    printf("18: pack_ToDo returned incorrect length (got %d, expected %d)\n", l, sizeof(ToDoRecord));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(16, target,8192, 128, l, "pack_ToDo"))
+  if (check_block(19, target,8192, 128, l, "pack_ToDo"))
     errors++;
     
   if (memcmp(target+128, ToDoRecord, sizeof(ToDoRecord))) {
     errors++;
-    printf("17: pack_ToDo generated incorrect information. Got:\n");
+    printf("20: pack_ToDo generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(ToDoRecord, sizeof(ToDoRecord));
@@ -979,12 +1069,27 @@ int test_expense() {
     printf("1: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseAppBlock));
   }
 
+  /* Unpacker should return count of bytes used */
+  l = unpack_ExpenseAppInfo(&mai, ExpenseAppBlock, sizeof(ExpenseAppBlock)+1);
+  if (l != sizeof(ExpenseAppBlock)) {
+    errors++;
+    printf("2: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseAppBlock));
+  }
+
   /* Unpacker should return failure if the block is too small to contain data */
   /*l = unpack_ExpenseAppInfo(&mai, ExpenseAppBlock, sizeof(ExpenseAppBlock)-10);
   if (l != 0) {
     errors++;
-    printf("2: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
+    printf("x: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
   }*/
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_ExpenseAppInfo(&mai, ExpenseAppBlock, sizeof(ExpenseAppBlock));
+  if (l != sizeof(ExpenseAppBlock)) {
+    errors++;
+    printf("3: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseAppBlock));
+  }
+
   
   if (
 /*     strcmp(mai.category.name[0],"Unfiled") ||
@@ -1039,14 +1144,14 @@ int test_expense() {
      0
      ) {
      errors++;
-     printf("2: unpack_ExpenseAppInfo generated incorrect information\n");
+     printf("4: unpack_ExpenseAppInfo generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_ExpenseAppInfo(&mai, 0, 0);
   if (l != sizeof(ExpenseAppBlock)) {
     errors++;
-    printf("3: pack_ExpenseAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(ExpenseAppBlock));
+    printf("5: pack_ExpenseAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(ExpenseAppBlock));
   }
   
   reset_block(target,8192);
@@ -1055,11 +1160,11 @@ int test_expense() {
   l = pack_ExpenseAppInfo(&mai, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("4: pack_ExpenseAppInfo packed into too small buffer (got %d)\n", l);
+    printf("6: pack_ExpenseAppInfo packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(5, target,8192, 128, 1, "pack_ExpenseAppInfo"))
+  if (check_block(7, target,8192, 128, 1, "pack_ExpenseAppInfo"))
     errors++;
 
   reset_block(target,8192);
@@ -1068,16 +1173,16 @@ int test_expense() {
   l = pack_ExpenseAppInfo(&mai, target+128, 8192-256);
   if (l != sizeof(ExpenseAppBlock)) {
     errors++;
-    printf("6: pack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseAppBlock));
+    printf("8: pack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseAppBlock));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(7, target,8192, 128, l, "pack_ExpenseAppInfo"))
+  if (check_block(9, target,8192, 128, l, "pack_ExpenseAppInfo"))
     errors++;
     
   if (memcmp(target+128, ExpenseAppBlock, sizeof(ExpenseAppBlock))) {
     errors++;
-    printf("8: pack_ExpenseAppInfo generated incorrect information. Got:\n");
+    printf("10: pack_ExpenseAppInfo generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(ExpenseAppBlock, sizeof(ExpenseAppBlock));
@@ -1088,7 +1193,7 @@ int test_expense() {
   l = unpack_Expense(&m, ExpenseRecord, sizeof(ExpenseRecord)+10);
   if (l != sizeof(ExpenseRecord)) {
     errors++;
-    printf("9: unpack_Expense returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseRecord));
+    printf("11: unpack_Expense returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseRecord));
   }
 
   if (
@@ -1107,14 +1212,14 @@ int test_expense() {
      0
      ) {
      errors++;
-     printf("10: unpack_Expense generated incorrect information\n");
+     printf("12: unpack_Expense generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_Expense(&m, 0, 0);
   if (l != sizeof(ExpenseRecord)) {
     errors++;
-    printf("11: pack_Expense returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(ExpenseRecord));
+    printf("13: pack_Expense returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(ExpenseRecord));
   }
   
   reset_block(target,8192);
@@ -1123,11 +1228,11 @@ int test_expense() {
   l = pack_Expense(&m, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("12: pack_Expense packed into too small buffer (got %d)\n", l);
+    printf("14: pack_Expense packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(13, target, 8192, 128, 1, "pack_Expense"))
+  if (check_block(15, target, 8192, 128, 1, "pack_Expense"))
     errors++;
 
   reset_block(target,8192);
@@ -1136,16 +1241,16 @@ int test_expense() {
   l = pack_Expense(&m, target+128, 8192-256);
   if (l != sizeof(ExpenseRecord)) {
     errors++;
-    printf("14: pack_Expense returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseRecord));
+    printf("16: pack_Expense returned incorrect length (got %d, expected %d)\n", l, sizeof(ExpenseRecord));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(15, target,8192, 128, l, "pack_Expense"))
+  if (check_block(17, target,8192, 128, l, "pack_Expense"))
     errors++;
     
   if (memcmp(target+128, ExpenseRecord, sizeof(ExpenseRecord))) {
     errors++;
-    printf("16: pack_Expense generated incorrect information. Got:\n");
+    printf("18: pack_Expense generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(ExpenseRecord, sizeof(ExpenseRecord));
@@ -1202,12 +1307,27 @@ int test_mail() {
     printf("1: unpack_MailAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MailAppBlock));
   }
 
+  /* Unpacker should return count of bytes used */
+  l = unpack_MailAppInfo(&mai, MailAppBlock, sizeof(MailAppBlock)+1);
+  if (l != sizeof(MailAppBlock)) {
+    errors++;
+    printf("2: unpack_MailAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MailAppBlock));
+  }
+
   /* Unpacker should return failure if the block is too small to contain data */
   /*l = unpack_MailAppInfo(&mai, MailAppBlock, sizeof(MailAppBlock)-10);
   if (l != 0) {
     errors++;
     printf("2: unpack_MailAppInfo returned incorrect length (got %d, expected %d)\n", l, 0);
   }*/
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_MailAppInfo(&mai, MailAppBlock, sizeof(MailAppBlock));
+  if (l != sizeof(MailAppBlock)) {
+    errors++;
+    printf("3: unpack_MailAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MailAppBlock));
+  }
+
   
   if (
 /*     strcmp(mai.category.name[0],"Unfiled") ||
@@ -1262,14 +1382,14 @@ int test_mail() {
      0
      ) {
      errors++;
-     printf("2: unpack_MailAppInfo generated incorrect information\n");
+     printf("4: unpack_MailAppInfo generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_MailAppInfo(&mai, 0, 0);
   if (l != sizeof(MailAppBlock)) {
     errors++;
-    printf("3: pack_MailAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MailAppBlock));
+    printf("5: pack_MailAppInfo returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MailAppBlock));
   }
   
   reset_block(target,8192);
@@ -1278,11 +1398,11 @@ int test_mail() {
   l = pack_MailAppInfo(&mai, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("4: pack_MailAppInfo packed into too small buffer (got %d)\n", l);
+    printf("6: pack_MailAppInfo packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(5, target,8192, 128, 1, "pack_MailAppInfo"))
+  if (check_block(7, target,8192, 128, 1, "pack_MailAppInfo"))
     errors++;
 
   reset_block(target,8192);
@@ -1291,16 +1411,16 @@ int test_mail() {
   l = pack_MailAppInfo(&mai, target+128, 8192-256);
   if (l != sizeof(MailAppBlock)) {
     errors++;
-    printf("6: pack_MailAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MailAppBlock));
+    printf("8: pack_MailAppInfo returned incorrect length (got %d, expected %d)\n", l, sizeof(MailAppBlock));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(7, target,8192, 128, l, "pack_MailAppInfo"))
+  if (check_block(9, target,8192, 128, l, "pack_MailAppInfo"))
     errors++;
     
   if (memcmp(target+128, MailAppBlock, sizeof(MailAppBlock))) {
     errors++;
-    printf("8: pack_MailAppInfo generated incorrect information. Got:\n");
+    printf("10: pack_MailAppInfo generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(MailAppBlock, sizeof(MailAppBlock));
@@ -1311,7 +1431,7 @@ int test_mail() {
   l = unpack_Mail(&m, MailRecord, sizeof(MailRecord)+10);
   if (l != sizeof(MailRecord)) {
     errors++;
-    printf("9: unpack_Mail returned incorrect length (got %d, expected %d)\n", l, sizeof(MailRecord));
+    printf("11: unpack_Mail returned incorrect length (got %d, expected %d)\n", l, sizeof(MailRecord));
   }
 
   if (
@@ -1330,14 +1450,14 @@ int test_mail() {
      0
      ) {
      errors++;
-     printf("10: unpack_Mail generated incorrect information\n");
+     printf("12: unpack_Mail generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_Mail(&m, 0, 0);
   if (l != sizeof(MailRecord)) {
     errors++;
-    printf("11: pack_Mail returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MailRecord));
+    printf("13: pack_Mail returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MailRecord));
   }
   
   reset_block(target,8192);
@@ -1346,11 +1466,11 @@ int test_mail() {
   l = pack_Mail(&m, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("12: pack_Mail packed into too small buffer (got %d)\n", l);
+    printf("14: pack_Mail packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(13, target, 8192, 128, 1, "pack_Mail"))
+  if (check_block(15, target, 8192, 128, 1, "pack_Mail"))
     errors++;
 
   reset_block(target,8192);
@@ -1359,16 +1479,16 @@ int test_mail() {
   l = pack_Mail(&m, target+128, 8192-256);
   if (l != sizeof(MailRecord)) {
     errors++;
-    printf("14: pack_Mail returned incorrect length (got %d, expected %d)\n", l, sizeof(MailRecord));
+    printf("16: pack_Mail returned incorrect length (got %d, expected %d)\n", l, sizeof(MailRecord));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(15, target,8192, 128, l, "pack_Mail"))
+  if (check_block(17, target,8192, 128, l, "pack_Mail"))
     errors++;
     
   if (memcmp(target+128, MailRecord, sizeof(MailRecord))) {
     errors++;
-    printf("16: pack_Mail generated incorrect information. Got:\n");
+    printf("18: pack_Mail generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(MailRecord, sizeof(MailRecord));
@@ -1379,7 +1499,21 @@ int test_mail() {
   l = unpack_MailSyncPref(&s1, MailSyncPreference, sizeof(MailSyncPreference)+10);
   if (l != sizeof(MailSyncPreference)) {
     errors++;
-    printf("17: unpack_MailSyncPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
+    printf("19: unpack_MailSyncPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
+  }
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_MailSyncPref(&s1, MailSyncPreference, sizeof(MailSyncPreference)+1);
+  if (l != sizeof(MailSyncPreference)) {
+    errors++;
+    printf("20: unpack_MailSyncPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
+  }
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_MailSyncPref(&s1, MailSyncPreference, sizeof(MailSyncPreference));
+  if (l != sizeof(MailSyncPreference)) {
+    errors++;
+    printf("21: unpack_MailSyncPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
   }
 
   if (
@@ -1398,14 +1532,14 @@ int test_mail() {
      0
      ) {
      errors++;
-     printf("18: unpack_MailSyncPref generated incorrect information\n");
+     printf("22: unpack_MailSyncPref generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_MailSyncPref(&s1, 0, 0);
   if (l != sizeof(MailSyncPreference)) {
     errors++;
-    printf("19: pack_MailSyncPref returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
+    printf("23: pack_MailSyncPref returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
   }
   
   reset_block(target,8192);
@@ -1414,11 +1548,11 @@ int test_mail() {
   l = pack_MailSyncPref(&s1, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("20: pack_MailSyncPref packed into too small buffer (got %d)\n", l);
+    printf("24: pack_MailSyncPref packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(21, target, 8192, 128, 1, "pack_MailSyncPref"))
+  if (check_block(25, target, 8192, 128, 1, "pack_MailSyncPref"))
     errors++;
 
   reset_block(target,8192);
@@ -1427,16 +1561,16 @@ int test_mail() {
   l = pack_MailSyncPref(&s1, target+128, 8192-256);
   if (l != sizeof(MailSyncPreference)) {
     errors++;
-    printf("22: pack_MailSyncPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
+    printf("26: pack_MailSyncPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(23, target,8192, 128, l, "pack_Mail"))
+  if (check_block(27, target,8192, 128, l, "pack_Mail"))
     errors++;
     
   if (memcmp(target+128, MailSyncPreference, sizeof(MailSyncPreference))) {
     errors++;
-    printf("24: pack_MailSyncPref generated incorrect information. Got:\n");
+    printf("28: pack_MailSyncPref generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(MailSyncPreference, sizeof(MailSyncPreference));
@@ -1447,7 +1581,21 @@ int test_mail() {
   l = unpack_MailSignaturePref(&s2, MailSigPreference, sizeof(MailSigPreference)+10);
   if (l != sizeof(MailSigPreference)) {
     errors++;
-    printf("25: unpack_MailSigPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
+    printf("29: unpack_MailSigPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
+  }
+
+  /* Unpacker should return count of bytes used */
+  l = unpack_MailSignaturePref(&s2, MailSigPreference, sizeof(MailSigPreference)+1);
+  if (l != sizeof(MailSigPreference)) {
+    errors++;
+    printf("30: unpack_MailSigPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
+  }
+  
+  /* Unpacker should return count of bytes used */
+  l = unpack_MailSignaturePref(&s2, MailSigPreference, sizeof(MailSigPreference));
+  if (l != sizeof(MailSigPreference)) {
+    errors++;
+    printf("31: unpack_MailSigPref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSyncPreference));
   }
 
   if (
@@ -1466,14 +1614,14 @@ int test_mail() {
      0
      ) {
      errors++;
-     printf("26: unpack_MailSyncPref generated incorrect information\n");
+     printf("32: unpack_MailSyncPref generated incorrect information\n");
   }
   
   /* Packer should return necessary block length when no buffer is given */
   l = pack_MailSignaturePref(&s2, 0, 0);
   if (l != sizeof(MailSigPreference)) {
     errors++;
-    printf("27: pack_MailSignaturePref returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MailSigPreference));
+    printf("33: pack_MailSignaturePref returned incorrect allocation length (got %d, expected %d)\n", l, sizeof(MailSigPreference));
   }
   
   reset_block(target,8192);
@@ -1482,11 +1630,11 @@ int test_mail() {
   l = pack_MailSignaturePref(&s2, target+128, 1);
   if (l != 0) {
     errors++;
-    printf("28: pack_MailSignaturePref packed into too small buffer (got %d)\n", l);
+    printf("34: pack_MailSignaturePref packed into too small buffer (got %d)\n", l);
   }
   
   /* Packer should not scribble on memory */
-  if (check_block(29, target, 8192, 128, 1, "pack_MailSyncPref"))
+  if (check_block(35, target, 8192, 128, 1, "pack_MailSyncPref"))
     errors++;
 
   reset_block(target,8192);
@@ -1495,16 +1643,16 @@ int test_mail() {
   l = pack_MailSignaturePref(&s2, target+128, 8192-256);
   if (l != sizeof(MailSigPreference)) {
     errors++;
-    printf("30: pack_MailSignaturePref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSigPreference));
+    printf("36: pack_MailSignaturePref returned incorrect length (got %d, expected %d)\n", l, sizeof(MailSigPreference));
   }
 
   /* Packer should not scribble on memory */
-  if (check_block(31, target,8192, 128, l, "pack_Mail"))
+  if (check_block(37, target,8192, 128, l, "pack_Mail"))
     errors++;
     
   if (memcmp(target+128, MailSigPreference, sizeof(MailSigPreference))) {
     errors++;
-    printf("32: pack_MailSignaturePref generated incorrect information. Got:\n");
+    printf("38: pack_MailSignaturePref generated incorrect information. Got:\n");
     dumpdata(target+128, l);
     printf(" expected:\n");
     dumpdata(MailSigPreference, sizeof(MailSigPreference));

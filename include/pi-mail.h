@@ -52,6 +52,9 @@ struct MailSignaturePref {
   char * signature;
 };
 
+extern char * MailSyncTypeNames[];
+extern char * MailSortTypeNames[];
+
 enum MailSyncType { mailSyncAll, mailSyncSend, mailSyncFilter };
 
 extern void free_Mail PI_ARGS((struct Mail *));

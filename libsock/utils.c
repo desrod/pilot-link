@@ -19,6 +19,9 @@
 
 #ifndef HAVE_INET_ATON
 # include <sys/param.h>
+#ifdef __EMX__
+# include <sys/types.h>
+#endif
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <ctype.h>
