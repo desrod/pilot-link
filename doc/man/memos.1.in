@@ -1,0 +1,79 @@
+.\" 
+.\" 
+.TH "memos" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.SH "NAME"
+\fBmemos\fR \- Read or Write Memopad entries to STDOUT or files.
+
+
+.SH "SYNOPSIS"
+\fBmemos\fR [\fB\-p\fR <\fIport\fR>] [\fB\-V\fR] [\fIoptions\fR]
+
+
+.SH "DESCRIPTION"
+\fBmemos\fR is used to read your Palm Memos database and read/write the
+entries to STDOUT, or to individual files on disk, in a directory you
+specify, one memo per file in that named directory.
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld. If this
+is not specified, will look for the \fI$PILOTPORT\fR environment variable.  
+If both are not found or supplied, \fBinstall\-expenses\fR will fall back to
+/dev/pilot.
+   
+   
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display the help synopsis for \fBmemos\fR.
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBmemos\fR.
+
+
+.TP 
+\fB\-V\fR, \fB\-\-verbose\fR
+Verbose, with \-d, print each filename when written to disk.
+
+.TP 
+\fB\-d\fR, \fB\-\-delete\fR
+Delete memo named by number <\fInum\fR>.
+
+
+.TP 
+\fB\-f\fR, \fB\-\-file\fR [\fIfile\fR] ..    
+Use <file> as input file (instead of MemoDB.pdb).
+
+.TP 
+\fB\-s\fR, \fB\-\-save\fR <\fIdir\fR>
+Save memos in <dir> instead of writing to STDOUT.
+
+.TP 
+\fB\-c\fR, \fB\-\-category\fR <\fIcat\fR>
+Only create memos in this category.
+
+.TP 
+\fB\-r\fR, \fB\-\-regex\fR [\fIregex\fR]
+Select memos saved by regular expression on the title.
+
+.SH "USAGE"
+Connect to a target Palm handheld and read/write to/from the Memo application database (MemoDB.pdb).
+
+.SH "BUGS"
+.PP 
+\fBKNOWN BUGS\fR
+.IP 
+\fBmemos\fR has no known bugs at this time.
+
+.PP 
+\fBREPORTING BUGS\fR
+.IP 
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+.SH "AUTHOR"
+\fBmemos\fR was written by Kenneth Albanowski.b
+.SH "SEE ALSO"
+\fBinstall\-memo\fR(1),
+\fBpilot\-link\fR(7)
