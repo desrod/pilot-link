@@ -25,6 +25,8 @@
 #include "pi-dlp.h"
 #include "pi-socket.h"
 
+void w(char *name, int value);
+
 FILE *f;
 
 void w( char *name, int value) {
