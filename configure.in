@@ -101,7 +101,7 @@ dnl Defaults for GCC
 dnl ******************************
 if test "x$GCC" = "xyes"; then
 	CFLAGS=${CFLAGS:-"-g -Wall"}
-	CXXFLAGS=${CFLAGS:-"-g -Wall"}
+	CXXFLAGS=${CXXFLAGS:-"-g -Wall"}
 fi
 
 
