@@ -1,6 +1,5 @@
 // -*- C -*-
 
-
 // a char value that allows None for a null value.
 %typemap (python,in) char *ALLOWNULL {
     if (!($input) || ($input == Py_None)) {
@@ -10,7 +9,6 @@
     }
 }
 
-
 // -------------------------------------
 // struct PilotUser
 // -------------------------------------
@@ -18,36 +16,34 @@
     static struct PilotUser temp;
     int l;
     PyObject *foo;
-
+	
     temp.userID = DGETLONG($input,"userID",0);
     temp.viewerID = DGETLONG($input,"viewerID",0);
     temp.lastSyncPC = DGETLONG($input,"lastSyncPC",0);
     temp.successfulSyncDate = DGETLONG($input,"successfulSyncDate",0);
     temp.lastSyncDate = DGETLONG($input,"lastSyncDate",0);
     strncpy(temp.username, DGETSTR($input,"name",""), 128);
-
+	
     foo = PyDict_GetItemString($input,"password");
     if (PyString_Check(foo)) {
-	l = PyString_Size(foo);
-	temp.passwordLength = l;
-	memcpy(temp.password, PyString_AsString(foo), l);
+		l = PyString_Size(foo);
+		temp.passwordLength = l;
+		memcpy(temp.password, PyString_AsString(foo), l);
     }
     
     $1 = &temp;    
 }
 
 %typemap (python,argout) struct PilotUser* {
-    PyObject *o;
-    
     if ($1) {
-	o = Py_BuildValue("{slslslslslssss#}",
-			  "userID", $1->userID,
-			  "viewerID", $1->viewerID,
-			  "lastSyncPC", $1->lastSyncPC,
-			  "successfulSyncDate", $1->successfulSyncDate,
-			  "lastSyncDate", $1->lastSyncDate,
-			  "name", $1->username,
-			  "password", $1->password, $1->passwordLength);
+		PyObject *o = Py_BuildValue("{slslslslslssss#}",
+									"userID", $1->userID,
+									"viewerID", $1->viewerID,
+									"lastSyncPC", $1->lastSyncPC,
+									"successfulSyncDate", $1->successfulSyncDate,
+									"lastSyncDate", $1->lastSyncDate,
+									"name", $1->username,
+									"password", $1->password, $1->passwordLength);
         $result = t_output_helper($result, o);
     }
 }
@@ -60,14 +56,12 @@
 // struct SysInfo
 // -------------------------------------
 %typemap (python,argout) struct SysInfo * {
-    PyObject *o;
-    
     if ($1) {
-	o = Py_BuildValue("{slslss#}",
-			  "romVersion", $1->romVersion,
-			  "locale", $1->locale,
-			  "name", $1->prodID, $1->prodIDLength);
-	$result = t_output_helper($result, o);
+		PyObject *o = Py_BuildValue("{slslss#}",
+									"romVersion", $1->romVersion,
+									"locale", $1->locale,
+									"name", $1->prodID, $1->prodIDLength);
+		$result = t_output_helper($result, o);
     }
 }
 
@@ -81,53 +75,47 @@
 // -------------------------------------
 %rename(dlp_ReadDBList_) dlp_ReadDBList;
 
-%typemap (in,numinputs=0) (pi_buffer_t *dblist) {
-  $1 = pi_buffer_new(0xFFFF);
-}
-
 %typemap (python,argout) (pi_buffer_t *dblist) {
-  PyObject *o;
-  int j;
-  struct DBInfo	info;
-  
-  if ($1) {
-    $result = PyList_New(($1->used / sizeof(struct DBInfo)));
-    for (j=0; j < ($1->used / sizeof(struct DBInfo)); j++) {
-      memcpy(&info, $1->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
-      o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
-			"more", info.more,
-			"flags", info.flags,
-			"miscFlags", info.miscFlags,
-			"type", PyString_FromStringAndSize(printlong(info.type), 4),
-			"creator", PyString_FromStringAndSize(printlong(info.creator), 4),
-			"version", info.version,
-			"modnum", info.modnum,
-			"createDate", info.createDate,
-			"modifyDate", info.modifyDate,
-			"backupDate", info.backupDate,
-			"index", info.index,
-			"name", info.name,
-			
-			"flagResource", !!(info.flags & dlpDBFlagResource),
-			"flagReadOnly", !!(info.flags & dlpDBFlagReadOnly),
-			"flagAppInfoDirty", !!(info.flags & dlpDBFlagAppInfoDirty),
-			"flagBackup", !!(info.flags & dlpDBFlagBackup),
-			"flagLaunchable", !!(info.flags & dlpDBFlagLaunchable),
-			"flagOpen", !!(info.flags & dlpDBFlagOpen),
-			"flagNewer", !!(info.flags & dlpDBFlagNewer),
-			"flagReset", !!(info.flags & dlpDBFlagReset),
-			"flagCopyPrevention", !!(info.flags & dlpDBFlagCopyPrevention),
-			"flagStream", !!(info.flags & dlpDBFlagStream),
-			"flagExcludeFromSync", !!(info.miscFlags & dlpDBMiscFlagExcludeFromSync),
-
-			"flagSchema", !!(info.flags & dlpDBFlagSchema),
-			"flagSecure", !!(info.flags & dlpDBFlagSecure),
-			"flagExtended", !!(info.flags & dlpDBFlagExtended),
-			"flagFixedUp", !!(info.flags & dlpDBFlagFixedUp));
-      Py_INCREF(o);
-      PyList_SET_ITEM($result, j, o);
-    }
-  }
+	if ($1) {
+		int j;
+		struct DBInfo info;
+		$result = PyList_New(($1->used / sizeof(struct DBInfo)));
+		for (j=0; j < ($1->used / sizeof(struct DBInfo)); j++) {
+			memcpy(&info, $1->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
+			PyObject *o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
+										"more", info.more,
+										"flags", info.flags,
+										"miscFlags", info.miscFlags,
+										"type", PyString_FromStringAndSize(printlong(info.type), 4),
+										"creator", PyString_FromStringAndSize(printlong(info.creator), 4),
+										"version", info.version,
+										"modnum", info.modnum,
+										"createDate", info.createDate,
+										"modifyDate", info.modifyDate,
+										"backupDate", info.backupDate,
+										"index", info.index,
+										"name", info.name,
+										
+										"flagResource", !!(info.flags & dlpDBFlagResource),
+										"flagReadOnly", !!(info.flags & dlpDBFlagReadOnly),
+										"flagAppInfoDirty", !!(info.flags & dlpDBFlagAppInfoDirty),
+										"flagBackup", !!(info.flags & dlpDBFlagBackup),
+										"flagLaunchable", !!(info.flags & dlpDBFlagLaunchable),
+										"flagOpen", !!(info.flags & dlpDBFlagOpen),
+										"flagNewer", !!(info.flags & dlpDBFlagNewer),
+										"flagReset", !!(info.flags & dlpDBFlagReset),
+										"flagCopyPrevention", !!(info.flags & dlpDBFlagCopyPrevention),
+										"flagStream", !!(info.flags & dlpDBFlagStream),
+										"flagExcludeFromSync", !!(info.miscFlags & dlpDBMiscFlagExcludeFromSync),
+										
+										"flagSchema", !!(info.flags & dlpDBFlagSchema),
+										"flagSecure", !!(info.flags & dlpDBFlagSecure),
+										"flagExtended", !!(info.flags & dlpDBFlagExtended),
+										"flagFixedUp", !!(info.flags & dlpDBFlagFixedUp));
+			Py_INCREF(o);
+			PyList_SET_ITEM($result, j, o);
+		}
+	}
 }
 
 
@@ -213,7 +201,7 @@
 // -------------------------------------
 // struct CardInfo
 // -------------------------------------
-%typemap (python,argout) struct CardInfo *OUTPUT {
+%typemap (python,argout) (struct CardInfo *cardinfo) {
     PyObject *o;
 
     if ($1) {
@@ -296,7 +284,7 @@
 %native(dlp_ReadRecordIDList) PyObject *_wrap_dlp_ReadRecordIDList(PyObject *, PyObject *);
 %{
 static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
-	int sd, dbf, sort, start, max;
+	int sd, dbhandle, sort, start, max;
 	int ret;
 	recordid_t *buf;
 	int count, i;
@@ -304,7 +292,7 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
 	
 	buf = (recordid_t *)PyMem_Malloc(0xFFFF);    
 	
-	if (!PyArg_ParseTuple(args, "iiiii", &sd, &dbf, &sort, &start, &max))
+	if (!PyArg_ParseTuple(args, "iiiii", &sd, &dbhandle, &sort, &start, &max))
 		return NULL;
 	
 	/* this is a rather simplistic wrapper.  if max is too big, we just
@@ -316,7 +304,7 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
 		return NULL;
 	}
 	
-	ret = dlp_ReadRecordIDList(sd, dbf, sort, start, max, buf, &count);
+	ret = dlp_ReadRecordIDList(sd, dbhandle, sort, start, max, buf, &count);
 	
 	if (ret < 0) {
 		PyErr_SetObject(PIError, Py_BuildValue("(is)", ret, dlp_strerror(ret)));
