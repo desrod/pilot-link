@@ -6,6 +6,11 @@
 #include <pi-args.h>
 #include <pi-appinfo.h>
 
+/*
+ * This code works on the Tungsten E and T3, but breaks other devices (not
+ * just breaks on other devices!)  You've been warned.  --KB
+ */
+
 #define NUM_CONTACT_PHONES 7
 #define NUM_CONTACT_CUSTOMS 9
 #define NUM_CONTACT_ENTRIES 39
