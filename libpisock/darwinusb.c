@@ -1247,6 +1247,16 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	return len;
 }
 
+static int
+u_flush(pi_socket_t *ps, int flags)
+{
+	if (flags & PI_FLUSH_INPUT) {
+		pthread_mutex_lock(&read_queue_mutex);
+		read_queue_used = 0;
+		pthread_mutex_unlock(&read_queue_mutex);
+	}
+	return 0;
+}
 
 void
 pi_usb_impl_init (struct pi_usb_impl *impl)
@@ -1255,6 +1265,7 @@ pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->close = u_close;
 	impl->write = u_write;
 	impl->read = u_read;
+	impl->flush = u_flush;
 	impl->poll = u_poll;
 }
 

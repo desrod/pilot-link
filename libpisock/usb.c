@@ -90,6 +90,7 @@ pi_usb_protocol_dup (pi_protocol_t *prot)
 		new_prot->free 		= prot->free;
 		new_prot->read 		= prot->read;
 		new_prot->write 	= prot->write;
+		new_prot->flush		= prot->flush;
 		new_prot->getsockopt 	= prot->getsockopt;
 		new_prot->setsockopt 	= prot->setsockopt;
 		new_prot->data 		= NULL;
@@ -149,6 +150,7 @@ pi_usb_protocol (pi_device_t *dev)
 		prot->free 		= pi_usb_protocol_free;
 		prot->read 		= data->impl.read;
 		prot->write 		= data->impl.write;
+		prot->flush		= data->impl.flush;
 		prot->getsockopt 	= pi_usb_getsockopt;
 		prot->setsockopt 	= pi_usb_setsockopt;
 		prot->data 		= NULL;

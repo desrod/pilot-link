@@ -133,6 +133,7 @@ static speed_t calcrate(speed_t baudrate);
 void pi_serial_impl_init (struct pi_serial_impl *impl);
 static size_t s_read_buf (pi_socket_t *ps, pi_buffer_t *buf,
 	size_t len);
+static int s_flush(pi_socket_t *ps, int flags);
 
 #ifdef sleeping_beauty
 static void s_delay(time_t sec, suseconds_t usec);
@@ -444,7 +445,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			errno = ENOMEM;
 			return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 		}
-		rbuf = read(ps->sd, &buf->data[buf->used], len);
+		rbuf = recv(ps->sd, &buf->data[buf->used], len, 0);
 		if (rbuf > 0) {
 			if (flags == PI_MSG_PEEK) {
 				memcpy(data->buf, buf->data + buf->used, rbuf);
@@ -465,6 +466,42 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		"DEV RX Unix Serial Bytes: %d\n", rbuf));
 
 	return rbuf;
+}
+
+/***********************************************************************
+ *
+ * Function:    s_flush
+ *
+ * Summary:	Flush incoming and/or outgoing data from the socket/file
+ *		descriptor
+ *
+ * Parameters:	ps is of type pi_socket that contains the sd member which is
+ *              the file descriptor that the data in buf will be read. It
+ *              also contains the read buffer.
+ *
+ *		flags is of type int and can be a combination of
+ *		PI_FLUSH_INPUT and PI_FLUSH_OUTPUT
+ *
+ * Returns:	0
+ *
+ ***********************************************************************/
+static int
+s_flush(pi_socket_t *ps, int flags)
+{
+	char buf[256];
+	struct pi_serial_data *data = (struct pi_serial_data *) ps->device->data;
+
+	if (flags & PI_FLUSH_INPUT) {
+		/* clear internal buffer */
+		data->buf_size = 0;
+
+		/* flush pending data (we assume the socket is in blocking mode) */
+		fcntl(ps->sd, F_SETFL, O_NONBLOCK);
+		while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
+			;
+		fcntl(ps->sd, F_SETFL, 0);
+	}
+	return 0;
 }
 
 #ifdef sleeping_beauty
@@ -563,6 +600,7 @@ pi_serial_impl_init (struct pi_serial_impl *impl)
 	impl->changebaud 	= s_changebaud;
 	impl->write 		= s_write;
 	impl->read 		= s_read;
+	impl->flush		= s_flush;
 	impl->poll 		= s_poll;
 }
 

@@ -55,6 +55,7 @@ static int u_close(pi_socket_t *ps);
 static int u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
 static int u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_poll(pi_socket_t *ps, int timeout);
+static int u_flush(pi_socket_t *ps, int flags);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
@@ -62,6 +63,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->close 		= u_close;
 	impl->write 		= u_write;
 	impl->read 		= u_read;
+	impl->flush		= u_flush;
 	impl->poll 		= u_poll;
 }
 
@@ -330,6 +332,42 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		"DEV RX USB Linux Bytes: %d\n", rbuf));
 
 	return rbuf;
+}
+
+/***********************************************************************
+ *
+ * Function:    u_flush
+ *
+ * Summary:	Flush incoming and/or outgoing data from the socket/file
+ *		descriptor
+ *
+ * Parameters:	ps is of type pi_socket that contains the sd member which is
+ *              the file descriptor that the data in buf will be read. It
+ *              also contains the read buffer.
+ *
+ *		flags is of type int and can be a combination of
+ *		PI_FLUSH_INPUT and PI_FLUSH_OUTPUT
+ *
+ * Returns:	0
+ *
+ ***********************************************************************/
+static int
+u_flush(pi_socket_t *ps, int flags)
+{
+	char buf[256];
+	struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
+
+	if (flags & PI_FLUSH_INPUT) {
+		/* clear internal buffer */
+		data->buf_size = 0;
+
+		/* flush pending data */
+		fcntl(ps->sd, F_SETFL, O_NONBLOCK);
+		while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
+			;
+		fcntl(ps->sd, F_SETFL, 0);
+	}
+	return 0;
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

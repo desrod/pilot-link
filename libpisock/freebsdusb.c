@@ -63,14 +63,15 @@ static int u_close(pi_socket_t *ps);
 static ssize_t u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
 static ssize_t u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_poll(pi_socket_t *ps, int timeout);
-
+static int u_flush(pi_socket_t *ps, int flags);
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
-	impl->open 		= u_open;
-	impl->close 		= u_close;
-	impl->write 		= u_write;
-	impl->read 		= u_read;
-	impl->poll 		= u_poll;
+	impl->open 	= u_open;
+	impl->close 	= u_close;
+	impl->write 	= u_write;
+	impl->read 	= u_read;
+	impl->flush	= u_flush;
+	impl->poll 	= u_poll;
 }
 
 
@@ -371,11 +372,22 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			return bytes_read;
 	}
 
-	/* FIXME: there is no timeout handling in the original freebsdusb code! */
-
 	/* check to see if device is ready for read */
 	FD_ZERO(&ready);
 	FD_SET(ps->sd, &ready);
+
+	/* If timeout == 0, wait forever for packet, otherwise wait till
+	   timeout milliseconds */
+	if (data->timeout == 0)
+		select(ps->sd + 1, &ready, 0, 0, 0);
+	else {
+		t.tv_sec 	= data->timeout / 1000;
+		t.tv_usec 	= (data->timeout % 1000) * 1000;
+		if (select(ps->sd + 1, &ready, 0, 0, &t) == 0)
+			return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
+	}
+
+	/* If data is available in time, read it */
 	if (!FD_ISSET(ps->sd, &ready)) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
 			 "DEV RX USB FreeBSD timeout\n"));
@@ -384,7 +396,7 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 	/* read data to pre-sized buffer */
-	rlen = read(ps->sd, &buf->data[buf->used], len);
+	rlen = recv(ps->sd, &buf->data[buf->used], len);
 	if (rlen > 0) {
 		if (flags == PI_MSG_PEEK) {
 			memcpy(data->buf, buf->data + buf->used, rlen);
@@ -402,6 +414,42 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		bytes_read = PI_ERR_SOCK_IO;
 
 	return bytes_read;
+}
+
+/***********************************************************************
+ *
+ * Function:    u_flush
+ *
+ * Summary:	Flush incoming and/or outgoing data from the socket/file
+ *		descriptor
+ *
+ * Parameters:	ps is of type pi_socket that contains the sd member which is
+ *              the file descriptor that the data in buf will be read. It
+ *              also contains the read buffer.
+ *
+ *		flags is of type int and can be a combination of
+ *		PI_FLUSH_INPUT and PI_FLUSH_OUTPUT
+ *
+ * Returns:	0
+ *
+ ***********************************************************************/
+static int
+u_flush(pi_socket_t *ps, int flags)
+{
+	char buf[256];
+	struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
+
+	if (flags & PI_FLUSH_INPUT) {
+		/* clear internal buffer */
+		data->used = 0;
+
+		/* flush pending data */
+		fcntl(ps->sd, F_SETFL, O_NONBLOCK);
+		while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
+			;
+		fcntl(ps->sd, F_SETFL, 0);
+	}
+	return 0;
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

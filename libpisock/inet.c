@@ -64,6 +64,7 @@ static int pi_inet_setsockopt(pi_socket_t *ps, int level, int option_name,
 			      const void *option_value, size_t *option_len);
 
 static int pi_inet_close(pi_socket_t *ps);
+static int pi_inet_flush(pi_socket_t *ps, int flags);
 
 int pi_socket_init(pi_socket_t *ps);
 
@@ -94,6 +95,7 @@ static pi_protocol_t
 		new_prot->free 		= prot->free;
 		new_prot->read 		= prot->read;
 		new_prot->write 	= prot->write;
+		new_prot->flush		= prot->flush;
 		new_prot->getsockopt 	= prot->getsockopt;
 		new_prot->setsockopt 	= prot->setsockopt;
 		new_prot->data 		= NULL;
@@ -152,6 +154,7 @@ static pi_protocol_t
 		prot->free 		= pi_inet_protocol_free;
 		prot->read 		= pi_inet_read;
 		prot->write 		= pi_inet_write;
+		prot->flush		= pi_inet_flush;
 		prot->getsockopt 	= pi_inet_getsockopt;
 		prot->setsockopt 	= pi_inet_setsockopt;
 		prot->data = NULL;
@@ -494,6 +497,31 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	if (ps)
 		pi_close (ps->sd);
 	return PI_ERR_GENERIC_SYSTEM;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_inet_flush
+ *
+ * Summary:     Flush input and/or output buffers on the socket
+ *
+ * Parameters:  pi_socket_t*, flags
+ *
+ * Returns:     0 on success or negative number on error
+ *
+ ***********************************************************************/
+static int
+pi_inet_flush(pi_socket_t *ps, int flags)
+{
+	char buf[256];
+
+	if (flags & PI_FLUSH_INPUT) {
+		fcntl(ps->sd, F_SETFL, O_NONBLOCK);
+		while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
+			;
+		fcntl(ps->sd, F_SETFL, 0);
+	}
+	return 0;
 }
 
 /***********************************************************************
