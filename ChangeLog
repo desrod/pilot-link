@@ -5,6 +5,8 @@
 
 	* doc/README.freebsd: Anish Mistry's FreeBSD readme doc added
 
+	* NEWS: Updated to add missing releases
+
 2002-09-16  JP Rosevear  <jpr@ximian.com>
 
 	* include/pi-version.h.in: remove the nano version stuff

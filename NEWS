@@ -1,49 +1,111 @@
-Pilot-Link 0.11.1, "Ocean's Eleventy-first", 07-18-2002
+--------------------------------------------------
+pilot-link 0.11.4, "Alzheimer Release", 09-16-2002
+--------------------------------------------------
+Some major bugs have been fixed in this release, which now supercedes all
+previous releases in the 0.11.x series.
+
+Major Features:
+	* Updated configuration to work with newer autoconf/automake versions
+
+Other Features: 
+	* None at this time
+
+Bug Fixes:
+	* Fixed the "double-free" bug that would sometimes cause the visor
+	  driver to crash or hang on Linux systems
+	* Network Hotsync from Linux to Windows now works
+	* Perl bindings will build cleanly on perl 5.6 and 5.8 with gcc 2.x
+	  and 3.x
+	* Fixed an issue with libpng being linked into every binary by default
+
+Known Problems:
+	* None identified for this release
+
+
+----------------------------------------------
+pilot-link 0.11.3, "Stable Release", 08-6-2002
+----------------------------------------------
+This is a rollup stable release of previous 0.11.x bugfixes and feature
+additions.
+
+Major Features:
+	* None at this time
+
+Other Features:
+	* None at this time
+
+Bug Fixes:
+	* Reverted a previous pilot-xfer option that overwrote the existing
+	  line during a backup. Curses will be dropped into here soon to
+	  more finitely control this.
+	* Fixed a missing dlpErrIllegalReq in pi-dlp.h that caused problems
+	  with J-Pilot
+
+Known Problems:
+	None identified for this release
+
+----------------------------------------------
+pilot-link 0.11.2, "I Want One Two", 08-6-2002
+----------------------------------------------
+This is an updated version to the 0.11.1 "Ocean's Eleventy-First" release
+from July 18th, and fixes quite a few bugs that people have reported with
+gnome-pilot and J-Pilot.
+
+Major Features:
+	* pilot-xfer now has a more "usable" backup style, and the -q option
+	  now does something useful (this will be changing in the near
+	  future, enabling curses to control the backup "windowing")
+	* First pass at native FreeBSD support from Anish Mistry (we need
+	  testers!)
+
+Other Features:
+	* None at this time
+
+Bug Fixes:
+	* install-todos -f didn't work at all in 0.11, fixed.
+	* pilot-addresses didn't import the right csv format, fixed.
+	* Updated the manpages and fixed some typos in the source
+	  documentation
+	* ReadDBList was returning an incorrect value, confusing J-Pilot,
+	  fixed.
+	* TCL version test was incorrect in ./confiure.in, fixed.
+	* pi-addresses.h had an incorrect field ordering which caused the
+	  ouput csv to be incompatible with the record format, fixed.
+	* Updates to allow pilot-link to build under BSD/OS 4.3 (Jeffrey C
+	  Honig)
+
+Known Problems:
+	* Network Hotsync from Linux to Windows does not work
+
 -------------------------------------------------------
+pilot-link 0.11.1, "Ocean's Eleventy-first", 07-18-2002
+-------------------------------------------------------
+This is a bugfix release to address some issues found in the 0.11 release
+from 7-12-2002.
 
-This is a minor bugfix release to squish some of the bugs that creeped in
-under the door into the 0.11 release. Most notably: 
-	
-	User Updates
-	------------
-	- pilot-xfer -f didn't work at all in 0.11, fixed. 
-	- pilot-xfer -f bugfix for non-writable local files 
-	- read-palmpix now takes arguments for output file type, '-t png' or
-	  '-t ppm'
-	- read-notepad also updated to accept the same argument types
+Major Features:
+	* read-palmpix now takes arguments for output file type, "-t png" or "-t ppm"
+	* read-notepad also updated to accept the same argument types
 
-	Development Updates
-	-------------------
-	- All of the language bindings (Perl, Python, Java, Tcl, Tk, iTcl)
+Other Features:
+	* Fixed some of the gcc-related warnings (more to come)	
+	* All of the language bindings (Perl, Python, Java, Tcl, Tk, iTcl)
 	  all default to off, unless specified. If you want to enable them,
 	  you must use --with-foo, where 'foo' is the binding of your
 	  choice, such as --with-perl
-	- Fixed some of the gcc-related warnings (more to come)
-	- Minor Python build fix
 
-	ToDo List for 0.11.2
-	--------------------
-	User Updates
-	------------
-	- pilot-addresses -T header fix (don't import header into record)
-	- pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
-	- pxd, first cut at a pilot-xfer'ized daemon
-	- missing manpages corrected
-	- pilot-datebook updated to match remaining structure
+Bug Fixes:
+	* pilot-xfer -f didn't work at all in 0.11, fixed.
+	* pilot-xfer -f bugfix for non-writable local files
+	* Minor Python build fix
 
-	Development Updates
-	-------------------
-	- Fix all remaining -pedantic warnings and errors Update
-	- configure.in to handle testing for python-devel installed
-	  #include <Python.h> int main() {PyObject x; return 0;}
-	- Update Java bindings to use Ant instead of {g|n}make 
-	- Rewrite Perl bindings to take advantage of MakeMaker 
-	- Add missing DLP 1.2 calls
+Known Problems:
+	* pilot-addresses -T header fix (don't import header into record)
+        * pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
 
-
-Pilot-Link 0.11, "Ocean's Eleven", 07-12-2002
 ---------------------------------------------
-
+pilot-link 0.11, "Ocean's Eleven", 07-12-2002
+---------------------------------------------
 This is a development release, primarily to test the new usb device support. 
 Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the
 Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or usb/tts/0).  Note that
@@ -71,9 +133,9 @@ Known Problems (Please see doc/TODO for more details):
 	* TCL/TK bindings are out of commission
 	* PDB files with space filler records are not yet handled properly
 
-Pilot-Link 0.10.99, "Woodstock", 03-20-2002
 -------------------------------------------
-
+pilot-link 0.10.99, "Woodstock", 03-20-2002
+-------------------------------------------
 This is a development release, primarily to test the new usb device support. 
 Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the
 Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or usb/tts/0).  Note that
