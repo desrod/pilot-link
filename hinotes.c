@@ -20,11 +20,7 @@
  *
  */
 
-#ifndef HAVE_GETOPT_LONG
 #include "getopt.h"
-#else
-#include <getopt.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,13 +47,14 @@ void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 			     struct HiNoteAppInfo mai, int category);
 
+/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"port",        required_argument, NULL, 'p'},
 	{"dirname",     required_argument, NULL, 'd'},
 	{NULL,          0,                 NULL, 0}
 };
-
+*/
 
 static const char *optstring = "hp:d:";
 

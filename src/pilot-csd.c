@@ -20,11 +20,7 @@
  *
  */
 
-#ifndef HAVE_GETOPT_LONG
 #include "getopt.h"
-#else
-#include <getopt.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

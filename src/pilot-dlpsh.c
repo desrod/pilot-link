@@ -24,11 +24,7 @@
 #include <config.h>
 #endif
 
-#ifndef HAVE_GETOPT_LONG
 #include "getopt.h"
-#else
-#include <getopt.h>
-#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>		/* free() */

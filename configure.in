@@ -639,7 +639,7 @@ echo "
   Readline support.... : $msg_readline
 
   TCL support......... : $msg_tcl	($TCL_VERSION)
-  ITCL support........ : $msg_itcl      ($ITCL_VERSION)
+  ITCL support........ : $msg_itcl	($ITCL_VERSION)
   TK Support.......... : $msg_tk	($TK_VERSION)
 
   Java support........ : $msg_java	($JAVAMAJOR.$JAVAMINOR)

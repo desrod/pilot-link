@@ -19,11 +19,7 @@
  *
  */
 
-#ifndef HAVE_GETOPT_LONG
 #include "getopt.h"
-#else
-#include <getopt.h>
-#endif
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,6 +34,7 @@
 int pilot_connect(const char *port);
 static void Help(char *progname);
 
+/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"port",        required_argument, NULL, 'p'},
@@ -46,6 +43,7 @@ struct option options[] = {
 	{"delete",      no_argument,       NULL, 'd'},
 	{NULL,          0,                 NULL, 0}
 };
+*/
 
 static const char *optstring = "hp:ifd";
 

@@ -1,3 +1,7 @@
+2002-01-16  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* *.c: Removed the global <getopt.h> dependancy
+
 2002-01-14  JP Rosevear  <jpr@ximian.com>
 
 	* Remove no longer needed OS/2 stuff
