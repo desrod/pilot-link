@@ -32,6 +32,9 @@
 #include "getopt.h"
 #include "config.h"
 
+/* FIXME: Fixes for AIX 4.3.3 Need testers */
+#undef HAVE_PNG
+
 #ifdef HAVE_PNG
 #include "png.h"
 #if (PNG_LIBPNG_VER < 10201)

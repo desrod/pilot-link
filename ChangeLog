@@ -4,6 +4,15 @@
 
 	* libpisock/net.c: Fix for Network Sync
 
+	* src/Makefile.am: Fix for autoconf 2.5x users
+
+	* src/read-notepad.c: Fix for AIX 4.3.3 builds, need testers
+	  (Addresses bug 0000272 in the bugtracker)
+	
+	* src/read-palmpix.c: Ditto
+
+	* src/pilot-datebook/pilot-datebook-data.h: Ditto		
+
 2002-08-30  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: define conditionals for usb support properly

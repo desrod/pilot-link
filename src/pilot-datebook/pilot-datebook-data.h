@@ -82,8 +82,18 @@ extern const char DATEBOOK_FIELD_YSTR[];
 extern const char DATEBOOK_FIELD_ZSTR[];
 
 
-/* enum */
+/* FIXME: Fixes for AIX 4.3.3 Need testers */
+#ifdef FALSE
+#undef FALSE
+#endif
 
+#ifdef TRUE
+#undef TRUE
+#endif
+/* End AIX fix */
+
+
+/* enum */
 typedef enum { FALSE=0, TRUE=1 } BOOLEAN;
 
 /* File data format */
