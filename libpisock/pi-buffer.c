@@ -1,7 +1,7 @@
 /*
  * pi-buffer.c:  simple data block management for variable data storage
  *
- * Copyright (c) 2004, Florent Pillet.
+ * Copyright (c) 2004-2005, Florent Pillet.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -17,7 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
  *
- * -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*-
+ * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,18 +25,6 @@
 
 #include "pi-buffer.h"
 
-/***********************************************************************
- *
- * Function:    pi_buffer_new
- *
- * Summary:     Allocate a new buffer with a default storage capacity
- *
- * Parameters:  capacity		--> base allocation size
- *
- * Returns:     new buffer structure. If allocation failed, the `allocated'
- *				and `data' members are set to 0
- *
- ***********************************************************************/
 pi_buffer_t*
 pi_buffer_new (size_t capacity) 
 {
@@ -56,21 +44,6 @@ pi_buffer_new (size_t capacity)
 	return buf;
 }
 
-/***********************************************************************
- *
- * Function:    pi_buffer_expect
- *
- * Summary:     Grow a buffer's storage capacity so that the expected
- *				number of bytes can be directly stored in the storage area
- *
- * Parameters:  buf				--> ptr to the buffer structure
- *				new_capacity	--> new allocated capacity
- *
- * Returns:     on return, buf struct is updated. If allocation failed,
- *				both `allocated' and `data' members are set to 0 and the
- *				function returns NULL
- *
- ***********************************************************************/
 pi_buffer_t*
 pi_buffer_expect (pi_buffer_t *buf, size_t expect)
 {
@@ -92,20 +65,6 @@ pi_buffer_expect (pi_buffer_t *buf, size_t expect)
 	return buf;
 }
 
-/***********************************************************************
- *
- * Function:    pi_buffer_append
- *
- * Summary:     Add data to a buffer, grow it as needed
- *
- * Parameters:  buf	--> ptr to the buffer structure
- *		data	--> data to append
- *		len	--> data size to append
- *
- * Returns:     on return, buf struct is updated. If allocation failed,
- *				both `allocated' and `data' members are set to 0
- *
- ***********************************************************************/
 pi_buffer_t*
 pi_buffer_append (pi_buffer_t *buf, void *data, size_t len)
 {
@@ -118,56 +77,23 @@ pi_buffer_append (pi_buffer_t *buf, void *data, size_t len)
 	return buf;
 }
 
-/***********************************************************************
- *
- * Function:    pi_buffer_append_buffer
- *
- * Summary:     Append a buffer to another buffer
- *
- * Parameters:  dest	--> ptr to the buffer to append to
- *		src     --> ptr to the source buffer to append
- *
- * Returns:     on return, dest struct is updated. If allocation failed,
- *				both `allocated' and `data' members are set to 0
- *
- ***********************************************************************/
 pi_buffer_t *
 pi_buffer_append_buffer (pi_buffer_t *dest, pi_buffer_t *src)
 {
 	return pi_buffer_append (dest, src->data, src->used);
 }
 
-/***********************************************************************
- *
- * Function:    pi_buffer_clear
- *
- * Summary:     Clear data in buffer
- *
- * Parameters:  buf	--> ptr to the buffer structure
- *
- * Returns:     nothing
- *
- ***********************************************************************/
 void
 pi_buffer_clear (pi_buffer_t *buf)
 {
 	buf->used = 0;
+	if (buf->allocated > (size_t)65535)
+	{
+		buf->data = (unsigned char *) realloc (buf->data, 65535);
+		buf->allocated = (buf->data == NULL) ? 0 : 65535;
+	}
 }
 
-/***********************************************************************
- *
- * Function:    pi_buffer_free
- *
- * Summary:     Add data to a buffer, grow it as needed
- *
- * Parameters:  buf	--> ptr to the buffer structure
- *		data	--> data to append
- *		len     --> data size to append
- *
- * Returns:     on return, buf struct is updated. If allocation failed,
- *				both `allocated' and `data' members are set to 0
- *
- ***********************************************************************/
 void
 pi_buffer_free (pi_buffer_t* buf)
 {
