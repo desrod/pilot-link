@@ -1,3 +1,7 @@
+2002-03-30  JP Rosevear  <jpr@ximian.com>
+
+	* bindings/Perl/Makefile.PL.in: Use the right libdir
+
 2002-03-20  JP Rosevear  <jpr@ximian.com>
 
 	* NEWS: update

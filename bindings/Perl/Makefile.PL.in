@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 
 $prefix = "@prefix@";
 $exec_prefix = "@exec_prefix@";
-$libdir = "../../libsock/.libs";
+$libdir = "../../libpisock/.libs";
 
 $lib = "-L$libdir -lpisock";
 
