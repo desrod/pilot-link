@@ -35,7 +35,7 @@ struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"user",        required_argument, NULL, 'u'},
 	{"id",          required_argument, NULL, 'i'},
-	{NULL,          0,                 NULL, 0}
+	{0, 		0, 		   0, 	 0}
 };
 
 static const char *optstring = "hvp:u:i:";
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	int 	c,		/* switch */
 		sd 		= -1;
 	char 	*progname 	= argv[0],
-		*port 		= NULL,
+		*port		= NULL,
 		*user 		= NULL,
 		*userid 	= NULL;
 	

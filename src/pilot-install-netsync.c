@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 	if (dlp_WriteNetSyncInfo(sd, &Net) < 0)
 		goto error_close;
 
-	if (enable)
+	if (enable > 0)
 		printf("\tEnabled NetSync");
 	if (hostname != NULL)
 		printf("\tInstalled Host Name: %s\n", Net.hostName);

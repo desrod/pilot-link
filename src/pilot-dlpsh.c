@@ -81,7 +81,7 @@ struct Command command_list[] = {
 	{"time", time_fn},
 	{"dtp",	 time_fn},
 	{"user", user_fn},
-	{NULL,   NULL}
+	{NULL, NULL}
 };
 
 /***********************************************************************
