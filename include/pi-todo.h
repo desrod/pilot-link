@@ -1,10 +1,9 @@
 #ifndef _PILOT_TODO_H_
 #define _PILOT_TODO_H_
 
-#include <time.h>
-
 #include "pi-args.h"
 #include "pi-appinfo.h"
+#include "pi-tconfig.h"
 
 #ifdef __cplusplus
 extern "C" {

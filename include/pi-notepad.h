@@ -44,18 +44,18 @@ typedef struct {
 #define NOTE_OUT_PNG       0x02
    
 /* Data Type */
-#define NOTEPAD_DATA_BITS  0x01     // OS 4 notepad
-#define NOTEPAD_DATA_PNG   0x02     // OS 5 notepad
+#define NOTEPAD_DATA_BITS  0x01     /* OS 4 notepad */
+#define NOTEPAD_DATA_PNG   0x02     /* OS 5 notepad */
    
 /* Note structure
  When flags = 0x03
    noteHdr_t
-   char name[0];       // NULL termniated and 1 padded to 2 byte boundary
+   char name[0];       NULL termniated and 1 padded to 2 byte boundary
    noteBody_t
  When flags = 0x07
    noteHdr_t
    noteDate_t alarmTime
-   char name[0];       // NULL termniated and 1 padded to 2 byte boundary
+   char name[0];       NULL termniated and 1 padded to 2 byte boundary
    noteBody_t
 */
 

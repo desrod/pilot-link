@@ -1,5 +1,5 @@
 /*
- * sync.h: Header for generic synchronization algorithm
+ * pi-util.h: Header for generic synchronization algorithm
  *
  * Copyright (c) 2000, Helix Code Inc.
  *
