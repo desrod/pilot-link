@@ -1,5 +1,10 @@
 2001-12-29  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/Makefile.am: Include iconv cflags and libs where
+	appropriate
+
+2001-12-29  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/pi-header.c (PalmHeader): remove unused var
 
 	* libsock/winserial.c (win_changebaud): remove non ansii comments
