@@ -29,7 +29,7 @@ INCLUDES = 			\
 CCEXECS =
 #endif
 
-noinst_LIBRARIES = libuserland.a
+noinst_LIBRARIES = libpiuserland.a
 
 bin_PROGRAMS = 		\
 	$(CCEXECS)	\
@@ -100,11 +100,8 @@ endif
 #	$(top_builddir)/libpisock++/libpisock++.la	\
 #	$(top_builddir)/libpisock/libpisock.la
 
-libuserland_a_SOURCES =		\
+libpiuserland_a_SOURCES =		\
 	userland.c
-libuserland_a_LIBADD =		\
-	$(POPT_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
 
 addresses_SOURCES = 		\
 	addresses.c
@@ -171,20 +168,21 @@ install_netsync_LDADD = 	\
 install_todos_SOURCES = 	\
 	install-todos.c
 install_todos_LDADD = 		\
-	libuserland.a		\
+	libpiuserland.a		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_todo_SOURCES =		\
         install-todo.c  
 install_todo_LDADD =            \
+	libpiuserland.a		\
 	$(POPT_LIBS)		\
         $(top_builddir)/libpisock/libpisock.la
 
 install_user_SOURCES = 		\
 	install-user.c
 install_user_LDADD = 		\
-	libuserland.a		\
+	libpiuserland.a		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
