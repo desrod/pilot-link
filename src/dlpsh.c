@@ -51,7 +51,7 @@ void print_splash(const char *progname);
 int pilot_connect(const char *port);
 
 
-/* FIXME: This isn't really ideal, passing a struct in is 
+/* FIXME: This isn't really ideal, passing a struct in is
    probably better. Something like this:
 
    typedef struct { int sd; int argc; char **argv; } cmd_struct_t;
@@ -99,9 +99,9 @@ struct Command {
 };
 
 struct Command command_list[] = {
-	{"df",   df_fn},  
+	{"df",   df_fn},
 	{"help", help_fn},
-	{"ls",   ls_fn},  
+	{"ls",   ls_fn},
 	{"reopen", reopen_fn},
 	{"exit", exit_fn},
 	{"quit", exit_fn},
@@ -115,8 +115,8 @@ struct Command command_list[] = {
  *
  * Function:    df_fn
  *
- * Summary:     Simple dump of CardInfo, which includes the RAM/ROM 
- * 		amounts free and used. 
+ * Summary:     Simple dump of CardInfo, which includes the RAM/ROM
+ * 		amounts free and used.
  *
  * Parameters:  None
  *
@@ -136,17 +136,17 @@ int df_fn(int sd, int argc, char *argv[])
 
 		printf("Filesystem           1k-blocks         Used   Available     Used     Total\n");
 		printf("Card0: ROM           %9lu", Card.romSize);
-                printf("          n/a   %9lu      n/a     %4luk\n", 
+                printf("          n/a   %9lu      n/a     %4luk\n",
 			Card.romSize, Card.romSize/1024);
 
 		printf("Card0: RAM           %9lu", Card.ramSize);
-		printf("     %8lu    %8lu     %3ld%%     %4luk\n", 
-			(Card.ramSize - Card.ramFree), Card.ramFree, 
-			((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, 
+		printf("     %8lu    %8lu     %3ld%%     %4luk\n",
+			(Card.ramSize - Card.ramFree), Card.ramFree,
+			((Card.ramSize - Card.ramFree) * 100) / Card.ramSize,
 			Card.ramSize/1024);
 
-		printf("Total (ROM + RAM)     %8lu     %8lu         n/a      n/a    %5luk\n\n", 
-			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree, 
+		printf("Total (ROM + RAM)     %8lu     %8lu         n/a      n/a    %5luk\n\n",
+			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree,
 			(Card.romSize + Card.ramSize)/1024);
 	}
 	return 0;
@@ -194,7 +194,7 @@ int help_fn(int sd, int argc, char *argv[])
 int ls_fn(int sd, int argc, const char *argv[])
 {
 	poptContext po;
-	
+
 	struct poptOption ls_options[] = {
 		{"long", 	'l', POPT_ARG_NONE, NULL, 'l', "List all RAM databases using \"expanded\" format"},
 		{"rom", 	'r', POPT_ARG_NONE, NULL, 'r', "List all ROM databases and applications"},
@@ -202,7 +202,7 @@ int ls_fn(int sd, int argc, const char *argv[])
 		POPT_AUTOHELP
         	{ NULL, 0, 0, NULL, 0 }
 	} ;
-	
+
 	int 	c,		/* switch */
 		cardno,
 		flags,
@@ -212,9 +212,9 @@ int ls_fn(int sd, int argc, const char *argv[])
 		rom_flag 	= 0,
 		i;
 	pi_buffer_t *buf;
-	
+
 	optind = 0;
-	
+
 	po = poptGetContext("dlpsh", argc, argv, ls_options, 0);
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
@@ -226,7 +226,7 @@ int ls_fn(int sd, int argc, const char *argv[])
 			  lflag = 1;
 			  break;
 		  case 'h':
-			  
+
 			  printf("   List all files and databases stored on your Palm device\n\n"
 			         "   Usage: ls [options]\n"
 				 "   Options:\n"
@@ -246,7 +246,7 @@ int ls_fn(int sd, int argc, const char *argv[])
 		flags = 0x40;	/* dlpReadDBListFlagROM */
 
 	buf = pi_buffer_new (32 * sizeof (struct DBInfo));
-	
+
 	for (;;) {
 		struct DBInfo info;
 		long tag;
@@ -255,7 +255,7 @@ int ls_fn(int sd, int argc, const char *argv[])
 		/* The databases are numbered starting at 0.  The first 12
 		   are in ROM, and the rest are in RAM.  The high two bits
 		   of the flags byte control wheter you see the ROM entries,
-		   RAM entries or both.  start is the lowest index you want. 
+		   RAM entries or both.  start is the lowest index you want.
 		   So, we start with 0, but usually we want to see ram
 		   entries, so it will return database number 12.  Then,
 		   we'll ask for 13, etc, until we get the NotFound error
@@ -263,7 +263,7 @@ int ls_fn(int sd, int argc, const char *argv[])
 		ret = dlp_ReadDBList(sd, cardno, flags | dlpDBListMultiple, start, buf);
 
 		if (ret == PI_ERR_DLP_PALMOS &&
-				pi_palmos_error(sd) == dlpErrNotFound) 
+				pi_palmos_error(sd) == dlpErrNotFound)
 			break;
 
 		if (ret < 0) {
@@ -281,7 +281,7 @@ int ls_fn(int sd, int argc, const char *argv[])
 			printf("%s\n", info.name);
 
 			if (lflag == 1) {
-				tag = htonl(info.type);			
+				tag = htonl(info.type);
 				printf("  More: 0x%x       Flags: 0x%-4x             Type: %.4s\n",
 					info.more, info.flags, (char *) &tag);
 				tag = htonl(info.creator);
@@ -291,15 +291,15 @@ int ls_fn(int sd, int argc, const char *argv[])
 				printf("  Backup : %19s\n", timestr(info.backupDate));
 				printf("  Modify : %19s\n\n", timestr(info.modifyDate));
 			}
-			
+
 			if (info.index < start) {
 				/* avoid looping forever if we get confused */
 				printf("error: index backs up\n");
 				break;
 			}
 		}
-		
-		if (info.index < start) 
+
+		if (info.index < start)
 			break;
 
 		start = info.index + 1;
@@ -388,7 +388,7 @@ int time_fn(int sd, int argc, char *argv[])
  *
  * Function:    user_fn
  *
- * Summary:     Set the username, UserID and PCID on the device, 
+ * Summary:     Set the username, UserID and PCID on the device,
  *		similar to install-user, but interactive
  *
  * Parameters:  None
@@ -402,27 +402,27 @@ int user_fn(int sd, int argc, const char *argv[])
 		ret,
 		fl_name 	= 0,
 		fl_uid 		= 0,
-		fl_vid 		= 0, 
+		fl_vid 		= 0,
 		fl_pid 		= 0;
-	
+
 	struct 	PilotUser User, nUser;
 
 	char *userID, *viewerID, *lastSyncPC;
-	
+
 	optind = 0;
-	
+
 	poptContext po;
-	
+
 	struct poptOption user_options[] = {
 		{"user", 	'u', POPT_ARG_STRING, &nUser.username, 'u', "Set Username on the Palm device (use double-quotes)"},
 		{"id", 		'i', POPT_ARG_STRING, &userID, 'i', "Set the numeric UserID on the Palm device"},
 		{"viewid", 	'v', POPT_ARG_STRING, &viewerID, 'v', "Set the numeric ViewerID on the Palm device"},
 		{"pcid", 	'p', POPT_ARG_STRING, &lastSyncPC, 'p', "Set the numeric PCID on the Palm device"},
-		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},	
+		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
 		POPT_AUTOHELP
         	{ NULL, 0, 0, NULL, 0 }
 		} ;
-	
+
 	po = poptGetContext("dlpsh", argc, argv, user_options, 0);
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
@@ -479,22 +479,22 @@ int user_fn(int sd, int argc, const char *argv[])
 		printf("   Username = \"%s\"\n", User.username);
 	if (fl_uid)
 		User.userID = nUser.userID;
-		printf("   UserID   = %08lx (%i)\n", User.userID, 
+		printf("   UserID   = %08lx (%i)\n", User.userID,
 			(int) User.userID);
 	if (fl_vid)
 		User.viewerID = nUser.viewerID;
-		printf("   ViewerID = %08lx (%i)\n", User.viewerID, 
+		printf("   ViewerID = %08lx (%i)\n", User.viewerID,
 			(int) User.viewerID);
 	if (fl_pid)
 		User.lastSyncPC = nUser.lastSyncPC;
-		printf("   PCid     = %08lx (%i)\n", User.lastSyncPC, 
+		printf("   PCid     = %08lx (%i)\n", User.lastSyncPC,
 			(int) User.lastSyncPC);
 
 	User.successfulSyncDate = time(NULL);
 	User.lastSyncDate = User.successfulSyncDate;
 
 	ret = dlp_WriteUserInfo(sd, &User);
-	
+
 	if (ret < 0) {
 		printf("dlp_WriteUserInfo: err %d\n", ret);
 		return -1;
@@ -546,7 +546,7 @@ void parse_command(int sd, char *cmd)
 		inc;
 
 	argc = 0;
-	
+
 	/* Changing input? BAD BAD BAD... -DD */
 	argv[0] = strtoke(cmd, " \t\n", "\"'");
 
@@ -568,7 +568,7 @@ void parse_command(int sd, char *cmd)
 
 	return;
 }
-	
+
 /***********************************************************************
  *
  * Function:    handle_single_command
@@ -780,9 +780,9 @@ int main(int argc, const char *argv[])
 
 	char 	*port 		= NULL,
 		*cmd		= NULL;
-	
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
 		{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
 		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
@@ -791,7 +791,7 @@ int main(int argc, const char *argv[])
 		POPT_AUTOHELP
         	{ NULL, 0, 0, NULL, 0 }
 	} ;
-		
+
 	po = poptGetContext("dlpsh", argc, argv, options, 0);
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
@@ -806,10 +806,10 @@ int main(int argc, const char *argv[])
 			display_help(progname);
 			return 0;
 		}
-	}	
+	}
 
 	setjmp (main_jmp);
-	
+
 	sd = pilot_connect(port);
 	if (sd < 0)
 		goto error;
@@ -828,5 +828,5 @@ error_close:
 	pi_close(sd);
 
 error:
-	return -1;	
+	return -1;
 }
