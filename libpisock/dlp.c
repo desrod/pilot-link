@@ -1190,8 +1190,6 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
  * Function:    dlp_FindDBInfo
  *
  * Summary:     Search for a database on the Palm
- *		FIXME: could read multiple databases at once using
- *		the dlpDBListMultiple flag
  *
  * Parameters:  None
  *
@@ -1203,7 +1201,8 @@ dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 	       unsigned long type, unsigned long creator,
 	       struct DBInfo *info)
 {
-	int 	i;
+	int 	i,
+		j;
 	pi_buffer_t *buf;
 
 	/* This function does not match any DLP layer function, but is
@@ -1220,28 +1219,32 @@ dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 
 	if (start < 0x1000) {
 		i = start;
-		while (dlp_ReadDBList(sd, cardno, 0x80, i, buf) >= 0) {
-			memcpy (info, buf->data, sizeof(struct DBInfo));
-			if ((!dbname || strcmp(info->name, dbname) == 0)
-			    && (!type || info->type == type)
-			    && (!creator || info->creator == creator))
-				goto found;
-			i = info->index + 1;
+		while (dlp_ReadDBList(sd, cardno, 0x80 | dlpDBListMultiple, i, buf) >= 0) {
+			for (j=0; j < (buf->used / sizeof(struct DBInfo)); j++) {
+				memcpy (info, buf->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
+				if ((!dbname || strcmp(info->name, dbname) == 0)
+					&& (!type || info->type == type)
+					&& (!creator || info->creator == creator))
+					goto found;
+				i = info->index + 1;
+			}
 		}
 		start = 0x1000;
 	}
 
 	i = start & 0xFFF;
-	while (dlp_ReadDBList(sd, cardno, 0x40, i, buf) >= 0) {
-		memcpy (info, buf->data, sizeof(struct DBInfo));
-		if ((!dbname || strcmp(info->name, dbname) == 0)
-		    && (!type || info->type == type)
-		    && (!creator || info->creator == creator))
-		{
-			info->index |= 0x1000;
-			goto found;
+	while (dlp_ReadDBList(sd, cardno, 0x40 | dlpDBListMultiple, i, buf) >= 0) {
+		for (j=0; j < (buf->used / sizeof(struct DBInfo)); j++) {
+			memcpy (info, buf->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
+			if ((!dbname || strcmp(info->name, dbname) == 0)
+				&& (!type || info->type == type)
+				&& (!creator || info->creator == creator))
+			{
+				info->index |= 0x1000;
+				goto found;
+			}
+			i = info->index + 1;
 		}
-		i = info->index + 1;
 	}
 
 	pi_buffer_free (buf);
