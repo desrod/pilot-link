@@ -41,10 +41,10 @@
 #include <sys/stat.h>
 #include <sys/time.h>		/* Needed for Redhat 6.x machines */
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #endif
-#include <netinet/in.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
