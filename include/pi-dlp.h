@@ -130,7 +130,22 @@ typedef unsigned long FileRef;
 		unsigned long   attributes;
 
 		/* 4: Filesystem type for this volume (defined below).
-		      Known values are: 'vfat' (MSDOSFS)
+		      These you can expect to see in devices:
+		          'vfat' (FAT12/FAT16 with long name support)
+		      Other values observed:
+		          'twmf' (Tapwave Zodiac internal VFS)
+		      PalmSource defines these, but don't bet on device support:
+		          'afsu' (Andrew network filesystem)
+		          'ext2' (Linux ext2 filesystem)
+		          'fats' (FAT12/FAT16 with 8.3 names)
+		          'ffsb' (BSD block-based filesystem)
+		          'hfse' (Macintosh HFS+)
+		          'hfss' (Macintosh HFS, pre-8.x)
+		          'hpfs' (OS/2 High Performance Filesystem)
+		          'mfso' (Original Macintosh filesystem)
+		          'nfsu' (NFS mount)
+		          'novl' (Novell filesystem)
+		          'ntfs' (Windows NT filesystem)
 		*/
 		unsigned long   fsType;
 
@@ -148,7 +163,19 @@ typedef unsigned long FileRef;
 		int slotRefNum;
 
 		/* 20: Type of card media (mediaMemoryStick, mediaCompactFlash, etc.)
-		       Known values are: 'sdig'(SD Card)
+		       These you can expect to see in devices:
+		           'cfsh' (CompactFlash)
+		           'mmcd' (MultiMedia Card)
+		           'mstk' (Memory Stick)
+		           'sdig' (SD card)
+		       Other values observed:
+		           'TFFS' (palmOne Tungsten T5 internal VFS)
+		           'twMF' (Tapwave Zodiac internal VFS)
+		       PalmSource also defines these:
+		           'pose' (Host filesystem emulated by POSE)
+		           'PSim' (Host filesystem emulated by Mac Simulator)
+		           'ramd' (RAM disk)
+		           'smed' (SmartMedia)
 		*/
 		unsigned long   mediaType;
 
