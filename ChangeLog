@@ -1,3 +1,11 @@
+2002-11-29  Angus Ainslie <angusa at deltatee dot com>
+
+	* pi-notepad.h: added a type field for OS 5
+	* read-notepad.c: now ouputs OS5 type 2 notepad files, only in
+	PNG.
+	* notepad.c: fixed odd length buffer copy
+	
+
 2002-11-29  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/*.c: Cleaned up all of the --help, --version, getopt_long()
@@ -44,6 +52,7 @@
 	  will be skipped. Need to clean up symantics between Install and
 	  Restore functions here.
 
+>>>>>>> 1.428
 2002-11-24  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Fixed AC_INIT to allow compatibility with autoconf
