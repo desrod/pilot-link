@@ -60,7 +60,7 @@ static const char *optstring = "p:hvc:rt";
 
 static void display_help(char *progname)
 {
-	printf("   Installs a new memo in a Palm Computing Device\n\n");
+	printf("   Installs a new Memo entry onto your Palm device\n\n");
 	printf("   Usage: %s -p <port> [-rt] [-c category] file [file] ...\n\n", 
 		progname);
 	printf("   Options:\n");
