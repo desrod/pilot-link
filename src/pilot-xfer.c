@@ -1074,7 +1074,11 @@ static int install_progress(int sd, pi_file_t *pf, int total, int xfer, int reco
 	fprintf(stdout,"\r   Installing '%s' ... (%d bytes)",filename,xfer);
 	fflush(stdout);
 
-	return PI_TRANSFER_CONTINUE;
+	if (dlp_OpenConduit(sd) < 0) {
+		return PI_TRANSFER_STOP;
+	} else {
+		return PI_TRANSFER_CONTINUE;
+	}
 }
 
 /***********************************************************************
@@ -1365,7 +1369,7 @@ static void palm_install_internal(const char *filename)
 	/* TODO: shouldn't this use Card.card? If we're looking for _a_
 	   card that can hold the file, shouldn't we check in the while
 	   loop above?  */
-	if (pi_file_install(f, sd, 0, install_progress) < 0) {
+	if (pi_file_install(f, sd, 0, plu_quiet ? NULL : install_progress) < 0) {
 		/* TODO: Does pi_file_install print a diagnostic? */
 		fprintf(stderr, "   ERROR: pi_file_install failed.\n");
 	} else {
@@ -1452,7 +1456,7 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 	fprintf(stdout, "   Installing '%s'... ", basename);
 	fflush(stdout);
 
-	if(pi_file_install_VFS(fd,basename,sd,vfspath,install_progress) < 0) {
+	if(pi_file_install_VFS(fd,basename,sd,vfspath,plu_quiet ? NULL : install_progress) < 0) {
 		fprintf(stderr,"   ERROR: pi_file_install_VFS failed.\n");
 	} else {
 		totalsize += sbuf.st_size;
