@@ -2,6 +2,8 @@
 
 	* pilot-xfer.c: Minor cleanups
 
+	* doc/logging.txt: Renamed to README.debugging
+
 2002-02-07  Judd Montgomery <judd at jpilot dot org>
 
 	* pilot-xfer.c: Fixed bug of pilot-xfer -i not accepting multiple
