@@ -7,7 +7,7 @@ handheld.
 
 
 .SH "SYNOPSIS"
-\fBinstall\-datebook\fR [\fB\-p\fR <\fIport\fR>] [<\fIfilename\fR> ...]
+\fBinstall\-datebook\fR [\fB\-p\fR <\fIport\fR>] \-r [<\fIfilename\fR> ...]
 .LP 
 
 .SH "DESCRIPTION"
