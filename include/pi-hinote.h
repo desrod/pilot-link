@@ -33,7 +33,5 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#include "pi-hinote.hxx"	//! not implemented
-
 #endif				/*__cplusplus*/
 #endif				/* _PILOT_HINOTE_H_ */

@@ -1,5 +1,10 @@
 2002-07-19  JP Rosevear  <jpr@ximian.com>
 
+	* include/pi-hinote.h: remove include of non-existant file and //
+	style comment
+
+2002-07-19  JP Rosevear  <jpr@ximian.com>
+	
 	* configure.in: turn c++ support back on by default
 
 2002-07-19  JP Rosevear  <jpr@ximian.com>
