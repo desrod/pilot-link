@@ -6,7 +6,8 @@ INCLUDES = 			\
 lib_LTLIBRARIES = libpisync.la
 
 libpisync_la_SOURCES =	\
-	sync.c
+	sync.c \
+	util.c
 
 libpisync_la_LIBADD = \
 	$(top_builddir)/libpisock/libpisock.la \
