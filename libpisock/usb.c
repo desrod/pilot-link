@@ -55,6 +55,9 @@ static int pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name,
 				const void *option_value, size_t *option_len);
 static int pi_usb_close(pi_socket_t *ps);
 
+static int USB_configure_visor (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe);
+static int USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe);
+
 int pi_socket_init(pi_socket_t *ps);
 
 /* Protocol Functions */
@@ -534,4 +537,405 @@ pi_usb_close(pi_socket_t *ps)
 	}
 
 	return 0;
+}
+
+
+/*
+ * Start of the identification and init code.
+ */
+
+/*
+ * This is the table of USB devices that we know about, what they are, and some flags.
+ */
+//
+// This table helps us determine whether a connecting USB device is
+// one we'd like to talk to.
+//
+pi_usb_dev_t known_devices[] = {
+	/* Sony */
+	{
+		.vendor = 0x054c,
+		.product = 0x0038,
+		.id = "Sony S S320 and other Palm OS 3.5 devices",
+		.flags = USB_INIT_SONY_CILE,
+	},
+	{
+		.vendor = 0x054c,
+		.product = 0x0066,
+		.id = "Sony T, SJ series, and other Palm OS 4.0 devices",
+	},
+	{
+		.vendor = 0x054c,
+		.product = 0x0095,
+		.id = "Sony S360",
+	},
+	{
+		.vendor = 0x054c,
+		.product = 0x000a,
+		.id = "Sony NR and other Palm OS 4.1 devices",
+	},
+	{
+		.vendor = 0x054c,
+		.product = 0x00da,
+		.id = "Sony NX",
+	},
+	{
+		.vendor = 0x054c,
+		.product = 0x00e9,
+		.id = "Sony NZ",
+	},
+	{
+		.vendor = 0x054c,
+		.product = 0x0144,
+		.id = "Sony UX",
+	},
+	{
+		.vendor = 0x054c,
+		.product = 0x0169,
+		.id = "Sony TJ",
+	},
+
+	/* AlphaSmart */
+	{
+		.vendor = 0x081e,
+		.product = 0xdf00,
+		.id = "Dana?",
+	},
+
+	/* HANDSPRING (vendor 0x082d) */
+	{
+		.vendor = 0x082d,
+		.product = 0x0100,
+		.id = "Visor, Treo 300",
+		.flags = USB_INIT_VISOR,
+	},
+	{
+		.vendor = 0x082d,
+		.product = 0x0200,
+		.id = "Treo",
+	},
+	{
+		.vendor = 0x082d,
+		.product = 0x0300,
+		.id = "Treo 600",
+	},
+
+	/* PalmOne, Palm Inc */
+	{
+		.vendor = 0x0830,
+		.product = 0x0001,
+		.id = "m500",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0002,
+		.id = "m505",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0003,
+		.id = "m515",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0010,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0011,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0020,
+		.id = "i705",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0030,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0031,
+		.id = "Tungsten|W",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0040,
+		.id = "m125",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0050,
+		.id = "m130",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0051,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0052,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0053,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0060,
+		.id = "Tungsten series, Zire 71",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0061,
+		.id = "Zire 31",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0062,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0063,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0070,
+		.id = "Zire",
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0071,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0080,
+		.id = "serial adapter",
+		.flags = USB_INIT_NONE,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0099,
+	},
+	{
+		.vendor = 0x0830,
+		.product = 0x0100,
+	},
+
+	/* GARMIN */
+	{
+		.vendor = 0x091e,
+		.product = 0x0004,
+		.id = "IQUE 3600",
+	},
+
+	/* Kyocera */
+	{
+		.vendor = 0x0c88,
+		.product = 0x0021,
+		.id = "7135 Smartphone",
+	},
+	{
+		.vendor = 0x0c88,
+		.product = 0xa226,
+		.id = "6035 Smartphone",
+	},
+
+	/* Tapwave */
+	{
+		.vendor = 0x12ef,
+		.product = 0x0100,
+		.id = "Zodiac, Zodiac2",
+		.flags = USB_INIT_TAPWAVE,
+	},
+
+	/* ACEECA */
+	{
+		.vendor = 0x4766,
+		.product = 0x0001,
+		.id = "MEZ1000",
+	},
+
+	/* Samsung */
+	{
+		.vendor = 0x04e8,
+		.product = 0x8001,
+		.id = "I330",
+	},
+};
+
+static pi_usb_dev_t override_device = { 0 };
+static pi_usb_dev_t current_device = { 0 };
+
+int
+USB_check_device (pi_usb_data_t *dev, u_int16_t vendor, u_int16_t product)
+{
+	unsigned int i;
+	if (override_device.vendor) {
+		if (override_device.vendor == vendor) {
+			if (!override_device.product ||
+					override_device.product == product) {
+				dev->dev.flags |= override_device.flags;
+				return 0;
+			}
+		}
+		return -1;
+	}
+
+	for (i = 0; i < (sizeof (known_devices) / sizeof (known_devices[0])); i++) {
+		if (known_devices[i].vendor == vendor) {
+			if (!known_devices[i].product ||
+					known_devices[i].product == product) {
+				dev->dev.flags |= override_device.flags;
+				return 0;
+			}
+		}
+	}
+
+	return -1;
+}
+
+
+/*
+ * Device configuration, ugh.
+ */
+
+int
+USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe)
+{
+	int ret;
+	u_int32_t flags = dev->dev.flags;
+
+	*input_pipe = 0xff;
+	*output_pipe = 0xff;
+
+	/*
+	 * Device specific magic incantations
+	 *
+	 * Many devices agree on talking only if you say the "magic" incantation first.
+	 * Usually, it's a control request or a sequence of control requests
+	 *
+	 */
+
+	if (flags & USB_INIT_NONE)
+		return 0;
+	else if (flags & USB_INIT_VISOR)
+		ret = USB_configure_visor (dev, input_pipe, output_pipe);
+	else if (flags & USB_INIT_SONY_CILE) {
+		/* according to linux code, PEG S-300 awaits these two requests */
+		/* USB_REQ_GET_CONFIGURATION */
+		ret = dev->impl.control_request (dev, 0x80, 0x08, 0, 0, NULL, 1, 0);
+		if (ret < 0)
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: Sony USB_REQ_GET_CONFIGURATION failed (err=%08x)\n", ret));
+		/* USB_REQ_GET_INTERFACE */
+		ret = dev->impl.control_request (dev, 0x80, 0x0A, 0, 0, NULL, 1, 0);
+		if (ret < 0)
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: Sony USB_REQ_GET_INTERFACE failed (err=%08x)\n", ret));
+	} else {
+		/* other devices will either accept or deny this generic call */
+		ret = USB_configure_generic (dev, input_pipe, output_pipe);
+	}
+
+	// query bytes available. Not that we really care,
+	// but most devices expect to receive this before
+	// they agree on talking to us.
+	if (!(flags & USB_INIT_TAPWAVE)) {
+		unsigned char ba[2];
+
+		ret = dev->impl.control_request (dev, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, 0, 0, &ba[0], 2, 0);
+		if (ret < 0)
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", ret));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
+	}
+
+    return 0;
+}
+
+static int
+USB_configure_visor (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe)
+{
+	int i, ret;
+	visor_connection_info_t ci;
+
+	ret = dev->impl.control_request (dev, 0xc2, VISOR_GET_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+	if (ret < 0)
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: VISOR_GET_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
+	else {
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb: VISOR_GET_CONNECTION_INFORMATION, num_ports=%d\n", ci.num_ports));
+		if (ci.num_ports > 2)
+			ci.num_ports = 2;
+		for (i=0; i < ci.num_ports; i++)
+		{
+			char *function_str;
+			switch (ci.connections[i].port_function_id)
+			{
+				case VISOR_FUNCTION_GENERIC:
+					function_str="GENERIC";
+					break;
+				case VISOR_FUNCTION_DEBUGGER:
+					function_str="DEBUGGER";
+					break;
+				case VISOR_FUNCTION_HOTSYNC:
+					function_str="HOTSYNC";
+					break;
+				case VISOR_FUNCTION_CONSOLE:
+					function_str="CONSOLE";
+					break;
+				case VISOR_FUNCTION_REMOTE_FILE_SYS:
+					function_str="REMOTE_FILE_SYSTEM";
+					break;
+				default:
+					function_str="UNKNOWN";
+					break;
+			}
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%02x (%s)\n", i, ci.connections[i].port_function_id, function_str));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci.connections[i].port));
+		}
+	}
+	return ret;
+}
+
+static int
+USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe)
+{
+	int i, ret;
+	palm_ext_connection_info_t ci;
+	u_int32_t flags = dev->dev.flags;
+
+	ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+	if (ret < 0)
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
+	else {
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb: PALM_GET_EXT_CONNECTION_INFORMATION, num_ports=%d, endpoint_numbers_different=%d\n", ci.num_ports, ci.endpoint_numbers_different));
+		for (i=0; i < ci.num_ports; i++) {
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id='%c%c%c%c'\n", i, ci.connections[i].port_function_id[0], ci.connections[i].port_function_id[1], ci.connections[i].port_function_id[2], ci.connections[i].port_function_id[3]));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci.connections[i].port));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, ci.connections[i].endpoint_info));
+			if (!memcmp(ci.connections[i].port_function_id, "cnys", 4)) {
+				// 'sync': we found the pipes to use for synchronization
+				// force find_interfaces to select this one rather than another one
+				if (ci.endpoint_numbers_different) {
+					if (input_pipe)
+						*input_pipe = ci.connections[i].endpoint_info >> 4;
+					if (output_pipe)
+						*output_pipe = ci.connections[i].endpoint_info & 0x0f;
+				} else {
+					if (input_pipe)
+						*input_pipe = ci.connections[i].port;
+					if (output_pipe)
+						*output_pipe = ci.connections[i].port;
+				}
+			}
+		}
+	}
+
+	if (flags & USB_INIT_TAPWAVE) {
+		/*
+		 * Tapwave: for Zodiac, the TwUSBD.sys driver on Windows sends
+		 * the ext-connection-info packet two additional times.
+		 */
+		ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+		ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+	}
+	return ret;
 }
