@@ -105,7 +105,6 @@ EXECS = $(CEXECS) $(@WITHTCL@) $(@WITHCXX@) $(@WITHPERL5@)
 
 PILIB = libsock/libpisock.la
 PICCLIB = @libcclib@
-PIHEADER = libsock/pi-header.o
 
 all: $(EXECS)
 
@@ -162,101 +161,101 @@ uninstall:
 	-$(LIBTOOL) $(RM) $(libdir)/libpicc.la
 	-rmdir $(libdir)
 
-install-memo$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) install-memo.o
-	$(CCLINK) install-memo.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+install-memo$(EXT): $(PILIB) $(GETOPT) install-memo.o
+	$(CCLINK) install-memo.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-install-datebook$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) install-datebook.o parsedate.o
-	$(CCLINK) install-datebook.o parsedate.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+install-datebook$(EXT): $(PILIB) $(GETOPT) install-datebook.o parsedate.o
+	$(CCLINK) install-datebook.o parsedate.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-install-todos$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) install-todos.o
-	$(CCLINK) install-todos.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+install-todos$(EXT): $(PILIB) $(GETOPT) install-todos.o
+	$(CCLINK) install-todos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-install-hinote$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) install-hinote.o
-	$(CCLINK) install-hinote.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+install-hinote$(EXT): $(PILIB) $(GETOPT) install-hinote.o
+	$(CCLINK) install-hinote.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-addresses$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-addresses.o
-	$(CCLINK) pilot-addresses.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pilot-addresses$(EXT): $(PILIB) $(GETOPT) pilot-addresses.o
+	$(CCLINK) pilot-addresses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-dedupe$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-dedupe.o
-	$(CCLINK) pilot-dedupe.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pilot-dedupe$(EXT): $(PILIB) $(GETOPT) pilot-dedupe.o
+	$(CCLINK) pilot-dedupe.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-install-user$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) install-user.o
-	$(CCLINK) install-user.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+install-user$(EXT): $(PILIB) $(GETOPT) install-user.o
+	$(CCLINK) install-user.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-money2qif$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) money2qif.o
-	$(CCLINK) money2qif.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+money2qif$(EXT): $(PILIB) $(GETOPT) money2qif.o
+	$(CCLINK) money2qif.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-xfer$(EXT): $(PILIB) $(PIHEADER) pilot-xfer.o
-	$(CCLINK) pilot-xfer.o $(PILIB) $(PIHEADER) -o $@ $(LIBS)
+pilot-xfer$(EXT): $(PILIB) pilot-xfer.o
+	$(CCLINK) pilot-xfer.o $(PILIB) -o $@ $(LIBS)
 
-pilot-schlep$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-schlep.o
-	$(CCLINK) pilot-schlep.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pilot-schlep$(EXT): $(PILIB) $(GETOPT) pilot-schlep.o
+	$(CCLINK) pilot-schlep.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-mail$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-mail.o parsedate.o
-	$(CCLINK) pilot-mail.o parsedate.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pilot-mail$(EXT): $(PILIB) $(GETOPT) pilot-mail.o parsedate.o
+	$(CCLINK) pilot-mail.o parsedate.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-port$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pi-port.o
-	$(CCLINK) pi-port.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pi-port$(EXT): $(PILIB) $(GETOPT) pi-port.o
+	$(CCLINK) pi-port.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-getrom$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pi-getrom.o
-	$(CCLINK) pi-getrom.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pi-getrom$(EXT): $(PILIB) $(GETOPT) pi-getrom.o
+	$(CCLINK) pi-getrom.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-getram$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pi-getram.o
-	$(CCLINK) pi-getram.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pi-getram$(EXT): $(PILIB) $(GETOPT) pi-getram.o
+	$(CCLINK) pi-getram.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-file$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-file.o
-	$(CCLINK) pilot-file.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pilot-file$(EXT): $(PILIB) $(GETOPT) pilot-file.o
+	$(CCLINK) pilot-file.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-clip$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-clip.o
-	$(CCLINK) pilot-clip.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pilot-clip$(EXT): $(PILIB) $(GETOPT) pilot-clip.o
+	$(CCLINK) pilot-clip.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pilot-debug$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-debug.o pd-tty.o
-	$(CCLINK) pilot-debug.o pd-tty.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(TCLTK_LIBS) $(RLLIBS) $(LIBS)
+pilot-debug$(EXT): $(PILIB) $(GETOPT) pilot-debug.o pd-tty.o
+	$(CCLINK) pilot-debug.o pd-tty.o $(PILIB) $(GETOPT) -o $@ $(TCLTK_LIBS) $(RLLIBS) $(LIBS)
 
-reminders$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) reminders.o
-	$(CCLINK) reminders.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+reminders$(EXT): $(PILIB) $(GETOPT) reminders.o
+	$(CCLINK) reminders.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-memos$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) memos.o
-	$(CCLINK) memos.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+memos$(EXT): $(PILIB) $(GETOPT) memos.o
+	$(CCLINK) memos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-read-todos$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) read-todos.o
-	$(CCLINK) read-todos.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+read-todos$(EXT): $(PILIB) $(GETOPT) read-todos.o
+	$(CCLINK) read-todos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-read-expenses$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) read-expenses.o
-	$(CCLINK) read-expenses.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+read-expenses$(EXT): $(PILIB) $(GETOPT) read-expenses.o
+	$(CCLINK) read-expenses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-read-ical$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) read-ical.o
-	$(CCLINK) read-ical.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+read-ical$(EXT): $(PILIB) $(GETOPT) read-ical.o
+	$(CCLINK) read-ical.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-addresses$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) addresses.o
-	$(CCLINK) addresses.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+addresses$(EXT): $(PILIB) $(GETOPT) addresses.o
+	$(CCLINK) addresses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-hinotes$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) hinotes.o
-	$(CCLINK) hinotes.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+hinotes$(EXT): $(PILIB) $(GETOPT) hinotes.o
+	$(CCLINK) hinotes.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-dlpsh$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) dlpsh.o
-	$(CCLINK) dlpsh.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+dlpsh$(EXT): $(PILIB) $(GETOPT) dlpsh.o
+	$(CCLINK) dlpsh.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-debugsh$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) debugsh.o
-	$(CCLINK) debugsh.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+debugsh$(EXT): $(PILIB) $(GETOPT) debugsh.o
+	$(CCLINK) debugsh.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-csd$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pi-csd.o
-	$(CCLINK) pi-csd.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pi-csd$(EXT): $(PILIB) $(GETOPT) pi-csd.o
+	$(CCLINK) pi-csd.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-pi-nredir$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pi-nredir.o
-	$(CCLINK) pi-nredir.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+pi-nredir$(EXT): $(PILIB) $(GETOPT) pi-nredir.o
+	$(CCLINK) pi-nredir.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
-ccexample$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) $(PICCLIB) ccexample.o
-	$(CXXLINK) ccexample.o $(PILIB) $(PIHEADER) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
+ccexample$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) ccexample.o
+	$(CXXLINK) ccexample.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-validate$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) $(PICCLIB) validate.o
-	$(CXXLINK) validate.o $(PILIB) $(PIHEADER) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
+validate$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) validate.o
+	$(CXXLINK) validate.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-iambicexample$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) $(PICCLIB) iambicexample.o
-	$(CXXLINK) iambicexample.o $(PILIB) $(PIHEADER) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
+iambicexample$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) iambicexample.o
+	$(CXXLINK) iambicexample.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-getrom$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) getrom.o
-	$(CCLINK) getrom.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+getrom$(EXT): $(PILIB) $(GETOPT) getrom.o
+	$(CCLINK) getrom.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
 parsedate.c: parsedate.y
 	@echo Expect six shift/reduce conflicts
@@ -279,10 +278,10 @@ Perl5 Perl: FORCE
 
 Tcl: FORCE
 	cd $(SUBDIRS)/Tcl; $(MAKE)
-	
+
 Java: FORCE
 	cd $(SUBDIRS)/Java; $(MAKE)
-	
+
 check test tests: FORCE
 	cd tests; $(MAKE) tests
 
@@ -429,11 +428,6 @@ pilot-file.o: pilot-file.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
  include/pi-file.h include/pi-header.h
-pilot-install.o: pilot-install.c include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/pi-dlp.h include/pi-memo.h include/pi-appinfo.h \
- include/pi-header.h
 pilot-mail.o: pilot-mail.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-mail.h \
