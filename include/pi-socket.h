@@ -162,6 +162,9 @@ typedef struct pi_socket_list
 	    PI_ARGS((int pi_sd, int level, int option_name, 
 		     const void *option_value, size_t *option_len));
 
+	extern int pi_socket_connected
+		PI_ARGS((int pi_sd));
+
 	extern int pi_version PI_ARGS((int pi_sd));
 	extern unsigned long pi_maxrecsize PI_ARGS((int pi_sd));
 

@@ -762,10 +762,7 @@ env_check (void)
 static int
 is_connected (pi_socket_t *ps) 
 {
-	if (ps->state == PI_SOCK_CONIN || ps->state == PI_SOCK_CONAC)
-		return 1;
-	else
-		return 0;
+	return (ps->state == PI_SOCK_CONIN || ps->state == PI_SOCK_CONAC) ? 1 : 0;
 }
 
 /***********************************************************************
@@ -782,10 +779,7 @@ is_connected (pi_socket_t *ps)
 static int
 is_listener (pi_socket_t *ps) 
 {
-	if (ps->state == PI_SOCK_LISTN)
-		return 1;
-	else
-		return 0;
+	return (ps->state == PI_SOCK_LISTN) ? 1 : 0;
 }
 
 /* Alarm Handling Code */
@@ -1858,4 +1852,26 @@ pi_reset_errors(int pi_sd)
 		ps->palmos_error = 0;
 	} else
 		errno = ESRCH;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_socket_connected
+ *
+ * Summary:     returns != 0 if the socket is connected
+ *
+ * Parameters:  None
+ *
+ * Returns:     0 for not connected, != 0 otherwise
+ *
+ ***********************************************************************/
+int
+pi_socket_connected(int pi_sd)
+{
+	pi_socket_t *ps;
+
+	if ((ps = find_pi_socket(pi_sd)))
+		return is_connected(ps);
+	errno = ESRCH;
+	return 0;
 }
