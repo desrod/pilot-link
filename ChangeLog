@@ -1,3 +1,8 @@
+2001-01-28 David A. Desrosiers
+
+        * Makefile.in: Removed '-FOO' from the tcl/itcl testing.
+          configure.in/configure
+
 2001-01-23  JP Rosevear  <jpr@ximian.com>
 
 	* Makefile.in: Add a dist target
