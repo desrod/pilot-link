@@ -129,7 +129,7 @@ int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	struct 	pi_slp_data *data;
 	struct 	slp *slp;
 		
-	unsigned char slp_buf[PI_SLP_MTU];
+	unsigned char slp_buf[PI_SLP_HEADER_LEN + PI_SLP_MTU + PI_SLP_FOOTER_LEN];
 	unsigned int i;
 	unsigned int n;
 
@@ -206,7 +206,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	
 	struct 	pi_protocol *prot, *next;
 	struct 	pi_slp_data *data;
-	unsigned char slp_buf[PI_SLP_MTU];
+	unsigned char slp_buf[PI_SLP_HEADER_LEN + PI_SLP_MTU + PI_SLP_FOOTER_LEN];
 
 	unsigned char *cur;
 

@@ -153,7 +153,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 		retries = PI_PADP_TX_RETRIES;
 		do {
-			unsigned char padp_buf[PI_PADP_MTU];
+			unsigned char padp_buf[PI_PADP_HEADER_LEN + PI_PADP_MTU];
 			int 	type,
 				socket,
 				timeout,
@@ -176,8 +176,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TXID, 
 				      &data->txid, &size);
 
-			tlen = (len > PI_PADP_MTU - PI_PADP_HEADER_LEN) 
-				? PI_PADP_MTU - PI_PADP_HEADER_LEN : len;
+			tlen = (len > PI_PADP_MTU) ? PI_PADP_MTU : len;
 
 			padp.type 	= data->type & 0xff;
 			padp.flags 	= fl | (len == tlen ? LAST : 0);
@@ -199,7 +198,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 		keepwaiting:
 
-			if (next->read(ps, padp_buf, PI_PADP_MTU, flags) > 0) {
+			if (next->read(ps, padp_buf, PI_PADP_HEADER_LEN + PI_PADP_MTU, flags) > 0) {
 				int type, size;
 				unsigned char txid;
 				
@@ -317,7 +316,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	struct 	padp padp, npadp;
 
 	time_t endtime;
-	unsigned char padp_buf[PI_PADP_MTU];
+	unsigned char padp_buf[PI_PADP_HEADER_LEN + PI_PADP_MTU];
 
 	endtime = time(NULL) + PI_PADP_RX_BLOCK_TO / 1000;
 
@@ -359,7 +358,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 		total_bytes = 0;
 		while (total_bytes < PI_PADP_HEADER_LEN) {
-			bytes = next->read(ps, padp_buf + total_bytes, PI_PADP_MTU - total_bytes, flags);
+			bytes = next->read(ps, padp_buf + total_bytes, 
+					   PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes, flags);
 			if (bytes < 0) {
 				LOG(PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Read Error\n");
 				return -1;
@@ -489,7 +489,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				total_bytes = 0;
 				while (total_bytes < PI_PADP_HEADER_LEN) {
 					bytes = next->read(ps, padp_buf + total_bytes, 
-							   PI_PADP_MTU - total_bytes, flags);
+							   PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes, 
+							   flags);
 					if (bytes < 0) {
 						LOG(PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Read Error");
 						return -1;
@@ -683,8 +684,8 @@ void padp_dump(unsigned char *data)
 	type 	= get_byte (&data[PI_PADP_OFFSET_TYPE]);
 	size 	= get_short(&data[PI_PADP_OFFSET_SIZE]);
 
-	if (size > PI_PADP_MTU - PI_PADP_HEADER_LEN)
-		size = PI_PADP_MTU - PI_PADP_HEADER_LEN;
+	if (size > PI_PADP_MTU)
+		size = PI_PADP_MTU;
 	if (type != padAck)
 		dumpdata(&data[PI_PADP_HEADER_LEN], size);
 }

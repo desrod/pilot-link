@@ -1,10 +1,26 @@
-2002-03-19  David A. Desrosiers <hacker at gnu-designs dot com>
+2002-03-20  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/slp.c (slp_tx): make the buffer the size of the
+	header/footer and mtu
+	(slp_rx): ditto
+
+	* libpisock/padp.c (padp_tx): ditto
+	(padp_rx): ditto
+
+	* include/pi-slp.h: ditto
+
+	* include/pi-padp.h: don't include the header in the MTU value
+
+	* libpisock/socket.c (pi_close): even if closing the device fails,
+	free the queue and device
+
+2002-03-20  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-xfer.c: If -f File.prc is specified, fetch, don't error.
 	  (Robert Cortopassi)
 
 2002-03-20  JP Rosevear  <jpr@ximian.com>
-
+	
 	* libpisock/padp.c (padp_tx): only check for a memory error after
 	we ensure the packet it the correct ack, return the proper length
 	count when the data response arrives instead of the ack, add

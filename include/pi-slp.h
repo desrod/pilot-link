@@ -9,7 +9,7 @@ extern "C" {
 
 #define PI_SLP_HEADER_LEN  10
 #define PI_SLP_FOOTER_LEN  2
-#define PI_SLP_MTU         PI_SLP_HEADER_LEN + 0xffff + PI_SLP_FOOTER_LEN
+#define PI_SLP_MTU         0xffff
 
 #define PI_SLP_SIG_BYTE1 0xbe
 #define PI_SLP_SIG_BYTE2 0xef

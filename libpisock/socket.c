@@ -1190,11 +1190,8 @@ int pi_close(int pi_sd)
 		}
 	}
 
-	if (ps->device != NULL) {
+	if (ps->device != NULL)
 		result = ps->device->close (ps);
-		if (result < 0)
-			return result;
-	}
 	
 	psl = ps_list_remove (psl, pi_sd);
 	watch_list = ps_list_remove (watch_list, pi_sd);

@@ -10,7 +10,7 @@ extern "C" {
 #include "pi-socket.h"
 
 #define PI_PADP_HEADER_LEN  4
-#define PI_PADP_MTU         PI_PADP_HEADER_LEN + 1024
+#define PI_PADP_MTU         1024
 
 #define PI_PADP_OFFSET_TYPE 0
 #define PI_PADP_OFFSET_FLGS 1
