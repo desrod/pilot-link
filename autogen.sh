@@ -10,8 +10,9 @@ DIE=0
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
   echo
   echo "**Error**: You must have \`autoconf' installed to compile $PKG_NAME."
-  echo "Download the appropriate package for your distribution,"
-  echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
+  echo "Download the appropriate package for your distribution or get the source."
+  echo "Get ftp://ftp.gnu.org/pub/gnu/autoconf/autoconf-2.13.tar.gz"
+  echo "(or a newer version if it is available)"
   DIE=1
 }
 
@@ -19,7 +20,7 @@ DIE=0
   (libtool --version) < /dev/null > /dev/null 2>&1 || {
     echo
     echo "**Error**: You must have \`libtool' installed to compile $PKG_NAME."
-    echo "Get ftp://ftp.gnu.org/pub/gnu/libtool-1.2d.tar.gz"
+    echo "Get ftp://ftp.gnu.org/pub/gnu/libtool/libtool-1.4.tar.gz"
     echo "(or a newer version if it is available)"
     DIE=1
   }
@@ -30,7 +31,7 @@ DIE=0
 #  (gettext --version) < /dev/null > /dev/null 2>&1 || {
 #    echo
 #    echo "**Error**: You must have \`gettext' installed to compile $PKG_NAME."
-#    echo "Get ftp://ftp.gnu.org/pub/gnu/gettext/gettext-0.10.39.tar.gz"
+#    echo "Get ftp://ftp.gnu.org/pub/gnu/gettext/gettext-0.11.5.tar.gz"
 #    echo "(or a newer version if it is available)"
 #    DIE=1
 #  }
@@ -39,7 +40,7 @@ DIE=0
 (automake --version) < /dev/null > /dev/null 2>&1 || {
   echo
   echo "**Error**: You must have \`automake' installed to compile $PKG_NAME."
-  echo "Get ftp://ftp.gnu.org/pub/gnu/automake-1.3.tar.gz"
+  echo "Get ftp://ftp.gnu.org/pub/gnu/automake/automake-1.5.tar.gz"
   echo "(or a newer version if it is available)"
   DIE=1
   NO_AUTOMAKE=yes
@@ -51,7 +52,7 @@ test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
   echo
   echo "**Error**: Missing \`aclocal'.  The version of \`automake'"
   echo "installed doesn't appear recent enough."
-  echo "Get ftp://ftp.gnu.org/pub/gnu/automake-1.3.tar.gz"
+  echo "Get ftp://ftp.gnu.org/pub/gnu/automake/automake-1.5.tar.gz"
   echo "(or a newer version if it is available)"
   DIE=1
 }
