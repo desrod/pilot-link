@@ -71,14 +71,16 @@ extern "C" {
 
 	struct ExpensePref {
 		int 	currentCategory,
-			defaultCategory,
-			noteFont,
+			defaultCurrency,
+			attendeeFont,
 			showAllCategories,
 			showCurrency,
 			saveBackup,
-			allowQuickFill,
-			currencies[7];
+			allowQuickFill;
 		enum 	ExpenseDistance unitOfDistance;
+		int     currencies[5],
+			unknown[2],
+			noteFont;
 
 	};
 

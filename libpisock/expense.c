@@ -365,9 +365,9 @@ unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 
 	p->currentCategory 	= get_short(record);
 	record += 2;
-	p->defaultCategory 	= get_short(record);
+	p->defaultCurrency 	= get_short(record);
 	record += 2;
-	p->noteFont 		= get_byte(record);
+	p->attendeeFont         = get_byte(record);
 	record++;
 	p->showAllCategories 	= get_byte(record);
 	record++;
@@ -378,11 +378,18 @@ unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 	p->allowQuickFill 	= get_byte(record);
 	record++;
 	p->unitOfDistance 	= (enum ExpenseDistance) get_byte(record);
-	record += 2;
-	for (i = 0; i < 7; i++) {
+	record++;
+	for (i = 0; i < 5; i++) {
 		p->currencies[i] = get_byte(record);
 		record++;
 	}
+	for (i = 0; i < 2; i++) {
+		p->unknown[i] = get_byte(record);
+		record++;		
+	}
+	p->noteFont = get_byte(record);
+	record++;
+	
 	return (record - start);
 }
 
@@ -404,11 +411,11 @@ int pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 
 	set_short(record, p->currentCategory);
 	record += 2;
-	set_short(record, p->defaultCategory);
+	set_short(record, p->defaultCurrency);
 	record += 2;
-	set_byte(record, p->noteFont);
+	set_byte(record, p->attendeeFont);
 	record++;
-	set_short(record, p->showAllCategories);
+	set_byte(record, p->showAllCategories);
 	record++;
 	set_byte(record, p->showCurrency);
 	record++;
@@ -418,11 +425,18 @@ int pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 	record++;
 	set_byte(record, p->unitOfDistance);
 	record++;
-	set_byte(record, 0);	/* gapfill ?? */
-	record++;
-	for (i = 0; i < 7; i++) {
+	for (i = 0; i < 5; i++) {
 		set_byte(record, p->currencies[i]);
 		record++;
 	}
+	/* Unknown values */
+	set_byte(record, 0xff);
+	record++;
+	set_byte(record, 0xff);
+	record++;
+
+	set_byte(record, p->noteFont);
+	record++;
+	
 	return record - start;
 }

@@ -1,3 +1,19 @@
+2002-03-07  JP Rosevear  <jpr@ximian.com>
+
+	* tools/Perl5/Pilot.xs: adjust expense wrappers
+
+	* read-expenses.c (main): print both font fields, the correct
+	number of categories and the correct number of new pref bytes
+
+	* include/pi-expense.h: adjust pref fields
+
+	* libsock/expense.c (unpack_ExpensePref): its the default
+	currency, not category, read the correct number of currencies and
+	both font values, get the two unknown values
+	(pack_ExpensePref): write the correct number of categories,
+	showAllCategories is only one byte long, write 0xff for the two
+	unknown values, write both font values
+
 2002-03-01  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* s/PalmHeader/print_splash/ && s/Help/print_help/

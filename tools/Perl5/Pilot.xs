@@ -1858,16 +1858,17 @@ UnpackPref(record)
 
 	    hv_store(ret, "unitOfDistance", 14, newSVlist(a.unitOfDistance, ExpenseDistanceNames), 0);
 	    hv_store(ret, "currentCategory", 15, newSViv(a.currentCategory), 0);
-	    hv_store(ret, "defaultCategory", 15, newSViv(a.defaultCategory), 0);
-	    hv_store(ret, "noteFont", 8, newSViv(a.noteFont), 0);
+	    hv_store(ret, "defaultCurrency", 15, newSViv(a.defaultCurrency), 0);
+	    hv_store(ret, "attendeeFont", 8, newSViv(a.attendeeFont), 0);
 	    hv_store(ret, "showAllCategories", 17, newSViv(a.showAllCategories), 0);
 	    hv_store(ret, "showCurrency", 12, newSViv(a.showCurrency), 0);
 	    hv_store(ret, "saveBackup", 10, newSViv(a.saveBackup), 0);
 	    hv_store(ret, "allowQuickFill", 14, newSViv(a.allowQuickFill), 0);
 	    e = newAV();
-	    for (i=0;i<7;i++)
+	    for (i=0;i<5;i++)
 			av_store(e, i, newSViv(a.currencies[i]));
 		hv_store(ret, "currencies", 10, (SV*)newRV_noinc((SV*)e), 0);
+	    hv_store(ret, "noteFont", 8, newSViv(a.noteFont), 0);
 	}
     }
     OUTPUT:
@@ -1892,19 +1893,20 @@ PackPref(record, id)
 
 	a.unitOfDistance = (s = hv_fetch(h, "unitOfDistance", 14, 0)) ? SvList(*s, ExpenseDistanceNames) : 0;
 	a.currentCategory = (s=hv_fetch(h,"currentCategory",15,0)) ? SvIV(*s) : 0;
-	a.defaultCategory = (s=hv_fetch(h,"defaultCategory",15,0)) ? SvIV(*s) : 0;
-	a.noteFont = (s=hv_fetch(h,"noteFont",8,0)) ? SvIV(*s) : 0;
+	a.defaultCurrency = (s=hv_fetch(h,"defaultCurrency",15,0)) ? SvIV(*s) : 0;
+	a.attendeeFont = (s=hv_fetch(h,"attendeeFont",8,0)) ? SvIV(*s) : 0;
 	a.showAllCategories = (s=hv_fetch(h,"showAllCategories",17,0)) ? SvIV(*s) : 0;
 	a.showCurrency = (s=hv_fetch(h,"showCurrency",12,0)) ? SvIV(*s) : 0;
 	a.saveBackup = (s=hv_fetch(h,"saveBackup",10,0)) ? SvIV(*s) : 0;
 	a.allowQuickFill = (s=hv_fetch(h,"allowQuickFill",14,0)) ? SvIV(*s) : 0;
 	
 	if ((s=hv_fetch(h, "currencies", 10, 0)) && SvOK(*s) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV)) {
-		for(i=0;i<7;i++)
+		for(i=0;i<5;i++)
 			a.currencies[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
 	} else
-		for(i=0;i<7;i++)
+		for(i=0;i<5;i++)
 			a.currencies[i] = 0;
+	a.noteFont = (s=hv_fetch(h,"noteFont",8,0)) ? SvIV(*s) : 0;
 		
     len = pack_ExpensePref(&a, (CPTR)mybuf, 0xffff);
     RETVAL = newSVpv(mybuf, len);

@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 	ret = dlp_ReadAppPreference(sd, Expense_Creator, Expense_Pref, 1,
 				  0xffff, buffer, 0, 0);
 		
-	/* Open the ToDo database, store access handle in db */
+	/* Open the Expense database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ExpenseDB", &db) < 0) {
 		printf("Unable to open ExpenseDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open ExpenseDB.\n");
@@ -108,21 +108,22 @@ int main(int argc, char *argv[])
 	if (ret >= 0) {
 		unpack_ExpensePref(&tp, buffer, 0xffff);
 		i = pack_ExpensePref(&tp, buffer2, 0xffff);
+		
 #ifdef DEBUG
 		fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
 		dumpdata(buffer, ret);
-		fprintf(stderr, "New prefs, %d bytes:\n", ret);
+		fprintf(stderr, "New prefs, %d bytes:\n", i);
 		dumpdata(buffer2, i);
 #endif
-		printf("Expense prefs, current category %d, default category %d\n",
-			tp.currentCategory, tp.defaultCategory);
-		printf("  Note font %d, Show all categories %d, Show currency %d, Save backup %d\n",
-			tp.noteFont, tp.showAllCategories, tp.showCurrency,
+		printf("Expense prefs, current category %d, default currency %d\n",
+			tp.currentCategory, tp.defaultCurrency);
+		printf("  Attendee font %d, Note font %d, Show all categories %d, Show currency %d, Save backup %d\n",
+			tp.attendeeFont, tp.noteFont, tp.showAllCategories, tp.showCurrency,
 			tp.saveBackup);
 		printf("  Allow quickfill %d, Distance unit %d\n\n",
 			tp.allowQuickFill, tp.unitOfDistance);
 		printf("Currencies:\n");
-		for (i = 0; i < 7; i++) {
+		for (i = 0; i < 5; i++) {
 			fprintf(stderr, "  %d", tp.currencies[i]);
 		}
 		printf("\n\n");
@@ -175,7 +176,7 @@ int main(int argc, char *argv[])
 		dumpdata(buffer, len);
 		fprintf(stderr, "New length %d, data:\n", ret);
 		dumpdata(buffer2, ret);
-#endif	
+#endif 
 		printf("Category: %s\n", tai.category.name[category]);
 		printf("  Type: %3d\n  Payment: %3d\n  Currency: %3d\n",
 			t.type, t.payment, t.currency);
