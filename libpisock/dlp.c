@@ -754,6 +754,11 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 		if (req->cmd != dlpFuncVFSVolumeInfo ||
 				(*res)->cmd != dlpFuncVFSVolumeSize) {
 			errno = -ENOMSG;
+
+			LOG((PI_DBG_DLP, PI_DBG_LVL_DEBUG,
+				"dlp_exec: result CMD 0x%02x doesn't match requested cmd 0x%02x",
+				(unsigned)((*res)->cmd), (unsigned)req->cmd));
+
 			return pi_set_error(sd, PI_ERR_DLP_COMMAND);
 		}
 	}
@@ -3994,10 +3999,10 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 	set_byte(DLP_REQUEST_DATA(req, 0, 10), backup ? 0x80 : 0);
 	set_byte(DLP_REQUEST_DATA(req, 0, 11), 0); 	/* Reserved */
 
-	if (size + 12 > DLP_BUF_SIZE) {
+	if ((size + 12) > DLP_BUF_SIZE) {
 		LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
 			 "DLP WriteAppPreferenceV2: data too large (>64k)"));
-		return PI_ERR_DLP_COMMAND;
+		return PI_ERR_DLP_DATASIZE;
 	}
 	memcpy(DLP_REQUEST_DATA(req, 0, 12), buffer, size);
 
