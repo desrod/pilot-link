@@ -2,7 +2,6 @@
 # See the file COPYING for details.
 AC_INIT(include/pi-version.h.in)
 
-# Force 2.53 for additional BSD fixes, --help output
 dnl AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
