@@ -174,8 +174,26 @@ main (const int argc, const char **argv)
 		data += 16;
 	}
 
-	printf ("\nCountry and sorting\n");
-	hexprint (data, len, ofs, 0);
+	printf ("\n\nCountry: %hhu\n", data[0]);
+
+	/* Skip a 0 byte */
+	data += 2;
+	ofs += 2;
+	len -= 2;
+
+	printf ("\nSorting: %s\n", data[0] ? "By company" : "By name");
+
+	/* Skip a 0 byte */
+	data += 2;
+	ofs += 2;
+	len -= 2;
+
+	if (len > 0)
+	{
+		/* Should never be true! */
+		printf ("\n\nWhatever is left:\n");
+		hexprint (data, len, ofs, 1);
+	}
 
 	dlp_CloseDB(sd, db);
 	dlp_EndOfSync (sd, 0);
