@@ -1,0 +1,574 @@
+/*
+ * CodingGuidelines:  pilot-link Coding Guidelines
+ *
+ * (c) 2002, David A. Desrosiers <hacker at gnu-designs.com>
+ *
+ * (2002-01-26) dd
+ * 	Initial release of Coding Guidelines
+ *
+ */
+
+This is the first draft copy of the pilot-link coding conventions document.
+There are bound to be errors, but this should cleanly capture the ideas and
+concepts distributed throughout the pilot-link codebase and conduits.
+
+This should assist anyone who wants to modify the code found here, or work
+on active development. Anyone who wishes to contribute code should adhere to
+these guidelines. Code that doesn't follow these conventions will be
+modified or (in extreme cases) rejected. If you have additional suggestions
+or a good case for changing some of these guidelines then send a message or
+post a message on the pilot-unix mailing list[1].
+
+First, start off by reading the ANSI C99 Coding Standards document. I may
+have deviated in a few places but just about everything in the document
+applies here as well. 
+
+If you are new to C programming, and reading the code seems confusing to
+you, you might want to try some of the available FAQs[2] out there, as well
+as the K&R "The C Programming Language"[3] books.
+
+Above all, write code that is easy to read and maintain. Comment blocks of
+code and functions at all times. And get on my case if I deviate too much as
+well!
+
+Some Advice to Contributors 
+---------------------------
+	Document and comment your code while you're writing it, not after
+	you have it debugged and working correctly.
+
+	Everyone who will have to look at your unfinished but
+	well-documented program will appreciate the explanations.
+
+
+File Organization
+-----------------
+
+	A file consists of various sections that should be separated by
+	several blank lines. Although there is no maximum length limit for
+	source files, files with more than about 1000 lines are cumbersome
+	to deal with. 
+
+	Many rows of asterisks, for example, present little information
+	compared to the time it takes to scroll past, and are discouraged.
+
+	Lines longer than 79 columns are not handled well by all terminals
+	and should be avoided if possible. Excessively long lines which
+	result from deep indenting are often a symptom of poorly-organized
+	code.
+
+	Every code file should start with comments containing a copyright
+	notice, the name of the file, and a half-to-one-line summary of what
+	the file contains. If you create a file by copying the boilerplate
+	from another file, make sure to edit the copyright year and the file
+	name as well as add your own name to the top if you are the original
+	author.
+
+File Naming Conventions
+-----------------------
+
+Some compilers and tools require certain suffix conventions for names of
+files. The following suffixes are required:
+
+	* C source file names must end in .c
+
+	* Header files, otherwise called includes, must end in .h
+
+	* Headers for C++ code in pilot-link may end in .hxx
+
+The following conventions are universally followed:
+
+	* Relocatable object file names end in .o
+
+	* Include header file names end in .h.
+
+	An alternate convention that may be preferable in multi-language
+	environments such as pilot-link is to suffix both the language type
+	and .h (e.g.  'foo.cc' or 'foo.hxx') to separate the standard .h
+	headers and includes from those that are C++ specific.
+
+	* Yacc source file names end in .y
+
+	C++ has compiler-dependent suffix conventions, including .c, ..c,
+	.cc, .c.c, and .C. Since much C code is also C++ code, there is no
+	clear solution here.
+
+	In addition, it is conventional to use 'Makefile' (not 'makefile',
+	note the lowercase 'M' in the second case) for the main control file
+	for make (for systems that support it) and 'README' for a summary
+	of the contents of the directory or directory tree.
+
+
+Program Files
+-------------
+
+The suggested order of sections for a program file is as follows:
+
+	1. First in the file is a prologue that tells what is in that file. 
+	   A description of the purpose of the objects in the files (whether
+	   they be functions, external data declarations or definitions, or
+	   something else) is more useful than a list of the object names.
+	   The prologue may optionally contain author(s), revision control
+	   information, references, etc.
+
+	2. Any header file includes should be next. If the include is for a
+	   non-obvious reason, the reason should be commented. In most
+	   cases, system include files like stdio.h should be included
+	   before user include files. In pilot-link, the stacking order
+	   looks like this:
+
+		#include <sys/types.h>
+		#include <sys/stat.h> 
+		#include <signal.h>
+		#include <utime.h>
+		#include <string.h> 
+		#include <dirent.h>
+
+		#include "pi-source.h"
+		#include "pi-socket.h"
+		#include "pi-file.h"
+		#include "pi-dlp.h"   
+		#include "pi-version.h"
+		#include "pi-header.h"
+
+	3. Any defines and typedefs that apply to the file as a whole are
+	   next. One normal order is to have "constant" macros first, then
+	   "function" macros, then typedefs and enums.
+
+	4. Next come the global (external) data declarations, usually in the
+	   order: externs, non-static globals, static globals. If a set of
+	   defines applies to a particular piece of global data (such as a
+	   flags word), the defines should be immediately after the data
+	   declaration or embedded in structure declarations, indented to
+	   put the defines one level deeper than the first keyword of the
+	   declaration to which they apply.
+
+	5. The functions come last, and should be in some sort of meaningful
+	   order. Like functions should appear together. A "breadth-first"
+	   approach (functions on a similar level of abstraction together)
+	   is preferred over "depth-first" (functions defined as soon as
+	   possible before or after their calls).
+
+	   Considerable judgement is called for here. If defining large
+	   numbers of essentially-independent utility functions, consider
+	   alphabetical order.
+
+	   You'll notice a convention in pilot-link's source files which
+	   models the following boilerplate structure, that main() is ALWAYS
+	   last, and Help() appears directly above main():
+
+		/*
+		 * MyConduit.c:  Palm boilerplate conduit template
+		 *
+		 * Copyright (c) 1996-2002, John Q. Public
+		 * 
+		 * This is licensed under the Foo License
+		 * 
+		 */
+		
+		#ifdef HAVE_CONFIG_H
+		# include <config.h> 
+		#endif
+
+		#include <system.h>
+		#include "local.h"
+
+		#define something somevalue
+
+		/* Declare prototypes */
+		int main(int argc, char *argv[])
+		void my_function(char foo, FILE *blort);
+		static void Help(char *progname)
+
+		void my_function(foo, FILE *blort) {
+			..function data;
+		}
+
+		/* Help() always directly precedes main() */
+		static void Help(char *progname) {
+			..Help text here;
+			..right above main();
+		}
+		
+		/* main(); is always last, at the bottom */
+		int main(int argc, char *argv[]) {
+			..main last function;
+		}
+	
+Header Files
+------------
+
+	The header file is the first place that a contributor will go to
+	find out information about procedures, structures, constants, etc.
+	Make sure that every procedure and structure has a comment that says
+	what it does. Divide procedures into meaningful groups set off by
+	some distinguished form of comment.
+
+	Avoid private header filenames that are the same as library header
+	filenames. 
+
+	Don't use absolute pathnames for header files. Use the construction
+	for getting them from a standard place, or define them relative to
+	the current directory. Use the -I (include-path) to handle extensive
+	private libraries of header files. This allows reorganizing the
+	project directory structure without having to alter source files.
+
+	If you're creating your own header files, remember that header files
+	that declare functions or external variables should be included in
+	the file that defines the function or variable. That way, the
+	compiler can do type checking and the external declaration will
+	always agree with the definition.
+
+	Avoid defining variables in a header file. It is bad design, and is
+	a common symptom of poor "partitioning" of code between files. 
+
+	Some objects like typedefs and initialized data definitions cannot
+	be seen twice by the compiler in one compilation. On some systems,
+	repeating uninitialized declarations without the extern keyword also
+	causes problems. Repeated declarations can happen if include files
+	are nested and will cause the compilation to fail.
+
+	Header files should not be nested. In extreme cases, where a large
+	number of header files are to be included in several different
+	source files, please put all common #includes in one include file,
+	such as the legacy include/pi-config.h file in previous pilot-link
+	releases.
+
+	One trick to avoid "double-inclusion" of headers is to use the
+	syntax below. It is not widely used in pilot-link, but the project
+	is moving in that direction.
+
+		#ifndef MYHEADER_H define MYHEADER_H
+		  ..body of myheader.h
+		#endif	/* end MYHEADER_H */
+
+Comments
+--------
+
+	The comments should describe what is happening, how it is being
+	done, what parameters mean, which globals are used and which are
+	modified, and any restrictions or bugs.
+
+	C is not assembler; putting a comment at the top of a 3-10 line
+	section telling what it does overall is often more useful than a
+	comment on each line describing micrologic.
+
+	Comments should justify offensive code. The justification should be
+	that something bad will happen if unoffensive code is used. Just
+	making code faster is not enough to rationalize a hack; the
+	performance must be shown to be unacceptable without the hack. The
+	comment should explain the unacceptable behavior and describe why
+	the hack is a "good fix" fix.
+
+	Block comments inside a function are appropriate, and they should be
+	tabbed over to the same tab setting as the code that they describe.
+	One-line comments alone on a line should be indented to the tab
+	setting of the code that follows.
+
+		if (argc > 1) {
+			/* Get input file from command line. */
+			if (freopen(argv[1], "r", stdin) == NULL) {
+				perror(argv[1]);
+			}
+		}
+
+	Very short comments may appear on the same line as the code they
+	describe, and should be tabbed over to separate them from the
+	statements. If more than one short comment appears in a block of
+	code they should all be tabbed to the same tab setting.
+
+		if (a == EXCEPTION) {
+			b = TRUE;       	/* special case */
+		} else {
+			b = isprime(a); 	/* works only for odd 'a' */
+		}
+
+Declarations
+------------
+
+	Global declarations should begin in column one at the top of the
+	file. All external data declaration should be preceded by the extern
+	keyword. 
+
+	Repeated size declarations are particularly beneficial to someone
+	picking up code written by another.
+
+	The "pointer" qualifier, '*', should be with the variable name
+	rather than with the type.
+
+		char 	*s, 
+			*t, 
+			*u;
+
+	..instead of
+
+		char* 	s, 
+			t, 
+			u;
+
+	which would be incorrect, since 't' and 'u' do not get declared as
+	pointers in the second example.
+
+	You may notice throughout pilot-link's codebase, a very different
+	indenting standard on declaring types. This style is called
+	"Berkeley Indenting". In the above two examples, you can see that
+	the types are indented one level beyond the type name, and each
+	additional declaration of the same type is indented underneath it,
+	separated by commas. The following two are functionally equivalent:
+
+		char *s, *t, *u; 
+
+		char	*s,	/* S is for Santa	*/
+			*t,	/* T is for Type 	*/
+			*u;	/* U know what this is	*/
+
+	However, the second type is much more readable, and easier to
+	maintain. It also allows type-level commenting, which the first
+	example does not. Please adhere to this style when developing code
+	against pilot-link, or updating existing pilot-link code. 
+
+	The names, values, and comments are usually tabbed so that they line
+	up underneath each other. Use the tab character rather than blanks
+	(spaces).
+	
+	Any variable whose initial value is important should be explicitly
+	initialized, or at the very least should be commented to indicate
+	that C's default initialization to zero is being relied upon. 
+
+	Constants used to initialize longs should be explicitly long. Use
+	capital letters; for example two long '2l' looks a lot like '21',
+	the number twenty-one. A proper example would be similar to: 
+
+		int sd		= -1;
+		char *msg 	= "string";
+
+		struct bar foo[] = {
+			{ 40, BLORT, 60000L },	/* Note the capital L */
+			{ 28, QUUX, 0L },	
+			{ 0 },
+		};
+
+	In any file which is part of a larger whole rather than a
+	self-contained program, maximum use should be made of the static
+	keyword to make functions and variables local to single files.
+
+	Variables in particular should be accessible from other files only
+	when there is a clear need that cannot be filled in another way. 
+	Such usage should be commented to make it clear that another file's
+	variables are being used; the comment should name the other file.
+
+Function Declarations
+---------------------
+
+	Each function should be preceded by a block comment prologue that
+	gives a short description of what the function does and (if not
+	clear) how to use it. Discussion of non-trivial design decisions and
+	side-effects is also appropriate. Avoid duplicating information
+	clear from the code.
+
+	An example from pilot-link's libsock/dlp.c file: 
+
+		/************************************************************
+		 *
+		 * Function:    dlp_GetSysDateTime
+		 *
+		 * Summary:     DLP 1.0 GetSysDateTime function to get
+		 *              device date and time
+		 *
+		 * Parmeters:   None
+		 *
+		 * Returns:     A negative number on error, the number of
+		 *              bytes read otherwise
+		 *
+		 ************************************************************/
+
+	The function return type should be alone on a line, and indented one
+	stop (if necessary) Do not default to int; if the function does not
+	return a value then it should be given return type void
+
+		static void Help(char *progname)
+		{
+			printf("This is some Help text that"
+			       "extends to a second line\n");
+			return;
+		}
+
+	Each parameter should be declared (do not default to int). In
+	general the role of each variable in the function should be
+	described. This may either be done in the function comment or, if
+	each declaration is on its own line, in a comment on that line. Loop
+	counters called 'i', 'j', 'k' and so on, string pointers called 's',
+	and integral types called 'c' and used for characters are typically
+	excluded.
+	
+	If a group of functions all have a similar parameter or local
+	variable name, it helps to call the repeated variable by the same
+	name in all functions (int i; /* for example */). 
+
+	Avoid using the same name for different purposes in related
+	functions. Like parameters should also appear in the same place in
+	the various argument lists.
+
+	Comments for parameters and local variables should be tabbed so that
+	they line up underneath each other. Local variable declarations
+	should be separated from the function's statements by a blank line.
+
+	Avoid local declarations that override declarations at higher
+	levels. In particular, local variables should not be redeclared in
+	nested blocks.
+
+Whitespace
+----------
+
+	Use vertical and horizontal whitespace tactfully. Indentation and
+	spacing should reflect the block structure of the code; i.e. there
+	should be at least two blank lines between the end of one function
+	and the comments for the next.
+
+	A long string of conditional operators should be split onto separate
+	lines for easier readability.
+	
+	A conditional expressed as: 
+
+		if (foo->next==NULL && totalcount<needed && needed<=MAX_ALLOT 
+		           && server_active(current_input)) { 
+				..stuff
+		}
+
+	Would be more readable as:
+
+		if (foo->next == NULL
+			&& totalcount < needed
+			&& needed <= MAX_ALLOT
+			&& server_active(current_input)) { 
+				..stuff
+		}
+
+Compound Statements
+-------------------
+
+	A compound statement is a list of statements enclosed by braces.
+	There are many common ways of formatting the braces. Be consistent
+	with your local standard, if you have one, or pick one and use it
+	consistently. When editing someone else's code, always use the style
+	used in that code.
+
+		control {
+			statement;
+			statement;
+		}
+
+	The style above is called "K&R style", and is preferred if you
+	haven't already got a favorite. With K&R style, the else part of an
+	if-else statement and the while part of a do-while statement should
+	appear on the same line as the close brace. With most other styles,
+	the braces are always alone on a line.
+
+	In pilot-link, you will see a mix of both K&R and Berkeley style
+	indenting. Either is appropriate, and they are functionally
+	interchangable. If you are unsure which to use, follow similar code
+	examples in the pilot-link project as a baseline. Defaulting to K&R
+	will always work as well.
+
+	When a block of code has several labels, the labels are placed on
+	separate lines. The fall-through feature of the C switch statement,
+	(with no break between a code segment and the next case statement)
+	must be commented for future maintenance. 
+
+	A lint-style comment/directive is best.
+
+		switch (expr) {
+		    case ABC:
+		    case DEF:
+		            statement;
+		            break;
+		    case GHI:
+		            statement;
+		            /* FALLTHROUGH */
+		    case XYZ:
+		            statement;
+		            break;
+		    }
+
+	The last break above is unnecessary, but is required because it
+	prevents a fall-through error if another case is added later after
+	the last one. 
+
+	The "default" case, if used, should be last and does not require a
+	break if it is last.
+
+
+	Whenever an if-else statement has a compound statement for either
+	the if or else section, the statements of both the if and else
+	sections should both be enclosed in braces (called fully bracketed
+	syntax).
+
+		if (expr) {
+			statement;
+		} else {
+			statement;
+			statement;
+		}
+
+	
+	An if-else with else if statements should be written with the else
+	conditions left-justified. There are several examples of this usage
+	throughout pilot-link's conduits.
+
+		if (STREQ(reply, "yes")) {
+			statements for yes
+			...
+		} else if (STREQ(reply, "no")) {
+			...
+		} else if (STREQ(reply, "maybe")) {
+			...
+		} else {
+			statements for default
+			...
+		}
+
+##################################################################
+#
+# This part is not finished yet, these are just my notes while I 
+# work my way down the document
+#
+##################################################################
+
+Naming Classes
+
+	* Use FirstLetterOfWordIsCaptilized style (Camel Notation)
+
+Naming Files
+
+	* Use all lower case.
+
+	* Use - to separate words. eg. pilot-install.c
+
+	* Use .c file extensions for source files, .h for headers, .cpp or
+	  .cc for C++, .hxx for C++ private headers, .pl for perl, and so
+	  on.
+
+	* Filenames must be less than 32 characters in length. This plays
+	  nice with older file systems like MacOS.
+
+General Formatting
+
+	* Use TABS with a size of 8 to make the code easily readable while
+	  not wasting too much space
+
+Miscellaneous
+
+	* Avoid magic numbers. The only magic numbers in use should be 1 and 0.
+
+Braces and Paranthesis
+
+	* Paranthesis should be right after a function name.  i.e.
+	  function() not function ()
+
+	* Paranthesis should have a space right after a keyword (if, while,
+	  for) eg: for (...)
+
+Appendices
+----------
+[1] http://hcirisc.cs.binghamton.edu/mailman/listinfo/pilot-unix
+[2] http://www.eskimo.com/~scs/C-faq/top.html
+[3] http://isbn.nu/0131103628

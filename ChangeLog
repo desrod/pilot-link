@@ -1,3 +1,8 @@
+2002-01-26  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* CodingGuidelines: First draft of Coding Guidelines. I needed to
+	  divert my attention to avoid burn.
+
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: set use_python to false when appropriate, same for
