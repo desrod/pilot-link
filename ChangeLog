@@ -1,3 +1,7 @@
+2002-09-27  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* bindings/Python/src/pisock.i: Added pilot_connect() 
+
 2002-09-26  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/dlp.c (dlp_CallApplication): check result before using

@@ -133,6 +133,7 @@ static PyObject *Error;
     $target = sizeof(struct pi_sockaddr);
 }
 
+extern int pilot_connect (char *port);
 extern int pi_socket (int domain, int type, int protocol);
 extern int pi_connect (int pi_sd, struct sockaddr *INPUT, int addrlen);
 extern int pi_bind (int pi_sd, struct sockaddr *INPUT, int addrlen);
