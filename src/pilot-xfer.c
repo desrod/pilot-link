@@ -290,12 +290,14 @@ static int creator_is_PalmOS(long creator)
 		long 	L;
 		char 	C[4];
 	} buf;
+
 	int 	n;
+
 	static long special_cases[] = {
 		pi_mktag('p', 'p', 'p', '_'),
-		pi_mktag('u', '8', 'E', 'Z')
+		pi_mktag('u', '8', 'E', 'Z'),
+		pi_mktag('a', '6', '8', 'k'),
 	};
-
 
 	/* Test for special cases -- PalmOS CRIDs outside of lowercase alpha
 	   range */
@@ -426,6 +428,11 @@ static void Backup(char *dirname, unsigned long int flags, int rom,
 		if (skip == 1)
 			continue;
 
+                if (info.creator == pi_mktag('a', '6', '8', 'k')) {
+			printf("\n=== Skipping ARMlet '%s'\n", info.name);
+			continue;
+                }
+
 		if (rom == 1 && creator_is_PalmOS(info.creator)) {
 			printf("=== OS file, skipping '%s'.\n", info.name);
 			continue;
@@ -453,7 +460,7 @@ static void Backup(char *dirname, unsigned long int flags, int rom,
 			synctext = "Syncronizing";
 		}
 
-		fprintf(stdout, "[%-3d] %s %-35.30s", filecount, synctext, name); 
+		fprintf(stdout, "    [%-3d] %s %-35.30s", filecount, synctext, name); 
 		filecount++;
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
@@ -473,7 +480,7 @@ static void Backup(char *dirname, unsigned long int flags, int rom,
 			totalsize += sbuf.st_size;
 		}
 
-		fputs("\x1B[K\r", stdout );
+		fputs("\x1B[K\r", stdout);
 		fflush(stdout);
 
 		pi_file_close(f);
