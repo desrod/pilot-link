@@ -64,16 +64,19 @@ struct option options[] =
 	 {"list", no_argument, NULL, 'l'},
 	 {"type", required_argument, NULL, 't'},
 	 {"name", required_argument, NULL, 'n'},
-	 {"stretch", required_argument, NULL, 's'},
+	 {"colour", no_argument, NULL, 'c'},
+	 {"bias", required_argument, NULL, 'b'},
 	 {NULL, 0, NULL, 0}
 };
 
-static const char *optstring = "hvp:lt:n:s:";
+static const char *optstring = "hvp:lt:n:cb:";
 
-#define HISTOGRAM_STRETCH 4
-#define HISTOGRAM_BIG_STRETCH 8
+#define VEO_COLOUR_CORRECT 0x01
+#define VEO_BIAS           0x12
 
 uint8_t redLUT[256], greenLUT[256], blueLUT[256];
+
+double bias_factor = 0.50;
 
 /***********************************************************************
  *
@@ -98,8 +101,10 @@ static void display_help (char *progname)
    printf("     -t, --type [type],      Specify picture output type (ppm or png)\n");
 #endif
    printf("     -l                      List Photos on device\n");
-   printf("     -s, --stretch [num],    1 - Small Histogram stretch\n");
-   printf("                             2 - Bigger Histogram stretch\n");
+   printf("     -b, --bias [num],       lighten or darken the image\n");
+   printf("                             0..50   darken image\n");
+   printf("                             50..100 lighten image\n");
+   printf("     -c, --colour,           colour correct the output colours\n");
    printf("     -n, --name [name],      Specify output picture by name\n");
    printf("   Examples: %s -p /dev/pilot -l\n\n", progname);
 
@@ -130,11 +135,13 @@ static const char *fmt_date (struct Veo *v)
  *
  * Function:	protect_files
  *
- * Summary:     FIXME
+ * Summary:     Adjust output file name so as to not overwrite an exsisting 
+ *              file
  *
- * Parameters:
+ * Parameters:  filename and file extension
  *
- * Returns:
+ * Returns:     1 file name protected
+ *              0 no alernate name found
  *
  ***********************************************************************/
 int protect_files (char *name, char *extension)
@@ -523,228 +530,232 @@ static int
 #define max(a,b) (( a > b ) ? a : b )
 #define min(a,b) (( a < b ) ? a : b )
 
-#define CEILING       224.0
-#define HIGH_CEILING  256.0
-
-#define RED_TOP_THRESHOLD    (17 * 3)
-#define GREEN_TOP_THRESHOLD  (15 * 6)
-#define BLUE_TOP_THRESHOLD   (18 * 3)
-
-#define RED_BOT_THRESHOLD    (2 * 3)
-#define GREEN_BOT_THRESHOLD  (2 * 6)
-#define BLUE_BOT_THRESHOLD   (2 * 3)
-
-#define RED_CEIL_VAL 80
-#define GREEN_CEIL_VAL 96
-#define BLUE_CEIL_VAL 64
-
-int Histogram (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, long flags )
+/***********************************************************************
+ *
+ * Function:    Bias
+ * 
+ *              Bias is based on the Fast Alternative to Perlin's Bias 
+ *              algorithm in Graphics Gems IV by
+ *              Christophe Schlick schlick@labri.u-bordeuax.fr
+ *
+ * Summary:     Lighten or darken the image
+ *
+ * Parameters:
+ *
+ * Returns:
+ *
+ ***********************************************************************/
+static void Bias( double bias, int width, int height, uint8_t *data )
 {
-   uint8_t *tmpRow;
-   uint8_t gMin, gMax, rMin, rMax, bMin, bMax, Max, Min;
-   uint16_t r[256], g[256], b[256], rCum, gCum, bCum;
-   float gInc, rInc, bInc, gCur, rCur, bCur;
-   uint16_t width = v->width;
-   uint16_t height = v->height;
    int i;
-   float ceiling = CEILING;
-   
-   if( flags && HISTOGRAM_BIG_STRETCH )
-	 ceiling = HIGH_CEILING;
+   double num, denom, t;
+      
+   for( i=0; i<width*height; i++ )
+     {
+	t = (double)data[i]/256.0;
+	num = t;
+	denom = (1.0/bias - 2) * (1.0 - t) + 1;
+	data[i] = num/denom * 256.0;     
+     }
+}
 
-   memset (r, 0, 256 * sizeof (uint16_t));
-   memset (g, 0, 256 * sizeof (uint16_t));
-   memset (b, 0, 256 * sizeof (uint16_t));
+int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, long flags )
+{
+	uint8_t *tmpRow;
+	uint8_t gMin, gMax, rMin, rMax, bMin, bMax;
+	float gInc, rInc, bInc, gCur, rCur, bCur;
+	float rMean = 0, gMean = 0, bMean = 0, maxMean;
+	uint16_t	width = v->width;
+	uint16_t	height = v->height;
+	int i;
+   	float redCeiling = 254;
+   	float greenCeiling = 252;
+   	float blueCeiling = 255;
 
-   memset (red, 0, 256 * sizeof (uint8_t));
-   memset (green, 0, 256 * sizeof (uint8_t));
-   memset (blue, 0, 256 * sizeof (uint8_t));
+	memset( red, 0, 256 * sizeof( uint8_t ));
+	memset( green, 0, 256 * sizeof( uint8_t ));
+	memset( blue, 0, 256 * sizeof( uint8_t ));
 
-   gMin = rMin = bMin = 255;
-   gMax = rMax = bMax = 0;
+	gMin = rMin = bMin = 255;
+	gMax = rMax = bMax = 0;
+		
+	tmpRow = malloc( 2560 );
+	
+	GetPicData( 0, 0, v, tmpRow );
+	
+	for( i=0; i<width; i += 2 )
+	{
+		gMin = min( gMin, tmpRow[i] );
+		rMin = min( rMin, tmpRow[i+width] );
+		bMin = min( bMin, tmpRow[i+1] );
+		gMin = min( gMin, tmpRow[i+width+1] );
+		gMax = max( gMax, tmpRow[i] );
+		rMax = max( rMax, tmpRow[i+width] );
+		bMax = max( bMax, tmpRow[i+1] );
+		gMax = max( gMax, tmpRow[i+width+1] );
+		
+		rMean += tmpRow[i+width];
+		gMean += tmpRow[i];
+		gMean += tmpRow[i+width+1];
+		bMean += tmpRow[i+1];
+	}	
+	
+	
+	if( width == 640 )
+	{
+		for( i=width*2; i<width*3; i += 2 )
+		{
+			gMin = min( gMin, tmpRow[i] );
+			rMin = min( rMin, tmpRow[i+width] );
+			bMin = min( bMin, tmpRow[i+1] );
+			gMin = min( gMin, tmpRow[i+width+1] );
+			gMax = max( gMax, tmpRow[i] );
+			rMax = max( rMax, tmpRow[i+width] );
+			bMax = max( bMax, tmpRow[i+1] );
+			gMax = max( gMax, tmpRow[i+width+1] );		
 
-   tmpRow = malloc (2560);
+			rMean += tmpRow[i+width];
+			gMean += tmpRow[i];
+			gMean += tmpRow[i+width+1];
+			bMean += tmpRow[i+1];
+		}
+	}	
 
-   GetPicData (0, 0, v, tmpRow);
+	GetPicData( 0, height/2, v, tmpRow );
+	
+	for( i=0; i<width; i += 2 )
+	{
+		gMin = min( gMin, tmpRow[i] );
+		rMin = min( rMin, tmpRow[i+width] );
+		bMin = min( bMin, tmpRow[i+1] );
+		gMin = min( gMin, tmpRow[i+width+1] );
+		gMax = max( gMax, tmpRow[i] );
+		rMax = max( rMax, tmpRow[i+width] );
+		bMax = max( bMax, tmpRow[i+1] );
+		gMax = max( gMax, tmpRow[i+width+1] );		
 
-   for (i = 0; i < width; i += 2)
-	 {
-		g[tmpRow[i]]++;
-		b[tmpRow[i + 1]]++;
-		r[tmpRow[i + width]]++;
-		g[tmpRow[i + width + 1]]++;
-	 }
+		rMean += tmpRow[i+width];
+		gMean += tmpRow[i];
+		gMean += tmpRow[i+width+1];
+		bMean += tmpRow[i+1];
+	}	
+	
+	if( width == 640 )
+	{
+		for( i=width*2; i<width*3; i += 2 )
+		{
+			gMin = min( gMin, tmpRow[i] );
+			rMin = min( rMin, tmpRow[i+width] );
+			bMin = min( bMin, tmpRow[i+1] );
+			gMin = min( gMin, tmpRow[i+width+1] );
+			gMax = max( gMax, tmpRow[i] );
+			rMax = max( rMax, tmpRow[i+width] );
+			bMax = max( bMax, tmpRow[i+1] );
+			gMax = max( gMax, tmpRow[i+width+1] );		
 
-   if (width == 640)
-	 {
-		for (i = width * 2; i < width * 3; i += 2)
-		  {
-			 g[tmpRow[i]]++;
-			 b[tmpRow[i + 1]]++;
-			 r[tmpRow[i + width]]++;
-			 g[tmpRow[i + width + 1]]++;
-		  }
-	 }
+			rMean += tmpRow[i+width];
+			gMean += tmpRow[i];
+			gMean += tmpRow[i+width+1];
+			bMean += tmpRow[i+1];
+		}
+	}	
 
-   GetPicData (0, height / 2, v, tmpRow);
+	GetPicData( 0, height-1, v, tmpRow );
+	
+	for( i=0; i<width; i += 2 )
+	{
+		gMin = min( gMin, tmpRow[i] );
+		rMin = min( rMin, tmpRow[i+width] );
+		bMin = min( bMin, tmpRow[i+1] );
+		gMin = min( gMin, tmpRow[i+width+1] );
+		gMax = max( gMax, tmpRow[i] );
+		rMax = max( rMax, tmpRow[i+width] );
+		bMax = max( bMax, tmpRow[i+1] );
+		gMax = max( gMax, tmpRow[i+width+1] );		
 
-   for (i = 0; i < width; i += 2)
-	 {
-		g[tmpRow[i]]++;
-		b[tmpRow[i + 1]]++;
-		r[tmpRow[i + width]]++;
-		g[tmpRow[i + width + 1]]++;
-	 }
+		rMean += tmpRow[i+width];
+		gMean += tmpRow[i];
+		gMean += tmpRow[i+width+1];
+		bMean += tmpRow[i+1];
+	}	
+	
+	if( width == 640 )
+	{
+		for( i=width*2; i<width*3; i += 2 )
+		{
+			gMin = min( gMin, tmpRow[i] );
+			rMin = min( rMin, tmpRow[i+width] );
+			bMin = min( bMin, tmpRow[i+1] );
+			gMin = min( gMin, tmpRow[i+width+1] );
+			gMax = max( gMax, tmpRow[i] );
+			rMax = max( rMax, tmpRow[i+width] );
+			bMax = max( bMax, tmpRow[i+1] );
+			gMax = max( gMax, tmpRow[i+width+1] );		
 
-   if (width == 640)
-	 {
-		for (i = width * 2; i < width * 3; i += 2)
-		  {
-			 g[tmpRow[i]]++;
-			 b[tmpRow[i + 1]]++;
-			 r[tmpRow[i + width]]++;
-			 g[tmpRow[i + width + 1]]++;
-		  }
-	 }
+			rMean += tmpRow[i+width];
+			gMean += tmpRow[i];
+			gMean += tmpRow[i+width+1];
+			bMean += tmpRow[i+1];
+		}
+	}	
 
-   GetPicData (0, height - 1, v, tmpRow);
-
-   for (i = 0; i < width; i += 2)
-	 {
-		g[tmpRow[i]]++;
-		b[tmpRow[i + 1]]++;
-		r[tmpRow[i + width]]++;
-		g[tmpRow[i + width + 1]]++;
-	 }
-
-   if (width == 640)
-	 {
-		for (i = width * 2; i < width * 3; i += 2)
-		  {
-			 g[tmpRow[i]]++;
-			 b[tmpRow[i + 1]]++;
-			 r[tmpRow[i + width]]++;
-			 g[tmpRow[i + width + 1]]++;
-		  }
-	 }
-
-   rCum = 0;
-   gCum = 0;
-   bCum = 0;
-
-   for (i = 0; i < 256; i++)
-	 {
-		rCum += r[i];
-		gCum += g[i];
-		bCum += b[i];
-
-		if (rMin == 255 && rCum > RED_BOT_THRESHOLD)
-		  rMin = i;
-
-		if (gMin == 255 && gCum > GREEN_BOT_THRESHOLD)
-		  gMin = i;
-
-		if (bMin == 255 && bCum > BLUE_BOT_THRESHOLD)
-		  bMin = i;
-
-		if (rMin != 255 && gMin != 255 && bMin != 255)
-		  break;
-	 }
-
-   gCum = rCum = bCum = 0;
-
-   rMax = rMin + RED_CEIL_VAL;
-   gMax = gMin + GREEN_CEIL_VAL;
-   bMax = bMin + BLUE_CEIL_VAL;
-
-   for (i = 255; i > min (RED_CEIL_VAL, min (GREEN_CEIL_VAL, BLUE_CEIL_VAL));
-		i--)
-	 {
-		rCum += r[i];
-		gCum += g[i];
-		bCum += b[i];
-
-		if (i > rMax && rMax == (rMin + RED_CEIL_VAL)
-			&& rCum > RED_TOP_THRESHOLD)
-		  rMax = i;
-
-		if (i > gMax && gMax == (gMin + GREEN_CEIL_VAL)
-			&& gCum > GREEN_TOP_THRESHOLD)
-		  gMax = i;
-
-		if (i > bMax && bMax == (bMin + BLUE_CEIL_VAL)
-			&& bCum > BLUE_TOP_THRESHOLD)
-		  bMax = i;
-
-		if (rMax != (rMin + RED_CEIL_VAL) && gMax != (gMin + GREEN_CEIL_VAL)
-			&& bMax != (gMin + BLUE_CEIL_VAL))
-		  break;
-	 }
-
-   rInc = ceiling / (rMax - rMin);
-   gInc = ceiling / (gMax - gMin);
-   bInc = ceiling / (bMax - bMin);
-
+	rMean = rMean / ( 640 * 3 );
+	gMean = gMean / ( 640 * 6 );
+	bMean = bMean / ( 640 * 3 );
+	
+	maxMean = max( gMean-gMin, max( bMean-bMin, rMean-rMin ));
+//	maxMean = max( gMean, max( bMean, rMean ));
+		
+	rInc = maxMean / (rMean-rMin);
+   	gInc = maxMean / (gMean-gMin);
+   	bInc = maxMean / (bMean-bMin);
+	
    rCur = 0;
    gCur = 0;
    bCur = 0;
 
-   /* Some kind of high contrast shot
-    * don't stretch too much */
-   if (rInc < 1.3)
-	 bInc = gInc = rInc;
-   else if (gInc < 1.3)
-	 bInc = rInc = gInc;
-   else if (bInc < 1.3)
-	 rInc = gInc = bInc;
-
-   /* Low contrast shot - don't stretch the bottom out */
-   if (rInc > 3.0 || gInc > 3.0 || bInc > 3.0)
+   for (i = 0; i<256; i++)
 	 {
-		rInc = ceiling / rMax;
-		gInc = ceiling / gMax;
-		bInc = ceiling / bMax;
+	 	if( i < rMin )
+		 	red[i] = 0;
+		else 
+		{
+			if( rCur < redCeiling )
+			  red[i] = rCur;
+			else
+			  red[i] = redCeiling;
 
-		rCur = rMin;
-		gCur = gMin;
-		bCur = bMin;
-	 }
+			rCur += rInc;
+		}
 
-   for (i = rMin; i < 256; i++)
-	 {
-		if (rCur < 254)
-		  red[i] = rCur;
+		if( i < gMin )
+			green[i] = 0;
 		else
-		  red[i] = 254;
+		{
+			if( gCur < greenCeiling )
+			  green[i] = gCur;
+			else
+			  green[i] = greenCeiling;
 
-		rCur += rInc;
-	 }
-
-   for (i = gMin; i < 256; i++)
-	 {
-		if (gCur < 254)
-		  green[i] = gCur;
+			gCur += gInc;
+		}
+		
+		if( i < bMin )
+			blue[i] = 0;
 		else
-		  green[i] = 254;
+		{
+			if( bCur < blueCeiling )
+			  blue[i] = bCur;
+			else
+			  blue[i] = blueCeiling;
 
-		gCur += gInc;
+			bCur += bInc;
+		}
 	 }
 
-   for (i = bMin; i < 256; i++)
-	 {
-		if (bCur < 254)
-		  blue[i] = bCur;
-		else
-		  blue[i] = 254;
+	free( tmpRow );
 
-		bCur += bInc;
-	 }
-
-   red[255] = green[255] = blue[255] = 255;
-
-   free (tmpRow);
-
-   return (1);
+	return( 1 );
 }
 
 /***********************************************************************
@@ -773,7 +784,7 @@ int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row)
 
    if (r == 0)
 	 {
-		if (-1 == GetPicData (HISTOGRAM_STRETCH, r, v, rowB))
+		if (-1 == GetPicData (flags, r, v, rowB))
 		  return (-1);
 		rAP = rBP = rowB;
 		rCP = rowB + v->width;
@@ -781,7 +792,7 @@ int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row)
 	 }
    else if (r == (v->height - 1))
 	 {
-		if (-1 == GetPicData (HISTOGRAM_STRETCH, r, v, rowA))
+		if (-1 == GetPicData (flags, r, v, rowA))
 		  return (-1);
 		rAP = rowA + v->width * 2;
 		rCP = rBP = rowA + v->width * 3;
@@ -789,10 +800,10 @@ int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row)
 	 }
    else if (modR == 0)
 	 {
-		if (-1 == GetPicData (HISTOGRAM_STRETCH, r - 1, v, rowA))
+		if (-1 == GetPicData (flags, r - 1, v, rowA))
 		  return (-1);
 		rAP = rowA + v->width * 3;
-		if (-1 == GetPicData (HISTOGRAM_STRETCH, r, v, rowB))
+		if (-1 == GetPicData (flags, r, v, rowB))
 		  return (-1);
 		rBP = rowB;
 		rCP = rowB + v->width;
@@ -800,18 +811,18 @@ int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row)
 	 }
    else if (modR == 3)
 	 {
-		if (-1 == GetPicData (HISTOGRAM_STRETCH, r, v, rowA))
+		if (-1 == GetPicData (flags, r, v, rowA))
 		  return (-1);
 		rAP = rowA + v->width * 2;
 		rBP = rowA + v->width * 3;
-		if (-1 == GetPicData (HISTOGRAM_STRETCH, r + 1, v, rowB))
+		if (-1 == GetPicData (flags, r + 1, v, rowB))
 		  return (-1);
 		rCP = rowB;
 
 	 }
    else
 	 {
-		if (-1 == GetPicData (HISTOGRAM_STRETCH, r, v, rowA))
+		if (-1 == GetPicData (flags, r, v, rowA))
 		  return (-1);
 		rAP = rowA + v->width * (modR - 1);
 		rBP = rowA + v->width * modR;
@@ -907,7 +918,7 @@ int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row)
 		row[i * 6 + 5] = (rAP[i * 2 + 1] + rCP[i * 2 + 1]) >> 1;
 	 }
 
-   if (flags & HISTOGRAM_STRETCH)
+   if (flags & VEO_COLOUR_CORRECT)
 	 {
 		for (i = 0; i < v->width * 3; i += 3)
 		  {
@@ -917,6 +928,9 @@ int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row)
 		  }
 	 }
 
+   if (flags & VEO_BIAS)
+	 Bias( bias_factor, v->width*3, 1, row );
+   
    return (1);
 }
 
@@ -1061,7 +1075,7 @@ void WritePicture (int sd, int db, int type, char *name, char *progname, long fl
 		else
 		  return;
 
-		Histogram (&v, redLUT, greenLUT, blueLUT, flags);
+		ColourCorrect (&v, redLUT, greenLUT, blueLUT, flags);
 
 		if (type == VEO_OUT_PNG)
 		  write_png (f, &v, flags);
@@ -1085,7 +1099,8 @@ int main (int argc, char *argv[])
 	 sd = -1, 
 	 action = VEO_ACTION_OUTPUT, 
 	 dbcount = 0, 
-	 type = VEO_OUT_PPM;
+	 type = VEO_OUT_PPM,
+	 bias = 50;
    long flags = 0;
    struct DBInfo info;
 
@@ -1115,19 +1130,19 @@ int main (int argc, char *argv[])
 		   case 'l':
 			 action = VEO_ACTION_LIST;
 			 break;
-		   case 'S':
-			 switch( atoi( optarg ))
+		   case 'b':
+			 bias = atoi( optarg );
+			 if( bias > 100 || bias < 0 )
 			   {
-				case 1:
-				  flags |= HISTOGRAM_STRETCH;
-				  break;
-				case 2:
-				  flags |= HISTOGRAM_BIG_STRETCH;
-				  break;
-				default:
-  				  fprintf (stderr, "Unknown stretch argument\n");
-				  break;
+  				  fprintf (stderr, "Bad bias\n");
+				  exit( EXIT_FAILURE );
 			   }
+			 
+			 bias_factor = (double)bias / 100.0;
+			 flags |= VEO_BIAS;
+			 break;
+		   case 'c':
+			 flags |= VEO_COLOUR_CORRECT;
 			 break;
 		   case 't':
 			 if (!strncmp ("png", optarg, 3))
@@ -1215,10 +1230,10 @@ int main (int argc, char *argv[])
 
    return 0;
 
-   error_close:
+error_close:
    pi_close (sd);
 
-   error:
+error:
    return -1;
 
 }
