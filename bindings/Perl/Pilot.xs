@@ -362,7 +362,7 @@ SvChar4(arg)
 	}
 
 #define unpack_dbinfo(arg, var)\
-	if ((SvTYPE(arg) == SVt_RV) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {\
+	if (SvROK(arg) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {\
 	    HV * i = (HV*)SvRV(arg);\
 	    SV ** s;\
 	    var.more = (s = hv_fetch(i, "more", 4, 0)) ? SvIV(*s) : 0;\

@@ -8,6 +8,9 @@
 
 	* libpisock/dlp.c: Ditto
 
+	* bindings/Perl/dump.pl: strict fixes
+
+	* bindings/Perl/Pilot.xs: Fixed an incorrect ref test
 
 2002-07-03  JP Rosevear  <jpr@ximian.com>
 
