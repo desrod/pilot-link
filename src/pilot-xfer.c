@@ -1023,7 +1023,7 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 	}
 #define APPEND_BASENAME \
 			basename = strrchr(localfile,'/'); \
-			if (NULL == basename) basename = localfile; \
+			if (NULL == basename) basename = localfile; else basename++; \
 			if (rpath[rpathlen-1] != '/') { \
 				rpath[rpathlen++]='/'; \
 				rpath[rpathlen]=0; \
