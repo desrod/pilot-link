@@ -30,7 +30,10 @@ except AttributeError:
 del types
 
 
+from pisockextras import *
+
 error = _pisock.error 
+dlperror = _pisock.dlperror
 
 
 print_splash = _pisock.print_splash
@@ -964,32 +967,6 @@ class dlpResponsePtr(dlpResponse):
 _pisock.dlpResponse_swigregister(dlpResponsePtr)
 
 
-dlp_arg_new = _pisock.dlp_arg_new
-
-dlp_arg_free = _pisock.dlp_arg_free
-
-dlp_arg_len = _pisock.dlp_arg_len
-
-dlp_request_new = _pisock.dlp_request_new
-
-dlp_request_new_with_argid = _pisock.dlp_request_new_with_argid
-
-dlp_request_free = _pisock.dlp_request_free
-
-dlp_response_new = _pisock.dlp_response_new
-
-dlp_response_read = _pisock.dlp_response_read
-
-dlp_request_write = _pisock.dlp_request_write
-
-dlp_response_free = _pisock.dlp_response_free
-
-dlp_exec = _pisock.dlp_exec
-
-dlp_strerror = _pisock.dlp_strerror
-
-dlp_RPC = _pisock.dlp_RPC
-
 dlp_set_protocol_version = _pisock.dlp_set_protocol_version
 
 dlp_ptohdate = _pisock.dlp_ptohdate
@@ -1034,7 +1011,7 @@ dlp_WriteAppPreference = _pisock.dlp_WriteAppPreference
 
 dlp_ResetSystem = _pisock.dlp_ResetSystem
 
-dlp_ReadDBList = _pisock.dlp_ReadDBList
+dlp_ReadDBList_ = _pisock.dlp_ReadDBList_
 
 dlp_FindDBByName = _pisock.dlp_FindDBByName
 
@@ -1198,7 +1175,6 @@ class pi_file_entry_tPtr(pi_file_entry_t):
         if not hasattr(self,"thisown"): _swig_setattr(self, pi_file_entry_t, 'thisown', 0)
         _swig_setattr(self, pi_file_entry_t,self.__class__,pi_file_entry_t)
 _pisock.pi_file_entry_t_swigregister(pi_file_entry_tPtr)
-cvar = _pisock.cvar
 
 class pi_file_t(_object):
     __swig_setmethods__ = {}
@@ -1449,4 +1425,26 @@ pi_file_merge = _pisock.pi_file_merge
 unix_time_to_pilot_time = _pisock.unix_time_to_pilot_time
 
 pilot_time_to_unix_time = _pisock.pilot_time_to_unix_time
+PI_ERR_PROT_ABORTED = _pisock.PI_ERR_PROT_ABORTED
+PI_ERR_PROT_INCOMPATIBLE = _pisock.PI_ERR_PROT_INCOMPATIBLE
+PI_ERR_PROT_BADPACKET = _pisock.PI_ERR_PROT_BADPACKET
+PI_ERR_SOCK_DISCONNECTED = _pisock.PI_ERR_SOCK_DISCONNECTED
+PI_ERR_SOCK_INVALID = _pisock.PI_ERR_SOCK_INVALID
+PI_ERR_SOCK_TIMEOUT = _pisock.PI_ERR_SOCK_TIMEOUT
+PI_ERR_SOCK_CANCELED = _pisock.PI_ERR_SOCK_CANCELED
+PI_ERR_SOCK_IO = _pisock.PI_ERR_SOCK_IO
+PI_ERR_SOCK_LISTENER = _pisock.PI_ERR_SOCK_LISTENER
+PI_ERR_DLP_BUFSIZE = _pisock.PI_ERR_DLP_BUFSIZE
+PI_ERR_DLP_PALMOS = _pisock.PI_ERR_DLP_PALMOS
+PI_ERR_DLP_UNSUPPORTED = _pisock.PI_ERR_DLP_UNSUPPORTED
+PI_ERR_DLP_SOCKET = _pisock.PI_ERR_DLP_SOCKET
+PI_ERR_DLP_DATASIZE = _pisock.PI_ERR_DLP_DATASIZE
+PI_ERR_DLP_COMMAND = _pisock.PI_ERR_DLP_COMMAND
+PI_ERR_FILE_INVALID = _pisock.PI_ERR_FILE_INVALID
+PI_ERR_FILE_ERROR = _pisock.PI_ERR_FILE_ERROR
+PI_ERR_FILE_ABORTED = _pisock.PI_ERR_FILE_ABORTED
+PI_ERR_FILE_NOT_FOUND = _pisock.PI_ERR_FILE_NOT_FOUND
+PI_ERR_GENERIC_MEMORY = _pisock.PI_ERR_GENERIC_MEMORY
+PI_ERR_GENERIC_ARGUMENT = _pisock.PI_ERR_GENERIC_ARGUMENT
+PI_ERR_GENERIC_SYSTEM = _pisock.PI_ERR_GENERIC_SYSTEM
 

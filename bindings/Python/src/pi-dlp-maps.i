@@ -67,6 +67,8 @@
     }
 }
 
+%rename(dlp_ReadDBList_) dlp_ReadDBList;
+
 %typemap (in,numinputs=0) struct SysInfo * (struct SysInfo temp) {
     $1 = &temp;
 }

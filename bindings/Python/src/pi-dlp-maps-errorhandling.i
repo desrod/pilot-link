@@ -8,9 +8,9 @@ typedef int DLPDBERROR;
 
 %typemap (python,out) DLPERROR {
     if ($1 < 0) {
-	PyErr_SetObject(PIError, Py_BuildValue("(is)", $1,
-					     dlp_strerror($1)));
-	return NULL;
+      // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
+      PyErr_SetObject(DLPError, Py_BuildValue("(is)", $1, dlp_strerror($1)));
+      return NULL;
     }
     $result = Py_None;
     Py_INCREF(Py_None);
@@ -23,7 +23,7 @@ typedef int DLPDBERROR;
 	Py_INCREF(Py_None);
 	$result = Py_None;
     } else if ($1 < 0) {
-	PyErr_SetObject(PIError, Py_BuildValue("(is)", $1, dlp_strerror($1)));
+	PyErr_SetObject(DLPError, Py_BuildValue("(is)", $1, dlp_strerror($1)));
 	return NULL;
     }
     Py_INCREF(Py_None);

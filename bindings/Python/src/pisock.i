@@ -37,6 +37,11 @@
 
 
 %module pisock
+
+%pythoncode %{ 
+from pisockextras import *
+%} 
+
 %{
 #include <time.h>
 #include "pi-args.h"
@@ -44,10 +49,10 @@
 #include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-util.h"
-#include "pi-header.h"    
+#include "pi-header.h"
+#include "pi-source.h"
+#include "pi-error.h"
 
-extern char *printlong(unsigned long);
-extern unsigned long makelong(char *c);
 
 #define DGETLONG(src,key,default) (PyDict_GetItemString(src,key) ? \
 				   PyInt_AsLong(PyDict_GetItemString(src,key)) : default)
@@ -56,16 +61,22 @@ extern unsigned long makelong(char *c);
 				  PyString_AsString(PyDict_GetItemString(src,key)) : default)
 
 static PyObject *PIError;
+static PyObject *DLPError;
 %}
 
 %init %{
   PIError = PyErr_NewException("pisock.error", NULL, NULL);
   Py_INCREF(PIError);
   PyDict_SetItemString(d, "error", PIError);
+
+  DLPError = PyErr_NewException("pisock.dlperror", PIError, NULL);
+  Py_INCREF(DLPError);
+  PyDict_SetItemString(d, "dlperror", DLPError);
 %}
 
 %pythoncode %{ 
 error = _pisock.error 
+dlperror = _pisock.dlperror
 %} 
 
 %include typemaps.i
@@ -76,6 +87,7 @@ error = _pisock.error
 %include general-maps-errorhandling.i
 
 %include pi-socket-maps.i
+%include pi-socket-maps-errorhandling.i
 
 %include pi-dlp-maps.i
 %include pi-dlp-maps-errorhandling.i
@@ -86,4 +98,5 @@ error = _pisock.error
 %include ../../../include/pi-dlp.h
 %include ../../../include/pi-socket.h
 %include ../../../include/pi-file.h
+%include ../../../include/pi-error.h
 

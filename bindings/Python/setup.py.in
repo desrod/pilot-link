@@ -19,7 +19,7 @@ setup(name = "python-libpisock",
                                libraries=['pisock'],
                                )
                      ],
-      py_modules = ["pisock"],
+      py_modules = ["pisock","pisockextras"],
       )
 
 unlink("pisock.py")
