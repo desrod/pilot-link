@@ -6,6 +6,12 @@ manpages, docs, more..
 
 Major Features:
         * None at this time
+	* New pilot-archive sample conduit to send archived ToDo records to
+	  STDOUT as CSV-formatted entries.
+	* Deprecated pilot-mail, in favor of pilot-mailsync. pilot-mail
+	  remains, as an example to other conduit authors.
+	* pilot-link 0.11.6 will now cleanly build on OSX 10.x.x systems
+	* pilot-xfer --time feature added to sync Palm time to desktop time
 
 Other Features:
         * New install-todo conduit (Robert A. Kaplan)
@@ -14,7 +20,9 @@ Other Features:
 	  propose possible solutions to solving them for general users
 	* Added HOST_OS detection and linked into each conduit, to assist
 	  debugging
-
+	* Added Python test script (Nicholas Piper)
+	* Added support for ElectricFence malloc() debugging library
+	
 Bug Fixes:
         * Fix for failures on usb:// notation use
         * Fix for missing pi_close() elements
@@ -24,6 +32,8 @@ Bug Fixes:
 	* Fix for CreatorID output in dlpsh
 	* Fix to allow gcc 3.2  builds
 	* Fix for pilot_connect() that was losing the client socket
+	* Fix for install-memos malloc() bug, -t missing argument bug, title
+	  truncation bug.
 
 Known Problems:
 	* FreeBSD hangs on USB synchronization (this may not be a pilot-link
@@ -32,6 +42,8 @@ Known Problems:
         * snprintf() calls fail on Irix 6.4 systems   
         * Improper getopt_long propagation on Irix 6.4
         * autoconf/automake 2.5x problems on AIX
+	* install-memo doesn't strip ^M from files before syncronization,
+	  doesn't detect duplicate files being sync'd to the same device.
 
 
 --------------------------------------------------------------------------
