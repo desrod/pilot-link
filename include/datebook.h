@@ -24,24 +24,25 @@ enum  DayOfMonthType{
 };
 
 struct Appointment {
-	int event;
-	struct tm begin, end;
+	int event;            /* Is this a timeless event? */
+	struct tm begin, end; /* When does this appointment start and end? */
 	
-	int advance;
-	int advanceUnits;
+	int alarm;            /* Should an alarm go off? */
+	int advance;          /* How far in advance should it be? */
+	int advanceUnits;     /* What am I measuring the advance in? */
 	
-	int repeatType;
-	struct tm repeatEnd;
-	int repeatForever;
-	int repeatFreq;
-	int repeatOn;
-	int repeatWeekstart;
+	int repeatType;       /* How should I repeat this appointment, if at all? */
+	int repeatForever;    /* Do the repetitions end at some date? */
+	struct tm repeatEnd;  /* What date to they end on? */
+	int repeatFreq;       /* Should I skip an interval for each repetition? */
+	int repeatOn;         /* What things are the targets of repetition? */
+	int repeatWeekstart;  /* What day did the user decide starts the week? */
 	
-	int exceptions;
-	struct tm * exception;
+	int exceptions;       /* How many repetitions are their to be ignored? */
+	struct tm * exception; /* What are they? */
 	
-	char * description;
-	char * note;
+	char * description;   /* What is the description of this appointment? */
+	char * note;          /* Is there a note to go along with it? */
 };
 
 struct AppointmentAppInfo {

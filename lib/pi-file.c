@@ -109,22 +109,41 @@ static int pi_file_close_for_write (struct pi_file *pf);
 static void pi_file_free (struct pi_file *pf);
 
 /* this seems to work, but what about leap years? */
-#define PILOT_TIME_DELTA (((unsigned)(1970 - 1904) * 365 * 24 * 60 * 60) + 1450800)
-/*#define PILOT_TIME_DELTA (unsigned)2082844800*/
+/*#define PILOT_TIME_DELTA (((unsigned)(1970 - 1904) * 365 * 24 * 60 * 60) + 1450800)*/
 
+/* Exact value of "Jan 1, 1970 0:00:00 GMT" - "Jan 1, 1904 0:00:00 GMT" */
+#define PILOT_TIME_DELTA (unsigned)(2082844800)
+
+
+/* FIXME: These conversion functions apply no timezone correction. UNIX uses
+   UTC for time_t's, while the Pilot uses local time for database backup
+   time and appointments, etc. It is not particularly simple to convert
+   between these in UNIX, especially since the Pilot's local time is
+   unknown, and if syncing over political boundries, could easily be
+   different then the local time on the UNIX box. Since the Pilot does not
+   know what timezone it is in, there is no unambiguous way to correct for
+   this.
+   
+   Worse, the creation date for a program is stored in the local time _of
+   the computer which did the final linking of that program_. Again, the
+   Pilot does not store the timezone information needed to reconstruct
+   where/when this was.
+   
+   A better immediate tack would be to dissect these into struct tm's, and
+   return those.
+                                                                     --KJA
+   */
+   
 static time_t
 pilot_time_to_unix_time (unsigned long raw_time)
 {
-  if (raw_time > PILOT_TIME_DELTA)
-    return (raw_time - PILOT_TIME_DELTA);
-  else
-    return (raw_time);
+  return (time_t)(raw_time - PILOT_TIME_DELTA);
 }
 
 static unsigned long
 unix_time_to_pilot_time (time_t t)
 {
-  return (t + PILOT_TIME_DELTA);
+  return (unsigned long)((unsigned long)t + PILOT_TIME_DELTA);
 }
 
 /*
@@ -406,7 +425,7 @@ pi_file_read_resource (struct pi_file *pf, int idx,
     return (-1);
 
   fseek (pf->f, pf->entries[idx].offset, SEEK_SET);
-  if (fread (pf->rbuf, entp->size, 1, pf->f) != 1)
+  if (fread (pf->rbuf, 1, entp->size, pf->f) != entp->size)
     return (-1);
 
   *bufp = pf->rbuf;
@@ -442,15 +461,43 @@ pi_file_read_record (struct pi_file *pf, int idx,
     return (-1);
 
   fseek (pf->f, pf->entries[idx].offset, SEEK_SET);
-  if (fread (pf->rbuf, entp->size, 1, pf->f) != 1)
+  if (fread (pf->rbuf, 1, entp->size, pf->f) != entp->size)
     return (-1);
 
   *bufp = pf->rbuf;
   *sizep = entp->size;
-  *attrp = entp->attrs >> 4;
+  *attrp = entp->attrs & 0xf0;
   *catp = entp->attrs & 0xf;
   *uidp = entp->uid;
 
+  return (0);
+}
+
+int
+pi_file_read_record_by_id (struct pi_file *pf, pi_uid_t uid,
+			   void **bufp, int *sizep, int *attrp, int *catp)
+{
+  int idx;
+  struct pi_file_entry *entp;
+
+  for (idx = 0, entp = pf->entries; idx < pf->nentries; idx++, entp++) {
+    if (entp->uid == uid)
+      return (pi_file_read_record (pf, idx, bufp, sizep, attrp, catp, &uid));
+  }
+
+  return (-1);
+}
+
+int
+pi_file_id_used (struct pi_file *pf, pi_uid_t uid)
+{
+  int idx;
+  struct pi_file_entry *entp;
+
+  for (idx = 0, entp = pf->entries; idx < pf->nentries; idx++, entp++) {
+    if (entp->uid == uid)
+      return (1);
+  }
   return (0);
 }
 
@@ -615,7 +662,7 @@ int pi_file_append_record (struct pi_file *pf, void *buf, int size,
   }
 
   entp->size = size;
-  entp->attrs = (attrs << 4) | (category & 0xf);
+  entp->attrs = (attrs & 0xf0) | (category & 0xf);
   entp->uid = uid;
 
   return (0);

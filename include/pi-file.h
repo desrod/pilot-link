@@ -28,6 +28,10 @@ int pi_file_read_resource (struct pi_file *pf, int idx,
 int pi_file_read_record (struct pi_file *pf, int idx,
 			 void **bufp, int *sizep, int *attrp, int * catp, pi_uid_t *uidp);
 int pi_file_get_entries (struct pi_file *pf, int * entries);			 
+int pi_file_read_record_by_id (struct pi_file *pf, pi_uid_t uid,
+			       void **bufp, int *sizep,
+			       int *attrp, int * catp);
+int pi_file_id_used (struct pi_file *pf, pi_uid_t uid);
 
 struct pi_file *pi_file_create (char *name, struct DBInfo * info);
 

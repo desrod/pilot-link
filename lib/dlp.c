@@ -56,18 +56,22 @@ char * dlp_errorlist[] = {
   if (result < count) {  \
     if (result < 0) \
       fprintf(stderr, "Result: Error: %s (%d)\n", dlp_errorlist[-result], result); \
-    else \
+    else { \
       fprintf(stderr, "Result: Read %d bytes, expected at least %d\n", result, count); \
-    return -128;      \
+      result = -128; \
+    } \
+    return result;      \
   } else \
     fprintf(stderr, "Result: No error, %d bytes\n", result);
   
 #else
 
 #define Trace(name)
-#define Expect(count) \
-  if (result < count) {  \
-    return -128;      \
+#define Expect(count)   \
+  if (result < count) { \
+    if (result >= 0)    \
+      result = -128;    \
+    return result;      \
   }
   
 #endif
@@ -141,6 +145,22 @@ int dlp_exec(int sd, int cmd, int arg,
 /* These conversion functions are strictly for use within the DLP layer.
    This particular date/time format does not occur anywhere else within the
    Pilot or its communications. */
+   
+/* Notice: These conversion functions apply a possibly incorrect timezone
+   correction. They use the local time on the UNIX box, and transmit this
+   directly to the Pilot. This assumes that the Pilot has the same local
+   time. If the Pilot is communicating from a different timezone, this is
+   not necessarily correct.
+   
+   It would be possible to compare the current time on the Pilot with the
+   current time on the UNIX box, and use that as the timezone offset, but
+   this would break if the Pilot had the wrong time, or one or the either
+   didn't have the proper local (wall) time.
+   
+   In any case, since the (possibly incorrect) timezone correction is
+   applied both way, there is no immediate problem.
+                                                                   -- KJA
+   */
    
 static time_t dlp_ptohdate(unsigned const char * data)
 {

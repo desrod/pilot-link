@@ -1,3 +1,9 @@
+Jan 9, 1997		Kenneth Albanowski 0.4.2
+
+	Applied Pace's rm_fn patch, and pi-file patch for freads and attrs.
+	My patch to return correct DLP errors.
+	Probably some other stuff that I've forgotton.
+
 Dec 30, 1996	Kenneth Albanowski 0.4.1
 
 	Got sync-ical functional. It's very messy, but parts of it do actually

@@ -16,6 +16,7 @@ struct pi_socket *ticklish_pi_socket;
 /* Prototypes */
 int user_fn(int sd, int argc, char **argv);
 int ls_fn(int sd, int argc, char **argv);
+int rm_fn(int sd, int argc, char **argv);
 int help_fn(int sd, int argc, char **argv);
 int exit_fn(int sd, int argc, char **argv);
 char *strtoke(char *str, char *ws, char *delim);
@@ -33,6 +34,7 @@ struct Command {
 struct Command command_list[] = {
   { "user", user_fn },
   { "ls", ls_fn },
+  { "rm", rm_fn },
   { "help", help_fn },
   { "quit", exit_fn },
   { "exit", exit_fn },
@@ -237,6 +239,33 @@ ls_fn(int sd, int argc, char **argv)
   }
 
   return 0;
+}
+
+int 
+rm_fn(int sd, int argc, char **argv) 
+{
+  int ret;
+  int cardno;
+  char *name;
+
+  if (argc != 2) {
+    printf ("Usage: rm database\n");
+    return (0);
+  }
+
+  name = argv[1];
+
+  cardno = 0;
+  if ((ret = dlp_DeleteDB (sd, cardno, name)) < 0) {
+    if (ret == dlpErrNotFound) {
+      printf ("%s: not found\n", name);
+      return (0);
+    }
+    printf ("%s: remove error %d\n", name, ret);
+    return (0);
+  }
+
+  return (0);
 }
 
 /* parse user commands and do the right thing.. */

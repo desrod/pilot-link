@@ -33,6 +33,22 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
   unsigned long d;
   int j;
   
+  /* Note: There are possible timezone conversion problems related to the
+           use of the begin, end, repeatEnd, and exception[] members of a
+           struct Appointment. As they are kept in local (wall) time in
+           struct tm's, the timezone of the Pilot is irrelevant, _assuming_
+           that any UNIX program keeping time in time_t's converts them to
+           the correct local time. If the Pilot is in a different timezone
+           than the UNIX box, it may not be simple to deduce that correct
+           (desired) timezone.
+           
+           The easiest solution is to keep apointments in struct tm's, and
+           out of time_t's. Of course, this might not actually be a help if
+           you are constantly darting across timezones and trying to keep
+           appointments.
+                                                                    -- KJA
+           */
+  
   a->begin.tm_hour = get_byte(buffer);
   a->begin.tm_min = get_byte(buffer+1);
   a->begin.tm_sec = 0;
@@ -40,6 +56,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
   a->begin.tm_year = (d >> 9) + 4;
   a->begin.tm_mon = ((d >> 5) & 15) - 1;
   a->begin.tm_mday = d & 31;
+  a->begin.tm_isdst = -1;
   a->end = a->begin;
 
   a->end.tm_hour = get_byte(buffer+2);
@@ -72,6 +89,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 	
 	if (iflags & alarmFlag) 
 		{
+		a->alarm = 1;
 		a->advance = get_byte(p2);
 		p2+=1;
 		a->advanceUnits = get_byte(p2);
@@ -79,6 +97,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 		
 		}
 	else {
+		a->alarm = 0;
 		a->advance = 0;
 		a->advanceUnits = 0;
 	}
@@ -88,7 +107,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 		a->repeatType = get_byte(p2); p2+=2;
 		d = (unsigned short int)get_short(p2); p2+=2;
 		if(d==0xffff)
-			a->repeatForever=1;
+			a->repeatForever=1; /* repeatEnd is invalid */
 		else {
 			a->repeatEnd.tm_year = (d >> 9) + 4;
 			a->repeatEnd.tm_mon = ((d >> 5) & 15) - 1;
@@ -96,6 +115,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 			a->repeatEnd.tm_min = 0;
 			a->repeatEnd.tm_hour = 0;
 			a->repeatEnd.tm_sec = 0;
+			a->repeatEnd.tm_isdst = -1;
 			mktime(&a->repeatEnd);
 			a->repeatForever = 0;
 		}
@@ -105,8 +125,11 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 		p2++;
 		}
 	else {
-		a->repeatForever = 1;
+		a->repeatType = 0;
+		a->repeatForever = 1; /* repeatEnd is invalid */
 		a->repeatFreq = 0;
+		a->repeatOn = 0;
+		a->repeatWeekstart = 0;
 	}
 
 	if (iflags & exceptFlag)
@@ -122,6 +145,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 			a->exception[j].tm_hour = 0;
 			a->exception[j].tm_min = 0;
 			a->exception[j].tm_sec = 0;
+			a->exception[j].tm_isdst = -1;
 			mktime(&a->exception[j]);
 		}
 		

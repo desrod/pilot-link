@@ -49,7 +49,6 @@ void unpack_Address(struct Address * a, unsigned char * buffer, int len) {
     a->lastname = 0;
   }*/
   
-  v = 1;
   for(v=0;v<19;v++) {
     if(contents & (1 << v)) {
       a->entry[v] = strdup(buffer);
@@ -75,7 +74,6 @@ void pack_Address(struct Address * a, unsigned char * record, int * len) {
   contents = 0;
   offset = 0; /* FIXME: Check to see if this really should default to zero */
 
-  v = 1;
   for(v=0;v<19;v++) {
     if(a->entry[v]) {
       if(v==entryCompany)

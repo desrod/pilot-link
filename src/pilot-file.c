@@ -233,11 +233,11 @@ list_records (struct pi_file *pf, struct DBInfo *ip)
         return;
       }
       printf ("%d\t%d\t%s\t%d\n", entnum, size, printlong(type), id);
-    }
       if (vflag) {
         dump(buf,size);
         printf ("\n");
       }
+    }
   } else {
     printf ("entries\n");
     printf ("index\tsize\tattrs\tcat\tuid\n");

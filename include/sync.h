@@ -24,12 +24,13 @@ typedef struct PilotRecord PilotRecord;
    needed to implement synchronization. These are defined outside of a 
    structure definition, so they can be pasted into multiple definitions,
    with the result of two structures sharing (at least in part) the same
-   layout */
+   layout. It's very likely that this approach is less portable then using
+   void*'s, but its less messy to read. */
 
 #define StandardLocalRecord \
 	int attr; \
 	int archived; \
-	int secret;
+	int secret
 
 #define StandardSyncAbs \
 	int (*MatchRecord)(SyncAbs*, LocalRecord**, PilotRecord*); \
@@ -49,7 +50,7 @@ typedef struct PilotRecord PilotRecord;
 	int (*CompareBackup)(SyncAbs*,LocalRecord*,PilotRecord*); \
 	int (*FreeTransmit)(SyncAbs*,LocalRecord*,PilotRecord*); \
 	int (*DeleteAll)(SyncAbs*); \
-	PilotRecord * (*Transmit)(SyncAbs*,LocalRecord*); 
+	PilotRecord * (*Transmit)(SyncAbs*,LocalRecord*)
 
 #ifdef Abstract_sync
 

@@ -23,11 +23,13 @@ void unpack_Memo(struct Memo * a, unsigned char * buffer, int len) {
 }
 
 void pack_Memo(struct Memo * a, unsigned char * buffer, int * len) {
-  if(a->text)
+  if(a->text) {
     strcpy(buffer,a->text);
-  else
+    *len = strlen(a->text)+1;
+  } else {
     buffer[0] = 0;
-  *len = strlen(a->text)+1;
+    *len = 1;
+  }
 }
                   
 void unpack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int len) {

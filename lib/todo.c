@@ -22,25 +22,44 @@ void free_ToDo(struct ToDo * a) {
 
 void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
   unsigned long d;
-  
-  a->due.tm_hour = 0;
-  a->due.tm_min = 0;
-  a->due.tm_sec = 0;
+
+  /* Note: There are possible timezone conversion problems related to the
+           use of the due member of a struct ToDo. As it is kept in local
+           (wall) time in struct tm's, the timezone of the Pilot is
+           irrelevant, _assuming_ that any UNIX program keeping time in
+           time_t's converts them to the correct local time. If the Pilot is
+           in a different timezone than the UNIX box, it may not be simple
+           to deduce that correct (desired) timezone.
+                                                                               
+           The easiest solution is to keep apointments in struct tm's, and
+           out of time_t's. Of course, this might not actually be a help if
+           you are constantly darting across timezones and trying to keep
+           appointments.
+                                                                    -- KJA
+           */
+                                                                                                                                                                                                          
+                                                                                                                                                                                                            
   d = (unsigned short int)get_short(buffer);
   if (d != 0xffff) {
     a->due.tm_year = (d >> 9) + 4;
     a->due.tm_mon = ((d >> 5) & 15) - 1;
     a->due.tm_mday = d & 31;
+    a->due.tm_hour = 0;
+    a->due.tm_min = 0;
+    a->due.tm_sec = 0;
+    a->due.tm_isdst = -1;
     mktime(&a->due);
     a->indefinite = 0;
   } else {
-    a->indefinite = 1;
+    a->indefinite = 1; /* a->due is invalid */
   }
 
   a->priority = get_byte(buffer+2);
   if(a->priority & 0x80) {
     a->complete = 1;
     a->priority &= 0x7f;
+  } else {
+    a->complete = 0;
   }
   
   a->description = strdup(buffer+3);
