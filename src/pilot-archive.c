@@ -48,19 +48,19 @@ static void display_help(const char *progname)
 int main(int argc, const char *argv[])
 {
 	int 	c,	/* switch */
-	 	db, 
-		i, 
+	 	db,
+		i,
 		sd = -1;
 
 	const char
-                *progname 	= argv[0], 
+                *progname 	= argv[0],
 		*port 		= NULL;
 
 	struct 	ToDoAppInfo tai;
 	pi_buffer_t *buffer;
 
 	poptContext po;
-	
+
 	struct poptOption options[] = {
                 {"port",	'p', POPT_ARG_STRING, &port, 0,  "Use device <port> to communicate with Palm"},
                 {"help",	'h', POPT_ARG_NONE, NULL,   'h', "Display this information"},
@@ -108,7 +108,7 @@ int main(int argc, const char *argv[])
 		struct ToDo todo;
 
 		if (port) {
-			len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 
+			len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0,
 				&attr, &category);
 
 			if (len < 0)
