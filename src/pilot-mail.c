@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 		*pop_host 	= getvars("POPHOST", ""),
 		*pop_user 	= getvars("POPUSER", ""),
 		*pop_pass 	= getvars("POPPASS", ""),
-		*sendmail 	= getvars("SENDMAIL", "/usr/lib/sendmail -t -i"),
+		*sendmail 	= getvars("SENDMAIL", "/usr/sbin/sendmail -t -i"),
 		*pop_keep 	= getvars("POPKEEP", "keep"),
 		*pilot_dispose 	= getvars("PILOTDISPOSE", "keep"),
 		*topilot_mhdir 	= getvars("TOPILOT_MHDIR", "");
