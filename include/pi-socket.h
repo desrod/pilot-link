@@ -9,18 +9,48 @@ extern "C" {
 
 #include "pi-version.h"
 
-#define PI_AF_SLP		0x0051	/* arbitrary, for completeness, just in case */
-#define PI_AF_INETSLP		0x0054
+#define PI_AF_PILOT             0x00
 
-#define PI_PF_SLP		PI_AF_SLP
-#define PI_PF_PADP		0x0052
-#define PI_PF_LOOP		0x0053
+#define PI_PF_DEV               0x01
+#define PI_PF_SLP_RPC		0x02
+#define PI_PF_SLP_PADP		0x03
+#define PI_PF_SLP_LOOP		0x04
+#define PI_PF_PADP		0x05
+#define PI_PF_DLP		0x06
 
 #define PI_SOCK_STREAM		0x0010
-#define PI_SOCK_DGRAM		0x0020
 #define PI_SOCK_RAW		0x0030
-#define PI_SOCK_SEQPACKET	0x0040
 
+enum PiOptLevels {
+	PI_LEVEL_SOCKET,
+	PI_LEVEL_SLP,
+	PI_LEVEL_PADP,
+	PI_LEVEL_DLP
+};
+
+enum PiOptSocket {
+	PI_SOCKET_RATE,
+	PI_SOCKET_ESTRATE,
+	PI_SOCKET_HIGHRATE,
+	PI_SOCKET_TIMEOUT
+};
+
+enum PiOptSLP {
+	PI_SLP_DEST,
+	PI_SLP_LASTDEST,
+	PI_SLP_SRC,
+	PI_SLP_LASTSRC,
+	PI_SLP_TYPE,
+	PI_SLP_LASTTYPE,
+	PI_SLP_TXID,
+	PI_SLP_LASTTXID
+};
+
+enum PiOptPADP {
+	PI_PADP_TYPE,
+	PI_PADP_LASTTYPE,
+};
+	
 #define PI_SLP_SPEED		0x0001
 
 #define PI_PilotSocketDLP	3
@@ -34,15 +64,13 @@ extern "C" {
 #include "pi-sockaddr.h"
 #endif
 
-	struct pi_skb;
-
-	struct pi_mac;
-
 	struct pi_socket;
 
 	struct sockaddr;
 
 	extern int pi_socket PI_ARGS((int domain, int type, int protocol));
+	extern struct pi_socket *pi_socket_copy PI_ARGS((struct pi_socket *ps));
+
 	extern int pi_connect
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
 		     int addrlen));
@@ -70,11 +98,12 @@ extern "C" {
 	extern int pi_getsockpeer
 	    PI_ARGS((int pi_sd, struct sockaddr * addr, int *namelen));
 
-	extern int pi_setmaxspeed
-	    PI_ARGS((int pi_sd, int speed, int overclock));
 	extern int pi_getsockopt
 	    PI_ARGS((int pi_sd, int level, int option_name,
 		     void *option_value, int *option_len));
+	extern int pi_setsockopt
+	    PI_ARGS((int pi_sd, int level, int option_name, 
+		     const void *option_value, int *option_len));
 
 	extern int pi_version PI_ARGS((int pi_sd));
 
@@ -82,6 +111,12 @@ extern "C" {
 	extern int pi_watchdog PI_ARGS((int pi_sd, int interval));
 
 	extern int pi_close PI_ARGS((int pi_sd));
+
+	extern struct pi_protocol *pi_protocol
+	    PI_ARGS((int pi_sd, int level));
+	extern struct pi_protocol *pi_protocol_next
+	    PI_ARGS((int pi_sd, int level));
+	
 
 #ifdef __cplusplus
 }

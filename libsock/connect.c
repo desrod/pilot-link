@@ -32,12 +32,12 @@ int pilot_connect(const char *port)
 	struct PilotUser U;
 	struct pi_sockaddr addr;
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
 		perror("   Reason: pi_socket");
 		return 0;
 	}
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
 
 	if (pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {

@@ -132,14 +132,28 @@ static int calcrate(int baudrate)
 # define O_NONBLOCK 0
 #endif
 
-static int s_changebaud(struct pi_socket *ps);
+
+static int s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen);
 static int s_close(struct pi_socket *ps);
-static int s_write(struct pi_socket *ps);
-static int s_read(struct pi_socket *ps, int timeout);
+static int s_changebaud(struct pi_socket *ps);
+static int s_write(struct pi_socket *ps, unsigned char *buf, int len);
+static int s_read(struct pi_socket *ps, unsigned char *buf, int len);
+static int s_poll(struct pi_socket *ps, int timeout);
+
+void pi_serial_impl_init (struct pi_serial_impl *impl)
+{
+	impl->open = s_open;
+	impl->close = s_close;
+	impl->changebaud = s_changebaud;
+	impl->write = s_write;
+	impl->read = s_read;
+	impl->poll = s_poll;
+}
+
 
 /***********************************************************************
  *
- * Function:    pi_serial_open
+ * Function:    s_open
  *
  * Summary:     Open the serial port and establish a connection for
  *		unix
@@ -150,12 +164,14 @@ static int s_read(struct pi_socket *ps, int timeout);
  *
  ***********************************************************************/
 int
-pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
+s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 	char *tty = addr->pi_device;
 
 	int i;
 
+	
 #ifndef SGTTY
 	struct termios tcn;
 #else
@@ -167,27 +183,27 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	if (!tty)
 		tty = "<Null>";
 
-	if ((ps->mac->fd = open(tty, O_RDWR | O_NONBLOCK)) == -1) {
+	if ((data->fd = open(tty, O_RDWR | O_NONBLOCK)) == -1) {
 		return -1;	/* errno already set */
 	}
 
-	if (!isatty(ps->mac->fd)) {
-		close(ps->mac->fd);
+	if (!isatty(data->fd)) {
+		close(data->fd);
 		errno = EINVAL;
 		return -1;
 	}
 #ifndef SGTTY
 	/* Set the tty to raw and to the correct speed */
-	tcgetattr(ps->mac->fd, &tcn);
+	tcgetattr(data->fd, &tcn);
 
-	ps->tco = tcn;
+	data->tco = tcn;
 
 	tcn.c_oflag = 0;
 	tcn.c_iflag = IGNBRK | IGNPAR;
 
 	tcn.c_cflag = CREAD | CLOCAL | CS8;
 
-	(void) cfsetspeed(&tcn, calcrate(ps->rate));
+	(void) cfsetspeed(&tcn, calcrate(data->rate));
 
 	tcn.c_lflag = NOFLSH;
 
@@ -199,58 +215,44 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	tcn.c_cc[VMIN] = 1;
 	tcn.c_cc[VTIME] = 0;
 
-	tcsetattr(ps->mac->fd, TCSANOW, &tcn);
+	tcsetattr(data->fd, TCSANOW, &tcn);
 #else
 	/* Set the tty to raw and to the correct speed */
-	ioctl(ps->mac->fd, TIOCGETP, &tcn);
+	ioctl(data->fd, TIOCGETP, &tcn);
 
-	ps->tco = tcn;
+	data->tco = tcn;
 
 	tcn.sg_flags = RAW;
-	tcn.sg_ispeed = calcrate(ps->rate);
-	tcn.sg_ospeed = calcrate(ps->rate);
+	tcn.sg_ispeed = calcrate(data->rate);
+	tcn.sg_ospeed = calcrate(data->rate);
 
-	ioctl(ps->mac->fd, TIOCSETN, &tcn);
+	ioctl(data->fd, TIOCSETN, &tcn);
 #endif
 
-	if ((i = fcntl(ps->mac->fd, F_GETFL, 0)) != -1) {
+	if ((i = fcntl(data->fd, F_GETFL, 0)) != -1) {
 		i &= ~O_NONBLOCK;
-		fcntl(ps->mac->fd, F_SETFL, i);
+		fcntl(data->fd, F_SETFL, i);
 	}
 
 	if (ps->sd) {
-		int orig = ps->mac->fd;
+		int orig = data->fd;
 
 #ifdef HAVE_DUP2
-		ps->mac->fd = dup2(ps->mac->fd, ps->sd);
+		data->fd = dup2(data->fd, ps->sd);
 #else
 #ifdef F_DUPFD
 		close(ps->sd);
-		ps->mac->fd = fcntl(ps->mac->fd, F_DUPFD, ps->sd);
+		data->fd = fcntl(data->fd, F_DUPFD, ps->sd);
 #else
 		close(ps->sd);
-		ps->mac->fd = dup(ps->mac->fd);	/* Unreliable */
+		data->fd = dup(data->fd);	/* Unreliable */
 #endif
 #endif
-		if (ps->mac->fd != orig)
+		if (data->fd != orig)
 			close(orig);
 	}
-#ifndef NO_SERIAL_TRACE
-	if (ps->debuglog) {
-		ps->debugfd =
-		    open(ps->debuglog, O_WRONLY | O_CREAT | O_APPEND,
-			 0666);
-		/* This sequence is magic used by my trace analyzer - kja */
-		write(ps->debugfd, "\0\1\0\0\0\0\0\0\0\0", 10);
-	}
-#endif
 
-	ps->serial_close = s_close;
-	ps->serial_read = s_read;
-	ps->serial_write = s_write;
-	ps->serial_changebaud = s_changebaud;
-
-	return ps->mac->fd;
+	return data->fd;
 }
 
 /* Linux versions "before 2.1.8 or so" fail to flush hardware FIFO on port
@@ -318,28 +320,29 @@ static s_delay(int sec, int usec)
  ***********************************************************************/
 static int s_changebaud(struct pi_socket *ps)
 {
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 #ifndef SGTTY
 	struct termios tcn;
 
 #ifdef sleeping_beauty
 	s_delay(0, 200000);
 #endif
-	/* Set the tty to the new speed */ tcgetattr(ps->mac->fd, &tcn);
+	/* Set the tty to the new speed */ tcgetattr(data->fd, &tcn);
 
 	tcn.c_cflag = CREAD | CLOCAL | CS8;
-	(void) cfsetspeed(&tcn, calcrate(ps->rate));
+	(void) cfsetspeed(&tcn, calcrate(data->rate));
 
-	tcsetattr(ps->mac->fd, TCSADRAIN, &tcn);
+	tcsetattr(data->fd, TCSADRAIN, &tcn);
 
 #else
 	struct sgttyb tcn;
 
-	ioctl(ps->mac->fd, TIOCGETP, &tcn);
+	ioctl(data->fd, TIOCGETP, &tcn);
 
-	tcn.sg_ispeed = calcrate(ps->rate);
-	tcn.sg_ospeed = calcrate(ps->rate);
+	tcn.sg_ispeed = calcrate(data->rate);
+	tcn.sg_ospeed = calcrate(data->rate);
 
-	ioctl(ps->mac->fd, TIOCSETN, &tcn);
+	ioctl(data->fd, TIOCSETN, &tcn);
 #endif
 
 #ifdef sleeping_beauty
@@ -361,6 +364,7 @@ static int s_changebaud(struct pi_socket *ps)
  ***********************************************************************/
 static int s_close(struct pi_socket *ps)
 {
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 	int result;
 
 #ifdef sleeping_beauty
@@ -368,20 +372,48 @@ static int s_close(struct pi_socket *ps)
 #endif
 
 #ifndef SGTTY
-	tcsetattr(ps->mac->fd, TCSADRAIN, &ps->tco);
+	tcsetattr(data->fd, TCSADRAIN, &data->tco);
 #else
-	ioctl(ps->mac->fd, TIOCSETP, &ps->tco);
+	ioctl(data->fd, TIOCSETP, &data->tco);
 #endif
 
-	result = close(ps->mac->fd);
-	ps->mac->fd = 0;
-
-#ifndef NO_SERIAL_TRACE
-	if (ps->debugfd)
-		close(ps->debugfd);
-#endif
+	result = close(data->fd);
+	data->fd = 0;
 
 	return result;
+}
+
+static int s_poll(struct pi_socket *ps, int timeout)
+{
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	fd_set ready;
+	struct timeval t;
+
+	FD_ZERO(&ready);
+	FD_SET(data->fd, &ready);
+
+	printf ("Serial Poll: %d\n", data->fd);
+
+	/* If timeout == 0, wait forever for packet, otherwise wait till
+	   timeout milliseconds */
+	if (timeout == 0)
+		select(data->fd + 1, &ready, 0, 0, 0);
+	else {
+		t.tv_sec = timeout / 1000;
+		t.tv_usec = (timeout % 1000) * 1000;
+		select(data->fd + 1, &ready, 0, 0, &t);
+	}
+
+	if (!FD_ISSET(data->fd, &ready)) {
+		/* otherwise throw out any current packet and return */
+#ifdef DEBUG
+		fprintf(stderr, "Serial RX: timeout\n");
+#endif
+		data->rx_errors++;
+		return -1;
+	}
+
+	return 0;
 }
 
 /***********************************************************************
@@ -395,45 +427,23 @@ static int s_close(struct pi_socket *ps)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int s_write(struct pi_socket *ps)
+static int s_write(struct pi_socket *ps, unsigned char *buf, int len)
 {
-	struct pi_skb *skb;
-	int nwrote, len;
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	int nwrote;
 
-#ifndef NO_SERIAL_TRACE
-	int i;
-#endif
-
-	if (ps->txq) {
-		ps->busy++;
-
-		skb = ps->txq;
-		ps->txq = skb->next;
-
-		len = 0;
-		while (len < skb->len) {
-			nwrote = 0;
-			nwrote = write(ps->mac->fd, skb->data, skb->len);
-			if (nwrote < 0)
-				break;	/* transmission failure */
-			len += nwrote;
-		}
-#ifndef NO_SERIAL_TRACE
-		if (ps->debuglog)
-			for (i = 0; i < skb->len; i++) {
-				write(ps->debugfd, "2", 1);
-				write(ps->debugfd, skb->data + i, 1);
-			}
-#endif
-		ps->tx_bytes += skb->len;
-
-		ps->busy--;
-		/* hacke to slow things down so that the Visor will work */
-		usleep(10 + skb->len);
-		free(skb);
-		return 1;
+	while (len > 0) {
+		nwrote = write(data->fd, buf, len);
+		if (nwrote < 0)
+			return -1;
+		len -= nwrote;
 	}
-	return 0;
+	data->tx_bytes += len;
+
+	/* hack to slow things down so that the Visor will work */
+	usleep(10 + len);
+
+	return len;
 }
 
 /***********************************************************************
@@ -447,66 +457,39 @@ static int s_write(struct pi_socket *ps)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int s_read(struct pi_socket *ps, int timeout)
+static int s_read(struct pi_socket *ps, unsigned char *buf, int len)
 {
-	int r;
-	unsigned char *buf;
-
-#ifndef NO_SERIAL_TRACE
-	int i;
-#endif
-	fd_set ready, ready2;
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	fd_set ready;
 	struct timeval t;
+	int r;
 
 	FD_ZERO(&ready);
-	FD_SET(ps->mac->fd, &ready);
+	FD_SET(data->fd, &ready);
 
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
-
-	pi_serial_flush(ps);	/* We likely want to be in sync with tx */
-	if (!ps->mac->expect)
-		slp_rx(ps);	/* let SLP know we want a packet */
-
-	while (ps->mac->expect) {
-		buf = ps->mac->buf;
-
-		while (ps->mac->expect) {
-			ready2 = ready;
-
-			if (timeout == 0)
-				select(ps->mac->fd + 1, &ready2, 0, 0, 0);
-			else {
-				t.tv_sec = timeout / 1000;
-				t.tv_usec = (timeout % 1000) * 1000;
-				select(ps->mac->fd + 1, &ready2, 0, 0, &t);
-			}
-			/* If data is available in time, read it */
-			if (FD_ISSET(ps->mac->fd, &ready2))
-				r = read(ps->mac->fd, buf,
-					 ps->mac->expect);
-			else {
-				/* otherwise throw out any current packet and return */
-#ifdef DEBUG
-				fprintf(stderr, "Serial RX: timeout\n");
-#endif
-				ps->mac->state = ps->mac->expect = 1;
-				ps->mac->buf = ps->mac->rxb->data;
-				ps->rx_errors++;
-				return 0;
-			}
-#ifndef NO_SERIAL_TRACE
-			if (ps->debuglog)
-				for (i = 0; i < r; i++) {
-					write(ps->debugfd, "1", 1);
-					write(ps->debugfd, buf + i, 1);
-				}
-#endif
-			ps->rx_bytes += r;
-			buf += r;
-			ps->mac->expect -= r;
-		}
-		slp_rx(ps);
+	if (data->timeout == 0)
+		select(data->fd + 1, &ready, 0, 0, 0);
+	else {
+		t.tv_sec = data->timeout / 1000;
+		t.tv_usec = (data->timeout % 1000) * 1000;
+		select(data->fd + 1, &ready, 0, 0, &t);
 	}
-	return 0;
+	/* If data is available in time, read it */
+	if (FD_ISSET(data->fd, &ready))
+		r = read(data->fd, buf, len);
+	else {
+		/* otherwise throw out any current packet and return */
+#ifdef DEBUG
+		fprintf(stderr, "Serial RX: timeout\n");
+#endif
+		data->rx_errors++;
+		return 0;
+	}
+	data->rx_bytes += r;
+
+	return r;
 }
+
+

@@ -7,18 +7,53 @@
 extern "C" {
 #endif
 
-	extern int pi_serial_connect
-	    PI_ARGS((struct pi_socket * ps, struct sockaddr * addr,
-		     int addrlen));
-	extern int pi_serial_bind
-	    PI_ARGS((struct pi_socket * ps, struct sockaddr * addr,
-		     int addrlen));
+	struct pi_serial_impl {
+		int (*open) PI_ARGS((struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen));
+		int (*close) PI_ARGS((struct pi_socket *ps));
+		int (*changebaud) PI_ARGS((struct pi_socket *ps));
+		int (*write) PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
+		int (*read) PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
+		int (*poll) PI_ARGS((struct pi_socket *ps, int timeout));
+	};
 
-	extern int pi_serial_open
-	    PI_ARGS((struct pi_socket * ps, struct pi_sockaddr * addr,
-		     int addrlen));
+	struct pi_serial_data {
+		struct pi_serial_impl impl;
 
-	extern int pi_serial_flush PI_ARGS((struct pi_socket * ps));
+		/* File descriptor */
+		int fd;
+
+		/* I/O options */
+#ifndef WIN32
+#ifndef OS2
+# ifndef SGTTY
+		struct termios tco;
+# else
+		struct sgttyb tco;
+# endif
+#endif
+#endif
+
+		/* Baud rate info */
+		int rate;		/* Current port baud rate                         */
+		int establishrate;	/* Baud rate to use after link is established                     */
+		int establishhighrate;	/* Boolean: try to establish rate higher than the device publishes*/
+
+		/* Time out */
+		int timeout;
+		
+		/* Statistics */
+		int rx_bytes;
+		int rx_errors;
+
+		int tx_bytes;
+		int tx_errors;
+	};
+
+	extern struct pi_device *pi_serial_device
+            PI_ARGS((void));
+
+	extern void pi_serial_impl_init
+	    PI_ARGS((struct pi_serial_impl *impl));
 
 #ifdef __cplusplus
 }

@@ -37,6 +37,7 @@
 #include "pi-serial.h"
 #include "pi-inetserial.h"
 #include "pi-inet.h"
+#include "pi-slp.h"
 #include "pi-padp.h"
 #include "pi-cmp.h"
 #include "pi-dlp.h"
@@ -119,149 +120,71 @@ static RETSIGTYPE pi_serial_onalarm(int signo);
 static int interval = 0;
 static int busy = 0;
 
-/***********************************************************************
- *
- * Function:    default_socket_connect
- *
- * Summary:     Connect to the socket passed in the descriptor
- *
- * Parmeters:   None
- *
- * Returns:     -1
- *
- ***********************************************************************/
-static int
-default_socket_connect(struct pi_socket *ps, struct sockaddr *addr,
-		       int flag)
+static void
+protocol_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 {
-	errno = ENOSYS;
-	return -1;
+	ps->protocol_queue = realloc(ps->protocol_queue, (sizeof(struct pi_protocol *)) * ps->queue_len + 1);
+	ps->protocol_queue[ps->queue_len] = prot;
+	ps->queue_len++;
 }
 
-/***********************************************************************
- *
- * Function:    default_socket_listen
- *
- * Summary:     Listen to the socket passed to the call
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int default_socket_listen(struct pi_socket *ps, int flag)
+static struct pi_protocol *
+protocol_queue_find (struct pi_socket *ps, int level) 
 {
-	errno = ENOSYS;
-	return -1;
+	int i;
+	
+	for (i = 0; i < ps->queue_len; i++) {
+		if (ps->protocol_queue[i]->level == level)
+			return ps->protocol_queue[i];
+	}
+
+	return NULL;
 }
 
-/***********************************************************************
- *
- * Function:    default_socket_accept
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int
-default_socket_accept(struct pi_socket *ps, struct sockaddr *addr,
-		      int *flag)
+static struct pi_protocol *
+protocol_queue_find_next (struct pi_socket *ps, int level) 
 {
-	errno = ENOSYS;
-	return -1;
+	int i;
+	
+	if (ps->queue_len == 0)
+		return NULL;
+	
+	if (level == 0) {
+		return ps->protocol_queue[0];
+	}
+	
+	for (i = 0; i < ps->queue_len - 1; i++) {
+		if (ps->protocol_queue[i]->level == level)
+			return ps->protocol_queue[i + 1];
+	}
+
+	return NULL;
 }
 
-/***********************************************************************
- *
- * Function:    default_socket_close
- *
- * Summary:     Close the open socket
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int default_socket_close(struct pi_socket *ps)
+struct pi_protocol *pi_protocol (int pi_sd, int level)
 {
-	return 0;
+	struct pi_socket *ps;
+
+	if (!(ps = find_pi_socket(pi_sd))) {
+		errno = ESRCH;
+		return NULL;
+	}
+
+	return protocol_queue_find(ps, level);
 }
 
-/***********************************************************************
- *
- * Function:    default_socket_tickle
- *
- * Summary:     Keep the socket open with a tickle packet
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int default_socket_tickle(struct pi_socket *ps)
+struct pi_protocol *pi_protocol_next (int pi_sd, int level)
 {
-	errno = ENOSYS;
-	return -1;
+	struct pi_socket *ps;
+
+	if (!(ps = find_pi_socket(pi_sd))) {
+		errno = ESRCH;
+		return NULL;
+	}
+
+	return protocol_queue_find_next(ps, level);
 }
 
-/***********************************************************************
- *
- * Function:    default_socket_bind
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int
-default_socket_bind(struct pi_socket *ps, struct sockaddr *addr, int flag)
-{
-	errno = ENOSYS;
-	return -1;
-}
-
-/***********************************************************************
- *
- * Function:    default_socket_send
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int
-default_socket_send(struct pi_socket *ps, void *buf, int len,
-		    unsigned int flags)
-{
-	errno = ENOSYS;
-	return -1;
-}
-
-/***********************************************************************
- *
- * Function:    default_socket_recv
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int
-default_socket_recv(struct pi_socket *ps, void *buf, int len,
-		    unsigned int flags)
-{
-	errno = ENOSYS;
-	return -1;
-}
 
 /***********************************************************************
  *
@@ -277,23 +200,18 @@ default_socket_recv(struct pi_socket *ps, void *buf, int len,
 int pi_socket(int domain, int type, int protocol)
 {
 	struct pi_socket *ps;
-
+	struct pi_protocol *prot;
+	
 	if (protocol == 0) {
 		if (type == PI_SOCK_STREAM)
 			protocol = PI_PF_PADP;
 		else if (type == PI_SOCK_RAW)
-			protocol = PI_PF_SLP;
-	}
-
-	if (((domain != PI_AF_SLP) && (domain != AF_INET))
-	    || ((type != PI_SOCK_STREAM) && (type != PI_SOCK_RAW))
-	    || ((protocol != PI_PF_PADP) && (protocol != PI_PF_SLP))) {	/* FIXME:  Need to support more */
-		errno = EINVAL;
-		return -1;
+			protocol = PI_PF_DEV;
 	}
 
 	ps = calloc(sizeof(struct pi_socket), 1);
 
+	/* Create unique socket descriptor */
 #if defined( OS2 ) || defined( WIN32 )
 	if ((ps->sd = open("NUL", O_RDWR)) == -1) {
 #else
@@ -305,33 +223,50 @@ int pi_socket(int domain, int type, int protocol)
 		errno = err;
 		return -1;
 	}
-	ps->mac = calloc(1, sizeof(struct pi_mac));
 
+	/* Build the protocol queue */
+	ps->protocol_queue = NULL;
+	ps->queue_len = 0;
+
+	switch (protocol) {
+	case PI_PF_DLP:
+	case PI_PF_PADP:
+		prot = padp_protocol ();
+		protocol_queue_add (ps, prot);
+	case PI_PF_SLP_PADP:
+		prot = slp_protocol ();
+		protocol_queue_add (ps, prot);
+		break;
+	case PI_PF_SLP_RPC:
+		prot = slp_protocol ();
+		protocol_queue_add (ps, prot);
+		break;
+	case PI_PF_SLP_LOOP:
+		prot = slp_protocol ();
+		protocol_queue_add (ps, prot);
+		break;
+	}
+
+	/* Determine the device type */
+	ps->device = pi_serial_device ();
+	prot = ps->device->protocol (ps->device);
+	protocol_queue_add (ps, prot);
+
+	/* Initialize the rest of the fields */
+	ps->laddr = NULL;
+	ps->laddrlen = 0;
+	ps->raddr = NULL;
+	ps->raddrlen = 0;
 	ps->type = type;
 	ps->protocol = protocol;
 	ps->connected = 0;
 	ps->accepted = 0;
 	ps->broken = 0;
-	ps->mac->fd = 0;
-	ps->mac->ref = 1;
-	ps->xid = 0xff;
 	ps->initiator = 0;
 	ps->minorversion = 0;
 	ps->majorversion = 0;
 	ps->version = 0;
 	ps->dlprecord = 0;
-	ps->busy = 0;
-
-	ps->establishrate = -1;
-
-	ps->socket_connect = default_socket_connect;
-	ps->socket_listen = default_socket_listen;
-	ps->socket_accept = default_socket_accept;
-	ps->socket_close = default_socket_close;
-	ps->socket_tickle = default_socket_tickle;
-	ps->socket_bind = default_socket_bind;
-	ps->socket_send = default_socket_send;
-	ps->socket_recv = default_socket_recv;
 
 #ifdef OS2
 	ps->os2_read_timeout = 60;
@@ -359,6 +294,48 @@ int pi_socket(int domain, int type, int protocol)
 	pi_socket_recognize(ps);
 
 	return ps->sd;
+}
+
+
+/***********************************************************************
+ *
+ * Function:    pi_socket_copy
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     New socket
+ *
+ ***********************************************************************/
+struct pi_socket *pi_socket_copy(struct pi_socket *ps)
+{
+	struct pi_socket *new_ps;
+	int i;
+	
+	new_ps = malloc(sizeof(struct pi_socket));
+	memcpy(new_ps, ps, sizeof(struct pi_socket));
+
+	new_ps->laddr = malloc(ps->laddrlen);
+	new_ps->raddr = malloc(ps->raddrlen);
+	memcpy(new_ps->laddr, ps->laddr, ps->laddrlen);
+	memcpy(new_ps->raddr, ps->raddr, ps->raddrlen);
+
+	new_ps->sd = dup(ps->sd);
+	
+	new_ps->protocol_queue = NULL;
+	new_ps->queue_len = 0;
+	for (i = 0; i < ps->queue_len; i++) {
+		struct pi_protocol *prot;
+		
+		prot = ps->protocol_queue[i]->dup (ps->protocol_queue[i]);
+		protocol_queue_add(new_ps, prot);
+	}
+	new_ps->device = ps->device->dup (ps->device);
+	
+	pi_socket_recognize(new_ps);
+
+	return new_ps;
 }
 
 /***********************************************************************
@@ -399,36 +376,13 @@ void pi_socket_recognize(struct pi_socket *ps)
 int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
-	struct pi_sockaddr *pa = (struct pi_sockaddr *) addr;
-	enum { inet, serial } conn;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
 
-	conn = serial;
-
-	if (addr->sa_family == PI_AF_SLP) {
-		if (pa->pi_device[0] == '.')
-			conn = inet;
-		else
-			conn = serial;
-	} else if (addr->sa_family == AF_INET)
-		conn = inet;
-	else if (addr->sa_family == PI_AF_INETSLP)
-		conn = inet;
-
-	if (conn == serial)
-		return pi_serial_connect(ps, addr, addrlen);
-	else if (conn == inet)
-#ifdef _PILOT_INET_H_
-		return pi_inet_connect(ps, addr, addrlen);
-#else
-		return -1;
-#endif
-
-	return -1;
+	return ps->device->connect (ps, addr, addrlen);
 }
 
 /***********************************************************************
@@ -445,36 +399,13 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
-	struct pi_sockaddr *pa = (struct pi_sockaddr *) addr;
-	enum { inet, serial } conn;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
 
-	conn = serial;
-
-	if (addr->sa_family == PI_AF_SLP) {
-		if (pa->pi_device[0] == '.')
-			conn = inet;
-		else
-			conn = serial;
-	} else if (addr->sa_family == AF_INET)
-		conn = inet;
-	else if (addr->sa_family == PI_AF_INETSLP)
-		conn = serial;
-
-	if (conn == serial)
-		return pi_serial_bind(ps, addr, addrlen);
-	else if (conn == inet)
-#ifdef _PILOT_INET_H_
-		return pi_inet_bind(ps, addr, addrlen);
-#else
-		return -1;
-#endif
-
-	return -1;
+	return ps->device->bind (ps, addr, addrlen);
 }
 
 /***********************************************************************
@@ -497,7 +428,7 @@ int pi_listen(int pi_sd, int backlog)
 		return -1;
 	}
 
-	return ps->socket_listen(ps, backlog);
+	return ps->device->listen (ps, backlog);
 }
 
 /***********************************************************************
@@ -522,7 +453,7 @@ int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
 
 	ps->accept_to = 0;
 
-	return ps->socket_accept(ps, addr, addrlen);
+	return ps->device->accept(ps, addr, addrlen);
 }
 
 /***********************************************************************
@@ -548,80 +479,74 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
 
 	ps->accept_to = timeout;
 
-	return ps->socket_accept(ps, addr, addrlen);
-}
-
-/***********************************************************************
- *
- * Function:    pi_setmaxspeed
- *
- * Summary:     Set the maximum connection speed of the socket
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int pi_setmaxspeed(int pi_sd, int speed, int overclock)
-{
-	struct pi_socket *ps;
-
-	if (!(ps = find_pi_socket(pi_sd))) {
-		errno = ESRCH;
-		return -1;
-	}
-
-	if (ps->connected) {
-		errno = EBUSY;	/* EISCONN might be better, but is not available on all OSes. */
-		return -1;
-	}
-
-	ps->establishrate = speed;
-	ps->establishhighrate = overclock;
-
-	return 0;
+	return ps->device->accept(ps, addr, addrlen);
 }
 
 /***********************************************************************
  *
  * Function:    pi_getsockopt
  *
- * Summary:     
+ * Summary:     Get a socket option
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     0 on success, negative value on failure
  *
  ***********************************************************************/
 int
-pi_getsockopt(int pi_sd, int level, int option_name, void *option_value,
-	      int *option_len)
+pi_getsockopt(int pi_sd, int level, int option_name, 
+	      void *option_value, int *option_len)
 {
 	struct pi_socket *ps;
-
+	struct pi_protocol *prot;
+	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
 
-	if (level != PI_PF_SLP) {
+	prot = protocol_queue_find (ps, level);
+	
+	if (prot == NULL || prot->level != level) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	if (option_name == PI_SLP_SPEED) {
-		int speed = ps->rate;
-		memcpy(option_value, &speed,
-		       (*option_len <
-			sizeof(int)) ? *option_len : sizeof(int));
-		if (*option_len > sizeof(int))
-			*option_len = sizeof(int);
+	return prot->getsockopt (ps, level, option_name, option_value, option_len);
+}
 
-		return 0;
+
+/***********************************************************************
+ *
+ * Function:    pi_setsockopt
+ *
+ * Summary:     Set a socket option
+ *
+ * Parmeters:   None
+ *
+ * Returns:     0 on success, negative value on failure
+ *
+ ***********************************************************************/
+int
+pi_setsockopt(int pi_sd, int level, int option_name, 
+	      const void *option_value, int *option_len) 
+{
+	struct pi_socket *ps;
+	struct pi_protocol *prot;
+	
+	if (!(ps = find_pi_socket(pi_sd))) {
+		errno = ESRCH;
+		return -1;
 	}
 
-	errno = EINVAL;
-	return -1;
+	prot = protocol_queue_find (ps, level);
+	
+	if (prot == NULL || prot->level != level) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return prot->setsockopt (ps, level, option_name, option_value, option_len);
 }
 
 /***********************************************************************
@@ -647,7 +572,7 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
 	if (interval)
 		alarm(interval);
 
-	return ps->socket_send(ps, msg, len, flags);
+	return ps->protocol_queue[0]->write (ps, msg, len);
 }
 
 /***********************************************************************
@@ -670,7 +595,7 @@ int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
 		return -1;
 	}
 
-	return ps->socket_recv(ps, msg, len, flags);
+	return ps->protocol_queue[0]->read (ps, msg, len);
 }
 
 /***********************************************************************
@@ -726,7 +651,8 @@ int pi_tickle(int pi_sd)
 		return -1;
 	}
 
-	return ps->socket_tickle(ps);
+//	return ps->socket_tickle(ps);
+	return 0;
 }
 
 /***********************************************************************
@@ -750,11 +676,11 @@ int pi_close(int pi_sd)
 		return -1;
 	}
 
-	busy++;
-	result = ps->socket_close(ps);
-	busy--;
-
+	result = ps->device->close (ps);
+	printf ("Result: %d\n", result);
+	
 	if (result == 0) {
+		
 		if (ps == psl) {
 			psl = psl->next;
 		} else {
@@ -775,7 +701,7 @@ int pi_close(int pi_sd)
 
 /***********************************************************************
  *
- * Function:    pi_onexit
+ * Function:    pi_nexit
  *
  * Summary:     Install an atexit handler that closes open sockets
  *
@@ -784,17 +710,14 @@ int pi_close(int pi_sd)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void pi_onexit(void)
+static void onexit(void)
 {
 	struct pi_socket *p, *n;
 
 	for (p = psl; p; p = n) {
 		n = p->next;
-		if (p->socket_close) {
 			pi_close(p->sd);
-		}
 	}
-
 }
 
 /***********************************************************************
@@ -813,7 +736,7 @@ void installexit(void)
 	static int installedexit = 0;
 
 	if (!installedexit)
-		atexit(pi_onexit);
+		atexit(onexit);
 
 	installedexit = 1;
 }

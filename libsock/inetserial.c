@@ -133,7 +133,7 @@ static int n_changebaud(struct pi_socket *ps)
 
 	set_short(buffer, 1);
 	set_short(buffer + 2, 4);
-	set_long(buffer + 4, ps->rate);
+//	set_long(buffer + 4, ps->rate);
 
 	write(ps->mac->fd, buffer, 8);
 
@@ -195,7 +195,7 @@ static int n_write(struct pi_socket *ps)
 
 	if (ps->txq) {
 
-		ps->busy++;
+//		ps->busy++;
 
 		skb = ps->txq;
 		ps->txq = skb->next;
@@ -222,7 +222,7 @@ static int n_write(struct pi_socket *ps)
 		ps->tx_bytes += skb->len;
 		free(skb);
 
-		ps->busy--;
+//		ps->busy--;
 
 		return 1;
 	}
@@ -257,7 +257,7 @@ static int n_read(struct pi_socket *ps, int timeout)
 	pi_serial_flush(ps);	/* We likely want to be in sync with tx */
 
 	if (!ps->mac->expect)
-		slp_rx(ps);	/* let SLP know we want a packet */
+//		slp_rx(ps);	/* let SLP know we want a packet */
 
 	while (ps->mac->expect) {
 		buf = ps->mac->buf;
@@ -292,7 +292,7 @@ static int n_read(struct pi_socket *ps, int timeout)
 			buf += r;
 			ps->mac->expect -= r;
 		}
-		slp_rx(ps);
+//		slp_rx(ps);
 	}
 	return 0;
 }

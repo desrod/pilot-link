@@ -77,17 +77,33 @@ extern "C" {
 		unsigned char data[PI_SLP_MTU];
 	};
 
-	struct pi_mac {
-		int fd;
-		int state;
-		int expect;
-		int ref;
-		struct pi_skb *rxb;
-		unsigned char *buf;
-	};
-
 	struct sockaddr;
 
+	struct pi_protocol {
+		int level;
+		struct pi_protocol *(*dup) PI_ARGS((struct pi_protocol *));
+
+		int (*read) PI_ARGS((struct pi_socket *, unsigned char *, int));
+		int (*write) PI_ARGS((struct pi_socket *, unsigned char *, int));
+	 	int (*getsockopt) PI_ARGS((struct pi_socket *, int, int, void *, int *));
+		int (*setsockopt) PI_ARGS((struct pi_socket *, int, int, const void *, int *));
+
+		void *data;
+	};
+
+	struct pi_device {
+		struct pi_device *(*dup) PI_ARGS((struct pi_device *dev));
+		struct pi_protocol *(*protocol) PI_ARGS((struct pi_device *dev));
+
+		int (*bind) PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
+		int (*listen) PI_ARGS((struct pi_socket *ps, int backlog));
+		int (*accept) PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int *addrlen));
+		int (*connect) PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
+		int (*close) PI_ARGS((struct pi_socket *ps));
+
+		void *data;
+	};
+	
 	struct pi_socket {
 		struct sockaddr *laddr;
 		int laddrlen;
@@ -95,11 +111,12 @@ extern "C" {
 		int raddrlen;
 		int type;
 		int protocol;
-		unsigned char xid;
-		unsigned char nextid;
 		int sd;
 		int initiator;
-		struct pi_mac *mac;
+		struct pi_device *device;
+		struct pi_protocol **protocol_queue;
+		int queue_len;
+		
 #ifndef WIN32
 #ifndef OS2
 # ifndef SGTTY
@@ -112,9 +129,7 @@ extern "C" {
 		struct pi_skb *txq;
 		struct pi_skb *rxq;
 		struct pi_socket *next;
-		int rate;		/* Current port baud rate                                               */
-		int establishrate;	/* Baud rate to use after link is established                           */
-		int establishhighrate;	/* Boolean: try to establish rate higher than the device publishes      */
+
 		int connected;		/* true on connected or accepted socket                                 */
 		int accepted;		/* only true on accepted socket                                         */
 		int broken;		/* sth. went wrong so badly we cannot use this socket anymore           */
@@ -122,35 +137,11 @@ extern "C" {
 		int majorversion;
 		int minorversion;
 		int tickle;
-		int busy;
 		int version;		/* In form of 0xAABB where AA is major version and BB is minor version  */
 		int dlprecord;		/* Index used for some DLP functions */
-		int tx_packets;
-		int rx_packets;
-		int tx_bytes;
-		int rx_bytes;
-		int tx_errors;
-		int rx_errors;
+
 		char last_tid;
-		int (*socket_connect)
-		 PI_ARGS((struct pi_socket *, struct sockaddr *, int));
-		int (*socket_listen) PI_ARGS((struct pi_socket *, int));
-		int (*socket_accept)
-		 PI_ARGS((struct pi_socket *, struct sockaddr *, int *));
-		int (*socket_close) PI_ARGS((struct pi_socket *));
-		int (*socket_tickle) PI_ARGS((struct pi_socket *));
-		int (*socket_bind)
-		 PI_ARGS((struct pi_socket *, struct sockaddr *, int));
-		int (*socket_send)
-		 PI_ARGS((struct pi_socket *, void *buf, int len,
-			  unsigned int flags));
-		int (*socket_recv)
-		 PI_ARGS((struct pi_socket *, void *buf, int len,
-			  unsigned int flags));
-		int (*serial_close) PI_ARGS((struct pi_socket *));
-		int (*serial_changebaud) PI_ARGS((struct pi_socket *));
-		int (*serial_write) PI_ARGS((struct pi_socket *));
-		int (*serial_read) PI_ARGS((struct pi_socket *, int));
+
 #ifdef OS2
 		unsigned short os2_read_timeout;
 		unsigned short os2_write_timeout;

@@ -45,16 +45,8 @@ int cmp_rx(struct pi_socket *ps, struct cmp *c)
 
 	Begin(cmp_rx);
 
-	if (!ps->rxq) {
-		ps->serial_read(ps, ps->accept_to);
-
-		if (ps->rx_errors > 0) {
-			errno = ETIMEDOUT;
-			return -1;
-		}
-
-	}
-
+	printf ("CMP_RX\n");
+	
 	l = padp_rx(ps, cmpbuf, 10);
 
 	if (l < 10)
@@ -85,9 +77,10 @@ int cmp_rx(struct pi_socket *ps, struct cmp *c)
  *
  ***********************************************************************/
 int cmp_init(struct pi_socket *ps, int baudrate)
-{
+{	
 	unsigned char cmpbuf[10];
-
+	int type, size;
+	
 	set_byte(cmpbuf + 0, 2);
 	set_long(cmpbuf + 2, 0);
 	set_long(cmpbuf + 6, baudrate);
@@ -99,7 +92,12 @@ int cmp_init(struct pi_socket *ps, int baudrate)
 
 	cmp_dump(cmpbuf, 1);
 
-	return padp_tx(ps, cmpbuf, 10, padData);
+	type = padData;
+	size = sizeof(type);
+	pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, 
+		      &type, &size);
+
+	return padp_tx(ps, cmpbuf, 10);
 }
 
 /***********************************************************************
@@ -116,7 +114,8 @@ int cmp_init(struct pi_socket *ps, int baudrate)
 int cmp_abort(struct pi_socket *ps, int reason)
 {
 	unsigned char cmpbuf[10];
-
+	int type, size;
+	
 	set_byte(cmpbuf + 0, 3);
 	set_byte(cmpbuf + 1, reason);
 	set_long(cmpbuf + 2, 0);
@@ -124,7 +123,12 @@ int cmp_abort(struct pi_socket *ps, int reason)
 
 	cmp_dump(cmpbuf, 1);
 
-	return padp_tx(ps, cmpbuf, 10, padData);
+	type = padData;
+	size = sizeof(type);
+	pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, 
+		      &type, &size);
+
+	return padp_tx(ps, cmpbuf, 10);
 }
 
 /***********************************************************************
@@ -141,7 +145,8 @@ int cmp_abort(struct pi_socket *ps, int reason)
 int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 {
 	unsigned char cmpbuf[200];
-
+	int type, size;
+	
 	set_byte(cmpbuf + 0, 1);
 	set_byte(cmpbuf + 1, 0);
 	set_short(cmpbuf + 2, CommVersion_1_0);
@@ -150,7 +155,12 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 
 	cmp_dump(cmpbuf, 1);
 
-	return padp_tx(ps, cmpbuf, 10, padWake);
+	type = padWake;
+	size = sizeof(type);
+	pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, 
+		      &type, &size);
+
+	return padp_tx(ps, cmpbuf, 10);
 }
 
 /***********************************************************************

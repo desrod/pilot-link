@@ -175,7 +175,7 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
 		errno = -EIO;
 		return -err;
 	}
-
+	
 	if (exec_buf[0] != (unsigned char) (cmd | 0x80)) {		/* received wrong response 	*/
 		errno = -ENOMSG;
 		return -1;

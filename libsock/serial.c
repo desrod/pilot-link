@@ -49,17 +49,123 @@
 extern int win_peek(struct pi_socket *ps, int timeout);
 #endif
 
+static int pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, 
+			     int addrlen);
+static int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr,
+			  int addrlen);
 static int pi_serial_listen(struct pi_socket *ps, int backlog);
 static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr,
 			    int *addrlen);
-static int pi_serial_send(struct pi_socket *ps, void *msg, int len,
-			  unsigned int flags);
-static int pi_serial_recv(struct pi_socket *ps, void *msg, int len,
-			  unsigned int flags);
+static int pi_serial_getsockopt(struct pi_socket *ps, int level, int option_name, 
+				void *option_value, int *option_len);
+static int pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name, 
+				const void *option_value, int *option_len);
+
 static int pi_serial_tickle(struct pi_socket *ps);
 static int pi_serial_close(struct pi_socket *ps);
 
+static struct pi_protocol *pi_serial_protocol (struct pi_device *dev);
+
 extern int dlp_trace;
+
+static struct pi_protocol *pi_serial_protocol_dup (struct pi_protocol *prot)
+{
+	struct pi_protocol *new_prot;
+	
+	new_prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
+	new_prot->level = prot->level;
+	new_prot->dup = prot->dup;
+	new_prot->read = prot->read;
+	new_prot->write = prot->write;
+	new_prot->getsockopt = prot->getsockopt;
+	new_prot->setsockopt = prot->setsockopt;
+	new_prot->data = NULL;
+
+	return new_prot;
+}
+
+static struct pi_protocol *pi_serial_protocol (struct pi_device *dev)
+{	
+	struct pi_protocol *prot;
+	struct pi_serial_data *data;
+	
+	data = dev->data;
+	
+	prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
+	prot->level = PI_LEVEL_SOCKET;
+	prot->dup = pi_serial_protocol_dup;
+	prot->read = data->impl.read;
+	prot->write = data->impl.write;
+	prot->getsockopt = pi_serial_getsockopt;
+	prot->setsockopt = pi_serial_setsockopt;
+	prot->data = NULL;
+	
+	return prot;
+}
+
+
+static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
+{
+	struct pi_device *new_dev;
+	struct pi_serial_data *new_data, *data;
+	
+	new_dev = (struct pi_device *)malloc (sizeof (struct pi_device));
+	new_dev->dup = dev->dup;
+	new_dev->protocol = dev->protocol;	
+	new_dev->bind = dev->bind;
+	new_dev->listen = dev->listen;
+	new_dev->accept = dev->accept;
+	new_dev->connect = dev->connect;
+	new_dev->close = dev->close;
+	
+	new_data = (struct pi_serial_data *)malloc (sizeof (struct pi_serial_data));
+	data = (struct pi_serial_data *)dev->data;
+	new_data->impl = data->impl;
+	new_data->fd = dup(data->fd);
+	printf ("New FD %d\n", new_data->fd);
+	new_data->rate = data->rate;
+	new_data->establishrate = data->establishrate;
+	new_data->establishhighrate = data->establishhighrate;
+	new_data->timeout = data->timeout;
+	new_data->rx_bytes = 0;
+	new_data->rx_errors = 0;
+	new_data->tx_bytes = 0;
+	new_data->tx_errors = 0;
+	new_dev->data = new_data;
+	
+	return new_dev;
+}
+
+struct pi_device *pi_serial_device (void) 
+{
+	struct pi_device *dev;
+	struct pi_serial_data *data;
+	
+	dev = (struct pi_device *)malloc (sizeof (struct pi_device));
+	data = (struct pi_serial_data *)malloc (sizeof (struct pi_serial_data));
+
+	dev->dup = pi_serial_device_dup;
+	dev->protocol = pi_serial_protocol;	
+	dev->bind = pi_serial_bind;
+	dev->listen = pi_serial_listen;
+	dev->accept = pi_serial_accept;
+	dev->connect = pi_serial_connect;
+	dev->close = pi_serial_close;
+
+	pi_serial_impl_init (&data->impl);
+	data->fd = 0;
+	data->rate = -1;
+	data->establishrate = -1;
+	data->establishhighrate = -1;
+	data->timeout = 0;
+	data->rx_bytes = 0;
+	data->rx_errors = 0;
+	data->tx_bytes = 0;
+	data->tx_errors = 0;
+	dev->data = data;
+	
+	return dev;
+}
 
 /***********************************************************************
  *
@@ -72,48 +178,36 @@ extern int dlp_trace;
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int
+static int
 pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 	struct cmp c;
 	struct pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 	char *rate_env;
 
 	if (ps->type == PI_SOCK_STREAM) {
-		if (ps->establishrate == -1) {
-			ps->establishrate = 9600;	/* Default PADP connection rate */
+		if (data->establishrate == -1) {
+			data->establishrate = 9600;	/* Default PADP connection rate */
 			rate_env = getenv("PILOTRATE");
 			if (rate_env) {
 				if (rate_env[0] == 'H') {	/* Establish high rate */
-					ps->establishrate =
+					data->establishrate =
 					    atoi(rate_env + 1);
-					ps->establishhighrate = -1;
+					data->establishhighrate = -1;
 				} else {
-					ps->establishrate = atoi(rate_env);
-					ps->establishhighrate = 0;
+					data->establishrate = atoi(rate_env);
+					data->establishhighrate = 0;
 				}
 			}
 		}
-		ps->rate = 9600;	/* Mandatory CMP conncetion rate */
+		data->rate = 9600;	/* Mandatory CMP conncetion rate */
 	} else if (ps->type == PI_SOCK_RAW) {
-		ps->establishrate = ps->rate = 57600;	/* Mandatory SysPkt connection rate */
+		data->establishrate = data->rate = 57600;	/* Mandatory SysPkt connection rate */
 	}
 
-	if ((addr->sa_family == PI_AF_INETSLP)
-	    || ((addr->sa_family == PI_AF_SLP)
-		&& (pa->pi_device[0] == ':'))) {
-#ifdef _PILOT_INETSERIAL_H_
-		if (pi_inetserial_open(ps, addr, addrlen) == -1) {
-			return -1;	/* errno already set */
-		}
-#else
-		errno = EINVAL;
-		return -1;
-#endif
-	} else {
-		if (pi_serial_open(ps, pa, addrlen) == -1) {
-			return -1;	/* errno already set */
-		}
+	if (data->impl.open(ps, pa, addrlen) == -1) {
+		return -1;	/* errno already set */
 	}
 
 	ps->raddr = malloc(addrlen);
@@ -136,15 +230,15 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
 			if (c.flags & 0x80) {
 				/* Change baud rate */
-				ps->rate = c.baudrate;
-				if (ps->serial_changebaud(ps) < 0)
+				data->rate = c.baudrate;
+				if (data->impl.changebaud(ps) < 0)
 					return -1;
 
 			}
 
 		} else if (c.type == 3) {
 			/* CMP abort packet -- the other side didn't like us */
-			ps->serial_close(ps);
+			data->impl.close(ps);
 
 #ifdef DEBUG
 			fprintf(stderr,
@@ -155,15 +249,7 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 		}
 	}
 	ps->connected = 1;
-
 	ps->initiator = 1;	/* We initiated the link */
-
-	ps->socket_listen 	= pi_serial_listen;
-	ps->socket_accept 	= pi_serial_accept;
-	ps->socket_close 	= pi_serial_close;
-	ps->socket_send 	= pi_serial_send;
-	ps->socket_recv 	= pi_serial_recv;
-	ps->socket_tickle 	= pi_serial_tickle;
 
 	return 0;
 }
@@ -179,47 +265,35 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int
+static int
 pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 	struct pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 	char *rate_env;
 
 	if (ps->type == PI_SOCK_STREAM) {
-		if (ps->establishrate == -1) {
-			ps->establishrate = 9600;	/* Default PADP connection rate */
+		if (data->establishrate == -1) {
+			data->establishrate = 9600;	/* Default PADP connection rate */
 			rate_env = getenv("PILOTRATE");
 			if (rate_env) {
 				if (rate_env[0] == 'H') {	/* Establish high rate */
-					ps->establishrate =
+					data->establishrate =
 					    atoi(rate_env + 1);
-					ps->establishhighrate = -1;
+					data->establishhighrate = -1;
 				} else {
-					ps->establishrate = atoi(rate_env);
-					ps->establishhighrate = 0;
+					data->establishrate = atoi(rate_env);
+					data->establishhighrate = 0;
 				}
 			}
 		}
-		ps->rate = 9600;	/* Mandatory CMP connection rate */
+		data->rate = 9600;	/* Mandatory CMP connection rate */
 	} else if (ps->type == PI_SOCK_RAW) {
-		ps->establishrate = ps->rate = 57600;	/* Mandatory SysPkt connection rate */
+		data->establishrate = data->rate = 57600;	/* Mandatory SysPkt connection rate */
 	}
 
-	if ((addr->sa_family == PI_AF_INETSLP)
-	    || ((addr->sa_family == PI_AF_SLP)
-		&& (pa->pi_device[0] == ':'))) {
-#ifdef _PILOT_INETSERIAL_H_
-		if (pi_inetserial_open(ps, addr, addrlen) == -1) {
-			return -1;	/* errno already set */
-		}
-#else
-		errno = EINVAL;
-		return -1;
-#endif
-	} else {
-		if (pi_serial_open(ps, pa, addrlen) == -1) {
-			return -1;	/* errno already set */
-		}
+	if (data->impl.open(ps, pa, addrlen) == -1) {
+		return -1;	/* errno already set */
 	}
 
 	ps->raddr = malloc(addrlen);
@@ -228,13 +302,6 @@ pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	ps->laddr = malloc(addrlen);
 	memcpy(ps->laddr, addr, addrlen);
 	ps->laddrlen = addrlen;
-
-	ps->socket_listen = pi_serial_listen;
-	ps->socket_accept = pi_serial_accept;
-	ps->socket_close = pi_serial_close;
-	ps->socket_send = pi_serial_send;
-	ps->socket_recv = pi_serial_recv;
-	ps->socket_tickle = pi_serial_tickle;
 
 	return 0;
 }
@@ -252,7 +319,9 @@ pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  ***********************************************************************/
 static int pi_serial_listen(struct pi_socket *ps, int backlog)
 {
-	return ps->serial_changebaud(ps);	/* ps->rate has been set by bind */
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+
+	return data->impl.changebaud(ps);	/* ps->rate has been set by bind */
 }
 
 /***********************************************************************
@@ -269,54 +338,45 @@ static int pi_serial_listen(struct pi_socket *ps, int backlog)
 static int
 pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
-	struct pi_socket *accept;
-	struct timeval tv;
-	struct cmp c;
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct pi_socket *accept = NULL;
 
-	accept = malloc(sizeof(struct pi_socket));
-	memcpy(accept, ps, sizeof(struct pi_socket));
+	if (ps->type == PI_SOCK_STREAM) {
+		struct timeval tv;
+		struct cmp c;
 
-	if (accept->type == PI_SOCK_STREAM) {
-#ifdef WIN32
-		int rc;
-
-		rc = win_peek(ps, accept->accept_to);	/* Wait for data on the CommPort. */
-		if (rc < 0) {
-			errno = ETIMEDOUT;
-			goto fail;
-		}
-#else
-		accept->serial_read(accept, accept->accept_to);
-#endif
-
-		if (accept->rx_errors > 0) {
+		/* Wait for data */
+		if (data->impl.poll(ps, 0) < 0) {
 			errno = ETIMEDOUT;
 			goto fail;
 		}
 
+		accept = pi_socket_copy(ps);
+
+		/* Check for a proper cmp connection */
 		if (cmp_rx(accept, &c) < 0)
 			goto fail;	/* Failed to establish connection, errno already set */
 
 		if ((c.version & 0xFF00) == 0x0100) {
-			if ((unsigned long) accept->establishrate >
+			if ((unsigned long) data->establishrate >
 			    c.baudrate) {
-				if (!accept->establishhighrate) {
+				if (!data->establishhighrate) {
 					fprintf(stderr,
 						"Rate %d too high, dropping to %ld\n",
-						ps->establishrate,
+						data->establishrate,
 						c.baudrate);
-					accept->establishrate = c.baudrate;
+					data->establishrate = c.baudrate;
 				}
 			}
 
-			accept->rate = accept->establishrate;
+			data->rate = data->establishrate;
 			accept->version = c.version;
-			if (cmp_init(accept, accept->rate) < 0)
+
+			if (cmp_init(accept, data->rate) < 0)
 				goto fail;
-			pi_serial_flush(accept);
 
 			/* We always reconfigure our port, no matter what */
-			if (accept->serial_changebaud(accept) < 0)
+			if (data->impl.changebaud(accept) < 0)
 				goto fail;
 
 			/* Palm device needs some time to reconfigure its port */
@@ -344,79 +404,89 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 			goto fail;
 		}
 	} else {
+		accept = pi_socket_copy(ps);
+
 		accept->connected = 1;
 		accept->accepted = 1;
 	}
 
-	accept->sd = dup(ps->sd);
-
-	pi_socket_recognize(accept);
-
-	accept->laddr = malloc(ps->laddrlen);
-	accept->raddr = malloc(ps->raddrlen);
-	memcpy(accept->laddr, ps->laddr, ps->laddrlen);
-	memcpy(accept->raddr, ps->raddr, ps->raddrlen);
-
-	accept->mac->ref++;	/* Keep mac around even if the bound socket
-				   is closed */
 	accept->initiator = 0;	/* We accepted the link, we did not initiate
 				   it */
 
 	return accept->sd;
-      fail:
-	free(accept);
+
+ fail:
+	if (accept)
+		pi_close (accept->sd);
 	return -1;
 }
 
-/***********************************************************************
- *
- * Function:    pi_serial_send
- *
- * Summary:     Send message on a connected socket
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int
-pi_serial_send(struct pi_socket *ps, void *msg, int len,
-	       unsigned int flags)
+pi_serial_getsockopt(struct pi_socket *ps, int level, int option_name, 
+		     void *option_value, int *option_len)
 {
-	if (ps->type == PI_SOCK_STREAM)
-		return padp_tx(ps, msg, len, padData);
-	else
-#ifdef _PILOT_SYSPKT_H
-		return syspkt_tx(ps, msg, len);
-#else
-		return -1;
-#endif
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+
+	switch (option_name) {
+	case PI_SOCKET_RATE:
+		if (*option_len < sizeof (data->rate))
+			goto error;
+		memcpy (option_value, &data->rate, sizeof (data->rate));
+		*option_len = sizeof (data->rate);
+		break;
+	case PI_SOCKET_ESTRATE:
+		if (*option_len < sizeof (data->establishrate))
+			goto error;
+		memcpy (option_value, &data->establishrate, 
+			sizeof (data->establishrate));
+		*option_len = sizeof (data->establishrate);
+		break;
+	case PI_SOCKET_HIGHRATE:
+		if (*option_len < sizeof (data->establishhighrate))
+			goto error;
+		memcpy (option_value, &data->establishhighrate,
+			sizeof (data->establishhighrate));
+		*option_len = sizeof (data->establishhighrate);
+		break;
+	}
+
+	return 0;
+	
+ error:
+	errno = EINVAL;
+	return -1;
 }
 
-/***********************************************************************
- *
- * Function:    pi_serial_recv
- *
- * Summary:     Receive message on a connected socket
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int
-pi_serial_recv(struct pi_socket *ps, void *msg, int len,
-	       unsigned int flags)
+pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name, 
+		     const void *option_value, int *option_len)
 {
-	if (ps->type == PI_SOCK_STREAM)
-		return padp_rx(ps, msg, len);
-	else
-#ifdef _PILOT_SYSPKT_H
-		return syspkt_rx(ps, msg, len);
-#else
-		return -1;
-#endif
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+
+	/* FIXME: can't change stuff if already connected */
+
+	switch (option_name) {
+	case PI_SOCKET_ESTRATE:
+		if (*option_len != sizeof (data->establishrate))
+			goto error;
+		memcpy (&data->establishrate, option_value,
+			sizeof (data->establishrate));
+		break;
+	case PI_SOCKET_HIGHRATE:
+		if (*option_len != sizeof (data->establishhighrate))
+			goto error;
+		memcpy (&data->establishhighrate, option_value,
+			sizeof (data->establishhighrate));
+		break;
+	}
+
+	return 0;
+	
+ error:
+	errno = EINVAL;
+	return -1;
 }
+
 
 /***********************************************************************
  *
@@ -433,16 +503,20 @@ static int pi_serial_tickle(struct pi_socket *ps)
 {
 	if (ps->type == PI_SOCK_STREAM) {
 		struct padp pd;
-		int ret;
+		int type, size;
 
-		if (ps->busy || !ps->connected)
+		if (!ps->connected)
 			return -1;
 		pd.type = padTickle;
 		pd.flags = 0x00;
 		pd.size = 0x00;
-		ret = padp_tx(ps, (void *) &pd, 0, padTickle);
-		pi_serial_flush(ps);
-		return ret;
+
+		type = padTickle;
+		size = sizeof(type);
+		pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, 
+			      &type, &size);
+
+		return padp_tx(ps, (void *) &pd, 0);
 	} else {
 		errno = EOPNOTSUPP;
 		return -1;
@@ -462,10 +536,13 @@ static int pi_serial_tickle(struct pi_socket *ps)
  ***********************************************************************/
 static int pi_serial_close(struct pi_socket *ps)
 {
+	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+
 #ifdef DEBUG
 	fprintf(stderr, "pi_serial_close\n");
 	fprintf(stderr, "connected: %d\n", ps->connected);
 #endif
+
 	if (ps->type == PI_SOCK_STREAM) {
 		if (!(ps->broken))	/* If connection is not broken */
 			if (ps->connected & 1)	/* And the socket is connected */
@@ -473,50 +550,19 @@ static int pi_serial_close(struct pi_socket *ps)
 					dlp_EndOfSync(ps->sd, 0);	/* then end sync, with clean status */
 	}
 
-	if (ps->sd && (ps->sd != ps->mac->fd))	/* If device still has a /dev/null handle */
-		close(ps->sd);	/* Close /dev/null handle */
+	/* If device still has a /dev/null handle */
+	/* Close /dev/null handle */
+	if (ps->sd && (ps->sd != data->fd))
+		close(ps->sd);
 
-	if (ps->mac->fd) {	/* If device was opened */
-		if (ps->connected) {
-			if (!(ps->broken))
-				pi_serial_flush(ps);	/* Flush the device, and set baud rate back to the initial setting */
-#ifdef notdef
-			ps->rate = 9600;
-			ps->serial_changebaud(ps);
-#endif
-		}
-
-		ps->connected = 0;
-		ps->accepted = 0;
-		ps->broken = -1;	/* Ban any future PADP traffic */
-
-		if (--(ps->mac->ref) == 0) {	/* If no-one is using the device, close it */
-			ps->serial_close(ps);
-			free(ps->mac);
-		}
-	}
+	/* If device was opened */
+	if (data->fd)
+		data->impl.close(ps);
 
 	if (ps->laddr)
 		free(ps->laddr);
 	if (ps->raddr)
 		free(ps->raddr);
 
-	return 0;
-}
-
-/***********************************************************************
- *
- * Function:    pi_serial_flush
- *
- * Summary:     Flush the socket of all data
- *
- * Parmeters:   None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***********************************************************************/
-int pi_serial_flush(struct pi_socket *ps)
-{
-	while (ps->serial_write(ps));
 	return 0;
 }

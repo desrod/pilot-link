@@ -1,6 +1,11 @@
 INCLUDES = \
 	-I$(top_srcdir)/include
 
+noinst_PROGRAMS = test
+
+test_SOURCES = test.c
+test_LDADD = libpisock.la
+
 serial_FILES = \
 	unixserial.c 	\
 	winserial.c	\
@@ -19,8 +24,6 @@ libpisock_la_SOURCES =  \
 	dlp.c		\
 	expense.c	\
 	hinote.c	\
-	inet.c		\
-	inetserial.c	\
 	mail.c		\
 	md5.c		\
 	memo.c		\
