@@ -8,7 +8,7 @@ dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=11
-PILOT_LINK_MINOR=0
+PILOT_LINK_MINOR=1
 PILOT_LINK_NANO=
 PILOT_LINK_PATCH=
 
@@ -24,7 +24,7 @@ dnl Pilot Link Library Version
 dnl ******************************
 PISOCK_CURRENT=6
 PISOCK_REVISION=0
-PISOCK_AGE=0
+PISOCK_AGE=1
 
 AC_SUBST(PISOCK_CURRENT)
 AC_SUBST(PISOCK_REVISION)
@@ -645,6 +645,7 @@ src/pix/Makefile
 src/pilot-datebook/Makefile
 bindings/Makefile
 bindings/Perl/Makefile.PL
+bindings/Python/setup.py
 bindings/Java/Makefile
 doc/Makefile
 doc/man/Makefile

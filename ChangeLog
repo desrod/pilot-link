@@ -1,6 +1,10 @@
 2002-07-17  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-datebook/Makefile.am: Removed trailing space
+
+	* bindings/Python/setup.py.in: Fix autoconf propagation
+
+	* configure.in: Added fix for Python autoconf configuration
 	
 	* libpisock/Makefile.am: Added $(usb_FILES) for BSD users
 
