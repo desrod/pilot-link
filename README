@@ -1,46 +1,67 @@
-
 Sorry for not providing decent information here. The basics are:
 
- For UNIX and Win32/Cygwin:
- -------------------------  
-	1) Run configure. If you want to install in someplace other than
-	   /usr/local, give configure an argument like '--prefix=/usr/pilot'
-	
-	2) Run make
-	
-	3) Play around, CAREFULLY. pilot-xfer is probably the most useful
-	   program for you, and also the safest of all to use
-	   non-destructively. Also dlpsh is a good app to use to poke around
-	   in your Palm device.
-	
-	4) Run 'make install' if you you have tested thoroughly and are sure
-	   pilot-link works well for you.
+For UNIX and Win32/Cygwin:
+-------------------------'
+	1.) Run configure. If you want to install in some place other than
+	    /usr/local, give configure an argument like:
 
- For OS/2:
- --------  
-	1) Run os2configure.cmd.
+		$ ./configure --prefix=/home/fred/pilot
+
+	    If you are using a CVS version of pilot-link, you will have to
+	    run 'sh ./autogen.sh' instead, which will create configure for
+	    you. You will also need to have your development environment set
+	    up, which will require such tools as automake, autoconf,
+	    libtool, and others to be properly installed and configured.
+
+	2.) If configure ran successfully, you should run 'make' to build
+	    the software.
+
+		$ make
 	
-	2) Run make -f Makefile.os2
+	3.) Play around in the source directory, CAREFULLY. dlpsh and
+	    pilot-xfer are probably the most useful programs for you, and
+	    also the safest of all to use non-destructively.
 	
-	3) Play around, CAREFULLY. pilot-xfer is probably the most useful
-	   program for you, and also the safest of all to use
-	   non-destructively. Also dlpsh is a good app to use to poke around
-	   in your Palm device.
+	4.) Once you have determined that pilot-link works and suits your
+	    needs, su to root to install the conduits, libraries, docs, and
+	    headers required for proper operation of pilot-link.
+
+		$ su - root
+
+	    If you wish to include root's environment (recommended), make
+	    sure you include the '-' when you su to root.
+
+	5.) Run 'make install' if you you have tested thoroughly and are
+	    sure pilot-link works well for you.
+
+		# make install
+
+For OS/2 (serial devices only, USB is unsupported):
+--------------------------------------------------'
+	1.) Run os2configure.cmd.
 	
-	4) Run 'make install' if you you have tested thoroughly and are sure
-	   pilot-link works well for you.
+	2.) Run make -f Makefile.os2
 	
-	Note on pilot-debug: this program is a work-in-progress, and
+	3.) Play around, CAREFULLY. pilot-xfer is probably the most useful
+	    program for you, and also the safest of all to use
+	    non-destructively. Also dlpsh is a good app to use to poke
+	    around in your Palm device.
+	
+	4.) Run 'make install' if you you have tested thoroughly and are
+	    sure pilot-link works well for you.
+	
+	Note on pilot-debug: This program is a work-in-progress, and
 	requires Tcl 7.5 (or greater) and optionally Tk 4.1 (or greater)
 	and/or Readline 2.0.  You'll need to modify Makefile to to use
 	Readline 2.0, and if your Tcl or Tk aren't in standard places,
 	you'll need to wiggle configure or the Makefile.  You must have
-	install pilot-link or else run pilot-debug in the pilot-link source
-	directory if you want the fancy images for the Remote UI window.
+	installed pilot-link or else run pilot-debug in the pilot-link
+	source directory if you want the fancy images for the Remote UI
+	window.
 
 
 Usage notes:
------------
+-----------'
 	read-ical and sync-ical will only run if you have ical-2.x installed
 	and in the path.
 	
@@ -81,11 +102,22 @@ Usage notes:
 	'make validate', but it may not be of use to anyone but Scott.
 
 Debugging notes:
----------------
-	Please see doc/README.debugging for more detailed information.
+---------------'
+	Please see doc/README.debugging for more detailed information
+	describing how to debug pilot-link's core protocols and interfaces.
+
+USB Notes:
+---------'
+	Please see doc/README.usb for more detailed information on USB.
 	
+
+FreeBSD Notes:
+-------------'
+	Please see doc/README.freebsd for more detailed information on
+	setting up pilot-link to work with FreeBSD systems.
+
 Embedding information:
----------------------
+---------------------'
 	As of 0.5.0, the headers in pilot-link have been rearranged slightly
 	so that it should be easier and more reliable to use the libpisock.a
 	library in external applications.
@@ -99,178 +131,172 @@ Embedding information:
 	pi-macros contains the portable byte-access routines.
 
 Reporting Bugs:
---------------
+--------------'
 	Any bugs you find with pilot-link can be easily reported in the
-	online bug tracking system at http://bugs.pilot-link.org, and can be
+	online bug-tracking system at http://bugs.pilot-link.org, and can be
 	updated, audited, commented on, and resovled from there.
 	
-	Please check the existing bugs in the system first before reporting
+	Please check the existing bugs in the system FIRST before reporting
 	your bug. There may be an identical report from another user that
-	matches your bug.
+	matches your bug. If you find one that is similar, please add a bug
+	"note" to that existing report, adding your specific details.
+
+	If your bug is unique, and does not appear in the system, please
+	fill out a bug report and remember to be as detailed as possible
+	when filling it out. Make sure to include your operating system,
+	pilot-link version, Palm handheld type, and version of pilot-link
+	that was used to produce the bug. With this information, the
+	developers can be well-informed with the information they'll need to
+	help try to track down and fix your bug.
 
 
 License notes:
--------------
-	The utility programs (pilot-xfer, sync-plan, etc.) are licensed for
-	use under the GPL. For more information, please see COPYING. The
-	librarys (libpisock and libcc) and the interpreter bindings (Perl,
-	Python, Java, and Tcl) are licensed for use under the LGPL. For more
-	information, please see COPYING.LIB.
+-------------'
+	The utility programs, otherwise known collectively as "conduits"
+	(pilot-xfer, sync-plan, etc.) are licensed for use under the GPL.
+	For more information, please see COPYING. The librarys (libpisock
+	and libcc) and the interpreter bindings (Perl, Python, Java, and
+	Tcl) are licensed for use under the LGPL. For more information,
+	please see COPYING.LIB.
 	
 	All contained source is the copyright of its author(s). Please see
 	the copyright notices in the individual files for more information.
 
 Basic program list, in no particular order:
-------------------------------------------
+------------------------------------------'
 
-	addresses
-	---------
-	dump Palm address book into generic format
+	addresses:
+		Dump Palm Address book into a generic format
 
-	ccexample
-	---------
-	test program demonstrating C++ interface
-    
-	debugsh
-	-------
-	command-line interface to Palm debug monitor
+	ccexample:
+		Test program demonstrating the C++ interface of pilot-link
 
-	dlpsh
-	-----
-	command-line interface to Palm HotSync protocol
+	debugsh:
+		Command-line interface to Palm debug monitor
 
-	getrom
-	------
-	program to fetch ROM using getrom.prc or getrom2.prc
+	dlpsh:
+		Command-line interface to Palm Desktop Link Protocol (DLP)
 
-	getrom.prc
-	----------
-	Palm program to help dump a 512K ROM 
+	getrom:
+		Program to fetch ROM using getrom.prc or getrom2.prc
+
+	getrom.prc:
+		Palm program to help dump a 512K ROM 
+
+	getrom2.prc:
+		Palm conduit to help dump a 1024K ROM (used for OS 2.x to OS
+		4.1 ROM images, does not work with OS5 ROM images)
+
+	iambicexample:
+		Test program demonstrating the C++ interface of pilot-link
+
+	ietf2datebook:
+		Convert IETF calendar to format used by install-datebook
+
+	install-datebook:
+		Import Datebook entries from a text format into Palm
+
+	install-expenses:
+		Install Expense entries from the commandline
+
+	install-memo:
+		Import Memo entries from a text format into Palm
+
+	install-netsync:
+		Modify network settings on your Palm device (IP, subnet,
+		netmask, hostname)
+
+	install-todo:
+		Import ToDo entries from the commandline, one entry at a
+		time
+
+	install-todos:
+		 Import ToDo records from a text format into Palm, several
+		 at a time
+
+	install-user:
+		Modify user name settings (and report lots of into) about
+		Palm
+
+	memos:
+		Export Memos from Palm in standard mailbox format
 	
-	getrom2.prc
-	-----------
-	Palm program to help dump a 1024K ROM (used for OS 2.x)
-    
-	iambicexample
-	-------------
-	test program demonstrating C++ interface
+	pi-csd:
+		Must be running to accept Network HotSync(tm) connects
 
-	ietf2datebook
-	-------------
-	convert IETF calendar to format used by install-datebook
+	pi-getram:
+		Program that retrieves RAM from Palm (does not work with OS5
+		ROM images)
 
-	install-datebook
-	----------------
-	import datebook records from a text format into Palm
+	pi-getrom:
+		Program that retrieves ROM from Palm (without getrom.prc)
 
-	install-memo
-	------------
-	import memo records from a text format into Palm
+	pi-nredir:
+		Program that accepts connections and redirects them via the
+		Network HotSync(tm) protocol
 
-	install-netsync
-	---------------
-	modify network settings on your Palm device (IP, netmask, hostname)
+	pi-port:
+		Experimental program to separate serial layer from
+		pilot-link
+
+	pilot-addresses:
+		Import and export Address book
+
+	pilot-clip:
+		Experimental program to import and export data from Palm
+		clipboard
 	
-	install-todos
-	-------------
-	import todo records from a text format into Palm
-	
-	install-user
-	------------
-	modify user name settings (and report lots of into) about Palm
+	pilot-debug:
+		Graphical and command-line program to interface with Palm
+		debug monitor
 
-	memos
-	-----
-	export memos from Palm in mailbox format
-	
-	pi-csd
-	------
-	must be running to accept Network HotSync(tm) connects
+	pilot-dedupe:
+		Strips duplicate records from Palm databases
 
-	pi-getram
-	---------
-	program that retrieves RAM from Palm
+	pilot-file:
 
-	pi-getrom
-	---------
-	program that retrieves ROM from Palm (without getrom.prc)
+		Dissect and view detailed information about .prc (Palm
+		Resource Database), .pdb (Palm Record Database), and .pqa
+		(Palm Query Application) files
 
-	pi-nredir
-	---------
-	program that accepts connections and redirects them via the Network
-	HotSync(tm) protocol
+	pilot-mail:
+		Import mail from POP3 mailbox into Palm Pro's Mail
+		application, and send mail via sendmail (this has been
+		deprecated in favor of pilot-mailsync now)
 
-	pi-port
-	-------
-	experimental program to separate serial layer from pilot-link
+	pilot-schlep:
+		Pack up an arbitrary file on the Palm in .prc format, like a
+		portable "suitcase" container
 
-	pilot-addresses
-	---------------
-	import and export address book
+	pilot-undelete:
+		Turn archived records into normal records
 
-	pilot-clip
-	----------
-	experimental program to import and export data from Palm clipboard
-	
-	pilot-debug
-	-----------
-	graphical and command-line program to interface with Palm debug
-	monitor
+	pilot-xfer:
+		Back up, restore, install & delete Palm databases (this is a
+		very useful conduit, the most widely used of all of them)
 
-	pilot-dedupe
-	------------
-	strips duplicate records from Palm databases
+	read-expenses:
+		Export Palm Pro Expense database into text format
 
-	pilot-file
-	----------
-	disect .prc and .pdb files
+	read-ical:
+		Export Palm Datebook and ToDo databases into an Ical
+		calendar (ical is required)
 
-	pilot-mail
-	----------
-	import mail from POP3 mailbox into Palm Pro's Mail application, and
-	send mail via sendmail
+	read-todos:
+		Export Palm ToDo database into generic text format
 
-	pilot-schlep
-	------------
-	pack up an arbitrary file on the Palm in .prc format, like a
-	"suitcase"
-
-	pilot-undelete
-	--------------
-	turn archived records into normal records
-
-	pilot-xfer
-	----------
-	back up, restore, install & delete Palm databases (This is a very
-	useful program)
-
-	read-expenses
-	-------------
-	export Palm Pro expense database into text format
-
-	read-ical
-	---------
-	export Palm datebook and todo databases into an Ical calendar (ical
-	is required)
-
-	read-todos
-	----------
-	export Palm todo database into generic text format
-
-	reminders
-	---------
-	export Palm datebook into a 'remind' data file
+	reminders:
+		Export Palm Datebook into a 'remind' data file
 
 	sync-plan
-	---------
-	completely synchronize the Palm datebook with the Plan calendar via
-	netplan
+		Completely synchronize the Palm Datebook with the Plan
+		calendar via netplan
 
-	validate
-	--------
-	experimental program to test C++ features
+	validate:
+		Experimental program to test C++ features of pilot-link
   
 Happy Hacking,
-pilot-link team
+The pilot-link Team
 
-(originally written by Kenneth Albanowski <kjahds@kjahds.com>)
+pilot-link was originally written by Kenneth Albanowski <kjahds@kjahds.com>
+and others.
