@@ -22,6 +22,7 @@
 #define PALM_USERLAND_H
 
 #include <popt.h>
+#include "pi-appinfo.h"
 
 /*
  * This file defines general stuff for conduits -- common option processing,
@@ -64,6 +65,14 @@ extern int userland_connect();
  */
 
 extern void userland_badoption(poptContext pc, int optc);
+
+/*
+ * Look up a category name. Argument @p info is the category part of the
+ * AppInfo block for the database, while @p name is the category to look up.
+ * Returns the index of the category if found (0..15) or -1 if not.
+ */
+
+extern int userland_findcategory(const struct CategoryAppInfo *info, const char *name);
 
 /*
  * We need to be able to refer to the table of common options.

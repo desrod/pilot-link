@@ -22,6 +22,7 @@
 #include "userland.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 
 #include "pi-header.h"
 #include "pi-socket.h"
@@ -116,6 +117,22 @@ void userland_badoption(poptContext pc, int optc)
 		poptBadOption(pc, POPT_BADOPTION_NOALIAS),
 		poptStrerror(optc));
 	exit(1);
+}
+
+int userland_findcategory(const struct CategoryAppInfo *info, const char *name)
+{
+	int index, match_category;
+
+	match_category = -1;
+	for (index = 0; index < 16; index += 1) {
+		if ((info->name[index][0]) &&
+			(strncasecmp(info->name[index], name, 15) == 0)) {
+			match_category = index;
+			break;
+		}
+	}
+
+	return match_category;
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
