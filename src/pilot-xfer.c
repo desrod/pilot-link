@@ -1750,14 +1750,14 @@ int main(int argc, const char *argv[])
 		{"Listall",  'L', POPT_ARG_NONE, NULL, 'L', "List all data, internal and external on the Palm", NULL},
 
 		/* action indicators that may be mixed in with the others */
-		{"Purge",    'P', POPT_ARG_NONE, NULL, 'P', "Purge any deleted data that hasn't been cleaned up", NULL},
+		{"Purge",    'P', POPT_BIT_SET, &sync_flags, PURGE, "Purge any deleted data that hasn't been cleaned up", NULL},
 
 		/* modifiers for the various actions */
 		{"archive",  'a', POPT_ARG_STRING, &archive_dir, 0, "Modifies -s to archive deleted files in directory <dir>", "dir"},
 		{"exclude",  'e', POPT_ARG_STRING, NULL, 'e', "Exclude databases listed in <file> from being included", "file"},
 		{"vfsdir",   'D', POPT_ARG_STRING, &vfsdir, 'D', "Modifies all of -lLi to use VFS <dir> instead of internal storage", "dir"},
-		{"Flash",    'F', POPT_ARG_NONE, NULL, 'F', "Modifies -b, -u, and -s, to back up non-OS dbs from Flash ROM", NULL},
-		{"OsFlash",  'O', POPT_ARG_NONE, NULL, 'O', "Modifies -b, -u, and -s, to back up OS dbs from Flash ROM", NULL},
+		{"Flash",    'F', POPT_BIT_SET, &sync_flags, MEDIA_FLASH, "Modifies -b, -u, and -s, to back up non-OS dbs from Flash ROM", NULL},
+		{"OsFlash",  'O', POPT_BIT_SET, &sync_flags, MEDIA_ROM, "Modifies -b, -u, and -s, to back up OS dbs from Flash ROM", NULL},
 		{"Illegal",  'I', POPT_ARG_NONE, &unsaved, 0, "Modifies -b, -u, and -s, to back up the illegal database Unsaved Preferences.prc (normally skipped)", NULL},
 
 		/* misc */
@@ -1823,20 +1823,9 @@ int main(int argc, const char *argv[])
 
 		/* Modifiers */
 
-		case 'P':
-			sync_flags |= PURGE;
-			break;
 		case 'D':
 			sync_flags |= MEDIA_VFS;
 			break;
-		case 'F':
-			sync_flags |= MEDIA_FLASH;
-			break;
-		case 'O':
-			sync_flags |= MEDIA_ROM;
-			break;
-
-
 
 		/* Misc */
 
