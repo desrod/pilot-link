@@ -27,18 +27,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* FIXME: What other platforms might have differing requirements? */
 #if HAVE_STDINT_H
-#include <stdint.h>
+# include <stdint.h>
 #else
-#if HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-#endif
+# if HAVE_INTTYPES_H
+#  include <inttypes.h>
+# else
+
+#  ifndef uint8_t
+#   define uint8_t unsigned char
+#  endif
+
+#  ifndef uint16_t
+#   define uint16_t unsigned short
+#  endif
+
+#  ifndef uint32_t
+#   define uint32_t unsigned long
+#  endif
+
+#  ifndef int8_t
+#   define int8_t char
+#  endif
+
+#  ifndef int16_t
+#   define int16_t short
+#  endif
+
+#  ifndef int32_t
+#   define int32_t long
+#  endif
+
+# endif /* HAVE_INTTYPES_H */
+#endif /* HAVE_STDINT_H */
 
 #include "pi-macros.h"
 #include "pi-palmpix.h"
-  
+
 void DecodeRow(uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData,
                uint32_t *offset, int32_t *firstWord, int16_t *PPLutsW,
                uint8_t *PPLuts, uint16_t halfWidth);
