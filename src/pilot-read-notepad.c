@@ -34,7 +34,12 @@
 
 #ifdef HAVE_PNG
 #include "png.h"
+#if (PNG_LIBPNG_VER < 10201)
+ #define png_voidp_NULL (png_voidp)NULL
+ #define png_error_ptr_NULL (png_error_ptr)NULL
 #endif
+#endif
+
 
 int pilot_connect(const char *port);
 static void print_help(char *progname);
