@@ -2,7 +2,7 @@
  * sync.c:  Implement generic synchronization algorithm
  *
  * Documentation of the sync cases is at:
- * http://www.palmos.com/dev/tech/docs/conduits/win/CnComp_Conduits.html#926365
+ * http://www.palmos.com/dev/tech/docs/conduits/win/Intro_CondBasics.html#928692
  *
  * Copyright (c) 2000-2001, Ximian Inc.
  *

@@ -1,3 +1,7 @@
+2001-11-17  JP Rosevear  <jpr@ximian.com>
+
+	* Convert to automake
+
 2001-11-05  David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* install-user.c: Slowly moving stuff over to getopt_long(), added

@@ -1,140 +1,18 @@
-
 # This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
-
-dnl Process this file with autoconf to produce a configure script.
 AC_INIT(include/pi-cmp.h)
-AC_CONFIG_AUX_DIR(scripts)
+AM_CONFIG_HEADER(include/pi-config.h include/pi-sockaddr.h)
+
+AM_INIT_AUTOMAKE(pilot-link, 0.9.5cvs)
 
 dnl Check host type
 AC_CANONICAL_HOST
 
-dnl Enumerate the sets of available languages
-ALL_LINGUAS="en"
-
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-AC_ISC_POSIX
 AM_PROG_LIBTOOL
 AC_PROG_YACC
-
-AC_PATH_PROG(RANLIB, ranlib)
-AC_PATH_PROG(STRIP, strip)
-AC_PATH_PROG(GZIP, [gzip compress])
-AC_PATH_PROG(CAT, cat)
-AC_PATH_PROG(LINT, lint)
-AC_PATH_PROG(RM, rm)
-
-
-WITHTCL="WITHOUTTCL"
-WITHCXX="WITHOUTCXX"
-WITHTK="WITHOUTTK"
-WITHPERL5="WITHOUTPERL5"
-WITHPYTHON="WITHOUTPYTHON"
-WITHJAVA="WITHOUTJAVA"
-
-AC_ARG_WITH(cpp,      [  --with-cpp[=c++ compiler]  use C++     [default=yes]])
-
-if test "x$with_cpp" = "xno"; then
-	CXX=
-	ac_cv_prog_cxx_works=no
-else
-
-if test "x$with_cpp" = "xyes"; then
-	with_cpp=""
-fi
-
-if test "x$with_cpp" = "x"; then
-	AC_CHECK_PROGS(CXX,$CCC c++ g++ gcc CC cxx cc++, gcc)
-else
-	CXX=$with_cpp
-fi
-
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_CHECK([whether C++ compiler ($CXX $CXFLAGS $LDFLAGS) works],
-  ac_cv_prog_cxx_works,
-[AC_TRY_COMPILE([#include <stdio.h>], [class a { public: int b; a(void); };
-a b; ],
-  ac_cv_prog_cxx_works=yes,ac_cv_prog_cxx_works=no)])
-AC_LANG_RESTORE
-
-AC_PROG_CXX_GNU
-
-if test $ac_cv_prog_gxx = yes; then
-  GXX=yes
-dnl Check whether -g works, even if CXXFLAGS is set, in case the package
-dnl plays around with CXXFLAGS (such as to build both debugging and
-dnl normal versions of a library), tasteless as that idea is.
-  ac_test_CXXFLAGS="${CXXFLAGS+set}"
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS=
-  AC_PROG_CXX_G
-  if test "$ac_test_CXXFLAGS" = set; then
-    CXXFLAGS="$ac_save_CXXFLAGS"
-  elif test $ac_cv_prog_cxx_g = yes; then
-    CXXFLAGS="-g -O2"
-  else
-    CXXFLAGS="-O2"
-  fi
-else
-  GXX=
-  test "${CXXFLAGS+set}" = set || CXXFLAGS="-g"
-fi
-
-fi
-
-ccexecs=''
-cclib=''
-libcclib=''
-SUBMAKE_COMM='cd $(top_builddir)/libsock ; $(MAKE) '
-SUBMAKE_COMM_CC='-true'
-EXT=''
-CXXLIBS=''
-if test $ac_cv_prog_cxx_works = yes; then
-  ccexecs='$(CCEXECS)'
-  cclib='libpicc.a'
-  libcclib='libcc/libpicc.a'
-  SUBMAKE_COMM_CC='cd $(top_builddir)/libcc ; $(MAKE) '
-  WITHCXX='WITHCXX'
-else
-  CXX=''
-  CXXFLAGS=''
-fi
-AC_SUBST(ccexecs)
-AC_SUBST(cclib)
-AC_SUBST(libcclib)
-AC_SUBST(SUBMAKE_COMM)
-AC_SUBST(SUBMAKE_COMM_CC)
-AC_SUBST(EXT)
-AC_SUBST(CXXLIBS)
-
-
-dnl Adjust linker
-
-case "$host" in
-	*sunos*)
-		case "$LD" in 
-			*/ucb/*) LIBS="-L/usr/ucblib -R/usr/ucblib $LIBS" ;;
-		esac ;;
-esac		
-
-dnl Checks for libraries.
-
-dnl ******************************
-dnl c++ lib checking
-dnl ******************************
-if test $ac_cv_prog_cxx_works = yes; then
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  if test $ac_cv_prog_gxx = yes; then
-    AC_CHECK_LIB(g++, main, CXXLIBS="$CXXLIBS -lg++")
-  fi
-  AC_LANG_RESTORE
-fi
-AC_CHECK_LIB(m, ldexp, LIBS="$LIBS -lm")
-AC_CHECK_LIB(PW, alloca, LIBS="$LIBS -lPW")
 
 dnl ******************************
 dnl iconv checking
@@ -156,7 +34,7 @@ AC_CHECK_LIB(iconv, libiconv, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"]
     AC_CHECK_FUNC(iconv, [
 	AC_CHECK_FUNCS(gnu_get_libc_version)
 	AC_MSG_CHECKING(if system iconv handles CP1252)
-	AC_TRY_COMPILE([
+	AC_TRY_RUN([
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
@@ -188,6 +66,9 @@ LDFLAGS="$save_LDFLAGS"
 
 if test "$have_iconv" = yes; then
 	AC_DEFINE(HAVE_ICONV)
+	msg_iconv=yes
+else
+	msg_iconv=no
 fi
 AC_SUBST(ICONV_CFLAGS)
 AC_SUBST(ICONV_LIBS)
@@ -234,9 +115,9 @@ if test "x$RLDEFS" = "x"; then
 	AC_MSG_RESULT(none)
 fi
 
-AC_DEFINE(HAVE_LIBREADLINE) 
 AC_SUBST(RLLIBS)
 AC_SUBST(RLDEFS)
+
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -285,14 +166,27 @@ if test $ac_cv_sa_len = yes; then
   AC_DEFINE(HAVE_SA_LEN)
 fi
 
-dnl Check packages
-AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl     [default=yes]])
-AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use Itcl    [default=yes]])
-AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk      [default=yes]])
-AC_ARG_WITH(python,   [  --with-python=pylibbase use Python  [default=yes]])
-AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java    [default=yes]])
-AC_ARG_WITH(perl5,    [  --with-perl5=perl5exec  use Perl5   [default=yes]])
+dnl ******************************
+dnl C++
+dnl ******************************
+use_cpp=false
+msg_cpp=no
+AC_ARG_WITH(cpp,      [  --with-cpp[=c++ compiler]  use C++     [default=yes]])
+if test "x$with_cpp" != "xno"; then
+	AC_PROG_CXX
+	use_cpp=true
+fi
+AM_CONDITIONAL(WITH_CXX, $use_cpp)
+if $use_cpp; then
+	msg_cpp=yes
+fi
 
+dnl ******************************
+dnl Perl
+dnl ******************************
+use_perl5=false
+msg_perl=no
+AC_ARG_WITH(perl5,    [  --with-perl5=perl5exec  use Perl5   [default=yes]])
 if test "x$with_perl5" = "xno"; then
 	PERL5=''
 else
@@ -303,15 +197,32 @@ else
 	fi
 fi
 
-changequote(, )dnl
+AC_MSG_CHECKING(Perl Version)
 if test "x$PERL5" != "x"; then
-	case `$PERL5 -e 'print $]'` in
-		*5.*) WITHPERL5='WITHPERL5' ;;
-		*)	PERL5='' ;;
-	esac
+	verstxt=`$PERL5 -e 'print $]'`
+        vers=`echo "$verstxt" | awk -F. '{ printf "%d", ($1 * 1000) + $2;}'`
+	if test "$vers" -ge 5000; then
+		if test "$vers" -lt 6000; then
+			AC_MSG_RESULT($verstxt)
+			use_perl5=true
+		else
+			AC_MSG_RESULT($verstext [perl 5 not found])
+		fi
+	else
+		AC_MSG_RESULT($verstext [perl 5 not found])
+	fi
 fi
-changequote([, ])dnl
+AM_CONDITIONAL(WITH_PERL5, $use_perl)
+if $use_perl; then
+	msg_perl=yes
+fi
 
+dnl ******************************
+dnl Java
+dnl ******************************
+use_java=false
+msg_java=no
+AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java    [default=yes]])
 AC_MSG_CHECKING(for Java Development Kit)
 if test "x$with_java" = "xyes" || test "x$with_java" = "x" ; then
 	for java_path in /usr/local/java /usr/local /usr/java /usr; do
@@ -341,7 +252,7 @@ changequote([, ])dnl
 	$with_java/bin/javac test.java
 	case `$with_java/bin/java test` in
 		*present*) AC_MSG_RESULT(found in $with_java) 
-			WITHJAVA='WITHJAVA'
+			use_java=true
 			JAVABASE="$with_java"
 			javaos="$host_os"
 			case "$javaos" in
@@ -370,16 +281,28 @@ changequote([, ])dnl
 else
 	AC_MSG_RESULT(not found)
 fi
+AM_CONDITIONAL(WITH_JAVA, $use_java)
+if $use_java; then
+	msg_java=yes
+fi
 AC_SUBST(JAVABASE)
 AC_SUBST(JAVAARCH)
 AC_SUBST(JAVAMAJOR)
 AC_SUBST(JAVAMINOR)
 
-if test "x$PERL5" = "x"; then
-	PERL5="/usr/bin/perl"
-fi
-
+dnl ******************************
+dnl TCL/ITCL/TK
+dnl ******************************
+use_tcl=false
+msg_tcl=no
+use_itcl=false
+msg_itcl=no
+use_tk=false
+msg_tk=no
 itcl=''
+AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl     [default=yes]])
+AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use Itcl    [default=yes]])
+AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk      [default=yes]])
 if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
 	for tcl_path in /usr /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
 		if test -f $tcl_path/lib/tclConfig.sh; then
@@ -437,7 +360,7 @@ else
 		TCLTKFLAGS="-DTCL $TCL_INC"
 		DEBIAN_TCL="\$(TCL_INC)/tcl"
 		DEBIANTCL="$TCL_INC/tcl"
-		WITHTCL='WITHTCL'
+		use_tcl=true
 		
 		if test "x$with_itcl" = "xyes" || test "x$with_itcl" = "x"; then
 			for itcl_path in $with_tcl; do
@@ -470,7 +393,7 @@ else
 				#TCLTK_LIBS="\$(TK_LIB_SPEC) \$(TCL_LIB_SPEC) \$(TK_LIBS)"
 				#TCLTK_FLAGS="$TCLTK_FLAGS -DTK \$(TK_INC)"
 				#TCLTKLIBS="$TKLIBS"
-				#WITHTK='WITHTK'
+				use_ictl=true
 				if test "x$ITCL_INC" = "x$TCL_INC"; then
 					ITCL_INC=" #same as TCL_INC"
 					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
@@ -511,7 +434,7 @@ else
 				TCLTK_LIBS="\$(TK_LIB_SPEC) \$(TCL_LIB_SPEC) \$(TK_LIBS)"
 				TCLTK_FLAGS="$TCLTK_FLAGS -DTK \$(TK_INC)"
 				TCLTKLIBS="$TKLIBS"
-				WITHTK='WITHTK'
+				use_tk=true
 				if test "x$TK_INC" = "x$TCL_INC"; then
 					TK_INC=" #same as TCL_INC"
 					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
@@ -527,6 +450,18 @@ fi
 
 TCL_PACKAGE_PATH=`echo $TCL_PACKAGE_PATH | sed 's/ .*//'`
 
+AM_CONDITIONAL(WITH_TCL, $use_tcl)
+if $use_tcl; then
+	msg_tcl=yes
+fi
+AM_CONDITIONAL(WITH_ITCL, $use_itcl)
+if $use_itcl; then
+	msg_itcl=yes
+fi
+AM_CONDITIONAL(WITH_TK, $use_tk)
+if $use_tk; then
+	msg_tk=yes
+fi
 AC_SUBST(TCL_VERSION)
 AC_SUBST(TCL_LIBS)
 AC_SUBST(TCL_LIB_SPEC)
@@ -553,6 +488,12 @@ if test ! "x$TCL_VERSION" = "x"; then
 fi
 AC_SUBST(TCLEXECS)
 
+dnl ******************************
+dnl Python
+dnl ******************************
+use_python=false
+msg_python=no
+AC_ARG_WITH(python,   [  --with-python=pylibbase use Python  [default=yes]])
 if test "x$with_python" = "xyes" || test "x$with_python" = "x" ; then
         AC_PATH_PROG(with_python,python,"")
 	if test "x$with_python" = "xyes"; then
@@ -562,7 +503,7 @@ if test "x$with_python" = "xyes" || test "x$with_python" = "x" ; then
 	fi
 fi 
 
-AC_MSG_CHECKING(for Python)
+AC_MSG_CHECKING(Python Development Kit)
 
 PYTHON_PREFIX=''
 PYTHON_EXEC_PREFIX=''
@@ -593,9 +534,13 @@ print ver"`]
 	else
 		PYTHONLIBDIR=${PYTHON_EXEC_PREFIX}/lib/python$PYTHONLIBVER
 		PYTHONINCDIR=${PYTHON_PREFIX}/include/python$PYTHONLIBVER
-		WITHPYTHON='WITHPYTHON'
+		use_python=true
 		AC_MSG_RESULT(Python version $PYTHONVER in $PYTHONLIBDIR)
 	fi
+fi
+AM_CONDITIONAL(WITH_PYTHON, $use_python)
+if $use_python; then
+	msg_python=yes
 fi
 AC_SUBST(PYTHON_PREFIX)
 AC_SUBST(PYTHON_EXEC_PREFIX)
@@ -603,7 +548,6 @@ AC_SUBST(PYTHONLIBDIR)
 AC_SUBST(PYTHONINCDIR)
 AC_SUBST(PYTHONVER)
 AC_SUBST(PYTHONLIBVER)
-
 
 dnl Derive warning flag
 AC_CACHE_CHECK([for maximum warnings compiler flag],
@@ -628,26 +572,24 @@ esac
 AC_SUBST(CPLIB)
 AC_SUBST(ARFLAGS)
 
-AC_CONFIG_HEADER(include/pi-config.h include/pi-sockaddr.h)
+AC_OUTPUT([
+Makefile
+libsock/Makefile
+libcc/Makefile
+include/Makefile
+tools/Makefile
+tools/Python/Makefile
+tools/Tcl/Makefile
+tools/Perl5/Makefile.PL
+tools/Java/Makefile
+tests/Makefile
+man/Makefile
+])
 
-if test $ac_cv_prog_cxx_works = yes; then
-  cc_m='libcc/Makefile'
-fi
-
-AC_SUBST(WITHTCL)
-AC_SUBST(WITHJAVA)
-AC_SUBST(WITHTK)
-AC_SUBST(WITHPYTHON)
-AC_SUBST(WITHPERL5)
-AC_SUBST(WITHCXX)
-
-LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/\.lo/g'`
-AC_SUBST(LTLIBOBJS)
-LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/\.lo/g'`
-AC_SUBST(LTALLOCA)
-
-dnl These are the only lines required to internationalize the package.
-dnl (OK, not quite, the AC_OUTPUT has also some parts.)
-AM_GNU_GETTEXT
-
-AC_OUTPUT(libsock/Makefile $cc_m Makefile Makefile.os2 tools/empty tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile)
+echo "
+	 Iconv support:   $msg_iconv
+	   C++ support:	  $msg_cpp
+   TCL/ITCL/TK support:   $msg_tcl/$msg_itcl/$msg_tk
+	  Java support:   $msg_java
+	Python support:	  $msg_python
+	  Perl support:	  $msg_perl"

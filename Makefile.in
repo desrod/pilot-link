@@ -1,488 +1,1047 @@
-prefix 		= @prefix@
-exec_prefix 	= @exec_prefix@
-bindir 		= @bindir@
-libdir 		= @libdir@
-pixdir 		= ${libdir}/pix
-includedir 	= @includedir@
-mandir1 	= @mandir@/man1
-mandir7 	= @mandir@/man7
-srcdir 		= @srcdir@
-VPATH 		= @srcdir@
-localedir 	= @prefix@/locale
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-top_builddir 	= .
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
 
-PURELINK 	=
-PURIFY 		=
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
 
-# Libraries needed to link with Tcl & (optionally) Tk
-TCLTK_LIBS 	= @TCLTKLIBS@
 
-# Include directives needed to compile with Tcl & Tk, and
-# -DTCL if Tcl is available, and
-# -DTK if Tk is available.
-TCLTK_FLAGS 	= @TCLTKFLAGS@
+SHELL = @SHELL@
 
-# Libraries needed to link with GNU readline
-RLLIBS 		= @RLLIBS@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
 
-# Include directives needed to compile with GNU readline, and
-# -DREADLINE_2_0 if GNU readline 2.0 is available, or 
-# -DREADLINE_2_1 if GNU readline 2.1 (or later) is available.
-RLDEFS 		= @RLDEFS@
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
 
-PERL5 		= @PERL5@
+DESTDIR =
 
-CC 		= @CC@
-CXX 		= @CXX@
-CDEFS 		= -DLIBDIR=\"$(libdir)\" -DLOCALEDIR=\"$(localedir)\"
-# -DDEBUG
-CFLAGS 		= -I./include -I$(srcdir)/include @CFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
-CXXFLAGS 	= -I./include -I$(srcdir)/include @CXXFLAGS@ @CWFLAG@ $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
-LDFLAGS 	= @LDFLAGS@
-LIBS 		= @LIBS@
-# For Electric Fence by Bruce Perens
-# http://perens.com/FreeSoftware/
-# -lefence
-CXXLIBS 	= @CXXLIBS@
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
 
-libcclib 	= @libcclib@
-cclib 		= @cclib@
+top_builddir = .
 
-LANGS 		= Perl5 Java Tcl Python
-SUBDIRS 	= tools
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
 
-CAT		= @CAT@
-CPLIB		= @CPLIB@
-EXT		= @EXT@
-GZIP		= @GZIP@
-INSTALL		= $(LIBTOOL) @INSTALL@
-INSTALL_DATA	= @INSTALL_DATA@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-LINT		= @LINT@
-RANLIB		= @RANLIB@
-RM		= rm -f
-SHELL		= /bin/sh
-STRIP		= @STRIP@
-SUBMAKE_COMM	= @SUBMAKE_COMM@
-SUBMAKE_COMM_CC = @SUBMAKE_COMM_CC@
-YACC		= @YACC@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
 
-LIBTOOL 	= @LIBTOOL@
-LIBTOOLLINK 	= $(LIBTOOL) --mode=link
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+ARFLAGS = @ARFLAGS@
+AS = @AS@
+CC = @CC@
+CPLIB = @CPLIB@
+CWFLAG = @CWFLAG@
+CXX = @CXX@
+DEBIANTCL = @DEBIANTCL@
+DEBIAN_TCL = @DEBIAN_TCL@
+DLLTOOL = @DLLTOOL@
+ICONV_CFLAGS = @ICONV_CFLAGS@
+ICONV_LIBS = @ICONV_LIBS@
+JAVAARCH = @JAVAARCH@
+JAVABASE = @JAVABASE@
+JAVAMAJOR = @JAVAMAJOR@
+JAVAMINOR = @JAVAMINOR@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
+PACKAGE = @PACKAGE@
+PERL5 = @PERL5@
+PYTHONINCDIR = @PYTHONINCDIR@
+PYTHONLIBDIR = @PYTHONLIBDIR@
+PYTHONLIBVER = @PYTHONLIBVER@
+PYTHONVER = @PYTHONVER@
+PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
+PYTHON_PREFIX = @PYTHON_PREFIX@
+RANLIB = @RANLIB@
+RLDEFS = @RLDEFS@
+RLLIBS = @RLLIBS@
+TCLEXECS = @TCLEXECS@
+TCLLIBS = @TCLLIBS@
+TCLTKFLAGS = @TCLTKFLAGS@
+TCLTKLIBS = @TCLTKLIBS@
+TCLTK_FLAGS = @TCLTK_FLAGS@
+TCLTK_LIBS = @TCLTK_LIBS@
+TCL_BIN = @TCL_BIN@
+TCL_INC = @TCL_INC@
+TCL_LIBS = @TCL_LIBS@
+TCL_LIB_SPEC = @TCL_LIB_SPEC@
+TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+TCL_VERSION = @TCL_VERSION@
+TKLIBS = @TKLIBS@
+TK_BIN = @TK_BIN@
+TK_INC = @TK_INC@
+TK_LIBS = @TK_LIBS@
+TK_LIB_SPEC = @TK_LIB_SPEC@
+TK_VERSION = @TK_VERSION@
+VERSION = @VERSION@
+YACC = @YACC@
+with_python = @with_python@
+@WITH_CXX_TRUE@CXX_DIR = libcc
+@WITH_CXX_FALSE@CXX_DIR = 
 
-CCLINK 		= $(LIBTOOLLINK)  $(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS)
-CXXLINK 	= $(LIBTOOLLINK) $(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS)
+SUBDIRS = libsock $(CXX_DIR) include man tests tools
 
-.SUFFIXES: .out .o .cc .c .e .r .f .y .l .s .p .PL
+INCLUDES =  	-I$(top_srcdir)/include
 
-.c.o:
-	$(CC) $(CFLAGS) -c $<
+@WITH_CXX_TRUE@CCEXECS = ccexample iambicexample
+@WITH_CXX_FALSE@CCEXECS = 
 
+bin_PROGRAMS =  	$(CCEXECS)		addresses		debugsh			dlpsh			getrom			hinotes			install-datebook 	install-hinote		install-memo		install-todos		memos			money2qif		pi-csd			pi-getram		pi-getrom		pi-nredir		pi-port			pilot-addresses		pilot-clip		pilot-debug		pilot-dedupe		pilot-file		pilot-mail		pilot-prc		pilot-schlep		pilot-xfer		read-expenses		read-ical		read-todos		reminders
+
+@WITH_PERL5_TRUE@PERLSCRIPTS = 	ietf2datebook		pilot-undelete		sync-plan
+@WITH_PERL5_FALSE@PERLSCRIPTS = 
+
+bin_SCRIPTS = 
+
+ccexample_SOURCES =  	ccexample.cc
+
+ccexample_LDADD =  	$(top_builddir)/libcc/libpicc.a		$(top_builddir)/libsock/libpisock.la
+
+
+iambicexample_SOURCES =  	iambicexample.cc
+
+iambicexample_LDADD =  	$(top_builddir)/libcc/libpicc.a		$(top_builddir)/libsock/libpisock.la
+
+
+addresses_SOURCES =  	addresses.c
+
+addresses_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+debugsh_SOURCES =  	debugsh.c
+
+debugsh_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+dlpsh_SOURCES =  	dlpsh.c
+
+dlpsh_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+getrom_SOURCES =  	getrom.c
+
+getrom_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+hinotes_SOURCES =  	hinotes.c
+
+hinotes_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+install_datebook_SOURCES =  	install-datebook.c 	parsedate.y
+
+install_datebook_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+install_hinote_SOURCES =  	install-hinote.c
+
+install_hinote_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+install_memo_SOURCES =  	install-memo.c
+
+install_memo_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+install_todos_SOURCES =  	install-todos.c
+
+install_todos_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+#install_user_SOURCES = \
+#	install-user.c
+#install_user_LDADD = \
+#	$(top_builddir)/libsock/libpisock.la
+
+memos_SOURCES =  	memos.c
+
+memos_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+money2qif_SOURCES =  	money2qif.c
+
+money2qif_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pi_csd_SOURCES =  	pi-csd.c
+
+pi_csd_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pi_getram_SOURCES =  	pi-getram.c
+
+pi_getram_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pi_getrom_SOURCES =  	pi-getrom.c
+
+pi_getrom_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pi_nredir_SOURCES =  	pi-nredir.c
+
+pi_nredir_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pi_port_SOURCES =  	pi-port.c
+
+pi_port_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pilot_addresses_SOURCES =  	pilot-addresses.c
+
+pilot_addresses_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pilot_clip_SOURCES =  	pilot-clip.c
+
+pilot_clip_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pilot_debug_SOURCES =  	pd-tty.c		pilot-debug.c
+
+pilot_debug_LDADD =  	$(TCLTKLIBS)					$(top_builddir)/libsock/libpisock.la
+
+
+pilot_dedupe_SOURCES =  	pilot-dedupe.c
+
+pilot_dedupe_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pilot_file_SOURCES =  	pilot-file.c
+
+pilot_file_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pilot_mail_SOURCES =  	parsedate.y		pilot-mail.c
+
+pilot_mail_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pilot_prc_SOURCES =  	pilot-prc.c
+
+pilot_prc_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pilot_schlep_SOURCES =  	pilot-schlep.c
+
+pilot_schlep_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+pilot_xfer_SOURCES =  	pilot-xfer.c
+
+pilot_xfer_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+read_expenses_SOURCES =  	read-expenses.c
+
+read_expenses_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+read_ical_SOURCES =  	read-ical.c
+
+read_ical_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+read_todos_SOURCES =  	read-todos.c
+
+read_todos_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+reminders_SOURCES =  	reminders.c
+
+reminders_LDADD =  	$(top_builddir)/libsock/libpisock.la
+
+
+prc_DATA = getrom.prc getrom2.prc
+prcdir = $(datadir)/pilot-link
+
+CLEANFILES = $(PERLSCRIPTS)
+
+EXTRA_DIST =  	$(prc_DATA)			ietf2datebook.PL		pilot-undelete.PL		sync-plan.PL
+
+ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ./include/pi-config.h ./include/pi-sockaddr.h
+CONFIG_CLEAN_FILES = 
+PROGRAMS =  $(bin_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I./include -I./include
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+ccexample_OBJECTS =  ccexample.o
+ccexample_DEPENDENCIES =  $(top_builddir)/libcc/libpicc.a \
+$(top_builddir)/libsock/libpisock.la
+ccexample_LDFLAGS = 
+iambicexample_OBJECTS =  iambicexample.o
+iambicexample_DEPENDENCIES =  $(top_builddir)/libcc/libpicc.a \
+$(top_builddir)/libsock/libpisock.la
+iambicexample_LDFLAGS = 
+addresses_OBJECTS =  addresses.o
+addresses_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+addresses_LDFLAGS = 
+debugsh_OBJECTS =  debugsh.o
+debugsh_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+debugsh_LDFLAGS = 
+dlpsh_OBJECTS =  dlpsh.o
+dlpsh_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+dlpsh_LDFLAGS = 
+getrom_OBJECTS =  getrom.o
+getrom_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+getrom_LDFLAGS = 
+hinotes_OBJECTS =  hinotes.o
+hinotes_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+hinotes_LDFLAGS = 
+install_datebook_OBJECTS =  install-datebook.o parsedate.o
+install_datebook_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+install_datebook_LDFLAGS = 
+install_hinote_OBJECTS =  install-hinote.o
+install_hinote_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+install_hinote_LDFLAGS = 
+install_memo_OBJECTS =  install-memo.o
+install_memo_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+install_memo_LDFLAGS = 
+install_todos_OBJECTS =  install-todos.o
+install_todos_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+install_todos_LDFLAGS = 
+memos_OBJECTS =  memos.o
+memos_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+memos_LDFLAGS = 
+money2qif_OBJECTS =  money2qif.o
+money2qif_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+money2qif_LDFLAGS = 
+pi_csd_OBJECTS =  pi-csd.o
+pi_csd_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pi_csd_LDFLAGS = 
+pi_getram_OBJECTS =  pi-getram.o
+pi_getram_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pi_getram_LDFLAGS = 
+pi_getrom_OBJECTS =  pi-getrom.o
+pi_getrom_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pi_getrom_LDFLAGS = 
+pi_nredir_OBJECTS =  pi-nredir.o
+pi_nredir_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pi_nredir_LDFLAGS = 
+pi_port_OBJECTS =  pi-port.o
+pi_port_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pi_port_LDFLAGS = 
+pilot_addresses_OBJECTS =  pilot-addresses.o
+pilot_addresses_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_addresses_LDFLAGS = 
+pilot_clip_OBJECTS =  pilot-clip.o
+pilot_clip_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_clip_LDFLAGS = 
+pilot_debug_OBJECTS =  pd-tty.o pilot-debug.o
+pilot_debug_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_debug_LDFLAGS = 
+pilot_dedupe_OBJECTS =  pilot-dedupe.o
+pilot_dedupe_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_dedupe_LDFLAGS = 
+pilot_file_OBJECTS =  pilot-file.o
+pilot_file_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_file_LDFLAGS = 
+pilot_mail_OBJECTS =  parsedate.o pilot-mail.o
+pilot_mail_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_mail_LDFLAGS = 
+pilot_prc_OBJECTS =  pilot-prc.o
+pilot_prc_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_prc_LDFLAGS = 
+pilot_schlep_OBJECTS =  pilot-schlep.o
+pilot_schlep_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_schlep_LDFLAGS = 
+pilot_xfer_OBJECTS =  pilot-xfer.o
+pilot_xfer_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+pilot_xfer_LDFLAGS = 
+read_expenses_OBJECTS =  read-expenses.o
+read_expenses_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+read_expenses_LDFLAGS = 
+read_ical_OBJECTS =  read-ical.o
+read_ical_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+read_ical_LDFLAGS = 
+read_todos_OBJECTS =  read-todos.o
+read_todos_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+read_todos_LDFLAGS = 
+reminders_OBJECTS =  reminders.o
+reminders_DEPENDENCIES =  $(top_builddir)/libsock/libpisock.la
+reminders_LDFLAGS = 
+SCRIPTS =  $(bin_SCRIPTS)
+
+CXXFLAGS = @CXXFLAGS@
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DATA =  $(prc_DATA)
+
+DIST_COMMON =  README AUTHORS COPYING COPYING.LIB ChangeLog INSTALL \
+Makefile.am Makefile.in NEWS TODO aclocal.m4 config.guess config.sub \
+configure configure.in include/pi-config.h.in include/pi-sockaddr.h.in \
+include/stamp-h1.in include/stamp-h2.in install-sh ltconfig ltmain.sh \
+missing mkinstalldirs parsedate.c
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = gtar
+GZIP_ENV = --best
+DIST_SUBDIRS =  libsock libcc include man tests tools
+DEP_FILES =  .deps/addresses.P .deps/ccexample.P .deps/debugsh.P \
+.deps/dlpsh.P .deps/getrom.P .deps/hinotes.P .deps/iambicexample.P \
+.deps/install-datebook.P .deps/install-hinote.P .deps/install-memo.P \
+.deps/install-todos.P .deps/memos.P .deps/money2qif.P .deps/parsedate.P \
+.deps/pd-tty.P .deps/pi-csd.P .deps/pi-getram.P .deps/pi-getrom.P \
+.deps/pi-nredir.P .deps/pi-port.P .deps/pilot-addresses.P \
+.deps/pilot-clip.P .deps/pilot-debug.P .deps/pilot-dedupe.P \
+.deps/pilot-file.P .deps/pilot-mail.P .deps/pilot-prc.P \
+.deps/pilot-schlep.P .deps/pilot-xfer.P .deps/read-expenses.P \
+.deps/read-ical.P .deps/read-todos.P .deps/reminders.P
+SOURCES = $(ccexample_SOURCES) $(iambicexample_SOURCES) $(addresses_SOURCES) $(debugsh_SOURCES) $(dlpsh_SOURCES) $(getrom_SOURCES) $(hinotes_SOURCES) $(install_datebook_SOURCES) $(install_hinote_SOURCES) $(install_memo_SOURCES) $(install_todos_SOURCES) $(memos_SOURCES) $(money2qif_SOURCES) $(pi_csd_SOURCES) $(pi_getram_SOURCES) $(pi_getrom_SOURCES) $(pi_nredir_SOURCES) $(pi_port_SOURCES) $(pilot_addresses_SOURCES) $(pilot_clip_SOURCES) $(pilot_debug_SOURCES) $(pilot_dedupe_SOURCES) $(pilot_file_SOURCES) $(pilot_mail_SOURCES) $(pilot_prc_SOURCES) $(pilot_schlep_SOURCES) $(pilot_xfer_SOURCES) $(read_expenses_SOURCES) $(read_ical_SOURCES) $(read_todos_SOURCES) $(reminders_SOURCES)
+OBJECTS = $(ccexample_OBJECTS) $(iambicexample_OBJECTS) $(addresses_OBJECTS) $(debugsh_OBJECTS) $(dlpsh_OBJECTS) $(getrom_OBJECTS) $(hinotes_OBJECTS) $(install_datebook_OBJECTS) $(install_hinote_OBJECTS) $(install_memo_OBJECTS) $(install_todos_OBJECTS) $(memos_OBJECTS) $(money2qif_OBJECTS) $(pi_csd_OBJECTS) $(pi_getram_OBJECTS) $(pi_getrom_OBJECTS) $(pi_nredir_OBJECTS) $(pi_port_OBJECTS) $(pilot_addresses_OBJECTS) $(pilot_clip_OBJECTS) $(pilot_debug_OBJECTS) $(pilot_dedupe_OBJECTS) $(pilot_file_OBJECTS) $(pilot_mail_OBJECTS) $(pilot_prc_OBJECTS) $(pilot_schlep_OBJECTS) $(pilot_xfer_OBJECTS) $(read_expenses_OBJECTS) $(read_ical_OBJECTS) $(read_todos_OBJECTS) $(reminders_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .cc .lo .o .s .y
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+$(ACLOCAL_M4):  configure.in 
+	cd $(srcdir) && $(ACLOCAL)
+
+config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+	$(SHELL) ./config.status --recheck
+$(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
+	cd $(srcdir) && $(AUTOCONF)
+
+include/pi-config.h: include/stamp-h1
+	@if test ! -f $@; then \
+		rm -f include/stamp-h1; \
+		$(MAKE) include/stamp-h1; \
+	else :; fi
+include/stamp-h1: $(srcdir)/include/pi-config.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=include/pi-config.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > include/stamp-h1 2> /dev/null
+$(srcdir)/include/pi-config.h.in: $(srcdir)/include/stamp-h1.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/include/stamp-h1.in; \
+		$(MAKE) $(srcdir)/include/stamp-h1.in; \
+	else :; fi
+$(srcdir)/include/stamp-h1.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/include/stamp-h1.in 2> /dev/null
+
+include/pi-sockaddr.h: include/stamp-h2
+	@if test ! -f $@; then \
+		rm -f include/stamp-h2; \
+		$(MAKE) include/stamp-h2; \
+	else :; fi
+include/stamp-h2: $(srcdir)/include/pi-sockaddr.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=include/pi-sockaddr.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > include/stamp-h2 2> /dev/null
+$(srcdir)/include/pi-sockaddr.h.in: $(srcdir)/include/stamp-h2.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/include/stamp-h2.in; \
+		$(MAKE) $(srcdir)/include/stamp-h2.in; \
+	else :; fi
+$(srcdir)/include/stamp-h2.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/include/stamp-h2.in 2> /dev/null
+
+mostlyclean-hdr:
+
+clean-hdr:
+
+distclean-hdr:
+	-rm -f include/pi-config.h include/pi-sockaddr.h
+
+maintainer-clean-hdr:
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+ccexample: $(ccexample_OBJECTS) $(ccexample_DEPENDENCIES)
+	@rm -f ccexample
+	$(CXXLINK) $(ccexample_LDFLAGS) $(ccexample_OBJECTS) $(ccexample_LDADD) $(LIBS)
+
+iambicexample: $(iambicexample_OBJECTS) $(iambicexample_DEPENDENCIES)
+	@rm -f iambicexample
+	$(CXXLINK) $(iambicexample_LDFLAGS) $(iambicexample_OBJECTS) $(iambicexample_LDADD) $(LIBS)
+
+addresses: $(addresses_OBJECTS) $(addresses_DEPENDENCIES)
+	@rm -f addresses
+	$(LINK) $(addresses_LDFLAGS) $(addresses_OBJECTS) $(addresses_LDADD) $(LIBS)
+
+debugsh: $(debugsh_OBJECTS) $(debugsh_DEPENDENCIES)
+	@rm -f debugsh
+	$(LINK) $(debugsh_LDFLAGS) $(debugsh_OBJECTS) $(debugsh_LDADD) $(LIBS)
+
+dlpsh: $(dlpsh_OBJECTS) $(dlpsh_DEPENDENCIES)
+	@rm -f dlpsh
+	$(LINK) $(dlpsh_LDFLAGS) $(dlpsh_OBJECTS) $(dlpsh_LDADD) $(LIBS)
+
+getrom: $(getrom_OBJECTS) $(getrom_DEPENDENCIES)
+	@rm -f getrom
+	$(LINK) $(getrom_LDFLAGS) $(getrom_OBJECTS) $(getrom_LDADD) $(LIBS)
+
+hinotes: $(hinotes_OBJECTS) $(hinotes_DEPENDENCIES)
+	@rm -f hinotes
+	$(LINK) $(hinotes_LDFLAGS) $(hinotes_OBJECTS) $(hinotes_LDADD) $(LIBS)
+
+install-datebook: $(install_datebook_OBJECTS) $(install_datebook_DEPENDENCIES)
+	@rm -f install-datebook
+	$(LINK) $(install_datebook_LDFLAGS) $(install_datebook_OBJECTS) $(install_datebook_LDADD) $(LIBS)
+
+install-hinote: $(install_hinote_OBJECTS) $(install_hinote_DEPENDENCIES)
+	@rm -f install-hinote
+	$(LINK) $(install_hinote_LDFLAGS) $(install_hinote_OBJECTS) $(install_hinote_LDADD) $(LIBS)
+
+install-memo: $(install_memo_OBJECTS) $(install_memo_DEPENDENCIES)
+	@rm -f install-memo
+	$(LINK) $(install_memo_LDFLAGS) $(install_memo_OBJECTS) $(install_memo_LDADD) $(LIBS)
+
+install-todos: $(install_todos_OBJECTS) $(install_todos_DEPENDENCIES)
+	@rm -f install-todos
+	$(LINK) $(install_todos_LDFLAGS) $(install_todos_OBJECTS) $(install_todos_LDADD) $(LIBS)
+
+memos: $(memos_OBJECTS) $(memos_DEPENDENCIES)
+	@rm -f memos
+	$(LINK) $(memos_LDFLAGS) $(memos_OBJECTS) $(memos_LDADD) $(LIBS)
+
+money2qif: $(money2qif_OBJECTS) $(money2qif_DEPENDENCIES)
+	@rm -f money2qif
+	$(LINK) $(money2qif_LDFLAGS) $(money2qif_OBJECTS) $(money2qif_LDADD) $(LIBS)
+
+pi-csd: $(pi_csd_OBJECTS) $(pi_csd_DEPENDENCIES)
+	@rm -f pi-csd
+	$(LINK) $(pi_csd_LDFLAGS) $(pi_csd_OBJECTS) $(pi_csd_LDADD) $(LIBS)
+
+pi-getram: $(pi_getram_OBJECTS) $(pi_getram_DEPENDENCIES)
+	@rm -f pi-getram
+	$(LINK) $(pi_getram_LDFLAGS) $(pi_getram_OBJECTS) $(pi_getram_LDADD) $(LIBS)
+
+pi-getrom: $(pi_getrom_OBJECTS) $(pi_getrom_DEPENDENCIES)
+	@rm -f pi-getrom
+	$(LINK) $(pi_getrom_LDFLAGS) $(pi_getrom_OBJECTS) $(pi_getrom_LDADD) $(LIBS)
+
+pi-nredir: $(pi_nredir_OBJECTS) $(pi_nredir_DEPENDENCIES)
+	@rm -f pi-nredir
+	$(LINK) $(pi_nredir_LDFLAGS) $(pi_nredir_OBJECTS) $(pi_nredir_LDADD) $(LIBS)
+
+pi-port: $(pi_port_OBJECTS) $(pi_port_DEPENDENCIES)
+	@rm -f pi-port
+	$(LINK) $(pi_port_LDFLAGS) $(pi_port_OBJECTS) $(pi_port_LDADD) $(LIBS)
+
+pilot-addresses: $(pilot_addresses_OBJECTS) $(pilot_addresses_DEPENDENCIES)
+	@rm -f pilot-addresses
+	$(LINK) $(pilot_addresses_LDFLAGS) $(pilot_addresses_OBJECTS) $(pilot_addresses_LDADD) $(LIBS)
+
+pilot-clip: $(pilot_clip_OBJECTS) $(pilot_clip_DEPENDENCIES)
+	@rm -f pilot-clip
+	$(LINK) $(pilot_clip_LDFLAGS) $(pilot_clip_OBJECTS) $(pilot_clip_LDADD) $(LIBS)
+
+pilot-debug: $(pilot_debug_OBJECTS) $(pilot_debug_DEPENDENCIES)
+	@rm -f pilot-debug
+	$(LINK) $(pilot_debug_LDFLAGS) $(pilot_debug_OBJECTS) $(pilot_debug_LDADD) $(LIBS)
+
+pilot-dedupe: $(pilot_dedupe_OBJECTS) $(pilot_dedupe_DEPENDENCIES)
+	@rm -f pilot-dedupe
+	$(LINK) $(pilot_dedupe_LDFLAGS) $(pilot_dedupe_OBJECTS) $(pilot_dedupe_LDADD) $(LIBS)
+
+pilot-file: $(pilot_file_OBJECTS) $(pilot_file_DEPENDENCIES)
+	@rm -f pilot-file
+	$(LINK) $(pilot_file_LDFLAGS) $(pilot_file_OBJECTS) $(pilot_file_LDADD) $(LIBS)
+
+pilot-mail: $(pilot_mail_OBJECTS) $(pilot_mail_DEPENDENCIES)
+	@rm -f pilot-mail
+	$(LINK) $(pilot_mail_LDFLAGS) $(pilot_mail_OBJECTS) $(pilot_mail_LDADD) $(LIBS)
+
+pilot-prc: $(pilot_prc_OBJECTS) $(pilot_prc_DEPENDENCIES)
+	@rm -f pilot-prc
+	$(LINK) $(pilot_prc_LDFLAGS) $(pilot_prc_OBJECTS) $(pilot_prc_LDADD) $(LIBS)
+
+pilot-schlep: $(pilot_schlep_OBJECTS) $(pilot_schlep_DEPENDENCIES)
+	@rm -f pilot-schlep
+	$(LINK) $(pilot_schlep_LDFLAGS) $(pilot_schlep_OBJECTS) $(pilot_schlep_LDADD) $(LIBS)
+
+pilot-xfer: $(pilot_xfer_OBJECTS) $(pilot_xfer_DEPENDENCIES)
+	@rm -f pilot-xfer
+	$(LINK) $(pilot_xfer_LDFLAGS) $(pilot_xfer_OBJECTS) $(pilot_xfer_LDADD) $(LIBS)
+
+read-expenses: $(read_expenses_OBJECTS) $(read_expenses_DEPENDENCIES)
+	@rm -f read-expenses
+	$(LINK) $(read_expenses_LDFLAGS) $(read_expenses_OBJECTS) $(read_expenses_LDADD) $(LIBS)
+
+read-ical: $(read_ical_OBJECTS) $(read_ical_DEPENDENCIES)
+	@rm -f read-ical
+	$(LINK) $(read_ical_LDFLAGS) $(read_ical_OBJECTS) $(read_ical_LDADD) $(LIBS)
+
+read-todos: $(read_todos_OBJECTS) $(read_todos_DEPENDENCIES)
+	@rm -f read-todos
+	$(LINK) $(read_todos_LDFLAGS) $(read_todos_OBJECTS) $(read_todos_LDADD) $(LIBS)
+
+reminders: $(reminders_OBJECTS) $(reminders_DEPENDENCIES)
+	@rm -f reminders
+	$(LINK) $(reminders_LDFLAGS) $(reminders_OBJECTS) $(reminders_LDADD) $(LIBS)
+
+install-binSCRIPTS: $(bin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(INSTALL_SCRIPT) $$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`"; \
+	    $(INSTALL_SCRIPT) $$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`; \
+	  else if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_SCRIPT) $(srcdir)/$$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`"; \
+	    $(INSTALL_SCRIPT) $(srcdir)/$$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`; \
+	  else :; fi; fi; \
+	done
+
+uninstall-binSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`; \
+	done
 .cc.o:
-	$(CXX) $(CXXFLAGS) -c $<
+	$(CXXCOMPILE) -c $<
+.cc.lo:
+	$(LTCXXCOMPILE) -c $<
+.y.c:
+	$(YACC) $(AM_YFLAGS) $(YFLAGS) $< && mv y.tab.c $*.c
+	if test -f y.tab.h; then \
+	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
+	else :; fi
+parsedate.h: parsedate.c
 
-.PL:
+
+install-prcDATA: $(prc_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(prcdir)
+	@list='$(prc_DATA)'; for p in $$list; do \
+	  if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(prcdir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(prcdir)/$$p; \
+	  else if test -f $$p; then \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(prcdir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(prcdir)/$$p; \
+	  fi; fi; \
+	done
+
+uninstall-prcDATA:
+	@$(NORMAL_UNINSTALL)
+	list='$(prc_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(prcdir)/$$p; \
+	done
+
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+
+@SET_MAKE@
+
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
+	  rev="$$subdir $$rev"; \
+	  test "$$subdir" = "." && dot_seen=yes; \
+	done; \
+	test "$$dot_seen" = "no" && rev=". $$rev"; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+   if test "$$subdir" = .; then :; else \
+	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
+   fi; \
+	done; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(PACKAGE)-$(VERSION)
+top_distdir = $(distdir)
+
+# This target untars the dist file and tries a VPATH configuration.  Then
+# it guarantees that the distribution is self-contained by making another
+# tarfile.
+distcheck: dist
+	-rm -rf $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) zxf $(distdir).tar.gz
+	mkdir $(distdir)/=build
+	mkdir $(distdir)/=inst
+	dc_install_base=`cd $(distdir)/=inst && pwd`; \
+	cd $(distdir)/=build \
+	  && ../configure --srcdir=.. --prefix=$$dc_install_base \
+	  && $(MAKE) $(AM_MAKEFLAGS) \
+	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
+	  && $(MAKE) $(AM_MAKEFLAGS) check \
+	  && $(MAKE) $(AM_MAKEFLAGS) install \
+	  && $(MAKE) $(AM_MAKEFLAGS) installcheck \
+	  && $(MAKE) $(AM_MAKEFLAGS) dist
+	-rm -rf $(distdir)
+	@banner="$(distdir).tar.gz is ready for distribution"; \
+	dashes=`echo "$$banner" | sed s/./=/g`; \
+	echo "$$dashes"; \
+	echo "$$banner"; \
+	echo "$$dashes"
+dist: distdir
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) chozf $(distdir).tar.gz $(distdir)
+	-rm -rf $(distdir)
+dist-all: distdir
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) chozf $(distdir).tar.gz $(distdir)
+	-rm -rf $(distdir)
+distdir: $(DISTFILES)
+	-rm -rf $(distdir)
+	mkdir $(distdir)
+	-chmod 777 $(distdir)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu Makefile
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+	for subdir in $(DIST_SUBDIRS); do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d $(distdir)/$$subdir \
+	    || mkdir $(distdir)/$$subdir \
+	    || exit 1; \
+	    chmod 777 $(distdir)/$$subdir; \
+	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(distdir) distdir=../$(distdir)/$$subdir distdir) \
+	      || exit 1; \
+	  fi; \
+	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
+%.o: %.cc
+	@echo '$(CXXCOMPILE) -c $<'; \
+	$(CXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.cc
+	@echo '$(LTCXXCOMPILE) -c $<'; \
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+info-am:
+info: info-recursive
+dvi-am:
+dvi: dvi-recursive
+check-am: all-am
+check: check-recursive
+installcheck-am:
+installcheck: installcheck-recursive
+install-exec-am: install-binPROGRAMS install-binSCRIPTS
+install-exec: install-exec-recursive
+
+install-data-am: install-prcDATA
+install-data: install-data-recursive
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-recursive
+uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
+		uninstall-prcDATA
+uninstall: uninstall-recursive
+all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
+all-redirect: all-recursive
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs: installdirs-recursive
+installdirs-am:
+	$(mkinstalldirs)  $(DESTDIR)$(bindir) $(DESTDIR)$(bindir) \
+		$(DESTDIR)$(prcdir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+	-test -z "parsedatehparsedatec" || rm -f parsedateh parsedatec
+mostlyclean-am:  mostlyclean-hdr mostlyclean-binPROGRAMS \
+		mostlyclean-compile mostlyclean-libtool \
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+
+mostlyclean: mostlyclean-recursive
+
+clean-am:  clean-hdr clean-binPROGRAMS clean-compile clean-libtool \
+		clean-tags clean-depend clean-generic mostlyclean-am
+
+clean: clean-recursive
+
+distclean-am:  distclean-hdr distclean-binPROGRAMS distclean-compile \
+		distclean-libtool distclean-tags distclean-depend \
+		distclean-generic clean-am
+	-rm -f libtool
+
+distclean: distclean-recursive
+	-rm -f config.status
+
+maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-binPROGRAMS \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-tags maintainer-clean-depend \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-recursive
+	-rm -f config.status
+
+.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
+maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile mostlyclean-libtool distclean-libtool \
+clean-libtool maintainer-clean-libtool uninstall-binSCRIPTS \
+install-binSCRIPTS uninstall-prcDATA install-prcDATA \
+install-data-recursive uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
+maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend info-am info dvi-am dvi check check-am \
+installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs-am installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+	$(PERLSCRIPTS)
+
+ietf2datebook: ietf2datebook.PL
 	$(PERL5) $< > $@
 	chmod +x $@
 
-
-WITHTCL 	= $(TCLEXECS)
-WITHCXX 	= $(CXXEXECS)
-WITHPERL5 	= $(PERLEXECS)
-
-CEXECS 		= addresses$(EXT) debugsh$(EXT) dlpsh$(EXT) getrom$(EXT) \
-		  hinotes$(EXT) install-datebook$(EXT) install-hinote$(EXT) \
-		  install-memo$(EXT) install-todos$(EXT) install-user$(EXT) \
-		  memos$(EXT) money2qif$(EXT) pi-csd$(EXT) pi-getram$(EXT) \
-		  pi-getrom$(EXT) pi-nredir$(EXT) pi-port$(EXT) \
-		  pilot-addresses$(EXT) pilot-clip$(EXT) pilot-dedupe$(EXT) \
-		  pilot-file$(EXT) pilot-mail$(EXT) pilot-prc$(EXT) \
-		  pilot-schlep$(EXT) pilot-xfer$(EXT) read-expenses$(EXT) \
-		  read-ical$(EXT) read-todos$(EXT) reminders$(EXT) @ccexecs@
-
-CXXEXECS 	= ccexample$(EXT) iambicexample$(EXT)
-
-TCLEXECS 	= pilot-debug$(EXT)
-
-PERLEXECS 	= pilot-undelete ietf2datebook sync-plan
-
-GETOPT 		= getopt.o getopt1.o
-
-EXECS 		= $(CEXECS) $(@WITHTCL@) $(@WITHCXX@) $(@WITHPERL5@)
-
-PILIB 		= libsock/libpisock.la
-PICCLIB 	= @libcclib@
-
-all: $(EXECS)
-
-$(PILIB): FORCE
-	$(SUBMAKE_COMM) libpisock.la
-
-libcc/libpicc.a: FORCE
-	$(SUBMAKE_COMM_CC) libpicc.a
-
-installdirs:
-	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir) $(mandir1) $(mandir7)
-
-install: $(EXECS) installdirs $(PILIB) $(PICCLIB) install-man
-	$(INSTALL_DATA) $(PILIB) $(libdir)/libpisock.la
-	if test -n "$(PICCLIB)"; then \
-		$(INSTALL_DATA) $(PICCLIB) $(libdir)/libpicc.la; \
-	fi
-	for p in $(CEXECS); do \
-		$(STRIP) ".libs/$$p"; \
-	done        
-	for p in $(EXECS); do \
-		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
-	done
-	for h in *.h $(srcdir)/include/*.h include/*.hxx $(srcdir)/include/*.hxx; do \
-		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
-	done
-	for p in $(srcdir)/tools/pix/*.gif $(srcdir)/tools/pix/*.xbm; do \
-		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
-	done
-	$(LIBTOOL) -n --finish $(libdir)
-
-install-man:
-	for m in ${srcdir}/man/*.1; do \
-		$(INSTALL_DATA) $$m $(mandir1)/`basename $$m`; \
-		$(CAT) $$m | $(GZIP) > $(mandir1)/`basename $$m`.gz; \
-	done
-	for m in ${srcdir}/man/*.7; do \
-		$(INSTALL_DATA) $$m $(mandir7)/`basename $$m`; \
-		$(CAT) $$m | $(GZIP) > $(mandir7)/`basename $$m`.gz; \
-	done
-
-uninstall:
-	-for p in $(EXECS) $(PERLEXECS) $(CXXEXECS) $(TCLEXECS); do \
-		$(RM) $(bindir)/$$p; \
-	done
-	-rmdir $(bindir)
-	-for h in include/*; do \
-		$(RM) $(includedir)/`basename $$h`; \
-	done
-	-rmdir $(includedir)
-	-$(LIBTOOL) $(RM) $(libdir)/libpisock.la
-	-$(LIBTOOL) $(RM) $(libdir)/libpicc.la
-	-rmdir $(libdir)
-
-install-memo$(EXT): $(PILIB) $(GETOPT) install-memo.o
-	$(CCLINK) install-memo.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-install-datebook$(EXT): $(PILIB) $(GETOPT) install-datebook.o parsedate.o
-	$(CCLINK) install-datebook.o parsedate.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-install-todos$(EXT): $(PILIB) $(GETOPT) install-todos.o
-	$(CCLINK) install-todos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-install-hinote$(EXT): $(PILIB) $(GETOPT) install-hinote.o
-	$(CCLINK) install-hinote.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pilot-addresses$(EXT): $(PILIB) $(GETOPT) pilot-addresses.o
-	$(CCLINK) pilot-addresses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pilot-dedupe$(EXT): $(PILIB) $(GETOPT) pilot-dedupe.o
-	$(CCLINK) pilot-dedupe.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-install-user$(EXT): $(PILIB) $(GETOPT) install-user.o
-	$(CCLINK) install-user.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-money2qif$(EXT): $(PILIB) $(GETOPT) money2qif.o
-	$(CCLINK) money2qif.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pilot-xfer$(EXT): $(PILIB) pilot-xfer.o
-	$(CCLINK) pilot-xfer.o $(PILIB) -o $@ $(LIBS)
-
-pilot-schlep$(EXT): $(PILIB) $(GETOPT) pilot-schlep.o
-	$(CCLINK) pilot-schlep.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pilot-mail$(EXT): $(PILIB) $(GETOPT) pilot-mail.o parsedate.o
-	$(CCLINK) pilot-mail.o parsedate.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pi-port$(EXT): $(PILIB) $(GETOPT) pi-port.o
-	$(CCLINK) pi-port.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pi-getrom$(EXT): $(PILIB) $(GETOPT) pi-getrom.o
-	$(CCLINK) pi-getrom.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pi-getram$(EXT): $(PILIB) $(GETOPT) pi-getram.o
-	$(CCLINK) pi-getram.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pilot-file$(EXT): $(PILIB) $(GETOPT) pilot-file.o
-	$(CCLINK) pilot-file.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pilot-prc$(EXT): $(PILIB) $(GETOPT) pilot-prc.o
-	$(CCLINK) pilot-prc.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pilot-clip$(EXT): $(PILIB) $(GETOPT) pilot-clip.o
-	$(CCLINK) pilot-clip.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pilot-debug$(EXT): $(PILIB) $(GETOPT) pilot-debug.o pd-tty.o
-	$(CCLINK) pilot-debug.o pd-tty.o $(PILIB) $(GETOPT) -o $@ $(TCLTK_LIBS) $(RLLIBS) $(LIBS)
-
-reminders$(EXT): $(PILIB) $(GETOPT) reminders.o
-	$(CCLINK) reminders.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-memos$(EXT): $(PILIB) $(GETOPT) memos.o
-	$(CCLINK) memos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-read-todos$(EXT): $(PILIB) $(GETOPT) read-todos.o
-	$(CCLINK) read-todos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-read-expenses$(EXT): $(PILIB) $(GETOPT) read-expenses.o
-	$(CCLINK) read-expenses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-read-ical$(EXT): $(PILIB) $(GETOPT) read-ical.o
-	$(CCLINK) read-ical.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-addresses$(EXT): $(PILIB) $(GETOPT) addresses.o
-	$(CCLINK) addresses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-hinotes$(EXT): $(PILIB) $(GETOPT) hinotes.o
-	$(CCLINK) hinotes.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-dlpsh$(EXT): $(PILIB) $(GETOPT) dlpsh.o
-	$(CCLINK) dlpsh.o $(PILIB) $(GETOPT) -o $@ $(RLLIBS) $(LIBS)
-
-debugsh$(EXT): $(PILIB) $(GETOPT) debugsh.o
-	$(CCLINK) debugsh.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pi-csd$(EXT): $(PILIB) $(GETOPT) pi-csd.o
-	$(CCLINK) pi-csd.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-pi-nredir$(EXT): $(PILIB) $(GETOPT) pi-nredir.o
-	$(CCLINK) pi-nredir.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-ccexample$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) ccexample.o
-	$(CXXLINK) ccexample.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
-
-validate$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) validate.o
-	$(CXXLINK) validate.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
-
-iambicexample$(EXT): $(PILIB) $(GETOPT) $(PICCLIB) iambicexample.o
-	$(CXXLINK) iambicexample.o $(PILIB) $(GETOPT) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
-
-getrom$(EXT): $(PILIB) $(GETOPT) getrom.o
-	$(CCLINK) getrom.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
-
-parsedate.c: parsedate.y
-	@echo Expect six shift/reduce conflicts
-	$(YACC) parsedate.y
-	mv y.tab.c parsedate.c
-
 pilot-undelete: pilot-undelete.PL
-
-ietf2datebook: ietf2datebook.PL
+	$(PERL5) $< > $@
+	chmod +x $@
 
 sync-plan: sync-plan.PL
+	$(PERL5) $< > $@
+	chmod +x $@
 
-FORCE:
-
-Python:	FORCE
-	cd $(SUBDIRS)/Python; $(MAKE)
-
-Perl5 Perl: FORCE
-	cd $(SUBDIRS)/Perl5; $(PERL5) Makefile.PL && $(MAKE)
-
-Tcl: FORCE
-	cd $(SUBDIRS)/Tcl; $(MAKE)
-
-Java: FORCE
-	cd $(SUBDIRS)/Java; $(MAKE)
-
-check test tests: FORCE
-	cd tests; $(MAKE) tests
-
-strip: $(EXECS)
-	$(STRIP) $(EXECS)
-
-depend:
-#	@-p4 edit Makefile.in */Makefile.in 2>&1 >> /dev/null
-	@-chmod +w */Makefile.in 2>&1 >> /dev/null
-	$(SUBMAKE_COMM) depend
-	$(SUBMAKE_COMM_CC) depend
-	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -w -MM -Iinclude *.c >> Makefile.in
-#	@-p4 revert `p4 diff -sr Makefile.in */Makefile.in` 2>&1 >> /dev/null 
-
-os2:
-	@-p4 edit Makefile.os2 */Makefile.os2 2>&1 >> /dev/null
-	@-chmod +w Makefile.os2 */Makefile.os2 2>&1 >> /dev/null
-	perl scripts/os2dist.pl
-	@-p4 revert `p4 diff -sr Makefile.os2 */Makefile.os2` 2>&1 >> /dev/null 
-
-distclean: clean depend
-	$(RM) Makefile Makefile.os2 libsock/Makefile include/pi-config.h $include/pi-sockaddr.h
-	$(RM) libcc/Makefile
-	$(RM) config.log config.status config.cache libtool
-	$(RM) PiDebug.log
-	-cd $(SUBDIRS)/Perl5 ; $(MAKE) realclean ; rm Makefile.PL
-	-cd $(SUBDIRS)/Python ; $(MAKE) distclean
-	-cd $(SUBDIRS)/Tcl ; $(MAKE) clean
-	-cd $(SUBDIRS)/Java ; $(MAKE) distclean
-	-cd tests ; $(MAKE) distclean
-	$(RM) *~ *.orig */*~ */*.orig
-	$(RM) $(SUBDIRS)/Tcl/Makefile $(SUBDIRS)/Perl5/Makefile.PL $(SUBDIRS)/Perl5/Makefile $(SUBDIRS)/Python/Makefile $(SUBDIRS)/empty
-
-clean:
-	$(RM) *.o *.a *.lo *.la core a.out tarball test_s test_c install-prc$(EXT) pilot-debug$(EXT)
-	$(RM) -rf .libs _libs
-	$(RM) $(CEXECS) $(TCLEXECS) $(CXXEXECS) $(PERLEXECS) validate 
-	$(RM) pilot.rom* pilot2.rom* sync-plan.ids.*
-	$(SUBMAKE_COMM) clean
-	$(SUBMAKE_COMM_CC) clean
-
-tarball: distclean
-	gcc -o tarball scripts/tarball.c -Iinclude
-	./tarball
-
-dist: tarball
-	-rm -f pilot-link-?.?.?.tar.gz
-	-mv ../pilot-link-?.?.?.tar.gz .
-
-#Depend information starts here. Do not edit the text beyond this point!
-addresses.o: addresses.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-address.h include/pi-appinfo.h include/pi-dlp.h \
- include/pi-header.h
-debugsh.o: debugsh.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-syspkt.h include/pi-header.h
-dlpsh.o: dlpsh.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-padp.h include/pi-dlp.h include/pi-serial.h \
- include/pi-header.h
-getopt.o: getopt.c
-getopt1.o: getopt1.c getopt.h
-getrom.o: getrom.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-serial.h include/pi-header.h
-hinotes.o: hinotes.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-hinote.h include/pi-appinfo.h include/pi-dlp.h \
- include/pi-header.h
-install-datebook.o: install-datebook.c include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/i18n.h include/pi-dlp.h include/pi-datebook.h \
- include/pi-appinfo.h
-install-hinote.o: install-hinote.c include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/i18n.h include/pi-dlp.h include/pi-hinote.h \
- include/pi-appinfo.h include/pi-header.h
-install-memo.o: install-memo.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-memo.h include/pi-appinfo.h
-install-todos.o: install-todos.c include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/i18n.h include/pi-dlp.h include/pi-todo.h \
- include/pi-appinfo.h include/pi-header.h
-install-user.o: install-user.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-header.h
-kittykiller.o: kittykiller.c
-memos.o: memos.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-memo.h include/pi-appinfo.h include/pi-dlp.h \
- include/pi-file.h include/pi-header.h
-money2qif.o: money2qif.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-money.h include/pi-appinfo.h include/pi-dlp.h \
- include/pi-header.h
-parsedate.o: parsedate.c
-pd-tty.o: pd-tty.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-syspkt.h
-pi-csd.o: pi-csd.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-serial.h include/pi-slp.h \
- include/pi-header.h
-pi-getram.o: pi-getram.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-syspkt.h include/pi-dlp.h
-pi-getrom.o: pi-getrom.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-syspkt.h include/pi-dlp.h include/pi-header.h
-pi-nredir.o: pi-nredir.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-header.h
-pi-port.o: pi-port.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-serial.h include/pi-slp.h \
- include/pi-header.h
-pilot-addresses.o: pilot-addresses.c include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/i18n.h include/pi-dlp.h include/pi-address.h \
- include/pi-appinfo.h include/pi-header.h
-pilot-clip.o: pilot-clip.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-syspkt.h include/pi-dlp.h include/pi-header.h
-pilot-debug.o: pilot-debug.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-syspkt.h
-pilot-dedupe.o: pilot-dedupe.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-header.h
-pilot-file.o: pilot-file.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-file.h include/pi-header.h
-pilot-mail.o: pilot-mail.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-mail.h include/pi-appinfo.h include/pi-dlp.h \
- include/pi-header.h
-pilot-prc.o: pilot-prc.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-dlp.h include/pi-file.h include/pi-header.h
-pilot-schlep.o: pilot-schlep.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-file.h include/pi-dlp.h include/pi-header.h
-pilot-xfer.o: pilot-xfer.c getopt.h include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/i18n.h include/pi-file.h include/pi-dlp.h include/pi-header.h
-read-expenses.o: read-expenses.c include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/i18n.h include/pi-expense.h include/pi-appinfo.h \
- include/pi-dlp.h include/pi-header.h
-read-ical.o: read-ical.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-todo.h include/pi-appinfo.h include/pi-datebook.h \
- include/pi-dlp.h include/pi-header.h
-read-todos.o: read-todos.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-todo.h include/pi-appinfo.h include/pi-dlp.h \
- include/pi-file.h include/pi-header.h
-reminders.o: reminders.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/i18n.h \
- include/pi-datebook.h include/pi-appinfo.h include/pi-dlp.h \
- include/pi-header.h
-test.o: test.c
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:
