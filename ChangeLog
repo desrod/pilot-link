@@ -1,3 +1,8 @@
+2002-01-31  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* dlpsh.c: Trying to fix. Crashes all over the place. strtoke()
+	  needs to go away, and it's not thread-safe.
+
 2002-01-30  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/cmp.c (cmp_wakeup): use new version define

@@ -227,13 +227,13 @@ int ls_fn(int sd, int argc, char *argv[])
 			return -1;
 		}
 
-		printf("%s\n", info.name);
+		printf("  File: %s\n", info.name);
 
 		if (lflag == 1) {
-			printf("       More: 0x%x     Flags: 0x%-4x             Type: %.4s\n",
+			printf("  More: 0x%x     Flags: 0x%-4x             Type: %.4s\n",
 				info.more, info.flags, (char *) &tag);
 			tag = htonl(info.creator);
-			printf("  CreatorID: %s    Modification Number: %-4ld Version: %-2d\n",
+			printf("Creator: %s    Modification Number: %-4ld Version: %-2d\n",
 				(char *) &tag, info.modnum, info.version);
 			printf("Created: %19s\n", timestr(info.createDate));
 			printf("Backup : %19s\n", timestr(info.backupDate));
@@ -641,37 +641,33 @@ int main(int argc, char *argv[])
 
 	if (argc < 2 && !getenv("PILOTPORT")) {
 		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
-
-	if (port == NULL && argc > 1) {
-		printf("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		       "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
-		exit(1);
-	} else if (port != NULL) {
-
-		sd = pilot_connect(port);
+		return 0;
+	} else {
 		
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-		} else {
-			printf("\nWelcome to the DLP Shell\n"
-			       "Type 'help' for additional information\n\n");
+		sd = pilot_connect(port);
+		if (sd < 0)
+			goto error;
+	
+		if (dlp_OpenConduit(sd) < 0)
+			goto error_close;
 
-			/* Stayin' alive, stayin' alive...
-			   Normally we tickle to keep the port open and listening, 
-			   but since we're removing PADP support, we have to find
-			   another way to do this cleanly. Maybe pilot_connect() 
-			   has to go... 
-			*/			
-			pi_watchdog(sd, TICKLE_INTERVAL);
+		printf("\nWelcome to the DLP Shell\n"
+		       "Type 'help' for additional information\n\n");
 
-			handle_user_commands(sd);
+		pi_watchdog(sd, TICKLE_INTERVAL);
 
-			return 0;
-		}
+		handle_user_commands(sd);
+
+		return 0;
 	}
-	return 0;
+error_close:
+	pi_close(sd);
+
+error:
+	perror("   ERROR");
+	fprintf(stderr, "\n");
+
+	return -1;
+
+	
 }
