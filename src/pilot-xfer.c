@@ -607,7 +607,7 @@ static void Fetch(char *dbname)
 {
 	struct 	DBInfo info;
 	char 	name[256],
-		synclog[70];
+		synclog[512];
 
 	struct 	pi_file *f;
 
@@ -663,8 +663,9 @@ static void Fetch(char *dbname)
 
 	printf("complete.\n\n");	
 
-        sprintf(synclog, "File '%s' successfully fetched.\n\n"
-		"Thank you for using pilot-link.", name);
+        snprintf(synclog, sizeof(synclog)-1,
+				"File '%s' successfully fetched.\n\n"
+				"Thank you for using pilot-link.", name);
         dlp_AddSyncLogEntry(sd, synclog);
 
 	pi_file_close(f);

@@ -389,6 +389,9 @@ pi_file_close(pi_file_t *pf)
 {
 	int 	err;
 
+	if (!pf)
+		return -1;
+
 	if (pf->for_writing) {
 		if (pi_file_close_for_write(pf) < 0)
 			pf->err = 1;
