@@ -1,0 +1,78 @@
+.\" 
+.\" 
+.TH "pilot-foto" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.SH "NAME"
+\fBpilot\-foto\fR \- Fetches and converts images from the Palm 'Foto' application
+
+
+.SH "SYNOPSIS"
+\fBpilot\-foto\fR [\fB\-p\fR <\fIport\fR>] -f |-c] MyImage.jpg.pdb
+
+
+.SH "DESCRIPTION"
+\fBpilot\-foto\fR is used to fetch images from your Palm that are created
+with the Palm "Foto" application (CreatorID 'Foto'). The Palm Zire71
+handheld produces these images.
+
+
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld.
+If this is not specified, will look for the \fI$PILOTPORT\fR environment
+variable. If both are not found or supplied, \fBinstall\-expenses\fR will
+fall back to /dev/pilot
+   
+   
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display the help synopsis for \fBpilot\-foto\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBpilot\-foto\fR
+
+
+.TP 
+\fB\-f\fR, \fB\-\-fetch\fR [filename]
+Fetch the file named by [filename] from the Palm and convert it to a .jpg
+file you can view with your standard image tools
+
+
+.TP 
+\fB\-c\fR, \fB\-\-convert\fR [filename]
+Convert the photo file named in [filename] from a file locally on your
+system (not on the Palm itself) into a .jpg file you can view with standard
+image tools
+
+
+.SH "USAGE"
+Connect to a target Palm handheld and fetch image files from the device
+which match the CreatorID 'Foto' and convert them to .jpg format files.
+Alternately, it can convert local files with the same CreatorID to .jpg
+files as well
+
+.SH "EXAMPLES"
+To fetch the images from the Palm, and convert them to .jpg files:
+.IP 
+\fBpilot\-foto\fR \fB\-p\fR /dev/pilot \fB\-f\fR MyImage.jpg.pdb
+.LP
+To convert an image already on disk, such as from a full backup: 
+.IP 
+\fBpilot\-foto\fR \fB\-c\fR MyImage.jpg.pdb
+
+
+
+.SH "BUGS"
+.PP
+\fBKNOWN BUGS\fR
+.IP
+\fBpilot\-foto\fR has no known bugs at this time.
+
+.PP
+\fBREPORTING BUGS\fR
+.IP
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+.SH "AUTHOR"
+\fBpilot\-foto\fR was written by Judd Montgomery
