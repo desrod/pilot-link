@@ -55,12 +55,13 @@ int main(int argc, char *argv[])
 		*memo_buf	= NULL,
 		*category_name	= NULL,
 		*filename	= NULL,
-		*tmp		= NULL,
-		buf[0xffff];
+		*tmp		= NULL;
 
         struct 	PilotUser User;
         struct 	MemoAppInfo mai;
 	struct  stat sbuf;
+
+	pi_buffer_t *appblock;
 
 	FILE *f;
 
@@ -161,8 +162,10 @@ int main(int argc, char *argv[])
 		goto error_close;
 	}
 
-	ReadAppBlock = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-	unpack_MemoAppInfo(&mai, (unsigned char *) buf, ReadAppBlock);
+	appblock = pi_buffer_new(0xffff);
+	ReadAppBlock = dlp_ReadAppBlock(sd, db, 0, 0xffff, appblock);
+	unpack_MemoAppInfo(&mai, appblock->data, ReadAppBlock);
+	pi_buffer_free(appblock);
 
 	if (category_name) {
 		category = plu_findcategory(&mai.category,category_name,

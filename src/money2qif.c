@@ -101,8 +101,8 @@ int main(int argc, const char *argv[])
 
 	buffer = pi_buffer_new (0xffff);
 
-	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
-	unpack_MoneyAppInfo(&mai, buffer->data, 0xffff);
+	dlp_ReadAppBlock(sd, db, 0, buffer->allocated, buffer);
+	unpack_MoneyAppInfo(&mai, buffer->data, buffer->used);
 
 	match_category = plu_findcategory(&mai.category,account,PLU_CAT_NOFLAGS);
 

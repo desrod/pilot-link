@@ -152,8 +152,7 @@ int main(int argc, const char **argv)
 		sd 		= -1,
 		mode 		= MEMO_MBOX_STDOUT;
 
-	char 	appblock[0xffff],
-		*dirname = NULL;
+	char	*dirname = NULL;
 
 	struct 	HiNoteAppInfo mai;
 	struct 	PilotUser User;
@@ -235,12 +234,10 @@ int main(int argc, const char **argv)
 			goto error_close;
 		}
 
-		dlp_ReadAppBlock(sd, db, 0, appblock,
-				 0xffff);
-		unpack_HiNoteAppInfo(&mai, (unsigned char *) appblock,
-				     0xffff);
-
 		buffer = pi_buffer_new (0xffff);
+		
+		dlp_ReadAppBlock(sd, db, 0, 0xffff, buffer);
+		unpack_HiNoteAppInfo(&mai, buffer->data, 0xffff);
 
 		for (i = 0;; i++) {
 			int 	attr,
@@ -271,6 +268,8 @@ int main(int argc, const char **argv)
 				  break;
 			}
 		}
+
+		pi_buffer_free(buffer);
 
 	/* Close the Hi-Note database and write out to the Palm logfile */
 	dlp_CloseDB(sd, db);

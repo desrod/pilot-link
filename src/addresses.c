@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
 	buffer = pi_buffer_new (0xffff);
 
-	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
+	dlp_ReadAppBlock(sd, db, 0, 0xffff, buffer);
 	unpack_AddressAppInfo(&aai, buffer->data, 0xffff);
 
 	for (index = 0;; index++) {

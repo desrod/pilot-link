@@ -188,13 +188,13 @@ int main(int argc, const char *argv[])
 
 	ssize_t	len;
 
-	pi_buffer_t *buffer;
+	pi_buffer_t	*buffer,
+		*appblock;
 
 	const char
                 *progname 	= argv[0];
 
-	char    appblock[0xffff],
-		*buf = NULL,
+	char    *buf = NULL,
 		*dirname = NULL,
 		*category_name = NULL,
 		*filename = NULL,
@@ -270,6 +270,7 @@ int main(int argc, const char *argv[])
 	}
 
 	/* FIXME - Need to add tests here for port/filename, clean this. -DD */
+	appblock = pi_buffer_new(0xffff);
 	if (!filename) {
 
 	        sd = plu_connect();
@@ -288,8 +289,7 @@ int main(int argc, const char *argv[])
 			goto error_close;
 		}
 
-		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
-				 0xffff);
+		dlp_ReadAppBlock(sd, db, 0, 0xffff, appblock);
 	} else {
 		pif = pi_file_open(filename);
 		if (!pif) {
@@ -298,11 +298,11 @@ int main(int argc, const char *argv[])
 		}
 
 		pi_file_get_app_info(pif, (void *) &ptr, &len);
-
-		memcpy(appblock, ptr, len);
+		pi_buffer_append(appblock, ptr, len);
 	}
 
-	unpack_MemoAppInfo(&mai, (unsigned char *) appblock, 0xffff);
+	unpack_MemoAppInfo(&mai, appblock->data, appblock->used);
+	pi_buffer_free(appblock);
 
 	if (category_name && category_name[0] != '\0') {
 		match_category = plu_findcategory(&mai.category,category_name, PLU_CAT_WARN_UNKNOWN);

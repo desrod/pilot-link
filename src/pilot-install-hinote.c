@@ -53,6 +53,7 @@ int main(int argc, const char *argv[])
 	char    *file_text,
 		*cat 		= NULL,
 		buf[0xffff];
+	pi_buffer_t *appblock;
 
 	unsigned char note_buf[0x8000];
 	FILE 	*f;
@@ -118,9 +119,10 @@ int main(int argc, const char *argv[])
 		goto error_close;
 	}
 
-	j = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-	unpack_HiNoteAppInfo(&mai, (unsigned char *) buf, j);	/* should check result */
-
+	appblock = pi_buffer_new(0xffff);
+	j = dlp_ReadAppBlock(sd, db, 0, 0xffff, appblock);
+	unpack_HiNoteAppInfo(&mai, appblock->data, j);	/* should check result */
+	pi_buffer_free(appblock);
 
 	if (cat != NULL) {
 		category = plu_findcategory(&mai.category,cat,

@@ -50,6 +50,7 @@ int main(int argc, const char *argv[])
 
 	unsigned char buf[0xffff];
 	unsigned char *b;
+	pi_buffer_t *appblock;
 
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo eai;
@@ -152,8 +153,10 @@ int main(int argc, const char *argv[])
 		goto error_close;
 	}
 
-	l = dlp_ReadAppBlock(sd, db, 0, buf, 0xffff);
-	unpack_ExpenseAppInfo(&eai, buf, l);
+	appblock = pi_buffer_new(0xffff);
+	l = dlp_ReadAppBlock(sd, db, 0, 0xffff, appblock);
+	unpack_ExpenseAppInfo(&eai, appblock->data, l);
+	pi_buffer_free(appblock);
 
 	category = 0;	/* unfiled */
 	if (category_name) {
