@@ -724,20 +724,14 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
    This particular date/time format does not occur anywhere else within the
    Palm or its communications. */
 
-/* Notice: These conversion functions apply a possibly incorrect timezone
-   correction. They use the local time on the UNIX box, and transmit this
-   directly to the Palm. This assumes that the Palm has the same local time.
-   If the Palm is communicating from a different timezone, this is not
-   necessarily correct.
-   
-   It would be possible to compare the current time on the Palm with the
-   current time on the UNIX box, and use that as the timezone offset, but
-   this would break if the Palm had the wrong time, or one or the either
-   didn't have the proper local (wall) time.
-   
-   In any case, since the (possibly incorrect) timezone correction is
-   applied both way, there is no immediate problem.
-   -- KJA */
+/* Notice: 
+   The dates in the DLP protocol are expressed as absolute dates/times,
+   without any time zone information. For example if a file was created
+   on the device at 19:32:48, the time members will be 19, 32 and 48.
+   This simplifies things a lot since we don't need to to time zone
+   conversions. The functions below convert a breakdown DLP date to and
+   from a time_t expressed in the machine's local timezone.
+   -- FP */
 
 /***********************************************************************
  *
@@ -751,7 +745,7 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
  *
  ***********************************************************************/
 static
-time_t dlp_ptohdate(const char *data)
+time_t dlp_ptohdate(const unsigned char *data)
 {
 	struct tm t;
 
@@ -760,10 +754,12 @@ time_t dlp_ptohdate(const char *data)
 	t.tm_hour 	= (int) data[4];
 	t.tm_mday 	= (int) data[3];
 	t.tm_mon 	= (int) data[2] - 1;
-	t.tm_year 	= ((data[0] << 8) | data[1]) - 1900;
+	t.tm_year 	= (((int)data[0] << 8) | (int)data[1]) - 1900;
 	t.tm_wday 	= 0;
 	t.tm_yday 	= 0;
 	t.tm_isdst 	= -1;
+	t.tm_zone   = NULL;
+	t.tm_gmtoff = 0;
 
 	/* Seems like year comes back as all zeros if the date is "empty"
 	   (but other fields can vary).  And mktime() chokes on 1900 B.C. 
@@ -813,7 +809,7 @@ time_t dlp_ptohdate(const char *data)
  *
  ***********************************************************************/
 static void
-dlp_htopdate(time_t time, char *data)
+dlp_htopdate(time_t time, unsigned char *data)
 {				/* @+ptrnegate@ */
 	int 	year;
 	struct 	tm *t = localtime(&time);
@@ -828,8 +824,8 @@ dlp_htopdate(time_t time, char *data)
 	data[4] = (unsigned char) t->tm_hour;
 	data[3] = (unsigned char) t->tm_mday;
 	data[2] = (unsigned char) (t->tm_mon + 1);
-	data[0] = (unsigned char) ((year >> 8) & 0xff);
-	data[1] = (unsigned char) ((year >> 0) & 0xff);
+	data[0] = (unsigned char) (year >> 8);
+	data[1] = (unsigned char) year;
 
 	return;
 }
@@ -5465,7 +5461,8 @@ dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *volInfo)
  * Parameters:  sd			--> socket descriptor 
  *				volRefNum   --> as returned by dlp_VFSVolumeEnumerate()
  *				len			<-> on input, the maximum size of the name
- *								buffer. on output, the used size
+ *								buffer (including the ending nul byte).
+ *								on output, the used size
  *				name		<-- the volume name
  * 
  * Returns:     -1		dlp error (see errno)
