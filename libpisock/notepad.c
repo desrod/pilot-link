@@ -47,13 +47,13 @@ void free_NotePad( struct NotePad *a )
 {
    if( a->flags & NOTEPAD_FLAG_NAME )
      {
-//	fprintf( stderr, "Freeing name: %s\n", a->name );
+/*	fprintf( stderr, "Freeing name: %s\n", a->name ); */
 	free(a->name);
      }
    
    if( a->flags & NOTEPAD_FLAG_BODY )
      {
-//	fprintf( stderr, "Freeing data\n" );
+/*	fprintf( stderr, "Freeing data\n" ); */
 	free(a->data);
      }
    
@@ -106,11 +106,11 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
    a->flags = (unsigned short int) get_short(buffer);
    buffer += 2;
 
-//   fprintf( stderr, "flags: 0x%x\n", a->flags );
+/*   fprintf( stderr, "flags: 0x%x\n", a->flags ); */
    
    if( a->flags & NOTEPAD_FLAG_ALARM )
      {
-//	fprintf( stderr, "Getting Alarm\n" );
+/*	fprintf( stderr, "Getting Alarm\n" ); */
 	a->alarmDate.sec = (unsigned short int) get_short(buffer);
 	buffer += 2;
 	a->alarmDate.min = (unsigned short int) get_short(buffer);
@@ -130,7 +130,7 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
   
    if( a->flags & NOTEPAD_FLAG_NAME )
      {
-//	fprintf( stderr, "Getting Name\n" );
+/*	fprintf( stderr, "Getting Name\n" ); */
 	a->name = strdup((char *) buffer);
    
 	buffer += strlen( a->name ) + 1;
@@ -138,8 +138,8 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
 	if( (strlen( a->name ) + 1)%2 == 1)
 	  buffer++;
 	
-//	if( len%2 == 1 )
-//	  len++;
+/*	if( len%2 == 1 )
+	  len++; */
      }
    else 
      {
@@ -149,7 +149,7 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
 
    if( a->flags & NOTEPAD_FLAG_BODY )
      {
-//	fprintf( stderr, "Getting Body\n" );
+/*	fprintf( stderr, "Getting Body\n" ); */
 	a->body.bodyLen = get_long( buffer );
 	buffer += 4;
    

@@ -530,7 +530,7 @@ static void Fetch(char *dbname)
 	          target filename, such as: '-f AddressDB' instead of 
 		  using '-f AddressDB.pdb' */
 
-	if (access(dbname, R_OK|W_OK) != 0) {
+	if (access(dbname, F_OK) == 0 && access(dbname, R_OK|W_OK) != 0) {
 		fprintf(stderr, "\n");
 		fprintf(stderr, "   Unable to write to %s, check "
 			"ownership and permissions.\n\n", dbname);

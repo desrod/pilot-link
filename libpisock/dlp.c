@@ -445,18 +445,18 @@ static time_t dlp_ptohdate(unsigned const char *data)
 	if (data[0] == 0 && data[1] == 0)
 
 	/* This original calculation was wrong, and reported one day earlier
-	   return (time_t) 0x83D8FE00;		// Wed Dec 30 16:00:00 1903 GMT
+	   than it was supposed to report. You can verify this with the
 	   following: 
 		perl -e '$date=localtime(0x83D8FE00); print $date,"\n"'
 
-	   return (time_t) 0x83D96E80;		// Thu Dec 31 00:00:00 1903 GMT
-	   return (time_t) 0x00007080;		// Thu Jan  1 00:00:00 1970 GMT
+	   return (time_t) 0x83D8FE00;	// Wed Dec 30 16:00:00 1903 GMT
+
 	   Here are others, depending on what your system requirements are: 
 
 	   return (time_t) 0x83D96E80;	// Thu Dec 31 00:00:00 1903 GMT
 	   return (time_t) 0x00007080;	// Thu Jan  1 00:00:00 1970 GMT
 
-	return (time_t) 0x83DAC000;		/* Fri Jan  1 00:00:00 1904 GMT */
+	   Palm's own Conduit Development Kit references using 1/1/1904, so
 	   that's what we'll use here until something else breaks it.
 
 	*/

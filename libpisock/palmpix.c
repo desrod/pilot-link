@@ -1234,7 +1234,7 @@ void DecodeRow( uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData, uint32
        NOT in m68k byte order.
     
         0UInt8 numRec;
-        1UInt8 s0;// Always zero
+        1UInt8 s0;		// Always zero
         2UInt8 month;
         3UInt8 day;
         4UInt8 cent;
@@ -1242,10 +1242,10 @@ void DecodeRow( uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData, uint32
         6UInt8 hour;
         7UInt8 min;
         8UInt8 sec;
-        9UInt8 resolution;  // 640x480 = 1, 320x240 = 2, 400x300 = 3, 800x600 = 4
+        9UInt8 resolution;  	// 640x480 = 1, 320x240 = 2, 400x300 = 3, 800x600 = 4
        10UInt16 w;
        12UInt16 h;
-       14UInt16 thumbLen;//Size of the thumbnail following the name
+       14UInt16 thumbLen;	// Size of the thumbnail following the name
        16UInt16 GRsize;
        18UInt8 sep0;
        19UInt16 Rsize;
@@ -1254,11 +1254,11 @@ void DecodeRow( uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData, uint32
        24UInt8 sep2;
        25UInt16 GBsize;
        27UInt16 pad1;
-       29UInt16 num;// hires 1200, lowres 300
+       29UInt16 num;		// hires 1200, lowres 300
        31UInt8 resA[14];
        45UInt8 zoom;
-       46UInt8 softMajor;// Always 0x0102  [see below]
-       47UInt8 softMinor;// Always 0x0102  [see below]
+       46UInt8 softMajor;	// Always 0x0102  [see below]
+       47UInt8 softMinor;	// Always 0x0102  [see below]
        48UInt8 resB[34];
        82UInt16 dir[57];
     

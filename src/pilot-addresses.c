@@ -332,7 +332,6 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 		}
 
 #ifdef DEBUG
-//      printf("Category %s (%d)\n", aai->CategoryName[category], category);
 		printf("Category %s (%d)\n", aai->category.name[category],
 		       category);
 		for (l = 0; l < 19; l++) {

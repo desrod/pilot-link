@@ -296,9 +296,7 @@ int main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		// print_splash(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
+	if (port == NULL && getenv("PILOTPORT")) {
 		port = getenv("PILOTPORT");
 	}
 	
