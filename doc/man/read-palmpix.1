@@ -1,0 +1,66 @@
+.TH READ-PALMPIX 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+
+.SH NAME
+.B read-palmpix 
+\- Convert all pictures in the files given or found via connecting to a Palm
+handheld if no files are given, writing each to <pixname>.ppm
+
+.SH SYNOPSIS
+.B read-palmpix 
+\-p <port> -n <pixname>
+
+.SH DESCRIPTION
+.B read-palmpix 
+allows a Kodak PalmPix camera user to extract the images from their Palm
+handheld device and convert them to Portable Pixmap (.ppm) files on their
+system.
+
+.SS OPTIONS
+.TP
+.BI \-p\ \--port\  <port> ,
+Use device file 
+.I port
+to communicate with the Palm handheld device. If this is not specified, will
+look for the $PILOTPORT environment variable. If both are not found, will
+fall back to /dev/pilot.
+
+.TP
+.BI \-h\ \--help\,
+Display help synopsis
+
+.TP
+.BI \-v\ \--version\,
+Display version of
+.B read-palmpix
+
+.TP
+.BI \-l\ --list\,
+List picture information found on the device instead of converting them to
+image files
+
+.TP
+.BI \-n\ \--name\ <pixname>, 
+Convert only
+.I pixname
+to an image file, and output to stdout as a .ppm
+
+.SH USAGE
+The program will connect to the target Palm handheld device, and read the
+images found in the Kodak PalmPix image database, and allow the user to view
+the list of images, or to select one or all of them, and convert them to
+Portable Pixmap (.ppm) files to be viewed or printed at the desktop level.
+If no options are specified, all of the images on the device will be
+converted.
+
+.SH KNOWN BUGS
+.B read-palmpix
+has no known bugs.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
+.SH AUTHOR
+.B read-palmpix 
+was originally written by Angus Ainslie <\fIangusa@deltatee.com\fP>, and updated by John Marshall <\fIjmarshall@acm.org\fP>to
+include core pilot-link functionality.

@@ -3,6 +3,42 @@
 	* libpisock/todo.c: Added maximum length #defines for Description
 	  and Note length, will add check code later
 
+	* include/pi-dlp.h: Added dlp_GetROMToken patch (Owen Stenseth)
+
+	* libpisock/dlp.c: Ditto (Owen Stenseth)
+
+	* bindings/Perl/Pilot.xs: Ditto (Owen Stenseth)	
+
+	* bindings/Python/setup.py: Incremented to 0.11.0 version
+
+	* bindings/Perl/Makefile.PL.in: Ditto
+
+	* bindings/Java/org/gnu/pdapilot/Constants.java: Ditto, updated
+	  formatting
+
+	* src/pi-getromtoken.c: GetROMToken sample conduit (Owen Stenseth)
+
+	* src/install-hinote.c: s/cat/category/ in struct option
+	
+	* src/install-netsync.c: More intuitive options used, -i ip, 
+	  -m mask, -n hostname
+
+	* src/install-user.c: Ditto
+
+	* doc/man/pilot-addresses.1: Updated manpage
+	
+	* doc/man/install-user.1: Ditto
+		
+	* doc/man/install-hinote.1: Ditto
+
+	* doc/man/pilot-xfer.1: Ditto
+
+	* doc/man/read-palmpix.1: New manpage for read-palmpix
+
+	* doc/man/read-notepad.1: Ditto for read-notepad
+
+	* doc/man/install-netsync.1: Ditto for install-netsync
+
 2002-07-11  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-addresses.c: WriteUserInfo fix

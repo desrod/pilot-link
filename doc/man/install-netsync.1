@@ -1,0 +1,76 @@
+.TH INSTALL-NETSYNC 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+
+.SH NAME
+.B install-netsync 
+\- reads or sets the Network Preferences information on a Palm Device
+
+.SH SYNOPSIS
+.B install-netsync
+\-p /dev/pilot -e -n <hostname> -i <ip> -m <netmask>
+
+.SH DESCRIPTION
+.B install-netsync
+allows the user to read or change the Network Preferences stored on the
+Pilot
+
+.SS OPTIONS
+.TP
+.BI \-p\ \--port\  <port> ,
+Use device file
+.I port
+to communicate with the Palm handheld device. If this is not specified, will
+look for the $PILOTPORT environment variable. If both are not found, will
+fall back to /dev/pilot.
+   
+.TP
+.BI \-h\ \--help\,
+Display help synopsis for 
+.B install-netsync
+
+.TP
+.BI \-v\ \--version\,
+Display version of
+.B install-netsync
+
+.TP
+.BI \-e\ \--enable\,
+Enable the LanSync operation (instead of local HotSync)
+
+.TP
+.BI \-n\ \--name\ <hostname>,
+Sets the hostname of the remote machine you wish to connect to. This is 
+.B not
+the hostname of the Palm device itself
+
+.TP
+.BI \-i\ \--ip\,
+Set the IP address of the remote machine you wish to connect to. This is
+.B not
+the IP address of the Palm device itself
+
+.TP
+.BI \-m\ \--mask\,
+Set the netmask of the remote machine you wish to connect to. This is
+.B not
+the netmask address of the Palm device itself
+
+
+.SH USAGE
+The program will connect to a target Palm handheld device, and read or set
+the Network Preferences information specified or display the Network
+Preferences stored on the Palm device
+
+.SH KNOWN BUGS
+.BR install-netsync
+has no known bugs.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
+.SH AUTHOR
+.B install-netsync
+was created from the original 
+.B install-user 
+application originally written by D. Jeff Dionne, and adapted to split it
+out into a separate conduit
