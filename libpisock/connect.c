@@ -56,6 +56,7 @@ int pilot_connect(char *port)
 	int 	parent_sd	= -1, 	/* Client socket, formerly sd	*/
 		client_sd	= -1,	/* Parent socket, formerly sd2	*/
 		result, 
+		count	= 0,
 		err	= 0;
 	struct 	pi_sockaddr addr;
 	struct 	stat attr;
@@ -78,6 +79,7 @@ int pilot_connect(char *port)
 		exit(1);
 	}
 
+	begin:
 	if (!(parent_sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n",
 			port ? port : getenv("PILOTPORT"));
@@ -93,17 +95,19 @@ int pilot_connect(char *port)
 		result = pi_bind(parent_sd, NULL, 0);
 	}
 
+
 	if (result < 0) {
-		int save_errno = errno;
-		char *portname;
+		int 	save_errno = errno,
+			j;
+		char 	*portname;
 
 		portname = (port != NULL) ? port : getenv("PILOTPORT");
 
+
 		if (portname) {
-			fprintf(stderr, "\n");
+			char realport[50];
+			realpath(portname, realport);
 			errno = save_errno;
-			fprintf(stderr, "   ERROR: %s (%d)\n\n", strerror(errno), 
-				errno);
 
 			if (errno == 2) {
 				fprintf(stderr, "   The device %s does not exist..\n",
@@ -112,16 +116,21 @@ int pilot_connect(char *port)
 					"<major> <minor>\n\n", portname);
 
 			} else if (errno == 13) {
-				char realport[50];
-				realpath(portname, realport);
 				fprintf(stderr, "   Please check the "
 					"permissions on %s..\n", realport);
 				fprintf(stderr, "   Possible solution:\n\n\tchmod 0666 "
 					"%s\n\n", realport);
 
 			} else if (errno == 19) {
-				fprintf(stderr, "   Press the HotSync button first and "
-					"relaunch this conduit..\n\n");
+				while (count <= 5) {
+					fprintf(stderr, "\r   Port not connected, sleeping for 2 seconds, ");
+					fprintf(stderr, "%d retries..", 5-count);
+					sleep(2);
+					count++;
+					goto begin;
+				}
+				fprintf(stderr, "\n\n   Device not found on %s, Did you hit HotSync?\n\n", realport);
+
 			} else if (errno == 21) {
 				fprintf(stderr, "   The port specified must contain a "
 					"device name, and %s was a directory.\n"
@@ -135,8 +144,6 @@ int pilot_connect(char *port)
 				"information\n\n");
 		} else
 			fprintf(stderr, "\n   No port specified\n");
-		pi_close(parent_sd);
-		pi_close(client_sd);
 		return -1;
 	}
 
