@@ -136,8 +136,8 @@ static char usb_read_buffer[MAX_AUTO_READ_SIZE];
 static pthread_mutex_t read_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t read_queue_data_avail_cond = PTHREAD_COND_INITIALIZER;
 static char *read_queue = NULL;				/* stores completed reads, grows by 64k chunks */
-static int read_queue_size = 0;
-static int read_queue_used = 0;
+static size_t read_queue_size = 0;
+static size_t read_queue_used = 0;
 
 static pthread_t usb_thread = 0;
 static CFRunLoopRef usb_run_loop = 0;
@@ -154,7 +154,7 @@ static void read_completion (void *refCon, IOReturn result, void *arg0);
 static int accepts_device (unsigned short vendor, unsigned short product);
 static IOReturn configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, UInt8 *inputPipeNumber, UInt8 *outputPipeNumber);
 static IOReturn find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, UInt8 inputPipeNumber, UInt8 outputPipeNumber);
-static int prime_read ();
+static int prime_read (void);
 
 static IOReturn read_visor_connection_information (IOUSBDeviceInterface **dev);
 static IOReturn read_generic_connection_information (IOUSBDeviceInterface **dev, UInt8 *inputPipeNumber, UInt8 *outputPipeNumber);
@@ -295,7 +295,7 @@ acceptedDevices[] = {
 /***************************************************************************/
 
 static int
-start_listening()
+start_listening(void)
 {
 	mach_port_t masterPort;
 	CFMutableDictionaryRef matchingDict;
@@ -362,7 +362,7 @@ start_listening()
 }
 
 static void
-stop_listening()
+stop_listening(void)
 {
 	if (usb_device_notification)
 	{
@@ -964,7 +964,7 @@ read_completion (void *refCon, IOReturn result, void *arg0)
 }
 
 static int
-prime_read()
+prime_read(void)
 {
 	if (usb_opened)
 	{
@@ -1135,8 +1135,9 @@ u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 	}
 
 	IOReturn kr = (*usb_interface)->WritePipe(usb_interface, usb_out_pipe_ref, buf, len);
-	if (kr != kIOReturnSuccess)
+	if (kr != kIOReturnSuccess) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
+	}
 
 	return (kr != kIOReturnSuccess) ? 0 : len;
 }
@@ -1145,6 +1146,7 @@ u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 static int
 u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 {
+	int bytes_read;
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
 
 	if (!usb_opened) {
@@ -1208,12 +1210,14 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 		// make sure we report broken connections
 		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
 			ps->state = PI_SOCK_CONBK;
-		len = -1;
+		bytes_read = PI_ERR_SOCK_DISCONNECTED;
 	}
 	else
 	{
 		if (read_queue_used < len)
 			len = read_queue_used;
+
+		bytes_read = (int)len;
 
 		if (len)
 		{
