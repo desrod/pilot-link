@@ -14,8 +14,9 @@ typedef struct VeoAppInfo {
 } VeoAppInfo_t;
 
 /* Actions */
-#define VEO_ACTION_OUTPUT  0x01
-#define VEO_ACTION_LIST    0x02
+#define VEO_ACTION_OUTPUT      0x01
+#define VEO_ACTION_LIST        0x02
+#define VEO_ACTION_OUTPUT_ONE  0x04
    
 /* Output type */
 #define VEO_OUT_PPM       0x01
@@ -38,6 +39,7 @@ typedef struct Veo {
    /* These are not in the palm db header. They're used by the decoder */
    unsigned short  width, height;
    int  sd, db;
+   char            name[32];
 } Veo_t;
 
 void free_Veo(Veo_t *v );
