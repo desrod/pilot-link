@@ -9,9 +9,9 @@ copy("src/pisock.py", "pisock.py")
 setup(name = "python-libpisock",
       version = "@PILOT_LINK_VERS@.@PILOT_LINK_MAJOR@.@PILOT_LINK_MINOR@",
       description = "Python binding for the pisock library.",
-      author = "Rob Tillotson",
-      author_email = "rob@pyrite.org",
-      url = "http://www.pyrite.org/",
+      author = "Nick Piper",
+      author_email = "nick@nickpiper.co.uk",
+      url = "http://www.pilot-link.org/",
 
       ext_modules = [Extension("_pisock",["src/pisock_wrap.c"],
                                include_dirs=['../../include'],
