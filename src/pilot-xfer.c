@@ -1822,7 +1822,7 @@ int main(int argc, const char *argv[])
 				fprintf(stderr,"Error: specify only one of -brsuimfdlL.\n");
 				return 1;
 			}
-			set_operation(optc,&palm_operation,NULL);
+			set_operation(optc,&palm_operation,&sync_flags);
 			break;
 
 		/* Modifiers */
