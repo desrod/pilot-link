@@ -30,24 +30,6 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-const char *port	= NULL,
-	*hostname 	= NULL,
-	*address 	= NULL,
-	*netmask 	= NULL;
-
-const struct poptOption options[] = {
-	{ "port",    'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
-	{ "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
-	{ "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
-	{ "enable",  'e', POPT_ARG_NONE,   0, 'e', "Enables LANSync on the Palm"},
-	{ "disable", 'd', POPT_ARG_NONE,   0, 'd', "Disable the LANSync setting on the Palm"},
-	{ "name",    'n', POPT_ARG_STRING, &hostname, 0, "The hostname of the remote machine you sync with", "<name>"},   
-	{ "address", 'a', POPT_ARG_STRING, &address, 0, "IP address of the remote machine you connect to", "<address>"},
-	{ "mask",    'm', POPT_ARG_STRING, &netmask, 0, "Subnet mask of the network your Palm is on", "<netmask>"},
-	POPT_AUTOHELP
-	{ NULL, 0, 0, NULL, 0 }
-};
-
 poptContext po;
 
 /***********************************************************************
@@ -69,7 +51,8 @@ static void display_help(const char *progname) {
 		printf("\n  Examples:\n");
 		printf("      %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
 			progname);
-		exit(1);
+
+		exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[])
@@ -79,6 +62,24 @@ int main(int argc, char *argv[])
 		po_err	= -1;
 
 	char *progname 	= argv[0];
+
+	const char *port	= NULL,
+		*hostname 	= NULL,
+		*address 	= NULL,
+		*netmask 	= NULL;
+
+	const struct poptOption options[] = {
+		{ "port",    'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
+		{ "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
+		{ "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
+		{ "enable",  'e', POPT_ARG_NONE,   0, 'e', "Enables LANSync on the Palm"},
+		{ "disable", 'd', POPT_ARG_NONE,   0, 'd', "Disable the LANSync setting on the Palm"},
+		{ "name",    'n', POPT_ARG_STRING, &hostname, 0, "The hostname of the remote machine you sync with", "<name>"},   
+		{ "address", 'a', POPT_ARG_STRING, &address, 0, "IP address of the remote machine you connect to", "<address>"},
+		{ "mask",    'm', POPT_ARG_STRING, &netmask, 0, "Subnet mask of the network your Palm is on", "<netmask>"},
+		POPT_AUTOHELP
+		{ NULL, 0, 0, NULL, 0 }
+	};
 
 	struct 	NetSyncInfo 	Net;
 	struct in_addr addr;
