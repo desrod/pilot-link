@@ -157,7 +157,7 @@ int main(int argc, const char *argv[])
 	}
 
         while ((po_err = poptGetNextOpt(po)) >= 0) {
-		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",po_err);
 		return 1;
 	}
 

@@ -82,7 +82,7 @@ int main(int argc, const char *argv[])
 	}
 
 	if (c < -1) {
-		plu_badoption(pc,c);
+		plu_badoption(po,c);
 	}
 
 	if (!plu_port && !filename) {
