@@ -1,3 +1,7 @@
+2003-06-30  JP Rosevear  <jpr@ximian.com>
+
+	* include/pi-util.h: fix comment
+
 2003-06-17 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Completely new Java bindings imported, check the README and TODO

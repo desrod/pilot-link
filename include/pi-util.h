@@ -1,5 +1,5 @@
 /*
- * pi-util.h: Header for generic synchronization algorithm
+ * pi-util.h: Header for utility routines
  *
  * Copyright (c) 2000, Helix Code Inc.
  *
