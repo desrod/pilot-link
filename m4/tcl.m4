@@ -34,10 +34,11 @@ AC_DEFUN(PILOT_LINK_PATH_TCLCONFIG, [
     # the alternative search directory is invoked by --with-tcl
     #
 
-    if test x"${no_tcl}" = x ; then
-	# we reset no_tcl in case something fails here
-	no_tcl=true
-	AC_ARG_WITH(tcl, [  --with-tcl              directory containing tcl configuration (tclConfig.sh)], with_tclconfig=${withval})
+    use_tcl=false
+
+    AC_ARG_WITH(tcl, [  --with-tcl=tclconfig	use TCL], with_tclconfig=${withval}, with_tclconfig=no)
+
+    if test x"${with_tclconfig}" != xno ; then
 	AC_MSG_CHECKING([for Tcl configuration])
 	AC_CACHE_VAL(ac_cv_c_tclconfig,[
 
@@ -99,7 +100,7 @@ AC_DEFUN(PILOT_LINK_PATH_TCLCONFIG, [
 	    AC_MSG_WARN("Cannot find Tcl configuration definitions")
 	    exit 0
 	else
-	    no_tcl=
+	    use_tcl=true
 	    TCL_BIN_DIR=${ac_cv_c_tclconfig}
 	    AC_MSG_RESULT([found $TCL_BIN_DIR/tclConfig.sh])
 	fi

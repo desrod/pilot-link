@@ -4,7 +4,13 @@ else
 JAVA_DIR=
 endif
 
-SUBDIRS = $(JAVA_DIR)
+if WITH_TCL
+TCL_DIR=Tcl
+else
+TCL_DIR=
+endif
+
+SUBDIRS = $(JAVA_DIR) $(TCL_DIR)
 
 #
 # Python Building
