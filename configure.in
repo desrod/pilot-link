@@ -506,15 +506,24 @@ else
 	PYTHON_PREFIX=`$with_python -c "import sys; print sys.prefix"`
 	PYTHON_EXEC_PREFIX=`$with_python -c "import sys; print sys.exec_prefix"`
 	PYTHONVER=[`$with_python -c "import sys, string; print string.split(sys.version)[0]"`]
-	if test ! -f ${PYTHON_PREFIX}/include/python$PYTHONVER/Python.h; then
-		AC_MSG_RESULT(Unable to find ${PYTHON_PREFIX}/include/python$PYTHONVER/Python.h)
-	elif test ! -f ${PYTHON_EXEC_PREFIX}/lib/python$PYTHONVER/config/Makefile; then
-		AC_MSG_RESULT(Unable to find ${PYTHON_EXEC_PREFIX}/lib/python$PYTHONVER/config/Makefile)
+	PYTHONLIBVER=[`$with_python -c "\
+import sys, string
+ver = string.split(sys.version)[0]
+while '.' in ver:
+  trim = ver[:string.rfind(ver, '.')]
+  if '.' not in trim:
+    break
+  ver = trim
+print ver"`]
+	if test ! -f ${PYTHON_PREFIX}/include/python$PYTHONLIBVER/Python.h; then
+		AC_MSG_RESULT(Unable to find ${PYTHON_PREFIX}/include/python$PYTHONLIBVER/Python.h)
+	elif test ! -f ${PYTHON_EXEC_PREFIX}/lib/python$PYTHONLIBVER/config/Makefile; then
+		AC_MSG_RESULT(Unable to find ${PYTHON_EXEC_PREFIX}/lib/python$PYTHONLIBVER/config/Makefile)
 	else
-		AC_MSG_RESULT(Python version $PYTHONVER in $with_python)
-		PYTHONLIBDIR=${PYTHON_EXEC_PREFIX}/lib/python$PYTHONVER
-		PYTHONINCDIR=${PYTHON_PREFIX}/include/python$PYTHONVER
+		PYTHONLIBDIR=${PYTHON_EXEC_PREFIX}/lib/python$PYTHONLIBVER
+		PYTHONINCDIR=${PYTHON_PREFIX}/include/python$PYTHONLIBVER
 		WITHPYTHON='WITHPYTHON'
+		AC_MSG_RESULT(Python version $PYTHONVER in $PYTHONLIBDIR)
 	fi
 fi
 AC_SUBST(PYTHON_PREFIX)
@@ -522,6 +531,7 @@ AC_SUBST(PYTHON_EXEC_PREFIX)
 AC_SUBST(PYTHONLIBDIR)
 AC_SUBST(PYTHONINCDIR)
 AC_SUBST(PYTHONVER)
+AC_SUBST(PYTHONLIBVER)
 
 
 dnl Derive warning flag

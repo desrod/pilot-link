@@ -1,6 +1,9 @@
 /* socket.c:  Berkeley sockets style interface to Pilot SLP/PADP
  *
  * (c) 1996, D. Jeff Dionne.
+ * Copyright (c) 1997-1999, Kenneth Albanowski
+ * Copyright (c) 1999, Tilo Christ
+ *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
  */
@@ -123,6 +126,8 @@ int pi_socket(int domain, int type, int protocol)
   ps->version = 0;
   ps->dlprecord = 0;
   ps->busy = 0;
+  
+  ps->establishrate = -1;
   
   ps->socket_connect = default_socket_connect;
   ps->socket_listen = default_socket_listen;
@@ -267,6 +272,53 @@ int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
   }
   
   return ps->socket_accept(ps, addr, addrlen);
+}
+
+/* Set the maximum connection speed of the socket */
+int pi_setmaxspeed(int pi_sd, int speed, int overclock)
+{
+  struct pi_socket *ps;
+
+  if (!(ps = find_pi_socket(pi_sd))) {
+    errno = ESRCH;
+    return -1;
+  }
+  
+  if (ps->connected) {
+    errno = EISCONN;
+    return -1;
+  }
+  
+  ps->establishrate = speed;
+  ps->establishhighrate = overclock;
+  
+  return 0;
+}
+
+int pi_getsockopt(int pi_sd, int level, int option_name, void * option_value, int * option_len)
+{
+  struct pi_socket *ps;
+
+  if (!(ps = find_pi_socket(pi_sd))) {
+    errno = ESRCH;
+    return -1;
+  }
+
+  if (level != PI_PF_SLP) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  if (option_name == PI_SLP_SPEED) {
+    int speed = ps->rate;
+    memcpy(option_value, &speed, (*option_len < sizeof(int)) ? *option_len : sizeof(int));
+    if (*option_len > sizeof(int))
+      *option_len = sizeof(int);
+    return 0;
+  }
+
+  errno = EINVAL;
+  return -1;
 }
 
 /* Send msg on a connected socket */

@@ -2783,15 +2783,24 @@ else
 	PYTHON_PREFIX=`$with_python -c "import sys; print sys.prefix"`
 	PYTHON_EXEC_PREFIX=`$with_python -c "import sys; print sys.exec_prefix"`
 	PYTHONVER=`$with_python -c "import sys, string; print string.split(sys.version)[0]"`
-	if test ! -f ${PYTHON_PREFIX}/include/python$PYTHONVER/Python.h; then
-		echo "$ac_t""Unable to find ${PYTHON_PREFIX}/include/python$PYTHONVER/Python.h" 1>&6
-	elif test ! -f ${PYTHON_EXEC_PREFIX}/lib/python$PYTHONVER/config/Makefile; then
-		echo "$ac_t""Unable to find ${PYTHON_EXEC_PREFIX}/lib/python$PYTHONVER/config/Makefile" 1>&6
+	PYTHONLIBVER=`$with_python -c "\
+import sys, string
+ver = string.split(sys.version)[0]
+while '.' in ver:
+  trim = ver[:string.rfind(ver, '.')]
+  if '.' not in trim:
+    break
+  ver = trim
+print ver"`
+	if test ! -f ${PYTHON_PREFIX}/include/python$PYTHONLIBVER/Python.h; then
+		echo "$ac_t""Unable to find ${PYTHON_PREFIX}/include/python$PYTHONLIBVER/Python.h" 1>&6
+	elif test ! -f ${PYTHON_EXEC_PREFIX}/lib/python$PYTHONLIBVER/config/Makefile; then
+		echo "$ac_t""Unable to find ${PYTHON_EXEC_PREFIX}/lib/python$PYTHONLIBVER/config/Makefile" 1>&6
 	else
-		echo "$ac_t""Python version $PYTHONVER in $with_python" 1>&6
-		PYTHONLIBDIR=${PYTHON_EXEC_PREFIX}/lib/python$PYTHONVER
-		PYTHONINCDIR=${PYTHON_PREFIX}/include/python$PYTHONVER
+		PYTHONLIBDIR=${PYTHON_EXEC_PREFIX}/lib/python$PYTHONLIBVER
+		PYTHONINCDIR=${PYTHON_PREFIX}/include/python$PYTHONLIBVER
 		WITHPYTHON='WITHPYTHON'
+		echo "$ac_t""Python version $PYTHONVER in $PYTHONLIBDIR" 1>&6
 	fi
 fi
 
@@ -2801,8 +2810,9 @@ fi
 
 
 
+
 echo $ac_n "checking for maximum warnings compiler flag""... $ac_c" 1>&6
-echo "configure:2806: checking for maximum warnings compiler flag" >&5
+echo "configure:2816: checking for maximum warnings compiler flag" >&5
 if eval "test \"`echo '$''{'ac_cv_cwflag'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3031,6 +3041,7 @@ s%@PYTHON_EXEC_PREFIX@%$PYTHON_EXEC_PREFIX%g
 s%@PYTHONLIBDIR@%$PYTHONLIBDIR%g
 s%@PYTHONINCDIR@%$PYTHONINCDIR%g
 s%@PYTHONVER@%$PYTHONVER%g
+s%@PYTHONLIBVER@%$PYTHONLIBVER%g
 s%@CWFLAG@%$CWFLAG%g
 s%@CPLIB@%$CPLIB%g
 s%@ARFLAGS@%$ARFLAGS%g

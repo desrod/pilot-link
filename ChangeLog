@@ -1,3 +1,20 @@
+Apr  4, 1999	Kenneth Albanowski	0.9.2
+
+	Please note a significant (but minor) change: the license for the hinote
+	code in the pisock library has been changed to LGPL. In the previous
+	release (0.9.1), it was GPL, which would prevent the library from being
+	used in an LGPL manner. If you wish to use the pisock library with the
+	LGPL license, please base your work on 0.9.2.
+
+	Rewrote pilot-dedupe in a more sensible manner. (New version could have
+	some bugs.)
+	
+	Added Tilo's changes to support "high" baud rates with PILOTRATE
+	environment variable.  Say "PILOTRATE=H115200" to specify a high rate.
+	PILOTHIGHRATE variable is now ignored.
+	
+	Added Tilo's pi_setmaxspeed() function, and added initial
+	pi_getsockopt() support to retrieve current speed.
 
 Jan 14,	1999	Kenneth Albanowski	0.9.1
 

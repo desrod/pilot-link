@@ -1,6 +1,9 @@
 /* serial.c: Interface layer to serial HotSync connections
  *
  * Copyright (c) 1996, 1997, D. Jeff Dionne & Kenneth Albanowski
+ * Copyright (c) 1998, 1999, Kenneth Albanowski
+ * Copyright (c) 1999, Tilo Christ
+ *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
  */
@@ -39,9 +42,22 @@ int pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
   struct pi_sockaddr * pa = (struct pi_sockaddr*)addr;
 
   if(ps->type == PI_SOCK_STREAM) {
-    ps->establishrate = 9600; /* Default PADP connection rate */
-    if (getenv("PILOTRATE"))
-    	ps->establishrate = atoi(getenv("PILOTRATE"));
+    if (ps->establishrate == -1) {
+      char * rate_env = getenv("PILOTRATE");
+      ps->establishrate = 9600; /* Default PADP connection rate */
+      if (rate_env) {
+        if (rate_env[0] == 'H')
+        { /* Establish high rate */
+          ps->establishrate = atoi(rate_env + 1);
+          ps->establishhighrate = -1;
+        }
+        else
+        {
+          ps->establishrate = atoi(rate_env);
+          ps->establishhighrate = 0;
+        }
+      }
+    }
     ps->rate = 9600; /* Mandatory CMP connection rate */
   } else if(ps->type == PI_SOCK_RAW) {
     ps->establishrate = ps->rate = 57600; /* Mandatory SysPkt connection rate */
@@ -114,16 +130,23 @@ int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
   struct pi_sockaddr * pa = (struct pi_sockaddr*)addr;
   if(ps->type == PI_SOCK_STREAM) {
-    ps->establishrate = 9600; /* Default PADP connection rate */
-    if (getenv("PILOTRATE")) {
-    	ps->establishrate = atoi(getenv("PILOTRATE"));
-    	ps->establishhighrate = 0;
+    if (ps->establishrate == -1) {
+      char * rate_env = getenv("PILOTRATE");
+      ps->establishrate = 9600; /* Default PADP connection rate */
+      if (rate_env) {
+        if (rate_env[0] == 'H')
+        { /* Establish high rate */
+          ps->establishrate = atoi(rate_env + 1);
+          ps->establishhighrate = -1;
+        }
+        else
+        {
+          ps->establishrate = atoi(rate_env);
+          ps->establishhighrate = 0;
+        }
+      }
     }
-    if (getenv("PILOTHIGHRATE")) {
-    	ps->establishrate = atoi(getenv("PILOTHIGHRATE"));
-    	ps->establishhighrate = 1;
-    }
-    ps->rate = 9600; /* Mandatory CMP conncetion rate */
+    ps->rate = 9600; /* Mandatory CMP connection rate */
   } else if(ps->type == PI_SOCK_RAW) {
     ps->establishrate = ps->rate = 57600; /* Mandatory SysPkt connection rate */
   }

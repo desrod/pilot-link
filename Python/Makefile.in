@@ -11,7 +11,7 @@ PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
 PYTHONINCDIR = @PYTHONINCDIR@
 PYTHONLIBDIR = @PYTHONLIBDIR@
-PYTHONVERSION = @PYTHONVER@
+PYTHONLIBVERSION = @PYTHONLIBVER@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -19,7 +19,7 @@ bindir = @bindir@
 libdir = @libdir@
 
 # The following lines should be left as is:
-VERSION=	$(PYTHONVERSION)
+LIBVERSION=	$(PYTHONLIBVERSION)
 pyinstalldir=	$(PYTHON_PREFIX)
 installdir=	$(exec_prefix)
 exec_installdir=$(PYTHON_EXEC_PREFIX)
@@ -75,16 +75,16 @@ installpyc:
 	for m in $(PYMODULES) the-end; do \
 	  if [ "$$m" != the-end ]; then \
 	    python -c "import $$m"; \
-	    cp $$m.py $(installdir)/lib/python$(VERSION)/; \
-	    cp $$m.pyc $(installdir)/lib/python$(VERSION)/; \
+	    cp $$m.py $(installdir)/lib/python$(LIBVERSION)/; \
+	    cp $$m.pyc $(installdir)/lib/python$(LIBVERSION)/; \
 	  fi; \
 	done
 
 uninstallpyc:
 	for m in $(PYMODULES) the-end; do \
 	  if [ "$$m" != the-end ]; then \
-	    rm -f $(installdir)/lib/python$(VERSION)/$$m.py; \
-	    rm -f $(installdir)/lib/python$(VERSION)/$$m.pyc; \
+	    rm -f $(installdir)/lib/python$(LIBVERSION)/$$m.py; \
+	    rm -f $(installdir)/lib/python$(LIBVERSION)/$$m.pyc; \
 	  fi; \
 	done
 

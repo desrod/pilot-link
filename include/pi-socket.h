@@ -21,6 +21,8 @@ extern "C" {
 #define PI_SOCK_RAW       0x0030
 #define PI_SOCK_SEQPACKET 0x0040
 
+#define PI_SLP_SPEED	0x0001
+
 #define PI_PilotSocketDLP       3
 #define PI_PilotSocketConsole   1
 #define PI_PilotSocketDebugger  0
@@ -51,12 +53,16 @@ extern int pi_write PI_ARGS((int pi_sd, void *msg, int len));
 extern int pi_getsockname PI_ARGS((int pi_sd, struct sockaddr * addr, int * namelen));
 extern int pi_getsockpeer PI_ARGS((int pi_sd, struct sockaddr * addr, int * namelen));
 
+extern int pi_setmaxspeed PI_ARGS((int pi_sd, int speed, int overclock));
+extern int pi_getsockopt PI_ARGS((int pi_sd, int level, int option_name, void * option_value, int * option_len));
+
 extern int pi_version PI_ARGS((int pi_sd));
 
 extern int pi_tickle PI_ARGS((int pi_sd));
 extern int pi_watchdog PI_ARGS((int pi_sd, int interval));
 
 extern int pi_close PI_ARGS((int pi_sd));
+
 
 #ifdef __cplusplus
 }

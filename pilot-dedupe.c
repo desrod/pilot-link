@@ -27,7 +27,34 @@ struct record {
 	struct record * next;
 };
 
+int compare_r(const void * av, const void * bv)
+{
+	struct record * a = *(struct record**)av;
+	struct record * b = *(struct record**)bv;
+	int i,o;
+
+	if (a->cat < b->cat)
+		o = -1;
+	else if (a->cat > b->cat)
+		o = 1;
+	else if (a->len < b->len)
+		o = -1;
+	else if (a->len > b->len)
+		o = 1;
+	else if ((i = memcmp(a->data, b->data, a->len)))
+		o = i;
+	else if (a->index < b->index)
+		o = -1;
+	else if (a->index > b->index)
+		o = 1;
+	else
+		o = 0;
+
+	return o;
+}
+
 struct record * records = 0;
+
 
 int main(int argc, char *argv[])
 {
@@ -83,7 +110,11 @@ int main(int argc, char *argv[])
   dlp_OpenConduit(sd);
   
   for (i=2;i<argc;i++) {
+    struct record ** sortidx;
     int dupe=0;
+    int j,k;
+    int count;
+    
     /* Open the database, store access handle in db */
     printf("Opening %s\n", argv[i]);
     if(dlp_OpenDB(sd, 0, dlpOpenReadWrite, argv[i], &db) < 0) {
@@ -92,15 +123,17 @@ int main(int argc, char *argv[])
       exit(1);*/
       continue;
     }
+
     printf("Reading records...\n");
   
     l=0;
+    count=0;
     for(;;) {
       int attr;
       recordid_t id;
       int cat;
       int len = dlp_ReadRecordByIndex(sd, db, l, (unsigned char *)buf, &id, 0, &attr, &cat);
-      
+
       l++;
       
       if(len<0)
@@ -109,7 +142,9 @@ int main(int argc, char *argv[])
       /* Skip deleted records */
       if((attr & dlpRecAttrDeleted) || (attr & dlpRecAttrArchived))
         continue;
-        
+
+      count++;
+
       r = (struct record*)malloc(sizeof(struct record));
       r->data = (char*)malloc(len);
       memcpy(r->data, buf, len);
@@ -123,29 +158,45 @@ int main(int argc, char *argv[])
       
     }
     
+    sortidx = malloc(sizeof(struct record *) * count);
+    r = records;
+    for (k=0; r && (k<count); k++, r=r->next)
+    	sortidx[k] = r;
+    
+    qsort(sortidx, count, sizeof(struct record*), compare_r);
+
     printf("Scanning for duplicates...\n");
     
-    r = records;
-    while (r) {
-      struct record * r2 = r->next;
-      int d = 1;
-
-      pi_tickle(sd);
-
-      while(r2) {
-        if ((r2->len == r->len) && 
-            (r2->cat == r->cat) &&
-            (memcmp(r2->data,r->data,r->len)==0)) {
-            printf("Deleting record %d, duplicate #%d of record %d\n", r2->index, d++, r->index);
-            dupe++;
-            dlp_DeleteRecord(sd, db, 0, r2->id);
-            r2->id = 0;
-            r2->len = -1;
-        }
-        r2=r2->next;
+    for (k=0; k<count; k++) {
+      struct record * r2;
+      int d = 0;
+      r = sortidx[k];
+      
+      if (r->len < 0)
+        continue;
+      
+      for (j=k+1; j<count; j++) {
+        r2 = sortidx[j];
+        
+        if (r2->len < 0)
+          continue;
+          
+        if ((r->len != r2->len) || memcmp(r->data, r2->data, r->len))
+          break;
+        
+        printf("Deleting record %d, duplicate #%d of record %d\n", r2->index, ++d, r->index);
+        dupe++;
+        dlp_DeleteRecord(sd, db, 0, r2->id);
+        
+        r2->len = -1;
+        r2->id = 0;
+        
       }
-      r=r->next;
+      k = j-1;
+      
     }
+
+    free(sortidx);
     
     while(records) {
       if (records->data)
@@ -154,6 +205,7 @@ int main(int argc, char *argv[])
       records=records->next;
       free(r);
     }
+    
     /* Close the database */
     dlp_CloseDB(sd, db);
     sprintf(buf,"Removed %d duplicates from %s\n", dupe, argv[i]);
@@ -163,9 +215,6 @@ int main(int argc, char *argv[])
 
   dlp_ResetLastSyncPC(sd);
   
-  /* All of the following code is now unnecessary, but harmless */
-  
-  dlp_EndOfSync(sd,0);
   pi_close(sd);
   return 0;
 }
