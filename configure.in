@@ -138,7 +138,15 @@ rl_callback_read_char();],
 static void execline(char *line)
 {}
 rl_callback_handler_install("prompt", execline);],
-	[msg_readline=complete])])
+	[AC_TRY_LINK([
+#include <stdio.h>
+#include <readline/readline.h>], [
+rl_callback_handler_remove();],
+	[AC_TRY_LINK([
+#include <stdio.h>
+#include <readline/readline.h>], [
+rl_forced_update_display();],
+	[msg_readline=complete])])])])
 
 	LIBS="$ac_save_LIBS"
 
