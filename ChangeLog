@@ -4,6 +4,9 @@
 	  /dev/pilot, and removed the putenv() call. No children need (or
 	  can access) this, so there's no need to set it here.
 
+	* src/pilot-xfer.c: Cleaned up print_help(), minor formatting
+	  changes.
+
 2002-03-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/install-user.c: Exit when no arguments are specified

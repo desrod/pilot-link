@@ -942,7 +942,9 @@ static void Purge(void)
  ***********************************************************************/
 static void print_help(char *progname)
 {
-	printf("   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n\n"
+	printf("   Sync, backup, install, delete and more from your Palm device.\n"
+	       "   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
+	       "   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n"
 	       "   Options:\n"
 	       "     -p <port>    Use device file <port> to communicate with Palm\n"
 	       "     -h           Display this information (--port)\n"
@@ -1085,7 +1087,7 @@ int main(int argc, char *argv[])
 			novsf = 1;
 			break;
 
-		/* FIXME: quiet needs to go away, replace with verbose */
+		/* FIXME: quiet needs to go away, replace with --verbose */
 		case 'q':
 			quiet = 2;
 			break;
@@ -1100,15 +1102,17 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc < 2) {
-		print_help(progname);
-		printf("Insufficient number of arguments\n");
+		fprintf(stderr, "\n");
+		printf("   Insufficient number of arguments\n");
+		fprintf(stderr, "   Please use --help for more information\n");
+	} else {
+		
+		end=time(NULL);
+		timespent = (end-start);
+		printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
 	}
-
+	
 	pi_close(sd);
-        end=time(NULL);
-        timespent = (end-start);
-        printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
-
 	return 0;
 }
 
