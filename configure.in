@@ -16,13 +16,10 @@ AM_CONFIG_HEADER(config.h)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
 
-
-AC_PATH_PROG(ID, id)
-
 dnl ******************************
 dnl Warn re: config/build as root
 dnl ******************************
-if test `$ID -u` = 0; then 
+if test "`awk -F: "/^${USER}:/ {print \$3}" /etc/passwd`=0"; then 
 	echo ""
 	echo "   WARNING: Please do not configure or build this software as root.."
 	echo ""
@@ -544,7 +541,7 @@ dnl *************************************
 use_efence=false
 msg_efence=no   
 
-AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking [default=no]],  , with_efence=no)
+AC_ARG_WITH(efence, [  --with-efence           use ElectricFence          [default=no]],  , with_efence=no)
 
 if test "x$with_efence" != "xno"; then
 	AC_CHECK_LIB(efence, malloc, LIBS="$LIBS -lefence")
