@@ -802,7 +802,7 @@ int main(int argc, const char *argv[])
 		fprintf(stderr,"   ERROR: Specify a mode (delete, install, list, fetch, convert).\n");
 		return 1;
 	case mode_convert:
-		while (*args) {
+		while (args != NULL && *args) {
 			pdb_to_jpg(*args++);
 		}
 		return 0;
@@ -822,7 +822,7 @@ int main(int argc, const char *argv[])
 		/* impossible */
 		break;
 	case mode_delete_all:
-		if (*args) {
+		if (args != NULL && *args) {
 			/* It's an error here to protect users from an accidental --delete vs.
 			 * --delete-all confusion. The other -all actions don't destroy data.
 			 */
@@ -833,13 +833,13 @@ int main(int argc, const char *argv[])
 		do_delete(sd,NULL,1);
 		break;
 	case mode_list:
-		if (*args) {
+		if (args != NULL && *args) {
 			fprintf(stderr,"   WARNING: With --list, do not specify files.\n");
 		}
 		do_list(sd);
 		break;
 	case mode_fetch_all:
-		if (*args) {
+		if (args != NULL && *args) {
 			fprintf(stderr,"   WARNING: With --fetch-all, do not specify files.\n");
 		}
 		do_fetch(sd,NULL,1);
