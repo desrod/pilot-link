@@ -1,5 +1,12 @@
 AC_DEFUN(AC_PILOT_LINK_HOOK,
 [
+PILOT_LINK_VERS=@PILOT_LINK_VERS@
+PILOT_LINK_MAJOR=@PILOT_LINK_MAJOR@
+PILOT_LINK_MINOR=@PILOT_LINK_MINOR@
+PILOT_LINK_PATCH=@PILOT_LINK_PATCH@
+
+AC_MSG_CHECKING(for pilot-link version >= $1)
+
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h)
 
@@ -19,6 +26,8 @@ if test $ac_cv_sa_len = yes; then
   SA_LEN_FIELD="unsigned char pi_len;"
 fi
 AC_SUBST(SA_LEN_FIELD)
+
+AC_MSG_RESULT(yes ($PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH))
 ])
 
 AC_DEFUN([AC_PILOT_LINK],[
@@ -28,5 +37,5 @@ AC_DEFUN([AC_PILOT_LINK],[
 		plv=$1
 	fi
 		
-	GNOME_PILOT_HOOK($plv)
+	AC_PILOT_LINK_HOOK($plv)
 ])

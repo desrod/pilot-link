@@ -1,5 +1,11 @@
 2002-01-18  JP Rosevear  <jpr@ximian.com>
 
+	* pilot-link.m4.in: add version check
+
+	* configure.in: output pilot-link.m4
+
+2002-01-18  JP Rosevear  <jpr@ximian.com>
+	
 	* pilot-link.m4: reduce number of checks
 
 	* configure.in: reorg checks
