@@ -509,11 +509,12 @@ int main(int argc, const char *argv[])
 {
 
 	int 	c,			/* switch */
-		deleteallcategories 	= 0,
 		db,
 		l,
-		mode 			= 0,
 		sd 			= -1;
+
+	enum { mode_none, mode_read, mode_write, mode_delete_all, mode_delete }
+		run_mode = mode_none;
 
 	const char
         	*progname 		= argv[0];
@@ -531,11 +532,11 @@ int main(int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-	        {"delete-all",	 0 , POPT_ARG_NONE, &deleteallcategories, 0, "Delete all Palm records in all categories"},
+	        {"delete-all",	 0 , POPT_ARG_NONE, &run_mode,  mode_delete_all, "Delete all Palm records in all categories"},
         	{"titles",	'T', POPT_ARG_NONE, &tablehead,           0, "Write header with titles"},
 	        {"escape",	'e', POPT_ARG_NONE, &encodechars,         0, "Escape special chcters with backslash"},
 	        {"delimiter",	't', POPT_ARG_INT,  &tabledelim,          0, "Include category, use delimiter (3=tab, 2=;, 1=,)"},
-        	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,      0, "Delete old Palm records in <category>"},
+        	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,'d', "Delete old Palm records in <category>"},
 	        {"category",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to"},
         	{"augment",	'a', POPT_ARG_NONE, &augment,             0, "Augment records with additional information"},
 	        {"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm"},
@@ -543,30 +544,50 @@ int main(int argc, const char *argv[])
 	        POPT_TABLEEND
 	};
 
+	const char *mode_error = "   ERROR: Specify exactly one of read, write, delete or delete all.\n";
+
 	po = poptGetContext("pilot-addresses", argc, argv, options, 0);
-	poptSetOtherOptionHelp(po," [-p port] <options> -r|-w file\n\n"
+	poptSetOtherOptionHelp(po,"\n\n"
 		"   Reads addresses from the Palm to CSV file or\n"
-		"   writes addresses from CSV file to the Palm.\n\n");
+		"   writes addresses from CSV file to the Palm.\n\n"
+		"   Provide exactly one of --read or --write.\n\n");
 	plu_popt_alias(po,"delall",0,"--bad-option --delete-all");
 	plu_popt_alias(po,"delcat",0,"--bad-option --delete-category");
 	plu_popt_alias(po,"install",0,"--bad-option --category");
 
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		const char *duplicate_rw = "   ERROR: Can only specify one of -rw.\n";
 		switch (c) {
+		/* these are the mode-setters. delete-all does it through
+		 * popt hooks, since it doesn't take an argument. 
+		 *
+		 * Special case is that you can mix -w and -d to write the
+		 * file and then delete a category.
+		 */
 		case 'r':
-			if (mode) {
-				fprintf(stderr,duplicate_rw);
+			if (run_mode != mode_none) {
+				fprintf(stderr,"%s",mode_error);
 				return 1;
 			}
-			mode = 1;
+			run_mode = mode_read;
 			break;
 		case 'w':
-			if (mode) {
-				fprintf(stderr,duplicate_rw);
+			if ((run_mode != mode_none) && (run_mode != mode_delete)) {
+				fprintf(stderr,"%s",mode_error);
 				return 1;
 			}
-			mode = 2;
+			run_mode = mode_write;
+			break;
+		case 'd':
+			if ((run_mode != mode_none) && (run_mode != mode_write)) {
+				fprintf(stderr,"%s",mode_error);
+				return 1;
+			}
+			run_mode = mode_delete;
 			break;
 		default:
 			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
@@ -577,17 +598,21 @@ int main(int argc, const char *argv[])
 	if (c < -1)
 		plu_badoption(po,c);
 
-	/* The first implies that -t was given; the second that it wasn't,
-	   so use default, and the third if handles weird values. */
-	if ((tabledelim > 0) && (tabledelim < sizeof(tabledelim))) tableformat = 1;
-	if (tabledelim == -1) tabledelim = 1;
-	if ((tabledelim < 0) || (tabledelim > sizeof(tabledelim))) {
-		fprintf(stderr,"   ERROR: Invalid delimiter number %d.\n",tabledelim);
+	if (mode_none == run_mode) {
+		fprintf(stderr,"%s",mode_error);
 		return 1;
 	}
 
-	if ((mode < 1) || (mode > 2)) {
-		fprintf(stderr,"   ERROR: Must specify one of -r -w.\n");
+	/* The first implies that -t was given; the second that it wasn't,
+	   so use default, and the third if handles weird values. */
+	if ((tabledelim > 0) && (tabledelim < sizeof(tabledelim))) {
+		tableformat = 1;
+	}
+	if (tabledelim == -1) {
+		tabledelim = 1;
+	}
+	if ((tabledelim < 0) || (tabledelim > sizeof(tabledelim))) {
+		fprintf(stderr,"   ERROR: Invalid delimiter number %d.\n",tabledelim);
 		return 1;
 	}
 
@@ -615,9 +640,16 @@ int main(int argc, const char *argv[])
 	else
 		defaultcategory = 0;	/* Unfiled */
 
-	if (mode == 2) {		/* Write to file */
+	switch(run_mode) {
+		FILE *f;
+		int i;
+	case mode_none:
+		/* impossible */
+		fprintf(stderr,"%s",mode_error);
+		break;
+	case mode_write:
 		/* FIXME - Must test for existing file first! DD 2002/03/18 */
-		FILE *f = fopen(wrFilename, "w");
+		f = fopen(wrFilename, "w");
 
 		if (f == NULL) {
 			sprintf(buf, "%s: %s", progname, wrFilename);
@@ -629,9 +661,9 @@ int main(int argc, const char *argv[])
 			dlp_DeleteCategory(sd, db,
 				plu_findcategory(&aai.category,deletecategory));
 		fclose(f);
-
-	} else if (mode == 1) {	/* Read from file */
-		FILE *f = fopen(rdFilename, "r");
+		break;
+	case mode_read:
+		f = fopen(rdFilename, "r");
 
 		if (f == NULL) {
 			fprintf(stderr, "Unable to open input file");
@@ -647,30 +679,30 @@ int main(int argc, const char *argv[])
 		}
 		read_file(f, sd, db, &aai);
 		fclose(f);
-	} else if (deletecategory)
+		break;
+	case mode_delete:
 		dlp_DeleteCategory(sd, db,
 				plu_findcategory (&aai.category,deletecategory));
-	  else
-		if (deleteallcategories) {
-			int i;
-
-			for (i = 0; i < 16; i++)
-				if (strlen(aai.category.name[i]) > 0)
-					dlp_DeleteCategory(sd, db, i);
-		}
+		break;
+	case mode_delete_all:
+		for (i = 0; i < 16; i++)
+			if (strlen(aai.category.name[i]) > 0)
+				dlp_DeleteCategory(sd, db, i);
+		break;
+	}
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);
 
 	/* Tell the user who it is, with a different PC id. */
-	User.lastSyncPC = 0xDEADBEEF;
+	User.lastSyncPC = 0x00010000;
 	User.successfulSyncDate = time(NULL);
 	User.lastSyncDate = User.successfulSyncDate;
 	dlp_WriteUserInfo(sd, &User);
 
-	if (mode == 1) {
+	if (run_mode == mode_read) {
 		dlp_AddSyncLogEntry(sd, "Wrote entries to Palm Address Book.\n");
-	} else if (mode == 2) {
+	} else if (run_mode == mode_write) {
 		dlp_AddSyncLogEntry(sd, "Successfully read Address Book from Palm.\n");
 	}
 
