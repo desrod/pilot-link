@@ -75,12 +75,10 @@ struct option options[] = {
 	{"Flash",       no_argument,       NULL, 'F'},
 	{"Osflash",     no_argument,       NULL, 'O'},
 	{"Illegal",     no_argument,       NULL, 'I'},
-	{"quiet",       no_argument,       NULL, 'q'},
-	{"count",       no_argument,       NULL, 'c'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "-p:hvb:u:s:tSr:i:m:f:d:e:PlLa:x:FOIqc";
+static const char *optstring = "-p:hvb:u:s:tSr:i:m:f:d:e:PlLa:x:FOI";
 
 int	novsf	= 0;
 
@@ -302,7 +300,7 @@ static int creator_is_PalmOS(long creator)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
+static void Backup(char *dirname, int only_changed, int remove_deleted,
 	    int rom, int unsaved, char *archive_dir)
 {
 	int 	i,
@@ -387,10 +385,6 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			break;
 		i = info.index + 1;
 
-		if (quiet == 1) {
-			fflush(stdout);
-		}
-
 		if (dlp_OpenConduit(sd) < 0) {
 			printf("\n");
 			printf("Exiting on cancel, all data was not backed " 
@@ -421,27 +415,23 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			continue;
 
 		if (rom == 1 && creator_is_PalmOS(info.creator)) {
-			if (!quiet)
-				printf("OS file, skipping '%s'.\n", info.name);
+			printf("OS file, skipping '%s'.\n", info.name);
 			continue;
 		} else if (rom == 2 && !creator_is_PalmOS(info.creator)) {
-			if (!quiet)
-				printf("Non-OS file, skipping '%s'\n", info.name);
+			printf("Non-OS file, skipping '%s'\n", info.name);
 			continue;
 		}
 
 		if (!unsaved
 		    && strcmp(info.name, "Unsaved Preferences") == 0) {
-			if (!quiet)
-				printf("\nSkipping '%s'\n", info.name);
+			printf("\nSkipping '%s'\n", info.name);
 			continue;
 		}
 
 		if (only_changed) {
 			if (stat(name, &statb) == 0) {
 				if (info.modifyDate == statb.st_mtime) {
-					if (!quiet)
-						printf("No change, skipping '%s'.\n", info.name);
+					printf("No change, skipping '%s'.\n", info.name);
 					RemoveFromList(name, orig_files, ofile_total);
 					continue;
 				}
@@ -450,11 +440,8 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 
 		if (only_changed) {
 			fprintf(stdout, "Synchronizing %-35s\n", name); 
-		} else if (!quiet) {
-			printf("Backing up %-35s", name);
-			fflush(stdout);
 		} else {
-			printf(".");
+			printf("Backing up %-35s", name);
 			fflush(stdout);
 		}
 
@@ -469,7 +456,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
-		} else if (stat(name, &sbuf) == 0 && !quiet) {
+		} else if (stat(name, &sbuf) == 0) {
 			printf("[%7ld bytes | %3ld kb total]\n", 
 				sbuf.st_size, totalsize/1024);
 			totalsize += sbuf.st_size;
@@ -1156,11 +1143,7 @@ static void display_help(char *progname)
 	printf("                             Flash ROM\n");
 	printf("     -I, --Illegal           Modifies -b, -u, and -s, to back up the 'illegal'\n");
 	printf("                             database Unsaved Preferences.prc (normally skipped,\n");
-	printf("                             per Palm's recommendation)\n");
-	printf("     -q, --quiet             Makes all the backup options quiet about skipped\n");
-	printf("                             files\n");
-	printf("     -c, --count             Does same as '-q', but counts files(\"[nnn]...\") as\n");
-	printf("                             they are processed\n\n");
+	printf("                             per Palm's recommendation)\n\n");
 	printf("   The serial port used to connect to may be specified by the $PILOTPORT\n");
 	printf("   environment variable in your shell instead of the command line.  If it is\n");
 	printf("   not specified anywhere, it will default to /dev/pilot.\n\n");
@@ -1181,7 +1164,6 @@ int main(int argc, char *argv[])
 	 	do_rom 		= 0,
 		do_unsaved 	= 0,
 		timespent 	= 0,
-		quiet 		= 0,
 		last_c          = 0;
 
         time_t 	start,end;
@@ -1211,14 +1193,14 @@ int main(int argc, char *argv[])
 			port = optarg;
 			break;
 		case 'b':
-			Backup(optarg, 0, 0, quiet, do_rom, do_unsaved, archive_dir);
+			Backup(optarg, 0, 0, do_rom, do_unsaved, archive_dir);
 
 			break;
 		case 'u':
-			Backup(optarg, 1, 0, quiet, do_rom, do_unsaved, archive_dir);
+			Backup(optarg, 1, 0, do_rom, do_unsaved, archive_dir);
 			break;
 		case 's':
-			Backup(optarg, 1, 1, quiet, do_rom, do_unsaved, archive_dir);
+			Backup(optarg, 1, 1, do_rom, do_unsaved, archive_dir);
 			break;
 		case 't':
 			Time();
@@ -1270,14 +1252,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'S':
 			novsf = 1;
-			break;
-
-		/* FIXME: quiet needs to go away, replace with --verbose */
-		case 'q':
-			quiet = 2;
-			break;
-		case 'c':
-			quiet = 1;
 			break;
 		}
 
