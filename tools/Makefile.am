@@ -1,6 +1,13 @@
-INCLUDES = -I$(top_srcdir)/libsock
+if WITH_CCLIB
+CC_TARGETS = ccexample iambicexample validate
+else
+CC_TARGETS =
+endif
+
+INCLUDES = -I$(top_srcdir)/libsock -I$(top_srcdir)/libcc
 
 LIBPISOCK = ../libsock/libpisock.la
+LIBPICC = ../libcc/libpicc.la
 
 bin_PROGRAMS = \
 	addresses 	\
@@ -30,7 +37,8 @@ bin_PROGRAMS = \
 	read-expenses	\
 	read-ical 	\
 	read-todos	\
-	reminders
+	reminders 	\
+	$(CC_TARGETS)
 
 addresses_SOURCES = addresses.c
 addresses_LDADD = $(LIBPISOCK)
@@ -115,3 +123,14 @@ read_todos_LDADD = $(LIBPISOCK)
 
 reminders_SOURCES = reminders.c
 reminders_LDADD = $(LIBPISOCK)
+
+if WITH_CCLIB
+ccexample_SOURCES = ccexample.cc
+ccexample_LDADD = $(LIBPISOCK) $(LIBPICC)
+
+iambicexample_SOURCES = iambicexample.cc
+iambicexample_LDADD = $(LIBPISOCK) $(LIBPICC)
+
+validate_SOURCES = validate.cc
+validate_LDADD = $(LIBPISOCK) $(LIBPICC)
+endif
