@@ -201,7 +201,9 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 				state++;
 				cur++;
 				expect = 1;
-			}
+			} else {
+				printf (">>> Unexpected byte 0x%.2x\n", buf[PI_SLP_OFFSET_SIG1]);
+			}			
 			break;
 
 		case 2:
@@ -228,8 +230,6 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 			/* Addition check sum for header */
 			for (v = i = 0; i < 9; i++)
 				v += buf[i];
-
-			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(buf, 1));
 
 			/* read in the whole SLP header. */
 			if ((v & 0xff) == buf[PI_SLP_OFFSET_SUM]) {
@@ -260,6 +260,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 			data->last_type = get_byte(&buf[PI_SLP_OFFSET_TYPE]);
 			data->last_txid = get_byte(&buf[PI_SLP_OFFSET_TXID]);
 
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(buf, 0));
 			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(buf));
 
 			/* Remove the header */

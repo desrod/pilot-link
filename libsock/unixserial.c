@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
@@ -123,7 +124,9 @@ static int calcrate(int baudrate)
 		return B460800;
 #endif
 	else {
-		printf("Unable to set baud rate %d\n", baudrate);
+		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR,
+		    "DEV Serial CHANGEBAUD Unable to set baud rate %d\n",
+		    baudrate);
 		abort();	/* invalid baud rate */
 	}
 }
@@ -377,6 +380,8 @@ static int s_close(struct pi_socket *ps)
 	ioctl(data->fd, TIOCSETP, &data->tco);
 #endif
 
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV Serial CLOSE fd: %d\n", data->fd);
+
 	result = close(data->fd);
 	data->fd = 0;
 
@@ -392,8 +397,6 @@ static int s_poll(struct pi_socket *ps, int timeout)
 	FD_ZERO(&ready);
 	FD_SET(data->fd, &ready);
 
-	printf ("Serial Poll: %d\n", data->fd);
-
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
 	if (timeout == 0)
@@ -406,12 +409,11 @@ static int s_poll(struct pi_socket *ps, int timeout)
 
 	if (!FD_ISSET(data->fd, &ready)) {
 		/* otherwise throw out any current packet and return */
-#ifdef DEBUG
-		fprintf(stderr, "Serial RX: timeout\n");
-#endif
+		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV Serial POLL timeout\n");
 		data->rx_errors++;
 		return -1;
 	}
+	LOG(PI_DBG_DEV, PI_DBG_LVL_DEBUG, "DEV Serial POLL Read data on %d\n", data->fd);
 
 	return 0;
 }
@@ -430,18 +432,21 @@ static int s_poll(struct pi_socket *ps, int timeout)
 static int s_write(struct pi_socket *ps, unsigned char *buf, int len)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
-	int nwrote;
+	int total, nwrote;
 
-	while (len > 0) {
+	total = len;
+	while (total > 0) {
 		nwrote = write(data->fd, buf, len);
 		if (nwrote < 0)
 			return -1;
-		len -= nwrote;
+		total -= nwrote;
 	}
 	data->tx_bytes += len;
 
 	/* hack to slow things down so that the Visor will work */
 	usleep(10 + len);
+
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV Serial TX Bytes: %d\n", len);
 
 	return len;
 }
@@ -481,13 +486,13 @@ static int s_read(struct pi_socket *ps, unsigned char *buf, int len)
 		r = read(data->fd, buf, len);
 	else {
 		/* otherwise throw out any current packet and return */
-#ifdef DEBUG
-		fprintf(stderr, "Serial RX: timeout\n");
-#endif
+		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV Serial RX timeout\n");
 		data->rx_errors++;
 		return 0;
 	}
 	data->rx_bytes += r;
+
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV Serial RX Bytes: %d\n", r);
 
 	return r;
 }

@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-padp.h"
@@ -46,14 +47,12 @@ int cmp_rx(struct pi_socket *ps, struct cmp *c)
  
 	Begin(cmp_rx);
 
-	printf ("CMP_RX\n");
-	
 	l = padp_rx(ps, cmpbuf, 10);
 
 	if (l < 10)
 		return -1;
 
-	cmp_dump(cmpbuf, 0);
+	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(cmpbuf, 0));
 
 	c->type = get_byte(cmpbuf);
 	c->flags = get_byte(cmpbuf + 1);
@@ -91,7 +90,7 @@ int cmp_init(struct pi_socket *ps, int baudrate)
 	else
 		set_byte(cmpbuf + 1, 0);
 
-	cmp_dump(cmpbuf, 1);
+	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(cmpbuf, 1));
 
 	type = padData;
 	size = sizeof(type);
@@ -122,7 +121,7 @@ int cmp_abort(struct pi_socket *ps, int reason)
 	set_long(cmpbuf + 2, 0);
 	set_long(cmpbuf + 6, 0);
 
-	cmp_dump(cmpbuf, 1);
+	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(cmpbuf, 1));
 
 	type = padData;
 	size = sizeof(type);
@@ -154,7 +153,7 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 	set_short(cmpbuf + 4, 0);
 	set_long(cmpbuf + 6, maxbaud);
 
-	cmp_dump(cmpbuf, 1);
+	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(cmpbuf, 1));
 
 	type = padWake;
 	size = sizeof(type);
@@ -177,19 +176,15 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
  ***********************************************************************/
 void cmp_dump(unsigned char *cmp, int rxtx)
 {
-#ifdef DEBUG
-
-	fprintf(stderr, "CMP %s %s", rxtx ? "TX" : "RX",
-		(get_byte(cmp) == 1) ? "WAKE" : (get_byte(cmp) ==
-						 2) ? "INIT"
-		: (get_byte(cmp) == 3) ? "ABRT" : "");
+	LOG(PI_DBG_CMP, PI_DBG_LVL_NONE,
+	    "CMP %s %s", rxtx ? "TX" : "RX",
+	    (get_byte(cmp) == 1) ? "WAKE"
+	    : (get_byte(cmp) == 2) ? "INIT"
+	    : (get_byte(cmp) == 3) ? "ABRT" : "");
 	if ((get_byte(cmp) < 1) || (get_byte(cmp) > 3))
-		fprintf(stderr, "UNK %d", get_byte(cmp));
-	fprintf(stderr,
-		"  Type: %2.2X Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
-		get_byte(cmp),
-		get_byte(cmp + 1), get_long(cmp + 2), get_long(cmp + 6),
-		get_long(cmp + 6));
-
-#endif
+		LOG(PI_DBG_CMP, PI_DBG_LVL_NONE, "UNK %d", get_byte(cmp));
+	LOG(PI_DBG_CMP, PI_DBG_LVL_NONE,
+	    "  Type: %2.2X Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
+	    get_byte(cmp), get_byte(cmp + 1), get_long(cmp + 2),
+	    get_long(cmp + 6), get_long(cmp + 6));
 }

@@ -523,16 +523,16 @@ static int pi_serial_close(struct pi_socket *ps)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 
-#ifdef DEBUG
-	fprintf(stderr, "pi_serial_close\n");
-	fprintf(stderr, "connected: %d\n", ps->connected);
-#endif
-
 	if (ps->type == PI_SOCK_STREAM) {
-		if (!(ps->broken))	/* If connection is not broken */
-			if (ps->connected & 1)	/* And the socket is connected */
-				if (!(ps->connected & 2))	/* And it wasn't end-of-synced */
-					dlp_EndOfSync(ps->sd, 0);	/* then end sync, with clean status */
+		/* If connection is not broken */
+		if (!(ps->broken))
+			/* Socket is connected and wasn't end-of-synced */
+			if ((ps->connected & 1) && !(ps->connected & 2)) {
+				/* then end sync, with clean status */
+				dlp_EndOfSync(ps->sd, 0);
+				printf("Writing end of sync\n");
+			}
+		
 	}
 
 	/* If device still has a /dev/null handle */
