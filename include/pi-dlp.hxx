@@ -240,10 +240,10 @@ class DLP
      int callApplication(const unsigned long creator,
 			 const unsigned long type, const int action,
 			 const int length, void *data,
-			 unsigned long *retcode, const int maxretlen,
-			 int *retlen, void *retdata) const {
+			 unsigned long *retcode,
+			 pi_buffer_t *retdata) const {
 	  return dlp_CallApplication(_sd, creator, type, action, length, data,
-				     retcode, maxretlen, retlen, retdata);
+				     retcode, retdata);
      }
 
      int readFeature(const unsigned long creator, const unsigned int num,
