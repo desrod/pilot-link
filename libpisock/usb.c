@@ -765,7 +765,6 @@ pi_usb_dev_t known_devices[] = {
 };
 
 static pi_usb_dev_t override_device = { 0 };
-static pi_usb_dev_t current_device = { 0 };
 
 int
 USB_check_device (pi_usb_data_t *dev, u_int16_t vendor, u_int16_t product)
@@ -840,7 +839,7 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 	// but most devices expect to receive this before
 	// they agree on talking to us.
 	if (!(flags & USB_INIT_TAPWAVE)) {
-		unsigned char ba[2];
+		unsigned char ba[2] = { 0 };
 
 		ret = dev->impl.control_request (dev, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, 0, 0, &ba[0], 2, 0);
 		if (ret < 0)

@@ -85,8 +85,12 @@ USB_open (pi_usb_data_t *data)
 {
 	struct usb_bus *bus;
 	struct usb_device *dev;
-	int first = 1, ret;
+	int try = 0;
+	int ret;
 	u_int8_t input_endpoint = 0xFF, output_endpoint = 0xFF;
+#ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
+	int first;
+#endif
 
 	usb_init ();
 restart:
@@ -109,18 +113,21 @@ restart:
 			if (dev->config[0].interface[0].altsetting[0].bNumEndpoints < 2)
 				continue;
 
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, 0x%04x 0x%04x.\n", __FILE__, __LINE__, dev->descriptor.idVendor, dev->descriptor.idProduct));
 			if (USB_check_device (data, dev->descriptor.idVendor, dev->descriptor.idProduct))
 				continue;
 
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 			USB_handle = usb_open(dev);
 
-			if (first) {
-				first = 0;
+			if (!try++) {
 				usb_reset (USB_handle);
 				usb_close (USB_handle);
 				CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (0));
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 				goto restart;
 			}
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 
 			data->ref = USB_handle;
 
@@ -190,6 +197,12 @@ claim:
 
 			return 1;
 		}
+	}
+
+	if (try < 3) {
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
+		sleep (1);
+		goto restart;
 	}
 
 	errno = ENODEV;
