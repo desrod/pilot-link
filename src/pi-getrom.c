@@ -36,20 +36,10 @@
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "userland.h"
 
 int cancel = 0;
 
-static void display_help(const char *progname)
-{
-	printf("   Retrieves the ROM image from your Palm device\n\n");
-	printf("   Usage: %s -p <port> [pilot.rom]\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n"); 
-	printf("     -h, --help              Display help information for %s\n", progname);   
-	printf("     -v, --version           Display %s version information\n\n", progname);  
-	printf("   Only the port option is required, the other options are... optional.\n\n");
-	printf("   Examples: %s -p /dev/pilot myrom\n\n", progname);
-}
 
 static void sighandler(int signo)
 {
@@ -67,76 +57,85 @@ int main(int argc, const char *argv[])
 		majorVersion,
 		minorVersion,
 		bugfixVersion,
-		build, 
+		build,
 		state,
 		timespent	= 0;
-	
-	const char
-                *progname 	= argv[0];
 
 	char 	name[256],
-		print[256],
-		*port 	        = NULL,
-		*filename;
-	
+		print[256];
+	const char **args = NULL;
+
 	time_t 	start = time(NULL), end;
 
 	struct 	RPC_params p;
-	unsigned long ROMstart; 
+	unsigned long ROMstart;
 	unsigned long ROMlength;
 	unsigned long ROMversion;
 	unsigned long offset;
 	unsigned long left;
 
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	        POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+		USERLAND_RESERVED_OPTIONS
+	        POPT_TABLEEND
 	};
-	
+
 	po = poptGetContext("pi-getrom", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"[filename]\n\n"
+		"   Retrieves the ROM image from your Palm device.\n\n");
 
-	while ((c = poptGetNextOpt(po)) >= 0) {
-		switch (c) {
-
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 'p':
-			port = optarg;
-			break;
-		default:
-			display_help(progname);
-			return 0;
-		}
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
 	}
-	if (optind > 0)
-		filename = argv[1];
-	else
-		filename = NULL;
+	while ((c = poptGetNextOpt(po)) >= 0) {
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
+	}
+
+	if ( c < -1) {
+		plu_badoption(po,c);
+	}
+
+	args = poptGetArgs(po);
+	if (args && args[0] && args[1]) {
+		fprintf(stderr,"   ERROR: Specify at most one filename.\n");
+		return 1;
+	}
+
+	if (!args || !args[0]) {
+		strcpy(name, "pilot-");
+	} else {
+		strcpy(name, args[0]);
+	}
 
 
-	printf("   Warning: Please completely back up your Palm (with pilot-xfer -b)\n"
+	printf("   WARNING: Please completely back up your Palm (with pilot-xfer -b)\n"
 	       "            before using this program!\n\n"
 	       "   NOTICE: Use of this program may place you in violation\n"
 	       "           of your license agreement with Palm Computing.\n\n"
 	       "           Please read your Palm Computing handbook (\"Software\n"
 	       "           License Agreement\") before running this program.\n\n");
 
-	sd = pilot_connect(port);
+	sd = plu_connect();
 	if (sd < 0) {
 		return -1;
 	}
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
+
+	dlp_ReadFeature(sd, makelong("psys"), 1, &ROMversion);
+
+	majorVersion =
+	    (((ROMversion >> 28) & 0xf) * 10) + ((ROMversion >> 24) & 0xf);
+	minorVersion 	= ((ROMversion >> 20) & 0xf);
+	bugfixVersion 	= ((ROMversion >> 16) & 0xf);
+	state 		= ((ROMversion >> 12) & 0xf);
+	build 		= (((ROMversion >> 8) & 0xf) * 10)
+				+ (((ROMversion >> 4) & 0xf) * 10)
+				+ (ROMversion & 0xf);
 
 	/* OS5 devices no longer support RPC, and will crash if we try to call it */
 	if ((majorVersion >= 5) && (minorVersion == 0)) {
@@ -145,7 +144,8 @@ int main(int argc, const char *argv[])
 			"   tools will cause the Palm to crash.\n\n"
 			"   Future versions of these tools may be updated to work around these\n"
 			"   problems. For now, we'd like to avoid crashing your device.\n\n");
-		exit(EXIT_FAILURE);
+		pi_close(sd);
+		return 1;
 	}
 
 	PackRPC(&p, 0xA23E, RPC_IntReply, RPC_Long(0xFFFFFFFF), RPC_End);
@@ -153,27 +153,12 @@ int main(int argc, const char *argv[])
 	PackRPC(&p, 0xA23E, RPC_IntReply, RPC_Long(ROMstart), RPC_End);
 	/* err = */ dlp_RPC(sd, &p, &ROMlength);
 
-	dlp_ReadFeature(sd, makelong("psys"), 1, &ROMversion);
-
-	if (!filename)
-		strcpy(name, "pilot-");
-	else
-		strcpy(name, filename);
-
-	majorVersion =
-	    (((ROMversion >> 28) & 0xf) * 10) + ((ROMversion >> 24) & 0xf);
-	minorVersion 	= ((ROMversion >> 20) & 0xf);
-	bugfixVersion 	= ((ROMversion >> 16) & 0xf);
-	state 		= ((ROMversion >> 12) & 0xf);
-	build 		= (((ROMversion >> 8) & 0xf) * 10) 
-				+ (((ROMversion >> 4) & 0xf) * 10) 
-				+ (ROMversion & 0xf);
 
 	/* As Steve said, "Bummer." */
 	if ((majorVersion == 3) && (minorVersion == 0)
 	    && (ROMlength == 0x100000)) {
 		ROMlength = 0x200000;
-	} 
+	}
 
 
 	sprintf(name + strlen(name), "%d.%d.%d.rom", majorVersion,
@@ -181,12 +166,12 @@ int main(int argc, const char *argv[])
 
 	if (state != 3)
 		sprintf(name + strlen(name), "-%s%d", (
-			(state == 0) ? "d" : 
-			(state == 1) ? "a" : 
+			(state == 0) ? "d" :
+			(state == 1) ? "a" :
 			(state == 2) ? "b" : "u"), build);
 
 	printf("   Generating %s\n", name);
-	
+
 	file = open(name, O_RDWR | O_CREAT, 0666);
 
 	offset = lseek(file, 0, SEEK_END);
@@ -222,7 +207,7 @@ int main(int argc, const char *argv[])
 			RPC_End);
 		/* err = */ dlp_RPC(sd, &p, 0);
 		left -= len;
-		
+
 		/* If the buffer only contains zeros, skip instead of
 		   writing, so that the file will be holey. */
 		for (j = 0; j < len; j++)
