@@ -43,7 +43,7 @@ char 	tabledelims[4] = { '\n', ',', ';', '\t' };
 int inchar(FILE * in);
 int read_field(char *dest, FILE * in, size_t length);
 void outchar(char c, FILE * out);
-int write_field(FILE * out, char *source, enum terminators more);
+int write_field(FILE * out, const char *source, enum terminators more);
 int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai, int human /* human-readable or CSV */);
@@ -283,7 +283,7 @@ void outchar(char c, FILE * out)
  * Returns:
  *
  ***********************************************************************/
-int write_field(FILE * out, char *source, enum terminators more)
+int write_field(FILE * out, const char *source, enum terminators more)
 {
 	putc('"', out);
 
@@ -485,7 +485,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
  *
  ***********************************************************************/
 
-void write_record_CSV(FILE *out, struct AddressAppInfo *aai, struct Address *addr, const int attribute, const int category)
+void write_record_CSV(FILE *out, const struct AddressAppInfo *aai, const struct Address *addr, const int attribute, const int category)
 {
 	int j;
 	char buffer[16];
