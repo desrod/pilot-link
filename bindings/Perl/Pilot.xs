@@ -42,6 +42,7 @@
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
+#include "pi-error.h"
 
 
 typedef unsigned char * CPTR;
@@ -92,6 +93,138 @@ int arg;
     case 'O':
 	break;
     case 'P':
+	if (strEQ(name, "PI_ERR_PROT_ABORTED"))
+#ifdef PI_ERR_PROT_ABORTED
+	    return PI_ERR_PROT_ABORTED;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_PROT_INCOMPATIBLE"))
+#ifdef PI_ERR_PROT_INCOMPATIBLE
+	    return PI_ERR_PROT_INCOMPATIBLE;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_PROT_BADPACKET"))
+#ifdef PI_ERR_PROT_BADPACKET
+	    return PI_ERR_PROT_BADPACKET;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_SOCK_DISCONNECTED"))
+#ifdef PI_ERR_SOCK_DISCONNECTED
+	    return PI_ERR_SOCK_DISCONNECTED;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_SOCK_INVALID"))
+#ifdef PI_ERR_SOCK_INVALID
+	    return PI_ERR_SOCK_INVALID;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_SOCK_TIMEOUT"))
+#ifdef PI_ERR_SOCK_TIMEOUT
+	    return PI_ERR_SOCK_TIMEOUT;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_SOCK_CANCELED"))
+#ifdef PI_ERR_SOCK_CANCELED
+	    return PI_ERR_SOCK_CANCELED;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_SOCK_IO"))
+#ifdef PI_ERR_SOCK_IO
+	    return PI_ERR_SOCK_IO;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_SOCK_LISTENER"))
+#ifdef PI_ERR_SOCK_LISTENER
+	    return PI_ERR_SOCK_LISTENER;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_DLP_BUFSIZE"))
+#ifdef PI_ERR_DLP_BUFSIZE
+	    return PI_ERR_DLP_BUFSIZE;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_DLP_PALMOS"))
+#ifdef PI_ERR_DLP_PALMOS
+	    return PI_ERR_DLP_PALMOS;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_DLP_UNSUPPORTED"))
+#ifdef PI_ERR_DLP_UNSUPPORTED
+	    return PI_ERR_DLP_UNSUPPORTED;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_DLP_SOCKET"))
+#ifdef PI_ERR_DLP_SOCKET
+	    return PI_ERR_DLP_SOCKET;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_DLP_DATASIZE"))
+#ifdef PI_ERR_DLP_DATASIZE
+	    return PI_ERR_DLP_DATASIZE;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_DLP_COMMAND"))
+#ifdef PI_ERR_DLP_COMMAND
+	    return PI_ERR_DLP_COMMAND;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_FILE_INVALID"))
+#ifdef PI_ERR_FILE_INVALID
+	    return PI_ERR_FILE_INVALID;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_FILE_ERROR"))
+#ifdef PI_ERR_FILE_ERROR
+	    return PI_ERR_FILE_ERROR;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_FILE_ABORTED"))
+#ifdef PI_ERR_FILE_ABORTED
+	    return PI_ERR_FILE_ABORTED;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_FILE_NOT_FOUND"))
+#ifdef PI_ERR_FILE_NOT_FOUND
+	    return PI_ERR_FILE_NOT_FOUND;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_GENERIC_MEMORY"))
+#ifdef PI_ERR_GENERIC_MEMORY
+	    return PI_ERR_GENERIC_MEMORY;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_GENERIC_ARGUMENT"))
+#ifdef PI_ERR_GENERIC_ARGUMENT
+	    return PI_ERR_GENERIC_ARGUMENT;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PI_ERR_GENERIC_SYSTEM"))
+#ifdef PI_ERR_GENERIC_SYSTEM
+	    return PI_ERR_GENERIC_SYSTEM;
+#else
+	    goto not_there;
+#endif
 	if (strEQ(name, "PI_AF_SLP"))
 #ifdef PI_AF_SLP
 	    return PI_AF_SLP;
@@ -164,6 +297,24 @@ int arg;
 #else
 	    goto not_there;
 #endif
+	if (strEQ(name, "PILOT_LINK_VERSION"))
+#ifdef PILOT_LINK_VERSION
+	    return PILOT_LINK_VERSION;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PILOT_LINK_MAJOR"))
+#ifdef PILOT_LINK_MAJOR
+	    return PILOT_LINK_MAJOR;
+#else
+	    goto not_there;
+#endif
+	if (strEQ(name, "PILOT_LINK_MINOR"))
+#ifdef PILOT_LINK_MINOR
+	    return PILOT_LINK_MINOR;
+#else
+	    goto not_there;
+#endif
 	break;
     case 'Q':
 	break;
@@ -202,6 +353,28 @@ int arg;
 				DoName(dlpEndCodeOutOfMemory);
 				DoName(dlpEndCodeUserCan);
 				DoName(dlpEndCodeOther);
+				DoName(dlpErrNoError);
+				DoName(dlpErrSystem);
+				DoName(dlpErrIllegalReq);
+				DoName(dlpErrMemory);
+				DoName(dlpErrParam);
+				DoName(dlpErrNotFound);
+				DoName(dlpErrNoneOpen);
+				DoName(dlpErrAlreadyOpen);
+				DoName(dlpErrTooManyOpen);
+				DoName(dlpErrExists);
+				DoName(dlpErrOpen);
+				DoName(dlpErrDeleted);
+				DoName(dlpErrBusy);
+				DoName(dlpErrNotSupp);
+				DoName(dlpErrUnused1);
+				DoName(dlpErrReadOnly);
+				DoName(dlpErrSpace);
+				DoName(dlpErrLimit);
+				DoName(dlpErrSync);
+				DoName(dlpErrWrapper);
+				DoName(dlpErrArgument);
+				DoName(dlpErrSize);
 				break;
 			case 'R':
 				DoName(dlpRecAttrDeleted);
@@ -237,6 +410,7 @@ not_there:
 }
 
 static char mybuf[0xffff];
+static pi_buffer_t pibuf = {NULL, 0, 0};
 
 static AV * tmtoav (struct tm * t) {
 	AV * ret = newAV();
@@ -2280,18 +2454,11 @@ read(socket, len)
 	{
 	    int result;
 
-	    pi_buffer_t *mybuf;
-	    mybuf = pi_buffer_new(sizeof(struct DBInfo));
-
-	    if (len > sizeof(mybuf))
-	    	len = sizeof(mybuf);
-	    result = pi_read(socket, mybuf, len);
+	    result = pi_read(socket, &pibuf, len);
 	    if (result >=0) 
-	    	RETVAL = newSVpv(mybuf->data, result);
+	    	RETVAL = newSVpv(pibuf.data, result);
 	    else
 	    	RETVAL = &sv_undef;
-
-	    pi_buffer_free(mybuf);
 	}
 	OUTPUT:
 	RETVAL
@@ -2324,31 +2491,11 @@ errorText(error)
 	RETVAL
 
 int
-bind(socket, sockaddr)
+bind(socket, port)
 	int	socket
-	SV *	sockaddr
+	char *  port
 	CODE:
-	{
-		struct pi_sockaddr a;
-		HV * h;
-		if ((h=(HV*)SvRV(sockaddr)) && (SvTYPE(SvRV(sockaddr))==SVt_PVHV)) {
-			SV ** s;
-			char * name;
-			struct pi_sockaddr * a;
-	    	if ((s = hv_fetch(h, "device", 6, 0)))
-	    		name = SvPV(*s,na);
-	    	else
-	    		name = "";
-			a = calloc(1,sizeof(struct pi_sockaddr)+strlen(name));
-			strcpy(a->pi_device, name);
-	    	a->pi_family = (s = hv_fetch(h, "family", 6, 0)) ? SvIV(*s) : 0;
-			RETVAL = pi_bind(socket, (struct sockaddr*)a, sizeof(struct pi_sockaddr)+strlen(name));
-		} else {
-			STRLEN len;
-			void * c = SvPV(sockaddr, len);
-			RETVAL = pi_bind(socket, (struct sockaddr*)c, len);
-		}
-	}
+	RETVAL = pi_bind(socket, port);
 	OUTPUT:
 	RETVAL
 
@@ -2357,15 +2504,9 @@ openPort(port)
 	char *	port
 	CODE:
 	{
-		struct pi_sockaddr a;
 		int socket = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP);
-		
-		strcpy(a.pi_device, port);
-		a.pi_family = PI_AF_PILOT;
-		pi_bind(socket, (struct sockaddr*)&a, sizeof(a));
-		
+		pi_bind(socket, port);
 		pi_listen(socket, 1);
-		
 		RETVAL = socket;
 	}
 	OUTPUT:
@@ -2416,6 +2557,14 @@ errno(self)
 	CODE:
 		RETVAL = self->errnop;
 		self->errnop = 0;
+	OUTPUT:
+	RETVAL
+
+int
+palmos_errno(self)
+        PDA::Pilot::DLP::DB *self
+	CODE:
+		RETVAL = pi_palmos_error(self->socket);
 	OUTPUT:
 	RETVAL
 
@@ -2477,25 +2626,21 @@ setSortBlock(self, data)
 	RETVAL
 
 SV *
-getAppBlock(self, len=0xffff, offset=0)
+getAppBlock(self)
 	PDA::Pilot::DLP::DB *self
-	int len
-	int	offset
 	PPCODE:
 	{
-		int result = dlp_ReadAppBlock(self->socket, self->handle, offset, mybuf, len);
-		ReturnReadAI(mybuf, result);
+		int result = dlp_ReadAppBlock(self->socket, self->handle, 0, -1, &pibuf);
+		ReturnReadAI(pibuf.data, result);
 	}
 
 SV *
-getSortBlock(self, len=0xffff, offset=0)
+getSortBlock(self)
 	PDA::Pilot::DLP::DB *self
-	int len
-	int	offset
 	PPCODE:
 	{
-		int result = dlp_ReadSortBlock(self->socket,self->handle, offset, mybuf, len);
-		ReturnReadSI(mybuf, result);
+		int result = dlp_ReadSortBlock(self->socket,self->handle, 0, -1, &pibuf);
+		ReturnReadSI(pibuf.data, result);
 	}
 
 Result
@@ -2685,15 +2830,10 @@ getRecord(self, index)
 	{
 		int attr, category;
 		unsigned long id;
-		int size, result;
+		int result;
 
-		pi_buffer_t *mybuf;
-		mybuf = pi_buffer_new(sizeof(struct DBInfo));
-
-		result = dlp_ReadRecordByIndex(self->socket, self->handle, index, mybuf, &id, &attr, &category);
-		ReturnReadRecord(mybuf->data, size);
-
-		pi_buffer_free(mybuf);
+		result = dlp_ReadRecordByIndex(self->socket, self->handle, index, &pibuf, &id, &attr, &category);
+		ReturnReadRecord(pibuf.data, pibuf.used);
 	}
 
 Result
@@ -2786,15 +2926,10 @@ getRecordByID(self, id)
 	unsigned long id
 	PPCODE:
 	{
-	    int size, result, attr, category, index;
+	    int result, attr, category, index;
 
-            pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(sizeof(struct DBInfo));
-
-	    result = dlp_ReadRecordById(self->socket, self->handle, id, mybuf, &index, &attr, &category);
-	    ReturnReadRecord(mybuf->data,size);
-
-	    pi_buffer_free(mybuf);
+	    result = dlp_ReadRecordById(self->socket, self->handle, id, &pibuf, &index, &attr, &category);
+	    ReturnReadRecord(pibuf.data, pibuf.used);
 	}
 
 void
@@ -2803,19 +2938,14 @@ getNextModRecord(self, category=-1)
 	int	category
 	PPCODE:
 	{
-	    int size, result, attr, index;
+	    int result, attr, index;
 	    unsigned long id;
 
-            pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(sizeof(struct DBInfo));
-
 	    if (category == -1)
-	    	result = dlp_ReadNextModifiedRec(self->socket, self->handle, mybuf, &id, &index, &attr, &category);
+	    	result = dlp_ReadNextModifiedRec(self->socket, self->handle, &pibuf, &id, &index, &attr, &category);
 	    else
-	    	result = dlp_ReadNextModifiedRecInCategory(self->socket, self->handle, category, mybuf, &id, &index, &attr);
-	    ReturnReadRecord(mybuf->data, size);
-
-	    pi_buffer_free(mybuf);
+	    	result = dlp_ReadNextModifiedRecInCategory(self->socket, self->handle, category, &pibuf, &id, &index, &attr);
+	    ReturnReadRecord(pibuf.data, pibuf.used);
 	}
 
 void
@@ -2824,16 +2954,11 @@ getNextRecord(self, category)
 	int	category
 	PPCODE:
 	{
-	   int size, result, attr, index;
+	   int result, attr, index;
 	    unsigned long id;
 
-            pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(sizeof(struct DBInfo));
-
-	    result = dlp_ReadNextRecInCategory(self->socket, self->handle, category, mybuf, &id, &index, &attr);
-	    ReturnReadRecord(mybuf->data, size);
-
-	    pi_buffer_free(mybuf);
+	    result = dlp_ReadNextRecInCategory(self->socket, self->handle, category, &pibuf, &id, &index, &attr);
+	    ReturnReadRecord(pibuf.data, pibuf.used);
 	}
 
 unsigned long
@@ -2888,15 +3013,10 @@ setResourceByID(self, type, id)
 	int	id
 	PPCODE:
 	{
-	   int size, result, index;
+	   int result, index;
 
-            pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(sizeof(struct DBInfo));
-
-	    result = dlp_ReadResourceByType(self->socket, self->handle, type, id, mybuf, &index);
-	    ReturnReadResource(mybuf->data, size);
-
-	    pi_buffer_free(mybuf);
+	    result = dlp_ReadResourceByType(self->socket, self->handle, type, id, &pibuf, &index);
+	    ReturnReadResource(pibuf.data, pibuf.used);
 	}
 
 void
@@ -2905,16 +3025,11 @@ getResource(self, index)
 	int	index
 	PPCODE:
 	{
-	    int size, result, id;
+	    int result, id;
 	    Char4 type;
 
-            pi_buffer_t *mybuf;
-            mybuf = pi_buffer_new(sizeof(struct DBInfo));
-
-	    result = dlp_ReadResourceByIndex(self->socket, self->handle, index, mybuf, &type, &id);
-	    ReturnReadResource(mybuf->data, size);
-
-	    pi_buffer_free(mybuf);
+	    result = dlp_ReadResourceByIndex(self->socket, self->handle, index, &pibuf, &type, &id);
+	    ReturnReadResource(pibuf.data, pibuf.used);
 	}
 
 SV *
@@ -3072,6 +3187,14 @@ errno(self)
 	CODE:
 		RETVAL = self->errnop;
 		self->errnop = 0;
+	OUTPUT:
+	RETVAL
+
+int
+palmos_errno(self)
+        PDA::Pilot::DLP *self
+	CODE:
+		RETVAL = pi_palmos_error(self->socket);
 	OUTPUT:
 	RETVAL
 
@@ -3501,13 +3624,9 @@ getDBInfo(self, start, RAM=1, ROM=0, cardno=0)
 	{
 		struct DBInfo info;
 
-		pi_buffer_t *buffer = pi_buffer_new(sizeof(struct DBInfo));
-
 		int where = (RAM ? dlpDBListRAM : 0) | (ROM ? dlpDBListROM : 0);
-		int result = dlp_ReadDBList(self->socket, cardno, where, start, buffer);
-		pack_dbinfo(RETVAL,(*(struct DBInfo *)(buffer->data)), result);
-
-		pi_buffer_free(buffer);
+		int result = dlp_ReadDBList(self->socket, cardno, where, start, &pibuf);
+		pack_dbinfo(RETVAL,(*(struct DBInfo *)(pibuf.data)), result);
 	}
 	OUTPUT:
 	RETVAL
@@ -3581,13 +3700,12 @@ getROMToken(self,token)
 	}
 
 void
-callApplication(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
+callApplication(self, creator, type, action, data=&sv_undef)
 	PDA::Pilot::DLP *self
 	Char4	creator
 	Char4	type
 	int	action
 	SV *data
-	int	maxretlen
 	PPCODE:
 	{
 		unsigned long retcode;
@@ -3596,10 +3714,10 @@ callApplication(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 		(void)SvPV(data,len);
 		result = dlp_CallApplication(self->socket, creator, 
 				    type, action, len, SvPV(data,na),
-		                    &retcode, maxretlen, (int *)&len, mybuf);
+		                    &retcode, &pibuf);
 		EXTEND(sp, 2);
 		if (result >= 0) {
-			PUSHs(sv_2mortal(newSVpv(mybuf, len)));
+			PUSHs(sv_2mortal(newSVpv(pibuf.data, pibuf.used)));
 			if (GIMME != G_SCALAR) {
 				PUSHs(sv_2mortal(newSViv(retcode)));
 			}
