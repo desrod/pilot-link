@@ -138,6 +138,8 @@ void display_rate(int record, int records, int written, int elapsed)
 
 	if (elapsed < 1)
 		elapsed = 1;
+	if (written < 1)
+		written = 1;
 	k_sec = ((double) (written / 1024) / (double) elapsed);
 	if (file_size > 0) {
 		est_done = (file_size - written) / (written / elapsed);
