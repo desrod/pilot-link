@@ -759,7 +759,7 @@ int main(int argc, const char *argv[])
 		"   Installs and Fetches Palm 'Foto' Image files\n"
 		"   Converts Palm 'Foto' (*.jpg.pdb) Image files to jpg\n\n"
 		"   Example arguments: \n"
-		"      -p /dev/pilot -f\n"
+		"      -p serial:/dev/ttyUSB0 -f\n"
 		"      -i MyImage.jpg\n"
 		"      -i *.jpg\n"
 		"      -f MyImage\n"

@@ -51,7 +51,7 @@ static void display_help(const char *progname)
 	printf("     -h, --help        Display this information\n");
 	printf("     -v, --version     Display version information\n\n");
 	printf("     -a --account      The name of the Account category in MicroMoney\n");
-	printf("   Examples: %s -p /dev/pilot -a BankGlobal\n\n", progname);
+	printf("   Examples: %s -p serial:/dev/ttyUSB0 -a BankGlobal\n\n", progname);
 	printf("   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n");
 	printf("   on MicroMoney.\n\n");
 	printf("   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n");

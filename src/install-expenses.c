@@ -96,7 +96,7 @@ static void display_help(const char *progname)
 	printf("     -c, --category <cat>    Install entry into this category\n\n");
 	printf("     -r, --replace <cat>     Replace entry in this category\n\n");
 	printf("   Example:\n");
-	printf("     %s -p /dev/pilot -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n", progname);
+	printf("     %s -p serial:/dev/ttyUSB0 -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n", progname);
 	printf("                      -g 21 -l \"San Francisco\" -N \"This is a note\"\n\n");
 
 	return;

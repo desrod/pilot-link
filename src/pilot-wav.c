@@ -389,7 +389,7 @@ static void display_help(const char *progname)
 	printf("     -f --fetch | <file> Fetch all wav files or specified wav file from the Palm\n");
 	printf("     -c --convert <file> Convert <file>.wav.pdb file to wav\n\n");
 	printf("   Examples: \n");
-	printf("      pilot-wav -p /dev/pilot -f MyVoiceMemo.wav.pdb\n");
+	printf("      pilot-wav -p serial:/dev/ttyUSB0 -f MyVoiceMemo.wav.pdb\n");
 	printf("      pilot-wav -c MyVoiceMemo.wav.pdb\n\n");
 	return;
 }

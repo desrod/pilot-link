@@ -67,7 +67,7 @@ int main(int argc, const char *argv[])
 	"   standard output in a generic text format/ Otherwise, use --file to read a todo\n"
 	"   database file from disk for printing.\n\n"
 	"   Example arguments:\n"
-	"      -p /dev/pilot \n"
+	"      -p serial:/dev/ttyUSB0 \n"
 	"      -f ToDoDB.pdb\n");
 
 

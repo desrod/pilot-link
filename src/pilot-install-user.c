@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	poptSetOtherOptionHelp(po, " [-p port] [-u user] [-i id]\n\n"
 		"   Assigns your Palm device a Username and unique UserID\n\n"
 		"   Example:\n"
-		"      -p /dev/pilot -u david -i 1\n\n");
+		"      -p serial:/dev/ttyUSB0 -u david -i 1\n\n");
 
         while ((po_err = poptGetNextOpt(po)) >= 0) {
 		/* Everything is handled by popt magic */

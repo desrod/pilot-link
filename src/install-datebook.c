@@ -70,7 +70,7 @@ int main(int argc, const char *argv[])
 	pc = poptGetContext("install-datebook", argc, argv, options, 0);
 	poptSetOtherOptionHelp(pc,"\n   Installs new Datebook entries onto your Palm handheld device\n\n"
 		"   Example usage: \n"
-		"      -p /dev/pilot -r db.txt\n\n");
+		"      -p serial:/dev/ttyUSB0 -r db.txt\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(pc,stderr,0);

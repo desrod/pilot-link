@@ -48,7 +48,7 @@ static void display_help(const char *progname)
 	printf("     -p --port <port>    Use device file <port> to communicate with Palm\n");
 	printf("     -h, --help          Display help information\n");   
 	printf("     -v, --version       Display version information\n\n");  
-	printf("   Examples: %s -p /dev/pilot\n\n", progname);
+	printf("   Examples: %s -p serial:/dev/ttyUSB0\n\n", progname);
 	printf("   This will bind your locally connected device to a network port, and\n");
 	printf("   redirect them through the network device to a listening server as\n");
 	printf("   specified in the LANSync Preferences panel on your Palm.\n\n");

@@ -209,7 +209,7 @@ static void display_help(const char *progname)
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
 	printf("     -h, --help              Display help information for %s\n", progname);
 	printf("     -v, --version           Display %s version information\n\n", progname);
-	printf("   Examples: %s -p /dev/pilot AddressDb\n\n", progname);
+	printf("   Examples: %s -p serial:/dev/ttyUSB0 AddressDb\n\n", progname);
 
 	return;
 }

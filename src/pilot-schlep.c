@@ -138,9 +138,9 @@ static void display_help(const char *progname)
 	printf("     -d, --delete            Delete the packaged file from your Palm device\n\n");
 	printf("   Examples:\n");
 	printf("     To package up and store a file for later retrieval on your Palm:\n");
-	printf("             %s -p /dev/pilot -i InstallThis.zip\n\n", progname);
+	printf("             %s -p serial:/dev/ttyUSB0 -i InstallThis.zip\n\n", progname);
 	printf("     To unpack a file that has been stored on your Palm with %s:\n", progname);
-	printf("             %s -p /dev/pilot -f RetrieveThis.pdf\n\n", progname);
+	printf("             %s -p serial:/dev/ttyUSB0 -f RetrieveThis.pdf\n\n", progname);
 
 	printf("   Currently the stored name and file type is not queried so you can\n");
 	printf("   potentially Install a PDF file, and retrieve it as a ZIP file.\n\n");

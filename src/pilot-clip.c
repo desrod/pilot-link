@@ -121,8 +121,8 @@ static void display_help(const char *progname)
 	printf("     -v, --version           Display %s version information\n", progname);
 	printf("     -g, --get               Get the contents of the clipboard\n");
 	printf("     -s, --set <value>       Set the value <value> in the clipboard\n\n");
-	printf("   Examples: %s -p /dev/pilot -g\n", progname);
-	printf("             %s -p /dev/pilot -s \"Put this in the clipboard\"\n\n", progname);
+	printf("   Examples: %s -p serial:/dev/ttyUSB0 -g\n", progname);
+	printf("             %s -p serial:/dev/ttyUSB0 -s \"Put this in the clipboard\"\n\n", progname);
 
 	return;
 }

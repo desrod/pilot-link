@@ -192,7 +192,7 @@ int main(int argc, const char **argv)
 	"   that syncronizing Hi-Note images is not supported at this time, only text.\n\n"
 	"   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n"
 	"   Example arguments:\n"
-	"      -p /dev/pilot -d ~/Palm\n\n");
+	"      -p serial:/dev/ttyUSB0 -d ~/Palm\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(pc,stderr,0);
