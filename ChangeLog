@@ -7,6 +7,8 @@
 
 	* libpisock/dlp.c: Ditto (Owen Stenseth)
 
+	* libpisock/sys.c: Fixed error warnings
+
 	* bindings/Perl/Pilot.xs: Ditto (Owen Stenseth)	
 
 	* bindings/Python/setup.py: Incremented to 0.11.0 version
@@ -31,6 +33,10 @@
 	* src/read-notepad.c: Ditto
 
 	* src/ietf2datebook.PL: Cleaned up perl 
+
+	* doc/man/pi-getrom.1: New manpage
+
+	* doc/man/pi-getram.1: Ditto
 
 	* doc/man/pilot-addresses.1: Updated manpage
 	

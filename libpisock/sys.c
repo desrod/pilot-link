@@ -186,7 +186,7 @@ sys_getsockopt(struct pi_socket *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
-		return -1;
+		goto error;
 	data = (struct pi_sys_data *)prot->data;
 
 	switch (option_name) {
@@ -209,7 +209,7 @@ sys_setsockopt(struct pi_socket *ps, int level, int option_name,
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
-		return -1;
+		goto error;
 	data = (struct pi_sys_data *)prot->data;
 
 	switch (option_name) {
