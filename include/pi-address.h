@@ -24,14 +24,12 @@ extern "C" {
 	};
 
 	struct AddressAppInfo {
+		struct CategoryAppInfo category;
+		char 	labels[19 + 3][16],	/* Hairy to explain, obvious to look at 		*/
+			phoneLabels[8][16];	/* Duplication of some labels, to greatly reduce hair 	*/
 		int 	labelRenamed[19 + 3],	/* list of booleans showing which labels were modified 	*/
 			country,
 			sortByCompany;
-		struct 	CategoryAppInfo category;
-		char 	labels[19 + 3][16],	/* Hairy to explain, obvious to look at 		*/
-			phoneLabels[8][16];	/* Duplication of some labels, to greatly reduce hair 	*/
-
-
 	};
 
 	extern void free_Address PI_ARGS((struct Address *));

@@ -7,10 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
-/* Much of this is covered in rfc822, just grab
-   it from here: http://www.faqs.org/rfcs/rfc822.html
- */
 
 	struct Mail {
 		int 	read,

@@ -18,9 +18,9 @@ extern "C" {
 		unsigned char dest;
 		unsigned char src;
 		unsigned char type;
+		unsigned short dlen;
 		unsigned char id;
 		unsigned char csum;
-		unsigned short dlen;
 	};
 
 	extern int slp_tx

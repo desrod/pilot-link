@@ -41,37 +41,37 @@ extern "C" {
 
 	extern int pi_socket PI_ARGS((int domain, int type, int protocol));
 	extern int pi_connect
-		PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
-			int addrlen));
+	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
+		     int addrlen));
 	extern int pi_bind
-		PI_ARGS((int pi_sd, struct sockaddr * my_addr, int addrlen));
+	    PI_ARGS((int pi_sd, struct sockaddr * my_addr, int addrlen));
 	extern int pi_listen PI_ARGS((int pi_sd, int backlog));
 	extern int pi_accept
-		PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
-			int *addrlen));
+	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
+		     int *addrlen));
 
 	extern int pi_accept_to
-		PI_ARGS((int pi_sd, struct sockaddr * addr, int *addrlen,
-			int timeout));
+	    PI_ARGS((int pi_sd, struct sockaddr * addr, int *addrlen,
+		     int timeout));
 
 	extern int pi_send
-		PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
+	    PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
 	extern int pi_recv
-		PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
+	    PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
 
 	extern int pi_read PI_ARGS((int pi_sd, void *msg, int len));
 	extern int pi_write PI_ARGS((int pi_sd, void *msg, int len));
 
 	extern int pi_getsockname
-		PI_ARGS((int pi_sd, struct sockaddr * addr, int *namelen));
+	    PI_ARGS((int pi_sd, struct sockaddr * addr, int *namelen));
 	extern int pi_getsockpeer
-		PI_ARGS((int pi_sd, struct sockaddr * addr, int *namelen));
+	    PI_ARGS((int pi_sd, struct sockaddr * addr, int *namelen));
 
 	extern int pi_setmaxspeed
-		PI_ARGS((int pi_sd, int speed, int overclock));
+	    PI_ARGS((int pi_sd, int speed, int overclock));
 	extern int pi_getsockopt
-		PI_ARGS((int pi_sd, int level, int option_name,
-			void *option_value, int *option_len));
+	    PI_ARGS((int pi_sd, int level, int option_name,
+		     void *option_value, int *option_len));
 
 	extern int pi_version PI_ARGS((int pi_sd));
 

@@ -51,7 +51,6 @@ extern "C" {
 	struct _SyncHandler {
 		int 	sd,
 			secret;
-		
 		int 	(*Pre) (SyncHandler *, int dbhandle, int *slow);
 		int 	(*Post) (SyncHandler *, int dbhandle);
 

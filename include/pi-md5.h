@@ -13,9 +13,9 @@
 #define UINT32 unsigned long
 
 struct MD5Context {
-	UINT32 	buf[4];
-	UINT32	bytes[2];
-	UINT32	in[16];
+	UINT32 	buf[4],
+		bytes[2],
+		in[16];
 };
 
 void MD5Init(struct MD5Context *context);
