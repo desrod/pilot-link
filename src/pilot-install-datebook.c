@@ -72,6 +72,11 @@ int main(int argc, const char *argv[])
 		"   Example usage: \n"
 		"      -p /dev/pilot -r db.txt\n\n");
 
+	if (argc < 2) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
+	}
+
 	while ((c = poptGetNextOpt(pc)) >= 0) {
 		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
 		return 1;
@@ -82,7 +87,7 @@ int main(int argc, const char *argv[])
 
 	if (filename == NULL) {
 		fprintf(stderr,"   ERROR: No filename given.\n");
-		exit(EXIT_FAILURE);
+		return 1;
 	}
 
 	sd = plu_connect();
