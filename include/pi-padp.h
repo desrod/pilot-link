@@ -43,13 +43,18 @@ extern "C" {
 #define SIZEOF_PADP 4
 
 	extern struct pi_protocol *padp_protocol
-	    PI_ARGS((void));	
+	    PI_ARGS((void));
+
 	extern int padp_tx
-	    PI_ARGS((struct pi_socket * ps, unsigned char *buf, int len));
+	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
 	extern int padp_rx
-	    PI_ARGS((struct pi_socket * ps, unsigned char *buf, int len));
+	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
+
+	extern void padp_dump_header
+	    PI_ARGS((unsigned char *data, int rxtx));
 	extern void padp_dump
-	    PI_ARGS((unsigned char * data, struct padp * padp, int rxtx));
+	    PI_ARGS((unsigned char *data));
+
 
 #ifdef __cplusplus
 }

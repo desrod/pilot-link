@@ -21,6 +21,7 @@ libpisock_la_SOURCES =  \
 	connect.c	\
 	cmp.c		\
 	datebook.c	\
+	debug.c		\
 	dlp.c		\
 	expense.c	\
 	hinote.c	\

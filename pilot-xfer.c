@@ -52,7 +52,6 @@ char *progname;
 char *exclude[100];
 int numexclude = 0;
 
-int pilot_connect(char const *port);
 static void Help(char *progname);
 
 /***********************************************************************
@@ -151,12 +150,12 @@ void Connect(void)
         if (sd != 0)
                 return;
 
-        if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+        if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET))) {
                 perror("   pi_socket");
                 exit(1);
         }
 
-        addr.pi_family = PI_AF_SLP;
+        addr.pi_family = PI_AF_PILOT;
         strcpy(addr.pi_device, device);
 
         ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));

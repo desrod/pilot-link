@@ -142,10 +142,6 @@ extern "C" {
 		unsigned short os2_read_timeout;
 		unsigned short os2_write_timeout;
 #endif
-#ifndef NO_SERIAL_TRACE
-		char *debuglog;
-		int debugfd;
-#endif
 	};
 
 	/* internal functions */
@@ -157,9 +153,11 @@ extern "C" {
 	extern int crc16 PI_ARGS((unsigned char *ptr, int count));
 	extern char *printlong PI_ARGS((unsigned long val));
 	extern unsigned long makelong PI_ARGS((char *c));
+
 	extern void dumpline
-	    PI_ARGS((const unsigned char *buf, int len, int addr));
-	extern void dumpdata PI_ARGS((const unsigned char *buf, int len));
+	    PI_ARGS((int type, const unsigned char *buf, int len, int addr));
+	extern void dumpdata
+	    PI_ARGS((int type, const unsigned char *buf, int len));
 
 #if defined(PADP_TRACE)
 #define Begin(a) fprintf(stderr,"Begin %s\n",#a)

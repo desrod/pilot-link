@@ -22,11 +22,10 @@
 
 #include <stdio.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-net.h"
-
-void nh(unsigned char *d);
 
 static int net_getsockopt(struct pi_socket *ps, int level, int option_name, 
 			  void *option_value, int *option_len);
@@ -120,7 +119,9 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len)
 	buf[PI_NET_OFFSET_TYPE] = 0x01;
 	buf[PI_NET_OFFSET_TXID] = data->txid;
 	set_long(&buf[PI_NET_OFFSET_SIZE], len);
-	nh(buf);
+
+	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1));
+	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(buf));
 	
 	result = next->write(ps, buf, PI_NET_HEADER_LEN);
 	if (result < 0)
@@ -128,16 +129,6 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len)
 	result = next->write(ps, msg, len);
 	if (result < 0)
 		return result;
-
-#ifndef NO_SERIAL_TRACE
-	if (ps->debuglog) {
-		buf[0] = 4;
-		buf[1] = 0;
-		set_long(buf + 2, len);
-		write(ps->debugfd, buf, 6);
-		write(ps->debugfd, msg, len);
-	}
-#endif
 
 	return len;
 }
@@ -185,8 +176,11 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 			return n;
 	}
 	if (l == PI_NET_HEADER_LEN + 1)
-		printf ("NET RX: Headerless packet\n");
-	nh(buf);
+		LOG (PI_DBG_NET, PI_DBG_LVL_INFO,
+		     "NET RX: Headerless packet\n");
+
+	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1));
+	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(buf));
 	
 	rlen = get_long(&buf[PI_NET_OFFSET_SIZE]);
 	if (len > rlen)
@@ -226,16 +220,6 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 		if (data->txid == 0xff)
 			data->txid = 1;
 	}
-
-#ifndef NO_SERIAL_TRACE
-	if (ps->debuglog) {
-		buf[0] = 3;
-		buf[1] = 0;
-		set_long(buf + 2, len);
-		write(ps->debugfd, buf, 6);
-		write(ps->debugfd, msg, len);
-	}
-#endif
 
 	return len;
 }
@@ -278,14 +262,20 @@ net_setsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
-void nh(unsigned char *d)
+void net_dump_header(unsigned char *data, int rxtx)
 {
-#ifdef DEBUG
-	int i;
+	LOG(PI_DBG_NET, PI_DBG_LVL_NONE,
+	    "NET %s type=%d txid=0x%.2x len=0x%.4x\n",
+	    rxtx ? "TX" : "RX",
+	    get_byte(&data[PI_NET_OFFSET_TYPE]),
+	    get_byte(&data[PI_NET_OFFSET_TXID]),
+	    get_long(&data[PI_NET_OFFSET_SIZE]));
+}
 
-	fprintf(stderr, "NET HDR [");
-	for (i = 0; i < 6; i++)
-		fprintf(stderr, " 0x%.2x", 0xff & d[i]);
-	fprintf(stderr, "]\n");
-#endif
+void net_dump(unsigned char *data)
+{
+	int s;
+
+	s = get_long(&data[PI_NET_OFFSET_SIZE]);
+	dumpdata(PI_DBG_NET, &data[PI_NET_HEADER_LEN], s);
 }

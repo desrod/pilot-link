@@ -19,13 +19,19 @@ extern "C" {
 	};
 
 	extern struct pi_protocol *net_protocol
-	    PI_ARGS((void));		
+	    PI_ARGS((void));
+
 	extern int net_rx_handshake
 	    PI_ARGS((struct pi_socket *ps));
 	extern int net_tx
 	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
 	extern int net_rx
 	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
+
+	extern void net_dump_header
+	    PI_ARGS((unsigned char *data, int rxtx));
+	extern void net_dump
+	    PI_ARGS((unsigned char *data));
 
 #ifdef __cplusplus
 }

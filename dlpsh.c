@@ -565,7 +565,7 @@ int main(int argc, char **argv)
 			    ("\nWelcome to the DLP Shell\nType 'help' for additional information\n\n");
 
 			/* Stayin' alive, stayin' alive... */
-			pi_watchdog(sd, TICKLE_INTERVAL);
+//			pi_watchdog(sd, TICKLE_INTERVAL);
 
 			handle_user_commands(sd);
 

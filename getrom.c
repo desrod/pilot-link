@@ -40,14 +40,13 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
-	int l, p;
+	int sd, l, p;
 	char buf[0xffff];
 	char *progname = argv[0];
 	char *port = argv[1];
 	int i;
 	struct pi_sockaddr addr;
 	unsigned char check;
-	struct pi_socket ps;
 	extern char *optarg;
 	extern int optind;
 	int rom;
@@ -65,21 +64,24 @@ int main(int argc, char *argv[])
 		argc--;
 	}
 
-	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, port);
-
-	ps.mac = calloc(1, sizeof(struct pi_mac));
-
-	ps.rate = 38400;
-	ps.sd = 0;
-	if (pi_serial_open(&ps, &addr, sizeof(addr)) == -1) {
-		fprintf(stderr, "   Unable to open port %s\n\n", port);
-		exit(0);
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_RAW, PI_PF_DEV))) {
+		perror("   Reason: pi_socket");
+		return 1;
 	}
 
-	rom =
-	    open((version == 2) ? "pilot2.rom" : "pilot.rom",
-		 O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	addr.pi_family = PI_AF_PILOT;
+	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
+
+	if (pi_connect(sd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
+		printf("\n   Unable to connect to port '%s'\n", port);
+		perror("   Reason: pi_connect");
+		printf("\n");
+		pi_close(sd);
+		return 1;
+	}
+
+	rom = open((version == 2) ? "pilot2.rom" : "pilot.rom",
+		   O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (rom == -1) {
 		perror("Unable to create pilot.rom");
 		exit(0);
@@ -97,16 +99,18 @@ int main(int argc, char *argv[])
 	max = (version == 2) ? 256 : 128;
 	for (i = 0; i < max; i++) {
 		do {
-			l = read(ps.mac->fd, buf, 1);
+			printf("Reading...\n");
+			l = pi_read(sd, buf, 1);
 			if (l < 1)
 				continue;
 		} while (buf[0] != '*');
+
 		printf("\r%d/%d", i + 1, max);
 		fflush(stdout);
 
 		p = 0;
 		do {
-			l = read(ps.mac->fd, buf + p, 4096 - p);
+			l = pi_read(sd, buf + p, 4096 - p);
 			if (l < 0) {
 				perror("Unable to read sync byte");
 			}
@@ -114,7 +118,7 @@ int main(int argc, char *argv[])
 		} while (p < 4096);
 
 		check = 0xff;
-		if (read(ps.mac->fd, buf + 4096, 1) < 0) {
+		if (pi_read(sd, buf + 4096, 1) < 0) {
 			perror("Unable to read checksum byte");
 			goto error;
 		}
@@ -131,14 +135,15 @@ int main(int argc, char *argv[])
 
 		buf[4096] = '+';
 
-		write(ps.mac->fd, buf + 4096, 1);
+		pi_write(sd, buf + 4096, 1);
 	}
 	printf("\nSuccessful!\n");
 
       error:
 	close(rom);
 
-	ps.serial_close(&ps);
+	pi_close(sd);
 
 	return 0;
 }
+

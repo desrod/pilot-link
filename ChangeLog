@@ -1,3 +1,40 @@
+2001-12-06  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/utils.c (dumpline): take debug type
+	(dumpdata): ditto
+
+	* libsock/net.c: convert to new logging functions
+	
+	* libsock/padp.c: ditto
+
+	* libsock/slp.c: ditto
+
+	* libsock/dlp.c: start converting over to new logging functions
+
+	* libsock/Makefile.am (INCLUDES): compile new files
+
+	* include/pi-source.h: no longer need the serial trace info,
+	modify protos
+
+	* include/pi-slp.h: new protos
+
+	* include/pi-padp.h: new protos, tidy
+
+	* include/pi-net.h: new protos
+
+	* libsock/socket.c: let env vars set the debugging types, level
+	and log files
+
+	* libsock/debug.c (pi_debug_get_types): get the debugging type
+	flags
+	(pi_debug_set_types): set same
+	(pi_debug_get_level): get debug level
+	(pi_debug_set_level): set same
+	(pi_debug_set_file): set the file to write debug output to
+	(pi_log): log debugging info
+
+	* include/pi-debug.h: debugging functionality
+
 2001-12-01  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/test.c (main): default to using PI_PF_NET protocol

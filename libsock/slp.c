@@ -24,6 +24,7 @@
 #endif
 #include <stdio.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
@@ -143,8 +144,8 @@ int slp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 	/* Write out the data */
 	bytes = next->write(ps, slp_buf, PI_SLP_HEADER_LEN + len + PI_SLP_FOOTER_LEN);
 
-	dph(slp_buf);
-	slp_dump(slp_buf, 1);
+	CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf, 1));
+	CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf));
 
 	return bytes;
 }
@@ -228,7 +229,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 			for (v = i = 0; i < 9; i++)
 				v += buf[i];
 
-			dph(buf);
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(buf, 1));
 
 			/* read in the whole SLP header. */
 			if ((v & 0xff) == buf[PI_SLP_OFFSET_SUM]) {
@@ -245,10 +246,9 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 			/* that should be the whole packet. */
 			v = crc16(buf, PI_SLP_HEADER_LEN + packet_len);
 			if (v != get_short(&buf[PI_SLP_HEADER_LEN + packet_len])) {
-#ifdef DEBUG
-				fprintf(stderr, "my crc=0x%.4x your crc=0x%.4x\n",
-					v, get_short((&buf[packet_len])));
-#endif
+				LOG(PI_DBG_SLP, PI_DBG_LVL_ERR,
+				    "CRC16 check failed: computed=0x%.4x received=0x%.4x\n", 
+				    v, get_short(&buf[packet_len]));
 				return -1;
 			}
 			
@@ -260,7 +260,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 			data->last_type = get_byte(&buf[PI_SLP_OFFSET_TYPE]);
 			data->last_txid = get_byte(&buf[PI_SLP_OFFSET_TXID]);
 
-			slp_dump(buf, 0);
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(buf));
 
 			/* Remove the header */
 			cur = buf + PI_SLP_HEADER_LEN;
@@ -425,38 +425,22 @@ slp_setsockopt(struct pi_socket *ps, int level, int option_name,
  * Returns:     Nothing
  *
  ***********************************************************************/
-void slp_dump(unsigned char *data, int rxtx)
-{
-#ifdef DEBUG
-	fprintf(stderr, "SLP %s %d->%d len=0x%.4x Prot=%d ID=0x%.2x\n",
-		rxtx ? "TX" : "RX",
-		get_byte(&data[PI_SLP_OFFSET_DEST]),
-		get_byte(&data[PI_SLP_OFFSET_SRC]),
-		get_short(&data[PI_SLP_OFFSET_SIZE]),
-		get_byte(&data[PI_SLP_OFFSET_TYPE]),
-		get_byte(&data[PI_SLP_OFFSET_TXID]));
-#endif
+void slp_dump_header(unsigned char *data, int rxtx)
+{	
+	LOG(PI_DBG_SLP, PI_DBG_LVL_NONE,
+	    "SLP %s %d->%d type=%d txid=0x%.2x len=0x%.4x\n",
+	    rxtx ? "TX" : "RX",
+	    get_byte(&data[PI_SLP_OFFSET_DEST]),
+	    get_byte(&data[PI_SLP_OFFSET_SRC]),
+	    get_byte(&data[PI_SLP_OFFSET_TYPE]),
+	    get_byte(&data[PI_SLP_OFFSET_TXID]),
+	    get_short(&data[PI_SLP_OFFSET_SIZE]));
 }
 
-/***********************************************************************
- *
- * Function:    dph
- *
- * Summary:     Dump the raw data to stderr
- *
- * Parmeters:   None
- *
- * Returns:     Nothing 
- *
- ***********************************************************************/
-void dph(unsigned char *d)
+void slp_dump(unsigned char *data)
 {
-#ifdef DEBUG
-	int i;
+	int s;
 
-	fprintf(stderr, "SLP HDR [");
-	for (i = 0; i < 10; i++)
-		fprintf(stderr, " 0x%.2x", 0xff & d[i]);
-	fprintf(stderr, "]\n");
-#endif
+	s = get_short(&data[PI_SLP_OFFSET_SIZE]);
+	dumpdata(PI_DBG_SLP, &data[PI_SLP_HEADER_LEN], s);
 }

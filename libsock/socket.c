@@ -43,6 +43,7 @@
 #include "pi-net.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
+#include "pi-debug.h"
 
 #ifdef WIN32
 /* An implementation of alarm for windows*/
@@ -315,22 +316,72 @@ int pi_socket(int domain, int type, int protocol)
 	ps->os2_read_timeout = 60;
 	ps->os2_write_timeout = 60;
 #endif
+	if (getenv("PILOT_DEBUG")) {
+		int types = 0, done;
+		char *debug, *b, *e;
+		
+		debug = strdup(getenv("PILOT_DEBUG"));
 
-#ifndef NO_SERIAL_TRACE
-	ps->debuglog = 0;
-	ps->debugfd = 0;
+		b = debug;
+		done = 0;
+		while (!done) {
+			e = strchr(b, ' ');
+			if (e)
+				*e = '\0';
+			else
+				done = 1;
+			
+			if (!strcmp(b, "SYS"))
+				types |= PI_DBG_SYS;
+			else if (!strcmp(b, "DEV"))
+				types |= PI_DBG_DEV;
+			else if (!strcmp(b, "SLP"))
+				types |= PI_DBG_SLP;
+			else if (!strcmp(b, "PADP"))
+				types |= PI_DBG_PADP;
+			else if (!strcmp(b, "DLP"))
+				types |= PI_DBG_DLP;
+			else if (!strcmp(b, "NET"))
+				types |= PI_DBG_NET;
+			else if (!strcmp(b, "SOCK"))
+				types |= PI_DBG_SOCK;
+			else if (!strcmp(b, "USER"))
+				types |= PI_DBG_USER;
+			e++;
+			b = e;
+		}
+		pi_debug_set_types(types);
 
-	if (getenv("PILOTLOG")) {
-		if ((ps->debuglog = getenv("PILOTLOGFILE")) == 0)
-			ps->debuglog = "PiDebug.log";
+		free(debug);
 	}
-#endif
+	if (getenv("PILOT_DEBUG_LEVEL")) {
+		const char *debug;
+		int level = 0;
+		
+		debug = getenv("PILOT_DEBUG_LEVEL");
+		if (!strcmp(debug, "NONE"))
+			level |= PI_DBG_LVL_NONE;
+		else if (!strcmp(debug, "ERR"))
+			level |= PI_DBG_LVL_ERR;
+		else if (!strcmp(debug, "WARN"))
+			level |= PI_DBG_LVL_WARN;
+		else if (!strcmp(debug, "INFO"))
+			level |= PI_DBG_LVL_INFO;
+		else if (!strcmp(debug, "DEBUG"))
+			level |= PI_DBG_LVL_DEBUG;
 
-#ifndef NO_DLP_TRACE
-	if (getenv("PILOTDLP")) {
-		dlp_trace = 1;
+		pi_debug_set_level (level);
 	}
-#endif
+	
+	if (getenv("PILOT_LOG")) {
+		const char *logfile;
+		
+		logfile = getenv("PILOT_LOGFILE");
+		if (logfile == NULL)
+			pi_debug_set_file("PiDebug.log");
+		else
+			pi_debug_set_file(logfile);
+	}
 
 	installexit();
 

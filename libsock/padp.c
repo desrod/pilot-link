@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-padp.h"
@@ -109,12 +110,6 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 	struct padp padp;
 	int retries;
 
-#ifdef DEBUG
-	int i;
-	for(i=0;i<74;i++) fprintf(stderr, "-");
-	fprintf(stderr, "\n");
-#endif
-
 	if (ps->broken)		/* Don't use an unavailable connection */
 		return -1;
 
@@ -175,7 +170,8 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 			set_short(&padp_buf[PI_PADP_OFFSET_SIZE], padp.size);
 			memcpy(padp_buf + PI_PADP_HEADER_LEN, buf, tlen);
 
-			padp_dump(padp_buf, &padp, 1);
+			CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf, 1));
+			CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf));
 			
 			next->write(ps, padp_buf, tlen + 4);
 
@@ -196,7 +192,9 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 				padp.size =
 				    get_short(&padp_buf[PI_PADP_OFFSET_SIZE]);
 
-				padp_dump(padp_buf, &padp, 0);
+
+				CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf, 0));
+				CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf));
 
 				/* FIXME: error checking */
 				size = sizeof(type);
@@ -279,11 +277,6 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 
 	End(padp_tx);
 
-#ifdef DEBUG
-	for(i=0;i<74;i++) fprintf(stderr, "<");
-	fprintf(stderr, "\n");
-#endif
-
 	return count;
 }
 
@@ -311,8 +304,6 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 	int ouroffset = 0;
 	time_t endtime;
 	unsigned char padp_buf[PI_SLP_MTU - 12];
-
-	printf ("PADP_RX\n");
 
 	endtime = time(NULL) + recStartTimeout / 1000;
 
@@ -357,7 +348,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 		padp.flags = get_byte(&padp_buf[PI_PADP_OFFSET_FLGS]);
 		padp.size = get_short(&padp_buf[PI_PADP_OFFSET_SIZE]);
 
-		padp_dump(padp_buf, &padp, 0);
+		CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf, 0));
+		CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf));
 
 		size = sizeof(type);
 		/* FIXME: error checking */
@@ -403,7 +395,6 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 	}
 
 	/* OK, we got the expected begin-of-data packet */
-	printf ("PADP_RX: First packet found %d\n", data_len);	
 	endtime = time(NULL) + recSegTimeout / 1000;
 
 	for (;;) {
@@ -411,7 +402,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 		unsigned char npadp_buf[PI_SLP_MTU - 12];
 		At(got data);
 
-		padp_dump(padp_buf, &padp, 0);
+		CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf, 0));
+		CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf));
 
 		/* Ack the packet */
 		type = 2;
@@ -435,7 +427,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 		set_byte(&npadp_buf[PI_PADP_OFFSET_FLGS], npadp.flags);
 		set_short(&npadp_buf[PI_PADP_OFFSET_SIZE], npadp.size);
 
-		padp_dump(npadp_buf, &npadp, 1);
+		CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(npadp_buf, 1));
+		CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(npadp_buf));
 
 		next->write(ps, npadp_buf, 4);
 		At(sent Ack);
@@ -448,7 +441,6 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 
 		if (offset == ouroffset) {
 			At(storing block);
-			printf ("PADP_RX: Storing block\n");
 			memcpy((unsigned char *) buf + ouroffset,
 			       &padp_buf[PI_PADP_HEADER_LEN], data_len);
 
@@ -456,7 +448,6 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 		}
 
 		if (padp.flags & LAST) {
-			printf ("PADP_RX: Last packet found\n");
 			break;
 		} else {
 			endtime = time(NULL) + recSegTimeout / 1000;
@@ -485,7 +476,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 				padp.size =
 				    get_short(&padp_buf[PI_PADP_OFFSET_SIZE]);
 
-				padp_dump(padp_buf, &padp, 0);
+				CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf, 0));
+				CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf));
 
 				size = sizeof(type);
 				/* FIXME: error checking */
@@ -614,25 +606,14 @@ padp_setsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
-/***********************************************************************
- *
- * Function:    padp_dump
- *
- * Summary:     Dump PADP packets 
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void padp_dump(unsigned char *data, struct padp *padp, int rxtx)
+void padp_dump_header(unsigned char *data, int rxtx)
 {
-#ifdef DEBUG
-	int i;
 	int s;
+	unsigned char type, flags;
 	char *stype;
 
-	switch (padp->type) {
+	type = get_byte (&data[PI_PADP_OFFSET_TYPE]);
+	switch (type) {
 	case padData:
 		stype = "DATA";
 		break;
@@ -653,20 +634,39 @@ void padp_dump(unsigned char *data, struct padp *padp, int rxtx)
 		break;
 	}
 
-	fprintf(stderr, "PADP %s %s %c%c%c len=0x%.4x\n", stype,
-		rxtx ? "TX" : "RX", (padp->flags & FIRST) ? 'F' : ' ',
-		(padp->flags & LAST) ? 'L' : ' ',
-		(padp->flags & MEMERROR) ? 'M' : ' ', padp->size);
+	flags = get_byte(&data[PI_PADP_OFFSET_FLGS]);
+	s = get_short(&data[PI_PADP_OFFSET_SIZE]);
 
-	s = padp->size;
+	LOG(PI_DBG_PADP, PI_DBG_LVL_NONE, 
+	    "PADP %s %c%c%c type=%s len=0x%.4x\n", 
+	    rxtx ? "TX" : "RX",
+	    (flags & FIRST) ? 'F' : ' ',
+	    (flags & LAST) ? 'L' : ' ',
+	    (flags & MEMERROR) ? 'M' : ' ',
+	    stype, s);
+}
+
+/***********************************************************************
+ *
+ * Function:    padp_dump
+ *
+ * Summary:     Dump PADP packets 
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void padp_dump(unsigned char *data)
+{
+	int s;
+	unsigned char type;
+
+	type = get_byte (&data[PI_PADP_OFFSET_TYPE]);
+	s = get_short(&data[PI_PADP_OFFSET_SIZE]);
+
 	if (s > PI_SLP_MTU - 12)
 		s = PI_SLP_MTU - 12;
-	if (!(padp->type == padAck)) {
-		for (i = 0; i < s; i += 16) {
-			dumpline(&data[PI_PADP_HEADER_LEN + i],
-				 ((padp->size - i) < 16) ? 
-				 padp->size - i : 16, i);
-		}
-	}
-#endif
+	if (type != padAck)
+		dumpdata(PI_DBG_PADP, &data[PI_PADP_HEADER_LEN], s);
 }

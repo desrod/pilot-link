@@ -62,8 +62,10 @@ extern "C" {
 	extern int slp_rx
 	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
 
-	extern void slp_dump PI_ARGS((unsigned char * skb, int rxtx));
-	extern void dph PI_ARGS((unsigned char *d));
+	extern void slp_dump_header
+	    PI_ARGS((unsigned char *data, int rxtx));
+	extern void slp_dump
+	    PI_ARGS((unsigned char *data));
 
 #ifdef __cplusplus
 }
