@@ -6,6 +6,7 @@
  * See the file COPYING for details.
  */
 
+#include <string.h>
 
 #include "pilot-datebook-update.h"
 

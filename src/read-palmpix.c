@@ -45,6 +45,7 @@ const char *progname;
 int pilot_connect(const char *port);
 
 void write_ppm (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
+void write_png( FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
 void init_for_ppm (struct PalmPixState *state);
 void read_db (struct PalmPixState *state, int n, int (*action) (const struct PalmPixHeader *, struct PalmPixState *, int, const char *), const char *action_arg);
 
@@ -59,18 +60,18 @@ struct option options[] = {
 
 static const char optstring[] = "ln:p:hvt:";
 
-static void print_help(char *progname) 
+static void display_help(char *progname) 
 {
-        printf("   Convert all pictures in the files given, or found via connecting to a\n"
-	       "   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n"
-               "   Usage: %s [-p port] [-l | -n pixname] [file]...\n"
-               "   Options:\n"
-               "     -p <port>    Use device file <port> to communicate with Palm\n"
-               "     -h           Display this information\n"
-	       "     --type, -t   specify picture output type\n"
-	       "                  either \"ppm\" or \"png\"\n"
-               "     --list, -l   List picture information instead of converting\n"
-	       "     -n [name]    Convert only <pixname>, and output to stdout as .ppm\n\n", progname);
+        printf("   Convert all pictures in the files given, or found via connecting to a\n");
+        printf("   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");
+        printf("   Usage: %s [-p port] [-l | -n pixname] [file]...\n", progname);
+        printf("   Options:\n");
+        printf("     -p <port>    Use device file <port> to communicate with Palm\n");
+        printf("     -h           Display this information\n");
+        printf("     --type, -t   specify picture output type\n");
+        printf("                  either \"ppm\" or \"png\"\n");
+        printf("     --list, -l   List picture information instead of converting\n");
+        printf("     -n [name]    Convert only <pixname>, and output to stdout as .ppm\n\n");
         return;
 }
 
@@ -365,7 +366,7 @@ int
 	   break;
 	   
 	 case 'h':
-	   print_help(progname);
+	   display_help(progname);
 	   return EXIT_SUCCESS;
 	   
 	 case 't':
@@ -394,7 +395,7 @@ int
 	   return EXIT_SUCCESS;
 	     
 	 default:
-	   print_help(progname);
+	   display_help(progname);
 	   return EXIT_FAILURE;
 	   
 	}
