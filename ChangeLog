@@ -1,6 +1,7 @@
 2002-09-17  David A. Desrosiers <hacker at gnu-designs dot com>
 
-	* configure.in: Added HOST_OS and removed the -fullwarn for Irix
+	* configure.in: Added HOST_OS and removed the -fullwarn for Irix,
+	  updated to test for snprintf()
 
 	* src/Makefile.am: Fixed a typo on bin_SCRIPTS, missing end \
 
