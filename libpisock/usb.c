@@ -836,9 +836,9 @@ USB_configure_visor (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_
 	visor_connection_info_t ci;
 
 	ret = dev->impl.control_request (dev, 0xc2, VISOR_GET_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
-	if (ret < 0)
+	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: VISOR_GET_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
-	else {
+	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb: VISOR_GET_CONNECTION_INFORMATION, num_ports=%d\n", ci.num_ports));
 		if (ci.num_ports > 2)
 			ci.num_ports = 2;
@@ -881,9 +881,9 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 	u_int32_t flags = dev->dev.flags;
 
 	ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
-	if (ret < 0)
+	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
-	else {
+	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb: PALM_GET_EXT_CONNECTION_INFORMATION, num_ports=%d, endpoint_numbers_different=%d\n", ci.num_ports, ci.endpoint_numbers_different));
 		for (i=0; i < ci.num_ports; i++) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id='%c%c%c%c'\n", i, ci.connections[i].port_function_id[0], ci.connections[i].port_function_id[1], ci.connections[i].port_function_id[2], ci.connections[i].port_function_id[3]));
