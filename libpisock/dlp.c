@@ -2,6 +2,8 @@
  * dlp.c:  Palm DLP protocol
  *
  * Copyright (c) 1996, 1997, Kenneth Albanowski
+ * Copyright (c) 1998-2003, ???
+ * Copyright (c) 2004, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -1254,6 +1256,120 @@ found:
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:	dlp_decode_finddb_response
+ *
+ * Summary:	Response decoding for the three variants of dlp_FindDB
+ *
+ * Parameters:	None
+ *
+ * Returns:	Nothing
+ *
+ ***********************************************************************/
+static void
+dlp_decode_finddb_response(struct dlpResponse *res, int *cardno, unsigned long *localid,
+	int *dbhandle, struct DBInfo *info, struct DBSizeInfo *size)
+{
+	int arg, argid;
+	for (arg = 0; arg < res->argc; arg++) {
+		argid = (res->argv[arg]->id & 0x7f) - PI_DLP_ARG_FIRST_ID;
+		if (argid == 0) {
+			if (cardno)
+				*cardno = get_byte(DLP_RESPONSE_DATA(res, arg, 0));
+			if (localid)
+				*localid = get_long(DLP_RESPONSE_DATA(res, arg, 2));
+			if (dbhandle)
+				*dbhandle = get_long(DLP_RESPONSE_DATA(res, arg, 6));
+
+			if (info) {
+				info->more = 0;
+				info->miscFlags =
+					get_byte(DLP_RESPONSE_DATA(res, arg, 11));
+				info->flags =
+					get_short(DLP_RESPONSE_DATA(res, arg, 12));
+				info->type =
+					get_long(DLP_RESPONSE_DATA(res, arg, 14));
+				info->creator =
+					get_long(DLP_RESPONSE_DATA(res, arg, 18));
+				info->version =
+					 get_short(DLP_RESPONSE_DATA(res, arg, 22));
+				info->modnum =
+					get_long(DLP_RESPONSE_DATA(res, arg, 24));
+				info->createDate =
+					 get_date(DLP_RESPONSE_DATA(res, arg, 28));
+				info->modifyDate =
+					 get_date(DLP_RESPONSE_DATA(res, arg, 36));
+				info->backupDate =
+					 get_date(DLP_RESPONSE_DATA(res, arg, 44));
+				info->index =
+					 get_short(DLP_RESPONSE_DATA(res, arg, 52));
+
+				strncpy(info->name, DLP_RESPONSE_DATA(res, arg, 54), 32);
+				info->name[32] = '\0';
+
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+					 "DLP FindDB Name: '%s', "
+					 "Version: %d, More: %s\n",
+					 info->name, info->version,
+					 info->more ? "Yes" : "No"));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+					 "  Creator: '%s'", printlong(info->creator)));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+					 " Type: '%s' Flags: %s%s%s%s%s%s%s%s%s%s",
+					 printlong(info->type),
+					 (info->flags & dlpDBFlagResource) ?
+					"Resource " : "",
+					 (info->flags & dlpDBFlagReadOnly) ?
+					"ReadOnly " : "",
+					 (info->flags & dlpDBFlagAppInfoDirty) ?
+					"AppInfoDirty " : "",
+					 (info->flags & dlpDBFlagBackup) ?
+					"Backup " : "",
+					 (info->flags & dlpDBFlagReset) ?
+					"Reset " : "",
+					 (info->flags & dlpDBFlagNewer) ?
+					"Newer " : "",
+					 (info->flags & dlpDBFlagCopyPrevention) ?
+					"CopyPrevention " : "",
+					 (info->flags & dlpDBFlagStream) ?
+					"Stream " : "",
+					 (info->flags & dlpDBFlagOpen) ?
+					"Open " : "",
+					 (!info->flags) ? "None" : ""));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+					" (0x%2.2X)\n", info->flags));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+						"  Modnum: %ld, Index: %d, "
+					"Creation date: %s",
+						info->modnum, info->index,
+					ctime(&info->createDate)));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+						" Modification date: %s",
+					ctime(&info->modifyDate)));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
+					 " Backup date: %s",
+					ctime(&info->backupDate)));
+			}
+		}
+		else if (argid == 1) {
+			if (size) {
+				size->numRecords =
+					get_long(DLP_RESPONSE_DATA(res, arg, 0));
+				size->totalBytes =
+					get_long(DLP_RESPONSE_DATA(res, arg, 4));
+				size->dataBytes =
+					get_long(DLP_RESPONSE_DATA(res, arg, 8));
+				size->appBlockSize =
+					get_long(DLP_RESPONSE_DATA(res, arg, 12));
+				size->sortBlockSize =
+					get_long(DLP_RESPONSE_DATA(res, arg, 16));
+				size->maxRecSize =
+					get_long(DLP_RESPONSE_DATA(res, arg, 20));
+			}
+		}
+	}
+}
 
 /***********************************************************************
  *
@@ -1295,93 +1411,8 @@ dlp_FindDBByName (int sd, int cardno, PI_CONST char *name, unsigned long *locali
 	
 	dlp_request_free(req);
 	
-	if (result >= 0) {
-		if (localid)
-			*localid = get_long(DLP_RESPONSE_DATA(res, 0, 2));
-		if (dbhandle)
-			*dbhandle = get_long(DLP_RESPONSE_DATA(res, 0, 6));
-
-		if (info) {
-			info->more = 0;
-			info->miscFlags =
-				get_byte(DLP_RESPONSE_DATA(res, 0, 11));
-			info->flags = get_short(DLP_RESPONSE_DATA(res, 0, 12));
-			info->type = get_long(DLP_RESPONSE_DATA(res, 0, 14));
-			info->creator = get_long(DLP_RESPONSE_DATA(res, 0, 18));
-			info->version =
-				 get_short(DLP_RESPONSE_DATA(res, 0, 22));
-			info->modnum = get_long(DLP_RESPONSE_DATA(res, 0, 24));
-			info->createDate =
-				 get_date(DLP_RESPONSE_DATA(res, 0, 28));
-			info->modifyDate =
-				 get_date(DLP_RESPONSE_DATA(res, 0, 36));
-			info->backupDate =
-				 get_date(DLP_RESPONSE_DATA(res, 0, 44));
-			info->index =
-				 get_short(DLP_RESPONSE_DATA(res, 0, 52));
-
-			strncpy(info->name, DLP_RESPONSE_DATA(res, 0, 54), 32);
-			info->name[32] 		= '\0';
-
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "DLP ReadDBList Name: '%s', "
-				 "Version: %d, More: %s\n",
-			     info->name, info->version,
-				 info->more ? "Yes" : "No"));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "  Creator: '%s'", printlong(info->creator)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     " Type: '%s' Flags: %s%s%s%s%s%s%s%s%s%s",
-			     printlong(info->type),
-			     (info->flags & dlpDBFlagResource) ?
-				"Resource " : "",
-			     (info->flags & dlpDBFlagReadOnly) ?
-				"ReadOnly " : "",
-			     (info->flags & dlpDBFlagAppInfoDirty) ?
-				"AppInfoDirty " : "",
-			     (info->flags & dlpDBFlagBackup) ?
-				"Backup " : "",
-			     (info->flags & dlpDBFlagReset) ?
-				"Reset " : "",
-			     (info->flags & dlpDBFlagNewer) ?
-				"Newer " : "",
-			     (info->flags & dlpDBFlagCopyPrevention) ?
-				"CopyPrevention " : "",
-			     (info->flags & dlpDBFlagStream) ?
-				"Stream " : "",
-			     (info->flags & dlpDBFlagOpen) ?
-				"Open " : "",
-			     (!info->flags) ? "None" : ""));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-				" (0x%2.2X)\n", info->flags));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     	"  Modnum: %ld, Index: %d, "
-				"Creation date: %s",
-			    	info->modnum, info->index,
-				ctime(&info->createDate)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     	" Modification date: %s",
-				ctime(&info->modifyDate)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
-			     " Backup date: %s",
-				ctime(&info->backupDate)));
-		}
-		
-		if (size) {
-			size->numRecords =
-				get_long(DLP_RESPONSE_DATA(res, 1, 0));
-			size->totalBytes =
-				get_long(DLP_RESPONSE_DATA(res, 1, 4));
-			size->dataBytes =
-				get_long(DLP_RESPONSE_DATA(res, 1, 8));
-			size->appBlockSize =
-				get_long(DLP_RESPONSE_DATA(res, 1, 12));
-			size->sortBlockSize =
-				get_long(DLP_RESPONSE_DATA(res, 1, 16));
-			size->maxRecSize =
-				get_long(DLP_RESPONSE_DATA(res, 1, 20));
-		}
-	}
+	if (result > 0)
+		dlp_decode_finddb_response(res, NULL, localid, dbhandle, info, size);
 	
 	dlp_response_free(res);
 	
@@ -1416,110 +1447,24 @@ dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno,
 
 	req = dlp_request_new_with_argid(dlpFuncFindDB, 0x21, 1, 2);
 
+	/* Note: there is a bug in HotSync -- requesting the
+	 * maxRecSize crashes the device, so we don't. This is supposed to work only
+	 * for this variant of FindDB anyway.
+	 */
 	if (cardno || localid || info)
 		flags |= dlpFindDBOptFlagGetAttributes;
 	if (size)
-		flags |= (dlpFindDBOptFlagGetSize | dlpFindDBOptFlagMaxRecSize);
+		flags |= dlpFindDBOptFlagGetSize;
 
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), flags);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), dbhandle);
 
 	result = dlp_exec(sd, req, &res);
-	
+
 	dlp_request_free(req);
 	
-	if (result >= 0) {
-		if (cardno)
-			*cardno = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
-		if (localid)
-			*localid = get_long(DLP_RESPONSE_DATA(res, 0, 2));
-
-		if (info) {
-			info->more = 0;
-			info->miscFlags =
-				get_byte(DLP_RESPONSE_DATA(res, 0, 11));
-			info->flags =
-				 get_short(DLP_RESPONSE_DATA(res, 0, 12));
-			info->type =
-				 get_long(DLP_RESPONSE_DATA(res, 0, 14));
-			info->creator =
-				 get_long(DLP_RESPONSE_DATA(res, 0, 18));
-			info->version =
-				 get_short(DLP_RESPONSE_DATA(res, 0, 22));
-			info->modnum =
-				get_long(DLP_RESPONSE_DATA(res, 0, 24));
-			info->createDate =
-				get_date(DLP_RESPONSE_DATA(res, 0, 28));
-			info->modifyDate =
-				get_date(DLP_RESPONSE_DATA(res, 0, 36));
-			info->backupDate =
-				get_date(DLP_RESPONSE_DATA(res, 0, 44));
-			info->index =
-				 get_short(DLP_RESPONSE_DATA(res, 0, 52));
-			strncpy(info->name, DLP_RESPONSE_DATA(res, 0, 54), 32);
-			info->name[32] 		= '\0';
-
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "DLP ReadDBList Name: '%s', "
-				 "Version: %d, More: %s\n",
-			     info->name, info->version,
-				 info->more ? "Yes" : "No"));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "  Creator: '%s'", printlong(info->creator)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     " Type: '%s' Flags: %s%s%s%s%s%s%s%s%s%s",
-			     printlong(info->type),
-			     (info->flags & dlpDBFlagResource) ?
-				 "Resource " : "",
-			     (info->flags & dlpDBFlagReadOnly) ?
-				 "ReadOnly " : "",
-			     (info->flags & dlpDBFlagAppInfoDirty) ?
-				 "AppInfoDirty " : "",
-			     (info->flags & dlpDBFlagBackup) ?
-				 "Backup " : "",
-			     (info->flags & dlpDBFlagReset) ?
-				 "Reset " : "",
-			     (info->flags & dlpDBFlagNewer) ?
-				 "Newer " : "",
-			     (info->flags & dlpDBFlagCopyPrevention) ?
-				 "CopyPrevention " : "",
-			     (info->flags & dlpDBFlagStream) ?
-				 "Stream " : "",
-			     (info->flags & dlpDBFlagOpen) ?
-				 "Open " : "",
-			     (!info->flags) ?
-				 "None" : ""));
-
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-				 " (0x%2.2X)\n", info->flags));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "  Modnum: %ld, Index: %d, "
-				"Creation date: %s",
-			     	info->modnum, info->index,
-				ctime(&info->createDate)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     " Modification date: %s",
-				ctime(&info->modifyDate)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
-			     " Backup date: %s",
-			 	ctime(&info->backupDate)));
-		}
-		
-		if (size) {
-			size->numRecords =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 0));
-			size->totalBytes =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 4));
-			size->dataBytes =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 8));
-			size->appBlockSize =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 12));
-			size->sortBlockSize =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 16));
-			size->maxRecSize =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 20));
-		}
-	}
+	if (result > 0)
+		dlp_decode_finddb_response(res, cardno, localid, NULL, info, size);
 	
 	dlp_response_free(res);
 	
@@ -1576,99 +1521,8 @@ dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator,
 	
 	dlp_request_free(req);
 	
-	if (result >= 0) {
-		if (cardno)
-			*cardno = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
-		if (localid)
-			*localid = get_long(DLP_RESPONSE_DATA(res, 0, 2));
-		if (dbhandle)
-			*dbhandle = get_long(DLP_RESPONSE_DATA(res, 0, 6));
-		
-		if (info) {
-			info->more = 0;
-			info->miscFlags	=
-				 get_byte(DLP_RESPONSE_DATA(res, 0, 11));
-			info->flags =
-				 get_short(DLP_RESPONSE_DATA(res, 0, 12));
-			info->type =
-				 get_long(DLP_RESPONSE_DATA(res, 0, 14));
-			info->creator =
-				 get_long(DLP_RESPONSE_DATA(res, 0, 18));
-			info->version 	=
-				 get_short(DLP_RESPONSE_DATA(res, 0, 22));
-			info->modnum =
-				 get_long(DLP_RESPONSE_DATA(res, 0, 24));
-			info->createDate =
-				 get_date(DLP_RESPONSE_DATA(res, 0, 28));
-			info->modifyDate =
-				 get_date(DLP_RESPONSE_DATA(res, 0, 36));
-			info->backupDate =
-				 get_date(DLP_RESPONSE_DATA(res, 0, 44));
-			info->index =
-				 get_short(DLP_RESPONSE_DATA(res, 0, 52));
-
-			strncpy(info->name, DLP_RESPONSE_DATA(res, 0, 54), 32);
-			info->name[32] 		= '\0';
-
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "DLP ReadDBList Name: '%s', "
-				 "Version: %d, More: %s\n",
-			     info->name, info->version,
-				 info->more ? "Yes" : "No"));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "  Creator: '%s'", printlong(info->creator)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     " Type: '%s' Flags: %s%s%s%s%s%s%s%s%s%s",
-			     printlong(info->type),
-			     (info->flags & dlpDBFlagResource) ?
-				 "Resource " : "",
-			     (info->flags & dlpDBFlagReadOnly) ?
-				 "ReadOnly " : "",
-			     (info->flags & dlpDBFlagAppInfoDirty) ?
-				 "AppInfoDirty " : "",
-			     (info->flags & dlpDBFlagBackup) ?
-				 "Backup " : "",
-			     (info->flags & dlpDBFlagReset) ?
-				 "Reset " : "",
-			     (info->flags & dlpDBFlagNewer) ?
-				 "Newer " : "",
-			     (info->flags & dlpDBFlagCopyPrevention) ?
-				 "CopyPrevention " : "",
-			     (info->flags & dlpDBFlagStream) ?
-				 "Stream " : "",
-			     (info->flags & dlpDBFlagOpen) ?
-				 "Open " : "",
-			     (!info->flags) ? "None" : ""));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-				" (0x%2.2X)\n", info->flags));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     	"  Modnum: %ld, Index: %d, "
-				"Creation date: %s",
-			     	info->modnum, info->index,
-				ctime(&info->createDate)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     	" Modification date: %s",
-				ctime(&info->modifyDate)));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
-			     	" Backup date: %s",
-				ctime(&info->backupDate)));
-		}
-		
-		if (size) {
-			size->numRecords = 
-				get_long(DLP_RESPONSE_DATA(res, 1, 0));
-			size->totalBytes =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 4));
-			size->dataBytes =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 8));
-			size->appBlockSize =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 12));
-			size->sortBlockSize =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 16));
-			size->maxRecSize =
-				 get_long(DLP_RESPONSE_DATA(res, 1, 20));
-		}	
-	}
+	if (result > 0)
+		dlp_decode_finddb_response(res, cardno, localid, dbhandle, info, size);
 	
 	dlp_response_free(res);
 	
