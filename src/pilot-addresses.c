@@ -553,6 +553,13 @@ int main(int argc, const char *argv[])
 		 * Special case is that you can mix -w and -d to write the
 		 * file and then delete a category.
 		 */
+		case mode_delete_all :
+			if (run_mode != mode_none) {
+				fprintf(stderr,"%s",mode_error);
+				return 1;
+			}
+			run_mode = mode_delete_all;
+			break;
 		case 'r':
 			if (run_mode != mode_none) {
 				fprintf(stderr,"%s",mode_error);
@@ -674,7 +681,7 @@ int main(int argc, const char *argv[])
 		break;
 	case mode_delete_all:
 		for (i = 0; i < 16; i++)
-			if (strlen(aai.category.name[i]) > 0)
+			if (aai.category.name[i][0])
 				dlp_DeleteCategory(sd, db, i);
 		break;
 	}
