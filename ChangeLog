@@ -2,7 +2,7 @@
 
 	* bindings/Python/README.txt: Deprecate, replace with README
 
-	* bindings/Python/test.py: New test suite (Nicholas Piper)
+	* bindings/Python/test.py: New test script (Nicholas Piper)
 	
 	* bindings/Python/src/pisock.i: Code cleanups (Nicholas Piper)
 
