@@ -98,6 +98,27 @@ int pi_sock_installedexit = 0;
 /* Linked List Code */
 /***********************************************************************
  *
+ * Function:    ps_list_dump
+ *
+ * Summary:     internal debugging function
+ *
+ * Parameters:	pi_socket_list_t *
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+ps_list_dump (pi_socket_list_t *list)
+{
+	fprintf(stderr, "* Dumping pi_socket_list @ %p:\n",list);
+	while (list != NULL) {
+		fprintf(stderr,"  %p: ps=%p, pi_sd=%d\n", list, list->ps, list->ps->sd);
+		list = list->next;
+	}
+}
+	      
+/***********************************************************************
+ *
  * Function:    ps_list_append
  *
  * Summary:     creates and appends a new pi_socket_list element to
@@ -116,20 +137,20 @@ ps_list_append (pi_socket_list_t *list, pi_socket_t *ps)
 	
 	ASSERT (ps != NULL);
 
-	new_elem = malloc(sizeof(pi_socket_list_t));
-	
+	new_elem = (pi_socket_list_t *)malloc(sizeof(pi_socket_list_t));
+
 	if (new_elem != NULL) {
 		new_elem->ps 	= ps;
 		new_elem->version = 0;
 		new_elem->next 	= NULL;
 
 		if (list == NULL)
-			return new_elem;
-	
-		elem = list;
-		while (elem->next != NULL)
-			elem = elem->next;
-	
+			list = new_elem;
+		else {
+			elem = list;
+			while (elem->next != NULL)
+				elem = elem->next;
+		}
 		elem->next = new_elem;
 	} else
 		list = NULL;
@@ -257,9 +278,10 @@ ps_list_find_elem (pi_socket_list_t *list, int pi_sd)
 static pi_socket_list_t *
 ps_list_remove (pi_socket_list_t *list, int pi_sd) 
 {
-	pi_socket_list_t *elem, *new_list = list, *prev_elem;
+	pi_socket_list_t *elem,
+		*new_list = list,
+		*prev_elem = NULL;
 
-	prev_elem = NULL;
 	for (elem = list; elem != NULL; elem = elem->next) {
 		if (elem->ps == NULL)
 			continue;
@@ -335,7 +357,7 @@ ps_list_free (pi_socket_list_t *list)
 		l = next;
 	} while (l != NULL);
 }
-	      
+
 /* Protocol Queue */
 /***********************************************************************
  *
@@ -1544,15 +1566,19 @@ pi_close(int pi_sd)
 	}
 
 	if (result == 0) {
-		if (ps->device != NULL)
-			result = ps->device->close (ps);
-		
+		/* we need to remove the entry from the list prior to
+		 * closing it, because closing it will reset the pi_sd */
 		psl = ps_list_remove (psl, pi_sd);
 		watch_list = ps_list_remove (watch_list, pi_sd);
 
+		if (ps->device != NULL)
+			result = ps->device->close (ps);
+
 		protocol_queue_destroy(ps);
+
 		if (ps->device != NULL)
 			ps->device->free(ps->device);
+
 		free(ps);
 	}
 
