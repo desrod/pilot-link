@@ -655,8 +655,8 @@ int main(int argc, const char *argv[])
 
 	po = poptGetContext("pilot-addresses", argc, argv, options, 0);
 	poptSetOtherOptionHelp(po,"\n\n"
-		"   Reads addresses from the Palm to file or\n"
-		"   writes addresses from CSV file to the Palm.\n\n"
+		"   Reads addresses from a file and installs on the Palm, or\n"
+		"   writes addresses from the Palm to a file.\n\n"
 		"   Provide exactly one of --read or --write.\n\n");
 	plu_popt_alias(po,"delall",0,"--bad-option --delete-all");
 	plu_popt_alias(po,"delcat",0,"--bad-option --delete-category");
