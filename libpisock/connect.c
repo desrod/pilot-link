@@ -28,7 +28,30 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-/* Declare prototypes */
+
+/***********************************************************************
+ *
+ * Function:    pilot_connect
+ *
+ * Summary:     Connect to a Palm device.
+ *
+ * Parameters:  port -- Communications port through which a Palm device
+ *                      is connected.  If this is NULL, pilot_connect()
+ *                      will attempt to discover the correct port.
+ *
+ * Returns:     Socket descriptor, if successful.
+ *              -1, if the connection can not be established.
+ *
+ *  If 'port' is NULL, the PILOTPORT environment variable is checked.
+ *  If neither of them are set, the port defaults to /dev/pilot.
+ *
+ *  A socket is created.
+ *  A message is displayed, reminding the user to press the HotSync button.
+ *  pilot_connect() waits for communication to be established.
+ *  ... potentially forever.
+ *  Once communication is established, the socket descriptor is returned.
+ *
+ ***********************************************************************/
 int pilot_connect(char *port)
 {
 	int 	sd, 
