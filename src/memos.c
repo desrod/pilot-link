@@ -1,8 +1,8 @@
-/* 
+/*
  * memos.c:  Translate Palm Memos into e-mail format
  *
  * Copyright (c) 1996, Kenneth Albanowski
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
@@ -19,7 +19,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +30,7 @@
 #include "pi-memo.h"
 #include "pi-file.h"
 #include "pi-header.h"
+#include "userland.h"
 
 /* constants to determine how to produce memos */
 #define MEMO_MBOX_STDOUT 0
@@ -66,14 +66,14 @@ void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 	/* FIXME: might be good to get the time stamp of the memo file for
 	   the "Received" line */
 
-	time_str = ctime(&now); 
+	time_str = ctime(&now);
 
 	printf("From Palm.Handheld %s"
 	       "From: pilot-link memos (MemoDB) <Palm.Handheld@your.machine>\n"
-	       "Received: %s" 
+	       "Received: %s"
 	       "To: You\n"
 	       "Date: %s"
-	       "Subject: ", time_str, time_str, time_str); 
+	       "Subject: ", time_str, time_str, time_str);
 
 	/* print category name in brackets in subject field */
 	printf("[%s] ", mai.category.name[category]);
@@ -97,7 +97,7 @@ void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
  * Function:    write_memo_in_directory
  *
  * Summary:     Writes each memo into /$DIR/$CATEGORY/$FILENAME form
- *              after the user specifies the -d /dir/name argument  
+ *              after the user specifies the -d /dir/name argument
  *
  * Parameters:  None
  *
@@ -168,59 +168,10 @@ write_memo_in_directory(char *dirname, struct Memo m,
 	fclose(fd);
 }
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Outputs the program arguments and params
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Manipulate MemoDB.pdb entries from a file or your Palm device\n\n");
-	printf("   Usage: memos -p <port> [-V] [options]\n\n");
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -V, --verbose           Verbose, with -d, print each filename when\n");
-	printf("                             written\n");
-	printf("     -d, --delete            Delete memo named by number <num>\n");
-	printf("     -f, --file [file] ..    Use <file> as input file (instead of MemoDB.pdb)\n");
-	printf("     -s, --save <dir>        Save memos in <dir> instead of writing to\n");
-	printf("                             STDOUT\n");
-	printf("     -c, --category <cat>    Only upload memos in this category\n");
-	printf("     -r, --regex [regexp]    Select memos saved by regular expression on\n");
-	printf("                             title\n\n");
-
-	printf("   By default, the contents of your Palm's memo database will be written to\n");
-	printf("   standard output as a standard Unix mailbox (mbox-format) file, with each\n");
-	printf("   memo as a separate message.  The subject of each message will be the\n");
-	printf("   category.\n\n");
-
-	printf("   If '-s' is specified, than instead of being written to standard output,\n");
-	printf("   will be saved in subdirectories of <dir>. Each subdirectory will be the\n");
-	printf("   name of a category on the Palm, and will contain the memos in that\n");
-	printf("   category. Each memo's filename will be the first line (up to the first 40\n");
-	printf("   chcters) of the memo. Control chcters, slashes, and equal signs that\n");
-	printf("   would otherwise appear in filenames are converted after the fashion of\n");
-	printf("   MIME's quoted-printable encoding. Note that if you have two memos in the\n");
-	printf("   same category whose first lines are identical, one of them will be\n");
-	printf("   overwritten.\n\n");
-
-	printf("   If '-f' is specified, the specified file will be treated as a memo\n");
-	printf("   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
-
-	return;
-}
 
 int main(int argc, const char *argv[])
 {
-	int 	attr, 
+	int 	attr,
 		c,		/* switch */
 		category,
 		db,
@@ -244,51 +195,51 @@ int main(int argc, const char *argv[])
 	char 	appblock[0xffff],
 		dirname[MAXDIRNAMELEN] = "",
 		*buf 		= NULL,
-		*port 		= NULL,
 		category_name[MAXDIRNAMELEN + 1] = "",
 		filename[MAXDIRNAMELEN + 1], *ptr,
 		*fnameArg, *dnameArg, *catnameArg, *regexArg;
-	
+
 	struct 	MemoAppInfo mai;
 	struct 	pi_file *pif = NULL;
 	struct 	Memo m;
 
 	regex_t title_pattern;
 	recordid_t id;
-	
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	        {"verbose",	'V', POPT_ARG_NONE, NULL, 'V', "Verbose, with -d, print each filename when written"},
-        	{"delete",	'd', POPT_ARG_NONE, NULL, 'd', "Delete memo named by number <num>"},				
+		USERLAND_RESERVED_OPTIONS
+	        {"verbose",	'v', POPT_ARG_VAL, &verbose, 1, "Verbose, with -s, print each filename when written"},
+        	{"delete",	'd', POPT_ARG_VAL, &delete,  1, "Delete memo named by number <num>"},
                 {"file",	'f', POPT_ARG_STRING, &fnameArg, 'f', "Use <file> as input file (instead of MemoDB.pdb)"},
                 {"save",	's', POPT_ARG_STRING, &dnameArg, 's', "Save memos in <dir> instead of writing to STDOUT"},
 	        {"category",	'c', POPT_ARG_STRING, &catnameArg, 'c', "Only upload memos in this category"},
                 {"regex",	'r', POPT_ARG_STRING, &regexArg, 'r', "Select memos saved by regular expression on title"},
-                POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+                POPT_TABLEEND
 	};
 
 	po = poptGetContext("memos", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po," [-p port] [-v] <memo options>\n\n"
+		"   Manipulate MemoDB.pdb entries from a file or your Palm device\n\n"
+		"   By default, the contents of your Palm's memo database will be written to\n"
+		"   standard output as a standard UNIX mailbox (mbox-format) file, with each\n"
+		"   memo as a separate message.  The subject of each message will be the\n"
+		"   category.\n\n"
+		"   If '-s' is specified, than instead of being written to standard output,\n"
+		"   will be saved in subdirectories of <dir>. Each subdirectory will be the\n"
+		"   name of a category on the Palm, and will contain the memos in that\n"
+		"   category. Each memo's filename will be the first line (up to the first 40\n"
+		"   characters) of the memo. Control chcters, slashes, and equal signs that\n"
+		"   would otherwise appear in filenames are converted after the fashion of\n"
+		"   MIME's quoted-printable encoding. Note that if you have two memos in the\n"
+		"   same category whose first lines are identical, one of them will be\n"
+		"   overwritten.\n\n"
+		"   If '-f' is specified, the specified file will be treated as a memo\n"
+		"   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
-
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 'V':
-			verbose = 1;
-			break;
-		case 'd':
-			delete = 1;
-			break;
 		case 'f':
 			strncpy(filename, fnameArg, MAXDIRNAMELEN);
 			filename[MAXDIRNAMELEN] = '\0';
@@ -312,15 +263,16 @@ int main(int argc, const char *argv[])
 			title_matching = 1;
 			break;
 		default:
-			display_help(progname);
-			return 0;
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
 		}
 	}
+	if (c < -1) userland_badoption(po,c);
 
 	/* FIXME - Need to add tests here for port/filename, clean this. -DD */
 	if (filename[0] == '\0') {
-	
-	        sd = pilot_connect(port);
+
+	        sd = userland_connect();
 
         	if (sd < 0)
                 	goto error;
@@ -335,7 +287,7 @@ int main(int argc, const char *argv[])
 					    "Unable to open MemoDB.\n");
 			exit(EXIT_FAILURE);
 		}
-	
+
 		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
 				 0xffff);
 	} else {
@@ -405,7 +357,7 @@ int main(int argc, const char *argv[])
 		if( match_category >= 0 ) {
 			if( match_category != category )
 				continue;
-		} 
+		}
 
 		unpack_Memo(&m, buffer->data, buffer->used);
 
