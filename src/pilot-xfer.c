@@ -84,6 +84,8 @@ struct option options[] = {
 
 static const char *optstring = "-hvp:b:u:s:Sr:i:m:f:d:e:P:lLa:FOIqc";
 
+int	novsf	= 0;
+
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 int sd = 0;
@@ -996,7 +998,6 @@ int main(int argc, char *argv[])
 		do_unsaved 	= 0,
 		timespent 	= 0,
 		quiet 		= 0,
-		novsf		= 0,
 		last_c          = 0;
 
         time_t 	start,end;
