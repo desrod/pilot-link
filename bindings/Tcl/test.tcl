@@ -13,6 +13,6 @@ proc accept {socket} {
 	close $socket
 }
 
-puts [piOpen -server accept /dev/cua3]
+puts [piOpen -server accept /dev/ttyS0]
 
 vwait bar
