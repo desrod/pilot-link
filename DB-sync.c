@@ -4,17 +4,12 @@
 #include "pi-socket.h"
 
 static unsigned char SyncOpen[] = { 0x2e, 0 };
-static unsigned char AppData[] = { 0x17, 0x01, 0x20, 0x0d, 0, 0xe0 };
+static unsigned char AppData[] = { 0x17, 0x01, 0x20, 0, 0, 0xe0 };
 static unsigned char AppDataRetrieve[] = { 0x1b, 0x01, 0x20, 0x06 };
 static unsigned char DataRecordRetrieve[] = {0x1f, 0x01, 0x20, 0x01 };
-static unsigned char WriteAddressDBTemplate[] = {0x1b, 0x01, 0xa0, 0, 2, 0x82, 1, 0};
-static unsigned char DatebookData[] = { 0x18, 0x01, 0x20, 0x19, 0x64, 0x61, 
-					0x74, 0x65, 0x44, 0x41, 0x54, 0x41,
-					0,    0,    0,    0,    0,    0,
-					0x44, 0x61, 0x74, 0x65, 0x62, 0x6f,
-					0x6f, 0x6b, 0x44, 0x42, 0};
+static unsigned char WriteDBTemplate[] = {0x1b, 0x01, 0xa0, 0, 2, 0x82, 1, 0};
 
-do_datebookdb(int sd)
+SyncDB(int sd, unsigned char *name, unsigned char *dataname, int dnamelen)
 {
   unsigned char buf[64];
   unsigned char *data;
@@ -29,28 +24,32 @@ do_datebookdb(int sd)
   pi_write(sd,SyncOpen,sizeof(SyncOpen));
   pi_read(sd,buf,64);
 
-  /* get a handle for the DatebookDB */
+  /* get a handle for the DB */
 
   memcpy(buf, AppData, sizeof(AppData));
-  strcpy(&buf[sizeof(AppData)],"DatebookDB");
+  strcpy(&buf[sizeof(AppData)],name);
+  buf[3] = strlen(name) + 3;            /* Sigh! */
 
-  pi_write(sd, buf, sizeof(AppData) + strlen("DatebookDB") + 1);
+  pi_write(sd, buf, sizeof(AppData) + strlen(name) + 1);
   pi_read(sd, buf, 64);
 
   if (buf[1] == 1) index = buf[6];
   else {
-  
-    pi_write(sd, DatebookData, sizeof(DatebookData));
-    pi_read(sd, buf, 64);
 
-    if (buf[1] == 1) index = buf[6];
-    else {
-      fprintf(stderr, "Can't get a handle for the Datebook!\n");
-      return -1;
+    if (dataname) {
+      pi_write(sd, dataname, dnamelen);
+      pi_read(sd, buf, 64);
+
+      if (buf[1] == 1) index = buf[6];
     }
   }
 
-  /* read the DatebookDB template */
+  if (index == -1) {
+    fprintf(stderr, "Can't get a handle for %s\n",name);
+    return -1;
+  }
+
+  /* Try to read the template */
 
   memcpy(buf, AppDataRetrieve, sizeof(AppDataRetrieve));
   buf[4] = index;
@@ -64,7 +63,7 @@ do_datebookdb(int sd)
      for now, we just echo it back, after fudging the header.
      Actually, I'll but we don't need this right now....*/
 #if 0
-  memcpy(data, WriteAddressDBTemplate, sizeof(WriteAddressDBTemplate));
+  memcpy(data, WriteDBTemplate, sizeof(WriteDBTemplate));
   pi_write(sd, data, size);
 
   pi_read(sd, buf, 64);  /* this gives [9c 00 00 00] */

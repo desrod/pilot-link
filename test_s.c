@@ -9,12 +9,14 @@ static unsigned char QueryRS[] = { 0x16, 0x01, 0x20, 0x04, 0x40, 0, 0, 0};
 static unsigned char QueryDB[] = { 0x16, 0x01, 0x20, 0x04, 0x80, 0, 0, 0};
 
 static unsigned char SyncOpen[] = { 0x2e, 0 };
-static unsigned char EOS[] = { 0x2f, 0x01, 0x02, 0, 0};
+static unsigned char SyncClose[] = { 0x29, 0 };
+static unsigned char EOS[] = { 0x2f, 0x01, 0x20, 0x02, 0, 0};
 
 static unsigned char AppData[] = { 0x17, 0x01, 0x20, 0x0c, 0, 0xe0 };
 static unsigned char AppDataRetrieve[] = { 0x1b, 0x01, 0x20, 0x06 };
 static unsigned char DataRecordRetrieve[] = {0x1f, 0x01, 0x20, 0x01 };
 
+static unsigned char CUser[] = { 0x11, 0x01, 0x20, 0x20, 0, 0};
 
 main(int argc, char *argv[])
 {
@@ -22,6 +24,8 @@ main(int argc, char *argv[])
   int sd;
   int i;
   char *buf;
+
+  unsigned char userid[64];
 
   if (argc != 2) {
     fprintf(stderr,"usage:%s /dev/tty??\n",argv[0]);
@@ -45,7 +49,7 @@ main(int argc, char *argv[])
 
   pi_write(sd,Ident,sizeof(Ident));
   pi_write(sd,User,sizeof(User));
-  pi_read(sd,buf,64);
+  pi_read(sd,userid,64);
 
   i = 0;
   do {
@@ -65,14 +69,22 @@ main(int argc, char *argv[])
     i = ntohs(*(unsigned short *)(&buf[6])) + 1;
   } while (buf[1] == 1);
 
-  do_addressdb(sd);
-  do_datebookdb(sd);
-  do_memodb(sd);
+  SyncAll(sd);
+
+  pi_write(sd, SyncClose, sizeof(SyncClose));
+  pi_read(sd, buf, 64);
+
+  memcpy(userid, CUser, sizeof(CUser));
+  pi_write(sd, userid, 0x24);
+  pi_read(sd, buf, 64);
+
+  /* confirm all ok */
+  ConfirmAll(sd);
 
   /* I think this is End Of Session */
 
   pi_write(sd,EOS,sizeof(EOS));
-  pi_read(sd,buf,64);
+  pi_read(sd, buf, 64);
 
   /* wait a second, for things to close */
   sleep(1);

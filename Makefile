@@ -1,5 +1,5 @@
 OBJS = socket.o serial.o slp.o padp.o utils.o
-SERVEROBJS = test_s.o address-db.o datebook-db.o memo-db.o
+SERVEROBJS = test_s.o all-sync.o DB-sync.o
 
 CC = gcc
 CFLAGS = -O2 -g -DDEBUG
