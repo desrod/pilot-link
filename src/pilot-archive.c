@@ -30,6 +30,10 @@
 
 int main(int argc, const char *argv[])
 {
+	fprintf(stderr,"   DEPRECATED: Use read-todos -w --archived instead.\n");
+	return 1;
+
+#if 0
 	int 	c,	/* switch */
 	 	db,
 		i,
@@ -137,4 +141,5 @@ int main(int argc, const char *argv[])
 
       error:
 	return -1;
+#endif
 }

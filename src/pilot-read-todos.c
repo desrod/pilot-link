@@ -34,12 +34,61 @@
 #include "pi-header.h"
 #include "pi-userland.h"
 
+void print_unarchived(struct ToDoAppInfo *tai, struct ToDo *todo, int category)
+{
+	printf("Category: %s\n", tai->category.name[category]);
+	printf("Priority: %d\n", todo->priority);
+	printf("Completed: %s\n", todo->complete ? "Yes" : "No");
+	if (todo->indefinite) {
+		printf("Due: No Date");
+	} else {
+		printf("Due: %s", asctime(&todo->due));
+	}
+	if (todo->description)
+		printf("Description: %s\n", todo->description);
+	if (todo->note)
+		printf("Note: %s\n", todo->note);
+	printf("\n");
+}
+
+void print_archived(struct ToDoAppInfo *tai, struct ToDo *todo, int category)
+{
+	printf("\"Category\", ");
+	printf("\"%s\", ", tai->category.name[category]);
+	printf("\"Priority\", ");
+	printf("\"%d\", ", todo->priority);
+	printf("\"Completed\", ");
+	printf("\"%s\", ", todo->complete ? "Yes" : "No");
+
+	if (todo->indefinite) {
+		printf("\"Due\", \"No Date\", ");
+	} else {
+		printf("\"Due\", ");
+		printf("\"%s\", ", asctime(&todo->due));
+	}
+
+	if (todo->description) {
+		printf("\"Description\", ");
+		printf("\"%s\", ", todo->description);
+	}
+
+	if (todo->note) {
+		printf("\"Note\", ");
+		printf("\"%s\", ", todo->note);
+	}
+
+	printf("\n\n");
+}
+
 int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		db,
 		i,
 		sd 		= -1;
+
+	enum { mode_none, mode_write=257 } run_mode = mode_none;
+	int archived = 0;
 
 	char
 		*filename 	= NULL,
@@ -56,7 +105,9 @@ int main(int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
+		{"write",	'w', POPT_ARG_NONE,NULL,mode_write, "Write output" },
 	        {"file", 	'f', POPT_ARG_STRING, &filename, 0, "Save ToDO entries in <filename> instead of STDOUT"},
+		{"archived",	'A', POPT_ARG_NONE, &archived, 0, "Write archived entries only, in human-readable format"},
 		POPT_TABLEEND
 	};
 
@@ -67,8 +118,8 @@ int main(int argc, const char *argv[])
 	"   standard output in a generic text format/ Otherwise, use --file to read a todo\n"
 	"   database file from disk for printing.\n\n"
 	"   Example arguments:\n"
-	"      -p /dev/pilot \n"
-	"      -f ToDoDB.pdb\n");
+	"      -w -A -p /dev/pilot \n"
+	"      -w -f ToDoDB.pdb\n");
 
 
 	if (argc<2) {
@@ -77,14 +128,31 @@ int main(int argc, const char *argv[])
 	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
-		return 1;
+		switch(c) {
+		case mode_write :
+			if (run_mode == mode_none) {
+				run_mode = c;
+			} else {
+				if (c!=run_mode) {
+					fprintf(stderr,"   ERROR: Specify exactly one of -w.\n");
+					return 1;
+				}
+			}
+			break;
+		default:
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
+		}
 	}
 
 	if (c < -1) {
 		plu_badoption(po,c);
 	}
 
+	if (mode_none == run_mode) {
+		fprintf(stderr,"   ERROR: Specify exactly one of -w.\n");
+		return 1;
+	}
 	if (!plu_port && !filename) {
 		fprintf(stderr,"   ERROR: Specify either --port or --file.\n");
 		return 1;
@@ -157,31 +225,22 @@ int main(int argc, const char *argv[])
 		}
 
 		/* Skip deleted records */
-		if ((attr & dlpRecAttrDeleted)
-		    || (attr & dlpRecAttrArchived))
+		if (attr & dlpRecAttrArchived) {
+			if (archived) {
+				unpack_ToDo(&todo, recbuf->data, recbuf->used);
+				print_archived(&tai,&todo,category);
+				free_ToDo(&todo);
+			}
+			continue;
+		}
+		if (attr & dlpRecAttrDeleted)
 			continue;
 
-		unpack_ToDo(&todo, recbuf->data, recbuf->used);
-
-		printf("Category: %s\n", tai.category.name[category]);
-		printf("Priority: %d\n", todo.priority);
-		printf("Completed: %s\n", todo.complete ? "Yes" : "No");
-
-		if (todo.indefinite) {
-			printf("Due: No Date");
-		} else {
-			printf("Due: %s", asctime(&todo.due));
+		if (!archived) {
+			unpack_ToDo(&todo, recbuf->data, recbuf->used);
+			print_unarchived(&tai,&todo,category);
+			free_ToDo(&todo);
 		}
-
-		if (todo.description)
-			printf("Description: %s\n", todo.description);
-
-		if (todo.note)
-			printf("Note: %s\n", todo.note);
-
-		printf("\n");
-
-		free_ToDo(&todo);
 	}
 
     pi_buffer_free (recbuf);
