@@ -1,7 +1,7 @@
 /*
  * darwinusb.c: I/O support for Darwin (Mac OS X) USB
  *
- * Copyright (c) 2004, Florent Pillet.
+ * Copyright (c) 2004-2005, Florent Pillet.
  *
  * libpisock interface modeled after linuxusb.c by Jeff Dionne and 
  * Kenneth Albanowski
@@ -129,7 +129,6 @@ static int usb_auto_read_size = 0;			/* if != 0, prime reads to the input pipe t
 static int usb_read_ahead_size = 0;			/* when waiting for big chunks of data, used as a hint to make bigger read requests */
 static int usb_last_read_ahead_size;		/* also need this to properly compute the size of the next read */
 
-
 static char usb_read_buffer[MAX_AUTO_READ_SIZE];
 
 static pthread_mutex_t read_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -144,6 +143,7 @@ static pthread_mutex_t usb_run_loop_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t usb_thread_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t usb_thread_ready_cond = PTHREAD_COND_INITIALIZER;
 
+/* local prototypes */
 static IOReturn control_request (IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, void *pData, UInt16 maxReplyLength);
 
 static void device_added (void *refCon, io_iterator_t iterator);
@@ -151,13 +151,12 @@ static void device_notification (void *refCon, io_service_t service, natural_t m
 static void read_completion (void *refCon, IOReturn result, void *arg0);
 
 static int accepts_device (unsigned short vendor, unsigned short product);
-static IOReturn configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, UInt8 *inputPipeNumber, UInt8 *outputPipeNumber);
-static IOReturn find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, UInt8 inputPipeNumber, UInt8 outputPipeNumber);
-static int prime_read (void);
+static IOReturn configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int *port_number, int *input_pipe_number, int *output_pipe_number);
+static IOReturn find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number);
+static int prime_read (int input_pipe);
 
 static IOReturn read_visor_connection_information (IOUSBDeviceInterface **dev);
-static IOReturn read_generic_connection_information (IOUSBDeviceInterface **dev, UInt8 *inputPipeNumber, UInt8 *outputPipeNumber);
-
+static IOReturn read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
 
 //
 // USB control requests we send to the devices
@@ -450,22 +449,18 @@ device_added (void *refCon, io_iterator_t iterator)
 	HRESULT res;
 	SInt32 score;
 	UInt16 vendor, product;
-	UInt8 inputPipeNumber, outputPipeNumber;
+	int port_number = 0xff, input_pipe_number = 0xff, output_pipe_number = 0xff;
 
 	while ((ioDevice = IOIteratorNext (iterator)))
 	{
 		if (usb_opened)
 		{
-			// we can only handle one connection at once
+			// we can only handle one connection at once for now
 			IOObjectRelease (ioDevice);
-			continue;
+			break;
 		}
 
-		kr = IOCreatePlugInInterfaceForService (ioDevice,
-				kIOUSBDeviceUserClientTypeID,
-				kIOCFPlugInInterfaceID,
-				&plugInInterface,
-				&score);
+		kr = IOCreatePlugInInterfaceForService (ioDevice, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
 		if (kr != kIOReturnSuccess || !plugInInterface)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: -> unable to create a plugin (kr=0x%08x)\n", kr));
@@ -506,12 +501,13 @@ device_added (void *refCon, io_iterator_t iterator)
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to reset device (kr=0x%08x)\n", kr));
+			(*dev)->USBDeviceClose (dev);
 			(*dev)->Release(dev);
 			IOObjectRelease (ioDevice);
 			continue;
 		}
 
-		kr = configure_device (dev, vendor, product, &inputPipeNumber, &outputPipeNumber);
+		kr = configure_device (dev, vendor, product, &port_number, &input_pipe_number, &output_pipe_number);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to configure device (kr=0x%08x)\n", kr));
@@ -521,7 +517,7 @@ device_added (void *refCon, io_iterator_t iterator)
 			continue;
 		}
 
-		kr = find_interfaces(dev, vendor, product, inputPipeNumber, outputPipeNumber);
+		kr = find_interfaces(dev, vendor, product, port_number, input_pipe_number, output_pipe_number);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to find interfaces (kr=0x%08x)\n", kr));
@@ -533,7 +529,8 @@ device_added (void *refCon, io_iterator_t iterator)
 
 		// Register for an interest notification for this device,
 		// so we get notified when it goes away
-		kr = IOServiceAddInterestNotification(  usb_notify_port,
+		kr = IOServiceAddInterestNotification(
+				usb_notify_port,
 				ioDevice,
 				kIOGeneralInterest,
 				device_notification,
@@ -551,14 +548,11 @@ device_added (void *refCon, io_iterator_t iterator)
 }
 
 static IOReturn
-configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, UInt8 *inputPipeNumber, UInt8 *outputPipeNumber)
+configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int *port_number, int *input_pipe_number, int *output_pipe_number)
 {
 	UInt8 numConf, conf;
 	IOReturn kr;
 	IOUSBConfigurationDescriptorPtr confDesc;
-
-	*inputPipeNumber = 0xff;
-	*outputPipeNumber = 0xff;
 
 	kr = (*dev)->GetNumberOfConfigurations (dev, &numConf);
 	if (!numConf)
@@ -575,7 +569,8 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 		kr = (*dev)->GetConfigurationDescriptorPtr(dev, 0, &confDesc);
 		if (kr)
 		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get config descriptor for index %d (err=%08x numConf=%d)\n", 0, kr, (int)numConf));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get config descriptor for index %d (err=%08x numConf=%d)\n",
+				0, kr, (int)numConf));
 			continue;
 		}
 
@@ -583,7 +578,8 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 		if (kr == kIOReturnSuccess)
 			break;
 
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to set configuration to value %d (err=%08x numConf=%d)\n", (int)confDesc->bConfigurationValue, kr, (int)numConf));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to set configuration to value %d (err=%08x numConf=%d)\n",
+			(int)confDesc->bConfigurationValue, kr, (int)numConf));
 	}
 	if (conf == numConf)
 		return kr;
@@ -606,7 +602,8 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	{
 		kr = read_visor_connection_information (dev);
 	}
-	else if (vendor == VENDOR_SONY && product == PRODUCT_SONY_CLIE_3_5) {
+	else if (vendor == VENDOR_SONY && product == PRODUCT_SONY_CLIE_3_5)
+	{
 		// according to linux code, PEG S-300 awaits these two requests
 		kr = control_request (dev, USBmakebmRequestType(kUSBIn, kUSBStandard, kUSBDevice), 0x08 /* USB_REQ_GET_CONFIGURATION */, NULL, 1);
 		if (kr != kIOReturnSuccess)
@@ -622,14 +619,14 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	else
 	{
 		// other devices will either accept or deny this generic call
-		kr = read_generic_connection_information (dev, inputPipeNumber, outputPipeNumber);
+		kr = read_generic_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
 
 		if (vendor == VENDOR_TAPWAVE)
 		{
-			// Tapwave: for Zodiac, the TwUSBD.sys driver on Windows sends the ext-connection-info packet
-			// two additional times.
-			read_generic_connection_information (dev, NULL, NULL);
-			read_generic_connection_information (dev, NULL, NULL);
+			// Tapwave: for Zodiac, the TwUSBD.sys driver on Windows sends 
+			// the ext-connection-info packet two additional times.
+			read_generic_connection_information (dev, NULL, NULL, NULL);
+			read_generic_connection_information (dev, NULL, NULL, NULL);
 		}
 	}
 
@@ -651,16 +648,14 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 }
 
 static IOReturn
-find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, UInt8 inputPipeNumber, UInt8 outputPipeNumber)
+find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number)
 {
 	IOReturn kr;
 	io_iterator_t iterator;
 	io_service_t usbInterface;
 	HRESULT res;
 	SInt32 score;
-	UInt8 intfClass;
-	UInt8 intfSubClass;
-	UInt8 intfNumEndpoints;
+	UInt8 intfClass, intfSubClass, intfNumEndpoints;
 	int pipeRef, pass;
 	IOUSBFindInterfaceRequest request;
 	IOCFPlugInInterface **plugInInterface = NULL;
@@ -725,22 +720,19 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		//    64 bytes transfer size
 		// 3. Finally of this failed, forget about the transfer size and take the first ones that
 		//    come (i.e. Tungsten W has a 64 bytes IN pipe and a 32 bytes OUT pipe).
-		for (pass=0; pass < 3 && (usb_in_pipe_ref==0 || usb_out_pipe_ref==0); pass++)
+		for (pass=1; pass <= 3 && (usb_in_pipe_ref==0 || usb_out_pipe_ref==0); pass++)
 		{
-			int ignorePacketSize = 0;
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pass %d looking for pipes\n", pass+1));
-			if (pass == 1)
+			int ignorePacketSize = (pass == 3);
+			if (pass == 2)
 			{
-				// second pass: don't try to guess pipe numbers
-				inputPipeNumber = 0xff;
-				outputPipeNumber = 0xff;
+				port_number = 0xff;
+				input_pipe_number = 0xff;
+				output_pipe_number = 0xff;
 			}
-			else if (pass == 2)
-			{
-				// last chance: forget about transfer size,
-				// just take the first pipes that come
-				ignorePacketSize = 1;
-			}
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pass %d looking for pipes, port_number=0x%02x, input_pipe_number=0x%02x, output_pipe_number=0x%02x, ignorePacketSize=%d\n",
+				pass, port_number, input_pipe_number, output_pipe_number, ignorePacketSize));
+
 			for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
 			{
 				UInt8 direction, number, transferType, interval;
@@ -754,22 +746,26 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 				}
 				else
 				{
-					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x\n",pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval));
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x\n",
+						pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval));
+
 					if (usb_in_pipe_ref == 0 &&
 					    direction == kUSBIn &&
-					    transferType == kUSBBulk &&
-					    (maxPacketSize == 64 || ignorePacketSize) &&
-					    (inputPipeNumber == 0xff || number == inputPipeNumber))
+					    transferType == kUSBBulk)
 					{
-						usb_in_pipe_ref = pipeRef;
+						if ((port_number != 0xff && number == port_number) ||
+							(input_pipe_number != 0xff && number == input_pipe_number) ||
+							(pass > 1 && (maxPacketSize == 64 || ignorePacketSize)))
+							usb_in_pipe_ref = pipeRef;
 					}
 					else if (usb_out_pipe_ref == 0 &&
-						 direction == kUSBOut &&
-						 transferType == kUSBBulk &&
-						 (maxPacketSize == 64 || ignorePacketSize) &&
-						 (outputPipeNumber == 0xff || number == outputPipeNumber))
+							 direction == kUSBOut &&
+							 transferType == kUSBBulk)
 					{
-						usb_out_pipe_ref = pipeRef;
+						if ((port_number != 0xff && number == port_number) ||
+							(output_pipe_number != 0xff && number == output_pipe_number) ||
+							(pass > 1 && (maxPacketSize == 64 || ignorePacketSize)))
+							usb_out_pipe_ref = pipeRef;
 					}
 				}
 			}
@@ -790,8 +786,7 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 				LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: USBConnection OPENED usb_in_pipe_ref=%d usb_out_pipe_ref=%d\n", usb_in_pipe_ref, usb_out_pipe_ref));
 				usb_opened = 1;
 				CFRunLoopAddSource (CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
-				//usb_read_ahead_size = MAX_AUTO_READ_SIZE;
-				prime_read();
+				prime_read(usb_in_pipe_ref);
 				break;
 			}
 		}
@@ -888,7 +883,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev)
 }
 
 static IOReturn
-read_generic_connection_information (IOUSBDeviceInterface **dev, UInt8 *inputPipeNumber, UInt8 *outputPipeNumber)
+read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe)
 {
 	int i;
 	kern_return_t  kr;
@@ -909,12 +904,22 @@ read_generic_connection_information (IOUSBDeviceInterface **dev, UInt8 *inputPip
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, ci.connections[i].endpoint_info));
 			if (ci.connections[i].port_function_id == 'cnys')
 			{
-				// 'sync': we found the pipes to use for synchronization
+				// 'sync': we found the port/pipes to use for synchronization
 				// force find_interfaces to select this one rather than another one
-				if (inputPipeNumber)
-					*inputPipeNumber = ci.connections[i].endpoint_info >> 4;
-				if (outputPipeNumber)
-					*outputPipeNumber = ci.connections[i].endpoint_info & 0x0f;
+				// if the port number in the structure is not 0, there are chances
+				// that the "number" of each pipe is a port number. Otherwise, if
+				// the endpoint info is not 0, chances are that it contains input
+				// and output pipe number that are also the "number" value of the pipe
+				// (in this case, each pipe has a different "number")
+				if (port_number && ci.connections[i].port)
+						*port_number = ci.connections[i].port;
+				if (ci.connections[i].endpoint_info)
+				{
+					if (input_pipe)
+						*input_pipe = ci.connections[i].endpoint_info >> 4;
+					if (output_pipe)
+						*output_pipe = ci.connections[i].endpoint_info & 0x0f;
+				}
 			}
 		}
 	}
@@ -982,14 +987,14 @@ read_completion (void *refCon, IOReturn result, void *arg0)
 	{
 		if (result != kIOReturnSuccess)
 			(*usb_interface)->ClearPipeStall (usb_interface, usb_in_pipe_ref);
-		prime_read();
+		prime_read(usb_in_pipe_ref);
 	}
 
 	pthread_mutex_unlock(&read_queue_mutex);
 }
 
 static int
-prime_read(void)
+prime_read(int input_pipe)
 {
 	if (usb_opened)
 	{
@@ -1009,17 +1014,17 @@ prime_read(void)
 #endif
 
 		IOReturn kr;
-		kr = (*usb_interface)->ReadPipeAsync (usb_interface, usb_in_pipe_ref, usb_read_buffer,
-				usb_last_read_ahead_size, &read_completion, NULL);
+		kr = (*usb_interface)->ReadPipeAsync (usb_interface, input_pipe, usb_read_buffer,
+				usb_last_read_ahead_size, &read_completion, (void *)input_pipe);
 
 		if (kr == kIOUSBPipeStalled)
 		{
 #ifdef DEBUG_USB
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stalled -- clearing stall and re-priming\n"));
 #endif
-			(*usb_interface)->ClearPipeStall (usb_interface, usb_in_pipe_ref);
-			kr = (*usb_interface)->ReadPipeAsync (	usb_interface, usb_in_pipe_ref, usb_read_buffer,
-					usb_last_read_ahead_size, &read_completion, NULL);
+			(*usb_interface)->ClearPipeStall (usb_interface, input_pipe);
+			kr = (*usb_interface)->ReadPipeAsync (	usb_interface, input_pipe, usb_read_buffer,
+					usb_last_read_ahead_size, &read_completion, (void *)input_pipe);
 		}
 
 		if (kr == kIOReturnSuccess)
@@ -1294,7 +1299,7 @@ pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->poll = u_poll;
 }
 
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */
