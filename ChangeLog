@@ -1,5 +1,9 @@
 2002-06-28  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/dlp.c: oops, remove old dlp_exec function
+
+2002-06-28  JP Rosevear  <jpr@ximian.com>
+	
 	* include/pi-dlp.h: tidy protos
 
 	* libpisock/dlp.c: rename dlp_exec_new to dlp_exec

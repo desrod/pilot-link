@@ -51,6 +51,8 @@
 /* Define prototypes */
 static void record_dump (unsigned char *data);
 
+
+
 char *dlp_errorlist[] = {
 	"No error",
 	"General System error",
@@ -333,78 +335,6 @@ dlp_response_free (struct dlpResponse *res)
 		return;
 	free (res->argv);
 		dlp_arg_free (res->argv[i]);
-}
-
-int dlp_exec(int sd, int cmd, int arg,const unsigned char *msg, int msglen, 
-	     unsigned char *result, int maxlen)
-{
-	static unsigned char exec_buf[DLP_BUF_SIZE];
-	int 	i,	
-		err;
-
-	exec_buf[0] = (unsigned char) cmd;
-	if (msg && arg && msglen) {
-		memcpy(&exec_buf[6], msg, msglen);
-		exec_buf[1] = (unsigned char) 1;
-		exec_buf[2] = (unsigned char) (arg | 0x80);
-		exec_buf[3] = (unsigned char) 0;
-		set_short(exec_buf + 4, msglen);
-		i = msglen + 6;
-	} else {
-		exec_buf[1] = (unsigned char) 0;
-		i = 2;
-	}
-
-	if (pi_write(sd, &exec_buf[0], i) < i) {
-		errno = -EIO;
-		return -1;
-	}
-
-	i = pi_read(sd, &exec_buf[0], DLP_BUF_SIZE);
-	if (i < 0)
-		return -1;
-	
-	err = get_short(exec_buf + 2);
-
-	if (err != 0) {
-		errno = -EIO;
-		return -err;
-	}
-	
-	if (exec_buf[0] != (unsigned char) (cmd | 0x80)) {		/* received wrong response 	*/
-		errno = -ENOMSG;
-		return -1;
-	}
-
-	if ((exec_buf[1] == (unsigned char) 0) || (result == 0))	/* no return blocks or buffers 	*/
-		return 0;
-
-	/* assume only one return block */
-	if ((exec_buf[4] & 0xC0) == 0xC0) {	/* Long arg */
-		i = get_long(exec_buf + 6);
-
-		if (i > maxlen)
-			i = maxlen;
-
-		memcpy(result, &exec_buf[10], i);
-	} else if (exec_buf[4] & 0x80) {	/* Short arg */
-		i = get_short(exec_buf + 6);
-
-		if (i > maxlen)
-			i = maxlen;
-
-		memcpy(result, &exec_buf[8], i);
-	} else {		/* Tiny arg */
-		i = (int) exec_buf[5];
-
-		if (i > maxlen)
-			i = maxlen;
-
-		memcpy(result, &exec_buf[6], i);
-	}
-
-	return i;
-
 	
 	if (res->argv)
 		free (res->argv);
