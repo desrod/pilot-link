@@ -1,3 +1,8 @@
+Aug 17, 1997	Kenneth Albanowski 0.8.2
+	Utility changes:
+	  - read-ical: still more oops.
+	  - pi-csd: scrap ifr_netmask.
+
 Aug 9, 1997		Kenneth Albanowski 0.8.1
 	Configuration changes:
 	  - A few tweaks for Java and OS/2.
@@ -11,7 +16,6 @@ Aug 9, 1997		Kenneth Albanowski 0.8.1
 	    signature if it already has them.
 	  - pilot-xfer: tried to fix optind. Again.
 	  - read-ical: oops.
-	  - 
 	Utility changes:
 	  - Added installdatebook and ietf2datebook, both provided by Tero
 	    Kivinen <kivinen@ssh.fi>

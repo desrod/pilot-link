@@ -277,10 +277,11 @@ int main(int argc, char *argv[])
 			    a.description);
 		fprintf(ical,"$i dayrepeat %d $begin\n", a.repeatFrequency * 7);
 	    } else {
+		int ii;
 		fprintf(ical,"$i weekdays ");
-		for (i=0;i<7;i++)
-		  if (a.repeatDays[i])
-		    fprintf(ical,"%d ", i+1);
+		for (ii=0;ii<7;ii++)
+		  if (a.repeatDays[ii])
+		    fprintf(ical,"%d ", ii+1);
 		fprintf(ical,"\n");
 	    }
 	  } else if(a.repeatType == repeatYearly) {

@@ -954,7 +954,6 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
     fprintf(stderr, " Wrote: UID: 0x%8.8lX, VID: 0x%8.8lX, PCID: 0x%8.8lX\n", 
       User->userID, User->viewerID, User->lastSyncPC);
     fprintf(stderr, "        Last sync date: %s", ctime(&User->lastSyncDate));
-    fprintf(stderr, "        Successful sync date: %s", ctime(&User->successfulSyncDate));
     fprintf(stderr, "        User name '%s'\n", User->username);
   }
 #endif

@@ -180,9 +180,9 @@ void fetch_host(char * hostname, int hostlen, struct in_addr *address, struct in
       break;
 
 /*
- * NetBSD probably falls into the same camp - need to check
+ * Is there any system where we need to use ifr_netmask?
  */
-#if defined (__FreeBSD__) || defined (__NetBSD__)
+#if 1
     b = (struct sockaddr_in*)&ifreqmask.ifr_addr;
 #else
     b = (struct sockaddr_in*)&ifreqmask.ifr_netmask;
