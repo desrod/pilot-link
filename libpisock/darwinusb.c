@@ -107,7 +107,7 @@
  * These values are somewhat tricky.  Priming reads with a size of exactly one
  * USB packet works best (no timeouts).  Probably best to leave these as they are.
  */
-#define MAX_AUTO_READ_SIZE	16384
+#define MAX_AUTO_READ_SIZE	32767
 #define AUTO_READ_SIZE		64
 
 
@@ -297,7 +297,7 @@ static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short ven
 static IOReturn	find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved);
 static int		prime_read (usb_connection_t *connexion);
 static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe);
-static void		decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
+static int		decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
 
 
@@ -632,13 +632,8 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	 */
 	kr = read_generic_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
 	if (kr != kIOReturnSuccess)
-	{
 		kr = read_visor_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
-		if (kr == kIOReturnSuccess)
-			*pipe_info_retrieved = 1;
-	}
-	else
-		*pipe_info_retrieved = 1;
+	*pipe_info_retrieved = (kr == kIOReturnSuccess);
 
 	/* query bytes available. Not that we really care,
 	 * but most devices expect to receive this before
@@ -727,41 +722,47 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		}
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface has %d endpoints\n", intfNumEndpoints));
 
-		/* If device didn't answer to the connection_information request, check manually over the pipes
-		 * if there is a connection data sent by the device. I some traces were showing data
-		 * sent over pipes that didn't look like legit. packets. Turns out this looked more like a
-		 * palm_ext_connection_info buffer.
+		/* If device didn't answer to the connection_information request,
+		 * try to read a preamble sent by the device. This is sent by devices which chipsets
+		 * don't support the vendor control endpoint requests. Look for the first pipe on
+		 * which a preamble is available.
 		 */
 		if (!pipe_info_retrieved)
 		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: checking for pipe_info sent by device\n"));
-			for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
+			int reqTimeout;
+			int preambleFound = 0;
+			for (reqTimeout = 100; reqTimeout <= 300 && !preambleFound; reqTimeout += 100)
 			{
-				kr = (*usb.interface)->GetPipeProperties (usb.interface, pipeRef, &direction, &number,
-									  &transferType, &maxPacketSize, &interval);
-				if (kr != kIOReturnSuccess)
-					continue;
-				if (direction == kUSBIn)
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: checking for pipe_info sent by device with timeout %dms\n"));
+				for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
 				{
-					UInt32 size = sizeof(usb.read_buffer);
-					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: trying pipe %d type=%d\n", pipeRef, (int)transferType));
-					if (transferType == kUSBBulk)
-						kr = (*usb.interface)->ReadPipeTO (usb.interface, pipeRef, &usb.read_buffer, &size, 1000, 250);
-					else
-						kr = (*usb.interface)->ReadPipe (usb.interface, pipeRef, &usb.read_buffer, &size);
-
-					if (kr == kIOReturnSuccess && size >= 8)
+					kr = (*usb.interface)->GetPipeProperties (usb.interface, pipeRef, &direction, &number,
+										  &transferType, &maxPacketSize, &interval);
+					if (kr != kIOReturnSuccess)
+						continue;
+					if (direction == kUSBIn)
 					{
-						/* got something!! */
-						LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: got %d bytes there!\n", (int)size));
-						CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(usb.read_buffer, size));
-						if (usb.read_buffer[0]=='V' && usb.read_buffer[1]=='N' &&
-							usb.read_buffer[2]=='D' && usb.read_buffer[3]=='R')
+						UInt32 size = sizeof(usb.read_buffer);
+						LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: trying pipe %d type=%d\n", pipeRef, (int)transferType));
+						if (transferType == kUSBBulk)
+							kr = (*usb.interface)->ReadPipeTO (usb.interface, pipeRef, &usb.read_buffer, &size, reqTimeout, 250);
+						else
+							kr = (*usb.interface)->ReadPipe (usb.interface, pipeRef, &usb.read_buffer, &size);
+
+						if (kr == kIOReturnSuccess && size >= 8)
 						{
-							palm_ext_connection_info ci;
-							memcpy(&ci, &usb.read_buffer[6], sizeof(ci));
-							decode_generic_connection_information(&ci, &port_number, &input_pipe_number, &output_pipe_number);
-							break;
+							/* got something!! */
+							LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: got %d bytes there!\n", (int)size));
+							CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(usb.read_buffer, size));
+							if (!memcmp(usb.read_buffer, "VNDR10", 6))
+							{
+								/* VNDR version 1.0 */
+								palm_ext_connection_info ci;
+								memcpy(&ci, &usb.read_buffer[6], sizeof(ci));
+								decode_generic_connection_information(&ci, &port_number, &input_pipe_number, &output_pipe_number);
+								preambleFound = 1;
+								break;
+							}
 						}
 					}
 				}
@@ -934,12 +935,14 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 	return kr;
 }
 
-static void
+static int
 decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe)
 {
 	int i;
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: decode_generic_connection_information num_ports=%d, endpoint_numbers_different=%d\n", ci->num_ports, ci->endpoint_numbers_different));
+	if (ci->num_ports == 0)
+		return -1;
 	for (i=0; i < ci->num_ports; i++)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx\n", i, ci->connections[i].port_function_id));
@@ -949,16 +952,17 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 			ci->connections[i].port_function_id == 'Lsfr')		/* T5 */
 		{
 			/* 'sync': we found the port/pipes to use for synchronization
-			 * force find_interfaces to select this one rather than another one
-			 * if the port number in the structure is not 0, there are chances
-			 * that the "number" of each pipe is a port number. Otherwise, if
-			 * the endpoint info is not 0, chances are that it contains input
-			 * and output pipe number that are also the "number" value of the pipe
-			 * (in this case, each pipe has a different "number")
+			 * If endpoint_numbers_different is != 0, then the number of each
+			 * endpoint to use for IN and OUT is stored in endpoint_info.
+			 * Otherwise, the port number (same for both endpoints) is in
+			 * port.
 			 */
-			if (port_number && ci->connections[i].port)
+			if (!ci->endpoint_numbers_different)
+			{
+				if (port_number)
 					*port_number = ci->connections[i].port;
-			if (ci->connections[i].endpoint_info)
+			}
+			else if (ci->connections[i].endpoint_info)
 			{
 				if (input_pipe)
 					*input_pipe = ci->connections[i].endpoint_info >> 4;
@@ -967,6 +971,7 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 			}
 		}
 	}
+	return kIOReturnSuccess;
 }
 
 static IOReturn
@@ -979,10 +984,9 @@ read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_numbe
 	if (kr != kIOReturnSuccess)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", kr));
+		return kr;
 	}
-	else
-		decode_generic_connection_information(&ci, port_number, input_pipe, output_pipe);
-	return kr;
+	return decode_generic_connection_information(&ci, port_number, input_pipe, output_pipe);
 }
 
 static void
