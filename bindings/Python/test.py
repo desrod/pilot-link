@@ -22,15 +22,36 @@ port = "/dev/pilot"
 
 
 print "Press HotSync now"
-sd = pisock.pilot_connect(port)
-if sd == -1:
-    print "Unable to connect."
+sd = pisock.pi_socket(pisock.PI_AF_PILOT,
+                      pisock.PI_SOCK_STREAM,
+                      pisock.PI_PF_DLP)
+print sd
+result = pisock.pi_bind(sd, port);
+# should throw exception ?
+print result
+if result < 0:
+    print "Unable to bind to port."
+    sys.exit(10)
+result = pisock.pi_listen(sd,1)
+if result < 0:
+    print "Unable to listen on port."
+    sys.exit(10)
+sd, address = pisock.pi_accept(sd);
+
+if sd < 0:
+    print "Unable to accept data on port."
     sys.exit(10)
 
+print "Going to ReadSysInfo"
+print pisock.dlp_ReadSysInfo(sd)
+print "Done ReadSysInfo"
+
 try:
+    print "Going to OpenConduit"
     pisock.dlp_OpenConduit(sd)
+    print "Done OpenConduit"
 except pisock.error, e:
-    print e
+    print "Exception in OpenConduit:", e
     sys.exit(10)
     
 print pisock.dlp_ReadUserInfo(sd)

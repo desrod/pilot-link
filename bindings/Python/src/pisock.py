@@ -33,20 +33,23 @@ del types
 error = _pisock.error 
 
 
+print_splash = _pisock.print_splash
+
 pilot_connect = _pisock.pilot_connect
 PI_AF_PILOT = _pisock.PI_AF_PILOT
-PI_PF_DEV = _pisock.PI_PF_DEV
-PI_PF_SLP = _pisock.PI_PF_SLP
-PI_PF_SYS = _pisock.PI_PF_SYS
-PI_PF_PADP = _pisock.PI_PF_PADP
-PI_PF_NET = _pisock.PI_PF_NET
-PI_PF_DLP = _pisock.PI_PF_DLP
 PI_SOCK_STREAM = _pisock.PI_SOCK_STREAM
 PI_SOCK_RAW = _pisock.PI_SOCK_RAW
 PI_CMD_CMP = _pisock.PI_CMD_CMP
 PI_CMD_NET = _pisock.PI_CMD_NET
 PI_CMD_SYS = _pisock.PI_CMD_SYS
 PI_MSG_PEEK = _pisock.PI_MSG_PEEK
+PI_MSG_REALLOC = _pisock.PI_MSG_REALLOC
+PI_PF_DEV = _pisock.PI_PF_DEV
+PI_PF_SLP = _pisock.PI_PF_SLP
+PI_PF_SYS = _pisock.PI_PF_SYS
+PI_PF_PADP = _pisock.PI_PF_PADP
+PI_PF_NET = _pisock.PI_PF_NET
+PI_PF_DLP = _pisock.PI_PF_DLP
 PI_LEVEL_DEV = _pisock.PI_LEVEL_DEV
 PI_LEVEL_SLP = _pisock.PI_LEVEL_SLP
 PI_LEVEL_PADP = _pisock.PI_LEVEL_PADP
@@ -77,12 +80,137 @@ PI_NET_TYPE = _pisock.PI_NET_TYPE
 PI_NET_SPLIT_WRITES = _pisock.PI_NET_SPLIT_WRITES
 PI_NET_WRITE_CHUNKSIZE = _pisock.PI_NET_WRITE_CHUNKSIZE
 PI_SOCK_STATE = _pisock.PI_SOCK_STATE
-PI_PilotSocketDLP = _pisock.PI_PilotSocketDLP
-PI_PilotSocketConsole = _pisock.PI_PilotSocketConsole
-PI_PilotSocketDebugger = _pisock.PI_PilotSocketDebugger
-PI_PilotSocketRemoteUI = _pisock.PI_PilotSocketRemoteUI
+class pi_socket_t(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, pi_socket_t, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, pi_socket_t, name)
+    def __repr__(self):
+        return "<C pi_socket_t instance at %s>" % (self.this,)
+    __swig_setmethods__["sd"] = _pisock.pi_socket_t_sd_set
+    __swig_getmethods__["sd"] = _pisock.pi_socket_t_sd_get
+    if _newclass:sd = property(_pisock.pi_socket_t_sd_get, _pisock.pi_socket_t_sd_set)
+    __swig_setmethods__["type"] = _pisock.pi_socket_t_type_set
+    __swig_getmethods__["type"] = _pisock.pi_socket_t_type_get
+    if _newclass:type = property(_pisock.pi_socket_t_type_get, _pisock.pi_socket_t_type_set)
+    __swig_setmethods__["protocol"] = _pisock.pi_socket_t_protocol_set
+    __swig_getmethods__["protocol"] = _pisock.pi_socket_t_protocol_get
+    if _newclass:protocol = property(_pisock.pi_socket_t_protocol_get, _pisock.pi_socket_t_protocol_set)
+    __swig_setmethods__["cmd"] = _pisock.pi_socket_t_cmd_set
+    __swig_getmethods__["cmd"] = _pisock.pi_socket_t_cmd_get
+    if _newclass:cmd = property(_pisock.pi_socket_t_cmd_get, _pisock.pi_socket_t_cmd_set)
+    __swig_setmethods__["laddr"] = _pisock.pi_socket_t_laddr_set
+    __swig_getmethods__["laddr"] = _pisock.pi_socket_t_laddr_get
+    if _newclass:laddr = property(_pisock.pi_socket_t_laddr_get, _pisock.pi_socket_t_laddr_set)
+    __swig_setmethods__["laddrlen"] = _pisock.pi_socket_t_laddrlen_set
+    __swig_getmethods__["laddrlen"] = _pisock.pi_socket_t_laddrlen_get
+    if _newclass:laddrlen = property(_pisock.pi_socket_t_laddrlen_get, _pisock.pi_socket_t_laddrlen_set)
+    __swig_setmethods__["raddr"] = _pisock.pi_socket_t_raddr_set
+    __swig_getmethods__["raddr"] = _pisock.pi_socket_t_raddr_get
+    if _newclass:raddr = property(_pisock.pi_socket_t_raddr_get, _pisock.pi_socket_t_raddr_set)
+    __swig_setmethods__["raddrlen"] = _pisock.pi_socket_t_raddrlen_set
+    __swig_getmethods__["raddrlen"] = _pisock.pi_socket_t_raddrlen_get
+    if _newclass:raddrlen = property(_pisock.pi_socket_t_raddrlen_get, _pisock.pi_socket_t_raddrlen_set)
+    __swig_setmethods__["protocol_queue"] = _pisock.pi_socket_t_protocol_queue_set
+    __swig_getmethods__["protocol_queue"] = _pisock.pi_socket_t_protocol_queue_get
+    if _newclass:protocol_queue = property(_pisock.pi_socket_t_protocol_queue_get, _pisock.pi_socket_t_protocol_queue_set)
+    __swig_setmethods__["queue_len"] = _pisock.pi_socket_t_queue_len_set
+    __swig_getmethods__["queue_len"] = _pisock.pi_socket_t_queue_len_get
+    if _newclass:queue_len = property(_pisock.pi_socket_t_queue_len_get, _pisock.pi_socket_t_queue_len_set)
+    __swig_setmethods__["cmd_queue"] = _pisock.pi_socket_t_cmd_queue_set
+    __swig_getmethods__["cmd_queue"] = _pisock.pi_socket_t_cmd_queue_get
+    if _newclass:cmd_queue = property(_pisock.pi_socket_t_cmd_queue_get, _pisock.pi_socket_t_cmd_queue_set)
+    __swig_setmethods__["cmd_len"] = _pisock.pi_socket_t_cmd_len_set
+    __swig_getmethods__["cmd_len"] = _pisock.pi_socket_t_cmd_len_get
+    if _newclass:cmd_len = property(_pisock.pi_socket_t_cmd_len_get, _pisock.pi_socket_t_cmd_len_set)
+    __swig_setmethods__["device"] = _pisock.pi_socket_t_device_set
+    __swig_getmethods__["device"] = _pisock.pi_socket_t_device_get
+    if _newclass:device = property(_pisock.pi_socket_t_device_get, _pisock.pi_socket_t_device_set)
+    __swig_setmethods__["state"] = _pisock.pi_socket_t_state_set
+    __swig_getmethods__["state"] = _pisock.pi_socket_t_state_get
+    if _newclass:state = property(_pisock.pi_socket_t_state_get, _pisock.pi_socket_t_state_set)
+    __swig_setmethods__["command"] = _pisock.pi_socket_t_command_set
+    __swig_getmethods__["command"] = _pisock.pi_socket_t_command_get
+    if _newclass:command = property(_pisock.pi_socket_t_command_get, _pisock.pi_socket_t_command_set)
+    __swig_setmethods__["accept_to"] = _pisock.pi_socket_t_accept_to_set
+    __swig_getmethods__["accept_to"] = _pisock.pi_socket_t_accept_to_get
+    if _newclass:accept_to = property(_pisock.pi_socket_t_accept_to_get, _pisock.pi_socket_t_accept_to_set)
+    __swig_setmethods__["dlprecord"] = _pisock.pi_socket_t_dlprecord_set
+    __swig_getmethods__["dlprecord"] = _pisock.pi_socket_t_dlprecord_get
+    if _newclass:dlprecord = property(_pisock.pi_socket_t_dlprecord_get, _pisock.pi_socket_t_dlprecord_set)
+    __swig_setmethods__["dlpversion"] = _pisock.pi_socket_t_dlpversion_set
+    __swig_getmethods__["dlpversion"] = _pisock.pi_socket_t_dlpversion_get
+    if _newclass:dlpversion = property(_pisock.pi_socket_t_dlpversion_get, _pisock.pi_socket_t_dlpversion_set)
+    __swig_setmethods__["maxrecsize"] = _pisock.pi_socket_t_maxrecsize_set
+    __swig_getmethods__["maxrecsize"] = _pisock.pi_socket_t_maxrecsize_get
+    if _newclass:maxrecsize = property(_pisock.pi_socket_t_maxrecsize_get, _pisock.pi_socket_t_maxrecsize_set)
+    __swig_setmethods__["last_error"] = _pisock.pi_socket_t_last_error_set
+    __swig_getmethods__["last_error"] = _pisock.pi_socket_t_last_error_get
+    if _newclass:last_error = property(_pisock.pi_socket_t_last_error_get, _pisock.pi_socket_t_last_error_set)
+    __swig_setmethods__["palmos_error"] = _pisock.pi_socket_t_palmos_error_set
+    __swig_getmethods__["palmos_error"] = _pisock.pi_socket_t_palmos_error_get
+    if _newclass:palmos_error = property(_pisock.pi_socket_t_palmos_error_get, _pisock.pi_socket_t_palmos_error_set)
+    def __init__(self, *args):
+        _swig_setattr(self, pi_socket_t, 'this', _pisock.new_pi_socket_t(*args))
+        _swig_setattr(self, pi_socket_t, 'thisown', 1)
+    def __del__(self, destroy=_pisock.delete_pi_socket_t):
+        try:
+            if self.thisown: destroy(self)
+        except: pass
+
+class pi_socket_tPtr(pi_socket_t):
+    def __init__(self, this):
+        _swig_setattr(self, pi_socket_t, 'this', this)
+        if not hasattr(self,"thisown"): _swig_setattr(self, pi_socket_t, 'thisown', 0)
+        _swig_setattr(self, pi_socket_t,self.__class__,pi_socket_t)
+_pisock.pi_socket_t_swigregister(pi_socket_tPtr)
+
+class pi_socket_list_t(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, pi_socket_list_t, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, pi_socket_list_t, name)
+    def __repr__(self):
+        return "<C pi_socket_list_t instance at %s>" % (self.this,)
+    __swig_setmethods__["ps"] = _pisock.pi_socket_list_t_ps_set
+    __swig_getmethods__["ps"] = _pisock.pi_socket_list_t_ps_get
+    if _newclass:ps = property(_pisock.pi_socket_list_t_ps_get, _pisock.pi_socket_list_t_ps_set)
+    __swig_setmethods__["next"] = _pisock.pi_socket_list_t_next_set
+    __swig_getmethods__["next"] = _pisock.pi_socket_list_t_next_get
+    if _newclass:next = property(_pisock.pi_socket_list_t_next_get, _pisock.pi_socket_list_t_next_set)
+    def __init__(self, *args):
+        _swig_setattr(self, pi_socket_list_t, 'this', _pisock.new_pi_socket_list_t(*args))
+        _swig_setattr(self, pi_socket_list_t, 'thisown', 1)
+    def __del__(self, destroy=_pisock.delete_pi_socket_list_t):
+        try:
+            if self.thisown: destroy(self)
+        except: pass
+
+class pi_socket_list_tPtr(pi_socket_list_t):
+    def __init__(self, this):
+        _swig_setattr(self, pi_socket_list_t, 'this', this)
+        if not hasattr(self,"thisown"): _swig_setattr(self, pi_socket_list_t, 'thisown', 0)
+        _swig_setattr(self, pi_socket_list_t,self.__class__,pi_socket_list_t)
+_pisock.pi_socket_list_t_swigregister(pi_socket_list_tPtr)
+
 
 pi_socket = _pisock.pi_socket
+
+pi_socket_setsd = _pisock.pi_socket_setsd
+
+pi_getsockname = _pisock.pi_getsockname
+
+pi_getsockpeer = _pisock.pi_getsockpeer
+
+pi_getsockopt = _pisock.pi_getsockopt
+
+pi_setsockopt = _pisock.pi_setsockopt
+
+pi_protocol = _pisock.pi_protocol
+
+pi_protocol_next = _pisock.pi_protocol_next
+
+pi_socket_connected = _pisock.pi_socket_connected
 
 pi_connect = _pisock.pi_connect
 
@@ -94,7 +222,7 @@ pi_accept = _pisock.pi_accept
 
 pi_accept_to = _pisock.pi_accept_to
 
-pi_socket_connected = _pisock.pi_socket_connected
+pi_close = _pisock.pi_close
 
 pi_send = _pisock.pi_send
 
@@ -104,23 +232,7 @@ pi_read = _pisock.pi_read
 
 pi_write = _pisock.pi_write
 
-pi_getsockname = _pisock.pi_getsockname
-
-pi_getsockpeer = _pisock.pi_getsockpeer
-
-pi_setsockopt = _pisock.pi_setsockopt
-
-pi_getsockopt = _pisock.pi_getsockopt
-
-pi_version = _pisock.pi_version
-
-pi_maxrecsize = _pisock.pi_maxrecsize
-
-pi_tickle = _pisock.pi_tickle
-
-pi_watchdog = _pisock.pi_watchdog
-
-pi_close = _pisock.pi_close
+pi_flush = _pisock.pi_flush
 
 pi_error = _pisock.pi_error
 
@@ -131,6 +243,14 @@ pi_palmos_error = _pisock.pi_palmos_error
 pi_set_palmos_error = _pisock.pi_set_palmos_error
 
 pi_reset_errors = _pisock.pi_reset_errors
+
+pi_version = _pisock.pi_version
+
+pi_maxrecsize = _pisock.pi_maxrecsize
+
+pi_tickle = _pisock.pi_tickle
+
+pi_watchdog = _pisock.pi_watchdog
 
 dlp_strerror = _pisock.dlp_strerror
 dlpDBFlagResource = _pisock.dlpDBFlagResource

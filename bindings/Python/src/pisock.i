@@ -43,6 +43,7 @@
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
+#include "pi-util.h"
 #include "pi-header.h"    
 
 extern char *printlong(unsigned long);
@@ -70,16 +71,17 @@ error = _pisock.error
 %} 
 
 %include typemaps.i
-%include ../../include/pi-args.h
 
-%include pi-header.i
+#define PI_DEPRECATED
 
-%include pi-source.i
+%include ../../../include/pi-args.h
+
+%include ../../../include/pi-header.h
 
 %include general-maps.i
 
 %include pi-socket-maps.i
-%include pi-socket.i
+%include ../../../include/pi-socket.h
 
 %include pi-dlp-maps.i
 %include pi-dlp.i

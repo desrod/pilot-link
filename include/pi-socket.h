@@ -193,9 +193,9 @@ typedef struct pi_socket_list
 	extern int pi_socket_setsd PI_ARGS((pi_socket_t *ps, int pi_sd));
 
 	extern int pi_getsockname
-	    PI_ARGS((int pi_sd, struct sockaddr * addr, size_t *namelen));
+	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen));
 	extern int pi_getsockpeer
-	    PI_ARGS((int pi_sd, struct sockaddr * addr, size_t *namelen));
+	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen));
 
 	extern int pi_getsockopt
 	    PI_ARGS((int pi_sd, int level, int option_name,
@@ -234,10 +234,10 @@ typedef struct pi_socket_list
 
 	extern int pi_accept
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
-		     size_t *addrlen));
+		     size_t *namelen));
 
 	extern int pi_accept_to
-	    PI_ARGS((int pi_sd, struct sockaddr * addr, size_t *addrlen,
+	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen,
 		     int timeout));
 
 	extern int pi_close PI_ARGS((int pi_sd));

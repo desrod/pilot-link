@@ -137,7 +137,7 @@ extern DLPERROR dlp_ResetDBIndex (int sd, int dbhandle);
 %native(dlp_ReadRecordIDList) PyObject *_wrap_dlp_ReadRecordIDList(PyObject *, PyObject *);
 
 extern DLPDBERROR dlp_WriteRecord (int sd, int dbhandle, int flags,
-				 recordid_t INPUT, int catID, void *INBUF,
+				 recordid_t INPUT, int catID, PI_CONST void *INBUF,
 				 size_t INBUFLEN, recordid_t *OUTPUT);
 extern DLPERROR dlp_DeleteRecord (int sd, int dbhandle, int all, recordid_t INPUT);
 extern DLPERROR dlp_DeleteCategory (int sd, int dbhandle, int category);

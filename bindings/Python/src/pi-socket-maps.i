@@ -22,7 +22,7 @@
     $1 = (struct sockaddr *)&temp;
 }
 
-%typemap (python, argout) struct sockaddr *OUTPUT {
+%typemap (python, argout) struct sockaddr *remote_addr {
     PyObject *o;
 
     if ($1) {
@@ -32,10 +32,11 @@
     }
 }
 
-%typemap (python,in,numinputs=0) struct sockaddr *OUTPUT (struct pi_sockaddr temp) {
+%typemap (python,in,numinputs=0) struct sockaddr *remote_addr (struct pi_sockaddr temp) {
     $1 = (struct sockaddr *)&temp;
 }
 
-%typemap (python,in,numinputs=0) int addrlen {
-    $1 = sizeof(struct pi_sockaddr);
+%typemap (python,in,numinputs=0) size_t *namelen (size_t temp) {
+    $1 = (size_t *)&temp;
 }
+
