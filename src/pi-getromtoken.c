@@ -37,8 +37,6 @@ int main(int argc, const char *argv[])
 		sd 		= -1;
 
 	const char
-                *progname 	= argv[0],
-		*port 		= NULL,
 	        *token 		= NULL;
 
 	long    long_token;
@@ -56,7 +54,7 @@ int main(int argc, const char *argv[])
 	};
 
 	pc = poptGetContext("pi-getromtoken", argc, argv, options, 0);
-	poptSetOtherOptionHelp(pc,"\n\n",
+	poptSetOtherOptionHelp(pc,"\n\n"
 		"   Reads a ROM token from a Palm Handheld device.\n"
 		"   Tokens you may currently extract are:\n"
 		"       adcc:  Entropy for internal A->D convertor calibration\n"
@@ -85,7 +83,7 @@ int main(int argc, const char *argv[])
 		return 1;
 	}
 
-	long_token = pi_mktag(token);
+	long_token = pi_mktag(token[0],token[1],token[2],token[3]);
 
 	sd = plu_connect();
 
