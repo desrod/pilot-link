@@ -3,6 +3,10 @@
 	* src/pilot-addresses.c: Fixed missing options, getopt_long(),
 	  changed -c argument to -i. 
 
+	* libpisock/utils.c: using unsigned short for crc16, not int
+
+	* include/pi-source.h: same
+
 2002-03-15  JP Rosevear  <jpr@ximian.co>m
 
 	* pilot-link.m4.in: remove unneccessary checks, error on failure

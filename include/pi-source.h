@@ -146,7 +146,7 @@ extern "C" {
 
 	extern void pi_socket_recognize PI_ARGS((struct pi_socket *));
 	extern struct pi_socket *find_pi_socket PI_ARGS((int sd));
-	extern int crc16 PI_ARGS((unsigned char *ptr, int count));
+	extern unsigned short crc16 PI_ARGS((unsigned char *ptr, int count));
 	extern char *printlong PI_ARGS((unsigned long val));
 	extern unsigned long makelong PI_ARGS((char *c));
 
