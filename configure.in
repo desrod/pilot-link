@@ -101,10 +101,8 @@ dnl ******************************
 dnl Check if this was CVS source
 dnl ******************************
 if test -d "${srcdir}/CVS" ; then
-        PL_FROM_CVS=yes
-        CFLAGS="$CFLAGS -Werror"
-else
-        PL_FROM_CVS=no
+       PL_FROM_CVS=yes
+dnl        CFLAGS="$CFLAGS -Werror"
 fi
 
 
