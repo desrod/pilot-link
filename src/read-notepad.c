@@ -23,7 +23,7 @@
 #include <config.h>
 #endif
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,17 +48,6 @@ char *progname;
 void write_png( FILE *f, struct NotePad *n );
 #endif
 
-struct option options[] = {
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
-	{"list",        no_argument,       NULL, 'l'},
-	{"type",        required_argument, NULL, 't'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "hvp:lt:";
-
 
 /***********************************************************************
  *
@@ -80,7 +69,7 @@ static void display_help(const char *progname)
 	printf("     -h, --help              Display help information for %s\n", progname);
 	printf("     -v, --version           Display %s version information\n\n", progname);
 	printf("     -l                      List Notes on device\n");
-	printf("     -t                      Specify picture output type\n");
+	printf("     -t [png|ppm]            Specify picture output type\n");
 	printf("                             either \"ppm\" or \"png\"\n\n");
 	printf("   Examples: %s -p /dev/pilot -l -t png\n\n", progname);
 
@@ -477,16 +466,36 @@ int main(int argc, char *argv[])
    
    int type = NOTE_OUT_PPM;
    
-   char		*port 		= NULL; 	/* *filename = NULL, *ptr */
+   char		*port 		= NULL,
+		*typename	= NULL;
    
    struct 	PilotUser User;
    struct 	NotePadAppInfo nai;
    pi_buffer_t *buffer;
 
+   poptContext pc;
+
+   struct poptOption options[] = {
+	   {"port", 'p', POPT_ARG_STRING, &port, 0,
+	    "Use device file <port> to communicate with Palm", "port"},
+	   {"help", 'h', POPT_ARG_NONE, NULL, 'h',
+	    "Display help information", NULL},
+	   {"version", 'v', POPT_ARG_NONE, NULL, 'v',
+	    "Show program version information", NULL},
+	   {NULL, 'l', POPT_ARG_VAL, &action, NOTEPAD_ACTION_LIST,
+	    "List Notes on device", NULL},
+	   {"type", 't', POPT_ARG_STRING, NULL, 't',
+	    "Specify picture output type, either \"ppm\" or \"png\"",
+	    "type"},
+	   POPT_TABLEEND
+   };
+
+   pc = poptGetContext("read-notepad", argc, argv, options, 0);
+
+
    progname = argv[0];
 
-   while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) 
-     {
+   while ((c = poptGetNextOpt(pc)) >= 0) {
 	switch (c) {
 	 case 'h':
 	   display_help(progname);
@@ -494,12 +503,9 @@ int main(int argc, char *argv[])
 	 case 'v':
 	   print_splash(progname);
 	   return 0;
-	 case 'p':
-	   port = optarg;
-/* 	   filename = NULL; */
-	   break;
 	 case 't':
-	   if( !strncmp( "png", optarg, 3 ))
+	   typename = poptGetOptArg(pc);
+	   if( !strncmp( "png", typename, 3 ))
 	     {
 #ifdef HAVE_PNG	     
 		type = NOTE_OUT_PNG;
@@ -507,7 +513,7 @@ int main(int argc, char *argv[])
 		fprintf( stderr, "read-notepad was built without png support\n" );
 #endif
 	     }
-	   else if( !strncmp( "ppm", optarg, 3 ))
+	   else if( !strncmp( "ppm", typename, 3 ))
 	     {
 		type = NOTE_OUT_PPM;
 	     }
@@ -517,20 +523,17 @@ int main(int argc, char *argv[])
 		type = NOTE_OUT_PPM;
 	     }
 	   
-/*	     filename = NULL; */
-
-	   break;
-#if 0	   
-	 case 'f':
-	   filename = optarg;
-	   break;
-#endif
-	 case 'l':
-	   action = NOTEPAD_ACTION_LIST;
 	   break;
 	}
-     }
-   
+   }
+   if (c < -1) {
+	   /* an error occurred during option processing */
+	   fprintf(stderr, "%s: %s\n",
+	       poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+	       poptStrerror(c));
+	   return 1;
+   }
+
    sd = pilot_connect(port);
 
    if( sd < 0 )

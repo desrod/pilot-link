@@ -24,7 +24,7 @@
 #include <config.h>
 #endif
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,16 +38,6 @@ static void display_help(const char *progname);
 void print_splash(char *progname);
 int pilot_connect(const char *porg);
 extern time_t parsedate(char *p);
-
-struct option options[] = {
-        {"port",        required_argument, NULL, 'p'},
-        {"help",        no_argument,       NULL, 'h'},
-        {"version",     no_argument,       NULL, 'v'},
-        {"read",        required_argument, NULL, 'r'},
-        {0,             0,                 0,    0}
-};
-
-static const char *optstring = "p:hvr:";
 
 static void display_help(const char *progname)
 {
@@ -86,8 +76,23 @@ int main(int argc, char *argv[])
 	struct 	PilotUser User;
 	struct 	Appointment appointment;
 
+	poptContext pc;
 
-        while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"read", 'r', POPT_ARG_STRING, &filename, 0,
+		 "Read entries from <file>", "file"},
+		POPT_TABLEEND
+	};
+
+	pc = poptGetContext("install-datebook", argc, argv, options, 0);
+
+	while ((c = poptGetNextOpt(pc)) >= 0) {
                 switch (c) {
 
                 case 'h':
@@ -96,17 +101,23 @@ int main(int argc, char *argv[])
                 case 'v':
                         print_splash(progname);
                         return 0;
-                case 'p':
-                        port = optarg;
-                        break;
-                case 'r':
-                        filename = optarg;
-                        break;
 		default:
                         display_help(progname);
                         return 0;
                 }
         }
+
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
+	}
+	if (filename == NULL) {
+		display_help(progname);
+		exit(EXIT_FAILURE);
+	}
 
 	sd = pilot_connect(port);
 	if (sd < 0)

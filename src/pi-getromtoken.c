@@ -19,23 +19,13 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 
 #include "pi-dlp.h"
 #include "pi-header.h"
 #include "pi-source.h"
 #include "pi-syspkt.h"
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"token",       required_argument, NULL, 't'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvu:i:t:";
 
 
 /***********************************************************************
@@ -81,7 +71,23 @@ int main(int argc, char *argv[])
 
 	char    buffer[50];
 	
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	poptContext pc;
+
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"token", 't', POPT_ARG_STRING, &token, 0,
+		 "A ROM token to read (i.e. snum)", "token"},
+		POPT_TABLEEND
+	};
+
+	pc = poptGetContext("pi-getromtoken", argc, argv, options, 0);
+
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 
 		case 'h':
@@ -90,17 +96,20 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
-		case 't':
-			token = optarg;
-			break;
 		default:
 			display_help(progname);
 			return 0;
 		}
 	}
+
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
+	}
+
 	
 	if (!token) {
 		display_help(progname);

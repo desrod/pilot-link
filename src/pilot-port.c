@@ -19,7 +19,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,19 +40,8 @@
 
 /* Declare prototypes */
 static void display_help(const char *progname);
-void print_splash(char *progname);
-int pilot_connect(const char *porg);
 
 void do_read(struct pi_socket *ps, int type, char *buffer, int length);
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",	no_argument,       NULL, 'v'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hv";
 
 /***********************************************************************
  *
@@ -102,7 +91,7 @@ static void display_help(const char *progname)
 	printf("     -v, --version           Display %s version information\n\n", progname);  
 	printf("   Examples: %s -p /dev/pilot\n\n", progname);
 
-	return 0;
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -119,8 +108,22 @@ int main(int argc, char *argv[])
 		*slpbuffer,
 		*progname 	= argv[0],
 		*port 		= NULL;
-	
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+
+	poptContext pc;
+
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		POPT_TABLEEND
+	};
+
+	pc = poptGetContext("pi-port", argc, argv, options, 0);
+
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 		
 		case 'h':
@@ -129,13 +132,18 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
 		default:
 			display_help(progname);
 			return 0;
 		}
+	}
+
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
 	}
 	
 

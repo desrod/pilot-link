@@ -19,7 +19,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -27,18 +27,6 @@
 #include "pi-source.h"
 #include "pi-file.h"
 #include "pi-header.h"
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"install",     required_argument, NULL, 'i'},
-	{"fetch",       required_argument, NULL, 'f'},
-	{"delete",      no_argument,       NULL, 'd'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvi:f:d";
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -143,18 +131,16 @@ static void display_help(const char *progname)
 	printf("   Usage: %s -p <port> [options]\n\n", progname);
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -i, --install < file    Pack and install the file to your Palm\n");
-	printf("     -f, --fetch > file      Unpack the file from your Palm device\n");
+	printf("     -h, --help              Display this information\n");
+	printf("     -v, --version           Display version information\n");
+	printf("     -i, --install file      Pack and install the file to your Palm\n");
+	printf("     -f, --fetch file        Unpack the file from your Palm device\n");
 	printf("     -d, --delete            Delete the packaged file from your Palm device\n\n");
 	printf("   Examples:\n");
 	printf("     To package up and store a file for later retrieval on your Palm:\n");
 	printf("             %s -p /dev/pilot -i InstallThis.zip\n\n", progname);
 	printf("     To unpack a file that has been stored on your Palm with %s:\n", progname);
 	printf("             %s -p /dev/pilot -f RetrieveThis.pdf\n\n", progname);
-	printf("   Please notice that you must use redirection to Install or Fetch files\n");
-	printf("   using %s.\n\n", progname);
 
 	printf("   Currently the stored name and file type is not queried so you can\n");
 	printf("   potentially Install a PDF file, and retrieve it as a ZIP file.\n\n");
@@ -170,16 +156,36 @@ int main(int argc, char *argv[])
 {
 	int 	c,		/* switch */
 		sd 		= -1,
-
-		install 	= -1,
-		fetch 		= -1,
-		delete 		= -1;
+	        actions,
+		delete 		= 0;
 	
 	char 	*progname 	= argv[0],
-		*port 		= NULL,
-		*filename 	= NULL;
+	        *port 		= NULL,
+	        *install_filename 	= NULL,
+		*fetch_filename 	= NULL;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	poptContext pc;
+
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display this information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"install", 'i', POPT_ARG_STRING, &install_filename, 0,
+		 "Pack and install <file> to your Palm", "file"},
+		{"fetch", 'f', POPT_ARG_STRING, &fetch_filename, 0,
+		 "Unpack the file from your Palm device", "file"},
+		{"delete", 'd', POPT_ARG_NONE, &delete, 0,
+		 "Delete the packaged file from your Palm device", NULL},
+		 POPT_TABLEEND
+	};
+
+	port = getenv("PILOTPORT"),
+
+	pc = poptGetContext("pilot-schlep", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 
 		case 'h':
@@ -188,36 +194,41 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
-		case 'i':
-			filename = optarg;
-			install = 1;
-			break;
-		case 'f':
-			filename = optarg;
-			fetch = 1;
-			break;
-		case 'd':
-			delete = 1;
-			break;
 		default:
 			display_help(progname);
 			return 0;
 		}
 	}
-	
-	if (install + fetch + delete > -1) {
-		display_help(progname);
-		fprintf(stderr, "ERROR: You must specify only one action\n");
+
+	if (c < -1) {
+             /* an error occurred during option processing */
+             fprintf(stderr, "%s: %s\n",
+                     poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+                     poptStrerror(c));
+             return 1;
+	}
+
+	actions = (install_filename != NULL) + 
+	    (fetch_filename != NULL) +
+	    (delete == 1);
+	if (actions > 1) {
+		fprintf(stderr, "%s: You must specify only one action\n",
+		    progname);
 		return -1;
-	} else if (install + fetch + delete == -3) {
+	} else if (actions < 1) {
 		display_help(progname);
-		fprintf(stderr, "ERROR: You must specify at least one action\n");
+		fprintf(stderr, "%s: You must specify at least one action\n",
+		    progname);
 		return -1;
 	}
 		
+	if (port == NULL) {
+		printf
+		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		     "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
+		return -1;
+	}
+
 	sd = pilot_connect(port);
 	if (sd < 0)
 		goto error;
@@ -225,11 +236,11 @@ int main(int argc, char *argv[])
 	if (dlp_OpenConduit(sd) < 0)
 		goto error_close;
 
-	if (install == 1) {
-		if (Install (sd, filename) < 0)
+	if (install_filename != NULL) {
+		if (Install (sd, install_filename) < 0)
 			goto error_close;
-	} else if (fetch == 1) {
-		if (Fetch (sd, filename) < 0)
+	} else if (fetch_filename != NULL) {
+		if (Fetch (sd, fetch_filename) < 0)
 			goto error_close;
 	} else if (delete == 1) {
 		if (Delete (sd) < 0)

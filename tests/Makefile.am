@@ -1,6 +1,7 @@
 INCLUDES = 			\
 	-I../include		\
-	-I$(top_srcdir)/include
+	-I$(top_srcdir)/include \
+	$(POPT_INCLUDES)
 
 noinst_PROGRAMS =		\
 	contactsdb-test		\

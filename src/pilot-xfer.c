@@ -19,7 +19,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -86,35 +86,6 @@ typedef enum {
   palm_op_noop
 } palm_op_t;
 
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"backup",      required_argument, NULL, 'b'},
-	{"update",      required_argument, NULL, 'u'},
-	{"sync",        required_argument, NULL, 's'},
-	{"restore",     required_argument, NULL, 'r'},
-	{"install",     required_argument, NULL, 'i'},
-	{"merge",       required_argument, NULL, 'm'},
-	{"fetch",       required_argument, NULL, 'f'},
-	{"delete",      required_argument, NULL, 'd'},
-	{"exclude",     required_argument, NULL, 'e'},
-	{"Purge",       no_argument,       NULL, 'P'},
-	{"list",        no_argument,       NULL, 'l'},
-	{"Listall",     no_argument,       NULL, 'L'},
-	{"archive",     required_argument, NULL, 'a'},
-	{"exec",        required_argument, NULL, 'x'},
-	{"Flash",       no_argument,       NULL, 'F'},
-	{"Osflash",     no_argument,       NULL, 'O'},
-	{"Illegal",     no_argument,       NULL, 'I'},
-	{"verbose",     no_argument,       NULL, 'V'},
-	{"vfsdir",      required_argument, NULL, 'D'},
-	{NULL,          0,                 NULL, 0},
-
-};
-
-static const char *optstring = "-p:hvb:u:s:r:i:m:f:d:e:PlLa:x:FOIVD:";
-
 int 	sd 	= 0;
 char    *port 	= NULL;
 char    *vfsdir = NULL;
@@ -141,9 +112,10 @@ static int findVFSPath(int verbose, const char *path, long *volume,
  * Return:      Nothing
  *
  ***********************************************************************/
-static void MakeExcludeList(char *efile)
+static void MakeExcludeList(const char *efile)
 {
 	char 	temp[1024];
+
 	FILE 	*f = fopen(efile, "r");
 
 	if (!f) {
@@ -684,7 +656,7 @@ static void Fetch(char *dbname)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Delete(char *dbname)
+static void Delete(const char *dbname)
 {
 	struct 	DBInfo info;
 
@@ -1168,7 +1140,7 @@ static void Install(palm_media_t media_type,const char *localfile)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Merge(char *filename)
+static void Merge(const char *filename)
 {
 	struct pi_file *f;
 
@@ -1215,8 +1187,6 @@ static void ListInternal(palm_media_t media_type)
 	char	text[10],
 		synclog[68];
 	pi_buffer_t *buffer;
-
-	printf("DEBUG: media_type: %d\n", media_type);
 
 	media_type == 1 ? sprintf(text, " and ROM") : sprintf(text, "%s", "");
 	printf("   Reading list of databases in RAM%s...\n", text);
@@ -1696,67 +1666,6 @@ static void Purge(void)
 
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Sync, backup, install, delete and more from your Palm device.\n");
-	printf("   This is the swiss-army-knife of the entire pilot-link suite.\n\n");
-	printf("   Usage: %s [-p port] [ -F|-O -I -q|-c ] command(s)\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for pilot-xfer\n");
-	printf("     -v, --version           Display pilot-xfer version information\n");
-	printf("     -b, --backup <dir>      Back up your Palm to <dir>\n");
-	printf("     -u, --update <dir>      Update <dir> with newer Palm data\n");
-	printf("     -s, --sync <dir>        Same as -u above, but removes local files if\n");
-	printf("                             data is removed from your Palm\n");
-	printf("     -r, --restore <dir>     Restore backupdir to your Palm\n");
-	printf("     -i, --install [db] ..   Install local prc, pdb, pqa files to your Palm\n");
-	printf("     -m, --merge [file] ..   Adds the records in <file> into the corresponding\n");
-	printf("                             Palm database\n");
-	printf("     -f, --fetch [db]        Retrieve [db] from your Palm\n");
-	printf("     -d, --delete [db]       Delete (permanently) [db] from your Palm\n");
-	printf("     -e, --exclude <file>    Exclude databases listed in <file> from being included\n");
-	printf("                             by -b, -s, or -u (See pilot-xfer(1) for more detail)\n");
-	printf("     -P, --Purge             Purge any deleted data that hasn't been cleaned up\n");
-	printf("                             by a sync\n");
-	printf("     -l, --list              List all application and 3rd party Palm data/apps\n");
-	printf("     -L, --List              List all data, internal and external on the Palm\n");
-	printf("     -a, --archive           Modifies -s to archive deleted files in specified\n");
-	printf("                             directory.\n");
-	printf("     -x, --exec              Execute a shell command for intermediate processing\n");
-	printf("     -D, --vfsdir <dir>      List or install specified VFS volume and directory\n");
-	printf("                             instead of internal memory.\n");
-	printf("     -F, --Flash             Modifies -b, -u, and -s, to back up non-OS db's\n");
-	printf("                             from Flash ROM\n");
-	printf("     -O, --Osflash           Modifies -b, -u, and -s, to back up OS db 's from\n");
-	printf("                             Flash ROM\n");
-	printf("     -I, --Illegal           Modifies -b, -u, and -s, to back up the 'illegal'\n");
-	printf("                             database Unsaved Preferences.prc (normally skipped,\n");
-	printf("                             per Palm's recommendation)\n\n");
-	printf("   The serial port used to connect to may be specified by the $PILOTPORT\n");
-	printf("   environment variable in your shell instead of the command line.  If it is\n");
-	printf("   not specified anywhere, it will default to /dev/pilot.\n\n");
-	printf("   Additionally, the baud rate to connect with may be specified by the\n");
-	printf("   $PILOTRATE environment variable.If not specified, it will default to\n");
-	printf("   a safe rate of 9600.\n\n");
-	printf("   Please use caution setting $PILOTRATE to higher values, as several types\n");
-	printf("   of workstations have problems with higher baud rates.  Always consult the\n");
-	printf("   man page(s) for additional usage of these options as well as details on\n");
-	printf("   the results of combining other parameters together.\n\n");
-
-	return;
-}
 
 
 int main(int argc, char *argv[])
@@ -1774,66 +1683,119 @@ int main(int argc, char *argv[])
 	palm_media_t media_type      = palm_media_ram;
 	palm_op_t palm_operation     = palm_op_noop;
 
-	while ((optc = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (optc) {
+	poptContext pc;
 
-		case 'V':
-			verbose = 1;
-			break;
-		case 'h':
-			display_help(progname);
-			return 0;
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"backup", 'b', POPT_ARG_STRING, &dirname, 'b',
+		 "Back up your Palm to <dir>", "dir"},
+		{"update", 'u', POPT_ARG_STRING, &dirname, 'u',
+		 "Update <dir> with newer Palm data", "dir"},
+		{"sync", 's', POPT_ARG_STRING, &dirname, 's',
+		 "Same as -u option, but removes local files if "
+		 "data is removed from your Palm", "dir"},
+		{"restore", 'r', POPT_ARG_STRING, &dirname, 'r',
+		 "Restore backupdir <dir> to your Palm", "dir"},
+		{"install", 'i', POPT_ARG_STRING, &dbname, 'i',
+		 "Install local prc, pdb, pqa files to your Palm", "file"},
+		{"fetch", 'f', POPT_ARG_STRING, &dbname, 'f',
+		 "Retrieve [db] from your Palm", "db"},
+		{"merge", 'm', POPT_ARG_STRING, NULL, 'm',
+		 "Adds the records in <file> into the corresponding Palm database", "file"},
+		{"delete", 'd', POPT_ARG_STRING, NULL, 'd',
+		 "Delete (permanently) [db] from your Palm", "db"},
+		{"Purge", 'P', POPT_ARG_NONE, NULL, 'P',
+		 "Purge any deleted data that hasn't been cleaned up", NULL},
+		{"exclude", 'e', POPT_ARG_STRING, NULL, 'e',
+		 "Exclude databases listed in <file> from being included",
+		 "file"},
+		{"list", 'l', POPT_ARG_NONE, NULL, 'l',
+		 "List all application and 3rd party Palm data/apps", NULL},
+		{"Listall", 'L', POPT_ARG_NONE, NULL, 'L',
+		 "List all data, internal and external on the Palm", NULL},
+		{"archive", 'a', POPT_ARG_STRING, &archive_dir, 0,
+		 "Modifies -s to archive deleted files in directory <dir>", "dir"},
+		{"vfsdir", 'D', POPT_ARG_STRING, &vfsdir, 'D',
+		 "Modifies all of -lLi to use VFS <dir> instead of internal storage", "dir"},
+		{"Flash", 'F', POPT_ARG_VAL, &media_type, palm_media_flash,
+		 "Modifies -b, -u, and -s, to back up non-OS db's"
+		 " from Flash ROM", NULL},
+		{"OsFlash", 'O', POPT_ARG_VAL, &media_type, palm_media_rom,
+		 "Modifies -b, -u, and -s, to back up OS db's"
+		 " from Flash ROM", NULL},
+		{"Illegal", 'I', POPT_ARG_NONE, &unsaved, 0,
+		 "Modifies -b, -u, and -s, to back up the 'illegal"
+		" database Unsaved Preferences.prc (normally skipped)", NULL},
+		{"exec", 'x', POPT_ARG_STRING, NULL, 'x',
+		 "Execute a shell command for intermediate processing", "command"},
+		{"verbose", 'V', POPT_ARG_NONE, &verbose, 0,
+		 "Print  verbose  information - normally routine "
+		 "progress messages will be displayed.", NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
+	const char *help_header_text =
+	    " [-p  <port>] [--help] <options> <actions>\n"
+	    "   Sync, backup, install, delete and more from your Palm device.\n"
+	    "   This is the swiss-army-knife of the entire pilot-link suite.\n\n";
+
+	const char *listalias = "--List";
+
+	/* Backwards compatibility */
+	struct poptAlias listall_alias = {
+		"List", '\0', 0, &listalias
+	};
+
+	pc = poptGetContext("pilot-xfer", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc, help_header_text);
+	poptAddAlias(pc, listall_alias, 0);
+
+	poptSetOtherOptionHelp(pc, help_header_text);
+	while ((optc = poptGetNextOpt(pc)) >= 0) {
+		switch (optc) {
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			if (verbose)
-				printf("Option -p with value: %s\n", optarg);
-			break;
 		case 'b':
-			dirname = optarg;
 			palm_operation = palm_op_backup;
 			sync_flags = BACKUP;
 			if (verbose)
-				printf("Option -b with value: %s\n", optarg);
+				printf("Option -b with value: %s\n", dirname);
 			break;
 		case 'u':
-			dirname = optarg;
 			palm_operation = palm_op_backup;
 			sync_flags = UPDATE;
 			if (verbose)
-				printf("Option -u with value: %s\n", optarg);
+				printf("Option -u with value: %s\n", dirname);
 			break;
 		case 's':
-			dirname = optarg;
 			palm_operation = palm_op_backup;
 			sync_flags = UPDATE|SYNC;
 			if (verbose)
-				printf("Option -s with value: %s\n", optarg);
+				printf("Option -s with value: %s\n", dirname);
 			break;
 		case 'r':
-			dirname = optarg;
 			palm_operation = palm_op_restore;
 			break;
 		case 'i':
-			dbname = optarg;
 			palm_operation = palm_op_install;
 			if (verbose)
-				printf("Option -i with value: %s\n", optarg);
+				printf("Option -i with value: %s\n", dbname);
 			break;
 		case 'm':
-			Merge(optarg);
+			Merge(poptGetOptArg(pc));
 			break;
 		case 'f':
-			dbname = optarg;
 			palm_operation = palm_op_fetch;
 			break;
 		case 'd':
-			Delete(optarg);
+			Delete(poptGetOptArg(pc));
 			break;
 		case 'e':
-			MakeExcludeList(optarg);
+			MakeExcludeList(poptGetOptArg(pc));
 			break;
 		case 'P':
 			Purge();
@@ -1846,31 +1808,27 @@ int main(int argc, char *argv[])
 			if (media_type != palm_media_vfs) media_type = palm_media_rom;
 			palm_operation = palm_op_list;
 			break;
-		case 'a':
-			archive_dir = optarg;
-			break;
 		case 'x':
-			if (system(optarg)) {
+			if (system(poptGetOptArg(pc))) {
 				fprintf(stderr,"system() failed, aborting.\n");
 				return -1;
 			}
 			break;
-		case 'F':
-			media_type = palm_media_flash;
-			break;
-		case 'O':
-			media_type = palm_media_rom;
-			break;
-		case 'I':
-			unsaved = 1;
-			break;
 		case 'D':
-			vfsdir = optarg;
 			media_type = palm_media_vfs;
 			break;
 		default:
+			printf("got option %d, arg %s\n", optc, poptGetOptArg(pc));
 			break;
 		}
+	}
+
+	if (optc < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+			poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+			poptStrerror(optc));
+		return 1;
 	}
 
 	switch (palm_operation) {

@@ -17,7 +17,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,15 +25,6 @@
 #include "pi-header.h"
 #include "pi-source.h"
 #include "pi-dlp.h"
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hv";
 
 struct record {
 	struct record *next;
@@ -214,7 +205,6 @@ static void display_help(const char *progname)
 {
 	printf("   Removes duplicate records from any Palm database\n\n");
 	printf("   Usage: %s -p <port> dbname [dbname] ..\n", progname);
-	printf("                       -o <hostname> -a <ip> -n <subnet>\n");
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
 	printf("     -h, --help              Display help information for %s\n", progname);
@@ -230,9 +220,24 @@ int main(int argc, char *argv[])
 	int     c,		/* switch */
 		sd		= -1;
 	char 	*port 	        = NULL,
+		*db		= NULL,
 		*progname 	= argv[0];
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	poptContext pc;
+
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		POPT_TABLEEND
+	};
+
+	pc = poptGetContext("pilot-dedupe", argc, argv, options, 0);
+
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 
 		case 'h':
@@ -241,27 +246,32 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
 		default:
 			display_help(progname);
 			return 0;
 		}
 	}
 
-	if (optind < 0) {
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
+	}
+
+	if(poptPeekArg(pc) == NULL) {
 		display_help(progname);
-		fprintf(stderr, "\tERROR: You must specify atleast one database\n");
-		return -1;		
+		fprintf(stderr, "\tERROR: You must specify at least one database\n");
+		return -1;
 	}
 	
 	sd = pilot_connect (port);
 	if (sd < 0)
 		goto error;
 
-	for (; optind < argc; optind++)
-		DeDupe (sd, argv[optind]);
+	while((db = poptGetArg(pc)) != NULL)
+		DeDupe (sd, db);
 
 	if (dlp_ResetLastSyncPC(sd) < 0)
 		goto error_close;

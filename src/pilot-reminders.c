@@ -19,7 +19,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,15 +29,6 @@
 #include "pi-datebook.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hv";
 
 static char 
 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
@@ -71,7 +62,7 @@ static void display_help(const char *progname)
 	printf("   unless redirected to a file.\n\n");
 	printf("   Please see http://www.roaringpenguin.com/remind.html for more\n");
 	printf("   information on the Remind Calendar Program.\n\n");
-	
+
 	return;
 }
 
@@ -86,22 +77,40 @@ int main(int argc, char *argv[])
 		*port 		= NULL;
 	pi_buffer_t *buffer;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (c) {
+	poptContext pc;
 
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		POPT_TABLEEND
+	};
+
+	pc = poptGetContext("reminders", argc, argv, options, 0);
+
+	while ((c = poptGetNextOpt(pc)) >= 0) {
+		switch (c) {
 		case 'h':
 			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
 		default:
 			display_help(progname);
 			return 0;
 		}
+	}
+
+	if (c < -1) {
+             /* an error occurred during option processing */
+             fprintf(stderr, "%s: %s\n",
+                     poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+                     poptStrerror(c));
+             return 1;
 	}
 	
 	sd = pilot_connect(port);

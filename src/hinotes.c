@@ -20,7 +20,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,16 +42,6 @@ void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 
 void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 			     struct HiNoteAppInfo mai, int category);
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-        {"version",     no_argument,       NULL, 'v'},
-	{"dirname",     required_argument, NULL, 'd'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvd:";
 
 void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 		     struct HiNoteAppInfo mai, int category)
@@ -183,7 +173,7 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
 
 	int 	c,		/* switch */
@@ -195,14 +185,30 @@ int main(int argc, char *argv[])
 	char 	appblock[0xffff],
 		dirname[MAXDIRNAMELEN] = "",
 		*progname 	= argv[0],
-		*port 		= NULL;
+		*port 		= getenv("PILOTPORT");
 
 	struct 	HiNoteAppInfo mai;
 	struct 	PilotUser User;
 
 	pi_buffer_t *buffer;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	poptContext pc;
+
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"dirname", 'd', POPT_ARG_STRING, NULL, 'd',
+		 "Save memos in <dir> instead of writing to STDOUT", "dir"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display this information", NULL},
+		 POPT_TABLEEND
+	};
+
+
+	pc = poptGetContext("hinotes", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 			
 		case 'h':
@@ -211,12 +217,9 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
 		case 'd':
 			/* Name of directory to create and store memos in */
-			strncpy(dirname, optarg, sizeof(dirname));
+			strncpy(dirname, poptGetOptArg(pc), sizeof(dirname));
 			mode = MEMO_DIRECTORY;
 			break;
 		default:
@@ -225,18 +228,26 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (c < -1) {
+             /* an error occurred during option processing */
+             fprintf(stderr, "%s: %s\n",
+                     poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+                     poptStrerror(c));
+             return 1;
+          }
+
+
 	if (argc < 2 && !getenv("PILOTPORT")) {
 		print_splash(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
+		return 0;
 	}
 
-	if (port == NULL && argc > 1) {
+	if (port == NULL) {
 		printf
 		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
 		     "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
 		exit(EXIT_FAILURE);
-	} else if (port != NULL) {
+	} else {
 
 		sd = pilot_connect(port);
 

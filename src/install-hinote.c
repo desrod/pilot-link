@@ -19,7 +19,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -29,16 +29,6 @@
 #include "pi-dlp.h"
 #include "pi-hinote.h"
 #include "pi-header.h"
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-        {"version",     no_argument,       NULL, 'v'},
-	{"category",    required_argument, NULL, 'c'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvc:";
 
 static void display_help(const char *progname)
 {
@@ -58,7 +48,6 @@ int main(int argc, char *argv[])
 {
 	int 	db,
 		sd	= -1,
-		index,
 		c,		/* switch */
 		j,
 		filenamelen,
@@ -68,9 +57,11 @@ int main(int argc, char *argv[])
 		note_size;
 	
 	char 	*file_text,
+	    	*file_arg,
 		*progname 	= argv[0],
 		*port 		= NULL,
 		*cat 		= NULL,
+	    
 		buf[0xffff];
 	
 	unsigned char note_buf[0x8000];
@@ -80,7 +71,24 @@ int main(int argc, char *argv[])
 	struct 	HiNoteAppInfo mai;
 	struct 	HiNoteNote note;
 		
-	while (((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)) {
+	poptContext pc;
+
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"category", 'c', POPT_ARG_STRING, &cat, 0,
+		 "Write files to <category> in the Hi-NOte application",
+		 "category"},
+		POPT_TABLEEND
+	};
+
+	pc = poptGetContext("install-hinote", argc, argv, options, 0);
+
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 			
 		case 'h':
@@ -89,16 +97,23 @@ int main(int argc, char *argv[])
                 case 'v':
                         print_splash(progname);
                         return 0;
-		case 'p':
-			port = optarg;
-			break;
-		case 'c':
-			cat = optarg;
-			break;
 		default:
 			display_help(progname);
 			return 0;
 		}
+	}
+
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
+	}
+
+	if(poptPeekArg(pc) == NULL) {
+		fprintf(stderr, "%s: No files listed to install\n", progname);
+		return 0;
 	}
 
         sd = pilot_connect(port);
@@ -117,29 +132,29 @@ int main(int argc, char *argv[])
 	
 	j = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
 	unpack_HiNoteAppInfo(&mai, (unsigned char *) buf, j);	/* should check result */
-		
-	for (index = 2; index < argc; index++) {
-	
-		if (strcmp(argv[index], "-c") == 0) {
-			for (j = 0; j < 16; j++)
-				if (strcasecmp
-				    (mai.category.name[j],
-				     argv[index + 1]) == 0) {
-					category = j;
-					break;
-				}
-			if (j == 16)
-				category = atoi(argv[index + 1]);
-			index++;
-			continue;
+
+
+	if (cat != NULL) {
+		for (j = 0; j < 16; j++) {
+			if (strcasecmp
+			    (mai.category.name[j],
+				cat) == 0) {
+				category = j;
+				break;
+			}
 		}
+		if (j == 16)
+			category = atoi(cat);
+	}
+	
+	while((file_arg = poptGetArg(pc)) != NULL) {
 	
 		/* Attempt to check the file size */
 		/* stat() returns nonzero on error */
-		err = stat(argv[index], &info);
+		err = stat(file_arg, &info);
 		if (err) {
 		   /* FIXME: use perror() */
-		   printf("Error accessing file: %s\n", argv[index]);
+		   printf("Error accessing file: %s\n", file_arg);
 		   exit(EXIT_FAILURE);
 		}
 	
@@ -152,7 +167,7 @@ int main(int argc, char *argv[])
 
 			exit(EXIT_FAILURE);
 		} else {
-			f = fopen(argv[index], "r");
+			f = fopen(file_arg, "r");
 		}
 	
 		if (f == NULL) {
@@ -164,7 +179,7 @@ int main(int argc, char *argv[])
 		filelen = ftell(f);
 		fseek(f, 0, SEEK_SET);
 	
-		filenamelen = strlen(argv[index]);
+		filenamelen = strlen(file_arg);
 
 		file_text = (char *) malloc(filelen + filenamelen + 2);
 		if (file_text == NULL) {
@@ -172,7 +187,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	
-		strcpy(file_text, argv[index]);
+		strcpy(file_text, file_arg);
 		file_text[filenamelen] = '\n';
 	
 		fread(file_text + filenamelen + 1, filelen, 1, f);
@@ -185,7 +200,7 @@ int main(int argc, char *argv[])
 		note_size = pack_HiNoteNote(&note, note_buf, sizeof(note_buf));
 
 		/* dlp_exec(sd, 0x26, 0x20, &db, 1, NULL, 0); */
-		fprintf(stderr, "Installing %s to Hi-Note application...\n", argv[index]);
+		fprintf(stderr, "Installing %s to Hi-Note application...\n", file_arg);
 		dlp_WriteRecord(sd, db, 0, 0, category, note_buf,
 				note_size, 0);
 		free(file_text);
