@@ -4,6 +4,10 @@
 	  pilot-mailsync. pilot-mail.c will stay here for those who wish to
 	  learn how to write conduits.
 
+	* src/pilot-archive: Added pilot-archive skeleton for archiving
+	  records to desktop, not yet complete. Release Early, Release
+	  Often!
+
 2002-12-10 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* autogen.sh: UnixWare fixes for $VENDOR
