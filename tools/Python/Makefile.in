@@ -45,7 +45,7 @@ OBS=$(MODULE).o
 EXTRALD= -L$(libdir) -lpisock
 
 # Put Extra compiler options, such as extra -I options, here
-CFLAGS=-O -I../include
+CFLAGS=-O -I../../include
 
 # If you have any Python modules, include them here, so that they
 # can get installed.

@@ -216,24 +216,7 @@ time_fn(int sd, int argc, char **argv)
    c = *asctime(tm_ptr);
    r = dlp_SetSysDateTime(sd, ltime);
 
-/*
- * This is only portable for USA locales (the %D is not
- * going to support .eu locales. Ideally, this should read the
- * format from the Palm, and present the return string in the
- * format the palm specifies (Prefs->Formats). So I'll leave
- * it at the unixtime format for now.
- *  
- * strftime(timebuf, 80, "Now setting Palm time from desktop to %l:%M %P, date to %D\n", tm_ptr);
- *
- */
-
-   /*  
-    * Explicit long format for date/time here, not %c.
-    * Bleah. Could be nicely formatted, some other time.
-    */
-   strftime(timebuf, 80,
-	    "Now setting Palm time from desktop to: %a %b %e %T %Z 20%g\n",
-	    tm_ptr);
+   strftime(timebuf, 80, "Now setting Palm time from desktop to: %a %b %d %H:%M:%S %Z %Y\n", tm_ptr);
    printf(timebuf);
    return 0;
 

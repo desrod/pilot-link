@@ -34,6 +34,6 @@ WriteMakefile(
     'VERSION'    => '0.1',
     'LIBS'       => $lib,
     'XSPROTOARG' => '-noprototypes',
-    'INC'        => '-I../include',
+    'INC'        => '-I../../include',
     'DEFINE'     => '-DPERL_POLLUTE',
 );

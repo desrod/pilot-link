@@ -146,7 +146,6 @@ int main(int argc, char *argv[])
 	    if (fields[0][0] != '\0') {
 	       time_t t;
 
-	       appointment.event = 0;
 	       t = parsedate(fields[0]);
 	       if (t == -1) {
 		  fprintf(stderr, "Invalid start date or time : %s\n",

@@ -526,13 +526,13 @@ SvChar4(arg)
 	    			croak("record must contain deleted");			\
     			attr |= SvIV(*s) ? dlpRecAttrDeleted : 0;			\
 	    		if (!(s = hv_fetch(h, "modified", 8, 0)) || !SvOK(*s))	\
-	    			croak("record must contain deleted");			\
+	    			croak("record must contain modified");			\
     			attr |= SvIV(*s) ? dlpRecAttrDirty : 0;				\
 	    		if (!(s = hv_fetch(h, "busy", 4, 0)) || !SvOK(*s))	\
-	    			croak("record must contain deleted");			\
+	    			croak("record must contain busy");			\
     			attr |= SvIV(*s) ? dlpRecAttrBusy : 0;				\
 	    		if (!(s = hv_fetch(h, "archived", 8, 0)) || !SvOK(*s))	\
-	    			croak("record must contain deleted");			\
+	    			croak("record must contain archived");			\
     			attr |= SvIV(*s) ? dlpRecAttrArchived : 0;			\
 	    		if (!(s = hv_fetch(h, "category", 8, 0)) || !SvOK(*s))	\
 	    			croak("record must contain category");	\
