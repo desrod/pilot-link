@@ -234,13 +234,13 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 	}
 
 	if (iflags & descFlag) {
-		a->description = strdup(p2);
+		a->description = priv_strdup(p2);
 		p2 += strlen((char *)p2) + 1;
 	} else
 		a->description = 0;
 
 	if (iflags & noteFlag) {
-		a->note = strdup(p2);
+		a->note = priv_strdup(p2);
 		p2 += strlen((char *)p2) + 1;
 	} else {
 		a->note = 0;

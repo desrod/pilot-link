@@ -38,6 +38,7 @@
 #include "pi-socket.h"
 #include "pi-file.h"
 
+#undef FILEDEBUG
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 /*
@@ -836,7 +837,7 @@ struct pi_file *pi_file_create(char *name, struct DBInfo *info)
 	if ((pf = calloc(1, sizeof *pf)) == NULL)
 		return (NULL);
 
-	if ((pf->file_name = strdup(name)) == NULL)
+	if ((pf->file_name = priv_strdup(name)) == NULL)
 		goto bad;
 
 	pf->for_writing = 1;
@@ -1238,11 +1239,12 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 
 			written += size;
 
-			/* FIXME - need to add callbacks for this info, not print here -DD
+/* FIXME - need to add callbacks for this info, not print here -DD */
+#ifdef FILEDEBUG
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
-			*/
+#endif
 
 			if ((dlp_ReadResourceByIndex
 			     (socket, db, j, buffer, &type, &id,
@@ -1268,11 +1270,12 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 
 			written += size;
 
-			/* FIXME - need to add callbacks for this info, not print here -DD
+/* FIXME - need to add callbacks for this info, not print here -DD  */
+#ifdef FILEDEBUG
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
-			*/
+#endif
 
 			/* There is no way to restore records with these
 			   attributes, so there is no use in backing them up
@@ -1332,7 +1335,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 
 	if (strcmp(pf->info.name, "Graffiti ShortCuts ") == 0) {
 		flags |= 0x8000;	/* Rewrite an open DB */
-		reset = 1;	/* To be on the safe side */
+		reset = 1;		/* To be on the safe side */
 	}
 	LOG((PI_DBG_API, PI_DBG_LVL_INFO,
 	    "FILE INSTALL Name: %s Flags: %8.8X\n", pf->info.name, flags));
@@ -1444,11 +1447,12 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			    (socket, db, type, id, buffer, size) < 0)
 				goto fail;
 
-			/* FIXME - need to add callbacks for this info, not print here -DD
+/* FIXME - need to add callbacks for this info, not print here -DD  */
+#ifdef FILEDEBUG
 			display_rate(j + 1, pf->nentries, ftell(pf->f),
 				     (double) ((unsigned long) time(NULL) -
 					       start_time));
-			*/
+#endif
 			
 			/* If we see a 'boot' section, regardless of file
 			   type, require reset */
@@ -1487,11 +1491,12 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			     0) < 0)
 				goto fail;
 
-			/* FIXME - need to add callbacks for this info, not print here -DD
+/* FIXME - need to add callbacks for this info, not print here -DD  */
+#ifdef FILEDEBUG
 			display_rate(j + 1, pf->nentries, ftell(pf->f),
 				     (double) ((unsigned long) time(NULL) -
 					       start_time));
-			*/
+#endif
 		}
 		printf("\n");
 	}

@@ -57,7 +57,7 @@ int unpack_Memo(struct Memo *a, unsigned char *buffer, int len)
 {
 	if (len < 1)
 		return 0;
-	a->text = strdup((char *) buffer);
+	a->text = priv_strdup((char *) buffer);
 	return strlen((char *) buffer) + 1;
 }
 

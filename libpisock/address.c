@@ -36,13 +36,13 @@
  * Returns:     Nothing
  *
  ***********************************************************************/
-void free_Address(struct Address *a)
+void free_Address(struct Address *addr)
 {
 	int 	i;
 
 	for (i = 0; i < 19; i++)
-		if (a->entry[i])
-			free(a->entry[i]);
+		if (addr->entry[i])
+			free(addr->entry[i]);
 }
 
 #define hi(x) (((x) >> 4) & 0x0f)
@@ -62,7 +62,7 @@ void free_Address(struct Address *a)
  *		buffer otherwise
  *
  ***********************************************************************/
-int unpack_Address(struct Address *a, unsigned char *buffer, int len)
+int unpack_Address(struct Address *addr, unsigned char *buffer, int len)
 {
 	unsigned long contents;
 	unsigned long v;
@@ -72,12 +72,12 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
 		return 0;
 
 	/* get_byte(buffer); gapfill */
-	a->showPhone     = hi(get_byte(buffer + 1));
-	a->phoneLabel[4] = lo(get_byte(buffer + 1));
-	a->phoneLabel[3] = hi(get_byte(buffer + 2));
-	a->phoneLabel[2] = lo(get_byte(buffer + 2));
-	a->phoneLabel[1] = hi(get_byte(buffer + 3));
-	a->phoneLabel[0] = lo(get_byte(buffer + 3));
+	addr->showPhone     = hi(get_byte(buffer + 1));
+	addr->phoneLabel[4] = lo(get_byte(buffer + 1));
+	addr->phoneLabel[3] = hi(get_byte(buffer + 2));
+	addr->phoneLabel[2] = lo(get_byte(buffer + 2));
+	addr->phoneLabel[1] = hi(get_byte(buffer + 3));
+	addr->phoneLabel[0] = lo(get_byte(buffer + 3));
 
 	contents = get_long(buffer + 4);
 
@@ -87,21 +87,21 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
 	len 	-= 9;
 
 	/* if(flag & 0x1) { 
-	   a->lastname = strdup(buffer);
+	   addr->lastname = priv_strdup(buffer);
 	   buffer += strlen(buffer) + 1;
 	   } else {
-	   a->lastname = 0;
+	   addr->lastname = 0;
 	   } */
 
 	for (v = 0; v < 19; v++) {
 		if (contents & (1 << v)) {
 			if (len < 1)
 				return 0;
-			a->entry[v] = strdup((char *) buffer);
+			addr->entry[v] = priv_strdup((char *) buffer);
 			buffer += strlen((char *) buffer) + 1;
-			len -= strlen(a->entry[v]) + 1;
+			len -= strlen(addr->entry[v]) + 1;
 		} else {
-			a->entry[v] = 0;
+			addr->entry[v] = 0;
 		}
 	}
 
@@ -122,7 +122,7 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
  *		buffer otherwise
  *
  ***********************************************************************/
-int pack_Address(struct Address *a, unsigned char *record, int len)
+int pack_Address(struct Address *addr, unsigned char *record, int len)
 {
 	int 	l,
 		destlen = 9;
@@ -135,8 +135,8 @@ int pack_Address(struct Address *a, unsigned char *record, int len)
 	unsigned char offset;
 
 	for (v = 0; v < 19; v++)
-		if (a->entry[v])
-			destlen += strlen(a->entry[v]) + 1;
+		if (addr->entry[v])
+			destlen += strlen(addr->entry[v]) + 1;
 
 	if (!record)
 		return destlen;
@@ -149,23 +149,23 @@ int pack_Address(struct Address *a, unsigned char *record, int len)
 	offset 		= 0;
 
 	for (v = 0; v < 19; v++) {
-		if (a->entry[v] && strlen(a->entry[v])) {
+		if (addr->entry[v] && strlen(addr->entry[v])) {
 			if (v == entryCompany)
 				offset =
 				    (unsigned char) (buffer - record) - 8;
 			contents |= (1 << v);
-			l = strlen(a->entry[v]) + 1;
-			memcpy(buffer, a->entry[v], l);
+			l = strlen(addr->entry[v]) + 1;
+			memcpy(buffer, addr->entry[v], l);
 			buffer += l;
 		}
 	}
 
-	phoneflag = ((unsigned long) a->phoneLabel[0]) << 0;
-	phoneflag |= ((unsigned long) a->phoneLabel[1]) << 4;
-	phoneflag |= ((unsigned long) a->phoneLabel[2]) << 8;
-	phoneflag |= ((unsigned long) a->phoneLabel[3]) << 12;
-	phoneflag |= ((unsigned long) a->phoneLabel[4]) << 16;
-	phoneflag |= ((unsigned long) a->showPhone) << 20;
+	phoneflag = ((unsigned long) addr->phoneLabel[0]) << 0;
+	phoneflag |= ((unsigned long) addr->phoneLabel[1]) << 4;
+	phoneflag |= ((unsigned long) addr->phoneLabel[2]) << 8;
+	phoneflag |= ((unsigned long) addr->phoneLabel[3]) << 12;
+	phoneflag |= ((unsigned long) addr->phoneLabel[4]) << 16;
+	phoneflag |= ((unsigned long) addr->showPhone) << 20;
 
 	set_long(record, phoneflag);
 	set_long(record + 4, contents);

@@ -115,7 +115,7 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->amount = strdup(buffer);
+		a->amount = priv_strdup(buffer);
 		buffer += strlen(a->amount);
 		len -= strlen(a->amount);
 	} else {
@@ -128,7 +128,7 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->vendor = strdup(buffer);
+		a->vendor = priv_strdup(buffer);
 		buffer += strlen(a->vendor);
 		len -= strlen(a->vendor);
 	} else {
@@ -141,7 +141,7 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->city = strdup(buffer);
+		a->city = priv_strdup(buffer);
 		buffer += strlen(a->city);
 		len -= strlen(a->city);
 	} else {
@@ -154,7 +154,7 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->attendees = strdup(buffer);
+		a->attendees = priv_strdup(buffer);
 		buffer += strlen(a->attendees);
 		len -= strlen(a->attendees);
 	} else {
@@ -167,7 +167,7 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->note = strdup(buffer);
+		a->note = priv_strdup(buffer);
 		buffer += strlen(a->note);
 		len -= strlen(a->note);
 	} else {

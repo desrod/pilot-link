@@ -407,7 +407,7 @@ env_check (void)
 			*b,
 			*e;
 		
-		debug = strdup(getenv("PILOT_DEBUG"));
+		debug = priv_strdup(getenv("PILOT_DEBUG"));
 
 		b 	= debug;
 		done 	= 0;
