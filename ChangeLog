@@ -1,3 +1,7 @@
+2002-11-1  David A. Desrosiers <hacker at gnu-designs dot com>
+	
+	* configure.in: Fix --no-verify error on BSD systems
+
 2002-10-28  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Makefile.am: Added DESTDIR to perl and python-install

@@ -55,6 +55,7 @@ AM_INIT_AUTOMAKE(pilot-link, [$VERSION])
 
 dnl Check host type
 AC_CANONICAL_HOST
+AC_CANONICAL_SYSTEM
 
 dnl Checks for programs.
 AC_PROG_CC
