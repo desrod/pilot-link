@@ -90,8 +90,8 @@ AC_STRUCT_TM
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
 
-AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h errno.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h stdint.h inttypes.h)
-AC_CHECK_FUNCS(atexit cfmakeraw cfsetispeed cfsetospeed cfsetspeed dup2 gethostname inet_aton memcpy memmove putenv sigaction snprintf strchr strdup strtoul uname)
+AC_CHECK_HEADERS(dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/ioctl_compat.h sys/ioctl.h sys/malloc.h sys/select.h sys/sockio.h sys/time.h sys/utsname.h unistd.h)
+AC_CHECK_FUNCS(atexit cfmakeraw cfsetispeed cfsetospeed cfsetspeed dup2 gethostname inet_aton malloc memcpy memmove putenv sigaction snprintf strchr strdup strtok strtoul uname)
 
 dnl Find optional libraries (borrowed from Tcl)
 tcl_checkBoth=0
