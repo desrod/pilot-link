@@ -26,7 +26,6 @@
 
 #include "pi-socket.h"
 #include "pi-dlp.h"
-#include "pi-header.h"
 
 /* Declare prototypes */
 int pilot_connect(char *port)
