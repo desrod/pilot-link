@@ -1,6 +1,7 @@
 INCLUDES = 			\
 	-I../../include		\
-	-I$(top_srcdir)/include
+	-I$(top_srcdir)/include	\
+	$(TCL_INCLUDES)
 
 bin_PROGRAMS = pitclsh
 lib_LTLIBRARIES = libpitcl.la

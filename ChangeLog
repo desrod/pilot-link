@@ -1,3 +1,18 @@
+2003-07-01  JP Rosevear  <jpr@ximian.com>
+
+	* configure.in: subst TCL_INCLUDES
+
+	* bindings/Tcl/Makefile.am: include TCL_INCLUDES
+
+2003-07-01  JP Rosevear  <jpr@ximian.com>
+	
+	* configure.in: only call subsequent tcl macros if we could find
+	the tcl config, show enable/disable message properly
+
+	* tcl.m4: allow passing of "no" to --with-tcl to disable tcl build
+
+	* bindings/Makefile.am: conditionally compile the tcl dir
+
 2003-06-30  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: update tcl check
