@@ -1,4 +1,4 @@
-;# This is free software, licensed under the GNU Public License V2.
+# This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
 AC_INIT(include/pi-version.h.in)
 
@@ -657,10 +657,10 @@ AC_ARG_ENABLE(compile-warnings,
 
 if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
-		-pedantic -ansi -O0 -Wshadow -Wall -W -Waggregate-return 	\
-		-Wcast-align -Wcast-qual -Wnested-externs -Wpointer-arith 	\
-		-Wundef -Wbad-function-cast -Wmissing-prototypes -Winline	\
-		-Wstrict-prototypes -Wmissing-declarations -Wconversion"
+		-std=c99 -g -Wshadow -Wall -W -Waggregate-return -Wcast-align 	\
+		-Wcast-qual -Wnested-externs -Wpointer-arith -Wundef -Winline	\
+		-Wbad-function-cast -pedantic -O0"
+
 fi
 
 case "$host" in
