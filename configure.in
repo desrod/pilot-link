@@ -800,6 +800,7 @@ AC_OUTPUT([
 	doc/man/install-hinote.1
 	doc/man/install-memo.1
 	doc/man/install-netsync.1
+	doc/man/install-todo.1
 	doc/man/install-user.1
 	doc/man/pi-getram.1
 	doc/man/pi-getrom.1

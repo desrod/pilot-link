@@ -1,3 +1,14 @@
+2003-01-06 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Added install-todo manpage to AC_OUTPUT
+
+	* doc/man/Makefile.am: Added install-todo.1 manpage
+
+	* doc/man/install-todo.1.in: New manpage for install-todo
+
+	* doc/man/*.?.in: s/Free Software Foundation/(c) FSF 1996-2003/ so
+	  it fits on the screen without overlap
+
 2003-01-05 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Added doc/man/*.in files for automagic generation

@@ -8,6 +8,7 @@ man_MANS =			\
 	install-hinote.1	\
 	install-memo.1		\
 	install-netsync.1	\
+	install-todo.1		\
 	install-user.1		\
 	pi-getram.1		\
 	pi-getrom.1		\
