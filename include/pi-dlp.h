@@ -376,6 +376,7 @@ typedef unsigned long FileRef;
 		vfsModeExclusive 	= dlpVFSOpenExclusive,
 		vfsModeRead 		= dlpVFSOpenRead,
 		vfsModeWrite 		= dlpVFSOpenWrite,
+		vfsModeReadWrite	= vfsModeRead | vfsModeWrite,
 		vfsModeCreate 		= 0x8 		/* Create file if it doesn't exist. Handled in VFS layer */,
 		vfsModeTruncate 	= 0x10 		/* Truncate to 0 bytes on open. Handled in VFS layer */,
 		vfsModeLeaveOpen 	= 0x20 		/* Leave file open even if foreground task closes. */
