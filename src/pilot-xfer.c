@@ -587,7 +587,7 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
  *
  ***********************************************************************/
 static void
-palm_fetch(const char *dbname)
+palm_fetch_internal(const char *dbname)
 {
 	struct DBInfo	info;
 	char			name[256],
@@ -657,6 +657,150 @@ palm_fetch(const char *dbname)
 	dlp_AddSyncLogEntry(sd, synclog);
 
 	pi_file_close(f);
+}
+
+static void
+palm_fetch_VFS(const char *dbname, const char *vfspath)
+{
+	static unsigned long
+					totalsize = 0;
+
+	long			volume = -1;
+	char			rpath[vfsMAXFILENAME];
+	int				rpathlen = vfsMAXFILENAME;
+	FileRef			file;
+	long			attributes;
+	pi_buffer_t *buffer;
+	int				fd = -1,
+					offset;
+	size_t			readsize,writesize;
+
+	struct stat				sbuf;
+
+	if (NULL == vfspath)
+	{
+		/* how the heck did we get here then? */
+		fprintf(stderr,"\n   No VFS path given.\n");
+		return;
+	}
+
+	if (access(dbname, F_OK) == 0 && access(dbname, R_OK|W_OK) != 0)
+	{
+		fprintf(stderr, "\n   Unable to write to %s, check "
+				"ownership and permissions.\n\n", dbname);
+		exit(EXIT_FAILURE);
+	}
+
+	if (dlp_OpenConduit(sd) < 0)
+	{
+		fprintf(stderr, "\nExiting on cancel, some files were not"
+				"fetched.\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0)
+	{
+		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n", vfspath);
+		return;
+	}
+
+
+	fprintf(stderr, "   Fetching '%s'... ", dbname);
+
+	if (rpath[rpathlen-1] != '/') {
+		rpath[rpathlen] = '/';
+		rpathlen++;
+	}
+
+	strncat(rpath,dbname,sizeof(rpath)-rpathlen-1);
+	rpathlen=strlen(rpath);
+
+	fprintf(stderr,"* Reading %s on volume %ld\n",rpath,volume);
+
+	if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenRead,&file) < 0) {
+		fprintf(stderr,"\n   Cannot open file '%s' on VFS.\n",rpath);
+		/* unlink(dbname) ? */
+		return;
+	}
+
+	if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
+	{
+		fprintf(stderr,"   Could not get attributes of VFS file.\n");
+		(void) dlp_VFSFileClose(sd,file);
+		return;
+	}
+
+	if (attributes & vfsFileAttrDirectory)
+	{
+		/* Clear case for later feature. */
+		fprintf(stderr,"   Cannot retrieve a directory.\n");
+		dlp_VFSFileClose(sd,file);
+		return;
+	}
+
+
+	fprintf(stderr,"* Got attributes %lx.\n",attributes);
+
+	/* Calculate basename, perhaps? */
+	fd = open(dbname,O_WRONLY | O_CREAT | O_TRUNC,0666);
+	if (fd < 0) {
+		fprintf(stderr,"\n   Cannot open local file for '%s'.\n",dbname);
+		dlp_VFSFileClose(sd,file);
+		return;
+	}
+
+#define FBUFSIZ 16384
+
+	buffer = pi_buffer_new(64 * 1024);
+	readsize = 0;
+	while (readsize >= 0)
+	{
+		readsize = dlp_VFSFileRead(sd,file,buffer,FBUFSIZ);
+
+		fprintf(stderr,"*  Read %ld bytes.\n",readsize);
+
+		if (readsize <= 0) break;
+		offset=0;
+		while (readsize > 0)
+		{
+			writesize = write(fd,buffer->data+offset,readsize);
+			if (writesize < 0)
+			{
+				fprintf(stderr,"   Error while writing file.\n");
+				break;
+			}
+			readsize -= writesize;
+			totalsize += writesize;
+			offset += writesize;
+		}
+	}
+	pi_buffer_free(buffer);
+
+	dlp_VFSFileClose(sd,file);
+	close(fd);
+
+	printf("(%lu bytes, %ld KiB total)\n",
+		(unsigned long)sbuf.st_size, totalsize/1024);
+}
+
+static void
+palm_fetch(unsigned long int flags,const char *dbname)
+{
+	switch(flags & MEDIA_MASK)
+	{
+	case MEDIA_RAM:
+	case MEDIA_ROM:
+	case MEDIA_FLASH:
+		palm_fetch_internal(dbname);
+		break;
+	case MEDIA_VFS:
+		palm_fetch_VFS(dbname,vfsdir);
+		break;
+	default:
+		fprintf(stderr,"   ERROR: Unknown media type %lx\n",
+				(flags & MEDIA_MASK));
+		break;
+	}
 }
 
 
@@ -1994,19 +2138,19 @@ main(int argc, const char *argv[])
 			fprintf(stderr,gracias);
 			return 1;
 			break;
-		case palm_op_install:
 		case palm_op_merge:
-		case palm_op_fetch:
 		case palm_op_delete:
+			if (MEDIA_VFS == (sync_flags & MEDIA_VFS))
+			{
+				fprintf(stderr,"   ERROR: cannot merge or delete with VFS.\n");
+				return 1;
+			}
+			/* FALLTHRU */
+		case palm_op_fetch:
+		case palm_op_install:
 			if (rargc < 1)
 			{
 				fprintf(stderr,"   ERROR: -imfd require additional arguments.\n");
-				return 1;
-			}
-			if ((MEDIA_VFS == (sync_flags & MEDIA_VFS))
-					&& (palm_op_install != palm_operation))
-			{
-				fprintf(stderr,"   ERROR: cannot merge, fetch or delete with VFS.\n");
 				return 1;
 			}
 			break;
@@ -2050,7 +2194,7 @@ main(int argc, const char *argv[])
 						palm_merge(*rargv);
 						break;
 					case palm_op_fetch:
-						palm_fetch(*rargv);
+						palm_fetch(sync_flags,*rargv);
 						break;
 					case palm_op_delete:
 						palm_delete(*rargv);
