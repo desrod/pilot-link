@@ -1,3 +1,17 @@
+2001-02-28 David A. Desrosiers
+
+        * kittykiller.c: Fixed ^M madness
+          man/install-memos.1: More ^M madness. (Carl Jacobsen)
+
+          man/*: Various manpage updates and edits. Updated the location
+          of the pilot-link homepage in relevant places. 
+          s/USR Pilot/Palm Computing Device/ also
+ 
+          pilot-xfer.c: fixed a reference to a non-initialized variable
+          in Restore() (Tamito KAJIYAMA)
+
+          tools/Python/pdapilot.py: fixed a typo in a member variable name
+
 2001-02-25 David A. Desrosiers
 
         * memos.c: Fixed the detection of the %ENV for PILOTPORT
