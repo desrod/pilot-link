@@ -122,9 +122,7 @@ static pi_protocol_t
 static void
 pi_inet_protocol_free (pi_protocol_t *prot)
 {
-
 	ASSERT (prot != NULL);
-
 	if (prot != NULL)
 		free(prot);
 }
@@ -182,7 +180,6 @@ static void
 pi_inet_device_free (pi_device_t *dev) 
 {
 	ASSERT (dev != NULL);
-
 	if (dev != NULL) {
 		if (dev->data != NULL)
 			free(dev->data);
@@ -694,13 +691,19 @@ pi_inet_setsockopt(pi_socket_t *ps, int level, int option_name,
 static int pi_inet_close(pi_socket_t *ps)
 {
 	/* Close sd handle */
-	if (ps->sd)
+	if (ps->sd) {
 		close(ps->sd);
+		ps->sd = 0;
+	}
 
-	if (ps->laddr)
+	if (ps->laddr) {
 		free(ps->laddr);
-	if (ps->raddr)
+		ps->laddr = NULL;
+	}
+	if (ps->raddr) {
 		free(ps->raddr);
+		ps->raddr = NULL;
+	}
 
 	return 0;
 }
