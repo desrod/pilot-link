@@ -48,7 +48,7 @@ static const char *optstring = "p:hvi:f:d";
 
 /* Declare prototypes */
 static void display_help(char *progname);
-void display_splash(char *progname);
+void print_splash(char *progname);
 int pilot_connect(char *port);
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			exit(0);
 		case 'v':
-			display_splash(progname);
+			print_splash(progname);
 			exit(0);
 		case 'p':
 			port = optarg;

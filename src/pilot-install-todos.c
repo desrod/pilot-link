@@ -31,7 +31,7 @@
 
 /* Declare prototypes */
 static void display_help(char *progname);
-void display_splash(char *progname);
+void print_splash(char *progname);
 int pilot_connect(char *port);
 
 void install_ToDos(int sd, int db, char *filename);
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 			  filename = optarg;
 			  break;
                   case 'v':
-                          display_splash(progname);
+                          print_splash(progname);
                           exit(0);
 		}
 	}
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc < 2 && !getenv("PILOTPORT")) {
-		display_splash(progname);
+		print_splash(progname);
 	} else if (port == NULL && getenv("PILOTPORT")) {
 		port = getenv("PILOTPORT");
 	}

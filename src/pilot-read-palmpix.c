@@ -46,7 +46,7 @@
 
 /* Declare prototypes */
 static void display_help(char *progname);
-void display_splash(char *progname);
+void print_splash(char *progname);
 int pilot_connect(char *port);
 const char *progname;
 int protect_files(char *name, char *extension);
@@ -435,7 +435,7 @@ int
 	   break;
 
 	 case 'v':
-	   display_splash(progname);
+	   print_splash(progname);
 	   return EXIT_SUCCESS;
 	     
 	 default:

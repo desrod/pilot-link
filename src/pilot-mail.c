@@ -44,7 +44,7 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
-void display_splash(char *progname);
+void print_splash(char *progname);
 int pilot_connect(char *port);
 
 void markline(char *msg);

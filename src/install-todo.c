@@ -40,7 +40,7 @@
 
 /* Declare prototypes */
 static void display_help(char *progname);
-void display_splash(char *progname);
+void print_splash(char *progname);
 int pilot_connect(char *port);
 char *read_file(char *filename);
 void install_ToDo(int sd, int db, struct ToDo todo);
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 			  todo.note = read_file(optarg);
 			  break;
                   case 'v':
-                          display_splash(progname);
+                          print_splash(progname);
                           exit(0);
 		}
 	}

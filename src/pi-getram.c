@@ -37,7 +37,7 @@
 
 /* Declare prototypes */
 static void display_help(char *progname);
-void display_splash(char *progname);
+void print_splash(char *progname);
 int pilot_connect(char *port);
 
 int cancel = 0;
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		case 'v':
-			display_splash(progname);
+			print_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;
