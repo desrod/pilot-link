@@ -1,11 +1,35 @@
---------------------------------------------------
+--------------------------------------------------------------------------
+pilot-link 0.11.5, "Insomnia", 09-28-2002
+--------------------------------------------------------------------------
+Just minor bugs, closing up a few BSD and zoning in on some BSD and Irix
+issues for this (and the next) release.
+
+Major Features:
+        * None at this time
+
+Other Features:
+        * None at this time
+
+Bug Fixes:
+	* Fix for dlp_callApplication crash (Owen Stenseth)
+	* Fix for standard includes when using gcc/g++/c++ 3.x or later
+	* Fix for 'name' and 'nameLength' member errors (Nicholas Piper)
+
+Known Problems:
+	* Java bindings missing manifest
+	* snprintf() calls fail on Irix 6.4 systems
+	* Improper getopt_long propagation on Irix 6.4
+	* autoconf/automake 2.5x problems on AIX	
+
+--------------------------------------------------------------------------
 pilot-link 0.11.4, "Alzheimer Release", 09-16-2002
---------------------------------------------------
+--------------------------------------------------------------------------
 Some major bugs have been fixed in this release, which now supercedes all
 previous releases in the 0.11.x series.
 
 Major Features:
-	* Updated configuration to work with newer autoconf/automake versions
+	* Updated configuration to work with newer autoconf/automake
+	  versions
 
 Other Features: 
 	* None at this time
@@ -16,15 +40,16 @@ Bug Fixes:
 	* Network Hotsync from Linux to Windows now works
 	* Perl bindings will build cleanly on perl 5.6 and 5.8 with gcc 2.x
 	  and 3.x
-	* Fixed an issue with libpng being linked into every binary by default
+	* Fixed an issue with libpng being linked into every binary by
+	  default
 
 Known Problems:
 	* Java bindings may or may not work, need to investigate
 
 
-----------------------------------------------
+--------------------------------------------------------------------------
 pilot-link 0.11.3, "Stable Release", 08-6-2002
-----------------------------------------------
+--------------------------------------------------------------------------
 This is a rollup stable release of previous 0.11.x bugfixes and feature
 additions.
 
@@ -44,9 +69,9 @@ Bug Fixes:
 Known Problems:
 	None identified for this release
 
-----------------------------------------------
+--------------------------------------------------------------------------
 pilot-link 0.11.2, "I Want One Two", 08-6-2002
-----------------------------------------------
+--------------------------------------------------------------------------
 This is an updated version to the 0.11.1 "Ocean's Eleventy-First" release
 from July 18th, and fixes quite a few bugs that people have reported with
 gnome-pilot and J-Pilot.
@@ -77,14 +102,15 @@ Bug Fixes:
 Known Problems:
 	* Network Hotsync from Linux to Windows does not work
 
--------------------------------------------------------
+--------------------------------------------------------------------------
 pilot-link 0.11.1, "Ocean's Eleventy-first", 07-18-2002
--------------------------------------------------------
+--------------------------------------------------------------------------
 This is a bugfix release to address some issues found in the 0.11 release
 from 7-12-2002.
 
 Major Features:
-	* read-palmpix now takes arguments for output file type, "-t png" or "-t ppm"
+	* read-palmpix now takes arguments for output file type, "-t png" or
+	  "-t ppm"
 	* read-notepad also updated to accept the same argument types
 
 Other Features:
@@ -103,9 +129,9 @@ Known Problems:
 	* pilot-addresses -T header fix (don't import header into record)
         * pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
 
----------------------------------------------
+--------------------------------------------------------------------------
 pilot-link 0.11, "Ocean's Eleven", 07-12-2002
----------------------------------------------
+--------------------------------------------------------------------------
 This is a development release, primarily to test the new usb device support. 
 Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the
 Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or usb/tts/0).  Note that
@@ -133,9 +159,9 @@ Known Problems (Please see doc/TODO for more details):
 	* TCL/TK bindings are out of commission
 	* PDB files with space filler records are not yet handled properly
 
--------------------------------------------
+--------------------------------------------------------------------------
 pilot-link 0.10.99, "Woodstock", 03-20-2002
--------------------------------------------
+--------------------------------------------------------------------------
 This is a development release, primarily to test the new usb device support. 
 Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the
 Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or usb/tts/0).  Note that

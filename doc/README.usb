@@ -13,13 +13,14 @@ Linux USB Configuration
 	First, in order to get USB working with your Palm device, your
 	desktop machine must support the USB subsystem. Depending on your
 	machine configuration, this may require a kernel recompile, or the
-	insertion of some necessary modules.
+	insertion of the required modules.
 
-	If you should find that your kernel is old, you will need to do a
-	kernel upgrade. Using kernels older than 2.4.17 are not recommended
-	and may not work for newer Palm devices, as the kernel-level visor.o
-	module that is required may not have support for your newer Palm
-	device. More on this later.
+	If you should find that your kernel is older than 2.4.18 (as of the
+	time of this README), you will need to do a kernel upgrade. Using
+	kernels older than 2.4.18 are not recommended and may not work for
+	newer Palm devices, as the kernel-level visor.o module that is
+	required may not have support for your newer Palm device. More on
+	this later.
 
 	First, verify that you have USB working on your system. If you're
 	using a USB-based keyboard or mouse, you already have USB support in
@@ -51,12 +52,13 @@ Linux USB Configuration
 
 		# modprobe usbserial
 
-	Then on top of that, add the Visor driver. NOTE: You do not need to
-	be using a Handspring Visor to use this driver. The name 'visor.o'
-	is simply from a legacy time when the _only_ USB-based Palm handheld
-	device was a Handspring Visor. Now that Sony and Palm also produce
-	USB-based handheld devices, the code still is inside visor.o, but it
-	retains its legacy name.
+	Then on top of that, add the Visor driver. 
+
+	NOTE: You do not need to be using a Handspring Visor to use this
+	driver. The name 'visor.o' is simply from a legacy time when the
+	_only_ USB-based Palm handheld device was a Handspring Visor. Now
+	that Sony and Palm also produce USB-based handheld devices, the code
+	still is inside visor.o, but it retains its legacy name.
 
 		# modprobe visor
 
@@ -87,13 +89,15 @@ Linux USB Configuration
 	Next we must verify that the actual USB devices are created and
 	registered in /dev for you.
 
-	In your kernel source directory, under
+	In your kernel source directory, under the kernel source directory
 	Documentation/usb/usb-serial.txt, is an overview of how to create
-	the proper USB devices on your system. For Palm devices, you will
-	need no more than two of these devices, /dev/ttyUSB0 and
-	/dev/ttyUSB1, depending on your Palm device manufacturer (As of the
-	/writing of this document, two Sony models use /dev/ttyUSB0, and the
-	/rest of the Sony and Palm models use /dev/ttyUSB1)
+	the proper USB devices on your system. 
+
+	For Palm devices, you will need no more than two of these devices,
+	/dev/ttyUSB0 and /dev/ttyUSB1, depending on your Palm device
+	manufacturer (as of the time of this README, two Sony models use
+	/dev/ttyUSB0, and the rest of the Sony and Palm models use
+	/dev/ttyUSB1)
 
 		# mknod /dev/ttyUSB0 c 188 0
 		# mknod /dev/ttyUSB1 c 188 1
@@ -105,8 +109,9 @@ Linux USB Configuration
 	Also, make sure your user has read and write permissions to those
 	device nodes: 
 
-		# chmod 0666 /dev/ttyUSB?    # the '?' is a wildcard 
-	
+		# chmod 0666 /dev/ttyUSB?    # the '?' is a wildcard and
+					     # will chmod all ttyUSB* 
+					     # devices 
 	..or
 
 		# chmod a+rw /dev/ttyUSB?
@@ -217,6 +222,3 @@ USB Palm Handheld Device Kernel Matrix
         Sony Clie (OS v4.0)             2.4.10-pre5
         Sony Clie (OS v4.1)             2.4.19-pre7
         Sony Clie S360                  2.4.19-pre2
-
-
-
