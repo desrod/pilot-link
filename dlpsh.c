@@ -19,6 +19,9 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <getopt.h>
 #include <signal.h>
@@ -32,7 +35,7 @@
 #include "pi-serial.h"
 #include "pi-header.h"
 
-#ifdef READLINE_2_1
+#ifdef HAVE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
@@ -474,9 +477,9 @@ int rm_fn(int sd, int argc, char **argv)
 void handle_user_commands(int sd)
 {
 
-#ifdef READLINE_2_1
+#ifdef HAVE_READLINE
 	char *line;
-	static const char *prompt = "dlpsh> ";
+	char *prompt = "dlpsh> ";
 #else
 	char buf[256];
 #endif
@@ -488,7 +491,7 @@ void handle_user_commands(int sd)
 	for (;;) {
 		fflush(stdout);
 
-#ifdef READLINE_2_1
+#ifdef HAVE_READLINE
 		line = readline(prompt);
 		if (line && *line)	/* skip blanks */
 			add_history(line);
@@ -520,7 +523,7 @@ void handle_user_commands(int sd)
 			}
 		}
 
-#ifdef READLINE_2_1
+#ifdef HAVE_READLINE
 		free(line);
 #endif
 	}

@@ -78,47 +78,86 @@ AC_SUBST(ICONV_LIBS)
 dnl ******************************
 dnl readline checking
 dnl ******************************
-AC_ARG_WITH(readline21,      [  --with-readline21    use readline 2.1 [default=yes]])
-AC_ARG_WITH(readline20,      [  --with-readline20    use readline 2.0 [default=yes]])
+msg_readline=no
+AC_ARG_WITH(readline,      [  --with-readline    use readline [default=yes]])
+if test "x$with_readline" != "xno"; then
+	AC_MSG_CHECKING(for readline)
 
-ac_save_LIBS="$LIBS"
-LIBS="$LIBS -lreadline"
-AC_TRY_LINK(,[(void)readline(0);], RLLIBS="-lreadline",
-LIBS="$LIBS -ltermcap"
-AC_TRY_LINK(,[(void)readline(0);], RLLIBS="-lreadline -ltermcap"))
-LIBS="$ac_save_LIBS"
-
-AC_MSG_CHECKING(for readline)
-if test "x$with_readline21" = "x" || test "x$with_readline21" = "xyes"; then
 	ac_save_LIBS="$LIBS"
-	LIBS="$LIBS $RLLIBS"
-	AC_TRY_LINK([#include <stdio.h>
-	#include <readline/readline.h>], [rl_callback_read_char();], [RLDEFS="-DREADLINE_2_1"
-		with_readline20='no'
-		AC_MSG_RESULT(2.1)])
+	LIBS="$LIBS -lreadline"
+	AC_TRY_LINK(,[(void)readline(0);], RL_LIBS="-lreadline",
+		LIBS="$LIBS -ltermcap"
+		AC_TRY_LINK(,[(void)readline(0);], RL_LIBS="-lreadline -ltermcap"))
 	LIBS="$ac_save_LIBS"
+
+	if test "x$RL_LIBS" = "x"; then
+		AC_MSG_RESULT(not found)
+	else
+		AC_MSG_RESULT(found)
+	fi
 fi
-if test "x$with_readline20" = "x" || test "x$with_readline20" = "xyes"; then
+
+if test "x$RL_LIBS" != "x"; then
+	AC_MSG_CHECKING(for basic readline functions)
+
 	ac_save_LIBS="$LIBS"
-	LIBS="$LIBS $RLLIBS"
-	AC_TRY_LINK([#include <stdio.h>
-	#include <readline/readline.h>], [
-extern void rl_deprep_terminal(void);
-extern int rl_getc(FILE * stream);
-extern void rl_gather_tyi(void);
 
-rl_deprep_terminal();
-(void)rl_getc(stdin);
-rl_gather_tyi();], RLDEFS="-DREADLINE_2_0"; AC_MSG_RESULT(2.0))
+	LIBS="$LIBS $RL_LIBS"
+	AC_TRY_LINK([
+#include <stdio.h>
+#include <readline/readline.h>], [
+char *line; 
+line = readline("prompt");], 
+	[AC_TRY_LINK([
+#include <stdio.h>
+#include <readline/history.h>], [
+add_history("test");],
+	[msg_readline=partial])])
+
 	LIBS="$ac_save_LIBS"
+
+	if test "xmsg_readline" = "xno"; then
+		AC_MSG_RESULT(no)
+	else
+		AC_MSG_RESULT(yes)
+	fi
+fi
+if test "x$msg_readline" != "xno"; then
+	AC_MSG_CHECKING(for extra readline functions)
+
+	ac_save_LIBS="$LIBS"
+
+	LIBS="$LIBS $RL_LIBS"
+	AC_TRY_LINK([
+#include <stdio.h>
+#include <readline/readline.h>], [
+rl_callback_read_char();], 
+	[AC_TRY_LINK([
+#include <stdio.h>
+#include <readline/readline.h>], [
+static void execline(char *line)
+{}
+rl_callback_handler_install("prompt", execline);],
+	[msg_readline=complete])])
+
+	LIBS="$ac_save_LIBS"
+
+	if test "x$msg_readline" != "xcomplete"; then
+		AC_MSG_RESULT(no)
+	else
+		AC_MSG_RESULT(yes)
+	fi
 fi
 
-if test "x$RLDEFS" = "x"; then
-	AC_MSG_RESULT(none)
+if test "x$msg_readline" = "xpartial"; then
+	AC_DEFINE(HAVE_READLINE)
 fi
-
-AC_SUBST(RLLIBS)
-AC_SUBST(RLDEFS)
+if test "x$msg_readline" = "xcomplete"; then
+	AC_DEFINE(HAVE_READLINE)
+	AC_DEFINE(HAVE_READLINE_EXTRA)
+fi
+AC_SUBST(RL_CFLAGS)
+AC_SUBST(RL_LIBS)
 
 dnl ******************************
 dnl C++
@@ -536,6 +575,7 @@ man/Makefile
 
 echo "
 	 Iconv support:   $msg_iconv
+      Readline support:   $msg_readline
 	   C++ support:	  $msg_cpp
    TCL/ITCL/TK support:   $msg_tcl/$msg_itcl/$msg_tk
 	  Java support:   $msg_java

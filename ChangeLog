@@ -1,3 +1,17 @@
+2001-12-05  JP Rosevear  <jpr@ximian.com>
+
+	* pd-tty.c: use new defines for compiling read line support
+
+	* dlpsh.c: ditto
+
+	* configure.in: improved readline checking, no just checks for
+	appropriate functions, basic ones and extra ones
+
+	* acconfig.h: new defines
+
+	* Makefile.am: conditionally compile tcl/tk dependant apps,
+	include readline cflags and libs
+
 2001-11-23  JP Rosevear  <jpr@ximian.com>
 
 	* autogen.sh: handle ACLOCAL_FLAGS properly

@@ -24,6 +24,10 @@
 void display(char *text, char *tag, int type);
 void do_readline(void);
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -56,7 +60,7 @@ extern int tty;			/* Non-zero means standard input is a
 				   terminal-like device.  Zero means it's 
 				   NULL */
 
-#if defined(READLINE_2_1)
+#ifdef HAVE_READLINE_EXTRA
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -173,168 +177,7 @@ void do_readline(void)
 
 }
 
-#endif
-#if !defined(READLINE_2_1) && defined(READLINE_2_0)
-
-#include <readline/readline.h>
-#include <readline/history.h>
-
-/* Undocumented readline-2.0 internals */
-extern void rl_deprep_terminal(void);
-extern int rl_getc(FILE * stream);
-extern void rl_gather_tyi(void);
-
-static volatile int readable = 0;
-
-static Tcl_DString command;
-
-static int mode = 0;
-
-static void Readable(ClientData d, int mask)
-{
-	readable = 1;
-}
-
-static void Exit(ClientData d)
-{
-	rl_deprep_terminal();
-}
-
-/***********************************************************************
- *
- * Function:    do_readline
- *
- * Summary:     Internal readline routine
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void do_readline(void)
-{
-	char buf[20];
-	int gotPartial = 0;
-	int exitCode = 0;
-	Tcl_Channel in = Tcl_GetStdChannel(TCL_STDIN);
-
-	Tcl_SetChannelOption(interp, in, "-blocking", "off");
-
-	Tcl_CreateChannelHandler(in, TCL_READABLE, Readable, 0);
-
-	Tcl_CreateExitHandler((Tcl_ExitProc *) Exit, (ClientData) 0);
-
-	for (;;) {
-		char *line = readline(gotPartial ? "> " : "pilot-debug> ");
-		char *cmd;
-		int code;
-
-		if (!line)
-			break;
-		(void) Tcl_DStringAppend(&command, line, -1);
-		cmd = Tcl_DStringAppend(&command, "\n", -1);
-
-		add_history(line);
-		free(line);
-
-		if (!Tcl_CommandComplete(cmd)) {
-			gotPartial = 1;
-		} else {
-			gotPartial = 0;
-			code =
-			    Tcl_RecordAndEval(interp, cmd,
-					      TCL_EVAL_GLOBAL);
-
-			Tcl_DStringFree(&command);
-			if (*interp->result != 0) {
-				Tcl_Channel chan;
-
-				if (code != TCL_OK) {
-					chan =
-					    Tcl_GetChannel(interp,
-							   "stderr", NULL);
-				} else {
-					chan =
-					    Tcl_GetChannel(interp,
-							   "stdout", NULL);
-				}
-				if (chan) {
-					Tcl_Write(chan, interp->result,
-						  -1);
-					Tcl_Write(chan, "\n", 1);
-				}
-			}
-		}
-		Tcl_ResetResult(interp);
-	}
-	sprintf(buf, "exit %d", exitCode);
-	Tcl_Eval(interp, buf);
-}
-
-/***********************************************************************
- *
- * Function:    rl_getc
- *
- * Summary:     Replace internal readline routine that retrieves a 
- *		character
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int rl_getc(FILE * stream)
-{
-	unsigned char c;
-	int d;
-
-	for (;;) {
-		if (!readable)
-			Tcl_DoOneEvent(0);
-		d = Tcl_Read(Tcl_GetStdChannel(TCL_STDIN), &c, 1);
-		readable = 0;
-		if (d == 1) {
-			if (mode) {
-				printf("\n");
-				mode = 0;
-				rl_forced_update_display();
-			}
-			return (unsigned int) c;
-		}
-	}
-}
-
-/***********************************************************************
- *
- * Function:    rl_gather_tyi
- *
- * Summary:     Replace internal readline routine that gets a character
- *		without blocking
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void rl_gather_tyi(void)
-{
-	unsigned char c;
-	int d;
-
-	Tcl_DoOneEvent(TCL_DONT_WAIT);
-	d = Tcl_Read(Tcl_GetStdChannel(TCL_STDIN), &c, 1);
-	if (d == 1) {
-		if (mode) {
-			printf("\n");
-			mode = 0;
-			rl_forced_update_display();
-		}
-		rl_stuff_char(c);
-	}
-	return;
-}
-#endif
-#if !defined(READLINE_2_1) && !defined(READLINE_2_0)
+#else
 
 static void StdinProc(ClientData clientData, int mask);
 
@@ -563,7 +406,7 @@ int partial;			/* Non-zero means there already exists a
 	}
 }
 
-#endif				/* !USE_READLINE_2_0 and 2_1 */
+#endif				/* !HAVE_READLINE_EXTRA */
 
 /***********************************************************************
  *
@@ -627,14 +470,10 @@ void display(char *text, char *tag, int type)
 		printf("%c", text[i]);
 		if (text[i] == '\n') {
 			mode = 0;
-#ifdef READLINE_2_1
-			rl_forced_update_display();	/* Bring the prompt back */
-#else
-#ifdef READLINE_2_0
+#ifdef HAVE_READLINE_EXTRA
 			rl_forced_update_display();	/* Bring the prompt back */
 #else
 			Prompt(interp, gotPartial);
-#endif
 #endif
 		}
 	}

@@ -6,8 +6,9 @@ endif
 
 SUBDIRS=libsock $(CXX_DIR) include man tests tools
 
-INCLUDES = \
-	-I$(top_srcdir)/include
+INCLUDES = 			\
+	-I$(top_srcdir)/include \
+	$(RL_CFLAGS)
 
 if WITH_CXX
 CCEXECS = ccexample iambicexample
@@ -15,8 +16,15 @@ else
 CCEXECS =
 endif
 
+if WITH_TK
+TKEXECS = pilot-debug
+else
+TKEXECS =
+endif
+
 bin_PROGRAMS = 		\
 	$(CCEXECS)	\
+	$(TKEXECS)	\
 	addresses	\
 	debugsh		\
 	dlpsh		\
@@ -36,7 +44,6 @@ bin_PROGRAMS = 		\
 	pi-port		\
 	pilot-addresses	\
 	pilot-clip	\
-	pilot-debug	\
 	pilot-dedupe	\
 	pilot-file	\
 	pilot-mail	\
@@ -84,7 +91,8 @@ debugsh_LDADD = \
 
 dlpsh_SOURCES = \
 	dlpsh.c
-dlpsh_LDADD = \
+dlpsh_LDADD = 					\
+	$(RL_LIBS)				\
 	$(top_builddir)/libsock/libpisock.la
 
 getrom_SOURCES = \
@@ -173,6 +181,7 @@ pilot_debug_SOURCES = 	\
 	pilot-debug.c
 pilot_debug_LDADD = \
 	$(TCLTKLIBS)				\
+	$(RL_LIBS)				\
 	$(top_builddir)/libsock/libpisock.la
 
 pilot_dedupe_SOURCES = \
