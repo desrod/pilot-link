@@ -413,22 +413,6 @@ else
 fi 
 
 AC_MSG_CHECKING(for Tcl)
-TCL_VERSION=""
-TCL_LIBS=""
-TCL_LIB_SPEC=""
-TCL_PACKAGE_SPEC=""
-TCL_INC=""
-TCL_BIN=""
-TK_VERSION=""
-TK_LIBS=""
-TK_LIB_SPEC=""
-TK_INC=""
-TK_BIN=""
-TCLTK_FLAGS=""
-TCLTKFLAGS=""
-TCLLIBS=""
-TKLIBS=""
-TCLTKLIBS=""
 if test "x$with_tcl" = "x"; then
 	AC_MSG_RESULT(not found)
 elif test "x$with_tcl" = "xno"; then
@@ -482,7 +466,7 @@ else
 				#TCLTK_LIBS="\$(TK_LIB_SPEC) \$(TCL_LIB_SPEC) \$(TK_LIBS)"
 				#TCLTK_FLAGS="$TCLTK_FLAGS -DTK \$(TK_INC)"
 				#TCLTKLIBS="$TKLIBS"
-				use_ictl=true
+				use_itcl=true
 				if test "x$ITCL_INC" = "x$TCL_INC"; then
 					ITCL_INC=" #same as TCL_INC"
 					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
@@ -644,7 +628,7 @@ echo "
   Readline support.... : $msg_readline
 
   TCL support......... : $msg_tcl	($TCL_VERSION)
-  ITCL support........ : $msg_itcl  <<<- Why is this broken?
+  ITCL support........ : $msg_itcl      ($ITCL_VERSION)
   TK Support.......... : $msg_tk	($TK_VERSION)
 
   Java support........ : $msg_java	($JAVAMAJOR.$JAVAMINOR)
