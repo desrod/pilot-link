@@ -2165,7 +2165,7 @@ static PyObject *_wrap_dlp_ReadDBList(PyObject *self, PyObject *args) {
                 "flagReadOnly", !!(info.flags & dlpDBFlagReadOnly),
                 "flagAppInfoDirty", !!(info.flags & dlpDBFlagAppInfoDirty),
                 "flagBackup", !!(info.flags & dlpDBFlagBackup),
-                "flagClipping", !!(info.flags & dlpDBFlagClipping),
+                "flagClipping", !!(info.flags & dlpDBFlagLaunchable),
                 "flagOpen", !!(info.flags & dlpDBFlagOpen),
                 "flagNewer", !!(info.flags & dlpDBFlagNewer),
                 "flagReset", !!(info.flags & dlpDBFlagReset),
@@ -2267,7 +2267,7 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
             "flagReadOnly", !!(arg7->flags & dlpDBFlagReadOnly),
             "flagAppInfoDirty", !!(arg7->flags & dlpDBFlagAppInfoDirty),
             "flagBackup", !!(arg7->flags & dlpDBFlagBackup),
-            "flagClipping", !!(arg7->flags & dlpDBFlagClipping),
+            "flagClipping", !!(arg7->flags & dlpDBFlagLaunchable),
             "flagOpen", !!(arg7->flags & dlpDBFlagOpen),
             "flagNewer", !!(arg7->flags & dlpDBFlagNewer),
             "flagReset", !!(arg7->flags & dlpDBFlagReset),
@@ -4122,7 +4122,7 @@ static PyObject *_wrap_pi_file_get_info(PyObject *self, PyObject *args) {
             "flagReadOnly", !!(arg2->flags & dlpDBFlagReadOnly),
             "flagAppInfoDirty", !!(arg2->flags & dlpDBFlagAppInfoDirty),
             "flagBackup", !!(arg2->flags & dlpDBFlagBackup),
-            "flagClipping", !!(arg2->flags & dlpDBFlagClipping),
+            "flagClipping", !!(arg2->flags & dlpDBFlagLaunchable),
             "flagOpen", !!(arg2->flags & dlpDBFlagOpen),
             "flagNewer", !!(arg2->flags & dlpDBFlagNewer),
             "flagReset", !!(arg2->flags & dlpDBFlagReset),
@@ -4565,7 +4565,7 @@ static PyObject *_wrap_pi_file_create(PyObject *self, PyObject *args) {
         if (DGETLONG(obj1,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
         if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
         if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagClipping;
+        if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagLaunchable;
         if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
         if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
         if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
@@ -4613,7 +4613,7 @@ static PyObject *_wrap_pi_file_set_info(PyObject *self, PyObject *args) {
         if (DGETLONG(obj1,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
         if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
         if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagClipping;
+        if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagLaunchable;
         if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
         if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
         if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
@@ -5169,7 +5169,7 @@ SWIGEXPORT(void) SWIG_init(void) {
     PyDict_SetItemString(d,"dlpDBFlagReadOnly", SWIG_From_int((int)dlpDBFlagReadOnly));
     PyDict_SetItemString(d,"dlpDBFlagAppInfoDirty", SWIG_From_int((int)dlpDBFlagAppInfoDirty));
     PyDict_SetItemString(d,"dlpDBFlagBackup", SWIG_From_int((int)dlpDBFlagBackup));
-    PyDict_SetItemString(d,"dlpDBFlagClipping", SWIG_From_int((int)dlpDBFlagClipping));
+    PyDict_SetItemString(d,"dlpDBFlagClipping", SWIG_From_int((int)dlpDBFlagLaunchable));
     PyDict_SetItemString(d,"dlpDBFlagOpen", SWIG_From_int((int)dlpDBFlagOpen));
     PyDict_SetItemString(d,"dlpDBFlagNewer", SWIG_From_int((int)dlpDBFlagNewer));
     PyDict_SetItemString(d,"dlpDBFlagReset", SWIG_From_int((int)dlpDBFlagReset));
