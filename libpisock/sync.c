@@ -209,6 +209,15 @@ store_record_on_pilot (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, Re
 }
 
 static int
+open_db (SyncHandler *sh, int *dbhandle)
+{
+	if (sh->secret)
+		return dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite && dlpOpenSecret, sh->name, dbhandle);
+	else
+		return dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, dbhandle);
+}
+
+static int
 close_db (SyncHandler *sh, int dbhandle)
 {
 	dlp_CleanUpDatabase (sh->sd, dbhandle);
@@ -356,7 +365,7 @@ sync_CopyToPilot (SyncHandler *sh)
 	int slow = 0;
 	int result = 0;
 	
-	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	result = open_db (sh, &dbhandle);
 	if (result < 0) goto cleanup;
 
 	result = sh->Pre (sh, dbhandle, &slow);
@@ -389,7 +398,7 @@ sync_CopyFromPilot (SyncHandler *sh)
 	int slow = 0;
 	int result = 0;
 
-	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	result = open_db (sh, &dbhandle);
 	if (result < 0) goto cleanup;
 	
 	result = sh->Pre (sh, dbhandle, &slow);
@@ -522,7 +531,7 @@ sync_MergeFromPilot (SyncHandler *sh)
 	int slow = 0;
 	int result = 0;
 	
-	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	result = open_db (sh, &dbhandle);
 	if (result < 0) goto cleanup;
 	
 	result = sh->Pre (sh, dbhandle, &slow);
@@ -636,7 +645,7 @@ sync_MergeToPilot (SyncHandler *sh)
 	int slow = 0;
 	int result = 0;
 	
-	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+	result = open_db (sh, &dbhandle);
 	if (result < 0) goto cleanup;
 
 	result = sh->Pre (sh, dbhandle, &slow);
@@ -664,8 +673,8 @@ sync_Synchronize (SyncHandler *sh)
 	int dbhandle;
 	int slow = 0;
 	int result = 0;
-	
-	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
+
+	result = open_db (sh, &dbhandle);	
 	if (result < 0) goto cleanup;
 
 	result = sh->Pre (sh, dbhandle, &slow);

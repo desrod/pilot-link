@@ -1,3 +1,20 @@
+2001-03-12  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/sync.c (open_db): handle the secret flag
+	(sync_CopyToPilot): use open_db
+	(sync_CopyFromPilot): ditto
+	(sync_MergeFromPilot): ditto
+	(sync_MergeToPilot): ditto
+	(sync_Synchronize): ditto
+
+	* scripts/tarball.c: name the tarball properly
+
+	* Makefile.in: make make dist a little better
+
+	* include/pi-sync.h: add secret field
+
+	* Makefile.in: remove old dist tarball and reflect new name
+
 2001-03-01  John Marshall  <john_marshall@palm.com>
 
         * configure.in (AC_OUTPUT): Add tools/empty to AC_OUTPUT so that

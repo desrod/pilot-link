@@ -50,7 +50,10 @@ struct _PilotRecord {
 
 struct _SyncHandler {
 	int sd;
+
 	char *name;
+	int secret;
+	
 	void *data;
 
 	int (*Pre) (SyncHandler *, int dbhandle, int *slow);
