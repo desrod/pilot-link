@@ -1,4 +1,8 @@
 2001-07-12  David A. Desrosiers <hacker@gnu-designs.com>
+	
+	* include/i18n.h: Oops! 
+
+2001-07-12  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* TODO: New layout and format, more conducive to allowing others to
 	  see where the most help is needed, sorted by severity.
