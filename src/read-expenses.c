@@ -34,23 +34,23 @@
 int pilot_connect(const char *port);
 static void Help(char *progname);
 
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
+	{"version",	no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
-static const char *optstring = "hp:";
+static const char *optstring = "hvp:";
 
 static void Help(char *progname)
 {
-	printf("   Export Palm Expense application database data into text format\n"
-	       "   Usage: %s -p <port>\n\n"
+	printf("   Export Palm Expense application database data into text format\n\n"
+	       "   Usage: %s -p <port>\n"
 	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -h                Display this information\n\n"
+	       "     -p <port>      Use device file <port> to communicate with Palm\n"
+	       "     -h --help      Display this information\n"
+	       "     -v --version   Display version information\n\n"
 	       "   Examples: %s -p /dev/pilot\n\n", progname, progname);
 	return;
 }
@@ -70,10 +70,13 @@ int main(int argc, char *argv[])
 	struct 	ExpenseAppInfo tai;
 	struct 	ExpensePref tp;
 		
-	while ((c = getopt(argc, argv, optstring)) != -1) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'h':
 			  Help(progname);
+			  exit(0);
+		  case 'v':
+			  PalmHeader(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;
@@ -81,133 +84,114 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
+        sd = pilot_connect(port);
+        if (sd < 0)
+                goto error;
 
-	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+        if (dlp_ReadUserInfo(sd, &User) < 0)
+                goto error_close;
+
+	
+	/* Note that under PalmOS 1.x, you can only read preferences before
+	   the DB is opened 
+	 */
+	ret = dlp_ReadAppPreference(sd, Expense_Creator, Expense_Pref, 1,
+				  0xffff, buffer, 0, 0);
+		
+	/* Open the ToDo database, store access handle in db */
+	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ExpenseDB", &db) < 0) {
+		printf("Unable to open ExpenseDB");
+		dlp_AddSyncLogEntry(sd, "Unable to open ExpenseDB.\n");
 		exit(1);
-	} else if (port != NULL) {
-		sd = pilot_connect(port);
-
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-		} else {
-
-			/* Ask the pilot who it is. */
-			dlp_ReadUserInfo(sd, &User);
-		
-			/* Tell user (via Palm) that we are starting things up */
-			dlp_OpenConduit(sd);
-		
-			/* Note that under PalmOS 1.x, you can only read preferences before
-			   the DB is opened 
-			 */
-			ret =
-			    dlp_ReadAppPreference(sd, Expense_Creator, Expense_Pref, 1,
-						  0xffff, buffer, 0, 0);
-		
-			/* Open the ToDo database, store access handle in db */
-			if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ExpenseDB", &db) < 0) {
-				printf("Unable to open ExpenseDB");
-				dlp_AddSyncLogEntry(sd, "Unable to open ExpenseDB.\n");
-				exit(1);
-			}
-		
-			if (ret >= 0) {
-				unpack_ExpensePref(&tp, buffer, 0xffff);
-				i = pack_ExpensePref(&tp, buffer2, 0xffff);
-#ifdef DEBUG
-				fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
-				dumpdata(buffer, ret);
-				fprintf(stderr, "New prefs, %d bytes:\n", ret);
-				dumpdata(buffer2, i);
-#endif
-				printf("Expense prefs, current category %d, default category %d\n",
-					tp.currentCategory, tp.defaultCategory);
-				printf("  Note font %d, Show all categories %d, Show currency %d, Save backup %d\n",
-					tp.noteFont, tp.showAllCategories, tp.showCurrency,
-					tp.saveBackup);
-				printf("  Allow quickfill %d, Distance unit %d\n\n",
-					tp.allowQuickFill, tp.unitOfDistance);
-				printf("Currencies:\n");
-				for (i = 0; i < 7; i++) {
-					fprintf(stderr, "  %d", tp.currencies[i]);
-				}
-				printf("\n\n");
-			}
-		
-			ret = dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-			unpack_ExpenseAppInfo(&tai, buffer, 0xffff);
-#ifdef DEBUG
-			i = pack_ExpenseAppInfo(&tai, buffer2, 0xffff);
-			printf("Orig length %d, new length %d, orig data:\n", ret, i);
-			dumpdata(buffer, ret);
-			printf("New data:\n");
-			dumpdata(buffer2, i);
-#endif
-			printf("Expense app info, sort order %d\n", tai.sortOrder);
-			printf(" Currency 1, name '%s', symbol '%s', rate '%s'\n",
-				tai.currencies[0].name, tai.currencies[0].symbol,
-				tai.currencies[0].rate);
-			printf(" Currency 2, name '%s', symbol '%s', rate '%s'\n",
-				tai.currencies[1].name, tai.currencies[1].symbol,
-				tai.currencies[1].rate);
-			printf(" Currency 3, name '%s', symbol '%s', rate '%s'\n",
-				tai.currencies[2].name, tai.currencies[2].symbol,
-				tai.currencies[2].rate);
-			printf(" Currency 4, name '%s', symbol '%s', rate '%s'\n\n",
-				tai.currencies[3].name, tai.currencies[3].symbol,
-				tai.currencies[3].rate);
-		
-			for (i = 0;; i++) {
-				int 	attr,
-					category;
-				struct Expense t;
-		
-				int len =
-				    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
-							  &category);
-		
-				if (len < 0)
-					break;
-		
-				/* Skip deleted records */
-				if ((attr & dlpRecAttrDeleted)
-				    || (attr & dlpRecAttrArchived))
-					continue;
-		
-				unpack_Expense(&t, buffer, len);
-				ret = pack_Expense(&t, buffer2, 0xffff);
-#ifdef DEBUG
-				fprintf(stderr, "Orig length %d, data:\n", len);
-				dumpdata(buffer, len);
-				fprintf(stderr, "New length %d, data:\n", ret);
-				dumpdata(buffer2, ret);
-#endif	
-				printf("Category: %s\n", tai.category.name[category]);
-				printf("  Type: %3d\n  Payment: %3d\n  Currency: %3d\n",
-					t.type, t.payment, t.currency);
-				printf("  Amount: %s\n  Vendor: %s\n  City: %s\n",
-					t.amount ? t.amount : "<None>",
-					t.vendor ? t.vendor : "<None>",
-					t.city ? t.city : "<None>");
-				printf("  Attendees: %s\n  Note: %s\n",
-					t.attendees ? t.attendees : "<None>",
-					t.note ? t.note : "<None>");
-				printf("  Date: %s", asctime(&t.date));
-				printf("\n");
-		
-				free_Expense(&t);
-			}
-		}
 	}
+		
+	if (ret >= 0) {
+		unpack_ExpensePref(&tp, buffer, 0xffff);
+		i = pack_ExpensePref(&tp, buffer2, 0xffff);
+#ifdef DEBUG
+		fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
+		dumpdata(buffer, ret);
+		fprintf(stderr, "New prefs, %d bytes:\n", ret);
+		dumpdata(buffer2, i);
+#endif
+		printf("Expense prefs, current category %d, default category %d\n",
+			tp.currentCategory, tp.defaultCategory);
+		printf("  Note font %d, Show all categories %d, Show currency %d, Save backup %d\n",
+			tp.noteFont, tp.showAllCategories, tp.showCurrency,
+			tp.saveBackup);
+		printf("  Allow quickfill %d, Distance unit %d\n\n",
+			tp.allowQuickFill, tp.unitOfDistance);
+		printf("Currencies:\n");
+		for (i = 0; i < 7; i++) {
+			fprintf(stderr, "  %d", tp.currencies[i]);
+		}
+		printf("\n\n");
+	}
+		
+	ret = dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+	unpack_ExpenseAppInfo(&tai, buffer, 0xffff);
+#ifdef DEBUG
+	i = pack_ExpenseAppInfo(&tai, buffer2, 0xffff);
+	printf("Orig length %d, new length %d, orig data:\n", ret, i);
+	dumpdata(buffer, ret);
+	printf("New data:\n");
+	dumpdata(buffer2, i);
+#endif
+	printf("Expense app info, sort order %d\n", tai.sortOrder);
+	printf(" Currency 1, name '%s', symbol '%s', rate '%s'\n",
+		tai.currencies[0].name, tai.currencies[0].symbol,
+		tai.currencies[0].rate);
+	printf(" Currency 2, name '%s', symbol '%s', rate '%s'\n",
+		tai.currencies[1].name, tai.currencies[1].symbol,
+		tai.currencies[1].rate);
+	printf(" Currency 3, name '%s', symbol '%s', rate '%s'\n",
+		tai.currencies[2].name, tai.currencies[2].symbol,
+		tai.currencies[2].rate);
+	printf(" Currency 4, name '%s', symbol '%s', rate '%s'\n\n",
+		tai.currencies[3].name, tai.currencies[3].symbol,
+		tai.currencies[3].rate);
+		
+	for (i = 0;; i++) {
+		int 	attr,
+			category;
+		struct Expense t;
+
+		int len =
+		    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
+					  &category);
+
+		if (len < 0)
+			break;
+
+		/* Skip deleted records */
+		if ((attr & dlpRecAttrDeleted)
+		    || (attr & dlpRecAttrArchived))
+			continue;
+
+		unpack_Expense(&t, buffer, len);
+		ret = pack_Expense(&t, buffer2, 0xffff);
+#ifdef DEBUG
+		fprintf(stderr, "Orig length %d, data:\n", len);
+		dumpdata(buffer, len);
+		fprintf(stderr, "New length %d, data:\n", ret);
+		dumpdata(buffer2, ret);
+#endif	
+		printf("Category: %s\n", tai.category.name[category]);
+		printf("  Type: %3d\n  Payment: %3d\n  Currency: %3d\n",
+			t.type, t.payment, t.currency);
+		printf("  Amount: %s\n  Vendor: %s\n  City: %s\n",
+			t.amount ? t.amount : "<None>",
+			t.vendor ? t.vendor : "<None>",
+			t.city ? t.city : "<None>");
+		printf("  Attendees: %s\n  Note: %s\n",
+			t.attendees ? t.attendees : "<None>",
+			t.note ? t.note : "<None>");
+		printf("  Date: %s", asctime(&t.date));
+		printf("\n");
+
+		free_Expense(&t);
+	}		
+		
 	/* Close the database */
 	dlp_CloseDB(sd, db);
 
@@ -215,4 +199,14 @@ int main(int argc, char *argv[])
 				"Thank you for using pilot-link\n");
 	pi_close(sd);
 	exit(0);
+
+error_close:
+        pi_close(sd);
+        
+error:
+        perror("   ERROR:");
+        fprintf(stderr, "\n");
+        fprintf(stderr, "   Please use --help for more information\n\n");
+
+        return -1;
 }

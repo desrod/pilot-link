@@ -51,8 +51,9 @@ static void Help(char *progname)
 	       "     -i <userid>       A 5-digit numeric UserID, required for PalmOS\n"
 	       "     -h --help         Display this information\n"
 	       "     -v --version      Display version information\n\n"
-	       "   Examples: %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n"
-	       "             %s -p /dev/pilot -o Host -a 192.168.1.1 -n 255.255.255.0\n\n",
+	       "   Examples: \n"
+	       "      %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n"
+	       "      %s -p /dev/pilot -o Host -a 192.168.1.1 -n 255.255.255.0\n\n",
 	       progname, progname, progname);
 	return;
 }
@@ -75,10 +76,10 @@ int main(int argc, char *argv[])
 
 		case 'h':
 			Help(progname);
-			return 0;
+			exit(0);
 		case 'v':
 			PalmHeader(progname);
-			return 0;
+			exit(0);
 		case 'p':
 			port = optarg;
 			break;
@@ -90,10 +91,6 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	
-	if (optind < 2)
-		PalmHeader(progname);
-		exit(0);
 	
 	sd = pilot_connect(port);
 	if (sd < 0)
@@ -144,6 +141,7 @@ error_close:
 error:
 	perror("   ERROR:");
 	fprintf(stderr, "\n");
+	fprintf(stderr, "   Please use --help for more information\n\n");
 
 	return -1;
 }

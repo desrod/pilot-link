@@ -51,13 +51,14 @@ static void Help(char *progname)
 	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n"
 	       "   Please see http://www.roaringpenguin.com/remind.html for more\n"
 	       "   information on the Remind Calendar Program.\n\n"
-	       "   Usage: %s -p <port>\n\n"
+	       "   Usage: %s -p <port>\n"
 	       "   Options:\n"
 	       "     -p <port>         Use device file <port> to communicate with Palm\n"
 	       "     -h, --help        Display this information\n"
 	       "     -v, --version     Display version information\n\n"
-	       "   Examples: %s -p /dev/pilot\n"
-	       "             %s -p /dev/pilot > ~/Palm/remind.file\n\n"
+	       "   Examples:\n"
+	       "     %s -p /dev/pilot   # Exports to STDOUT\n"
+	       "     %s -p /dev/pilot > ~/Palm/remind.file\n\n"
 	       "   Your Datebook database will be written to STDOUT as it is converted\n"
 	       "   unless redirected to a file.\n\n", progname, progname, progname);
 	return;
@@ -102,6 +103,7 @@ int main(int argc, char *argv[])
 	
 	printf("PUSH-OMIT-CONTEXT\n");
 	printf("CLEAR-OMIT-CONTEXT\n");
+	
 	for (i = 0;; i++) {
 		int 	attr,
 			j;
@@ -311,6 +313,7 @@ int main(int argc, char *argv[])
  error:
 	perror("   ERROR");
 	fprintf(stderr, "\n");
-
+	fprintf(stderr, "   Please use --help for more information\n");
+	
 	return -1;
 }

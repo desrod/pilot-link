@@ -44,10 +44,11 @@ static const char *optstring = "hvp:";
 static void Help(char *progname)
 {
 	printf("   Accept connection and redirect via Network Hotsync Protocol\n\n"
-	       "   Usage: %s -p <port>\n\n"
+	       "   Usage: %s -p <port>\n"
 	       "   Options:\n"
-	       "     -p <port>           Use device file <port> to communicate with Palm\n"
-	       "     -h                  Display this information\n\n"
+	       "     -p <port>         Use device file <port> to communicate with Palm\n"
+	       "     -h                Display this information\n"
+	       "      -v --version     Display version information\n"
 	       "   Examples: %s -p /dev/pilot\n\n"
 	       "   This will bind your locally connected device to a network port,and\n"
 	       "   redirect them through the network device to a listening server as\n"
@@ -75,10 +76,10 @@ int main(int argc, char *argv[])
 
 		case 'h':
 			Help(progname);
-			return 0;
+			exit(0);
 		case 'v':
 			PalmHeader(progname);
-			return 0;
+			exit(0);
 		case 'p':
 			port = optarg;
 			break;
@@ -137,7 +138,8 @@ int main(int argc, char *argv[])
  error:
 	perror("   ERROR");
 	fprintf(stderr, "\n");
-
+	fprintf(stderr, "   Please use --help for more information\n\n");
+	
 	return -1;
 }
 

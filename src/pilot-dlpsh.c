@@ -643,35 +643,31 @@ int main(int argc, char *argv[])
 			  PalmHeader(progname);
 			  exit(0);
 		}
-	}
-
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-		return 0;
-	} else {
-		
-		sd = pilot_connect(port);
-		if (sd < 0)
-			goto error;
+	}	
 	
-		if (dlp_OpenConduit(sd) < 0)
-			goto error_close;
+	sd = pilot_connect(port);
+	if (sd < 0)
+		goto error;
 
-		printf("\nWelcome to the DLP Shell\n"
-		       "Type 'help' for additional information\n\n");
+	if (dlp_OpenConduit(sd) < 0)
+		goto error_close;
 
-		pi_watchdog(sd, TICKLE_INTERVAL);
+	printf("\nWelcome to the DLP Shell\n"
+	       "Type 'help' for additional information\n\n");
 
-		handle_user_commands(sd);
+	pi_watchdog(sd, TICKLE_INTERVAL);
 
-		return 0;
-	}
+	handle_user_commands(sd);
+
+	return 0;
+
 error_close:
 	pi_close(sd);
 
 error:
 	perror("   ERROR");
 	fprintf(stderr, "\n");
+	fprintf(stderr, "   Please use --help for more information\n");
 
 	return -1;
 

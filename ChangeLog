@@ -1,3 +1,23 @@
+2002-02-27  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* dlpsh.c: pilot_connect() fixes, getopt_long() fixes, cleanup.
+
+	* install-user.c: Same
+
+	* pi-nredir.c: Same
+
+	* pi-port.c: Same. Non-working at the moment..
+
+	* pilot-schlep.c: Same
+
+	* read-expenses.c: Same
+
+	* read-ical.c: Same
+
+	* read-todos.c: Same
+
+	* reminders.c: Same
+
 2002-02-25  David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* libsock/connect.c: BSD errno.h fixes (Peter da Silva)

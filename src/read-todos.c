@@ -34,16 +34,15 @@
 int pilot_connect(const char *port);
 static void Help(char *progname);
 
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{"file",        required_argument, NULL, 'f'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
-static const char *optstring = "hp:f:";
+static const char *optstring = "hvp:f:";
 
 static void Help(char *progname)
 {
@@ -76,11 +75,14 @@ int main(int argc, char *argv[])
 	struct 	ToDoAppInfo tai;
 	unsigned char buffer[0xffff];
 	
-	while (((c = getopt(argc, argv, optstring)) != -1)) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'h':
 			  Help(progname);
 			  exit(0);
+                  case 'v':
+			  PalmHeader(progname);
+			  return 0;
 		  case 'p':
 			  port = optarg;
 			  filename = NULL;
@@ -91,118 +93,108 @@ int main(int argc, char *argv[])
 		}
 	}
 		
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
+        sd = pilot_connect(port);
+        if (sd < 0)
+                goto error;   
+
+        if (dlp_ReadUserInfo(sd, &User) < 0)
+                goto error_close;
+		
+	/* Open the ToDo database, store access handle in db */
+	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
+		puts("Unable to open ToDoDB");
+		dlp_AddSyncLogEntry(sd,
+				    "Unable to open ToDoDB.\n");
+		exit(1);
 	}
 
-	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
-		exit(1);
-	} else if (port != NULL) {
+	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
 
-		sd = pilot_connect(port);
+	if (filename) {
+		int 	len;
 
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
+		pif = pi_file_open(filename);
+		if (!pif) {
+			perror("pi_file_open");
 			exit(1);
 		}
 
-		/* Tell user (via Palm) that we are starting things up */
-		dlp_ReadUserInfo(sd, &User);
-		dlp_OpenConduit(sd);
-		
-		/* Open the ToDo database, store access handle in db */
-		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-			puts("Unable to open ToDoDB");
-			dlp_AddSyncLogEntry(sd,
-					    "Unable to open ToDoDB.\n");
+		sd = pi_file_get_app_info(pif, (void *) &ptr, &len);
+		if (sd == -1) {
+			perror("pi_file_get_app_info");
 			exit(1);
 		}
 
-		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+		memcpy(buffer, ptr, len);
+	}
 
+	unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 
+	for (i = 0;; i++) {
+		int 	attr,
+			category,
+			len;
+		struct 	ToDo t;
+
+		if (port) {
+			len =
+			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+						  &attr, &category);
+
+			if (len < 0)
+				break;
+		}
 		if (filename) {
-			int 	len;
-	
-			pif = pi_file_open(filename);
-			if (!pif) {
-				perror("pi_file_open");
-				exit(1);
-			}
-	
-			sd = pi_file_get_app_info(pif, (void *) &ptr, &len);
-			if (sd == -1) {
-				perror("pi_file_get_app_info");
-				exit(1);
-			}
-	
+			if (pi_file_read_record
+			    (pif, i, (void *) &ptr, &len, &attr, &category,
+			     0))
+				break;
+
 			memcpy(buffer, ptr, len);
 		}
-	
-		unpack_ToDoAppInfo(&tai, buffer, 0xffff);
-	
-		for (i = 0;; i++) {
-			int 	attr,
-				category,
-				len;
-			struct 	ToDo t;
-	
-			if (port) {
-				len =
-				    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
-							  &attr, &category);
-	
-				if (len < 0)
-					break;
-			}
-			if (filename) {
-				if (pi_file_read_record
-				    (pif, i, (void *) &ptr, &len, &attr, &category,
-				     0))
-					break;
-	
-				memcpy(buffer, ptr, len);
-			}
-	
-			/* Skip deleted records */
-			if ((attr & dlpRecAttrDeleted)
-			    || (attr & dlpRecAttrArchived))
-				continue;
-	
-			unpack_ToDo(&t, buffer, len);
-	
-			printf("Category: %s\n", tai.category.name[category]);
-			printf("Priority: %d\n", t.priority);
-			printf("Completed: %s\n", t.complete ? "Yes" : "No");
-			if (t.indefinite)
-				printf("Due: No Date");
-			else
-				printf("Due: %s", asctime(&t.due));
-			if (t.description)
-				printf("Description: %s\n", t.description);
-			if (t.note)
-				printf("Note: %s\n", t.note);
-			printf("\n");
-	
-			free_ToDo(&t);
-		}
-	
-		if (port) {
-			/* Close the database */
-			dlp_CloseDB(sd, db);
-			dlp_AddSyncLogEntry(sd, "Successfully read ToDos from Palm.\n"
-						"Thank you for using pilot-link.");
-			dlp_EndOfSync(sd, 0);
-			pi_close(sd);
-		}
-		if (filename) {
-			pi_file_close(pif);
-		}
+
+		/* Skip deleted records */
+		if ((attr & dlpRecAttrDeleted)
+		    || (attr & dlpRecAttrArchived))
+			continue;
+
+		unpack_ToDo(&t, buffer, len);
+
+		printf("Category: %s\n", tai.category.name[category]);
+		printf("Priority: %d\n", t.priority);
+		printf("Completed: %s\n", t.complete ? "Yes" : "No");
+		if (t.indefinite)
+			printf("Due: No Date");
+		else
+			printf("Due: %s", asctime(&t.due));
+		if (t.description)
+			printf("Description: %s\n", t.description);
+		if (t.note)
+			printf("Note: %s\n", t.note);
+		printf("\n");
+
+		free_ToDo(&t);
+	}
+
+	if (port) {
+		/* Close the database */
+		dlp_CloseDB(sd, db);
+		dlp_AddSyncLogEntry(sd, "Successfully read ToDos from Palm.\n"
+					"Thank you for using pilot-link.");
+		dlp_EndOfSync(sd, 0);
+		pi_close(sd);
+	} else if (filename) {
+		pi_file_close(pif);
 	}
 	return 0;
+	
+error_close:
+        pi_close(sd);
+
+error:
+        perror("   ERROR:");
+        fprintf(stderr, "\n");
+        fprintf(stderr, "   Please use --help for more information\n\n");
+
+        return -1;
 }

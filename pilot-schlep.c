@@ -63,7 +63,7 @@ static int Fetch(int sd, char *filename)
 	if (fd < 0)
 		return -1;
 
-	printf("\tFetching to %s ", filename);
+	printf("   Fetching to %s ", filename);
 	fflush(stdout);
 	if (dlp_OpenDB(sd, 0, dlpOpenRead, "Schlep", &db) < 0)
 		return -1;
@@ -101,7 +101,7 @@ static int Install(int sd, char *filename)
 	
 	dlp_DeleteDB(sd, 0, "Schlep");
 
-	printf("\tInstalling %s ", filename);
+	printf("   Installing %s ", filename);
 	fflush(stdout);
 	
 	if (dlp_CreateDB (sd, pi_mktag('S', 'h', 'l', 'p'),
@@ -133,7 +133,7 @@ static int Install(int sd, char *filename)
 
 static int Delete(int sd) 
 {
-	printf("\tDeleting... ");
+	printf("   Deleting... ");
 	fflush(stdout);
 	if (dlp_DeleteDB(sd, 0, "Schlep") < 0) {
 		printf("failed\n\n");
@@ -147,7 +147,7 @@ static int Delete(int sd)
 static void Help(char *progname)
 {
 	printf("   Package up any arbitrary file and sync it to your Palm device\n\n"
-	       "   Usage: %s -p <port> [options]\n\n"
+	       "   Usage: %s -p <port> [options]\n"
 	       "   Options:\n"
 	       "     -p <port>      Use device file <port> to communicate with Palm\n"
 	       "     -i < filename  Pack up and install the arbitrary file to your Palm\n"
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 			exit(0);
 		case 'v':
 			PalmHeader(progname);
-			return 0;
+			exit(0);
 		case 'p':
 			port = optarg;
 			break;
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
 		return -1;
 	} else if (install + fetch + delete == -3) {
 		Help(progname);
-		fprintf(stderr, "ERROR: You must specify atleast one action\n");
+		fprintf(stderr, "ERROR: You must specify at least one action\n");
 		return -1;
 	}
 		
@@ -248,13 +248,14 @@ int main(int argc, char *argv[])
 
 	return 0;
 
- error_close:
-	pi_close(sd);
-	
- error:
-	perror("\tError");
-	fprintf(stderr, "\n");
+error_close:
+        pi_close(sd);
 
-	return -1;
+error:
+        perror("   ERROR:");
+        fprintf(stderr, "\n");
+        fprintf(stderr, "   Please use --help for more information\n\n");
+
+        return -1;
 }
 
