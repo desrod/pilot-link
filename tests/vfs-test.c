@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "pi-debug.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
