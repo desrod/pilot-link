@@ -1,4 +1,4 @@
-;/* 
+/* 
  * pilot-xfer.c:  Palm Database transfer utility
  *
  * (c) 1996, 1998, Kenneth Albanowski.
@@ -291,7 +291,6 @@ static int creator_is_PalmOS(long creator)
 /***********************************************************************
  *
  * Function:    Backup
- *
  * Summary:     Build a filelist and back up the Palm to destination
  *
  * Parameters:  None
@@ -304,7 +303,9 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 {
 	int 	i,
 		ofile_len,
-		ofile_total;
+		ofile_total,
+		totalsize;
+
 	struct 	dirent *dirent;
 	struct 	stat sbuf;
 
@@ -371,8 +372,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		*/
 
 		int 	skip = 0,
-			x,
-			totalsize;
+			x;
 		
 		char 	name[256];
 		struct 	stat statb;
@@ -405,7 +405,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 
 		for (x = 0; x < numexclude; x++) {
 			if (strcmp(exclude[x], info.name) == 0) {
-				printf("Excluding '%s'...\n", name);
+				fprintf(stdout, "Excluding '%s'...\n", name);
 				RemoveFromList(name, orig_files, ofile_total);
 				skip = 1;
 			}
@@ -420,14 +420,14 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			continue;
 		} else if (rom == 2 && !creator_is_PalmOS(info.creator)) {
 			if (!quiet)
-				printf("Non-OS file, skipping '%s'.\n", info.name);
+				printf("\rNon-OS file, skipping '%s'\n", info.name);
 			continue;
 		}
 
 		if (!unsaved
 		    && strcmp(info.name, "Unsaved Preferences") == 0) {
 			if (!quiet)
-				printf("Skipping '%s'.\n", info.name);
+				printf("\nSkipping '%s'\n", info.name);
 			continue;
 		}
 
@@ -443,11 +443,11 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		}
 
 		if (only_changed) {
-			printf("Synchronizing %-42s\n", name); 
+			fprintf(stdout, "Synchronizing %-42s\n", name); 
 		} else {
-			printf("Backing up %-42s", name);
+			printf("\rBacking up %-42s", name);
+			fflush(stdout);
 		} 
-		fflush(stdout);
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
 		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
@@ -461,11 +461,11 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
 		} else if (stat(name, &sbuf) == 0) {
-			fprintf(stderr, "[%7d bytes | %-6.1f kb total]\n", 
+			printf("[%7ld bytes | %-6.1f kb total]", 
 				sbuf.st_size, (float)totalsize/1024);
 			totalsize += sbuf.st_size;
 		}
-		
+
 		pi_file_close(f);
 
 		/* Note: This is no guarantee that the times on the host
@@ -517,7 +517,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 	printf("%s backup complete.\n",
 	       (rom == 2 ? "\nOS" : (rom == 1 ? "\nFlash" : "\nRAM")));
 
-	dlp_AddSyncLogEntry(sd, "pilot-xfer backup successful.\n");
+	dlp_AddSyncLogEntry(sd, "Backup successful.\nThank you for using pilot-link.");
 }
 
 /***********************************************************************
@@ -827,7 +827,8 @@ static void Restore(char *dirname)
  ***********************************************************************/
 static void Install(char *filename)
 {
-	float	totalsize;
+	int totalsize;
+
 	struct 	pi_file *f;
 	struct 	stat sbuf;
 
@@ -852,8 +853,7 @@ static void Install(char *filename)
 		fprintf(stderr, "failed.\n");
 	} else if (stat(filename, &sbuf) == 0) {
 		totalsize += sbuf.st_size;
-		fprintf(stderr, "[%7d bytes | %9.0f total]\n", 
-			sbuf.st_size, totalsize);
+		printf("[%7ld bytes | %9.0f total]\n", sbuf.st_size, (float)totalsize);
 	}
 	
 	pi_file_close(f);
@@ -1098,6 +1098,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'b':
 			Backup(optarg, 0, 0, quiet, do_rom, do_unsaved, archive_dir);
+
 			break;
 		case 'u':
 			Backup(optarg, 1, 0, quiet, do_rom, do_unsaved, archive_dir);
@@ -1178,7 +1179,6 @@ int main(int argc, char *argv[])
 		timespent = (end-start);
 		printf("Time elapsed: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
 	}
-	
 	pi_close(sd);
 	return 0;
 }

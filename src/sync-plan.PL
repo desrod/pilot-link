@@ -88,7 +88,9 @@ sub RecordPlanToPilot {
 		$pilot->{event}=0;
 	} else {
 		$pilot->{begin} = [localtime($plan->{date})];
-		$pilot->{event}=1;
+		$pilot->{event}	= 1;
+		$plan->{early} 	= 0;
+		$plan->{late} 	= 0;
 	}
 	
 	if ($plan->{early} and $plan->{late} and ($plan->{early} != $plan->{late})) {

@@ -1,10 +1,14 @@
 #!/usr/bin/env perl 
 
 use strict;
-# use warnings;
+use warnings;
 # use diagnostics;
 use PDA::Pilot;
 use Data::Dumper;
+
+# Test::Harness will hijack STDERR and STDOUT, waiting for an 'ok' on a test
+# result. If you run this non-interatively, it will seem to hang, just run
+# it interactively to test it until this test is corrected.
 
 my ($port,      # device port
     $db,        # database to dump

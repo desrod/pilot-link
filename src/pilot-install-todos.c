@@ -80,6 +80,10 @@ void install_ToDos(int sd, int db, char *filename)
 
 	fread(file_text, filelen, 1, f);
 
+        cPtr = file_text;
+        begPtr = cPtr;
+        cLen = 0;
+        i = 0;
 	while (i < filelen) {
 		i++;
 		/* printf("c:%c.\n",*cPtr); */
@@ -89,7 +93,7 @@ void install_ToDos(int sd, int db, char *filename)
 			*cPtr = '\0';
 
 			todo.priority 	= 4;
-			todo.complete 	= 1;
+			todo.complete 	= 0;
 			todo.indefinite = 1;
 			/* now = time(0);
 			   todo.due = *localtime(&now); */
@@ -115,18 +119,18 @@ void install_ToDos(int sd, int db, char *filename)
 
 static void display_help(char *progname)
 {
-	printf("   Updates the Palm ToDo list with entries from a local file\n\n");
-	printf("   Usage: %s -p <port> -f <filename>\n", progname);
-	printf("   Options:\n");
-	printf("     -p <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -f <filename>   A local file with formatted ToDo tasklist entries\n");
-	printf("     -h              Display this information\n\n");
-	printf("   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n", progname);
-	printf("   The format of this file is a simple line-by-line ToDo task entry.\n");
-	printf("   For each new line in the local file, a new task is created in the\n");
-	printf("   ToDo database on the Palm.\n\n");
+        printf("   Updates the Palm ToDo list with entries from a local file\n\n");
+        printf("   Usage: %s -p <port> -f <filename>\n", progname);
+        printf("   Options:\n");
+        printf("     -p <port>       Use device file <port> to communicate with Palm\n");
+        printf("     -f <filename>   A local file with formatted ToDo tasklist entries\n");
+        printf("     -h              Display this information\n\n");
+        printf("   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n", progname);
+        printf("   The format of this file is a simple line-by-line ToDo task entry.\n");
+        printf("   For each new line in the local file, a new task is created in the\n");
+        printf("   ToDo database on the Palm.\n\n");
 
-	exit(0);
+        exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -201,7 +205,6 @@ int main(int argc, char *argv[])
 		User.lastSyncPC = 0x00010000;
 		User.successfulSyncDate = time(NULL);
 		User.lastSyncDate = User.successfulSyncDate;
-		dlp_WriteUserInfo(sd, &User);
 	
 		dlp_AddSyncLogEntry(sd, "Wrote ToDo list entries to Palm.\nThank you for using pilot-link.\n");
 	

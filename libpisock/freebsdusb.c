@@ -127,12 +127,12 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 		return -1;
 	}
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV USB_GET_DEVICE_INFO USB FreeBSD fd: %d\n", fd);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV USB_GET_DEVICE_INFO USB FreeBSD fd: %d\n", fd));
 
 	/* set the configuration */
 	i = 1;
 	if (ioctl(fd, USB_SET_CONFIG, &i) < 0) {
-		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, "DEV USB_SET_CONFIG USB FreeBSD fd: %d failed\n", fd);
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "DEV USB_SET_CONFIG USB FreeBSD fd: %d failed\n", fd));
 
 		close(fd);
 		return -1;
@@ -170,14 +170,14 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	what is coming so we can't specify exact byte amounts */
 	i = 1;
 	if (ioctl(endpoint_fd, USB_SET_SHORT_XFER, &i) < 0) {
-		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV USB_SET_SHORT_XFER USB FreeBSD fd: %d failed\n", endpoint_fd);
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV USB_SET_SHORT_XFER USB FreeBSD fd: %d failed\n", endpoint_fd));
 	}
 
 	/* 0 timeout value will cause us the wait until the device has data
            available or is disconnected */
 	i = 0;
 	if (ioctl(endpoint_fd, USB_SET_TIMEOUT, &i) < 0) {
-		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV USB_SET_TIMEOUT USB FreeBSD fd: %d failed\n", endpoint_fd);
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV USB_SET_TIMEOUT USB FreeBSD fd: %d failed\n", endpoint_fd));
 	}
 
 	/* save our file descriptor in the pi_socket structure */
@@ -189,7 +189,7 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	/* free endpoint string memory */
 	free(pEndPoint);
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV OPEN USB FreeBSD fd: %d\n", endpoint_fd);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV OPEN USB FreeBSD fd: %d\n", endpoint_fd));
 
 	/* return our endpoint file descriptor since this is where the
 	   reading and writing will be done */
@@ -212,7 +212,7 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 static int
 u_close(struct pi_socket *ps)
 {
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CLOSE USB FreeBSD fd: %d\n", ps->sd);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CLOSE USB FreeBSD fd: %d\n", ps->sd));
 
 	return close(ps->sd);
 }
@@ -234,7 +234,7 @@ u_poll(struct pi_socket *ps, int timeout)
 {
 	/* stub this function and log an error that this should never needed
 	   to be called */
-	LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV POLL USB FreeBSD Timeout: %d\npoll() should not be called for FreeBSD USB\n", timeout);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV POLL USB FreeBSD Timeout: %d\npoll() should not be called for FreeBSD USB\n", timeout));
 
 	return 1;
 }
@@ -290,7 +290,7 @@ u_write(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		total -= nwrote;
 	}
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX USB FreeBSD Bytes: %d\n", len);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX USB FreeBSD Bytes: %d\n", len));
 
 	return len;
 }
@@ -359,8 +359,8 @@ u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
                                 FD_ZERO(&ready);
                                 FD_SET(ps->sd, &ready);
                                 if (!FD_ISSET(ps->sd, &ready)) {
-                                        LOG(PI_DBG_DEV, PI_DBG_LVL_WARN,
-                                            "DEV RX USB FreeBSD timeout\n");
+                                        LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
+                                            "DEV RX USB FreeBSD timeout\n"));
                                         errno = ETIMEDOUT;
                                         return -1;
                                 }
@@ -376,8 +376,8 @@ u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
                                 FD_ZERO(&ready);
                                 FD_SET(ps->sd, &ready);
                                 if (!FD_ISSET(ps->sd, &ready)) {
-                                        LOG(PI_DBG_DEV, PI_DBG_LVL_WARN,
-                                            "DEV RX USB FreeBSD timeout\n");
+                                        LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
+                                            "DEV RX USB FreeBSD timeout\n"));
                                         errno = ETIMEDOUT;
                                         return -1;
                                 }
@@ -409,9 +409,9 @@ u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
                 }
         }
-        LOG(PI_DBG_DEV, PI_DBG_LVL_INFO,
+        LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
             "DEV RX USB FreeBSD Bytes: %d:%d\n", bytes_read,
-            bytes_read + data->buf_size);
+            bytes_read + data->buf_size));
 
         return bytes_read;
 }
