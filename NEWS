@@ -1,0 +1,29 @@
+Pilot-Link 0.10.99, 03-20-2002
+------------------------------
+
+This is a development release.
+
+Major Features:
+
+	* Support for new USB devices (like the m500)
+	* Updated Java and Python bindings
+	* Application cleanup for consistency
+
+Other Features:
+
+	* Generic device and protocol implementations
+	* Complete Autoconf/Automake setup
+	* C++ library is now shared and installed
+	* Source tree re-organization
+
+Bug Fixes:
+
+	* Expense Preferences no pack/unpack correctly
+	* Dozens of minor bug fixes
+
+Known Problems:
+	
+	* os2serial.c and winserial.c files are not yet ported
+	* The "sys" protocol is not well tested
+	* TCL/TK bindings are out of commission
+	* PDB files with space filler records are not handled properly

@@ -25,7 +25,7 @@ public class Constants {
    public static int dlpDBListROM = 64;
    public static int PILOT_LINK_VERSION = 0;
    public static int PILOT_LINK_MAJOR = 10;
-   public static int PILOT_LINK_MINOR = 1;
+   public static int PILOT_LINK_MINOR = 99;
    public static int PI_AF_PILOT = 0;
    public static int PI_PF_DEV = 1;
    public static int PI_PF_SLP = 2;

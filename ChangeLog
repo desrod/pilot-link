@@ -1,3 +1,15 @@
+2002-03-20  JP Rosevear  <jpr@ximian.com>
+
+	* NEWS: update
+
+	* configure.in: bump version to 0.10.99
+
+	* bindings/Perl/Makefile.PL.in: Bump version
+		
+	* bindings/Java/org/gnu/pdapilot/Constants.java: ditto
+
+	* bindings/Python/setup.py: ditto
+
 2002-03-20  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-xfer.c: Another tweak to allow filenames with more than
