@@ -13,7 +13,7 @@ python-build: Python/setup.py
 	cd $(srcdir)/Python && $(PYTHON) setup.py build
 
 python-install: python-build
-	cd $(srcdir)/Python && $(PYTHON) setup.py install --prefix=$(prefix)
+	cd $(srcdir)/Python && $(PYTHON) setup.py install --prefix=$(prefix) --root=$(DESTDIR)
 
 python-clean: Python/setup.py
 	-cd $(srcdir)/Python && $(PYTHON) setup.py clean 
@@ -38,10 +38,10 @@ Perl/Makefile: Perl/Makefile.PL
 	cd Perl && $(PERL) Makefile.PL INSTALLDIRS=vendor
 
 perl-build: Perl/Makefile
-	cd Perl && $(MAKE) PREFIX=$(DESTDIR)$(prefix)
+	cd Perl && $(MAKE)
 
 perl-install: perl-build
-	cd Perl && $(MAKE) install 
+	cd Perl && $(MAKE) install PREFIX=$(DESTDIR)$(prefix)
 
 perl-uninstall: Perl/Makefile
 	cd Perl && $(MAKE) uninstall
