@@ -19,7 +19,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -40,6 +39,7 @@
 #include "pi-header.h"
 #include "pi-util.h"
 
+#include "userland.h"
 
 /* unsigned char typedef byte; */
 typedef unsigned char byte;
@@ -108,7 +108,6 @@ typedef enum {
 
 
 int 	sd 	= 0;
-char    *port 	= NULL;
 char    *vfsdir = NULL;
 
 #define MAXEXCLUDE 100
@@ -230,29 +229,6 @@ static void protect_name(char *d, const char *s)
 	}
 	*d = '\0';
 }
-
-
-/***********************************************************************
- *
- * Function:    palm_connect
- *
- * Summary:     Establish the connection with the device
- *
- * Parameters:  None
- *
- * Return:      Nothing
- *
- ***********************************************************************/
-static void palm_connect(void)
- {
-	if (sd != 0)
-		return;
-
-	sd = pilot_connect(port);
-	if (sd < 0)
-		exit(EXIT_FAILURE);
-}
-
 
 
 /***********************************************************************
@@ -666,8 +642,6 @@ static void palm_fetch(const char *dbname)
 static void palm_delete(const char *dbname)
 {
 	struct 	DBInfo info;
-
-	palm_connect();
 
 	dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info);
 
@@ -1121,7 +1095,6 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 
 static void palm_install(unsigned long int flags,const char *localfile)
 {
-	palm_connect();
 	switch(flags & MEDIA_MASK) {
 	case MEDIA_RAM :
 	case MEDIA_ROM :
@@ -1152,8 +1125,6 @@ static void palm_install(unsigned long int flags,const char *localfile)
 static void palm_merge(const char *filename)
 {
 	struct pi_file *f;
-
-	palm_connect();
 
 	f = pi_file_open(filename);
 
@@ -1616,7 +1587,6 @@ static void palm_list_VFS()
  ***********************************************************************/
 static void palm_list(unsigned long int flags)
 {
-	palm_connect();
 	switch(flags & MEDIA_MASK) {
 	case MEDIA_RAM :
 	case MEDIA_ROM :
@@ -1651,8 +1621,6 @@ static void palm_purge(void)
 		h;
 	struct 	DBInfo info;
 	pi_buffer_t *buffer;
-
-	palm_connect();
 
 	printf("Reading list of databases to purge...\n");
 
@@ -1718,8 +1686,7 @@ static void add_popt_alias(poptContext pc,
 int main(int argc, const char *argv[])
 {
 	int 	optc,		/* switch */
-		unsaved 	= 0,
-                verbose         = 0;
+		unsaved 	= 0;
 
 	const char
                 *archive_dir    = NULL,
@@ -1736,10 +1703,7 @@ int main(int argc, const char *argv[])
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port",     'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
-		{"version",   0 , POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
-		POPT_AUTOHELP
-		{"verbose",  'v', POPT_ARG_NONE, &verbose, 0, "Print  verbose  information - normally routine progress messages will be displayed.", NULL},
+		USERLAND_RESERVED_OPTIONS
 
 		/* action indicators that take a <dir> argument */
 		{"backup",   'b', POPT_ARG_STRING, &dirname, palm_op_backup, "Back up your Palm to <dir>", "dir"},
@@ -1795,10 +1759,6 @@ int main(int argc, const char *argv[])
 
 	while ((optc = poptGetNextOpt(pc)) >= 0) {
 		switch (optc) {
-		case 'v':
-			print_splash(progname);
-			return 0;
-
 		/* Actions with a dir argument */
 
 		case palm_op_backup:
@@ -1872,7 +1832,6 @@ int main(int argc, const char *argv[])
 	if (rargv) {
 		const char **s = rargv;
 		while (*s) {
-			if (verbose) printf("Remaining argument: %s\n",*s);
 			s++;
 			rargc++;
 		}
@@ -1930,7 +1889,7 @@ int main(int argc, const char *argv[])
 	}
 
 	/* actual operation */
-	palm_connect();
+	userland_connect();
 	switch(palm_operation) {
 	case palm_op_noop: /* handled above */
 		exit(1);
