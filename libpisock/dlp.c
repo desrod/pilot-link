@@ -651,6 +651,7 @@ dlp_request_write (struct dlpRequest *req, int sd)
 		}
 	}
 
+	pi_flush(sd, PI_FLUSH_INPUT);
 	if ((i = pi_write(sd, exec_buf, len)) < (ssize_t)len) {
 		errno = -EIO;
 		if (i >= 0 && i < (ssize_t)len)
@@ -1832,7 +1833,7 @@ dlp_CloseDB_All(int sd)
  ***************************************************************************/
 int
 dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
-		    int action, size_t length, void *data,
+		    int action, size_t length, const void *data,
 		    unsigned long *retcode, pi_buffer_t *retbuf)
 {
 	int 	result,
