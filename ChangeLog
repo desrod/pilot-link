@@ -1,3 +1,8 @@
+2002-04-20  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Remove the warning about libpisock and development
+	versions
+
 2002-04-18  JP Rosevear  <jpr@ximian.com>
 
 	* bindings/Makefile.am: better dependency rule
