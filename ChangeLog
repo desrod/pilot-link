@@ -4,6 +4,11 @@
 
 	* src/read-palmpix.c: s/U/User/ to align with other conduits
 
+	* configure.in: Beginning fix for OSX/NeXT ENOMSG issue (errno.h)
+
+	* libpisock/dlp.c: Ditto
+
+
 2002-07-03  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: check for stdint.h and inttypes.h

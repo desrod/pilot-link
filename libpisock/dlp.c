@@ -29,7 +29,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+
+/* We need to fix this for OSX and NeXT systems that 
+   don't provide ENOMSG. Use EINVAL instead. */
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif /* HAVE_ERRNO_H */
+
 #include <string.h>
 #include <sys/types.h>
 #include <netinet/in.h>
