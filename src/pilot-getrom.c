@@ -50,21 +50,29 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
-	char name[256];
-	char print[256];
-	char *progname = argv[0];
-	char *device = argv[1];
-	int i, sd;
-	struct RPC_params p;
-	struct pi_sockaddr addr;
-	extern char *optarg;
-	extern int optind;
-
-	/* int err; */
-	int ret;
-	int file;
-	unsigned long ROMstart, ROMlength, ROMversion, offset, left;
-	int majorVersion, minorVersion, bugfixVersion, build, state;
+	int 	idx,
+		sd,
+		ret,
+		file,
+		majorVersion,
+		minorVersion,
+		bugfixVersion,
+		build, 
+		state;
+	
+	char 	name[256],
+		print[256],
+		*progname 	= argv[0],
+		*device 	= argv[1];
+	
+	struct 	RPC_params p;
+	struct 	pi_sockaddr addr;
+	unsigned long ROMstart; 
+	unsigned long ROMlength;
+	unsigned long ROMversion;
+	unsigned long offset;
+	unsigned long left;
+	
 
 	PalmHeader(progname);
 
@@ -100,14 +108,14 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	fprintf(stderr, "   Warning: Please completely back up your Palm (with pilot-xfer -b)\n");
-	fprintf(stderr, "            before using this program!\n\n");
-	fprintf(stderr, "   NOTICE: Use of this program may place you in violation\n");
-	fprintf(stderr, "           of your license agreement with Palm Computing.\n\n");
-	fprintf(stderr, "           Please read your Palm Computing handbook (\"Software\n");
-	fprintf(stderr, "           License Agreement\") before running this program.\n\n");
-	fprintf(stderr, "   Start HotSync (not getrom.prc) on your Palm.\n");
-	fprintf(stderr, "   Port: %s\n\n   Please press the HotSync button...\n", device);
+	printf("   Warning: Please completely back up your Palm (with pilot-xfer -b)\n"
+	       "            before using this program!\n\n"
+	       "   NOTICE: Use of this program may place you in violation\n"
+	       "           of your license agreement with Palm Computing.\n\n"
+	       "           Please read your Palm Computing handbook (\"Software\n"
+	       "           License Agreement\") before running this program.\n\n"
+	       "   Start HotSync (not getrom.prc) on your Palm.\n"
+	       "   Port: %s\n\n   Please press the HotSync button...\n", device);
 
 	sd = pi_accept(sd, 0, 0);
 	if (sd == -1) {
@@ -176,7 +184,7 @@ int main(int argc, char *argv[])
 
 	signal(SIGINT, sighandler);
 	left = ROMlength - offset;
-	i = offset;
+	idx = offset;
 	while (left > 0) {
 		char buffer[256];
 		int len = left;
@@ -204,12 +212,12 @@ int main(int argc, char *argv[])
 		else
 			write(file, buffer, len);
 		offset += len;
-		if (cancel || !(i++ % 8))
+		if (cancel || !(idx++ % 8))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
 				printf("\nCancelled!\n");
 				goto cancel;
 			}
-		if (!(i % 16)) {
+		if (!(idx % 16)) {
 			sprintf(print, "%ld", offset);
 			PackRPC(&p, 0xA220, RPC_IntReply,
 				RPC_Ptr(print, strlen(print)),
@@ -223,8 +231,6 @@ int main(int argc, char *argv[])
 
       cancel:
 	close(file);
-
 	pi_close(sd);
-
 	return 0;
 }

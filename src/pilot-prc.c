@@ -131,8 +131,8 @@ int main(int argc, char **argv)
  ***********************************************************************/
 char *iso_time_str(time_t t)
 {
-	struct tm tm;
-	static char buf[50];
+	struct 	tm tm;
+	static 	char buf[50];
 
 	tm = *localtime(&t);
 	sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d",
@@ -154,26 +154,26 @@ char *iso_time_str(time_t t)
  ***********************************************************************/
 void dump(void *buf, int n)
 {
-	int c;
-	int i;
-	int j;
+	int 	ch,
+		idx,
+		j;
 
-	for (i = 0; i < n; i += 16) {
-		printf("%04x: ", i);
+	for (idx = 0; idx < n; idx += 16) {
+		printf("%04x: ", idx);
 		for (j = 0; j < 16; j++) {
-			if (i + j < n)
+			if (idx + j < n)
 				printf("%02x ",
-				       ((unsigned char *) buf)[i + j]);
+				       ((unsigned char *) buf)[idx + j]);
 			else
 				printf("   ");
 		}
 		printf("  ");
-		for (j = 0; j < 16 && i + j < n; j++) {
-			c = ((unsigned char *) buf)[i + j] & 0x7f;
-			if (c < ' ' || c >= 0x7f)
+		for (j = 0; j < 16 && idx + j < n; j++) {
+			ch = ((unsigned char *) buf)[idx + j] & 0x7f;
+			if (ch < ' ' || ch >= 0x7f)
 				putchar('.');
 			else
-				putchar(c);
+				putchar(ch);
 		}
 		printf("\n");
 	}
@@ -352,12 +352,12 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 {
-	int attrs;
-	int cat;
-	int id;
-	int size;
+	int 	attrs,
+		cat,
+		id,
+		size;
 	unsigned long type, uid;
-	void *buf;
+	void 	*buf;
 
 	if (ip->flags & dlpDBFlagResource) {
 		printf("entries\n");

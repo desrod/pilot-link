@@ -45,51 +45,35 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip);
 char *iso_time_str(time_t t);
 void dump(void *buf, int size);
 
-char *progname;
+int pilot_connect(const char *port);
+static void Help(char *progname);
 
-/***********************************************************************
- *
- * Function:    usage
- *
- * Summary:     Print out the program usage and arguments
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void usage(void)
-{
-	PalmHeader(progname);
-
-	fprintf(stderr, "   Usage: %s [options] file\n", progname);
-	fprintf(stderr, "   -h       = dump the header of the database(s)\n");
-	fprintf(stderr, "   -a       = dump app_info segment of the database(s)\n");
-	fprintf(stderr, "   -s       = dump sort_info block of database(s)\n");
-	fprintf(stderr, "   -l       = list all records in the database(s)\n");
-	fprintf(stderr, "   -r #     = dump a record (# is an index, or eg 'code0' or a uid 1234')\n");
-	fprintf(stderr, "   -v       = dump all data and all records, very verbose\n\n");
-	fprintf(stderr, "   -R, -V as -r, -v, but also dump resources to files\n\n");
-	exit(1);
-}
-
-int hflag = 0, aflag = 0, sflag = 0, vflag = 0, lflag = 0, rflag =
-    0, filedump = 0;
+int hflag = 0, aflag = 0, sflag = 0, vflag = 0, lflag = 0, 
+	rflag = 0, filedump = 0;
 char *rkey;
+
+static const char *optstring = "hp:Haslr:R:vV";
 
 
 int main(int argc, char **argv)
 {
-	struct pi_file *pf;
-	struct DBInfo info;
-	int c;
-	char *name;
-
-	progname = argv[0];
-
-	while ((c = getopt(argc, argv, "haslr:R:vV")) != EOF) {
-		switch (c) {
+	int 	ch;
+	char 	*name,
+		*progname 	= argv[0],
+		*port 		= NULL;
+	struct 	pi_file *pf;
+	struct 	DBInfo info;
+		
+	while ((ch = getopt(argc, argv, optstring)) != EOF) {
+		switch (ch) {
 		case 'h':
+			Help(progname);
+			exit(0);
+		case 'p':
+			port = optarg;
+			break;
+
+		case 'H':
 			hflag = 1;
 			break;
 		case 'a':
@@ -115,17 +99,13 @@ int main(int argc, char **argv)
 			rkey = optarg;
 			break;
 		default:
-			usage();
 		}
 	}
-
-	if (optind >= argc)
-		usage();
 
 	name = argv[optind++];
 
 	if (optind != argc)
-		usage();
+		Help(progname);
 
 	if ((pf = pi_file_open(name)) == NULL) {
 		fprintf(stderr, "can't open %s\n", name);
@@ -168,8 +148,8 @@ int main(int argc, char **argv)
  ***********************************************************************/
 char *iso_time_str(time_t t)
 {
-	struct tm tm;
-	static char buf[50];
+	struct 	tm tm;
+	static 	char buf[50];
 
 	tm = *localtime(&t);
 	sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d",
@@ -191,26 +171,26 @@ char *iso_time_str(time_t t)
  ***********************************************************************/
 void dump(void *buf, int n)
 {
-	int c;
-	int i;
-	int j;
+	int 	ch,
+		idx,
+		j;
 
-	for (i = 0; i < n; i += 16) {
-		printf("%04x: ", i);
+	for (idx = 0; idx < n; idx += 16) {
+		printf("%04x: ", idx);
 		for (j = 0; j < 16; j++) {
-			if (i + j < n)
+			if (idx + j < n)
 				printf("%02x ",
-				       ((unsigned char *) buf)[i + j]);
+				       ((unsigned char *) buf)[idx + j]);
 			else
 				printf("   ");
 		}
 		printf("  ");
-		for (j = 0; j < 16 && i + j < n; j++) {
-			c = ((unsigned char *) buf)[i + j] & 0x7f;
-			if (c < ' ' || c >= 0x7f)
+		for (j = 0; j < 16 && idx + j < n; j++) {
+			ch = ((unsigned char *) buf)[idx + j] & 0x7f;
+			if (ch < ' ' || ch >= 0x7f)
 				putchar('.');
 			else
-				putchar(c);
+				putchar(ch);
 		}
 		printf("\n");
 	}
@@ -273,8 +253,8 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 {
-	void *app_info;
-	int app_info_size;
+	int 	app_info_size;
+	void 	*app_info;
 
 	if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
 		printf("can't get app_info\n\n");
@@ -299,8 +279,9 @@ void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 {
-	void *sort_info;
-	int sort_info_size;
+	int 	sort_info_size;
+	void 	*sort_info;
+
 
 	if (pi_file_get_sort_info(pf, &sort_info, &sort_info_size) < 0) {
 		printf("can't get sort_info\n\n");
@@ -325,14 +306,14 @@ void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void list_records(struct pi_file *pf, struct DBInfo *ip)
 {
-	int attrs;
-	int cat;
-	int entnum;
-	int id;
-	int nentries;
-	int size;
+	int 	attrs,
+		cat,
+		entnum,		/* Number of the entry record */
+		id,
+		nentries, 	/* Number of entries in the list */
+		size;
+	void 	*buf;
 	unsigned long type, uid;
-	void *buf;
 
 	pi_file_get_entries(pf, &nentries);
 
@@ -397,14 +378,15 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void dump_record(struct pi_file *pf, struct DBInfo *ip)
 {
-	int attrs;
-	int cat;
-	int id;
-	int record;
-	int size;
+	int 	attrs,
+		cat,
+		id,
+		record,
+		size;
+	void 	*buf;
 	unsigned long type;
 	unsigned long uid;
-	void *buf;
+
 
 	if (ip->flags & dlpDBFlagResource) {
 		printf("entries\n");
@@ -469,4 +451,23 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip)
 	}
 
 	printf("\n");
+}
+
+static void Help(char *progname)
+{
+	printf("   Dump application and header information from your PRC/PDB files\n\n"
+	       "   Usage: %s -p <port> [options] file\n\n"
+	       "   Options:\n"
+	       "     -p <port>         Use device file <port> to communicate with Palm\n"
+	       "     -h                Display this information\n\n"
+	       "     -H                Dump the header of the database(s)\n"
+	       "     -a                Dump app_info segment of the database(s)\n"
+	       "     -s                Dump sort_info block of database(s)\n"
+	       "     -l                List all records in the database(s)\n"
+	       "     -r <num>          Dump a record (<num> is an index, or eg 'code0' or a uid '1234')\n"
+	       "     -v       = dump all data and all records, very verbose\n\n"
+	       "     -R, -V as -r, -v, but also dump resources to files\n\n"
+	       "   Examples: %s -p /dev/pilot -l Foo.prc\n"
+	       "             %s -p /dev/pilot -h -a Bar.pdb\n\n", progname, progname, progname);
+	return;
 }

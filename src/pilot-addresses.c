@@ -17,6 +17,7 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -37,8 +38,9 @@ int match_category(char *buf, struct AddressAppInfo *aai);
 int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
-void Help(char *progname);
-void Version(void);
+
+int pilot_connect(const char *port);
+static void Help(char *progname);
 
 /* Yet more hair: reorganize fields to match visible appearence */
 int realentry[19] =
@@ -46,18 +48,18 @@ int realentry[19] =
 
 char *tableheads[22] =
     { "Last name", "First name", "Company", "Work", "Home",
-	"Fax", "Other", "Email", "Address", "City", "State",
-	"Zip Code", "Country", "Title", "Custom1", "Custom2", "Custom3",
-	"Custom4", "Note", "Main", "Pager", "Mobile"
+      "Fax", "Other", "Email", "Address", "City", "State",
+      "Zip Code", "Country", "Title", "Custom1", "Custom2", 
+      "Custom3", "Custom4", "Note", "Main", "Pager", "Mobile"
 };
 
 static const char *optstring = "DTeqp:t:d:c:arw";
 
-int 	tableformat = 0,
-	tabledelim = 1,
-	encodechars = 0,
-	augment = 0,
-	tablehead = 0,
+int 	tableformat 	= 0,
+	tabledelim 	= 1,
+	encodechars 	= 0,
+	augment 	= 0,
+	tablehead 	= 0,
 	defaultcategory = 0;
 
 char 	tabledelims[5] = { '\n', ',', ';', '\t' },
@@ -67,25 +69,22 @@ int main(int argc, char *argv[])
 {
 
 	int 	ch,
-		deleteallcategories = 0,
+		deleteallcategories 	= 0,
 		db,
 		l,
-		mode = 0,
-		quiet = 0,
-		ret,
-		sd;
-	char 	*defaultcategoryname = 0,
-		*deletecategory = 0,
-		*progname = argv[0],
+		mode 			= 0,
+		quiet 			= 0,
+		sd 			= -1;
+	char 	*defaultcategoryname 	= 0,
+		*deletecategory 	= 0,
+		*progname 		= argv[0],
+		*port			= NULL,
 		buf[0xffff];
 
 	struct 	AddressAppInfo 	aai;
 	struct 	PilotUser 	User;
 	struct 	pi_sockaddr 	addr;
 		
-	extern char *optarg;
-	extern int optind;
-
 	if (argc < 3)
 		Help(progname);
 
@@ -137,58 +136,18 @@ int main(int argc, char *argv[])
 			mode = 2;
 			break;
 		case 'h':
-		case '?':
 			Help(progname);
+			break;
+		default:
 		}
 	}
 
-	if (mode == 0)
-		Help(progname);
-
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
-		exit(1);
-	}
-
-	addr.pi_family = PI_AF_SLP;
-/*   strcpy(addr.pi_device, device); */
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			addr.pi_device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	if (!quiet) {
-		printf
-		    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-		     addr.pi_device);
-	}
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n",
-			addr.pi_device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			addr.pi_device);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	if (!quiet) {
-		fprintf(stderr, "Connected...\n");
-	}
+	/* This is not done yet, missing $PILOTPORT test
+	 * FIX ME
+	 * FIX ME
+	 * FIX ME
+	 */
+	sd = pilot_connect(port);
 
 	/* Ask the pilot who it is. */
 	dlp_ReadUserInfo(sd, &User);
@@ -272,9 +231,7 @@ int main(int argc, char *argv[])
 	} else if (mode == 2) {
 		dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
 	}
-
-	/* All of the following code is now unnecessary, but harmless */
-
+	
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 
@@ -283,88 +240,88 @@ int main(int argc, char *argv[])
 
 int inchar(FILE * in)
 {
-	int 	c;
+	int 	ch;
 
-	c = getc(in);
-	if (encodechars && c == '\\') {
-		c = getc(in);
-		switch (c) {
+	ch = getc(in);
+	if (encodechars && ch == '\\') {
+		ch = getc(in);
+		switch (ch) {
 		case 'b':
-			c = '\b';
+			ch = '\b';
 			break;
 		case 'f':
-			c = '\f';
+			ch = '\f';
 			break;
 		case 'n':
-			c = '\n';
+			ch = '\n';
 			break;
 		case 't':
-			c = '\t';
+			ch = '\t';
 			break;
 		case 'r':
-			c = '\r';
+			ch = '\r';
 			break;
 		case 'v':
-			c = '\v';
+			ch = '\v';
 			break;
 		case '\\':
-			c = '\\';
+			ch = '\\';
 			break;
 		default:
-			ungetc(c, in);
-			c = '\\';
+			ungetc(ch, in);
+			ch = '\\';
 			break;
 		}
 	}
-	return c;
+	return ch;
 }
 
 
 int read_field(char *dest, FILE * in)
 {
-	int c;
+	int 	ch;
 
 	do {			/* Absorb whitespace */
-		c = getc(in);
-	} while ((c != EOF)
-		 && ((c == ' ') || (c == '\t') || (c == '\n')
-		     || (c == '\r')));
+		ch = getc(in);
+	} while ((ch != EOF)
+		 && ((ch == ' ') || (ch == '\t') || (ch == '\n')
+		     || (ch == '\r')));
 
-	if (c == '"') {
-		c = inchar(in);
+	if (ch == '"') {
+		ch = inchar(in);
 
-		while (c != EOF) {
-			if (c == '"') {
-				c = inchar(in);
-				if (c != '"')
+		while (ch != EOF) {
+			if (ch == '"') {
+				ch = inchar(in);
+				if (ch != '"')
 					break;
 			}
-			*dest++ = c;
-			c = inchar(in);
+			*dest++ = ch;
+			ch = inchar(in);
 		}
 	} else {
-		while (c != EOF) {
-			if (c == ','
+		while (ch != EOF) {
+			if (ch == ','
 			    || (tableformat
-				&& c == tabledelims[tabledelim])) {
+				&& ch == tabledelims[tabledelim])) {
 				break;
 			}
-			*dest++ = c;
-			c = inchar(in);
+			*dest++ = ch;
+			ch = inchar(in);
 		}
 	}
 	*dest++ = '\0';
 
-	while ((c != EOF) && ((c == ' ') || (c == '\t')))	/* Absorb whitespace */
-		c = getc(in);
+	while ((ch != EOF) && ((ch == ' ') || (ch == '\t')))	/* Absorb whitespace */
+		ch = getc(in);
 
-	if (c == ',')
+	if (ch == ',')
 		return 1;
-	else if (c == ';')
+	else if (ch == ';')
 		return 2;
-	else if (c == '\t')
+	else if (ch == '\t')
 		return 3;
-	else if (c == EOF)
+	else if (ch == EOF)
 		return -1;	/* No more */
 	else
 		return 0;
@@ -420,7 +377,6 @@ void outchar(char c, FILE * out)
 
 int write_field(FILE * out, char *source, int more)
 {
-
 	putc('"', out);
 	while (*source) {
 		outchar(*source, out);
@@ -464,12 +420,12 @@ int match_phone(char *buf, struct AddressAppInfo *aai)
 
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 {
-	struct Address a;
-	int attribute;
-	int category;
-	int i;
-	int l;
-	char buf[0xffff];
+	int 	i,
+		l,
+		attribute,
+		category;
+	char 	buf[0xffff];
+	struct 	Address a;
 
 
 	do {
@@ -555,15 +511,14 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 {
-	struct Address a;
-	int attribute;
-	int category;
-	int i;
-	int j;
-	int l;
-	char buf[0xffff];
-
-
+	int 	i,
+		j,
+		l,
+		attribute,
+		category;
+	char 	buf[0xffff];
+	struct 	Address a;
+		
 	if (tablehead) {
 		write_field(out, "Category", tabledelim);
 		for (j = 0; j < 19; j++) {
@@ -670,33 +625,23 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	return 0;
 }
 
-void Help(char *progname)
+static void Help(char *progname)
 {
-	PalmHeader(progname);
-
-	fprintf(stderr, "   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n",
-		progname);
-	fprintf(stderr, "             [-d category] -r|-w [<file>]\n\n");
-	fprintf(stderr, "     -t delim    = include category, use delimiter (3=tab, 2=;, 1=,)\n");
-	fprintf(stderr, "     -T          = write header with titles\n");
-	fprintf(stderr, "     -q          = do not prompt for HotSync button press\n");
-	fprintf(stderr, "     -a          = augment records with additional information\n");
-	fprintf(stderr, "     -e          = escape special chcters with backslash\n");
-	fprintf(stderr, "     -p port     = use device file <port> to communicate with Palm\n");
-	fprintf(stderr, "     -c category = install to category <category> by default\n");
-	fprintf(stderr, "     -d category = delete old Palm records in <category>\n");
-	fprintf(stderr, "     -D          = delete all Palm records in all categories\n");
-	fprintf(stderr, "     -r file     = read records from <file> and install them to Palm\n");
-	fprintf(stderr, "     -w file     = get records from Palm and write them to <file>\n\n");
-	exit(2);
+	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n"
+	       "             [-d category] -r|-w [<file>]\n\n"
+	       "     -t delim          include category, use delimiter (3=tab, 2=;, 1=,)\n"
+	       "     -T                write header with titles\n"
+	       "     -q                do not prompt for HotSync button press\n"
+	       "     -a                augment records with additional information\n"
+	       "     -e                escape special chcters with backslash\n"
+	       "     -p port           use device file <port> to communicate with Palm\n"
+	       "     -c category       install to category <category> by default\n"
+	       "     -d category       delete old Palm records in <category>\n"
+	       "     -D                delete all Palm records in all categories\n"
+	       "     -r file           read records from <file> and install them to Palm\n"
+	       "     -w file           get records from Palm and write them to <file>\n\n",
+	progname);
+	return;
 }
 
-void Version(void)
-{
-	PalmHeader(progname);
-	fprintf(stderr,
-		"   Type 'man 7 %s' at your shell for more information.\n\n",
-		progname);
-	exit(0);
-}
 

@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	int 	count,
 		db,
 		sd,
-		inc, 
+		idx, 
 		l = 0,
 		lost,
 		dupe,
@@ -89,20 +89,25 @@ int main(int argc, char *argv[])
 		*progname = argv[0],
 
 		/* Thanks to Jon Armstrong for helping me with this */
-		*port 			= getvars("PILOTPORT", "/dev/pilot"),
-		*from_address 		= getvars("PILOTFROM", ""),
-		*pop_host 		= getvars("POPHOST", ""),
-		*pop_user 		= getvars("POPUSER", ""),
-		*pop_pass 		= getvars("POPPASS", ""),
-		*sendmail 		= getvars("SENDMAIL", "/usr/lib/sendmail -t -i"),
-		*pop_keep 		= getvars("POPKEEP", "keep"),
-		*pilot_dispose 		= getvars("PILOTDISPOSE", "keep"),
-		*topilot_mhdir 		= getvars("TOPILOT_MHDIR", "");
+		*port 		= getvars("PILOTPORT", ""),
+		*from_address 	= getvars("PILOTFROM", ""),
+		*pop_host 	= getvars("POPHOST", ""),
+		*pop_user 	= getvars("POPUSER", ""),
+		*pop_pass 	= getvars("POPPASS", ""),
+		*sendmail 	= getvars("SENDMAIL", "/usr/lib/sendmail -t -i"),
+		*pop_keep 	= getvars("POPKEEP", "keep"),
+		*pilot_dispose 	= getvars("PILOTDISPOSE", "keep"),
+		*topilot_mhdir 	= getvars("TOPILOT_MHDIR", "");
 	
 	while ((count = getopt(argc, argv, optstring)) != -1) {
 		switch (count) {
 		case 's':
 			sendmail = optarg;
+			break;
+		case 'h':
+			Help(progname, port, pop_host, pop_user, pop_pass, 
+			     from_address, pop_keep, pilot_dispose, 
+			     topilot_mhdir, sendmail);
 			break;
 		case 'p':
 			port = optarg;
@@ -128,18 +133,14 @@ int main(int argc, char *argv[])
 		case 'm':
 			topilot_mhdir = optarg;
 			break;
-		case 'h':
 		default:
-			Help(progname, port, 
-		pop_host, pop_user, pop_pass, from_address, pop_keep, pilot_dispose, topilot_mhdir, 
-		sendmail);
 		}
 	}
 	argc -= optind;
 	argv += optind;
 
 	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
+		// PalmHeader(progname);
 	} else if (port == NULL && getenv("PILOTPORT")) {
 		port = getenv("PILOTPORT");
 	}
@@ -147,25 +148,15 @@ int main(int argc, char *argv[])
 	if (!strlen(pop_host) && !strlen(sendmail)) {
 		printf("%s requires that at least one of -h or -s must be set.\n\n",
 			progname);
-		Help(progname, port, pop_host, pop_user, pop_pass, 
-		     from_address, pop_keep, pilot_dispose, 
-		     topilot_mhdir, sendmail);
 	}
 
 	if (strlen(pop_host)) {
 		if (!strlen(pop_user)) {
 			printf("\nUndeclared option -u must be set to receive mail.\n\n");
-			Help(progname, port, pop_host, pop_user, pop_pass, 
-			     from_address, pop_keep, pilot_dispose, 
-			     topilot_mhdir, sendmail);
-		
 		} else if (!strlen(pop_keep)
 			   || (strcmp(pop_keep, "keep")
 			       && strcmp(pop_keep, "delete"))) {
 			printf("-k must have an argument of 'keep' or 'delete'.\n\n");
-			Help(progname, port, pop_host, pop_user, pop_pass, 
-			     from_address, pop_keep, pilot_dispose, 
-			     topilot_mhdir, sendmail);
 		}
 	}
 
@@ -178,9 +169,6 @@ int main(int argc, char *argv[])
 					 strcmp(pilot_dispose, "delete") &&
 					 strcmp(pilot_dispose, "file"))) {
 			printf("-d must have an argument of 'keep', 'delete', or 'file'.\n\n");
-			Help(progname, port, pop_host, pop_user, pop_pass, 
-			     from_address, pop_keep, pilot_dispose, 
-			     topilot_mhdir, sendmail);
 		}
 	}
 
@@ -256,7 +244,7 @@ int main(int argc, char *argv[])
 	       sig.signature ? sig.signature : "<None>");
 
 #if 0
-	for (inc = 0; 1; inc++) {
+	for (idx = 0; 1; idx++) {
 		struct Mail t;
 		int attr, category;
 
@@ -300,7 +288,7 @@ int main(int argc, char *argv[])
 		/* sendmail transmission section */
 
 		/* Iterate over messages in Outbox */
-		for (inc = 0;; inc++) {
+		for (idx = 0;; idx++) {
 			struct 	Mail t;
 			int 	attr,
 				size;
@@ -451,7 +439,7 @@ int main(int argc, char *argv[])
 			goto endpop;
 		}
 
-		for (inc = 1;; inc++) {
+		for (idx = 1;; idx++) {
 			int 	len,
 				h;
 			char 	*msg;
@@ -468,7 +456,7 @@ int main(int argc, char *argv[])
 			t.body = 0;
 			t.dated = 0;
 
-			sprintf(buffer, "LIST %d\r\n", inc);
+			sprintf(buffer, "LIST %d\r\n", idx);
 			write(popfd, buffer, strlen(buffer));
 			l = read(popfd, buffer, 1024);
 			if (l < 0) {
@@ -484,7 +472,7 @@ int main(int argc, char *argv[])
 			if (len > 16000)
 				continue;
 
-			sprintf(buffer, "RETR %d\r\n", inc);
+			sprintf(buffer, "RETR %d\r\n", idx);
 			write(popfd, buffer, strlen(buffer));
 			l = getpopstring(popfd, buffer);
 			if ((l < 0) || (buffer[0] != '+')) {
@@ -536,7 +524,7 @@ int main(int argc, char *argv[])
 			if (h) {
 				/* Oops, incomplete message, still reading headers */
 				printf("Incomplete message %d\n",
-					inc);
+					idx);
 				free_Mail(&t);
 				continue;
 			}
@@ -544,7 +532,7 @@ int main(int argc, char *argv[])
 			if (strlen(msg) > p.truncate) {
 				/* We could truncate it, but we won't for now */
 				printf("Message %d too large (%ld bytes)\n",
-					inc, (long) strlen(msg));
+					idx, (long) strlen(msg));
 				free_Mail(&t);
 				continue;
 			}
@@ -557,12 +545,12 @@ int main(int argc, char *argv[])
 			    (sd, db, 0, 0, 0, buffer, len, 0) > 0) {
 				rec++;
 				if (strcmp(pop_keep, "delete") == 0) {
-					sprintf(buffer, "DELE %d\r\n", inc);
+					sprintf(buffer, "DELE %d\r\n", idx);
 					write(popfd, buffer,
 					      strlen(buffer));
 					read(popfd, buffer, 1024);
 					if (buffer[0] != '+') {
-						printf("Error deleting message %d\n", inc);
+						printf("Error deleting message %d\n", idx);
 						dupe++;
 					}
 				} else
@@ -593,7 +581,7 @@ int main(int argc, char *argv[])
 
 		/* MH directory reading section */
 
-		for (inc = 1;; inc++) {
+		for (idx = 1;; idx++) {
 			int 	len,
 				mhmsg,
 				h;
@@ -610,11 +598,11 @@ int main(int argc, char *argv[])
 			t.body = 0;
 			t.dated = 0;
 
-			if ((mhmsg = openmhmsg(topilot_mhdir, inc)) < 0) {
+			if ((mhmsg = openmhmsg(topilot_mhdir, idx)) < 0) {
 				break;
 			}
 
-			fprintf(stderr, "%d ", inc);
+			fprintf(stderr, "%d ", idx);
 			fflush(stderr);
 
 			/* Read the message */
@@ -661,7 +649,7 @@ int main(int argc, char *argv[])
 
 			if (h) {
 				/* Oops, incomplete message, still reading headers */
-				printf("Incomplete message %d\n", inc);
+				printf("Incomplete message %d\n", idx);
 				free_Mail(&t);
 				continue;
 			}
@@ -669,7 +657,7 @@ int main(int argc, char *argv[])
 			if (strlen(msg) > p.truncate) {
 				/* We could truncate it, but we won't for now */
 				printf("Message %d too large (%ld bytes)\n",
-					inc, (long) strlen(msg));
+					idx, (long) strlen(msg));
 				free_Mail(&t);
 				continue;
 			}
@@ -685,11 +673,11 @@ int main(int argc, char *argv[])
 					char filename[1000];
 
 					sprintf(filename, "%s/%d", topilot_mhdir,
-						inc);
+						idx);
 					close(mhmsg);
 					if (unlink(filename)) {
 						printf("Error deleting message %d\n",
-							inc);
+							idx);
 						dupe++;
 					}
 					continue;

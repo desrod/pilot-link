@@ -52,16 +52,16 @@ static const char *optstring = "hp:ifd";
 int main(int argc, char *argv[])
 {
 	int 	ch,
-		sd 	= -1,
-		segment = 4096,
-		Install = -1,
-		Fetch 	= -1,
-		Delete 	= -1;
-	char 	*progname = argv[0],
-		*port 	= NULL,
-		*install = NULL,
-		*fetch 	= NULL,
-		*delete = NULL;
+		sd 		= -1,
+		segment 	= 4096,
+		Install 	= -1,
+		Fetch 		= -1,
+		Delete 		= -1;
+	char 	*progname 	= argv[0],
+		*port 		= NULL,
+		*install 	= NULL,
+		*fetch 		= NULL,
+		*delete 	= NULL;
 
 	while ((ch = getopt(argc, argv, optstring)) != -1) {
 		switch (ch) {
@@ -145,17 +145,17 @@ int main(int argc, char *argv[])
 		/* Fetch here, not Install */
 		} else if (Fetch && Install == -1) {
 			int 	db,
-				index,
+				idx,
 				l;
 			char 	buffer[0xffff];
 		
 			if (dlp_OpenDB(sd, 0, dlpOpenRead, "Schlep", &db) < 0)
 				return 0;
 		
-			for (index = 0;
+			for (idx = 0;
 			     (l =
 			      dlp_ReadResourceByType(sd, db, pi_mktag('D', 'A', 'T', 'A'),
-						     index, buffer, 0, 0)) > 0; index++) {
+						     idx, buffer, 0, 0)) > 0; idx++) {
 				write(fileno(stdout), buffer, l);
 				fprintf(stderr, ".");
 			}

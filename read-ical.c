@@ -53,18 +53,18 @@ int main(int argc, char *argv[])
 {
 	int 	ch,
 		db,
-		sd = -1,
-		index,
-		read_todos = -1;
+		sd 		= -1,
+		idx,
+		read_todos 	= -1;
 	FILE 	*ical;
 	unsigned char buffer[0xffff];
 	char 	cmd[255],
-		*dbonly = NULL,
-		*ptext = NULL,
-		*icalfile = NULL,
-		*port = NULL,
-		*pubtext = NULL,
-		*progname = argv[0];
+		*dbonly 	= NULL,
+		*ptext 		= NULL,
+		*icalfile 	= NULL,
+		*port 		= NULL,
+		*pubtext 	= NULL,
+		*progname 	= argv[0];
 	struct ToDoAppInfo tai;
 
 	while ((ch = getopt(argc, argv, optstring)) != -1) {
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 						 0xffff);
 				unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 				
-				for (index = 0;; index++) {
+				for (idx = 0;; idx++) {
 					int 	attr,
 						category;
 					char 	id_buf[255];
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 					recordid_t id;
 
 					int len =
-					    dlp_ReadRecordByIndex(sd, db, index, buffer, &id, 0, &attr, &category);
+					    dlp_ReadRecordByIndex(sd, db, idx, buffer, &id, 0, &attr, &category);
 
 					if (len < 0)
 						break;
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			for (index = 0;; index++) {
+			for (idx = 0;; idx++) {
 				int 	j,
 					attr;
 				char 	id_buf[255];				
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 				recordid_t id;
 
 				int len =
-				    dlp_ReadRecordByIndex(sd, db, index, buffer, &id, 0, &attr, 0);
+				    dlp_ReadRecordByIndex(sd, db, idx, buffer, &id, 0, &attr, 0);
 
 				if (len < 0)
 					break;

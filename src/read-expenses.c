@@ -46,11 +46,11 @@ int main(int argc, char *argv[])
 {
 	int 	count,
 		db,
-		index,
+		idx,
 		ret,
-		sd = -1;
-	char 	*progname = argv[0],
-		*port = NULL;
+		sd 		= -1;
+	char 	*progname 	= argv[0],
+		*port 		= NULL;
 	unsigned char buffer[0xffff];
 	unsigned char buffer2[0xffff];
 	struct 	PilotUser User;
@@ -110,12 +110,12 @@ int main(int argc, char *argv[])
 		
 			if (ret >= 0) {
 				unpack_ExpensePref(&tp, buffer, 0xffff);
-				index = pack_ExpensePref(&tp, buffer2, 0xffff);
+				idx = pack_ExpensePref(&tp, buffer2, 0xffff);
 #ifdef DEBUG
 				fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
 				dumpdata(buffer, ret);
 				fprintf(stderr, "New prefs, %d bytes:\n", ret);
-				dumpdata(buffer2, index);
+				dumpdata(buffer2, idx);
 #endif
 				printf("Expense prefs, current category %d, default category %d\n",
 					tp.currentCategory, tp.defaultCategory);
@@ -125,8 +125,8 @@ int main(int argc, char *argv[])
 				printf("  Allow quickfill %d, Distance unit %d\n\n",
 					tp.allowQuickFill, tp.unitOfDistance);
 				printf("Currencies:\n");
-				for (index = 0; index < 7; index++) {
-					fprintf(stderr, "  %d", tp.currencies[index]);
+				for (idx = 0; idx < 7; idx++) {
+					fprintf(stderr, "  %d", tp.currencies[idx]);
 				}
 				printf("\n\n");
 			}
@@ -134,11 +134,11 @@ int main(int argc, char *argv[])
 			ret = dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
 			unpack_ExpenseAppInfo(&tai, buffer, 0xffff);
 #ifdef DEBUG
-			index = pack_ExpenseAppInfo(&tai, buffer2, 0xffff);
-			printf("Orig length %d, new length %d, orig data:\n", ret, index);
+			idx = pack_ExpenseAppInfo(&tai, buffer2, 0xffff);
+			printf("Orig length %d, new length %d, orig data:\n", ret, idx);
 			dumpdata(buffer, ret);
 			printf("New data:\n");
-			dumpdata(buffer2, index);
+			dumpdata(buffer2, idx);
 #endif
 			printf("Expense app info, sort order %d\n", tai.sortOrder);
 			printf(" Currency 1, name '%s', symbol '%s', rate '%s'\n",
@@ -154,13 +154,13 @@ int main(int argc, char *argv[])
 				tai.currencies[3].name, tai.currencies[3].symbol,
 				tai.currencies[3].rate);
 		
-			for (index = 0;; index++) {
+			for (idx = 0;; idx++) {
 				int 	attr,
 					category;
 				struct Expense t;
 		
 				int len =
-				    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0, &attr,
+				    dlp_ReadRecordByIndex(sd, db, idx, buffer, 0, 0, &attr,
 							  &category);
 		
 				if (len < 0)

@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 {
 	int 	db,
 		sd,
-		i,
+		idx,
 		l,
 		ret,
 		category,
@@ -117,22 +117,22 @@ int main(int argc, char *argv[])
 		switch (ch) {
 		case 'e':
 			theExpense.type = etBus;
-			for (i = 0; expenseTypes[i] != NULL; i++)
+			for (idx = 0; expenseTypes[idx] != NULL; idx++)
 			{
-				if (strcasecmp(optarg, expenseTypes[i]) == 0)
+				if (strcasecmp(optarg, expenseTypes[idx]) == 0)
 				{
-					theExpense.type = i;
+					theExpense.type = idx;
 					break;
 				}
 			}
 			break;
 		case 't':
 			theExpense.payment = epCash;
-			for (i = 0; paymentTypes[i] != NULL; i++)
+			for (idx = 0; paymentTypes[idx] != NULL; idx++)
 			{
-				if (strcasecmp(optarg, paymentTypes[i]) == 0)
+				if (strcasecmp(optarg, paymentTypes[idx]) == 0)
 				{
-					theExpense.payment = i;
+					theExpense.payment = idx;
 					break;
 				}
 			}
@@ -235,10 +235,10 @@ int main(int argc, char *argv[])
 
 	if (category_name) {
 		category = -1;	/* invalid category */
-		for (i = 0; i < 16; i++)
+		for (idx = 0; idx < 16; idx++)
 			if (!strcasecmp
-			    (mai.category.name[i], category_name)) {
-				category = i;
+			    (mai.category.name[idx], category_name)) {
+				category = idx;
 				break;
 			}
 		if (category < 0) {

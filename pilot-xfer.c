@@ -27,6 +27,7 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <time.h>
 #ifdef __EMX__
 #include <sys/types.h>
@@ -35,6 +36,7 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <utime.h>
+#include <errno.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -45,7 +47,25 @@
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
-int sd = 0;
+/* Declare prototypes */
+
+void MakeExcludeList(char *efile);
+void Connect(void);
+void VoidSyncFlags(void);
+void RemoveFromList(char *name, char **list, int max);
+int creator_is_PalmOS(long creator);
+void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
+            int rom, int unsaved, char *archive_dir);
+void Fetch(char *dbname);
+void Delete(char *dbname);
+void Restore(char *dirname);
+void Install(char *filename);
+void Merge(char *filename);
+void Purge(void);
+void Version(void);
+void List(int rom);
+
+int sd = -1;
 char *device = "/dev/pilot";
 char *progname;
 
@@ -54,6 +74,9 @@ int numexclude = 0;
 
 int pilot_connect(char const *port);
 static void Help(char *progname);
+
+int save_errno;
+
 
 /***********************************************************************
  *
@@ -68,8 +91,8 @@ static void Help(char *progname);
  ***********************************************************************/
 void MakeExcludeList(char *efile)
 {
-	char temp[1024];
-	FILE *f = fopen(efile, "r");
+	char 	temp[1024];
+	FILE 	*f = fopen(efile, "r");
 
 	/*  If the Exclude file cannot be opened, ... */
 	if (!f) {
@@ -90,7 +113,7 @@ void MakeExcludeList(char *efile)
  * Function:    protect_name
  *
  * Summary:     Protects filenames and paths which include 'illegal' 
- *              chcters, such as '/' and '=' in them. 
+ *              characters, such as '/' and '=' in them. 
  *
  * Parameters:  None
  *
@@ -145,9 +168,9 @@ static void protect_name(char *d, char *s)
  ***********************************************************************/
 void Connect(void)
 {
-        struct pi_sockaddr addr;
-        int ret;
-
+        int 	ret;
+        struct 	pi_sockaddr addr;
+		
         if (sd != 0)
                 return;
 
@@ -161,8 +184,10 @@ void Connect(void)
 
         ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
         if (ret == -1) {
+		save_errno = errno;
                 fprintf(stderr, "\n   Unable to bind to port %s\n",
                         device);
+		errno = save_errno;
                 perror("   pi_bind");
                 fprintf(stderr, "\n");
                 exit(1);
@@ -174,7 +199,9 @@ void Connect(void)
 
         ret = pi_listen(sd, 1);
         if (ret == -1) {
+		save_errno = errno;
                 fprintf(stderr, "\n   Error listening on %s\n", device);
+		errno = save_errno;
                 perror("   pi_listen");
                 fprintf(stderr, "\n"); 
                 exit(1);
@@ -182,8 +209,10 @@ void Connect(void)
 
         sd = pi_accept(sd, 0, 0);
         if (sd == -1) {
+		save_errno = errno;
                 fprintf(stderr, "\n   Error accepting data on %s\n",
                         device);
+		errno = save_errno;
                 perror("   pi_accept");
                 fprintf(stderr, "\n"); 
                 exit(1);
@@ -206,17 +235,17 @@ void Connect(void)
  ***********************************************************************/ 
 void VoidSyncFlags(void)
 {
-	struct PilotUser U;
+	struct 	PilotUser User;
 
 	Connect();
-	if (dlp_ReadUserInfo(sd, &U) >= 0) {
-		U.lastSyncPC = 0x00000000;	
+	if (dlp_ReadUserInfo(sd, &User) >= 0) {
+		User.lastSyncPC = 0x00000000;	
 		/* Hopefully unique constant, to tell any Desktop software
 		   that databases have been altered, and that a slow sync is
 		   necessary 
 		 */
-		U.lastSyncDate = U.successfulSyncDate = time(0);
-		dlp_WriteUserInfo(sd, &U);
+		User.lastSyncDate = User.successfulSyncDate = time(0);
+		dlp_WriteUserInfo(sd, &User);
 	}
 }
 
@@ -233,12 +262,12 @@ void VoidSyncFlags(void)
  ***********************************************************************/
 void RemoveFromList(char *name, char **list, int max)
 {
-	int i;
+	int 	idx;
 
-	for (i = 0; i < max; i++) {
-		if (list[i] != NULL && strcmp(name, list[i]) == 0) {
-			free(list[i]);
-			list[i] = NULL;
+	for (idx = 0; idx < max; idx++) {
+		if (list[idx] != NULL && strcmp(name, list[idx]) == 0) {
+			free(list[idx]);
+			list[idx] = NULL;
 		}
 	}
 }
@@ -260,8 +289,8 @@ int creator_is_PalmOS(long creator)
 		long L;
 		char C[4];
 	} buf;
-	int n;
-	static long special_cases[] = {
+	int 	n;
+	static 	long special_cases[] = {
 		pi_mktag('p', 'p', 'p', '_'),
 		pi_mktag('u', '8', 'E', 'Z')
 	};
@@ -301,12 +330,13 @@ int creator_is_PalmOS(long creator)
 void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 	    int rom, int unsaved, char *archive_dir)
 {
+	int 	filecounter 	= 0,
+		idx,
+		ofile_len,
+		ofile_total,
+		backup_complete = -1;
 	struct dirent *dirent;
-	int filecounter = 0;
-	int i;
-	int ofile_len;
-	int ofile_total;
-	char **orig_files = 0;
+	char 	**orig_files = 0;
 	DIR *dir;
 
 	Connect();
@@ -341,14 +371,15 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 			sprintf(name, "%s/%s", dirname, dirent->d_name);
 			orig_files[ofile_total++] = strdup(name);
 		}
+	backup_complete = 1;
 		closedir(dir);
 	}
 
-	i = 0;
+	idx = 0;
 	for (;;) {
-		struct DBInfo info;
-		struct pi_file *f;
-		struct utimbuf times;
+		struct 	DBInfo info;
+		struct 	pi_file *f;
+		struct 	utimbuf times;
 
 		/* This is supposed to be fixed on NeXT's Openstep 4.2.
 		   Anyone care to test this?
@@ -358,16 +389,17 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		}; 
 		*/
 		
-		struct stat statb;
-		int skip = 0;
-		int x;
-		char name[256];
+		int 	skip = 0,
+			x;
+		struct 	stat statb;
+		char 	name[256],
+			tmp_name[256];
 
 
-		if (dlp_ReadDBList(sd, 0, (rom ? 0x40 : 0x80), i, &info) <
+		if (dlp_ReadDBList(sd, 0, (rom ? 0x40 : 0x80), idx, &info) <
 		    0)
 			break;
-		i = info.index + 1;
+		idx = info.index + 1;
 
 		if (quiet == 1) {
 			printf("[ %d ]\r", ++filecounter);
@@ -388,6 +420,9 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 			strcat(name, ".prc");
 		else if (!(info.flags & dlpDBFlagClipping))
 			strcat(name, ".pdb");
+
+		strcpy(tmp_name, name);
+		strcat(tmp_name, ".tmp");
 
 		for (x = 0; x < numexclude; x++) {
 			/* printf("Skipcheck:%s:%s:\n",exclude[x],info.name); */
@@ -435,18 +470,49 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
 		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
 
-		f = pi_file_create(name, &info);
+		f = pi_file_create(tmp_name, &info);
 		if (f == 0) {
 			printf("Failed, unable to create file\n");
+			backup_complete = 0;
 			break;
 		}
 
-		if (pi_file_retrieve(f, sd, 0) < 0)
-			printf("Failed, unable to back up database\n");
-		else
-			printf("done.\n");
-		pi_file_close(f);
-
+		if (pi_file_retrieve(f, sd, 0) < 0) {
+			pi_file_close(f);
+			remove(tmp_name);
+  			printf("Failed, unable to back up database\n");
+			if (access(name, F_OK) == 0) {
+				printf("Leaving old '%s' in '%s'.\n",
+					info.name, name);
+			}
+			backup_complete = 0;
+		} else {
+			pi_file_close(f);
+			if(remove(name) == -1 && errno != ENOENT) {
+				save_errno = errno;
+				printf("Failed, unable to remove old file\n");
+				errno = save_errno;
+				perror(name);
+				if(access(name, F_OK)) {
+					printf("Leaving old '%s' in '%s'.\n",
+						info.name, name);
+				}
+				printf("Leaving new '%s' in '%s'.\n",
+					info.name, tmp_name);
+				backup_complete = 0;
+			} else if(rename(tmp_name, name) == -1) {
+				save_errno = errno;
+				printf("Failed, unable to rename temp file\n");
+				errno = save_errno;
+				perror(name);
+				printf("Leaving '%s' in '%s'.\n",
+					info.name, tmp_name);
+				backup_complete = 0;
+			} else {
+				printf("OK\n");
+			}
+		}
+  
 		/* Note: This is no guarantee that the times on the host
 		   system actually match the GMT times on the Palm. We only
 		   check to see whether they are the same or different, and
@@ -459,42 +525,56 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		RemoveFromList(name, orig_files, ofile_total);
 	}
 
+	if (!backup_complete) {
+		printf("Backup incomplete");
+		if(remove_deleted) {
+			printf(" ... disabling delete/archive\n");
+			remove_deleted = 0;
+		}
+		printf(".\n");
+	}
+
 	if (orig_files) {
-		int dirname_len = strlen(dirname);
-		char newname[256];
+		int 	dirname_len = strlen(dirname);
+		char 	newname[256];
 
 		if (remove_deleted && dlp_OpenConduit(sd) < 0) {
 			/* If the connection has gone down here, there is
 			   probably a communication error. */
-			printf("Exiting on error, stopped before removing files.\n");
-			exit(1);
+			remove_deleted = 0;
+			backup_complete = 0;
+			printf("Comm error ... disabling delete/archive\n");
 		}
 
 
-		for (i = 0; i < ofile_total; i++)
-			if (orig_files[i] != NULL) {
+		for (idx = 0; idx < ofile_total; idx++)
+			if (orig_files[idx] != NULL) {
 				if (remove_deleted) {
 
 					if (archive_dir) {
-						printf("Archiving '%s'.\n", orig_files[i]);
-						sprintf(newname, "%s/%s", archive_dir, &orig_files[i] [dirname_len + 1]);
-						if (rename (orig_files[i], newname) != 0) {
-							printf("rename(%s, %s) ", orig_files [i], newname);
+						printf("Archiving '%s'.\n", orig_files[idx]);
+						sprintf(newname, "%s/%s", archive_dir, &orig_files[idx] [dirname_len + 1]);
+						if (rename (orig_files[idx], newname) != 0) {
+							save_errno = errno;
+							printf("rename(%s, %s) ", orig_files [idx], newname);
+							errno = save_errno;
 							perror("failed");
 						}
 					} else {
-						printf("Removing '%s'.\n", orig_files[i]); 
-						unlink(orig_files[i]);
+						printf("Removing '%s'.\n", orig_files[idx]); 
+						unlink(orig_files[idx]);
 					}
 				}
-				free(orig_files[i]);
+				free(orig_files[idx]);
 			}
 		if (orig_files)
 			free(orig_files);
 	}
 
-	printf("%s backup done.\n",
-	       (rom == 2 ? "\nOS" : (rom == 1 ? "\nFlash" : "\nRAM")));
+ 	if(backup_complete) {
+ 		printf("%s backup done.\n",
+ 		       (rom == 2 ? "OS" : (rom == 1 ? "Flash" : "RAM")));
+ 	}
 }
 
 /***********************************************************************
@@ -510,9 +590,9 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
  ***********************************************************************/
 void Fetch(char *dbname)
 {
-	struct DBInfo info;
-	char name[256];
-	struct pi_file *f;
+	char 	name[256];
+	struct 	DBInfo info;
+	struct 	pi_file *f;
 
 	Connect();
 
@@ -577,7 +657,7 @@ void Fetch(char *dbname)
  ***********************************************************************/
 void Delete(char *dbname)
 {
-	struct DBInfo info;
+	struct 	DBInfo info;
 
 	Connect();
 
@@ -604,9 +684,9 @@ void Delete(char *dbname)
 }
 
 struct db {
-	char name[256];
-	int flags;
-	int maxblock;
+	int 	flags,
+		maxblock;
+	char 	name[256];
 	unsigned long creator, type;
 };
 
@@ -636,16 +716,17 @@ int compare(struct db *d1, struct db *d2)
  ***********************************************************************/
 void Restore(char *dirname)
 {
-	DIR *dir;
-	struct dirent *dirent;
-	struct DBInfo info;
-	struct db **db = NULL;
-	struct pi_file *f;
-	int dbcount = 0;
-	int i;
-	int j;
-	int max;
-	int size;
+	int 	dbcount = 0,
+		idx,
+		j,
+		max,
+		size;
+	DIR 	*dir;
+	struct 	dirent *dirent;
+	struct 	DBInfo info;
+	struct 	db **db = NULL;
+	struct 	pi_file *f;
+
 
 	dir = opendir(dirname);
 
@@ -694,12 +775,12 @@ void Restore(char *dirname)
 
 		pi_file_get_entries(f, &max);
 
-		for (i = 0; i < max; i++) {
+		for (idx = 0; idx < max; idx++) {
 			if (info.flags & dlpDBFlagResource)
-				pi_file_read_resource(f, i, 0, &size, 0,
+				pi_file_read_resource(f, idx, 0, &size, 0,
 						      0);
 			else
-				pi_file_read_record(f, i, 0, &size, 0, 0,
+				pi_file_read_record(f, idx, 0, &size, 0, 0,
 						    0);
 
 			if (size > db[dbcount]->maxblock)
@@ -714,48 +795,48 @@ void Restore(char *dirname)
 
 #ifdef DEBUG
 	printf("Unsorted:\n");
-	for (i = 0; i < dbcount; i++) {
-		printf("%d: %s\n", i, db[i]->name);
-		printf("  maxblock: %d\n", db[i]->maxblock);
-		printf("  creator: '%s'\n", printlong(db[i]->creator));
-		printf("  type: '%s'\n", printlong(db[i]->type));
+	for (idx = 0; idx < dbcount; idx++) {
+		printf("%d: %s\n", idx, db[idx]->name);
+		printf("  maxblock: %d\n", db[idx]->maxblock);
+		printf("  creator: '%s'\n", printlong(db[idx]->creator));
+		printf("  type: '%s'\n", printlong(db[idx]->type));
 	}
 #endif
 
-	for (i = 0; i < dbcount; i++)
-		for (j = i + 1; j < dbcount; j++)
-			if (compare(db[i], db[j]) > 0) {
-				struct db *temp = db[i];
+	for (idx = 0; idx < dbcount; idx++)
+		for (j = idx + 1; j < dbcount; j++)
+			if (compare(db[idx], db[j]) > 0) {
+				struct db *temp = db[idx];
 
-				db[i] = db[j];
+				db[idx] = db[j];
 				db[j] = temp;
 			}
 #ifdef DEBUG
 	printf("Sorted:\n");
-	for (i = 0; i < dbcount; i++) {
-		printf("%d: %s\n", i, db[i]->name);
-		printf("  maxblock: %d\n", db[i]->maxblock);
-		printf("  creator: '%s'\n", printlong(db[i]->creator));
-		printf("  type: '%s'\n", printlong(db[i]->type));
+	for (idx = 0; idx < dbcount; idx++) {
+		printf("%d: %s\n", idx, db[idx]->name);
+		printf("  maxblock: %d\n", db[idx]->maxblock);
+		printf("  creator: '%s'\n", printlong(db[idx]->creator));
+		printf("  type: '%s'\n", printlong(db[idx]->type));
 	}
 #endif
 
 	Connect();
 
-	for (i = 0; i < dbcount; i++) {
+	for (idx = 0; idx < dbcount; idx++) {
 
 		if (dlp_OpenConduit(sd) < 0) {
 			printf("Exiting on cancel, all data not restored, stopped before restoing '%s'.\n",
-				db[i]->name);
+				db[idx]->name);
 			exit(1);
 		}
 
-		f = pi_file_open(db[i]->name);
+		f = pi_file_open(db[idx]->name);
 		if (f == 0) {
-			printf("Unable to open '%s'!\n", db[i]->name);
+			printf("Unable to open '%s'!\n", db[idx]->name);
 			break;
 		}
-		printf("Restoring %s... ", db[i]->name);
+		printf("Restoring %s... ", db[idx]->name);
 		fflush(stdout);
 		if (pi_file_install(f, sd, 0) < 0)
 			printf("failed.\n");
@@ -766,8 +847,8 @@ void Restore(char *dirname)
 
 	VoidSyncFlags();
 
-	for (i = 0; i < dbcount; i++) {
-		free(db[i]);
+	for (idx = 0; idx < dbcount; idx++) {
+		free(db[idx]);
 	}
 	free(db);
 
@@ -787,7 +868,7 @@ void Restore(char *dirname)
  ***********************************************************************/
 void Install(char *filename)
 {
-	struct pi_file *f;
+	struct 	pi_file *f;
 
 	Connect();
 
@@ -827,7 +908,7 @@ void Install(char *filename)
  ***********************************************************************/
 void Merge(char *filename)
 {
-	struct pi_file *f;
+	struct 	pi_file *f;
 
 	Connect();
 
@@ -870,9 +951,9 @@ void Merge(char *filename)
  ***********************************************************************/
 void List(int rom)
 {
+	int 	idx,
+		dbcount = 0; 
 	struct DBInfo info;
-	int i;
-	int dbcount = 0; 
 
 	Connect();
 
@@ -886,16 +967,16 @@ void List(int rom)
 	else
 		printf("Reading list of databases in RAM...\n");
 
-	i = 0;
+	idx = 0;
 
 	for (;;) {
 		if (dlp_ReadDBList
-		    (sd, 0, (rom ? 0x80 | 0x40 : 0x80), i, &info) < 0)
+		    (sd, 0, (rom ? 0x80 | 0x40 : 0x80), idx, &info) < 0)
 			break;
 		dbcount++;
-		i = info.index + 1;
+		idx = info.index + 1;
 
-		printf("[%ld] \t%s\n", dbcount, info.name);
+		printf("[%d] \t%s\n", dbcount, info.name);
 	}
 	printf("\nList done. %d files found.\n", dbcount);
 
@@ -915,9 +996,9 @@ void List(int rom)
  ***********************************************************************/
 void Purge(void)
 {
-	struct DBInfo info;
-	int i;
-	int h;
+	int 	idx,
+		h;
+	struct 	DBInfo info;
 
 	Connect();
 
@@ -928,11 +1009,11 @@ void Purge(void)
 
 	printf("Reading list of databases to purge...\n");
 
-	i = 0;
+	idx = 0;
 	for (;;) {
-		if (dlp_ReadDBList(sd, 0, 0x80, i, &info) < 0)
+		if (dlp_ReadDBList(sd, 0, 0x80, idx, &info) < 0)
 			break;
-		i = info.index + 1;
+		idx = info.index + 1;
 
 		if (info.flags & 1)
 			continue;	/* skip resource databases */
@@ -958,59 +1039,7 @@ void Purge(void)
 	printf("Purge done.\n");
 }
 
-/***********************************************************************
- *
- * Function:    Help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void Help(char *progname)
-{
-	PalmHeader(progname);
 
-	printf("   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n\n"
-	       "   -b[ackup] backupdir   = copy the contents of your palm to < backupdir >\n"
-	       "   -u[pdate] backupdir   = update backupdir with newer Palm data\n"
-	       "   -s[ync] backupdir     = same as - u above, but removes local files if data\n"
-	       "                           is removed from your Palm\n"
-	       "   -r[estore] backupdir  = restore backupdir to your Palm\n"
-	       "   -i[nstall] dbname(s)  = install local[prc | pdb] files to your Palm\n"
-	       "   -m[erge] filename(s)  = adds the records in <file> into the corresponding\n"
-	       "                           Palm database\n"
-	       "   -f[etch] dbname(s)    = retrieve dbname(s) from your Palm\n"
-	       "   -d[elete] dbname(s)   = delete(permanently) dbname(s) from your Palm\n"
-	       "   -e[xclude] filename   = exclude dbname(s) listed in <filename> from being\n"
-	       "                           included by -backup, -sync, or -update.\n"
-	       "   -P[urge]              = purge any deleted data that hasn't been cleaned up\n"
-	       "                           by a sync\n\n"
- 	       "   -l[ist]               = list all application and 3 rd party data on the Palm\n"
-	       "   -L[istall]            = list all data, internal and external on the Palm\n"
-	       "   -v[ersion]            = report the version of %s\n", progname, progname, progname);
-	printf("                           (currently %d.%d.%d%s)\n"
-	       "   -h[elp]               = reprint this usage screen\n\n"
-	       "   -a modifies -s to archive deleted files in specified directory.\n"
-	       "   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n"
-	       "   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n"
-	       "   -I modifies -b, -u, and -s, to back up \"illegal\"\n"
-	       "      Unsaved Preferences.prc (normally skipped, per Palm's recommendation).\n"
-	       "   -q makes all the backup options shut up about skipped files.\n"
-	       "   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n"
- 	       "   The serial port used to connect to may be specified by the $PILOTPORT\n"
-	       "   environment variable in your shell instead of the command line.  If it is\n"
-	       "   not specified anywhere, it will default to /dev/pilot.\n\n"
- 	       "   Additionally, the baud rate to connect with may be specified by the\n"
-	       "   $PILOTRATE environment variable.If not specified, it will default to 9600.\n"
-	       "   Please use caution setting $PILOTRATE to higher values, as several types of\n"
-	       "   workstations have problems with higher baud rates.\n"
- 	       "   Always consult the man page(s) for additional usage of these options as well\n"
-	       "   as details on the results of combining other parameters together.\n\n", PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
-	exit(0);
-}
 
 /***********************************************************************
  *
@@ -1032,37 +1061,92 @@ void Version(void)
 
 
 struct {
-	char *name;
-	int value;
+	char 	*name;
+	int 	value;
 } longopt[] = {
-	  {"backup",  'b'}
-	, {"update",  'u'}
-	, {"sync",    's'}
-	, {"restore", 'r'}
-	, {"install", 'i'}
-	, {"merge",   'm'}
-	, {"fetch",   'f'}
-	, {"delete",  'd'}
-	, {"exclude", 'e'}
-	, {"purge",   'P'}
-	, {"list",    'l'}
-	, {"Listall", 'L'}
-	, {"version", 'v'}
-	, {"help",    'h'}
-	, {0, 0}
+	{"backup",  'b'},
+	{"update",  'u'},
+	{"sync",    's'},
+	{"restore", 'r'},
+	{"install", 'i'},
+	{"merge",   'm'},
+	{"fetch",   'f'},
+	{"delete",  'd'},
+	{"exclude", 'e'},
+	{"purge",   'P'},
+	{"list",    'l'},
+	{"Listall", 'L'},
+	{"version", 'v'},
+	{"help",    'h'},
+	{0, 0}
 };
+
+
+/***********************************************************************
+ *
+ * Function:    Help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void Help(char *progname)
+{
+	printf("   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n\n"
+	       "   -b[ackup] backupdir   = copy the contents of your palm to < backupdir >\n"
+	       "   -u[pdate] backupdir   = update backupdir with newer Palm data\n"
+	       "   -s[ync] backupdir     = same as - u above, but removes local files if data\n"
+	       "                           is removed from your Palm\n"
+	       "   -r[estore] backupdir  = restore backupdir to your Palm\n"
+	       "   -i[nstall] dbname(s)  = install local[prc | pdb] files to your Palm\n"
+	       "   -m[erge] filename(s)  = adds the records in <file> into the corresponding\n"
+	       "                           Palm database\n"
+	       "   -f[etch] dbname(s)    = retrieve dbname(s) from your Palm\n"
+	       "   -d[elete] dbname(s)   = delete(permanently) dbname(s) from your Palm\n"
+	       "   -e[xclude] filename   = exclude dbname(s) listed in <filename> from being\n"
+	       "                           included by -backup, -sync, or -update.\n"
+	       "   -P[urge]              = purge any deleted data that hasn't been cleaned up\n"
+	       "                           by a sync\n\n"
+ 	       "   -l[ist]               = list all application and 3 rd party data on the Palm\n"
+	       "   -L[istall]            = list all data, internal and external on the Palm\n"
+	       "   -v[ersion]            = report the version of %s\n", progname, progname);
+	printf("                           (currently %d.%d.%d%s)\n"
+	       "   -h[elp]               = reprint this usage screen\n\n"
+	       "   -a modifies -s to archive deleted files in specified directory.\n"
+	       "   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n"
+	       "   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n"
+	       "   -I modifies -b, -u, and -s, to back up \"illegal\"\n"
+	       "      Unsaved Preferences.prc (normally skipped, per Palm's recommendation).\n"
+	       "   -q makes all the backup options shut up about skipped files.\n"
+	       "   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n"
+ 	       "   The serial port used to connect to may be specified by the $PILOTPORT\n"
+	       "   environment variable in your shell instead of the command line.  If it is\n"
+	       "   not specified anywhere, it will default to /dev/pilot.\n\n"
+ 	       "   Additionally, the baud rate to connect with may be specified by the\n"
+	       "   $PILOTRATE environment variable.If not specified, it will default to 9600.\n"
+	       "   Please use caution setting $PILOTRATE to higher values, as several types of\n"
+	       "   workstations have problems with higher baud rates.\n"
+ 	       "   Always consult the man page(s) for additional usage of these options as well\n"
+	       "   as details on the results of combining other parameters together.\n\n", 
+		PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
+	exit(0);
+}
 
 int main(int argc, char *argv[])
 {
-	char *archive_dir = NULL;
-	char *tmp;
-	int action;
-	int do_rom = 0;
-	int do_unsaved = 0;
-	int i;
-	int mode;
-	int timespent = 0;
-	int quiet = 0;
+	int 	action,
+		do_rom 		= 0,
+		do_unsaved 	= 0,
+		idx,
+		mode,
+		timespent 	= 0,
+		quiet 		= 0;
+	char 	*archive_dir 	= NULL,
+		*tmp;
+
         time_t start,end;
         start = time(NULL);
 	progname = argv[0];
@@ -1087,79 +1171,79 @@ int main(int argc, char *argv[])
 	mode = 'p';
 	action = 0;
 
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
+	for (idx = 1; idx < argc; idx++) {
+		if (argv[idx][0] == '-') {
 			/* If it is a long argument, convert it to the canonical short version */
-			if (argv[i][1] == '-') {
+			if (argv[idx][1] == '-') {
 				int j;
 
 				for (j = 0; longopt[j].name; j++)
 					if (!strcmp
 					    (longopt[j].name,
-					     argv[i] + 2)) {
-						argv[i][1] =
+					     argv[idx] + 2)) {
+						argv[idx][1] =
 						    longopt[j].value;
-						argv[i][2] = '\0';
+						argv[idx][2] = '\0';
 						break;
 					}
 			}
-			if (strlen(argv[i]) != 2) {
+			if (strlen(argv[idx]) != 2) {
 				printf("%s: Unknown option '%s'\n",
-					argv[0], argv[i]);
+					argv[0], argv[idx]);
 				Help(progname);
 			}
 
 			/* Check for commands that take a single argument */
-			else if (strchr("bus", argv[i][1])) {
+			else if (strchr("bus", argv[idx][1])) {
 				mode = 0;
-				if (++i >= argc) {
+				if (++idx >= argc) {
 					printf("%s: Options '%s' requires argument\n",
-						argv[0], argv[i - 1]);
+						argv[0], argv[idx - 1]);
 					Help(progname);
 				}
 				action = 1;
 
 				/* Check for commands with unlimited arguments */
-			} else if (strchr("rimfde", argv[i][1])) {
-				mode = argv[i][1];
+			} else if (strchr("rimfde", argv[idx][1])) {
+				mode = argv[idx][1];
 				action = 1;
-				if (++i >= argc) {
+				if (++idx >= argc) {
 					printf("%s: Options '%s' requires argument\n",
-						argv[0], argv[i - 1]);
+						argv[0], argv[idx - 1]);
 					Help(progname);
 				}
 				/* Check for commands that take no arguments */
-			} else if (strchr("lLP", argv[i][1])) {
+			} else if (strchr("lLP", argv[idx][1])) {
 				action = 1;
 				mode = 0;
 
 				/* Check for modifiers to -b -u -s */
-			} else if (strchr("FOIqc", argv[i][1])) {
+			} else if (strchr("FOIqc", argv[idx][1])) {
 				/* nothing to do, yet... */
 
 				/* Check for options that take a single argument */
-			} else if (strchr("a", argv[i][1])) {
-				if (++i >= argc) {
+			} else if (strchr("a", argv[idx][1])) {
+				if (++idx >= argc) {
 					printf("%s: Options '%s' requires argument\n",
-						argv[0], argv[i - 1]);
+						argv[0], argv[idx - 1]);
 					Help(progname);
 				}
 
 				/* Check for forcing commands */
-			} else if (argv[i][1] == 'v') {
+			} else if (argv[idx][1] == 'v') {
 				Version();
-			} else if (argv[i][1] == 'h') {
+			} else if (argv[idx][1] == 'h') {
 				Help(progname);
 
 			} else {
 				printf("%s: Unknown option '%s'\n",
-					argv[0], argv[i]);
+					argv[0], argv[idx]);
 				Help(progname);
 			}
 		} else {
 			if (!mode) {
 				printf("%s: Must specify command before argument '%s'\n",
-					argv[0], argv[i]);
+					argv[0], argv[idx]);
 				Help(progname);
 			}
 			if (mode != 'p')
@@ -1177,14 +1261,14 @@ int main(int argc, char *argv[])
 
 	mode = 'p';
 
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
+	for (idx = 1; idx < argc; idx++) {
+		if (argv[idx][0] == '-') {
 			mode = 0;
-			if (strchr("abusrimfde", argv[i][1])) {
-				mode = argv[i][1];
-				i++;
+			if (strchr("abusrimfde", argv[idx][1])) {
+				mode = argv[idx][1];
+				idx++;
 			} else
-				switch (argv[i][1]) {
+				switch (argv[idx][1]) {
 				case 'l':
 					List(0);
 					continue;
@@ -1195,19 +1279,19 @@ int main(int argc, char *argv[])
 					Purge();
 					continue;
 				case 'F':
-					do_rom = !do_rom;	/* can be toggled */
+					do_rom 		= !do_rom;	/* can be toggled */
 					continue;
 				case 'O':
-					do_rom = 2;
+					do_rom 		= 2;
 					continue;
 				case 'I':
-					do_unsaved = 1;
+					do_unsaved 	= 1;
 					continue;
 				case 'q':
-					quiet = 2;
+					quiet 		= 2;
 					continue;
 				case 'c':
-					quiet = 1;
+					quiet 		= 1;
 					continue;
 				default:
 					/* Shouldn't reach here */
@@ -1216,45 +1300,45 @@ int main(int argc, char *argv[])
 		}
 		switch (mode) {
 		case 'p':
-			device = argv[i];
+			device = argv[idx];
 			mode = 0;
 			break;
 		case 'a':
-			archive_dir = argv[i];
+			archive_dir = argv[idx];
 			mode = 0;
 			break;
 		case 'b':
-			Backup(argv[i], 0, 0, quiet, do_rom, do_unsaved,
+			Backup(argv[idx], 0, 0, quiet, do_rom, do_unsaved,
 			       archive_dir);
 			mode = 0;
 			break;
 		case 'u':
-			Backup(argv[i], 1, 0, quiet, do_rom, do_unsaved,
+			Backup(argv[idx], 1, 0, quiet, do_rom, do_unsaved,
 			       archive_dir);
 			mode = 0;
 			break;
 		case 's':
-			Backup(argv[i], 1, 1, quiet, do_rom, do_unsaved,
+			Backup(argv[idx], 1, 1, quiet, do_rom, do_unsaved,
 			       archive_dir);
 			mode = 0;
 			break;
 		case 'r':
-			Restore(argv[i]);
+			Restore(argv[idx]);
 			break;
 		case 'i':
-			Install(argv[i]);
+			Install(argv[idx]);
 			break;
 		case 'm':
-			Merge(argv[i]);
+			Merge(argv[idx]);
 			break;
 		case 'f':
-			Fetch(argv[i]);
+			Fetch(argv[idx]);
 			break;
 		case 'd':
-			Delete(argv[i]);
+			Delete(argv[idx]);
 			break;
 		case 'e':
-			MakeExcludeList(argv[i]);
+			MakeExcludeList(argv[idx]);
 			break;
 		default:
 			/* Shouldn't reach here */

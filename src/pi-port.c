@@ -58,10 +58,8 @@ int main(int argc, char *argv[])
 		sd = -1,
 		netport = 4386,
 		serverfd, fd;
-
 	struct 	pi_socket *ps;
 	struct 	sockaddr_in serv_addr;
-	
 	char 	*buffer,
 		*slpbuffer,
 		*progname = argv[0],

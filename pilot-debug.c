@@ -48,7 +48,7 @@ int usetk;
 #endif
 
 #ifndef TCL_ACTIVE
-#define TCL_ACTIVE TCL_READABLE
+#define TCL_ACTIVE TCL_REA
 #endif
 #ifndef TCL_RELEASE_LEVEL
 #define TCL_RELEASE_LEVEL 8
@@ -60,8 +60,7 @@ int usetk;
 extern int matherr();
 int *tclDummyMathPtr = (int *) matherr;
 
-int done = 0;
-
+int done 	= 0;
 int Interactive = 1;
 
 Tcl_Interp * interp;        
@@ -97,16 +96,14 @@ void SetLabel(const char * label, const char * value)
 
 char *itoa(int val)
 {
-        static char buf[20];
-
+        static 	char buf[20];
         sprintf(buf, "%d", val);
-        return buf;
+        return 	buf;
 }
 
 char *htoa(int val)
 {
         static char buf[9];
-
         sprintf(buf, "%8.8X", val);
         return buf;
 }
@@ -114,7 +111,6 @@ char *htoa(int val)
 char *h4toa(int val)
 {
         static char buf[5];
-
         sprintf(buf, "%4.4X", val);
         return buf;
 }
@@ -243,7 +239,7 @@ void
 Read_Pilot(ClientData clientData, int mask)
 {
    unsigned char buf[4096];
-   int l;
+   int 	l;
 
    memset(buf, 0, 4096);
    l = pi_read(port, buf, 4096);
@@ -508,8 +504,8 @@ int majorVersion, minorVersion, stateVersion, buildVersion;
  ***********************************************************************/
 void DbgGetDeviceVersion(void)
 {
+        int 	result;
         struct RPC_params p;
-        int result;
         unsigned long ROMversion;
 
         ROMversion = 0x12345678;
@@ -649,8 +645,8 @@ int DbgAttachDebugger(int verify)
  ***********************************************************************/
 int DbgAttachConsole(int verify)
 {
-        int err;
-        struct RPC_params p;
+        int 	err;
+        struct 	RPC_params p;
 
         if (!port) {
                 Error
@@ -970,20 +966,24 @@ int proc_warmboot(ClientData clientData, Tcl_Interp * interp, int argc,
 int proc_battery(ClientData clientData, Tcl_Interp * interp, int argc,
                  char *argv[])
 {
-        int err;
-        int warn, critical, maxTicks;
-        int v, kind, pluggedin;
+        int 	err,
+		warn,
+		critical,
+		maxTicks,
+		v,
+		kind,
+		pluggedin;
         char buffer[30];
         struct RPC_params p;
 
         if (!DbgAttach(0))
                 return TCL_ERROR;
 
-        warn = 0x1234;
-        critical = 0x2345;
-        maxTicks = 0x3456;
-        kind = 2;
-        pluggedin = 3;
+        warn 		= 0x1234;
+        critical 	= 0x2345;
+        maxTicks 	= 0x3456;
+        kind 		= 2;
+        pluggedin 	= 3;
 
         PackRPC(&p, 0xA0B6, RPC_IntReply,
                 RPC_Byte(0), RPC_ShortPtr(&warn), RPC_ShortPtr(&critical),
@@ -1037,12 +1037,13 @@ int proc_battery(ClientData clientData, Tcl_Interp * interp, int argc,
 int proc_mirror(ClientData clientData, Tcl_Interp * interp, int argc,
                 char *argv[])
 {
+        int 	e1,
+		e2,
+		active,
+		scrGlobals,
+		doDrawNotify;
         struct RPC_params p;
         unsigned long addr;
-        int e1, e2;
-        int active;
-
-        int scrGlobals, doDrawNotify;
 
         if (!DbgAttachConsole(0))
                 return TCL_ERROR;
@@ -1118,8 +1119,9 @@ int proc_mirror(ClientData clientData, Tcl_Interp * interp, int argc,
 int proc_updatedisplay(ClientData clientData, Tcl_Interp * interp,
                        int argc, char *argv[])
 {
+        int 	e1,
+		e2;
         struct RPC_params p;
-        int e1, e2;
 
         if (!DbgAttachConsole(0))
                 return TCL_ERROR;
@@ -1143,14 +1145,15 @@ int proc_getdisplay(ClientData clientData, Tcl_Interp * interp, int argc,
         return TCL_ERROR;
 
 #else
-        char buffer[0xffff];
-        char buffer2[0xffff];
+        int 	e1,
+		e2,
+		l;
+        char 	buffer[0xffff],
+		buffer2[0xffff];
         Tk_PhotoImageBlock block;
         Tk_PhotoHandle handle;
         struct RPC_params p;
         unsigned long addr;
-        int e1, e2;
-        int l;
 
         if (!usetk) {
                 Say("getdisplay is not usable when graphical display is disabled");
@@ -1252,8 +1255,10 @@ int proc_transmit(ClientData clientData, Tcl_Interp * interp, int argc,
 int proc_pushbutton(ClientData clientData, Tcl_Interp * interp, int argc,
                     char *argv[])
 {
-        struct RPC_params p;
-        unsigned int key = 0, scan = 0, mod = 0;
+        struct 	RPC_params p;
+        unsigned int key 	= 0;
+	unsigned int scan 	= 0;
+	unsigned int mod 	= 0;
 
         if (!DbgAttachConsole(0))
                 return TCL_ERROR;
@@ -1350,7 +1355,7 @@ int proc_key(ClientData clientData, Tcl_Interp * interp, int argc,
              char *argv[])
 {
         /*struct RPC_params p; */
-        int key = argv[1][0];
+        int 	key = argv[1][0];
 
         /* Change \r to \n */
         if (key == 13)

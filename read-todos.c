@@ -48,14 +48,14 @@ int main(int argc, char *argv[])
 {
 	int 	ch,
 		db,
-		index,
-		sd = -1;
-	char 	*progname = argv[0],
-		*port = NULL,
-		*filename = NULL,
+		idx,
+		sd 		= -1;
+	char 	*progname 	= argv[0],
+		*port 		= NULL,
+		*filename 	= NULL,
 		*ptr;
 	struct 	PilotUser User;
-	struct 	pi_file *pif = NULL;
+	struct 	pi_file *pif 	= NULL;
 	struct 	ToDoAppInfo tai;
 	unsigned char buffer[0xffff];
 	
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 
 
 		if (filename) {
-			int len;
+			int 	len;
 	
 			pif = pi_file_open(filename);
 			if (!pif) {
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 	
 		unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 	
-		for (index = 0;; index++) {
+		for (idx = 0;; idx++) {
 			int 	attr,
 				category,
 				len;
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 	
 			if (port) {
 				len =
-				    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0,
+				    dlp_ReadRecordByIndex(sd, db, idx, buffer, 0, 0,
 							  &attr, &category);
 	
 				if (len < 0)
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 			}
 			if (filename) {
 				if (pi_file_read_record
-				    (pif, index, (void *) &ptr, &len, &attr, &category,
+				    (pif, idx, (void *) &ptr, &len, &attr, &category,
 				     0))
 					break;
 	

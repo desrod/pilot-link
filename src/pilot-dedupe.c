@@ -1,4 +1,4 @@
-/* 
+/*
  * pilot-dedupe.c:  Palm utility to remove duplicate records
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -59,10 +59,10 @@ struct record {
  ***********************************************************************/
 int compare_r(const void *av, const void *bv)
 {
+	int 	i,
+		o;
 	struct record *a = *(struct record **) av;
 	struct record *b = *(struct record **) bv;
-	int i;
-	int o;
 
 	if (a->cat < b->cat)
 		o = -1;
@@ -89,17 +89,17 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
+	int 	db,
+		idx,
+		l,
+		ret,
+		sd;
+	char 	*device 	= argv[1],
+		*progname 	= argv[0],
+		buf[0xffff];
 	struct pi_sockaddr addr;
 	struct PilotUser U; 
 	struct record *r;
-	int db;
-	int i;
-	int l;
-	int ret;
-	int sd;
-	char *device = argv[1];  
-	char *progname = argv[0];
-	char buf[0xffff];
 
 #ifdef sun
 	extern char *optarg;
@@ -157,17 +157,18 @@ int main(int argc, char *argv[])
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
 
-	for (i = 2; i < argc; i++) {
+	for (idx = 2; idx < argc; idx++) {
+		int 	count,
+			dupe = 0,
+			j,
+			k;
 		struct record **sortidx;
-		int count;
-		int dupe = 0;
-		int j;
-		int k;
+
 
 		/* Open the database, store access handle in db */
-		printf("Opening %s\n", argv[i]);
-		if (dlp_OpenDB(sd, 0, dlpOpenReadWrite, argv[i], &db) < 0) {
-			printf("Unable to open %s\n", argv[i]);
+		printf("Opening %s\n", argv[idx]);
+		if (dlp_OpenDB(sd, 0, dlpOpenReadWrite, argv[idx], &db) < 0) {
+			printf("Unable to open %s\n", argv[idx]);
 			/*dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
 			   exit(1); */
 			continue;
@@ -175,8 +176,8 @@ int main(int argc, char *argv[])
 
 		printf("Reading records...\n");
 
-		l = 0;
-		count = 0;
+		l 	= 0;
+		count 	= 0;
 		for (;;) {
 			int attr;
 			int cat;
@@ -262,7 +263,7 @@ int main(int argc, char *argv[])
 		while (records) {
 			if (records->data)
 				free(records->data);
-			r = records;
+			r 	= records;
 			records = records->next;
 			free(r);
 		}
@@ -270,13 +271,12 @@ int main(int argc, char *argv[])
 		/* Close the database */
 		dlp_CloseDB(sd, db);
 		sprintf(buf, "Removed %d duplicates from %s\n", dupe,
-			argv[i]);
+			argv[idx]);
 		printf("%s", buf);
 		dlp_AddSyncLogEntry(sd, buf);
 	}
 
 	dlp_ResetLastSyncPC(sd);
-
 	pi_close(sd);
 	return 0;
 }
