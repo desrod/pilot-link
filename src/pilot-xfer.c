@@ -1249,16 +1249,33 @@ static void print_volumeinfo(const char *buf, long volume, struct VFSInfo *info)
 	case pi_mktag('v','f','a','t') :
 		printf("VFAT");
 		break;
-	default:
-		printf("<unknown>");
-	}
-	printf(" filesysytem on ");
-	switch(info->mediaType) {
-	case pi_mktag('s','d','i','g') :
-		printf("SD card");
+	case pi_mktag('t','w','M','F') :
+		printf("Tapwave media");
 		break;
 	default:
-		printf("<unknown>");
+		/* This sortof-untag is gross, but useful */
+		printf("Unknown (type %c%c%c%c)",
+			(char)(info->mediaType >> 24) & 0xff,
+			(char)(info->mediaType >> 16) & 0xff,
+			(char)(info->mediaType >> 8) & 0xff,
+			(char)(info->mediaType) & 0xff);
+	}
+	printf(" filesystem ");
+	switch(info->mediaType) {
+	case pi_mktag('s','d','i','g') :
+		printf("on SD card");
+		break;
+	case pi_mktag('T','F','F','S') :
+	case pi_mktag('t','w','M','F') :
+		printf("in internal memory");
+		break;
+	default:
+		/* This sortof-untag is gross, but useful */
+		printf("on unknown media (type %c%c%c%c)",
+			(char)(info->mediaType >> 24) & 0xff,
+			(char)(info->mediaType >> 16) & 0xff,
+			(char)(info->mediaType >> 8) & 0xff,
+			(char)(info->mediaType) & 0xff);
 	}
 	printf("\n");
 
