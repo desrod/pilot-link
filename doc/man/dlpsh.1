@@ -1,37 +1,70 @@
 .TH DLPSH 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+
 .SH NAME
-dlpsh \- command shell for executing DLP commands to a Palm Device
+.B dlpsh 
+\- command shell for executing DLP commands to a Palm Device
+
 .SH SYNOPSIS
-.B dlpsh /dev/cua?
+.B dlpsh
+\-p <port>
+
 .SH DESCRIPTION
-This manual page
-documents the small application
-.BR dlpsh .
 .B dlpsh
-allows the user to connect to a Pilot and execute arbitrary
-.B Data Link Protocol
-(DLP) commands to a Pilot connected to the specified callout
-device.  Once 
-.B dlpsh
-is started, the user must invoke HotSync on the target device.
-Once connected, the user may execute any of the built-in
+allows the user to connect to a Palm handheld device and execute arbitrary
+Data Link Protocol (DLP) commands. Once connected, the user may execute any
+of the built-in
 .B DLP
-commands. (See 
+commands. (See
 .BR BUILT-IN\ COMMANDS ).
 The connection to the Pilot is kept alive by sending a
 .B PadTickle
-packet to the Pilot after a small period of non-activity. (7 seconds
-by default)
+packet to the Pilot after a small period of non-activity. (7 seconds by
+default)
+
 .SS BUILT-IN COMMANDS
-user [-n username] [-i user id] [-v viewer id] [-p pc id]
+There are many options available to dlpsh, including the following. 
+.TP
+.BI user
+Print the currently set User information
+
+.TP
+.BI ls
+Used with -l and -r to provide long and ROM file lists
+
+.TP
+.BI df
+display how much RAM and ROM is free on your device
+
+.TP
+.BI time,\ dtp
+Desktop-to-Palm, set the time on the Palm from the desktop
+
+.TP
+.BI rm
+Remove a file, delete it entirely from the Palm device
+
+.TP
+.BI quit,\ exit
+Exit the DLP Protocol Shell
+
+
 .SS OPTIONS
-none
-.SH USEAGE
+While in dlpsh, you can always invoke 'help' or 'option --help' to get
+further information on that option.
+
+
+.SH USAGE
 The program will connect to a target, and give the user a prompt for
 executing commands.
-.SH BUGS
+
+.SH KNOWN BUGS
 .BR dlpsh
 has no known bugs.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
 .SH AUTHOR
 .B dlpsh
-was written by Chris Stevens and Damien Neil
+was written by Chris Stevens <\fIstevens@rpi.edu\fP> and Damien Neil <\fIneild@rpi.edu\fP>

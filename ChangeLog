@@ -38,6 +38,8 @@
 
 	* doc/man/pilot-xfer.1: Ditto
 
+	* doc/man/dlpsh.1: Ditto
+
 	* doc/man/read-palmpix.1: New manpage for read-palmpix
 
 	* doc/man/read-notepad.1: Ditto for read-notepad
