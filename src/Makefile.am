@@ -33,7 +33,6 @@ noinst_LTLIBRARIES = libpiuserland.la
 
 bin_PROGRAMS = 		\
 	$(CCEXECS)	\
-	addresses	\
 	debugsh		\
 	dlpsh		\
 	hinotes		\
@@ -53,7 +52,6 @@ bin_PROGRAMS = 		\
 	pi-getromtoken	\
 	pi-nredir	\
 	pilot-addresses	\
-	pilot-archive	\
 	pilot-clip	\
 	pilot-dedupe	\
 	pilot-file	\
@@ -94,13 +92,6 @@ libpiuserland_la_SOURCES =	\
 	userland.c
 libpiuserland_la_LDFLAGS =	\
 	-static
-
-addresses_SOURCES = 		\
-	addresses.c
-addresses_LDADD = 		\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
 
 debugsh_SOURCES = 		\
 	debugsh.c
@@ -245,13 +236,6 @@ pilot_addresses_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
-
-pilot_archive_SOURCES =		\
-        pilot-archive.c
-pilot_archive_LDADD =           \
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-        $(top_builddir)/libpisock/libpisock.la
 
 pilot_clip_SOURCES = 		\
 	pilot-clip.c
@@ -407,7 +391,6 @@ EXTRA_DIST = 			\
 	ietf2datebook.PL	\
 	pilot-undelete.PL	\
 	sync-plan.PL		\
-	addresses.c		\
 	ccexample.cc		\
 	debugsh.c		\
 	dlpsh.c			\
@@ -432,7 +415,6 @@ EXTRA_DIST = 			\
 	pi-nredir.c		\
 	pi-port.c		\
 	pilot-addresses.c	\
-	pilot-archive.c		\
 	pilot-clip.c		\
 	pilot-debug.c		\
 	pilot-dedupe.c		\
