@@ -71,17 +71,14 @@ typedef struct {
 } pdb_t;
 
 typedef enum {
-  palm_media_ram, 	/* media_type 0 */
-  palm_media_rom, 	/* media_type 1 */
-  palm_media_flash, 	/* media_type 2 */
-  palm_media_vfs
-} palm_media_t;
-
-typedef enum {
+  palm_op_noop = 0,
   palm_op_restore,
   palm_op_backup,
-  palm_op_armyknife,  /* install, merge, delete, etc. */
-  palm_op_noop
+  palm_op_install,
+  palm_op_merge,
+  palm_op_fetch,
+  palm_op_delete,
+  palm_op_list
 } palm_op_t;
 
 int 	sd 	= 0;
@@ -92,12 +89,35 @@ char    *vfsdir = NULL;
 char 	*exclude[MAXEXCLUDE];
 int 	numexclude = 0;
 
-#define BACKUP (1<<0)
-#define UPDATE (1<<1)
-#define SYNC (1<<2)
+#define BACKUP      (0x0001)
+#define UPDATE      (0x0002)
+#define SYNC        (0x0004)
+
+#define MEDIA_MASK  (0x0f00)
+#define MEDIA_RAM   (0x0000)
+#define MEDIA_ROM   (0x0100)
+#define MEDIA_FLASH (0x0200)
+#define MEDIA_VFS   (0x0400)
+
+#define MIXIN_MASK  (0xf000)
+#define PURGE       (0x1000)
+
 
 static int findVFSPath(int verbose, const char *path, long *volume,
 	char *rpath, int *rpathlen);
+
+
+const char *media_name(int m)
+{
+	switch (m) {
+	case MEDIA_RAM : return "RAM";
+	case MEDIA_ROM : return "OS";
+	case MEDIA_FLASH : return "Flash";
+	case MEDIA_VFS : return "VFS";
+	default : return NULL;
+	}
+}
+
 
 /***********************************************************************
  *
@@ -220,34 +240,6 @@ static void Connect(void)
 }
 
 
-#if 0
-/***********************************************************************
- *
- * Function:    VoidSyncFlags
- *
- * Summary:     Get the last PCID and lastSyncTime from the Palm
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void VoidSyncFlags(void)
-{
-	struct 	PilotUser User;
-
-	if (dlp_ReadUserInfo(sd, &User) == 0) {
-		/* Hopefully unique constant, to tell any Desktop software
-		   that databases have been altered, and that a slow sync is
-		   necessary
-		 */
-		User.lastSyncPC = 0x00000000;
-		User.lastSyncDate = User.successfulSyncDate = time(0);
-		dlp_WriteUserInfo(sd, &User);
-	}
-}
-#endif
-
 
 /***********************************************************************
  *
@@ -328,8 +320,8 @@ static int creator_is_PalmOS(unsigned long creator)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Backup(char *dirname, unsigned long int flags, palm_media_t
-	media_type, int unsaved, char *archive_dir)
+static void Backup(char *dirname, unsigned long int flags,
+	int unsaved, char *archive_dir)
 {
 
 	int	i		= 0,
@@ -345,7 +337,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		*name,
 		synclog[70];
 
-	const char *synctext = (flags & UPDATE) ? "Syncronizing" : "Backing up";
+	const char *synctext = (flags & UPDATE) ? "Synchronizing" : "Backing up";
 
 	DIR 	*dir;
 	pi_buffer_t *buffer;
@@ -416,7 +408,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			exit(EXIT_FAILURE);
 		}
 
-		if (dlp_ReadDBList(sd, 0, (media_type ? 0x40 : 0x80), i, buffer) < 0)
+		if (dlp_ReadDBList(sd, 0, ((flags & MEDIA_MASK) ? 0x40 : 0x80), i, buffer) < 0)
 			break;
 
 		memcpy(&info, buffer->data, sizeof(struct DBInfo));
@@ -552,9 +544,8 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 
 	free(name);
 
-	printf("%s backup complete.",
-	       (media_type == 2 ? "\n   OS"
-		: (media_type == 1 ? "\n   Flash" : "\n   RAM")));
+
+	printf("%s backup complete.", media_name(flags & MEDIA_MASK));
 
 	printf(" %d files backed up, %d skipped, %d file%s failed.\n",
 		(filecount ? filecount - 1 : 0), skipped, failed, (failed == 1) ? "" : "s");
@@ -1112,19 +1103,21 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 	totalsize += sbuf.st_size; */
 }
 
-static void Install(palm_media_t media_type,const char *localfile)
+static void Install(unsigned long int flags,const char *localfile)
 {
 	Connect();
-	switch(media_type) {
-	case palm_media_ram :
-	case palm_media_rom :
-	case palm_media_flash :
+	switch(flags & MEDIA_MASK) {
+	case MEDIA_RAM :
+	case MEDIA_ROM :
+	case MEDIA_FLASH :
 		InstallInternal(localfile);
 		break;
-	case palm_media_vfs :
+	case MEDIA_VFS :
 		InstallVFS(localfile,vfsdir);
 		break;
-	/* No default - want warning for unhandled media types */
+	default :
+		fprintf(stderr,"   ERROR: Unknown media type %lx\n",(flags & MEDIA_MASK));
+		break;
 	}
 }
 
@@ -1178,24 +1171,23 @@ static void Merge(const char *filename)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void ListInternal(palm_media_t media_type)
+static void ListInternal(unsigned long int flags)
 {
 	int 	i		= 0,
 		j,
 		dbcount 	= 0;
 	struct 	DBInfo info;
-	char	text[10],
-		synclog[68];
+	char synclog[68];
 	pi_buffer_t *buffer;
 
-	media_type == 1 ? sprintf(text, " and ROM") : sprintf(text, "%s", "");
-	printf("   Reading list of databases in RAM%s...\n", text);
+	printf("   Reading list of databases in RAM%s...\n",
+		(flags & MEDIA_MASK) ? " and ROM" : "");
 
 	buffer = pi_buffer_new(sizeof(struct DBInfo));
 
 	for (;;) {
 		if (dlp_ReadDBList
-		    (sd, 0, (media_type ? 0x80 | 0x40 : 0x80) | dlpDBListMultiple, i, buffer) < 0)
+		    (sd, 0, ((flags & MEDIA_MASK) ? 0x40 : 0) | 0x80 | dlpDBListMultiple, i, buffer) < 0)
 			break;
 		for (j=0; j < (buffer->used / sizeof(struct DBInfo)); j++) {
 			memcpy(&info, buffer->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
@@ -1591,19 +1583,21 @@ static void ListVFS()
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void List(palm_media_t media_type)
+static void List(unsigned long int flags)
 {
 	Connect();
-	switch(media_type) {
-	case palm_media_ram :
-	case palm_media_rom :
-	case palm_media_flash :
-		ListInternal(media_type);
+	switch(flags & MEDIA_MASK) {
+	case MEDIA_RAM :
+	case MEDIA_ROM :
+	case MEDIA_FLASH :
+		ListInternal(flags);
 		break;
-	case palm_media_vfs :
+	case MEDIA_VFS :
 		ListVFS();
 		break;
-	/* No default - want warning for unhandled media types */
+	default :
+		fprintf(stderr,"   ERROR: Unknown media type %lx.\n",flags & MEDIA_MASK);
+		break;
 	}
 }
 
@@ -1665,7 +1659,59 @@ static void Purge(void)
 	printf("Purge complete.\n");
 }
 
+/***********************************************************************
+ *
+ * Summary:     Argument handling data structures and functions.
+ *
+ ***********************************************************************/
 
+
+static void set_operation(int opt, palm_op_t *op, unsigned long int *flags)
+{
+	switch(opt) {
+	case 'b' :
+		*op = palm_op_backup;
+		*flags |= BACKUP;
+		break;
+	case 'u' :
+		*op = palm_op_backup;
+		*flags |= UPDATE;
+		break;
+	case 's' :
+		*op = palm_op_backup;
+		*flags |= UPDATE | SYNC;
+		break;
+	case 'r' :
+		*op = palm_op_restore;
+		*flags |= BACKUP;
+		break;
+	case 'i' :
+		*op = palm_op_install;
+		break;
+	case 'm' :
+		*op = palm_op_merge;
+		break;
+	case 'f' :
+		*op = palm_op_fetch;
+		break;
+	case 'd' :
+		*op = palm_op_delete;
+		break;
+	case 'l' :
+		*op = palm_op_list;
+		*flags &= ~(MEDIA_MASK);
+		*flags |= MEDIA_RAM;
+		break;
+	case 'L' :
+		*op = palm_op_list;
+		*flags &= ~(MEDIA_MASK);
+		*flags |= MEDIA_ROM;
+		break;
+	default:
+		fprintf(stderr,"Error: unknown operation %c.\n",opt);
+		exit(1);
+	}
+}
 
 
 
@@ -1680,68 +1726,90 @@ int main(int argc, char *argv[])
 		*progname 	= argv[0];
 
 	unsigned long int sync_flags = palm_op_backup;
-	palm_media_t media_type      = palm_media_ram;
 	palm_op_t palm_operation     = palm_op_noop;
 
+	const char *gracias = "   Thank you for using pilot-link.\n";
+
+	const char **rargv; /* for scanning remaining arguments */
+	int rargc;
 	poptContext pc;
 
 	struct poptOption options[] = {
 		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
+			"Use device file <port> to communicate with Palm", "port"},
 		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
-		{"backup", 'b', POPT_ARG_STRING, &dirname, 'b',
-		 "Back up your Palm to <dir>", "dir"},
-		{"update", 'u', POPT_ARG_STRING, &dirname, 'u',
-		 "Update <dir> with newer Palm data", "dir"},
-		{"sync", 's', POPT_ARG_STRING, &dirname, 's',
-		 "Same as -u option, but removes local files if "
-		 "data is removed from your Palm", "dir"},
-		{"restore", 'r', POPT_ARG_STRING, &dirname, 'r',
-		 "Restore backupdir <dir> to your Palm", "dir"},
-		{"install", 'i', POPT_ARG_STRING, NULL, 'i',
-		 "Install local prc, pdb, pqa files to your Palm", "file"},
-		{"fetch", 'f', POPT_ARG_STRING, NULL, 'f',
-		 "Retrieve [db] from your Palm", "db"},
-		{"merge", 'm', POPT_ARG_STRING, NULL, 'm',
-		 "Adds the records in <file> into the corresponding Palm database", "file"},
-		{"delete", 'd', POPT_ARG_STRING, NULL, 'd',
-		 "Delete (permanently) [db] from your Palm", "db"},
-		{"Purge", 'P', POPT_ARG_NONE, NULL, 'P',
-		 "Purge any deleted data that hasn't been cleaned up", NULL},
-		{"list", 'l', POPT_ARG_NONE, NULL, 'l',
-		 "List all application and 3rd party Palm data/apps", NULL},
-		{"Listall", 'L', POPT_ARG_NONE, NULL, 'L',
-		 "List all data, internal and external on the Palm", NULL},
-		{"archive", 'a', POPT_ARG_STRING, &archive_dir, 0,
-		 "Modifies -s to archive deleted files in directory <dir>", "dir"},
-		{"exclude", 'e', POPT_ARG_STRING, NULL, 'e',
-		 "Exclude databases listed in <file> from being included",
-		 "file"},
-		{"vfsdir", 'D', POPT_ARG_STRING, &vfsdir, 'D',
-		 "Modifies all of -lLi to use VFS <dir> instead of internal storage", "dir"},
-		{"Flash", 'F', POPT_ARG_VAL, &media_type, palm_media_flash,
-		 "Modifies -b, -u, and -s, to back up non-OS db's"
-		 " from Flash ROM", NULL},
-		{"OsFlash", 'O', POPT_ARG_VAL, &media_type, palm_media_rom,
-		 "Modifies -b, -u, and -s, to back up OS db's"
-		 " from Flash ROM", NULL},
-		{"Illegal", 'I', POPT_ARG_NONE, &unsaved, 0,
-		 "Modifies -b, -u, and -s, to back up the 'illegal"
-		" database Unsaved Preferences.prc (normally skipped)", NULL},
-		{"exec", 'x', POPT_ARG_STRING, NULL, 'x',
-		 "Execute a shell command for intermediate processing", "command"},
+			"Show program version information", NULL},
 		{"verbose", 'V', POPT_ARG_NONE, &verbose, 0,
-		 "Print  verbose  information - normally routine "
-		 "progress messages will be displayed.", NULL},
+			"Print  verbose  information - normally routine "
+			"progress messages will be displayed.", NULL},
+
+		/* action indicators that take a <dir> argument */
+
+		{"backup", 'b', POPT_ARG_STRING, &dirname, 'b',
+			"Back up your Palm to <dir>", "dir"},
+		{"update", 'u', POPT_ARG_STRING, &dirname, 'u',
+			"Update <dir> with newer Palm data", "dir"},
+		{"sync", 's', POPT_ARG_STRING, &dirname, 's',
+			"Same as -u option, but removes local files if "
+			"data is removed from your Palm", "dir"},
+		{"restore", 'r', POPT_ARG_STRING, &dirname, 'r',
+			"Restore backupdir <dir> to your Palm", "dir"},
+
+		/* action indicators that take no argument, but eat the
+			remaining command-line arguments. */
+
+		{"install", 'i', POPT_ARG_NONE, NULL, 'i',
+			"Install local prc, pdb, pqa files to your Palm", "file"},
+		{"fetch", 'f', POPT_ARG_NONE, NULL, 'f',
+			"Retrieve [db] from your Palm", "db"},
+		{"merge", 'm', POPT_ARG_NONE, NULL, 'm',
+			"Adds the records in <file> into the corresponding Palm database", "file"},
+		{"delete", 'd', POPT_ARG_NONE, NULL, 'd',
+			"Delete (permanently) [db] from your Palm", "db"},
+
+		/* action indicators that take no arguments. */
+
+		{"list", 'l', POPT_ARG_NONE, NULL, 'l',
+			"List all application and 3rd party Palm data/apps", NULL},
+		{"Listall", 'L', POPT_ARG_NONE, NULL, 'L',
+			"List all data, internal and external on the Palm", NULL},
+
+		/* action indicators that may be mixed in with the others */
+
+		{"Purge", 'P', POPT_ARG_NONE, NULL, 'P',
+			"Purge any deleted data that hasn't been cleaned up", NULL},
+
+		/* modifiers for the various actions */
+
+		{"archive", 'a', POPT_ARG_STRING, &archive_dir, 0,
+			"Modifies -s to archive deleted files in directory <dir>", "dir"},
+		{"exclude", 'e', POPT_ARG_STRING, NULL, 'e',
+			"Exclude databases listed in <file> from being included",
+			"file"},
+		{"vfsdir", 'D', POPT_ARG_STRING, &vfsdir, 'D',
+			"Modifies all of -lLi to use VFS <dir> instead of internal storage", "dir"},
+		{"Flash", 'F', POPT_ARG_NONE, NULL, 'F',
+			"Modifies -b, -u, and -s, to back up non-OS db's"
+			" from Flash ROM", NULL},
+		{"OsFlash", 'O', POPT_ARG_NONE, NULL, 'O',
+			"Modifies -b, -u, and -s, to back up OS db's"
+			" from Flash ROM", NULL},
+		{"Illegal", 'I', POPT_ARG_NONE, &unsaved, 0,
+			"Modifies -b, -u, and -s, to back up the 'illegal"
+		" database Unsaved Preferences.prc (normally skipped)", NULL},
+
+		/* misc */
+
+		{"exec", 'x', POPT_ARG_STRING, NULL, 'x',
+			"Execute a shell command for intermediate processing", "command"},
 		POPT_AUTOHELP
 		POPT_TABLEEND
 	};
 	const char *help_header_text =
-	    " [-p  <port>] [--help] <options> <actions>\n"
-	    "   Sync, backup, install, delete and more from your Palm device.\n"
-	    "   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
-	    "   Use one of -brsu or one or more of -dfimlLP; mix in -aexDFIOV.\n\n";
+		" [-p  <port>] [--help] <options> <actions>\n"
+		"   Sync, backup, install, delete and more from your Palm device.\n"
+		"   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
+		"   Use one of -brsu or one or more of -dfimlLP; mix in -aexDFIOV.\n\n";
 
 	const char *listalias = "--List";
 
@@ -1761,105 +1829,58 @@ int main(int argc, char *argv[])
 			print_splash(progname);
 			return 0;
 
-
-		/* Actions we only want one of */
+		/* Actions with a dir argument */
 
 		case 'b':
-			if (palm_op_noop != palm_operation)
-				fprintf(stderr,"Warning: only the last -brsu will be used.\n");
-			palm_operation = palm_op_backup;
-			sync_flags = BACKUP;
-			if (verbose)
-				printf("Option -b with value: %s\n", dirname);
-			break;
 		case 'u':
-			if (palm_op_noop != palm_operation)
-				fprintf(stderr,"Warning: only the last -brsu will be used.\n");
-			palm_operation = palm_op_backup;
-			sync_flags = UPDATE;
-			if (verbose)
-				printf("Option -u with value: %s\n", dirname);
-			break;
 		case 's':
-			if (palm_op_noop != palm_operation)
-				fprintf(stderr,"Warning: only the last -brsu will be used.\n");
-			palm_operation = palm_op_backup;
-			sync_flags = UPDATE|SYNC;
-			if (verbose)
-				printf("Option -s with value: %s\n", dirname);
-			break;
 		case 'r':
-			if (palm_op_noop != palm_operation)
-				fprintf(stderr,"Warning: only the last -brsu will be used.\n");
-			palm_operation = palm_op_restore;
+			if (palm_op_noop != palm_operation) {
+				fprintf(stderr,"Error: specify only one of -brsuimfdlL.\n");
+				return 1;
+			}
+			set_operation(optc,&palm_operation,&sync_flags);
 			if (verbose)
-				printf("Option -r with value: %s\n", dirname);
+				printf("Option -%c with value: %s\n", optc, dirname);
 			break;
 
 
-		/* Actions we can handle one or more of */
+		/* Actions without an argument */
 
 		case 'i':
-			if ((palm_op_noop != palm_operation) &&
-				(palm_op_armyknife != palm_operation)) {
-				fprintf(stderr,"Warning: mixing -brsu and -imfd is a bad idea.\n");
-				if (palm_op_noop == palm_operation) palm_operation = palm_op_armyknife;
-			}
-			Install(media_type,poptGetOptArg(pc));
-			break;
 		case 'm':
-			if ((palm_op_noop != palm_operation) &&
-				(palm_op_armyknife != palm_operation)) {
-				fprintf(stderr,"Warning: mixing -brsu and -imfd is a bad idea.\n");
-				if (palm_op_noop == palm_operation) palm_operation = palm_op_armyknife;
-			}
-			Merge(poptGetOptArg(pc));
-			break;
 		case 'f':
-			if ((palm_op_noop != palm_operation) &&
-				(palm_op_armyknife != palm_operation)) {
-				fprintf(stderr,"Warning: mixing -brsu and -imfd is a bad idea.\n");
-				if (palm_op_noop == palm_operation) palm_operation = palm_op_armyknife;
-			}
-			Fetch(poptGetOptArg(pc));
-			break;
 		case 'd':
-			if ((palm_op_noop != palm_operation) &&
-				(palm_op_armyknife != palm_operation)) {
-				fprintf(stderr,"Warning: mixing -brsu and -imfd is a bad idea.\n");
-				if (palm_op_noop == palm_operation) palm_operation = palm_op_armyknife;
-			}
-			Delete(poptGetOptArg(pc));
-			break;
-		case 'P':
-			if ((palm_op_noop != palm_operation) &&
-				(palm_op_armyknife != palm_operation)) {
-				fprintf(stderr,"Warning: mixing -brsu and -imfd is a bad idea.\n");
-				if (palm_op_noop == palm_operation) palm_operation = palm_op_armyknife;
-			}
-			Purge();
-			break;
 		case 'l':
-			if ((palm_op_noop != palm_operation) &&
-				(palm_op_armyknife != palm_operation)) {
-				fprintf(stderr,"Warning: mixing -brsu and -imfd is a bad idea.\n");
-				if (palm_op_noop == palm_operation) palm_operation = palm_op_armyknife;
-			}
-			if (media_type != palm_media_vfs) media_type = palm_media_ram;
-			List(media_type);
-			break;
 		case 'L':
-			if ((palm_op_noop != palm_operation) &&
-				(palm_op_armyknife != palm_operation)) {
-				fprintf(stderr,"Warning: mixing -brsu and -imfd is a bad idea.\n");
-				if (palm_op_noop == palm_operation) palm_operation = palm_op_armyknife;
+			if (palm_op_noop != palm_operation) {
+				fprintf(stderr,"Error: specify only one of -brsuimfdlL.\n");
+				return 1;
 			}
-			if (media_type != palm_media_vfs) media_type = palm_media_rom;
-			List(media_type);
+			set_operation(optc,&palm_operation,NULL);
+			break;
+
+		/* Modifiers */
+
+		case 'P':
+			sync_flags |= PURGE;
+			break;
+		case 'D':
+			if (vfsdir && vfsdir[0]) sync_flags |= MEDIA_VFS;
+			else sync_flags &= ~(MEDIA_VFS);
+			break;
+		case 'F':
+			sync_flags &= ~MEDIA_MASK;
+			sync_flags |= MEDIA_FLASH;
+			break;
+		case 'O':
+			sync_flags &= ~MEDIA_MASK;
+			sync_flags |= MEDIA_ROM;
 			break;
 
 
-		/* Special modifiers to all */
+
+		/* Misc */
 
 		case 'e':
 			MakeExcludeList(poptGetOptArg(pc));
@@ -1869,10 +1890,6 @@ int main(int argc, char *argv[])
 				fprintf(stderr,"system() failed, aborting.\n");
 				return -1;
 			}
-			break;
-		case 'D':
-			if (vfsdir && !vfsdir[0]) media_type = palm_media_ram;
-			else media_type = palm_media_vfs;
 			break;
 		default:
 			printf("got option %d, arg %s\n", optc, poptGetOptArg(pc));
@@ -1888,37 +1905,98 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	switch (palm_operation) {
-		struct 	stat sbuf;
-		case palm_op_backup:
-			if (stat (dirname, &sbuf) == 0) {
-				if (!S_ISDIR (sbuf.st_mode)) {
-					fprintf(stderr, "   ERROR: '%s' is a file, and not a directory.\n"
-						"   Please supply a directory name when performing a "
-						"backup operation and try again.\n\n",
-						dirname);
-					fprintf(stderr, "   Thank you for using pilot-link.\n");
-					exit(EXIT_FAILURE);
-				}
+	/* collect and count remaining arguments */
+	rargc = 0;
+	rargv = poptGetArgs(pc);
+	if (rargv) {
+		const char **s = rargv;
+		while (*s) {
+			if (verbose) printf("Remaining argument: %s\n",*s);
+			s++;
+			rargc++;
+		}
+	}
+
+	/* sanity checking */
+	switch(palm_operation) {
+		struct stat sbuf;
+	case palm_op_backup:
+	case palm_op_restore:
+		if (stat (dirname, &sbuf) == 0) {
+			if (!S_ISDIR (sbuf.st_mode)) {
+				fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
+					"   Please supply a directory name when performing a "
+					"backup or restore and try again.\n\n",
+					dirname);
+				fprintf(stderr,gracias);
+				return 1;
 			}
-			Connect();
-			Backup(dirname, sync_flags, media_type, unsaved, archive_dir);
-			break;
-		case palm_op_restore:
-			Connect();
-			Restore(dirname);
-			break;
-		case palm_op_armyknife:
-			/* nothing left to do */
-			break;
-		case palm_op_noop:
-			printf("   Insufficient or invalid options supplied.\n");
-			printf("   Please use 'pilot-xfer --help' for more info.\n\n");
-			break;
-        }
+		}
+		/* FALLTHRU */
+	case palm_op_list:
+		if (rargc > 0) {
+			fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlL.\n");
+			fprintf(stderr,gracias);
+			return 1;
+		}
+		break;
+	case palm_op_noop:
+		fprintf(stderr,"   ERROR: Must specify one of -bursimfdlL.\n");
+		fprintf(stderr,gracias);
+		return 1;
+		break;
+	case palm_op_install:
+	case palm_op_merge:
+	case palm_op_fetch:
+	case palm_op_delete:
+		if (rargc < 1) {
+			fprintf(stderr,"   ERROR: -imfd require additional arguments.\n");
+			return 1;
+		}
+		if ((MEDIA_VFS == (sync_flags & MEDIA_VFS)) &&
+			(palm_op_merge == palm_operation)) {
+			fprintf(stderr,"   ERROR: cannot merge to VFS.\n");
+			return 1;
+		}
+		break;
+	}
+
+	/* actual operation */
+	Connect();
+	switch(palm_operation) {
+	case palm_op_noop: /* handled above */
+		exit(1);
+		break;
+	case palm_op_backup:
+		Backup(dirname, sync_flags, unsaved, archive_dir);
+		break;
+	case palm_op_restore:
+		Restore(dirname);
+		break;
+	case palm_op_merge:
+	case palm_op_install:
+	case palm_op_fetch:
+	case palm_op_delete:
+		while (rargv && *rargv) {
+			switch(palm_operation) {
+			case palm_op_merge: Merge(*rargv); break;
+			case palm_op_fetch: Fetch(*rargv); break;
+			case palm_op_delete: Delete(*rargv); break;
+			case palm_op_install: Install(sync_flags,*rargv); break;
+			default: /* impossible */ break;
+			}
+			rargv++;
+		}
+		break;
+	case palm_op_list:
+		List(sync_flags);
+		break;
+	}
+
+	if (sync_flags & PURGE) Purge();
 
 	pi_close(sd);
-	printf("   Thank you for using pilot-link.\n");
+	puts(gracias);
 	return 0;
 }
 
