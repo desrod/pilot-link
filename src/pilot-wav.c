@@ -397,37 +397,39 @@ static void display_help(const char *progname)
 
 int main(int argc, const char *argv[])
 {
-        int 	c,
-		fetch,
-		convert;
+        int 	c;
 
 	const char
                 *progname       = argv[0];
 
         char 	*port		= NULL,
-		*filename	= NULL;
-
-        fetch = convert = FALSE;
-	
-	poptContext po;
-	
-	struct poptOption options[] = {
-	        {"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-        	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-        	{"fetch",	'f', POPT_ARG_STRING, &filename, 'f', "Fetch all wav files or specified wav file from the Palm"},
-	        {"convert",	'c', POPT_ARG_STRING, &filename, 'c', "Convert <file>.wav.pdb file to wav"},
-        	 POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
-	};
+	    	*fetch		= NULL,
+	    	*convert	= NULL;
 
         if (argc < 2 ) {
                 display_help(progname);
         }
+	
+	poptContext pc;
+	
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"fetch", 'f', POPT_ARG_STRING, &fetch, 0,
+		 "Fetch all wav files or specified wav file from the Palm",
+		 "[file|all]"},
+		{"convert", 'c', POPT_ARG_STRING, &convert, 0,
+		 "Convert <file>.wav.pdb file to wav", "file"},
+		POPT_TABLEEND
+	};
 
-	po = poptGetContext("pilot-wav", argc, argv, options, 0);
+	pc = poptGetContext("pilot-wav", argc, argv, options, 0);
 
-	while ((c = poptGetNextOpt(po)) >= 0) {
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 
                 case 'h':
@@ -436,17 +438,25 @@ int main(int argc, const char *argv[])
                 case 'v':
                         print_splash(progname);
                         return 0;
-                case 'f':
-                        do_fetch(port, filename);
-                        break;
-		 case 'c':
-                        pdb_to_wav(filename);
-                        break;
                 default:
                         display_help(progname);
                         return 0;
                 }
         }
+        
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
+	}
+
+	if(convert != NULL)
+		pdb_to_wav(convert);
+
+	if(fetch != NULL)
+		do_fetch(port, fetch);
         
         return 0;
 }

@@ -45,6 +45,7 @@
 #endif
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
+
 #define VEO_COLOUR_CORRECT 0x01
 #define VEO_BIAS           0x12
 
@@ -1099,16 +1100,24 @@ int main (int argc, const char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	        {"list",	'l', POPT_ARG_NONE, NULL, 'l', "List Photos on device"},
-        	{"type",	't', POPT_ARG_STRING, &imgtype, 't', "Specify picture output type (ppm or png)"},
-	        {"name",	'n', POPT_ARG_STRING, &picname, 'n', "Specify output picture by name"},
-        	{"colour",	'c', POPT_ARG_NONE, NULL, 'c', "Colour correct the output colours"},
-	        {"bias",	'b', POPT_ARG_INT, &bias, 'b', "Lighten or darken the image; 0..50   darken image, 50..100 lighten image"},
-        	POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"name", 'n', POPT_ARG_STRING, &picname, 'n',
+		 "Specify output picture by name", "name"},
+		{"list", 'l', POPT_ARG_VAL, &action, VEO_ACTION_LIST,
+		 "List Photos on device", NULL},
+		{"bias", 'b', POPT_ARG_INT, &bias, 'b',
+		 "lighten or darken the image (0..50 darken, 50..100 lighten)", "bias"},
+		{"colour", 'c', POPT_ARG_VAL | POPT_ARGFLAG_OR, &flags,
+		 VEO_COLOUR_CORRECT,
+		 "colour correct the output colours", NULL},
+		{"type", 't', POPT_ARG_STRING, &imgtype, 't',
+		 "Specify picture output type (ppm or png)", "[ppm|png]"},
+		POPT_TABLEEND
 	};
 
 	po = poptGetContext("read-veo", argc, argv, options, 0);
@@ -1124,12 +1133,8 @@ int main (int argc, const char *argv[])
 		   case 'n':
 			 action = VEO_ACTION_OUTPUT_ONE;
 			 break;
-		   case 'l':
-			 action = VEO_ACTION_LIST;
-			 break;
 		   case 'b':
-			 if( bias > 100 || bias < 0 )
-			   {
+			if( bias > 100 || bias < 0 ) {
   				  fprintf (stderr, "Bad bias\n");
 				  exit( EXIT_FAILURE );
 			   }
@@ -1137,30 +1142,31 @@ int main (int argc, const char *argv[])
 			 bias_factor = (double)bias / 100.0;
 			 flags |= VEO_BIAS;
 			 break;
-		   case 'c':
-			 flags |= VEO_COLOUR_CORRECT;
-			 break;
 		   case 't':
-			 if (!strncmp ("png", imgtype, 3))
-			   {
+			if (!strncmp ("png", imgtype, 3)) {
 #ifdef HAVE_PNG
 				  type = VEO_OUT_PNG;
 #else
 				  fprintf (stderr, "%s was built without png support\n", progname );
 #endif
 			   }
-			 else if (!strncmp ("ppm", imgtype, 3))
-			   {
+			else if (!strncmp ("ppm", imgtype, 3)) {
 				  type = VEO_OUT_PPM;
-			   }
-			 else
-			   {
+			} else {
 				  fprintf (stderr, "Unknown output type defaulting to ppm\n");
 				  type = VEO_OUT_PPM;
 			   }
 			 break;
 		  }
 	 }
+
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(po, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
+	}
 
    sd = pilot_connect (port);
 
@@ -1171,18 +1177,15 @@ int main (int argc, const char *argv[])
 	 goto error_close;
 
    buf = pi_buffer_new (sizeof (struct DBInfo));
-   for (;;)
-	 {
+	for (;;) {
 		if (dlp_ReadDBList (sd, 0, 0x80, i, buf) < 0)
 		  break;
         memcpy (&info, buf->data, sizeof(struct DBInfo));
 		i = info.index + 1;
 		if (info.type == pi_mktag ('E', 'Z', 'V', 'I')
-			&& info.creator == pi_mktag ('O', 'D', 'I', '2'))
-		  {
+		    && info.creator == pi_mktag ('O', 'D', 'I', '2')) {
 			 dbcount++;
-			 switch (action)
-			   {
+			switch (action) {
 				case VEO_ACTION_LIST:
 				  printf ("%s\n", info.name);
 				  break;
@@ -1192,8 +1195,7 @@ int main (int argc, const char *argv[])
 					break;
 
 				case VEO_ACTION_OUTPUT:
-				  if (dlp_OpenDB (sd, 0, 0x80 | 0x40, info.name, &db) < 0)
-					{
+				if (dlp_OpenDB (sd, 0, 0x80 | 0x40, info.name, &db) < 0) {
 					   puts ("Unable to open Veo database");
 					   dlp_AddSyncLogEntry (sd, "Unable to open Veo database.\n");
 					   exit (EXIT_FAILURE);
@@ -1204,8 +1206,7 @@ int main (int argc, const char *argv[])
 				  WritePicture(sd, db, type, info.name, progname, flags);
 
 
-				  if (sd)
-					{
+				if (sd) {
 					   /* Close the database */
 					   dlp_CloseDB (sd, db);
 					}
@@ -1215,8 +1216,7 @@ int main (int argc, const char *argv[])
 		  }
 	 }
     pi_buffer_free(buf);
-   if (sd)
-	 {
+	if (sd) {
 		dlp_AddSyncLogEntry (sd,
 							 "Successfully read Veo photos from Palm.\n"
 							 "Thank you for using pilot-link.");
@@ -1228,10 +1228,10 @@ int main (int argc, const char *argv[])
 
    return 0;
 
-error_close:
+  error_close:
    pi_close (sd);
 
-error:
+  error:
    return -1;
 
 }

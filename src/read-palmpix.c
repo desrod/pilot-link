@@ -1,3 +1,4 @@
+/* ex: set tabstop=4 expandtab: */
 /* 
  * read-palmpix.c:  PalmPix image convertor
  *
@@ -34,7 +35,7 @@
 #include "pi-header.h"
 #include "pi-palmpix.h"
 
-#include "getopt.h"
+#include "popt.h"
 
 #ifdef HAVE_PNG
 #include "png.h"
@@ -45,22 +46,6 @@
 #endif
 
 const char *progname;
-
-struct option options[] = {
-	{"port", 	required_argument,  NULL, 'p'},
-	{"help", 	no_argument,        NULL, 'h'},
-	{"version", 	no_argument,        NULL, 'v'},
-	{"name",	required_argument,  NULL, 'n'},
-	{"list",	no_argument,        NULL, 'l'},
-	{"colour",	no_argument,        NULL, 'c'},
-	{"stretch",	no_argument,        NULL, 's'},
-	{"type",        required_argument,  NULL, 't'},
-	{"bias",        required_argument,  NULL, 'b'},
-	{NULL,		no_argument,        NULL, 0}
-};
-
-static const char optstring[] = "p:hvln:t:b:cs";
-
 
 /***********************************************************************
  *
@@ -504,7 +489,6 @@ static void display_help(const char *progname)
 int main (int argc, char **argv) {
 	int 	c, 	/* switch */
 	sd	= -1, 
-	nfileargs,
 	output_type = PALMPIX_OUT_PPM,
 	bias = 50,
 	flags = 0;
@@ -513,12 +497,42 @@ int main (int argc, char **argv) {
 		int, const char *) = write_all;
 
 	const 	char *pixname 	= NULL;
-	char 	*port 		= NULL;
+	char 	*port 		= NULL,
+	    	*file_arg	= NULL,
+	    	*type_str	= NULL;
 	struct 	PilotUser User;
    
 	char *progname = argv[0];
    
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	poptContext pc;
+
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"stretch", 's', POPT_ARG_VAL | POPT_ARGFLAG_OR, &flags,
+		 PALMPIX_HISTOGRAM_STRETCH,
+		 "Do a histogram stretch on the colour planes", NULL},
+		{"colour", 'c', POPT_ARG_VAL | POPT_ARGFLAG_OR, &flags,
+		 PALMPIX_COLOUR_CORRECTION,
+		 "Do a simple colour correction", NULL},
+		{"type", 't', POPT_ARG_STRING, &type_str, 't',
+		 "Specify picture output type (ppm or png)", "[ppm|png]"},
+		{"bias", 'b', POPT_ARG_INT, &bias, 'b',
+		 "lighten or darken the image (0..50 darken, 50..100 lighten)", "bias"},
+		{"list", 'l', POPT_ARG_NONE, NULL, 'l',
+		 "List picture information instead of converting", NULL},
+		{"name", 'n', POPT_ARG_STRING, &pixname, 'n',
+		 "Convert only <name>, and output to STDOUT as type", "name"},
+		POPT_TABLEEND
+	};
+
+	pc = poptGetContext("read-palmpix", argc, argv, options, 0);
+
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 	        switch (c) {
 
         	case 'h':
@@ -527,40 +541,26 @@ int main (int argc, char **argv) {
         	case 'v':
 	        	print_splash(progname);
 		        return 0;
-        	case 's':
-	        	flags |= PALMPIX_HISTOGRAM_STRETCH;
-		        break;
-        	case 'c':
-	        	flags |= PALMPIX_COLOUR_CORRECTION;
-		        break;
-        	case 'p':
-        		free(port);
-	        	port = strdup(optarg);
-        		break;
         	case 'b':
-	        	bias = atoi( optarg );
-			    if( bias < 0 || bias > 100 )
-				 {
+			if( bias < 0 || bias > 100 ) {
 					fprintf( stderr, "Bad bias\n" );
 					exit( EXIT_FAILURE );
 				 }
-			   
-        		break;
-        	case 'l':
-	        	action = list;
 		        break;
         	case 'n':
 	        	action = write_one;
-		        pixname = optarg;
+        		break;
+        	case 'l':
+	        	action = list;
         		break;
 	        case 't':
-		        if( !strncmp( "png", optarg, 3 )) {
+		        if( !strncmp( "png", type_str, 3 )) {
 #ifdef HAVE_PNG	     
         			output_type = PALMPIX_OUT_PNG;
 #else
 	        		fprintf( stderr, "read-palmpix was built without png support\n" );
 #endif
-		        } else if( !strncmp( "ppm", optarg, 3 )) {
+		        } else if( !strncmp( "ppm", type_str, 3 )) {
 			        output_type = PALMPIX_OUT_PPM;
         		} else {
         			fprintf( stderr, "Unknown output type defaulting to ppm\n" );
@@ -572,19 +572,27 @@ int main (int argc, char **argv) {
 	        	return 0;
                 }
         }
-	nfileargs = argc - optind - 1;
 
-	if (nfileargs > 0) {
-		int i;
-
-		for (i = optind; i < argc; i++) {
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
+	}
 	     
-			struct pi_file *f = pi_file_open (argv[i]);
+	if(poptPeekArg(pc) != NULL) {
+		int i = 0;
+		
+		while((file_arg = poptGetArg(pc)) != NULL) {
+			i++;
+			struct pi_file *f = pi_file_open (file_arg);
 			if (f) {
 		  
 				struct DBInfo info;
-				if (nfileargs > 1 && action != write_one)
-					printf ("%s:\n", argv[i]);
+				if ((poptPeekArg(pc) != NULL || i > 1)
+				    && action != write_one)
+					printf ("%s:\n", file_arg);
 		  
 				pi_file_get_info (f, &info);
                 if (info.flags & dlpDBFlagResource) {
@@ -598,14 +606,16 @@ int main (int argc, char **argv) {
 				s.state.getrecord = getrecord_pi_file;
 				s.f = f;
 				read_db (&s.state, n, action, pixname);
-			} else
+				} else {
 				fprintf (stderr,
 					"%s: %s is not a valid record database\n",
-					progname, argv[i]);
+					    progname, file_arg);
+				}
 				pi_file_close (f);
-			} else
+			} else {
 				fprintf (stderr, "%s: can't open %s\n",
-					progname, argv[i]);
+				    progname, file_arg);
+			}
 			}
 	} else  {
 		int db;

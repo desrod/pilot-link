@@ -20,7 +20,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,18 +33,6 @@
 #include "pi-header.h"
 
 static void display_help(const char *progname);
-
-struct option options[] = {
-	{"port", 	required_argument,  NULL, 'p'},
-	{"help", 	no_argument,        NULL, 'h'},
-	{"version", 	no_argument,        NULL, 'v'},
-	{"datebook", 	no_argument,        NULL, 'd'},
-	{"pubtext", 	no_argument,        NULL, 't'},
-	{"file",	required_argument,  NULL, 'f'},
-	{NULL, 		0,                  NULL, 0}
-};
-
-static const char *optstring = "p:hvdt:f:";
 
 char *tclquote(char *in)
 {
@@ -119,7 +107,6 @@ int main(int argc, char *argv[])
 	FILE 	*ical;
 	unsigned char buffer[0xffff];
 	char 	cmd[255],
-		*dbonly 	= NULL,
 		*ptext 		= NULL,
 		*icalfile 	= NULL,
 		*port 		= NULL,
@@ -128,7 +115,29 @@ int main(int argc, char *argv[])
 	struct ToDoAppInfo tai;
 	pi_buffer_t *recbuf;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	poptContext pc;
+
+	struct poptOption options[] = {
+		{"port", 'p', POPT_ARG_STRING, &port, 0,
+		 "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
+		 "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
+		 "Show program version information", NULL},
+		{"datebook", 'd', POPT_ARG_VAL, &read_todos, 0,
+		 "Datebook only, no ToDos", NULL},
+		{"pubtext", 't', POPT_ARG_STRING, &ptext, 0,
+		 "Replace text of items not started with a bullet with <pubtext>",
+		 "pubtext"},
+		{"file", 'f', POPT_ARG_STRING, &icalfile, 0,
+		 "Write the ical formatted data to <file> (overwrites existing <file>)",
+		 "file"},
+		POPT_TABLEEND
+	};
+
+	pc = poptGetContext("read-ical", argc, argv, options, 0);
+
+	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 
 		case 'h':
@@ -137,25 +146,21 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
-		case 'd':
-			dbonly = optarg;
-			read_todos = 0;
-			break;
-		case 't':
-			ptext = optarg;
-			break;
-		case 'f':
-			icalfile = optarg;
-			strncpy(icalfile, optarg, sizeof(icalfile));
-			break;
+	
 		default:
 			display_help(progname);
 			return 0; 	
 		}
 	}
+
+	if (c < -1) {
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
+		    poptStrerror(c));
+		return 1;
+	}
+
 
 	if (icalfile == NULL) {
 		display_help(progname);
