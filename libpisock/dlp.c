@@ -18,6 +18,11 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
 
+/*
+ * Documentation marked with DHS is my fault.
+ *               -- David H. Silber <pilot@SilberSoft.com>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -3099,10 +3104,23 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 
 /***********************************************************************
  *
- * Parameters:  None
+ * Parameters:  sd       -- Socket descriptor as returned by pilot_connect().
+ *              fHandle  -- Database handle as returned by dlp_OpenDB().
+ *              index    -- Specifies record to get.
+ *              buffer   -- Data from specified record.
+ *              id       -- Record ID of record on palm device? (*)
+ *              size     -- Size of data returned in buffer.
+ *              attr     -- Attributes from record on palm device? (*)
+ *              category -- Category from record on palm device? (*)
  *              id       <-- Record ID of record on palm device.
  *              size     <-- Size of data returned in buffer.
  *              attr     <-- Attributes from record on palm device.
+ *              category <-- Category from record on palm device.
+ *
+ * Returns:     A negative number on error, the number of bytes read
+ *		otherwise
+ * (*)  I'm guessing on these.  If you have better information, fix this
+ * documentation.  DHS
  * Turns this request for a particular record in the database into a
  * low-level dlp request.
  *
