@@ -1,6 +1,6 @@
 /* ex: set tabstop=4 expandtab: */
 /*
- * read-veo.c
+ * read-screenshot.c
  *
  * Copyright (c) 2003-2004, Angus Ainslie
  *
@@ -24,7 +24,6 @@
 # include <config.h>
 #endif
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,9 +31,9 @@
 #include <stdint.h>
 
 #include "pi-source.h"
-//#include "pi-veo.h"
 #include "pi-file.h"
 #include "pi-header.h"
+#include "userland.h"
 
 #ifdef HAVE_PNG
 # include "png.h"
@@ -50,64 +49,18 @@
 #define OUT_PNG	 2
 
 struct ss_state {
-	int w, 
-	  h, 
+	int w,
+	  h,
 	  depth;
 	unsigned char *pix_map;
 };
 
-/***********************************************************************
- *
- * Function:	 display_help
- *
- * Summary:	  Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:	  Nothing
- *
- ***********************************************************************/
-static void display_help (const char *progname)
-{
-	printf("	Syncronize your Veo Traveler databases with your desktop machine\n\n");
-	printf("	Usage: %s -p /dev/pilot [options]\n\n", progname);
-	printf("	Options:\n");
-	printf("	  -p, --port <port>		 Use device file <port> to communicate with Palm\n");
-	printf("	  -h, --help				  Display help information for %s\n", progname);
-	printf("	  -v, --version			  Display %s version information\n\n", progname);
-#ifdef HAVE_PNG
-	printf("	  -t, --type [type],		Specify picture output type (ppm or png)\n");
-#endif
-	printf("	Examples: %s -p /dev/pilot -l\n\n", progname);
-
-	exit (0);
-}
-
-/***********************************************************************
- *
- * Function:	 fmt_date
- *
- * Summary:	  Format the output date on the images
- *
- * Parameters:
- *
- * Returns:
- *
-static const char *fmt_date (struct Veo *v)
-{
-	static char buf[24];
-
-	sprintf (buf, "%d-%02d-%02d", v->year, v->month, v->day);
-	return buf;
-
-}
- ***********************************************************************/
 
 /***********************************************************************
  *
  * Function:	protect_files
  *
- * Summary:	  Adjust output file name so as to not overwrite an exsisting 
+ * Summary:	  Adjust output file name so as to not overwrite an exsisting
  *				  file
  *
  * Parameters:  filename and file extension
@@ -173,10 +126,10 @@ void write_png ( char *fname, struct ss_state *state )
 	png_structp png_ptr;
 	png_infop info_ptr;
 	FILE *f;
-	
+
 	if( state->depth < 8 )
 		gray_buf = malloc( state->w );
-	
+
 	png_ptr = png_create_write_struct
 		(PNG_LIBPNG_VER_STRING, png_voidp_NULL,
 		png_error_ptr_NULL, png_error_ptr_NULL);
@@ -199,7 +152,7 @@ void write_png ( char *fname, struct ss_state *state )
 	}
 
 	f = fopen (fname, "wb");
-	  
+
 	png_init_io (png_ptr, f);
 
 	if( state->depth < 8 )
@@ -248,9 +201,9 @@ void write_ppm ( char *fname, struct ss_state *state)
 {
 	int i;
 	FILE *f;
-	
+
 	f = fopen (fname, "wb");
-	  
+
 	fprintf (f, "P6\n# ");
 
 	fprintf (f, "%s\n", fname );
@@ -261,11 +214,11 @@ void write_ppm ( char *fname, struct ss_state *state)
 
 	for( i = 0; i < 3*state->h*state->w; i += 3 )
 		fwrite( &state->pix_map[i], 3, 1, f);
-	
+
 	fclose( f );
 }
 
-	  
+
 /***********************************************************************
  *
  * Function:	 WritePictures
@@ -355,10 +308,10 @@ void WritePictures (int sd, int db, int type )
 					/* get next */
 					fprintf( stderr, "Unknown record" );
 					continue;
-				} 
+				}
 			}
-	  
-			pixelBuf 
+
+			pixelBuf
 			= pi_buffer_new (state.h * state.w * state.depth / 8 + 10 + 1024);
 
 	//		pixelBuf = malloc( state.h * state.w * state.depth / 8 + 10 + 1024 );
@@ -374,12 +327,12 @@ void WritePictures (int sd, int db, int type )
 				memcpy( pixelBuf->data, &inBuf->data[10], len - 10 );
 			else
 				memcpy( pixelBuf->data, inBuf->data, len );
-		  
+
 			for( i=1; i< recs; i++ )
 			{
 				len =
 				dlp_ReadRecordByIndex (sd, db, idx, inBuf, 0, &attr, &category);
-				memcpy( &pixelBuf->data[i*61440-10], inBuf->data, len );	  
+				memcpy( &pixelBuf->data[i*61440-10], inBuf->data, len );
 				idx++;
 			}
 
@@ -393,7 +346,7 @@ void WritePictures (int sd, int db, int type )
 
 			if( state.depth == 8 )
 			memcpy( clut, &inBuf->data[len-1024], 1024 );
-	  
+
 			switch( state.depth )
 			{
 				case 1:
@@ -409,22 +362,22 @@ void WritePictures (int sd, int db, int type )
 							val = mask - val;
 							/* stretch */
 							val *= (255/mask);
-			 
+
 							state.pix_map[3*(i*(8/state.depth)+k)] = val;
 							state.pix_map[3*(i*(8/state.depth)+k)+1] = val;
 							state.pix_map[3*(i*(8/state.depth)+k)+2] = val;
 						}
 		 			}
 			 	break;
-			 
+
 				case 8:
 					for( i = 0; i < state.h*state.w; i++)
 					{
-						state.pix_map[3*i] = 
+						state.pix_map[3*i] =
 						*(1 + (char *)&clut[pixelBuf->data[i]]);
-						state.pix_map[3*i+1] = 
+						state.pix_map[3*i+1] =
 						*(2 + (char *)&clut[pixelBuf->data[i]]);
-						state.pix_map[3*i+2] = 
+						state.pix_map[3*i+2] =
 						*(3 + (char *)&clut[pixelBuf->data[i]]);
 					}
 				break;
@@ -443,12 +396,12 @@ void WritePictures (int sd, int db, int type )
 					fprintf( stderr, "I'm out of my depth :)\n" );
 				break;
 			}
-	  
+
 			if( type == OUT_PPM )
 				write_ppm( fname, &state );
 			#ifdef HAVE_PNG
 			else
-				write_png( fname, &state );		 
+				write_png( fname, &state );
 			#endif
 
 			pi_buffer_free (pixelBuf);
@@ -461,71 +414,65 @@ void WritePictures (int sd, int db, int type )
 		return;
 
 	pi_buffer_free (inBuf);
-}	
+}
 
 int main (int argc, const char *argv[])
 {
 	int c,			/* switch */
 	 db,
-	 sd = -1, 
+	 sd = -1,
 	 dbcount = 0,
 	  type = OUT_PPM;
 
 	const char
-                *progname       = argv[0],
-                *port           = NULL,
                 *ptype;
 
 	struct PilotUser User;
 	unsigned char buffer[0xffff];
-	
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-		{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+		USERLAND_RESERVED_OPTIONS
 		{"type", 	't', POPT_ARG_STRING, &ptype, 0, "Specify picture output type (ppm or png)"},
-		POPT_AUTOHELP
-        	{ NULL, 0, 0, NULL, 0 }
+		POPT_TABLEEND
 	};
 
 	po = poptGetContext("read-screenshot", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"\n\n");
+
+	if (argc<2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		switch (c) {
-			case 'h':
-				display_help(progname);
-			return 0;
-			case 'v':
-				print_splash(progname);
-			return 0;
-			case 'p':
-				port = strdup(optarg);
-			break;
-			case 't':
-				if (!strncmp ("png", ptype, 3))
-				{
-					#ifdef HAVE_PNG
-					type = OUT_PNG;
-					#else
-					fprintf (stderr, "%s was built without png support\n", progname);
-					#endif
-				}
-				else if (!strncmp ("ppm", ptype, 3))
-				{
-					type = OUT_PPM;
-				}
-				else
-				{
-					fprintf (stderr, "Unknown output type defaulting to ppm\n");
-					type = OUT_PPM;
-				}
-			break;
-		  }
-	 }
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
+	}
+	if (c<-1) {
+		plu_badoption(po,c);
+	}
 
-	sd = pilot_connect (port);
+	if (!strncmp ("png", ptype, 3))
+	{
+#ifdef HAVE_PNG
+		type = OUT_PNG;
+#else
+		fprintf (stderr, "   ERROR: read-screenshot was built without png support.\n");
+#endif
+	}
+	else if (!strncmp ("ppm", ptype, 3))
+	{
+		type = OUT_PPM;
+	}
+	else
+	{
+		fprintf (stderr, "   ERROR: Unknown output type, defaulting to ppm\n");
+		type = OUT_PPM;
+	}
+
+	sd = plu_connect ();
 
 	if (sd < 0)
 	 	goto error;
@@ -535,31 +482,33 @@ int main (int argc, const char *argv[])
 
 	if (dlp_OpenDB (sd, 0, dlpOpenRead, "ScreenShotDB", &db) < 0)
 	{
-		puts ("Unable to open Screen Shot database");
+		fprintf (stderr,"   ERROR: Unable to open Screen Shot database on Palm.\n");
 		dlp_AddSyncLogEntry (sd, "Unable to open Screen Shot database.\n");
-		exit (EXIT_FAILURE);
+		goto error_close;
 	}
-	
+
 	dlp_ReadAppBlock (sd, db, 0, buffer, 0xffff);
-	
+
 	WritePictures (sd, db, type );
-	
+
 	if (sd)
 	{
 		/* Close the database */
 		dlp_CloseDB (sd, db);
 	 }
-	
+
 	if (sd)
 	{
 		dlp_AddSyncLogEntry (sd,
-							 "Successfully read Veo photos from Palm.\n"
+							 "Successfully read screenshots from Palm.\n"
 							 "Thank you for using pilot-link.");
 		dlp_EndOfSync (sd, 0);
 		pi_close (sd);
 	}
 
-	printf ("\nList complete. %d files found.\n", dbcount);
+	if (!plu_quiet) {
+		printf ("\nList complete. %d files found.\n", dbcount);
+	}
 
 	return 0;
 

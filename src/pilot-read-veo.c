@@ -24,7 +24,6 @@
 # include <config.h>
 #endif
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +34,7 @@
 #include "pi-veo.h"
 #include "pi-file.h"
 #include "pi-header.h"
+#include "userland.h"
 
 #ifdef HAVE_PNG
 # include "png.h"
@@ -53,38 +53,6 @@ uint8_t redLUT[256], greenLUT[256], blueLUT[256];
 
 double bias_factor = 0.50;
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-   printf("   Syncronize your Veo Traveler databases with your desktop machine\n\n");
-   printf("   Usage: %s -p /dev/pilot [options]\n\n", progname);
-   printf("   Options:\n");
-   printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-   printf("     -h, --help              Display help information for %s\n", progname);
-   printf("     -v, --version           Display %s version information\n\n", progname);
-#ifdef HAVE_PNG
-   printf("     -t, --type [type],      Specify picture output type (ppm or png)\n");
-#endif
-   printf("     -l                      List Photos on device\n");
-   printf("     -b, --bias [num],       lighten or darken the image\n");
-   printf("                             0..50   darken image\n");
-   printf("                             50..100 lighten image\n");
-   printf("     -c, --colour,           colour correct the output colours\n");
-   printf("     -n, --name [name],      Specify output picture by name\n");
-   printf("   Examples: %s -p /dev/pilot -l\n\n", progname);
-
-   exit (0);
-}
 
 /***********************************************************************
  *
@@ -110,7 +78,7 @@ static const char *fmt_date (struct Veo *v)
  *
  * Function:	protect_files
  *
- * Summary:     Adjust output file name so as to not overwrite an exsisting 
+ * Summary:     Adjust output file name so as to not overwrite an exsisting
  *              file
  *
  * Parameters:  filename and file extension
@@ -493,7 +461,7 @@ static int
     * uncompressed record ??? */
    tmpRow = pi_buffer_new (5120);
 
-   len = dlp_ReadRecordByIndex (v->sd, v->db, 1 + r / 4, tmpRow, 0, 
+   len = dlp_ReadRecordByIndex (v->sd, v->db, 1 + r / 4, tmpRow, 0,
 								&attr, &category);
 
    if (len < 0)
@@ -502,7 +470,7 @@ static int
    Decode (tmpRow->data, row, v->width);
 
    pi_buffer_free(tmpRow);
- 
+
    return (len);
 }
 
@@ -512,8 +480,8 @@ static int
 /***********************************************************************
  *
  * Function:    Bias
- * 
- *              Bias is based on the Fast Alternative to Perlin's Bias 
+ *
+ *              Bias is based on the Fast Alternative to Perlin's Bias
  *              algorithm in Graphics Gems IV by
  *              Christophe Schlick schlick@labri.u-bordeuax.fr
  *
@@ -528,13 +496,13 @@ static void Bias( double bias, int width, int height, uint8_t *data )
 {
    int i;
    double num, denom, t;
-      
+
    for( i=0; i<width*height; i++ )
      {
 	t = (double)data[i]/256.0;
 	num = t;
 	denom = (1.0/bias - 2) * (1.0 - t) + 1;
-	data[i] = num/denom * 256.0;     
+	data[i] = num/denom * 256.0;
      }
 }
 
@@ -557,11 +525,11 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 
 	gMin = rMin = bMin = 255;
 	gMax = rMax = bMax = 0;
-		
+
 	tmpRow = malloc( 2560 );
-	
+
 	GetPicData( 0, 0, v, tmpRow );
-	
+
 	for( i=0; i<width; i += 2 )
 	{
 		gMin = min( gMin, tmpRow[i] );
@@ -572,14 +540,14 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 		rMax = max( rMax, tmpRow[i+width] );
 		bMax = max( bMax, tmpRow[i+1] );
 		gMax = max( gMax, tmpRow[i+width+1] );
-		
+
 		rMean += tmpRow[i+width];
 		gMean += tmpRow[i];
 		gMean += tmpRow[i+width+1];
 		bMean += tmpRow[i+1];
-	}	
-	
-	
+	}
+
+
 	if( width == 640 )
 	{
 		for( i=width*2; i<width*3; i += 2 )
@@ -591,17 +559,17 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 			gMax = max( gMax, tmpRow[i] );
 			rMax = max( rMax, tmpRow[i+width] );
 			bMax = max( bMax, tmpRow[i+1] );
-			gMax = max( gMax, tmpRow[i+width+1] );		
+			gMax = max( gMax, tmpRow[i+width+1] );
 
 			rMean += tmpRow[i+width];
 			gMean += tmpRow[i];
 			gMean += tmpRow[i+width+1];
 			bMean += tmpRow[i+1];
 		}
-	}	
+	}
 
 	GetPicData( 0, height/2, v, tmpRow );
-	
+
 	for( i=0; i<width; i += 2 )
 	{
 		gMin = min( gMin, tmpRow[i] );
@@ -611,14 +579,14 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 		gMax = max( gMax, tmpRow[i] );
 		rMax = max( rMax, tmpRow[i+width] );
 		bMax = max( bMax, tmpRow[i+1] );
-		gMax = max( gMax, tmpRow[i+width+1] );		
+		gMax = max( gMax, tmpRow[i+width+1] );
 
 		rMean += tmpRow[i+width];
 		gMean += tmpRow[i];
 		gMean += tmpRow[i+width+1];
 		bMean += tmpRow[i+1];
-	}	
-	
+	}
+
 	if( width == 640 )
 	{
 		for( i=width*2; i<width*3; i += 2 )
@@ -630,17 +598,17 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 			gMax = max( gMax, tmpRow[i] );
 			rMax = max( rMax, tmpRow[i+width] );
 			bMax = max( bMax, tmpRow[i+1] );
-			gMax = max( gMax, tmpRow[i+width+1] );		
+			gMax = max( gMax, tmpRow[i+width+1] );
 
 			rMean += tmpRow[i+width];
 			gMean += tmpRow[i];
 			gMean += tmpRow[i+width+1];
 			bMean += tmpRow[i+1];
 		}
-	}	
+	}
 
 	GetPicData( 0, height-1, v, tmpRow );
-	
+
 	for( i=0; i<width; i += 2 )
 	{
 		gMin = min( gMin, tmpRow[i] );
@@ -650,14 +618,14 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 		gMax = max( gMax, tmpRow[i] );
 		rMax = max( rMax, tmpRow[i+width] );
 		bMax = max( bMax, tmpRow[i+1] );
-		gMax = max( gMax, tmpRow[i+width+1] );		
+		gMax = max( gMax, tmpRow[i+width+1] );
 
 		rMean += tmpRow[i+width];
 		gMean += tmpRow[i];
 		gMean += tmpRow[i+width+1];
 		bMean += tmpRow[i+1];
-	}	
-	
+	}
+
 	if( width == 640 )
 	{
 		for( i=width*2; i<width*3; i += 2 )
@@ -669,26 +637,26 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 			gMax = max( gMax, tmpRow[i] );
 			rMax = max( rMax, tmpRow[i+width] );
 			bMax = max( bMax, tmpRow[i+1] );
-			gMax = max( gMax, tmpRow[i+width+1] );		
+			gMax = max( gMax, tmpRow[i+width+1] );
 
 			rMean += tmpRow[i+width];
 			gMean += tmpRow[i];
 			gMean += tmpRow[i+width+1];
 			bMean += tmpRow[i+1];
 		}
-	}	
+	}
 
 	rMean = rMean / ( 640 * 3 );
 	gMean = gMean / ( 640 * 6 );
 	bMean = bMean / ( 640 * 3 );
-	
+
 	maxMean = max( gMean-gMin, max( bMean-bMin, rMean-rMin ));
 //	maxMean = max( gMean, max( bMean, rMean ));
-		
+
 	rInc = maxMean / (rMean-rMin);
    	gInc = maxMean / (gMean-gMin);
    	bInc = maxMean / (bMean-bMin);
-	
+
    rCur = 0;
    gCur = 0;
    bCur = 0;
@@ -697,7 +665,7 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 	 {
 	 	if( i < rMin )
 		 	red[i] = 0;
-		else 
+		else
 		{
 			if( rCur < redCeiling )
 			  red[i] = rCur;
@@ -718,7 +686,7 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
 
 			gCur += gInc;
 		}
-		
+
 		if( i < bMin )
 			blue[i] = 0;
 		else
@@ -909,7 +877,7 @@ int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row)
 
    if (flags & VEO_BIAS)
 	 Bias( bias_factor, v->width*3, 1, row );
-   
+
    return (1);
 }
 
@@ -1078,34 +1046,27 @@ int main (int argc, const char *argv[])
    int  c,			/* switch */
 	db,
 	i = 0,
-	sd = -1, 
-	action = VEO_ACTION_OUTPUT, 
-	dbcount = 0, 
+	sd = -1,
+	action = VEO_ACTION_OUTPUT,
+	dbcount = 0,
 	type = VEO_OUT_PPM,
 	bias = 50;
 	long flags = 0;
 	struct DBInfo info;
 	pi_buffer_t *buf;
 
-	const char 
-                *progname = argv[0],
-                *port = NULL,
+	const char
                 *picname = NULL;
 
 	char *imgtype = NULL;
-	
+
 	struct PilotUser User;
 	unsigned char buffer[0xffff];
 
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
+		USERLAND_RESERVED_OPTIONS
 		{"name", 'n', POPT_ARG_STRING, &picname, 'n',
 		 "Specify output picture by name", "name"},
 		{"list", 'l', POPT_ARG_VAL, &action, VEO_ACTION_LIST,
@@ -1121,24 +1082,26 @@ int main (int argc, const char *argv[])
 	};
 
 	po = poptGetContext("read-veo", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"\n\n"
+		"   Synchronize your Veo Traveler databases with your desktop machine.\n"
+		"   Output defaults to ppm.\n\n");
+
+	if (argc<2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
-		   case 'h':
-			 display_help(progname);
-			 return 0;
-		   case 'v':
-			 print_splash(progname);
-			 return 0;
 		   case 'n':
 			 action = VEO_ACTION_OUTPUT_ONE;
 			 break;
 		   case 'b':
 			if( bias > 100 || bias < 0 ) {
-  				  fprintf (stderr, "Bad bias\n");
-				  exit( EXIT_FAILURE );
+  				  fprintf (stderr, "   ERROR: Bad bias value %d, using 50.\n",bias);
+				  bias = 50;
 			   }
-			 
+
 			 bias_factor = (double)bias / 100.0;
 			 flags |= VEO_BIAS;
 			 break;
@@ -1147,13 +1110,14 @@ int main (int argc, const char *argv[])
 #ifdef HAVE_PNG
 				  type = VEO_OUT_PNG;
 #else
-				  fprintf (stderr, "%s was built without png support\n", progname );
+				  fprintf (stderr, "   ERROR: read-veo was built without png support\n");
+				  type = VEO_OUT_PPM;
 #endif
 			   }
 			else if (!strncmp ("ppm", imgtype, 3)) {
 				  type = VEO_OUT_PPM;
 			} else {
-				  fprintf (stderr, "Unknown output type defaulting to ppm\n");
+				  fprintf (stderr, "   ERROR: Unknown output type, defaulting to ppm\n");
 				  type = VEO_OUT_PPM;
 			   }
 			 break;
@@ -1161,14 +1125,10 @@ int main (int argc, const char *argv[])
 	 }
 
 	if (c < -1) {
-		/* an error occurred during option processing */
-		fprintf(stderr, "%s: %s\n",
-		    poptBadOption(po, POPT_BADOPTION_NOALIAS),
-		    poptStrerror(c));
-		return 1;
+		plu_badoption(po,c);
 	}
 
-   sd = pilot_connect (port);
+	sd = plu_connect ();
 
    if (sd < 0)
 	 goto error;
@@ -1196,14 +1156,14 @@ int main (int argc, const char *argv[])
 
 				case VEO_ACTION_OUTPUT:
 				if (dlp_OpenDB (sd, 0, 0x80 | 0x40, info.name, &db) < 0) {
-					   puts ("Unable to open Veo database");
+					   fprintf (stderr,"   ERROR:Unable to open Veo database on Palm.\n");
 					   dlp_AddSyncLogEntry (sd, "Unable to open Veo database.\n");
-					   exit (EXIT_FAILURE);
+					   goto error_close;
 					}
 
 				  dlp_ReadAppBlock (sd, db, 0, buffer, 0xffff);
 
-				  WritePicture(sd, db, type, info.name, progname, flags);
+				  WritePicture(sd, db, type, info.name, "read-veo", flags);
 
 
 				if (sd) {
@@ -1224,7 +1184,9 @@ int main (int argc, const char *argv[])
 		pi_close (sd);
 	 }
 
-   printf ("\nList complete. %d files found.\n", dbcount);
+	if (!plu_quiet) {
+		printf ("\nList complete. %d files found.\n", dbcount);
+	}
 
    return 0;
 
