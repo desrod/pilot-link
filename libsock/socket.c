@@ -40,6 +40,7 @@
 #include "pi-slp.h"
 #include "pi-padp.h"
 #include "pi-cmp.h"
+#include "pi-net.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 
@@ -128,14 +129,29 @@ protocol_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 	ps->queue_len++;
 }
 
+static void
+protocol_init_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
+{
+	ps->init_queue = realloc(ps->init_queue, (sizeof(struct pi_protocol *)) * ps->init_len + 1);
+	ps->init_queue[ps->init_len] = prot;
+	ps->init_len++;
+}
+
 static struct pi_protocol *
 protocol_queue_find (struct pi_socket *ps, int level) 
 {
 	int i;
-	
-	for (i = 0; i < ps->queue_len; i++) {
-		if (ps->protocol_queue[i]->level == level)
-			return ps->protocol_queue[i];
+
+	if (ps->connected) {
+		for (i = 0; i < ps->queue_len; i++) {
+			if (ps->protocol_queue[i]->level == level)
+				return ps->protocol_queue[i];
+		}
+	} else {
+		for (i = 0; i < ps->init_len; i++) {
+			if (ps->init_queue[i]->level == level)
+				return ps->init_queue[i];
+		}
 	}
 
 	return NULL;
@@ -146,18 +162,28 @@ protocol_queue_find_next (struct pi_socket *ps, int level)
 {
 	int i;
 	
-	if (ps->queue_len == 0)
+	if (ps->connected && ps->queue_len == 0)
 		return NULL;
-	
-	if (level == 0) {
-		return ps->protocol_queue[0];
-	}
-	
-	for (i = 0; i < ps->queue_len - 1; i++) {
-		if (ps->protocol_queue[i]->level == level)
-			return ps->protocol_queue[i + 1];
-	}
+	else if (!ps->connected && ps->init_len == 0)
+		return NULL;
 
+	if (ps->connected && level == 0)
+		return ps->protocol_queue[0];
+	else if (!ps->connected && level == 0)
+		return ps->init_queue[0];
+	
+	if (ps->connected) {
+		for (i = 0; i < ps->queue_len - 1; i++) {
+			if (ps->protocol_queue[i]->level == level)
+				return ps->protocol_queue[i + 1];
+		}
+	} else {
+		for (i = 0; i < ps->init_len - 1; i++) {
+			if (ps->init_queue[i]->level == level)
+				return ps->init_queue[i + 1];
+		}
+	}
+	
 	return NULL;
 }
 
@@ -224,26 +250,41 @@ int pi_socket(int domain, int type, int protocol)
 		return -1;
 	}
 
-	/* Build the protocol queue */
+	/* Build the protocol queues */
 	ps->protocol_queue = NULL;
 	ps->queue_len = 0;
+	ps->init_queue = NULL;
+	ps->init_len = 0;
 
+	/* The connected protocol queue */
 	switch (protocol) {
-	case PI_PF_DLP:
 	case PI_PF_PADP:
 		prot = padp_protocol ();
 		protocol_queue_add (ps, prot);
-	case PI_PF_SLP_PADP:
+	case PI_PF_SLP:
 		prot = slp_protocol ();
 		protocol_queue_add (ps, prot);
 		break;
-	case PI_PF_SLP_RPC:
-		prot = slp_protocol ();
+	case PI_PF_NET:
+		prot = net_protocol ();
 		protocol_queue_add (ps, prot);
 		break;
-	case PI_PF_SLP_LOOP:
+	}
+
+	/* The initialization protocol queue */
+	switch (protocol) {
+	case PI_PF_PADP:
+	case PI_PF_SLP:
+		prot = padp_protocol ();
+		protocol_init_queue_add (ps, prot);
 		prot = slp_protocol ();
-		protocol_queue_add (ps, prot);
+		protocol_init_queue_add (ps, prot);
+		ps->init = PI_INIT_CMP;
+		break;
+	case PI_PF_NET:
+		prot = net_protocol ();
+		protocol_init_queue_add (ps, prot);
+		ps->init = PI_INIT_NET;
 		break;
 	}
 
@@ -251,7 +292,9 @@ int pi_socket(int domain, int type, int protocol)
 	ps->device = pi_serial_device ();
 	prot = ps->device->protocol (ps->device);
 	protocol_queue_add (ps, prot);
-
+	prot = ps->device->protocol (ps->device);
+	protocol_init_queue_add (ps, prot);
+	
 	/* Initialize the rest of the fields */
 	ps->laddr = NULL;
 	ps->laddrlen = 0;
@@ -330,6 +373,14 @@ struct pi_socket *pi_socket_copy(struct pi_socket *ps)
 		
 		prot = ps->protocol_queue[i]->dup (ps->protocol_queue[i]);
 		protocol_queue_add(new_ps, prot);
+	}
+	new_ps->init_queue = NULL;
+	new_ps->init_len = 0;
+	for (i = 0; i < ps->init_len; i++) {
+		struct pi_protocol *prot;
+		
+		prot = ps->init_queue[i]->dup (ps->init_queue[i]);
+		protocol_init_queue_add(new_ps, prot);
 	}
 	new_ps->device = ps->device->dup (ps->device);
 	
@@ -677,8 +728,6 @@ int pi_close(int pi_sd)
 	}
 
 	result = ps->device->close (ps);
-	printf ("Result: %d\n", result);
-	
 	if (result == 0) {
 		
 		if (ps == psl) {

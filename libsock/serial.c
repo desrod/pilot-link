@@ -35,7 +35,7 @@
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
-#include "pi-inetserial.h"
+#include "pi-net.h"
 #include "pi-padp.h"
 #include "pi-cmp.h"
 #include "pi-dlp.h"
@@ -122,7 +122,6 @@ static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 	data = (struct pi_serial_data *)dev->data;
 	new_data->impl = data->impl;
 	new_data->fd = dup(data->fd);
-	printf ("New FD %d\n", new_data->fd);
 	new_data->rate = data->rate;
 	new_data->establishrate = data->establishrate;
 	new_data->establishhighrate = data->establishhighrate;
@@ -182,7 +181,6 @@ static int
 pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
-	struct cmp c;
 	struct pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 	char *rate_env;
 
@@ -206,9 +204,8 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 		data->establishrate = data->rate = 57600;	/* Mandatory SysPkt connection rate */
 	}
 
-	if (data->impl.open(ps, pa, addrlen) == -1) {
+	if (data->impl.open(ps, pa, addrlen) == -1)
 		return -1;	/* errno already set */
-	}
 
 	ps->raddr = malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
@@ -218,34 +215,9 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	ps->laddrlen = addrlen;
 
 	if (ps->type == PI_SOCK_STREAM) {
-
-		if (cmp_wakeup(ps, 38400) < 0)	/* Assume this box can't go over 38400 */
-			return -1;
-
-		if (cmp_rx(ps, &c) < 0)
-			return -1;	/* failed to read, errno already set */
-
-		if (c.type == 2) {
-			/* CMP init packet */
-
-			if (c.flags & 0x80) {
-				/* Change baud rate */
-				data->rate = c.baudrate;
-				if (data->impl.changebaud(ps) < 0)
-					return -1;
-
-			}
-
-		} else if (c.type == 3) {
-			/* CMP abort packet -- the other side didn't like us */
-			data->impl.close(ps);
-
-#ifdef DEBUG
-			fprintf(stderr,
-				"Received CMP abort from client\n");
-#endif
-			errno = -EIO;
-			return -1;
+		switch (ps->init) {
+		case PI_INIT_CMP:
+		case PI_INIT_NET:
 		}
 	}
 	ps->connected = 1;
@@ -342,9 +314,9 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	struct pi_socket *accept = NULL;
 
 	if (ps->type == PI_SOCK_STREAM) {
-		struct timeval tv;
 		struct cmp c;
-
+		struct timeval tv;
+		
 		/* Wait for data */
 		if (data->impl.poll(ps, 0) < 0) {
 			errno = ETIMEDOUT;
@@ -353,56 +325,63 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 
 		accept = pi_socket_copy(ps);
 
-		/* Check for a proper cmp connection */
-		if (cmp_rx(accept, &c) < 0)
-			goto fail;	/* Failed to establish connection, errno already set */
+		switch (ps->init) {
+		case PI_INIT_CMP:
+			if (cmp_rx(ps, &c) < 0)
+				return -1;	/* Failed to establish connection, errno already set */
 
-		if ((c.version & 0xFF00) == 0x0100) {
-			if ((unsigned long) data->establishrate >
-			    c.baudrate) {
-				if (!data->establishhighrate) {
-					fprintf(stderr,
-						"Rate %d too high, dropping to %ld\n",
-						data->establishrate,
-						c.baudrate);
-					data->establishrate = c.baudrate;
+			if ((c.version & 0xFF00) == 0x0100) {
+				if ((unsigned long) data->establishrate >
+				    c.baudrate) {
+					if (!data->establishhighrate) {
+						fprintf(stderr,
+							"Rate %d too high, dropping to %ld\n",
+							data->establishrate,
+							c.baudrate);
+						data->establishrate = c.baudrate;
+					}
 				}
-			}
 
-			data->rate = data->establishrate;
-			accept->version = c.version;
+				data->rate = data->establishrate;
+				ps->version = c.version;
 
-			if (cmp_init(accept, data->rate) < 0)
-				goto fail;
+				if (cmp_init(ps, data->rate) < 0)
+					goto fail;
 
-			/* We always reconfigure our port, no matter what */
-			if (data->impl.changebaud(accept) < 0)
-				goto fail;
+				/* We always reconfigure our port, no matter what */
+				if (data->impl.changebaud(ps) < 0)
+					goto fail;
 
-			/* Palm device needs some time to reconfigure its port */
+				/* Palm device needs some time to reconfigure its port */
 #ifdef WIN32
-			Sleep(100);
+				Sleep(100);
 #else
-			tv.tv_sec = 0;
-			tv.tv_usec = 50000;
-			select(0, 0, 0, 0, &tv);
+				tv.tv_sec = 0;
+				tv.tv_usec = 50000;
+				select(0, 0, 0, 0, &tv);
 #endif
+			} else {
+				cmp_abort(ps, 0x80);	/* 0x80 means the comm version wasn't compatible */
 
-			accept->connected = 1;
-			accept->accepted = 1;
-			accept->dlprecord = 0;
-		} else {
-			cmp_abort(ps, 0x80);	/* 0x80 means the comm version wasn't compatible */
+				fprintf(stderr,
+					"pi_socket connection failed due to comm version mismatch\n");
+				fprintf(stderr,
+					" (expected version 01xx, got %4.4X)\n",
+					c.version);
 
-			fprintf(stderr,
-				"pi_socket connection failed due to comm version mismatch\n");
-			fprintf(stderr,
-				" (expected version 01xx, got %4.4X)\n",
-				c.version);
-
-			errno = ECONNREFUSED;
-			goto fail;
+				errno = ECONNREFUSED;
+				goto fail;
+			}
+			break;
+		case PI_INIT_NET:
+			if (net_rx_handshake(ps) < 0)
+				goto fail;
+			break;
 		}
+
+		accept->connected = 1;
+		accept->accepted = 1;
+		accept->dlprecord = 0;
 	} else {
 		accept = pi_socket_copy(ps);
 

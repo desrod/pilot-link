@@ -27,6 +27,7 @@
 #include "pi-cmp.h"
 #include "pi-serial.h"
 
+
 /***********************************************************************
  *
  * Function:    cmp_rx
@@ -42,7 +43,7 @@ int cmp_rx(struct pi_socket *ps, struct cmp *c)
 {
 	int l;
 	unsigned char cmpbuf[10];
-
+ 
 	Begin(cmp_rx);
 
 	printf ("CMP_RX\n");
@@ -185,7 +186,8 @@ void cmp_dump(unsigned char *cmp, int rxtx)
 	if ((get_byte(cmp) < 1) || (get_byte(cmp) > 3))
 		fprintf(stderr, "UNK %d", get_byte(cmp));
 	fprintf(stderr,
-		"  Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
+		"  Type: %2.2X Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
+		get_byte(cmp),
 		get_byte(cmp + 1), get_long(cmp + 2), get_long(cmp + 6),
 		get_long(cmp + 6));
 

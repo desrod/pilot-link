@@ -28,6 +28,7 @@ libpisock_la_SOURCES =  \
 	md5.c		\
 	memo.c		\
 	money.c		\
+	net.c		\
 	padp.c		\
 	pi-file.c	\
 	pi-header.c	\

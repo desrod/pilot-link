@@ -18,10 +18,14 @@ extern "C" {
 		unsigned long baudrate;
 	};
 
+	extern int cmp_rx_handshake
+	    PI_ARGS((struct pi_socket *ps));
+	extern int cmp_tx_handshake
+	    PI_ARGS((struct pi_socket *ps));
+
 	extern int cmp_rx PI_ARGS((struct pi_socket * ps, struct cmp * c));
 	extern int cmp_init PI_ARGS((struct pi_socket * ps, int baudrate));
 	extern int cmp_abort PI_ARGS((struct pi_socket * ps, int reason));
-
 	extern int cmp_wakeup
 	    PI_ARGS((struct pi_socket * ps, int maxbaud));
 

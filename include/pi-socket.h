@@ -12,19 +12,22 @@ extern "C" {
 #define PI_AF_PILOT             0x00
 
 #define PI_PF_DEV               0x01
-#define PI_PF_SLP_RPC		0x02
-#define PI_PF_SLP_PADP		0x03
-#define PI_PF_SLP_LOOP		0x04
-#define PI_PF_PADP		0x05
-#define PI_PF_DLP		0x06
+#define PI_PF_SLP		0x02
+#define PI_PF_PADP		0x03
+#define PI_PF_NET		0x04
 
 #define PI_SOCK_STREAM		0x0010
 #define PI_SOCK_RAW		0x0030
+
+#define PI_INIT_CMP 0x01
+#define PI_INIT_NET 0x02
 
 enum PiOptLevels {
 	PI_LEVEL_SOCKET,
 	PI_LEVEL_SLP,
 	PI_LEVEL_PADP,
+	PI_LEVEL_NET,
+	PI_LEVEL_CMP,
 	PI_LEVEL_DLP
 };
 

@@ -12,12 +12,15 @@ main(int argc, char *argv[])
 	struct SysInfo sys;
 	struct PilotUser user;
 	
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET))) {
 		return -1;
 	}
 
 	addr.pi_family = PI_AF_PILOT;
-	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
+	if (argc >= 2)
+		strncpy(addr.pi_device, argv[1], sizeof(addr.pi_device));
+	else
+		strncpy(addr.pi_device, port, sizeof(addr.pi_device));
 
 	if (pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
 		printf("\n   Unable to bind to port %s\n", port);
@@ -44,16 +47,17 @@ main(int argc, char *argv[])
 		return 0;
 	}
 
-	if (dlp_ReadSysInfo (sd, &sys) < 0)
-		printf ("DLP SysInfo: ERROR");
-	else
-		printf ("**** DLP SysInfo: %lu %lu %d\n", sys.romVersion, sys.locale, sys.nameLength);
-	
 	if (dlp_ReadUserInfo (sd, &user) < 0)
-		printf ("DLP UserInfo: ERROR");
+		printf ("DLP UserInfo: ERROR\n");
 	else
 		printf ("**** DLP UserInfo: %lu %lu %lu %lu %lu %s\n", user.userID, user.viewerID,
 			user.lastSyncPC, user.successfulSyncDate, user.lastSyncDate, user.username);
+
+	if (dlp_ReadSysInfo (sd, &sys) < 0)
+		printf ("DLP SysInfo: ERROR\n");
+	else
+		printf ("**** DLP SysInfo: %lu %lu %d\n", sys.romVersion, sys.locale, sys.nameLength);
+	
 	pi_close (sd);
 
 	return 0;

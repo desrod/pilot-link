@@ -111,21 +111,17 @@ extern "C" {
 		int raddrlen;
 		int type;
 		int protocol;
+		int init;
 		int sd;
 		int initiator;
-		struct pi_device *device;
+
 		struct pi_protocol **protocol_queue;
 		int queue_len;
-		
-#ifndef WIN32
-#ifndef OS2
-# ifndef SGTTY
-		struct termios tco;
-# else
-		struct sgttyb tco;
-# endif
-#endif
-#endif
+		struct pi_protocol **init_queue;
+		int init_len;
+
+		struct pi_device *device;
+
 		struct pi_skb *txq;
 		struct pi_skb *rxq;
 		struct pi_socket *next;
