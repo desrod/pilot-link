@@ -4833,7 +4833,7 @@ dlp_VFSFileClose(int sd, FileRef fileRef)
  *				data		--> data buffer to write
  *				len			--> number of bytes to write
  *
- * Returns:     negative number on error
+ * Returns:     negative number on error, number of bytes written on success
  *
  ***********************************************************************/
 int
@@ -4862,7 +4862,8 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
 	dlp_request_free (req);
 
 	if (result >= 0) {
-		result = pi_write (sd, data, len);
+		int bytes = pi_write (sd, data, len);
+		result = bytes;
 		if (result < (int)len) {
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     "send failed %d\n", result));
@@ -4873,10 +4874,10 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
 			result = dlp_response_read (&res, sd);
 
 			if (result > 0) {
-				result = get_short(DLP_RESPONSE_DATA (res, 0, 2));
+				pi_set_palmos_error(sd, get_short(DLP_RESPONSE_DATA (res, 0, 2)));
 				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-					"send success (%d) res %d!\n", len, result));
-				pi_set_palmos_error(sd, result);
+					"send success (%d) res 0x%04x!\n", len, pi_palmos_error(sd)));
+				result = bytes;
 			}
 		} 
 	}
