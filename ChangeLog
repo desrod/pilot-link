@@ -1,4 +1,25 @@
+2001-02-25 David A. Desrosiers
+
+        * memos.c: Fixed the detection of the %ENV for PILOTPORT
+          and the device name from pi_device to argv[1] (Bob Wittig)
+
+          pilot-xfer.c: Fix for reporting the databases not found
+          db[dbcount]->name (Bob Wittig)
+
+          pilot-addresses: More PILOTPORT detection fixes, also no
+          longer ignoring the quiet flag if passed to the app (Bob
+          Wittig)
+
+          libsock/Makefile.os2: Fixes for pisock.def
+
+          man/install-memo.1, man/pilot-xfer.1, 
+          man/pilot-addresses.1: Manpage updates (Bob Wittig)
+
+          sync-plan.PL: Added capability to authenticate to the
+          Netplan Server (Mark Peletier)          
+
 2001-02-17 David A. Desrosiers
+
         * aclocal.m4: Fixed the BSD nm test (again). How many 
           times do we have to keep fixing this?!
 

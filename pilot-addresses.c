@@ -26,6 +26,8 @@
 #include "pi-address.h"
 #include "pi-header.h"
 
+#define PILOTPORT "/dev/pilot"
+
 /* Yet more hair: reorganize fields to match visible appearence */
 
 int realentry[19] =
@@ -435,7 +437,7 @@ int main(int argc, char *argv[])
    char *defaultcategoryname = 0;
    char *deletecategory = 0;
    char *progname = argv[0];
-   char *device = argv[1];
+/*   char *device = argv[1]; */
    int deleteallcategories = 0;
    int quiet = 0;
    int mode = 0;
@@ -445,6 +447,12 @@ int main(int argc, char *argv[])
 
    if (argc < 3)
       Help(progname);
+
+   if (getenv("PILOTPORT")) {
+      strcpy(addr.pi_device,getenv("PILOTPORT"));
+   } else {
+      strcpy(addr.pi_device,PILOTPORT);
+   }
 
    while (((c = getopt(argc, argv, "DTeqp:t:d:c:arw")) != -1)
 	  && (mode == 0)) {
@@ -500,22 +508,25 @@ int main(int argc, char *argv[])
    }
                                 
    addr.pi_family = PI_AF_SLP;
-   strcpy(addr.pi_device, device);
+/*   strcpy(addr.pi_device, device); */
                                      
    ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
    if (ret == -1)
    {
-      fprintf(stderr, "\n   Unable to bind to port %s\n", device);
+      fprintf(stderr, "\n   Unable to bind to port %s\n", addr.pi_device);
       perror("   pi_bind");
       fprintf(stderr, "\n");
       exit (1);
    }
-   
-   printf("   Port: %s\n\n   Please press the HotSync button now...\n", device);
+
+   if (!quiet)
+   {
+      printf("   Port: %s\n\n   Please press the HotSync button now...\n", addr.pi_device);
+   }
 
    ret = pi_listen(sd, 1);
    if (ret == -1) {
-      fprintf(stderr, "\n   Error listening on %s\n", device);
+      fprintf(stderr, "\n   Error listening on %s\n", addr.pi_device);
       perror("   pi_listen");
       fprintf(stderr, "\n");
       exit(1);
@@ -523,13 +534,16 @@ int main(int argc, char *argv[])
 
    sd = pi_accept(sd, 0, 0);
    if (sd == -1) {
-      fprintf(stderr, "\n   Error accepting data on %s\n", device);
+      fprintf(stderr, "\n   Error accepting data on %s\n", addr.pi_device);
       perror("   pi_accept");
       fprintf(stderr, "\n");
       exit(1);
    }
 
-   fprintf(stderr, "Connected...\n");
+   if (!quiet)
+   {
+      fprintf(stderr, "Connected...\n");
+   }
 
    /* Ask the pilot who it is. */
    dlp_ReadUserInfo(sd, &U);

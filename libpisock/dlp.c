@@ -393,12 +393,12 @@ dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 	   intended as a shortcut for programs looking for databases. It
    c->more = SI_more(dlp_buf) || (SI_count(dlp_buf) > 1);
 			i = info->index + 1;
-   c->card = SI_cardNo(dlp_buf);
-   c->version = SI_cardVersion(dlp_buf);
+   c->card     = SI_cardNo(dlp_buf);
+   c->version  = SI_cardVersion(dlp_buf);
    c->creation = SI_crDate(dlp_buf);
-   c->romSize = SI_romSize(dlp_buf);
-   c->ramSize = SI_ramSize(dlp_buf);
-   c->ramFree = SI_freeRam(dlp_buf);
+   c->romSize  = SI_romSize(dlp_buf);
+   c->ramSize  = SI_ramSize(dlp_buf);
+   c->ramFree  = SI_freeRam(dlp_buf);
 			goto found;
    len1 = SI_cardNameSize(dlp_buf);
    memcpy(c->name, ptr_SI_cardNameAndManuf(dlp_buf, 0), len1);
@@ -489,18 +489,18 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo *info)
    if (pi_version(sd) > 0x0100)	/* PalmOS 2.0 has additional flag */
       info->miscFlags = get_byte(dlp_buf + 5);
    else
-      info->miscFlags = 0;
-   info->flags = get_short(dlp_buf + 6);
-   info->type = get_long(dlp_buf + 8);
-   info->creator = get_long(dlp_buf + 12);
-   info->version = get_short(dlp_buf + 16);
-   info->modnum = get_long(dlp_buf + 18);
-   info->createDate = get_date(dlp_buf + 22);
-   info->modifyDate = get_date(dlp_buf + 30);
-   info->backupDate = get_date(dlp_buf + 38);
-   info->index = get_short(dlp_buf + 46);
-   strncpy(info->name, (char *) dlp_buf + 48, 32);
-   info->name[32] = '\0';
+      info->miscFlags  = 0;
+      info->flags      = get_short(dlp_buf + 6);
+      info->type       = get_long(dlp_buf + 8);
+      info->creator    = get_long(dlp_buf + 12);
+      info->version    = get_short(dlp_buf + 16);
+      info->modnum     = get_long(dlp_buf + 18);
+      info->createDate = get_date(dlp_buf + 22);
+      info->modifyDate = get_date(dlp_buf + 30);
+      info->backupDate = get_date(dlp_buf + 38);
+      info->index      = get_short(dlp_buf + 46);
+      strncpy(info->name, (char *) dlp_buf + 48, 32);
+      info->name[32]   = '\0';
 
 #ifdef DLP_TRACE
    if (dlp_trace) {

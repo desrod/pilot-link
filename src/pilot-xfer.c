@@ -570,7 +570,7 @@ void Restore(char *dirname)
 
       f = pi_file_open(db[dbcount]->name);
       if (f == 0) {
-	 printf("Unable to open '%s'!\n", name);
+	 printf("Unable to open '%s'!\n", db[dbcount]->name);
 	 break;
       }
 

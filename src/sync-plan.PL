@@ -1274,7 +1274,10 @@ sub SyncDB {
 	}
 	
 	$netplanversion = $reply;
-	
+
+   # Authenticate
+   SendPlanCommand($socket, "=plan<uid=$<,gid=$>,pid=$$>\n");
+
 	SendPlanCommand($socket, "o$dbname\n");
 	$reply = ReadPlanReply($socket);
 	

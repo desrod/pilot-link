@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
    PalmHeader(progname);
 
-   if (argc < 3) {
+   if (argc < 2) {
       fprintf(stderr, "   Assigns your Palm device a user name and unique userid\n\n");
       fprintf(stderr, "   Usage: %s %s [User name] <userid>\n\n", argv[0], TTYPrompt);
       fprintf(stderr, "   Example: %s /dev/ttyS0 \"John Q. Public\" 12345\n\n", progname);

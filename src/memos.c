@@ -32,6 +32,8 @@
 #include "pi-file.h"
 #include "pi-header.h"
 
+#define PILOTPORT "/dev/pilot"
+
 /* constants to determine how to produce memos */
 #define MEMO_MBOX_STDOUT 0
 #define MEMO_DIRECTORY 1
@@ -115,9 +117,15 @@ main(int argc, char *argv[])
       Help();
    }
 
-   while (((c = getopt(argc, argv, "vqp:d:h?")) != -1)) {
+   if (getenv("PILOTPORT")) {
+      strcpy(addr.pi_device,getenv("PILOTPORT"));
+   } else {
+      strcpy(addr.pi_device,PILOTPORT);
+   }
+  
+   while (((c = getopt(argc, argv, "vqp:d:f:h?")) != -1)) {
 
-      switch (c) {
+    switch (c) {
       case 'v':
 	 verbose = 1;
 	 break;
@@ -150,7 +158,7 @@ main(int argc, char *argv[])
    PalmHeader(progname);
 
    addr.pi_family = PI_AF_SLP;
-   strcpy(addr.pi_device, argv[1]);
+   strcpy(device, addr.pi_device);
 
    if (filename[0] == '\0') {
 

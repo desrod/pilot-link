@@ -66,11 +66,10 @@ libpisock.la: $(OBJS)
 # Then it cleans up.
 # NOTE: You will need the OS/2 Linker, link386.exe, for this to work.
 libpisockdll.a: libpisock.a
-	echo ; AUTOMATICALLY GENERATED FROM Makefile.os2  DO NOT EDIT >pisock.def
-	echo ; pisock.dll module definition file >>pisock.def
+	echo "; AUTOMATICALLY GENERATED FROM Makefile.os2  DO NOT EDIT" >pisock.def
+	echo "; pisock.dll module definition file" >>pisock.def
 	echo LIBRARY pisock >>pisock.def
-	echo DESCRIPTION >>pisock.def
-	echo  'Pilot-link socket interface DLL' >>pisock.def
+	echo DESCRIPTION \'Pilot-link socket interface DLL\' >>pisock.def
 	echo CODE PRELOAD >>pisock.def
 	echo EXPORTS >>pisock.def
 	emxexp -o libpisock.a >>pisock.def
