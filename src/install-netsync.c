@@ -18,7 +18,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,46 +30,38 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"enable",      no_argument,       NULL, 'e'},
-	{"disable",	no_argument,       NULL, 'd'},
-	{"name",        required_argument, NULL, 'n'},
-	{"ip",          required_argument, NULL, 'i'},
-	{"mask",        required_argument, NULL, 'm'},
-	{NULL,          0,                 NULL, 0}
+const struct poptOption options[] = {
+	{ "port",    'p', POPT_ARG_STRING, 0, 'p', "Use device file <port> to communicate with Palm"},
+	{ "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
+	{ "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
+	{ "enable",  'e', POPT_ARG_NONE,   0, 'e', "Enables LANSync on the Palm"},
+	{ "disable", 'd', POPT_ARG_NONE,   0, 'd', "Disable the LANSync setting on the Palm"},
+	{ "name",    'n', POPT_ARG_STRING, 0, 'n', "The hostname of the desktop you sync with"},   
+	{ "ip",      'i', POPT_ARG_STRING, 0, 'i', "IP address of the machine you connect your Palm to"},
+	{ "mask",    'm', POPT_ARG_STRING, 0, 'm', "The subnet mask of the network your Palm is on"},
+	POPT_AUTOHELP
+	{ NULL, 0, 0, NULL, 0 }
 };
 
+char *strdup(const char *s);
+poptContext po;
 
-static const char *optstring = "p:hvedn:i:m:";
+static void display_help(const char *progname) {
+		printf("Assigns your Palm device NetSync information\n\n");
 
-static void display_help(const char *progname)
-{
-	printf("   Assigns your Palm device NetSync information\n\n");
-	printf("   Usage: %s -p <port> -n <hostname> -i <ip> -m <subnet>\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -e, --enable      Enables LANSync on the Palm\n");
-	printf("     -d, --disable     Disable the LANSync setting on the Palm\n");
-	printf("     -n <name>         The hostname of the desktop you are syncing with\n");
-	printf("     -i, --ip <ip>     IP address of the machine you connect your Palm to\n");
-	printf("     -m <mask>         The subnet mask of the network your Palm is on\n");
-	printf("     -h, --help        Display this information\n");
-	printf("     -v, --version     Display version information\n\n");
-	printf("   Examples: %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n", progname);
+		poptPrintHelp(po, stderr, 0);
 
-	return;
+		printf("\n  Examples: %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
+			progname);
+		exit(1);
 }
 
 int main(int argc, char *argv[])
 {
-	int 	c,		/* switch */
-		enable		= -1,
+	int 	enable		= -1,
 		sd 		= -1;
 
-	char 	*progname 	= argv[0],
+	const char *progname 	= argv[0],
 		*port 		= NULL,
 		*hostname 	= NULL,
 		*address 	= NULL,
@@ -79,37 +71,25 @@ int main(int argc, char *argv[])
 
 	struct in_addr addr;
 
-/*
-	struct poptOption long_options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm"},
-		{"version", 'v', POPT_ARG_NONE, NULL, 0, "Display version information"},
-        	{"enable", 'e', POPT_ARG_NONE, &enable, 0, "Enables LANSync on the Palm"},
-        	{"disable", 'd', POPT_ARG_NONE, &enable, 0, "Disable the LANSync setting on the Palm"},
-        	{"name", 'n', POPT_ARG_STRING, &hostname, 0, "The hostname of the desktop you are syncing with"},
-        	{"ip", 'i', POPT_ARG_STRING, &address, 0, "IP address of the machine you connect your Palm to"},
-        	{"mask", 'm', POPT_ARG_STRING, &netmask, 0, "The subnet mask of the network your Palm is on"},
-		POPT_AUTOHELP
-        	{ NULL, 0, 0, NULL, 0 }
-	};
+	int po_err;
+	po = poptGetContext("install-netsync", argc, (const char **) argv, options, 0);
 
-	poptContext pc;
-	pc = poptGetContext("install-netsync", argc, (const char **) argv, long_options, 0);
+	if (argc < 2) {
+		display_help(progname);
+		exit(1);
+	}
 
-*/
-	setlinebuf(stdout);
-
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (c) {
+	while ((po_err = poptGetNextOpt(po)) != -1) {
+		switch (po_err) {
 
 		case 'h':
-			display_help(progname);
+			poptPrintHelp(po, stderr, 0);
 			return 0;
 		case 'v':
 			print_splash(progname);
 			return 0;
 		case 'p':
-			free(port);
-			port = strdup(optarg);
+			port = poptGetOptArg(po);
 			break;
 		case 'e':
 			enable = 1;
@@ -118,19 +98,16 @@ int main(int argc, char *argv[])
 			enable = 0;
 			break;
 		case 'n':
-			free(hostname);
-			hostname = strdup(optarg);
+			hostname = poptGetOptArg(po);
 			break;
 		case 'i':
-			free(address);
-			address = strdup(optarg);
+			address = poptGetOptArg(po);
 			break;
 		case 'm':
-			free(netmask);
-			netmask = strdup(optarg); 
+			netmask = poptGetOptArg(po);
 			break;
 		default:
-			display_help(progname);
+			poptPrintHelp(po, stderr, 0);
 			return 0;
 		}
 	}
