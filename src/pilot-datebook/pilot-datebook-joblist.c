@@ -241,7 +241,7 @@ joblist_parse_param (struct job_list * joblist, int argc, char **argv, char * pr
 {
   struct job * cur_job;
   char 	c,	/* switch */
-	port	= NULL;
+	*port	= NULL;
   int optind2;
 
 
