@@ -1,5 +1,27 @@
 --------------------------------------------------------------------------
-pilot-link 0.11.6, "Torrent of Lucidity", 12-XX-2002
+pilot-link 0.11.7, "What's up Doc?", 1-05-2003
+--------------------------------------------------------------------------
+The last release had a few small errors in it, namely the changing of the
+exit(1) vs. exit 1; autoconf vs. C'isms.
+
+Major Features:
+        * None at this time
+
+Other Features:
+        * New manpages and manpage formatting 
+
+Bug Fixes:
+        * Fix for failures on libiconv w/Evolution
+        * Fix for PI_LOG output
+	* Fix for exit; vs. exit(); 
+	* Fix for readline support breaking C++ detection
+
+Known Problems:
+        * Same as previous release
+
+
+--------------------------------------------------------------------------
+pilot-link 0.11.6, "Torrent of Lucidity", 12-24-2002
 --------------------------------------------------------------------------
 A few bugs squashed in this one, improved stability, two new conduits,
 manpages, docs, more..
