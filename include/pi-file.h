@@ -64,11 +64,11 @@ extern "C" {
 
 	/* closes read or write handle */
 	extern int pi_file_close PI_ARGS((pi_file_t * pf));
-	extern int pi_file_get_info
+	extern void pi_file_get_info
 	    PI_ARGS((pi_file_t * pf, struct DBInfo * infop));
-	extern int pi_file_get_app_info
+	extern void pi_file_get_app_info
 	    PI_ARGS((pi_file_t * pf, void **datap, size_t *sizep));
-	extern int pi_file_get_sort_info
+	extern void pi_file_get_sort_info
 	    PI_ARGS((pi_file_t * pf, void **dadtap, size_t *sizep));
 	extern int pi_file_read_resource
 	    PI_ARGS((pi_file_t * pf, int idx, void **bufp, size_t *sizep,
@@ -81,7 +81,7 @@ extern "C" {
 	extern int pi_file_read_record
 	    PI_ARGS((pi_file_t * pf, int idx, void **bufp, size_t *sizep,
 		     int *attrp, int *catp, pi_uid_t * uidp));
-	extern int pi_file_get_entries
+	extern void pi_file_get_entries
 	    PI_ARGS((pi_file_t * pf, int *entries));
 	extern int pi_file_read_record_by_id
 	    PI_ARGS((pi_file_t * pf, pi_uid_t uid, void **bufp,
