@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "install-expenses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "install-expenses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBinstall\-expenses\fR \- Install an expense record from various parameters and arguments passed at connection time.
 .SH "SYNOPSIS"

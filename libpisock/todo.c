@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if TIME_WITH_SYS_TIME
+#ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
 #else
-# if HAVE_SYS_TIME_H
+# ifdef HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # else
 #  include <time.h>
@@ -40,24 +40,33 @@
 #define DescMaxLength 256
 #define NoteMaxLength 4096
 
+
 /***********************************************************************
  *
  * Function:    free_ToDo
  *
  * Summary:     Free the memory and filehandle from the record alloc. 
  *
- * Parameters:  None
+ * Parameters:  ToDo_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_ToDo(struct ToDo *a)
+void
+free_ToDo(ToDo_t *todo)
 {
-	if (a->description)
-		free(a->description);
-	if (a->note)
-		free(a->note);
+
+	if (todo->description != NULL) {
+		free(todo->description);
+		todo->description = NULL;
+	}
+
+	if (todo->note != NULL) {
+		free(todo->note);
+		todo->note = NULL;
+	}
 }
+
 
 /***********************************************************************
  *
@@ -65,12 +74,13 @@ void free_ToDo(struct ToDo *a)
  *
  * Summary:     Unpack the ToDo structure into records we can chew on
  *
- * Parameters:  None
+ * Parameters:  ToDo_t*, char* to buffer, length of buffer
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
-int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
+int
+unpack_ToDo(ToDo_t *todo, unsigned char *buffer, size_t len)
 {
 	unsigned long d;
 	unsigned char *start = buffer;
@@ -93,25 +103,25 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 		return 0;
 	d = (unsigned short int) get_short(buffer);
 	if (d != 0xffff) {
-		a->due.tm_year 	= (d >> 9) + 4;
-		a->due.tm_mon 	= ((d >> 5) & 15) - 1;
-		a->due.tm_mday 	= d & 31;
-		a->due.tm_hour 	= 0;
-		a->due.tm_min 	= 0;
-		a->due.tm_sec 	= 0;
-		a->due.tm_isdst = -1;
-		mktime(&a->due);
-		a->indefinite 	= 0;
+		todo->due.tm_year = (d >> 9) + 4;
+		todo->due.tm_mon = ((d >> 5) & 15) - 1;
+		todo->due.tm_mday = d & 31;
+		todo->due.tm_hour = 0;
+		todo->due.tm_min = 0;
+		todo->due.tm_sec = 0;
+		todo->due.tm_isdst = -1;
+		mktime(&todo->due);
+		todo->indefinite = 0;
 	} else {
-		a->indefinite 	= 1;	/* a->due is invalid */
+		todo->indefinite = 1;	/* todo->due is invalid */
 	}
 
-	a->priority = get_byte(buffer + 2);
-	if (a->priority & 0x80) {
-		a->complete 	= 1;
-		a->priority 	&= 0x7f;
+	todo->priority = get_byte(buffer + 2);
+	if (todo->priority & 0x80) {
+		todo->complete = 1;
+		todo->priority &= 0x7f;
 	} else {
-		a->complete 	= 0;
+		todo->complete = 0;
 	}
 
 	buffer += 3;
@@ -119,23 +129,24 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 
 	if (len < 1)
 		return 0;
-	a->description = strdup((char *) buffer);
+	todo->description = strdup((char *) buffer);
 
-	buffer 	+= strlen(a->description) + 1;
-	len 	-= strlen(a->description) + 1;
+	buffer += strlen(todo->description) + 1;
+	len -= strlen(todo->description) + 1;
 
 	if (len < 1) {
-		free(a->description);
-		a->description = 0;
+		free(todo->description);
+		todo->description = 0;
 		return 0;
 	}
-	a->note = strdup((char *) buffer);
+	todo->note = strdup((char *) buffer);
 
-	buffer 	+= strlen(a->note) + 1;
-	len 	-= strlen(a->note) + 1;
+	buffer += strlen(todo->note) + 1;
+	len -= strlen(todo->note) + 1;
 
 	return (buffer - start);	/* FIXME: return real length */
 }
+
 
 /***********************************************************************
  *
@@ -143,21 +154,22 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
  *
  * Summary:     Pack the ToDo records into a structure
  *
- * Parameters:  None
+ * Parameters:  ToDo_t*, char* to buffer, length of buffer
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
-int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
+int
+pack_ToDo(ToDo_t *todo, unsigned char *buf, size_t len)
 {
-	int 	pos,
-		destlen = 3;
+	int pos;
+	size_t destlen = 3;
 
-	if (a->description)
-		destlen += strlen(a->description);
+	if (todo->description)
+		destlen += strlen(todo->description);
 	destlen++;
-	if (a->note)
-		destlen += strlen(a->note);
+	if (todo->note)
+		destlen += strlen(todo->note);
 	destlen++;
 
 	if (!buf)
@@ -165,31 +177,31 @@ int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
 	if (len < destlen)
 		return 0;
 
-	if (a->indefinite) {
+	if (todo->indefinite) {
 		buf[0] = 0xff;
 		buf[1] = 0xff;
 	} else {
 		set_short(buf,
-			  ((a->due.tm_year - 4) << 9) | ((a->due.tm_mon +
-							  1) << 5) | a->
+			  ((todo->due.tm_year - 4) << 9) | ((todo->due.tm_mon +
+							  1) << 5) | todo->
 			  due.tm_mday);
 	}
-	buf[2] = a->priority;
-	if (a->complete) {
+	buf[2] = todo->priority;
+	if (todo->complete) {
 		buf[2] |= 0x80;
 	}
 
 	pos = 3;
-	if (a->description) {
-		strcpy((char *) buf + pos, a->description);
-		pos += strlen(a->description) + 1;
+	if (todo->description) {
+		strcpy((char *) buf + pos, todo->description);
+		pos += strlen(todo->description) + 1;
 	} else {
 		buf[pos++] = 0;
 	}
 
-	if (a->note) {
-		strcpy((char *) buf + pos, a->note);
-		pos += strlen(a->note) + 1;
+	if (todo->note) {
+		strcpy((char *) buf + pos, todo->note);
+		pos += strlen(todo->note) + 1;
 	} else {
 		buf[pos++] = 0;
 	}
@@ -197,36 +209,38 @@ int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
 	return pos;
 }
 
+
 /***********************************************************************
  *
  * Function:    unpack_ToDoAppInfo
  *
  * Summary:     Unpack the ToDo AppInfo block from the structure
  *
- * Parameters:  None
+ * Parameters:  ToDoAppInfo_t*, char* to record, record length
  *
- * Returns:     Nothing
+ * Returns:     effective record length
  *
  ***********************************************************************/
 int
-unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
+unpack_ToDoAppInfo(ToDoAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
-	int 	i;
+	int i;
 	unsigned char *start = record;
 
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!i)
 		return 0;
 	record += i;
 	len -= i;
 	if (len < 4)
 		return 0;
-	ai->dirty = get_short(record);
+	appinfo->dirty = get_short(record);
 	record += 2;
-	ai->sortByPriority = get_byte(record);
+	appinfo->sortByPriority = get_byte(record);
 	record += 2;
 	return (record - start);
 }
+
 
 /***********************************************************************
  *
@@ -234,18 +248,18 @@ unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
  *
  * Summary:     Pack the AppInfo block/record back into the structure
  *
- * Parameters:  None
+ * Parameters:  ToDoAppInfo_t*, char* to record, record length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-pack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
+pack_ToDoAppInfo(ToDoAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
-	int 	i;
+	int i;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!record)
 		return i + 4;
 	if (!i)
@@ -254,8 +268,8 @@ pack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 	len -= i;
 	if (len < 4)
 		return 0;
-	set_short(record, ai->dirty);
-	set_byte(record + 2, ai->sortByPriority);
+	set_short(record, appinfo->dirty);
+	set_byte(record + 2, appinfo->sortByPriority);
 	set_byte(record + 3, 0);	/* gapfill */
 	record += 4;
 

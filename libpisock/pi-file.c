@@ -31,11 +31,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-file.h"
 
 #undef FILEDEBUG
@@ -92,41 +90,10 @@
 #define PI_RESOURCE_ENT_SIZE 10
 #define PI_RECORD_ENT_SIZE 8
 
-struct pi_file_entry {
-	int 	offset,
-		size,
-		id,
-		attrs;
-	unsigned long type;
-	pi_uid_t uid;
-};
-
-struct pi_file {
-	int 	err,
-		for_writing,	
-		app_info_size,
-		sort_info_size,
-		next_record_list_id,
-		resource_flag,
-		ent_hdr_size,
-		nentries,
-		nentries_allocated,
-		rbuf_size;
-	FILE 	*f;
-	FILE 	*tmpf;
-	char 	*file_name;
-	void 	*app_info,
-		*sort_info,
-		*rbuf;
-	unsigned long unique_id_seed;
-	struct 	DBInfo info;
-	struct 	pi_file_entry *entries;
-
-
-};
-
-static int pi_file_close_for_write(struct pi_file *pf);
-static void pi_file_free(struct pi_file *pf);
+/* Declare prototypes */
+static int pi_file_close_for_write(pi_file_t *pf);
+static void pi_file_free(pi_file_t *pf);
+/* static unsigned long unix_time_to_pilot_time(time_t t); */
 
 int file_size;
 unsigned long start_time;
@@ -146,12 +113,15 @@ void display_rate(int record, int records, int written, int elapsed)
 	if (file_size > 0) {
 		est_done = (file_size - written) / (written / elapsed);
 
-		fprintf(stderr, "   Record %3d of %3d. Wrote %9d bytes of %9d. Elapsed:"
-		       "%2d sec.  %0.2f KB/s  Remaining: %d\r", record, records, 
-		       written, file_size, elapsed, k_sec, est_done);
+		fprintf(stderr,
+		 "   Record %3d of %3d. Wrote %9d bytes of %9d. Elapsed:"
+		 "%2d sec.  %0.2f KB/s  Remaining: %d\r", record, records, 
+			written, file_size, elapsed, k_sec, est_done);
 	} else {
-		fprintf(stderr, "   Record %3d of %3d. Wrote %9d bytes. Elapsed: %2d "
-		       "sec.  %0.2f KB/s.\r", record, records, written, elapsed, k_sec);
+		fprintf(stderr,
+		 "   Record %3d of %3d. Wrote %9d bytes. Elapsed: %2d "
+		 "sec.  %0.2f KB/s.\r",
+		 record, records, written, elapsed, k_sec);
 
 	}
 }
@@ -182,21 +152,24 @@ void display_rate(int record, int records, int written, int elapsed)
                                                                      --KJA
    */
 
+
 /***********************************************************************
  *
  * Function:    pilot_time_to_unix_time
  *
  * Summary:     Convert the Palm time to Unix time
  *
- * Parameters:  None
+ * Parameters:  palm time
  *
- * Returns:     Nothing
+ * Returns:     unix time
  *
  ***********************************************************************/
-static time_t pilot_time_to_unix_time(unsigned long raw_time)
+static time_t
+pilot_time_to_unix_time(unsigned long raw_time)
 {
 	return (time_t) (raw_time - PILOT_TIME_DELTA);
 }
+
 
 /***********************************************************************
  *
@@ -204,15 +177,17 @@ static time_t pilot_time_to_unix_time(unsigned long raw_time)
  *
  * Summary:     Convert Unix time to Palm time
  *
- * Parameters:  None
+ * Parameters:  unix time
  *
- * Returns:     Nothing
+ * Returns:     palm time
  *
  ***********************************************************************/
-static unsigned long unix_time_to_pilot_time(time_t t)
+unsigned long
+unix_time_to_pilot_time(time_t t)
 {
 	return (unsigned long) ((unsigned long) t + PILOT_TIME_DELTA);
 }
+
 
 /***********************************************************************
  *
@@ -220,24 +195,25 @@ static unsigned long unix_time_to_pilot_time(time_t t)
  *
  * Summary:     Open .prc or .pdb file for reading
  *
- * Parameters:  None
+ * Parameters:  file name
  *
- * Returns:     Nothing
+ * Returns:     pi_file_t *file handle or NULL if failed
  *
  ***********************************************************************/
-struct pi_file *pi_file_open(const char *name)
+pi_file_t
+*pi_file_open(const char *name)
 {
 	int 	i;
 	
-	struct 	pi_file *pf;
+	pi_file_t *pf;
 	struct 	DBInfo *ip;
-	struct 	pi_file_entry *entp;
+	pi_file_entry_t *entp;
 		
 	unsigned char buf[PI_HDR_SIZE];
 	unsigned char *p;
-	unsigned long offset, app_info_offset, sort_info_offset;
+	off_t offset, app_info_offset, sort_info_offset;
 
-	if ((pf = calloc(1, sizeof *pf)) == NULL)
+	if ((pf = calloc(1, sizeof (pi_file_t))) == NULL)
 		return (NULL);
 
 	pf->for_writing = 0;
@@ -318,13 +294,14 @@ struct pi_file *pi_file_open(const char *name)
 
 	if (pf->nentries) {
 		if ((pf->entries =
-		     calloc(pf->nentries, sizeof *pf->entries)) == NULL)
+		     calloc((size_t)pf->nentries,
+				sizeof *pf->entries)) == NULL)
 			goto bad;
 
 		for (i = 0, entp = pf->entries; i < pf->nentries;
 		     i++, entp++) {
-			if (fread(buf, pf->ent_hdr_size, 1, pf->f) !=
-			    (size_t) 1)
+			if (fread(buf, (size_t) pf->ent_hdr_size, 1, pf->f)
+				!= (size_t) 1)
 				goto bad;
 
 			p = buf;
@@ -343,8 +320,10 @@ struct pi_file *pi_file_open(const char *name)
 				entp->uid 	= get_treble(p + 5);
 
 				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
-				     "FILE OPEN Entry %d UID: 0x%8.8X Attrs: %2.2X Offset: @%X\n", i,
-				     (int) entp->uid, entp->attrs, entp->offset));
+				 "FILE OPEN Entry %d UID: "
+				 "0x%8.8X Attrs: %2.2X Offset: @%X\n", i,
+				     (int) entp->uid, entp->attrs,
+					 entp->offset));
 			}
 		}
 
@@ -359,7 +338,8 @@ struct pi_file *pi_file_open(const char *name)
 
 			if (entp->size < 0) {
 				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
-				     "FILE OPEN %s: Entry %d corrupt, giving up\n",
+				 "FILE OPEN %s: Entry %d corrupt,"
+				 "giving up\n",
 					name, pf->nentries - i - 1));
 				goto bad;
 			}
@@ -391,22 +371,24 @@ struct pi_file *pi_file_open(const char *name)
 	if (pf->app_info_size == 0)
 		pf->app_info = NULL;
 	else {
-		if ((pf->app_info = malloc(pf->app_info_size)) == NULL)
+		if ((pf->app_info =
+			malloc((size_t) pf->app_info_size)) == NULL)
 			goto bad;
 		fseek(pf->f, app_info_offset, SEEK_SET);
-		if (fread(pf->app_info, 1, pf->app_info_size, pf->f) !=
-		    (size_t) pf->app_info_size)
+		if (fread(pf->app_info, 1, (size_t) pf->app_info_size, pf->f)
+			 != (size_t) pf->app_info_size)
 			goto bad;
 	}
 
 	if (pf->sort_info_size == 0)
 		pf->sort_info = NULL;
 	else {
-		if ((pf->sort_info = malloc(pf->sort_info_size)) == NULL)
+		if ((pf->sort_info = malloc((size_t)pf->sort_info_size))
+			 == NULL)
 			goto bad;
 		fseek(pf->f, sort_info_offset, SEEK_SET);
-		if (fread(pf->sort_info, 1, pf->sort_info_size, pf->f) !=
-		    (size_t) pf->sort_info_size)
+		if (fread(pf->sort_info, 1, (size_t) pf->sort_info_size,
+			 pf->f) != (size_t) pf->sort_info_size)
 			goto bad;
 	}
 
@@ -417,18 +399,20 @@ struct pi_file *pi_file_open(const char *name)
 	return (NULL);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_close
  *
  * Summary:     Close the open file handle
  *
- * Parameters:  None
+ * Parameters:  file handle pi_file_t*
  *
- * Returns:     Nothing
+ * Returns:     0 for success, -1 otherwise
  *
  ***********************************************************************/
-int pi_file_close(struct pi_file *pf)
+int
+pi_file_close(pi_file_t *pf)
 {
 	int 	err;
 
@@ -447,113 +431,126 @@ int pi_file_close(struct pi_file *pf)
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_free
  *
  * Summary:     Flush and clean the file handles used
  *
- * Parameters:  None
+ * Parameters:  file handle pi_file_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-static void pi_file_free(struct pi_file *pf)
+static
+void pi_file_free(pi_file_t *pf)
 {
-	if (pf->f)
+
+	ASSERT (pf != NULL);
+
+	if (pf->f != 0)
 		fclose(pf->f);
 	
-	if (pf->app_info)
+	if (pf->app_info != NULL)
 		free(pf->app_info);
 	
-	if (pf->sort_info)
+	if (pf->sort_info != NULL)
 		free(pf->sort_info);
 	
-	if (pf->entries)
+	if (pf->entries != NULL)
 		free(pf->entries);
 	
-	if (pf->file_name)
+	if (pf->file_name != NULL)
 		free(pf->file_name);
 	
-	if (pf->rbuf)
+	if (pf->rbuf != NULL)
 		free(pf->rbuf);
 	
-	if (pf->tmpf)
+	if (pf->tmpf != 0)
 		fclose(pf->tmpf);
 	
 	free(pf);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_get_info
  *
- * Summary:
+ * Summary:	retrieve file pi_file info
  *
- * Parameters:  None
+ * Parameters:  file handle pi_file_t*, DBInfo
  *
- * Returns:     Nothing
+ * Returns:     0
  *
  ***********************************************************************/
-int pi_file_get_info(struct pi_file *pf, struct DBInfo *infop)
+int
+pi_file_get_info(pi_file_t *pf, struct DBInfo *infop)
 {
 	*infop = pf->info;
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_get_app_info
  *
- * Summary:
+ * Summary:	retrieve pi_file app info
  *
- * Parameters:  None
+ * Parameters:  file handle pi_file_t*, data buffer*, size*
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_get_app_info(struct pi_file *pf, void **datap, int *sizep)
+int
+pi_file_get_app_info(pi_file_t *pf, void **datap, size_t *sizep)
 {
 	*datap = pf->app_info;
 	*sizep = pf->app_info_size;
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_get_sort_info
  *
- * Summary:
+ * Summary:	retrieves pi_file sort info
  *
- * Parameters:  None
+ * Parameters:  file handle pi_file_t*, data*, size*
  *
- * Returns:     Nothing
+ * Returns:     0
  *
  ***********************************************************************/
-int pi_file_get_sort_info(struct pi_file *pf, void **datap, int *sizep)
+int
+pi_file_get_sort_info(pi_file_t *pf, void **datap, size_t *sizep)
 {
 	*datap = pf->sort_info;
 	*sizep = pf->sort_info_size;
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_set_rbuf_size
  *
- * Summary:
+ * Summary:	set pi_file rbuf size
  *
- * Parameters:  None
+ * Parameters:  file handle pi_file_t*, rbuf size
  *
- * Returns:     Nothing
+ * Returns:     0 for success, -1 otherwise
  *
  ***********************************************************************/
-static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
+static int
+pi_file_set_rbuf_size(pi_file_t *pf, size_t size)
 {
-	int 	new_size;
+	size_t 	new_size;
 	void 	*rbuf;
 
-	if (size > pf->rbuf_size) {
+	if (size > (size_t)pf->rbuf_size) {
 		if (pf->rbuf_size == 0) {
 			new_size = size + 2048;
 			rbuf = malloc(new_size);
@@ -572,6 +569,7 @@ static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_find_resource_by_type_id
@@ -584,7 +582,7 @@ static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
  *
  ***********************************************************************/
 static int
-pi_file_find_resource_by_type_id(struct pi_file *pf,
+pi_file_find_resource_by_type_id(pi_file_t *pf,
 				 unsigned long type, int id, int *idxp)
 {
 	int 	i;
@@ -605,6 +603,7 @@ pi_file_find_resource_by_type_id(struct pi_file *pf,
 	return (-1);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_read_resource_by_type_id
@@ -617,8 +616,8 @@ pi_file_find_resource_by_type_id(struct pi_file *pf,
  *
  ***********************************************************************/
 int
-pi_file_read_resource_by_type_id(struct pi_file *pf, unsigned long type,
-				 int id, void **bufp, int *sizep,
+pi_file_read_resource_by_type_id(pi_file_t *pf, unsigned long type,
+				 int id, void **bufp, size_t *sizep,
 				 int *idxp)
 {
 	int 	i;
@@ -633,6 +632,7 @@ pi_file_read_resource_by_type_id(struct pi_file *pf, unsigned long type,
 	return (-1);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_type_id_used
@@ -644,10 +644,12 @@ pi_file_read_resource_by_type_id(struct pi_file *pf, unsigned long type,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_type_id_used(struct pi_file *pf, unsigned long type, int id)
+int
+pi_file_type_id_used(pi_file_t *pf, unsigned long type, int id)
 {
 	return (pi_file_find_resource_by_type_id(pf, type, id, NULL) == 0);
 }
+
 
 /*********************************************************************** 
  * 
@@ -662,11 +664,11 @@ int pi_file_type_id_used(struct pi_file *pf, unsigned long type, int id)
  *
  ***********************************************************************/
 int
-pi_file_read_resource(struct pi_file *pf, int i,
-		      void **bufp, int *sizep, unsigned long *type,
+pi_file_read_resource(pi_file_t *pf, int i,
+		      void **bufp, size_t *sizep, unsigned long *type,
 		      int *idp)
 {
-	struct pi_file_entry *entp;
+	pi_file_entry_t *entp;
 
 	if (pf->for_writing)
 		return (-1);
@@ -680,10 +682,10 @@ pi_file_read_resource(struct pi_file *pf, int i,
 	entp = &pf->entries[i];
 
 	if (bufp) {
-		if (pi_file_set_rbuf_size(pf, entp->size) < 0)
+		if (pi_file_set_rbuf_size(pf, (size_t) entp->size) < 0)
 			return (-1);
 		fseek(pf->f, pf->entries[i].offset, SEEK_SET);
-		if (fread(pf->rbuf, 1, entp->size, pf->f) !=
+		if (fread(pf->rbuf, 1, (size_t) entp->size, pf->f) !=
 		    (size_t) entp->size)
 			return (-1);
 		*bufp = pf->rbuf;
@@ -699,6 +701,7 @@ pi_file_read_resource(struct pi_file *pf, int i,
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_read_record
@@ -712,11 +715,11 @@ pi_file_read_resource(struct pi_file *pf, int i,
  *
  ***********************************************************************/
 int
-pi_file_read_record(struct pi_file *pf, int i,
-		    void **bufp, int *sizep, int *attrp, int *catp,
+pi_file_read_record(pi_file_t *pf, int i,
+		    void **bufp, size_t *sizep, int *attrp, int *catp,
 		    pi_uid_t * uidp)
 {
-	struct pi_file_entry *entp;
+	pi_file_entry_t *entp;
 
 	if (pf->for_writing)
 		return (-1);
@@ -730,7 +733,7 @@ pi_file_read_record(struct pi_file *pf, int i,
 	entp = &pf->entries[i];
 
 	if (bufp) {
-		if (pi_file_set_rbuf_size(pf, entp->size) < 0) {
+		if (pi_file_set_rbuf_size(pf, (size_t) entp->size) < 0) {
 			LOG((PI_DBG_API, PI_DBG_LVL_ERR,
 			    "FILE READ_RECORD Unable to set buffer size!\n"));
 			return (-1);
@@ -738,7 +741,7 @@ pi_file_read_record(struct pi_file *pf, int i,
 		
 		fseek(pf->f, pf->entries[i].offset, SEEK_SET);
 
-		if (fread(pf->rbuf, 1, entp->size, pf->f) !=
+		if (fread(pf->rbuf, 1, (size_t) entp->size, pf->f) !=
 		    (size_t) entp->size) {
 			LOG((PI_DBG_API, PI_DBG_LVL_ERR,
 			    "FILE READ_RECORD Unable to read record!\n"));
@@ -763,6 +766,7 @@ pi_file_read_record(struct pi_file *pf, int i,
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_read_record_by_id
@@ -775,8 +779,8 @@ pi_file_read_record(struct pi_file *pf, int i,
  *
  ***********************************************************************/
 int
-pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid,
-			  void **bufp, int *sizep, int *idxp, int *attrp,
+pi_file_read_record_by_id(pi_file_t *pf, pi_uid_t uid,
+			  void **bufp, size_t *sizep, int *idxp, int *attrp,
 			  int *catp)
 {
 	int 	i;
@@ -795,6 +799,7 @@ pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid,
 	return (-1);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_id_used
@@ -806,7 +811,8 @@ pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
+int
+pi_file_id_used(pi_file_t *pf, pi_uid_t uid)
 {
 	int 	i;
 	struct 	pi_file_entry *entp;
@@ -819,6 +825,7 @@ int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_create
@@ -830,9 +837,10 @@ int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
  * Returns:     Nothing
  *
  ***********************************************************************/
-struct pi_file *pi_file_create(char *name, struct DBInfo *info)
+pi_file_t *
+pi_file_create(char *name, struct DBInfo *info)
 {
-	struct pi_file *pf;
+	pi_file_t *pf;
 
 	if ((pf = calloc(1, sizeof *pf)) == NULL)
 		return (NULL);
@@ -861,6 +869,7 @@ struct pi_file *pi_file_create(char *name, struct DBInfo *info)
 	return (NULL);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_set_info
@@ -873,7 +882,8 @@ struct pi_file *pi_file_create(char *name, struct DBInfo *info)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
+int
+pi_file_set_info(pi_file_t *pf, struct DBInfo *ip)
 {
 	if (!pf->for_writing)
 		return (-1);
@@ -887,6 +897,7 @@ int pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_set_app_info
@@ -898,7 +909,8 @@ int pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_set_app_info(struct pi_file *pf, void *data, int size)
+int
+pi_file_set_app_info(pi_file_t *pf, void *data, size_t size)
 {
 	void 	*p;
 
@@ -920,6 +932,7 @@ int pi_file_set_app_info(struct pi_file *pf, void *data, int size)
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_set_sort_info
@@ -931,7 +944,8 @@ int pi_file_set_app_info(struct pi_file *pf, void *data, int size)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
+int
+pi_file_set_sort_info(pi_file_t *pf, void *data, size_t size)
 {
 	void 	*p;
 
@@ -953,6 +967,7 @@ int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_append_entry
@@ -965,10 +980,11 @@ int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static struct pi_file_entry *pi_file_append_entry(struct pi_file *pf)
+static pi_file_entry_t
+*pi_file_append_entry(pi_file_t *pf)
 {
-	int 	new_count,
-		new_size;
+	int 	new_count;
+	size_t	new_size;
 	struct 	pi_file_entry *new_entries;
 	struct 	pi_file_entry *entp;
 
@@ -996,6 +1012,7 @@ static struct pi_file_entry *pi_file_append_entry(struct pi_file *pf)
 	return (entp);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_append_resource
@@ -1008,10 +1025,10 @@ static struct pi_file_entry *pi_file_append_entry(struct pi_file *pf)
  *
  ***********************************************************************/
 int
-pi_file_append_resource(struct pi_file *pf, void *buf, int size,
-			unsigned long type, int id)
+pi_file_append_resource(pi_file_t *pf, void *buf, size_t size,
+	unsigned long type, int id)
 {
-	struct pi_file_entry *entp;
+	pi_file_entry_t *entp;
 
 	if (!pf->for_writing || !pf->resource_flag)
 		return (-1);
@@ -1030,6 +1047,7 @@ pi_file_append_resource(struct pi_file *pf, void *buf, int size,
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_append_record  
@@ -1041,10 +1059,11 @@ pi_file_append_resource(struct pi_file *pf, void *buf, int size,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_append_record(struct pi_file *pf, void *buf, int size,
-			  int attrs, int category, pi_uid_t uid)
+int
+pi_file_append_record(pi_file_t *pf, void *buf, size_t size,
+	int attrs, int category, pi_uid_t uid)
 {
-	struct pi_file_entry *entp;
+	pi_file_entry_t *entp;
 
 #ifdef DEBUG
 	printf("append: %d\n", pf->nentries);
@@ -1067,6 +1086,7 @@ int pi_file_append_record(struct pi_file *pf, void *buf, int size,
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_get_entries
@@ -1078,12 +1098,14 @@ int pi_file_append_record(struct pi_file *pf, void *buf, int size,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_get_entries(struct pi_file *pf, int *entries)
+int
+pi_file_get_entries(pi_file_t *pf, int *entries)
 {
 	*entries = pf->nentries;
 
 	return (0);
 }
+
 
 /***********************************************************************
  *
@@ -1096,7 +1118,8 @@ int pi_file_get_entries(struct pi_file *pf, int *entries)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int pi_file_close_for_write(struct pi_file *pf)
+static int
+pi_file_close_for_write(pi_file_t *pf)
 {
 	int 	i,
 		offset,
@@ -1106,7 +1129,7 @@ static int pi_file_close_for_write(struct pi_file *pf)
 	struct 	DBInfo *ip;
 	struct 	pi_file_entry *entp;
 		
-	unsigned char buf[PI_HDR_SIZE];
+	unsigned char buf[512];
 	unsigned char *p;
 
 	ip = &pf->info;
@@ -1159,7 +1182,7 @@ static int pi_file_close_for_write(struct pi_file *pf)
 			set_treble(p + 5, entp->uid);
 		}
 
-		if (fwrite(buf, pf->ent_hdr_size, 1, f) != 1)
+		if (fwrite(buf, (size_t) pf->ent_hdr_size, 1, f) != 1)
 			goto bad;
 
 		offset += entp->size;
@@ -1169,23 +1192,24 @@ static int pi_file_close_for_write(struct pi_file *pf)
 	fwrite("\0\0", 1, 2, f);
 
 	if (pf->app_info
-	    && (fwrite(pf->app_info, 1, pf->app_info_size, f) !=
+	    && (fwrite(pf->app_info, 1,(size_t) pf->app_info_size, f) !=
 		(size_t) pf->app_info_size))
 		goto bad;
 
 	if (pf->sort_info
-	    && (fwrite(pf->sort_info, 1, pf->sort_info_size, f) !=
+	    && (fwrite(pf->sort_info, 1, (size_t) pf->sort_info_size, f) !=
 		(size_t) pf->sort_info_size))
 		goto bad;
 
 
 	rewind(pf->tmpf);
-	while ((c = getc(pf->tmpf)) != EOF)
-		putc(c, f);
-
+	do {
+		c = fread (buf, 1, sizeof (buf), pf->tmpf);
+		fwrite (buf, 1, sizeof (buf), f);
+	} while (c == sizeof (buf));
 	fflush(f);
 
-	if (ferror(f) || feof(f))
+	if (ferror(f) || feof(f) || !feof(pf->tmpf))
 		goto bad;
 
 	fclose(f);
@@ -1195,6 +1219,7 @@ static int pi_file_close_for_write(struct pi_file *pf)
 	fclose(f);
 	return (-1);
 }
+
 
 /***********************************************************************
  *
@@ -1207,13 +1232,14 @@ static int pi_file_close_for_write(struct pi_file *pf)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
+int
+pi_file_retrieve(pi_file_t *pf, int socket, int cardno)
 {
 	int 	db,
 		l,
 		j,
-		size		= 0,
 		written 	= 0;
+	size_t	size = 0;
 	
 	unsigned char buffer[0xffff];
 
@@ -1226,7 +1252,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 
 	l = dlp_ReadAppBlock(socket, db, 0, buffer, 0xffff);
 	if (l > 0)
-		pi_file_set_app_info(pf, buffer, l);
+		pi_file_set_app_info(pf, buffer, (size_t)l);
 
 	if (dlp_ReadOpenDBInfo(socket, db, &l) < 0)
 		return -1;
@@ -1292,6 +1318,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 	return dlp_CloseDB(socket, db);
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_install
@@ -1303,16 +1330,18 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_install(struct pi_file *pf, int socket, int cardno)
+int
+pi_file_install(pi_file_t *pf, int socket, int cardno)
 {
 	int 	db,
-		l,
 		j,
 		reset 		= 0,
-		size		= 0,
 		flags,
 		version,
 		freeai 		= 0;
+
+	size_t	l;
+	size_t	size = 0;
 	
 	void 	*buffer;
 
@@ -1400,7 +1429,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 		   never lose information. */
 
 		void *b2 = calloc(1, 282);
-		memcpy(b2, buffer, l);
+		memcpy(b2, buffer, (size_t)l);
 		    
 		buffer 	= b2;
 		l 	= 282;
@@ -1427,7 +1456,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			if ((pi_file_read_resource(pf, j, 0, &size, 0, 0)
 			     == 0) && (size > 65536)) {
 				LOG((PI_DBG_API, PI_DBG_LVL_ERR,
-				    "FILE INSTALL Database contains resource over 64K!\n"));
+				    "FILE INSTALL Database contains"
+					" resource over 64K!\n"));
 				goto fail;
 			}
 		}
@@ -1461,12 +1491,13 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 		}
 	} else {
 		for (j = 0; j < pf->nentries; j++) {
-			int size;
+			size_t size;
 
 			if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0)
 			      == 0)) && (size > 65536)) {
 				LOG((PI_DBG_API, PI_DBG_LVL_ERR,
-				    "FILE INSTALL Database contains resource over 64K!\n"));
+				    "FILE INSTALL Database contains"
+					" resource over 64K!\n"));
 				goto fail;
 			}
 		}
@@ -1512,6 +1543,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	return -1;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_file_merge
@@ -1523,7 +1555,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_file_merge(struct pi_file *pf, int socket, int cardno)
+int
+pi_file_merge(pi_file_t *pf, int socket, int cardno)
 {
 	int 	db,
 		j,
@@ -1549,17 +1582,18 @@ int pi_file_merge(struct pi_file *pf, int socket, int cardno)
 	/* Resource or record? */
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < pf->nentries; j++) {
-			int 	size;
+			size_t 	size;
 
 			if ((pi_file_read_resource(pf, j, 0, &size, 0, 0)
 			     == 0) && (size > 65536)) {
-				printf("Database contains resource over 64K!\n");
+				printf("Database contains"
+					" resource over 64K!\n");
 				goto fail;
 			}
 		}
 		for (j = 0; j < pf->nentries; j++) {
-			int 	id,
-				size;
+			int 	id;
+			size_t	size;
 			unsigned long type;
 
 			if (pi_file_read_resource
@@ -1578,7 +1612,7 @@ int pi_file_merge(struct pi_file *pf, int socket, int cardno)
 		}
 	} else {
 		for (j = 0; j < pf->nentries; j++) {
-			int 	size;
+			size_t 	size;
 
 			if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0)
 			      == 0)) && (size > 65536)) {
@@ -1587,8 +1621,8 @@ int pi_file_merge(struct pi_file *pf, int socket, int cardno)
 			}
 		}
 		for (j = 0; j < pf->nentries; j++) {
-			int 	size,
-				attr,
+			size_t 	size;
+			int	attr,
 				category;
 			unsigned long id;
 

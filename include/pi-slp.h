@@ -61,13 +61,13 @@ extern "C" {
 		unsigned char csum;
 	};
 
-	extern struct pi_protocol *slp_protocol
+	extern pi_protocol_t *slp_protocol
 	    PI_ARGS((void));
 
 	extern int slp_tx
-	    PI_ARGS((struct pi_socket * ps, unsigned char *buf, int len, int flags));
+	    PI_ARGS((pi_socket_t * ps, unsigned char *buf, size_t len, int flags));
 	extern int slp_rx
-	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
+	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len, int flags));
 
 	extern void slp_dump_header
 	    PI_ARGS((unsigned char *data, int rxtx));

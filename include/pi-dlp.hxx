@@ -174,13 +174,13 @@ class DLP
 
      int readResourceByType(const int handle, const unsigned long type,
 			    const int id, void *buffer, int *idx,
-			    int *size) const {
+			    size_t *size) const {
 	  return dlp_ReadResourceByType(_sd, handle, type, id, buffer, idx,
 					size);
      }
 
      int readResourceByIndex(const int handle, const int idx, void *buffer,
-			     unsigned long *type, int *id, int *size) const {
+			     unsigned long *type, int *id, size_t *size) const {
 	  return dlp_ReadResourceByIndex(_sd, handle, idx, buffer, type,
 					 id, size);
      }
@@ -196,33 +196,33 @@ class DLP
      }
 
      int readNextModifiedRec(const int handle, void *buffer, recordid_t *id,
-			     int *idx, int *size, int *attr, int *cat) const {
+			     int *idx, size_t *size, int *attr, int *cat) const {
 	  return dlp_ReadNextModifiedRec(_sd, handle, buffer, id, idx, size,
 					 attr, cat);
      }
 
      int readNextModifiedRecInCategory(const int handle, const int incat,
 				       void *buffer, recordid_t *id, int *idx,
-				       int *size, int *attr) const {
+				       size_t *size, int *attr) const {
 	  return dlp_ReadNextModifiedRecInCategory(_sd, handle, incat, buffer,
 						   id, idx, size, attr);
      }
 
      int readNextRecInCategory(const int handle, const int incat, void *buffer,
-			       recordid_t *id, int *idx, int *size,
+			       recordid_t *id, int *idx, size_t *size,
 			       int *attr) const {
 	  return dlp_ReadNextRecInCategory(_sd, handle, incat, buffer, id, idx,
 					   size, attr);
      }
 
      int readRecordById(const int handle, const recordid_t id, void *buffer,
-			int *idx, int *size, int *attr, int *category) const {
+			int *idx, size_t *size, int *attr, int *category) const {
 	  return dlp_ReadRecordById(_sd, handle, id, buffer, idx, size, attr,
 				    category);
      }
 
      int readRecordByIndex(const int handle, const int idx, void *buffer,
-			   recordid_t *id, int *size, int *attr,
+			   recordid_t *id, size_t *size, int *attr,
 			   int *category) const {
 	  return dlp_ReadRecordByIndex(_sd, handle, idx, buffer, id, size,
 				       attr, category);
@@ -268,7 +268,7 @@ class DLP
 
      int readAppPreference(const unsigned long creator, const int id,
 			   const int backup, const int maxsize, void *buffer,
-			   int *size, int *version) const {
+			   size_t *size, int *version) const {
 	  return dlp_ReadAppPreference(_sd, creator, id, backup, maxsize,
 				       buffer, size, version);
      }

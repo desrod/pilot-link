@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "install-todo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "install-todo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBinstall\-todo\fR \- Updates the Palm ToDo list with one new entry.
 

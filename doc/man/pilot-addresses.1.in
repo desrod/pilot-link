@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "pilot-addresses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "pilot-addresses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 
 \fBpilot\-addresses\fR \- read and write address book databases to and from

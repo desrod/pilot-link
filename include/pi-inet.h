@@ -9,7 +9,7 @@ extern "C" {
 
 #define PI_NET_DEV     1
 
-	struct pi_inet_data {
+	typedef struct pi_inet_data {
 		/* Time out */
 		int timeout;
 		
@@ -19,9 +19,9 @@ extern "C" {
 
 		int tx_bytes;
 		int tx_errors;
-	};
+	} pi_inet_data_t;
 
-	extern struct pi_device *pi_inet_device
+	extern pi_device_t *pi_inet_device
             PI_ARGS((int type));
 
 #ifdef __cplusplus

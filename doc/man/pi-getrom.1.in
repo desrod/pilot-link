@@ -1,6 +1,6 @@
+;.\" 
 .\" 
-.\" 
-.TH "pi-getrom" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "pi-getrom" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBpi\-getrom\fR \- Retrieves the ROM image from your Palm device for use in 
 debugging.
@@ -27,7 +27,7 @@ protocol.
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
 Use device file <\fIport\fR> to communicate with the Palm handheld. If this
 is not specified, will look for the \fI$PILOTPORT\fR environment variable.
-If both are not found or supplied, \fBinstall\-expenses\fR will fall back to
+If both are not found or supplied, \fBpi\-getrom\fR will fall back to
 /dev/pilot.
    
    

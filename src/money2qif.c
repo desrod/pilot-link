@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MoneyDB", &db) < 0) {
 		printf("Unable to open MoneyDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open MoneyDB.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);

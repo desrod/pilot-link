@@ -1,7 +1,6 @@
 #ifndef _PILOT_ADDRESS_H_
 #define _PILOT_ADDRESS_H_
 
-#include "pi-args.h"
 #include "pi-appinfo.h"
 
 #ifdef __cplusplus
@@ -30,33 +29,32 @@ extern "C" {
 		entryCategory
 	};
 
-	struct Address {
+	typedef struct Address {
 		int phoneLabel[5];
 		int showPhone;
 
 		char *entry[19];
-	};
+	} Address_t;
 
-	struct AddressAppInfo {
+	typedef struct AddressAppInfo {
 		struct CategoryAppInfo category;
-		char labels[19 + 3][16];		/* Hairy to explain, obvious to look at 		*/
-		int labelRenamed[19 + 3];		/* list of booleans showing which labels were modified 	*/
-		char phoneLabels[8][16];		/* Duplication of some labels, to greatly reduce hair 	*/
+		char labels[19 + 3][16]; /* Hairy explain, obvious to look */
+		int labelRenamed[19 + 3]; /* booleans show labels modified */
+		char phoneLabels[8][16]; /* Dup some labels, reduce hair */
 		int country;
 		int sortByCompany;
-	};
+	} AddressAppInfo_t;
 
-	extern void free_Address PI_ARGS((struct Address *));
+	extern void free_Address
+	  PI_ARGS((Address_t *));
 	extern int unpack_Address
-	    PI_ARGS((struct Address *, unsigned char *record, int len));
+	  PI_ARGS((Address_t *, unsigned char *record, size_t len));
 	extern int pack_Address
-	    PI_ARGS((struct Address *, unsigned char *record, int len));
+	  PI_ARGS((Address_t *, unsigned char *record, size_t len));
 	extern int unpack_AddressAppInfo
-	    PI_ARGS((struct AddressAppInfo *, unsigned char *AppInfo,
-		     int len));
+	  PI_ARGS((AddressAppInfo_t *, unsigned char *AppInfo, size_t len));
 	extern int pack_AddressAppInfo
-	    PI_ARGS((struct AddressAppInfo *, unsigned char *AppInfo,
-		     int len));
+	  PI_ARGS((AddressAppInfo_t *, unsigned char *AppInfo, size_t len));
 
 #ifdef __cplusplus
 }

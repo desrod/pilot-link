@@ -31,9 +31,7 @@
 #include <unistd.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-veo.h"
-#include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-header.h"
 

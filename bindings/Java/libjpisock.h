@@ -15,8 +15,6 @@ extern "C" {
 JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_connect
   (JNIEnv *, jobject, jstring);
 
-JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
-  (JNIEnv *env, jobject, jint, jint);
 /*
  * Class:     org_gnu_pilotlink_PilotLink
  * Method:    readSysInfo
@@ -35,27 +33,35 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readUserInfo
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink
+ * Method:    readAppInfo
+ * Signature: (II)Lorg/gnu/pilotlink/RawAppInfo;
+ */
+JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
+  (JNIEnv *, jobject, jint, jint);
+
+/*
+ * Class:     org_gnu_pilotlink_PilotLink
  * Method:    writeUserInfo
- * Signature: (Lorg/gnu/pilotlink/User;)V
+ * Signature: (ILorg/gnu/pilotlink/User;)V
  */
 JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_writeUserInfo
   (JNIEnv *, jobject, jint, jobject);
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink
- * Method:    openConduit
- * Signature: (I)V
+ * Method:    createDB
+ * Signature: (IJLjava/lang/String;JII)I
  */
-JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_openConduit
-  (JNIEnv *, jobject, jint);
+JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_createDB
+  (JNIEnv *, jobject, jint, jlong, jstring, jlong, jint, jint);
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink
- * Method     writeAppBlock
- * Signature: Unknown
+ * Method:    deleteDB
+ * Signature: (ILjava/lang/String;)I
  */
-JNIEXPORT int JNICALL Java_org_gnu_pilotlink_PilotLink_writeAppBlock
-	(JNIEnv *, jobject, jint, jint, jbyteArray, jint);
+JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteDB
+  (JNIEnv *, jobject, jint, jstring);
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink
@@ -67,19 +73,11 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_openDB
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink
- * Method:    createDB
- * Signature: Unknown
+ * Method:    writeAppBlock
+ * Signature: (II[BI)I
  */
-JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_createDB
-	(JNIEnv *env, jobject obj, jint handle, jlong creator, jstring jdbname, jlong type);
-
-/*
- * Class:     org_gnu_pilotlink_PilotLink
- * Method:    deleteDB
- * Signature: Unknown
- */
-JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteDB
-	(JNIEnv *env, jobject obj, jint handle, jstring jdbname);
+JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_writeAppBlock
+  (JNIEnv *, jobject, jint, jint, jbyteArray, jint);
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink
@@ -92,7 +90,7 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordCount
 /*
  * Class:     org_gnu_pilotlink_PilotLink
  * Method:    getRecordByIndex
- * Signature: (III)Lorg/gnu/pilotlink/Record;
+ * Signature: (III)Lorg/gnu/pilotlink/RawRecord;
  */
 JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordByIndex
   (JNIEnv *, jobject, jint, jint, jint);
@@ -108,10 +106,10 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteRecordByIndex
 /*
  * Class:     org_gnu_pilotlink_PilotLink
  * Method:    writeRecord
- * Signature: (IIILorg/gnu/pilotlink/Record;)I
+ * Signature: (IILorg/gnu/pilotlink/Record;)I
  */
 JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_writeRecord
-  (JNIEnv *, jobject, jint, jint,  jobject);
+  (JNIEnv *, jobject, jint, jint, jobject);
 
 /*
  * Class:     org_gnu_pilotlink_PilotLink
@@ -124,7 +122,7 @@ JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_closeDB
 /*
  * Class:     org_gnu_pilotlink_PilotLink
  * Method:    endSync
- * Signature: ()V
+ * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_endSync
   (JNIEnv *, jobject, jint);
@@ -136,6 +134,46 @@ JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_endSync
  */
 JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_close
   (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     org_gnu_pilotlink_PilotLink
+ * Method:    openConduit
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_openConduit
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     org_gnu_pilotlink_PilotLink
+ * Method:    getResourceByIndex
+ * Signature: (III)Lorg/gnu/pilotlink/RawRecord;
+ */
+JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getResourceByIndex
+  (JNIEnv *, jobject, jint, jint, jint);
+
+/*
+ * Class:     org_gnu_pilotlink_PilotLink
+ * Method:    writeResource
+ * Signature: (IILorg/gnu/pilotlink/RawRecord;)V
+ */
+JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_writeResource
+  (JNIEnv *, jobject, jint, jint, jobject);
+
+/*
+ * Class:     org_gnu_pilotlink_PilotLink
+ * Method:    resetSystem
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_gnu_pilotlink_PilotLink_resetSystem
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     org_gnu_pilotlink_PilotLink
+ * Method:    readDBList
+ * Signature: (IIII)Lorg/gnu/pilotlink/DBInfo;
+ */
+JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readDBList
+  (JNIEnv *, jobject, jint, jint, jint, jint);
 
 #ifdef __cplusplus
 }

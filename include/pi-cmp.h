@@ -28,27 +28,33 @@ extern "C" {
 		unsigned char type;
 		unsigned char flags;
 		unsigned int version;
-		unsigned long baudrate;
+		speed_t baudrate;
 	};
 
-	extern struct pi_protocol *cmp_protocol
+	extern pi_protocol_t *cmp_protocol
 	    PI_ARGS((void));
 
 	extern int cmp_rx_handshake
-	    PI_ARGS((struct pi_socket *ps, unsigned long establishrate, int establishhighrate));
+	  PI_ARGS((pi_socket_t *ps, unsigned long establishrate,
+		int establishhighrate));
 	extern int cmp_tx_handshake
-	    PI_ARGS((struct pi_socket *ps));
+	  PI_ARGS((pi_socket_t *ps));
 	extern int cmp_tx
- 	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
+	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
+		size_t len, int flags));
 	extern int cmp_rx
-	    PI_ARGS((struct pi_socket *ps, unsigned char *msg, int len, int flags));
+	  PI_ARGS((pi_socket_t *ps, unsigned char *msg,
+		size_t len, int flags));
 
-	extern int cmp_init PI_ARGS((struct pi_socket * ps, int baudrate));
-	extern int cmp_abort PI_ARGS((struct pi_socket * ps, int reason));
+	extern int cmp_init
+	  PI_ARGS((pi_socket_t *ps, speed_t baudrate));
+	extern int cmp_abort
+	  PI_ARGS((pi_socket_t *ps, int reason));
 	extern int cmp_wakeup
-		PI_ARGS((struct pi_socket * ps, int maxbaud));
+	  PI_ARGS((pi_socket_t *ps, speed_t maxbaud));
 
-	extern void cmp_dump PI_ARGS((unsigned char *cmp, int rxtx));
+	extern void cmp_dump
+	  PI_ARGS((unsigned char *cmp, int rxtx));
 
 #ifdef __cplusplus
 }

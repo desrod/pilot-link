@@ -25,6 +25,7 @@
 
 /* Todo: truncation, filtering, priority, notification */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,7 +39,6 @@
 #include <netdb.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-mail.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MailDB", &db) < 0) {
 		printf("Unable to open MailDB\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open MailDB.\nFile not found.");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
@@ -479,7 +479,7 @@ int main(int argc, char *argv[])
 				printf("Error launching '%s' to transmit mail! (No mail lost, %d received, %d sent)\n",
 					sendmail, rec, sent);
 				pi_close(sd);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 
 			if (from_address && from_address[0]) {

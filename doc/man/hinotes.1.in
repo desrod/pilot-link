@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "hinotes" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "hinotes" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBhinotes\fR \- Syncronize your Hi\-Notes database with your desktop machine. 
 Hi-Notes must be installed on your Palm handheld (and at least one entry must 

@@ -34,81 +34,152 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #include <netinet/in.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-serial.h"
 #include "pi-slp.h"
 
-static int slp_getsockopt(struct pi_socket *ps, int level, int option_name, 
+/* Declare function prototypes */
+static int slp_getsockopt(pi_socket_t *ps, int level, int option_name, 
 			  void *option_value, size_t *option_len);
-static int slp_setsockopt(struct pi_socket *ps, int level, int option_name, 
+static int slp_setsockopt(pi_socket_t *ps, int level, int option_name, 
 			  const void *option_value, size_t *option_len);
 
-static struct pi_protocol *slp_protocol_dup (struct pi_protocol *prot)
-{
-	struct 	pi_protocol *new_prot;
-	struct 	pi_slp_data *data, *new_data;
-	
-	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level 	= prot->level;
-	new_prot->dup 		= prot->dup;
-	new_prot->free 		= prot->free;
-	new_prot->read 		= prot->read;
-	new_prot->write 	= prot->write;
-	new_prot->getsockopt 	= prot->getsockopt;
-	new_prot->setsockopt 	= prot->setsockopt;
 
-	new_data 		= (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
-	data 			= (struct pi_slp_data *)prot->data;
-	new_data->dest 		= data->dest;
-	new_data->last_dest 	= data->last_dest;	
-	new_data->src 		= data->src;
-	new_data->last_src 	= data->last_src;
-	new_data->type 		= data->type;
-	new_data->last_type 	= data->last_type;
-	new_data->txid 		= data->txid;
-	new_data->last_txid 	= data->last_txid;
-	new_prot->data 		= new_data;
+/***********************************************************************
+ *
+ * Function:    slp_protocol_dup
+ *
+ * Summary:     clones an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol_t*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t*
+slp_protocol_dup (pi_protocol_t *prot)
+{
+	pi_protocol_t *new_prot;
+
+	struct	pi_slp_data	*data,
+				*new_data;
+	
+	new_prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
+	new_data = (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
+
+	if ( (new_prot != NULL) && (new_data != NULL) ) {
+		new_prot->level	= prot->level;
+		new_prot->dup 	= prot->dup;
+		new_prot->free 	= prot->free;
+		new_prot->read 	= prot->read;
+		new_prot->write	= prot->write;
+		new_prot->getsockopt = prot->getsockopt;
+		new_prot->setsockopt = prot->setsockopt;
+
+		data = (struct pi_slp_data *)prot->data;
+	
+		new_data->dest 	= data->dest;
+		new_data->last_dest = data->last_dest;	
+		new_data->src 	= data->src;
+		new_data->last_src = data->last_src;
+		new_data->type 	= data->type;
+		new_data->last_type = data->last_type;
+		new_data->txid 	= data->txid;
+		new_data->last_txid = data->last_txid;
+
+		new_prot->data 	= new_data;
+
+	} else if (new_prot != NULL) {
+		free(new_prot);
+		new_prot = NULL;
+	} else if (new_data != NULL) {
+		free(new_data);
+		new_data = NULL;
+	}
 
 	return new_prot;
 }
 
-static void slp_protocol_free (struct pi_protocol *prot)
+
+/***********************************************************************
+ *
+ * Function:    slp_protocol_free
+ *
+ * Summary:     frees an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol_t*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+slp_protocol_free (pi_protocol_t *prot)
 {
-	free(prot->data);
+	if (prot == NULL)
+		return;
+
+	if ( (prot->data) != NULL)
+		free(prot->data);
+
 	free(prot);
 }
 
-struct pi_protocol *slp_protocol (void)
+
+/***********************************************************************
+ *
+ * Function:    slp_protocol
+ *
+ * Summary:     creates a pi_protocol struct instance
+ *
+ * Parameters:  pi_protocol_t*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+pi_protocol_t*
+slp_protocol (void)
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_slp_data *data;
 
-	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	prot->level 		= PI_LEVEL_SLP;
-	prot->dup 		= slp_protocol_dup;
-	prot->free 		= slp_protocol_free;
-	prot->read 		= slp_rx;
-	prot->write 		= slp_tx;
-	prot->getsockopt 	= slp_getsockopt;
-	prot->setsockopt 	= slp_setsockopt;
+	prot 	= (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
+	data 	= (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
 
-	data 			= (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
-	data->dest 		= PI_SLP_SOCK_DLP;
-	data->last_dest 	= -1;	
-	data->src 		= PI_SLP_SOCK_DLP;
-	data->last_src 		= -1;
-	data->type 		= PI_SLP_TYPE_PADP;
-	data->last_type 	= -1;
-	data->txid 		= 0xfe;
-	data->last_txid 	= -1;
-	prot->data 		= data;
+	if ( (prot != NULL) && (data != NULL) ) {
+		prot->level = PI_LEVEL_SLP;
+		prot->dup = slp_protocol_dup;
+		prot->free = slp_protocol_free;
+		prot->read = slp_rx;
+		prot->write = slp_tx;
+		prot->getsockopt = slp_getsockopt;
+		prot->setsockopt = slp_setsockopt;
+
+		data->dest = PI_SLP_SOCK_DLP;
+		data->last_dest	= -1;	
+		data->src = PI_SLP_SOCK_DLP;
+		data->last_src 	= -1;
+		data->type = PI_SLP_TYPE_PADP;
+		data->last_type	= -1;
+		data->txid = 0xfe;
+		data->last_txid	= 0xff;
+		prot->data = data;
+
+	} else if (prot != NULL) {
+		free(prot);
+		prot = NULL;
+	} else if (data != NULL) {
+		free(data);
+		data = NULL;
+	}
 	
 	return prot;
 }
+
 
 /***********************************************************************
  *
@@ -121,17 +192,22 @@ struct pi_protocol *slp_protocol (void)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+int
+slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes;
 	
-	struct 	pi_protocol *prot, *next;
+	pi_protocol_t	*prot,
+			*next;
+
 	struct 	pi_slp_data *data;
 	struct 	slp *slp;
 		
-	unsigned char slp_buf[PI_SLP_HEADER_LEN + PI_SLP_MTU + PI_SLP_FOOTER_LEN];
-	unsigned int i;
-	unsigned int n;
+	unsigned char slp_buf[PI_SLP_HEADER_LEN + PI_SLP_MTU +
+		PI_SLP_FOOTER_LEN];
+
+	unsigned int	i,
+			n;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
@@ -161,10 +237,12 @@ int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	memcpy (slp_buf + PI_SLP_HEADER_LEN, buf, len);
 
 	/* CRC value */
-	set_short(&slp_buf[PI_SLP_HEADER_LEN + len], crc16(slp_buf, PI_SLP_HEADER_LEN + len));
+	set_short(&slp_buf[PI_SLP_HEADER_LEN + len],
+		crc16(slp_buf, (int)(PI_SLP_HEADER_LEN + len)));
 
 	/* Write out the data */
-	bytes = next->write(ps, slp_buf, PI_SLP_HEADER_LEN + len + PI_SLP_FOOTER_LEN, flags);
+	bytes = next->write(ps, slp_buf,
+		PI_SLP_HEADER_LEN + len + PI_SLP_FOOTER_LEN, flags);
 
 	CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf, 1));
 	CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf));
@@ -175,7 +253,7 @@ int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 /* Sigh.  SLP is a really broken protocol.  It has no proper framing, so it
    makes a proper "device driver" layer impossible.  There ought to be a
    layer below SLP that reads frames off the wire and passes them up. 
-   Insted, all we can do is have the device driver give us bytes and SLP has
+   Instead, all we can do is have the device driver give us bytes and SLP has
    to keep a pile of status info while it builds frames for itself.  So
    here's the code that does that. */
 
@@ -187,10 +265,11 @@ int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  *
  * Parameters:  None
  *
- * Returns:     Nothing
+ * Returns:     packet length or -1 on error
  *
  ***********************************************************************/
-int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+int
+slp_rx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	int 	i, 
 		checksum, 
@@ -204,9 +283,12 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		bytes,
 		total_bytes;
 	
-	struct 	pi_protocol *prot, *next;
+	pi_protocol_t	*prot,
+			*next;
+
 	struct 	pi_slp_data *data;
-	unsigned char slp_buf[PI_SLP_HEADER_LEN + PI_SLP_MTU + PI_SLP_FOOTER_LEN];
+	unsigned char slp_buf[PI_SLP_HEADER_LEN +
+		PI_SLP_MTU + PI_SLP_FOOTER_LEN];
 
 	unsigned char *cur;
 
@@ -239,12 +321,15 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				state++;
 				expect = PI_SLP_HEADER_LEN - 3;
 			} else {
-				slp_buf[PI_SLP_OFFSET_SIG1] = slp_buf[PI_SLP_OFFSET_SIG2];
-				slp_buf[PI_SLP_OFFSET_SIG2] = slp_buf[PI_SLP_OFFSET_SIG3];
+				slp_buf[PI_SLP_OFFSET_SIG1] =
+					slp_buf[PI_SLP_OFFSET_SIG2];
+				slp_buf[PI_SLP_OFFSET_SIG2] =
+					slp_buf[PI_SLP_OFFSET_SIG3];
 				expect = 1;
 				cur--;
 				LOG((PI_DBG_SLP, PI_DBG_LVL_WARN,
-				    "SLP RX Unexpected signature 0x%.2x 0x%.2x 0x%.2x\n",
+					"SLP RX Unexpected signature"
+					" 0x%.2x 0x%.2x 0x%.2x\n",
 				    b1, b2, b3));
 			}
 			break;
@@ -257,14 +342,17 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			/* read in the whole SLP header. */
 			if ((checksum & 0xff) == slp_buf[PI_SLP_OFFSET_SUM]) {
 				state++;
-				packet_len = get_short(&slp_buf[PI_SLP_OFFSET_SIZE]);
-				if (packet_len > len) {
-					LOG((PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Packet size exceed buffer\n"));
+				packet_len =
+				 get_short(&slp_buf[PI_SLP_OFFSET_SIZE]);
+				if (packet_len > (int)len) {
+				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR,
+				 "SLP RX Packet size exceed buffer\n"));
 					return -1;
 				}
 				expect = packet_len;
 			} else {
-				LOG((PI_DBG_SLP, PI_DBG_LVL_WARN, "SLP RX Header checksum failed\n"));
+				LOG((PI_DBG_SLP, PI_DBG_LVL_WARN,
+				 "SLP RX Header checksum failed\n"));
 				return 0;
 			}
 			break;
@@ -274,9 +362,12 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			break;
 		case 4:
 			/* that should be the whole packet. */
-			checksum = crc16(slp_buf, PI_SLP_HEADER_LEN + packet_len);
-			checksum_packet = get_short(&slp_buf[PI_SLP_HEADER_LEN + packet_len]);
-			if (get_byte(&slp_buf[PI_SLP_OFFSET_TYPE]) == PI_SLP_TYPE_LOOP) {
+			checksum = crc16(slp_buf,
+			 PI_SLP_HEADER_LEN + packet_len);
+			checksum_packet =
+			 get_short(&slp_buf[PI_SLP_HEADER_LEN + packet_len]);
+			if (get_byte(&slp_buf[PI_SLP_OFFSET_TYPE]) ==
+			 PI_SLP_TYPE_LOOP) {
 				/* Adjust because every tenth loopback
 				   packet has a bogus check sum */
 				if (checksum != checksum_packet)
@@ -291,15 +382,22 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			}
 			
 			/* Track the info so getsockopt will work */
-			data->last_dest 	= get_byte(&slp_buf[PI_SLP_OFFSET_DEST]);
-			data->last_src 		= get_byte(&slp_buf[PI_SLP_OFFSET_SRC]);
-			data->last_type 	= get_byte(&slp_buf[PI_SLP_OFFSET_TYPE]);
-			data->last_txid 	= get_byte(&slp_buf[PI_SLP_OFFSET_TXID]);
+			data->last_dest =
+			 get_byte(&slp_buf[PI_SLP_OFFSET_DEST]);
+			data->last_src 	=
+			 get_byte(&slp_buf[PI_SLP_OFFSET_SRC]);
+			data->last_type =
+			 get_byte(&slp_buf[PI_SLP_OFFSET_TYPE]);
+			data->last_txid =
+			 get_byte(&slp_buf[PI_SLP_OFFSET_TXID]);
 
-			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf, 0));
-			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf));
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO,
+			 slp_dump_header(slp_buf, 0));
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG,
+			 slp_dump(slp_buf));
 
-			memcpy(buf, &slp_buf[PI_SLP_HEADER_LEN], packet_len);
+			memcpy(buf, &slp_buf[PI_SLP_HEADER_LEN],
+				(size_t)packet_len);
 			goto done;
 			break;
 
@@ -308,9 +406,10 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		}
 		
 		do {
-			bytes = next->read(ps, cur, expect, flags);
+			bytes = next->read(ps, cur, (size_t)expect, flags);
 			if (bytes < 0) {
-				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Read Error\n"));
+				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR,
+				 "SLP RX Read Error\n"));
 				return -1;
 			}			
 			total_bytes += bytes;
@@ -324,11 +423,23 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	return packet_len;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    slp_getsockopt
+ *
+ * Summary:     get options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-slp_getsockopt(struct pi_socket *ps, int level, int option_name, 
-	       void *option_value, size_t *option_len)
+slp_getsockopt(pi_socket_t *ps, int level, int option_name, 
+       void *option_value, size_t *option_len)
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_slp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
@@ -346,7 +457,8 @@ slp_getsockopt(struct pi_socket *ps, int level, int option_name,
 	case PI_SLP_LASTDEST:
 		if (*option_len < sizeof (data->dest))
 			goto error;
-		memcpy (option_value, &data->last_dest, sizeof (data->last_dest));
+		memcpy (option_value, &data->last_dest,
+			sizeof (data->last_dest));
 		*option_len = sizeof (data->last_dest);
 		break;
 	case PI_SLP_SRC:
@@ -400,11 +512,23 @@ slp_getsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    slp_setsockopt
+ *
+ * Summary:     set options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-slp_setsockopt(struct pi_socket *ps, int level, int option_name, 
-	       const void *option_value, size_t *option_len)
+slp_setsockopt(pi_socket_t *ps, int level, int option_name, 
+       const void *option_value, size_t *option_len)
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_slp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
@@ -450,18 +574,20 @@ slp_setsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
+
 /***********************************************************************
  *
- * Function:    slp_dump
+ * Function:    slp_dump_header
  *
- * Summary:     Dump the contents of the SPL frame
+ * Summary:     Dump the contents of the SPL frame header
  *
- * Parameters:  None
+ * Parameters:  char* to data buffer, RXTX flag
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void slp_dump_header(unsigned char *data, int rxtx)
+void
+slp_dump_header(unsigned char *data, int rxtx)
 {	
 	LOG((PI_DBG_SLP, PI_DBG_LVL_NONE,
 	    "SLP %s %d->%d type=%d txid=0x%.2x len=0x%.4x checksum=0x%.2x\n",
@@ -474,10 +600,23 @@ void slp_dump_header(unsigned char *data, int rxtx)
 	    get_byte(&data[PI_SLP_OFFSET_SUM])));
 }
 
-void slp_dump(unsigned char *data)
+
+/***********************************************************************
+ *
+ * Function:    slp_dump
+ *
+ * Summary:     Dump the contents of the SPL frame
+ *
+ * Parameters:  char* to data buffer
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+void
+slp_dump(unsigned char *data)
 {
-	int 	size;
+	size_t 	size;
 
 	size = get_short(&data[PI_SLP_OFFSET_SIZE]);
-	dumpdata(&data[PI_SLP_HEADER_LEN], size);
+	dumpdata((char *)&data[PI_SLP_HEADER_LEN], size);
 }

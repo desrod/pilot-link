@@ -28,7 +28,6 @@ extern void joblist_abort_all(void);
 
 /* Constants */
 const int DATEBOOK_MAX_CATEGORIES = 16;
-
 const char *Weekday[7] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 const int WEEKDAY_LEN = sizeof(Weekday[0]);
 const char WEEKDAY_UNKNOWN[] = "unknown_weekday";
@@ -38,19 +37,19 @@ const char WEEKDAY_UNKNOWN[] = "unknown_weekday";
 */
 /* Month name looks nicer if capitalized; case is irrelevant for parsedate
  */
-const char *Month[12] = {"jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"};
-const int MONTH_LEN = sizeof(Month[0]);
-const char MONTH_UNKNOWN[] = "unknown_month";
-const char DATE_UNKNOWN[] = "unknown_date";
-const char TIME_UNKNOWN[] = "unknown_time";
-const char BOOLEAN_YES[] = "yes";
-const char BOOLEAN_NO[] = "no";
-const char BOOLEAN_TRUE[] = "true";
-const char BOOLEAN_FALSE[] = "false";
+static const char *Month[12] = {"jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"};
+static const int MONTH_LEN = sizeof(Month[0]);
+static const char MONTH_UNKNOWN[] = "unknown_month";
+static const char DATE_UNKNOWN[] = "unknown_date";
+static const char TIME_UNKNOWN[] = "unknown_time";
+static const char BOOLEAN_YES[] = "yes";
+static const char BOOLEAN_NO[] = "no";
+static const char BOOLEAN_TRUE[] = "true";
+static const char BOOLEAN_FALSE[] = "false";
 
 
 
-const char * DATA_FORMAT_TXT[] = {
+static const char * DATA_FORMAT_TXT[] = {
   "invalid",
   "hotsync",
   "pdb",

@@ -40,7 +40,6 @@
 #include <netdb.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-serial.h"
 #include "pi-slp.h"
@@ -192,7 +191,7 @@ fetch_host(char *hostname, size_t hostlen, struct in_addr *address,
 				       sizeof(struct in_addr));
 			}
 		} else
-#endif				/* defined(IFF_POINTOPOINT) && defined(SIOCGIFDSTADDR) */
+#endif			/* defined(IFF_POINTOPOINT) && defined(SIOCGIFDSTADDR) */
 			/* If it isn't a point-to-point device, use the address */
 #ifdef SIOCGIFADDR
 		{

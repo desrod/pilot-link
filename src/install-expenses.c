@@ -23,7 +23,6 @@
 #include <string.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-expense.h"
 
@@ -132,12 +131,13 @@ int main(int argc, char *argv[])
 		replace_category = 0;
 	
 	char 	*port		= NULL,
-		buf[0xffff],
 		*progname 	= argv[0],
 		*category_name 	= NULL;
+
+	unsigned char buf[0xffff];
 	
 	struct 	PilotUser User;
-	struct 	ExpenseAppInfo mai;
+	struct 	ExpenseAppInfo eai;
 	struct 	Expense theExpense;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
@@ -225,17 +225,17 @@ int main(int argc, char *argv[])
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, Expense_DB, &db) < 0) {
 		puts("Unable to open ExpenseDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open ExpenseDB.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
-	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-	unpack_ExpenseAppInfo(&mai, buf, l);
+	l = dlp_ReadAppBlock(sd, db, 0, buf, 0xffff);
+	unpack_ExpenseAppInfo(&eai, buf, l);
 
 	if (category_name) {
 		category = -1;	/* invalid category */
 		for (i = 0; i < 16; i++)
 			if (!strcasecmp
-			    (mai.category.name[i], category_name)) {
+			    (eai.category.name[i], category_name)) {
 				category = i;
 				break;
 			}
@@ -270,12 +270,16 @@ int main(int argc, char *argv[])
 
 		strcpy(b, theExpense.amount);
 		b += strlen(theExpense.amount) + 1;
+
 		strcpy(b, theExpense.vendor);
 		b += strlen(theExpense.vendor) + 1;
+
 		strcpy(b, theExpense.city);
 		b += strlen(theExpense.city) + 1;
+
 		strcpy(b, theExpense.attendees);
 		b += strlen(theExpense.attendees) + 1;
+
 		strcpy(b, theExpense.note);
 		b += strlen(theExpense.note) + 1;
 

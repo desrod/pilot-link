@@ -55,6 +55,7 @@ extern const char DATEBOOK_FIELD_REPEAT_DAY[];
 extern const char DATEBOOK_FIELD_REPEAT_WEEKSTART[];
 extern const char DATEBOOK_FIELD_REPEAT_WEEKDAYS[];
 extern const char DATEBOOK_FIELD_REPEAT_EXCEPTION_NUM[];
+
 /* Leave out repeatException for now
  * (complicated array compare)
  */

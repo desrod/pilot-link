@@ -28,9 +28,7 @@
 #include <regex.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-memo.h"
-#include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-header.h"
 
@@ -39,7 +37,6 @@
 #define MEMO_DIRECTORY 1
 #define MAXDIRNAMELEN 1024
 
-int verbose = 0;
 char *progname;
 
 /* Declare prototypes */
@@ -185,7 +182,7 @@ write_memo_in_directory(char *dirname, struct Memo m,
 	if (!(fd = fopen(pathbuffer, "w"))) {
 		printf("%s: can't open file \"%s\" for writing\n",
 			progname, pathbuffer);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	fputs(m.text, fd);
 	fclose(fd);
@@ -306,10 +303,9 @@ int main(int argc, char *argv[])
 			ret = regcomp(&title_pattern, optarg, REG_NOSUB);
 			buf = (char *) malloc(bufsize);
 			if (ret) {
-				regerror(ret, &title_pattern, buf,
-					bufsize);
+				regerror(ret, &title_pattern, buf, bufsize);
 				printf("%s\n", buf);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			title_matching = 1;
 			break;
@@ -335,7 +331,7 @@ int main(int argc, char *argv[])
 			printf("Unable to open MemoDB.\n");
 			dlp_AddSyncLogEntry(sd,
 					    "Unable to open MemoDB.\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	
 		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
@@ -346,13 +342,13 @@ int main(int argc, char *argv[])
 		pif = pi_file_open(filename);
 		if (!pif) {
 			perror("pi_file_open");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		ret = pi_file_get_app_info(pif, (void *) &ptr, &len);
 		if (ret == -1) {
 			perror("pi_file_get_app_info");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		memcpy(appblock, ptr, len);
@@ -372,7 +368,7 @@ int main(int argc, char *argv[])
 				category_name);
 			dlp_AddSyncLogEntry(sd,
 				"Can't find specified memo category.\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		};
 	}
 

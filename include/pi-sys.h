@@ -9,23 +9,25 @@ extern "C" {
 
 #define PI_SYS_HEADER_LEN  0
 
-	struct pi_sys_data 
+	typedef struct pi_sys_data 
 	{
 		unsigned char txid;
-	};
+	} pi_sys_data_t;
 
-	extern struct pi_protocol *sys_protocol
+	extern pi_protocol_t *sys_protocol
 	    PI_ARGS((void));
 
 	extern int sys_tx
-	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
+	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
+		 size_t len, int flags));
 	extern int sys_rx
-	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
+	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
+		 size_t len, int flags));
 
 	extern void sys_dump_header
 	    PI_ARGS((unsigned char *data, int rxtx));
 	extern void sys_dump
-	    PI_ARGS((unsigned char *data, int len));
+	    PI_ARGS((unsigned char *data, size_t len));
 
 #ifdef __cplusplus
 }

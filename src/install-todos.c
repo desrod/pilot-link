@@ -24,7 +24,6 @@
 #include <stdlib.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-todo.h"
 #include "pi-header.h"
@@ -66,7 +65,7 @@ void install_ToDos(int sd, int db, char *filename)
 	f = fopen(filename, "r");
 	if (f == NULL) {
 		perror("fopen");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fseek(f, 0, SEEK_END);
@@ -76,7 +75,7 @@ void install_ToDos(int sd, int db, char *filename)
 	file_text = (char *) malloc(filelen + 1);
 	if (file_text == NULL) {
 		perror("malloc()");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fread(file_text, filelen, 1, f);
@@ -171,7 +170,7 @@ int main(int argc, char *argv[])
 		printf("\n");
 		printf("   ERROR: You must specify a filename to read ToDo entries from.\n");
 		printf("   Please see %s --help for more information.\n\n", progname);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (argc < 2 && !getenv("PILOTPORT")) {
@@ -184,14 +183,14 @@ int main(int argc, char *argv[])
 		printf("\n");
 		printf("   ERROR: At least one command parameter of '-p <port>' must be set, or the\n"
 		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	} else if (port != NULL) {
 		
 		sd = pilot_connect(port);
 
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		
 		/* Tell user (via Palm) that we are starting things up */
@@ -201,7 +200,7 @@ int main(int argc, char *argv[])
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
 			puts("Unable to open ToDoDB");
 			dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		/* Actually do the install here, passed a filename */

@@ -1,23 +1,22 @@
 #ifndef _PILOT_HINOTE_H_	/* -*- C++ -*- */
 #define _PILOT_HINOTE_H_
 
-#include "pi-args.h"
 #include "pi-appinfo.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	struct HiNoteNote {
+	typedef struct HiNoteNote {
 		int flags;
 		int level;
 		char *text;
-	};
+	} HiNoteNote_t;
 
-	struct HiNoteAppInfo {
+	typedef struct HiNoteAppInfo {
 		struct CategoryAppInfo category;
 		unsigned char reserved[48];
-	};
+	} HiNoteAppInfo_t;
 
 	extern void free_HiNoteNote PI_ARGS((struct HiNoteNote *));
 	extern int unpack_HiNoteNote

@@ -7,7 +7,7 @@ use PDA::Pilot;
 use Data::Dumper;
 
 print "Now press the HotSync button (defaults to /dev/pilot)\n";
-my $socket 	= PDA::Pilot::openPort("/dev/pilot") or die "$!";
+my $socket 	= PDA::Pilot::openPort("/dev/ttyqe") or die "$!";
 my $dlp 	= PDA::Pilot::accept($socket);
 my $db 		= $dlp->open("DatebookDB");
 my $r;

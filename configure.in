@@ -23,7 +23,7 @@ dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=12
 PILOT_LINK_MINOR=0
-PILOT_LINK_PATCH=
+PILOT_LINK_PATCH=-rc7
 
 AC_SUBST(PILOT_LINK_VERS)
 AC_SUBST(PILOT_LINK_MAJOR)
@@ -214,10 +214,17 @@ case "$host" in
 		usb_type=freebsd
 		msg_usb="yes, FreeBSD"
 	;;
+        *darwin*)
+		AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
+		usb_type=darwin
+		msg_usb="yes, Darwin"
+		LIBS="$LIBS -framework IOKit -framework Carbon -lstdc++"
+        ;;
+
 esac
 AM_CONDITIONAL(WITH_LINUXUSB, test x$usb_type = xlinux)
 AM_CONDITIONAL(WITH_FREEBSDUSB, test x$usb_type = xfreebsd)
-
+AM_CONDITIONAL(WITH_DARWINUSB, test x$usb_type = xdarwin)
 
 dnl ******************************
 dnl Test for getopt
@@ -595,9 +602,10 @@ AC_ARG_ENABLE(compile-warnings,
 
 if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
-		-Wall -Wstrict-prototypes -Wmissing-declarations \
-		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
-		-pedantic"
+		-pedantic -ansi -O0 -Wshadow -Wall -W -Waggregate-return 	\
+		-Wcast-align -Wcast-qual -Wnested-externs -Wpointer-arith 	\
+		-Wundef -Wbad-function-cast -Wmissing-prototypes -Winline	\
+		-Wstrict-prototypes -Wmissing-declarations -Wconversion"
 fi
 
 case "$host" in

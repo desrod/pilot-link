@@ -98,9 +98,9 @@ do
       fi
       if grep "^AM_PROG_LIBTOOL" configure.in >/dev/null; then
 	if test -z "$NO_LIBTOOLIZE" ; then 
-          if [ -n "$VENDOR" ]; then
-             if [ "$VENDOR = apple" ]; then
-                echo "Running glibtoolize...(for $VENDOR $HOSTTYPE on $MACHTYPE)"
+          if [ -n "$OSTYPE" ]; then
+             if [ "$OSTYPE" = "darwin" ]; then
+                echo "Running glibtoolize... ($MACHTYPE)"
                 glibtoolize --force --copy
              fi
           else

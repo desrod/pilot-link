@@ -31,69 +31,148 @@
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-net.h"
 
 #define PI_NET_TIMEOUT 10*1000
 
-static int net_getsockopt(struct pi_socket *ps, int level, int option_name, 
-			  void *option_value, int *option_len);
-static int net_setsockopt(struct pi_socket *ps, int level, int option_name, 
-			  const void *option_value, int *option_len);
+static int net_getsockopt(pi_socket_t *ps, int level, int option_name, 
+			  void *option_value, size_t *option_len);
+static int net_setsockopt(pi_socket_t *ps, int level, int option_name, 
+			  const void *option_value, size_t *option_len);
 
-static struct pi_protocol *net_protocol_dup (struct pi_protocol *prot)
+/***********************************************************************
+ *
+ * Function:    net_protocol_dup
+ *
+ * Summary:     clones an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol_t*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t
+*net_protocol_dup (pi_protocol_t *prot)
 {
-	struct pi_protocol *new_prot;
-	struct pi_net_data *data, *new_data;
-	
-	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level 	= prot->level;
-	new_prot->dup 		= prot->dup;
-	new_prot->free 		= prot->free;
-	new_prot->read 		= prot->read;
-	new_prot->write 	= prot->write;
-	new_prot->getsockopt 	= prot->getsockopt;
-	new_prot->setsockopt 	= prot->setsockopt;
+	pi_protocol_t *new_prot = NULL;
+	pi_net_data_t	*data = NULL,
+			*new_data = NULL;
 
-	new_data 		= (struct pi_net_data *)malloc (sizeof (struct pi_net_data));
-	data 			= (struct pi_net_data *)prot->data;
-	new_data->type 		= data->type;
-	new_data->txid 		= data->txid;
-	new_prot->data 		= new_data;
+	ASSERT(prot != NULL);
+	
+	new_prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
+	if (new_prot != NULL) {
+		new_data = (pi_net_data_t *)malloc (sizeof (pi_net_data_t));
+		if (new_data == NULL) {
+			free(new_prot);
+			new_prot == NULL;
+		}
+	}
+
+	if ( (new_prot != NULL) && (new_data != NULL) ) {
+		new_prot->level 	= prot->level;
+		new_prot->dup 		= prot->dup;
+		new_prot->free 		= prot->free;
+		new_prot->read 		= prot->read;
+		new_prot->write 	= prot->write;
+		new_prot->getsockopt 	= prot->getsockopt;
+		new_prot->setsockopt 	= prot->setsockopt;
+
+		data 			= (pi_net_data_t *)prot->data;
+		new_data->type 		= data->type;
+		new_data->txid 		= data->txid;
+		new_prot->data 		= new_data;
+	}
 
 	return new_prot;
 }
 
-static void net_protocol_free (struct pi_protocol *prot)
+
+/***********************************************************************
+ *
+ * Function:    net_protocol_free
+ *
+ * Summary:     frees an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static
+void net_protocol_free (pi_protocol_t *prot)
 {
-	free(prot->data);
-	free(prot);
+
+	ASSERT (prot != NULL);
+
+	if (prot != NULL) {
+		if (prot->data != NULL) {
+			free(prot->data);
+			prot->data = NULL;
+		}
+		free(prot);
+	}
 }
 
-struct pi_protocol *net_protocol (void)
+
+/***********************************************************************
+ *
+ * Function:    net_protocol
+ *
+ * Summary:     creates and inits pi_protocol struct instance
+ *
+ * Parameters:  void
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+pi_protocol_t
+*net_protocol (void)
 {
-	struct 	pi_protocol *prot;
-	struct 	pi_net_data *data;
+	pi_protocol_t *prot = NULL;
+	pi_net_data_t *data = NULL;
 
-	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));	
-	prot->level 		= PI_LEVEL_NET;
-	prot->dup 		= net_protocol_dup;
-	prot->free 		= net_protocol_free;
-	prot->read 		= net_rx;
-	prot->write 		= net_tx;
-	prot->getsockopt 	= net_getsockopt;
-	prot->setsockopt 	= net_setsockopt;
+	prot 	= (pi_protocol_t *)malloc (sizeof (pi_protocol_t));	
+	if (prot != NULL) {
+		data 	= (pi_net_data_t *)malloc (sizeof (pi_net_data_t));
+		if (data == NULL) {
+			free(prot);
+			prot = NULL;
+		}
+	}
 
-	data 			= (struct pi_net_data *)malloc (sizeof (struct pi_net_data));
-	data->type 		= PI_NET_TYPE_DATA;
-	data->txid 		= 0x00;
-	prot->data 		= data;
+	if ( (prot != NULL) && (data != NULL) ) {
+
+		prot->level 		= PI_LEVEL_NET;
+		prot->dup 		= net_protocol_dup;
+		prot->free 		= net_protocol_free;
+		prot->read 		= net_rx;
+		prot->write 		= net_tx;
+		prot->getsockopt 	= net_getsockopt;
+		prot->setsockopt 	= net_setsockopt;
+
+		data->type 		= PI_NET_TYPE_DATA;
+		data->txid 		= 0x00;
+		prot->data 		= data;
+	}
 	
 	return prot;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    net_rx_handshake
+ *
+ * Summary:     RX handshake
+ *
+ * Parameters:  pi_socket_t*
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 int
-net_rx_handshake(struct pi_socket *ps)
+net_rx_handshake(pi_socket_t *ps)
 {
 	unsigned char msg1[50] = 
 		"\x12\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
@@ -122,8 +201,20 @@ net_rx_handshake(struct pi_socket *ps)
 	return 0;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    net_tx_handshake
+ *
+ * Summary:     TX handshake
+ *
+ * Parameters:  pi_socket_t*
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 int
-net_tx_handshake(struct pi_socket *ps)
+net_tx_handshake(pi_socket_t *ps)
 {
 	unsigned char msg1[22] = 
 		"\x90\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
@@ -151,18 +242,33 @@ net_tx_handshake(struct pi_socket *ps)
 	return 0;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    net_tx
+ *
+ * Summary:     Transmit NET Packets
+ *
+ * Parameters:  pi_socket_t*, char* to buf, buf length, flags
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
 int
-net_tx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
+net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 {
 	int 	bytes;
-	struct 	pi_protocol *prot, *next;
-	struct 	pi_net_data *data;
+
+	pi_protocol_t	*prot,
+			*next;
+
+	pi_net_data_t *data;
 	unsigned char *buf;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
-	data = (struct pi_net_data *)prot->data;
+	data = (pi_net_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_NET);
 	if (next == NULL)
 		return -1;
@@ -179,36 +285,49 @@ net_tx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 
 	/* Write the header and body */
 	bytes = next->write(ps, buf, PI_NET_HEADER_LEN + len, flags);
-	if (bytes < (PI_NET_HEADER_LEN + len)) {
+	if (bytes < (int)(PI_NET_HEADER_LEN + len)) {
 		free(buf);
 		return bytes;
 	}
 
 	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1));
-	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, dumpdata(msg, len));
+	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, dumpdata((char *)msg, len));
 	
 	free(buf);
 	return len;
 }
 
+/***********************************************************************
+ *
+ * Function:    net_rx
+ *
+ * Summary:     Receive NET Packets
+ *
+ * Parameters:  pi_socket_t*, char* to buf, buf length, flags
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
 int
-net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
+net_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 {
 	int 	bytes, 
 		total_bytes, 
 		packet_len,
-		timeout,
-		size;
+		timeout;
+
+	size_t	size;
 	
-	struct 	pi_protocol *prot, *next;
-	struct 	pi_net_data *data;
-		
+	pi_protocol_t	*prot,
+			*next;
+
+	pi_net_data_t *data;
 	unsigned char *cur;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
-	data = (struct pi_net_data *)prot->data;
+	data = (pi_net_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_NET);
 	if (next == NULL)
 		return -1;
@@ -224,7 +343,8 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 		bytes = next->read(ps, msg, 1, flags);
 		if (bytes > 0) {
 			LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
-			     "NET RX: Checking for headerless packet %d\n", msg[0]));
+			     "NET RX: Checking for headerless packet %d\n",
+				msg[0]));
 
 			if (msg[0] == 0x90) {
 				/* Cause the header bytes to be skipped */
@@ -244,7 +364,8 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 	
 	/* Bytes in what's left of the header */
 	while (total_bytes < PI_NET_HEADER_LEN) {
-		bytes = next->read(ps, msg + total_bytes, PI_NET_HEADER_LEN - total_bytes, flags);
+		bytes = next->read(ps, msg + total_bytes,
+			(size_t)(PI_NET_HEADER_LEN - total_bytes), flags);
 		if (bytes <= 0)
 			return bytes;
 		total_bytes += bytes;
@@ -254,7 +375,8 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 	packet_len = get_long(&msg[PI_NET_OFFSET_SIZE]);
 	while (total_bytes < PI_NET_HEADER_LEN + packet_len) {
 		bytes = next->read(ps, msg + total_bytes, 
-				  PI_NET_HEADER_LEN + packet_len - total_bytes, flags);
+		   (size_t)(PI_NET_HEADER_LEN + packet_len - total_bytes),
+		    flags);
 		if (bytes <= 0)
 			return bytes;
 		else if (bytes > 0)
@@ -275,22 +397,34 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 
 	/* Remove the header */
 	cur = msg + PI_NET_HEADER_LEN;
-	memmove (msg, cur, packet_len);	
+	memmove (msg, cur, (size_t)packet_len);	
 
 	return packet_len;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    net_getsockopt
+ *
+ * Summary:     get options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-net_getsockopt(struct pi_socket *ps, int level, int option_name, 
-	       void *option_value, int *option_len)
+net_getsockopt(pi_socket_t *ps, int level, int option_name, 
+	       void *option_value, size_t *option_len)
 {
-	struct 	pi_protocol *prot;
-	struct 	pi_net_data *data;
+	pi_protocol_t *prot;
+	pi_net_data_t *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
-	data = (struct pi_net_data *)prot->data;
+	data = (pi_net_data_t *)prot->data;
 
 	switch (option_name) {
 	case PI_NET_TYPE:
@@ -309,17 +443,29 @@ net_getsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    net_setsockopt
+ *
+ * Summary:     set options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-net_setsockopt(struct pi_socket *ps, int level, int option_name, 
-	       const void *option_value, int *option_len)
+net_setsockopt(pi_socket_t *ps, int level, int option_name, 
+	       const void *option_value, size_t *option_len)
 {
-	struct 	pi_protocol *prot;
-	struct 	pi_net_data *data;
+	pi_protocol_t *prot;
+	pi_net_data_t *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
 		return -1;
-	data = (struct pi_net_data *)prot->data;
+	data = (pi_net_data_t *)prot->data;
 
 	switch (option_name) {
 	case PI_NET_TYPE:
@@ -338,7 +484,20 @@ net_setsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
-void net_dump_header(unsigned char *data, int rxtx)
+
+/***********************************************************************
+ *
+ * Function:    net_dump_header
+ *
+ * Summary:     Dump the NET packet header
+ *
+ * Parameters:  char* to net packet, TX boolean
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+void
+net_dump_header(unsigned char *data, int rxtx)
 {
 	LOG((PI_DBG_NET, PI_DBG_LVL_NONE,
 	    "NET %s type=%d txid=0x%.2x len=0x%.4x\n",
@@ -348,10 +507,23 @@ void net_dump_header(unsigned char *data, int rxtx)
 	    get_long(&data[PI_NET_OFFSET_SIZE])));
 }
 
-void net_dump(unsigned char *data)
+
+/***********************************************************************
+ *
+ * Function:    net_dump
+ *
+ * Summary:     Dump the NET packet
+ *
+ * Parameters:  char* to net packet
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+void
+net_dump(unsigned char *data)
 {
-	int 	size;
+	size_t 	size;
 
 	size = get_long(&data[PI_NET_OFFSET_SIZE]);
-	dumpdata(&data[PI_NET_HEADER_LEN], size);
+	dumpdata((char *)&data[PI_NET_HEADER_LEN], size);
 }

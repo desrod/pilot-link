@@ -38,6 +38,7 @@ int match_category(char *buf, struct AddressAppInfo *aai);
 int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
+int read_csvline(FILE *f);
 
 static void display_help(char *progname);
 
@@ -96,9 +97,6 @@ int 	tableformat 	= 0,
 	defaultcategory = 0;
 
 char 	tabledelims[5] = { '\n', ',', ';', '\t' },
-	*progname,
-
-	buf[1000],
         *field[100],
         *unquote(char *);
 
@@ -108,7 +106,8 @@ int read_csvline(FILE *f)
 
         int     nfield;
         char    *p, 
-                *q;
+		buf[0xffff],
+		*q;
                                
         if (fgets(buf, sizeof(buf), f) == NULL)
                 return -1;
@@ -583,7 +582,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 				if (augment && (j >= 3) && (j <= 7))
 					write_field(out,
 						    aai->phoneLabels[addr.phoneLabel
-								     [j - 3]], 2);
+								     [j - 4]], 2);
 				write_field(out, addr.entry[realentry[j]],
 					    tabledelim);
 			}
@@ -718,11 +717,11 @@ int main(int argc, char *argv[])
         if (dlp_ReadUserInfo(sd, &User) < 0)
                 goto error_close;
 	
-	/* Open the MemoDB.pdb database, store access handle in db */
+	/* Open the AddressDB.pdb database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
 		puts("Unable to open AddressDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
@@ -741,7 +740,7 @@ int main(int argc, char *argv[])
 		if (f == NULL) {
 			sprintf(buf, "%s: %s", argv[0], argv[optind]);
 			perror(buf);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		write_file(f, sd, db, &aai);
 		if (deletecategory)
@@ -764,7 +763,7 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "it is readable by this user");
 				fprintf(stderr, " before launching.\n\n");
 
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			if (deletecategory)
 				dlp_DeleteCategory(sd, db,

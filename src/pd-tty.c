@@ -36,7 +36,6 @@ void do_readline(void);
 #include <sys/types.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 

@@ -25,29 +25,33 @@
 #include "pi-macros.h"
 #include "pi-address.h"
 
+#define hi(x) (((x) >> 4) & 0x0f)
+#define lo(x) ((x) & 0x0f)
+#define pair(x,y) (((x) << 4) | (y))
+
 /***********************************************************************
  *
  * Function:    free_Address
  *
  * Summary:	Free the members of an address structure
  *
- * Parameters:  None
+ * Parameters:  Address_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_Address(struct Address *addr)
+void
+free_Address(Address_t *addr)
 {
 	int 	i;
 
 	for (i = 0; i < 19; i++)
-		if (addr->entry[i])
+		if (addr->entry[i]) {
 			free(addr->entry[i]);
+			addr->entry[i] = NULL;
+		}
 }
 
-#define hi(x) (((x) >> 4) & 0x0f)
-#define lo(x) ((x) & 0x0f)
-#define pair(x,y) (((x) << 4) | (y))
 
 /***********************************************************************
  *
@@ -56,16 +60,17 @@ void free_Address(struct Address *addr)
  * Summary:     Fill in the address structure based on the raw record 
  *		data
  *
- * Parameters:  None
+ * Parameters:  Address_t*, char* to buf, buf size
  *
  * Returns:     0 on error, the length of the data used from the
  *		buffer otherwise
  *
  ***********************************************************************/
-int unpack_Address(struct Address *addr, unsigned char *buffer, int len)
+int
+unpack_Address(Address_t *addr, unsigned char *buffer, size_t len)
 {
-	unsigned long contents;
-	unsigned long v;
+	unsigned long	contents,
+			v;
 	unsigned char *start = buffer;
 
 	if (len < 9)
@@ -108,6 +113,7 @@ int unpack_Address(struct Address *addr, unsigned char *buffer, int len)
 	return (buffer - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    pack_Address
@@ -115,23 +121,25 @@ int unpack_Address(struct Address *addr, unsigned char *buffer, int len)
  * Summary:     Fill in the raw address record data based on the 
  *		address structure
  *
- * Parameters:  None
+ * Parameters:  Address_t*, char * to record, record length
  *
  * Returns:     The length of the buffer required if record is NULL,
  *		or 0 on error, the length of the data used from the 
  *		buffer otherwise
  *
  ***********************************************************************/
-int pack_Address(struct Address *addr, unsigned char *record, int len)
+int
+pack_Address(Address_t *addr, unsigned char *record, size_t len)
 {
-	int 	l,
-		destlen = 9;
+	unsigned int	l,
+			destlen = 9;
 
 	unsigned char *start = record;
 	unsigned char *buffer;
-	unsigned long contents;
-	unsigned long v;
-	unsigned long phoneflag;
+	unsigned long 	contents,
+			v,
+			phoneflag;
+
 	unsigned char offset;
 
 	for (v = 0; v < 19; v++)
@@ -174,6 +182,7 @@ int pack_Address(struct Address *addr, unsigned char *record, int len)
 	return (buffer - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    unpack_AddressAppInfo
@@ -181,7 +190,7 @@ int pack_Address(struct Address *addr, unsigned char *record, int len)
  * Summary:     Fill in the app info structure based on the raw app 
  *		info data
  *
- * Parameters:  None
+ * Parameters:  AddressAppInfo_t*, char * to record, record length
  *
  * Returns:     The necessary length of the buffer if record is NULL,
  *		or 0 on error, the length of the data used from the 
@@ -189,10 +198,9 @@ int pack_Address(struct Address *addr, unsigned char *record, int len)
  *
  ***********************************************************************/
 int
-unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
-		      int len)
+unpack_AddressAppInfo(AddressAppInfo_t *ai, unsigned char *record, size_t len)
 {
-	int 	i,
+	size_t 	i,
 		destlen = 4 + 16 * 22 + 2 + 2;
 
 	unsigned char *start = record;
@@ -236,7 +244,7 @@ unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
  * Summary:     Fill in the raw app info record data based on the app
  *		info structure
  *
- * Parameters:  None
+ * Parameters:  AddressAppInfo_t*, char * to record, record length
  *
  * Returns:     The length of the buffer required if record is NULL,
  *		or 0 on error, the length of the data used from the
@@ -244,11 +252,10 @@ unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
  *
  ***********************************************************************/
 int
-pack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
-		    int len)
+pack_AddressAppInfo(AddressAppInfo_t *ai, unsigned char *record, size_t len)
 {
-	int 	i,
-		destlen = 4 + 16 * 22 + 2 + 2;
+	int 	i;
+	size_t	destlen = 4 + 16 * 22 + 2 + 2;
 	unsigned char *pos = record;
 	unsigned long r;
 

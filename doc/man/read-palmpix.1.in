@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "read-palmpix" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "read-palmpix" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBread\-palmpix\fR \- Convert all pictures in the files given or found via 
 connecting to a Palm handheld if no files are given. The default output type is 

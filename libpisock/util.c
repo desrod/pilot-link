@@ -65,7 +65,7 @@ convert_ToPilotChar(const char *charset, const char *text,
 	ib 	= (char *)text;
 	*ptext 	= ob = malloc(obl);
 	
-	if (iconv(cd, &ib, &ibl, &ob, &obl) == -1)
+	if (iconv(cd, &ib, &ibl, &ob, &obl) == (size_t)-1)
 		return -1;
 	*ob = '\0';
 
@@ -76,6 +76,7 @@ convert_ToPilotChar(const char *charset, const char *text,
 	return -1;
 #endif
 }
+
 
 /***********************************************************************
  *
@@ -108,7 +109,7 @@ convert_FromPilotChar(const char *charset, const char *ptext,
 	ib 	= (char *)ptext;
 	*text 	= ob = malloc(obl);
 	
-	if (iconv(cd, &ib, &ibl, &ob, &obl) == -1)
+	if (iconv(cd, &ib, &ibl, &ob, &obl) == (size_t)-1)
 		return -1;
 	*ob = '\0';
 

@@ -1,18 +1,17 @@
 #ifndef _PILOT_VEO_H_
 #define _PILOT_VEO_H_
 
-#include "pi-args.h"
 #include "pi-appinfo.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct VeoAppInfo {
-   int 	dirty,
-     sortByPriority;
-   struct 	CategoryAppInfo category;
-};
+typedef struct VeoAppInfo {
+	int 	dirty,
+	sortByPriority;
+	struct 	CategoryAppInfo category;
+} VeoAppInfo_t;
 
 /* Actions */
 #define VEO_ACTION_OUTPUT  0x01
@@ -24,24 +23,28 @@ struct VeoAppInfo {
 
 typedef struct Veo {
    unsigned char   res1[1];
-   unsigned char   quality;  // 0 = high, 1 = med, 2 = low this must mean
-                             // something to the conduit because it doesn't
-                             // change anything on the Palm
-   unsigned char   resolution;     // 0 = 640x480, 1 = 320x240
+
+   /* 0 = high, 1 = med, 2 = low this must mean something 
+      to the conduit because it doesn't change anything 
+      on the Palm */
+   unsigned char   quality;
+
+   /* 0 = 640x480, 1 = 320x240 */
+   unsigned char   resolution;
    unsigned char   res2[12];
    unsigned long   picnum;
    unsigned short  day, month, year;
    
-   // These are not in the palm db header. They're used by the decoder
+   /* These are not in the palm db header. They're used by the decoder */
    unsigned short  width, height;
    int  sd, db;
 } Veo_t;
 
-void free_Veo( struct Veo *v );
-int unpack_Veo(struct Veo *v, unsigned char *buffer, int len);
-int unpack_VeoAppInfo(struct VeoAppInfo *vai, unsigned char *record, int len);
-int pack_Veo(struct Veo *v, unsigned char *buffer, int len);
-int pack_VeoAppInfo(struct VeoAppInfo *vai, unsigned char *record, int len);
+void free_Veo(Veo_t *v );
+int unpack_Veo(Veo_t *v, unsigned char *buffer, size_t len);
+int unpack_VeoAppInfo(VeoAppInfo_t *vai, unsigned char *record, size_t len);
+int pack_Veo(Veo_t *v, unsigned char *buffer, size_t len);
+int pack_VeoAppInfo(VeoAppInfo_t *vai, unsigned char *record, size_t len);
 
 #ifdef __cplusplus
 }

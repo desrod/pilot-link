@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if TIME_WITH_SYS_TIME
+#ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
 #else
-# if HAVE_SYS_TIME_H
+# ifdef HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # else
 #  include <time.h>
@@ -39,54 +39,73 @@
 char *ExpenseSortNames[] = { "Date", "Type", NULL };
 char *ExpenseDistanceNames[] = { "Miles", "Kilometers", NULL };
 char *ExpensePaymentNames[] =
-    { "AmEx", "Cash", "Check", "CreditCard", "MasterCard", "Prepaid",
-"VISA",
-	"Unfiled"
+    {	"AmEx", "Cash", "Check", "CreditCard", "MasterCard", "Prepaid",
+	"VISA", "Unfiled"
 };
+
 char *ExpenseTypeNames[] =
-    { "Airfare", "Breakfast", "Bus", "Business Meals", "Car Rental", "Dinner",
-	"Entertainment", "Fax", "Gas", "Gifts", "Hotel", "Incidentals", "Laundry",
-	"Limo", "Lodging", "Lunch", "Mileage", "Other", "Parking", "Postage",
-	"Snack", "Subway", "Supplies", "Taxi", "Telephone", "Tips", "Tolls", "Train"
+    { 	"Airfare", "Breakfast", "Bus", "Business Meals", "Car Rental",
+	"Dinner", "Entertainment", "Fax", "Gas", "Gifts", "Hotel",
+	"Incidentals", "Laundry", "Limo", "Lodging", "Lunch", "Mileage",
+	"Other", "Parking", "Postage", "Snack", "Subway", "Supplies",
+	"Taxi", "Telephone", "Tips", "Tolls", "Train"
 };
+
 
 /***********************************************************************
  *
- * Function:    free_Expense
+ * Function:	free_Expense
  *
- * Summary:     
+ * Summary:     frees members of the Expense structure
  *
- * Parameters:  None
+ * Parameters:  Expense_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_Expense(struct Expense *a)
+void
+free_Expense(Expense_t *expense)
 {
-	if (a->note)
-		free(a->note);
-	if (a->amount)
-		free(a->amount);
-	if (a->city)
-		free(a->city);
-	if (a->vendor)
-		free(a->vendor);
-	if (a->attendees)
-		free(a->attendees);
+	if (expense->note != NULL) {
+		free(expense->note);
+		expense->note = NULL;
+	}
+
+	if (expense->amount != NULL) {
+		free(expense->amount);
+		expense->amount = NULL;
+	}
+
+	if (expense->city != NULL) {
+		free(expense->city);
+		expense->city = NULL;
+	}
+
+	if (expense->vendor != NULL) {
+		free(expense->vendor);
+		expense->vendor = NULL;
+	}
+
+	if (expense->attendees != NULL) {
+		free(expense->attendees);
+		expense->attendees = NULL;
+	}
 }
+
 
 /***********************************************************************
  *
  * Function:    unpack_Expense
  *
- * Summary:     
+ * Summary:     unpack Expense records
  *
- * Parameters:  None
+ * Parameters:  Expense_t*, char* to buffer, length of buffer
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
-int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
+int
+unpack_Expense(Expense_t *expense, unsigned char *buffer, int len)
 {
 	unsigned long d;
 	unsigned char *start = buffer;
@@ -95,18 +114,18 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	d = (unsigned short int) get_short(buffer);
-	a->date.tm_year 	= (d >> 9) + 4;
-	a->date.tm_mon 		= ((d >> 5) & 15) - 1;
-	a->date.tm_mday 	= d & 31;
-	a->date.tm_hour 	= 0;
-	a->date.tm_min 		= 0;
-	a->date.tm_sec 		= 0;
-	a->date.tm_isdst 	= -1;
-	mktime(&a->date);
+	expense->date.tm_year 	= (d >> 9) + 4;
+	expense->date.tm_mon 	= ((d >> 5) & 15) - 1;
+	expense->date.tm_mday 	= d & 31;
+	expense->date.tm_hour 	= 0;
+	expense->date.tm_min 	= 0;
+	expense->date.tm_sec 	= 0;
+	expense->date.tm_isdst 	= -1;
+	mktime(&expense->date);
 
-	a->type 	= (enum ExpenseType) get_byte(buffer + 2);
-	a->payment 	= (enum ExpensePayment) get_byte(buffer + 3);
-	a->currency 	= get_byte(buffer + 4);
+	expense->type 	= (enum ExpenseType) get_byte(buffer + 2);
+	expense->payment = (enum ExpensePayment) get_byte(buffer + 3);
+	expense->currency = get_byte(buffer + 4);
 
 	buffer 	+= 6;
 	len 	-= 6;
@@ -115,11 +134,11 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->amount = strdup(buffer);
-		buffer += strlen(a->amount);
-		len -= strlen(a->amount);
+		expense->amount = strdup((char *)buffer);
+		buffer += strlen(expense->amount);
+		len -= strlen(expense->amount);
 	} else {
-		a->amount = 0;
+		expense->amount = 0;
 	}
 	buffer++;
 	len--;
@@ -128,11 +147,11 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->vendor = strdup(buffer);
-		buffer += strlen(a->vendor);
-		len -= strlen(a->vendor);
+		expense->vendor = strdup((char *)buffer);
+		buffer += strlen(expense->vendor);
+		len -= strlen(expense->vendor);
 	} else {
-		a->vendor = 0;
+		expense->vendor = 0;
 	}
 	buffer++;
 	len--;
@@ -141,11 +160,11 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->city = strdup(buffer);
-		buffer += strlen(a->city);
-		len -= strlen(a->city);
+		expense->city = strdup((char *)buffer);
+		buffer += strlen(expense->city);
+		len -= strlen(expense->city);
 	} else {
-		a->city = 0;
+		expense->city = 0;
 	}
 	buffer++;
 	len--;
@@ -154,11 +173,11 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->attendees = strdup(buffer);
-		buffer += strlen(a->attendees);
-		len -= strlen(a->attendees);
+		expense->attendees = strdup((char *)buffer);
+		buffer += strlen(expense->attendees);
+		len -= strlen(expense->attendees);
 	} else {
-		a->attendees = 0;
+		expense->attendees = 0;
 	}
 	buffer++;
 	len--;
@@ -167,11 +186,11 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
-		a->note = strdup(buffer);
-		buffer += strlen(a->note);
-		len -= strlen(a->note);
+		expense->note = strdup((char *)buffer);
+		buffer += strlen(expense->note);
+		len -= strlen(expense->note);
 	} else {
-		a->note = 0;
+		expense->note = 0;
 	}
 
 	buffer++;
@@ -180,32 +199,34 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 	return (buffer - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    pack_Expense
  *
- * Summary:     
+ * Summary:     pack Expense records
  *
- * Parameters:  None
+ * Parameters:  Expense_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
-int pack_Expense(struct Expense *a, unsigned char *record, int len)
+int
+pack_Expense(Expense_t *expense, unsigned char *record, int len)
 {
 	int 	destlen = 6 + 1 + 1 + 1 + 1 + 1;
 	unsigned char *buf = record;
 
-	if (a->amount)
-		destlen += strlen(a->amount);
-	if (a->vendor)
-		destlen += strlen(a->vendor);
-	if (a->city)
-		destlen += strlen(a->city);
-	if (a->attendees)
-		destlen += strlen(a->attendees);
-	if (a->note)
-		destlen += strlen(a->note);
+	if (expense->amount)
+		destlen += strlen(expense->amount);
+	if (expense->vendor)
+		destlen += strlen(expense->vendor);
+	if (expense->city)
+		destlen += strlen(expense->city);
+	if (expense->attendees)
+		destlen += strlen(expense->attendees);
+	if (expense->note)
+		destlen += strlen(expense->note);
 
 	if (!record)
 		return destlen;
@@ -213,51 +234,51 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
 		return 0;
 
 	set_short(buf,
-		  ((a->date.tm_year - 4) << 9) | ((a->date.tm_mon +
-						   1) << 5) | a->date.
+		  ((expense->date.tm_year - 4) << 9) | ((expense->date.tm_mon +
+						   1) << 5) | expense->date.
 		  tm_mday);
 	buf += 2;
-	set_byte(buf, a->type);
-	set_byte(buf + 1, a->payment);
-	set_byte(buf + 2, a->currency);
+	set_byte(buf, expense->type);
+	set_byte(buf + 1, expense->payment);
+	set_byte(buf + 2, expense->currency);
 	set_byte(buf + 3, 0);	/* gapfill */
 	buf += 4;
 
-	if (a->amount) {
-		strcpy(buf, a->amount);
-		buf += strlen(buf);
+	if (expense->amount) {
+		strcpy((char *)buf, expense->amount);
+		buf += strlen((char *)buf);
 	} else {
 		set_byte(buf, 0);
 	}
 	buf++;
 
-	if (a->vendor) {
-		strcpy(buf, a->vendor);
-		buf += strlen(buf);
+	if (expense->vendor) {
+		strcpy((char *)buf, expense->vendor);
+		buf += strlen((char *)buf);
 	} else {
 		set_byte(buf, 0);
 	}
 	buf++;
 
-	if (a->city) {
-		strcpy(buf, a->city);
-		buf += strlen(buf);
+	if (expense->city) {
+		strcpy((char *)buf, expense->city);
+		buf += strlen((char *)buf);
 	} else {
 		set_byte(buf, 0);
 	}
 	buf++;
 
-	if (a->attendees) {
-		strcpy(buf, a->attendees);
-		buf += strlen(buf);
+	if (expense->attendees) {
+		strcpy((char *)buf, expense->attendees);
+		buf += strlen((char *)buf);
 	} else {
 		set_byte(buf, 0);
 	}
 	buf++;
 
-	if (a->note) {
-		strcpy(buf, a->note);
-		buf += strlen(buf);
+	if (expense->note) {
+		strcpy((char *)buf, expense->note);
+		buf += strlen((char *)buf);
 	} else {
 		set_byte(buf, 0);
 	}
@@ -266,38 +287,39 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
 	return (buf - record);
 }
 
+
 /***********************************************************************
  *
  * Function:    unpack_ExpenseAppInfo
  *
- * Summary:     
+ * Summary:   	unpacks ExpenseAppInfo record
  *
- * Parameters:  None
+ * Parameters:  ExpenseAppInfo_t*, char* to record, record length
  *
- * Returns:     Nothing
+ * Returns:     effective record length
  *
  ***********************************************************************/
 int
-unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
+unpack_ExpenseAppInfo(ExpenseAppInfo_t *appinfo, unsigned char *record,
 		      int len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!i)
 		return 0;
 	record += i;
 	len -= i;
 	if (len < 2 + (16 + 4 + 8) * 4);
-	ai->sortOrder = (enum ExpenseSort) get_byte(record);
+	appinfo->sortOrder = (enum ExpenseSort) get_byte(record);
 	record += 2;
 	for (i = 0; i < 4; i++) {
-		memcpy(ai->currencies[i].name, record, 16);
+		memcpy(appinfo->currencies[i].name, record, 16);
 		record += 16;
-		memcpy(ai->currencies[i].symbol, record, 4);
+		memcpy(appinfo->currencies[i].symbol, record, 4);
 		record += 4;
-		memcpy(ai->currencies[i].rate, record, 8);
+		memcpy(appinfo->currencies[i].rate, record, 8);
 		record += 8;
 	}
 	return (record - start);
@@ -307,22 +329,22 @@ unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
  *
  * Function:    pack_ExpenseAppInfo
  *
- * Summary:     
+ * Summary:     packs ExpenseAppInfo record
  *
- * Parameters:  None
+ * Parameters:  ExpenseAppInfo_t*, char* to record, record length
  *
- * Returns:     Nothing
+ * Returns:     effective record length
  *
  ***********************************************************************/
 int
-pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
+pack_ExpenseAppInfo(ExpenseAppInfo_t *appinfo, unsigned char *record,
 		    int len)
 {
 	int 	i,
 		destlen = 2 + (16 + 4 + 8) * 4;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!record)
 		return i + destlen;
 	if (!i)
@@ -331,15 +353,15 @@ pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 	len 	-= i;
 	if (len < destlen)
 		return 0;
-	set_byte(record, ai->sortOrder);
+	set_byte(record, appinfo->sortOrder);
 	set_byte(record + 1, 0);	/* gapfill */
 	record += 2;
 	for (i = 0; i < 4; i++) {
-		memcpy(record, ai->currencies[i].name, 16);
+		memcpy(record, appinfo->currencies[i].name, 16);
 		record += 16;
-		memcpy(record, ai->currencies[i].symbol, 4);
+		memcpy(record, appinfo->currencies[i].symbol, 4);
 		record += 4;
-		memcpy(record, ai->currencies[i].rate, 8);
+		memcpy(record, appinfo->currencies[i].rate, 8);
 		record += 8;
 	}
 
@@ -350,44 +372,44 @@ pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
  *
  * Function:    unpack_ExpensePref
  *
- * Summary:     
+ * Summary:     unpacks ExpensePref record
  *
- * Parameters:  None
+ * Parameters:  ExpensePref_t*, char* to record, record length
  *
- * Returns:     Nothing
+ * Returns:     effective record length
  *
  ***********************************************************************/
 int
-unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
+unpack_ExpensePref(ExpensePref_t *pref, unsigned char *record, int len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	p->currentCategory 	= get_short(record);
+	pref->currentCategory 	= get_short(record);
 	record += 2;
-	p->defaultCurrency 	= get_short(record);
+	pref->defaultCurrency 	= get_short(record);
 	record += 2;
-	p->attendeeFont         = get_byte(record);
+	pref->attendeeFont         = get_byte(record);
 	record++;
-	p->showAllCategories 	= get_byte(record);
+	pref->showAllCategories 	= get_byte(record);
 	record++;
-	p->showCurrency 	= get_byte(record);
+	pref->showCurrency 	= get_byte(record);
 	record++;
-	p->saveBackup 		= get_byte(record);
+	pref->saveBackup 		= get_byte(record);
 	record++;
-	p->allowQuickFill 	= get_byte(record);
+	pref->allowQuickFill 	= get_byte(record);
 	record++;
-	p->unitOfDistance 	= (enum ExpenseDistance) get_byte(record);
+	pref->unitOfDistance 	= (enum ExpenseDistance) get_byte(record);
 	record++;
 	for (i = 0; i < 5; i++) {
-		p->currencies[i] = get_byte(record);
+		pref->currencies[i] = get_byte(record);
 		record++;
 	}
 	for (i = 0; i < 2; i++) {
-		p->unknown[i] = get_byte(record);
+		pref->unknown[i] = get_byte(record);
 		record++;		
 	}
-	p->noteFont = get_byte(record);
+	pref->noteFont = get_byte(record);
 	record++;
 	
 	return (record - start);
@@ -397,14 +419,14 @@ unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
  *
  * Function:    pack_ExpensePref
  *
- * Summary:     
+ * Summary:     packs ExpensePref record
  *
- * Parameters:  None
+ * Parameters:  ExpensePref_t*, char* to record, record length
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
+int pack_ExpensePref(ExpensePref_t *p, unsigned char *record, int len)
 {
 	int 	i;
 	unsigned char *start = record;

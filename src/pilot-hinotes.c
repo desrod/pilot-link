@@ -27,7 +27,6 @@
 #include <sys/stat.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-hinote.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
@@ -151,7 +150,7 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 	if (!(fd = fopen(pathbuffer, "w"))) {
 		printf("%s: can't open file \"%s\" for writing\n",
 		       progname, pathbuffer);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	fputs(m.text, fd);
 	fclose(fd);
@@ -241,14 +240,14 @@ int main(int argc, char *argv[])
 		printf
 		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
 		     "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	} else if (port != NULL) {
 
 		sd = pilot_connect(port);
 
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		/* Tell user (via Palm) that we are starting things up */
@@ -261,7 +260,7 @@ int main(int argc, char *argv[])
 			       "You must run Hi-Notes and create at least one entry first.\n");
 			dlp_AddSyncLogEntry(sd,
 					    "Unable to locate or open Hi-NoteDB.\nFile not found.\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,

@@ -24,7 +24,6 @@
 #include <io.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-serial.h"
 #include "pi-slp.h"
 #include "pi-syspkt.h"
@@ -41,12 +40,13 @@
 #define INCL_MISC
 #include <os2.h>
 
-static int so_changebaud(struct pi_socket *ps);
-static int so_close(struct pi_socket *ps);
-static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
+/* Declare prototypes */
+static int so_changebaud(pi_socket_t *ps);
+static int so_close(pi_socket_t *ps);
+static int pi_socket_set_timeout(pi_socket_t *ps, int read_timeout,
 				 int write_timeout);
-static int so_write(struct pi_socket *ps);
-static int so_read(struct pi_socket *ps, int timeout);
+static int so_write(pi_socket_t *ps);
+static int so_read(pi_socket_t *ps, int timeout);
 
 /***********************************************************************
  *
@@ -54,13 +54,13 @@ static int so_read(struct pi_socket *ps, int timeout);
  *
  * Summary:     Open the serial connection and listen for incoming data
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, pi_sockaddr, address length
  *
  * Returns:     The file descriptor used
  *
  ***********************************************************************/
 int
-pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
+pi_serial_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
 	int 	c,
 		filesize = 0;
@@ -75,42 +75,44 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 		tty = "<Null>";
 
 	/* open the device */
-	rc = DosOpen(tty,						/* the device 					*/
-		     &fd,						/* the file descriptor returned 		*/
-		     &action,						/* the action taken 				*/
-		     filesize,						/* the size of the file 			*/
-		     FILE_NORMAL,					/* file permissions mode, not the same as UNIX 	*/
-		     OPEN_ACTION_OPEN_IF_EXISTS,			/* file open action 				*/
-		     OPEN_SHARE_DENYREADWRITE | OPEN_ACCESS_READWRITE,	/* open mode 					*/
-		     0);						/* extended attributes 				*/
+	rc = DosOpen(tty,	/* the device	*/
+		     &fd,	/* the file descriptor returned	*/
+		     &action,	/* the action taken	*/
+		     filesize,	/* the size of the file */
+		     FILE_NORMAL,	/* file permissions mode,
+						 not the same as UNIX 	*/
+		     OPEN_ACTION_OPEN_IF_EXISTS, /* file open action */
+		     OPEN_SHARE_DENYREADWRITE |
+			 OPEN_ACCESS_READWRITE,	/* open mode */
+		     0);	/* extended attributes 	*/
 	if (c) {
 		switch (c) {
 		case 2:		
-			errno = ENOENT;		/* ERROR_FILE_NOT_FOUND  	*/
+			errno = ENOENT;		/* ERROR_FILE_NOT_FOUND  */
 			break;
 		case 3:		
-			errno = ENOTDIR;	/* ERROR_PATH_NOT_FOUND  	*/
+			errno = ENOTDIR;	/* ERROR_PATH_NOT_FOUND  */
 			break;
 		case 4:		
-			errno = EMFILE;		/* ERROR_TOO_MANY_OPEN_FILES  	*/
+			errno = EMFILE;		/* ERROR_TOO_MANY_OPEN_FILES*/
 			break;
 		case 5:		
-			errno = EACCES;		/* ERROR_ACCESS_DENIED  	*/
+			errno = EACCES;		/* ERROR_ACCESS_DENIED 	*/
 			break;
 		case 32:	
-			errno = EBUSY;		/* ERROR_SHARING_VIOLATION  	*/
+			errno = EBUSY;		/* ERROR_SHARING_VIOLATION */
 			break;
 		case 82:	
-			errno = EEXIST;		/* ERROR_CANNOT_MAKE  		*/
+			errno = EEXIST;		/* ERROR_CANNOT_MAKE  	*/
 			break;
 		case 99:	
-			errno = EBUSY;		/* ERROR_DEVICE_IN_USE  	*/
+			errno = EBUSY;		/* ERROR_DEVICE_IN_USE 	*/
 			break;
 		case 112:	
-			errno = ENOSPC;		/* ERROR_DISK_FULL  		*/
+			errno = ENOSPC;		/* ERROR_DISK_FULL  	*/
 			break;
 		case 87:	
-			errno = EINVAL;		/* ERROR_INVALID_PARAMETER  	*/
+			errno = EINVAL;		/* ERROR_INVALID_PARAMETER  */
 			break;
 		default:
 			errno = -ENOMSG;
@@ -119,9 +121,10 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 		return (-1);
 	}
 
-	ps->mac->fd 		= _imphandle(fd);		/* Let EMX know about this handle */
-	ps->mac->fd 		= dup2(ps->mac->fd, ps->sd);	/* Substitute serial connection for
-								   original NUL handle */
+	ps->mac->fd = _imphandle(fd);	/* Let EMX know about this handle */
+	ps->mac->fd = dup2(ps->mac->fd,
+		 ps->sd);	/* Substitute serial connection for
+				 original NUL handle */
 
 	so_changebaud(ps);
 	pi_socket_set_timeout(ps, -1, 60000);
@@ -149,18 +152,20 @@ struct STR_EXTSETBAUDRATE {
 	UCHAR fraction;
 };
 
+
 /***********************************************************************
  *
  * Function:    so_changebaud
  *
- * Summary:     
+ * Summary:     change baudrate 
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
- * Returns:     Nothing
+ * Returns:     0 for success, -1 otherwise
  *
  ***********************************************************************/
-static int so_changebaud(struct pi_socket *ps)
+static int
+so_changebaud(pi_socket_t *ps)
 {
 	int 	param_length,
 		c;		/* switch */
@@ -168,46 +173,52 @@ static int so_changebaud(struct pi_socket *ps)
 	struct STR_EXTSETBAUDRATE extsetbaudrate;
 
 	extsetbaudrate.baudrate = ps->rate;
-	extsetbaudrate.fraction = 0;		/* if anyone knows some fractions 	*/
-						/* that could be used here, let me know */
+	extsetbaudrate.fraction = 0;	/* if anyone knows some fractions*/
+					/* that could be used here, let me
+					 know */
 
 	param_length = sizeof(extsetbaudrate);
-	c = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 			*/
-			 IOCTL_ASYNC,				/* asyncronous change 			*/
-			 ASYNC_EXTSETBAUDRATE,			/* set the baudrate 			*/
-			 &extsetbaudrate,			/* pointer to the baudrate 		*/
-			 param_length,				/* length of the previous parameter 	*/
-			 (unsigned long *) &param_length,	/* max length of data ret 		*/
-			 NULL,					/* data to be sent 			*/
-			 0,					/* length of data 			*/
-			 NULL);					/* length of data returned 		*/
+	c = DosDevIOCtl(ps->mac->fd,	/* file decsriptor */
+			 IOCTL_ASYNC,	/* asyncronous change	*/
+			 ASYNC_EXTSETBAUDRATE,	/* set the baudrate */
+			 &extsetbaudrate,	/* pointer to the baudrate */
+			 param_length,	/* length of the previous parameter*/
+			 (unsigned long *) &param_length,	/* max length
+								 of data ret */
+			 NULL,	/* data to be sent */
+			 0,	/* length of data */
+			 NULL);	/* length of data returned	*/
 
 	/* also set the port to 8N1 as OS/2 defaults to some braindead
 	   values */
 
-	if (!c) {							/* but only if the previous operation succeeded 	*/
-		param_length = 3;					/* 3 bytes for line control 				*/
-		c = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 					*/
-				 IOCTL_ASYNC,				/* asyncronous change 					*/
-				 ASYNC_SETLINECTRL,			/* set the line controls 				*/
-				 linctrl,				/* pointer to the configuration 			*/
-				 param_length,				/* length of the previous parameter		 	*/
-				 (unsigned long *) &param_length,	/* max length of params		 			*/
-				 NULL,					/* data to be returned 					*/
-				 0,					/* length of data 					*/
-				 NULL);					/* length of data returned 				*/
+	if (!c) {	/* but only if the previous operation succeeded	*/
+		param_length = 3;	/* 3 bytes for line control	*/
+		c = DosDevIOCtl(ps->mac->fd,	/* file decsriptor	*/
+				 IOCTL_ASYNC,	/* asyncronous change 	*/
+				 ASYNC_SETLINECTRL,	/* set the line
+							 controls 	*/
+				 linctrl,	/* pointer to the
+						 configuration 	*/
+				 param_length,	/* length of the previous
+						 parameter */
+				 (unsigned long *) &param_length,	
+						/* max length of params	*/
+				 NULL,	/* data to be returned	*/
+				 0,	/* length of data */
+				 NULL);	/* length of data returned	*/
 	}
 
 	if (c) {
 		switch (c) {
 		case 1:		
-			errno = ENOTTY;		/* ERROR_INVALID_FUNCTION 	*/
+			errno = ENOTTY;	/* ERROR_INVALID_FUNCTION	*/
 			break;
 		case 6:		
-			errno = EBADF;		/* ERROR_INVALID_HANDLE 	*/
+			errno = EBADF;	/* ERROR_INVALID_HANDLE 	*/
 			break;
 		case 87:	
-			errno = EINVAL;		/* ERROR_INVALID_PARAMETER 	*/
+			errno = EINVAL;	/* ERROR_INVALID_PARAMETER 	*/
 			break;
 		default:
 			errno = -ENOMSG;
@@ -224,6 +235,7 @@ static int so_changebaud(struct pi_socket *ps)
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    so_close
@@ -235,7 +247,8 @@ static int so_changebaud(struct pi_socket *ps)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int so_close(struct pi_socket *ps)
+static int
+so_close(pi_socket_t *ps)
 {
 #ifndef NO_SERIAL_TRACE
 	if (ps->debugfd)
@@ -245,6 +258,7 @@ static int so_close(struct pi_socket *ps)
 	DosClose(ps->mac->fd);
 	return (0);
 }
+
 
 /***********************************************************************
  *
@@ -263,7 +277,7 @@ static int so_close(struct pi_socket *ps)
  *
  ***********************************************************************/
 static int
-pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
+pi_socket_set_timeout(pi_socket_t *ps, int read_timeout,
 		      int write_timeout)
 {
 	int 	param_length,
@@ -278,15 +292,17 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 		return (0);
 
 	ret_len = sizeof(DCBINFO);
-	c = DosDevIOCtl(ps->mac->fd,			/* file decsriptor 			*/
-			 IOCTL_ASYNC,			/* asyncronous change 			*/
-			 ASYNC_GETDCBINFO,		/* get device control block info 	*/
-			 NULL,				/*  					*/
-			 0,				/* length of the previous parameter 	*/
-			 NULL,				/* max length of data ret 		*/
-			 &devinfo,			/* data to be recieved 			*/
-			 ret_len,			/* length of data 			*/
-			 (unsigned long *) &ret_len);	/* length of data returned 		*/
+	c = DosDevIOCtl(ps->mac->fd,	/* file decsriptor */
+			 IOCTL_ASYNC,	/* asyncronous change 	*/
+			 ASYNC_GETDCBINFO,	/* get device control
+						 block info 	*/
+			 NULL,		/*	*/
+			 0,	/* length of the previous parameter 	*/
+			 NULL,	/* max length of data ret 		*/
+			 &devinfo,	/* data to be recieved 		*/
+			 ret_len,	/* length of data		*/
+			 (unsigned long *) &ret_len);
+				/* length of data returned 		*/
 	if (c)
 		goto error;
 
@@ -312,27 +328,29 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 		}
 	}
 	param_length = sizeof(DCBINFO);
-	c = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 			*/
-			 IOCTL_ASYNC,				/* asyncronous change 			*/
-			 ASYNC_SETDCBINFO,			/* get device control block info 	*/
-			 &devinfo,				/* parameters to set  			*/
-			 param_length,				/* length of the previous parameter 	*/
-			 (unsigned long *) &param_length,	/* max length of parameters 		*/
-			 NULL,					/* data to be recieved 			*/
-			 0,					/* length of data 			*/
-			 NULL);					/* length of data returned 		*/
+	c = DosDevIOCtl(ps->mac->fd,	/* file decsriptor	*/
+			 IOCTL_ASYNC,	/* asyncronous change	*/
+			 ASYNC_SETDCBINFO,	/* get device control
+						 block info 	*/
+			 &devinfo,	/* parameters to set  	*/
+			 param_length,	/* length of the previous parameter*/
+			 (unsigned long *) &param_length,
+					/* max length of parameters */
+			 NULL,		/* data to be recieved 	*/
+			 0,		/* length of data 	*/
+			 NULL);		/* length of data returned */
 
       error:
 	if (c) {
 		switch (c) {
 		case 1:		
-			errno = ENOTTY;		/* ERROR_INVALID_FUNCTION 	*/
+			errno = ENOTTY;	/* ERROR_INVALID_FUNCTION */
 			break;
 		case 6:		
-			errno = EBADF;		/* ERROR_INVALID_HANDLE 	*/
+			errno = EBADF;	/* ERROR_INVALID_HANDLE */
 			break;
 		case 87:	
-			errno = EINVAL;		/* ERROR_INVALID_PARAMETER 	*/
+			errno = EINVAL;	/* ERROR_INVALID_PARAMETER */
 			break;
 		default:
 			errno = -ENOMSG;
@@ -351,6 +369,7 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    so_write
@@ -362,7 +381,8 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int so_write(struct pi_socket *ps)
+static int
+so_write(pi_socket_t *ps)
 {
 	int 	nwrote,
 		len;
@@ -406,6 +426,7 @@ static int so_write(struct pi_socket *ps)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    so_read
@@ -417,7 +438,8 @@ static int so_write(struct pi_socket *ps)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int so_read(struct pi_socket *ps, int timeout)
+static int
+so_read(pi_socket_t *ps, int timeout)
 {
 	int 	r;
 	unsigned char *buf;

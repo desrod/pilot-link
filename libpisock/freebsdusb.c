@@ -56,11 +56,15 @@
 #define MAX_BUF 256
 #endif
 
-static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen);
-static int u_close(struct pi_socket *ps);
-static int u_write(struct pi_socket *ps, unsigned char *buf, int len, int flags);
-static int u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags);
-static int u_poll(struct pi_socket *ps, int timeout);
+/* Declare prototypes */
+static int u_open(pi_socket_t *ps, struct pi_sockaddr *addr,
+	int addrlen);
+static int u_close(pi_socket_t *ps);
+static int u_write(pi_socket_t *ps, unsigned char *buf,
+	int len, int flags);
+static int u_read(pi_socket_t *ps, unsigned char *buf, int len,
+	int flags);
+static int u_poll(pi_socket_t *ps, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
@@ -79,7 +83,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
  * Summary:     Open the usb port and establish a connection for
  *		communicating over the usb port.
  *
- * Parameters:  ps is of type pi_sockect which will given a copy of the
+ * Parameters:  ps is of type pi_socket_t which will given a copy of the
  *              valid file descriptor that is returned by the function.
  * 
  * 		addr of type pi_socketaddr contains the member pi_device
@@ -93,7 +97,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
  *
  ***********************************************************************/
 static int
-u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
+u_open(pi_socket_t *ps, struct pi_sockaddr *addr, int addrlen)
 {
 	int 	fd,
 		i,
@@ -127,22 +131,24 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 		return -1;
 	}
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV USB_GET_DEVICE_INFO USB FreeBSD fd: %d\n", fd));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+		"DEV USB_GET_DEVICE_INFO USB FreeBSD fd: %d\n", fd));
 
 	/* set the configuration */
 	i = 1;
 	if (ioctl(fd, USB_SET_CONFIG, &i) < 0) {
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "DEV USB_SET_CONFIG USB FreeBSD fd: %d failed\n", fd));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
+		 "DEV USB_SET_CONFIG USB FreeBSD fd: %d failed\n", fd));
 
 		close(fd);
 		return -1;
 	}
 
-	/* close the main communication pipe since we have initilized everything we needed to
-	NOTE: we HAVE to do all this stuff to the main pipe or we will cause a kernel panic  
-	when data is sent over the endpoint */
+	/* close the main communication pipe since we have initilized
+	  everything we needed to
+	NOTE: we HAVE to do all this stuff to the main pipe or we will
+	 cause a kernel panic when data is sent over the endpoint */
 	(void) close(fd);
-
 
 	/* open endpoint */
 	/* allocate data for the usb endpoint string */
@@ -170,14 +176,18 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	what is coming so we can't specify exact byte amounts */
 	i = 1;
 	if (ioctl(endpoint_fd, USB_SET_SHORT_XFER, &i) < 0) {
-		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV USB_SET_SHORT_XFER USB FreeBSD fd: %d failed\n", endpoint_fd));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
+		 "DEV USB_SET_SHORT_XFER USB FreeBSD fd: %d failed\n",
+			endpoint_fd));
 	}
 
 	/* 0 timeout value will cause us the wait until the device has data
            available or is disconnected */
 	i = 0;
 	if (ioctl(endpoint_fd, USB_SET_TIMEOUT, &i) < 0) {
-		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV USB_SET_TIMEOUT USB FreeBSD fd: %d failed\n", endpoint_fd));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
+		 "DEV USB_SET_TIMEOUT USB FreeBSD fd: %d failed\n",
+			endpoint_fd));
 	}
 
 	/* save our file descriptor in the pi_socket structure */
@@ -189,7 +199,8 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	/* free endpoint string memory */
 	free(pEndPoint);
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV OPEN USB FreeBSD fd: %d\n", endpoint_fd));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+		"DEV OPEN USB FreeBSD fd: %d\n", endpoint_fd));
 
 	/* return our endpoint file descriptor since this is where the
 	   reading and writing will be done */
@@ -210,9 +221,10 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
  *
  ***********************************************************************/
 static int
-u_close(struct pi_socket *ps)
+u_close(pi_socket_t *ps)
 {
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CLOSE USB FreeBSD fd: %d\n", ps->sd));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+		"DEV CLOSE USB FreeBSD fd: %d\n", ps->sd));
 
 	return close(ps->sd);
 }
@@ -230,11 +242,13 @@ u_close(struct pi_socket *ps)
  *
  ***********************************************************************/
 static int
-u_poll(struct pi_socket *ps, int timeout)
+u_poll(pi_socket_t *ps, int timeout)
 {
 	/* stub this function and log an error that this should never needed
 	   to be called */
-	LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV POLL USB FreeBSD Timeout: %d\npoll() should not be called for FreeBSD USB\n", timeout));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
+		"DEV POLL USB FreeBSD Timeout: %d\npoll()"
+		" should not be called for FreeBSD USB\n", timeout));
 
 	return 1;
 }
@@ -263,7 +277,7 @@ u_poll(struct pi_socket *ps, int timeout)
  *
  ***********************************************************************/
 static int
-u_write(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+u_write(pi_socket_t *ps, unsigned char *buf, int len, int flags)
 {
 	int 	nwrote, 
 		total, 
@@ -290,7 +304,8 @@ u_write(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		total -= nwrote;
 	}
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX USB FreeBSD Bytes: %d\n", len));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+		"DEV TX USB FreeBSD Bytes: %d\n", len));
 
 	return len;
 }
@@ -321,7 +336,7 @@ u_write(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  *
  ***********************************************************************/
 static int
-u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+u_read(pi_socket_t *ps, unsigned char *buf, int len, int flags)
 {
         struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
         int bytes_want = 0;
@@ -350,12 +365,12 @@ u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
         } else if (data->buf_size == 0 && bytes_read < len) {
                 /* reset data buffer */
                 data->pos = data->buf;
-                /* offset storage to no overwrite data copied from the buffer */
+                /* offset storage to no overwrite data copied the buffer */
                 pbuf_pos = buf + bytes_read;
                 bytes_want = len - bytes_read;
                 do {
                         if (bytes_want >= MAX_BUF) {
-                                /* check to see if the device is ready for a read */
+                                /* check to see if device is ready for read */
                                 FD_ZERO(&ready);
                                 FD_SET(ps->sd, &ready);
                                 if (!FD_ISSET(ps->sd, &ready)) {
@@ -372,7 +387,7 @@ u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
                                 bytes_want -= rlen;
                                 pbuf_pos += rlen;
                         } else if (bytes_want < MAX_BUF) {
-                                /* check to see if the device is ready for a read */
+                                /* check to see if device is ready for read */
                                 FD_ZERO(&ready);
                                 FD_SET(ps->sd, &ready);
                                 if (!FD_ISSET(ps->sd, &ready)) {

@@ -35,7 +35,7 @@ void print_splash(char *progname)
         patchlevel = PILOT_LINK_PATCH;
 #endif
 	printf("   .--------------------------------------------.\n"
-	       "   | (c) Copyright 1996-2003, pilot-link team   |\n"
+	       "   | (c) Copyright 1996-2004, pilot-link team   |\n"
 	       "   |   Join the pilot-link lists to help out.   |\n"
 	       "   `--------------------------------------------'\n"
 	       "   This is %s, from pilot-link version %d.%d.%d%s\n\n"

@@ -1,3 +1,4 @@
+/* ex: set tabstop=4 expandtab: */
 /* 
  * install-netsync.c:  Palm Network Information Installer
  *
@@ -22,9 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
 
@@ -32,7 +33,6 @@
 static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
-char *strdup(const char *s);
 
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 			return 0;
 		case 'p':
 			free(port);
-			port = priv_strdup(optarg);
+			port = strdup(optarg);
 			break;
 		case 'e':
 			enable = 1;
@@ -103,15 +103,15 @@ int main(int argc, char *argv[])
 			break;
 		case 'n':
 			free(hostname);
-			hostname = priv_strdup(optarg);
+			hostname = strdup(optarg);
 			break;
 		case 'i':
 			free(address);
-			address = priv_strdup(optarg);
+			address = strdup(optarg);
 			break;
 		case 'm':
 			free(netmask);
-			netmask = priv_strdup(optarg); 
+			netmask = strdup(optarg); 
 			break;
 		default:
 			display_help(progname);

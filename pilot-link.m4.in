@@ -42,4 +42,3 @@ AC_DEFUN([AC_PILOT_LINK],[
 		
 	AC_PILOT_LINK_HOOK($plv)
 ])
-

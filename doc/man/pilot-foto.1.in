@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "pilot-foto" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "pilot-foto" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBpilot\-foto\fR \- Fetches and converts images from the Palm 'Foto' application
 

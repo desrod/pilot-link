@@ -53,7 +53,8 @@
  *  the socket descriptor is returned.
  *
  ***********************************************************************/
-int pilot_connect(char *port)
+int
+pilot_connect(char *port)
 {
 	int 	parent_sd	= -1, 	/* Client socket, formerly sd	*/
 		client_sd	= -1,	/* Parent socket, formerly sd2	*/
@@ -63,7 +64,10 @@ int pilot_connect(char *port)
 	struct 	pi_sockaddr addr;
 	struct 	stat attr;
 	struct  SysInfo sys_info;
-	char 	*defport = "/dev/pilot";
+	char 	*defport = "/dev/pilot",
+		*buf;
+
+	setvbuf(stdout, buf, _IONBF, sizeof(buf));
 
 	if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
 		fprintf(stderr, "   No $PILOTPORT specified and no -p "
@@ -74,16 +78,20 @@ int pilot_connect(char *port)
 	}
 
 	if (err) {
-		fprintf(stderr, "   ERROR: %s (%d)\n\n", strerror(errno), errno);
-		fprintf(stderr, "   Error accessing: '%s'. Does '%s' exist?\n",
+		fprintf(stderr,
+			"   ERROR: %s (%d)\n\n", strerror(errno), errno);
+		fprintf(stderr,
+			"   Error accessing: '%s'. Does '%s' exist?\n",
 		       port, port);
-		fprintf(stderr, "   Please use --help for more information\n\n");
+		fprintf(stderr,
+			"   Please use --help for more information\n\n");
 		exit(1);
 	}
 
 	fprintf(stderr, "\n");
 	begin:
-	if ((parent_sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP)) < 0) {
+	if ((parent_sd = pi_socket(PI_AF_PILOT,
+			PI_SOCK_STREAM, PI_PF_DLP)) < 0) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n",
 			port ? port : getenv("PILOTPORT"));
 		return -1;
@@ -110,34 +118,45 @@ int pilot_connect(char *port)
 			errno = save_errno;
 
 			if (errno == ENOENT) {
-				fprintf(stderr, "   The device %s does not exist..\n",
+				fprintf(stderr,
+					" The device %s does not exist..\n",
 					portname);
-				fprintf(stderr, "   Possible solution:\n\n\tmknod %s c "
+				fprintf(stderr,
+					" Possible solution:\n\n\tmknod %s c "
 					"<major> <minor>\n\n", portname);
 
 			} else if (errno == EACCES) {
 				fprintf(stderr, "   Please check the "
 					"permissions on %s..\n", realport);
-				fprintf(stderr, "   Possible solution:\n\n\tchmod 0666 "
+				fprintf(stderr,
+					 " Possible solution:\n\n\tchmod 0666 "
 					"%s\n\n", realport);
 
 			} else if (errno == ENODEV) {
 				while (count <= 5) {
 					if (isatty(fileno(stdout))) {
-						fprintf(stderr, "\r   Port not connected, sleeping for 2 seconds, ");
-						fprintf(stderr, "%d retries..", 5-count);
+						fprintf(stderr,
+						 "\r   Port not connected,"
+						 " sleeping for 2 seconds, ");
+						fprintf(stderr,
+							 "%d retries..",
+							 	5-count);
 					}
 					sleep(2);
 					count++;
 					goto begin;
 				}
-				fprintf(stderr, "\n\n   Device not found on %s, Did you hit HotSync?\n\n", realport);
+				fprintf(stderr,
+					 "\n\n   Device not found on %s, \
+					 Did you hit HotSync?\n\n", realport);
 
 			} else if (errno == EISDIR) {
-				fprintf(stderr, "   The port specified must contain a "
-					"device name, and %s was a directory.\n"
-					"   Please change that to reference a real "
-					"device, and try again\n\n", portname);
+				fprintf(stderr, " The port specified must"
+					" contain a device name, and %s was"
+					" a directory.\n"
+					"   Please change that to reference a"
+					" real device, and try"
+					" again\n\n", portname);
 			}
 
 			fprintf(stderr, "   Unable to bind to port: %s\n", 
@@ -150,7 +169,8 @@ int pilot_connect(char *port)
 	}
 
 	if (isatty(fileno(stdout))) {
-		printf("\n   Listening to port: %s\n\n   Please press the HotSync "
+		printf("\n   Listening to port: %s\n\n"
+			"   Please press the HotSync "
 			"button now... ",
 			port ? port : getenv("PILOTPORT"));
 	}
@@ -172,7 +192,6 @@ int pilot_connect(char *port)
 
 	if (isatty(fileno(stdout))) {
 		printf("connected!\n\n");
-		fflush(NULL);
 	}
 
 	if (dlp_ReadSysInfo(client_sd, &sys_info) < 0) {
@@ -183,6 +202,5 @@ int pilot_connect(char *port)
 	}
 
 	dlp_OpenConduit(client_sd);
-	fflush(NULL);
 	return client_sd;
 }

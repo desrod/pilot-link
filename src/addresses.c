@@ -57,7 +57,7 @@ static const char *optstring = "p:hv";
 static void display_help(char *progname)
 {
 	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n");
-	printf("   Usage: %s -p <port> [options]\n\n", progname);
+	printf("   Usage: addresses -p <port> [options]\n\n");
 	printf("   Options:\n");
 	printf("   -p <port>      Use device file <port> to communicate with Palm\n");
 	printf("   -h             Display this information\n\n");
@@ -102,6 +102,11 @@ int main(int argc, char *argv[])
                 }
         }
 
+        if (argc < 2) {
+                display_help(progname);
+                return 0;
+        }
+
 	sd = pilot_connect(port);
 
 	if (sd < 0)
@@ -114,7 +119,7 @@ int main(int argc, char *argv[])
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
 		puts("Unable to open AddressDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);

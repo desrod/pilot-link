@@ -27,7 +27,6 @@
 #include <string.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-todo.h"
 #include "pi-datebook.h"
 #include "pi-dlp.h"
@@ -166,7 +165,7 @@ int main(int argc, char *argv[])
 	if (icalfile == NULL) {
 		display_help(progname);
 		fprintf(stderr, "ical filename not specified. Please use the -f option\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
         sd = pilot_connect(port);
@@ -188,7 +187,7 @@ int main(int argc, char *argv[])
 		    (sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
 			printf("Unable to open ToDoDB.\n");
 			dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		dlp_ReadAppBlock(sd, db, 0, buffer,
@@ -242,7 +241,7 @@ int main(int argc, char *argv[])
 		printf("Unable to open DatebookDB\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
 		pi_close(sd);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	for (i = 0;; i++) {

@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if TIME_WITH_SYS_TIME
+#ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
 #else
-# if HAVE_SYS_TIME_H
+# ifdef HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # else
 #  include <time.h>
@@ -43,100 +43,142 @@ char *MailSyncTypeNames[] = { "All", "Send", "Filter", NULL };
  *
  * Function:    free_Mail
  *
- * Summary:     
+ * Summary:     frees all the Mail_t structure members
  *
- * Parameters:  None
+ * Parameters:  Mail_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_Mail(struct Mail *a)
+void
+free_Mail(Mail_t *mail)
 {
-	if (a->from)
-		free(a->from);
-	if (a->to)
-		free(a->to);
-	if (a->subject)
-		free(a->subject);
-	if (a->cc)
-		free(a->cc);
-	if (a->bcc)
-		free(a->bcc);
-	if (a->replyTo)
-		free(a->replyTo);
-	if (a->sentTo)
-		free(a->sentTo);
-	if (a->body)
-		free(a->body);
+	if (mail->from != NULL) {
+		free(mail->from);
+		mail->from = NULL;
+	}
+
+	if (mail->to != NULL) {
+		free(mail->to);
+		mail->to = NULL;
+	}
+
+	if (mail->subject != NULL) {
+		free(mail->subject);
+		mail->to = NULL;
+	}
+
+	if (mail->cc != NULL) {
+		free(mail->cc);
+		mail->cc = NULL;
+	}
+
+	if (mail->bcc != NULL) {
+		free(mail->bcc);
+		mail->bcc = NULL;
+	}
+
+	if (mail->replyTo) {
+		free(mail->replyTo);
+		mail->replyTo = NULL;
+	}
+
+	if (mail->sentTo) {
+		free(mail->sentTo);
+		mail->sentTo = NULL;
+	}
+
+	if (mail->body != NULL) {
+		free(mail->body);
+		mail->body = NULL;
+	}
 }
+
 
 /***********************************************************************
  *
  * Function:    free_MailAppInfo
  *
- * Summary:     
+ * Summary:     frees all MailAppInfo_t structure members
  *
- * Parameters:  None
+ * Parameters:  MailAppInfo_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_MailAppInfo(struct MailAppInfo *a)
+void
+free_MailAppInfo(MailAppInfo_t *appinfo)
 {
-	/* if (a->signature)
-	   free(a->signature); */
+	/* if (appinfo->signature)
+	   free(appinfo->signature); */
 }
+
 
 /***********************************************************************
  *
  * Function:    free_MailSyncPref
  *
- * Summary:     
+ * Summary:     frees all MailSyncPref_t structure members 
  *
- * Parameters:  None
+ * Parameters:  MailSyncPref_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_MailSyncPref(struct MailSyncPref *a)
+void
+free_MailSyncPref(MailSyncPref_t *pref)
 {
-	if (a->filterTo);
-	free(a->filterTo);
-	if (a->filterFrom);
-	free(a->filterFrom);
-	if (a->filterSubject);
-	free(a->filterSubject);
+	if (pref->filterTo != NULL) {
+		free(pref->filterTo);
+		pref->filterTo = NULL;
+	}
+
+	if (pref->filterFrom != NULL) {
+		free(pref->filterFrom);
+		pref->filterFrom = NULL;
+	}
+
+	if (pref->filterSubject != NULL) {
+		free(pref->filterSubject);
+		pref->filterSubject = NULL;
+	}
 }
+
 
 /***********************************************************************
  *
  * Function:    free_MailSignaturePref
  *
- * Summary:     
+ * Summary:     frees all MailSignaturePref_t structure members
  *
- * Parameters:  None
+ * Parameters:  MailSignaturePref_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_MailSignaturePref(struct MailSignaturePref *a)
+void
+free_MailSignaturePref(MailSignaturePref_t *pref)
 {
-	if (a->signature);
-	free(a->signature);
+	if (pref->signature != NULL) {
+		free(pref->signature);
+		pref->signature = NULL;
+	}
 }
+
 
 /***********************************************************************
  *
  * Function:    unpack_Mail
  *
- * Summary:     
+ * Summary:     unpacks Mail
  *
- * Parameters:  None
+ * Parameters:  Mail_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
-int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
+int
+unpack_Mail(Mail_t *mail, unsigned char *buffer, size_t len)
 {
 	int 	flags;
 	unsigned long d;
@@ -146,28 +188,28 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
 		return 0;
 
 	d = (unsigned short int) get_short(buffer);
-	a->date.tm_year 	= (d >> 9) + 4;
-	a->date.tm_mon 		= ((d >> 5) & 15) - 1;
-	a->date.tm_mday 	= d & 31;
-	a->date.tm_hour 	= get_byte(buffer + 2);
-	a->date.tm_min 		= get_byte(buffer + 3);
-	a->date.tm_sec 		= 0;
-	a->date.tm_isdst 	= -1;
-	mktime(&a->date);
+	mail->date.tm_year 	= (d >> 9) + 4;
+	mail->date.tm_mon 	= ((d >> 5) & 15) - 1;
+	mail->date.tm_mday 	= d & 31;
+	mail->date.tm_hour 	= get_byte(buffer + 2);
+	mail->date.tm_min 	= get_byte(buffer + 3);
+	mail->date.tm_sec 	= 0;
+	mail->date.tm_isdst 	= -1;
+	mktime(&mail->date);
 
 	if (d)
-		a->dated = 1;
+		mail->dated = 1;
 	else
-		a->dated = 0;
+		mail->dated = 0;
 
 	flags = get_byte(buffer + 4);
 
-	a->read 		= (flags & (1 << 7)) ? 1 : 0;
-	a->signature 		= (flags & (1 << 6)) ? 1 : 0;
-	a->confirmRead 		= (flags & (1 << 5)) ? 1 : 0;
-	a->confirmDelivery 	= (flags & (1 << 4)) ? 1 : 0;
-	a->priority 		= (flags & (3 << 2)) >> 2;
-	a->addressing 		= (flags & 3);
+	mail->read 		= (flags & (1 << 7)) ? 1 : 0;
+	mail->signature 		= (flags & (1 << 6)) ? 1 : 0;
+	mail->confirmRead 		= (flags & (1 << 5)) ? 1 : 0;
+	mail->confirmDelivery 	= (flags & (1 << 4)) ? 1 : 0;
+	mail->priority 		= (flags & (3 << 2)) >> 2;
+	mail->addressing 		= (flags & 3);
 
 	buffer 	+= 6;
 	len 	-= 6;
@@ -175,119 +217,121 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
 	if (len < 1)
 		return 0;
 	if (get_byte(buffer)) {
-		a->subject = strdup(buffer);
-		buffer += strlen(buffer);
-		len -= strlen(buffer);
+		mail->subject = strdup((char *)buffer);
+		buffer += strlen((char *)buffer);
+		len -= strlen((char *)buffer);
 	} else
-		a->subject = 0;
+		mail->subject = 0;
 	buffer++;
 	len--;
 	if (len < 1)
 		return 0;
 	if (get_byte(buffer)) {
-		a->from = strdup(buffer);
-		buffer += strlen(buffer);
-		len -= strlen(buffer);
+		mail->from = strdup((char *)buffer);
+		buffer += strlen((char *)buffer);
+		len -= strlen((char *)buffer);
 	} else
-		a->from = 0;
+		mail->from = 0;
 	buffer++;
 	len--;
 	if (len < 1)
 		return 0;
 	if (get_byte(buffer)) {
-		a->to = strdup(buffer);
-		buffer += strlen(buffer);
-		len -= strlen(buffer);
+		mail->to = strdup((char *)buffer);
+		buffer += strlen((char *)buffer);
+		len -= strlen((char *)buffer);
 	} else
-		a->to = 0;
+		mail->to = 0;
 	buffer++;
 	len--;
 	if (len < 1)
 		return 0;
 	if (get_byte(buffer)) {
-		a->cc = strdup(buffer);
-		buffer += strlen(buffer);
-		len -= strlen(buffer);
+		mail->cc = strdup((char *)buffer);
+		buffer += strlen((char *)buffer);
+		len -= strlen((char *)buffer);
 	} else
-		a->cc = 0;
+		mail->cc = 0;
 	buffer++;
 	len--;
 	if (len < 1)
 		return 0;
 	if (get_byte(buffer)) {
-		a->bcc = strdup(buffer);
-		buffer += strlen(buffer);
-		len -= strlen(buffer);
+		mail->bcc = strdup((char *)buffer);
+		buffer += strlen((char *)buffer);
+		len -= strlen((char *)buffer);
 	} else
-		a->bcc = 0;
+		mail->bcc = 0;
 	buffer++;
 	len--;
 	if (len < 1)
 		return 0;
 	if (get_byte(buffer)) {
-		a->replyTo = strdup(buffer);
-		buffer += strlen(buffer);
-		len -= strlen(buffer);
+		mail->replyTo = strdup((char *)buffer);
+		buffer += strlen((char *)buffer);
+		len -= strlen((char *)buffer);
 	} else
-		a->replyTo = 0;
+		mail->replyTo = 0;
 	buffer++;
 	len--;
 	if (len < 1)
 		return 0;
 	if (get_byte(buffer)) {
-		a->sentTo = strdup(buffer);
-		buffer += strlen(buffer);
-		len -= strlen(buffer);
+		mail->sentTo = strdup((char *)buffer);
+		buffer += strlen((char *)buffer);
+		len -= strlen((char *)buffer);
 	} else
-		a->sentTo = 0;
+		mail->sentTo = 0;
 	buffer++;
 	len--;
 	if (len < 1)
 		return 0;
 	if (get_byte(buffer)) {
-		a->body = strdup(buffer);
-		buffer += strlen(buffer);
-		len -= strlen(buffer);
+		mail->body = strdup((char *)buffer);
+		buffer += strlen((char *)buffer);
+		len -= strlen((char *)buffer);
 	} else
-		a->body = 0;
+		mail->body = 0;
 	buffer++;
 	len--;
 
 	return (buffer - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    pack_Mail
  *
- * Summary:     
+ * Summary:     packs Mail
  *
- * Parameters:  None
+ * Parameters:  Mail_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
-int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
+int
+pack_Mail(struct Mail *mail, unsigned char *buffer, size_t len)
 {
-	int 	destlen = 6 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+	size_t 	destlen = 6 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
 	unsigned char *start = buffer;
 
-	if (a->subject)
-		destlen += strlen(a->subject);
-	if (a->from)
-		destlen += strlen(a->from);
-	if (a->to)
-		destlen += strlen(a->to);
-	if (a->cc)
-		destlen += strlen(a->cc);
-	if (a->bcc)
-		destlen += strlen(a->bcc);
-	if (a->replyTo)
-		destlen += strlen(a->replyTo);
-	if (a->sentTo)
-		destlen += strlen(a->sentTo);
-	if (a->body)
-		destlen += strlen(a->body);
+	if (mail->subject)
+		destlen += strlen(mail->subject);
+	if (mail->from)
+		destlen += strlen(mail->from);
+	if (mail->to)
+		destlen += strlen(mail->to);
+	if (mail->cc)
+		destlen += strlen(mail->cc);
+	if (mail->bcc)
+		destlen += strlen(mail->bcc);
+	if (mail->replyTo)
+		destlen += strlen(mail->replyTo);
+	if (mail->sentTo)
+		destlen += strlen(mail->sentTo);
+	if (mail->body)
+		destlen += strlen(mail->body);
 
 	if (!buffer)
 		return destlen;
@@ -295,71 +339,71 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
 		return 0;
 
 	set_short(buffer,
-		  ((a->date.tm_year - 4) << 9) | ((a->date.tm_mon +
-						   1) << 5) | a->date.
+		  ((mail->date.tm_year - 4) << 9) | ((mail->date.tm_mon +
+						   1) << 5) | mail->date.
 		  tm_mday);
-	set_byte(buffer + 2, a->date.tm_hour);
-	set_byte(buffer + 3, a->date.tm_min);
+	set_byte(buffer + 2, mail->date.tm_hour);
+	set_byte(buffer + 3, mail->date.tm_min);
 
-	if (!a->dated)
+	if (!mail->dated)
 		set_long(buffer, 0);
 
-	set_byte(buffer + 4, (a->read ? (1 << 7) : 0) |
-		 (a->signature ? (1 << 6) : 0) | (a->
+	set_byte(buffer + 4, (mail->read ? (1 << 7) : 0) |
+		 (mail->signature ? (1 << 6) : 0) | (mail->
 						  confirmRead ? (1 << 5) :
-						  0) | (a->
+						  0) | (mail->
 							confirmDelivery
 							? (1 << 4) : 0) |
-		 ((a->priority & 3) << 2) | (a->addressing & 3));
+		 ((mail->priority & 3) << 2) | (mail->addressing & 3));
 	set_byte(buffer + 5, 0);
 
 	buffer += 6;
 
-	if (a->subject) {
-		strcpy(buffer, a->subject);
-		buffer += strlen(buffer);
+	if (mail->subject) {
+		strcpy((char *)buffer, mail->subject);
+		buffer += strlen((char *)buffer);
 	} else
 		set_byte(buffer, 0);
 	buffer++;
-	if (a->from) {
-		strcpy(buffer, a->from);
-		buffer += strlen(buffer);
+	if (mail->from) {
+		strcpy((char *)buffer, mail->from);
+		buffer += strlen((char *)buffer);
 	} else
 		set_byte(buffer, 0);
 	buffer++;
-	if (a->to) {
-		strcpy(buffer, a->to);
-		buffer += strlen(buffer);
+	if (mail->to) {
+		strcpy((char *)buffer, mail->to);
+		buffer += strlen((char *)buffer);
 	} else
 		set_byte(buffer, 0);
 	buffer++;
-	if (a->cc) {
-		strcpy(buffer, a->cc);
-		buffer += strlen(buffer);
+	if (mail->cc) {
+		strcpy((char *)buffer, mail->cc);
+		buffer += strlen((char *)buffer);
 	} else
 		set_byte(buffer, 0);
 	buffer++;
-	if (a->bcc) {
-		strcpy(buffer, a->bcc);
-		buffer += strlen(buffer);
+	if (mail->bcc) {
+		strcpy((char *)buffer, mail->bcc);
+		buffer += strlen((char *)buffer);
 	} else
 		set_byte(buffer, 0);
 	buffer++;
-	if (a->replyTo) {
-		strcpy(buffer, a->replyTo);
-		buffer += strlen(buffer);
+	if (mail->replyTo) {
+		strcpy((char *)buffer, mail->replyTo);
+		buffer += strlen((char *)buffer);
 	} else
 		set_byte(buffer, 0);
 	buffer++;
-	if (a->sentTo) {
-		strcpy(buffer, a->sentTo);
-		buffer += strlen(buffer);
+	if (mail->sentTo) {
+		strcpy((char *)buffer, mail->sentTo);
+		buffer += strlen((char *)buffer);
 	} else
 		set_byte(buffer, 0);
 	buffer++;
-	if (a->body) {
-		strcpy(buffer, a->body);
-		buffer += strlen(buffer);
+	if (mail->body) {
+		strcpy((char *)buffer, mail->body);
+		buffer += strlen((char *)buffer);
 	} else
 		set_byte(buffer, 0);
 	buffer++;
@@ -367,35 +411,36 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
 	return (buffer - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    unpack_MailAppInfo
  *
- * Summary:     
+ * Summary:     unpacks MailAppInfo
  *
- * Parameters:  None
+ * Parameters:  MailAppInfo_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
+unpack_MailAppInfo(MailAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!i)
 		return i;
 	record += i;
 	len -= i;
 	if (len < 11)
 		return 0;
-	ai->dirty = get_short(record);
+	appinfo->dirty = get_short(record);
 	record += 2;
-	ai->sortOrder = get_byte(record);
+	appinfo->sortOrder = get_byte(record);
 	record += 2;
-	ai->unsentMessage = get_long(record);
+	appinfo->unsentMessage = get_long(record);
 	record += 4;
 
 /* ai->signature = 0; 			*/
@@ -405,24 +450,25 @@ unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 	return (record - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    pack_MailAppInfo
  *
- * Summary:     
+ * Summary:     packs MailAppInfo
  *
- * Parameters:  None
+ * Parameters:  MailAppInfo_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
+pack_MailAppInfo(struct MailAppInfo *appinfo, unsigned char *record, size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!record)
 		return i + 11;
 	if (!i)
@@ -431,19 +477,19 @@ pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 	len -= i;
 	if (len < 8)
 		return 0;
-	set_short(record, ai->dirty);
+	set_short(record, appinfo->dirty);
 	record += 2;
 	set_short(record, 0);	/* gapfill */
-	set_byte(record, ai->sortOrder);
+	set_byte(record, appinfo->sortOrder);
 	record += 2;
-	set_long(record, ai->unsentMessage);
+	set_long(record, appinfo->unsentMessage);
 	record += 4;
 
 	set_short(record, (record - start + 2));
 	record += 2;
 
-	/* if (ai->signature)
-	   strcpy(record, ai->signature);
+	/* if (appinfo->signature)
+	   strcpy(record, appinfo->signature);
 	   else
 	   set_byte(record, 0);
 	   record += strlen(record); */
@@ -453,169 +499,173 @@ pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 	return (record - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    unpack_MailSyncPref
  *
- * Summary:     
+ * Summary:     unpacks Mail
  *
- * Parameters:  None
+ * Parameters:  MailSyncPref_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-unpack_MailSyncPref(struct MailSyncPref *a, unsigned char *record, int len)
+unpack_MailSyncPref(MailSyncPref_t *pref, unsigned char *record, size_t len)
 {
 	unsigned char *start = record;
 
-	a->syncType = get_byte(record);
+	pref->syncType = get_byte(record);
 	record += 1;
-	a->getHigh = get_byte(record);
+	pref->getHigh = get_byte(record);
 	record += 1;
-	a->getContaining = get_byte(record);
+	pref->getContaining = get_byte(record);
 	record += 2;
-	a->truncate = get_short(record);
+	pref->truncate = get_short(record);
 	record += 2;
 
 	if (get_byte(record)) {
-		a->filterTo = strdup(record);
-		record += strlen(record);
+		pref->filterTo = strdup((char *)record);
+		record += strlen((char *)record);
 	} else
-		a->filterTo = 0;
+		pref->filterTo = 0;
 	record++;
 	if (get_byte(record)) {
-		a->filterFrom = strdup(record);
-		record += strlen(record);
+		pref->filterFrom = strdup((char *)record);
+		record += strlen((char *)record);
 	} else
-		a->filterFrom = 0;
+		pref->filterFrom = 0;
 	record++;
 	if (get_byte(record)) {
-		a->filterSubject = strdup(record);
-		record += strlen(record);
+		pref->filterSubject = strdup((char *)record);
+		record += strlen((char *)record);
 	} else
-		a->filterSubject = 0;
+		pref->filterSubject = 0;
 	record++;
 
 	return (record - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    pack_MailSyncPref
  *
- * Summary:     
+ * Summary:     packs Mail
  *
- * Parameters:  None
+ * Parameters:  MailSyncPref_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record, int len)
+pack_MailSyncPref(MailSyncPref_t *pref, unsigned char *record, size_t len)
 {
-	int 	destlen = 6 + 1 + 1 + 1;
+	size_t 	destlen = 6 + 1 + 1 + 1;
 	unsigned char *start = record;
 
-	if (ai->filterTo)
-		destlen += strlen(ai->filterTo);
-	if (ai->filterSubject)
-		destlen += strlen(ai->filterSubject);
-	if (ai->filterFrom)
-		destlen += strlen(ai->filterFrom);
+	if (pref->filterTo)
+		destlen += strlen(pref->filterTo);
+	if (pref->filterSubject)
+		destlen += strlen(pref->filterSubject);
+	if (pref->filterFrom)
+		destlen += strlen(pref->filterFrom);
 
 	if (!record)
 		return destlen;
 	if (len < destlen)
 		return 0;
 
-	set_byte(record, ai->syncType);
+	set_byte(record, pref->syncType);
 	record++;
-	set_byte(record, ai->getHigh);
+	set_byte(record, pref->getHigh);
 	record++;
-	set_byte(record, ai->getContaining);
+	set_byte(record, pref->getContaining);
 	record++;
 	set_byte(record, 0);
 	record++;		/* gapfill */
-	set_short(record, ai->truncate);
+	set_short(record, pref->truncate);
 	record += 2;
 
-	if (ai->filterTo) {
-		strcpy(record, ai->filterTo);
-		record += strlen(ai->filterTo);
+	if (pref->filterTo) {
+		strcpy((char *)record, pref->filterTo);
+		record += strlen(pref->filterTo);
 	}
 	*record++ = 0;
 
-	if (ai->filterFrom) {
-		strcpy(record, ai->filterFrom);
-		record += strlen(ai->filterFrom);
+	if (pref->filterFrom) {
+		strcpy((char *)record, pref->filterFrom);
+		record += strlen(pref->filterFrom);
 	}
 	*record++ = 0;
 
-	if (ai->filterSubject) {
-		strcpy(record, ai->filterSubject);
-		record += strlen(ai->filterSubject);
+	if (pref->filterSubject) {
+		strcpy((char *)record, pref->filterSubject);
+		record += strlen(pref->filterSubject);
 	}
 	*record++ = 0;
 
 	return (record - start);
 }
 
+
 /***********************************************************************
  *
  * Function:    unpack_MailSignaturePref
  *
- * Summary:     
+ * Summary:     unpacks MailSignaturePref
  *
- * Parameters:  None
+ * Parameters:  MailSignaturePref_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-unpack_MailSignaturePref(struct MailSignaturePref *a,
-			 unsigned char *record, int len)
+unpack_MailSignaturePref(MailSignaturePref_t *pref,
+			 unsigned char *record, size_t len)
 {
 	unsigned char *start = record;
 
 	if (len < 1)
 		return 0;
 
-	a->signature = strdup(record);
+	pref->signature = strdup((char *)record);
 
-	record += strlen(a->signature) + 1;
+	record += strlen(pref->signature) + 1;
 
 	return (record - start);
 }
+
 
 /***********************************************************************
  *
  * Function:    pack_MailSignaturePref
  *
- * Summary:     
+ * Summary:     packs MailSignaturePref
  *
- * Parameters:  None
+ * Parameters:  MailSignaturePref_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-pack_MailSignaturePref(struct MailSignaturePref *ai, unsigned char *record,
-		       int len)
+pack_MailSignaturePref(struct MailSignaturePref *pref, unsigned char *record,
+		       size_t len)
 {
-	int 	destlen = 1;
+	size_t 	destlen = 1;
 	unsigned char *start = record;
 
-	if (ai->signature)
-		destlen += strlen(ai->signature);
+	if (pref->signature)
+		destlen += strlen(pref->signature);
 
 	if (!record)
 		return destlen;
 	if (len < destlen)
 		return 0;
-	if (ai->signature) {
-		strcpy(record, ai->signature);
-		record += strlen(ai->signature);
+	if (pref->signature) {
+		strcpy((char *)record, pref->signature);
+		record += strlen(pref->signature);
 	}
 	*record = 0;
 	record++;

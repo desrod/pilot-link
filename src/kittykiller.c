@@ -20,23 +20,33 @@
  */
 
 #include <windows.h>
+#include <string.h>
 
 #define WM_POKEHOTSYNC            WM_USER + 0xbac5
+
+/* Terminate without displaying the "Are you sure?"
+   confirmation dialog. */
 #define PHS_QUIET_WM_CLOSE        1
 #define HOTSYNC_APP_CLASS         "KittyHawk"
 
 int main(int argc, char *argv[])
 {
-
 	/* obtain the handle for the HotSync Manager's window */
 	HWND hWnd = FindWindow(HOTSYNC_APP_CLASS, NULL);
 
-	/* If the HotSync manager is already running, send the exit message */
-	if (hWnd) {
-		/* Send a message to the HotSync manager asking it to
-		   terminate without displaying the "Are you sure?"
-		   confirmation dialog. */
+        printf("   .--------------------------------------------.\n"
+               "   | (c) Copyright 1996-2004, pilot-link team   |\n"
+               "   |   Join the pilot-link lists to help out.   |\n"
+               "   `--------------------------------------------'\n\n");
+
+	if (!hWnd) {
+		printf("    HotSync Manager was not running... exiting.\n");
+	} else {
+		printf("    Shutting down HotSync Manager...\n");
 		SendMessage(hWnd, WM_POKEHOTSYNC, PHS_QUIET_WM_CLOSE, 0);
 	}
+
+	printf("    Thank you for using pilot-link.\n\n"); 
+
 	return 0;
 }

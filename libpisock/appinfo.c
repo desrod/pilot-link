@@ -31,14 +31,13 @@
  *
  * Summary:     Unpack the AppInfo block into the structure
  *
- * Parameters:  None
+ * Parameters:  CategoryAppInfo_t*, char* to record, record length
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
 int
-unpack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
-		       int len)
+unpack_CategoryAppInfo(CategoryAppInfo_t *ai, unsigned char *record, size_t len)
 {
 	int 	i,
 		rec;
@@ -70,14 +69,13 @@ unpack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
  *
  * Summary:     Pack the AppInfo structure 
  *
- * Parameters:  None
+ * Parameters:  CategoryAppInfo_t*, char* to record, record length
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
 int
-pack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
-		     int len)
+pack_CategoryAppInfo(CategoryAppInfo_t *ai, unsigned char *record, size_t len)
 {
 	int 	i,
 		rec;

@@ -32,140 +32,257 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-usb.h"
 #include "pi-net.h"
 #include "pi-cmp.h"
 
-static int pi_usb_connect(struct pi_socket *ps, struct sockaddr *addr, 
-			     int addrlen);
-static int pi_usb_bind(struct pi_socket *ps, struct sockaddr *addr,
-			  int addrlen);
-static int pi_usb_listen(struct pi_socket *ps, int backlog);
-static int pi_usb_accept(struct pi_socket *ps, struct sockaddr *addr,
-			    int *addrlen);
-static int pi_usb_getsockopt(struct pi_socket *ps, int level, int option_name, 
-				void *option_value, int *option_len);
-static int pi_usb_setsockopt(struct pi_socket *ps, int level, int option_name, 
-				const void *option_value, int *option_len);
-static int pi_usb_close(struct pi_socket *ps);
+static int pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, 
+			     socklen_t addrlen);
+static int pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr,
+			  socklen_t addrlen);
+static int pi_usb_listen(pi_socket_t *ps, int backlog);
+static int pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr,
+			    socklen_t *addrlen);
+static int pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name, 
+				void *option_value, size_t *option_len);
+static int pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name, 
+				const void *option_value, size_t *option_len);
+static int pi_usb_close(pi_socket_t *ps);
 
-int pi_socket_init(struct pi_socket *ps);
+int pi_socket_init(pi_socket_t *ps);
 
 /* Protocol Functions */
-static struct pi_protocol *pi_usb_protocol_dup (struct pi_protocol *prot)
+/***********************************************************************
+ *
+ * Function:    pi_usb_protocol_dup
+ *
+ * Summary:     creates a new copy of a USB pi_protocol instance
+ *
+ * Parameters:	pi_protocol_t*
+ *
+ * Returns:     new pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+pi_protocol_t *
+pi_usb_protocol_dup (pi_protocol_t *prot)
 {
-	struct pi_protocol *new_prot;
+	pi_protocol_t *new_prot;
+
+	ASSERT(prot != NULL);
 	
-	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level 	= prot->level;
-	new_prot->dup 		= prot->dup;
-	new_prot->free 		= prot->free;
-	new_prot->read 		= prot->read;
-	new_prot->write 	= prot->write;
-	new_prot->getsockopt 	= prot->getsockopt;
-	new_prot->setsockopt 	= prot->setsockopt;
-	new_prot->data 		= NULL;
+	new_prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
+
+	if (new_prot != NULL) {
+		new_prot->level 	= prot->level;
+		new_prot->dup 		= prot->dup;
+		new_prot->free 		= prot->free;
+		new_prot->read 		= prot->read;
+		new_prot->write 	= prot->write;
+		new_prot->getsockopt 	= prot->getsockopt;
+		new_prot->setsockopt 	= prot->setsockopt;
+		new_prot->data 		= NULL;
+	}
 
 	return new_prot;
 }
 
-static void pi_usb_protocol_free (struct pi_protocol *prot)
+
+/***********************************************************************
+ *
+ * Function:    pi_usb_protocol_free
+ *
+ * Summary:     frees USB pi_protocol instance
+ *
+ * Parameters:	pi_protocol_t*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+pi_usb_protocol_free (pi_protocol_t *prot)
 {
-	free(prot);
+	ASSERT(prot != NULL);
+	
+	if (prot != NULL)
+		free(prot);
 }
 
-static struct pi_protocol *pi_usb_protocol (struct pi_device *dev)
+
+/***********************************************************************
+ *
+ * Function:    pi_usb_protocol
+ *
+ * Summary:     creates a new USB pi_protocol instance
+ *
+ * Parameters:	pi_device_t*
+ *
+ * Returns:     new pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t *
+pi_usb_protocol (pi_device_t *dev)
 {	
-	struct pi_protocol *prot;
-	struct pi_usb_data *data;
+	pi_protocol_t *prot;
+	pi_usb_data_t *data;
+
+	ASSERT(dev != NULL);
 	
 	data = dev->data;
 	
-	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	prot->level 		= PI_LEVEL_DEV;
-	prot->dup 		= pi_usb_protocol_dup;
-	prot->free 		= pi_usb_protocol_free;
-	prot->read 		= data->impl.read;
-	prot->write 		= data->impl.write;
-	prot->getsockopt 	= pi_usb_getsockopt;
-	prot->setsockopt 	= pi_usb_setsockopt;
-	prot->data 		= NULL;
+	prot 	= (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
+
+	if (prot != NULL) {
+		prot->level 		= PI_LEVEL_DEV;
+		prot->dup 		= pi_usb_protocol_dup;
+		prot->free 		= pi_usb_protocol_free;
+		prot->read 		= data->impl.read;
+		prot->write 		= data->impl.write;
+		prot->getsockopt 	= pi_usb_getsockopt;
+		prot->setsockopt 	= pi_usb_setsockopt;
+		prot->data 		= NULL;
+	}
 	
 	return prot;
 }
 
 /* Device Functions */
-static struct pi_device *pi_usb_device_dup (struct pi_device *dev)
+/***********************************************************************
+ *
+ * Function:    pi_usb_device_dup
+ *
+ * Summary:     creates a new copy of a USB pi_device instance
+ *
+ * Parameters:	pi_device_t*
+ *
+ * Returns:     new pi_device_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_device_t *
+pi_usb_device_dup (pi_device_t *dev)
 {
-	struct 	pi_device *new_dev;
-	struct 	pi_usb_data *new_data, *data;
+	pi_device_t *new_dev = NULL;
+
+	struct 	pi_usb_data	*new_data = NULL,
+				*data = NULL;
+
+	ASSERT(dev != NULL);
 	
-	new_dev 		= (struct pi_device *)malloc (sizeof (struct pi_device));
-	new_dev->dup 		= dev->dup;
-	new_dev->free 		= dev->free;
-	new_dev->protocol 	= dev->protocol;	
-	new_dev->bind 		= dev->bind;
-	new_dev->listen 	= dev->listen;
-	new_dev->accept 	= dev->accept;
-	new_dev->connect 	= dev->connect;
-	new_dev->close 		= dev->close;
+	new_dev	= (pi_device_t *)malloc (sizeof (pi_device_t));
+		if (new_dev != NULL) {
+			new_data = (pi_usb_data_t *)malloc
+				(sizeof (struct pi_usb_data));
+			if (new_data == NULL) {
+				free(new_dev);
+				new_dev = NULL;
+			}
+		}
+
+	if ( (new_dev != NULL) && (new_data != NULL) ) {
+
+		new_dev->dup 		= dev->dup;
+		new_dev->free 		= dev->free;
+		new_dev->protocol 	= dev->protocol;	
+		new_dev->bind 		= dev->bind;
+		new_dev->listen 	= dev->listen;
+		new_dev->accept 	= dev->accept;
+		new_dev->connect 	= dev->connect;
+		new_dev->close 		= dev->close;
 	
-	new_data 		= (struct pi_usb_data *)malloc (sizeof (struct pi_usb_data));
-	data 			= (struct pi_usb_data *)dev->data;
-	new_data->impl 		= data->impl;
-	memcpy(new_data->buf, data->buf, data->buf_size);
-	new_data->buf_size 	= data->buf_size;
-	new_data->ref           = NULL;
-	new_data->timeout 	= data->timeout;
-	new_dev->data 		= new_data;
+		data 	= (pi_usb_data_t *)dev->data;
+		new_data->impl 		= data->impl;
+		memcpy(new_data->buf, data->buf, data->buf_size);
+		new_data->buf_size 	= data->buf_size;
+		new_data->ref           = NULL;
+		new_data->timeout 	= data->timeout;
+		new_dev->data 		= new_data;
+	}
 	
 	return new_dev;
 }
 
-static void pi_usb_device_free (struct pi_device *dev) 
-{
-	struct pi_usb_data *data = (struct pi_usb_data *)dev->data;
 
-	free(data);
-	free(dev);
+/***********************************************************************
+ *
+ * Function:    pi_usb_device_free
+ *
+ * Summary:     frees USB pi_device instance
+ *
+ * Parameters:	pi_device_t*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+pi_usb_device_free (pi_device_t *dev) 
+{
+	pi_usb_data_t *data = (pi_usb_data_t *)dev->data;
+
+	ASSERT(dev != NULL);
+
+	if (data != NULL)
+		free(data);
+	if (dev != NULL)
+		free(dev);
 }
 
-struct pi_device *pi_usb_device (int type) 
+
+/***********************************************************************
+ *
+ * Function:    pi_usb_device
+ *
+ * Summary:     creates a new USB pi_device instance
+ *
+ * Parameters:	pi_device_t*
+ *
+ * Returns:     new pi_device_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+pi_device_t *
+pi_usb_device (int type) 
 {
-	struct 	pi_device *dev;
-	struct 	pi_usb_data *data;
+	pi_device_t *dev;
+	pi_usb_data_t *data;
 	
-	dev 	= (struct pi_device *)malloc (sizeof (struct pi_device));
-	data 	= (struct pi_usb_data *)malloc (sizeof (struct pi_usb_data));
-
-	dev->dup 		= pi_usb_device_dup;
-	dev->free 		= pi_usb_device_free;
-	dev->protocol 		= pi_usb_protocol;	
-	dev->bind 		= pi_usb_bind;
-	dev->listen 		= pi_usb_listen;
-	dev->accept 		= pi_usb_accept;
-	dev->connect 		= pi_usb_connect;
-	dev->close 		= pi_usb_close;
-
-	switch (type) {
-	case PI_USB_DEV:
-		pi_usb_impl_init (&data->impl);
-		break;
-	default:
-		pi_usb_impl_init (&data->impl);
-		break;
+	dev = (pi_device_t *)malloc (sizeof (pi_device_t));
+	if (dev != NULL) {
+		data = (pi_usb_data_t *)malloc (sizeof (struct pi_usb_data));
+		if (data == NULL) {
+			free(dev);
+			dev = NULL;
+		}
 	}
 	
-	data->buf_size 		= 0;
-	data->ref               = NULL;
-	data->timeout 		= 0;
-	dev->data 		= data;
+	if ( (dev != NULL) && (data != NULL) ) {
+
+		dev->dup 		= pi_usb_device_dup;
+		dev->free 		= pi_usb_device_free;
+		dev->protocol 		= pi_usb_protocol;	
+		dev->bind 		= pi_usb_bind;
+		dev->listen 		= pi_usb_listen;
+		dev->accept 		= pi_usb_accept;
+		dev->connect 		= pi_usb_connect;
+		dev->close 		= pi_usb_close;
+
+		switch (type) {
+		case PI_USB_DEV:
+			pi_usb_impl_init (&data->impl);
+			break;
+		default:
+			pi_usb_impl_init (&data->impl);
+			break;
+		}
+	
+		data->buf_size 		= 0;
+		data->ref               = NULL;
+		data->timeout 		= 0;
+		dev->data 		= data;
+	}
 	
 	return dev;
 }
@@ -176,15 +293,15 @@ struct pi_device *pi_usb_device (int type)
  *
  * Summary:     Connect socket to a given address
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, sockaddr*, socket length
  *
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
 static int
-pi_usb_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
+pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, socklen_t addrlen)
 {
-	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
+	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 
 	if (data->impl.open(ps, pa, addrlen) == -1)
@@ -220,15 +337,15 @@ pi_usb_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  *
  * Summary:     Bind address to a local socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, sockaddr*, socket length
  *
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
 static int
-pi_usb_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
+pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr, socklen_t addrlen)
 {
-	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
+	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 
 	if (data->impl.open(ps, pa, addrlen) == -1) {
@@ -251,12 +368,13 @@ pi_usb_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  *
  * Summary:     Prepare for incoming connections
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, backlog
  *
- * Returns:     Nothing
+ * Returns:     0
  *
  ***********************************************************************/
-static int pi_usb_listen(struct pi_socket *ps, int backlog)
+static int
+pi_usb_listen(pi_socket_t *ps, int backlog)
 {
 	ps->state = PI_SOCK_LISTN;
 	
@@ -269,15 +387,15 @@ static int pi_usb_listen(struct pi_socket *ps, int backlog)
  *
  * Summary:     Accept an incoming connection
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, sockaddr*, socket length
  *
- * Returns:     Nothing
+ * Returns:     pi_socket descriptor or -1 on error
  *
  ***********************************************************************/
 static int
-pi_usb_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
+pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, socklen_t *addrlen)
 {
-	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
+	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_socket *accept = NULL;
 
 	/* Wait for data */
@@ -317,11 +435,23 @@ pi_usb_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	return -1;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    pi_usb_getsockopt
+ *
+ * Summary:     get options on USB socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-pi_usb_getsockopt(struct pi_socket *ps, int level, int option_name, 
-		     void *option_value, int *option_len)
+pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name, 
+		     void *option_value, size_t *option_len)
 {
-	struct pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
+	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
 	switch (option_name) {
 	case PI_DEV_TIMEOUT:
@@ -340,11 +470,23 @@ pi_usb_getsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    pi_usb_setsockopt
+ *
+ * Summary:     set options on USB socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-pi_usb_setsockopt(struct pi_socket *ps, int level, int option_name, 
-		     const void *option_value, int *option_len)
+pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name, 
+		     const void *option_value, size_t *option_len)
 {
-	struct pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
+	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
 	switch (option_name) {
 	case PI_DEV_TIMEOUT:
@@ -369,22 +511,27 @@ pi_usb_setsockopt(struct pi_socket *ps, int level, int option_name,
  *
  * Summary:     Close a connection, destroy the socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
- * Returns:     Nothing
+ * Returns:     0
  *
  ***********************************************************************/
-static int pi_usb_close(struct pi_socket *ps)
+static int
+pi_usb_close(pi_socket_t *ps)
 {
-	struct pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
+	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
-	if (ps->sd)
+	if (ps->sd != 0)
 		data->impl.close (ps);
 
-	if (ps->laddr)
+	if (ps->laddr != NULL) {
 		free(ps->laddr);
-	if (ps->raddr)
+		ps->laddr = NULL;
+	}
+	if (ps->raddr != NULL) {
 		free(ps->raddr);
+		ps->raddr = NULL;
+	}
 
 	return 0;
 }

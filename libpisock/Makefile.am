@@ -12,17 +12,21 @@ serial_SOURCE = unixserial.c
 usb_FILES = 		\
 	usb.c		\
 	linuxusb.c	\
-	freebsdusb.c
+	freebsdusb.c	\
+	darwinusb.c
 
 if WITH_LINUXUSB
 usb_SOURCE = usb.c linuxusb.c
-else
+endif
+
 if WITH_FREEBSDUSB
 usb_SOURCE = usb.c freebsdusb.c
-else
-usb_SOURCE =
 endif
+
+if WITH_DARWINUSB
+usb_SOURCE = usb.c darwinusb.c darwinusbcore.cpp
 endif
+
 lib_LTLIBRARIES = libpisock.la
 
 libpisock_la_SOURCES =  \
@@ -31,6 +35,7 @@ libpisock_la_SOURCES =  \
 	address.c	\
 	appinfo.c	\
 	connect.c	\
+	contact.c	\
 	cmp.c		\
 	datebook.c	\
 	debug.c		\

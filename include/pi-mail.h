@@ -2,14 +2,13 @@
 #define _PILOT_MAIL_H_
 
 #include <time.h>
-#include "pi-args.h"
 #include "pi-appinfo.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	struct Mail {
+	typedef struct Mail {
 		int read;
 		int signature;
 		int confirmRead;
@@ -28,18 +27,18 @@ extern "C" {
 		char *replyTo;
 		char *sentTo;
 		char *body;
-	};
+	} Mail_t;
 
-	struct MailAppInfo {
+	typedef struct MailAppInfo {
 		struct CategoryAppInfo category;
 		int dirty;			/* boolean */
 		int sortOrder;
 		unsigned long unsentMessage;	/* UniqueID of unsent message */
 
 		/* char *signature; not implemented by Palm */
-	};
+	} MailAppInfo_t;
 
-	struct MailSyncPref {
+	typedef struct MailSyncPref {
 		int syncType;
 		int getHigh;
 		int getContaining;
@@ -47,11 +46,11 @@ extern "C" {
 		char *filterTo;
 		char *filterFrom;
 		char *filterSubject;
-	};
+	} MailSyncPref_t;
 
-	struct MailSignaturePref {
+	typedef struct MailSignaturePref {
 		char *signature;
-	};
+	} MailSignaturePref_t;
 
 	extern char *MailSyncTypeNames[];
 	extern char *MailSortTypeNames[];
@@ -85,34 +84,34 @@ extern "C" {
 	    PI_ARGS((struct MailSignaturePref *));
 
 	extern int unpack_Mail
-	    PI_ARGS((struct Mail *, unsigned char *record, int len));
+	    PI_ARGS((struct Mail *, unsigned char *record, size_t len));
 
 	extern int pack_Mail
-	    PI_ARGS((struct Mail *, unsigned char *record, int len));
+	    PI_ARGS((struct Mail *, unsigned char *record, size_t len));
 
 	extern int unpack_MailAppInfo
 	    PI_ARGS((struct MailAppInfo *, unsigned char *AppInfo,
-		     int len));
+		     size_t len));
 
 	extern int pack_MailAppInfo
 	    PI_ARGS((struct MailAppInfo *, unsigned char *AppInfo,
-		     int len));
+		     size_t len));
 
 	extern int unpack_MailSyncPref
 	    PI_ARGS((struct MailSyncPref *, unsigned char *record,
-		     int len));
+		     size_t len));
 
 	extern int unpack_MailSignaturePref
 	    PI_ARGS((struct MailSignaturePref *, unsigned char *record,
-		     int len));
+		     size_t len));
 
 	extern int pack_MailSyncPref
 	    PI_ARGS((struct MailSyncPref *, unsigned char *record,
-		     int len));
+		     size_t len));
 
 	extern int pack_MailSignaturePref
 	    PI_ARGS((struct MailSignaturePref *, unsigned char *record,
-		     int len));
+		     size_t len));
 
 #ifdef __cplusplus
 }

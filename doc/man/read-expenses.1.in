@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "read-expenses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "read-expenses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBread-expenses\fR \- Connect to the Palm handheld and dump the Expense application data in a simple format
 
@@ -33,7 +33,7 @@ Category: Unfiled
 .br
   Note: Some simple note text
 .br
-  Date: Fri May  9 00:00:00 2003
+  Date: Fri May  9 00:00:00 2004
 
 
 

@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "read-todos" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "read-todos" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBread\-todos\fR \- Syncronize your Palm ToDo application's database with your 
 desktop machine.

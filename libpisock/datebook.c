@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if TIME_WITH_SYS_TIME 	 
+#ifdef TIME_WITH_SYS_TIME 	 
 # include <sys/time.h> 	 
 # include <time.h> 	 
 #else 	 
-# if HAVE_SYS_TIME_H 	 
+# ifdef HAVE_SYS_TIME_H 	 
 #  include <sys/time.h> 	 
 # else 	 
 #  include <time.h> 	 
@@ -35,6 +35,12 @@
 
 #include "pi-macros.h"
 #include "pi-datebook.h"
+
+#define alarmFlag 	64
+#define repeatFlag 	32
+#define noteFlag 	16
+#define exceptFlag 	8
+#define descFlag 	4
 
 char *DatebookAlarmTypeNames[] = { "Minutes", "Hours", "Days", NULL };
 
@@ -52,21 +58,30 @@ char *DatebookRepeatTypeNames[] =
  *
  * Function:    free_Appointment
  *
- * Summary:     Frees members of the apointment structure
+ * Summary:     Frees members of the appointment structure
  *
- * Parameters:  Appointment structure
+ * Parameters:  Appointment_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_Appointment(struct Appointment *a)
+void
+free_Appointment(Appointment_t *a)
 {
-	if (a->exception)
+	if (a->exception != NULL) {
 		free(a->exception);
-	if (a->description)
+		a->exception = NULL;
+	}
+
+	if (a->description != NULL) {
 		free(a->description);
-	if (a->note)
+		a->description = NULL;
+	}
+
+	if (a->note != NULL) {
 		free(a->note);
+		a->note = NULL;
+	}
 }
 
 /***********************************************************************
@@ -76,14 +91,14 @@ void free_Appointment(struct Appointment *a)
  * Summary:     Fill in the appointment structure based on the raw 
  *		record data
  *
- * Parameters:  None
+ * Parameters:  Appointment_t*, char* to buffer, buffer length
  *
  * Returns:     0 on error, the length of the data used from the
  *		buffer otherwise
  *
  ***********************************************************************/
 int
-unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
+unpack_Appointment(Appointment_t *a, unsigned char *buffer, int len)
 {
 	int 	iflags,
 		j,
@@ -142,12 +157,6 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 	/* buffer+7 is gapfill */
 
 	p2 = (unsigned char *) buffer + 8;
-
-#define alarmFlag 	64
-#define repeatFlag 	32
-#define noteFlag 	16
-#define exceptFlag 	8
-#define descFlag 	4
 
 	if (iflags & alarmFlag) {
 		a->alarm 	= 1;
@@ -234,13 +243,13 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 	}
 
 	if (iflags & descFlag) {
-		a->description = strdup(p2);
+		a->description = strdup((char *)p2);
 		p2 += strlen((char *)p2) + 1;
 	} else
 		a->description = 0;
 
 	if (iflags & noteFlag) {
-		a->note = strdup(p2);
+		a->note = strdup((char *)p2);
 		p2 += strlen((char *)p2) + 1;
 	} else {
 		a->note = 0;
@@ -255,14 +264,15 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
  * Summary:	Fill in the raw appointment record data based on the 
  *		appointment structure
  *
- * Parameters:  None
+ * Parameters:  Appointment_t*, char* to buffer, buffer length
  *
  * Returns:     The length of the buffer required if record is NULL,
  *		or 0 on error, the length of the data used from the 
  *		buffer otherwise
  *
  ***********************************************************************/
-int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
+int
+pack_Appointment(Appointment_t *a, unsigned char *buf, int len)
 {
 	int 	iflags,
 		destlen = 8;
@@ -297,11 +307,6 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 	if (a->event) {
 		set_long(buf, 0xffffffff);
 	}
-#define alarmFlag 	64
-#define repeatFlag 	32
-#define noteFlag 	16
-#define exceptFlag 	8
-#define descFlag 	4
 
 	iflags = 0;
 
@@ -401,7 +406,7 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
  * Summary:     Fill in the app info structure based on the raw app 
  *		info data
  *
- * Parameters:  None
+ * Parameters:  AppointmentAppInfo_t*, char* to record, record length
  *
  * Returns:     The necessary length of the buffer if record is NULL,
  *		or 0 on error, the length of the data used from the 
@@ -409,8 +414,8 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
  *
  ***********************************************************************/
 int
-unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
-			  unsigned char *record, int len)
+unpack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
+	unsigned char *record, int len)
 {
 	int 	i;
 
@@ -432,7 +437,7 @@ unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
  * Summary:     Fill in the raw app info record data based on the app 
  *		info structure
  *
- * Parameters:  None
+ * Parameters:  AppointmentAppInfo*, char* to buffer, buffer length
  *
  * Returns:     The length of the buffer required if record is NULL,
  *		or 0 on error, the length of the data used from the 
@@ -440,8 +445,8 @@ unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
  *
  ***********************************************************************/
 int
-pack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
-			unsigned char *record, int len)
+pack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
+	unsigned char *record, int len)
 {
 	int 	i;
 	unsigned char *start = record;

@@ -26,7 +26,6 @@
 
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-datebook.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
@@ -45,7 +44,8 @@ struct option options[] = {
 
 static const char *optstring = "p:hv";
 
-char 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
+static char 
+	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
 	*Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", 
 			"aug", "sep", "oct", "nov", "dec"};
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 		puts("Unable to open DatebookDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
 		pi_close(sd);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	printf("PUSH-OMIT-CONTEXT\n");

@@ -1,53 +1,36 @@
-Feb 2003   Stephan Bösebeck & John Mitchell
-Pilot-Link Java-Bindings
-Consider this Code PRE-Alpha! Use at own risk!
+Stephan Bösebeck & John Mitchell
 
-I wrote this new version of Java because i could not get the original one by
-David Goodenough to work with the new Java VM 1.4. I used a different
-apporach to the problem:
+We have coded this bindings for the PilotLink library, as the original version by David Goodenough did not run with jdk 1.4.
+Some remarks about the source:
+- We wanted to keep the C-part as small es possible. So porting to other platforms should be easier
+- All communication with the lib is done via org.gnu.PilotLink, which uses RawRecords. These RawRecords can be used to build other data records (lik DatebookRecord, Memo, etc). Disgn like in jdk's streams:
+   DatebookRecord dbr= new DatebookRecord(PilotLink.getRecord...)
 
-- I tried to keep the C-part as small as possible for two reasons, 1st I
-  wanted to be able to expand the functionality to other datatypes (like
-  mileage, images etc.) in java without running a c-compiler! This makes it
-  more easy to keep it platform independent; and 2nd, I coded my last C
-  program several years ago ;-)
+At the moment, this functions are supported:
+- Reading and writing of RawRecords by index
+- Reading of user and sysinfo
+- reading and writing of DatebookRecords
 
-- All the communication with the pilot-link interface is done by one class,
-  org.gnu.pilotlink.PilotLink which calls the c-functions. There, raw
-  records are used (org.gnu.pilotlink.RawRecord) which can then be
-  transformed to other types of records (memo, datebookrecord etc. - analog
-  to streams in java), e.g.:
+I hope i can add more features soon.
 
-    DatebookRecord dr=new DatebookRecord(PilotLink.getRecord...)
+BUG:
+There is a problem opening more than one db at a time. The lib gives back Errorcode -1, even if the DB was being closed before.
 
+INSTALLATION:
+Normally just do a "configure --with-java" in the Pilot-Link dir. Then you will get a pilotlink.jar and a lib, which will be installed in JAVA_HOME.
+For testing an as an example, there is a test.java which can be used to demonstrate the funktionality of the bindings. Take a look at the test.java, before you try it...
 
-Things the java-bindings can do now (not much, I know...):
-- Read raw records, write raw records
-- read in datebook entries
-- write datebook entries
-- read user and sys info
+By default, the port the test.java connects ist /dev/usb/tts/1 (Devfs), you can either change it in source or start the testclass with the port as param.
 
-More functionality will follow as soon as possible...
+TESTING:
+I wrote a test.java where you can test all of the funktionality with your palm. I recommend doing a backup of your data on the palm before trying!
+Take a look at the code, the first several lines in the class test are booleans where you can switch on/off parts of the test. Try them out.
 
-There is a problem with opening more than one db in one session, even if
-closing before. I'm working on it...
+FTB3Pro:
+As a special feature there is support for the (german) FahrtenbuchPro 3 from dealit. It can be considered as an example on how easy it is to add funktionality without coding C! This part of the test wil (of course) only work, if you have this software on your Palm!
 
-INSTALL
-
-Normally you install it by following these steps:
-
-1) Edit the Makefile and change the path to JAVA_HOME according to your
-   jdk-installation, set PORT to your Pilot-Port
-
-2) Run "make"
-3) As root do: "make install"
-
-4) Test the installation with: java test
-
-The testfile should establish a connection to your palm and read out some
-records. You can test storing as well by editinng the test.java accordingly.
-
-If you have suggestions or questions, drop me a line.
 
 Stephan Bösebeck (stephan_boesebeck@web.de)
 John Mitchell (jfm@minioak.com)
+
+Thanks to Alex Villacís Lasso (a_villacis@palosanto.com)

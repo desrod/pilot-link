@@ -38,6 +38,7 @@
 #else
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>		/* Needed for Redhat 6.x machines */
 #endif
@@ -53,108 +54,209 @@
 #include <sys/select.h>
 #endif
 
-static int pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, 
-			     int addrlen);
-static int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr,
-			  int addrlen);
-static int pi_serial_listen(struct pi_socket *ps, int backlog);
-static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr,
-			    int *addrlen);
-static int pi_serial_getsockopt(struct pi_socket *ps, int level, int option_name, 
-				void *option_value, int *option_len);
-static int pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name, 
-				const void *option_value, int *option_len);
-static int pi_serial_close(struct pi_socket *ps);
+/* Declare prototypes */
+static int pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr, 
+			socklen_t addrlen);
+static int pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr,
+			socklen_t addrlen);
+static int pi_serial_listen(pi_socket_t *ps, int backlog);
+static int pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
+			socklen_t *addrlen);
+static int pi_serial_getsockopt(pi_socket_t *ps, int level,
+			int option_name, void *option_value,
+			size_t *option_len);
+static int pi_serial_setsockopt(pi_socket_t *ps, int level,
+			int option_name, const void *option_value,
+			size_t *option_len);
+static int pi_serial_close(pi_socket_t *ps);
 
-int pi_socket_init(struct pi_socket *ps);
+int pi_socket_init(pi_socket_t *ps);
+
 
 /* Protocol Functions */
-static struct pi_protocol *pi_serial_protocol_dup (struct pi_protocol *prot)
+/***********************************************************************
+ *
+ * Function:    pi_serial_protocol_dup
+ *
+ * Summary:     clones an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t*
+pi_serial_protocol_dup (pi_protocol_t *prot)
 {
-	struct pi_protocol *new_prot;
+	pi_protocol_t *new_prot;
+
+	ASSERT (prot != NULL);
 	
-	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level 	= prot->level;
-	new_prot->dup 		= prot->dup;
-	new_prot->free 		= prot->free;
-	new_prot->read 		= prot->read;
-	new_prot->write 	= prot->write;
-	new_prot->getsockopt 	= prot->getsockopt;
-	new_prot->setsockopt 	= prot->setsockopt;
-	new_prot->data 		= NULL;
+	new_prot = (pi_protocol_t *) malloc(sizeof (pi_protocol_t));
+
+	if (new_prot != NULL) {
+		new_prot->level 	= prot->level;
+		new_prot->dup 		= prot->dup;
+		new_prot->free 		= prot->free;
+		new_prot->read 		= prot->read;
+		new_prot->write 	= prot->write;
+		new_prot->getsockopt 	= prot->getsockopt;
+		new_prot->setsockopt 	= prot->setsockopt;
+		new_prot->data 		= NULL;
+	}
 
 	return new_prot;
 }
 
-static void pi_serial_protocol_free (struct pi_protocol *prot)
+
+/***********************************************************************
+ *
+ * Function:    pi_serial_protocol_free
+ *
+ * Summary:     frees an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+pi_serial_protocol_free (pi_protocol_t *prot)
 {
-	free(prot);
+	ASSERT (prot != NULL);
+
+	if (prot != NULL)
+		free(prot);
 }
 
-static struct pi_protocol *pi_serial_protocol (struct pi_device *dev)
+
+/***********************************************************************
+ *
+ * Function:    pi_serial_protocol
+ *
+ * Summary:     creates and inits pi_protocol struct instance
+ *
+ * Parameters:  pi_device_t*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t*
+pi_serial_protocol (pi_device_t *dev)
 {	
-	struct pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct pi_serial_data *data;
+
+	ASSERT (dev != NULL);
 	
 	data = dev->data;
 	
-	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	prot->level 		= PI_LEVEL_DEV;
-	prot->dup 		= pi_serial_protocol_dup;
-	prot->free 		= pi_serial_protocol_free;
-	prot->read 		= data->impl.read;
-	prot->write 		= data->impl.write;
-	prot->getsockopt 	= pi_serial_getsockopt;
-	prot->setsockopt 	= pi_serial_setsockopt;
-	prot->data 		= NULL;
+	prot = (pi_protocol_t *) malloc(sizeof (pi_protocol_t));
+
+	if (prot != NULL) {
+		prot->level 		= PI_LEVEL_DEV;
+		prot->dup 		= pi_serial_protocol_dup;
+		prot->free 		= pi_serial_protocol_free;
+		prot->read 		= data->impl.read;
+		prot->write 		= data->impl.write;
+		prot->getsockopt 	= pi_serial_getsockopt;
+		prot->setsockopt 	= pi_serial_setsockopt;
+		prot->data 		= NULL;
+	}
 	
 	return prot;
 }
 
+
 /* Device Functions */
-static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
+/***********************************************************************
+ *
+ * Function:    pi_serial_device_dup
+ *
+ * Summary:     clones an existing pi_device struct
+ *
+ * Parameters:  pi_device_t*
+ *
+ * Returns:     pi_device_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_device_t*
+pi_serial_device_dup (pi_device_t *dev)
 {
-	struct 	pi_device *new_dev;
-	struct 	pi_serial_data *new_data, *data;
+	pi_device_t *new_dev = NULL;
+	struct 	pi_serial_data	*new_data = NULL,
+				*data = NULL;
+
+	ASSERT (dev != NULL);
 	
-	new_dev 		= (struct pi_device *)malloc (sizeof (struct pi_device));
-	new_dev->dup 		= dev->dup;
-	new_dev->free 		= dev->free;
-	new_dev->protocol 	= dev->protocol;	
-	new_dev->bind 		= dev->bind;
-	new_dev->listen 	= dev->listen;
-	new_dev->accept 	= dev->accept;
-	new_dev->connect 	= dev->connect;
-	new_dev->close 		= dev->close;
+	new_dev	= (pi_device_t *) malloc(sizeof (pi_device_t));
+	new_data = (struct pi_serial_data *)
+				malloc(sizeof (struct pi_serial_data));
+
+	if ((new_dev != NULL) && (new_data != NULL)) { 
+		new_dev->dup 		= dev->dup;
+		new_dev->free 		= dev->free;
+		new_dev->protocol 	= dev->protocol;	
+		new_dev->bind 		= dev->bind;
+		new_dev->listen 	= dev->listen;
+		new_dev->accept 	= dev->accept;
+		new_dev->connect 	= dev->connect;
+		new_dev->close 		= dev->close;
 	
-	new_data 		= (struct pi_serial_data *)malloc (sizeof (struct pi_serial_data));
-	data 			= (struct pi_serial_data *)dev->data;
-	new_data->impl 		= data->impl;
-	memcpy(new_data->buf, data->buf, data->buf_size);
-	new_data->buf_size 	= data->buf_size;
-	new_data->ref           = data->ref;
-	(*(new_data->ref))++;
+		data 			= (struct pi_serial_data *)dev->data;
+		new_data->impl 		= data->impl;
+		memcpy(new_data->buf, data->buf, data->buf_size);
+		new_data->buf_size 	= data->buf_size;
+		new_data->ref           = data->ref;
+		(*(new_data->ref))++;
 #ifndef WIN32
 #ifndef OS2
-	new_data->tco = data->tco;
+		new_data->tco = data->tco;
 #endif
 #endif
-	new_data->rate 		= data->rate;
-	new_data->establishrate = data->establishrate;
-	new_data->establishhighrate = data->establishhighrate;
-	new_data->timeout 	= data->timeout;
-	new_data->rx_bytes 	= 0;
-	new_data->rx_errors 	= 0;
-	new_data->tx_bytes 	= 0;
-	new_data->tx_errors 	= 0;
-	new_dev->data 		= new_data;
-	
+		new_data->rate 		= data->rate;
+		new_data->establishrate = data->establishrate;
+		new_data->establishhighrate = data->establishhighrate;
+		new_data->timeout 	= data->timeout;
+		new_data->rx_bytes 	= 0;
+		new_data->rx_errors 	= 0;
+		new_data->tx_bytes 	= 0;
+		new_data->tx_errors 	= 0;
+
+		new_dev->data 		= new_data;
+
+	} else if (new_dev != NULL) {
+		free(new_dev);
+		new_dev = NULL;
+
+	} else if (new_data != NULL) {
+		free(new_data);
+		new_data = NULL;
+	}
+		
 	return new_dev;
 }
 
-static void pi_serial_device_free (struct pi_device *dev) 
+
+/***********************************************************************
+ *
+ * Function:    pi_serial_device_free
+ *
+ * Summary:     frees an existing pi_device struct
+ *
+ * Parameters:  pi_device_t*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+pi_serial_device_free (pi_device_t *dev) 
 {
-	struct pi_serial_data *data = (struct pi_serial_data *)dev->data;
+	struct pi_serial_data *data;
+
+	ASSERT (dev != NULL);
+
+	data = (struct pi_serial_data *)dev->data;
 
 	(*(data->ref))--;
 
@@ -165,47 +267,73 @@ static void pi_serial_device_free (struct pi_device *dev)
 	free(dev);
 }
 
-struct pi_device *pi_serial_device (int type) 
+
+/***********************************************************************
+ *
+ * Function:    pi_serial_device
+ *
+ * Summary:     creates and inits pi_device struct instance 
+ *
+ * Parameters:  device type
+ *
+ * Returns:     pi_device_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+pi_device_t*
+pi_serial_device (int type) 
 {
-	struct 	pi_device *dev;
+	pi_device_t *dev;
 	struct 	pi_serial_data *data;
 	
-	dev 	= (struct pi_device *)malloc (sizeof (struct pi_device));
-	data 	= (struct pi_serial_data *)malloc (sizeof (struct pi_serial_data));
+	dev = (pi_device_t *) malloc(sizeof (pi_device_t));
+	data = (struct pi_serial_data *)
+			malloc(sizeof (struct pi_serial_data));
 
-	dev->dup 		= pi_serial_device_dup;
-	dev->free 		= pi_serial_device_free;
-	dev->protocol 		= pi_serial_protocol;	
-	dev->bind 		= pi_serial_bind;
-	dev->listen 		= pi_serial_listen;
-	dev->accept 		= pi_serial_accept;
-	dev->connect 		= pi_serial_connect;
-	dev->close 		= pi_serial_close;
+	if ( (dev != NULL) && (data != NULL) ) {
+		dev->dup 		= pi_serial_device_dup;
+		dev->free 		= pi_serial_device_free;
+		dev->protocol 		= pi_serial_protocol;	
+		dev->bind 		= pi_serial_bind;
+		dev->listen 		= pi_serial_listen;
+		dev->accept 		= pi_serial_accept;
+		dev->connect 		= pi_serial_connect;
+		dev->close 		= pi_serial_close;
 
-	switch (type) {
-	case PI_SERIAL_DEV:
-		pi_serial_impl_init (&data->impl);
-		break;
-	default:
-		pi_serial_impl_init (&data->impl);
-		break;
-	}
+		switch (type) {
+		case PI_SERIAL_DEV:
+			pi_serial_impl_init (&data->impl);
+			break;
+		default:
+			pi_serial_impl_init (&data->impl);
+			break;
+		}
 	
-	data->buf_size 		= 0;
-	data->ref               = (int *)malloc (sizeof (int));
-	*(data->ref)            = 1;
-	data->rate 		= -1;
-	data->establishrate 	= -1;
-	data->establishhighrate = -1;
-	data->timeout 		= 0;
-	data->rx_bytes 		= 0;
-	data->rx_errors 	= 0;
-	data->tx_bytes 		= 0;
-	data->tx_errors 	= 0;
-	dev->data 		= data;
+		data->buf_size 		= 0;
+		data->ref               = (int *)malloc (sizeof (int));
+		*(data->ref)            = 1;
+		data->rate 		= (speed_t)-1;
+		data->establishrate 	= (speed_t)-1;
+		data->establishhighrate = -1;
+		data->timeout 		= 0;
+		data->rx_bytes 		= 0;
+		data->rx_errors 	= 0;
+		data->tx_bytes 		= 0;
+		data->tx_errors 	= 0;
+
+		dev->data 		= data;
+
+	} else if (dev != NULL) {
+		free(dev);
+		dev = NULL;
+
+	} else if (data != NULL) {
+		free(data);
+		data = NULL;
+	}
 	
 	return dev;
 }
+
 
 /***********************************************************************
  *
@@ -213,37 +341,43 @@ struct pi_device *pi_serial_device (int type)
  *
  * Summary:     Connect socket to a given address
  *
- * Parameters:  None
+ * Parameters:  pi_socket*, sockaddr*, socklen_t
  *
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
 static int
-pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
+pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr,
+	socklen_t addrlen)
 {
 	char 	*rate_env;
-	struct 	pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct 	pi_serial_data *data =
+		(struct pi_serial_data *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 
 	if (ps->type == PI_SOCK_STREAM) {
 		if (ps->protocol == PI_PF_SYS) {
 			data->establishrate = data->rate = 57600;
 		} else {
-			if (data->establishrate == -1) {
-				data->establishrate = 9600;	/* Default PADP connection rate */
+			if (data->establishrate == (speed_t) -1) {
+				/* Default PADP connection rate */
+				data->establishrate = 9600;
 				rate_env = getenv("PILOTRATE");
 				if (rate_env) {
-					if (rate_env[0] == 'H') {	/* Establish high rate */
+					/* Establish high rate */
+					if (rate_env[0] == 'H') {
 						data->establishrate =
 							atoi(rate_env + 1);
 						data->establishhighrate = -1;
 					} else {
-						data->establishrate = atoi(rate_env);
+						data->establishrate =
+							atoi(rate_env);
 						data->establishhighrate = 0;
 					}
 				}
 			}
-			data->rate = 9600;	/* Mandatory CMP connection rate */
+			/* Mandatory CMP connection rate */
+			data->rate = 9600;
 		}
 	} else if (ps->type == PI_SOCK_RAW) {
 		data->establishrate = data->rate = 57600;
@@ -260,7 +394,7 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	ps->laddrlen 	= addrlen;
 
 	if (ps->type == PI_SOCK_STREAM) {
-		int 	size;
+		size_t 	size;
 		
 		switch (ps->cmd) {
 		case PI_CMD_CMP:
@@ -297,30 +431,34 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	return -1;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_serial_bind
  *
  * Summary:     Bind address to a local socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket*, sockaddr*, socklen_t
  *
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
 static int
-pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
+pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr, socklen_t addrlen)
 {
 	char 	*rate_env;
-	struct 	pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct 	pi_serial_data *data =
+			(struct pi_serial_data *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 
 	if (ps->type == PI_SOCK_STREAM) {
-		if (data->establishrate == -1) {
-			data->establishrate = 9600;	/* Default PADP connection rate */
+		if (data->establishrate == (speed_t) -1) {
+			/* Default PADP connection rate */
+			data->establishrate = 9600;
 			rate_env = getenv("PILOTRATE");
 			if (rate_env) {
-				if (rate_env[0] == 'H') {	/* Establish high rate */
+				/* Establish high rate */
+				if (rate_env[0] == 'H') {
 					data->establishrate =
 					    atoi(rate_env + 1);
 					data->establishhighrate = -1;
@@ -332,7 +470,8 @@ pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 		}
 		data->rate = 9600;	/* Mandatory CMP connection rate */
 	} else if (ps->type == PI_SOCK_RAW) {
-		data->establishrate = data->rate = 57600;	/* Mandatory SysPkt connection rate */
+		/* Mandatory SysPkt connection rate */
+		data->establishrate = data->rate = 57600;
 	}
 
 	if (data->impl.open(ps, pa, addrlen) == -1) {
@@ -355,17 +494,19 @@ pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  *
  * Summary:     Prepare for incoming connections
  *
- * Parameters:  None
+ * Parameters:  pi_socket*, backlog
  *
- * Returns:     Nothing
+ * Returns:     0 for success, -1 otherwise
  *
  ***********************************************************************/
-static int pi_serial_listen(struct pi_socket *ps, int backlog)
+static int pi_serial_listen(pi_socket_t *ps, int backlog)
 {
 	int 	result;
-	struct 	pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct 	pi_serial_data *data =
+		(struct pi_serial_data *)ps->device->data;
 	
-	result = data->impl.changebaud(ps);	/* ps->rate has been set by bind */
+	/* ps->rate has been set by bind */
+	result = data->impl.changebaud(ps);
 	if (result == 0)
 		ps->state = PI_SOCK_LISTN;
 	
@@ -378,16 +519,18 @@ static int pi_serial_listen(struct pi_socket *ps, int backlog)
  *
  * Summary:     Accept an incoming connection
  *
- * Parameters:  None
+ * Parameters:  pi_socket*, sockaddr*
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
 static int
-pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
+pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
+	socklen_t *addrlen)
 {
-	struct 	pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
-	int 	size;
+	struct 	pi_serial_data *data =
+		(struct pi_serial_data *)ps->device->data;
+	size_t 	size;
 	struct 	pi_socket *accept = NULL;
 
 	/* Wait for data */
@@ -404,7 +547,8 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 
 		switch (accept->cmd) {
 		case PI_CMD_CMP:
-			if (cmp_rx_handshake(accept, data->establishrate, data->establishhighrate) < 0)
+			if (cmp_rx_handshake(accept, data->establishrate,
+				data->establishhighrate) < 0)
 				return -1;
 
 			size = sizeof(data->rate);
@@ -415,7 +559,7 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 			if (data->impl.changebaud(accept) < 0)
 				goto fail;
 			
-			/* Palm device needs some time to reconfigure its port */
+			/*Palm device needs some time to reconfigure its port*/
 #ifdef WIN32
 			Sleep(100);
 #else
@@ -446,11 +590,24 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	return -1;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    pi_serial_getsockopt
+ *
+ * Summary:     get options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-pi_serial_getsockopt(struct pi_socket *ps, int level, int option_name, 
-		     void *option_value, int *option_len)
+pi_serial_getsockopt(pi_socket_t *ps, int level, int option_name, 
+		     void *option_value, size_t *option_len)
 {
-	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct pi_serial_data *data =
+		(struct pi_serial_data *)ps->device->data;
 
 	switch (option_name) {
 	case PI_DEV_RATE:
@@ -489,11 +646,24 @@ pi_serial_getsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    pi_serial_setsockopt
+ *
+ * Summary:     set options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name, 
-		     const void *option_value, int *option_len)
+pi_serial_setsockopt(pi_socket_t *ps, int level, int option_name, 
+		     const void *option_value, size_t *option_len)
 {
-	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct pi_serial_data *data =
+		(struct pi_serial_data *)ps->device->data;
 
 	/* FIXME: can't change stuff if already connected */
 
@@ -532,22 +702,28 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
  *
  * Summary:     Close a connection, destroy the socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket*
  *
- * Returns:     Nothing
+ * Returns:     always 0 for success
  *
  ***********************************************************************/
-static int pi_serial_close(struct pi_socket *ps)
+static int pi_serial_close(pi_socket_t *ps)
 {
-	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct pi_serial_data *data =
+		(struct pi_serial_data *)ps->device->data;
 
 	if (ps->sd)
 		data->impl.close (ps);
 
-	if (ps->laddr)
+	if (ps->laddr) {
 		free(ps->laddr);
-	if (ps->raddr)
+		ps->laddr = NULL;
+	}
+
+	if (ps->raddr) {
 		free(ps->raddr);
+		ps->raddr = NULL;
+	}
 
 	return 0;
 }

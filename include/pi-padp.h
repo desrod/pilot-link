@@ -1,8 +1,6 @@
 #ifndef _PILOT_PADP_H_
 #define _PILOT_PADP_H_
 
-#include "pi-args.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,31 +24,33 @@ extern "C" {
 #define LAST		0x40
 #define MEMERROR	0x20
 
-	struct pi_padp_data 
+	typedef struct pi_padp_data 
 	{
 		int type;
 		int last_type;
 
 		unsigned char txid;
 		unsigned next_txid;
-	};
+	} pi_padp_data_t;
 
-	struct padp {
+	typedef struct padp {
 		unsigned char type;
 		unsigned char flags;
 		unsigned short size;
-	};
+	} padp_t;
 
 #define SIZEOF_PADP 4
 
-	extern struct pi_protocol *padp_protocol
+	extern pi_protocol_t *padp_protocol
 	    PI_ARGS((void));
 
 	extern int padp_tx
-	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
+	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
+			int flags));
 
 	extern int padp_rx
-	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
+	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
+			int flags));
 
 	extern void padp_dump_header
 	    PI_ARGS((unsigned char *data, int rxtx));

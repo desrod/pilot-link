@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "read-notepad" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "read-notepad" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBread\-notepad\fR \- Connect to the Palm handheld and list the record 
 information found in the Palm Notepad application (found on OS4 and newer 

@@ -9,33 +9,33 @@ extern "C" {
 
 #define PI_USB_DEV     1
 
-	struct pi_usb_impl {
-		int (*open) PI_ARGS((struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen));
-		int (*close) PI_ARGS((struct pi_socket *ps));
-		int (*write) PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
-		int (*read) PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
-		int (*poll) PI_ARGS((struct pi_socket *ps, int timeout));
-	};
+	typedef struct pi_usb_impl {
+		int (*open) PI_ARGS((pi_socket_t *ps,
+			struct pi_sockaddr *addr, size_t addrlen));
+		int (*close) PI_ARGS((pi_socket_t *ps));
+		int (*write) PI_ARGS((pi_socket_t *ps,
+			unsigned char *buf, size_t len, int flags));
+		int (*read) PI_ARGS((pi_socket_t *ps,
+			 unsigned char *buf, size_t len, int flags));
+		int (*poll) PI_ARGS((pi_socket_t *ps, int timeout));
+	} pi_usb_impl_t;
 
-	struct pi_usb_data {
+	typedef struct pi_usb_data {
 		struct pi_usb_impl impl;
 
 		unsigned char buf[256];
 		unsigned char *pos;
-		int buf_size;
+		size_t buf_size;
 		
 		/* I/O options */
 		int *ref;
 
 		/* Time out */
 		int timeout;
-	};
+	} pi_usb_data_t;
 
-	extern struct pi_device *pi_usb_device
-            PI_ARGS((int type));
-
-	extern void pi_usb_impl_init
-	    PI_ARGS((struct pi_usb_impl *impl));
+	extern pi_device_t *pi_usb_device PI_ARGS((int type));
+	extern void pi_usb_impl_init PI_ARGS((struct pi_usb_impl *impl));
 
 #ifdef __cplusplus
 }

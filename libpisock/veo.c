@@ -22,17 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
-
 #include "pi-macros.h"
 #include "pi-veo.h"
 
@@ -43,7 +32,8 @@
  * Summary:     Free the memory and filehandle from the record alloc. 
  *
  ***********************************************************************/
-void free_Veo( struct Veo *a )
+void
+free_Veo( Veo_t *veo )
 {
 }
 
@@ -54,42 +44,44 @@ void free_Veo( struct Veo *a )
  * Summary:     Unpack the Veo structure into records we can chew on
  *
  ***********************************************************************/
-int unpack_Veo(struct Veo *v, unsigned char *buffer, int len)
+int
+unpack_Veo(Veo_t *veo, unsigned char *buffer, size_t len)
 {
    unsigned char *start = buffer;
    
-   // consume unknown
+   /* consume unknown */
    buffer += 1;
-   v->quality = (unsigned char) get_byte(buffer);
+   veo->quality = (unsigned char) get_byte(buffer);
    buffer += 1;
-   v->resolution = (unsigned char) get_byte(buffer);
+   veo->resolution = (unsigned char) get_byte(buffer);
    buffer += 1;
-   // consume 12 more unknowns
+   /* consume 12 more unknowns */
    buffer += 12;
-   v->picnum = (unsigned long int) get_long(buffer);
+   veo->picnum = (unsigned long int) get_long(buffer);
    buffer += 4;
-   v->day = (unsigned short int) get_short(buffer);
+   veo->day = (unsigned short int) get_short(buffer);
    buffer += 2;
-   v->month = (unsigned short int) get_short(buffer);
+   veo->month = (unsigned short int) get_short(buffer);
    buffer += 2;
-   v->year = (unsigned short int) get_short(buffer);
+   veo->year = (unsigned short int) get_short(buffer);
    buffer += 2;
 
-   if( v->resolution == 0 )
+   if( veo->resolution == 0 )
      {
-	v->width = 640;
-	v->height = 480;
+	veo->width = 640;
+	veo->height = 480;
      }
-   else if( v->resolution == 1 )
+   else if( veo->resolution == 1 )
      {
-	v->width = 320;
-	v->height = 240;
+	veo->width = 320;
+	veo->height = 240;
      }
    else 
      fprintf( stderr, "unknown resolution\n" );
 	
    return ( buffer - start );	/* FIXME: return real length */
 }
+
 
 /***********************************************************************
  *
@@ -98,10 +90,11 @@ int unpack_Veo(struct Veo *v, unsigned char *buffer, int len)
  * Summary:     Pack the Veo records into a structure
  *
  ***********************************************************************/
-int pack_Veo(struct Veo *a, unsigned char *buf, int len)
+int pack_Veo(Veo_t *veo, unsigned char *buf, size_t len)
 {
    return( 0 );
 }
+
 
 /***********************************************************************
  *
@@ -110,24 +103,26 @@ int pack_Veo(struct Veo *a, unsigned char *buf, int len)
  * Summary:     Unpack the Veo AppInfo block from the structure
  *
  ***********************************************************************/
-int unpack_VeoAppInfo(struct VeoAppInfo *ai, unsigned char *record, int len)
+int unpack_VeoAppInfo(struct VeoAppInfo *appinfo, unsigned char *record,
+		 size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	i = unpack_CategoryAppInfo( &ai->category, record, len );
+	i = unpack_CategoryAppInfo( &appinfo->category, record, len );
 	if (!i)
 		return 0;
 	record += i;
 	len -= i;
 	if (len < 4)
 		return 0;
-	ai->dirty = get_short(record);
+	appinfo->dirty = get_short(record);
 	record += 2;
-	ai->sortByPriority = get_byte(record);
+	appinfo->sortByPriority = get_byte(record);
 	record += 2;
 	return (record - start);
 }
+
 
 /***********************************************************************
  *
@@ -137,12 +132,12 @@ int unpack_VeoAppInfo(struct VeoAppInfo *ai, unsigned char *record, int len)
  *
  ***********************************************************************/
 int
-pack_VeoAppInfo(struct VeoAppInfo *vai, unsigned char *record, int len)
+pack_VeoAppInfo(struct VeoAppInfo *appinfo, unsigned char *record, size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&vai->category, record, len);
+	i = pack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!record)
 		return i + 4;
 	if (!i)
@@ -151,8 +146,8 @@ pack_VeoAppInfo(struct VeoAppInfo *vai, unsigned char *record, int len)
 	len -= i;
 	if (len < 4)
 		return 0;
-	set_short(record, vai->dirty);
-	set_byte(record + 2, vai->sortByPriority);
+	set_short(record, appinfo->dirty);
+	set_byte(record + 2, appinfo->sortByPriority);
 	set_byte(record + 3, 0);	/* gapfill */
 	record += 4;
 

@@ -29,15 +29,15 @@
  *
  * Function:    unpack_Transaction
  *
- * Summary:     
+ * Summary:     unpacks Transaction_t data
  *
- * Parameters:  None
+ * Parameters:  Transaction_t*, char* to buffer, length of buffer
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-unpack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
+unpack_Transaction(Transaction_t *trans, unsigned char *buffer, size_t len)
 {
 
 	unsigned char *p;
@@ -46,69 +46,71 @@ unpack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 		return 0;
 
 	p = buffer;
-	a->flags 	= get_byte(p);
+	trans->flags 	= get_byte(p);
 	p += 2;			/* gap */
-	a->checknum 	= get_short(p);
+	trans->checknum 	= get_short(p);
 	p += 2;
-	a->amount 	= get_slong(p);
+	trans->amount 	= get_slong(p);
 	p += 4;
-	a->total 	= get_slong(p);
+	trans->total 	= get_slong(p);
 	p += 4;
-	a->amountc 	= get_sshort(p);
+	trans->amountc 	= get_sshort(p);
 	p += 2;
-	a->totalc 	= get_sshort(p);
-	p += 2;
-
-	a->second 	= get_sshort(p);
-	p += 2;
-	a->minute 	= get_sshort(p);
-	p += 2;
-	a->hour 	= get_sshort(p);
-	p += 2;
-	a->day 		= get_sshort(p);
-	p += 2;
-	a->month 	= get_sshort(p);
-	p += 2;
-	a->year 	= get_sshort(p);
-	p += 2;
-	a->wday 	= get_sshort(p);
+	trans->totalc 	= get_sshort(p);
 	p += 2;
 
-	a->repeat 	= get_byte(p);
+	trans->second 	= get_sshort(p);
+	p += 2;
+	trans->minute 	= get_sshort(p);
+	p += 2;
+	trans->hour 	= get_sshort(p);
+	p += 2;
+	trans->day 		= get_sshort(p);
+	p += 2;
+	trans->month 	= get_sshort(p);
+	p += 2;
+	trans->year 	= get_sshort(p);
+	p += 2;
+	trans->wday 	= get_sshort(p);
+	p += 2;
+
+	trans->repeat 	= get_byte(p);
 	p += 1;
-	a->flags2 	= get_byte(p);
+	trans->flags2 	= get_byte(p);
 	p += 1;
-	a->type 	= get_byte(p);
-	p += 1;
-
-	memcpy(a->reserved, p, 2);
-	p += 2;
-
-	a->xfer = get_byte(p);
+	trans->type 	= get_byte(p);
 	p += 1;
 
-	strcpy(a->description, p);
+	memcpy(trans->reserved, p, 2);
+	p += 2;
+
+	trans->xfer = get_byte(p);
+	p += 1;
+
+	strcpy(trans->description, (char *)p);
 	p += 19;
-	strcpy(a->note, p);
-	p += strlen(p) + 1;
+	strcpy(trans->note, (char *)p);
+	p += strlen((char *)p) + 1;
 
 	return (p - buffer);
 }
+
 
 /***********************************************************************
  *
  * Function:    pack_Transaction
  *
- * Summary:     
+ * Summary:     unpacks Transaction_t data
  *
- * Parameters:  None
+ * Parameters:  Transaction_t*, char* to buffer, length of buffer
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
-int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
+int pack_Transaction(struct Transaction *trans, unsigned char *buffer,
+		 	size_t len)
 {
-	int 	destlen = 46 + strlen(a->note) + 1;
+	size_t 	destlen = 46 + strlen(trans->note) + 1;
 	unsigned char *p;
 
 	if (!buffer)
@@ -117,77 +119,79 @@ int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 		return 0;
 
 	p = buffer;
-	set_byte(p, a->flags);
+	set_byte(p, trans->flags);
 	p += 1;
 	set_byte(p, 0);
 	p += 1;			/* gap fill */
-	set_short(p, a->checknum);
+	set_short(p, trans->checknum);
 	p += 2;
-	set_slong(p, a->amount);
+	set_slong(p, trans->amount);
 	p += 4;
-	set_slong(p, a->total);
+	set_slong(p, trans->total);
 	p += 4;
-	set_sshort(p, a->amountc);
+	set_sshort(p, trans->amountc);
 	p += 2;
-	set_sshort(p, a->totalc);
+	set_sshort(p, trans->totalc);
 	p += 2;
 
-	set_sshort(p, a->second);
+	set_sshort(p, trans->second);
 	p += 2;
-	set_sshort(p, a->minute);
+	set_sshort(p, trans->minute);
 	p += 2;
-	set_sshort(p, a->hour);
+	set_sshort(p, trans->hour);
 	p += 2;
-	set_sshort(p, a->day);
+	set_sshort(p, trans->day);
 	p += 2;
-	set_sshort(p, a->month);
+	set_sshort(p, trans->month);
 	p += 2;
-	set_sshort(p, a->year);
+	set_sshort(p, trans->year);
 	p += 2;
-	set_sshort(p, a->wday);
+	set_sshort(p, trans->wday);
 	p += 2;
 
-	set_byte(p, a->repeat);
+	set_byte(p, trans->repeat);
 	p += 1;
-	set_byte(p, a->flags2);
+	set_byte(p, trans->flags2);
 	p += 1;
-	set_byte(p, a->type);
+	set_byte(p, trans->type);
 	p += 1;
 
 	/* gap fill */
 	set_short(p, 0);
 	p += 2;
 
-	set_byte(p, a->xfer);
+	set_byte(p, trans->xfer);
 	p += 1;
 
-	strcpy(p, a->description);
+	strcpy((char *)p, trans->description);
 	p += 19;
-	strcpy(p, a->note);
-	p += strlen(p) + 1;
+	strcpy((char *)p, trans->note);
+	p += strlen((char *)p) + 1;
 
 	return (p - buffer);
 }
+
 
 /***********************************************************************
  *
  * Function:    unpack_MoneyAppInfo
  *
- * Summary:     Unpack the MoneyManager AppInfo block
+ * Summary:     unpacks MoneyAppInfo_t data
  *
- * Parameters:  None
+ * Parameters:  MoneyAppInfo_t*, char* to buffer, length of buffer
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
+unpack_MoneyAppInfo(MoneyAppInfo_t *appinfo, unsigned char *buffer, size_t len)
 {
 	int 	i,
 		j;
+
 	unsigned char *p;
 
-	i = unpack_CategoryAppInfo(&a->category, buffer, len);
+	i = unpack_CategoryAppInfo(&appinfo->category, buffer, len);
 	if (!i)
 		return 0;
 
@@ -198,37 +202,38 @@ unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 		return 0;
 
 	for (j = 0; j < 20; j++) {
-		memcpy(a->typeLabels[j], p, 10);
+		memcpy(appinfo->typeLabels[j], p, 10);
 		p += 10;
 	}
 
 	for (j = 0; j < 20; j++) {
-		memcpy(a->tranLabels[j], p, 20);
+		memcpy(appinfo->tranLabels[j], p, 20);
 		p += 20;
 	}
 
 	return i + 603;
 }
 
+
 /***********************************************************************
  *
  * Function:    pack_MoneyAppInfo
  *
- * Summary:     Pack the MoneyManager AppInfo block
+ * Summary:     packs MoneyAppInfo_t data
  *
- * Parameters:  None
+ * Parameters:  MoneyAppInfo_t*, char* to buffer, length of buffer
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-pack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
+pack_MoneyAppInfo(MoneyAppInfo_t *appinfo, unsigned char *buffer, size_t len)
 {
 	int 	i,
 		j;
 	unsigned char *p;
 
-	i = pack_CategoryAppInfo(&a->category, buffer, len);
+	i = pack_CategoryAppInfo(&appinfo->category, buffer, len);
 
 	if (!buffer)
 		return i + 603;
@@ -241,12 +246,12 @@ pack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 		return 0;
 
 	for (j = 0; j < 20; j++) {
-		memcpy(p, a->typeLabels[j], 10);
+		memcpy(p, appinfo->typeLabels[j], 10);
 		p += 10;
 	}
 
 	for (j = 0; j < 20; j++) {
-		memcpy(p, a->tranLabels[j], 20);
+		memcpy(p, appinfo->tranLabels[j], 20);
 		p += 20;
 	}
 

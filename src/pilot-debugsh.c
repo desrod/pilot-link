@@ -31,7 +31,6 @@
 #include <netinet/in.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 #include "pi-header.h"
@@ -112,7 +111,7 @@ void read_pilot(int sd)
 	
 	printf("From Palm %d:", l);
 	if (l < 0)
-		exit(1);
+		exit(EXIT_FAILURE);
 	
 	dumpdata((unsigned char *) buf, l);
 

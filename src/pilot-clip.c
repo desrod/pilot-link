@@ -24,7 +24,6 @@
 #include <netinet/in.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 #include "pi-header.h"

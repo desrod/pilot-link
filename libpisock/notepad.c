@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if TIME_WITH_SYS_TIME
+#ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>  
 #else
-# if HAVE_SYS_TIME_H
+# ifdef HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # else
 #  include <time.h>
@@ -36,6 +36,7 @@
 #include "pi-macros.h"
 #include "pi-notepad.h"
 
+
 /***********************************************************************
  *
  * Function:    free_NotePad
@@ -43,7 +44,7 @@
  * Summary:     Free the memory and filehandle from the record alloc. 
  *
  ***********************************************************************/
-void free_NotePad( struct NotePad *a )
+void free_NotePad( NotePad_t *a )
 {
    if( a->flags & NOTEPAD_FLAG_NAME )
      {
@@ -59,6 +60,7 @@ void free_NotePad( struct NotePad *a )
    
 }
 
+
 /***********************************************************************
  *
  * Function:    unpack_NotePad
@@ -66,119 +68,120 @@ void free_NotePad( struct NotePad *a )
  * Summary:     Unpack the NotePad structure into records we can chew on
  *
  ***********************************************************************/
-int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
+int unpack_NotePad(NotePad_t *notepad, unsigned char *buffer, size_t len)
 {
    unsigned char *start = buffer;
    
-   a->createDate.sec = (unsigned short int) get_short(buffer);
+   notepad->createDate.sec = (unsigned short int) get_short(buffer);
    buffer += 2;
-   a->createDate.min = (unsigned short int) get_short(buffer);
+   notepad->createDate.min = (unsigned short int) get_short(buffer);
    buffer += 2;
-   a->createDate.hour = (unsigned short int) get_short(buffer);
+   notepad->createDate.hour = (unsigned short int) get_short(buffer);
    buffer += 2;
-   a->createDate.day = (unsigned short int) get_short(buffer);
+   notepad->createDate.day = (unsigned short int) get_short(buffer);
    buffer += 2;
-   a->createDate.month = (unsigned short int) get_short(buffer);
+   notepad->createDate.month = (unsigned short int) get_short(buffer);
    buffer += 2;
-   a->createDate.year = (unsigned short int) get_short(buffer);
-   buffer += 2;
-
-   a->createDate.s = (unsigned short int) get_short(buffer);
+   notepad->createDate.year = (unsigned short int) get_short(buffer);
    buffer += 2;
 
-   a->changeDate.sec = (unsigned short int) get_short(buffer);
-   buffer += 2;
-   a->changeDate.min = (unsigned short int) get_short(buffer);
-   buffer += 2;
-   a->changeDate.hour = (unsigned short int) get_short(buffer);
-   buffer += 2;
-   a->changeDate.day = (unsigned short int) get_short(buffer);
-   buffer += 2;
-   a->changeDate.month = (unsigned short int) get_short(buffer);
-   buffer += 2;
-   a->changeDate.year = (unsigned short int) get_short(buffer);
+   notepad->createDate.s = (unsigned short int) get_short(buffer);
    buffer += 2;
 
-   a->changeDate.s = (unsigned short int) get_short(buffer);
+   notepad->changeDate.sec = (unsigned short int) get_short(buffer);
+   buffer += 2;
+   notepad->changeDate.min = (unsigned short int) get_short(buffer);
+   buffer += 2;
+   notepad->changeDate.hour = (unsigned short int) get_short(buffer);
+   buffer += 2;
+   notepad->changeDate.day = (unsigned short int) get_short(buffer);
+   buffer += 2;
+   notepad->changeDate.month = (unsigned short int) get_short(buffer);
+   buffer += 2;
+   notepad->changeDate.year = (unsigned short int) get_short(buffer);
    buffer += 2;
 
-   a->flags = (unsigned short int) get_short(buffer);
+   notepad->changeDate.s = (unsigned short int) get_short(buffer);
    buffer += 2;
 
-/*   fprintf( stderr, "flags: 0x%x\n", a->flags ); */
+   notepad->flags = (unsigned short int) get_short(buffer);
+   buffer += 2;
+
+/*   fprintf( stderr, "flags: 0x%x\n", notepad->flags ); */
    
-   if( a->flags & NOTEPAD_FLAG_ALARM )
+   if( notepad->flags & NOTEPAD_FLAG_ALARM )
      {
 /*	fprintf( stderr, "Getting Alarm\n" ); */
-	a->alarmDate.sec = (unsigned short int) get_short(buffer);
+	notepad->alarmDate.sec = (unsigned short int) get_short(buffer);
 	buffer += 2;
-	a->alarmDate.min = (unsigned short int) get_short(buffer);
+	notepad->alarmDate.min = (unsigned short int) get_short(buffer);
 	buffer += 2;
-	a->alarmDate.hour = (unsigned short int) get_short(buffer);
+	notepad->alarmDate.hour = (unsigned short int) get_short(buffer);
 	buffer += 2;
-	a->alarmDate.day = (unsigned short int) get_short(buffer);
+	notepad->alarmDate.day = (unsigned short int) get_short(buffer);
 	buffer += 2;
-	a->alarmDate.month = (unsigned short int) get_short(buffer);
+	notepad->alarmDate.month = (unsigned short int) get_short(buffer);
 	buffer += 2;
-	a->alarmDate.year = (unsigned short int) get_short(buffer);
+	notepad->alarmDate.year = (unsigned short int) get_short(buffer);
 	buffer += 2;
 
-	a->alarmDate.s = (unsigned short int) get_short(buffer);
+	notepad->alarmDate.s = (unsigned short int) get_short(buffer);
 	buffer += 2;
      }
   
-   if( a->flags & NOTEPAD_FLAG_NAME )
+   if( notepad->flags & NOTEPAD_FLAG_NAME )
      {
 /*	fprintf( stderr, "Getting Name\n" ); */
-	a->name = strdup((char *) buffer);
+	notepad->name = strdup((char *) buffer);
    
-	buffer += strlen( a->name ) + 1;
+	buffer += strlen( notepad->name ) + 1;
 	
-	if( (strlen( a->name ) + 1)%2 == 1)
+	if( (strlen( notepad->name ) + 1)%2 == 1)
 	  buffer++;
 	
      }
    else 
      {
-	a->name = NULL;
+	notepad->name = NULL;
      }
    
 
-   if( a->flags & NOTEPAD_FLAG_BODY )
+   if( notepad->flags & NOTEPAD_FLAG_BODY )
      {
 /*	fprintf( stderr, "Getting Body\n" ); */
-	a->body.bodyLen = get_long( buffer );
+	notepad->body.bodyLen = get_long( buffer );
 	buffer += 4;
    
-	a->body.width = get_long( buffer );
+	notepad->body.width = get_long( buffer );
 	buffer += 4;
    
-	a->body.height = get_long( buffer );
+	notepad->body.height = get_long( buffer );
 	buffer += 4;
    
-	a->body.l1 = get_long( buffer );
+	notepad->body.l1 = get_long( buffer );
 	buffer += 4;
    
-	a->body.dataType = get_long( buffer );
+	notepad->body.dataType = get_long( buffer );
 	buffer += 4;
 
-	a->body.dataLen = get_long( buffer );
+	notepad->body.dataLen = get_long( buffer );
 	buffer += 4;
    
-	a->data = malloc( a->body.dataLen );
+	notepad->data = malloc( notepad->body.dataLen );
 
-	if( a->data == NULL )
+	if( notepad->data == NULL )
 	  {
 	     fprintf( stderr, "Body data alloc failed\n" );
 	     return( 0 );
 	  }
 	     
-	memcpy( a->data, buffer, a->body.dataLen );
+	memcpy( notepad->data, buffer, notepad->body.dataLen );
 
      }
    
    return ( buffer - start );	/* FIXME: return real length */
 }
+
 
 /***********************************************************************
  *
@@ -187,10 +190,11 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
  * Summary:     Pack the NotePad records into a structure
  *
  ***********************************************************************/
-int pack_NotePad(struct NotePad *a, unsigned char *buf, int len)
+int pack_NotePad(NotePad_t *notepad, unsigned char *buf, size_t len)
 {
    return( 0 );
 }
+
 
 /***********************************************************************
  *
@@ -199,21 +203,22 @@ int pack_NotePad(struct NotePad *a, unsigned char *buf, int len)
  * Summary:     Unpack the NotePad AppInfo block from the structure
  *
  ***********************************************************************/
-int unpack_NotePadAppInfo(struct NotePadAppInfo *ai, unsigned char *record, int len)
+int unpack_NotePadAppInfo(NotePadAppInfo_t *appinfo, unsigned char *record,
+			 size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	i = unpack_CategoryAppInfo( &ai->category, record, len );
+	i = unpack_CategoryAppInfo( &appinfo->category, record, len );
 	if (!i)
 		return 0;
 	record += i;
 	len -= i;
 	if (len < 4)
 		return 0;
-	ai->dirty = get_short(record);
+	appinfo->dirty = get_short(record);
 	record += 2;
-	ai->sortByPriority = get_byte(record);
+	appinfo->sortByPriority = get_byte(record);
 	record += 2;
 	return (record - start);
 }
@@ -226,12 +231,13 @@ int unpack_NotePadAppInfo(struct NotePadAppInfo *ai, unsigned char *record, int 
  *
  ***********************************************************************/
 int
-pack_NotePadAppInfo(struct NotePadAppInfo *ai, unsigned char *record, int len)
+pack_NotePadAppInfo(NotePadAppInfo_t *appinfo, unsigned char *record,
+		 	size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!record)
 		return i + 4;
 	if (!i)
@@ -240,8 +246,8 @@ pack_NotePadAppInfo(struct NotePadAppInfo *ai, unsigned char *record, int len)
 	len -= i;
 	if (len < 4)
 		return 0;
-	set_short(record, ai->dirty);
-	set_byte(record + 2, ai->sortByPriority);
+	set_short(record, appinfo->dirty);
+	set_byte(record + 2, appinfo->sortByPriority);
 	set_byte(record + 3, 0);	/* gapfill */
 	record += 4;
 

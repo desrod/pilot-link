@@ -31,16 +31,20 @@
  *
  * Summary:     Frees all record data associated with the Memo database
  *
- * Parameters:  None
+ * Parameters:  Memo_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_Memo(struct Memo *a)
+void 
+free_Memo(Memo_t *memo)
 {
-	if (a->text)
-		free(a->text);
+	if (memo->text != NULL) {
+		free(memo->text);
+		memo->text = NULL;
+	}
 }
+
 
 /***********************************************************************
  *
@@ -48,18 +52,20 @@ void free_Memo(struct Memo *a)
  *
  * Summary:     Unpack the memo structure into the buffer allocated
  *
- * Parameters:  None
+ * Parameters:  Memo_t*, char* to buffer, length
  *
  * Returns:     Length in bytes of the buffer allocated
  *
  ***********************************************************************/
-int unpack_Memo(struct Memo *a, unsigned char *buffer, int len)
+int
+unpack_Memo(Memo_t *memo, unsigned char *buffer, size_t len)
 {
 	if (len < 1)
 		return 0;
-	a->text = strdup((char *) buffer);
+	memo->text = strdup((char *) buffer);
 	return strlen((char *) buffer) + 1;
 }
+
 
 /***********************************************************************
  *
@@ -67,23 +73,24 @@ int unpack_Memo(struct Memo *a, unsigned char *buffer, int len)
  *
  * Summary:     Pack the memo structure into the buffer allocated
  *
- * Parameters:  None
+ * Parameters:  Memo_t*, char* to buffer, length of buffer
  *
- * Returns:     Nothing
+ * Returns:     buffer length
  *
  ***********************************************************************/
-int pack_Memo(struct Memo *a, unsigned char *buffer, int len)
+int
+pack_Memo(Memo_t *memo, unsigned char *buffer, size_t len)
 {
-	int destlen = (a->text ? strlen(a->text) : 0) + 1;
+	size_t destlen = (memo->text ? strlen(memo->text) : 0) + 1;
 
 	if (!buffer)
 		return destlen;
 	if (len < destlen)
 		return 0;
-	if (a->text) {
+	if (memo->text) {
 		if (buffer)
-			strcpy((char *) buffer, a->text);
-		return strlen(a->text) + 1;
+			strcpy((char *) buffer, memo->text);
+		return strlen(memo->text) + 1;
 	} else {
 		if (buffer)
 			buffer[0] = 0;
@@ -91,21 +98,23 @@ int pack_Memo(struct Memo *a, unsigned char *buffer, int len)
 	}
 }
 
+
 /***********************************************************************
  *
  * Function:    unpack_MemoAppInfo
  *
  * Summary:     Unpack the memo AppInfo block structure
  *
- * Parameters:  None
+ * Parameters:  MemoAppInfo_t*, char* to record, record length
  *
- * Returns:     Nothing
+ * Returns:     effective record length
  *
  ***********************************************************************/
 int
-unpack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
+unpack_MemoAppInfo(struct MemoAppInfo *appinfo, unsigned char *record,
+			 size_t len)
 {
-	int 	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	int 	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
 	unsigned char *start = record;
 
 	if (!i)
@@ -114,13 +123,14 @@ unpack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
 	len -= i;
 	if (len >= 4) {
 		record += 2;
-		ai->sortByAlpha = get_byte(record);
+		appinfo->sortByAlpha = get_byte(record);
 		record += 2;
 	} else {
-		ai->sortByAlpha = 0;
+		appinfo->sortByAlpha = 0;
 	}
 	return (record - start);
 }
+
 
 /***********************************************************************
  *
@@ -128,18 +138,18 @@ unpack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
  *
  * Summary:     Pack the memo AppInfo block structure
  *
- * Parameters:  None
+ * Parameters:  MemoAppInfo_t*, char* to record, record length
  *
- * Returns:     Nothing
+ * Returns:     effective record length
  *
  ***********************************************************************/
 int
-pack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
+pack_MemoAppInfo(MemoAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!record)
 		return i + 4;
 	if (i == 0)				/* category pack failed */
@@ -150,7 +160,7 @@ pack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
 		return (record - start);
 	set_short(record, 0);			/* gapfill new for 2.0 	*/
 	record += 2;
-	set_byte(record, ai->sortByAlpha);	/* new for 2.0 		*/
+	set_byte(record, appinfo->sortByAlpha);	/* new for 2.0 		*/
 	record++;
 	set_byte(record, 0);			/* gapfill new for 2.0 	*/
 	record++;

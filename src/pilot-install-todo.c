@@ -26,9 +26,8 @@
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
-#include "pi-socket.h"
+#include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-todo.h"
 #include "pi-header.h"
@@ -84,7 +83,7 @@ char *read_file(char *filename)
 	f = fopen(filename, "r");
 	if (f == NULL) {
 		perror("fopen");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fseek(f, 0, SEEK_END);
@@ -94,7 +93,7 @@ char *read_file(char *filename)
 	file_text = (char *) malloc(filelen + 1);
 	if (file_text == NULL) {
 		perror("malloc()");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fread(file_text, filelen, 1, f);
@@ -227,7 +226,7 @@ int main(int argc, char *argv[])
 	if (argc < 2) {
 		printf("   Insufficient or invalid options supplied.\n");
 		printf("   Please use 'install-todo --help' for more info.\n\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (optind < argc){
@@ -237,13 +236,13 @@ int main(int argc, char *argv[])
 	sd = pilot_connect(port);
 
         if (sd < 0)
-		exit(1);
+		exit(EXIT_FAILURE);
 
 	/* Open the ToDo database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
 		puts("Unable to open ToDo Database");
 		dlp_AddSyncLogEntry(sd, "Unable to open ToDo Database.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	install_ToDo(sd, db, todo);

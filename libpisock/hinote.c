@@ -28,17 +28,20 @@
  *
  * Function:    free_HiNoteNote
  *
- * Summary:     
+ * Summary:     frees HiNoteNote_t members
  *
- * Parameters:  None
+ * Parameters:  HiNoteNote_t*
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void free_HiNoteNote(struct HiNoteNote *a)
+void
+free_HiNoteNote(HiNoteNote_t *hinote)
 {
-	if (a->text)
-		free(a->text);
+	if (hinote->text != NULL) {
+		free(hinote->text);
+		hinote->text = NULL;
+	}
 }
 
 /***********************************************************************
@@ -47,18 +50,21 @@ void free_HiNoteNote(struct HiNoteNote *a)
  *
  * Summary:     Unpack a HiNote record
  *
- * Parameters:  None
+ * Parameters:  HiNoteNote_t*, char* to buffer, buffer length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
-int unpack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
+int
+unpack_HiNoteNote(HiNoteNote_t *hinote, unsigned char *buffer, int len)
 {
 	if (len < 3)
 		return 0;
-	a->flags 	= buffer[0];
-	a->level 	= buffer[1];
-	a->text 	= strdup((char *) &buffer[2]);
+
+	hinote->flags 	= buffer[0];
+	hinote->level 	= buffer[1];
+	hinote->text 	= strdup((char *) &buffer[2]);
+
 	return strlen((char *) &buffer[2]) + 3;
 }
 
@@ -68,34 +74,36 @@ int unpack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
  *
  * Summary:     Pack a HiNote record
  *
- * Parameters:  None
+ * Parameters:  HiNoteNote_t*
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
+int
+pack_HiNoteNote(HiNoteNote_t *hinote, unsigned char *buffer, int len)
 {
 	int 	destlen;
 
 	destlen = 3;
-	if (a->text)
-		destlen += strlen(a->text);
+	if (hinote->text)
+		destlen += strlen(hinote->text);
 
 	if (!buffer)
 		return destlen;
 	if (len < destlen)
 		return 0;
 
-	buffer[0] = a->flags;
-	buffer[1] = a->level;
+	buffer[0] = hinote->flags;
+	buffer[1] = hinote->level;
 
-	if (a->text)
-		strcpy((char *) &buffer[2], a->text);
+	if (hinote->text)
+		strcpy((char *) &buffer[2], hinote->text);
 	else {
 		buffer[2] = 0;
 	}
 	return destlen;
 }
+
 
 /***********************************************************************
  *
@@ -103,21 +111,20 @@ int pack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
  *
  * Summary:     Unpack the HiNote AppInfo block
  *
- * Parameters:  None
+ * Parameters:  HiNoteAppInfo_t*, char* to record, record length
  *
- * Returns:     Nothing
+ * Returns:     effective buffer length
  *
  ***********************************************************************/
 int
-unpack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
-		     int len)
+unpack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, int len)
 {
 	int 	i,	
 		index;
 	unsigned char *start;
 
 	start = record;
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!i)
 		return i;
 	record += i;
@@ -125,9 +132,10 @@ unpack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 	if (len < 48)
 		return 0;
 	for (index = 0; i < 48; i++)
-		ai->reserved[i] = *record++;
+		appinfo->reserved[i] = *record++;
 	return (record - start);
 }
+
 
 /***********************************************************************
  *
@@ -135,20 +143,19 @@ unpack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
  *
  * Summary:     Pack the HiNote AppInfo block
  *
- * Parameters:  None
+ * Parameters:  HiNoteAppInfo_t*, char* record, length of record
  *
- * Returns:     Nothing
+ * Returns:     effective record length
  *
  ***********************************************************************/
 int
-pack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
-		   int len)
+pack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, int len)
 {
 	int 	i,
 		index;
 	unsigned char *start = record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&appinfo->category, record, len);
 	if (i == 0)		/* category pack failed */
 		return 0;
 	if (!record)
@@ -158,7 +165,7 @@ pack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 	if (len < 48)
 		return (record - start);
 	for (index = 0; i < 48; i++)
-		*record++ = ai->reserved[i];
+		*record++ = appinfo->reserved[i];
 
 	return (record - start);
 }

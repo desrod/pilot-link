@@ -31,63 +31,130 @@
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-slp.h"
 #include "pi-sys.h"
 
-static int sys_getsockopt(struct pi_socket *ps, int level, int option_name, 
-			  void *option_value, int *option_len);
-static int sys_setsockopt(struct pi_socket *ps, int level, int option_name, 
-			  const void *option_value, int *option_len);
+/* Declare function prototypes */
+static int sys_getsockopt(pi_socket_t *ps, int level, int option_name, 
+			  void *option_value, size_t *option_len);
+static int sys_setsockopt(pi_socket_t *ps, int level, int option_name, 
+			  const void *option_value, size_t *option_len);
 
-static struct pi_protocol *sys_protocol_dup (struct pi_protocol *prot)
+
+/***********************************************************************
+ *
+ * Function:    sys_protocol_dup
+ *
+ * Summary:     clones an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t *
+sys_protocol_dup (pi_protocol_t *prot)
 {
-	struct pi_protocol *new_prot;
-	struct pi_sys_data *data, *new_data;
+	pi_protocol_t *new_prot = NULL;
+	pi_sys_data_t	*data = NULL,
+			*new_data = NULL;
 	
-	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level 	= prot->level;
-	new_prot->dup 		= prot->dup;
-	new_prot->free 		= prot->free;
-	new_prot->read 		= prot->read;
-	new_prot->write 	= prot->write;
-	new_prot->getsockopt 	= prot->getsockopt;
-	new_prot->setsockopt 	= prot->setsockopt;
+	new_prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
+	if (new_prot != NULL) {
+		new_data = (pi_sys_data_t *)malloc (sizeof (pi_sys_data_t));
+		if (new_data == NULL) {
+			free(new_prot);
+			new_prot = NULL;
+		}
+	}
 
-	new_data 		= (struct pi_sys_data *)malloc (sizeof (struct pi_sys_data));
-	data 			= (struct pi_sys_data *)prot->data;
-	new_data->txid 		= data->txid;
-	new_prot->data 		= new_data;
+	if ( (new_prot != NULL) && (new_data != NULL) ) {
+	
+		new_prot->level	= prot->level;
+		new_prot->dup 	= prot->dup;
+		new_prot->free 	= prot->free;
+		new_prot->read 	= prot->read;
+		new_prot->write = prot->write;
+		new_prot->getsockopt	= prot->getsockopt;
+		new_prot->setsockopt 	= prot->setsockopt;
+
+		data 	= (pi_sys_data_t *)prot->data;
+		new_data->txid 	= data->txid;
+		new_prot->data 	= new_data;
+	}
 
 	return new_prot;
 }
 
-static void sys_protocol_free (struct pi_protocol *prot)
+
+/***********************************************************************
+ *
+ * Function:    sys_protocol_free
+ *
+ * Summary:     frees an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+sys_protocol_free (pi_protocol_t *prot)
 {
-	free(prot->data);
-	free(prot);
+
+	ASSERT (prot != NULL);
+
+	if (prot != NULL) {
+		if (prot->data != NULL)
+			free(prot->data);
+		free(prot);
+	}
 }
 
-struct pi_protocol *sys_protocol (void)
+
+/***********************************************************************
+ *
+ * Function:    sys_protocol
+ *
+ * Summary:     creates and inits pi_protocol struct instance
+ *
+ * Parameters:  void
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+pi_protocol_t *
+sys_protocol (void)
 {
-	struct 	pi_protocol *prot;
-	struct 	pi_sys_data *data;
+	pi_protocol_t *prot = NULL;
+	pi_sys_data_t *data = NULL;
 
-	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));	
-	prot->level 		= PI_LEVEL_SYS;
-	prot->dup 		= sys_protocol_dup;
-	prot->free 		= sys_protocol_free;
-	prot->read 		= sys_rx;
-	prot->write 		= sys_tx;
-	prot->getsockopt 	= sys_getsockopt;
-	prot->setsockopt 	= sys_setsockopt;
+	prot 	= (pi_protocol_t *)malloc (sizeof (pi_protocol_t));	
+	if (prot != NULL) {
+		data = (pi_sys_data_t *)malloc (sizeof (pi_sys_data_t));
+		if (data == NULL) {
+			free(prot);
+			prot = NULL;
+		}
+	}
 
-	data 			= (struct pi_sys_data *)malloc (sizeof (struct pi_sys_data));
-	data->txid 		= 0x00;
-	prot->data 		= data;
+	if ( (prot != NULL) && (data != NULL) ) {
+
+		prot->level 	= PI_LEVEL_SYS;
+		prot->dup 	= sys_protocol_dup;
+		prot->free 	= sys_protocol_free;
+		prot->read 	= sys_rx;
+		prot->write 	= sys_tx;
+		prot->getsockopt = sys_getsockopt;
+		prot->setsockopt = sys_setsockopt;
+
+		data->txid 	= 0x00;
+		prot->data 	= data;
+	}
 	
 	return prot;
 }
+
 
 /***********************************************************************
  *
@@ -95,23 +162,28 @@ struct pi_protocol *sys_protocol (void)
  *
  * Summary:     Send a system message
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, char* to buffer, buffer length, flags
  *
  * Returns:     0 if success, nonzero otherwise
  *
  ***********************************************************************/
-int sys_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+int
+sys_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
-	struct 	pi_protocol *prot, *next;
-	struct 	pi_sys_data *data;
+	pi_protocol_t	*prot,
+			*next;
+
+	pi_sys_data_t *data;
+
 	int 	type,
-		socket,
-		size;
+		socket;
+
+	size_t	size;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
 		return -1;
-	data = (struct pi_sys_data *)prot->data;
+	data = (pi_sys_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SYS);
 	if (next == NULL)
 		return -1;
@@ -123,6 +195,7 @@ int sys_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		data->txid = 0x11;	/* some random # */
 
 	type 	= PI_SLP_TYPE_RDCP;
+
 	/* Fix me, allow socket type */
 	socket 	= PI_SLP_SOCK_CON;
 	size 	= sizeof(type);
@@ -144,27 +217,31 @@ int sys_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    sys_rx
  *
  * Summary:     Receive system message
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, char* to buffer, buffer length, flags
  *
- * Returns:     Length of read
+ * Returns:     Length of read or -1 on error
  *
  ***********************************************************************/
-int sys_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+int
+sys_rx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
-	struct 	pi_protocol *next, *prot;
-	struct 	pi_sys_data *data;
-	int 	data_len;
+	pi_protocol_t	*next,
+			*prot;
+
+	pi_sys_data_t *data;
+	size_t 	data_len;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
 		return -1;
-	data = (struct pi_sys_data *)prot->data;
+	data = (pi_sys_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SYS);
 	if (next == NULL)
 		return -1;
@@ -177,17 +254,30 @@ int sys_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	return data_len;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    sys_getsockopt
+ *
+ * Summary:     get options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-sys_getsockopt(struct pi_socket *ps, int level, int option_name, 
-	       void *option_value, int *option_len)
+sys_getsockopt(pi_socket_t *ps, int level, int option_name, 
+	       void *option_value, size_t *option_len)
 {
-	struct 	pi_protocol *prot;
-	struct 	pi_sys_data *data;
+	pi_protocol_t *prot;
+
+	pi_sys_data_t *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
 		goto error;
-	data = (struct pi_sys_data *)prot->data;
+	data = (pi_sys_data_t *)prot->data;
 
 	switch (option_name) {
 
@@ -200,17 +290,29 @@ sys_getsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    sys_setsockopt
+ *
+ * Summary:     get options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-sys_setsockopt(struct pi_socket *ps, int level, int option_name, 
-	       const void *option_value, int *option_len)
+sys_setsockopt(pi_socket_t *ps, int level, int option_name, 
+	       const void *option_value, size_t *option_len)
 {
-	struct 	pi_protocol *prot;
-	struct 	pi_sys_data *data;
+	pi_protocol_t *prot;
+	pi_sys_data_t *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
 		goto error;
-	data = (struct pi_sys_data *)prot->data;
+	data = (pi_sys_data_t *)prot->data;
 
 	switch (option_name) {
 
@@ -223,13 +325,39 @@ sys_setsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
-void sys_dump_header(unsigned char *data, int rxtx)
+
+/***********************************************************************
+ *
+ * Function:    sys_dump_header
+ *
+ * Summary:     Dump SYS packet header
+ *
+ * Parameters:  char* to data, RXTX boolean
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+void
+sys_dump_header(unsigned char *data, int rxtx)
 {
 	LOG((PI_DBG_SYS, PI_DBG_LVL_NONE,
 	    "SYS %s\n", rxtx ? "TX" : "RX"));
 }
 
-void sys_dump(unsigned char *data, int len)
+
+/***********************************************************************
+ *
+ * Function:    sys_dump
+ *
+ * Summary:     Dump SYS packet
+ *
+ * Parameters:  char* to data, length
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+void
+sys_dump(unsigned char *data, size_t len)
 {
-	dumpdata(&data[PI_SYS_HEADER_LEN], len);
+	dumpdata((char *)&data[PI_SYS_HEADER_LEN], len);
 }

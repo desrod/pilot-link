@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "pi-socket.h"
+#include "pi-source.h"
 #include "pi-todo.h"
 #include "pi-dlp.h"
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
 		puts("Unable to open ToDoDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);

@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "pilot-xfer" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "pilot-xfer" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBpilot\-xfer\fR \- backup, sync, and restore databases from a Palm handheld
 device, such as those made from \fIPalm\fR, \fIHandspring\fR, \fIHandera\fR, 

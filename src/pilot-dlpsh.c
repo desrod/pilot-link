@@ -30,7 +30,7 @@
 #include <strings.h>
 #include <netinet/in.h>
 
-#include "pi-socket.h"
+#include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
 
@@ -48,10 +48,34 @@ static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
 
+
+/* FIXME: This isn't really ideal, passing a struct in is 
+   probably better. Something like this:
+
+   typedef struct { int sd; int argc; char **argv; } cmd_struct_t;
+
+   int df_fn(cmd_struct_t *cmd_struct);
+   int exit_fn(cmd_struct_t *cmd_struct);
+   int ls_fn(cmd_struct_t *cmd_struct);
+   int help_fn(cmd_struct_t *cmd_struct);
+   int rm_fn(cmd_struct_t *cmd_struct);
+   int time_fn(cmd_struct_t *cmd_struct);
+   int user_fn(cmd_struct_t *cmd_struct);
+
+   typedef int (*cmd_func_t)(cmd_struct_t *);
+
+   struct Command {
+           char *name;
+           cmd_func_t func;
+   };
+
+   Knghtbrd: In the meantime, let's fix the warnings...
+*/
+
 int 	df_fn(int sd, int argc, char *argv[]),
 	exit_fn(int sd, int argc, char *argv[]),
-	help_fn(int sd, int argc, char *argv[]),
 	ls_fn(int sd, int argc, char *argv[]),
+	help_fn(int sd, int argc, char *argv[]),
 	rm_fn(int sd, int argc, char *argv[]),
 	time_fn(int sd, int argc, char *argv[]),
 	user_fn(int sd, int argc, char *argv[]);
@@ -77,12 +101,8 @@ struct Command command_list[] = {
 	{"quit", exit_fn},
 	{"rm",   rm_fn},
 	{"time", time_fn},
-	{"dtp",	 time_fn},
 	{"user", user_fn},
-	{NULL, NULL}
 };
-
-static const char *optstring = "p:hv";
 
 /***********************************************************************
  *
@@ -179,7 +199,7 @@ int ls_fn(int sd, int argc, char *argv[])
 		cardno,
 		flags,
 		ret,
-		start,
+		start		= 0,
 		lflag 		= 0,
 		rom_flag 	= 0;
 	
@@ -213,7 +233,6 @@ int ls_fn(int sd, int argc, char *argv[])
 	else
 		flags = 0x40;	/* dlpReadDBListFlagROM */
 
-	start = 0;
 	for (;;) {
 		struct DBInfo info;
 		long tag;
@@ -481,9 +500,71 @@ char *timestr(time_t t)
 
 /***********************************************************************
  *
+ * Function:    parse_command
+ *
+ * Summary:     Parses and executes a command
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void parse_command(int sd, char *cmd)
+{
+	char 	*argv[32];
+	int 	argc,
+		inc;
+
+	argc = 0;
+	
+	/* Changing input? BAD BAD BAD... -DD */
+	argv[0] = strtoke(cmd, " \t\n", "\"'");
+
+	while (argv[argc] != NULL) {
+		argc++;
+
+		/* Tsk, tsk. Changing the input again! -DD */
+		argv[argc] = strtoke(NULL, " \t\n", "\"'");
+	}
+
+	if (argc == 0)
+		return;
+
+	for (inc = 0; command_list[inc].name != NULL; inc++) {
+		if (strcasecmp(argv[0], command_list[inc].name) == 0) {
+			command_list[inc].func(sd, argc, argv);
+		}
+	}
+
+	return;
+}
+	
+/***********************************************************************
+ *
+ * Function:    handle_single_command
+ *
+ * Summary:     Dispatch a command from the cmdline and exit
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void handle_single_command(int sd, char *cmd)
+{
+	parse_command(sd, cmd);
+	/* FIXME: knghtbrd: log something or not? */
+	dlp_EndOfSync(sd, 0);
+	pi_close(sd);
+	exit(0);
+}
+
+
+/***********************************************************************
+ *
  * Function:    handle_user_commands
  *
- * Summary:     Parse user commands and arguments
+ * Summary:     Read user commands interactively
  *
  * Parameters:  None
  *
@@ -503,55 +584,37 @@ void handle_user_commands(int sd)
 	char 	buf[256];
 #endif
 
-	char 	*argv[32];
-	int 	argc,
-		inc;
+	printf("\nWelcome to the DLP Shell\n"
+	       "Type 'help' for additional information\n\n");
+
+	pi_watchdog(sd, TICKLE_INTERVAL);
 
 	for (;;) {
 		fflush(stdout);
 
 #ifdef HAVE_READLINE
-	line = readline(prompt);
-	if (line && *line)	/* skip blanks */
-		add_history(line);
-	if (!line)
-		break;
+		line = readline(prompt);
+		if (!line != NULL)
+			break;
+		if (*line)	/* skip blanks */
+			add_history(line);
 
-	argc = 0;
-	
-	/* Changing input? BAD BAD BAD... -DD */
-	argv[0] = strtoke(line, " \t\n", "\"'");
+		parse_command(sd, line);
+
+		free(line);
 #else
-	printf("dlpsh> ");
-	
-	if (fgets(buf, 256, stdin) == NULL)
-		break;
+		printf("dlpsh> ");
 
-	argc 	= 0;
-	argv[0] = strtoke(buf, " \t\n", "\"'");
-#endif
+		if (fgets(buf, 256, stdin) == NULL)
+			break;
 
-	while (argv[argc] != NULL) {
-		argc++;
-
-		/* Tsk, tsk. Changing the input again! -DD */
-		argv[argc] = strtoke(NULL, " \t\n", "\"'");
-	}
-
-	if (argc == 0)
-		continue;
-
-	for (inc = 0; command_list[inc].name != NULL; inc++) {
-		if (strcasecmp(argv[0], command_list[inc].name) == 0) {
-			command_list[inc].func(sd, argc, argv);
-		}
-	}
-
-#ifdef HAVE_READLINE
-	free(line);
+		parse_command(sd, buf);
 #endif
 	}
 	printf("\n");
+
+	/* User must have pressed ^d or something */
+	parse_command(sd, "exit");
 }
 
 
@@ -639,6 +702,7 @@ static void display_help(char *progname)
 	printf("   An interactive Desktop Link Protocol (DLP) Shell for your Palm device\n\n");
 	printf("   Usage: %s -p <port>\n", progname);
 	printf("   Options:\n");
+	printf("   -c, --command <cmd>       Execute <cmd> and exit immediately\n");
 	printf("   -p, --port <port>         Use device file <port> to communicate with Palm\n");
 	printf("   -h, --help                Display help information for %s\n", progname);
 	printf("   -v, --version             Display %s version information\n\n", progname);
@@ -657,9 +721,13 @@ int main(int argc, char *argv[])
 		sd 		= -1;
 
 	char 	*progname 	= argv[0],
-		*port 		= NULL;
+		*port 		= NULL,
+		*cmd		= NULL;
 		
+	const char *optstring = "c:p:hv";
+
 	struct option options[] = {
+		{"command", required_argument, NULL, 'c'},
 		{"port",    required_argument, NULL, 'p'},
 		{"help",    no_argument,       NULL, 'h'},
 		{"version", no_argument,       NULL, 'v'},
@@ -678,6 +746,17 @@ int main(int argc, char *argv[])
 		case 'p':
 			port = optarg;
 			break;
+		case 'c':
+			if (cmd != NULL)
+			{
+			    /* can't -c twice */
+			    display_help(progname);
+			    return (0);
+			}
+			
+			/* FIXME: Knghtbrd: strndup this */
+			cmd = strdup(optarg);
+			break;
 		default:
 			display_help(progname);
 			return 0;
@@ -691,12 +770,10 @@ int main(int argc, char *argv[])
 	if (dlp_OpenConduit(sd) < 0)
 		goto error_close;
 
-	printf("\nWelcome to the DLP Shell\n"
-	       "Type 'help' for additional information\n\n");
-
-	pi_watchdog(sd, TICKLE_INTERVAL);
-
-	handle_user_commands(sd);
+	if (cmd != NULL)
+		handle_single_command(sd, cmd);
+	else
+		handle_user_commands(sd);
 
 	return 0;
 

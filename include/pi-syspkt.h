@@ -38,7 +38,7 @@ extern "C" {
 
 	struct RPC_param {
 		int byRef;
-		int size;
+		size_t size;
 		int invert;
 		int arg;
 		void *data;
@@ -82,7 +82,7 @@ extern "C" {
 	    PI_ARGS((int sd, struct Pilot_breakpoint * b));
 	extern int sys_Find
 	    PI_ARGS((int sd, unsigned long startaddr,
-		     unsigned long stopaddr, int len, int caseinsensitive,
+		     unsigned long stopaddr, size_t len, int caseinsensitive,
 		     void *data, unsigned long *found));
 
 	extern int sys_RemoteEvent

@@ -1,8 +1,10 @@
 c_headers = 			\
+	darwinusbcore.h		\
 	pi-address.h		\
 	pi-appinfo.h		\
 	pi-args.h		\
 	pi-cmp.h		\
+	pi-contact.h		\
 	pi-datebook.h		\
 	pi-debug.h		\
 	pi-dlp.h		\
@@ -33,7 +35,7 @@ c_headers = 			\
 	pi-usb.h		\
 	pi-util.h		\
 	pi-veo.h		\
-	pi-versamail		\
+	pi-versamail.h		\
 	pi-version.h
 
 c_privheaders = 		\

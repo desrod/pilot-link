@@ -30,9 +30,7 @@
 #include <unistd.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-notepad.h"
-#include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-header.h"
 
@@ -556,7 +554,7 @@ int main(int argc, char *argv[])
      {
 	puts("Unable to open NotePadDB");
 	dlp_AddSyncLogEntry(sd, "Unable to open NotePadDB.\n");
-	exit(1);
+	exit(EXIT_FAILURE);
      }
    
    dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);

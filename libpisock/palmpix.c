@@ -65,7 +65,7 @@
 #include "pi-palmpix.h"
 
 void DecodeRow(uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData,
-               uint32_t *offset, int32_t *firstWord, int16_t *PPLutsW,
+               uint32_t *offset, int32_t *firstWord, uint16_t *PPLutsW,
                uint8_t *PPLuts, uint16_t halfWidth);
 
 uint8_t huffWidth[] = {
@@ -1107,14 +1107,14 @@ uint16_t huffTable[] =
  * Christophe Schlick schlick@labri.u-bordeuax.fr
  *****************************************************************/
   
-static void Bias( float bias, int width, int height, uint8_t *data )
+static void Bias( double bias, int width, int height, uint8_t *data )
 {
    int i;
-   float num, denom, t;
+   double num, denom, t;
       
    for( i=0; i<width*height; i++ )
      {
-	t = (float)data[i]/256.0;
+	t = (double)data[i]/256.0;
 	num = t;
 	denom = (1.0/bias - 2) * (1.0 - t) + 1;
 	data[i] = num/denom * 256.0;     
@@ -1184,7 +1184,7 @@ static void Interpolate( const struct PalmPixHeader *pixHdr, uint8_t *red, uint8
    
 }
 
-void DecodeRow( uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData, uint32_t *offset, int32_t *firstWord, int16_t *PPLutsW, uint8_t *PPLuts, uint16_t halfWidth )
+void DecodeRow( uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData, uint32_t *offset, int32_t *firstWord, uint16_t *PPLutsW, uint8_t *PPLuts, uint16_t halfWidth )
 {
    uint8_t *saveStartP, shiftOut;
    int16_t tmpW3, tmpResult, tmpW0, idx, resultW;
@@ -1395,21 +1395,21 @@ int unpack_PalmPix (struct PalmPixState *s,
 	for (k = 0; k < 4; k++) 
 	  {
 		 
-	     chan[k] = malloc (rawWidth * rawHeight);
+	     chan[k] = malloc ((size_t)(rawWidth * rawHeight));
 	     if (chan[k] == NULL)
 	       goto failed;
-	     memset (chan[k], 0, rawWidth * rawHeight);
+	     memset (chan[k], 0, (size_t)(rawWidth * rawHeight));
 	     if (chansize_max < h->chansize[k])
 	       chansize_max = h->chansize[k];
 	     
 	  }
 	  
 	
-	raw = malloc (chansize_max);
+	raw = malloc ((size_t)chansize_max);
 	if (raw == NULL)
 	  goto failed;
 	
-	s->pixmap = malloc (h->w * h->h * 3);
+	s->pixmap = malloc ((size_t)(h->w * h->h * 3));
 	if (s->pixmap == NULL)
 	  goto failed;
 	
@@ -1429,7 +1429,7 @@ int unpack_PalmPix (struct PalmPixState *s,
 		    {
 		       if (bufsize > h->chansize[k] - nbytes)
 			 bufsize = h->chansize[k] - nbytes;
-		       memcpy (&raw[nbytes], buffer, bufsize);
+		       memcpy (&raw[nbytes], buffer, (size_t)bufsize);
 		       nbytes += bufsize;
 		       
 		    }
@@ -1439,7 +1439,7 @@ int unpack_PalmPix (struct PalmPixState *s,
 	       }
 		 
 	     offset = 0;
-	     memcpy (chan[k], &raw[offset], rawWidth);
+	     memcpy (chan[k], &raw[offset], (size_t)rawWidth);
 	     offset += rawWidth;
 	     
 	     for (j = 1; j < rawHeight; j++) 

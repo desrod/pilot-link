@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "memos" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "memos" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBmemos\fR \- Read or Write Memopad entries to STDOUT or files.
 

@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "install-user" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "install-user" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBinstall\-user\fR \- reads or sets a Palm User and UserID on a Palm Device.
 

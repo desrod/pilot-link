@@ -57,7 +57,7 @@ void printCategoryNames(appInfo_t & ai)
 void memos(pi_file * pf)
 {
 	void *app_info;
-	int app_info_size;
+	size_t app_info_size;
 
 	if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
 		cerr << "Unable to get app info" << endl;

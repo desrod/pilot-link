@@ -24,7 +24,6 @@
 
 #include "pi-header.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 
 /* Declare prototypes */

@@ -19,11 +19,11 @@
 #ifndef _PILOT_DLP_H_
 #define _PILOT_DLP_H_
 
-#include "pi-args.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <unistd.h>
 
 #include "pi-macros.h"		/* For recordid_t */
 
@@ -167,7 +167,7 @@ typedef unsigned long FileRef;
 	   functions should check for a return value less then zero.
 	 */
 	struct PilotUser {
-		int 	passwordLength;
+		size_t 	passwordLength;
 		char 	username[128],
 			password[128];
 		unsigned long userID, viewerID, lastSyncPC;
@@ -483,9 +483,8 @@ typedef unsigned long FileRef;
 	};
 
 	struct dlpArg {
-		int 	id,
-			len;		
-
+		int 	id;
+		size_t	len;		
 		char *data;
 	};
 
@@ -504,7 +503,7 @@ typedef unsigned long FileRef;
 		struct dlpArg **argv;
 	};	
 
-	extern struct dlpArg * dlp_arg_new PI_ARGS((int id, int len));
+	extern struct dlpArg * dlp_arg_new PI_ARGS((int id, size_t len));
 	extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
 	extern int dlp_arg_len PI_ARGS((int argc, struct dlpArg **argv));
 	extern struct dlpRequest *dlp_request_new 
@@ -513,21 +512,24 @@ typedef unsigned long FileRef;
 	        PI_ARGS((enum dlpFunctions cmd, int argid, int argc, ...));
 	extern struct dlpResponse *dlp_response_new
 	        PI_ARGS((enum dlpFunctions cmd, int argc));
-	extern int dlp_response_read PI_ARGS((struct dlpResponse **res, int sd));
-	extern int dlp_request_write PI_ARGS((struct dlpRequest *req, int sd));
+	extern ssize_t dlp_response_read PI_ARGS((struct dlpResponse **res,
+		int sd));
+	extern ssize_t dlp_request_write PI_ARGS((struct dlpRequest *req,
+		int sd));
 	extern void dlp_request_free PI_ARGS((struct dlpRequest *req));
 	extern void dlp_response_free PI_ARGS((struct dlpResponse *req));
 
-	extern int dlp_exec PI_ARGS((int sd, struct dlpRequest *req, struct dlpResponse **res));
+	extern int dlp_exec PI_ARGS((int sd, struct dlpRequest *req,
+		struct dlpResponse **res));
 
 	extern char *dlp_errorlist[];
 	extern char *dlp_strerror(int error);
 
 	/* Get the time on the Palm and return it as a local time_t value. */ 
-	extern int dlp_GetSysDateTime PI_ARGS((int sd, time_t * t));
+	extern int dlp_GetSysDateTime PI_ARGS((int sd, time_t *t));
 
 	/* Set the time on the Palm using a local time_t value. */
-	extern int dlp_SetSysDateTime PI_ARGS((int sd, time_t time));
+	extern int dlp_SetSysDateTime PI_ARGS((int sd, time_t t));
 
 	extern int dlp_ReadStorageInfo
 		PI_ARGS((int sd, int cardno, struct CardInfo * c));
@@ -571,9 +573,9 @@ typedef unsigned long FileRef;
 
 	/* Create database */
 	extern int dlp_CreateDB
-		PI_ARGS((int sd, long creator, long type, int cardno,
-			int flags, int version, PI_CONST char *name,
-			int *dbhandle));
+		PI_ARGS((int sd, unsigned long creator, unsigned long type,
+			int cardno, int flags, unsigned int version,
+			PI_CONST char *name, int *dbhandle));
 
 	/* Require reboot of Palm after HotSync terminates. */
 	extern int dlp_ResetSystem PI_ARGS((int sd));
@@ -631,14 +633,15 @@ typedef unsigned long FileRef;
 			int dlen));
 
 	extern int dlp_WriteAppBlock
-		PI_ARGS((int sd, int fHandle, PI_CONST void *dbuf, int dlen));
+		PI_ARGS((int sd,int fHandle,PI_CONST void *dbuf,size_t dlen));
 
 	extern int dlp_ReadSortBlock
 		PI_ARGS((int sd, int fHandle, int offset, void *dbuf,
 			int dlen));
 
 	extern int dlp_WriteSortBlock
-		PI_ARGS((int sd, int fHandle, PI_CONST void *dbuf, int dlen));
+		PI_ARGS((int sd, int fHandle, PI_CONST void *dbuf,
+			size_t dlen));
 
 	/* Reset NextModified position to beginning */
 	extern int dlp_ResetDBIndex PI_ARGS((int sd, int dbhandle));
@@ -659,7 +662,7 @@ typedef unsigned long FileRef;
 
 	extern int dlp_WriteRecord
 		PI_ARGS((int sd, int dbhandle, int flags, recordid_t recID,
-			int catID, void *data, int length,
+			int catID, void *data, size_t length,
 			recordid_t * NewID));
 
 	extern int dlp_DeleteRecord
@@ -670,15 +673,15 @@ typedef unsigned long FileRef;
 
 	extern int dlp_ReadResourceByType
 		PI_ARGS((int sd, int fHandle, unsigned long type, int id,
-			void *buffer, int *index, int *size));
+			void *buffer, int *index, size_t *size));
 
 	extern int dlp_ReadResourceByIndex
 		PI_ARGS((int sd, int fHandle, int index, void *buffer,
-			unsigned long *type, int *id, int *size));
+			unsigned long *type, int *id, size_t *size));
 
 	extern int dlp_WriteResource
 		PI_ARGS((int sd, int dbhandle, unsigned long type, int id, 
-			PI_CONST void *data, int length));
+			PI_CONST void *data, size_t length));
 
 	extern int dlp_DeleteResource
 		PI_ARGS((int sd, int dbhandle, int all, unsigned long restype,
@@ -686,23 +689,23 @@ typedef unsigned long FileRef;
 
 	extern int dlp_ReadNextModifiedRec
 		PI_ARGS((int sd, int fHandle, void *buffer, recordid_t * id,
-			int *index, int *size, int *attr, int *category));
+			int *index, size_t *size, int *attr, int *category));
 
 	extern int dlp_ReadNextModifiedRecInCategory
 		PI_ARGS((int sd, int fHandle, int incategory, void *buffer,
-			recordid_t * id, int *index, int *size, int *attr));
+			recordid_t * id, int *index, size_t *size, int *attr));
 
 	extern int dlp_ReadNextRecInCategory
 		PI_ARGS((int sd, int fHandle, int incategory, void *buffer,
-			recordid_t * id, int *index, int *size, int *attr));
+			recordid_t * id, int *index, size_t *size, int *attr));
 
 	extern int dlp_ReadRecordById
 		PI_ARGS((int sd, int fHandle, recordid_t id, void *buffer,
-			int *index, int *size, int *attr, int *category));
+			int *index, size_t *size, int *attr, int *category));
 
 	extern int dlp_ReadRecordByIndex
-		PI_ARGS((int sd, int fHandle, int index, void *buffer,
-			recordid_t * id, int *size, int *attr,
+		PI_ARGS((int sd, int fHandle, int ind, void *buffer,
+			recordid_t * id, size_t *size, int *attr,
 			int *category));
 
 	/* Deletes all records in the opened database which are marked as
@@ -719,8 +722,8 @@ typedef unsigned long FileRef;
 	/* 32-bit retcode and data over 64K only supported on v2.0 Palms */
 	extern int dlp_CallApplication
 		PI_ARGS((int sd, unsigned long creator, unsigned long type,
-			int action, int length, void *data,
-			unsigned long *retcode, int maxretlen, int *retlen,
+			int action, size_t length, void *data,
+			unsigned long *retcode, size_t maxretlen, int *retlen,
 			void *retdata));
 
 	extern int dlp_ReadFeature
@@ -728,7 +731,7 @@ typedef unsigned long FileRef;
 			unsigned long *feature));
 
 	extern int dlp_GetROMToken
-		PI_ARGS((int sd, unsigned long token, char *buffer, unsigned int *size));
+		PI_ARGS((int sd, unsigned long token, char *buffer, size_t *size));
 
 	/* PalmOS 2.0 only */
 	extern int dlp_ReadNetSyncInfo
@@ -740,11 +743,11 @@ typedef unsigned long FileRef;
 
 	extern int dlp_ReadAppPreference
 		PI_ARGS((int sd, unsigned long creator, int id, int backup,
-			int maxsize, void *buffer, int *size, int *version));
+			int maxsize, void *buffer, size_t *size, int *version));
 
 	extern int dlp_WriteAppPreference
 		PI_ARGS((int sd, unsigned long creator, int id, int backup,
-			int version, void *buffer, int size));
+			int version, void *buffer, size_t size));
 
 	/* PalmOS 3.0 only */
 	extern int dlp_SetDBInfo
@@ -803,10 +806,10 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, FileRef afile));
 
 	extern int dlp_VFSFileWrite
-		PI_ARGS((int sd, FileRef afile, unsigned char *data, int len));
+		PI_ARGS((int sd, FileRef afile, unsigned char *data, size_t len));
 
 	extern int dlp_VFSFileRead
-		PI_ARGS((int sd, FileRef afile, unsigned char *data, int
+		PI_ARGS((int sd, FileRef afile, unsigned char *data, size_t 
 			*numBytes));
 
 	extern int dlp_VFSFileDelete

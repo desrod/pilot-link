@@ -26,7 +26,6 @@
 #include <string.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-hinote.h"
 #include "pi-header.h"
@@ -118,7 +117,7 @@ int main(int argc, char *argv[])
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "Hi-NoteDB", &db) < 0) {
 		puts("Unable to open Hi-NoteDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open Hi-NoteDB.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	j = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
@@ -146,7 +145,7 @@ int main(int argc, char *argv[])
 		if (err) {
 		   /* FIXME: use perror() */
 		   printf("Error accessing file: %s\n", argv[index]);
-		   exit(1);
+		   exit(EXIT_FAILURE);
 		}
 	
 		/* If size is good, open the file. */
@@ -156,14 +155,14 @@ int main(int argc, char *argv[])
 			       "(28,672 bytes), please reduce into two or more pieces and sync each again.\n\n", 
 				(int)info.st_size);
 
-			exit(1);
+			exit(EXIT_FAILURE);
 		} else {
 			f = fopen(argv[index], "r");
 		}
 	
 		if (f == NULL) {
 			perror("fopen");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	
 		fseek(f, 0, SEEK_END);
@@ -175,7 +174,7 @@ int main(int argc, char *argv[])
 		file_text = (char *) malloc(filelen + filenamelen + 2);
 		if (file_text == NULL) {
 			perror("malloc()");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	
 		strcpy(file_text, argv[index]);

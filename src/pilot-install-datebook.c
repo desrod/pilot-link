@@ -30,7 +30,6 @@
 #include <string.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-datebook.h"
 
@@ -124,13 +123,13 @@ int main(int argc, char *argv[])
 		puts("Unable to open DatebookDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
 		pi_close(sd);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	f = fopen(filename, "r");
 	if (f == NULL) {
 		perror("fopen");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fseek(f, 0, SEEK_END);
@@ -140,7 +139,7 @@ int main(int argc, char *argv[])
 	file_text = (char *) malloc(filelen + 1);
 	if (file_text == NULL) {
 		perror("malloc()");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fread(file_text, filelen, 1, f);
@@ -244,6 +243,13 @@ int main(int argc, char *argv[])
 					     (Appointment_buf));
 			printf("Description: %s, %s\n",
 				appointment.description, appointment.note);
+
+			printf("date: %d/%d/%d %d:%02d\n", 
+				appointment.begin.tm_mon + 1, 
+				appointment.begin.tm_mday, 
+				appointment.begin.tm_year + 1900, 
+				appointment.begin.tm_hour, 
+				appointment.begin.tm_min);
 
 			dlp_WriteRecord(sd, db, 0, 0, 0,
 					Appointment_buf,

@@ -36,7 +36,6 @@
 #include <io.h>
 #else
 #include <unistd.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>		/* Needed for Redhat 6.x machines */
@@ -53,124 +52,245 @@
 #include "pi-cmp.h"
 #include "pi-net.h"
 
-static int pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr,
-			  int addrlen);
-static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, 
-		       int addrlen);
-static int pi_inet_listen(struct pi_socket *ps, int backlog);
-static int pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr,
-			 int *addrlen);
-static int pi_inet_read(struct pi_socket *ps, unsigned char *msg, int len, int flags);
-static int pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags);
-static int pi_inet_getsockopt(struct pi_socket *ps, int level, int option_name, 
-			      void *option_value, int *option_len);
-static int pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name, 
-			      const void *option_value, int *option_len);
+/* Declare prototypes */
+static int pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr,
+			   size_t addrlen);
+static int pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, 
+		       size_t addrlen);
+static int pi_inet_listen(pi_socket_t *ps, int backlog);
+static int pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr,
+			 size_t *addrlen);
+static int pi_inet_read(pi_socket_t *ps, unsigned char *msg, size_t len, int flags);
+static int pi_inet_write(pi_socket_t *ps, unsigned char *msg, size_t len, int flags);
+static int pi_inet_getsockopt(pi_socket_t *ps, int level, int option_name, 
+			      void *option_value, size_t *option_len);
+static int pi_inet_setsockopt(pi_socket_t *ps, int level, int option_name, 
+			      const void *option_value, size_t *option_len);
 
-static int pi_inet_close(struct pi_socket *ps);
+static int pi_inet_close(pi_socket_t *ps);
 
-int pi_socket_init(struct pi_socket *ps);
+int pi_socket_init(pi_socket_t *ps);
 
 /* Protocol Functions */
-static struct pi_protocol *pi_inet_protocol_dup (struct pi_protocol *prot)
+/***********************************************************************
+ *
+ * Function:    pi_inet_protocol_dup
+ *
+ * Summary:     clones an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol_t*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t
+*pi_inet_protocol_dup (pi_protocol_t *prot)
 {
-	struct pi_protocol *new_prot;
+	pi_protocol_t *new_prot;
+
+	ASSERT (prot != NULL);
 	
-	new_prot 		= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level 	= prot->level;
-	new_prot->dup 		= prot->dup;
-	new_prot->free 		= prot->free;
-	new_prot->read 		= prot->read;
-	new_prot->write 	= prot->write;
-	new_prot->getsockopt 	= prot->getsockopt;
-	new_prot->setsockopt 	= prot->setsockopt;
-	new_prot->data 		= NULL;
+	new_prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
+
+	if (new_prot != NULL) {
+		new_prot->level 	= prot->level;
+		new_prot->dup 		= prot->dup;
+		new_prot->free 		= prot->free;
+		new_prot->read 		= prot->read;
+		new_prot->write 	= prot->write;
+		new_prot->getsockopt 	= prot->getsockopt;
+		new_prot->setsockopt 	= prot->setsockopt;
+		new_prot->data 		= NULL;
+	}
 
 	return new_prot;
 }
 
-static void pi_inet_protocol_free (struct pi_protocol *prot)
+
+/***********************************************************************
+ *
+ * Function:    pi_inet_protocol_free
+ *
+ * Summary:     frees an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+pi_inet_protocol_free (pi_protocol_t *prot)
 {
-	free(prot);
+
+	ASSERT (prot != NULL);
+
+	if (prot != NULL)
+		free(prot);
 }
 
-static struct pi_protocol *pi_inet_protocol (struct pi_device *dev)
+
+/***********************************************************************
+ *
+ * Function:    pi_inet_protocol
+ *
+ * Summary:     creates and inits pi_protocol struct instance
+ *
+ * Parameters:  pi_device_t*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t
+*pi_inet_protocol (pi_device_t *dev)
 {	
-	struct 	pi_protocol *prot;
-	struct 	pi_inet_data *data;
+	pi_protocol_t *prot;
+	pi_inet_data_t *data;
+
+	ASSERT (dev != NULL);
 	
 	data = dev->data;
 	
-	prot 			= (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	prot->level 		= PI_LEVEL_DEV;
-	prot->dup 		= pi_inet_protocol_dup;
-	prot->free 		= pi_inet_protocol_free;
-	prot->read 		= pi_inet_read;
-	prot->write 		= pi_inet_write;
-	prot->getsockopt 	= pi_inet_getsockopt;
-	prot->setsockopt 	= pi_inet_setsockopt;
-	prot->data = NULL;
+	prot 	= (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
+
+	if (prot != NULL) {
+		prot->level 		= PI_LEVEL_DEV;
+		prot->dup 		= pi_inet_protocol_dup;
+		prot->free 		= pi_inet_protocol_free;
+		prot->read 		= pi_inet_read;
+		prot->write 		= pi_inet_write;
+		prot->getsockopt 	= pi_inet_getsockopt;
+		prot->setsockopt 	= pi_inet_setsockopt;
+		prot->data = NULL;
+	}
 	
 	return prot;
 }
 
 /* Device Functions */
-static struct pi_device *pi_inet_device_dup (struct pi_device *dev)
+/***********************************************************************
+ *
+ * Function:    pi_inet_device_dup
+ *
+ * Summary:     clones an existing pi_device struct
+ *
+ * Parameters:  pi_device_t*
+ *
+ * Returns:     pi_device_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_device_t
+*pi_inet_device_dup (pi_device_t *dev)
 {
-	struct 	pi_device *new_dev;
-	struct 	pi_inet_data *new_data, *data;
+	pi_device_t	*new_dev = NULL;
+	pi_inet_data_t	*new_data = NULL,
+			*data = NULL;
+
+	ASSERT (dev != NULL);
 	
-	new_dev 		= (struct pi_device *)malloc (sizeof (struct pi_device));
-	new_dev->dup 		= dev->dup;
-	new_dev->free 		= dev->free;
-	new_dev->protocol 	= dev->protocol;	
-	new_dev->bind 		= dev->bind;
-	new_dev->listen 	= dev->listen;
-	new_dev->accept 	= dev->accept;
-	new_dev->connect 	= dev->connect;
-	new_dev->close 		= dev->close;
+	new_dev	= (pi_device_t *)malloc (sizeof (pi_device_t));
+	if (new_dev != NULL) {
+		new_data = (pi_inet_data_t *)malloc (sizeof (pi_inet_data_t));
+		if (new_data == NULL) {
+			free(new_dev);
+			new_dev = NULL;
+		}
+	}
+
+	if ( (new_dev != NULL) && (new_data != NULL) ) {
+
+		new_dev->dup 		= dev->dup;
+		new_dev->free 		= dev->free;
+		new_dev->protocol 	= dev->protocol;	
+		new_dev->bind 		= dev->bind;
+		new_dev->listen 	= dev->listen;
+		new_dev->accept 	= dev->accept;
+		new_dev->connect 	= dev->connect;
+		new_dev->close 		= dev->close;
 	
-	new_data 		= (struct pi_inet_data *)malloc (sizeof (struct pi_inet_data));
-	data = (struct pi_inet_data *)dev->data;
-	new_data->timeout 	= data->timeout;
-	new_data->rx_bytes 	= 0;
-	new_data->rx_errors 	= 0;
-	new_data->tx_bytes 	= 0;
-	new_data->tx_errors 	= 0;
-	new_dev->data 		= new_data;
+		data = (pi_inet_data_t *)dev->data;
+		new_data->timeout 	= data->timeout;
+		new_data->rx_bytes 	= 0;
+		new_data->rx_errors 	= 0;
+		new_data->tx_bytes 	= 0;
+		new_data->tx_errors 	= 0;
+		new_dev->data 		= new_data;
+	}
 	
 	return new_dev;
 }
 
-static void pi_inet_device_free (struct pi_device *dev) 
+
+/***********************************************************************
+ *
+ * Function:    pi_inet_device_free
+ *
+ * Summary:     frees an existing pi_device struct
+ *
+ * Parameters:  pi_device_t*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+pi_inet_device_free (pi_device_t *dev) 
 {
-	free(dev->data);
-	free(dev);
+
+	ASSERT (dev != NULL);
+
+	if (dev != NULL) {
+		if (dev->data != NULL) {
+			free(dev->data);
+			dev->data = NULL;
+		}
+		free(dev);
+	}
 }
 
-struct pi_device *pi_inet_device (int type) 
-{
-	struct pi_device *dev;
-	struct pi_inet_data *data;
-	
-	dev = (struct pi_device *)malloc (sizeof (struct pi_device));
-	data = (struct pi_inet_data *)malloc (sizeof (struct pi_inet_data));
 
-	dev->dup 		= pi_inet_device_dup;
-	dev->free 		= pi_inet_device_free;
-	dev->protocol 		= pi_inet_protocol;	
-	dev->bind 		= pi_inet_bind;
-	dev->listen 		= pi_inet_listen;
-	dev->accept 		= pi_inet_accept;
-	dev->connect 		= pi_inet_connect;
-	dev->close 		= pi_inet_close;
+/***********************************************************************
+ *
+ * Function:    pi_inet_device
+ *
+ * Summary:     creates and inits pi_device struct instance 
+ *
+ * Parameters:  device type
+ *
+ * Returns:     pi_device_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+pi_device_t
+*pi_inet_device (int type) 
+{
+	pi_device_t *dev = NULL;
+	pi_inet_data_t *data = NULL;
 	
-	data->timeout 		= 0;
-	data->rx_bytes 		= 0;
-	data->rx_errors 	= 0;
-	data->tx_bytes 		= 0;
-	data->tx_errors 	= 0;
-	dev->data 		= data;
+	dev = (pi_device_t *)malloc (sizeof (pi_device_t));
+	if (dev != NULL) {
+		data = (pi_inet_data_t *)malloc (sizeof (pi_inet_data_t));
+		if (data == NULL) {
+			free(dev);
+			dev = NULL;
+		}
+	}
+
+	if ( (dev != NULL) && (data != NULL) ) {
+
+		dev->dup 	= pi_inet_device_dup;
+		dev->free 	= pi_inet_device_free;
+		dev->protocol 	= pi_inet_protocol;	
+		dev->bind 	= pi_inet_bind;
+		dev->listen 	= pi_inet_listen;
+		dev->accept 	= pi_inet_accept;
+		dev->connect 	= pi_inet_connect;
+		dev->close 	= pi_inet_close;
+	
+		data->timeout 	= 0;
+		data->rx_bytes 	= 0;
+		data->rx_errors	= 0;
+		data->tx_bytes 	= 0;
+		data->tx_errors	= 0;
+		dev->data 	= data;
+	}
 	
 	return dev;
 }
@@ -179,17 +299,18 @@ struct pi_device *pi_inet_device (int type)
  *
  * Function:    pi_inet_connect
  *
- * Summary:     
+ * Summary:	establish an inet connection
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, sockaddr*, address length
  *
- * Returns:     Nothing
+ * Returns:     0 for success, -1 otherwise
  *
  ***********************************************************************/
 static int
-pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
+pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	int 	sd;
+
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	sockaddr_in serv_addr;
 	char 	*device = paddr->pi_device + 4;
@@ -199,17 +320,18 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	serv_addr.sin_family = AF_INET;
 	if (strlen(device) > 1) {
 		serv_addr.sin_addr.s_addr = inet_addr(device);
-		if (serv_addr.sin_addr.s_addr == -1) {
+		if (serv_addr.sin_addr.s_addr == (in_addr_t)-1) {
 			struct hostent *hostent = gethostbyname(device);
 		
 			if (!hostent) {
 				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
-				    "DEV CONNECT Inet: Unable to determine host\n"));
+				    "DEV CONNECT Inet: Unable"
+					" to determine host\n"));
 				return -1;
 			}
 			
 			memcpy((char *) &serv_addr.sin_addr.s_addr,
-			       hostent->h_addr, hostent->h_length);
+			       hostent->h_addr, (size_t)hostent->h_length);
 		}
 	} else {
 		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -217,7 +339,7 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	serv_addr.sin_port = htons(14238);
 
 	sd = socket(AF_INET, SOCK_STREAM, 0);
-	fcntl(sd, F_SETFL, O_NONBLOCK);
+
 	if (sd < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, 
 		    "DEV CONNECT Inet: Unable to create socket\n"));
@@ -233,7 +355,7 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 		    "DEV CONNECT Inet: Unable to connect\n"));
 		return -1;
 	}
-	
+
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
 	ps->raddrlen 	= addrlen;
@@ -262,22 +384,24 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	return -1;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_inet_bind
  *
  * Summary:     Bind address to a local socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, sockaddr*, address length
  *
- * Returns:     Nothing
+ * Returns:     0 for success, -1 otherwise
  *
  ***********************************************************************/
-static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
+static int
+pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	int 	opt,
-		optlen,
 		sd;
+	size_t	optlen;
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	sockaddr_in serv_addr;
 	char 	*device = paddr->pi_device + 4, 
@@ -288,14 +412,14 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 	serv_addr.sin_family = AF_INET;
 	if (strlen(device) > 1 && strncmp(device, "any", 3)) {
 		serv_addr.sin_addr.s_addr = inet_addr(device);
-		if (serv_addr.sin_addr.s_addr == -1) {
+		if (serv_addr.sin_addr.s_addr == (in_addr_t)-1) {
 			struct hostent *hostent = gethostbyname(device);
 		
 			if (!hostent)
 				return -1;
 
 			memcpy((char *) &serv_addr.sin_addr.s_addr,
-			       hostent->h_addr, hostent->h_length);
+			       hostent->h_addr, (size_t)hostent->h_length);
 		}
 	} else {
 		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -334,7 +458,8 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 	if (bind(ps->sd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 		return -1;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV BIND Inet Bound to %s\n", device));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+		"DEV BIND Inet Bound to %s\n", device));
 
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
@@ -346,18 +471,20 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_inet_listen
  *
  * Summary:     Wait for an incoming connection
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, backlog
  *
- * Returns:     Nothing
+ * Returns:     0 on success, -1 otherwise
  *
  ***********************************************************************/
-static int pi_inet_listen(struct pi_socket *ps, int backlog)
+static int
+pi_inet_listen(pi_socket_t *ps, int backlog)
 {
 	int 	result;
 	
@@ -374,13 +501,13 @@ static int pi_inet_listen(struct pi_socket *ps, int backlog)
  *
  * Summary:     Accept an incoming connection
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, sockaddr*, address length
  *
- * Returns:     Nothing
+ * Returns:     socket descriptor on success, -1 otherwise
  *
  ***********************************************************************/
 static int
-pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
+pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
 	struct 	pi_socket *acpt = NULL;
 	int sd;
@@ -425,17 +552,17 @@ pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
  *
  * Summary:     Send msg on a connected socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, char* to message, length of message, flags
  *
- * Returns:     Nothing
+ * Returns:     number of bytes written or -1 on error
  *
  ***********************************************************************/
 static int
-pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags)
+pi_inet_write(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 {
 	int 	total,
 		nwrote;
-	struct 	pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+	pi_inet_data_t *data = (pi_inet_data_t *)ps->device->data;
 	struct 	timeval t;
 	fd_set 	ready;
 
@@ -471,17 +598,17 @@ pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags)
  *
  * Summary:     Receive message on a connected socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, char* to message, length of message, flags
  *
- * Returns:     Nothing
+ * Returns:     number of bytes read or -1 on error
  *
  ***********************************************************************/
 static int
-pi_inet_read(struct pi_socket *ps, unsigned char *msg, int len, int flags)
+pi_inet_read(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 {
 	int 	r, 
 		fl 	= 0;
-	struct 	pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+	pi_inet_data_t *data = (pi_inet_data_t *)ps->device->data;
 	fd_set 	ready;
 	struct 	timeval t;
 
@@ -518,11 +645,23 @@ pi_inet_read(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 	return r;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    pi_inet_getsockopt
+ *
+ * Summary:     get options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-pi_inet_getsockopt(struct pi_socket *ps, int level, int option_name, 
-		   void *option_value, int *option_len)
+pi_inet_getsockopt(pi_socket_t *ps, int level, int option_name, 
+		   void *option_value, size_t *option_len)
 {
-	struct 	pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+	pi_inet_data_t *data = (pi_inet_data_t *)ps->device->data;
 
 	switch (option_name) {
 	case PI_DEV_TIMEOUT:
@@ -541,11 +680,23 @@ pi_inet_getsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;	
 }
 
+
+/***********************************************************************
+ *
+ * Function:    pi_inet_setsockopt
+ *
+ * Summary:     set options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name, 
-		   const void *option_value, int *option_len)
+pi_inet_setsockopt(pi_socket_t *ps, int level, int option_name, 
+		   const void *option_value, size_t *option_len)
 {
-	struct 	pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+	pi_inet_data_t *data = (pi_inet_data_t *)ps->device->data;
 
 	switch (option_name) {
 	case PI_DEV_TIMEOUT:
@@ -570,12 +721,12 @@ pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name,
  *
  * Summary:     Close a connection, destroy the socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
- * Returns:     Nothing
+ * Returns:     0
  *
  ***********************************************************************/
-static int pi_inet_close(struct pi_socket *ps)
+static int pi_inet_close(pi_socket_t *ps)
 {
 	/* Close sd handle */
 	if (ps->sd)

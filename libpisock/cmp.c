@@ -36,71 +36,155 @@
 #include "pi-padp.h"
 #include "pi-cmp.h"
 
-static int cmp_getsockopt(struct pi_socket *ps, int level, int option_name, 
-			  void *option_value, int *option_len);
-static int cmp_setsockopt(struct pi_socket *ps, int level, int option_name, 
-			  const void *option_value, int *option_len);
+/* Declare prototypes */
+static int cmp_getsockopt(pi_socket_t *ps, int level, int option_name, 
+			  void *option_value, unsigned int *option_len);
+static int cmp_setsockopt(pi_socket_t *ps, int level, int option_name, 
+			  const void *option_value, unsigned int *option_len);
 
-static struct pi_protocol *cmp_protocol_dup (struct pi_protocol *prot)
+static pi_protocol_t *cmp_protocol_dup (pi_protocol_t *prot);
+static void cmp_protocol_free (pi_protocol_t *prot);
+
+/* Protocol Functions */
+/***********************************************************************
+ *
+ * Function:    cmp_protocol_dup
+ *
+ * Summary:     clones an existing pi_protocol struct 
+ *
+ * Parameters:  pi_protocol_t*
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_protocol_t*
+cmp_protocol_dup (pi_protocol_t *prot)
 {
-	struct 	pi_protocol *new_prot;
-	struct 	pi_cmp_data *data, *new_data;
-	
-	new_prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	new_prot->level 	= prot->level;
-	new_prot->dup 		= prot->dup;
-	new_prot->free 		= prot->free;
-	new_prot->read 		= prot->read;
-	new_prot->write 	= prot->write;
-	new_prot->getsockopt 	= prot->getsockopt;
-	new_prot->setsockopt 	= prot->setsockopt;
+	pi_protocol_t *new_prot;
 
+	struct	pi_cmp_data	 *data,
+				 *new_data;
+	
+	new_prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
 	new_data = (struct pi_cmp_data *)malloc (sizeof (struct pi_cmp_data));
-	data = (struct pi_cmp_data *)prot->data;
-	new_data->type 		= data->type;
-	new_data->flags 	= data->type;
-	new_data->version 	= data->type;
-	new_data->baudrate 	= data->type;
-	new_prot->data 		= new_data;
+
+	if ( (new_prot != NULL) && (new_data != NULL) ) {
+		new_prot->level 	= prot->level;
+		new_prot->dup 		= prot->dup;
+		new_prot->free 		= prot->free;
+		new_prot->read 		= prot->read;
+		new_prot->write 	= prot->write;
+		new_prot->getsockopt 	= prot->getsockopt;
+		new_prot->setsockopt 	= prot->setsockopt;
+
+		data = (struct pi_cmp_data *)prot->data;
+		new_data->type 		= data->type;
+		new_data->flags 	= data->flags;
+		new_data->version 	= data->version;
+		new_data->baudrate 	= data->baudrate;
+
+		new_prot->data 		= new_data;
+
+	} else if (new_prot != NULL) {
+		free(new_prot);
+		new_prot = NULL;
+	} else if (new_data != NULL) {
+		free(new_data);
+		new_data = NULL;
+	}
 
 	return new_prot;
 }
 
-static void cmp_protocol_free (struct pi_protocol *prot)
+
+/***********************************************************************
+ *
+ * Function:    cmp_protocol_free
+ *
+ * Summary:     frees an existing pi_protocol struct
+ *
+ * Parameters:  pi_protocol_t*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static void
+cmp_protocol_free (pi_protocol_t *prot)
 {
-	free(prot->data);
-	free(prot);
+	if (prot != NULL) {
+		if (prot->data != NULL)
+			free(prot->data);
+		free(prot);
+	}
 }
 
-struct pi_protocol *cmp_protocol (void)
+
+/***********************************************************************
+ *
+ * Function:    cmp_protocol
+ *
+ * Summary:     creates and inits pi_protocol struct instance
+ *
+ * Parameters:  void
+ *
+ * Returns:     pi_protocol_t* or NULL if operation failed
+ *
+ ***********************************************************************/
+pi_protocol_t*
+cmp_protocol (void)
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
 
-	prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));	
-	prot->level 		= PI_LEVEL_CMP;
-	prot->dup 		= cmp_protocol_dup;
-	prot->free 		= cmp_protocol_free;
-	prot->read 		= cmp_rx;
-	prot->write 		= cmp_tx;
-	prot->getsockopt 	= cmp_getsockopt;
-	prot->setsockopt 	= cmp_setsockopt;
-
+	prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));	
 	data = (struct pi_cmp_data *)malloc (sizeof (struct pi_cmp_data));
-	data->type 	= 0;
-	data->flags 	= 0;
-	data->version 	= 0;
-	data->baudrate 	= 0;
-	prot->data 	= data;
+
+	if ( (prot != NULL) && (data != NULL) ) {
+		prot->level 		= PI_LEVEL_CMP;
+		prot->dup 		= cmp_protocol_dup;
+		prot->free 		= cmp_protocol_free;
+		prot->read 		= cmp_rx;
+		prot->write 		= cmp_tx;
+		prot->getsockopt 	= cmp_getsockopt;
+		prot->setsockopt 	= cmp_setsockopt;
+
+		data->type 	= 0;
+		data->flags 	= 0;
+		data->version 	= 0;
+		data->baudrate 	= 0;
+
+		prot->data 	= data;
+
+	} else if (prot != NULL) {
+		free(prot);
+		prot = NULL;
+	} else if (data != NULL) {
+		free(data);
+		data = NULL;
+	}
 	
 	return prot;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    cmp_rx_handshake
+ *
+ * Summary:     establishes RX handshake
+ *
+ * Parameters:  pi_socket_t*, baudrate, hirate enable
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 int
-cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establishhighrate) 
+cmp_rx_handshake(pi_socket_t *ps, unsigned long establishrate,
+	int establishhighrate) 
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
+
 	unsigned char buf[PI_CMP_HEADER_LEN];
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -138,10 +222,22 @@ cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establis
 	return 0;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    cmp_tx_handshake
+ *
+ * Summary:     establishes TX handshake
+ *
+ * Parameters:  pi_socket_t*
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 int
-cmp_tx_handshake(struct pi_socket *ps) 
+cmp_tx_handshake(pi_socket_t *ps) 
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -149,7 +245,7 @@ cmp_tx_handshake(struct pi_socket *ps)
 		return -1;
 	data = (struct pi_cmp_data *)prot->data;
 
-	if (cmp_wakeup(ps, 38400) < 0)	/* Assume this box can't go over 38400 */
+	if (cmp_wakeup(ps, 38400) < 0)	/* Assume box can't go over 38400 */
 		return -1;
 
 	if (cmp_rx(ps, NULL, 0, 0) < 0)
@@ -159,7 +255,8 @@ cmp_tx_handshake(struct pi_socket *ps)
 	case PI_CMP_TYPE_INIT:
 		return 0;
 	case PI_CMP_TYPE_ABRT:
-		LOG((PI_DBG_CMP, PI_DBG_LVL_NONE, "CMP Aborted by other end\n"));
+		LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,
+			"CMP Aborted by other end\n"));
 		errno = -EIO;
 		return -1;
 	}
@@ -168,13 +265,29 @@ cmp_tx_handshake(struct pi_socket *ps)
 
 }
 
-int cmp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+
+/***********************************************************************
+ *
+ * Function:    cmp_tx
+ *
+ * Summary:     Transmit CMP Packets
+ *
+ * Parameters:  pi_socket_t*, char* to buf, buf length, flags
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
+int
+cmp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes,
-		type,
-		size;
+		type;
+
+	size_t	size;
 	
-	struct 	pi_protocol *prot, *next;
+	pi_protocol_t	*prot,
+			*next;
+
 	struct 	pi_cmp_data *data;
 		
 	unsigned char cmp_buf[PI_CMP_HEADER_LEN];
@@ -218,10 +331,14 @@ int cmp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int cmp_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
+int
+cmp_rx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 {
 	int 	bytes;
-	struct 	pi_protocol *prot, *next;
+
+	pi_protocol_t	*prot,
+			*next;
+
 	struct 	pi_cmp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -252,14 +369,15 @@ int cmp_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
  *
  * Summary:     Initialize the socket for CMP transmission
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, baudrate
  *
  * Returns:     Number of packets transmitted
  *
  ***********************************************************************/
-int cmp_init(struct pi_socket *ps, int baudrate)
+int
+cmp_init(pi_socket_t *ps, speed_t baudrate)
 {	
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -283,14 +401,15 @@ int cmp_init(struct pi_socket *ps, int baudrate)
  *
  * Summary:     Abort a CMP session in progress
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
- * Returns:     Number of PADP packets transmitted
+ * Returns:     Number of PADP packets transmitted or -1 on error
  *
  ***********************************************************************/
-int cmp_abort(struct pi_socket *ps, int reason)
+int
+cmp_abort(pi_socket_t *ps, int reason)
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -312,14 +431,15 @@ int cmp_abort(struct pi_socket *ps, int reason)
  *
  * Summary:     Wakeup the CMP listener process
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
- * Returns:     Number of PADP packets transmitted
+ * Returns:     Number of PADP packets transmitted or -1 on error
  *
  ***********************************************************************/
-int cmp_wakeup(struct pi_socket *ps, int maxbaud)
+int
+cmp_wakeup(pi_socket_t *ps, speed_t maxbaud)
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
 	
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -335,11 +455,23 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 	return cmp_tx(ps, NULL, 0, 0);
 }
 
+
+/***********************************************************************
+ *
+ * Function:    cmp_getsockopt
+ *
+ * Summary:     get options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-cmp_getsockopt(struct pi_socket *ps, int level, int option_name, 
-	       void *option_value, int *option_len)
+cmp_getsockopt(pi_socket_t *ps, int level, int option_name, 
+	       void *option_value, unsigned int *option_len)
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -385,11 +517,23 @@ cmp_getsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    cmp_setsockopt
+ *
+ * Summary:     set options on socket
+ *
+ * Parameters:  pi_socket*, level, option name, option value, option length
+ *
+ * Returns:     0 for success, -1 otherwise
+ *
+ ***********************************************************************/
 static int
-cmp_setsockopt(struct pi_socket *ps, int level, int option_name, 
-	       const void *option_value, int *option_len)
+cmp_setsockopt(pi_socket_t *ps, int level, int option_name, 
+	       const void *option_value, unsigned int *option_len)
 {
-	struct 	pi_protocol *prot;
+	pi_protocol_t *prot;
 	struct 	pi_padp_data *data;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
@@ -414,18 +558,20 @@ cmp_setsockopt(struct pi_socket *ps, int level, int option_name,
 	return -1;
 }
 
+
 /***********************************************************************
  *
  * Function:    cmp_dump
  *
  * Summary:     Dump the CMP packet frames
  *
- * Parameters:  None
+ * Parameters:  char* to cmp packet, TX boolean
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-void cmp_dump(unsigned char *cmp, int rxtx)
+void
+cmp_dump(unsigned char *cmp, int rxtx)
 {
 	char *type;
 	

@@ -28,9 +28,7 @@
 
 #include "pi-header.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-file.h"
-#include "pi-dlp.h"	/* Also included in pi-file.h */
 
 /* Declare prototypes */
 static void display_help(char *progname);

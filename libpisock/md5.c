@@ -104,13 +104,13 @@ void MD5Final(UINT8 digest[16], struct MD5Context *ctx)
 	count = 56 - 1 - count;
 
 	if (count < 0) {	/* Padding forces an extra block */
-		memset(p, 0, count + 8);
+		memset(p, 0, (size_t)(count + 8));
 		byteSwap(ctx->in, 16);
 		MD5Transform(ctx->buf, ctx->in);
 		p = (UINT8 *) ctx->in;
 		count = 56;
 	}
-	memset(p, 0, count);
+	memset(p, 0, (size_t)count);
 	byteSwap(ctx->in, 14);
 
 	/* Append length in bits and transform */

@@ -24,6 +24,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
 
@@ -54,7 +55,6 @@
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 
 /* this routine ruthlessly stolen verbatim from Brian J. Swetland */
 
@@ -300,13 +300,13 @@ unsigned long makelong(char *c)
 	if (l >= 4)
 		return get_long(c);
 	memset(c2, ' ', 4);
-	memcpy(c2, c, l);
+	memcpy(c2, c, (size_t)l);
 	return get_long(c2);
 }
 
-void dumpline(const unsigned char *buf, int len, int addr)
+void dumpline(const char *buf, size_t len, unsigned int addr)
 {
-	int 	i;
+	unsigned int i;
 
 	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "  %.4x  ", addr);
 
@@ -330,9 +330,9 @@ void dumpline(const unsigned char *buf, int len, int addr)
 	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "\n");
 }
 
-void dumpdata(const unsigned char *buf, int len)
+void dumpdata(const char *buf, size_t len)
 {
-	int 	i;
+	unsigned int i;
 
 	for (i = 0; i < len; i += 16)
 		dumpline(buf + i, ((len - i) > 16) ? 16 : len - i, i);
@@ -354,6 +354,7 @@ void set_float(void *buffer, double value)
 		sign;
 	unsigned char *buf = buffer;
 	unsigned long frac;
+	double r;
 
 	/* Take absolute */
 	if (value < 0) {
@@ -363,7 +364,8 @@ void set_float(void *buffer, double value)
 		sign 	= 0xFF;
 
 	/* Convert mantissa to 32-bit integer, and take exponent */
-	frac = (unsigned long) ldexp(frexp(value, &exp), 32);
+	r = ldexp(frexp(value, &exp), 32);
+	frac = (unsigned long)r;
 	exp -= 32;
 
 	/* Store values in buffer */
@@ -395,6 +397,7 @@ int compareTm(struct tm *a, struct tm *b)
 	date = a->tm_sec - b->tm_sec;
 	return date;
 }
+
 
 #ifdef OS2
 

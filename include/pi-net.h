@@ -19,24 +19,26 @@ extern "C" {
 #define PI_NET_TYPE_DATA 0x01
 #define PI_NET_TYPE_TCKL 0x02
 
-	struct pi_net_data 
+	typedef struct pi_net_data 
 	{
 		int type;
 
 		unsigned char txid;
-	};
+	} pi_net_data_t;
 
-	extern struct pi_protocol *net_protocol
+	extern pi_protocol_t *net_protocol
 	    PI_ARGS((void));
 
 	extern int net_rx_handshake
-	    PI_ARGS((struct pi_socket *ps));
+	    PI_ARGS((pi_socket_t *ps));
 	extern int net_tx_handshake
-	    PI_ARGS((struct pi_socket *ps));
+	    PI_ARGS((pi_socket_t *ps));
 	extern int net_tx
-	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
+	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
+		 int flags));
 	extern int net_rx
-	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len, int flags));
+	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
+		 int flags));
 
 	extern void net_dump_header
 	    PI_ARGS((unsigned char *data, int rxtx));

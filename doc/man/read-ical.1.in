@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "read-ical" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "read-ical" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBread\-ical\fR \- coverts information on your Palm handheld into an 
 Ical\-formatted calendar. Note, this is not the same as the iCal calendar 

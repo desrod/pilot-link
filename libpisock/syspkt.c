@@ -28,6 +28,7 @@
 #include <winsock.h>
 #else
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #endif
 
@@ -37,7 +38,6 @@
 #include <string.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-syspkt.h"
 #include "pi-slp.h"
 #include "pi-serial.h"
@@ -48,6 +48,7 @@ int sys_PackRegisters(void *data, struct Pilot_registers *r);
 int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
                     long * freeram);
+
 
 /***********************************************************************
  *
@@ -60,7 +61,8 @@ int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int sys_UnpackState(void *buffer, struct Pilot_state *s)
+int
+sys_UnpackState(void *buffer, struct Pilot_state *s)
 {
 	int 	idx;
 	unsigned char *data = buffer;
@@ -84,6 +86,7 @@ int sys_UnpackState(void *buffer, struct Pilot_state *s)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    sys_UnpackRegisters
@@ -95,7 +98,8 @@ int sys_UnpackState(void *buffer, struct Pilot_state *s)
  * Returns:     0
  *
  ***********************************************************************/
-int sys_UnpackRegisters(void *data, struct Pilot_registers *r)
+int
+sys_UnpackRegisters(void *data, struct Pilot_registers *r)
 {
 	unsigned char *buffer = data;
 
@@ -123,6 +127,7 @@ int sys_UnpackRegisters(void *data, struct Pilot_registers *r)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    sys_PackRegisters
@@ -134,7 +139,8 @@ int sys_UnpackRegisters(void *data, struct Pilot_registers *r)
  * Returns:     0
  *
  ***********************************************************************/
-int sys_PackRegisters(void *data, struct Pilot_registers *r)
+int
+sys_PackRegisters(void *data, struct Pilot_registers *r)
 {
 	int 	idx;
 	unsigned char *buffer = data;
@@ -163,7 +169,8 @@ int sys_PackRegisters(void *data, struct Pilot_registers *r)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int sys_Continue(int sd, struct Pilot_registers *r, struct Pilot_watch *w)
+int
+sys_Continue(int sd, struct Pilot_registers *r, struct Pilot_watch *w)
 {
 	char 	buf[94];
 
@@ -198,7 +205,8 @@ int sys_Continue(int sd, struct Pilot_registers *r, struct Pilot_watch *w)
  * Returns:     Socket, command, 6 bytes
  *
  ***********************************************************************/
-int sys_Step(int sd)
+int
+sys_Step(int sd)
 {
 	char 	buf[94];
 
@@ -223,7 +231,8 @@ int sys_Step(int sd)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
+int
+sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
 {
 	int 	idx;
 	char 	buf[94];
@@ -262,7 +271,8 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int sys_SetTrapBreaks(int sd, int *traps)
+int
+sys_SetTrapBreaks(int sd, int *traps)
 {
 	int 	idx;
 	char 	buf[94];
@@ -299,7 +309,8 @@ int sys_SetTrapBreaks(int sd, int *traps)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int sys_GetTrapBreaks(int sd, int *traps)
+int
+sys_GetTrapBreaks(int sd, int *traps)
 {
 	int 	idx;
 	char 	buf[94];
@@ -325,6 +336,7 @@ int sys_GetTrapBreaks(int sd, int *traps)
 	return 1;
 }
 
+
 /***********************************************************************
  *
  * Function:    sys_ToggleDbgBreaks
@@ -336,7 +348,8 @@ int sys_GetTrapBreaks(int sd, int *traps)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int sys_ToggleDbgBreaks(int sd)
+int
+sys_ToggleDbgBreaks(int sd)
 {
 	int 	idx;
 	char 	buf[94];
@@ -358,6 +371,7 @@ int sys_ToggleDbgBreaks(int sd)
 	return get_byte(buf + 6);
 }
 
+
 /***********************************************************************
  *
  * Function:    sys_QueryState
@@ -369,7 +383,8 @@ int sys_ToggleDbgBreaks(int sd)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int sys_QueryState(int sd)
+int
+sys_QueryState(int sd)
 {
 	char 	buf[6];
 
@@ -435,6 +450,7 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
 	return done;
 }
 
+
 /***********************************************************************
  *
  * Function:    sys_WriteMemory
@@ -487,6 +503,7 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
 	return done;
 }
 
+
 /***********************************************************************
  *
  * Function:    sys_Find
@@ -499,7 +516,7 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
  *
  ***********************************************************************/
 int
-sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, int len,
+sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, size_t len,
 	 int caseinsensitive, void *data, unsigned long *found)
 {
 	int 	result;
@@ -530,6 +547,7 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, int len,
 
 	return get_byte(buf + 10);
 }
+
 
 /***********************************************************************
  *
@@ -564,6 +582,7 @@ sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
 
 	return pi_write(sd, buf, 16);
 }
+
 
 /***********************************************************************
  *
@@ -611,7 +630,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 	if (socket == 3)
 		set_short(buf + 4, c - buf - 6);
 
-	pi_write(sd, buf + 4, c - buf - 4);
+	pi_write(sd, buf + 4,(size_t)(c - buf - 4));
 
 	if (reply) {
 		int l = pi_read(sd, buf, 4096);
@@ -636,6 +655,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    RPC
@@ -647,7 +667,8 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int RPC(int sd, int socket, int trap, int reply, ...)
+int
+RPC(int sd, int socket, int trap, int reply, ...)
 {
 	int 	idx 	= 0,
 		j,
@@ -686,7 +707,7 @@ int RPC(int sd, int socket, int trap, int reply, ...)
 				} else {
 					int *l = c;
 
-					*l = htonl(*l);
+					*l = htonl((unsigned) *l);
 				}
 			}
 		}
@@ -708,7 +729,7 @@ int RPC(int sd, int socket, int trap, int reply, ...)
 			} else {
 				int *l = c;
 
-				*l = htonl(*l);
+				*l = htonl((unsigned) *l);
 			}
 		}
 	}
@@ -718,6 +739,7 @@ int RPC(int sd, int socket, int trap, int reply, ...)
 	else
 		return D0;
 }
+
 
 /***********************************************************************
  *
@@ -730,7 +752,8 @@ int RPC(int sd, int socket, int trap, int reply, ...)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int PackRPC(struct RPC_params *p, int trap, int reply, ...)
+int
+PackRPC(struct RPC_params *p, int trap, int reply, ...)
 {
 	int 	idx = 0;
 	va_list ap;
@@ -767,6 +790,7 @@ int PackRPC(struct RPC_params *p, int trap, int reply, ...)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    UninvertRPC
@@ -778,7 +802,8 @@ int PackRPC(struct RPC_params *p, int trap, int reply, ...)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void UninvertRPC(struct RPC_params *p)
+void
+UninvertRPC(struct RPC_params *p)
 {
 	int 	j;
 
@@ -798,11 +823,12 @@ void UninvertRPC(struct RPC_params *p)
 			} else {
 				long *l = c;
 
-				*l = htonl(*l);
+				*l = htonl((unsigned) *l);
 			}
 		}
 	}
 }
+
 
 /***********************************************************************
  *
@@ -815,7 +841,8 @@ void UninvertRPC(struct RPC_params *p)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void InvertRPC(struct RPC_params *p)
+void
+InvertRPC(struct RPC_params *p)
 {
 	int 	j;
 
@@ -835,11 +862,12 @@ void InvertRPC(struct RPC_params *p)
 			} else {
 				long *l = c;
 
-				*l = ntohl(*l);
+				*l = ntohl((unsigned) *l);
 			}
 		}
 	}
 }
+
 
 /***********************************************************************
  *
@@ -852,7 +880,8 @@ void InvertRPC(struct RPC_params *p)
  * Returns:     Nothing
  *
  ***********************************************************************/
-unsigned long DoRPC(int sd, int socket, struct RPC_params *p, int *error)
+unsigned long
+DoRPC(int sd, int socket, struct RPC_params *p, int *error)
 {
 	int 	err;
 	long 	D0 = 0,
@@ -877,6 +906,7 @@ unsigned long DoRPC(int sd, int socket, struct RPC_params *p, int *error)
 		return err;
 }
 
+
 /***********************************************************************
  *
  * Function:    RPC_Int_Void
@@ -888,10 +918,12 @@ unsigned long DoRPC(int sd, int socket, struct RPC_params *p, int *error)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int RPC_Int_Void(int sd, int trap)
+int
+RPC_Int_Void(int sd, int trap)
 {
 	return RPC(sd, 1, trap, 0, RPC_End);
 }
+
 
 /***********************************************************************
  *
@@ -904,10 +936,12 @@ int RPC_Int_Void(int sd, int trap)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int RPC_Ptr_Void(int sd, int trap)
+int
+RPC_Ptr_Void(int sd, int trap)
 {
 	return RPC(sd, 1, trap, 1, RPC_End);
 }
+
 
 /***********************************************************************
  *
@@ -920,7 +954,8 @@ int RPC_Ptr_Void(int sd, int trap)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
+int
+RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
                     long * freeram) {
   return RPC(sd, 1, 0xA004, 0, RPC_Short(cardno), RPC_Ptr(cardname, 32), 

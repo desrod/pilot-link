@@ -90,7 +90,7 @@
 
 /* Define prototypes */
 #ifdef PI_DEBUG
-static void record_dump (unsigned char *data);
+static void record_dump (char *data);
 #endif
 
 char *dlp_errorlist[] = {
@@ -164,17 +164,6 @@ char * exp_errorlist[] = {
 	"Incompatible API version"
 };
 
-
-char *dlp_strerror(int error)
-{
-	if (error < 0)
-		error = -error;
-	if ((unsigned int) error >= (sizeof(dlp_errorlist)/(sizeof(char *))))
-		return "Unknown error";
-	else
-		return dlp_errorlist[error];
-}
-
 int dlp_trace = 0;
 
 #ifdef PI_DEBUG
@@ -196,22 +185,77 @@ int dlp_trace = 0;
 #define Expect(count)
 #endif
 
-struct dlpArg *
-dlp_arg_new (int id, int len) 
+
+/***********************************************************************
+ *
+ * Function:	dlp_strerror
+ *
+ * Summary:	lookup text for dlp error
+ *
+ * Parameters:	error number
+ *
+ * Returns:     char* to error text string
+ *
+ ***********************************************************************/
+char 
+*dlp_strerror(int error)
+{
+	if (error < 0)
+		error = -error;
+	if ((unsigned int) error >= (sizeof(dlp_errorlist)/(sizeof(char *))))
+		return "Unknown error";
+	else
+		return dlp_errorlist[error];
+}
+
+
+/***********************************************************************
+ *
+ * Function:	dlp_arg_new
+ *
+ * Summary:	create a dlpArg instance
+ *
+ * Parameters:	id, length of data
+ *
+ * Returns:     dlpArg* or NULL on failure
+ *
+ ***********************************************************************/
+struct dlpArg
+*dlp_arg_new (int id, size_t len) 
 {
 	struct dlpArg *arg;
 	
 	arg = malloc(sizeof (struct dlpArg));
-	arg->id = id;
-	arg->len = len;
-	if (len > 0)
-		arg->data = malloc (sizeof (unsigned char) * len);
-	else
-		arg->data = NULL;
+	if (arg != NULL) {
+		arg->id = id;
+		arg->len = len;
+
+		if (len > 0) {
+			arg->data = malloc (sizeof (unsigned char) * len);
+			if (arg->data == NULL) {
+				free(arg);
+				arg = NULL;
+			}
+		} else {
+			arg->data = NULL;
+		}
+	}	
 	
 	return arg;
 }
 
+
+/***********************************************************************
+ *
+ * Function:	dlp_arg_free
+ *
+ * Summary:	frees a dlpArg instance
+ *
+ * Parameters:	dlpArg*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 void
 dlp_arg_free (struct dlpArg *arg)
 {
@@ -220,6 +264,19 @@ dlp_arg_free (struct dlpArg *arg)
 	free (arg);
 }
 
+
+/***********************************************************************
+ *
+ * Function:	dlp_arg_len
+ *
+ * Summary:	computes aggregate length of data members associated with
+ *		an array of dlpArg instances
+ *
+ * Parameters:	number of dlpArg instances, dlpArg**
+ *
+ * Returns:     aggregate length or -1 on error
+ *
+ ***********************************************************************/
 int
 dlp_arg_len (int argc, struct dlpArg **argv)
 {
@@ -243,87 +300,185 @@ dlp_arg_len (int argc, struct dlpArg **argv)
 	return len;
 }
 
-struct dlpRequest *
+
+/***********************************************************************
+ *
+ * Function:	dlp_request_new
+ *
+ * Summary:	creates a new dlpRequest instance 
+ *
+ * Parameters:	dlpFunction command, number of dlpArgs, lengths of dlpArgs
+ *		data member
+ *
+ * Returns:     dlpRequest* or NULL if failure
+ *
+ ***********************************************************************/
+struct dlpRequest*
 dlp_request_new (enum dlpFunctions cmd, int argc, ...) 
 {
 	struct dlpRequest *req;
 	va_list ap;
-	int i;
+	int 	i,
+		j;
 	
 	req = malloc (sizeof (struct dlpRequest));
-	req->cmd = cmd;
-	
-	req->argc = argc;
-	if (argc)
-		req->argv = malloc (sizeof (struct dlpArg *) * argc);
-	else
-		req->argv = NULL;
-	
-	va_start (ap, argc);
-	for (i = 0; i < argc; i++) {
-		int len;
 
-		len = va_arg (ap, int);
-		req->argv[i] = dlp_arg_new (PI_DLP_ARG_FIRST_ID + i, len);
-	}
-	va_end (ap);
+	if (req != NULL) {
+		req->cmd = cmd;
+		req->argc = argc;
+
+		if (argc) {
+			req->argv = malloc (sizeof (struct dlpArg *) * argc);
+			if (req->argv == NULL) {
+				free(req);
+				req = NULL;
+				goto done;
+			}
+		} else {
+			req->argv = NULL;
+		}
 	
+		va_start (ap, argc);
+		for (i = 0; i < argc; i++) {
+			size_t len;
+
+			len = va_arg (ap, size_t);
+			req->argv[i] = dlp_arg_new (PI_DLP_ARG_FIRST_ID + i,
+				len);
+			if (req->argv[i] == NULL) {
+				for (j = 0; j < i; j++)
+					dlp_arg_free(req->argv[j]);
+				free(req);
+				break;
+			}
+				
+		}
+		va_end (ap);
+	}
+	
+done:
 	return req;	
 }
 
-struct dlpRequest *
+
+/***********************************************************************
+ *
+ * Function:	dlp_request_new_with_argid
+ *
+ * Summary:	creates a new dlpRequest instance with argid
+ *
+ * Parameters:	dlpFunction command, number of dlpArgs, argid,
+ *		lengths of dlpArgs data member
+ *
+ * Returns:     dlpRequest* or NULL if failure
+ *
+ ***********************************************************************/
+struct dlpRequest*
 dlp_request_new_with_argid (enum dlpFunctions cmd, int argid, int argc, ...)
 {
 	struct dlpRequest *req;
 	va_list ap;
-	int i;
+	int	i,
+		j;
 	
 	req = malloc (sizeof (struct dlpRequest));
-	req->cmd = cmd;
-	
-	req->argc = argc;
-	if (argc)
-		req->argv = malloc (sizeof (struct dlpArg *) * argc);
-	else
-		req->argv = NULL;
-	
-	va_start (ap, argc);
-	for (i = 0; i < argc; i++) {
-		int len;
 
-		len = va_arg (ap, int);
-		req->argv[i] = dlp_arg_new (argid + i, len);
+	if (req != NULL) {
+
+		req->cmd = cmd;
+		req->argc = argc;
+
+		if (argc) {
+			req->argv = malloc (sizeof (struct dlpArg *) * argc);
+			if (req->argv == NULL) {
+				free(req);
+				req = NULL;
+				goto done;
+			}
+		} else {
+			req->argv = NULL;
+		}
+	
+		va_start (ap, argc);
+		for (i = 0; i < argc; i++) {
+			size_t len;
+
+			len = va_arg (ap, size_t);
+			req->argv[i] = dlp_arg_new (argid + i, len);
+			if (req->argv[i] == NULL) {
+				for (j = 0; j < i; j++)
+					dlp_arg_free(req->argv[j]);
+				free(req);
+				break;
+			}
+		}
+		va_end (ap);
 	}
-	va_end (ap);
 
+done:
 	return req;
 }
 
-struct dlpResponse *
-dlp_response_new (enum dlpFunctions cmd, int argc) 
+
+/***********************************************************************
+ *
+ * Function:	dlp_response_new
+ *
+ * Summary:	creates a new dlpResponse instance 
+ *
+ * Parameters:	dlpFunction command, number of dlpArg instances
+ *
+ * Returns:     dlpResponse* or NULL if failure
+ *
+ ***********************************************************************/
+struct dlpResponse
+*dlp_response_new (enum dlpFunctions cmd, int argc) 
 {
 	struct dlpResponse *res;
 	
 	res = malloc (sizeof (struct dlpResponse));
-	res->cmd = cmd;
-	res->err = dlpErrNoError;
+
+	if (res != NULL) {
+
+		res->cmd = cmd;
+		res->err = dlpErrNoError;
 	
-	res->argc = argc;
-	if (argc)
-		res->argv = malloc (sizeof (struct dlpArg *) * argc);
-	else
-		res->argv = NULL;
+		res->argc = argc;
+		if (argc) {
+			res->argv = malloc (sizeof (struct dlpArg *) * argc);
+			if (res->argv == NULL) {
+				free(res);
+				res = NULL;
+			}
+		} else {
+			res->argv = NULL;
+		}	
+	}
 	
 	return res;
 }
 
-int
+
+/***********************************************************************
+ *
+ * Function:	dlp_response_read
+ *
+ * Summary:	reads dlp response
+ *
+ * Parameters:	dlpResonse**, sd
+ *
+ * Returns:     first dlpArg response length or -1 on error
+ *
+ ***********************************************************************/
+ssize_t
 dlp_response_read (struct dlpResponse **res, int sd)
 {
 	struct dlpResponse *response;
 	unsigned char dlp_buf[DLP_BUF_SIZE], *buf;
 	short argid;
-	int bytes, len, i;
+	int i,j;
+	ssize_t bytes;
+	size_t len;
 	
 	bytes = pi_read(sd, dlp_buf, DLP_BUF_SIZE);
 	if (bytes < 0)
@@ -332,15 +487,20 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	response = dlp_response_new (dlp_buf[0] & 0x7f, dlp_buf[1]);
 	*res = response;
 
+	if (response == NULL)
+		return -1;
+
 	response->err = get_short (&dlp_buf[2]);
 
 	buf = dlp_buf + 4;
 	for (i = 0; i < response->argc; i++) {
-		if ((get_byte(buf) & PI_DLP_ARG_FLAG_LONG) == PI_DLP_ARG_FLAG_LONG) {
+		if ((get_byte(buf) & PI_DLP_ARG_FLAG_LONG)
+				== PI_DLP_ARG_FLAG_LONG) {
 			argid = get_short (buf) & 0x3FFF;
 			len = get_long (&buf[2]);
 			buf += 6;
-		} else if ((get_byte (buf) & PI_DLP_ARG_FLAG_SHORT) == PI_DLP_ARG_FLAG_SHORT) {
+		} else if ((get_byte (buf) & PI_DLP_ARG_FLAG_SHORT)
+				== PI_DLP_ARG_FLAG_SHORT) {
 			argid = get_byte(buf) & 0x7f;
 			len = get_short (&buf[2]);
 			buf += 4;
@@ -351,6 +511,12 @@ dlp_response_read (struct dlpResponse **res, int sd)
 		}
 		
 		response->argv[i] = dlp_arg_new (argid, len);
+		if (response->argv[i] == NULL) {
+			for (j = 0; j < i; j++)
+				dlp_arg_free(response->argv[j]);
+			free(response);
+			return -1;
+		}
 		memcpy (response->argv[i]->data, buf, len);
 		buf += len;
 	}
@@ -361,14 +527,30 @@ dlp_response_read (struct dlpResponse **res, int sd)
 		return response->argv[0]->len;
 }
 
-int
+
+/***********************************************************************
+ *
+ * Function:	dlp_request_write
+ *
+ * Summary:	writes dlp request
+ *
+ * Parameters:	dlpRequest**, sd
+ *
+ * Returns:     response length or -1 on error
+ *
+ ***********************************************************************/
+ssize_t
 dlp_request_write (struct dlpRequest *req, int sd)
 {
 	unsigned char *exec_buf, *buf;
-	int len, i;
+	int i;
+	size_t len;
 	
 	len = dlp_arg_len (req->argc, req->argv) + 2;
 	exec_buf = (unsigned char *) malloc (sizeof (unsigned char) * len);
+
+	if (exec_buf == NULL)
+		return -1;
 	
 	set_byte (&exec_buf[PI_DLP_OFFSET_CMD], req->cmd);
 	set_byte (&exec_buf[PI_DLP_OFFSET_ARGC], req->argc);
@@ -402,7 +584,7 @@ dlp_request_write (struct dlpRequest *req, int sd)
 		}
 	}
 
-	if (pi_write(sd, exec_buf, len) < len) {
+	if (pi_write(sd, exec_buf, len) < (ssize_t)len) {
 		errno = -EIO;
 		i = -1;
 	}
@@ -413,36 +595,80 @@ dlp_request_write (struct dlpRequest *req, int sd)
 	return i;
 }
 
+
+/***********************************************************************
+ *
+ * Function:	dlp_request_free
+ *
+ * Summary:	frees a dlpRequest instance
+ *
+ * Parameters:	dlpRequest*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 void
 dlp_request_free (struct dlpRequest *req)
 {
 	int i;
 
-	for (i = 0; i < req->argc; i++)
-		dlp_arg_free (req->argv[i]);
+	if (req == NULL)
+		return;
 
-	if (req->argv)
+	for (i = 0; i < req->argc; i++)
+		if (req->argv[i] != NULL)
+			dlp_arg_free (req->argv[i]);
+
+	if (req->argv != NULL)
 		free (req->argv);
+
 	free (req);
 }
 
+
+/***********************************************************************
+ *
+ * Function:	dlp_response_free
+ *
+ * Summary:	frees a dlpResponse instance
+ *
+ * Parameters:	dlpResponse*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 void
 dlp_response_free (struct dlpResponse *res) 
 {
 	int i;
 
-	if (!res)
+	if (res == NULL)
 		return;
 	
 	for (i = 0; i < res->argc; i++)
-		dlp_arg_free (res->argv[i]);
+		if (res->argv[i] != NULL)
+			dlp_arg_free (res->argv[i]);
 	
-	if (res->argv)
+	if (res->argv != NULL)
 		free (res->argv);
+
 	free (res);	
 }
 
-int dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
+
+/***********************************************************************
+ *
+ * Function:	dlp_exec
+ *
+ * Summary:	writes a dlp request and reads the response
+ *
+ * Parameters:	dlpResponse*
+ *
+ * Returns:     the number of response bytes, or -1 on error
+ *
+ ***********************************************************************/
+int
+dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 {
 	int bytes;
 	*res = NULL;
@@ -461,7 +687,8 @@ int dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 	if ((*res)->cmd != req->cmd) {
 		
 		/* The Tungsten T returns the wrong code for VFSVolumeInfo */
-		if (req->cmd != dlpFuncVFSVolumeInfo || (*res)->cmd != dlpFuncVFSVolumeSize) {
+		if (req->cmd != dlpFuncVFSVolumeInfo ||
+				(*res)->cmd != dlpFuncVFSVolumeSize) {
 			errno = -ENOMSG;
 			return -1;
 		}
@@ -501,12 +728,13 @@ int dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
  *
  * Summary:     Convert Palm format to time_t
  *
- * Parameters:  None
+ * Parameters:  char* to time data buffer
  *
  * Returns:     time_t struct to mktime
  *
  ***********************************************************************/
-static time_t dlp_ptohdate(unsigned const char *data)
+static
+time_t dlp_ptohdate(const char *data)
 {
 	struct tm t;
 
@@ -531,25 +759,28 @@ static time_t dlp_ptohdate(unsigned const char *data)
 	   the Palm's clock (thus little chance of being run into by any
 	   Palm-based time stamp). */
 
-	if (data[0] == 0 && data[1] == 0)
+	if (data[0] == 0 && data[1] == 0) {
 
-	/* This original calculation was wrong, and reported one day earlier
-	   than it was supposed to report. You can verify this with the
-	   following: 
-		perl -e '$date=localtime(0x83D8FE00); print $date,"\n"'
+		/* This original calculation was wrong, and reported one day
+		   earlier than it was supposed to report. You can verify
+		   this with the following:
 
-	   return (time_t) 0x83D8FE00;	// Wed Dec 30 16:00:00 1903 GMT
+			perl -e '$date=localtime(0x83D8FE00); print $date,"\n"'
 
-	   Here are others, depending on what your system requirements are: 
+		return (time_t) 0x83D8FE00;	// Wed Dec 30 16:00:00 1903 GMT
 
-	   return (time_t) 0x83D96E80;	// Thu Dec 31 00:00:00 1903 GMT
-	   return (time_t) 0x00007080;	// Thu Jan  1 00:00:00 1970 GMT
+		Here are others, depending on what your system requirements are: 
 
-	   Palm's own Conduit Development Kit references using 1/1/1904, so
-	   that's what we'll use here until something else breaks it.
+		return (time_t) 0x83D96E80;	// Thu Dec 31 00:00:00 1903 GMT
+		return (time_t) 0x00007080;	// Thu Jan  1 00:00:00 1970 GMT
 
-	*/
-	return (time_t) 0x83DAC000;	/* Fri Jan  1 00:00:00 1904 GMT */
+		Palm's own Conduit Development Kit references using 1/1/1904, 
+		so that's what we'll use here until something else breaks
+		it.
+		*/
+
+		return (time_t) 0x83DAC000;	/* Fri Jan  1 00:00:00 1904 GMT */
+	}
 	return mktime(&t);
 }
 
@@ -559,12 +790,13 @@ static time_t dlp_ptohdate(unsigned const char *data)
  *
  * Summary:     Convert time_t to Palm format
  *
- * Parameters:  None
+ * Parameters:  time_t, char* to time data buffer
  *
- * Returns:     Nothing
+ * Returns:     void
  *
  ***********************************************************************/
-static void dlp_htopdate(time_t time, unsigned char *data)
+static void
+dlp_htopdate(time_t time, char *data)
 {				/* @+ptrnegate@ */
 	int 	year;
 	struct 	tm *t = localtime(&time);
@@ -606,7 +838,8 @@ static void dlp_htopdate(time_t time, unsigned char *data)
  *		otherwise
  *
  ***********************************************************************/
-int dlp_GetSysDateTime(int sd, time_t * t)
+int
+dlp_GetSysDateTime(int sd, time_t * t)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -623,13 +856,15 @@ int dlp_GetSysDateTime(int sd, time_t * t)
 	if (result >= 0) {
 		*t = dlp_ptohdate(DLP_RESPONSE_DATA (res, 0, 0));
 
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP GetSysDateTime %s", ctime(t)));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			"DLP GetSysDateTime %s", ctime(t)));
 	}
 
 	dlp_response_free(res);
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -643,7 +878,8 @@ int dlp_GetSysDateTime(int sd, time_t * t)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_SetSysDateTime(int sd, time_t time)
+int
+dlp_SetSysDateTime(int sd, time_t time)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -663,6 +899,7 @@ int dlp_SetSysDateTime(int sd, time_t time)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ReadStorageInfo
@@ -675,11 +912,11 @@ int dlp_SetSysDateTime(int sd, time_t time)
  *		otherwise
  *
  ***********************************************************************/
-int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
+int
+dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 {
-	int 	result,
-		len1,
-		len2;
+	int 	result;
+	size_t len1, len2;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
@@ -709,7 +946,8 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 		c->name[len1] = '\0';
 
 		len2 = get_byte(DLP_RESPONSE_DATA(res, 0, 29));
-		memcpy(c->manufacturer, DLP_RESPONSE_DATA(res, 0, 30 + len1), len2);
+		memcpy(c->manufacturer, DLP_RESPONSE_DATA(res, 0, 30 + len1),
+			len2);
 		c->manufacturer[len2] = '\0';
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -731,6 +969,7 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ReadSysInfo
@@ -743,7 +982,8 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
  *		otherwise
  *
  ***********************************************************************/
-int dlp_ReadSysInfo(int sd, struct SysInfo *s)
+int
+dlp_ReadSysInfo(int sd, struct SysInfo *s)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -765,13 +1005,18 @@ int dlp_ReadSysInfo(int sd, struct SysInfo *s)
 		s->locale = get_long (DLP_RESPONSE_DATA (res, 0, 4));
 		/* The 8th byte is a filler byte */
 		s->prodIDLength = get_byte (DLP_RESPONSE_DATA (res, 0, 9));
-		memcpy(s->prodID, DLP_RESPONSE_DATA(res, 0, 10), s->prodIDLength);
+		memcpy(s->prodID, DLP_RESPONSE_DATA(res, 0, 10),
+			 s->prodIDLength);
 
 		if (res->argc > 1) {
-			s->dlpMajorVersion = get_short (DLP_RESPONSE_DATA (res, 1, 0));
-			s->dlpMinorVersion = get_short (DLP_RESPONSE_DATA (res, 1, 2));
-			s->compatMajorVersion = get_short (DLP_RESPONSE_DATA (res, 1, 4));
-			s->compatMinorVersion = get_short (DLP_RESPONSE_DATA (res, 1, 6));
+			s->dlpMajorVersion =
+				 get_short (DLP_RESPONSE_DATA (res, 1, 0));
+			s->dlpMinorVersion =
+				 get_short (DLP_RESPONSE_DATA (res, 1, 2));
+			s->compatMajorVersion =
+				 get_short (DLP_RESPONSE_DATA (res, 1, 4));
+			s->compatMinorVersion =
+				 get_short (DLP_RESPONSE_DATA (res, 1, 6));
 		} else {
 			s->dlpMajorVersion = 0;
 			s->dlpMinorVersion = 0;
@@ -796,6 +1041,7 @@ int dlp_ReadSysInfo(int sd, struct SysInfo *s)
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -831,19 +1077,23 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 	
 	if (result >= 0) {
 		info->more = get_byte(DLP_RESPONSE_DATA(res, 0, 2));
-		if (pi_version(sd) > 0x0100)	/* PalmOS 2.0 has additional flag */
-			info->miscFlags = get_byte(DLP_RESPONSE_DATA(res, 0, 5));
+		/* PalmOS 2.0 has additional flag */
+		if (pi_version(sd) > 0x0100)
+			info->miscFlags =
+				 get_byte(DLP_RESPONSE_DATA(res, 0, 5));
 		else
 			info->miscFlags = 0;
-		info->flags 		= get_short(DLP_RESPONSE_DATA(res, 0, 6));
-		info->type 		= get_long(DLP_RESPONSE_DATA(res, 0, 8));
-		info->creator 		= get_long(DLP_RESPONSE_DATA(res, 0, 12));
-		info->version 		= get_short(DLP_RESPONSE_DATA(res, 0, 16));
-		info->modnum 		= get_long(DLP_RESPONSE_DATA(res, 0, 18));
-		info->createDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 22));
-		info->modifyDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 30));
-		info->backupDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 38));
-		info->index 		= get_short(DLP_RESPONSE_DATA(res, 0, 46));
+
+		info->flags 	 = get_short(DLP_RESPONSE_DATA(res, 0, 6));
+		info->type 	 = get_long(DLP_RESPONSE_DATA(res, 0, 8));
+		info->creator 	 = get_long(DLP_RESPONSE_DATA(res, 0, 12));
+		info->version 	 = get_short(DLP_RESPONSE_DATA(res, 0, 16));
+		info->modnum 	 = get_long(DLP_RESPONSE_DATA(res, 0, 18));
+		info->createDate = get_date(DLP_RESPONSE_DATA(res, 0, 22));
+		info->modifyDate = get_date(DLP_RESPONSE_DATA(res, 0, 30));
+		info->backupDate = get_date(DLP_RESPONSE_DATA(res, 0, 38));
+		info->index 	 = get_short(DLP_RESPONSE_DATA(res, 0, 46));
+
 		strncpy(info->name, DLP_RESPONSE_DATA(res, 0, 48), 32);
 		info->name[32] 		= '\0';
 
@@ -857,11 +1107,13 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 		    printlong(info->type),
 		    (info->flags & dlpDBFlagResource) ? "Resource " : "",
 		    (info->flags & dlpDBFlagReadOnly) ? "ReadOnly " : "",
-		    (info->flags & dlpDBFlagAppInfoDirty) ? "AppInfoDirty " : "",
+		    (info->flags & dlpDBFlagAppInfoDirty) ?
+				 "AppInfoDirty " : "",
 		    (info->flags & dlpDBFlagBackup) ? "Backup " : "",
 		    (info->flags & dlpDBFlagReset) ? "Reset " : "",
 		    (info->flags & dlpDBFlagNewer) ? "Newer " : "",
-		    (info->flags & dlpDBFlagCopyPrevention) ? "CopyPrevention " : "",
+		    (info->flags & dlpDBFlagCopyPrevention) ?
+				"CopyPrevention " : "",
 		    (info->flags & dlpDBFlagStream) ? "Stream " : "",
 		    (info->flags & dlpDBFlagOpen) ? "Open " : "",
 		    (!info->flags) ? "None" : ""));
@@ -952,8 +1204,9 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
  * Returns:	Nothing
  *
  ***********************************************************************/
-int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, int *dbhandle,
-		      struct DBInfo *info, struct DBSizeInfo *size)
+int
+dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid,
+	int *dbhandle, struct DBInfo *info, struct DBSizeInfo *size)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -988,54 +1241,83 @@ int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, in
 
 		if (info) {
 			info->more = 0;
-			info->miscFlags = get_byte(DLP_RESPONSE_DATA(res, 0, 11));
-			info->flags 		= get_short(DLP_RESPONSE_DATA(res, 0, 12));
-			info->type 		= get_long(DLP_RESPONSE_DATA(res, 0, 14));
-			info->creator 		= get_long(DLP_RESPONSE_DATA(res, 0, 18));
-			info->version 		= get_short(DLP_RESPONSE_DATA(res, 0, 22));
-			info->modnum 		= get_long(DLP_RESPONSE_DATA(res, 0, 24));
-			info->createDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 28));
-			info->modifyDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 36));
-			info->backupDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 44));
-			info->index 		= get_short(DLP_RESPONSE_DATA(res, 0, 52));
+			info->miscFlags =
+				get_byte(DLP_RESPONSE_DATA(res, 0, 11));
+			info->flags = get_short(DLP_RESPONSE_DATA(res, 0, 12));
+			info->type = get_long(DLP_RESPONSE_DATA(res, 0, 14));
+			info->creator = get_long(DLP_RESPONSE_DATA(res, 0, 18));
+			info->version =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 22));
+			info->modnum = get_long(DLP_RESPONSE_DATA(res, 0, 24));
+			info->createDate =
+				 get_date(DLP_RESPONSE_DATA(res, 0, 28));
+			info->modifyDate =
+				 get_date(DLP_RESPONSE_DATA(res, 0, 36));
+			info->backupDate =
+				 get_date(DLP_RESPONSE_DATA(res, 0, 44));
+			info->index =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 52));
+
 			strncpy(info->name, DLP_RESPONSE_DATA(res, 0, 54), 32);
 			info->name[32] 		= '\0';
 
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "DLP ReadDBList Name: '%s', Version: %d, More: %s\n",
-			     info->name, info->version, info->more ? "Yes" : "No"));
+			     "DLP ReadDBList Name: '%s', "
+				 "Version: %d, More: %s\n",
+			     info->name, info->version,
+				 info->more ? "Yes" : "No"));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     "  Creator: '%s'", printlong(info->creator)));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     " Type: '%s' Flags: %s%s%s%s%s%s%s%s%s%s",
 			     printlong(info->type),
-			     (info->flags & dlpDBFlagResource) ? "Resource " : "",
-			     (info->flags & dlpDBFlagReadOnly) ? "ReadOnly " : "",
-			     (info->flags & dlpDBFlagAppInfoDirty) ? "AppInfoDirty " : "",
-			     (info->flags & dlpDBFlagBackup) ? "Backup " : "",
-			     (info->flags & dlpDBFlagReset) ? "Reset " : "",
-			     (info->flags & dlpDBFlagNewer) ? "Newer " : "",
-			     (info->flags & dlpDBFlagCopyPrevention) ? "CopyPrevention " : "",
-			     (info->flags & dlpDBFlagStream) ? "Stream " : "",
-			     (info->flags & dlpDBFlagOpen) ? "Open " : "",
+			     (info->flags & dlpDBFlagResource) ?
+				"Resource " : "",
+			     (info->flags & dlpDBFlagReadOnly) ?
+				"ReadOnly " : "",
+			     (info->flags & dlpDBFlagAppInfoDirty) ?
+				"AppInfoDirty " : "",
+			     (info->flags & dlpDBFlagBackup) ?
+				"Backup " : "",
+			     (info->flags & dlpDBFlagReset) ?
+				"Reset " : "",
+			     (info->flags & dlpDBFlagNewer) ?
+				"Newer " : "",
+			     (info->flags & dlpDBFlagCopyPrevention) ?
+				"CopyPrevention " : "",
+			     (info->flags & dlpDBFlagStream) ?
+				"Stream " : "",
+			     (info->flags & dlpDBFlagOpen) ?
+				"Open " : "",
 			     (!info->flags) ? "None" : ""));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, " (0x%2.2X)\n", info->flags));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "  Modnum: %ld, Index: %d, Creation date: %s",
-			     info->modnum, info->index, ctime(&info->createDate)));
+				" (0x%2.2X)\n", info->flags));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     " Modification date: %s", ctime(&info->modifyDate)));
+			     	"  Modnum: %ld, Index: %d, "
+				"Creation date: %s",
+			    	info->modnum, info->index,
+				ctime(&info->createDate)));
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     	" Modification date: %s",
+				ctime(&info->modifyDate)));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
-			     " Backup date: %s", ctime(&info->backupDate)));
+			     " Backup date: %s",
+				ctime(&info->backupDate)));
 		}
 		
 		if (size) {
-			size->numRecords = get_long(DLP_RESPONSE_DATA(res, 1, 0));
-			size->totalBytes = get_long(DLP_RESPONSE_DATA(res, 1, 4));
-			size->dataBytes = get_long(DLP_RESPONSE_DATA(res, 1, 8));
-			size->appBlockSize = get_long(DLP_RESPONSE_DATA(res, 1, 12));
-			size->sortBlockSize = get_long(DLP_RESPONSE_DATA(res, 1, 16));
-			size->maxRecSize = get_long(DLP_RESPONSE_DATA(res, 1, 20));
+			size->numRecords =
+				get_long(DLP_RESPONSE_DATA(res, 1, 0));
+			size->totalBytes =
+				get_long(DLP_RESPONSE_DATA(res, 1, 4));
+			size->dataBytes =
+				get_long(DLP_RESPONSE_DATA(res, 1, 8));
+			size->appBlockSize =
+				get_long(DLP_RESPONSE_DATA(res, 1, 12));
+			size->sortBlockSize =
+				get_long(DLP_RESPONSE_DATA(res, 1, 16));
+			size->maxRecSize =
+				get_long(DLP_RESPONSE_DATA(res, 1, 20));
 		}
 	}
 	
@@ -1043,6 +1325,7 @@ int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, in
 	
 	return result;	
 }
+
 
 /***********************************************************************
  *
@@ -1055,8 +1338,9 @@ int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, in
  * Returns:     Nothing
  *
  ***********************************************************************/
-int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *localid, 
-			    struct DBInfo *info, struct DBSizeInfo *size)
+int
+dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno,
+	 unsigned long *localid, struct DBInfo *info, struct DBSizeInfo *size)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1090,54 +1374,88 @@ int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *lo
 
 		if (info) {
 			info->more = 0;
-			info->miscFlags = get_byte(DLP_RESPONSE_DATA(res, 0, 11));
-			info->flags 		= get_short(DLP_RESPONSE_DATA(res, 0, 12));
-			info->type 		= get_long(DLP_RESPONSE_DATA(res, 0, 14));
-			info->creator 		= get_long(DLP_RESPONSE_DATA(res, 0, 18));
-			info->version 		= get_short(DLP_RESPONSE_DATA(res, 0, 22));
-			info->modnum 		= get_long(DLP_RESPONSE_DATA(res, 0, 24));
-			info->createDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 28));
-			info->modifyDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 36));
-			info->backupDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 44));
-			info->index 		= get_short(DLP_RESPONSE_DATA(res, 0, 52));
+			info->miscFlags =
+				get_byte(DLP_RESPONSE_DATA(res, 0, 11));
+			info->flags =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 12));
+			info->type =
+				 get_long(DLP_RESPONSE_DATA(res, 0, 14));
+			info->creator =
+				 get_long(DLP_RESPONSE_DATA(res, 0, 18));
+			info->version =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 22));
+			info->modnum =
+				get_long(DLP_RESPONSE_DATA(res, 0, 24));
+			info->createDate =
+				get_date(DLP_RESPONSE_DATA(res, 0, 28));
+			info->modifyDate =
+				get_date(DLP_RESPONSE_DATA(res, 0, 36));
+			info->backupDate =
+				get_date(DLP_RESPONSE_DATA(res, 0, 44));
+			info->index =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 52));
 			strncpy(info->name, DLP_RESPONSE_DATA(res, 0, 54), 32);
 			info->name[32] 		= '\0';
 
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "DLP ReadDBList Name: '%s', Version: %d, More: %s\n",
-			     info->name, info->version, info->more ? "Yes" : "No"));
+			     "DLP ReadDBList Name: '%s', "
+				 "Version: %d, More: %s\n",
+			     info->name, info->version,
+				 info->more ? "Yes" : "No"));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     "  Creator: '%s'", printlong(info->creator)));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     " Type: '%s' Flags: %s%s%s%s%s%s%s%s%s%s",
 			     printlong(info->type),
-			     (info->flags & dlpDBFlagResource) ? "Resource " : "",
-			     (info->flags & dlpDBFlagReadOnly) ? "ReadOnly " : "",
-			     (info->flags & dlpDBFlagAppInfoDirty) ? "AppInfoDirty " : "",
-			     (info->flags & dlpDBFlagBackup) ? "Backup " : "",
-			     (info->flags & dlpDBFlagReset) ? "Reset " : "",
-			     (info->flags & dlpDBFlagNewer) ? "Newer " : "",
-			     (info->flags & dlpDBFlagCopyPrevention) ? "CopyPrevention " : "",
-			     (info->flags & dlpDBFlagStream) ? "Stream " : "",
-			     (info->flags & dlpDBFlagOpen) ? "Open " : "",
-			     (!info->flags) ? "None" : ""));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, " (0x%2.2X)\n", info->flags));
+			     (info->flags & dlpDBFlagResource) ?
+				 "Resource " : "",
+			     (info->flags & dlpDBFlagReadOnly) ?
+				 "ReadOnly " : "",
+			     (info->flags & dlpDBFlagAppInfoDirty) ?
+				 "AppInfoDirty " : "",
+			     (info->flags & dlpDBFlagBackup) ?
+				 "Backup " : "",
+			     (info->flags & dlpDBFlagReset) ?
+				 "Reset " : "",
+			     (info->flags & dlpDBFlagNewer) ?
+				 "Newer " : "",
+			     (info->flags & dlpDBFlagCopyPrevention) ?
+				 "CopyPrevention " : "",
+			     (info->flags & dlpDBFlagStream) ?
+				 "Stream " : "",
+			     (info->flags & dlpDBFlagOpen) ?
+				 "Open " : "",
+			     (!info->flags) ?
+				 "None" : ""));
+
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "  Modnum: %ld, Index: %d, Creation date: %s",
-			     info->modnum, info->index, ctime(&info->createDate)));
+				 " (0x%2.2X)\n", info->flags));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     " Modification date: %s", ctime(&info->modifyDate)));
+			     "  Modnum: %ld, Index: %d, "
+				"Creation date: %s",
+			     	info->modnum, info->index,
+				ctime(&info->createDate)));
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     " Modification date: %s",
+				ctime(&info->modifyDate)));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
-			     " Backup date: %s", ctime(&info->backupDate)));
+			     " Backup date: %s",
+			 	ctime(&info->backupDate)));
 		}
 		
 		if (size) {
-			size->numRecords = get_long(DLP_RESPONSE_DATA(res, 1, 0));
-			size->totalBytes = get_long(DLP_RESPONSE_DATA(res, 1, 4));
-			size->dataBytes = get_long(DLP_RESPONSE_DATA(res, 1, 8));
-			size->appBlockSize = get_long(DLP_RESPONSE_DATA(res, 1, 12));
-			size->sortBlockSize = get_long(DLP_RESPONSE_DATA(res, 1, 16));
-			size->maxRecSize = get_long(DLP_RESPONSE_DATA(res, 1, 20));
+			size->numRecords =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 0));
+			size->totalBytes =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 4));
+			size->dataBytes =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 8));
+			size->appBlockSize =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 12));
+			size->sortBlockSize =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 16));
+			size->maxRecSize =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 20));
 		}
 	}
 	
@@ -1145,6 +1463,7 @@ int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *lo
 	
 	return result;	
 }
+
 
 /***********************************************************************
  *
@@ -1157,9 +1476,10 @@ int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *lo
  * Returns:     Creator ID in 'result'
  *
  ***********************************************************************/
-int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, int start, 
-			     int latest, int *cardno, unsigned long *localid, int *dbhandle, 
-			     struct DBInfo *info, struct DBSizeInfo *size)
+int
+dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator,
+ 	int start, int latest, int *cardno, unsigned long *localid,
+	int *dbhandle, struct DBInfo *info, struct DBSizeInfo *size)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1176,7 +1496,8 @@ int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, 
 	if (cardno || localid || dbhandle || info)
 		flags |= dlpFindDBOptFlagGetAttributes;
 	if (size)
-		flags |= (dlpFindDBOptFlagGetSize | dlpFindDBOptFlagMaxRecSize);
+		flags |= (dlpFindDBOptFlagGetSize |
+			 dlpFindDBOptFlagMaxRecSize);
 
 	if (start)
 		search_flags |= dlpFindDBSrchFlagNewSearch;
@@ -1203,54 +1524,87 @@ int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, 
 		
 		if (info) {
 			info->more = 0;
-			info->miscFlags 	= get_byte(DLP_RESPONSE_DATA(res, 0, 11));
-			info->flags 		= get_short(DLP_RESPONSE_DATA(res, 0, 12));
-			info->type 		= get_long(DLP_RESPONSE_DATA(res, 0, 14));
-			info->creator 		= get_long(DLP_RESPONSE_DATA(res, 0, 18));
-			info->version 		= get_short(DLP_RESPONSE_DATA(res, 0, 22));
-			info->modnum 		= get_long(DLP_RESPONSE_DATA(res, 0, 24));
-			info->createDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 28));
-			info->modifyDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 36));
-			info->backupDate 	= get_date(DLP_RESPONSE_DATA(res, 0, 44));
-			info->index 		= get_short(DLP_RESPONSE_DATA(res, 0, 52));
+			info->miscFlags	=
+				 get_byte(DLP_RESPONSE_DATA(res, 0, 11));
+			info->flags =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 12));
+			info->type =
+				 get_long(DLP_RESPONSE_DATA(res, 0, 14));
+			info->creator =
+				 get_long(DLP_RESPONSE_DATA(res, 0, 18));
+			info->version 	=
+				 get_short(DLP_RESPONSE_DATA(res, 0, 22));
+			info->modnum =
+				 get_long(DLP_RESPONSE_DATA(res, 0, 24));
+			info->createDate =
+				 get_date(DLP_RESPONSE_DATA(res, 0, 28));
+			info->modifyDate =
+				 get_date(DLP_RESPONSE_DATA(res, 0, 36));
+			info->backupDate =
+				 get_date(DLP_RESPONSE_DATA(res, 0, 44));
+			info->index =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 52));
+
 			strncpy(info->name, DLP_RESPONSE_DATA(res, 0, 54), 32);
 			info->name[32] 		= '\0';
 
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "DLP ReadDBList Name: '%s', Version: %d, More: %s\n",
-			     info->name, info->version, info->more ? "Yes" : "No"));
+			     "DLP ReadDBList Name: '%s', "
+				 "Version: %d, More: %s\n",
+			     info->name, info->version,
+				 info->more ? "Yes" : "No"));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     "  Creator: '%s'", printlong(info->creator)));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     " Type: '%s' Flags: %s%s%s%s%s%s%s%s%s%s",
 			     printlong(info->type),
-			     (info->flags & dlpDBFlagResource) ? "Resource " : "",
-			     (info->flags & dlpDBFlagReadOnly) ? "ReadOnly " : "",
-			     (info->flags & dlpDBFlagAppInfoDirty) ? "AppInfoDirty " : "",
-			     (info->flags & dlpDBFlagBackup) ? "Backup " : "",
-			     (info->flags & dlpDBFlagReset) ? "Reset " : "",
-			     (info->flags & dlpDBFlagNewer) ? "Newer " : "",
-			     (info->flags & dlpDBFlagCopyPrevention) ? "CopyPrevention " : "",
-			     (info->flags & dlpDBFlagStream) ? "Stream " : "",
-			     (info->flags & dlpDBFlagOpen) ? "Open " : "",
+			     (info->flags & dlpDBFlagResource) ?
+				 "Resource " : "",
+			     (info->flags & dlpDBFlagReadOnly) ?
+				 "ReadOnly " : "",
+			     (info->flags & dlpDBFlagAppInfoDirty) ?
+				 "AppInfoDirty " : "",
+			     (info->flags & dlpDBFlagBackup) ?
+				 "Backup " : "",
+			     (info->flags & dlpDBFlagReset) ?
+				 "Reset " : "",
+			     (info->flags & dlpDBFlagNewer) ?
+				 "Newer " : "",
+			     (info->flags & dlpDBFlagCopyPrevention) ?
+				 "CopyPrevention " : "",
+			     (info->flags & dlpDBFlagStream) ?
+				 "Stream " : "",
+			     (info->flags & dlpDBFlagOpen) ?
+				 "Open " : "",
 			     (!info->flags) ? "None" : ""));
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, " (0x%2.2X)\n", info->flags));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "  Modnum: %ld, Index: %d, Creation date: %s",
-			     info->modnum, info->index, ctime(&info->createDate)));
+				" (0x%2.2X)\n", info->flags));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     " Modification date: %s", ctime(&info->modifyDate)));
+			     	"  Modnum: %ld, Index: %d, "
+				"Creation date: %s",
+			     	info->modnum, info->index,
+				ctime(&info->createDate)));
+			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			     	" Modification date: %s",
+				ctime(&info->modifyDate)));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
-			     " Backup date: %s", ctime(&info->backupDate)));
+			     	" Backup date: %s",
+				ctime(&info->backupDate)));
 		}
 		
 		if (size) {
-			size->numRecords = get_long(DLP_RESPONSE_DATA(res, 1, 0));
-			size->totalBytes = get_long(DLP_RESPONSE_DATA(res, 1, 4));
-			size->dataBytes = get_long(DLP_RESPONSE_DATA(res, 1, 8));
-			size->appBlockSize = get_long(DLP_RESPONSE_DATA(res, 1, 12));
-			size->sortBlockSize = get_long(DLP_RESPONSE_DATA(res, 1, 16));
-			size->maxRecSize = get_long(DLP_RESPONSE_DATA(res, 1, 20));
+			size->numRecords = 
+				get_long(DLP_RESPONSE_DATA(res, 1, 0));
+			size->totalBytes =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 4));
+			size->dataBytes =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 8));
+			size->appBlockSize =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 12));
+			size->sortBlockSize =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 16));
+			size->maxRecSize =
+				 get_long(DLP_RESPONSE_DATA(res, 1, 20));
 		}	
 	}
 	
@@ -1258,6 +1612,7 @@ int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, 
 	
 	return result;	
 }
+
 
 /***********************************************************************
  *
@@ -1271,7 +1626,8 @@ int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, 
  *		otherwise
  *
  ***********************************************************************/
-int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
+int
+dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1301,6 +1657,7 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_DeleteDB
@@ -1312,7 +1669,8 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_DeleteDB(int sd, int card, const char *name)
+int
+dlp_DeleteDB(int sd, int card, const char *name)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1334,6 +1692,7 @@ int dlp_DeleteDB(int sd, int card, const char *name)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_CreateDB
@@ -1346,8 +1705,8 @@ int dlp_DeleteDB(int sd, int card, const char *name)
  *
  ***********************************************************************/
 int
-dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
-	     int version, const char *name, int *dbhandle)
+dlp_CreateDB(int sd, unsigned long creator, unsigned long type, int cardno,
+	 int flags, unsigned int version, const char *name, int *dbhandle)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1381,6 +1740,7 @@ dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_CloseDB
@@ -1392,7 +1752,8 @@ dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_CloseDB(int sd, int dbhandle)
+int
+dlp_CloseDB(int sd, int dbhandle)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1412,7 +1773,20 @@ int dlp_CloseDB(int sd, int dbhandle)
 	return result;
 }
 
-int dlp_CloseDB_All(int sd)
+
+/***********************************************************************
+ *
+ * Function:    dlp_CloseDB_All
+ *
+ * Summary:     Close all the databases opened on the Palm
+ *
+ * Parameters:  None
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
+int
+dlp_CloseDB_All(int sd)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1444,20 +1818,21 @@ int dlp_CloseDB_All(int sd)
  ***********************************************************************/
 int
 dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
-		    int action, int length, void *data,
-		    unsigned long *retcode, int maxretlen, int *retlen,
+		    int action, size_t length, void *data,
+		    unsigned long *retcode, size_t maxretlen, int *retlen,
 		    void *retdata)
 {
 	int 	result,
-		data_len,
 		version = pi_version(sd);
+	size_t	data_len;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
 	if (version >= 0x0101) {	/* PalmOS 2.0 call encoding */
 		Trace(CallApplicationV1);
 
-		req = dlp_request_new_with_argid(dlpFuncCallApplication, 0x21, 1, 22 + length);
+		req = dlp_request_new_with_argid(dlpFuncCallApplication,
+			 0x21, 1, 22 + length);
 		
 		set_long(DLP_REQUEST_DATA(req, 0, 0), creator);
 		set_long(DLP_REQUEST_DATA(req, 0, 4), type);
@@ -1480,21 +1855,24 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			data_len = res->argv[0]->len - 16;
 			
 			if (retcode)
-				*retcode = get_long(DLP_RESPONSE_DATA(res, 0, 0));
+				*retcode =
+				 get_long(DLP_RESPONSE_DATA(res, 0, 0));
 			if (retlen)
 				*retlen = data_len;
 			if (retdata)
 				memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 16),
-				       data_len > maxretlen ? maxretlen : data_len);
+				data_len > maxretlen ? maxretlen : data_len);
 			
 
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "DLP CallApplication Result: %lu (0x%8.8lX), and %d bytes:\n",
+			     "DLP CallApplication Result: %lu (0x%8.8lX), "
+				 "and %d bytes:\n",
 			     get_long(DLP_RESPONSE_DATA(res, 0, 0)), 
 			     get_long(DLP_RESPONSE_DATA(res, 0, 4)),
 			     data_len));
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-			      dumpdata(DLP_RESPONSE_DATA(res, 0, 16), data_len));
+			      dumpdata(DLP_RESPONSE_DATA(res, 0, 16),
+					(size_t)data_len));
 		}
 		
 		dlp_response_free(res);
@@ -1523,22 +1901,25 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		if (result >= 0) {
 			data_len = res->argv[0]->len - 6;
 			if (retcode)
-				*retcode = get_short(DLP_RESPONSE_DATA(res, 0, 2));
+				*retcode =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 2));
 			if (retlen)
 				*retlen = data_len;
 			
 			if (retdata)
 				memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 6),
-				       data_len > maxretlen ? maxretlen : data_len);
+				data_len > maxretlen ? maxretlen : data_len);
 			
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			     "DLP CallApplication Action: %d Result: %lu (0x%4.4lX), and %d bytes:\n",
+			     "DLP CallApplication Action: %d Result:"
+				" %lu (0x%4.4lX), and %d bytes:\n",
 			     get_short(DLP_RESPONSE_DATA(res, 0, 0)), 
 			     get_short(DLP_RESPONSE_DATA(res, 0, 2)), 
 			     get_short(DLP_RESPONSE_DATA(res, 0, 2)),
 			     data_len));
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-			      dumpdata(DLP_RESPONSE_DATA(res, 0, 6), data_len));
+			      dumpdata(DLP_RESPONSE_DATA(res, 0, 6),
+				(size_t)data_len));
 		}
 		
 		dlp_response_free(res);
@@ -1546,6 +1927,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		return result;
 	}
 }
+
 
 /***********************************************************************
  *
@@ -1558,7 +1940,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_ResetSystem(int sd)
+int
+dlp_ResetSystem(int sd)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1576,6 +1959,7 @@ int dlp_ResetSystem(int sd)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_AddSyncLogEntry
@@ -1587,7 +1971,8 @@ int dlp_ResetSystem(int sd)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_AddSyncLogEntry(int sd, char *entry)
+int
+dlp_AddSyncLogEntry(int sd, char *entry)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1612,6 +1997,7 @@ int dlp_AddSyncLogEntry(int sd, char *entry)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ReadOpenDBInfo
@@ -1624,7 +2010,8 @@ int dlp_AddSyncLogEntry(int sd, char *entry)
  *		otherwise
  *
  ***********************************************************************/
-int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
+int
+dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1667,9 +2054,10 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
  *		otherwise
  *
  ***********************************************************************/
-int dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags, unsigned int version,
-		   time_t createDate, time_t modifyDate, time_t backupDate, 
-		   unsigned long type, unsigned long creator)
+int
+dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags,
+	unsigned int version, time_t createDate, time_t modifyDate,
+	time_t backupDate, unsigned long type, unsigned long creator)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1701,6 +2089,7 @@ int dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags, unsigned int
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_MoveCategory
@@ -1712,7 +2101,8 @@ int dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags, unsigned int
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
+int
+dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1752,7 +2142,8 @@ int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_OpenConduit(int sd)
+int
+dlp_OpenConduit(int sd)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1770,6 +2161,7 @@ int dlp_OpenConduit(int sd)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_EndOfSync
@@ -1781,10 +2173,11 @@ int dlp_OpenConduit(int sd)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_EndOfSync(int sd, int status)
+int
+dlp_EndOfSync(int sd, int status)
 {
 	int 	result;
-	struct 	pi_socket *ps;
+	pi_socket_t	*ps;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
@@ -1811,6 +2204,7 @@ int dlp_EndOfSync(int sd, int status)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_AbortSync
@@ -1822,9 +2216,10 @@ int dlp_EndOfSync(int sd, int status)
  * Returns:     Return value: A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_AbortSync(int sd)
+int
+dlp_AbortSync(int sd)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t	*ps;
 
 	Trace(AbortSync);
 
@@ -1834,6 +2229,7 @@ int dlp_AbortSync(int sd)
 
 	return 0;
 }
+
 
 /***********************************************************************
  *
@@ -1846,7 +2242,8 @@ int dlp_AbortSync(int sd)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_WriteUserInfo(int sd, struct PilotUser *User)
+int
+dlp_WriteUserInfo(int sd, struct PilotUser *User)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1875,6 +2272,7 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ReadUserInfo
@@ -1887,10 +2285,11 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
  *		otherwise 
  *
  ***********************************************************************/
-int dlp_ReadUserInfo(int sd, struct PilotUser *User)
+int
+dlp_ReadUserInfo(int sd, struct PilotUser *User)
 {
-	int 	result,
-		userlen;
+	int 	result;
+	size_t	userlen;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
@@ -1903,32 +2302,44 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User)
 	dlp_request_free (req);
 
 	if (result >= 0) {
-		User->userID 		 = get_long(DLP_RESPONSE_DATA (res, 0, 0));
-		User->viewerID 		 = get_long(DLP_RESPONSE_DATA (res, 0, 4));
-		User->lastSyncPC 	 = get_long(DLP_RESPONSE_DATA (res, 0, 8));
-		User->successfulSyncDate = get_date(DLP_RESPONSE_DATA (res, 0, 12));
-		User->lastSyncDate 	 = get_date(DLP_RESPONSE_DATA (res, 0, 20));
-		userlen                  = get_byte(DLP_RESPONSE_DATA (res, 0, 28));
-		User->passwordLength 	 = get_byte(DLP_RESPONSE_DATA (res, 0, 29));
-		memcpy(User->username, DLP_RESPONSE_DATA (res, 0, 30), userlen);
-		memcpy(User->password, DLP_RESPONSE_DATA (res, 0, 30 + userlen),
-		       User->passwordLength);
+		User->userID =
+			 get_long(DLP_RESPONSE_DATA (res, 0, 0));
+		User->viewerID =
+			 get_long(DLP_RESPONSE_DATA (res, 0, 4));
+		User->lastSyncPC =
+			 get_long(DLP_RESPONSE_DATA (res, 0, 8));
+		User->successfulSyncDate =
+			 get_date(DLP_RESPONSE_DATA (res, 0, 12));
+		User->lastSyncDate =
+			 get_date(DLP_RESPONSE_DATA (res, 0, 20));
+		userlen = 
+			get_byte(DLP_RESPONSE_DATA (res, 0, 28));
+		User->passwordLength  =
+			 get_byte(DLP_RESPONSE_DATA (res, 0, 29));
+
+		memcpy(User->username,
+			 DLP_RESPONSE_DATA (res, 0, 30), userlen);
+		memcpy(User->password,
+			 DLP_RESPONSE_DATA (res, 0, 30 + userlen),
+				User->passwordLength);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadUserInfo UID=0x%8.8lX VID=0x%8.8lX PCID=0x%8.8lX\n",
-		    User->userID, User->viewerID, User->lastSyncPC));
+		    	"DLP ReadUserInfo UID=0x%8.8lX VID=0x%8.8lX "
+			"PCID=0x%8.8lX\n",
+			    User->userID, User->viewerID, User->lastSyncPC));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "  Last Sync=%s  Last Successful Sync=%s",
-		    ctime (&User->lastSyncDate), ctime (&User->successfulSyncDate)));
+			"  Last Sync=%s  Last Successful Sync=%s",
+		    	ctime (&User->lastSyncDate),
+			ctime (&User->successfulSyncDate)));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "  Username=%s\n",
-		    User->username));
+		 	"  Username=%s\n", User->username));
 	}
 	
 	dlp_response_free (res);
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -1942,7 +2353,8 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User)
  *		otherwise
  *
  ***********************************************************************/
-int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
+int
+dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -1960,7 +2372,7 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 	dlp_request_free(req);
 
 	if (result >= 0) {
-		int str_offset = 24;
+		size_t str_offset = 24;
 		
 		i->lanSync = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
 		
@@ -1990,6 +2402,7 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_WriteNetSyncInfo
@@ -2001,7 +2414,8 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
+int
+dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
 	int 	result,
 		str_offset = 24;
@@ -2019,10 +2433,13 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 	    "  PC hostname: '%s', address '%s', mask '%s'\n",
 	    i->hostName, i->hostAddress, i->hostSubnetMask));
 
-	req = dlp_request_new(dlpFuncWriteNetSyncInfo, 1, 24 + strlen(i->hostName) + 
-			      strlen(i->hostAddress) + strlen(i->hostSubnetMask) + 3);
+	req = dlp_request_new(dlpFuncWriteNetSyncInfo, 1,
+		24 + strlen(i->hostName) + 
+		strlen(i->hostAddress) + strlen(i->hostSubnetMask) + 3);
 	
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), 0x80 | 0x40 | 0x20 | 0x10);	/* Change all settings */
+	/* Change all settings */
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), 0x80 | 0x40 | 0x20 | 0x10);
+
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), i->lanSync);
 	set_long(DLP_REQUEST_DATA(req, 0, 2), 0);  /* Reserved1 */
 	set_long(DLP_REQUEST_DATA(req, 0, 6), 0);  /* Reserved2 */
@@ -2046,6 +2463,7 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 	return result;
 }
 
+
 #ifdef _PILOT_SYSPKT_H
 /***********************************************************************
  *
@@ -2058,7 +2476,8 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
+int
+dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 {
 	int 	i,
 		err;
@@ -2094,12 +2513,12 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 			*c++ = 0;
 	}
 
-	pi_write(sd, dlp_buf, c - dlp_buf);
+	pi_write(sd, dlp_buf, (size_t)(c - dlp_buf));
 
 	err = 0;
 
 	if (p->reply) {
-		int l = pi_read(sd, dlp_buf, c - dlp_buf + 2);
+		int l = pi_read(sd, dlp_buf, (size_t)(c - dlp_buf + 2));
 
 		if (l < 0)
 			err = l;
@@ -2117,7 +2536,8 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 				if (p->param[i].byRef && p->param[i].data)
 					memcpy(p->param[i].data, c + 2,
 					       p->param[i].size);
-				c += 2 + ((p->param[i].size + 1) & ~1);
+				c += 2 + ((p->param[i].size + 1) & 
+						(unsigned)~1);
 			}
 		}
 	}
@@ -2134,6 +2554,7 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 
 	return err;
 }
+
 
 /***********************************************************************
  *
@@ -2208,11 +2629,13 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 		
 		if (result >= 0) {
 			if (feature)
-				*feature = (unsigned long) get_long(DLP_RESPONSE_DATA(res, 0, 0));
+				*feature = (unsigned long)
+				 get_long(DLP_RESPONSE_DATA(res, 0, 0));
 			
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			    "DLP ReadFeature Feature: 0x%8.8lX\n",
-			    (unsigned long) get_long(DLP_RESPONSE_DATA(res, 0, 0))));
+			    (unsigned long)
+				get_long(DLP_RESPONSE_DATA(res, 0, 0))));
 		}
 		dlp_response_free(res);
 
@@ -2221,6 +2644,7 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 	
 }
 #endif				/* IFDEF _PILOT_SYSPKT_H */
+
 
 /***********************************************************************
  *
@@ -2235,7 +2659,7 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
  *
  ***********************************************************************/
 int
-dlp_GetROMToken(int sd, unsigned long token, char *buffer, unsigned int *size)
+dlp_GetROMToken(int sd, unsigned long token, char *buffer, size_t *size)
 {
 	unsigned long result;
 
@@ -2316,6 +2740,7 @@ dlp_GetROMToken(int sd, unsigned long token, char *buffer, unsigned int *size)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ResetLastSyncPC
@@ -2327,7 +2752,8 @@ dlp_GetROMToken(int sd, unsigned long token, char *buffer, unsigned int *size)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_ResetLastSyncPC(int sd)
+int
+dlp_ResetLastSyncPC(int sd)
 {
 	int 	err;
 	struct 	PilotUser User;
@@ -2340,6 +2766,7 @@ int dlp_ResetLastSyncPC(int sd)
 	return dlp_WriteUserInfo(sd, &User);
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ResetDBIndex
@@ -2351,10 +2778,11 @@ int dlp_ResetLastSyncPC(int sd)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_ResetDBIndex(int sd, int dbhandle)
+int
+dlp_ResetDBIndex(int sd, int dbhandle)
 {
 	int 	result;
-	struct 	pi_socket *ps;
+	pi_socket_t	*ps;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
@@ -2374,6 +2802,7 @@ int dlp_ResetDBIndex(int sd, int dbhandle)
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -2413,7 +2842,8 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 		
 		ret = get_short(DLP_RESPONSE_DATA(res, 0, 0));
 		for (i = 0; i < ret; i++)
-			IDs[i] = get_long(DLP_RESPONSE_DATA(res, 0, 2 + (i * 4)));
+			IDs[i] =
+			 get_long(DLP_RESPONSE_DATA(res, 0, 2 + (i * 4)));
 
 		if (count)
 			*count = ret;
@@ -2421,13 +2851,15 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadRecordIDList %d IDs:\n", ret));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2), ret * 4));
+		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2), 
+			(size_t)(ret * 4)));
 	}
 
 	dlp_response_free(res);
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -2444,7 +2876,7 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
  ***********************************************************************/
 int
 dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
-		int catID, void *data, int length, recordid_t * NewID)
+		int catID, void *data, size_t length, recordid_t * NewID)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -2452,7 +2884,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 
 	Trace(WriteRecord);
 
-	if (length == -1)
+	if (length == (size_t)-1)
 		length = strlen((char *) data) + 1;
 
 	if (length + 8 > DLP_BUF_SIZE) {
@@ -2469,7 +2901,8 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 
 	memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
 
-	CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, record_dump(DLP_RESPONSE_DATA(req, 0, 0)));
+	CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
+		 record_dump(DLP_RESPONSE_DATA(req, 0, 0)));
 	
 	result = dlp_exec(sd, req, &res);
 
@@ -2477,7 +2910,8 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	
 	if (result >= 0) {
 		if (NewID)
-			*NewID = get_long(DLP_RESPONSE_DATA(res, 0, 0));	/* New record ID */
+			/* New record ID */
+			*NewID = get_long(DLP_RESPONSE_DATA(res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP WriteRecord Record ID: 0x%8.8lX\n",
@@ -2488,6 +2922,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -2501,7 +2936,8 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
+int
+dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 {
 	int 	result,
 		flags = all ? 0x80 : 0;
@@ -2524,6 +2960,7 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_DeleteCategory
@@ -2536,7 +2973,8 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_DeleteCategory(int sd, int dbhandle, int category)
+int
+dlp_DeleteCategory(int sd, int dbhandle, int category)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -2550,7 +2988,8 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 		Trace(DeleteCategoryV1);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP DeleteCategory Emulating with: Handle: %d, Category: %d\n",
+		    "DLP DeleteCategory Emulating with: Handle: %d, "
+			"Category: %d\n",
 		    dbhandle, category & 0xff));
 
 		for (i = 0;
@@ -2562,7 +3001,7 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 			r = dlp_DeleteRecord(sd, dbhandle, 0, id);
 			if (r < 0)
 				return r;
-			i--;	/* Sigh, deleting the record moves it to the end. */
+			i--; /* Sigh, deleting record moves it to the end. */
 		}
 
 		return 0;
@@ -2586,6 +3025,7 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 	}
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ReadResourceByType
@@ -2600,7 +3040,7 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
  ***********************************************************************/
 int
 dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
-		       void *buffer, int *index, int *size)
+		       void *buffer, int *index, size_t *size)
 {
 	int 	result,
 		data_len;
@@ -2629,14 +3069,16 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 		if (size)
 			*size = get_short(DLP_RESPONSE_DATA(res, 0, 6));
 		if (buffer)
-			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
+			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10),
+				(size_t)data_len);
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadResourceByType  Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
+		    "DLP ReadResourceByType  Type: '%s', ID: %d, "
+			 "Index: %d, and %d bytes:\n",
 		    printlong(type), id, 
-		    get_short(DLP_RESPONSE_DATA(res, 0, 6)), data_len));
+		    get_short(DLP_RESPONSE_DATA(res, 0, 6)),(size_t)data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 10), data_len));
+		      dumpdata(DLP_RESPONSE_DATA(res, 0, 10),(size_t)data_len));
 	} else {
 		data_len = result;
 	}
@@ -2645,6 +3087,7 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 	
 	return data_len;
 }
+
 
 /***********************************************************************
  *
@@ -2660,7 +3103,7 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
  ***********************************************************************/
 int
 dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
-			unsigned long *type, int *id, int *size)
+			unsigned long *type, int *id, size_t *size)
 {
 	int 	result,
 		data_len;
@@ -2690,15 +3133,18 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
 		if (size)
 			*size = get_short(DLP_RESPONSE_DATA(res, 0, 8));
 		if (buffer)
-			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
+			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10),
+				(size_t)data_len);
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadResourceByIndex Type: '%s', ID: %d, Index: %d, and %d bytes:\n",
+		    "DLP ReadResourceByIndex Type: '%s', ID: %d, "
+			"Index: %d, and %d bytes:\n",
 		    printlong(get_long(DLP_RESPONSE_DATA(res, 0, 0))),
 		    get_short(DLP_RESPONSE_DATA(res, 0, 4)),
 		    index, data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 10), data_len));
+		      dumpdata(DLP_RESPONSE_DATA(res, 0, 10),
+			 (size_t)data_len));
 	} else {
 		data_len = result;
 	}
@@ -2707,6 +3153,7 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
 	
 	return data_len;
 }
+
 
 /***********************************************************************
  *
@@ -2721,7 +3168,7 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
  ***********************************************************************/
 int
 dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
-		  const void *data, int length)
+		  const void *data, size_t length)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -2750,6 +3197,7 @@ dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
 
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -2789,6 +3237,7 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ReadAppBlock
@@ -2801,7 +3250,8 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
  *		otherwise
  *
  ***********************************************************************/
-int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
+int
+dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 {
 	int 	result,
 		data_len;
@@ -2824,12 +3274,14 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	if (result >= 0) {
 		data_len = res->argv[0]->len - 2;
 		if (dbuf)
-			memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2), data_len);
+			memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2),
+				(size_t)data_len);
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadAppBlock %d bytes\n", data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2), data_len));
+		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
+			(size_t)data_len));
 	} else {
 		data_len = result;
 	}
@@ -2838,6 +3290,7 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	
 	return data_len;
 }
+
 
 /***********************************************************************
  *
@@ -2850,8 +3303,9 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
-		      int length)
+int
+dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
+      size_t length)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -2878,6 +3332,7 @@ int dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -2915,12 +3370,14 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	if (result >= 0) {
 		data_len = res->argv[0]->len - 2;
 		if (dbuf)
-			memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2), data_len);
+			memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2), 
+				(size_t)data_len);
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadSortBlock %d bytes\n", data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2), data_len));
+		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
+			(size_t)data_len));
 	} else {
 		data_len = result;
 	}
@@ -2929,6 +3386,7 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	
 	return data_len;
 }
+
 
 /***********************************************************************
  *
@@ -2941,8 +3399,9 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
-		       int length)
+int
+dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
+		       size_t length)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -2970,6 +3429,7 @@ int dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_CleanUpDatabase
@@ -2982,7 +3442,8 @@ int dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_CleanUpDatabase(int sd, int fHandle)
+int
+dlp_CleanUpDatabase(int sd, int fHandle)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3002,6 +3463,7 @@ int dlp_CleanUpDatabase(int sd, int fHandle)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ResetSyncFlags
@@ -3014,7 +3476,8 @@ int dlp_CleanUpDatabase(int sd, int fHandle)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int dlp_ResetSyncFlags(int sd, int fHandle)
+int
+dlp_ResetSyncFlags(int sd, int fHandle)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3034,6 +3497,7 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ReadNextRecInCategory
@@ -3050,7 +3514,7 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
 int
 dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 			  void *buffer, recordid_t * id, int *index,
-			  int *size, int *attr)
+			  size_t *size, int *attr)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3060,12 +3524,13 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 		/* Emulate for PalmOS 1.0 */
 		int 	cat,
 			rec;
-		struct pi_socket *ps;
+		pi_socket_t *ps;
 
 		Trace(ReadNextRecInCategoryV1);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadNextRecInCategory Emulating with: Handle: %d, Category: %d\n",
+		    "DLP ReadNextRecInCategory Emulating with: Handle: %d, "
+			 "Category: %d\n",
 		    fHandle, incategory));
 
 		if ((ps = find_pi_socket(sd)) == 0)
@@ -3124,22 +3589,25 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 
 		if (result >= 0) {
 			data_len = res->argv[0]->len - 10;
-			if (id)
-				*id = get_long(DLP_RESPONSE_DATA(res, 0, 0));
-			if (index)
-				*index = get_short(DLP_RESPONSE_DATA(res, 0, 4));
-			if (size)
-				*size = get_short(DLP_RESPONSE_DATA(res, 0, 6));
-			if (attr)
-				*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
+			if (id) *id =
+				 get_long(DLP_RESPONSE_DATA(res, 0, 0));
+			if (index) *index =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 4));
+			if (size) *size =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 6));
+			if (attr) *attr =
+				 get_byte(DLP_RESPONSE_DATA(res, 0, 8));
 			if (buffer)
-				memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
+				memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10),
+					(size_t)data_len);
 
 			flags = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			    "DLP ReadNextRecInCategory ID: 0x%8.8lX, Index: %d, Category: %d\n"
+			    "DLP ReadNextRecInCategory ID: 0x%8.8lX, "
+				 "Index: %d, Category: %d\n"
 			    "  Flags: %s%s%s%s%s%s (0x%2.2X) and %d bytes:\n",
-			    (unsigned long) get_long(DLP_RESPONSE_DATA(res, 0, 0)),
+			    (unsigned long) get_long(DLP_RESPONSE_DATA(res,
+					0, 0)),
 			    get_short(DLP_RESPONSE_DATA(res, 0, 4)),
 			    (int) get_byte(DLP_RESPONSE_DATA(res, 0, 9)),
 			    (flags & dlpRecAttrDeleted) ? " Deleted" : "",
@@ -3150,7 +3618,8 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 			    (!flags) ? " None" : "",
 			    flags, data_len));
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-			      dumpdata(DLP_RESPONSE_DATA(res, 0, 10), data_len));
+			      dumpdata(DLP_RESPONSE_DATA(res, 0, 10),
+				(size_t)data_len));
 		} else {
 			data_len = result;
 		}
@@ -3160,6 +3629,7 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 		return data_len;
 	}
 }
+
 
 /***********************************************************************
  *
@@ -3175,7 +3645,7 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
  ***********************************************************************/
 int
 dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
-		      int maxsize, void *buffer, int *size, int *version)
+		      int maxsize, void *buffer, size_t *size, int *version)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3189,7 +3659,8 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 		Trace(ReadAppPreferenceV1);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadAppPreference Emulating with: Creator: '%s', Id: %d, Size: %d, Backup: %d\n",
+		    "DLP ReadAppPreference Emulating with: Creator: '%s', "
+			"Id: %d, Size: %d, Backup: %d\n",
 		    printlong(creator), id,
 		    buffer ? maxsize : 0, backup ? 0x80 : 0));
 
@@ -3214,7 +3685,7 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 
 		if (rec > 2) {
 			rec -= 2;
-			memmove(buffer, ((char *) buffer) + 2, rec);
+			memmove(buffer, ((char *) buffer) + 2, (size_t)rec);
 		} else {
 			rec = 0;
 		}
@@ -3241,22 +3712,25 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 		
 		if (result >= 0) {
 			data_len = get_short(DLP_RESPONSE_DATA(res, 0, 4));
-			if (version)
-				*version = get_short(DLP_RESPONSE_DATA(res, 0, 0));
-			if (size && !buffer)
-				*size = get_short(DLP_RESPONSE_DATA(res, 0, 2));/* Total size */
+			if (version) *version =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 0));
+			if (size && !buffer) *size =
+			 get_short(DLP_RESPONSE_DATA(res, 0, 2)); /* Total sz */
 			if (size && buffer)
 				*size = data_len;	/* Size returned */
 			if (buffer)
-				memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 6), data_len);
+				memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 6),
+					(size_t)data_len);
 
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			    "DLP ReadAppPref Version: %d, Total size: %d, Read %d bytes:\n",
+			    "DLP ReadAppPref Version: %d, "
+				"Total size: %d, Read %d bytes:\n",
 			    get_short(DLP_RESPONSE_DATA(res, 0, 0)), 
 			    get_short(DLP_RESPONSE_DATA(res, 0, 2)),
 			    get_short(DLP_RESPONSE_DATA(res, 0, 4))));
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-			      dumpdata(DLP_RESPONSE_DATA(res, 0, 6), data_len));
+			      dumpdata(DLP_RESPONSE_DATA(res, 0, 6),
+				(size_t)data_len));
 		} else {
 			data_len = result;
 		}
@@ -3266,6 +3740,7 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 		return data_len;
 	}
 }
+
 
 /***********************************************************************
  *
@@ -3280,7 +3755,7 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
  ***********************************************************************/
 int
 dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
-		       int version, void *buffer, int size)
+		       int version, void *buffer, size_t size)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3338,6 +3813,7 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 	}
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ReadNextModifiedRecInCategory
@@ -3364,7 +3840,7 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 int
 dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 				  void *buffer, recordid_t * id,
-				  int *index, int *size, int *attr)
+				  int *index, size_t *size, int *attr)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3378,7 +3854,8 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 		Trace(ReadNextModifiedRecInCategoryV1);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP ReadNextModifiedRecInCategory Emulating with: Handle: %d, Category: %d\n",
+		    "DLP ReadNextModifiedRecInCategory"
+			" Emulating with: Handle: %d, Category: %d\n",
 		    fHandle, incategory));
 
 		do {
@@ -3387,15 +3864,18 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 						    id, index, size, attr,
 						    &cat);
 
-			/* If none found, reset modified pointer so that another search on a different
-			   (or the same!) category will start from the beginning */
+			/* If none found, reset modified pointer so that
+			 another search on a different (or the same!) category
+			 will start from the beginning */
 
-			/* Working on same assumption as ReadNextRecInCat, elide this:
+			/* Working on same assumption as ReadNextRecInCat,
+				elide this:
 			   if (r < 0)
 			   dlp_ResetDBIndex(sd, fHandle);
 			 */
 
-			/* Loop until we fail to get a record or a record is found in the proper category */
+			/* Loop until we fail to get a record or a record
+			 is found in the proper category */
 		}
 		while ((rec >= 0) && (cat != incategory));
 
@@ -3405,7 +3885,8 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 		
 		Trace(ReadNextModifiedRecInCategoryV2);
 
-		req = dlp_request_new(dlpFuncReadNextModifiedRecInCategory, 1, 2);
+		req = dlp_request_new(dlpFuncReadNextModifiedRecInCategory,
+			1, 2);
 
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), incategory);
@@ -3417,18 +3898,21 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 		if (result >= 0) {
 			data_len = res->argv[0]->len - 10;
 			
-			if (id)
-				*id = get_long(DLP_RESPONSE_DATA(res, 0, 0));
-			if (index)
-				*index = get_short(DLP_RESPONSE_DATA(res, 0, 4));
-			if (size)
-				*size = get_short(DLP_RESPONSE_DATA(res, 0, 6));
-			if (attr)
-				*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
-			if (buffer)
-				memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
+			if (id) *id =
+				 get_long(DLP_RESPONSE_DATA(res, 0, 0));
+			if (index) *index =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 4));
+			if (size) *size =
+				 get_short(DLP_RESPONSE_DATA(res, 0, 6));
+			if (attr) *attr =
+				 get_byte(DLP_RESPONSE_DATA(res, 0, 8));
 
-			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+			if (buffer)
+				memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10),
+					(size_t)data_len);
+
+			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
+				 record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
 		} else {
 			data_len = result;
 		}
@@ -3438,6 +3922,7 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 		return data_len;
 	}
 }
+
 
 /***********************************************************************
  *
@@ -3454,7 +3939,7 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
  ***********************************************************************/
 int
 dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
-			int *index, int *size, int *attr, int *category)
+			int *index, size_t *size, int *attr, int *category)
 {
 	int 	result,
 		data_len;
@@ -3473,20 +3958,23 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
 	
 	if (result >= 0) {
 		data_len = res->argv[0]->len -10;
-		if (id)
-			*id = get_long(DLP_RESPONSE_DATA(res, 0, 0));
-		if (index)
-			*index = get_short(DLP_RESPONSE_DATA(res, 0, 4));
-		if (size)
-			*size = get_short(DLP_RESPONSE_DATA(res, 0, 6));
-		if (attr)
-			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
-		if (category)
-			*category = get_byte(DLP_RESPONSE_DATA(res, 0, 9));
-		if (buffer)
-			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
+		if (id) *id =
+			 get_long(DLP_RESPONSE_DATA(res, 0, 0));
+		if (index) *index =
+			 get_short(DLP_RESPONSE_DATA(res, 0, 4));
+		if (size) *size =
+			 get_short(DLP_RESPONSE_DATA(res, 0, 6));
+		if (attr) *attr =
+			 get_byte(DLP_RESPONSE_DATA(res, 0, 8));
+		if (category) *category =
+			 get_byte(DLP_RESPONSE_DATA(res, 0, 9));
 
-		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+		if (buffer)
+			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10),
+				(size_t)data_len);
+
+		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
+			 record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
 	} else {
 		data_len = result;
 	}
@@ -3495,6 +3983,7 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
 	
 	return data_len;
 }
+
 
 /***********************************************************************
  *
@@ -3510,7 +3999,7 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
  ***********************************************************************/
 int
 dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
-		   int *index, int *size, int *attr, int *category)
+		   int *index, size_t *size, int *attr, int *category)
 {
 	int 	result,
 		data_len;
@@ -3533,18 +4022,21 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 	
 	if (result >= 0) {
 		data_len = res->argv[0]->len - 10;
-		if (index)
-			*index = get_short(DLP_RESPONSE_DATA(res, 0, 4));
-		if (size)
-			*size = get_short(DLP_RESPONSE_DATA(res, 0, 6));
-		if (attr)
-			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
-		if (category)
-			*category = get_byte(DLP_RESPONSE_DATA(res, 0, 9));
-		if (buffer)
-			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
+		if (index) *index =
+			 get_short(DLP_RESPONSE_DATA(res, 0, 4));
+		if (size) *size =
+			 get_short(DLP_RESPONSE_DATA(res, 0, 6));
+		if (attr) *attr =
+			 get_byte(DLP_RESPONSE_DATA(res, 0, 8));
+		if (category) *category =
+			 get_byte(DLP_RESPONSE_DATA(res, 0, 9));
 
-		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+		if (buffer)
+			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10),
+				(size_t)data_len);
+
+		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
+			 record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
 	} else {
 		data_len = result;
 	}
@@ -3553,6 +4045,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 	
 	return data_len;
 }
+
 
 /***********************************************************************
  *
@@ -3580,7 +4073,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
  ***********************************************************************/
 int
 dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
-		      recordid_t * id, int *size, int *attr, int *category)
+	recordid_t * id, size_t *size, int *attr, int *category)
 {
 	int 	result,
 		data_len;
@@ -3594,8 +4087,9 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), index);
-	set_short(DLP_REQUEST_DATA(req, 0, 4), 0);	/* Offset into record */
-	set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? DLP_BUF_SIZE : 0);	/* length to return */
+	set_short(DLP_REQUEST_DATA(req, 0, 4), 0); /* Offset into record */
+	set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ?
+		 DLP_BUF_SIZE : 0);	/* length to return */
 
 	result = dlp_exec(sd, req, &res);
 
@@ -3603,18 +4097,21 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 	
 	if (result >= 0) {
 		data_len = res->argv[0]->len - 10;
-		if (id)
-			*id = get_long(DLP_RESPONSE_DATA(res, 0, 0));
-		if (size)
-			*size = get_short(DLP_RESPONSE_DATA(res, 0, 6));
-		if (attr)
-			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
-		if (category)
-			*category = get_byte(DLP_RESPONSE_DATA(res, 0, 9));
-		if (buffer)
-			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
+		if (id) *id =
+			 get_long(DLP_RESPONSE_DATA(res, 0, 0));
+		if (size) *size =
+			 get_short(DLP_RESPONSE_DATA(res, 0, 6));
+		if (attr) *attr =
+			 get_byte(DLP_RESPONSE_DATA(res, 0, 8));
+		if (category) *category =
+			 get_byte(DLP_RESPONSE_DATA(res, 0, 9));
 
-		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+		if (buffer)
+			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10),
+				(size_t)data_len);
+
+		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
+			 record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
 	} else {
 		data_len = result;
 	}
@@ -3625,9 +4122,9 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 }
 
 #ifdef PI_DEBUG
-static void record_dump (unsigned char *data)
+static void record_dump (char *data)
 {
-	int size, flags;
+	size_t size, flags;
 	
 	size = get_short(&data[6]);
 	flags = get_byte(&data[8]);
@@ -3644,7 +4141,7 @@ static void record_dump (unsigned char *data)
 	    (flags & dlpRecAttrArchived) ? " Archive" : "",
 	    (!flags) ? " None" : "",
 	    flags, size));
-	dumpdata(&data[10], size);
+	dumpdata((char *)&data[10], size);
 }
 #endif
 
@@ -3659,7 +4156,8 @@ static void record_dump (unsigned char *data)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
+int
+dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3680,13 +4178,17 @@ int dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
 
 		slots = get_short(DLP_RESPONSE_DATA (res, 0, 0));
 
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP ExpSlotEnumerate %d\n", slots));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			 "DLP ExpSlotEnumerate %d\n", slots));
 
 		if (slots) {
 			for (i = 0; i < slots && i < *len; i++) {
-				firstRef[i] =  get_short(DLP_RESPONSE_DATA (res, 0, 2 + (2 * i)));
+				firstRef[i] =
+			  	get_short(DLP_RESPONSE_DATA (res, 0,
+					 2 + (2 * i)));
 
-				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "  %d Slot-Refnum %d\n", i, firstRef[i]));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+				 "  %d Slot-Refnum %d\n", i, firstRef[i]));
 			}
 		}
 
@@ -3710,7 +4212,8 @@ int dlp_ExpSlotEnumerate(int sd, int *len, int *firstRef)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_ExpCardPresent(int sd, int SlotRef)
+int
+dlp_ExpCardPresent(int sd, int SlotRef)
 {
 	int 	result;
         struct dlpRequest *req;
@@ -3730,6 +4233,7 @@ int dlp_ExpCardPresent(int sd, int SlotRef)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_ExpCardInfo
@@ -3741,7 +4245,8 @@ int dlp_ExpCardPresent(int sd, int SlotRef)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *len)
+int
+dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *len)
 {
 	int 	result;
         struct dlpRequest *req;
@@ -3763,13 +4268,16 @@ int dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *len)
 
 		/* FIXME Read and return packed strings */
 
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP ExpCardInfo Flags: %lu Length: %d\n", *flags, *len));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			 "DLP ExpCardInfo Flags: %lu Length: %d\n",
+			 *flags, *len));
 	}
 	
 	dlp_response_free(res);
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -3782,7 +4290,9 @@ int dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *len)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir, int *len)
+int
+dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir,
+	int *len)
 {
 	int 	result,
 		buflen;
@@ -3791,7 +4301,8 @@ int dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir, int
 	
 	Trace(VFSGetDefaultDir);
 	
-	req = dlp_request_new(dlpFuncVFSGetDefaultDir, 1, 2 + (strlen(type) + 1));
+	req = dlp_request_new(dlpFuncVFSGetDefaultDir,
+		1, 2 + (strlen(type) + 1));
 
 	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
 	strcpy(DLP_REQUEST_DATA(req, 0, 2), type);
@@ -3807,7 +4318,8 @@ int dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir, int
 			return -1;
 		
 		if (buflen) {
-			strncpy(dir, DLP_RESPONSE_DATA (res, 0, 2), buflen);
+			strncpy(dir, DLP_RESPONSE_DATA (res, 0, 2), 
+				(size_t)buflen);
 		} else {
 			strcpy(dir,"");
 		}
@@ -3823,6 +4335,7 @@ int dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir, int
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSImportDatabaseFromFile
@@ -3834,8 +4347,9 @@ int dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir, int
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
-				  int *cardno, unsigned long *localid)
+int
+dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
+	int *cardno, unsigned long *localid)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3846,7 +4360,8 @@ int dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Import file <%s>%d\n", path));
 
-	req = dlp_request_new(dlpFuncVFSImportDatabaseFromFile, 1, 2 + (strlen(path) + 1));
+	req = dlp_request_new(dlpFuncVFSImportDatabaseFromFile,
+		1, 2 + (strlen(path) + 1));
 
 	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
 	strcpy(DLP_REQUEST_DATA(req, 0, 2), path);
@@ -3872,6 +4387,7 @@ int dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSExportDatabaseToFile
@@ -3883,8 +4399,9 @@ int dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path, 
-				int cardno, unsigned int localid)  
+int
+dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path, 
+	int cardno, unsigned int localid)  
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3892,7 +4409,8 @@ int dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
 	
 	Trace(VFSExportDatabaseToFile);
 	
-	req = dlp_request_new(dlpFuncVFSExportDatabaseToFile, 1, 8 + (strlen(path) + 1));
+	req = dlp_request_new(dlpFuncVFSExportDatabaseToFile,
+		1, 8 + (strlen(path) + 1));
 	
 	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), cardno);
@@ -3907,6 +4425,7 @@ int dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileCreate
@@ -3918,7 +4437,8 @@ int dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileCreate(int sd, int volRefNum,const char *name)
+int
+dlp_VFSFileCreate(int sd, int volRefNum,const char *name)
 {
 	int 	result;
         struct dlpRequest *req;
@@ -3939,6 +4459,7 @@ int dlp_VFSFileCreate(int sd, int volRefNum,const char *name)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileOpen
@@ -3950,8 +4471,9 @@ int dlp_VFSFileCreate(int sd, int volRefNum,const char *name)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode, 
-		    FileRef *fileRef)
+int
+dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode, 
+	    FileRef *fileRef)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3975,7 +4497,8 @@ int dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode,
 	
 	if (result >= 0) {
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		     "OpenFileRef: 0x%x\n", get_long(DLP_RESPONSE_DATA (res, 0, 0))));
+		     "OpenFileRef: 0x%x\n",
+			get_long(DLP_RESPONSE_DATA (res, 0, 0))));
 		
 		*fileRef = get_long(DLP_RESPONSE_DATA (res, 0, 0));
 	}
@@ -3984,6 +4507,7 @@ int dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode,
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -3996,7 +4520,8 @@ int dlp_VFSFileOpen(int sd, int volRefNum, const char *name, int openMode,
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileClose(int sd, FileRef fileRef)
+int
+dlp_VFSFileClose(int sd, FileRef fileRef)
 {
 	int 	result;
 
@@ -4032,10 +4557,10 @@ int dlp_VFSFileClose(int sd, FileRef fileRef)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, int len)
+int
+dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
 {
-	int 	result,
-		respondlength;
+	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
@@ -4056,7 +4581,7 @@ int dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, int len)
 	if (result >= 0) {
 #if 1
 		/* FIXME Do we need size checks? */
-		if (pi_write(sd, data, len) < len) {
+		if (pi_write(sd, data, len) < (int)len) {
 	
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     "send failed %d\n", result));
@@ -4078,6 +4603,7 @@ int dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, int len)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileRead
@@ -4089,7 +4615,8 @@ int dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, int len)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, int *len)
+int
+dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, size_t *len)
 {
 	int 	result,
 		respondlength;
@@ -4109,8 +4636,8 @@ int dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, int *len)
 
 	if (result>=0) {
 		/* FIXME We must read properly */
-		int	rest,
-			at = 0;
+		size_t	at = 0;
+		size_t	rest;
 		rest	= *len;
 	
 		do {
@@ -4134,6 +4661,7 @@ int dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, int *len)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileDelete
@@ -4145,7 +4673,8 @@ int dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, int *len)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileDelete(int sd, int volRefNum, const char *name)
+int
+dlp_VFSFileDelete(int sd, int volRefNum, const char *name)
 {
 	int 	result;
 	
@@ -4167,6 +4696,7 @@ int dlp_VFSFileDelete(int sd, int volRefNum, const char *name)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileRename
@@ -4178,7 +4708,8 @@ int dlp_VFSFileDelete(int sd, int volRefNum, const char *name)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileRename(int sd, int volRefNum, const char *name, 
+int
+dlp_VFSFileRename(int sd, int volRefNum, const char *name, 
 		      const char *newname)
 {
 	int 	result;
@@ -4190,7 +4721,8 @@ int dlp_VFSFileRename(int sd, int volRefNum, const char *name,
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Rename file %s to %s\n", name, newname));
 	
-	req = dlp_request_new(dlpFuncVFSFileRename, 1, 4 + (strlen(name) + 1) + (strlen(newname) + 1));
+	req = dlp_request_new(dlpFuncVFSFileRename,
+		1, 4 + (strlen(name) + 1) + (strlen(newname) + 1));
 	
 	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), 2);
@@ -4205,6 +4737,7 @@ int dlp_VFSFileRename(int sd, int volRefNum, const char *name,
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileEOF
@@ -4216,7 +4749,8 @@ int dlp_VFSFileRename(int sd, int volRefNum, const char *name,
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileEOF(int sd, FileRef fileRef)
+int
+dlp_VFSFileEOF(int sd, FileRef fileRef)
 {
 	int 	result;
 	
@@ -4237,6 +4771,7 @@ int dlp_VFSFileEOF(int sd, FileRef fileRef)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileTell
@@ -4248,7 +4783,8 @@ int dlp_VFSFileEOF(int sd, FileRef fileRef)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
+int
+dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
 {
 	int 	result;
 	
@@ -4274,6 +4810,7 @@ int dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileGetAttributes
@@ -4285,7 +4822,8 @@ int dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileGetAttributes (int sd, FileRef fileRef, long *attributes)
+int
+dlp_VFSFileGetAttributes (int sd, FileRef fileRef, long *attributes)
 {
 	int	result;
 	
@@ -4311,6 +4849,7 @@ int dlp_VFSFileGetAttributes (int sd, FileRef fileRef, long *attributes)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileSetAttributes
@@ -4322,7 +4861,8 @@ int dlp_VFSFileGetAttributes (int sd, FileRef fileRef, long *attributes)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileSetAttributes(int sd, FileRef fileRef, long attributes)
+int
+dlp_VFSFileSetAttributes(int sd, FileRef fileRef, long attributes)
 {
 	int	result;
 	struct dlpRequest *req; 
@@ -4343,6 +4883,7 @@ int dlp_VFSFileSetAttributes(int sd, FileRef fileRef, long attributes)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileGetDate
@@ -4354,7 +4895,8 @@ int dlp_VFSFileSetAttributes(int sd, FileRef fileRef, long attributes)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
+int
+dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
 {
 	int	result;
 	struct dlpRequest *req; 
@@ -4386,6 +4928,7 @@ int dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileSetDate
@@ -4397,7 +4940,8 @@ int dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
+int
+dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 {
 	int	result;
 	struct dlpRequest *req;
@@ -4426,6 +4970,7 @@ int dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSDirCreate
@@ -4437,7 +4982,8 @@ int dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSDirCreate(int sd, int volRefNum, const char *name)
+int
+dlp_VFSDirCreate(int sd, int volRefNum, const char *name)
 {
 	int 	result;
 	
@@ -4459,6 +5005,7 @@ int dlp_VFSDirCreate(int sd, int volRefNum, const char *name)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSDirEntryEnumerate
@@ -4470,7 +5017,8 @@ int dlp_VFSDirCreate(int sd, int volRefNum, const char *name)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum, 
+int
+dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum, 
 	unsigned long *dirIlterate, int *maxcount, struct VFSDirInfo *data)
 {
 	int 	result,
@@ -4511,18 +5059,22 @@ int dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 	
 		for (at = 0; at < entries; at++) {
 			if ((*maxcount)>at) {
-				data[at].attr = get_long(DLP_RESPONSE_DATA (res, 0, 0) + from);
-				strncpy(data[at].name, DLP_RESPONSE_DATA(res, 0, from + 4),
+				data[at].attr = 
+					get_long(DLP_RESPONSE_DATA (res,
+					 0, 0) + from);
+				strncpy(data[at].name,
+					 DLP_RESPONSE_DATA(res, 0, from + 4),
 					vfsMAXFILENAME);
 				data[at].name[vfsMAXFILENAME-1] = 0;
 				count++;
 			}
 	
-			/* Zero terminated string. Strings that have an even length
-			   will be null terminated and have a pad byte. */
+			/* Zero terminated string. Strings that have an
+			 even length will be null terminated and have a
+			 pad byte. */
 			slen=strlen(DLP_RESPONSE_DATA(res, 0, from + 4)) + 1;
 			if (slen%2)
-				slen++;		/* make even stringlen + NULL */
+				slen++;	/* make even stringlen + NULL */
 	
 			if ((slen+4)%2)
 				slen++;
@@ -4538,6 +5090,7 @@ int dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 	return result;  
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSVolumeFormat
@@ -4549,7 +5102,8 @@ int dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSVolumeFormat(int sd, unsigned char flags,
+int
+dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	int fsLibRef, struct VFSSlotMountParamTag *param)
 {
 	int 	result;
@@ -4565,7 +5119,8 @@ int dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	req = dlp_request_new(dlpFuncVFSVolumeFormat, 1, 4);
 /* FIXME check sizes, list the mount params properly */
 	set_short(DLP_REQUEST_DATA(req, 0, 0), fsLibRef);
-	set_short(DLP_REQUEST_DATA(req, 0, 2), sizeof(struct VFSSlotMountParamTag));
+	set_short(DLP_REQUEST_DATA(req, 0, 2),
+		 sizeof(struct VFSSlotMountParamTag));
 	set_byte(DLP_REQUEST_DATA(req, 0, 4), flags);
 	set_byte(DLP_REQUEST_DATA(req, 0, 4), 0); /* unused */
 
@@ -4583,6 +5138,7 @@ int dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSVolumeEnumerate
@@ -4594,7 +5150,8 @@ int dlp_VFSVolumeFormat(int sd, unsigned char flags,
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSVolumeEnumerate(int sd, int *len, int *firstRef)
+int
+dlp_VFSVolumeEnumerate(int sd, int *len, int *firstRef)
 {
 	int	result;
 	struct dlpRequest *req;
@@ -4613,12 +5170,16 @@ int dlp_VFSVolumeEnumerate(int sd, int *len, int *firstRef)
 		
 		vols = get_short(DLP_RESPONSE_DATA (res, 0, 0));
 
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP VFSVolumeEnumerate %d\n", vols));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			"DLP VFSVolumeEnumerate %d\n", vols));
 		if (vols) {
 			for (i = 0; i < vols && i < *len; i++) {
-				firstRef[i] =  get_short(DLP_RESPONSE_DATA (res, 0, 2 + (2 * i)));
+				firstRef[i] =
+				  get_short(DLP_RESPONSE_DATA (res,
+					 0, 2 + (2 * i)));
 
-				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "  %d Volume-Refnum %d\n", i, firstRef[i]));
+				LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+				 "  %d Volume-Refnum %d\n", i, firstRef[i]));
 			}
 		}
 
@@ -4629,6 +5190,7 @@ int dlp_VFSVolumeEnumerate(int sd, int *len, int *firstRef)
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -4641,7 +5203,8 @@ int dlp_VFSVolumeEnumerate(int sd, int *len, int *firstRef)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *v)
+int
+dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *v)
 {
 	int 	result;
 	
@@ -4686,6 +5249,7 @@ int dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *v)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSVolumeGetLabel
@@ -4697,7 +5261,8 @@ int dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *v)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
+int
+dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
 {
 	int 	result;
 	struct dlpRequest *req; 
@@ -4714,16 +5279,19 @@ int dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
 	dlp_request_free(req);
 
 	if (result >= 0) {
-		strncpy(name, DLP_RESPONSE_DATA(res, 0, 0), *len - 1);
+		strncpy(name, DLP_RESPONSE_DATA(res, 0, 0),
+			 (size_t)(*len - 1));
 		*len = strlen(name);
 
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP VFSVolumeGetLabel %s\n", name));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			 "DLP VFSVolumeGetLabel %s\n", name));
 	}
 	
 	dlp_response_free(res);
 	
 	return result;
 }
+
 
 /***********************************************************************
  *
@@ -4736,7 +5304,8 @@ int dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSVolumeSetLabel(int sd, int volRefNum, char *name)
+int
+dlp_VFSVolumeSetLabel(int sd, int volRefNum, char *name)
 {
 	int 	result;
 	struct dlpRequest *req; 
@@ -4744,7 +5313,8 @@ int dlp_VFSVolumeSetLabel(int sd, int volRefNum, char *name)
 	
 	Trace(VFSVolumeSetLabel);
 
-	req = dlp_request_new(dlpFuncVFSVolumeSetLabel, 1, 2 + (strlen(name) + 1));
+	req = dlp_request_new(dlpFuncVFSVolumeSetLabel, 1,
+			2 + (strlen(name) + 1));
 
 	set_short(DLP_REQUEST_DATA(req, 0, 0), volRefNum);
 	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
@@ -4757,6 +5327,7 @@ int dlp_VFSVolumeSetLabel(int sd, int volRefNum, char *name)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSVolumeSize
@@ -4768,8 +5339,9 @@ int dlp_VFSVolumeSetLabel(int sd, int volRefNum, char *name)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSVolumeSize(int sd, int volRefNum, long *volumeSizeUsed,
-		      long *volumeSizeTotal)
+int
+dlp_VFSVolumeSize(int sd, int volRefNum, long *volumeSizeUsed,
+	long *volumeSizeTotal)
 {
 	int 	result;
 	struct dlpRequest *req; 
@@ -4799,6 +5371,7 @@ int dlp_VFSVolumeSize(int sd, int volRefNum, long *volumeSizeUsed,
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    dlp_VFSFileSeek
@@ -4810,8 +5383,8 @@ int dlp_VFSVolumeSize(int sd, int volRefNum, long *volumeSizeUsed,
  * Returns:     
  *
  ***********************************************************************/
-
-int dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
+int
+dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
 {
 	int 	result;
 	
@@ -4821,7 +5394,8 @@ int dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
 	Trace(VFSFileSeek);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		"Seek %x to offset %d from origin %d\n",fileRef,offset,origin));
+		"Seek %x to offset %d from origin %d\n",
+			fileRef,offset,origin));
 	
 	req = dlp_request_new(dlpFuncVFSFileSeek, 1, 10);
 	
@@ -4849,7 +5423,8 @@ int dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
+int
+dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 {
 	int 	result;
 	struct dlpRequest *req; 
@@ -4885,7 +5460,8 @@ int dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
  * Returns:     
  *
  ***********************************************************************/
-int dlp_VFSFileSize(int sd, FileRef fileRef,int *size)
+int
+dlp_VFSFileSize(int sd, FileRef fileRef,int *size)
 {
 	int 	result;
 	struct dlpRequest *req;

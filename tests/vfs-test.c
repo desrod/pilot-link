@@ -35,8 +35,8 @@
 int pilot_connect(char *port);
 
 /* For various protocol versions, set to 0 to not test those versions */
-#define DLP_1_1 1
-#define DLP_1_2 1
+#define DLP_1_1 0
+#define DLP_1_2 0
 #define DLP_1_3 1
 
 /* Logging defines */
@@ -65,7 +65,6 @@ int main (int argc, char **argv)
 	t1 = time (NULL);
 	LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "VFSTEST Starting at %s", ctime (&t1)));
 
-#if DLP_1_3
 	/*********************************************************************
 	 *
 	 * Test: Expansion
@@ -150,7 +149,6 @@ int main (int argc, char **argv)
 	 *   None
 	 *
 	 *********************************************************************/
-#endif
 
 	t1 = time (NULL);
 	LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "VFSTEST Ending at %s", ctime (&t1)));

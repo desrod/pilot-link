@@ -44,7 +44,7 @@ $dlp = PDA::Pilot::accept($socket) or die "$!";
 
 print Dumper($dlp);
 
-dump_sysinfo();
+# dump_sysinfo();
 dump_memopad();
 dump_datebook();
 dump_mail();

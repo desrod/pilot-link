@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "read-veo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "read-veo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBread\-veo\fR \- Convert all pictures found via connecting to a Palm
 handheld. The output type is Portable Pixmap (.ppm).

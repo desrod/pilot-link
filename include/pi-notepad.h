@@ -1,18 +1,17 @@
 #ifndef _PILOT_NOTEPAD_H_
 #define _PILOT_NOTEPAD_H_
 
-#include "pi-args.h"
 #include "pi-appinfo.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct NotePadAppInfo {
+typedef struct NotePadAppInfo {
    int 	dirty,
      sortByPriority;
    struct 	CategoryAppInfo category;
-};
+} NotePadAppInfo_t;
 
 typedef struct {
    unsigned short sec;
@@ -61,7 +60,7 @@ typedef struct {
 */
 
 			   
-typedef struct {
+typedef struct body {
    unsigned long bodyLen;
    unsigned long width;
    unsigned long height;
@@ -70,7 +69,7 @@ typedef struct {
    unsigned int dataLen;	/* length of dataRecs in bytes	*/
 } body_t;
    
-typedef struct {
+typedef struct dataRec {
    unsigned char  repeat;
    unsigned char  data;
 } dataRec_t;
@@ -85,11 +84,13 @@ typedef struct NotePad {
    dataRec_t   *data;
 } NotePad_t;
 
-void free_NotePad( struct NotePad *a );
-int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len);
-int unpack_NotePadAppInfo(struct NotePadAppInfo *ai, unsigned char *record, int len);
-int pack_NotePad(struct NotePad *a, unsigned char *buffer, int len);
-int pack_NotePadAppInfo(struct NotePadAppInfo *ai, unsigned char *record, int len);
+void free_NotePad( NotePad_t *a );
+int unpack_NotePad(NotePad_t *a, unsigned char *buffer, size_t len);
+int unpack_NotePadAppInfo(NotePadAppInfo_t *ai, unsigned char *record,
+	size_t len);
+int pack_NotePad(NotePad_t *a, unsigned char *buffer, size_t len);
+int pack_NotePadAppInfo(NotePadAppInfo_t *ai, unsigned char *record,
+	size_t len);
 
 #ifdef __cplusplus
 }

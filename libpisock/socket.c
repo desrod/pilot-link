@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 #endif
 #include <stdlib.h>
 #include <stdio.h>
@@ -43,7 +44,6 @@
 #include <string.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-serial.h"
 #ifdef HAVE_USB
 #include "pi-usb.h"
@@ -58,100 +58,209 @@
 #include "pi-syspkt.h"
 #include "pi-debug.h"
 
-int pi_socket_init(struct pi_socket *ps);
+/* Declare function prototypes */
+static pi_socket_list_t *ps_list_append (pi_socket_list_t *list,
+	pi_socket_t *ps);
+static pi_socket_list_t *ps_list_prepend (pi_socket_list_t *list,
+	pi_socket_t *ps);
+static pi_socket_t *ps_list_find (pi_socket_list_t *list,
+	int pi_sd);
+static pi_socket_list_t *ps_list_find_elem (pi_socket_list_t *list,
+	int pi_sd); 
+static pi_socket_list_t *ps_list_remove (pi_socket_list_t *list,
+	int pi_sd); 
+static pi_socket_list_t *ps_list_copy (pi_socket_list_t *list);
+static void ps_list_free (pi_socket_list_t *list);
+
+static void protocol_queue_add (pi_socket_t *ps, pi_protocol_t *prot);
+static void protocol_cmd_queue_add (pi_socket_t *ps, pi_protocol_t *prot);
+static pi_protocol_t *protocol_queue_find (pi_socket_t *ps, int level);
+static pi_protocol_t *protocol_queue_find_next (pi_socket_t *ps, int level); 
+
+int pi_socket_init(pi_socket_t *ps);
+
+static int is_connected (pi_socket_t *ps);
+static int is_listener (pi_socket_t *ps);
 
 /* Linked List of Sockets */
-struct pi_socket_list
-{
-	struct pi_socket *ps;
-	int version;
-	
-	struct pi_socket_list *next;
-};
+pi_socket_list_t pi_socket_list;
 
-static struct pi_socket_list *psl = NULL;
-static struct pi_socket_list *watch_list = NULL;
+/* GLOBALS */
+static pi_socket_list_t *psl = NULL;
+static pi_socket_list_t *watch_list = NULL;
 
 /* Automated tickling interval */
-static int interval = 0;
+static unsigned int interval = 0;
 
 
 /* Linked List Code */
-static struct pi_socket_list *
-ps_list_append (struct pi_socket_list *list, struct pi_socket *ps) 
+/***********************************************************************
+ *
+ * Function:    ps_list_append
+ *
+ * Summary:     creates and appends a new pi_socket_list element to
+ *		the (possibly empty) pi_socket_list and	fills in the
+ *		pi_socket_t* member to point to the given pi_socket.
+ *
+ * Parameters:	pi_socket_list_t*, pi_socket_t*
+ *
+ * Returns:     pi_socket_list_t*, or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_socket_list_t *
+ps_list_append (pi_socket_list_t *list, pi_socket_t *ps) 
 {
-	struct pi_socket_list *elem, *new_elem;
+	pi_socket_list_t *elem, *new_elem;
 	
-	ASSERT (ps != NULL)
+	ASSERT (ps != NULL);
 
-	new_elem 	= malloc(sizeof(struct pi_socket_list));
-	new_elem->ps 	= ps;
-	new_elem->version = 0;
-	new_elem->next 	= NULL;
+	new_elem = malloc(sizeof(pi_socket_list_t));
+	
+	if (new_elem != NULL) {
+		new_elem->ps 	= ps;
+		new_elem->version = 0;
+		new_elem->next 	= NULL;
 
-	if (list == NULL)
-		return new_elem;
+		if (list == NULL)
+			return new_elem;
 	
-	elem = list;
-	while (elem->next != NULL)
-		elem = elem->next;
+		elem = list;
+		while (elem->next != NULL)
+			elem = elem->next;
 	
-	elem->next = new_elem;
+		elem->next = new_elem;
+	} else
+		list = NULL;
 
 	return list;
 }
 
-#if 0
-static struct pi_socket_list *
-ps_list_prepend (struct pi_socket_list *list, struct pi_socket *ps) 
-{
-	struct pi_socket_list *new_elem;
-	
-	ASSERT (ps != NULL)
 
-	new_elem 	= malloc(sizeof(struct pi_socket_list));
-	new_elem->ps 	= ps;
-	new_elem->version = 0;
-	new_elem->next 	= list;
+/***********************************************************************
+ *
+ * Function:    ps_list_prepend
+ *
+ * Summary:     creates and prepends a new pi_socket_list element to
+ *		the (possibly empty) pi_socket_list and	fills in the
+ *		pi_socket_t* member to point to the given pi_socket.
+ *
+ * Parameters:	pi_socket_list_t *, pi_socket_t *
+ *
+ * Returns:     pi_socket_list_t *, or NULL if operation failed
+ *
+ ***********************************************************************/
+static pi_socket_list_t *
+ps_list_prepend (pi_socket_list_t *list, pi_socket_t *ps) 
+{
+	pi_socket_list_t *new_elem;
+	
+	ASSERT (ps != NULL);
+
+	new_elem = malloc(sizeof(pi_socket_list_t));
+
+	if (new_elem != NULL) {
+		new_elem->ps 	= ps;
+		new_elem->version = 0;
+		new_elem->next 	= list;
+	}
 
 	return new_elem;
 }
-#endif
 
-static struct pi_socket *
-ps_list_find (struct pi_socket_list *list, int sd) 
+
+/***********************************************************************
+ *
+ * Function:    ps_list_find
+ *
+ * Summary:     traverse a (possibly empty) pi_socket_list and find
+ *		the first list element whose pi_socket_t* member points
+ *		to a pi_socket matching the given socket descriptor
+ *
+ * Parameters:	pi_socket_list_t *, socket descriptor 
+ *
+ * Returns:     pi_socket_t *, or NULL if no match
+ *
+ * NOTE:	ps_list_find returns a pointer which points directly to
+ *		the socket (pi_socket_t *) whereas ps_find_elem returns a
+ *		pointer to the list element (pi_socket_list_t *) which
+ *		_contains_ a pointer to the socket
+ *
+ ***********************************************************************/
+static pi_socket_t *
+ps_list_find (pi_socket_list_t *list, int pi_sd) 
 {
-	struct pi_socket_list *elem;
+	pi_socket_list_t *elem;
 	
 	for (elem = list; elem != NULL; elem = elem->next) {
-		if (elem->ps->sd == sd)
-			return elem->ps;
+		if (elem->ps != NULL)
+			if (elem->ps->sd == pi_sd)
+				return elem->ps;
 	}
 
 	return NULL;
 }
 
-static struct pi_socket_list *
-ps_list_find_elem (struct pi_socket_list *list, int sd) 
+
+/***********************************************************************
+ *
+ * Function:    ps_find_elem
+ *
+ * Summary:     traverse a (possibly empty) pi_socket_list and find
+ *		the first list element whose pi_socket* member points
+ *		to a pi_socket matching the given socket descriptor
+ *
+ * Parameters:	pi_socket_list_t*, socket descriptor 
+ *
+ * Returns:     pi_socket_list_t*, or NULL if not found
+ *
+ * NOTE:	ps_list_find returns a pointer which points directly to
+ *		the socket (pi_socket_t *) whereas ps_find_elem returns a
+ *		pointer to the list element (pi_socket_list_t *) which
+ *		_contains_ a pointer to the socket
+ *
+ ***********************************************************************/
+static pi_socket_list_t *
+ps_list_find_elem (pi_socket_list_t *list, int pi_sd) 
 {
-	struct pi_socket_list *elem;
+	pi_socket_list_t *elem;
 	
 	for (elem = list; elem != NULL; elem = elem->next) {
-		if (elem->ps->sd == sd)
-			return elem;
+		if (elem->ps != NULL)
+			if (elem->ps->sd == pi_sd)
+				return elem;
 	}
 
 	return NULL;
 }
 
-static struct pi_socket_list *
-ps_list_remove (struct pi_socket_list *list, int sd) 
+
+/***********************************************************************
+ *
+ * Function:    ps_list_remove
+ *
+ * Summary:     remove first pi_socket_list element pointing to a pi_socket
+ *		member matching socket descriptor
+ *
+ * Parameters:	pi_socket_list_t *, socket descriptor 
+ *
+ * Returns:     the (possibly NULL) head pi_socket_list_t *
+ *
+ * NOTE:	only the pi_socket_list element is freed,
+ *		_not_ the pi_socket.  Consequently, this function
+ *		makes the (risky) assumption that the pi_socket will
+ *		be freed elsewhere.
+ *
+ ***********************************************************************/
+static pi_socket_list_t *
+ps_list_remove (pi_socket_list_t *list, int pi_sd) 
 {
-	struct pi_socket_list *elem, *new_list = list, *prev_elem;
+	pi_socket_list_t *elem, *new_list = list, *prev_elem;
 
 	prev_elem = NULL;
 	for (elem = list; elem != NULL; elem = elem->next) {
-		if (elem->ps->sd == sd) {
+		if (elem->ps == NULL)
+			continue;
+		else if (elem->ps->sd == pi_sd) {
 			if (prev_elem == NULL)
 				new_list = elem->next;
 			else
@@ -165,10 +274,25 @@ ps_list_remove (struct pi_socket_list *list, int sd)
 	return new_list;
 }
 
-static struct pi_socket_list *
-ps_list_copy (struct pi_socket_list *list) 
+
+/***********************************************************************
+ *
+ * Function:    ps_list_copy
+ *
+ * Summary:     copy pi_socket_list
+ *
+ * Parameters:	pi_socket_list_t *
+ *
+ * Returns:     pi_socket_list_t* (new list head)
+ *
+ * NOTE:	pi_list_copy does _not_ copy the pi_socket member, it
+ *		copies only the list elements
+ *
+ ***********************************************************************/
+static pi_socket_list_t *
+ps_list_copy (pi_socket_list_t *list) 
 {
-	struct pi_socket_list *l, *new_list = NULL;
+	pi_socket_list_t *l, *new_list = NULL;
 	
 	for (l = list; l != NULL; l = l->next)
 		new_list = ps_list_append (new_list, l->ps);
@@ -176,10 +300,27 @@ ps_list_copy (struct pi_socket_list *list)
 	return new_list;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    ps_list_free
+ *
+ * Summary:     free pi_socket_list elements
+ *
+ * Parameters:	pi_socket_list_t *
+ *
+ * Returns:     void
+ *
+ * NOTE:	only the pi_socket_list elements are freed,
+ *		_not_ the pi_sockets.  Consequently, this function
+ *		makes the (risky) assumption that the pi_sockets will
+ *		be freed elsewhere.
+ *
+ ***********************************************************************/
 static void
-ps_list_free (struct pi_socket_list *list)
+ps_list_free (pi_socket_list_t *list)
 {
-	struct pi_socket_list *l, *next;
+	pi_socket_list_t *l, *next;
 
 	if (list == NULL)
 		return;
@@ -193,24 +334,63 @@ ps_list_free (struct pi_socket_list *list)
 }
 	      
 /* Protocol Queue */
+/***********************************************************************
+ *
+ * Function:    protocol_queue_add
+ *
+ * Summary:     adds protocol queue to pi_socket
+ *
+ * Parameters:	pi_socket_t*, pi_protocol_t*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 static void
-protocol_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
+protocol_queue_add (pi_socket_t *ps, pi_protocol_t *prot)
 {
-	ps->protocol_queue = realloc(ps->protocol_queue, (sizeof(struct pi_protocol *)) * (ps->queue_len + 1));
+	ps->protocol_queue = realloc(ps->protocol_queue,
+		(sizeof(pi_protocol_t *)) * (ps->queue_len + 1));
+
 	ps->protocol_queue[ps->queue_len] = prot;
 	ps->queue_len++;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    cmd_queue_add
+ *
+ * Summary:     adds command queue to pi_socket
+ *
+ * Parameters:	pi_socket_t*, pi_protocol*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 static void
-protocol_cmd_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
+protocol_cmd_queue_add (pi_socket_t *ps, pi_protocol_t *prot)
 {
-	ps->cmd_queue = realloc(ps->cmd_queue, (sizeof(struct pi_protocol *)) * (ps->cmd_len + 1));
+	ps->cmd_queue = realloc(ps->cmd_queue,
+		(sizeof(pi_protocol_t *)) * (ps->cmd_len + 1));
+
 	ps->cmd_queue[ps->cmd_len] = prot;
 	ps->cmd_len++;
 }
 
-static struct pi_protocol *
-protocol_queue_find (struct pi_socket *ps, int level) 
+
+/***********************************************************************
+ *
+ * Function:    protocol_queue_find
+ *
+ * Summary:     find queue entry
+ *
+ * Parameters:	pi_socket_t*, level
+ *
+ * Returns:     pi_protocol*, or NULL if queue entry not found
+ *
+ ***********************************************************************/
+static pi_protocol_t*
+protocol_queue_find (pi_socket_t *ps, int level) 
 {
 	int 	i;
 
@@ -229,8 +409,20 @@ protocol_queue_find (struct pi_socket *ps, int level)
 	return NULL;
 }
 
-static struct pi_protocol *
-protocol_queue_find_next (struct pi_socket *ps, int level) 
+
+/***********************************************************************
+ *
+ * Function:    protocol_queue_find_next
+ *
+ * Summary:     find next queue entry
+ *
+ * Parameters:	pi_socket*, level
+ *
+ * Returns:     pi_protocol_t* or NULL if next queue entry not found
+ *
+ ***********************************************************************/
+static pi_protocol_t*
+protocol_queue_find_next (pi_socket_t *ps, int level) 
 {
 	int 	i;
 
@@ -258,11 +450,27 @@ protocol_queue_find_next (struct pi_socket *ps, int level)
 	return NULL;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    protocol_queue_build
+ *
+ * Summary:     build protocol queue
+ *
+ * Parameters:	pi_socket_t*, autodetect
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 static void
-protocol_queue_build (struct pi_socket *ps, int autodetect) 
+protocol_queue_build (pi_socket_t *ps, int autodetect) 
 {
 	int 	protocol;
-	struct 	pi_protocol *prot, *dev_prot, *dev_cmd_prot;
+
+	pi_protocol_t	*prot,
+			*dev_prot,
+			*dev_cmd_prot;
+
 	unsigned char byte;
 	
 	/* The device protocol */
@@ -282,19 +490,24 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 				switch (byte) {
 				case PI_SLP_SIG_BYTE1:
 					protocol = PI_PF_PADP;
-					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, "PADP/SLP\n"));
+					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+						"PADP/SLP\n"));
 					found = 1;
 					break;			
 				case PI_NET_SIG_BYTE1:
 				case 0x01:
 					protocol = PI_PF_NET;
-					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, "NET\n"));
+					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+						"NET\n"));
 					found = 1;
 					break;
 				default:
-					if (dev_prot->read (ps, &byte, 1, PI_MSG_PEEK) < 0) {
+					if (dev_prot->read (ps, &byte, 1,
+						PI_MSG_PEEK) < 0) {
 						protocol = PI_PF_PADP;
-						LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, "Default\n"));
+						LOG((PI_DBG_SOCK,
+						 PI_DBG_LVL_INFO,
+						 "Default\n"));
 						found = 1;
 					}
 				}
@@ -354,8 +567,20 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
   	protocol_cmd_queue_add (ps, dev_cmd_prot);
 }
 
+
+/***********************************************************************
+ *
+ * Function:    protocol_queue_destroy
+ *
+ * Summary:     destroy protocol queue
+ *
+ * Parameters:	pi_socket_t *
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 static void
-protocol_queue_destroy (struct pi_socket *ps)
+protocol_queue_destroy (pi_socket_t *ps)
 {
 	int 	i;	
 	for (i = 0; i < ps->queue_len; i++)
@@ -369,10 +594,22 @@ protocol_queue_destroy (struct pi_socket *ps)
 		free(ps->cmd_queue);
 }
 
-struct pi_protocol *
+
+/***********************************************************************
+ *
+ * Function:    pi_protocol
+ *
+ * Summary:     destroy protocol queue
+ *
+ * Parameters:	socket descriptor, level
+ *
+ * Returns:     pi_protocol_t*
+ *
+ ***********************************************************************/
+pi_protocol_t *
 pi_protocol (int pi_sd, int level)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -382,10 +619,10 @@ pi_protocol (int pi_sd, int level)
 	return protocol_queue_find(ps, level);
 }
 
-struct pi_protocol *
+pi_protocol_t *
 pi_protocol_next (int pi_sd, int level)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -397,6 +634,17 @@ pi_protocol_next (int pi_sd, int level)
 
 
 /* Environment Code */
+/***********************************************************************
+ *
+ * Function:    env_check
+ *
+ * Summary:     configures Pilot-Link debug environment
+ *
+ * Parameters:	void
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 static void
 env_check (void) 
 {
@@ -447,6 +695,8 @@ env_check (void)
 
 		free(debug);
 	}
+
+	/* PILOT Debug Level */
 	if (getenv("PILOT_DEBUG_LEVEL")) {
 		int 	level = 0;
 		const char *debug;
@@ -467,6 +717,7 @@ env_check (void)
 		pi_debug_set_level (level);
 	}
 	
+	/* log file name */
 	if (getenv("PILOT_LOG")) {
 		const char *logfile;
 		
@@ -479,22 +730,44 @@ env_check (void)
 }
 
 /* Util functions */
+/***********************************************************************
+ *
+ * Function:    is_connected
+ *
+ * Summary:     interrogate socket connection state
+ *
+ * Parameters:	pi_socket*
+ *
+ * Returns:     1 if socket is connected, 0 otherwise
+ *
+ ***********************************************************************/
 static int
-is_connected (struct pi_socket *ps) 
+is_connected (pi_socket_t *ps) 
 {
 	if (ps->state == PI_SOCK_CONIN || ps->state == PI_SOCK_CONAC)
 		return 1;
-	
-	return 0;
+	else
+		return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    is_listener
+ *
+ * Summary:     interrogate socket listener state
+ *
+ * Parameters:	pi_socket*
+ *
+ * Returns:     1 if socket is listener, 0 otherwise
+ *
+ ***********************************************************************/
 static int
-is_listener (struct pi_socket *ps) 
+is_listener (pi_socket_t *ps) 
 {
 	if (ps->state == PI_SOCK_LISTN)
 		return 1;
-	
-	return 0;
+	else
+		return 0;
 }
 
 /* Alarm Handling Code */
@@ -548,19 +821,20 @@ alarm(unsigned sec)
 static RETSIGTYPE
 onalarm(int signo)
 {
-	struct pi_socket_list *l;
+	pi_socket_list_t *l;
 
-	signal(SIGALRM, onalarm);
+	signal(signo, onalarm);
 	
 	for (l = watch_list; l != NULL; l = l->next) {
-		struct pi_socket *ps = l->ps;
+		pi_socket_t *ps = l->ps;
 
 		if (!is_connected(ps))
 			continue;
 
 		if (pi_tickle(ps->sd) < 0) {
 			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, 
-			    "SOCKET Socket %d is busy during tickle\n", ps->sd));
+				"SOCKET Socket %d is busy during tickle\n",
+				ps->sd));
 			alarm(1);
 		} else {
 			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
@@ -571,18 +845,44 @@ onalarm(int signo)
 }
 
 /* Exit Handling Code */
+/***********************************************************************
+ *
+ * Function:    onexit
+ *
+ * Summary:     this function closes and destroys all pi_sockets and
+ *		frees the global pi_socket_list
+ *
+ * Parameters:	void
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 static void
 onexit(void)
 {
-	struct pi_socket_list *l, *list;
+	pi_socket_list_t *l,
+			 *list;
 
 	list = ps_list_copy (psl);
+
 	for (l = list; l != NULL; l = l->next)
 		pi_close(l->ps->sd);
 
 	ps_list_free (list);
 }
 
+
+/***********************************************************************
+ *
+ * Function:    installexit
+ *
+ * Summary:     install exit function using atexit()
+ *
+ * Parameters:	void
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
 static void
 installexit(void)
 {
@@ -601,14 +901,16 @@ installexit(void)
  *
  * Summary:     Create a local connection endpoint
  *
- * Parameters:  None
+ * Parameters:  domain, type, protocol
  *
- * Returns:     Nothing
+ * Returns:     socket descriptor, or -1 on error
  *
  ***********************************************************************/
-int pi_socket(int domain, int type, int protocol)
+int
+pi_socket(int domain, int type, int protocol)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
+	pi_socket_list_t *list;
 
 	env_check ();
 	
@@ -619,7 +921,9 @@ int pi_socket(int domain, int type, int protocol)
 			protocol = PI_PF_DEV;
 	}
 
-	ps = calloc(sizeof(struct pi_socket), 1);
+	ps = calloc(sizeof(pi_socket_t), 1);
+	if (ps == NULL)
+		return -1;
 
 	/* Create unique socket descriptor */
 #if defined( OS2 ) || defined( WIN32 )
@@ -660,12 +964,16 @@ int pi_socket(int domain, int type, int protocol)
 	ps->os2_read_timeout 	= 60;
 	ps->os2_write_timeout 	= 60;
 #endif
-
-	installexit();
-
-	pi_socket_recognize(ps);
-
-	return ps->sd;
+ 
+	/* post the new socket to the list */
+	list = pi_socket_recognize(ps);
+	if (list == NULL) {
+		free(ps);
+		return -1;
+	} else {
+		installexit();
+		return ps->sd;
+	}
 }
 
 
@@ -673,69 +981,107 @@ int pi_socket(int domain, int type, int protocol)
  *
  * Function:    pi_socket_copy
  *
- * Summary:     
+ * Summary:	copies a pi_socket
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
- * Returns:     New socket
+ * Returns:     pi_socket_t * (New socket), or NULL if operation failed
  *
  ***********************************************************************/
-struct pi_socket *pi_socket_copy(struct pi_socket *ps)
+pi_socket_t *
+pi_socket_copy(pi_socket_t *ps)
 {
 	int 	i;
-	struct pi_socket *new_ps;
+	pi_socket_t *new_ps = NULL;
+	struct sockaddr *laddr = NULL;
+	struct sockaddr *raddr = NULL;
 	
-	new_ps = malloc(sizeof(struct pi_socket));
-	memcpy(new_ps, ps, sizeof(struct pi_socket));
-
-	new_ps->laddr = malloc(ps->laddrlen);
-	new_ps->raddr = malloc(ps->raddrlen);
-	memcpy(new_ps->laddr, ps->laddr, ps->laddrlen);
-	memcpy(new_ps->raddr, ps->raddr, ps->raddrlen);
-
-	new_ps->sd = dup(ps->sd);
-	
-	new_ps->protocol_queue = NULL;
-	new_ps->queue_len = 0;
-	for (i = 0; i < ps->queue_len; i++) {
-		struct pi_protocol *prot;
-		
-		prot = ps->protocol_queue[i]->dup (ps->protocol_queue[i]);
-		protocol_queue_add(new_ps, prot);
+	new_ps = malloc(sizeof(pi_socket_t));
+	if (new_ps != NULL) {
+		laddr = malloc(ps->laddrlen);
+		if (laddr != NULL) {
+			raddr = malloc(ps->raddrlen);
+			if (raddr == NULL) {
+				free(laddr);
+				laddr = NULL;
+				free(new_ps);
+				new_ps = NULL;
+			}
+		} else {
+			free(new_ps);
+			new_ps = NULL;
+		}
 	}
-	new_ps->cmd_queue = NULL;
-	new_ps->cmd_len = 0;
-	for (i = 0; i < ps->cmd_len; i++) {
-		struct pi_protocol *prot;
-		
-		prot = ps->cmd_queue[i]->dup (ps->cmd_queue[i]);
-		protocol_cmd_queue_add(new_ps, prot);
-	}
-	new_ps->device = ps->device->dup (ps->device);
+
+	if ( (new_ps != NULL) && (laddr != NULL) && (raddr != NULL) ) {
+		memcpy(new_ps, ps, sizeof(pi_socket_t));
+
+		new_ps->laddr = laddr;
+		new_ps->raddr = raddr;
+		memcpy(new_ps->laddr, ps->laddr, ps->laddrlen);
+		memcpy(new_ps->raddr, ps->raddr, ps->raddrlen);
+
+		new_ps->sd = dup(ps->sd);
 	
-	pi_socket_recognize(new_ps);
+		new_ps->protocol_queue = NULL;
+		new_ps->queue_len = 0;
+
+		for (i = 0; i < ps->queue_len; i++) {
+			pi_protocol_t *prot;
+		
+			prot =
+			 ps->protocol_queue[i]->dup (ps->protocol_queue[i]);
+			protocol_queue_add(new_ps, prot);
+		}
+
+		new_ps->cmd_queue = NULL;
+		new_ps->cmd_len = 0;
+
+		for (i = 0; i < ps->cmd_len; i++) {
+			pi_protocol_t *prot;
+		
+			prot = ps->cmd_queue[i]->dup (ps->cmd_queue[i]);
+			protocol_cmd_queue_add(new_ps, prot);
+		}
+		new_ps->device = ps->device->dup (ps->device);
+	
+		pi_socket_recognize(new_ps);
+	}
 
 	return new_ps;
 }
 
-int pi_socket_setsd(struct pi_socket *ps, int sd)
+
+/***********************************************************************
+ *
+ * Function:    pi_socket_setsd
+ *
+ * Summary:	dups a pi_socket descriptor
+ *
+ * Parameters:  pi_socket_t*, pi_socket descriptor
+ *
+ * Returns:     0 on success, -1 otherwise
+ *
+ ***********************************************************************/
+int
+pi_socket_setsd(pi_socket_t *ps, int pi_sd)
 {
 	int 	orig;
 	
-	orig = sd;
+	orig = pi_sd;
 	
 #ifdef HAVE_DUP2
-	sd = dup2(sd, ps->sd);
+	pi_sd = dup2(pi_sd, ps->sd);
 #else
 #ifdef F_DUPFD
 	close(ps->sd);
-	sd = fcntl(sd, F_DUPFD, ps->sd);
+	pi_sd = fcntl(sd, F_DUPFD, ps->sd);
 #else
 	close(ps->sd);
-	sd = dup(sd);	/* Unreliable */
+	pi_sd = dup(pi_sd);	/* Unreliable */
 #endif
 #endif
-	if (sd != orig)
+	if (pi_sd != orig)
 		close(orig);
 	else
 		return -1;
@@ -743,27 +1089,42 @@ int pi_socket_setsd(struct pi_socket *ps, int sd)
 	return 0;
 }
 
-int pi_socket_init(struct pi_socket *ps)
+
+/***********************************************************************
+ *
+ * Function:    pi_socket_init
+ *
+ * Summary:     inits the pi_socket 
+ *
+ * Parameters:  pi_socket_t*
+ *
+ * Returns:     0
+ *
+ ***********************************************************************/
+int
+pi_socket_init(pi_socket_t *ps)
 {
   	protocol_queue_build (ps, 1);
 
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_socket_recognize
  *
- * Summary:     
+ * Summary:     appends the pi_socket to global list
  *
- * Parameters:  None
+ * Parameters:  pi_socket*
  *
- * Returns:     Nothing
+ * Returns:     pi_socket_list_t *
  *
  ***********************************************************************/
-void pi_socket_recognize(struct pi_socket *ps)
+pi_socket_list_t *
+pi_socket_recognize(pi_socket_t *ps)
 {
-	psl = ps_list_append (psl, ps);
+	return(psl = ps_list_append (psl, ps));
 }
 
 /***********************************************************************
@@ -777,10 +1138,11 @@ void pi_socket_recognize(struct pi_socket *ps)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
+int
+pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 {
-	int 	paddrlen = addrlen;
-	struct 	pi_socket *ps;
+	size_t 	paddrlen = addrlen;
+	pi_socket_t *ps;
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	pi_sockaddr eaddr;
 	
@@ -831,11 +1193,12 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
+int
+pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 {
-	int 	paddrlen = addrlen,
-		bind_return;
-	struct 	pi_socket *ps;
+	size_t 	paddrlen = addrlen;
+	int	bind_return;
+	pi_socket_t *ps;
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	pi_sockaddr eaddr;
 	
@@ -890,9 +1253,10 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_listen(int pi_sd, int backlog)
+int
+pi_listen(int pi_sd, int backlog)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -913,9 +1277,10 @@ int pi_listen(int pi_sd, int backlog)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
+int
+pi_accept(int pi_sd, struct sockaddr *addr, size_t *addrlen)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 		
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -942,9 +1307,9 @@ int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
  *
  ***********************************************************************/
 int
-pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
+pi_accept_to(int pi_sd, struct sockaddr *addr, size_t *addrlen, int timeout)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -972,10 +1337,10 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
  ***********************************************************************/
 int
 pi_getsockopt(int pi_sd, int level, int option_name, 
-	      void *option_value, int *option_len)
+	      void *option_value, size_t *option_len)
 {
-	struct 	pi_socket *ps;
-	struct 	pi_protocol *prot;
+	pi_socket_t *ps;
+	pi_protocol_t *prot;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1005,7 +1370,8 @@ pi_getsockopt(int pi_sd, int level, int option_name,
 		return -1;
 	}
 
-	return prot->getsockopt (ps, level, option_name, option_value, option_len);
+	return prot->getsockopt (ps, level, option_name,
+		option_value, option_len);
 }
 
 
@@ -1022,10 +1388,10 @@ pi_getsockopt(int pi_sd, int level, int option_name,
  ***********************************************************************/
 int
 pi_setsockopt(int pi_sd, int level, int option_name, 
-	      const void *option_value, int *option_len) 
+	      const void *option_value, size_t *option_len) 
 {
-	struct 	pi_socket *ps;
-	struct 	pi_protocol *prot;
+	pi_socket_t *ps;
+	pi_protocol_t *prot;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1055,7 +1421,8 @@ pi_setsockopt(int pi_sd, int level, int option_name,
 		return -1;
 	}
 
-	return prot->setsockopt (ps, level, option_name, option_value, option_len);
+	return prot->setsockopt (ps, level, option_name,
+		option_value, option_len);
 }
 
 /***********************************************************************
@@ -1069,9 +1436,10 @@ pi_setsockopt(int pi_sd, int level, int option_name,
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
+int
+pi_send(int pi_sd, void *msg, size_t len, int flags)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1098,9 +1466,10 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
+ssize_t
+pi_recv(int pi_sd, void *msg, size_t len, int flags)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1124,7 +1493,8 @@ int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_read(int pi_sd, void *msg, int len)
+ssize_t
+pi_read(int pi_sd, void *msg, size_t len)
 {
 	return pi_recv(pi_sd, msg, len, 0);
 }
@@ -1141,7 +1511,8 @@ int pi_read(int pi_sd, void *msg, int len)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_write(int pi_sd, void *msg, int len)
+ssize_t
+pi_write(int pi_sd, void *msg, size_t len)
 {
 	return pi_send(pi_sd, msg, len, 0);
 }
@@ -1157,14 +1528,14 @@ int pi_write(int pi_sd, void *msg, int len)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_tickle(int pi_sd)
+int
+pi_tickle(int pi_sd)
 {
-	int 	result,
-		type, 
-		size, 
-		len = 0;
+	int 	result, type; 
+	size_t	len = 0;
+	size_t	size;
 	unsigned char 	msg[1];
-	struct pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1174,7 +1545,8 @@ int pi_tickle(int pi_sd)
 	if (!is_connected (ps))
 		return -1;
 
-	LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, "SOCKET Tickling socket %d\n", pi_sd));
+	LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+			"SOCKET Tickling socket %d\n", pi_sd));
 
 	/* Enter command state */
 	ps->command = 1;
@@ -1184,7 +1556,8 @@ int pi_tickle(int pi_sd)
 	case PI_CMD_CMP:
 		type = padTickle;
 		size = sizeof(type);
-		pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &type, &size);
+		pi_setsockopt(ps->sd, PI_LEVEL_PADP,
+			 PI_PADP_TYPE, &type, &size);
 		break;
 	case PI_CMD_NET:
 		type = PI_NET_TYPE_TCKL;
@@ -1201,6 +1574,7 @@ int pi_tickle(int pi_sd)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_close
@@ -1212,10 +1586,11 @@ int pi_tickle(int pi_sd)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_close(int pi_sd)
+int
+pi_close(int pi_sd)
 {
-	int 	result = 0;
-	struct 	pi_socket *ps;
+	int 		result = 0;
+	pi_socket_t	*ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1247,6 +1622,7 @@ int pi_close(int pi_sd)
 	return result;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_getsockname
@@ -1258,9 +1634,10 @@ int pi_close(int pi_sd)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_getsockname(int pi_sd, struct sockaddr *addr, int *namelen)
+int
+pi_getsockname(int pi_sd, struct sockaddr *addr, size_t *namelen)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1274,6 +1651,7 @@ int pi_getsockname(int pi_sd, struct sockaddr *addr, int *namelen)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_getsockpeer
@@ -1285,9 +1663,10 @@ int pi_getsockname(int pi_sd, struct sockaddr *addr, int *namelen)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
+int
+pi_getsockpeer(int pi_sd, struct sockaddr *addr, size_t *namelen)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1301,6 +1680,7 @@ int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    pi_version
@@ -1312,10 +1692,11 @@ int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_version(int pi_sd)
+int
+pi_version(int pi_sd)
 {
-	int 	size;
-	struct 	pi_socket_list *elem;
+	size_t 	size;
+	pi_socket_list_t *elem;
 	struct  SysInfo si;
 	
 	/* FIXME This is an ugly hack for versions because cmp doesn't
@@ -1346,7 +1727,8 @@ int pi_version(int pi_sd)
 	switch (elem->ps->cmd) {
 	case PI_CMD_CMP:
 		size = sizeof(elem->version);
-		pi_getsockopt(elem->ps->sd, PI_LEVEL_CMP, PI_CMP_VERS, &elem->version, &size);
+		pi_getsockopt(elem->ps->sd, PI_LEVEL_CMP,
+			PI_CMP_VERS, &elem->version, &size);
 		break;
 	}
 
@@ -1356,9 +1738,10 @@ int pi_version(int pi_sd)
 	return elem->version;
 }
 
-struct pi_socket *find_pi_socket(int sd)
+pi_socket_t *
+find_pi_socket(int pi_sd)
 {
-	return ps_list_find (psl, sd);
+	return ps_list_find (psl, pi_sd);
 }
 
 /***********************************************************************
@@ -1372,9 +1755,10 @@ struct pi_socket *find_pi_socket(int sd)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int pi_watchdog(int pi_sd, int newinterval)
+int
+pi_watchdog(int pi_sd, int newinterval)
 {
-	struct 	pi_socket *ps;
+	pi_socket_t *ps;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;

@@ -1,3 +1,4 @@
+/* ex: set tabstop=4 expandtab: */
 /*
  * read-todos.c:  Translate Palm ToDo database into generic format
  *
@@ -31,7 +32,6 @@
 #include "pi-socket.h"
 #include "pi-todo.h"
 #include "pi-file.h"
-#include "pi-dlp.h"	/* Also included in pi-file.h */
 #include "pi-header.h"
 
 /* Declare prototypes */
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 			puts("   Unable to open ToDoDB");
 			dlp_AddSyncLogEntry(sd,
 					    "   Unable to open ToDoDB.\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	
 		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
@@ -138,13 +138,13 @@ int main(int argc, char *argv[])
 		if (!pif) {
 			fprintf(stderr, "   ERROR: %s\n", strerror(errno));
 			fprintf(stderr, "   Does %s exist?\n\n", filename);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		sd = pi_file_get_app_info(pif, (void *) &ptr, &len);
 		if (sd == -1) {
 			perror("pi_file_get_app_info");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		memcpy(buffer, ptr, len);
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 	} else {
 		printf("ERROR: Insufficient number of arguments\n\n");
 		display_help(progname);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	unpack_ToDoAppInfo(&tai, buffer, 0xffff);

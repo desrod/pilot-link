@@ -31,9 +31,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pi-dlp.h"
 #include "pi-file.h"
-#include "pi-socket.h"
+#include "pi-source.h"
 
 /* Declare prototypes */
 static void display_help(char *progname);

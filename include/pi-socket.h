@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "pi-version.h"
+#include "pi-sockaddr.h"
 
 #define PI_AF_PILOT             0x00
 
@@ -76,16 +77,48 @@ enum PiOptSock {
 	PI_SOCK_STATE
 };
 
-#include "pi-sockaddr.h"
+struct	pi_protocol;	/* forward declaration */
 
+typedef struct pi_socket {
+	int sd;
 
-	struct pi_socket;
+	int type;
+	int protocol;
+	int cmd;
 
-	struct sockaddr;
+	struct sockaddr *laddr;
+	size_t laddrlen;
+	struct sockaddr *raddr;
+	size_t raddrlen;
+
+	struct pi_protocol **protocol_queue;
+	int queue_len;
+	struct pi_protocol **cmd_queue;
+	int cmd_len;
+	struct pi_device *device;
+
+	int state;
+	int command;	/* true when socket in command state  */
+	int accept_to;	/* timeout value for call to accept() */
+	int dlprecord;	/* Index used for some DLP functions */
+
+#ifdef OS2
+	unsigned short os2_read_timeout;
+	unsigned short os2_write_timeout;
+#endif
+} pi_socket_t;
+
+typedef struct pi_socket_list
+{
+	pi_socket_t *ps;
+	int version;
+	
+	struct pi_socket_list *next;
+} pi_socket_list_t;
 
 	extern int pi_socket PI_ARGS((int domain, int type, int protocol));
-	extern struct pi_socket *pi_socket_copy PI_ARGS((struct pi_socket *ps));
-	extern int pi_socket_setsd PI_ARGS((struct pi_socket *ps, int sd));
+	extern pi_socket_t *pi_socket_copy PI_ARGS((pi_socket_t *ps));
+	extern int pi_socket_setsd PI_ARGS((pi_socket_t *ps, int pi_sd));
 
 	extern int pi_connect
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
@@ -95,31 +128,31 @@ enum PiOptSock {
 	extern int pi_listen PI_ARGS((int pi_sd, int backlog));
 	extern int pi_accept
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
-		     int *addrlen));
+		     size_t *addrlen));
 
 	extern int pi_accept_to
-	    PI_ARGS((int pi_sd, struct sockaddr * addr, int *addrlen,
+	    PI_ARGS((int pi_sd, struct sockaddr * addr, size_t *addrlen,
 		     int timeout));
 
 	extern int pi_send
-	    PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
+	    PI_ARGS((int pi_sd, void *msg, size_t len, int flags));
 	extern int pi_recv
-	    PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
+	    PI_ARGS((int pi_sd, void *msg, size_t len, int flags));
 
-	extern int pi_read PI_ARGS((int pi_sd, void *msg, int len));
-	extern int pi_write PI_ARGS((int pi_sd, void *msg, int len));
+	extern ssize_t pi_read PI_ARGS((int pi_sd, void *msg, size_t len));
+	extern ssize_t pi_write PI_ARGS((int pi_sd, void *msg, size_t len));
 
 	extern int pi_getsockname
-	    PI_ARGS((int pi_sd, struct sockaddr * addr, int *namelen));
+	    PI_ARGS((int pi_sd, struct sockaddr * addr, size_t *namelen));
 	extern int pi_getsockpeer
-	    PI_ARGS((int pi_sd, struct sockaddr * addr, int *namelen));
+	    PI_ARGS((int pi_sd, struct sockaddr * addr, size_t *namelen));
 
 	extern int pi_getsockopt
 	    PI_ARGS((int pi_sd, int level, int option_name,
-		     void *option_value, int *option_len));
+		     void *option_value, size_t *option_len));
 	extern int pi_setsockopt
 	    PI_ARGS((int pi_sd, int level, int option_name, 
-		     const void *option_value, int *option_len));
+		     const void *option_value, size_t *option_len));
 
 	extern int pi_version PI_ARGS((int pi_sd));
 

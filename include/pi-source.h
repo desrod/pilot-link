@@ -1,6 +1,18 @@
 #ifndef _PILOT_SOURCE_H_
 #define _PILOT_SOURCE_H_
 
+# include <sys/ioctl.h>
+# include <sys/time.h>
+# include <sys/errno.h>
+# include <time.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <string.h>
+# include <stdlib.h>
+# include <dirent.h>
+# include <errno.h>
+# include <assert.h>
+
 #ifdef NeXT
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -14,18 +26,6 @@
 # define ENOMSG 150
 # define strcasecmp stricmp
 # define strncasecmp strnicmp
-
-# include <sys/ioctl.h>
-# include <sys/time.h>
-# include <sys/errno.h>
-# include <time.h>
-# include <fcntl.h>
-# include <unistd.h>
-# include <string.h>
-# include <stdlib.h>
-# include <dirent.h>
-# include <errno.h>
-# include <assert.h>
 
 # define TTYPrompt "com#"
 # define RETSIGTYPE void
@@ -72,80 +72,65 @@ extern "C" {
 #define PI_SOCK_CONEN  0x10  /* Connected but end */
 #define PI_SOCK_CLOSE  0x20  /* Closed */
 
-	struct sockaddr;
-
-	struct pi_protocol {
+	typedef struct pi_protocol {
 		int level;
-		struct pi_protocol *(*dup) PI_ARGS((struct pi_protocol *));
-		void (*free) PI_ARGS((struct pi_protocol *));
-
-		int (*read) PI_ARGS((struct pi_socket *, unsigned char *, int, int));
-		int (*write) PI_ARGS((struct pi_socket *, unsigned char *, int, int));
-	 	int (*getsockopt) PI_ARGS((struct pi_socket *, int, int, void *, int *));
-		int (*setsockopt) PI_ARGS((struct pi_socket *, int, int, const void *, int *));
-
+		struct pi_protocol *(*dup)
+			PI_ARGS((struct pi_protocol *));
+		void (*free)
+			PI_ARGS((struct pi_protocol *));
+		ssize_t	(*read)
+			PI_ARGS((pi_socket_t *ps, unsigned char *buf,
+				size_t len, int flags));
+		ssize_t	(*write)
+			PI_ARGS((pi_socket_t *ps, unsigned char *buf,
+				size_t len, int flags));
+	 	int (*getsockopt)
+			PI_ARGS((pi_socket_t *ps, int level,
+				int option_name, void *option_value,
+					size_t *option_len));
+		int (*setsockopt)
+			PI_ARGS((pi_socket_t *ps, int level,
+				int option_name, const void *option_value,
+					size_t *option_len));
 		void *data;
-	};
+	} pi_protocol_t;
 
-	struct pi_device {
-		struct pi_device *(*dup) PI_ARGS((struct pi_device *dev));
-		void (*free) PI_ARGS((struct pi_device *dev));
-		struct pi_protocol *(*protocol) PI_ARGS((struct pi_device *dev));
-
-		int (*bind) PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
-		int (*listen) PI_ARGS((struct pi_socket *ps, int backlog));
-		int (*accept) PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int *addrlen));
-		int (*connect) PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
-		int (*close) PI_ARGS((struct pi_socket *ps));
-
+	typedef struct pi_device {
+		struct pi_device *(*dup)
+			PI_ARGS((struct pi_device *dev));
+		void (*free)
+			PI_ARGS((struct pi_device *dev));
+		struct pi_protocol *(*protocol)
+			PI_ARGS((struct pi_device *dev));
+		int (*bind)
+			PI_ARGS((pi_socket_t *ps,
+				struct sockaddr *addr, size_t addrlen));
+		int (*listen)
+			PI_ARGS((pi_socket_t *ps, int backlog));
+		int (*accept)
+			PI_ARGS((pi_socket_t *ps, struct sockaddr *addr,
+				size_t *addrlen));
+		int (*connect)
+			PI_ARGS((pi_socket_t *ps, struct sockaddr *addr,
+				size_t addrlen));
+		int (*close)
+			PI_ARGS((pi_socket_t *ps));
 		void *data;
-	};
+	} pi_device_t;
 	
-	struct pi_socket {
-		int sd;
-
-		int type;
-		int protocol;
-		int cmd;
-
-		struct sockaddr *laddr;
-		int laddrlen;
-		struct sockaddr *raddr;
-		int raddrlen;
-
-		struct pi_protocol **protocol_queue;
-		int queue_len;
-		struct pi_protocol **cmd_queue;
-		int cmd_len;
-		struct pi_device *device;
-
-		int state;
-		int command;		/* true when socket in command state                               */
-		int accept_to;		/* timeout value for call to accept()                              */
-		int dlprecord;		/* Index used for some DLP functions */
-
-#ifdef OS2
-		unsigned short os2_read_timeout;
-		unsigned short os2_write_timeout;
-#endif
-	};
-
 	/* internal functions */
-
-#include "pi-args.h"
-
-	extern void pi_socket_recognize PI_ARGS((struct pi_socket *));
-	extern struct pi_socket *find_pi_socket PI_ARGS((int sd));
+	extern pi_socket_list_t *pi_socket_recognize PI_ARGS((pi_socket_t *));
+	extern pi_socket_t *find_pi_socket PI_ARGS((int sd));
 	extern int crc16 PI_ARGS((unsigned char *ptr, int count));
 	extern char *printlong PI_ARGS((unsigned long val));
 	extern unsigned long makelong PI_ARGS((char *c));
 
 	extern void dumpline
-	    PI_ARGS((const unsigned char *buf, int len, int addr));
+	    PI_ARGS((const char *buf, size_t len, unsigned int addr));
 	extern void dumpdata
-	    PI_ARGS((const unsigned char *buf, int len));
+	    PI_ARGS((const char *buf, size_t len));
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* _PILOT_SOCKET_H_ */
+#endif				/* _PILOT_SOURCE_H_ */

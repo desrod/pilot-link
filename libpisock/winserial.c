@@ -25,17 +25,18 @@
 #include <fcntl.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-serial.h"
 #include "pi-slp.h"
 #include "pi-padp.h"
 
-static int so_changebaud(struct pi_socket *ps);
-static int so_close(struct pi_socket *ps);
-static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
+/* Declare prototypes */
+static int so_changebaud(pi_socket_t *ps);
+static int so_close(pi_socket_t *ps);
+static int pi_socket_set_timeout(pi_socket_t *ps, int read_timeout,
 				 int write_timeout);
-static int so_write(struct pi_socket *ps);
-static int so_read(struct pi_socket *ps, int timeout);
+static int so_write(pi_socket_t *ps);
+static int so_read(pi_socket_t *ps, int timeout);
+
 
 /***********************************************************************
  *
@@ -44,13 +45,14 @@ static int so_read(struct pi_socket *ps, int timeout);
  * Summary:     Open the serial port and establish a connection for 
  *		Win32
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, pi_sockaddr*
  *
  * Returns:     The file descriptor
  *
  ***********************************************************************/
 int
-pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
+pi_serial_open(pi_socket_t *ps, struct pi_sockaddr *addr,
+	 socklen_t addrlen)
 {
 	HANDLE 	fd;
 	char 	*tty 	= addr->pi_device;
@@ -86,23 +88,26 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	return ((int) fd);
 }
 
+
 /***********************************************************************
  *
  * Function:    so_changebaud
  *
  * Summary:     Change the speed of the socket/file descriptor
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
- * Returns:     Nothing
+ * Returns:     0 for success, -1 otherwise
  *
  ***********************************************************************/
-int so_changebaud(struct pi_socket *ps)
+int
+so_changebaud(pi_socket_t *ps)
 {
 	HANDLE 	fd 	= (HANDLE) ps->mac->fd;
 
 	return win_changebaud(fd, ps->rate);
 }
+
 
 /***********************************************************************
  *
@@ -110,12 +115,13 @@ int so_changebaud(struct pi_socket *ps)
  *
  * Summary:     Change the connection parameters on Win32
  *
- * Parameters:  None
+ * Parameters:  file handle, rate
  *
- * Returns:     Nothing
+ * Returns:     0 for success, -1 otherwise
  *
  ***********************************************************************/
-static int win_changebaud(HANDLE fd, int rate)
+static int
+win_changebaud(HANDLE fd, int rate)
 {
 	BOOL 	rc;
 	COMMTIMEOUTS ctmoCommPort;
@@ -157,18 +163,20 @@ static int win_changebaud(HANDLE fd, int rate)
 	return -1;
 }
 
+
 /***********************************************************************
  *
  * Function:    so_close
  *
  * Summary:     Close the open socket/file descriptor
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
- * Returns:     Nothing
+ * Returns:     0
  *
  ***********************************************************************/
-static int so_close(struct pi_socket *ps)
+static int
+so_close(pi_socket_t *ps)
 {
 #ifndef NO_SERIAL_TRACE
 	if (ps->debugfd)
@@ -178,18 +186,20 @@ static int so_close(struct pi_socket *ps)
 	return (0);
 }
 
+
 /***********************************************************************
  *
  * Function:    so_write
  *
  * Summary:     Write to the open socket/file descriptor 
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int so_write(struct pi_socket *ps)
+static int
+so_write(pi_socket_t *ps)
 {
 	int 	nwrote,
 		len;
@@ -231,18 +241,19 @@ static int so_write(struct pi_socket *ps)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    so_read
  *
  * Summary:     Read incoming data from the socket/file descriptor
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, timeout
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int so_read(struct pi_socket *ps, int timeout)
+static int so_read(pi_socket_t *ps, int timeout)
 {
 	int 	r;
 	unsigned char *buf;
@@ -289,18 +300,19 @@ static int so_read(struct pi_socket *ps, int timeout)
 	return 0;
 }
 
+
 /***********************************************************************
  *
  * Function:    win_peek
  *
  * Summary:     Wait for incoming connection from Palm device
  *
- * Parameters:  None
+ * Parameters:  pi_socket_t*, timeout
  *
  * Returns:     -1 if no connection, 0 otherwise
  *
  ***********************************************************************/
-int win_peek(struct pi_socket *ps, int timeout)
+int win_peek(pi_socket_t *ps, int timeout)
 {
 	int 	time 		= timeout;
 	COMSTAT comstat;

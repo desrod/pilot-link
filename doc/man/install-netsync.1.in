@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "install-netsync" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.TH "install-netsync" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2004" "Conduits"
 .SH "NAME"
 \fBinstall\-netsync\fR \- reads or sets the Network Preferences information on 
 a Palm Device.

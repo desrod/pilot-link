@@ -26,7 +26,6 @@
 #include <string.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-expense.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
@@ -112,7 +111,7 @@ int main(int argc, char *argv[])
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ExpenseDB", &db) < 0) {
 		printf("Unable to open ExpenseDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open ExpenseDB.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 		
 	if (ret >= 0) {

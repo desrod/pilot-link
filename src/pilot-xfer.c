@@ -1,4 +1,4 @@
-/* 
+;/* 
  * pilot-xfer.c:  Palm Database transfer utility
  *
  * (c) 1996, 1998, Kenneth Albanowski.
@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <sys/time.h> 	 
 #include <time.h>
+#include <locale.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -69,7 +70,6 @@ typedef struct {
 static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
-char *commify(long value);
 
 typedef enum { 
   palm_media_ram, 	/* media_type 0 */
@@ -300,6 +300,51 @@ static void RemoveFromList(char *name, char **list, int max)
 
 /***********************************************************************
  *
+ * Function:    creator_is_PalmOS
+ *
+ * Summary:     Skip Palm files which match the internal Palm CreatorID
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static int creator_is_PalmOS(unsigned long creator)
+{
+        union {
+                long    L;
+                char    C[4];
+        } buf;
+
+        union buf;
+
+        int     n;
+
+        static long special_cases[] = {
+                pi_mktag('p', 'p', 'p', '_'),
+                pi_mktag('u', '8', 'E', 'Z'),
+
+                /* These cause a reset/crash on OS5 when accessed       */
+                pi_mktag('P', 'M', 'H', 'a'),   /* Phone Link Update    */
+                pi_mktag('P', 'M', 'N', 'e'),   /* Ditto                */
+                pi_mktag('F', 'n', 't', '1'),   /* Hires font resource  */
+                pi_mktag('m', 'o', 'd', 'm'),
+        };
+
+        for (n = 0; n < sizeof(special_cases) / sizeof(long); n++)
+                if (creator == special_cases[n])
+                        return 1;
+
+        for (n = 0; n < 4; n++)
+                if (buf.C[n] < 'a' || buf.C[n] > 'z')
+                        return 0;
+
+        return 1;
+}
+
+
+/***********************************************************************
+ *
  * Function:    Backup
  *
  * Summary:     Build a file list and back up the Palm to destination
@@ -331,51 +376,51 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 
 	/* Check if the directory exists before writing to it. If it doesn't
 	   exist as a directory, and it isn't a file, create it. */
-        if (access(dirname, F_OK) == -1) {
+	if (access(dirname, F_OK) == -1) {
 		fprintf(stderr, "   Creating directory '%s'...\n", dirname);
-                mkdir(dirname, 0700);
+		mkdir(dirname, 0700);
 
 	} else if (access(dirname, R_OK|W_OK|X_OK) != 0) {
-                fprintf(stderr, "\n");
-                fprintf(stderr, "   ERROR: %s\n", strerror(errno));
-                fprintf(stderr, "   Please check ownership and permissions"
-                        " on %s.\n\n", dirname);
-                return;
+		fprintf(stderr, "\n");
+		fprintf(stderr, "   ERROR: %s\n", strerror(errno));
+		fprintf(stderr, "   Please check ownership and permissions"
+			" on %s.\n\n", dirname);
+		return;
 
-        } else if (flags & UPDATE) {
-                if ((dir = opendir(dirname)) == NULL) {
-                        fprintf(stderr, "\n");
-                        fprintf(stderr, "   ERROR: %s\n", strerror(errno));   
-                        fprintf(stderr, "   Does the directory %s exist?\n\n",
-                                dirname);  
-                        return;
-                } else {
+	} else if (flags & UPDATE) {
+		if ((dir = opendir(dirname)) == NULL) {
+			fprintf(stderr, "\n");
+			fprintf(stderr, "   ERROR: %s\n", strerror(errno));   
+			fprintf(stderr, "   Does the directory %s exist?\n\n",
+				dirname);  
+			return;
+		} else {
 			struct 	dirent *dirent;
 
-                        while ((dirent = readdir(dir))) {
-                                char *name;
-                                int dirnamelen;
-                                dirnamelen = strlen(dirname);
+			while ((dirent = readdir(dir))) {
+				char *name;
+				int dirnamelen;
+				dirnamelen = strlen(dirname);
 
-                                if (dirent->d_name[0] == '.')
-                                        continue;
+				if (dirent->d_name[0] == '.')
+					continue;
 
-                                if (ofile_total >= ofile_len) {
-                                        ofile_len += 256;
-                                        orig_files = realloc(orig_files, 
-                                                        (sizeof (char *)) * ofile_len);
-                                }
+				if (ofile_total >= ofile_len) {
+					ofile_len += 256;
+					orig_files = realloc(orig_files, 
+							(sizeof (char *)) * ofile_len);
+				}
 				name = malloc(dirnamelen + strlen (dirent->d_name) + 2);
-                                if (name == NULL) {
-                                        continue;
-                                } else {
-                                        sprintf(name, "%s/%s", dirname, dirent->d_name);
-                                        orig_files[ofile_total++] = name;
-                                }
-                        }
-                        closedir(dir);
-                }
-        }
+				if (name == NULL) {
+					continue;
+				} else {
+					sprintf(name, "%s/%s", dirname, dirent->d_name);
+					orig_files[ofile_total++] = name;
+				}
+			}
+			closedir(dir);
+		}
+	}
 
 	for(;;) {
 		struct 	DBInfo info;
@@ -387,13 +432,12 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 
 		char 	name[256];
 		struct 	stat sbuf;
+		char crid[5];
 	
 		if (dlp_ReadDBList(sd, 0, (media_type ? 0x40 : 0x80), i, &info) < 0)
 			break;
 
-	        i = info.index + 1;
-
-		char crid[5];
+		i = info.index + 1;
 
 		crid[0] = (info.creator & 0xFF000000) >> 24;
 		crid[1] = (info.creator & 0x00FF0000) >> 16;
@@ -404,9 +448,9 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		if (dlp_OpenConduit(sd) < 0) {
 			printf("\n   Exiting on cancel, all data was not backed up" 
 			       "\n   Stopped before backing up: '%s'\n\n", info.name);
-		        sprintf(synclog, "\npilot-xfer was cancelled by the user "
+			sprintf(synclog, "\npilot-xfer was cancelled by the user "
 				"before backing up '%s'.", info.name);
-		        dlp_AddSyncLogEntry(sd, synclog);
+			dlp_AddSyncLogEntry(sd, synclog);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -416,13 +460,13 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		protect_name(name + strlen(name), info.name);
 
 		if (creator_is_PalmOS(info.creator)) {
-                        printf("   [-][skip][%s] Skipping OS file '%s'.\n", 
+			printf("   [-][skip][%s] Skipping OS file '%s'.\n", 
 				crid, info.name);
 			continue;
 		}
-                
+		
 		if (info.flags & dlpDBFlagResource) { 
-                        strcat(name, ".prc");
+			strcat(name, ".prc");
 		} else if (info.flags & dlpDBFlagClipping) { 
 			strcat(name, ".pqa");
 		} else {
@@ -437,7 +481,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			}
 		}
 
-	        if (info.creator == pi_mktag('a', '6', '8', 'k')) {
+		if (info.creator == pi_mktag('a', '6', '8', 'k')) {
 			printf("   [-][a68k][PACE] Skipping '%s'\n", info.name);
 			skipped++;
 			continue;
@@ -452,44 +496,38 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			continue;
 		}
 
-                if ((flags & UPDATE) && (stat(name, &sbuf) == 0)) {
-		        if (info.modifyDate == sbuf.st_mtime) {
+		RemoveFromList(name, orig_files, ofile_total); 
+		if ((stat(name, &sbuf) && (flags & UPDATE) == 0)) {
+			if (info.modifyDate == sbuf.st_mtime) {
 				printf("   [-][unch] Unchanged, skipping %s\n",
 					name);
-				RemoveFromList(name, orig_files, ofile_total); 
 				continue;
 			}
 		}
 
-                /* Ensure that DB-open and DB-ReadOnly flags are not kept */
+		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
 		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
 
-		if ((flags & BACKUP) && (stat(name, &sbuf) == 0)) {
-			totalsize += sbuf.st_size;
-			printf("   [+][%-4d]", filecount);
-			printf("[%s] %s '%s'", crid, synctext, info.name);
+		printf("   [+][%-4d]", filecount);
+		printf("[%s] %s '%s'", crid, synctext, info.name);
+		
+		setlocale(LC_ALL, "");
+		printf(", %'ld bytes, %'ld KiB... ", 
+			(long)sbuf.st_size, (long)totalsize/1024);
 
-			char *foo, *bar;
-
-			foo = commify(sbuf.st_size);
-			bar = commify(totalsize/1024);
-
-			printf(", %s bytes, %s KiB... ", foo, bar);
-
-			filecount++;
-		}
+		filecount++;
 
 		f = pi_file_create(name, &info);
 		RemoveFromList(name, orig_files, ofile_total);
 
-                if (f == 0) {
-                        printf("\nFailed, unable to create file.\n");
-                        break;
-                } else if (pi_file_retrieve(f, sd, 0) < 0) {
-                        printf("\n   [-][fail][%s] Failed, unable to retrieve %s from the Palm.\n", 
+		if (f == 0) {
+			printf("\nFailed, unable to create file.\n");
+			break;
+		} else if (pi_file_retrieve(f, sd, 0) < 0) {
+			printf("\n   [-][fail][%s] Failed, unable to retrieve %s from the Palm.\n", 
 				crid, info.name);
-                        failed++;
-                } 
+			failed++;
+		} 
 		pi_file_close(f);
 		printf("\n");
 

@@ -112,13 +112,13 @@ int main(int argc, char *argv[])
 	if (dlp_ReadNetSyncInfo(sd, &Net) < 0) {
 		fprintf(stderr,
 			"Unable to read network information, cancelling sync.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	if (!Net.lanSync) {
 		fprintf(stderr,
 			"LANSync not enabled on your Palm, cancelling sync.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	sd2 = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET);
