@@ -296,7 +296,6 @@ static int creator_is_PalmOS(long creator)
 	static long special_cases[] = {
 		pi_mktag('p', 'p', 'p', '_'),
 		pi_mktag('u', '8', 'E', 'Z'),
-		pi_mktag('a', '6', '8', 'k'),
 	};
 
 	/* Test for special cases -- PalmOS CRIDs outside of lowercase alpha
