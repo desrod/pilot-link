@@ -8,5 +8,5 @@
 /* If releasing a version without a patch number, make sure that this is not
    defined, simply leave blank quotes. */
 
-#define PILOT_LINK_PATCH ""
+#define PILOT_LINK_PATCH "-cvs"
 #endif	/* _PILOT_VERSION_H_ */
