@@ -3,7 +3,32 @@
 AC_INIT(include/pi-cmp.h)
 AM_CONFIG_HEADER(config.h)
 
-AM_INIT_AUTOMAKE(pilot-link, 0.9.6cvs)
+dnl ******************************
+dnl Pilot Link Version
+dnl ******************************
+PILOT_LINK_VERS=0
+PILOT_LINK_MAJOR=10
+PILOT_LINK_MINOR=1
+PILOT_LINK_PATCH=cvs
+
+AC_SUBST(PILOT_LINK_VERS)
+AC_SUBST(PILOT_LINK_MAJOR)
+AC_SUBST(PILOT_LINK_MINOR)
+AC_SUBST(PILOT_LINK_PATCH)
+VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
+
+dnl ******************************
+dnl Pilot Link Library Version
+dnl ******************************
+PISOCK_CURRENT=4
+PISOCK_REVISION=0
+PISOCK_AGE=0
+
+AC_SUBST(PISOCK_CURRENT)
+AC_SUBST(PISOCK_REVISION)
+AC_SUBST(PISOCK_AGE)
+
+AM_INIT_AUTOMAKE(pilot-link, [$VERSION])
 
 dnl Check host type
 AC_CANONICAL_HOST
@@ -624,6 +649,7 @@ Makefile
 libsock/Makefile
 libcc/Makefile
 include/Makefile
+include/pi-version.h
 tools/Makefile
 tools/Python/Makefile
 tools/Tcl/Makefile

@@ -1,3 +1,14 @@
+2001-12-29  JP Rosevear  <jpr@ximian.com>
+
+	* configure.in: vars for the module and library versions, subst
+	the version stuff into the version header
+
+	* libsock/Makefile.am: use vars for the library versioning
+
+	* include/pi-version.h.in: subst in the version info
+
+	* include/Makefile.am (c_header_DATA): include pi-version.h.in
+
 2001-12-23  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libsock/connect.c: Fill pointers for &User, &Net, etc. 

@@ -30,7 +30,8 @@ c_header_DATA = \
 	pi-syspkt.h		\
 	pi-todo.h		\
 	pi-util.h		\
-	pi-version.h
+	pi-version.h		\
+	pi-version.h.in
 
 c_headerdir=$(includedir)
 
