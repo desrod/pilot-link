@@ -13,7 +13,7 @@ python-build: Python/setup.py
 	cd $(srcdir)/Python && $(PYTHON) setup.py build
 
 python-install: python-build
-	cd $(srcdir)/Python && $(PYTHON) setup.py install
+	cd $(srcdir)/Python && $(PYTHON) setup.py install --prefix=$(prefix)
 
 python-clean: Python/setup.py
 	-cd $(srcdir)/Python && $(PYTHON) setup.py clean 
@@ -35,10 +35,10 @@ endif
 #
 
 Perl/Makefile: Perl/Makefile.PL
-	cd Perl && $(PERL) Makefile.PL
+	cd Perl && $(PERL) Makefile.PL INSTALLDIRS=vendor
 
 perl-build: Perl/Makefile
-	cd Perl && $(MAKE)
+	cd Perl && $(MAKE) install PREFIX=$(prefix)
 
 perl-install: perl-build
 	cd Perl && $(MAKE) install

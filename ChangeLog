@@ -2,6 +2,8 @@
 
 	* src/pilot-xfer.c: Usability additions
 
+	* bindings/Makefile.am: Temporary workaround for --prefix
+
 2002-07-29  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/dlp.c (dlp_request_write): ensure that exec_buf is
