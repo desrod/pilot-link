@@ -281,23 +281,23 @@ int
 unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 		      int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
-	idx = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!idx)
+	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!i)
 		return 0;
-	record += idx;
-	len -= idx;
+	record += i;
+	len -= i;
 	if (len < 2 + (16 + 4 + 8) * 4);
 	ai->sortOrder = (enum ExpenseSort) get_byte(record);
 	record += 2;
-	for (idx = 0; idx < 4; idx++) {
-		memcpy(ai->currencies[idx].name, record, 16);
+	for (i = 0; i < 4; i++) {
+		memcpy(ai->currencies[i].name, record, 16);
 		record += 16;
-		memcpy(ai->currencies[idx].symbol, record, 4);
+		memcpy(ai->currencies[i].symbol, record, 4);
 		record += 4;
-		memcpy(ai->currencies[idx].rate, record, 8);
+		memcpy(ai->currencies[i].rate, record, 8);
 		record += 8;
 	}
 	return (record - start);
@@ -318,28 +318,28 @@ int
 pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 		    int len)
 {
-	int 	idx,
+	int 	i,
 		destlen = 2 + (16 + 4 + 8) * 4;
 	unsigned char *start = record;
 
-	idx = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return idx + destlen;
-	if (!idx)
-		return idx;
-	record 	+= idx;
-	len 	-= idx;
+		return i + destlen;
+	if (!i)
+		return i;
+	record 	+= i;
+	len 	-= i;
 	if (len < destlen)
 		return 0;
 	set_byte(record, ai->sortOrder);
 	set_byte(record + 1, 0);	/* gapfill */
 	record += 2;
-	for (idx = 0; idx < 4; idx++) {
-		memcpy(record, ai->currencies[idx].name, 16);
+	for (i = 0; i < 4; i++) {
+		memcpy(record, ai->currencies[i].name, 16);
 		record += 16;
-		memcpy(record, ai->currencies[idx].symbol, 4);
+		memcpy(record, ai->currencies[i].symbol, 4);
 		record += 4;
-		memcpy(record, ai->currencies[idx].rate, 8);
+		memcpy(record, ai->currencies[i].rate, 8);
 		record += 8;
 	}
 
@@ -360,7 +360,7 @@ pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 int
 unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
 	p->currentCategory 	= get_short(record);
@@ -379,8 +379,8 @@ unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 	record++;
 	p->unitOfDistance 	= (enum ExpenseDistance) get_byte(record);
 	record += 2;
-	for (idx = 0; idx < 7; idx++) {
-		p->currencies[idx] = get_byte(record);
+	for (i = 0; i < 7; i++) {
+		p->currencies[i] = get_byte(record);
 		record++;
 	}
 	return (record - start);
@@ -399,7 +399,7 @@ unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
  ***********************************************************************/
 int pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
 	set_short(record, p->currentCategory);
@@ -420,8 +420,8 @@ int pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 	record++;
 	set_byte(record, 0);	/* gapfill ?? */
 	record++;
-	for (idx = 0; idx < 7; idx++) {
-		set_byte(record, p->currencies[idx]);
+	for (i = 0; i < 7; i++) {
+		set_byte(record, p->currencies[i]);
 		record++;
 	}
 	return record - start;

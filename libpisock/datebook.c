@@ -163,7 +163,7 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 	}
 
 	if (iflags & repeatFlag) {
-		int 	idx,
+		int 	i,
 			on;
 
 		a->repeatType = (enum repeatTypes) get_byte(p2);
@@ -188,26 +188,26 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 		on = get_byte(p2);
 		p2++;
 		a->repeatDay = (enum DayOfMonthType) 0;
-		for (idx = 0; idx < 7; idx++)
-			a->repeatDays[idx] = 0;
+		for (i; = 0; i < 7; i++)
+			a->repeatDays[i] = 0;
 
 		if (a->repeatType == repeatMonthlyByDay)
 			a->repeatDay = (enum DayOfMonthType) on;
 		else if (a->repeatType == repeatWeekly)
-			for (idx = 0; idx < 7; idx++)
-				a->repeatDays[idx] = !!(on & (1 << idx));
+			for (i = 0; i < 7; i++)
+				a->repeatDays[i] = !!(on & (1 << i));
 		a->repeatWeekstart = get_byte(p2);
 		p2++;
 		p2++;
 	} else {
-		int 	idx;
+		int 	i;
 
 		a->repeatType 		= (enum repeatTypes) 0;
 		a->repeatForever 	= 1;	/* repeatEnd is invalid */
 		a->repeatFrequency 	= 0;
 		a->repeatDay 		= (enum DayOfMonthType) 0;
-		for (idx = 0; idx < 7; idx++)
-			a->repeatDays[idx] = 0;
+		for (i = 0; i < 7; i++)
+			a->repeatDays[i] = 0;
 		a->repeatWeekstart 	= 0;
 	}
 
@@ -316,7 +316,7 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 	}
 
 	if (a->repeatType) {
-		int 	idx, 
+		int 	i, 
 			on;
 
 		iflags |= repeatFlag;
@@ -325,9 +325,9 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 			on = a->repeatDay;
 		else if (a->repeatType == repeatWeekly) {
 			on = 0;
-			for (idx = 0; idx < 7; idx++)
-				if (a->repeatDays[idx])
-					on |= 1 << idx;
+			for (i = 0; i < 7; i++)
+				if (a->repeatDays[i])
+					on |= 1 << i;
 		} else
 			on = 0;
 
@@ -358,20 +358,20 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 	}
 
 	if (a->exceptions) {
-		int 	idx;
+		int 	i;
 
 		iflags |= exceptFlag;
 
 		set_short(pos, a->exceptions);
 		pos += 2;
 
-		for (idx = 0; idx < a->exceptions; idx++, pos += 2)
+		for (i = 0; i < a->exceptions; i++, pos += 2)
 			set_short(pos,
 				  ((a->
-				    exception[idx].tm_year -
-				    4) << 9) | ((a->exception[idx].tm_mon +
+				    exception[i].tm_year -
+				    4) << 9) | ((a->exception[i].tm_mon +
 						 1) << 5) | a->
-				  exception[idx].tm_mday);
+				  exception[i].tm_mday);
 	}
 
 	if (a->description != NULL) {
@@ -412,17 +412,17 @@ int
 unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
 			  unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 
-	idx = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!idx)
+	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!i)
 		return 0;
-	record += idx;
-	len -= idx;
+	record += i;
+	len -= i;
 	if (len < 2)
 		return 0;
 	ai->startOfWeek = get_byte(record);
-	return idx + 2;
+	return i + 2;
 }
 
 /***********************************************************************
@@ -443,16 +443,16 @@ int
 pack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
 			unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
-	idx = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return idx + 2;
-	if (!idx)
-		return idx;
-	record 	+= idx;
-	len 	-= idx;
+		return i + 2;
+	if (!i)
+		return i;
+	record 	+= i;
+	len 	-= i;
 	if (len < 2)
 		return 0;
 	set_short(record, 0);

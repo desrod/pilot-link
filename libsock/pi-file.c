@@ -222,7 +222,7 @@ static unsigned long unix_time_to_pilot_time(time_t t)
  ***********************************************************************/
 struct pi_file *pi_file_open(char *name)
 {
-	int 	idx;
+	int 	i;
 	struct 	pi_file *pf;
 	struct 	DBInfo *ip;
 	struct 	pi_file_entry *entp;
@@ -307,8 +307,8 @@ struct pi_file *pi_file_open(char *name)
 		     calloc(pf->nentries, sizeof *pf->entries)) == NULL)
 			goto bad;
 
-		for (idx = 0, entp = pf->entries; idx < pf->nentries;
-		     idx++, entp++) {
+		for (i = 0, entp = pf->entries; i < pf->nentries;
+		     i++, entp++) {
 			if (fread(buf, pf->ent_hdr_size, 1, pf->f) !=
 			    (size_t) 1)
 				goto bad;
@@ -335,17 +335,17 @@ struct pi_file *pi_file_open(char *name)
 			}
 		}
 
-		for (idx = 0, entp = pf->entries + pf->nentries - 1;
-		     idx < pf->nentries; idx++, entp--) {
+		for (i = 0, entp = pf->entries + pf->nentries - 1;
+		     i < pf->nentries; i++, entp--) {
 			entp->size = offset - entp->offset;
 			offset = entp->offset;
 #ifdef DEBUG
-			printf("Entry %d, size %d\n", pf->nentries - idx - 1,
+			printf("Entry %d, size %d\n", pf->nentries - i - 1,
 			       entp->size);
 #endif
 			if (entp->size < 0) {
 				printf("%s: Entry %d corrupt, giving up\n",
-					name, pf->nentries - idx - 1);
+					name, pf->nentries - i - 1);
 				goto bad;
 			}
 		}
@@ -564,17 +564,17 @@ static int
 pi_file_find_resource_by_type_id(struct pi_file *pf,
 				 unsigned long type, int id, int *idxp)
 {
-	int 	idx;
+	int 	i;
 	struct 	pi_file_entry *entp;
 
 	if (!pf->resource_flag)
 		return (-1);
 
-	for (idx = 0, entp = pf->entries; idx < pf->nentries;
-	     idx++, entp++) {
+	for (i = 0, entp = pf->entries; i < pf->nentries;
+	     i++, entp++) {
 		if (entp->type == type && entp->id == id) {
 			if (idxp)
-				*idxp = idx;
+				*idxp = i;
 			return (0);
 		}
 	}
@@ -598,13 +598,13 @@ pi_file_read_resource_by_type_id(struct pi_file *pf, unsigned long type,
 				 int id, void **bufp, int *sizep,
 				 int *idxp)
 {
-	int 	idx;
+	int 	i;
 
-	if (pi_file_find_resource_by_type_id(pf, type, id, &idx) == 0) {
+	if (pi_file_find_resource_by_type_id(pf, type, id, &i) == 0) {
 		if (idxp)
-			*idxp = idx;
+			*idxp = i;
 		return (pi_file_read_resource
-			(pf, idx, bufp, sizep, NULL, NULL));
+			(pf, i, bufp, sizep, NULL, NULL));
 	}
 
 	return (-1);
@@ -639,7 +639,7 @@ int pi_file_type_id_used(struct pi_file *pf, unsigned long type, int id)
  *
  ***********************************************************************/
 int
-pi_file_read_resource(struct pi_file *pf, int idx,
+pi_file_read_resource(struct pi_file *pf, int i,
 		      void **bufp, int *sizep, unsigned long *type,
 		      int *idp)
 {
@@ -651,15 +651,15 @@ pi_file_read_resource(struct pi_file *pf, int idx,
 	if (!pf->resource_flag)
 		return (-1);
 
-	if (idx < 0 || idx >= pf->nentries)
+	if (i < 0 || i >= pf->nentries)
 		return (-1);
 
-	entp = &pf->entries[idx];
+	entp = &pf->entries[i];
 
 	if (bufp) {
 		if (pi_file_set_rbuf_size(pf, entp->size) < 0)
 			return (-1);
-		fseek(pf->f, pf->entries[idx].offset, SEEK_SET);
+		fseek(pf->f, pf->entries[i].offset, SEEK_SET);
 		if (fread(pf->rbuf, 1, entp->size, pf->f) !=
 		    (size_t) entp->size)
 			return (-1);
@@ -689,7 +689,7 @@ pi_file_read_resource(struct pi_file *pf, int idx,
  *
  ***********************************************************************/
 int
-pi_file_read_record(struct pi_file *pf, int idx,
+pi_file_read_record(struct pi_file *pf, int i,
 		    void **bufp, int *sizep, int *attrp, int *catp,
 		    pi_uid_t * uidp)
 {
@@ -699,16 +699,16 @@ pi_file_read_record(struct pi_file *pf, int idx,
 		return (-1);
 
 #ifdef DEBUG
-	fprintf(stderr, "Reading record %d\n", idx);
+	fprintf(stderr, "Reading record %d\n", i);
 #endif
 
 	if (pf->resource_flag)
 		return (-1);
 
-	if (idx < 0 || idx >= pf->nentries)
+	if (i < 0 || i >= pf->nentries)
 		return (-1);
 
-	entp = &pf->entries[idx];
+	entp = &pf->entries[i];
 
 #ifdef DEBUG
 	fprintf(stderr, "record size is %d\n", entp->size);
@@ -718,7 +718,7 @@ pi_file_read_record(struct pi_file *pf, int idx,
 	if (bufp) {
 		if (pi_file_set_rbuf_size(pf, entp->size) < 0)
 			return (-1);
-		fseek(pf->f, pf->entries[idx].offset, SEEK_SET);
+		fseek(pf->f, pf->entries[i].offset, SEEK_SET);
 		if (fread(pf->rbuf, 1, entp->size, pf->f) !=
 		    (size_t) entp->size)
 			return (-1);
@@ -753,16 +753,16 @@ pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid,
 			  void **bufp, int *sizep, int *idxp, int *attrp,
 			  int *catp)
 {
-	int 	idx;
+	int 	i;
 	struct 	pi_file_entry *entp;
 
-	for (idx = 0, entp = pf->entries; idx < pf->nentries;
-	     idx++, entp++) {
+	for (i = 0, entp = pf->entries; i < pf->nentries;
+	     i++, entp++) {
 		if (entp->uid == uid) {
 			if (idxp)
-				*idxp = idx;
+				*idxp = i;
 			return (pi_file_read_record
-				(pf, idx, bufp, sizep, attrp, catp, &uid));
+				(pf, i, bufp, sizep, attrp, catp, &uid));
 		}
 	}
 
@@ -782,11 +782,11 @@ pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid,
  ***********************************************************************/
 int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
 {
-	int 	idx;
+	int 	i;
 	struct 	pi_file_entry *entp;
 
-	for (idx = 0, entp = pf->entries; idx < pf->nentries;
-	     idx++, entp++) {
+	for (i = 0, entp = pf->entries; i < pf->nentries;
+	     i++, entp++) {
 		if (entp->uid == uid)
 			return (1);
 	}
@@ -1072,7 +1072,7 @@ int pi_file_get_entries(struct pi_file *pf, int *entries)
  ***********************************************************************/
 static int pi_file_close_for_write(struct pi_file *pf)
 {
-	int 	idx,
+	int 	i,
 		offset,
 		c;
 	FILE 	*f;
@@ -1117,7 +1117,7 @@ static int pi_file_close_for_write(struct pi_file *pf)
 	if (fwrite(buf, PI_HDR_SIZE, 1, f) != 1)
 		goto bad;
 
-	for (idx = 0, entp = pf->entries; idx < pf->nentries; idx++, entp++) {
+	for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
 		entp->offset = offset;
 
 		p = buf;

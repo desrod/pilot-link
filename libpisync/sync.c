@@ -577,7 +577,7 @@ int sync_CopyToPilot(SyncHandler * sh)
 int sync_CopyFromPilot(SyncHandler * sh)
 {
 	int 	dbhandle,	
-		idx,	
+		i,	
 		slow 	= 0,
 		result 	= 0;
 
@@ -598,15 +598,15 @@ int sync_CopyFromPilot(SyncHandler * sh)
 			goto cleanup;
 	}
 
-	idx = 0;
+	i = 0;
 	while (dlp_ReadRecordByIndex
-	       (sh->sd, dbhandle, idx, precord->buffer, &precord->recID,
+	       (sh->sd, dbhandle, i, precord->buffer, &precord->recID,
 		&precord->len, &precord->flags, &precord->catID) > 0) {
 		result = sh->AddRecord(sh, precord);
 		if (result < 0)
 			goto cleanup;
 
-		idx++;
+		i++;
 	}
 
 	result = sh->Post(sh, dbhandle);
@@ -707,7 +707,7 @@ static int
 sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 			 RecordModifier rec_mod)
 {
-	int 	idx,
+	int 	i,
 		parch, 
 		psecret,
 		result = 0;
@@ -716,9 +716,9 @@ sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 	DesktopRecord *drecord 	= NULL;
 	RecordQueue rq 		= { 0, NULL };
 
-	idx = 0;
+	i = 0;
 	while (dlp_ReadRecordByIndex
-	       (sh->sd, dbhandle, idx, precord->buffer, &precord->recID,
+	       (sh->sd, dbhandle, i, precord->buffer, &precord->recID,
 		&precord->len, &precord->flags, &precord->catID) > 0) {
 		int 	count = rq.count;
 
@@ -752,7 +752,7 @@ sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 		if (drecord && rq.count == count)
 			ErrorCheck(sh->FreeMatch(sh, drecord));
 
-		idx++;
+		i++;
 	}
 	sync_FreePilotRecord(precord);
 

@@ -38,11 +38,11 @@
  ***********************************************************************/
 void free_Address(struct Address *a)
 {
-	int 	idx;
+	int 	i;
 
-	for (idx = 0; idx < 19; idx++)
-		if (a->entry[idx])
-			free(a->entry[idx]);
+	for (i = 0; i < 19; i++)
+		if (a->entry[i])
+			free(a->entry[i]);
 }
 
 #define hi(x) (((x) >> 4) & 0x0f)
@@ -192,26 +192,26 @@ int
 unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 		      int len)
 {
-	int 	idx,
+	int 	i,
 		destlen = 4 + 16 * 22 + 2 + 2;
 
 	unsigned char *start = record;
 	unsigned long r;
 
-	idx = unpack_CategoryAppInfo(&ai->category, record, len);
+	i = unpack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return idx + destlen;
-	if (!idx)
-		return idx;
-	record += idx;
-	len -= idx;
+		return i + destlen;
+	if (!i)
+		return i;
+	record += i;
+	len -= i;
 
 	if (len < destlen)
 		return 0;
 
 	r = get_long(record);
-	for (idx = 0; idx < 22; idx++)
-		ai->labelRenamed[idx] = !!(r & (1 << idx));
+	for (i = 0; i < 22; i++)
+		ai->labelRenamed[i] = !!(r & (1 << i));
 
 	record += 4;
 	memcpy(ai->labels, record, 16 * 22);
@@ -221,10 +221,10 @@ unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 	ai->sortByCompany = get_byte(record);
 	record += 2;
 
-	for (idx = 3; idx < 8; idx++)
-		strcpy(ai->phoneLabels[idx - 3], ai->labels[idx]);
-	for (idx = 19; idx < 22; idx++)
-		strcpy(ai->phoneLabels[idx - 19 + 5], ai->labels[idx]);
+	for (i = 3; i < 8; i++)
+		strcpy(ai->phoneLabels[i - 3], ai->labels[i]);
+	for (i = 19; i < 22; i++)
+		strcpy(ai->phoneLabels[i - 19 + 5], ai->labels[i]);
 
 	return (record - start);
 }
@@ -247,31 +247,31 @@ int
 pack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 		    int len)
 {
-	int 	idx,
+	int 	i,
 		destlen = 4 + 16 * 22 + 2 + 2;
 	unsigned char *pos = record;
 	unsigned long r;
 
-	idx = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return destlen + idx;
-	if (!idx)
-		return idx;
+		return destlen + i;
+	if (!i)
+		return i;
 
-	pos += idx;
-	len -= idx;
+	pos += i;
+	len -= i;
 
-	for (idx = 3; idx < 8; idx++)
-		strcpy(ai->phoneLabels[idx - 3], ai->labels[idx]);
-	for (idx = 19; idx < 22; idx++)
-		strcpy(ai->phoneLabels[idx - 19 + 5], ai->labels[idx]);
+	for (i = 3; i < 8; i++)
+		strcpy(ai->phoneLabels[i - 3], ai->labels[i]);
+	for (i = 19; i < 22; i++)
+		strcpy(ai->phoneLabels[i - 19 + 5], ai->labels[i]);
 
 	memset(pos, 0, destlen);
 
 	r = 0;
-	for (idx = 0; idx < 22; idx++)
-		if (ai->labelRenamed[idx])
-			r |= (1 << idx);
+	for (i = 0; i < 22; i++)
+		if (ai->labelRenamed[i])
+			r |= (1 << i);
 	set_long(pos, r);
 	pos += 4;
 
@@ -282,10 +282,10 @@ pack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 	set_byte(pos, ai->sortByCompany);
 	pos += 2;
 
-	for (idx = 3; idx < 8; idx++)
-		strcpy(ai->phoneLabels[idx - 3], ai->labels[idx]);
-	for (idx = 19; idx < 22; idx++)
-		strcpy(ai->phoneLabels[idx - 19 + 5], ai->labels[idx]);
+	for (i = 3; i < 8; i++)
+		strcpy(ai->phoneLabels[i - 3], ai->labels[i]);
+	for (i = 19; i < 22; i++)
+		strcpy(ai->phoneLabels[i - 19 + 5], ai->labels[i]);
 
 	return (pos - record);
 }

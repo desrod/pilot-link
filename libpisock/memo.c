@@ -136,16 +136,16 @@ unpack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
 int
 pack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
-	idx = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return idx + 4;
-	if (idx == 0)				/* category pack failed */
+		return i + 4;
+	if (i == 0)				/* category pack failed */
 		return 0;
-	record += idx;
-	len -= idx;
+	record += i;
+	len -= i;
 	if (len < 4)
 		return (record - start);
 	set_short(record, 0);			/* gapfill new for 2.0 	*/

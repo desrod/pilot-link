@@ -174,7 +174,7 @@ int
 s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
 	int 	fd, 
-		idx;
+		i;
 	char 	*tty 	= addr->pi_device;
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 
@@ -210,8 +210,8 @@ s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 
 	cfmakeraw(&tcn);
 
-	for (idx = 0; idx < 16; idx++)
-		tcn.c_cc[idx] = 0;
+	for (i = 0; i < 16; i++)
+		tcn.c_cc[i] = 0;
 
 	tcn.c_cc[VMIN] = 1;
 	tcn.c_cc[VTIME] = 0;
@@ -230,9 +230,9 @@ s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	ioctl(fd, TIOCSETN, &tcn);
 #endif
 
-	if ((idx = fcntl(fd, F_GETFL, 0)) != -1) {
-		idx &= ~O_NONBLOCK;
-		fcntl(fd, F_SETFL, idx);
+	if ((i = fcntl(fd, F_GETFL, 0)) != -1) {
+		i &= ~O_NONBLOCK;
+		fcntl(fd, F_SETFL, i);
 	}
 
 	if (pi_socket_setsd(ps, fd) < 0)

@@ -207,14 +207,14 @@ int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
 int
 unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
-	idx = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!idx)
+	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!i)
 		return 0;
-	record += idx;
-	len -= idx;
+	record += i;
+	len -= i;
 	if (len < 4)
 		return 0;
 	ai->dirty = get_short(record);
@@ -238,16 +238,16 @@ unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 int
 pack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
-	idx = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return idx + 4;
-	if (!idx)
+		return i + 4;
+	if (!i)
 		return 0;
-	record += idx;
-	len -= idx;
+	record += i;
+	len -= i;
 	if (len < 4)
 		return 0;
 	set_short(record, ai->dirty);

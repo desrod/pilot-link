@@ -381,14 +381,14 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
 int
 unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
-	idx = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!idx)
-		return idx;
-	record += idx;
-	len -= idx;
+	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!i)
+		return i;
+	record += i;
+	len -= i;
 	if (len < 11)
 		return 0;
 	ai->dirty = get_short(record);
@@ -419,16 +419,16 @@ unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 int
 pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 {
-	int 	idx;
+	int 	i;
 	unsigned char *start = record;
 
-	idx = pack_CategoryAppInfo(&ai->category, record, len);
+	i = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
-		return idx + 11;
-	if (!idx)
-		return idx;
-	record += idx;
-	len -= idx;
+		return i + 11;
+	if (!i)
+		return i;
+	record += i;
+	len -= i;
 	if (len < 8)
 		return 0;
 	set_short(record, ai->dirty);

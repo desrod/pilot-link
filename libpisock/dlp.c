@@ -117,7 +117,7 @@ char *dlp_strerror(int error)
 int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen, 
 	     unsigned char *result, int maxlen)
 {
-	int 	idx,	
+	int 	i,	
 		err;
 
 	exec_buf[0] = (unsigned char) cmd;
@@ -127,18 +127,18 @@ int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen,
 		exec_buf[2] = (unsigned char) (arg | 0x80);
 		exec_buf[3] = (unsigned char) 0;
 		set_short(exec_buf + 4, msglen);
-		idx = msglen + 6;
+		i = msglen + 6;
 	} else {
 		exec_buf[1] = (unsigned char) 0;
-		idx = 2;
+		i = 2;
 	}
 
-	if (pi_write(sd, &exec_buf[0], idx) < idx) {
+	if (pi_write(sd, &exec_buf[0], i) < i) {
 		errno = -EIO;
 		return -1;
 	}
 
-	idx = pi_read(sd, &exec_buf[0], DLP_BUF_SIZE);
+	i = pi_read(sd, &exec_buf[0], DLP_BUF_SIZE);
 
 	err = get_short(exec_buf + 2);
 
@@ -157,29 +157,29 @@ int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen,
 
 	/* assume only one return block */
 	if ((exec_buf[4] & 0xC0) == 0xC0) {	/* Long arg */
-		idx = get_long(exec_buf + 6);
+		i = get_long(exec_buf + 6);
 
-		if (idx > maxlen)
-			idx = maxlen;
+		if (i > maxlen)
+			i = maxlen;
 
-		memcpy(result, &exec_buf[10], idx);
+		memcpy(result, &exec_buf[10], i);
 	} else if (exec_buf[4] & 0x80) {	/* Short arg */
-		idx = get_short(exec_buf + 6);
+		i = get_short(exec_buf + 6);
 
-		if (idx > maxlen)
-			idx = maxlen;
+		if (i > maxlen)
+			i = maxlen;
 
-		memcpy(result, &exec_buf[8], idx);
+		memcpy(result, &exec_buf[8], i);
 	} else {		/* Tiny arg */
-		idx = (int) exec_buf[5];
+		i = (int) exec_buf[5];
 
-		if (idx > maxlen)
-			idx = maxlen;
+		if (i > maxlen)
+			i = maxlen;
 
-		memcpy(result, &exec_buf[6], idx);
+		memcpy(result, &exec_buf[6], i);
 	}
 
-	return idx;
+	return i;
 
 	
 	if (res->argv)
@@ -627,7 +627,7 @@ int
  *
  ***********************************************************************/
 int
-	int 	idx;
+dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	       unsigned long type, unsigned long creator,
 	       struct DBInfo *info)
 {
@@ -636,21 +636,21 @@ int
 	/* This function does not match any DLP layer function, but is
 	   intended as a shortcut for programs looking for databases. It
 	   uses a fairly byzantine mechanism for ordering the RAM databases
-		idx = start;
-		while (dlp_ReadDBList(sd, cardno, 0x80, idx, info) > 0) {
+	   before the ROM ones.  You must feed the "index" slot from the
+		while (dlp_ReadDBList(sd, cardno, 0x80, i, info) > 0) {
 
 	if (start < 0x1000) {
 		i = start;
 		while (dlp_ReadDBList(sd, cardno, 0x80, i, info) >= 0) {
 			if (((!dbname)
 			     || (strcmp(info->name, dbname) == 0))
-			idx = info->index + 1;
+			    && ((!type) || (info->type == type))
 			    && ((!creator)
 				|| (info->creator == creator)))
 				goto found;
 			i = info->index + 1;
-	idx = start & 0xFFF;
-	while (dlp_ReadDBList(sd, cardno, 0x40, idx, info) > 0) {
+		}
+	while (dlp_ReadDBList(sd, cardno, 0x40, i, info) > 0) {
 	}
 
 	i = start & 0xFFF;
@@ -660,7 +660,7 @@ int
 							     || (info->
 								 creator ==
 								 creator)))
-		idx = info->index + 1;
+		{
 			info->index |= 0x1000;
 			goto found;
 		}
@@ -1465,7 +1465,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
  * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
-	int 	idx,
+ *
  ***********************************************************************/
 int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 {
@@ -1486,15 +1486,15 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 
 	set_short(dlp_buf + 4, p->trap);
 	set_long(dlp_buf + 6, D0);
-	for (idx = p->args - 1; idx >= 0; idx--) {
-		set_byte(c, p->param[idx].byRef);
+	set_long(dlp_buf + 10, A0);
+	set_short(dlp_buf + 14, p->args);
 
-		set_byte(c, p->param[idx].size);
+	c = dlp_buf + 16;
 	for (i = p->args - 1; i >= 0; i--) {
-		if (p->param[idx].data)
-			memcpy(c, p->param[idx].data, p->param[idx].size);
-		c += p->param[idx].size;
-		if (p->param[idx].size & 1)
+		set_byte(c, p->param[i].byRef);
+		c++;
+		set_byte(c, p->param[i].size);
+		c++;
 		if (p->param[i].data)
 			memcpy(c, p->param[i].data, p->param[i].size);
 		c += p->param[i].size;
@@ -1517,11 +1517,11 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 			err = -2;
 		else if (get_short(dlp_buf + 2))
 			err = -get_short(dlp_buf + 2);
-			for (idx = p->args - 1; idx >= 0; idx--) {
-				if (p->param[idx].byRef && p->param[idx].data)
-					memcpy(p->param[idx].data, c + 2,
-					       p->param[idx].size);
-				c += 2 + ((p->param[idx].size + 1) & ~1);
+		else {
+			D0 = get_long(dlp_buf + 8);
+			A0 = get_long(dlp_buf + 12);
+			c = dlp_buf + 18;
+			for (i = p->args - 1; i >= 0; i--) {
 				if (p->param[i].byRef && p->param[i].data)
 					memcpy(p->param[i].data, c + 2,
 					       p->param[i].size);
@@ -1713,7 +1713,7 @@ int dlp_ResetLastSyncPC(int sd)
  *
  ***********************************************************************/
 	int 	result,
-		idx,
+		i,
 		ret;
 	unsigned int nbytes;
 	unsigned char *p;
@@ -1750,11 +1750,11 @@ int dlp_ResetLastSyncPC(int sd)
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 #endif
 		    "DLP ReadRecordIDList %d IDs:\n", ret));
-	for (idx = 0, p = dlp_buf + 2; idx < ret; idx++, p += 4)
-		IDs[idx] = get_long(p);
+	for (i = 0, p = dlp_buf + 2; i < ret; i++, p += 4)
+		IDs[i] = get_long(p);
 
 	if (count)
-		*count = idx;
+		*count = i;
 
 	return nbytes;
 

@@ -67,12 +67,12 @@
 int crc16(unsigned char *ptr, int count)
 {
 	int 	crc,
-		idx;
+		i;
 
 	crc = 0;
 	while (--count >= 0) {
 		crc = crc ^ (int) *ptr++ << 8;
-		for (idx = 0; idx < 8; ++idx)
+		for (i = 0; i < 8; ++i)
 			if (crc & 0x8000)
 				crc = crc << 1 ^ 0x1021;
 			else
@@ -305,24 +305,24 @@ unsigned long makelong(char *c)
 
 void dumpline(const unsigned char *buf, int len, int addr)
 {
-	int 	idx;
+	int 	i;
 
 	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "  %.4x  ", addr);
 
-	for (idx = 0; idx < 16; idx++) {
+	for (i = 0; i < 16; i++) {
 
-		if (idx < len)
+		if (i < len)
 			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "%.2x ",
-			       0xff & (unsigned int) buf[idx]);
+			       0xff & (unsigned int) buf[i]);
 		else
 			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "   ");
 	}
 
 	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "  ");
 
-	for (idx = 0; idx < len; idx++) {
-		if (isprint(buf[idx]) && (buf[idx] >= 32) && (buf[idx] <= 126))
-			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "%c", buf[idx]);
+	for (i = 0; i < len; i++) {
+		if (isprint(buf[i]) && (buf[i] >= 32) && (buf[i] <= 126))
+			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "%c", buf[i]);
 		else
 			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, ".");
 	}
@@ -331,10 +331,10 @@ void dumpline(const unsigned char *buf, int len, int addr)
 
 void dumpdata(const unsigned char *buf, int len)
 {
-	int 	idx;
+	int 	i;
 
-	for (idx = 0; idx < len; idx += 16)
-		dumpline(buf + idx, ((len - idx) > 16) ? 16 : len - idx, idx);
+	for (i = 0; i < len; i += 16)
+		dumpline(buf + i, ((len - i) > 16) ? 16 : len - i, i);
 }
 
 double get_float(void *buffer)

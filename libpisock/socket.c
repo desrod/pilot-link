@@ -155,17 +155,17 @@ protocol_cmd_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
 static struct pi_protocol *
 protocol_queue_find (struct pi_socket *ps, int level) 
 {
-	int 	idx;
+	int 	i;
 
 	if (ps->command) {
-		for (idx = 0; idx < ps->cmd_len; idx++) {
-			if (ps->cmd_queue[idx]->level == level)
-				return ps->cmd_queue[idx];
+		for (i = 0; i < ps->cmd_len; i++) {
+			if (ps->cmd_queue[i]->level == level)
+				return ps->cmd_queue[i];
 		}
 	} else {
-		for (idx = 0; idx < ps->queue_len; idx++) {
-			if (ps->protocol_queue[idx]->level == level)
-				return ps->protocol_queue[idx];
+		for (i = 0; i < ps->queue_len; i++) {
+			if (ps->protocol_queue[i]->level == level)
+				return ps->protocol_queue[i];
 		}
 	}
 
@@ -175,7 +175,7 @@ protocol_queue_find (struct pi_socket *ps, int level)
 static struct pi_protocol *
 protocol_queue_find_next (struct pi_socket *ps, int level) 
 {
-	int 	idx;
+	int 	i;
 
 	if (ps->command && ps->cmd_len == 0)
 		return NULL;
@@ -187,14 +187,14 @@ protocol_queue_find_next (struct pi_socket *ps, int level)
 		return ps->protocol_queue[0];
 	
 	if (ps->command) {
-		for (idx = 0; idx < ps->cmd_len - 1; idx++) {
-			if (ps->cmd_queue[idx]->level == level)
-				return ps->cmd_queue[idx + 1];
+		for (i = 0; i < ps->cmd_len - 1; i++) {
+			if (ps->cmd_queue[i]->level == level)
+				return ps->cmd_queue[i + 1];
 		}
 	} else {
-		for (idx = 0; idx < ps->queue_len - 1; idx++) {
-			if (ps->protocol_queue[idx]->level == level)
-				return ps->protocol_queue[idx + 1];
+		for (i = 0; i < ps->queue_len - 1; i++) {
+			if (ps->protocol_queue[i]->level == level)
+				return ps->protocol_queue[i + 1];
 		}
 	}
 
@@ -291,12 +291,12 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 static void
 protocol_queue_destroy (struct pi_socket *ps)
 {
-	int idx;
+	int 	i;
 	
-	for (idx = 0; idx < ps->queue_len; idx++)
-		ps->protocol_queue[idx]->free(ps->protocol_queue[idx]);
-	for (idx = 0; idx < ps->cmd_len; idx++)
-		ps->cmd_queue[idx]->free(ps->cmd_queue[idx]);
+	for (i = 0; i < ps->queue_len; i++)
+		ps->protocol_queue[i]->free(ps->protocol_queue[i]);
+	for (i = 0; i < ps->cmd_len; i++)
+		ps->cmd_queue[i]->free(ps->cmd_queue[i]);
 
 	if (ps->queue_len > 0)
 		free(ps->protocol_queue);
@@ -612,7 +612,7 @@ int pi_socket(int domain, int type, int protocol)
  ***********************************************************************/
 struct pi_socket *pi_socket_copy(struct pi_socket *ps)
 {
-	int 	idx;
+	int 	i;
 	struct pi_socket *new_ps;
 	
 	new_ps = malloc(sizeof(struct pi_socket));
@@ -627,18 +627,18 @@ struct pi_socket *pi_socket_copy(struct pi_socket *ps)
 	
 	new_ps->protocol_queue = NULL;
 	new_ps->queue_len = 0;
-	for (idx = 0; idx < ps->queue_len; idx++) {
+	for (i = 0; i < ps->queue_len; i++) {
 		struct pi_protocol *prot;
 		
-		prot = ps->protocol_queue[idx]->dup (ps->protocol_queue[idx]);
+		prot = ps->protocol_queue[i]->dup (ps->protocol_queue[i]);
 		protocol_queue_add(new_ps, prot);
 	}
 	new_ps->cmd_queue = NULL;
 	new_ps->cmd_len = 0;
-	for (idx = 0; idx < ps->cmd_len; idx++) {
+	for (i = 0; i < ps->cmd_len; i++) {
 		struct pi_protocol *prot;
 		
-		prot = ps->cmd_queue[idx]->dup (ps->cmd_queue[idx]);
+		prot = ps->cmd_queue[i]->dup (ps->cmd_queue[i]);
 		protocol_cmd_queue_add(new_ps, prot);
 	}
 	new_ps->device = ps->device->dup (ps->device);

@@ -1,6 +1,8 @@
 2002-01-24  David A. Desrosiers <hacker at gnu-designs dot com>
 
-	* Type cleanups. s/idx/i/ # that was stupid of me
+	* Type cleanups. s/idx/i/ # that was stupid of me, loop variables
+	  should be of the usual variety: $i, $j, $k, etc. and follows the
+	  pilot-link CodingGuidelines document being drafted
 
 2002-01-24  JP Rosevear  <jpr@ximian.com>
 

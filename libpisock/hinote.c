@@ -112,20 +112,20 @@ int
 unpack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 		     int len)
 {
-	int 	idx,	
+	int 	i,	
 		index;
 	unsigned char *start;
 
 	start = record;
-	idx = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!idx)
-		return idx;
-	record += idx;
-	len -= idx;
+	i = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!i)
+		return i;
+	record += i;
+	len -= i;
 	if (len < 48)
 		return 0;
-	for (index = 0; idx < 48; idx++)
-		ai->reserved[idx] = *record++;
+	for (index = 0; i < 48; i++)
+		ai->reserved[i] = *record++;
 	return (record - start);
 }
 
@@ -144,21 +144,21 @@ int
 pack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 		   int len)
 {
-	int 	idx,
+	int 	i,
 		index;
 	unsigned char *start = record;
 
-	idx = pack_CategoryAppInfo(&ai->category, record, len);
-	if (idx == 0)		/* category pack failed */
+	i = pack_CategoryAppInfo(&ai->category, record, len);
+	if (i == 0)		/* category pack failed */
 		return 0;
 	if (!record)
-		return idx + 48;
-	record += idx;
-	len -= idx;
+		return i + 48;
+	record += i;
+	len -= i;
 	if (len < 48)
 		return (record - start);
-	for (index = 0; idx < 48; idx++)
-		*record++ = ai->reserved[idx];
+	for (index = 0; i < 48; i++)
+		*record++ = ai->reserved[i];
 
 	return (record - start);
 }

@@ -183,17 +183,17 @@ int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 int
 unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 {
-	int 	idx,
+	int 	i,
 		j;
 	unsigned char *p;
 
-	idx = unpack_CategoryAppInfo(&a->category, buffer, len);
-	if (!idx)
+	i = unpack_CategoryAppInfo(&a->category, buffer, len);
+	if (!i)
 		return 0;
 
-	p = (unsigned char *) (buffer + idx);
+	p = (unsigned char *) (buffer + i);
 
-	len -= idx;
+	len -= i;
 	if (len < 603)
 		return 0;
 
@@ -207,7 +207,7 @@ unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 		p += 20;
 	}
 
-	return idx + 603;
+	return i + 603;
 }
 
 /***********************************************************************
@@ -224,20 +224,20 @@ unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 int
 pack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 {
-	int 	idx,
+	int 	i,
 		j;
 	unsigned char *p;
 
-	idx = pack_CategoryAppInfo(&a->category, buffer, len);
+	i = pack_CategoryAppInfo(&a->category, buffer, len);
 
 	if (!buffer)
-		return idx + 603;
-	if (!idx)
-		return idx;
+		return i + 603;
+	if (!i)
+		return i;
 
-	p = (unsigned char *) (buffer + idx);
-	len -= idx;
-	if (idx < 603)
+	p = (unsigned char *) (buffer + i);
+	len -= i;
+	if (i < 603)
 		return 0;
 
 	for (j = 0; j < 20; j++) {
@@ -250,5 +250,5 @@ pack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 		p += 20;
 	}
 
-	return (idx + 603);
+	return (i + 603);
 }

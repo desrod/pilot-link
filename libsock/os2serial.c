@@ -369,7 +369,7 @@ static int so_write(struct pi_socket *ps)
 	struct 	pi_skb *skb;
 
 #ifndef NO_SERIAL_TRACE
-	int 	idx;
+	int 	i;
 #endif
 	int 	rc;
 
@@ -391,9 +391,9 @@ static int so_write(struct pi_socket *ps)
 		}
 #ifndef NO_SERIAL_TRACE
 		if (ps->debuglog)
-			for (idx = 0; idx < skb->len; idx++) {
+			for (i = 0; i < skb->len; i++) {
 				write(ps->debugfd, "2", 1);
-				write(ps->debugfd, skb->data + idx, 1);
+				write(ps->debugfd, skb->data + i, 1);
 			}
 #endif
 		ps->tx_bytes += skb->len;
@@ -423,7 +423,7 @@ static int so_read(struct pi_socket *ps, int timeout)
 	unsigned char *buf;
 
 #ifndef NO_SERIAL_TRACE
-	int 	idx;
+	int 	i;
 #endif
 	int 	rc;
 
@@ -461,9 +461,9 @@ static int so_read(struct pi_socket *ps, int timeout)
 			}
 #ifndef NO_SERIAL_TRACE
 			if (ps->debuglog)
-				for (idx = 0; idx < r; idx++) {
+				for (i = 0; i < r; i++) {
 					write(ps->debugfd, "1", 1);
-					write(ps->debugfd, buf + idx, 1);
+					write(ps->debugfd, buf + i, 1);
 				}
 #endif
 			ps->rx_bytes += r;
