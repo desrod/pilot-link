@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-notepad.h"
@@ -31,9 +32,17 @@
 #include "pi-file.h"
 #include "pi-header.h"
 
+#ifdef HAVE_PNG
+#include "png.h"
+#endif
+
 int pilot_connect(const char *port);
 static void print_help(char *progname);
 void write_ppm( FILE *f, struct NotePad *n );
+
+#ifdef HAVE_PNG
+void write_png( FILE *f, struct NotePad *n );
+#endif
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -105,64 +114,70 @@ void write_ppm( FILE *f, struct NotePad *n )
    
 }
 
-#ifdef XXXX
-// FIXEME - Need to finish this some time - AA
+#ifdef HAVE_PNG
 void write_png( FILE *f, struct NotePad *n )
 {
-   int i,j,k;
-   unsigned long black = 0;
-   unsigned long white = 0x11111111;
+   int i,j,k = 0, width;
    png_structp png_ptr;
    png_infop info_ptr;
+   png_bytep row;
+   
+   width = n->body.width + 8;
    
    png_ptr = png_create_write_struct
-     ( PNG_LIBPNG_VER_STRING, (png_voidp)user_error_ptr,
-      user_error_fn, user_warning_fn );
+     ( PNG_LIBPNG_VER_STRING, png_voidp_NULL,  
+       png_error_ptr_NULL, png_error_ptr_NULL);
 
    if(!png_ptr)
-     return (ERROR);
+     return;
    
    info_ptr = png_create_info_struct(png_ptr);
    if( !info_ptr )
      {
 	png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-	return (ERROR);
+	return;
      }
    
    if( setjmp( png_jmpbuf( png_ptr )))
      {
 	png_destroy_write_struct( &png_ptr, &info_ptr );
 	fclose( f );
-	return( ERROR );
+	return;
      }
    
    png_init_io( png_ptr, f );
    
-   png_set_IHDR( png_ptr, info_ptr, n->body.width, n->body.height,
+   png_set_IHDR( png_ptr, info_ptr, width, n->body.height,
 		1, PNG_COLOR_TYPE_GRAY, PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_DEFAULT,  PNG_FILTER_TYPE_DEFAULT );
-     
-   if( n->name != NULL )
-     fprintf( f, "%s (created on %s)\n", n->name, fmt_date( n->createDate ));
-   else
-     fprintf( f, "%s", fmt_date( n->createDate ));
-	      
-   fprintf( f, "%ld %ld\n1\n",
-	    n->body.width, n->body.height );
 
-   for( i=0; i<n->body.dataLen/2; i++ )
+   png_write_info( png_ptr, info_ptr );
+
+   row = (png_bytep)malloc( width/8 * sizeof( png_byte ));
+   
+   if( NULL == row )
+     return;
+   
+   for( i=0, k=0; i<n->body.dataLen/2; i++ )
      for( j=0; j<n->data[i].repeat; j++ )
        {
-	  for( k=0; k<8; k++ )
+	  row[k] = n->data[i].data ^ 0xFF;
+
+	  if( ++k >= width/8 )
 	    {
-	       if( n->data[i].data & 1<<(7-k) )
-		 fwrite( &black, 3, 1, f );
-	       else
-		 fwrite( &white, 3, 1, f );
+	       png_write_row( png_ptr, row );
+	       k = 0;
+	       png_write_flush(png_ptr);	  
 	    }
        }
    
-//   fwrite (state->pixmap, header->w * header->h * 3, 1, f);
+   png_write_end(png_ptr, info_ptr);
+   
+   free( row );
+
+   row = NULL;
+
+   png_destroy_write_struct( &png_ptr, &info_ptr );
    
 }
 #endif
@@ -173,8 +188,14 @@ int main(int argc, char *argv[])
      db,
      i,
      sd 		= -1,
-     action = NOTEPAD_ACTION_OUTPUT,
-     type = NOTE_OUT_PPM;
+     action = NOTEPAD_ACTION_OUTPUT;
+   
+#ifdef HAVE_PNG
+   int type = NOTE_OUT_PNG;
+#else
+   int type = NOTE_OUT_PNG;
+#endif
+   
    char 	*progname 	= argv[0],
      *port 		= NULL,
      *filename 	= NULL,
@@ -333,8 +354,7 @@ int main(int argc, char *argv[])
 		       break;
 		       
 		     case NOTE_OUT_PNG:
-		       // FIXME - Not working yet - AA
-//		       write_png( f, &n );
+		       write_png( f, &n );
 		       break;
 		    }
 		  		       
