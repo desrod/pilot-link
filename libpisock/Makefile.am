@@ -65,7 +65,7 @@ libpisock_la_SOURCES =  \
 	versamail.c
 
 libpisock_la_LIBADD = \
-	$(ICONV_LIBS)
+	$(ICONV_LIBS) @usb_libs@
 
 libpisock_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)

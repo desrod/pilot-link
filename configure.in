@@ -198,10 +198,11 @@ AC_SUBST(PNG_LIBS)
 
 dnl ******************************
 dnl Test if building USB Support
-dnl for Linux or FreeBSD
+dnl for various OSes
 dnl ******************************
 msg_usb=no
 usb_type=
+usb_libs=
 
 case "$host" in
 	*linux*)
@@ -218,13 +219,14 @@ case "$host" in
 		AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
 		usb_type=darwin
 		msg_usb="yes, Darwin"
-		LIBS="$LIBS -framework IOKit -framework Carbon -lstdc++"
+		usb_libs="-Wl,-framework,IOKit -Wl,-framework,Carbon -lstdc++"
         ;;
 
 esac
 AM_CONDITIONAL(WITH_LINUXUSB, test x$usb_type = xlinux)
 AM_CONDITIONAL(WITH_FREEBSDUSB, test x$usb_type = xfreebsd)
 AM_CONDITIONAL(WITH_DARWINUSB, test x$usb_type = xdarwin)
+AC_SUBST(usb_libs)
 
 dnl ******************************
 dnl Test for getopt
@@ -692,6 +694,7 @@ echo "
   Java support............ : $msg_java	$JAVA_VERSION
   Python support.......... : $msg_python	$PYTHONVER
   Perl support............ : $msg_perl	$PERL_VERSION
+
 "
 
 if [[ x"$PL_FROM_CVS" = xyes ]]; then
