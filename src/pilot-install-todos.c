@@ -1,4 +1,4 @@
-/* 
+/*
  * install-todolist.c:  Palm ToDo list installer
  *
  * Copyright 1996, Robert A. Kaplan
@@ -19,7 +19,7 @@
  *
  */
 
-#include "popt.h"
+#include "userland.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -34,17 +34,17 @@ void install_ToDos(int sd, int db, char *filename)
 		cLen		= 0,
 		i		= 0,
 		filelen;
-	
+
         char 	*file_text 	= NULL,
 		*cPtr 		= file_text,
 		*begPtr 	= cPtr,
 		note_text[] 	= "";
-	
+
         unsigned char ToDo_buf[0xffff];
-	
+
         struct 	ToDo todo;
-        FILE 	*f;	
-				
+        FILE 	*f;
+
 	f = fopen(filename, "r");
 	if (f == NULL) {
 		perror("fopen");
@@ -100,23 +100,6 @@ void install_ToDos(int sd, int db, char *filename)
 	return;
 }
 
-static void display_help(const char *progname)
-{
-	printf("   Updates the Palm ToDo list with entries from a local file\n\n");
-	printf("   Usage: %s -p <port> -f <filename>\n", progname);
-	printf("   Options:\n");
-	printf("   -p, --port <port>         Use device file <port> to communicate with Palm\n");
-	printf("   -h, --help                Display help information for %s\n", progname);
-	printf("   -v, --version             Display %s version information\n", progname);
-	printf("   -f, --filename <filename> A local file with formatted ToDo entries\n\n");
-	printf("   Examples: %s -p /dev/pilot -f $HOME/MyTodoList.txt\n\n", progname);
-	printf("   The format of this file is a simple line-by-line ToDo task entry.\n");
-	printf("   For each new line in the local file, a new task is created in the\n");
-	printf("   ToDo database on the Palm.\n\n");
-
-        return;
-}
-
 int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
@@ -126,68 +109,49 @@ int main(int argc, const char *argv[])
         const char
                 *progname 	= argv[0];
 
-        char 	*filename 	= NULL,
-		*port 		= NULL;
-	struct 	PilotUser User;
-	
+        char 	*filename 	= NULL;
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+		USERLAND_RESERVED_OPTIONS
 	        {"filename",	'f', POPT_ARG_STRING, &filename, 0, "A local file with formatted ToDo entries"},
-        	POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+		POPT_TABLEEND
 	};
 
 	po = poptGetContext("install-todos", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,
+		" [-p port] -f filename\n\n"
+		"   Updates the Palm ToDo list with entries from a local file\n\n"
+		"   Example:\n"
+		"      -p /dev/pilot -f $HOME/MyTodoList.txt\n\n"
+		"   The format of this file is a simple line-by-line ToDo task entry.\n"
+		"   For each new line in the local file, a new task is created in the\n"
+		"   ToDo database on the Palm.\n\n");
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		switch (c) {
-
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		default:
-			display_help(progname);
-			return 0;
-		}
 	}
-	
+
+	if (c < -1) userland_badoption(po,c);
+
 	if (filename == NULL) {
-		printf("\n");
-		printf("   ERROR: You must specify a filename to read ToDo entries from.\n");
-		printf("   Please see %s --help for more information.\n\n", progname);
+		fprintf(stderr,"\n   ERROR: You must specify a filename to read ToDo entries from.\n"
+			"   Please see %s --help for more information.\n\n", progname);
 		exit(EXIT_FAILURE);
 	}
 
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		print_splash(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
 
-	if (port == NULL && argc > 1) {
-		printf("\n");
-		printf("   ERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n\n");
-		exit(EXIT_FAILURE);
-	} else if (port != NULL) {
-		
-		sd = pilot_connect(port);
+		sd = userland_connect();
+		if (sd<0) exit(EXIT_FAILURE);
 
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
 			exit(EXIT_FAILURE);
 		}
-		
+
 		/* Tell user (via Palm) that we are starting things up */
 		dlp_OpenConduit(sd);
-	
+
 		/* Open the ToDo Pad's database, store access handle in db */
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
 			puts("Unable to open ToDoDB");
@@ -197,18 +161,12 @@ int main(int argc, const char *argv[])
 
 		/* Actually do the install here, passed a filename */
 		install_ToDos(sd, db, filename);
-		
+
 		/* Close the database */
 		dlp_CloseDB(sd, db);
-	
-		/* Tell the user who it is, with a different PC id. */
-		User.lastSyncPC 	= 0x00010000;
-		User.successfulSyncDate = time(NULL);
-		User.lastSyncDate 	= User.successfulSyncDate;
-	
+
 		dlp_AddSyncLogEntry(sd, "Wrote ToDo list entries to Palm.\nThank you for using pilot-link.\n");
 		dlp_EndOfSync(sd, 0);
 		pi_close(sd);
-	}
 	return 0;
 }

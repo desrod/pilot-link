@@ -169,9 +169,9 @@ install_netsync_LDADD = 	\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_todos_SOURCES = 	\
-	$(getopt_sources)	\
 	install-todos.c
 install_todos_LDADD = 		\
+	libuserland.a		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
