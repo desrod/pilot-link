@@ -313,35 +313,35 @@ static void RemoveFromList(char *name, char **list, int max)
  ***********************************************************************/
 static int creator_is_PalmOS(unsigned long creator)
 {
-        union {
-                long    L;
-                char    C[4];
-        } buf;
+	union {
+		long    L;
+		char    C[4];
+	} buf;
 
-        union buf;
+	union buf;
 
-        int     n;
+	int     n;
 
-        static long special_cases[] = {
-                pi_mktag('p', 'p', 'p', '_'),
-                pi_mktag('u', '8', 'E', 'Z'),
+	static long special_cases[] = {
+		pi_mktag('p', 'p', 'p', '_'),
+		pi_mktag('u', '8', 'E', 'Z'),
 
-                /* These cause a reset/crash on OS5 when accessed       */
-                pi_mktag('P', 'M', 'H', 'a'),   /* Phone Link Update    */
-                pi_mktag('P', 'M', 'N', 'e'),   /* Ditto                */
-                pi_mktag('F', 'n', 't', '1'),   /* Hires font resource  */
-                pi_mktag('m', 'o', 'd', 'm'),
-        };
+		/* These cause a reset/crash on OS5 when accessed       */
+		pi_mktag('P', 'M', 'H', 'a'),   /* Phone Link Update    */
+		pi_mktag('P', 'M', 'N', 'e'),   /* Ditto                */
+		pi_mktag('F', 'n', 't', '1'),   /* Hires font resource  */
+		pi_mktag('m', 'o', 'd', 'm'),
+	};
 
-        for (n = 0; n < sizeof(special_cases) / sizeof(long); n++)
-                if (creator == special_cases[n])
-                        return 1;
+	for (n = 0; n < sizeof(special_cases) / sizeof(long); n++)
+		if (creator == special_cases[n])
+			return 1;
 
-        for (n = 0; n < 4; n++)
-                if (buf.C[n] < 'a' || buf.C[n] > 'z')
-                        return 0;
+	for (n = 0; n < 4; n++)
+		if (buf.C[n] < 'a' || buf.C[n] > 'z')
+			return 0;
 
-        return 1;
+	return 1;
 }
 
 
@@ -755,10 +755,10 @@ static void Restore(char *dirname)
 	struct 	pi_file *f;
 	struct  stat sbuf;
 
-        struct  CardInfo Card;
+	struct  CardInfo Card;
 
-        Card.card = -1;
-        Card.more = 1;
+	Card.card = -1;
+	Card.more = 1;
 
 	if ((dir = opendir(dirname)) == NULL) {
 		fprintf(stderr, "\n");
@@ -851,20 +851,20 @@ static void Restore(char *dirname)
 		printf("Restoring %s... ", db[i]->name);
 		fflush(stdout);
 
-	        stat(db[i]->name, &sbuf);
+		stat(db[i]->name, &sbuf);
 
-	        while (Card.more) {
-        	        if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
-	                        break;
-	        }
+		while (Card.more) {
+			if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
+				break;
+		}
 
-	        if (sbuf.st_size > Card.ramFree) {
-        	        fprintf(stderr, "\n\n");
-                	fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
-	                fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
-        	                (unsigned long)sbuf.st_size, Card.ramFree);
+		if (sbuf.st_size > Card.ramFree) {
+			fprintf(stderr, "\n\n");
+			fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
+			fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
+				(unsigned long)sbuf.st_size, Card.ramFree);
 			exit(EXIT_FAILURE);
-        	}
+		}
 
 		if (pi_file_install(f, sd, 0, NULL) < 0) {
 			printf("failed.\n");
@@ -902,10 +902,10 @@ static void InstallInternal(const char *filename)
 	struct 	pi_file *f;
 	struct 	stat sbuf;
 
-        struct  CardInfo Card;
+	struct  CardInfo Card;
 
-        Card.card = -1;
-        Card.more = 1;
+	Card.card = -1;
+	Card.more = 1;
 
 	f = pi_file_open(filename);
 
@@ -915,8 +915,8 @@ static void InstallInternal(const char *filename)
 	}
 
 	if (dlp_OpenConduit(sd) < 0) {
-                fprintf(stderr, "\nExiting on cancel, some files were not"
-			       "installed\n\n");
+		fprintf(stderr, "\nExiting on cancel, some files were not"
+				"installed\n\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -924,9 +924,9 @@ static void InstallInternal(const char *filename)
 
 	stat(filename, &sbuf);
 
-        while (Card.more) {
-                if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
-                        break;
+	while (Card.more) {
+		if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
+			break;
 	}
 
 	if (sbuf.st_size > Card.ramFree) {
@@ -1777,9 +1777,9 @@ int main(int argc, char *argv[])
 	while ((optc = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (optc) {
 
-                case 'V':
-                        verbose = 1;
-                        break;
+		case 'V':
+			verbose = 1;
+			break;
 		case 'h':
 			display_help(progname);
 			return 0;
@@ -1788,22 +1788,22 @@ int main(int argc, char *argv[])
 			return 0;
 		case 'p':
 			port = optarg;
-                        if (verbose)
-                                printf("Option -p with value: %s\n", optarg);
+			if (verbose)
+				printf("Option -p with value: %s\n", optarg);
 			break;
 		case 'b':
 			dirname = optarg;
 			palm_operation = palm_op_backup;
 			sync_flags = BACKUP;
-                if (verbose)
-                    printf("Option -b with value: %s\n", optarg);
+			if (verbose)
+				printf("Option -b with value: %s\n", optarg);
 			break;
 		case 'u':
 			dirname = optarg;
 			palm_operation = palm_op_backup;
 			sync_flags = UPDATE;
-                if (verbose)
-                    printf("Option -u with value: %s\n", optarg);
+			if (verbose)
+				printf("Option -u with value: %s\n", optarg);
 			break;
 		case 's':
 			dirname = optarg;
@@ -1819,8 +1819,8 @@ int main(int argc, char *argv[])
 		case 'i':
 			dbname = optarg;
 			palm_operation = palm_op_install;
-                        if (verbose)
-                                printf("Option -i with value: %s\n", optarg);
+			if (verbose)
+				printf("Option -i with value: %s\n", optarg);
 			break;
 		case 'm':
 			Merge(optarg);
@@ -1840,7 +1840,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'l':
 			if (media_type != palm_media_vfs) media_type = palm_media_ram;
-                        palm_operation = palm_op_list;
+			palm_operation = palm_op_list;
 			break;
 		case 'L':
 			if (media_type != palm_media_vfs) media_type = palm_media_rom;
