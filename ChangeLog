@@ -2,7 +2,8 @@
 
 	* pilot-xfer.c: Revert an oops I did
 
-	* addresses.c: Removed the 'fancy' output (fstyle)
+	* addresses.c: Removed the 'fancy' output (fstyle), flattened the
+	  error reporting a bit
 	
 	* tools/Python/setup.py: Incremented version
 

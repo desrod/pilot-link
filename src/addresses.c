@@ -89,75 +89,59 @@ int main(int argc, char *argv[])
                 }
         }
 
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port=getenv("PILOTPORT");
-	} 
+	sd = pilot_connect(port);
 
-	if (port == NULL && argc > 1) {
-                printf("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		       "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
+	if (sd < 0)
+		goto error;
+
+	if (dlp_OpenConduit(sd) < 0)
+		goto error_close;
+	
+	/* Open the Address book's database, store access handle in db */
+	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
+		puts("Unable to open AddressDB");
+		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
 		exit(1);
-        } else if (port != NULL) {
-		
-		sd = pilot_connect(port);
+	}
 	
-		/* Did we get a valid socket descriptor back? */
-		if (dlp_OpenConduit(sd) < 0) {
-			exit(1);
-		}
+	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+	unpack_AddressAppInfo(&aai, buffer, 0xffff);
 	
-		/* Tell user (via Palm) that we are starting things up */
-		dlp_OpenConduit(sd);
-	
-		/* Open the Address book's database, store access handle in db */
-		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
-			puts("Unable to open AddressDB");
-			dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-			exit(1);
-		}
-	
-		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-		unpack_AddressAppInfo(&aai, buffer, 0xffff);
-	
-		for (index = 0;; index++) {
-			int 	attr,
-				category,
-				count = 0,
-				j;
-			struct 	Address a;
+	for (index = 0;; index++) {
+		int 	attr,
+			category,
+			i;
+		struct 	Address a;
 
-			int len =
-			    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0, &attr,
-						  &category);
+		int len =
+		    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0, &attr,
+					  &category);
 	
-			if (len < 0)
-				break;
+		if (len < 0)
+			break;
 	
-			/* Skip deleted records */
-			if ((attr & dlpRecAttrDeleted)
-			    || (attr & dlpRecAttrArchived))
-				continue;
+		/* Skip deleted records */
+		if ((attr & dlpRecAttrDeleted)
+		    || (attr & dlpRecAttrArchived))
+			continue;
 	
-			unpack_Address(&a, buffer, len);
+		unpack_Address(&a, buffer, len);
 
-			printf("Category: %s\n", aai.category.name[category]);
+		printf("Category: %s\n", aai.category.name[category]);
 
-			for (j = 0; j < 19; j++) {
-				if (a.entry[j]) {
-					int l = j;
+		for (i = 0; i < 19; i++) {
+			if (a.entry[i]) {
+				int l = i;
 	
-					if ((l >= entryPhone1) && (l <= entryPhone5)) {
-						printf("%s: %s\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[j]);
-					} else {
-						printf("%s: %s\n", aai.labels[l], a.entry[j]);
-					}
+				if ((l >= entryPhone1) && (l <= entryPhone5)) {
+					printf("%s: %s\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[i]);
+				} else {
+					printf("%s: %s\n", aai.labels[l], a.entry[i]);
 				}
 			}
-			printf("\n");
-			free_Address(&a);
 		}
+		printf("\n");
+		free_Address(&a);
 	}
 
 	/* Close the database */
@@ -167,4 +151,14 @@ int main(int argc, char *argv[])
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	return 0;
+
+ error_close:
+        pi_close(sd);
+
+ error:
+        perror("   ERROR:");
+        fprintf(stderr, "\n");
+	fprintf(stderr, "Please use -h for more detailed options.\n");
+
+        return -1;
 }
