@@ -925,7 +925,7 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 	
 	dlp_request_free(req);
 	
-		    "DLP OpenDB Handle=%d", *dbhandle));
+	if (result >= 0) {
 		*dbhandle = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -1005,7 +1005,7 @@ dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	
 	dlp_request_free(req);
 	
-		    "DLP CreateDB Handle=%d", *dbhandle));
+	if (result >= 0 && dbhandle) {
 		*dbhandle = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
