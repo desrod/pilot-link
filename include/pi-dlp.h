@@ -1194,9 +1194,11 @@ struct dlpResponse {
 	 * @param count On return, the number of record IDs found in @p IDs
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
+#ifndef SWIG			/* bindings provide a native implementation */
 	extern PI_ERR dlp_ReadRecordIDList
 		PI_ARGS((int sd, int dbhandle, int sort, int start, int max,
 			recordid_t *recuids, int *count));
+#endif
 
 	/** @brief Read a record using its unique ID
 	 *
@@ -1559,7 +1561,9 @@ struct dlpResponse {
 	 * #vfsIteratorStop.
 	 *
 	 * @bug On some early OS 5 devices like Tungsten T and Sony NX70, NX73 this
-	 * call crashes the device. Seems to be a bug in HotSync.
+	 * call crashes the device. This has been confirmed to be a bug in HotSync on
+	 * the device, as tests showed that a regular HotSync conduit does crash the
+	 * device with this call too.
 	 *
 	 * @param sd Socket number
 	 * @param dirref Directory reference obtained from dlp_VFSFileOpen()
