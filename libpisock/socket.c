@@ -690,7 +690,7 @@ pi_protocol_next (int pi_sd, int level)
  *
  ***********************************************************************/
 static void
-env_check (void) 
+env_dbgcheck (void) 
 {
 	if (getenv("PILOT_DEBUG")) {
 		int 	types = 0,
@@ -948,7 +948,7 @@ pi_socket(int domain, int type, int protocol)
 	pi_socket_t *ps;
 	pi_socket_list_t *list;
 
-	env_check ();
+	env_dbgcheck ();
 	
 	if (protocol == 0) {
 		if (type == PI_SOCK_STREAM)
