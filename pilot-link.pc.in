@@ -4,8 +4,8 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: Pilot Link
-Description: 
+Description: Suite of tools to communicate with a Palm handheld over various interfaces
 Version: @VERSION@
 Requires: 
 Libs: -L${libdir} -lpisock
-Cflags: -I${includedir}
+Cflags: -g -I${includedir}
