@@ -1,3 +1,4 @@
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * cmp.c:  Pilot CMP protocol
  *
@@ -41,6 +42,7 @@ static struct pi_protocol *cmp_protocol_dup (struct pi_protocol *prot)
 	new_prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
 	new_prot->level = prot->level;
 	new_prot->dup = prot->dup;
+	new_prot->free = prot->free;
 	new_prot->read = prot->read;
 	new_prot->write = prot->write;
 	new_prot->getsockopt = prot->getsockopt;
@@ -57,6 +59,12 @@ static struct pi_protocol *cmp_protocol_dup (struct pi_protocol *prot)
 	return new_prot;
 }
 
+static void cmp_protocol_free (struct pi_protocol *prot)
+{
+	free(prot->data);
+	free(prot);
+}
+
 struct pi_protocol *cmp_protocol (void)
 {
 	struct pi_protocol *prot;
@@ -65,6 +73,7 @@ struct pi_protocol *cmp_protocol (void)
 	prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));	
 	prot->level = PI_LEVEL_CMP;
 	prot->dup = cmp_protocol_dup;
+	prot->free = cmp_protocol_free;
 	prot->read = cmp_rx;
 	prot->write = cmp_tx;
 	prot->getsockopt = cmp_getsockopt;

@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 		*progname = argv[0],
 		*port = NULL;
 	
-	struct 	sockaddr_in 	addr2;
+	struct 	pi_sockaddr 	addr;
 	struct 	NetSyncInfo 	Net;
 
 	while ((ch = getopt(argc, argv, optstring)) != -1) {
@@ -111,25 +111,20 @@ int main(int argc, char *argv[])
 		/* DEBUG log for this Network Hotsync session */
 		putenv("PILOTLOGFILE=PiDebugNet.log");
 	
-		sd2 = pi_socket(AF_INET, PI_SOCK_STREAM, 0);
+		sd2 = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET);
 		if (sd2 < 0) {
 			perror("Unable to get socket 2");
 			exit(1);
 		}
 		printf("Got socket 2\n");
 	
-		memset(&addr2, 0, sizeof(addr2));
-		addr2.sin_family = AF_INET;
-		addr2.sin_port = htons(14238);
-	
-		if ((addr2.sin_addr.s_addr = inet_addr(Net.hostAddress)) == -1) {
-			fprintf(stderr, "Unable to parse PC address '%s'\n",
-				Net.hostAddress);
-			exit(1);
-		}
+		memset(&addr, 0, sizeof(addr));
+		addr.pi_family = PI_AF_PILOT;
+		strcpy(addr.pi_device, "net:");
+		strcpy(addr.pi_device + 4, Net.hostAddress);
 	
 		printf("Trying to connect\n");
-		ret = pi_connect(sd2, (struct sockaddr *) &addr2, sizeof(addr2));
+		ret = pi_connect(sd2, (struct sockaddr *) &addr, sizeof(addr));
 		printf("Connected\n");
 		if (ret < 0) {
 			perror("Unable to connect to PC");

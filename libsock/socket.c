@@ -1,3 +1,4 @@
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * socket.c:  Berkeley sockets style interface to Pilot
  *
@@ -276,6 +277,21 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 	protocol_cmd_queue_add (ps, dev_cmd_prot);
 }
 
+static void
+protocol_queue_destroy (struct pi_socket *ps)
+{
+	int i;
+	
+	for (i = 0; i < ps->queue_len; i--)
+		ps->protocol_queue[i]->free(ps->protocol_queue[i]);
+	for (i = 0; i < ps->cmd_len; i--)
+		ps->cmd_queue[i]->free(ps->cmd_queue[i]);
+
+	if (ps->queue_len > 0)
+		free(ps->protocol_queue);
+	if (ps->cmd_len > 0)
+		free(ps->cmd_queue);
+}
 
 struct pi_protocol *
 pi_protocol (int pi_sd, int level)
@@ -1056,11 +1072,15 @@ int pi_close(int pi_sd)
 	}
 
 	result = ps->device->close (ps);
-	if (result == 0) {
-		psl = ps_list_remove (psl, pi_sd);
-		watch_list = ps_list_remove (watch_list, pi_sd);
-		free(ps);
-	}
+	if (result <= 0)
+		return result;
+	
+	psl = ps_list_remove (psl, pi_sd);
+	watch_list = ps_list_remove (watch_list, pi_sd);
+
+	protocol_queue_destroy(ps);
+	ps->device->free(ps->device);
+	free(ps);
 
 	return result;
 }

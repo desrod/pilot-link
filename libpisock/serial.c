@@ -1,3 +1,4 @@
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * serial.c: Interface layer to serial HotSync connections
  *
@@ -107,6 +108,7 @@ static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 	
 	new_dev = (struct pi_device *)malloc (sizeof (struct pi_device));
 	new_dev->dup = dev->dup;
+	new_dev->free = dev->free;
 	new_dev->protocol = dev->protocol;	
 	new_dev->bind = dev->bind;
 	new_dev->listen = dev->listen;
@@ -132,6 +134,12 @@ static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 	return new_dev;
 }
 
+static void pi_serial_device_free (struct pi_device *dev) 
+{
+	free(dev->data);
+	free(dev);
+}
+
 struct pi_device *pi_serial_device (int type) 
 {
 	struct pi_device *dev;
@@ -141,6 +149,7 @@ struct pi_device *pi_serial_device (int type)
 	data = (struct pi_serial_data *)malloc (sizeof (struct pi_serial_data));
 
 	dev->dup = pi_serial_device_dup;
+	dev->free = pi_serial_device_free;
 	dev->protocol = pi_serial_protocol;	
 	dev->bind = pi_serial_bind;
 	dev->listen = pi_serial_listen;

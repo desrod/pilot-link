@@ -1,3 +1,24 @@
+2002-01-14  JP Rosevear  <jpr@ximian.com>
+
+	* pi-nredir.c (main): connect properly with a net: address now
+
+	* libsock/cmp.c: implement free method
+
+	* libsock/net.c: ditto
+
+	* libsock/padp.c: ditto
+
+	* libsock/serial.c: ditto
+
+	* libsock/inet.c: ditto
+
+	* libsock/slp.c: ditto
+
+	* libsock/socket.c (pi_close): properly free things
+	(protocol_queue_destroy): free each protocol
+
+	* include/pi-source.h: add free methods to the device and protocol
+
 2002-01-12  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* include/*hxx: Fix a missing 'class' declaration which causes libcc

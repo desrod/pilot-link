@@ -87,6 +87,7 @@ extern "C" {
 	struct pi_protocol {
 		int level;
 		struct pi_protocol *(*dup) PI_ARGS((struct pi_protocol *));
+		void (*free) PI_ARGS((struct pi_protocol *));
 
 		int (*read) PI_ARGS((struct pi_socket *, unsigned char *, int, int));
 		int (*write) PI_ARGS((struct pi_socket *, unsigned char *, int, int));
@@ -98,6 +99,7 @@ extern "C" {
 
 	struct pi_device {
 		struct pi_device *(*dup) PI_ARGS((struct pi_device *dev));
+		void (*free) PI_ARGS((struct pi_device *dev));
 		struct pi_protocol *(*protocol) PI_ARGS((struct pi_device *dev));
 
 		int (*bind) PI_ARGS((struct pi_socket *ps, struct sockaddr *addr, int addrlen));
