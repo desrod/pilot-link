@@ -507,7 +507,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			*dev_prot,
 			*dev_cmd_prot;
 	unsigned char byte;
-	pi_buffer_t byte_buf;
+	pi_buffer_t byte_buf = { 0 };
 
 	byte_buf.data = &byte;
 	byte_buf.allocated = 1;

@@ -183,7 +183,7 @@ int main(int argc, const char *argv[])
 		match_category 	= -1,
 		title_matching 	= 0;
 
-	size_t	len;
+	ssize_t	len;
 
 	pi_buffer_t *buffer;
 
