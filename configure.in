@@ -656,7 +656,7 @@ dnl (already done) enable_werror=no
 
 AC_ARG_ENABLE(compile-werror,
 	      [  --enable-compile-werror   
-                          Enable verbose compiler warnings],
+                          Causes warnings to be treated as errors in GCC],
 	      enable_werror=yes)
 if test "x$GCC" = "xyes" -a "x$enable_werror" = "xyes"; then
 	CFLAGS="$CFLAGS -Werror"
