@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-datebook.h"
@@ -48,6 +49,18 @@ char 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
 	*Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", 
 			"aug", "sep", "oct", "nov", "dec"};
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n\n");
@@ -66,6 +79,7 @@ static void display_help(char *progname)
 	
 	return;
 }
+
 
 int main(int argc, char *argv[])
 {

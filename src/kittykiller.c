@@ -28,10 +28,10 @@
 int main(int argc, char *argv[])
 {
 
-	/* obtain the handle for the HotSync manager's window */
+	/* obtain the handle for the HotSync Manager's window */
 	HWND hWnd = FindWindow(HOTSYNC_APP_CLASS, NULL);
 
-	/* if the HotSync manager is already running, send the exit message */
+	/* If the HotSync manager is already running, send the exit message */
 	if (hWnd) {
 		/* Send a message to the HotSync manager asking it to
 		   terminate without displaying the "Are you sure?"

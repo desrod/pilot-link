@@ -21,9 +21,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
 
-#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-address.h"
@@ -96,8 +96,54 @@ int 	tableformat 	= 0,
 	defaultcategory = 0;
 
 char 	tabledelims[5] = { '\n', ',', ';', '\t' },
-	*progname;
+	*progname,
 
+	buf[1000],
+        *field[100],
+        *unquote(char *);
+
+
+int read_csvline(FILE *f)
+{       
+
+        int     nfield;
+        char    *p, 
+                *q;
+                               
+        if (fgets(buf, sizeof(buf), f) == NULL)
+                return -1;
+  
+        nfield = 0;
+
+        for (q = buf; (p=strtok(q, ",\n\r")) != NULL; q = NULL)
+                field[nfield++] = unquote(p);
+
+        return nfield;
+}
+
+char *unquote(char *p)
+{
+        if (p[0] == '"') {
+                if (p[strlen(p)-1] == '"')
+                        p[strlen(p)-1] = '\0';
+                p++; 
+        }
+        return p;   
+} 
+
+
+/***********************************************************************
+ *
+ * Function:    inchar
+ *
+ * Summary:     Turn the protected name back into the "original" 
+ *		characters
+ *
+ * Parameters:  
+ *
+ * Returns:     Modified character, 'c'
+ *
+ ***********************************************************************/
 int inchar(FILE * in)
 {
 	int 	c;	/* switch */
@@ -137,7 +183,18 @@ int inchar(FILE * in)
 }
 
 
-int read_field(char *dest, FILE * in)
+/***********************************************************************
+ *
+ * Function:    read_field
+ *
+ * Summary:     Reach each field of the CSV during read_file
+ *
+ * Parameters:  Inbound filehandle
+ *
+ * Returns:     0
+ *
+ ***********************************************************************/
+int read_field(char *dest, FILE *in)
 {
 	int 	c;
 
@@ -175,21 +232,38 @@ int read_field(char *dest, FILE * in)
 	}
 	*dest++ = '\0';
 
-	while ((c != EOF) && ((c == ' ') || (c == '\t')))	/* Absorb whitespace */
+	/* Absorb whitespace */
+	while ((c != EOF) && ((c == ' ') || (c == '\t')))
 		c = getc(in);
 
 	if (c == ',')
 		return 1;
+
 	else if (c == ';')
 		return 2;
+
 	else if (c == '\t')
 		return 3;
+
 	else if (c == EOF)
 		return -1;	/* No more */
+
 	else
 		return 0;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    outchar
+ *
+ * Summary:     Protect each of the 'illegal' characters in the output
+ *
+ * Parameters:  filehandle
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void outchar(char c, FILE * out)
 {
 	if (encodechars) {
@@ -237,6 +311,18 @@ void outchar(char c, FILE * out)
 	}
 }
 
+
+/***********************************************************************
+ *
+ * Function:    write_field
+ *
+ * Summary:     Write out each field in the CSV
+ *
+ * Parameters:  
+ *
+ * Returns:     
+ *
+ ***********************************************************************/
 int write_field(FILE * out, char *source, int more)
 {
 	putc('"', out);
@@ -251,16 +337,31 @@ int write_field(FILE * out, char *source, int more)
 #if 0
 	if (more == 1)
 		putc(',', out);
+
 	else if (more == 2)
 		putc(';', out);
+
 	else if (more == 3)
 		putc('\t', out);
+
 	else if (more == 0)
 		putc('\n', out);
 #endif
 	return 0;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    match_category
+ *
+ * Summary:     Find and match the specified category name in 'buf'
+ *
+ * Parameters:  
+ *
+ * Returns:     
+ *
+ ***********************************************************************/
 int match_category(char *buf, struct AddressAppInfo *aai)
 {
 	int 	i;
@@ -271,6 +372,18 @@ int match_category(char *buf, struct AddressAppInfo *aai)
 	return atoi(buf);	/* 0 is default */
 }
 
+
+/***********************************************************************
+ *
+ * Function:    match_phone
+ *
+ * Summary:     Find and match the 'phone' entries in 'buf'
+ *
+ * Parameters:  
+ *
+ * Returns:     
+ *
+ ***********************************************************************/
 int match_phone(char *buf, struct AddressAppInfo *aai)
 {
 	int 	i;
@@ -281,46 +394,49 @@ int match_phone(char *buf, struct AddressAppInfo *aai)
 	return atoi(buf);	/* 0 is default */
 }
 
-int read_file(FILE *in, int sd, int db, struct AddressAppInfo *aai)
+
+/***********************************************************************
+ *
+ * Function:    read_file
+ *
+ * Summary:    	Open specified file and read into address records 
+ *
+ * Parameters:  filehandle
+ *
+ * Returns:     
+ *
+ ***********************************************************************/
+int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 {
 	int 	i	= -1,
 		l,
+		nf,
 		attribute,
 		category;
 	char 	buf[0xffff];
-	char	line[1000];
-	struct 	Address a;
+
+	struct 	Address addr;
 
 	printf("   Reading CSV entries, writing to Palm Address Book... ");
 	fflush(stdout);
-	do {
 
-                fgets(line, 1000, in);
-		if (index(line, '#') == line) {
-			fprintf(stderr, "\nIgnoring header\n");		
-                        continue;
-		} 
+	while ((nf = read_csvline(f)) != -1) {
+		i = read_field(buf, f);
 
-		i = read_field(buf, in);
+		memset(&addr, 0, sizeof(addr));
+		addr.showPhone = 0;
 
-		memset(&a, 0, sizeof(a));
-		a.showPhone = 0;
-
-		if (tableformat) {
+		if (i == 2) {
 			category = match_category(buf, aai);
-			i = read_field(buf, in);
-		} else {
+			i = read_field(buf, f);
 			if (i == 2) {
-				category = match_category(buf, aai);
-				i = read_field(buf, in);
-				if (i == 2) {
-					a.showPhone =
-					    match_phone(buf, aai);
-					i = read_field(buf, in);
-				}
-			} else
-				category = defaultcategory;
+				addr.showPhone = match_phone(buf, aai);
+				i = read_field(buf, f);
+			}
+		} else {
+			category = defaultcategory;
 		}
+
 		if (i < 0)
 			break;
 
@@ -331,28 +447,26 @@ int read_file(FILE *in, int sd, int db, struct AddressAppInfo *aai)
 
 			if ((l2 >= 3) && (l2 <= 7)) {
 				if (i != 2 || tableformat)
-					a.phoneLabel[l2 - 3] = l2 - 3;
+					addr.phoneLabel[l2 - 3] = l2 - 3;
 				else {
-					a.phoneLabel[l2 - 3] =
-					    match_phone(buf, aai);
-					i = read_field(buf, in);
+					addr.phoneLabel[l2 - 3] = match_phone(buf, aai);
+					i = read_field(buf, f);
 				}
 			}
-			a.entry[l2] = strdup(buf);
 
 			if (i == 0)
 				break;
 
-			i = read_field(buf, in);
+			i = read_field(buf, f);
 		}
 
 		attribute = (atoi(buf) ? dlpRecAttrSecret : 0);
 
 		while (i > 0) {	/* Too many fields in record */
-			i = read_field(buf, in);
+			i = read_field(buf, f);
 		}
 
-		l = pack_Address(&a, (unsigned char *) buf, sizeof(buf));
+		l = pack_Address(&addr, (unsigned char *) buf, sizeof(buf));
 
 		dlp_WriteRecord(sd, db, attribute, 0, category,
 				(unsigned char *) buf, l, 0);
@@ -363,6 +477,18 @@ int read_file(FILE *in, int sd, int db, struct AddressAppInfo *aai)
 	return 0;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    write_file
+ *
+ * Summary:     Writes Address records in CSV format to <file>
+ *
+ * Parameters:  filehandle
+ *
+ * Returns:     0
+ *
+ ***********************************************************************/
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 {
 	int 	i,
@@ -373,12 +499,11 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	
 	char 	buf[0xffff];
 	
-	struct 	Address a;
+	struct 	Address addr;
 		
 	/* Print out the header and fields with fields intact. Note we
 	   'ignore' the last field (Private flag) and print our own here, so
-	   we don't have to chop off the trailing comma at the end. Hacky.
-	   */
+	   we don't have to chop off the trailing comma at the end. Hacky. */
 	if (tablehead) {
 		fprintf(out, "# ");
 		for (j = 0; j < 19; j++) {
@@ -399,7 +524,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 
 		if (attribute & dlpRecAttrDeleted)
 			continue;
-		unpack_Address(&a, (unsigned char *) buf, l);
+		unpack_Address(&addr, (unsigned char *) buf, l);
 
 /* Simplified system */
 #if 0
@@ -407,17 +532,17 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		write_field(out, aai->category.name[category], -1);
 
 		for (j = 0; j < 19; j++) {
-			if (a.entry[j]) {
+			if (addr.entry[j]) {
 				putc(',', out);
 				putc('\n', out);
 				if ((j >= 4) && (j <= 8))
 					write_field(out,
-						    aai->phoneLabels[a.phoneLabel
+						    aai->phoneLabels[addr.phoneLabel
 								     [j - 4]], 1);
 				else
 					write_field(out, aai->labels[j],
 						    1);
-				write_field(out, a.entry[j], -1);
+				write_field(out, addr.entry[j], -1);
 			}
 		pi_tickle(ps->sd);
 		}
@@ -426,7 +551,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 
 /* Complex system */
 #if 1
-		if (tableformat || (augment && (category || a.showPhone))) {
+		if (tableformat || (augment && (category || addr.showPhone))) {
 			if (tableformat)
 				write_field(out,
 					    aai->category.name[category],
@@ -435,9 +560,9 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 				write_field(out,
 					    aai->category.name[category],
 					    2);
-			if (a.showPhone && (!tableformat)) {
+			if (addr.showPhone && (!tableformat)) {
 				write_field(out,
-					    aai->phoneLabels[a.showPhone],
+					    aai->phoneLabels[addr.showPhone],
 					    2);
 			}
 		}
@@ -445,21 +570,21 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		for (j = 0; j < 19; j++) {
 #ifdef NOT_ALL_LABELS
 			if (augment && (j >= 4) && (j <= 8))
-				if (a.phoneLabel[j - 4] != j - 4)
+				if (addr.phoneLabel[j - 4] != j - 4)
 					write_field(out,
-						    aai->phoneLabels[a.phoneLabel
+						    aai->phoneLabels[addr.phoneLabel
 								     [j -4]], 2);
-			if (a.entry[realentry[j]])
-				write_field(out, a.entry[realentry[j]],
+			if (addr.entry[realentry[j]])
+				write_field(out, addr.entry[realentry[j]],
 					    tabledelim);
 
 #else			/* print the phone labels if there is something in the field */
-			if (a.entry[realentry[j]]) {
+			if (addr.entry[realentry[j]]) {
 				if (augment && (j >= 3) && (j <= 7))
 					write_field(out,
-						    aai->phoneLabels[a.phoneLabel
+						    aai->phoneLabels[addr.phoneLabel
 								     [j - 3]], 2);
-				write_field(out, a.entry[realentry[j]],
+				write_field(out, addr.entry[realentry[j]],
 					    tabledelim);
 			}
 #endif
@@ -476,6 +601,18 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	return 0;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n", progname);
@@ -488,7 +625,7 @@ static void display_help(char *progname)
 	printf("     -p port           use device file <port> to communicate with Palm\n");
 	printf("     -c category       install to category <category> by default\n");
 	printf("     -d category       delete old Palm records in <category>\n");
-	printf("     -D                delete all Palm records in all categories\n");
+	printf("     -D, --delall      delete all Palm records in all categories\n");
 	printf("     -r file           read records from <file> and install them to Palm\n");
 	printf("     -w file           get records from Palm and write them to <file>\n");
 	printf("     -h, --help        Display this information\n");
@@ -496,6 +633,7 @@ static void display_help(char *progname)
 
 	return;
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -566,8 +704,14 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 	}
+	
+	if (argc < 2) {
+		display_help(progname);
+		return 0;
+	}
 
 	sd = pilot_connect(port);
+	
 	if (sd < 0)
 		goto error;
 	
@@ -590,7 +734,7 @@ int main(int argc, char *argv[])
 	else
 		defaultcategory = 0;	/* Unfiled */
 
-	if (mode == 2) {	/* Write to file */
+	if (mode == 2) {		/* Write to file */
 		/* FIXME - Must test for existing file first! DD 2002/03/18 */
 		FILE *f = fopen(argv[optind], "w");
 
@@ -605,9 +749,9 @@ int main(int argc, char *argv[])
 					   match_category(deletecategory,
 							  &aai));
 		fclose(f);
-	} else if (mode == 1) {
-		FILE *f = fopen(argv[optind], "r");
 
+	} else if (mode == 1) {	/* Read from file */
+		FILE *f = fopen(argv[optind], "r");
 		while (optind < argc) {
 			if (f == NULL) {
 				fprintf(stderr, "Unable to open input file");

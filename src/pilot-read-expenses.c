@@ -65,10 +65,13 @@ int main(int argc, char *argv[])
 		i,
 		ret,
 		sd 		= -1;
+
 	char 	*progname 	= argv[0],
 		*port 		= NULL;
+
 	char buffer[0xffff];
 	char buffer2[0xffff];
+
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo tai;
 	struct 	ExpensePref tp;

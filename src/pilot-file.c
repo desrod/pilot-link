@@ -29,8 +29,8 @@
 #include "pi-header.h"
 #include "pi-source.h"
 #include "pi-socket.h"
-#include "pi-dlp.h"
 #include "pi-file.h"
+#include "pi-dlp.h"	/* Also included in pi-file.h */
 
 /* Declare prototypes */
 static void display_help(char *progname);
@@ -77,6 +77,7 @@ static char *iso_time_str(time_t t)
 	return (buf);
 }
 
+
 /***********************************************************************
  *
  * Function:    dump
@@ -115,6 +116,7 @@ static void dump(void *buf, int n)
 	}
 }
 
+
 /***********************************************************************
  *
  * Function:    dump_header
@@ -128,8 +130,8 @@ static void dump(void *buf, int n)
  ***********************************************************************/
 static void dump_header(struct pi_file *pf, struct DBInfo *ip)
 {
-	printf("name: \"%s\"\n", ip->name);
-	printf("flags: 0x%x", ip->flags);
+	printf("Name..........: %s\n", ip->name);
+	printf("flags.........: 0x%x", ip->flags);
 	if (ip->flags & dlpDBFlagNewer)
 		printf(" NEWER");
 	
@@ -158,15 +160,16 @@ static void dump_header(struct pi_file *pf, struct DBInfo *ip)
 		printf(" OPEN");
 	
 	printf("\n");
-	printf("version: %d\n", ip->version);
-	printf("creation_time: %s\n", iso_time_str(ip->createDate));
-	printf("modified_time: %s\n", iso_time_str(ip->modifyDate));
-	printf("backup_time: %s\n", iso_time_str(ip->backupDate));
-	printf("modification_number: %ld\n", ip->modnum);
-	printf("type: '%s', ", printlong(ip->type));
-	printf("creator: '%s'\n", printlong(ip->creator));
+	printf("version.......: %d\n", ip->version);
+	printf("creation_time.: %s\n", iso_time_str(ip->createDate));
+	printf("modified_time.: %s\n", iso_time_str(ip->modifyDate));
+	printf("backup_time...: %s\n", iso_time_str(ip->backupDate));
+	printf("mod_number....: %ld\n", ip->modnum);
+	printf("type..........: %s\n", printlong(ip->type));
+	printf("CreatorID.....: %s\n", printlong(ip->creator));
 	printf("\n");
 }
+
 
 /***********************************************************************
  *
@@ -194,6 +197,7 @@ static void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+
 /***********************************************************************
  *
  * Function:    dump_sort_info
@@ -220,6 +224,7 @@ static void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 	dump(sort_info, sort_info_size);
 	printf("\n");
 }
+
 
 /***********************************************************************
  *
@@ -293,6 +298,7 @@ static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, in
 	printf("\n");
 }
 
+
 /***********************************************************************
  *
  * Function:    dump_record
@@ -329,7 +335,7 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 		} else {
 			type = makelong(rkey);
 			id = 0;
-			sscanf(&rkey[4], "%x", &id);
+			sscanf(&rkey[4], "%d", &id);
 			if (pi_file_read_resource_by_type_id
 			    (pf, type, id, &buf, &size, &record) < 0) {
 				printf
@@ -338,6 +344,7 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 				return;
 			}
 		}
+
 		printf("%d\t%d\t%s\t%d\n", record, size, printlong(type),
 		       id);
 		dump(buf, size);
@@ -381,6 +388,18 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 	printf("\n");
 }
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Dump application and header information from your local PRC/PDB files\n\n");
@@ -413,9 +432,11 @@ int main(int argc, char **argv)
 		lflag 		= 0, 
 		rflag 		= 0,
 		filedump 	= 0;
+
 	char 	*name,
 		*rkey           = NULL,
 		*progname 	= argv[0];
+
 	struct 	pi_file *pf;
 	struct 	DBInfo info;
 
@@ -461,12 +482,13 @@ int main(int argc, char **argv)
 		name = argv[optind];
 	} else {
 		display_help(progname);
-		fprintf(stderr, "ERROR: You must specify a file\n");
+		fprintf(stderr, "   ERROR: You must specify a file\n");
 		return -1;
 	}
 	
 	if ((pf = pi_file_open(name)) == NULL) {
-		fprintf(stderr, "can't open %s\n", name);
+		fprintf(stderr, "   ERROR: Can't open '%s' Does '%s' exist?\n\n", 
+			name, name);
 		return -1;
 	}
 

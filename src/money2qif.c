@@ -46,15 +46,27 @@ struct option options[] = {
 
 static const char *optstring = "p:hva:";
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n");
 	printf("   Usage: %s -p <port> -a AccountName\n", progname);
 	printf("   Options:\n");
 	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -a --account      The name of the Account category in MicroMoney\n");
 	printf("     -h, --help        Display this information\n");
 	printf("     -v, --version     Display version information\n\n");
+	printf("     -a --account      The name of the Account category in MicroMoney\n");
 	printf("   Examples: %s -p /dev/pilot -a BankGlobal\n\n", progname);
 	printf("   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n");
 	printf("   on MicroMoney.\n\n");
@@ -64,6 +76,7 @@ static void display_help(char *progname)
 
 	return;
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -104,7 +117,8 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind > 1 && account == NULL) {
-		fprintf(stderr, "ERROR: You must specify an Account Category as found in MicroMoney \n");
+		fprintf(stderr, "   ERROR: You must specify an Account Category"
+			" as found in MicroMoney \n");
 		return -1;
 	} 
 	

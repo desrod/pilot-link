@@ -7,11 +7,9 @@ endif
 SUBDIRS=prc pix pilot-datebook
 
 INCLUDES = 			\
-	-Iinclude		\
 	-I$(top_srcdir)/include \
 	$(PNG_CFLAGS)		\
-	$(TCL_INC)		\
-	$(TK_INC)		\
+	$(TCL_INCLUDES)		\
 	$(RL_CFLAGS)
 
 if WITH_CXX
@@ -49,6 +47,7 @@ bin_PROGRAMS = 		\
 	pilot-foto	\
 	pilot-prc	\
 	pilot-schlep	\
+	pilot-wav	\
 	pilot-xfer	\
 	read-expenses	\
 	read-ical	\
@@ -234,7 +233,8 @@ pilot_clip_LDADD = 				\
 #	pd-tty.c		\
 #	pilot-debug.c
 #pilot_debug_LDADD = 				\
-#	$(TCLTKLIBS)				\
+#	$(TCL_LIBS)				\
+#	$(TCL_INCLUDES)				\
 #	$(RL_LIBS)				\
 #	$(top_builddir)/libpisock/libpisock.la
 
@@ -279,6 +279,12 @@ pilot_schlep_SOURCES = 		\
 	$(getopt_sources)	\
 	pilot-schlep.c
 pilot_schlep_LDADD = 				\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_wav_SOURCES = 		\
+	$(getopt_sources)	\
+	pilot-wav.c
+pilot_wav_LDADD = 				\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_xfer_SOURCES = 		\

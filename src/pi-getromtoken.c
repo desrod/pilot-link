@@ -21,20 +21,11 @@
 
 #include "getopt.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <string.h>
-#include <netinet/in.h>
 
+#include "pi-dlp.h"
 #include "pi-header.h"
 #include "pi-source.h"
 #include "pi-syspkt.h"
-#include "pi-dlp.h"
 
 /* Declare prototypes */
 static void display_help(char *progname);
@@ -51,14 +42,26 @@ struct option options[] = {
 
 static const char *optstring = "p:hvu:i:t:";
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Reads a ROM token from a Palm Handheld device\n\n");
 	printf("   Usage: %s -p <port> -t <romtoken>\n\n", progname);
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -h, --help              Display help information\n");
+	printf("     -v, --version           Display version information\n");
 	printf("     -t <token>              A ROM token to read (i.e. snum)\n\n");
 	printf("   Example: %s -p /dev/pilot -t snum\n\n", progname);
 	printf("   Other tokens you may currently extract are:\n");
@@ -68,6 +71,7 @@ static void display_help(char *progname)
 
 	return;
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -103,7 +107,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	
-	if(token == NULL) {
+	if (!token) {
 		display_help(progname);
 		return 0;
 	}
@@ -111,6 +115,7 @@ int main(int argc, char *argv[])
 	set_long(&long_token, *((long *)token));
 	
 	sd = pilot_connect(port);
+
 	if (sd < 0)
 		goto error;
 

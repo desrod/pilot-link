@@ -169,7 +169,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	
-
 	/* Now we can read and write packets: to get the Palm to send a
 	   packet, write a ".2" shortcut, which starts the debugging mode.
 	   (Make sure to reset your Palm after finishing this example!) */
