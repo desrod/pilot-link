@@ -79,6 +79,7 @@ int pilot_connect(char *port)
 		exit(1);
 	}
 
+	fprintf(stderr, "\n");
 	begin:
 	if (!(parent_sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n",
