@@ -4,19 +4,19 @@
  * (c) 1996, Kenneth Albanowski.
  * Derived from padp.c.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -44,10 +44,11 @@ int syspkt_tx(struct pi_socket *ps, void *m, int length)
 	fprintf(stderr, "-----------------\n");
 #endif
 
-	/*ps->laddr.pi_port = msg[0];
+	/* ps->laddr.pi_port = msg[0];
 	   ps->raddr.pi_port = msg[1];
 	   ps->protocol = msg[2]; XXX */
-	/*ps->xid = msg[3]; */
+
+	/* ps->xid = msg[3]; */
 
 	if ((!ps->xid) || (ps->xid == 0xff))
 		ps->xid = 0x11;	/* some random # */
@@ -178,7 +179,7 @@ int sys_Continue(int sd, struct Pilot_registers *r, struct Pilot_watch *w)
 	buf[3] = 0;
 
 	buf[4] = 0x07;
-	buf[5] = 0;		/*gapfil */
+	buf[5] = 0;		/* gapfill */
 
 	if (!r)
 		return pi_write(sd, buf, 6);
@@ -203,7 +204,7 @@ int sys_Step(int sd)
 	buf[3] = 0;
 
 	buf[4] = 0x03;
-	buf[5] = 0;		/*gapfil */
+	buf[5] = 0;		/* gapfill */
 
 	return pi_write(sd, buf, 6);
 }
@@ -219,7 +220,7 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
 	buf[3] = 0;
 
 	buf[4] = 0x0c;
-	buf[5] = 0;		/*gapfil */
+	buf[5] = 0;		/* gapfill */
 
 	for (i = 0; i < 6; i++) {
 		set_long(buf + 6 + i * 6, b[i].address);
@@ -248,7 +249,7 @@ int sys_SetTrapBreaks(int sd, int *traps)
 	buf[3] = 0;
 
 	buf[4] = 0x11;
-	buf[5] = 0;		/*gapfil */
+	buf[5] = 0;		/* gapfill */
 
 	for (i = 0; i < 5; i++) {
 		set_short(buf + 6 + i * 2, traps[i]);
@@ -275,7 +276,7 @@ int sys_GetTrapBreaks(int sd, int *traps)
 	buf[3] = 0;
 
 	buf[4] = 0x10;
-	buf[5] = 0;		/*gapfil */
+	buf[5] = 0;		/* gapfill */
 
 	pi_write(sd, buf, 6);
 
@@ -302,7 +303,7 @@ int sys_ToggleDbgBreaks(int sd)
 	buf[3] = 0;
 
 	buf[4] = 0x0d;
-	buf[5] = 0;		/*gapfil */
+	buf[5] = 0;		/* gapfill */
 
 	pi_write(sd, buf, 6);
 
@@ -324,7 +325,7 @@ int sys_QueryState(int sd)
 	buf[3] = 0;
 
 	buf[4] = 0;
-	buf[5] = 0;		/*gapfil */
+	buf[5] = 0;		/* gapfill */
 
 	return pi_write(sd, buf, 6);
 }
@@ -348,7 +349,7 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
 		buf[3] = 0;
 
 		buf[4] = 0x01;
-		buf[5] = 0;	/*gapfil */
+		buf[5] = 0;	/* gapfill */
 
 		set_long(buf + 6, addr + done);
 		set_short(buf + 10, todo);
@@ -390,7 +391,7 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
 		buf[3] = 0;
 
 		buf[4] = 0x02;
-		buf[5] = 0;	/*gapfil */
+		buf[5] = 0;	/* gapfill */
 
 		set_long(buf + 6, addr);
 		set_short(buf + 10, len);
@@ -426,7 +427,7 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, int len,
 	buf[3] = 0;
 
 	buf[4] = 0x11;
-	buf[5] = 0;		/*gapfil */
+	buf[5] = 0;		/* gapfill */
 
 	set_long(buf + 6, startaddr);
 	set_long(buf + 10, stopaddr);
@@ -453,21 +454,21 @@ sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
 {
 	char buf[20];
 
-	buf[0] = 2;
-	buf[1] = 2;
-	buf[2] = 0;
-	buf[3] = 0x11;
+	buf[0] 	= 2;
+	buf[1] 	= 2;
+	buf[2] 	= 0;
+	buf[3] 	= 0x11;
 
-	buf[4] = 0x0d;		/*RemoteEvtCommand */
-	buf[5] = 0;		/*gapfil */
-	buf[6] = penDown;
-	buf[7] = 0;		/*gapfil */
-	buf[8] = x >> 8;
-	buf[9] = x & 0xff;
+	buf[4] 	= 0x0d;		/* RemoteEvtCommand	*/
+	buf[5] 	= 0;		/* gapfill 		*/
+	buf[6] 	= penDown;
+	buf[7] 	= 0;		/* gapfill 		*/
+	buf[8] 	= x >> 8;
+	buf[9] 	= x & 0xff;
 	buf[10] = y >> 8;
 	buf[11] = y & 0xff;
 	buf[12] = keypressed;
-	buf[13] = 0;		/*gapfil */
+	buf[13] = 0;		/* gapfill 		*/
 	buf[14] = keymod >> 8;
 	buf[15] = keymod & 0xff;
 	buf[16] = keyasc >> 8;

@@ -4,19 +4,19 @@
  * Copyright (c) 1996, 1997, D. Jeff Dionne & Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -146,12 +146,12 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
 	ps->initiator = 1;	/* We initiated the link */
 
-	ps->socket_listen = pi_serial_listen;
-	ps->socket_accept = pi_serial_accept;
-	ps->socket_close = pi_serial_close;
-	ps->socket_send = pi_serial_send;
-	ps->socket_recv = pi_serial_recv;
-	ps->socket_tickle = pi_serial_tickle;
+	ps->socket_listen 	= pi_serial_listen;
+	ps->socket_accept 	= pi_serial_accept;
+	ps->socket_close 	= pi_serial_close;
+	ps->socket_send 	= pi_serial_send;
+	ps->socket_recv 	= pi_serial_recv;
+	ps->socket_tickle 	= pi_serial_tickle;
 
 	return 0;
 }
@@ -316,8 +316,10 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	memcpy(accept->laddr, ps->laddr, ps->laddrlen);
 	memcpy(accept->raddr, ps->raddr, ps->raddrlen);
 
-	accept->mac->ref++;	/* Keep mac around even if the bound socket is closed */
-	accept->initiator = 0;	/* We accepted the link, we did not initiate it */
+	accept->mac->ref++;	/* Keep mac around even if the bound socket
+				   is closed */
+	accept->initiator = 0;	/* We accepted the link, we did not initiate
+				   it */
 
 	return accept->sd;
       fail:

@@ -4,19 +4,19 @@
  * Portions Copyright (c) 1996, D. Jeff Dionne.
  * Portions Copyright (c) 1996, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -162,11 +162,8 @@ int inet_aton(const char *cp, struct in_addr *addr)
 	register u_int *pp = parts;
 
 	for (;;) {
-		/*
-		 * Collect number up to ``.''.
-		 * Values are specified as for C:
-		 * 0x=hex, 0=octal, other=decimal.
-		 */
+		/* Collect number up to ``.''. Values are specified as for
+		   C: 0x=hex, 0=octal, other=decimal. */
 		val = 0;
 		base = 10;
 		if (*cp == '0') {
@@ -192,27 +189,22 @@ int inet_aton(const char *cp, struct in_addr *addr)
 			break;
 		}
 		if (*cp == '.') {
-			/*
-			 * Internet format:
-			 *      a.b.c.d
-			 *      a.b.c   (with c treated as 16-bits)
-			 *      a.b     (with b treated as 24 bits)
-			 */
+			/* Internet format:
+			     a.b.c.d
+			     a.b.c   (with c treated as 16-bits)
+			     a.b     (with b treated as 24 bits) */
+
 			if (pp >= parts + 3 || val > 0xff)
 				return (0);
 			*pp++ = val, cp++;
 		} else
 			break;
 	}
-	/*
-	 * Check for trailing characters.
-	 */
+	/* Check for trailing characters. */
 	if (*cp && (!isascii(*cp) || !isspace(*cp)))
 		return (0);
-	/*
-	 * Concoct the address according to
-	 * the number of parts specified.
-	 */
+
+	/* Concoct the address according to the number of parts specified. */
 	n = pp - parts + 1;
 	switch (n) {
 
@@ -362,9 +354,8 @@ int compareTm(struct tm *a, struct tm *b)
 
 #ifdef OS2
 
-/* Replacement version of getenv(), because the one in the EMX 0.9c,
- * fix03 dist appears to be busted when called from inside a DLL. (MJJ)
- */
+/* Replacement version of getenv(), because the one in the EMX 0.9c, fix03
+   dist appears to be busted when called from inside a DLL. (MJJ) */
 char *getenv(const char *envar)
 {
 	APIRET rc;

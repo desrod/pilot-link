@@ -1,44 +1,61 @@
+2001-05-13  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* memos.c: Added an additional fix to the -t handling in the
+	  original patch to allow for a regular expression to be used in
+	  place of a simple string. (Tamito KAJIYAMA)
+
+	* "Don't Diff This Codebase". Yes, billions of little formatting and
+	  indenting tweaks here and there in preparation for a large
+	  transplant/migration to the DLP 1.3 codebase. More to be added in
+	  here soon, every funtion documented, every struct explained.
+
+	  Working on the release, little bit more code cleanup to go.
+
+	* Makefile.in: manpage ${srcdir}/man fix (John Marshall)
+
 2001-05-09  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* pilot-schlep.c: Updated the help verbage to be a bit more verbose
 	  about what the tool actually does. (Walter Koch, Voytek Eymont)
 
-	* man/pilot-link.7: Updated verbage to reflect change in pilot-schlep,
-	  also repaginated page to 80 cols. (David A. Desrosiers)
+	* man/pilot-link.7: Updated verbage to reflect change in
+	  pilot-schlep, also repaginated page to 80 cols. (David A.
+	  Desrosiers)
 
-	* man/pilot-addresses.1: Repaginated to 80 cols. (David A. Desrosiers)
+	* man/pilot-addresses.1: Repaginated to 80 cols. (David A.
+	  Desrosiers)
 
 	* ccexample.cc: Yes, it's just a sample app, but all of this should
-	  compile cleanly. unsigned char* packed = (unsigned char*)mai.pack();
-	  fixes where required, and delete[] fixes also. (David A. Desrosiers)
+	  compile cleanly. unsigned char* packed = (unsigned
+	  char*)mai.pack(); fixes where required, and delete[] fixes also.
+	  (David A. Desrosiers)
 
-	* Makefile.os2: Temporary fix for compilation buglet, need to revisit
-	  this when I get a proper OS/2 workstation built here for testing. 
-	  Credit for this goes to several people on the os2-pda mailing list
-	  (John Poltorak, Bob Wittig, others. Thanks guys!)
+	* Makefile.os2: Temporary fix for compilation buglet, need to
+	  revisit this when I get a proper OS/2 workstation built here for
+	  testing.  Credit for this goes to several people on the os2-pda
+	  mailing list (John Poltorak, Bob Wittig, others. Thanks guys!)
 
-	* dlpsh.c: Cleaned up the 'df' function again, no more eye-candy. Need
-	  to clean up argument parsing here. (David A. Desrosiers)
+	* dlpsh.c: Cleaned up the 'df' function again, no more eye-candy.
+	  Need to clean up argument parsing here. (David A. Desrosiers)
 
 2001-04-29  David A. Desrosiers <hacker@gnu-designs.com>
 
-	* MAJOR change to the codebase, everything was properly 
-          indented with 8-character tabs, bracing, brackets, etc. 
-          WARNING: Diffing this code will result in a HUGE diff.
+	* MAJOR change to the codebase, everything was properly indented
+          with 8-character tabs, bracing, brackets, etc.  WARNING: Diffing
+          this code will result in a HUGE diff.  (David A. Desrosiers)
+
+	* Begun weeding out all occurences of gets(), strcat(), sprintf(),
+          and similar dangerous functions from the code where they appeared.
           (David A. Desrosiers)
 
-	* Begun weeding out all occurences of gets(), strcat(), 
-          sprintf(), and similar dangerous functions from the code
-          where they appeared. (David A. Desrosiers)
-
-	* memos.c: Added abilility to select the title of the memo
-          when sync'ing. (Tamito KAJIYAMA)
+	* memos.c: Added abilility to select the title of the memo when
+          sync'ing. (Tamito KAJIYAMA)
 
 	* memos.c: Escaping of ':' in OS/2 filenames (Bob Wittig)
 
-	* reminders.c: strncpy(addr.pi_device, device, sizeof(addr.pi_device));
-          These type of fixes will be applied the whole sourcebase soon.
-          (David A. Desrosiers)
+	* reminders.c: strncpy(addr.pi_device, device,
+          sizeof(addr.pi_device)); These type of fixes will be applied the
+          whole sourcebase soon.  (David A. Desrosiers)
 
 2001-03-30  JP Rosevear  <jpr@ximian.com>
 
@@ -89,63 +106,62 @@
 
 2001-03-01 David A. Desrosiers
 
-        * Addition of CopyPrevention and Stream flags to various interfaces 
-          (John Marshall) 
+        * Addition of CopyPrevention and Stream flags to various interfaces
+          (John Marshall)
           
-          Added pi_file_find_resource_by_type_id  and pi_file_read_resource_by_type_id 
-          to pilot-file.c (John Marshall) 
+          Added pi_file_find_resource_by_type_id  and
+          pi_file_read_resource_by_type_id to pilot-file.c (John Marshall)
 
           General code cleanups and housecleaning
 
 2001-02-28 David A. Desrosiers
 
-        * kittykiller.c: Fixed ^M madness
-          man/install-memos.1: More ^M madness. (Carl Jacobsen)
+        * kittykiller.c: Fixed ^M madness man/install-memos.1: More ^M
+          madness. (Carl Jacobsen)
 
-          man/*: Various manpage updates and edits. Updated the location
-          of the pilot-link homepage in relevant places. 
-          s/USR Pilot/Palm Computing Device/ also
+          man/*: Various manpage updates and edits. Updated the location of
+          the pilot-link homepage in relevant places.  s/USR Pilot/Palm
+          Computing Device/ also
  
-          pilot-xfer.c: fixed a reference to a non-initialized variable
-          in Restore() (Tamito KAJIYAMA)
+          pilot-xfer.c: fixed a reference to a non-initialized variable in
+          Restore() (Tamito KAJIYAMA)
 
           tools/Python/pdapilot.py: fixed a typo in a member variable name
 
 2001-02-25 David A. Desrosiers
 
-        * memos.c: Fixed the detection of the %ENV for PILOTPORT
-          and the device name from pi_device to argv[1] (Bob Wittig)
+        * memos.c: Fixed the detection of the %ENV for PILOTPORT and the
+          device name from pi_device to argv[1] (Bob Wittig)
 
           pilot-xfer.c: Fix for reporting the databases not found
           db[dbcount]->name (Bob Wittig)
 
-          pilot-addresses: More PILOTPORT detection fixes, also no
-          longer ignoring the quiet flag if passed to the app (Bob
-          Wittig)
+          pilot-addresses: More PILOTPORT detection fixes, also no longer
+          ignoring the quiet flag if passed to the app (Bob Wittig)
 
           libsock/Makefile.os2: Fixes for pisock.def
 
-          man/install-memo.1, man/pilot-xfer.1, 
-          man/pilot-addresses.1: Manpage updates (Bob Wittig)
+          man/install-memo.1, man/pilot-xfer.1, man/pilot-addresses.1:
+          Manpage updates (Bob Wittig)
 
-          sync-plan.PL: Added capability to authenticate to the
-          Netplan Server (Mark Peletier)          
+          sync-plan.PL: Added capability to authenticate to the Netplan
+          Server (Mark Peletier)
 
 2001-02-17 David A. Desrosiers
 
-        * aclocal.m4: Fixed the BSD nm test (again). How many 
-          times do we have to keep fixing this?!
+        * aclocal.m4: Fixed the BSD nm test (again). How many times do we
+          have to keep fixing this?!
 
-        sync-plan.PL: s/Pilot/Palm where required. No breakage.
+        * sync-plan.PL: s/Pilot/Palm where required. No breakage.
 
-        dlpsh.c: Fixed the double "EXITING" error. Prettied up
-        the 'mem' function and added kbytes. Removed the 'exit' 
-        option. Changed the layout of 'help'. Fixed some of the 
-        formatting. Lots more to do to this binary.
+        * dlpsh.c: Fixed the double "EXITING" error. Prettied up the 'mem'
+          function and added kbytes. Removed the 'exit' option. Changed the
+          layout of 'help'. Fixed some of the formatting. Lots more to do to
+          this binary.
 
 2001-01-28 David A. Desrosiers
 
-        * Makefile.in: Removed '-FOO' from the tcl/itcl testing.
+        * Makefile.in: Removed '-FOO' from the tcl/itcl testing. 
           configure.in/configure
 
 2001-01-23  JP Rosevear  <jpr@ximian.com>
@@ -297,16 +313,15 @@
 
 2000-10-30  David A. Desrosiers <hacker@linuxcare.com>
 
-	* dlpsh time macro change [John Marshall] 
+	* dlpsh time macro change [John Marshall]
 
 	* Perl5 error output update [Larry W. Virden]
 
-	* install-datebook.c: fixed appointment.event 
-          errors with entries that had zero time.
-          [Martin Schwenke]
+	* install-datebook.c: fixed appointment.event errors with entries
+          that had zero time.  [Martin Schwenke]
 	
-	* Makefile.in: Updated all Makefile.in to 
-          reflect new paths for $(LANG) under tools.
+	* Makefile.in: Updated all Makefile.in to reflect new paths for
+          $(LANG) under tools.
 
 2000-10-30  JP Rosevear  <jpr@helixcode.com>
 
@@ -353,57 +368,52 @@
 
 2000-10-20  David A. Desrosiers <hacker@linuxcare.com>
 
-	* Cleaned up some more "ascii art". Nice small
-          tight header now. 
+	* Cleaned up some more "ascii art". Nice small tight header now.
 
-	* Moved the $(LANG) to their own ./tools dir
-          in preparation for the autoconfiscating of 
-          pilot-link. 
+	* Moved the $(LANG) to their own ./tools dir in preparation for the
+          autoconfiscating of pilot-link.
 
-	* configure.in fix for Debian's broken Tcl
-          include path mess. Still not perfect. 
+	* configure.in fix for Debian's broken Tcl include path mess. Still
+          not perfect.
 
-	* Beginning the merge of install-????.c into 
-          pilot-install -foo. 
+	* Beginning the merge of install-????.c into pilot-install -foo.
 
 2000-10-18  David A. Desrosiers <hacker@linuxcare.com>
 
         * s/port = argv[1]/device = argv[1]/
 
-	* Yet more string fixes, trying to get these
-          things to act and look similar. 
+	* Yet more string fixes, trying to get these things to act and look
+          similar.
 
 	* Took out the \007 dreck. Bad linux, bad..
 
-	* dlpsh.c: Fixed a non-ANSI_C compliant %G 
-          macro in the time_fn function, replaced with
-          a hack with 20%g. Throws a warning about 2
-          digit century, but the '20' sneaked in front
-          fixes that (uuugly!)
+	* dlpsh.c: Fixed a non-ANSI_C compliant %G macro in the time_fn
+          function, replaced with a hack with 20%g. Throws a warning about 2
+          digit century, but the '20' sneaked in front fixes that (uuugly!)
 
 	* s/socket_descriptor/sd/
 	
-	* Commented out the OS2 declarations until we
-	  can *PROPERLY* test for $(HOST)
+	* Commented out the OS2 declarations until we can *PROPERLY* test
+	  for $(HOST)
 
 	* Small buglet in PILOT_LINK_PATCH fixed
 
 	* Added a -pre3 declaration to pi-version.h
 
-	* Simple deprecation warning in pilot-mail hinting
-	  at it's impending removal. 
+	* Simple deprecation warning in pilot-mail hinting at it's impending
+	  removal.
 
 	* More ANSI-C'ification (gotta love -pedantic)
 		
 2000-10-14  David A. Desrosiers <hacker@linuxcare.com>
 
-	* dlpsh.c: Added a 'time' option to sync unix 
-          desktop time and date to Palm. 
+	* dlpsh.c: Added a 'time' option to sync unix desktop time and date
+          to Palm.
 
 	* Makefile.in: Added install-strip stanza
 
-	* parsedate.y: Added <stdlib.h> to stop bison
-          errors it was throwing related to free()
+	* parsedate.y: Added <stdlib.h> to stop bison errors it was throwing
+          related to free()
 
 	* Added some typedefs to include/pi-mail.h 
 
@@ -413,8 +423,7 @@
 
 	* More indenting cleanups. 
 
-	* Java Makefile.in fix for the ln syntax and
-          a bad doConstants path. 
+	* Java Makefile.in fix for the ln syntax and a bad doConstants path.
 
 2000-10-11  JP Rosevear  <jpr@helixcode.com>
 
@@ -431,20 +440,18 @@
 
 2000-10-08  David A. Desrosiers <hacker@linuxcare.com>
 
-	* dlpsh.c: Added a mem function to determine 
-          the amount of ROM/RAM on the device, and 
-          ROM/RAM free. Only works w/Card 0
+	* dlpsh.c: Added a mem function to determine the amount of ROM/RAM
+          on the device, and ROM/RAM free. Only works w/Card 0
 
-	* Added all appropriate FSF/GPL pointers in the
-          headers of the files which were missing them.
+	* Added all appropriate FSF/GPL pointers in the headers of the files
+          which were missing them.
 
         * confiugre: Fixed BSD nm test
 
-        * libsock/sync.c (sync_record): Use ReplaceRecord callback.
-        There can be a subtle difference between add/delete and replace.
-        (sync_MergeToPilot_slow): Calculate flags for records during
-        a slow sync
-        (sync_MergeFromPilot_slow): ditto
+        * libsock/sync.c (sync_record): Use ReplaceRecord callback.  There
+          can be a subtle difference between add/delete and replace. 
+          (sync_MergeToPilot_slow): Calculate flags for records during a
+          slow sync (sync_MergeFromPilot_slow): ditto
 
         * include/pi-sync.h: Add ReplaceRecord callback
 

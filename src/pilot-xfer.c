@@ -1,21 +1,21 @@
 /* 
- * pilot-xfer.c:  Palm Database transfer utility 
+ * pilot-xfer.c:  Palm Database transfer utility
  *
  * (c) 1996, 1998, Kenneth Albanowski.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -190,11 +190,11 @@ void VoidSyncFlags(void)
 
 	Connect();
 	if (dlp_ReadUserInfo(sd, &U) >= 0) {
-		U.lastSyncPC = 0x00000000;	/* Hopefully unique constant, to tell
-						   any Desktop software that databases
-						   have been altered, and that a slow
-						   sync is necessary 
-						 */
+		U.lastSyncPC = 0x00000000;	
+		/* Hopefully unique constant, to tell any Desktop software
+		   that databases have been altered, and that a slow sync is
+		   necessary 
+		 */
 		U.lastSyncDate = U.successfulSyncDate = time(0);
 		dlp_WriteUserInfo(sd, &U);
 	}
@@ -225,7 +225,9 @@ int creator_is_PalmOS(long creator)
 	};
 
 
-	/* Test for special cases -- PalmOS CRIDs outside of lowercase alpha range */
+	/* Test for special cases -- PalmOS CRIDs outside of lowercase alpha
+	   range 
+	 */
 
 	for (n = 0; n < sizeof(special_cases) / sizeof(long); n++)
 
@@ -388,10 +390,10 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 			printf("OK\n");
 		pi_file_close(f);
 
-		/* Note: This is no guarantee that the times on the host system
-		   actually match the GMT times on the Palm. We only check to
-		   see whether they are the same or different, and do not treat
-		   them as real times. */
+		/* Note: This is no guarantee that the times on the host
+		   system actually match the GMT times on the Palm. We only
+		   check to see whether they are the same or different, and
+		   do not treat them as real times. */
 
 		times.actime = info.createDate;
 		times.modtime = info.modifyDate;
@@ -405,8 +407,8 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 		char newname[256];
 
 		if (remove_deleted && dlp_OpenConduit(sd) < 0) {
-			/* If the connection has gone down here, there is probably
-			   a communication error. */
+			/* If the connection has gone down here, there is
+			   probably a communication error. */
 			fprintf(stderr,
 				"Exiting on error, stopped before removing files.\n");
 			exit(1);
@@ -473,10 +475,10 @@ void Fetch(char *dbname)
 
 	protect_name(name, dbname);
 
-	/* Judd - Graffiti hack
-	 * Graffiti ShortCuts with a space on the end or not is really supposed
-	 * to be the same file, so we will treat it as such to avoid confusion.
-	 * remove the space.
+	/* Judd - Graffiti hack 
+	   Graffiti ShortCuts with a space on the end or not is really
+	   supposed to be the same file, so we will treat it as such to
+	   avoid confusion.  remove the space.
 	 */
 	if (strcmp(name, "Graffiti ShortCuts ") == 0) {
 		strcpy(name, "Graffiti ShortCuts");
@@ -570,8 +572,8 @@ void Restore(char *dirname)
 	dir = opendir(dirname);
 
 
-	/* Find out how many directory entries exist, so that we can allocate
-	   the buffer.  We avoid scandir() for maximum portability.
+	/* Find out how many directory entries exist, so that we can
+	   allocate the buffer.  We avoid scandir() for maximum portability.
 
 	   The count is a bit conservative, as it includes . and .. entries.
 	 */

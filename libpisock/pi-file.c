@@ -10,19 +10,19 @@
  * makedoc7 by Pat Beirne, <patb@corel.com>
  * and the include files from the pilot SDK
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -53,8 +53,10 @@
  * 4		uniq id seed (I think it is just garbage)
  * 4		next record list id (normally 0, or ptr to extended hdr)
  * 2		num records for this header
- * Hypothetically plus 2 more bytes if an extended or perhaps secondary header (not supported)
- * (In practice, this value is never set, instead it usually indicates a damaged file.)
+ *
+ * Hypothetically plus 2 more bytes if an extended or perhaps secondary
+ * header (not supported) (In practice, this value is never set, instead it
+ * usually indicates a damaged file.)
  *
  * if the low bit of attr is on, then next thing is a list of resource entry
  * descriptors:
@@ -76,10 +78,10 @@
  *
  * next, the app_info, if any, then the sort_info, if any
  *
- * then the space used the data. Every offset is an offset from the beginning of the
- * file, and will point until this area. Each block starts at the given offset and
- * ends at the beginning of the next block. The last block ends at the end of the file.
- */
+ * then the space used the data. Every offset is an offset from the
+ * beginning of the file, and will point until this area. Each block starts
+ * at the given offset and ends at the beginning of the next block. The last
+ * block ends at the end of the file. */
 
 #define PI_HDR_SIZE 78
 #define PI_RESOURCE_ENT_SIZE 10
@@ -123,19 +125,19 @@ static int pi_file_close_for_write(struct pi_file *pf);
 static void pi_file_free(struct pi_file *pf);
 
 /* this seems to work, but what about leap years? */
-/*#define PILOT_TIME_DELTA (((unsigned)(1970 - 1904) * 365 * 24 * 60 * 60) + 1450800)*/
+
+/* #define PILOT_TIME_DELTA (((unsigned)(1970 - 1904) * 365 * 24 * 60 * 60) + 1450800) */
 
 /* Exact value of "Jan 1, 1970 0:00:00 GMT" - "Jan 1, 1904 0:00:00 GMT" */
 #define PILOT_TIME_DELTA (unsigned)(2082844800)
 
 /* FIXME: These conversion functions apply no timezone correction. UNIX uses
-   UTC for time_t's, while the Palm uses local time for database backup
-   time and appointments, etc. It is not particularly simple to convert
-   between these in UNIX, especially since the Palm's local time is
-   unknown, and if syncing over political boundries, could easily be
-   different then the local time on the UNIX box. Since the Palm does not
-   know what timezone it is in, there is no unambiguous way to correct for
-   this.
+   UTC for time_t's, while the Palm uses local time for database backup time
+   and appointments, etc. It is not particularly simple to convert between
+   these in UNIX, especially since the Palm's local time is unknown, and if
+   syncing over political boundries, could easily be different then the
+   local time on the UNIX box. Since the Palm does not know what timezone it
+   is in, there is no unambiguous way to correct for this.
    
    Worse, the creation date for a program is stored in the local time _of
    the computer which did the final linking of that program_. Again, the
@@ -144,8 +146,7 @@ static void pi_file_free(struct pi_file *pf);
    
    A better immediate tack would be to dissect these into struct tm's, and
    return those.
-                                                                     --KJA
-   */
+   --KJA */
 
 static time_t pilot_time_to_unix_time(unsigned long raw_time)
 {
@@ -157,9 +158,7 @@ static unsigned long unix_time_to_pilot_time(time_t t)
 	return (unsigned long) ((unsigned long) t + PILOT_TIME_DELTA);
 }
 
-/*
- * open .prc or .pdb file for reading
- */
+/* open .prc or .pdb file for reading */
 struct pi_file *pi_file_open(char *name)
 {
 	struct pi_file *pf;
@@ -677,10 +676,8 @@ int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
 	return (0);
 }
 
-/*
- * internal function to extend entry list if necessary, and return a
- * pointer to the next available slot
- */
+/* internal function to extend entry list if necessary, and return a pointer
+   to the next available slot */
 static struct pi_file_entry *pi_file_append_entry(struct pi_file *pf)
 {
 	int new_count;
@@ -912,8 +909,8 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 				dlp_CloseDB(socket, db);
 				return -1;
 			}
-			/* There is no way to restore records with these attributes, so there is no
-			   use in backing them up */
+			/* There is no way to restore records with these
+			   attributes, so there is no use in backing them up */
 			if (attr &
 			    (dlpRecAttrArchived | dlpRecAttrDeleted))
 				continue;
@@ -942,8 +939,9 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	/* Delete DB if it already exists */
 	dlp_DeleteDB(socket, cardno, pf->info.name);
 
-	/* Judd - 25Nov99 - Graffiti hack */
-	/* We want to make sure that these 2 flags get set for this one */
+	/* Judd - 25Nov99 - Graffiti hack 
+           We want to make sure that these 2 flags get set for this one */
+
 	if (pf->info.creator == pi_mktag('g', 'r', 'a', 'f')) {
 		flags |= dlpDBFlagNewer;
 		flags |= dlpDBFlagReset;
@@ -963,11 +961,13 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 		int retry = 0;
 
 		/* Judd - 25Nov99 - Graffiti hack
-		 * The dlpDBFlagNewer specifies that if a DB is open and cannot be
-		 * deleted then it can be overwritten by a DB with a different name.
-		 * The creator ID of "graf" is what really identifies a DB, not the name.
-		 * We could call it JimBob and the palm would still find it and use it.
-		 */
+
+		   The dlpDBFlagNewer specifies that if a DB is open and
+		   cannot be deleted then it can be overwritten by a DB with
+		   a different name.  The creator ID of "graf" is what
+		   really identifies a DB, not the name.  We could call it
+		   JimBob and the palm would still find it and use it. */
+
 		if (strcmp(pf->info.name, "Graffiti ShortCuts ") == 0) {
 			strcpy(pf->info.name, "Graffiti ShortCuts");
 			retry = 1;
@@ -984,8 +984,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 
 		if (retry) {
 			/* Judd - 25Nov99 - Graffiti hack
-			 * We changed the name, now we can try to write it again
-			 */
+			   We changed the name, now we can try to write it
+			   again */
 			if (dlp_CreateDB
 			    (socket, pf->info.creator, pf->info.type,
 			     cardno, flags, pf->info.version,
@@ -1002,13 +1002,15 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	/* Compensate for bug in OS 2.x Memo */
 	if ((version > 0x0100) && (strcmp(pf->info.name, "MemoDB") == 0)
 	    && (l > 0) && (l < 282)) {
-		/* Justification: The appInfo structure was accidentally lengthend in
-		   OS 2.0, but the Memo application does not check that it is long
-		   enough, hence the shorter block from OS 1.x will cause the 2.0 Memo
-		   application to lock up if the sort preferences are modified. This
-		   code detects the installation of a short app info block on a 2.0
-		   machine, and lengthens it. This transformation will never lose
-		   information. */
+
+		/* Justification: The appInfo structure was accidentally
+		   lengthend in OS 2.0, but the Memo application does not
+		   check that it is long enough, hence the shorter block
+		   from OS 1.x will cause the 2.0 Memo application to lock
+		   up if the sort preferences are modified. This code
+		   detects the installation of a short app info block on a
+		   2.0 machine, and lengthens it. This transformation will
+		   never lose information. */
 
 		void *b2 = calloc(1, 282);
 
@@ -1018,7 +1020,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 		freeai = 1;
 	}
 
-	/* All system updates seen to have the 'ptch' type, so trigger a reboot on those */
+	/* All system updates seen to have the 'ptch' type, so trigger a
+	   reboot on those */
 	if (pf->info.creator == pi_mktag('p', 't', 'c', 'h'))
 		reset = 1;
 
@@ -1058,7 +1061,8 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			    (socket, db, type, id, buffer, size) < 0)
 				goto fail;
 
-			/* If we see a 'boot' section, regardless of file type, require reset */
+			/* If we see a 'boot' section, regardless of file
+			   type, require reset */
 			if (type == pi_mktag('b', 'o', 'o', 't'))
 				reset = 1;
 		}
@@ -1122,7 +1126,8 @@ int pi_file_merge(struct pi_file *pf, int socket, int cardno)
 	     pf->info.name, &db) < 0)
 		return pi_file_install(pf, socket, cardno);
 
-	/* All system updates seen to have the 'ptch' type, so trigger a reboot on those */
+	/* All system updates seen to have the 'ptch' type, so trigger a
+	   reboot on those */
 	if (pf->info.creator == pi_mktag('p', 't', 'c', 'h'))
 		reset = 1;
 
@@ -1156,7 +1161,8 @@ int pi_file_merge(struct pi_file *pf, int socket, int cardno)
 			    (socket, db, type, id, buffer, size) < 0)
 				goto fail;
 
-			/* If we see a 'boot' section, regardless of file type, require reset */
+			/* If we see a 'boot' section, regardless of file
+			   type, require reset */
 			if (type == pi_mktag('b', 'o', 'o', 't'))
 				reset = 1;
 		}

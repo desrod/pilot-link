@@ -3,19 +3,19 @@
  *
  * Copyright (c) 1997, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -53,7 +53,7 @@ void free_Mail(struct Mail *a)
 
 void free_MailAppInfo(struct MailAppInfo *a)
 {
-	/*if (a->signature)
+	/* if (a->signature)
 	   free(a->signature); */
 }
 
@@ -313,7 +313,8 @@ unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 	ai->unsentMessage = get_long(record);
 	record += 4;
 
-/*ai->signature = 0; *//*strdup(start + get_short(record)); */
+/* ai->signature = 0; 			*/
+/* strdup(start + get_short(record)); 	*/
 	record += 3;
 
 	return (record - start);
@@ -336,7 +337,7 @@ pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 		return 0;
 	set_short(record, ai->dirty);
 	record += 2;
-	set_short(record, 0);	/* gapfil */
+	set_short(record, 0);	/* gapfill */
 	set_byte(record, ai->sortOrder);
 	record += 2;
 	set_long(record, ai->unsentMessage);
@@ -345,7 +346,7 @@ pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 	set_short(record, (record - start + 2));
 	record += 2;
 
-	/*if (ai->signature)
+	/* if (ai->signature)
 	   strcpy(record, ai->signature);
 	   else
 	   set_byte(record, 0);
@@ -417,7 +418,7 @@ pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record, int len)
 	set_byte(record, ai->getContaining);
 	record++;
 	set_byte(record, 0);
-	record++;		/* gapfil */
+	record++;		/* gapfill */
 	set_short(record, ai->truncate);
 	record += 2;
 

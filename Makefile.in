@@ -128,10 +128,10 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	for h in include/*.h $(srcdir)/include/*.h include/*.hxx $(srcdir)/include/*.hxx; do \
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
 	done
-	for m in man/*.1; do \
+	for m in ${srcdir}/man/*.1; do \
 		$(INSTALL_DATA) $$m $(mandir1)/`basename $$m`; \
 	done
-	for m in man/*.7; do \
+	for m in ${srcdir}/man/*.7; do \
 		$(INSTALL_DATA) $$m $(mandir7)/`basename $$m`; \
 	done
 	for p in $(srcdir)/tools/pix/*.gif $(srcdir)/tools/pix/*.xbm; do \

@@ -4,19 +4,19 @@
  * Copyright (c) 1996, Kenneth Albanowski
  * Based on code by Bill Goodman, modified by Michael Bravo
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -85,11 +85,13 @@ int main(int argc, char *argv[])
 			quiet = 1;
 			break;
 		case 'p':
-			/* optarg is name of port to use instead of $PILOTPORT or /dev/pilot */
+			/* optarg is name of port to use instead of
+			   $PILOTPORT or /dev/pilot */
 			strcpy(addr.pi_device, optarg);
 			break;
 		case 'd':
-			/* optarg is name of directory to create and store memos in */
+			/* optarg is name of directory to create and store
+			   memos in */
 			strcpy(dirname, optarg);
 			mode = MEMO_DIRECTORY;
 			break;
@@ -286,7 +288,8 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 			strncat(pathbuffer, "=3D", 3);
 			continue;
 		}
-		/* escape if it's an ISO8859 control character (note: some are printable on the Palm) */
+		/* escape if it's an ISO8859 control character (note: some
+		   are printable on the Palm) */
 		if ((m.text[j] | 0x7f) < ' ') {
 			tmp[0] = '\0';
 			sprintf(tmp, "=%2X", (unsigned char) m.text[j]);

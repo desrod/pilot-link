@@ -1,5 +1,5 @@
 /*
- * pilot-mail.c:  Synchronize mail between palm and active network 
+ * pilot-mail.c:  Synchronize mail between palm and active network
  *                connection
  *
  * Copyright (c) 1997, Kenneth Albanowski
@@ -7,19 +7,19 @@
  * Modifications by Diego Zamboni to allow it to read mail from an MH-style
  * mailbox into the Palm.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -789,7 +789,8 @@ int main(int argc, char *argv[])
 				msg += strlen(msg);
 			}
 
-			/* Well, we've now got the message. I bet _you_ feel happy with yourself. */
+			/* Well, we've now got the message. I bet _you_ feel
+			   happy with yourself. */
 
 			if (h) {
 				/* Oops, incomplete message, still reading headers */
@@ -919,7 +920,8 @@ int main(int argc, char *argv[])
 				h = 1;
 			}
 
-			/* Well, we've now got the message. I bet _you_ feel happy with yourself. */
+			/* Well, we've now got the message. I bet _you_ feel
+			   happy with yourself. */
 
 			if (h) {
 				/* Oops, incomplete message, still reading headers */

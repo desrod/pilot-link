@@ -3,19 +3,19 @@
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -40,9 +40,9 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 	unsigned long d;
 	unsigned char *start = buffer;
 
-	/* Note: There are possible timezone conversion problems related to the
-	   use of the due member of a struct ToDo. As it is kept in local
-	   (wall) time in struct tm's, the timezone of the Palm is
+	/* Note: There are possible timezone conversion problems related to
+	   the use of the due member of a struct ToDo. As it is kept in
+	   local (wall) time in struct tm's, the timezone of the Palm is
 	   irrelevant, _assuming_ that any UNIX program keeping time in
 	   time_t's converts them to the correct local time. If the Palm is
 	   in a different timezone than the UNIX box, it may not be simple
@@ -52,8 +52,7 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 	   out of time_t's. Of course, this might not actually be a help if
 	   you are constantly darting across timezones and trying to keep
 	   appointments.
-	   -- KJA
-	 */
+	   -- KJA */
 
 	if (len < 3)
 		return 0;
@@ -189,7 +188,7 @@ pack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 		return 0;
 	set_short(record, ai->dirty);
 	set_byte(record + 2, ai->sortByPriority);
-	set_byte(record + 3, 0);	/* gapfil */
+	set_byte(record + 3, 0);	/* gapfill */
 	record += 4;
 
 	return (record - start);

@@ -3,19 +3,19 @@
  *
  * Copyright (C) 1997, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	extern char *optarg;
 	extern int optind;
 
-	/*int err; */
+	/* int err; */
 	int ret;
 	int file;
 	unsigned long ROMstart, ROMlength, ROMversion, offset, left;
@@ -162,13 +162,13 @@ int main(int argc, char *argv[])
 	lseek(file, offset, SEEK_SET);
 
 	PackRPC(&p, 0xA164, RPC_IntReply, RPC_Byte(1), RPC_End);
-	/*err = */ dlp_RPC(sd, &p, 0);
+	/* err = */ dlp_RPC(sd, &p, 0);
 
 	sprintf(print, "Downloading byte %ld", offset);
 	PackRPC(&p, 0xA220, RPC_IntReply, RPC_Ptr(print, strlen(print)),
 		RPC_Short(strlen(print)), RPC_Short(0), RPC_Short(28),
 		RPC_End);
-	/*err = */ dlp_RPC(sd, &p, 0);
+	/* err = */ dlp_RPC(sd, &p, 0);
 
 	signal(SIGINT, sighandler);
 	left = ROMlength - offset;
@@ -185,10 +185,10 @@ int main(int argc, char *argv[])
 		PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),
 			RPC_Long(offset + ROMstart), RPC_Long(len),
 			RPC_End);
-		/*err = */ dlp_RPC(sd, &p, 0);
+		/* err = */ dlp_RPC(sd, &p, 0);
 		left -= len;
-		/* If the buffer only contains zeros, skip instead of writing, so
-		   that the file will be holey. */
+		/* If the buffer only contains zeros, skip instead of
+		   writing, so that the file will be holey. */
 		for (j = 0; j < len; j++)
 			if (buffer[j])
 				break;
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
 				RPC_Ptr(print, strlen(print)),
 				RPC_Short(strlen(print)), RPC_Short(92),
 				RPC_Short(28), RPC_End);
-			/*err = */ dlp_RPC(sd, &p, 0);
+			/* err = */ dlp_RPC(sd, &p, 0);
 		}
 	}
 	printf("\r%ld of %ld bytes\n", offset, ROMlength);

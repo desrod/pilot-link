@@ -1,22 +1,22 @@
 /* 
- * pi-csd.c: Connection Service Daemon, required for accepting 
- *           logons via NetSync(tm)
+ * pi-csd.c: Connection Service Daemon, required for accepting logons via
+ *           NetSync(tm)
  *
  * Copyright (c) 1997, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -88,11 +88,9 @@ void Help(char *progname)
 # endif
 #endif
 
-/* 
- * While this function is useful in pi-csd, it is intended also to
- * be a demonstration of the proper (or improper, if I'm unlucky) techniques
- * to retrieve networking information.
- */
+/* While this function is useful in pi-csd, it is intended also to be a
+   demonstration of the proper (or improper, if I'm unlucky) techniques to
+   retrieve networking information. */
 
 void
 fetch_host(char *hostname, int hostlen, struct in_addr *address,
@@ -115,8 +113,8 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 		strncpy(hostname, uts.nodename, hostlen - 1);
 		hostname[hostlen - 1] = '\0';
 	}
-# endif				/*def HAVE_UNAME */
-#endif				/*def HAVE_GETHOSTNAME */
+# endif				/* def HAVE_UNAME */
+#endif				/* def HAVE_GETHOSTNAME */
 
 	/* Get host address through DNS */
 	hent = gethostbyname(hostname);
@@ -162,13 +160,13 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 #ifdef IFF_LOOPBACK
 		if (ifreqaddr.ifr_flags & IFF_LOOPBACK)
 			continue;
-#endif				/*def IFF_LOOPBACK */
+#endif				/* def IFF_LOOPBACK */
 
 #ifdef IFF_UP
 		/* Reject down devices */
 		if (!(ifreqaddr.ifr_flags & IFF_UP))
 			continue;
-#endif				/*def IFF_UP */
+#endif				/* def IFF_UP */
 
 		if (ifr->ifr_addr.sa_family != AF_INET)
 			continue;
@@ -187,7 +185,7 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 				       sizeof(struct in_addr));
 			}
 		} else
-#endif				/*defined(IFF_POINTOPOINT) && defined(SIOCGIFDSTADDR) */
+#endif				/* defined(IFF_POINTOPOINT) && defined(SIOCGIFDSTADDR) */
 			/* If it isn't a point-to-point device, use the address */
 #ifdef SIOCGIFADDR
 		{
@@ -201,10 +199,11 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 				       sizeof(struct in_addr));
 			}
 		}
-#endif				/*def SIOCGIFADDR */
+#endif				/* def SIOCGIFADDR */
 		/* OK, we've got an address */
 
-		/* Compare netmask against the current address and see if it seems to match. */
+		/* Compare netmask against the current address and see if it
+		   seems to match. */
 #ifdef SIOCGIFNETMASK
 		if (ioctl(s, SIOCGIFNETMASK, (char *) &ifreqmask) < 0)
 			break;
@@ -227,14 +226,14 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 				break;
 			}
 		}
-#endif				/*def SIOCGIFNETMASK */
+#endif				/* def SIOCGIFNETMASK */
 
 	}
 
       done:
 	free(ifc.ifc_buf);
 	close(s);
-#endif				/*defined(SIOCGIFCONF) && defined(SIOCGIFFLAGS) */
+#endif				/* defined(SIOCGIFCONF) && defined(SIOCGIFFLAGS) */
 }
 
 int main(int argc, char *argv[])

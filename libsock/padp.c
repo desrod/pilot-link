@@ -4,22 +4,22 @@
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
  *
- * Mostly rewritten by Kenneth Albanowski.
- * Adjusted timeout values and better error handling by Tilo Christ.
+ * Mostly rewritten by Kenneth Albanowski.  Adjusted timeout values and
+ * better error handling by Tilo Christ.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -35,10 +35,10 @@
 #define xmitTimeout 2*1000
 #define xmitRetries 10
 
-/*@+matchanyintegral@*/
+/* @+matchanyintegral@ */
 
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
-/*@-predboolint@*/
+/* @-predboolint@ */
 {
 	int flags = FIRST;
 	int tlen;
@@ -68,9 +68,9 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 		ps->nextid = (unsigned char) 1;	/* wrap */
 	else
 		ps->nextid = ps->xid + (unsigned char) 1;
-/*  } else {
-    ps->nextid = ps->xid;
-  }*/
+/*	} else {
+		ps->nextid = ps->xid;
+  	} */
 
 	if ((type != padAck) && !ps->initiator)
 		ps->xid = ps->nextid;
@@ -163,8 +163,9 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 					   && (slp->id == ps->xid)
 					   && (len == 0)) {
 					fprintf(stderr, "Missing ack\n");
-					/* Incoming padData from response to this transmission.
-					   Maybe the Ack was lost */
+					/* Incoming padData from response to
+					   this transmission.  Maybe the Ack
+					   was lost */
 					/* Don't consume packet, and return success. */
 					count = 0;
 					goto done;
@@ -211,8 +212,9 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 			ps->broken = -1;
 /*	      count = -1;
 	      goto done; */
-			return -1;	/* Maximum failure: transmission failed, and 
-					   the connection must be presumed dead */
+			return -1;	/* Maximum failure: transmission
+					   failed, and the connection must
+					   be presumed dead */
 		}
 
 	} while (len);
@@ -484,7 +486,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 	}
 
       done:
-	/*ps->xid = ps->nextid; */
+	/* ps->xid = ps->nextid; */
 
 	End(padp_rx);
 

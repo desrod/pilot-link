@@ -19,9 +19,9 @@
 
 /* $Revision$
 **
-**  Originally written by Steven M. Bellovin <smb@research.att.com> while
-**  at the University of North Carolina at Chapel Hill.  Later tweaked by
-**  a couple of people on Usenet.  Completely overhauled by Rich $alz
+**  Originally written by Steven M. Bellovin <smb@research.att.com> while at
+**  the University of North Carolina at Chapel Hill.  Later tweaked by a
+**  couple of people on Usenet.  Completely overhauled by Rich $alz
 **  <rsalz@osf.org> and Jim Berets <jberets@bbn.com> in August, 1990.
 **  Further revised (removed obsolete constructs and cleaned up timezone
 **  names) in August, 1991, by Rich.  Paul Eggert <eggert@twinsun.com>
@@ -48,13 +48,15 @@ int date_lex();
 #define yyerror		date_error
 
 
-    /* See the LeapYears table in Convert. */
+/* See the LeapYears table in Convert. */
 #define EPOCH		1970
 #define END_OF_TIME	2038
-    /* Constants for general time calculations. */
+
+/* Constants for general time calculations. */
 #define DST_OFFSET	1
 #define SECSPERDAY	(24L * 60L * 60L)
-    /* Readability for TABLE stuff. */
+
+/* Readability for TABLE stuff. */
 #define HOUR(x)		(x * 60)
 
 #define LPAREN		'('
@@ -65,18 +67,14 @@ int date_lex();
 #define ENDOF(array)	(&array[SIZEOF(array)])
 
 
-/*
-**  An entry in the lexical lookup table.
-*/
+/* An entry in the lexical lookup table. */
 typedef struct _TABLE {
 	char *name;
 	int type;
 	time_t value;
 } TABLE;
 
-/*
-**  Daylight-savings mode:  on, off, or not yet known.
-*/
+/* Daylight-savings mode:  on, off, or not yet known. */
 typedef enum _DSTMODE {
 	DSTon, DSToff, DSTmaybe
 } DSTMODE;

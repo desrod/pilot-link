@@ -4,19 +4,19 @@
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -75,12 +75,12 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
 	return 0;
 }
 
-/* Sigh.  SLP is a really broken protocol.  It has no proper framing, so
-   it makes a proper "device driver" layer impossible.  There ought to be
-   a layer below SLP that reads frames off the wire and passes them up.
-   Insted, all we can do is have the device driver give us bytes and SLP
-   has to keep a pile of status info while it builds frames for itself.
-   So here's the code that does that. */
+/* Sigh.  SLP is a really broken protocol.  It has no proper framing, so it
+   makes a proper "device driver" layer impossible.  There ought to be a
+   layer below SLP that reads frames off the wire and passes them up. 
+   Insted, all we can do is have the device driver give us bytes and SLP has
+   to keep a pile of status info while it builds frames for itself.  So
+   here's the code that does that. */
 
 int slp_rx(struct pi_socket *ps)
 {
@@ -122,7 +122,8 @@ int slp_rx(struct pi_socket *ps)
 
 	case 3:
 		if (v == 0xed) {
-			/* OK.  we think we're sync'ed, so go for the rest of the header */
+			/* OK.  we think we're sync'ed, so go for the rest
+			   of the header */
 			ps->mac->state++;
 			ps->mac->expect = 7;
 			ps->mac->buf++;
@@ -151,7 +152,7 @@ int slp_rx(struct pi_socket *ps)
 
 		if ((v ==
 		     get_short(&ps->mac->rxb->data[ps->mac->rxb->len - 2]))
-		    || (ps->mac->rxb->data[5] == 3 /*PI_PF_LOOP */ )
+		    || (ps->mac->rxb->data[5] == 3 /* PI_PF_LOOP */ )
 		    /* we'll ignore LOOP packets anyway, so we'll disregard
 		       CRC errors for them -- working around a problem where
 		       the tenth LOOP packet carries an incorrect CRC value */
@@ -166,14 +167,14 @@ int slp_rx(struct pi_socket *ps)
 			ps->mac->rxb->source = ps->mac->rxb->data[4];
 			ps->mac->rxb->type = ps->mac->rxb->data[5];
 			ps->mac->rxb->id = ps->mac->rxb->data[8];
-			/*ps->xid = ps->mac->rxb->data[8];
+			/* ps->xid = ps->mac->rxb->data[8];
 			   ps->laddr.pi_port = ps->mac->rxb->data[3];
 			   ps->raddr.pi_port = ps->mac->rxb->data[4]; 
 			   ps->protocol = ps->mac->rxb->data[5]; XXX */
 
 			/* hack to ignore LOOP packets... */
 
-			if (ps->mac->rxb->data[5] == 3 /*PI_PF_LOOP */ ) {
+			if (ps->mac->rxb->data[5] == 3 /* PI_PF_LOOP */ ) {
 				ps->mac->expect = 1;
 				ps->mac->state = 1;
 				ps->mac->rxb->next = (struct pi_skb *) 0;

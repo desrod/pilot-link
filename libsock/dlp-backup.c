@@ -3,25 +3,25 @@
  *
  * Copyright (c) 1996, 1997, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
-/*@+matchanyintegral@*/
-/*@-predboolint@*/
-/*@-boolops@*/
+/* @+matchanyintegral@	*/
+/* @-predboolint@	*/
+/* @-boolops@		*/
 
 #ifdef WIN32
 #include <winsock.h>		/* for hton* */
@@ -39,8 +39,8 @@
 #define set_date(ptr,val) (dlp_htopdate((val),(ptr)))
 
 #define DLP_BUF_SIZE 0xffff
-static /*@checked@ */ unsigned char dlp_buf[DLP_BUF_SIZE];
-static /*@checked@ */ unsigned char exec_buf[DLP_BUF_SIZE];
+static /* @checked@ */ unsigned char dlp_buf[DLP_BUF_SIZE];
+static /* @checked@ */ unsigned char exec_buf[DLP_BUF_SIZE];
 
 char *dlp_errorlist[] = {
    "No error",
@@ -127,11 +127,11 @@ buf[1] = etc.}
 #endif
 
 int
-dlp_exec(int sd, int cmd, int arg, const unsigned char /*@null@ */ *msg,
+dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
 	 int msglen,
-	 unsigned char /*@out@ *//*@null@ */ *result, int maxlen)
- /*@modifies *result, exec_buf;@ */
- /*@-predboolint -boolops@ */
+	 unsigned char /* @out@ *//* @null@ */ *result, int maxlen)
+ /* @modifies *result, exec_buf;@ */
+ /* @-predboolint -boolops@ */
 {
    int i;
    int err;
@@ -164,12 +164,12 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /*@null@ */ *msg,
       return -err;
    }
 
-   if (exec_buf[0] != (unsigned char) (cmd | 0x80)) {	/* received wrong response */
+   if (exec_buf[0] != (unsigned char) (cmd | 0x80)) {		/* received wrong response 	*/
       errno = -ENOMSG;
       return -1;
    }
 
-   if ((exec_buf[1] == (unsigned char) 0) || (result == 0))	/* no return blocks or buffers */
+   if ((exec_buf[1] == (unsigned char) 0) || (result == 0))	/* no return blocks or buffers 	*/
       return 0;
 
    /* assume only one return block */
@@ -202,7 +202,7 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /*@null@ */ *msg,
 
 }
 
-/* These conversion functions are strictly for use within the DLP layer.
+/* These conversion functions are strictly for use within the DLP layer. 
    This particular date/time format does not occur anywhere else within the
    Pilot or its communications. */
 
@@ -242,7 +242,7 @@ dlp_ptohdate(unsigned const char *data)
 
 static void
 dlp_htopdate(time_t time, unsigned char *data)
-{				/*@+ptrnegate@ */
+{				/* @+ptrnegate@ */
    struct tm *t = localtime(&time);
    int y;
 
@@ -324,7 +324,9 @@ dlp_SetSysDateTime(int sd, time_t time)
  *  Byte    cardNameSize	byte(28)
  *  Byte    cardManufSize	byte(29)
  *  Char[0] cardNameAndManuf	byte(30)
- * struct read access */
+ * struct read access 
+ */
+
 #define SI_number(ptr)		get_byte((ptr)+0)
 #define SI_more(ptr)		get_byte((ptr)+1)
 #define SI_unused(ptr)		get_byte((ptr)+2)
@@ -526,11 +528,11 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 {
    int i;
 
-   /* This function does not match any DLP layer function, but is intended as
-      a shortcut for programs looking for databases. It uses a fairly
-      byzantine mechanism for ordering the RAM databases before the ROM ones.
-      You must feed the "index" slot from the returned info in as start the
-      next time round. */
+   /* This function does not match any DLP layer function, but is intended
+      as a shortcut for programs looking for databases. It uses a fairly
+      byzantine mechanism for ordering the RAM databases before the ROM
+      ones.  You must feed the "index" slot from the returned info in as
+      start the next time round. */
 
    if (start < 0x1000) {
       i = start;
@@ -1134,12 +1136,12 @@ dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
    }
 #endif
 
-   set_byte(dlp_buf, 0x80 | 0x40 | 0x20 | 0x10);	/* Change all settings */
+   set_byte(dlp_buf, 0x80 | 0x40 | 0x20 | 0x10);	/* Change all settings 	*/
    set_byte(dlp_buf + 1, i->lanSync);
-   set_long(dlp_buf + 2, 0);	/* Reserved1 */
-   set_long(dlp_buf + 6, 0);	/* Reserved2 */
-   set_long(dlp_buf + 10, 0);	/* Reserved3 */
-   set_long(dlp_buf + 14, 0);	/* Reserved4 */
+   set_long(dlp_buf + 2, 0);				/* Reserved1 		*/
+   set_long(dlp_buf + 6, 0);				/* Reserved2 		*/
+   set_long(dlp_buf + 10, 0);				/* Reserved3 		*/
+   set_long(dlp_buf + 14, 0);				/* Reserved4 		*/
    set_short(dlp_buf + 18, strlen(i->hostName) + 1);
    set_short(dlp_buf + 20, strlen(i->hostAddress) + 1);
    set_short(dlp_buf + 22, strlen(i->hostSubnetMask) + 1);
@@ -1563,8 +1565,8 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
    set_byte(dlp_buf + 1, 0x00);
    set_long(dlp_buf + 2, type);
    set_short(dlp_buf + 6, id);
-   set_short(dlp_buf + 8, 0);	/* Offset into record */
-   set_short(dlp_buf + 10, buffer ? DLP_BUF_SIZE : 0);	/* length to return */
+   set_short(dlp_buf + 8, 0);				/* Offset into record 	*/
+   set_short(dlp_buf + 10, buffer ? DLP_BUF_SIZE : 0);	/* length to return 	*/
 
    Trace(ReadResourceByType);
 
@@ -1607,8 +1609,8 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
    set_byte(dlp_buf, fHandle);
    set_byte(dlp_buf + 1, 0x00);
    set_short(dlp_buf + 2, index);
-   set_short(dlp_buf + 4, 0);	/* Offset into record */
-   set_short(dlp_buf + 6, buffer ? DLP_BUF_SIZE : 0);	/* length to return */
+   set_short(dlp_buf + 4, 0);				/* Offset into record 	*/
+   set_short(dlp_buf + 6, buffer ? DLP_BUF_SIZE : 0);	/* length to return 	*/
 
    Trace(ReadResourceByIndex);
 
@@ -1745,7 +1747,7 @@ dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 }
 
 int
-dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@ */ void *data,
+dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 		  int length)
 {
    int result;
@@ -1811,7 +1813,7 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 }
 
 int
-dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@ */ void *data,
+dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 		   int length)
 {
    int result;
@@ -1937,11 +1939,12 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory, void *buffer,
 	    ps->dlprecord++;
 	 }
 	 else {
-	    /* If none found, reset modified pointer so that another search on a different
-	       (or the same!) category will work */
+	    /* If none found, reset modified pointer so that another search
+	       on a different (or the same!) category will work */
+
 	    /* Freeow! Do _not_ reset, as the Pilot itself does not!
-	       ps->dlprecord = 0;
-	     */
+
+	       ps->dlprecord = 0; */
 	 }
 
 	 break;
@@ -2199,15 +2202,16 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 	    dlp_ReadNextModifiedRec(sd, fHandle, buffer, id, index, size,
 				    attr, &cat);
 
-	 /* If none found, reset modified pointer so that another search on a different
-	    (or the same!) category will start from the beginning */
+	 /* If none found, reset modified pointer so that another search on
+	    a different (or the same!) category will start from the
+	    beginning */
 
 	 /* Working on same assumption as ReadNextRecInCat, elide this:
 	    if (r < 0)
-	    dlp_ResetDBIndex(sd, fHandle);
-	  */
+	    dlp_ResetDBIndex(sd, fHandle); */
 
-	 /* Loop until we fail to get a record or a record is found in the proper category */
+	 /* Loop until we fail to get a record or a record is found in the
+	    proper category */
       }
       while ((r >= 0) && (cat != incategory));
 
@@ -2344,8 +2348,8 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
    set_byte(dlp_buf, fHandle);
    set_byte(dlp_buf + 1, 0x00);
    set_long(dlp_buf + 2, id);
-   set_short(dlp_buf + 6, 0);	/* Offset into record */
-   set_short(dlp_buf + 8, buffer ? DLP_BUF_SIZE : 0);	/* length to return */
+   set_short(dlp_buf + 6, 0);				/* Offset into record 	*/
+   set_short(dlp_buf + 8, buffer ? DLP_BUF_SIZE : 0);	/* length to return 	*/
 
    Trace(ReadRecordById);
 
@@ -2384,7 +2388,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
    }
 #endif
 
-   /*id = get_long(dlp_buf); */
+   /* id = get_long(dlp_buf); */
    if (index)
       *index = get_short(dlp_buf + 4);
    if (size)
@@ -2412,8 +2416,8 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
    set_byte(dlp_buf, fHandle);
    set_byte(dlp_buf + 1, 0x00);
    set_short(dlp_buf + 2, index);
-   set_short(dlp_buf + 4, 0);	/* Offset into record */
-   set_short(dlp_buf + 6, buffer ? DLP_BUF_SIZE : 0);	/* length to return */
+   set_short(dlp_buf + 4, 0);				/* Offset into record 	*/
+   set_short(dlp_buf + 6, buffer ? DLP_BUF_SIZE : 0);	/* length to return 	*/
 
    Trace(ReadRecordByIndex);
 
@@ -2453,7 +2457,7 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 
    if (id)
       *id = get_long(dlp_buf);
-   /*get_short(dlp_buf+4) == index */
+   /* get_short(dlp_buf+4) == index */
    if (size)
       *size = get_short(dlp_buf + 6);
    if (attr)

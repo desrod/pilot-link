@@ -3,19 +3,19 @@
  *
  * Copyright 1996, Robert A. Kaplan
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 
 		fread(file_text, filelen, 1, f);
 
-		/*printf("file: %s\n",file_text); */
+		/* printf("file: %s\n",file_text); */
 
 		cPtr = file_text;
 		begPtr = cPtr;
@@ -138,16 +138,16 @@ int main(int argc, char *argv[])
 		count = 0;
 		while (count < filelen) {
 			count++;
-			/*printf("c:%c.\n",*cPtr); */
+			/* printf("c:%c.\n",*cPtr); */
 			if (*cPtr == '\n') {
 				todo.description = begPtr;
-				/* replace cr with terminator */
+				/* replace CR with terminator */
 				*cPtr = '\0';
 
 				todo.priority = 4;
 				todo.complete = 1;
 				todo.indefinite = 1;
-				/*now = time(0);
+				/* now = time(0);
 				   todo.due = *localtime(&now); */
 				todo.note = note_text;
 				ToDo_size =

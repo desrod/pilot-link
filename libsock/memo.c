@@ -3,19 +3,19 @@
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -90,17 +90,17 @@ pack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
 	i = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
 		return i + 4;
-	if (i == 0)		/* category pack failed */
+	if (i == 0)				/* category pack failed */
 		return 0;
 	record += i;
 	len -= i;
 	if (len < 4)
 		return (record - start);
-	set_short(record, 0);	/* gapfil new for 2.0 */
+	set_short(record, 0);			/* gapfill new for 2.0 	*/
 	record += 2;
-	set_byte(record, ai->sortByAlpha);	/* new for 2.0 */
+	set_byte(record, ai->sortByAlpha);	/* new for 2.0 		*/
 	record++;
-	set_byte(record, 0);	/* gapfil new for 2.0 */
+	set_byte(record, 0);			/* gapfill new for 2.0 	*/
 	record++;
 
 	return (record - start);

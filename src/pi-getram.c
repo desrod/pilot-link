@@ -3,19 +3,19 @@
  *
  * Copyright (C) 1997, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -130,9 +130,9 @@ int main(int argc, char *argv[])
 	dlp_OpenConduit(sd);
 
 	PackRPC(&p, 0xA23D, RPC_IntReply, RPC_Long(0xFFFFFFFE), RPC_End);
-	/*err = */ dlp_RPC(sd, &p, &SRAMstart);
+	/* err = */ dlp_RPC(sd, &p, &SRAMstart);
 	PackRPC(&p, 0xA23D, RPC_IntReply, RPC_Long(SRAMstart), RPC_End);
-	/*err = */ dlp_RPC(sd, &p, &SRAMlength);
+	/* err = */ dlp_RPC(sd, &p, &SRAMlength);
 
 #if 0
 	printf
@@ -175,24 +175,24 @@ int main(int argc, char *argv[])
 	lseek(file, offset, SEEK_SET);
 
 	PackRPC(&p, 0xA164, RPC_IntReply, RPC_Byte(1), RPC_End);
-	/*err = */ dlp_RPC(sd, &p, 0);
+	/* err = */ dlp_RPC(sd, &p, 0);
 
 	sprintf(print, "Downloading byte %ld", offset);
 	PackRPC(&p, 0xA220, RPC_IntReply, RPC_Ptr(print, strlen(print)),
 		RPC_Short(strlen(print)), RPC_Short(0), RPC_Short(28),
 		RPC_End);
-	/*err = */ dlp_RPC(sd, &p, 0);
+	/* err = */ dlp_RPC(sd, &p, 0);
 
 #if 0
 	PackRPC(&p, 0xA026, RPC_IntReply, RPC_LongPtr(&penPtr),
 		RPC_Long(364), RPC_Long(4), RPC_End);
-	/*err = */ dlp_RPC(sd, &p, 0);
+	/* err = */ dlp_RPC(sd, &p, 0);
 
 	printf("penPtr = %lu (%8.8lX)\n", penPtr, penPtr);
 
 	PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(print, 8),
 		RPC_Long(penPtr), RPC_Long(8), RPC_End);
-	/*err = */ dlp_RPC(sd, &p, 0);
+	/* err = */ dlp_RPC(sd, &p, 0);
 	dumpdata(print, 8);
 #endif
 
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 		PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),
 			RPC_Long(offset + SRAMstart), RPC_Long(len),
 			RPC_End);
-		/*err = */ dlp_RPC(sd, &p, 0);
+		/* err = */ dlp_RPC(sd, &p, 0);
 		left -= len;
 
 		if (copilot)
@@ -218,8 +218,8 @@ int main(int argc, char *argv[])
 				*(short int *) (buffer + j) =
 				    get_short(buffer + j);
 
-		/* If the buffer only contains zeros, skip instead of writing, so
-		   that the file will be holey. */
+		/* If the buffer only contains zeros, skip instead of
+		   writing, so that the file will be holey. */
 		for (j = 0; j < len; j++)
 			if (buffer[j])
 				break;
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
 				RPC_Ptr(print, strlen(print)),
 				RPC_Short(strlen(print)), RPC_Short(92),
 				RPC_Short(28), RPC_End);
-			/*err = */ dlp_RPC(sd, &p, 0);
+			/* err = */ dlp_RPC(sd, &p, 0);
 		}
 	}
 	printf("\r%ld of %ld bytes\n", offset, SRAMlength);

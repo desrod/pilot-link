@@ -3,19 +3,19 @@
  *
  * Copyright (c) 1997, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -179,7 +179,7 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
 	set_byte(buf, a->type);
 	set_byte(buf + 1, a->payment);
 	set_byte(buf + 2, a->currency);
-	set_byte(buf + 3, 0);	/*gapfil */
+	set_byte(buf + 3, 0);	/* gapfill */
 	buf += 4;
 
 	if (a->amount) {
@@ -269,7 +269,7 @@ pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 	if (len < destlen)
 		return 0;
 	set_byte(record, ai->sortOrder);
-	set_byte(record + 1, 0);	/* gapfil */
+	set_byte(record + 1, 0);	/* gapfill */
 	record += 2;
 	for (i = 0; i < 4; i++) {
 		memcpy(record, ai->currencies[i].name, 16);
@@ -333,7 +333,7 @@ int pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 	record++;
 	set_byte(record, p->unitOfDistance);
 	record++;
-	set_byte(record, 0);	/* gapfil ?? */
+	set_byte(record, 0);	/* gapfill ?? */
 	record++;
 	for (i = 0; i < 7; i++) {
 		set_byte(record, p->currencies[i]);

@@ -3,19 +3,19 @@
  *
  * Copyright (c) 1996, Kenneth Albanowski
  * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -24,6 +24,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <regex.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -73,7 +74,7 @@ Help(void)
 	fprintf(stderr, "    -p port     = use device file <port> to communicate with Palm\n");
 	fprintf(stderr, "    -f file     = use <file> as memo database file (rather than hotsyncing)\n");
 	fprintf(stderr, "    -d dir      = save memos in <dir> instead of writing to STDOUT\n");
-	fprintf(stderr, "    -t title    = select memos to be saved by title\n");
+	fprintf(stderr, "    -t regexp   = select memos to be saved by title\n");
 	fprintf(stderr, "    -h|-?       = print this usage summary\n\n");
 	fprintf(stderr, "   By default, the contents of your Palm's memo database will be written\n");
 	fprintf(stderr, "   to standard output as a standard Unix mailbox (mbox-format) file, with\n");
@@ -115,7 +116,10 @@ int main(int argc, char *argv[])
 	int c;
 	extern char *optarg;
 	extern int optind;
-	char *title = NULL;
+	int title_matching = 0;
+	regex_t title_pattern;
+	char *buf = NULL;
+	int bufsize = 1024;
 	char filename[MAXDIRNAMELEN + 1], *ptr;
 	struct pi_file *pif = NULL;
 	char *device = argv[1];
@@ -144,7 +148,8 @@ int main(int argc, char *argv[])
 			verbose = 0;
 			break;
 		case 'p':
-			/* optarg is name of port to use instead of $PILOTPORT or /dev/pilot */
+			/* optarg is name of port to use instead of
+			   $PILOTPORT or /dev/pilot */
 			strcpy(addr.pi_device, optarg);
 			break;
 		case 'f':
@@ -159,7 +164,14 @@ int main(int argc, char *argv[])
 			break;
 		case 't':
 			/* optarg is a query to select memos by title */
-			title = optarg;
+			ret = regcomp(&title_pattern, optarg, REG_NOSUB);
+			buf = (char *)malloc(bufsize);
+			if (ret) {
+				regerror(ret, &title_pattern, buf, bufsize);
+				fprintf(stderr, "%s\n", buf);
+				exit(1);
+			}
+			title_matching = 1;
 			break;
 		case 'h':
 		case '?':
@@ -286,11 +298,13 @@ int main(int argc, char *argv[])
 		unpack_Memo(&m, buffer, len);
 
 		/* Skip memos whose title does not match with the query */
-		if (title != NULL) {
-			for (len = 0; m.text[len] && m.text[len] != '\n';
-			     len++);
-			if (strlen(title) != len
-			    || strncmp(title, m.text, len))
+		if (title_matching) {
+			for (len = 0; m.text[len] && m.text[len] != '\n'; len++);
+			if (bufsize < len + 1)
+				buf = (char *)realloc(buf, len + 1);
+			strncpy(buf, m.text, len);
+			buf[len] = '\0';
+			if (regexec(&title_pattern, buf, 0, NULL, 0) == REG_NOMATCH)
 				continue;
 		}
 
@@ -303,6 +317,11 @@ int main(int argc, char *argv[])
 						verbose);
 			break;
 		}
+	}
+
+	if (title_matching) {
+		regfree(&title_pattern);
+		free(buf);
 	}
 
 	if (filename[0] == '\0') {
@@ -326,7 +345,7 @@ int main(int argc, char *argv[])
  *
  * PARAMETERS:  None
  *
- * RETURNS:     Help options
+ * RETURNS:
  *
  */
 void
@@ -413,7 +432,8 @@ write_memo_in_directory(char *dirname, struct Memo m,
 			continue;
 		}
 #endif
-		/* escape if it's an ISO8859 control character (note: some are printable on the Palm) */
+		/* escape if it's an ISO8859 control character (note: some
+		   are printable on the Palm) */
 		if ((m.text[j] | 0x7f) < ' ') {
 			tmp[0] = '\0';
 			sprintf(tmp, "=%2X", (unsigned char) m.text[j]);

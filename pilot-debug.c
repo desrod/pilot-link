@@ -1,19 +1,19 @@
 /* 
  * pilot-debug.c:  Palm debugging console, with optional graphics support
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -33,10 +33,8 @@
 
 extern void do_readline(void);
 
-/* 
- * Display text asynchronously, and make sure it doesn't interfere with
- * the current prompt
- */
+/* Display text asynchronously, and make sure it doesn't interfere with the
+   current prompt */
 extern void display(char * text, char * tag, int type);
  
 #ifndef LIBDIR
@@ -57,10 +55,8 @@ int usetk;
 #define TCL_RELEASE_LEVEL 8
 #endif
 
-/*
- * The following variable is a special hack that is needed in order for
- * Sun shared libraries to be used for Tcl.
- */
+/* The following variable is a special hack that is needed in order for Sun
+   shared libraries to be used for Tcl. */
 
 extern int matherr();
 int *tclDummyMathPtr = (int *) matherr;
@@ -72,20 +68,23 @@ int Interactive = 1;
 Tcl_Interp * interp;        
 struct Pilot_state state;
 
-int debugger = 0; /* If non-zero, then debugger is thought to be active */
-int console = 0;  /* If non-zero, then console is thought to be active 
-                     Note: if both console and debugger are thought to be
-                           active, only the debugger will be usable. If
-                           execution is continued, the console be
-                           be usable again. */
-int stalestate = 1; /* If non-zero, then the current Palm state (in particular the registers)
-                       should be assumed out-of-date */
+int debugger = 0; 	/* If non-zero, then debugger is thought to be
+			   active */
+
+int console = 0;  	/* If non-zero, then console is thought to be active
+			   Note: if both console and debugger are thought to
+			   be active, only the debugger will be usable. If
+			   execution is continued, the console be be usable
+			   again. */
+
+int stalestate = 1; 	/* If non-zero, then the current Palm state (in
+			   particular the registers) should be assumed
+			   out-of-date */
                        
 int port = 0;
 
-
-int tty;			/* Non-zero means standard input is a
-				 * terminal-like device.  Zero means it's*/
+int tty;		/* Non-zero means standard input is a terminal-like
+			   device.  Zero means it's */
 
 
 /* Misc utility */
@@ -203,8 +202,9 @@ void SetModeLabel(void)
 }
 
 
-/* Workhorse function to read input from the Palm. Called both via Tcl event loop on serial input,
-   and explicitly by any function has thinks there should be a packet ready. */
+/* Workhorse function to read input from the Palm. Called both via Tcl event
+   loop on serial input, and explicitly by any function has thinks there
+   should be a packet ready. */
    
 void
 Read_Pilot(ClientData clientData, int mask)
@@ -218,11 +218,11 @@ Read_Pilot(ClientData clientData, int mask)
    if (l < 6)
       return;
 
-   /*puts("From Palm:");
+   /* puts("From Palm:");
       dumpdata((unsigned char *)buf, l); */
 
-   if (buf[2] == 0) {		/* SysPkt command */
-      if (buf[0] == 2) {	/* UI */
+   if (buf[2] == 0) {		/* SysPkt command 	*/
+      if (buf[0] == 2) {	/* UI 			*/
 	 if ((!console) || debugger) {
 	    Say("Console active\n");
 	    console = 1;
@@ -230,7 +230,7 @@ Read_Pilot(ClientData clientData, int mask)
 	    SetModeLabel();
 	    Tcl_VarEval(interp, "checkin 25", NULL);
 	 }
-	 if (buf[4] == 0x0c) {	/* Screen update */
+	 if (buf[4] == 0x0c) {	/* Screen update 	*/
 #ifdef TK
 	    if (usetk) {
 	       int i, x1, y1, sx, sy, w, h, bytes;
@@ -272,7 +272,7 @@ Read_Pilot(ClientData clientData, int mask)
 		  }
 	       }
 
-	       /*for(i=0;i<((l-20)*8);i++) {
+	       /* for(i=0;i<((l-20)*8);i++) {
 	          int p = i/8+20;
 	          int b = 1<<(7-(i%8));
 	          buffer[i] = (buf[p] & b) ? 0 : 0xff;
@@ -288,8 +288,8 @@ Read_Pilot(ClientData clientData, int mask)
 	 }
 
       }
-      else if (buf[0] == 1) {	/* Console */
-	 if (buf[4] == 0x7f) {	/* Message from Palm */
+      else if (buf[0] == 1) {	/* Console 		*/
+	 if (buf[4] == 0x7f) {	/* Message from Palm 	*/
 	    int i;
 
 	    for (i = 6; i < l; i++)
@@ -310,7 +310,7 @@ Read_Pilot(ClientData clientData, int mask)
 	 }
       }
       else if (buf[0] == 0) {	/* Debug */
-	 if (!debugger) {
+	 if (!debugger) {	
 	    debugger = 1;
 	    SetModeLabel();
 	    Tcl_VarEval(interp, "checkin 25", NULL);
@@ -400,9 +400,10 @@ Read_Pilot(ClientData clientData, int mask)
 
 
 
-/* Workhorse function to turn an address string into a numeric value. Ideally, it should
-   also know about traps, function names, etc. As it is, it just assumed the text is
-   a hexadecimal number, with or with '0x' prefix. */
+/* Workhorse function to turn an address string into a numeric value. 
+   Ideally, it should also know about traps, function names, etc. As it is,
+   it just assumed the text is a hexadecimal number, with or with '0x'
+   prefix. */
 unsigned long
 ParseAddress(char *address)
 {
@@ -595,8 +596,9 @@ unsigned long DbgRPC(struct RPC_params * p, int * error)
    }
 
    if (p->reply == RPC_NoReply) {
-      /* If the RPC call will normally generate no reply (as in a call that reboots the machine)
-         then we need to do some special work to verify that the connection is active */
+      /* If the RPC call will normally generate no reply (as in a call that
+         reboots the machine) then we need to do some special work to verify
+         that the connection is active */
       DbgAttach(1);
       if (!debugger && !console) {
 	 if (error)
@@ -717,7 +719,8 @@ int proc_t(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
    return TCL_OK;
 }
 
-/* Attach to a Palm that has already crashed into the debugger without notifying us */
+/* Attach to a Palm that has already crashed into the debugger without
+   notifying us */
 int proc_attach(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
    DbgAttach(2);		/* Two means explicit verify, as opposed to implicit */
@@ -807,9 +810,9 @@ int proc_battery(ClientData clientData, Tcl_Interp *interp, int argc, char *argv
    if (err)
       return TCL_ERROR;
 
-/*		printf("Volts = %f, crit = %f, warn = %f, ticks = %d, kind = %d, pluggedin= %d, err = %d\n",
-			(float)v/100, (float)critical/100, (float)warn/100,
-			maxTicks, kind, pluggedin, err);*/
+/* printf("Volts = %f, crit = %f, warn = %f, ticks = %d, kind =
+   %d, pluggedin= %d, err = %d\n", (float)v/100, (float)critical/100,
+   (float)warn/100, maxTicks, kind, pluggedin, err); */
 
    sprintf(buffer, "%.2f %s%s", (float) v / 100, (kind == 0) ? "Alkaline" :
 	   (kind == 1) ? "NiCd" :
@@ -1064,7 +1067,8 @@ int proc_pushbutton(ClientData clientData, Tcl_Interp *interp, int argc, char *a
    return TCL_OK;
 }
 
-/* Tcl procedure to simulate a pen tap -- primarily used by Remote UI bindings */
+/* Tcl procedure to simulate a pen tap -- primarily used by Remote UI
+   bindings */
 int proc_pen(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
    int x = atoi(argv[1]) - 32, y = atoi(argv[2]) - 33, pen = atoi(argv[3]);
@@ -1081,7 +1085,8 @@ int proc_pen(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
    return TCL_OK;
 }
 
-/* Tcl procedure to simulate a key press -- primarily used by Remote UI bindings */
+/* Tcl procedure to simulate a key press -- primarily used by Remote UI
+   bindings */
 int proc_key(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
    /*struct RPC_params p; */
@@ -1941,12 +1946,10 @@ after the Palm halts.)\n\n\ Execute 'help' for the list of commands\n
 currently implemented.\n\n\ "); 
 #endif
 
-    /*
-     * Specify a user-specific startup file to invoke if the application
-     * is run interactively.  Typically the startup file is "~/.apprc"
-     * where "app" is the name of the application.  If this line is deleted
-     * then no user-specific startup file will be run under any conditions.
-     */
+    /* Specify a user-specific startup file to invoke if the application is
+       run interactively.  Typically the startup file is "~/.apprc" where
+       "app" is the name of the application.  If this line is deleted then
+       no user-specific startup file will be run under any conditions. */
 
     Tcl_SetVar(interp, "tcl_rcFileName", "~/.pdebugrc", TCL_GLOBAL_ONLY);
 
@@ -2011,10 +2014,8 @@ int main(int argc, char *argv[])
       }
    }
 
-   /*
-    * Make command-line arguments available in the Tcl variables "argc"
-    * and "argv".
-    */
+   /* Make command-line arguments available in the Tcl variables "argc" and
+      "argv". */
 
    args = Tcl_Merge(argc - 1, argv + 1);
    Tcl_SetVar(interp, "argv", args, TCL_GLOBAL_ONLY);
@@ -2024,9 +2025,7 @@ int main(int argc, char *argv[])
    Tcl_SetVar(interp, "argv0", (fileName != NULL) ? fileName : argv[0],
 	      TCL_GLOBAL_ONLY);
 
-   /*
-    * Set the "tcl_interactive" variable.
-    */
+   /* Set the "tcl_interactive" variable. */
 
    tty = isatty(0);
    Tcl_SetVar(interp, "tcl_interactive",
@@ -2037,9 +2036,7 @@ int main(int argc, char *argv[])
       usetk = 0;
 #endif
 
-   /*
-    * Invoke application-specific initialization.
-    */
+   /* Invoke application-specific initialization. */
 
    if (Tcl_AppInit(interp) != TCL_OK) {
       errChannel = Tcl_GetStdChannel(TCL_STDERR);
@@ -2051,20 +2048,15 @@ int main(int argc, char *argv[])
       }
    }
 
-   /*
-    * Invoke the script specified on the command line, if any.
-    */
+   /* Invoke the script specified on the command line, if any. */
 
    if (fileName != NULL) {
       code = Tcl_EvalFile(interp, fileName);
       if (code != TCL_OK) {
 	 errChannel = Tcl_GetStdChannel(TCL_STDERR);
 	 if (errChannel) {
-	    /*
-	     * The following statement guarantees that the errorInfo
-	     * variable is set properly.
-	     */
-
+	    /* The following statement guarantees that the errorInfo
+	       variable is set properly. */
 	    Tcl_AddErrorInfo(interp, "");
 	    Tcl_Write(errChannel,
 		      Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY), -1);
@@ -2078,28 +2070,22 @@ int main(int argc, char *argv[])
    /* Tcl 7.5 did not support this command */
 #if (TCL_MAJOR_VERSION > 7) || (TCL_MINOR_VERSION > 5)
 
-   /*
-    * We're running interactively.  Source a user-specific startup
-    * file if the application specified one and if the file exists.
-    */
+	/* We're running interactively.  Source a user-specific startup file if
+	   the application specified one and if the file exists. */
 
    Tcl_SourceRCFile(interp);
 #endif
 
-   /*
-    * Loop infinitely, waiting for commands to execute.  When there
-    * are no windows left, Tk_MainLoop returns and we exit.
-    */
+	/* Loop infinitely, waiting for commands to execute.  When there are no
+	   windows left, Tk_MainLoop returns and we exit. */
 
 #ifdef TK
    if (!usetk) {
 #endif
 
-      /*
-       * Process commands from stdin until there's an end-of-file.  Note
-       * that we need to fetch the standard channels again after every
-       * eval, since they may have been changed.
-       */
+	/* Process commands from stdin until there's an end-of-file.  Note
+	   that we need to fetch the standard channels again after every
+	   eval, since they may have been changed. */
 
       do_readline();
 

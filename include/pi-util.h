@@ -31,14 +31,15 @@ extern "C" {
 #include "pi-args.h"
 #include "pi-config.h"
 
-   extern int convert_ToPilotChar 
-     PI_ARGS((const char *charset, const char *text, int bytes, char **ptext));
+	extern int convert_ToPilotChar
+	    PI_ARGS((const char *charset, const char *text, int bytes,
+		     char **ptext));
 
-   extern int convert_FromPilotChar 
-     PI_ARGS((const char *charset, const char *ptext, int bytes, char **text));
+	extern int convert_FromPilotChar
+	    PI_ARGS((const char *charset, const char *ptext, int bytes,
+		     char **text));
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif

@@ -3,19 +3,19 @@
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -35,10 +35,10 @@ char *DatebookRepeatTypeNames[] =
 	NULL
 };
 
-/* dom1stSun = REM Sun 1  
- dom1stMon = Rem Mon 1 
- dom2ndSun = REM Sun 8 
- domLastSun = REM Sun 1 -7*/
+/* dom1stSun 	= REM Sun 1  
+   dom1stMon 	= Rem Mon 1 
+   dom2ndSun 	= REM Sun 8 
+   domLastSun 	= REM Sun 1 -7 */
 
 void free_Appointment(struct Appointment *a)
 {
@@ -59,9 +59,9 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 	int j;
 	int destlen;
 
-	/* Note: There are possible timezone conversion problems related to the
-	   use of the begin, end, repeatEnd, and exception[] members of a
-	   struct Appointment. As they are kept in local (wall) time in
+	/* Note: There are possible timezone conversion problems related to
+	   the use of the begin, end, repeatEnd, and exception[] members of
+	   a struct Appointment. As they are kept in local (wall) time in
 	   struct tm's, the timezone of the Pilot is irrelevant, _assuming_
 	   that any UNIX program keeping time in time_t's converts them to
 	   the correct local time. If the Pilot is in a different timezone
@@ -72,8 +72,7 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 	   out of time_t's. Of course, this might not actually be a help if
 	   you are constantly darting across timezones and trying to keep
 	   appointments.
-	   -- KJA
-	 */
+	   -- KJA */
 
 	destlen = 8;
 	if (len < destlen)
@@ -107,7 +106,7 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 
 	iflags = get_byte(buffer + 6);
 
-	/* buffer+7 is gapfil */
+	/* buffer+7 is gapfill */
 
 	p2 = (unsigned char *) buffer + 8;
 
@@ -341,7 +340,7 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 	}
 
 	set_byte(buf + 6, iflags);
-	set_byte(buf + 7, 0);	/* gapfil */
+	set_byte(buf + 7, 0);	/* gapfill */
 
 	return ((long) pos - (long) buf);
 }

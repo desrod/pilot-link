@@ -5,19 +5,19 @@
  *           simulate co-routine), readline 2.1 (using callback mechanism)
  *           and Tk (using a standard text widget.)
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -52,10 +52,8 @@ extern int Interactive;
 
 extern Tcl_Interp *interp;
 
-extern int tty;			/*
-				 * Non-zero means standard input is a
-				 * terminal-like device.  Zero means it's
-				 */
+extern int tty;			/* Non-zero means standard input is a
+				   terminal-like device.  Zero means it's */
 
 #if defined(READLINE_2_1)
 
@@ -287,10 +285,10 @@ static void StdinProc(ClientData clientData, int mask);
 static void Prompt(Tcl_Interp * interp, int partial);
 
 static Tcl_DString command;	/* Used to buffer incomplete commands being
-				 * read from stdin. */
+				   read from stdin. */
 
 static Tcl_DString line;	/* Used to read the next line from the
-				 * terminal input. */
+				   terminal input. */
 
 static int gotPartial = 0;
 
@@ -302,11 +300,9 @@ void do_readline(void)
 	int exitCode = 0;
 	Tcl_Channel inChannel, outChannel;
 
-	/*
-	 * Process commands from stdin until there's an end-of-file.  Note
-	 * that we need to fetch the standard channels again after every
-	 * eval, since they may have been changed.
-	 */
+	/* Process commands from stdin until there's an end-of-file.  Note
+	   that we need to fetch the standard channels again after every
+	   eval, since they may have been changed. */
 
 	inChannel = Tcl_GetChannel(interp, "stdin", NULL);
 	if (inChannel) {
@@ -328,12 +324,10 @@ void do_readline(void)
 	Tcl_DStringInit(&line);
 	Tcl_ResetResult(interp);
 
-	/*
-	 * Loop infinitely until all event handlers are passive. Then exit.
-	 * Rather than calling exit, invoke the "exit" command so that
-	 * users can replace "exit" with some other command to do additional
-	 * cleanup on exit.  The Tcl_Eval call should never return.
-	 */
+	/* Loop infinitely until all event handlers are passive. Then exit. 
+	   Rather than calling exit, invoke the "exit" command so that users
+	   can replace "exit" with some other command to do additional
+	   cleanup on exit.  The Tcl_Eval call should never return. */
 
 	while (Tcl_DoOneEvent(0)) {
 	}
@@ -350,8 +344,8 @@ void do_readline(void)
  *
  * DESCRIPTION: This procedure is invoked by the event dispatcher whenever
  *              standard input becomes readable.  It grabs the next line of
- *              input characters, adds them to a command being assembled, and
- *              executes the command if it's complete.
+ *              input characters, adds them to a command being assembled,
+ *              and executes the command if it's complete.
  *
  * ARGUMENTS:   None
  *
@@ -396,13 +390,11 @@ int mask;			/* Not used. */
 	}
 	gotPartial = 0;
 
-	/*
-	 * Disable the stdin channel handler while evaluating the command;
-	 * otherwise if the command re-enters the event loop we might
-	 * process commands from stdin before the current command is
-	 * finished.  Among other things, this will trash the text of the
-	 * command being evaluated.
-	 */
+	/* Disable the stdin channel handler while evaluating the command;
+	   otherwise if the command re-enters the event loop we might
+	   process commands from stdin before the current command is
+	   finished.  Among other things, this will trash the text of the
+	   command being evaluated. */
 
 	Tcl_CreateChannelHandler(chan, TCL_ACTIVE, StdinProc,
 				 (ClientData) chan);
@@ -432,9 +424,7 @@ int mask;			/* Not used. */
 		}
 	}
 
-	/*
-	 * Output a prompt.
-	 */
+	/* Output a prompt. */
 
       prompt:
 	if (tty) {
@@ -448,8 +438,8 @@ int mask;			/* Not used. */
  *
  * NAME:        Prompt
  *
- * DESCRIPTION: Issue a prompt on standard output, or invoke a script
- *              to issue the prompt
+ * DESCRIPTION: Issue a prompt on standard output, or invoke a script to
+ *              issue the prompt
  *
  * ARGUMENTS:   None
  *
@@ -458,10 +448,10 @@ int mask;			/* Not used. */
 
 static void Prompt(interp, partial)
 Tcl_Interp *interp;		/* Interpreter to use for prompting. */
-int partial;			/* Non-zero means there already
 
-				 * exists a partial command, so use
-				 * the secondary prompt. */
+int partial;			/* Non-zero means there already exists a
+				   partial command, so use the secondary
+				   prompt. */
 {
 	char *promptCmd;
 	int code;
@@ -484,11 +474,10 @@ int partial;			/* Non-zero means there already
 		if (code != TCL_OK) {
 			Tcl_AddErrorInfo(interp,
 					 "\n    (script that generates prompt)");
-			/*
-			 * We must check that errChannel is a real channel - it
-			 * is possible that someone has transferred stderr out of
-			 * this interpreter with "interp transfer".
-			 */
+			/* We must check that errChannel is a real channel -
+			   it is possible that someone has transferred
+			   stderr out of this interpreter with "interp
+			   transfer". */
 
 			errChannel =
 			    Tcl_GetChannel(interp, "stdout", NULL);
@@ -536,7 +525,7 @@ void display(char *text, char *tag, int type)
 					  ";.f.t mark unset display", -1);
 		/*printf("Exec |%s|\n", Tcl_DStringValue(&disp)); */
 		Tcl_Eval(interp, Tcl_DStringValue(&disp));
-		/*puts(interp->result); */
+		/* puts(interp->result); */
 		Tcl_DStringFree(&disp);
 		return;
 	}

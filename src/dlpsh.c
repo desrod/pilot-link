@@ -3,19 +3,19 @@
  *
  * (c) 1996, 2000, The pilot-link Team
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -262,15 +262,14 @@ int ls_fn(int sd, int argc, char **argv)
 		struct DBInfo info;
 		long tag;
 
-		/*
-		 * The databases are numbered starting at 0.  The first 12 are in
-		 * ROM, and the rest are in RAM.  The high two bits of the flags
-		 * byte control wheter you see the ROM entries, RAM entries or both.
-		 * start is the lowest index you want.  So, we start with 0, but
-		 * usually we want to see ram entries, so it will return database
-		 * number 12.  Then, we'll ask for 13, etc, until we get the NotFound
-		 * error return.
-		 */
+		/* The databases are numbered starting at 0.  The first 12
+		   are in ROM, and the rest are in RAM.  The high two bits
+		   of the flags byte control wheter you see the ROM entries,
+		   RAM entries or both.  start is the lowest index you want. 
+		   So, we start with 0, but usually we want to see ram
+		   entries, so it will return database number 12.  Then,
+		   we'll ask for 13, etc, until we get the NotFound error
+		   return. */
 		ret = dlp_ReadDBList(sd, cardno, flags, start, &info);
 
 		if (ret == -5 /* dlpRespErrNotFound */ )

@@ -256,7 +256,7 @@ class DLP
 	  return dlp_ReadFeature(_sd, creator, num, feature);
      }
 
-     // PlamOS 2.0 and above only
+     // PalmOS 2.0 and above only
      int readNetSyncInfo(NetSyncInfo *i) const {
 	  return dlp_ReadNetSyncInfo(_sd, i);
      }

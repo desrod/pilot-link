@@ -5,19 +5,19 @@
  * Copyright (c) 1999, Tilo Christ
  * Copyright (c) 1999, John Franks
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
 
@@ -155,7 +155,6 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 }
 
 /* Bind address to a local socket */
-
 int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
 	int opt, optlen;
@@ -429,9 +428,9 @@ static int pi_net_tickle(struct pi_socket *ps)
 static int pi_net_close(struct pi_socket *ps)
 {
 	if (ps->type == PI_SOCK_STREAM) {
-		if (ps->connected & 1)	/* If socket is connected */
-			if (!(ps->connected & 2))	/* And it wasn't end-of-synced */
-				dlp_EndOfSync(ps->sd, 0);	/* then end sync, with clean status */
+		if (ps->connected & 1)				/* If socket is connected 		*/
+			if (!(ps->connected & 2))		/* And it wasn't end-of-synced 		*/
+				dlp_EndOfSync(ps->sd, 0);	/* then end sync, with clean status 	*/
 	}
 
 	close(ps->sd);
