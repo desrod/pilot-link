@@ -112,7 +112,7 @@ int df_fn(int sd, int argc, char *argv[])
                 printf("          n/a   %9lu      n/a     %4luk\n", Card.romSize, Card.romSize/1024);
 
 		printf("Card0:RAM            %9lu", Card.ramSize);
-		printf("     %8lu    %8lu    %3ld%%      %4luk\n", (Card.ramSize - Card.ramFree), Card.ramFree, ((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
+		printf("     %8lu    %8lu     %3ld%%     %4luk\n", (Card.ramSize - Card.ramFree), Card.ramFree, ((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
 
 		printf("Total (ROM + RAM)     %8lu     %8lu         n/a      n/a    %5luk\n\n", 
 			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree, 
