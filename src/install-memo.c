@@ -36,12 +36,21 @@
 int pilot_connect(const char *port);
 int usage(char *progname);
 
-#define PILOTPORT "/dev/pilot"
+static const char *optstring = "c:p:rthv";
+
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
+	{"port"   ,     required_argument, NULL, 'p'},
+	{"category",    required_argument, NULL, 'c'},
+	{"replace",     no_argument,       NULL, 'r'},
+	{"title",       no_argument,       NULL, 't'},
+	{NULL,          0,                 NULL, 0}
+};
 
 static void Help(char *progname)
 {
 	printf("Usage: %s -p <port> [-qrt] [-c category] file [file] ...\n"
-	       "       -q = do not prompt for HotSync button press\n"
 	       "       -r = replace all memos in specified category\n"
 	       "       -t = use filename as memo title\n", progname);
 
@@ -54,7 +63,8 @@ int main(int argc, char *argv[])
 		category,
 		c,		/* switch */
 		db,
-		inc,
+		i		= 0,
+		j		= 0,
 		ReadAppBlock, 
 		memo_size,
 		preamble,
@@ -72,7 +82,7 @@ int main(int argc, char *argv[])
 
 	FILE *f;
 	
-	while ((c = getopt(argc, argv, "c:p:qrt")) != -1)
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		case 'c':
 			category_name = optarg;
@@ -86,7 +96,16 @@ int main(int argc, char *argv[])
 		case 't':
 			add_title++;
 			break;
+		case 'h':
+			Help(progname);
+			break;
+			exit(0);
+		
 		}
+	}
+		
+	argc -= optind;
+	argv += optind;
 
 	if (replace_category && !category_name) {
 		printf("%s: memo category required when specifying replace\n",
@@ -116,10 +135,10 @@ int main(int argc, char *argv[])
 
 	if (category_name) {
 		category = -1;	/* invalid category */
-		for (inc = 0; inc < 16; inc++)
+		for (i = 0; i < 16; i++)
 			if (!strcasecmp
-			    (mai.category.name[inc], category_name)) {
-				category = inc;
+			    (mai.category.name[i], category_name)) {
+				category = i;
 				break;
 			}
 		if (category < 0) {
@@ -133,20 +152,21 @@ int main(int argc, char *argv[])
 	} else
 		category = 0;	/* unfiled */
 
-	for (inc = 0; inc < argc; inc++) {
+	for (j = 0; j < argc; j++) {
 
-		f = fopen(argv[inc], "r");
+		f = fopen(argv[j], "r");
+
 		if (f == NULL) {
-			printf("%s: cannot open %s (%s), skipping...\n",
-				progname, argv[inc], strerror(errno));
+			printf("%s: Cannot open %s (%s), skipping...\n",
+				progname, argv[j], strerror(errno));
 			continue;
 		}
-
+		
 		fseek(f, 0, SEEK_END);
 		memo_size = ftell(f);
 		fseek(f, 0, SEEK_SET);
 
-		preamble = add_title ? strlen(argv[inc]) + 1 : 0;
+		preamble = add_title ? strlen(argv[i]) + 1 : 0;
 
 		memo_buf = (char *) malloc(memo_size + preamble + 1);
 		if (memo_buf == NULL) {
@@ -155,7 +175,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (preamble)
-			sprintf(memo_buf, "%s\n", argv[inc]);
+			sprintf(memo_buf, "%s\n", argv[i]);
 
 		fread(memo_buf + preamble, memo_size, 1, f);
 
@@ -163,6 +183,7 @@ int main(int argc, char *argv[])
 
 		dlp_WriteRecord(sd, (unsigned char) db, 0, 0, category,
 				(unsigned char *) memo_buf, -1, 0);
+		printf("File %s successfully installed..\n", argv[j]);
 		free(memo_buf);
 		fclose(f);
 	}
