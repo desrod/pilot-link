@@ -32,6 +32,7 @@
 #include "pi-debug.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
+#include "pi-error.h"
 
 /* Prototypes */
 int pilot_connect(char *port);
@@ -43,10 +44,11 @@ int pilot_connect(char *port);
 
 /* Logging defines */
 #define CHECK_RESULT(func) \
-  if (result < 0) { \
-	LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "VFSTEST " #func " failed (%d)\n", result)); \
-	goto error; \
-  }
+	if (result < 0) { \
+		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "VFSTEST " #func " failed (%d, last palmos error: 0x%04x)\n", result, pi_palmos_error(sd))); \
+		if (result == PI_ERR_SOCK_DISCONNECTED) \
+			goto error; \
+	}
 
 #define TEST_VFS_DIR			"/vfs-test"
 #define TEST_VFS_FILE			"/vfs-test/test.dat"
@@ -100,25 +102,26 @@ int main (int argc, char **argv)
 
 	for (i = 0; i < ref_length; i++) {
 		result = dlp_ExpCardPresent (sd, refs[i]);
-		if (result == 0x2903) { 
-			LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "* dlp_ExpCardPresent: card not present in slot %d\n", i));
+		if (result == PI_ERR_DLP_PALMOS) { 
+			LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "* dlp_ExpCardPresent: card not present in slot %d, PalmOS err 0x%04x\n", i, pi_palmos_error(sd)));
 		} else {
 			CHECK_RESULT(dlp_ExpCardPresent);
+			if (result >= 0) {
+				strings = NULL;
+				result = dlp_ExpCardInfo (sd, refs[i], &flags, &numStrings, &strings);
+				CHECK_RESULT(dlp_ExpCardInfo);
 
-			strings = NULL;
-			result = dlp_ExpCardInfo (sd, refs[i], &flags, &numStrings, &strings);
-			CHECK_RESULT(dlp_ExpCardInfo);
+				LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Expansion card {%d}: "
+					"capabilities = 0x%08lx, numStrings = %d\n", refs[i], flags, numStrings));
 
-			LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* Expansion card {%d}: "
-				"capabilities = 0x%08lx, numStrings = %d\n", refs[i], flags, numStrings));
-
-			if (strings) {
-				char *p = strings;
-				for (j = 0; j < numStrings; j++) {
-					LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "\tstring[%d] = '%s'\n", j, p));
-					p += strlen (p) + 1;
+				if (strings) {
+					char *p = strings;
+					for (j = 0; j < numStrings; j++) {
+						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "\tstring[%d] = '%s'\n", j, p));
+						p += strlen (p) + 1;
+					}
+					free (strings);
 				}
-				free (strings);
 			}
 		}
 	}
@@ -162,8 +165,6 @@ int main (int argc, char **argv)
 	ref_length = sizeof (refs) / sizeof (refs[0]);
 	result = dlp_VFSVolumeEnumerate (sd, &ref_length, refs);
 	CHECK_RESULT(dlp_VFSVolumeEnumerate);
-	if (result < 0)
-		goto error;
 
 	for (i = 0; i < ref_length; i++) {
 		struct VFSInfo vfs;
@@ -451,7 +452,7 @@ int main (int argc, char **argv)
 	t1 = time (NULL);
 	LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "VFSTEST Ending at %s", ctime (&t1)));
 
- error:
+error:
 	pi_close (sd);
 
 	return 0;
