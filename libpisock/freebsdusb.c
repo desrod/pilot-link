@@ -29,7 +29,8 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/time.h>		/* Needed for Redhat 6.x machines */
+#include <sys/time.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <string.h>
 
@@ -349,6 +350,7 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	ssize_t	rlen;
 	int bytes_read = 0;
 	fd_set ready;
+	struct timeval t;
 	
 	if (flags == PI_MSG_PEEK && len > 256)
 		len = 256;
@@ -442,7 +444,7 @@ u_flush(pi_socket_t *ps, int flags)
 
 	if (flags & PI_FLUSH_INPUT) {
 		/* clear internal buffer */
-		data->used = 0;
+		data->buf_size = 0;
 
 		/* flush pending data */
 		if ((fl = fcntl(ps->sd, F_GETFL, 0)) != -1) {
