@@ -32,6 +32,11 @@
 
 poptContext po;
 
+#ifndef HAVE_BASENAME
+/* Yes, this isn't efficient... scanning the string twice */
+#define basename(s) (strrchr((s), '/') == NULL ? (s) : strrchr((s), '/') + 1)
+#endif
+
 /***********************************************************************
  *
  * Function:    display_help
@@ -211,8 +216,7 @@ int main(int argc, char *argv[])
 
 	memo_buf[memo_size + preamble] = '\0';
 
-	dlp_WriteRecord(sd, (unsigned char) db, 0, 0, category,
-				(unsigned char *) memo_buf, -1, 0);
+	dlp_WriteRecord(sd, db, 0, 0, category, memo_buf, -1, 0);
 	free(memo_buf);
 	fclose(f);
 
