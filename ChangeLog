@@ -1,4 +1,8 @@
-2002-02-20  David A. Desrosiers <hacker at gnu-designs dot com>
+2002-02-25  David A. Desrosiers <hacker at gnu-designs dot com>
+	
+	* libsock/connect.c: BSD errno.h fixes (Peter da Silva)
+
+2002-02-24  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Increment/fix versions of libpisock, Python, Perl bindings
 

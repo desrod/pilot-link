@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/errno.h>
 
 #include "pi-socket.h"
 #include "pi-dlp.h"
@@ -29,14 +30,15 @@
 /* Declare prototypes */
 int pilot_connect(const char *port);
 
-int pilot_connect(const char *port) 
+int pilot_connect(const char *port)
 {
 	int 	sd, 
 		result;
 	struct 	pi_sockaddr addr;
 
 	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-		fprintf(stderr, "\n   Unable to create socket '%s'\n", port ? port : getenv("PILOTPORT"));
+		fprintf(stderr, "\n   Unable to create socket '%s'\n",
+			port ? port : getenv("PILOTPORT"));
 		return -1;
 	}
 
@@ -45,21 +47,29 @@ int pilot_connect(const char *port)
 		strncpy(addr.pi_device, port, sizeof(addr.pi_device));
 		result = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
 	} else {
-		result = pi_bind(sd, NULL, 0);		
+		result = pi_bind(sd, NULL, 0);
 	}
 
 	if (result < 0) {
-		if (port)
-			fprintf(stderr, "\n   Unable to bind to port '%s'\n", port);
-		else if (getenv("PILOTPORT"))
-			fprintf(stderr, "\n   Unable to bind to port '%s'\n", getenv("PILOTPORT"));
-		else
+		int save_errno = errno;
+		char *portname;
+
+		portname = port ? port : getenv("PILOTPORT");
+
+		if (portname) {
+			fprintf(stderr, "\n   ");
+			errno = save_errno;
+			perror(portname);
+			fprintf(stderr, "   Unable to bind to port '%s'\n",
+				port);
+		} else
 			fprintf(stderr, "\n   No port specified\n");
 		pi_close(sd);
 		return -1;
 	}
 
-	fprintf(stderr, "\n   Listening to port: %s\n\n   Please press the HotSync button now... ", 
+	fprintf(stderr,
+		"\n   Listening to port: %s\n\n   Please press the HotSync button now... ",
 		port ? port : getenv("PILOTPORT"));
 
 	if (pi_listen(sd, 1) == -1) {
@@ -79,6 +89,6 @@ int pilot_connect(const char *port)
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
-	
+
 	return sd;
 }
