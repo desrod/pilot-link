@@ -1,15 +1,26 @@
 
 Sorry for not providing decent information here. The basics are:
+
+ For UNIX:
   
-  1) run configure (unless using OS/2). If you want to install in someplace
+  1) run configure. If you want to install in someplace
      other the /usr/local, give configure an argument like '--prefix=/usr/pilot'
     
-  2) run make (unless using OS/2, then make -f Makefile.os2)
+  2) run make
     
   3) play around, _carefully_. pilot-xfer is probably the most useful
      program for you, and also the safest.
      
   4) run 'make install' if you feel the need.
+
+ For OS/2:
+  
+  1) run os2configure.cmd.
+    
+  2) runn make -f Makefile.os2
+    
+  3) play around, _carefully_. pilot-xfer is probably the most useful
+     program for you, and also the safest.
      
 Note on pilot-debug: this program is a work-in-progress, and requires Tcl
 7.5 (or greater) and optionally Tk 4.1 (or greater) and/or Readline 2.0.

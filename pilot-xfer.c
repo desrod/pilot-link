@@ -672,11 +672,8 @@ int main(int argc, char *argv[])
   if (tmp != NULL)
     device = tmp;
   
-#ifdef __EMX__
-  optmode = GETOPT_KEEP;
-#else
   optind=1;
-#endif  
+
   while (argv[optind] != NULL) {
     c = getopt_long(argc, argv, "b:u:s:e:r:i:m:f:d:plh", options, 0);
     if (c == EOF) {

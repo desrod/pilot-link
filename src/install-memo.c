@@ -11,6 +11,10 @@
 #include "pi-dlp.h"
 #include "pi-memo.h"
 
+extern char* optarg;
+extern int optind;
+    
+
 int usage(char *progname)
 {
     fprintf(stderr, "usage: %s [-qrt] [-c category] %s file [file] ...\n",

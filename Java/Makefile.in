@@ -44,7 +44,7 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 
 java = @JAVABASE@
-JAVACOMPILE = $(java)/bin/javac
+JAVACOMPILE = $(java)/bin/javac -d bin
 JAVAH = $(java)/bin/javah
 JAVARUN = $(java)/bin/java
 JAVADEPS = jdeps
@@ -288,6 +288,7 @@ clean:
 	$(RM) *.o *.lo *.a *.la core a.out *.orig *.so *.class */*.class */*/*.class doConstants
 	$(RM) *~ */*~ */*/*~ Pdapilot/constants.java Pdapilot/constants.class doConstants
 	$(RM) $(STUBC) $(STUBH) $(JDKSPECIFIC)
+	$(RM) -rf bin
 	$(RM) -rf .libs _libs
 
 depend: $(JDKSPECIFIC)

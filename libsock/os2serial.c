@@ -24,6 +24,7 @@
 #define INCL_DOSFILEMGR    /* File System values */
 #define INCL_DOSDEVIOCTL   /* DosDevIOCtl values */
 #define INCL_DOSDEVICES    /* DosDevice   values */
+#define INCL_MISC
 #include <os2.h>
 
 static int so_changebaud(struct pi_socket *ps);
@@ -115,38 +116,51 @@ int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr * addr, int addrlen)
   return(fd);  
 }
 
+/* stuff for OS/2 ASYNC_EXTSETBAUDRATE 
+ * this seems like a good place to put this, as it is only used here in
+ * so_changebaud(), MJJ.
+ */
+struct STR_EXTSETBAUDRATE {
+  ULONG baudrate;
+  UCHAR fraction;
+};
+
+
 static int so_changebaud(struct pi_socket *ps)
 {
   int param_length;
-  int rc, baudrate;
+  int rc;
   unsigned char linctrl[3] = {8,0,0};
+  struct STR_EXTSETBAUDRATE extsetbaudrate;
 
-  baudrate = ps->rate;
+  extsetbaudrate.baudrate = ps->rate;
+  extsetbaudrate.fraction = 0;    /* if anyone knows some fractions */
+                                  /* that could be used here, let me know */
 
-  param_length=sizeof(baudrate);
-  rc=DosDevIOCtl(ps->mac->fd, /* file decsriptor */
-		 IOCTL_ASYNC, /*asyncronous change */
-		 ASYNC_SETBAUDRATE, /* set the baudrate */
-		 &baudrate, /* pointer to the baudrate */
-		 param_length, /* length of the previous parameter */
+  param_length=sizeof(extsetbaudrate);
+  rc=DosDevIOCtl(ps->mac->fd,          /* file decsriptor */
+		 IOCTL_ASYNC,          /*asyncronous change */
+		 ASYNC_EXTSETBAUDRATE, /* set the baudrate */
+		 &extsetbaudrate,      /* pointer to the baudrate */
+		 param_length,         /* length of the previous parameter */
 		 (unsigned long *)&param_length, /* max length of data ret */
-		 NULL, /* data to be sent */
-		 0, /* length of data */
-		 NULL); /* length of data returned */
+		 NULL,                 /* data to be sent */
+		 0,                    /* length of data */
+		 NULL);                /* length of data returned */
 
   /* also set the port to 8N1 as OS/2 defaults to some braindead values */
   if (!rc)   /* but only if the previous operation succeeded */
     {
-      param_length = 3; /* 3 bytes for line control */
-      rc=DosDevIOCtl(ps->mac->fd, /* file decsriptor */
-		     IOCTL_ASYNC, /*asyncronous change */
-		     ASYNC_SETLINECTRL, /* set the line controls */
-		     linctrl, /* pointer to the configuration */
-		     param_length, /* length of the previous parameter */
+      param_length = 3;                /* 3 bytes for line control */
+      rc=DosDevIOCtl(ps->mac->fd,      /* file decsriptor */
+		     IOCTL_ASYNC,      /* asyncronous change */
+		     ASYNC_SETLINECTRL,/* set the line controls */
+		     linctrl,          /* pointer to the configuration */
+		     param_length,     /* length of the previous parameter */
 		     (unsigned long *)&param_length, /* max length of params */
-		     NULL, /* data to be returned */
-		     0, /* length of data */
-		     NULL); /* length of data returned */
+		     NULL,             /* data to be returned */
+		     0,                /* length of data */
+		     NULL);            /* length of data returned */
     }
 
 

@@ -1971,7 +1971,7 @@ Pack(record)
     a.sentTo = (s = hv_fetch(h, "sentTo", 6, 0)) ? SvPV(*s,na) : 0;
     a.body = (s = hv_fetch(h, "body", 4, 0)) ? SvPV(*s,na) : 0;
     
-    a.read = (s = hv_fetch(h, "body", 4, 0)) ? SvIV(*s) : 0;
+    a.read = (s = hv_fetch(h, "read", 4, 0)) ? SvIV(*s) : 0;
     a.signature = (s = hv_fetch(h, "signature", 9, 0)) ? SvIV(*s) : 0;
     a.confirmRead = (s = hv_fetch(h, "confirmRead", 11, 0)) ? SvIV(*s) : 0;
     a.confirmDelivery = (s = hv_fetch(h, "confirmDelivery", 15, 0)) ? SvIV(*s) : 0;

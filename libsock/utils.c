@@ -21,6 +21,9 @@
 # include <sys/param.h>
 #ifdef __EMX__
 # include <sys/types.h>
+# define INCL_DOSFILEMGR    /* File System values */
+# define INCL_MISC
+# include <os2.h>
 #endif
 # include <netinet/in.h>
 # include <arpa/inet.h>
@@ -323,3 +326,24 @@ int compareTm(struct tm *a, struct tm *b)
 	d = a->tm_sec - b->tm_sec;
 	return d;
 }
+
+
+#ifdef OS2
+
+/* Replacement version of getenv(), because the one in the EMX 0.9c,
+ * fix03 dist appears to be busted when called from inside a DLL. (MJJ)
+ */
+char *getenv(const char *envar)
+{
+  APIRET rc;
+  unsigned char *envstring;
+
+  /* just call the OS/2 function directly */
+  rc = DosScanEnv(envar, &envstring);
+  if(rc)
+    return NULL;
+  else
+    return envstring;
+}
+
+#endif

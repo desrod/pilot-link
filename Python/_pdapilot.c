@@ -5,8 +5,13 @@
 #include "pi-mail.h"
 #include "pi-memo.h"
 #include "pi-todo.h"
+#include "pi-datebook.h"
+#include "pi-address.h"
 #include "pi-socket.h"
 #include "pi-syspkt.h"
+#include <ctype.h>
+
+static char *dow[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", NULL};
 
 extern char * printlong (unsigned long val);
 extern unsigned long makelong (char * c);
@@ -357,6 +362,9 @@ Bind(self, args)
 			e = PyDict_GetItemString(addr, "family");
 			a->pi_family = e ? PyInt_AsLong(e) : 0;
 			
+		} else {
+			PyErr_SetString(Error, "\"device\" parameter not set");
+			return NULL;
 		}
 		i = pi_bind(socket,(struct sockaddr*)a,len);
 		free(a);
@@ -541,7 +549,7 @@ ResetSystem(self, args)
 	DlpObject *self;
 	PyObject *args;
 {
-	int socket, result;
+	int result;
 	if (!PyArg_ParseTuple(args, ""))
 		return NULL;
 	result = dlp_ResetSystem(self->socket);
@@ -554,7 +562,7 @@ Dirty(self, args)
 	DlpObject *self;
 	PyObject *args;
 {
-	int socket, result;
+	int result;
 	if (!PyArg_ParseTuple(args, ""))
 		return NULL;
 	result = dlp_ResetLastSyncPC(self->socket);
@@ -593,7 +601,8 @@ OpenDB(self, args)
 	if (!packer)
 		packer = PyDict_GetItemString(DBClasses, "");
 	if (!packer) {
-		PyErr_SetString(PyExc_ValueError, "pdapilot.DBClasses must contain a default");
+		PyErr_SetString(PyExc_ValueError,
+						"pdapilot.DBClasses must contain a default");
 		dlp_CloseDB(self->socket, handle);
 		free(obj);
 		return NULL;
@@ -770,7 +779,7 @@ NextModRec(self, args)
 	if (category == -1)
 		result = dlp_ReadNextModifiedRec(self->socket->socket, self->handle, self->socket->buffer, &id, &index, &length, &attr, &category);
 	else
-		result = dlp_ReadNextModifiedRecInCategory(self->socket->socket, self->handle, index, self->socket->buffer, &id, &index, &length, &attr);
+		result = dlp_ReadNextModifiedRecInCategory(self->socket->socket, self->handle, category, self->socket->buffer, &id, &index, &length, &attr);
 	
 	DlpDB_CheckError(result);
 	
@@ -793,7 +802,7 @@ NextCatRec(self, args)
 	if (!PyArg_ParseTuple(args, "i", &category))
 		return NULL;
 	
-	result = dlp_ReadNextRecInCategory(self->socket->socket, self->handle, index, self->socket->buffer, &id, &index, &length, &attr);
+	result = dlp_ReadNextRecInCategory(self->socket->socket, self->handle, category, self->socket->buffer, &id, &index, &length, &attr);
 	
 	DlpDB_CheckError(result);
 
@@ -835,7 +844,7 @@ SetRec(self, args)
 	unsigned long id=0;
 	unsigned long newid;
 	int raw=0;
-	int index, length, attr=0, category=0;
+	int length, attr=0, category=0;
 	char * data;
 	PyObject * h, *i;
 	int result;
@@ -870,7 +879,8 @@ SetRec(self, args)
 		attr |= 0x08;
 	if (i=PyObject_GetAttrString(h, "category")) category = PyInt_AsLong(i);
 	
-	dlp_WriteRecord(self->socket->socket, self->handle, attr, id, category, data, length, &newid);
+	result = dlp_WriteRecord(self->socket->socket, self->handle, 
+				attr, id, category, data, length, &newid);
 	
 	DlpDB_CheckError(result);
 	
@@ -1007,13 +1017,13 @@ RecordIDs(self, args)
 	DlpDBObject *self;
 	PyObject *args;
 {
-	int sort=0, result;
+	int sort, result;
 	PyObject *list;
 	int count, start;
 	int i;
 	recordid_t *id = (recordid_t*)self->socket->buffer;
 	
-	if (!PyArg_ParseTuple(args, "|i"), sort)
+	if (!PyArg_ParseTuple(args, "|i", &sort))
 		return NULL;
 
 	list = PyList_New(0);
@@ -1112,7 +1122,6 @@ GetAppBlock(self, args)
 	DlpDBObject *self;
 	PyObject *args;
 {
-	int records;
 	int length=0xffff,offset=0, result;
 	PyObject *ret;
 	PyObject *c, *callargs;
@@ -1137,7 +1146,7 @@ SetAppBlock(self, args)
 {
 	char * data;
 	int length,result;
-	PyObject * h, *i, *c;
+	PyObject * h;
 	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
 		
@@ -1159,7 +1168,6 @@ GetSortBlock(self, args)
 	DlpDBObject *self;
 	PyObject *args;
 {
-	int records;
 	int length=0xffff,offset=0, result;
 	PyObject *ret, *c, *callargs;
 	if (!PyArg_ParseTuple(args, "|ii", &length, &offset))
@@ -1336,7 +1344,7 @@ GetAppPref(self, args)
 	unsigned long creator;
 	int id, backup=1;
 	int length, version, result;
-	PyObject * ret, *p1, *p2, *f, *callargs;
+	PyObject * ret, *p1, *p2, *f = NULL, *callargs;
 	
 	if (!PyArg_ParseTuple(args, "O&i|i", &ParseChar4, &creator, &id, &backup))
 		return NULL;
@@ -1374,9 +1382,8 @@ GetAppPrefRaw(self, args)
 	unsigned long creator;
 	int id, backup=1;
 	int length, version, result;
-	PyObject * ret, *p1, *p2, *f, *callargs;
-	
-	if (!PyArg_ParseTuple(args, "O&i|i", &ParseChar4, &creator, &id, &backup))
+
+        if (!PyArg_ParseTuple(args, "O&i|i", &ParseChar4, &creator, &id, &backup))
 		return NULL;
 	
 	result = dlp_ReadAppPreference(self->socket, creator, id, backup,
@@ -1394,8 +1401,7 @@ BlankAppPref(self, args)
 {
 	unsigned long creator;
 	int id;
-	int length, version, result;
-	PyObject * ret, *p1, *p2, *f, *callargs;
+	PyObject * ret, *p1, *p2, *f = NULL, *callargs;
 	
 	if (!PyArg_ParseTuple(args, "O&i|i", &ParseChar4, &creator, &id))
 		return NULL;
@@ -1464,7 +1470,6 @@ SetAppPrefRaw(self, args)
 	unsigned long creator;
 	int id=0, length, version=0, backup=1, result;
 	char * data;
-	PyObject *h, *i;
 
 	if (!PyArg_ParseTuple(args, "s#O&iii", &data, &length, &ParseChar4, &creator, &id, &version, &backup))
 		return NULL;
@@ -1487,7 +1492,7 @@ DBGetAppPref(self, args)
 	int id=0, backup=1;
 	int length, version, result;
 	int r;
-	PyObject * ret, *p1, *p2, *f, *callargs;
+	PyObject * ret, *f, *callargs;
 	
 	if (!PyArg_ParseTuple(args, "|ii", &id, &backup))
 		return NULL;
@@ -1525,8 +1530,8 @@ DBBlankAppPref(self, args)
 {
 	unsigned long creator;
 	int id=0;
-	int length, version, result, backup=0;
-	PyObject * ret, *p1, *p2, *f, *callargs;
+	int backup=0;
+	PyObject * ret, *p1, *p2, *callargs;
 	
 	if (!PyArg_ParseTuple(args, "|ii", &id, &backup))
 		return NULL;
@@ -1670,7 +1675,7 @@ GetFeature(self, args)
 {
 	unsigned long creator, feature;
 	int result, number;
-	if (!PyArg_ParseTuple(args, "O&i"), &ParseChar4, &creator, &number)
+	if (!PyArg_ParseTuple(args, "O&i", &ParseChar4, &creator, &number))
 		return NULL;
 		
 	result = dlp_ReadFeature(self->socket, creator, number, &feature);
@@ -2087,10 +2092,9 @@ FileCheckID(self, args)
 	PiFileObject *self;
 	PyObject *args;
 {
-	int records;
 	unsigned long id;
 	
-	if (!PyArg_ParseTuple(args, "l", id))
+	if (!PyArg_ParseTuple(args, "l", &id))
 		return NULL;
 		
 	return Py_BuildValue("i", pi_file_id_used(self->pf, id));
@@ -2209,7 +2213,7 @@ FileSetAppBlock(self, args)
 {
 	char * c;
 	int length;
-	PyObject *h, *i;
+	PyObject *h;
 	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
 		
@@ -2253,7 +2257,7 @@ FileSetSortBlock(self, args)
 {
 	char * c;
 	int length;
-	PyObject *h, *i;
+	PyObject *h;
 	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
 		
@@ -2297,10 +2301,8 @@ FileAddRec(self, args)
 	PyObject *args;
 {
 	unsigned long id=0;
-	unsigned long newid;
 	int length, attr=0, category=0;
 	char * data;
-	int result;
 	PyObject *h, *i;
 	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
@@ -2346,7 +2348,6 @@ FileAddRsc(self, args)
 	unsigned long type;
 	int id, length;
 	char * data;
-	int result;
 	PyObject *h, *i;
 	if (!PyArg_ParseTuple(args, "O", &h))
 		return NULL;
@@ -2380,7 +2381,6 @@ FileInstall(self, args)
 	PyObject *args;
 {
 	DlpObject *socket;
-	int result;
 	int cardno=0;
 	if (!PyArg_ParseTuple(args, "O!|i", &Dlp_Type, &socket, &cardno))
 		return NULL;
@@ -2399,7 +2399,6 @@ FileRetrieve(self, args)
 	PyObject *args;
 {
 	DlpObject *socket;
-	int result;
 	int cardno=0;
 	if (!PyArg_ParseTuple(args, "O!|i", &Dlp_Type, &socket, &cardno))
 		return NULL;
@@ -2490,7 +2489,7 @@ MemoUnpack(self, args)
 
 	char * data;
 	int length;
-	PyObject * result, *dict;
+	PyObject *dict;
 	
 	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
 		return NULL;
@@ -2607,9 +2606,8 @@ MemoUnpackAppBlock(self, args)
 {
 	char * data;
 	int length;
-	PyObject *names, *ids, *h, *raw, *dict;
+	PyObject *dict;
 	struct MemoAppInfo m;
-	int i;
 	
 	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
 		return NULL;
@@ -2632,10 +2630,8 @@ MemoPackAppBlock(self, args)
 {
 	char * data;
 	int length;
-	PyObject *names, *ids;
 	struct MemoAppInfo m;
-	int i;
-	PyObject *dict, *e, *c, *result;
+	PyObject *dict, *e, *result;
 
 	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
 		return NULL;
@@ -2664,7 +2660,7 @@ TodoUnpack(self, args)
 	char * data;
 	int length;
 	struct ToDo m;
-	PyObject * result, *dict;
+	PyObject *dict;
 	
 	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
 		return NULL;
@@ -2698,9 +2694,9 @@ TodoPack(self, args)
 	char * data;
 	int length;
 	struct ToDo m;
-	PyObject * dict, *e, *o;
+	PyObject *e, *o;
 	
-	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
+	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &o))
 		return NULL;
 	
 	data = malloc(0xffff);
@@ -2732,9 +2728,8 @@ TodoUnpackAppBlock(self, args)
 {
 	char * data;
 	int length;
-	PyObject *names, *ids, *dict;
+	PyObject *dict;
 	struct ToDoAppInfo m;
-	int i;
 	
 	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
 		return NULL;
@@ -2756,10 +2751,8 @@ TodoPackAppBlock(self, args)
 {
 	char * data;
 	int length;
-	PyObject *names, *ids;
 	struct ToDoAppInfo m;
-	int i;
-	PyObject *result, *o, *e, *c;
+	PyObject *result, *o, *e;
 	
 	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &o))
 		return NULL;
@@ -2779,6 +2772,287 @@ TodoPackAppBlock(self, args)
 	return result;
 }
 
+
+static PyObject *
+DatebookUnpack(self, args)
+	PyObject *self;
+	PyObject *args;
+{
+	char * data;
+	int length;
+	struct Appointment m;
+	PyObject *dict, *ri, *exc;
+	int *rd, count;
+	
+	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
+		return NULL;
+	
+	if (unpack_Appointment(&m, data, length) <= 0)
+	{
+		static char temp[1024];
+		sprintf(temp, "unpack_Appointment failed! (length = %d)", length);
+		PyErr_SetString(PyExc_ValueError, temp);
+		return NULL;
+	}
+
+	PyDict_SetItemString(dict, "begin", BuildTm(&m.begin));
+	PyDict_SetItemString(dict, "end",
+						 m.event ? Py_BuildValue("") : BuildTm(&m.end));
+
+	PyDict_SetItemString(dict, "alarm", m.alarm
+						 ? Py_BuildValue("(is)", m.advance,
+										 DatebookAlarmTypeNames[m.advanceUnits])
+						 : Py_BuildValue(""));
+
+    PyDict_SetItemString(dict, "repeatWeekstart",
+						 PyInt_FromLong(m.repeatWeekstart));
+
+	switch (m.repeatType)
+	{
+	case repeatWeekly:
+	    rd = m.repeatDays;
+		ri = Py_BuildValue("(iiiiiii)", rd[0], rd[1], rd[2], rd[3], rd[4],
+						   rd[5], rd[6], rd[7]);
+		break;
+	case repeatMonthlyByDay:
+		ri = Py_BuildValue("(is)", m.repeatDay/7 >= 4 ? -1 : m.repeatDay/7 + 1,
+						   dow[m.repeatDay % 7]);
+		break;
+	case repeatNone:
+	case repeatDaily:
+	case repeatMonthlyByDate:
+	case repeatYearly:
+	default:
+		ri = Py_BuildValue("");
+		break;
+	}
+	PyDict_SetItemString(dict, "repeat", m.repeatType == repeatNone
+						 ? Py_BuildValue("")
+						 : Py_BuildValue("(isO)", m.repeatFrequency,
+										 DatebookRepeatTypeNames[m.repeatType],
+										 ri));
+	PyDict_SetItemString(dict, "repeatEnd", m.repeatForever
+						 ? Py_BuildValue("")
+						 : BuildTm(&m.repeatEnd));
+ 
+	if (m.exceptions)
+	{
+		exc = PyList_New(m.exceptions);
+		for (count = 0; count < m.exceptions; count++)
+			PyList_SetItem(exc, count, BuildTm(m.exception + count));
+		PyDict_SetItemString(dict, "exceptions", exc);
+	}
+	else
+		PyDict_SetItemString(dict, "exceptions", Py_BuildValue(""));
+
+	PyDict_SetItemString(dict, "description", m.description ? PyString_FromString(m.description) : Py_BuildValue(""));
+	PyDict_SetItemString(dict, "note", m.note ? PyString_FromString(m.note) : Py_BuildValue(""));
+
+	free_Appointment(&m);
+	
+	return Py_BuildValue("");
+}
+
+
+int stringlook(char *str, char **list)
+{
+	char **ptr;
+	for (ptr = list; *ptr; ptr++)
+		if (!strcasecmp(str, *ptr))
+			return ptr - list;
+	return 0; /* always return something reasonable */
+}
+
+
+static PyObject *
+DatebookPack(self, args)
+	PyObject *self;
+	PyObject *args;
+{
+	char *data, *str;
+	int length, count, week;
+	struct Appointment m;
+	PyObject *e, *e2, *o;
+	int *rd;
+	
+	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &o))
+		return NULL;
+
+	memset(&m, 0, sizeof(m));
+
+	// event, begin, end
+	if (!(e = PyDict_GetItemString(o, "begin")) || !PyTuple_Check(e))
+	{
+		PyErr_SetString(PyExc_ValueError,
+						"\"begin\" attribute not set; cannot create record!");
+		return NULL;
+	}
+	ParseTm(e, &m.begin);
+	
+	if (!(e = PyDict_GetItemString(o, "end")) || !PyTuple_Check(e))
+	{
+		m.event = 1;
+	}
+	else
+	{
+		m.event = 0;
+		ParseTm(e, &m.end);
+	}
+ 
+	// alarm, advance, advanceUnits
+	e = PyDict_GetItemString(o, "alarm");
+	if (!e || !PyTuple_Check(e))
+		m.alarm = 0;
+	else
+	{
+		m.alarm = 1;
+		str = "";
+		m.advance = 0;
+		PyArg_ParseTuple(e, "is", &m.advance, &str);
+		m.advanceUnits = stringlook(str, DatebookAlarmTypeNames);
+	}
+
+	m.repeatWeekstart = ((e=PyDict_GetItemString(o, "repeatWeekStart"))
+						 ? PyInt_AsLong(e) : 0);
+ 
+	// repeat Type/Frequency/Day/Days/Weekstart
+	e = PyDict_GetItemString(o, "repeat");
+	if (!e || !PyTuple_Check(e))
+		m.repeatType = repeatNone;
+	else
+	{
+		m.repeatFrequency = 1;
+		str = "";
+		e2 = e; /* default value */
+		PyArg_ParseTuple(e, "isO", &m.repeatFrequency, &str, &e2);
+		m.repeatType = stringlook(str, DatebookRepeatTypeNames);
+
+		switch (m.repeatType)
+		{
+		case repeatWeekly:
+			memset(m.repeatDays, 0, sizeof(m.repeatDays));
+			rd = m.repeatDays;
+			if (PyTuple_Check(e2))
+				PyArg_ParseTuple(e2, "iiiiiii", &rd[0], &rd[1], &rd[2],
+								 &rd[3], &rd[4], &rd[5], &rd[6], &rd[7]);
+			break;
+		case repeatMonthlyByDay:
+			if (!PyTuple_Check(e2))
+				m.repeatDay = 0;
+			else
+			{
+				week = 0;
+				str = "";
+				PyArg_ParseTuple(e2, "is", &week, &str);
+				m.repeatDay = ((week >= 1 ? week : 5) - 1) * 7 
+					            + stringlook(str, dow);
+			}
+			break;
+		case repeatNone:
+		case repeatDaily:
+		case repeatMonthlyByDate:
+		case repeatYearly:
+		default:
+			break;
+		}
+	}
+
+	// repeat Forever/End
+	e = PyDict_GetItemString(o, "repeatEnd");
+	if (!e || !PyTuple_Check(e))
+		m.repeatForever = 1;
+	else
+	{
+		m.repeatForever = 0;
+		ParseTm(e, &m.repeatEnd);
+	}
+ 
+	// exceptions, exception
+	e = PyDict_GetItemString(o, "exceptions");
+	if (!e || !PyList_Check(e))
+	{
+		m.exceptions = 0;
+		m.exception = NULL;
+	}
+	else
+	{
+		m.exceptions = PyList_Size(e);
+		m.exception = malloc(sizeof(struct tm *) * m.exceptions);
+		for (count = 0; count < m.exceptions; count++)
+		{
+			memset(&m.exception[count], 0, sizeof(struct tm));
+			e2 = PyList_GetItem(e, count);
+			if (PyTuple_Check(e2))
+				ParseTm(e2, &m.exception[count]);
+		}
+	}
+
+	m.description = (e=PyDict_GetItemString(o, "description")) ? PyString_AsString(e) : 0;
+	m.note = (e=PyDict_GetItemString(o, "note")) ? PyString_AsString(e) : 0;
+	
+	data = malloc(0xffff);
+	length = pack_Appointment(&m, data, 0xffff);
+	o = Py_BuildValue("s#", data, length);
+	free(data);
+	
+	return o;
+}
+
+static PyObject *
+DatebookUnpackAppBlock(self, args)
+	PyObject *self;
+	PyObject *args;
+{
+ /* Copied from TODO -- this will never work!
+	char * data;
+	int length;
+	PyObject *dict;
+	struct ToDoAppInfo m;
+	
+	if (!PyArg_ParseTuple(args, "Os#", &dict, &data, &length))
+		return NULL;
+	
+	unpack_ToDoAppInfo(&m, data, length);
+	
+	PyDict_SetItemString(dict, "sortByPriority", PyInt_FromLong(m.sortByPriority));
+	PyDict_SetItemString(dict, "dirty", PyInt_FromLong(m.dirty));
+
+	doUnpackCategory(dict, &m.category);
+  */
+	return Py_BuildValue("");
+}
+
+static PyObject *
+DatebookPackAppBlock(self, args)
+	PyObject *self;
+	PyObject *args;
+{
+ /* Copied from TODO -- this will never work!
+	char * data;
+	int length;
+	struct ToDoAppInfo m;
+	PyObject *result, *o, *e;
+	
+	if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &o))
+		return NULL;
+	
+	data = malloc(0xFFFF);
+	
+	m.sortByPriority = (e=PyDict_GetItemString(o, "sortByPriority")) ? PyInt_AsLong(e) : 0;
+	m.dirty = (e=PyDict_GetItemString(o, "dirty")) ? PyInt_AsLong(e) : 0;
+
+	doPackCategory(o, &m.category);
+	
+	length = pack_ToDoAppInfo(&m, data, 0xffff);
+	
+	result = Py_BuildValue("s#", data, length);
+	
+	free(data);
+	return result;
+  */
+    return Py_BuildValue("");
+}
+
 static PyObject *
 MailUnpackPref(self, args)
 	PyObject *self;
@@ -2788,7 +3062,7 @@ MailUnpackPref(self, args)
 	char * data;
 	int length;
 	int id;
-	PyObject * result, *dict;
+	PyObject *dict;
 	
 	if (!PyArg_ParseTuple(args, "Os#i", &dict, &data, &length, &id))
 		return NULL;
@@ -2930,10 +3204,6 @@ RPCPack(self, args)
 	for(i=0;i<PyTuple_Size(rpcargs);i++) {
 		char * type = PyString_AsString(PyTuple_GetItem(rpctypes, i));
 		PyObject * value = PyTuple_GetItem(rpcargs, i);
-		char * data = 0;
-		int len = 0;
-		unsigned long arg;
-		int ref=0;
 		if (type[0] == '&') {
 			result->p->param[i].byRef = 1;	
 			type++;
@@ -2976,9 +3246,6 @@ DlpRPC(self, args)
 	DlpObject *self;
 	PyObject *args;
 {
-	long trap;
-	char * reply;
-	int r;
 	RpcObject * rpc;
 	int i;
 	int err;
@@ -3040,7 +3307,7 @@ static PyMethodDef Dlp_methods[] = {
 	{"abort",	Abort, 1},
 	{"log",		Log, 1},
 	{"getTime",	GetTime, 1},
-	{"setTime",	GetTime, 1},
+	{"setTime",	SetTime, 1},
 	{"getCardInfo",	CardInfo, 1},
 	{"getSysInfo",	SysInfo, 1},
 	{"getUserInfo",	GetUserInfo, 1},
@@ -3090,7 +3357,7 @@ static PyMethodDef DlpDB_methods[] = {
 	{"getPref",	DBGetAppPref, 1},
 	{"newPref",	DBBlankAppPref, 1},
 	{"setPref",	DBSetAppPref, 1},
-/*	{"setPrefRaw",	DBGetAppPrefRaw, 1},
+/*	{"getPrefRaw",	DBGetAppPrefRaw, 1},
 	{"setPrefRaw",	DBSetAppPrefRaw, 1},*/
 	{NULL,	NULL}
 };
@@ -3116,6 +3383,10 @@ static PyMethodDef Methods[] = {
 	{"ToDoUnpackAppBlock",	TodoUnpackAppBlock, 1},
 	{"ToDoPack",	TodoPack, 1},
 	{"ToDoPackAppBlock",	TodoPackAppBlock, 1},
+	{"DatebookUnpack",		DatebookUnpack, 1},
+	{"DatebookUnpackAppBlock",	DatebookUnpackAppBlock, 1},
+	{"DatebookPack",			DatebookPack, 1},
+	{"DatebookPackAppBlock",	DatebookPackAppBlock, 1},
 	{"MailUnpackPref",	MailUnpackPref, 1},
 	{"MailPackPref",	MailPackPref, 1},
 	{"PackRPC",	RPCPack, 1},
@@ -3134,7 +3405,7 @@ static PyMethodDef MemoAppBlock_methods[] = {
 void
 init_pdapilot()
 {
-	PyObject *m, *d, *main, *t;
+	PyObject *m, *d, *main;
 	main = m = Py_InitModule("_pdapilot", Methods);
 	d = PyModule_GetDict(m);
 	Error = PyString_FromString("pdapilot.error");

@@ -5,7 +5,11 @@
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
  */
- 
+
+#ifdef __EMX__
+# include <sys/types.h>
+# include <netinet/in.h>
+#endif 
 
 #include <stdio.h>
 #include <stdlib.h>

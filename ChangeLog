@@ -1,3 +1,15 @@
+Feb 27,  1998	Kenneth Albanowski 0.8.11
+
+	Sorry, no time for detail:
+	
+	  - Java build changed, to store executables in separate directory
+	  - Minor patch to Perl binding
+	  - Major patch to Python binding
+	  - A few OS/2 improvements
+	  
+	  Note: I've seen an apparent problem with glibc2's getopt, but this
+	        is not confirmed.
+
 Dec 20,  1997	Kenneth Albanowski 0.8.10
 	Library changes:
 	  - Bug affecting address book sorting corrected

@@ -75,8 +75,9 @@ class RecordBlock (Block):
 				self.archived = 0
 		if category != None:
 			self.category = category
-		if contents != None:
-			self.unpack(contents, dlpdb)
+		if (contents != None):
+		    if not self.deleted:
+				self.unpack(contents, dlpdb)
 		else:
 			self.fill()
 	def fill(self):
@@ -165,6 +166,37 @@ class ToDo (RecordDatabase):
 			self.raw = block
 			_pdapilot.ToDoUnpackAppBlock(self.__dict__, block)
 
+class Datebook (RecordDatabase):
+	creator = 'date'
+	name = 'DatebookDB'
+	class Record (RecordBlock):
+		def fill(self):
+			self.begin = self.end = None
+			self.alarm = None
+			self.repeat = None;
+			self.repeatEnd = None;
+			self.repeatWeekstart = 0;
+			self.exceptions = None
+			self.description = None
+			self.note = None
+			RecordBlock.fill(self)
+		
+		def pack(self, dlpdb=None):
+			self.raw = _pdapilot.DatebookPack(self.__dict__)
+			return self.raw
+		
+		def unpack(self, block, dlpdb=None):
+			self.raw = block
+			_pdapilot.DatebookUnpack(self.__dict__, block)
+			
+	class AppBlock (AppBlock):
+		def pack(self, dlpdb=None):
+			self.raw = _pdapilot.DatebookPackAppBlock(self.__dict__)
+			return self.raw
+		
+		def unpack(self, block, dlpdb=None):
+			self.raw = block
+			_pdapilot.DatebookUnpackAppBlock(self.__dict__, block)
 
 
 class Mail (RecordDatabase):
@@ -196,6 +228,7 @@ PrefClasses[''] = PrefBlock
 
 DBClasses[Memo.name] = Memo
 DBClasses[ToDo.name] = ToDo
+DBClasses[Datebook.name] = Datebook
 DBClasses[Mail.name] = Mail
 PrefClasses[Mail.creator] = {'': Mail.Pref}
 

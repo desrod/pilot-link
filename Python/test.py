@@ -1,6 +1,6 @@
 
 try:
-	import pdapiot
+	import pdapilot
 except:
 	import sys
 	sys.path.append('./.libs/')
@@ -8,12 +8,12 @@ except:
 
 from sys import stdin
 
-print 'Please enter the serial port [/dev/cua3]: ',
+print 'Please enter the serial port [/dev/pilot]: ',
 port = stdin.readline()
 port = port[0:len(port)-1]
 
 if len(port) == 0:
-  port = '/dev/cua3'
+  port = '/dev/pilot'
 
 print 'Using port',port
 
@@ -41,7 +41,7 @@ print "Battery voltage is ", b[0], " (warning marker is ", b[1],", critical mark
 
 rpc = pdapilot.PackRPC(0xA0B6, "i", ("b", "&s", "&s", "&s", "&b", "&b"),
                                     (0,   0,    0,    0,    0,    0))
-b = dlp.RPC(rpc)
+#b = dlp.RPC(rpc)
 
 print "Battery results through Python RPC:", b
 
