@@ -6,6 +6,7 @@ c_headers = 			\
 	pi-datebook.h		\
 	pi-debug.h		\
 	pi-dlp.h		\
+	pi-foto.h		\
 	pi-expense.h		\
 	pi-file.h		\
 	pi-header.h		\
@@ -32,6 +33,7 @@ c_headers = 			\
 	pi-usb.h		\
 	pi-util.h		\
 	pi-veo.h		\
+	pi-versamail		\
 	pi-version.h
 
 c_privheaders = 		\

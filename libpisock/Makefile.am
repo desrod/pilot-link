@@ -56,7 +56,8 @@ libpisock_la_SOURCES =  \
 	todo.c		\
 	util.c		\
 	utils.c		\
-	veo.c
+	veo.c		\
+	versamail.c
 
 libpisock_la_LIBADD = \
 	$(ICONV_LIBS)

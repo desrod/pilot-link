@@ -4,6 +4,7 @@ INCLUDES = 			\
 
 noinst_PROGRAMS =	\
 	dlp-test	\
+	versamail-test	\
 	vfs-test
 
 dlp_test_SOURCES =	\
@@ -14,6 +15,11 @@ dlp_test_LDADD =	\
 vfs_test_SOURCES =	\
 	vfs-test.c
 vfs_test_LDADD =	\
+	$(top_builddir)/libpisock/libpisock.la
+
+versamail_test_SOURCES =	\
+	versamail-test.c
+versamail_test_LDADD =	\
 	$(top_builddir)/libpisock/libpisock.la
 
 check_PROGRAMS =  \
