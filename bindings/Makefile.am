@@ -33,19 +33,20 @@ endif
 #
 # Perl Building
 #
-perl-make: Perl/Makefile.PL
+
+Perl/Makefile: Perl/Makefile.PL
 	cd Perl && $(PERL5) Makefile.PL
 
-perl-build: perl-make
+perl-build: Perl/Makefile
 	cd Perl && $(MAKE)
 
 perl-install: perl-build
 	cd Perl && $(MAKE) install
 
-perl-uninstall: perl-make
+perl-uninstall: Perl/Makefile
 	cd Perl && $(MAKE) uninstall
 
-perl-clean: perl-make
+perl-clean: Perl/Makefile
 	cd Perl && $(MAKE) realclean
 
 if WITH_PERL

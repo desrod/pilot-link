@@ -1,5 +1,9 @@
 2002-04-18  JP Rosevear  <jpr@ximian.com>
 
+	* bindings/Makefile.am: better dependency rule
+
+2002-04-18  JP Rosevear  <jpr@ximian.com>
+	
 	* Makefile.am: add libpisync as a subdir
 
 	* configure.in: AC_SUBST the version info
