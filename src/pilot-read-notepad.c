@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 #ifdef HAVE_PNG
    int type = NOTE_OUT_PNG;
 #else
-   int type = NOTE_OUT_PNG;
+   int type = NOTE_OUT_PPM;
 #endif
    
    char 	*progname 	= argv[0],
