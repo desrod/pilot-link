@@ -204,15 +204,22 @@ struct VFSInfo {
 	unsigned long   reserved;
 };
 
+/** @brief Information about the handheld user
+ *
+ * This structure is used in dlp_ReadUserInfo() and dlp_WriteUserInfo()
+ */
 struct PilotUser {
 	size_t 	passwordLength;
-	char 	username[128],
-		password[128];
-	unsigned long userID, viewerID, lastSyncPC;
-	time_t successfulSyncDate, lastSyncDate;
+	char 	username[128];
+	char	password[128];
+	unsigned long userID;
+	unsigned long viewerID;
+	unsigned long lastSyncPC;
+	time_t successfulSyncDate;
+	time_t lastSyncDate;
 };
 
-/** Device information.
+/** @brief Device information.
  *
  * This structure is filled by dlp_ReadSysInfo()
  */
@@ -228,7 +235,7 @@ struct SysInfo {
 	unsigned long  maxRecSize;		/**< Maximum record size. Usually <=0xFFFF or ==0 for older devices (means records are limited to 64k), can be much larger for devices with DLP >= 1.4 (i.e. 0x00FFFFFE) */
 };
 
-/** Database information.
+/** @brief Database information.
  *
  * A database information block is returned by dlp_ReadDBList(), dlp_FindDBInfo(), dlp_FindDBByName(), dlp_FindDBByOpenHandle()
  * and dlp_FindDBByTypeCreator().
@@ -248,7 +255,7 @@ struct DBInfo {
 	time_t backupDate;			/**< Last time this database was backed up using HotSync. If the database was never backed up, this field is set to 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT) */
 };
 
-/** Size information for a database.
+/** @brief Size information for a database.
  *
  * Returned by dlp_FindDBByName(), dlp_FindDBByOpenHandle() and dlp_FindDBByTypeCreator().
  */ 
@@ -261,7 +268,7 @@ struct DBSizeInfo {
 	unsigned long maxRecSize;		/**< note: this field is always set to 0 on return from dlp_FindDBxxx */
 };
 
-/** Information about a memory card.
+/** @brief Information about a memory card.
  *
  * This structure describes a device's internal storage only, not removable media.
  * It is returned by dlp_ReadStorageInfo().
@@ -278,7 +285,7 @@ struct CardInfo {
 	char	manufacturer[128];		/**< Card manufacturer name */
 };
 
-/** Network HotSync information.
+/** @brief Network HotSync information.
  *
  * Returned by dlp_ReadNetSyncInfo(). Gives the network location of a remote handheld.
  */
