@@ -19,7 +19,7 @@ Bug Fixes:
 	* Fixed an issue with libpng being linked into every binary by default
 
 Known Problems:
-	* None identified for this release
+	* Java bindings may or may not work, need to investigate
 
 
 ----------------------------------------------
