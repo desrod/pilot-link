@@ -1,3 +1,12 @@
+2000-10-31  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_record): use ArchiveRecord to set/unset
+	records "archiveness" and use SetStatusCleared to avoid double
+	syncing records.
+
+	* include/pi-sync.h: Remove AddArchive and DeleteArchive,
+	add SetStatusCleared and ArchiveRecord.
+
 2000-10-30  David A. Desrosiers <hacker@linuxcare.com>
 
 	* dlpsh time macro change [John Marshall] 
