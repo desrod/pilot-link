@@ -2,13 +2,14 @@
 # See the file COPYING for details.
 AC_INIT(include/pi-cmp.h)
 AM_CONFIG_HEADER(config.h)
+AC_SUBST(HOST_OS)
 
 dnl ******************************
 dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=11
-PILOT_LINK_MINOR=4
+PILOT_LINK_MINOR=5
 PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
@@ -651,10 +652,6 @@ if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
 		-Wall -Wstrict-prototypes -Wmissing-declarations \
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
 		-pedantic"
-else 
-	case "$host" in
-		*irix*)	CFLAGS="$CFLAGS -fullwarn" ;
-	esac
 fi
 
 case "$host" in
@@ -690,6 +687,7 @@ tests/Makefile
 echo "
   pilot-link.......... : $VERSION
   libpisock........... : $PISOCK_CURRENT.$PISOCK_REVISION.$PISOCK_AGE
+  build host.......... : $host_os
 
   Extra Warnings...... : $set_compile_warnings
   

@@ -1,3 +1,7 @@
+2002-09-17  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Added HOST_OS and removed the -fullwarn for Irix
+
 2002-09-17  JP Rosevear  <jpr@ximian.com>
 
 	* src/pilot-datebook/Makefile.am: dist getopt*.c files because
