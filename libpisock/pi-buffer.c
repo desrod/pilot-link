@@ -66,7 +66,7 @@ pi_buffer_expect (pi_buffer_t *buf, size_t expect)
 }
 
 pi_buffer_t*
-pi_buffer_append (pi_buffer_t *buf, void *data, size_t len)
+pi_buffer_append (pi_buffer_t *buf, const void *data, size_t len)
 {
 	if (pi_buffer_expect (buf, len) == NULL)
 		return NULL;
@@ -78,7 +78,7 @@ pi_buffer_append (pi_buffer_t *buf, void *data, size_t len)
 }
 
 pi_buffer_t *
-pi_buffer_append_buffer (pi_buffer_t *dest, pi_buffer_t *src)
+pi_buffer_append_buffer (pi_buffer_t *dest, const pi_buffer_t *src)
 {
 	return pi_buffer_append (dest, src->data, src->used);
 }

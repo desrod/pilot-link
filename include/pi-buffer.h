@@ -104,7 +104,7 @@ extern "C" {
 	 * @return The @p buf buffer on success, NULL if a memory error happened
 	 */
 	extern pi_buffer_t* pi_buffer_append
-		PI_ARGS((pi_buffer_t *buf, void *data, size_t len));
+		PI_ARGS((pi_buffer_t *buf, PI_CONST void *data, size_t len));
 
 	/** @brief Append a buffer to another buffer
 	 *
@@ -113,7 +113,7 @@ extern "C" {
 	 * @return The @p dest buffer on success, NULL if a memory error happened
 	 */
 	extern pi_buffer_t* pi_buffer_append_buffer
-		PI_ARGS((pi_buffer_t *dest, pi_buffer_t *src));
+		PI_ARGS((pi_buffer_t *dest, PI_CONST pi_buffer_t *src));
 
 	/** @brief Reset the @a used member of a buffer
 	 *
