@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
   int ret;
   unsigned char buffer[0xffff];
   struct MailAppInfo tai;
-  struct MailPrefs p;
+  struct MailPref1 p;
   struct sockaddr_in pop_addr;
   int popfd;
   struct hostent * hostent;
@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
   }
   
   memset(&tai, '\0', sizeof(struct MailAppInfo));
-  memset(&p, '\0', sizeof(struct MailPrefs));
+  memset(&p, '\0', sizeof(struct MailPref1));
   tai.signature = 0;
 
   /* Ask the pilot who it is. */
@@ -439,12 +439,12 @@ int main(int argc, char *argv[])
   if (pi_version(sd) > 0x0100) {
     if (dlp_ReadAppPreference(sd, makelong("mail"), 1, 1, 0xffff, buffer, 0, 0)>=0) {
       printf("Got local backup mail preferences\n"); /* 2 for remote prefs */
-      unpack_MailPrefs(&p, buffer, 0);
+      unpack_MailPref1(&p, buffer, 0);
     } else {
       printf("Unable to get mail preferences, trying current\n");
       if (dlp_ReadAppPreference(sd, makelong("mail"), 1, 1, 0xffff, buffer, 0, 0)>=0) {
         printf("Got local current mail preferences\n"); /* 2 for remote prefs */
-        unpack_MailPrefs(&p, buffer, 0);
+        unpack_MailPref1(&p, buffer, 0);
       } else
         printf("Couldn't get any mail preferences.\n");
     }
@@ -877,7 +877,7 @@ endmh:
   }
 
 end:  
-  free_MailPrefs(&p);
+  free_MailPref1(&p);
   free_MailAppInfo(&tai);
   
   dlp_ResetLastSyncPC(sd);

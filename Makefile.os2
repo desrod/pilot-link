@@ -22,17 +22,17 @@ TCLTK_LIBS =
 TCLTK_FLAGS = 
 
 # Libraries needed to link with GNU readline
-RLLIBS = @RLLIBS@
+RLLIBS = 
 # Include directives needed to compile with GNU readline, and
 # -DREADLINE_2_0 if GNU readline 2.0 is available, or 
 # -DREADLINE_2_1 if GNU readline 2.1 (or later) is available.
-RLDEFS = @RLDEFS@
+RLDEFS = 
 
 CC = gcc
 CXX = gcc
 CDEFS = -DLIBDIR=\"$(libdir)\" 
 # -DDEBUG
-CFLAGS = -I./include -I$(srcdir)/include -g -O2 -fno-strength-reduce -Wall $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
+CFLAGS = -I./include -I$(srcdir)/include -g -Zcrtdll -O2 -fno-strength-reduce -D__ST_MT_ERRNO__ -Wall $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
 CXXFLAGS = -I./include -I$(srcdir)/include -g -O2 -fno-strength-reduce -Wall $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
 LDFLAGS = 
 LIBS = -lsocket -los2
@@ -92,20 +92,20 @@ PERLEXECS = pilot-undelete
 
 EXECS = $(CEXECS) $(WITHOUTTCL) $(WITHCXX) $(WITHOUTPERL5)
 
-PILIB = libsock/libpisock.a
+PILIB = libsock/libpisockdll.a
 PICCLIB = libcc/libpicc.a
 
 all: submake $(EXECS)
 
 submake $(PILIB) $(PICCLIB):
-	$(SUBMAKE_COMM) libpisock.a
+	$(SUBMAKE_COMM) libpisockdll.a
 	$(SUBMAKE_COMM_CC) libpicc.a
 
 installdirs:
-	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir)
+	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir) $(mandir)
 
 install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
-	$(INSTALL_DATA) $(PILIB) $(libdir)/libpisock.a
+	$(INSTALL_DATA) $(PILIB) $(libdir)/libpisockdll.a
 	if test -f $(PICCLIB); then \
 		$(INSTALL_DATA) $(PICCLIB) $(libdir)/libpicc.a; \
 	fi
@@ -132,7 +132,7 @@ uninstall: $(EXECS)
 		$(RM) $(includedir)/`basename $$h`; \
 	done
 	-rmdir $(includedir)
-	-$(LIBTOOL) $(RM) $(libdir)/libpisock.a
+	-$(LIBTOOL) $(RM) $(libdir)/libpisockdll.a
 	-$(LIBTOOL) $(RM) $(libdir)/libpicc.a
 	-rmdir $(libdir)
 
@@ -246,6 +246,9 @@ Perl5 Perl: FORCE
 
 Tcl: FORCE
 	cd Tcl; make
+	
+Java: FORCE
+	cd Java; make
 
 strip: $(EXECS)
 	$(STRIP) $(EXECS)
@@ -262,6 +265,7 @@ distclean: clean
 	-cd Perl5 ; make realclean ; rm Makefile.PL
 	-cd Python ; make distclean
 	-cd Tcl ; make clean
+	-cd Java ; make distclean
 	$(RM) *~ *.orig */*~ */*.orig
 	$(RM) Tcl/Makefile Perl5/Makefile.PL Perl5/Makefile Python/Makefile
 	perl scripts/os2dist.pl

@@ -252,6 +252,7 @@ unsigned long SvChar4 _((SV *arg));
 typedef struct {
 	int errno;
 	struct pi_file * pf;
+	SV * Class;
 } PDA__Pilot__File;
 typedef struct DLP {
 	int errno;
@@ -262,10 +263,14 @@ typedef struct DLPDB {
 	int	socket;
 	int	handle;
 	int errno;
+	SV * dbname;
+	int dbmode;
+	int dbcard;
+	SV * Class;
 } PDA__Pilot__DLP__DB;
 
-typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__ResourceDB;
-typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__RecordDB;
+/*typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__ResourceDB;
+typedef PDA__Pilot__DLP__DB PDA__Pilot__DLP__RecordDB;*/
 typedef struct DBInfo DBInfo;
 typedef struct PilotUser UserInfo;
 typedef unsigned long Char4;
@@ -298,29 +303,6 @@ SvChar4(arg)
 			croak("Char4 argument a string that isn't four bytes long");
 		return makelong(c);
 	}
-}
-
-SV * DoFunc(SV * arg, SV *func);
-
-SV *
-DoFunc(arg, func)
-	SV * arg;
-	SV * func;
-{
-	dSP;
-	SV * result;
-	printf("Invoking function %8.8x (%8.8x)\n", (unsigned long)func, (unsigned long)SvRV(func));
-	PUSHMARK(sp);
-	EXTEND(sp, 1);
-	PUSHs(arg);
-	PUTBACK;
-	printf("Starting call\n");
-	perl_call_sv(func, G_SCALAR);     /* NOTE: May longjmp (die)      */
-	printf("Ending call\n");
-	SPAGAIN;
-	result = POPs;
-	PUTBACK;
-	return result;
 }
 
 #define pack_dbinfo(arg, var, failure)	\
@@ -400,255 +382,286 @@ DoFunc(arg, func)
 		croak("argument is not a hash reference"); \
 	}
 
-#define PackRecord \
-	    {	\
-	    	if (self->Pack) {	\
-	    		int count;		\
-	        	PUSHMARK(sp);	\
-	          	XPUSHs(data);	\
-		    	XPUSHs(sv_2mortal(newSViv(attr)));	\
-		    	XPUSHs(sv_2mortal(newSViv(category)));	\
-	    		PUTBACK;	\
-	    		count = perl_call_sv((SV*)self->Pack, G_SCALAR);	\
-	    		SPAGAIN;	\
-	    		if (count!=1)	\
-	    			croak("Pack function failed");\
-	    		data = POPs;\
-	    		PUTBACK;\
-	        }\
-	        else if (SvROK(data) && (SvTYPE(SvRV(data))==SVt_PVHV)) {	\
-	    		SV ** s = hv_fetch((HV*)SvRV(data), "raw", 3, 0);	\
-	    		if (s)	\
-	    			data = *s;	\
-	    		else	\
-	    			croak("Unable to pack record");	\
-	    	}	\
+#define PackAI	 											\
+	    {													\
+	    	HV * h;											\
+	    	if (SvRV(data) &&	 							\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {	\
+	    		int count;									\
+	        	PUSHMARK(sp);								\
+	          	XPUSHs(data);								\
+		    	PUTBACK;									\
+		    	count = perl_call_method("Pack", G_SCALAR);	\
+		    	SPAGAIN;									\
+		    	if (count != 1)								\
+		    		croak("Unable to pack app block");		\
+		    	data = POPs;								\
+		    	PUTBACK;									\
+	        }												\
+	        else {											\
+		    		croak("Unable to pack app block");		\
+	        }												\
 	    }
 
-
-#define DoPackAI(data) \
-	    {	\
-	    	if (self->PackAI) {	\
-	    		int count;		\
-	        	PUSHMARK(sp);	\
-	          	XPUSHs(data);	\
-	    		PUTBACK;	\
-	    		count = perl_call_sv((SV*)self->PackAI, G_SCALAR);	\
-	    		SPAGAIN;	\
-	    		if (count!=1)	\
-	    			croak("PackAI function failed");\
-	    		data = POPs;\
-	    		PUTBACK;\
-	        } \
-	        else if (SvROK(data) && (SvTYPE(SvRV(data))==SVt_PVHV)) {	\
-	    		SV ** s = hv_fetch((HV*)SvRV(data), "raw", 3, 0);	\
-	    		if (s)	\
-	    			data = *s;	\
-	    		else	\
-	    			croak("Unable to pack app block");	\
-	    	}	\
+#define ReturnReadAI(buf,size) 									\
+	    if (result >=0) {										\
+	    	if (self->Class) {									\
+	    		int count;										\
+	    		PUSHMARK(sp);									\
+	    		XPUSHs(self->Class);							\
+	    		XPUSHs(newSVpv(buf, size));						\
+		    	PUTBACK;										\
+		    	count = perl_call_method("appblock", G_SCALAR);	\
+		    	SPAGAIN;										\
+		    	if (count != 1)									\
+		    		croak("Unable to create appblock");			\
+	    	}													\
+	    	else {												\
+	    		croak("Class not defined");						\
+	    	}													\
+		} else {												\
+	    	self->errno = result;								\
+	    	PUSHs(&sv_undef);									\
 	    }
 
-#define DoUnpackAI(RETVAL, buf, size) \
-	    {	\
-	    	HV * h = newHV();	\
-	    	RETVAL = newRV_noinc((SV*)h);	\
-	    	hv_store(h, "raw", 3, newSVpv(buf, size), 0);	\
-	    	if (self->UnpackAI) {	\
-	    		int count;		\
-	        	PUSHMARK(sp);	\
-	          	XPUSHs(RETVAL);	\
-	    		PUTBACK;	\
-	    		count = perl_call_sv((SV*)self->UnpackAI, G_SCALAR);	\
-	    		SPAGAIN;	\
-	    		if (count!=1)	\
-	    			croak("UnpackAI function failed");\
-	    		RETVAL = POPs;\
-	    		PUTBACK;\
-	        }\
+#define PackSI	 											\
+	    {													\
+	    	HV * h;											\
+	    	if (SvRV(data) &&	 							\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {	\
+	    		int count;									\
+	        	PUSHMARK(sp);								\
+	          	XPUSHs(data);								\
+		    	PUTBACK;									\
+		    	count = perl_call_method("Pack", G_SCALAR);	\
+		    	SPAGAIN;									\
+		    	if (count != 1)								\
+		    		croak("Unable to pack sort block");		\
+		    	data = POPs;								\
+		    	PUTBACK;									\
+	        }												\
+	        else {											\
+		    		croak("Unable to pack sort block");		\
+	        }												\
 	    }
 
-#define DoPackSI(data) \
-	    {	\
-	    	if (self->PackSI) {	\
-	    		int count;		\
-	        	PUSHMARK(sp);	\
-	          	XPUSHs(data);	\
-	    		PUTBACK;	\
-	    		count = perl_call_sv((SV*)self->PackSI, G_SCALAR);	\
-	    		SPAGAIN;	\
-	    		if (count!=1)	\
-	    			croak("PackSI function failed");\
-	    		data = POPs;\
-	    		PUTBACK;\
-	        }\
-	        else if (SvROK(data) && (SvTYPE(SvRV(data))==SVt_PVHV)) {	\
-	    		SV ** s = hv_fetch((HV*)SvRV(data), "raw", 3, 0);	\
-	    		if (s)	\
-	    			data = *s;	\
-	    		else	\
-	    			croak("Unable to pack sort block");	\
-	    	}	\
+#define ReturnReadSI(buf,size) 									\
+	    if (result >=0) {										\
+	    	if (self->Class) {									\
+	    		int count;										\
+	    		PUSHMARK(sp);									\
+	    		XPUSHs(self->Class);							\
+	    		XPUSHs(newSVpv(buf, size));						\
+		    	PUTBACK;										\
+		    	count = perl_call_method("sortblock", G_SCALAR);\
+		    	SPAGAIN;										\
+		    	if (count != 1)									\
+		    		croak("Unable to create sortblock");		\
+	    	}													\
+	    	else {												\
+	    		croak("Class not defined");						\
+	    	}													\
+		} else {												\
+	    	self->errno = result;								\
+	    	PUSHs(&sv_undef);									\
 	    }
 
-#define DoUnpackSI(RETVAL, buf, size) \
-	    {	\
-	    	HV * h = newHV();	\
-	    	RETVAL = newRV_noinc((SV*)h);	\
-	    	hv_store(h, "raw", 3, newSVpv(buf, size), 0);	\
-	    	if (self->UnpackSI) {	\
-	    		int count;		\
-	        	PUSHMARK(sp);	\
-	          	XPUSHs(RETVAL);	\
-	    		PUTBACK;	\
-	    		count = perl_call_sv((SV*)self->UnpackSI, G_SCALAR);	\
-	    		SPAGAIN;	\
-	    		if (count!=1)	\
-	    			croak("UnpackSI function failed");\
-	    		RETVAL = POPs;\
-	    		PUTBACK;\
-	        }\
+#define PackRecord 											\
+	    {													\
+	    	HV * h;											\
+	    	if (SvRV(data) &&	 							\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {	\
+	    		int count;									\
+	    		SV ** s;									\
+	    		if (!(s = hv_fetch(h, "id", 2, 0)) || !SvOK(*s))	\
+	    			croak("record must contain id");		\
+    			id = SvIV(*s);								\
+	    		if (!(s = hv_fetch(h, "attr", 4, 0)) || !SvOK(*s))	\
+	    			croak("record must contain attr");		\
+    			attr = SvIV(*s);							\
+	    		if (!(s = hv_fetch(h, "cat", 3, 0)) || !SvOK(*s))	\
+	    			croak("record must contain category");	\
+    			category = SvIV(*s);						\
+	        	PUSHMARK(sp);								\
+	          	XPUSHs(data);								\
+		    	PUTBACK;									\
+		    	count = perl_call_method("Pack", G_SCALAR);	\
+		    	SPAGAIN;									\
+		    	if (count != 1)								\
+		    		croak("Unable to pack record");			\
+		    	data = POPs;								\
+		    	PUTBACK;									\
+	        }												\
+	        else {											\
+		    		croak("Unable to pack record");			\
+	        }												\
 	    }
 
-
-#define ReturnReadRecord(buf,size) \
-	    if (result >=0) {	\
-	    	int scalar = (GIMME == G_SCALAR);	\
-	    	/*HV * h = newHV();	\
-	    	SV * result = newRV_noinc((SV*)h);	\
-	    	int count; \
-	    	hv_store(h, "raw", 3, newSVpv(buf, size), 0);	\
-	    	if (self->Unpack) {	\
-	        	PUSHMARK(sp);	\
-	          	XPUSHs(result);	\
-		    	XPUSHs(sv_2mortal(newSViv(attr)));	\
-		    	XPUSHs(sv_2mortal(newSViv(category)));	\
-	    		PUTBACK;	\
-	    		count = perl_call_sv((SV*)self->Unpack, G_SCALAR);	\
-	    		SPAGAIN;	\
-	    		if (count!=1)	\
-	    			croak("Unpack function failed");\
-	    		result = POPs;\
-	    		PUTBACK;\
-	        }*/\
-	    	EXTEND(sp, 5);	\
-		    PUSHs(newSVpv(buf, size)); \
-		    if (!scalar) {	\
-		    	PUSHs(sv_2mortal(newSViv(index)));	\
-		    	PUSHs(sv_2mortal(newSViv(id)));	\
-		    	PUSHs(sv_2mortal(newSViv(attr)));	\
-		    	PUSHs(sv_2mortal(newSViv(category)));	\
-		    } \
-		} else {	\
-	    	self->errno = result;\
-	    	PUSHs(&sv_undef);	\
+#define PackRaw												\
+	    {													\
+	    	HV * h;											\
+	    	if (SvRV(data) &&	 							\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {	\
+	    		int count;									\
+	        	PUSHMARK(sp);								\
+	          	XPUSHs(data);								\
+		    	PUTBACK;									\
+		    	count = perl_call_method("Raw", G_SCALAR);	\
+		    	SPAGAIN;									\
+		    	if (count != 1)	{							\
+		    		SV ** s = hv_fetch(h, "raw", 3, 0);		\
+		    		if (s)									\
+		    			data = *s;							\
+		    	} else {									\
+			    	data = POPs;							\
+			    	PUTBACK;								\
+			    }											\
+	        }												\
 	    }
 
-#define PackResource \
-	    {	\
-	    	if (self->Pack) {	\
-	    		int count;		\
-	        	PUSHMARK(sp);	\
-	          	XPUSHs(data);	\
-	          	XPUSHs(sv_2mortal(newSVChar4(type)));	\
-	          	XPUSHs(sv_2mortal(newSViv(id)));	\
-	    		PUTBACK;	\
-	    		count = perl_call_sv((SV*)self->Pack, G_SCALAR);	\
-	    		SPAGAIN;	\
-	    		if (count!=1)	\
-	    			croak("Pack function failed");\
-	    		data = POPs;\
-	    		PUTBACK;\
-	        }\
-	        else if (SvROK(data) && (SvTYPE(SvRV(data))==SVt_PVHV)) {	\
-	    		SV ** s = hv_fetch((HV*)SvRV(data), "raw", 3, 0);	\
-	    		if (s)	\
-	    			data = *s;	\
-	    		else	\
-	    			croak("Unable to pack resource");	\
-	    	}	\
+#define ReturnReadRecord(buf,size) 								\
+	    if (result >=0) {										\
+	    	if (self->Class) {									\
+	    		int count;										\
+	    		SV * ret;										\
+	    		PUSHMARK(sp);									\
+	    		XPUSHs(self->Class);							\
+	    		XPUSHs(newSVpv(buf, size));						\
+		    	XPUSHs(sv_2mortal(newSViv(id)));				\
+		    	XPUSHs(sv_2mortal(newSViv(attr)));				\
+		    	XPUSHs(sv_2mortal(newSViv(category)));			\
+		    	XPUSHs(sv_2mortal(newSViv(index)));				\
+		    	PUTBACK;										\
+		    	count = perl_call_method("record", G_SCALAR);	\
+		    	SPAGAIN;										\
+		    	if (count != 1)									\
+		    		croak("Unable to create record");			\
+		    	ret = POPs;										\
+		    	PUTBACK;										\
+		    	PUSHs(ret);										\
+	    	}													\
+	    	else {												\
+	    		croak("Class not defined");						\
+	    	}													\
+		} else {												\
+	    	self->errno = result;								\
+	    	PUSHs(&sv_undef);									\
 	    }
 
-#define ReturnReadResource(buf,size) \
-	    if (result >=0) {	\
-	    	int scalar = (GIMME == G_SCALAR);	\
-	    	/*HV * h = newHV();	\
-	    	SV * result = newRV_noinc((SV*)h);	\
-	    	int count; \
-	    	hv_store(h, "raw", 3, newSVpv(buf, size), 0);	\
-	    	if (self->Unpack) {	\
-	        	PUSHMARK(sp);	\
-	          	XPUSHs(result);	\
-	          	XPUSHs(sv_2mortal(newSVChar4(type)));	\
-	          	XPUSHs(sv_2mortal(newSViv(id)));	\
-	    		PUTBACK;	\
-	    		count = perl_call_sv((SV*)self->Unpack, G_SCALAR);	\
-	    		SPAGAIN;	\
-	    		if (count!=1)	\
-	    			croak("Unpack function failed");\
-	    		result = POPs;\
-	    		PUTBACK;\
-	        }*/\
-		    EXTEND(sp, 4);	\
-	    	PUSHs(sv_2mortal(newSVpv(buf, size)));	\
-		    if (GIMME != G_SCALAR) {	\
-		    	PUSHs(sv_2mortal(newSViv(index)));	\
-		    	PUSHs(sv_2mortal(newSVChar4(type)));	\
-		    	PUSHs(sv_2mortal(newSViv(id)));	\
-		    }	\
-		} else {	\
-	    	PUSHs(&sv_undef);	\
-	    	self->errno = result;\
+#define PackResource 											\
+	    {														\
+	    	HV * h;												\
+	    	if (SvRV(data) &&	 								\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {		\
+	    		int count;										\
+	    		SV ** s;										\
+	    		if (!(s = hv_fetch(h, "id", 2, 0)) || !SvOK(*s))\
+	    			croak("record must contain id");			\
+    			id = SvIV(*s);									\
+	    		if (!(s = hv_fetch(h, "type", 4, 0)) || !SvOK(*s))	\
+	    			croak("record must contain type");			\
+    			type = SvChar4(*s);								\
+	        	PUSHMARK(sp);									\
+	          	XPUSHs(data);									\
+		    	PUTBACK;										\
+		    	count = perl_call_method("Pack", G_SCALAR);		\
+		    	SPAGAIN;										\
+		    	if (count != 1)									\
+		    		croak("Unable to pack resource");			\
+		    	data = POPs;									\
+		    	PUTBACK;										\
+	        }													\
+	        else {												\
+		    		croak("Unable to pack resource");			\
+	        }													\
 	    }
 
-/*void
-Packers(self, mode)
-	PDA::Pilot::DLP::DB *	self
-	SV *	mode
-	CODE:
-	{
-		HV * h;
-		AV * a = 0;
-		if (SvROK(mode) && (SvTYPE(SvRV(mode))==SVt_PVAV)) {
-			a = (AV*)SvRV(mode);
-		} else if (SvTRUE(mode)) {
-			h = perl_get_hv("PDA::Pilot::DBPackers", 0);
-			if (h) {
-				STRLEN len;
-				SV ** s;
-				(void)SvPV(mode, len);
-				s = hv_fetch(h, SvPV(mode, na), len, 0);
-				if (s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV))
-					a = (AV*)SvRV(*s);
-				else
-					croak("Unknown DB packer type");
-			}
-		}
+#define ReturnReadResource(buf,size) 							\
+	    if (result >=0) {										\
+	    	if (self->Class) {									\
+	    		int count;										\
+	    		PUSHMARK(sp);									\
+	    		XPUSHs(self->Class);							\
+	    		XPUSHs(newSVpv(buf, size));						\
+		    	XPUSHs(sv_2mortal(newSVChar4(type)));			\
+		    	XPUSHs(sv_2mortal(newSViv(id)));				\
+		    	XPUSHs(sv_2mortal(newSViv(index)));				\
+		    	PUTBACK;										\
+		    	count = perl_call_method("resource", G_SCALAR);	\
+		    	SPAGAIN;										\
+		    	if (count != 1)									\
+		    		croak("Unable to create resource");			\
+	    	}													\
+	    	else {												\
+	    		croak("Class not defined");						\
+	    	}													\
+		} else {												\
+	    	self->errno = result;								\
+	    	PUSHs(&sv_undef);									\
+	    }
 
-		if (self->Pack) { SvREFCNT_dec(self->Pack); self->Pack = 0; }
-		if (self->Unpack) { SvREFCNT_dec(self->Unpack); self->Unpack = 0; }
-		if (self->PackAI) { SvREFCNT_dec(self->PackAI); self->PackAI = 0; }
-		if (self->UnpackAI) { SvREFCNT_dec(self->UnpackAI); self->UnpackAI = 0; }
-		if (self->PackSI) { SvREFCNT_dec(self->PackSI); self->PackSI = 0; }
-		if (self->UnpackSI) { SvREFCNT_dec(self->UnpackSI); self->UnpackSI = 0; }
-		
-		if (a) {
-			SV ** c;
-			c = av_fetch(a, 0, 0);
-			if (c && SvOK(*c)) { self->Unpack = *c; SvREFCNT_inc(*c); }
-			c = av_fetch(a, 1, 0);
-			if (c && SvOK(*c)) { self->Pack = *c; SvREFCNT_inc(*c); }
-			c = av_fetch(a, 2, 0);
-			if (c && SvOK(*c)) { self->UnpackAI = *c; SvREFCNT_inc(*c); }
-			c = av_fetch(a, 3, 0);
-			if (c && SvOK(*c)) { self->PackAI = *c; SvREFCNT_inc(*c); }
-			c = av_fetch(a, 4, 0);
-			if (c && SvOK(*c)) { self->UnpackSI = *c; SvREFCNT_inc(*c); }
-			c = av_fetch(a, 5, 0);
-			if (c && SvOK(*c)) { self->PackSI = *c; SvREFCNT_inc(*c); }
-		}
-	}
-*/
+#define PackPref	 											\
+	    {														\
+	    	HV * h;												\
+	    	if (SvRV(data) &&	 								\
+	    		(SvTYPE(h=(HV*)SvRV(data))==SVt_PVHV)) {		\
+	    		int count;										\
+	    		SV ** s;										\
+	    		if (!(s = hv_fetch(h, "id", 2, 0)) || !SvOK(*s))\
+	    			croak("record must contain id");			\
+    			id = SvIV(*s);									\
+	    		if (!(s = hv_fetch(h, "creator", 7, 0)) || !SvOK(*s))	\
+	    			croak("record must contain type");			\
+    			creator = SvChar4(*s);							\
+	    		if (!(s = hv_fetch(h, "version", 7, 0)) || !SvOK(*s))	\
+	    			croak("record must contain type");			\
+    			version = SvIV(*s);								\
+	    		if (!(s = hv_fetch(h, "backup", 6, 0)) || !SvOK(*s))	\
+	    			croak("record must contain type");			\
+    			backup = SvIV(*s);								\
+   	        	PUSHMARK(sp);									\
+	          	XPUSHs(data);									\
+		    	PUTBACK;										\
+		    	count = perl_call_method("Pack", G_SCALAR);		\
+		    	SPAGAIN;										\
+		    	if (count != 1)									\
+		    		croak("Unable to pack resource");			\
+		    	data = POPs;									\
+		    	PUTBACK;										\
+	        }													\
+	        else {												\
+		    		croak("Unable to pack resource");			\
+	        }													\
+	    }
+
+#define ReturnReadPref(buf,size)	 							\
+	    if (result >=0) {										\
+			HV * h = perl_get_hv("PDA::Pilot::PrefClasses", 0);	\
+			SV ** s;											\
+    		int count;											\
+			if (!h)												\
+				croak("PrefClasses doesn't exist");				\
+			s = hv_fetch(h, printlong(creator), 4, 0);			\
+			if (!s)												\
+				s = hv_fetch(h, "", 0, 0);						\
+			if (!s)												\
+				croak("Default PrefClass not defined");			\
+    		PUSHMARK(sp);										\
+    		XPUSHs(newSVsv(*s));								\
+    		XPUSHs(newSVpv(buf, size));							\
+	    	XPUSHs(sv_2mortal(newSVChar4(creator)));			\
+	    	XPUSHs(sv_2mortal(newSViv(id)));					\
+	    	XPUSHs(sv_2mortal(newSViv(version)));				\
+	    	XPUSHs(sv_2mortal(newSViv(backup)));				\
+	    	PUTBACK;											\
+	    	count = perl_call_method("pref", G_SCALAR);			\
+	    	SPAGAIN;											\
+	    	if (count != 1)										\
+	    		croak("Unable to create resource");				\
+		} else {												\
+	    	self->errno = result;								\
+	    	PUSHs(&sv_undef);									\
+	    }
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot
 
@@ -660,7 +673,7 @@ constant(name,arg)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Appointment
 
 SV *
-Unpack(record, ...)
+Unpack(record)
     SV * record
     CODE:
     {
@@ -670,7 +683,7 @@ Unpack(record, ...)
     HV * ret, *h;
     struct Appointment a;
     
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -680,18 +693,19 @@ Unpack(record, ...)
     	} else {
     		croak("Unable to unpack appointment");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
-	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
+	    SvREFCNT_inc(record);
+	    hv_store(ret, "raw", 3, record, 0);
 	    (void)SvPV(record, len);
 	    unpack_Appointment(&a, SvPV(record, len), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_Appointment(&a, (unsigned char*)SvPV(record, len), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
     
     hv_store(ret, "event", 5, newSViv(a.event), 0);
     hv_store(ret, "begin", 5, newRV_noinc((SV*)tmtoav(&a.begin)), 0);
@@ -843,6 +857,8 @@ Pack(record)
 		free(a.exception);
     
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -860,7 +876,7 @@ UnpackAppBlock(record)
     int i;
     struct AppointmentAppInfo a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -870,18 +886,18 @@ UnpackAppBlock(record)
     	} else {
     		croak("Unable to unpack appointment app block");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_AppointmentAppInfo(&a, (unsigned char*)SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_AppointmentAppInfo(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
 
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
@@ -958,6 +974,8 @@ PackAppBlock(record)
     pack_AppointmentAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -966,7 +984,7 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::ToDo
 
 SV *
-Unpack(record, ...)
+Unpack(record)
     SV * record
     CODE:
     {
@@ -976,7 +994,7 @@ Unpack(record, ...)
     HV * ret;
     struct ToDo a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -986,18 +1004,18 @@ Unpack(record, ...)
     	} else {
     		croak("Unable to unpack todo");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_ToDo(&a, (unsigned char*)SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_ToDo(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
 
 
     hv_store(ret, "indefinite", 10, newSViv(a.indefinite), 0);
@@ -1043,6 +1061,8 @@ Pack(record)
     pack_ToDo(&a, (unsigned char*)mybuf, &len);
     
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -1060,7 +1080,7 @@ UnpackAppBlock(record)
     int i;
     struct ToDoAppInfo a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -1070,18 +1090,18 @@ UnpackAppBlock(record)
     	} else {
     		croak("Unable to unpack todo app block");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_ToDoAppInfo(&a, SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_ToDoAppInfo(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
 
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
@@ -1158,6 +1178,8 @@ PackAppBlock(record)
     pack_ToDoAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -1166,7 +1188,7 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Address
 
 SV *
-Unpack(record, ...)
+Unpack(record)
     SV * record
     CODE:
     {
@@ -1176,7 +1198,7 @@ Unpack(record, ...)
     HV * ret;
     struct Address a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -1186,18 +1208,18 @@ Unpack(record, ...)
     	} else {
     		croak("Unable to unpack address");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_Address(&a, SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_Address(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
 
     e = newAV();
     hv_store(ret, "phoneLabel", 10, newRV_noinc((SV*)e), 0);
@@ -1252,6 +1274,8 @@ Pack(record)
     pack_Address(&a, (unsigned char*)mybuf, &len);
     
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -1269,7 +1293,7 @@ UnpackAppBlock(record)
     int i;
     struct AddressAppInfo a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -1279,18 +1303,18 @@ UnpackAppBlock(record)
     	} else {
     		croak("Unable to unpack address app block");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_AddressAppInfo(&a, SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_AddressAppInfo(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
     
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
@@ -1395,6 +1419,8 @@ PackAppBlock(record)
     pack_AddressAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -1403,7 +1429,7 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Memo
 
 SV *
-Unpack(record, ...)
+Unpack(record)
     SV * record
     CODE:
     {
@@ -1413,7 +1439,7 @@ Unpack(record, ...)
     HV * ret;
     struct Memo a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -1423,18 +1449,18 @@ Unpack(record, ...)
     	} else {
     		croak("Unable to unpack memo");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_Memo(&a, SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_Memo(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
 
     hv_store(ret, "text", 4, newSVpv(a.text,0), 0);
 
@@ -1465,6 +1491,8 @@ Pack(record)
     pack_Memo(&a, (unsigned char*)mybuf, &len);
     
     RETVAL = newSVpv(mybuf, len);
+    
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -1481,7 +1509,7 @@ UnpackAppBlock(record)
     int i;
     struct MemoAppInfo a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -1491,18 +1519,18 @@ UnpackAppBlock(record)
     	} else {
     		croak("Unable to unpack memo app block");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_MemoAppInfo(&a, SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_MemoAppInfo(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
 
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
@@ -1579,6 +1607,8 @@ PackAppBlock(record)
     pack_MemoAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -1587,7 +1617,7 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Mail
 
 SV *
-Unpack(record, ...)
+Unpack(record)
     SV * record
     CODE:
     {
@@ -1597,7 +1627,7 @@ Unpack(record, ...)
     HV * ret;
     struct Mail a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -1607,18 +1637,18 @@ Unpack(record, ...)
     	} else {
     		croak("Unable to unpack mail");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_Mail(&a, SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_Mail(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
     
     if (a.subject) hv_store(ret, "subject", 7, newSVpv(a.subject,0), 0);
     if (a.from) hv_store(ret, "from", 4, newSVpv(a.from,0), 0);
@@ -1680,6 +1710,8 @@ Pack(record)
     pack_Mail(&a, (unsigned char*)mybuf, &len);
     
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -1696,7 +1728,7 @@ UnpackAppBlock(record)
     int i;
     struct MailAppInfo a;
 
-    /*if (SvRV(record)) {
+    if (SvRV(record)) {
     	SV ** raw;
     	ret = (HV*)SvRV(record);
     	raw = hv_fetch(ret, "raw", 3, 0);
@@ -1706,18 +1738,18 @@ UnpackAppBlock(record)
     	} else {
     		croak("Unable to unpack mail app block");
     	}
-    	RETVAL = record;
+    	RETVAL = SvREFCNT_inc(record);
     } else {
 	    ret = newHV();
 	    hv_store(ret, "raw", 3, SvREFCNT_inc(record), 0);
 	    (void)SvPV(record, len);
 	    unpack_MailAppInfo(&a, SvPV(record, na), len);
 	    RETVAL = newRV_noinc((SV*)ret);
-	}*/
-    (void)SvPV(record, len);
+	}
+    /*(void)SvPV(record, len);
     unpack_MailAppInfo(&a, (unsigned char*)SvPV(record, na), len);
 	ret = newHV();
-	RETVAL = newRV_noinc((SV*)ret);
+	RETVAL = newRV_noinc((SV*)ret);*/
 
     hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
     
@@ -1801,6 +1833,8 @@ PackAppBlock(record)
     pack_MailAppInfo(&a, (unsigned char*)mybuf, &len);
 
     RETVAL = newSVpv(mybuf, len);
+
+    hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
     }
     OUTPUT:
@@ -1940,14 +1974,12 @@ void
 DESTROY(db)
 	PDA::Pilot::DLP::DB *	db
 	CODE:
-	/*if (db->Pack) SvREFCNT_dec(db->Pack);
-	if (db->Unpack) SvREFCNT_dec(db->Unpack);
-	if (db->PackAI) SvREFCNT_dec(db->PackAI);
-	if (db->UnpackAI) SvREFCNT_dec(db->UnpackAI);
-	if (db->PackSI) SvREFCNT_dec(db->PackSI);
-	if (db->UnpackSI) SvREFCNT_dec(db->UnpackSI);*/
+	if (db->Class)
+		SvREFCNT_dec(db->Class);
 	if (db->handle)
 		dlp_CloseDB(db->socket, db->handle);
+	if (db->dbname)
+		SvREFCNT_dec(db->dbname);
 	SvREFCNT_dec(db->connection);
 	free(db);
 
@@ -1961,6 +1993,37 @@ errno(self)
 	RETVAL
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::DBPtr
+
+SV *
+Class(self, name=0)
+	PDA::Pilot::DLP::DB *	self
+	SV *	name
+	CODE:
+	{
+		SV ** s = 0;
+		HV * h;
+		if (name) {
+			int len;
+			h = perl_get_hv("PDA::Pilot::DBClasses", 0);
+			if (!h)
+				croak("DBClasses doesn't exist");
+			if (SvOK(name)) {
+				(void)SvPV(name,len);
+				s = hv_fetch(h, SvPV(name,na), len, 0);
+			}
+			if (!s)
+				s = hv_fetch(h, "", 0, 0);
+			if (!s)
+				croak("Default DBClass not defined");
+			SvREFCNT_inc(*s);
+			if (self->Class)
+				SvREFCNT_dec(self->Class);
+			self->Class = *s;
+		}
+		RETVAL = newSVsv(self->Class);
+	}
+	OUTPUT:
+	RETVAL
 
 Result
 Close(self)
@@ -1979,7 +2042,7 @@ SetSortBlock(self, data)
 	{
 		STRLEN len;
 		void * c;
-		/*DoPackSI(data);*/
+		PackSI;
 		c = SvPV(data, len);
 		RETVAL = dlp_WriteSortBlock(self->socket, self->handle, c, len);
 	}
@@ -1991,40 +2054,22 @@ GetAppBlock(self, len=0xffff, offset=0)
 	PDA::Pilot::DLP::DB *	self
 	int len
 	int	offset
-	CODE:
+	PPCODE:
 	{
 		int result = dlp_ReadAppBlock(self->socket, self->handle, offset, mybuf, len);
-		if (result >= 0) {
-			RETVAL = newSVpv(mybuf, result);
-			/*DoUnpackAI(RETVAL, mybuf, result);*/
-		}
-		else {
-			RETVAL = &sv_undef;
-			self->errno = result;
-		}
+		ReturnReadAI(mybuf, result);
 	}
-	OUTPUT:
-	RETVAL
 
 SV *
 GetSortBlock(self, len=0xffff, offset=0)
 	PDA::Pilot::DLP::DB *	self
 	int len
 	int	offset
-	CODE:
+	PPCODE:
 	{
 		int result = dlp_ReadSortBlock(self->socket,self->handle, offset, mybuf, len);
-		if (result >= 0) {
-			RETVAL = newSVpv(mybuf, result);
-			/*DoUnpackSI(RETVAL, mybuf, result);*/
-		}
-		else {
-			RETVAL = &sv_undef;
-			self->errno = result;
-		}
+		ReturnReadSI(mybuf, result);
 	}
-	OUTPUT:
-	RETVAL
 
 Result
 SetAppBlock(self, data)
@@ -2034,19 +2079,16 @@ SetAppBlock(self, data)
 	{
 		STRLEN len;
 		void * c;
-		/*DoPackAI(data);*/
+		PackAI;
 		c = SvPV(data, len);
 		RETVAL = dlp_WriteAppBlock(self->socket, self->handle, c, len);
 	}
 	OUTPUT:
 	RETVAL
 
-
-MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::RecordDBPtr
-
 Result
 Purge(self)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_CleanUpDatabase(self->socket, self->handle);
 	OUTPUT:
@@ -2054,7 +2096,7 @@ Purge(self)
 
 Result
 ResetFlags(self)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_ResetSyncFlags(self->socket, self->handle);
 	OUTPUT:
@@ -2062,7 +2104,7 @@ ResetFlags(self)
 
 Result
 DeleteCategory(self, category)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	int	category
 	CODE:
 	RETVAL = dlp_DeleteCategory(self->socket, self->handle, category);
@@ -2070,8 +2112,147 @@ DeleteCategory(self, category)
 	RETVAL
 
 void
+NewRecord(self, id=0, attr=0, cat=0)
+	PDA::Pilot::DLP::DB *	self
+	SV *	id
+	SV *	attr
+	SV *	cat
+	PPCODE:
+	{
+    	if (self->Class) {									
+    		int count;										
+    		PUSHMARK(sp);									
+    		XPUSHs(self->Class);
+    		if (id)
+	    		XPUSHs(id);
+	    	if (attr)
+	    		XPUSHs(attr);
+	    	if (cat)
+	    		XPUSHs(cat);
+	    	PUTBACK;										
+	    	count = perl_call_method("record", G_SCALAR);
+	    	SPAGAIN;										
+	    	if (count != 1)									
+	    		croak("Unable to create record");			
+    	}													
+    	else {												
+    		croak("Class not defined");						
+    	}													
+    }
+
+void
+NewResource(self, type=0, id=0)
+	PDA::Pilot::DLP::DB *	self
+	SV *	type
+	SV *	id
+	PPCODE:
+	{
+    	if (self->Class) {									
+    		int count;										
+    		PUSHMARK(sp);									
+    		XPUSHs(self->Class);							
+    		if (type)	
+    			XPUSHs(type);
+    		if (id)
+    			XPUSHs(id);
+	    	PUTBACK;										
+	    	count = perl_call_method("resource", G_SCALAR);
+	    	SPAGAIN;										
+	    	if (count != 1)									
+	    		croak("Unable to create record");			
+    	}													
+    	else {												
+    		croak("Class not defined");						
+    	}													
+    }
+
+void
+NewAppBlock(self)
+	PDA::Pilot::DLP::DB *	self
+	PPCODE:
+	{
+    	if (self->Class) {									
+    		int count;										
+    		PUSHMARK(sp);									
+    		XPUSHs(self->Class);							
+	    	PUTBACK;										
+	    	count = perl_call_method("appblock", G_SCALAR);
+	    	SPAGAIN;										
+	    	if (count != 1)									
+	    		croak("Unable to create record");			
+    	}													
+    	else {												
+    		croak("Class not defined");						
+    	}													
+    }
+
+void
+NewSortBlock(self)
+	PDA::Pilot::DLP::DB *	self
+	PPCODE:
+	{
+    	if (self->Class) {									
+    		int count;										
+    		PUSHMARK(sp);									
+    		XPUSHs(self->Class);							
+	    	PUTBACK;										
+	    	count = perl_call_method("sortblock", G_SCALAR);
+	    	SPAGAIN;										
+	    	if (count != 1)									
+	    		croak("Unable to create record");			
+    	}													
+    	else {												
+    		croak("Class not defined");						
+    	}													
+    }
+
+void
+NewPref(self, id=0, version=0, backup=0, creator=0)
+	PDA::Pilot::DLP::DB *	self
+	SV *	id
+	SV *	version
+	SV *	backup
+	SV *	creator
+	PPCODE:
+	{
+		if (!creator) {
+			int count;
+			PUSHMARK(sp);
+			XPUSHs(self->Class);
+			PUTBACK;
+			count = perl_call_method("creator", G_SCALAR);
+			SPAGAIN;
+			if (count != 1)
+				croak("Unable to get creator");
+			creator = POPs;
+			PUTBACK;
+		}
+    	if (self->Class) {									
+    		int count;										
+    		PUSHMARK(sp);									
+    		XPUSHs(self->Class);
+    		if (creator)
+    			XPUSHs(creator);
+    		if (id)
+    			XPUSHs(id);
+    		if (version)
+    			XPUSHs(version);
+    		if (backup)
+    			XPUSHs(backup);
+	    	PUTBACK;										
+	    	count = perl_call_method("pref", G_SCALAR);
+	    	SPAGAIN;										
+	    	if (count != 1)									
+	    		croak("Unable to create record");			
+    	}													
+    	else {												
+    		croak("Class not defined");						
+    	}													
+    }
+
+void
 GetRecord(self, index)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	int	index
 	PPCODE:
 	{
@@ -2084,7 +2265,7 @@ GetRecord(self, index)
 
 Result
 MoveCategory(self, fromcat, tocat)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	int	fromcat
 	int	tocat
 	CODE:
@@ -2095,7 +2276,7 @@ MoveCategory(self, fromcat, tocat)
 
 Result
 DeleteRecord(self, id)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	unsigned long	id
 	CODE:
 	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 0, id);
@@ -2105,7 +2286,7 @@ DeleteRecord(self, id)
 
 Result
 DeleteRecords(self)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 1, 0);
 	OUTPUT:
@@ -2113,7 +2294,7 @@ DeleteRecords(self)
 
 Result
 ResetNext(self)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_ResetDBIndex(self->socket, self->handle);
 	OUTPUT:
@@ -2121,7 +2302,7 @@ ResetNext(self)
 
 int
 Records(self)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	CODE:
 	{
 		int result = dlp_ReadOpenDBInfo(self->socket, self->handle, &RETVAL);
@@ -2135,7 +2316,7 @@ Records(self)
 
 void
 RecordIDs(self, sort=0)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	int	sort
 	PPCODE:
 	{
@@ -2168,7 +2349,7 @@ RecordIDs(self, sort=0)
 
 void
 GetRecordByID(self, id)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	unsigned long id
 	PPCODE:
 	{
@@ -2179,7 +2360,7 @@ GetRecordByID(self, id)
 
 void
 GetNextChanged(self, category=-1)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	int	category
 	PPCODE:
 	{
@@ -2194,7 +2375,7 @@ GetNextChanged(self, category=-1)
 
 void
 GetNextInCategory(self, category)
-	PDA::Pilot::DLP::RecordDB *	self
+	PDA::Pilot::DLP::DB *	self
 	int	category
 	PPCODE:
 	{
@@ -2205,18 +2386,17 @@ GetNextInCategory(self, category)
 	}
 
 unsigned long
-SetRecord(self, data, id, attr, category)
-	PDA::Pilot::DLP::RecordDB *	self
-	unsigned long	id
-	int	attr
-	int	category
+SetRecord(self, data)
+	PDA::Pilot::DLP::DB *	self
 	SV *	data
 	CODE:
 	{
 		STRLEN len;
+		unsigned long id;
+		int attr, category;
 		int result;
 		void * c;
-		/*PackRecord;*/
+		PackRecord;
 		c = SvPV(data, len);
 		result = dlp_WriteRecord(self->socket, self->handle, attr, id, category, c, len, &RETVAL);
 		if (result<0) {
@@ -2227,11 +2407,32 @@ SetRecord(self, data, id, attr, category)
 	OUTPUT:
 	RETVAL
 
-MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::ResourceDBPtr
+unsigned long
+SetRecordRaw(self, data, id, attr, category)
+	PDA::Pilot::DLP::DB *	self
+	unsigned long	id
+	int	attr
+	int	category
+	SV *	data
+	CODE:
+	{
+		STRLEN len;
+		int result;
+		void * c;
+		PackRaw;
+		c = SvPV(data, len);
+		result = dlp_WriteRecord(self->socket, self->handle, attr, id, category, c, len, &RETVAL);
+		if (result<0) {
+			RETVAL = 0;
+			self->errno = result;
+		}
+	}
+	OUTPUT:
+	RETVAL
 
 void
 GetResourceByID(self, type, id)
-	PDA::Pilot::DLP::ResourceDB *	self
+	PDA::Pilot::DLP::DB *	self
 	Char4	type
 	int	id
 	PPCODE:
@@ -2243,7 +2444,7 @@ GetResourceByID(self, type, id)
 
 void
 GetResource(self, index)
-	PDA::Pilot::DLP::ResourceDB *	self
+	PDA::Pilot::DLP::DB *	self
 	int	index
 	PPCODE:
 	{
@@ -2254,17 +2455,17 @@ GetResource(self, index)
 	}
 
 SV *
-SetResource(self, data, type, id)
-	PDA::Pilot::DLP::ResourceDB *	self
+SetResource(self, data)
+	PDA::Pilot::DLP::DB *	self
 	SV *	data
-	Char4	type
-	int	id
 	CODE:
 	{
 		STRLEN len;
 		int result;
+		Char4 type;
+		int id;
 		void * c;
-		/*PackResource;*/
+		PackResource;
 		c = SvPV(data, len);
 		result = dlp_WriteResource(self->socket, self->handle, type, id, c, len);
 		if (result < 0) {
@@ -2278,7 +2479,7 @@ SetResource(self, data, type, id)
 
 Result
 DeleteResource(self, type, id)
-	PDA::Pilot::DLP::ResourceDB *	self
+	PDA::Pilot::DLP::DB *	self
 	Char4	type
 	int	id
 	CODE:
@@ -2288,11 +2489,107 @@ DeleteResource(self, type, id)
 
 Result
 DeleteResources(self)
-	PDA::Pilot::DLP::ResourceDB *	self
+	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_DeleteResource(self->socket, self->handle, 1, 0, 0);
 	OUTPUT:
 	RETVAL
+
+void
+GetPref(self, id=0, backup=1)
+	PDA::Pilot::DLP::DB *	self
+	int	id
+	int	backup
+	PPCODE:
+	{
+		Char4 creator;
+	    int len, version, result;
+	    SV * c, n, v;
+	    int r;
+		if (self->Class) {
+			int count;
+			PUSHMARK(sp);
+			XPUSHs(self->Class);
+			PUTBACK;
+			count = perl_call_method("creator", G_SCALAR);
+			SPAGAIN;
+			if (count != 1)
+				croak("Unable to get creator");
+			creator = SvChar4(POPs);
+			PUTBACK;
+        }
+        if (pi_version(self->socket)< 0x101)
+		    r = dlp_CloseDB(self->socket, self->handle);
+	    result = dlp_ReadAppPreference(self->socket, creator, id, backup, 0xFFFF, mybuf, &len, &version);
+	    if (pi_version(self->socket)< 0x101)
+		    r = dlp_OpenDB(self->socket, self->dbcard, self->dbmode, SvPV(self->dbname,na), &self->handle);
+	    ReturnReadPref(mybuf, len);
+	}
+
+SV *
+SetPref(self, data)
+	PDA::Pilot::DLP::DB *	self
+	SV *	data
+	PPCODE:
+	{
+		Char4	creator;
+		int id;
+		int	version;
+		int	backup;
+	    STRLEN len;
+	    int result;
+	    void * buf;
+	    int r;
+	    PackPref;
+	    buf = SvPV(data, len);
+    	if (pi_version(self->socket)< 0x101)
+	    	r = dlp_CloseDB(self->socket, self->handle);
+	    result = dlp_WriteAppPreference(self->socket, creator, id, backup, version, buf, len);
+    	if (pi_version(self->socket)< 0x101)
+		    r = dlp_OpenDB(self->socket, self->dbcard, self->dbmode, SvPV(self->dbname,na), &self->handle);
+		if (result < 0) {
+			self->errno = result;
+			RETVAL = newSVsv(&sv_undef);
+		} else {
+			RETVAL = newSViv(result);
+		}
+	}
+
+SV *
+SetPrefRaw(self, data, number, version, backup=1)
+	PDA::Pilot::DLP::DB *	self
+	SV *	data
+	int	number
+	int	version
+	int	backup
+	PPCODE:
+	{
+	    STRLEN len;
+		Char4 creator;
+	    int version, result;
+	    void * buf;
+	    PackRaw;
+	    buf = SvPV(data, len);
+		if (self->Class) {
+			int count;
+			PUSHMARK(sp);
+			XPUSHs(self->Class);
+			PUTBACK;
+			count = perl_call_method("creator", G_SCALAR);
+			SPAGAIN;
+			if (count != 1)
+				croak("Unable to get creator");
+			creator = SvChar4(POPs);
+			PUTBACK;
+        }
+	    result = dlp_WriteAppPreference(self->socket, creator, number, backup, version, buf, len);
+		if (result < 0) {
+			self->errno = result;
+			RETVAL = newSVsv(&sv_undef);
+		} else {
+			RETVAL = newSViv(result);
+		}
+	}
 
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLPPtr
@@ -2435,6 +2732,42 @@ GetUserInfo(self)
 	OUTPUT:
 	RETVAL
 
+void
+NewPref(self, creator, id=0, version=0, backup=0)
+	PDA::Pilot::DLP *	self
+	Char4	creator
+	SV *	id
+	SV *	version
+	SV *	backup
+	PPCODE:
+	{
+		HV * h = perl_get_hv("PDA::Pilot::PrefClasses", 0);
+		SV ** s;										
+   		int count;											
+		if (!h)												
+			croak("PrefClasses doesn't exist");				
+		s = hv_fetch(h, printlong(creator), 4, 0);			
+		if (!s)												
+			s = hv_fetch(h, "", 0, 0);						
+		if (!s)												
+			croak("Default PrefClass not defined");			
+   		PUSHMARK(sp);										
+   		XPUSHs(newSVsv(*s));								
+   		XPUSHs(&sv_undef);									
+    	XPUSHs(sv_2mortal(newSVChar4(creator)));			
+    	if (id)
+	    	XPUSHs(id);					
+	    if (version)
+	    	XPUSHs(version);				
+	    if (backup)
+	    	XPUSHs(backup);
+    	PUTBACK;											
+    	count = perl_call_method("pref", G_SCALAR);			
+    	SPAGAIN;											
+    	if (count != 1)										
+    		croak("Unable to create resource");				
+    }
+
 Result
 Delete(self, name, cardno=0)
 	PDA::Pilot::DLP *	self
@@ -2471,43 +2804,25 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0)
 			x->socket = self->socket;
 			x->handle = handle;
 			x->errno = 0;
-			/*x->Pack = x->Unpack = 0;
-			x->PackAI = x->UnpackAI = 0;
-			x->PackSI = x->UnpackSI = 0;*/
+			x->dbname = newSVpv(name,0);
+			x->dbmode = mode;
+			x->dbcard = cardno;
 			RETVAL = newRV(sv);
 			SvREFCNT_dec(sv);
-			type = dlp_ReadResourceByIndex(x->socket, x->handle, 0, 0, 0, 0, 0);
-
-			if ( type == -13) { /* record database */
-				sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));
-			} else {
-				sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::ResourceDBPtr",0));
+			sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::DBPtr",0));
+			{
+				HV * h = perl_get_hv("PDA::Pilot::DBClasses", 0);
+				SV ** s;
+				if (!h)
+					croak("DBClasses doesn't exist");
+				s = hv_fetch(h, name, strlen(name), 0);
+				if (!s)
+					s = hv_fetch(h, "", 0, 0);
+				if (!s)
+					croak("Default DBClass not defined");
+				x->Class = *s; 
+				SvREFCNT_inc(*s);
 			}
-
-			/*if (!raw) {
-				HV * h = perl_get_hv("PDA::Pilot::DBPackers", 0);
-				if (h) {
-					SV ** s = hv_fetch(h, name, strlen(name), 0);
-					if (*s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
-						AV * a = (AV*)SvRV(*s);
-						if (a) {
-							SV ** c;
-							c = av_fetch(a, 0, 0);
-							if (c && SvOK(*c)) { x->Unpack = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 1, 0);
-							if (c && SvOK(*c)) { x->Pack = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 2, 0);
-							if (c && SvOK(*c)) { x->UnpackAI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 3, 0);
-							if (c && SvOK(*c)) { x->PackAI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 4, 0);
-							if (c && SvOK(*c)) { x->UnpackSI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 5, 0);
-							if (c && SvOK(*c)) { x->PackSI = *c; SvREFCNT_inc(*c); }
-						}
-					}
-				}
-			}*/
 		}
 	}
     OUTPUT:
@@ -2537,38 +2852,25 @@ Create(self, name, creator, type, flags, version, cardno=0)
 			x->socket = self->socket;
 			x->handle = handle;
 			x->errno = 0;
+			x->dbname = newSVpv(name,0);
+			x->dbmode = dlpOpenRead|dlpOpenWrite|dlpOpenSecret;
+			x->dbcard = cardno;
 			RETVAL = newRV(sv);
 			SvREFCNT_dec(sv);
-
-			if ( flags & dlpDBFlagResource) { /* resource database */
-				sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::ResourceDBPtr",0));
-			} else {
-				sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));
+			sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLP::DBPtr",0));
+			{
+				HV * h = perl_get_hv("PDA::Pilot::DBClasses", 0);
+				SV ** s;
+				if (!h)
+					croak("DBClasses doesn't exist");
+				s = hv_fetch(h, name, strlen(name), 0);
+				if (!s)
+					s = hv_fetch(h, "", 0, 0);
+				if (!s)
+					croak("Default DBClass not defined");
+				x->Class = *s; 
+				SvREFCNT_inc(*s);
 			}
-			/*if (!raw) {
-				HV * h = perl_get_hv("PDA::Pilot::DBPackers", 0);
-				if (h) {
-					SV ** s = hv_fetch(h, name, strlen(name), 0);
-					if (*s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
-						AV * a = (AV*)SvRV(*s);
-						if (a) {
-							SV ** c;
-							c = av_fetch(a, 0, 0);
-							if (c && SvOK(*c)) { x->Unpack = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 1, 0);
-							if (c && SvOK(*c)) { x->Pack = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 2, 0);
-							if (c && SvOK(*c)) { x->UnpackAI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 3, 0);
-							if (c && SvOK(*c)) { x->PackAI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 4, 0);
-							if (c && SvOK(*c)) { x->UnpackSI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 5, 0);
-							if (c && SvOK(*c)) { x->PackSI = *c; SvREFCNT_inc(*c); }
-						}
-					}
-				}
-			}*/
 		}
 	}
     OUTPUT:
@@ -2577,52 +2879,45 @@ Create(self, name, creator, type, flags, version, cardno=0)
 
 
 void
-GetAppPref(self, creator, number, backup=1)
+GetPref(self, creator, id=0, backup=1)
 	PDA::Pilot::DLP *	self
 	Char4	creator
-	int	number
+	int	id
 	int	backup
 	PPCODE:
 	{
 	    int len, version, result;
 	    SV * c, n, v;
-	    result = dlp_ReadAppPreference(self->socket, creator, number, backup, 0xFFFF, mybuf, &len, &version);
-	    
-	    if (result >=0) {
-	    	SV * result = sv_2mortal(newSVpv(mybuf,len));
-	    	int scalar = (GIMME == G_SCALAR);
-	    	/*if (!raw && perl_get_cv("PDA::Pilot::UnpackPref", 0)) {
-	    		int count;
-	        	PUSHMARK(sp);
-	          	XPUSHs(result);
-		    	XPUSHs(sv_2mortal(newSVChar4(creator)));
-		    	XPUSHs(sv_2mortal(newSViv(number)));
-		    	XPUSHs(sv_2mortal(newSViv(version)));
-		    	XPUSHs(sv_2mortal(newSViv(backup)));
-	    		PUTBACK;
-	    		count = perl_call_pv("PDA::Pilot::UnpackPref", G_SCALAR);
-	    		SPAGAIN;
-	    		if (count!=1)
-	    			croak("Unpack pref function failed");
-	    		result = POPs;
-	    		PUTBACK;
-	    	}*/
-		    EXTEND(sp, 4);
-	    	PUSHs(result);
-		    if (!scalar) {
-		    	PUSHs(sv_2mortal(newSVChar4(creator)));
-		    	PUSHs(sv_2mortal(newSViv(number)));
-		    	PUSHs(sv_2mortal(newSViv(version)));
-		    	PUSHs(sv_2mortal(newSViv(backup)));
-		    }
-		} else {
-	    	PUSHs(&sv_undef);
-	    	self->errno = result;
-	    }
+	    result = dlp_ReadAppPreference(self->socket, creator, id, backup, 0xFFFF, mybuf, &len, &version);
+	    ReturnReadPref(mybuf, len);
 	}
 
 SV *
-SetAppPref(self, data, creator, number, version, backup=1)
+SetPref(self, data)
+	PDA::Pilot::DLP *	self
+	SV *	data
+	PPCODE:
+	{
+		Char4	creator;
+		int id;
+		int	version;
+		int	backup;
+	    STRLEN len;
+	    int result;
+	    void * buf;
+	    PackPref;
+	    buf = SvPV(data, len);
+	    result = dlp_WriteAppPreference(self->socket, creator, id, backup, version, buf, len);
+		if (result < 0) {
+			self->errno = result;
+			RETVAL = newSVsv(&sv_undef);
+		} else {
+			RETVAL = newSViv(result);
+		}
+	}
+
+SV *
+SetPrefRaw(self, data, creator, number, version, backup=1)
 	PDA::Pilot::DLP *	self
 	SV *	data
 	Char4	creator
@@ -2634,22 +2929,7 @@ SetAppPref(self, data, creator, number, version, backup=1)
 	    STRLEN len;
 	    int version, result;
 	    void * buf;
-    	/*if (!raw && perl_get_cv("PDA::Pilot::PackPref", 0)) {
-    		int count;
-        	PUSHMARK(sp);
-          	XPUSHs(data);
-	    	XPUSHs(sv_2mortal(newSVChar4(creator)));
-	    	XPUSHs(sv_2mortal(newSViv(number)));
-	    	XPUSHs(sv_2mortal(newSViv(version)));
-	    	XPUSHs(sv_2mortal(newSViv(backup)));
-    		PUTBACK;
-    		count = perl_call_pv("PDA::Pilot::PackPref", G_SCALAR);
-    		SPAGAIN;
-    		if (count!=1)
-    			croak("Pack pref function failed");
-    		data = POPs;
-    		PUTBACK;
-    	}*/
+	    PackRaw;
 	    buf = SvPV(data, len);
 	    result = dlp_WriteAppPreference(self->socket, creator, number, backup, version, buf, len);
 		if (result < 0) {
@@ -2837,30 +3117,19 @@ Open(name)
 		RETVAL = calloc(sizeof(PDA__Pilot__File),1);
 		RETVAL->errno = 0;
 		RETVAL->pf = pi_file_open(name);
-			/*if (!raw) {
-				HV * h = perl_get_hv("PDA::Pilot::DBPackers", 0);
-				if (h) {
-					SV ** s = hv_fetch(h, name, strlen(name), 0);
-					if (*s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
-						AV * a = (AV*)SvRV(*s);
-						if (a) {
-							SV ** c;
-							c = av_fetch(a, 0, 0);
-							if (c && SvOK(*c)) { RETVAL->Unpack = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 1, 0);
-							if (c && SvOK(*c)) { RETVAL->Pack = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 2, 0);
-							if (c && SvOK(*c)) { RETVAL->UnpackAI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 3, 0);
-							if (c && SvOK(*c)) { RETVAL->PackAI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 4, 0);
-							if (c && SvOK(*c)) { RETVAL->UnpackSI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 5, 0);
-							if (c && SvOK(*c)) { RETVAL->PackSI = *c; SvREFCNT_inc(*c); }
-						}
-					}
-				}
-			}*/
+		{
+			HV * h = perl_get_hv("PDA::Pilot::DBClasses", 0);
+			SV ** s;
+			if (!h)
+				croak("DBClasses doesn't exist");
+			s = hv_fetch(h, name, strlen(name), 0);
+			if (!s)
+				s = hv_fetch(h, "", 0, 0);
+			if (!s)
+				croak("Default DBClass not defined");
+			RETVAL->Class = *s; 
+			SvREFCNT_inc(*s);
+		}
 	}
 	OUTPUT:
 	RETVAL
@@ -2873,30 +3142,19 @@ Create(name, info)
 	RETVAL = calloc(sizeof(PDA__Pilot__File),1);
 	RETVAL->errno = 0;
 	RETVAL->pf = pi_file_create(name, &info);
-			/*if (!raw) {
-				HV * h = perl_get_hv("PDA::Pilot::DBPackers", 0);
-				if (h) {
-					SV ** s = hv_fetch(h, name, strlen(name), 0);
-					if (*s && SvROK(*s) && (SvTYPE(SvRV(*s))==SVt_PVAV)) {
-						AV * a = (AV*)SvRV(*s);
-						if (a) {
-							SV ** c;
-							c = av_fetch(a, 0, 0);
-							if (c && SvOK(*c)) { RETVAL->Unpack = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 1, 0);
-							if (c && SvOK(*c)) { RETVAL->Pack = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 2, 0);
-							if (c && SvOK(*c)) { RETVAL->UnpackAI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 3, 0);
-							if (c && SvOK(*c)) { RETVAL->PackAI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 4, 0);
-							if (c && SvOK(*c)) { RETVAL->UnpackSI = *c; SvREFCNT_inc(*c); }
-							c = av_fetch(a, 5, 0);
-							if (c && SvOK(*c)) { RETVAL->PackSI = *c; SvREFCNT_inc(*c); }
-						}
-					}
-				}
-			}*/
+	{
+		HV * h = perl_get_hv("PDA::Pilot::DBClasses", 0);
+		SV ** s;
+		if (!h)
+			croak("DBClasses doesn't exist");
+		s = hv_fetch(h, name, strlen(name), 0);
+		if (!s)
+			s = hv_fetch(h, "", 0, 0);
+		if (!s)
+			croak("Default DBClass not defined");
+		RETVAL->Class = *s; 
+		SvREFCNT_inc(*s);
+	}
 	OUTPUT:
 	RETVAL
 
@@ -2915,15 +3173,42 @@ void
 DESTROY(self)
 	PDA::Pilot::File *	self
 	CODE:
-	/*if (self->Pack) SvREFCNT_dec(self->Pack);
-	if (self->Unpack) SvREFCNT_dec(self->Unpack);
-	if (self->PackAI) SvREFCNT_dec(self->PackAI);
-	if (self->UnpackAI) SvREFCNT_dec(self->UnpackAI);
-	if (self->PackSI) SvREFCNT_dec(self->PackSI);
-	if (self->UnpackSI) SvREFCNT_dec(self->UnpackSI);	*/
 	if (self->pf)
 		pi_file_close(self->pf);
+	if (self->Class)
+		SvREFCNT_dec(self->Class);
 	free(self);
+
+SV *
+Class(self, name=0)
+	PDA::Pilot::File *	self
+	SV *	name
+	CODE:
+	{
+		SV ** s = 0;
+		HV * h;
+		if (name) {
+			int len;
+			h = perl_get_hv("PDA::Pilot::DBClasses", 0);
+			if (!h)
+				croak("DBClasses doesn't exist");
+			if (SvOK(name)) {
+				(void)SvPV(name, len);
+				s = hv_fetch(h, SvPV(name, na), len, 0);
+			}
+			if (!s)
+				s = hv_fetch(h, "", 0, 0);
+			if (!s)
+				croak("Default DBClass not defined");
+			SvREFCNT_inc(*s);
+			if (self->Class)
+				SvREFCNT_dec(self->Class);
+			self->Class = *s;
+		}
+		RETVAL = newSVsv(self->Class);
+	}
+	OUTPUT:
+	RETVAL
 
 int
 Close(self)
@@ -2945,12 +3230,7 @@ GetAppBlock(self)
 	    int len, result;
 	    void * buf;
 		result = pi_file_get_app_info(self->pf, &buf, &len);
-		if (result)
-		    RETVAL = &sv_undef;
-		else {
-		    /*DoUnpackAI(RETVAL, buf, len);*/
-			RETVAL = newSVpv(buf, len);
-		}
+		ReturnReadAI(buf, len);
 	}
 	OUTPUT:
 	RETVAL
@@ -2963,13 +3243,7 @@ GetSortBlock(self)
 	    int len, result;
 	    void * buf;
 		result = pi_file_get_sort_info(self->pf, &buf, &len);
-		if (result) {
-			self->errno = result;
-		    RETVAL = &sv_undef;
-		} else {
-		    /*DoUnpackSI(RETVAL, buf, len);*/
-			RETVAL = newSVpv(buf, len);
-		}
+		ReturnReadSI(buf, len);
 	}
 	OUTPUT:
 	RETVAL
@@ -3073,7 +3347,7 @@ SetAppBlock(self, data)
 	{
 	    STRLEN len;
 	    char * c;
-	    /*DoPackAI(data);*/
+	    PackAI;
 	    c = SvPV(data, len);
 		RETVAL = pi_file_set_app_info(self->pf, c, len);
     }
@@ -3088,7 +3362,7 @@ SetSortBlock(self, data)
 	{
 	    int len;
 	    char * c;
-	    /*DoPackSI(data);*/
+	    PackSI;
 	    c = SvPV(data, len);
 		RETVAL = pi_file_set_sort_info(self->pf, c, len);
     }
@@ -3106,7 +3380,7 @@ AddResource(self, data, type, id)
 	    STRLEN len;
 	    int result;
 	    void * buf;
-	    /*PackResource;*/
+	    PackResource;
 	    buf = SvPV(data, len);
 		RETVAL = pi_file_append_resource(self->pf, buf, len, type, id);
 	}
@@ -3114,7 +3388,25 @@ AddResource(self, data, type, id)
 	RETVAL
 
 int
-AddRecord(self, data, uid, attr, category)
+AddRecord(self, data)
+	PDA::Pilot::File *	self
+	SV *	data
+	CODE:
+	{
+	    STRLEN len;
+	    unsigned long id;
+	    int attr, category;
+	    int result;
+	    void * buf;
+	    PackRecord;
+	    buf = SvPV(data, len);
+		RETVAL = pi_file_append_record(self->pf, buf, len, attr, category, id);
+	}
+	OUTPUT:
+	RETVAL
+
+int
+AddRecordRaw(self, data, uid, attr, category)
 	PDA::Pilot::File *	self
 	SV *	data
 	unsigned long	uid
@@ -3125,7 +3417,7 @@ AddRecord(self, data, uid, attr, category)
 	    STRLEN len;
 	    int result;
 	    void * buf;
-	    /*PackRecord;*/
+	    PackRaw;
 	    buf = SvPV(data, len);
 		RETVAL = pi_file_append_record(self->pf, buf, len, attr, category, uid);
 	}

@@ -54,6 +54,10 @@ typedef struct {
 	DlpObject * socket;
 	int handle;
 	
+	PyObject * dbname;
+	int dbmode;
+	int dbcard;
+	
 	PyObject *Class;
 } DlpDBObject;
 
@@ -104,6 +108,8 @@ DlpDB_dealloc(self)
 		dlp_CloseDB(self->socket->socket, self->handle);
 	if (self->socket)
 		Py_DECREF(self->socket);
+	if (self->dbname)
+		Py_DECREF(self->dbname);
 	PyMem_DEL(self);
 }
 
@@ -576,6 +582,10 @@ OpenDB(self, args)
 	obj = PyObject_NEW(DlpDBObject, &DlpDB_Type);
 	obj->socket = self;
 	obj->handle = handle;
+	obj->dbcard = cardno;
+	obj->dbmode = mode;
+	obj->dbname = PyTuple_GetItem(args,0);
+	Py_INCREF(obj->dbname);
 	Py_INCREF(self);
 	
 	obj->Class = 0;
@@ -592,8 +602,6 @@ OpenDB(self, args)
 		obj->Class = packer;
 		Py_XINCREF(packer);
 	}
-	
-	printf("Done with openDB\n");
 	
 	return (PyObject*)obj;
 }
@@ -622,6 +630,10 @@ CreateDB(self, args)
 	obj = PyObject_NEW(DlpDBObject, &DlpDB_Type);
 	obj->socket = self;
 	obj->handle = handle;
+	obj->dbname = PyTuple_GetItem(args, 0);
+	Py_INCREF(obj->dbname);
+	obj->dbmode = dlpOpenRead|dlpOpenWrite|dlpOpenSecret;
+	obj->dbcard = cardno;
 	Py_INCREF(self);
 
 	/*obj->Pack = obj->Unpack = obj->PackAppBlock = obj->UnpackAppBlock = 
@@ -1399,6 +1411,7 @@ BlankAppPref(self, args)
 	return ret;
 }
 
+
 static PyObject *
 SetAppPref(self, args)
 	DlpObject *self;
@@ -1448,6 +1461,119 @@ SetAppPrefRaw(self, args)
 		
 	result = dlp_WriteAppPreference(self->socket, creator, id, backup,
 		version, data, length);
+		
+	Dlp_CheckError(result);
+
+	return Py_BuildValue("i", result);
+}
+
+
+static PyObject *
+DBGetAppPref(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	unsigned long creator;
+	int id=0, backup=1;
+	int length, version, result;
+	int r;
+	PyObject * ret, *p1, *p2, *f, *callargs;
+	
+	if (!PyArg_ParseTuple(args, "|ii", &id, &backup))
+		return NULL;
+	
+	f = PyObject_GetAttrString(self->Class, "creator");
+	if (!f) {
+		PyErr_SetString(Error, "unable to retrieve creator from db class");
+		return NULL;
+	}
+	if (!ParseChar4(f, &creator))
+		return NULL;
+	
+	if (pi_version(self->socket->socket)<0x101)
+		r = dlp_CloseDB(self->socket->socket, self->handle);
+	
+	result = dlp_ReadAppPreference(self->socket->socket, creator, id, backup,
+		0xffff, self->socket->buffer, &length, &version);
+
+	if (pi_version(self->socket->socket)<0x101)
+		r = dlp_OpenDB(self->socket->socket, self->dbcard, self->dbmode, PyString_AsString(self->dbname), &self->handle);
+	
+	Dlp_CheckError(result);
+	
+	f = PyObject_GetAttrString(self->Class, "Pref");
+	callargs = Py_BuildValue("(s#OO&iii)", self->socket->buffer, length, self, &BuildChar4, (void*)&creator, id, version, backup, 0, 0);
+	ret = PyEval_CallObject(f, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+static PyObject *
+DBBlankAppPref(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	unsigned long creator;
+	int id=0;
+	int length, version, result, backup=0;
+	PyObject * ret, *p1, *p2, *f, *callargs;
+	
+	if (!PyArg_ParseTuple(args, "|ii", &id, &backup))
+		return NULL;
+
+	p1 = PyObject_GetAttrString(self->Class, "creator");
+	if (!p1) {
+		PyErr_SetString(Error, "unable to retrieve creator from db class");
+		return NULL;
+	}
+	if (!ParseChar4(p1, &creator))
+		return NULL;
+
+	p2 = PyObject_GetAttrString(self->Class, "Pref");
+	
+	Py_INCREF(Py_None);
+	callargs = Py_BuildValue("(OOO&i)", Py_None, self, &BuildChar4, (void*)&creator, id);
+	ret = PyEval_CallObject(p2, callargs);
+	Py_DECREF(callargs);
+	return ret;
+}
+
+
+static PyObject *
+DBSetAppPref(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	unsigned long creator;
+	int id=0, length, version=0, backup=1, result;
+	char * data;
+	int r;
+	PyObject *h, *i;
+
+	if (!PyArg_ParseTuple(args, "O", &h))
+		return NULL;
+		
+	i = PyObject_CallMethod(h, "pack", "O", self);
+	data = PyString_AsString(i);
+	length = PyString_Size(i);
+
+	if (!(i=PyObject_GetAttrString(h, "creator")) || (i == Py_None)) 
+		{ PyErr_SetString(PyExc_ValueError, "The pref's .creator attribute must be set");
+			return NULL; } 
+	else
+		creator = ParseChar4(i);
+	if (i=PyObject_GetAttrString(h, "id")) id = PyInt_AsLong(i);
+	if (i=PyObject_GetAttrString(h, "version")) version = PyInt_AsLong(i);
+	if (i=PyObject_GetAttrString(h, "backup")) backup = PyInt_AsLong(i);
+	
+	if (pi_version(self->socket->socket)<0x101)
+		r = dlp_CloseDB(self->socket->socket, self->handle);
+
+	result = dlp_WriteAppPreference(self->socket->socket, creator, id, backup,
+		version, data, length);
+
+	if (pi_version(self->socket->socket)<0x101)
+		r = dlp_OpenDB(self->socket->socket, self->dbcard, self->dbmode, PyString_AsString(self->dbname), &self->handle);
 		
 	Dlp_CheckError(result);
 
@@ -2634,8 +2760,8 @@ MailUnpackPref(self, args)
 		return NULL;
 		
 	if (id == 1) {
-		struct MailPrefs m;
-		unpack_MailPrefs(&m, data, length);
+		struct MailPref1 m;
+		unpack_MailPref1(&m, data, length);
 		
 		PyDict_SetItemString(dict, "synctype", PyInt_FromLong(m.synctype));
 		PyDict_SetItemString(dict, "gethigh", PyInt_FromLong(m.gethigh));
@@ -2645,7 +2771,7 @@ MailUnpackPref(self, args)
 		PyDict_SetItemString(dict, "filterfrom", Py_BuildValue("z", m.filterfrom));
 		PyDict_SetItemString(dict, "filtersubject", Py_BuildValue("z", m.filtersubject));
 	
-		free_MailPrefs(&m);
+		free_MailPref1(&m);
 	} else if (id == 3) {
 		PyDict_SetItemString(dict, "signature", PyString_FromString(data));
 	}
@@ -2927,6 +3053,11 @@ static PyMethodDef DlpDB_methods[] = {
 {"NewSortBlock", BlankSortBlock, 1},
 {"NewRecord", BlankRecord, 1},
 {"NewResource", BlankResource, 1},
+	{"GetPref",	DBGetAppPref, 1},
+	{"NewPref",	DBBlankAppPref, 1},
+	{"SetPref",	DBSetAppPref, 1},
+/*	{"GetPrefRaw",	DBGetAppPrefRaw, 1},
+	{"SetPrefRaw",	DBSetAppPrefRaw, 1},*/
 	{NULL,	NULL}
 };
 

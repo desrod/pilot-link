@@ -1034,12 +1034,15 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo * i)
   i->lansync = get_byte(dlp_buf);
   p = 24;
 
+  i->PCName[0] = 0;
   memcpy(i->PCName, dlp_buf+p, get_short(dlp_buf+18));
   p += get_short(dlp_buf+18);
 	
+  i->PCAddr[0] = 0;
   memcpy(i->PCAddr, dlp_buf+p, get_short(dlp_buf+20));
   p += get_short(dlp_buf+20);
 
+  i->PCMask[0] = 0;
   memcpy(i->PCMask, dlp_buf+p, get_short(dlp_buf+22));
   p += get_short(dlp_buf+22);
 

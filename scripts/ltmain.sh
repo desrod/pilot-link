@@ -987,16 +987,23 @@ if test "\$libtool_install_magic" = "$magic"; then
   link_against_libtool_libs='$link_against_libtool_libs'
   finalize_command='$finalize_command'
 else
+  program="$output"
+
   # Find the directory that this script lives in.
   thisdir=\`echo \$0 | sed 's%/[^/]*$%%'\`
+  zerodir="\$thisdir"
   test "x\$thisdir" = "x\$0" && thisdir=.
 
   # Try to get the absolute directory name.
   absdir=\`cd "\$thisdir" && pwd\`
   test -n "\$absdir" && thisdir="\$absdir"
 
+  # If \$0 failed (due to symlink?), try hardcoded path.
+  if test ! -f "\$thisdir/$objdir/\$program"; then
+  	thisdir="`pwd`"
+  fi
+
   progdir="\$thisdir/$objdir"
-  program="$output"
 
   if test -f "\$progdir/\$program"; then
     # Run the actual program with our arguments.
@@ -1034,8 +1041,10 @@ EOF
     exit 1
   else
     # The program doesn't exist.
-    echo "\$0: error: \$progdir/\$program does not exist" 1>&2
-    echo "This script is just a wrapper for \$program." 1>&2
+    echo "\$0: error: neither \$zerodir/$objdir/\$program" 1>&2
+    echo "nor \$progdir/\$program exists." 1>&2
+    echo "This script is just a wrapper for \$program, and cannot" 1>&2
+    echo "be moved far from its original directory without breaking." 1>&2
     echo "See the $PACKAGE documentation for more information." 1>&2
     exit 1
   fi

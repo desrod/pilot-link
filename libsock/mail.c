@@ -38,7 +38,7 @@ void free_MailAppInfo(struct MailAppInfo * a) {
     free(a->signature);
 }
 
-void free_MailPrefs(struct MailPrefs * a) {
+void free_MailPref1(struct MailPref1 * a) {
   if (a->filterto);
     free(a->filterto);
   if (a->filterfrom);
@@ -269,7 +269,7 @@ void pack_MailAppInfo(struct MailAppInfo * ai, unsigned char * record, int * len
     *len = record-start;
 }
 
-void unpack_MailPrefs(struct MailPrefs * a, unsigned char * record, int len) {
+void unpack_MailPref1(struct MailPref1 * a, unsigned char * record, int len) {
   a->synctype = get_byte(record);
   record += 1;
   a->gethigh = get_byte(record);

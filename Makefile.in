@@ -102,7 +102,7 @@ submake $(PILIB) $(PICCLIB):
 	$(SUBMAKE_COMM_CC) libpicc.a
 
 installdirs:
-	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir)
+	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir) $(mandir)
 
 install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	$(INSTALL_DATA) $(PILIB) $(libdir)/libpisock.la
@@ -246,6 +246,9 @@ Perl5 Perl: FORCE
 
 Tcl: FORCE
 	cd Tcl; make
+	
+Java: FORCE
+	cd Java; make
 
 strip: $(EXECS)
 	$(STRIP) $(EXECS)
@@ -262,6 +265,7 @@ distclean: clean
 	-cd Perl5 ; make realclean ; rm Makefile.PL
 	-cd Python ; make distclean
 	-cd Tcl ; make clean
+	-cd Java ; make distclean
 	$(RM) *~ *.orig */*~ */*.orig
 	$(RM) Tcl/Makefile Perl5/Makefile.PL Perl5/Makefile Python/Makefile
 	perl scripts/os2dist.pl

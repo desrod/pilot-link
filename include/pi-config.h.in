@@ -215,4 +215,6 @@ char * strdup(const char *string);
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#ifndef NeXT
 #include <netdb.h>
+#endif

@@ -23,6 +23,7 @@ WITHCXX="WITHOUTCXX"
 WITHTK="WITHOUTTK"
 WITHPERL5="WITHOUTPERL5"
 WITHPYTHON="WITHOUTPYTHON"
+WITHJAVA="WITHOUTJAVA"
 
 AC_ARG_WITH(cpp,      [  --with-cpp[=c++ compiler]  use C++     [default=yes]])
 
@@ -209,6 +210,7 @@ AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl     [default=yes]])
 AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use Itcl    [default=yes]])
 AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk      [default=yes]])
 AC_ARG_WITH(python,   [  --with-python=pylibbase use Python  [default=yes]])
+AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java    [default=yes]])
 AC_ARG_WITH(perl5,    [  --with-perl5=perl5exec  use Perl5   [default=yes]])
 
 if test "x$with_perl5" = "xno"; then
@@ -229,6 +231,42 @@ if test "x$PERL5" != "x"; then
 	esac
 fi
 changequote([, ])dnl
+
+if test "x$with_java" = "xyes" || test "x$with_java" = "x" ; then
+	for java_path in /usr/local/java /usr/local /usr/java /usr; do
+		if test -f $java_path/bin/javac; then
+			with_java=$java_path; break
+		fi
+	done
+	if test "x$with_java" = "xyes"; then
+		echo "Unable to find Java base installation directory."
+		echo "Please give directory (such as /usr/local) as argument to --with-java=dir."
+		with_java=no
+	fi
+fi 
+JAVABASE=''
+if test "x$with_java" != "xno"; then
+	# I'd like to check Java for version, but it doesn't seem to know how to do that. Odd.
+	AC_MSG_CHECKING(for Java)
+changequote(, )dnl
+	cat >test.java <<EOF
+	public class test { public static void main(String[] args) { 
+		System.out.println("present");
+	} }
+EOF
+changequote([, ])dnl
+	$with_java/bin/javac test.java
+	case `$with_java/bin/java test` in
+		*present*) AC_MSG_RESULT(found) 
+			WITHJAVA='WITHJAVA'
+			JAVABASE="$with_java"
+			;;
+		*)	AC_MSG_RESULT(not found) 
+			with_java=no ;;
+	esac
+	rm -f test.java test.class
+fi
+AC_SUBST(JAVABASE)
 
 if test "x$PERL5" = "x"; then
 	PERL5="/usr/bin/perl"
@@ -485,6 +523,7 @@ if test $ac_cv_prog_cxx_works = yes; then
 fi
 
 AC_SUBST(WITHTCL)
+AC_SUBST(WITHJAVA)
 AC_SUBST(WITHTK)
 AC_SUBST(WITHPYTHON)
 AC_SUBST(WITHPERL5)
@@ -494,4 +533,4 @@ LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTLIBOBJS)
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTALLOCA)
-AC_OUTPUT(libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL)
+AC_OUTPUT(libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile)

@@ -2,7 +2,8 @@
 
 # Conjure up OS/2 specific makefiles
 
-%defs = ( '@RANLIB@', 'ar -s', '@CC@', 'gcc', '@CFLAGS@', '-g -O2 -fno-strength-reduce',
+%defs = ( '@RANLIB@', 'ar -s', '@CC@', 'gcc', 
+	  '@CFLAGS@', '-g -Zcrtdll -O2 -fno-strength-reduce -D__ST_MT_ERRNO__',
           '@CWFLAG@', '-Wall', '@CPLIB@', 'cp', '@YACC@', 'bison -y', 
           '@LIBS@', '-lsocket -los2', '@EXT@', '.EXE',
           '@SUBMAKE_COMM@', '$(MAKE) -C libsock -f Makefile.os2',
@@ -18,8 +19,11 @@
 	  '@WITHTK@', 'WITHOUTTK',
 	  '@WITHPYTHON@', 'WITHOUTPYTHON',
 	  '@WITHPERL5@', 'WITHOUTPERL5',
+	  '@WITHJAVA@', 'WITHOUTJAVA',
 	  '@TCLTKLIBS@', '',
-      '@TCLTKFLAGS@', '',
+	  '@TCLTKFLAGS@', '',
+	  '@RLDEFS@', '',
+	  '@RLLIBS@', '',
 	  '@WITHCXX@', 'WITHCXX'
         );
         
@@ -31,6 +35,7 @@ while(<>) {
     foreach $k (keys %defs) {
       s/$k/$defs{$k}/g;
     }
+    s/libpisock.la/libpisockdll.a/g;
     s/\.la/.a/g;
     s/^LIBTOOL = (.*)$/LIBTOOL =/;
     s/^LIBTOOLLINK = (.*)$/LIBTOOLLINK =/;
@@ -46,7 +51,7 @@ while(<>) {
       s/$k/$defs{$k}/g;
     }
     s#\.la#.a# if /^all:/;
-	s#../include/pi-config.h# #g;
+	s#\.\./include/pi-config.h# #g;
 	s#unixserial#os2serial#g;
 	s#O = lo#O = o#g;
 	print;
@@ -58,6 +63,6 @@ while(<>) {
     foreach $k (keys %defs) {
       s/$k/$defs{$k}/g;
     }
-	s#../include/pi-config.h# #g;
+	s#\.\./include/pi-config.h# #g;
 	print;
 }

@@ -30,13 +30,13 @@ if (defined $dlp) {
 		$i = 0;
 		$c = 0;
 		for(;;) {
-			@r = $db->GetRecord($i);
-			last if not defined($r[0]); #no more records
-			if ($r[3] & 0x08) {
+			$r = $db->GetRecord($i);
+			last if not defined($r); #no more records
+			if ($r->{attr} & 0x08) {
 				print "Record $i is archived, un-archiving.\n";
 				#Archived
-				$r[3] &= ~0x88; # Clear deleted and archived attribute
-				$db->SetRecord($r[0], $r[2], $r[3], $r[4]); # Re-store record
+				$r->{attr} &= ~0x88; # Clear deleted and archived attribute
+				$db->SetRecord($r); # Re-store record
 				
 				$c++;
 			}

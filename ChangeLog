@@ -1,3 +1,35 @@
+Jul 22, 1997	Kenneth Albanowski 0.7.5
+
+	Configuration changes:
+	  - Uninstalled binaries should better cope with symlinks or moving
+	    their directory.
+	  - The Java Development Kit is automatically detected.
+	Build changes:
+	  - Man pages probably can be installed now
+	  - Added Mike Jarabek's latest OS/2 patches, which should allow a
+	    shared libpisock dll to be built and used.
+	Pisoket library changes:
+	  - Mail preferences renamed from "MailPrefs" to "MailPref1".
+	  - Corrected bug in retrieving NetSync info if fields were empty.
+	Utility changes:
+	  - Modified pilot-undelete slightly to match new Perl5 module.
+	  - Added pilot-xfer patches (slightly modified) by Christopher Chan-Nui
+	    <channui@austin.ibm.com>. These allow default port via PILOTPORT,
+	    and multiple files/db's with a command.
+	Java binding changes:
+	  - New! All of the libpisock functionality is accessible from the Java
+	    interpreter. The only missing parts are RPC, CallApplication, and
+	    the packers other then Memo.
+	Perl 5 binding changes:
+	  - Completely revised record storage mechanism uses objects to describe
+	    records, resources, appblocks, sortblocks, and prefs.
+	    All current code using the Perl5 module will need to be rewritten,
+	    though the changes will probably be minimal.
+	    The upshot of this change is that record packing/unpacking is now
+	    automated.
+	Python binding changes:
+	  - Preferences may be retrieved from an open DB.
+	  
 Jul 13, 1997	Kenneth Albanowski 0.7.4
 
 	Configuration changes:

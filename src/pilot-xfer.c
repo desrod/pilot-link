@@ -20,7 +20,7 @@
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 int sd = 0;
-char * device;
+char * device = "/dev/pilot";
 char * progname;
 
 char * exclude[100];
@@ -61,11 +61,11 @@ void Connect(void) {
   
   ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
-    perror("pi_bind");
+    fprintf(stderr, "Unable to bind to port '%s'.\n(Please see '%s -h' for information setting the port).\n", device, progname);
     exit(1);
   }
     
-  printf("Waiting for connection (press the HotSync button now)...\n");
+  printf("Waiting for connection on %s (press the HotSync button now)...\n", device);
 
   ret = pi_listen(sd,1);
   if(ret == -1) {
@@ -510,22 +510,28 @@ void Purge(void)
 
 void Help(void)
 {
-      printf("Usage: %s %s command(s)\n\n",progname,TTYPrompt);
-      printf("Where a command is one of: -b(ackup)  backupdir\n");
-      printf("                           -r(estore) backupdir\n");
-      printf("                           -i(nstall) filename \n");
-      printf("                           -m(erge)   filename \n");
-      printf("                           -f(etch)   dbname   \n");
-      printf("                           -d(elete)  dbname   \n");
-      printf("                           -e(xclude) filename\n");
-      printf("                           -p(urge)\n");
-      printf("                           -l(ist)\n");
+      printf("Usage: %s [%s] command(s)\n\n",progname,TTYPrompt);
+      printf("Where a command is one or more of: -b(ackup)  backupdir\n");
+      printf("                                   -r(estore) backupdir\n");
+      printf("                                   -i(nstall) filename(s)\n");
+      printf("                                   -m(erge)   filename(s)\n");
+      printf("                                   -f(etch)   dbname(s)\n");
+      printf("                                   -d(elete)  dbname(s)\n");
+      printf("                                   -e(xclude) filename(s)\n");
+      printf("                                   -p(urge)\n");
+      printf("                                   -l(ist)\n");
+      printf("\n");
+      printf("The serial port to connect to may be specified by the PILOTPORT\n");
+      printf("environment variable instead of the command line. If not specified\n");
+      printf("anywhere, it will default to /dev/pilot.\n");
       exit(0);
 }
 
 int main(int argc, char *argv[])
 {
   int c;
+  int lastmode = 0;
+  char *tmp;
 #ifdef sun
   extern char* optarg;
   extern int optind;
@@ -534,14 +540,29 @@ int main(int argc, char *argv[])
 
   progname = argv[0];
 
-  if (argc < 3) {
+  if (argc < 2) {
     Help();
   }
 
-  device = argv[1];
+  tmp = getenv("PILOTPORT");
+  if (tmp != NULL)
+    device = tmp;
   
-  optind = 2;
-  while ((c = getopt(argc, argv, "b:e:r:i:m:f:d:plh")) != -1) {
+  optind++;
+  while (argv[optind] != NULL) {
+    c = getopt(argc, argv, "b:e:r:i:m:f:d:plh");
+    if (c == -1) {
+	optarg=argv[optind++];
+	c = lastmode;
+	if (lastmode=='b' || lastmode=='r' || lastmode=='l' || lastmode=='p') {
+	    fprintf(stderr, "'%c', only accepts one argument!\n", lastmode);
+	    continue;
+	}
+	if (c == 0) {
+	  device = optarg;
+	  continue;
+	}
+    }
     switch (c) {
     case 'b':
       Backup(optarg);
@@ -571,10 +592,14 @@ int main(int argc, char *argv[])
       List();
       break;
     default:
+      break;
     case 'h': case '?':
       Help();
     }
+    lastmode=c;
   }
+  if (lastmode==0)
+    Help();
   
   Disconnect();
   

@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 	  end   = a.end.tm_hour*60 + a.end.tm_min;
 
 	  fprintf(ical,"$i starttime %d\n", start);
-	  fprintf(ical,"$i length %d\n", end-start+1);
+	  fprintf(ical,"$i length %d\n", end-start);
 	}
 	
 	fprintf(ical,"$i text %s\n", tclquote(a.description));

@@ -14,7 +14,7 @@ top_builddir = ..
 
 CC = gcc
 CXX = gcc
-CFLAGS = -I../include -I$(srcdir)/../include -g -O2 -fno-strength-reduce -Wall
+CFLAGS = -I../include -I$(srcdir)/../include -g -Zcrtdll -O2 -fno-strength-reduce -D__ST_MT_ERRNO__ -Wall
 # -DPADP_TRACE
 # -DNO_DLP_TRACE
 # -DNO_SERIAL_TRACE

@@ -31,6 +31,30 @@ print "Now press the HotSync button\n"
 
 dlp = pdapilot.Accept(socket)
 
+db = dlp.Open('MailDB')
+
+r = db.GetRecord(0)
+
+print 'Record 0:', r
+
+s = db.GetPref(1)
+
+print 'Pref 1:', s
+
+s = db.GetPref(3)
+
+print 'Pref 3:', s
+
+r = db.GetRecord(1)
+
+print 'Record 1:', r
+
+q = db.NewPref(1)
+
+print 'Blank pref 1:', q
+
+sys.exit()
+
 ui = dlp.GetUserInfo()
 
 b = dlp.Battery()

@@ -43,7 +43,7 @@ struct MailAppInfo {
   char * signature;
 };
 
-struct MailPrefs {
+struct MailPref1 {
   int synctype;
   int gethigh;
   int getcontaining;
@@ -57,12 +57,12 @@ enum MailSyncType { mailSyncAll, mailSyncSend, mailSyncFilter };
 
 extern void free_Mail PI_ARGS((struct Mail *));
 extern void free_MailAppInfo PI_ARGS((struct MailAppInfo *));
-extern void free_MailPrefs PI_ARGS((struct MailPrefs *));
+extern void free_MailPref1 PI_ARGS((struct MailPref1 *));
 extern void unpack_Mail PI_ARGS((struct Mail *, unsigned char * record, int len));
 extern void pack_Mail PI_ARGS((struct Mail *, unsigned char * record, int * len));
 extern void unpack_MailAppInfo PI_ARGS((struct MailAppInfo *, unsigned char * AppInfo, int len));
 extern void pack_MailAppInfo PI_ARGS((struct MailAppInfo *, unsigned char * AppInfo, int * len));
-extern void unpack_MailPrefs PI_ARGS((struct MailPrefs *, unsigned char * record, int len));
+extern void unpack_MailPref1 PI_ARGS((struct MailPref1 *, unsigned char * record, int len));
 
 #ifdef __cplusplus
 }

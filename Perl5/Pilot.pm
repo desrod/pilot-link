@@ -80,62 +80,371 @@ sub AUTOLOAD {
 }
 
 bootstrap PDA::Pilot;
+package PDA::Pilot::Block;
 
-# Preloaded methods go here.
+# Generic functions for "blocks", i.e., chunks of data from a Pilot.
 
-@PDA::Pilot::DLP::ResourceDBPtr::ISA = qw(PDA::Pilot::DLP::DBPtr);
-@PDA::Pilot::DLP::RecordDBPtr::ISA = qw(PDA::Pilot::DLP::DBPtr);
-
-%DBPackers = ( 
-	MemoDB => [	\&PDA::Pilot::Memo::Unpack, \&PDA::Pilot::Memo::Pack, 
-				\&PDA::Pilot::Memo::UnpackAppBlock, \&PDA::Pilot::Memo::PackAppBlock],
-	ToDoDB => [	\&PDA::Pilot::ToDo::Unpack, \&PDA::Pilot::ToDo::Pack, 
-				\&PDA::Pilot::ToDo::UnpackAppBlock, \&PDA::Pilot::ToDo::PackAppBlock],
-	AddressDB => [	\&PDA::Pilot::Address::Unpack, \&PDA::Pilot::Address::Pack, 
-					\&PDA::Pilot::Address::UnpackAppBlock, \&PDA::Pilot::Address::PackAppBlock],
-	MailDB => [	\&PDA::Pilot::Mail::Unpack, \&PDA::Pilot::Mail::Pack, 
-					\&PDA::Pilot::Mail::UnpackAppBlock, \&PDA::Pilot::Mail::PackAppBlock],
-	DatebookDB => [	\&PDA::Pilot::Appointment::Unpack, \&PDA::Pilot::Appointment::Pack, 
-					\&PDA::Pilot::Appointment::UnpackAppBlock, \&PDA::Pilot::Appointment::PackAppBlock],
-	 );
-
-%UnpackPref = ();
-
-sub UnpackPref {
-	my($data, $creator, $number, $version) = @_;
-	my($func);
-	
-	print "UnpackPref, data = |$data|, creator = |$creator|, number = |$number|, version = |$version|\n";
-	
-	if (exists $UnpackPref{$creator}) {
-		$func = $UnpackPref{$creator}->{$number} || $UnpackPref{$creator}->{default};
-	}
-	$func ||= $UnpackPref{default};
-	if ($func) {
-		&$func(@_);
+sub new {
+	my($self,$data) = @_;
+	$self = bless {}, (ref($self) || $self);
+	if (defined($data)) {
+		$self->Unpack($data);
 	} else {
-		$data;
+		$self->Fill();
 	}
+	return $self;
 }
 
-%PackPref = ();
+sub Unpack {
 
-sub PackPref {
-	my($data, $creator, $number, $version) = @_;
-	my($func);
+# Translate a "packed" block of binary data into a decent Perl representation
 
-	print "PackPref, data = |$data|, creator = |$creator|, number = |$number|, version = |$version|\n";
-	
-	if (exists $PackPref{$creator}) {
-		$func = $PackPref{$creator}->{$number} || $PackPref{$creator}->{default};
-	}
-	$func ||= $PackPref{default};
-	if ($func) {
-		&$func(@_);
-	} else {
-		$data;
-	}
+	my($self,$data) = @_;
+	$self->{raw} = $data;
 }
+
+sub Pack {
+
+# Translate a Perl representation of a data block into a string of binary data
+
+	my($self) = @_;
+	return $self->{raw};
+}
+
+sub Raw {
+
+# Just copy the "raw" item straight through
+
+	my($self) = @_;
+	return $self->{raw};
+}
+
+sub Fill {
+
+# Fill in a block with default Perl data
+
+}
+
+# Copy a block
+
+sub Clone {
+	my($self) = @_;
+	my($k,$v);
+	my($new) = bless {}, ref($_);
+	for (($k,$v) = each %$self) { $new->{$k} = $v }
+	$new;
+}
+
+package PDA::Pilot::Record;
+
+# A class to represent generic database records
+
+@ISA = qw(PDA::Pilot::Block);
+
+sub new {
+	my($self,$data,$id,$attr,$cat,$index) = @_;
+	$self = bless { index => $index, id => $id, attr => $attr, cat => $cat}, 
+		(ref($self) || $self);
+	if (defined($data)) {
+		$self->Unpack($data);
+	} else {
+		$self->Fill();
+	}
+	return $self;
+}
+
+package PDA::Pilot::Resource;
+
+# A class to represent generic database resources
+
+@ISA = qw(PDA::Pilot::Block);
+
+sub new {
+	my($self,$data,$index,$type,$id) = @_;
+	$self = bless { index => $index, type => $type, id => $id}, 
+		(ref($self) || $self);
+	if (defined($data)) {
+		$self->Unpack($data);
+	} else {
+		$self->Fill();
+	}
+	return $self;
+}
+
+package PDA::Pilot::AppBlock;
+
+# A class to represent generic application-information blocks
+
+@ISA = qw(PDA::Pilot::Block);
+
+package PDA::Pilot::SortBlock;
+
+# A class to represent generic sort-information blocks
+
+@ISA = qw(PDA::Pilot::Block);
+
+package PDA::Pilot::Pref;
+
+# A class to represent generic preference blocks
+
+@ISA = qw(PDA::Pilot::Block);
+
+sub new {
+	my($self,$data,$creator,$id,$version,$backup) = @_;
+	$self = bless { creator => $creator, id => $id, version => $version, backup => $backup}, 
+		(ref($self) || $self);
+	if (defined($data)) {
+		$self->Unpack($data);
+	} else {
+		$self->Fill();
+	}
+	return $self;
+}
+
+package PDA::Pilot::MemoRecord;
+
+# A class to represent records of the Memo application
+
+@ISA = qw(PDA::Pilot::Record);
+
+sub Pack {
+	my($self) = @_;
+	return $self->{raw} = PDA::Pilot::Memo::Pack($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Memo::Unpack($self);
+}
+
+package PDA::Pilot::MemoAppBlock;
+
+# A class to represent records of the Memo application
+
+@ISA = qw(PDA::Pilot::AppBlock);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Memo::PackAppBlock($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Memo::UnpackAppBlock($self);
+}
+
+package PDA::Pilot::ToDoRecord;
+
+# A class to represent records of the ToDo application
+
+@ISA = qw(PDA::Pilot::Record);
+
+sub Pack {
+	my($self) = @_;
+	return $self->{raw} = PDA::Pilot::ToDo::Pack($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::ToDo::Unpack($self);
+}
+
+package PDA::Pilot::ToDoAppBlock;
+
+# A class to represent the app block of the ToDo application
+
+@ISA = qw(PDA::Pilot::AppBlock);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::ToDo::PackAppBlock($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::ToDo::UnpackAppBlock($self);
+}
+
+package PDA::Pilot::AddressRecord;
+
+# A class to represent records of the Address application
+
+@ISA = qw(PDA::Pilot::Record);
+
+sub Pack {
+	my($self) = @_;
+	return $self->{raw} = PDA::Pilot::Address::Pack($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Address::Unpack($self);
+}
+
+package PDA::Pilot::AddressAppBlock;
+
+# A class to represent the app block of the Address application
+
+@ISA = qw(PDA::Pilot::AppBlock);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Address::PackAppBlock($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Address::UnpackAppBlock($self);
+}
+
+package PDA::Pilot::AppointmentRecord;
+
+# A class to represent records of the Appointment application
+
+@ISA = qw(PDA::Pilot::Record);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Appointment::Pack($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Appointment::Unpack($self);
+}
+
+package PDA::Pilot::AppointmentAppBlock;
+
+# A class to represent the app block of the Appointment application
+
+@ISA = qw(PDA::Pilot::AppBlock);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Appointment::PackAppBlock($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Appointment::UnpackAppBlock($self);
+}
+
+package PDA::Pilot::MailRecord;
+
+# A class to represent records of the Mail application
+
+@ISA = qw(PDA::Pilot::Record);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Mail::Pack($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Mail::Unpack($self);
+}
+
+package PDA::Pilot::MailAppBlock;
+
+# A class to represent the app block of the Mail application
+
+@ISA = qw(PDA::Pilot::AppBlock);
+
+sub Pack {
+	my($self) = @_;
+	return PDA::Pilot::Mail::PackAppBlock($self);
+}
+
+sub Unpack {
+	my($self, $data) = @_;
+	$self->{raw} = $data;
+	PDA::Pilot::Mail::UnpackAppBlock($self);
+}
+
+package PDA::Pilot::Database;
+
+# A class to specify which classes are used for generic database entries
+
+sub record { shift @_; PDA::Pilot::Record->new(@_) }
+sub resource { shift @_; PDA::Pilot::Resource->new(@_) }
+sub pref { shift @_; PDA::Pilot::Pref->new(@_) }
+sub appblock { shift @_; PDA::Pilot::AppBlock->new(@_) }
+sub sortblock { shift @_; PDA::Pilot::SortBlock->new(@_) }
+
+package PDA::Pilot::MemoDatabase;
+
+# A class to specify which classes are used for Memo database entries
+
+@ISA=qw(PDA::Pilot::Database);
+
+sub record { shift @_; PDA::Pilot::MemoRecord->new(@_) }
+sub appblock { shift @_; PDA::Pilot::MemoAppBlock->new(@_) }
+sub creator { 'memo' }
+sub dbname { 'MemoDB' }
+
+package PDA::Pilot::ToDoDatabase;
+
+@ISA=qw(PDA::Pilot::Database);
+
+sub record { shift @_; PDA::Pilot::ToDoRecord->new(@_) }
+sub appblock { shift @_; PDA::Pilot::ToDoAppBlock->new(@_) }
+sub creator { 'todo' }
+sub dbname { 'ToDoDB' }
+
+package PDA::Pilot::AppointmentDatabase;
+
+@ISA=qw(PDA::Pilot::Database);
+
+sub record { shift @_; PDA::Pilot::AppointmentRecord->new(@_) }
+sub appblock { shift @_; PDA::Pilot::AppointmentAppBlock->new(@_) }
+sub creator { 'date' }
+sub dbname { 'DatebookDB' }
+
+package PDA::Pilot::AddressDatabase;
+
+@ISA=qw(PDA::Pilot::Database);
+
+sub record { shift @_; PDA::Pilot::AddressRecord->new(@_) }
+sub appblock { shift @_; PDA::Pilot::AddressAppBlock->new(@_) }
+sub creator { 'addr' }
+sub dbname { 'AddressDB' }
+
+package PDA::Pilot::MailDatabase;
+
+@ISA=qw(PDA::Pilot::Database);
+
+sub record { shift @_; PDA::Pilot::MailRecord->new(@_) }
+sub appblock { shift @_; PDA::Pilot::MailAppBlock->new(@_) }
+sub creator { 'mail' }
+sub dbname { 'MailDB' }
+
+package PDA::Pilot;
+
+%DBClasses = (	MemoDB => 'PDA::Pilot::MemoDatabase',
+				ToDoDB => 'PDA::Pilot::ToDoDatabase',
+				AddressDB => 'PDA::Pilot::AddressDatabase',
+				DatebookDB => 'PDA::Pilot::AppointmentDatabase',
+				MailDB => 'PDA::Pilot::MailDatabase');
+%PrefClasses = (	memo => 'PDA::Pilot::MemoDatabase',
+					todo => 'PDA::Pilot::ToDoDatabase',
+					mail => 'PDA::Pilot::MailDatabase',
+					date => 'PDA::Pilot::AppointmentDatabase',
+					addr => 'PDA::Pilot::AddressDatabase'
+					);
+
+# Default classes
+$DBClasses{''} = 'PDA::Pilot::Database';
+$PrefClasses{''} = 'PDA::Pilot::Database';
 
 sub CompareTm {
 	my(@a) = @{$_[0]};

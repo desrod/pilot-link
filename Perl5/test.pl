@@ -18,13 +18,29 @@ $socket = PDA::Pilot::OpenPort($port);
 #$socket = PDA::Pilot::socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP);
 #
 #PDA::Pilot::bind($socket,
-#	{family => PI_AF_SLP, port => PI_PilotSocketDLP, device => $port});
+#	{family => PI_AF_SLP, device => $port});
 #
 #PDA::Pilot::listen($socket, 1);
 
 print "Now press the HotSync button\n";
 
 $dlp = PDA::Pilot::Accept($socket);
+
+$db = $dlp->Open("DatebookDB");
+
+#$db->Class(undef);
+
+$r = $db->GetRecord(0);
+
+use Data::Dumper;
+
+print Dumper($r);
+
+$r = $db->GetRecord(1);
+
+print Dumper($r);
+
+exit;
 
 $PDA::Pilot::UnpackPref{mail}->{3} = sub { $_[0] . "x"};
 

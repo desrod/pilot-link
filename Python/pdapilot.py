@@ -86,6 +86,7 @@ class Database:
 	Pref = PrefBlock
 
 class Memo (RecordDatabase):
+	creator = 'memo'
 	name = 'MemoDB'
 	class Record (RecordBlock):
 		def fill(self):
@@ -109,6 +110,7 @@ class Memo (RecordDatabase):
 			_pdapilot.MemoUnpackAppBlock(self.__dict__, block)
 
 class ToDo (RecordDatabase):
+	creator = 'todo'
 	name = 'ToDoDB'
 	class Record (RecordBlock):
 		def fill(self):
@@ -138,7 +140,7 @@ class ToDo (RecordDatabase):
 
 
 
-class Mail:
+class Mail (RecordDatabase):
 	creator = 'mail'
 	name = 'MailDB'
 	class Pref (PrefBlock):
@@ -167,6 +169,7 @@ PrefClasses[''] = PrefBlock
 
 DBClasses[Memo.name] = Memo
 DBClasses[ToDo.name] = ToDo
+DBClasses[Mail.name] = Mail
 PrefClasses[Mail.creator] = {'': Mail.Pref}
 
 
