@@ -1,3 +1,15 @@
+Aug 24, 1997	Kenneth Albanowski 0.8.3
+	Perl 5 binding changes:
+	  - Default attributes of new records.
+	  - Generic typedef for all pilot-link char* casts.
+	  - Added SvOK and SvTYPE checks to all (?) SvRV extactions.
+	  - Rewrote unpacking technique to deal with failed unpackings (due
+	    to deleted records.)
+	  - Rewrote packing technique to deal with deleted records (produce
+	    empty result).
+	  - alarm->units returns text, not numbes.
+	  - Fixed shadowing variable in getNextModRecord.
+
 Aug 17, 1997	Kenneth Albanowski 0.8.2
 	Utility changes:
 	  - read-ical: still more oops.

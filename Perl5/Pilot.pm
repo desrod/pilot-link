@@ -143,6 +143,12 @@ package PDA::Pilot::Record;
 
 sub new {
 	my($self,$data,$id,$attr,$cat,$index) = @_;
+
+      $index = 0 unless defined($index);
+      $id = 0 unless defined($id);
+      $attr = 0 unless defined($attr);
+      $cat = "" unless defined($cat);
+
 	$self = bless { 
 		index => $index,
 		id => $id,

@@ -15,7 +15,7 @@ SERIAL = unixserial.$(O)
 
 OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS) $(SERIAL)
 
-prefix = /usr/local
+prefix = /usr/pilot
 exec_prefix = ${prefix}
 libdir = ${exec_prefix}/lib
 srcdir = .
