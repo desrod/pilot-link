@@ -640,7 +640,7 @@ int main(int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-	        {"delete-all",	 0 , POPT_ARG_NONE, &run_mode,  mode_delete_all, "Delete all Palm records in all categories"},
+	        {"delete-all",	 0 , POPT_ARG_NONE, NULL,  mode_delete_all, "Delete all Palm records in all categories"},
 	        {"delimiter",	't', POPT_ARG_INT,  &tabledelim,          0, "Include category, use delimiter (3=tab, 2=;, 1=,)"},
         	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,'d', "Delete old Palm records in <category>", "category"},
 	        {"category",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to", "category"},
