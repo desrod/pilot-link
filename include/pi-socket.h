@@ -25,24 +25,26 @@ extern "C" {
 #define PI_SOCK_STREAM		0x0010
 #define PI_SOCK_RAW		0x0030
 
-#define PI_CMD_CMP 0x01
-#define PI_CMD_NET 0x02
-#define PI_CMD_SYS 0x03
+#define PI_CMD_CMP		0x01
+#define PI_CMD_NET		0x02
+#define PI_CMD_SYS		0x03
 
-#define PI_MSG_PEEK 	0x01
-#define	PI_MSG_REALLOC	0x02
+#define PI_MSG_PEEK		0x01
+#define	PI_MSG_REALLOC		0x02
 
+/** @brief Protocol levels for the socket's protocol queue */
 enum PiOptLevels {
-	PI_LEVEL_DEV,
-	PI_LEVEL_SLP,
-	PI_LEVEL_PADP,
-	PI_LEVEL_NET,
-	PI_LEVEL_SYS,
-	PI_LEVEL_CMP,
-	PI_LEVEL_DLP,
-	PI_LEVEL_SOCK
+	PI_LEVEL_DEV,		/**< Device level */
+	PI_LEVEL_SLP,		/**< Serial link protocol level */
+	PI_LEVEL_PADP,		/**< PADP protocol level */
+	PI_LEVEL_NET,		/**< NET protocol level */
+	PI_LEVEL_SYS,		/**< System protocol level */
+	PI_LEVEL_CMP,		/**< CMP protocol level */
+	PI_LEVEL_DLP,		/**< Desktop link protocol level */
+	PI_LEVEL_SOCK		/**< Socket level */
 };
 
+/** @brief Device level socket options (use pi_getsockopt() and pi_setsockopt()) */
 enum PiOptDevice {
 	PI_DEV_RATE,
 	PI_DEV_ESTRATE,
@@ -50,6 +52,7 @@ enum PiOptDevice {
 	PI_DEV_TIMEOUT
 };
 
+/** @brief Serial link protocol socket options (use pi_getsockopt() and pi_setsockopt()) */
 enum PiOptSLP {
 	PI_SLP_DEST,
 	PI_SLP_LASTDEST,
@@ -61,11 +64,13 @@ enum PiOptSLP {
 	PI_SLP_LASTTXID
 };
 
+/** @brief PADP protocol socket options (use pi_getsockopt() and pi_setsockopt()) */
 enum PiOptPADP {
 	PI_PADP_TYPE,
 	PI_PADP_LASTTYPE
 };
 
+/** @brief CMP protocol socket options (use pi_getsockopt() and pi_setsockopt()) */
 enum PiOptCMP {
 	PI_CMP_TYPE,
 	PI_CMP_FLAGS,
@@ -73,17 +78,19 @@ enum PiOptCMP {
 	PI_CMP_BAUD
 };
 
+/** @brief NET protocol socket options (use pi_getsockopt() and pi_setsockopt()) */
 enum PiOptNet {
 	PI_NET_TYPE,
-	PI_NET_SPLIT_WRITES,	/* if set, write separately the NET header and data */
-	PI_NET_WRITE_CHUNKSIZE	/* size of data chunks if PI_NET_SPLIT_WRITES is set. 0 for no chunking of data */
+	PI_NET_SPLIT_WRITES,		/**< if set, write separately the NET header and data */
+	PI_NET_WRITE_CHUNKSIZE		/**< size of data chunks if PI_NET_SPLIT_WRITES is set. 0 for no chunking of data */
 };
 
+/** @brief Socket level options (use pi_getsockopt() and pi_setsockopt()) */
 enum PiOptSock {
 	PI_SOCK_STATE
 };
 
-struct	pi_protocol;	/* forward declaration */
+struct	pi_protocol;			/* forward declaration */
 
 typedef struct pi_socket {
 	int sd;
@@ -104,15 +111,15 @@ typedef struct pi_socket {
 	struct pi_device *device;
 
 	int state;
-	int command;	/* true when socket in command state  */
-	int accept_to;	/* timeout value for call to accept() */
-	int dlprecord;	/* Index used for some DLP functions */
+	int command;			/**< true when socket in command state  */
+	int accept_to;			/**< timeout value for call to accept() */
+	int dlprecord;			/**< Index used for some DLP functions */
 
-	int dlpversion;	/* version of the DLP protocol running on the device */
-	unsigned long maxrecsize;/* max record size on the device */
+	int dlpversion;			/**< version of the DLP protocol running on the device */
+	unsigned long maxrecsize;	/**< max record size on the device */
 
-	int last_error;		/* error code returned by the last dlp_* command */
-	int palmos_error;	/* Palm OS error code returned by the last transaction with the handheld */
+	int last_error;			/**< error code returned by the last dlp_* command */
+	int palmos_error;		/**< Palm OS error code returned by the last transaction with the handheld */
 
 #ifdef OS2
 	unsigned short os2_read_timeout;
