@@ -287,39 +287,27 @@ dnl *********************************
 dnl Check if using the included popt
 dnl *********************************
 
-AC_ARG_WITH(included-popt,
-[  --with-included-popt    use bundled popt library, not from system],
-[ 
-  case "$withval" in
-	yes)
-		INCLUDED_POPT=yes
-		;;
-	no)
-		INCLUDED_POPT=no
-		;;
-  esac ],
-)
-if test x"$INCLUDED_POPT" != x"yes"; then
-    AC_CHECK_LIB(popt, poptGetContext,
-		 INCLUDED_POPT=no, INCLUDED_POPT=yes)
-fi
-
 AC_MSG_CHECKING(whether to use included popt)
-if test x"$INCLUDED_POPT" = x"yes"; then
+AC_ARG_WITH(included-popt,
+[  --with-included-popt    use bundled popt library, not from system],,
+		AC_CHECK_LIB(popt, poptGetContext,
+				[with_included_popt="no"],
+				[with_included_popt="yes"])
+)
+
+if test "x$with_included_popt" = "xyes"; then
+	msg_popt="yes (included)"
     AC_MSG_RESULT(yes)
-    BUILD_POPT='$(POPT_OBJS)'  
 	POPT_LIBS='$(POPT_OBJS)'
-    POPT_FLAGS="-I$srcdir/popt"
+    POPT_INCLUDES="-I$srcdir/popt"
 else
     AC_MSG_RESULT(no)
-	BUILD_POPT=""
+	msg_popt="yes (system)"
     POPT_LIBS="-lpopt"
 fi
-AC_SUBST(INCLUDED_POPT)
-AC_SUBST(BUILD_POPT)
+AM_CONDITIONAL(INCLUDED_POPT, test "x$with_included_popt" = "xyes")
 AC_SUBST(POPT_LIBS)
-AC_SUBST(POPT_FLAGS)
-
+AC_SUBST(POPT_INCLUDES)
 
 dnl ******************************
 dnl Test for getopt
@@ -752,8 +740,9 @@ echo "
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
-  Using internal popt..... : $INCLUDED_POPT
   ElectricFence checks.... : $msg_efence
+  Using internal popt..... : $with_included_popt
+  Readline support........ : $msg_readline
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
   CXXFLAGS................ : $CXXFLAGS
@@ -763,7 +752,6 @@ echo "
   C++ support............. : $msg_cpp
   Iconv support........... : $msg_iconv
   PNG support............. : $msg_png
-  Readline support........ : $msg_readline
 
   External Language Support
   -------------------------.
