@@ -135,9 +135,13 @@ int main(int argc, const char *argv[])
 	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
 	}
 
-	if (c < -1) plu_badoption(po,c);
+	if (c < -1) {
+		plu_badoption(po,c);
+	}
 
 	if (filename == NULL) {
 		fprintf(stderr,"\n   ERROR: You must specify a filename to read ToDo entries from.\n"

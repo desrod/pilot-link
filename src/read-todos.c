@@ -77,6 +77,12 @@ int main(int argc, const char *argv[])
 	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
+	}
+
+	if (c < -1) {
+		plu_badoption(pc,c);
 	}
 
 	if (!plu_port && !filename) {
