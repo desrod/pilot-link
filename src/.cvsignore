@@ -36,6 +36,8 @@ pilot-undelete
 pilot-xfer
 read-expenses
 read-ical
+read-notepad
+read-palmpix
 read-todos
 reminders
 sync-plan
