@@ -755,6 +755,7 @@ AC_OUTPUT([
 	doc/Makefile
 	doc/man/Makefile
 	doc/man/addresses.1
+	doc/man/debugsh.1
 	doc/man/dlpsh.1
 	doc/man/hinotes.1
 	doc/man/ietf2datebook.1
@@ -764,20 +765,33 @@ AC_OUTPUT([
 	doc/man/install-memo.1
 	doc/man/install-netsync.1
 	doc/man/install-todo.1
+	doc/man/install-todos.1
 	doc/man/install-user.1
 	doc/man/memos.1
+	doc/man/money2qif.1
+	doc/man/pi-csd.1
 	doc/man/pi-getram.1
 	doc/man/pi-getrom.1
+	doc/man/pi-getromtoken.1
 	doc/man/pilot-addresses.1
 	doc/man/pilot-archive.1
+	doc/man/pilot-clip.1
+	doc/man/pilot-dedupe.1
+	doc/man/pilot-file.1
 	doc/man/pilot-foto.1
-	doc/man/pilot-link.7
+	doc/man/pilot-schlep.1
+	doc/man/pilot-treofoto.1
+	doc/man/pilot-wav.1
 	doc/man/pilot-xfer.1
+	doc/man/pi-nredir.1
 	doc/man/read-expenses.1
 	doc/man/read-ical.1
 	doc/man/read-notepad.1
 	doc/man/read-palmpix.1
+	doc/man/read-screenshot.1
 	doc/man/read-todos.1
+	doc/man/read-veo.1
+	doc/man/reminders.1
 	tests/Makefile
 	darwin/Makefile
 ])
