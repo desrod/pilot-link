@@ -64,7 +64,7 @@ typedef struct pi_file {
 typedef struct {
 	int type;				/**< Transfer type (see #piProgressType enum) */
 	int transferred_bytes;			/**< Current transferred bytes */
-	void *userinfo;				/**< Provided by and passed back to client */
+	void *userinfo;				/**< Provided by and passed back to client (not used for now, will be in a future release) */
 	union {
 		struct {
 			pi_file_t *pf;		/**< May be NULL */
@@ -155,10 +155,13 @@ extern int pi_file_merge
     PI_ARGS((pi_file_t * pf, int socket, int cardno,
 		progress_func report_progress));
 
-extern unsigned long unix_time_to_pilot_time
-    PI_ARGS((time_t t));
-extern time_t pilot_time_to_unix_time
-    PI_ARGS((unsigned long raw_time));
+/** @name Utilities */
+/*@{*/
+	extern unsigned long unix_time_to_pilot_time
+	    PI_ARGS((time_t t));
+	extern time_t pilot_time_to_unix_time
+	    PI_ARGS((unsigned long raw_time));
+/*@}*/
 
 #ifdef __cplusplus
 }

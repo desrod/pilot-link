@@ -36,6 +36,8 @@
  * checked using pi_palmos_error()
  *
  */
+
+/** @brief Definition of errors returned by various libpisock functions */
 enum dlpErrorDefinitions {
 	/* PROTOCOL level errors */
 	PI_ERR_PROT_ABORTED		= -100,		/**< aborted by other end */
