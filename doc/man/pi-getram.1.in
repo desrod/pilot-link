@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "pi-getram" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.TH "pi-getram" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
 \fBpi\-getram\fR \- Retrieves the RAM image from your Palm device
 

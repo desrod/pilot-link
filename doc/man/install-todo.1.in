@@ -1,0 +1,64 @@
+.\" 
+.\" 
+.TH "install-todo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
+.SH "NAME"
+\fBinstall\-todo\fR \- Updates the Palm ToDo list with one new entry
+
+.SH "SYNOPSIS"
+\fBinstall\-todo\fR [\fB\-p\fR <\fIport\fR>] [\fB\-P\fR <\fIpriority\fR>] [\fB\-d\fR <\fIduedate\fR>] [\fB\-c\fR] [\fB\-n\fR <\fInote\fR>] [\fB\-f\fR <\fIfilename\fR>]
+
+.SH "DESCRIPTION"
+\fBinstall\-todo\fR allows the user to install one new ToDo list entry with specified paramters passed to \fBinstall\-todo\fR and add a Note entry using text found in a filename <\fIfilename\fR> passed to \fBinstall\-todo\fR
+.SH "OPTIONS"
+.TP 
+\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
+Use device file <\fIport\fR> to communicate with the Palm handheld device. If this is not specified, will look for the \fI$PILOTPORT\fR environment variable. If both are not found, will fall back to /dev/pilot
+
+
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Display help synopsis for \fBinstall\-hinote\fR
+
+
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Display version of \fBinstall\-hinote\fR
+
+
+.TP 
+\fB\-P\fR, \fB\-\-priority\fR <\fIpriority\fR>
+Specify the priority of the ToDo entry (defaults to 4)
+
+
+.TP 
+\fB\-d\fR, \fB\-\-due\fR <\fIduedate\fR>
+The due Date MM/DD/YYYY (defaults to blank, no due date)
+
+
+.TP 
+\fB\-c\fR, \fB\-\-completed\fR
+Mark the item complete (default is incomplete)
+
+
+.TP 
+\fB\-n\fR, \fB\-\-note\fR <\fInote\fR>
+The Note text you wish to add to this ToDo entry
+
+
+.TP 
+\fB\-f\fR, \fB\-\-file\fR <\fIfilename\fR>
+A local filename containing the Note text
+.SH "USAGE"
+The program will connect to a target Palm handheld device, and writes the
+ToDo entry to the Palm ToDo List application, using the specified parameters and input from the supplied file passed as arguments
+.SH "SEE ALSO"
+\fBinstall\-todos\fR(1)
+.SH "KNOWN BUGS"
+\fBinstall\-todo\fR has no known bugs
+
+.SH "REPORTING BUGS"
+Report bugs at \fIhttp://bugs.pilot\-link.org/\fR
+
+
+.SH "AUTHOR"
+\fBinstall\-todo\fR was written by Martin Fick, based on code in install\-todos by Robert A. Kaplan

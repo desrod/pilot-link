@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "install-hinote" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.TH "install-hinote" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
 \fBinstall\-hinote\fR \- installs a new Hi\-Note entry onto your Palm Device
 

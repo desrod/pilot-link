@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "install-datebook" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.TH "install-datebook" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
 \fBinstall\-datebook\fR \- installs a new datebook entries onto your Palm handheld device
 

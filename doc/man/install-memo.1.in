@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "install-memo" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.TH "install-memo" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
 \fBinstall\-memo\fR \- installs a new memo entry onto your Palm Computing Device
 

@@ -1,8 +1,6 @@
-.\" 
-.\" 
-.TH "addresses" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.TH "addresses" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBaddresses\fR \- Dumps the Palm AddressBook entries to STDOUT in a simple format
+\fBaddresses\fR \- Dumps the Palm Address Book entries to STDOUT in a simple format
 
 
 .SH "SYNOPSIS"

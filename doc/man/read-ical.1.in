@@ -1,9 +1,8 @@
 .\" 
 .\" 
-.TH "read-ical" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.TH "read-ical" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
-\fBread\-ical\fR \- coverts information on your Palm handheld device into an Ical\-formatted
-calendar
+\fBread\-ical\fR \- coverts information on your Palm handheld device into an Ical\-formatted calendar
 
 
 .SH "SYNOPSIS"

@@ -1,6 +1,6 @@
 .\" 
 .\" 
-.TH "ietf2datebook" "1" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.TH "ietf2datebook" "1" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "Conduits"
 .SH "NAME"
 \fBietf2datebook\fR \- Converts IETF agenda format to \fBinstall\-datebook\fR format
 

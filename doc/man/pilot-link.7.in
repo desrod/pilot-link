@@ -1,4 +1,4 @@
-.TH "PILOT-LINK" "7" "pilot-link - @VERSION@" "Free Software Foundation" ""
+.TH "PILOT-LINK" "7" "pilot-link - @VERSION@" "(c) FSF 1996-2003" "pilot-link suite"
 .SH "NAME"
 \fBpilot\-link\fR \- a suite of tools for communicating with Palm handheld devices, such as
 those made from \fIPalm\fR, \fIHandspring\fR, \fIHandera\fR, \fITRGPro\fR, \fISony\fR or other Palm Compatible Handheld PDA device
