@@ -2,6 +2,9 @@
 
 	* src/install-user.c: Exit when no arguments are specified
 
+	* src/pilot-xfer.c: Added a top limit for numexclude. We don't want
+	  to oob this array. This prevents that. 
+
 2002-03-18  JP Rosevear  <jpr@ximian.com>
 
 	* src/dlpsh.c (strtoke): don't run past the end of the string on

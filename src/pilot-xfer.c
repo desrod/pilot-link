@@ -91,8 +91,11 @@ int	novsf	= 0;
 int sd = 0;
 char *port = NULL;
 
-char *exclude[100];
-int numexclude = 0;
+#define MAXEXCLUDE 100
+char 	*exclude[MAXEXCLUDE];
+int 	numexclude = 0;
+
+
 
 /***********************************************************************
  *
@@ -119,8 +122,12 @@ static void MakeExcludeList(char *efile)
 	while ((fgets(temp, sizeof(temp), f)) != NULL) {
 		if (temp[strlen(temp) - 1] == '\n')
 			temp[strlen(temp) - 1] = '\0';
-		printf("Will exclude: %s\n", temp);
+		printf("Now excluding: %s\n", temp);
 		exclude[numexclude++] = strdup(temp);
+		if (numexclude == MAXEXCLUDE) {
+			printf("Maximum number of exclusions reached [%d]\n", MAXEXCLUDE);
+			break;
+		}
 	}
 }
 
