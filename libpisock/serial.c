@@ -154,7 +154,12 @@ static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 
 static void pi_serial_device_free (struct pi_device *dev) 
 {
-	free(dev->data);
+	struct pi_serial_data *data = (struct pi_serial_data *)dev->data;
+
+	if (*(data->ref) == 0)
+		free (data->ref);
+	free(data);
+
 	free(dev);
 }
 
@@ -186,6 +191,7 @@ struct pi_device *pi_serial_device (int type)
 	
 	data->buf_size 		= 0;
 	data->ref               = (int *)malloc (sizeof (int));
+	*(data->ref)            = 1;
 	data->rate 		= -1;
 	data->establishrate 	= -1;
 	data->establishhighrate = -1;
