@@ -2,6 +2,7 @@
 #define _PILOT_EXPENSE_H_
 
 #include "pi-args.h"
+#include "pi-appinfo.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,10 +50,7 @@ struct Expense {
 };
 
 struct ExpenseAppInfo {
-  int renamedcategories;
-  char CategoryName[16][16];
-  unsigned char CategoryID[16];
-  unsigned char lastUniqueID;
+  struct CategoryAppInfo category;
   enum ExpenseSort sortOrder;
   struct ExpenseCustomCurrency currencies[4];
 };
@@ -72,12 +70,12 @@ struct ExpensePrefs {
 };
 
 extern void free_Expense PI_ARGS((struct Expense *));
-extern void unpack_Expense PI_ARGS((struct Expense *, unsigned char * record, int len));
-extern void pack_Expense PI_ARGS((struct Expense *, unsigned char * record, int * len));
-extern void unpack_ExpensePrefs PI_ARGS((struct ExpensePrefs *, unsigned char * record, int len));
-extern void pack_ExpensePrefs PI_ARGS((struct ExpensePrefs *, unsigned char * record, int * len));
-extern void unpack_ExpenseAppInfo PI_ARGS((struct ExpenseAppInfo *, unsigned char * AppInfo, int len));
-extern void pack_ExpenseAppInfo PI_ARGS((struct ExpenseAppInfo *, unsigned char * AppInfo, int * len));
+extern int unpack_Expense PI_ARGS((struct Expense *, unsigned char * record, int len));
+extern int pack_Expense PI_ARGS((struct Expense *, unsigned char * record, int len));
+extern int unpack_ExpensePrefs PI_ARGS((struct ExpensePrefs *, unsigned char * record, int len));
+extern int pack_ExpensePrefs PI_ARGS((struct ExpensePrefs *, unsigned char * record, int len));
+extern int unpack_ExpenseAppInfo PI_ARGS((struct ExpenseAppInfo *, unsigned char * AppInfo, int len));
+extern int pack_ExpenseAppInfo PI_ARGS((struct ExpenseAppInfo *, unsigned char * AppInfo, int len));
 
 #ifdef __cplusplus
 }

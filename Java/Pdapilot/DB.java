@@ -55,15 +55,39 @@ public class DB {
 		public AppBlock getAppBlock() throws DlpException {
 			return socket.dlp_ReadAppBlock(handle, dbClass);
 		}
+		
+		public AppBlock newAppBlock() {
+			return dbClass.newAppBlock();
+		}
 
 		public SortBlock getSortBlock() throws DlpException {
 			return socket.dlp_ReadSortBlock(handle, dbClass);
 		}
-		
+
+		public SortBlock newSortBlock() {
+			return dbClass.newSortBlock();
+		}
+
 		public Record getRecord(int index) throws DlpException {
 			return socket.dlp_ReadRecordByIndex(handle, index, dbClass);
 		}
 
+		public Record newRecord() {
+			return dbClass.newRecord();
+		}
+
+		public Record newRecord(RecordID id) {
+			return dbClass.newRecord(id);
+		}
+
+		public Resource newResource() {
+			return dbClass.newResource();
+		}
+
+		public Resource newResource(Char4 type, int id) {
+			return dbClass.newResource(type, id);
+		}
+		
 		public Record getRecord(RecordID id) throws DlpException {
 			return socket.dlp_ReadRecordByID(handle, id, dbClass);
 		}
@@ -136,6 +160,14 @@ public class DB {
 			socket.dlp_ResetSyncFlags(handle);
 		}
 
+		public void resetNext() throws DlpException {
+			socket.dlp_ResetDBIndex(handle);
+		}
+		
+		public int getRecords() throws DlpException {
+			return socket.dlp_ReadOpenDBInfo(handle);
+		}
+
 		public Pref getPref(int id)
 			throws DlpException, IOException
 		{	return getPref(id, true); }
@@ -152,6 +184,16 @@ public class DB {
 				handle = socket.dlp_OpenDB(dbcard, dbmode, dbname);
 			return result;
 		}
+		
+		public Pref newPref(int id)
+		{
+			return dbClass.newPref(null, dbClass.creator(), id, 1, true);
+		}
+		
+		public Pref newPref(int id, int version, boolean backup)
+		{
+			return dbClass.newPref(null, dbClass.creator(), id, version, backup);
+		}
 
 		public void setPref(Pref pref)
 			throws DlpException, IOException
@@ -163,6 +205,12 @@ public class DB {
 				handle = socket.dlp_OpenDB(dbcard, dbmode, dbname);
 		}
 
+		public RecordID[] getRecordIDs()throws DlpException
+			{ return getRecordIDs(false);	}
+		public RecordID[] getRecordIDs(boolean sort) 	throws DlpException
+		{	return getRecordIDs(sort, 0); 	}
+		public RecordID[] getRecordIDs(boolean sort, int start)		throws DlpException
+		{	return getRecordIDs(sort, start, 0xffff);	}
 		public RecordID[] getRecordIDs(boolean sort, int start, int max)
 			throws DlpException
 		{

@@ -11,7 +11,7 @@ public class Record extends Pdapilot.Record {
 
 		public String description, note;
 		public java.util.Date due;
-		public boolean complete, indefinite;
+		public boolean complete;
 		public int priority;
 		
 		public Record() {
@@ -28,17 +28,16 @@ public class Record extends Pdapilot.Record {
 		public void fill() {
 			priority = 0;
 			complete = false;
-			indefinite = true;
 			description = "";
+			due = null;
 		}
 		
-        public String toString() {
-            return "<todo record, id "+id+", index "+index+", attr "+attr+", cat "+
-          cat+", description '"+ Util.prettyPrint(description)+
+        public String describe() {
+            return "id "+id+", index "+index+", attr "+attr+", category "+
+          category+", description '"+ Util.prettyPrint(description)+
           ", note '"+ Util.prettyPrint(note)+
           ", due "+ Util.prettyPrint(due) +
           ", complete " + complete +
-          ", indefinite " + indefinite +
-          ", priority " + priority + "'>";
+          ", priority " + priority + "'";
         }
 }

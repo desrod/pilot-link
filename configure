@@ -1222,7 +1222,7 @@ fi
 ccexecs=''
 cclib=''
 libcclib=''
-SUBMAKE_COMM='cd libsock ; $(MAKE) '
+SUBMAKE_COMM='cd $(top_builddir)/libsock ; $(MAKE) '
 SUBMAKE_COMM_CC='-true'
 EXT=''
 CXXLIBS=''
@@ -1230,7 +1230,7 @@ if test $ac_cv_prog_cxx_works = yes; then
   ccexecs='$(CCEXECS)'
   cclib='libpicc.a'
   libcclib='libcc/libpicc.a'
-  SUBMAKE_COMM_CC='cd libcc ; $(MAKE) '
+  SUBMAKE_COMM_CC='cd $(top_builddir)/libcc ; $(MAKE) '
   WITHCXX='WITHCXX'
 else
   CXX=''
@@ -1671,7 +1671,7 @@ EOF
 
 fi
 
-for ac_hdr in fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h
+for ac_hdr in fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -2208,7 +2208,7 @@ cat >> confdefs.h <<EOF
 EOF
 
 
-for ac_func in atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2
+for ac_func in atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:2215: checking for $ac_func" >&5
@@ -2831,7 +2831,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile include/pi-config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile include/pi-config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -2961,7 +2961,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile"}
+CONFIG_FILES=\${CONFIG_FILES-"libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then

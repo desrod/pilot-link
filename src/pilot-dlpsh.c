@@ -120,8 +120,8 @@ int user_fn(int sd, int argc, char **argv) {
   if (fl_pid)
     U.lastSyncPC = nU.lastSyncPC;
 
-  U.succSyncDate = time(NULL);
-  U.lastSyncDate = U.succSyncDate;
+  U.successfulSyncDate = time(NULL);
+  U.lastSyncDate = U.successfulSyncDate;
 
   ret = dlp_WriteUserInfo(sd, &U);
   if (ret < 0) {
@@ -215,9 +215,9 @@ ls_fn(int sd, int argc, char **argv)
       printf ("creator '%.4s'; ", (char *)&tag);
       printf ("version %d; ", info.version);
       printf ("modnum %ld\n", info.modnum);
-      printf ("  cr %s; ", timestr (info.crdate));
-      printf ("mod %s; ", timestr (info.moddate));
-      printf ("backup %s; ", timestr (info.backupdate));
+      printf ("  cr %s; ", timestr (info.createDate));
+      printf ("mod %s; ", timestr (info.modifyDate));
+      printf ("backup %s; ", timestr (info.backupDate));
       printf ("\n");
     }
 

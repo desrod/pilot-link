@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
   }
   
   dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-  unpack_ToDoAppInfo(&tai, buffer, 0);
+  unpack_ToDoAppInfo(&tai, buffer, 0xffff);
   
   for (i=0;1;i++) {
   	struct ToDo t;
@@ -245,19 +245,19 @@ int main(int argc, char *argv[])
 	
 	fprintf(ical,"set begin [date make %d %d %d]\n", a.begin.tm_mday,a.begin.tm_mon+1,a.begin.tm_year+1900);
 	
-	if (a.repeatFreq) {
+	if (a.repeatFrequency) {
 	  if (a.repeatType == repeatDaily) {
-	    fprintf(ical,"$i dayrepeat %d $begin\n", a.repeatFreq);
+	    fprintf(ical,"$i dayrepeat %d $begin\n", a.repeatFrequency);
 	  } else if(a.repeatType == repeatMonthlyByDate) {
-	    fprintf(ical,"$i month_day %d $begin %d\n",a.begin.tm_mon+1,a.repeatFreq);
+	    fprintf(ical,"$i month_day %d $begin %d\n",a.begin.tm_mon+1,a.repeatFrequency);
 	  } else if(a.repeatType == repeatMonthlyByDay) {
 	    if (a.repeatOn>=domLastSun) {
 	      fprintf(ical,"$i month_last_week_day %d 1 $begin %d\n", a.repeatOn % 7 + 1,
-	                                                    a.repeatFreq);
+	                                                    a.repeatFrequency);
 	    } else {
 	      fprintf(ical,"$i month_week_day %d %d $begin %d\n", a.repeatOn % 7 + 1,
 	                                                    a.repeatOn / 7 + 1,
-	                                                    a.repeatFreq);
+	                                                    a.repeatFrequency);
 	    }
 	  } else if(a.repeatType == repeatWeekly) {
 	    /*
@@ -266,7 +266,7 @@ int main(int argc, char *argv[])
 	     * do days of the week and a repeat-frequency > 1, so do the
 	     * best we can and go on.
 	     */
-	    if (a.repeatFreq > 1) {
+	    if (a.repeatFrequency > 1) {
 		int ii, found;
 		for (ii = 1, found = 0; ii < 128; ii <<= 1) {
 		    if (a.repeatOn & i)
@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
 		if (found > 1)
 		    fprintf(stderr, "Incomplete translation of %s\n",
 			    a.description);
-		fprintf(ical,"$i dayrepeat %d $begin\n", a.repeatFreq * 7);
+		fprintf(ical,"$i dayrepeat %d $begin\n", a.repeatFrequency * 7);
 	    } else {
 		fprintf(ical,"$i weekdays ");
 		if(a.repeatOn & 1)
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 		fprintf(ical,"\n");
 	    }
 	  } else if(a.repeatType == repeatYearly) {
-	    fprintf(ical,"$i monthrepeat %d $begin\n", 12 * a.repeatFreq);
+	    fprintf(ical,"$i monthrepeat %d $begin\n", 12 * a.repeatFrequency);
 	  }
 	  fprintf(ical,"$i start $begin\n");
 	  if (!a.repeatForever)

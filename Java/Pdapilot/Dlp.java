@@ -5,7 +5,6 @@ import java.io.*;
 
 public class Dlp extends Socket {
 		Dlp(int sock) { super(sock); }
-
 		synchronized public int dlp_OpenDB(int card, int mode, String name) throws DlpException
 			{ return calls.dlp_OpenDB(socket, card, mode, name); }
 		synchronized public int dlp_CreateDB(Char4 creator, Char4 type, int card, int flags, int version, String name) throws DlpException
@@ -36,6 +35,8 @@ public class Dlp extends Socket {
 			{ return calls.dlp_WriteUserInfo(socket, info); }
 		synchronized public SysInfo dlp_ReadSysInfo() throws DlpException
 			{ return calls.dlp_ReadSysInfo(socket); }
+		synchronized public void dlp_OpenConduit() throws DlpException
+			{ calls.dlp_OpenConduit(socket); }
 		synchronized public NetInfo dlp_ReadNetSyncInfo() throws DlpException
 			{ return calls.dlp_ReadNetSyncInfo(socket); }
 		synchronized public int dlp_WriteNetSyncInfo(NetInfo info) throws DlpException
@@ -82,7 +83,13 @@ public class Dlp extends Socket {
 			{ return calls.dlp_ReadRecordIDList(socket, handle, sort, start, max); }
 		synchronized public int dlp_DeleteCategory(int handle, int category) throws DlpException
 			{ return calls.dlp_DeleteCategory(socket, handle, category); }
-			
+		synchronized public int dlp_ResetDBIndex(int handle) throws DlpException
+			{ return calls.dlp_ResetDBIndex(socket, handle); }
+		synchronized public int dlp_ResetSystem() throws DlpException
+			{ return calls.dlp_ResetSystem(socket); }
+    	synchronized public byte[] dlp_CallApplication(Char4 creator, int type, int action, byte[] data, int[] retcode)  	throws DlpException
+    		{ return calls.dlp_CallApplication(socket, creator, type, action, data, retcode); }
+    			
 		public void close() throws DlpException, IOException {
 			/* This method must be idempotent */
 			if (this.socket != 0) {
@@ -97,6 +104,10 @@ public class Dlp extends Socket {
 				dlp_EndOfSync(status);
 				super.close();
 			}
+		}
+
+		public void reset() throws DlpException {
+			dlp_ResetSystem();
 		}
 
 		public DB open(Pdapilot.Database dbClass)
@@ -145,6 +156,12 @@ public class Dlp extends Socket {
 		{
 			return dlp_ReadSysInfo();
 		}
+		
+		public void getStatus()
+			throws DlpException, CancelSyncException
+		{
+			dlp_OpenConduit();
+		}
 
 		public DBInfo getDBInfo(int start, boolean RAM, boolean ROM, int card)
 			throws DlpException
@@ -152,6 +169,12 @@ public class Dlp extends Socket {
 			return dlp_ReadDBList(card, (RAM ? constants.dlpDBListRAM : 0) |
 										(ROM ? constants.dlpDBListROM : 0),
 										start);
+		}
+		
+		public int getFeature(Char4 type, int id)
+			throws DlpException
+		{
+			return dlp_ReadFeature(type, id);
 		}
 		
 		public Pref getPref(Char4 creator, int id)
@@ -164,6 +187,21 @@ public class Dlp extends Socket {
 			if (dbClass == null)
 				dbClass = Database.defaultPrefClass;
 			return dlp_ReadAppPreference(creator, id, backup, dbClass);
+		}
+
+		public Pref newPref(Char4 creator, int id)
+			throws DlpException
+		{	return newPref(creator, id, 1); }
+		public Pref newPref(Char4 creator, int id, int version)
+			throws DlpException
+		{	return newPref(creator, id, version, true); }
+		public Pref newPref(Char4 creator, int id, int version, boolean backup)
+			throws DlpException
+		{
+			Database dbClass = (Database)Database.prefClasses.get(creator);
+			if (dbClass == null)
+				dbClass = Database.defaultPrefClass;
+			return dbClass.newPref(null, creator, id, version, backup);
 		}
 
 		public void setPref(Pref pref)
@@ -186,5 +224,17 @@ public class Dlp extends Socket {
 		
 		public void log(String message) throws DlpException {
 			dlp_AddSyncLogEntry(message);
+		}
+		
+		public byte[] callApplication(Char4 creator, int type, int action, byte[] data, int[] retcode)
+			throws DlpException
+		{
+			return dlp_CallApplication(creator, type, action, data, retcode);
+		}
+		
+		public void delete(String dbname) throws DlpException
+			{	delete(dbname, 0); }
+		public void delete(String dbname, int card) throws DlpException {
+			dlp_DeleteDB(card, dbname);
 		}
 }

@@ -55,6 +55,15 @@
 /* Define if you have the sa_len member of struct sockaddr */
 #undef HAVE_SA_LEN
 
+/* Define if you have the inet_aton function */
+#undef HAVE_INET_ATON
+
+/* Define if you have the gethostname function */
+#undef HAVE_GETHOSTNAME
+
+/* Define if you have the uname function */
+#undef HAVE_UNAME
+
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
@@ -102,6 +111,15 @@
 
 /* Define if you have the <ndir.h> header file.  */
 #undef HAVE_NDIR_H
+
+/* Define if you have the <sockio.h> header file.  */
+#undef HAVE_SOCKIO_H
+
+/* Define if you have the <netdb.h> header file.  */
+#undef HAVE_NETDB_H
+
+/* Define if you have the <sys/utsname.h> header file.  */
+#undef HAVE_SYS_UTSNAME_H
 
 #ifdef NeXT
 # include <libc.h>
@@ -152,6 +170,18 @@
 
 #ifdef HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
+#endif
+
+#ifdef HAVE_SOCKIO_H
+# include <sockio.h>
+#endif
+
+#ifdef HAVE_NETDB_H
+# include <netdb.h>
+#endif
+
+#ifdef HAVE_SYS_UTSNAME_H
+# include <sys/utsname.h>
 #endif
 
 #if defined(HAVE_DIRENT_H) && !defined(NeXT)

@@ -145,14 +145,14 @@ class Mail (RecordDatabase):
 	name = 'MailDB'
 	class Pref (PrefBlock):
 		def fill(self):
-			if self.id == 1:
-				self.synctype = None;
-				self.gethigh = None;
-				self.getcontaining = None;
+			if (self.id == 1) or (self.id == 2):
+				self.syncType = None;
+				self.getHigh = None;
+				self.getContaining = None;
 				self.truncate = None;
-				self.filterto = None;
-				self.filterfrom = None;
-				self.filtersubject = None;
+				self.filterTo = None;
+				self.filterFrom = None;
+				self.filterSubject = None;
 			elif self.id == 3:
 				self.signature = None;
 			

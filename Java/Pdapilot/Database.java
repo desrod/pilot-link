@@ -4,16 +4,21 @@ package Pdapilot;
 
 public class Database {
 	public Record newRecord() { return new Record(); }
+	public Record newRecord(RecordID id)
+		{ return new Record(null, id, 0, 0, 0); }
 	public Record newRecord(byte[] contents, RecordID id, int index, int attr, int cat) 
 		{ return new Record(contents, id, index, attr, cat); }
 		
 	public Resource newResource() { return new Resource(); }
+	public Resource newResource(Char4 type, int id) 
+		{ return newResource(null, type, id, 0); }
 	public Resource newResource(byte[] contents, Char4 type, int id, int index) 
 		{ return new Resource(contents, type, id, index); }
 	
 	public Pref newPref() { return new Pref(); }
 	public Pref newPref(byte[] contents, Char4 creator, int id, int version, boolean backup)
 		{ return new Pref(contents, creator, id, version, backup); }
+		
 	public AppBlock newAppBlock(){ return new AppBlock(); } 
 	public SortBlock newSortBlock() { return new SortBlock(); }
 	public AppBlock newAppBlock(byte[] contents){ return new AppBlock(contents); } 

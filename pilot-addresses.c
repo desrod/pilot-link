@@ -130,7 +130,7 @@ int match_category(char * buf, struct AddressAppInfo * aai)
 {
   int i;
   for (i=0;i<16;i++)
-    if (strcasecmp(buf, aai->CategoryName[i])==0)
+    if (strcasecmp(buf, aai->category.name[i])==0)
       return i;
   return atoi(buf); /* 0 is default */
 }
@@ -139,7 +139,7 @@ int match_phone(char * buf, struct AddressAppInfo * aai)
 {
   int i;
   for (i=0;i<8;i++)
-    if (strcasecmp(buf, aai->phonelabels[i])==0)
+    if (strcasecmp(buf, aai->phoneLabels[i])==0)
       return i;
   return atoi(buf); /* 0 is default */
 }
@@ -157,13 +157,13 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo * aai)
     i = read_field(buf,in);
 
     memset(&a,0,sizeof(a));
-    a.whichphone = 0;
+    a.showPhone = 0;
     
     if (i==2) {
       category = match_category(buf, aai);
       i = read_field(buf, in);
       if (i==2) {
-        a.whichphone = match_phone(buf, aai);
+        a.showPhone = match_phone(buf, aai);
         i = read_field(buf, in);
       }
     } else
@@ -179,9 +179,9 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo * aai)
 
       if ( (l2>=3) && (l2<=7) ) {
         if (i != 2)
-          a.phonelabel[l2-3] = l2-3;
+          a.phoneLabel[l2-3] = l2-3;
         else {
-          a.phonelabel[l2-3] = match_phone(buf, aai);
+          a.phoneLabel[l2-3] = match_phone(buf, aai);
           i = read_field(buf, in);
         }
       }
@@ -204,13 +204,13 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo * aai)
     printf("Category %s (%d)\n", aai->CategoryName[category], category);
     for (l=0;l<19;l++) {
       if ((l>=3) && (l<=7))
-        printf(" %s (%d): %s\n", aai->phonelabels[a.phonelabel[l-3]], a.phonelabel[l-3], a.entry[l]);
+        printf(" %s (%d): %s\n", aai->phoneLabels[a.phoneLabel[l-3]], a.phoneLabel[l-3], a.entry[l]);
       else
         printf(" %s: %s\n", aai->labels[l], a.entry[l]);
     }
 #endif
 
-    pack_Address(&a, (unsigned char *)buf, &l);
+    l = pack_Address(&a, (unsigned char *)buf, sizeof(buf));
 #ifdef DEBUG
     dumpdata(buf,l);
 #endif    
@@ -248,7 +248,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo * aai)
         putc(',',out);
         putc('\n',out);
         if ( (j>=4) && (j<=8) )
-          write_field(out, aai->phonelabels[a.phonelabel[j-4]], 1);
+          write_field(out, aai->phoneLabels[a.phoneLabel[j-4]], 1);
         else
           write_field(out, aai->labels[j], 1);
         write_field(out, a.entry[j], -1);
@@ -259,25 +259,25 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo * aai)
     
 /* Complex system */
 #if 1
-    if (augment && (category || a.whichphone)) {
-      write_field(out,aai->CategoryName[category],2);
-      if (a.whichphone) {
-        write_field(out,aai->phonelabels[a.whichphone],2);
+    if (augment && (category || a.showPhone)) {
+      write_field(out,aai->category.name[category],2);
+      if (a.showPhone) {
+        write_field(out,aai->phoneLabels[a.showPhone],2);
       }
     }
 
     for (j=0;j<19;j++) {
 #ifdef NOT_ALL_LABELS
       if (augment && (j >= 4) && (j<=8))
-        if (a.phonelabel[j-4] != j-4)
-          write_field(out, aai->phonelabels[a.phonelabel[j-4]], 2);
+        if (a.phoneLabel[j-4] != j-4)
+          write_field(out, aai->phoneLabels[a.phoneLabel[j-4]], 2);
       if (a.entry[realentry[j]])
         write_field(out, a.entry[realentry[j]], 1);
 
 #else  /* print the phone labels if there is something in the field */
       if (a.entry[realentry[j]]) {
 	if (augment && (j >= 4) && (j<=8))
-	  write_field(out, aai->phonelabels[a.phonelabel[j-4]], 2);
+	  write_field(out, aai->phoneLabels[a.phoneLabel[j-4]], 2);
         write_field(out, a.entry[realentry[j]], 1);
       }
 #endif
@@ -433,8 +433,8 @@ int main(int argc, char *argv[])
 
   /* Tell the user who it is, with a different PC id. */
   U.lastSyncPC = 0xDEADBEEF;
-  U.succSyncDate = time(NULL);
-  U.lastSyncDate = U.succSyncDate;
+  U.successfulSyncDate = time(NULL);
+  U.lastSyncDate = U.successfulSyncDate;
   dlp_WriteUserInfo(sd,&U);
 
   dlp_AddSyncLogEntry(sd, "Wrote addresses to Pilot.\n");

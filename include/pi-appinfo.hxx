@@ -1,5 +1,5 @@
-#ifndef __PI_APP_INFO_H		/* -*- C++ -*- */
-#define __PI_APP_INFO_H
+#ifndef __PI_APP_INFO_HXX		/* -*- C++ -*- */
+#define __PI_APP_INFO_HXX
 
 #ifdef __cplusplus
 
@@ -73,4 +73,4 @@ class baseApp_t
      
 #endif /*__cplusplus*/
 
-#endif /* __PI_APP_INFO_H */
+#endif /* __PI_APP_INFO_HXX */

@@ -1,4 +1,7 @@
 
+As of 0.8.0: Any documentation included is dubious at best.
+
+
 New, as of 0.7.3: the module has been completely overhauled to support a
 more robust installation process ('make install' might just work!) and the
 actual interface has been substantially modified to automatically pack and

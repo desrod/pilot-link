@@ -170,6 +170,8 @@ dump_header (struct pi_file *pf, struct DBInfo *ip)
 {
   printf ("name: \"%s\"\n", ip->name);
   printf ("flags: 0x%x", ip->flags);
+  if (ip->flags & dlpDBFlagNewer) printf (" NEWER");
+  if (ip->flags & dlpDBFlagReset) printf (" RESET");
   if (ip->flags & dlpDBFlagResource) printf (" RESOURCE");
   if (ip->flags & dlpDBFlagReadOnly) printf (" READ_ONLY");
   if (ip->flags & dlpDBFlagAppInfoDirty) printf (" APP-INFO-DIRTY");
@@ -177,9 +179,9 @@ dump_header (struct pi_file *pf, struct DBInfo *ip)
   if (ip->flags & dlpDBFlagOpen) printf (" OPEN");
   printf ("\n");
   printf ("version: %d\n", ip->version);
-  printf ("creation_time: %s\n", iso_time_str (ip->crdate));
-  printf ("modified_time: %s\n", iso_time_str (ip->moddate));
-  printf ("backup_time: %s\n", iso_time_str (ip->backupdate));
+  printf ("creation_time: %s\n", iso_time_str (ip->createDate));
+  printf ("modified_time: %s\n", iso_time_str (ip->modifyDate));
+  printf ("backup_time: %s\n", iso_time_str (ip->backupDate));
   printf ("modification_number: %ld\n", ip->modnum);
   printf ("type: '%s', ", printlong(ip->type));
   printf ("creator: '%s'\n", printlong(ip->creator));

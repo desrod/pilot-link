@@ -6,7 +6,7 @@ SOCKOBJS = socket.$(O) serial.$(O) inetserial.$(O) slp.$(O) padp.$(O) \
 
 FILEOBJS = pi-file.$(O)
 
-APPOBJS = datebook.$(O) memo.$(O) address.$(O) todo.$(O) expense.$(O) mail.$(O) sync.$(O)
+APPOBJS = datebook.$(O) memo.$(O) address.$(O) todo.$(O) expense.$(O) mail.$(O) sync.$(O) appinfo.$(O)
 
 UTILOBJS = utils.$(O)
 
@@ -51,7 +51,7 @@ libpisock.a: $(OBJS)
 
 libpisock.la: $(OBJS)
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) \
-		-export-dynamic -rpath $(libdir) -version-info 0:0:0 \
+		-export-dynamic -rpath $(libdir) -version-info 1:0:0 \
 		-o libpisock.la $(OBJS)
 
 # OS/2 dll build rules,  This is somewhat of a hack.
@@ -89,19 +89,22 @@ depend:
 #Dependencies
 address.o address.lo: address.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-dlp.h ../include/pi-address.h
+ ../include/pi-dlp.h ../include/pi-address.h ../include/pi-appinfo.h
+appinfo.o appinfo.lo: appinfo.c ../include/pi-source.h ../include/pi-config.h \
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-appinfo.h
 cmp.o cmp.lo: cmp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-padp.h ../include/pi-cmp.h ../include/pi-serial.h
 datebook.o datebook.lo: datebook.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-dlp.h ../include/pi-datebook.h
+ ../include/pi-dlp.h ../include/pi-datebook.h ../include/pi-appinfo.h
 dlp.o dlp.lo: dlp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-syspkt.h
 expense.o expense.lo: expense.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-dlp.h ../include/pi-expense.h
+ ../include/pi-dlp.h ../include/pi-expense.h ../include/pi-appinfo.h
 inet.o inet.lo: inet.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-inet.h ../include/pi-slp.h ../include/pi-syspkt.h \
@@ -113,10 +116,10 @@ inetserial.o inetserial.lo: inetserial.c ../include/pi-source.h \
  ../include/pi-padp.h
 mail.o mail.lo: mail.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-dlp.h ../include/pi-mail.h
+ ../include/pi-dlp.h ../include/pi-mail.h ../include/pi-appinfo.h
 memo.o memo.lo: memo.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-dlp.h ../include/pi-memo.h
+ ../include/pi-dlp.h ../include/pi-memo.h ../include/pi-appinfo.h
 os2serial.o os2serial.lo: os2serial.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-serial.h ../include/pi-slp.h ../include/pi-syspkt.h \
@@ -148,7 +151,7 @@ syspkt.o syspkt.lo: syspkt.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-syspkt.h ../include/pi-slp.h ../include/pi-serial.h
 todo.o todo.lo: todo.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-dlp.h ../include/pi-todo.h
+ ../include/pi-dlp.h ../include/pi-todo.h ../include/pi-appinfo.h
 unixserial.o unixserial.lo: unixserial.c ../include/pi-source.h \
  ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
  ../include/pi-macros.h ../include/pi-serial.h ../include/pi-slp.h \

@@ -95,7 +95,7 @@ void memos(void *buf)
      
      Memo m;
      unpack_Memo(&m, (unsigned char *) buf, size);
-     pack_Memo(&m, kenBuf, &kenSize);
+     kenSize = pack_Memo(&m, kenBuf, 0xffff);
      free_Memo(&m);
      
      compare(buf, size, packed, packedSize1,
@@ -115,7 +115,7 @@ void todos(void *buf)
      
      ToDo m;
      unpack_ToDo(&m, (unsigned char *) buf, size);
-     pack_ToDo(&m, kenBuf, &kenSize);
+     kenSize = pack_ToDo(&m, kenBuf, 0xffff);
      free_ToDo(&m);
      
      compare(buf, size, packed, packedSize1,
@@ -144,7 +144,7 @@ void appointments(void *buf)
      
      Appointment m;
      unpack_Appointment(&m, ptr, size);
-     pack_Appointment(&m, kenBuf, &kenSize);
+     kenSize = pack_Appointment(&m, kenBuf, 0xffff);
      free_Appointment(&m);
      kenBuf[7] = *(ptr + 7);
      
@@ -186,7 +186,7 @@ void addresses(void *buf)
      
      Address m;
      unpack_Address(&m, (unsigned char *) buf, size);
-     pack_Address(&m, kenBuf, &kenSize);
+     kenSize = pack_Address(&m, kenBuf, 0xffff);
      free_Address(&m);
      kenBuf[0] = *ptr;
      

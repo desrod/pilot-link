@@ -9,6 +9,8 @@
 
 #ifdef __EMX__
 # define OS2
+# include <sys/types.h>
+# include <sys/socket.h>
 # include <sys/param.h> /* for htonl .. */
 # define ENOMSG 150
 # define strcasecmp stricmp
@@ -16,14 +18,12 @@
 
 # include <sys/ioctl.h>
 # include <sys/time.h>
-# include <sys/types.h>
 # include <sys/errno.h>
 # include <time.h>
 # include <fcntl.h>
 # include <unistd.h>
 # include <string.h>
 # include <stdlib.h>
-# include <sys/socket.h>
 /*# include <netinet/in.h>*/
 # include <dirent.h>
 # include <errno.h>

@@ -20,8 +20,8 @@ public class Pref extends Block {
 			this.unpack(contents);
 		}
 		
-		public String toString() {
-			return "<generic pref, creator="+creator.toString()+", id="+id+", version="+version+
-				", backup="+backup+", raw='"+Util.prettyPrint(raw)+"'>";
+		public String describe() {
+			return " creator="+creator.toString()+", id="+id+", version="+version+
+				", backup="+backup+", raw='"+Util.prettyPrint(raw)+"'";
 		}
 }

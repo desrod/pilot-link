@@ -186,9 +186,9 @@ pi_file_open (char *name)
   memcpy(ip->name, p, 32);
   ip->flags = get_short(p+32);
   ip->version = get_short(p+34);
-  ip->crdate = pilot_time_to_unix_time (get_long(p+36));
-  ip->moddate = pilot_time_to_unix_time (get_long(p+40));
-  ip->backupdate = pilot_time_to_unix_time (get_long(p+44));
+  ip->createDate = pilot_time_to_unix_time (get_long(p+36));
+  ip->modifyDate = pilot_time_to_unix_time (get_long(p+40));
+  ip->backupDate = pilot_time_to_unix_time (get_long(p+44));
   ip->modnum = get_long(p+48);
   app_info_offset = get_long(p+52);
   sort_info_offset = get_long(p+56);
@@ -202,9 +202,9 @@ pi_file_open (char *name)
 
 #ifdef DEBUG  
   printf("pi_file_open:\n Name '%s', flags 0x%4.4X, version %d\n", ip->name, ip->flags, ip->version);
-  printf(" Creation date %s\n", ctime(&ip->crdate));
-  printf(" Modification date %s\n", ctime(&ip->moddate));
-  printf(" Backup date %s\n", ctime(&ip->backupdate));
+  printf(" Creation date %s\n", ctime(&ip->createDate));
+  printf(" Modification date %s\n", ctime(&ip->modifyDate));
+  printf(" Backup date %s\n", ctime(&ip->backupDate));
   printf(" Appinfo size %d, sortinfo size %d\n", pf->app_info_size, pf->sort_info_size);
   printf(" Type '%s'", printlong(ip->type));
   printf(" Creator '%s', seed 0x%8.8lX\n", printlong(ip->creator), pf->unique_id_seed);
@@ -734,9 +734,9 @@ pi_file_close_for_write (struct pi_file *pf)
   memcpy(p, ip->name, 32);
   set_short(p+32, ip->flags);
   set_short(p+34, ip->version);
-  set_long(p+36, unix_time_to_pilot_time(ip->crdate));
-  set_long(p+40, unix_time_to_pilot_time(ip->moddate));
-  set_long(p+44, unix_time_to_pilot_time(ip->backupdate));
+  set_long(p+36, unix_time_to_pilot_time(ip->createDate));
+  set_long(p+40, unix_time_to_pilot_time(ip->modifyDate));
+  set_long(p+44, unix_time_to_pilot_time(ip->backupDate));
   set_long(p+48, ip->modnum);
   set_long(p+52, pf->app_info_size ? offset : 0); offset += pf->app_info_size;
   set_long(p+56, pf->sort_info_size ? offset : 0); offset += pf->sort_info_size;

@@ -67,15 +67,15 @@ int main(int argc, char *argv[])
   
   dlp_ReadSysInfo(sd, &S);
   
-  C.cardno = -1;
+  C.card = -1;
   C.more = 1;
   while(C.more) {
-    if(dlp_ReadStorageInfo(sd, C.cardno+1, &C)<0)
+    if(dlp_ReadStorageInfo(sd, C.card+1, &C)<0)
       break;
     
     printf(" Card #%d has %lu bytes of ROM, and %lu bytes of RAM (%lu of that is free)\n",
-       C.cardno, C.ROMsize, C.RAMsize, C.RAMfree);
-    printf(" It is called '%s', and was made by '%s'.\n", C.name, C.manuf);
+       C.card, C.romSize, C.ramSize, C.ramFree);
+    printf(" It is called '%s', and was made by '%s'.\n", C.name, C.manufacturer);
   }
   
 
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
   }
   
   printf( "Through ReadSysInfo: ROM Version: 0x%8.8lX, locale: 0x%8.8lX, name: '%s'\n", 
-              S.ROMVersion, S.localizationID, S.name);
+              S.romVersion, S.locale, S.name);
 
   dlp_ReadFeature(sd, makelong("psys"), 1, &romversion);
   
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
   
   if (dlp_ReadNetSyncInfo(sd, &N) >= 0) {
     printf( "NetSync: LAN sync = %d, Host name = '%s', address = '%s', netmask ='%s'\n",
-    	N.lansync, N.PCName, N.PCAddr, N.PCMask);
+    	N.lanSync, N.hostName, N.hostAddress, N.hostSubnetMask);
   }
   
   pi_close(sd);

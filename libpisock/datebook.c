@@ -28,11 +28,12 @@ void free_Appointment(struct Appointment * a) {
     free(a->note);
 }
 
-void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) {
+int unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) {
   int iflags;
   unsigned char * p2;
   unsigned long d;
   int j;
+  int destlen;
   
   /* Note: There are possible timezone conversion problems related to the
            use of the begin, end, repeatEnd, and exception[] members of a
@@ -49,6 +50,10 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
            appointments.
                                                                     -- KJA
            */
+  
+  destlen = 8;
+  if (len<destlen)
+    return 0;
   
   a->begin.tm_hour = get_byte(buffer);
   a->begin.tm_min = get_byte(buffer+1);
@@ -120,7 +125,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 			mktime(&a->repeatEnd);
 			a->repeatForever = 0;
 		}
-		a->repeatFreq = get_byte(p2); p2++;
+		a->repeatFrequency = get_byte(p2); p2++;
 		a->repeatOn = get_byte(p2); p2++;
 		a->repeatWeekstart = get_byte(p2); p2++;
 		p2++;
@@ -128,7 +133,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 	else {
 		a->repeatType = 0;
 		a->repeatForever = 1; /* repeatEnd is invalid */
-		a->repeatFreq = 0;
+		a->repeatFrequency = 0;
 		a->repeatOn = 0;
 		a->repeatWeekstart = 0;
 	}
@@ -171,15 +176,32 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 	else {
 		a->note = 0;
 	}
-  
+  return (p2-buffer);
 }
 
-void pack_Appointment(struct Appointment *a,
+int pack_Appointment(struct Appointment *a,
                       unsigned char *buf,
-                      int *len)
+                      int len)
 {
     int iflags;
     char *pos;
+    int destlen = 8;
+    
+    if (a->alarm)
+      destlen+=2;
+    if (a->repeatType)
+      destlen+=8;
+    if (a->exceptions)
+      destlen+=2+2*a->exceptions;
+    if (a->note)
+      destlen+=strlen(a->note)+1;
+    if (a->description)
+      destlen+=strlen(a->description)+1;
+    
+    if (!buf)
+      return destlen;
+    if (len<destlen)
+      return 0;
 
     set_byte(buf, a->begin.tm_hour);
     set_byte(buf+1, a->begin.tm_min);
@@ -230,7 +252,7 @@ void pack_Appointment(struct Appointment *a,
         
         pos+=2;
         
-        set_byte(pos, a->repeatFreq); pos++;
+        set_byte(pos, a->repeatFrequency); pos++;
         set_byte(pos, a->repeatOn); pos++;
         set_byte(pos, a->repeatWeekstart); pos++;
         set_byte(pos, 0); pos++;
@@ -266,45 +288,41 @@ void pack_Appointment(struct Appointment *a,
     }
 
     set_byte(buf+6, iflags);
+    set_byte(buf+7, 0); /* gapfil */
 
-    *len = ((long)pos - (long)buf);
+    return ((long)pos - (long)buf);
 }
 
                   
-void unpack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * record, int len) {
+int unpack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * record, int len) {
   int i;
-  ai->renamedcategories = get_short(record);
-  record+=2;
-  for(i=0;i<16;i++) {
-    memcpy(ai->CategoryName[i], record, 16);
-    record += 16;
-  }
-  memcpy(ai->CategoryID, record, 16);
-  record += 16;
-  ai->lastUniqueID = get_byte(record);
-  record += 4;
+  i = unpack_CategoryAppInfo(&ai->category, record, len);
+  if (!i)
+    return 0;
+  record += i;
+  len -= i;
+  if (len<4)
+    return 0;
   ai->startOfWeek = get_byte(record);
+  return i+2;
 }
 
-void pack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * record, int * len) {
+int pack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * record, int len) {
   int i;
   unsigned char * start = record;
   
-  set_short(record, ai->renamedcategories);
-  record += 2;
-  for(i=0;i<16;i++) {
-    memcpy(record, ai->CategoryName[i], 16);
-    record += 16;
-  }
-  memcpy(record, ai->CategoryID, 16);
-  record += 16;
-  set_byte(record, ai->lastUniqueID);
-  record ++;
-  set_byte(record, 0); /* gapfil */
-  set_short(record+1, 0); /* gapfil */
-  set_byte(record+3, ai->startOfWeek);
-  record+=4;
+  i = pack_CategoryAppInfo(&ai->category, record, len);
+  if (!record)
+    return i+2;
+  if (!i)
+    return i;
+  record += i;
+  len -= i;
+  if (i<2)
+    return 0;
+  set_short(record, 0);
+  set_byte(record, ai->startOfWeek);
+  record+=2;
   
-  if (len)
-    *len = (record-start);
+  return (record-start);
 }

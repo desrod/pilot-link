@@ -8,10 +8,21 @@ public class test {
 			Pdapilot.constants.PILOT_LINK_VERSION + "." +
 			Pdapilot.constants.PILOT_LINK_MAJOR + "." +
 			Pdapilot.constants.PILOT_LINK_MINOR);
-			
-		Pdapilot.Socket x = new Pdapilot.Socket("/dev/cua3");
+		
+		System.out.print("Port to use [/dev/cua3]? ");
+		System.out.flush();
+		java.io.DataInputStream dis = new java.io.DataInputStream(System.in);
+		
+		String port = dis.readLine();
+		if (port.equals("")) {
+			port = "/dev/cua3";
+		}
+		System.out.println("Please hit the HotSync button now.");
+		
+		Pdapilot.Socket x = new Pdapilot.Socket(port);
 		Pdapilot.Dlp y = x.accept();
-
+		
+		
 		System.out.println(y.getTime().toString());
 		System.out.println(y.getUserInfo().toString());
 		System.out.println(y.getSysInfo().toString());
@@ -43,8 +54,9 @@ public class test {
 		System.out.println(z.getAppBlock().toString());
 
 		System.out.println(z.getPref(0).toString());
-		
-		//z.dbClass = new Pdapilot.Database(); 
+		//System.out.println(z.getPref(1).toString());
+		//System.out.println(z.getPref(2).toString());
+		//System.out.println(z.getPref(3).toString());
 		
 		for (int i=0;;i++) {
 			Pdapilot.Record q = (Pdapilot.Record)z.getRecord(i);

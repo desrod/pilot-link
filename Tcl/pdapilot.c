@@ -122,7 +122,7 @@ typedef struct AcceptCallback {
     Tcl_Interp *interp;                 /* Interpreter in which to run it. */
 } AcceptCallback;
 
-typedef  void (*packcmd) _ANSI_ARGS_((Tcl_Interp*, char*, char *, int*));
+typedef  int (*packcmd) _ANSI_ARGS_((Tcl_Interp*, char*, char *, int));
 typedef  void (*unpackcmd) _ANSI_ARGS_((Tcl_Interp*, char*, int));
 
 struct Packer {
@@ -135,19 +135,20 @@ void MemoUnpackCmd(Tcl_Interp * interp, char * buf, int len)
 {
 	struct Memo m;
 	
-	unpack_Memo(&m, buf, len);
+	len = unpack_Memo(&m, buf, len);
 
 	Tcl_AppendElement(interp, m.text);
 	free_Memo(&m);
+
 }
 
-void MemoPackCmd(Tcl_Interp * interp, char * rec, char * buf, int * len)
+int MemoPackCmd(Tcl_Interp * interp, char * rec, char * buf, int len)
 {
 	struct Memo m;
 	
 	m.text = rec;
 	
-	pack_Memo(&m, buf, len);
+	return pack_Memo(&m, buf, len);
 }
 
 struct { char * name; packcmd pack, packai, packsi; unpackcmd unpack, unpackai, unpacksi; }
@@ -1148,7 +1149,7 @@ SetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 	Tcl_GetInt(interp, argv[5], &attr);
 	Tcl_GetInt(interp, argv[6], &cat);
 
-	pack[sock].pack(interp, argv[3], buf, &len);
+	len = pack[sock].pack(interp, argv[3], buf, 0xffff);
 	
 	result = dlp_WriteRecord(sock, handle, attr, id, cat, buf, len, &id);
 	

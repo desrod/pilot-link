@@ -14,7 +14,7 @@ public class AppBlock extends Block {
 			super(contents);
 		}
 		
-		public String toString() {
-			return "<generic appblock raw='"+Util.prettyPrint(new String(raw,0))+"'>";
+		public String describe() {
+			return "raw='"+Util.prettyPrint(new String(raw,0))+"'";
 		}
 }

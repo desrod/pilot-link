@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   
     if (strcmp(argv[i],"-c")==0) {
       for (l=0; l<16; l++)
-        if (strcasecmp(mai.CategoryName[l], argv[i+1]) == 0) {
+        if (strcasecmp(mai.category.name[l], argv[i+1]) == 0) {
           category = l;
           break;
         }
@@ -124,8 +124,8 @@ int main(int argc, char *argv[])
 
   /* Tell the user who it is, with a different PC id. */
   U.lastSyncPC = 0x00010000;
-  U.succSyncDate = time(NULL);
-  U.lastSyncDate = U.succSyncDate;
+  U.successfulSyncDate = time(NULL);
+  U.lastSyncDate = U.successfulSyncDate;
   dlp_WriteUserInfo(sd,&U);
 
   dlp_AddSyncLogEntry(sd, "Wrote memo to Pilot.\n");

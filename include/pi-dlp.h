@@ -17,47 +17,47 @@ extern "C" {
    
 struct PilotUser {
   unsigned long userID, viewerID, lastSyncPC;
-  time_t succSyncDate, lastSyncDate;
+  time_t successfulSyncDate, lastSyncDate;
   char username[128];
-  int passwordLen;
+  int passwordLength;
   char password[128];
 };
 
 struct SysInfo {
-  unsigned long ROMVersion;
-  unsigned long localizationID;
-  int namelength;
+  unsigned long romVersion;
+  unsigned long locale;
+  int nameLength;
   char name[128];
 };
 
 struct DBInfo {
   int more;
   unsigned int flags;
-  unsigned int miscflags;
+  unsigned int miscFlags;
   unsigned long type,creator;
   unsigned int version;
   unsigned long modnum;
-  time_t crdate,moddate,backupdate;
+  time_t createDate,modifyDate,backupDate;
   unsigned int index;
   char name[34];
 };
 
 struct CardInfo {
-	int cardno;
+	int card;
 	int version;
 	time_t creation;
-	unsigned long ROMsize, RAMsize, RAMfree;
+	unsigned long romSize, ramSize, ramFree;
 	char name[128];
-	char manuf[128];
+	char manufacturer[128];
 	
 	int more;
 };
 
 struct NetSyncInfo {
-  int lansync;
-  char PCName[256]; /* Null terminated string */
-  char PCAddr[40]; /* Null terminated string */
-  char PCMask[40]; /* Null terminated string */
+  int lanSync;
+  char hostName[256]; /* Null terminated string */
+  char hostAddress[40]; /* Null terminated string */
+  char hostSubnetMask[40]; /* Null terminated string */
 };
 
 enum dlpDBFlags {

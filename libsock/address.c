@@ -25,23 +25,28 @@ void free_Address(struct Address * a) {
 #define lo(x) ((x) & 0x0f)
 #define pair(x,y) (((x) << 4) | (y))
 
-void unpack_Address(struct Address * a, unsigned char * buffer, int len) {
+int unpack_Address(struct Address * a, unsigned char * buffer, int len) {
   unsigned long contents;
   unsigned long v;
+  unsigned char * start = buffer;
+  
+  if (len<9)
+    return 0;
   
   /*get_byte(buffer); gapfil*/
-  a->whichphone = hi(get_byte(buffer+1));
-  a->phonelabel[4] = lo(get_byte(buffer+1));
-  a->phonelabel[3] = hi(get_byte(buffer+2));
-  a->phonelabel[2] = lo(get_byte(buffer+2));
-  a->phonelabel[1] = hi(get_byte(buffer+3));
-  a->phonelabel[0] = lo(get_byte(buffer+3));
+  a->showPhone = hi(get_byte(buffer+1));
+  a->phoneLabel[4] = lo(get_byte(buffer+1));
+  a->phoneLabel[3] = hi(get_byte(buffer+2));
+  a->phoneLabel[2] = lo(get_byte(buffer+2));
+  a->phoneLabel[1] = hi(get_byte(buffer+3));
+  a->phoneLabel[0] = lo(get_byte(buffer+3));
   
   contents = get_long(buffer+4);
   
   /*get_byte(buffer+8) offset*/
   
   buffer += 9;
+  len -= 9;
   
   /*if(flag & 0x1) { 
      a->lastname = strdup(buffer);
@@ -52,15 +57,21 @@ void unpack_Address(struct Address * a, unsigned char * buffer, int len) {
   
   for(v=0;v<19;v++) {
     if(contents & (1 << v)) {
+      if (len<1)
+        return 0;
       a->entry[v] = strdup((char*)buffer);
       buffer += strlen((char*)buffer)+1;
+      len -= strlen(a->entry[v])+1;
     } else {
       a->entry[v] = 0;
     }
   }
+  
+  return (buffer-start);
 }
 
-void pack_Address(struct Address * a, unsigned char * record, int * len) {
+int pack_Address(struct Address * a, unsigned char * record, int len) {
+  unsigned char *start = record;
   unsigned char *buffer;
   unsigned long contents;
   unsigned long v;
@@ -68,7 +79,16 @@ void pack_Address(struct Address * a, unsigned char * record, int * len) {
   unsigned char offset;
   int l;
 
-  *len = 9;
+  int destlen = 9;
+  for(v=0;v<19;v++)
+    if(a->entry[v])
+      destlen += strlen(a->entry[v])+1;
+      
+  if (!record)
+    return destlen;
+  if (len<destlen)
+    return 0;
+
   buffer = record + 9;
 
   phoneflag = 0;
@@ -78,78 +98,95 @@ void pack_Address(struct Address * a, unsigned char * record, int * len) {
   for(v=0;v<19;v++) {
     if(a->entry[v] && strlen(a->entry[v])) {
       if(v==entryCompany)
-        offset = (unsigned char)(*len - 8);
+        offset = (unsigned char)(buffer-record);
       contents |= (1 << v);
       l = strlen(a->entry[v])+1;
       memcpy(buffer,a->entry[v],l);
-      *len+=l;
       buffer+=l;
     }
   }
   
-  phoneflag  = ((unsigned long)a->phonelabel[0]) << 0;
-  phoneflag |= ((unsigned long)a->phonelabel[1]) << 4;
-  phoneflag |= ((unsigned long)a->phonelabel[2]) << 8;
-  phoneflag |= ((unsigned long)a->phonelabel[3]) << 12;
-  phoneflag |= ((unsigned long)a->phonelabel[4]) << 16;
-  phoneflag |= ((unsigned long)a->whichphone)  << 20;
+  phoneflag  = ((unsigned long)a->phoneLabel[0]) << 0;
+  phoneflag |= ((unsigned long)a->phoneLabel[1]) << 4;
+  phoneflag |= ((unsigned long)a->phoneLabel[2]) << 8;
+  phoneflag |= ((unsigned long)a->phoneLabel[3]) << 12;
+  phoneflag |= ((unsigned long)a->phoneLabel[4]) << 16;
+  phoneflag |= ((unsigned long)a->showPhone)  << 20;
 
   set_long(record, phoneflag);
   set_long(record+4, contents);
   set_byte(record+8, offset);
+  
+  return (buffer-start);
 }
 
-void unpack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, int len) {
+int unpack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, int len) {
   int i;
-  ai->renamedcategories = get_short(record);
-  record+=2;
-  for(i=0;i<16;i++) {
-    memcpy(ai->CategoryName[i], record, 16);
-    record += 16;
-  }
-  memcpy(ai->CategoryID, record, 16);
-  record += 16;
-  ai->lastUniqueID = get_byte(record);
-  record += 4;
-  ai->dirtyfieldlabels = get_long(record);
+  unsigned char * start = record;
+  unsigned long r;
+  int destlen = 4+16*22+2+2;
+  i = unpack_CategoryAppInfo(&ai->category, record, len);
+  if (!record)
+  	return i+destlen;
+  if (!i)
+  	return i;
+  record += i;
+  len -= i;
+
+  if (len < destlen)
+  	return 0;
+
+  r = get_long(record);
+  for(i=0;i<22;i++)
+    ai->labelRenamed[i] = !!(r & (1<<i));
+    
   record += 4;
   memcpy(ai->labels,record, 16*22);
   record += 16*22;
   ai->country = get_short(record);
   record+=2;
   ai->sortByCompany = get_byte(record);
+  record +=2;
   
   for(i=3;i<8;i++)
-    strcpy(ai->phonelabels[i-3],ai->labels[i]);
+    strcpy(ai->phoneLabels[i-3],ai->labels[i]);
   for(i=19;i<22;i++)
-    strcpy(ai->phonelabels[i-19+5],ai->labels[i]);
+    strcpy(ai->phoneLabels[i-19+5],ai->labels[i]);
+  
+  return (record-start);
 }
 
-/* Untested */
-void pack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, int * len)
+int pack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, int len)
 {
   int i;
   unsigned char * pos = record;
+  unsigned long r;
+  int destlen = 4+16*22+2+2;
+  
+
+  i = pack_CategoryAppInfo(&ai->category, record, len);
+  if (!record)
+    return destlen+i;
+  if (!i)
+    return i;
+    
+  pos += i;
+  len -= i;
 
   for(i=3;i<8;i++)
-    strcpy(ai->phonelabels[i-3],ai->labels[i]);
+    strcpy(ai->phoneLabels[i-3],ai->labels[i]);
   for(i=19;i<22;i++)
-    strcpy(ai->phonelabels[i-19+5],ai->labels[i]);
+    strcpy(ai->phoneLabels[i-19+5],ai->labels[i]);
   
-  memset(record, 0, 2+(16*16)+16+4+4+(16*22)+2);
+  memset(pos, 0, destlen);
   
-  set_short(pos, ai->renamedcategories);
-  pos+=2;
-  for(i=0;i<16;i++) {
-    strncpy((char*)pos, ai->CategoryName[i], 16);
-    pos+=16;
-  }
-  memcpy(pos, (char*)ai->CategoryID, 16);
-  pos += 16;
-  set_byte(pos, ai->lastUniqueID);
+  r = 0;
+  for(i=0;i<22;i++)
+    if (ai->labelRenamed[i])
+      r |= (1<<i);
+  set_long(pos, r);
   pos+= 4;
-  set_long(pos, ai->dirtyfieldlabels);
-  pos+= 4;
+
   memcpy(pos, ai->labels, 16*22);
   pos += 16*22;
   set_short(pos, ai->country);
@@ -158,10 +195,9 @@ void pack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, int
   pos+=2;
   
   for(i=3;i<8;i++)
-    strcpy(ai->phonelabels[i-3],ai->labels[i]);
+    strcpy(ai->phoneLabels[i-3],ai->labels[i]);
   for(i=19;i<22;i++)
-    strcpy(ai->phonelabels[i-19+5],ai->labels[i]);
+    strcpy(ai->phoneLabels[i-19+5],ai->labels[i]);
   
-  if (len)
-    *len = (pos-record);
+  return (pos-record);
 }

@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 	/*now = time(0);
 	todo.due = *localtime(&now);*/
 	todo.note = note_text;
-	pack_ToDo(&todo, ToDo_buf,&ToDo_size);
+	ToDo_size = pack_ToDo(&todo, ToDo_buf, sizeof(ToDo_buf));
 printf("desc: %s\n",todo.description); 
 /* printf("todobuf: %s\n",ToDo_buf);       */
 	dlp_WriteRecord(sd, db, 0, 0, 0, ToDo_buf, ToDo_size, 0);
@@ -136,8 +136,8 @@ printf("desc: %s\n",todo.description);
 
   /* Tell the user who it is, with a different PC id. */
   U.lastSyncPC = 0x00010000;
-  U.succSyncDate = time(NULL);
-  U.lastSyncDate = U.succSyncDate;
+  U.successfulSyncDate = time(NULL);
+  U.lastSyncDate = U.successfulSyncDate;
   dlp_WriteUserInfo(sd,&U);
 
   dlp_AddSyncLogEntry(sd, "Wrote ToDo to Pilot.\n");

@@ -361,29 +361,29 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c)
   
   c->more = SI_more(dlp_buf) || (SI_count(dlp_buf) > 1);
   
-  c->cardno =	SI_cardNo(dlp_buf);
+  c->card =	SI_cardNo(dlp_buf);
   c->version =	SI_cardVersion(dlp_buf);
   c->creation = SI_crDate(dlp_buf);
-  c->ROMsize =	SI_romSize(dlp_buf);
-  c->RAMsize =	SI_ramSize(dlp_buf);
-  c->RAMfree =	SI_freeRam(dlp_buf);
+  c->romSize =	SI_romSize(dlp_buf);
+  c->ramSize =	SI_ramSize(dlp_buf);
+  c->ramFree =	SI_freeRam(dlp_buf);
   
   len1 = SI_cardNameSize(dlp_buf);
   memcpy(c->name, ptr_SI_cardNameAndManuf(dlp_buf,0), len1);
   c->name[len1] = '\0';
   
   len2 = SI_cardManufSize(dlp_buf);
-  memcpy(c->manuf, ptr_SI_cardNameAndManuf(dlp_buf, len1), len2);
-  c->manuf[len2] = '\0';
+  memcpy(c->manufacturer, ptr_SI_cardNameAndManuf(dlp_buf, len1), len2);
+  c->manufacturer[len2] = '\0';
   
 #ifdef DLP_TRACE
   if (dlp_trace) {  
     fprintf(stderr, "  Read: Cardno: %d, Card Version: %d, Creation time: %s",
-      c->cardno, c->version, ctime(&c->creation));
+      c->card, c->version, ctime(&c->creation));
     fprintf(stderr, "        Total ROM: %lu, Total RAM: %lu, Free RAM: %lu\n",
-      c->ROMsize, c->RAMsize, c->RAMfree);
+      c->romSize, c->ramSize, c->ramFree);
     fprintf(stderr, "        Card name: '%s'\n", c->name);
-    fprintf(stderr, "        Manufacturer name: '%s'\n", c->manuf);
+    fprintf(stderr, "        Manufacturer name: '%s'\n", c->manufacturer);
     fprintf(stderr, "        More: %s\n", c->more ? "Yes" : "No");
   }
 #endif
@@ -402,17 +402,17 @@ int dlp_ReadSysInfo(int sd, struct SysInfo * s)
   
   Expect(10);
   
-  s->ROMVersion = get_long(dlp_buf);
-  s->localizationID = get_long(dlp_buf+4);
+  s->romVersion = get_long(dlp_buf);
+  s->locale = get_long(dlp_buf+4);
   /* dlp_buf+8 is a filler byte */
-  s->namelength = get_byte(dlp_buf+9);
-  memcpy(s->name, dlp_buf+10, s->namelength);
-  s->name[s->namelength] = '\0';
+  s->nameLength = get_byte(dlp_buf+9);
+  memcpy(s->name, dlp_buf+10, s->nameLength);
+  s->name[s->nameLength] = '\0';
 
 #ifdef DLP_TRACE
   if (dlp_trace) {    
     fprintf(stderr, "  Read: ROM Version: 0x%8.8lX, Localization ID: 0x%8.8lX\n",
-      (unsigned long)s->ROMVersion, (unsigned long)s->localizationID);
+      (unsigned long)s->romVersion, (unsigned long)s->locale);
     fprintf(stderr, "        Name '%s'\n", s->name);
   }
 #endif
@@ -451,17 +451,17 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
   
   info->more = get_byte(dlp_buf+2);
   if (pi_version(sd) > 0x0100) /* PalmOS 2.0 has additional flag */
-    info->miscflags = get_byte(dlp_buf+5);
+    info->miscFlags = get_byte(dlp_buf+5);
   else
-    info->miscflags = 0;
+    info->miscFlags = 0;
   info->flags = get_short(dlp_buf+6);
   info->type = get_long(dlp_buf+8);
   info->creator = get_long(dlp_buf+12);
   info->version = get_short(dlp_buf+16);
   info->modnum = get_long(dlp_buf+18);
-  info->crdate = get_date(dlp_buf+22);
-  info->moddate = get_date(dlp_buf+30);
-  info->backupdate = get_date(dlp_buf+38);
+  info->createDate = get_date(dlp_buf+22);
+  info->modifyDate = get_date(dlp_buf+30);
+  info->backupDate = get_date(dlp_buf+38);
   info->index = get_short(dlp_buf+46);
   strncpy(info->name, (char*)dlp_buf+48, 32);
   info->name[32] = '\0';
@@ -490,9 +490,9 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
       fprintf(stderr, " None");
     fprintf(stderr, " (0x%2.2X)\n", info->flags);
     fprintf(stderr, "        Modnum: %ld, Index: %d, Creation date: %s",
-      info->modnum, info->index, ctime(&info->crdate));
-    fprintf(stderr, "        Modification date: %s", ctime(&info->moddate));
-    fprintf(stderr, "        Backup date: %s", ctime(&info->backupdate));
+      info->modnum, info->index, ctime(&info->createDate));
+    fprintf(stderr, "        Modification date: %s", ctime(&info->modifyDate));
+    fprintf(stderr, "        Backup date: %s", ctime(&info->backupDate));
   }
 #endif
     
@@ -954,7 +954,7 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
     fprintf(stderr, " Wrote: UID: 0x%8.8lX, VID: 0x%8.8lX, PCID: 0x%8.8lX\n", 
       User->userID, User->viewerID, User->lastSyncPC);
     fprintf(stderr, "        Last sync date: %s", ctime(&User->lastSyncDate));
-    fprintf(stderr, "        Successful sync date: %s", ctime(&User->succSyncDate));
+    fprintf(stderr, "        Successful sync date: %s", ctime(&User->successfulSyncDate));
     fprintf(stderr, "        User name '%s'\n", User->username);
   }
 #endif
@@ -990,23 +990,23 @@ int dlp_ReadUserInfo(int sd, struct PilotUser* User)
   User->userID = get_long(dlp_buf);
   User->viewerID = get_long(dlp_buf+4);
   User->lastSyncPC = get_long(dlp_buf+8);
-  User->succSyncDate = get_date(dlp_buf+12);
+  User->successfulSyncDate = get_date(dlp_buf+12);
   User->lastSyncDate = get_date(dlp_buf+20);
-  User->passwordLen = get_byte(dlp_buf+29);
+  User->passwordLength = get_byte(dlp_buf+29);
   memcpy(User->username, dlp_buf+30, userlen);
   User->username[userlen] = '\0';
-  memcpy(User->password, dlp_buf+30+userlen, User->passwordLen);
+  memcpy(User->password, dlp_buf+30+userlen, User->passwordLength);
 
 #ifdef DLP_TRACE
   if (dlp_trace) {  
     fprintf(stderr, "  Read: UID: 0x%8.8lX, VID: 0x%8.8lX, PCID: 0x%8.8lX\n", 
       User->userID, User->viewerID, User->lastSyncPC);
     fprintf(stderr, "        Last sync date: %s", ctime(&User->lastSyncDate));
-    fprintf(stderr, "        Successful sync date: %s", ctime(&User->succSyncDate));
+    fprintf(stderr, "        Successful sync date: %s", ctime(&User->successfulSyncDate));
     fprintf(stderr, "        User name '%s'", User->username);
-    if (User->passwordLen) {
-      fprintf(stderr, ", Password of %d bytes:\n", User->passwordLen);
-      dumpdata((unsigned char *)User->password,User->passwordLen);
+    if (User->passwordLength) {
+      fprintf(stderr, ", Password of %d bytes:\n", User->passwordLength);
+      dumpdata((unsigned char *)User->password,User->passwordLength);
     }
     else
       fprintf(stderr, ", No password\n");
@@ -1031,26 +1031,26 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo * i)
   Expect(24);
   
 
-  i->lansync = get_byte(dlp_buf);
+  i->lanSync = get_byte(dlp_buf);
   p = 24;
 
-  i->PCName[0] = 0;
-  memcpy(i->PCName, dlp_buf+p, get_short(dlp_buf+18));
+  i->hostName[0] = 0;
+  memcpy(i->hostName, dlp_buf+p, get_short(dlp_buf+18));
   p += get_short(dlp_buf+18);
 
-  i->PCAddr[0] = 0;
-  memcpy(i->PCAddr, dlp_buf+p, get_short(dlp_buf+20));
+  i->hostAddress[0] = 0;
+  memcpy(i->hostAddress, dlp_buf+p, get_short(dlp_buf+20));
   p += get_short(dlp_buf+20);
 
-  i->PCMask[0] = 0;
-  memcpy(i->PCMask, dlp_buf+p, get_short(dlp_buf+22));
+  i->hostSubnetMask[0] = 0;
+  memcpy(i->hostSubnetMask, dlp_buf+p, get_short(dlp_buf+22));
   p += get_short(dlp_buf+22);
 
 #ifdef DLP_TRACE
   if (dlp_trace) {  
     fprintf(stderr, "  Read: Active: %d\n", get_byte(dlp_buf));
     fprintf(stderr, "        PC hostname: '%s', address '%s', mask '%s'\n",
-      i->PCName, i->PCAddr, i->PCMask);
+      i->hostName, i->hostAddress, i->hostSubnetMask);
   }
 #endif
 
@@ -1071,26 +1071,26 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i)
   if (dlp_trace) {  
     fprintf(stderr, "  Wrote: Active: %d\n", get_byte(dlp_buf));
     fprintf(stderr, "        PC hostname: '%s', address '%s', mask '%s'\n",
-      i->PCName, i->PCAddr, i->PCMask);
+      i->hostName, i->hostAddress, i->hostSubnetMask);
   }
 #endif
   
   set_byte(dlp_buf, 0x80|0x40|0x20|0x10); /* Change all settings */
-  set_byte(dlp_buf+1, i->lansync);
+  set_byte(dlp_buf+1, i->lanSync);
   set_long(dlp_buf+2, 0);  /* Reserved1 */
   set_long(dlp_buf+6, 0);  /* Reserved2 */
   set_long(dlp_buf+10, 0); /* Reserved3 */
   set_long(dlp_buf+14, 0); /* Reserved4 */
-  set_short(dlp_buf+18, strlen(i->PCName)+1);
-  set_short(dlp_buf+20, strlen(i->PCAddr)+1);
-  set_short(dlp_buf+22, strlen(i->PCMask)+1);
+  set_short(dlp_buf+18, strlen(i->hostName)+1);
+  set_short(dlp_buf+20, strlen(i->hostAddress)+1);
+  set_short(dlp_buf+22, strlen(i->hostSubnetMask)+1);
   p = 24;
-  strcpy((char *)dlp_buf+p, i->PCName);
-  p += strlen(i->PCName)+1;
-  strcpy((char *)dlp_buf+p, i->PCAddr);
-  p += strlen(i->PCAddr)+1;
-  strcpy((char *)dlp_buf+p, i->PCMask);
-  p += strlen(i->PCMask)+1;
+  strcpy((char *)dlp_buf+p, i->hostName);
+  p += strlen(i->hostName)+1;
+  strcpy((char *)dlp_buf+p, i->hostAddress);
+  p += strlen(i->hostAddress)+1;
+  strcpy((char *)dlp_buf+p, i->hostSubnetMask);
+  p += strlen(i->hostSubnetMask)+1;
   
   result = dlp_exec(sd, 0x37, 0x20, dlp_buf, p, dlp_buf, DLP_BUF_SIZE);
 

@@ -59,10 +59,12 @@ int main(int argc, char *argv[])
     exit(1);
   }
     
-  if (!N.lansync) {
+  if (!N.lanSync) {
     fprintf(stderr, "LAN Sync not enabled on your PalmPilot, cancelling sync.\n");
     exit(1);
   }
+
+  setenv("PILOTLOGFILE","PiDebugNet.log",1);
   
   sd2 = pi_socket(AF_INET, PI_SOCK_STREAM, 0);
   if (sd2 <0 ) {
@@ -75,8 +77,8 @@ int main(int argc, char *argv[])
   addr2.sin_family = AF_INET;
   addr2.sin_port = htons(14238);
 
-  if ((addr2.sin_addr.s_addr = inet_addr(N.PCAddr))==-1) {
-    fprintf(stderr, "Unable to parse PC address '%s'\n", N.PCAddr);
+  if ((addr2.sin_addr.s_addr = inet_addr(N.hostAddress))==-1) {
+    fprintf(stderr, "Unable to parse PC address '%s'\n", N.hostAddress);
     exit(1);
   }
   

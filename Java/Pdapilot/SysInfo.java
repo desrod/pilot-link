@@ -2,12 +2,12 @@
 package Pdapilot;
 
 public class SysInfo {
-	public int ROMversion;
-	public int localeID;
+	public int romVersion;
+	public int locale;
 	public String name;
 	
 	public String toString() {
-		return "<Pdapilot.SysInfo ROMversion "+ROMversion+", localeID "+localeID+
+		return "<Pdapilot.SysInfo ROMversion "+romVersion+", locale "+locale+
 			", name '"+Util.prettyPrint(name)+"'>";
 	}
 }

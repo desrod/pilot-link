@@ -220,7 +220,8 @@ int main(int argc, char *argv[])
   int ret;
   unsigned char buffer[0xffff];
   struct MailAppInfo tai;
-  struct MailPref1 p;
+  struct MailSyncPref p;
+  struct MailSignaturePref sig;
   struct sockaddr_in pop_addr;
   int popfd;
   struct hostent * hostent;
@@ -407,8 +408,7 @@ int main(int argc, char *argv[])
   }
   
   memset(&tai, '\0', sizeof(struct MailAppInfo));
-  memset(&p, '\0', sizeof(struct MailPref1));
-  tai.signature = 0;
+  memset(&p, '\0', sizeof(struct MailSyncPref));
 
   /* Ask the pilot who it is. */
   dlp_ReadUserInfo(sd,&U);
@@ -424,45 +424,42 @@ int main(int argc, char *argv[])
   }
   
   dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-  unpack_MailAppInfo(&tai, buffer, 0);
+  unpack_MailAppInfo(&tai, buffer, 0xffff);
   
   setbuf(stderr, 0);
   
-  p.synctype = 0;
-  p.gethigh = 0;
-  p.getcontaining = 0;
+  p.syncType = 0;
+  p.getHigh = 0;
+  p.getContaining = 0;
   p.truncate = 8*1024;
-  p.filterto = 0;
-  p.filterfrom = 0;
-  p.filtersubject = 0;
+  p.filterTo = 0;
+  p.filterFrom = 0;
+  p.filterSubject = 0;
   
   if (pi_version(sd) > 0x0100) {
     if (dlp_ReadAppPreference(sd, makelong("mail"), 1, 1, 0xffff, buffer, 0, 0)>=0) {
       printf("Got local backup mail preferences\n"); /* 2 for remote prefs */
-      unpack_MailPref1(&p, buffer, 0);
+      unpack_MailSyncPref(&p, buffer, 0xffff);
     } else {
       printf("Unable to get mail preferences, trying current\n");
       if (dlp_ReadAppPreference(sd, makelong("mail"), 1, 1, 0xffff, buffer, 0, 0)>=0) {
         printf("Got local current mail preferences\n"); /* 2 for remote prefs */
-        unpack_MailPref1(&p, buffer, 0);
+        unpack_MailSyncPref(&p, buffer, 0xffff);
       } else
         printf("Couldn't get any mail preferences.\n");
     }
     
-    if (tai.signature)
-      free(tai.signature);
-      
     if (dlp_ReadAppPreference(sd, makelong("mail"), 3, 1, 0xffff, buffer, 0, 0)>0) {
-      tai.signature=strdup(buffer);
+      unpack_MailSignaturePref(&sig, buffer, 0xffff);
     }
 
   }
 
   printf("Local Prefs: Sync=%d, High=%d, getc=%d, trunc=%d, to=|%s|, from=|%s|, subj=|%s|\n",
-     p.synctype, p.gethigh, p.getcontaining, p.truncate, p.filterto ? p.filterto : "<none>",
-     p.filterfrom ? p.filterfrom : "<none>", p.filtersubject ? p.filtersubject : "<none>");
+     p.syncType, p.getHigh, p.getContaining, p.truncate, p.filterTo ? p.filterTo : "<none>",
+     p.filterFrom ? p.filterFrom : "<none>", p.filterSubject ? p.filterSubject : "<none>");
 
-  printf("AppInfo Signature: |%s|\n\n", tai.signature ? tai.signature : "<None>");
+  printf("AppInfo Signature: |%s|\n\n", sig.signature ? sig.signature : "<None>");
 
 #if 0
   for (i=0;1;i++) {
@@ -564,9 +561,9 @@ int main(int argc, char *argv[])
 	  fprintbody(sendf,t.body);
 	  fprintf(sendf,"\r\n");
 	}
-	if (t.signature && tai.signature) {
+	if (t.signature && sig.signature) {
 	  fprintf(sendf,"\r\n-- \r\n");
-	  fprintbody(sendf,tai.signature);
+	  fprintbody(sendf,sig.signature);
 	  fprintf(sendf,"\r\n");
 	}
 
@@ -729,7 +726,7 @@ int main(int argc, char *argv[])
     
     t.body = strdup(buffer);
     
-    pack_Mail(&t, buffer, &len);
+    len = pack_Mail(&t, buffer, 0xffff);
     
     if (dlp_WriteRecord(sd, db, 0, 0, 0, buffer, len, 0)>0) {
       rec++;
@@ -847,7 +844,7 @@ endpop:
     
     t.body = strdup(msg);
     
-    pack_Mail(&t, buffer, &len);
+    len = pack_Mail(&t, buffer, 0xffff);
     
     if (dlp_WriteRecord(sd, db, 0, 0, 0, buffer, len, 0)>0) {
       rec++;
@@ -877,7 +874,8 @@ endmh:
   }
 
 end:  
-  free_MailPref1(&p);
+  free_MailSyncPref(&p);
+  free_MailSignaturePref(&sig);
   free_MailAppInfo(&tai);
   
   dlp_ResetLastSyncPC(sd);

@@ -7,23 +7,23 @@ import java.io.*;
  */
 
 public class Record extends Block {
-		public int index, attr, cat;
+		public int index, attr, category;
 		public RecordID id;
 		
 		public Record() {
 			super();
 		}
 		
-		public Record(byte[] contents, RecordID id, int index, int attr, int cat) {
+		public Record(byte[] contents, RecordID id, int index, int attr, int category) {
 			this.id = id;
 			this.index = index;
 			this.attr = attr;
-			this.cat = cat;
+			this.category = category;
 			this.unpack(contents);
 		}
 		
-		public String toString() {
-			return "<generic record, id "+id+", index "+index+", attr "+attr+", cat "+
-				cat+", raw '"+Util.prettyPrint(new String(raw,0))+"'>";
+		public String describe() {
+			return " id "+id+", index "+index+", attr "+attr+", category "+
+				category;
 		}
 }

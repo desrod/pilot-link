@@ -17,53 +17,54 @@ if len(port) == 0:
 
 print 'Using port',port
 
-socket = pdapilot.OpenPort(port)
+socket = pdapilot.openPort(port)
 
 # OpenPort is the equivalent of
 #
 #socket = pdapilot.socket(pdapilot.PI_AF_SLP, pdapilot.PI_SOCK_STREAM, pdapilot.PI_PF_PADP);
 #
-#pdapilot.Bind(socket, {'family': pdapilot.PI_AF_SLP, 'device': port})
+#pdapilot.bind(socket, {'family': pdapilot.PI_AF_SLP, 'device': port})
 #
-#pdapilot.Listen(socket,1)
+#pdapilot.listen(socket,1)
 
-print "Now press the HotSync button\n"
+print "Now press the HotSync button"
 
-dlp = pdapilot.Accept(socket)
+dlp = pdapilot.accept(socket)
 
-db = dlp.Open('MailDB')
+db = dlp.open('MailDB')
 
-r = db.GetRecord(0)
+appinfo = db.getAppBlock()
+
+print 'App block:', appinfo
+
+r = db.getRecord(0)
 
 print 'Record 0:', r
 
-s = db.GetPref(1)
+s = db.getPref(1)
 
 print 'Pref 1:', s
 
-s = db.GetPref(3)
+s = db.getPref(3)
 
 print 'Pref 3:', s
 
-r = db.GetRecord(1)
+r = db.getRecord(1)
 
 print 'Record 1:', r
 
-q = db.NewPref(1)
+q = db.newPref(1)
 
 print 'Blank pref 1:', q
 
-sys.exit()
+ui = dlp.getUserInfo()
 
-ui = dlp.GetUserInfo()
-
-b = dlp.Battery()
+b = dlp.getBattery()
 
 print "Battery voltage is ", b[0], " (warning marker is ", b[1],", critical marker ", b[2], ")\n"
 
 rpc = pdapilot.PackRPC(0xA0B6, "i", ("b", "&s", "&s", "&s", "&b", "&b"),
                                     (0,   0,    0,    0,    0,    0))
-
 b = dlp.RPC(rpc)
 
 print "Battery results through Python RPC:", b
@@ -76,47 +77,49 @@ print "Battery results through Python RPC:", b
 
 print "At open"
 
-p = dlp.GetAppPref(pdapilot.Mail.creator, 1)
+p = dlp.getPref(pdapilot.Mail.creator, 1)
 
 print p
 print "Repacked: ", `p.pack()`
 
-p = dlp.GetAppPref(pdapilot.Mail.creator, 3)
+p = dlp.getPref(pdapilot.Mail.creator, 3)
 
 print p
 print "Repacked: ", `p.pack()`
 
 # Construct a blank preference object
-p = dlp.NewAppPref(pdapilot.Mail.creator, 1)
+p = dlp.newPref(pdapilot.Mail.creator, 1)
 print p
 
-p = dlp.GetAppPrefRaw(pdapilot.Mail.creator, 1)
+p = dlp.getPrefRaw(pdapilot.Mail.creator, 1)
 print p
 
-db = dlp.Open("MemoDB")
+db.close()
+
+db = dlp.open("MemoDB")
 
 print "Class: ", db.Class
 
 print "At getrecord"
 
-r = db.GetRecord(0)
+r = db.getRecord(0)
 
 print "Memo: ", r
 
-x = db.NewRecord()
+x = db.newRecord()
 x.text = 'a-aFooFoo!'
 x.id = None
 print x.pack()
 print x
 
-db.SetRecord(x)
+db.setRecord(x)
 
 print "New memo: ", x
 
-r = db.GetAppBlock()
+r = db.getAppBlock()
 print "Got app block", r
 
-r = db.NewAppBlock()
+r = db.newAppBlock()
 
 print "New app block: ", r
 

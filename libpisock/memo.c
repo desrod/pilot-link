@@ -19,62 +19,65 @@ void free_Memo(struct Memo * a) {
     free(a->text);
 }
 
-void unpack_Memo(struct Memo * a, unsigned char * buffer, int len) {
+int unpack_Memo(struct Memo * a, unsigned char * buffer, int len) {
+  if (len<1)
+    return 0;
   a->text = strdup((char*)buffer);
+  return strlen((char*)buffer)+1;
 }
 
-void pack_Memo(struct Memo * a, unsigned char * buffer, int * len) {
+int pack_Memo(struct Memo * a, unsigned char * buffer, int len) {
+  int destlen = (a->text ? strlen(a->text) : 0)+1;
+  if (!buffer)
+    return destlen;
+  if (len < destlen)
+    return 0;
   if(a->text) {
-    strcpy((char*)buffer,a->text);
-    *len = strlen(a->text)+1;
+    if (buffer)
+      strcpy((char*)buffer,a->text);
+    return strlen(a->text)+1;
   } else {
-    buffer[0] = 0;
-    *len = 1;
+    if (buffer)
+      buffer[0] = 0;
+    return 1;
   }
 }
                   
-void unpack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int len) {
-  int i;
-  ai->renamedcategories = get_short(record);
-  record+=2;
-  for(i=0;i<16;i++) {
-    memcpy(ai->CategoryName[i], record, 16);
-    record += 16;
-  }
-  memcpy(ai->CategoryID, record, 16);
-  record += 16;
-  ai->lastUniqueID = get_byte(record);
-  record += 4;
-  if (len >= 282) {
+int unpack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int len) {
+  unsigned char * start = record;
+  int i = unpack_CategoryAppInfo(&ai->category, record, len);
+  if (!i)
+    return i;
+  record += i;
+  len -= i;
+  if (len >= 4) {
     record += 2;
-    ai->sortOrder = get_byte(record);
+    ai->sortByAlpha = get_byte(record);
+    record += 2;
   } else {
-    ai->sortOrder = 0;
+    ai->sortByAlpha = 0;
   }
+  return (record-start);
 }
 
-void pack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int * len) {
+int pack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int len) {
   int i;
   unsigned char * start = record;
-  set_short(record, ai->renamedcategories);
-  record += 2;
-  for(i=0;i<16;i++) {
-    memcpy(record, ai->CategoryName[i], 16);
-    record += 16;
-  }
-  memcpy(record, ai->CategoryID, 16);
-  record += 16;
-  set_byte(record, ai->lastUniqueID);
-  record ++;
-  set_byte(record, 0); /* gapfil */
-  set_short(record+1, 0); /* gapfil */
-  record += 3;
+  i=pack_CategoryAppInfo(&ai->category, record, len);
+  if (!record)
+    return i + 4;
+  if (i==0) /* category pack failed*/
+    return 0;
+  record += i;
+  len -= i;
+  if (len<4)
+    return 0; /*not enough room*/
   set_short(record, 0); /* gapfil new for 2.0 */
   record += 2;
-  set_byte(record, ai->sortOrder); /* new for 2.0 */
+  set_byte(record, ai->sortByAlpha); /* new for 2.0 */
   record++;
   set_byte(record, 0); /* gapfil new for 2.0 */
   record++;
   
-  *len = (record-start);
+  return (record-start);
 }

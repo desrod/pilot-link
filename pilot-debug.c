@@ -30,9 +30,9 @@ extern void display(char * text, char * tag, int type);
 
 #ifdef TK
 int usetk;
-# include "tk.h"
+# include <tk.h>
 #else
-# include "tcl.h"
+# include <tcl.h>
 #endif
 
 #ifndef TCL_ACTIVE
@@ -257,7 +257,7 @@ void Read_Pilot(ClientData clientData, int mask) {
         }*/
         Tk_PhotoPutBlock(handle, &block, 32+sx-x1, 33+sy-y1, w+x1, h);
       
-        /*Tcl_VarEval(interp, "global show; set show(.remote) 1; update", NULL); */
+        Tcl_VarEval(interp, "global show; set show(.remote) 1; update", NULL);
         }
 #endif    	   
 	return;
@@ -796,6 +796,21 @@ int proc_mirror(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[
   return TCL_OK;  
 }
 
+int proc_updatedisplay(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+{
+  struct RPC_params p;
+  int e1,e2;
+
+  if (!DbgAttachConsole(0))
+    return TCL_ERROR;
+
+  /* Try to prod Pilot into immediately giving us a screen update */
+  PackRPC(&p,0xA0F1, RPC_IntReply, RPC_Short(0), RPC_Short(0), RPC_Short(160), RPC_Short(160), RPC_End);
+  e1=DbgRPC(&p, &e2);
+  
+  return TCL_OK;  
+}
+
 #define DB 0xFFFF0000
 #define LSSA 0xFA00  
 
@@ -892,6 +907,11 @@ int proc_pushbutton(ClientData clientData, Tcl_Interp *interp, int argc, char *a
   
   sys_RPCerror = 0;
   switch(atoi(argv[1])) {
+    case 0: /* Backlight */
+        key = 0x0113;
+        mod = 0x08;
+        break;
+        
     case 1: /* Power */
     	key = 0x0208;
     	mod = 0x08;
@@ -955,6 +975,8 @@ int proc_key(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
   /*struct RPC_params p;*/
   int key = argv[1][0];
+  /* Change \r to \n */
+  if (key == 13) key = 10;
   
   /* Transmit ASCII key to Pilot */
 
@@ -1086,26 +1108,57 @@ canvas .remote.c -width 221 -height 337
 .remote.c create rectangle 160 225 187 253 -outline black -tag screen
 .remote.c create rectangle 62 200 159 253 -outline black -tag screen
 
-.remote.c bind button1 <ButtonPress-1> {.remote.c itemconfigure button1 -fill green; update; pushbutton 1}
-.remote.c bind button1 <ButtonRelease-1> {.remote.c itemconfigure button1 -fill blue}
+set buttons(1) 0
 
-.remote.c bind button2 <ButtonPress-1> {.remote.c itemconfigure button2 -fill green; update; pushbutton 2}
-.remote.c bind button2 <ButtonRelease-1> {.remote.c itemconfigure button2 -fill blue}
+proc holdbutton {button} {
+	global buttons
+	if {$button==1} {
+		set buttons($button) [after 1000 \"continuebutton $button\"]
+	} else {
+		pushbutton $button
+		set buttons($button) [after 250 \"holdbutton $button\"]
+	}
+}
 
-.remote.c bind button3 <ButtonPress-1> {.remote.c itemconfigure button3 -fill green; update; pushbutton 3}
-.remote.c bind button3 <ButtonRelease-1> {.remote.c itemconfigure button3 -fill blue}
+proc continuebutton {button} {
+	global buttons
+	if {$button==1} {
+		pushbutton 0
+	}
+	set buttons($button) \"\"
+}
 
-.remote.c bind button4 <ButtonPress-1> {.remote.c itemconfigure button4 -fill green; update; pushbutton 4}
-.remote.c bind button4 <ButtonRelease-1> {.remote.c itemconfigure button4 -fill blue}
+proc releasebutton {button} {
+	global buttons
+	if {$buttons($button)!=\"\"} {
+		if {$button==1} {
+			pushbutton 1
+		}
+		after cancel $buttons($button)
+		set buttons($button) \"\"
+	}
+}
 
-.remote.c bind button5 <ButtonPress-1> {.remote.c itemconfigure button5 -fill green; update; pushbutton 5}
-.remote.c bind button5 <ButtonRelease-1> {.remote.c itemconfigure button5 -fill blue}
+.remote.c bind button1 <ButtonPress-1> {.remote.c itemconfigure button1 -fill green; update; holdbutton 1}
+.remote.c bind button1 <ButtonRelease-1> {.remote.c itemconfigure button1 -fill blue; releasebutton 1}
 
-.remote.c bind button6 <ButtonPress-1> {.remote.c itemconfigure button6 -fill green; update; pushbutton 6}
-.remote.c bind button6 <ButtonRelease-1> {.remote.c itemconfigure button6 -fill blue}
+.remote.c bind button2 <ButtonPress-1> {.remote.c itemconfigure button2 -fill green; update; holdbutton 2}
+.remote.c bind button2 <ButtonRelease-1> {.remote.c itemconfigure button2 -fill blue; releasebutton 2}
 
-.remote.c bind button7 <ButtonPress-1> {.remote.c itemconfigure button7 -fill green; update; pushbutton 7}
-.remote.c bind button7 <ButtonRelease-1> {.remote.c itemconfigure button7 -fill blue}
+.remote.c bind button3 <ButtonPress-1> {.remote.c itemconfigure button3 -fill green; update; holdbutton 3}
+.remote.c bind button3 <ButtonRelease-1> {.remote.c itemconfigure button3 -fill blue; releasebutton 3}
+
+.remote.c bind button4 <ButtonPress-1> {.remote.c itemconfigure button4 -fill green; update; holdbutton 4}
+.remote.c bind button4 <ButtonRelease-1> {.remote.c itemconfigure button4 -fill blue; releasebutton 4}
+
+.remote.c bind button5 <ButtonPress-1> {.remote.c itemconfigure button5 -fill green; update; holdbutton 5}
+.remote.c bind button5 <ButtonRelease-1> {.remote.c itemconfigure button5 -fill blue; releasebutton 5}
+
+.remote.c bind button6 <ButtonPress-1> {.remote.c itemconfigure button6 -fill green; update; holdbutton 6}
+.remote.c bind button6 <ButtonRelease-1> {.remote.c itemconfigure button6 -fill blue; releasebutton 6}
+
+.remote.c bind button7 <ButtonPress-1> {.remote.c itemconfigure button7 -fill green; update; holdbutton 7}
+.remote.c bind button7 <ButtonRelease-1> {.remote.c itemconfigure button7 -fill blue; releasebutton 7}
 
 catch {
 	.remote.c create image 0 282 -image B1 -anchor nw -tag downbutton1
@@ -1118,26 +1171,26 @@ catch {
 
 	.remote.c create image 0 0 -image Case -anchor nw
 
-	.remote.c bind button1 <ButtonPress-1> {.remote.c raise downbutton1; update; pushbutton 1}
-	.remote.c bind button1 <ButtonRelease-1> {.remote.c lower downbutton1}
+	.remote.c bind button1 <ButtonPress-1> {.remote.c raise downbutton1; update; holdbutton 1}
+	.remote.c bind button1 <ButtonRelease-1> {.remote.c lower downbutton1; releasebutton 1}
 
-	.remote.c bind button2 <ButtonPress-1> {.remote.c raise downbutton2; update; pushbutton 2}
-	.remote.c bind button2 <ButtonRelease-1> {.remote.c lower downbutton2}
+	.remote.c bind button2 <ButtonPress-1> {.remote.c raise downbutton2; update; holdbutton 2}
+	.remote.c bind button2 <ButtonRelease-1> {.remote.c lower downbutton2; releasebutton 2}
 
-	.remote.c bind button3 <ButtonPress-1> {.remote.c raise downbutton3; update; pushbutton 3}
-	.remote.c bind button3 <ButtonRelease-1> {.remote.c lower downbutton3}
+	.remote.c bind button3 <ButtonPress-1> {.remote.c raise downbutton3; update; holdbutton 3}
+	.remote.c bind button3 <ButtonRelease-1> {.remote.c lower downbutton3; releasebutton 3}
 
-	.remote.c bind button4 <ButtonPress-1> {.remote.c raise downbutton4; update; pushbutton 4}
-	.remote.c bind button4 <ButtonRelease-1> {.remote.c lower downbutton4}
+	.remote.c bind button4 <ButtonPress-1> {.remote.c raise downbutton4; update; holdbutton 4}
+	.remote.c bind button4 <ButtonRelease-1> {.remote.c lower downbutton4; releasebutton 4}
 
-	.remote.c bind button5 <ButtonPress-1> {.remote.c raise downbutton5; update; pushbutton 5}
-	.remote.c bind button5 <ButtonRelease-1> {.remote.c lower downbutton5}
+	.remote.c bind button5 <ButtonPress-1> {.remote.c raise downbutton5; update; holdbutton 5}
+	.remote.c bind button5 <ButtonRelease-1> {.remote.c lower downbutton5; releasebutton 5}
 
-	.remote.c bind button6 <ButtonPress-1> {.remote.c raise downbutton6; update; pushbutton 6}
-	.remote.c bind button6 <ButtonRelease-1> {.remote.c lower downbutton6}
+	.remote.c bind button6 <ButtonPress-1> {.remote.c raise downbutton6; update; holdbutton 6}
+	.remote.c bind button6 <ButtonRelease-1> {.remote.c lower downbutton6; releasebutton 6}
 
-	.remote.c bind button7 <ButtonPress-1> {.remote.c raise downbutton7; update; pushbutton 7}
-	.remote.c bind button7 <ButtonRelease-1> {.remote.c lower downbutton7}
+	.remote.c bind button7 <ButtonPress-1> {.remote.c raise downbutton7; update; holdbutton 7}
+	.remote.c bind button7 <ButtonRelease-1> {.remote.c lower downbutton7; releasebutton 7}
 	
 	
 	.remote.c itemconfigure button1 -outline {} -fill {}
@@ -1164,7 +1217,50 @@ pack .remote.c -side top
 .remote.c bind screen <B1-Motion> {pen %x %y 1}
 .remote.c bind screen <ButtonRelease-1> {pen %x %y 0}
 
-bind .remote <KeyPress> {key %A}
+global KeyQueue
+global KeyQueueId
+global KeyQueueDelay
+set KeyQueue {}
+set KeyQueueId {}
+set KeyQueueDelay 50
+
+proc readyqueue {} {
+    global KeyQueueId
+    global KeyQueueDelay
+    if {$KeyQueueId == {}} {
+	after $KeyQueueDelay { set KeyQueueId [ after idle {sendqueue} ] }
+    }
+}
+
+proc queuekey {c} {
+    global KeyQueue
+    append KeyQueue $c
+    readyqueue
+}
+
+proc sendqueue {} {
+    global KeyQueue
+    global KeyQueueId
+    if {[string length $KeyQueue] > 0} {
+	key [string index $KeyQueue 0]
+	set KeyQueue [string range $KeyQueue 1 end]
+    }
+    set KeyQueueId {}
+    if {[string length $KeyQueue] > 0} { readyqueue }
+}
+
+bind .remote <KeyPress> {queuekey %A}
+
+## Handle pasting
+proc do_paste { } {
+    if [catch {selection get} sel] {
+	if [catch {selection get -selection CLIPBOARD} sel] {
+	    return
+	}
+    }
+    queuekey $sel
+}
+bind .remote <ButtonPress-2> {do_paste}
 
 #####  /*** Generate remote console window ***/
 
@@ -1507,6 +1603,7 @@ warmboot\n\
 pushbutton <button number>\tSimulate button push\n\
 mirror [bool]\tContinually view the Pilot's screen in the Remote UI window (if bool supplied, can turn on or off mirroring, otherwise toggles)\n\
 getdisplay\tShow the Pilot's display in the Remote UI window\n\
+updatedisplay\tForce a mirror refresh\n\
 ");
   return TCL_OK;
 }
@@ -1523,6 +1620,7 @@ struct { char * name; Tcl_CmdProc * proc; } cmds[] = {
 	{ "attach",	proc_attach },
 	{ "transmit",	proc_transmit },
 	{ "getdisplay",	proc_getdisplay },
+	{ "updatedisplay",	proc_updatedisplay },
 	{ "mirror",     proc_mirror },
 	{ "battery",	proc_battery },
 	{ "port",	proc_port },

@@ -1,3 +1,58 @@
+Aug 4, 1997 	Kenneth Albanowski 0.8.0
+
+	Configuration changes:
+	  - Added dependancy checking to utilties.
+	  - Touched up OS/2 configuration slightly.
+	  - Added detection of uname and other SunOS (or was it Solaris?) foibles.
+	Pisocket library changes:
+	  - Changes to nearly all structure definitions, though these are mostly
+	    just changes to the names of members. The names have been changed to
+	    follow a common naming scheme ("thisIsAMethod", "ramSize", etc.),
+	    to remove chopped words, and to let the interpreter bindings use the
+	    same member names as the C code. The new names are frozen (I hope)
+	    and will not change again.
+	  - Category information has been broken out of the appInfo structures
+	    into a separate structure, since it was producing needless
+	    duplicated code.
+	  - All of the database record packing code had been tuned and tested,
+	    and now pay attention to their arguments. In particular, both the
+	    packers and unpackers return how many bytes were used (or zero if
+	    the buffer wasn't long enough), and the packer will return the
+	    desired buffer length if it is passed a buffer address of zero. 
+	    These changes allow programs to let the packer calculate how much
+	    buffer space should be allocated.
+	  - Version number of shared library bumped up to indicate incompatible changes.
+	Test code changes:
+	  - Added test code to check all packers and unpackers for proper operation.
+	Utility changes:
+	  - Added pi-getrom program to fetch a Pilot's ROM through RPC calls.
+	    Be careful, this program _could_ cause your Pilot to lock up, so
+	    back up first. But I'd love to hear about any problems.
+	  - pi-csd tries to get the host name via uname if gethostname isn't available.
+	  - Added backlight support to remote UI in pilot-debug.
+	  - Added Ian G.'s pilot-debug patches to support pasting text into the remote UI.
+	  - All utilities modified to match changes to pisocket library.
+	Java binding changes:
+	  - Dlp exceptions now contain (through hard effort) the Dlp error value
+	  - Use slightly less deprecated Date interface (bleagh!)
+	  - Structures modified to match new definitions.
+	  - Added resetNext & callApplication methods.
+	  - Adapted packers to new structures -- broke off categories into
+	    a subclass of AppBlock.
+	  - Added support for all standard databases except Expense.
+	  - Changed toString mechanism to allow superclasses to build up description.
+	  - Added newRecord, newResource, newAppBlock, newSortBlock and newPref methods.
+	  - Java structures and methods are freezing if not frozen.
+	Perl 5 binding changes:
+	  - Structures modified to match new definitions.
+	  - Perl structures and methods are freezing if not frozen.
+	  - Renamed methods to match Java binding ("likeThis", "ramSize", "getRecord", etc.)
+	Python binding changes:
+	  - Structures modified to match new definitions.
+	  - Python structures and methods are freezing if not frozen.
+	  - Renamed methods to match Java binding.
+	
+
 Jul 26, 1997	Kenneth Albanowski 0.7.6
 
 	Configuration changes:

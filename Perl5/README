@@ -1,4 +1,7 @@
 
+As of 0.8.0: Any documentation included is dubious at best.
+
+
 This is an experimental piece of code to interface Perl 5 to the pilot-link
 library. To use it, you will need to perform these steps:
 

@@ -314,15 +314,15 @@ SvChar4(arg)
 			HV * i = newHV();	\
 			hv_store(i, "more", 4, newSViv(var.more), 0);	\
 	    	hv_store(i, "flags", 5, newSViv(var.flags), 0);	\
-	    	hv_store(i, "miscflags", 9, newSViv(var.miscflags), 0);	\
+	    	hv_store(i, "miscFlags", 9, newSViv(var.miscFlags), 0);	\
 	    	hv_store(i, "type", 4, newSVChar4(var.type), 0);	\
 	    	hv_store(i, "creator", 7, newSVChar4(var.creator), 0);	\
 	    	hv_store(i, "version", 7, newSViv(var.version), 0);	\
 	    	hv_store(i, "modnum", 6, newSViv(var.modnum), 0);	\
 	    	hv_store(i, "index", 5, newSViv(var.index), 0);	\
-	    	hv_store(i, "crdate", 6, newSViv(var.crdate), 0);	\
-	    	hv_store(i, "moddate", 7, newSViv(var.moddate), 0);	\
-	    	hv_store(i, "backupdate", 10, newSViv(var.backupdate), 0);	\
+	    	hv_store(i, "createDate", 10, newSViv(var.createDate), 0);	\
+	    	hv_store(i, "modifyDate", 10, newSViv(var.modifyDate), 0);	\
+	    	hv_store(i, "backupDate", 10, newSViv(var.backupDate), 0);	\
 	    	hv_store(i, "name", 4, newSVpv(var.name, 0), 0);	\
 			arg = newRV((SV*)i);	\
 		}	\
@@ -334,15 +334,15 @@ SvChar4(arg)
 	    SV ** s;	\
 	    var.more = (s = hv_fetch(i, "more", 4, 0)) ? SvIV(*s) : 0;	\
 	    var.flags = (s = hv_fetch(i, "flags", 5, 0)) ? SvIV(*s) : 0;	\
-	    var.miscflags = (s = hv_fetch(i, "miscflags", 9, 0)) ? SvIV(*s) : 0;	\
+	    var.miscFlags = (s = hv_fetch(i, "miscFlags", 9, 0)) ? SvIV(*s) : 0;	\
 	    var.type = (s = hv_fetch(i, "type", 4, 0)) ? SvChar4(*s) : 0;	\
 	    var.creator = (s = hv_fetch(i, "creator", 7, 0)) ? SvChar4(*s) : 0;	\
 	    var.version = (s = hv_fetch(i, "version", 7, 0)) ? SvIV(*s) : 0;	\
 	    var.modnum = (s = hv_fetch(i, "modnum", 6, 0)) ? SvIV(*s) : 0;	\
 	    var.index = (s = hv_fetch(i, "index", 5, 0)) ? SvIV(*s) : 0;	\
-	    var.crdate = (s = hv_fetch(i, "crdate", 6, 0)) ? SvIV(*s) : 0;	\
-	    var.moddate = (s = hv_fetch(i, "moddate", 7, 0)) ? SvIV(*s) : 0;	\
-	    var.backupdate = (s = hv_fetch(i, "backupdate", 10, 0)) ? SvIV(*s) : 0;	\
+	    var.createDate = (s = hv_fetch(i, "creatDate", 10, 0)) ? SvIV(*s) : 0;	\
+	    var.modifyDate = (s = hv_fetch(i, "modifyDate", 10, 0)) ? SvIV(*s) : 0;	\
+	    var.backupDate = (s = hv_fetch(i, "backupDate", 10, 0)) ? SvIV(*s) : 0;	\
 	    if ((s = hv_fetch(i, "name", 4, 0)) ? SvPV(*s,na) : 0)	\
 	    	strcpy(var.name, SvPV(*s, na));	\
 	} else	{\
@@ -359,10 +359,10 @@ SvChar4(arg)
 			hv_store(i, "userID", 6, newSViv(var.userID), 0);	\
 	    	hv_store(i, "viewerID", 8, newSViv(var.viewerID), 0);	\
 	    	hv_store(i, "lastSyncPC", 10, newSViv(var.lastSyncPC), 0);	\
-	    	hv_store(i, "lastGoodSync", 12, newSViv(var.succSyncDate), 0);	\
-	    	hv_store(i, "lastSync", 8, newSViv(var.lastSyncDate), 0);	\
+	    	hv_store(i, "successfulSyncDate", 18, newSViv(var.successfulSyncDate), 0);	\
+	    	hv_store(i, "lastSyncDate", 12, newSViv(var.lastSyncDate), 0);	\
 	    	hv_store(i, "name", 4, newSVpv(var.username,0), 0);	\
-	    	hv_store(i, "password", 8, newSVpv(var.password,var.passwordLen), 0);	\
+	    	hv_store(i, "password", 8, newSVpv(var.password,var.passwordLength), 0);	\
 			arg = newRV((SV*)i);	\
 		}	\
 	}
@@ -374,8 +374,8 @@ SvChar4(arg)
 	    var.userID = (s = hv_fetch(i, "userID", 6, 0)) ? SvIV(*s) : 0;	\
 	    var.viewerID = (s = hv_fetch(i, "viewerID", 8, 0)) ? SvIV(*s) : 0;	\
 	    var.lastSyncPC = (s = hv_fetch(i, "lastSyncPC", 10, 0)) ? SvIV(*s) : 0;	\
-	    var.lastSyncDate = (s = hv_fetch(i, "lastSync", 8, 0)) ? SvIV(*s) : 0;	\
-	    var.succSyncDate = (s = hv_fetch(i, "lastGoodSync", 12, 0)) ? SvIV(*s) : 0;	\
+	    var.lastSyncDate = (s = hv_fetch(i, "lastSyncDate", 12, 0)) ? SvIV(*s) : 0;	\
+	    var.successfulSyncDate = (s = hv_fetch(i, "successfulSyncDate", 18, 0)) ? SvIV(*s) : 0;	\
 	    if ((s = hv_fetch(i, "name", 4, 0)) ? SvPV(*s,na) : 0)	\
 	    	strcpy(var.username, SvPV(*s, na));	\
 	} else	{\
@@ -479,7 +479,7 @@ SvChar4(arg)
 	    		if (!(s = hv_fetch(h, "attr", 4, 0)) || !SvOK(*s))	\
 	    			croak("record must contain attr");		\
     			attr = SvIV(*s);							\
-	    		if (!(s = hv_fetch(h, "cat", 3, 0)) || !SvOK(*s))	\
+	    		if (!(s = hv_fetch(h, "category", 8, 0)) || !SvOK(*s))	\
 	    			croak("record must contain category");	\
     			category = SvIV(*s);						\
 	        	PUSHMARK(sp);								\
@@ -663,6 +663,66 @@ SvChar4(arg)
 	    	PUSHs(&sv_undef);									\
 	    }
 
+void doUnpackCategory(HV * self, struct CategoryAppInfo * c)
+{
+	AV * e = newAV();
+	int i;
+	
+    hv_store(self, "categoryRenamed", 15, newRV_noinc((SV*)e), 0);
+
+    for (i=0;i<16;i++) {
+    	av_push(e, newSViv(c->renamed[i]));
+    }
+
+    e = newAV();
+    hv_store(self, "categoryName", 12, newRV_noinc((SV*)e), 0);
+    
+    for (i=0;i<16;i++) {
+    	av_push(e, newSVpv(c->name[i], 0));
+    }
+
+    e = newAV();
+    hv_store(self, "categoryID", 10, newRV_noinc((SV*)e), 0);
+    
+    for (i=0;i<16;i++) {
+    	av_push(e, newSViv(c->ID[i]));
+    }
+
+    hv_store(self, "categoryLastUniqueID", 20, newSViv(c->lastUniqueID), 0);
+}
+
+
+void doPackCategory(HV * self, struct CategoryAppInfo * c)
+{
+	SV ** s;
+	AV * av;
+	int i;
+	
+    if ((s = hv_fetch(self, "categoryName", 12, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
+    	for (i=0;i<16;i++)
+    		strncpy(c->name[i], (s=av_fetch(av, i, 0)) ? SvPV(*s,na) : "", 16);
+	else
+		for (i=0;i<16;i++)
+			strcpy(c->name[i], "");
+
+	for (i=0;i<16;i++)
+		c->name[i][15] = '\0';
+
+    if ((s = hv_fetch(self, "categoryID", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
+    	for (i=0;i<16;i++)
+    		c->ID[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
+	else
+		for (i=0;i<16;i++)
+			c->ID[i] = 0;
+
+    if ((s = hv_fetch(self, "categoryRenamed", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
+    	for (i=0;i<16;i++)
+    		c->renamed[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
+	else
+		for (i=0;i<16;i++)
+			c->renamed[i] = 0;
+}
+
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot
 
 double
@@ -734,7 +794,7 @@ Unpack(record)
         
    		hv_store(repeat, "type", 4, newSViv(a.repeatType), 0);
    		hv_store(repeat, "forever", 7, newSViv(a.repeatForever), 0);
-   		hv_store(repeat, "frequency", 9, newSViv(a.repeatFreq), 0);
+   		hv_store(repeat, "frequency", 9, newSViv(a.repeatFrequency), 0);
    		hv_store(repeat, "on", 2, newSViv(a.repeatOn), 0);
    		hv_store(repeat, "weekstart", 9, newSViv(a.repeatWeekstart), 0);
    		hv_store(repeat, "end", 3, newRV_noinc((SV*)tmtoav(&a.repeatEnd)),0);
@@ -819,7 +879,7 @@ Pack(record)
 		HV * h2 = (HV*)SvRV(*s);
 	    a.repeatType = (s = hv_fetch(h2, "type", 4, 0)) ? SvIV(*s) : 0;
 	    a.repeatForever = (s = hv_fetch(h2, "forever", 7, 0)) ? SvIV(*s) : 0;
-	    a.repeatFreq = (s = hv_fetch(h2, "frequency", 9, 0)) ? SvIV(*s) : 0;
+	    a.repeatFrequency = (s = hv_fetch(h2, "frequency", 9, 0)) ? SvIV(*s) : 0;
 	    a.repeatOn = (s = hv_fetch(h2, "on", 2, 0)) ? SvIV(*s) : 0;
 	    a.repeatWeekstart = (s = hv_fetch(h2, "weekstart", 9, 0)) ? SvIV(*s) : 0;
 	    if (s = hv_fetch(h2, "end", 3, 0)) 
@@ -827,7 +887,7 @@ Pack(record)
     } else {
     	a.repeatType = 0;
     	a.repeatForever = 0;
-    	a.repeatFreq = 0;
+    	a.repeatFrequency = 0;
     	a.repeatOn = 0;
     	a.repeatWeekstart = 0;
     	memset(&a.repeatEnd,'\0', sizeof(struct tm));
@@ -851,7 +911,7 @@ Pack(record)
       croak("appointments must contain a description");
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
-    pack_Appointment(&a, (unsigned char*)mybuf, &len);
+    len = pack_Appointment(&a, (unsigned char*)mybuf, 0xffff);
     
     if (a.exception)
 		free(a.exception);
@@ -899,24 +959,8 @@ UnpackAppBlock(record)
 	ret = newHV();
 	RETVAL = newRV_noinc((SV*)ret);*/
 
-    hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
-    
-    e = newAV();
-    hv_store(ret, "categoryName", 12, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSVpv(a.CategoryName[i], 0));
-    }
-
-    e = newAV();
-    hv_store(ret, "categoryID", 10, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSViv(a.CategoryID[i]));
-    }
-
-    hv_store(ret, "lastUniqueID", 12, newSViv(a.lastUniqueID), 0);
-
+	doUnpackCategory(ret, &a.category);
+	
     hv_store(ret, "startOfWeek", 11, newSViv(a.startOfWeek), 0);
 
     }
@@ -939,39 +983,14 @@ PackAppBlock(record)
     	RETVAL = record;
     else {
     
-    if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
-	    a.renamedcategories = SvIV(*s);
-	else
-		a.renamedcategories = 0;
+    doPackCategory(h, &a.category);
 
-    if ((s = hv_fetch(h, "categoryName", 12, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		strncpy(a.CategoryName[i], (s=av_fetch(av, i, 0)) ? SvPV(*s,na) : "", 16);
-	else
-		for (i=0;i<16;i++)
-			strcpy(a.CategoryName[i], "");
-
-	for (i=0;i<16;i++)
-		a.CategoryName[i][15] = '\0';
-
-    if ((s = hv_fetch(h, "categoryID", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		a.CategoryID[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
-	else
-		for (i=0;i<16;i++)
-			a.CategoryID[i] = 0;
-
-    if ((s = hv_fetch(h, "lastUniqueID", 12, 0)))
-	    a.lastUniqueID = SvIV(*s);
-	else
-		a.lastUniqueID = 0;
-		
     if ((s = hv_fetch(h, "startOfWeek", 11, 0)))
 	    a.startOfWeek = SvIV(*s);
 	else
 		a.startOfWeek = 0;
 
-    pack_AppointmentAppInfo(&a, (unsigned char*)mybuf, &len);
+    len = pack_AppointmentAppInfo(&a, (unsigned char*)mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1017,9 +1036,8 @@ Unpack(record)
 	ret = newHV();
 	RETVAL = newRV_noinc((SV*)ret);*/
 
-
-    hv_store(ret, "indefinite", 10, newSViv(a.indefinite), 0);
-    hv_store(ret, "due", 3, newRV_noinc((SV*)tmtoav(&a.due)), 0);  
+    if (!a.indefinite)
+      hv_store(ret, "due", 3, newRV_noinc((SV*)tmtoav(&a.due)), 0);  
     hv_store(ret, "priority", 8, newSViv(a.priority), 0);
     hv_store(ret, "complete", 8, newSViv(a.complete), 0);
     if (a.description)
@@ -1047,18 +1065,21 @@ Pack(record)
     	RETVAL = record;
  	else {
 
-    a.indefinite = (s = hv_fetch(h, "indefinite", 10, 0)) ? SvIV(*s) : 0;
     a.priority = (s = hv_fetch(h, "priority", 8, 0)) ? SvIV(*s) : 0;
     a.complete = (s = hv_fetch(h, "complete", 8, 0)) ? SvIV(*s) : 0;
-    if (!a.indefinite && (s = hv_fetch(h, "due", 3, 0))) 
+    if ((s = hv_fetch(h, "due", 3, 0))) {
     	avtotm((AV*)SvRV(*s), &a.due);
-    else
+    	a.indefinite = 0;
+    }
+    else {
     	memset(&a.due,'\0', sizeof(struct tm));
+    	a.indefinite = 1;
+    }
     
     a.description = (s = hv_fetch(h, "description", 11, 0)) ? SvPV(*s,na) : 0;
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
-    pack_ToDo(&a, (unsigned char*)mybuf, &len);
+    len = pack_ToDo(&a, (unsigned char*)mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
 
@@ -1103,23 +1124,7 @@ UnpackAppBlock(record)
 	ret = newHV();
 	RETVAL = newRV_noinc((SV*)ret);*/
 
-    hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
-    
-    e = newAV();
-    hv_store(ret, "categoryName", 12, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSVpv(a.CategoryName[i], 0));
-    }
-
-    e = newAV();
-    hv_store(ret, "categoryID", 10, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSViv(a.CategoryID[i]));
-    }
-
-    hv_store(ret, "lastUniqueID", 12, newSViv(a.lastUniqueID), 0);
+    doUnpackCategory(ret, &a.category);
 
     hv_store(ret, "dirty", 5, newSViv(a.dirty), 0);
 
@@ -1144,38 +1149,16 @@ PackAppBlock(record)
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
     	RETVAL = record;
     else {
+
+    doUnpackCategory(h, &a.category);
     
-    if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
-	    a.renamedcategories = SvIV(*s);
-	else
-		a.renamedcategories = 0;
 
-    if ((s = hv_fetch(h, "categoryName", 12, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		strncpy(a.CategoryName[i], (s=av_fetch(av, i, 0)) ? SvPV(*s,na) : "", 16);
-	else
-		for (i=0;i<16;i++)
-			strcpy(a.CategoryName[i], "");
-
-	for (i=0;i<16;i++)
-		a.CategoryName[i][15] = '\0';
-
-    if ((s = hv_fetch(h, "categoryID", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		a.CategoryID[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
-	else
-		for (i=0;i<16;i++)
-			a.CategoryID[i] = 0;
-
-    if ((s = hv_fetch(h, "lastUniqueID", 12, 0)))
-	    a.lastUniqueID = SvIV(*s);
-	else
-		a.lastUniqueID = 0;
+	doPackCategory(h, &a.category);
 
     a.dirty = (s = hv_fetch(h, "dirty", 5, 0)) ? SvIV(*s) : 0;
     a.sortByPriority = (s = hv_fetch(h, "sortByPriority", 14, 0)) ? SvIV(*s) : 0;
 
-    pack_ToDoAppInfo(&a, (unsigned char*)mybuf, &len);
+    len = pack_ToDoAppInfo(&a, (unsigned char*)mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1225,7 +1208,7 @@ Unpack(record)
     hv_store(ret, "phoneLabel", 10, newRV_noinc((SV*)e), 0);
     
     for (i=0;i<5;i++) {
-    	av_push(e, newSViv(a.phonelabel[i]));
+    	av_push(e, newSViv(a.phoneLabel[i]));
     }
 
     e = newAV();
@@ -1234,6 +1217,8 @@ Unpack(record)
     for (i=0;i<19;i++) {
     	av_push(e, a.entry[i] ? newSVpv(a.entry[i],0) : &sv_undef);
     }
+    
+    hv_store(ret, "showPhone", 9, newSViv(a.showPhone), 0);
     
     free_Address(&a);
     
@@ -1259,10 +1244,10 @@ Pack(record)
 
     if ((s = hv_fetch(h, "phoneLabel", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
     	for (i=0;i<5;i++)
-    		a.phonelabel[i] = ((s=av_fetch(av, i, 0)) && SvOK(*s)) ? SvIV(*s) : 0;
+    		a.phoneLabel[i] = ((s=av_fetch(av, i, 0)) && SvOK(*s)) ? SvIV(*s) : 0;
 	else
 		for (i=0;i<5;i++)
-			a.phonelabel[i] = 0;
+			a.phoneLabel[i] = 0;
 
     if ((s = hv_fetch(h, "entry", 5, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
     	for (i=0;i<19;i++)
@@ -1270,8 +1255,13 @@ Pack(record)
 	else
 		for (i=0;i<19;i++)
 			a.entry[i] = 0;
+	
+	if ((s = hv_fetch(h, "showPhone", 9, 0)))
+	  a.showPhone = SvIV(*s);
+	else
+	  a.showPhone = 0;
 
-    pack_Address(&a, (unsigned char*)mybuf, &len);
+    len = pack_Address(&a, (unsigned char*)mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
 
@@ -1316,25 +1306,14 @@ UnpackAppBlock(record)
 	ret = newHV();
 	RETVAL = newRV_noinc((SV*)ret);*/
     
-    hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
+    doUnpackCategory(ret, &a.category);
     
     e = newAV();
-    hv_store(ret, "categoryName", 12, newRV_noinc((SV*)e), 0);
+    hv_store(ret, "labelRenamed", 12, newRV_noinc((SV*)e), 0);
     
-    for (i=0;i<16;i++) {
-    	av_push(e, newSVpv(a.CategoryName[i], 0));
+    for (i=0;i<22;i++) {
+    	av_push(e, newSViv(a.labelRenamed[i]));
     }
-
-    e = newAV();
-    hv_store(ret, "categoryID", 10, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSViv(a.CategoryID[i]));
-    }
-
-    hv_store(ret, "lastUniqueID", 12, newSViv(a.lastUniqueID), 0);
-
-    hv_store(ret, "dirtyfieldlabels", 16, newSViv(a.dirtyfieldlabels), 0);
 
     hv_store(ret, "country", 7, newSViv(a.country), 0);
     hv_store(ret, "sortByCompany", 13, newSViv(a.sortByCompany), 0);
@@ -1350,7 +1329,7 @@ UnpackAppBlock(record)
     hv_store(ret, "phoneLabel", 10, newRV_noinc((SV*)e), 0);
     
     for (i=0;i<8;i++) {
-    	av_push(e, newSVpv(a.phonelabels[i],0));
+    	av_push(e, newSVpv(a.phoneLabels[i],0));
     }
 
     }
@@ -1372,35 +1351,14 @@ PackAppBlock(record)
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
     	RETVAL = record;
     else {
+
+    doPackCategory(h, &a.category);
     
-    if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
-	    a.renamedcategories = SvIV(*s);
+    if ((s = hv_fetch(h, "labelRenamed", 12, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
+    	for (i=0;i<22;i++) a.labelRenamed[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
 	else
-		a.renamedcategories = 0;
-
-    if ((s = hv_fetch(h, "categoryName", 12, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		strncpy(a.CategoryName[i], (s=av_fetch(av, i, 0)) ? SvPV(*s,na) : "", 16);
-	else
-		for (i=0;i<16;i++)
-			strcpy(a.CategoryName[i], "");
-
-	for (i=0;i<16;i++)
-		a.CategoryName[i][15] = '\0';
-
-    if ((s = hv_fetch(h, "categoryID", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		a.CategoryID[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
-	else
-		for (i=0;i<16;i++)
-			a.CategoryID[i] = 0;
-
-    if ((s = hv_fetch(h, "lastUniqueID", 12, 0)))
-	    a.lastUniqueID = SvIV(*s);
-	else
-		a.lastUniqueID = 0;
-
-    a.dirtyfieldlabels = (s = hv_fetch(h, "dirtyfieldlabels", 16, 0)) ? SvIV(*s) : 0;
+		for (i=0;i<22;i++) a.labelRenamed[i] = 0;
+		
     a.country = (s = hv_fetch(h, "country", 7, 0)) ? SvIV(*s) : 0;
     a.sortByCompany = (s = hv_fetch(h, "sortByCompany", 13, 0)) ? SvIV(*s) : 0;
 
@@ -1411,12 +1369,12 @@ PackAppBlock(record)
 	for (i=0;i<22;i++) a.labels[i][15] = 0;
 
     if ((s = hv_fetch(h, "phoneLabel", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<8;i++) strncpy(a.phonelabels[i], (s=av_fetch(av, i, 0)) ? SvPV(*s,na) : "", 16);
+    	for (i=0;i<8;i++) strncpy(a.phoneLabels[i], (s=av_fetch(av, i, 0)) ? SvPV(*s,na) : "", 16);
 	else
-		for (i=0;i<8;i++) a.phonelabels[i][0] = 0;
-	for (i=0;i<8;i++) a.phonelabels[i][15] = 0;
+		for (i=0;i<8;i++) a.phoneLabels[i][0] = 0;
+	for (i=0;i<8;i++) a.phoneLabels[i][15] = 0;
 
-    pack_AddressAppInfo(&a, (unsigned char*)mybuf, &len);
+    len = pack_AddressAppInfo(&a, (unsigned char*)mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1488,7 +1446,7 @@ Pack(record)
 	else
 		a.text = 0;
     
-    pack_Memo(&a, (unsigned char*)mybuf, &len);
+    len = pack_Memo(&a, (unsigned char*)mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
     
@@ -1532,25 +1490,9 @@ UnpackAppBlock(record)
 	ret = newHV();
 	RETVAL = newRV_noinc((SV*)ret);*/
 
-    hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
-    
-    e = newAV();
-    hv_store(ret, "categoryName", 12, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSVpv(a.CategoryName[i], 0));
-    }
+    doUnpackCategory(ret, &a.category);
 
-    e = newAV();
-    hv_store(ret, "categoryID", 10, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSViv(a.CategoryID[i]));
-    }
-
-    hv_store(ret, "lastUniqueID", 12, newSViv(a.lastUniqueID), 0);
-
-    hv_store(ret, "sortOrder", 9, newSViv(a.sortOrder), 0);
+    hv_store(ret, "sortByAlpha", 9, newSViv(a.sortByAlpha), 0);
 
     }
     OUTPUT:
@@ -1571,40 +1513,16 @@ PackAppBlock(record)
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
     	RETVAL = record;
     else {
+
+    doPackCategory(h, &a.category);
     
-    if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
-	    a.renamedcategories = SvIV(*s);
-	else
-		a.renamedcategories = 0;
-
-    if ((s = hv_fetch(h, "categoryName", 12, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		strncpy(a.CategoryName[i], (s=av_fetch(av, i, 0)) ? SvPV(*s,na) : "", 16);
-	else
-		for (i=0;i<16;i++)
-			strcpy(a.CategoryName[i], "");
-
-	for (i=0;i<16;i++)
-		a.CategoryName[i][15] = '\0';
-
-    if ((s = hv_fetch(h, "categoryID", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		a.CategoryID[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
-	else
-		for (i=0;i<16;i++)
-			a.CategoryID[i] = 0;
-
-    if ((s = hv_fetch(h, "lastUniqueID", 12, 0)))
-	    a.lastUniqueID = SvIV(*s);
-	else
-		a.lastUniqueID = 0;
 		
-    if ((s = hv_fetch(h, "sortOrder", 9, 0)))
-	    a.sortOrder = SvIV(*s);
+    if ((s = hv_fetch(h, "sortByAlpha", 9, 0)))
+	    a.sortByAlpha = SvIV(*s);
 	else
-		a.sortOrder = 0;
+		a.sortByAlpha = 0;
     
-    pack_MemoAppInfo(&a, (unsigned char*)mybuf, &len);
+    len = pack_MemoAppInfo(&a, (unsigned char*)mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1707,7 +1625,7 @@ Pack(record)
     a.dated = (s = hv_fetch(h, "date", 4, 0)) ? 1 : 0;
     if (s) avtotm((AV*)SvRV(*s), &a.date);
 
-    pack_Mail(&a, (unsigned char*)mybuf, &len);
+    len = pack_Mail(&a, (unsigned char*)mybuf, 0xffff);
     
     RETVAL = newSVpv(mybuf, len);
 
@@ -1751,28 +1669,11 @@ UnpackAppBlock(record)
 	ret = newHV();
 	RETVAL = newRV_noinc((SV*)ret);*/
 
-    hv_store(ret, "renamedCategories",17 , newSViv(a.renamedcategories), 0);
-    
-    e = newAV();
-    hv_store(ret, "categoryName", 12, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSVpv(a.CategoryName[i], 0));
-    }
-
-    e = newAV();
-    hv_store(ret, "categoryID", 10, newRV_noinc((SV*)e), 0);
-    
-    for (i=0;i<16;i++) {
-    	av_push(e, newSViv(a.CategoryID[i]));
-    }
-
-    hv_store(ret, "lastUniqueID", 12, newSViv(a.lastUniqueID), 0);
-
+    doUnpackCategory(ret, &a.category);
 
     hv_store(ret, "sortOrder", 9, newSViv(a.sortOrder), 0);
 
-    hv_store(ret, "dirtyfieldlabels", 16, newSViv(a.dirtyfieldlabels), 0);
+    hv_store(ret, "dirty", 5, newSViv(a.dirty), 0);
     hv_store(ret, "unsentMessage", 13, newSViv(a.unsentMessage), 0);
 
     }
@@ -1794,43 +1695,19 @@ PackAppBlock(record)
     if (!SvRV(record) || (SvTYPE(h=(HV*)SvRV(record))!=SVt_PVHV))
     	RETVAL = record;
     else {
+
+
+    doPackCategory(h, &a.category);
     
-    if ((s = hv_fetch(h, "renamedCategories", 17, 0)))
-	    a.renamedcategories = SvIV(*s);
-	else
-		a.renamedcategories = 0;
-
-    if ((s = hv_fetch(h, "categoryName", 12, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		strncpy(a.CategoryName[i], (s=av_fetch(av, i, 0)) ? SvPV(*s,na) : "", 16);
-	else
-		for (i=0;i<16;i++)
-			strcpy(a.CategoryName[i], "");
-
-	for (i=0;i<16;i++)
-		a.CategoryName[i][15] = '\0';
-
-    if ((s = hv_fetch(h, "categoryID", 10, 0)) && SvRV(*s) && (SvTYPE(av=(AV*)SvRV(*s))==SVt_PVAV))
-    	for (i=0;i<16;i++)
-    		a.CategoryID[i] = (s=av_fetch(av, i, 0)) ? SvIV(*s) : 0;
-	else
-		for (i=0;i<16;i++)
-			a.CategoryID[i] = 0;
-
-    if ((s = hv_fetch(h, "lastUniqueID", 12, 0)))
-	    a.lastUniqueID = SvIV(*s);
-	else
-		a.lastUniqueID = 0;
-		
     if ((s = hv_fetch(h, "sortOrder", 9, 0)))
 	    a.sortOrder = SvIV(*s);
 	else
 		a.sortOrder = 0;
 
-	a.dirtyfieldlabels = (s=hv_fetch(h,"dirtyfieldlabels",16,0)) ? SvIV(*s) : 0;
+	a.dirty = (s=hv_fetch(h,"dirty",5,0)) ? SvIV(*s) : 0;
 	a.unsentMessage = (s=hv_fetch(h,"unsentMessage",13,0)) ? SvIV(*s) : 0;
 
-    pack_MailAppInfo(&a, (unsigned char*)mybuf, &len);
+    len = pack_MailAppInfo(&a, (unsigned char*)mybuf, 0xffff);
 
     RETVAL = newSVpv(mybuf, len);
 
@@ -1843,7 +1720,7 @@ PackAppBlock(record)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot
 
 int
-Close(socket)
+close(socket)
 	int	socket
 	CODE:
 	RETVAL = pi_close(socket);
@@ -1851,7 +1728,7 @@ Close(socket)
 	RETVAL
 
 int
-Write(socket, msg)
+write(socket, msg)
 	int	socket
 	SV *	msg
 	CODE: {
@@ -1860,7 +1737,7 @@ Write(socket, msg)
 	}
 
 SV *
-Read(socket, len)
+read(socket, len)
 	int	socket
 	int	len
 	CODE:
@@ -1878,7 +1755,7 @@ Read(socket, len)
 	RETVAL
 
 int
-Socket(domain, type, protocol)
+socket(domain, type, protocol)
 	int	domain
 	int	type
 	int	protocol
@@ -1888,7 +1765,7 @@ Socket(domain, type, protocol)
 	RETVAL
 
 int
-Listen(socket, backlog)
+listen(socket, backlog)
 	int	socket
 	int	backlog
 	CODE:
@@ -1896,8 +1773,16 @@ Listen(socket, backlog)
 	OUTPUT:
 	RETVAL
 
+char *
+errorText(error)
+	int error
+	CODE:
+	RETVAL = dlp_strerror(error);
+	OUTPUT:
+	RETVAL
+
 int
-Bind(socket, sockaddr)
+bind(socket, sockaddr)
 	int	socket
 	SV *	sockaddr
 	CODE:
@@ -1926,7 +1811,7 @@ Bind(socket, sockaddr)
 	RETVAL
 
 int
-OpenPort(port)
+openPort(port)
 	char *	port
 	CODE:
 	{
@@ -1945,7 +1830,7 @@ OpenPort(port)
 	RETVAL
 
 SV *
-Accept(socket)
+accept(socket)
 	int	socket
 	CODE:
 	{
@@ -1995,7 +1880,7 @@ errno(self)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::DBPtr
 
 SV *
-Class(self, name=0)
+class(self, name=0)
 	PDA::Pilot::DLP::DB *	self
 	SV *	name
 	CODE:
@@ -2026,7 +1911,7 @@ Class(self, name=0)
 	RETVAL
 
 Result
-Close(self)
+close(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_CloseDB(self->socket, self->handle);
@@ -2035,7 +1920,7 @@ Close(self)
 	RETVAL
 
 Result
-SetSortBlock(self, data)
+setSortBlock(self, data)
 	PDA::Pilot::DLP::DB *	self
 	SV *	data
 	CODE:
@@ -2050,7 +1935,7 @@ SetSortBlock(self, data)
 	RETVAL
 
 SV *
-GetAppBlock(self, len=0xffff, offset=0)
+getAppBlock(self, len=0xffff, offset=0)
 	PDA::Pilot::DLP::DB *	self
 	int len
 	int	offset
@@ -2061,7 +1946,7 @@ GetAppBlock(self, len=0xffff, offset=0)
 	}
 
 SV *
-GetSortBlock(self, len=0xffff, offset=0)
+getSortBlock(self, len=0xffff, offset=0)
 	PDA::Pilot::DLP::DB *	self
 	int len
 	int	offset
@@ -2072,7 +1957,7 @@ GetSortBlock(self, len=0xffff, offset=0)
 	}
 
 Result
-SetAppBlock(self, data)
+setAppBlock(self, data)
 	PDA::Pilot::DLP::DB *	self
 	SV *	data
 	CODE:
@@ -2087,7 +1972,7 @@ SetAppBlock(self, data)
 	RETVAL
 
 Result
-Purge(self)
+purge(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_CleanUpDatabase(self->socket, self->handle);
@@ -2095,7 +1980,7 @@ Purge(self)
 	RETVAL
 
 Result
-ResetFlags(self)
+resetFlags(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_ResetSyncFlags(self->socket, self->handle);
@@ -2103,7 +1988,7 @@ ResetFlags(self)
 	RETVAL
 
 Result
-DeleteCategory(self, category)
+deleteCategory(self, category)
 	PDA::Pilot::DLP::DB *	self
 	int	category
 	CODE:
@@ -2112,7 +1997,7 @@ DeleteCategory(self, category)
 	RETVAL
 
 void
-NewRecord(self, id=0, attr=0, cat=0)
+newRecord(self, id=0, attr=0, cat=0)
 	PDA::Pilot::DLP::DB *	self
 	SV *	id
 	SV *	attr
@@ -2141,7 +2026,7 @@ NewRecord(self, id=0, attr=0, cat=0)
     }
 
 void
-NewResource(self, type=0, id=0)
+newResource(self, type=0, id=0)
 	PDA::Pilot::DLP::DB *	self
 	SV *	type
 	SV *	id
@@ -2167,7 +2052,7 @@ NewResource(self, type=0, id=0)
     }
 
 void
-NewAppBlock(self)
+newAppBlock(self)
 	PDA::Pilot::DLP::DB *	self
 	PPCODE:
 	{
@@ -2187,7 +2072,7 @@ NewAppBlock(self)
     }
 
 void
-NewSortBlock(self)
+newSortBlock(self)
 	PDA::Pilot::DLP::DB *	self
 	PPCODE:
 	{
@@ -2207,7 +2092,7 @@ NewSortBlock(self)
     }
 
 void
-NewPref(self, id=0, version=0, backup=0, creator=0)
+newPref(self, id=0, version=0, backup=0, creator=0)
 	PDA::Pilot::DLP::DB *	self
 	SV *	id
 	SV *	version
@@ -2251,7 +2136,7 @@ NewPref(self, id=0, version=0, backup=0, creator=0)
     }
 
 void
-GetRecord(self, index)
+getRecord(self, index)
 	PDA::Pilot::DLP::DB *	self
 	int	index
 	PPCODE:
@@ -2264,7 +2149,7 @@ GetRecord(self, index)
 	}
 
 Result
-MoveCategory(self, fromcat, tocat)
+moveCategory(self, fromcat, tocat)
 	PDA::Pilot::DLP::DB *	self
 	int	fromcat
 	int	tocat
@@ -2275,7 +2160,7 @@ MoveCategory(self, fromcat, tocat)
 
 
 Result
-DeleteRecord(self, id)
+deleteRecord(self, id)
 	PDA::Pilot::DLP::DB *	self
 	unsigned long	id
 	CODE:
@@ -2285,7 +2170,7 @@ DeleteRecord(self, id)
 
 
 Result
-DeleteRecords(self)
+deleteRecords(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_DeleteRecord(self->socket, self->handle, 1, 0);
@@ -2293,7 +2178,7 @@ DeleteRecords(self)
 	RETVAL
 
 Result
-ResetNext(self)
+resetNext(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_ResetDBIndex(self->socket, self->handle);
@@ -2301,7 +2186,7 @@ ResetNext(self)
 	RETVAL
 
 int
-Records(self)
+getRecords(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
 	{
@@ -2315,7 +2200,7 @@ Records(self)
 	RETVAL
 
 void
-RecordIDs(self, sort=0)
+getRecordIDs(self, sort=0)
 	PDA::Pilot::DLP::DB *	self
 	int	sort
 	PPCODE:
@@ -2348,7 +2233,7 @@ RecordIDs(self, sort=0)
 	}
 
 void
-GetRecordByID(self, id)
+getRecordByID(self, id)
 	PDA::Pilot::DLP::DB *	self
 	unsigned long id
 	PPCODE:
@@ -2359,7 +2244,7 @@ GetRecordByID(self, id)
 	}
 
 void
-GetNextChanged(self, category=-1)
+getNextModRecord(self, category=-1)
 	PDA::Pilot::DLP::DB *	self
 	int	category
 	PPCODE:
@@ -2374,7 +2259,7 @@ GetNextChanged(self, category=-1)
 	}
 
 void
-GetNextInCategory(self, category)
+getNextRecord(self, category)
 	PDA::Pilot::DLP::DB *	self
 	int	category
 	PPCODE:
@@ -2386,7 +2271,7 @@ GetNextInCategory(self, category)
 	}
 
 unsigned long
-SetRecord(self, data)
+setRecord(self, data)
 	PDA::Pilot::DLP::DB *	self
 	SV *	data
 	CODE:
@@ -2408,7 +2293,7 @@ SetRecord(self, data)
 	RETVAL
 
 unsigned long
-SetRecordRaw(self, data, id, attr, category)
+setRecordRaw(self, data, id, attr, category)
 	PDA::Pilot::DLP::DB *	self
 	unsigned long	id
 	int	attr
@@ -2431,7 +2316,7 @@ SetRecordRaw(self, data, id, attr, category)
 	RETVAL
 
 void
-GetResourceByID(self, type, id)
+setResourceByID(self, type, id)
 	PDA::Pilot::DLP::DB *	self
 	Char4	type
 	int	id
@@ -2443,7 +2328,7 @@ GetResourceByID(self, type, id)
 	}
 
 void
-GetResource(self, index)
+getResource(self, index)
 	PDA::Pilot::DLP::DB *	self
 	int	index
 	PPCODE:
@@ -2455,7 +2340,7 @@ GetResource(self, index)
 	}
 
 SV *
-SetResource(self, data)
+setResource(self, data)
 	PDA::Pilot::DLP::DB *	self
 	SV *	data
 	CODE:
@@ -2478,7 +2363,7 @@ SetResource(self, data)
 	RETVAL
 
 Result
-DeleteResource(self, type, id)
+deleteResource(self, type, id)
 	PDA::Pilot::DLP::DB *	self
 	Char4	type
 	int	id
@@ -2488,7 +2373,7 @@ DeleteResource(self, type, id)
 	RETVAL
 
 Result
-DeleteResources(self)
+deleteResources(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_DeleteResource(self->socket, self->handle, 1, 0, 0);
@@ -2496,7 +2381,7 @@ DeleteResources(self)
 	RETVAL
 
 void
-GetPref(self, id=0, backup=1)
+getPref(self, id=0, backup=1)
 	PDA::Pilot::DLP::DB *	self
 	int	id
 	int	backup
@@ -2527,7 +2412,7 @@ GetPref(self, id=0, backup=1)
 	}
 
 SV *
-SetPref(self, data)
+setPref(self, data)
 	PDA::Pilot::DLP::DB *	self
 	SV *	data
 	PPCODE:
@@ -2556,7 +2441,7 @@ SetPref(self, data)
 	}
 
 SV *
-SetPrefRaw(self, data, number, version, backup=1)
+setPrefRaw(self, data, number, version, backup=1)
 	PDA::Pilot::DLP::DB *	self
 	SV *	data
 	int	number
@@ -2612,7 +2497,7 @@ errno(self)
 	RETVAL
 
 SV *
-GetTime(self)
+getTime(self)
 	PDA::Pilot::DLP *	self
 	CODE:
 	{
@@ -2628,7 +2513,7 @@ GetTime(self)
 	RETVAL
 
 Result
-SetTime(self, time)
+setTime(self, time)
 	PDA::Pilot::DLP *	self
 	long	time
 	CODE:
@@ -2637,7 +2522,7 @@ SetTime(self, time)
 	RETVAL
 
 SV *
-SysInfo(self)
+getSysInfo(self)
 	PDA::Pilot::DLP *	self
 	CODE:
 	{
@@ -2648,9 +2533,9 @@ SysInfo(self)
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			HV * i = newHV();
-			hv_store(i, "ROMversion", 10, newSViv(si.ROMVersion), 0);	\
-	    	hv_store(i, "localizationID", 14, newSViv(si.localizationID), 0);	\
-	    	hv_store(i, "name", 4, newSVpv(si.name, si.namelength), 0);	\
+			hv_store(i, "romVersion", 10, newSViv(si.romVersion), 0);	\
+	    	hv_store(i, "locale", 6, newSViv(si.locale), 0);	\
+	    	hv_store(i, "name", 4, newSVpv(si.name, si.nameLength), 0);	\
 			RETVAL = newRV((SV*)i);
 		}
 	}
@@ -2658,7 +2543,7 @@ SysInfo(self)
 	RETVAL
 
 SV *
-CardInfo(self, cardno=0)
+getCardInfo(self, cardno=0)
 	PDA::Pilot::DLP *	self
 	int	cardno
 	CODE:
@@ -2670,14 +2555,14 @@ CardInfo(self, cardno=0)
 			RETVAL = newSVsv(&sv_undef);
 		} else {
 			HV * i = newHV();
-			hv_store(i, "cardno", 6, newSViv(c.cardno), 0);	\
+			hv_store(i, "card", 6, newSViv(c.card), 0);	\
 	    	hv_store(i, "version", 7, newSViv(c.version), 0);	\
 	    	hv_store(i, "created", 8, newSViv(c.creation), 0);	\
-	    	hv_store(i, "ROMsize", 7, newSViv(c.ROMsize), 0);	\
-	    	hv_store(i, "RAMsize", 7, newSViv(c.RAMsize), 0);	\
-	    	hv_store(i, "RAMfree", 7, newSViv(c.RAMfree), 0);	\
+	    	hv_store(i, "romSize", 7, newSViv(c.romSize), 0);	\
+	    	hv_store(i, "ramSize", 7, newSViv(c.ramSize), 0);	\
+	    	hv_store(i, "ramFree", 7, newSViv(c.ramFree), 0);	\
 	    	hv_store(i, "name", 4, newSVpv(c.name,0), 0);	\
-	    	hv_store(i, "manufacturer", 12, newSVpv(c.manuf,0), 0);	\
+	    	hv_store(i, "manufacturer", 12, newSVpv(c.manufacturer,0), 0);	\
 			RETVAL = newRV((SV*)i);
 		}
 	}
@@ -2685,7 +2570,7 @@ CardInfo(self, cardno=0)
 	RETVAL
 
 int
-SetUserInfo(self, info)
+setUserInfo(self, info)
 	PDA::Pilot::DLP *	self
 	UserInfo	&info
 	CODE:
@@ -2694,7 +2579,7 @@ SetUserInfo(self, info)
 	RETVAL
 
 void
-Battery(self)
+getBattery(self)
 	PDA::Pilot::DLP *	self
 	PPCODE:
 	{
@@ -2720,7 +2605,7 @@ Battery(self)
 	}
 
 SV *
-GetUserInfo(self)
+getUserInfo(self)
 	PDA::Pilot::DLP *	self
 	CODE:
 	{
@@ -2733,7 +2618,7 @@ GetUserInfo(self)
 	RETVAL
 
 void
-NewPref(self, creator, id=0, version=0, backup=0)
+newPref(self, creator, id=0, version=0, backup=0)
 	PDA::Pilot::DLP *	self
 	Char4	creator
 	SV *	id
@@ -2769,7 +2654,7 @@ NewPref(self, creator, id=0, version=0, backup=0)
     }
 
 Result
-Delete(self, name, cardno=0)
+delete(self, name, cardno=0)
 	PDA::Pilot::DLP *	self
 	char *	name
 	int	cardno
@@ -2783,7 +2668,7 @@ Delete(self, name, cardno=0)
 	RETVAL
 
 SV *
-Open(self, name, mode=dlpOpenReadWrite, cardno=0)
+open(self, name, mode=dlpOpenReadWrite, cardno=0)
 	PDA::Pilot::DLP *	self
 	char *	name
 	int	mode
@@ -2829,7 +2714,7 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0)
     RETVAL
 
 SV *
-Create(self, name, creator, type, flags, version, cardno=0)
+create(self, name, creator, type, flags, version, cardno=0)
 	PDA::Pilot::DLP *	self
 	char *	name
 	Char4	creator
@@ -2879,7 +2764,7 @@ Create(self, name, creator, type, flags, version, cardno=0)
 
 
 void
-GetPref(self, creator, id=0, backup=1)
+getPref(self, creator, id=0, backup=1)
 	PDA::Pilot::DLP *	self
 	Char4	creator
 	int	id
@@ -2893,7 +2778,7 @@ GetPref(self, creator, id=0, backup=1)
 	}
 
 SV *
-SetPref(self, data)
+setPref(self, data)
 	PDA::Pilot::DLP *	self
 	SV *	data
 	PPCODE:
@@ -2917,7 +2802,7 @@ SetPref(self, data)
 	}
 
 SV *
-SetPrefRaw(self, data, creator, number, version, backup=1)
+setPrefRaw(self, data, creator, number, version, backup=1)
 	PDA::Pilot::DLP *	self
 	SV *	data
 	Char4	creator
@@ -2942,7 +2827,7 @@ SetPrefRaw(self, data, creator, number, version, backup=1)
 
 
 Result
-Close(self, status=0)
+close(self, status=0)
 	PDA::Pilot::DLP *	self
 	int	status
 	CODE:
@@ -2953,7 +2838,7 @@ Close(self, status=0)
 	RETVAL
 
 Result
-Abort(self)
+abort(self)
 	PDA::Pilot::DLP *	self
 	CODE:
 	RETVAL = dlp_AbortSync(self->socket) || pi_close(self->socket);
@@ -2963,7 +2848,7 @@ Abort(self)
 	RETVAL
 
 Result
-Reset(self)
+reset(self)
 	PDA::Pilot::DLP *	self
 	CODE:
 	RETVAL = dlp_ResetSystem(self->socket);
@@ -2971,7 +2856,7 @@ Reset(self)
 	RETVAL
 
 Result
-Status(self)
+getStatus(self)
 	PDA::Pilot::DLP *	self
 	CODE:
 	RETVAL = dlp_OpenConduit(self->socket);
@@ -2979,7 +2864,7 @@ Status(self)
 	RETVAL
 
 Result
-Log(self, message)
+log(self, message)
 	PDA::Pilot::DLP *	self
 	char *	message
 	CODE:
@@ -2989,7 +2874,7 @@ Log(self, message)
 
 
 Result
-Dirty(self)
+dirty(self)
 	PDA::Pilot::DLP *	self
 	CODE:
 	RETVAL = dlp_ResetLastSyncPC(self->socket);
@@ -2997,14 +2882,16 @@ Dirty(self)
 	RETVAL
 
 SV *
-GetDBInfo(self, start, where, cardno=0)
+getDBInfo(self, start, RAM, ROM, cardno=0)
 	PDA::Pilot::DLP *	self
 	int	start
-	int	where
+	int	RAM
+	int	ROM
 	int	cardno
 	CODE:
 	{
 		DBInfo info;
+		int where = (RAM ? dlpDBListRAM : 0) | (ROM ? dlpDBListROM : 0);
 		int result = dlp_ReadDBList(self->socket, cardno, where, start, &info);
 		pack_dbinfo(RETVAL, info, result);
 	}
@@ -3012,7 +2899,7 @@ GetDBInfo(self, start, where, cardno=0)
 	RETVAL
 
 SV *
-FindDBInfo(self, start, name, creator, type, cardno=0)
+findDBInfo(self, start, name, creator, type, cardno=0)
 	PDA::Pilot::DLP *	self
 	int	start
 	SV *	name
@@ -3041,7 +2928,7 @@ FindDBInfo(self, start, name, creator, type, cardno=0)
 	RETVAL
 
 SV *
-GetFeature(self, creator, number)
+getFeature(self, creator, number)
 	PDA::Pilot::DLP *	self
 	Char4	creator
 	int	number
@@ -3061,7 +2948,7 @@ GetFeature(self, creator, number)
 
 
 void
-Call(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
+callApplication(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 	PDA::Pilot::DLP *	self
 	Char4	creator
 	Char4	type
@@ -3087,7 +2974,7 @@ Call(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 	}
 
 int
-Tickle(self)
+tickle(self)
 	PDA::Pilot::DLP *	self
 	CODE:
 	{
@@ -3097,7 +2984,7 @@ Tickle(self)
 	RETVAL
 
 int
-Watchdog(self, interval)
+watchdog(self, interval)
 	PDA::Pilot::DLP *	self
 	int interval
 	CODE:
@@ -3110,7 +2997,7 @@ Watchdog(self, interval)
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::File
 
 PDA::Pilot::File *
-Open(name)
+open(name)
 	char *	name
 	CODE:
 	{
@@ -3135,7 +3022,7 @@ Open(name)
 	RETVAL
 
 PDA::Pilot::File *
-Create(name, info)
+create(name, info)
 	char *	name
 	DBInfo	info
 	CODE:
@@ -3180,7 +3067,7 @@ DESTROY(self)
 	free(self);
 
 SV *
-Class(self, name=0)
+class(self, name=0)
 	PDA::Pilot::File *	self
 	SV *	name
 	CODE:
@@ -3211,7 +3098,7 @@ Class(self, name=0)
 	RETVAL
 
 int
-Close(self)
+close(self)
 	PDA::Pilot::File *	self
 	CODE:
 	if (self->pf) {
@@ -3223,7 +3110,7 @@ Close(self)
 	RETVAL
 
 SV *
-GetAppBlock(self)
+getAppBlock(self)
 	PDA::Pilot::File *	self
 	CODE:
 	{
@@ -3236,7 +3123,7 @@ GetAppBlock(self)
 	RETVAL
 
 SV *
-GetSortBlock(self)
+getSortBlock(self)
 	PDA::Pilot::File *	self
 	CODE:
 	{
@@ -3249,7 +3136,7 @@ GetSortBlock(self)
 	RETVAL
 
 SV *
-Records(self)
+getRecords(self)
 	PDA::Pilot::File *	self
 	CODE:
 	{
@@ -3265,7 +3152,7 @@ Records(self)
 	RETVAL
 
 SV *
-GetResource(self, index)
+getResource(self, index)
 	PDA::Pilot::File *	self
 	int	index
 	CODE:
@@ -3280,7 +3167,7 @@ GetResource(self, index)
 	RETVAL
 
 SV *
-GetRecord(self, index)
+getRecord(self, index)
 	PDA::Pilot::File *	self
 	int	index
 	CODE:
@@ -3295,7 +3182,7 @@ GetRecord(self, index)
 	RETVAL
 
 SV *
-GetRecordByID(self, id)
+getRecordByID(self, id)
 	PDA::Pilot::File *	self
 	unsigned long	id
 	CODE:
@@ -3310,7 +3197,7 @@ GetRecordByID(self, id)
 	RETVAL
 
 int
-CheckID(self, uid)
+checkID(self, uid)
 	PDA::Pilot::File *	self
 	unsigned long	uid
 	CODE:
@@ -3319,7 +3206,7 @@ CheckID(self, uid)
 	RETVAL
 
 SV *
-GetDBInfo(self)
+getDBInfo(self)
 	PDA::Pilot::File *	self
 	CODE:
 	{
@@ -3331,7 +3218,7 @@ GetDBInfo(self)
 	RETVAL
 
 int
-SetDBInfo(self, info)
+setDBInfo(self, info)
 	PDA::Pilot::File *	self
 	DBInfo	info
 	CODE:
@@ -3340,7 +3227,7 @@ SetDBInfo(self, info)
 	RETVAL
 
 int
-SetAppBlock(self, data)
+setAppBlock(self, data)
 	PDA::Pilot::File *	self
 	SV *	data
 	CODE:
@@ -3355,7 +3242,7 @@ SetAppBlock(self, data)
 	RETVAL
 
 int
-SetSortBlock(self, data)
+setSortBlock(self, data)
 	PDA::Pilot::File *	self
 	SV *	data
 	CODE:
@@ -3370,7 +3257,7 @@ SetSortBlock(self, data)
 	RETVAL
 
 int
-AddResource(self, data, type, id)
+addResource(self, data, type, id)
 	PDA::Pilot::File *	self
 	SV *	data
 	Char4	type
@@ -3388,7 +3275,7 @@ AddResource(self, data, type, id)
 	RETVAL
 
 int
-AddRecord(self, data)
+addRecord(self, data)
 	PDA::Pilot::File *	self
 	SV *	data
 	CODE:
@@ -3406,7 +3293,7 @@ AddRecord(self, data)
 	RETVAL
 
 int
-AddRecordRaw(self, data, uid, attr, category)
+addRecordRaw(self, data, uid, attr, category)
 	PDA::Pilot::File *	self
 	SV *	data
 	unsigned long	uid
@@ -3426,7 +3313,7 @@ AddRecordRaw(self, data, uid, attr, category)
 
 
 int
-Install(self, socket, cardno)
+install(self, socket, cardno)
 	PDA::Pilot::File *	self
 	PDA::Pilot::DLP *	socket
 	int	cardno
@@ -3436,7 +3323,7 @@ Install(self, socket, cardno)
 	RETVAL
 
 int
-Retrieve(self, socket, cardno)
+retrieve(self, socket, cardno)
 	PDA::Pilot::File *	self
 	PDA::Pilot::DLP *	socket
 	int	cardno

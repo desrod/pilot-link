@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   }
   
   dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-  unpack_AddressAppInfo(&aai, buffer, 0);
+  unpack_AddressAppInfo(&aai, buffer, 0xffff);
   
   for (i=0;1;i++) {
   	struct Address a;
@@ -87,12 +87,12 @@ int main(int argc, char *argv[])
   		
 	unpack_Address(&a, buffer, len);
 	
-	printf("Category: %s\n", aai.CategoryName[category]);
+	printf("Category: %s\n", aai.category.name[category]);
 	for(j=0;j<19;j++) {
 	  if(a.entry[j]) {
 	    int l = j;
 	    if ( (l >= entryPhone1) && ( l <= entryPhone5))
-	      printf("%s: %s\n", aai.phonelabels[a.phonelabel[l-entryPhone1]], a.entry[j]);
+	      printf("%s: %s\n", aai.phoneLabels[a.phoneLabel[l-entryPhone1]], a.entry[j]);
 	    else
 	      printf("%s: %s\n", aai.labels[l], a.entry[j]);
 	  }

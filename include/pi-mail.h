@@ -2,6 +2,7 @@
 #define _PILOT_MAIL_H_
 
 #include "pi-args.h"
+#include "pi-appinfo.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,40 +30,42 @@ struct Mail {
 };
 
 struct MailAppInfo {
-  unsigned int renamedcategories; /* Bitfield of categories with changed names */
-  char CategoryName[16][16]; /* 16 categories of 15 characters+nul each */
-  unsigned char CategoryID[16]; 
-  unsigned char lastUniqueID; /* Each category gets a unique ID, for sync tracking
-                                 purposes. Those from the Pilot are between 0 & 127.
-                                 Those from the PC are between 128 & 255. I'm not
-                                 sure what role lastUniqueID plays. */
-  unsigned long dirtyfieldlabels; /* bitfield of same */
+  struct CategoryAppInfo category;
+  int dirty; /* boolean */
   int sortOrder;
   unsigned long unsentMessage; /* UniqueID of unsent message */
   
-  char * signature;
+  /*char * signature; not implemented by Palm*/
 };
 
-struct MailPref1 {
-  int synctype;
-  int gethigh;
-  int getcontaining;
+struct MailSyncPref {
+  int syncType;
+  int getHigh;
+  int getContaining;
   int truncate;
-  char * filterto;
-  char * filterfrom;
-  char * filtersubject;
+  char * filterTo;
+  char * filterFrom;
+  char * filterSubject;
+};
+
+struct MailSignaturePref {
+  char * signature;
 };
 
 enum MailSyncType { mailSyncAll, mailSyncSend, mailSyncFilter };
 
 extern void free_Mail PI_ARGS((struct Mail *));
 extern void free_MailAppInfo PI_ARGS((struct MailAppInfo *));
-extern void free_MailPref1 PI_ARGS((struct MailPref1 *));
-extern void unpack_Mail PI_ARGS((struct Mail *, unsigned char * record, int len));
-extern void pack_Mail PI_ARGS((struct Mail *, unsigned char * record, int * len));
-extern void unpack_MailAppInfo PI_ARGS((struct MailAppInfo *, unsigned char * AppInfo, int len));
-extern void pack_MailAppInfo PI_ARGS((struct MailAppInfo *, unsigned char * AppInfo, int * len));
-extern void unpack_MailPref1 PI_ARGS((struct MailPref1 *, unsigned char * record, int len));
+extern void free_MailSyncPref PI_ARGS((struct MailSyncPref *));
+extern void free_MailSignaturePref PI_ARGS((struct MailSignaturePref *));
+extern int unpack_Mail PI_ARGS((struct Mail *, unsigned char * record, int len));
+extern int pack_Mail PI_ARGS((struct Mail *, unsigned char * record, int len));
+extern int unpack_MailAppInfo PI_ARGS((struct MailAppInfo *, unsigned char * AppInfo, int len));
+extern int pack_MailAppInfo PI_ARGS((struct MailAppInfo *, unsigned char * AppInfo, int len));
+extern int unpack_MailSyncPref PI_ARGS((struct MailSyncPref *, unsigned char * record, int len));
+extern int unpack_MailSignaturePref PI_ARGS((struct MailSignaturePref *, unsigned char * record, int len));
+extern int pack_MailSyncPref PI_ARGS((struct MailSyncPref *, unsigned char * record, int len));
+extern int pack_MailSignaturePref PI_ARGS((struct MailSignaturePref *, unsigned char * record, int len));
 
 #ifdef __cplusplus
 }

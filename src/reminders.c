@@ -118,19 +118,19 @@ int main(int argc, char *argv[])
 			a.repeatEnd.tm_mday, Month[a.repeatEnd.tm_mon], a.repeatEnd.tm_year+1900);
 	}
 
-	if(a.repeatFreq) {
+	if(a.repeatFrequency) {
 		if(a.repeatType == repeatDaily) {
 		        /* On the specified day... */
 			printf("REM %d %s %d ",a.begin.tm_mday,Month[a.begin.tm_mon],a.begin.tm_year+1900);
-			if(a.repeatFreq > 1) {
+			if(a.repeatFrequency > 1) {
 				/* And every x days afterwords */
-				printf("*%d ",a.repeatFreq);
+				printf("*%d ",a.repeatFrequency);
 			}
 		} else if(a.repeatType == repeatMonthlyByDate) {
 			/* On the x of every month */
 			printf("REM %d ", a.begin.tm_mday);
 
-			if(a.repeatFreq>1) {
+			if(a.repeatFrequency>1) {
 
 				/* if the month is equal to the starting month mod x */
 				sprintf(satisfy,"SATISFY \
@@ -140,10 +140,10 @@ int main(int argc, char *argv[])
 					a.begin.tm_year+1900,
 					a.begin.tm_mon+1,
 					a.begin.tm_mday,
-					a.repeatFreq,
+					a.repeatFrequency,
 					a.begin.tm_year+1900,
 					a.begin.tm_mon,
-					a.repeatFreq);
+					a.repeatFrequency);
 			} else {
 				sprintf(satisfy, "SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate()))] ",
 					a.begin.tm_year+1900,
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 			if(a.repeatOn & 64)
 				printf("Sat ");
 
-			if(a.repeatFreq>1) {
+			if(a.repeatFrequency>1) {
 				/* if the week is equal to the starting week mod x */
 				sprintf(satisfy, "SATISFY \
 [(trigdate()>=date(%d,%d,%d)) &&\
@@ -177,11 +177,11 @@ int main(int argc, char *argv[])
 		a.begin.tm_year+1900,
 		a.begin.tm_mon+1,
 		a.begin.tm_mday,
-		a.repeatFreq,
+		a.repeatFrequency,
 		a.begin.tm_year+1900,
 		a.begin.tm_mon+1,
 		a.begin.tm_mday,
-		a.repeatFreq);
+		a.repeatFrequency);
 			} else {
 				sprintf(satisfy, "SATISFY [(trigdate()>=date(%d,%d,%d))  && (!isomitted(trigdate()))] ",
 					a.begin.tm_year+1900,
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 				printf("REM %s %d ", Weekday[weekday], day);
 			}
 
-			if( a.repeatFreq > 1) {
+			if( a.repeatFrequency > 1) {
 
 				sprintf(satisfy,"SATISFY \
 [(trigdate()>=date(%d,%d,%d)) && \
@@ -211,10 +211,10 @@ int main(int argc, char *argv[])
 					a.begin.tm_year+1900,
 					a.begin.tm_mon+1,
 					a.begin.tm_mday,
-					a.repeatFreq,
+					a.repeatFrequency,
 					a.begin.tm_year+1900,
 					a.begin.tm_mon,
-					a.repeatFreq);
+					a.repeatFrequency);
 			} else {
 				sprintf(satisfy, "SATISFY [(trigdate()>=date(%d,%d,%d))  && (!isomitted(trigdate()))] ",
 					a.begin.tm_year+1900,
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 			/* On one day each year */
 			printf("REM %d %s ", a.begin.tm_mday, Month[a.begin.tm_mon]);
 	
-			if(a.repeatFreq>1) {
+			if(a.repeatFrequency>1) {
 
 				/* if the year is equal to the starting year, mod x */
 				sprintf(satisfy,"SATISFY \
@@ -235,9 +235,9 @@ int main(int argc, char *argv[])
 					a.begin.tm_year+1900,
 					a.begin.tm_mon+1,
 					a.begin.tm_mday,
-					a.repeatFreq,
+					a.repeatFrequency,
 					a.begin.tm_year+1900,
-					a.repeatFreq);
+					a.repeatFrequency);
 			} else {
 				sprintf(satisfy, "SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate()))]",
 					a.begin.tm_year+1900,

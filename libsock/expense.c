@@ -27,9 +27,13 @@ void free_Expense(struct Expense * a) {
     free(a->attendees);
 }
 
-void unpack_Expense(struct Expense * a, unsigned char * buffer, int len)
+int unpack_Expense(struct Expense * a, unsigned char * buffer, int len)
 {
   unsigned long d;
+  unsigned char * start = buffer;
+  
+  if (len<6)
+    return 0;
                                                                                                                                                                                                             
   d = (unsigned short int)get_short(buffer);
   a->date.tm_year = (d >> 9) + 4;
@@ -46,52 +50,97 @@ void unpack_Expense(struct Expense * a, unsigned char * buffer, int len)
   a->currency = get_byte(buffer+4);
   
   buffer += 6;
+  len -= 6;
+  
+  if (len<1)
+    return 0;
   
   if (*buffer) {
     a->amount = strdup(buffer);
     buffer += strlen(a->amount);
+    len -= strlen(a->amount);
   } else {
     a->amount = 0;
   }
   buffer++;
+  len--;
+  
+  if (len<1)
+    return 0;
 
   if (*buffer) {
     a->vendor = strdup(buffer);
     buffer += strlen(a->vendor);
+    len -= strlen(a->vendor);
   } else {
     a->vendor = 0;
   }
   buffer++;
+  len--;
+
+  if (len<1)
+    return 0;
 
   if (*buffer) {
     a->city = strdup(buffer);
     buffer += strlen(a->city);
+    len -= strlen(a->city);
   } else {
     a->city = 0;
   }
   buffer++;
+  len--;
 
+  if (len<1)
+    return 0;
 
   if (*buffer) {
     a->attendees = strdup(buffer);
     buffer += strlen(a->attendees);
+    len -= strlen(a->attendees);
   } else {
     a->attendees = 0;
   }
   buffer++;
+  len--;
+
+  if (len<1)
+    return 0;
 
   if (*buffer) {
     a->note = strdup(buffer);
     buffer += strlen(a->note);
+    len -= strlen(a->note);
   } else {
     a->note = 0;
   }
+
   buffer++;
+  len--;
+  
+  return (buffer - start);
 }
 
-void pack_Expense(struct Expense * a, unsigned char * record, int * len)
+int pack_Expense(struct Expense * a, unsigned char * record, int len)
 {
   unsigned char * buf = record;
+  int destlen = 6+1+1+1+1+1;
+  
+  if (a->amount)
+    destlen += strlen(a->amount);
+  if (a->vendor)
+    destlen += strlen(a->vendor);
+  if (a->city)
+    destlen += strlen(a->city);
+  if (a->attendees)
+    destlen += strlen(a->attendees);
+  if (a->note)
+    destlen += strlen(a->note);
+  
+  if (!record)
+    return destlen;
+  if (len<destlen)
+    return 0;
   
   set_short(buf, ((a->date.tm_year - 4) << 9) |
                    ((a->date.tm_mon  + 1) << 5) |
@@ -143,23 +192,19 @@ void pack_Expense(struct Expense * a, unsigned char * record, int * len)
   }
   buf++;
   
-  if (len)
-    *len = (buf-record);
+  return (buf-record);
 }
 
-void unpack_ExpenseAppInfo(struct ExpenseAppInfo * ai, unsigned char * record, int len)
+int unpack_ExpenseAppInfo(struct ExpenseAppInfo * ai, unsigned char * record, int len)
 {
   int i;
-  ai->renamedcategories = get_short(record);
-  record+=2;
-  for(i=0;i<16;i++) {
-    memcpy(ai->CategoryName[i], record, 16);
-    record += 16;
-  }
-  memcpy(ai->CategoryID, record, 16);
-  record += 16;
-  ai->lastUniqueID = get_byte(record);
-  record += 4;
+  unsigned char*start = record;
+  i = unpack_CategoryAppInfo(&ai->category, record, len);
+  if (!i)
+    return 0;
+  record+=i;
+  len-=i;
+  if (len < 2+(16+4+8)*4);
   ai->sortOrder = get_byte(record);
   record += 2;
   for(i=0;i<4;i++) {
@@ -170,24 +215,26 @@ void unpack_ExpenseAppInfo(struct ExpenseAppInfo * ai, unsigned char * record, i
     memcpy(ai->currencies[i].rate, record, 8);
     record+=8;
   }
+  return (record-start);
 }
 
-void pack_ExpenseAppInfo(struct ExpenseAppInfo * ai, unsigned char * record, int * len)
+int pack_ExpenseAppInfo(struct ExpenseAppInfo * ai, unsigned char * record, int len)
 {
   unsigned char * start = record;
   int i;
-  set_short(record, ai->renamedcategories);
-  record += 2;
-  for(i=0;i<16;i++) {
-    memcpy(record, ai->CategoryName[i], 16);
-    record += 16;
-  }
-  memcpy(record, ai->CategoryID, 16);
-  record += 16;
-  set_long(record, 0); /* gapfil */
-  set_byte(record, ai->lastUniqueID);
-  record += 4;
+  int destlen = 2+(16+4+8)*4;
+  
+  i = pack_CategoryAppInfo(&ai->category, record, len);
+  if (!record)
+    return i + destlen;
+  if (!i)
+    return i;
+  record += i;
+  len -= i;
+  if (len < destlen)
+    return 0;
   set_byte(record, ai->sortOrder);
+  set_byte(record+1, 0); /* gapfil */
   record += 2;
   for(i=0;i<4;i++) {
     memcpy(record, ai->currencies[i].name, 16);
@@ -197,13 +244,14 @@ void pack_ExpenseAppInfo(struct ExpenseAppInfo * ai, unsigned char * record, int
     memcpy(record, ai->currencies[i].rate, 8);
     record+=8;
   }
-  if (len)
-    *len = (record-start);
+
+  return (record-start);
 }
 
-void unpack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int len)
+int unpack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int len)
 {
   int i;
+  unsigned char * start = record;
   p->currentCategory = get_short(record);
   record += 2;
   p->defaultCategory = get_short(record);
@@ -224,9 +272,10 @@ void unpack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int le
     p->currencies[i] = get_byte(record);
     record++;
   }
+  return (record - start);
 }
 
-void pack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int * len)
+int pack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int len)
 {
   int i;
   unsigned char * start = record;
@@ -252,6 +301,5 @@ void pack_ExpensePrefs(struct ExpensePrefs * p, unsigned char * record, int * le
     set_byte(record, p->currencies[i]);
     record++;
   }
-  if (len)
-    *len = record-start;
+  return record-start;
 }

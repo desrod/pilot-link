@@ -20,8 +20,9 @@ void free_ToDo(struct ToDo * a) {
     free(a->note);
 }
 
-void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
+int unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
   unsigned long d;
+  unsigned char * start = buffer;
 
   /* Note: There are possible timezone conversion problems related to the
            use of the due member of a struct ToDo. As it is kept in local
@@ -37,8 +38,10 @@ void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
            appointments.
                                                                     -- KJA
            */
+
                                                                                                                                                                                                           
-                                                                                                                                                                                                            
+  if (len< 3)
+    return 0;
   d = (unsigned short int)get_short(buffer);
   if (d != 0xffff) {
     a->due.tm_year = (d >> 9) + 4;
@@ -62,12 +65,43 @@ void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
     a->complete = 0;
   }
   
-  a->description = strdup((char*)buffer+3);
-  a->note = strdup((char*)buffer+3+strlen((char*)buffer+3)+1);
+  buffer +=3;
+  len -= 3;
+  
+  if (len<1)
+    return 0;
+  a->description = strdup((char*)buffer);
+  
+  buffer += strlen(a->description)+1;
+  len -= strlen(a->description)+1;
+  
+  if (len<1) {
+    free(a->description);
+    a->description=0;
+    return 0;
+  }
+  a->note = strdup((char*)buffer);
+  
+  buffer += strlen(a->note)+1;
+  len -= strlen(a->note)+1;  
+  
+  return (buffer-start); /* FIXME: return real length*/
 }
 
-void pack_ToDo(struct ToDo *a, unsigned char * buf, int * len) {
+int pack_ToDo(struct ToDo *a, unsigned char * buf, int len) {
   int pos;
+  int destlen = 3;
+  if (a->description)
+    destlen+=strlen(a->description);
+  destlen++;
+  if (a->note)
+    destlen+=strlen(a->note);
+  destlen++;
+  
+  if (!buf)
+    return destlen;
+  if (len<destlen)
+    return 0;
 
   if (a->indefinite) {
     buf[0] = 0xff;
@@ -97,46 +131,43 @@ void pack_ToDo(struct ToDo *a, unsigned char * buf, int * len) {
     buf[pos++] = 0;
   }
   
-  if (len)
-    *len = pos;
+  return pos;
 }
 
                   
-void unpack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int len) {
+int unpack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int len) {
   int i;
-  ai->renamedcategories = get_short(record);
-  record+=2;
-  for(i=0;i<16;i++) {
-    memcpy(ai->CategoryName[i], record, 16);
-    record += 16;
-  }
-  memcpy(ai->CategoryID, record, 16);
-  record += 16;
-  ai->lastUniqueID = get_byte(record);
-  record += 4;
+  unsigned char * start = record;
+  i = unpack_CategoryAppInfo(&ai->category, record, len);
+  if (!i)
+    return 0;
+  record += i;
+  len -= i;
+  if (len<4)
+    return 0;
   ai->dirty = get_short(record);
   record += 2;
   ai->sortByPriority = get_byte(record);
   record += 2;
+  return (record-start);
 }
 
-void pack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int * len) {
+int pack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int len) {
   int i;
-  set_short(record, ai->renamedcategories);
-  record += 2;
-  for(i=0;i<16;i++) {
-    memcpy(record, ai->CategoryName[i], 16);
-    record += 16;
-  }
-  memcpy(record, ai->CategoryID, 16);
-  record += 16;
-  set_byte(record, ai->lastUniqueID);
-  record ++;
-  set_byte(record, 0); /* gapfil */
-  set_short(record+1, 0); /* gapfil */
-  set_short(record+3, ai->dirty);
-  set_byte(record+5, ai->sortByPriority);
-  set_byte(record+6, 0); /* gapfil */
+  unsigned char * start = record;
+  i = pack_CategoryAppInfo(&ai->category, record, len);
+  if (!record)
+    return i+4;
+  if (!i)
+    return 0;
+  record += i;
+  len -= i;
+  if (len < 4)
+    return 0;
+  set_short(record, ai->dirty);
+  set_byte(record+2, ai->sortByPriority);
+  set_byte(record+3, 0); /* gapfil */
+  record += 4;
   
-  *len = 2 + (16*16) + 16 + 2 + 2 + 2 + 2;
+  return (record-start);
 }

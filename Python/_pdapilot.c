@@ -1725,14 +1725,14 @@ CardInfo(self, args)
 	Dlp_CheckError(result);
 	
 	return Py_BuildValue("{sisislslslslssss}",
-		"cardno", s.cardno,
+		"card", s.card,
 		"version", s.version,
 		"created", (long)s.creation,
-		"ROMsize", (long)s.ROMsize,
-		"RAMsize", (long)s.RAMsize,
-		"RAMfree", (long)s.RAMfree,
+		"romSize", (long)s.romSize,
+		"ramSize", (long)s.ramSize,
+		"ramFree", (long)s.ramFree,
 		"name", s.name,
-		"manufacturer", s.manuf);
+		"manufacturer", s.manufacturer);
 }
 
 static PyObject *
@@ -1754,9 +1754,9 @@ GetUserInfo(self, args)
 		"viewerID", (long)p.viewerID,
 		"name", p.username,
 		"lastSyncPC", (long)p.lastSyncPC,
-		"lastGoodSync", (long)p.succSyncDate,
-		"lastSync", (long)p.lastSyncDate,
-		"password", p.password, p.passwordLen
+		"successfulSyncDate", (long)p.successfulSyncDate,
+		"lastSyncDate", (long)p.lastSyncDate,
+		"password", p.password, p.passwordLength
 		);
 }
 
@@ -1768,15 +1768,15 @@ BuildDBInfo(i)
 	return Py_BuildValue("{sisisisOsOsisislslslslss}",
 		"more", i->more,
 		"flags", i->flags,
-		"miscflags", i->miscflags,
+		"miscFlags", i->miscFlags,
 		"type", BuildChar4(&i->type),
 		"creator", BuildChar4(&i->creator),
 		"version", i->version,
 		"index", i->index,
 		"modnum", (long)i->modnum,
-		"crdate", (long)i->crdate,
-		"moddate", (long)i->moddate,
-		"backupdate", (long)i->backupdate,
+		"createDate", (long)i->createDate,
+		"modifyDate", (long)i->modifyDate,
+		"backupDate", (long)i->backupDate,
 		"name", i->name
 		);
 }
@@ -1790,7 +1790,7 @@ static int ParseDBInfo(d, i)
 	memset(i, '\0', sizeof(struct DBInfo));
 	
 	i->flags = (e=PyDict_GetItemString(d, "flags")) ? PyInt_AsLong(e) : 0;
-	i->miscflags = (e=PyDict_GetItemString(d, "miscflags")) ? PyInt_AsLong(e) : 0;
+	i->miscFlags = (e=PyDict_GetItemString(d, "miscFlags")) ? PyInt_AsLong(e) : 0;
 	e=PyDict_GetItemString(d, "type");
 	if (e) {
 		if (ParseChar4(e, &i->type)==0)
@@ -1807,9 +1807,9 @@ static int ParseDBInfo(d, i)
 	i->version = (e=PyDict_GetItemString(d, "version")) ? PyInt_AsLong(e) : 0;
 	i->modnum = (e=PyDict_GetItemString(d, "modnum")) ? PyInt_AsLong(e) : 0;
 	i->index = (e=PyDict_GetItemString(d, "index")) ? PyInt_AsLong(e) : 0;
-	i->crdate = (e=PyDict_GetItemString(d, "crdate")) ? PyInt_AsLong(e) : 0;
-	i->moddate = (e=PyDict_GetItemString(d, "moddate")) ? PyInt_AsLong(e) : 0;
-	i->backupdate = (e=PyDict_GetItemString(d, "backupdate")) ? PyInt_AsLong(e) : 0;
+	i->createDate = (e=PyDict_GetItemString(d, "createDate")) ? PyInt_AsLong(e) : 0;
+	i->modifyDate = (e=PyDict_GetItemString(d, "modifyDate")) ? PyInt_AsLong(e) : 0;
+	i->backupDate = (e=PyDict_GetItemString(d, "backupDate")) ? PyInt_AsLong(e) : 0;
 	strcpy(i->name, (e=PyDict_GetItemString(d, "name")) ? PyString_AsString(e) : "");
 	
 	return 1;
@@ -1835,8 +1835,8 @@ SetUserInfo(self, args)
 	p.userID = (e=PyDict_GetItemString(d, "userID")) ? PyInt_AsLong(e) : 0;
 	p.viewerID = (e=PyDict_GetItemString(d, "viewerID")) ? PyInt_AsLong(e) : 0;
 	p.lastSyncPC = (e=PyDict_GetItemString(d, "lastSyncPC")) ? PyInt_AsLong(e) : 0;
-	p.succSyncDate = (e=PyDict_GetItemString(d, "lastGoodSync")) ? PyInt_AsLong(e) : 0;
-	p.lastSyncDate = (e=PyDict_GetItemString(d, "lastSync")) ? PyInt_AsLong(e) : 0;
+	p.successfulSyncDate = (e=PyDict_GetItemString(d, "successfulSyncDate")) ? PyInt_AsLong(e) : 0;
+	p.lastSyncDate = (e=PyDict_GetItemString(d, "lastSyncDate")) ? PyInt_AsLong(e) : 0;
 	strcpy(p.username, (e=PyDict_GetItemString(d, "name")) ? PyString_AsString(e) : "");
 
 	result = dlp_WriteUserInfo(self->socket, &p);
@@ -1861,8 +1861,8 @@ SysInfo(self, args)
 	Dlp_CheckError(result);
 	
 	return Py_BuildValue("{slslss}",
-		"ROMversion", (long)s.ROMVersion,
-		"localizationID", (long)s.localizationID,
+		"romVersion", (long)s.romVersion,
+		"locale", (long)s.locale,
 		"name", s.name);
 }
 
@@ -1872,11 +1872,13 @@ GetDBInfo(self, args)
 	PyObject *args;
 {
 	int result;
-	int db, where, cardno=0;
+	int db, where, RAM=1, ROM=0, cardno=0;
 	struct DBInfo i;
 	
-	if (!PyArg_ParseTuple(args, "ii|i", &db, &where, &cardno))
+	if (!PyArg_ParseTuple(args, "i|iii", &db, &RAM, &ROM, &cardno))
 		return NULL;
+	
+	where = (RAM ? dlpDBListRAM : 0) | (ROM ? dlpDBListROM : 0);
 
 	result = dlp_ReadDBList(self->socket, cardno, where, db, &i);
 	
@@ -2483,13 +2485,82 @@ MemoPack(self, args)
 	
 	m.text = (e=PyDict_GetItemString(dict, "text")) ? PyString_AsString(e) : 0;
 	
-	pack_Memo(&m, data, &length);
+	length = pack_Memo(&m, data, 0xffff);
 	
 	result = Py_BuildValue("s#", data, length);
 	
 	free(data);
 	return result;
 }
+
+static void doUnpackCategory(PyObject * dict, struct CategoryAppInfo * c)
+{
+	int i;
+	PyObject * names, *ids, *renames;
+	names = PyList_New(16);
+	for (i=0;i<16;i++)
+		PyList_SetItem(names, i, PyString_FromString(c->name[i]));
+
+	ids = PyList_New(16);
+	for (i=0;i<16;i++)
+		PyList_SetItem(ids, i, PyInt_FromLong(c->ID[i]));	
+
+	renames = PyList_New(16);
+	for (i=0;i<16;i++)
+		PyList_SetItem(renames, i, PyInt_FromLong(c->renamed[i]));	
+		
+	PyDict_SetItemString(dict, "categoryName", names);
+	PyDict_SetItemString(dict, "categoryID", ids);
+	PyDict_SetItemString(dict, "categoryRenamed", renames);
+	PyDict_SetItemString(dict, "categoryLastUniqueID", PyInt_FromLong(c->lastUniqueID));
+}
+
+static void doPackCategory(PyObject * dict, struct CategoryAppInfo * c)
+{
+	int i;
+	PyObject *e, *s;
+	
+	i = 0;
+	if (e=PyDict_GetItemString(dict, "categoryName")) {
+		for(i=0;i<16;i++) {
+			s = PyList_GetItem(e, i);
+			if (s)
+				strcpy(c->name[i], PyString_AsString(s));
+			else
+				break;
+		}
+	}
+	for(;i<16;i++)
+		c->name[i][0] = '\0';
+
+	i = 0;
+	if (e=PyDict_GetItemString(dict, "categoryID")) {
+		for(i=0;i<16;i++) {
+			s = PyList_GetItem(e, i);
+			if (s)
+				c->ID[i] = PyInt_AsLong(s);
+			else
+				break;
+		}
+	}
+	for(;i<16;i++)
+		c->ID[i] = 0;
+
+	i = 0;
+	if (e=PyDict_GetItemString(dict, "categoryRenamed")) {
+		for(i=0;i<16;i++) {
+			s = PyList_GetItem(e, i);
+			if (s)
+				c->renamed[i] = PyInt_AsLong(s);
+			else
+				break;
+		}
+	}
+	for(;i<16;i++)
+		c->renamed[i] = 0;
+
+	c->lastUniqueID = (e=PyDict_GetItemString(dict, "categoryLastUniqueID")) ? PyInt_AsLong(e) : 0;
+}	
 
 static PyObject *
 MemoUnpackAppBlock(self, args)
@@ -2506,19 +2577,11 @@ MemoUnpackAppBlock(self, args)
 		return NULL;
 	
 	unpack_MemoAppInfo(&m, data, length);
-	
-	names = PyList_New(16);
-	for (i=0;i<16;i++)
-		PyList_SetItem(names, i, PyString_FromString(m.CategoryName[i]));
 
-	ids = PyList_New(16);
-	for (i=0;i<16;i++)
-		PyList_SetItem(ids, i, PyInt_FromLong(m.CategoryID[i]));	
 
-	PyDict_SetItemString(dict, "categoryname", names);
-	PyDict_SetItemString(dict, "categoryID", ids);
-	PyDict_SetItemString(dict, "lastID", PyInt_FromLong(m.lastUniqueID));
-	PyDict_SetItemString(dict, "sortOrder", PyInt_FromLong(m.sortOrder));
+	doUnpackCategory(dict, &m.category);
+
+	PyDict_SetItemString(dict, "sortByAlpha", PyInt_FromLong(m.sortByAlpha));
 	
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -2541,37 +2604,12 @@ MemoPackAppBlock(self, args)
 	
 	data = calloc(0xFFFF, 1);
 	memset(&m, 0, sizeof(m));
-	
-	i = 0;
-	if (e=PyDict_GetItemString(dict, "categoryname")) {
-		for(i=0;i<16;i++) {
-			c = PyList_GetItem(e, i);
-			if (c)
-				strcpy(m.CategoryName[i], PyString_AsString(c));
-			else
-				break;
-		}
-	}
-	for(;i<16;i++)
-		m.CategoryName[i][0] = '\0';
 
-	i = 0;
-	if (e=PyDict_GetItemString(dict, "categoryID")) {
-		for(i=0;i<16;i++) {
-			c = PyList_GetItem(e, i);
-			if (c)
-				m.CategoryID[i] = PyInt_AsLong(c);
-			else
-				break;
-		}
-	}
-	for(;i<16;i++)
-		m.CategoryID[i] = 0;
+	doPackCategory(dict, &m.category);
 
-	m.sortOrder = (e=PyDict_GetItemString(dict, "sortOrder")) ? PyInt_AsLong(e) : 0;
-	m.lastUniqueID = (e=PyDict_GetItemString(dict, "lastID")) ? PyInt_AsLong(e) : 0;
+	m.sortByAlpha = (e=PyDict_GetItemString(dict, "sortByAlpha")) ? PyInt_AsLong(e) : 0;
 	
-	pack_MemoAppInfo(&m, data, &length);
+	length = pack_MemoAppInfo(&m, data, 0xffff);
 	
 	result = Py_BuildValue("s#", data, length);
 	free(data);
@@ -2599,7 +2637,7 @@ TodoUnpack(self, args)
 	PyDict_SetItemString(dict, "priority", PyInt_FromLong(m.priority));
 	PyDict_SetItemString(dict, "complete", PyInt_FromLong(m.complete));
 	PyDict_SetItemString(dict, "description", m.description ? PyString_FromString(m.description) : Py_BuildValue(""));
-	PyDict_SetItemString(dict, "description", m.note ? PyString_FromString(m.note) : Py_BuildValue(""));
+	PyDict_SetItemString(dict, "note", m.note ? PyString_FromString(m.note) : Py_BuildValue(""));
 	
 	/*result = Py_BuildValue("{sOsisiszsz}", 
 		"due", ,
@@ -2641,7 +2679,7 @@ TodoPack(self, args)
 			m.indefinite=0;
 		}
 	
-	pack_ToDo(&m, data, &length);
+	length = pack_ToDo(&m, data, 0xffff);
 	
 	o = Py_BuildValue("s#", data, length);
 	free(data);
@@ -2665,27 +2703,10 @@ TodoUnpackAppBlock(self, args)
 	
 	unpack_ToDoAppInfo(&m, data, length);
 	
-	names = PyList_New(16);
-	for (i=0;i<16;i++)
-		PyList_SetItem(names, i, PyString_FromString(m.CategoryName[i]));
-
-	ids = PyList_New(16);
-	for (i=0;i<16;i++)
-		PyList_SetItem(ids, i, PyInt_FromLong(m.CategoryID[i]));	
-	
-	PyDict_SetItemString(dict, "categoryname", names);
-	PyDict_SetItemString(dict, "categoryID", ids);
-	PyDict_SetItemString(dict, "lastID", PyInt_FromLong(m.lastUniqueID));
 	PyDict_SetItemString(dict, "sortByPriority", PyInt_FromLong(m.sortByPriority));
 	PyDict_SetItemString(dict, "dirty", PyInt_FromLong(m.dirty));
 
-	/*return Py_BuildValue("{sOsOsisisi}", 
-		"category", names,
-		"categoryID", ids,
-		"lastID",	m.lastUniqueID,
-		"sortByPriority",	m.sortByPriority,
-		"dirty",	m.dirty
-		 );*/
+	doUnpackCategory(dict, &m.category);
 	
 	return Py_BuildValue("");
 }
@@ -2707,37 +2728,12 @@ TodoPackAppBlock(self, args)
 	
 	data = malloc(0xFFFF);
 	
-	i = 0;
-	if (e=PyDict_GetItemString(o, "categoryname")) {
-		for(i=0;i<16;i++) {
-			c = PyList_GetItem(e, i);
-			if (c)
-				strcpy(m.CategoryName[i], PyString_AsString(c));
-			else
-				break;
-		}
-	}
-	for(;i<16;i++)
-		m.CategoryName[i][0] = '\0';
-
-	i = 0;
-	if (e=PyDict_GetItemString(o, "categoryID")) {
-		for(i=0;i<16;i++) {
-			c = PyList_GetItem(e, i);
-			if (c)
-				m.CategoryID[i] = PyInt_AsLong(c);
-			else
-				break;
-		}
-	}
-	for(;i<16;i++)
-		m.CategoryID[i] = 0;
-
 	m.sortByPriority = (e=PyDict_GetItemString(o, "sortByPriority")) ? PyInt_AsLong(e) : 0;
 	m.dirty = (e=PyDict_GetItemString(o, "dirty")) ? PyInt_AsLong(e) : 0;
-	m.lastUniqueID = (e=PyDict_GetItemString(o, "lastID")) ? PyInt_AsLong(e) : 0;
+
+	doPackCategory(o, &m.category);
 	
-	pack_ToDoAppInfo(&m, data, &length);
+	length = pack_ToDoAppInfo(&m, data, 0xffff);
 	
 	result = Py_BuildValue("s#", data, length);
 	
@@ -2759,19 +2755,19 @@ MailUnpackPref(self, args)
 	if (!PyArg_ParseTuple(args, "Os#i", &dict, &data, &length, &id))
 		return NULL;
 		
-	if (id == 1) {
-		struct MailPref1 m;
-		unpack_MailPref1(&m, data, length);
+	if( (id == 1)  || (id==2)) {
+		struct MailSyncPref m;
+		unpack_MailSyncPref(&m, data, length);
 		
-		PyDict_SetItemString(dict, "synctype", PyInt_FromLong(m.synctype));
-		PyDict_SetItemString(dict, "gethigh", PyInt_FromLong(m.gethigh));
-		PyDict_SetItemString(dict, "getcontaining", PyInt_FromLong(m.getcontaining));
+		PyDict_SetItemString(dict, "syncType", PyInt_FromLong(m.syncType));
+		PyDict_SetItemString(dict, "getGigh", PyInt_FromLong(m.getHigh));
+		PyDict_SetItemString(dict, "getContaining", PyInt_FromLong(m.getContaining));
 		PyDict_SetItemString(dict, "truncate", PyInt_FromLong(m.truncate));
-		PyDict_SetItemString(dict, "filterto", Py_BuildValue("z", m.filterto));
-		PyDict_SetItemString(dict, "filterfrom", Py_BuildValue("z", m.filterfrom));
-		PyDict_SetItemString(dict, "filtersubject", Py_BuildValue("z", m.filtersubject));
+		PyDict_SetItemString(dict, "filterTo", Py_BuildValue("z", m.filterTo));
+		PyDict_SetItemString(dict, "filterFrom", Py_BuildValue("z", m.filterFrom));
+		PyDict_SetItemString(dict, "filterSubject", Py_BuildValue("z", m.filterSubject));
 	
-		free_MailPref1(&m);
+		free_MailSyncPref(&m);
 	} else if (id == 3) {
 		PyDict_SetItemString(dict, "signature", PyString_FromString(data));
 	}
@@ -2806,22 +2802,22 @@ MailPackPref(self, args)
 		data[length] = 0;
 		length++;
 	}
-	/*else if (id == 1) {  	Oops, I never wrote pack_MailPrefs...
-		struct MailPrefs m;
+	else if ((id == 1) || (id==2)) {
+		struct MailSyncPref m;
 	
 		data = malloc(0xffff);
 		memset(&m, 0, sizeof(m));
 	
-		m.synctype = PyInt_AsLong(PyDict_GetItemString(dict, "synctype"));
-		m.gethigh = PyInt_AsLong(PyDict_GetItemString(dict, "gethigh"));
-		m.getcontaining = PyInt_AsLong(PyDict_GetItemString(dict, "getcontaining"));
+		m.syncType = PyInt_AsLong(PyDict_GetItemString(dict, "syncType"));
+		m.getHigh = PyInt_AsLong(PyDict_GetItemString(dict, "getHigh"));
+		m.getContaining = PyInt_AsLong(PyDict_GetItemString(dict, "getContaining"));
 		m.truncate = PyInt_AsLong(PyDict_GetItemString(dict, "truncate"));
-		m.filterto = PyString_AsString(PyDict_GetItemString(dict, "filterto"));
-		m.filterfrom = PyString_AsString(PyDict_GetItemString(dict, "filterfrom"));
-		m.filtersubject = PyString_AsString(PyDict_GetItemString(dict, "filtersubject"));
+		m.filterTo = PyString_AsString(PyDict_GetItemString(dict, "filterTo"));
+		m.filterFrom = PyString_AsString(PyDict_GetItemString(dict, "filterFrom"));
+		m.filterSubject = PyString_AsString(PyDict_GetItemString(dict, "filterSubject"));
 	
-		pack_MailPrefs(&m, data, &length);
-	}*/
+		length = pack_MailSyncPref(&m, data, 0xffff);
+	}
 	else {
 		e = PyDict_GetItemString(dict, "raw");
 		Py_XINCREF(e);
@@ -2971,109 +2967,109 @@ DlpRPC(self, args)
 }
 
 static PyMethodDef PiFile_methods[] = {
-	{"Records",	FileRecords, 1},
-	{"CheckID",	FileCheckID, 1},
-	{"GetRecord",	FileGetRec, 1},
-	{"GetRecordByID",	FileGetRecById, 1},
-	{"GetResource",	FileGetRsc, 1},
-	{"AddRecord",	FileAddRec, 1},
-	{"AddResource",	FileAddRsc, 1},
-	{"GetAppBlock",	FileGetAppBlock, 1},
-	{"SetAppBlock",	FileGetAppBlock, 1},
-	{"GetSortBlock",FileGetSortBlock, 1},
-	{"SetSortBlock",FileSetSortBlock, 1},
-	{"GetDBInfo",	FileGetDBInfo, 1},
-	{"SetDBInfo",	FileSetDBInfo, 1},
-	{"Install",	FileInstall, 1},
-	{"Retrieve",	FileRetrieve, 1},
-	{"Close",	FileClose, 1},
-{"NewAppBlock", FileBlankAppBlock, 1},
-{"NewSortBlock", FileBlankSortBlock, 1},
-{"NewRecord", FileBlankRecord, 1},
-{"NewResource", FileBlankResource, 1},
+	{"getRecords",	FileRecords, 1},
+	{"checkID",	FileCheckID, 1},
+	{"getRecord",	FileGetRec, 1},
+	{"getRecordByID",	FileGetRecById, 1},
+	{"getResource",	FileGetRsc, 1},
+	{"addRecord",	FileAddRec, 1},
+	{"addResource",	FileAddRsc, 1},
+	{"getAppBlock",	FileGetAppBlock, 1},
+	{"setAppBlock",	FileGetAppBlock, 1},
+	{"getSortBlock",FileGetSortBlock, 1},
+	{"setSortBlock",FileSetSortBlock, 1},
+	{"getDBInfo",	FileGetDBInfo, 1},
+	{"setDBInfo",	FileSetDBInfo, 1},
+	{"install",	FileInstall, 1},
+	{"retrieve",	FileRetrieve, 1},
+	{"close",	FileClose, 1},
+	{"newAppBlock", FileBlankAppBlock, 1},
+	{"newSortBlock", FileBlankSortBlock, 1},
+	{"newRecord", FileBlankRecord, 1},
+	{"newResource", FileBlankResource, 1},
 	{NULL,	NULL}
 };
 
 static PyMethodDef Dlp_methods[] = {
-	{"Open",	OpenDB, 1},
-	{"Create",	CreateDB, 1},
-	{"Delete",	DeleteDB, 1},
-	{"Status",	Status, 1},
-	{"Dirty",	Dirty, 1},
-	{"Battery",	Battery, 1},
-	{"Reset",	ResetSystem, 1},
-	{"Close",	Close, 1},
-	{"Abort",	Abort, 1},
-	{"Log",		Log, 1},
-	{"GetTime",	GetTime, 1},
-	{"SetTime",	GetTime, 1},
-	{"CardInfo",	CardInfo, 1},
-	{"SysInfo",	SysInfo, 1},
-	{"GetUserInfo",	GetUserInfo, 1},
-	{"SetUserInfo",	SetUserInfo, 1},
-	{"GetAppPref",	GetAppPref, 1},
-	{"NewAppPref",	BlankAppPref, 1},
-	{"SetAppPref",	SetAppPref, 1},
-	{"GetAppPrefRaw",	GetAppPrefRaw, 1},
-	{"SetAppPrefRaw",	SetAppPrefRaw, 1},
-	{"GetFeature",	GetFeature, 1},
-	{"GetDBInfo",	GetDBInfo, 1},
-	{"FindDBInfo",	FindDBInfo, 1},
-	{"Call",	CallApp, 1},
+	{"open",	OpenDB, 1},
+	{"create",	CreateDB, 1},
+	{"delete",	DeleteDB, 1},
+	{"status",	Status, 1},
+	{"dirty",	Dirty, 1},
+	{"getBattery",	Battery, 1},
+	{"reset",	ResetSystem, 1},
+	{"close",	Close, 1},
+	{"abort",	Abort, 1},
+	{"log",		Log, 1},
+	{"getTime",	GetTime, 1},
+	{"setTime",	GetTime, 1},
+	{"getCardInfo",	CardInfo, 1},
+	{"getSysInfo",	SysInfo, 1},
+	{"getUserInfo",	GetUserInfo, 1},
+	{"setUserInfo",	SetUserInfo, 1},
+	{"getPref",	GetAppPref, 1},
+	{"newPref",	BlankAppPref, 1},
+	{"setPref",	SetAppPref, 1},
+	{"getPrefRaw",	GetAppPrefRaw, 1},
+	{"setPrefRaw",	SetAppPrefRaw, 1},
+	{"getFeature",	GetFeature, 1},
+	{"getDBInfo",	GetDBInfo, 1},
+	{"findDBInfo",	FindDBInfo, 1},
+	{"callApplication",	CallApp, 1},
 	{"RPC",		DlpRPC, 1},
 	{NULL,	NULL}
 };
 
 static PyMethodDef DlpDB_methods[] = {
-	{"SetRecord",	SetRec, 1},
-	{"SetResource",	SetRsc, 1},
-	{"GetNextInCategory",	NextCatRec, 1},
-	{"GetNextChanged",	NextModRec, 1},
-	{"GetResource",	GetRsc, 1},
-	{"GetResourceByID",	GetRscById, 1},
-	{"GetRecord",	GetRec, 1},
-	{"GetRecordByID",	GetRecById, 1},
-	{"DeleteRecord",	DeleteRec, 1},
-	{"DeleteRecords",	DeleteAllRec, 1},
-	{"DeleteResource",	DeleteRsc, 1},
-	{"DeleteResources",	DeleteAllRsc, 1},
-	{"Close",	CloseDB, 1},
-	{"Records",	Records, 1},
-	{"RecordIDs",	RecordIDs, 1},
-	{"GetAppBlock",	GetAppBlock, 1},
-	{"SetAppBlock",	SetAppBlock, 1},
-	{"GetSortBlock",GetSortBlock, 1},
-	{"SetSortBlock",SetSortBlock, 1},
-	{"MoveCategory",MoveCategory, 1},
-	{"DeleteCategory",DeleteCategory, 1},
-	{"Purge",	Purge, 1},
-	{"ResetNext",	ResetNext, 1},
-	{"ResetFlags",	ResetFlags, 1},
-{"NewAppBlock", BlankAppBlock, 1},
-{"NewSortBlock", BlankSortBlock, 1},
-{"NewRecord", BlankRecord, 1},
-{"NewResource", BlankResource, 1},
-	{"GetPref",	DBGetAppPref, 1},
-	{"NewPref",	DBBlankAppPref, 1},
-	{"SetPref",	DBSetAppPref, 1},
-/*	{"GetPrefRaw",	DBGetAppPrefRaw, 1},
-	{"SetPrefRaw",	DBSetAppPrefRaw, 1},*/
+	{"setRecord",	SetRec, 1},
+	{"setResource",	SetRsc, 1},
+	{"getNextRecord",	NextCatRec, 1},
+	{"getNextModRecord",	NextModRec, 1},
+	{"getResource",	GetRsc, 1},
+	{"getResourceByID",	GetRscById, 1},
+	{"getRecord",	GetRec, 1},
+	{"getRecordByID",	GetRecById, 1},
+	{"deleteRecord",	DeleteRec, 1},
+	{"deleteRecords",	DeleteAllRec, 1},
+	{"deleteResource",	DeleteRsc, 1},
+	{"deleteResources",	DeleteAllRsc, 1},
+	{"close",	CloseDB, 1},
+	{"getRecords",	Records, 1},
+	{"getRecordIDs",	RecordIDs, 1},
+	{"getAppBlock",	GetAppBlock, 1},
+	{"setAppBlock",	SetAppBlock, 1},
+	{"getSortBlock",GetSortBlock, 1},
+	{"setSortBlock",SetSortBlock, 1},
+	{"moveCategory",MoveCategory, 1},
+	{"deleteCategory",DeleteCategory, 1},
+	{"purge",	Purge, 1},
+	{"resetNext",	ResetNext, 1},
+	{"resetFlags",	ResetFlags, 1},
+	{"newAppBlock", BlankAppBlock, 1},
+	{"newSortBlock", BlankSortBlock, 1},
+	{"newRecord", BlankRecord, 1},
+	{"newResource", BlankResource, 1},
+	{"getPref",	DBGetAppPref, 1},
+	{"newPref",	DBBlankAppPref, 1},
+	{"setPref",	DBSetAppPref, 1},
+/*	{"setPrefRaw",	DBGetAppPrefRaw, 1},
+	{"setPrefRaw",	DBSetAppPrefRaw, 1},*/
 	{NULL,	NULL}
 };
 
 
 
 static PyMethodDef Methods[] = {
-	{"Socket",	Socket, 1},
-	{"Bind",	Bind, 1},
-	{"Read",	Read, 1},
-	{"Write",	Write, 1},
-	{"Accept",	Accept, 1},
-	{"Close",	CloseSocket, 1},
-	{"Listen",	Listen, 1},
-	{"FileOpen",	OpenFile, 1},
-	{"FileCreate",	CreateFile, 1},
-	{"OpenPort",	OpenPort, 1},
+	{"socket",	Socket, 1},
+	{"bind",	Bind, 1},
+	{"read",	Read, 1},
+	{"write",	Write, 1},
+	{"accept",	Accept, 1},
+	{"close",	CloseSocket, 1},
+	{"listen",	Listen, 1},
+	{"fileOpen",	OpenFile, 1},
+	{"fileCreate",	CreateFile, 1},
+	{"openPort",	OpenPort, 1},
 	{"MemoUnpack",	MemoUnpack, 1},
 	{"MemoUnpackAppBlock",	MemoUnpackAppBlock, 1},
 	{"MemoPack",	MemoPack, 1},

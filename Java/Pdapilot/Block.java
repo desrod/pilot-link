@@ -27,7 +27,11 @@ public class Block {
 			raw = data;
 		}
 		
-		public String toString() {
-			return "<Block raw='" + Util.prettyPrint(new String(raw, 0)) + "'>";
+		public String describe() {
+			return "raw='" + Util.prettyPrint(new String(raw, 0));
 		}
+
+	public String toString() {
+		return "<" + this.getClass().getName() + " " + describe() + ">";
+	}
 }

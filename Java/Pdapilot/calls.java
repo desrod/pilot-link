@@ -57,12 +57,17 @@ public class calls {
 	static public native int dlp_ReadOpenDBInfo(int socket, int handle) throws DlpException;
 	static public native int dlp_ReadFeature(int socket, Char4 creator, int id) throws DlpException;
 	static public native RecordID[] dlp_ReadRecordIDList(int socket, int handle, boolean sort, int start, int max) throws DlpException;
+	static public native byte[] dlp_CallApplication(int socket, Char4 creator, int type, int action, byte[] argument, int[] retcode) throws DlpException;
+	static public native int dlp_ResetDBIndex(int socket, int handle) throws DlpException;
 	
 	static public byte[] getByteArray(int length) { return new byte[length]; }
 	static public int getArrayLength(byte[] array) { return array.length; }
 	static public RecordID[] makeRecordIDArray(int length) { return new RecordID[length]; }
 	static public Object[] makeStringArray(int length) { return new String[length]; }
 	static public int[] makeIntArray(int length) { return new int[length]; }
+	static public boolean[] makeBooleanArray(int length) { return new boolean[length]; }
+	static public Object[] makeDateArray(int length) { return new java.util.Date[length]; }
+	static public int getObjectArrayLength(Object[] array) { return array.length; }
 	
 	static {
 		System.loadLibrary("JavaPisock");

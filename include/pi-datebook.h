@@ -2,6 +2,7 @@
 #define _PILOT_DATEBOOK_H_
 
 #include "pi-args.h"
+#include "pi-appinfo.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +39,7 @@ struct Appointment {
 	int repeatType;       /* How should I repeat this appointment, if at all? */
 	int repeatForever;    /* Do the repetitions end at some date? */
 	struct tm repeatEnd;  /* What date to they end on? */
-	int repeatFreq;       /* Should I skip an interval for each repetition? */
+	int repeatFrequency;       /* Should I skip an interval for each repetition? */
 	int repeatOn;         /* What things are the targets of repetition? */
 	int repeatWeekstart;  /* What day did the user decide starts the week? */
 	
@@ -50,21 +51,15 @@ struct Appointment {
 };
 
 struct AppointmentAppInfo {
-  unsigned int renamedcategories; /* Bitfield of categories with changed names */
-  char CategoryName[16][16]; /* 16 categories of 15 characters+nul each */
-  unsigned char CategoryID[16]; 
-  unsigned char lastUniqueID; /* Each category gets a unique ID, for sync tracking
-                                 purposes. Those from the Pilot are between 0 & 127.
-                                 Those from the PC are between 128 & 255. I'm not
-                                 sure what role lastUniqueID plays. */
+  struct CategoryAppInfo category;
   int startOfWeek;
 };
 
 extern void free_Appointment PI_ARGS((struct Appointment *));
-extern void unpack_Appointment PI_ARGS((struct Appointment *, unsigned char * record, int len));
-extern void pack_Appointment PI_ARGS((struct Appointment *, unsigned char * record, int * len));
-extern void unpack_AppointmentAppInfo PI_ARGS((struct AppointmentAppInfo *, unsigned char * AppInfo, int len));
-extern void pack_AppointmentAppInfo PI_ARGS((struct AppointmentAppInfo *, unsigned char * AppInfo, int * len));
+extern int unpack_Appointment PI_ARGS((struct Appointment *, unsigned char * record, int len));
+extern int pack_Appointment PI_ARGS((struct Appointment *, unsigned char * record, int len));
+extern int unpack_AppointmentAppInfo PI_ARGS((struct AppointmentAppInfo *, unsigned char * AppInfo, int len));
+extern int pack_AppointmentAppInfo PI_ARGS((struct AppointmentAppInfo *, unsigned char * AppInfo, int len));
 
 #ifdef __cplusplus
 }

@@ -79,7 +79,7 @@ fi
 ccexecs=''
 cclib=''
 libcclib=''
-SUBMAKE_COMM='cd libsock ; $(MAKE) '
+SUBMAKE_COMM='cd $(top_builddir)/libsock ; $(MAKE) '
 SUBMAKE_COMM_CC='-true'
 EXT=''
 CXXLIBS=''
@@ -87,7 +87,7 @@ if test $ac_cv_prog_cxx_works = yes; then
   ccexecs='$(CCEXECS)'
   cclib='libpicc.a'
   libcclib='libcc/libpicc.a'
-  SUBMAKE_COMM_CC='cd libcc ; $(MAKE) '
+  SUBMAKE_COMM_CC='cd $(top_builddir)/libcc ; $(MAKE) '
   WITHCXX='WITHCXX'
 else
   CXX=''
@@ -170,7 +170,7 @@ AC_SUBST(RLDEFS)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h)
+AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -194,7 +194,7 @@ AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2)
+AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname)
 
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
   ac_cv_termios_cspeed,
@@ -548,4 +548,4 @@ LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTLIBOBJS)
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTALLOCA)
-AC_OUTPUT(libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile)
+AC_OUTPUT(libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile)

@@ -1,4 +1,6 @@
 
+As of 0.8.0: Any documentation included is dubious at beest.
+
 jdeps (by Steven Robbins, available at
 <http://www.cs.mcgill.ca/~stever/software/JavaDeps/>) is required for dependancy
 generation.

@@ -71,7 +71,7 @@ void Help(char *argv[])
 
 /* While this function is useful in pi-csd, it is intended also to
    be a demonstration of the proper (or improper, if I'm unlucky) techniques
-   to retrieve networking information. */
+   to retrieve networking information.*/
    
 void fetch_host(char * hostname, int hostlen, struct in_addr *address, struct in_addr * mask)
 {
@@ -80,9 +80,20 @@ void fetch_host(char * hostname, int hostlen, struct in_addr *address, struct in
   struct ifreq * ifr, ifreqaddr, ifreqmask;
   struct hostent * hent;
   
+#ifdef HAVE_GETHOSTNAME
   /* Get host name the easy way */
   
   gethostname(hostname, hostlen);
+#else
+# ifdef HAVE_UNAME
+  struct utsname uts;
+  
+  if (uname(&uts)==0) {
+    strncpy(hostname, uts.nodename, hostlen-1);
+    hostname[hostlen-1] = '\0';
+  }
+# endif /*def HAVE_UNAME*/
+#endif /*def HAVE_GETHOSTNAME*/
 
   /* Get host address through DNS */
   hent = gethostbyname(hostname);

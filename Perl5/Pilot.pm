@@ -143,7 +143,7 @@ package PDA::Pilot::Record;
 
 sub new {
 	my($self,$data,$id,$attr,$cat,$index) = @_;
-	$self = bless { index => $index, id => $id, attr => $attr, cat => $cat}, 
+	$self = bless { index => $index, id => $id, attr => $attr, category => $cat}, 
 		(ref($self) || $self);
 	if (defined($data)) {
 		$self->Unpack($data);

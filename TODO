@@ -6,6 +6,10 @@ Things to-do (in order of importance, highest = most important):
 	    PADP and perhaps SLP transmissions, receptions, and calculating
 	    exactly how many bytes is needed to transfer a file won't be fun.)
 	  - Check RPC code (something broken on large-endian machines?)
+	  - Add reada socket calls that allocate the return buffer (important
+	    for netsync, as results larger then 64K are possible.)
+	  - Fix DLP to understand multiple return arguments.
+	  - Write iambicExpense.c
 	Tcl binding:
 	  - Add Tcl 8 specific code to allow retrieval of raw records, and optionally
 	    use Tcl routines for packing and unpacking.

@@ -25,9 +25,9 @@ void do_readline(void);
 
 #ifdef TK
 extern int usetk;
-# include "tk.h"
+# include <tk.h>
 #else
-# include "tcl.h"
+# include <tcl.h>
 #endif
 
 #ifndef TCL_ACTIVE

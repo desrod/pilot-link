@@ -1,6 +1,11 @@
 package Pdapilot;
 
 public class CancelSyncException extends DlpException {
-	CancelSyncException() { super(); }
-	CancelSyncException(String s) { super(s); }
+	CancelSyncException() { super(-18); }
+	
+	public static void kickWillyScuggins() 
+		throws CancelSyncException
+	{
+		throw new CancelSyncException();
+	}
 }

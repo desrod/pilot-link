@@ -1,0 +1,113 @@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+libdir = @libdir@
+pixdir = ${libdir}/pix
+includedir = @includedir@
+mandir = @mandir@/man1
+srcdir = ../
+VPATH = ../
+
+top_builddir = ..
+
+PURELINK =
+PURIFY =
+
+# Libraries needed to link with Tcl & (optionally) Tk
+TCLTK_LIBS = 
+# Include directives needed to compile with Tcl & Tk, and
+# -DTCL if Tcl is available, and
+# -DTK if Tk is available.
+TCLTK_FLAGS = 
+
+# Libraries needed to link with GNU readline
+RLLIBS = 
+# Include directives needed to compile with GNU readline, and
+# -DREADLINE_2_0 if GNU readline 2.0 is available, or 
+# -DREADLINE_2_1 if GNU readline 2.1 (or later) is available.
+RLDEFS = 
+
+CC = gcc
+CXX = gcc
+CDEFS = -DLIBDIR=\"$(libdir)\" 
+# -DDEBUG
+CFLAGS = -I$(top_builddir)/include -I$(srcdir)/include -g -Zcrtdll -O2 -fno-strength-reduce -D__ST_MT_ERRNO__ -Wall $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
+CXXFLAGS = -I$(top_builddir)/include -I$(srcdir)/include -g -O2 -fno-strength-reduce -Wall $(RLDEFS) $(CDEFS) $(TCLTK_FLAGS)
+LDFLAGS = 
+LIBS = -lsocket -los2
+# -lefence
+CXXLIBS = -lstdcpp
+
+libcclib = libcc/libpicc.a
+cclib = libpicc.a
+
+INSTALL = $(LIBTOOL) @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+YACC = bison -y
+RANLIB = ar -s
+RM = rm -f
+STRIP = strip
+SHELL = /bin/sh
+CPLIB = cp
+EXT = .EXE
+SUBMAKE_COMM = $(MAKE) -C $(top_builddir)/libsock -f Makefile.os2
+SUBMAKE_COMM_CC = $(MAKE) -C $(top_builddir)/libcc -f Makefile.os2
+
+LIBTOOL = @LIBTOOL@
+LIBTOOLLINK = $(LIBTOOL) --mode=link
+
+CCLINK = $(LIBTOOLLINK)  $(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS)
+CXXLINK = $(LIBTOOLLINK) $(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS)
+
+.SUFFIXES: .out .o .cc .c .e .r .f .y .l .s .p
+
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+.cc.o:
+	$(CXX) $(CXXFLAGS) -c $<
+
+
+WITHTCL = $(TCLEXECS)
+WITHCXX = $(CXXEXECS)
+WITHPERL5 = $(PERLEXECS)
+
+CEXECS = packers$(EXT)
+
+CXXEXECS =
+
+TCLEXECS =
+
+PERLEXECS = 
+
+EXECS = $(CEXECS) $(WITHOUTTCL) $(WITHCXX) $(WITHOUTPERL5)
+
+WITHCXXLIB = ../libcc/libpicc.la
+PILIB = ../libsock/libpisock.la
+PICCLIB = $(WITHCXXLIB)
+
+all: $(PILIB) $(PICCLIB) $(EXECS) 
+
+$(PILIB): FORCE
+	$(SUBMAKE_COMM)
+
+$(WITHCXXLIB): FORCE
+	$(SUBMAKE_COMM_CC)
+
+tests test: $(EXECS)
+	packers$(EXT)
+
+packers$(EXT): $(PILIB) packers.o
+	$(CCLINK) packers.o $(PILIB) -o $@ $(LIBS)
+
+distclean: clean
+	$(RM) Makefile
+
+clean:
+	$(RM) *.o *.a *.lo *.la core a.out test_s test_c install-prc$(EXT) pilot-debug$(EXT)
+	$(RM) -r .libs
+	$(RM) $(CEXECS) $(TCLEXECS) $(CXXEXECS) $(PERLEXECS)
+	
+FORCE:

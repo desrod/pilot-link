@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
   }
   
   if (ret >= 0) {
-    unpack_ExpensePrefs(&tp, buffer, 0);
-    pack_ExpensePrefs(&tp, buffer2, &i);
+    unpack_ExpensePrefs(&tp, buffer, 0xffff);
+    i = pack_ExpensePrefs(&tp, buffer2, 0xffff);
     fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
     dumpdata(buffer, ret);
     fprintf(stderr, "New prefs, %d bytes:\n", ret);
@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
   
 
   ret = dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-  unpack_ExpenseAppInfo(&tai, buffer, 0);
-  pack_ExpenseAppInfo(&tai, buffer2, &i);
+  unpack_ExpenseAppInfo(&tai, buffer, 0xffff);
+  i = pack_ExpenseAppInfo(&tai, buffer2, 0xffff);
   fprintf (stderr, "Orig length %d, new length %d, orig data:\n", ret, i);
   dumpdata(buffer,ret);
   fprintf (stderr, "New data:\n");
@@ -125,13 +125,13 @@ int main(int argc, char *argv[])
   		continue;
   		
 	unpack_Expense(&t, buffer, len);
-	pack_Expense(&t, buffer2, &ret);
+	ret = pack_Expense(&t, buffer2, 0xffff);
 	fprintf(stderr, "Orig length %d, data:\n", len);
 	dumpdata(buffer, len);
 	fprintf(stderr, "New length %d, data:\n", ret);
 	dumpdata(buffer2, ret);
 	
-	fprintf(stderr,"Category: %s\n", tai.CategoryName[category]);
+	fprintf(stderr,"Category: %s\n", tai.category.name[category]);
 	fprintf(stderr,"Type: %d, Payment: %d, Currency: %d\n", t.type, t.payment, t.currency);
 	fprintf(stderr,"Amount: '%s', Vendor: '%s', City: '%s'\n",
 		t.amount ?t.amount: "<None>", t.vendor ? t.vendor: "<None>", t.city ?t.city: "<None>");

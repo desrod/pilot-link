@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   }
   
   dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-  unpack_ToDoAppInfo(&tai, buffer, 0);
+  unpack_ToDoAppInfo(&tai, buffer, 0xffff);
   
   for (i=0;1;i++) {
   	struct ToDo t;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   		
 	unpack_ToDo(&t, buffer, len);
 	
-	printf("Category: %s\n", tai.CategoryName[category]);
+	printf("Category: %s\n", tai.category.name[category]);
 	printf("Priority: %d\n", t.priority);
 	printf("Completed: %s\n", t.complete ? "Yes" : "No");
 	if(t.indefinite)

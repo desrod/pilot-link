@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   }
   
   dlp_ReadAppBlock(sd, db, 0, (unsigned char *)appblock, 0xffff);
-  unpack_MemoAppInfo(&mai, (unsigned char *)appblock, 0);
+  unpack_MemoAppInfo(&mai, (unsigned char *)appblock, 0xffff);
 
   for (i=0;1;i++) {
   	struct Memo m;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	
 	printf("From your.pilot Tue Oct  1 07:56:25 1996\nReceived: Pilot@p by memo Tue Oct  1 07:56:25 1996\nTo: you@y\nDate: Thu, 31 Oct 1996 23:34:38 -0500\n");
 	printf("Subject: ");
-	printf("[%s] ", mai.CategoryName[category]);
+	printf("[%s] ", mai.category.name[category]);
 	for(j=0;j<40;j++) {
 		if((!m.text[j]) || (m.text[j] == '\n'))
 			break;
