@@ -28,14 +28,15 @@
 #include "userland.h"
 
 const char
-	*user		= NULL,
-	*userid		= NULL;
-
+    *user   = NULL,
+    *userid = NULL;
+int list = 0;
 
 const struct poptOption options[] = {
 	USERLAND_RESERVED_OPTIONS
 	{ "user",    'u', POPT_ARG_STRING, &user, 0, "Set the username, use quotes for spaces (see example)", "<username>"},
 	{ "id",      'i', POPT_ARG_STRING, &userid, 0, "A 5-digit numeric UserID, required for PalmOS", "<userid>"},
+	{ "list",    'l', POPT_ARG_NONE, &list, 0, "List the current username and ID (default)",NULL},
 	POPT_TABLEEND
 };
 
@@ -43,64 +44,82 @@ poptContext po;
 
 int main(int argc, char *argv[])
 {
-	int 	sd 		= -1,
-		po_err		= -1;
+	int  sd     = -1,
+	     po_err = -1;
 
 	struct 	PilotUser 	User;
 
         po = poptGetContext("install-user", argc, (const char **) argv, options, 0);
-	poptSetOtherOptionHelp(po, " [-p port] [-u user] [-i id]\n\n"
-		"   Assigns your Palm device a Username and unique UserID\n\n"
+	poptSetOtherOptionHelp(po, "\n\n"
+		"   Set a  username and ID on the Palm.\n\n"
 		"   Example:\n"
 		"      -p /dev/pilot -u \"John Q. Public\" -i 12345\n");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
         while ((po_err = poptGetNextOpt(po)) >= 0) {
 		/* Everything is handled by popt magic */
 	}
 
-	if (po_err < -1)
-	    plu_badoption(po,po_err);
-
-	sd = plu_connect();
-	if (sd < 0)
-		goto error;
-
-	if (dlp_ReadUserInfo(sd, &User) < 0)
-		goto error_close;
-
-	if (!user && !userid) {
-		printf("   Palm user: %s\n", User.username);
-		printf("   UserID:    %lu\n\n", User.userID);
-		pi_close(sd);
-		return 0;
+	if (po_err < -1) {
+		plu_badoption(po,po_err);
 	}
 
-	if (userid)
-		User.userID = abs(atoi(userid));
+	sd = plu_connect();
+	if (sd < 0) {
+		goto error;
+	}
 
-	if (user)
+	if (dlp_ReadUserInfo(sd, &User) < 0) {
+		goto error_close;
+	}
+
+	if (list || (!user && !userid)) {
+		printf("   Palm user: %s\n", User.username);
+		printf("   UserID:    %lu\n\n", User.userID);
+		goto cleanup;
+	}
+
+	if (userid) {
+		User.userID = abs(atoi(userid));
+	}
+
+	if (user) {
 		strncpy(User.username, user, sizeof(User.username) - 1);
+	}
 
 	User.lastSyncDate = time(NULL);
 
-	if (dlp_WriteUserInfo(sd, &User) < 0)
+	if (dlp_WriteUserInfo(sd, &User) < 0) {
 		goto error_close;
+	}
 
-	if (user)
+	if (!plu_quiet && user) {
 		printf("   Installed User Name: %s\n", User.username);
-	if (userid)
+	}
+	if (!plu_quiet && userid) {
 		printf("   Installed User ID: %lu\n", User.userID);
-	printf("\n");
+	}
+	if (!plu_quiet && (user || userid)) {
+		printf("\n");
+	}
 
+cleanup:
 	if (dlp_AddSyncLogEntry(sd, "install-user exited normally.\n"
-				    "Thank you for using pilot-link.\n") < 0)
+				    "Thank you for using pilot-link.\n") < 0) {
 		goto error_close;
+	}
 
-	if (dlp_EndOfSync(sd, 0) < 0)
+	if (dlp_EndOfSync(sd, 0) < 0) {
 		goto error_close;
+	}
 
-	if (pi_close(sd) < 0)
+	if (pi_close(sd) < 0) {
 		goto error;
+	}
 
 	return 0;
 
@@ -111,4 +130,4 @@ error:
 	return -1;
 }
 
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
