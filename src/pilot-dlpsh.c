@@ -45,11 +45,6 @@
 
 struct pi_socket *ticklish_pi_socket;
 
-/* Declare prototypes */
-static void display_help(const char *progname);
-void print_splash(const char *progname);
-int pilot_connect(const char *port);
-
 
 /* FIXME: This isn't really ideal, passing a struct in is
    probably better. Something like this:
