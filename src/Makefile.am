@@ -145,6 +145,7 @@ install_hinote_LDADD = 		\
 install_memo_SOURCES = 		\
 	install-memo.c
 install_memo_LDADD = 		\
+	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
