@@ -52,7 +52,7 @@ extern "C" {
 
 	struct DBInfo {
 		int 	more;
-		char name[34];
+		char 	name[34];
 		unsigned int flags;
 		unsigned int miscFlags;
 		unsigned int version;
@@ -64,8 +64,8 @@ extern "C" {
 
 	struct CardInfo {
 		int 	card,
-			version;
-			int more;
+			version,
+			more;
 
 		time_t 	creation;
 

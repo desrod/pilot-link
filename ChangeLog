@@ -1,3 +1,13 @@
+2002-01-02  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* Nothin' but net! er, I mean whitespace. Minor changes. 
+	
+	* libcc/*.cc: Lack of consistant comments, fixed.
+
+	* tools/Python: All new Python bindings from Rob Tillotson
+
+	
+
 2001-12-31  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* More code cleanups, function relocation, pilot_connect().

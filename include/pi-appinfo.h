@@ -9,7 +9,9 @@ extern "C" {
 
 	struct CategoryAppInfo {
 		unsigned int renamed[16];	/* Boolean array of categories with changed names */
-		char 	name[16][16];		/* 16 categories of 15 characters+nul each */
+
+		char 	name[16][16];		/* 16 categories of 15 characters + nul each */
+
 		unsigned char ID[16];
 		unsigned char lastUniqueID;	/* Each category gets a unique ID, for sync tracking
 						   purposes. Those from the Palm are between 0 & 127.
@@ -28,5 +30,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #include "pi-appinfo.hxx"
-#endif				/*__cplusplus*/
+#endif				/* __cplusplus */
 #endif				/* _PILOT_APPINFO_H_ */

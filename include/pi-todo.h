@@ -25,18 +25,18 @@ extern "C" {
 
 	extern void free_ToDo PI_ARGS((struct ToDo *));
 	extern int unpack_ToDo
-	    PI_ARGS((struct ToDo *, unsigned char *record, int len));
+		PI_ARGS((struct ToDo *, unsigned char *record, int len));
 	extern int pack_ToDo
-	    PI_ARGS((struct ToDo *, unsigned char *record, int len));
+		PI_ARGS((struct ToDo *, unsigned char *record, int len));
 	extern int unpack_ToDoAppInfo
-	    PI_ARGS((struct ToDoAppInfo *, unsigned char *record,
-		     int len));
+		PI_ARGS((struct ToDoAppInfo *, unsigned char *record,
+			int len));
 	extern int pack_ToDoAppInfo
-	    PI_ARGS((struct ToDoAppInfo *, unsigned char *record,
-		     int len));
+		PI_ARGS((struct ToDoAppInfo *, unsigned char *record,
+			int len));
 
 #ifdef __cplusplus
 }
 #include "pi-todo.hxx"
-#endif				/*__cplusplus*/
+#endif				/* __cplusplus */
 #endif				/* _PILOT_TODO_H_ */

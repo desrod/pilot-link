@@ -10,11 +10,11 @@
 #include "pi-source.h"
 #include "pi-datebook.h"
 
-#define alarmFlag 64
-#define repeatFlag 32
-#define noteFlag 16
-#define exceptFlag 8
-#define descFlag 4
+#define alarmFlag 	64
+#define repeatFlag 	32
+#define noteFlag 	16
+#define exceptFlag 	8
+#define descFlag 	4
 
 appointmentAppInfo_t::appointmentAppInfo_t(void *ai) 
      : appInfo_t(ai) 
@@ -70,14 +70,14 @@ appointment_t::appointment_t(const appointment_t &oldCopy)
 
 void appointment_t::blank(void) 
 {
-     _untimed = _hasAlarm = _advance = 0;
-     _repeatType = none;
-     _repeatOn = 0;
-     _numExceptions = 0;
-     _exceptions = NULL;
-     _description = _note = NULL;
-     _next = NULL;
-     _repeatEnd = NULL;
+     _untimed 		= _hasAlarm = _advance = 0;
+     _repeatType 	= none;
+     _repeatOn 		= 0;
+     _numExceptions 	= 0;
+     _exceptions 	= NULL;
+     _description 	= _note = NULL;
+     _next 		= NULL;
+     _repeatEnd 	= NULL;
 }
 
 void appointment_t::unpack(void *buf
@@ -86,8 +86,8 @@ void appointment_t::unpack(void *buf
 #endif
 )
 {
-     // If we unpack more than once, we need to free up any old data first
-     // so that we don't leak memory
+// If we unpack more than once, we need to free up any old data first
+// so that we don't leak memory
 #if 0
      if (!firstTime) {
 #endif
@@ -232,7 +232,7 @@ void *appointment_t::internalPack(unsigned char *buf)
      if (_untimed)
 	  set_long(ptr, 0xffffffff);
 
-     ptr += 4;			// Now at buf + 8
+     ptr += 4;	// Now at buf + 8
 
      int iflags = 0;
      

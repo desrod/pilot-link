@@ -22,10 +22,10 @@ extern "C" {
 		repeatYearly
 	};
 
-	/* This enumeration normally isn't of much use, as you can get just as useful
-	   results by taking the value mod 7 to get the day of the week, and div 7
-	   to get the week value, with week 4 (of 0) meaning the last, be it fourth
-	   or fifth. 
+	/* This enumeration normally isn't of much use, as you can get just
+	   as useful results by taking the value mod 7 to get the day of the
+	   week, and div 7 to get the week value, with week 4 (of 0) meaning
+	   the last, be it fourth or fifth.
 	 */
 
 	enum DayOfMonthType {
@@ -51,16 +51,16 @@ extern "C" {
 	};
 
 	struct Appointment {
-		int 	event;			/* Is this a timeless event?                         */
-		struct 	tm begin, end;		/* When does this appointment start and end?         */
-		int 	alarm,			/* Should an alarm go off?                           */
-			advance,		/* How far in advance should it be?                  */
-			advanceUnits;		/* What am I measuring the advance in?               */
+		int 	event;			  /* Is this a timeless event?                       */
+		struct 	tm begin, end;		  /* When does this appointment start and end?       */
+		int 	alarm,			  /* Should an alarm go off?                         */
+			advance,		  /* How far in advance should it be?                */
+			advanceUnits;		  /* What am I measuring the advance in?             */
 
-		enum 	repeatTypes repeatType;	/* How should I repeat this appointment, if at all?  */
-		int 	repeatForever,		/* Do the repetitions end at some date?              */
-			repeatFrequency;	/* Should I skip an interval for each repetition?    */
-		struct 	tm repeatEnd;		/* What date do they end on?                         */
+		enum 	repeatTypes repeatType;	  /* How should I repeat this appointment, if at all?*/
+		int 	repeatForever,		  /* Do the repetitions end at some date?            */
+			repeatFrequency;	  /* Should I skip an interval for each repetition?  */
+		struct 	tm repeatEnd;		  /* What date do they end on?                       */
 
 
 		enum 	DayOfMonthType repeatDay; /* for repeatMonthlyByDay                          */

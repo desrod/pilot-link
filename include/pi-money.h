@@ -10,9 +10,8 @@ extern "C" {
 
 	struct Transaction {
 		int 	amountc,	 /* _cents_ as above                     */
-			totalc;
-
-		int 	second, 	 /* Date                                 */
+			totalc,
+			second, 	 /* Date                                 */
 			minute,
 			hour,
 			day,
@@ -30,6 +29,7 @@ extern "C" {
 
 		char 	repeat,		 /* 0:single, 1:weekly, 2: every two     */
 					 /* weeks, 3:monthly, 4: monthly end     */
+
 			flags2,		 /* 1:receipt                            */
 			type,		 /* Type (Category) index to typeLabels  */
 			reserved[2],
