@@ -1,5 +1,7 @@
 2002-01-24  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/serial.c (pi_serial_accept): obey timeout value (if any)
+
 	* pilot-link.m4.in: fix version configure check
 
 2002-01-24  JP Rosevear  <jpr@ximian.com>
