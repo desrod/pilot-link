@@ -278,7 +278,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 		}
 		
 		     
-	return 0;
+	return bytes;
 	if (response->argc == 0)
 		return 0;
 	else
@@ -362,13 +362,14 @@ dlp_response_free (struct dlpResponse *res)
 		free (res->argv);
 	free (res);	
 
+	int bytes;
 int dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 {
 	int bytes;
 	*res = NULL;
 	
 	if (dlp_request_write (req, sd) < req->argc) {
-	if (dlp_response_read (res, sd) < 0) {
+		errno = -EIO;
 		return -1;
 	}
 
@@ -385,7 +386,7 @@ int dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 
 	/* Check to make sure there was no error  */
 	if ((*res)->err != dlpErrNoError) {
-	return 0;
+		errno = -ENOMSG;
 		return -(*res)->err;
 	}
 

@@ -1,3 +1,17 @@
+2002-07-23  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/install-datebook.c: Fix for wrong number of fields
+	  encountered, updated to getopt_long, cleansed
+
+2002-07-21  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/*.c: More C89 fixes, s/print_help/display_help, also
+	  s/return/exit(0)/ to return error to caller
+
+	* src/pilot-datebook/pilot-datebook-update.c: Missing <string.h>
+
+	* src/read-palmpix.c: Fixed C89 warnings, missing proto for write_png
+
 2002-07-19  Angus Ainslie  <angusa@deltatee.com>
 
         * libpisock/palmpix.c: Added defines for [u]int*_t
