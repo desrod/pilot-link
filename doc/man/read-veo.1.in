@@ -13,7 +13,7 @@ handheld. The output type is Portable Pixmap (.ppm).
 .SH "DESCRIPTION"
 \fBread\-veo\fR allows a Veo traveler camera user to extract the images
 from their Palm handheld and convert them to Portable Pixmap (.ppm) or
-PNG (.png) files on their system.
+Portable Network Graphic (.png) files on their system.
 
 
 .SH "OPTIONS"
