@@ -149,7 +149,7 @@ int main(int argc, const char *argv[])
 		" [-p port] <todo-options>\n\n"
 		"   Updates the Palm ToDo list with a single new entry\n\n"
 		"   Example:\n"
-		"       -p serial:/dev/ttyUSB0 -n 'Buy Milk' -D 'Go shopping, see note for items'\n\n");
+		"       -p /dev/pilot -n 'Buy Milk' -D 'Go shopping, see note for items'\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(po,stderr,0);

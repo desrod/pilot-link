@@ -397,7 +397,7 @@ int main(int argc, const char *argv[])
 	poptSetOtherOptionHelp(pc,"\n\n"
 	"   Decodes Palm Voice Memo files to wav files you can read\n\n"
 	"   Example arguments: \n"
-	"      pilot-wav -p serial:/dev/ttyUSB0 -f MyVoiceMemo.wav.pdb\n"
+	"      pilot-wav -p /dev/pilot -f MyVoiceMemo.wav.pdb\n"
 	"      pilot-wav -c MyVoiceMemo.wav.pdb\n\n");
 
 	if (argc < 2 ) {

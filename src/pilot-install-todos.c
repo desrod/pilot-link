@@ -124,7 +124,7 @@ int main(int argc, const char *argv[])
 		"\n\n"
 		"   Updates the Palm ToDo list with entries from a local file\n\n"
 		"   Example:\n"
-		"      -p serial:/dev/ttyUSB0 -f $HOME/MyTodoList.txt\n\n"
+		"      -p /dev/pilot -f $HOME/MyTodoList.txt\n\n"
 		"   The format of this file is a simple line-by-line ToDo task entry.\n"
 		"   For each new line in the local file, a new task is created in the\n"
 		"   ToDo database on the Palm.\n\n");

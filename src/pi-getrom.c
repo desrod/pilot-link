@@ -427,7 +427,7 @@ int main(int argc, const char *argv[])
 		"       irda:  Present only on memory card w/IrDA support\n"
 		"       snum:  Device serial number (from Memory Card Flash ID)\n\n"
 		"   Example arguments:\n"
-		"      -p serial:/dev/ttyUSB0 -t snum\n\n";
+		"      -p /dev/pilot -t snum\n\n";
 	} else if (DEFAULT_MODE == mode_getram) {
 		progname="pi-getram";
 		opthelp=

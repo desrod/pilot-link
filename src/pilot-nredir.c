@@ -64,7 +64,7 @@ int main(int argc, const char *argv[])
 	"   redirect them through the network device to a listening server as\n"
 	"   specified in the LANSync Preferences panel on your Palm.\n\n"
 	"   Examples arguments:\n"
-	"      -p serial:/dev/ttyUSB0\n\n");
+	"      -p /dev/pilot\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(po,stderr,1);

@@ -42,6 +42,8 @@
 #endif
 #endif
 
+const char *progname;
+
 #ifdef HAVE_PNG
 void write_png( FILE *f, struct NotePad *n );
 #endif

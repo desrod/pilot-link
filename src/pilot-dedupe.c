@@ -222,7 +222,7 @@ int main(int argc, const char *argv[])
 	poptSetOtherOptionHelp(pc,"<database> ...\n\n"
 	"   Removes duplicate records from any Palm database\n\n"
 	"   Example arguments:\n"
-	"      -p serial:/dev/ttyUSB0 AddressDB ToDoDB\n\n");
+	"      -p /dev/pilot AddressDB ToDoDB\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(pc,stderr,0);

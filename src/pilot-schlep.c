@@ -176,9 +176,9 @@ int main(int argc, const char *argv[])
 	    "   capability, as well as handle multiple 'Schlep' files.\n\n"
 	    "   Example arguments:\n"
 	    "     To package up and store a file for later retrieval on your Palm:\n"
-	    "             -p serial:/dev/ttyUSB0 -i InstallThis.zip\n\n"
+	    "             -p /dev/pilot -i InstallThis.zip\n\n"
 	    "     To unpack a file that has been stored on your Palm with the '-i' option:\n"
-	    "             -p serial:/dev/ttyUSB0 -f RetrieveThis.pdf\n\n"
+	    "             -p /dev/pilot -f RetrieveThis.pdf\n\n"
 	    );
 
 	if (argc < 2) {

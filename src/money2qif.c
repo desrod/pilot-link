@@ -66,7 +66,7 @@ int main(int argc, const char *argv[])
 	"   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n"
 	"   pilot-link.\n\n"
 	"   Example argumentss:\n"
-	"      -p serial:/dev/ttyUSB0 -a BankGlobal\n\n");
+	"      -p /dev/pilot -a BankGlobal\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(po,stderr,0);

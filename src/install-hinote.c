@@ -75,7 +75,7 @@ int main(int argc, const char *argv[])
 		"   Install local files into your Hi-Notes database on your Palm device\n"
 		"   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n"
 		"   Example arguments:\n"
-		"      -p serial:/dev/ttyUSB0 -c 1 ~/Palm/Note1.txt ~/Note2.txt\n\n");
+		"      -p /dev/pilot -c 1 ~/Palm/Note1.txt ~/Note2.txt\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(pc,stderr,0);

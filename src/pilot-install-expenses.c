@@ -79,7 +79,7 @@ int main(int argc, const char *argv[])
 	poptSetOtherOptionHelp(po,"\n\n"
 		"   Install Expense application entries to your Palm device\n\n"
 		"   Example arguments:\n"
-		"     %s -p serial:/dev/ttyUSB0 -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n"
+		"     %s -p /dev/pilot -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n"
 		"                      -g 21 -l \"San Francisco\" -N \"This is a note\"\n\n");
 
 	if (argc < 2) {
