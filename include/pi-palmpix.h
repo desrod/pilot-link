@@ -11,6 +11,10 @@ extern "C"
 #define PalmPix_Creator (makelong ("COCO"))
 #define PalmPix_DB "ArchImage"
 
+/* flags values */
+#define PALMPIX_COLOUR_CORRECTION    1
+#define PALMPIX_HISTOGRAM_STRETCH    2
+
 struct PalmPixState {
    /* This callback should read record #RECNO into BUFFER and BUFSIZE,
     * and return 0 when successful, just like pi_file_read_record().  */
@@ -32,7 +36,12 @@ struct PalmPixState {
    
    /* This will be filled in by pixPixmap.  */
    unsigned char *pixmap;
+
+   /* The output brightness adjustment */
+   int bias;
    
+   /* this controls colour correction and histogram stretch */
+   int flags;
 };
    
 enum {
