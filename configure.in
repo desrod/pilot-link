@@ -102,13 +102,14 @@ fi
 dnl ******************************
 dnl PNG Support
 dnl ******************************
-AC_CHECK_LIB(png, main, [have_png=yes; LIBS="$LIBS -lpng"])
+AC_CHECK_LIB(png, main, [have_png=yes; PNGLIBS="-lpng"])
 if test "$have_png" = yes; then
 	AC_DEFINE(HAVE_PNG)
 	msg_png=yes
 else
 	msg_png=no
 fi
+AC_SUBST(PNGLIBS)
 
 dnl ******************************
 dnl USB Support

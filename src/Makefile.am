@@ -243,11 +243,13 @@ read_ical_LDADD = 				\
 read_notepad_SOURCES = \
 	read-notepad.c
 read_notepad_LDADD = 				\
+	$(PNGLIBS) 				\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_palmpix_SOURCES = \
 	read-palmpix.c
 read_palmpix_LDADD = 				\
+	$(PNGLIBS) 				\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_todos_SOURCES = \
