@@ -25,7 +25,8 @@
 #include "pi-header.h"
 #include "pi-dlp.h"
 
-int pilot_connect(const char *port) {
+int pilot_connect(const char *port)
+{
 	int sd;
 	int ret;
 	struct PilotUser U;
@@ -37,10 +38,9 @@ int pilot_connect(const char *port) {
 	}
 
 	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, port);
+	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
 
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
+	if (pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
 		printf("\n   Unable to bind to port %s\n", port);
 		perror("   Reason: pi_bind");
 		printf("\n");
@@ -52,8 +52,7 @@ int pilot_connect(const char *port) {
 	    ("\n   Connecting to port: %s\n\n   Please press the HotSync button now...\n",
 	     port);
 
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
+	if (pi_listen(sd, 1) == -1) {
 		printf("\n   Error listening on %s\n", port);
 		perror("   Reason: pi_listen");
 		printf("\n");
@@ -61,8 +60,7 @@ int pilot_connect(const char *port) {
 		return 0;
 	}
 
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
+	if (pi_accept(sd, 0, 0) == -1) {
 		printf("\n   Error accepting data on %s\n", port);
 		perror("   Reason: pi_accept");
 		printf("\n");

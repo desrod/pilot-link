@@ -380,7 +380,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 			exit(1);
 		}
 
-		strcpy(name, dirname);
+		strncpy(name, dirname, sizeof(name));
 		strcat(name, "/");
 		protect_name(name + strlen(name), info.name);
 
@@ -536,7 +536,7 @@ void Fetch(char *dbname)
 	   avoid confusion, remove the space.
 	 */
 	if (strcmp(name, "Graffiti ShortCuts ") == 0) {
-		strcpy(name, "Graffiti ShortCuts");
+		strncpy(name, "Graffiti ShortCuts", sizeof(name));
 	}
 
 	if (info.flags & dlpDBFlagResource)

@@ -10,6 +10,14 @@
 	* include/pi-version.h: decremented the version from 0.9.6-cvs to
 	  0.9.5.1. There's already some rogue 0.9.6 versions showing up in
 	  places. Until this is releasd, I'll keep it "standard" numerics.
+
+	* libsock/connect.c: Cleaned out some redundant cruft in the tests,
+	  removed fprintf(), added more "English" to perror().
+
+	* dlpsh.c: Removed the unused pi-padp.h include definition
+
+	* Others: strcat/fprintf be gone! Bad. Sending informative messages
+	  to stderr is just bad.
 	
 2001-11-17  JP Rosevear  <jpr@ximian.com>
 
