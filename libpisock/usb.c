@@ -43,6 +43,8 @@
 #include "pi-cmp.h"
 #include "pi-error.h"
 
+pi_protocol_t *pi_usb_protocol_dup (pi_protocol_t *prot);
+
 static int pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, 
 			     size_t addrlen);
 static int pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr,
@@ -485,222 +487,256 @@ pi_usb_close(pi_socket_t *ps)
  */
 
 /*
- * This is the table of USB devices that we know about, what they are, and some flags.
+ * This is the table of USB devices that we know about, what they are, and
+ * some flags.
+ * 
+ * This table helps us determine whether a connecting USB device is one we'd
+ * like to talk to.
+ *
  */
-//
-// This table helps us determine whether a connecting USB device is
-// one we'd like to talk to.
-//
+
 pi_usb_dev_t known_devices[] = {
 	/* Sony */
 	{
-		.vendor = 0x054c,
-		.product = 0x0038,
-		.id = "Sony S S320 and other Palm OS 3.5 devices",
-		.flags = USB_INIT_SONY_CILE,
+		.vendor 	= 0x054c,
+		.product 	= 0x0038,
+		.id 		= "Sony S S320 and other Palm OS 3.5 devices",
+		.flags 		= USB_INIT_SONY_CILE,
 	},
+
 	{
-		.vendor = 0x054c,
-		.product = 0x0066,
-		.id = "Sony T, SJ series, and other Palm OS 4.0 devices",
+		.vendor 	= 0x054c,
+		.product 	= 0x0066,
+		.id 		= "Sony T, SJ series, and other Palm OS 4.0 devices",
 	},
+
 	{
-		.vendor = 0x054c,
-		.product = 0x0095,
-		.id = "Sony S360",
+		.vendor 	= 0x054c,
+		.product 	= 0x0095,
+		.id 		= "Sony S360",
 	},
+
 	{
-		.vendor = 0x054c,
-		.product = 0x000a,
-		.id = "Sony NR and other Palm OS 4.1 devices",
+		.vendor 	= 0x054c,
+		.product 	= 0x000a,
+		.id 		= "Sony NR and other Palm OS 4.1 devices",
 	},
+
 	{
-		.vendor = 0x054c,
-		.product = 0x00da,
-		.id = "Sony NX",
+		.vendor 	= 0x054c,
+		.product 	= 0x00da,
+		.id 		= "Sony NX",
 	},
+
 	{
-		.vendor = 0x054c,
-		.product = 0x00e9,
-		.id = "Sony NZ",
+		.vendor 	= 0x054c,
+		.product 	= 0x00e9,
+		.id 		= "Sony NZ",
 	},
+
 	{
-		.vendor = 0x054c,
-		.product = 0x0144,
-		.id = "Sony UX",
+		.vendor 	= 0x054c,
+		.product 	= 0x0144,
+		.id 		= "Sony UX",
 	},
+
 	{
-		.vendor = 0x054c,
-		.product = 0x0169,
-		.id = "Sony TJ",
+		.vendor 	= 0x054c,
+		.product 	= 0x0169,
+		.id 		= "Sony TJ",
 	},
 
 	/* AlphaSmart */
 	{
-		.vendor = 0x081e,
-		.product = 0xdf00,
-		.id = "Dana?",
+		.vendor 	= 0x081e,
+		.product 	= 0xdf00,
+		.id 		= "Alphasmart Dana",
 	},
 
 	/* HANDSPRING (vendor 0x082d) */
 	{
-		.vendor = 0x082d,
-		.product = 0x0100,
-		.id = "Visor, Treo 300",
-		.flags = USB_INIT_VISOR,
+		.vendor 	= 0x082d,
+		.product 	= 0x0100,
+		.id 		= "Visor, Treo 300",
+		.flags 		= USB_INIT_VISOR,
 	},
+
 	{
-		.vendor = 0x082d,
-		.product = 0x0200,
-		.id = "Treo",
+		.vendor 	= 0x082d,
+		.product 	= 0x0200,
+		.id 		= "Treo",
 	},
+
 	{
-		.vendor = 0x082d,
-		.product = 0x0300,
-		.id = "Treo 600",
+		.vendor 	= 0x082d,
+		.product 	= 0x0300,
+		.id 		= "Treo 600",
 	},
 
 	/* PalmOne, Palm Inc */
 	{
-		.vendor = 0x0830,
-		.product = 0x0001,
-		.id = "m500",
+		.vendor 	= 0x0830,
+		.product 	= 0x0001,
+		.id 		= "m500",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0002,
-		.id = "m505",
+		.vendor 	= 0x0830,
+		.product 	= 0x0002,
+		.id 		= "m505",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0003,
-		.id = "m515",
+		.vendor 	= 0x0830,
+		.product 	= 0x0003,
+		.id 		= "m515",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0010,
+		.vendor 	= 0x0830,
+		.product 	= 0x0010,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0011,
+		.vendor 	= 0x0830,
+		.product 	= 0x0011,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0020,
-		.id = "i705",
+		.vendor 	= 0x0830,
+		.product 	= 0x0020,
+		.id 		= "i705",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0030,
+		.vendor 	= 0x0830,
+		.product 	= 0x0030,
+		.id		= "Tungsten|Z",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0031,
-		.id = "Tungsten|W",
+		.vendor 	= 0x0830,
+		.product 	= 0x0031,
+		.id 		= "Tungsten|W",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0040,
-		.id = "m125",
+		.vendor 	= 0x0830,
+		.product 	= 0x0040,
+		.id 		= "m125",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0050,
-		.id = "m130",
+		.vendor 	= 0x0830,
+		.product 	= 0x0050,
+		.id 		= "m130",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0051,
+		.vendor 	= 0x0830,
+		.product 	= 0x0051,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0052,
+		.vendor 	= 0x0830,
+		.product 	= 0x0052,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0053,
+		.vendor 	= 0x0830,
+		.product 	= 0x0053,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0060,
-		.id = "Tungsten series, Zire 71",
+		.vendor 	= 0x0830,
+		.product 	= 0x0060,
+		.id 		= "Tungsten series, Zire 71",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0061,
-		.id = "Zire 31, 72",
+		.vendor 	= 0x0830,
+		.product 	= 0x0061,
+		.id 		= "Zire 31, 72",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0062,
+		.vendor 	= 0x0830,
+		.product 	= 0x0062,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0063,
+		.vendor 	= 0x0830,
+		.product 	= 0x0063,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0070,
-		.id = "Zire",
+		.vendor 	= 0x0830,
+		.product 	= 0x0070,
+		.id 		= "Zire",
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0071,
+		.vendor 	= 0x0830,
+		.product 	= 0x0071,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0080,
-		.id = "serial adapter",
-		.flags = USB_INIT_NONE,
+		.vendor 	= 0x0830,
+		.product 	= 0x0080,
+		.id 		= "m100",
+		.flags 		= USB_INIT_NONE,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0099,
+		.vendor 	= 0x0830,
+		.product 	= 0x0099,
 	},
+
 	{
-		.vendor = 0x0830,
-		.product = 0x0100,
+		.vendor 	= 0x0830,
+		.product 	= 0x0100,
 	},
 
 	/* GARMIN */
 	{
-		.vendor = 0x091e,
-		.product = 0x0004,
-		.id = "IQUE 3600",
+		.vendor 	= 0x091e,
+		.product 	= 0x0004,
+		.id 		= "IQUE 3600",
 	},
 
 	/* Kyocera */
 	{
-		.vendor = 0x0c88,
-		.product = 0x0021,
-		.id = "7135 Smartphone",
+		.vendor 	= 0x0c88,
+		.product 	= 0x0021,
+		.id 		= "7135 Smartphone",
 	},
+
 	{
-		.vendor = 0x0c88,
-		.product = 0xa226,
-		.id = "6035 Smartphone",
+		.vendor 	= 0x0c88,
+		.product 	= 0xa226,
+		.id 		= "6035 Smartphone",
 	},
 
 	/* Tapwave */
 	{
-		.vendor = 0x12ef,
-		.product = 0x0100,
-		.id = "Zodiac, Zodiac2",
-		.flags = USB_INIT_TAPWAVE,
+		.vendor 	= 0x12ef,
+		.product 	= 0x0100,
+		.id 		= "Zodiac, Zodiac2",
+		.flags 		= USB_INIT_TAPWAVE,
 	},
 
 	/* ACEECA */
 	{
-		.vendor = 0x4766,
-		.product = 0x0001,
-		.id = "MEZ1000",
+		.vendor 	= 0x4766,
+		.product 	= 0x0001,
+		.id 		= "MEZ1000",
 	},
 
 	/* Samsung */
 	{
-		.vendor = 0x04e8,
-		.product = 0x8001,
-		.id = "I330",
+		.vendor 	= 0x04e8,
+		.product 	= 0x8001,
+		.id 		= "i330",
 	},
 };
 
@@ -775,9 +811,9 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 		ret = USB_configure_generic (dev, input_pipe, output_pipe);
 	}
 
-	// query bytes available. Not that we really care,
-	// but most devices expect to receive this before
-	// they agree on talking to us.
+	/* query bytes available. Not that we really care,
+	   but most devices expect to receive this before
+	   they agree on talking to us. */
 	if (!(flags & USB_INIT_TAPWAVE)) {
 		unsigned char ba[2] = { 0 };
 
