@@ -1,3 +1,7 @@
+2003-01-08 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* docs/README.usb: Change Zire to ttyUSB1 not ttyUSB0 (close #442)
+
 2003-01-06 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Added install-todo manpage to AC_OUTPUT

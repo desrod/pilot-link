@@ -221,17 +221,17 @@ USB Palm Handheld Device Kernel Matrix
 	           Treo 300	2.5.52		082d/0100
 	           Visor			082d/0100	USB1
 	           Visor Edge
-	           Visor Deluxe   		082d/0100	USB1
-	           Visor Platinum 2.4.18-14	082d/0100	USB1
-	           Visor Prism    		082d/0100	USB1
+	           Visor Deluxe   		082d/0100	USB1/ugen/ucom0
+	           Visor Platinum 2.4.18-14	082d/0100	USB1/ugen/ucom0
+	           Visor Prism    		082d/0100	USB1/ugen/ucom0
 
-	Palm I705                 2.4.19-pre6   0830/0020
+	Palm I705                 2.4.19-pre6   0830/0020	USB1/ucom0
 	     M130 (no networking) 2.4.19-pre5   0830/0050
 	     M500                 2.4.6-pre1    0830/0001	USB1/ucom0
 	     M505                 2.4.6-pre1    0830/0002	USB1/ucom0
 	     M515                 2.4.19-pre2   0830/0003	USB1/ucom0
 	     Tungsten-T           		0830/0060
-	     Zire                 		0830/0070	USB0/ucom0
+	     Zire                 		0830/0070	USB1/ucom0
 	     Tungsten-Z				0830/0031
 
 	Sony Clie 320		2.4.10-pre2	054c/????	USB0/ucom0
