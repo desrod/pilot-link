@@ -170,21 +170,21 @@ install_netsync_LDADD = 	\
 install_todos_SOURCES = 	\
 	install-todos.c
 install_todos_LDADD = 		\
-	libpiuserland.a		\
+	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_todo_SOURCES =		\
         install-todo.c  
 install_todo_LDADD =            \
-	libpiuserland.a		\
+	libpiuserland.la	\
 	$(POPT_LIBS)		\
         $(top_builddir)/libpisock/libpisock.la
 
 install_user_SOURCES = 		\
 	install-user.c
 install_user_LDADD = 		\
-	libpiuserland.a		\
+	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
