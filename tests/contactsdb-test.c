@@ -191,7 +191,7 @@ pbooktype_t
 print_appblock (int sd, int db)
 {
 	int i;
-	int ofs;
+	int ofs = 0;
 	int clabels;
 	unsigned char *data;
 	size_t len;
