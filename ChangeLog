@@ -2,6 +2,9 @@
 
 	* libpisock/connect.c: Fixed connect syntax error
 
+	* doc/man/read-ical.1.in: Updated manpage for read-ical to be more
+	  informative.
+
 2003-11-11 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in Fixing a possible Gentoo issue. We should be using

@@ -44,7 +44,9 @@ Display version of \fBread\-ical\fR.
 
 .TP 
 <\fIfilename\fR>
-This is the file to output the ical\-formatted data to.
+This is the file in which the ical\-formatted data should be saved.  Note
+that this will be deleted, so do not use your primary calendar file.  See
+\fBDESCRIPTION\fR for details.
 
 
 .SH "USAGE"
