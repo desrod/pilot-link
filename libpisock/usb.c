@@ -922,3 +922,7 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

@@ -915,3 +915,7 @@ padp_dump(unsigned char *data)
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

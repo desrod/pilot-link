@@ -228,3 +228,7 @@ void MD5Transform(UINT32 buf[4], UINT32 const in[16])
 #endif
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

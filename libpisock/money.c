@@ -259,3 +259,7 @@ pack_MoneyAppInfo(MoneyAppInfo_t *appinfo, unsigned char *buffer, size_t len)
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

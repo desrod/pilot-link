@@ -148,7 +148,7 @@ pack_MemoAppInfo(MemoAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
-
+	
 	i = pack_CategoryAppInfo(&appinfo->category, record, len);
 	if (!record)
 		return i + 4;
@@ -164,8 +164,12 @@ pack_MemoAppInfo(MemoAppInfo_t *appinfo, unsigned char *record, size_t len)
 	record++;
 	set_byte(record, 0);			/* gapfill new for 2.0 	*/
 	record++;
-
+	
 	return (record - start);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */
