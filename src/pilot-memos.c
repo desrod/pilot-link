@@ -87,7 +87,7 @@ void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 	now = time( NULL );
 
 	/* FIXME: might be good to get the time stamp of the memo file for
-	 * the "Received" line */
+	   the "Received" line */
 
 	time_str = ctime(&now); 
 
