@@ -416,7 +416,7 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len)
 static ssize_t
 s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
-	unsigned int rbuf;
+	ssize_t rbuf;
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
 	struct 	timeval t;
@@ -445,7 +445,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			errno = ENOMEM;
 			return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 		}
-		rbuf = recv(ps->sd, &buf->data[buf->used], len, 0);
+		rbuf = read(ps->sd, &buf->data[buf->used], len);
 		if (rbuf > 0) {
 			if (flags == PI_MSG_PEEK) {
 				memcpy(data->buf, buf->data + buf->used, rbuf);
@@ -488,6 +488,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 static int
 s_flush(pi_socket_t *ps, int flags)
 {
+	int fl;
 	char buf[256];
 	struct pi_serial_data *data = (struct pi_serial_data *) ps->device->data;
 
@@ -496,10 +497,13 @@ s_flush(pi_socket_t *ps, int flags)
 		data->buf_size = 0;
 
 		/* flush pending data (we assume the socket is in blocking mode) */
-		fcntl(ps->sd, F_SETFL, O_NONBLOCK);
-		while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
-			;
-		fcntl(ps->sd, F_SETFL, 0);
+		if ((fl = fcntl(ps->sd, F_GETFL, 0)) != -1)
+		{
+			fcntl(ps->sd, F_SETFL, fl | O_NONBLOCK);
+			while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
+				;
+			fcntl(ps->sd, F_SETFL, fl);
+		}
 	}
 	return 0;
 }
