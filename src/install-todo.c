@@ -20,7 +20,7 @@
  *
  */
 
-#include "popt.h"
+#include "userland.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -86,7 +86,7 @@ char *read_file(char *filename)
  *
  * Summary:     Adds the entry to ToDoDB.pdb
  *
- * Parameters:  
+ * Parameters:
  *
  * Returns:     Nothing
  *
@@ -99,7 +99,7 @@ void install_ToDo(int sd, int db, struct ToDo todo)
 	char  duedate[DATE_STR_MAX];
 
 	printf("Indefinite:  %i\n", todo.indefinite);
-	if (todo.indefinite == NULL)
+	if (todo.indefinite == 0)
 		strftime(duedate, DATE_STR_MAX, "%a %b %d %H:%M:%S %Z %Y", &todo.due);
 	printf("Due Date:    %s\n", duedate);
 	printf("Priority:    %i\n", todo.priority);
@@ -114,48 +114,19 @@ void install_ToDo(int sd, int db, struct ToDo todo)
 	return;
 }
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("Updates the Palm ToDo list with a single new entry\n\n");
-
-	poptPrintHelp(po, stderr, 0);
-
-	printf("   Examples:\n");
-	printf("     %s -p /dev/pilot -n 'Buy Milk' 'Go shopping, see note for items'\n", 
-		basename(progname));
-	printf("     %s -p /dev/pilot -f ShoppingList.txt 'Go to supermarket'\n\n",
-		basename(progname));
-
-        return;
-}
-
 int main(int argc, const char *argv[])
 {
 	int 	sd	= -1,
 		db,
 		po_err  = -1;
 
-	const char
-                *progname 	= argv[0];
-
-	char    *port		= NULL,
-		*completed	= NULL,
-                *priority	= NULL,
+	char
 		*due		= NULL,
 		*description	= NULL,
 		*note		= NULL,
 		*filename	= NULL;
+	int priority = 1;
+	int completed = 0;
 
 	struct 	PilotUser User;
 	struct 	ToDo todo;
@@ -163,46 +134,39 @@ int main(int argc, const char *argv[])
 	todo.indefinite  = 1;
 
         const struct poptOption options[] = {
-                { "port",        'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
-                { "help",        'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
-                { "version",     'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
+		USERLAND_RESERVED_OPTIONS
                 { "priority",    'P', POPT_ARG_INT, &priority, 0, "The Priority (default is 1)", "[1|2|3|4|5]"},
                 { "due",         'd', POPT_ARG_STRING, &due, 0, "The due Date of the item (default is no date)", "mm/dd/yyyy"},
                 { "completed",   'c', POPT_ARG_NONE, &completed, 0, "Mark the item complete (default is incomplete)"},
 		{ "description", 'D', POPT_ARG_STRING, &description, 0, "The title of the ToDo entry", "[title]"},
                 { "note",        'n', POPT_ARG_STRING, &note, 0, "The Note(tm) text (a single string)", "<note>"},
                 { "file",        'f', POPT_ARG_STRING, &filename, 0, "A local filename containing the Note text", "[filename]"},
-                POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+		POPT_TABLEEND
         };
 
         po = poptGetContext("install-todo", argc, (const char **) argv, options, 0);
+	poptSetOtherOptionHelp(po,
+		" [-p port] <todo-options>\n\n"
+		"   Updates the Palm ToDo list with a single new entry\n\n"
+		"   Example:\n"
+		"       -p /dev/pilot -n 'Buy Milk' -D 'Go shopping, see note for items'\n\n");
 
-        if (argc < 2) {
-                display_help(progname);
-                exit(1);
-        }
+        while ((po_err = poptGetNextOpt(po)) >= 0) {
+	}
 
-        while ((po_err = poptGetNextOpt(po)) != -1) {
-                switch (po_err) {
+	if (po_err < -1) userland_badoption(po,po_err);
 
-		case 'v':
-                          print_splash(progname);
-                          return 0;
-		case 'f': /* Note filename */
-			  todo.note = read_file(filename);
-			  break;
-		default:
-		  	display_help(progname);
-		  	return 0;
-		}
+	if ((priority < 1) || (priority > 5)) {
+		priority=1;
+		fprintf(stderr,"   WARNING: Changed illegal priority to 1.\n");
 	}
 
 	/*  Setup some todo defaults */
 	todo.priority    = priority;
 	todo.complete    = completed;
 	todo.description = description;
-	todo.note        = note;
+	if (filename) todo.note = read_file(filename);
+	else todo.note = note;
 
 	if (due != NULL) {
 		strptime(due, "%m/%d/%Y", &todo.due);
@@ -212,7 +176,7 @@ int main(int argc, const char *argv[])
 		todo.due.tm_hour = 0;
 	}
 
-	sd = pilot_connect(port);
+	sd = userland_connect();
 
         if (sd < 0)
 		exit(EXIT_FAILURE);
