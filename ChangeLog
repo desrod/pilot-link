@@ -1,3 +1,7 @@
+2002-04-02  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/memos.c: oops, forgot some braces
+
 2002-03-30  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/unixserial.c (s_read): Check to make sure the read was

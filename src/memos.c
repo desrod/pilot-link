@@ -301,10 +301,11 @@ int main(int argc, char *argv[])
 			  exit(0);
 		}
 	}
-	
-	if (optind < 2)
+
+	if (optind < 2) {
 		print_splash(progname);
 		exit(0);
+	}
 
 	/* FIXME - Need to add tests here for port/filename, clean this. -DD */
 	if (filename[0] == '\0') {
