@@ -37,7 +37,7 @@ endif
 Perl/Makefile: Perl/Makefile.PL
 	cd Perl && $(PERL) Makefile.PL INSTALLDIRS=vendor
 
-perl-build:
+perl-build: Perl/Makefile
 	cd Perl && $(MAKE) PREFIX=$(DESTDIR)$(prefix)
 
 perl-install:
