@@ -129,6 +129,16 @@ int main(int argc, char *argv[])
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
+	
+	/* OS5 devices no longer support RPC, and will crash if we try to call it */
+	if ((majorVersion >= 5) && (minorVersion == 0)) {
+		printf("   Unfortunately, Palm changed the underlying protocol used to fetch RAM\n"
+			"   images from the handheld in a fatal way, and accessing them with these\n"
+			"   tools will cause the Palm to crash.\n\n"
+			"   Future versions of these tools may be updated to work around these\n"
+			"   problems. For now, we'd like to avoid crashing your device.\n\n");        
+		exit(EXIT_FAILURE);
+        }
 
 	PackRPC(&p, 0xA23D, RPC_IntReply, RPC_Long(0xFFFFFFFE), RPC_End);
 	/* err = */ dlp_RPC(sd, &p, &SRAMstart);
