@@ -300,7 +300,7 @@ dnl C++
 dnl ******************************
 use_cpp=false
 msg_cpp=no
-AC_ARG_WITH(cpp,      [  --with-cpp=[c++exec]        use C++      [default=no]], ,with_cpp=no)
+AC_ARG_WITH(cpp,      [  --with-cpp=[c++exec]        use C++      [default=yes]])
 if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
 	use_cpp=true
