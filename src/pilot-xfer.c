@@ -391,6 +391,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			printf("Exiting on cancel, all data was not backed " 
 			       "up.\nStopped before backing up '%s'.\n\n",
 				info.name);
+			fflush(stdout);
 			exit(1);
 		}
 
@@ -443,11 +444,10 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		}
 
 		if (only_changed) {
-			fprintf(stdout, "\rSynchronizing %-42s\n", name); 
+			fprintf(stdout, "Synchronizing %-35s\n", name); 
 		} else if (!quiet) {
-			printf("\rBacking up %-42s", name);
+			printf("Backing up %-35s", name);
 			fflush(stdout);
-
 		} else {
 			printf(".");
 			fflush(stdout);
@@ -465,9 +465,11 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
 		} else if (stat(name, &sbuf) == 0 && !quiet) {
-			printf("[%7ld bytes | %-6.1f kb total]", 
+			printf("[%7ld bytes | %-6.1f kb total]\n", 
 				sbuf.st_size, (float)totalsize/1024);
 			totalsize += sbuf.st_size;
+		} else {
+			printf("\n");
 		}
 
 		pi_file_close(f);
@@ -477,8 +479,8 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		   check to see whether they are the same or different, and
 		   do not treat them as real times. */
 
-		times.actime = info.createDate;
-		times.modtime = info.modifyDate;
+		times.actime 	= info.createDate;
+		times.modtime 	= info.modifyDate;
 		utime(name, &times);
 
 		RemoveFromList(name, orig_files, ofile_total);
@@ -849,7 +851,7 @@ static void Install(char *filename)
 		exit(1);
 	}
 
-	fprintf(stderr, "Installing %-42s", filename);
+	fprintf(stderr, "Installing %-35s", filename);
 	fflush(stdout);
 
 	if (pi_file_install(f, sd, 0) < 0) {

@@ -22,7 +22,7 @@ VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 dnl ******************************
 dnl Pilot Link Library Version
 dnl ******************************
-PISOCK_CURRENT=7
+PISOCK_CURRENT=8
 PISOCK_REVISION=0
 PISOCK_AGE=0
 
