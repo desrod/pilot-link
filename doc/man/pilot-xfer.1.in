@@ -1,5 +1,5 @@
 .\" -*- coding: us-ascii -*-
-.TH pilot-xfer 1 "0.12.0-pre3"  
+.TH pilot-xfer 1 "@VERSION@"
 .SH NAME
 pilot-xfer \- Backup, sync, and restore databases from a Palm handheld device. 
 .SH SECTION
