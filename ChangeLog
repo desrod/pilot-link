@@ -1,13 +1,16 @@
 2003-08-18 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Added AM_MAINTAINER_MODE to allow clean 
-	  conditional rebuilds.
+	  conditional rebuilds. (#760)
 
-	* doc/man/pilot-addresses.1.in: Fixed erroneous blank line
+	* doc/man/pilot-addresses.1.in: Fixed erroneous blank line (#765)
 
-	* configure.in: Added a check for libstdc++ for libpisock++
+	* configure.in: Added a check for libstdc++ for libpisock++ (#768)
 
-	* libpisock++/Makefile.am: Export LIBCXX into LDFLAGS
+	* libpisock++/Makefile.am: Export LIBCXX into LDFLAGS (#768)
+
+	* src/pilot-datebook/pilot-datebook-joblist.c: Incorrect types fixed
+	  (#773)
 
 2003-07-21  Angus Ainslie  <angusa@deltatee.com>
 

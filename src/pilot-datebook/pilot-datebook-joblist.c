@@ -240,10 +240,10 @@ void
 joblist_parse_param (struct job_list * joblist, int argc, char **argv, char * progname)
 {
   struct job * cur_job;
-  char 	c,	/* switch */
-	*port	= NULL;
-  int optind2;
+  int 	c,		/* switch */
+	optind2;
 
+  char *port	= NULL;
 
   /* This function can be called multiple times for parameter files! */
 
