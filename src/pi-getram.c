@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 	time_t  start = time(NULL), end;
 
 	struct 	RPC_params p;
-	plu_romverstion_t version;
+	plu_romversion_t version;
 
 	unsigned long SRAMstart, SRAMlength, ROMversion, offset, left;
 
