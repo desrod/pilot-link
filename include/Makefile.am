@@ -8,6 +8,7 @@ c_headers = 			\
 	pi-datebook.h		\
 	pi-debug.h		\
 	pi-dlp.h		\
+	pi-error.h		\
 	pi-foto.h		\
 	pi-expense.h		\
 	pi-file.h		\
