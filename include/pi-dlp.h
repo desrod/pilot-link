@@ -317,13 +317,13 @@ typedef unsigned long FileRef;
 		dlpFuncVFSFileSize,			/* 0x5c */
 
 		/* DLP 1.4-TW functions added here (Palm OS 5/TapWave) */
-		dlpFuncExpSlotMediaType,                /* 0x5d */
-		dlpFuncWriteRecordEx,               /* 0x5e - function to write >64k records in TapWave */
+		dlpFuncExpSlotMediaType,		/* 0x5d */
+		dlpFuncWriteRecordEx,			/* 0x5e - function to write >64k records in TapWave */
 		dlpFuncWriteResourceEx,			/* 0x5f - function to write >64k resources in TapWave */
-		dlpFuncReadRecordEx,              /* 0x60 - function to read >64k records by index in TapWave */
-		dlpFuncUnknown1,                /* 0x61 (may be bogus definition in tapwave headers, is listed as dlpFuncReadRecordStream)*/
-		dlpFuncUnknown3,				/* 0x62 */
-		dlpFuncUnknown4,				/* 0x63 */
+		dlpFuncReadRecordEx,			/* 0x60 - function to read >64k records by index in TapWave */
+		dlpFuncUnknown1,			/* 0x61 (may be bogus definition in tapwave headers, is listed as dlpFuncReadRecordStream)*/
+		dlpFuncUnknown3,			/* 0x62 */
+		dlpFuncUnknown4,			/* 0x63 */
 		dlpFuncReadResourceEx,			/* 0x64 - function to read resources >64k by index in TapWave */
 		dlpLastFunc
 	};
@@ -347,7 +347,7 @@ typedef unsigned long FileRef;
 
 	enum dlpDBMiscFlags {
 		dlpDBMiscFlagExcludeFromSync = 0x80,	/* defined for DLP 1.1 */
-		dlpDBMiscFlagRamBased = 0x40	/* defined for DLP 1.2 */
+		dlpDBMiscFlagRamBased 	= 0x40		/* defined for DLP 1.2 */
 	};
 
 	enum dlpRecAttributes {
@@ -359,25 +359,26 @@ typedef unsigned long FileRef;
 	};
 
 	enum dlpOpenFlags {
-		dlpOpenRead = 0x80,
-		dlpOpenWrite = 0x40,
-		dlpOpenExclusive = 0x20,
-		dlpOpenSecret = 0x10,
-		dlpOpenReadWrite = 0xC0
+		dlpOpenRead 		= 0x80,
+		dlpOpenWrite 		= 0x40,
+		dlpOpenExclusive 	= 0x20,
+		dlpOpenSecret 		= 0x10,
+		dlpOpenReadWrite 	= 0xC0
 	};
 
 	enum dlpVFSOpenFlags {
-		dlpVFSOpenExclusive = 0x1,
-		dlpVFSOpenRead = 0x2,
-		dlpVFSOpenWrite = 0x5 /* implies exclusive */,
-		dlpVFSOpenReadWrite = 0x7 /* read | write */,
+		dlpVFSOpenExclusive 	= 0x1,
+		dlpVFSOpenRead 		= 0x2,
+		dlpVFSOpenWrite 	= 0x5 		/* implies exclusive */,
+		dlpVFSOpenReadWrite 	= 0x7 		/* read | write */,
+
 		/* Remainder are aliases and special cases not for VFSFileOpen */
-		vfsModeExclusive = dlpVFSOpenExclusive,
-		vfsModeRead = dlpVFSOpenRead,
-		vfsModeWrite = dlpVFSOpenWrite,
-		vfsModeCreate = 0x8 /* Create file if it doesn't exist. Handled in VFS layer */,
-		vfsModeTruncate = 0x10 /* Truncate to 0 bytes on open. Handled in VFS layer */,
-		vfsModeLeaveOpen = 0x20 /* Leave file open even if foreground task closes. */
+		vfsModeExclusive 	= dlpVFSOpenExclusive,
+		vfsModeRead 		= dlpVFSOpenRead,
+		vfsModeWrite 		= dlpVFSOpenWrite,
+		vfsModeCreate 		= 0x8 		/* Create file if it doesn't exist. Handled in VFS layer */,
+		vfsModeTruncate 	= 0x10 		/* Truncate to 0 bytes on open. Handled in VFS layer */,
+		vfsModeLeaveOpen 	= 0x20 		/* Leave file open even if foreground task closes. */
 
 	} ;
 
@@ -388,21 +389,21 @@ typedef unsigned long FileRef;
 		dlpEndCodeOther				/* dlpEndCodeOther and higher == "Anything else" */
 	};
 
-	enum dlpDBList {					/* flags passed to dlp_ReadDBList */
+	enum dlpDBList {				/* flags passed to dlp_ReadDBList */
 		dlpDBListRAM 		= 0x80,
 		dlpDBListROM 		= 0x40,
 		dlpDBListMultiple	= 0x20		/* defined for DLP 1.2 */
 	};
 
 	enum dlpFindDBOptFlags {
-		dlpFindDBOptFlagGetAttributes = 0x80,
-		dlpFindDBOptFlagGetSize       = 0x40,
-		dlpFindDBOptFlagMaxRecSize    = 0x20
+		dlpFindDBOptFlagGetAttributes	= 0x80,
+		dlpFindDBOptFlagGetSize		= 0x40,
+		dlpFindDBOptFlagMaxRecSize	= 0x20
 	};
 
 	enum dlpFindDBSrchFlags {
-		dlpFindDBSrchFlagNewSearch  = 0x80,
-		dlpFindDBSrchFlagOnlyLatest = 0x40
+		dlpFindDBSrchFlagNewSearch	= 0x80,
+		dlpFindDBSrchFlagOnlyLatest	= 0x40
 	};
 
 	/* After a DLP transaction, there may be a DLP or Palm OS error
