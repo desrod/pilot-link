@@ -153,7 +153,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 		retries = PI_PADP_TX_RETRIES;
 		do {
-			unsigned char padp_buf[PI_PADP_MTU];
+			unsigned char padp_buf[PI_SLP_MTU];
 			int 	type,
 				socket,
 				timeout,
@@ -328,7 +328,8 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  ***********************************************************************/
 int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 {
-	int 	data_len,
+	int 	bytes,
+		total_bytes,
 		offset 		= 0,
 		ouroffset 	= 0;
 	struct 	pi_protocol *next, *prot;
@@ -336,7 +337,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	struct 	padp padp, npadp;
 
 	time_t endtime;
-	unsigned char padp_buf[PI_PADP_MTU];
+	unsigned char padp_buf[PI_SLP_MTU];
 
 	endtime = time(NULL) + PI_PADP_RX_BLOCK_TO / 1000;
 
@@ -375,13 +376,24 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
 			      &timeout, &size);
 
-		data_len = next->read(ps, padp_buf, PI_PADP_MTU, flags);
-		if (data_len < 0)
-			return -1;
+		total_bytes = 0;
+		while (total_bytes < PI_PADP_HEADER_LEN) {
+			bytes = next->read(ps, padp_buf + total_bytes, PI_SLP_MTU - total_bytes, flags);
+			if (bytes < 0)
+				return -1;
+			total_bytes += bytes;
+		}
 		
 		padp.type 	= get_byte(&padp_buf[PI_PADP_OFFSET_TYPE]);
 		padp.flags 	= get_byte(&padp_buf[PI_PADP_OFFSET_FLGS]);
 		padp.size 	= get_short(&padp_buf[PI_PADP_OFFSET_SIZE]);
+
+		while (total_bytes < PI_PADP_HEADER_LEN + padp.size) {
+			bytes = next->read(ps, padp_buf + total_bytes, PI_SLP_MTU - total_bytes, flags);
+			if (bytes < 0)
+				return -1;
+			total_bytes += bytes;
+		}
 
 		size = sizeof(type);
 		/* FIXME: error checking */
@@ -462,15 +474,15 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 		/* calculate length and offset - remove  */
 		offset = ((padp.flags & FIRST) ? 0 : padp.size);
-		data_len -= PI_PADP_HEADER_LEN;
+		total_bytes -= PI_PADP_HEADER_LEN;
 
 		/* If packet was out of order, ignore it */
 
 		if (offset == ouroffset) {
 			memcpy((unsigned char *) buf + ouroffset,
-			       &padp_buf[PI_PADP_HEADER_LEN], data_len);
+			       &padp_buf[PI_PADP_HEADER_LEN], total_bytes);
 
-			ouroffset += data_len;
+			ouroffset += total_bytes;
 		}
 
 		if (padp.flags & LAST) {
@@ -498,9 +510,14 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
 					      &timeout, &size);
 
-				data_len = next->read(ps, padp_buf, PI_SLP_MTU, flags);
-				if (data_len < 0)
-					return -1;
+				total_bytes = 0;
+				while (total_bytes < PI_PADP_HEADER_LEN) {
+					bytes = next->read(ps, padp_buf + total_bytes, 
+							   PI_SLP_MTU - total_bytes, flags);
+					if (bytes < 0)
+						return -1;
+					total_bytes += bytes;
+				}				
 
 				padp.type =
 				    get_byte(&padp_buf[PI_PADP_OFFSET_TYPE]);
@@ -508,6 +525,14 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				    get_byte(&padp_buf[PI_PADP_OFFSET_FLGS]);
 				padp.size =
 				    get_short(&padp_buf[PI_PADP_OFFSET_SIZE]);
+
+				while (total_bytes < PI_PADP_HEADER_LEN + padp.size) {
+					bytes = next->read(ps, padp_buf + total_bytes,
+							   PI_SLP_MTU - total_bytes, flags);
+					if (bytes < 0)
+						return -1;
+					total_bytes += bytes;
+				}
 
 				CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf, 0));
 				CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf));

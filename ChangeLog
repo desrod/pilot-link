@@ -1,5 +1,11 @@
 2002-03-19  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/padp.c (padp_rx): ensure that all bytes are read in
+
+	* libpisock/slp.c (slp_rx): return 0 on bad checksum (header or packet)
+	
+2002-03-19  JP Rosevear  <jpr@ximian.com>
+
 	* libpisock/slp.c (slp_dump_header): print out checksum correctly
 
 	* libpisock/dlp.c (dlp_exec): check for an error from the read

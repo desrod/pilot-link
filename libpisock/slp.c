@@ -261,7 +261,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				expect = packet_len;
 			} else {
 				LOG(PI_DBG_SLP, PI_DBG_LVL_WARN, "SLP RX Header checksum failed\n");
-				return -1;
+				return 0;
 			}
 			break;
 		case 3:
@@ -283,7 +283,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				    "SLP RX Packet checksum failed: "
 				    "computed=0x%.4x received=0x%.4x\n",
 				    checksum, checksum_packet);
-				return -1;
+				return 0;
 			}
 			
 			/* Track the info so getsockopt will work */
