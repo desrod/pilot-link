@@ -1,3 +1,9 @@
+2001-12-06  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Slightly different test for perl 5.x on targets,
+	  which extracts the canonical version number, not internal 
+	  working version number.
+
 2001-12-06  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in (msg_perl): fix perl check to allow for all 5.x
