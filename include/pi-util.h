@@ -28,7 +28,6 @@ extern "C" {
 #endif
 
 #include "pi-args.h"
-#include "pi-config.h"
 
 	extern int convert_ToPilotChar
 	    PI_ARGS((const char *charset, const char *text, int bytes,

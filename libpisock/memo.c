@@ -22,9 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pi-source.h"
-#include "pi-socket.h"
-#include "pi-dlp.h"
+#include "pi-macros.h"
 #include "pi-memo.h"
 
 /***********************************************************************
