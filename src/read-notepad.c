@@ -115,22 +115,41 @@ void write_ppm( FILE *f, struct NotePad *n )
    fprintf( f, "%ld %ld\n255\n",
 	    n->body.width+8, n->body.height );
 
-   for( i=0; i<n->body.dataLen/2; i++ )
-     {
-	datapoints += n->data[i].repeat;
-	
-	for( j=0; j<n->data[i].repeat; j++ )
-	  {
+   if( n->body.dataType == NOTEPAD_DATA_BITS )
+     for( i=0; i<n->body.dataLen/2; i++ )
+       {
+	  datapoints += n->data[i].repeat;
 	  
-	     for( k=0; k<8; k++ )
-	       {
-		  if( n->data[i].data & 1<<(7-k) )
-		    fwrite( &black, 3, 1, f );
-		  else
-		    fwrite( &white, 3, 1, f );
-	       }
-	  }
-     }
+	  for( j=0; j<n->data[i].repeat; j++ )
+	    {
+	    
+	       for( k=0; k<8; k++ )
+		 {
+		    if( n->data[i].data & 1<<(7-k) )
+		      fwrite( &black, 3, 1, f );
+		    else
+		      fwrite( &white, 3, 1, f );
+		 }
+	    }
+       }
+   else
+     for( i=0; i<n->body.dataLen/2; i++ )
+       {
+	  for( k=0; k<8; k++ )
+	    {
+	       if( n->data[i].repeat & 1<<(7-k) )
+		 fwrite( &black, 3, 1, f );
+	       else
+		 fwrite( &white, 3, 1, f );
+	    }
+	  for( k=0; k<8; k++ )
+	    {
+	       if( n->data[i].data & 1<<(7-k) )
+		 fwrite( &black, 3, 1, f );
+	       else
+		 fwrite( &white, 3, 1, f );
+	    }
+       }
    
 }
 
@@ -178,16 +197,30 @@ void write_png( FILE *f, struct NotePad *n )
    if( NULL == row )
      return;
    
-   for( i=0, k=0; i<n->body.dataLen/2; i++ )
-     for( j=0; j<n->data[i].repeat; j++ )
-       {
-	  row[k] = n->data[i].data ^ 0xFF;
+   if( n->body.dataType == NOTEPAD_DATA_BITS )
+     for( i=0, k=0; i<n->body.dataLen/2; i++ )
+       for( j=0; j<n->data[i].repeat; j++ )
+	 {
+	    row[k] = n->data[i].data ^ 0xFF;
 
-	  if( ++k >= width/8 )
+	    if( ++k >= width/8 )
+	      {
+		 png_write_row( png_ptr, row );
+		 k = 0;
+		 png_write_flush(png_ptr);	  
+	      }
+	 }
+   else
+     for( i=0, k=0; i<n->body.dataLen/2; i++ )
+       {
+	  row[k] = n->data[i].repeat ^ 0xFF;
+	  row[k+1] = n->data[i].data ^ 0xFF;
+	  k += 2;
+	  if( k >= width/8 )
 	    {
 	       png_write_row( png_ptr, row );
 	       k = 0;
-	       png_write_flush(png_ptr);	  
+	       png_write_flush(png_ptr);
 	    }
        }
    
@@ -235,7 +268,7 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
    else
      printf( "no\n" );
    
-   printf( " Picture version: %ld\n", n.body.dataType );
+   printf( "Picture version: %ld\n", n.body.dataType );
 
 }
 
@@ -318,6 +351,7 @@ void output_picture( int type, struct NotePad n )
 	     break;
 
 	   case NOTEPAD_DATA_BITS:
+	   case NOTEPAD_DATA_UNCOMPRESSED:
 	     switch( type )
 	       {
 		case NOTE_OUT_PPM:
@@ -333,6 +367,9 @@ void output_picture( int type, struct NotePad n )
 		  break;
 	       }
 	     break;
+
+	   default:
+	     fprintf( stderr, "Picture version is unknown - unable to convert\n" );
 	  }
 	
 	fclose (f);

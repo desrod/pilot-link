@@ -44,8 +44,9 @@ typedef struct {
 #define NOTE_OUT_PNG       0x02
    
 /* Data Type */
-#define NOTEPAD_DATA_BITS  0x01     /* OS 4 notepad */
-#define NOTEPAD_DATA_PNG   0x02     /* OS 5 notepad */
+#define NOTEPAD_DATA_UNCOMPRESSED  0x00     /* OS 4 notepad? */
+#define NOTEPAD_DATA_BITS          0x01     /* OS 4 notepad */
+#define NOTEPAD_DATA_PNG           0x02     /* OS 5 notepad */
    
 /* Note structure
  When flags = 0x03
