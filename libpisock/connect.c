@@ -112,10 +112,12 @@ int pilot_connect(char *port)
 					"<major> <minor>\n\n", portname);
 
 			} else if (errno == 13) {
+				char realport[50];
+				realpath(portname, realport);
 				fprintf(stderr, "   Please check the "
-					"permissions on %s..\n", portname);
+					"permissions on %s..\n", realport);
 				fprintf(stderr, "   Possible solution:\n\n\tchmod 0666 "
-					"%s\n\n", portname);
+					"%s\n\n", realport);
 
 			} else if (errno == 19) {
 				fprintf(stderr, "   Press the HotSync button first and "
