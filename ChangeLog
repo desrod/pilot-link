@@ -2,6 +2,8 @@
 
 	* src/pilot-xfer.c: Terminal corruption fixes
 
+	* bindings/Perl/test.pl: Mail doesn't have categories
+
 2002-07-30  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Makefile.am: Temporary workaround for --prefix, fixed

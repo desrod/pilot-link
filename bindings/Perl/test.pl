@@ -156,8 +156,6 @@ sub dump_mail {
 
 		# Dump all records to STDOUT
 		# print Dumper($app);
-
-		print "Categories: @{$app->{categoryName}}\n";
 		$db->close();
 	}
 }
