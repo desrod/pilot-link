@@ -10,6 +10,8 @@
 
 	* bindings/Perl/dump.pl: strict fixes
 
+	* bindings/Perl/test.pl: Rewrite, need to test return of $dlp
+
 	* bindings/Perl/Pilot.xs: Fixed an incorrect ref test
 
 2002-07-03  JP Rosevear  <jpr@ximian.com>
