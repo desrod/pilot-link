@@ -575,14 +575,49 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 	dlp_AddSyncLogEntry(sd, synclog);
 }
 
+/***********************************************************************
+ *
+ * Function:    fetch_progress
+ *
+ * Summary:     Sample progress output for the pi_file_retrieve*
+ *              functions.
+ *
+ * Parameters:  see pi_file_install docs.
+ *
+ * Returns:     PI_TRANSFER_CONTINUE or PI_TRANSFER_STOP if it seems
+ *              that the Palm has canceled on us.
+ *
+ ***********************************************************************/
+
+static int fetch_progress(int sd, pi_file_t *pf, int total, int xfer, int records)
+{
+	const char *filename = NULL;
+
+	if (pf && pf->file_name) {
+		filename = pf->file_name;
+	}
+	if (!filename) {
+		filename="<unnamed>";
+	}
+
+	fprintf(stdout,"\r   Fetching '%s' ... (%d bytes)",filename,xfer);
+	fflush(stdout);
+
+	if (dlp_OpenConduit(sd) < 0) {
+		return PI_TRANSFER_STOP;
+	} else {
+		return PI_TRANSFER_CONTINUE;
+	}
+}
+
 
 /***********************************************************************
  *
- * Function:    palm_fetch
+ * Function:    palm_fetch_internal
  *
  * Summary:     Grab a file from the Palm, write to disk
  *
- * Parameters:  None
+ * Parameters:  dbname --> name of database on Palm to fetch.
  *
  * Returns:     Nothing
  *
@@ -645,7 +680,7 @@ palm_fetch_internal(const char *dbname)
 	{
 		printf("Failed, unable to create file.\n");
 		return;
-	} else if (pi_file_retrieve(f, sd, 0, NULL) < 0)
+	} else if (pi_file_retrieve(f, sd, 0, fetch_progress) < 0)
 	{
 		printf("Failed, unable to fetch database from the Palm.\n");
 	}
@@ -1055,8 +1090,8 @@ palm_restore(const char *dirname)
  *
  * Parameters:  see pi_file_install docs.
  *
- * Returns:     PI_TRANSFER_CONTINUE, because it doesn't allow PC-side
- *              cancels.
+ * Returns:     PI_TRANSFER_CONTINUE or PI_TRANSFER_STOP if it seems
+ *              that the Palm has canceled on us.
  *
  ***********************************************************************/
 
