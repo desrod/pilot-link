@@ -86,8 +86,6 @@ typedef enum {
   palm_op_noop
 } palm_op_t;
 
-char *strndup(const char *s, size_t n);
-
 struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
@@ -153,10 +151,9 @@ static void MakeExcludeList(char *efile)
 	}
 
 	while ((fgets(temp, sizeof(temp), f)) != NULL) {
-		if (temp[strlen(temp) - 1] == '\n')
-			temp[strlen(temp) - 1] = '\0';
+		temp[strlen(temp) - 1] = '\0';
 		printf("Now excluding: %s\n", temp);
-		exclude[numexclude++] = strndup(temp, sizeof(temp));
+		exclude[numexclude++] = strdup(temp);
 		if (numexclude == MAXEXCLUDE) {
 			printf("Maximum number of exclusions reached [%d]\n", MAXEXCLUDE);
 			break;
