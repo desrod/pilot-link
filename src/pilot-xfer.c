@@ -316,17 +316,16 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 	DIR 	*dir;
 
  	if (access(dirname, F_OK) == -1) {
-		mkdir(dirname, 0700); 
-		return;
+		mkdir(dirname, 0700);
 	} else if (access(dirname, R_OK|W_OK|X_OK) != 0) {
 		fprintf(stderr, "\n");
 		perror("   ERROR");
-		fprintf(stderr, "   Unable to write to %s, check "
-			"ownership and permissions.\n\n", dirname);
+		fprintf(stderr, "   Unable to write to %s\n", dirname);
+		fprintf(stderr, "   Please check ownership and permissions.\n\n");
 		exit(1);
-	} else {
-		Connect();
-	}
+	} 
+
+	Connect();
 
 	if (archive_dir)
 		mkdir(archive_dir, 0700);
