@@ -341,7 +341,7 @@ SWIG_GetPtr(char *c, void **ptr, char *t)
   }
   c++;
   /* Extract hex value from pointer */
-  while (d = *c) {
+  while ((d = *c)) {
     if ((d >= '0') && (d <= '9'))
       p = (p << 4) + (d - '0');
     else if ((d >= 'a') && (d <= 'f'))
@@ -461,6 +461,7 @@ typedef int DLPDBERROR;
 
 static PyObject *Error;
 
+/* This is not yet used in this code
 static PyObject* l_output_helper(PyObject* target, PyObject* o) {
     PyObject*   o2;
     if (!target) {                   
@@ -480,6 +481,7 @@ static PyObject* l_output_helper(PyObject* target, PyObject* o) {
     }
     return target;
 }
+*/
 
 static PyObject* t_output_helper(PyObject* target, PyObject* o) {
     PyObject*   o2;
@@ -1101,7 +1103,7 @@ static int _wrap_dlp_errorlist_set(PyObject *val) {
     return 1;
 }
 
-static PyObject *_wrap_dlp_errorlist_get() {
+static PyObject *_wrap_dlp_errorlist_get(void) {
     PyObject * pyobj;
     char ptemp[128];
 
@@ -3856,7 +3858,7 @@ static PyObject *_wrap_pi_file_append_record(PyObject *self, PyObject *args) {
     int  _arg2;
     int  _arg3;
     int  _arg4;
-    recordid_t * _arg5;
+    recordid_t * _arg5 = NULL;
     PyObject * _argo0 = 0;
     int  __buflen;
     PyObject * _obj1 = 0;
@@ -4124,7 +4126,7 @@ static PyObject *SWIG_globals;
 #ifdef __cplusplus
 extern "C" 
 #endif
-SWIGEXPORT(void) init_pisock() {
+SWIGEXPORT(void) init_pisock(void) {
 	 PyObject *m, *d;
 	 SWIG_globals = SWIG_newvarlink();
 	 m = Py_InitModule("_pisock", _pisockMethods);

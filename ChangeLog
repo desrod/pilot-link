@@ -4,6 +4,8 @@
 
 	* bindings/Python/setup.py.in: Fix autoconf propagation
 
+	* bindings/Python/src/pisock_wrap.c: Clean swig warnings
+
 	* configure.in: Added fix for Python autoconf configuration
 	
 	* libpisock/Makefile.am: Added $(usb_FILES) for BSD users
