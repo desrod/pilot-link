@@ -19,7 +19,7 @@
  */
 
 #include <string.h>		/* for memcpy() */
-#include "md5.h"
+#include "pi-md5.h"
 
 /*
  * Note: this code is harmless but does nothing on little-endian machines.

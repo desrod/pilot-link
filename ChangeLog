@@ -1,4 +1,17 @@
 2001-05-25  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* include/md5.h: Renamed md5.h to pi-md5.h to be more in line with
+	  the current include/* naming scheme.
+
+	* tools/Perl5/README: cleaned up the README to make it more current
+	  and less threatening
+
+	* tools/Perl5/test.pl, tools/Perl5/dump.pl: chmod 0755
+
+	* tools/Perl5/dump.pl: Fixed shebang to be a bit more portable
+	  (recommended by the perl newsgroups and the Camel book)
+
+2001-05-25  David A. Desrosiers <hacker@gnu-designs.com>
 2001-05-24
 
 	* tools/Perl5/Pilot.xs: Fixed a typo in 'creatDate' (Hadmut Danisch)
