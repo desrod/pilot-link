@@ -505,7 +505,7 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 	int err;
 
 	/* Wait for data */
-	if ((err = data->impl.poll(ps, ps->accept_to)) < 0)
+	if ((err = data->impl.poll(ps, ps->accept_to * 1000)) < 0)
 		goto fail;
 	
 	data->timeout = ps->accept_to * 1000;
