@@ -1,3 +1,9 @@
+2002-07-17  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pilot-datebook/Makefile.am: Removed trailing space
+	
+	* libpisock/Makefile.am: Added $(usb_FILES) for BSD users
+
 2002-07-16  David A. Desrosiers <hacker at gnu-designs dot com>
 
         * src/memos.c: Removed redundant call to print_splash(), fixed

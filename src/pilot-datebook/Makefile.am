@@ -39,7 +39,7 @@ pilot_datebook_SOURCES = 		\
 	pilot-datebook-sort.h		\
 	pilot-datebook-update.c		\
 	pilot-datebook-update.h		\
-	pilot-datebook-windat.c		\	
+	pilot-datebook-windat.c		\
 	pilot-datebook-windat.h
 
 pilot_datebook_LDADD =			\

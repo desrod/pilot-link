@@ -63,4 +63,4 @@ libpisock_la_LIBADD = \
 libpisock_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
 
-EXTRA_DIST = $(serial_FILES)
+EXTRA_DIST = $(serial_FILES) $(usb_FILES)
