@@ -49,7 +49,12 @@ int pilot_connect(const char *port)
 	}
 
 	if (result < 0) {
-		fprintf(stderr, "\n   Unable to bind to port '%s'\n", port ? port : getenv("PILOTPORT"));
+		if (port)
+			fprintf(stderr, "\n   Unable to bind to port '%s'\n", port);
+		else if (getenv("PILOTPORT"))
+			fprintf(stderr, "\n   Unable to bind to port '%s'\n", getenv("PILOTPORT"));
+		else
+			fprintf(stderr, "\n   No port specified\n");
 		pi_close(sd);
 		return -1;
 	}

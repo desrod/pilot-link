@@ -1,5 +1,9 @@
 2002-01-31  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/connect.c (pilot_connect): improve pi_bind error message
+
+2002-01-31  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/serial.c (pi_serial_device_dup): increment ref count
 	properly
 	(pi_serial_close): decrement ref count properly
