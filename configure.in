@@ -284,15 +284,22 @@ AC_SUBST(usb_libs)
 
 
 dnl *********************************
-dnl Check if using the included popt
+dnl Check for popt (use internal if needed)
 dnl *********************************
 
 AC_ARG_WITH(included-popt,
 [  --with-included-popt    use bundled popt library, not from system],,
-		AC_CHECK_LIB(popt, poptGetContext,
-				[with_included_popt="no"],
-				[with_included_popt="yes"])
+		[with_included_popt="auto"]
 )
+
+if test "x$with_included_popt" != "xyes"; then
+	dnl Determine if system popt is good enough
+	AC_CHECK_HEADER(popt.h,
+					AC_CHECK_LIB(popt, poptStrippedArgv,,
+								 [with_included_popt="yes"]),
+					[with_included_popt="yes"]
+	)
+fi
 
 AC_MSG_CHECKING(whether to use included popt)
 if test "x$with_included_popt" = "xyes"; then
@@ -747,7 +754,7 @@ AC_MSG_RESULT([
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
   ElectricFence checks.... : $msg_efence
-  Using internal popt..... : $with_included_popt
+  Using internal popt..... : $msg_popt
   Readline support........ : $msg_readline
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
