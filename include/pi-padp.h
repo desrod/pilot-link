@@ -24,6 +24,12 @@ extern "C" {
 #define LAST		0x40
 #define MEMERROR	0x20
 
+	typedef struct padp {
+		unsigned char type;
+		unsigned char flags;
+		unsigned short size;
+	} padp_t;
+
 	typedef struct pi_padp_data 
 	{
 		int type;
@@ -31,15 +37,11 @@ extern "C" {
 
 		unsigned char txid;
 		unsigned next_txid;
+
+		unsigned char last_ack_txid;
+		struct padp last_ack_padp;
 	} pi_padp_data_t;
 
-	typedef struct padp {
-		unsigned char type;
-		unsigned char flags;
-		unsigned short size;
-	} padp_t;
-
-#define SIZEOF_PADP 4
 
 	extern pi_protocol_t *padp_protocol
 	    PI_ARGS((void));
