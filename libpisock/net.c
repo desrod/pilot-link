@@ -1,5 +1,5 @@
 /*
- * net.c: Protocl for NetSync connections
+ * net.c: Protocol for NetSync connections
  *
  * Copyright (c) 1997, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
