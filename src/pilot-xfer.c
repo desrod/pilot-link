@@ -592,25 +592,28 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
  *
  ***********************************************************************/
 
-static int fetch_progress(int sd, pi_file_t *pf, int total, int xfer, int records)
+static int fetch_progress(int sd, pi_progress_t *progress)
 {
 	const char *filename = NULL;
 
-	if (pf && pf->file_name) {
-		filename = pf->file_name;
+	if (progress->type == PI_PROGRESS_RECEIVE_DB &&
+			progress->data.db.pf &&
+			progress->data.db.pf->file_name) {
+		filename = progress->data.db.pf->file_name;
+	} else if (progress->type == PI_PROGRESS_RECEIVE_VFS &&
+				progress->data.vfs.path &&
+				strlen(progress->data.vfs.path)) {
+		filename = progress->data.vfs.path;
 	}
-	if (!filename) {
+	if (!filename)
 		filename="<unnamed>";
-	}
 
-	fprintf(stdout,"\r   Fetching '%s' ... (%d bytes)",filename,xfer);
+	fprintf(stdout,"\r   Fetching '%s' ... (%d bytes)",filename,progress->transferred_bytes);
 	fflush(stdout);
 
-	if (!pi_socket_connected(sd)) {
+	if (!pi_socket_connected(sd))
 		return PI_TRANSFER_STOP;
-	} else {
-		return PI_TRANSFER_CONTINUE;
-	}
+	return PI_TRANSFER_CONTINUE;
 }
 
 
@@ -712,7 +715,7 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	int          filesize;
 	int          original_filesize;
 	int          written_so_far;
-	pi_file_t    fake_file;
+	pi_progress_t progress;
 
 	enum { bad_parameters=-1,
 	       cancel=-2,
@@ -721,7 +724,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	       insufficient_space=-5,
 	       internal_=-6
 	} ;
-
 
 	if (findVFSPath(vfspath,&volume,rpath,&rpathlen) < 0)
 	{
@@ -762,9 +764,12 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	dlp_VFSFileSize(socket,file,&filesize);
 	original_filesize = filesize;
 
+	memset(&progress, 0, sizeof(progress));
+	progress.type = PI_PROGRESS_RECEIVE_VFS;
+	progress.data.vfs.path = (char *)vfspath;
+	progress.data.vfs.total_bytes = filesize;
+
 #define FBUFSIZ 65536
-	memset(&fake_file,0,sizeof(fake_file));
-	fake_file.file_name = /* const_cast */ (char *) basename;
 
 	buffer = pi_buffer_new(FBUFSIZ);
 	readsize = 0;
@@ -781,7 +786,7 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 
 		if (readsize <= 0) break;
 		filesize -= readsize;
-		offset=0;
+		offset = 0;
 		while (readsize > 0)
 		{
 			writesize = write(fd,buffer->data+offset,readsize);
@@ -792,10 +797,10 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 			}
 
 			written_so_far += writesize;
+			progress.transferred_bytes += writesize;
 
 			if ((filesize > 0) || (readsize > 0)) {
-				if (f && (f(socket,&fake_file,original_filesize,
-					(int)written_so_far,0) == PI_TRANSFER_STOP)) {
+				if (f && (f(socket,&progress) == PI_TRANSFER_STOP)) {
 					written_so_far = cancel;
 					pi_set_error(socket,PI_ERR_FILE_ABORTED);
 					goto cleanup;
@@ -1125,25 +1130,29 @@ palm_restore(const char *dirname)
  *
  ***********************************************************************/
 
-static int install_progress(int sd, pi_file_t *pf, int total, int xfer, int records)
+static int install_progress(int sd, pi_progress_t *progress)
 {
 	const char *filename = NULL;
 
-	if (pf && pf->file_name) {
-		filename = pf->file_name;
+	if (progress->type == PI_PROGRESS_SEND_DB &&
+			progress->data.db.pf &&
+			progress->data.db.pf->file_name) {
+		filename = progress->data.db.pf->file_name;
+	} else if (progress->type == PI_PROGRESS_SEND_VFS &&
+				progress->data.vfs.path &&
+				strlen(progress->data.vfs.path)) {
+		filename = progress->data.vfs.path;
 	}
-	if (!filename) {
+	if (!filename)
 		filename="<unnamed>";
-	}
 
-	fprintf(stdout,"\r   Installing '%s' ... (%d bytes)",filename,xfer);
+	fprintf(stdout,"\r   Installing '%s' ... (%d bytes)",filename,progress->transferred_bytes);
 	fflush(stdout);
 
-	if (!pi_socket_connected(sd)) {
+	if (!pi_socket_connected(sd)) 
 		return PI_TRANSFER_STOP;
-	} else {
-		return PI_TRANSFER_CONTINUE;
-	}
+	
+	return PI_TRANSFER_CONTINUE;
 }
 
 /***********************************************************************
@@ -1197,7 +1206,7 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 	size_t      written_so_far = 0;
 	enum { no_path=0, appended_filename=1, retried=2, done=3 } path_steps;
 	struct stat sbuf;
-	pi_file_t   fake_file;
+	pi_progress_t progress;
 
 	if (fstat(fd,&sbuf) < 0) {
 		fprintf(stderr,"   ERROR: Cannot stat '%s'.\n",basename);
@@ -1320,10 +1329,10 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 		return internal_;
 	}
 
-	memset(&fake_file,0,sizeof(fake_file));
-
-	fake_file.file_name = /* const_cast */ (char *) basename;
-
+	memset(&progress, 0, sizeof(progress));
+	progress.type = PI_PROGRESS_SEND_VFS;
+	progress.data.vfs.path = (char *) basename;
+	progress.data.vfs.total_bytes = sbuf.st_size;
 
 	writesize = 0;
 	written_so_far = 0;
@@ -1343,10 +1352,10 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 			readsize -= writesize;
 			offset += writesize;
 			written_so_far += writesize;
+			progress.transferred_bytes += writesize;
 
 			if ((writesize>0) || (readsize > 0)) {
-				if (f && (f(socket,&fake_file,(int)sbuf.st_size,
-					(int)written_so_far,0) == PI_TRANSFER_STOP)) {
+				if (f && (f(socket, &progress) == PI_TRANSFER_STOP)) {
 					sbuf.st_size = 0;
 					pi_set_error(socket,PI_ERR_FILE_ABORTED);
 					goto cleanup;
@@ -1359,8 +1368,6 @@ cleanup:
 	free(filebuffer);
 	dlp_VFSFileClose(socket,file);
 	close(fd);
-
-
 	return sbuf.st_size;
 }
 
