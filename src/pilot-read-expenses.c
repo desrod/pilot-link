@@ -35,8 +35,9 @@ int main(int argc, const char *argv[])
 	int 	db,
 		i,
 		ret,
-		po_err		= -1,
+		c		= -1,
 		sd 		= -1;
+	enum { mode_none, mode_write = 257 } run_mode = mode_none;
 
 	char buffer[0xffff];
 	char buffer2[0xffff];
@@ -51,6 +52,7 @@ int main(int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
+		{"write",'w', POPT_ARG_NONE,NULL,mode_write,"Write data"},
 	        POPT_TABLEEND
 	};
 
@@ -63,13 +65,30 @@ int main(int argc, const char *argv[])
 		return 1;
 	}
 
-	while ((po_err = poptGetNextOpt(po)) >= 0) {
-		fprintf(stderr,"   ERROR: Unhandled option %d.\n",po_err);
-		return 1;
+	while ((c = poptGetNextOpt(po)) >= 0) {
+		switch(c) {
+		case mode_write :
+			if (run_mode == mode_none) {
+				run_mode = c;
+			} else {
+				if (c != run_mode) {
+					fprintf(stderr,"   ERROR: Specify exactly one of -w.\n");
+					return 1;
+				}
+			}
+			break;
+		default:
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
+		}
 	}
 
-	if (po_err < -1) {
-		plu_badoption(po,po_err);
+	if (c < -1) {
+		plu_badoption(po,c);
+	}
+	if (mode_none == run_mode) {
+		fprintf(stderr,"   ERROR: Specify --write (-w) to output data.\n");
+		return 1;
 	}
 
         sd = plu_connect();
