@@ -1,6 +1,6 @@
 /*
- * pilot-archive.c:  Create Archive files of Palm databases with "archived"
- * 		     records within them
+ * pilot-archive.c:  Output "Archived" records in CSV format to STDOUT
+ *                   from ToDo application
  *
  * Copyright (c) 2002, David A. Desrosiers
  *
@@ -23,14 +23,10 @@
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-todo.h"
 #include "pi-dlp.h"
-#include "pi-file.h"
-#include "pi-header.h"
 
 /* Declare prototypes */
 static void display_help(char *progname);
@@ -38,140 +34,130 @@ void print_splash(char *progname);
 int pilot_connect(char *port);
 
 struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{NULL,          0,                 NULL, 0}
+	{"port",	required_argument, NULL, 'p'},
+	{"help",	no_argument,       NULL, 'h'},
+	{"version",	no_argument,       NULL, 'v'},
+	{NULL,		0,                 NULL, 0}
 };
 
 static const char *optstring = "p:hv";
 
 static void display_help(char *progname)
 {
-	printf("   Exports any \"archived\" records on your Palm to an archive file.\n\n");
+	printf("   Exports any records marked as \"Archived\" on your Palm to CSV format\n\n");
 	printf("   Usage: %s -p <port>\n\n", progname);
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
 	printf("     -h, --help              Display help information for %s\n", progname);
 	printf("     -v, --version           Display %s version information\n\n", progname);
-	
+
 	return;
 }
 
 int main(int argc, char *argv[])
 {
-	int 	c,		/* switch */
-		db,
-		i,
-		sd 		= -1,
-		attr;
-	char 	*progname 	= argv[0],
-		*port 		= NULL,
-                *filename       = NULL,
-                *ptr;
+	int 	c,	/* switch */
+	 	db, 
+		i, 
+		sd = -1;
 
-        struct  PilotUser User;
-        struct  pi_file *pif    = NULL;
-        struct  ToDoAppInfo tai;
+	char 	*progname 	= argv[0], 
+		*port 		= NULL;
 
-        unsigned char buffer[0xffff];
+	struct 	ToDoAppInfo tai;
+
+	unsigned char buffer[0xffff];
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 'p':
-			port = optarg;
-			break;
-		default:
-			display_help(progname);
-			return 0;
+		  case 'h':
+			  display_help(progname);
+			  return 0;
+		  case 'v':
+			  print_splash(progname);
+			  return 0;
+		  case 'p':
+			  port = optarg;
+			  break;
+		  default:
+			  display_help(progname);
+			  return 0;
 		}
 	}
-	
+
 	sd = pilot_connect(port);
 	if (sd < 0)
 		goto error;
 
-        /* Open the ToDo database, store access handle in db */
-        if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-                puts("Unable to open ToDoDB");
-                dlp_AddSyncLogEntry(sd,
-                                    "Unable to open ToDoDB.\n");
-                exit(1);
-        }
+	/* Open the ToDo database, store access handle in db */
+	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
+		puts("Unable to open ToDoDB");
+		dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
+		exit(1);
+	}
 
-        dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-	
-        unpack_ToDoAppInfo(&tai, buffer, 0xffff);
+	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
 
-        for (i = 0;; i++) {
-                int     attr,
-                        category,
-                        len;
-                struct  ToDo t;
+	unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 
-                if (port) {
-                        len =
-                            dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
-                                                  &attr, &category);
+	for (i = 0;; i++) {
+		int attr, category, len;
+		struct ToDo todo;
 
-                        if (len < 0)
-                                break;
-                }
+		if (port) {
+			len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+				&attr, &category);
 
+			if (len < 0)
+				break;
+		}
+
+		/* Only if records are marked as "Archive to Desktop" */
 		if (attr & dlpRecAttrArchived) {
 
-	                unpack_ToDo(&t, buffer, len);
+			unpack_ToDo(&todo, buffer, len);
 
-	                printf("\"Category\", ");
+			printf("\"Category\", ");
 			printf("\"%s\", ", tai.category.name[category]);
-	                printf("\"Priority\", ");
-			printf("\"%d\", ", t.priority);
-	                printf("\"Completed\", ");
-			printf("\"%s\", ", t.complete ? "Yes" : "No");
+			printf("\"Priority\", ");
+			printf("\"%d\", ", todo.priority);
+			printf("\"Completed\", ");
+			printf("\"%s\", ", todo.complete ? "Yes" : "No");
 
-	                if (t.indefinite) {
-	                        printf("\"Due\", \"No Date\", ");
+			if (todo.indefinite) {
+				printf("\"Due\", \"No Date\", ");
 			} else {
-	                        printf("\"Due\", ");
-				printf("\"%s\", ", asctime(&t.due));
+				printf("\"Due\", ");
+				printf("\"%s\", ", asctime(&todo.due));
 			}
 
-	                if (t.description) {
-	                        printf("\"Description\", ");
-				printf("\"%s\", ", t.description);
+			if (todo.description) {
+				printf("\"Description\", ");
+				printf("\"%s\", ", todo.description);
 			}
 
-	                if (t.note) {
-	                        printf("\"Note\", ");
-				printf("\"%s\", ", t.note);
+			if (todo.note) {
+				printf("\"Note\", ");
+				printf("\"%s\", ", todo.note);
 			}
 
-	                printf("\n\n");
+			printf("\n\n");
 
-	                free_ToDo(&t);
-			}
-	        }
+			free_ToDo(&todo);
+		}
+	}
 
-	/* Close the database */
 	dlp_CloseDB(sd, db);
-	dlp_AddSyncLogEntry(sd, "Successfully archived records from\n"
-				"the ToDo database on your Palm\n"
-				"Thank you for using pilot-link\n");
+	dlp_AddSyncLogEntry(sd, "Successfully printed archived records\n"
+				"from the ToDo database on your Palm\n"
+				"handheld.\n\n"
+			    "Thank you for using pilot-link\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 
 	return 0;
 
-error_close:
-	pi_close(sd);
-		
-error:
+      error:
 	return -1;
 }
