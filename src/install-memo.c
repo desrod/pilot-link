@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 {
 	int 	add_title,
 		category,
-		count,
+		ch,
 		db,
 		inc,
 		ReadAppBlock, 
@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
 		strcpy(addr.pi_device, PILOTPORT);
 	}
 
-	while ((count = getopt(argc, argv, "c:p:qrt")) != -1)
-		switch (count) {
+	while ((ch = getopt(argc, argv, "c:p:qrt")) != -1)
+		switch (ch) {
 		case 'c':
 			category_name = optarg;
 			break;

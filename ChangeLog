@@ -4,6 +4,12 @@
 	
 	* read-todos.c: Same
 
+	* install-memo.c: Same, s/count/ch/
+	
+	* memos.c: Same, s/count/ch/
+
+	* install-user.c: s/count/ch/
+	
 	* pi-file.c: Progress output, formatting cleanups, fixed a missing
 	  LGPL banner, missing Graffiti hack from Judd. Damn you vim.
 

@@ -53,20 +53,20 @@ void write_memo_in_directory(char *dirname, struct Memo m,
 int main(int argc, char *argv[])
 {
 	int 	attr, 
-		count,
+		ch,
 		category,
 		db,
 		index,
 		len,
 		ret,
-		sd = -1,
-		quiet = 0,
-		verbose = 0,
-		delete = 0,
-		mode = MEMO_MBOX_STDOUT,
-		bufsize = 1024,
-		match_category = -1,
-		title_matching = 0;
+		sd 		= -1,
+		quiet 		= 0,
+		verbose 	= 0,
+		delete 		= 0,
+		mode 		= MEMO_MBOX_STDOUT,
+		bufsize 	= 1024,
+		match_category 	= -1,
+		title_matching 	= 0;
 
 	unsigned char 	buffer[0xffff];
 	
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 		category_name[MAXDIRNAMELEN + 1] = "",
 		filename[MAXDIRNAMELEN + 1], *ptr;
 	
-	struct 	PilotUser U;
+	struct 	PilotUser User;
 	struct 	MemoAppInfo mai;
 	struct 	pi_file *pif = NULL;
 	struct 	Memo m;
@@ -86,8 +86,8 @@ int main(int argc, char *argv[])
 	regex_t title_pattern;
 	recordid_t id;
 
-	while (((count = getopt(argc, argv, "vqQDp:d:f:c:t:h?")) != -1)) {
-		switch (count) {
+	while (((ch = getopt(argc, argv, "vqQDp:d:f:c:t:h?")) != -1)) {
+		switch (ch) {
 		  case 'v':
 			  verbose = 1;
 			  break;
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 			}
 	
 			/* Ask the pilot who it is. */
-			dlp_ReadUserInfo(sd, &U);
+			dlp_ReadUserInfo(sd, &User);
 	
 			/* Tell user (via Palm) that we are starting things up */
 			dlp_OpenConduit(sd);

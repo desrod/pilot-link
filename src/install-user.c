@@ -58,7 +58,7 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	ch,
 		sd 		= -1;
 	char 	*progname 	= argv[0],
 		*port 		= NULL,
@@ -69,8 +69,8 @@ int main(int argc, char *argv[])
 
 	opterr = 0;
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((ch = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (ch) {
 
 		case 'h':
 			Help(progname);
