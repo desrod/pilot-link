@@ -73,19 +73,24 @@ static PyObject *Error;
 //
 //  Socket stuff (from pi-socket.h)
 //
-#define PI_AF_SLP 		0x0051        /* arbitrary, for completeness, just in case */
-#define PI_AF_INETSLP 		0x0054    
+#define PI_AF_PILOT             0x00
 
-#define PI_PF_SLP    		PI_AF_SLP
-#define PI_PF_PADP   		0x0052
-#define PI_PF_LOOP   		0x0053
+#define PI_PF_DEV               0x01
+#define PI_PF_SLP               0x02
+#define PI_PF_SYS               0x03
+#define PI_PF_PADP              0x04
+#define PI_PF_NET               0x05
+#define PI_PF_DLP               0x06
 
-#define PI_SOCK_STREAM    	0x0010
-#define PI_SOCK_DGRAM     	0x0020
-#define PI_SOCK_RAW       	0x0030
-#define PI_SOCK_SEQPACKET 	0x0040
+#define PI_SOCK_STREAM          0x0010
+#define PI_SOCK_RAW             0x0030
 
-#define PI_SLP_SPEED		0x0001
+#define PI_CMD_CMP 0x01
+#define PI_CMD_NET 0x02
+#define PI_CMD_SYS 0x03
+
+#define PI_MSG_PEEK 0x01
+
 
 #define PI_PilotSocketDLP       3
 #define PI_PilotSocketConsole   1
@@ -145,7 +150,10 @@ extern int pi_write (int pi_sd, void *msg, int len);
 extern int pi_getsockname (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT);
 extern int pi_getsockpeer (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT);
 
-// extern int pi_setmaxspeed (int pi_sd, int speed, int overclock);
+/* Not supported since 1.37.2.3 2002/01/06 07:05:27 , appears we should use
+   pi_setsockopt now
+extern int pi_setmaxspeed (int pi_sd, int speed, int overclock);
+*/
 extern int pi_getsockopt (int pi_sd, int level, int option_name, void * option_value, int * option_len);
 
 extern int pi_version (int pi_sd);
@@ -211,7 +219,7 @@ extern int pi_close (int pi_sd);
 	o = Py_BuildValue("{slslss#}",
 			  "romVersion", $source->romVersion,
 			  "locale", $source->locale,
-			  "name", $source->name, $source->nameLength);
+			  "name", $source->prodID, $source->prodIDLength);
 	$target = t_output_helper($target, o);
     }
 }
@@ -700,10 +708,6 @@ extern PIERROR pi_file_merge (struct pi_file *pf, int socket, int cardno);
 // pi-serial
 // pi-slp
 // pi-sync
-
-
-// and some miscellaneous things 
-void print_splash (char *progname); 
 
 %{
 
