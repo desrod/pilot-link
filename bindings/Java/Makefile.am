@@ -4,8 +4,8 @@ INCLUDES= 				\
 	-I../../include			\
 	-I $(top_srcdir)/include 	\
 	-I $(top_builddir)/include	\
-	-I $(JAVA_HOME)/include		\
-	-I $(JAVA_HOME)/include/linux
+	-I $(JAVABASE)/include		\
+	-I $(JAVABASE)/include/linux
 
 noinst_PROGRAMS = doConstants
 
