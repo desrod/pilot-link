@@ -2187,7 +2187,7 @@ main(int argc, const char *argv[])
 		{"install",  'i', POPT_ARG_NONE, NULL, palm_op_install, "Install local prc, pdb, pqa files to your Palm", NULL},
 		{"fetch",    'f', POPT_ARG_NONE, NULL, palm_op_fetch, "Retrieve databases from your Palm", NULL},
 		{"merge",    'm', POPT_ARG_NONE, NULL, palm_op_merge, "Adds records from local files into the corresponding Palm databases", NULL},
-		{"delete",   'd', POPT_ARG_NONE, NULL, palm_op_delete, "Delete (permanently) databases from your Palm", NULL},
+		{"delete",   '\0', POPT_ARG_NONE, NULL, palm_op_delete, "Delete (permanently) databases from your Palm", NULL},
 
 		/* action indicators that take no arguments. */
 		{"list",     'l', POPT_ARG_NONE, NULL, palm_op_list, "List all application and 3rd party Palm data/apps", NULL},
