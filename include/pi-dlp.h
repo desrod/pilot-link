@@ -102,29 +102,6 @@ extern "C" {
 
 typedef unsigned long FileRef;
 
-/* Don't let anyone else open it */
-#define vfsModeExclusive	(0x0001U)
-
-/* Open for read access */
-#define vfsModeRead		(0x0002U)
-
-/* Open for write access, implies exclusive */
-#define vfsModeWrite		(0x0004U | vfsModeExclusive)
-
-/* create the file if it doesn't already exist.  Implemented in VFS layer,
-   no FS lib call will ever have to handle this. */
-#define vfsModeCreate		(0x0008U)
-
-/* Truncate file to 0 bytes after opening, removing all existing data.
-   Implemented in VFS layer, no FS lib call will ever have to handle this.
-   */
-#define vfsModeTruncate		(0x0010U)
-
-/* open for read/write access */
-#define vfsModeReadWrite	(vfsModeWrite | vfsModeRead)
-
-/* Leave the file open even if when the foreground task closes */
-#define vfsModeLeaveOpen	(0x0020U)
 
 /* Volume attributes as found in VFSInfo.attributes */
 #define vfsVolAttrSlotBased	(0x00000001UL)
@@ -152,7 +129,9 @@ typedef unsigned long FileRef;
 		/* 0: read-only etc. */
 		unsigned long   attributes;
 
-		/* 4: Filesystem type for this volume (defined below) */
+		/* 4: Filesystem type for this volume (defined below).
+		      Known values are: 'vfat' (MSDOSFS)
+		*/
 		unsigned long   fsType;
 
 		/* 8: Creator code of filesystem driver for this volume. */
@@ -168,7 +147,9 @@ typedef unsigned long FileRef;
 		/* 18: ExpMgr slot number of card containing volume */
 		int slotRefNum;
 
-		/* 20: Type of card media (mediaMemoryStick, mediaCompactFlash, etc.) */
+		/* 20: Type of card media (mediaMemoryStick, mediaCompactFlash, etc.)
+		       Known values are: 'sdig'(SD Card)
+		*/
 		unsigned long   mediaType;
 
 		/* 24: reserved for future use (other mountclasses may need more space) */
@@ -389,7 +370,15 @@ typedef unsigned long FileRef;
 		dlpVFSOpenExclusive = 0x1,
 		dlpVFSOpenRead = 0x2,
 		dlpVFSOpenWrite = 0x5 /* implies exclusive */,
-		dlpVFSOpenReadWrite = 0x7 /* read | write */
+		dlpVFSOpenReadWrite = 0x7 /* read | write */,
+		/* Remainder are aliases and special cases not for VFSFileOpen */
+		vfsModeExclusive = dlpVFSOpenExclusive,
+		vfsModeRead = dlpVFSOpenRead,
+		vfsModeWrite = dlpVFSOpenWrite,
+		vfsModeCreate = 0x8 /* Create file if it doesn't exist. Handled in VFS layer */,
+		vfsModeTruncate = 0x10 /* Truncate to 0 bytes on open. Handled in VFS layer */,
+		vfsModeLeaveOpen = 0x20 /* Leave file open even if foreground task closes. */
+
 	} ;
 
 	enum dlpEndStatus {
