@@ -39,14 +39,16 @@ c_privheaders = 		\
 c_header_DATA = $(c_headers)
 c_headerdir=$(includedir)
 
-cxx_header_DATA = \
+cxx_headers = 			\
 	pi-address.hxx		\
 	pi-appinfo.hxx		\
 	pi-datebook.hxx		\
 	pi-dlp.hxx		\
 	pi-memo.hxx		\
 	pi-todo.hxx
+
 if WITH_CXX
+cxx_header_DATA = $(cxx_headers)
 cxx_headerdir=$(includedir)
 endif
 
@@ -54,5 +56,5 @@ endif
 EXTRA_DIST = 			\
 	$(c_headers)		\
 	$(c_privheaders)	\
-	$(cxx_header_DATA)
+	$(cxx_headers)
 
