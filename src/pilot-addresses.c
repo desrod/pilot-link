@@ -48,13 +48,13 @@ static void Help(char *progname);
 
 /* Yet more hair: reorganize fields to match visible appearence */
 int realentry[19] =
-    { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18 };
+    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
 
-char *tableheads[22] =
-    { "Last name", "First name", "Company", "Work", "Home",
-      "Fax", "Other", "Email", "Address", "City", "State",
-      "Zip Code", "Country", "Title", "Custom1", "Custom2", 
-      "Custom3", "Custom4", "Note", "Main", "Pager", "Mobile"
+char *tableheads[22] = { 
+	"Last name", "First name", "Company", "Work", "Home", "Fax",
+	"Other", "E-mail", "Address", "City", "State", "Zip Code",
+	"Country", "Title", "Custom 1", "Custom 2", "Custom 3", "Custom 4",
+	"Note", "Main", "Pager", "Mobile"
 };
 
 static const char *optstring = "DTeqp:t:d:c:arw";
@@ -87,17 +87,7 @@ int main(int argc, char *argv[])
 
 	struct 	AddressAppInfo 	aai;
 	struct 	PilotUser 	User;
-	struct 	pi_sockaddr 	addr;
 		
-	if (argc < 3)
-		Help(progname);
-
-	if (getenv("PILOTPORT")) {
-		strcpy(addr.pi_device, getenv("PILOTPORT"));
-	} else {
-		strcpy(addr.pi_device, PILOTPORT);
-	}
-
 	while (((ch = getopt(argc, argv, optstring)) != -1)
 	       && (mode == 0)) {
 		switch (ch) {
@@ -119,10 +109,7 @@ int main(int argc, char *argv[])
 			quiet = 1;
 			break;
 		case 'p':
-			/* optarg is name of port to use instead of
-			   $PILOTPORT or /dev/pilot */
-
-			strcpy(addr.pi_device, optarg);
+			port = optarg;
 			break;
 		case 'd':
 			deletecategory = optarg;
@@ -145,101 +132,108 @@ int main(int argc, char *argv[])
 		default:
 		}
 	}
-
-	/* This is not done yet, missing $PILOTPORT test
-	 * FIX ME
-	 * FIX ME
-	 * FIX ME
-	 */
-	sd = pilot_connect(port);
-
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &User);
-
-	/* Tell user (via the Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
-
-	/* Open the MemoDB.pdb database, store access handle in db */
-	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
-		puts("Unable to open AddressDB");
-		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-		exit(1);
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
 	}
 
-	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-	unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
-
-	if (defaultcategoryname)
-		defaultcategory =
-		    match_category(defaultcategoryname, &aai);
-	else
-		defaultcategory = 0;	/* Unfiled */
-
-	if (mode == 2) {	/* Write */
-		FILE *f = fopen(argv[optind], "w");
-
-		if (f == NULL) {
-			sprintf(buf, "%s: %s", argv[0], argv[optind]);
-			perror(buf);
+	if (port == NULL && argc > 1) {
+		printf
+		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+		exit(1);
+	} else {
+		sd = pilot_connect(port);
+	
+		/* Ask the pilot who it is. */
+		dlp_ReadUserInfo(sd, &User);
+	
+		/* Tell user (via the Palm) that we are starting things up */
+		dlp_OpenConduit(sd);
+	
+		/* Open the MemoDB.pdb database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
+			puts("Unable to open AddressDB");
+			dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
 			exit(1);
 		}
-		write_file(f, sd, db, &aai);
-		if (deletecategory)
-			dlp_DeleteCategory(sd, db,
-					   match_category(deletecategory,
-							  &aai));
-		fclose(f);
-	} else if (mode == 1) {
-		FILE *f;
-
-		while (optind < argc) {
-			f = fopen(argv[optind], "r");
+	
+		l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
+		unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
+	
+		if (defaultcategoryname)
+			defaultcategory =
+			    match_category(defaultcategoryname, &aai);
+		else
+			defaultcategory = 0;	/* Unfiled */
+	
+		if (mode == 2) {	/* Write */
+			FILE *f = fopen(argv[optind], "w");
+	
 			if (f == NULL) {
-				sprintf(buf, "%s: %s", argv[0],
-					argv[optind]);
+				sprintf(buf, "%s: %s", argv[0], argv[optind]);
 				perror(buf);
-				continue;
+				exit(1);
 			}
+			write_file(f, sd, db, &aai);
 			if (deletecategory)
 				dlp_DeleteCategory(sd, db,
-						   match_category
-						   (deletecategory, &aai));
-
-			if (deleteallcategories) {
-				int i;
-
-				for (i = 0; i < 16; i++)
-					if (strlen(aai.category.name[i]) >
-					    0)
-						dlp_DeleteCategory(sd, db,
-								   i);
-			}
-
-			read_file(f, sd, db, &aai);
+						   match_category(deletecategory,
+								  &aai));
 			fclose(f);
-			optind++;
-		}
-	}
-
-	/* Close the database */
-	dlp_CloseDB(sd, db);
-
-	/* Tell the user who it is, with a different PC id. */
-	User.lastSyncPC = 0xDEADBEEF;
-	User.successfulSyncDate = time(NULL);
-	User.lastSyncDate = User.successfulSyncDate;
-	dlp_WriteUserInfo(sd, &User);
-
-	if (mode == 1) {
-		dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
-	} else if (mode == 2) {
-		dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
-	}
+		} else if (mode == 1) {
+			FILE *f;
 	
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-
-	return 0;
+			while (optind < argc) {
+				f = fopen(argv[optind], "r");
+				if (f == NULL) {
+					sprintf(buf, "%s: %s", argv[0],
+						argv[optind]);
+					perror(buf);
+					continue;
+				}
+				if (deletecategory)
+					dlp_DeleteCategory(sd, db,
+							   match_category
+							   (deletecategory, &aai));
+	
+				if (deleteallcategories) {
+					int i;
+	
+					for (i = 0; i < 16; i++)
+						if (strlen(aai.category.name[i]) >
+						    0)
+							dlp_DeleteCategory(sd, db,
+									   i);
+				}
+	
+				read_file(f, sd, db, &aai);
+				fclose(f);
+				optind++;
+			}
+		}
+	
+		/* Close the database */
+		dlp_CloseDB(sd, db);
+	
+		/* Tell the user who it is, with a different PC id. */
+		User.lastSyncPC = 0xDEADBEEF;
+		User.successfulSyncDate = time(NULL);
+		User.lastSyncDate = User.successfulSyncDate;
+		dlp_WriteUserInfo(sd, &User);
+	
+		if (mode == 1) {
+			dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
+		} else if (mode == 2) {
+			dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
+		}
+		
+		dlp_EndOfSync(sd, 0);
+		pi_close(sd);
+	
+		return 0;
+	}
 }
 
 int inchar(FILE * in)
@@ -404,27 +398,27 @@ int write_field(FILE * out, char *source, int more)
 
 int match_category(char *buf, struct AddressAppInfo *aai)
 {
-	int i;
+	int idx;
 
-	for (i = 0; i < 16; i++)
-		if (strcasecmp(buf, aai->category.name[i]) == 0)
-			return i;
+	for (idx = 0; idx < 16; idx++)
+		if (strcasecmp(buf, aai->category.name[idx]) == 0)
+			return idx;
 	return atoi(buf);	/* 0 is default */
 }
 
 int match_phone(char *buf, struct AddressAppInfo *aai)
 {
-	int i;
+	int idx;
 
-	for (i = 0; i < 8; i++)
-		if (strcasecmp(buf, aai->phoneLabels[i]) == 0)
-			return i;
+	for (idx = 0; idx < 8; idx++)
+		if (strcasecmp(buf, aai->phoneLabels[idx]) == 0)
+			return idx;
 	return atoi(buf);	/* 0 is default */
 }
 
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 {
-	int 	i,
+	int 	idx,
 		l,
 		attribute,
 		category;
@@ -433,56 +427,56 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 
 
 	do {
-		i = read_field(buf, in);
+		idx = read_field(buf, in);
 
 		memset(&a, 0, sizeof(a));
 		a.showPhone = 0;
 
 		if (tableformat) {
 			category = match_category(buf, aai);
-			i = read_field(buf, in);
+			idx = read_field(buf, in);
 		} else {
-			if (i == 2) {
+			if (idx == 2) {
 				category = match_category(buf, aai);
-				i = read_field(buf, in);
-				if (i == 2) {
+				idx = read_field(buf, in);
+				if (idx == 2) {
 					a.showPhone =
 					    match_phone(buf, aai);
-					i = read_field(buf, in);
+					idx = read_field(buf, in);
 				}
 			} else
 				category = defaultcategory;
 		}
-		if (i < 0)
+		if (idx < 0)
 			break;
 
 		attribute = 0;
 
-		for (l = 0; (i >= 0) && (l < 19); l++) {
+		for (l = 0; (idx >= 0) && (l < 19); l++) {
 			int l2 = realentry[l];
 
 			if ((l2 >= 3) && (l2 <= 7)) {
-				if (i != 2 || tableformat)
+				if (idx != 2 || tableformat)
 					a.phoneLabel[l2 - 3] = l2 - 3;
 				else {
 					a.phoneLabel[l2 - 3] =
 					    match_phone(buf, aai);
-					i = read_field(buf, in);
+					idx = read_field(buf, in);
 				}
 			}
 
 			a.entry[l2] = strdup(buf);
 
-			if (i == 0)
+			if (idx == 0)
 				break;
 
-			i = read_field(buf, in);
+			idx = read_field(buf, in);
 		}
 
 		attribute = (atoi(buf) ? dlpRecAttrSecret : 0);
 
-		while (i > 0) {	/* Too many fields in record */
-			i = read_field(buf, in);
+		while (idx > 0) {	/* Too many fields in record */
+			idx = read_field(buf, in);
 		}
 
 #ifdef DEBUG
@@ -508,14 +502,14 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 		dlp_WriteRecord(sd, db, attribute, 0, category,
 				(unsigned char *) buf, l, 0);
 
-	} while (i >= 0);
+	} while (idx >= 0);
 
 	return 0;
 }
 
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 {
-	int 	i,
+	int 	idx,
 		j,
 		l,
 		attribute,
@@ -524,6 +518,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	struct 	Address a;
 		
 	if (tablehead) {
+		fprintf(out, "# ");
 		write_field(out, "Category", tabledelim);
 		for (j = 0; j < 19; j++) {
 			write_field(out, tableheads[realentry[j]],
@@ -532,11 +527,11 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		write_field(out, "Private-Flag", 0);
 	}
 
-	for (i = 0;
+	for (idx = 0;
 	     (j =
-	      dlp_ReadRecordByIndex(sd, db, i, (unsigned char *) buf, 0,
+	      dlp_ReadRecordByIndex(sd, db, idx, (unsigned char *) buf, 0,
 				    &l, &attribute, &category)) >= 0;
-	     i++) {
+	     idx++) {
 
 
 		if (attribute & dlpRecAttrDeleted)
@@ -545,7 +540,6 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		dlp_AddSyncLogEntry(sd, ".");
 
 /* Simplified system */
-
 #if 0
 		write_field(out, "Category", 1);
 		write_field(out, aai->category.name[category], -1);
@@ -556,11 +550,8 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 				putc('\n', out);
 				if ((j >= 4) && (j <= 8))
 					write_field(out,
-						    aai->phoneLabels[a.
-								     phoneLabel
-								     [j -
-								      4]],
-						    1);
+						    aai->phoneLabels[a.phoneLabel
+								     [j - 4]], 1);
 				else
 					write_field(out, aai->labels[j],
 						    1);
@@ -593,25 +584,18 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 			if (augment && (j >= 4) && (j <= 8))
 				if (a.phoneLabel[j - 4] != j - 4)
 					write_field(out,
-						    aai->phoneLabels[a.
-								     phoneLabel
-								     [j -
-								      4]],
-						    2);
+						    aai->phoneLabels[a.phoneLabel
+								     [j -4]], 2);
 			if (a.entry[realentry[j]])
 				write_field(out, a.entry[realentry[j]],
 					    tabledelim);
 
-#else				/* print the phone labels if there is something in the field */
-
+#else			/* print the phone labels if there is something in the field */
 			if (a.entry[realentry[j]]) {
 				if (augment && (j >= 4) && (j <= 8))
 					write_field(out,
-						    aai->phoneLabels[a.
-								     phoneLabel
-								     [j -
-								      4]],
-						    2);
+						    aai->phoneLabels[a.phoneLabel
+								     [j - 4]], 2);
 				write_field(out, a.entry[realentry[j]],
 					    tabledelim);
 			}
