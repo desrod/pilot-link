@@ -5,7 +5,6 @@ INCLUDES = 			\
 
 serial_FILES = 		\
 	unixserial.c 	\
-	winserial.c	\
 	os2serial.c 
 serial_SOURCE = unixserial.c
 
