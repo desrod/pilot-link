@@ -74,39 +74,8 @@ int 	tableformat 	= 0,
 	tablehead 	= 0,
 	defaultcategory = 0;
 
-char 	tabledelims[4] = { '\n', ',', ';', '\t' },
-        *field[100],
-        *unquote(char *);
+char 	tabledelims[4] = { '\n', ',', ';', '\t' };
 
-
-int read_csvline(FILE *f)
-{
-
-        int     nfield;
-        char    *p,
-		buf[0xffff],
-		*q;
-
-        if (fgets(buf, sizeof(buf), f) == NULL)
-                return -1;
-
-        nfield = 0;
-
-        for (q = buf; (p=strtok(q, ",\n\r")) != NULL; q = NULL)
-                field[nfield++] = unquote(p);
-
-        return nfield;
-}
-
-char *unquote(char *p)
-{
-        if (p[0] == '"') {
-                if (p[strlen(p)-1] == '"')
-                        p[strlen(p)-1] = '\0';
-                p++;
-        }
-        return p;
-}
 
 
 /***********************************************************************
@@ -364,7 +333,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 	printf("   Reading CSV entries, writing to Palm Address Book... ");
 	fflush(stdout);
 
-	while ((nf = read_csvline(f)) != -1) {
+	while (!feof(f)) {
 		i = read_field(buf, f);
 
 		memset(&addr, 0, sizeof(addr));
