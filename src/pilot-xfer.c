@@ -664,8 +664,8 @@ static void Restore(char *dirname)
 	if ((dir = opendir(dirname)) == NULL) {
 		fprintf(stderr, "\n");
 		perror("   ERROR");
-		fprintf(stderr, "   opendir() failed. Cannot open directory %s.\n", dirname);
-		fprintf(stderr, "   Does the directory exist?\n\n");
+		fprintf(stderr, "   opendir() failed. Cannot open directory %s.\n"
+				"   Does the directory exist?\n\n", dirname);
 		errno = save_errno;
 		exit(1);
 	}

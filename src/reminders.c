@@ -311,9 +311,5 @@ int main(int argc, char *argv[])
 	return 0;
 
  error:
-	perror("   ERROR");
-	fprintf(stderr, "\n");
-	fprintf(stderr, "   Please use --help for more information\n");
-	
 	return -1;
 }

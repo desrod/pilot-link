@@ -214,9 +214,5 @@ error_close:
 	pi_close(sd);
 	
 error:
-	perror("   ERROR");
-	fprintf(stderr, "\n");
-	fprintf(stderr, "   Please use --help for more information\n\n");
-
 	return -1;	
 }

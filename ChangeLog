@@ -1,4 +1,4 @@
-2002-04-12  David A. Desrosiers <hacker at gnu-designs dot com>
+2002-04-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Makefile.am: Typo, s/buildir/builddir/, remove
 	  LD_LIBRARY_PATH which is ignored by distutils anyway (David
@@ -8,6 +8,8 @@
 
 	* src/pi-getram.c: Same
 	
+	* src/*.c: Removed extraneous error strings in 'error:' 
+
 2002-04-16  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/socket.c (onalarm): use RETSIGTYPE

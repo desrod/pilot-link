@@ -180,8 +180,5 @@ int main(int argc, char *argv[])
 	return 0;
 
 error:
-	perror("   ERROR");
-	fprintf(stderr, "\n");
-
 	return -1;
 }

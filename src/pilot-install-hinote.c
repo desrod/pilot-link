@@ -214,10 +214,6 @@ int main(int argc, char *argv[])
         pi_close(sd);
 
  error:
-        perror("   ERROR:");
-        fprintf(stderr, "\n");
-        fprintf(stderr, "Please use -h for more detailed options.\n");
-
         return -1;
 }
 
