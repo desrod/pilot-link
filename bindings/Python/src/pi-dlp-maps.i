@@ -202,20 +202,18 @@
 // struct CardInfo
 // -------------------------------------
 %typemap (python,argout) (struct CardInfo *cardinfo) {
-    PyObject *o;
-
     if ($1) {
-	o = Py_BuildValue("{sisislslslslsssssi}",
-			  "card", $1->card,
-			  "version", $1->version,
-			  "creation", $1->creation,
-			  "romSize", $1->romSize,
-			  "ramSize", $1->ramSize,
-			  "ramFree", $1->ramFree,
-			  "name", $1->name,
-			  "manufacturer", $1->manufacturer,
-			  "more", $1->more);
-	$result = t_output_helper($result, o);
+		PyObject *o = Py_BuildValue("{sisislslslslsssssi}",
+									"card", $1->card,
+									"version", $1->version,
+									"creation", $1->creation,
+									"romSize", $1->romSize,
+									"ramSize", $1->ramSize,
+									"ramFree", $1->ramFree,
+									"name", $1->name,
+									"manufacturer", $1->manufacturer,
+									"more", $1->more);
+		$result = t_output_helper($result, o);
     }
 }
 
@@ -229,12 +227,12 @@
 %typemap (python,argout) struct NetSyncInfo *OUTPUT {
     PyObject *o;
     if ($1){
-	o = Py_BuildValue("{sissssss}",
-			  "lanSync", $1->lanSync,
-			  "hostName", $1->hostName,
-			  "hostAddress", $1->hostAddress,
-			  "hostSubnetMask", $1->hostSubnetMask);
-	$result = t_output_helper($result, o);
+		o = Py_BuildValue("{sissssss}",
+						  "lanSync", $1->lanSync,
+						  "hostName", $1->hostName,
+						  "hostAddress", $1->hostAddress,
+						  "hostSubnetMask", $1->hostSubnetMask);
+		$result = t_output_helper($result, o);
     }
 }
 
@@ -264,19 +262,12 @@
 // -------------------------------------
 // Used by dlp_ReadAppPreference
 // -------------------------------------
-%typemap (python,argout) (void *OUTBUF, size_t *OUTBUFLEN, int *OUTPUT) {
-  PyObject *o;
-  if ($1) {
-    o = Py_BuildValue("is#", $3, $1, $2);
-    $result = t_output_helper($result, o);
-  }
+%typemap (python,argout) (void *databuf, size_t *datasize, int *version) {
+	if ($1) {
+		PyObject *o = Py_BuildValue("is#", $3, $1, $2);
+		$result = t_output_helper($result, o);
+	}
 }
-
-%typemap (in,numinputs=0) (int reqbytes, pi_buffer_t *retbuf) {
-  $1 = 0xFFFF;
-  $2 = pi_buffer_new($1);
-}
-
 
 // -------------------------------------
 // dlp_ReadRecordIDList custom wrapper
