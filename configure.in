@@ -9,21 +9,22 @@ AM_CONFIG_HEADER(config.h)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
 
+AC_PATH_PROG(ID, id)
 
 dnl ******************************
 dnl Deny config/build as root
 dnl ******************************
-dnl if test $UID = 0; then 
-dnl	echo ""
-dnl	echo "   WARNING: Please do not configure or build this software as root.."
-dnl	echo ""
-dnl	echo "   You should not need to be the root user, or superuser to build or"
-dnl	echo "   configure software. You will only need to use the root user to"
-dnl	echo "   install the software to its final destination, not to build it."
-dnl	echo ""
-dnl	echo "   You probably want to build this as a normal user, not root."
-dnl	echo ""
-dnl fi
+if test `$ID -u` = 0; then 
+	echo ""
+	echo "   WARNING: Please do not configure or build this software as root.."
+	echo ""
+	echo "   You should not need to be the root user, or superuser to build or"
+	echo "   configure software. You will only need to use the root user to"
+	echo "   install the software to its final destination, not to build it."
+	echo ""
+	echo "   You probably want to build this as a normal user, not root."
+	echo ""
+fi
 
 
 dnl ******************************
@@ -689,12 +690,6 @@ dnl *************************************
 use_efence=false
 msg_efence=no   
 AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking [default=no]],  , with_efence=no)
-
-case $withval in
-/*)
-    LIBS="-L$withval/lib"
-    ;;
-esac  
 
 if test "x$with_efence" != "xno"; then
 	AC_CHECK_LIB(efence, malloc, LIBS="$LIBS -lefence")

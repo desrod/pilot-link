@@ -2,6 +2,10 @@
 	
 	* Cleaned up some missing header declarations
 
+	* Closing a bug on BSD systems that would unset $LIBS when gnugetopt
+	  was found and added to $LIBS (replaces most of patch-ab in the
+	  pilot-link port) (Joe Marcus Clarke)
+
 2003-01-08 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* docs/README.usb: Change Zire to ttyUSB1 not ttyUSB0 (close #442)
