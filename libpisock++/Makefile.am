@@ -1,10 +1,10 @@
-lib_LIBRARIES = libpicc.a
-
-INCLUDES = \
+INCLUDES = 			\
 	-I../include		\
 	-I$(top_srcdir)/include
 
-libpicc_a_SOURCES = 	\
+lib_LTLIBRARIES = libpisock++.la
+
+libpisock___la_SOURCES = 	\
 	address.cc	\
 	appInfo.cc	\
 	datebook.cc	\
@@ -13,5 +13,8 @@ libpicc_a_SOURCES = 	\
 	memo.cc		\
 	todo.cc
 
-libpicc_a_LIBADD = \
-	$(top_builddir)/libsock/libpisock.la
+libpisock___la_LIBADD = \
+	$(top_builddir)/libpisock/libpisock.la
+
+libpisock___la_LDFLAGS = \
+	-export-dynamic -version-info $(PISOCKPP_CURRENT):$(PISOCKPP_REVISION):$(PISOCKPP_AGE)

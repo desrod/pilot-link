@@ -2232,7 +2232,7 @@ JNIEXPORT void JNICALL Java_org_gnu_pdapilot_expense_Pref_unpack
    if( isCopy == JNI_TRUE) env->ReleaseByteArrayElements( b, buf, JNI_ABORT);
    setObjectField( env, pref, "raw", "[B", b);
    setIntField( env, pref, "currentCategory", a.currentCategory);
-   setIntField( env, pref, "defaultCategory", a.defaultCategory);
+   setIntField( env, pref, "defaultCurrency", a.defaultCurrency);
    // NOTE this next one looks wrong, but its what the old code did
    setIntField( env, pref, "currentCategory", a.noteFont);
    setIntField( env, pref, "showAllCategories", a.showAllCategories);
@@ -2264,7 +2264,7 @@ JNIEXPORT jbyteArray JNICALL Java_org_gnu_pdapilot_expense_Pref_pack
    int len, i;
    struct ExpensePref a;
    a.currentCategory = getIntField( env, pref, "currentCategory");
-   a.defaultCategory = getIntField( env, pref, "defaultCategory");
+   a.defaultCurrency = getIntField( env, pref, "defaultCurrency");
    a.noteFont = getIntField( env, pref, "currentCategory");
    a.showAllCategories = getBooleanField( env, pref, "showAllCategories");
    a.showCurrency = getBooleanField( env, pref, "showCurrencies");

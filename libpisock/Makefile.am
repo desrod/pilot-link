@@ -43,6 +43,7 @@ libpisock_la_SOURCES =  \
 libpisock_la_LIBADD = \
 	$(ICONV_LIBS)
 
-libpisock_la_LDFLAGS = -export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
+libpisock_la_LDFLAGS = \
+	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
 
 EXTRA_DIST = $(serial_FILES)

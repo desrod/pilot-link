@@ -10,7 +10,7 @@ SUBDIRS = $(JAVA_DIR)
 # Python Building
 #
 python-build: Python/setup.py
-	cd $(srcdir)/Python && LD_LIBRARY_PATH=$(top_buildir)/libsock/.libs/ $(PYTHON) setup.py build
+	cd $(srcdir)/Python && LD_LIBRARY_PATH=$(top_buildir)/libpisock/.libs/ $(PYTHON) setup.py build
 
 python-install: python-build
 	cd $(srcdir)/Python && $(PYTHON) setup.py install
@@ -33,42 +33,42 @@ endif
 #
 # Perl Building
 #
-perl5-make: Perl5/Makefile.PL
-	cd Perl5 && $(PERL5) Makefile.PL
+perl-make: Perl/Makefile.PL
+	cd Perl && $(PERL5) Makefile.PL
 
-perl5-build: perl5-make
-	cd Perl5 && $(MAKE)
+perl-build: perl-make
+	cd Perl && $(MAKE)
 
-perl5-install: perl5-build
-	cd Perl5 && $(MAKE) install
+perl-install: perl-build
+	cd Perl && $(MAKE) install
 
-perl5-uninstall: perl5-make
-	cd Perl5 && $(MAKE) uninstall
+perl-uninstall: perl-make
+	cd Perl && $(MAKE) uninstall
 
-perl5-clean: perl5-make
-	cd Perl5 && $(MAKE) realclean
+perl-clean: perl-make
+	cd Perl && $(MAKE) realclean
 
-if WITH_PERL5
-PERL5_ALL = perl5-build
-PERL5_INSTALL = perl5-install
-PERL5_CLEAN = perl5-clean
+if WITH_PERL
+PERL_ALL = perl-build
+PERL_INSTALL = perl-install
+PERL_CLEAN = perl-clean
 else
-PERL5_ALL = 
-PERL5_INSTALL = 
-PERL5_MCLEAN = 
-PERL5_CLEAN = 
+PERL_ALL = 
+PERL_INSTALL = 
+PERL_MCLEAN = 
+PERL_CLEAN = 
 endif
 
-all-local: $(PERL5_ALL) $(PYTHON_ALL)
+all-local: $(PERL_ALL) $(PYTHON_ALL)
 
-install-exec-local: $(PYTHON_INSTALL) $(PERL5_INSTALL)
+install-exec-local: $(PYTHON_INSTALL) $(PERL_INSTALL)
 
-uninstall-local: $(PYTHON_INSTALL) $(PERL5_UNINSTALL)
+uninstall-local: $(PYTHON_INSTALL) $(PERL_UNINSTALL)
 
-clean-local: $(PERL5_CLEAN) $(PYTHON_CLEAN)
+clean-local: $(PERL_CLEAN) $(PYTHON_CLEAN)
 
-distclean-local: $(PERL5_CLEAN) $(PYTHON_CLEAN)
+distclean-local: $(PERL_CLEAN) $(PYTHON_CLEAN)
 
-maintainer-clean-local: $(PERL5_CLEAN) $(PYTHON_CLEAN)
+maintainer-clean-local: $(PERL_CLEAN) $(PYTHON_CLEAN)
 
-EXTRA_DIST = Python Java Perl5 Tcl
+EXTRA_DIST = Python Java Perl Tcl

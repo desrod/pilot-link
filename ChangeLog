@@ -1,3 +1,32 @@
+2002-03-15  JP Rosevear  <jpr@ximian.com>
+
+	* tests/Makefile.am (INCLUDES): fix dir for linking
+
+	* src/prc/Makefile.am: dist and install the prc data
+
+	* src/pix/Makefile.am: dist the pix
+
+	* src/Makefile.am: compile apps
+
+	* libpisock++/Makefile.am: rename to libpisock++, make shared lib
+	and version
+
+	* libpisock/Makefile.am: tidy
+
+	* doc/Makefile.am: compile subdir
+
+	* bindings/Makefile.am: use correct libdir
+
+	* bindings/Java/Jni.c: s/defaultCategory/defaultCurrency/
+
+	* bindings/Makefile.am: reflect change of subdir from Perl5 to
+	Perl
+
+	* configure.in: fix AC_OUTPUT files, add version stuff for
+	libpisock++
+
+	* Makefile.am: remove stuff to build apps
+
 2002-03-07  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/unixserial.c (s_write): obey the timeout for writes as

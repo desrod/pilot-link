@@ -28,6 +28,17 @@ AC_SUBST(PISOCK_CURRENT)
 AC_SUBST(PISOCK_REVISION)
 AC_SUBST(PISOCK_AGE)
 
+dnl ******************************
+dnl Pilot Link C++ Library Version
+dnl ******************************
+PISOCKPP_CURRENT=0
+PISOCKPP_REVISION=0
+PISOCKPP_AGE=0
+
+AC_SUBST(PISOCKPP_CURRENT)
+AC_SUBST(PISOCKPP_REVISION)
+AC_SUBST(PISOCKPP_AGE)
+
 AM_INIT_AUTOMAKE(pilot-link, [$VERSION])
 
 dnl Check host type
@@ -301,7 +312,7 @@ if test "x$PERL5" != "x"; then
 		AC_MSG_RESULT($verstext [perl 5 not found])
 	fi
 fi
-AM_CONDITIONAL(WITH_PERL5, $use_perl5)
+AM_CONDITIONAL(WITH_PERL, $use_perl5)
 if $use_perl5; then
 	msg_perl=yes
 fi
@@ -590,15 +601,19 @@ esac
 AC_OUTPUT([
 Makefile
 pilot-link.m4
-libsock/Makefile
-libcc/Makefile
+libpisock/Makefile
+libpisock++/Makefile
 include/Makefile
 include/pi-version.h
-tools/Makefile
-tools/Perl5/Makefile.PL
-tools/Java/Makefile
+src/Makefile
+src/prc/Makefile
+src/pix/Makefile
+bindings/Makefile
+bindings/Perl/Makefile.PL
+bindings/Java/Makefile
+doc/Makefile
+doc/man/Makefile
 tests/Makefile
-man/Makefile
 ])
 
 echo "

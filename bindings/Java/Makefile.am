@@ -136,7 +136,7 @@ java_compile: $(java_files)
 	$(JAVAC) -d . $(java_files)
 
 java_lib: Jni.c
-	$(CXX) $(INCLUDES) $(DEFS) -L $(top_builddir)/libsock/.libs -lpisock -shared -o libPiJni.so $(srcdir)/Jni.c
+	$(CXX) $(INCLUDES) $(DEFS) -L $(top_builddir)/libpisock/.libs -lpisock -shared -o libPiJni.so $(srcdir)/Jni.c
 
 java_jar: $(java_classes)
 	$(JAR) cvf pilot-link.jar $(java_classes)
