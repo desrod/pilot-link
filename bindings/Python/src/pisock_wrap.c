@@ -4573,7 +4573,6 @@ static PyObject *_wrap_pi_file_create(PyObject *self, PyObject *args) {
         if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
         if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
         if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
         if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
         if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
         if (DGETLONG(obj1,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
