@@ -30,6 +30,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-file.h"
@@ -989,9 +990,7 @@ pi_file_append_record(struct pi_file *pf, void *buf, int size, int attrs,
 {
 	struct pi_file_entry *entp;
 
-#ifdef DEBUG
-	printf("append: %d\n", pf->nentries);
-#endif
+	LOG (PI_DBG_API, PI_DBG_LVL_INFO, "FILE APPEND %d\n", pf->nentries);
 
 	if (!pf->for_writing || pf->resource_flag)
 		return (-1);

@@ -1,5 +1,19 @@
 2002-01-05  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/socket.c: look for API type
+
+	* libsock/pi-file.c (pi_file_append_record): use LOG
+
+	* libsock/net.c (net_rx): make reading a little more sane
+
+	* include/pi-debug.h: add API type
+
+	* configure.in: define DEBUG here when appropriate
+
+	* acconfig.h: add DEBUG
+
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/connect.c (pilot_connect): switch back to _NET for
 	testing
 

@@ -345,6 +345,8 @@ int pi_socket(int domain, int type, int protocol)
 				types |= PI_DBG_NET;
 			else if (!strcmp(b, "SOCK"))
 				types |= PI_DBG_SOCK;
+			else if (!strcmp(b, "API"))
+				types |= PI_DBG_API;
 			else if (!strcmp(b, "USER"))
 				types |= PI_DBG_USER;
 			e++;

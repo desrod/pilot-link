@@ -138,9 +138,8 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 {
 	struct pi_protocol *prot, *next;
 	struct pi_net_data *data;
-	int n, l;
-	unsigned char buf[6];
-	int rlen;
+	unsigned char *cur;
+	int read, total_read, packet_len;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
 	if (prot == NULL)
@@ -150,76 +149,61 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 	if (next == NULL)
 		return -1;
 
-	l = 0;
+	total_read = 0;
 	if (data->txid == 0) {		
 		/* Peek to see if it is a headerless packet */
-		n = next->read(ps, buf, 1);
-		if (n > 0) {
-			if (buf[0] == 0x90) {
-				l = PI_NET_HEADER_LEN + 1;
-				buf[PI_NET_OFFSET_TYPE] = 0x01;
-				buf[PI_NET_OFFSET_TXID] = 0x01;
-				set_long (&buf[PI_NET_OFFSET_SIZE], 21);
+		read = next->read(ps, msg, 1);
+		if (read > 0) {
+			if (msg[0] == 0x90) {
+				/* Cause the header reading to be skipped */
+				LOG (PI_DBG_NET, PI_DBG_LVL_INFO,
+				     "NET RX: Headerless packet\n");
+				total_read = PI_NET_HEADER_LEN;
+				msg[PI_NET_OFFSET_TYPE] = 0x01;
+				msg[PI_NET_OFFSET_TXID] = 0x01;
+				set_long (&msg[PI_NET_OFFSET_SIZE], 21);
 			} else {
-				l += n;
+				total_read += read;
 			}
+		} else {
+			return read;
 		}
-		if (n <= 0)
-			return n;
 	}
 	
-	while (l < PI_NET_HEADER_LEN) {
-		n = next->read(ps, buf + l, PI_NET_HEADER_LEN - l);
-		if (n > 0)
-			l += n;
-		if (n <= 0)
-			return n;
-	}
-	if (l == PI_NET_HEADER_LEN + 1)
-		LOG (PI_DBG_NET, PI_DBG_LVL_INFO,
-		     "NET RX: Headerless packet\n");
-
-	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1));
-	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(buf));
-	
-	rlen = get_long(&buf[PI_NET_OFFSET_SIZE]);
-	if (len > rlen)
-		len = rlen;
-
-	l = 0;
-	while (l < len) {
-		n = next->read(ps, msg, len - l);
-		if (n > 0)
-			l += n;
-		if (n < 0)
-			return n;
-		if (n == 0) {
-			len = l;
-			break;
-		}
+	/* Read in what's left of the header */
+	while (total_read < PI_NET_HEADER_LEN) {
+		read = next->read(ps, msg + total_read, PI_NET_HEADER_LEN - total_read);
+		if (read <= 0)
+			return read;
+		total_read += read;
 	}
 
-	if (l < rlen) {
-		char discard;
-
-		while (l < rlen) {
-			n = read(ps->sd, &discard, 1);
-			if (n > 0)
-				l += n;
-			if (n < 0)
-				return n;
-			if (n == 0)
-				break;
-		}
+	/* Read in the rest of the packet */
+	packet_len = get_long(&msg[PI_NET_OFFSET_SIZE]);
+	while (total_read < PI_NET_HEADER_LEN + packet_len) {
+		read = next->read(ps, msg + total_read, 
+				  PI_NET_HEADER_LEN + packet_len - total_read);
+		if (read <= 0)
+			return read;
+		else if (read > 0)
+			total_read += read;
 	}
 
+	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(msg, 0));
+	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(msg));
+
+	/* Update the transaction id */
 	if (ps->initiator)
-		data->txid = buf[1];
+		data->txid = msg[PI_NET_OFFSET_TXID];
 	else {
 		data->txid++;
 		if (data->txid == 0xff)
 			data->txid = 1;
 	}
+
+	/* Remove the header */
+	cur = msg + PI_NET_HEADER_LEN;
+	memmove (msg, cur, packet_len);	
 
 	return len;
 }

@@ -36,6 +36,7 @@
 #include <signal.h>
 #include <utime.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-file.h"
@@ -428,6 +429,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 			}
 		}
 
+		LOG (PI_DBG_USER, PI_DBG_LVL_INFO, "USER (pilot-xfer.c) Backing up %s\n", name);
 		printf("Backing up '%s'... ", name);
 		fflush(stdout);
 
@@ -436,14 +438,18 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 
 		f = pi_file_create(name, &info);
 		if (f == 0) {
+			LOG (PI_DBG_USER, PI_DBG_LVL_INFO, "USER (pilot-xfer.c) Back up failed\n", name);
 			printf("Failed, unable to create file\n");
 			break;
 		}
 
-		if (pi_file_retrieve(f, sd, 0) < 0)
+		if (pi_file_retrieve(f, sd, 0) < 0) {
+			LOG (PI_DBG_USER, PI_DBG_LVL_INFO, "USER (pilot-xfer.c) Back up failed\n", name);
 			printf("Failed, unable to back up database\n");
-		else
+		} else {
+			LOG (PI_DBG_USER, PI_DBG_LVL_INFO, "USER (pilot-xfer.c) Back up succeed\n", name);
 			printf("done.\n");
+		}
 		pi_file_close(f);
 
 		/* Note: This is no guarantee that the times on the host
@@ -894,7 +900,7 @@ void List(int rom)
 		dbcount++;
 		i = info.index + 1;
 
-		printf("[%ld] \t%s\n", dbcount, info.name);
+		printf("[%d] \t%s\n", dbcount, info.name);
 	}
 	printf("\nList done. %d files found.\n", dbcount);
 
@@ -989,7 +995,7 @@ static void Help(char *progname)
 	       "                           by a sync\n\n"
  	       "   -l[ist]               = list all application and 3 rd party data on the Palm\n"
 	       "   -L[istall]            = list all data, internal and external on the Palm\n"
-	       "   -v[ersion]            = report the version of %s\n", progname, progname, progname);
+	       "   -v[ersion]            = report the version of %s\n", progname, progname);
 	printf("                           (currently %d.%d.%d%s)\n"
 	       "   -h[elp]               = reprint this usage screen\n\n"
 	       "   -a modifies -s to archive deleted files in specified directory.\n"

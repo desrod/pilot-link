@@ -35,8 +35,9 @@ extern "C" {
 #define PI_DBG_NET  0x020
 #define PI_DBG_CMP  0x040
 #define PI_DBG_SOCK 0x080
-#define PI_DBG_USER 0x100
-#define PI_DBG_ALL  0x200
+#define PI_DBG_API  0x100
+#define PI_DBG_USER 0x200
+#define PI_DBG_ALL  0x400
 
 #define PI_DBG_LVL_NONE  0x00
 #define PI_DBG_LVL_ERR   0x01
