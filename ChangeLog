@@ -8,7 +8,7 @@
 	
 2002-02-08  David A. Desrosiers <hacker at gnu-designs dot com>
 
-	* dlpsh.c: Missing header
+	* dlpsh.c: Missing header, removed garbage string in 'ls' output.
 
 	* pilot-xfer.c: Minor cleanups
 
