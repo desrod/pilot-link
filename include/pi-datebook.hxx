@@ -34,7 +34,7 @@ class appointment_t : public baseApp_t
      };
 
    private:
-     friend appointmentList_t;
+     friend class appointmentList_t;
      
      tm _begin;			// When the appointment begins
      tm _end;			// When the appointment ends

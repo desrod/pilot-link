@@ -19,7 +19,7 @@ class memoList_t;		// Forward declaration for older compilers
 
 class memo_t : public baseApp_t
 {
-     friend memoList_t;
+     friend class memoList_t;
      
      char *_text;
      int _size;

@@ -23,7 +23,7 @@ class todoList_t;
 
 class todo_t : public baseApp_t
 {
-     friend todoList_t;
+     friend class todoList_t;
      
      struct tm *_due;		// Non-NULL if there is a due date
      int _priority;		// A priority in the range 1-5

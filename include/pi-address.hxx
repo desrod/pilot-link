@@ -33,7 +33,7 @@ class address_t : public baseApp_t
 
      char *_entry[19];
      
-     friend addressList_t;
+     friend class addressList_t;
      
      address_t *_next;
 
