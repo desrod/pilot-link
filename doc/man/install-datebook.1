@@ -1,10 +1,11 @@
 .TH INSTALL-DATEBOOK 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
 
 .SH NAME
-install-datebook \- installs a new datebook entries in a Palm Device
+.B install-datebook 
+\- installs a new datebook entries onto your Palm handheld device
 
 .SH SYNOPSIS
-For serial devices, the -p /dev/port is required, or you may use the
+For serial devices, the -p <port> option is required, or you may use the
 $PILOTPORT environment variable:
 .br
 .B install-datebook -p /dev/ttySX filename [filename filename ...] 
@@ -53,20 +54,24 @@ none
 
 .SH USAGE
 The program will connect to the target Palm device, and write the
-datebook-formatted file given on the command line to the Palm into the
+datebook-formatted file given on the command line onto the Palm into the
 DatebookDB.pdb file.
 
-.SH BUGS
+.SH KNOWN BUGS
 If no timezone is given,
 .B install-datebook
 will assume the time is in GMT and it will convert it to localtime. If you
-don\'t want to write timezone entries to all begin and end times, set the TZ
+don't want to write timezone entries to all begin and end times, set the TZ
 environment variable to GMT before running this program.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
 
 .SH AUTHOR
 .B install-datebook
-was written by Tero Kivinen <kivinen@iki.fi>. This program was based on
-install-todos program written by Robert A. Kaplan.
+was written by Tero Kivinen <\fIkivinen@iki.fi\fP>. This program was based on
+install-todos program written by Robert A. Kaplan <\fIkaplan@openmarket.com\fP>.
 
 .SH SEE ALSO
 .br read-ical (1),
