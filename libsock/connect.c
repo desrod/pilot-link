@@ -20,15 +20,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "pi-socket.h"
 #include "pi-header.h"
 #include "pi-dlp.h"
 
+/* Declare prototypes */
+int pilot_connect(const char *port);
+
 int pilot_connect(const char *port) 
 {
 	int sd;
-	struct PilotUser U;
 	struct pi_sockaddr addr;
 
 	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
@@ -40,38 +43,34 @@ int pilot_connect(const char *port)
 	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
 
 	if (pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
-		printf("\n   Unable to bind to port '%s'\n", port);
+		fprintf(stderr, "\n   Unable to bind to port '%s'\n", port);
 		perror("   Reason: pi_bind");
-		printf("\n");
+		fprintf(stderr, "\n");
 		pi_close(sd);
 		return -1;
 	}
 
-	printf
-	    ("\n   Connecting to port: %s\n\n   Please press the HotSync button now...\n",
+	fprintf(stderr, "\n   Connecting to port: %s\n\n   Please press the HotSync button now...\n",
 	     port);
 
 	if (pi_listen(sd, 1) == -1) {
-		printf("\n   Error listening on %s\n", port);
+		fprintf(stderr, "\n   Error listening on %s\n", port);
 		perror("   Reason: pi_listen");
-		printf("\n");
+		fprintf(stderr, "\n");
 		pi_close(sd);
 		return -1;
 	}
 
 	sd = pi_accept(sd, 0, 0);
 	if (sd == -1) {
-		printf("\n   Error accepting data on %s\n", port);
+		fprintf(stderr, "\n   Error accepting data on %s\n", port);
 		perror("   Reason: pi_accept");
-		printf("\n");
+		fprintf(stderr, "\n");
 		pi_close(sd);
 		return -1;
 	}
 
-	printf("   Connected...\n");
-
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
+	fprintf(stderr, "   Connected...\n\n");
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
