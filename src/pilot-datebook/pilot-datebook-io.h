@@ -11,8 +11,6 @@
 #define _PILOT_DATEBOOK_IO
 
 
-#include "pilot-datebook-data.h"
-
 #include "pilot-datebook-hotsync.h"
 #include "pilot-datebook-pdb.h"
 #include "pilot-datebook-csv.h"
