@@ -473,10 +473,10 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 			if ((err = net_rx_handshake(ps)) < 0)
 				return err;
 			len = sizeof (split);
-			pi_setsockopt(sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
+			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
 				&split, &len);
 			len = sizeof (chunksize);
-			pi_setsockopt(sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
+			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
 				&chunksize, &len);
 			break;
 	}
