@@ -92,26 +92,23 @@ char *dlp_strerror(int error)
 
 int dlp_trace = 0;
 
-#ifndef NO_DLP_TRACE
-#define DLP_TRACE
-
+#ifdef PI_DEBUG
 #define Trace(name) \
-  if (dlp_trace)    \
-    fprintf(stderr, "DLP %d: %s\n", sd, #name);
+  LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP %d: %s\n", sd, #name);
 #define Expect(count)    \
   if (result < count) {  \
     if (result < 0) {    \
-      if (dlp_trace)     \
-        fprintf(stderr, "Result: Error: %s (%d)\n", dlp_errorlist[-result], result); \
+      LOG(PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Error  %s (%d)\n", dlp_errorlist[-result], result); \
     } else {             \
-      if (dlp_trace)     \
-        fprintf(stderr, "Result: Read %d bytes, expected at least %d\n", result, count); \
+      LOG(PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Read %d bytes, expected at least %d\n", result, count); \
       result = -128;     \
     }                    \
     return result;       \
   } else                 \
-    if (dlp_trace)       \
-      fprintf(stderr, "Result: No error, %d bytes\n", result);
+      LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP RX %d bytes\n", result);
+#else
+#define Trace(name)
+#define Expect(count)
 #endif
 
 int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen, 

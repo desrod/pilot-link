@@ -1,5 +1,9 @@
 2002-01-28  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/dlp.c: convert Trace and Expect to logging functions
+
+2002-01-28  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/padp.c: Use logging function
 
 2002-01-28  JP Rosevear  <jpr@ximian.com>

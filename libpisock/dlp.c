@@ -92,26 +92,23 @@ char *dlp_strerror(int error)
 		return "Unknown error";
 	else
 		return dlp_errorlist[error];
-#ifndef NO_DLP_TRACE
-#define DLP_TRACE
+}
 
-
-  if (dlp_trace)    \
-    fprintf(stderr, "DLP %d: %s\n", sd, #name);
+  LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP %d: %s\n", sd, #name);
 
 #ifdef PI_DEBUG
 #define Trace(name) \
-      if (dlp_trace)     \
-        fprintf(stderr, "Result: Error: %s (%d)\n", dlp_errorlist[-result], result); \
+      LOG(PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Error  %s (%d)\n", dlp_errorlist[-result], result); \
 #define Expect(count)    \
-      if (dlp_trace)     \
-        fprintf(stderr, "Result: Read %d bytes, expected at least %d\n", result, count); \
+      LOG(PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Read %d bytes, expected at least %d\n", result, count); \
     if (result < 0) {    \
       LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Error  %s (%d)\n", dlp_errorlist[-result], result)); \
     } else {             \
       LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Read %d bytes, expected at least %d\n", result, count)); \
-    if (dlp_trace)       \
-      fprintf(stderr, "Result: No error, %d bytes\n", result);
+      LOG(PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP RX %d bytes\n", result);
+    }                    \
+    return result;       \
+  } else                 \
       LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP RX %d bytes\n", result));
 #else
 int dlp_exec(int sd, int cmd, int arg, const unsigned char *msg, int msglen, 
