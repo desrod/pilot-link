@@ -1,6 +1,7 @@
 import unittest
 import sys,glob,os
 from optparse import OptionParser
+
 builds = glob.glob("../build/lib*")
 if len(builds) != 1:
     print "This little hack only works when you've got one build compiled."
@@ -8,26 +9,34 @@ if len(builds) != 1:
     print "and try again."
     os.exit(10)
 sys.path.insert(0,os.path.join(os.path.abspath("."),builds[0]))
+
 import pisock
 
 class OnlineTestCase(unittest.TestCase):
     def setUp(self):
         pass
-        
+
     def tearDown(self):
         pass
 
     def testdlp_AddSyncLogEntry(self):
-        pisock.dlp_AddSyncLogEntry(sd, "Test Completed.")
+        pisock.dlp_AddSyncLogEntry(sd, "Python test.")
 
     def testdlp_ReadUserInfo(self):
-        assert len(pisock.dlp_ReadUserInfo(sd)) > 3
+        res = pisock.dlp_ReadUserInfo(sd)
+        assert res!=None and len(res)>3
+        print "ReadUserInfo: username='" + res['name'] + "'"
 
+    def testdlp_ReadSysInfo(self):
+        res = pisock.dlp_ReadSysInfo(sd)
+        assert res!=None and res.has_key('romVersion')
+        print "ReadSysInfo: romVersion=" + hex(res['romVersion']) + " locale=" + hex(res['locale']) + " name='" + res['name'] + "'"
 
     def testdlp_ReadDBList(self):
-        lst = pisock.dlp_ReadDBList(sd,0,pisock.dlpDBListRAM)
-        assert len(lst) > 3
-        assert lst[0].has_key('name')
+        res = pisock.dlp_ReadDBList(sd,0,pisock.dlpDBListRAM)
+        assert len(res) > 3
+        assert res[0].has_key('name')
+        print "ReadDBList: " + str(len(res)) + " entries"
 
 class OfflineTestCase(unittest.TestCase):
     def setUp(self):
@@ -40,12 +49,10 @@ class OfflineTestCase(unittest.TestCase):
         sd = pisock.pi_socket(pisock.PI_AF_PILOT,
                               pisock.PI_SOCK_STREAM,
                               pisock.PI_PF_DLP)
-        
         self.assertRaises(pisock.error, pisock.pi_bind, sd, "/dev/nosuchport")
 
 onlineSuite = unittest.makeSuite(OnlineTestCase,'test')
 offlineSuite = unittest.makeSuite(OfflineTestCase,'test')
-
 combinedSuite = unittest.TestSuite((onlineSuite, offlineSuite))
 
 if __name__ == "__main__":
@@ -67,10 +74,10 @@ if __name__ == "__main__":
         pisock.pi_bind(sd, pilotport)
         pisock.pi_listen(sd, 1)
         pisock.pi_accept(sd)
-        pisock.dlp_ReadSysInfo(sd)
+        print pisock.dlp_ReadSysInfo(sd)
         pisock.dlp_OpenConduit(sd)
         print "Connected"
-        runner.run(combinedSuite)
+        runner.run(onlineSuite)
         pisock.pi_close(sd)
         print "Disconnected"
     else:
