@@ -350,6 +350,11 @@ dnl ******************************
 msg_readline=no
 AC_ARG_WITH(readline,      [  --with-readline         use readline               [default=yes]])
 if test "x$with_readline" != "xno"; then
+
+dnl For OSX builds
+CFLAGS="$CFLAGS -L/sw/lib"
+LDFLAGS="$LDFLAGS -I/sw/include"  
+
 AC_CHECK_LIB(termcap, tgoto, [
 	AC_CHECK_LIB(readline, readline, [
 	RL_LIBS="-lreadline -ltermcap"
@@ -362,9 +367,8 @@ AC_DEFINE(HAVE_READLINE_HISTORY_H),,"-ltermcap")
 ], RL_LIBS="")
 fi
 
-dnl For OSX builds
-CFLAGS="$CFLAGS -L/sw/lib"
-LDFLAGS="$LDFLAGS -I/sw/include"
+save_CFLAGS="$CFLAGS"
+save_LDFLAGS="$LDFLAGS"
 
 AC_SUBST(RL_LIBS)
 
