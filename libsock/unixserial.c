@@ -177,9 +177,6 @@ s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 		i;
 	char 	*tty 	= addr->pi_device;
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
-
-
-
 	
 #ifndef SGTTY
 	struct termios tcn;
@@ -195,6 +192,7 @@ s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 		errno = EINVAL;
 		return -1;
 	}
+
 #ifndef SGTTY
 	/* Set the tty to raw and to the correct speed */
 	tcgetattr(fd, &tcn);
@@ -357,13 +355,15 @@ static int s_close(struct pi_socket *ps)
 	s_delay(2, 0);
 #endif
 
+	if (*(data->ref) == 0) {
 #ifndef SGTTY
-	tcsetattr(ps->sd, TCSADRAIN, &data->tco);
+		tcsetattr(ps->sd, TCSADRAIN, &data->tco);
 #else
-	ioctl(ps->sd, TIOCSETP, &data->tco);
+		ioctl(ps->sd, TIOCSETP, &data->tco);
 #endif
-
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV Serial CLOSE fd: %d\n", ps->sd);
+	}
+	
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CLOSE Serial Unix fd: %d\n", ps->sd);
 
 	return close(ps->sd);
 }
@@ -393,7 +393,7 @@ static int s_poll(struct pi_socket *ps, int timeout)
 		data->rx_errors++;
 		return -1;
 	}
-	LOG(PI_DBG_DEV, PI_DBG_LVL_DEBUG, "DEV POLL Serial Unix Read data on %d\n", ps->sd);
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV POLL Serial Unix Found data on fd: %d\n", ps->sd);
 
 	return 0;
 }

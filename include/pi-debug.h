@@ -61,7 +61,7 @@ extern void pi_log PI_ARGS((int type, int level, char *format, ...));
 #define ASSERT(expr)                                            \
      do {                                                       \
        if (!(expr))						\
-         pi_log (PI_DBG_SYS, PI_DBG_LVL_ERR,              \
+         pi_log (PI_DBG_ALL, PI_DBG_LVL_NONE,                   \
 	         "file %s: line %d: assertion failed: (%s)",	\
 	         __FILE__,                                      \
 	         __LINE__,                                      \

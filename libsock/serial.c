@@ -55,10 +55,6 @@
 #include <sys/select.h>
 #endif
 
-#ifdef WIN32
-extern int win_peek(struct pi_socket *ps, int timeout);
-#endif
-
 static int pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, 
 			     int addrlen);
 static int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr,
@@ -136,6 +132,13 @@ static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 	new_data->impl 		= data->impl;
 	memcpy(new_data->buf, data->buf, data->buf_size);
 	new_data->buf_size 	= data->buf_size;
+	new_data->ref           = data->ref;
+	*(new_data->ref)++;
+#ifndef WIN32
+#ifndef OS2
+	new_data->tco = data->tco;
+#endif
+#endif
 	new_data->rate 		= data->rate;
 	new_data->establishrate = data->establishrate;
 	new_data->establishhighrate = data->establishhighrate;
@@ -182,6 +185,7 @@ struct pi_device *pi_serial_device (int type)
 	}
 	
 	data->buf_size 		= 0;
+	data->ref               = (int *)malloc (sizeof (int));
 	data->rate 		= -1;
 	data->establishrate 	= -1;
 	data->establishhighrate = -1;
@@ -504,6 +508,8 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
 static int pi_serial_close(struct pi_socket *ps)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+
+	*(data->ref)--;
 
 	if (ps->sd)
 		data->impl.close (ps);

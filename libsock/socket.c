@@ -74,6 +74,8 @@ ps_list_append (struct pi_socket_list *list, struct pi_socket *ps)
 {
 	struct pi_socket_list *elem, *new_elem;
 	
+	ASSERT (ps != NULL)
+
 	new_elem 	= malloc(sizeof(struct pi_socket_list));
 	new_elem->ps 	= ps;
 	new_elem->next 	= NULL;
@@ -95,6 +97,8 @@ ps_list_prepend (struct pi_socket_list *list, struct pi_socket *ps)
 {
 	struct pi_socket_list *new_elem;
 	
+	ASSERT (ps != NULL)
+
 	new_elem 	= malloc(sizeof(struct pi_socket_list));
 	new_elem->ps 	= ps;
 	new_elem->next 	= list;
@@ -135,6 +139,33 @@ ps_list_remove (struct pi_socket_list *list, int sd)
 	return new_list;
 }
 
+static struct pi_socket_list *
+ps_list_copy (struct pi_socket_list *list) 
+{
+	struct pi_socket_list *l, *new_list = NULL;
+	
+	for (l = list; l != NULL; l = l->next)
+		new_list = ps_list_append (new_list, l->ps);
+
+	return new_list;
+}
+
+static void
+ps_list_free (struct pi_socket_list *list)
+{
+	struct pi_socket_list *l, *next;
+
+	if (list == NULL)
+		return;
+	
+	l = list;
+	do {
+		next = l->next;
+		free(l);
+		l = next;
+	} while (l != NULL);
+}
+	      
 /* Protocol Queue */
 static void
 protocol_queue_add (struct pi_socket *ps, struct pi_protocol *prot)
@@ -507,10 +538,13 @@ onalarm(int signo)
 static void
 onexit(void)
 {
-	struct pi_socket_list *l;
+	struct pi_socket_list *l, *list;
 
-	for (l = psl; l != NULL; l = l->next)
+	list = ps_list_copy (psl);
+	for (l = list; l != NULL; l = l->next)
 		pi_close(l->ps->sd);
+
+	ps_list_free (list);
 }
 
 static void

@@ -1,3 +1,28 @@
+2002-01-25  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/utils.c: include config.h
+
+	* libsock/unixserial.c (s_close): only reset the port when all
+	users are gone
+
+	* libsock/socket.c (ps_list_append): add assertion
+	(ps_list_prepend): ditto
+	(ps_list_copy): copy a list
+	(ps_list_free): free a list (but not its data members)
+	(onexit): copy list before iterating over it
+
+	* libsock/serial.c: remove unused proto
+	(pi_serial_device_dup): copy tco struct, copy ref and increment it
+	(pi_serial_close): decrement ref
+
+	* libsock/pi-header.c: include config.h
+
+	* include/pi-serial.h: add ref counter
+
+	* include/pi-debug.h: always spew assert failures
+
+	* include/Makefile.am (c_header_DATA): don't install pi-version.h.in
+
 2002-01-24  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Type cleanups. s/idx/i/ # that was stupid of me, loop variables

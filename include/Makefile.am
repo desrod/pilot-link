@@ -28,7 +28,9 @@ c_header_DATA = \
 	pi-syspkt.h		\
 	pi-todo.h		\
 	pi-util.h		\
-	pi-version.h		\
+	pi-version.h
+
+c_noinstheader_DATA = 		\
 	pi-version.h.in
 
 c_headerdir=$(includedir)
@@ -46,4 +48,6 @@ cxx_headerdir=$(includedir)
 
 EXTRA_DIST = \
 	$(c_header_DATA)	\
+	$(c_noinstheader_DATA)	\
 	$(cxx_header_DATA)
+

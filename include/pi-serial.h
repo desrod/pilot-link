@@ -25,6 +25,8 @@ extern "C" {
 		int buf_size;
 		
 		/* I/O options */
+		int *ref;
+		
 #ifndef WIN32
 #ifndef OS2
 # ifndef SGTTY
