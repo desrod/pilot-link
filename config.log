@@ -1,0 +1,260 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:574: checking host system type
+configure:599: checking for gcc
+configure:676: checking whether the C compiler (gcc  ) works
+configure:690: gcc -o conftest    conftest.c  1>&5
+configure:710: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:715: checking whether we are using GNU C
+configure:724: gcc -E conftest.c
+configure:739: checking whether gcc accepts -g
+configure:777: checking for a BSD compatible install
+configure:829: checking for ranlib
+configure:868: checking for ld used by GCC
+configure:927: checking if the linker (/usr/bin/ld) is GNU ld
+ld version 2.7 (with BFD 2.7.0.2)
+configure:943: checking for BSD-compatible nm
+configure:978: checking whether ln -s works
+configure:1071: checking for ranlib
+configure:1102: checking for bison
+configure:1161: checking for c++
+configure:1203: checking whether C++ compiler (c++  ) works
+configure:1216: c++ -c   conftest.C 1>&5
+configure:1238: checking whether we are using GNU C++
+configure:1247: c++ -E conftest.C
+configure:1262: checking whether c++ accepts -g
+configure:1340: checking for main in -lg++
+configure:1355: c++ -o conftest -g -O2   conftest.C -lg++   1>&5
+configure:1385: checking for ldexp in -lm
+configure:1404: gcc -o conftest -g -O2   conftest.c -lm   1>&5
+configure:1425: checking for alloca in -lPW
+configure:1444: gcc -o conftest -g -O2   conftest.c -lPW   -lm 1>&5
+configure:1437: warning: conflicting types for built-in function `alloca'
+ld: cannot open -lPW: No such file or directory
+configure: failed program was:
+#line 1433 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char alloca();
+
+int main() {
+alloca()
+; return 0; }
+configure:1488: gcc -o conftest -g -O2   conftest.c  -lm -lreadline 1>&5
+/usr/local/lib/libreadline.so: undefined reference to `tgetnum'
+/usr/local/lib/libreadline.so: undefined reference to `tgoto'
+/usr/local/lib/libreadline.so: undefined reference to `tgetflag'
+/usr/local/lib/libreadline.so: undefined reference to `BC'
+/usr/local/lib/libreadline.so: undefined reference to `tputs'
+/usr/local/lib/libreadline.so: undefined reference to `PC'
+/usr/local/lib/libreadline.so: undefined reference to `tgetent'
+/usr/local/lib/libreadline.so: undefined reference to `UP'
+/usr/local/lib/libreadline.so: undefined reference to `tgetstr'
+configure: failed program was:
+#line 1481 "configure"
+#include "confdefs.h"
+
+int main() {
+(void)readline(0);
+; return 0; }
+configure:1504: gcc -o conftest -g -O2   conftest.c  -lm -lreadline -ltermcap 1>&5
+configure:1517: checking for readline
+configure:1530: gcc -o conftest -g -O2   conftest.c  -lm -lreadline -ltermcap 1>&5
+/tmp/cca111331.o: In function `main':
+/home/kjahds/work/plk/configure:1526: undefined reference to `rl_callback_read_char'
+configure: failed program was:
+#line 1522 "configure"
+#include "confdefs.h"
+#include <stdio.h>
+	#include <readline/readline.h>
+int main() {
+rl_callback_read_char();
+; return 0; }
+configure:1561: gcc -o conftest -g -O2   conftest.c  -lm -lreadline -ltermcap 1>&5
+configure:1581: checking how to run the C preprocessor
+configure:1602: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1642: checking for ANSI C header files
+configure:1655: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1722: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:1749: checking for fcntl.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for malloc.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for sys/ioctl.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for sys/time.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for sys/ioctl_compat.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1755: sys/ioctl_compat.h: No such file or directory
+configure: failed program was:
+#line 1754 "configure"
+#include "confdefs.h"
+#include <sys/ioctl_compat.h>
+configure:1749: checking for memory.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for string.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for strings.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for unistd.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for stdlib.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for netinet/in.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for dirent.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for sys/ndir.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1755: sys/ndir.h: No such file or directory
+configure: failed program was:
+#line 1754 "configure"
+#include "confdefs.h"
+#include <sys/ndir.h>
+configure:1749: checking for sys/dir.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for ndir.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1755: ndir.h: No such file or directory
+configure: failed program was:
+#line 1754 "configure"
+#include "confdefs.h"
+#include <ndir.h>
+configure:1749: checking for sys/select.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1755: sys/select.h: No such file or directory
+configure: failed program was:
+#line 1754 "configure"
+#include "confdefs.h"
+#include <sys/select.h>
+configure:1749: checking for sockio.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1755: sockio.h: No such file or directory
+configure: failed program was:
+#line 1754 "configure"
+#include "confdefs.h"
+#include <sockio.h>
+configure:1749: checking for netdb.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1749: checking for sys/utsname.h
+configure:1759: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1787: checking for working const
+configure:1841: gcc -c -g -O2  conftest.c 1>&5
+configure:1862: checking whether time.h and sys/time.h may both be included
+configure:1876: gcc -c -g -O2  conftest.c 1>&5
+configure:1897: checking whether struct tm is in sys/time.h or time.h
+configure:1910: gcc -c -g -O2  conftest.c 1>&5
+configure:1933: checking for connect
+configure:1961: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2074: checking for gethostbyname
+configure:2102: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2158: checking for main in -linet
+configure:2173: gcc -o conftest -g -O2   conftest.c -linet   -lm 1>&5
+ld: cannot open -linet: No such file or directory
+configure: failed program was:
+#line 2166 "configure"
+#include "confdefs.h"
+
+int main() {
+main()
+; return 0; }
+configure:2196: checking whether gcc needs -traditional
+configure:2203: sgtty.h: No such file or directory
+configure:2242: checking return type of signal handlers
+configure:2264: gcc -c -g -O2  conftest.c 1>&5
+configure:2285: checking for atexit
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for strchr
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for strdup
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for memcpy
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2297: warning: conflicting types for built-in function `memcpy'
+configure:2285: checking for memmove
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for strtoul
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for cfmakeraw
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for cfsetspeed
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+/tmp/cca117321.o: In function `main':
+/home/kjahds/work/plk/configure:2307: undefined reference to `cfsetspeed'
+configure: failed program was:
+#line 2290 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char cfsetspeed(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char cfsetspeed();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_cfsetspeed) || defined (__stub___cfsetspeed)
+choke me
+#else
+cfsetspeed();
+#endif
+
+; return 0; }
+configure:2285: checking for cfsetispeed
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for cfsetospeed
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for sigaction
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for dup2
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for inet_aton
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for gethostname
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for uname
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2285: checking for putenv
+configure:2313: gcc -o conftest -g -O2   conftest.c  -lm 1>&5
+configure:2339: checking for cispeed and cospeed members of struct termios
+configure:2352: gcc -c -g -O2  conftest.c 1>&5
+configure: In function `main':
+configure:2348: structure has no member named `c_ispeed'
+configure:2348: structure has no member named `c_ospeed'
+configure: failed program was:
+#line 2344 "configure"
+#include "confdefs.h"
+#include <termios.h>
+int main() {
+int main(void) {
+ struct termios t;t.c_ispeed=t.c_ospeed=0;}
+; return 0; }
+configure:2373: checking for sa_len
+configure:2387: gcc -c -g -O2  conftest.c 1>&5
+configure: In function `main':
+configure:2383: structure has no member named `sa_len'
+configure: failed program was:
+#line 2378 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+int main() {
+int main(void) {
+ struct sockaddr t;t.sa_len = 0;}
+; return 0; }
+configure:2453: checking for perl
+configure:2492: checking for Java Development Kit
+configure:2579: checking for Tcl
+configure:2630: checking for Itcl
+configure:2672: checking for Tk
+configure:2735: checking for python
+configure:2772: checking for Python
+configure:2806: checking for maximum warnings compiler flag

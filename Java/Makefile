@@ -1,0 +1,935 @@
+# Generated automatically from Makefile.in by configure.
+
+OBJS = Interface.lo Pdapilot_calls.lo Pdapilot_memo_Record.lo Pdapilot_memo_AppBlock.lo\
+		Pdapilot_todo_Record.lo Pdapilot_todo_AppBlock.lo Pdapilot_CategoryAppBlock.lo\
+		Pdapilot_address_Record.lo Pdapilot_address_AppBlock.lo\
+		Pdapilot_appointment_Record.lo Pdapilot_appointment_AppBlock.lo\
+		Pdapilot_mail_Record.lo Pdapilot_mail_AppBlock.lo Pdapilot_mail_SyncPref.lo Pdapilot_mail_SignaturePref.lo\
+		Pdapilot_expense_Record.lo Pdapilot_expense_AppBlock.lo Pdapilot_expense_Pref.lo\
+		Pdapilot_File.lo
+
+LIBS = -L${libdir} -lpisock
+
+STUBH = java_util_Date.h Pdapilot_calls.h Pdapilot_constants.h\
+		Pdapilot_Database.h Pdapilot_Block.h Pdapilot_Record.h\
+		Pdapilot_memo_Record.h Pdapilot_Resource.h Pdapilot_Char4.h Pdapilot_RecordID.h\
+		Pdapilot_CardInfo.h Pdapilot_SysInfo.h Pdapilot_UserInfo.h \
+		Pdapilot_DBInfo.h Pdapilot_NetInfo.h Pdapilot_AppBlock.h Pdapilot_SortBlock.h\
+		Pdapilot_Pref.h Pdapilot_memo_AppBlock.h Pdapilot_todo_AppBlock.h Pdapilot_todo_Record.h\
+		Pdapilot_CategoryAppBlock.h\
+		Pdapilot_address_Record.h Pdapilot_address_AppBlock.h\
+		Pdapilot_appointment_Record.h Pdapilot_appointment_AppBlock.h\
+		Pdapilot_mail_Record.h Pdapilot_mail_AppBlock.h Pdapilot_mail_SyncPref.h Pdapilot_mail_SignaturePref.h\
+		Pdapilot_mail_sync.h Pdapilot_mail_sort.h\
+		Pdapilot_expense_Record.h Pdapilot_expense_AppBlock.h Pdapilot_expense_Pref.h \
+		Pdapilot_appointment_repeat.h Pdapilot_appointment_time.h \
+		Pdapilot_expense_payment.h Pdapilot_expense_distance.h Pdapilot_expense_sort.h Pdapilot_expense_type.h\
+		Pdapilot_expense_CustomCurrency.h\
+		Pdapilot_File.h\
+		Pdapilot_Dlp.h
+
+STUBC = Pdapilot_calls.c Pdapilot_memo_Record.c Pdapilot_memo_AppBlock.c Pdapilot_constants.c \
+		Pdapilot_todo_Record.c Pdapilot_todo_AppBlock.c Pdapilot_CategoryAppBlock.c\
+		Pdapilot_address_Record.c Pdapilot_address_AppBlock.c\
+		Pdapilot_appointment_Record.c Pdapilot_appointment_AppBlock.c\
+		Pdapilot_mail_Record.c Pdapilot_mail_AppBlock.c Pdapilot_mail_SyncPref.c Pdapilot_mail_SignaturePref.c\
+		Pdapilot_expense_Record.c Pdapilot_expense_AppBlock.c Pdapilot_expense_Pref.c\
+		Pdapilot_File.c
+
+JDKSPECIFIC = Pdapilot/Util.java Pdapilot/Char4.java
+
+prefix = /usr/pilot
+exec_prefix = ${prefix}
+libdir = ${exec_prefix}/lib
+srcdir = .
+
+java = /usr/local/java
+JAVACOMPILE = $(java)/bin/javac -d bin
+JAVAH = $(java)/bin/javah
+JAVARUN = $(java)/bin/java
+JAVADEPS = jdeps
+JAVAVERSION = 1.0
+
+top_builddir = ..
+
+CC = gcc
+CFLAGS = -I$(java)/include/linux -I$(java)/include -I../include -I$(srcdir)/../include -DJAVAMAJOR=1 -DJAVAMINOR=0 -g -O2 -Wall
+AR = ar
+ARFLAGS = cur
+RANLIB = ranlib
+RM = rm -f
+LIBTOOL = $(top_builddir)/libtool
+
+.SUFFIXES: .c .lo .o .class .java
+
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+
+.java.class:
+	$(JAVACOMPILE) $<
+
+all: libJavaPisock.la Pdapilot/constants.class $(CLASSES)
+
+$(JDKSPECIFIC):
+	cd Pdapilot; for i in ../Pdapilot-JDK-$(JAVAVERSION)/*; do ln -s $$i .; done
+
+doConstants: doConstants.o
+	$(CC) -o doConstants doConstants.o
+
+stubs: $(JDKSPECIFIC) $(STUBH) $(STUBC)
+	
+java_util_Date.h:
+	$(JAVAH) java.util.Date
+
+Pdapilot/constants.java: doConstants
+	doConstants
+
+Pdapilot_calls.h: Pdapilot/calls.class
+	$(JAVAH) Pdapilot.calls
+
+Pdapilot_UserInfo.h: Pdapilot/UserInfo.class
+	$(JAVAH) Pdapilot.UserInfo
+
+Pdapilot_SysInfo.h: Pdapilot/SysInfo.class
+	$(JAVAH) Pdapilot.SysInfo
+
+Pdapilot_calls.c: Pdapilot/calls.class
+	$(JAVAH) -stubs Pdapilot.calls
+
+Pdapilot_memo_Record.c: Pdapilot/memo/Record.class
+	$(JAVAH) -stubs Pdapilot.memo.Record
+
+Pdapilot_todo_Record.c: Pdapilot/todo/Record.class
+	$(JAVAH) -stubs Pdapilot.todo.Record
+
+Pdapilot_constants.h: Pdapilot/constants.class
+	$(JAVAH) Pdapilot.constants
+
+Pdapilot_DBInfo.h: Pdapilot/DBInfo.class
+	$(JAVAH) Pdapilot.DBInfo
+
+Pdapilot_NetInfo.h: Pdapilot/NetInfo.class
+	$(JAVAH) Pdapilot.NetInfo
+
+Pdapilot_appointment_repeat.h: Pdapilot/appointment/repeat.class
+	$(JAVAH) Pdapilot.appointment.repeat
+
+Pdapilot_appointment_time.h: Pdapilot/appointment/time.class
+	$(JAVAH) Pdapilot.appointment.time
+
+Pdapilot_expense_distance.h: Pdapilot/expense/distance.class
+	$(JAVAH) Pdapilot.expense.distance
+
+Pdapilot_expense_type.h: Pdapilot/expense/type.class
+	$(JAVAH) Pdapilot.expense.type
+
+Pdapilot_expense_payment.h: Pdapilot/expense/payment.class
+	$(JAVAH) Pdapilot.expense.payment
+	
+Pdapilot_expense_sort.h: Pdapilot/expense/sort.class
+	$(JAVAH) Pdapilot.expense.sort
+	
+Pdapilot_AppBlock.h: Pdapilot/AppBlock.class
+	$(JAVAH) Pdapilot.AppBlock
+
+Pdapilot_memo_AppBlock.c: Pdapilot/memo/AppBlock.class
+	$(JAVAH) -stubs Pdapilot.memo.AppBlock
+
+Pdapilot_todo_AppBlock.c: Pdapilot/todo/AppBlock.class
+	$(JAVAH) -stubs Pdapilot.todo.AppBlock
+
+Pdapilot_CategoryAppBlock.c: Pdapilot/CategoryAppBlock.class
+	$(JAVAH) -stubs Pdapilot.CategoryAppBlock
+
+Pdapilot_CategoryAppBlock.h: Pdapilot/CategoryAppBlock.class
+	$(JAVAH) Pdapilot.CategoryAppBlock
+
+Pdapilot_File.c: Pdapilot/File.class
+	$(JAVAH) -stubs Pdapilot.File
+
+Pdapilot_File.h: Pdapilot/File.class
+	$(JAVAH) Pdapilot.File
+
+Pdapilot_expense_AppBlock.c: Pdapilot/expense/AppBlock.java
+	$(JAVAH) -stubs Pdapilot.expense.AppBlock
+
+Pdapilot_expense_AppBlock.h: Pdapilot/expense/AppBlock.class
+	$(JAVAH) Pdapilot.expense.AppBlock
+
+Pdapilot_expense_Record.c: Pdapilot/expense/Record.java
+	$(JAVAH) -stubs Pdapilot.expense.Record
+
+Pdapilot_expense_Record.h: Pdapilot/expense/Record.class
+	$(JAVAH) Pdapilot.expense.Record
+
+Pdapilot_expense_Pref.c: Pdapilot/expense/Pref.java
+	$(JAVAH) -stubs Pdapilot.expense.Pref
+
+Pdapilot_expense_Pref.h: Pdapilot/expense/Pref.class
+	$(JAVAH) Pdapilot.expense.Pref
+
+Pdapilot_expense_CustomCurrency.h: Pdapilot/expense/CustomCurrency.class
+	$(JAVAH) Pdapilot.expense.CustomCurrency
+
+Pdapilot_mail_AppBlock.c: Pdapilot/mail/AppBlock.java
+	$(JAVAH) -stubs Pdapilot.mail.AppBlock
+
+Pdapilot_mail_AppBlock.h: Pdapilot/mail/AppBlock.class
+	$(JAVAH) Pdapilot.mail.AppBlock
+
+Pdapilot_mail_sort.h: Pdapilot/mail/sort.class
+	$(JAVAH) Pdapilot.mail.sort
+
+Pdapilot_mail_sync.h: Pdapilot/mail/sync.class
+	$(JAVAH) Pdapilot.mail.sync
+
+Pdapilot_mail_Record.c: Pdapilot/mail/Record.java
+	$(JAVAH) -stubs Pdapilot.mail.Record
+
+Pdapilot_mail_Record.h: Pdapilot/mail/Record.class
+	$(JAVAH) Pdapilot.mail.Record
+
+Pdapilot_mail_SyncPref.c: Pdapilot/mail/SyncPref.java
+	$(JAVAH) -stubs Pdapilot.mail.SyncPref
+
+Pdapilot_mail_SyncPref.h: Pdapilot/mail/SyncPref.class
+	$(JAVAH) Pdapilot.mail.SyncPref
+
+Pdapilot_mail_SignaturePref.c: Pdapilot/mail/SignaturePref.java
+	$(JAVAH) -stubs Pdapilot.mail.SignaturePref
+
+Pdapilot_mail_SignaturePref.h: Pdapilot/mail/SignaturePref.class
+	$(JAVAH) Pdapilot.mail.SignaturePref
+
+Pdapilot_address_AppBlock.c: Pdapilot/address/AppBlock.class
+	$(JAVAH) -stubs Pdapilot.address.AppBlock
+
+Pdapilot_address_AppBlock.h: Pdapilot/address/AppBlock.class
+	$(JAVAH) Pdapilot.address.AppBlock
+
+Pdapilot_address_Record.c: Pdapilot/address/Record.class
+	$(JAVAH) -stubs Pdapilot.address.Record
+
+Pdapilot_address_Record.h: Pdapilot/address/Record.class
+	$(JAVAH) Pdapilot.address.Record
+
+Pdapilot_appointment_AppBlock.c: Pdapilot/appointment/AppBlock.class
+	$(JAVAH) -stubs Pdapilot.appointment.AppBlock
+
+Pdapilot_appointment_AppBlock.h: Pdapilot/appointment/AppBlock.class
+	$(JAVAH) Pdapilot.appointment.AppBlock
+
+Pdapilot_appointment_Record.c: Pdapilot/appointment/Record.class
+	$(JAVAH) -stubs Pdapilot.appointment.Record
+
+Pdapilot_appointment_Record.h: Pdapilot/appointment/Record.class
+	$(JAVAH) Pdapilot.appointment.Record
+
+Pdapilot_SortBlock.h: Pdapilot/SortBlock.class
+	$(JAVAH) Pdapilot.SortBlock
+
+Pdapilot_Database.h: Pdapilot/Database.class
+	$(JAVAH) Pdapilot.Database
+
+Pdapilot_Block.h: Pdapilot/Block.class
+	$(JAVAH) Pdapilot.Block
+
+Pdapilot_CardInfo.h: Pdapilot/CardInfo.class
+	$(JAVAH) Pdapilot.CardInfo
+
+Pdapilot_Record.h: Pdapilot/Record.class
+	$(JAVAH) Pdapilot.Record
+
+Pdapilot_memo_Record.h: Pdapilot/memo/Record.class
+	$(JAVAH) Pdapilot.memo.Record
+
+Pdapilot_memo_AppBlock.h: Pdapilot/memo/AppBlock.class
+	$(JAVAH) Pdapilot.memo.AppBlock
+
+Pdapilot_todo_Record.h: Pdapilot/todo/Record.class
+	$(JAVAH) Pdapilot.todo.Record
+
+Pdapilot_todo_AppBlock.h: Pdapilot/todo/AppBlock.class
+	$(JAVAH) Pdapilot.todo.AppBlock
+
+Pdapilot_Resource.h: Pdapilot/Resource.class
+	$(JAVAH) Pdapilot.Resource
+
+Pdapilot_Dlp.h: Pdapilot/Dlp.class
+	$(JAVAH) Pdapilot.Dlp
+
+Pdapilot_Char4.h: Pdapilot/Char4.class
+	$(JAVAH) Pdapilot.Char4
+
+Pdapilot_Pref.h: Pdapilot/Pref.class
+	$(JAVAH) Pdapilot.Pref
+
+Pdapilot_RecordID.h: Pdapilot/RecordID.class
+	$(JAVAH) Pdapilot.RecordID
+
+Pdapilot_constants.c: Pdapilot/constants.class
+	$(JAVAH) -stubs Pdapilot.constants
+
+libJavaPisock.la: $(OBJS)
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) \
+		-export-dynamic -rpath $(libdir) -version-info 0:0:0 \
+		-o libJavaPisock.la $(OBJS) $(LIBS)
+
+test: Pdapilot/constants.class libJavaPisock.la $(CLASSES) test.class
+	/bin/sh dotest $(JAVARUN) test
+
+realclean distclean: clean
+	$(RM) Makefile
+
+clean:
+	$(RM) *.o *.lo *.a *.la core a.out *.orig *.so *.class */*.class */*/*.class doConstants
+	$(RM) *~ */*~ */*/*~ Pdapilot/constants.java Pdapilot/constants.class doConstants
+	$(RM) $(STUBC) $(STUBH) $(JDKSPECIFIC)
+	$(RM) -rf bin
+	$(RM) -rf .libs _libs
+
+depend: $(JDKSPECIFIC)
+	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -w -MM -I../include *.c | perl -pne 's/^(\S*)\.o/$$& $$1.lo/g' >> Makefile.in ; $(JAVADEPS) *.java *.java */*.java */*/*.java  >> Makefile.in
+
+# deps missed by jdeps:
+
+Pdapilot/Block.class: Pdapilot/Util.class
+Pdapilot/DlpException.class: Pdapilot/Char4.class #Well, actually 'calls'
+Pdapilot/Dlp.java Pdapilot/constants.class: Pdapilot/constants.java
+
+#Dependencies
+Interface.o Interface.lo: Interface.c Pdapilot_calls.h Pdapilot_Database.h \
+ Pdapilot_Record.h Pdapilot_Pref.h Pdapilot_Dlp.h Pdapilot_AppBlock.h \
+ Pdapilot_SortBlock.h Pdapilot_Resource.h Pdapilot_CardInfo.h \
+ Pdapilot_UserInfo.h Pdapilot_SysInfo.h Pdapilot_NetInfo.h \
+ Pdapilot_CategoryAppBlock.h Pdapilot_memo_Record.h \
+ Pdapilot_memo_AppBlock.h Pdapilot_todo_Record.h \
+ Pdapilot_todo_AppBlock.h Pdapilot_address_Record.h \
+ Pdapilot_address_AppBlock.h Pdapilot_appointment_Record.h \
+ Pdapilot_appointment_AppBlock.h Pdapilot_appointment_repeat.h \
+ Pdapilot_appointment_time.h Pdapilot_mail_Record.h \
+ Pdapilot_mail_AppBlock.h Pdapilot_mail_SyncPref.h \
+ Pdapilot_mail_SignaturePref.h Pdapilot_mail_sort.h \
+ Pdapilot_mail_sync.h Pdapilot_expense_Record.h \
+ Pdapilot_expense_AppBlock.h Pdapilot_expense_Pref.h \
+ Pdapilot_expense_type.h Pdapilot_expense_payment.h \
+ Pdapilot_expense_distance.h Pdapilot_expense_sort.h \
+ Pdapilot_expense_CustomCurrency.h Pdapilot_RecordID.h \
+ Pdapilot_Char4.h Pdapilot_DBInfo.h Pdapilot_File.h java_util_Date.h \
+ ../include/pi-source.h ../include/pi-config.h ../include/pi-socket.h \
+ ../include/pi-args.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-memo.h ../include/pi-appinfo.h ../include/pi-address.h \
+ ../include/pi-datebook.h ../include/pi-todo.h ../include/pi-mail.h \
+ ../include/pi-expense.h ../include/pi-file.h
+Pdapilot_CategoryAppBlock.o Pdapilot_CategoryAppBlock.lo: Pdapilot_CategoryAppBlock.c
+Pdapilot_File.o Pdapilot_File.lo: Pdapilot_File.c
+Pdapilot_address_AppBlock.o Pdapilot_address_AppBlock.lo: Pdapilot_address_AppBlock.c
+Pdapilot_address_Record.o Pdapilot_address_Record.lo: Pdapilot_address_Record.c
+Pdapilot_appointment_AppBlock.o Pdapilot_appointment_AppBlock.lo: Pdapilot_appointment_AppBlock.c
+Pdapilot_appointment_Record.o Pdapilot_appointment_Record.lo: Pdapilot_appointment_Record.c
+Pdapilot_calls.o Pdapilot_calls.lo: Pdapilot_calls.c
+Pdapilot_expense_AppBlock.o Pdapilot_expense_AppBlock.lo: Pdapilot_expense_AppBlock.c
+Pdapilot_expense_Pref.o Pdapilot_expense_Pref.lo: Pdapilot_expense_Pref.c
+Pdapilot_expense_Record.o Pdapilot_expense_Record.lo: Pdapilot_expense_Record.c
+Pdapilot_mail_AppBlock.o Pdapilot_mail_AppBlock.lo: Pdapilot_mail_AppBlock.c
+Pdapilot_mail_Record.o Pdapilot_mail_Record.lo: Pdapilot_mail_Record.c
+Pdapilot_mail_SignaturePref.o Pdapilot_mail_SignaturePref.lo: Pdapilot_mail_SignaturePref.c
+Pdapilot_mail_SyncPref.o Pdapilot_mail_SyncPref.lo: Pdapilot_mail_SyncPref.c
+Pdapilot_memo_AppBlock.o Pdapilot_memo_AppBlock.lo: Pdapilot_memo_AppBlock.c
+Pdapilot_memo_Record.o Pdapilot_memo_Record.lo: Pdapilot_memo_Record.c
+Pdapilot_todo_AppBlock.o Pdapilot_todo_AppBlock.lo: Pdapilot_todo_AppBlock.c
+Pdapilot_todo_Record.o Pdapilot_todo_Record.lo: Pdapilot_todo_Record.c
+doConstants.o doConstants.lo: doConstants.c ../include/pi-source.h \
+ ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
+ ../include/pi-macros.h ../include/pi-dlp.h
+# -- Automatically generated by JavaDeps --
+
+# Rules for Pdapilot.expense.type
+#
+Pdapilot/expense/type.class: Pdapilot/expense/type.java
+	$(JAVACOMPILE) Pdapilot/expense/type.java
+
+
+# Rules for Pdapilot.Block
+#
+Pdapilot/Block.class: Pdapilot/Block.java
+	$(JAVACOMPILE) Pdapilot/Block.java
+
+
+# Rules for Pdapilot.RecordID
+#
+Pdapilot/RecordID.class: Pdapilot/RecordID.java
+	$(JAVACOMPILE) Pdapilot/RecordID.java
+
+
+# Rules for Pdapilot.Record
+#
+Pdapilot/Record.class: Pdapilot/Record.java
+	$(JAVACOMPILE) Pdapilot/Record.java
+
+Pdapilot/Record.class: Pdapilot/Block.class
+
+Pdapilot/Record.class: Pdapilot/RecordID.class
+
+
+# Rules for Pdapilot.mail.Record
+#
+Pdapilot/mail/Record.class: Pdapilot/mail/Record.java
+	$(JAVACOMPILE) Pdapilot/mail/Record.java
+
+Pdapilot/mail/Record.class: Pdapilot/Record.class
+
+Pdapilot/mail/Record.class: Pdapilot/RecordID.class
+
+
+# Rules for Pdapilot.Char4
+#
+Pdapilot/Char4.class: Pdapilot/Char4.java
+	$(JAVACOMPILE) Pdapilot/Char4.java
+
+
+# Rules for Pdapilot.DBInfo
+#
+Pdapilot/DBInfo.class: Pdapilot/DBInfo.java
+	$(JAVACOMPILE) Pdapilot/DBInfo.java
+
+Pdapilot/DBInfo.class: Pdapilot/Char4.class
+
+
+# Rules for Pdapilot.Util
+#
+Pdapilot/Util.class: Pdapilot/Util.java
+	$(JAVACOMPILE) Pdapilot/Util.java
+
+
+# Rules for Pdapilot.todo.Record
+#
+Pdapilot/todo/Record.class: Pdapilot/todo/Record.java
+	$(JAVACOMPILE) Pdapilot/todo/Record.java
+
+Pdapilot/todo/Record.class: Pdapilot/Util.class
+
+Pdapilot/todo/Record.class: Pdapilot/Record.class
+
+Pdapilot/todo/Record.class: Pdapilot/RecordID.class
+
+
+# Rules for Pdapilot.DlpException
+#
+Pdapilot/DlpException.class: Pdapilot/DlpException.java
+	$(JAVACOMPILE) Pdapilot/DlpException.java
+
+
+# Rules for Pdapilot.AppBlock
+#
+Pdapilot/AppBlock.class: Pdapilot/AppBlock.java
+	$(JAVACOMPILE) Pdapilot/AppBlock.java
+
+Pdapilot/AppBlock.class: Pdapilot/Block.class
+
+
+# Rules for Pdapilot.CategoryAppBlock
+#
+Pdapilot/CategoryAppBlock.class: Pdapilot/CategoryAppBlock.java
+	$(JAVACOMPILE) Pdapilot/CategoryAppBlock.java
+
+Pdapilot/CategoryAppBlock.class: Pdapilot/AppBlock.class
+
+
+# Rules for Pdapilot.todo.AppBlock
+#
+Pdapilot/todo/AppBlock.class: Pdapilot/todo/AppBlock.java
+	$(JAVACOMPILE) Pdapilot/todo/AppBlock.java
+
+Pdapilot/todo/AppBlock.class: Pdapilot/CategoryAppBlock.class
+
+
+# Rules for Pdapilot.Resource
+#
+Pdapilot/Resource.class: Pdapilot/Resource.java
+	$(JAVACOMPILE) Pdapilot/Resource.java
+
+Pdapilot/Resource.class: Pdapilot/Block.class
+
+Pdapilot/Resource.class: Pdapilot/Char4.class
+
+
+# Rules for Pdapilot.Pref
+#
+Pdapilot/Pref.class: Pdapilot/Pref.java
+	$(JAVACOMPILE) Pdapilot/Pref.java
+
+Pdapilot/Pref.class: Pdapilot/Block.class
+
+Pdapilot/Pref.class: Pdapilot/Char4.class
+
+
+# Rules for Pdapilot.SortBlock
+#
+Pdapilot/SortBlock.class: Pdapilot/SortBlock.java
+	$(JAVACOMPILE) Pdapilot/SortBlock.java
+
+Pdapilot/SortBlock.class: Pdapilot/Block.class
+
+
+# Rules for Pdapilot.memo.AppBlock
+#
+Pdapilot/memo/AppBlock.class: Pdapilot/memo/AppBlock.java
+	$(JAVACOMPILE) Pdapilot/memo/AppBlock.java
+
+Pdapilot/memo/AppBlock.class: Pdapilot/CategoryAppBlock.class
+
+
+# Rules for Pdapilot.memo.Record
+#
+Pdapilot/memo/Record.class: Pdapilot/memo/Record.java
+	$(JAVACOMPILE) Pdapilot/memo/Record.java
+
+Pdapilot/memo/Record.class: Pdapilot/Record.class
+
+Pdapilot/memo/Record.class: Pdapilot/RecordID.class
+
+
+# Rules for Pdapilot.mail.sort
+#
+Pdapilot/mail/sort.class: Pdapilot/mail/sort.java
+	$(JAVACOMPILE) Pdapilot/mail/sort.java
+
+
+# Rules for Pdapilot.mail.AppBlock
+#
+Pdapilot/mail/AppBlock.class: Pdapilot/mail/AppBlock.java
+	$(JAVACOMPILE) Pdapilot/mail/AppBlock.java
+
+Pdapilot/mail/AppBlock.class: Pdapilot/CategoryAppBlock.class
+
+Pdapilot/mail/AppBlock.class: Pdapilot/mail/sort.class
+
+Pdapilot/mail/AppBlock.class: Pdapilot/RecordID.class
+
+
+# Rules for Pdapilot.mail.sync
+#
+Pdapilot/mail/sync.class: Pdapilot/mail/sync.java
+	$(JAVACOMPILE) Pdapilot/mail/sync.java
+
+
+# Rules for Pdapilot.mail.SyncPref
+#
+Pdapilot/mail/SyncPref.class: Pdapilot/mail/SyncPref.java
+	$(JAVACOMPILE) Pdapilot/mail/SyncPref.java
+
+Pdapilot/mail/SyncPref.class: Pdapilot/Pref.class
+
+Pdapilot/mail/SyncPref.class: Pdapilot/mail/sync.class
+
+Pdapilot/mail/SyncPref.class: Pdapilot/Char4.class
+
+
+# Rules for Pdapilot.mail.SignaturePref
+#
+Pdapilot/mail/SignaturePref.class: Pdapilot/mail/SignaturePref.java
+	$(JAVACOMPILE) Pdapilot/mail/SignaturePref.java
+
+Pdapilot/mail/SignaturePref.class: Pdapilot/Pref.class
+
+Pdapilot/mail/SignaturePref.class: Pdapilot/Char4.class
+
+
+# Rules for Pdapilot.appointment.AppBlock
+#
+Pdapilot/appointment/AppBlock.class: Pdapilot/appointment/AppBlock.java
+	$(JAVACOMPILE) Pdapilot/appointment/AppBlock.java
+
+Pdapilot/appointment/AppBlock.class: Pdapilot/CategoryAppBlock.class
+
+
+# Rules for Pdapilot.appointment.time
+#
+Pdapilot/appointment/time.class: Pdapilot/appointment/time.java
+	$(JAVACOMPILE) Pdapilot/appointment/time.java
+
+
+# Rules for Pdapilot.appointment.repeat
+#
+Pdapilot/appointment/repeat.class: Pdapilot/appointment/repeat.java
+	$(JAVACOMPILE) Pdapilot/appointment/repeat.java
+
+
+# Rules for Pdapilot.appointment.Record
+#
+Pdapilot/appointment/Record.class: Pdapilot/appointment/Record.java
+	$(JAVACOMPILE) Pdapilot/appointment/Record.java
+
+Pdapilot/appointment/Record.class: Pdapilot/Record.class
+
+Pdapilot/appointment/Record.class: Pdapilot/appointment/time.class
+
+Pdapilot/appointment/Record.class: Pdapilot/appointment/repeat.class
+
+Pdapilot/appointment/Record.class: Pdapilot/RecordID.class
+
+
+# Rules for Pdapilot.expense.sort
+#
+Pdapilot/expense/sort.class: Pdapilot/expense/sort.java
+	$(JAVACOMPILE) Pdapilot/expense/sort.java
+
+
+# Rules for Pdapilot.expense.CustomCurrency
+#
+Pdapilot/expense/CustomCurrency.class: Pdapilot/expense/CustomCurrency.java
+	$(JAVACOMPILE) Pdapilot/expense/CustomCurrency.java
+
+
+# Rules for Pdapilot.expense.AppBlock
+#
+Pdapilot/expense/AppBlock.class: Pdapilot/expense/AppBlock.java
+	$(JAVACOMPILE) Pdapilot/expense/AppBlock.java
+
+Pdapilot/expense/AppBlock.class: Pdapilot/Util.class
+
+Pdapilot/expense/AppBlock.class: Pdapilot/CategoryAppBlock.class
+
+Pdapilot/expense/AppBlock.class: Pdapilot/expense/sort.class
+
+Pdapilot/expense/AppBlock.class: Pdapilot/expense/CustomCurrency.class
+
+
+# Rules for Pdapilot.expense.payment
+#
+Pdapilot/expense/payment.class: Pdapilot/expense/payment.java
+	$(JAVACOMPILE) Pdapilot/expense/payment.java
+
+
+# Rules for Pdapilot.expense.Record
+#
+Pdapilot/expense/Record.class: Pdapilot/expense/Record.java
+	$(JAVACOMPILE) Pdapilot/expense/Record.java
+
+Pdapilot/expense/Record.class: Pdapilot/Util.class
+
+Pdapilot/expense/Record.class: Pdapilot/Record.class
+
+Pdapilot/expense/Record.class: Pdapilot/expense/type.class
+
+Pdapilot/expense/Record.class: Pdapilot/expense/payment.class
+
+Pdapilot/expense/Record.class: Pdapilot/RecordID.class
+
+
+# Rules for Pdapilot.expense.distance
+#
+Pdapilot/expense/distance.class: Pdapilot/expense/distance.java
+	$(JAVACOMPILE) Pdapilot/expense/distance.java
+
+
+# Rules for Pdapilot.expense.Pref
+#
+Pdapilot/expense/Pref.class: Pdapilot/expense/Pref.java
+	$(JAVACOMPILE) Pdapilot/expense/Pref.java
+
+Pdapilot/expense/Pref.class: Pdapilot/Pref.class
+
+Pdapilot/expense/Pref.class: Pdapilot/expense/distance.class
+
+Pdapilot/expense/Pref.class: Pdapilot/Char4.class
+
+
+# Rules for Pdapilot.address.AppBlock
+#
+Pdapilot/address/AppBlock.class: Pdapilot/address/AppBlock.java
+	$(JAVACOMPILE) Pdapilot/address/AppBlock.java
+
+Pdapilot/address/AppBlock.class: Pdapilot/CategoryAppBlock.class
+
+
+# Rules for Pdapilot.address.Record
+#
+Pdapilot/address/Record.class: Pdapilot/address/Record.java
+	$(JAVACOMPILE) Pdapilot/address/Record.java
+
+Pdapilot/address/Record.class: Pdapilot/Record.class
+
+Pdapilot/address/Record.class: Pdapilot/RecordID.class
+
+
+# Rules for Pdapilot.todo.Database Pdapilot.Database Pdapilot.memo.Database Pdapilot.mail.Database Pdapilot.appointment.Database Pdapilot.expense.Database Pdapilot.address.Database 
+#
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/todo/Database.java Pdapilot/Database.java Pdapilot/memo/Database.java Pdapilot/mail/Database.java Pdapilot/appointment/Database.java Pdapilot/expense/Database.java Pdapilot/address/Database.java 
+	$(JAVACOMPILE) Pdapilot/todo/Database.java Pdapilot/Database.java Pdapilot/memo/Database.java Pdapilot/mail/Database.java Pdapilot/appointment/Database.java Pdapilot/expense/Database.java Pdapilot/address/Database.java 
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/AppBlock.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/todo/AppBlock.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/Record.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/todo/Record.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/RecordID.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/Char4.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/Resource.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/Pref.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/SortBlock.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/memo/AppBlock.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/memo/Record.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/mail/AppBlock.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/mail/Record.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/mail/SyncPref.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/mail/SignaturePref.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/appointment/AppBlock.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/appointment/Record.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/expense/AppBlock.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/expense/Record.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/expense/Pref.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/address/AppBlock.class
+
+Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class : Pdapilot/address/Record.class
+
+
+# Rules for Pdapilot.CardInfo
+#
+Pdapilot/CardInfo.class: Pdapilot/CardInfo.java
+	$(JAVACOMPILE) Pdapilot/CardInfo.java
+
+
+# Rules for Pdapilot.UserInfo
+#
+Pdapilot/UserInfo.class: Pdapilot/UserInfo.java
+	$(JAVACOMPILE) Pdapilot/UserInfo.java
+
+
+# Rules for Pdapilot.SysInfo
+#
+Pdapilot/SysInfo.class: Pdapilot/SysInfo.java
+	$(JAVACOMPILE) Pdapilot/SysInfo.java
+
+
+# Rules for Pdapilot.NetInfo
+#
+Pdapilot/NetInfo.class: Pdapilot/NetInfo.java
+	$(JAVACOMPILE) Pdapilot/NetInfo.java
+
+
+# Rules for Pdapilot.calls
+#
+Pdapilot/calls.class: Pdapilot/calls.java
+	$(JAVACOMPILE) Pdapilot/calls.java
+
+Pdapilot/calls.class: Pdapilot/DlpException.class
+
+Pdapilot/calls.class: Pdapilot/AppBlock.class
+
+Pdapilot/calls.class: Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class 
+
+Pdapilot/calls.class: Pdapilot/SortBlock.class
+
+Pdapilot/calls.class: Pdapilot/Pref.class
+
+Pdapilot/calls.class: Pdapilot/Char4.class
+
+Pdapilot/calls.class: Pdapilot/Record.class
+
+Pdapilot/calls.class: Pdapilot/RecordID.class
+
+Pdapilot/calls.class: Pdapilot/Resource.class
+
+Pdapilot/calls.class: Pdapilot/CardInfo.class
+
+Pdapilot/calls.class: Pdapilot/UserInfo.class
+
+Pdapilot/calls.class: Pdapilot/SysInfo.class
+
+Pdapilot/calls.class: Pdapilot/NetInfo.class
+
+Pdapilot/calls.class: Pdapilot/DBInfo.class
+
+
+# Rules for Pdapilot.end
+#
+Pdapilot/end.class: Pdapilot/end.java
+	$(JAVACOMPILE) Pdapilot/end.java
+
+
+# Rules for Pdapilot.NoCreatorException
+#
+Pdapilot/NoCreatorException.class: Pdapilot/NoCreatorException.java
+	$(JAVACOMPILE) Pdapilot/NoCreatorException.java
+
+Pdapilot/NoCreatorException.class: Pdapilot/DlpException.class
+
+
+# Rules for Pdapilot.constants
+#
+Pdapilot/constants.class: Pdapilot/constants.java
+	$(JAVACOMPILE) Pdapilot/constants.java
+
+
+# Rules for Pdapilot.CancelSyncException
+#
+Pdapilot/CancelSyncException.class: Pdapilot/CancelSyncException.java
+	$(JAVACOMPILE) Pdapilot/CancelSyncException.java
+
+Pdapilot/CancelSyncException.class: Pdapilot/DlpException.class
+
+
+# Rules for Pdapilot.DB Pdapilot.Dlp Pdapilot.Socket 
+#
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/DB.java Pdapilot/Dlp.java Pdapilot/Socket.java 
+	$(JAVACOMPILE) Pdapilot/DB.java Pdapilot/Dlp.java Pdapilot/Socket.java 
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class 
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/DlpException.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/AppBlock.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/SortBlock.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/Record.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/RecordID.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/Resource.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/Char4.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/Pref.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/NoCreatorException.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/CardInfo.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/UserInfo.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/SysInfo.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/NetInfo.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/DBInfo.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/end.class
+
+Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class : Pdapilot/CancelSyncException.class
+
+
+# Rules for Pdapilot.File
+#
+Pdapilot/File.class: Pdapilot/File.java
+	$(JAVACOMPILE) Pdapilot/File.java
+
+Pdapilot/File.class: Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class 
+
+Pdapilot/File.class: Pdapilot/DBInfo.class
+
+Pdapilot/File.class: Pdapilot/Record.class
+
+Pdapilot/File.class: Pdapilot/RecordID.class
+
+Pdapilot/File.class: Pdapilot/Resource.class
+
+Pdapilot/File.class: Pdapilot/AppBlock.class
+
+Pdapilot/File.class: Pdapilot/SortBlock.class
+
+Pdapilot/File.class: Pdapilot/Char4.class
+
+Pdapilot/File.class: Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class 
+
+
+# Rules for test
+#
+test.class: test.java
+	$(JAVACOMPILE) test.java
+
+test.class: Pdapilot/DlpException.class
+
+test.class: Pdapilot/CardInfo.class
+
+test.class: Pdapilot/DBInfo.class
+
+test.class: Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class 
+
+test.class: Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class 
+
+test.class: Pdapilot/RecordID.class
+
+test.class: Pdapilot/Pref.class
+
+test.class: Pdapilot/Record.class
+
+test.class: Pdapilot/expense/Record.class
+
+
+
+CLASSES = \
+	Pdapilot/expense/type.class \
+	Pdapilot/Block.class \
+	Pdapilot/RecordID.class \
+	Pdapilot/Record.class \
+	Pdapilot/mail/Record.class \
+	Pdapilot/Char4.class \
+	Pdapilot/DBInfo.class \
+	Pdapilot/Util.class \
+	Pdapilot/todo/Record.class \
+	Pdapilot/DlpException.class \
+	Pdapilot/AppBlock.class \
+	Pdapilot/CategoryAppBlock.class \
+	Pdapilot/todo/AppBlock.class \
+	Pdapilot/Resource.class \
+	Pdapilot/Pref.class \
+	Pdapilot/SortBlock.class \
+	Pdapilot/memo/AppBlock.class \
+	Pdapilot/memo/Record.class \
+	Pdapilot/mail/sort.class \
+	Pdapilot/mail/AppBlock.class \
+	Pdapilot/mail/sync.class \
+	Pdapilot/mail/SyncPref.class \
+	Pdapilot/mail/SignaturePref.class \
+	Pdapilot/appointment/AppBlock.class \
+	Pdapilot/appointment/time.class \
+	Pdapilot/appointment/repeat.class \
+	Pdapilot/appointment/Record.class \
+	Pdapilot/expense/sort.class \
+	Pdapilot/expense/CustomCurrency.class \
+	Pdapilot/expense/AppBlock.class \
+	Pdapilot/expense/payment.class \
+	Pdapilot/expense/Record.class \
+	Pdapilot/expense/distance.class \
+	Pdapilot/expense/Pref.class \
+	Pdapilot/address/AppBlock.class \
+	Pdapilot/address/Record.class \
+	Pdapilot/todo/Database.class Pdapilot/Database.class Pdapilot/memo/Database.class Pdapilot/mail/Database.class Pdapilot/appointment/Database.class Pdapilot/expense/Database.class Pdapilot/address/Database.class  \
+	Pdapilot/CardInfo.class \
+	Pdapilot/UserInfo.class \
+	Pdapilot/SysInfo.class \
+	Pdapilot/NetInfo.class \
+	Pdapilot/calls.class \
+	Pdapilot/end.class \
+	Pdapilot/NoCreatorException.class \
+	Pdapilot/constants.class \
+	Pdapilot/CancelSyncException.class \
+	Pdapilot/DB.class Pdapilot/Dlp.class Pdapilot/Socket.class  \
+	Pdapilot/File.class \
+	test.class \
+# end of classes list
