@@ -558,7 +558,7 @@ int main(int argc, char *argv[])
         if (dlp_ReadUserInfo(sd, &User) < 0)
                 goto error_close;
 	
-	/* Open the MemoDB.pdb database, store access handle in db */
+	/* Open the AddressDB.pdb database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
 		puts("Unable to open AddressDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
