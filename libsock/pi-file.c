@@ -141,8 +141,10 @@ void display_rate(int record, int records, int written, int elapsed)
 	if (written < 1)
 		written = 1;
 	k_sec = ((double) (written / 1024) / (double) elapsed);
+	
 	if (file_size > 0) {
 		est_done = (file_size - written) / (written / elapsed);
+
 		fprintf(stderr, "   Record %3d of %3d. Wrote %9d bytes of %9d. Elapsed:"
 		       "%2d sec.  %0.2f KB/s  Remaining: %d\r", record, records, 
 		       written, file_size, elapsed, k_sec, est_done);
@@ -151,7 +153,6 @@ void display_rate(int record, int records, int written, int elapsed)
 		       "sec.  %0.2f KB/s.\r", record, records, written, elapsed, k_sec);
 
 	}
-
 }
 
 /* this seems to work, but what about leap years? */
@@ -1215,7 +1216,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 	
 	unsigned char buffer[0xffff];
 
-	printf("\n");
+	/* printf("\n"); */
 	start_time = (unsigned long) time(NULL);
 	if (dlp_OpenDB
 	    (socket, cardno, dlpOpenRead | dlpOpenSecret, pf->info.name,
@@ -1236,9 +1237,12 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 			unsigned long type;
 
 			written += size;
+
+			/* FIXME - need to add callbacks for this info, not print here -DD
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
+			*/
 			if ((dlp_ReadResourceByIndex
 			     (socket, db, j, buffer, &type, &id,
 			      &size) < 0)
@@ -1262,9 +1266,12 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 			}
 
 			written += size;
+
+			/* FIXME - need to add callbacks for this info, not print here -DD
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
+			*/
 			/* There is no way to restore records with these
 			   attributes, so there is no use in backing them up
 			 */
@@ -1277,7 +1284,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 				return -1;
 			}
 		}
-	printf("\n");
+	/* printf("\n"); */
 	return dlp_CloseDB(socket, db);
 }
 
@@ -1436,9 +1443,12 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			    (socket, db, type, id, buffer, size) < 0)
 				goto fail;
 
+			/* FIXME - need to add callbacks for this info, not print here -DD
 			display_rate(j + 1, pf->nentries, ftell(pf->f),
 				     (double) ((unsigned long) time(NULL) -
 					       start_time));
+			*/
+			
 			/* If we see a 'boot' section, regardless of file
 			   type, require reset */
 			if (type == pi_mktag('b', 'o', 'o', 't'))
@@ -1475,9 +1485,12 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			    (socket, db, attr, id, category, buffer, size,
 			     0) < 0)
 				goto fail;
+
+			/* FIXME - need to add callbacks for this info, not print here -DD
 			display_rate(j + 1, pf->nentries, ftell(pf->f),
 				     (double) ((unsigned long) time(NULL) -
 					       start_time));
+			*/
 		}
 		printf("\n");
 	}
