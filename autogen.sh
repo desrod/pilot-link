@@ -38,7 +38,98 @@ DIE=0
 #  }
 #}
 
-(automake --version) < /dev/null > /dev/null 2>&1 || {
+
+# usage: test_version program version
+# returns 0 if program >= version; returns 1 if not.
+test_version()
+{
+    this_prog="$1"
+    want_vers="$2"
+
+    testv=`"$this_prog" --version 2>/dev/null | head -1 | awk '{print $NF}'`
+    if test -z "$testv" ; then return 1 ; fi
+
+    testv_major=`echo "$testv" | sed 's/\([0-9]*\).\([0-9]*\).*$/\1/'`
+    testv_minor=`echo "$testv" | sed 's/\([0-9]*\).\([0-9]*\).*$/\2/'`
+
+    vers_major=`echo "$want_vers" | sed 's/\([0-9]*\).\([0-9]*\).*$/\1/'`
+    vers_minor=`echo "$want_vers" | sed 's/\([0-9]*\).\([0-9]*\).*$/\2/'`
+
+    # if wanted_major > found_major, this isn't good enough
+    if test $vers_major -gt $testv_major ; then
+        return 1
+    # if wanted_major < found_major, then this is fine
+    elif test $vers_major -lt $testv_major ; then
+        return 0
+    # if we get here, then the majors are equal, so test the minor version
+    # we want found_minor >= want_minor.
+    # So, if want_minor > found_minor, this is bad.
+    elif test $vers_minor -gt $testv_minor ; then
+        return 1
+    # this is it.
+    else
+        return 0
+    fi
+}
+
+
+
+# usage: find_program preset program version "<other versions>"
+# sets "program" to the name of the program to use.
+# if preset is set, then use that regardless,
+#  otherwise check if "program" is of a good enough version and use that,
+#  otherwise check if "program-version" is of a good enough version and use that.
+#  otherwise return an error.
+find_program()
+{
+    find="$1"
+    prog="$2"
+    vers="$3"
+    extravers="$4"
+
+    if test -n "$find" ; then
+        test_version "$find" "$vers"
+        status="$?"
+        if test "$status" = 0 ; then
+            program="$find"
+            return 0
+        fi
+        echo "**Error**: cannot use $find"
+    else
+
+        test_version "$prog" "$vers"
+        status=$?
+        if test "$status" = 0 ; then
+            program="$prog"
+            return 0
+        fi
+
+        for test_vers in $vers $extravers ; do
+            test_version "$prog-$test_vers" "$vers"
+            status=$?
+            if test "$status" = 0 ; then
+                program="$prog-$test_vers"
+                return 0
+            fi
+        done
+    fi
+
+    echo
+    echo "**Warning**: Could not find a $prog that identifies itself >= $vers."
+    echo
+    program="$prog"
+}
+
+find_program "$AUTOCONF" autoconf 2.53
+AUTOCONF="$program"
+find_program "$AUTOHEADER" autoheader 2.53
+AUTOHEADER="$program"
+find_program "$AUTOMAKE" automake 1.5 "1.6 1.7"
+AUTOMAKE="$program"
+find_program "$ACLOCAL" aclocal 1.5 "1.6 1.7"
+ACLOCAL="$program"
+
+($AUTOMAKE --version) < /dev/null > /dev/null 2>&1 || {
   echo
   echo "**Error**: You must have \`automake' installed to compile $PKG_NAME."
   echo "Get ftp://ftp.gnu.org/pub/gnu/automake/automake-1.7.tar.gz"
@@ -112,7 +203,7 @@ do
       fi
 
       echo "Running aclocal $aclocalinclude ..."
-      aclocal $aclocalinclude || {
+      $ACLOCAL $aclocalinclude || {
 	echo
 	echo "**Error**: aclocal failed. This may mean that you have not"
 	echo "installed all of the packages you need, or you may need to"
@@ -124,13 +215,13 @@ do
 
       if grep "^AM_CONFIG_HEADER" configure.ac >/dev/null; then
 	echo "Running autoheader..."
-	autoheader || { echo "**Error**: autoheader failed."; exit 1; }
+	$AUTOHEADER || { echo "**Error**: autoheader failed."; exit 1; }
       fi
       echo "Running automake --gnu $am_opt ..."
-      automake --add-missing --gnu $am_opt ||
+      $AUTOMAKE --add-missing --gnu $am_opt ||
 	{ echo "**Error**: automake failed."; exit 1; }
       echo "Running autoconf ..."
-      autoconf || { echo "**Error**: autoconf failed."; exit 1; }
+      $AUTOCONF || { echo "**Error**: autoconf failed."; exit 1; }
     ) || exit 1
   fi
 done
