@@ -29,10 +29,10 @@
 #include "pi-usb.h"
 #include "darwinusbcore.h"
 
-static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen);
+static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(struct pi_socket *ps);
-static int u_write(struct pi_socket *ps, unsigned char *buf, int len, int flags);
-static int u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags);
+static int u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags);
+static int u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags);
 static int u_poll(struct pi_socket *ps, int timeout);
 
 void
@@ -46,7 +46,7 @@ pi_usb_impl_init (struct pi_usb_impl *impl)
 }
 
 static int
-u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
+u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
 	if (darwin_usb_start_listening() != 0) {
 		errno = EINVAL;
@@ -70,14 +70,14 @@ u_poll(struct pi_socket *ps, int timeout)
 }
 
 static int
-u_write(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 {
 	len = darwin_usb_write(buf, len);
 	return len;
 }
 
 static int
-u_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
+u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 {
 	int n = darwin_usb_read(buf, len, ((struct pi_usb_data *)ps->device->data)->timeout, flags);
 	return n;
