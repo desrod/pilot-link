@@ -121,13 +121,18 @@ int main(int argc, const char *argv[])
 
 	po = poptGetContext("install-todos", argc, argv, options, 0);
 	poptSetOtherOptionHelp(po,
-		" [-p port] -f filename\n\n"
+		"\n\n"
 		"   Updates the Palm ToDo list with entries from a local file\n\n"
 		"   Example:\n"
 		"      -p /dev/pilot -f $HOME/MyTodoList.txt\n\n"
 		"   The format of this file is a simple line-by-line ToDo task entry.\n"
 		"   For each new line in the local file, a new task is created in the\n"
 		"   ToDo database on the Palm.\n\n");
+
+	if (argc<2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 	}
@@ -156,7 +161,7 @@ int main(int argc, const char *argv[])
 
 		/* Open the ToDo Pad's database, store access handle in db */
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-			puts("Unable to open ToDoDB");
+			fprintf(stderr,"   ERROR: Unable to open ToDoDB on Palm.\n");
 			dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
 			pi_close(sd);
 			return 1;

@@ -52,31 +52,31 @@ char *strptime(const char *s, const char *format, struct tm *tm);
  * Returns:     Text inside the file, of course
  *
  ***********************************************************************/
-char *read_file(char *filename)
+int read_file(char *filename, char **text)
 {
 	FILE	*f;
 	size_t	filelen;
-	char	*file_text 	= NULL;
 
 	f = fopen(filename, "r");
 	if (f == NULL) {
-		perror("fopen");
-		exit(EXIT_FAILURE);
+		fprintf(stderr,"   ERROR: Could not open '%s': %s\n",
+			filename,strerror(errno));
+		return -1;
 	}
 
 	fseek(f, 0, SEEK_END);
 	filelen = ftell(f);
 	fseek(f, 0, SEEK_SET);
 
-	file_text = (char *) malloc(filelen + 1);
-	if (file_text == NULL) {
-		perror("malloc()");
-		exit(EXIT_FAILURE);
+	*text = (char *) malloc(filelen + 1);
+	if (*text == NULL) {
+		fprintf(stderr,"   ERROR: Could not allocate memory.\n");
+		return -1;
 	}
 
-	fread(file_text, filelen, 1, f);
+	fread(*text, filelen, 1, f);
 
-	return file_text;
+	return 0;
 }
 
 
@@ -151,11 +151,17 @@ int main(int argc, const char *argv[])
 		"   Example:\n"
 		"       -p /dev/pilot -n 'Buy Milk' -D 'Go shopping, see note for items'\n\n");
 
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
+
         while ((po_err = poptGetNextOpt(po)) >= 0) {
 	}
 
-	if (po_err < -1)
-	    plu_badoption(po,po_err);
+	if (po_err < -1) {
+		plu_badoption(po,po_err);
+	}
 
 	if ((priority < 1) || (priority > 5)) {
 		priority=1;
@@ -166,8 +172,15 @@ int main(int argc, const char *argv[])
 	todo.priority    = priority;
 	todo.complete    = completed;
 	todo.description = description;
-	if (filename) todo.note = read_file(filename);
-	else todo.note = note;
+	if (filename) {
+		int c = read_file(filename,&todo.note);
+		if (c<0) {
+			return 1;
+		}
+	}
+	else {
+		todo.note = note;
+	}
 
 	if (due != NULL) {
 		strptime(due, "%m/%d/%Y", &todo.due);
@@ -184,7 +197,7 @@ int main(int argc, const char *argv[])
 
 	/* Open the ToDo database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-		puts("Unable to open ToDo Database");
+		fprintf(stderr,"   ERROR: Unable to open ToDo Database on Palm.\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open ToDo Database.\n");
 		pi_close(sd);
 		return 1;
