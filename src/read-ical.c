@@ -24,7 +24,7 @@ char * tclquote(char * in)
   len = 3;
   pos = in;
   while(*pos) {
-    if((*pos == '\\') || (*pos == '"') || (*pos == '[') || (*pos == '$'))
+    if((*pos == '\\') || (*pos == '"') || (*pos == '[') || (*pos == '{') || (*pos == '$'))
       len++;
     len++;
     pos++;
@@ -38,7 +38,7 @@ char * tclquote(char * in)
   pos = in;
   *out++ = '"';
   while(*pos) {
-    if((*pos == '\\') || (*pos == '"') || (*pos == '[') || (*pos == '$'))
+    if((*pos == '\\') || (*pos == '"') || (*pos == '[') || (*pos == '{') || (*pos == '$'))
       *out++ = '\\';
     *out++=*pos++;
   }

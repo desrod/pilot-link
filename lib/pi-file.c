@@ -110,7 +110,7 @@ static void pi_file_free (struct pi_file *pf);
 
 /* this seems to work, but what about leap years? */
 #define PILOT_TIME_DELTA (((unsigned)(1970 - 1904) * 365 * 24 * 60 * 60) + 1450800)
-//#define PILOT_TIME_DELTA (unsigned)2082844800
+/*#define PILOT_TIME_DELTA (unsigned)2082844800*/
 
 static time_t
 pilot_time_to_unix_time (unsigned long raw_time)
@@ -583,7 +583,7 @@ pi_file_append_resource (struct pi_file *pf, void *buf, int size,
 
   entp = pi_file_append_entry (pf);
   
-  if (fwrite (buf, size, 1, pf->tmpf) != 1) {
+  if (size && (fwrite (buf, size, 1, pf->tmpf) != 1)) {
     pf->err = 1;
     return (-1);
   }
@@ -609,7 +609,7 @@ int pi_file_append_record (struct pi_file *pf, void *buf, int size,
 
   entp = pi_file_append_entry (pf);
   
-  if (fwrite (buf, size, 1, pf->tmpf) != 1) {
+  if (size && (fwrite (buf, size, 1, pf->tmpf) != 1)) {
     pf->err = 1;
     return (-1);
   }
@@ -752,10 +752,17 @@ int pi_file_retrieve(struct pi_file * pf, int socket, int cardno)
   	  int size;
   	  int attr;
   	  int category;
-  	  if( (dlp_ReadRecordByIndex(socket, db, j, buffer, &id, &size, &attr, &category)<0) ||
-  	      (pi_file_append_record(pf, buffer, size, attr, category, id)<0)) {
-              dlp_CloseDB(socket, db);
-              return -1;
+  	  if( (dlp_ReadRecordByIndex(socket, db, j, buffer, &id, &size, &attr, &category)<0)) {
+  	    dlp_CloseDB(socket,db);
+  	    return -1;
+  	  }
+  	  /* There is no way to restore records with these attributes, so there is no
+  	     use in backing them up */
+  	  if (attr & (dlpRecAttrArchived|dlpRecAttrDeleted))
+  	    continue;
+  	  if (pi_file_append_record(pf, buffer, size, attr, category, id)<0) {
+            dlp_CloseDB(socket, db);
+            return -1;
           }
   	}
   	
@@ -780,7 +787,7 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
     
   pi_file_get_app_info(pf, &buffer, &l);
   
-  /* All system updates seen have the 'ptch' type, so trigger a reboot on those */
+  /* All system updates seen to have the 'ptch' type, so trigger a reboot on those */
   if (pf->info.creator == pi_mktag('p','t','c','h'))
     reset = 1; 
       

@@ -96,18 +96,32 @@ int sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
   return pi_write(sd, buf, 16+4);
 }
 
-int sys_RPC(int sd, int trap, long * D0, long * A0, int params, struct RPC_param * param, int rep)
+int sys_RPC(int sd, int dlp, int trap, long * D0, long * A0, int params, struct RPC_param * param, int rep)
 {
   unsigned char buf[4096];
   int i;
   unsigned char * c;
   
-  buf[0] = 1;
-  buf[1] = 1;
-  buf[2] = 0;
+  /* dlp flag is intended to let RPC work within DLP layer. Unfortunately, I
+     can't make it work at all, either due to bugs in the code, or my lack
+     of understanding of how it should be implemented. The documentation is
+     not good. */
+         
+  if (dlp) {
+    buf[0] = 0x2D;
+    buf[1] = 1;
+    buf[2] = 0x20|0x80;
+    buf[3] = 0;
+    buf[4] = 0;
+    buf[5] = 0;
+  } else {
+    buf[0] = 1;
+    buf[1] = 1;
+    buf[2] = 0;
+    buf[4] = 0x0a;
+    buf[5] = 0;
+  }
   
-  buf[4] = 0x0a;
-  buf[5] = 0;
   set_short(buf+6, trap);
   set_long(buf+8, *D0);
   set_long(buf+12, *A0);
@@ -122,13 +136,16 @@ int sys_RPC(int sd, int trap, long * D0, long * A0, int params, struct RPC_param
     c += param[i].size;
   }
   
+  if (dlp)
+    set_short(buf+4, c-buf - 6);
+  
   pi_write(sd, buf, c-buf);
   
   if(rep) {
     pi_read(sd, buf, 4096);
   
     /* FIXME: Check to make sure incoming packet is response */
-  
+    
     *D0 = get_long(buf+8);
     *A0 = get_long(buf+12);
     c = buf+18;
@@ -182,7 +199,69 @@ int RPC(int sd, int trap, int ret, ...)
   }
   va_end(ap);
   
-  sys_RPC(sd, trap, &D0, &A0, i, p, ret != 2);
+  sys_RPC(sd, 0, trap, &D0, &A0, i, p, ret != 2);
+  
+  for(j=0;j<i;j++) {
+      if(p[i].invert) {
+        void * c = p[i].data;
+        if(p[i].size == 2) {
+          int * s = c;
+          *s = htons(*s);
+        } else {
+          int * l = c;
+          *l = htonl(*l);
+        }
+      }
+  }
+  
+  if(ret)
+    return A0;
+  else
+    return D0;
+}
+
+int dlp_ProcessRPC(int sd, int trap, int ret, ...)
+{
+  /* Flat busted. Sorry. */
+
+  va_list ap;
+  struct RPC_param p[20];
+  int RPC_arg[20];
+  int i=0,j;
+  long D0=0,A0=0;
+
+  va_start(ap, ret);
+  while(1) {
+    int type = va_arg(ap, int);
+    if(type == 0)
+      break;
+    if(type < 0) {
+      p[i].byRef = 0;
+      p[i].size = -type;
+      RPC_arg[i] = va_arg(ap,int);
+      p[i].data = &RPC_arg[i];
+      p[i].invert = 0;
+    } else {
+      void * c = va_arg(ap,void*);
+      p[i].byRef = 1;
+      p[i].size = type;
+      p[i].data = c;
+      p[i].invert = va_arg(ap,int);
+      if(p[i].invert) {
+        if(p[i].size == 2) {
+          int * s = c;
+          *s = htons(*s);
+        } else {
+          int * l = c;
+          *l = htonl(*l);
+        }
+      }
+    }
+    i++;
+  }
+  va_end(ap);
+  
+  sys_RPC(sd, 1, trap, &D0, &A0, i, p, ret != 2);
   
   for(j=0;j<i;j++) {
       if(p[i].invert) {

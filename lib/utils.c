@@ -36,7 +36,7 @@ char * printlong (unsigned long val)
   return buf;
 }
 
-void dumpline (char *buf, int len, int addr)
+void dumpline (const unsigned char *buf, int len, int addr)
 {
   int i;
 
@@ -51,13 +51,13 @@ void dumpline (char *buf, int len, int addr)
   fprintf (stderr,"  ");
 
   for (i=0;i<len;i++) {
-    if (isprint(buf[i])) fprintf (stderr,"%c",buf[i]);
+    if (isprint(buf[i]) && (buf[i]>=32) && (buf[i]<=126)) fprintf (stderr,"%c",buf[i]);
     else fprintf(stderr,".");
   }
   fprintf(stderr,"\n");
 }
 
-void dumpdata (char * buf, int len) {
+void dumpdata (const unsigned char * buf, int len) {
   int i;
   for(i=0;i<len;i+=16) {
     dumpline(buf+i, ((len-i)>16) ? 16 : len-i, i);

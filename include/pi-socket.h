@@ -124,8 +124,8 @@ int pi_device_open(char *, struct pi_socket *ps);
 struct pi_socket *find_pi_socket(int sd);
 int crc16(unsigned char *ptr, int count);
 char * printlong (unsigned long val);
-void dumpline (char *buf, int len, int addr);
-void dumpdata (char * buf, int len);
+void dumpline (const unsigned char *buf, int len, int addr);
+void dumpdata (const unsigned char * buf, int len);
 
 /* portable field access */
 

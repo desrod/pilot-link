@@ -36,6 +36,17 @@ struct DBInfo {
   char name[34];
 };
 
+struct CardInfo {
+	int cardno;
+	int version;
+	time_t creation;
+	unsigned long ROMsize, RAMsize, RAMfree;
+	char name[128];
+	char manuf[128];
+	
+	int more;
+};
+
 enum dlpDBFlags {
 	dlpDBFlagResource = 0x0001, /* Resource DB, instead of record DB */
 	dlpDBFlagReadOnly = 0x0002, /* DB is read only */
@@ -57,6 +68,7 @@ enum dlpOpenFlags {
         dlpOpenWrite = 0x40,
         dlpOpenExclusive = 0x20,
         dlpOpenSecret = 0x10,
+        dlpOpenReadWrite = 0xC0
 };
 
 enum dlpEndStatus {
@@ -65,7 +77,36 @@ enum dlpEndStatus {
         dlpEndCodeUserCan,     /* Cancelled by user */
         dlpEndCodeOther        /* dlpEndCodeOther and higher mean "Anything else" */
 };
-                                        
+
+enum dlpDBList {
+	dlpDBListRAM = 0x80,
+	dlpDBListROM = 0x40
+};
+
+enum dlpErrors { 
+  dlpErrNoError = -1,
+  dlpErrSystem  = -2,
+  dlpErrMemory  = -3,
+  dlpErrParam   = -4,
+  dlpErrNotFound = -5,
+  dlpErrNoneOpen = -6,
+  dlpErrAlreadyOpen = -7,
+  dlpErrTooManyOpen = -8,
+  dlpErrExists = -9,
+  dlpErrOpen = -10,
+  dlpErrDeleted = -11,
+  dlpErrBusy = -12,
+  dlpErrNotSupp = -13,
+  dlpErrUnused1 = -14,
+  dlpErrReadOnly = -15,
+  dlpErrSpace = -16,
+  dlpErrLimit = -17,
+  dlpErrSync = -18,
+  dlpErrWrapper = -19,
+  dlpErrArgument = -20,
+  dlpErrSize = -21,
+  dlpErrUnknown = -128
+};
 
 int dlp_GetSysDateTime(int sd, time_t * t);
 
@@ -74,12 +115,17 @@ int dlp_GetSysDateTime(int sd, time_t * t);
 int dlp_SetSysDateTime(int sd, time_t time);
 
   /* Set the time on the Pilot using a local time_t value. */
+  
+int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c);
+
 
 int dlp_ReadSysInfo(int sd, struct SysInfo * s);
 
   /* Read the system information block. */
 
 int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * info);
+
+  /* flags must contain dlpDBListRAM and/or dlpDBListROM */
 
 int dlp_FindDBInfo(int sd, int cardno, int start, char * dbname, unsigned long type,
                                unsigned long creator, struct DBInfo * info);
@@ -153,6 +199,9 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int * records);
  /* Return info about an opened database. Currently the only information
     returned is the number of records in the database. */
 
+
+int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat);
+
 int dlp_WriteUserInfo(int sd, struct PilotUser *User);
 
  /* Tell the pilot who it is. */
@@ -172,6 +221,10 @@ int dlp_ReadSortBlock(int sd, int fHandle, int offset,
 
 int dlp_WriteSortBlock(int sd, int fHandle, const unsigned char *dbuf,
                             int dlen);
+
+int dlp_ResetDBIndex(int sd, int dbhandle);
+
+ /* Reset NextModified position to beginning */
 
 int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
                          int start, int max, unsigned long * IDs);
@@ -220,5 +273,10 @@ int dlp_ResetSyncFlags(int sd, int fHandle);
 
   /* For record databases, reset all dirty flags. For both record and
      resource databases, set the last sync time to now. */
+
+int dlp_CallApplication(int sd, unsigned long creator, int action,
+                        int length, unsigned char * data,
+                        int * resultptr,
+                        int * retlen, unsigned char * retdata);
                   
 #endif /*_PILOT_DLP_H_*/

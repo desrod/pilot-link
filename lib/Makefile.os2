@@ -3,7 +3,8 @@ OBJS = socket.o serial.o slp.o padp.o utils.o \
        sync.o pi-file.o
 
 CC = gcc
-CFLAGS = @CFLAGS@ -Wall -I../include
+CFLAGS = -g -O2 -Wall -I../include
+# -DDLP_TRACE
 # -DDEBUG
 # -DTRACE
 AR = ar -cur

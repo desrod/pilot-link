@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
   int sd;
   struct PilotUser U;
   struct SysInfo S;
+  struct CardInfo C;
   int ret;
 
   if (argc < 2) {
@@ -63,6 +64,17 @@ int main(int argc, char *argv[])
   dlp_ReadUserInfo(sd, &U);
   
   dlp_ReadSysInfo(sd, &S);
+  
+  C.cardno = -1;
+  C.more = 1;
+  while(C.more) {
+    if(dlp_ReadStorageInfo(sd, C.cardno+1, &C)<0)
+      break;
+    
+    printf(" Card #%d has %lu bytes of ROM, and %lu bytes of RAM (%lu of that is free)\n",
+       C.cardno, C.ROMsize, C.RAMsize, C.RAMfree);
+    printf(" It is called '%s', and was made by '%s'.\n", C.name, C.manuf);
+  }
 
   if (argc == 2) {
     printf ("Pilot user %s\n",U.username);

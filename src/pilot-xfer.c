@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
+#include <signal.h>
 #include "dlp.h"
 #include "pi-socket.h"
 #include "pi-file.h"
@@ -16,12 +17,18 @@ int sd = 0;
 char * device;
 char * progname;
 
+RETSIGTYPE SigHandler(int signal);
+
 void Connect(void) {
   struct pi_sockaddr addr;
   int ret;
 
   if (sd!=0)
     return;
+    
+  signal(SIGHUP, SigHandler);
+  signal(SIGINT, SigHandler);
+  signal(SIGSEGV, SigHandler);
       
   if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
     perror("pi_socket");
@@ -63,6 +70,13 @@ void Disconnect(void)
   dlp_EndOfSync(sd, 0);
   pi_close(sd);
   sd = 0;
+}
+
+RETSIGTYPE SigHandler(int signal)
+{
+  puts("Abort on signal!");
+  Disconnect();
+  exit(3);
 }
 
 void Backup(char * dirname)
@@ -117,7 +131,7 @@ void Fetch(char * dbname)
   struct DBInfo info;
   char name[256];
     	struct pi_file * f;
-  
+    	
   Connect();
 
   if (dlp_OpenConduit(sd)<0) {
@@ -246,23 +260,24 @@ void List(void)
 
 void Help(void)
 {
-      printf("Usage: %s %s [ -b(ackup)  backupdir ]\n",progname,TTYPrompt);
-      printf("                  [ -r(estore) backupdir ]\n");
-      printf("                  [ -i(nstall) filename ]\n");
-      printf("                  [ -f(etch)   dbname ]\n");
-      printf("                  [ -l(ist) ]\n");
+      printf("Usage: %s %s command(s)\n\n",progname,TTYPrompt);
+      printf("Where a command is one of: -b(ackup)  backupdir\n");
+      printf("                           -r(estore) backupdir\n");
+      printf("                           -i(nstall) filename \n");
+      printf("                           -f(etch)   dbname   \n");
+      printf("                           -l(ist)\n");
       exit(0);
 }
 
 int main(int argc, char *argv[])
 {
-  char c;
+  int c;
 #ifdef sun
   extern char* optarg;
   extern int optind;
 #endif
 
-  
+
   progname = argv[0];
 
   if (argc < 3) {
@@ -270,10 +285,8 @@ int main(int argc, char *argv[])
   }
 
   device = argv[1];
-  argc--;
-  argv++;
   
-  optind = 0;
+  optind = 2;
   while ((c = getopt(argc, argv, "b:r:i:f:lh")) != -1) {
     switch (c) {
     case 'b':

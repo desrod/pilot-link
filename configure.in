@@ -31,5 +31,22 @@ if test $ac_cv_termios_cspeed = yes; then
   AC_DEFINE(TERMIOS_CSPEED)
 fi
 
+dnl Check host type
+dnl (Instead of using large messy autoconf facilities, just check uname)
+host=`uname`
+
+dnl Derive warning flag
+AC_CACHE_CHECK([for maximum warnings compiler flag],
+  ac_cv_cwflag,
+[case "$cc" in
+  *gcc*) ac_cv_cwflag=-Wall;;
+  *)	case "$host" in
+			*IRIX*)	ac_cv_cwflag=-fullwarn ;;
+			*)		ac_cv_cwflag=-Wall;;
+		esac ;;
+esac])
+CWFLAG=$ac_cv_cwflag
+AC_SUBST(CWFLAG)
+
 AC_CONFIG_HEADER(include/pi-config.h)
 AC_OUTPUT(lib/Makefile Makefile)

@@ -11,7 +11,8 @@ EXT = .EXE
 SUBMAKE_COMM = $(MAKE) -C lib -f Makefile.os2
 
 EXECS = install-memo$(EXT) install-user$(EXT)\
-		install-todos$(EXT) read-ical$(EXT) sync-memodir$(EXT)\
+		install-todos$(EXT) read-ical$(EXT)\
+		sync-memodir$(EXT) sync-ical$(EXT)\
 		pilot-xfer$(EXT) pilot-file$(EXT)\
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		test-connector$(EXT) test-acceptor$(EXT) debugsh$(EXT) dlpsh$(EXT)
@@ -54,6 +55,9 @@ read-ical$(EXT): libpisock.a read-ical.o
 sync-memodir$(EXT): libpisock.a sync-memodir.o
 	$(CC) $(CFLAGS) sync-memodir.o libpisock.a -o $@ $(LIBS)
 
+sync-ical$(EXT): libpisock.a sync-ical.o
+	$(CC) $(CFLAGS) sync-ical.o libpisock.a -o $@ $(LIBS)
+
 addresses$(EXT): libpisock.a addresses.o
 	$(CC) $(CFLAGS) addresses.o libpisock.a -o $@ $(LIBS)
 
@@ -74,7 +78,8 @@ strip: $(EXECS)
 
 distclean: clean
 	$(SUBMAKE_COMM) depend
-	$(RM) Makefile lib/Makefile lib/Makefile.in~ include/pi-config.h config.*
+	$(RM) Makefile lib/Makefile lib/Makefile.in~ include/pi-config.h
+	$(RM) config.*
 	perl os2dist.pl
 
 clean:

@@ -1,3 +1,22 @@
+Dec 30, 1996	Kenneth Albanowski 0.4.1
+
+	Got sync-ical functional. It's very messy, but parts of it do actually
+	   work.
+	Added new trace code to lib/dlp. Enable with -DDLP_TRACE in makefile.
+	Added remaining DLP functions. All but RPC are now implemented (and I
+	   have not been able to deduce how to invoke RPC under DLP, so it
+	   will stay unimplemented until somebody comes up with more information.)
+	Pace's patch for dlp_ReadRecordIDList.
+	Added patch to pi-file to successfully store zero-length records.
+	_Also_ added patch to stop ignore records on database retrieval that
+	   are archived or deleted. The reason is that without going to the
+	   RPC layer, there is no way to store records with those attributes.
+	Mucked about with getopt in pilot-xfer, hopefully for the better.
+	Added uname detection to configure so that IRIX gets proper warning flag.
+	
+	-- sync code still in limbo, undoubtedly not helped by holiday season.
+	   Patience is a virtue.
+
 Dec 22, 1996    Kenneth Albanowski 0.4.0
 
     Removed {install,retrieve}-{pdb,prc} packages, replaced with

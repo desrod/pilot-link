@@ -1276,6 +1276,26 @@ EOF
 
 fi
 
+host=`uname`
+
+echo $ac_n "checking for maximum warnings compiler flag""... $ac_c" 1>&6
+echo "configure:1283: checking for maximum warnings compiler flag" >&5
+if eval "test \"`echo '$''{'ac_cv_cwflag'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$cc" in
+  *gcc*) ac_cv_cwflag=-Wall;;
+  *)	case "$host" in
+			*IRIX*)	ac_cv_cwflag=-fullwarn ;;
+			*)		ac_cv_cwflag=-Wall;;
+		esac ;;
+esac
+fi
+
+echo "$ac_t""$ac_cv_cwflag" 1>&6
+CWFLAG=$ac_cv_cwflag
+
+
 
 trap '' 1 2 15
 cat > confcache <<\EOF
@@ -1397,6 +1417,7 @@ s%@mandir@%$mandir%g
 s%@CC@%$CC%g
 s%@RANLIB@%$RANLIB%g
 s%@CPP@%$CPP%g
+s%@CWFLAG@%$CWFLAG%g
 
 CEOF
 EOF
