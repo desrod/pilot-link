@@ -30,20 +30,24 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+const char *port	= NULL,
+	*hostname 	= NULL,
+	*address 	= NULL,
+	*netmask 	= NULL;
+
 const struct poptOption options[] = {
-	{ "port",    'p', POPT_ARG_STRING, 0, 'p', "Use device file <port> to communicate with Palm"},
+	{ "port",    'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
 	{ "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
 	{ "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
 	{ "enable",  'e', POPT_ARG_NONE,   0, 'e', "Enables LANSync on the Palm"},
 	{ "disable", 'd', POPT_ARG_NONE,   0, 'd', "Disable the LANSync setting on the Palm"},
-	{ "name",    'n', POPT_ARG_STRING, 0, 'n', "The hostname of the desktop you sync with"},   
-	{ "ip",      'i', POPT_ARG_STRING, 0, 'i', "IP address of the machine you connect your Palm to"},
-	{ "mask",    'm', POPT_ARG_STRING, 0, 'm', "The subnet mask of the network your Palm is on"},
+	{ "name",    'n', POPT_ARG_STRING, &hostname, 0, "The hostname of the remote machine you sync with", "<name>"},   
+	{ "address", 'a', POPT_ARG_STRING, &address, 0, "IP address of the remote machine you connect to", "<address>"},
+	{ "mask",    'm', POPT_ARG_STRING, &netmask, 0, "Subnet mask of the network your Palm is on", "<netmask>"},
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0 }
 };
 
-char *strdup(const char *s);
 poptContext po;
 
 static void display_help(const char *progname) {
@@ -61,14 +65,9 @@ int main(int argc, char *argv[])
 	int 	enable		= -1,
 		sd 		= -1;
 
-	const char *progname 	= argv[0],
-		*port 		= NULL,
-		*hostname 	= NULL,
-		*address 	= NULL,
-		*netmask 	= NULL;
+	const char *progname 	= argv[0];
 
 	struct 	NetSyncInfo 	Net;
-
 	struct in_addr addr;
 
 	int po_err;
@@ -88,23 +87,11 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = poptGetOptArg(po);
-			break;
 		case 'e':
 			enable = 1;
 			break;
 		case 'd':
 			enable = 0;
-			break;
-		case 'n':
-			hostname = poptGetOptArg(po);
-			break;
-		case 'i':
-			address = poptGetOptArg(po);
-			break;
-		case 'm':
-			netmask = poptGetOptArg(po);
 			break;
 		default:
 			poptPrintHelp(po, stderr, 0);
@@ -112,6 +99,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* FIXME: Take the user-supplied IP or hostname and reverse it to
+	   get the other component, which reduces the complexity of this by
+	   one argument passed in. getnameinfo() will help here. */
 	if (address && !inet_pton(AF_INET, address, &addr)) {
 		printf("   The address you supplied, '%s' is in invalid.\n"
 			"   Please supply a dotted quad, such as 1.2.3.4\n\n", address);
@@ -152,8 +142,7 @@ int main(int argc, char *argv[])
 
 	printf("   Hostname...: %s\n", Net.hostName);
 	printf("   IP Address.: %s\n", Net.hostAddress);
-	printf("   Netmask....: %s\n", Net.hostSubnetMask);
-	printf("\n");
+	printf("   Netmask....: %s\n\n", Net.hostSubnetMask);
 
 	if (dlp_WriteNetSyncInfo(sd, &Net) < 0)
 		goto error_close;
