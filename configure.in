@@ -16,21 +16,6 @@ AM_CONFIG_HEADER(config.h)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
 
-dnl ******************************
-dnl Warn re: config/build as root
-dnl ******************************
-if test "`awk -F: "/^${USER}:/ {print \$3}" /etc/passwd`=0"; then 
-	echo ""
-	echo "   WARNING: Please do not configure or build this software as root.."
-	echo ""
-	echo "   You should not need to be the root user, or superuser to build or"
-	echo "   configure software. You will only need to use the root user to"
-	echo "   install the software to its final destination, not to build it."
-	echo ""
-	echo "   You probably want to build this as a normal user, not root."
-	echo ""
-fi
-
 
 dnl ******************************
 dnl Pilot Link Version
@@ -92,9 +77,12 @@ AC_DEFINE_UNQUOTED(HOST_OS, "$host", [Host type])
 
 AM_INIT_AUTOMAKE(pilot-link, [$VERSION])
 
-dnl Checks for programs.
+dnl ******************************
+dnl Checks for basic programs.
+dnl ******************************
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_PROG_F77(g77 g77-3.2 g77-3.3 fl32 f77 fort77 xlf f90 xlf90)
 AM_PROG_LIBTOOL
 AC_PROG_YACC
 
