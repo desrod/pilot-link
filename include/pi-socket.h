@@ -7,15 +7,27 @@
 #include <termio.h>
 #endif
 
+#ifdef __EMX__
+#define OS2
+#include <sys/param.h> /* for htonl .. */
+#define ENOMSG 150
+#endif
+
 #define AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
 
-#define PF_SLP  AF_SLP
-#define PF_PADP 0x0002
+#define PF_SYS    0x0000
+#define PF_PADP   0x0002
+#define PF_LOOP   0x0003
 
 #define SOCK_STREAM    0x0010
 #define SOCK_DGRAM     0x0020
 #define SOCK_RAW       0x0030
 #define SOCK_SEQPACKET 0x0040
+
+#define PilotSocketDLP       3
+#define PilotSocketConsole   1
+#define PilotSocketDebugger  0
+#define PilotSocketRemoteUI  2
 
 #define SLP_MTU 1038
 
@@ -42,11 +54,14 @@ struct pi_mac {
 struct pi_socket {
   struct pi_sockaddr laddr;
   struct pi_sockaddr raddr;
+  int type;
   int protocol;
   int xid;
   int sd;
   struct pi_mac mac;
+#ifndef OS2
   struct termios tco;
+#endif
   struct pi_skb *txq;
   struct pi_skb *rxq;
   struct pi_socket *next;
@@ -58,6 +73,7 @@ struct pi_socket {
   int rx_bytes;
   int tx_errors;
   int rx_errors;
+  char last_tid;
 };
 
 int pi_socket(int domain, int type, int protocol);
@@ -69,8 +85,18 @@ int pi_accept(int pi_sd, struct pi_sockaddr *remote_addr, int *addrlen);
 int pi_send(int pi_sd, void *msg, int len, unsigned int flags);
 int pi_recv(int pi_sd, void *msg, int len, unsigned int flags);
 
+int pi_sendto(int pi_sd, void *msg, int len, unsigned int flags, 
+            struct pi_sockaddr * addr, int tolen);
+int pi_recvfrom(int pi_sd, void *msg, int len, unsigned int flags,
+                struct pi_sockaddr * addr, int *fromlen);
+
 int pi_read(int pi_sd, void *msg, int len);
 int pi_write(int pi_sd, void *msg, int len);
+
+int pi_getsockname(int pi_sd, struct pi_sockaddr * addr, int * namelen);
+int pi_getsockpeer(int pi_sd, struct pi_sockaddr * addr, int * namelen);
+
+int pi_tickle(int pi_sd);
 
 int pi_close(int pi_sd);
 

@@ -133,11 +133,17 @@ int slp_rx(struct pi_socket *ps)
 	) {
 
       ps->xid = ps->mac.rxb->data[8];
+      ps->laddr.port = ps->mac.rxb->data[3];
+      ps->raddr.port = ps->mac.rxb->data[4];
 
       /* hack to ignore LOOP packets... */
 
-      if (ps->mac.rxb->data[5] == 2) {
-
+      if (ps->mac.rxb->data[5] == PF_LOOP) {
+	ps->mac.expect = 1;
+	ps->mac.state = 1;
+	ps->mac.rxb->next = (struct pi_skb *)0;
+	ps->mac.buf = ps->mac.rxb->data;
+      } else {
 	if (!ps->rxq) ps->rxq = ps->mac.rxb;
 	else {
 
@@ -145,11 +151,6 @@ int slp_rx(struct pi_socket *ps)
 	  skb->next = ps->mac.rxb;
 	}
 	ps->mac.state = 0;
-      } else {
-	ps->mac.expect = 1;
-	ps->mac.state = 1;
-	ps->mac.rxb->next = (struct pi_skb *)0;
-	ps->mac.buf = ps->mac.rxb->data;
       }
       ps->rx_packets++;
     } else {
@@ -161,6 +162,7 @@ int slp_rx(struct pi_socket *ps)
     break;
 
   default:
+    break;
   }
 
   if (ps->mac.state && (!ps->mac.expect)) {

@@ -23,6 +23,7 @@ main(int argc, char *argv[])
   int sd;
   struct PilotUser U;
   struct SysInfo S;
+  int ret;
 
   if (argc < 2) {
     fprintf(stderr,"usage:%s /dev/tty?? [User name]\n",argv[0]);
@@ -38,10 +39,23 @@ main(int argc, char *argv[])
   addr.port = 3;
   strcpy(addr.device,argv[1]);
   
-  /*pi_connect(sd, &addr, sizeof(addr));*/
-  pi_bind(sd, &addr, sizeof(addr));
-  pi_listen(sd, 1);
+  ret = pi_bind(sd, &addr, sizeof(addr));
+  if(ret == -1) {
+    perror("pi_bind");
+    exit(1);
+  }
+
+  ret = pi_listen(sd, 1);
+  if(ret == -1) {
+    perror("pi_listen");
+    exit(1);
+  }
+
   sd = pi_accept(sd, 0, 0);
+  if(sd < 0) {
+    perror("pi_accept");
+    exit(1);
+  }
   
   /* Tell user (via Pilot) that we are starting things up */
   dlp_OpenConduit(sd);

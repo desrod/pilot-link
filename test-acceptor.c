@@ -42,6 +42,7 @@ main(int argc, char *argv[])
   struct pi_sockaddr addr;
   int sd;
   char buffer[64];
+  int ret;
 
   if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
     perror("pi_socket");
@@ -52,9 +53,23 @@ main(int argc, char *argv[])
   addr.port = 3;
   strcpy(addr.device,"/dev/ptyp9"); /* Bogus PTY allocation */
   
-  pi_bind(sd, &addr, sizeof(addr));
-  pi_listen(sd, 1);
+  ret = pi_bind(sd, &addr, sizeof(addr));
+  if(ret == -1) {
+    perror("pi_bind");
+    exit(1);
+  }
+
+  ret = pi_listen(sd, 1);
+  if(ret == -1) {
+    perror("pi_listen");
+    exit(1);
+  }
+
   sd = pi_accept(sd, 0, 0);
+  if(sd < 0) {
+    perror("pi_accept");
+    exit(1);
+  }
   
   pi_write(sd, "Sent from server", 17 );
   pi_read(sd, buffer, 64);

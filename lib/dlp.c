@@ -66,13 +66,13 @@ int dlp_exec(int sd, int cmd, int arg, void *msg, int msglen,
   }
   dlp_buf[0] = cmd;
 #ifdef DEBUG
-  puts("Sending dlp command");
+  fprintf(stderr,"Sending dlp command\n");
 #endif
   pi_write(sd, &dlp_buf[0], i);
 
 #ifdef DEBUG
-  puts("Reading dlp response");
-#endif DEBUG
+  fprintf(stderr,"Reading dlp response\n");
+#endif
   i = pi_read(sd, &dlp_buf[0], 0xffff);
   
   err = (dlp_buf[2] << 8) | dlp_buf[3];
@@ -374,3 +374,54 @@ int dlp_WriteResource(int sd, unsigned char dbhandle, long type, int id,
 
   return dlp_exec(sd, 0x24, 0x20, dlp_buf, 10+length, NULL, 0);
 }
+
+int dlp_ReadDBAppInfoBlock(int sd, unsigned char fHandle, short offset,
+                           unsigned char *dbuf, int dlen) {
+  set_byte(dlp_buf, fHandle);
+  set_byte(dlp_buf+1, 0x00);
+  set_short(dlp_buf+2, offset);
+  set_short(dlp_buf+4, dlen);
+  
+  return dlp_exec(sd, 0x1b, 0x20, dlp_buf, 6, dbuf, dlen);
+}
+
+int dlp_WriteDBAppInfoBlock(int sd, unsigned char fHandle, unsigned char *dbuf,
+                            int dlen) {
+  set_byte(dlp_buf, fHandle);
+  set_byte(dlp_buf+1, 0x00);
+  memcpy(dlp_buf+2, dbuf, dlen);
+
+  return dlp_exec(sd, 0x1c, 0x20, dlp_buf, dlen+2, NULL, 0);
+}
+
+/* FIXME:  Is this what this command code does? */
+int dlp_ResetSyncFlags(int sd, unsigned char fHandle) {
+  return dlp_exec(sd, 0x26, 0x20, &fHandle, sizeof(fHandle), NULL, 0);
+}
+
+int dlp_ReadNextModifiedRec(int sd, unsigned char fHandle, unsigned char *dbuf,
+                       int dlen) {
+  return dlp_exec(sd, 0x1f, 0x20, &fHandle, sizeof(fHandle), dbuf, dlen);
+}
+
+int dlp_ReadRecordById(int sd, unsigned char fHandle, long id, short offset,
+                       unsigned char *dbuf, int dlen) {
+  set_byte(dlp_buf, fHandle);
+  set_byte(dlp_buf+1, 0x00);
+  set_long(dlp_buf+2, id);
+  set_short(dlp_buf+6, offset);
+  set_short(dlp_buf+8, dlen);
+
+  return dlp_exec(sd, 0x20, 0x20, dlp_buf, 10, dbuf, dlen);
+}
+
+int dlp_ReadRecordByIndex(int sd, unsigned char fHandle, short index,
+                          short offset, unsigned char *dbuf, int dlen) {
+  set_byte(dlp_buf, fHandle);
+  set_byte(dlp_buf+1, 0x00);
+  set_short(dlp_buf+2, index);
+  set_short(dlp_buf+4, offset);
+  set_short(dlp_buf+6, dlen);
+
+  return dlp_exec(sd, 0x21, 0x20, dlp_buf, 8, dbuf, dlen);
+ }

@@ -16,6 +16,7 @@ main(int argc, char *argv[])
   struct pi_sockaddr addr;
   int sd;
   char buffer[64];
+  int ret;
 
   if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
     perror("pi_socket");
@@ -26,7 +27,11 @@ main(int argc, char *argv[])
   addr.port = 3;
   strcpy(addr.device,"/dev/ttyp9");
   
-  pi_connect(sd, &addr, sizeof(addr));
+  ret = pi_connect(sd, &addr, sizeof(addr));
+  if(ret == -1) {
+    perror("pi_connect");
+    exit(1);
+  }
   
   pi_read(sd, buffer, 64);
   puts(buffer);

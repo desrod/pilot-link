@@ -19,6 +19,7 @@ main(int argc, char *argv[])
   int sd;
   int i;
   char *buf;
+  int ret;
 
   unsigned char userid[64];
 
@@ -36,10 +37,24 @@ main(int argc, char *argv[])
   addr.port = 3;
   strcpy(addr.device,argv[1]);
 
-  pi_bind(sd, &addr, sizeof(addr));
-  pi_listen(sd,1);
+  ret = pi_bind(sd, &addr, sizeof(addr));
+  if(ret == -1) {
+    perror("pi_bind");
+    exit(1);
+  }
+
+  ret = pi_listen(sd,1);
+  if(ret == -1) {
+    perror("pi_listen");
+    exit(1);
+  }
+
   sd = pi_accept(sd,0,0);
-  
+  if(sd == -1) {
+    perror("pi_accept");
+    exit(1);
+  }
+
   puts("Connected");
 
   buf = (char *)malloc(4096);  /* some huge (in Pilot terms) working space */

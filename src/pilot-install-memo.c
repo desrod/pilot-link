@@ -21,6 +21,8 @@ main(int argc, char *argv[])
   int memo_size;
   char *memo_buf;
   FILE *f;
+  struct PilotUser U;
+  int ret;
 
   if (argc < 3) {
 #ifdef linux  
@@ -39,9 +41,26 @@ main(int argc, char *argv[])
   addr.port = 3;
   strcpy(addr.device,argv[1]);
   
-  pi_bind(sd, &addr, sizeof(addr));
-  pi_listen(sd,1);
+  ret = pi_bind(sd, &addr, sizeof(addr));
+  if(ret == -1) {
+    perror("pi_bind");
+    exit(1);
+  }
+
+  ret = pi_listen(sd,1);
+  if(ret == -1) {
+    perror("pi_listen");
+    exit(1);
+  }
+
   sd = pi_accept(sd, 0, 0);
+  if(sd == -1) {
+    perror("pi_accept");
+    exit(1);
+  }
+
+  /* Ask the pilot who it is. */
+  dlp_ReadUserInfo(sd,&U);
   
   /* Tell user (via Pilot) that we are starting things up */
   dlp_OpenConduit(sd);
@@ -86,6 +105,13 @@ main(int argc, char *argv[])
 
   /* Close the database */
   dlp_CloseDB(sd, db);
+
+  /* Tell the user who it is, with a different PC id. */
+  U.lastSyncPC = 0x00010000;
+  U.succSyncDate = time(NULL);
+  U.lastSyncDate = U.succSyncDate;
+  dlp_WriteUserInfo(sd,&U);
+
   dlp_AddSyncLogEntry(sd, "Wrote memo to Pilot.\n");
   
   /* All of the following code is now unnecessary, but harmless */

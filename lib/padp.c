@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "pi-socket.h"
 #include "padp.h"
+#include "slp.h"
 
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 {
@@ -33,6 +34,17 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 
   if (type == padWake) ps->xid = 0xff;
 
+  if ((ps->xid != (signed char)0xff) && (ps->xid != (signed char)0x00)) {
+    if (((signed char)(ps->xid) - (signed char)(ps->last_tid)) >= 0) {
+      ps->last_tid = ps->xid;
+#ifdef DEBUG
+      fprintf(stderr, "PADP tid:%02x\n", ps->last_tid);
+    } else {
+      fprintf(stderr, "PADP tid:%02x OUT OF ORDER!!!\n", ps->xid);
+#endif
+    }
+  }
+
   do {
 
     if (!flags) {
@@ -45,7 +57,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
     tlen = (len > 1024) ? 1024 : len;
 
     memcpy(&nskb->data[14], msg, tlen);
-    msg += tlen;
+    (long int) msg += tlen;
 
     padp = (struct padp *)(&nskb->data[10]);
     padp->type = type & 0xff;
@@ -69,14 +81,18 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 {
   struct padp *padp;
   struct pi_skb *skb;
+  char trans_id;
   int rlen =0;
 
+retry:
   if (!ps->rxq) return 0;
 
   skb = ps->rxq;
   ps->rxq = skb->next;
 
   padp = (struct padp *)(&skb->data[10]);
+
+  trans_id = ((struct slp *)(skb->data))->id;
 
   padp_dump(skb, padp, 0);
 
@@ -88,6 +104,24 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   }
 
   free (skb);
+
+
+#ifdef DEBUG
+  fprintf(stderr, "PADP tid:%02x last:%02x t-l:%02x\n", trans_id, ps->last_tid,
+          trans_id - ps->last_tid);
+#endif
+  if ((trans_id != (signed char)0xff) && (trans_id != (signed char)0x00)) {
+    if ((trans_id - ps->last_tid) < 0) {
+#ifdef DEBUG
+      fprintf(stderr, "PADP retrying...(xid=%d)\n", trans_id);
+#endif
+      pi_socket_read(ps);
+      goto retry;
+    }
+  }
+
+  ps->last_tid = trans_id;
+
   return rlen;
 }
 
@@ -95,9 +129,23 @@ int padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
 {
 #ifdef DEBUG
   int i;
+  char *stype;
+
+  switch(padp->type) {
+  case padData:
+    stype = "DATA"; break;
+  case padAck:
+    stype = "ACK"; break;
+  case padTickle:
+    stype = "TICKLE"; break;
+  case padWake:
+    stype = "WAKE"; break;
+  default:
+    stype = "LOOP"; break;
+  }
 
   fprintf(stderr,"PADP %s %s %c%c len=0x%.4x\n",
-	  (padp->type == padData) ? "DATA" : ((padp->type == padAck) ? "ACK " : "LOOP"),
+    stype,
 	  rxtx ? "TX" : "RX" ,
 	  (padp->flags & FIRST) ? 'F' : ' ',
 	  (padp->flags & LAST) ? 'L' : ' ',

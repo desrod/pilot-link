@@ -30,7 +30,7 @@ enum dlpDBFlags {
 	dlpDBFlagReadOnly = 0x0002, /* DB is read only */
 	dlpDBFlagAppInfoDirty = 0x0004, /* AppInfo data has been modified */
 	dlpDBFlagBackup = 0x0008, /* DB is tagged for generic backup */
-	dlpDBFlagOpen = 0x8000, /* DB is currently open */
+	dlpDBFlagOpen = 0x8000 /* DB is currently open */
 };
 
 enum dlpRecAttributes {
@@ -38,7 +38,7 @@ enum dlpRecAttributes {
 	dlpRecAttrDirty   = 0x40, /* record modified */
 	dlpRecAttrBusy    = 0x20, /* record locked  */
 	dlpRecAttrSecret  = 0x10, /* record is secret*/
-	dlpRecAttrArchived= 0x08, /* tagged for archival during next sync*/
+	dlpRecAttrArchived= 0x08 /* tagged for archival during next sync*/
 };
 
 enum dlpEndStatus {
