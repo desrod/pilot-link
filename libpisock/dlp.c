@@ -3160,7 +3160,7 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 	set_long(DLP_REQUEST_DATA(req, 0, 2), type);
 	set_short(DLP_REQUEST_DATA(req, 0, 6), id);
 	set_short(DLP_REQUEST_DATA(req, 0, 8), 0);
-	set_short(DLP_REQUEST_DATA(req, 0, 10), buffer ? buffer->allocated : 0);
+	set_short(DLP_REQUEST_DATA(req, 0, 10), buffer ? DLP_BUF_SIZE : 0);
 
 	result = dlp_exec(sd, req, &res);
 
@@ -4212,7 +4212,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_long(DLP_REQUEST_DATA(req, 0, 2), id); 
 	set_short(DLP_REQUEST_DATA(req, 0, 6), 0); /* Offset into record */
-	set_short(DLP_REQUEST_DATA(req, 0, 8), buffer ? buffer->allocated : 0);	/* length to return */
+	set_short(DLP_REQUEST_DATA(req, 0, 8), buffer ? DLP_BUF_SIZE : 0);	/* length to return */
 
 	result = dlp_exec(sd, req, &res);
 
@@ -4306,7 +4306,7 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
 		set_short(DLP_REQUEST_DATA(req, 0, 2), index);
 		set_short(DLP_REQUEST_DATA(req, 0, 4), 0); /* Offset into record */
-		set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? buffer->allocated : 0);	/* length to return */
+		set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? DLP_BUF_SIZE : 0);	/* length to return */
 	}
 	result = dlp_exec(sd, req, &res);
 
