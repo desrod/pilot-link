@@ -52,4 +52,4 @@ read-veo
 reminders
 sync-plan
 tags
-userland.lo
+*.lo
