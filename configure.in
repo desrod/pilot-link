@@ -8,7 +8,7 @@ dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=11
-PILOT_LINK_MINOR=2
+PILOT_LINK_MINOR=3
 PILOT_LINK_NANO=
 PILOT_LINK_PATCH=
 
