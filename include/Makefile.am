@@ -25,6 +25,7 @@ c_headers = \
 	pi-socket.h		\
 	pi-source.h		\
 	pi-sync.h		\
+	pi-sys.h		\
 	pi-syspkt.h		\
 	pi-todo.h		\
 	pi-util.h		\

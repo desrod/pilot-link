@@ -1,5 +1,9 @@
 2002-03-19  JP Rosevear  <jpr@ximian.com>
 
+	* include/Makefile.am (c_headers): add pi_sys.h
+
+2002-03-19  JP Rosevear  <jpr@ximian.com>
+	
 	* include/pi-sys.h: for new sys protocol
 
 	* include/pi-syspkt.h: remove protos
