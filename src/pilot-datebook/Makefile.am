@@ -21,6 +21,7 @@ pilot_datebook_SOURCES = 		\
 	pilot-datebook-ical.c		\
 	pilot-datebook-ical.h		\
 	pilot-datebook-io.c		\
+	pilot-datebook-io.h		\
 	pilot-datebook.h		\
 	pilot-datebook-job.c		\
 	pilot-datebook-job.h		\
@@ -35,7 +36,7 @@ pilot_datebook_SOURCES = 		\
 	pilot-datebook-shorttxt.c	\
 	pilot-datebook-shorttxt.h	\
 	pilot-datebook-sort.c		\
-	pilot-datebook-sort.h
+	pilot-datebook-sort.h		\
 	pilot-datebook-update.c		\
 	pilot-datebook-update.h		\
 	pilot-datebook-windat.c		\	
