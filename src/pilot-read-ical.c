@@ -340,7 +340,7 @@ main(int argc, char *argv[])
 	       int ii, found;
 
 	       for (ii = 0, found = 0; ii < 7; ii++) {
-		  if (a.repeatDays[i])
+		  if (a.repeatDays[ii])
 		     found++;
 	       }
 	       if (found > 1)
