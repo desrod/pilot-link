@@ -193,13 +193,13 @@ print_appblock (int sd, int db)
 	int i;
 	int ofs;
 	int clabels;
-	unsigned char buf[0xffff];
 	unsigned char *data;
 	size_t len;
 	pbooktype_t dbtype;
+	pi_buffer_t *appblock = pi_buffer_new(0xffff);
 
-	i = dlp_ReadAppBlock(sd, db, 0, buf, sizeof(buf));
-	data = (unsigned char *)&buf;
+	i = dlp_ReadAppBlock(sd, db, 0, 0xffff, appblock);
+	data = (unsigned char *)appblock->data;
 
 	if (i <= 0)
 		goto error;
@@ -267,10 +267,11 @@ print_appblock (int sd, int db)
 
 	puts("");
 
+	pi_buffer_free(appblock);
 	return dbtype;
 
 error:
-
+	pi_buffer_free(appblock);
 	return db_unknown;
 }
 

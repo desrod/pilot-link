@@ -68,8 +68,8 @@ main (int argc, char **argv)
 	time_t t1, t2;	
 	int handle;
 	unsigned char pref1[256], pref2[256];
-	unsigned char ablock1[256], ablock2[256];
-	unsigned char sblock1[256], sblock2[256];
+	unsigned char ablock1[256];
+	unsigned char sblock1[256];
 	unsigned char ires1[256];
 	unsigned char dres1[256];
 	unsigned char record1[256], record2[256], record3[256];
@@ -80,11 +80,13 @@ main (int argc, char **argv)
 	int i;
 	pi_buffer_t *record4,
 		*dres2,
-		*ires2;
+		*ires2,
+		*appblock;
 
 	record4 = pi_buffer_new (sizeof(record1));
 	ires2 = pi_buffer_new (sizeof (ires1));
 	dres2 = pi_buffer_new (sizeof (dres1));
+	appblock = pi_buffer_new(256);
 	
 	sd = pilot_connect (argv[1]);
 
@@ -407,9 +409,7 @@ main (int argc, char **argv)
 	 *
 	 *********************************************************************/
 	memset (ablock1, '\0', sizeof (ablock1));
-	memset (ablock2, '\0', sizeof (ablock2));
 	memset (sblock1, '\0', sizeof (sblock1));
-	memset (sblock2, '\0', sizeof (sblock2));
 	memset (record1, '\0', sizeof (record1));
 	memset (record2, '\0', sizeof (record2));
 	memset (record3, '\0', sizeof (record3));
@@ -425,9 +425,9 @@ main (int argc, char **argv)
 	/* Write and read back an app block */
 	result = dlp_WriteAppBlock (sd, handle, ablock1, sizeof(ablock1));
 	CHECK_RESULT(dlp_WriteAppBlock);
-	result = dlp_ReadAppBlock (sd, handle, 0, ablock2, sizeof(ablock2));
+	result = dlp_ReadAppBlock (sd, handle, 0, sizeof(ablock1), appblock);
 	CHECK_RESULT(dlp_ReadAppBlock);
-	if (memcmp(ablock1, ablock2, sizeof(ablock1) != 0)) {
+	if (result != sizeof(ablock1) || memcmp(ablock1, appblock->data, sizeof(ablock1) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST App block mismatch\n"));
 		goto error;
 	}
@@ -435,9 +435,9 @@ main (int argc, char **argv)
 	/* Write and read back a sort block */
 	result = dlp_WriteSortBlock (sd, handle, sblock1, sizeof(sblock1));
 	CHECK_RESULT(dlp_WriteSortBlock);
-	result = dlp_ReadSortBlock (sd, handle, 0, sblock2, sizeof(sblock2));
+	result = dlp_ReadSortBlock (sd, handle, 0, sizeof(sblock1), appblock);
 	CHECK_RESULT(dlp_ReadSortBlock);
-	if (memcmp(sblock1, sblock2, sizeof(sblock1) != 0)) {
+	if (result != sizeof(sblock1) || memcmp(sblock1, appblock->data, sizeof(sblock1) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST App block mismatch\n"));
 		goto error;
 	}
@@ -720,6 +720,7 @@ main (int argc, char **argv)
 	pi_buffer_free (record4);
 	pi_buffer_free (ires2);
 	pi_buffer_free (dres2);
+	pi_buffer_free(appblock);
 	return 0;
 }
 
