@@ -119,7 +119,7 @@ int	novsf	= 0;
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
-int 	sd 	= -1;
+int 	sd 	= 0;
 char *	port 	= NULL;
 
 #define MAXEXCLUDE 100
@@ -435,6 +435,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		}
 		
 		/* We do this to unbuffer stdout, fixes the printf() problem */
+
 		/*
 		printf("\x1B[K\r");
 		setvbuf(stdout, Buffer, _IONBF, sizeof(Buffer));
