@@ -29,7 +29,7 @@ elif test $PILOT_LINK_VERS -eq $pl_ve; then
 		AC_MSG_ERROR(no)
 	fi
 else
-	AC_MSG_ERRO(no)
+	AC_MSG_ERROR(no)
 fi
 ])
 
