@@ -117,28 +117,32 @@ static void display_help(const char *progname)
         return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		db,
 		sd 		= -1;
-        char 	*progname 	= argv[0],
-		*filename 	= NULL,
+
+        const char
+                *progname 	= argv[0];
+
+        char 	*filename 	= NULL,
 		*port 		= NULL;
 	struct 	PilotUser User;
 	
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"filename",	'f', POPT_ARG_STRING, &filename, 0, "A local file with formatted ToDo entries"},
-	 POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        {"filename",	'f', POPT_ARG_STRING, &filename, 0, "A local file with formatted ToDo entries"},
+        	POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 
 	po = poptGetContext("install-todos", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 

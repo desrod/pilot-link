@@ -42,8 +42,6 @@
 #endif
 #endif
 
-char *progname;
-
 #ifdef HAVE_PNG
 void write_png( FILE *f, struct NotePad *n );
 #endif
@@ -456,7 +454,7 @@ void output_picture( int type, struct NotePad n )
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
    int	c,	/* switch */
      db,
@@ -466,8 +464,10 @@ int main(int argc, char *argv[])
    
    int type = NOTE_OUT_PPM;
    
-   char		*port 		= NULL,
-		*typename	= NULL;
+   const char
+        *progname       = argv[0],
+        *port 		= NULL,
+	*typename	= NULL;
    
    struct 	PilotUser User;
    struct 	NotePadAppInfo nai;
@@ -476,18 +476,12 @@ int main(int argc, char *argv[])
    poptContext pc;
 
    struct poptOption options[] = {
-	   {"port", 'p', POPT_ARG_STRING, &port, 0,
-	    "Use device file <port> to communicate with Palm", "port"},
-	   {"help", 'h', POPT_ARG_NONE, NULL, 'h',
-	    "Display help information", NULL},
-	   {"version", 'v', POPT_ARG_NONE, NULL, 'v',
-	    "Show program version information", NULL},
-	   {NULL, 'l', POPT_ARG_VAL, &action, NOTEPAD_ACTION_LIST,
-	    "List Notes on device", NULL},
-	   {"type", 't', POPT_ARG_STRING, NULL, 't',
-	    "Specify picture output type, either \"ppm\" or \"png\"",
-	    "type"},
-	   POPT_TABLEEND
+        {"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
+        {"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display help information", NULL},
+        {"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+        {NULL, 'l', POPT_ARG_VAL, &action, NOTEPAD_ACTION_LIST, "List Notes on device", NULL},
+        {"type", 't', POPT_ARG_STRING, NULL, 't', "Specify picture output type, either \"ppm\" or \"png\"", "type"},
+        POPT_TABLEEND
    };
 
    pc = poptGetContext("read-notepad", argc, argv, options, 0);

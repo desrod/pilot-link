@@ -77,11 +77,11 @@ int pilot_connect(const char *port);
 int 	df_fn(int sd, int argc, char *argv[]),
 	reopen_fn(int sd, int argc, char *argv[]),
 	exit_fn(int sd, int argc, char *argv[]),
-	ls_fn(int sd, int argc, char *argv[]),
+	ls_fn(int sd, int argc, const char *argv[]),
 	help_fn(int sd, int argc, char *argv[]),
 	rm_fn(int sd, int argc, char *argv[]),
 	time_fn(int sd, int argc, char *argv[]),
-	user_fn(int sd, int argc, char *argv[]);
+	user_fn(int sd, int argc, const char *argv[]);
 
 char 	*strtoke(char *str, char *ws, char *delim),
 	*timestr(time_t t);
@@ -191,7 +191,7 @@ int help_fn(int sd, int argc, char *argv[])
  * Returns:     Nothing
  *
  ***********************************************************************/
-int ls_fn(int sd, int argc, char *argv[])
+int ls_fn(int sd, int argc, const char *argv[])
 {
 	poptContext po;
 	
@@ -215,7 +215,8 @@ int ls_fn(int sd, int argc, char *argv[])
 	
 	optind = 0;
 	
-	po = poptGetContext("install-expenses", argc, argv, ls_options, 0);
+	po = poptGetContext("dlpsh", argc, argv, ls_options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		  case 'r':
@@ -395,7 +396,7 @@ int time_fn(int sd, int argc, char *argv[])
  * Returns:     Nothing
  *
  ***********************************************************************/
-int user_fn(int sd, int argc, char *argv[])
+int user_fn(int sd, int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		ret,
@@ -422,7 +423,8 @@ int user_fn(int sd, int argc, char *argv[])
         	{ NULL, 0, 0, NULL, 0 }
 		} ;
 	
-	po = poptGetContext("install-expenses", argc, argv, user_options, 0);
+	po = poptGetContext("dlpsh", argc, argv, user_options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		  case 'u':
@@ -768,13 +770,15 @@ static void display_help(const char *progname)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c		= -1,
 		sd 		= -1;
 
-	char 	*progname 	= argv[0],
-		*port 		= NULL,
+	const char
+                *progname 	= argv[0];
+
+	char 	*port 		= NULL,
 		*cmd		= NULL;
 	
 	poptContext po;
@@ -789,6 +793,7 @@ int main(int argc, char *argv[])
 	} ;
 		
 	po = poptGetContext("dlpsh", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		case 'h':

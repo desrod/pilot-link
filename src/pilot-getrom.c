@@ -58,7 +58,7 @@ static void sighandler(int signo)
 
 struct record *records = 0;
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		i,
@@ -71,9 +71,11 @@ int main(int argc, char *argv[])
 		state,
 		timespent	= 0;
 	
+	const char
+                *progname 	= argv[0];
+
 	char 	name[256],
 		print[256],
-		*progname 	= argv[0],
 		*port 	        = NULL,
 		*filename;
 	
@@ -89,14 +91,15 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	 POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	po = poptGetContext("pi-getrom", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 
@@ -115,7 +118,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (optind > 0)
-		filename = argv[optind];
+		filename = argv[1];
 	else
 		filename = NULL;
 

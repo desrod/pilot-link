@@ -63,7 +63,7 @@ double bias_factor = 0.50;
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help (char *progname)
+static void display_help(const char *progname)
 {
    printf("   Syncronize your Veo Traveler databases with your desktop machine\n\n");
    printf("   Usage: %s -p /dev/pilot [options]\n\n", progname);
@@ -1015,7 +1015,7 @@ void write_ppm (FILE * f, struct Veo *v, long flags)
  * Returns:
  *
  ***********************************************************************/
-void WritePicture (int sd, int db, int type, char *name, char *progname, long flags)
+void WritePicture (int sd, int db, int type, char *name, const char *progname, long flags)
 {
    char fname[FILENAME_MAX];
    FILE *f;
@@ -1072,21 +1072,25 @@ void WritePicture (int sd, int db, int type, char *name, char *progname, long fl
 
 }
 
-int main (int argc, char *argv[])
+int main (int argc, const char *argv[])
 {
-   int c,			/* switch */
-	 db,
-	 i = 0,
-	 sd = -1, 
-	 action = VEO_ACTION_OUTPUT, 
-	 dbcount = 0, 
-	 type = VEO_OUT_PPM,
-	 bias = 50;
+   int  c,			/* switch */
+	db,
+	i = 0,
+	sd = -1, 
+	action = VEO_ACTION_OUTPUT, 
+	dbcount = 0, 
+	type = VEO_OUT_PPM,
+	bias = 50;
 	long flags = 0;
 	struct DBInfo info;
 	pi_buffer_t *buf;
 
-	char *progname = argv[0], *port = NULL, *picname = NULL;
+	const char 
+                *progname = argv[0],
+                *port = NULL,
+                *picname = NULL;
+
 	char *imgtype = NULL;
 	
 	struct PilotUser User;
@@ -1095,26 +1099,27 @@ int main (int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"list",	'l', POPT_ARG_NONE, NULL, 'l', "List Photos on device"},
-	{"type",	't', POPT_ARG_STRING, &imgtype, 't', "Specify picture output type (ppm or png)"},
-	{"name",	'n', POPT_ARG_STRING, &picname, 'n', "Specify output picture by name"},
-	{"colour",	'c', POPT_ARG_NONE, NULL, 'c', "Colour correct the output colours"},
-	{"bias",	'b', POPT_ARG_INT, &bias, 'b', "Lighten or darken the image; 0..50   darken image, 50..100 lighten image"},
-	 POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        {"list",	'l', POPT_ARG_NONE, NULL, 'l', "List Photos on device"},
+        	{"type",	't', POPT_ARG_STRING, &imgtype, 't', "Specify picture output type (ppm or png)"},
+	        {"name",	'n', POPT_ARG_STRING, &picname, 'n', "Specify output picture by name"},
+        	{"colour",	'c', POPT_ARG_NONE, NULL, 'c', "Colour correct the output colours"},
+	        {"bias",	'b', POPT_ARG_INT, &bias, 'b', "Lighten or darken the image; 0..50   darken image, 50..100 lighten image"},
+        	POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 
 	po = poptGetContext("read-veo", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		   case 'h':
-			 display_help (progname);
+			 display_help(progname);
 			 return 0;
 		   case 'v':
-			 print_splash (progname);
+			 print_splash(progname);
 			 return 0;
 		   case 'n':
 			 action = VEO_ACTION_OUTPUT_ONE;
@@ -1196,7 +1201,7 @@ int main (int argc, char *argv[])
 
 				  dlp_ReadAppBlock (sd, db, 0, buffer, 0xffff);
 
-				  WritePicture (sd, db, type, info.name, progname, flags);
+				  WritePicture(sd, db, type, info.name, progname, flags);
 
 
 				  if (sd)

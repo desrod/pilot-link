@@ -167,18 +167,12 @@ int main(int argc, char *argv[])
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display this information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
-		{"install", 'i', POPT_ARG_STRING, &install_filename, 0,
-		 "Pack and install <file> to your Palm", "file"},
-		{"fetch", 'f', POPT_ARG_STRING, &fetch_filename, 0,
-		 "Unpack the file from your Palm device", "file"},
-		{"delete", 'd', POPT_ARG_NONE, &delete, 0,
-		 "Delete the packaged file from your Palm device", NULL},
+		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display this information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+		{"install", 'i', POPT_ARG_STRING, &install_filename, 0, "Pack and install <file> to your Palm", "file"},
+		{"fetch", 'f', POPT_ARG_STRING, &fetch_filename, 0, "Unpack the file from your Palm device", "file"},
+		{"delete", 'd', POPT_ARG_NONE, &delete, 0, "Delete the packaged file from your Palm device", NULL},
 		 POPT_TABLEEND
 	};
 

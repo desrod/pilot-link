@@ -28,7 +28,7 @@
 
 /* Declare prototypes */
 static void display_help(const char *progname);
-void print_splash(char *progname);
+void print_splash(const char *progname);
 int pilot_connect(const char *porg);
 
 char *paymentTypes[] = 
@@ -102,7 +102,7 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	db,
 		sd		= -1,
@@ -111,15 +111,15 @@ int main(int argc, char *argv[])
 		category,
 		po_err		= -1,
 		replace_category = 0;
+
+	const char
+                *progname 	= argv[0];
 	
 	char 	*port		= NULL,
-		*progname 	= argv[0],
 		*category_name 	= NULL,
 		*expenseType	= NULL,
 		*paymentType	= NULL;
 	
-	
-
 	unsigned char buf[0xffff];
 	
 	struct 	PilotUser User;
@@ -129,21 +129,21 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"ptype", 	't', POPT_ARG_STRING, &paymentType, 't',"Payment type (Cash, Check, etc.)"},
-	{"etype", 	'e', POPT_ARG_STRING, &expenseType, 'e', "Expense type (Airfare, Hotel, etc.)"},
-	{"amount", 	'a', POPT_ARG_STRING, &theExpense.amount, 0, "Payment amount"},
-	{"vendor", 	'V', POPT_ARG_STRING, &theExpense.vendor, 0, "Expense vendor name (Joe's Restaurant)"},
-	{"city", 	'i', POPT_ARG_STRING, &theExpense.city, 0, "Location/city for this expense entry"},
-	{"guests", 	'g', POPT_ARG_STRING, &theExpense.attendees, 0, "Number of guests for this expense entry"},
-	{"note", 	'n', POPT_ARG_STRING, &theExpense.note, 0, "Notes for this expense entry"},
-	{"category", 	'c', POPT_ARG_STRING, &category_name, 0, "Install entry into this category"},
-        {"replace", 	'r', POPT_ARG_STRING, &category_name, 'r', "Replace entry in this category"},
-	POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        {"ptype", 	't', POPT_ARG_STRING, &paymentType, 't',"Payment type (Cash, Check, etc.)"},
+        	{"etype", 	'e', POPT_ARG_STRING, &expenseType, 'e', "Expense type (Airfare, Hotel, etc.)"},
+	        {"amount", 	'a', POPT_ARG_STRING, &theExpense.amount, 0, "Payment amount"},
+        	{"vendor", 	'V', POPT_ARG_STRING, &theExpense.vendor, 0, "Expense vendor name (Joe's Restaurant)"},
+	        {"city", 	'i', POPT_ARG_STRING, &theExpense.city, 0, "Location/city for this expense entry"},
+        	{"guests", 	'g', POPT_ARG_STRING, &theExpense.attendees, 0, "Number of guests for this expense entry"},
+	        {"note", 	'n', POPT_ARG_STRING, &theExpense.note, 0, "Notes for this expense entry"},
+        	{"category", 	'c', POPT_ARG_STRING, &category_name, 0, "Install entry into this category"},
+                {"replace", 	'r', POPT_ARG_STRING, &category_name, 'r', "Replace entry in this category"},
+        	POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	po = poptGetContext("install-expenses", argc, argv, options, 0);
 	

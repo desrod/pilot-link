@@ -36,7 +36,7 @@
 
 /* Declare prototypes */
 static void display_help(const char *progname);
-void print_splash(char *progname);
+void print_splash(const char *progname);
 int pilot_connect(const char *porg);
 long write_header(FILE *out);
 long write_data(char *buffer, int index, int size, long dataChunkSize, FILE *out);
@@ -395,35 +395,38 @@ static void display_help(const char *progname)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
         int 	c,
 		fetch,
 		convert;
 
+	const char
+                *progname       = argv[0];
+
         char 	*port		= NULL,
-		*filename	= NULL,
-		*progname       = argv[0];
+		*filename	= NULL;
 
         fetch = convert = FALSE;
 	
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"fetch",	'f', POPT_ARG_STRING, &filename, 'f', "Fetch all wav files or specified wav file from the Palm"},
-	{"convert",	'c', POPT_ARG_STRING, &filename, 'c', "Convert <file>.wav.pdb file to wav"},
-	 POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+	        {"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+        	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+        	{"fetch",	'f', POPT_ARG_STRING, &filename, 'f', "Fetch all wav files or specified wav file from the Palm"},
+	        {"convert",	'c', POPT_ARG_STRING, &filename, 'c', "Convert <file>.wav.pdb file to wav"},
+        	 POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 
         if (argc < 2 ) {
                 display_help(progname);
         }
 
-	po = poptGetContext("memos", argc, argv, options, 0);
+	po = poptGetContext("pilot-wav", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 

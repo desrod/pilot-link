@@ -1718,7 +1718,10 @@ int main(int argc, const char *argv[])
 		unsaved 	= 0,
                 verbose         = 0;
 
-	const char *archive_dir = NULL, *dirname = NULL, *progname = argv[0];
+	const char
+                *archive_dir    = NULL, 
+                *dirname        = NULL,
+                *progname       = argv[0];
 
 	unsigned long int sync_flags = palm_op_backup;
 	palm_op_t palm_operation     = palm_op_noop;
@@ -1766,6 +1769,7 @@ int main(int argc, const char *argv[])
 		POPT_AUTOHELP
 		POPT_TABLEEND
 	};
+
 	const char *help_header_text =
 		" [-p  <port>] [--help] <options> <actions>\n"
 		"   Sync, backup, install, delete and more from your Palm device.\n"

@@ -331,7 +331,7 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		hflag = 0,
@@ -345,7 +345,8 @@ int main(int argc, char *argv[])
 	struct 	pi_file *pf;
 	struct 	DBInfo info;
 
-	char 	*name,
+	const char
+                *name,
 		*progname 	= argv[0];
 
 	/* FIXME - This code isn't even right. It's cut-and-paste
@@ -355,18 +356,17 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	
-	{"help",	'H', POPT_ARG_NONE, NULL, 'H', "Display this information"},
-	{"header",	'h', POPT_ARG_NONE, NULL, 'h', "Header"},
-	{"appinfo",	'a', POPT_ARG_NONE, NULL, 'a', "AppInfo"},
-	{"sortinfo",	's', POPT_ARG_NONE, NULL, 's', "Do not obey or generate a 'sort' list"},
-        {"verbose",	'v', POPT_ARG_NONE, NULL, 'v', "Verbose mode"},
-	{"list",	'l', POPT_ARG_NONE, NULL, 'l', "List records"},
-	{"record",	'r', POPT_ARG_INT, &rnum, 'r', "Record number"},
-	{"name",	'n', POPT_ARG_STRING, &name, 0, "File name"},		
-	 POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"help",	'H', POPT_ARG_NONE, NULL, 'H', "Display this information"},
+	        {"header",	'h', POPT_ARG_NONE, NULL, 'h', "Header"},
+        	{"appinfo",	'a', POPT_ARG_NONE, NULL, 'a', "AppInfo"},
+	        {"sortinfo",	's', POPT_ARG_NONE, NULL, 's', "Do not obey or generate a 'sort' list"},
+                {"verbose",	'v', POPT_ARG_NONE, NULL, 'v', "Verbose mode"},
+	        {"list",	'l', POPT_ARG_NONE, NULL, 'l', "List records"},
+        	{"record",	'r', POPT_ARG_INT, &rnum, 'r', "Record number"},
+	        {"name",	'n', POPT_ARG_STRING, &name, 0, "File name"},		
+        	 POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+        };
 
 	po = poptGetContext("pilot-prc", argc, argv, options, 0);
 	while ((c = poptGetNextOpt(po)) >= 0) {

@@ -35,7 +35,7 @@
 
 /* Declare prototypes */
 static void display_help(const char *progname);
-void print_splash(char *progname);
+void print_splash(const char *progname);
 int pilot_connect(const char *porg);
 extern time_t parsedate(char *p);
 
@@ -54,7 +54,7 @@ static void display_help(const char *progname)
         return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		Appointment_size,
@@ -63,8 +63,10 @@ int main(int argc, char *argv[])
 		filelen,
 		sd		= -1;
 	
-	char 	*progname	= argv[0],
-		*port		= NULL,
+	const char
+                *progname	= argv[0];
+
+	char 	*port		= NULL,
 		*cPtr		= NULL,
 		*filename	= NULL,
 		*file_text	= NULL,
@@ -79,14 +81,10 @@ int main(int argc, char *argv[])
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
-		{"read", 'r', POPT_ARG_STRING, &filename, 0,
-		 "Read entries from <file>", "file"},
+		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+		{"read", 'r', POPT_ARG_STRING, &filename, 0, "Read entries from <file>", "file"},
 		POPT_TABLEEND
 	};
 

@@ -67,25 +67,25 @@ static void display_help(const char *progname)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		db,
 		i,
 		sd 		= -1;
-	const char 	*progname 	= argv[0],
-		*port 		= NULL;
+
+	const char
+                *progname 	= argv[0],
+                *port 		= NULL;
+
 	pi_buffer_t *buffer;
 
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
+		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
 		POPT_TABLEEND
 	};
 

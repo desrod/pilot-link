@@ -561,7 +561,7 @@ static void display_help(const char *progname)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 
 	int 	c,			/* switch */
@@ -571,10 +571,12 @@ int main(int argc, char *argv[])
 		mode 			= 0,
 		quiet 			= 0,
 		sd 			= -1;
-	
+
+	const char
+        	*progname 		= argv[0];	
+
 	char 	*defaultcategoryname 	= 0,
 		*deletecategory 	= 0,
-		*progname 		= argv[0],
 		*port			= NULL,
 		*wrFilename		= NULL,
 		*rdFilename		= NULL,
@@ -586,24 +588,25 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"delall",	'D', POPT_ARG_NONE, NULL, 'D', "Delete all Palm records in all categories"},
-	{"titles",	'T', POPT_ARG_NONE, NULL, 'T', "Write header with titles"},
-	{"escape",	'e', POPT_ARG_NONE, NULL, 'e', "Escape special chcters with backslash"},
-	{"quiet",	'q', POPT_ARG_NONE, NULL, 'q', "Do not prompt for HotSync button press"},
-	{"tdelim",	't', POPT_ARG_INT, &tabledelim, 't', "Include category, use delimiter (3=tab, 2=;, 1=,)"},
-	{"delcat",	'd', POPT_ARG_STRING, &deletecategory, 0, "Delete old Palm records in <category>"},
-	{"install",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to"},
-	{"augment",	'a', POPT_ARG_NONE, NULL, 'a', "Augment records with additional information"},
-	{"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm"},
-	{"write",	'w', POPT_ARG_STRING, &wrFilename, 'w', "Get records from Palm and write them to <file>"},
-	 POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        {"delall",	'D', POPT_ARG_NONE, NULL, 'D', "Delete all Palm records in all categories"},
+        	{"titles",	'T', POPT_ARG_NONE, NULL, 'T', "Write header with titles"},
+	        {"escape",	'e', POPT_ARG_NONE, NULL, 'e', "Escape special chcters with backslash"},
+        	{"quiet",	'q', POPT_ARG_NONE, NULL, 'q', "Do not prompt for HotSync button press"},
+	        {"tdelim",	't', POPT_ARG_INT, &tabledelim, 't', "Include category, use delimiter (3=tab, 2=;, 1=,)"},
+        	{"delcat",	'd', POPT_ARG_STRING, &deletecategory, 0, "Delete old Palm records in <category>"},
+	        {"install",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to"},
+        	{"augment",	'a', POPT_ARG_NONE, NULL, 'a', "Augment records with additional information"},
+	        {"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm"},
+        	{"write",	'w', POPT_ARG_STRING, &wrFilename, 'w', "Get records from Palm and write them to <file>"},
+	        POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	po = poptGetContext("pilot-addresses", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 			

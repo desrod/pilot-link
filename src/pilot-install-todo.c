@@ -140,16 +140,18 @@ static void display_help(const char *progname)
         return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	sd	= -1,
 		db,
 		po_err  = -1;
 
-	char *progname 	        = argv[0],
-		*port		= NULL,
+	const char
+                *progname 	= argv[0];
+
+	char    *port		= NULL,
 		*completed	= NULL,
-		*priority	= NULL,
+                *priority	= NULL,
 		*due		= NULL,
 		*description	= NULL,
 		*note		= NULL,

@@ -43,16 +43,16 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
-	int 	c,		/* switch */
-		db,
+	int 	db,
 		i,
 		ret,
 		po_err		= -1,
 		sd 		= -1;
 
-	char 	*progname 	= argv[0],
+	const char
+                *progname 	= argv[0],
 		*port 		= NULL;
 
 	char buffer[0xffff];
@@ -66,12 +66,12 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	po = poptGetContext("read-expenses", argc, argv, options, 0);
 	

@@ -48,8 +48,7 @@ static void display_help(const char *progname) {
 		poptPrintHelp(po, stderr, 0);
 
 		printf("\n  Examples:\n");
-		printf("      %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
-			basename(progname));
+		printf("      %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n", progname);
 
 		exit(EXIT_SUCCESS);
 }

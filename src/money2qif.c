@@ -81,13 +81,13 @@ int main(int argc, char *argv[])
 	poptContext po;
 
 	struct poptOption options[] = {
-	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"account", 	'a', POPT_ARG_STRING, &account, 0, "The name of the Account category in MicroMoney"},
-	POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        {"account", 	'a', POPT_ARG_STRING, &account, 0, "The name of the Account category in MicroMoney"},
+        	POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	po = poptGetContext("money2qif", argc, argv, options, 0);
 	

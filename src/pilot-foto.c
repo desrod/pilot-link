@@ -41,7 +41,7 @@
 
 /* Declare prototypes */
 static void display_help(const char *progname);
-void print_splash(char *progname);
+void print_splash(const char *progname);
 int pilot_connect(const char *porg);
 int get_jpg_info(FILE *in, char *type, unsigned short *version, 
 		 int *height, int *width);
@@ -768,7 +768,7 @@ int pdb_to_jpg(char *filename)
  * Returns:     Exit 0 on sucess, -1 on failure
  *
  ***********************************************************************/
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int c, fetch, convert;
 	int i;
@@ -776,7 +776,7 @@ int main(int argc, char *argv[])
 	int install_flag, delete_flag, fetch_flag;
 	int install_i, delete_i, fetch_i;
 	char *port = NULL;
-	char *progname = argv[0];
+	const char *progname = argv[0];
 	char *delete_files[512];
 	char *install_files[512];
 	char *fetch_files[512];
@@ -786,21 +786,19 @@ int main(int argc, char *argv[])
 	poptContext po;
 
 	struct poptOption options[] = {
-	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"delete",	'd', POPT_ARG_STRING, NULL, 'd', "Delete a jpg file on the handheld"},
-	{"delall",	'D', POPT_ARG_NONE, NULL, 'D', "Delete ALL jpg files on the handheld"},
-	{"install",	'i', POPT_ARG_STRING, NULL, 'i', "Install a jpg file"},
-	{"list",	'l', POPT_ARG_NONE, NULL, 'l', "List all photos and thumbnails"},
-	{"fetch",	'f', POPT_ARG_STRING, NULL, 'f', "Fetch files from the Palm"},
-	{"fetchall",	'F', POPT_ARG_NONE, NULL, 'F', "Fetch ALL jpg files from the Palm"},
-	{"convert",	'c', POPT_ARG_STRING, &convert_file, 'c', "convert [file].jpg.pdb files to jpg"},
-    
-	 POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
-
+        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help",	'h', POPT_ARG_NONE, NULL,   'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL,   'v', "Display version information"},
+	        {"delete",	'd', POPT_ARG_STRING, NULL, 'd', "Delete a jpg file on the handheld"},
+        	{"delall",	'D', POPT_ARG_NONE, NULL,   'D', "Delete ALL jpg files on the handheld"},
+	        {"install",	'i', POPT_ARG_STRING, NULL, 'i', "Install a jpg file"},
+        	{"list",	'l', POPT_ARG_NONE, NULL,   'l', "List all photos and thumbnails"},
+	        {"fetch",	'f', POPT_ARG_STRING, NULL, 'f', "Fetch files from the Palm"},
+        	{"fetchall",	'F', POPT_ARG_NONE, NULL,   'F', "Fetch ALL jpg files from the Palm"},
+	        {"convert",	'c', POPT_ARG_STRING, &convert_file, 'c', "convert [file].jpg.pdb files to jpg"},
+                POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	fetch = convert = FALSE;
 

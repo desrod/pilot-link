@@ -252,7 +252,7 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
         int 	c,		/* switch */
 		n,
@@ -263,8 +263,10 @@ int main(int argc, char *argv[])
 	struct 	in_addr raddress;
 	struct 	sockaddr_in serv_addr, cli_addr; 
 
-        char 	*progname 	= argv[0],
-		*addrarg	= NULL,
+        const char
+                *progname 	= argv[0];
+
+        char    *addrarg	= NULL,
 		*nmarg		= NULL;
 
         fd_set 	rset;
@@ -280,17 +282,18 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"hostname",	'H', POPT_ARG_STRING, &hostname, 0, "The hostname used for verification"},
-	{"address",	'a', POPT_ARG_STRING, &addrarg, 'a', "IP address of the host"},
-	{"netmask",	'n', POPT_ARG_STRING, &nmarg, 'n', "The subnet mask of the address"},
-	{"quiet",	'q', POPT_ARG_NONE, NULL, 'q', "Turn off status messages"},
-	 POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+        	{"hostname",	'H', POPT_ARG_STRING, &hostname, 0, "The hostname used for verification"},
+	        {"address",	'a', POPT_ARG_STRING, &addrarg, 'a', "IP address of the host"},
+        	{"netmask",	'n', POPT_ARG_STRING, &nmarg, 'n', "The subnet mask of the address"},
+	        {"quiet",	'q', POPT_ARG_NONE, NULL, 'q', "Turn off status messages"},
+                POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	po = poptGetContext("pi-csd", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 

@@ -67,7 +67,7 @@ struct ss_state {
  * Returns:	  Nothing
  *
  ***********************************************************************/
-static void display_help (char *progname)
+static void display_help (const char *progname)
 {
 	printf("	Syncronize your Veo Traveler databases with your desktop machine\n\n");
 	printf("	Usage: %s -p /dev/pilot [options]\n\n", progname);
@@ -463,7 +463,7 @@ void WritePictures (int sd, int db, int type )
 	pi_buffer_free (inBuf);
 }	
 
-int main (int argc, char *argv[])
+int main (int argc, const char *argv[])
 {
 	int c,			/* switch */
 	 db,
@@ -471,35 +471,37 @@ int main (int argc, char *argv[])
 	 dbcount = 0,
 	  type = OUT_PPM;
 
-	char *progname = argv[0], *port = NULL, *ptype;
+	const char
+                *progname       = argv[0],
+                *port           = NULL,
+                *ptype;
 
 	struct PilotUser User;
 	unsigned char buffer[0xffff];
 	
 	poptContext po;
 	
-	struct poptOption options[] =
-	{
+	struct poptOption options[] = {
 		{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
 		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        	{"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
 		{"type", 	't', POPT_ARG_STRING, &ptype, 0, "Specify picture output type (ppm or png)"},
 		POPT_AUTOHELP
         	{ NULL, 0, 0, NULL, 0 }
-	} ;
+	};
 
-	po = poptGetContext("dlpsh", argc, argv, options, 0);
+	po = poptGetContext("read-screenshot", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 			case 'h':
-				display_help (progname);
+				display_help(progname);
 			return 0;
 			case 'v':
-				print_splash (progname);
+				print_splash(progname);
 			return 0;
 			case 'p':
-				free (port);
-				port = strdup (optarg);
+				port = strdup(optarg);
 			break;
 			case 't':
 				if (!strncmp ("png", ptype, 3))

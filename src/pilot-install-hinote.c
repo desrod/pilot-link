@@ -44,7 +44,7 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	db,
 		sd	= -1,
@@ -56,12 +56,13 @@ int main(int argc, char *argv[])
 		category 	= 0,
 		note_size;
 	
-	char 	*file_text,
-	    	*file_arg,
-		*progname 	= argv[0],
+	const char
+                *progname 	= argv[0],
+                *file_arg;
+
+	char    *file_text,
 		*port 		= NULL,
 		*cat 		= NULL,
-	    
 		buf[0xffff];
 	
 	unsigned char note_buf[0x8000];
@@ -74,14 +75,10 @@ int main(int argc, char *argv[])
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
-		{"category", 'c', POPT_ARG_STRING, &cat, 0,
-		 "Write files to <category> in the Hi-NOte application",
+		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+		{"category", 'c', POPT_ARG_STRING, &cat, 0, "Write files to <category> in the Hi-NOte application",
 		 "category"},
 		POPT_TABLEEND
 	};

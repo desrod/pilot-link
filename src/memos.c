@@ -218,7 +218,7 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	attr, 
 		c,		/* switch */
@@ -238,10 +238,12 @@ int main(int argc, char *argv[])
 
 	pi_buffer_t *buffer;
 
+	const char
+                *progname 	= argv[0];
+
 	char 	appblock[0xffff],
 		dirname[MAXDIRNAMELEN] = "",
 		*buf 		= NULL,
-		*progname 	= argv[0],
 		*port 		= NULL,
 		category_name[MAXDIRNAMELEN + 1] = "",
 		filename[MAXDIRNAMELEN + 1], *ptr,
@@ -257,20 +259,21 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"verbose",	'V', POPT_ARG_NONE, NULL, 'V', "Verbose, with -d, print each filename when written"},
-	{"delete",	'd', POPT_ARG_NONE, NULL, 'd', "Delete memo named by number <num>"},				
-        {"file",	'f', POPT_ARG_STRING, &fnameArg, 'f', "Use <file> as input file (instead of MemoDB.pdb)"},
-        {"save",	's', POPT_ARG_STRING, &dnameArg, 's', "Save memos in <dir> instead of writing to STDOUT"},
-	{"category",	'c', POPT_ARG_STRING, &catnameArg, 'c', "Only upload memos in this category"},
-        {"regex",	'r', POPT_ARG_STRING, &regexArg, 'r', "Select memos saved by regular expression on title"},
-         POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        {"verbose",	'V', POPT_ARG_NONE, NULL, 'V', "Verbose, with -d, print each filename when written"},
+        	{"delete",	'd', POPT_ARG_NONE, NULL, 'd', "Delete memo named by number <num>"},				
+                {"file",	'f', POPT_ARG_STRING, &fnameArg, 'f', "Use <file> as input file (instead of MemoDB.pdb)"},
+                {"save",	's', POPT_ARG_STRING, &dnameArg, 's', "Save memos in <dir> instead of writing to STDOUT"},
+	        {"category",	'c', POPT_ARG_STRING, &catnameArg, 'c', "Only upload memos in this category"},
+                {"regex",	'r', POPT_ARG_STRING, &regexArg, 'r', "Select memos saved by regular expression on title"},
+                POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 
 	po = poptGetContext("memos", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 

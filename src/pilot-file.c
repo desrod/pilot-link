@@ -392,7 +392,7 @@ static void display_help(const char *progname)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 	int 	c,		/* switch */
 		hflag 		= 0,
@@ -403,9 +403,11 @@ int main(int argc, char **argv)
 		rflag 		= 0,
 		filedump 	= 0;
 
+	const char
+                *progname 	= argv[0];
+
 	char 	*name,
-		*rkey           = NULL,
-		*progname 	= argv[0];
+		*rkey           = NULL;
 
 	struct 	pi_file *pf;
 	struct 	DBInfo info;
@@ -413,21 +415,22 @@ int main(int argc, char **argv)
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"header",	'H', POPT_ARG_STRING, NULL, 'H', "Dump the header of the database(s)"},
-	{"appinfo",	'a', POPT_ARG_NONE, NULL, 'a', "Dump app_info segment of the database(s)"},
-	{"sortinfo",	's', POPT_ARG_NONE, NULL, 's', "Dump sort_info block of database(s)"},
-	{"list",	'l', POPT_ARG_NONE, NULL, 'l', "List all records in the database(s)"},
-	{"record",	'r', POPT_ARG_NONE, NULL, 'r', "Dump a record by index ('code0') or uid ('1234')"},
-	{"dump-rec",	'R', POPT_ARG_NONE, NULL, 'R', "Same as above but also dump records to files"},
-	{"dump",	'd', POPT_ARG_NONE, NULL, 'd', "Dump all data and all records, very verbose"},
-	{"dump-res",	'D', POPT_ARG_NONE, NULL, 'D', "Same as above but also dump resources to files"},
-	  POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"help",	'h', POPT_ARG_NONE, NULL,   'h', "Display this information"},
+                {"version",	'v', POPT_ARG_NONE, NULL,   'v', "Display version information"},
+        	{"header",	'H', POPT_ARG_STRING, NULL, 'H', "Dump the header of the database(s)"},
+	        {"appinfo",	'a', POPT_ARG_NONE, NULL,   'a', "Dump app_info segment of the database(s)"},
+        	{"sortinfo",	's', POPT_ARG_NONE, NULL,   's', "Dump sort_info block of database(s)"},
+	        {"list",	'l', POPT_ARG_NONE, NULL,   'l', "List all records in the database(s)"},
+        	{"record",	'r', POPT_ARG_NONE, NULL,   'r', "Dump a record by index ('code0') or uid ('1234')"},
+	        {"dump-rec",	'R', POPT_ARG_NONE, NULL,   'R', "Same as above but also dump records to files"},
+        	{"dump",	'd', POPT_ARG_NONE, NULL,   'd', "Dump all data and all records, very verbose"},
+	        {"dump-res",	'D', POPT_ARG_NONE, NULL,   'D', "Same as above but also dump resources to files"},
+        	  POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 
 	po = poptGetContext("pilot-file", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 			
@@ -467,9 +470,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (optind > 1) {
-		name = argv[optind];
-	} else {
+	if (optind < 1) {
 		display_help(progname);
 		fprintf(stderr, "   ERROR: You must specify a file\n");
 		return -1;

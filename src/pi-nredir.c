@@ -57,7 +57,7 @@ static void display_help(const char *progname)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		len,
@@ -67,8 +67,10 @@ int main(int argc, char *argv[])
 
 	size_t	size; 	
 
-	char	*progname = argv[0],
-		*port = NULL,
+	const char
+                *progname = argv[0];
+
+	char	*port = NULL,
 		port2[255] = "net:";
 
 	pi_buffer_t *buffer;
@@ -78,14 +80,15 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	        {"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	po = poptGetContext("pi-nredir", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 

@@ -58,14 +58,17 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		db,
 		i,
 		sd 		= -1;
-	char 	*progname 	= argv[0],
-		*port 		= NULL,
+
+        const char
+                *progname 	= argv[0];
+
+	char    *port 		= NULL,
 		*filename 	= NULL,
 		*ptr;
 
@@ -79,17 +82,17 @@ int main(int argc, char *argv[])
 	poptContext po;
 	
 	struct poptOption options[] = {
-	{"port", 	'p', POPT_ARG_STRING, &port, 'p', "Use device <port> to communicate with Palm"},
-	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	{"file", 	'f', POPT_ARG_STRING, &filename, 'f', "Save ToDO entries in <filename> instead of STDOUT"},
-	POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-	} ;
+        	{"port", 	'p', POPT_ARG_STRING, &port, 'p', "Use device <port> to communicate with Palm"},
+	        {"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	        {"file", 	'f', POPT_ARG_STRING, &filename, 'f', "Save ToDO entries in <filename> instead of STDOUT"},
+        	POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+	};
 	
 	po = poptGetContext("read-todos", argc, argv, options, 0);
 	
-	 while ((c = poptGetNextOpt(po)) >= 0) {
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		case 'h':
 			display_help(progname);

@@ -73,7 +73,7 @@ static int compare_r(const void *av, const void *bv)
 	return o;
 }
 
-static int DeDupe (int sd, char *dbname) 
+static int DeDupe (int sd, const char *dbname) 
 {
 	int 	c,
 		db,
@@ -215,23 +215,22 @@ static void display_help(const char *progname)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int     c,		/* switch */
 		sd		= -1;
-	char 	*port 	        = NULL,
-		*db		= NULL,
-		*progname 	= argv[0];
+
+	const char
+                *progname 	= argv[0],
+                *port 	        = NULL,
+                *db		= NULL;
 
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
+		{"port",    'p', POPT_ARG_STRING, &port, 0,  "Use device file <port> to communicate with Palm", "port"},
+		{"help",    'h', POPT_ARG_NONE, NULL,   'h', "Display help information", NULL},
+		{"version", 'v', POPT_ARG_NONE, NULL,   'v', "Show program version information", NULL},
 		POPT_TABLEEND
 	};
 
@@ -271,7 +270,7 @@ int main(int argc, char *argv[])
 		goto error;
 
 	while((db = poptGetArg(pc)) != NULL)
-		DeDupe (sd, db);
+		DeDupe(sd, db);
 
 	if (dlp_ResetLastSyncPC(sd) < 0)
 		goto error_close;

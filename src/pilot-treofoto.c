@@ -124,7 +124,7 @@ int fetch_remote_file(int sd, char *fullname)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, const char *argv[])
 {
 	struct pi_file *pi_fp, *img_fp;
 	int i, size, attr, cat, nentries;

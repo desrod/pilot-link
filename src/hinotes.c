@@ -173,7 +173,7 @@ static void display_help(const char *progname)
 	return;
 }
 
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 
 	int 	c,		/* switch */
@@ -182,9 +182,11 @@ int main(int argc, char **argv)
 		sd 		= -1,
 		mode 		= MEMO_MBOX_STDOUT;
 
+	const char
+                *progname 	= argv[0];
+
 	char 	appblock[0xffff],
 		dirname[MAXDIRNAMELEN] = "",
-		*progname 	= argv[0],
 		*port 		= getenv("PILOTPORT");
 
 	struct 	HiNoteAppInfo mai;
@@ -195,19 +197,15 @@ int main(int argc, char **argv)
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
-		{"dirname", 'd', POPT_ARG_STRING, NULL, 'd',
-		 "Save memos in <dir> instead of writing to STDOUT", "dir"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display this information", NULL},
+		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
+		{"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+		{"dirname", 'd', POPT_ARG_STRING, NULL, 'd', "Save memos in <dir> instead of writing to STDOUT", "dir"},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display this information", NULL},
 		 POPT_TABLEEND
 	};
 
-
 	pc = poptGetContext("hinotes", argc, argv, options, 0);
+
 	while ((c = poptGetNextOpt(pc)) >= 0) {
 		switch (c) {
 			

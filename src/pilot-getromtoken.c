@@ -58,11 +58,13 @@ static void display_help(const char *progname)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		sd 		= -1;
-	char 	*progname 	= argv[0],
+
+	const char
+                *progname 	= argv[0],
 		*port 		= NULL,
 	        *token 		= NULL;
 
