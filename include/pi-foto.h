@@ -7,6 +7,8 @@
  * Create date: 23 Feb 2004
  */
 
+#ifndef _PI_FOTO_H_
+#define _PI_FOTO_H_
 
 /*
  * Offsets into the thumbnail record header.
@@ -21,3 +23,4 @@
 #define FOTO_IMAGE_DATE   0x1c /* Date displayed with image. 4 bytes */
 #define FOTO_THUMB_SIZE   0x26 /* Size of thumbnail. 2 bytes */
 
+#endif /* _PI_FOTO_H_ */

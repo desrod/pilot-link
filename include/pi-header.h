@@ -1,3 +1,6 @@
+#ifndef _PI_HEADER_H_
+#define _PI_HEADER_H_
+
 /* Print the version splash 	*/
 void print_splash(const char *progname);
 
@@ -12,3 +15,5 @@ void pilot_listen_close(int *parent_sd);
 
 /* Wait for a new connection to the listen port */
 int pilot_connect_wait(int parent_sd, const char *port);
+
+#endif /* _PI_HEADER_H_ */

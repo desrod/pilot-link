@@ -1,3 +1,6 @@
+#ifndef _PI_ADDRESS_HXX_
+#define _PI_ADDRESS_HXX_
+
 #include "pi-appinfo.hxx"
 
 const int ADDRESS_APP_INFO_SIZE = 638;
@@ -96,6 +99,4 @@ public:
 	void merge(addressList_t &);
 };
 
-
-
-
+#endif /* _PI_ADDRESS_HXX */

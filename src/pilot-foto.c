@@ -191,7 +191,7 @@ int do_list(int sd)
    size_t offset;
    int db;
    int index;
-   recordid_t id;
+   recordid_t id_;
    int attr;
    int category;
    int start;
@@ -233,7 +233,7 @@ int do_list(int sd)
 
    for (index=0; index<65535; index++) {
       ret = dlp_ReadRecordByIndex(sd, db, index, buffer,
-				  &id, &attr, &category);
+				  &id_, &attr, &category);
       if (ret < 0)
 		  	break;
       if (buffer->used < 40)
@@ -273,7 +273,7 @@ int do_delete(int sd, const char **delete_files, int all)
    size_t offset;
    int db;
    int index;
-   recordid_t id;
+   recordid_t id_;
    int attr;
    int category;
    char log_text[256];
@@ -308,7 +308,7 @@ int do_delete(int sd, const char **delete_files, int all)
 	  buffer = pi_buffer_new (0xffff);
       for (index=0; index<65535; index++) {
 		 ret = dlp_ReadRecordByIndex(sd, db, index, buffer,
-						 &id, &attr, &category);
+						 &id_, &attr, &category);
 		 if (ret < 0) break;
 		 if (buffer->used < 40) continue;
 		 offset = ((buffer->data[38] << 8) | buffer->data[39]) + 40;
@@ -320,7 +320,7 @@ int do_delete(int sd, const char **delete_files, int all)
 		 /* printf("found jpg named = %s\n", jpg_name); */
 		 for (i=0; delete_files[i]; i++) {
 			if (!strcmp(jpg_name, delete_files[i])) {
-			   ret = dlp_DeleteRecord(sd, db, 0, id);
+			   ret = dlp_DeleteRecord(sd, db, 0, id_);
 			   if (ret < 0) {
 			  fprintf(stderr, "Unable to delete thumbnail %s\n", delete_files[i]);
 			   } else {
@@ -361,7 +361,7 @@ int do_delete(int sd, const char **delete_files, int all)
 int do_fetch(int sd, const char **fetch_files, int all)
 {
 	FILE *out;
-	recordid_t id;
+	recordid_t id_;
 	int i;
 	int found;
 	int index,
@@ -425,7 +425,7 @@ int do_fetch(int sd, const char **fetch_files, int all)
 
 			index = 0;
 			do {
-				ret = dlp_ReadRecordByIndex(sd, db, index, buffer, &id, &attr, &category);
+				ret = dlp_ReadRecordByIndex(sd, db, index, buffer, &id_, &attr, &category);
 				index++;
 				if (ret > 0 && buffer->used > 8)
 					fwrite(buffer->data + 8, buffer->used - 8, 1, out);

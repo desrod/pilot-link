@@ -196,7 +196,7 @@ net_rx_handshake(pi_socket_t *ps)
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
-	if ((err = net_rx(ps, buffer, 22, 0)) >= 0  &&
+	if ((err = net_rx(ps, buffer, 256, 0)) >= 0  &&
 		(err = net_tx(ps, msg1, 50, 0)) >= 0	&&
 		(err = net_rx(ps, buffer, 50, 0)) >= 0  &&
 		(err = net_tx(ps, msg2, 46, 0)) >= 0	&&
@@ -245,9 +245,9 @@ net_tx_handshake(pi_socket_t *ps)
 	}
 	
 	if ((err = net_tx(ps, msg1, 22, 0)) >= 0	&&
-		(err = net_rx(ps, buffer, 50, 0)) >= 0  &&
+		(err = net_rx(ps, buffer, 256, 0)) >= 0  &&
 		(err = net_tx(ps, msg2, 50, 0)) >= 0	&&
-		(err = net_rx(ps, buffer, 46, 0)) >= 0  &&
+		(err = net_rx(ps, buffer, 256, 0)) >= 0  &&
 		(err = net_tx(ps, msg3, 8, 0)) >= 0)
 	{
 		pi_buffer_free (buffer);

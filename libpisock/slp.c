@@ -227,7 +227,7 @@ slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 	slp->src 	= data->src;
 	slp->type 	= data->type;
 	slp->dlen 	= htons(len);
-	slp->id 	= data->txid;
+	slp->id_ 	= data->txid;
 
 	for (n = i = 0; i < 9; i++)
 		n += slp_buf[i];

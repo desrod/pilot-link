@@ -498,14 +498,14 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordByIndex
 
     if ((buffer = (jbyte *)malloc(MAX_RESOURCE_SIZE)) != NULL) {
 
-        recordid_t id;
+        recordid_t id_;
         size_t iRecSize;
 	jint iRecAttr, iRecCategory;
         jclass jClass_RawRecord;
         jmethodID jMethod_RawRecord;
 
         int iResult = dlp_ReadRecordByIndex(handle, db, idx, buffer,
-            &id, &iRecSize, &iRecAttr, &iRecCategory);
+            &id_, &iRecSize, &iRecAttr, &iRecCategory);
         if (iResult < 0) {
             postPilotLinkException(env, "Could not read database record by index",
                 iResult, errno);
@@ -519,7 +519,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordByIndex
             jbyteArray jArray_buffer = env->NewByteArray(iRecSize);
             env->SetByteArrayRegion(jArray_buffer, 0, iRecSize, buffer);
             jObject_RawRecord = env->NewObject(jClass_RawRecord, jMethod_RawRecord,
-                jArray_buffer, (jlong)id, (jint)iRecSize, (jint)iRecAttr, (jint)iRecCategory);
+                jArray_buffer, (jlong)id_, (jint)iRecSize, (jint)iRecAttr, (jint)iRecCategory);
         }
         free(buffer);
     } else {

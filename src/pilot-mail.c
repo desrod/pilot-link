@@ -453,12 +453,12 @@ int main(int argc, char *argv[])
 		for (i = 0;; i++) {
 			struct 	Mail t;
 			int 	attr;
-			recordid_t id;
+			recordid_t id_;
 			FILE *sendf;
 
 			int len =
 			    dlp_ReadNextRecInCategory(sd, db, 1, recbuf,
-						      &id, 0, &attr);
+						      &id_, 0, &attr);
 
 			if (len < 0)
 				break;
@@ -529,10 +529,10 @@ int main(int argc, char *argv[])
 				if (strcmp(pilot_dispose, "keep") == 0) {
 					dupe++;
 				} else if (strcmp(pilot_dispose, "delete") == 0) {
-					dlp_DeleteRecord(sd, db, 0, id);
+					dlp_DeleteRecord(sd, db, 0, id_);
 				} else {
 					/* Rewrite into Filed category */
-					dlp_WriteRecord(sd, db, attr, id,
+					dlp_WriteRecord(sd, db, attr, id_,
 							3, recbuf->data, recbuf->used, 0);
 				}
 			}

@@ -67,7 +67,7 @@ void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 		nskb->dest 	= buffer[1];
 		nskb->type 	= buffer[2];
 		len 		= get_short(buffer + 3);
-		nskb->id 	= buffer[5];
+		nskb->id_ 	= buffer[5];
 
 		memcpy(&nskb->data[10], buffer + 7, len);
 		slp_tx(ps, nskb, len);

@@ -500,96 +500,96 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor 	= 0x054c,
 		.product 	= 0x0038,
-		.id 		= "Sony S S320 and other Palm OS 3.5 devices",
+		.idstr 		= "Sony S S320 and other Palm OS 3.5 devices",
 		.flags 		= USB_INIT_SONY_CILE,
 	},
 
 	{
 		.vendor 	= 0x054c,
 		.product 	= 0x0066,
-		.id 		= "Sony T, SJ series, and other Palm OS 4.0 devices",
+		.idstr 		= "Sony T, SJ series, and other Palm OS 4.0 devices",
 	},
 
 	{
 		.vendor 	= 0x054c,
 		.product 	= 0x0095,
-		.id 		= "Sony S360",
+		.idstr 		= "Sony S360",
 	},
 
 	{
 		.vendor 	= 0x054c,
 		.product 	= 0x000a,
-		.id 		= "Sony NR and other Palm OS 4.1 devices",
+		.idstr 		= "Sony NR and other Palm OS 4.1 devices",
 	},
 
 	{
 		.vendor 	= 0x054c,
 		.product 	= 0x00da,
-		.id 		= "Sony NX",
+		.idstr 		= "Sony NX",
 	},
 
 	{
 		.vendor 	= 0x054c,
 		.product 	= 0x00e9,
-		.id 		= "Sony NZ",
+		.idstr 		= "Sony NZ",
 	},
 
 	{
 		.vendor 	= 0x054c,
 		.product 	= 0x0144,
-		.id 		= "Sony UX",
+		.idstr 		= "Sony UX",
 	},
 
 	{
 		.vendor 	= 0x054c,
 		.product 	= 0x0169,
-		.id 		= "Sony TJ",
+		.idstr 		= "Sony TJ",
 	},
 
 	/* AlphaSmart */
 	{
 		.vendor 	= 0x081e,
 		.product 	= 0xdf00,
-		.id 		= "Alphasmart Dana",
+		.idstr 		= "Alphasmart Dana",
 	},
 
 	/* HANDSPRING (vendor 0x082d) */
 	{
 		.vendor 	= 0x082d,
 		.product 	= 0x0100,
-		.id 		= "Visor, Treo 300",
+		.idstr 		= "Visor, Treo 300",
 		.flags 		= USB_INIT_VISOR,
 	},
 
 	{
 		.vendor 	= 0x082d,
 		.product 	= 0x0200,
-		.id 		= "Treo",
+		.idstr 		= "Treo",
 	},
 
 	{
 		.vendor 	= 0x082d,
 		.product 	= 0x0300,
-		.id 		= "Treo 600",
+		.idstr 		= "Treo 600",
 	},
 
 	/* PalmOne, Palm Inc */
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0001,
-		.id 		= "m500",
+		.idstr 		= "m500",
 	},
 
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0002,
-		.id 		= "m505",
+		.idstr 		= "m505",
 	},
 
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0003,
-		.id 		= "m515",
+		.idstr 		= "m515",
 	},
 
 	{
@@ -605,31 +605,31 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0020,
-		.id 		= "i705",
+		.idstr 		= "i705",
 	},
 
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0030,
-		.id		= "Tungsten|Z",
+		.idstr		= "Tungsten|Z",
 	},
 
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0031,
-		.id 		= "Tungsten|W",
+		.idstr 		= "Tungsten|W",
 	},
 
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0040,
-		.id 		= "m125",
+		.idstr 		= "m125",
 	},
 
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0050,
-		.id 		= "m130",
+		.idstr 		= "m130",
 	},
 
 	{
@@ -650,13 +650,13 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0060,
-		.id 		= "Tungsten series, Zire 71",
+		.idstr 		= "Tungsten series, Zire 71",
 	},
 
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0061,
-		.id 		= "Zire 31, 72",
+		.idstr 		= "Zire 31, 72",
 	},
 
 	{
@@ -672,7 +672,7 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0070,
-		.id 		= "Zire",
+		.idstr 		= "Zire",
 	},
 
 	{
@@ -683,7 +683,7 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0080,
-		.id 		= "m100",
+		.idstr 		= "m100",
 		.flags 		= USB_INIT_NONE,
 	},
 
@@ -701,27 +701,27 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor 	= 0x091e,
 		.product 	= 0x0004,
-		.id 		= "IQUE 3600",
+		.idstr 		= "IQUE 3600",
 	},
 
 	/* Kyocera */
 	{
 		.vendor 	= 0x0c88,
 		.product 	= 0x0021,
-		.id 		= "7135 Smartphone",
+		.idstr 		= "7135 Smartphone",
 	},
 
 	{
 		.vendor 	= 0x0c88,
 		.product 	= 0xa226,
-		.id 		= "6035 Smartphone",
+		.idstr 		= "6035 Smartphone",
 	},
 
 	/* Tapwave */
 	{
 		.vendor 	= 0x12ef,
 		.product 	= 0x0100,
-		.id 		= "Zodiac, Zodiac2",
+		.idstr 		= "Zodiac, Zodiac2",
 		.flags 		= USB_INIT_TAPWAVE,
 	},
 
@@ -729,14 +729,14 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor 	= 0x4766,
 		.product 	= 0x0001,
-		.id 		= "MEZ1000",
+		.idstr 		= "MEZ1000",
 	},
 
 	/* Samsung */
 	{
 		.vendor 	= 0x04e8,
 		.product 	= 0x8001,
-		.id 		= "i330",
+		.idstr 		= "i330",
 	},
 };
 

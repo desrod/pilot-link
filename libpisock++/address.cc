@@ -96,8 +96,8 @@ address_t::address_t(void)
 }
 
 	
-address_t::address_t(void *buf, int attr, recordid_t id, int category)
-	: baseApp_t(attr, id, category)
+address_t::address_t(void *buf, int attr, recordid_t id_, int category)
+	: baseApp_t(attr, id_, category)
 {
 	unpack(buf);
 }

@@ -252,11 +252,11 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordCount
 JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordByIndex
   (JNIEnv *env, jobject obj, jint handle , jint db , jint idx) {
 	  jbyte buffer[65536];
-	  recordid_t id;
+	  recordid_t id_;
 	  jint size, attr, category;
 	  //printf("Getting record..\n");
 	  int ret = dlp_ReadRecordByIndex(handle, db, idx, buffer, 
-				  &id, &size, &attr, &category);
+				  &id_, &size, &attr, &category);
           if (ret<0) {
 		return NULL;
 	  }				
@@ -272,7 +272,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordByIndex
 	  }
 	  jbyteArray array=env->NewByteArray(size);
 	  env->SetByteArrayRegion(array,0,size,buffer);
-	  jobject record=env->NewObject(rcls, rid, array, (jlong)id,size,attr,category );
+	  jobject record=env->NewObject(rcls, rid, array, (jlong)id_,size,attr,category );
 	  return record;
 }
 
@@ -289,7 +289,7 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_deleteRecordByIndex
 JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_writeRecord
   (JNIEnv *env, jobject obj, jint handle, jint db, jobject record) {
 	  
-	  jlong id=0;
+	  jlong id_=0;
 	  jclass cls=env->GetObjectClass(record);
 	  jmethodID mid=env->GetMethodID(cls,"getCategory","()I");
 	
@@ -298,8 +298,8 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_writeRecord
 	  
 	  jmethodID mid2=env->GetMethodID(cls,"getId","()J");
 
-	  id=env->CallLongMethod(record,mid2, NULL);
-	  if (id==0) {
+	  id_=env->CallLongMethod(record,mid2, NULL);
+	  if (id_==0) {
 		  printf("Creating new entry!\n");
 	  }
 
@@ -314,8 +314,8 @@ JNIEXPORT jint JNICALL Java_org_gnu_pilotlink_PilotLink_writeRecord
 	  jbyteArray arr=(jbyteArray)env->CallObjectMethod(record,mid);
 	  env->GetByteArrayRegion(arr,0,size,(jbyte*)buffer);
 	  recordid_t i=0;
-	  int ret=dlp_WriteRecord(handle,db,attr, id, cat, buffer,size,&i);
-	  if (id==0 && ret>0) {
+	  int ret=dlp_WriteRecord(handle,db,attr, id_, cat, buffer,size,&i);
+	  if (id_==0 && ret>0) {
 		  mid=env->GetMethodID(cls,"setId","(J)V");
 		  env->CallVoidMethod(record,mid,(jlong)i);
 	  }

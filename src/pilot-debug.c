@@ -1485,7 +1485,7 @@ static int proc_feature(ClientData clientData, Tcl_Interp * interp, int argc,
         if (strcmp(argv[1], "-all") == 0) {
                 struct RPC_params p;
                 unsigned long type, value;
-                unsigned short int id;
+                unsigned short int id_;
                 int i, j;
 
                 for (j = 0; j < 2; j++) {       /* 0: RAM, 1: ROM */
@@ -1498,14 +1498,14 @@ static int proc_feature(ClientData clientData, Tcl_Interp * interp, int argc,
                                 PackRPC(&p, 0xA27D, RPC_IntReply,
                                         RPC_Short(i), RPC_Byte(j),
                                         RPC_LongPtr(&type),
-                                        RPC_ShortPtr(&id),
+                                        RPC_ShortPtr(&id_),
                                         RPC_LongPtr(&value), RPC_End);
                                 e1 = DbgRPC(&p, &e2);
                                 if (e1 || e2)
                                         break;
                                 sprintf(buffer,
                                         "\t%s, 0x%4.4x (%d) = 0x%8.8lx (%lu)",
-                                        printlong(type), id, id, value,
+                                        printlong(type), id_, id_, value,
                                         value);
                                 Say(buffer);
                         }
@@ -1513,14 +1513,14 @@ static int proc_feature(ClientData clientData, Tcl_Interp * interp, int argc,
         } else if (strcmp(argv[1], "-unreg") == 0) {
                 struct RPC_params p;
                 unsigned long type, e1;
-                unsigned short int id;
+                unsigned short int id_;
                 int e2;
 
                 type = makelong(argv[2]);
-                id = atoi(argv[3]);
+                id_ = atoi(argv[3]);
 
                 PackRPC(&p, 0xA27A, RPC_IntReply, RPC_Long(type),
-                        RPC_Short(id), RPC_End);
+                        RPC_Short(id_), RPC_End);
 
                 e1 = DbgRPC(&p, &e2);
         }

@@ -74,11 +74,11 @@ void read_user(int sd)
 		    moddate, crdate, version, attr;
 		char name[32];
 
-		int id =
+		int id_ =
 		    RPC(sd, 1, 0xA044, 0, RPC_Short(0), RPC_Short(0),
 			RPC_End);
 
-		RPC(sd, 1, 0xA046, 0, RPC_Short(0), RPC_Long(id),
+		RPC(sd, 1, 0xA046, 0, RPC_Short(0), RPC_Long(id_),
 		    RPC_Ptr(name, 32),
 		    RPC_ShortRef(attr), RPC_ShortRef(version),
 		    RPC_LongRef(crdate), RPC_LongRef(moddate),
@@ -86,7 +86,7 @@ void read_user(int sd)
 		    RPC_LongRef(appInfo), RPC_LongRef(sortInfo),
 		    RPC_LongRef(type), RPC_LongRef(creator), RPC_End);
 
-		printf("The name of db 0 (LocalID %x) is %s\n", id, name);
+		printf("The name of db 0 (LocalID %x) is %s\n", id_, name);
 
 	} else if (strcmp(line, "quit") == 0) {
 		done = 1;

@@ -1434,7 +1434,10 @@ static void palm_install_internal(const char *filename)
 	   loop above?  */
 	if (pi_file_install(f, sd, 0, plu_quiet ? NULL : install_progress) < 0) {
 		/* TODO: Does pi_file_install print a diagnostic? */
-		fprintf(stderr, "   ERROR: pi_file_install failed.\n");
+		fprintf(stderr,
+				"\n   ERROR: pi_file_install failed "
+				"(%i, PalmOS 0x%04x).\n",
+				pi_error(sd), pi_palmos_error(sd));
 	} else {
 		totalsize += sbuf.st_size;
 		printf("   %ld KiB total.\n", totalsize/1024);

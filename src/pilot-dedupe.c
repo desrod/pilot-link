@@ -28,7 +28,7 @@
 
 struct record {
 	struct record *next;
-	unsigned long id;
+	unsigned long id_;
 	char *data;
 	int cat;
 	int index;
@@ -102,11 +102,11 @@ static int DeDupe (int sd, const char *dbname)
 	for (;;) {
 		int 	attr,
 			cat;
-		recordid_t id;
+		recordid_t id_;
 		int len =
 			dlp_ReadRecordByIndex(sd, db, l,
 					      buffer,
-					      &id,
+					      &id_,
 					      &attr, &cat);
 
 		l++;
@@ -128,7 +128,7 @@ static int DeDupe (int sd, const char *dbname)
 		memcpy(r->data, buffer->data, buffer->used);
 		r->len 		= len;
 		r->cat 		= cat;
-		r->id 		= id;
+		r->id_ 		= id_;
 		r->index 	= l;
 
 		r->next 	= records;
@@ -171,10 +171,10 @@ static int DeDupe (int sd, const char *dbname)
 				("Deleting record %d, duplicate #%d of record %d\n",
 				 r2->index, ++d, r->index);
 			dupe++;
-			dlp_DeleteRecord(sd, db, 0, r2->id);
+			dlp_DeleteRecord(sd, db, 0, r2->id_);
 
 			r2->len = -1;
-			r2->id = 0;
+			r2->id_ = 0;
 
 		}
 		k = j - 1;

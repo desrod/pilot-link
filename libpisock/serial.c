@@ -41,6 +41,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>		/* Needed for Redhat 6.x machines */
+#include <unistd.h>
 #endif
 
 #include "pi-debug.h"

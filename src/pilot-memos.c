@@ -206,7 +206,7 @@ int main(int argc, const char *argv[])
 	struct 	Memo m;
 
 	regex_t title_pattern;
-	recordid_t id;
+	recordid_t id_;
 
 	poptContext po;
 
@@ -319,12 +319,12 @@ int main(int argc, const char *argv[])
 			if (match_category >= 0) {
 				len = dlp_ReadNextRecInCategory(sd, db,
 							        match_category,
-							        buffer, &id,
+							        buffer, &id_,
 							        0, &attr);
 				category = match_category;
 			} else {
 				len = dlp_ReadRecordByIndex(sd, db, index,
-							    buffer, &id,
+							    buffer, &id_,
 							    &attr,
 							    &category);
 			}
@@ -380,8 +380,8 @@ int main(int argc, const char *argv[])
 
 	if (delete && !filename) {
 		if (verbose)
-			printf("Deleting record %d.\n", (int) id);
-		dlp_DeleteRecord(sd, db, 0, id);
+			printf("Deleting record %d.\n", (int) id_);
+		dlp_DeleteRecord(sd, db, 0, id_);
 	}
 
 	if (title_matching) {

@@ -74,7 +74,7 @@ main (int argc, char **argv)
 	unsigned char dres1[256];
 	unsigned char record1[256], record2[256], record3[256];
 	recordid_t rid1, rid2, rid3, rlist[4];
-	int index, id, count;
+	int index, id_, count;
 	unsigned long type;
 	int cardno;
 	int i;
@@ -595,7 +595,7 @@ main (int argc, char **argv)
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Resource by type mismatch\n"));
 		goto error;
 	}
-	result = dlp_ReadResourceByIndex (sd, handle, index, ires2, &type, &id);
+	result = dlp_ReadResourceByIndex (sd, handle, index, ires2, &type, &id_);
 	CHECK_RESULT(dlp_ReadResourceByIndex)
 	if (memcmp(ires1, ires2->data, sizeof(ires1) != 0)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Resource by index mismatch\n"));
@@ -605,7 +605,7 @@ main (int argc, char **argv)
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Resource by index return type mismatch\n"));
 		goto error;
 	}
-	if (id != 1) {
+	if (id_ != 1) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Resource by index return id mismatch\n"));
 		goto error;
 	}

@@ -212,7 +212,7 @@ static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, in
 	int 	attrs,
 		cat,
 		entnum,		/* Number of the entry record */
-		id,
+		id_,
 		nentries; 	/* Number of entries in the list */
 	size_t	size;
 	void 	*buf;
@@ -225,12 +225,12 @@ static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, in
 		printf("index\tsize\ttype\tid\n");
 		for (entnum = 0; entnum < nentries; entnum++) {
 			if (pi_file_read_resource
-			    (pf, entnum, &buf, &size, &type, &id) < 0) {
+			    (pf, entnum, &buf, &size, &type, &id_) < 0) {
 				printf("error reading %d\n\n", entnum);
 				return;
 			}
 			printf("%d\t%zu\t%s\t%d\n", entnum, size,
-			       printlong(type), id);
+			       printlong(type), id_);
 			if (verbose) {
 				dump(buf, size);
 				printf("\n");
@@ -239,7 +239,7 @@ static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, in
 					char name[64];
 
 					sprintf(name, "%4s%04x.bin",
-						printlong(type), id);
+						printlong(type), id_);
 					fp = fopen(name, "w");
 					fwrite(buf, size, 1, fp);
 					fclose(fp);
@@ -284,7 +284,7 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 {
 	int 	attrs,
 		cat,
-		id,
+		id_,
 		record;
 	size_t	size;
 	void 	*buf;
@@ -297,32 +297,32 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 		printf("index\tsize\ttype\tid\n");
 		if (sscanf(rkey, "%d", &record) == 1) {
 			if (pi_file_read_resource
-			    (pf, record, &buf, &size, &type, &id) < 0) {
+			    (pf, record, &buf, &size, &type, &id_) < 0) {
 				printf("error reading resource #%d\n\n",
 				       record);
 				return;
 			}
 		} else {
 			type = makelong(rkey);
-			id = 0;
-			sscanf(&rkey[4], "%d", &id);
+			id_ = 0;
+			sscanf(&rkey[4], "%d", &id_);
 			if (pi_file_read_resource_by_type_id
-			    (pf, type, id, &buf, &size, &record) < 0) {
+			    (pf, type, id_, &buf, &size, &record) < 0) {
 				printf
 				    ("error reading resource %s' #%d (0x%x)\n\n",
-				     printlong(type), id, id);
+				     printlong(type), id_, id_);
 				return;
 			}
 		}
 
 		printf("%d\t%zu\t%s\t%d\n", record, size, printlong(type),
-		       id);
+		       id_);
 		dump(buf, size);
 		if (filedump) {
 			FILE *fp;
 			char name[64];
 
-			sprintf(name, "%4s%04x.bin", printlong(type), id);
+			sprintf(name, "%4s%04x.bin", printlong(type), id_);
 			fp = fopen(name, "w");
 			fwrite(buf, size, 1, fp);
 			fclose(fp);

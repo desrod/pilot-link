@@ -13,7 +13,7 @@ extern "C" {
 	typedef struct pi_file_entry {
 		int 	offset,
 			size,
-			id,
+			id_,
 			attrs;
 		unsigned long type;
 		pi_uid_t uid;
@@ -74,10 +74,10 @@ extern "C" {
 	    PI_ARGS((pi_file_t * pf, int idx, void **bufp, size_t *sizep,
 		     unsigned long *type, int *idp));
 	extern int pi_file_read_resource_by_type_id
-	    PI_ARGS((pi_file_t * pf, unsigned long type, int id,
+	    PI_ARGS((pi_file_t * pf, unsigned long type, int id_,
 		     void **bufp, size_t *sizep, int *idxp));
 	extern int pi_file_type_id_used
-	    PI_ARGS((pi_file_t * pf, unsigned long type, int id));
+	    PI_ARGS((pi_file_t * pf, unsigned long type, int id_));
 	extern int pi_file_read_record
 	    PI_ARGS((pi_file_t * pf, int idx, void **bufp, size_t *sizep,
 		     int *attrp, int *catp, pi_uid_t * uidp));
@@ -101,7 +101,7 @@ extern "C" {
 
 	extern int pi_file_append_resource
 	    PI_ARGS((pi_file_t * pf, void *buf, size_t size,
-		     unsigned long type, int id));
+		     unsigned long type, int id_));
 	extern int pi_file_append_record
 	    PI_ARGS((pi_file_t * pf, void *buf, size_t size, int attr,
 		     int category, pi_uid_t uid));

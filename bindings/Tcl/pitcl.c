@@ -1090,7 +1090,7 @@ GetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 	int index;
 	int sock;
 	int len,attr,cat;
-	recordid_t id;
+	recordid_t id_;
 	
 	if (argc != 4 ) {
 		Tcl_SetResult(interp, "Usage: GetRecord socket dbhandle index", TCL_STATIC);
@@ -1108,7 +1108,7 @@ GetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 		return TCL_ERROR;
 	}
 	
-	result = dlp_ReadRecordByIndex(tcl_socket(interp, argv[1]), handle, index, buf, &id, &len, &attr, &cat);
+	result = dlp_ReadRecordByIndex(tcl_socket(interp, argv[1]), handle, index, buf, &id_, &len, &attr, &cat);
 	
 	if (result<0) {
 		Tcl_SetResult(interp, dlp_strerror(result), TCL_STATIC);
@@ -1117,7 +1117,7 @@ GetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 	
 	pack[sock].unpack(interp, buf, len);
 	Tcl_AppendInt(interp, index);
-	Tcl_AppendInt(interp, id);
+	Tcl_AppendInt(interp, id_);
 	Tcl_AppendInt(interp, attr);
 	Tcl_AppendInt(interp, cat);
 
@@ -1132,7 +1132,7 @@ SetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 	int index;
 	int sock;
 	int len,attr,cat;
-	recordid_t id;
+	recordid_t id_;
 	
 	if (argc != 7 ) {
 		Tcl_SetResult(interp, "Usage: SetRecord socket dbhandle record id attr cat", TCL_STATIC);
@@ -1149,13 +1149,13 @@ SetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 		return TCL_ERROR;
 	}
 	
-	Tcl_GetInt(interp, argv[4], &index); id = index;
+	Tcl_GetInt(interp, argv[4], &index); id_ = index;
 	Tcl_GetInt(interp, argv[5], &attr);
 	Tcl_GetInt(interp, argv[6], &cat);
 
 	len = pack[sock].pack(interp, argv[3], buf, 0xffff);
 	
-	result = dlp_WriteRecord(sock, handle, attr, id, cat, buf, len, &id);
+	result = dlp_WriteRecord(sock, handle, attr, id_, cat, buf, len, &id_);
 	
 	free(buf);
 	
@@ -1164,7 +1164,7 @@ SetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 		return TCL_ERROR;
 	}
 	
-	Tcl_AppendInt(interp, (int)id);
+	Tcl_AppendInt(interp, (int)id_);
 
 	return TCL_OK;
 }

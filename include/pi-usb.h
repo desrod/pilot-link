@@ -35,7 +35,7 @@ extern "C" {
 	typedef struct pi_usb_dev {
 		u_int16_t	vendor, product;
 		u_int32_t	flags;
-		char		*id;
+		char		*idstr;
 	} pi_usb_dev_t;
 
 	typedef struct pi_usb_data {

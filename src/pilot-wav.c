@@ -175,7 +175,7 @@ long write_data(char *buffer, int index, int size, long dataChunkSize, FILE *out
 int fetch_wavs(int sd, char *dbname)
 {
 	FILE *out;
-	recordid_t id;
+	recordid_t id_;
 	int 	index,
 		db,
 		attr,
@@ -249,7 +249,7 @@ int fetch_wavs(int sd, char *dbname)
                         while (ret > 0) {
 								ret =
                                     dlp_ReadRecordByIndex
-                                    PI_ARGS((sd, db, index, buffer, &id,
+                                    PI_ARGS((sd, db, index, buffer, &id_,
                                              &attr, &category));
 				if (ret > 0) {
                                   dataChunkSize = write_data(buffer->data, index, buffer->used, dataChunkSize, out);

@@ -156,7 +156,7 @@ pi_protocol_t
 			data->type 	= padData;
 			data->last_type = -1;
 			data->txid 	= 0xff;
-			data->next_txid = (unsigned)-1;
+			data->next_txid = 0xff;
 			prot->data 	= data;
 		}
 	}
@@ -506,7 +506,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 			   || !(padp.flags & FIRST)) {
 			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 			    "PADP RX Wrong packet type on queue"
-			    "(possible port speed problem?)\n"));
+			    "(possible port speed problem? (loc1))\n"));
 			continue;
 		}
 		break;
@@ -637,7 +637,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 				|| (padp.flags & FIRST)) {
 					LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 				"PADP RX Wrong packet type on queue"
-				"(possible port speed problem?)\n"));
+				"(possible port speed problem? (loc2))\n"));
 				continue;
 			}
 			break;
@@ -741,7 +741,7 @@ padp_setsockopt(pi_socket_t *ps, int level, int option_name,
 	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
- /***********************************************************************
+/***********************************************************************
 *
 * Function:    padp_sendack
 *

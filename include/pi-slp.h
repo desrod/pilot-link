@@ -58,7 +58,7 @@ extern "C" {
 		unsigned char src;
 		unsigned char type;
 		unsigned short dlen;
-		unsigned char id;
+		unsigned char id_;
 		unsigned char csum;
 	};
 

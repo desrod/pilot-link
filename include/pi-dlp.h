@@ -53,6 +53,9 @@ extern "C" {
 #define PI_DLP_ARG_FIRST_ID 0x20
 
 #define DLP_BUF_SIZE 0xffff
+#define DLP_REQUEST_DATA(req, arg, offset) &req->argv[arg]->data[offset]
+#define DLP_RESPONSE_DATA(res, arg, offset) &res->argv[arg]->data[offset]
+
 
 #define vfsFileAttrReadOnly     (0x00000001UL)
 #define vfsFileAttrHidden       (0x00000002UL)
@@ -469,7 +472,7 @@ typedef unsigned long FileRef;
 	};
 
 	struct dlpArg {
-		int 	id;
+		int 	id_;	/* ObjC has a type id */
 		size_t	len;
 		char *data;
 	};
@@ -489,7 +492,10 @@ typedef unsigned long FileRef;
 		struct dlpArg **argv;
 	};
 
-	extern struct dlpArg * dlp_arg_new PI_ARGS((int id, size_t len));
+	extern time_t dlp_ptohdate(unsigned const char *data);
+	extern void dlp_htopdate(time_t time, unsigned char *data);
+
+	extern struct dlpArg * dlp_arg_new PI_ARGS((int id_, size_t len));
 	extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
 	extern int dlp_arg_len PI_ARGS((int argc, struct dlpArg **argv));
 
@@ -666,15 +672,15 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, int dbhandle, int category));
 
 	extern int dlp_ReadResourceByType
-		PI_ARGS((int sd, int fHandle, unsigned long type, int id,
+		PI_ARGS((int sd, int fHandle, unsigned long type, int id_,
 			pi_buffer_t *buffer, int *resindex));
 
 	extern int dlp_ReadResourceByIndex
 		PI_ARGS((int sd, int fHandle, int resindex, pi_buffer_t *buffer,
-			unsigned long *type, int *id));
+			unsigned long *type, int *id_));
 
 	extern int dlp_WriteResource
-		PI_ARGS((int sd, int dbhandle, unsigned long type, int id,
+		PI_ARGS((int sd, int dbhandle, unsigned long type, int id_,
 			PI_CONST void *data, size_t length));
 
 	extern int dlp_DeleteResource
@@ -682,24 +688,24 @@ typedef unsigned long FileRef;
 			int resID));
 
 	extern int dlp_ReadNextModifiedRec
-		PI_ARGS((int sd, int fHandle, pi_buffer_t *buffer, recordid_t * id,
+		PI_ARGS((int sd, int fHandle, pi_buffer_t *buffer, recordid_t * id_,
 			int *recindex, int *attr, int *category));
 
 	extern int dlp_ReadNextModifiedRecInCategory
 		PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
-			recordid_t * id, int *recindex, int *attr));
+			recordid_t * id_, int *recindex, int *attr));
 
 	extern int dlp_ReadNextRecInCategory
 		PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
-			recordid_t * id, int *recindex, int *attr));
+			recordid_t * id_, int *recindex, int *attr));
 
 	extern int dlp_ReadRecordById
-		PI_ARGS((int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
+		PI_ARGS((int sd, int fHandle, recordid_t id_, pi_buffer_t *buffer,
 			int *recindex, int *attr, int *category));
 
 	extern int dlp_ReadRecordByIndex
 		PI_ARGS((int sd, int fHandle, int recindex, pi_buffer_t *buffer,
-			recordid_t * id, int *attr, int *category));
+			recordid_t * id_, int *attr, int *category));
 
 	/* Deletes all records in the opened database which are marked as
 	   archived or deleted.
@@ -733,11 +739,11 @@ typedef unsigned long FileRef;
 		PI_ARGS((int sd, struct NetSyncInfo * i));
 
 	extern int dlp_ReadAppPreference
-		PI_ARGS((int sd, unsigned long creator, int id, int backup,
+		PI_ARGS((int sd, unsigned long creator, int id_, int backup,
 			int maxsize, void *buffer, size_t *size, int *version));
 
 	extern int dlp_WriteAppPreference
-		PI_ARGS((int sd, unsigned long creator, int id, int backup,
+		PI_ARGS((int sd, unsigned long creator, int id_, int backup,
 			int version, void *buffer, size_t size));
 
 	/* PalmOS 3.0 only */

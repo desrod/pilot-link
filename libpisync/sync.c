@@ -298,7 +298,7 @@ store_record_on_pilot(SyncHandler * sh, int dbhandle,
 {
 	int 	result = 0;
 	PilotRecord precord;
-	recordid_t id;
+	recordid_t id_;
 
 	memset(&precord, 0, sizeof(PilotRecord));
 
@@ -308,9 +308,9 @@ store_record_on_pilot(SyncHandler * sh, int dbhandle,
 
 	PilotCheck(dlp_WriteRecord(sh->sd, dbhandle, precord.flags & dlpRecAttrSecret,
 				   precord.recID, precord.catID,
-				   precord.buffer, precord.len, &id));
+				   precord.buffer, precord.len, &id_));
 
-	DesktopCheck(sh->SetPilotID(sh, drecord, id));
+	DesktopCheck(sh->SetPilotID(sh, drecord, id_));
 
 	return result;
 }

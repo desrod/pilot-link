@@ -277,12 +277,12 @@ pi_file_t
 			p = buf;
 			if (pf->resource_flag) {
 				entp->type 	= get_long(p);
-				entp->id 	= get_short(p + 4);
+				entp->id_ 	= get_short(p + 4);
 				entp->offset 	= get_long(p + 6);
 
 				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 				     "FILE OPEN Entry %d '%s' #%d @%X\n", i,
-				       printlong(entp->type), entp->id,
+				       printlong(entp->type), entp->id_,
 				       entp->offset));
 			} else {
 				entp->offset 	= get_long(p);
@@ -552,7 +552,7 @@ pi_file_set_rbuf_size(pi_file_t *pf, size_t size)
  ***********************************************************************/
 static int
 pi_file_find_resource_by_type_id(pi_file_t *pf,
-				 unsigned long type, int id, int *idxp)
+				 unsigned long type, int id_, int *idxp)
 {
 	int 	i;
 	struct 	pi_file_entry *entp;
@@ -562,7 +562,7 @@ pi_file_find_resource_by_type_id(pi_file_t *pf,
 
 	for (i = 0, entp = pf->entries; i < pf->nentries;
 	     i++, entp++) {
-		if (entp->type == type && entp->id == id) {
+		if (entp->type == type && entp->id_ == id_) {
 			if (idxp)
 				*idxp = i;
 			return 0;
@@ -585,13 +585,13 @@ pi_file_find_resource_by_type_id(pi_file_t *pf,
  ***********************************************************************/
 int
 pi_file_read_resource_by_type_id(pi_file_t *pf, unsigned long type,
-				 int id, void **bufp, size_t *sizep,
+				 int id_, void **bufp, size_t *sizep,
 				 int *idxp)
 {
 	int 	i,
 		result;
 
-	result = pi_file_find_resource_by_type_id(pf, type, id, &i);
+	result = pi_file_find_resource_by_type_id(pf, type, id_, &i);
 	if (result < 0)
 		return result;
 
@@ -613,9 +613,9 @@ pi_file_read_resource_by_type_id(pi_file_t *pf, unsigned long type,
  *
  ***********************************************************************/
 int
-pi_file_type_id_used(pi_file_t *pf, unsigned long type, int id)
+pi_file_type_id_used(pi_file_t *pf, unsigned long type, int id_)
 {
-	return pi_file_find_resource_by_type_id(pf, type, id, NULL) == 0;
+	return pi_file_find_resource_by_type_id(pf, type, id_, NULL) == 0;
 }
 
 
@@ -662,7 +662,7 @@ pi_file_read_resource(pi_file_t *pf, int i,
 	if (type)
 		*type = entp->type;
 	if (idp)
-		*idp = entp->id;
+		*idp = entp->id_;
 
 	return 0;
 }
@@ -995,7 +995,7 @@ static pi_file_entry_t
  ***********************************************************************/
 int
 pi_file_append_resource(pi_file_t *pf, void *buf, size_t size,
-	unsigned long type, int id)
+	unsigned long type, int id_)
 {
 	pi_file_entry_t *entp;
 
@@ -1011,7 +1011,7 @@ pi_file_append_resource(pi_file_t *pf, void *buf, size_t size,
 
 	entp->size 	= size;
 	entp->type 	= type;
-	entp->id 	= id;
+	entp->id_ 	= id_;
 
 	return size;
 }
@@ -1138,7 +1138,7 @@ pi_file_close_for_write(pi_file_t *pf)
 		p = buf;
 		if (pf->resource_flag) {
 			set_long(p, entp->type);
-			set_short(p + 4, entp->id);
+			set_short(p + 4, entp->id_);
 			set_long(p + 6, entp->offset);
 		} else {
 			set_long(p, entp->offset);
@@ -1251,15 +1251,15 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < nrec; j++) {
-			int 	id;
+			int 	id_;
 			unsigned long type;
 
 			if ((result = dlp_ReadResourceByIndex(socket, db, j, buffer,
-					&type, &id)) < 0)
+					&type, &id_)) < 0)
 				goto fail;
 
 			if ((result = pi_file_append_resource (pf, buffer->data, buffer->used,
-					type, id)) < 0) {
+					type, id_)) < 0) {
 				pi_set_error(socket, result);
 				goto fail;
 			}
@@ -1276,9 +1276,9 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	} else for (j = 0; j < nrec; j++) {
 		int 	attr,
 			category;
-		unsigned long id;
+		unsigned long id_;
 
-		if ((result = dlp_ReadRecordByIndex(socket, db, j, buffer, &id, &attr,
+		if ((result = dlp_ReadRecordByIndex(socket, db, j, buffer, &id_, &attr,
 				&category)) < 0)
 			goto fail;
 
@@ -1298,7 +1298,7 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 		    (dlpRecAttrArchived | dlpRecAttrDeleted))
 			continue;
 		if ((result = pi_file_append_record(pf, buffer->data, buffer->used,
-				attr, category, id)) < 0) {
+				attr, category, id_)) < 0) {
 			pi_set_error(socket, result);
 			goto fail;
 		}
@@ -1500,18 +1500,18 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 	/* Upload resources / records */
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < pf->nentries; j++) {
-			int 	id;
+			int 	id_;
 			unsigned long type;
 
 			if ((result = pi_file_read_resource(pf, j, &buffer, &size,
-					&type,	&id)) < 0)
+					&type,	&id_)) < 0)
 				goto fail;
 
 			/* Skip empty resource, it cannot be installed */
 			if (size == 0)
 				continue;
 
-			if ((result = dlp_WriteResource(socket, db, type, id, buffer,
+			if ((result = dlp_WriteResource(socket, db, type, id_, buffer,
 					size)) < 0)
 				goto fail;
 
@@ -1533,10 +1533,10 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 		for (j = 0; j < pf->nentries; j++) {
 			int 	attr,
 				category;
-			unsigned long id;
+			unsigned long id_;
 
 			if ((result = pi_file_read_record(pf, j, &buffer, &size, &attr,
-					&category, &id)) < 0)
+					&category, &id_)) < 0)
 				goto fail;
 
 			/* Old OS version cannot install deleted records, so
@@ -1545,7 +1545,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 			    && version < 0x0101)
 				continue;
 
-			if ((result = dlp_WriteRecord(socket, db, attr, id, category,
+			if ((result = dlp_WriteRecord(socket, db, attr, id_, category,
 					buffer, size, 0)) < 0)
 				goto fail;
 
@@ -1571,6 +1571,8 @@ fail:
 	err1 = pi_error(socket);
 	err2 = pi_palmos_error(socket);
 
+	LOG((PI_DBG_API, PI_DBG_LVL_ERR, "FILE INSTALL error: pilot-link "
+		    "0x%04x, PalmOS 0x%04x\n", err1, err2));
 	if (db != -1 && pi_socket_connected(socket))
 		dlp_CloseDB(socket, db);
 	if (pi_socket_connected(socket))
@@ -1651,18 +1653,18 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 	/* Upload resources / records */
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < pf->nentries; j++) {
-			int 	id;
+			int 	id_;
 			unsigned long type;
 
 			if ((result = pi_file_read_resource
-			    (pf, j, &buffer, &size, &type, &id)) < 0)
+			    (pf, j, &buffer, &size, &type, &id_)) < 0)
 				goto fail;
 
 			if (size == 0)
 				continue;
 
 			if ((result = dlp_WriteResource
-			    (socket, db, type, id, buffer, size)) < 0)
+			    (socket, db, type, id_, buffer, size)) < 0)
 				goto fail;
 
 			bytes_written += size;
@@ -1683,10 +1685,10 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 		for (j = 0; j < pf->nentries; j++) {
 			int	attr,
 				category;
-			unsigned long id;
+			unsigned long id_;
 
 			if ((result = pi_file_read_record(pf, j, &buffer, &size,
-					&attr, &category, &id)) < 0)
+					&attr, &category, &id_)) < 0)
 				goto fail;
 
 			/* Old OS version cannot install deleted records, so

@@ -60,24 +60,24 @@ int appInfo_t::addCategory(charConst_t category)
 
 	       // Now find an ID to use.  We are allowed between 128 & 255,
 	       short int j;
-	       unsigned char id = 128;
+	       unsigned char id_ = 128;
 	       for (j = 0; j < 16; j++)
-		    if (_categoryName[i][0] != '\0' && _categoryID[j] > id)
-			 id = _categoryID[j];
+		    if (_categoryName[i][0] != '\0' && _categoryID[j] > id_)
+			 id_ = _categoryID[j];
 
-	       if (++id >= 255) {
-		    id = 127;
+	       if (++id_ >= 255) {
+		    id_ = 127;
 
 		    do {
-			 id++;
+			 id_++;
 			 for (j = 0; j < 16; j++)
 			      if (_categoryName[i][0] != '\0' &&
-				  _categoryID[j] == id)
+				  _categoryID[j] == id_)
 				   break;
 		    } while (j != 16);
 	       }
 
-	       _categoryID[i] = id;
+	       _categoryID[i] = id_;
 	       
 	       return 1;
 	  }
