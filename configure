@@ -3236,7 +3236,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "libsock/Makefile $cc_m Makefile tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile include/pi-config.h include/pi-sockaddr.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "libsock/Makefile $cc_m Makefile tools/empty tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile include/pi-config.h include/pi-sockaddr.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -3379,7 +3379,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"libsock/Makefile $cc_m Makefile tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile"}
+CONFIG_FILES=\${CONFIG_FILES-"libsock/Makefile $cc_m Makefile tools/empty tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
@@ -3556,4 +3556,3 @@ EOF
 chmod +x $CONFIG_STATUS
 rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
-

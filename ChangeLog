@@ -1,5 +1,10 @@
 2001-03-12  JP Rosevear  <jpr@ximian.com>
 
+	* scripts/tarball.c (main): fixes to make it work again, what a
+	horrible hack
+	
+2001-03-12  JP Rosevear  <jpr@ximian.com>
+
 	* libsock/sync.c (open_db): handle the secret flag
 	(sync_CopyToPilot): use open_db
 	(sync_CopyFromPilot): ditto
