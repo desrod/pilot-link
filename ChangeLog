@@ -1,3 +1,13 @@
+2002-07-29  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/dlp.c (dlp_request_write): ensure that exec_buf is
+	always freed
+	(dlp_ReadSysInfo): check that response, not request, has atleast
+	one arg
+	(dlp_ReadNetSyncInfo): free response
+	(dlp_ReadNextModifiedRec): free request
+	(dlp_ReadRecordByIndex): free response
+
 2002-07-28  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/dlp.c: Temporary fix for J-Pilot issues

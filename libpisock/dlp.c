@@ -321,15 +321,18 @@ dlp_request_write (struct dlpRequest *req, int sd)
 		} else if (arg->len < PI_DLP_ARG_LONG_LEN) {
 			set_short (&buf[0], argid | PI_DLP_ARG_FLAG_LONG);
 			set_long (&buf[2], arg->len);
-			return i;
+
 			memcpy (&buf[6], arg->data, arg->len);
 			buf += arg->len + 6;
 		} else {
 			goto cleanup;
 		}
-		return -1;
+	}
 
 	if (pi_write(sd, exec_buf, len) < len) {
+		errno = -EIO;
+		i = -1;
+	}
 
  cleanup:
 	free (exec_buf);
@@ -675,7 +678,7 @@ int dlp_ReadSysInfo(int sd, struct SysInfo *s)
 	if (result >= 0) {
 		s->romVersion = get_long (DLP_RESPONSE_DATA (res, 0, 0));
 		s->locale = get_long (DLP_RESPONSE_DATA (res, 0, 4));
-		if (req->argc > 1) {
+		/* The 8th byte is a filler byte */
 		s->prodIDLength = get_byte (DLP_RESPONSE_DATA (res, 0, 9));
 		memcpy(s->prodID, DLP_RESPONSE_DATA(res, 0, 10), s->prodIDLength);
 
@@ -1522,6 +1525,8 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadNetSyncInfo Active: %d\n", i->lanSync ? 1 : 0));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "  PC hostname: '%s', address '%s', mask '%s'\n",
 		    i->hostName, i->hostAddress, i->hostSubnetMask));
 	}
 
@@ -3016,6 +3021,8 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
 	
 	req = dlp_request_new (dlpFuncReadNextModifiedRec, 1, 1);
 	
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
+	
 	result = dlp_exec (sd, req, &res);
 
 	dlp_request_free(req);
@@ -3151,6 +3158,8 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 		if (buffer)
 			memcpy(buffer, DLP_RESPONSE_DATA(res, 0, 10), data_len);
 
+		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+	} else {
 		data_len = result;
 	}
 
