@@ -539,6 +539,7 @@ if $use_python; then
 		use_python=true
 		AC_MSG_RESULT(looks good)
 	else
+		use_python=false
 		AC_MSG_RESULT(not usable)
 	fi
 fi

@@ -1,5 +1,9 @@
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
+	* configure.in: set use_python to false when appropriate
+	
+2002-01-25  JP Rosevear  <jpr@ximian.com>
+
 	* configure.in: dump python check to /dev/null
 
 2002-01-25  JP Rosevear  <jpr@ximian.com>
