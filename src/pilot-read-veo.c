@@ -118,9 +118,8 @@ int protect_files( char *name, char *extension )
 int Decode( unsigned char *inP, unsigned char *outP, short w )
 {
    short shifter = 7, index = 0;
-   unsigned short tmp0, tmp3, tmp4, i, j; // d3
+   unsigned short tmp0, tmp3, tmp4, i, j; /* d3 */
    unsigned char *origOutP = outP;
-   unsigned char *origInP = inP;
 
    shifter = 7;
 
@@ -149,13 +148,12 @@ int Decode( unsigned char *inP, unsigned char *outP, short w )
 	     
 	     *outP = *inP++;
 	     
-	     outP += 2; //a3
+	     outP += 2; /* a3 */
 	     index = 2;
 	     
 	     while( index < w )
 	       {
-		  // Top of decompress loop
-		  //
+		  /* Top of decompress loop */
 		  tmp3 = 1 << shifter;
 
 		  tmp3 &= *inP;
@@ -195,7 +193,7 @@ int Decode( unsigned char *inP, unsigned char *outP, short w )
 
 		       tmp4 = tmp4 >> 11;
 
-		       //		  if( (char)tmp4 <= 0 )
+		       /* if( (char)tmp4 <= 0 ) */
 		       if( (char)tmp4 == 0 )
 			 {
 			    tmp3 = inP[0] << 8 | inP[1];
@@ -247,20 +245,21 @@ int Decode( unsigned char *inP, unsigned char *outP, short w )
 	*outP = *inP++;
 
 	if( shifter != 7 )
-	  {    // this second set probably isn't needed but we're going to use it anyhow
+	  {  /* this second set probably isn't 
+		needed but we're going to use 
+		it anyhow */
 	     shifter = 7;
 	     inP++;
 	  }
 
 	outP[w+1] = *inP++;
 
-	outP += 2; //a3
+	outP += 2; /* a3 */
 	index = 2;
 
 	while( index < w )
 	  {
-	     // Top of decompress loop
-	     //
+	     /* Top of decompress loop */
 	     tmp3 = 1 << shifter;
 
 	     tmp3 &= *inP;
@@ -300,7 +299,7 @@ int Decode( unsigned char *inP, unsigned char *outP, short w )
 
 		  tmp4 = tmp4 >> 11;
 
-		  //		  if( (char)tmp4 <= 0 )
+		  /* if( (char)tmp4 <= 0 ) */
 		  if( (char)tmp4 == 0 )
 		    {
 		       tmp3 = inP[0] << 8 | inP[1];
@@ -375,7 +374,7 @@ int Decode( unsigned char *inP, unsigned char *outP, short w )
 
 		  tmp4 = tmp4 >> 11;
 
-		  //		  if( (char)tmp4 <= 0 )
+		  /* if( (char)tmp4 <= 0 ) */
 		  if( (char)tmp4 == 0 )
 		    {
 		       tmp3 = inP[0] << 8 | inP[1];
@@ -431,7 +430,7 @@ static int GetPicData( int r, struct Veo *v, unsigned char *row )
 			       &attr, &category);
 		  
    if (len < 0)
-     return;
+     return 0;
 
    Decode( tmpRow, row, v->width );
 
@@ -441,7 +440,7 @@ static int GetPicData( int r, struct Veo *v, unsigned char *row )
 int Gen24bitRow( int r, struct Veo *v, unsigned char *row )
 {
    int i, rawW, rawH, modR = r%4;
-   unsigned char rowA[2560], rowB[2560], outRow[3*640];
+   unsigned char rowA[2560], rowB[2560];
    unsigned char *rAP, *rBP, *rCP;
 	
    rawW = v->width/2;
@@ -492,22 +491,24 @@ int Gen24bitRow( int r, struct Veo *v, unsigned char *row )
    
    if( r%2 == 0 )
      {
-	// green blue center
+	/* green blue center */
 	row[0] = ( rAP[0] + rCP[0]) >> 1;
 	row[1] = rBP[0];
 	row[2] = rBP[1];
-	// blue center
+
+	/* blue center */
 	row[3] = ( rAP[0] + rAP[2] + rCP[0] + rCP[2]) >> 2;
 	row[4] = ( rAP[1] + rBP[0] + rBP[2] + rCP[1]) >> 2;
 	row[5] = rBP[1];
 	
 	for( i=1; i<rawW-1; i++ )
 	  {
-	     // green blue center
+	     /* green blue center */
 	     row[i*6] = ( rAP[i*2] + rCP[i*2]) >> 1;
 	     row[i*6+1] = rBP[i*2];
 	     row[i*6+2] = ( rBP[i*2-1] + rBP[i*2+1]) >> 1;
-	     // blue center
+
+	     /* blue center */
 	     row[i*6+3] = ( rAP[i*2] + rAP[i*2+2] + rCP[i*2] + rCP[i*2+2]) >> 2;
 	     row[i*6+4] = ( rAP[i*2+1] + rBP[i*2] + rBP[i*2+2] + rCP[i*2+1]) >> 2;
 	     row[i*6+5] = rBP[i*2+1];
@@ -515,34 +516,38 @@ int Gen24bitRow( int r, struct Veo *v, unsigned char *row )
 	
 	i = rawW-1;
 	
-	// green blue center
+	/* green blue center */
 	row[i*6] = ( rAP[i*2] + rCP[i*2]) >> 1;
 	row[i*6+1] = rBP[i*2];
 	row[i*6+2] = ( rBP[i*2-1] + rBP[i*2+1]) >> 1;
-	// blue center
+
+	/* blue center */
 	row[i*6+3] = ( rAP[i*2] + rCP[i*2] ) >> 1;
 	row[i*6+4] = ( rAP[i*2+1] + rBP[i*2] + rCP[i*2+1])/3;
 	row[i*6+5] = rBP[i*2+1];
      }
    else
      {
-	// red center
+	/* red center */
 	row[0] = rBP[0];
 	row[1] = ( rAP[0] + rBP[1] + rCP[0]) / 3;
 	row[2] = ( rAP[1] + rCP[1] ) >> 1;
-	// green red center
+
+	/* green red center */
 	row[3] = ( rBP[0] + rBP[2]) >> 1;
 	row[4] = rBP[1];
 	row[5] = ( rAP[1] + rCP[1]) >> 1;
 	
 	for( i=1; i<rawW-1; i++ )
 	  {
-	     // red center
+	     /* red center */
 	     row[i*6] = rBP[i*2];
 	     row[i*6+1] = ( rAP[i*2] + rBP[i*2-1] + rBP[i*2+1] + rCP[i*2]) >> 2;
-	     //			row[i*6+1] = ( rBP[i*2-1] + rBP[i*2+1] ) >> 1;
+
+	     /* row[i*6+1] = ( rBP[i*2-1] + rBP[i*2+1] ) >> 1; */
 	     row[i*6+2] = ( rAP[i*2-1] + rAP[i*2+1] + rCP[i*2+1] + rCP[i*2-1]) >> 2;
-	     // green red center
+
+	     /* green red center */
 	     row[i*6+3] = ( rBP[i*2] + rBP[i*2+2]) >> 1;
 	     row[i*6+4] = rBP[i*2+1];
 	     row[i*6+5] = ( rAP[i*2+1] + rCP[i*2+1]) >> 1;
@@ -550,11 +555,12 @@ int Gen24bitRow( int r, struct Veo *v, unsigned char *row )
 	
 	i = rawW-1;
 	
-	// red center
+	/* red center */
 	row[i*6] = rBP[i*2];
 	row[i*6+1] = ( rAP[i*2] + rBP[i*2-1] + rBP[i*2+1] + rCP[i*2]) >> 2;
 	row[i*6+2] = ( rAP[i*2-1] + rAP[i*2+1] + rCP[i*2+1] + rCP[i*2-1]) >> 2;
-	// green red center
+
+	/* green red center */
 	row[i*6+3] = rBP[i*2];
 	row[i*6+4] = rBP[i*2+1];
 	row[i*6+5] = ( rAP[i*2+1] + rCP[i*2+1]) >> 1;
@@ -569,7 +575,7 @@ void WritePicture( int sd, int db, char *name )
    char fname[FILENAME_MAX];
    FILE *f;
    char extension[8];
-   static int i = 1, records, len;
+   static int i = 1, len;
    struct Veo v;
    unsigned char inBuf[2560];
    unsigned char outBuf[2560];
@@ -606,7 +612,7 @@ void WritePicture( int sd, int db, char *name )
 	if( name != NULL )
 	  fprintf( f, "%s (created on %s)\n", name, fmt_date( &v ));
 	
-	fprintf( f, "%ld %ld\n255\n", v.width, v.height );
+	fprintf( f, "%d %d\n255\n", v.width, v.height );
 
 	for( i=0; i<v.height; i++ ) 
 	  {
@@ -634,12 +640,9 @@ int main(int argc, char *argv[])
      dbcount = 0;
    
    struct   DBInfo info;
-   char     *port 		= NULL,
-     *ptr;
+   char     *port 		= NULL;
    
    struct 	PilotUser User;
-   struct 	pi_file *pif 	= NULL;
-   struct 	VeoAppInfo vai;
    unsigned char buffer[0xffff];
 
    progname = argv[0];
@@ -675,7 +678,7 @@ int main(int argc, char *argv[])
 	break;
       dbcount++;
       i = info.index + 1;
-//      if( info.type == 'EZVI' && info.creator == 'ODI2' )
+/*      if( info.type == 'EZVI' && info.creator == 'ODI2' ) */
       if( info.type == pi_mktag( 'E', 'Z', 'V', 'I' ) 
 	  && info.creator == pi_mktag( 'O', 'D', 'I', '2' ))
 	{
@@ -698,7 +701,7 @@ int main(int argc, char *argv[])
    
 		WritePicture( sd, db, info.name );
 		
-//		unpack_VeoAppInfo( &vai, buffer, 0xffff);
+/*		unpack_VeoAppInfo( &vai, buffer, 0xffff); */
    
 		if( sd ) {
 		   /* Close the database */
