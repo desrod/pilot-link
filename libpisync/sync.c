@@ -57,17 +57,14 @@ struct _RecordQueue {
 #define DesktopCheck(func) if (rec_mod == DESKTOP || rec_mod == BOTH) if ((result = func) < 0) return result;
 #define ErrorCheck(func)   if ((result = func) < 0) return result;
 
-/***********************************************************************
- *
- * Function:    sync_NewPilotRecord
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * sync_NewPilotRecord:
+ * @buf_size: The size of the buffer to give the device record
+ * 
+ * Create a new, empty device record with the given buffer size
+ * 
+ * Return value: The new device record
+ **/
 PilotRecord *sync_NewPilotRecord(int buf_size)
 {
 	PilotRecord *precord;
@@ -80,17 +77,14 @@ PilotRecord *sync_NewPilotRecord(int buf_size)
 	return precord;
 }
 
-/***********************************************************************
- *
- * Function:    sync_CopyPilotRecord
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * sync_CopyPilotRecord:
+ * @precord: The device record to copy
+ * 
+ * Copies the given device record
+ * 
+ * Return value: The new device record
+ **/
 PilotRecord *sync_CopyPilotRecord(const PilotRecord * precord)
 {
 	PilotRecord *new_record;
@@ -106,18 +100,13 @@ PilotRecord *sync_CopyPilotRecord(const PilotRecord * precord)
 	return new_record;
 }
 
-
-/***********************************************************************
+/**
+ * sync_FreePilotRecord:
+ * @precord: The device record to free
+ * 
+ * Free the memory of the given device record
  *
- * Function:    sync_FreePilotRecord
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+ **/
 void sync_FreePilotRecord(PilotRecord * precord)
 {
 	if (precord->buffer)
@@ -126,18 +115,14 @@ void sync_FreePilotRecord(PilotRecord * precord)
 	free(precord);
 }
 
-/***********************************************************************
- *
- * Function:    sync_NewDesktopRecord
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-DesktopRecord *sync_NewDesktopRecord(void)
+/**
+ * sync_NewDesktopRecord:
+ * 
+ * Create a new, empty, desktop record
+ * 
+ * Return value: The new desktop record
+ **/
+DesktopRecord *sync_NewDesktopRecord()
 {
 	DesktopRecord *drecord;
 
@@ -147,17 +132,14 @@ DesktopRecord *sync_NewDesktopRecord(void)
 	return drecord;
 }
 
-/***********************************************************************
- *
- * Function:    sync_CopyDesktopRecord
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * sync_CopyDesktopRecord:
+ * @drecord: The desktop record to copy
+ * 
+ * Copies the given desktop record
+ * 
+ * Return value: The new desktop record
+ **/
 DesktopRecord *sync_CopyDesktopRecord(const DesktopRecord * drecord)
 {
 	DesktopRecord *new_record;
@@ -169,33 +151,18 @@ DesktopRecord *sync_CopyDesktopRecord(const DesktopRecord * drecord)
 	return new_record;
 }
 
-/***********************************************************************
- *
- * Function:    sync_FreeDesktopRecord
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * sync_FreeDesktopRecord:
+ * @drecord: The desktop record to free
+ * 
+ * Free the memory of the given desktop record
+ * 
+ **/
 void sync_FreeDesktopRecord(DesktopRecord * drecord)
 {
 	free(drecord);
 }
 
-/***********************************************************************
- *
- * Function:    add_record_queue
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static void
 add_record_queue(RecordQueue * rq, PilotRecord * precord,
 		 DesktopRecord * drecord)
@@ -222,17 +189,6 @@ add_record_queue(RecordQueue * rq, PilotRecord * precord,
 	rq->count++;
 }
 
-/***********************************************************************
- *
- * Function:    free_record_queue_list
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int free_record_queue_list(SyncHandler * sh, RecordQueueList * rql)
 {
 	RecordQueueList *item;
@@ -253,20 +209,10 @@ static int free_record_queue_list(SyncHandler * sh, RecordQueueList * rql)
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:    delete_both
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int
-delete_both(SyncHandler * sh, int dbhandle, DesktopRecord * drecord,
-	    PilotRecord * precord, RecordModifier rec_mod)
+static int delete_both(SyncHandler * sh, int dbhandle, 
+		       DesktopRecord * drecord,
+		       PilotRecord * precord, 
+		       RecordModifier rec_mod)
 {
 	int result = 0;
 
@@ -280,20 +226,9 @@ delete_both(SyncHandler * sh, int dbhandle, DesktopRecord * drecord,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    store_record_on_pilot
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int
-store_record_on_pilot(SyncHandler * sh, int dbhandle,
-		      DesktopRecord * drecord, RecordModifier rec_mod)
+static int store_record_on_pilot(SyncHandler * sh, int dbhandle,
+				 DesktopRecord * drecord, 
+				 RecordModifier rec_mod)
 {
 	PilotRecord precord;
 	recordid_t id;
@@ -314,17 +249,6 @@ store_record_on_pilot(SyncHandler * sh, int dbhandle,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    open_db
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int open_db(SyncHandler * sh, int *dbhandle)
 {
 	if (sh->secret)
@@ -335,17 +259,6 @@ static int open_db(SyncHandler * sh, int *dbhandle)
 				  dbhandle);
 }
 
-/***********************************************************************
- *
- * Function:    close_db
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int close_db(SyncHandler * sh, int dbhandle)
 {
 	dlp_CleanUpDatabase(sh->sd, dbhandle);
@@ -356,17 +269,6 @@ static int close_db(SyncHandler * sh, int dbhandle)
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:    sync_record
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int
 sync_record(SyncHandler * sh, int dbhandle,
 	    DesktopRecord * drecord, PilotRecord * precord,
@@ -506,18 +408,16 @@ sync_record(SyncHandler * sh, int dbhandle,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_CopyToPilot
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int sync_CopyToPilot(SyncHandler * sh)
+/**
+ * sync_CopyToPilot:
+ * @sh: A sync handler struct
+ * 
+ * Copy all desktop records to the pilot
+ * 
+ * Return value: 0 on success, non-zero otherwise
+ **/
+int
+sync_CopyToPilot(SyncHandler * sh)
 {
 	int dbhandle;
 	DesktopRecord *drecord = NULL;
@@ -552,18 +452,16 @@ int sync_CopyToPilot(SyncHandler * sh)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_CopyFromPilot
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int sync_CopyFromPilot(SyncHandler * sh)
+/**
+ * sync_CopyFromPilot:
+ * @sh: A sync handler struct
+ * 
+ * Copy all device records to the desktop
+ * 
+ * Return value: 0 on success, non-zero otherwise
+ **/
+int
+sync_CopyFromPilot(SyncHandler * sh)
 {
 	int dbhandle;
 	int index;
@@ -605,17 +503,6 @@ int sync_CopyFromPilot(SyncHandler * sh)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_MergeFromPilot_process
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int
 sync_MergeFromPilot_process(SyncHandler * sh, int dbhandle,
 			    RecordQueue * rq, RecordModifier rec_mod)
@@ -640,17 +527,6 @@ sync_MergeFromPilot_process(SyncHandler * sh, int dbhandle,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_MergeFromPilot_fast
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int
 sync_MergeFromPilot_fast(SyncHandler * sh, int dbhandle,
 			 RecordModifier rec_mod)
@@ -680,17 +556,6 @@ sync_MergeFromPilot_fast(SyncHandler * sh, int dbhandle,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_MergeFromPilot_slow
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int
 sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 			 RecordModifier rec_mod)
@@ -746,18 +611,17 @@ sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_MergeFromPilot
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int sync_MergeFromPilot(SyncHandler * sh)
+/**
+ * sync_MergeToPilot:
+ * @sh: A sync handler struct
+ * 
+ * Synchronize the device records to the desktop, but do not alter the
+ * device records
+ * 
+ * Return value: 0 on success, non-zero otherwise
+ **/
+int
+sync_MergeFromPilot(SyncHandler * sh)
 {
 	int dbhandle;
 	int slow = 0;
@@ -789,20 +653,8 @@ int sync_MergeFromPilot(SyncHandler * sh)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_MergeToPilot_fast
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int
-sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle,
-		       RecordModifier rec_mod)
+sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle, RecordModifier rec_mod)
 {
 	PilotRecord *precord = NULL;
 	DesktopRecord *drecord = NULL;
@@ -834,20 +686,8 @@ sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_MergeToPilot_slow
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static int
-sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
-		       RecordModifier rec_mod)
+sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle, RecordModifier rec_mod)
 {
 	PilotRecord *precord = NULL;
 	DesktopRecord *drecord = NULL;
@@ -902,18 +742,17 @@ sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_MergeToPilot
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int sync_MergeToPilot(SyncHandler * sh)
+/**
+ * sync_MergeToPilot:
+ * @sh: A sync handler struct
+ * 
+ * Synchronize the desktop records to the pilot, but do not alter the
+ * desktop records
+ * 
+ * Return value: 0 on success, non-zero otherwise
+ **/
+int
+sync_MergeToPilot(SyncHandler * sh)
 {
 	int dbhandle;
 	int slow = 0;
@@ -945,18 +784,16 @@ int sync_MergeToPilot(SyncHandler * sh)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    sync_Synchronize
- *
- * Summary:     
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int sync_Synchronize(SyncHandler * sh)
+/**
+ * sync_Synchronize:
+ * @sh: A sync handler struct
+ * 
+ * Synchronizes the pilot database and the desktop database
+ * 
+ * Return value: 0 on success, non-zero otherwise
+ **/
+int
+sync_Synchronize(SyncHandler * sh)
 {
 	int dbhandle;
 	int slow = 0;

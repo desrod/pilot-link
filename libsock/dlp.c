@@ -101,19 +101,9 @@ int dlp_trace = 0;
 #endif
 
 #if 0
-/***********************************************************************
- *
- * Function:    dlp_buffer
- *
- * Summary:     Code to dynamically allocate buffer
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void *dlp_buffer(int sd, int cmd, int arg, int arglen,
-		 struct pi_socket *ps)
+/* Code to dynamically allocate buffer */
+void *
+dlp_buffer(int sd, int cmd, int arg, int arglen, struct pi_socket *ps)
 {
 	unsigned char *buf;
 
@@ -136,6 +126,21 @@ void *dlp_buffer(int sd, int cmd, int arg, int arglen,
 buf[1] = etc.}
 #endif
 
+/**
+ * dlp_exec:
+ * @sd: Socket descriptor of the open connection
+ * @cmd: Command to execute
+ * @arg: Argument type
+ * @msg: Message to send
+ * @msglen: Length of message
+ * @result: A buffer to hold the result
+ * @maxlen: Length of the result buffer
+ * 
+ * Execute a dlp call
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
 	 int msglen, unsigned char
@@ -230,17 +235,7 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
    applied both way, there is no immediate problem.
    -- KJA */
 
-/***********************************************************************
- *
- * Function:    dlp_ptohdate
- *
- * Summary:     Palm to "Human Date" format
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/* Convert Palm format to time_t */
 static time_t dlp_ptohdate(unsigned const char *data)
 {
 	struct tm t;
@@ -272,18 +267,9 @@ static time_t dlp_ptohdate(unsigned const char *data)
 	return mktime(&t);
 }
 
-/***********************************************************************
- *
- * Function:    dlp_htopdate
- *
- * Summary:     "Human Date" to Palm format
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void dlp_htopdate(time_t time, unsigned char *data)
+/* Convert time_t to Palm format */
+static void
+dlp_htopdate(time_t time, unsigned char *data)
 {				/* @+ptrnegate@ */
 	struct tm *t = localtime(&time);
 	int y;
@@ -305,18 +291,18 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 	return;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_GetSysDateTime
- *
- * Summary:     DLP 1.0 GetSysDateTime function
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_GetSysDateTime(int sd, time_t * t)
+/**
+ * dlp_GetSysDateTime:
+ * @sd: Socket descriptor of the open connection
+ * @t: A pointer to a variable set to device time
+ * 
+ * Get the device date and time
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
+int
+dlp_GetSysDateTime(int sd, time_t * t)
 {
 	unsigned char buf[8];
 	int result;
@@ -338,18 +324,17 @@ int dlp_GetSysDateTime(int sd, time_t * t)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_SetSysDateTime
- *
- * Summary:     DLP 1.0 SetSysDateTime function
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_SetSysDateTime(int sd, time_t time)
+/**
+ * dlp_SetSysDateTime:
+ * @sd: Socket descriptor of the open connection
+ * @time: The time to set the device to
+ * 
+ * Set the device date and time
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_SetSysDateTime(int sd, time_t time)
 {
 	unsigned char buf[8];
 	int result;
@@ -420,18 +405,19 @@ int dlp_SetSysDateTime(int sd, time_t time)
 #define sizeof_SIRequest		(2)
  /* end struct SIRequest */
 
-/***********************************************************************
- *
- * Function:    dlp_ReadStorageInfo
- *
- * Summary:     DLP 1.0 ReadStorageInfo to read ROM/RAM regions
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
+/**
+ * dlp_ReadStorageInfo:
+ * @sd: Socket descriptor of the open connection
+ * @cardno: Card to get the info for
+ * @c: A CardInfo struct to be filled in
+ * 
+ * Get information on storages
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
+int
+dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 {
 	int result;
 	int len1, len2;
@@ -490,18 +476,18 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadSysInfo
- *
- * Summary:     Read the System Information (memory, battery, etc.) 
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_ReadSysInfo(int sd, struct SysInfo *s)
+/**
+ * dlp_ReadSysInfo:
+ * @sd: Socket descriptor of the open connection 
+ * @s: A SysInfo struct to be filled in
+ * 
+ * Read the System Information (memory, battery, etc.)
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
+int
+dlp_ReadSysInfo(int sd, struct SysInfo *s)
 {
 	int result;
 
@@ -531,17 +517,20 @@ int dlp_ReadSysInfo(int sd, struct SysInfo *s)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadDBList
- *
- * Summary:     Iterate through the list of databases on the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadDBList:
+ * @sd: Socket descriptor of the open connection
+ * @cardno: Card number of the databases to iterate through
+ * @flags: A set of dlpDBList flags
+ * @start: Index of database to start at
+ * @info: DBInfo struct to be filled in
+ * 
+ * Iterate over all databases on the card in the device database, returning
+ * subsequent subsequent databases on each call
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadDBList(int sd, int cardno, int flags, int start,
 	       struct DBInfo *info)
@@ -636,18 +625,20 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 	return result;
 }
 
-
-/***********************************************************************
- *
- * Function:    dlp_FindDBInfo
- *
- * Summary:     Search for a database on the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_FindDBInfo:
+ * @sd: Socket descriptor of the open connection
+ * @cardno: Card number to search for the database on
+ * @start: 
+ * @dbname: Name of the database
+ * @type: Type code
+ * @creator: Creator code
+ * @info: DBInfo struct to be filled in
+ * 
+ * Search for a database on the device
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int
 dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	       unsigned long type, unsigned long creator,
@@ -696,18 +687,21 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_OpenDB
- *
- * Summary:     Open the database for read/write/delete/mod
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
+/**
+ * dlp_OpenDB:
+ * @sd: Socket descriptor of the open connection
+ * @cardno: Card number on which the database resides
+ * @mode: A set of dlpOpenFlags
+ * @name: Name of the database
+ * @dbhandle: A pointer to a variable set to the handle of the new databse
+ * 
+ * Open the database in the given mode
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
+int
+dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 {
 	unsigned char handle;
 	int result;
@@ -753,18 +747,18 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_DeleteDB
- *
- * Summary:     Delete the database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_DeleteDB(int sd, int card, const char *name)
+/**
+ * dlp_DeleteDB:
+ * @sd: Socket descriptor of the open connection
+ * @card: Card on which the database resides
+ * @name: Name of the database
+ * 
+ * Delete a database on the device
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_DeleteDB(int sd, int card, const char *name)
 {
 	int result;
 
@@ -789,17 +783,21 @@ int dlp_DeleteDB(int sd, int card, const char *name)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_CreateDB
- *
- * Summary:     Create a database on the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_CreateDB:
+ * @sd: Socket descriptor of the open connection
+ * @creator: Creator code
+ * @type: Type code
+ * @cardno: Number of the card to create the database on
+ * @flags: A set of dlpDBFlags
+ * @version: Database version
+ * @name: Name of the database
+ * @dbhandle: A pointer to a variable set to the handle of the new databse
+ * 
+ * Create a database on the device
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int
 dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	     int version, const char *name, int *dbhandle)
@@ -867,18 +865,17 @@ dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_CloseDB
- *
- * Summary:     Close the open database handle
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_CloseDB(int sd, int dbhandle)
+/**
+ * dlp_CloseDB:
+ * @sd: Socket descriptor of the open connection
+ * @dbhandle: Handle to a device database
+ * 
+ * Close the database on the device
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_CloseDB(int sd, int dbhandle)
 {
 	unsigned char handle = (unsigned char) dbhandle;
 	int result;
@@ -898,7 +895,16 @@ int dlp_CloseDB(int sd, int dbhandle)
 	return result;
 }
 
-int dlp_CloseDB_All(int sd)
+/**
+ * dlp_CloseDB_All:
+ * @sd: Socket descriptor of the open connection
+ * 
+ * Close all open databases on the device
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_CloseDB_All(int sd)
 {
 	int result;
 
@@ -911,17 +917,24 @@ int dlp_CloseDB_All(int sd)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_CallApplication
- *
- * Summary:     Call an application entry point via an action code
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_CallApplication:
+ * @sd: Socket descriptor of the open connection
+ * @creator: Creator code
+ * @type: Type code
+ * @action: Action code
+ * @length: Length of data to write
+ * @data: Data to write
+ * @retcode: A pointer to a variable set to the return code
+ * @maxretlen: Return data buffer size
+ * @retlen: Return data length
+ * @retdata: Return data buffer
+ * 
+ * Call an application entry point via an action code
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		    int action, int length, void *data,
@@ -1037,18 +1050,16 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ResetSystem
- *
- * Summary:     Reset the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_ResetSystem(int sd)
+/**
+ * dlp_ResetSystem:
+ * @sd: Socket descriptor of the open connection
+ * 
+ * Reset the device
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_ResetSystem(int sd)
 {
 	int result;
 
@@ -1061,18 +1072,17 @@ int dlp_ResetSystem(int sd)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_AddSyncLogEntry
- *
- * Summary:     Add text to the Palm's synchronization log
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_AddSyncLogEntry(int sd, char *entry)
+/**
+ * dlp_AddSyncLogEntry:
+ * @sd: Socket descriptor of the open connection
+ * @entry: Log text to add
+ * 
+ * Add text to the Palm's synchronization log
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_AddSyncLogEntry(int sd, char *entry)
 {
 	int result;
 
@@ -1094,18 +1104,19 @@ int dlp_AddSyncLogEntry(int sd, char *entry)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadOpenDBInfo
- *
- * Summary:     Get information on an open database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
+/**
+ * dlp_ReadOpenDBInfo:
+ * @sd: Socket descriptor of the open connection
+ * @dbhandle: Handle to a device database
+ * @records: A pointer to a variable set to the number of records
+ * 
+ * Read the number of records in the device database
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
+int
+dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 {
 	unsigned char buf[2];
 	int result;
@@ -1135,18 +1146,19 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_MoveCategory
- *
- * Summary:     Move a record from one position to another
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
+/**
+ * dlp_MoveCategory:
+ * @sd: Socket descriptor of the open connection 
+ * @handle: Handle to a device database
+ * @fromcat: Category to move from 
+ * @tocat: Category to move to
+ * 
+ * Move all records in a category to another category
+ * 
+ * Return value: A negative number on error, 0 otherwise 
+ **/
+int
+dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 {
 	int result;
 
@@ -1171,18 +1183,16 @@ int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_OpenConduit
- *
- * Summary:     This command is sent before each conduit is opened
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_OpenConduit(int sd)
+/**
+ * dlp_OpenConduit:
+ * @sd: Socket descriptor of the open connection
+ * 
+ * This command is sent before each conduit is opened
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_OpenConduit(int sd)
 {
 	int result;
 
@@ -1195,18 +1205,17 @@ int dlp_OpenConduit(int sd)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_EndOfSync
- *
- * Summary:     End the sync
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_EndOfSync(int sd, int status)
+/**
+ * dlp_EndOfSync:
+ * @sd: Socket descriptor of the open connection
+ * @status: Status to end the sync with
+ * 
+ * End the sync with the given status
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_EndOfSync(int sd, int status)
 {
 	int result;
 	struct pi_socket *ps;
@@ -1234,18 +1243,16 @@ int dlp_EndOfSync(int sd, int status)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_AbortSync
- *
- * Summary:     Enters a sync_aborted entry into the log
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_AbortSync(int sd)
+/**
+ * dlp_AbortSync:
+ * @sd: Socket descriptor of the open connection
+ * 
+ * Abort a sync that has started
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_AbortSync(int sd)
 {
 	struct pi_socket *ps;
 
@@ -1263,18 +1270,17 @@ int dlp_AbortSync(int sd)
 	return pi_close(sd);
 }
 
-/***********************************************************************
- *
- * Function:    dlp_WriteUserInfo
- *
- * Summary:     Saves user information in a file or to stdout
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_WriteUserInfo(int sd, struct PilotUser *User)
+/**
+ * dlp_WriteUserInfo:
+ * @sd: Socket descriptor of the open connection
+ * @User: PilotUser information
+ * 
+ * Write pilot user information to the Palm
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_WriteUserInfo(int sd, struct PilotUser *User)
 {
 	int result;
 
@@ -1309,18 +1315,18 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadUserInfo
- *
- * Summary:     Read user information from the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_ReadUserInfo(int sd, struct PilotUser *User)
+/**
+ * dlp_ReadUserInfo:
+ * @sd: Socket descriptor of the open connection
+ * @User: A pointer to a PilotUser structure to fill in
+ * 
+ * Read user information from the Palm
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise 
+ **/
+int
+dlp_ReadUserInfo(int sd, struct PilotUser *User)
 {
 	int result;
 	int userlen;
@@ -1367,18 +1373,18 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadNetSyncInfo
- *
- * Summary:     Read Network HotSync settings from the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
+/**
+ * dlp_ReadNetSyncInfo:
+ * @sd: Socket descriptor of the open connection
+ * @i: A pointer to a NetSync info structure to fill in
+ * 
+ * Read Network HotSync settings from the Palm
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
+int
+dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
 	int result;
 	int p;
@@ -1419,18 +1425,17 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_WriteNetSyncInfo
- *
- * Summary:     Write Network HotSync settings to the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
+/**
+ * dlp_WriteNetSyncInfo:
+ * @sd: Socket descriptor of the open connection
+ * @i: NetSync information
+ * 
+ * Write Network HotSync settings to the Palm
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
 	int result;
 	int p;
@@ -1476,18 +1481,18 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 }
 
 #ifdef _PILOT_SYSPKT_H
-/***********************************************************************
- *
- * Function:    dlp_RPC
- *
- * Summary:     Remote Procedure Calls interface
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
+/**
+ * dlp_RPC:
+ * @sd: Socket descriptor of the open connection
+ * @p: RPC call information
+ * @result:  A pointer to a variable set to function result
+ * 
+ * Make a remote procedure calls
+ * 
+ * Return value: 
+ **/
+int
+dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 {
 	int i;
 	unsigned char *c;
@@ -1564,17 +1569,18 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 	return err;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadFeature
- *
- * Summary:     Read a feature from Feature Manager on the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadFeature:
+ * @sd: Socket descriptor of the open connection
+ * @creator: Creator code of the feature
+ * @num: 
+ * @feature: A place to read the feature into
+ * 
+ * Read a feature from Feature Manager on the Palm
+ * 
+ * Return value: negative number on error, the number of bytes read
+ * otherwise 
+ **/
 int
 dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 		unsigned long *feature)
@@ -1664,18 +1670,16 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 }
 #endif				/* IFDEF _PILOT_SYSPKT_H */
 
-/***********************************************************************
- *
- * Function:    dlp_ResetLastSyncPC
- *
- * Summary:     Reset the LastSyncPC ID so we can start again
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_ResetLastSyncPC(int sd)
+/**
+ * dlp_ResetLastSyncPC:
+ * @sd: Socket descriptor of the open connection
+ * 
+ * Reset the LastSyncPC ID so we can start again
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_ResetLastSyncPC(int sd)
 {
 	struct PilotUser U;
 	int err;
@@ -1686,18 +1690,17 @@ int dlp_ResetLastSyncPC(int sd)
 	return dlp_WriteUserInfo(sd, &U);
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ResetDBIndex
- *
- * Summary:     Reset the modified records index
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_ResetDBIndex(int sd, int dbhandle)
+/**
+ * dlp_ResetDBIndex:
+ * @sd: Socket descriptor of the open connection
+ * @dbhandle: Handle to a device database
+ * 
+ * Reset the modified records index
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_ResetDBIndex(int sd, int dbhandle)
 {
 	int result;
 	struct pi_socket *ps;
@@ -1720,17 +1723,21 @@ int dlp_ResetDBIndex(int sd, int dbhandle)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadRecordIDList
- *
- * Summary:     Read in a list of RecordIDs from the Palm
- *
- * Parmeters:   None
- *
- * Returns:     Returns a list of unique RecordIDs
- *
- ***********************************************************************/
+/**
+ * dlp_ReadRecordIDList:
+ * @sd: Socket descriptor of the open connection
+ * @dbhandle: Handle to a device database
+ * @sort: Sort flag
+ * @start: Index to start at
+ * @max: Maximum number of records to return
+ * @IDs: Pointer to a list of recordid_t types atleast max long
+ * @count: A pointer to a variable set to the number of record ids read
+ * 
+ * Read in a list of RecordIDs from the Palm
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 		     recordid_t * IDs, int *count)
@@ -1780,17 +1787,23 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 	return nbytes;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_WriteRecord
- *
- * Summary:     Writes a new record to database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_WriteRecord:
+ * @sd: Socket descriptor of the open connection
+ * @dbhandle: Handle to a device database
+ * @flags: A set of dlpRecAttributes
+ * @recID: ID of the record
+ * @catID: Category of the record
+ * @data: Record data
+ * @length: Length of the record data
+ * @NewID: A pointer to a variable set to the new ID of the record
+ * 
+ * Writes a record to database.  If recID is 0, the device will create
+ * a new id and the variable the NewID pointer points to will be set
+ * to the new id.
+ * 
+ * Return value: A negative number on error, 0 otherwise 
+ **/
 int
 dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 		int catID, void *data, int length, recordid_t * NewID)
@@ -1861,18 +1874,20 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_DeleteRecord
- *
- * Summary:     Deletes a record from the database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
+/**
+ * dlp_DeleteRecord:
+ * @sd: Socket descriptor of the open connection
+ * @dbhandle: Handle to a device database
+ * @all:  Delete all records flag
+ * @recID: ID of the record to delete
+ * 
+ * Deletes a single record from the database or all records if the all
+ * flag is non-zero
+ * 
+ * Return value: 
+ **/
+int
+dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 {
 	int result;
 	int flags = all ? 0x80 : 0;
@@ -1899,19 +1914,19 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_DeleteCategory
- *
- * Summary:     Delete all records in a category. The category name 
- *		is not changed.
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int dlp_DeleteCategory(int sd, int dbhandle, int category)
+/**
+ * dlp_DeleteCategory:
+ * @sd: Socket descriptor of the open connection 
+ * @dbhandle: Handle to a device database
+ * @category: Category to delete
+ * 
+ * Delete all records in a category. The category name 
+ * is not changed.
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
+int
+dlp_DeleteCategory(int sd, int dbhandle, int category)
 {
 	int result;
 	int flags = 0x40;
@@ -1965,17 +1980,21 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadResourceByType
- *
- * Summary:     Read the record resources by ResourceID
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadResourceByType:
+ * @sd: Socket descriptor of the open connection 
+ * @fHandle: Handle to a device database
+ * @type: Type of the resource to read
+ * @id: ID of the resource to read
+ * @buffer: A buffer to read the resource into
+ * @index: A pointer to a variable set to the index of the resource
+ * @size: A pointer to a variable set to the size of the resource
+ * 
+ * Read a record resource by resource id
+ * 
+ * Return value:  A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 		       void *buffer, int *index, int *size)
@@ -2023,17 +2042,21 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 	return result - 10;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadResourceByIndex
- *
- * Summary:     Read the record resources by IndexID
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadResourceByIndex:
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @index: Index to read
+ * @buffer: A buffer to read the resource into
+ * @type: A pointer to a variable set to the resource id of the resource
+ * @id: A pointer to a variable set to the resource id of the resource
+ * @size: A pointer to a variable set to the size of the resource
+ * 
+ * Read a record resource by index
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
 			unsigned long *type, int *id, int *size)
@@ -2082,17 +2105,19 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
 	return result - 10;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_WriteResource
- *
- * Summary:     Write out the data
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_WriteResource:
+ * @sd: Socket descriptor of the open connection
+ * @dbhandle: Handle to a device database
+ * @type: Resource type
+ * @id: Resource id
+ * @data: Data of the resource
+ * @length: Length of the resource
+ * 
+ * Write a resource
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int
 dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
 		  const void *data, int length)
@@ -2130,17 +2155,19 @@ dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_DeleteResource
- *
- * Summary:     Delete a single resource from the database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_DeleteResource:
+ * @sd: Socket descriptor of the open connection
+ * @dbhandle: Handle to a device database 
+ * @all: Delete all resources flag
+ * @restype: Resource type to delete
+ * @resID: Resource id to delete
+ * 
+ * Delete a single resource from the database or all resources if the
+ * all flag is non-zero
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int
 dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 		   int resID)
@@ -2169,17 +2196,19 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadAppBlock
- *
- * Summary:     Read the AppInfo block
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadAppBlock:
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @offset: Offset from start of app info block to read
+ * @dbuf: Buffer to hold the app info block read in
+ * @dlen: Length of the buffer
+ * 
+ * Read the AppInfo block that matches the database
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 {
 	int result;
@@ -2217,17 +2246,17 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	return result - 2;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_WriteAppBlock
- *
- * Summary:     Write the AppInfo block
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_WriteAppBlock:
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @data: Data of the app info block to write
+ * @length: Length of the data
+ * 
+ * Write the AppInfo block that matches the database
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 		      int length)
 {
@@ -2261,17 +2290,19 @@ int dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadSortBlock
- *
- * Summary:     Read the SortBlock that matches the database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadSortBlock:
+ * @sd:  Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @offset: Offset from start of sort block to read
+ * @dbuf: Buffer to hold the sort block read in
+ * @dlen: Length of the buffer
+ * 
+ * Read the SortBlock that matches the database
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 {
@@ -2308,17 +2339,17 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	return result - 2;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_WriteSortBlock
- *
- * Summary:     Write the SortBlock that matches the database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_WriteSortBlock:
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @data: Data of the sort block to write
+ * @length: Length of the data
+ * 
+ * Write the SortBlock that matches the database
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 		       int length)
 {
@@ -2352,18 +2383,16 @@ int dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_CleanUpDatabase
- *
- * Summary:     Deletes all records which are marked as archived or 
- *		deleted in the record database
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_CleanUpDatabase:
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * 
+ * Deletes all records which are marked as archived or deleted in the
+ * record database
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int dlp_CleanUpDatabase(int sd, int fHandle)
 {
 	int result;
@@ -2384,6 +2413,16 @@ int dlp_CleanUpDatabase(int sd, int fHandle)
 	return result;
 }
 
+/**
+ * dlp_ResetSyncFlags:
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * 
+ * Clear all the sync flags (modified, deleted, etc) in the pilot
+ * database
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int dlp_ResetSyncFlags(int sd, int fHandle)
 {
 	int result;
@@ -2404,17 +2443,23 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadNextRecInCategory
- *
- * Summary:     Iterate through all records in category
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadNextRecInCategory
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @incategory: The category to read from
+ * @buffer: A buffer to read the record into
+ * @id: A pointer to a variable set to the record id of the record
+ * @index: A pointer to a variable set to the index of the record
+ * @size: A pointer to a variable set to the size of the record
+ * @attr: A pointer to a variable set to the attributes of the record
+ * 
+ * Iterate through all records in a category, returning subsequent
+ * records on each call
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 			  void *buffer, recordid_t * id, int *index,
@@ -2541,17 +2586,22 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 	return result - 10;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadAppPreference
- *
- * Summary:     Read application preference
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadAppPreference:
+ * @sd: Socket descriptor of the open connection
+ * @creator: Creator code
+ * @id: 
+ * @backup: 
+ * @maxsize: 
+ * @buffer: 
+ * @size: 
+ * @version: 
+ * 
+ * Read application preference
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 		      int maxsize, void *buffer, int *size, int *version)
@@ -2649,17 +2699,20 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 	return get_short(dlp_buf + 4);
 }
 
-/***********************************************************************
- *
- * Function:    dlp_WriteAppPreference
- *
- * Summary:     Write application preference
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_WriteAppPreference:
+ * @sd: Socket descriptor of the open connection
+ * @creator: Creator code
+ * @id: 
+ * @backup: 
+ * @version: 
+ * @buffer: The buffer to write
+ * @size: Size of the buffer
+ * 
+ * Write application preference
+ * 
+ * Return value: A negative number on error, 0 otherwise
+ **/
 int
 dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 		       int version, void *buffer, int size)
@@ -2735,17 +2788,23 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadNextModifiedRecInCategory
- *
- * Summary:     Iterate through modified records in category
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadNextModifiedRecInCategory
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @incategory: The category to read from
+ * @buffer: A buffer to read the record into
+ * @id: A pointer to a variable set to the record id of the record
+ * @index: A pointer to a variable set to the index of the record
+ * @size: A pointer to a variable set to the size of the record
+ * @attr: A pointer to a variable set to the attributes of the record
+ * 
+ * Iterate through modified records in a category, returning subsequent
+ * modifieded records on each call
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 				  void *buffer, recordid_t * id,
@@ -2850,17 +2909,23 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 	return result - 10;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadNextModifiedRec
- *
- * Summary:     Iterate through modified records in category
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadNextModifiedRec
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @buffer: A buffer to read the record into
+ * @id: A pointer to a variable set to the record id of the record
+ * @index: A pointer to a variable set to the index of the record
+ * @size: A pointer to a variable set to the size of the record
+ * @attr: A pointer to a variable set to the attributes of the record
+ * @category: A pointer to a variable set to the category of the record
+ * 
+ * Iterate through modified records in the device database, returning
+ * subsequent modified records on each call
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
 			int *index, int *size, int *attr, int *category)
@@ -2927,17 +2992,22 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
 	return result - 10;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadRecordById
- *
- * Summary:     Searches device database for match on a record by id
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadRecordById:
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @id: ID number of the record to read
+ * @buffer: A buffer to read the record into
+ * @index: A pointer to a variable set to the index of the record
+ * @size: A pointer to a variable set to the size of the record
+ * @attr: A pointer to a variable set to the attributes of the record
+ * @category: A pointer to a variable set to the category of the record
+ * 
+ * Read a record from the pilot by id number.
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 		   int *index, int *size, int *attr, int *category)
@@ -3010,17 +3080,22 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 	return result - 10;
 }
 
-/***********************************************************************
- *
- * Function:    dlp_ReadRecordByIndex
- *
- * Summary:     Searches device database for match on a record by index
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
+/**
+ * dlp_ReadRecordByIndex:
+ * @sd: Socket descriptor of the open connection
+ * @fHandle: Handle to a device database
+ * @index: Index of the record to read
+ * @buffer: A buffer to read the record into
+ * @id: A pointer to a variable set to the record id of the record
+ * @size: A pointer to a variable set to the size of the record
+ * @attr: A pointer to a variable set to the attributes of the record
+ * @category: A pointer to a variable set to the category of the record
+ * 
+ * Read a record from the pilot by index number.
+ * 
+ * Return value: A negative number on error, the number of bytes read
+ * otherwise
+ **/
 int
 dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 		      recordid_t * id, int *size, int *attr, int *category)
