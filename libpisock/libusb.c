@@ -55,14 +55,16 @@ static int u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int fla
 static int u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags);
 static int u_read_i(struct pi_socket *ps, unsigned char *buf, size_t len, int flags, int timeout);
 static int u_poll(struct pi_socket *ps, int timeout);
+static int u_control_request (pi_usb_data_t *usb_data, int request_type, int request, int value, int index, void *data, int size, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
-	impl->open 		= u_open;
-	impl->close		= u_close;
-	impl->write		= u_write;
-	impl->read 		= u_read;
-	impl->poll 		= u_poll;
+	impl->open 				= u_open;
+	impl->close				= u_close;
+	impl->write				= u_write;
+	impl->read 				= u_read;
+	impl->poll 				= u_poll;
+	impl->control_request	= u_control_request;
 }
 
 
@@ -77,73 +79,24 @@ static usb_dev_handle	*USB_handle;
 static int				USB_interface;
 static int				USB_in_endpoint;
 static int				USB_out_endpoint;
-/*
-   This table helps us determine whether a connecting USB device is
-   one we'd like to talk to.
-*/
-static struct {
-	unsigned short vendorID;
-	unsigned short productID;
-}
-acceptedDevices[] = {
-	/* SONY (vendor 0x054c) */
-	{0x054c,56},		// Sony S series (S320, S360)
-	{0x054c,102},		// Sony cliŽ (T series, SJ series)
-	{0x054c,149},
-	{0x054c,154},		// Sony NR
-	{0x054c,218},		// Sony NX
-
-	/* UNKNOWN */
-	{0x081e,57088},   // vendor 0x081e, unknown
-
-	/* HANDSPRING (vendor 0x082d) */
-	{0x082d,0},  // accept all Handspring devices
-
-	/* PALM (vendor 0x0830) */
-	{0x0830,1},		// m500
-	{0x0830,2},		// m505
-	{0x0830,3},		// m515
-	{0x0830,16},
-	{0x0830,17},
-	{0x0830,32},		// i705
-	{0x0830,48},
-	{0x0830,49},
-	{0x0830,64},		// m125
-	{0x0830,80},		// m130
-	{0x0830,81},
-	{0x0830,82},
-	{0x0830,83},
-	{0x0830,96},		// Zire 71, Tungsten TT, E, T2, T3
-	{0x0830,97},
-	{0x0830,98},
-	{0x0830,99},
-	{0x0830,112},
-	{0x0830,113},
-	{0x0830,153},
-	{0x0830,128},		// serial adapter
-	{0x0830,256},
-
-	/* UNKNOWN */
-	{3208,33},		// vendor 0x0c88, unknown
-
-	/* TAPWAVE */
-	{4847,256}		// 0x12ef/0x0100: TapWave Zodiac
-};
 
 static int
-USB_open (void)
+USB_open (pi_usb_data_t *data)
 {
 	struct usb_bus *bus;
 	struct usb_device *dev;
+	int first = 1, ret;
+	u_int8_t input_endpoint = 0xFF, output_endpoint = 0xFF;
 
 	usb_init ();
+restart:
 	usb_find_busses ();
 	usb_find_devices ();
-	usb_set_debug (2);
+	CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (2));
 
 	for (bus = usb_busses; bus; bus = bus->next) {
 		for (dev = bus->devices; dev; dev = dev->next) {
-			int i, found = 0;;
+			int i;
 
 			if (dev->descriptor.bNumConfigurations < 1)
 				continue;
@@ -156,20 +109,29 @@ USB_open (void)
 			if (dev->config[0].interface[0].altsetting[0].bNumEndpoints < 2)
 				continue;
 
-			for (i = 0; i < (sizeof (acceptedDevices) / sizeof (acceptedDevices[0])); i++) {
-				if (acceptedDevices[i].vendorID == dev->descriptor.idVendor) {
-					if (acceptedDevices[i].productID &&
-							(acceptedDevices[i].productID != dev->descriptor.idProduct))
-						continue;
-					found = 1;
-					break;
-				}
-			}
-			if (!found)
+			if (USB_check_device (data, dev->descriptor.idVendor, dev->descriptor.idProduct))
 				continue;
+
+			USB_handle = usb_open(dev);
+
+			if (first) {
+				first = 0;
+				usb_reset (USB_handle);
+				usb_close (USB_handle);
+				CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (0));
+				goto restart;
+			}
+
+			data->ref = USB_handle;
+
+			input_endpoint = output_endpoint = 0xFF;
+			USB_in_endpoint = USB_out_endpoint = 0xFF;
+
+			ret = USB_configure_device (data, &input_endpoint, &output_endpoint);
 
 			for (i = 0; i < dev->config[0].interface[0].altsetting[0].bNumEndpoints; i++) {
 				struct usb_endpoint_descriptor *endpoint;
+				u_int8_t address;
 
 				endpoint = &dev->config[0].interface[0].altsetting[0].endpoint[i];
 
@@ -177,40 +139,61 @@ USB_open (void)
 					continue;
 				if ((endpoint->bmAttributes & USB_ENDPOINT_TYPE_MASK) != USB_ENDPOINT_TYPE_BULK)
 					continue;
-#if 1
-				if ((endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK))
-					USB_in_endpoint = endpoint->bEndpointAddress;
-#else
-				if (!USB_in_endpoint && (endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK))
-					USB_in_endpoint = endpoint->bEndpointAddress;
-#endif
-#if 1
-				if (!(endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK))
-					USB_out_endpoint = endpoint->bEndpointAddress;
-#else
-				if (!USB_out_endpoint && !(endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK))
-					USB_out_endpoint = endpoint->bEndpointAddress;
-#endif
+				address = endpoint->bEndpointAddress;
+				if ((address & USB_ENDPOINT_DIR_MASK)) {
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "In: 0x%x 0x%x.\n", address, input_endpoint));
+					if (input_endpoint == 0xFF)
+						USB_in_endpoint = address;
+					else if ((address & USB_ENDPOINT_ADDRESS_MASK) == input_endpoint)
+						USB_in_endpoint = address;
+				} else {
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Out: 0x%x 0x%x.\n", address, output_endpoint));
+					if (output_endpoint == 0xFF)
+						USB_out_endpoint = address;
+					else if ((address & USB_ENDPOINT_ADDRESS_MASK) == output_endpoint)
+						USB_out_endpoint = address;
+				}
 			}
 
-			USB_handle = usb_open(dev);
+			if (USB_in_endpoint == 0xFF || USB_out_endpoint == 0xFF) {
+				usb_close (USB_handle);
+				continue;
+			}
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Config: %d, 0x%x 0x%x | 0x%x 0x%x.\n", ret, input_endpoint, output_endpoint, USB_in_endpoint, USB_out_endpoint));
+
 			USB_interface = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
+#ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
+			first = 1;
+claim:
+#endif
 			i = usb_claim_interface (USB_handle, USB_interface);
 			if (i < 0) {
-				if (i == EBUSY)
+				if (i == -EBUSY) {
 					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "Unable to claim device: Busy.\n"));
-				else if (i == ENOMEM)
+#ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
+					if (first) {
+						usb_detach_kernel_driver_np (USB_handle, USB_interface);
+						first = 0;
+						goto claim;
+					}
+#endif
+				} else if (i == -ENOMEM)
 					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "Unable to claim device: No memory.\n"));
 				else
 					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "Unable to claim device: %d.\n", i));
 				usb_close (USB_handle);
-				continue;
+
+				errno = -i;
+				return 0;
 			}
 
 			return 1;
 		}
 	}
+
 	errno = ENODEV;
+	CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (0));
 	return 0;
 }
 
@@ -222,6 +205,7 @@ USB_close (void)
 
 	usb_release_interface (USB_handle, USB_interface);
 	usb_close (USB_handle);
+	USB_handle = NULL;
 	return 1;
 }
 
@@ -235,8 +219,6 @@ USB_close (void)
 
 #define MAX_READ_SIZE	4096
 #define AUTO_READ_SIZE	64
-#define READ_BUFFER		1
-#if READ_BUFFER
 static char				*RD_buffer = NULL;
 static int				RD_buffer_size;
 static int				RD_buffer_used;
@@ -253,19 +235,13 @@ RD_do_read (int timeout)
 {
 	int	bytes_read;
 
-	/*
-	if (!RD_read_size) {
-		usleep (1000);
-		return;
-	}
-	*/
 	RD_last_read_size = RD_read_size & ~63;		/* 64 byte chunks. */
 	if (RD_last_read_size < AUTO_READ_SIZE)
 		RD_last_read_size = AUTO_READ_SIZE;
 	else if (RD_last_read_size > MAX_READ_SIZE)
 		RD_last_read_size = MAX_READ_SIZE;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "Reading: len: %d, timeout: %d.\n", RD_last_read_size, timeout));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Reading: len: %d, timeout: %d.\n", RD_last_read_size, timeout));
 	bytes_read = usb_bulk_read (USB_handle, USB_in_endpoint, RD_usb_buffer, RD_last_read_size, timeout);
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d\n", __FILE__, __LINE__, __FUNCTION__, bytes_read));
 	if (bytes_read < 0) {
@@ -338,7 +314,6 @@ RD_stop (void)
 
 	return 1;
 }
-#endif
 
 
 /***********************************************************************
@@ -351,17 +326,17 @@ RD_stop (void)
 static int
 u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
+	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
+
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
 	if (RD_running)
-		return 1;
-	if (!USB_open ())
 		return -1;
-#if READ_BUFFER
+	if (!USB_open (data))
+		return -1;
 	if (!RD_start ()) {
 		USB_close ();
 		return -1;
 	}
-#endif
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
 
 	return 1;
@@ -372,9 +347,7 @@ u_close(struct pi_socket *ps)
 {
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
 	RD_stop ();
-#if READ_BUFFER
 	USB_close ();
-#endif
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
 	return 1;
 }
@@ -385,7 +358,7 @@ u_poll(struct pi_socket *ps, int timeout)
 	unsigned char hack[28];
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
 
-	return u_read_i (ps, hack, 28, PI_MSG_PEEK, timeout);
+	return u_read_i (ps, hack, 1, PI_MSG_PEEK, timeout);
 }
 
 static int
@@ -396,21 +369,29 @@ u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 	if (!RD_running)
 		return -1;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "Writing: len: %d, flags: %d, timeout: %d.\n", len, flags, timeout));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Writing: len: %d, flags: %d, timeout: %d.\n", len, flags, timeout));
 	if (len <= 0)
 		return 0;
 
 	len = usb_bulk_write (USB_handle, USB_out_endpoint, buf, len, timeout);
-	LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "Wrote: %d.\n", len));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Wrote: %d.\n", len));
+	if (len > 0)
+		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata (buf, len));
 
 	return len;
 }
 
-#if READ_BUFFER
 static int
 u_read(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 {
-	return u_read_i (ps, buf, len, flags, ((struct pi_usb_data *)ps->device->data)->timeout);
+	int ret;
+
+	ret = u_read_i (ps, buf, len, flags, ((struct pi_usb_data *)ps->device->data)->timeout);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Read: %d (%d).\n", ret, len));
+	if (ret > 0)
+		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata (buf, ret));
+
+	return ret;
 }
 
 static int
@@ -419,10 +400,6 @@ u_read_i(struct pi_socket *ps, unsigned char *buf, size_t len, int flags, int ti
 	if (!RD_running)
 		return -1;
 
-	/*
-	if (timeout > 5000)
-		timeout = 5000;
-		*/
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d %d\n", __FILE__, __LINE__, __FUNCTION__, len, flags, timeout));
 	pthread_mutex_lock (&RD_buffer_mutex);
 	if (flags & PI_MSG_PEEK && len > 256)
@@ -431,7 +408,7 @@ u_read_i(struct pi_socket *ps, unsigned char *buf, size_t len, int flags, int ti
 	if (RD_buffer_used < len) {
 		struct timeval now;
 		struct timespec when, nownow;
-		int				last_used, zero_count = 0;
+		int				last_used;
 		gettimeofday(&now, NULL);
 		when.tv_sec = now.tv_sec + timeout / 1000;
 		when.tv_nsec = now.tv_usec + (timeout % 1000) * 1000 * 1000;
@@ -461,15 +438,6 @@ u_read_i(struct pi_socket *ps, unsigned char *buf, size_t len, int flags, int ti
 			} else
 				pthread_cond_wait (&RD_buffer_available_cond, &RD_buffer_mutex);
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
-			/*
-			if (last_used == RD_buffer_used) {
-				if (++zero_count > 5) {
-					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
-					break;
-				}
-			} else
-				zero_count = 0;
-				*/
 		} while (RD_buffer_used < len);
 
 		RD_read_size = 0;
@@ -504,5 +472,10 @@ u_read_i(struct pi_socket *ps, unsigned char *buf, size_t len, int flags, int ti
 }
 
 
-#endif
+static int
+u_control_request (pi_usb_data_t *usb_data, int request_type, int request,
+		int value, int index, void *data, int size, int timeout)
+{
+	return usb_control_msg (usb_data->ref, request_type, request, value, index, data, size, timeout);
+}
 
