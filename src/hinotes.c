@@ -20,11 +20,11 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -32,207 +32,163 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+int pilot_connect(const char *port);
+static void Help(char *progname);
+
 /* constants to determine how to produce memos */
 #define MEMO_MBOX_STDOUT 0
 #define MEMO_DIRECTORY 1
 #define MAXDIRNAMELEN 1024
 
 char *progname;
-
-void Help(void);
-int main(int argc, char *argv[]);
-void write_memo_mbox(struct HiNoteNote m, struct HiNoteAppInfo mai,
-		     int category);
+void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
+		     struct HiNoteAppInfo mai, int category);
 
 void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 			     struct HiNoteAppInfo mai, int category);
 
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"port",        required_argument, NULL, 'p'},
+	{"dirname",     required_argument, NULL, 'd'},
+	{NULL,          0,                 NULL, 0}
+};
+
+
+static const char *optstring = "hp:d:";
 
 int main(int argc, char *argv[])
 {
-	struct pi_sockaddr addr;
-	struct PilotUser U;
-	struct HiNoteAppInfo mai;
+
 	int c;
 	int db;
 	int i;
+	int sd = -1;
 	int mode = MEMO_MBOX_STDOUT;
-	int quiet = 0;
-	int ret;
-	int sd;
-	unsigned char buffer[0xffff];
 	char appblock[0xffff];
-	char *device = argv[1];
 	char dirname[MAXDIRNAMELEN] = "";
 	char *progname = argv[0];
-	extern char *optarg;
-	extern int optind;
+	char *port = NULL;
+	struct HiNoteAppInfo mai;
+	struct PilotUser User;
+	unsigned char buffer[0xffff];
 
-	PalmHeader(progname);
-
-        if (argc != 2) { 
-		Help();
-                exit(1);   
-        }
-
-
-
-	while (((c = getopt(argc, argv, "qp:d:h?")) != -1)) {
+	while (((c = getopt(argc, argv, optstring)) != -1)) {
 		switch (c) {
-		case 'q':
-			quiet = 1;
-			break;
-		case 'p':
-			/* optarg is name of port to use instead of
-			   $PILOTPORT or /dev/pilot */
-			strcpy(addr.pi_device, optarg);
-			break;
-		case 'd':
-			/* optarg is name of directory to create and store
-			   memos in */
-			strcpy(dirname, optarg);
-			mode = MEMO_DIRECTORY;
-			break;
-		case 'h':
-		case '?':
-			Help();
+		  case 'h':
+			  Help(progname);
+			  exit(0);
+		  case 'p':
+			  port = optarg;
+			  break;
+		  case 'd':
+			  /* Name of directory to create and store memos in */
+			  strncpy(dirname, optarg, sizeof(dirname));
+			  mode = MEMO_DIRECTORY;
+			  break;
+		  default:
 		}
 	}
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
-		exit(1);
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
 	}
 
-	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, device);
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
+	if (port == NULL && argc > 1) {
+		printf
+		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		     "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
 		exit(1);
-	}
+	} else if (port != NULL) {
 
-	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-	     device);
+		sd = pilot_connect(port);
 
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
+		/* Did we get a valid socket descriptor back? */
+		if (dlp_OpenConduit(sd) < 0) {
+			exit(1);
+		}
 
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			device);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
+		/* Tell user (via Palm) that we are starting things up */
+		dlp_ReadUserInfo(sd, &User);
+		dlp_OpenConduit(sd);
 
-	fprintf(stderr, "Connected...\n");
+		/* Open the Memo Pad's database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "Hi-NoteDB", &db) < 0) {
+			puts("Unable to open Hi-NoteDB");
+			dlp_AddSyncLogEntry(sd,
+					    "Unable to open Hi-NoteDB.\n");
+			exit(1);
+		}
 
-	/* Ask the palm who it is. */
-	dlp_ReadUserInfo(sd, &U);
+		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
+				 0xffff);
+		unpack_HiNoteAppInfo(&mai, (unsigned char *) appblock,
+				     0xffff);
 
-	/* Tell user (via Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
+		for (i = 0;; i++) {
+			struct HiNoteNote m;
+			int attr;
+			int category;
 
-	/* Open the Memo Pad's database, store access handle in db */
-	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "Hi-NoteDB", &db) < 0) {
-		puts("Unable to open Hi-NoteDB");
-		dlp_AddSyncLogEntry(sd, "Unable to open Hi-NoteDB.\n");
-		exit(1);
-	}
+			int len =
+			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+						  &attr,
+						  &category);
 
-	dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock, 0xffff);
-	unpack_HiNoteAppInfo(&mai, (unsigned char *) appblock, 0xffff);
+			if (len < 0)
+				break;
 
-	for (i = 0;; i++) {
-		struct HiNoteNote m;
-		int attr;
-		int category;
+			/* Skip deleted records */
+			if ((attr & dlpRecAttrDeleted)
+			    || (attr & dlpRecAttrArchived))
+				continue;
 
-		int len =
-		    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
-					  &category);
-
-		if (len < 0)
-			break;
-
-		/* Skip deleted records */
-		if ((attr & dlpRecAttrDeleted)
-		    || (attr & dlpRecAttrArchived))
-			continue;
-
-		unpack_HiNoteNote(&m, buffer, len);
-		switch (mode) {
-		case MEMO_MBOX_STDOUT:
-			write_memo_mbox(m, mai, category);
-			break;
-		case MEMO_DIRECTORY:
-			write_memo_in_directory(dirname, m, mai, category);
-			break;
+			unpack_HiNoteNote(&m, buffer, len);
+			switch (mode) {
+			  case MEMO_MBOX_STDOUT:
+				  write_memo_mbox(User, m, mai, category);
+				  break;
+			  case MEMO_DIRECTORY:
+				  write_memo_in_directory(dirname, m, mai,
+							  category);
+				  break;
+			}
 		}
 	}
 
-	/* Close the database */
+	/* Close the Hi-Note database and write out to the Palm logfile */
 	dlp_CloseDB(sd, db);
-
-	dlp_AddSyncLogEntry(sd, "Read Hi-Notes from Palm.\n");
-
+	dlp_AddSyncLogEntry(sd, "Read Hi-Notes from Palm.\nThank you for using pilot-link.\n");
+	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
-
 	return 0;
 }
 
-void Help(void)
-{
-	fprintf(stderr, "   Usage: %s [options]\n\n", TTYPrompt);
-	fprintf(stderr, "   Options:\n");
-	fprintf(stderr, "     -q          = do not prompt for HotSync button press\n");
-	fprintf(stderr, "     -p port     = use device file <port> to communicate with Palm\n");
-	fprintf(stderr, "     -d dir      = save memos in <dir> instead of writing to STDOUT\n");
-	fprintf(stderr, "     -h|-?       = print this help summary\n\n");
-	fprintf(stderr, "   By default, the contents of your Palm's memo database will be written\n");
-	fprintf(stderr, "   to standard output as a standard Unix mailbox (mbox-format) file, with\n");
-	fprintf(stderr, "   each memo as a separate message.  The subject of each message will be the\n");
-	fprintf(stderr, "   category.\n\n");
-	fprintf(stderr, "   If `-d' is specified, than instead of being written to standard output,\n");
-	fprintf(stderr, "   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n");
-	fprintf(stderr, "   name of a category on the Palm, and will contain the memos in that\n");
-	fprintf(stderr, "   category.  Each memo's filename will be the first line (up to the first\n");
-	fprintf(stderr, "   40 characters) of the memo.  Control characters, slashes, and equal\n");
-	fprintf(stderr, "   signs that would otherwise appear in filenames are converted after the\n");
-	fprintf(stderr, "   fashion of MIME's quoted-printable encoding.\n\n");
-	fprintf(stderr, "   Note that if you have two memos in the same category whose first lines\n");
-	fprintf(stderr, "   are identical, one of them will be overwritten.\n\n");
-	fprintf(stderr, "   The serial port to connect to may be specified by the $PILOTPORT environment\n");
-	fprintf(stderr, "   variable instead of by `-p' on the command line. If not specified anywhere\n");
-	fprintf(stderr, "   it will default to /dev/pilot.\n\n");
-	exit(0);
-}
 
-void write_memo_mbox(struct HiNoteNote m, struct HiNoteAppInfo mai,
-		     int category)
+void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
+		     struct HiNoteAppInfo mai, int category)
 {
 	int j;
 
-	printf("From Your.Palm Tue Oct  1 07:56:25 1996\n");
-	printf("Received: Palm@p by hi-note Tue Oct  1 07:56:25 1996\n");
-	printf("To: you@y\n");
-	printf("Date: Thu, 31 Oct 1996 23:34:38 -0500\n");
-	printf("Subject: ");
+	time_t ltime;
+	struct tm *tm_ptr;
+	char c, fromtmbuf[80], recvtmbuf[80];
 
-	/* print category name in brackets in subject field */
-	printf("[%s] ", mai.category.name[category]);
+	time(&ltime);
+	tm_ptr = localtime(&ltime);
+	c = *asctime(tm_ptr);
+
+	strftime(fromtmbuf, 80, "%a, %d %b %H:%M:%S %Y (%Z)\n", tm_ptr);
+	strftime(recvtmbuf, 80, "%d %b %H:%M:%S %Y\n", tm_ptr);
+
+	printf("From your.Palm.device %s"
+	       "Received: On your Palm by Hi-Note %s"
+	       "To: %s\n"
+	       "Date: %s"
+	       "Subject: [%s] ", fromtmbuf, recvtmbuf, User.username,
+	       fromtmbuf, mai.category.name[category]);
 
 	/* print (at least part of) first line as part of subject: */
 	for (j = 0; j < 40; j++) {
@@ -246,6 +202,7 @@ void write_memo_mbox(struct HiNoteNote m, struct HiNoteAppInfo mai,
 		printf("\n");
 	puts("");
 	puts(m.text);
+	printf("\n");
 }
 
 void write_memo_in_directory(char *dirname, struct HiNoteNote m,
@@ -257,7 +214,7 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 	FILE *fd;
 
 	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
-	mkdir(dirname, 0700);
+	mkdir(dirname, 0755);
 
 	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
 
@@ -269,7 +226,7 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 	strncat(pathbuffer, mai.category.name[category], 60);
 
 	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
-	mkdir(pathbuffer, 0700);
+	mkdir(pathbuffer, 0755);
 
 	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
 
@@ -298,12 +255,45 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 		strcat(pathbuffer, tmp);
 	}
 
-	fprintf(stderr, "Opening file %s\n", pathbuffer);
+	printf("Writing to file %s\n", pathbuffer);
 	if (!(fd = fopen(pathbuffer, "w"))) {
-		fprintf(stderr, "%s: can't open file \"%s\" for writing\n",
-			progname, pathbuffer);
+		printf("%s: can't open file \"%s\" for writing\n",
+		       progname, pathbuffer);
 		exit(1);
 	}
 	fputs(m.text, fd);
 	fclose(fd);
+}
+
+static void Help(char *progname)
+{
+	printf
+	    ("   Syncronize your HiNotes database with your desktop or server machine\n\n"
+	     "   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n"
+	     "     -p <port>      Use device file <port> to communicate with Palm\n"
+	     "     -d directory   Save memos in <dir> instead of writing to STDOUT\n"
+	     "     -h             Display this information\n\n"
+	     "   Examples: %s -p /dev/pilot -d ~/Palm\n\n"
+	     "   By default, the contents of your Palm's memo database will be written to\n"
+	     "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
+	     "   memo as a separate message.  The subject of each message will be the\n"
+	     "   category.\n\n"
+	     "   The memos will be written to STDOUT unless the '-d' option is specified.\n"
+	     "   Using '-d' will be save the memos in subdirectories of <dir>.  Each\n"
+	     "   subdirectory will contain the name of a category on the Palm where the\n"
+	     "   record was stored, and will contain the memos found in that category. \n\n"
+	     "   Each memo's filename will be the first line (up to the first 40\n"
+	     "   characters) of the memo.  Control characters, slashes, and equal signs\n"
+	     "   that would otherwise appear in filenames are converted after the fashion\n"
+	     "   of MIME's quoted-printable encoding.\n\n"
+	     "   Note that if you have two memos in the same category whose first lines\n"
+	     "   are identical, one of them will be OVERWRITTEN! This is unavoidable at\n"
+	     "   the present time, but may be fixed in a future release. Also, please note\n"
+	     "   that syncronizing Hi-Note images is not supported at this time, only text.\n\n"
+	     "   The serial port to connect to may be specified by the $PILOTPORT\n"
+	     "   environment variable instead of by -p' on the command line. If not\n"
+	     "   specified anywhere it will default to /dev/pilot.\n\n"
+	     "   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n",
+	     progname, progname);
+	return;
 }

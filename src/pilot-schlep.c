@@ -170,8 +170,6 @@ int main(int argc, char *argv[])
 			    "pilot-schlep, exited normally.\nThank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
-	exit(0);
-
 	}
 	return 0;
 }
@@ -180,13 +178,13 @@ int main(int argc, char *argv[])
 static void Help(char *progname)
 {
 	printf("   Package up any arbitrary file and sync it to your Palm device\n\n"
-	       "   Usage: %s -p <port> [options]\n"
+	       "   Usage: %s -p <port> [options]\n\n"
 	       "   Options:\n"
-	       "     -p <port>           Use device file <port> to communicate with Palm\n"
-	       "     -i < filename       Pack up and install the arbitrary file to your Palm\n"
-	       "     -f > filename       Unpack the arbitrary file from your Palm device\n"
-	       "     -d                  Delete the packaged 'Schlep' file from your Palm device\n"
-	       "     -h                  Display this information\n\n"
+	       "     -p <port>      Use device file <port> to communicate with Palm\n"
+	       "     -i < filename  Pack up and install the arbitrary file to your Palm\n"
+	       "     -f > filename  Unpack the arbitrary file from your Palm device\n"
+	       "     -d             Delete the packaged 'Schlep' file from your Palm device\n"
+	       "     -h             Display this information\n\n"
 	       "   Examples:\n"
 	       "   To package up and store a file for later retrieval on your Palm:\n"
 	       "             %s -p /dev/pilot -i < InstallThis.zip\n\n"

@@ -124,7 +124,6 @@ int main(int argc, char *argv[])
 	
 		dlp_EndOfSync(sd, 0);
 		pi_close(sd);
-		exit(0);
 	}
 	return 0;
 }
@@ -205,9 +204,9 @@ static void Help(char *progname)
 	printf("   Updates the Palm ToDo list with entries from a local file\n\n"
 	       "   Usage: %s -p <port> -f <filename>\n"
 	       "   Options:\n"
-	       "     -p <port>           Use device file <port> to communicate with Palm\n"
-	       "     -f <filename>       A local file with formatted ToDo tasklist entries\n"
-	       "     -h                  Display this information\n\n"
+	       "     -p <port>       Use device file <port> to communicate with Palm\n"
+	       "     -f <filename>   A local file with formatted ToDo tasklist entries\n"
+	       "     -h              Display this information\n\n"
 	       "   Examples: %s -p /dev/pilot -f MyTodoList.txt\n\n"
 	       "   The format of this file is a simple line-by-line ToDo task entry.\n"
 	       "   For each new line in the local file, a new task is created in the\n"

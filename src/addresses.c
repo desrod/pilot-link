@@ -37,10 +37,10 @@ int pilot_connect(const char *port);
 static void Help(char *progname);
 
 struct option options[] = {
-	{"help",     no_argument,       NULL, 'h'},
-	{"port",     required_argument, NULL, 'p'},
-	{"fancy",    no_argument,       NULL, 'f'},
-	{NULL,       0,                 NULL, 0}
+	{"help",        no_argument,       NULL, 'h'},
+	{"port",        required_argument, NULL, 'p'},
+	{"fancy",       no_argument,       NULL, 'f'},
+	{NULL,          0,                 NULL, 0}
 };
 
 static const char *optstring = "hp:f";
@@ -72,16 +72,21 @@ int main(int argc, char *argv[])
                           fancy = optarg;
 			  fstyle = 1;
                           break;
-                  case ':':
+                  default:
                 }
         }
 
-        if (port == NULL) {
+	if (argc < 2 && !getenv("PILOTPORT")) {
 		PalmHeader(progname);
-                Help(progname);
-                printf("ERROR: You forgot to specify a valid port\n");
-                exit(1);
-        } else {
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port=getenv("PILOTPORT");
+	} 
+
+	if (port == NULL && argc > 1) {
+                printf("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		       "environment variable $PILOTPORT must be if '-p' is omitted or missing.\n");
+		exit(1);
+        } else if (port != NULL) {
 		
 		sd = pilot_connect(port);
 	
@@ -124,11 +129,17 @@ int main(int argc, char *argv[])
 	
 			unpack_Address(&a, buffer, len);
 
+			/* Ignore this 'style' silliness. It was actually useful for me to 
+			   monkey around with this. The end result will be some XML output
+			   for the records at some point, though not using this verbose 
+			   mechanism.
+			 */
 			if (fstyle == 1) {
+				for(count=0;count<35;count++) printf(" ");
+				printf(".---------------.\n");
 				printf(".");
-				for(count=0;count<50;count++) printf("-");
-				printf(".\n");
-				printf("| Category     %35s |\n", aai.category.name[category]);
+				for(count=0;count<33;count++) printf("-");
+				printf("' %14s |\n", aai.category.name[category]);				
 			} else {
 				printf("Category: %s\n", aai.category.name[category]);
 			}
@@ -136,26 +147,24 @@ int main(int argc, char *argv[])
 				if (a.entry[j]) {
 					int l = j;
 	
-					if ((l >= entryPhone1) && (l <= entryPhone5))
+					if ((l >= entryPhone1) && (l <= entryPhone5)) {
 						if (fstyle == 1) {
 							printf("| %-11s: %-35s |\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[j]);
 						} else {
 							printf("%s: %s\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[j]);
 						}
-					else
+					} else {
 						if (fstyle == 1) {
-							printf("| %-11s: %-35s |\n", 
-								aai.labels[l], a.entry[j]);
+							printf("| %-11s: %-35s |\n", aai.labels[l], a.entry[j]);
 						} else {
-							printf("%s: %s\n", 
-								aai.labels[l], a.entry[j]);
+							printf("%s: %s\n", aai.labels[l], a.entry[j]);
 						}
+					}
 				}
 			}
 			if (fstyle == 1) {
-				printf("`");
-				for(count=0;count<50;count++) printf("-");
-				printf("'\n");
+				printf("|"); for(count=0;count<50;count++) printf(" "); printf("|\n");
+				printf("`._____________[  ]__________[  ]_________________.'");
 			}
 			printf("\n");
 			free_Address(&a);
@@ -173,13 +182,14 @@ int main(int argc, char *argv[])
 
 static void Help(char *progname)
 {
-        printf("   Dumps the Palm AddressDB database into a generic text output format\n\n"
-               "   Usage: %s -p <port> [options]\n"
-               "   Only the port option is required, the other options are... optional.\n\n"
-               "   -p <port>           Use device file <port> to communicate with Palm\n"
-               "   -f                  Use the new \"fancy\" index card output format\n"
-	       "   -h                  Display this information\n\n"
-               "   Example: %s -p /dev/pilot\n\n"
+	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n"
+               "   Usage: %s -p <port> [options]\n\n"
+	       "   Options:\n"
+	       "   -p <port>      Use device file <port> to communicate with Palm\n"
+	       "   -f             Use the new \"fancy\" index card output format\n"
+	       "   -h             Display this information\n\n"
+	       "   Only the port option is required, the other options are... optional.\n\n"
+	       "   Example: %s -p /dev/pilot\n\n"
 	       "   You can redirect the output of %s to a file instead of the default\n"
 	       "   STDOUT by using redirection and pipes as necessary.\n\n"
 	       "   Example: %s -p /dev/pilot -f > MyAddresses.txt\n\n", progname, progname, progname, progname);

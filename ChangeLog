@@ -1,10 +1,18 @@
 2001-11-10  David A. Desrosiers <hacker at gnu-designs dot com>
 
+	* dlpsh.c: stupid mistake, s/return 0;//
+
+	* money2qif.c: getopt(), help(), pilot_connect() updates. Does
+	  anyone still use MicroMoney? PocketQuicken supercedes it, no
+	  conduit for it yet. Josh?
+
 	* pilot-schlep.c: Carwash with a wax. Moved the functions into
 	  main().
 
 	* install-todos.c: Pulled out the excess noise in main(), cleaning
 	  house. Why doesn't this use the same format as read-todos?!
+
+	* Other random cleanups, moving things around. A recurring theme.
 
 2001-12-10  David A. Desrosiers <hacker at gnu-designs dot com>
 		

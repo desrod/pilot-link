@@ -23,7 +23,6 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-
 #include "getopt.h"
 #include <signal.h>
 #include <stdio.h>
@@ -106,15 +105,22 @@ int main(int argc, char *argv[])
 		  case 'p':
 			  port = optarg;
 			  break;
-		  case ':':
+		  default:
 		}
 	}
 
-	if (port == NULL) {
-		printf("ERROR: You forgot to specify a valid port\n\n");
-		Help(progname);
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
+	}
+
+	if (port == NULL && argc > 1) {
+		printf("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		       "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
 		exit(1);
-	} else {
+	} else if (port != NULL) {
+
 		sd = pilot_connect(port);
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
@@ -128,15 +134,15 @@ int main(int argc, char *argv[])
 			   but since we're removing PADP support, we have to find
 			   another way to do this cleanly. Maybe pilot_connect() 
 			   has to go... 
-			
+			*/			
 			pi_watchdog(sd, TICKLE_INTERVAL);
-			*/
 
 			handle_user_commands(sd);
 
 			return 0;
 		}
 	}
+	return 0;
 }
 
 /***********************************************************************
@@ -168,9 +174,8 @@ int df_fn(int sd, int argc, char *argv[])
 		printf("/dev/RAM               %7lu   %7lu     %7lu     %3ld%%     %4luk\n", 
 			Card.ramSize, (Card.ramSize - Card.ramFree), Card.ramFree, 
 			((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
-		printf("Total (ROM + RAM)     %8lu   %7lu         n/a      n/a    
-			%5luk\n\n", (Card.romSize + Card.ramSize), 
-			(Card.romSize + Card.ramSize)-Card.ramFree, 
+		printf("Total (ROM + RAM)     %8lu   %7lu         n/a      n/a    %5luk\n\n", 
+			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree, 
 			(Card.romSize + Card.ramSize)/1024);
 	}
 	return 0;
@@ -571,9 +576,8 @@ int exit_fn(int sd, int argc, char *argv[])
 	dlp_AddSyncLogEntry(sd, "dlpsh, DLP Protocol Shell ended.\nThank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
-
 	exit(0);
-	return 0;
+
 }
 
 /***********************************************************************
@@ -619,10 +623,14 @@ char *strtoke(char *str, char *ws, char *delim)
 
 static void Help(char *progname)
 {
-	PalmHeader(progname);
-	printf
-	    ("   An interactive DLP Protocol Shell for querying various\n"
-	     "   types of information from your Palm device, such as user\n"
-	     "   memory capacity, and setting the time, as well as others\n\n"
-	     "   Example: %s -p /dev/pilot\n\n", progname);
+	printf("   An interactive DLP Protocol Shell for your Palm device\n\n"
+	       "   Usage: %s -p <port>\n\n"
+	       "   Options:\n"
+	       "     -p <port>    Use device file <port> to communicate with Palm\n"
+	       "     -h           Display this information\n\n"
+	       "   dlpsh can query many different types of information from your Palm\n"
+	       "   device, such as user memory capacity, and setting the time, as well as\n"
+	       "   other useful functions. While in dlpsh, type 'help' for more options.\n\n"
+	       "   Example: %s -p /dev/pilot\n\n", progname, progname);
+	return;
 }
