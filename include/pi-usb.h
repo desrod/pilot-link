@@ -20,6 +20,7 @@ extern "C" {
 			unsigned char *buf, size_t len, int flags));
 		ssize_t (*read) PI_ARGS((pi_socket_t *ps,
 			 pi_buffer_t *buf, size_t expect, int flags));
+		int (*flush) PI_ARGS((pi_socket_t *ps, int flags));
 		int (*poll) PI_ARGS((pi_socket_t *ps, int timeout));
 
 		int (*control_request) PI_ARGS((struct pi_usb_data *usb_data,

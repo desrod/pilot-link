@@ -57,6 +57,9 @@ extern "C" {
 #define PI_SOCK_CONEN  0x10  /* Connected but end */
 #define PI_SOCK_CLOSE  0x20  /* Closed */
 
+#define PI_FLUSH_INPUT	0x01	/* for flush() */
+#define	PI_FLUSH_OUTPUT	0x02	/* for flush() */
+
 	typedef struct pi_protocol {
 		int level;
 		struct pi_protocol *(*dup)
@@ -69,6 +72,8 @@ extern "C" {
 		ssize_t	(*write)
 			PI_ARGS((pi_socket_t *ps, unsigned char *buf,
 				size_t len, int flags));
+		int (*flush)
+			PI_ARGS((pi_socket_t *ps, int flags));
 	 	int (*getsockopt)
 			PI_ARGS((pi_socket_t *ps, int level,
 				int option_name, void *option_value,
