@@ -182,7 +182,7 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	serv_addr.sin_family = AF_INET;
 	if (strlen(device) > 1) {
 		serv_addr.sin_addr.s_addr = inet_addr(device);
-		if (serv_addr.sin_addr.s_addr == INADDR_NONE) {
+		if (serv_addr.sin_addr.s_addr == -1) {
 			struct hostent *hostent = gethostbyname(device);
 		
 			if (!hostent) {
@@ -269,7 +269,7 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 	serv_addr.sin_family = AF_INET;
 	if (strlen(device) > 1 && strncmp(device, "any", 3)) {
 		serv_addr.sin_addr.s_addr = inet_addr(device);
-		if (serv_addr.sin_addr.s_addr == INADDR_NONE) {
+		if (serv_addr.sin_addr.s_addr == -1) {
 			struct hostent *hostent = gethostbyname(device);
 		
 			if (!hostent)
