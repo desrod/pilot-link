@@ -1,3 +1,19 @@
+2004-01-17 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/utils.c: Turn strdup() into priv_strdup(), so we don't
+	  have issues with broken strdup() implementations where it is
+	  detected on the system, but unusable.
+
+	* libpisock/address.c datebook.c expense.c hinote.c mail.c memo.c
+	  notepad.c pi-file.c socket.c todo.c: Update to handle the new
+	  priv_strdup() in libpisock.
+
+	* src/install-user.c: Code cleanup
+	
+	* src/install-netsync.c: Ditto
+
+	* src/pilot-wav.c: Added missing prototypes, function doc headers
+
 2004-01-05 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-archive.c: Cleaned up code, removed unused headers,
