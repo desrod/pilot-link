@@ -230,7 +230,7 @@ void output_picture( int type, struct NotePad n )
    if( n.flags & NOTEPAD_FLAG_NAME )
      sprintf( fname, "%s.%s", n.name, extension );
    else
-     sprintf( fname, "%4.4d.%s", i++, extension );
+     sprintf( fname, "%4.4d_np.%s", i++, extension );
    
    printf ("Generating %s...\n", fname);
    
