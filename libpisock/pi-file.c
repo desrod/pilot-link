@@ -347,7 +347,7 @@ pi_file_t
 		if ((pf->app_info =
 			malloc((size_t) pf->app_info_size)) == NULL)
 			goto bad;
-		fseek(pf->f, app_info_offset, SEEK_SET);
+		fseek(pf->f, (long)app_info_offset, SEEK_SET);
 		if (fread(pf->app_info, 1, (size_t) pf->app_info_size, pf->f)
 			 != (size_t) pf->app_info_size)
 			goto bad;
@@ -359,7 +359,7 @@ pi_file_t
 		if ((pf->sort_info = malloc((size_t)pf->sort_info_size))
 			 == NULL)
 			goto bad;
-		fseek(pf->f, sort_info_offset, SEEK_SET);
+		fseek(pf->f, (long)sort_info_offset, SEEK_SET);
 		if (fread(pf->sort_info, 1, (size_t) pf->sort_info_size,
 			 pf->f) != (size_t) pf->sort_info_size)
 			goto bad;
@@ -1167,7 +1167,7 @@ pi_file_close_for_write(pi_file_t *pf)
 	rewind(pf->tmpf);
 	do {
 		c = fread (buf, 1, sizeof (buf), pf->tmpf);
-		fwrite (buf, 1, c, f);
+		fwrite (buf, 1, (size_t)c, f);
 	} while (c == sizeof (buf));
 	fflush(f);
 
@@ -1230,7 +1230,7 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 		goto fail;
 	}
 
-	result = dlp_ReadAppBlock(socket, db, 0, buffer->data, buffer->allocated);
+	result = dlp_ReadAppBlock(socket, db, 0, buffer->data, DLP_BUF_SIZE);
 	if (result > 0) {
 		pi_file_set_app_info(pf, buffer->data, (size_t)result);
 		written = result;
@@ -1365,7 +1365,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 	   to avoid messing the device up if we have to fail. */
 	total_size = pf->app_info_size;
 	for (j = 0; j < pf->nentries; j++) {
-		int result =  (pf->info.flags & dlpDBFlagResource) ?
+		result =  (pf->info.flags & dlpDBFlagResource) ?
 			pi_file_read_resource(pf, j, 0, &size, 0, 0) :
 			pi_file_read_record(pf, j, 0, &size, 0, 0, 0);
 		if (result < 0) {
@@ -1488,8 +1488,8 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 			free(buffer);
 
 		if (report_progress
-			&& report_progress(socket, pf, total_size,
-				l, 0) == PI_TRANSFER_STOP) {
+			&& report_progress(socket, pf, (int)total_size,
+				(int)l, 0) == PI_TRANSFER_STOP) {
 			result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 			goto fail;
 		}
@@ -1516,8 +1516,8 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 			l += size;
 
 			if (report_progress
-				&& report_progress(socket, pf, total_size,
-					l, j) == PI_TRANSFER_STOP) {
+				&& report_progress(socket, pf, (int)total_size,
+					(int)l, (int)j) == PI_TRANSFER_STOP) {
 				result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 				goto fail;
 			}
@@ -1550,8 +1550,8 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 			l += size;
 
 			if (report_progress
-				&& report_progress(socket, pf, total_size,
-					l, j) == PI_TRANSFER_STOP) {
+				&& report_progress(socket, pf, (int)total_size,
+					(int)l, (int)j) == PI_TRANSFER_STOP) {
 				result = pi_set_error(socket, PI_ERR_FILE_ABORTED);
 				goto fail;
 			}
