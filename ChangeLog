@@ -1,3 +1,15 @@
+2000-12-08  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_record): When pilot record is archived and
+	changed and the desktop record is changed and the changes are not
+	identical, make sure the pilot record to be archived gets a new
+	pilot id so it is not overwritten by store_record_on_pilot
+
+2000-12-07  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_record): When the pilot record is archived
+	the desktop record is deleted, make sure to archive the record.
+	
 2000-12-07  JP Rosevear  <jpr@helixcode.com>
 
 	* libsock/sync.c (sync_record): When the pilot record is changed and

@@ -138,7 +138,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		
 	} else if (parch && ddel) {
 		DesktopCheck (sh->ReplaceRecord (sh, drecord, precord));
-		DesktopCheck (sh->ArchiveRecord (sh, drecord, 0));
+		DesktopCheck (sh->ArchiveRecord (sh, drecord, 1));
 		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (parch && !darch && !dchange) {
@@ -157,11 +157,11 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 			PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
 			DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		} else {
-			PilotCheck (dlp_WriteRecord (sh->sd, dbhandle, 0, precord->recID, 
+			PilotCheck (dlp_WriteRecord (sh->sd, dbhandle, 0, 0, 
 						     precord->catID, precord->buffer,
-						     precord->len, NULL));
-			DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+						     precord->len, &precord->recID));
 			DesktopCheck (sh->AddRecord (sh, precord));
+			DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
 			DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		}
 		
