@@ -35,7 +35,7 @@
 #include "pi-header.h"
 #include "pi-palmpix.h"
 
-#include "popt.h"
+#include "userland.h"
 
 #ifdef HAVE_PNG
 #include "png.h"
@@ -259,45 +259,6 @@ void write_png( FILE *f, const struct PalmPixState *state,
 #endif
 
 
-/***********************************************************************
- *
- * Function:    protect_files
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-int protect_files(char *name, char *extension)
-{
-	char *save_name, c = 1;
-
-	save_name = strdup( name );
-
-	if( NULL == save_name ) {
-		printf( "Failed to generate filename %s%s\n", name, extension );
-		return( 0 );
-	}
-
-	sprintf( name, "%s%s", save_name, extension );
-
-	while( access( name, F_OK ) == 0 ) {
-		sprintf( name, "%s_%02d%s", save_name, c, extension );
-		c++;
-
-		if( c == 'z' + 1 )
-			c = 'A';
-
-		if( c == 'Z' + 1 ) {
-			printf( "Failed to generate filename %s\n", name );
-			return( 0 );
-		}
-	}
-	free( save_name );
-	return( 1 );
-}
 
 
 /***********************************************************************
@@ -353,11 +314,15 @@ static int write_one (const struct PalmPixHeader *header,
 static int write_all (const struct PalmPixHeader *header,
 	struct PalmPixState *state, int recno, const char *ignored)
 {
-	init_for_ppm (state);
-	if (unpack_PalmPix (state, header, recno, pixName | pixPixmap) != 0) {
-
 	char fname[FILENAME_MAX], ext[10];
 	FILE *f;
+
+	init_for_ppm (state);
+	if (!unpack_PalmPix (state, header, recno, pixName | pixPixmap)) {
+		/* bail */
+		return recno;
+	}
+
 
 	sprintf( fname, "%s", state->pixname );
 
@@ -367,7 +332,9 @@ static int write_all (const struct PalmPixHeader *header,
 	else if( state->output_type == PALMPIX_OUT_PNG )
 		sprintf( ext, "_pp.png" );
 
-	protect_files( fname, ext );
+	if (plu_protect_files( fname, ext, sizeof(fname) ) < 1) {
+		return recno;
+	}
 
 	printf ("Generating %s...\n", fname);
 
@@ -383,13 +350,14 @@ static int write_all (const struct PalmPixHeader *header,
 			write_ppm (f, state, header);
 #endif
 			fclose (f);
-	} else
+	} else {
 		fprintf (stderr, "%s: can't write to %s\n",
 			progname, fname);
+	}
 
 		free_PalmPix_data (state);
 		recno = state->highest_recno;
-	}
+
 	return recno;
 }
 
@@ -486,7 +454,7 @@ static void display_help(const char *progname)
 }
 
 
-int main (int argc, char **argv) {
+int main (int argc, const char **argv) {
 	int 	c, 	/* switch */
 	sd	= -1,
 	output_type = PALMPIX_OUT_PPM,

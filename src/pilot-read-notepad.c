@@ -293,55 +293,6 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
 
 }
 
-
-/***********************************************************************
- *
- * Function:    protect_files
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Return:      Nothing
- *
- ***********************************************************************/
-int protect_files( char *name, char *extension )
-{
-   char *save_name,
-	c = 1;
-
-   save_name = strdup( name );
-
-   if( NULL == save_name )
-     {
-	printf( "Failed to generate filename %s%s\n", name, extension );
-	return( 0 );
-     }
-
-   sprintf( name, "%s%s", save_name, extension );
-
-   while( access( name, F_OK ) == 0 )
-     {
-	sprintf( name, "%s_%02d%s", save_name, c, extension );
-
-	c++;
-
-	if( c == 'z' + 1 )
-	  c = 'A';
-
-	if( c == 'Z' + 1 )
-	  {
-	     printf( "Failed to generate filename %s\n", name );
-	     return( 0 );
-	  }
-     }
-
-   free( save_name );
-
-   return( 1 );
-}
-
-
 /***********************************************************************
  *
  * Function:    output_picture
@@ -382,7 +333,9 @@ void output_picture( int type, struct NotePad n )
 	sprintf( fname, "%4.4d", i++ );
      }
 
-   protect_files( fname, extension );
+	if (plu_protect_files( fname, extension, sizeof(fname) ) < 1) {
+		goto cleanup;
+	}
 
    printf ("Generating %s...\n", fname);
 
@@ -421,10 +374,12 @@ void output_picture( int type, struct NotePad n )
 	fclose (f);
 
      }
-   else
-     fprintf (stderr, "Can't write to %s\n", fname);
+	else {
+		fprintf (stderr, "Can't write to %s\n", fname);
+	}
 
-   free_NotePad( &n );
+cleanup:
+	free_NotePad( &n );
 }
 
 

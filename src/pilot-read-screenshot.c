@@ -56,53 +56,6 @@ struct ss_state {
 };
 
 
-/***********************************************************************
- *
- * Function:	protect_files
- *
- * Summary:	  Adjust output file name so as to not overwrite an exsisting
- *				  file
- *
- * Parameters:  filename and file extension
- *
- * Returns:	  1 file name protected
- *				  0 no alernate name found
- *
- ***********************************************************************/
-int protect_files (char *name, char *extension)
-{
-	char *save_name, c = 1;
-
-	save_name = strdup (name);
-
-	if (NULL == save_name)
-	{
-		printf ("Failed to generate filename %s%s\n", name, extension);
-		return (0);
-	}
-
-	sprintf (name, "%s%s", save_name, extension);
-
-	while (access (name, F_OK) == 0)
-	{
-		sprintf (name, "%s_%02d%s", save_name, c, extension);
-
-		c++;
-
-		if (c == 'z' + 1)
-		  c = 'A';
-
-		if (c == 'Z' + 1)
-		{
-			printf ("Failed to generate filename %s\n", name);
-			return (0);
-		}
-	}
-
-	free (save_name);
-
-	return (1);
-}
 
 #define max(a,b) (( a > b ) ? a : b )
 #define min(a,b) (( a < b ) ? a : b )
@@ -338,7 +291,9 @@ void WritePictures (int sd, int db, int type )
 
 			sprintf (fname, "ScreenShot%d", ++imgNum );
 
-			protect_files (fname, extension);
+			if (plu_protect_files (fname, extension, sizeof(fname)) < 1) {
+				goto cleanup;
+			}
 
 			printf ("Generating %s...\n", fname);
 			fprintf( stderr, "height: %d width: %d records: %d bit depth: %d\n"
@@ -404,6 +359,7 @@ void WritePictures (int sd, int db, int type )
 				write_png( fname, &state );
 			#endif
 
+cleanup:
 			pi_buffer_free (pixelBuf);
 			//	  free( pixelBuf );
 			free( state.pix_map );
