@@ -505,12 +505,11 @@ static int s_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		if (flags == PI_MSG_PEEK && len > 256)
 			len = 256;
 		rbuf = read(ps->sd, buf, len);
-		if (flags == PI_MSG_PEEK) {
+		if (rbuf > 0 && flags == PI_MSG_PEEK) {
 			memcpy(data->buf, buf, rbuf);
 			data->buf_size = rbuf;
 		}
 	} else {
-		/* otherwise throw out any current packet and return */
 		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Unix Serial timeout\n");
 		data->rx_errors++;
 		errno = ETIMEDOUT;
