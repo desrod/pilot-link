@@ -81,7 +81,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:b:u:s:r:i:m:f:d:e:P:lLa:FOIqc";
+static const char *optstring = "-hvp:b:u:s:r:i:m:f:d:e:P:lLa:FOIqc";
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -974,7 +974,8 @@ int main(int argc, char *argv[])
 	 	do_rom 		= 0,
 		do_unsaved 	= 0,
 		timespent 	= 0,
-		quiet 		= 0;
+		quiet 		= 0,
+		last_c          = 0;
 
         time_t 	start,end;
 	
@@ -986,6 +987,13 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 
+		/* This means a field is unknown, could be multiple arg */
+		case 1:
+			if (last_c=='i') {
+				Install(optarg);
+			}
+			/* else { Unknown param, let it go by quietly } */
+			break;
 		case 'h':
 			Help(progname);
 			return 0;
@@ -1049,6 +1057,9 @@ int main(int argc, char *argv[])
 		case 'c':
 			quiet = 1;
 			break;
+		}
+		if (c > 1) {
+			last_c=c;
 		}
 	}
 
