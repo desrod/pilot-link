@@ -72,8 +72,10 @@ typedef struct {
 
 typedef enum {
   palm_op_noop = 0,
-  palm_op_restore,
+  palm_op_restore = 277, /* keep rest out of ASCII range */
   palm_op_backup,
+  palm_op_update,
+  palm_op_sync,
   palm_op_install,
   palm_op_merge,
   palm_op_fetch,
@@ -81,13 +83,9 @@ typedef enum {
   palm_op_list
 } palm_op_t;
 
-int 	sd 	= 0;
-char    *port 	= NULL;
-char    *vfsdir = NULL;
-
-#define MAXEXCLUDE 100
-char 	*exclude[MAXEXCLUDE];
-int 	numexclude = 0;
+/* Flags specifying various bits of behavior. Should be
+   different from the palm_ops and non-ASCII if they can
+   be set explicitly from the command-line. */
 
 #define BACKUP      (0x0001)
 #define UPDATE      (0x0002)
@@ -101,6 +99,22 @@ int 	numexclude = 0;
 
 #define MIXIN_MASK  (0xf000)
 #define PURGE       (0x1000)
+
+/* Need a marker for deprecated options, must be different from the
+   palm_op_* enums and the MEDIA_ defines. */
+
+#define DEPRECATED_OPTION	(17722)
+
+
+
+int 	sd 	= 0;
+char    *port 	= NULL;
+char    *vfsdir = NULL;
+
+#define MAXEXCLUDE 100
+char 	*exclude[MAXEXCLUDE];
+int 	numexclude = 0;
+
 
 
 static int findVFSPath(int verbose, const char *path, long *volume,
@@ -1666,48 +1680,20 @@ static void palm_purge(void)
  ***********************************************************************/
 
 
-static void set_operation(int opt, palm_op_t *op, unsigned long int *flags)
+static void add_popt_alias(poptContext pc,
+	const char *alias_long,
+	char alias_short,
+	const char *expansion)
 {
-	switch(opt) {
-	case 'b' :
-		*op = palm_op_backup;
-		*flags = BACKUP;
-		break;
-	case 'u' :
-		*op = palm_op_backup;
-		*flags = UPDATE;
-		break;
-	case 's' :
-		*op = palm_op_backup;
-		*flags = UPDATE | SYNC;
-		break;
-	case 'r' :
-		*op = palm_op_restore;
-		break;
-	case 'i' :
-		*op = palm_op_install;
-		break;
-	case 'm' :
-		*op = palm_op_merge;
-		break;
-	case 'f' :
-		*op = palm_op_fetch;
-		break;
-	case 'd' :
-		*op = palm_op_delete;
-		break;
-	case 'l' :
-		*op = palm_op_list;
-		*flags |= MEDIA_RAM;
-		break;
-	case 'L' :
-		*op = palm_op_list;
-		*flags |= MEDIA_ROM;
-		break;
-	default:
-		fprintf(stderr,"   ERROR: unknown operation %c.\n",opt);
-		exit(1);
-	}
+	struct poptAlias alias = {
+		alias_long,
+		alias_short,
+		0,
+		NULL
+	} ;
+
+	poptParseArgvString(expansion,&alias.argc,&alias.argv);
+	poptAddAlias(pc,alias,0);
 }
 
 
@@ -1719,11 +1705,11 @@ int main(int argc, const char *argv[])
                 verbose         = 0;
 
 	const char
-                *archive_dir    = NULL, 
+                *archive_dir    = NULL,
                 *dirname        = NULL,
                 *progname       = argv[0];
 
-	unsigned long int sync_flags = palm_op_backup;
+	unsigned long int sync_flags = 0;
 	palm_op_t palm_operation     = palm_op_noop;
 
 	const char *gracias = "   Thank you for using pilot-link.\n";
@@ -1738,20 +1724,19 @@ int main(int argc, const char *argv[])
 		{"verbose",  'V', POPT_ARG_NONE, &verbose, 0, "Print  verbose  information - normally routine progress messages will be displayed.", NULL},
 
 		/* action indicators that take a <dir> argument */
-		{"backup",   'b', POPT_ARG_STRING, &dirname, 'b', "Back up your Palm to <dir>", "dir"},
-		{"update",   'u', POPT_ARG_STRING, &dirname, 'u', "Update <dir> with newer Palm data", "dir"},
-		{"sync",     's', POPT_ARG_STRING, &dirname, 's', "Same as -u option, but removes local files if data is removed from your Palm", "dir"},
-		{"restore",  'r', POPT_ARG_STRING, &dirname, 'r', "Restore backupdir <dir> to your Palm", "dir"},
+		{"backup",   'b', POPT_ARG_STRING, &dirname, palm_op_backup, "Back up your Palm to <dir>", "dir"},
+		{"update",   'u', POPT_ARG_STRING, &dirname, palm_op_update, "Update <dir> with newer Palm data", "dir"},
+		{"sync",     's', POPT_ARG_STRING, &dirname, palm_op_sync, "Same as -u option, but removes local files if data is removed from your Palm", "dir"},
+		{"restore",  'r', POPT_ARG_STRING, &dirname, palm_op_restore, "Restore backupdir <dir> to your Palm", "dir"},
 
 		/* action indicators that take no argument, but eat the remaining command-line arguments. */
-		{"install",  'i', POPT_ARG_NONE, NULL, 'i', "Install local prc, pdb, pqa files to your Palm", "file"},
-		{"fetch",    'f', POPT_ARG_NONE, NULL, 'f', "Retrieve [db] from your Palm", "db"},
-		{"merge",    'm', POPT_ARG_NONE, NULL, 'm', "Adds the records in <file> into the corresponding Palm database", "file"},
-		{"delete",   'd', POPT_ARG_NONE, NULL, 'd', "Delete (permanently) [db] from your Palm", "db"},
+		{"install",  'i', POPT_ARG_NONE, NULL, palm_op_install, "Install local prc, pdb, pqa files to your Palm", NULL},
+		{"fetch",    'f', POPT_ARG_NONE, NULL, palm_op_fetch, "Retrieve databases from your Palm", NULL},
+		{"merge",    'm', POPT_ARG_NONE, NULL, palm_op_merge, "Adds records from local files into the corresponding Palm databases", NULL},
+		{"delete",   'd', POPT_ARG_NONE, NULL, palm_op_delete, "Delete (permanently) databases from your Palm", NULL},
 
 		/* action indicators that take no arguments. */
-		{"list",     'l', POPT_ARG_NONE, NULL, 'l', "List all application and 3rd party Palm data/apps", NULL},
-		{"Listall",  'L', POPT_ARG_NONE, NULL, 'L', "List all data, internal and external on the Palm", NULL},
+		{"list",     'l', POPT_ARG_NONE, NULL, palm_op_list, "List all application and 3rd party Palm data/apps", NULL},
 
 		/* action indicators that may be mixed in with the others */
 		{"Purge",    'P', POPT_BIT_SET, &sync_flags, PURGE, "Purge any deleted data that hasn't been cleaned up", NULL},
@@ -1759,13 +1744,14 @@ int main(int argc, const char *argv[])
 		/* modifiers for the various actions */
 		{"archive",  'a', POPT_ARG_STRING, &archive_dir, 0, "Modifies -s to archive deleted files in directory <dir>", "dir"},
 		{"exclude",  'e', POPT_ARG_STRING, NULL, 'e', "Exclude databases listed in <file> from being included", "file"},
-		{"vfsdir",   'D', POPT_ARG_STRING, &vfsdir, 'D', "Modifies all of -lLi to use VFS <dir> instead of internal storage", "dir"},
-		{"Flash",    'F', POPT_BIT_SET, &sync_flags, MEDIA_FLASH, "Modifies -b, -u, and -s, to back up non-OS dbs from Flash ROM", NULL},
-		{"OsFlash",  'O', POPT_BIT_SET, &sync_flags, MEDIA_ROM, "Modifies -b, -u, and -s, to back up OS dbs from Flash ROM", NULL},
-		{"Illegal",  'I', POPT_ARG_NONE, &unsaved, 0, "Modifies -b, -u, and -s, to back up the illegal database Unsaved Preferences.prc (normally skipped)", NULL},
+		{"vfsdir",   'D', POPT_ARG_STRING, &vfsdir, MEDIA_VFS, "Modifies -li to use VFS <dir> instead of internal storage", "dir"},
+		{"rom",       0 , POPT_ARG_NONE, NULL, MEDIA_FLASH, "Modifies -b, -u, and -s, to back up non-OS dbs from Flash ROM", NULL},
+		{"with-os",   0 , POPT_ARG_NONE, NULL, MEDIA_ROM, "Modifies -b, -u, and -s, to back up OS dbs from Flash ROM", NULL},
+		{"illegal",   0 , POPT_ARG_NONE, &unsaved, 0, "Modifies -b, -u, and -s, to back up the illegal database Unsaved Preferences.prc (normally skipped)", NULL},
 
 		/* misc */
-		{"exec", 'x', POPT_ARG_STRING, NULL, 'x', "Execute a shell command for intermediate processing", "command"},
+		{"exec",     'x', POPT_ARG_STRING, NULL, 'x', "Execute a shell command for intermediate processing", "command"},
+		{"booger",    0 , POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, DEPRECATED_OPTION, NULL, NULL},
 		POPT_AUTOHELP
 		POPT_TABLEEND
 	};
@@ -1774,19 +1760,21 @@ int main(int argc, const char *argv[])
 		" [-p  <port>] [--help] <options> <actions>\n"
 		"   Sync, backup, install, delete and more from your Palm device.\n"
 		"   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
-		"   Use exactly one of -brsudfimlL; mix in -aexDFIOPV.\n\n";
-
-	const char *listalias = "--List";
-
-	/* Backwards compatibility */
-	struct poptAlias listall_alias = {
-		"List", '\0', 0, &listalias
-	};
+		"   Use exactly one of -brsudfiml; mix in -aexDPV, --rom and --with-os.\n\n";
 
 	pc = poptGetContext("pilot-xfer", argc, argv, options, 0);
 
 	poptSetOtherOptionHelp(pc, help_header_text);
-	poptAddAlias(pc, listall_alias, 0);
+	/* can't alias both short and long in one go, hence "dupes" */
+	add_popt_alias(pc,"List",0,"--booger --list --rom");
+	add_popt_alias(pc,"Listall",0,"--booger --list --rom");
+	add_popt_alias(pc,NULL,'L',"--booger --list --rom");
+	add_popt_alias(pc,"Flash",0,"--booger --rom");
+	add_popt_alias(pc,NULL,'F',"--booger --rom");
+	add_popt_alias(pc,"OsFlash", 0,"--booger --with-os");
+	add_popt_alias(pc,NULL, 'O',"--booger --with-os");
+	add_popt_alias(pc,"Illegal", 0,"--booger --illegal");
+	add_popt_alias(pc,NULL, 'I',"--booger --illegal");
 
 	poptSetOtherOptionHelp(pc, help_header_text);
 	while ((optc = poptGetNextOpt(pc)) >= 0) {
@@ -1797,39 +1785,32 @@ int main(int argc, const char *argv[])
 
 		/* Actions with a dir argument */
 
-		case 'b':
-		case 'u':
-		case 's':
-		case 'r':
+		case palm_op_backup:
+		case palm_op_update:
+		case palm_op_sync:
+		case palm_op_restore:
+		case palm_op_install:
+		case palm_op_merge:
+		case palm_op_fetch:
+		case palm_op_delete:
+		case palm_op_list:
 			if (palm_op_noop != palm_operation) {
 				fprintf(stderr,"   ERROR: specify only one of -brsuimfdlL.\n");
 				return 1;
 			}
-			set_operation(optc,&palm_operation,&sync_flags);
-			if (verbose)
-				printf("Option -%c with value: %s\n", optc, dirname);
-			break;
-
-
-		/* Actions without an argument */
-
-		case 'i':
-		case 'm':
-		case 'f':
-		case 'd':
-		case 'l':
-		case 'L':
-			if (palm_op_noop != palm_operation) {
-				fprintf(stderr,"   ERROR: specify only one of -brsuimfdlL.\n");
-				return 1;
-			}
-			set_operation(optc,&palm_operation,&sync_flags);
+			palm_operation = optc;
 			break;
 
 		/* Modifiers */
 
-		case 'D':
-			sync_flags |= MEDIA_VFS;
+		case MEDIA_VFS:
+		case MEDIA_ROM:
+		case MEDIA_FLASH:
+			if ((sync_flags & MEDIA_MASK) != 0) {
+				fprintf(stderr,"   ERROR: specify only one media type (-DFO).\n");
+				return 1;
+			}
+			sync_flags |= optc;
 			break;
 
 		/* Misc */
@@ -1842,6 +1823,13 @@ int main(int argc, const char *argv[])
 				fprintf(stderr,"   ERROR: system() failed, aborting.\n");
 				return -1;
 			}
+			break;
+		case DEPRECATED_OPTION :
+			fprintf(stderr,"   WARNING: You are using a deprecated option. Use the following instead:\n"
+				"       --rom instead of -F, --Flash\n"
+				"       --with-os instead of -O, --OsFlash\n"
+				"       --illegal instead of -I, --Illegal\n"
+				"       --list --rom instead of -L, --List, --Listall\n\n");
 			break;
 		default:
 			/* popt handles all other arguments internally by
@@ -1875,46 +1863,17 @@ int main(int argc, const char *argv[])
 	}
 
 	/* sanity checking */
-	switch(sync_flags & MEDIA_MASK) {
-	case MEDIA_RAM:
-	case MEDIA_ROM:
-	case MEDIA_FLASH:
-	case MEDIA_VFS:
-		/* These are all clearly OK */
-		break;
-	default:
-		/* VFS can be combined with -l or -L, both of which set the
-		   media type (a bad idea, IMO), so let VFS override. */
-		if ((palm_op_list == palm_operation) &&
-			(sync_flags & MEDIA_VFS)) {
-			sync_flags &= ~(MEDIA_MASK);
-			sync_flags |= MEDIA_VFS;
-		}
-		else {
-			char media_names[64];
-			memset(media_names,0,sizeof(media_names));
-			if (sync_flags & MEDIA_ROM) {
-				strncat(media_names,media_name(MEDIA_ROM),sizeof(media_names));
-				strncat(media_names,", ",sizeof(media_names));
-			}
-			if (sync_flags & MEDIA_FLASH) {
-				strncat(media_names,media_name(MEDIA_FLASH),sizeof(media_names));
-				strncat(media_names,", ",sizeof(media_names));
-			}
-			if (sync_flags & MEDIA_VFS) {
-				strncat(media_names,media_name(MEDIA_VFS),sizeof(media_names));
-			}
-
-			fprintf(stderr,"   ERROR: Combining media types %s not supported.\n",media_names);
-			return 1;
-		}
-		break;
-	}
 
 	switch(palm_operation) {
 		struct stat sbuf;
 	case palm_op_backup:
 	case palm_op_restore:
+	case palm_op_update:
+	case palm_op_sync:
+		if (sync_flags & MEDIA_VFS) {
+			fprintf(stderr,"   ERROR: Cannot combine -burs with VFS (-D).\n\n");
+			return 1;
+		}
 		if (stat (dirname, &sbuf) == 0) {
 			if (!S_ISDIR (sbuf.st_mode)) {
 				fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
@@ -1934,7 +1893,7 @@ int main(int argc, const char *argv[])
 		}
 		break;
 	case palm_op_noop:
-		fprintf(stderr,"   ERROR: Must specify one of -bursimfdlL.\n");
+		fprintf(stderr,"   ERROR: Must specify one of -bursimfdl.\n");
 		fprintf(stderr,gracias);
 		return 1;
 		break;
@@ -1947,8 +1906,8 @@ int main(int argc, const char *argv[])
 			return 1;
 		}
 		if ((MEDIA_VFS == (sync_flags & MEDIA_VFS)) &&
-			(palm_op_merge == palm_operation)) {
-			fprintf(stderr,"   ERROR: cannot merge to VFS.\n");
+			(palm_op_install != palm_operation)) {
+			fprintf(stderr,"   ERROR: cannot merge, fetch or delete with VFS.\n");
 			return 1;
 		}
 		break;
@@ -1961,6 +1920,11 @@ int main(int argc, const char *argv[])
 		exit(1);
 		break;
 	case palm_op_backup:
+	case palm_op_update:
+	case palm_op_sync:
+		if (palm_op_backup == palm_operation) sync_flags |= BACKUP;
+		if (palm_op_update == palm_operation) sync_flags |= UPDATE;
+		if (palm_op_sync == palm_operation) sync_flags |= UPDATE | SYNC;
 		palm_backup(dirname, sync_flags, unsaved, archive_dir);
 		break;
 	case palm_op_restore:
