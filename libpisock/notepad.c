@@ -138,8 +138,6 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
 	if( (strlen( a->name ) + 1)%2 == 1)
 	  buffer++;
 	
-/*	if( len%2 == 1 )
-	  len++; */
      }
    else 
      {
@@ -162,13 +160,13 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
 	a->body.l1 = get_long( buffer );
 	buffer += 4;
    
-	a->body.l2 = get_long( buffer );
+	a->body.dataType = get_long( buffer );
 	buffer += 4;
 
 	a->body.dataLen = get_long( buffer );
 	buffer += 4;
    
-	a->data = malloc( a->body.dataLen/2 * sizeof( dataRec_t ));
+	a->data = malloc( a->body.dataLen );
 
 	if( a->data == NULL )
 	  {
@@ -176,14 +174,7 @@ int unpack_NotePad(struct NotePad *a, unsigned char *buffer, int len)
 	     return( 0 );
 	  }
 	     
-	for( i=0; i<a->body.dataLen/2; i++ )
-	  {
-	     if( buffer - start >= len )
-	       printf( " Bad len data:0x%x  i:%d  rec:%d  cur:%d\n", a->body.dataLen, i, len, buffer - start );
-
-	     a->data[i].repeat = get_byte( buffer++ );
-	     a->data[i].data   = get_byte( buffer++ );
-	  }
+	memcpy( a->data, buffer, a->body.dataLen );
 
      }
    
