@@ -45,7 +45,7 @@ extern int usetk;
 
 #include <tk.h>
 #else
-#include "/usr/local/include/tcl.h"
+#include <tcl.h>
 #endif
 
 #ifndef TCL_ACTIVE
