@@ -1210,21 +1210,23 @@ int
 pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	progress_func report_progress)
 {
-	int 	db,
+	int 	db = -1,
 		l,
 		j,
 		written 	= 0,
 		total_size,
 		nrec		= -1;
-	pi_buffer_t *buffer;
+	pi_buffer_t *buffer = NULL;
 
 	if (dlp_OpenDB (socket, cardno, dlpOpenRead | dlpOpenSecret, pf->info.name, &db) < 0)
-		return -1;
+		goto fail;
 
 	if (report_progress) {
 		struct DBSizeInfo size_info;
-		if (dlp_FindDBByName(socket, cardno, pf->info.name, NULL, NULL, NULL, &size_info) < 0)
-			return -1;
+		
+		if (dlp_FindDBByName(socket, cardno, pf->info.name, NULL, NULL,
+				NULL, &size_info) < 0)
+			goto fail;
 		total_size = size_info.totalBytes + size_info.appBlockSize;
 		nrec = size_info.numRecords;
 	}
@@ -1232,22 +1234,22 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	buffer = pi_buffer_new (DLP_BUF_SIZE);
 	if (buffer == NULL) {
 		errno = ENOMEM;
-		return -1;
+		goto fail;
 	}
 
 	l = dlp_ReadAppBlock(socket, db, 0, buffer->data, buffer->allocated);
 	if (l > 0) {
 		pi_file_set_app_info(pf, buffer->data, (size_t)l);
 		written = l;
-		if (report_progress)
-			report_progress(socket, pf, total_size, written, 0);
+		if (report_progress
+			&& report_progress(socket, pf, total_size, 
+				written, 0) == PI_TRANSFER_STOP)
+			goto fail;
 	}
 
 	if (nrec < 0) {
-		if (dlp_ReadOpenDBInfo(socket, db, &nrec) < 0) {
-			pi_buffer_free (buffer);
-			return -1;
-		}
+		if (dlp_ReadOpenDBInfo(socket, db, &nrec) < 0)
+			goto fail;
 	}
 
 	if (pf->info.flags & dlpDBFlagResource) {
@@ -1255,35 +1257,34 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 			int 	id;
 			unsigned long type;
 
-			if (dlp_ReadResourceByIndex(socket, db, j, buffer, &type, &id) < 0
-			    || pi_file_append_resource (pf, buffer->data, buffer->used, type, id) < 0) {
-				dlp_CloseDB(socket, db);
-				pi_buffer_free (buffer);
-				return -1;
-			}
-			
+			if (dlp_ReadResourceByIndex(socket, db, j, buffer, &type, &id) < 0)
+				goto fail;
+			if (pi_file_append_resource (pf, buffer->data, buffer->used,
+					type, id) < 0)
+				goto fail;
+
 			written += buffer->used;
 
-			if (report_progress)
-				report_progress(socket, pf, total_size, written, j+1);
+			if (report_progress
+				&& report_progress(socket, pf, total_size,
+					written, j+1) == PI_TRANSFER_STOP)
+				goto fail;
 		}
 	} else for (j = 0; j < nrec; j++) {
 		int 	attr,
 			category;
 		unsigned long id;
 
-		if (dlp_ReadRecordByIndex
-		     (socket, db, j, buffer, &id, &attr,
-		      &category) < 0) {
-			dlp_CloseDB(socket, db);
-			pi_buffer_free (buffer);
-			return -1;
-		}
+		if (dlp_ReadRecordByIndex(socket, db, j, buffer, &id, &attr,
+				&category) < 0)
+			goto fail;
 
 		written += buffer->used;
 
-		if (report_progress)
-			report_progress(socket, pf, total_size, written, j+1);
+		if (report_progress
+			&& report_progress(socket, pf, total_size,
+				written, j+1) == PI_TRANSFER_STOP)
+			goto fail;
 
 		/* There is no way to restore records with these
 		   attributes, so there is no use in backing them up
@@ -1291,15 +1292,19 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 		if (attr &
 		    (dlpRecAttrArchived | dlpRecAttrDeleted))
 			continue;
-		if (pi_file_append_record
-		    (pf, buffer->data, buffer->used, attr, category, id) < 0) {
-			dlp_CloseDB(socket, db);
-			pi_buffer_free (buffer);
-			return -1;
-		}
+		if (pi_file_append_record(pf, buffer->data, buffer->used,
+				attr, category, id) < 0)
+			goto fail;
 	}
 
 	return dlp_CloseDB(socket, db);
+
+fail:
+	if (db != -1)
+		dlp_CloseDB(socket, db);
+	if (buffer != NULL)
+		pi_buffer_free (buffer);
+	return -1;
 }
 
 
@@ -1318,7 +1323,7 @@ int
 pi_file_install(pi_file_t *pf, int socket, int cardno,
 	progress_func report_progress)
 {
-	int 	db,
+	int 	db = -1,
 		j,
 		reset 		= 0,
 		flags,
@@ -1459,8 +1464,10 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 		if (freeai)
 			free(buffer);
 
-		if (report_progress)
-			report_progress(socket, pf, total_size, l, 0);
+		if (report_progress
+			&& report_progress(socket, pf, total_size,
+				l, 0) == PI_TRANSFER_STOP)
+			goto fail;
 	}
 
 	/* Upload resources / records */
@@ -1469,23 +1476,24 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 			int 	id;
 			unsigned long type;
 
-			if (pi_file_read_resource
-				(pf, j, &buffer, &size, &type,	
-				 &id) < 0)
+			if (pi_file_read_resource(pf, j, &buffer, &size,
+					&type,	&id) < 0)
 				goto fail;
 
 			/* Skip empty resource, it cannot be installed */
 			if (size == 0)
 				continue;
 
-			if (dlp_WriteResource
-			    (socket, db, type, id, buffer, size) < 0)
+			if (dlp_WriteResource(socket, db, type, id, buffer,
+					size) < 0)
 				goto fail;
 
 			l += size;
 
-			if (report_progress)
-				report_progress(socket, pf, total_size, l, j);
+			if (report_progress
+				&& report_progress(socket, pf, total_size,
+					l, j) == PI_TRANSFER_STOP)
+				goto fail;
 			
 			/* If we see a 'boot' section, regardless of file
 			   type, require reset */
@@ -1498,9 +1506,8 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 				category;
 			unsigned long id;
 
-			if (pi_file_read_record
-			    (pf, j, &buffer, &size, &attr, &category,
-			     &id) < 0)
+			if (pi_file_read_record(pf, j, &buffer, &size, &attr,
+					&category, &id) < 0)
 				goto fail;
 
 			/* Old OS version cannot install deleted records, so
@@ -1509,15 +1516,16 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 			    && version < 0x0101)
 				continue;
 
-			if (dlp_WriteRecord
-			    (socket, db, attr, id, category, buffer, size,
-			     0) < 0)
+			if (dlp_WriteRecord(socket, db, attr, id, category, buffer,
+					size, 0) < 0)
 				goto fail;
 
 			l += size;
 
-			if (report_progress)
-				report_progress(socket, pf, total_size, l, j);
+			if (report_progress
+				&& report_progress(socket, pf, total_size,
+					l, j) == PI_TRANSFER_STOP)
+				goto fail;
 		}
 	}
 
@@ -1527,7 +1535,8 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 	return dlp_CloseDB(socket, db);
 
 fail:
-	dlp_CloseDB(socket, db);
+	if (db != -1)
+		dlp_CloseDB(socket, db);
 	dlp_DeleteDB(socket, cardno, pf->info.name);
 	/* FIXME: for proper error reporting, if there is no "last DLP error
 	   code" we should set an error code indicating that the failure
@@ -1551,7 +1560,7 @@ int
 pi_file_merge(pi_file_t *pf, int socket, int cardno,
 	progress_func report_progress)
 {
-	int 	db,
+	int 	db = -1,
 		j,
 		reset 	= 0,
 		version,
@@ -1616,8 +1625,10 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 
 			bytes_written += size;
 
-			if (report_progress)
-				report_progress(socket, pf, total_size, bytes_written, j);
+			if (report_progress
+				&& report_progress(socket, pf, total_size,
+					bytes_written, j) == PI_TRANSFER_STOP)
+				goto fail;
 
 			/* If we see a 'boot' section, regardless of file
 			   type, require reset */
@@ -1630,9 +1641,8 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 				category;
 			unsigned long id;
 
-			if (pi_file_read_record
-			    (pf, j, &buffer, &size, &attr, &category,
-			     &id) < 0)
+			if (pi_file_read_record(pf, j, &buffer, &size, &attr,
+					&category, &id) < 0)
 				goto fail;
 
 			/* Old OS version cannot install deleted records, so
@@ -1641,15 +1651,16 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 			    && version < 0x0101)
 				continue;
 
-			if (dlp_WriteRecord
-			    (socket, db, attr, 0, category, buffer, size,
-			     0) < 0)
+			if (dlp_WriteRecord(socket, db, attr, 0, category, buffer,
+					size, 0) < 0)
 				goto fail;
 
 			bytes_written += size;
 
-			if (report_progress)
-				report_progress(socket, pf, total_size, bytes_written, j);
+			if (report_progress
+				&& report_progress(socket, pf, total_size,
+					bytes_written, j) == PI_TRANSFER_STOP)
+				goto fail;
 
 		}
 	}
@@ -1660,6 +1671,7 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 	return dlp_CloseDB(socket, db);
 
 fail:
-	dlp_CloseDB(socket, db);
+	if (db != -1)
+		dlp_CloseDB(socket, db);
 	return -1;
 }

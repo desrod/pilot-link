@@ -45,10 +45,17 @@ extern "C" {
 
 	/* progress callback definition (the number of records
 	   can be obtained by looking at pf->nentries so we don't
-	   need to repeat it in the parameters) */
-	typedef void (*progress_func)(int socket, pi_file_t *pf,
+	   need to repeat it in the parameters) 
+	   Callback should return either PI_TRANSFER_STOP or
+	   PI_TRANSFER_CONTINUE
+	*/
+	typedef int (*progress_func)(int socket, pi_file_t *pf,
 		int total_bytes, int transferred_bytes,
 		int transferred_records);
+
+	#define PI_TRANSFER_STOP		0
+	#define	PI_TRANSFER_CONTINUE	1
+
 
 	/* most functions return -1 for error, 0 for ok */
 
