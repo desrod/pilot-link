@@ -297,7 +297,7 @@ int main(int argc, const char *argv[])
 			return 1;
 		}
 
-		pi_file_get_app_info(pif, (void *) &ptr, &len);
+		pi_file_get_app_info(pif, (void **) &ptr, &len);
 		pi_buffer_append(appblock, ptr, len);
 	}
 
@@ -332,7 +332,7 @@ int main(int argc, const char *argv[])
 				break;
 		} else {
 			if (pi_file_read_record
-			    (pif, index, (void *) &ptr, &len, &attr, &category,
+			    (pif, index, (void **) &ptr, &len, &attr, &category,
 			     0) < 0)
 				break;
 			memcpy(buffer->data, ptr, len);
