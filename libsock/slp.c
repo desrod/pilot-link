@@ -299,6 +299,8 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			return -1;
 		do {
 			bytes = next->read(ps, cur, expect, flags);
+			if (bytes < 0)
+				return -1;
 			total_bytes += bytes;
 			expect -= bytes;
 			cur += bytes;

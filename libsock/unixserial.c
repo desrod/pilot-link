@@ -392,6 +392,7 @@ static int s_poll(struct pi_socket *ps, int timeout)
 		/* otherwise throw out any current packet and return */
 		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV POLL Serial Unix timeout\n");
 		data->rx_errors++;
+		errno = ETIMEDOUT;
 		return -1;
 	}
 	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV POLL Serial Unix Found data on fd: %d\n", ps->sd);
@@ -499,7 +500,8 @@ static int s_read(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		/* otherwise throw out any current packet and return */
 		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Unix Serial timeout\n");
 		data->rx_errors++;
-		return 0;
+		errno = ETIMEDOUT;
+		return -1;
 	}
 	data->rx_bytes += rbuf;
 

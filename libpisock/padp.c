@@ -275,9 +275,12 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 					fl = 0;
 					break;
 				} else {
-					fprintf(stderr, "\n   Unexpected packet (possible port speed problem? out of sync packet?)\n");
+					LOG(PI_DBG_PADP, PI_DBG_LVL_ERR,
+					    "PADP TX Unexpected packet "
+					    "(possible port speed problem? "
+					    "out of sync packet?)\n");
+
 					/* Got unknown packet */
-					/* Don't consume packet */
 					errno = EIO;
 					count = -1;
 					goto done;
@@ -362,6 +365,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		}
 
 		data_len = next->read(ps, padp_buf, PI_PADP_MTU, flags);
+		if (data_len < 0)
+			return -1;
 		
 		padp.type 	= get_byte(&padp_buf[PI_PADP_OFFSET_TYPE]);
 		padp.flags 	= get_byte(&padp_buf[PI_PADP_OFFSET_FLGS]);
@@ -483,6 +488,8 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				}
 
 				data_len = next->read(ps, padp_buf, PI_SLP_MTU, flags);
+				if (data_len < 0)
+					return -1;
 
 				padp.type =
 				    get_byte(&padp_buf[PI_PADP_OFFSET_TYPE]);

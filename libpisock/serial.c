@@ -369,29 +369,30 @@ static int pi_serial_listen(struct pi_socket *ps, int backlog)
 static int
 pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
-	int 	size;
 	struct 	pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	int 	size;
 	struct 	pi_socket *accept = NULL;
 
 	/* Wait for data */
-	if (data->impl.poll(ps, ps->accept_to) < 0) {
-		errno = ETIMEDOUT;
+	if (data->impl.poll(ps, ps->accept_to) < 0)
 		goto fail;
-	}
 	
 	accept = pi_socket_copy(ps);
 	pi_socket_init(accept);
 	
 	if (ps->type == PI_SOCK_STREAM) {
+		struct 	pi_serial_data *data = (struct pi_serial_data *)accept->device->data;
 		struct timeval tv;
 
+		data->timeout = accept->accept_to * 1000;
+		
 		switch (accept->cmd) {
 		case PI_CMD_CMP:
 			if (cmp_rx_handshake(accept, data->establishrate, data->establishhighrate) < 0)
 				return -1;
 
 			size = sizeof(data->rate);
-			pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
+			pi_getsockopt(accept->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
 				      &data->rate, &size);
 			
 			/* We always reconfigure our port, no matter what */
@@ -414,6 +415,7 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 			break;
 		}
 
+		data->timeout = 0;
 		accept->dlprecord = 0;
 	}
 

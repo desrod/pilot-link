@@ -1,3 +1,20 @@
+2002-01-28  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/serial.c (pi_serial_accept): use the accept socket data
+	when appropriate, set timeout value for initialization based on
+	accept_to value
+
+	* libsock/unixserial.c (s_read): set the errno for a timeout
+	(s_poll): ditto
+
+	* libsock/slp.c (slp_rx): check for read errors
+
+	* libsock/padp.c (padp_rx): check for read errors
+	(padp_tx): use LOG
+
+	* libsock/cmp.c (cmp_init): set flags to 0x80 if rate is not 9600,
+	rather than if rates don't match
+
 2002-01-26  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* CodingGuidelines: First draft of Coding Guidelines. I needed to

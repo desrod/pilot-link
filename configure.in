@@ -301,8 +301,8 @@ if test "x$PERL5" != "x"; then
 		AC_MSG_RESULT($verstext [perl 5 not found])
 	fi
 fi
-AM_CONDITIONAL(WITH_PERL5, $use_perl)
-if $use_perl; then
+AM_CONDITIONAL(WITH_PERL5, $use_perl5)
+if $use_perl5; then
 	msg_perl=yes
 fi
 AC_SUBST(PERL5)

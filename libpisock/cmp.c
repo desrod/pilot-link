@@ -266,7 +266,7 @@ int cmp_init(struct pi_socket *ps, int baudrate)
 	data = (struct pi_cmp_data *)prot->data;
 
 	data->type = PI_CMP_TYPE_INIT;
-	if (baudrate != data->baudrate)
+	if (baudrate != 9600)
 		data->flags = 0x80;
 	else
 		data->flags = 0x00;
