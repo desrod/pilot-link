@@ -7,9 +7,9 @@ dnl ******************************
 dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
-PILOT_LINK_MAJOR=10
-PILOT_LINK_MINOR=99
-PILOT_LINK_NANO=1
+PILOT_LINK_MAJOR=11
+PILOT_LINK_MINOR=0
+PILOT_LINK_NANO=
 PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
@@ -650,7 +650,8 @@ tests/Makefile
 ])
 
 echo "
-  pilot-link $VERSION
+  pilot-link:		 $PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR
+  libpisock:		 $PISOCK_CURRENT.$PISOCK_REVISION.$PISOCK_AGE
   
   Direct USB support.. : $msg_usb
 
