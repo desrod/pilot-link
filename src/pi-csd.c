@@ -1,4 +1,4 @@
-/* 
+/*
  * pi-csd.c: Connection Service Daemon, required for accepting logons via
  *           NetSync(tm)
  *
@@ -24,7 +24,6 @@
 #include <config.h>
 #endif
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,6 +43,7 @@
 #include "pi-serial.h"
 #include "pi-slp.h"
 #include "pi-header.h"
+#include "userland.h"
 
 char hostname[130];
 struct in_addr address, netmask;
@@ -138,7 +138,7 @@ fetch_host(char *hostname, size_t hostlen, struct in_addr *address,
 
 		strncpy(ifreqaddr.ifr_name, ifr->ifr_name,
 			sizeof(ifreqaddr.ifr_name));
-		
+
 		strncpy(ifreqmask.ifr_name, ifr->ifr_name,
 			sizeof(ifreqmask.ifr_name));
 
@@ -225,53 +225,25 @@ fetch_host(char *hostname, size_t hostlen, struct in_addr *address,
 #endif				/* defined(SIOCGIFCONF) && defined(SIOCGIFFLAGS) */
 }
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Uh, the -help, of course
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Connection Service Daemon for Palm Devices\n\n");
-	printf("   Usage: %s -H <hostname> -a <ip> -n <subnet>\n\n", progname);
-	printf("   Options:\n");
-	printf("     -H <hostname>     The hostname used for verification\n");
-	printf("     -a <ip address>   IP address of the host\n");
-	printf("     -n <netmask>      The subnet mask of the address\n");
-	printf("     -q, --quiet       Turn off status messages\n");
-	printf("     -h, --help        Display this information\n");
-	printf("     -v, --version     Display version information\n\n");
-	printf("   Examples: %s -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n", progname);
-
-	return;
-}
-
 int main(int argc, const char *argv[])
 {
+	const char *progname = "pi-csd";
+
         int 	c,		/* switch */
 		n,
-		quiet 		= 0,
 		sockfd;
-	
+	int quiet = 0;
+
         struct	hostent *hent;
 	struct 	in_addr raddress;
-	struct 	sockaddr_in serv_addr, cli_addr; 
-
-        const char
-                *progname 	= argv[0];
+	struct 	sockaddr_in serv_addr, cli_addr;
 
         char    *addrarg	= NULL,
 		*nmarg		= NULL;
 
         fd_set 	rset;
 	unsigned char mesg[1026];
-        unsigned int clilen; 
+        unsigned int clilen;
 
 	memset(&address, 0, sizeof(address));
 	memset(&netmask, 0, sizeof(netmask));
@@ -280,66 +252,75 @@ int main(int argc, const char *argv[])
 	fetch_host(hostname, 128, &address, &netmask);
 
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-        	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+		/* Don't use USERLAND_RESERVED_OPTIONS, because this thing doesn't
+		   connect to the Palm at all. */
+		{ "version",  0 , POPT_ARG_NONE,    NULL, 'v', "Display version information", NULL},
+		{ "quiet",   'q', POPT_ARG_NONE,  &quiet,  0 , "Suppress messages", NULL},
         	{"hostname",	'H', POPT_ARG_STRING, &hostname, 0, "The hostname used for verification"},
-	        {"address",	'a', POPT_ARG_STRING, &addrarg, 'a', "IP address of the host"},
-        	{"netmask",	'n', POPT_ARG_STRING, &nmarg, 'n', "The subnet mask of the address"},
-	        {"quiet",	'q', POPT_ARG_NONE, NULL, 'q', "Turn off status messages"},
-                POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+	        {"address",	'a', POPT_ARG_STRING, &addrarg, 0, "IP address of the host","name-or-IP"},
+        	{"netmask",	'n', POPT_ARG_STRING, &nmarg, 0, "The subnet mask of the address","dotted-quad"},
+		POPT_AUTOHELP
+                POPT_TABLEEND
 	};
-	
-	po = poptGetContext("pi-csd", argc, argv, options, 0);
+
+	po = poptGetContext(progname, argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"\n\n"
+		"   Connection Service Daemon for Palm Devices\n\n"
+		"   Example arguments:\n"
+		"      -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
-
-		case 'h':
-			display_help(progname);
-			return 0;
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'a':
-			if (!inet_pton(AF_INET, addrarg, &address)) {
-				if ((hent = gethostbyname(addrarg))) {
-					memcpy(&address.s_addr,
-					       hent->h_addr,
-					       sizeof(address));
-				} else {
-					fprintf(stderr,
-						"Invalid address '%s'\n\n",
-						addrarg);
-					display_help(progname);
-				}
-			}
-			break;
-		case 'n':
-			if (!inet_pton(AF_INET, nmarg, &netmask))
-				display_help(progname);
-			break;
-		case 'q':
-			quiet = 1;
-			break;
 		default:
-			display_help(progname);
-			return 0;
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
+		}
+	}
+
+	if (!addrarg) {
+		fprintf(stderr,"   ERROR: Must give an address with -a.\n");
+		return 1;
+	}
+
+	if (!inet_pton(AF_INET, addrarg, &address)) {
+		if ((hent = gethostbyname(addrarg))) {
+			memcpy(&address.s_addr,
+				hent->h_addr,
+				sizeof(address));
+		} else {
+			fprintf(stderr,"   ERROR: Invalid address '%s'\n\n",addrarg);
+			return 1;
+		}
+	}
+
+
+	if (nmarg) {
+		if (!inet_pton(AF_INET, nmarg, &netmask)) {
+			fprintf(stderr,"   ERROR: Invalid netmask '%s'\n\n",nmarg);
+			return 1;
 		}
 	}
 
 	/* cannot execute without address and hostname */
 	if ((address.s_addr == 0) || (strlen(hostname) == 0)) {
-		display_help(progname);
+		fprintf(stderr,"   ERROR: Must give an address and a hostname.\n");
 		return -1;
 	}
-	
+
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockfd < 0) {
-		perror("Unable to get socket");
-		exit(EXIT_FAILURE);
+		fprintf(stderr,"   ERROR: Unable to get socket: %s\n",strerror(errno));
+		return 1;
 	}
 
 	memset(&serv_addr, 0, sizeof(serv_addr));
@@ -349,27 +330,28 @@ int main(int argc, const char *argv[])
 
 	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
 	    < 0) {
-		perror("Unable to bind socket");
-		exit(EXIT_FAILURE);
+		fprintf(stderr,"   ERROR: Unable to bind socket: %s\n",strerror(errno));
+		return 1;
 	}
 
 	if (!quiet) {
-		fprintf(stderr,
+		fprintf(stdout,
 			"%s(%d): Connection Service Daemon for Palm Computing(tm) device active.\n",
 			progname, getpid());
-		fprintf(stderr,
+		fprintf(stdout,
 			"%s(%d): Accepting connection requests for '%s' at %s",
 			progname, getpid(), hostname, inet_ntoa(address));
-		fprintf(stderr, " with mask %s.\n", inet_ntoa(netmask)
-		    );
+		fprintf(stdout, " with mask %s.\n", inet_ntoa(netmask));
 	}
 	for (;;) {
+		fflush(stdout);
 		clilen = sizeof(cli_addr);
 		FD_ZERO(&rset);
 		FD_SET(sockfd, &rset);
 		if (select(sockfd + 1, &rset, 0, 0, 0) < 0) {
-			perror("select failure");
-			exit(EXIT_FAILURE);
+			fprintf(stderr,"   ERROR: Select failure: %s\n",strerror(errno));
+			close(sockfd);
+			return 1;
 		}
 		n = recvfrom(sockfd, mesg, 1024, 0,
 			     (struct sockaddr *) &cli_addr, &clilen);
@@ -386,7 +368,7 @@ int main(int argc, const char *argv[])
 					  s_addr, 4, AF_INET);
 			memcpy(&raddress, &cli_addr.sin_addr.s_addr, 4);
 
-			fprintf(stderr, "%s(%d): Connection from %s[%s], ",
+			fprintf(stdout, "%s(%d): Connection from %s[%s], ",
 				progname,
 				getpid(), hent ? hent->h_name : "",
 				inet_ntoa(raddress));
@@ -403,14 +385,14 @@ int main(int argc, const char *argv[])
 			memcpy(&mask, mesg + 8, 4);
 
 			if (!quiet) {
-				fprintf(stderr, "req '%s', %s", name,
+				fprintf(stdout, "req '%s', %s", name,
 					inet_ntoa(ip));
-				fprintf(stderr, ", %s", inet_ntoa(mask));
+				fprintf(stdout, ", %s", inet_ntoa(mask));
 			}
 
 			if (strcmp(hostname, name) == 0) {
 				if (!quiet)
-					fprintf(stderr, " = accept.\n");
+					fprintf(stdout, " = accept.\n");
 
 				set_byte(mesg + 2, 0x02);
 				memcpy(mesg + 4, &address, 4);	/* address is already in Motorola byte order */
@@ -418,18 +400,20 @@ int main(int argc, const char *argv[])
 					   (struct sockaddr *) &cli_addr,
 					   clilen);
 				if (n < 0) {
-					perror("sendto error");
+					fprintf(stderr,"   ERROR: sendto() error: %s\n",
+						strerror(errno));
 				}
 				continue;
 			}
-			if (!quiet)
-				fprintf(stderr, " = reject.\n");
+			if (!quiet) {
+				fprintf(stdout, " = reject.\n");
+			}
 			continue;
 		}
 
 	      invalid:
 		if (!quiet)
-			fprintf(stderr, "invalid packet of %d bytes:\n", n);
+			fprintf(stdout, "invalid packet of %d bytes:\n", n);
 		dumpdata(mesg, n);
 	}
 

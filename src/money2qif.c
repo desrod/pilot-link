@@ -20,7 +20,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,133 +29,109 @@
 #include "pi-money.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "userland.h"
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
+
+int main(int argc, const char *argv[])
 {
-	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n");
-	printf("   Usage: %s -p <port> -a AccountName\n", progname);
-	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help        Display this information\n");
-	printf("     -v, --version     Display version information\n\n");
-	printf("     -a --account      The name of the Account category in MicroMoney\n");
-	printf("   Examples: %s -p serial:/dev/ttyUSB0 -a BankGlobal\n\n", progname);
-	printf("   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n");
-	printf("   on MicroMoney.\n\n");
-	printf("   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n");
-	printf("   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n");
-	printf("   pilot-link.\n\n");
-
-	return;
-}
-
-
-int main(int argc, char *argv[])
-{
-	int 	c,		/* switch */
+	int
 		db,
 		index,
 		po_err		= -1,
 		sd 		= -1;
 
 	char 	*noteln,
-		*progname 	= argv[0],
 		*port 		= NULL,
 		*account 	= NULL;
 
 	struct 	MoneyAppInfo mai;
 	pi_buffer_t *buffer;
-	
+
 	poptContext po;
 
 	struct poptOption options[] = {
-        	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+		USERLAND_RESERVED_OPTIONS
 	        {"account", 	'a', POPT_ARG_STRING, &account, 0, "The name of the Account category in MicroMoney"},
-        	POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+        	POPT_TABLEEND
 	};
-	
+
 	po = poptGetContext("money2qif", argc, argv, options, 0);
-	
+	poptSetOtherOptionHelp(po,"\n\n"
+	"   Convert and sync your MicroMoney account data Quicken QIF format.\n"
+	"   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n"
+	"   on MicroMoney.\n\n"
+	"   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n"
+	"   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n"
+	"   pilot-link.\n\n"
+	"   Example argumentss:\n"
+	"      -p serial:/dev/ttyUSB0 -a BankGlobal\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 	while ((po_err = poptGetNextOpt(po)) >= 0) {
-		switch (po_err) {
-		case 'h':
-                        display_help(progname);
-                        return 0;
-                case 'v':
-                        print_splash(progname);
-                        return 0;
-		default:
-			display_help(progname);
-			return 0;
-		}
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",po_err);
+		return 1;
 	}
 
-	if (optind > 1 && account == NULL) {
+	if (po_err < -1) {
+		plu_badoption(po,po_err);
+	}
+
+	if (!account) {
 		fprintf(stderr, "   ERROR: You must specify an Account Category"
 			" as found in MicroMoney \n");
 		return -1;
-	} 
-	
+	}
+
 	sd = pilot_connect(port);
 	if (sd < 0)
 		goto error;
 
 	/* Open the Money database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MoneyDB", &db) < 0) {
-		printf("Unable to open MoneyDB");
+		fprintf(stderr,"   ERROR: Unable to open MoneyDB on Palm.\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open MoneyDB.\n");
-		exit(EXIT_FAILURE);
+		pi_close(sd);
+		goto error;
 	}
 
 	buffer = pi_buffer_new (0xffff);
-	
+
 	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
 	unpack_MoneyAppInfo(&mai, buffer->data, 0xffff);
-	
+
 	for (index = 0; index < 16; index++)
 		if (!strcmp(mai.category.name[index], account))
 			break;
-	
+
 	if (index < 16) {
-	
+
 		printf("!Type:Bank\n");
-	
+
 		for (index = 0;; index++) {
 			int 	attr,
 				category;
 			struct 	Transaction t;
-	
+
 			int len =
 				dlp_ReadRecordByIndex(sd, db, index, buffer, 0,
 						      &attr,
 						      &category);
-	
+
 			if (len < 0)
 				break;
-	
+
 			if ((attr & dlpRecAttrDeleted)
 			    || (attr & dlpRecAttrArchived))
 				continue; 	/* Skip deleted records */
-	
+
 			if (strcmp(mai.category.name[category], account))
 				continue;
-	
+
 			unpack_Transaction(&t, buffer->data, buffer->used);
-	
+
 			printf("D%02d/%02d/%2d\n", t.month, t.day,
 			       t.year - 1900);
 			if (t.checknum)
@@ -177,8 +152,10 @@ int main(int argc, char *argv[])
 			if (t.flags & 1)
 				printf("CX\n");
 			printf("\n^\n");
-	
+
 		}
+	} else {
+		fprintf(stderr,"   ERROR: Category '%s' not found.\n",account);
 	}
 
 	pi_buffer_free (buffer);

@@ -61,6 +61,11 @@ int main(int argc, char *argv[])
 		"   Example:\n"
 		"      -p serial:/dev/ttyUSB0 -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n");
 
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
+
 	while ((po_err = poptGetNextOpt(po)) >= 0) {
 	}
 	if (po_err < -1) plu_badoption(po,po_err);
@@ -69,15 +74,15 @@ int main(int argc, char *argv[])
 	   get the other component, which reduces the complexity of this by
 	   one argument passed in. getnameinfo() will help here. */
 	if (address && !inet_pton(AF_INET, address, &addr)) {
-		printf("   The address you supplied, '%s' is in invalid.\n"
-			"   Please supply a dotted quad, such as 1.2.3.4\n\n", address);
-		exit(EXIT_FAILURE);
+		fprintf(stderr,"   ERROR: The address you supplied, '%s' is in invalid.\n"
+			"      Please supply a dotted quad, such as 1.2.3.4\n\n", address);
+		return 1;
 	}
 
 	if (netmask && !inet_pton(AF_INET, netmask, &addr)) {
-		printf("   The netmask you supplied, '%s' is in invalid.\n"
-			"   Please supply a dotted quad, such as 255.255.255.0\n\n", netmask);
-		exit(EXIT_FAILURE);
+		fprintf(stderr,"   ERROR: The netmask you supplied, '%s' is in invalid.\n"
+			"      Please supply a dotted quad, such as 255.255.255.0\n\n", netmask);
+		return 1;
 	}
 
 	sd = plu_connect();
@@ -94,7 +99,10 @@ int main(int argc, char *argv[])
 	if (enable != -1)
 		Net.lanSync = enable;
 
-	printf("   LANSync....: %sabled\n", (Net.lanSync == 1 ? "En" : "Dis"));
+	if (!plu_quiet) {
+		printf("   LANSync....: %sabled\n", (Net.lanSync == 1 ? "En" : "Dis"));
+		fflush(stdout);
+	}
 
 	if (hostname)
 		strncpy(Net.hostName, hostname, sizeof(Net.hostName));
@@ -106,9 +114,11 @@ int main(int argc, char *argv[])
 		strncpy(Net.hostSubnetMask, netmask,
 			sizeof(Net.hostSubnetMask));
 
-	printf("   Hostname...: %s\n", Net.hostName);
-	printf("   IP Address.: %s\n", Net.hostAddress);
-	printf("   Netmask....: %s\n\n", Net.hostSubnetMask);
+	if (!plu_quiet) {
+		printf("   Hostname...: %s\n", Net.hostName);
+		printf("   IP Address.: %s\n", Net.hostAddress);
+		printf("   Netmask....: %s\n\n", Net.hostSubnetMask);
+	}
 
 	if (dlp_WriteNetSyncInfo(sd, &Net) < 0)
 		goto error_close;
