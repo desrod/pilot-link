@@ -115,6 +115,11 @@ dnl for FreeBSD-amd64 only.
 PIC_LIBS=""
 
 
+dnl null_device is the default NULL device on your system
+dnl (usually /dev/null or NUL). If yours is _not_ /dev/null,
+dnl set it in the platform-specific section below.
+null_device="/dev/null"
+
 case "$host" in
         *darwin*)
 		dnl Use fink under MacOS X
@@ -126,15 +131,12 @@ case "$host" in
 		else
 			AC_MSG_RESULT(no)
 		fi
-
-		null_device="/dev/null"
         ;;
 	amd64*freebsd*)
 		dnl Need -fPIC for shared libs
 		PIC_LIBS="-fPIC"
 	;;
 	*)
-		null_device="/dev/null"
 	;;
 esac
 AC_DEFINE_UNQUOTED(NULL_DEVICE, "$null_device",
