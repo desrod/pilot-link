@@ -302,7 +302,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 	int 	i,
 		ofile_len,
 		ofile_total,
-		totalsize = 0;
+		totalsize;
 
 	struct 	dirent *dirent;
 	struct 	stat sbuf;
@@ -830,7 +830,7 @@ static void Restore(char *dirname)
  ***********************************************************************/
 static void Install(char *filename)
 {
-	int totalsize;
+	static int totalsize = 0;
 
 	struct 	pi_file *f;
 	struct 	stat sbuf;
@@ -856,7 +856,7 @@ static void Install(char *filename)
 		fprintf(stderr, "failed.\n");
 	} else if (stat(filename, &sbuf) == 0) {
 		totalsize += sbuf.st_size;
-		printf("[%7ld bytes | %9.0f total]\n", sbuf.st_size, (float)totalsize);
+		printf("[%7ld bytes | %7ld total]\n", sbuf.st_size, totalsize);
 	}
 	
 	pi_file_close(f);
