@@ -4,6 +4,8 @@
 
 	* pilot-xfer.c: Removed the [23] Foo.pdb noise 
 	
+	* libsock/*.c: layout, formatting, type changes
+
 2002-01-16  JP Rosevear  <jpr@ximian.com>
 
 	* install-user.c (Help): remove bogus info
