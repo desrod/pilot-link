@@ -70,6 +70,8 @@ Minor Issues
 	  calculating exactly how many bytes is needed to transfer a file
 	  won't be fun.)
 
+	  knghtbrd: this is partly done now.
+
         - Update Java bindings to use Ant instead of {g|n}make
 
         - Rewrite Perl bindings to take advantage of MakeMaker
@@ -103,6 +105,9 @@ Tweaks/Enhancements
 	| Files: 234 remaining, 468 total                              |
 	`--------------------------------------------------------------'
 
+	  knghtbrd: suggest wget-style output?  curses not required.
+
+
 	- Remove the pi_bind, pi_listen, pi_accept from all relevant files,
 	  and create a function pi_error() which will return the proper
 	  responses. Additionally, remove PalmHeader() and stick that in
@@ -133,7 +138,7 @@ Tweaks/Enhancements
 
 	- Collapse: read-todos/install-todos, memos/install-memos, etc.
 
-        - pilot-datebook updated to match remaining structure
+        - replace missing pilot-datebook
 
 New Features
 ------------
