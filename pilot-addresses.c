@@ -436,9 +436,9 @@ int main(int argc, char *argv[])
       perror(buf);
       exit(1);
     }
+    write_file(f, sd, db, &aai);
     if (deletecategory) 
       deleterecords(sd, db, match_category(deletecategory,&aai));
-    write_file(f, sd, db, &aai);
     fclose(f);
   } else if (mode == 1) {
     FILE * f;
@@ -449,10 +449,10 @@ int main(int argc, char *argv[])
         perror(buf);
         continue;
       }
-      read_file(f, sd, db, &aai);
-      fclose(f);
       if (deletecategory) 
         deleterecords(sd, db, match_category(deletecategory,&aai));
+      read_file(f, sd, db, &aai);
+      fclose(f);
       optind++;
     }
   }

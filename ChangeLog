@@ -1,5 +1,20 @@
+Mar 22, 1997	Kenneth Albanowski 0.5.4
+	
+	Added installation (and uninstallation) support to Makefile.
+	Extensively reorganized pilot-debug startup, added Tcl event loop from
+	    plus-patch, and removed Tk dependancy -- pilot-debug is now usable
+	    with or without Tk! That means debugsh is officially deprecated,
+	    unless there is a significant outcry for a Tcl-less debugger. 
+	Modified syspkt RPC code to properly support byte values and pointers. 
+	Added initial support for Personal PalmPilot -- but beware the
+	    possibility of uncaught incompatibilities.
+	Updated debugging routines in syspkt to more closely match Palm
+	    documentation -- note that this breaks my original gdb patch.
+
 Mar  9, 1997	Kenneth Albanowski 0.5.3
+
 	To help gdb, expanded syspkt support.
+	Started reorganization of pilot-debug.
 
 Mar  2, 1997	Kenneth Albanowski 0.5.2
 

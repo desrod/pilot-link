@@ -1,32 +1,52 @@
 
-## If you want to make pilot-debug, and have Tcl >= 7.6 and Tk >= 4.2, then
-## uncomment the following lines and correct the library and include
-## paths to match what is needed on your system
+## If you want to make pilot-debug, and have Tcl >= 7.6, then uncomment the
+## following three lines and correct the library and include paths to match
+## what is needed on your system
+##
+## You may uncomment the TK lines if you have Tk >= 4.2, though Tk is not
+## required, either for compilation or execution.
 
-#TKDEBUG = pilot-debug$(EXT)
-#TKLIBS  = -L/usr/local/tcl8.0/lib -L/usr/X11/lib -ltk -ltcl -lX11 -ldl -lm
-#TKINCS  = -I/usr/local/tcl8.0/include
+#PDEXE = pilot-debug$(EXT)
+#TCLLIBS  = -L/usr/local/tcl8.0/lib -ltcl8.0 -ldl -lm
+#TCLDEFS  = -I/usr/local/tcl8.0/include
+#TKLIBS  = -L/usr/local/tcl8.0/lib -L/usr/X11/lib -ltk8.0 -lX11
+#TKDEFS  = -DTK -I/usr/local/tcl8.0/include
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+libdir = @libdir@
+pixdir = ${libdir}/pix
+includedir = @includedir@
+mandir = @mandir@
+srcdir = @srcdir@
 
 CC = @CC@
-CFLAGS = @CFLAGS@ @CWFLAG@ -I./include $(TKINCS)
+CFLAGS = @CFLAGS@ @CWFLAG@ -DLIBDIR=\"$(libdir)\" -I./include
 # -DDEBUG
+LIBS =
+# -lefence
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
 RANLIB = @RANLIB@
 RM = rm -f
 STRIP = strip
-LIBS =
-# -lefence
+SHELL = /bin/sh
 CPLIB = @CPLIB@
 EXT =
 SUBMAKE_COMM = cd lib ; $(MAKE)
 
-EXECS = install-memo$(EXT) install-user$(EXT)\
+EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) \
+		install-memo$(EXT) install-user$(EXT)\
 		install-todos$(EXT) pilot-addresses$(EXT)\
 		read-ical$(EXT)\
 		sync-memodir$(EXT) sync-ical$(EXT)\
-		pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT)\
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
-		test-connector$(EXT) test-acceptor$(EXT) debugsh$(EXT) dlpsh$(EXT) \
-		getrom$(EXT) $(TKDEBUG)
+		debugsh$(EXT) dlpsh$(EXT) \
+		getrom$(EXT) \
+		test-connector$(EXT) test-acceptor$(EXT)		
 
 PILIBS = libpisock.a
 
@@ -37,6 +57,35 @@ submake lib/libpisock.a:
 
 libpisock.a: lib/libpisock.a
 	$(CPLIB) lib/libpisock.a libpisock.a
+
+installdirs:
+	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir)
+
+install: $(EXECS) installdirs libpisock.a
+	for p in $(EXECS); do \
+		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
+		$(STRIP) $(bindir)/$$p; \
+	done
+	for h in include/*; do \
+		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
+	done
+	for p in pix/*; do \
+		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
+	done
+	$(INSTALL_DATA) libpisock.a $(libdir)/libpisock.a
+	$(RANLIB) $(libdir)/libpisock.a
+
+uninstall: $(EXECS)
+	-for p in $(EXECS) pilot-debug; do \
+		$(RM) $(bindir)/$$p; \
+	done
+	-rmdir $(bindir)
+	-for h in include/*; do \
+		$(RM) $(includedir)/`basename $$h`; \
+	done
+	-rmdir $(includedir)
+	-$(RM) $(libdir)/pibpisock.a
+	-rmdir $(libdir)
 
 install-memo$(EXT): $(PILIBS) install-memo.o
 	$(CC) $(CFLAGS) install-memo.o $(PILIBS) -o $@ $(LIBS)
@@ -59,8 +108,11 @@ pilot-xfer$(EXT): $(PILIBS) pilot-xfer.o
 pilot-file$(EXT): $(PILIBS) pilot-file.o
 	$(CC) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)
 
+pilot-debug.o: $(PILIBS) pilot-debug.c Makefile
+	$(CC) $(CFLAGS) $(TCLDEFS) $(TKDEFS) -c pilot-debug.c
+
 pilot-debug$(EXT): $(PILIBS) pilot-debug.o
-	$(CC) $(CFLAGS) pilot-debug.o $(PILIBS) -o $@ $(TKLIBS) $(LIBS)
+	$(CC) $(CFLAGS) pilot-debug.o $(PILIBS) -o $@ $(TKLIBS) $(TCLLIBS) $(LIBS)
 
 reminders$(EXT): $(PILIBS) reminders.o
 	$(CC) $(CFLAGS) reminders.o $(PILIBS) -o $@ $(LIBS)
@@ -107,10 +159,10 @@ distclean: clean
 	$(RM) Makefile lib/Makefile lib/Makefile.in~ include/pi-config.h
 	$(RM) config.log config.status config.cache
 	$(RM) PiDebug.log
-	perl os2dist.pl
+	perl scripts/os2dist.pl
 
 clean:
-	$(RM) *.o *.a *~ core a.out test_s test_c install-prc$(EXT) 
+	$(RM) *.o *.a *~ core a.out test_s test_c install-prc$(EXT) pilot-debug$(EXT)
 	$(RM) $(EXECS)
 	$(RM) include/*~ man/*~ *.orig include/*.orig
 	$(RM) pilot.rom

@@ -80,6 +80,7 @@ struct pi_socket {
   int rate;          /* Current port baud rate */
   int establishrate; /* Baud rate to use after link is established */
   int connected;
+  int version;
   int tx_packets;
   int rx_packets;
   int tx_bytes;

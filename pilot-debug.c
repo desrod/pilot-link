@@ -1,4 +1,4 @@
-/* debugsh.c:  Graphical debugging station
+/* pilot-debug.c:  Pilot debugging console, with optional graphics support
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
@@ -15,7 +15,20 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 
-#include "tk.h"
+#ifndef LIBDIR
+# define LIBDIR "."
+#endif
+
+#ifdef TK
+int usetk;
+# include "tk.h"
+#else
+# include "tcl.h"
+#endif
+
+#ifndef TCL_ACTIVE
+# define TCL_ACTIVE TCL_READABLE
+#endif
 
 /*
  * The following variable is a special hack that is needed in order for
@@ -25,13 +38,9 @@
 extern int matherr();
 int *tclDummyMathPtr = (int *) matherr;
 
-#ifdef TK_TEST
-EXTERN int		Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
-#endif /* TK_TEST */
-
-
-
 int done = 0;
+
+int Interactive = 1;
 
 static Tcl_Interp * interp;        
 static struct Pilot_state state;
@@ -50,7 +59,10 @@ int port = 0;
 /* Misc utility */
 void SetLabel(const char * label, const char * value)
 {
-  Tcl_VarEval(interp, label, " configure -text \"", value, "\"",NULL);
+#ifdef TK
+  if (usetk)
+    Tcl_VarEval(interp, label, " configure -text \"", value, "\"",NULL);
+#endif
 }
 
 char * itoa(int val) {
@@ -75,9 +87,34 @@ int SayInteractive(char * text)
 {
 	Tcl_DString d;
 	
+	if (!Interactive)
+	  return 0;
+	
 	Tcl_DStringInit(&d);
-	Tcl_DStringAppendElement(&d, "Say");
-	Tcl_DStringAppendElement(&d, text);
+
+#ifdef TK
+	if (usetk) {
+		Tcl_DStringAppendElement(&d, ".f.t");
+		Tcl_DStringAppendElement(&d, "insert");
+		Tcl_DStringAppendElement(&d, "insert");
+		Tcl_DStringAppendElement(&d, text);
+		Tcl_Eval(interp, Tcl_DStringValue(&d));
+		Tcl_DStringFree(&d);
+		Tcl_DStringAppendElement(&d, ".f.t");	
+		Tcl_DStringAppendElement(&d, "see");
+		Tcl_DStringAppendElement(&d, "insert");
+		Tcl_Eval(interp, Tcl_DStringValue(&d));
+		Tcl_DStringFree(&d);
+	} else {
+#endif
+		Tcl_DStringAppendElement(&d, "puts");
+		Tcl_DStringAppendElement(&d, text);
+		Tcl_Eval(interp, Tcl_DStringValue(&d));
+		Tcl_DStringFree(&d);
+
+#ifdef TK
+	}
+#endif
 	Tcl_Eval(interp, Tcl_DStringValue(&d));
 	Tcl_DStringFree(&d);
 	
@@ -87,14 +124,35 @@ int SayInteractive(char * text)
 int Say(char * text)
 {
 	Tcl_DString d;
-	int i;
 	
-	Tcl_DStringInit(&d);
-	Tcl_DStringAppendElement(&d, "Say");
-	Tcl_DStringAppendElement(&d, text);
-	Tcl_Eval(interp, Tcl_DStringValue(&d));
-	Tcl_DStringFree(&d);
-        Tcl_AppendResult(interp, text, NULL);
+	if (Interactive) {
+		Tcl_DStringInit(&d);
+#ifdef TK
+		if (usetk) {
+			Tcl_DStringAppendElement(&d, ".f.t");
+			Tcl_DStringAppendElement(&d, "insert");
+			Tcl_DStringAppendElement(&d, "insert");
+			Tcl_DStringAppendElement(&d, text);
+			Tcl_Eval(interp, Tcl_DStringValue(&d));
+			Tcl_DStringFree(&d);
+			Tcl_DStringAppendElement(&d, ".f.t");	
+			Tcl_DStringAppendElement(&d, "see");
+			Tcl_DStringAppendElement(&d, "insert");
+			Tcl_Eval(interp, Tcl_DStringValue(&d));
+			Tcl_DStringFree(&d);
+		} else {
+#endif
+			Tcl_DStringAppendElement(&d, "puts");
+			Tcl_DStringAppendElement(&d, text);
+			Tcl_Eval(interp, Tcl_DStringValue(&d));
+			Tcl_DStringFree(&d);
+
+#ifdef TK
+		}
+#endif
+	} else 
+	        Tcl_AppendResult(interp, text, NULL);
+	
 	return 0;
 }
 
@@ -121,51 +179,67 @@ void Read_Pilot(ClientData clientData, int mask) {
   
   memset(buf,0,4096);
   l = pi_read(port, buf, 4096);
-  puts("From Pilot:");
-  dumpdata((unsigned char *)buf, l);
   
   if (l < 6)
     return;
+
+  puts("From Pilot:");
+  dumpdata((unsigned char *)buf, l);
   
   if(buf[2] == 0) { /* SysPkt command */
     if(buf[0] == 1) { /* Console */
       if ((!console) || debugger) {
               Say("Console active\n");
 	      console = 1;
+	      debugger = 0;
 	      SetModeLabel();
+	      Tcl_VarEval(interp, "checkin 25",NULL);
       }
       if(buf[4] == 0x7f) { /* Message from Pilot */
       	int i;
+		
       	for(i=6;i<l;i++)
       	  if(buf[i] == '\r')
       	    buf[i] = '\n';      	
         /* Insert message into both debug and console windows */
-        Tcl_VarEval(interp,".f.t insert end \"",buf+6,"\"",NULL);
-        Tcl_VarEval(interp,".console.t insert end \"",buf+6,"\"",NULL);
-        Tcl_VarEval(interp,".f.t mark set insert end",NULL);
-        Tcl_VarEval(interp,".console.t mark set insert end",NULL);
-        Tcl_VarEval(interp,".f.t see insert",NULL);
-        Tcl_VarEval(interp,".console.t see insert",NULL);
+#ifdef TK
+	if (usetk) {
+          Tcl_VarEval(interp,".f.t insert end \"",buf+6,"\"",NULL);
+          Tcl_VarEval(interp,".console.t insert end \"",buf+6,"\"",NULL);
+          Tcl_VarEval(interp,".f.t mark set insert end",NULL);
+          Tcl_VarEval(interp,".console.t mark set insert end",NULL);
+          Tcl_VarEval(interp,".f.t see insert",NULL);
+          Tcl_VarEval(interp,".console.t see insert",NULL);
+        } else
+#endif
+        Tcl_VarEval(interp,"Say \"",buf+6,"\"",NULL);
       }
     } else if (buf[0] == 0) { /* Debug */
       if (!debugger) {
            debugger = 1;
     	   SetModeLabel();
+	   Tcl_VarEval(interp, "checkin 25",NULL);
       }
     	if (buf[4] == 0x7f) { /* Message */
           int i;
           for(i=6;i<l;i++)
       	    if(buf[i] == '\r')
       	      buf[i] = '\n';      	
-    	  /* Insert message into debug window */
-	  Tcl_VarEval(interp,".f.t insert end \"",buf+6,"\"",NULL);
-          Tcl_VarEval(interp,".f.t mark set insert end",NULL);
-          Tcl_VarEval(interp,".f.t see insert",NULL);
+#ifdef TK
+          if (usetk) {
+     	    /* Insert message into debug window */
+ 	    Tcl_VarEval(interp,".f.t insert end \"",buf+6,"\"",NULL);
+            Tcl_VarEval(interp,".f.t mark set insert end",NULL);
+            Tcl_VarEval(interp,".f.t see insert",NULL);
+          } else
+#endif
+          Tcl_VarEval(interp,"Say \"",buf+6,"\"",NULL);
     	}
     	else if (buf[4] == 0x8c) { /* Breakpoints set */
     	   Say("Breakpoint set\n");
     	}
     	else if (buf[4] == 0x80) { /* State response */
+    	
     	   sys_UnpackState(buf+6,&state);
     	   
     	   if (stalestate) {
@@ -268,8 +342,9 @@ int DbgAttach(int verify)
     Error("No serial port selected, use 'port' command to choose one.\n");
     return 0;
   }
-  
-  if (verify || !debugger) {
+
+again:  
+  if (verify || (!debugger && !console)) {
     int old = debugger;
     sys_QueryState(port);
     debugger = 0;
@@ -278,13 +353,13 @@ int DbgAttach(int verify)
       if (verify > 1)
         Say("Attaching to Pilot debugger\n");
       else
-        Say("(attaching to Pilot debugger)\n");
+        SayInteractive("(attaching to Pilot debugger)\n");
   }
   
   if (!debugger && (verify || !console)) {
     int err;
     int old = console;
-    console = 0;
+     console = 0;
     PackRPC(&p, 0xA09E, RPC_IntReply, RPC_End); /* TaskID, a harmless call */
     DoRPC(port, 1, &p, &err);
     if (err == 0)
@@ -295,9 +370,17 @@ int DbgAttach(int verify)
       if (verify > 1)
         Say("Attaching to Pilot console\n");
       else
-        Say("(attaching to Pilot console)\n");
+        SayInteractive("(attaching to Pilot console)\n");
+    
   }
   
+  if (!debugger && !console && !verify) {
+    verify = 1;
+    goto again;
+  }
+  
+  SetModeLabel();
+ 
   return (debugger || console);
 }
 
@@ -315,7 +398,7 @@ int DbgAttachDebugger(int verify)
     Read_Pilot(0,0);
     SetModeLabel();
     if (debugger && !old)
-      Say("(attaching to Pilot debugger)\n");
+      SayInteractive("(attaching to Pilot debugger)\n");
   }
   
   if (!debugger) {
@@ -347,7 +430,7 @@ int DbgAttachConsole(int verify)
         console = 0;
     }
     if ((console && !debugger) && !old)
-      Say("(attaching to Pilot console)\n");
+      SayInteractive("(attaching to Pilot console)\n");
   }
   
   if (!console || debugger) {
@@ -419,8 +502,6 @@ unsigned char buffer[0xffff];
 /* Go, restart execution */
 int proc_g(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
-  struct Pilot_continue c;
-
   /* Use verify since the sys_Continue command produces no return value */
      
   if (!DbgAttachDebugger(1))
@@ -434,13 +515,7 @@ int proc_g(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
     /*SetBreakpoint(port, 5, ParseAddress(argv[1]), 1);*/
   }
   
-  c.regs = state.regs;
-  c.watch = 0;
-  c.watch_address = 0;
-  c.watch_length = 0;
-  c.watch_checksum = 0;
-  
-  sys_Continue(port, &c);
+  sys_Continue(port, &state.regs, 0);
   
   Say("Resuming execution\n");
   
@@ -451,14 +526,15 @@ int proc_g(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   stalestate = 1;
   SetModeLabel();
 
+  Tcl_VarEval(interp, "checkupin 25",NULL);
+  Tcl_ResetResult(interp);
+
   return TCL_OK;
 }
 
 /* Till, restart execution */
 int proc_t(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
-  struct Pilot_continue c;
-
   /* Use verify since the sys_Continue command produces no return value */
      
   if (!DbgAttachDebugger(1))
@@ -475,13 +551,7 @@ int proc_t(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
     SetLabel(".state.pc",htoa(state.regs.PC));
   }
   
-  c.regs = state.regs;
-  c.watch = 0;
-  c.watch_address = 0;
-  c.watch_length = 0;
-  c.watch_checksum = 0;
-  
-  sys_Continue(port, &c);
+  sys_Continue(port, &state.regs, 0);
   
   Say("Resuming execution\n");
   
@@ -491,6 +561,9 @@ int proc_t(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   console = 0;
   stalestate = 1;
   SetModeLabel();
+
+  Tcl_VarEval(interp, "checkupin 25",NULL);
+  Tcl_ResetResult(interp);
 
   return TCL_OK;
 }
@@ -520,6 +593,9 @@ int proc_coldboot(ClientData clientData, Tcl_Interp *interp, int argc, char *arg
   stalestate = 1;
   SetModeLabel();
 
+  Tcl_VarEval(interp, "checkupin 25",NULL);
+  Tcl_ResetResult(interp);
+
   return TCL_OK;
 }
 
@@ -535,8 +611,130 @@ int proc_warmboot(ClientData clientData, Tcl_Interp *interp, int argc, char *arg
   console = 0;
   stalestate = 1;
   SetModeLabel();
+  
+  Tcl_VarEval(interp, "checkupin 25",NULL);
+  Tcl_ResetResult(interp);
 
   return TCL_OK;
+}
+
+int proc_battery(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+{
+    		int err;
+    		int warn, critical, maxTicks;
+    		int v, kind, pluggedin;
+    		char buffer[30];
+	  struct RPC_params p;
+
+  if (!DbgAttach(0))
+    return TCL_ERROR;
+
+	    	warn = 0x1234;
+	    	critical = 0x2345;
+	    	maxTicks = 0x3456;
+	    	kind = 2;
+	    	pluggedin = 3;
+  
+	    PackRPC(&p,0xA0B6, RPC_IntReply,
+	    	RPC_Byte(0), RPC_ShortPtr(&warn), RPC_ShortPtr(&critical),
+	    	RPC_ShortPtr(&maxTicks), RPC_BytePtr(&kind), RPC_BytePtr(&pluggedin), RPC_End);
+	    	
+	 
+
+	  v =  DbgRPC(&p, &err);
+	  
+	 if (err)
+	   return TCL_ERROR;
+	  
+/*		printf("Volts = %f, crit = %f, warn = %f, ticks = %d, kind = %d, pluggedin= %d, err = %d\n",
+			(float)v/100, (float)critical/100, (float)warn/100,
+			maxTicks, kind, pluggedin, err);*/
+	
+	sprintf(buffer,"%.2f %s%s", (float)v/100, (kind == 0) ? "Alkaline" :
+	                                          (kind == 1) ? "NiCd" :
+	                                          (kind == 2) ? "Lithium" :
+	                                          "",
+	                                          pluggedin ? " Ext" : "" );
+	
+	Say(buffer);
+	
+	SetLabel(".state.battery",buffer);
+	
+	
+#ifdef TK
+	if (usetk) 
+		Tcl_VarEval(interp,".state.battery configure -fg ", (v <= critical) ? "red" :
+		                                                    (v <= warn) ? "darkred" :
+		                                                    "blue" , NULL);
+#endif	
+
+	Say((v <= critical) ? " power critical!\n" : (v <= warn) ? " power low\n" : "\n");
+	
+	return TCL_OK;
+}
+
+#define DB 0xFFFF0000
+#define LSSA 0xFA00  
+
+int proc_getdisplay(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+{
+#ifndef TK
+  Say("getdisplay is not available due to pilot-debug being compiled without Tk support");
+  return TCL_ERROR;
+
+#else  
+  char buffer[0xffff];
+  char buffer2[0xffff];
+  Tk_PhotoImageBlock block;
+  Tk_PhotoHandle handle;
+  struct RPC_params p;
+  unsigned long addr;
+  int e1,e2;
+  int l;
+
+
+  if (!usetk) {
+    Say("getdisplay is not usable when graphical display is disabled");
+    return TCL_ERROR;
+  }
+  
+  if (!DbgAttach(0))
+    return TCL_ERROR;
+    
+  
+  if (debugger) {
+  	l = sys_ReadMemory(port, DB+LSSA, 4, buffer);
+  	addr = get_long(buffer);
+  	l = sys_ReadMemory(port, addr, 160*160/8, buffer);
+  } else {
+ 	 PackRPC(&p,0xA026, RPC_IntReply, RPC_LongPtr(&addr), RPC_Long(DB+LSSA), RPC_Long(4), RPC_End);
+	  e1=DbgRPC(&p, &e2);
+	  for (l=0;l<160*160/8;l+=64) {
+		  PackRPC(&p,0xA026, RPC_IntReply, RPC_Ptr(buffer+l, 128), RPC_Long(addr+l), RPC_Long(128), RPC_End);
+		  e1=DbgRPC(&p, &e2);
+	  }
+  }
+  
+  block.width = 160;
+  block.height = 160;
+  block.pitch = 160;
+  block.pixelSize = 1;
+  block.offset[0] = 0;
+  block.offset[1] = 0;
+  block.offset[2] = 0; 
+  
+  handle = Tk_FindPhoto("Case");
+
+  for(l=0;l<160*160;l++) {
+  	int p = l/8;
+  	int b = 1<<(7-(l%8));
+  	buffer2[l] = (buffer[p] & b) ? 0 : 0xff;
+  }
+  block.pixelPtr = buffer2;
+  Tk_PhotoPutBlock(handle, &block, 32, 33, 160, 160);
+  
+  return TCL_OK;  
+#endif
 }
 
 int proc_transmit(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
@@ -561,7 +759,7 @@ int proc_transmit(ClientData clientData, Tcl_Interp *interp, int argc, char *arg
   return TCL_OK;  
 }
 
-int proc_button(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+int proc_pushbutton(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
   struct RPC_params p;
   unsigned int key=0, scan=0, mod=0;
@@ -696,78 +894,43 @@ int proc_port(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   return TCL_OK;
 }
 
-
-int proc_help(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+int proc_inittkdbg(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
-  Say("\
---- Help ---\n\
-g [<addr>]\tGo: Resume execution (if address is supplied, will start at that point)\n\
-t <addr1> [<addr2>}\tTill: Resume execution until addr1 (if addr2 is supplied, will start at that point)\n\
-coldboot\n\
-warmboot\n\
-button <button number>\tSimulate button push\n\
-");
-  return TCL_OK;
-}
-
-struct { char * name; Tcl_CmdProc * proc; } cmds[] = {
-	{ "coldboot",	proc_coldboot },
-	{ "warmboot",	proc_warmboot },
-	{ "button",	proc_button },
-	{ "pen",	proc_pen },
-	{ "key",	proc_key },
-	{ "g",		proc_g },
-	{ "t",		proc_t },
-	{ "attach",	proc_attach },
-	{ "transmit",	proc_transmit },
-	{ "port",	proc_port },
-	{ "help",	proc_help },
-	{ 0, 0}
-};
-
-int
-Tcl_AppInit(myinterp)
-    Tcl_Interp *myinterp;		/* Interpreter for application. */
-{
-    int i;
-    
-    interp=myinterp;
-  
-    if (Tcl_Init(interp) == TCL_ERROR) {
-	return TCL_ERROR;
-    }
-    if (Tk_Init(interp) == TCL_ERROR) {
-      return TCL_ERROR;
-    }
-    Tcl_StaticPackage(interp, "Tk", Tk_Init, (Tcl_PackageInitProc *) NULL);
-
-
-  /*** Load custom Tcl procedures ***/
-
-
-  for (i=0;cmds[i].name;i++) {
-    Tcl_CreateCommand(interp, cmds[i].name, cmds[i].proc, 0, NULL);
+#ifndef TK
+  Say("This executable does not contain Tk support!\n");
+  return TCL_ERROR;
+#else
+  static int created = 0;
+  if (created) {
+    Say("Graphical debugger already initialized.\n");
+    return TCL_OK;
   }
-   
-  
-  Tcl_VarEval(interp,"
+
+  Tcl_VarEval(interp,"\
 
 ###  /*** Generate remote UI window ***/
 
-proc inittkdbg {} {
-  
+set tkdbg 1
+
 toplevel .remote
 wm title .remote {Pilot Remote UI}
 
 catch {
-	image create photo Case -format gif -file {pix/case.gif}
-	image create photo B1 -format gif -file {pix/b1.gif}
-	image create photo B2 -format gif -file {pix/b2.gif}
-	image create photo B3 -format gif -file {pix/b3.gif}
-	image create photo B4 -format gif -file {pix/b4.gif}
-	image create photo B5 -format gif -file {pix/b5.gif}
-	image create photo B6 -format gif -file {pix/b6.gif}
-	image create photo B7 -format gif -file {pix/b7.gif}
+	if {[file exists {pix/case.gif}]} {
+		set dir {pix}
+	} elseif {[file exists {",LIBDIR,"/pix/case.gif}]} {
+		set dir {",LIBDIR,"/pix}
+	} else {
+		error {No pix}
+	}
+	image create photo Case -format gif -file \"$dir/case.gif\"
+	image create photo B1 -format gif -file \"$dir/b1.gif\"
+	image create photo B2 -format gif -file \"$dir/b2.gif\"
+	image create photo B3 -format gif -file \"$dir/b3.gif\"
+	image create photo B4 -format gif -file \"$dir/b4.gif\"
+	image create photo B5 -format gif -file \"$dir/b5.gif\"
+	image create photo B6 -format gif -file \"$dir/b6.gif\"
+	image create photo B7 -format gif -file \"$dir/b7.gif\"
 }
 
 canvas .remote.c -width 221 -height 337
@@ -788,25 +951,25 @@ canvas .remote.c -width 221 -height 337
 .remote.c create rectangle 160 225 187 253 -outline black -tag screen
 .remote.c create rectangle 62 200 159 253 -outline black -tag screen
 
-.remote.c bind button1 <ButtonPress-1> {.remote.c itemconfigure button1 -fill green; update; button 1}
+.remote.c bind button1 <ButtonPress-1> {.remote.c itemconfigure button1 -fill green; update; pushbutton 1}
 .remote.c bind button1 <ButtonRelease-1> {.remote.c itemconfigure button1 -fill blue}
 
-.remote.c bind button2 <ButtonPress-1> {.remote.c itemconfigure button2 -fill green; update; button 2}
+.remote.c bind button2 <ButtonPress-1> {.remote.c itemconfigure button2 -fill green; update; pushbutton 2}
 .remote.c bind button2 <ButtonRelease-1> {.remote.c itemconfigure button2 -fill blue}
 
-.remote.c bind button3 <ButtonPress-1> {.remote.c itemconfigure button3 -fill green; update; button 3}
+.remote.c bind button3 <ButtonPress-1> {.remote.c itemconfigure button3 -fill green; update; pushbutton 3}
 .remote.c bind button3 <ButtonRelease-1> {.remote.c itemconfigure button3 -fill blue}
 
-.remote.c bind button4 <ButtonPress-1> {.remote.c itemconfigure button4 -fill green; update; button 4}
+.remote.c bind button4 <ButtonPress-1> {.remote.c itemconfigure button4 -fill green; update; pushbutton 4}
 .remote.c bind button4 <ButtonRelease-1> {.remote.c itemconfigure button4 -fill blue}
 
-.remote.c bind button5 <ButtonPress-1> {.remote.c itemconfigure button5 -fill green; update; button 5}
+.remote.c bind button5 <ButtonPress-1> {.remote.c itemconfigure button5 -fill green; update; pushbutton 5}
 .remote.c bind button5 <ButtonRelease-1> {.remote.c itemconfigure button5 -fill blue}
 
-.remote.c bind button6 <ButtonPress-1> {.remote.c itemconfigure button6 -fill green; update; button 6}
+.remote.c bind button6 <ButtonPress-1> {.remote.c itemconfigure button6 -fill green; update; pushbutton 6}
 .remote.c bind button6 <ButtonRelease-1> {.remote.c itemconfigure button6 -fill blue}
 
-.remote.c bind button7 <ButtonPress-1> {.remote.c itemconfigure button7 -fill green; update; button 7}
+.remote.c bind button7 <ButtonPress-1> {.remote.c itemconfigure button7 -fill green; update; pushbutton 7}
 .remote.c bind button7 <ButtonRelease-1> {.remote.c itemconfigure button7 -fill blue}
 
 catch {
@@ -820,25 +983,25 @@ catch {
 
 	.remote.c create image 0 0 -image Case -anchor nw
 
-	.remote.c bind button1 <ButtonPress-1> {.remote.c raise downbutton1; update; button 1}
+	.remote.c bind button1 <ButtonPress-1> {.remote.c raise downbutton1; update; pushbutton 1}
 	.remote.c bind button1 <ButtonRelease-1> {.remote.c lower downbutton1}
 
-	.remote.c bind button2 <ButtonPress-1> {.remote.c raise downbutton2; update; button 2}
+	.remote.c bind button2 <ButtonPress-1> {.remote.c raise downbutton2; update; pushbutton 2}
 	.remote.c bind button2 <ButtonRelease-1> {.remote.c lower downbutton2}
 
-	.remote.c bind button3 <ButtonPress-1> {.remote.c raise downbutton3; update; button 3}
+	.remote.c bind button3 <ButtonPress-1> {.remote.c raise downbutton3; update; pushbutton 3}
 	.remote.c bind button3 <ButtonRelease-1> {.remote.c lower downbutton3}
 
-	.remote.c bind button4 <ButtonPress-1> {.remote.c raise downbutton4; update; button 4}
+	.remote.c bind button4 <ButtonPress-1> {.remote.c raise downbutton4; update; pushbutton 4}
 	.remote.c bind button4 <ButtonRelease-1> {.remote.c lower downbutton4}
 
-	.remote.c bind button5 <ButtonPress-1> {.remote.c raise downbutton5; update; button 5}
+	.remote.c bind button5 <ButtonPress-1> {.remote.c raise downbutton5; update; pushbutton 5}
 	.remote.c bind button5 <ButtonRelease-1> {.remote.c lower downbutton5}
 
-	.remote.c bind button6 <ButtonPress-1> {.remote.c raise downbutton6; update; button 6}
+	.remote.c bind button6 <ButtonPress-1> {.remote.c raise downbutton6; update; pushbutton 6}
 	.remote.c bind button6 <ButtonRelease-1> {.remote.c lower downbutton6}
 
-	.remote.c bind button7 <ButtonPress-1> {.remote.c raise downbutton7; update; button 7}
+	.remote.c bind button7 <ButtonPress-1> {.remote.c raise downbutton7; update; pushbutton 7}
 	.remote.c bind button7 <ButtonRelease-1> {.remote.c lower downbutton7}
 	
 	
@@ -858,7 +1021,6 @@ catch {
 	.remote.c raise button7
 	.remote.c itemconfigure screen -outline {} -fill {}
 	.remote.c raise screen
-
 }
 
 pack .remote.c -side top
@@ -884,6 +1046,7 @@ focus .console.t
 toplevel .state
 wm title .state {Pilot State}
 label .state.l1 -text {Active mode:}
+label .state.l1x -text {Battery:}
 label .state.l2 -text {Exception:}
 label .state.l25 -text {Reset:}
 label .state.l3 -text {Function:}
@@ -911,6 +1074,7 @@ label .state.l23 -text {USP:}
 label .state.l24 -text {SSP:}
 
 label .state.halted -text {None}
+label .state.battery -text {Unknown}
 label .state.exception -text {0}
 label .state.reset -text {No}
 label .state.funcname -text {}
@@ -939,71 +1103,74 @@ label .state.ssp -text {00000000}
 grid .state.l1 -column 0 -row 0 -sticky e -columnspan 2
 grid .state.halted -column 2 -row 0 -sticky w -columnspan 2
 
-grid .state.l2 -column 0 -row 1 -sticky e -columnspan 2
-grid .state.exception -column 2 -row 1 -sticky w -columnspan 2
+grid .state.l1x -column 0 -row 1 -sticky e -columnspan 2
+grid .state.battery -column 2 -row 1 -sticky w -columnspan 2
 
-grid .state.l25 -column 0 -row 2 -sticky e -columnspan 2
-grid .state.reset -column 2 -row 2 -sticky w -columnspan 2
+grid .state.l2 -column 0 -row 2 -sticky e -columnspan 2
+grid .state.exception -column 2 -row 2 -sticky w -columnspan 2
 
-grid .state.l3 -column 0 -row 3 -sticky e -columnspan 2 
-grid .state.funcname -column 2 -row 3 -sticky w -columnspan 2
+grid .state.l25 -column 0 -row 3 -sticky e -columnspan 2
+grid .state.reset -column 2 -row 3 -sticky w -columnspan 2
 
-grid .state.l4 -column 0 -row 4 -sticky e -columnspan 2 
-grid .state.funcstart -column 2 -row 4 -sticky w -columnspan 2
+grid .state.l3 -column 0 -row 4 -sticky e -columnspan 2 
+grid .state.funcname -column 2 -row 4 -sticky w -columnspan 2
 
-grid .state.l5 -column 0 -row 5 -sticky e -columnspan 2 
-grid .state.funcend -column 2 -row 5 -sticky w -columnspan 2
+grid .state.l4 -column 0 -row 5 -sticky e -columnspan 2 
+grid .state.funcstart -column 2 -row 5 -sticky w -columnspan 2
+
+grid .state.l5 -column 0 -row 6 -sticky e -columnspan 2 
+grid .state.funcend -column 2 -row 6 -sticky w -columnspan 2
 
 frame .state.rule1 -relief raised -bd 2 -height 4
-grid .state.rule1 -column 0 -row 6 -columnspan 4 -sticky ew
+grid .state.rule1 -column 0 -row 7 -columnspan 4 -sticky ew
 
-grid .state.l6 -column 0 -row 7 -sticky e 
-grid .state.d0 -column 1 -row 7 -sticky w
-grid .state.l7 -column 2 -row 7 -sticky e 
-grid .state.a0 -column 3 -row 7 -sticky w
+grid .state.l6 -column 0 -row 8 -sticky e 
+grid .state.d0 -column 1 -row 8 -sticky w
+grid .state.l7 -column 2 -row 8 -sticky e 
+grid .state.a0 -column 3 -row 8 -sticky w
 
-grid .state.l8 -column 0 -row 8 -sticky e 
-grid .state.d1 -column 1 -row 8 -sticky w
-grid .state.l9 -column 2 -row 8 -sticky e 
-grid .state.a1 -column 3 -row 8 -sticky w
+grid .state.l8 -column 0 -row 9 -sticky e 
+grid .state.d1 -column 1 -row 9 -sticky w
+grid .state.l9 -column 2 -row 9 -sticky e 
+grid .state.a1 -column 3 -row 9 -sticky w
 
-grid .state.l10 -column 0 -row 9 -sticky e 
-grid .state.d2 -column 1 -row 9 -sticky w
-grid .state.l11 -column 2 -row 9 -sticky e 
-grid .state.a2 -column 3 -row 9 -sticky w
+grid .state.l10 -column 0 -row 10 -sticky e 
+grid .state.d2 -column 1 -row 10 -sticky w
+grid .state.l11 -column 2 -row 10 -sticky e 
+grid .state.a2 -column 3 -row 10 -sticky w
 
-grid .state.l12 -column 0 -row 10 -sticky e 
-grid .state.d3 -column 1 -row 10 -sticky w
-grid .state.l13 -column 2 -row 10 -sticky e 
-grid .state.a3 -column 3 -row 10 -sticky w
+grid .state.l12 -column 0 -row 11 -sticky e 
+grid .state.d3 -column 1 -row 11 -sticky w
+grid .state.l13 -column 2 -row 11 -sticky e 
+grid .state.a3 -column 3 -row 11 -sticky w
 
-grid .state.l14 -column 0 -row 11 -sticky e 
-grid .state.d4 -column 1 -row 11 -sticky w
-grid .state.l15 -column 2 -row 11 -sticky e 
-grid .state.a4 -column 3 -row 11 -sticky w
+grid .state.l14 -column 0 -row 12 -sticky e 
+grid .state.d4 -column 1 -row 12 -sticky w
+grid .state.l15 -column 2 -row 12 -sticky e 
+grid .state.a4 -column 3 -row 12 -sticky w
 
-grid .state.l16 -column 0 -row 12 -sticky e 
-grid .state.d5 -column 1 -row 12 -sticky w
-grid .state.l17 -column 2 -row 12 -sticky e 
-grid .state.a5 -column 3 -row 12 -sticky w
+grid .state.l16 -column 0 -row 13 -sticky e 
+grid .state.d5 -column 1 -row 13 -sticky w
+grid .state.l17 -column 2 -row 13 -sticky e 
+grid .state.a5 -column 3 -row 13 -sticky w
 
-grid .state.l18 -column 0 -row 13 -sticky e 
-grid .state.d6 -column 1 -row 13 -sticky w
-grid .state.l19 -column 2 -row 13 -sticky e 
-grid .state.a6 -column 3 -row 13 -sticky w
+grid .state.l18 -column 0 -row 14 -sticky e 
+grid .state.d6 -column 1 -row 14 -sticky w
+grid .state.l19 -column 2 -row 14 -sticky e 
+grid .state.a6 -column 3 -row 14 -sticky w
 
-grid .state.l20 -column 0 -row 14 -sticky e 
-grid .state.d7 -column 1 -row 14 -sticky w
+grid .state.l20 -column 0 -row 15 -sticky e 
+grid .state.d7 -column 1 -row 15 -sticky w
 
-grid .state.l21 -column 0 -row 15 -sticky e 
-grid .state.pc -column 1 -row 15 -sticky w
-grid .state.l22 -column 2 -row 15 -sticky e 
-grid .state.sr -column 3 -row 15 -sticky w
+grid .state.l21 -column 0 -row 16 -sticky e 
+grid .state.pc -column 1 -row 16 -sticky w
+grid .state.l22 -column 2 -row 16 -sticky e 
+grid .state.sr -column 3 -row 16 -sticky w
 
-grid .state.l23 -column 0 -row 16 -sticky e 
-grid .state.usp -column 1 -row 16 -sticky w
-grid .state.l24 -column 2 -row 16 -sticky e 
-grid .state.ssp -column 3 -row 16 -sticky w
+grid .state.l23 -column 0 -row 17 -sticky e 
+grid .state.usp -column 1 -row 17 -sticky w
+grid .state.l24 -column 2 -row 17 -sticky e 
+grid .state.ssp -column 3 -row 17 -sticky w
 
 label .state.bl2 -text {B1:}
 label .state.bl4 -text {B2:}
@@ -1026,31 +1193,31 @@ label .state.b6 -text {00000000}
 label .state.b6a -text {Off}
 
 frame .state.rule2 -relief raised -bd 2 -height 4
-grid .state.rule2 -column 0 -row 17 -columnspan 4 -sticky ew
+grid .state.rule2 -column 0 -row 18 -columnspan 4 -sticky ew
 
-grid .state.bl2 -column 0 -row 18 -sticky e
-grid .state.b1 -column 1 -row 18 -sticky w
-grid .state.b1a -column 2 -row 18 -sticky w 
+grid .state.bl2 -column 0 -row 19 -sticky e
+grid .state.b1 -column 1 -row 19 -sticky w
+grid .state.b1a -column 2 -row 19 -sticky w 
 
-grid .state.bl4 -column 0 -row 19 -sticky e
-grid .state.b2 -column 1 -row 19 -sticky w
-grid .state.b2a -column 2 -row 19 -sticky w 
+grid .state.bl4 -column 0 -row 20 -sticky e
+grid .state.b2 -column 1 -row 20 -sticky w
+grid .state.b2a -column 2 -row 20 -sticky w 
 
-grid .state.bl6 -column 0 -row 20 -sticky e
-grid .state.b3 -column 1 -row 20 -sticky w
-grid .state.b3a -column 2 -row 20 -sticky w 
+grid .state.bl6 -column 0 -row 21 -sticky e
+grid .state.b3 -column 1 -row 21 -sticky w
+grid .state.b3a -column 2 -row 21 -sticky w 
 
-grid .state.bl8 -column 0 -row 21 -sticky e
-grid .state.b4 -column 1 -row 21 -sticky w
-grid .state.b4a -column 2 -row 21 -sticky w 
+grid .state.bl8 -column 0 -row 22 -sticky e
+grid .state.b4 -column 1 -row 22 -sticky w
+grid .state.b4a -column 2 -row 22 -sticky w 
 
-grid .state.bl10 -column 0 -row 22 -sticky e
-grid .state.b5 -column 1 -row 22 -sticky w
-grid .state.b5a -column 2 -row 22 -sticky w 
+grid .state.bl10 -column 0 -row 23 -sticky e
+grid .state.b5 -column 1 -row 23 -sticky w
+grid .state.b5a -column 2 -row 23 -sticky w 
 
-grid .state.bl12 -column 0 -row 23 -sticky e
-grid .state.b6 -column 1 -row 23 -sticky w
-grid .state.b6a -column 2 -row 23 -sticky w 
+grid .state.bl12 -column 0 -row 24 -sticky e
+grid .state.b6 -column 1 -row 24 -sticky w
+grid .state.b6a -column 2 -row 24 -sticky w 
 
 ###  /*** Generate debugger console window ***/
 
@@ -1083,7 +1250,20 @@ menu .m.windows.m
 #wm iconify .console
 #wm iconify .state
 
-global show
+
+proc ShowWindow {name1 name2 op} {
+  global show
+  if {$show($name2)} {
+    if {[wm state $name2] != \"normal\"} {
+      wm deiconify $name2
+    }
+  } else {
+    if {[wm state $name2] == \"normal\"} {
+      wm withdraw $name2
+    }
+  }
+}
+
 
 trace variable show w {ShowWindow}
 
@@ -1098,6 +1278,10 @@ bind .state <Map> { set show(.state) 1 }
 wm protocol .remote WM_DELETE_WINDOW { set show(.remote) 0 }
 wm protocol .console WM_DELETE_WINDOW { set show(.console) 0 }
 wm protocol .state WM_DELETE_WINDOW { set show(.state) 0 }
+
+set show(.remote) 0
+set show(.console) 0
+set show(.state) 0
 
 
 .m.file.m add command -label {Exit} -command {exit}
@@ -1121,69 +1305,168 @@ bind .f.t <Control-KeyPress-Return> {tkTextInsert .f.t \"\\n\" ; break}
 bind .console.t <KeyPress-Return> {Console [.console.t get {insert linestart} {insert lineend}] ; break}
 bind .f.t <KeyPress-Return> {Debugger [.f.t get {insert linestart} {insert lineend}] ; break}
 
-}
-
-set show(.remote) 0
-set show(.console) 0
-set show(.state) 0
-
-proc ShowWindow {name1 name2 op} {
-  global show
-  if {$show($name2)} {
-    if {[wm state $name2] != \"normal\"} {
-      wm deiconify $name2
-    }
-  } else {
-    if {[wm state $name2] == \"normal\"} {
-      wm withdraw $name2
-    }
-  }
-}
-
 proc Console {cmd} {
 	.console.t mark set insert {insert lineend}
 	tkTextInsert .console.t \\n
-	set Exec 2
 	transmit $cmd
 }
 
-proc Say {text} {
-	global Say
-	set Say 1
-	.f.t insert insert \"$text\"
-	.f.t see insert
-}
-
 proc Debugger {cmd} {
-	global Say
-	set Say 0
-	set Interactive 1
 	.f.t mark set insert {insert lineend}
 	tkTextInsert .f.t \\n
 	if {[string length [string trim $cmd]]!=0} {
-		set return [catch {eval $cmd} result]
-		if {($Say==0) || $return} {
-			set result [string trimright $result]
-			Say \"$result\\n\"
+		set code [catch {eval $cmd} message]
+		if {[string length $message]} {
+			set message [string trimright $message]
+			Say \"$message\\n\"
+			if {[.f.t compare insert != {insert linestart}]} {
+				Say \"\\\n\"
+			}
 		}
 	}
 }
+
+proc Say {text} {
+	global Interactive
+	if {$Interactive} {
+	  .f.t insert insert \"$text\"
+	  .f.t see insert
+	} else {
+	  upvar result result
+	  set result \"$result$text\"
+	}
+}
+
+
+", NULL);
+  puts(interp->result);
+  
+  created = 1;
+  usetk = 1;
+
+  return TCL_OK;
+#endif
+}
+
+int proc_help(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+{
+  Say("\
+--- Help ---\n\
+g [<addr>]\tGo: Resume execution (if address is supplied, will start at that point)\n\
+t <addr1> [<addr2>}\tTill: Resume execution until addr1 (if addr2 is supplied, will start at that point)\n\
+coldboot\n\
+warmboot\n\
+pushbutton <button number>\tSimulate button push\n\
+getdisplay\tShow the Pilot's display in the Remote UI window\n\
+");
+  return TCL_OK;
+}
+
+struct { char * name; Tcl_CmdProc * proc; } cmds[] = {
+	{ "coldboot",	proc_coldboot },
+	{ "warmboot",	proc_warmboot },
+	{ "pushbutton",	proc_pushbutton },
+	{ "pen",	proc_pen },
+	{ "key",	proc_key },
+	{ "g",		proc_g },
+	{ "t",		proc_t },
+	{ "attach",	proc_attach },
+	{ "transmit",	proc_transmit },
+	{ "getdisplay",	proc_getdisplay },
+	{ "battery",	proc_battery },
+	{ "port",	proc_port },
+	{ "help",	proc_help },
+	{ "inittkdbg",  proc_inittkdbg },
+	{ 0, 0}
+};
+
+int
+Tcl_AppInit(myinterp)
+    Tcl_Interp *myinterp;		/* Interpreter for application. */
+{
+    int i;
+    
+    interp=myinterp;
+  
+    if (Tcl_Init(interp) == TCL_ERROR) {
+	return TCL_ERROR;
+    }
+#ifdef TK
+    if (usetk) {    
+        if (Tk_Init(interp) == TCL_ERROR) {
+          return TCL_ERROR;
+        }
+        Tcl_StaticPackage(interp, "Tk", Tk_Init, (Tcl_PackageInitProc *) NULL);
+    }
+#endif
+
+  /*** Load custom Tcl procedures ***/
+
+
+  for (i=0;cmds[i].name;i++) {
+    Tcl_CreateCommand(interp, cmds[i].name, cmds[i].proc, 0, NULL);
+  }
+  
+  Tcl_VarEval(interp,"\
+proc Say {text} {
+	global Interactive
+	if {$Interactive} {
+	  puts \"$text\"
+	} else {
+	  upvar result result
+	  set result \"$result$text\"
+	}
+}
+
+proc interactive {args} {
+	global Interactive
+	global errorInfo
+	set hold $Interactive
+	set Interactive 1
+	set code [catch $args message]
+	set Interactive $hold
+	error $message $errorInfo $code
+}
+
+proc noninteractive {args} {
+	global Interactive
+	global errorInfo
+	set hold $Interactive
+	set Interactive 0
+	set code [catch $args message]
+	set Interactive $hold
+	error $message $errorInfo $code
+}
+
+set Interactive 1
+
 
 proc bgerror {msg} {
 	Say $msg
 }
 
-#proc attachpoll {} {
-#	attach
-#	after 5000 attachpoll
-#}
-#
-#after 5000 attachpoll
+proc checkup {} {
+	catch {noninteractive battery}
+	after 10000 checkup
+}
 
-", NULL);
+after 1000 checkup
 
-  Tcl_VarEval(interp,"inittkdbg",NULL);
+proc checkupin {time} {
+	after $time {catch {noninteractive battery}}
+}
 
+",NULL);     
+
+  Tcl_LinkVar(interp, "Interactive", (char*)&Interactive, TCL_LINK_INT);
+
+
+#ifdef TK  
+  if (usetk)
+    Tcl_VarEval(interp,"inittkdbg",NULL);
+  else
+    Tcl_VarEval(interp,"set tkdbg 0", NULL);
+#endif
 
   Say("\tWelcome to pilot-debug!\n\nType 'help' for further information.\n\n");
   
@@ -1222,7 +1505,7 @@ Execute 'help' for the list of commands currently implemented.\n\
      * then no user-specific startup file will be run under any conditions.
      */
 
-    Tcl_SetVar(interp, "tcl_rcFileName", "~/.tkdebugrc", TCL_GLOBAL_ONLY);
+    Tcl_SetVar(interp, "tcl_rcFileName", "~/.pdebugrc", TCL_GLOBAL_ONLY);
 
     Tcl_VarEval(interp,"\
       set tcl_prompt1 myprompt
@@ -1230,11 +1513,10 @@ Execute 'help' for the list of commands currently implemented.\n\
         puts -nonewline \"pilot-debug> \"
       }
       
-      set Exec 1
     ",NULL);
 
     /* Deal with command-line arguments */
-    
+
     Tcl_VarEval(interp,"\
       if {$argc > 0} {
         set p [lindex $argv 0]
@@ -1245,10 +1527,23 @@ Execute 'help' for the list of commands currently implemented.\n\
 set one with 'port /dev/something'\\n\\n\"
       }
     ",NULL);
-    
+        
     return TCL_OK;
 }
 
+static void
+StdinProc(ClientData clientData, int mask);
+
+static void
+Prompt(Tcl_Interp * interp, int partial);
+
+
+static Tcl_DString command;	/* Used to buffer incomplete commands being
+				 * read from stdin. */
+static Tcl_DString line;	/* Used to read the next line from the
+                                 * terminal input. */
+static int tty;			/* Non-zero means standard input is a
+				 * terminal-like device.  Zero means it's*/
 
 
 int main(int argc, char *argv[])
@@ -1257,6 +1552,8 @@ int main(int argc, char *argv[])
     char buf[20];
     int code;
     size_t length;
+    int exitCode = 0;
+    Tcl_Channel inChannel, outChannel, errChannel;
 
     Tcl_FindExecutable(argv[0]);
     interp = Tcl_CreateInterp();
@@ -1269,6 +1566,21 @@ int main(int argc, char *argv[])
 	    argc-=2;
 	    argv+=2;
 	}
+    }
+
+#ifdef TK    
+    usetk = 1;
+#endif
+    
+    if (argc > 1) {
+        length = strlen(argv[1]);
+        if ((length >= 2) && (strncmp(argv[1], "-notk", length) == 0)) {
+#ifdef TK
+             usetk = 0;
+#endif
+             argc--;
+             argv++;
+        }
     }
 
     /*
@@ -1288,14 +1600,28 @@ int main(int argc, char *argv[])
      * Set the "tcl_interactive" variable.
      */
 
-    Tcl_SetVar(interp, "tcl_interactive", "0", TCL_GLOBAL_ONLY);
+    tty = isatty(0);
+    Tcl_SetVar(interp, "tcl_interactive",
+	    ((fileName == NULL) && tty) ? "1" : "0", TCL_GLOBAL_ONLY);
+
+
+#ifdef TK
+    if (!getenv("DISPLAY") || (strlen(getenv("DISPLAY"))==0))
+        usetk = 0;
+#endif
 
     /*
      * Invoke application-specific initialization.
      */
 
     if (Tcl_AppInit(interp) != TCL_OK) {
-    	/*TkpDisplayWarning(interp->result, "Application initialization failed");*/
+	errChannel = Tcl_GetStdChannel(TCL_STDERR);
+	if (errChannel) {
+	    Tcl_Write(errChannel,
+		    "application-specific initialization failed: ", -1);
+	    Tcl_Write(errChannel, interp->result, -1);
+	    Tcl_Write(errChannel, "\n", 1);
+	}
     }
 
     /*
@@ -1304,16 +1630,255 @@ int main(int argc, char *argv[])
 
     if (fileName != NULL) {
 	code = Tcl_EvalFile(interp, fileName);
+	if (code != TCL_OK) {
+	    errChannel = Tcl_GetStdChannel(TCL_STDERR);
+	    if (errChannel) {
+		/*
+		 * The following statement guarantees that the errorInfo
+		 * variable is set properly.
+		 */
+
+		Tcl_AddErrorInfo(interp, "");
+		Tcl_Write(errChannel,
+			Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY), -1);
+		Tcl_Write(errChannel, "\n", 1);
+	    }
+	    exitCode = 1;
+	}
+	goto done;
     }
 
+    /*
+     * We're running interactively.  Source a user-specific startup
+     * file if the application specified one and if the file exists.
+     */
+
+    Tcl_SourceRCFile(interp);
+    
     /*
      * Loop infinitely, waiting for commands to execute.  When there
      * are no windows left, Tk_MainLoop returns and we exit.
      */
+     
+#ifdef TK
+    if (!usetk) {     
+#endif
 
-    Tk_MainLoop();
-    Tcl_DeleteInterp(interp);
-    Tcl_Exit(0);
-    
+    /*
+     * Process commands from stdin until there's an end-of-file.  Note
+     * that we need to fetch the standard channels again after every
+     * eval, since they may have been changed.
+     */
+
+    inChannel = Tcl_GetChannel(interp, "stdin", NULL);
+    if (inChannel) {
+	Tcl_CreateChannelHandler(inChannel, TCL_READABLE|TCL_ACTIVE,
+		StdinProc, (ClientData) inChannel);
+    }
+    if (tty) {
+	Prompt(interp, 0);
+    }
+    outChannel = Tcl_GetChannel(interp, "stdout", NULL);
+    if (outChannel) {
+	Tcl_Flush(outChannel);
+    }
+    Tcl_DStringInit(&command);
+    Tcl_CreateExitHandler((Tcl_ExitProc *) Tcl_DStringFree, (ClientData) &command);
+    Tcl_DStringInit(&line);
+    Tcl_ResetResult(interp);
+ 
+    /*
+     * Loop infinitely until all event handlers are passive. Then exit.
+     * Rather than calling exit, invoke the "exit" command so that
+     * users can replace "exit" with some other command to do additional
+     * cleanup on exit.  The Tcl_Eval call should never return.
+     */
+     
+#ifdef TK
+    }
+#endif
+
+done:
+
+#ifdef TK
+    if (usetk) {
+        Tk_MainLoop();
+        Tcl_DeleteInterp(interp);
+        Tcl_Exit(0);
+    } else {
+#endif
+        while (Tcl_DoOneEvent(0)) {
+        }
+        sprintf(buffer, "exit %d", exitCode);
+        Tcl_Eval(interp, buffer);
+#ifdef TK
+    }
+#endif
     return 0;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * StdinProc --
+ *
+ *	This procedure is invoked by the event dispatcher whenever
+ *	standard input becomes readable.  It grabs the next line of
+ *	input characters, adds them to a command being assembled, and
+ *	executes the command if it's complete.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Could be almost arbitrary, depending on the command that's
+ *	typed.
+ *
+ *----------------------------------------------------------------------
+ */
+
+    /* ARGSUSED */
+static void
+StdinProc(clientData, mask)
+    ClientData clientData;		/* Not used. */
+    int mask;				/* Not used. */
+{
+    static int gotPartial = 0;
+    char *cmd;
+    int code, count;
+    Tcl_Channel newchan, chan = (Tcl_Channel) clientData;
+
+    count = Tcl_Gets(chan, &line);
+
+    if (count < 0) {
+	if (!gotPartial) {
+	    if (tty) {
+		Tcl_Exit(0);
+	    } else {
+		Tcl_DeleteChannelHandler(chan, StdinProc, (ClientData) chan);
+	    }
+	    return;
+	} else {
+	    count = 0;
+	}
+    }
+
+    (void) Tcl_DStringAppend(&command, Tcl_DStringValue(&line), -1);
+    cmd = Tcl_DStringAppend(&command, "\n", -1);
+    Tcl_DStringFree(&line);
+    
+    if (!Tcl_CommandComplete(cmd)) {
+        gotPartial = 1;
+        goto prompt;
+    }
+    gotPartial = 0;
+
+    /*
+     * Disable the stdin channel handler while evaluating the command;
+     * otherwise if the command re-enters the event loop we might
+     * process commands from stdin before the current command is
+     * finished.  Among other things, this will trash the text of the
+     * command being evaluated.
+     */
+
+    Tcl_CreateChannelHandler(chan, TCL_ACTIVE, StdinProc, (ClientData) chan);
+    code = Tcl_RecordAndEval(interp, cmd, TCL_EVAL_GLOBAL);
+    newchan = Tcl_GetChannel(interp, "stdin", NULL);
+    if (chan != newchan) {
+	Tcl_DeleteChannelHandler(chan, StdinProc, (ClientData) chan);
+    }
+    if (newchan) {
+	Tcl_CreateChannelHandler(newchan, TCL_READABLE | TCL_ACTIVE,
+		StdinProc, (ClientData) newchan);
+    }
+    Tcl_DStringFree(&command);
+    if (*interp->result != 0) {
+	if (code != TCL_OK) {
+	    chan = Tcl_GetChannel(interp, "stderr", NULL);
+	} else if (tty) {
+	    chan = Tcl_GetChannel(interp, "stdout", NULL);
+	} else {
+	    chan = NULL;
+	}
+	if (chan) {
+	    Tcl_Write(chan, interp->result, -1);
+	    Tcl_Write(chan, "\n", 1);
+	}
+    }
+
+    /*
+     * Output a prompt.
+     */
+
+    prompt:
+    if (tty) {
+	Prompt(interp, gotPartial);
+    }
+    Tcl_ResetResult(interp);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Prompt --
+ *
+ *	Issue a prompt on standard output, or invoke a script
+ *	to issue the prompt.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	A prompt gets output, and a Tcl script may be evaluated
+ *	in interp.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+Prompt(interp, partial)
+    Tcl_Interp *interp;			/* Interpreter to use for prompting. */
+    int partial;			/* Non-zero means there already
+					 * exists a partial command, so use
+					 * the secondary prompt. */
+{
+    char *promptCmd;
+    int code;
+    Tcl_Channel outChannel, errChannel;
+
+    errChannel = Tcl_GetChannel(interp, "stderr", NULL);
+
+    promptCmd = Tcl_GetVar(interp,
+	partial ? "tcl_prompt2" : "tcl_prompt1", TCL_GLOBAL_ONLY);
+    if (promptCmd == NULL) {
+	outChannel = Tcl_GetChannel(interp, "stdout", NULL);
+defaultPrompt:
+	if (!partial && outChannel) {
+            Tcl_Write(outChannel, "% ", 2);
+	}
+    } else {
+	code = Tcl_Eval(interp, promptCmd);
+	outChannel = Tcl_GetChannel(interp, "stdout", NULL);
+	if (code != TCL_OK) {
+	    Tcl_AddErrorInfo(interp,
+		    "\n    (script that generates prompt)");
+            /*
+             * We must check that errChannel is a real channel - it
+             * is possible that someone has transferred stderr out of
+             * this interpreter with "interp transfer".
+             */
+
+	    errChannel = Tcl_GetChannel(interp, "stdout", NULL);
+            if (errChannel != (Tcl_Channel) NULL) {
+                Tcl_Write(errChannel, interp->result, -1);
+                Tcl_Write(errChannel, "\n", 1);
+            }
+	    goto defaultPrompt;
+	} else if (*interp->result && outChannel) {
+	    Tcl_Write(outChannel, interp->result, strlen(interp->result));
+	}
+    }
+    if (outChannel) {
+        Tcl_Flush(outChannel);
+    }
 }

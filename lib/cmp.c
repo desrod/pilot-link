@@ -76,7 +76,7 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
   
   set_byte(cmpbuf+0, 1);
   set_byte(cmpbuf+1, 0);
-  set_long(cmpbuf+2, OurCommVersion);
+  set_long(cmpbuf+2, CommVersion_1_0);
   set_long(cmpbuf+6, maxbaud);
 
   cmp_dump(cmpbuf, 1);

@@ -1,17 +1,21 @@
 
 Sorry for not providing decent information here. The basics are:
   
-  1) run configure (unless using OS/2)
+  1) run configure (unless using OS/2). If you want to install in someplace
+     other the /usr/local, give configure an argument like '--prefix=/usr/pilot'
     
   2) run make (unless using OS/2, then make -f Makefile.os2)
     
   3) play around, _carefully_. pilot-xfer is probably the most useful
      program for you, and also the safest.
      
+  4) run 'make install' if you feel the need.
+     
 Note on pilot-debug: this program is a work-in-progress, and requires Tcl
-7.6 (or greater) and Tk 4.2 (or greater). You'll need to modify Makefile to
-compile it (the directions are right at the top.) Currently pilot-debug needs to
-be executed in the pilot-link directory if you want the fancy images.
+7.6 (or greater) and optionally Tk 4.2 (or greater). You'll need to modify
+Makefile to compile it (the directions are right at the top.) Currently you
+must have installed pilot-link or run pilot-debug in the pilot-link
+directory if you want the fancy images for the Remote UI window.
 
 Usage notes:
 

@@ -1,12 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(include/pi-cmp.h)
+AC_CONFIG_AUX_DIR(scripts)
 
 dnl Check host type
 AC_CANONICAL_HOST
 
 dnl Checks for programs.
 AC_PROG_CC
-dnl AC_PROG_INSTALL
+AC_PROG_INSTALL
 AC_PROG_RANLIB
 
 dnl Checks for libraries.

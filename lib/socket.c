@@ -48,6 +48,7 @@ int pi_socket(int domain, int type, int protocol)
   ps->mac.fd = 0;
   ps->xid = 0;
   ps->initiator = 0;
+  ps->version = 0;
   
 #ifdef OS2
   ps->os2_read_timeout=60;
@@ -185,7 +186,8 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
     if(cmp_rx(ps, &c) < 0)
       return -1; /* Failed to establish connection, errno already set */
 
-    if (c.commversion == OurCommVersion) {
+    if ((c.commversion == CommVersion_1_0) ||
+        (c.commversion == CommVersion_2_0)) {
       if(ps->establishrate > c.baudrate) {
 #ifdef DEBUG
         fprintf(stderr,"Rate %d too high, dropping to %ld\n",ps->establishrate,c.baudrate);
@@ -193,6 +195,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
         ps->establishrate = c.baudrate;
       }
       ps->rate = ps->establishrate;
+      ps->version = c.commversion;
       if(cmp_init(ps, ps->rate)<0)
         return -1;
       if(ps->rate != 9600) {
@@ -205,7 +208,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
       pi_device_close(ps);
 
       fprintf(stderr, "pi_socket connection failed due to comm version mismatch\n");
-      fprintf(stderr, " (expected 0x%lx, got 0x%lx)\n", OurCommVersion, c.commversion);
+      fprintf(stderr, " (expected 0x%lx or 0x%lx, got 0x%lx)\n", CommVersion_1_0, CommVersion_2_0, c.commversion);
 
       errno = ECONNREFUSED;
       return -1;

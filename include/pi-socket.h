@@ -1,6 +1,10 @@
 #ifndef _PILOT_SOCKET_H_
 #define _PILOT_SOCKET_H_
 
+#define PILOT_LINK_VERSION 0
+#define PILOT_LINK_MAJOR 5
+#define PILOT_LINK_MINOR 4
+
 #define PI_AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
 
 #define PI_PF_SLP    PI_AF_SLP

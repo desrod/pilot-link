@@ -139,7 +139,7 @@ int sys_PackRegisters(void * data, struct Pilot_registers * r)
   return 0;
 }
 
-int sys_Continue(int sd, struct Pilot_continue * c)
+int sys_Continue(int sd, struct Pilot_registers * r, struct Pilot_watch * w)
 {
   char buf[94];
   
@@ -151,14 +151,32 @@ int sys_Continue(int sd, struct Pilot_continue * c)
   buf[4] = 0x07;
   buf[5] = 0; /*gapfil*/
   
-  sys_PackRegisters(buf+6, &c->regs);
-  set_byte(buf+80, c->watch);
+  if (!r)
+    return pi_write(sd,buf,6);
+  
+  sys_PackRegisters(buf+6, r);
+  set_byte(buf+80, (w != 0) ? 1 : 0);
   set_byte(buf+81, 0);
-  set_long(buf+82, c->watch_address);
-  set_long(buf+86, c->watch_length);
-  set_long(buf+90, c->watch_checksum);
+  set_long(buf+82, w ? w->address : 0);
+  set_long(buf+86, w ? w->length : 0);
+  set_long(buf+90, w ? w->checksum : 0);
   
   return pi_write(sd, buf, 94);
+}
+
+int sys_Step(int sd)
+{
+  char buf[94];
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0x03;
+  buf[5] = 0; /*gapfil*/
+  
+  return pi_write(sd,buf,6);
 }
 
 int sys_SetBreakpoints(int sd, struct Pilot_breakpoint * b)
@@ -190,6 +208,83 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint * b)
     return 1;
 }
 
+int sys_SetTrapBreaks(int sd, int * traps)
+{
+  char buf[94];
+  int i;
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0x11;
+  buf[5] = 0; /*gapfil*/
+  
+  for (i=0;i<5;i++) {
+    set_short(buf+6+i*2, traps[i]);
+  }
+  
+  pi_write(sd, buf, 16);
+  
+  i = pi_read(sd, buf, 6);
+
+  if ((i<=0) || (buf[4] != (char)0x91))
+    return 0;
+  else
+    return 1;
+}
+
+int sys_GetTrapBreaks(int sd, int * traps)
+{
+  char buf[94];
+  int i;
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0x10;
+  buf[5] = 0; /*gapfil*/
+  
+  pi_write(sd, buf, 6);
+  
+  i = pi_read(sd, buf, 16);
+
+  if ((i<16) || (buf[4] != (char)0x90))
+    return 0;
+
+  for (i=0;i<5;i++) {
+    traps[i] = get_short(buf+6+i*2);
+  }
+
+  return 1;
+}
+
+int sys_ToggleDbgBreaks(int sd)
+{
+  char buf[94];
+  int i;
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0x0d;
+  buf[5] = 0; /*gapfil*/
+  
+  pi_write(sd, buf, 6);
+  
+  i = pi_read(sd, buf, 7);
+
+  if ((i<7) || (buf[4] != (char)0x8d))
+    return 0;
+
+  return get_byte(buf+6);
+}
+
 int sys_QueryState(int sd)
 {
   char buf[6];
@@ -205,38 +300,91 @@ int sys_QueryState(int sd)
   return pi_write(sd, buf, 6);
 }
 
-int sys_ReadMemory(int sd, unsigned long addr, int len, void * dest)
+int sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void * dest)
 {
   int result;
   unsigned char buf[0xffff];
+  unsigned long todo,done;
   
-  buf[0] = 0;
-  buf[1] = 0;
-  buf[2] = 0;
-  buf[3] = 0;
   
-  buf[4] = 0x01;
-  buf[5] = 0; /*gapfil*/
+  done = 0;
+  do {
+    todo = len;
+    if (todo > 256)
+      todo = 256;
+
+    buf[0] = 0;
+    buf[1] = 0;
+    buf[2] = 0;
+    buf[3] = 0;
   
-  set_long(buf+6, addr);
-  set_short(buf+10, len);
+    buf[4] = 0x01;
+    buf[5] = 0; /*gapfil*/
   
-  pi_write(sd, buf, 12);
+    set_long(buf+6, addr+done);
+    set_short(buf+10, todo);
   
-  result = pi_read(sd, buf, len+6);
+    pi_write(sd, buf, 12);
   
-  if (result<0)
-    return result;
+    result = pi_read(sd, buf, todo+6);
   
-  if ((buf[4] == 0x81) && (result == len+6)) {
-    memcpy(dest, buf+6, len);
-    return len;
-  } else {
-    return 0;
-  }
+    if (result<0)
+      return done;
+  
+    if ((buf[4] == 0x81) && (result == todo+6)) {
+      memcpy(dest + done, buf+6, todo);
+      done += todo;
+    } else {
+      return done;
+    }
+  } while (done < len);
+  return done;
 }
 
-int sys_WriteMemory(int sd, unsigned long addr, int len, void * src)
+int sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void * src)
+{
+  int result;
+  unsigned char buf[0xffff];
+  unsigned long todo, done;
+  
+  
+  done = 0;
+  do {
+    todo = len;
+    if (todo>256)
+      todo = 256;
+
+    buf[0] = 0;
+    buf[1] = 0;
+    buf[2] = 0;
+    buf[3] = 0;
+  
+    buf[4] = 0x02;
+    buf[5] = 0; /*gapfil*/
+
+  
+    set_long(buf+6, addr);
+    set_short(buf+10, len);
+    memcpy(buf+12, src+done, todo);
+  
+    pi_write(sd, buf, len+12);
+  
+    result = pi_read(sd, buf, 6);
+  
+    if (result<0)
+      return done;
+   
+    if ((buf[4] == 0x82) && (result == todo+6)) {
+      ;
+    } else {
+      return done;
+    }
+  } while (done < len);
+  return done;
+} 
+
+int sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, int len, int caseinsensitive,
+             void * data, unsigned long * found)
 {
   int result;
   unsigned char buf[0xffff];
@@ -246,25 +394,26 @@ int sys_WriteMemory(int sd, unsigned long addr, int len, void * src)
   buf[2] = 0;
   buf[3] = 0;
   
-  buf[4] = 0x02;
+  buf[4] = 0x11;
   buf[5] = 0; /*gapfil*/
   
-  set_long(buf+6, addr);
-  set_short(buf+10, len);
-  memcpy(buf+12, src, len);
+  set_long(buf+6, startaddr);
+  set_long(buf+10, stopaddr);
+  set_short(buf+14, len);
+  set_byte(buf+16, caseinsensitive);
+  memcpy(buf+17, data, len);
   
-  pi_write(sd, buf, len+12);
+  pi_write(sd, buf, len+17);
   
-  result = pi_read(sd, buf, 6);
+  result = pi_read(sd, buf, 12);
   
   if (result<0)
     return result;
+    
+  if (found)
+    *found = get_long(buf+6);
   
-  if ((buf[4] == 0x82) && (result == len+6)) {
-    return len;
-  } else {
-    return 0;
-  }
+  return get_byte(buf+10);
 }
 
 
@@ -353,6 +502,7 @@ int sys_RPC(int sd, int socket, int trap, long * D0, long * A0, int params, stru
   return 0;
 }
 
+/* Deprecated */
 int RPC(int sd, int socket, int trap, int reply, ...)
 {
   va_list ap;
@@ -439,11 +589,14 @@ int PackRPC(struct RPC_params * p, int trap, int reply, ...)
       p->param[i].data = c;
       p->param[i].invert = (int)va_arg(ap,int);
       if(p->param[i].invert) {
-        if(p->param[i].size == 2) {
+        if((p->param[i].invert == 2) && (p->param[i].size == 2)) {
+          int * b = c;
+          *b = htons(*b<<8);
+        } else if(p->param[i].size == 2) {
           int * s = c;
           *s = htons(*s);
         } else {
-          int * l = c;
+          long * l = c;
           *l = htonl(*l);
         }
       }
@@ -470,11 +623,14 @@ unsigned long DoRPC(int sd, int socket, struct RPC_params * p, int * error)
   for(j=0;j<p->args;j++) {
       if(p->param[j].invert) {
         void * c = p->param[j].data;
-        if(p->param[j].size == 2) {
+        if((p->param[j].invert == 2) && (p->param[j].size == 2)) {
+          int * s = c;
+          *s = ntohs(*s)>>8;
+        } else if(p->param[j].size == 2) {
           int * s = c;
           *s = htons(*s);
         } else {
-          int * l = c;
+          long * l = c;
           *l = htonl(*l);
         }
       }

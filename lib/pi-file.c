@@ -863,7 +863,7 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
   if(dlp_CreateDB(socket, pf->info.creator, pf->info.type, cardno,
                        flags, pf->info.version,
                        pf->info.name, &db)<0)
-    return -1;
+   return -1;
     
   pi_file_get_app_info(pf, &buffer, &l);
   
