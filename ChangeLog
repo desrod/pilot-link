@@ -1,3 +1,13 @@
+2002-07-16  JP Rosevear  <jpr@ximian.com>
+
+	* configure.in: don't enable extra warnings by default and add
+	pedantic when we do
+
+	* libpisock/net.c (net_tx_handshake): use unsigned char type for
+	the buffer
+
+	* include/pi-socket.h: removing unneccessary comma
+
 2002-07-14  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/dlp.c (dlp_FindDBInfo): don't bail out unless the

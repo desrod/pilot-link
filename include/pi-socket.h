@@ -65,7 +65,7 @@ enum PiOptCMP {
 	PI_CMP_TYPE,
 	PI_CMP_FLAGS,
 	PI_CMP_VERS,
-	PI_CMP_BAUD,
+	PI_CMP_BAUD
 };
 
 enum PiOptNet {

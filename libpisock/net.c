@@ -135,7 +135,7 @@ net_tx_handshake(struct pi_socket *ps)
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
 	unsigned char msg3[8]  = 
 		"\x93\x00\x00\x00\x00\x00\x00\x00";
-	char buffer[200];
+	unsigned char buffer[200];
 	
 	if (net_tx(ps, msg1, 22, 0) < 0)
 		return -1;
