@@ -210,7 +210,7 @@ static void record_dump (unsigned long recID, unsigned int index, int flags,
 	    (flags & dlpRecAttrArchived) ? " Archive" : "",
 	    (!flags) ? " None" : "",
 	    flags, data_len));
-	dumpdata(data, data_len);
+	dumpdata(data, (size_t)data_len);
 }
 #endif
 
@@ -534,7 +534,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	}
 
 	response->err = get_short (&dlp_buf->data[2]);
-	pi_set_palmos_error(sd, response->err);
+	pi_set_palmos_error(sd, (int)response->err);
 
 	buf = dlp_buf->data + 4;
 	for (i = 0; i < response->argc; i++) {
@@ -749,7 +749,7 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 	/* Check to make sure there was no error  */
 	if ((*res)->err != dlpErrNoError) {
 		errno = -ENOMSG;
-		pi_set_palmos_error(sd, (*res)->err);
+		pi_set_palmos_error(sd, (int)((*res)->err));
 		return pi_set_error(sd, PI_ERR_DLP_PALMOS);
 	}
 
@@ -785,17 +785,14 @@ time_t dlp_ptohdate(const unsigned char *data)
 {
 	struct tm t;
 
+	memset(&t, 0, sizeof(t));
 	t.tm_sec 	= (int) data[6];
 	t.tm_min 	= (int) data[5];
 	t.tm_hour 	= (int) data[4];
 	t.tm_mday 	= (int) data[3];
 	t.tm_mon 	= (int) data[2] - 1;
 	t.tm_year 	= (((int)data[0] << 8) | (int)data[1]) - 1900;
-	t.tm_wday 	= 0;
-	t.tm_yday 	= 0;
 	t.tm_isdst 	= -1;
-	t.tm_zone   = NULL;
-	t.tm_gmtoff = 0;
 
 	/* Seems like year comes back as all zeros if the date is "empty"
 	   (but other fields can vary).  And mktime() chokes on 1900 B.C. 
@@ -845,12 +842,12 @@ time_t dlp_ptohdate(const unsigned char *data)
  *
  ***********************************************************************/
 static void
-dlp_htopdate(time_t time, unsigned char *data)
+dlp_htopdate(time_t ti, unsigned char *data)
 {				/* @+ptrnegate@ */
 	int 	year;
-	struct 	tm *t = localtime(&time);
+	const struct tm *t = localtime(&ti);
 
-	ASSERT(t != 0);
+	ASSERT(t != NULL);
 
 	year = t->tm_year + 1900;
 
@@ -862,8 +859,6 @@ dlp_htopdate(time_t time, unsigned char *data)
 	data[2] = (unsigned char) (t->tm_mon + 1);
 	data[0] = (unsigned char) (year >> 8);
 	data[1] = (unsigned char) year;
-
-	return;
 }
 
 
@@ -906,7 +901,7 @@ dlp_GetSysDateTime(int sd, time_t * t)
 	dlp_request_free(req);
 	
 	if (result > 0) {
-		*t = dlp_ptohdate(DLP_RESPONSE_DATA (res, 0, 0));
+		*t = dlp_ptohdate((const unsigned char *)DLP_RESPONSE_DATA (res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			"DLP GetSysDateTime %s", ctime(t)));
@@ -931,7 +926,7 @@ dlp_GetSysDateTime(int sd, time_t * t)
  *
  ***********************************************************************/
 int
-dlp_SetSysDateTime(int sd, time_t time)
+dlp_SetSysDateTime(int sd, time_t t)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -944,7 +939,7 @@ dlp_SetSysDateTime(int sd, time_t time)
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	
-	dlp_htopdate(time, DLP_REQUEST_DATA(req, 0, 0));
+	dlp_htopdate(t, (unsigned char *)DLP_REQUEST_DATA(req, 0, 0));
 
 	result = dlp_exec(sd, req, &res);
 
@@ -994,7 +989,7 @@ dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 			|| (get_byte(DLP_RESPONSE_DATA(res, 0, 3)) > 1);
 		c->card 	= get_byte(DLP_RESPONSE_DATA(res, 0, 5));
 		c->version 	= get_byte(DLP_RESPONSE_DATA(res, 0, 6));
-		c->creation 	= get_date(DLP_RESPONSE_DATA(res, 0, 8));
+		c->creation 	= get_date((const unsigned char *)DLP_RESPONSE_DATA(res, 0, 8));
 		c->romSize 	= get_long(DLP_RESPONSE_DATA(res, 0, 16));
 		c->ramSize 	= get_long(DLP_RESPONSE_DATA(res, 0, 20));
 		c->ramFree 	= get_long(DLP_RESPONSE_DATA(res, 0, 24));
@@ -1166,7 +1161,7 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 	dlp_request_free(req);
 	
 	if (result > 0) {
-		p = DLP_RESPONSE_DATA(res, 0, 0);
+		p = (unsigned char *)DLP_RESPONSE_DATA(res, 0, 0);
 		db.more = get_byte(p + 2);
 		count = get_byte(p + 3);
 
@@ -1269,7 +1264,7 @@ dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 	if (start < 0x1000) {
 		i = start;
 		while (dlp_ReadDBList(sd, cardno, 0x80 | dlpDBListMultiple, i, buf) >= 0) {
-			for (j=0; j < (buf->used / sizeof(struct DBInfo)); j++) {
+			for (j=0; j < (int)(buf->used / sizeof(struct DBInfo)); j++) {
 				memcpy (info, buf->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
 				if ((!dbname || strcmp(info->name, dbname) == 0)
 					&& (!type || info->type == type)
@@ -1283,7 +1278,7 @@ dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 
 	i = start & 0xFFF;
 	while (dlp_ReadDBList(sd, cardno, 0x40 | dlpDBListMultiple, i, buf) >= 0) {
-		for (j=0; j < (buf->used / sizeof(struct DBInfo)); j++) {
+		for (j=0; j < (int)(buf->used / sizeof(struct DBInfo)); j++) {
 			memcpy (info, buf->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
 			if ((!dbname || strcmp(info->name, dbname) == 0)
 				&& (!type || info->type == type)
@@ -1345,11 +1340,11 @@ dlp_decode_finddb_response(struct dlpResponse *res, int *cardno, unsigned long *
 				info->modnum =
 					get_long(DLP_RESPONSE_DATA(res, arg, 24));
 				info->createDate =
-					 get_date(DLP_RESPONSE_DATA(res, arg, 28));
+					 get_date((const unsigned char *)DLP_RESPONSE_DATA(res, arg, 28));
 				info->modifyDate =
-					 get_date(DLP_RESPONSE_DATA(res, arg, 36));
+					 get_date((const unsigned char *)DLP_RESPONSE_DATA(res, arg, 36));
 				info->backupDate =
-					 get_date(DLP_RESPONSE_DATA(res, arg, 44));
+					 get_date((const unsigned char *)DLP_RESPONSE_DATA(res, arg, 44));
 				info->index =
 					 get_short(DLP_RESPONSE_DATA(res, arg, 52));
 
@@ -1992,9 +1987,10 @@ dlp_AddSyncLogEntry(int sd, char *entry)
 	dlp_request_free(req);	
 	dlp_response_free(res);
 
-	if (result > 0)
+	if (result > 0) {
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP AddSyncLogEntry Entry: \n  %s\n", entry));
+	}
 
 	return result;
 }
@@ -2085,9 +2081,9 @@ dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags,
 	set_short(DLP_REQUEST_DATA(req, 0, 2), clearFlags);
 	set_short(DLP_REQUEST_DATA(req, 0, 4), flags);
 	set_short(DLP_REQUEST_DATA(req, 0, 6), version);
-	set_date(DLP_REQUEST_DATA(req, 0, 8), createDate);
-	set_date(DLP_REQUEST_DATA(req, 0, 16), modifyDate);
-	set_date(DLP_REQUEST_DATA(req, 0, 24), backupDate);
+	set_date((unsigned char *)DLP_REQUEST_DATA(req, 0, 8), createDate);
+	set_date((unsigned char *)DLP_REQUEST_DATA(req, 0, 16), modifyDate);
+	set_date((unsigned char *)DLP_REQUEST_DATA(req, 0, 24), backupDate);
 	set_long(DLP_REQUEST_DATA(req, 0, 32), type);
 	set_long(DLP_REQUEST_DATA(req, 0, 36), creator);
 	
@@ -2135,10 +2131,11 @@ dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 	dlp_request_free(req);	
 	dlp_response_free(res);
 
-	if (result >= 0)
+	if (result >= 0) {
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP MoveCategory Handle: %d, From: %d, To: %d\n",
 		    handle, fromcat, tocat));
+	}
 
 	return result;
 }
@@ -2293,7 +2290,7 @@ dlp_WriteUserInfo(int sd, struct PilotUser *User)
 	set_long(DLP_REQUEST_DATA(req, 0, 0), User->userID);
 	set_long(DLP_REQUEST_DATA(req, 0, 4), User->viewerID);
 	set_long(DLP_REQUEST_DATA(req, 0, 8), User->lastSyncPC);
-	set_date(DLP_REQUEST_DATA(req, 0, 12), User->lastSyncDate);
+	set_date((unsigned char *)DLP_REQUEST_DATA(req, 0, 12), User->lastSyncDate);
 	set_byte(DLP_REQUEST_DATA(req, 0, 20), 0xff);
 	set_byte(DLP_REQUEST_DATA(req, 0, 21), len);
 	strcpy(DLP_REQUEST_DATA(req, 0, 22), User->username);
@@ -2346,9 +2343,9 @@ dlp_ReadUserInfo(int sd, struct PilotUser *User)
 		User->lastSyncPC =
 			 get_long(DLP_RESPONSE_DATA (res, 0, 8));
 		User->successfulSyncDate =
-			 get_date(DLP_RESPONSE_DATA (res, 0, 12));
+			 get_date((const unsigned char *)DLP_RESPONSE_DATA (res, 0, 12));
 		User->lastSyncDate =
-			 get_date(DLP_RESPONSE_DATA (res, 0, 20));
+			 get_date((const unsigned char *)DLP_RESPONSE_DATA (res, 0, 20));
 		userlen = 
 			get_byte(DLP_RESPONSE_DATA (res, 0, 28));
 		User->passwordLength  =
@@ -2638,7 +2635,7 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 	if (pi_version(sd) < 0x0101) {
 		struct RPC_params p;		
 		int val;
-		unsigned long result;
+		unsigned long errCode;
 
 		if (feature == NULL)
 			return 0;
@@ -2650,7 +2647,7 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 			RPC_Short((unsigned short) num),
 			RPC_LongPtr(feature), RPC_End);
 
-		val = dlp_RPC(sd, &p, &result);
+		val = dlp_RPC(sd, &p, &errCode);
 
 		if (val < 0) {
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -2658,17 +2655,19 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 			    dlp_errorlist[-val], val));
 
 			return val;
-		} else if (result) {
+		}
+		
+		if (errCode) {
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			    "DLP ReadFeature FtrGet error 0x%8.8lX\n",
-			    (unsigned long) result));
-
-			return (-(long) result);
-		} else {
-			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			    " DLP ReadFeature Feature: 0x%8.8lX\n",
-			    (unsigned long) *feature));
+			    res));
+			pi_set_palmos_error(sd, (int)errCode);
+			return pi_set_error(sd, PI_ERR_DLP_PALMOS);
 		}
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    " DLP ReadFeature Feature: 0x%8.8lX\n",
+		    (unsigned long) *feature));
 		
 		return 0;
 	}
@@ -4496,9 +4495,9 @@ dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *numStrings,
 			for (i=0; i < *numStrings; i++, sz+=len, p+=len)
 				len = strlen (p) + 1;
 
-			*strings = (char *) malloc (sz);
+			*strings = (char *) malloc ((size_t)sz);
 			if (*strings)
-				memcpy (*strings, DLP_RESPONSE_DATA (res, 0, 8), sz);
+				memcpy (*strings, DLP_RESPONSE_DATA (res, 0, 8), (size_t)sz);
 			else
 				result = pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 		}
