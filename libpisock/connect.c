@@ -59,8 +59,7 @@ pilot_connect(const char *port)
 {
 	int 	sd	= -1, 	/* Socket, formerly parent/client_socket */
 		result, 
-		count	= 0,
-		err	= 0;
+		count	= 0;
 
 	struct 	pi_sockaddr addr;
 	struct 	stat attr;
@@ -72,105 +71,78 @@ pilot_connect(const char *port)
 			"<port> given.\n"
 			"   Defaulting to '%s'\n", defport);
 		port = defport;
-		err = stat(port, &attr);
-	}
-
-	if (err) {
-		fprintf(stderr, 
-			"   ERROR: %s (%d)\n\n", strerror(errno), errno);
-		fprintf(stderr,
-			"   Error accessing: '%s'. Does '%s' exist?\n",
-		       port, port);
-		fprintf(stderr,
-			"   Please use --help for more information\n\n");
-		exit(1);
 	}
 
 	fprintf(stderr, "\n");
 	if ((sd = pi_socket(PI_AF_PILOT,
 			PI_SOCK_STREAM, PI_PF_DLP)) < 0) {
-		fprintf(stderr, "\n   Unable to create socket '%s'\n",
-			port ? port : getenv("PILOTPORT"));
+		fprintf(stderr, "\n   Unable to create socket '%s'\n", port);
 		return -1;
 	}
 
 	begin:
-	if (port != NULL) {
-		addr.pi_family = PI_AF_PILOT;
-		strncpy(addr.pi_device, port, sizeof(addr.pi_device));
-		result =
-		    pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	} else {
-		result = pi_bind(sd, NULL, 0);
-	}
+	addr.pi_family = PI_AF_PILOT;
+	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
+	result = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
 
 	if (result < 0) {
 		int 	save_errno = errno;
-		const char 	*portname;
+		char	realport[50];
+		
+		realpath(port, realport);
+		errno = save_errno;
 
-		portname = (port != NULL) ? port : getenv("PILOTPORT");
-
-		if (portname) {
-			char realport[50];
-			realpath(portname, realport);
-			errno = save_errno;
-
-			if (errno == ENOENT) {
-				fprintf(stderr,
+		if (errno == ENOENT) {
+			fprintf(stderr,
 					" The device %s does not exist..\n",
-					portname);
-				fprintf(stderr,
+					port);
+			fprintf(stderr,
 					" Possible solution:\n\n\tmknod %s c "
-					"<major> <minor>\n\n", portname);
-
-			} else if (errno == EACCES) {
-				fprintf(stderr, "   Please check the "
+					"<major> <minor>\n\n", port);
+		} else if (errno == EACCES) {
+			fprintf(stderr, "   Please check the "
 					"permissions on %s..\n", realport);
-				fprintf(stderr,
-					 " Possible solution:\n\n\tchmod 0666 "
+			fprintf(stderr,
+					" Possible solution:\n\n\tchmod 0666 "
 					"%s\n\n", realport);
-
-			} else if (errno == ENODEV) {
-				while (count <= 5) {
-					if (isatty(fileno(stdout))) {
-						fprintf(stderr,
-						 "\r   Port not connected,"
-						 " sleeping for 2 seconds, ");
-						fprintf(stderr,
-							 "%d retries..",
-							 	5-count);
-					}
-					sleep(2);
-					count++;
-					goto begin;
+		} else if (errno == ENODEV) {
+			while (count <= 5) {
+				if (isatty(fileno(stdout))) {
+					fprintf(stderr,
+							"\r   Port not connected,"
+							" sleeping for 2 seconds, ");
+					fprintf(stderr,
+							"%d retries..",
+							5-count);
 				}
-				fprintf(stderr,
-					 "\n\n   Device not found on %s, \
-					 Did you hit HotSync?\n\n", realport);
-
-			} else if (errno == EISDIR) {
-				fprintf(stderr, " The port specified must"
+				sleep(2);
+				count++;
+				goto begin;
+			}
+			fprintf(stderr,
+					"\n\n   Device not found on %s, \
+					Did you hit HotSync?\n\n", realport);	
+		} else if (errno == EISDIR) {
+			fprintf(stderr, " The port specified must"
 					" contain a device name, and %s was"
 					" a directory.\n"
 					"   Please change that to reference a"
 					" real device, and try"
-					" again\n\n", portname);
-			}
+					" again\n\n", port);
+		}
+		
+		fprintf(stderr, "   Unable to bind to port: %s\n", 
+				port);
 
-			fprintf(stderr, "   Unable to bind to port: %s\n", 
-				portname);
-	                
-			fprintf(stderr, "   Please use --help for more "
+		fprintf(stderr, "   Please use --help for more "
 				"information\n\n");
-		} else
-			fprintf(stderr, "\n   No port specified\n");
 		return -1;
 	}
 
 	if (isatty(fileno(stdout))) {
 		printf("\n   Listening to port: %s\n\n"
 			"   Please press the HotSync button now... ",
-			port ? port : getenv("PILOTPORT"));
+			port);
 	}
 
 	if (pi_listen(sd, 1) < 0) {
