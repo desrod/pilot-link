@@ -23,7 +23,7 @@ dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=12
 PILOT_LINK_MINOR=0
-PILOT_LINK_PATCH=-rc7
+PILOT_LINK_PATCH=-rc8
 
 AC_SUBST(PILOT_LINK_VERS)
 AC_SUBST(PILOT_LINK_MAJOR)
@@ -36,8 +36,8 @@ dnl ******************************
 dnl Pilot Link Library Version 
 dnl libpisock.so.CURRENT.AGE.REVISION
 dnl ******************************
-PISOCK_CURRENT=8
-PISOCK_REVISION=7
+PISOCK_CURRENT=9
+PISOCK_REVISION=0
 PISOCK_AGE=0
 
 AC_SUBST(PISOCK_CURRENT)
@@ -50,7 +50,7 @@ dnl Pilot Link Sync Library Version
 dnl libpisync.so
 dnl ******************************
 PISYNC_CURRENT=0
-PISYNC_REVISION=1
+PISYNC_REVISION=2
 PISYNC_AGE=0
 
 AC_SUBST(PISYNC_CURRENT)
