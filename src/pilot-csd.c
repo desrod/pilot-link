@@ -237,12 +237,13 @@ void main(int argc, char*argv[]) {
         strcpy(hostname, optarg);
         break;
       case 'a':
-        if (!inet_aton(optarg, &address))
-          if ((hent = gethostbyname(optarg)))
+        if (!inet_aton(optarg, &address)) {
+          if ((hent = gethostbyname(optarg))) {
   	    memcpy(&address.s_addr, hent->h_addr, sizeof(address));
-  	  else {
+  	  } else {
   	    fprintf(stderr, "Invalid address '%s'\n\n", optarg);
   	    Help(argv);
+          }
   	  }
         break;
       case 's':

@@ -132,6 +132,10 @@ int slp_rx(struct pi_socket *ps)
 
     if ((v == 
 	get_short(&ps->mac->rxb->data[ps->mac->rxb->len - 2]))
+	|| (ps->mac->rxb->data[5] == 3 /*PI_PF_LOOP*/)
+		/* we'll ignore LOOP packets anyway, so we'll disregard
+		   CRC errors for them -- working around a problem where
+		   the tenth LOOP packet carries an incorrect CRC value */
 #if 0
 	|| (0xbeef == 
 	get_short(&ps->mac->rxb->data[ps->mac->rxb->len - 2]))

@@ -14,11 +14,6 @@
 #include "XSUB.h"
 #include "patchlevel.h"
 
-/* Work around a bit of Perl Pollution */
-#ifdef dirty
-#undef dirty
-#endif
-
 #include "pi-macros.h"
 #include "pi-file.h"
 #include "pi-datebook.h"

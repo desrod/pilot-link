@@ -440,11 +440,12 @@ again:
     sys_QueryState(port);
     debugger = 0;
     Read_Pilot(0,0);
-    if (debugger && !old)
+    if (debugger && !old) {
       if (verify > 1)
         Say("Attaching to Pilot debugger\n");
-      else
+      } else {
         SayInteractive("(attaching to Pilot debugger)\n");
+      }
   }
   
   if (!debugger && (verify || !console)) {
@@ -453,16 +454,20 @@ again:
      console = 0;
     PackRPC(&p, 0xA09E, RPC_IntReply, RPC_End); /* TaskID, a harmless call */
     DoRPC(port, 1, &p, &err);
-    if (err == 0)
-      console = 1;
-    else 
-      console = 0;
-    if (console && !old)
-      if (verify > 1)
-        Say("Attaching to Pilot console\n");
-      else
-        SayInteractive("(attaching to Pilot console)\n");
-    
+
+	if (err == 0) {
+		console = 1;
+	} else {
+		console = 0;
+	}
+
+	if (console && !old) {
+		if (verify > 1) {
+			Say("Attaching to Pilot console\n");
+		} else {
+			SayInteractive("(attaching to Pilot console)\n");
+    		}    
+	}
   }
   
   if (!debugger && !console && !verify) {

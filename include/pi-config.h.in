@@ -252,10 +252,10 @@ int putenv(const char *string);
 # define ENOMSG 1024
 #endif
 
-#if defined(linux) || defined(__FreeBSD__)
-# define TTYPrompt "/dev/cua??"
+#if defined(__FreeBSD__)
+# define TTYPrompt "/dev/cua[<0..n>]"
 #else
-# define TTYPrompt "/dev/tty??"
+# define TTYPrompt "/dev/tty[<0..n>]"
 #endif
 
 #ifdef NeXT

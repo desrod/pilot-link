@@ -1,0 +1,255 @@
+cd ./libsock ; make  libpisock.la
+make[1]: Entering directory `/src/compiling/pilot-link.0.9.3/libsock'
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c socket.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC socket.c
+mv -f socket.o socket.lo
+gcc -I../include -I./../include -g -O2 -Wall -c socket.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c serial.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC serial.c
+serial.c: In function `pi_serial_accept':
+serial.c:221: warning: unused variable `rc'
+mv -f serial.o serial.lo
+gcc -I../include -I./../include -g -O2 -Wall -c serial.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c inetserial.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC inetserial.c
+mv -f inetserial.o inetserial.lo
+gcc -I../include -I./../include -g -O2 -Wall -c inetserial.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c slp.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC slp.c
+mv -f slp.o slp.lo
+gcc -I../include -I./../include -g -O2 -Wall -c slp.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c padp.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC padp.c
+mv -f padp.o padp.lo
+gcc -I../include -I./../include -g -O2 -Wall -c padp.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c dlp.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC dlp.c
+mv -f dlp.o dlp.lo
+gcc -I../include -I./../include -g -O2 -Wall -c dlp.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c cmp.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC cmp.c
+mv -f cmp.o cmp.lo
+gcc -I../include -I./../include -g -O2 -Wall -c cmp.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c syspkt.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC syspkt.c
+mv -f syspkt.o syspkt.lo
+gcc -I../include -I./../include -g -O2 -Wall -c syspkt.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c inet.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC inet.c
+mv -f inet.o inet.lo
+gcc -I../include -I./../include -g -O2 -Wall -c inet.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c money.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC money.c
+mv -f money.o money.lo
+gcc -I../include -I./../include -g -O2 -Wall -c money.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c pi-file.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC pi-file.c
+mv -f pi-file.o pi-file.lo
+gcc -I../include -I./../include -g -O2 -Wall -c pi-file.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c datebook.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC datebook.c
+mv -f datebook.o datebook.lo
+gcc -I../include -I./../include -g -O2 -Wall -c datebook.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c memo.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC memo.c
+mv -f memo.o memo.lo
+gcc -I../include -I./../include -g -O2 -Wall -c memo.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c address.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC address.c
+mv -f address.o address.lo
+gcc -I../include -I./../include -g -O2 -Wall -c address.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c todo.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC todo.c
+mv -f todo.o todo.lo
+gcc -I../include -I./../include -g -O2 -Wall -c todo.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c expense.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC expense.c
+mv -f expense.o expense.lo
+gcc -I../include -I./../include -g -O2 -Wall -c expense.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c mail.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC mail.c
+mv -f mail.o mail.lo
+gcc -I../include -I./../include -g -O2 -Wall -c mail.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c sync.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC sync.c
+mv -f sync.o sync.lo
+gcc -I../include -I./../include -g -O2 -Wall -c sync.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c appinfo.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC appinfo.c
+mv -f appinfo.o appinfo.lo
+gcc -I../include -I./../include -g -O2 -Wall -c appinfo.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c hinote.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC hinote.c
+mv -f hinote.o hinote.lo
+gcc -I../include -I./../include -g -O2 -Wall -c hinote.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c utils.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC utils.c
+mv -f utils.o utils.lo
+gcc -I../include -I./../include -g -O2 -Wall -c utils.c >/dev/null 2>&1
+../libtool --mode=compile gcc -I../include -I./../include -g -O2 -Wall -c unixserial.c
+gcc -I../include -I./../include -g -O2 -Wall -c -fPIC -DPIC unixserial.c
+mv -f unixserial.o unixserial.lo
+gcc -I../include -I./../include -g -O2 -Wall -c unixserial.c >/dev/null 2>&1
+../libtool --mode=link gcc -I../include -I./../include -g -O2 -Wall \
+	-export-dynamic -rpath /usr/local/palm/lib -version-info 3:1:0 \
+	-o libpisock.la socket.lo serial.lo inetserial.lo slp.lo padp.lo dlp.lo cmp.lo syspkt.lo inet.lo money.lo pi-file.lo datebook.lo memo.lo address.lo todo.lo expense.lo mail.lo sync.lo appinfo.lo hinote.lo utils.lo unixserial.lo
+mkdir .libs
+gcc -shared -Wl,-soname -Wl,libpisock.so.3 -o .libs/libpisock.so.3.0.1 socket.lo serial.lo inetserial.lo slp.lo padp.lo dlp.lo cmp.lo syspkt.lo inet.lo money.lo pi-file.lo datebook.lo memo.lo address.lo todo.lo expense.lo mail.lo sync.lo appinfo.lo hinote.lo utils.lo unixserial.lo
+(cd .libs && ln -s libpisock.so.3.0.1 libpisock.so.3)
+(cd .libs && ln -s libpisock.so.3.0.1 libpisock.so)
+ar cru .libs/libpisock.a socket.o serial.o inetserial.o slp.o padp.o dlp.o cmp.o syspkt.o inet.o money.o pi-file.o datebook.o memo.o address.o todo.o expense.o mail.o sync.o appinfo.o hinote.o utils.o unixserial.o
+ranlib .libs/libpisock.a
+creating libpisock.la
+(cd .libs && ln -s ../libpisock.la libpisock.la)
+make[1]: Leaving directory `/src/compiling/pilot-link.0.9.3/libsock'
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pilot-xfer.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pilot-xfer.o libsock/libpisock.la -o pilot-xfer -lm
+mkdir .libs
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pilot-xfer.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so -o .libs/pilot-xfer -lm
+creating pilot-xfer
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c getopt.c
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c getopt1.c
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pilot-file.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pilot-file.o libsock/libpisock.la getopt.o getopt1.o -o pilot-file -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pilot-file.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pilot-file -lm
+creating pilot-file
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pilot-dedupe.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pilot-dedupe.o libsock/libpisock.la getopt.o getopt1.o -o pilot-dedupe -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pilot-dedupe.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pilot-dedupe -lm
+creating pilot-dedupe
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pilot-schlep.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pilot-schlep.o libsock/libpisock.la getopt.o getopt1.o -o pilot-schlep -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pilot-schlep.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pilot-schlep -lm
+creating pilot-schlep
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c install-memo.c
+install-memo.c: In function `main':
+install-memo.c:34: warning: `i' might be used uninitialized in this function
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include install-memo.o libsock/libpisock.la getopt.o getopt1.o -o install-memo -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include install-memo.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/install-memo -lm
+creating install-memo
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c install-user.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include install-user.o libsock/libpisock.la getopt.o getopt1.o -o install-user -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include install-user.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/install-user -lm
+creating install-user
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c install-datebook.c
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c parsedate.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include install-datebook.o parsedate.o libsock/libpisock.la getopt.o getopt1.o -o install-datebook -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include install-datebook.o parsedate.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/install-datebook -lm
+creating install-datebook
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c install-todos.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include install-todos.o libsock/libpisock.la getopt.o getopt1.o -o install-todos -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include install-todos.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/install-todos -lm
+creating install-todos
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pilot-addresses.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pilot-addresses.o libsock/libpisock.la getopt.o getopt1.o -o pilot-addresses -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pilot-addresses.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pilot-addresses -lm
+creating pilot-addresses
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pilot-clip.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pilot-clip.o libsock/libpisock.la getopt.o getopt1.o -o pilot-clip -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pilot-clip.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pilot-clip -lm
+creating pilot-clip
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c read-ical.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include read-ical.o libsock/libpisock.la getopt.o getopt1.o -o read-ical -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include read-ical.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/read-ical -lm
+creating read-ical
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pilot-mail.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pilot-mail.o parsedate.o libsock/libpisock.la getopt.o getopt1.o -o pilot-mail -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pilot-mail.o parsedate.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pilot-mail -lm
+creating pilot-mail
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c read-expenses.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include read-expenses.o libsock/libpisock.la getopt.o getopt1.o -o read-expenses -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include read-expenses.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/read-expenses -lm
+creating read-expenses
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c reminders.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include reminders.o libsock/libpisock.la getopt.o getopt1.o -o reminders -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include reminders.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/reminders -lm
+creating reminders
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c memos.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include memos.o libsock/libpisock.la getopt.o getopt1.o -o memos -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include memos.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/memos -lm
+creating memos
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c addresses.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include addresses.o libsock/libpisock.la getopt.o getopt1.o -o addresses -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include addresses.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/addresses -lm
+creating addresses
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c read-todos.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include read-todos.o libsock/libpisock.la getopt.o getopt1.o -o read-todos -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include read-todos.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/read-todos -lm
+creating read-todos
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c debugsh.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include debugsh.o libsock/libpisock.la getopt.o getopt1.o -o debugsh -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include debugsh.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/debugsh -lm
+creating debugsh
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c dlpsh.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include dlpsh.o libsock/libpisock.la getopt.o getopt1.o -o dlpsh -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include dlpsh.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/dlpsh -lm
+creating dlpsh
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c getrom.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include getrom.o libsock/libpisock.la getopt.o getopt1.o -o getrom -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include getrom.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/getrom -lm
+creating getrom
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pi-getrom.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pi-getrom.o libsock/libpisock.la getopt.o getopt1.o -o pi-getrom -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pi-getrom.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pi-getrom -lm
+creating pi-getrom
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pi-getram.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pi-getram.o libsock/libpisock.la getopt.o getopt1.o -o pi-getram -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pi-getram.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pi-getram -lm
+creating pi-getram
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pi-port.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pi-port.o libsock/libpisock.la getopt.o getopt1.o -o pi-port -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pi-port.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pi-port -lm
+creating pi-port
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pi-csd.c
+pi-csd.c:210: warning: return type of `main' is not `int'
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pi-csd.o libsock/libpisock.la getopt.o getopt1.o -o pi-csd -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pi-csd.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pi-csd -lm
+creating pi-csd
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pi-nredir.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pi-nredir.o libsock/libpisock.la getopt.o getopt1.o -o pi-nredir -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pi-nredir.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pi-nredir -lm
+creating pi-nredir
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c money2qif.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include money2qif.o libsock/libpisock.la getopt.o getopt1.o -o money2qif -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include money2qif.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/money2qif -lm
+creating money2qif
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c install-hinote.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include install-hinote.o libsock/libpisock.la getopt.o getopt1.o -o install-hinote -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include install-hinote.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/install-hinote -lm
+creating install-hinote
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c hinotes.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include hinotes.o libsock/libpisock.la getopt.o getopt1.o -o hinotes -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include hinotes.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/hinotes -lm
+creating hinotes
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pilot-debug.c
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c pd-tty.c
+./libtool --mode=link    gcc  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include pilot-debug.o pd-tty.o libsock/libpisock.la getopt.o getopt1.o -o pilot-debug -L/usr/local/lib -ltk8.1 -L/usr/local/lib -ltcl8.1 -L/usr/X11R6/lib -lX11 -ldl  -lm -lreadline -ltermcap -lm
+gcc -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include pilot-debug.o pd-tty.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o -o .libs/pilot-debug -L/usr/local/lib -ltk8.1 -L/usr/local/lib -ltcl8.1 -L/usr/X11R6/lib -lX11 -ldl -lm -lreadline -ltermcap -lm
+creating pilot-debug
+cd ./libcc ; make  libpicc.a
+make[1]: Entering directory `/src/compiling/pilot-link.0.9.3/libcc'
+c++ -I../include -I./../include -g -O2 -Wall -c datebook.cc
+c++ -I../include -I./../include -g -O2 -Wall -c address.cc
+c++ -I../include -I./../include -g -O2 -Wall -c todo.cc
+c++ -I../include -I./../include -g -O2 -Wall -c appInfo.cc
+c++ -I../include -I./../include -g -O2 -Wall -c memo.cc
+c++ -I../include -I./../include -g -O2 -Wall -c iambicExpense.cc
+c++ -I../include -I./../include -g -O2 -Wall -c dlp.cc
+rm -f libpicc.a
+ar cur libpicc.a datebook.o address.o todo.o appInfo.o memo.o iambicExpense.o dlp.o
+ranlib libpicc.a
+make[1]: Leaving directory `/src/compiling/pilot-link.0.9.3/libcc'
+c++ -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c ccexample.cc
+./libtool --mode=link   c++  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include ccexample.o libsock/libpisock.la getopt.o getopt1.o libcc/libpicc.a -o ccexample  -lm
+c++ -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include ccexample.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o libcc/libpicc.a -o .libs/ccexample -lm
+creating ccexample
+c++ -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include -c iambicexample.cc
+./libtool --mode=link   c++  -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\"  -DTCL -DTK -I/usr/local/include iambicexample.o libsock/libpisock.la getopt.o getopt1.o libcc/libpicc.a -o iambicexample  -lm
+c++ -I./include -I./include -g -O2 -Wall -DREADLINE_2_1 -DLIBDIR=\"/usr/local/palm/lib\" -DTCL -DTK -I/usr/local/include iambicexample.o -Wl,--rpath -Wl,/usr/local/palm/lib libsock/.libs/libpisock.so getopt.o getopt1.o libcc/libpicc.a -o .libs/iambicexample -lm
+creating iambicexample
+/usr/bin/perl pilot-undelete.PL > pilot-undelete
+chmod +x pilot-undelete
+/usr/bin/perl ietf2datebook.PL > ietf2datebook
+chmod +x ietf2datebook
+/usr/bin/perl sync-plan.PL > sync-plan
+chmod +x sync-plan

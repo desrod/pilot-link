@@ -30,7 +30,8 @@ int main(int argc, char *argv[])
   int ret;
 
   if (argc < 2) {
-    fprintf(stderr,"usage:%s %s [User name [User ID]]\n",argv[0],TTYPrompt);
+    fprintf(stderr,"Assign your Palm Device a user name and unique userid\n");
+    fprintf(stderr,"usage:%s %s [User name] <userid>\n",argv[0],TTYPrompt);
     exit(2);
   }
 

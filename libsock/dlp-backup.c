@@ -62,7 +62,7 @@ char * dlp_strerror(int error) {
     return dlp_errorlist[error];
 }
 
-const int dlp_trace = 1;
+const int dlp_trace = 0;
 
 #define DLP_TRACE
 
@@ -84,6 +84,9 @@ const int dlp_trace = 1;
     if (dlp_trace)       \
       fprintf(stderr, "Result: No error, %d bytes\n", result);
   
+#endif
+
+
 #if 0
 /* Eventual code to dynamically allocate buffer */
 void * dlp_buffer(int sd, int cmd, int arg, int arglen, struct pi_socket * ps)

@@ -62,9 +62,8 @@ char * dlp_strerror(int error) {
     return dlp_errorlist[error];
 	if ((unsigned int) error >= (sizeof(dlp_errorlist)/(sizeof(char *))))
 		return "Unknown error";
-const int dlp_trace = 0;
+const int dlp_trace = 1;
 		return dlp_errorlist[error];
-#ifndef NO_DLP_TRACE
 #define DLP_TRACE
 
 
@@ -85,19 +84,6 @@ const int dlp_trace = 0;
     if (dlp_trace)       \
       fprintf(stderr, "Result: No error, %d bytes\n", result);
   
-#else
-
-#define Trace(name)
-#define Expect(count)   \
-  if (result < count) { \
-    if (result >= 0)    \
-      result = -128;    \
-    return result;      \
-  }
-  
-#endif
-
-
 #if 0
 /* Eventual code to dynamically allocate buffer */
 void * dlp_buffer(int sd, int cmd, int arg, int arglen, struct pi_socket * ps)
