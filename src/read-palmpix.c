@@ -152,10 +152,9 @@ void
 void write_png( FILE *f, const struct PalmPixState *state,
 	        const struct PalmPixHeader *header)
 {
-   int i;  			/*	,j,k = 0; */
+   int i; 
    png_structp png_ptr;
    png_infop info_ptr;
-/*   png_bytep row; */
    
    png_ptr = png_create_write_struct
      ( PNG_LIBPNG_VER_STRING, png_voidp_NULL,  
@@ -186,23 +185,14 @@ void write_png( FILE *f, const struct PalmPixState *state,
 
    png_write_info( png_ptr, info_ptr );
 
-/*   row = (png_bytep)malloc( width/8 * sizeof( png_byte )); */
-   
-/*   if( NULL == row )
-     return; */
-   
    for( i=0; i<header->h; i++ )
-/*     for( j=0; j<n->data[i].repeat; j++ ) */
-       {
-	  png_write_row( png_ptr, &state->pixmap[i*header->w*3] );
-	  png_write_flush( png_ptr );	  
-       }
+     {
+	png_write_row( png_ptr, &state->pixmap[i*header->w*3] );
+	png_write_flush( png_ptr );	  
+     }
    
    png_write_end(png_ptr, info_ptr);
    
-/*   free( row ); */
-/*   row = NULL; */
-
    png_destroy_write_struct( &png_ptr, &info_ptr );
    
 }
