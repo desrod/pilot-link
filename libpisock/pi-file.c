@@ -207,6 +207,7 @@ pi_file_t
 
 	memcpy(ip->name, p, 32);
 	ip->flags 		= get_short(p + 32);
+	ip->miscFlags		= dlpDBMiscFlagRamBased;
 	ip->version 		= get_short(p + 34);
 	ip->createDate 		= pilot_time_to_unix_time(get_long(p + 36));
 	ip->modifyDate 		= pilot_time_to_unix_time(get_long(p + 40));
