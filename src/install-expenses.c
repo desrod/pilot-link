@@ -65,9 +65,9 @@ int main(int argc, const char *argv[])
 	        {"amount", 	'a', POPT_ARG_STRING, &theExpense.amount, 0, "Payment amount"},
         	{"vendor", 	'V', POPT_ARG_STRING, &theExpense.vendor, 0, "Expense vendor name (Joe's Restaurant)"},
 	        {"city", 	'i', POPT_ARG_STRING, &theExpense.city, 0, "Location/city for this expense entry"},
-        	{"guests", 	'g', POPT_ARG_STRING, &theExpense.attendees, 0, "Number of guests for this expense entry"},
+        	{"guests", 	'g', POPT_ARG_STRING, &theExpense.attendees, 0, "Number of guests for this expense entry","NUMBER"},
 	        {"note", 	'n', POPT_ARG_STRING, &theExpense.note, 0, "Notes for this expense entry"},
-        	{"category", 	'c', POPT_ARG_STRING, &category_name, 0, "Install entry into this category"},
+        	{"category", 	'c', POPT_ARG_STRING, &category_name, 0, "Install entry into this category", "CATEGORY" },
                 {"replace", 	0, POPT_ARG_VAL, &replace_category, 1, "Replace all entries in category by this one"},
         	POPT_TABLEEND
 	};
