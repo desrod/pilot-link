@@ -4,14 +4,17 @@
 .SH "NAME"
 
 \fBpilot\-addresses\fR \- read and write address book databases to and from
-a Palm handheld, such as those made from \fIPalm\fR, \fIHandspring\fR,
-\fIHandera\fR, \fITRGPro\fR, \fISony\fR or other Palm handheld.
+a Palm handheld
 
 
 .SH "SYNOPSIS"
-\fBpilot\-addresses\fR [\fB\-p\fR <\fIport\fR>] [\fB\-c\fR <\fIcategory\fR>] [\fB\-d\fR <\fIcategory\fR>] [\fB\-r\fR <\fIfile\fR> | \fB\-w\fR <\fIfile\fR>] 
+\fBpilot\-addresses\fR [\fIcommon-options\fR] [\fB\-c\fR <\fIcategory\fR>]  [\fB\-a\fR] [\fB\-t <\fIdelim\fR>\fR] \fB\-r\fR <\fIfile\fR>
 
-(Note that not all available options are shown above)
+\fBpilot\-addresses\fR [\fIcommon-options\fR] [\fB\-c\fR <\fIcategory\fR>]  [\fB\-t <\fIdelim\fR>\fR] \fB\-w\fR <\fIfile\fR> 
+
+\fBpilot\-addresses\fR [\fIcommon-options\fR] \fB\-d\fR <\fIcategory\fR>
+
+\fBpilot\-addresses\fR [\fIcommon-options\fR] \fB\-\-delete\-all\fR
 
 
 .SH "DESCRIPTION"
@@ -22,38 +25,29 @@ category or delete all entries in the database.
 
 .SH "OPTIONS"
 .TP 
-\fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
-Use device file <\fIport\fR> to communicate with the Palm handheld.
-If this is not specified, will look for the \fI$PILOTPORT\fR environment
-variable. If both are not found or supplied, \fBinstall\-expenses\fR will
-fall back to /dev/pilot.
+See \fBpilot-link\fR(7) for details on the common options.
 
-
-.TP 
-\fB\-h\fR, \fB\-\-help\fR   
-Display the help synopsis for \fBpilot\-addresses\fR.
-
-
-.TP 
-\fB\-v\fR, \fB\-\-version\fR
-Display version of \fBpilot\-addresses\fR.
 
 
 .TP 
 \fB\-a\fR, \fB\-\-augment\fR
 Augments fields in address book records with additional information.  The
 augmented information is placed before and separated from the field with a
-semi\-colon, (;).
+semi\-colon, (;). 
+Empty fields are not augmented.
 
 Augmented information can include any of the following below. 
 
-<\fIcategory\fR>  # Placed in front of each record or..
+<\fIcategory\fR><\fIshown\-phone\fR> Placed in front of each
+entry with a category set or with shown\-phone set.
 
-Placed in front of each phone number field: 
+<\fIphone\-label\fR> Placed in front of each phone number field. 
+These are drawn from the labels set on the Palm device, typically:
 
 ["Work"|"Home"|"Fax"|"Other"|"E\-mail"|"Main"|"Pager"|"Mobile"]
 
-Empty fields are not augmented.
+\fBNote:\fR This produces a non\-standard CSV file which is
+not parseable by anything other than \fBpilot\-addresses\fR.
 
 
 .TP 
@@ -63,23 +57,31 @@ Install records to category <\fIcategory\fR> by default. Normally
 option is overridden by the category specified in the record with the
 \fB\-a\fR option.
 
+.TP 
+\fB\-t\fR, \fB\-\-tdelim\fR <\fIdelim\fR>
+Use the delimiter specified to separate all
+fields of a record. Delimiters are specified as follows: 3=tab, 
+2=; (semi\-colon), 1=, (comma), 0=\\n (newline).
+This overrides the default delimiter of comma between fields and semi\-colon
+between a field's augmented information. 
+
+\fBNote:\fR This may generate
+confusing results when used with the \fB\-a\fR option.
+This generates non\-standard CSV files, which may be
+unparseable by anything other than \fBpilot\-addresses\fR.
+
 
 .TP 
-\fB\-d\fR, \fB\-\-delcat\fR <\fIcategory\fR>
+\fB\-d\fR, \fB\-\-delete\-category\fR <\fIcategory\fR>
 
-Delete all records in the specified category <\fIcategory\fR> before installing new records.
+Delete all records in the specified category <\fIcategory\fR> and do nothing else.
 
 
 .TP 
-\fB\-D\fR, \fB\-\-delall\fR
+\fB\-\-delete-all\fR
 Delete all address book records in all categories. Obviously, be \fBvery\fR
 careful with this one.
 
-
-.TP 
-.B \fB\-e\fR, \fB\-\-escape\fR
-Escape all special characters with a backslash. This enables you to read and
-write entries with newline characters in a field or note.
 
 
 .TP 
@@ -89,18 +91,6 @@ application. (Use the \fB\-w\fR <\fIfile\fR> option to get a sample
 "template file" for input records to see how the fields are laid out).
 
 
-.TP 
-\fB\-t\fR, \fB\-\-tdelim\fR <\fIdelim\fR>
-Include category in each record, use the delimiter specified to separate all
-fields of a record. Delimiters are specified as follows: 3=tab, 2=;, 1=,.
-This overrides the default delimiter of comma between fields and semi\-colon
-between a field's augmented information. (Please note that this may generate
-confusing results when used with the \fB\-a\fR option.)
-
-
-.TP 
-\fB\-T\fR, \fB\-\-titles\fR
-Write a header line with field titles as the first line of the data file.
 
 
 .TP 
@@ -130,11 +120,10 @@ onto the Palm:
 
 .LP 
 To read the address book records in the file addrbook.csv and place them
-into the Palm address book database category \fISpecial\fR after first
-deleting all current records in the \fISpecial\fR category on the palm:
+into the Palm address book database category \fISpecial\fR:
 
 .IP 
-\fBpilot\-addresses\fR \fB\-c\fR Special \fB\-d\fR Special \fB\-r\fR addrbook.csv
+\fBpilot\-addresses\fR \fB\-c\fR Special \fB\-r\fR addrbook.csv
 
 
 .SH "BUGS"
