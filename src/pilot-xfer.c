@@ -526,6 +526,17 @@ static void Fetch(char *dbname)
 	struct 	pi_file *f;
 	char    *tmpPtr = dbname;
 
+	/* FIXME: Need to handle users who pass no extension on the 
+	          target filename, such as: '-f AddressDB' instead of 
+		  using '-f AddressDB.pdb' */
+
+	if (access(dbname, R_OK|W_OK) != 0) {
+		fprintf(stderr, "\n");
+		fprintf(stderr, "   Unable to write to %s, check "
+			"ownership and permissions.\n\n", dbname);
+		exit(1);
+	}
+
 	/* removes .pxx from the end of supplied dbname for the case where
 	   user wants ThisDB and specifies it as ThisDB.prc, etc */
 	while (*tmpPtr != '\0' && tmpPtr <= dbname + 265) tmpPtr++;
@@ -561,6 +572,7 @@ static void Fetch(char *dbname)
 		strcat(name, ".prc");
 	else if (!(info.flags & dlpDBFlagClipping))
 		strcat(name, ".pdb");
+
 
 	printf("Fetching '%s'... ", name);
 	fflush(stdout);

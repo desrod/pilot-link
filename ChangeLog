@@ -2,6 +2,8 @@
 
 	* src/pilot-datebook/Makefile.am: Removed trailing space
 
+	* src/pilot-xfer.c: Fix for non-writable local files
+
 	* bindings/Python/setup.py.in: Fix autoconf propagation
 
 	* bindings/Python/src/pisock_wrap.c: Clean swig warnings
