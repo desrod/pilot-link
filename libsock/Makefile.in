@@ -107,10 +107,6 @@ datebook.o datebook.lo: datebook.c ../include/pi-source.h ../include/pi-config.h
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
  ../include/pi-datebook.h ../include/pi-appinfo.h
-dlp-backup.o dlp-backup.lo: dlp-backup.c ../include/pi-source.h \
- ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
- ../include/pi-version.h ../include/pi-sockaddr.h \
- ../include/pi-macros.h ../include/pi-dlp.h ../include/pi-syspkt.h
 dlp.o dlp.lo: dlp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
