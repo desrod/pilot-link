@@ -60,7 +60,7 @@
 static int u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(pi_socket_t *ps);
 static ssize_t u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
-static ssize_t u_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
+static ssize_t u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_poll(pi_socket_t *ps, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
@@ -274,7 +274,7 @@ u_poll(pi_socket_t *ps, int timeout)
  *
  ***********************************************************************/
 static ssize_t
-u_write(pi_socket_t *ps, unsigned char *buf, int len, int flags)
+u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	int 	nwrote, 
 		total, 
@@ -333,7 +333,7 @@ u_write(pi_socket_t *ps, unsigned char *buf, int len, int flags)
  *
  ***********************************************************************/
 static ssize_t
-u_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
         struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
         int bytes_want = 0;
