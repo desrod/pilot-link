@@ -1,5 +1,5 @@
 /*
- * install-todolist.c:  Palm ToDo list installer
+ * install-todo.c:  Palm ToDo list installer
  *
  * Copyright 2002, Martin Fick, based on code in install-todos by Robert A.
  * 		   Kaplan
@@ -20,10 +20,7 @@
  *
  */
 
-/* 12-27-2003:
-   FIXME: Crash when using the '-d MM/DD/YYYY' specifier */
-
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,25 +29,14 @@
 #include "pi-todo.h"
 #include "pi-header.h"
 
-#ifdef __GLIBC__
-#define _XOPEN_SOURCE /* glibc2 needs this */
+poptContext po;
+
+#ifndef HAVE_BASENAME
+/* Yes, this isn't efficient... scanning the string twice */
+#define basename(s) (strrchr((s), '/') == NULL ? (s) : strrchr((s), '/') + 1)
 #endif
 
 #define DATE_STR_MAX 1000
-
-struct option options[] = {
-        {"port",        required_argument, NULL, 'p'},
-        {"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-        {"priority",    required_argument, NULL, 'P'},
-        {"due",         required_argument, NULL, 'd'},
-        {"completed",   required_argument, NULL, 'c'},
-        {"note",        required_argument, NULL, 'n'},
-        {"file",        required_argument, NULL, 'f'},
-        {NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvd:P:cn:f:";
 
 char *strptime(const char *s, const char *format, struct tm *tm);
 
@@ -59,17 +45,17 @@ char *strptime(const char *s, const char *format, struct tm *tm);
  *
  * Function:    read_file
  *
- * Summary:     
+ * Summary:     Reads a file from disk to import into ToDoDB.pdb
  *
- * Parameters:  
+ * Parameters:  Pointer to a filename
  *
- * Returns:     
+ * Returns:     Text inside the file, of course
  *
  ***********************************************************************/
 char *read_file(char *filename)
 {
 	FILE	*f;
-	int	filelen;
+	size_t	filelen;
 	char	*file_text 	= NULL;
 
 	f = fopen(filename, "r");
@@ -98,7 +84,7 @@ char *read_file(char *filename)
  *
  * Function:    install_ToDo
  *
- * Summary:     
+ * Summary:     Adds the entry to ToDoDB.pdb
  *
  * Parameters:  
  *
@@ -110,15 +96,15 @@ void install_ToDo(int sd, int db, struct ToDo todo)
 	int 	ToDo_size;
 
 	unsigned char ToDo_buf[0xffff];
-	char  time[DATE_STR_MAX];
+	char  duedate[DATE_STR_MAX];
 
 	printf("Indefinite:  %i\n", todo.indefinite);
-	if (!todo.indefinite)
-		strftime(time, DATE_STR_MAX, "%a %b %d %H:%M:%S %Z %Y", &todo.due);
-	printf("Due Date:    %s\n", time);
+	if (todo.indefinite == NULL)
+		strftime(duedate, DATE_STR_MAX, "%a %b %d %H:%M:%S %Z %Y", &todo.due);
+	printf("Due Date:    %s\n", duedate);
 	printf("Priority:    %i\n", todo.priority);
 	printf("Complete:    %i\n", todo.complete);
-	printf("Description: %s\n\n", todo.description);
+	printf("Description: %s\n", todo.description);
 	printf("Note:        %s\n", todo.note);
 
 	ToDo_size = pack_ToDo(&todo, ToDo_buf, sizeof(ToDo_buf));
@@ -141,73 +127,68 @@ void install_ToDo(int sd, int db, struct ToDo todo)
  ***********************************************************************/
 static void display_help(const char *progname)
 {
-	printf("   Updates the Palm ToDo list with a single new entry\n\n");
-	printf("   Usage: %s [-pdycnft] command(s) [item]\n", progname);
-	printf("   Options:\n");
+	printf("Updates the Palm ToDo list with a single new entry\n\n");
 
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -P, --priority <value>  The Priority (default 4)\n");
-	printf("     -d, --due <duedate>     The due Date MM/DD/YYYY (default blank)\n");
-	printf("     -c, --completed         Mark the item complete (default is incomplete)\n");
-	printf("     -n, --note <note>       The Note text (single string)\n");
-	printf("     -f, --file <filename>   A local filename containing the Note text\n");
-	printf("     -h, --help              Display this information\n\n");
+	poptPrintHelp(po, stderr, 0);
+
 	printf("   Examples:\n");
-	printf("     %s -p /dev/pilot -n 'Buy Milk' 'Go shopping, see note for items'\n", progname);
-	printf("     %s -p /dev/pilot -f ShoppingList.txt 'Go to supermarket'\n\n", progname);
+	printf("     %s -p /dev/pilot -n 'Buy Milk' 'Go shopping, see note for items'\n", 
+		basename(progname));
+	printf("     %s -p /dev/pilot -f ShoppingList.txt 'Go to supermarket'\n\n",
+		basename(progname));
 
         return;
 }
 
 int main(int argc, char *argv[])
 {
-	int 	c,
+	int 	sd	= -1,
 		db,
-		sd	= -1;	/* switch */
+		po_err  = -1;
 
-	char 	*progname 	= argv[0],
-		*port		= NULL;
+	char *progname 	        = argv[0],
+		*port		= NULL,
+		*completed	= NULL,
+		*priority	= NULL,
+		*due		= NULL,
+		*description	= NULL,
+		*note		= NULL,
+		*filename	= NULL;
 
 	struct 	PilotUser User;
 	struct 	ToDo todo;
 
-	/*  Setup some todo defaults */
 	todo.indefinite  = 1;
-	todo.priority    = 1;
-	todo.complete    = 0;
-	todo.description = "";
-	todo.note        = "";
-	todo.due.tm_sec  = 0;
-	todo.due.tm_min  = 0;
-	todo.due.tm_hour = 0;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (c) {
+        const struct poptOption options[] = {
+                { "port",        'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
+                { "help",        'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
+                { "version",     'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
+                { "priority",    'P', POPT_ARG_INT, &priority, 0, "The Priority (default is 1)", "[1|2|3|4|5]"},
+                { "due",         'd', POPT_ARG_STRING, &due, 0, "The due Date of the item (default is no date)", "mm/dd/yyyy"},
+                { "completed",   'c', POPT_ARG_NONE, &completed, 0, "Mark the item complete (default is incomplete)"},
+		{ "description", 'D', POPT_ARG_STRING, &description, 0, "The title of the ToDo entry", "[title]"},
+                { "note",        'n', POPT_ARG_STRING, &note, 0, "The Note(tm) text (a single string)", "<note>"},
+                { "file",        'f', POPT_ARG_STRING, &filename, 0, "A local filename containing the Note text", "[filename]"},
+                POPT_AUTOHELP
+                { NULL, 0, 0, NULL, 0 }
+        };
 
-		case 'h':
-			  display_help(progname);
-			  return 0;
+        po = poptGetContext("install-todo", argc, (const char **) argv, options, 0);
+
+        if (argc < 2) {
+                display_help(progname);
+                exit(1);
+        }
+
+        while ((po_err = poptGetNextOpt(po)) != -1) {
+                switch (po_err) {
+
 		case 'v':
                           print_splash(progname);
                           return 0;
-		case 'p':
-			  port = optarg;
-			  break;
-		case 'P': /* Priority */
-			  todo.priority = atoi(optarg);
-			  break;
-		case 'd': /* Due Date */
-			  strptime(optarg, "%m/%d/%Y", &todo.due);
-			  todo.indefinite = 0;
-			  break;
-		case 'c': /* Complete */
-			  todo.complete = 1;
-			  break;
-		case 'n': /* Note */
-			  todo.note = optarg;
-			  break;
 		case 'f': /* Note filename */
-			  todo.note = read_file(optarg);
+			  todo.note = read_file(filename);
 			  break;
 		default:
 		  	display_help(progname);
@@ -215,14 +196,18 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (argc < 2) {
-		printf("   Insufficient or invalid options supplied.\n");
-		printf("   Please use 'install-todo --help' for more info.\n\n");
-		exit(EXIT_FAILURE);
-	}
+	/*  Setup some todo defaults */
+	todo.priority    = priority;
+	todo.complete    = completed;
+	todo.description = description;
+	todo.note        = note;
 
-	if (optind < argc){
-		todo.description = argv[optind];
+	if (due != NULL) {
+		strptime(due, "%m/%d/%Y", &todo.due);
+		todo.indefinite = 0;
+		todo.due.tm_sec  = 0;
+		todo.due.tm_min  = 0;
+		todo.due.tm_hour = 0;
 	}
 
 	sd = pilot_connect(port);

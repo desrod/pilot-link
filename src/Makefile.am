@@ -18,9 +18,7 @@ INCLUDES = 			\
 #	-W -Waggregate-return -Wcast-align 		\
 #	-Wcast-qual -Wnested-externs 			\
 #	-Wpointer-arith -Wundef -Wbad-function-cast 	\
-#	-Wmissing-prototypes -Wstrict-prototypes 	\
-#	-Wmissing-declarations -Wconversion -Winline 	\
-#	-pedantic -O0
+#	-Winline -pedantic -O0
 
 # Commented out for now, will fix later
 #if WITH_CXX
@@ -164,9 +162,9 @@ install_todos_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_todo_SOURCES =		\
-        $(getopt_sources)       \
         install-todo.c  
 install_todo_LDADD =            \
+	$(POPT_LIBS)		\
         $(top_builddir)/libpisock/libpisock.la
 
 install_user_SOURCES = 		\
