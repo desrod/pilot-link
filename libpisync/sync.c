@@ -74,22 +74,20 @@ delete_both (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 }
 
 static int
-store_record_on_palm (SyncHandler *sh, int dbhandle, DesktopRecord *drecord)
+store_record_on_pilot (SyncHandler *sh, int dbhandle, DesktopRecord *drecord)
 {
-	PilotRecord *precord;
+	PilotRecord precord;
 	recordid_t id;
 	int result = 0;
 	
+	memset (&precord, 0, sizeof (PilotRecord));
 	result = sh->Prepare (sh, drecord, &precord);
 	ErrorCheck(result);
 
 	result = dlp_WriteRecord (sh->sd, dbhandle, 0,
-				  precord->recID, precord->catID, 
-				  precord->buffer, precord->len, &id);
+				  precord.recID, precord.catID, 
+				  precord.buffer, precord.len, &id);
 	PErrorCheck(result);
-
-	result = sh->FreePrepare (sh, precord);
-	ErrorCheck(result);
 
 	result = sh->SetPilotID (sh, drecord, id);
 
@@ -132,7 +130,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		sh->AddRecord (sh, precord);
 
 	} else if (precord == NULL && drecord != NULL) {
-		store_record_on_palm (sh, dbhandle, drecord);
+		store_record_on_pilot (sh, dbhandle, drecord);
 		
 	} else if (parch && ddel) {
 		sh->ReplaceRecord (sh, drecord, precord);
@@ -158,14 +156,14 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		} else {
 			result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
 			ErrorCheck(result);
-			store_record_on_palm (sh, dbhandle, drecord);				
+			store_record_on_pilot (sh, dbhandle, drecord);				
 			sh->AddRecord (sh, precord);
 			sh->SetStatusCleared (sh, drecord);
 		}
 		
 	} else if (parch && !pchange && !darch && dchange) {
 		dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-		store_record_on_palm (sh, dbhandle, drecord);
+		store_record_on_pilot (sh, dbhandle, drecord);
 		sh->SetStatusCleared (sh, drecord);
 
 	} else if (pchange && darch && dchange) {
@@ -193,7 +191,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		if (comp != 0) {
 			sh->AddRecord (sh, precord);
 			drecord->recID = 0;
- 			store_record_on_palm (sh, dbhandle, drecord);
+ 			store_record_on_pilot (sh, dbhandle, drecord);
 		}
 		sh->SetStatusCleared (sh, drecord);
 		
@@ -206,7 +204,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		sh->SetStatusCleared (sh, drecord);
 		
 	} else if (pdel && dchange) {
-		store_record_on_palm (sh, dbhandle, drecord);
+		store_record_on_pilot (sh, dbhandle, drecord);
 		sh->SetStatusCleared (sh, drecord);
 		
 	} else if (pdel && !dchange) {
@@ -219,7 +217,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		
 	} else if (!pchange && dchange) {
 		dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-		store_record_on_palm (sh, dbhandle, drecord);
+		store_record_on_pilot (sh, dbhandle, drecord);
 		sh->SetStatusCleared (sh, drecord);
 		
 	} else if (!pchange && ddel) {
@@ -249,7 +247,7 @@ sync_CopyToPilot (SyncHandler *sh)
 	PErrorCheck(result);
 	
 	while (sh->ForEach (sh, &drecord) == 0 && drecord) {
-		result = store_record_on_palm (sh, dbhandle, drecord);
+		result = store_record_on_pilot (sh, dbhandle, drecord);
 		if (result != 0) break;
 	}
 

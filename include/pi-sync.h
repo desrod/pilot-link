@@ -71,8 +71,7 @@ struct _SyncHandler {
 	int (*Match) (SyncHandler *, PilotRecord *, DesktopRecord **);
 	int (*FreeMatch) (SyncHandler *, DesktopRecord *);	
 	
-	int (*Prepare) (SyncHandler *, DesktopRecord *, PilotRecord **);
-	int (*FreePrepare) (SyncHandler *, PilotRecord *);
+	int (*Prepare) (SyncHandler *, DesktopRecord *, PilotRecord *);
 };
 
 PilotRecord *sync_NewPilotRecord (int buf_size);
