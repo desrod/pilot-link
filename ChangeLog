@@ -2,6 +2,8 @@
 	
 	* install-datebook.c: Added pilot_connect();
 
+	* install-user.c: Now runs without User && UserID
+
 	* dlpsh.c: Removed the 'Filename' garbage
 
 2002-01-22  David A. Desrosiers <hacker at gnu-designs dot com>

@@ -90,11 +90,6 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	if (user == NULL && userid == NULL) {
-		Help(progname);
-		fprintf(stderr, "ERROR: You must specify a User Name or User ID (or both)\n");
-		return -1;
-	}
 	
 	sd = pilot_connect(port);
 	if (sd < 0)
@@ -103,24 +98,32 @@ int main(int argc, char *argv[])
 	if (dlp_ReadUserInfo(sd, &User) < 0)
 		goto error_close;
 
+	if (!user && !userid) {
+		printf("   Palm user: %s\n", User.username);
+		printf("   UserID:    %ld \n", User.userID);   
+	}
+	
 	/* Let's make sure we have valid arguments for these
 	   before we write the data to the Palm */
 	if (user != NULL)
 		strncpy(User.username, user, sizeof(User.username) - 1);
+
 	if (userid != NULL)
 		User.userID = atoi(userid);
+	
 	User.lastSyncDate = time(NULL);
+
 	if (dlp_WriteUserInfo(sd, &User) < 0)
 		goto error_close;
 
 	if (user != NULL)
-		printf("\tInstalled User Name: %s\n", User.username);
+		printf("   Installed User Name: %s\n", User.username);
 	if (userid != NULL)
-		printf("\tInstalled User ID: %ld \n", User.userID);
+		printf("   Installed User ID: %ld \n", User.userID);
 	printf("\n");
 	
 	if (dlp_AddSyncLogEntry(sd, "install-user, exited normally.\n"
-				"Thank you for using pilot-link.\n") < 0)
+				    "Thank you for using pilot-link.\n") < 0)
 		goto error_close;
 	
 	if (dlp_EndOfSync(sd, 0) < 0)
@@ -135,7 +138,7 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 	
  error:
-	perror("\tERROR:");
+	perror("   ERROR:");
 	fprintf(stderr, "\n");
 
 	return -1;
