@@ -42,7 +42,10 @@
 int verbose = 0;
 char *progname;
 
+/* Declare prototypes */
 static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 
 struct option options[] = {
         {"help",        no_argument,       NULL, 'h'},
@@ -57,7 +60,7 @@ struct option options[] = {
         {NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:Vd:f:s:c:r:";
+static const char *optstring = "p:hvVd:f:s:c:r:";
 
 void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category);
 void write_memo_in_directory(char *dirname, struct Memo m,
@@ -203,31 +206,37 @@ write_memo_in_directory(char *dirname, struct Memo m,
  ***********************************************************************/
 static void display_help(char *progname)
 {
-	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n");
-	printf("   Usage: memos [options]\n");
+	printf("   Manipulate MemoDB.pdb entries from a file or your Palm device\n\n");
+	printf("   Usage: memos -p <port> [-V] [options]\n\n");
 	printf("   Options:\n");
-	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
-	printf("     -h --help      Display this information\n");
-	printf("     -v --version   Display version information\n");
-	printf("     -V             Verbose, with -d, print each filename as it's written\n");
-	printf("     -d <num>       Delete the memo named by <number>\n");
-	printf("     -f file        Use <file> as memo database file (rather than HotSync)\n");
-	printf("     -s <dir>       Save memos in <dir> instead of writing to STDOUT\n");
-	printf("     -c category    Only upload memos in this category\n");
-	printf("     -r regexp      Select memos to be saved by regular expression on title\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -V, --verbose           Verbose, with -d, print each filename when\n");
+	printf("                             written\n");
+	printf("     -d, --delete            Delete memo named by number <num>\n");
+	printf("     -f, --file [file] ..    Use <file> as input file (instead of MemoDB.pdb)\n");
+	printf("     -s, --save <dir>        Save memos in <dir> instead of writing to\n");
+	printf("                             STDOUT\n");
+	printf("     -c, --category <cat>    Only upload memos in this category\n");
+	printf("     -r, --regex [regexp]    Select memos saved by regular expression on\n");
+	printf("                             title\n\n");
+
 	printf("   By default, the contents of your Palm's memo database will be written to\n");
 	printf("   standard output as a standard Unix mailbox (mbox-format) file, with each\n");
 	printf("   memo as a separate message.  The subject of each message will be the\n");
 	printf("   category.\n\n");
+
 	printf("   If '-s' is specified, than instead of being written to standard output,\n");
-	printf("   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n");
+	printf("   will be saved in subdirectories of <dir>. Each subdirectory will be the\n");
 	printf("   name of a category on the Palm, and will contain the memos in that\n");
-	printf("   category.  Each memo's filename will be the first line (up to the first\n");
-	printf("   40 chcters) of the memo.  Control chcters, slashes, and equal signs\n");
-	printf("   that would otherwise appear in filenames are converted after the fashion\n");
-	printf("   of MIME's quoted-printable encoding.  Note that if you have two memos in\n");
-	printf("   the same category whose first lines are identical, one of them will be\n");
+	printf("   category. Each memo's filename will be the first line (up to the first 40\n");
+	printf("   chcters) of the memo. Control chcters, slashes, and equal signs that\n");
+	printf("   would otherwise appear in filenames are converted after the fashion of\n");
+	printf("   MIME's quoted-printable encoding. Note that if you have two memos in the\n");
+	printf("   same category whose first lines are identical, one of them will be\n");
 	printf("   overwritten.\n\n");
+
 	printf("   If '-f' is specified, the specified file will be treated as a memo\n");
 	printf("   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
 
@@ -271,7 +280,7 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'v':
-			  print_splash(progname);
+			  display_splash(progname);
 			  exit(0);
 		  case 'd':
 			  delete = 1;
