@@ -82,7 +82,8 @@ int main(int argc, char *argv[])
 		minorVersion,
 		bugfixVersion,
 		build,
-		state;	
+		state,
+		timespent	= 0;	
 
 	char 	name[256],
 		print[256],
@@ -90,6 +91,9 @@ int main(int argc, char *argv[])
 		*port 		= NULL,
 		*filename;
 
+	time_t  start,end;
+        start = time(NULL);
+	
 	struct 	RPC_params p;
 
 	unsigned long SRAMstart, SRAMlength, ROMversion, offset, left;
@@ -160,13 +164,12 @@ int main(int argc, char *argv[])
 
 	sprintf(name + strlen(name), "%d.%d.%d.ram", majorVersion, minorVersion, bugfixVersion);
 	if (state != 3)
-		sprintf(name + strlen(name), "%s%d",
-			((state == 0) ? "d" : (state ==
-					       1) ? "a" : (state ==
-							   2) ? "b" : "u"),
-			build);
+		sprintf(name + strlen(name), "-%s%d", (
+			(state == 0) ? "d" : 
+			(state == 1) ? "a" :
+			(state == 2) ? "b" : "u"), build);
 
-	printf("\tGenerating %s\n", name);
+	printf("   Generating %s\n", name);
 
 	file = open(name, O_RDWR | O_CREAT, 0666);
 
@@ -207,7 +210,7 @@ int main(int argc, char *argv[])
 		if (len > 256)
 			len = 256;
 
-                printf("\r\t%ld of %ld bytes (%.2f%%)", offset, SRAMlength, perc);
+                printf("\r   %ld of %ld bytes (%.2f%%)", offset, SRAMlength, perc);
 		fflush(stdout);
 		PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),
 			RPC_Long(offset + SRAMstart), RPC_Long(len),
@@ -233,7 +236,9 @@ int main(int argc, char *argv[])
 		offset += len;
 		if (cancel || !(i++ % 4))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
-				printf("\nCancelled!\n");
+				printf("\n   Operation cancelled!\n");
+				dlp_AddSyncLogEntry(sd, "\npi-getrom ended unexpectedly.\n"
+							"Entire RAM was not fetched.\n");
 				goto cancel;
 			}
 		if (!(i % 8)) {
@@ -245,13 +250,16 @@ int main(int argc, char *argv[])
 			/* err = */ dlp_RPC(sd, &p, 0);
 		}
 	}
-	printf("\r%ld of %ld bytes\n", offset, SRAMlength);
-	printf("RAM fetch complete\n");
+
+	printf("   RAM fetch complete\n");	
+	end = time(NULL);
+        timespent = (end-start);
+        printf("   RAM fetched in: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
+
+
 
       cancel:
 	close(file);
-
 	pi_close(sd);
-
 	return 0;
 }

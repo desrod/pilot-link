@@ -79,13 +79,17 @@ int main(int argc, char *argv[])
 		minorVersion,
 		bugfixVersion,
 		build, 
-		state;
+		state,
+		timespent	= 0;
 	
 	char 	name[256],
 		print[256],
 		*progname 	= argv[0],
 		*port 	        = NULL,
 		*filename;
+	
+	time_t 	start,end;
+        start = time(NULL);
 	
 	struct 	RPC_params p;
 	unsigned long ROMstart; 
@@ -148,9 +152,9 @@ int main(int argc, char *argv[])
 	minorVersion 	= ((ROMversion >> 20) & 0xf);
 	bugfixVersion 	= ((ROMversion >> 16) & 0xf);
 	state 		= ((ROMversion >> 12) & 0xf);
-	build =
-	    (((ROMversion >> 8) & 0xf) * 10) +
-	    (((ROMversion >> 4) & 0xf) * 10) + (ROMversion & 0xf);
+	build 		= (((ROMversion >> 8) & 0xf) * 10) 
+				+ (((ROMversion >> 4) & 0xf) * 10) 
+				+ (ROMversion & 0xf);
 
 	/* As Steve said, "Bummer." */
 	if ((majorVersion == 3) && (minorVersion == 0)
@@ -160,15 +164,15 @@ int main(int argc, char *argv[])
 
 	sprintf(name + strlen(name), "%d.%d.%d.rom", majorVersion,
 		minorVersion, bugfixVersion);
+
 	if (state != 3)
-		sprintf(name + strlen(name), "%s%d",
-			((state == 0) ? "d" : (state ==
-					       1) ? "a" : (state ==
-							   2) ? "b" : "u"),
-			build);
+		sprintf(name + strlen(name), "-%s%d", (
+			(state == 0) ? "d" : 
+			(state == 1) ? "a" : 
+			(state == 2) ? "b" : "u"), build);
 
-	printf("\tGenerating %s\n", name);
-
+	printf("   Generating %s\n", name);
+	
 	file = open(name, O_RDWR | O_CREAT, 0666);
 
 	offset = lseek(file, 0, SEEK_END);
@@ -196,7 +200,7 @@ int main(int argc, char *argv[])
 		if (len > 256)
 			len = 256;
 
-		printf("\r\t%ld of %ld bytes (%.2f%%)", offset, ROMlength, perc);
+		printf("\r   %ld of %ld bytes (%.2f%%)", offset, ROMlength, perc);
 
 		fflush(stdout);
 		PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),
@@ -204,6 +208,7 @@ int main(int argc, char *argv[])
 			RPC_End);
 		/* err = */ dlp_RPC(sd, &p, 0);
 		left -= len;
+		
 		/* If the buffer only contains zeros, skip instead of
 		   writing, so that the file will be holey. */
 		for (j = 0; j < len; j++)
@@ -216,7 +221,9 @@ int main(int argc, char *argv[])
 		offset += len;
 		if (cancel || !(i++ % 8))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
-				printf("\nCancelled!\n");
+				printf("\n   Operation cancelled!\n");
+				dlp_AddSyncLogEntry(sd, "\npi-getrom ended unexpectedly.\n"
+							"Entire ROM was not fetched.\n");
 				goto cancel;
 			}
 		if (!(i % 16)) {
@@ -228,8 +235,11 @@ int main(int argc, char *argv[])
 			/* err = */ dlp_RPC(sd, &p, 0);
 		}
 	}
-	printf("\r%ld of %ld bytes\n", offset, ROMlength);
-	printf("ROM fetch complete\n");
+
+	printf("\n   ROM fetch complete\n");
+	end = time(NULL);
+	timespent = (end-start);
+	printf("   ROM fetched in: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
 
       cancel:
 	close(file);
