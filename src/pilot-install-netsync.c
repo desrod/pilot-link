@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
 
 	struct in_addr addr;
 
+/*
 	struct poptOption long_options[] = {
 		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm"},
 		{"version", 'v', POPT_ARG_NONE, NULL, 0, "Display version information"},
@@ -93,6 +94,8 @@ int main(int argc, char *argv[])
 
 	poptContext pc;
 	pc = poptGetContext("install-netsync", argc, (const char **) argv, long_options, 0);
+
+*/
 	setlinebuf(stdout);
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
