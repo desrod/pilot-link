@@ -806,7 +806,7 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	   intended as a shortcut for programs looking for databases. It
 	   uses a fairly byzantine mechanism for ordering the RAM databases
 	   before the ROM ones.  You must feed the "index" slot from the
-		while (dlp_ReadDBList(sd, cardno, 0x80, i, info) > 0) {
+	   returned info in as start the next time round. */
 
 	if (start < 0x1000) {
 		i = start;
@@ -819,7 +819,7 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 				goto found;
 			i = info->index + 1;
 		}
-	while (dlp_ReadDBList(sd, cardno, 0x40, i, info) > 0) {
+		start = 0x1000;
 	}
 
 	i = start & 0xFFF;
