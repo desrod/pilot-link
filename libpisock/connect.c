@@ -60,16 +60,7 @@ pilot_connect(const char *port)
 	int 	sd	= -1, 	/* Socket, formerly parent/client_socket */
 		result;
 
-	struct 	pi_sockaddr addr;
 	struct  SysInfo sys_info;
-	char 	*defport = "/dev/pilot";
-
-	if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
-		fprintf(stderr, "   No $PILOTPORT specified and no -p "
-			"<port> given.\n"
-			"   Defaulting to '%s'\n", defport);
-		port = defport;
-	}
 
 	fprintf(stderr, "\n");
 	if ((sd = pi_socket(PI_AF_PILOT,
@@ -78,9 +69,7 @@ pilot_connect(const char *port)
 		return -1;
 	}
 
-	addr.pi_family = PI_AF_PILOT;
-	strncpy(addr.pi_device, port, sizeof(addr.pi_device));
-	result = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
+	result = pi_bind(sd, port);
 
 	if (result < 0) {
 		fprintf(stderr, "   Unable to bind to port: %s\n", 

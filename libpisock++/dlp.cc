@@ -33,12 +33,8 @@ DLP::DLP(strConst_t device, const int showMsg)
 		return;
 	}
 	
-	struct pi_sockaddr addr;
-	addr.pi_family = PI_AF_PILOT;
-	strcpy(addr.pi_device, device);
-	
 	int ret;
-	if ((ret = pi_bind(_sd, (struct sockaddr *)&addr, sizeof(addr))) < 0) {
+	if ((ret = pi_bind(_sd, device)) < 0) {
 		perror("pi_bind");
 		_sd = -1;
 		return;

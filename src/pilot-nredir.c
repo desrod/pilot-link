@@ -77,11 +77,11 @@ int main(int argc, char *argv[])
 	size_t	size; 	
 
 	char	*progname = argv[0],
-		*port = NULL;
+		*port = NULL,
+		port2[255] = "net:";
 
 	pi_buffer_t *buffer;
 
-	struct 	pi_sockaddr 	addr;
 	struct 	NetSyncInfo 	Net;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
@@ -122,14 +122,11 @@ int main(int argc, char *argv[])
 	if (sd2 < 0)
 		goto error_close;
 	
-	memset(&addr, 0, sizeof(addr));
-	addr.pi_family = PI_AF_PILOT;
-	strcpy(addr.pi_device, "net:");
-	strcpy(addr.pi_device + 4, Net.hostAddress);
+	strncat(port2, Net.hostAddress, 251 - strlen(Net.hostAddress));
 	
 	printf("\tTrying %s... ", Net.hostAddress);
 	fflush(stdout);
-	if (pi_connect(sd2, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+	if (pi_connect(sd2, port2) < 0) {
 		printf("Failed\n");
 		goto error;
 	}

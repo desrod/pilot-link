@@ -147,8 +147,6 @@ int main(int argc, char *argv[])
 	int 	max,
 		sd = -1;
 	
-	struct pi_sockaddr laddr;
-
 	fd_set r, rin;
 
 	if (argc < 2) {
@@ -162,10 +160,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	laddr.pi_family = PI_AF_PILOT;
-	strcpy(laddr.pi_device, argv[1]);
-
-	if (pi_connect(sd, (struct sockaddr *) &laddr, sizeof(laddr)) < 0) {
+	if (pi_connect(sd, argv[1]) < 0) {
 		fprintf(stderr, "Unable to connect\n");
 		return -1;
 	}

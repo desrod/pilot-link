@@ -128,10 +128,9 @@ typedef struct pi_socket_list
 	extern int pi_socket_setsd PI_ARGS((pi_socket_t *ps, int pi_sd));
 
 	extern int pi_connect
-	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
-		     int addrlen));
+	    PI_ARGS((int pi_sd, const char *port));
 	extern int pi_bind
-	    PI_ARGS((int pi_sd, struct sockaddr * my_addr, int addrlen));
+	    PI_ARGS((int pi_sd, const char *port));
 	extern int pi_listen PI_ARGS((int pi_sd, int backlog));
 	extern int pi_accept
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,

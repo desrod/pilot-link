@@ -1001,7 +1001,6 @@ pi_socket(int domain, int type, int protocol)
 	return ps->sd;
 }
 
-
 /***********************************************************************
  *
  * Function:    pi_socket_setsd
@@ -1079,6 +1078,58 @@ pi_socket_recognize(pi_socket_t *ps)
 
 /***********************************************************************
  *
+ * Function:    pi_devsocket (static)
+ *
+ * Summary:     Looks up a socket and creates a new device
+ *				FIXME: Decide whether or not to create the socket here
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static pi_socket_t *
+pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
+{
+	pi_socket_t *ps;
+	char	*defport = "serial:/dev/pilot";
+
+	if (!(ps = find_pi_socket(pi_sd))) {
+		errno = ESRCH;
+		return NULL;
+	}
+
+	if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
+		fprintf(stderr, "   No $PILOTPORT specified and no -p "
+				"<port> given.\n"
+				"   Defaulting to '%s'\n", defport);
+		port = defport;
+	}
+
+	/* Create the device and sockaddr */
+	addr->pi_family = PI_AF_PILOT;
+	if (!strncmp (port, "serial:", 4)) {
+		strncpy(addr->pi_device, port + 7, sizeof(addr->pi_device));
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+#ifdef HAVE_USB	
+	} else if (!strncmp (port, "usb:", 4)) {
+		strncpy(addr->pi_device, port + 4, sizeof(addr->pi_device));
+		ps->device = pi_usb_device (PI_USB_DEV);
+#endif
+	} else if (!strncmp (port, "net:", 4)) {
+		strncpy(addr->pi_device, port + 4, sizeof(addr->pi_device));
+		ps->device = pi_inet_device (PI_NET_DEV);
+	} else {
+		/* No prefix assumed to be serial: (for compatibility) */
+		strncpy(addr->pi_device, port, sizeof(addr->pi_device));
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+	}
+
+	return ps;
+}
+
+/***********************************************************************
+ *
  * Function:    pi_connect
  *
  * Summary:     Connect to a remote server
@@ -1089,47 +1140,19 @@ pi_socket_recognize(pi_socket_t *ps)
  *
  ***********************************************************************/
 int
-pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
+pi_connect(int pi_sd, const char *port)
 {
-	size_t 	paddrlen = addrlen;
 	pi_socket_t *ps;
-	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
-	struct 	pi_sockaddr eaddr;
+	struct 	pi_sockaddr addr;
 	
-	if (!(ps = find_pi_socket(pi_sd))) {
-		errno = ESRCH;
+	ps = pi_devsocket(pi_sd, port, &addr);
+	if (!ps)
 		return PI_ERR_SOCK_INVALID;
-	}
-
-	if (paddr == NULL && getenv("PILOTPORT")) {
-		eaddr.pi_family = PI_AF_PILOT;
-		strncpy(eaddr.pi_device, getenv("PILOTPORT"),
-			sizeof(eaddr.pi_device));
-		paddr = &eaddr;
-		addrlen = sizeof(struct pi_sockaddr);
-	} else if (paddr == NULL) {
-		errno = EINVAL;
-		return PI_ERR_GENERIC_ARGUMENT;
-	}
-
-	/* Determine the device type */
-	if (strlen (paddr->pi_device) < 4)
-		ps->device = pi_serial_device (PI_SERIAL_DEV);
-	else if (!strncmp (paddr->pi_device, "ser:", 4))
-		ps->device = pi_serial_device (PI_SERIAL_DEV);
-#ifdef HAVE_USB	
-	else if (!strncmp (paddr->pi_device, "usb:", 4))
-		ps->device = pi_usb_device (PI_USB_DEV);
-#endif
-	else if (!strncmp (paddr->pi_device, "net:", 4))
-		ps->device = pi_inet_device (PI_NET_DEV);
-	else
-		ps->device = pi_serial_device (PI_SERIAL_DEV);
 
 	/* Build the protocol queue */
 	protocol_queue_build (ps, 0);
 	
-	return ps->device->connect (ps, (struct sockaddr *)paddr, paddrlen);
+	return ps->device->connect (ps, (struct sockaddr *)&addr, sizeof(addr));
 }
 
 /***********************************************************************
@@ -1144,46 +1167,18 @@ pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
  *
  ***********************************************************************/
 int
-pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
+pi_bind(int pi_sd, const char *port)
 {
-	size_t 	paddrlen = addrlen;
 	int	bind_return;
 	pi_socket_t *ps;
-	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
-	struct 	pi_sockaddr eaddr;
-	
-	if (!(ps = find_pi_socket(pi_sd))) {
-		errno = ESRCH;
-		return PI_ERR_SOCK_INVALID;
-	}
+	struct  pi_sockaddr addr;
 
-	if (paddr == NULL && getenv("PILOTPORT")) {
-		eaddr.pi_family = PI_AF_PILOT;
-		strncpy(eaddr.pi_device, getenv("PILOTPORT"),
-			sizeof(eaddr.pi_device));
-		paddr = &eaddr;
-		addrlen = sizeof(struct pi_sockaddr);
-	} else if (paddr == NULL) {
-		errno = EINVAL;
-		return PI_ERR_GENERIC_ARGUMENT;
-	}
-	
-	/* Determine the device type */
-	if (strlen (paddr->pi_device) < 4)
-		ps->device = pi_serial_device (PI_SERIAL_DEV);
-	else if (!strncmp (paddr->pi_device, "ser:", 4))
-		ps->device = pi_serial_device (PI_SERIAL_DEV);
-#ifdef HAVE_USB	
-	else if (!strncmp (paddr->pi_device, "usb:", 4))
-		ps->device = pi_usb_device (PI_USB_DEV);
-#endif
-	else if (!strncmp (paddr->pi_device, "net:", 4))
-		ps->device = pi_inet_device (PI_NET_DEV);
-	else
-		ps->device = pi_serial_device (PI_SERIAL_DEV);
+	ps = pi_devsocket(pi_sd, port, &addr);
+	if (!ps)
+		return PI_ERR_SOCK_INVALID;
 
 	bind_return =
-		ps->device->bind (ps, (struct sockaddr *)paddr, paddrlen);
+		ps->device->bind (ps, (struct sockaddr *)&addr, sizeof(addr));
 	if (bind_return < 0) {
 		ps->device->free (ps->device);
 		ps->device = NULL;

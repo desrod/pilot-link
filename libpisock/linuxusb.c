@@ -82,7 +82,7 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
 	int 	fd, 
 		i;
-	char 	*tty 	= addr->pi_device + 4;
+	char 	*tty 	= addr->pi_device;
 
 	if ((fd = open(tty, O_RDWR | O_NONBLOCK)) < 0) {
 		ps->last_error = PI_ERR_GENERIC_SYSTEM;

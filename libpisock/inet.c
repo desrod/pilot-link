@@ -254,7 +254,7 @@ pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	sockaddr_in serv_addr;
-	char 	*device = paddr->pi_device + 4;
+	char 	*device = paddr->pi_device;
 	
 	/* Figure out the addresses to allow */
 	memset(&serv_addr, 0, sizeof(serv_addr));
@@ -346,7 +346,7 @@ pi_inet_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	size_t	optlen;
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	sockaddr_in serv_addr;
-	char 	*device = paddr->pi_device + 4, 
+	char 	*device = paddr->pi_device, 
 		*port	= NULL;
 
 	/* Figure out the addresses to allow */

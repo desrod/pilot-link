@@ -104,9 +104,7 @@ u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 	/* struct 	usb_ctl_request ur;	*/
 	/* unsigned char usbresponse[50];	*/
 
-	/* The +4 is to remove the "usb:" part from the string so you are
-	   just left with "/dev/ugenX" */
-	char 	*tty 		= addr->pi_device + 4;
+	char 	*tty 		= addr->pi_device;
 	char 	*pEndPoint 	= NULL;
 
 	/* open the usb device */
