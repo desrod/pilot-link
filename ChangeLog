@@ -1,3 +1,7 @@
+2002-07-29  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pilot-xfer.c: Usability additions
+
 2002-07-29  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/dlp.c (dlp_request_write): ensure that exec_buf is

@@ -1,4 +1,4 @@
-/* 
+;/* 
  * pilot-xfer.c:  Palm Database transfer utility
  *
  * (c) 1996, 1998, Kenneth Albanowski.
@@ -63,7 +63,7 @@ struct option options[] = {
 	{"fetch",       required_argument, NULL, 'f'},
 	{"delete",      required_argument, NULL, 'd'},
 	{"exclude",     required_argument, NULL, 'e'},
-	{"Purge",       required_argument, NULL, 'P'},
+	{"Purge",       no_argument,       NULL, 'P'},
 	{"list",        no_argument,       NULL, 'l'},
 	{"Listall",     no_argument,       NULL, 'L'},
 	{"archive",     required_argument, NULL, 'a'},
@@ -76,7 +76,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "-hvp:b:u:s:Sr:i:m:f:d:e:P:lLa:x:FOIqc";
+static const char *optstring = "-hvp:b:u:s:Sr:i:m:f:d:e:PlLa:x:FOIqc";
 
 int	novsf	= 0;
 
@@ -306,6 +306,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		ofile_len,
 		ofile_total;
 	struct 	dirent *dirent;
+	struct 	stat sbuf;
 
 	char 	**orig_files = 0;
 	DIR 	*dir;
@@ -370,7 +371,9 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		*/
 
 		int 	skip = 0,
-			x;
+			x,
+			totalsize;
+		
 		char 	name[256];
 		struct 	stat statb;
 
@@ -401,7 +404,6 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			strcat(name, ".pdb");
 
 		for (x = 0; x < numexclude; x++) {
-			/* printf("Skipcheck:%s:%s:\n",exclude[x],info.name); */
 			if (strcmp(exclude[x], info.name) == 0) {
 				printf("Excluding '%s'...\n", name);
 				RemoveFromList(name, orig_files, ofile_total);
@@ -440,7 +442,11 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			}
 		}
 
-		fprintf(stderr, "Backing up '%s'... ", name);
+		if (only_changed) {
+			printf("Synchronizing %-40s\n", name); 
+		} else {
+			printf("Backing up %-40s", name);
+		} 
 		fflush(stdout);
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
@@ -452,10 +458,14 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			break;
 		}
 
-		if (pi_file_retrieve(f, sd, 0) < 0)
+		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
-		else
-			fprintf(stderr, "done.\n");
+		} else if (stat(name, &sbuf) == 0) {
+			fprintf(stderr, "[%7d bytes | %-6.1f kb total]\n", 
+				sbuf.st_size, (float)totalsize/1024);
+			totalsize += sbuf.st_size;
+		}
+		
 		pi_file_close(f);
 
 		/* Note: This is no guarantee that the times on the host
@@ -504,8 +514,10 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 			free(orig_files);
 	}
 
-	printf("%s backup done.\n",
+	printf("%s backup complete.\n",
 	       (rom == 2 ? "\nOS" : (rom == 1 ? "\nFlash" : "\nRAM")));
+
+	dlp_AddSyncLogEntry(sd, "pilot-xfer backup successful.\n");
 }
 
 /***********************************************************************
@@ -591,7 +603,7 @@ static void Fetch(char *dbname)
 		printf("OK\n");
 	pi_file_close(f);
 
-	printf("Fetch done.\n");
+	printf("Fetch complete.\n");
 }
 
 /***********************************************************************
@@ -624,7 +636,7 @@ static void Delete(char *dbname)
 	}
 	fflush(stdout);
 
-	printf("Delete done.\n");
+	printf("Delete complete.\n");
 }
 
 struct db {
@@ -815,21 +827,35 @@ static void Restore(char *dirname)
  ***********************************************************************/
 static void Install(char *filename)
 {
+	float	totalsize;
 	struct 	pi_file *f;
+	struct 	stat sbuf;
 
 	Connect();
 
 	f = pi_file_open(filename);
+
 	if (f == 0) {
 		printf("Unable to open '%s'!\n", filename);
 		return;
 	}
-	printf("Installing %s... ", filename);
+
+	if (dlp_OpenConduit(sd) < 0) {
+                fprintf(stderr, "\nExiting on cancel, some files were not installed\n\n");
+		exit(1);
+	}
+
+	fprintf(stderr, "Installing %-40s", filename);
 	fflush(stdout);
-	if (pi_file_install(f, sd, 0) < 0)
-		printf("failed.\n");
-	else
-		fprintf(stderr, "done.\n");
+
+	if (pi_file_install(f, sd, 0) < 0) {
+		fprintf(stderr, "failed.\n");
+	} else if (stat(filename, &sbuf) == 0) {
+		totalsize += sbuf.st_size;
+		fprintf(stderr, "[%7d bytes | %9.0f total]\n", 
+			sbuf.st_size, totalsize);
+	}
+	
 	pi_file_close(f);
 
 	if (!novsf)
@@ -909,7 +935,7 @@ static void List(int rom)
 		i = info.index + 1;
 		printf("%s\n", info.name);
 	}
-	printf("\nList done. %d files found.\n", dbcount);
+	printf("\nList complete. %d files found.\n", dbcount);
 
 }
 
@@ -963,7 +989,7 @@ static void Purge(void)
 	if (!novsf)
 		VoidSyncFlags();
 	
-	printf("Purge done.\n");
+	printf("Purge complete.\n");
 }
 
 /***********************************************************************
