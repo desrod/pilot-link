@@ -36,7 +36,7 @@
 // tuple of the numeric error code and a message.
 
 
-%module _pisock
+%module pisock
 %{
 #include <time.h>
 #include "pi-socket.h"
@@ -56,7 +56,7 @@ void *__dlp_buf;
 
 typedef int DLPERROR;
 typedef int DLPDBERROR;
- typedef int PIERROR;
+typedef int PIERROR;
 
 static PyObject *Error;
 %}
@@ -140,9 +140,6 @@ enum PiOptSock {
         PI_SOCK_STATE
 };
 
-
-
-
 #define PI_PilotSocketDLP       3
 #define PI_PilotSocketConsole   1
 #define PI_PilotSocketDebugger  0
@@ -157,7 +154,7 @@ enum PiOptSock {
     char *dev;
     int len;
 
-    if (!PyArg_ParseTuple($source, "is#", &temp.pi_family, &dev, &len)) {
+    if (!PyArg_ParseTuple($input, "is#", &temp.pi_family, &dev, &len)) {
 	return NULL;
     }
     if (len > 255) {
@@ -167,51 +164,51 @@ enum PiOptSock {
     strncpy(temp.pi_device, dev, len);
     temp.pi_device[len] = 0;
 
-    $target = (struct sockaddr *)&temp;
+    $1 = (struct sockaddr *)&temp;
 }
 
 %typemap (python, argout) struct sockaddr *OUTPUT {
     PyObject *o;
 
-    if ($source) {
-	o = Py_BuildValue("(is)", (int)((struct pi_sockaddr *)$source)->pi_family,
-			  ((struct pi_sockaddr *)$source)->pi_device);
-	$target = t_output_helper($target, o);
+    if ($1) {
+	o = Py_BuildValue("(is)", (int)((struct pi_sockaddr *)$1)->pi_family,
+			  ((struct pi_sockaddr *)$1)->pi_device);
+	$result = t_output_helper($result, o);
     }
 }
 
-%typemap (python,ignore) struct sockaddr *OUTPUT (struct pi_sockaddr temp) {
-    $target = (struct sockaddr *)&temp;
+%typemap (python,in,numinputs=0) struct sockaddr *OUTPUT (struct pi_sockaddr temp) {
+    $1 = (struct sockaddr *)&temp;
 }
 
-%typemap (python,ignore) int addrlen {
-    $target = sizeof(struct pi_sockaddr);
+%typemap (python,in,numinputs=0) int addrlen {
+    $1 = sizeof(struct pi_sockaddr);
 }
 
-extern int pilot_connect (char *port);
+extern int pilot_connect (const char *port);
 extern int pi_socket (int domain, int type, int protocol);
 extern int pi_connect (int pi_sd, struct sockaddr *INPUT, int addrlen);
 extern int pi_bind (int pi_sd, struct sockaddr *INPUT, int addrlen);
 extern int pi_listen (int pi_sd, int backlog);
-extern int pi_accept (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT);
+extern int pi_accept (int pi_sd, struct sockaddr *OUTPUT, size_t *OUTPUT);
 
-extern int pi_accept_to (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT, int timeout);
+extern int pi_accept_to (int pi_sd, struct sockaddr *OUTPUT, size_t *OUTPUT, int timeout);
 
-extern int pi_send (int pi_sd, void *msg, int len, unsigned int flags);
-extern int pi_recv (int pi_sd, void *msg, int len, unsigned int flags);
+extern ssize_t pi_send (int pi_sd, void *msg, size_t len, int flags);
+extern ssize_t pi_recv (int pi_sd, pi_buffer_t *msg, size_t len, int flags);
 
-extern int pi_read (int pi_sd, void *msg, int len);
-extern int pi_write (int pi_sd, void *msg, int len);
+extern int pi_read (int pi_sd, pi_buffer_t *msg, size_t len);
+extern int pi_write (int pi_sd, void *msg, size_t len);
 
-extern int pi_getsockname (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT);
-extern int pi_getsockpeer (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT);
+extern int pi_getsockname (int pi_sd, struct sockaddr *OUTPUT, size_t *OUTPUT);
+extern int pi_getsockpeer (int pi_sd, struct sockaddr *OUTPUT, size_t *OUTPUT);
 
 /* Not supported since 1.37.2.3 2002/01/06 07:05:27 , appears we should use
    pi_setsockopt now
 extern int pi_setmaxspeed (int pi_sd, int speed, int overclock);
 */
-extern int pi_setsockopt (int pi_sd, int level, int option_name, const void *option_value, int *option_len);
-extern int pi_getsockopt (int pi_sd, int level, int option_name, void * option_value, int * option_len);
+extern int pi_setsockopt (int pi_sd, int level, int option_name, const void *option_value, size_t *option_len);
+extern int pi_getsockopt (int pi_sd, int level, int option_name, void * option_value, size_t * option_len);
 
 extern int pi_version (int pi_sd);
 
@@ -231,125 +228,125 @@ extern int pi_close (int pi_sd);
     int l;
     PyObject *foo;
 
-    temp.userID = DGETLONG($source,"userID",0);
-    temp.viewerID = DGETLONG($source,"viewerID",0);
-    temp.lastSyncPC = DGETLONG($source,"lastSyncPC",0);
-    temp.successfulSyncDate = DGETLONG($source,"successfulSyncDate",0);
-    temp.lastSyncDate = DGETLONG($source,"lastSyncDate",0);
-    strncpy(temp.username, DGETSTR($source,"name",""), 128);
+    temp.userID = DGETLONG($input,"userID",0);
+    temp.viewerID = DGETLONG($input,"viewerID",0);
+    temp.lastSyncPC = DGETLONG($input,"lastSyncPC",0);
+    temp.successfulSyncDate = DGETLONG($input,"successfulSyncDate",0);
+    temp.lastSyncDate = DGETLONG($input,"lastSyncDate",0);
+    strncpy(temp.username, DGETSTR($input,"name",""), 128);
 
-    foo = PyDict_GetItemString($source,"password");
+    foo = PyDict_GetItemString($input,"password");
     if (PyString_Check(foo)) {
 	l = PyString_Size(foo);
 	temp.passwordLength = l;
 	memcpy(temp.password, PyString_AsString(foo), l);
     }
     
-    $target = &temp;    
+    $1 = &temp;    
 }
 
 %typemap (python,argout) struct PilotUser *OUTPUT {
     PyObject *o;
     
-    if ($source) {
+    if ($1) {
 	o = Py_BuildValue("{slslslslslssss#}",
-			  "userID", $source->userID,
-			  "viewerID", $source->viewerID,
-			  "lastSyncPC", $source->lastSyncPC,
-			  "successfulSyncDate", $source->successfulSyncDate,
-			  "lastSyncDate", $source->lastSyncDate,
-			  "name", $source->username,
-			  "password", $source->password, $source->passwordLength);
-        $target = t_output_helper($target, o);
+			  "userID", $1->userID,
+			  "viewerID", $1->viewerID,
+			  "lastSyncPC", $1->lastSyncPC,
+			  "successfulSyncDate", $1->successfulSyncDate,
+			  "lastSyncDate", $1->lastSyncDate,
+			  "name", $1->username,
+			  "password", $1->password, $1->passwordLength);
+        $result = t_output_helper($result, o);
     }
 }
 
-%typemap (python,ignore) struct PilotUser *OUTPUT (struct PilotUser temp) {
-    $target = &temp;
+%typemap (python,in,numinputs=0) struct PilotUser *OUTPUT (struct PilotUser temp) {
+    $1 = &temp;
 }
 
 // struct SysInfo
 %typemap (python,argout) struct SysInfo *OUTPUT {
     PyObject *o;
     
-    if ($source) {
+    if ($1) {
 	o = Py_BuildValue("{slslss#}",
-			  "romVersion", $source->romVersion,
-			  "locale", $source->locale,
-			  "name", $source->prodID, $source->prodIDLength);
-	$target = t_output_helper($target, o);
+			  "romVersion", $1->romVersion,
+			  "locale", $1->locale,
+			  "name", $1->prodID, $1->prodIDLength);
+	$result = t_output_helper($result, o);
     }
 }
 
-%typemap (python,ignore) struct SysInfo *OUTPUT (struct SysInfo temp) {
-    $target = &temp;
+%typemap (python,in,numinputs=0) struct SysInfo *OUTPUT (struct SysInfo temp) {
+    $1 = &temp;
 }
 
 // struct DBInfo
 %typemap (python,argout) struct DBInfo *OUTPUT {
     PyObject *o;
 
-    if ($source) {
+    if ($1) {
 	o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisi}",
-			  "more", $source->more,
-			  "flags", $source->flags,
-			  "miscFlags", $source->miscFlags,
-			  "type", PyString_FromStringAndSize(printlong($source->type), 4),
-			  "creator", PyString_FromStringAndSize(printlong($source->creator), 4),
-			  "version", $source->version,
-			  "modnum", $source->modnum,
-			  "createDate", $source->createDate,
-			  "modifyDate", $source->modifyDate,
-			  "backupDate", $source->backupDate,
-			  "index", $source->index,
-			  "name", $source->name,
+			  "more", $1->more,
+			  "flags", $1->flags,
+			  "miscFlags", $1->miscFlags,
+			  "type", PyString_FromStringAndSize(printlong($1->type), 4),
+			  "creator", PyString_FromStringAndSize(printlong($1->creator), 4),
+			  "version", $1->version,
+			  "modnum", $1->modnum,
+			  "createDate", $1->createDate,
+			  "modifyDate", $1->modifyDate,
+			  "backupDate", $1->backupDate,
+			  "index", $1->index,
+			  "name", $1->name,
 
-			  "flagResource", !!($source->flags & dlpDBFlagResource),
-			  "flagReadOnly", !!($source->flags & dlpDBFlagReadOnly),
-			  "flagAppInfoDirty", !!($source->flags & dlpDBFlagAppInfoDirty),
-			  "flagBackup", !!($source->flags & dlpDBFlagBackup),
-			  "flagClipping", !!($source->flags & dlpDBFlagClipping),
-			  "flagOpen", !!($source->flags & dlpDBFlagOpen),
-			  "flagNewer", !!($source->flags & dlpDBFlagNewer),
-			  "flagReset", !!($source->flags & dlpDBFlagReset),
-			  "flagCopyPrevention", !!($source->flags & dlpDBFlagCopyPrevention),
-			  "flagStream", !!($source->flags & dlpDBFlagStream),
-			  "flagExcludeFromSync", !!($source->miscFlags & dlpDBMiscFlagExcludeFromSync));
-	$target = t_output_helper($target, o);
+			  "flagResource", !!($1->flags & dlpDBFlagResource),
+			  "flagReadOnly", !!($1->flags & dlpDBFlagReadOnly),
+			  "flagAppInfoDirty", !!($1->flags & dlpDBFlagAppInfoDirty),
+			  "flagBackup", !!($1->flags & dlpDBFlagBackup),
+			  "flagClipping", !!($1->flags & dlpDBFlagClipping),
+			  "flagOpen", !!($1->flags & dlpDBFlagOpen),
+			  "flagNewer", !!($1->flags & dlpDBFlagNewer),
+			  "flagReset", !!($1->flags & dlpDBFlagReset),
+			  "flagCopyPrevention", !!($1->flags & dlpDBFlagCopyPrevention),
+			  "flagStream", !!($1->flags & dlpDBFlagStream),
+			  "flagExcludeFromSync", !!($1->miscFlags & dlpDBMiscFlagExcludeFromSync));
+	$result = t_output_helper($result, o);
     }
 }
 
-%typemap (python,ignore) struct DBInfo *OUTPUT (struct DBInfo temp) {
-    $target = &temp;
+%typemap (python,in,numinputs=0) struct DBInfo *OUTPUT (struct DBInfo temp) {
+    $1 = &temp;
 }
 
 %typemap (python,in) struct DBInfo * {
     static struct DBInfo temp;
 
-    temp.more = (int) DGETLONG($source, "more", 0);
-    temp.type = makelong(DGETSTR($source, "type", "    "));
-    temp.creator = makelong(DGETSTR($source, "creator", "    "));
-    temp.version = DGETLONG($source, "version", 0);
-    temp.modnum = DGETLONG($source, "modnum", 0);
-    temp.createDate = DGETLONG($source, "createDate", 0);
-    temp.modifyDate = DGETLONG($source, "modifyDate", 0);
-    temp.backupDate = DGETLONG($source, "backupDate", 0);
-    temp.index = DGETLONG($source, "index", 0);
-    strncpy(temp.name, DGETSTR($source,"name",""), 34);
+    temp.more = (int) DGETLONG($input, "more", 0);
+    temp.type = makelong(DGETSTR($input, "type", "    "));
+    temp.creator = makelong(DGETSTR($input, "creator", "    "));
+    temp.version = DGETLONG($input, "version", 0);
+    temp.modnum = DGETLONG($input, "modnum", 0);
+    temp.createDate = DGETLONG($input, "createDate", 0);
+    temp.modifyDate = DGETLONG($input, "modifyDate", 0);
+    temp.backupDate = DGETLONG($input, "backupDate", 0);
+    temp.index = DGETLONG($input, "index", 0);
+    strncpy(temp.name, DGETSTR($input,"name",""), 34);
     temp.flags = 0;
-    if (DGETLONG($source,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-    if (DGETLONG($source,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-    if (DGETLONG($source,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-    if (DGETLONG($source,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-    if (DGETLONG($source,"flagClipping",0)) temp.flags |= dlpDBFlagClipping;
-    if (DGETLONG($source,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-    if (DGETLONG($source,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-    if (DGETLONG($source,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-    if (DGETLONG($source,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-    if (DGETLONG($source,"flagStream",0)) temp.flags |= dlpDBFlagStream;
+    if (DGETLONG($input,"flagResource",0)) temp.flags |= dlpDBFlagResource;
+    if (DGETLONG($input,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
+    if (DGETLONG($input,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
+    if (DGETLONG($input,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
+    if (DGETLONG($input,"flagClipping",0)) temp.flags |= dlpDBFlagClipping;
+    if (DGETLONG($input,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
+    if (DGETLONG($input,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
+    if (DGETLONG($input,"flagReset",0)) temp.flags |= dlpDBFlagReset;
+    if (DGETLONG($input,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
+    if (DGETLONG($input,"flagStream",0)) temp.flags |= dlpDBFlagStream;
     temp.miscFlags = 0;
-    if (DGETLONG($source,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-    $target = &temp;
+    if (DGETLONG($input,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
+    $1 = &temp;
 }
     
     
@@ -357,97 +354,97 @@ extern int pi_close (int pi_sd);
 %typemap (python,argout) struct CardInfo *OUTPUT {
     PyObject *o;
 
-    if ($source) {
+    if ($1) {
 	o = Py_BuildValue("{sisislslslslsssssi}",
-			  "card", $source->card,
-			  "version", $source->version,
-			  "creation", $source->creation,
-			  "romSize", $source->romSize,
-			  "ramSize", $source->ramSize,
-			  "ramFree", $source->ramFree,
-			  "name", $source->name,
-			  "manufacturer", $source->manufacturer,
-			  "more", $source->more);
-	$target = t_output_helper($target, o);
+			  "card", $1->card,
+			  "version", $1->version,
+			  "creation", $1->creation,
+			  "romSize", $1->romSize,
+			  "ramSize", $1->ramSize,
+			  "ramFree", $1->ramFree,
+			  "name", $1->name,
+			  "manufacturer", $1->manufacturer,
+			  "more", $1->more);
+	$result = t_output_helper($result, o);
     }
 }
 
-%typemap (python,ignore) struct CardInfo *OUTPUT (struct CardInfo temp) {
-    $target = &temp;
+%typemap (python,in,numinputs=0) struct CardInfo *OUTPUT (struct CardInfo temp) {
+    $1 = &temp;
 }
 
 %typemap (python,argout) struct NetSyncInfo *OUTPUT {
     PyObject *o;
-    if ($source){
+    if ($1){
 	o = Py_BuildValue("{sissssss}",
-			  "lanSync", $source->lanSync,
-			  "hostName", $source->hostName,
-			  "hostAddress", $source->hostAddress,
-			  "hostSubnetMask", $source->hostSubnetMask);
-	$target = t_output_helper($target, o);
+			  "lanSync", $1->lanSync,
+			  "hostName", $1->hostName,
+			  "hostAddress", $1->hostAddress,
+			  "hostSubnetMask", $1->hostSubnetMask);
+	$result = t_output_helper($result, o);
     }
 }
 
-%typemap (python,ignore) struct NetSyncInfo *OUTPUT (struct NetSyncInfo temp) {
-    $target = &temp;
+%typemap (python,in,numinputs=0) struct NetSyncInfo *OUTPUT (struct NetSyncInfo temp) {
+    $1 = &temp;
 }
 
 %typemap (python,in) struct NetSyncInfo * {
     static struct NetSyncInfo temp;
 
-    temp.lanSync = (int) DGETLONG($source,"lanSync",0);
-    strncpy(temp.hostName, DGETSTR($source,"hostName",""), 256);
-    strncpy(temp.hostAddress, DGETSTR($source,"hostAddress",""), 40);
-    strncpy(temp.hostSubnetMask, DGETSTR($source,"hostSubnetMask",""), 40);
+    temp.lanSync = (int) DGETLONG($input,"lanSync",0);
+    strncpy(temp.hostName, DGETSTR($input,"hostName",""), 256);
+    strncpy(temp.hostAddress, DGETSTR($input,"hostAddress",""), 40);
+    strncpy(temp.hostSubnetMask, DGETSTR($input,"hostSubnetMask",""), 40);
 
-    $target = &temp;
+    $1 = &temp;
 }
 
 // a generic 4-character string type, for use as a type or creator ID
 %typemap (python,in) unsigned long STR4 {
-    if (!($source) || ($source == Py_None)) {
-	$target = 0;
+    if (!($input) || ($input == Py_None)) {
+	$1 = 0;
     } else {
-	if (!PyString_Check($source) || (PyString_Size($source) != 4)) {
+	if (!PyString_Check($input) || (PyString_Size($input) != 4)) {
 	    PyErr_SetString(PyExc_ValueError, "argument must be a 4-character string");
 	    return 0;
 	}
-	$target = makelong(PyString_AsString($source));
+	$1 = makelong(PyString_AsString($input));
     }
 }
 
 %typemap (python,in) long STR4 {
-    if (!($source) || ($source == Py_None)) {
-	$target = 0;
+    if (!($input) || ($input == Py_None)) {
+	$1 = 0;
     } else {
-	if (!PyString_Check($source) || (PyString_Size($source) != 4)) {
+	if (!PyString_Check($input) || (PyString_Size($input) != 4)) {
 	    PyErr_SetString(PyExc_ValueError, "argument must be a 4-character string");
 	    return 0;
 	}
-	$target = makelong(PyString_AsString($source));
+	$1 = makelong(PyString_AsString($input));
     }
 }
 
 %typemap (python,argout) unsigned long *OUTSTR4 {
     PyObject *o;
-    if ($source) {
-	o = PyString_FromStringAndSize(printlong(*$source), 4);
-	$target = t_output_helper($target, o);
+    if ($1) {
+	o = PyString_FromStringAndSize(printlong(*$1), 4);
+	$result = t_output_helper($result, o);
     }
 }
 
-%typemap (python,ignore) unsigned long *OUTSTR4 (unsigned long temp) {
-    $target = &temp;
+%typemap (python,in,numinputs=0) unsigned long *OUTSTR4 (unsigned long temp) {
+    $1 = &temp;
 }
 
 //
 
 // a char value that allows None for a null value.
 %typemap (python,in) char *ALLOWNULL {
-    if (!($source) || ($source == Py_None)) {
-	$target = NULL;
+    if (!($input) || ($input == Py_None)) {
+	$1 = NULL;
     } else {
-	$target = PyString_AsString($source);
+	$1 = PyString_AsString($input);
     }
 }
 
@@ -529,27 +526,25 @@ enum dlpErrors {
 extern char * dlp_errorlist[];
 extern char * dlp_strerror(int error);
 
-// note: $source is a pointer, because swig is treating DLPERROR as an opaque
-// type.  but since we typedef it to int, the compiler doesn't complain...
 %typemap (python,out) DLPERROR {
-    if (*($source) < 0) {
-	PyErr_SetObject(Error, Py_BuildValue("(is)", *($source),
-					     dlp_strerror(*($source))));
+    if ($1 < 0) {
+	PyErr_SetObject(Error, Py_BuildValue("(is)", $1,
+					     dlp_strerror($1)));
 	return NULL;
     }
-    $target = Py_None;
+    $result = Py_None;
     Py_INCREF(Py_None);
 }
 %typemap (python,out) DLPDBERROR {
-    if (*($source) == -5) {
+    if ($1 == -5) {
 	Py_INCREF(Py_None);
 	return Py_None;
-    } else if (*($source) < 0) {
-	PyErr_SetObject(Error, Py_BuildValue("(is)", *($source),
-					     dlp_strerror(*($source))));
+    } else if ($1 < 0) {
+	PyErr_SetObject(Error, Py_BuildValue("(is)", $1,
+					     dlp_strerror($1)));
 	return NULL;
     }
-    $target = Py_None;
+    $result = Py_None;
     Py_INCREF(Py_None);
 }
 
@@ -573,9 +568,9 @@ extern DLPERROR dlp_SetSysDateTime (int sd, time_t INPUT);
 extern DLPERROR dlp_ReadStorageInfo (int sd, int cardno, struct CardInfo *OUTPUT);
 extern DLPERROR dlp_ReadSysInfo (int sd, struct SysInfo *OUTPUT);
 extern DLPERROR dlp_ReadDBList (int sd, int cardno, int flags, int start,
-				struct DBInfo *OUTPUT);
+				pi_buffer_t *OUTBUF);
 // note: creator and type are 4-char strings or None, and name is a string or None.
-extern DLPERROR dlp_FindDBInfo (int sd, int cardno, int start, char *ALLOWNULL,
+extern DLPERROR dlp_FindDBInfo (int sd, int cardno, int start, const char *ALLOWNULL,
 				unsigned long STR4,
 				unsigned long STR4, struct DBInfo *OUTPUT);
 extern DLPERROR dlp_OpenDB (int sd, int cardno, int mode, char * name, int *OUTPUT);
@@ -583,10 +578,11 @@ extern DLPERROR dlp_CloseDB (int sd, int dbhandle);
 extern DLPERROR dlp_CloseDB_All (int sd);
 extern DLPERROR dlp_DeleteDB (int sd, int cardno, const char * name);
 // note: creator and type are 4-char strings.
-extern DLPERROR dlp_CreateDB (int sd, long STR4, long STR4, int cardno,
-			      int flags, int version, const char * name, int *OUTPUT);
+extern DLPERROR dlp_CreateDB (int sd, unsigned long STR4, unsigned long STR4, 
+			      int cardno, int flags, unsigned int version, 
+			      const char * name, int *OUTPUT);
 extern DLPERROR dlp_ResetSystem (int sd);
-extern DLPERROR dlp_AddSyncLogEntry (int sd, char * entry);
+extern DLPERROR dlp_AddSyncLogEntry (int sd, char *entry);
 extern DLPERROR dlp_OpenConduit (int sd);
 extern DLPERROR dlp_EndOfSync (int sd, int status);
 extern DLPERROR dlp_AbortSync (int sd);
@@ -596,43 +592,92 @@ extern DLPERROR dlp_WriteUserInfo (int sd, struct PilotUser *User);
 extern DLPERROR dlp_ReadUserInfo (int sd, struct PilotUser *OUTPUT);
 extern DLPERROR dlp_ResetLastSyncPC (int sd);
 
-// The kludge hits.-more- You die.
-//
-// This is a TOTAL hack.  As far as I know, the order in which SWIG processes typemaps
-// is never specified anywhere.  However, it appears that it does them in the basic
-// order of
-//    - "ignore" typemaps
-//    - basic argument processing
-//    - "in" typemaps
-//    - "check" typemaps
-//    - ...
-%typemap (python,in) void *INBUF (int __buflen) {
-    __buflen = PyString_Size($source);
-    $target = (void *)PyString_AsString($source);
+// XXX
+%typemap (python,in) (const void *INBUF, size_t INBUFLEN) {
+  $1 = (void *)PyString_AsString($input);
+  $2 = PyString_Size($input);
 }
 
-%typemap (python,ignore) int INBUFLEN {
-}
-%typemap (python,check) int INBUFLEN {
-    $target = __buflen;
-}
-
-%typemap (python,argout) void *OUTBUF {
-    PyObject *o;
-    if ($source) {
-	o = Py_BuildValue("s#", $source, __buflen);
-	$target = t_output_helper($target, o);
-    }
-}
-%typemap (python,ignore) void *OUTBUF {
-    $target = __dlp_buf;
-}
-%typemap (python,ignore) int  *OUTBUFLEN (int __buflen) {
-    $target = &__buflen;
+// Used by dlp_ReadAppPreference
+%typemap (python,argout) (void *OUTBUF, size_t *OUTBUFLEN) {
+  PyObject *o;
+  if ($1) {
+    o = Py_BuildValue("s#", $1, $2);
+    $result = t_output_helper($result, o);
+  }
 }
 
-%typemap (python,ignore) int DLPMAXBUF {
-    $target = DLPMAXBUF;
+%typemap (python,in,numinputs=0) (pi_buffer_t *OUTBUF) {
+  $1 = pi_buffer_new(0xFFFF);
+}
+
+%typemap (python,in,numinputs=0) (size_t *OUTBUFLEN) (size_t outbuflen) {
+  outbuflen = 0xFFFF;
+  $1 = &outbuflen;
+}
+
+%typemap (python,argout) (pi_buffer_t *OUTBUF) {
+  PyObject *o1;
+  if ($1) {
+    o1 = Py_BuildValue("s#", $1->data, $1->used);
+    pi_buffer_free($1);
+    $result = t_output_helper($result, o1);
+  }
+}
+
+// If we can't use OUTBUF->used for the size, it can get a bit more messy:
+
+/* %typemap (python,argout) (pi_buffer_t *OUTBUF, size_t *OUTBUFLEN) { */
+/*   PyObject *o; */
+/*   if ($1) { */
+/*     o = Py_BuildValue("s#", $1, $2); */
+/*     $result = t_output_helper($result, o); */
+/*   } */
+/* } */
+
+/* %typemap (python,argout) (pi_buffer_t *OUTBUF,  */
+/* 			  int *OUTPUT, size_t *OUTBUFLEN) { */
+/*   PyObject *o1, *o2; */
+/*   if ($1) { */
+/*     o1 = Py_BuildValue("s#", $1->data, $1->used); */
+/*     $result = t_output_helper($result, o1); */
+/*   } */
+/*   o2 = PyInt_FromLong((long) ($2)); */
+/*   $result = t_output_helper($result, o2);     */
+/* } */
+
+/* %typemap (python,argout) (pi_buffer_t *OUTBUF, unsigned long *OUTSTR4,  */
+/* 			  int *OUTPUT, size_t *OUTBUFLEN) { */
+/*   PyObject *o1, *o2, *o3; */
+/*   if ($1) { */
+/*     o1 = Py_BuildValue("s#", $1->data, $1->used); */
+/*     $result = t_output_helper($result, o1); */
+/*   } */
+/*   if ($2) { */
+/*     o2 = PyString_FromStringAndSize(printlong(*$2), 4); */
+/*     $result = t_output_helper($result, o2); */
+/*   }	 */
+/*   o3 = PyInt_FromLong((long) ($3)); */
+/*   $result = t_output_helper($result, o3);     */
+/* } */
+
+/* // can we make this duplication go away using %apply? */
+/* %typemap (python,argout) (void *OUTBUF, recordid_t *OUTPUT, int *OUTPUT, size_t *OUTBUFLEN) { */
+/*   PyObject *o1, *o2, *o3; */
+/*   if ($1) { */
+/*     o1 = Py_BuildValue("s#", $1, $4); */
+/*     $result = t_output_helper($result, o1); */
+/*   } */
+/*   if ($2) { */
+/*     o2 = PyString_FromStringAndSize(printlong(*$2), 4); */
+/*     $result = t_output_helper($result, o2); */
+/*   }	 */
+/*   o3 = PyInt_FromLong((long) ($3)); */
+/*   $result = t_output_helper($result, o3);    */ 
+/*} */
+
+%typemap (python,in,numinputs=0) int DLPMAXBUF {
+    $1 = DLPMAXBUF;
 }
 
 %apply unsigned long { recordid_t };
@@ -640,11 +685,11 @@ extern DLPERROR dlp_ResetLastSyncPC (int sd);
 
 %native(dlp_ReadAppBlock) PyObject *_wrap_dlp_ReadAppBlock(PyObject *, PyObject *);
 
-extern DLPERROR dlp_WriteAppBlock(int sd, int dbhandle, const void *INBUF, int INBUFLEN);
+extern DLPERROR dlp_WriteAppBlock(int sd, int dbhandle, const void *INBUF, size_t INBUFLEN);
 
 %native(dlp_ReadSortBlock) PyObject *_wrap_dlp_ReadSortBlock(PyObject *, PyObject *);
 
-extern DLPERROR dlp_WriteSortBlock(int sd, int dbhandle, const void *INBUF, int INBUFLEN);
+extern DLPERROR dlp_WriteSortBlock(int sd, int dbhandle, const void *INBUF, size_t INBUFLEN);
 
 extern DLPERROR dlp_ResetDBIndex (int sd, int dbhandle);
 
@@ -652,38 +697,39 @@ extern DLPERROR dlp_ResetDBIndex (int sd, int dbhandle);
 
 extern DLPDBERROR dlp_WriteRecord (int sd, int dbhandle, int flags,
 				 recordid_t INPUT, int catID, void *INBUF,
-				 int INBUFLEN, recordid_t *OUTPUT);
+				 size_t INBUFLEN, recordid_t *OUTPUT);
 extern DLPERROR dlp_DeleteRecord (int sd, int dbhandle, int all, recordid_t INPUT);
 extern DLPERROR dlp_DeleteCategory (int sd, int dbhandle, int category);
 
 extern DLPDBERROR dlp_ReadResourceByType (int sd, int fHandle, unsigned long STR4, int id,
-				   void *OUTBUF, 
-				   int *OUTPUT, int *OUTBUFLEN);
-extern DLPDBERROR dlp_ReadResourceByIndex (int sd, int fHandle, int index, void *OUTBUF,
-                          unsigned long *OUTSTR4, int *OUTPUT, int *OUTBUFLEN);
+				   pi_buffer_t *OUTBUF, int *OUTPUT);
+extern DLPDBERROR dlp_ReadResourceByIndex (int sd, int fHandle, int index, 
+					   pi_buffer_t *OUTBUF, unsigned long *OUTSTR4,
+					   int *OUTPUT);
 
 extern DLPDBERROR dlp_WriteResource (int sd, int dbhandle, unsigned long STR4, int id,
-				   const void *INBUF, int INBUFLEN);
+				   const void *INBUF, size_t INBUFLEN);
 extern DLPERROR dlp_DeleteResource (int sd, int dbhandle, int all, unsigned long STR4,
 				    int resID);
 
-extern DLPDBERROR dlp_ReadNextModifiedRec (int sd, int fHandle, void *OUTBUF,
-					 recordid_t *OUTPUT, int *OUTPUT, int *OUTBUFLEN,
-					 int *OUTPUT,
-					 int *OUTPUT);
+extern DLPDBERROR dlp_ReadNextModifiedRec (int sd, int fHandle, pi_buffer_t *OUTBUF,
+					 recordid_t *OUTPUT, int *OUTPUT,
+					 int *OUTPUT, int *OUTPUT);
 extern DLPDBERROR dlp_ReadNextModifiedRecInCategory (int sd, int fHandle, int incategory,
-						   void *OUTBUF,
-						   recordid_t *OUTPUT, int *OUTPUT,
-						   int *OUTBUFLEN, int *OUTPUT);
+						     pi_buffer_t *OUTBUF, 
+						     recordid_t *OUTPUT,
+						     int *OUTPUT, int *OUTPUT);
 extern DLPDBERROR dlp_ReadNextRecInCategory (int sd, int fHandle, int incategory,
-					   void *OUTBUFLEN,
+					   pi_buffer_t *OUTBUF,
 					   recordid_t *OUTPUT, int *OUTPUT,
-					   int *OUTBUFLEN, int *OUTPUT);
-extern DLPDBERROR dlp_ReadRecordById (int sd, int fHandle, recordid_t INPUT, void *OUTBUF, 
-				    int *OUTPUT, int *OUTBUFLEN, int *OUTPUT, int *OUTPUT);
-extern DLPDBERROR dlp_ReadRecordByIndex (int sd, int fHandle, int index, void *OUTBUF, 
-				       recordid_t *OUTPUT, int *OUTBUFLEN,
-				       int *OUTPUT, int *OUTPUT);
+					     int *OUTPUT);
+extern DLPDBERROR dlp_ReadRecordById (int sd, int fHandle, recordid_t INPUT, 
+				      pi_buffer_t *OUTBUF, int *OUTPUT, int *OUTPUT, 
+				      int *OUTPUT);
+extern DLPDBERROR dlp_ReadRecordByIndex (int sd, int fHandle, int index, 
+					 pi_buffer_t *OUTBUF, 
+					 recordid_t *OUTPUT, 
+					 int *OUTPUT, int *OUTPUT);
 extern DLPERROR dlp_CleanUpDatabase (int sd, int fHandle);
 extern DLPERROR dlp_ResetSyncFlags (int sd, int fHandle);
 // complex enough to probably need native code.
@@ -695,66 +741,71 @@ extern DLPERROR dlp_ReadFeature (int sd, unsigned long STR4, unsigned int num,
 extern DLPERROR dlp_ReadNetSyncInfo (int sd, struct NetSyncInfo *OUTPUT);
 extern DLPERROR dlp_WriteNetSyncInfo (int sd, struct NetSyncInfo * i);
 extern DLPERROR dlp_ReadAppPreference (int sd, unsigned long STR4, int id, int backup,
-				  int DLPMAXBUF, void *OUTBUF, int *OUTBUFLEN, int *OUTPUT);
+				       int DLPMAXBUF, void *OUTBUF, size_t *OUTBUFLEN, 
+				       int *OUTPUT);
 extern DLPERROR dlp_WriteAppPreference (int sd, unsigned long STR4, int id, int backup,
-					int version, void *INBUF, int INBUFLEN);
+					int version, void *INBUF, size_t INBUFLEN);
 // and the most complex of all... i'm not even sure how it works.
 //extern int dlp_RPC (int sd, struct RPC_params * p, unsigned long *OUTPUT);
 
 // for functions that return 0 on success or something else on error
 %typemap (python,out) PIERROR {
-    if (*($source) != 0) {
-	PyErr_SetObject(Error, Py_BuildValue("(is)", *($source),
+    int *res_pointer, res;
+    res_pointer = (int *) $1;
+    res = *res_pointer;
+    if (res != 0) {
+	PyErr_SetObject(Error, Py_BuildValue("(is)", res,
 					     "pisock error"));
 	return NULL;
     }
-    $target = Py_None;
+    $result = Py_None;
     Py_INCREF(Py_None);
 }
 
-%typemap (python,argout) void **OUTBUF {
-    PyObject *o;
-    if ($source) {
-	o = Py_BuildValue("s#", *($source), __buflen);
-	$target = t_output_helper($target, o);
-    }
-}
-%typemap (python,ignore) void **OUTBUF {
-    static void *foo;
-    $target = &foo;
-}
+// XXX
+//%typemap (python,argout) void **OUTBUF {
+//    PyObject *o;
+//    if ($1) {
+//	o = Py_BuildValue("s#", *($1), __buflen);
+//	$result = t_output_helper($result, o);
+//    }
+//}
+//%typemap (python,in,numinputs=0) void **OUTBUF {
+//    static void *foo;
+//    $1 = &foo;
+//}
 
 
 /* pi-file */
 
-extern struct pi_file *pi_file_open (char *name);
+extern struct pi_file *pi_file_open (const char *name);
 extern PIERROR pi_file_close (struct pi_file *pf);
 extern PIERROR pi_file_get_info (struct pi_file *pf, struct DBInfo *OUTPUT);
 extern PIERROR pi_file_get_app_info  (struct pi_file *pf, void **OUTBUF,
-					      int *OUTBUFLEN);
+					      size_t *OUTBUFLEN);
 extern PIERROR pi_file_get_sort_info (struct pi_file *pf, void **OUTBUF,
-					      int *OUTBUFLEN);
+					      size_t *OUTBUFLEN);
 extern PIERROR pi_file_read_resource (struct pi_file *pf, int idx, void **OUTBUF,
-				  int *OUTBUFLEN, unsigned long *OUTSTR4,
+				  size_t *OUTBUFLEN, unsigned long *OUTSTR4,
 				  int *OUTPUT);
 extern PIERROR pi_file_read_resource_by_type_id (struct pi_file *pf,
 					     unsigned long STR4, int id,
-					     void **OUTBUF, int *OUTBUFLEN, int *OUTPUT);
+					     void **OUTBUF, size_t *OUTBUFLEN, int *OUTPUT);
 extern PIERROR pi_file_type_id_used (struct pi_file *pf, unsigned long STR4, int id);
-extern PIERROR pi_file_read_record (struct pi_file *pf, int idx, void **OUTBUF, int *OUTBUFLEN,
+extern PIERROR pi_file_read_record (struct pi_file *pf, int idx, void **OUTBUF, size_t *OUTBUFLEN,
 				    int *OUTPUT, int *OUTPUT, recordid_t *OUTPUT);
 extern PIERROR pi_file_get_entries (struct pi_file *pf, int *OUTPUT);
 extern PIERROR pi_file_read_record_by_id (struct pi_file *pf, recordid_t INPUT, void **OUTBUF,
-					  int *OUTBUFLEN, int *OUTPUT, int *OUTPUT,
+					  size_t *OUTBUFLEN, int *OUTPUT, int *OUTPUT,
 					  int *OUTPUT);
 extern PIERROR pi_file_id_used (struct pi_file *pf, recordid_t INPUT);
 extern struct pi_file *pi_file_create (char *name, struct DBInfo *INPUT);
 extern PIERROR pi_file_set_info (struct pi_file *pf, struct DBInfo *INPUT);
-extern PIERROR pi_file_set_app_info (struct pi_file *pf, void *INBUF, int INBUFLEN);
-extern PIERROR pi_file_set_sort_info (struct pi_file *pf, void *INBUF, int INBUFLEN);
-extern PIERROR pi_file_append_resource (struct pi_file *pf, void *INBUF, int INBUFLEN,
+extern PIERROR pi_file_set_app_info (struct pi_file *pf, void *INBUF, size_t INBUFLEN);
+extern PIERROR pi_file_set_sort_info (struct pi_file *pf, void *INBUF, size_t INBUFLEN);
+extern PIERROR pi_file_append_resource (struct pi_file *pf, void *INBUF, size_t INBUFLEN,
 					unsigned long STR4, int id);
-extern PIERROR pi_file_append_record (struct pi_file *pf, void *INBUF, int INBUFLEN,
+extern PIERROR pi_file_append_record (struct pi_file *pf, void *INBUF, size_t INBUFLEN,
 				      int attr, int category, recordid_t INPUT);
 extern PIERROR pi_file_retrieve (struct pi_file *pf, int socket, int cardno);
 extern PIERROR pi_file_install (struct pi_file *pf, int socket, int cardno);

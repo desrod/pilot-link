@@ -26,7 +26,7 @@ be extended to support conduits written in Python.
 
 The C code for the interface is generated using SWIG, but SWIG is not
 required for building/installing it.  (To regenerate the wrapper from the
-SWIG source, use "swig -python -dnone pisock.i".)
+SWIG source, use "swig -python pisock.i".)
 
 There is currently no documentation; that should be fixed soon.
 

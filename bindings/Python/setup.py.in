@@ -1,5 +1,10 @@
 
 from distutils.core import setup, Extension
+from shutil import copy
+from os import unlink
+
+# messy, I know. Please fix if you know how!
+copy("src/pisock.py", "pisock.py")
 
 setup(name = "python-libpisock",
       version = "@PILOT_LINK_VERS@.@PILOT_LINK_MAJOR@.@PILOT_LINK_MINOR@",
@@ -16,3 +21,5 @@ setup(name = "python-libpisock",
                      ],
       py_modules = ["pisock"],
       )
+
+unlink("pisock.py")
