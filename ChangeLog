@@ -1,3 +1,9 @@
+2001-12-31  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* Just adjusting the conduits so they'll compile. 
+
+	* dumpdata() calls are commented out for now
+
 2001-12-06  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/utils.c (dumpline): take debug type

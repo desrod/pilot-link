@@ -52,12 +52,12 @@ int main(int argc, char *argv[])
 		exit(2);
 	}
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
 		perror("pi_socket");
 		exit(1);
 	}
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 	strcpy(addr.pi_device, device);
 
 	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));

@@ -105,7 +105,7 @@ void read_pilot(int sd)
 	int l = pi_read(sd, buf, 4096);
 
 	puts("From Palm:");
-	dumpdata((unsigned char *) buf, l);
+/*  	dumpdata((unsigned char *) buf, l); */
 
 	if (buf[2] == 0) {			/* SysPkt command 	*/
 		if (buf[0] == 1) {		/* Console 		*/
@@ -147,12 +147,12 @@ int main(int argc, char *argv[])
 		exit(2);
 	}
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_RAW, PI_PF_SLP))) {
 		perror("pi_socket");
 		exit(1);
 	}
 
-	laddr.pi_family = PI_AF_SLP;
+	laddr.pi_family = PI_AF_PILOT;
 	strcpy(laddr.pi_device, argv[1]);
 
 	pi_bind(sd, (struct sockaddr *) &laddr, sizeof(laddr));

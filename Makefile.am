@@ -33,7 +33,6 @@ bin_PROGRAMS = 		\
 	pi-getram	\
 	pi-getrom	\
 	pi-nredir	\
-	pi-port		\
 	pilot-addresses	\
 	pilot-clip	\
 	pilot-debug	\
@@ -151,11 +150,6 @@ pi_getrom_LDADD = \
 pi_nredir_SOURCES = \
 	pi-nredir.c
 pi_nredir_LDADD = \
-	$(top_builddir)/libsock/libpisock.la
-
-pi_port_SOURCES = \
-	pi-port.c
-pi_port_LDADD = \
 	$(top_builddir)/libsock/libpisock.la
 
 pilot_addresses_SOURCES = \

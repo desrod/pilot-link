@@ -202,13 +202,13 @@ int main(int argc, char *argv[])
 		PalmHeader(progname);
 	}
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 	strncpy(device, addr.pi_device, sizeof(device));
 
 	if (filename[0] == '\0') {
 		if (!
 		    (sd =
-		     pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+		     pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
 			perror("pi_socket");
 			exit(1);
 		}

@@ -408,14 +408,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
 		perror("pi_socket");
 		exit(1);
 	}
 
 	lost = dupe = rec = sent = 0;
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 	strcpy(addr.pi_device, device);
 
 	PalmHeader(progname);

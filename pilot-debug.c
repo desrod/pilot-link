@@ -1412,9 +1412,9 @@ int proc_port(ClientData clientData, Tcl_Interp * interp, int argc,
                 return TCL_OK;
         }
 
-        port = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP);
+        port = pi_socket(PI_AF_PILOT, PI_SOCK_RAW, PI_PF_SLP);
 
-        laddr.pi_family = PI_AF_SLP;
+        laddr.pi_family = PI_AF_PILOT;
         strcpy(laddr.pi_device, argv[1]);
 
         if (pi_bind(port, (struct sockaddr *) &laddr, sizeof(laddr)) == -1) {

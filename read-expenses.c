@@ -51,12 +51,12 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "   Usage: %s %s\n\n", argv[0], TTYPrompt);
 		exit(2);
 	}
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
 		perror("pi_socket");
 		exit(1);
 	}
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 	strcpy(addr.pi_device, device);
 
 	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
@@ -115,9 +115,10 @@ int main(int argc, char *argv[])
 		unpack_ExpensePref(&tp, buffer, 0xffff);
 		i = pack_ExpensePref(&tp, buffer2, 0xffff);
 		fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
-		dumpdata(buffer, ret);
+/*		dumpdata(buffer, ret);
 		fprintf(stderr, "New prefs, %d bytes:\n", ret);
 		dumpdata(buffer2, i);
+*/
 		fprintf(stderr,
 			"Expense prefs, current category %d, default category %d\n",
 			tp.currentCategory, tp.defaultCategory);
@@ -139,10 +140,10 @@ int main(int argc, char *argv[])
 	i = pack_ExpenseAppInfo(&tai, buffer2, 0xffff);
 	fprintf(stderr, "Orig length %d, new length %d, orig data:\n", ret,
 		i);
-	dumpdata(buffer, ret);
+/*	dumpdata(buffer, ret);
 	fprintf(stderr, "New data:\n");
 	dumpdata(buffer2, i);
-
+*/
 	fprintf(stderr, "Expense app info, sort order %d\n",
 		tai.sortOrder);
 	fprintf(stderr, " Currency 1, name '%s', symbol '%s', rate '%s'\n",
@@ -178,10 +179,11 @@ int main(int argc, char *argv[])
 		unpack_Expense(&t, buffer, len);
 		ret = pack_Expense(&t, buffer2, 0xffff);
 		fprintf(stderr, "Orig length %d, data:\n", len);
-		dumpdata(buffer, len);
+
+/*		dumpdata(buffer, len);
 		fprintf(stderr, "New length %d, data:\n", ret);
 		dumpdata(buffer2, ret);
-
+*/
 		fprintf(stderr, "Category: %s\n",
 			tai.category.name[category]);
 		fprintf(stderr, "Type: %d, Payment: %d, Currency: %d\n",

@@ -120,12 +120,12 @@ int main(int argc, char *argv[])
 		    ("Please insert Palm in cradle on %s and press HotSync button.\n",
 		     addr.pi_device);
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
 		perror("pi_socket");
 		exit(1);
 	}
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 
 	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
 	if (ret == -1) {

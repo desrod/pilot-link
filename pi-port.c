@@ -64,7 +64,7 @@ void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 	fprintf(stderr,
 		"A %d byte packet of type %d has been received from the network\n",
 		length, type);
-	dumpdata(buffer, length);
+/*	dumpdata(buffer, length); */
 	if (type == 0) {
 		struct pi_skb *nskb;
 		nskb = (struct pi_skb *) malloc(sizeof(struct pi_skb));
@@ -135,12 +135,12 @@ int main(int argc, char *argv[])
 
 	listen(serverfd, 5);
 
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_RAW, PI_PF_SLP))) {
 		perror("pi_socket");
 		exit(1);
 	}
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 	strcpy(addr.pi_device, device);
 
 	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 				fprintf(stderr,
 					"Read %d bytes from network at block+%d:\n",
 					r, l);
-				dumpdata(buffer + l, r);
+/*				dumpdata(buffer + l, r); */
 
 				l += r;
 				if (l >= 4) {
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
 						}
 						fprintf(stderr,
 							"Buffer now is:\n");
-						dumpdata(buffer, l);
+/*						dumpdata(buffer, l); */
 					}
 				}
 			      skip:

@@ -50,12 +50,12 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "   Usage: %s %s\n\n", argv[0], TTYPrompt);
 		exit(2);
 	}
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
 		perror("pi_socket");
 		exit(1);
 	}
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 	strncpy(addr.pi_device, device, sizeof(addr.pi_device));
 
 	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
