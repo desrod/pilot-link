@@ -1013,13 +1013,13 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 				/* directory, doesn't exist. Don't try to mkdir /. */
 				if ((rpathlen > 1) &&
 					(dlp_VFSDirCreate(sd,volume,rpath) < 0)) {
-					fprintf(stderr,"  Could not create destination directory.\n");
+					fprintf(stderr,"   Could not create destination directory.\n");
 					return;
 				}
 				APPEND_BASENAME
 			}
 			if (dlp_VFSFileCreate(sd,volume,rpath) < 0) {
-				fprintf(stderr,"  Cannot create destination file '%s'.\n",rpath);
+				fprintf(stderr,"   Cannot create destination file '%s'.\n",rpath);
 				return;
 			}
 		}
@@ -1057,20 +1057,20 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 #undef APPEND_BASENAME
 
 	if (dlp_VFSFileOpen(sd,volume,rpath,0x7,&file) < 0) {
-		fprintf(stderr,"  Cannot open destination file '%s'.\n",rpath);
+		fprintf(stderr,"   Cannot open destination file '%s'.\n",rpath);
 		return;
 	}
 
 	fd = open(localfile,O_RDONLY);
 	if (fd < 0) {
-		fprintf(stderr,"  Cannot open local file for reading.\n");
+		fprintf(stderr,"   Cannot open local file for reading.\n");
 		dlp_VFSFileClose(sd,file);
 		return;
 	}
 #define FBUFSIZ 16384
 	filebuffer = (char *)malloc(FBUFSIZ);
 	if (NULL == filebuffer) {
-		fprintf(stderr,"  Cannot allocate memory for file copy.\n");
+		fprintf(stderr,"   Cannot allocate memory for file copy.\n");
 		dlp_VFSFileClose(sd,file);
 		close(fd);
 		return;
@@ -1084,7 +1084,7 @@ static void palm_install_VFS(const char *localfile, const char *vfspath)
 		while (readsize > 0) {
 			writesize = dlp_VFSFileWrite(sd,file,filebuffer+offset,readsize);
 			if (writesize < 0) {
-				fprintf(stderr,"  Error while writing file.\n");
+				fprintf(stderr,"   Error while writing file.\n");
 				break;
 			}
 			readsize -= writesize;
@@ -1704,7 +1704,7 @@ static void set_operation(int opt, palm_op_t *op, unsigned long int *flags)
 		*flags |= MEDIA_ROM;
 		break;
 	default:
-		fprintf(stderr,"Error: unknown operation %c.\n",opt);
+		fprintf(stderr,"   ERROR: unknown operation %c.\n",opt);
 		exit(1);
 	}
 }
@@ -1797,7 +1797,7 @@ int main(int argc, const char *argv[])
 		case 's':
 		case 'r':
 			if (palm_op_noop != palm_operation) {
-				fprintf(stderr,"Error: specify only one of -brsuimfdlL.\n");
+				fprintf(stderr,"   ERROR: specify only one of -brsuimfdlL.\n");
 				return 1;
 			}
 			set_operation(optc,&palm_operation,&sync_flags);
@@ -1815,7 +1815,7 @@ int main(int argc, const char *argv[])
 		case 'l':
 		case 'L':
 			if (palm_op_noop != palm_operation) {
-				fprintf(stderr,"Error: specify only one of -brsuimfdlL.\n");
+				fprintf(stderr,"   ERROR: specify only one of -brsuimfdlL.\n");
 				return 1;
 			}
 			set_operation(optc,&palm_operation,&sync_flags);
@@ -1834,12 +1834,17 @@ int main(int argc, const char *argv[])
 			break;
 		case 'x':
 			if (system(poptGetOptArg(pc))) {
-				fprintf(stderr,"system() failed, aborting.\n");
+				fprintf(stderr,"   ERROR: system() failed, aborting.\n");
 				return -1;
 			}
 			break;
 		default:
-			printf("got option %d, arg %s\n", optc, poptGetOptArg(pc));
+			/* popt handles all other arguments internally by
+			   setting values, setting bits, etc., only options
+			   with field val != 0 come though here, and
+			   all of them should special processing. */
+			fprintf(stderr,"   ERROR: got option %d, arg %s\n", optc, poptGetOptArg(pc));
+			return 1;
 			break;
 		}
 	}
