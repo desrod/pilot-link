@@ -1,6 +1,5 @@
 SOCKOBJS = socket.o serial.o slp.o padp.o \
-       dlp.o cmp.o syspkt.o\
-       sync.o pi-file.o
+       dlp.o cmp.o syspkt.o pi-file.o\
 
 FILEOBJS = pi-file.o
 

@@ -1,6 +1,10 @@
 #ifndef _PILOT_PADP_SLP_H_
 #define _PILOT_PADP_SLP_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SLP_RDCP_T 0
 #define SLP_PADP_T 2
 #define SLP_LOOP_T 3
@@ -23,4 +27,8 @@ extern int slp_rx(struct pi_socket *ps);
 extern void slp_dump(struct pi_skb *skb, int rxtx);
 extern void dph(unsigned char *d);
                                             
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* _PILOT_PADP_SLP_H_ */

@@ -1,9 +1,13 @@
 #ifndef _PILOT_SOCKET_H_
 #define _PILOT_SOCKET_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PILOT_LINK_VERSION 0
 #define PILOT_LINK_MAJOR 5
-#define PILOT_LINK_MINOR 4
+#define PILOT_LINK_MINOR 7
 
 #define PI_AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
 
@@ -54,5 +58,8 @@ extern int pi_tickle(int pi_sd);
 
 extern int pi_close(int pi_sd);
 
-#endif /* _PILOT_SOCKET_H_ */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* _PILOT_SOCKET_H_ */

@@ -338,11 +338,14 @@ pi_accept(socket, remoteaddr, addrlen)
 
 int
 dlp_OpenDB(sd, cardno, mode, name, dbhandle)
+    INPUT:
 	int	sd
 	int	cardno
 	int	mode
 	char *	name
 	int	&dbhandle
+    OUTPUT:
+	dbhandle
 
 int
 dlp_CloseDB(sd, dbhandle)
@@ -357,3 +360,45 @@ dlp_EndOfSync(sd, status)
 int
 dlp_ResetSystem(sd)
 	int	sd
+
+int
+dlp_ReadAppBlock(sd, dbhandle, offset, dbuf, dlen)
+	int	sd
+	int	dbhandle
+	int	offset
+	char *	dbuf
+	int	dlen
+
+int
+dlp_ReadOpenDBInfo(sd, dbhandle, records)
+	int	sd
+	int	dbhandle
+	int	&records
+
+int
+dlp_ReadRecordByIndex(sd, fHandle, index, buffer, id, size, attr, category)
+    PREINIT:
+        SV *sv_buffer = SvROK(ST(3)) ? SvRV(ST(3)) : ST(3);
+    INPUT:
+	int	sd
+	int	fHandle
+	int	index
+	long	&id
+	int	&size
+	int	&attr
+	int	&category
+	char *	buffer = sv_grow( sv_buffer, size+1 );
+    OUTPUT:
+	id
+	size
+	attr
+	category
+    CLEANUP:
+        if (RETVAL >= 0) {
+            SvCUR(sv_buffer) = RETVAL;
+            SvPOK_only(sv_buffer);
+            *SvEND(sv_buffer) = '\0';
+            if (tainting)
+                sv_magic(sv_buffer, 0, 't', 0, 0);
+        }
+

@@ -1,6 +1,10 @@
 #ifndef _PILOT_MEMO_H_
 #define _PILOT_MEMO_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct Memo {
   char * text;
 };
@@ -21,5 +25,9 @@ extern void unpack_Memo(struct Memo *, unsigned char * record, int len);
 extern void pack_Memo(struct Memo *, unsigned char * record, int * len);
 extern void unpack_MemoAppInfo(struct MemoAppInfo *, unsigned char * AppInfo, int len);
 extern void pack_MemoAppInfo(struct MemoAppInfo *, unsigned char * AppInfo, int * len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PILOT_MEMO_H_ */

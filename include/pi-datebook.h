@@ -1,6 +1,10 @@
 #ifndef _PILOT_DATEBOOK_H_
 #define _PILOT_DATEBOOK_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <sys/time.h>
 
 enum alarmTypes {advMinutes, advHours, advDays};
@@ -61,5 +65,9 @@ extern void unpack_Appointment(struct Appointment *, unsigned char * record, int
 extern void pack_Appointment(struct Appointment *, unsigned char * record, int * len);
 extern void unpack_AppointmentAppInfo(struct AppointmentAppInfo *, unsigned char * AppInfo, int len);
 extern void pack_AppointmentAppInfo(struct AppointmentAppInfo *, unsigned char * AppInfo, int * len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PILOT_DATEBOOK_H_ */

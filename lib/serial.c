@@ -166,7 +166,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   ioctl(ps->mac.fd, TIOCSETN, &tcn);
 #endif
 
-  if ((i = fcntl(ps->mac.fd, F_GETFL))!=-1) {
+  if ((i = fcntl(ps->mac.fd, F_GETFL, 0))!=-1) {
     i &= ~O_NONBLOCK;
     fcntl(ps->mac.fd, F_SETFL, i);
   }

@@ -311,8 +311,16 @@ int pi_tickle(int pi_sd)
     return -1;
   }
   
-  if(ps->type == PI_SOCK_STREAM)
-    return padp_tx(ps,0,0,padTickle);
+  if(ps->type == PI_SOCK_STREAM) {
+    struct padp pd;
+    int ret;
+    pd.type = padTickle;
+    pd.flags = 0x00;
+    pd.size = 0x00;
+    ret = padp_tx(ps, (void *)&pd, 0, padTickle);
+    pi_socket_flush(ps);
+    return ret;
+  }
   else {
     errno = EOPNOTSUPP;
     return -1;

@@ -1,6 +1,10 @@
 #ifndef _PILOT_MACROS_H_
 #define _PILOT_MACROS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef unsigned long recordid_t;
 
 #define get_long(ptr) ((((unsigned char*)(ptr))[0] << 24) | \
@@ -32,5 +36,9 @@ typedef unsigned long recordid_t;
 #define set_byte(ptr,val) (((unsigned char*)(ptr))[0]=(val))
 
 #define char4(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PILOT_MACROS_H_ */

@@ -19,6 +19,9 @@
 /* Define if you have the memcpy function.  */
 #undef HAVE_MEMCPY
 
+/* Define if you have the memcpy function.  */
+#undef HAVE_MEMMOVE
+
 /* Define if you have the strchr function.  */
 #undef HAVE_STRCHR
 
@@ -169,6 +172,8 @@
 #endif
 #ifndef HAVE_MEMCPY
 # define memcpy(d, s, n) bcopy ((s), (d), (n))
+#endif
+#ifndef HAVE_MEMMOVE
 # define memmove(d, s, n) bcopy ((s), (d), (n))
 #endif
 

@@ -1,6 +1,10 @@
 #ifndef _PILOT_MAIL_H_
 #define _PILOT_MAIL_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <sys/time.h>
 
 struct Mail {
@@ -59,5 +63,9 @@ extern void pack_Mail(struct Mail *, unsigned char * record, int * len);
 extern void unpack_MailAppInfo(struct MailAppInfo *, unsigned char * AppInfo, int len);
 extern void pack_MailAppInfo(struct MailAppInfo *, unsigned char * AppInfo, int * len);
 extern void unpack_MailPrefs(struct MailPrefs *, unsigned char * record, int len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PILOT_MAIL_H_ */

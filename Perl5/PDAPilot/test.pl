@@ -6,7 +6,7 @@ $socket = PDA::Pilot::pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP);
 
 print "socket: $socket\n";
 
-$addr = pack("S S a12", PI_AF_SLP, PI_PilotSocketDLP, "/dev/cua3");
+$addr = pack("S S a12", PI_AF_SLP, PI_PilotSocketDLP, "/dev/ttyd2");
 
 print "addr: $addr\n";
 $value = PDA::Pilot::pi_bind($socket, $addr, length($addr));
@@ -29,6 +29,14 @@ $value = PDA::Pilot::dlp_OpenDB($data, 0, 0x80, "MemoDB", $handle);
 
 print "opendb: $value\n";
 print "handle: $handle\n";
+
+$r_id = 0;
+$r_len = 0xffff;
+$r_attr = 0;
+$r_cat = 0;
+$index = 0;
+$retval = PDA::Pilot::dlp_ReadRecordByIndex($data, $handle, $index, $dbuf, $r_id, $r_len, $r_attr, $r_cat);
+print "Record 0: $retval, $r_id, $dbuf\n";
 
 $value = PDA::Pilot::dlp_CloseDB($data, $handle);
 

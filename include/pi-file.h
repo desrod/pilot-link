@@ -1,6 +1,9 @@
-
 #ifndef _PILOT_FILE_H_
 #define _PILOT_FILE_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* For DBInfo */
 #include "pi-dlp.h"
@@ -47,5 +50,9 @@ extern int pi_file_append_record (struct pi_file *pf, void *buf, int size,
 			     
 extern int pi_file_retrieve(struct pi_file * pf, int socket, int cardno);
 extern int pi_file_install(struct pi_file * pf, int socket, int cardno);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

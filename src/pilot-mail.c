@@ -720,9 +720,9 @@ int main(int argc, char *argv[])
 endpop:  
   close(popfd);
   
-end:  
   }
 
+end:  
   free_MailPrefs(&p);
   free_MailAppInfo(&tai);
   

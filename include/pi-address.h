@@ -1,6 +1,10 @@
 #ifndef _PILOT_ADDRESS_H_
 #define _PILOT_ADDRESS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum { entryLastname, entryFirstname, entryCompany, 
        entryPhone1, entryPhone2, entryPhone3, entryPhone4, entryPhone5,
        entryAddress, entryCity, entryState, entryZip, entryCountry, entryTitle,
@@ -36,5 +40,9 @@ extern void unpack_Address(struct Address *, unsigned char * record, int len);
 extern void pack_Address(struct Address *, unsigned char * record, int * len);
 extern void unpack_AddressAppInfo(struct AddressAppInfo *, unsigned char * AppInfo, int len);
 extern void pack_AddressAppInfo(struct AddressAppInfo *, unsigned char * AppInfo, int * len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PILOT_ADDRESS_H_ */

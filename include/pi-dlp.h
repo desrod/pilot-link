@@ -1,6 +1,9 @@
-
 #ifndef _PILOT_DLP_H_
 #define _PILOT_DLP_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "pi-macros.h" /* For recordid_t */
 #include <sys/time.h>
@@ -321,5 +324,9 @@ extern int dlp_WriteAppPreference(int sd, int fHandle, unsigned long creator, in
 struct RPC_params;
 
 extern int dlp_RPC(int sd, struct RPC_params * p, unsigned long * result);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*_PILOT_DLP_H_*/

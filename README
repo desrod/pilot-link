@@ -22,6 +22,8 @@ Usage notes:
   read-ical and sync-ical will only run if you have ical-2.x installed and
   in the path.
   
+  sync-mail and sync-memodir are useless stubs at the moment.
+  
   The default connection rate is 9600 baud. You are welcome to try higher
   baud rates (19200, 38400, or 57600) by setting the PILOTRATE environment
   variable.
@@ -34,7 +36,8 @@ Usage notes:
   and Pilot mailbox (via pilot-xfer) before experimenting.
   
   If you wish, you may easily change the default settings (pop host,
-  password, etc.) for pilot-mail by editing the top of pilot-mail.c.
+  password, etc.) for pilot-mail by editing the top of pilot-mail.c, as well
+  as by setting the environment variables indicated in its help.
 
 Debugging notes:
 

@@ -742,7 +742,7 @@ int dlp_AddSyncLogEntry(int sd, char * entry)
 #ifdef DLP_TRACE  
   if (dlp_trace) {  
     fprintf(stderr," Wrote: Entry:\n");
-    dumpdata(entry,strlen(entry));
+    dumpdata((unsigned char *)entry,strlen(entry));
   }
 #endif
 
@@ -922,7 +922,7 @@ int dlp_ReadUserInfo(int sd, struct PilotUser* User)
     fprintf(stderr, "        User name '%s'", User->username);
     if (User->passwordLen) {
       fprintf(stderr, ", Password of %d bytes:\n", User->passwordLen);
-      dumpdata(User->password,User->passwordLen);
+      dumpdata((unsigned char *)User->password,User->passwordLen);
     }
     else
       fprintf(stderr, ", No password\n");
@@ -998,11 +998,11 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i)
   set_short(dlp_buf+20, strlen(i->PCAddr)+1);
   set_short(dlp_buf+22, strlen(i->PCMask)+1);
   p = 24;
-  strcpy(dlp_buf+p, i->PCName);
+  strcpy((char *)dlp_buf+p, i->PCName);
   p += strlen(i->PCName)+1;
-  strcpy(dlp_buf+p, i->PCAddr);
+  strcpy((char *)dlp_buf+p, i->PCAddr);
   p += strlen(i->PCAddr)+1;
-  strcpy(dlp_buf+p, i->PCMask);
+  strcpy((char *)dlp_buf+p, i->PCMask);
   p += strlen(i->PCMask)+1;
   
   result = dlp_exec(sd, 0x37, 0x20, dlp_buf, p, dlp_buf, DLP_BUF_SIZE);
@@ -1821,7 +1821,7 @@ int dlp_ReadAppPreference(int sd, int fHandle, unsigned long creator, int id, in
     
     if (r>2) {
       r-=2;
-      memmove(buffer, buffer+2, r);
+      memmove(buffer, ((char*)buffer)+2, r);
     } else {
       r = 0;
     }

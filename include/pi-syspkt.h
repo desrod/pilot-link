@@ -1,6 +1,9 @@
-
 #ifndef _PILOT_SYSPKT_H
 #define _PILOT_SYSPKT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct Pilot_registers {
   unsigned long A[7];
@@ -109,5 +112,9 @@ extern int dlp_ProcessRPC(int sd, int trap, int ret, ...);
 
 extern int RPC_Int_Void(int sd, int trap);
 extern int RPC_Ptr_Void(int sd, int trap);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*_PILOT_SYSPKT_H_*/

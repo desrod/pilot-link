@@ -1,6 +1,9 @@
-
 #ifndef _PILOT_CMP_H_
 #define _PILOT_CMP_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define CommVersion_1_0 0x0100L
 #define CommVersion_2_0 0x0101L
@@ -23,5 +26,8 @@ extern int cmp_wakeup(struct pi_socket *ps, int maxbaud);
 
 extern void cmp_dump(unsigned char * cmp, int rxtx);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PILOT_CMP_H_ */

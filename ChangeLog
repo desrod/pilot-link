@@ -1,3 +1,9 @@
+Apr 20, 1997	Kenneth Albanowski 0.5.7
+	
+	Adaption for NeXTStep and Solaris configuration problems.
+	  - Always use three arguments to fcntl.
+	  - Use bmove for memmove even if memcopy is present.
+
 Apr 13, 1997	Kenneth Albanowski 0.5.6
 
     New pilot-mail excutable to directly support transmission and reception

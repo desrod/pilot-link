@@ -1,6 +1,10 @@
 #ifndef _PILOT_SYNC_H_
 #define _PILOT_SYNC_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum { RecordNothing , RecordNew, RecordDeleted, RecordModified, RecordPending };
 
 struct PilotRecord {
@@ -76,5 +80,9 @@ extern int FastSync(int handle, int db, struct SyncAbs * s );
 /* Synchronize by pulling all data off remote, and comparing to backup
    on local if flags show no change */
 extern int SlowSync(int handle, int db, struct SyncAbs * s );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

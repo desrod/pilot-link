@@ -1,6 +1,10 @@
 #ifndef _PILOT_SOURCE_H_
 #define _PILOT_SOURCE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef NeXT
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -122,5 +126,8 @@ extern void dumpdata (const unsigned char * buf, int len);
 #define End(a)
 #endif
 
-#endif /* _PILOT_SOCKET_H_ */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* _PILOT_SOCKET_H_ */
