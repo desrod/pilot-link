@@ -22,6 +22,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
 		argc--;
 	}
 
-	addr.pi_family = PI_AF_SLP;
+	addr.pi_family = PI_AF_PILOT;
 	strcpy(addr.pi_device, port);
 
 	ps.mac = calloc(1, sizeof(struct pi_mac));
