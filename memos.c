@@ -238,7 +238,6 @@ int main(int argc, char *argv[])
 		category_name[MAXDIRNAMELEN + 1] = "",
 		filename[MAXDIRNAMELEN + 1], *ptr;
 	
-	struct 	PilotUser User;
 	struct 	MemoAppInfo mai;
 	struct 	pi_file *pif = NULL;
 	struct 	Memo m;
@@ -299,44 +298,25 @@ int main(int argc, char *argv[])
 	/* Need to add tests here for port/filename, clean this. -DD */
 	if (filename[0] == '\0') {
 
-		if (argc < 2 && !getenv("PILOTPORT")) {
-			PalmHeader(progname);
-		} else if (port == NULL && getenv("PILOTPORT")) {
-			port = getenv("PILOTPORT");
-		}
 	
-		if (port == NULL && argc > 1) {
-			printf
-			    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-			     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+	        sd = pilot_connect(port);
+
+        	if (sd < 0)
+                	goto error;
+
+	        if (dlp_OpenConduit(sd) < 0)
+        	        goto error_close;
+
+		/* Open the Memo Pad's database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MemoDB", &db) < 0) {
+			printf("Unable to open MemoDB.\n");
+			dlp_AddSyncLogEntry(sd,
+					    "Unable to open MemoDB.\n");
 			exit(1);
-		} else if (port != NULL) {
-
-			sd = pilot_connect(port);
-			
-			/* Did we get a valid socket descriptor back? */
-			if (dlp_OpenConduit(sd) < 0) {
-				exit(1);
-			}
-	
-			/* Ask the pilot who it is. */
-			dlp_ReadUserInfo(sd, &User);
-	
-			/* Tell user (via Palm) that we are starting things up */
-			dlp_OpenConduit(sd);
-	
-			/* Open the Memo Pad's database, store access handle in db */
-			if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MemoDB", &db) < 0) {
-				printf("Unable to open MemoDB.\n");
-				dlp_AddSyncLogEntry(sd,
-						    "Unable to open MemoDB.\n");
-				exit(1);
-			}
-	
-			dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
-					 0xffff);
 		}
-
+	
+		dlp_ReadAppBlock(sd, db, 0, (unsigned char *) appblock,
+				 0xffff);
 	} else {
 		int len;
 
@@ -451,4 +431,14 @@ int main(int argc, char *argv[])
 		pi_file_close(pif);
 	}
 	return 0;
+
+error_close:
+	pi_close(sd);
+
+error:
+	perror("   ERROR:");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Please use -h for more detailed options.\n");
+
+	return -1;
 }

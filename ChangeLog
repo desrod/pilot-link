@@ -7,7 +7,9 @@
 	
 	* tools/Python/setup.py: Incremented version
 
-	* install-hinote: PILOTPORT conversion, flattened
+	* install-hinote.c: PILOTPORT conversion, flattened
+
+	* memos.c: Ditto
 
 2002-02-08  JP Rosevear  <jpr@ximian.com>
 
