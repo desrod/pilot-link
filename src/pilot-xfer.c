@@ -1642,76 +1642,6 @@ palm_list_internal(unsigned long int flags)
 	dlp_AddSyncLogEntry(sd, synclog);
 }
 
-/***********************************************************************
- *
- * Function:    print_volumeinfo
- *
- * Summary:     Show information about the given @p volume; the
- *              VFSInfo structure @p info should already have been
- *              filled in with a call to VFSVolumeInfo, and buf
- *              should contain the volume label (if any).
- *
- * Parameters:  buf         --> volume label. May be NULL.
- *              volume      --> volume ref number.
- *              info        --> volume info
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void
-print_volumeinfo(const char *buf, long volume, struct VFSInfo *info)
-{
-	long	size_used,
-			size_total;
-
-	/* Only relevant when listing dir / */
-	printf("   /card%d\n",info->slotRefNum);
-	if (buf && (buf[0])) printf("   /%s\n",buf);
-	printf("      ");
-	switch(info->fsType)
-	{
-		case pi_mktag('v','f','a','t'):
-			printf("VFAT");
-			break;
-		case pi_mktag('t','w','M','F'):
-			printf("Tapwave media");
-			break;
-		default:
-			/* This sortof-untag is gross, but useful */
-			printf("Unknown (type %c%c%c%c)",
-					(char)(info->mediaType >> 24) & 0xff,
-					(char)(info->mediaType >> 16) & 0xff,
-					(char)(info->mediaType >> 8) & 0xff,
-					(char)(info->mediaType) & 0xff);
-	}
-	printf(" filesystem ");
-	switch(info->mediaType)
-	{
-		case pi_mktag('m','m','c','d'):
-			printf("on MultiMediaCard");
-			break;
-		case pi_mktag('s','d','i','g'):
-			printf("on SD card");
-			break;
-		case pi_mktag('T','F','F','S'):
-		case pi_mktag('t','w','M','F'):
-			printf("in internal memory");
-			break;
-		default:
-			/* This sortof-untag is gross, but useful */
-			printf("on unknown media (type %c%c%c%c)",
-					(char)(info->mediaType >> 24) & 0xff,
-					(char)(info->mediaType >> 16) & 0xff,
-					(char)(info->mediaType >> 8) & 0xff,
-					(char)(info->mediaType) & 0xff);
-	}
-	printf("\n");
-
-	if (dlp_VFSVolumeSize(sd,volume,&size_used,&size_total) >= 0)
-	{
-		printf("      Used: %ld Total: %ld bytes.\n",size_used,size_total);
-	}
-}
 
 /***********************************************************************
  *
@@ -1808,37 +1738,209 @@ print_dir(long volume, const char *path, FileRef dir)
 }
 
 
+
 static int
-palm_cardinfo ()
+numdigits (int num)
+{
+	int				digits = 1;
+
+	while ((num /= 10) > 0)
+		digits++;
+
+	return digits;
+}
+
+static char *
+mediatype (struct VFSInfo *info)
+{
+	char			*fs,
+					*media,
+					*ret;
+	static char		crid1[] = "<    >",
+					crid2[] = "on <    >";
+
+	switch(info->fsType) {
+		case pi_mktag('v','f','a','t'):
+			fs = "VFAT";
+			break;
+		case pi_mktag('f','a','t','s'):
+			fs = "FAT";
+			break;
+		case pi_mktag('t','w','M','F'):
+			fs = "Tapwave";
+			break;
+		default:
+			/* This sortof-untag is gross, but useful */
+			crid1[1] = (char)(info->mediaType >> 24) & 0xff;
+			crid1[2] = (char)(info->mediaType >> 16) & 0xff;
+			crid1[3] = (char)(info->mediaType >> 8) & 0xff;
+			crid1[4] = (char)(info->mediaType) & 0xff;
+			fs = crid1;
+	}
+	switch(info->mediaType) {
+		case pi_mktag('m','m','c','d'):
+			media = "on MMC";
+			break;
+		case pi_mktag('s','d','i','g'):
+			media = "on SD";
+			break;
+		case pi_mktag('m','s','t','k'):
+			media = "on MS";
+			break;
+		case pi_mktag('c','f','s','h'):
+			media = "on CF";
+			break;
+		case pi_mktag('T','F','F','S'):
+			media = "in RAM";
+			break;
+		case pi_mktag('t','w','M','F'):
+			media = "MFS";
+			break;
+		default:
+			/* It's not less gross the second time... */
+			crid2[4] = (char)(info->mediaType >> 24) & 0xff;
+			crid2[5] = (char)(info->mediaType >> 16) & 0xff;
+			crid2[6] = (char)(info->mediaType >> 8) & 0xff;
+			crid2[7] = (char)(info->mediaType) & 0xff;
+			media = crid2;
+	}
+	if (asprintf (&ret, "%s %s", fs, media) > -1)
+		return ret;
+	else
+		return "<unknown>";
+}
+
+typedef struct cardreport_s {
+	char				*type;
+	long				size_total;
+	long				size_used;
+	long				size_free;
+	int					cardnum;
+	char				*name;
+	struct cardreport_s	*next;
+} cardreport_t;
+
+static int
+pilot_cardinfo ()
 {
 	int				i,
+					j,
 					ret,
 					volume_count = 16,
 					volumes[16];
+	cardreport_t	*cards = NULL,
+					*t,
+					*t2;
 	struct VFSInfo	info;
-	char			buf[vfsMAXFILENAME];
+	char			buf[vfsMAXFILENAME],
+					*fmt;
+	long			size_used,
+					size_total;
 	int				len;					/* should be size_t in dlp.c? */
+	
+	size_t			digits_type = 10,
+					digits_total = 4,
+					digits_used = 4,
+					digits_free = 4,
+					digits_cardnum = 1;
 
 	/* VFS info */
 	if ((ret = dlp_VFSVolumeEnumerate(sd,&volume_count,volumes)) < 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
-				"palm_cardinfo: dlp_VFSVolumeEnumerate returned %i\n", ret));
-		return ret;
+				"pilot_cardinfo: dlp_VFSVolumeEnumerate returned %i\n", ret));
+		goto cleanup;
 	}
 
 	for (i = 0; i < volume_count; i++)
 	{
-		/* Real volume? */
-		if (dlp_VFSVolumeInfo(sd, volumes[i], &info) < 0)
-			continue;
+		if ((ret = dlp_VFSVolumeInfo(sd, volumes[i], &info)) < 0) {
+			LOG ((PI_DBG_USER, PI_DBG_LVL_ERR,
+					"pilot_cardinfo: dlp_VFSVolumeInfo returned %i\n", ret));
+			goto cleanup;
+		}
+		if ((ret = dlp_VFSVolumeSize(sd, volumes[i], &size_used,
+						&size_total)) < 0)
+		{
+			LOG ((PI_DBG_USER, PI_DBG_LVL_ERR,
+					"pilot_cardinfo: dlp_VFSVolumeSize returned %i\n", ret));
+			goto cleanup;
+		}
 
 		len = sizeof(buf);
 		buf[0] = '\0';
 		dlp_VFSVolumeGetLabel (sd, volumes[i], &len, buf);
 
-		print_volumeinfo (buf, volumes[i], &info);
+		t = malloc (sizeof (cardreport_t));
+		t->size_used = size_used;
+		t->size_total = size_total;
+		t->size_free = size_total - size_used;
+		t->type = mediatype(&info);
+		t->cardnum = info.slotRefNum;
+		t->name = malloc (strlen(buf) + 1);
+		strcpy (&t->name[1], buf);
+		t->name[0] = '/';
+
+		/* Insert into sorted order */
+		if (cards == NULL || cards->cardnum > t->cardnum) {
+			t->next = cards;
+			cards = t;
+		} else {
+			t2 = cards;
+			while (t2->next != NULL && t2->next->cardnum < t->cardnum)
+				t2 = t2->next;
+			t->next = t2->next;
+			t2->next = t;
+		}
+
+		/* Determine field widths */
+#define FIELDWIDTH(NAME, FUNC)		\
+		j = FUNC;					\
+		if (j > NAME)				\
+				NAME = j
+		FIELDWIDTH (digits_type, strlen(t->type));
+		FIELDWIDTH (digits_used, numdigits(t->size_used));
+		FIELDWIDTH (digits_total, numdigits(t->size_total));
+		FIELDWIDTH (digits_free, numdigits(t->size_free));
+		FIELDWIDTH (digits_cardnum, numdigits(t->cardnum));
+#undef FIELDWIDTH
 	}
 
+	asprintf (&fmt, "%%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
+			digits_type, digits_used, digits_total, digits_free,
+			digits_cardnum);
+	if (fmt == NULL) {
+		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
+					"pilot_cardinfo: unable to allocate hdr fmt memory\n"));
+		goto cleanup;
+	}
+	
+	printf (fmt, "Filesystem", "Size", "Used", "Free", "#", "Card name");
+	free (fmt);
+	asprintf (&fmt, "%%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
+			digits_type, digits_used, digits_total, digits_free,
+			digits_cardnum);
+	if (fmt == NULL) {
+		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
+					"pilot_cardinfo: unable to allocate data fmt memory\n"));
+		goto cleanup;
+	}
+
+	for (t = cards; t != NULL; t = t->next) {
+		printf (fmt, t->type, t->size_used, t->size_total,
+				t->size_free, t->cardnum, t->name);
+	}
+	free (fmt);
+
+cleanup:
+	t = cards;
+	while (t != NULL)
+	{
+		cards = t->next;
+		free (t->name);
+		free (t->type);
+		free (t);
+		t = cards;
+	}
 	return 0;
 }
 
@@ -2445,7 +2547,7 @@ main(int argc, const char *argv[])
 			palm_list(sync_flags);
 			break;
 		case palm_op_cardinfo:
-			palm_cardinfo();
+			pilot_cardinfo();
 			break;
 	}
 
