@@ -421,37 +421,6 @@ static int fail (const char *func) {
 }
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Convert all pictures in the files given, or found via connecting to a\n");
-	printf("   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");
-	printf("   Usage: %s [-p port] [-l | -n pixname] [file]...\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-    printf("     -b, --bias [num],       lighten or darken the image\n");
-    printf("                             0..50   darken image\n");
-    printf("                             50..100 lighten image\n");
-	printf("     -c, --colour            Do a simple colour correction\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-    printf("     -l, --list,             List picture information instead of converting\n");
-	printf("     -n, --name [name]       Convert only <name>, and output to STDOUT as type\n\n");
-	printf("     -s, --stretch,          Do a histogram stretch on the colour planes\n");
-	printf("     -t, --type,             Specify picture output type (ppm or png)\n");
-	printf("     -v, --version           Display %s version information\n", progname);
-
-	return;
-}
 
 
 int main (int argc, const char **argv) {
@@ -465,88 +434,70 @@ int main (int argc, const char **argv) {
 		int, const char *) = write_all;
 
 	const 	char *pixname 	= NULL;
-	char 	*port 		= NULL,
+	const char
 	    	*file_arg	= NULL,
 	    	*type_str	= NULL;
 	struct 	PilotUser User;
 
-	char *progname = argv[0];
-
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
-		{"stretch", 's', POPT_ARG_VAL | POPT_ARGFLAG_OR, &flags,
-		 PALMPIX_HISTOGRAM_STRETCH,
-		 "Do a histogram stretch on the colour planes", NULL},
-		{"colour", 'c', POPT_ARG_VAL | POPT_ARGFLAG_OR, &flags,
-		 PALMPIX_COLOUR_CORRECTION,
-		 "Do a simple colour correction", NULL},
-		{"type", 't', POPT_ARG_STRING, &type_str, 't',
-		 "Specify picture output type (ppm or png)", "[ppm|png]"},
-		{"bias", 'b', POPT_ARG_INT, &bias, 'b',
-		 "lighten or darken the image (0..50 darken, 50..100 lighten)", "bias"},
-		{"list", 'l', POPT_ARG_NONE, NULL, 'l',
-		 "List picture information instead of converting", NULL},
-		{"name", 'n', POPT_ARG_STRING, &pixname, 'n',
-		 "Convert only <name>, and output to STDOUT as type", "name"},
+		USERLAND_RESERVED_OPTIONS
+		{"stretch", 's', POPT_ARG_VAL | POPT_ARGFLAG_OR, &flags, PALMPIX_HISTOGRAM_STRETCH, "Do a histogram stretch on the colour planes", NULL},
+		{"colour", 'c', POPT_ARG_VAL | POPT_ARGFLAG_OR, &flags,	 PALMPIX_COLOUR_CORRECTION, "Do a simple colour correction", NULL},
+		{"type", 't', POPT_ARG_STRING, &type_str, 't', "Specify picture output type (ppm or png)", "[ppm|png]"},
+		{"bias", 'b', POPT_ARG_INT,    &bias,      0 , "lighten or darken the image (0..49 darken, 51..100 lighten)", "bias"},
+		{"list", 'l', POPT_ARG_NONE,   NULL,      'l', "List picture information instead of converting", NULL},
+		{"name", 'n', POPT_ARG_STRING, &pixname,  'n', "Convert only <name>, and output to STDOUT as type", "name"},
 		POPT_TABLEEND
 	};
 
 	pc = poptGetContext("read-palmpix", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc,"[file] ...\n\n"
+		"   Convert all pictures in the files given, or found via connecting to a\n"
+		"   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(pc)) >= 0) {
 	        switch (c) {
-
-        	case 'h':
-        		display_help(progname);
-	        	return 0;
-        	case 'v':
-	        	print_splash(progname);
-		        return 0;
-        	case 'b':
-			if( bias < 0 || bias > 100 ) {
-					fprintf( stderr, "Bad bias\n" );
-					exit( EXIT_FAILURE );
-				 }
-		        break;
+			/* Normally, l would be handled by popt magic, but since action
+			   is a _function_pointer_, not an enum or something, it needs
+			   special treatment. */
+		case 'l':
+			action = list;
         	case 'n':
 	        	action = write_one;
-        		break;
-        	case 'l':
-	        	action = list;
         		break;
 	        case 't':
 		        if( !strncmp( "png", type_str, 3 )) {
 #ifdef HAVE_PNG
         			output_type = PALMPIX_OUT_PNG;
 #else
-	        		fprintf( stderr, "read-palmpix was built without png support\n" );
+	        		fprintf( stderr, "   ERROR: read-palmpix was built without png support\n" );
 #endif
 		        } else if( !strncmp( "ppm", type_str, 3 )) {
 			        output_type = PALMPIX_OUT_PPM;
         		} else {
-        			fprintf( stderr, "Unknown output type defaulting to ppm\n" );
+        			fprintf( stderr, "   ERROR: Unknown output type defaulting to ppm\n" );
         			output_type = PALMPIX_OUT_PPM;
         		}
         		break;
 	        default:
-        		display_help(progname);
-	        	return 0;
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
                 }
         }
 
 	if (c < -1) {
-		/* an error occurred during option processing */
-		fprintf(stderr, "%s: %s\n",
-		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-		    poptStrerror(c));
-		return 1;
+		plu_badoption(pc,c);
+	}
+	if( bias < 0 || bias > 100 ) {
+		fprintf( stderr, "   ERROR: Bad bias valud %d, defaulting to 50.\n", bias );
+		bias=50;
 	}
 
 	if(poptPeekArg(pc) != NULL) {
@@ -576,19 +527,19 @@ int main (int argc, const char **argv) {
 				read_db (&s.state, n, action, pixname);
 				} else {
 				fprintf (stderr,
-					"%s: %s is not a valid record database\n",
-					    progname, file_arg);
+					"   ERROR: %s is not a valid record database\n",
+					    file_arg);
 				}
 				pi_file_close (f);
 			} else {
-				fprintf (stderr, "%s: can't open %s\n",
-				    progname, file_arg);
+				fprintf (stderr, "   ERROR: can't open %s\n",
+				    file_arg);
 			}
 			}
 	} else  {
 		int db;
 
-		sd = pilot_connect(port);
+		sd = plu_connect();
 		if (sd < 0)
 			return fail ("pi_socket");
 
@@ -620,11 +571,12 @@ int main (int argc, const char **argv) {
 			User.lastSyncPC = 0x00010000;
 			User.lastSyncDate = User.successfulSyncDate = time (NULL);
 			dlp_WriteUserInfo (sd, &User);
-		} else
-			fprintf (stderr, "%s: can't open database %s\n",
-				progname, PalmPix_DB);
-			dlp_EndOfSync (sd, dlpEndCodeNormal);
-			pi_close (sd);
+		} else {
+			fprintf (stderr, "   ERROR: can't open database %s\n",
+				PalmPix_DB);
+		}
+		dlp_EndOfSync (sd, dlpEndCodeNormal);
+		pi_close (sd);
 	}
 	return 0;
 }
