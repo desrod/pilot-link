@@ -21,6 +21,8 @@
 
 	* libpisock/socket.c: Ditto (Robert L Krawitz)
 
+	* Makefile.am: Remove call to tcl.m4 for now
+
 2003-05-14 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pi-getrom.c: Deprecate CoPilot functions, use POSE
