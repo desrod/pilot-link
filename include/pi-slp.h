@@ -25,6 +25,12 @@ extern "C" {
 #define PI_SLP_OFFSET_TXID 8
 #define PI_SLP_OFFSET_SUM  9
 
+
+#define PI_SLP_SOCK_DBG  0x00
+#define PI_SLP_SOCK_CON  0x01
+#define PI_SLP_SOCK_RUI  0x02
+#define PI_SLP_SOCK_DLP  0x03
+
 #define PI_SLP_TYPE_RDCP 0x00
 #define PI_SLP_TYPE_PADP 0x02
 #define PI_SLP_TYPE_LOOP 0x03

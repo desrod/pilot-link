@@ -1,5 +1,18 @@
 2002-03-19  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/slp.c (slp_protocol): use new defines
+
+	* libpisock/padp.c (padp_rx): ditto
+	(padp_tx): ditto
+
+	* include/pi-slp.h: create slp socket defines
+
+	* include/pi-socket.h: remove obsolete defines
+
+	* libpisock/socket.c (pi_getsockopt): use correct field name
+
+2002-03-19  JP Rosevear  <jpr@ximian.com>
+	
 	* include/pi-socket.h: add a SOCK level and options
 
 	* src/pi-nredir.c (main): set both sockets to PI_SOCK_CONEN

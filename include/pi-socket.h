@@ -72,13 +72,6 @@ enum PiOptNet {
 enum PiOptSock {
 	PI_SOCK_STATE
 };
-	
-#define PI_SLP_SPEED		0x0001
-
-#define PI_PilotSocketDLP	3
-#define PI_PilotSocketConsole	1
-#define PI_PilotSocketDebugger	0
-#define PI_PilotSocketRemoteUI	2
 
 #include "pi-sockaddr.h"
 

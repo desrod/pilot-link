@@ -160,7 +160,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				size;
 
 			type 	= PI_SLP_TYPE_PADP;
-			socket 	= PI_PilotSocketDLP;
+			socket 	= PI_SLP_SOCK_DLP;
 			timeout = PI_PADP_TX_TIMEOUT;
 			size 	= sizeof(type);
 			pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TYPE, 
@@ -435,7 +435,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 
 		/* Ack the packet */
 		type 	= 2;
-		socket 	= PI_PilotSocketDLP;
+		socket 	= PI_SLP_SOCK_DLP;
 		size 	= sizeof(type);
 		pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TYPE, 
 			      &type, &size);

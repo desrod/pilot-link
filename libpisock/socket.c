@@ -934,10 +934,10 @@ pi_getsockopt(int pi_sd, int level, int option_name,
 	if (level == PI_LEVEL_SOCK) {
 		switch (option_name) {
 		case PI_SOCK_STATE:
-			if (*option_len < sizeof (ps->rate))
+			if (*option_len < sizeof (ps->state))
 				goto error;
-			memcpy (option_value, &ps->rate, sizeof (ps->rate));
-			*option_len = sizeof (ps->rate);
+			memcpy (option_value, &ps->state, sizeof (ps->state));
+			*option_len = sizeof (ps->state);
 			break;
 		}
 		return 0;

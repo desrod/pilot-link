@@ -97,9 +97,9 @@ struct pi_protocol *slp_protocol (void)
 	prot->setsockopt 	= slp_setsockopt;
 
 	data 			= (struct pi_slp_data *)malloc (sizeof (struct pi_slp_data));
-	data->dest 		= PI_PilotSocketDLP;
+	data->dest 		= PI_SLP_SOCK_DLP;
 	data->last_dest 	= -1;	
-	data->src 		= PI_PilotSocketDLP;
+	data->src 		= PI_SLP_SOCK_DLP;
 	data->last_src 		= -1;
 	data->type 		= PI_SLP_TYPE_PADP;
 	data->last_type 	= -1;
