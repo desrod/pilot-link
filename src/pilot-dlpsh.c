@@ -752,9 +752,13 @@ int main(int argc, const char *argv[])
 
 	poptContext po;
 
+	enum { mode_none=0, mode_interactive=257, mode_command }
+		run_mode = mode_none;
+
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-		{"command", 	'c', POPT_ARG_STRING, &cmd, 0, "Execute <cmd> and exit immediately"},
+		{"command", 	'c', POPT_ARG_STRING, &cmd, mode_command, "Execute <cmd> and exit immediately"},
+		{"interactive",	'i', POPT_ARG_NONE, NULL, mode_interactive, "Enter interactive mode."},
 		POPT_TABLEEND
 	} ;
 
@@ -772,12 +776,32 @@ int main(int argc, const char *argv[])
 	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
-		return 1;
+		switch(c)
+		{
+		case mode_command:
+		case mode_interactive:
+			if (run_mode == mode_none) {
+				run_mode = c;
+			} else {
+				if (c != run_mode) {
+					fprintf(stderr,"   ERROR: Specify exactly one of -c or -i\n");
+					return 1;
+				}
+			}
+			break;
+		default:
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
+		}
 	}
 
 	if ( c < -1) {
 		plu_badoption(po,c);
+	}
+
+	if (mode_none == run_mode) {
+		fprintf(stderr,"   ERROR: Specify exactly one of -c or -i\n");
+		return 1;
 	}
 
 	setjmp (main_jmp);

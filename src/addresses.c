@@ -34,6 +34,9 @@
 
 int main(int argc, char *argv[])
 {
+	fprintf(stderr,"   DEPRECATED: Use pilot-addresses --write - --human-readable instead.\n");
+	return 1;
+#if 0
 	int 	db,
 		index,
 		sd 		= -1,
@@ -141,6 +144,7 @@ int main(int argc, char *argv[])
 
  error:
         return -1;
+#endif
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

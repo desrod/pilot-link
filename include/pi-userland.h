@@ -80,18 +80,7 @@ void plu_popt_alias(poptContext pc,
  */
 void plu_set_badoption_help(const char *help);
 
-/*
- * Check if there is a port set (in the environment or perhaps even
- * a config file) that we should use if no --port is given. This is
- * used to avoid bailing out in conduits that don't really _need_
- * any arguments if the port is set that was.
- *
- * Returns 0 if no port is set.
- * Returns non-zero if a port is set.
- *
- * Note that this says _nothing_ about a possible --port argument!
- */
-int plu_portgiven();
+
 
 
 
