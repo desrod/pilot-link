@@ -55,15 +55,17 @@ static int u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int fla
 static int u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout);
 static int u_poll(struct pi_socket *ps, int timeout);
+static int u_flush(pi_socket_t *ps, int flags);
 static int u_control_request (pi_usb_data_t *usb_data, int request_type, int request, int value, int index, void *data, int size, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
-	impl->open 				= u_open;
-	impl->close				= u_close;
-	impl->write				= u_write;
-	impl->read 				= u_read;
-	impl->poll 				= u_poll;
+	impl->open 	= u_open;
+	impl->close	= u_close;
+	impl->write	= u_write;
+	impl->read 	= u_read;
+	impl->flush	= u_flush;
+	impl->poll 	= u_poll;
 	impl->control_request	= u_control_request;
 }
 
@@ -489,6 +491,16 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 	return len;
 }
 
+static int u_flush(pi_socket_t *ps, int flags)
+{
+	if (flags & PI_FLUSH_INPUT) {
+		/* clear internal buffer */
+		pthread_mutex_lock (&RD_buffer_mutex);
+		RD_buffer_used = 0;
+		pthread_mutex_unlock (&RD_buffer_mutex);
+	}
+	return 0;
+}
 
 static int
 u_control_request (pi_usb_data_t *usb_data, int request_type, int request,
