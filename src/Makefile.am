@@ -325,6 +325,8 @@ pilot_schlep_LDADD = 		\
 pilot_treofoto_SOURCES = 		\
 	pilot-treofoto.c
 pilot_treofoto_LDADD = 		\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_wav_SOURCES = 		\

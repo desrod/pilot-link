@@ -24,13 +24,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdlib.h>
 
-#include <pi-file.h>
-#include <pi-header.h>
+#include "pi-file.h"
+#include "pi-header.h"
+#include "pi-dlp.h"
+#include "userland.h"
 
 #define MAIN_PDB_NAME "ImageLib_mainDB.pdb"
 #define IMG_PDB_NAME  "ImageLib_imageDB.pdb"
-#define PORT          "/dev/ttyUSB1"
 
 /* Record formats via script from
  * http://www.xent.com/~bsittler/treo600/dumphotos
@@ -54,7 +56,8 @@ typedef struct MainDBImgRecord {
 int extract_image(struct pi_file *pi_fp, MainDBImgRecord * img_rec)
 {
 
-	int i, size, attr, cat, nentries, fd;
+	int i, attr, cat, nentries, fd;
+	size_t size;
 	void *Pbuf;
 	pi_uid_t uid, req_uid;
 	char imgfilename[1024];
@@ -65,7 +68,7 @@ int extract_image(struct pi_file *pi_fp, MainDBImgRecord * img_rec)
 
 	if ((fd = open(imgfilename, O_RDWR | O_CREAT | O_TRUNC,
 		       S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1) {
-		fprintf(stderr, "failed to open '%s' for writing\n",
+		fprintf(stderr, "   WARNING: failed to open '%s' for writing\n",
 			imgfilename);
 		return 0;
 	}
@@ -75,7 +78,7 @@ int extract_image(struct pi_file *pi_fp, MainDBImgRecord * img_rec)
 	for (i = 0; i < nentries; i++) {
 		if (pi_file_read_record
 		    (pi_fp, i, &Pbuf, &size, &attr, &cat, &uid) < 0) {
-			printf("Error reading image record %d\n\n", i);
+			fprintf(stderr,"   WARNING: Error reading image record %d\n\n", i);
 			return -1;
 		}
 
@@ -85,7 +88,9 @@ int extract_image(struct pi_file *pi_fp, MainDBImgRecord * img_rec)
 		}
 	}
 
-	printf("Wrote '%s' \n", imgfilename);
+	if (!plu_quiet) {
+		printf("   Wrote '%s' \n", imgfilename);
+	}
 
 	close(fd);
 
@@ -126,42 +131,69 @@ int fetch_remote_file(int sd, char *fullname)
 
 int main(int argc, const char *argv[])
 {
-	struct pi_file *pi_fp, *img_fp;
-	int i, size, attr, cat, nentries;
+	struct pi_file *pi_fp = NULL, *img_fp = NULL;
+	int i, attr, cat, nentries;
+	size_t size;
 	pi_uid_t uid;
 	MainDBImgRecord *img_rec;
 	int sd = -1;
+	int c;
+	int ret = 1;
 
-	if ((sd = pilot_connect(PORT)) < 0) {
-		fprintf(stderr, "FAILED: unable to connect via '%s'\n",
-			PORT);
-		exit(1);
+	struct poptOption options[] = {
+		USERLAND_RESERVED_OPTIONS
+		POPT_TABLEEND
+		} ;
+
+	poptContext po = poptGetContext("pilot-treofoto",argc,argv,options,0);
+	poptSetOtherOptionHelp(po,"\n\n"
+		"   Copies Treo foto databases to current directory and\n"
+		"   extracts .jpg files from them.");
+
+	if (argc<2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
+
+	while ((c = poptGetNextOpt(po)) >= 0) {
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
+	}
+
+	if (c < -1) {
+		plu_badoption(po,c);
+	}
+
+
+
+
+	if ((sd = plu_connect()) < 0) {
+		return 1;
 	}
 
 	if (!fetch_remote_file(sd, MAIN_PDB_NAME)) {
-		fprintf(stderr, "FAILED: unable to fetch '%s'\n",
+		fprintf(stderr, "   ERROR: unable to fetch '%s'\n",
 			MAIN_PDB_NAME);
-		exit(1);
+		goto cleanup;
 	}
 
 
 	if (!fetch_remote_file(sd, IMG_PDB_NAME)) {
-		fprintf(stderr, "FAILED: unable to fetch '%s'\n",
+		fprintf(stderr, "   ERROR: unable to fetch '%s'\n",
 			IMG_PDB_NAME);
-		exit(1);
+		goto cleanup;
 	}
 
 
 	if ((pi_fp = pi_file_open(MAIN_PDB_NAME)) == NULL) {
-		printf("FAILED: could not open local '%s'\n",
+		fprintf(stderr,"   ERROR: could not open local '%s'\n",
 		       MAIN_PDB_NAME);
-		exit(1);
+		goto cleanup;
 	}
 
 	if ((img_fp = pi_file_open(IMG_PDB_NAME)) == NULL) {
-		pi_file_close(pi_fp);
-		printf("FAILED: could not open '%s'\n", IMG_PDB_NAME);
-		exit(1);
+		fprintf(stderr,"   ERROR: could not open '%s'\n", IMG_PDB_NAME);
+		goto cleanup;
 	}
 
 	pi_file_get_entries(pi_fp, &nentries);
@@ -170,20 +202,31 @@ int main(int argc, const char *argv[])
 		if (pi_file_read_record
 		    (pi_fp, i, (void **) &img_rec, &size, &attr, &cat,
 		     &uid) < 0) {
-			printf("Error reading record: %d\n\n", i);
+			fprintf(stderr,"   WARNING: Could not read record: %d\n\n", i);
 			continue;
 		}
 
 		extract_image(img_fp, img_rec);
 	}
 
-	pi_file_close(img_fp);
-	pi_file_close(pi_fp);
+	ret=0;
 
-	unlink(IMG_PDB_NAME);
-	unlink(MAIN_PDB_NAME);
+cleanup:
+	if (img_fp) {
+		pi_file_close(img_fp);
+		unlink(IMG_PDB_NAME);
+	}
+	if (pi_fp) {
+		pi_file_close(pi_fp);
+		unlink(MAIN_PDB_NAME);
+	}
+	if (sd >= 0) {
+		dlp_EndOfSync(sd, 0);
+		pi_close(sd);
+	}
 
-	return 0;
+	return ret;
+
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
