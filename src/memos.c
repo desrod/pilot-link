@@ -71,7 +71,7 @@ void write_memo_in_directory(char *dirname, struct Memo m,
  *
  * Summary:     Write a memo entry to MailDB database
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -119,7 +119,7 @@ void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
  * Summary:     Writes each memo into /$DIR/$CATEGORY/$FILENAME form
  *              after the user specifies the -d /dir/name argument  
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -197,7 +197,7 @@ write_memo_in_directory(char *dirname, struct Memo m,
  *
  * Summary:     Outputs the program arguments and params
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

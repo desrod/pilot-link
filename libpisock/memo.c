@@ -31,7 +31,7 @@
  *
  * Summary:     Frees all record data associated with the Memo database
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -48,7 +48,7 @@ void free_Memo(struct Memo *a)
  *
  * Summary:     Unpack the memo structure into the buffer allocated
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Length in bytes of the buffer allocated
  *
@@ -67,7 +67,7 @@ int unpack_Memo(struct Memo *a, unsigned char *buffer, int len)
  *
  * Summary:     Pack the memo structure into the buffer allocated
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -97,7 +97,7 @@ int pack_Memo(struct Memo *a, unsigned char *buffer, int len)
  *
  * Summary:     Unpack the memo AppInfo block structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -128,7 +128,7 @@ unpack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
  *
  * Summary:     Pack the memo AppInfo block structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

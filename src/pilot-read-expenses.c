@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
 		sd 		= -1;
 	char 	*progname 	= argv[0],
 		*port 		= NULL;
-	unsigned char buffer[0xffff];
-	unsigned char buffer2[0xffff];
+	char buffer[0xffff];
+	char buffer2[0xffff];
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo tai;
 	struct 	ExpensePref tp;

@@ -166,7 +166,7 @@ void pi_serial_impl_init (struct pi_serial_impl *impl)
  * Summary:     Open the serial port and establish a connection for
  *		unix
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The file descriptor
  *
@@ -277,7 +277,7 @@ s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
  *
  * Summary:     Delay for a given period have time
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -299,7 +299,7 @@ static s_delay(int sec, int usec)
  *
  * Summary:     Change the speed of the socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -343,7 +343,7 @@ static int s_changebaud(struct pi_socket *ps)
  *
  * Summary:     Close the open socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -406,7 +406,7 @@ static int s_poll(struct pi_socket *ps, int timeout)
  *
  * Summary:     Write to the open socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -473,7 +473,7 @@ static int s_read_buf (struct pi_socket *ps, unsigned char *buf, int len)
  *
  * Summary:     Read incoming data from the socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

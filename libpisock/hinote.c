@@ -30,7 +30,7 @@
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -47,7 +47,7 @@ void free_HiNoteNote(struct HiNoteNote *a)
  *
  * Summary:     Unpack a HiNote record
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -68,7 +68,7 @@ int unpack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
  *
  * Summary:     Pack a HiNote record
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -103,7 +103,7 @@ int pack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
  *
  * Summary:     Unpack the HiNote AppInfo block
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -135,7 +135,7 @@ unpack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
  *
  * Summary:     Pack the HiNote AppInfo block
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

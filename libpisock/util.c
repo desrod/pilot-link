@@ -41,7 +41,7 @@
  * Summary:     Convert any supported desktop text encoding to the Palm
  *		supported encoding
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, -1 on failure
  *
@@ -84,7 +84,7 @@ convert_ToPilotChar(const char *charset, const char *text,
  * Summary:     Convert from Palm supported encoding to a supported 
  *		desktop text encoding
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, -1 on failure
  *

@@ -57,7 +57,7 @@ static const char *optstring = "hvHaslr:R:dD";
  *
  * Summary:     Build an ISO-compliant date string
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -80,7 +80,7 @@ static char *iso_time_str(time_t t)
  *
  * Summary:     Dump data as requested by other functions
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -118,7 +118,7 @@ static void dump(void *buf, int n)
  *
  * Summary:     Dump the header section of the database
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -171,7 +171,7 @@ static void dump_header(struct pi_file *pf, struct DBInfo *ip)
  *
  * Summary:     Dump the AppInfo segment of the database(s)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -197,7 +197,7 @@ static void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
  *
  * Summary:     Dump the SortInfo block of the database(s)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -224,7 +224,7 @@ static void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
  *
  * Summary:     List all records in the database(s)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -296,7 +296,7 @@ static void list_records(struct pi_file *pf, struct DBInfo *ip, int filedump, in
  *
  * Summary:     Dump a record
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

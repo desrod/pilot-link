@@ -46,7 +46,7 @@
  *
  * Summary:     Free the memory and filehandle from the record alloc. 
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -65,7 +65,7 @@ void free_ToDo(struct ToDo *a)
  *
  * Summary:     Unpack the ToDo structure into records we can chew on
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -143,7 +143,7 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
  *
  * Summary:     Pack the ToDo records into a structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -203,7 +203,7 @@ int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
  *
  * Summary:     Unpack the ToDo AppInfo block from the structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -234,7 +234,7 @@ unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
  *
  * Summary:     Pack the AppInfo block/record back into the structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

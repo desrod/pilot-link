@@ -213,7 +213,7 @@ int cmp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  *
  * Summary:     Receive CMP packets
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
  *
@@ -252,7 +252,7 @@ int cmp_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
  *
  * Summary:     Initialize the socket for CMP transmission
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Number of packets transmitted
  *
@@ -283,7 +283,7 @@ int cmp_init(struct pi_socket *ps, int baudrate)
  *
  * Summary:     Abort a CMP session in progress
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Number of PADP packets transmitted
  *
@@ -312,7 +312,7 @@ int cmp_abort(struct pi_socket *ps, int reason)
  *
  * Summary:     Wakeup the CMP listener process
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Number of PADP packets transmitted
  *
@@ -420,7 +420,7 @@ cmp_setsockopt(struct pi_socket *ps, int level, int option_name,
  *
  * Summary:     Dump the CMP packet frames
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

@@ -54,7 +54,7 @@ static int so_read(struct pi_socket *ps, int timeout);
  *
  * Summary:     Open the serial connection and listen for incoming data
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The file descriptor used
  *
@@ -155,7 +155,7 @@ struct STR_EXTSETBAUDRATE {
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -230,7 +230,7 @@ static int so_changebaud(struct pi_socket *ps)
  *
  * Summary:     Close the open socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -252,7 +252,7 @@ static int so_close(struct pi_socket *ps)
  *
  * Summary:     Set a timeout value for the socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -357,7 +357,7 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
  *
  * Summary:     Write our data to the open socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -412,7 +412,7 @@ static int so_write(struct pi_socket *ps)
  *
  * Summary:     Read incoming data from the socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

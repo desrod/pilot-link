@@ -91,7 +91,7 @@ struct Command command_list[] = {
  * Summary:     Simple dump of CardInfo, which includes the RAM/ROM 
  * 		amounts free and used. 
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -126,7 +126,7 @@ int df_fn(int sd, int argc, char *argv[])
  *
  * Summary:     Handle the parsing of -h inside 'dlpsh>'
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -152,7 +152,7 @@ int help_fn(int sd, int argc, char *argv[])
  *
  * Summary:     Similar to unix ls, lists files with -l and -r
  *
- * Parmeters:   -l for long and -r for ram
+ * Parameters:  -l for long and -r for ram
  *
  * Returns:     Nothing
  *
@@ -232,14 +232,14 @@ int ls_fn(int sd, int argc, char *argv[])
 		printf("%s\n", info.name);
 
 		if (lflag == 1) {
-			printf("  More: 0x%x     Flags: 0x%-4x             Type: %.4s\n",
+			printf("  More: 0x%x        Flags: 0x%-4x             Type: %.4s\n",
 				info.more, info.flags, (char *) &tag);
 			tag = htonl(info.creator);
-			printf("Creator: %s    Modification Number: %-4ld Version: %-2d\n",
+			printf("  Creator: %s    Modification Number: %-4ld Version: %-2d\n",
 				(char *) &tag, info.modnum, info.version);
-			printf("Created: %19s\n", timestr(info.createDate));
-			printf("Backup : %19s\n", timestr(info.backupDate));
-			printf("Modify : %19s\n\n", timestr(info.modifyDate));
+			printf("  Created: %19s\n", timestr(info.createDate));
+			printf("  Backup : %19s\n", timestr(info.backupDate));
+			printf("  Modify : %19s\n\n", timestr(info.modifyDate));
 		}
 
 		if (info.index < start) {
@@ -259,7 +259,7 @@ int ls_fn(int sd, int argc, char *argv[])
  *
  * Summary:     Similar to unix rm, deletes a database from the Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -303,7 +303,7 @@ int rm_fn(int sd, int argc, char *argv[])
  * Summary:     ntpdate-style function for setting Palm time from
  *		desktop clock
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -333,7 +333,7 @@ int time_fn(int sd, int argc, char *argv[])
  * Summary:     Set the username, UserID and PCID on the device, 
  *		similar to install-user, but interactive
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -448,7 +448,7 @@ int user_fn(int sd, int argc, char *argv[])
  *
  * Summary:     Build an ISO-compliant time string for use later
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     String containing the proper time
  *
@@ -474,7 +474,7 @@ char *timestr(time_t t)
  *
  * Summary:     Parse user commands and arguments
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -564,7 +564,7 @@ int exit_fn(int sd, int argc, char *argv[])
  *
  * Summary:     Strip out path delimiters in arguments and filenames
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Input string minus path delimiters (ala basepath)
  *

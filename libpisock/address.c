@@ -31,7 +31,7 @@
  *
  * Summary:	Free the members of an address structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -56,7 +56,7 @@ void free_Address(struct Address *a)
  * Summary:     Fill in the address structure based on the raw record 
  *		data
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on error, the length of the data used from the
  *		buffer otherwise
@@ -115,7 +115,7 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
  * Summary:     Fill in the raw address record data based on the 
  *		address structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The length of the buffer required if record is NULL,
  *		or 0 on error, the length of the data used from the 
@@ -181,7 +181,7 @@ int pack_Address(struct Address *a, unsigned char *record, int len)
  * Summary:     Fill in the app info structure based on the raw app 
  *		info data
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The necessary length of the buffer if record is NULL,
  *		or 0 on error, the length of the data used from the 
@@ -236,7 +236,7 @@ unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
  * Summary:     Fill in the raw app info record data based on the app
  *		info structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The length of the buffer required if record is NULL,
  *		or 0 on error, the length of the data used from the

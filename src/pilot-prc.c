@@ -55,7 +55,7 @@ static const char *optstring = "hasvlr:";
  *
  * Summary:     POSIX'ified time string
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -78,7 +78,7 @@ char *iso_time_str(time_t t)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -116,7 +116,7 @@ void dump(void *buf, int n)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -171,7 +171,7 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
  *
  * Summary:     Dump the AppInfo block of the database
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -197,7 +197,7 @@ void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -223,7 +223,7 @@ void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -286,7 +286,7 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

@@ -187,7 +187,7 @@ void display_rate(int record, int records, int written, int elapsed)
  *
  * Summary:     Convert the Palm time to Unix time
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -203,7 +203,7 @@ static time_t pilot_time_to_unix_time(unsigned long raw_time)
  *
  * Summary:     Convert Unix time to Palm time
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -219,7 +219,7 @@ static unsigned long unix_time_to_pilot_time(time_t t)
  *
  * Summary:     Open .prc or .pdb file for reading
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -422,7 +422,7 @@ struct pi_file *pi_file_open(char *name)
  *
  * Summary:     Close the open file handle
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -452,7 +452,7 @@ int pi_file_close(struct pi_file *pf)
  *
  * Summary:     Flush and clean the file handles used
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -489,7 +489,7 @@ static void pi_file_free(struct pi_file *pf)
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -506,7 +506,7 @@ int pi_file_get_info(struct pi_file *pf, struct DBInfo *infop)
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -524,7 +524,7 @@ int pi_file_get_app_info(struct pi_file *pf, void **datap, int *sizep)
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -542,7 +542,7 @@ int pi_file_get_sort_info(struct pi_file *pf, void **datap, int *sizep)
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -577,7 +577,7 @@ static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -610,7 +610,7 @@ pi_file_find_resource_by_type_id(struct pi_file *pf,
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -638,7 +638,7 @@ pi_file_read_resource_by_type_id(struct pi_file *pf, unsigned long type,
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -655,7 +655,7 @@ int pi_file_type_id_used(struct pi_file *pf, unsigned long type, int id)
  * Summary:     Returned buffer is valid until next call, or until
  *              pi_file_close
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing  
  *
@@ -705,7 +705,7 @@ pi_file_read_resource(struct pi_file *pf, int i,
  * Summary:     Returned buffer is valid until next call, or until
  *              pi_file_close
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -768,7 +768,7 @@ pi_file_read_record(struct pi_file *pf, int i,
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -800,7 +800,7 @@ pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid,
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -824,7 +824,7 @@ int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -867,7 +867,7 @@ struct pi_file *pi_file_create(char *name, struct DBInfo *info)
  * Summary:     May call these any time before close (even multiple
  *              times)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -892,7 +892,7 @@ int pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -925,7 +925,7 @@ int pi_file_set_app_info(struct pi_file *pf, void *data, int size)
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -959,7 +959,7 @@ int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
  * Summary:     Internal function to extend entry list if necessary,
  *              and return a pointer to the next available slot
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1001,7 +1001,7 @@ static struct pi_file_entry *pi_file_append_entry(struct pi_file *pf)
  *
  * Summary:
  *
- * Parmeters:   None 
+ * Parameters:  None 
  *
  * Returns:     Nothing
  *
@@ -1035,7 +1035,7 @@ pi_file_append_resource(struct pi_file *pf, void *buf, int size,
  *
  * Summary:
  *
- * Parmeters:   None 
+ * Parameters:  None 
  *
  * Returns:     Nothing
  *
@@ -1072,7 +1072,7 @@ int pi_file_append_record(struct pi_file *pf, void *buf, int size,
  *
  * Summary:     
  *
- * Parmeters:   None   
+ * Parameters:  None   
  *
  * Returns:     Nothing
  *
@@ -1090,7 +1090,7 @@ int pi_file_get_entries(struct pi_file *pf, int *entries)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1201,7 +1201,7 @@ static int pi_file_close_for_write(struct pi_file *pf)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1242,7 +1242,8 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
-			*/
+			 */
+
 			if ((dlp_ReadResourceByIndex
 			     (socket, db, j, buffer, &type, &id,
 			      &size) < 0)
@@ -1294,7 +1295,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1313,7 +1314,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	void 	*buffer;
 
 	version = pi_version(socket);
-	printf("\n");
+//	printf("\n");
 
 	/* Delete DB if it already exists */
 	dlp_DeleteDB(socket, cardno, pf->info.name);
@@ -1492,7 +1493,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 					       start_time));
 			*/
 		}
-		printf("\n");
+//		printf("\n");
 	}
 
 	if (reset)
@@ -1512,7 +1513,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
  *
  * Summary:
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

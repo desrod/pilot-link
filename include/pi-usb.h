@@ -21,6 +21,7 @@ extern "C" {
 		struct pi_usb_impl impl;
 
 		unsigned char buf[256];
+		unsigned char *pos;
 		int buf_size;
 		
 		/* I/O options */

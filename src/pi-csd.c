@@ -87,7 +87,7 @@ struct in_addr address, netmask;
  *
  * Summary:     Retrieve the networking information from the host
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -246,7 +246,7 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
  *
  * Summary:     Uh, the -help, of course
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

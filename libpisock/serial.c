@@ -205,7 +205,7 @@ struct pi_device *pi_serial_device (int type)
  *
  * Summary:     Connect socket to a given address
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
  *
@@ -295,7 +295,7 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  *
  * Summary:     Bind address to a local socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
  *
@@ -347,7 +347,7 @@ pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  *
  * Summary:     Prepare for incoming connections
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -370,7 +370,7 @@ static int pi_serial_listen(struct pi_socket *ps, int backlog)
  *
  * Summary:     Accept an incoming connection
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -524,7 +524,7 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
  *
  * Summary:     Close a connection, destroy the socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

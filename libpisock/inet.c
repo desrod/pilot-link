@@ -181,7 +181,7 @@ struct pi_device *pi_inet_device (int type)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -267,7 +267,7 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  *
  * Summary:     Bind address to a local socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -351,7 +351,7 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
  *
  * Summary:     Wait for an incoming connection
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -373,7 +373,7 @@ static int pi_inet_listen(struct pi_socket *ps, int backlog)
  *
  * Summary:     Accept an incoming connection
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -424,7 +424,7 @@ pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
  *
  * Summary:     Send msg on a connected socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -470,7 +470,7 @@ pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags)
  *
  * Summary:     Receive message on a connected socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -569,7 +569,7 @@ pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name,
  *
  * Summary:     Close a connection, destroy the socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

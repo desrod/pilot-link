@@ -108,7 +108,7 @@ struct pi_protocol *padp_protocol (void)
  *
  * Summary:     Transmit PADP packets
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Number of packets transmitted
  *
@@ -300,7 +300,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  *
  * Summary:     Receive PADP packets
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -671,7 +671,7 @@ void padp_dump_header(unsigned char *data, int rxtx)
  *
  * Summary:     Dump PADP packets 
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

@@ -60,7 +60,7 @@ static const char *optstring = "hvp:";
  *
  * Summary:     Read the incoming data from the network socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

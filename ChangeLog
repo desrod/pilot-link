@@ -1,9 +1,19 @@
-2002-07-29  David A. Desrosiers <hacker at gnu-designs dot com>
-
-	* src/pilot-xfer.c: Usability additions
+2002-07-30  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Makefile.am: Temporary workaround for --prefix, fixed
 	  typo in build target
+
+	* libpisock/freebsdusb.c: FreeBSD updates (Anish Mistry)
+
+	* src/*.c: Fixed typo s/Parmeter/Parameter/
+
+	* libpisock/*.c: Ditto
+	
+	* libpisync/*.c: Ditto
+
+2002-07-29  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pilot-xfer.c: Usability additions
 
 2002-07-29  JP Rosevear  <jpr@ximian.com>
 

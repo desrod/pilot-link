@@ -55,7 +55,7 @@ int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
  *
  * Summary:     Get the state command
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -90,7 +90,7 @@ int sys_UnpackState(void *buffer, struct Pilot_state *s)
  *
  * Summary:     Read the register commands
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0
  *
@@ -129,7 +129,7 @@ int sys_UnpackRegisters(void *data, struct Pilot_registers *r)
  *
  * Summary:     Pack the register commands
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0
  *
@@ -158,7 +158,7 @@ int sys_PackRegisters(void *data, struct Pilot_registers *r)
  *
  * Summary:     Define the Continue command
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -193,7 +193,7 @@ int sys_Continue(int sd, struct Pilot_registers *r, struct Pilot_watch *w)
  *
  * Summary:     Single-step command
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Socket, command, 6 bytes
  *
@@ -218,7 +218,7 @@ int sys_Step(int sd)
  *
  * Summary:     Set the breakpoints (0x0C, 0x8C)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -257,7 +257,7 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
  *
  * Summary:     Set the Trap Breaks (0x11, 0x91)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -294,7 +294,7 @@ int sys_SetTrapBreaks(int sd, int *traps)
  *
  * Summary:     Get the Trap Breaks (0x10, 0x90)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -331,7 +331,7 @@ int sys_GetTrapBreaks(int sd, int *traps)
  *
  * Summary:     Enable the DbgBreaks command (0x0D, 0x8D)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -364,7 +364,7 @@ int sys_ToggleDbgBreaks(int sd)
  *
  * Summary:     Query the state (uh)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -389,7 +389,7 @@ int sys_QueryState(int sd)
  *
  * Summary:     Read memory (0x01, 0x81)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -441,7 +441,7 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
  *
  * Summary:     Write memory (0x02, 0x82) 
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -493,7 +493,7 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
  *
  * Summary:     Searches a range of addresses for data (0x13, 0x80)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -538,7 +538,7 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, int len,
  * Summary:     Parameters sent from host to target to feed pen and 
  *		keyboard events. They do not require a response.
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -571,7 +571,7 @@ sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
  *
  * Summary:     Remote Procedure calls (0x0A, 0x8A)
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -642,7 +642,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
  *
  * Summary:     Deprecated
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -725,7 +725,7 @@ int RPC(int sd, int socket, int trap, int reply, ...)
  *
  * Summary:     Pack the RPC structure for transmission
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -773,7 +773,7 @@ int PackRPC(struct RPC_params *p, int trap, int reply, ...)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -810,7 +810,7 @@ void UninvertRPC(struct RPC_params *p)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -847,7 +847,7 @@ void InvertRPC(struct RPC_params *p)
  *
  * Summary:     Actually execute the RPC query/response
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -883,7 +883,7 @@ unsigned long DoRPC(int sd, int socket, struct RPC_params *p, int *error)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -899,7 +899,7 @@ int RPC_Int_Void(int sd, int trap)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -915,7 +915,7 @@ int RPC_Ptr_Void(int sd, int trap)
  *
  * Summary:     Untested complex RPC example
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

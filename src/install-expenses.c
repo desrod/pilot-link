@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 	}
 
 	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-	unpack_ExpenseAppInfo(&mai, (unsigned char *) buf, l);
+	unpack_ExpenseAppInfo(&mai, buf, l);
 
 	if (category_name) {
 		category = -1;	/* invalid category */

@@ -116,7 +116,7 @@ struct pi_protocol *slp_protocol (void)
  *
  * Summary:     Build and queue up an SLP packet to be transmitted
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     A negative number on error, 0 otherwise
  *
@@ -185,7 +185,7 @@ int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  *
  * Summary:     Accept SLP packets on the wire
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -456,7 +456,7 @@ slp_setsockopt(struct pi_socket *ps, int level, int option_name,
  *
  * Summary:     Dump the contents of the SPL frame
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

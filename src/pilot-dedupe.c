@@ -53,7 +53,7 @@ struct record {
  *
  * Summary:     Compare records
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

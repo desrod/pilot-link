@@ -95,7 +95,7 @@ struct pi_protocol *sys_protocol (void)
  *
  * Summary:     Send a system message
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 if success, nonzero otherwise
  *
@@ -150,7 +150,7 @@ int sys_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  *
  * Summary:     Receive system message
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Length of read
  *

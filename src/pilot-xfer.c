@@ -200,7 +200,7 @@ static void Connect(void)
  *
  * Summary:     Get the last PCID and lastSyncTime from the Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -227,7 +227,7 @@ static void VoidSyncFlags(void)
  *
  * Summary:     Remove the excluded files from the op list
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -250,7 +250,7 @@ static void RemoveFromList(char *name, char **list, int max)
  *
  * Summary:     Nothing
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -294,7 +294,7 @@ static int creator_is_PalmOS(long creator)
  *
  * Summary:     Build a filelist and back up the Palm to destination
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -526,7 +526,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
  *
  * Summary:     Grab a file from the Palm, write to disk
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -612,7 +612,7 @@ static void Fetch(char *dbname)
  *
  * Summary:     Delete a database from the Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -667,7 +667,7 @@ static int compare(struct db *d1, struct db *d2)
  *
  * Summary:     Send files to the Palm from disk, restoring Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -820,7 +820,7 @@ static void Restore(char *dirname)
  *
  * Summary:     Push file(s) to the Palm from filelist
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -869,7 +869,7 @@ static void Install(char *filename)
  * Summary:     Adds the records in <file> into the corresponding
  *		Palm database
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -907,7 +907,7 @@ static void Merge(char *filename)
  *
  * Summary:     List the databases found on the Palm device
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -946,7 +946,7 @@ static void List(int rom)
  * Summary:     Purge any deleted data that hasn't been cleaned up
  *              by a sync
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -998,7 +998,7 @@ static void Purge(void)
  *
  * Summary:     Print out the --help options and arguments
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

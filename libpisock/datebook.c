@@ -54,7 +54,7 @@ char *DatebookRepeatTypeNames[] =
  *
  * Summary:     Frees members of the apointment structure
  *
- * Parmeters:   Appointment structure
+ * Parameters:  Appointment structure
  *
  * Returns:     Nothing
  *
@@ -76,7 +76,7 @@ void free_Appointment(struct Appointment *a)
  * Summary:     Fill in the appointment structure based on the raw 
  *		record data
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on error, the length of the data used from the
  *		buffer otherwise
@@ -235,13 +235,13 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 
 	if (iflags & descFlag) {
 		a->description = strdup(p2);
-		p2 += strlen(p2) + 1;
+		p2 += strlen((char *)p2) + 1;
 	} else
 		a->description = 0;
 
 	if (iflags & noteFlag) {
 		a->note = strdup(p2);
-		p2 += strlen(p2) + 1;
+		p2 += strlen((char *)p2) + 1;
 	} else {
 		a->note = 0;
 	}
@@ -255,7 +255,7 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
  * Summary:	Fill in the raw appointment record data based on the 
  *		appointment structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The length of the buffer required if record is NULL,
  *		or 0 on error, the length of the data used from the 
@@ -401,7 +401,7 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
  * Summary:     Fill in the app info structure based on the raw app 
  *		info data
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The necessary length of the buffer if record is NULL,
  *		or 0 on error, the length of the data used from the 
@@ -432,7 +432,7 @@ unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
  * Summary:     Fill in the raw app info record data based on the app 
  *		info structure
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The length of the buffer required if record is NULL,
  *		or 0 on error, the length of the data used from the 

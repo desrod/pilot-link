@@ -72,7 +72,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
  *
  * Summary:     Open the usb port and establish a connection for
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The file descriptor
  *
@@ -111,7 +111,7 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
  *
  * Summary:     Close the open socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -160,7 +160,7 @@ u_poll(struct pi_socket *ps, int timeout)
  *
  * Summary:     Write to the open socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -225,7 +225,7 @@ u_read_buf (struct pi_socket *ps, unsigned char *buf, int len)
  *
  * Summary:     Read incoming data from the socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

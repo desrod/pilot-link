@@ -63,7 +63,7 @@ struct _RecordQueue {
  * Summary:     Create a new, empty device record with the given buffer
  *		size
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The new device record
  *
@@ -86,7 +86,7 @@ PilotRecord *sync_NewPilotRecord(int buf_size)
  *
  * Summary:     Copies the given device record
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The device record passed by sync_NewPilotRecord
  *
@@ -113,7 +113,7 @@ PilotRecord *sync_CopyPilotRecord(const PilotRecord * precord)
  *
  * Summary:     Free the memory of the given device record
  *
- * Parmeters:   The device record to free
+ * Parameters:  The device record to free
  *
  * Returns:     Nothing
  *
@@ -132,7 +132,7 @@ void sync_FreePilotRecord(PilotRecord * precord)
  *
  * Summary:     Create a new, empty, desktop record
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The new, empty desktop record
  *
@@ -153,7 +153,7 @@ DesktopRecord *sync_NewDesktopRecord(void)
  *
  * Summary:     Copies the given desktop record
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The new desktop record (DesktopRecord)
  *
@@ -174,7 +174,7 @@ DesktopRecord *sync_CopyDesktopRecord(const DesktopRecord * drecord)
  *
  * Summary:     Free the memory of the given desktop record
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -191,7 +191,7 @@ void sync_FreeDesktopRecord(DesktopRecord * drecord)
  * Summary:     Add records to process to the queue, until no more 
  *		records exist
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -228,7 +228,7 @@ add_record_queue(RecordQueue * rq, PilotRecord * precord,
  *
  * Summary:     Free the list
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -259,7 +259,7 @@ static int free_record_queue_list(SyncHandler * sh, RecordQueueList * rql)
  *
  * Summary:     Delete records from both Palm and desktop, same time
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     negative number if error, otherwise 0 to indicate
  *		success
@@ -287,7 +287,7 @@ delete_both(SyncHandler * sh, int dbhandle, DesktopRecord * drecord,
  *
  * Summary:     Store the new/modified record on the Palm 
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 if success, otherwise negative number
  *
@@ -321,7 +321,7 @@ store_record_on_pilot(SyncHandler * sh, int dbhandle,
  *
  * Summary:     Open a given database by handle for operation
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -342,7 +342,7 @@ static int open_db(SyncHandler * sh, int *dbhandle)
  *
  * Summary:     Close a given database by handle
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -363,7 +363,7 @@ static int close_db(SyncHandler * sh, int dbhandle)
  *
  * Summary:     Synchronize a record to the Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 if success, otherwise return a negative number
  *
@@ -522,7 +522,7 @@ sync_record(SyncHandler * sh, int dbhandle,
  *
  * Summary:     Copy all desktop records to the Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, non-zero otherwise
  *
@@ -568,7 +568,7 @@ int sync_CopyToPilot(SyncHandler * sh)
  *
  * Summary:     Copy all device records from the Palm to the desktop
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, non-zero otherwise
  *
@@ -622,7 +622,7 @@ int sync_CopyFromPilot(SyncHandler * sh)
  *
  * Summary:     Try to be intelligent about merging data in a record
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -657,7 +657,7 @@ sync_MergeFromPilot_process(SyncHandler * sh, int dbhandle,
  *
  * Summary:     er, fast merge from Palm to desktop
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 if success, nonzero otherwise
  *
@@ -697,7 +697,7 @@ sync_MergeFromPilot_fast(SyncHandler * sh, int dbhandle,
  *
  * Summary:     uh, slow merge from Palm to desktop
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 if success, nonzero otherwise
  *
@@ -767,7 +767,7 @@ sync_MergeFromPilot_slow(SyncHandler * sh, int dbhandle,
  * Summary:     Synchronize the device records to the desktop, but do 
  *		not alter the device records
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, non-zero otherwise
  *
@@ -810,7 +810,7 @@ int sync_MergeFromPilot(SyncHandler * sh)
  *
  * Summary:     Fast merge from desktop to Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, non-zero otherwise
  *
@@ -855,7 +855,7 @@ sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle,
  *
  * Summary:     Slow merge from desktop to Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, non-zero otherwise
  *
@@ -926,7 +926,7 @@ sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
  * Summary:     Synchronize the desktop records to the pilot, but do
  *		not alter the desktop records
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, non-zero otherwise
  *
@@ -969,7 +969,7 @@ int sync_MergeToPilot(SyncHandler * sh)
  *
  * Summary:     Synchronizes the pilot database and the desktop database
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, non-zero otherwise
  *

@@ -45,7 +45,7 @@ char *MailSyncTypeNames[] = { "All", "Send", "Filter", NULL };
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -76,7 +76,7 @@ void free_Mail(struct Mail *a)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -93,7 +93,7 @@ void free_MailAppInfo(struct MailAppInfo *a)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -114,7 +114,7 @@ void free_MailSyncPref(struct MailSyncPref *a)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -131,7 +131,7 @@ void free_MailSignaturePref(struct MailSignaturePref *a)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -262,7 +262,7 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -373,7 +373,7 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -411,7 +411,7 @@ unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -459,7 +459,7 @@ pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -506,7 +506,7 @@ unpack_MailSyncPref(struct MailSyncPref *a, unsigned char *record, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -567,7 +567,7 @@ pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -594,7 +594,7 @@ unpack_MailSignaturePref(struct MailSignaturePref *a,
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

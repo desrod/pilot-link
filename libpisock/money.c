@@ -31,7 +31,7 @@
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -101,7 +101,7 @@ unpack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -175,7 +175,7 @@ int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
  *
  * Summary:     Unpack the MoneyManager AppInfo block
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -216,7 +216,7 @@ unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
  *
  * Summary:     Pack the MoneyManager AppInfo block
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

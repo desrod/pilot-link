@@ -56,7 +56,7 @@ char *ExpenseTypeNames[] =
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -81,7 +81,7 @@ void free_Expense(struct Expense *a)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -186,7 +186,7 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -272,7 +272,7 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -309,7 +309,7 @@ unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -352,7 +352,7 @@ pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -399,7 +399,7 @@ unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

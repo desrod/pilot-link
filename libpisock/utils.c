@@ -64,7 +64,7 @@
  *
  * Summary:     Implementation of the CRC16 Cyclic Redundancy Check
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     CRC + NULL
  *
@@ -93,7 +93,7 @@ int crc16(unsigned char *ptr, int count)
  *
  * Summary:     Duplicate a string
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     String or NULL
  *
@@ -134,7 +134,7 @@ extern char **environ;
  * Summary:     Put STRING, which is of the form "NAME=VALUE", in the
  *		environment
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 for success, nonzero if any errors occur
  *
@@ -198,7 +198,7 @@ int putenv(const char *string)
  *
  * Summary:     Manipulate our network address information
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

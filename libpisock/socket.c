@@ -584,7 +584,7 @@ installexit(void)
  *
  * Summary:     Create a local connection endpoint
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -658,7 +658,7 @@ int pi_socket(int domain, int type, int protocol)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     New socket
  *
@@ -739,7 +739,7 @@ int pi_socket_init(struct pi_socket *ps)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -755,7 +755,7 @@ void pi_socket_recognize(struct pi_socket *ps)
  *
  * Summary:     Connect to a remote server
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -809,7 +809,7 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
  *
  * Summary:     Bind address to a local socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -860,7 +860,7 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
  *
  * Summary:     Wait for an incoming connection
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -883,7 +883,7 @@ int pi_listen(int pi_sd, int backlog)
  *
  * Summary:     Accept an incoming connection
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -911,7 +911,7 @@ int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -940,7 +940,7 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
  *
  * Summary:     Get a socket option
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, negative value on failure
  *
@@ -990,7 +990,7 @@ pi_getsockopt(int pi_sd, int level, int option_name,
  *
  * Summary:     Set a socket option
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     0 on success, negative value on failure
  *
@@ -1039,7 +1039,7 @@ pi_setsockopt(int pi_sd, int level, int option_name,
  *
  * Summary:     Send message on a connected socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1068,7 +1068,7 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
  *
  * Summary:     Receive msg on a connected socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1094,7 +1094,7 @@ int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
  *
  * Summary:     Wrapper for receive
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1111,7 +1111,7 @@ int pi_read(int pi_sd, void *msg, int len)
  *
  * Summary:     Wrapper for send
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1127,7 +1127,7 @@ int pi_write(int pi_sd, void *msg, int len)
  *
  * Summary:     Tickle a stream connection
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1182,7 +1182,7 @@ int pi_tickle(int pi_sd)
  *
  * Summary:     Close a connection, destroy the socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1228,7 +1228,7 @@ int pi_close(int pi_sd)
  *
  * Summary:     Get the local address for a socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1255,7 +1255,7 @@ int pi_getsockname(int pi_sd, struct sockaddr *addr, int *namelen)
  *
  * Summary:     Get the remote address for a socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1282,7 +1282,7 @@ int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1330,7 +1330,7 @@ struct pi_socket *find_pi_socket(int sd)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

@@ -379,7 +379,7 @@ Function Declarations
 		 * Summary:     DLP 1.0 GetSysDateTime function to get
 		 *              device date and time
 		 *
-		 * Parmeters:   None
+		 * Parameters:  None
 		 *
 		 * Returns:     A negative number on error, the number of
 		 *              bytes read otherwise

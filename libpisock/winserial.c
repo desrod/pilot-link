@@ -44,7 +44,7 @@ static int so_read(struct pi_socket *ps, int timeout);
  * Summary:     Open the serial port and establish a connection for 
  *		Win32
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     The file descriptor
  *
@@ -92,7 +92,7 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
  *
  * Summary:     Change the speed of the socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -110,7 +110,7 @@ int so_changebaud(struct pi_socket *ps)
  *
  * Summary:     Change the connection parameters on Win32
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -163,7 +163,7 @@ static int win_changebaud(HANDLE fd, int rate)
  *
  * Summary:     Close the open socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -184,7 +184,7 @@ static int so_close(struct pi_socket *ps)
  *
  * Summary:     Write to the open socket/file descriptor 
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -237,7 +237,7 @@ static int so_write(struct pi_socket *ps)
  *
  * Summary:     Read incoming data from the socket/file descriptor
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -295,7 +295,7 @@ static int so_read(struct pi_socket *ps, int timeout)
  *
  * Summary:     Wait for incoming connection from Palm device
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     -1 if no connection, 0 otherwise
  *

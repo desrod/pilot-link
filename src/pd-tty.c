@@ -88,7 +88,7 @@ static void Exit(ClientData d)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -149,7 +149,7 @@ static void execline(char *line)
  *
  * Summary:     Internal readline routine
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -198,7 +198,7 @@ static int mode 	= 0;
  *
  * Summary:     Process commands from stdin until there's an end-of-file
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -256,7 +256,7 @@ void do_readline(void)
  *              input chcters, adds them to a command being assembled,
  *              and executes the command if it's complete.
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -353,7 +353,7 @@ int mask;			/* Not used. */
  * Summary:     Issue a prompt on standard output, or invoke a script
  *		to issue the prompt
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Outputs a prompt, Tcl script may be evaluated in interp
  *
@@ -416,7 +416,7 @@ int partial;			/* Non-zero means there already exists a
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *

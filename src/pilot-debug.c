@@ -161,7 +161,7 @@ static int SayInteractive(char *text)
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -213,7 +213,7 @@ static int Error(char *text)
  *
  * Summary:     What state are we starting up in
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -232,7 +232,7 @@ static void SetModeLabel(void)
  *		loop on serial input, and explicitly by any function
  *		has thinks there should be a packet ready
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -446,7 +446,7 @@ Read_Pilot(ClientData clientData, int mask)
  *		As it is, it just assumed the text is a hexadecimal
  * 		number, with or with '0x' prefix.
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -462,7 +462,7 @@ static unsigned long ParseAddress(char *address)
  *
  * Summary:     Utility function to modify breakpoint table
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -507,7 +507,7 @@ int majorVersion, minorVersion, stateVersion, buildVersion;
  *
  * Summary:     Return the device version in use
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -543,7 +543,7 @@ static void DbgGetDeviceVersion(void)
  * Summary:     Attempt to verify a connection to either the debugger
  *		or console
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -611,7 +611,7 @@ static int DbgAttach(int verify)
  *
  * Summary:     Bind the debugger to the open socket and port
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -648,7 +648,7 @@ static int DbgAttachDebugger(int verify)
  *
  * Summary:     Attach an interactive debugging console to the socket
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -695,7 +695,7 @@ static int DbgAttachConsole(int verify)
  *
  * Summary:     Low-level debugging routines via RPC to the Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -767,7 +767,7 @@ unsigned char buffer[0xffff];
  *
  * Summary:     Go, restart execution
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -810,7 +810,7 @@ static int proc_g(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     Till, restart execution
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -857,7 +857,7 @@ static int proc_t(ClientData clientData, Tcl_Interp * interp, int argc,
  * Summary:     Attach to a Palm that has already crashed into the
  *		debugger without notifying us
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -880,7 +880,7 @@ static int proc_attach(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     Display the screen output in the GUI window
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -903,7 +903,7 @@ static int proc_sendscreen(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     Drop all communication, restart device
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -935,7 +935,7 @@ static int proc_coldboot(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     Simple "pin reset" restart
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -966,7 +966,7 @@ static int proc_warmboot(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     Display and query battery status information
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1037,7 +1037,7 @@ static int proc_battery(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1119,7 +1119,7 @@ static int proc_mirror(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     Force a screen update from the Palm
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1221,7 +1221,7 @@ static int proc_getdisplay(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1255,7 +1255,7 @@ static int proc_transmit(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     Simulate and emulate the button press actions
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1324,7 +1324,7 @@ static int proc_pushbutton(ClientData clientData, Tcl_Interp * interp, int argc,
  * Summary:     Tcl procedure to simulate a pen tap -- primarily used
  *		by Remote UI bindings
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1354,7 +1354,7 @@ static int proc_pen(ClientData clientData, Tcl_Interp * interp, int argc,
  * Summary:     Tcl procedure to simulate a key press -- primarily used
  *		by Remote UI bindings
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1395,7 +1395,7 @@ static int proc_key(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1461,7 +1461,7 @@ static int proc_port(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
@@ -1532,7 +1532,7 @@ static int proc_feature(ClientData clientData, Tcl_Interp * interp, int argc,
  *
  * Summary:     Build the GUI and import all the usable elements
  *
- * Parmeters:   None
+ * Parameters:  None
  *
  * Returns:     Nothing
  *
