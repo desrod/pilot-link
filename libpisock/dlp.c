@@ -21,40 +21,18 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
 
-/***************************************************************************
- *
- * Documentation marked with DHS is my fault.
- *               -- David H. Silber <pilot@SilberSoft.com>
- *
- *  Key to documentation
- *
- *  Parameters marked with '-->' are data passed in to the function.
- *  Parameters marked with '<--' are data passed back from the function.
- *    If the argument is a NULL, no data is returned.
- *  Parameters marked with '<->' are used for data passed in and then
- *    (possibly modified) data passed back.
- *
- *  -- DHS
- ***************************************************************************/
-
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-
 #ifdef HAVE_ERRNO_H
-#include <errno.h>
-
-/* For systems that don't provide ENOMSG. Use EINVAL instead. */
-#ifndef        ENOMSG
-#define ENOMSG EINVAL
-#endif /* ENOMSG */
-
-#endif /* HAVE_ERRNO_H */
-
+	#include <errno.h>
+	#ifndef ENOMSG
+		#define ENOMSG EINVAL	/* For systems that don't provide ENOMSG. Use EINVAL instead. */
+	#endif
+#endif
 #include <string.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -199,21 +177,6 @@ static void record_dump (unsigned long recID, unsigned int recIndex, int flags,
 }
 #endif
 
-/***************************************************************************
- *
- * Function:	dlp_set_protocol_version
- *
- * Summary:	set the protocol version we should announce to the device when
- *		it connects (see pi-dlp.h for details). This should be done
- *		prior to connecting with device if you want to change from
- *		the defaults.
- *
- * Parameters:	major	--> protocol major version
- *		minor	--> protocol minor version
- *
- * Returns:     nothing
- *
- ***************************************************************************/
 void
 dlp_set_protocol_version(int major, int minor)
 {
@@ -802,17 +765,6 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
    from a time_t expressed in the machine's local timezone.
    -- FP */
 
-/***************************************************************************
- *
- * Function:    dlp_ptohdate
- *
- * Summary:     Convert Palm format to time_t
- *
- * Parameters:  char* to time data buffer
- *
- * Returns:     time_t struct to mktime
- *
- ***************************************************************************/
 time_t
 dlp_ptohdate(const unsigned char *data)
 {
@@ -864,17 +816,6 @@ dlp_ptohdate(const unsigned char *data)
 	return mktime(&t);
 }
 
-/***************************************************************************
- *
- * Function:    dlp_htopdate
- *
- * Summary:     Convert time_t to Palm format
- *
- * Parameters:  time_t, char* to time data buffer
- *
- * Returns:     void
- *
- ***************************************************************************/
 void
 dlp_htopdate(time_t ti, unsigned char *data)
 {				/* @+ptrnegate@ */
@@ -902,18 +843,6 @@ dlp_htopdate(time_t ti, unsigned char *data)
 	data[1] = (unsigned char) year;
 }
 
-/***************************************************************************
- *
- * Function:    dlp_GetSysDateTime
- *
- * Summary:     DLP 1.0 GetSysDateTime function to get device date and time
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_GetSysDateTime(int sd, time_t * t)
 {
@@ -944,19 +873,6 @@ dlp_GetSysDateTime(int sd, time_t * t)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_SetSysDateTime
- *
- * Summary:     DLP 1.0 SetSysDateTime function to set the device date and
- *		time
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_SetSysDateTime(int sd, time_t t)
 {
@@ -981,19 +897,6 @@ dlp_SetSysDateTime(int sd, time_t t)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadStorageInfo
- *
- * Summary:     DLP 1.0 ReadStorageInfo to read ROM/RAM regions
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 {
@@ -1054,21 +957,6 @@ dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadSysInfo
- *
- * Summary:     Read the System Information (device DLP version, ROM
- *              version, product ID, maximum record/resource size)
- *
- * Parameters:  sd        --> socket descriptor
- *              s         <-- system information
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadSysInfo(int sd, struct SysInfo *s)
 {
@@ -1140,26 +1028,6 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadDBList
- *
- * Summary:     Iterate through the list of databases on the Palm
- *
- * Parameters:  sd	--> client socket
- *		cardno  --> card number (should be 0)
- *		flags   --> see enum dlpDBList in pi-dlp.h
- *		start   --> index of first database to list
- *		info	<-> buffer containing one or more DBInfo structs
- *			    depending on `flags' and the DLP version running
- *			    on the device.
- *
- * Returns:	A negative number on error, the number of bytes read otherwise.
- *		Use (info->used / sizeof(DBInfo)) to know how many database
- *		information blocks were returned
- *
- ***************************************************************************/
 int
 dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 {
@@ -1263,18 +1131,6 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_FindDBInfo
- *
- * Summary:     Search for a database on the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 	       unsigned long type, unsigned long creator,
@@ -1443,17 +1299,6 @@ dlp_decode_finddb_response(struct dlpResponse *res, int *cardno, unsigned long *
 	}
 }
 
-/***************************************************************************
- *
- * Function:	dlp_FindDBByName
- *
- * Summary:	Search for a database on the Palm by explicit name
- *
- * Parameters:	None
- *
- * Returns:	Nothing
- *
- ***************************************************************************/
 int
 dlp_FindDBByName (int sd, int cardno, PI_CONST char *name, unsigned long *localid,
 	int *dbhandle, struct DBInfo *info, struct DBSizeInfo *size)
@@ -1496,18 +1341,6 @@ dlp_FindDBByName (int sd, int cardno, PI_CONST char *name, unsigned long *locali
 	return result;	
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_FindDBByOpenHandle
- *
- * Summary:     Search for a database on the Palm by database handle
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***************************************************************************/
 int
 dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno,
 	 unsigned long *localid, struct DBInfo *info, struct DBSizeInfo *size)
@@ -1553,18 +1386,6 @@ dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno,
 	return result;	
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_FindDBByTypeCreator
- *
- * Summary:     Search for a database on the Palm by CreatorID
- *
- * Parameters:  None
- *
- * Returns:     Creator ID in 'result'
- *
- ***************************************************************************/
 int
 dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator,
  	int start, int latest, int *cardno, unsigned long *localid,
@@ -1616,19 +1437,6 @@ dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator,
 	return result;	
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_OpenDB
- *
- * Summary:     Open the database for read/write/delete/mode
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_OpenDB(int sd, int cardno, int mode, PI_CONST char *name, int *dbhandle)
 {
@@ -1663,18 +1471,6 @@ dlp_OpenDB(int sd, int cardno, int mode, PI_CONST char *name, int *dbhandle)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_DeleteDB
- *
- * Summary:     Delete a given database on the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_DeleteDB(int sd, int card, const char *name)
 {
@@ -1701,18 +1497,6 @@ dlp_DeleteDB(int sd, int card, const char *name)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_CreateDB
- *
- * Summary:     Create a database on the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_CreateDB(int sd, unsigned long creator, unsigned long type, int cardno,
 	 int flags, unsigned int version, const char *name, int *dbhandle)
@@ -1752,18 +1536,6 @@ dlp_CreateDB(int sd, unsigned long creator, unsigned long type, int cardno,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_CloseDB
- *
- * Summary:     Close the database opened on the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_CloseDB(int sd, int dbhandle)
 {
@@ -1788,18 +1560,6 @@ dlp_CloseDB(int sd, int dbhandle)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_CloseDB_All
- *
- * Summary:     Close all the databases opened on the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_CloseDB_All(int sd)
 {
@@ -1822,18 +1582,6 @@ dlp_CloseDB_All(int sd)
 	return result;
 }
 
-/***************************************************************************
- *
- * Function:    dlp_CallApplication
- *
- * Summary:     Call an application entry point via an action code
- *
- * Parameters:	retbuf is emptied prior to receiving data
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		    int action, size_t length, const void *data,
@@ -1943,18 +1691,6 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ResetSystem
- *
- * Summary:     Reset the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_ResetSystem(int sd)
 {
@@ -1977,18 +1713,6 @@ dlp_ResetSystem(int sd)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_AddSyncLogEntry
- *
- * Summary:     Add text to the Palm's synchronization log
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_AddSyncLogEntry(int sd, char *entry)
 {
@@ -2018,19 +1742,6 @@ dlp_AddSyncLogEntry(int sd, char *entry)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadOpenDBInfo
- *
- * Summary:     Read the number of records in the device database
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 {
@@ -2065,19 +1776,6 @@ dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 	return result;
 }
 
-/***************************************************************************
- *
- * Function:    dlp_SetDBInfo
- *
- * Summary:     Set the database info, passing 0 for a param leaves it
- *              unchanged.
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags,
 	unsigned int version, time_t createDate, time_t modifyDate,
@@ -2118,18 +1816,6 @@ dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_MoveCategory
- *
- * Summary:     Move all records in a category to another category
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 {
@@ -2163,17 +1849,6 @@ dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 	return result;
 }
 
-/***************************************************************************
- *
- * Function:    dlp_OpenConduit
- *
- * Summary:     This command is sent before each conduit is opened
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_OpenConduit(int sd)
 {
@@ -2202,18 +1877,6 @@ dlp_OpenConduit(int sd)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_EndOfSync
- *
- * Summary:     End the sync with the given status
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_EndOfSync(int sd, int status)
 {
@@ -2250,18 +1913,6 @@ dlp_EndOfSync(int sd, int status)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_AbortSync
- *
- * Summary:     Enters a sync_aborted entry into the log
- *
- * Parameters:  None
- *
- * Returns:     Return value: A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_AbortSync(int sd)
 {
@@ -2281,18 +1932,6 @@ dlp_AbortSync(int sd)
 	return 0;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_WriteUserInfo
- *
- * Summary:     Write user information to the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_WriteUserInfo(int sd, struct PilotUser *User)
 {
@@ -2326,19 +1965,6 @@ dlp_WriteUserInfo(int sd, struct PilotUser *User)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadUserInfo
- *
- * Summary:     Read user information from the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise 
- *
- ***************************************************************************/
 int
 dlp_ReadUserInfo(int sd, struct PilotUser *User)
 {
@@ -2397,19 +2023,6 @@ dlp_ReadUserInfo(int sd, struct PilotUser *User)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadNetSyncInfo
- *
- * Summary:     Read Network HotSync settings from the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
@@ -2464,18 +2077,6 @@ dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_WriteNetSyncInfo
- *
- * Summary:     Write Network HotSync settings to the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_WriteNetSyncInfo(int sd, const struct NetSyncInfo *i)
 {
@@ -2532,17 +2133,6 @@ dlp_WriteNetSyncInfo(int sd, const struct NetSyncInfo *i)
 
 
 #ifdef _PILOT_SYSPKT_H
-/***************************************************************************
- *
- * Function:    dlp_RPC
- *
- * Summary:     Remote Procedure Calls interface
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 {
@@ -2632,18 +2222,6 @@ dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 }
 
 
-/***************************************************************************
- *
- * Function:    dlp_ReadFeature
- *
- * Summary:     Read a feature from Feature Manager on the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise 
- *
- ***************************************************************************/
 int
 dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 		unsigned long *feature)
@@ -2725,19 +2303,6 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 }
 #endif				/* IFDEF _PILOT_SYSPKT_H */
 
-
-/***************************************************************************
- *
- * Function:    dlp_GetROMToken
- *
- * Summary:     Emulation of the SysGetROMToken function on the Palm
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise 
- *
- ***************************************************************************/
 int
 dlp_GetROMToken(int sd, unsigned long token, char *buffer, size_t *size)
 {
@@ -2821,18 +2386,6 @@ dlp_GetROMToken(int sd, unsigned long token, char *buffer, size_t *size)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ResetLastSyncPC
- *
- * Summary:     Reset the LastSyncPC ID so we can start again
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_ResetLastSyncPC(int sd)
 {
@@ -2849,18 +2402,6 @@ dlp_ResetLastSyncPC(int sd)
 	return dlp_WriteUserInfo(sd, &User);
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ResetDBIndex
- *
- * Summary:     Reset the modified records index
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_ResetDBIndex(int sd, int dbhandle)
 {
@@ -2893,19 +2434,6 @@ dlp_ResetDBIndex(int sd, int dbhandle)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadRecordIDList
- *
- * Summary:     Read in a list of RecordIDs from the Palm
- *
- * Parameters:  None
- *
- * Returns:	A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 		     recordid_t * IDs, int *count)
@@ -2953,25 +2481,9 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_WriteRecord
- *
- * Summary:     Writes a record to database. If recID is 0, the device will
- *		create a new id and the variable the NewID pointer points to
- *		will be set to the new id. If length is -1, function will
- *		consider data as a string and write a data block of (strlen
- *		+ 1).
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
-		int catID, void *data, size_t length, recordid_t *pNewRecID)
+		int catID, const void *data, size_t length, recordid_t *pNewRecID)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3042,19 +2554,6 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_DeleteRecord
- *
- * Summary:     Deletes a record from the database or all records if the all
- *		flag is non-zero
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 {
@@ -3082,18 +2581,6 @@ dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 	return result;
 }
 
-/***************************************************************************
- *
- * Function:    dlp_DeleteCategory
- *
- * Summary:     Delete all records in a category. The category name is not
- *		changed.
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_DeleteCategory(int sd, int dbhandle, int category)
 {
@@ -3148,19 +2635,6 @@ dlp_DeleteCategory(int sd, int dbhandle, int category)
 	}
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadResourceByType
- *
- * Summary:     Read the record resources by ResourceID
- *
- * Parameters:  buffer is emptied prior to reading data
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadResourceByType(int sd, int dbhandle, unsigned long type, int resID,
 		       pi_buffer_t *buffer, int *resindex)
@@ -3214,19 +2688,6 @@ dlp_ReadResourceByType(int sd, int dbhandle, unsigned long type, int resID,
 	return data_len;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadResourceByIndex
- *
- * Summary:     Read the record resources by index
- *
- * Parameters:  buffer is emptied prior to reading data
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadResourceByIndex(int sd, int dbhandle, int resindex, pi_buffer_t *buffer,
 			unsigned long *type, int *resID)
@@ -3299,18 +2760,6 @@ dlp_ReadResourceByIndex(int sd, int dbhandle, int resindex, pi_buffer_t *buffer,
 	return data_len;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_WriteResource
- *
- * Summary:     Write a resource
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_WriteResource(int sd, int dbhandle, unsigned long type, int resID,
 		  const void *data, size_t length)
@@ -3362,18 +2811,6 @@ dlp_WriteResource(int sd, int dbhandle, unsigned long type, int resID,
 }
 
 
-/***************************************************************************
- *
- * Function:    dlp_DeleteResource
- *
- * Summary:     Delete a single resource from the database or all resources
- *		if the all flag is non-zero
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 		   int resID)
@@ -3403,20 +2840,6 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadAppBlock
- *
- * Summary:     Read the AppInfo block that matches the database
- *
- * Parameters:  retbuf is emptied prior to receiving data
- *				reqbytes should be -1 to read from 'offset' 'till the end
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadAppBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *retbuf)
 {
@@ -3468,18 +2891,6 @@ dlp_ReadAppBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *re
 	return data_len;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_WriteAppBlock
- *
- * Summary:     Write the AppInfo block that matches the database
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_WriteAppBlock(int sd, int dbhandle, const /* @unique@ */ void *data,
       size_t length)
@@ -3516,20 +2927,6 @@ dlp_WriteAppBlock(int sd, int dbhandle, const /* @unique@ */ void *data,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadSortBlock
- *
- * Summary:     Read the SortBlock that matches the database
- *
- * Parameters:  retbuf emptied before receiving data
- *				reqbytes: use -1 to get all data from offset on.
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadSortBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *retbuf)
 {
@@ -3581,18 +2978,6 @@ dlp_ReadSortBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *r
 	return data_len;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_WriteSortBlock
- *
- * Summary:     Write the SortBlock that matches the database
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_WriteSortBlock(int sd, int dbhandle, const /* @unique@ */ void *data,
 		       size_t length)
@@ -3628,19 +3013,6 @@ dlp_WriteSortBlock(int sd, int dbhandle, const /* @unique@ */ void *data,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_CleanUpDatabase
- *
- * Summary:     Deletes all records which are marked as archived or deleted
- *		in the record database
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_CleanUpDatabase(int sd, int dbhandle)
 {
@@ -3665,19 +3037,6 @@ dlp_CleanUpDatabase(int sd, int dbhandle)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ResetSyncFlags
- *
- * Summary:     Clear all the sync flags (modified, deleted, etc) in the
- *		pilot database
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_ResetSyncFlags(int sd, int dbandle)
 {
@@ -3702,20 +3061,6 @@ dlp_ResetSyncFlags(int sd, int dbandle)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadNextRecInCategory
- *
- * Summary:     Iterate through all records in category returning subsequent
- *		records on each call
- *
- * Parameters:  buffer is emptied prior to reading data
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadNextRecInCategory(int sd, int dbhandle, int category,
 			  pi_buffer_t *buffer, recordid_t *recuid, int *recindex,
@@ -3838,19 +3183,6 @@ dlp_ReadNextRecInCategory(int sd, int dbhandle, int category,
 	return data_len;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadAppPreference
- *
- * Summary:     Read application preference
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadAppPreference(int sd, unsigned long creator, int prefID, int backup,
 		      int maxsize, void *buffer, size_t *size, int *version)
@@ -3959,18 +3291,6 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int prefID, int backup,
 	return data_len;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_WriteAppPreference
- *
- * Summary:     Write application preference
- *
- * Parameters:  None
- *
- * Returns:     A negative number on error, 0 otherwise
- *
- ***************************************************************************/
 int
 dlp_WriteAppPreference(int sd, unsigned long creator, int prefID, int backup,
 		       int version, void *buffer, size_t size)
@@ -4042,28 +3362,6 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int prefID, int backup,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadNextModifiedRecInCategory
- *
- * Summary:     Iterate through modified records in category, returning
- *		subsequent modifieded records on each call
- *
- * Parameters:  sd         --> Socket descriptor as returned by
- *                             pilot_connect().
- *              fHandle    --> Database handle as returned by dlp_OpenDB().
- *              incategory --> Category to fetch records from.
- *              buffer     <-- Data from specified record. emptied prior to reading data
- *              id_        <-- Record ID of record on palm device.
- *              recindex   <-- Specifies record to get.
- *              size       <-- Size of data returned in buffer.
- *              attr       <-- Attributes from record on palm device.
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadNextModifiedRecInCategory(int sd, int dbhandle, int category,
 				  pi_buffer_t *buffer, recordid_t *recID,
@@ -4152,20 +3450,6 @@ dlp_ReadNextModifiedRecInCategory(int sd, int dbhandle, int category,
 	return data_len;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadNextModifiedRec
- *
- * Summary:     Iterate through modified records in category, returning
- *		subsequent modified records on each call
- *
- * Parameters:  buffer is emptied prior to reading data
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadNextModifiedRec(int sd, int dbhandle, pi_buffer_t *buffer, recordid_t * recID,
 			int *recindex, int *attr, int *category)
@@ -4221,19 +3505,6 @@ dlp_ReadNextModifiedRec(int sd, int dbhandle, pi_buffer_t *buffer, recordid_t * 
 	return data_len;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadRecordById
- *
- * Summary:     Searches device database for match on a record by id
- *
- * Parameters:  buffer is emptied prior to reading data
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- ***************************************************************************/
 int
 dlp_ReadRecordById(int sd, int dbhandle, recordid_t recuid, pi_buffer_t *buffer,
 		   int *recindex, int *attr, int *category)
@@ -4287,28 +3558,6 @@ dlp_ReadRecordById(int sd, int dbhandle, recordid_t recuid, pi_buffer_t *buffer,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ReadRecordByIndex
- *
- * Summary:     Searches device database for match on a record by index
- *
- * Parameters:  sd       --> Socket descriptor as returned by pilot_connect().
- *              fHandle  --> Database handle as returned by dlp_OpenDB().
- *              recindex --> Specifies record to get.
- *              buffer   <-- Data from specified record. emptied prior to reading data
- *              recuid   <-- ptr to Record ID of record on palm device (can be NULL).
- *              attr     <-- ptr to Attributes from record on palm device (can be NULL).
- *              category <-- ptr to Category from record on palm device (can be NULL).
- *
- * Returns:     A negative number on error, the number of bytes read
- *		otherwise
- *
- * Turns this request for a particular record in the database into a
- * low-level dlp request.
- *
- ***************************************************************************/
 int
 dlp_ReadRecordByIndex(int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
 	recordid_t * recuid, int *attr, int *category)
@@ -4378,23 +3627,6 @@ dlp_ReadRecordByIndex(int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
 	return result;
 }
 
-/***************************************************************************
- *
- * Function:    dlp_ExpSlotEnumerate
- *
- * Summary:     Get the number of expansion slots on the device Available
- * 		only in version 1.3 and later of the protocol (Palm OS 4.0
- * 		and later)
- *
- * Parameters:  sd		--> Socket descriptor as returned by pilot_connect().
- * 		numSlots	<-> on input, the maximum number of slot refs
- * 				    that can be stored in the slotRefs array. 
- * 				    On output, the number of slots on the device
- * 		slotRefs	<-- an array of int with the ref of each slot
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_ExpSlotEnumerate(int sd, int *numSlots, int *slotRefs)
 {
@@ -4441,21 +3673,6 @@ dlp_ExpSlotEnumerate(int sd, int *numSlots, int *slotRefs)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ExpCardPresent
- *
- * Summary:     Check whether there is an expansion card in a slot Available
- * 		only in version 1.3 and later of the protocol (Palm OS 4.0
- * 		and later)
- *
- * Parameters:  sd	--> socket descriptor as returned by pilot_connect().
- *		slotRef	--> slot ref as returned by dlp_ExpCardInfo()
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_ExpCardPresent(int sd, int slotRef)
 {
@@ -4481,26 +3698,6 @@ dlp_ExpCardPresent(int sd, int slotRef)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ExpCardInfo
- *
- * Summary:     Return information about one connected expansion card
- *
- * Parameters:  sd		--> socket descriptor 
- * 		slotRef		--> slot ref as returned by dlp_ExpCardInfo()
- *		flags		<-- card capabilities (see ExpansionMgr.h in
- *				    Palm OS headers)
- *		numStrings	<-- number of packed information strings
- *		strings		<-- if strings was not NULL and numStrings>0,
- *				    the function returns a new buffer with the
- *				    packed strings. It is the caller's
- *				    responsibility to free() the buffer.
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *numStrings,
 				char **strings)
@@ -4551,28 +3748,6 @@ dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *numStrings,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSGetDefaultDir
- *
- * Summary:	Return the default location of the given volume for files of
- *		a particular type
- *
- * Parameters:  sd		--> socket descriptor
- *		volRefNum	--> volume reference number returned from
- *	    			    dlp_VFSVolumeEnumerate()
- *		type		--> file type. can be either a MIME type (ie
- *		    		    "image/jpeg") or a file extension (ie
- *		                    ".jpg")
- *		dir		<-> a buffer to hold the returned path
- *		len		<-> on input, the maximum size of the dir
- *			            buffer. on output, the effective size
- *				    (counting the nul terminator)
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir,
 	int *len)
@@ -4621,18 +3796,6 @@ dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSImportDatabaseFromFile
- *
- * Summary:     
- *
- * Parameters:  FIXME
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
 	int *cardno, unsigned long *localid)
@@ -4677,18 +3840,6 @@ dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSExportDatabaseToFile
- *
- * Summary:     
- *
- * Parameters:  FIXME
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path, 
 	int cardno, unsigned int localid)  
@@ -4719,21 +3870,6 @@ dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileCreate
- *
- * Summary:     Create a new file
- *
- * Parameters:  sd	        --> socket descriptor
- *		volRefNum       --> volume reference number returned from
- *			            dlp_VFSVolumeEnumerate()
- *		path		--> full path of the file to create
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileCreate(int sd, int volRefNum, const char *name)
 {
@@ -4760,23 +3896,6 @@ dlp_VFSFileCreate(int sd, int volRefNum, const char *name)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileOpen
- *
- * Summary:     Open a file or directory and return a FileRef to it
- *
- * Parameters:  sd      	--> socket descriptor
- *		volRefNum       --> volume reference number returned from
- *				    dlp_VFSVolumeEnumerate()
- *		path	        --> access path to the file or directory
- *		openMode	--> open mode, use constants from Palm SDK
- *		fileRef		<-- returned file reference
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileOpen(int sd, int volRefNum, const char *path, int openMode, 
 	    FileRef *fileRef)
@@ -4817,20 +3936,6 @@ dlp_VFSFileOpen(int sd, int volRefNum, const char *path, int openMode,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileClose
- *
- * Summary:     Close an open file or directory
- *
- * Parameters:  sd	--> socket descriptor
- *		fileRef	--> file or directory reference obtained from
- *			    dlp_VFSFileOpen()
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileClose(int sd, FileRef fileRef)
 {
@@ -4859,21 +3964,6 @@ dlp_VFSFileClose(int sd, FileRef fileRef)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileWrite
- *
- * Summary:     Write data to an open file
- *
- * Parameters:  sd	--> socket descriptor
- *		fileRef	--> file reference obtained from dlp_VFSFileOpen()
- *		data	--> data buffer to write
- *		len	--> number of bytes to write
- *
- * Returns:     negative number on error, number of bytes written on success
- *
- ***************************************************************************/
 int
 dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
 {
@@ -4925,21 +4015,6 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileRead
- *
- * Summary:     Read data from an open file
- *
- * Parameters:  sd	--> socket descriptor
- *		fileRef	--> file reference obtained from dlp_VFSFileOpen()
- *		data	<-> buffer to hold the data, emptied first
- *		len	--> on input, number of bytes to read
- * 
- * Returns:     negative number on error, total number of bytes read otherwise
- *
- ***************************************************************************/
 int
 dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 {
@@ -4987,20 +4062,6 @@ dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileDelete
- *
- * Summary:     Delete a closed file or directory
- *
- * Parameters:  sd		--> socket descriptor
- *		volRefNum	--> as returned by dlp_VFSVolumeEnumerate()
- *		path		--> complete file access path
- * 
- * Returns:     negative number on error
- * 
- ***************************************************************************/
 int
 dlp_VFSFileDelete(int sd, int volRefNum, const char *path)
 {
@@ -5027,21 +4088,6 @@ dlp_VFSFileDelete(int sd, int volRefNum, const char *path)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileRename
- *
- * Summary:     Rename an existing file or directory
- *
- * Parameters:  sd		--> socket descriptor
- *		volRefNum	--> as returned by dlp_VFSVolumeEnumerate()
- *		path		--> complete file access path
- *		newname		--> new file name (without the access path)
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileRename(int sd, int volRefNum, const char *path, 
 		      const char *newname)
@@ -5075,19 +4121,6 @@ dlp_VFSFileRename(int sd, int volRefNum, const char *path,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileEOF
- *
- * Summary:     Checks whether the current position is at the end of file
- *
- * Parameters:  sd	--> socket descriptor
- *		fileRef	--> file reference obtained from dlp_VFSFileOpen()
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileEOF(int sd, FileRef fileRef)
 {
@@ -5113,20 +4146,6 @@ dlp_VFSFileEOF(int sd, FileRef fileRef)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileTell
- *
- * Summary:     Return the current seek position in an open file
- *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
- *		position	<-- current position
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
 {
@@ -5157,20 +4176,6 @@ dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileGetAttributes
- *
- * Summary:     Return the attributes of an open file
- *
- * Parameters:  sd	        --> socket descriptor
- *		fileRef 	--> file reference obtained from dlp_VFSFileOpen()
- *		attributes	<-- file attributes (see Palm SDK's VFSMgr.h)
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileGetAttributes (int sd, FileRef fileRef, unsigned long *attributes)
 {
@@ -5201,20 +4206,6 @@ dlp_VFSFileGetAttributes (int sd, FileRef fileRef, unsigned long *attributes)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileSetAttributes
- *
- * Summary:     Change the attributes of an open file
- *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
- *		attributes	--> new file attributes (see Palm SDK's VFSMgr.h)
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileSetAttributes(int sd, FileRef fileRef, unsigned long attributes)
 {
@@ -5241,23 +4232,6 @@ dlp_VFSFileSetAttributes(int sd, FileRef fileRef, unsigned long attributes)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileGetDate
- *
- * Summary:     Return one of the dates associated with an open file or
- *				directory (creation, modification or last access)
- *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
- *		whichDate	--> which date you want (vfsFileDateCreated,
- *				    vfsFileDateModified or vfsFileDateAccessed)
- *		date		<-- the date
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
 {
@@ -5295,23 +4269,6 @@ dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileSetDate
- *
- * Summary:     Change one of the dates for an open file or directory
- *		(created, modified or last access)
- *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
- *		whichDate       --> which date you want (vfsFileDateCreated,
- *				    vfsFileDateModified or vfsFileDateAccessed)
- *		date		--> the date
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 {
@@ -5345,20 +4302,6 @@ dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSDirCreate
- *
- * Summary:     Create a new directory on a VFS volume
- *
- * Parameters:  sd		--> socket descriptor 
- *		volRefNum	--> as returned by dlp_VFSVolumeEnumerate()
- *		path		--> full path of directory to create
- *
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSDirCreate(int sd, int volRefNum, const char *path)
 {
@@ -5385,25 +4328,6 @@ dlp_VFSDirCreate(int sd, int volRefNum, const char *path)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSDirEntryEnumerate
- *
- * Summary:     Iterate through the entries in a directory
- *
- * Parameters:  sd		--> socket descriptor 
- *		dirRefNum	--> FileRef obtained from dlp_VFSFileOpen()
- *		dirIterator	<-> iterator we use to navigate in the dirs.
- *		    		    start with vfsIteratorStart
- *		maxDirItems	<-> on input, the max. number of VFSDirInfo
- *				    structs that can be filled at once.  on
- *				    output, the actual number of items
- *		data		<-- "maxDirItems" directory items
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum, 
 	unsigned long *dirIterator, int *maxDirItems, struct VFSDirInfo *data)
@@ -5490,18 +4414,6 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 	return result;  
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSVolumeFormat
- *
- * Summary:     
- *
- * Parameters:  FIXME
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	int fsLibRef, struct VFSSlotMountParam *param)
@@ -5543,22 +4455,6 @@ dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSVolumeEnumerate
- *
- * Summary:     Returns a list of connected VFS volumes
- *
- * Parameters:  sd              --> socket descriptor 
- *		numVols		<-> on input, the maximum number of volume
- *				    references that can be returned. On output,
- *				    the actual number of volume references
- *		volRefs		<-- an array of volume references
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSVolumeEnumerate(int sd, int *numVols, int *volRefs)
 {
@@ -5606,20 +4502,6 @@ dlp_VFSVolumeEnumerate(int sd, int *numVols, int *volRefs)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSVolumeInfo
- *
- * Summary:     Returns information about one VFS volume
- *
- * Parameters:  sd      	--> socket descriptor 
- *		volRefNum	--> as returned by dlp_VFSVolumeEnumerate()
- *		volInfo		<-- volume information
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *volInfo)
 {
@@ -5669,23 +4551,6 @@ dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *volInfo)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSVolumeGetLabel
- *
- * Summary:     Return the label (name) of a VFS volume
- *
- * Parameters:  sd		--> socket descriptor 
- *		volRefNum       --> as returned by dlp_VFSVolumeEnumerate()
- *		len     	<-> on input, the maximum size of the name
- *				    buffer (including the ending nul byte). on
- *				    output, the used size
- *		name		<-- the volume name
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
 {
@@ -5721,20 +4586,6 @@ dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSVolumeSetLabel
- *
- * Summary:     Change the label (name) of a VFS volume
- *
- * Parameters:  sd		--> socket descriptor 
- *		volRefNum       --> as returned by dlp_VFSVolumeEnumerate()
- *		name	        --> the new volume name
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSVolumeSetLabel(int sd, int volRefNum, const char *name)
 {
@@ -5762,21 +4613,6 @@ dlp_VFSVolumeSetLabel(int sd, int volRefNum, const char *name)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSVolumeSize
- *
- * Summary:     Return the total and used size of a VFS volume
- *
- * Parameters:  sd		--> socket descriptor 
- *		volRefNum   	--> as returned by dlp_VFSVolumeEnumerate()
- *		volSizeUsed 	<-- number of bytes used on the volume
- *		volSizeTotal	<-- total size of the volume
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSVolumeSize(int sd, int volRefNum, long *volSizeUsed,
 	long *volSizeTotal)
@@ -5813,21 +4649,6 @@ dlp_VFSVolumeSize(int sd, int volRefNum, long *volSizeUsed,
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileSeek
- *
- * Summary:     Change the current seek position in an open file
- *
- * Parameters:  sd	        --> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
- *		origin		--> seek origin (use vfsOriginXXX from pi-dlp.h)
- *		offset		--> offset relative to the chosen origin
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
 {
@@ -5859,20 +4680,6 @@ dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileResize
- *
- * Summary:     Resize an open file
- *
- * Parameters:  sd		--> socket descriptor
- *		fileRef	        --> file reference obtained from dlp_VFSFileOpen()
- *		newSize	        --> the new file size
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 {
@@ -5902,20 +4709,6 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_VFSFileSize
- *
- * Summary:     Return the size of an open file
- *
- * Parameters:  sd		--> socket descriptor
- *		fileRef	        --> file reference obtained from dlp_VFSFileOpen()
- *		size	        <-- the size of the file
- * 
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 {
@@ -5949,21 +4742,6 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 	return result;
 }
 
-
-/***************************************************************************
- *
- * Function:    dlp_ExpSlotMediaType
- *
- * Summary:     Return the type of media supported by an expansion slot (DLP
- *				1.4 only)
- *
- * Parameters:  sd		--> socket descriptor
- *              slotNum		--> slot to query (1...n)
- *              mediaType	<-- media type
- *
- * Returns:     negative number on error
- *
- ***************************************************************************/
 int
 dlp_ExpSlotMediaType(int sd, int slotNum, unsigned long *mediaType)
 {
