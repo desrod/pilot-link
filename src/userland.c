@@ -140,6 +140,40 @@ int plu_protect_files(char *name, const char *extension, const size_t namelength
 }
 
 
+int plu_getromversion(int sd, plu_romversion_t *d)
+{
+	unsigned long ROMversion;
+
+	if ((sd < 0)  || !d) {
+		return -1;
+	}
+
+	if (dlp_ReadFeature(sd, makelong("psys"), 1, &ROMversion) < 0) {
+		return -1;
+	}
+
+	d->major =
+		(((ROMversion >> 28) & 0xf) * 10) + ((ROMversion >> 24) & 0xf);
+	d->minor = ((ROMversion >> 20) & 0xf);
+	d->bugfix = ((ROMversion >> 16) & 0xf);
+	d->state = ((ROMversion >> 12) & 0xf);
+	d->build =
+		(((ROMversion >> 8) & 0xf) * 100) +
+		(((ROMversion >> 4) & 0xf) * 10) + (ROMversion & 0xf);
+
+	memset(d->name,0,sizeof(d->name));
+	snprintf(d->name, sizeof(d->name),"%d.%d.%d", d->major, d->minor, d->bugfix);
+
+	if (d->state != 3) {
+		int len = strlen(d->name);
+		snprintf(d->name + len, sizeof(d->name) - len,"-%s%d", (
+			(d->state == 0) ? "d" :
+			(d->state == 1) ? "a" :
+			(d->state == 2) ? "b" : "u"), d->build);
+	}
+
+	return 0;
+}
 
 
 /* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */

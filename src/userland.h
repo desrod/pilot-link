@@ -113,6 +113,23 @@ extern int plu_connect();
 
 extern int plu_findcategory(const struct CategoryAppInfo *info, const char *name);
 
+typedef struct {
+	/* Numeric parts of the ROM version */
+	int major,
+		minor,
+		bugfix,
+		build,
+		state;
+	/* Textual representation of same: xxx.xx.xx-xxxxx */
+	char name[16];
+} plu_romversion_t;
+
+/*
+ * Retrieve the ROM version from the Palm; returns -1 on failure, 0
+ * otherwise and fills the fields of the @p d structure.
+ */
+extern int plu_getromversion(int sd, plu_romversion_t *d);
+
 
 /***********************************************************************
  *
