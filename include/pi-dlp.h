@@ -209,7 +209,7 @@ typedef unsigned long FileRef;
 		unsigned long dataBytes;
 		unsigned long appBlockSize;
 		unsigned long sortBlockSize;
-		unsigned long maxRecSize;
+		unsigned long maxRecSize;		/* note: this field is always set to 0 on return from dlp_FindDBxxx */
 	};
 
 	struct CardInfo {
