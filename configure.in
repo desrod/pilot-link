@@ -351,103 +351,19 @@ msg_readline=no
 
 AC_ARG_WITH(readline,      [  --with-readline         use readline               [default=yes]])
 if test "x$with_readline" != "xno"; then
-LIBS="$LIBS -lreadline"
-	dnl Let's check all the possible places for readline
-	for termlib in ncurses curses termcap terminfo termlib ; do
-		AC_CHECK_LIB(${termlib}, 
-			add_history, [LIBS="-l${termlib} $LIBS"; break])
-		LIBS="$ac_save_LIBS"
-	done
-
-        AC_MSG_CHECKING(for readline)
-        AC_TRY_LINK([
-#include <stdio.h>
-#include <readline/readline.h>],[(void)readline(0);],
-                RL_LIBS="-lreadline",
-
-        AC_TRY_LINK(,[(void)readline(0);], 
-                RL_LIBS="-lreadline -l${termlib}"))
-
-        if test "x$RL_LIBS" = "x"; then 
-                AC_MSG_RESULT(not found)
-                AC_MSG_ERROR([Development headers for readline were not found. Please correct.])
-        else
-                AC_MSG_RESULT(found)
-        fi
+AC_CHECK_LIB(termcap, tgoto, [
+	AC_CHECK_LIB(readline, readline, [
+	RL_LIBS="-lreadline -ltermcap"
+	LIBS="$ac_save_LIBS"
+	AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
+	msg_readline=yes
+	AC_CHECK_LIB(readline, add_history,
+AC_DEFINE(HAVE_READLINE_HISTORY_H),,"-ltermcap")
+	], RL_LIBS="", "-ltermcap")  
+], RL_LIBS="")
 fi
 
-if test "x$RL_LIBS" != "x"; then
-        AC_MSG_CHECKING(for basic readline functions)
-
-        ac_save_LIBS="$LIBS"
-
-        LIBS="$LIBS $RL_LIBS"
-        AC_TRY_LINK([
-#include <stdio.h>
-#include <readline/readline.h>], [
-char *line; 
-line = readline("prompt");],      
-        [AC_TRY_LINK([
-#include <stdio.h>
-#include <readline/history.h>], [ 
-add_history("test");],
-        [msg_readline=partial])]) 
-
-        LIBS="$ac_save_LIBS"
-
-        if test "xmsg_readline" = "xno"; then
-                AC_MSG_RESULT(no)
-        else
-                AC_MSG_RESULT(yes)
-        fi
-fi
-
-if test "x$msg_readline" != "xno"; then
-        AC_MSG_CHECKING(for extra readline functions)
-
-        ac_save_LIBS="$LIBS"
-
-        LIBS="$LIBS $RL_LIBS"
-        AC_TRY_LINK([
-#include <stdio.h>   
-#include <readline/readline.h>], [
-rl_callback_read_char();], 
-        [AC_TRY_LINK([
-#include <stdio.h>
-#include <readline/readline.h>], [
-static void execline(char *line)  
-{}
-rl_callback_handler_install("prompt", execline);],
-        [AC_TRY_LINK([
-#include <stdio.h>
-#include <readline/readline.h>], [
-rl_callback_handler_remove();],   
-        [AC_TRY_LINK([
-#include <stdio.h>
-#include <readline/readline.h>], [
-rl_forced_update_display();],
-        [msg_readline=full])])])])
-
-        LIBS="$ac_save_LIBS"
-
-        if test "x$msg_readline" != "xfull"; then
-                AC_MSG_RESULT(no)
-        else
-                AC_MSG_RESULT(yes)
-        fi
-fi
-  
-if test "x$msg_readline" = "xpartial"; then
-        AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
-fi
-  
-if test "x$msg_readline" = "xfull"; then
-        AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
-        AC_DEFINE(HAVE_READLINE_EXTRA, 1, [Define if we have extra readline support])
-fi
-
-AC_SUBST(RL_CFLAGS)
-AC_SUBST(RL_LIBS)  
+AC_SUBST(RL_LIBS)
 
 
 dnl ******************************

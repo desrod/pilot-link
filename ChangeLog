@@ -1,3 +1,10 @@
+2003-07-05 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* autogen.sh: Fixes for OSX libtool vs. glibtool
+
+	* configure.in: Smaller, more-exact readline check, remove unused
+	  RL_CFLAGS reference
+
 2003-07-04 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-xfer.c: Fixed some screen bugs

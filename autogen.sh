@@ -17,8 +17,8 @@ DIE=0
 }
 
 (grep "^AM_PROG_LIBTOOL" $srcdir/configure.in >/dev/null) && {
-  (libtool --version) < /dev/null > /dev/null 2>&1 || 
-  (glibtool --version) < /dev/null > /dev/null 2>&1 || {
+  (glibtool --version) < /dev/null > /dev/null 2>&1 || 
+  (libtool --version) < /dev/null > /dev/null 2>&1 || {
     echo
     echo "**Error**: You must have \`libtool' installed to compile $PKG_NAME."
     echo "Get ftp://ftp.gnu.org/pub/gnu/libtool/libtool-1.4.tar.gz"
