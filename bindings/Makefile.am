@@ -15,16 +15,13 @@ python-build: Python/setup.py
 python-install: python-build
 	cd $(srcdir)/Python && $(PYTHON) setup.py install
 
-python-mostlyclean: Python/setup.py
-	cd $(srcdir)/Python && $(PYTHON) setup.py clean
-
 python-clean: Python/setup.py
-	cd $(srcdir)/Python && $(PYTHON) setup.py clean && rm -rf build
+	-cd $(srcdir)/Python && $(PYTHON) setup.py clean 
+	-cd $(srcdir)/Python && rm -rf build
 
 if WITH_PYTHON
 PYTHON_ALL = python-build
 PYTHON_INSTALL = python-install
-PYTHON_MCLEAN = python-mostlyclean
 PYTHON_CLEAN = python-clean
 else
 PYTHON_ALL = 
@@ -48,16 +45,12 @@ perl5-install: perl5-build
 perl5-uninstall: perl5-make
 	cd $(srcdir)/Perl5 && $(MAKE) uninstall
 
-perl5-mostlyclean: perl5-make
-	cd $(srcdir)/Perl5 && $(MAKE) clean
-
 perl5-clean: perl5-make
 	cd $(srcdir)/Perl5 && $(MAKE) realclean
 
 if WITH_PERL5
 PERL5_ALL = perl5-build
 PERL5_INSTALL = perl5-install
-PERL5_MCLEAN = perl5-mostlyclean
 PERL5_CLEAN = perl5-clean
 else
 PERL5_ALL = 
@@ -71,8 +64,6 @@ all-local: $(PERL5_ALL) $(PYTHON_ALL)
 install-exec-local: $(PYTHON_INSTALL) $(PERL5_INSTALL)
 
 uninstall-local: $(PYTHON_INSTALL) $(PERL5_UNINSTALL)
-
-mostlyclean-local: $(PERL5_MCLEAN) $(PYTHON_MCLEAN)
 
 clean-local: $(PERL5_CLEAN) $(PYTHON_CLEAN)
 
