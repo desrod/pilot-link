@@ -1,3 +1,11 @@
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+
+	* tools/Perl5/Makefile.PL.in: look for library where its built
+
+	* tools/Makefile.am: roll rules to build perl and python from here
+
+	* configure.in: simplify python test
+
 2002-01-04  JP Rosevear  <jpr@ximian.com>
 
 	* *.c: fix getopt.h includes
