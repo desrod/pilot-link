@@ -1,0 +1,95 @@
+.\" -*- coding: us-ascii -*-
+.TH install-todos 1 "@VERSION@"  
+.SH NAME
+install-todo \- Updates the Palm ToDo list with entries from a local file. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIinstall-todos\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-f\fR|\fB\-\-filename\fR \fBSTRING\fR]
+.SH DESCRIPTION
+\fIinstall-todos\fR allows the user to update the Palm
+ToDo list with entries from a local file.
+.PP
+The format of this file is a simple line-by-line ToDo task entry.
+For each new line in the local file, a new task is created in the
+ToDo database on the Palm.
+.SH OPTIONS
+.SS "INSTALL-TODOS OPTIONS"
+\fB\-f\fR,
+\fB\-\-filename\fR \fBfilename\fR
+.RS 
+A local filename containing the ToDo entry text.
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIinstall-todos\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIinstall-todos\fR will
+print the usage information.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fIinstall-todo\fR
+and exit without connecting.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for
+\fIinstall-todos\fR and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH USAGE
+The program will connect to a target Palm handheld, and creates the
+ToDo entry to the Palm ToDo application, using the specified file.
+.SH EXAMPLE
+\fB\-p\fR
+\fB/dev/pilot\fR
+\fB\-f\fR
+\fB$HOME/MyTodoList.txt\fR
+.SH AUTHOR
+\fIinstall-todo\fR was originally written by
+Martin Fick, based on code in \fIinstall-todos\fR by
+Robert A. Kaplan.
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIpilot-link\fR (7).

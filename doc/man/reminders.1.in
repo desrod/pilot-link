@@ -1,0 +1,79 @@
+.\" -*- coding: us-ascii -*-
+.TH reminders 1 "@VERSION@"  
+.SH NAME
+reminders \- Exports your Palm Datebook database into a 'remind' data file format. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIreminders\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-w\fR|\fB\-\-write\fR]
+.SH DESCRIPTION
+Your Datebook database will be written to STDOUT as it is converted
+unless redirected to a file.
+.SH OPTIONS
+.SS "REMINDERS OPTIONS"
+\fB\-w\fR, \fB\-\-write\fR
+.RS 
+Write out the datebook database.
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR\fBport\fR
+.RS 
+Use device file \fBport\fR to communicate with
+the Palm handheld. If this is not specified,
+\fIreminders \fRwill look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIreminders \fRwill
+print the usage information.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fIreminders \fR
+and exit without connecting.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fIreminders \fR
+and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH AUTHOR
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIhttp://www.roaringpenguin.com/penguin/open_source_remind.php\fR
+.PP
+\fIpilot-link\fR (7)

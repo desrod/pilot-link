@@ -1,0 +1,77 @@
+.\" -*- coding: us-ascii -*-
+.TH pi-csd 1 "@VERSION@"  
+.SH NAME
+pi-csd \- Connection Service Daemon for Palm Devices
+.SH SECTION
+pilot-link: Tools
+.SH SYNOPSIS
+Required for accepting logons via NetSync(tm)
+.PP
+\fIpi-csd\fR
+\fB\-H\fR
+\fB"localhost"\fR
+\fB\-a\fR
+\fB127.0.0.1\fR
+\fB\-n\fR
+\fB255.255.255.0\fR
+.SH OPTIONS
+.SS "PI-CSD OPTIONS"
+\fB\-\-version\fR
+.RS 
+Display version of \fIpi-csd\fR and exit.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress messages.
+.RE
+.PP
+\fB\-H\fR, \fB\-\-hostname\fR
+.RS 
+The hostname used for verification
+.RE
+.PP
+\fB\-a\fR, \fB\-\-address\fR
+.RS 
+name or IP address of the host
+.RE
+.PP
+\fB\-n\fR, \fB\-\-netmask\fR
+.RS 
+The subnet mask of the address.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fIpi-csd\fR and
+exit.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit.
+.RE
+.SH AUTHOR
+\fIpi-csd\fR was written by Kenneth Albanowski.
+.PP
+This manual page was written by Neil Williams <linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIpilot-link\fR (7).

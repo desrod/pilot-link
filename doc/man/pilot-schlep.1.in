@@ -1,0 +1,119 @@
+.\" -*- coding: us-ascii -*-
+.TH pilot-schlep 1 "@VERSION@"  
+.SH NAME
+pilot-schlep \- Package up any arbitrary file and sync it to your Palm device. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fIpilot-schlep\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-i\fR|\fB\-\-install\fR \fBfile\fR]
+[\fB\-f\fR|\fB\-\-fetch\fR \fBfile\fR]
+[\fB\-d\fR|\fB\-\-delete\fR]
+.SH DESCRIPTION
+Currently the stored name and file type is not queried so you can
+potentially Install a PDF file, and retrieve it as a ZIP file.
+.PP
+You must take care to remember what type of file you are
+installing and fetching. This will be updated in a later release to
+handle this type of
+capability, as well as handle multiple 'Schlep' files.
+.SH OPTIONS
+.SS "PILOT-SCHLEP OPTIONS"
+\fB\-i\fR, \fB\-\-install\fR \fBfile\fR
+.RS 
+Pack and install \fBfile\fR to your Palm
+.RE
+.PP
+\fB\-f\fR, \fB\-\-fetch\fR \fBfile\fR
+.RS 
+Unpack the file from your Palm device
+.RE
+.PP
+\fB\-d\fR, \fB\-\-delete\fR
+.RS 
+Delete the packaged file from your Palm device
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR\fBport\fR
+.RS 
+Use device file \fBport\fR to communicate with
+the Palm handheld. If this is not specified,
+\fIpilot-schlep\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIpilot-schlep\fR will
+print the usage information.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fIpilot-schlep\fR.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for
+\fIpilot-schlep\fR.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH EXAMPLES
+To package up and store a file for later retrieval on your Palm:
+.PP
+.nf
+
+         \fBpilot\-schlep\fR \-p /dev/pilot \-i InstallThis.zip
+      
+.fi
+.PP
+To unpack a file that has been stored on your Palm with pilot-schlep:
+.PP
+.nf
+
+         \fBpilot\-schlep\fR \-p /dev/pilot \-f RetrieveThis.pdf
+      
+.fi
+.PP
+Please notice that you must use redirection to Install or Fetch files
+using pilot-schlep.
+.PP
+Currently the stored name and file type is not queried so you can
+potentially Install a PDF file, and retrieve it as a ZIP file.
+.PP
+You must take care to remember what type of file you are installing and
+fetching. This will be updated in a later release to handle this type
+of capability, as well as handle multiple 'Schlep' files.
+.SH AUTHOR
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIpilot-link\fR (7)

@@ -1,0 +1,98 @@
+.\" -*- coding: us-ascii -*-
+.TH money2qif 1 "@VERSION@"  
+.SH NAME
+money2qif \- Convert and sync your MicroMoney account data Quicken QIF format. 
+.SH SECTION
+pilot-link: Conduits
+.SH SYNOPSIS
+\fImoney2qif\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-a\fR|\fB\-\-account\fR \fBSTRING\fR]
+.SH DESCRIPTION
+\fImoney2qif\fR is used to convert and sync your
+MicroMoney
+account data Quicken QIF format.
+.PP
+Please see http://www.techstop.com.my/MicroMoney.htm for more
+information
+on MicroMoney.
+.PP
+NOTE: MicroMoney is no longer supported or supplied by Landware,
+and has
+been superceded by PocketQuicken. There is no PocketQuicken conduit in
+pilot-link.
+.SH EXAMPLE
+\fB\-p\fR
+\fB/dev/pilot\fR
+\fB\-a\fR
+\fBBankGlobal\fR
+.SH OPTIONS
+.SS "MONEY2QIF OPTION"
+\fB\-a\fR,
+\fB\-\-account\fR \fBSTRING\fR
+.RS 
+The name of the Account category in MicroMoney.
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIinstall-expenses\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIinstall-expenses\fR will
+print the usage information.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 
+Display the copyright information,version number, licence
+details
+and build details and exit without connecting.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.SS "HELP OPTIONS"
+\fB\-?\fR, \fB\-\-help\fR
+.RS 
+Show the help message and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH AUTHOR
+\fImoney2qif\fR was written by Rui Oliveira and
+Kenneth Albanowski.
+.PP
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIinstall-memo\fR(1),
+\fIpilot-link\fR(7)

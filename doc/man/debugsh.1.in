@@ -1,0 +1,70 @@
+.\" -*- coding: us-ascii -*-
+.TH debugsh 1 "@VERSION@"  
+.SH NAME
+debugsh \- Simple debugging console for a Palm Handheld device (deprecated). 
+.SH SECTION
+pilot-link: Tools
+.SH SYNOPSIS
+\fBdebugsh\fR
+\fB/dev/tty<0..n>\fR
+.SH DESCRIPTION
+(deprecated)\fIdebugsh\fR is a Command-line interface
+to the Palm debug monitor. Use device file
+\fB/dev/tty<0..n>\fR to communicate with the Palm
+handheld. If this is not specified, \fIdebugsh\fR will
+output a simple usage help message.
+.SH "SHELL COMMANDS"
+\fBcoldboot\fR
+.RS 
+Restart your Palm
+.RE
+.PP
+\fBreboot\fR
+.RS 
+Restart your Palm
+.RE
+.PP
+\fBnumdb\fR
+.RS 
+Returns the number of databases on the PDA card.
+.RE
+.PP
+\fBdbinfo\fR
+.RS 
+Returns the names of databases on the Palm.
+.RE
+.PP
+\fBquit\fR
+.RS 
+Quits the debug shell.
+.RE
+.SH USAGE
+The program will connect to your Palm handheld and give the user an
+interactive prompt (a "shell") for executing debugging commands.
+.SH AUTHOR
+This manual page was written by Ludovic Rousseau
+<rousseau@debian.org> for the Debian GNU/Linux
+system.
+.PP
+Updated for pilot-link 0.12 by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIpilot-link\fR (7)

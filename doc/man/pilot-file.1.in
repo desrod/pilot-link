@@ -1,0 +1,117 @@
+.\" -*- coding: us-ascii -*-
+.TH pilot-file 1 "@VERSION@"  
+.SH NAME
+pilot-file \- Dump application and header information from your local PRC/PDB files. 
+.SH SECTION
+pilot-link: Tools
+.SH SYNOPSIS
+\fIpilot-file\fR
+[\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
+[\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
+[\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
+[\fB\-H\fR|\fB\-\-header\fR]
+[\fB\-a\fR|\fB\-\-appinfo\fR]
+[\fB\-s\fR|\fB\-\-sortinfo\fR]
+[\fB\-l\fR|\fB\-\-list\fR]
+[\fB\-r\fR|\fB\-\-record\fR \fBSTRING\fR]
+[\fB\-f\fR|\fB\-\-to\-file\fR]
+[\fB\-d\fR|\fB\-\-dump\fR]
+\fBfilename\fR ...
+.SH DESCRIPTION
+\fIpilot-file\fR is used to
+Dump application and header information from your local PRC/PDB files.
+.PP
+\fIpilot-file\fR does not connect to your Palm.
+.SH OPTIONS
+.SS "PILOT-FILE OPTIONS"
+\fB\-H\fR, \fB\-\-header\fR
+.RS 
+Dump the header of the database(s)
+.RE
+.PP
+\fB\-a\fR, \fB\-\-appinfo\fR
+.RS 
+Dump app_info segment of the database(s)
+.RE
+.PP
+\fB\-s\fR, \fB\-\-sortinfo\fR
+.RS 
+Dump sort_info block of database(s)
+.RE
+.PP
+\fB\-l\fR, \fB\-\-list\fR
+.RS 
+List all records in the database(s)
+.RE
+.PP
+\fB\-r\fR, \fB\-\-record\fR \fBSTRING\fR
+.RS 
+Dump a record by index ('code0') or uid ('1234')
+.RE
+.PP
+\fB\-f\fR, \fB\-\-to\-file\fR
+.RS 
+Same as above but also dump records to files
+.RE
+.PP
+\fB\-d\fR, \fB\-\-dump\fR
+.RS 
+Dump all data and all records, very verbose
+.RE
+.SS "CONDUIT OPTIONS"
+\fB\-p\fR, \fB\-\-port\fR
+<\fBport\fR>
+.RS 
+Use device file <\fBport\fR> to communicate
+with the Palm handheld. If this is not specified,
+\fIpilot-file\fR will look for the
+\fB$PILOTPORT\fR environment variable. If neither
+are
+found or supplied, \fIpilot-file\fR
+will print the usage information.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 
+Suppress 'Hit HotSync button' message
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 
+Display version of \fIpilot-file\fR and exit
+without connecting.
+.RE
+.SS "HELP OPTIONS"
+\fB\-h\fR, \fB\-\-help\fR
+.RS 
+Display the help synopsis for \fIpilot-file\fR
+and exit without connecting.
+.RE
+.PP
+\fB\-\-usage\fR 
+.RS 
+Display a brief usage message and exit without connecting.
+.RE
+.SH AUTHOR
+This manual page was written by Neil Williams
+<linux@codehelp.co.uk>
+.SH "REPORTING BUGS"
+Report bugs at:
+\fIhttp://bugs.pilot-link.org\fR
+.SH COPYRIGHT
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the 
+License, or (at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+USA
+.SH "SEE ALSO"
+\fIpilot-link\fR (7).
