@@ -174,12 +174,26 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 					       (unsigned char) padData)
 					   && (slp->id == ps->xid)
 					   && (len == 0)) {
+#ifdef DEBUG
 					fprintf(stderr, "Missing ack\n");
+#endif
 					/* Incoming padData from response to
 					   this transmission.  Maybe the Ack
-					   was lost */
+					   was lost 
+					 */
+
 					/* Don't consume packet, and return success. */
 					count = 0;
+
+				/* Patch from Christian Mock <cm@coretec.at> to try to 
+				   alleviate the 'Unexpected Packet' errors on some 
+				   machines. Found in http://bugs.debian.org/120459 -DD
+				 */
+					len = 0;
+					count += tlen;
+					flags = 0;
+				/* End Patch */
+						   
 					goto done;
 					return 0;
 				} else if (padp.type == (unsigned char) 4) {
