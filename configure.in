@@ -138,6 +138,17 @@ int main (int argc, char **argv)
 
 	exit (0);
 }], AC_MSG_RESULT(yes); have_iconv=yes, [AC_MSG_RESULT(no);], AC_MSG_RESULT(not cross compiling);)])])
+
+dnl ##  Fixed AC_TRY_RUN warning, missing third argument. -DD 22/01/2002
+dnl
+dnl 	AC_TRY_RUN is a macro that's basically like an if-then-else structure. If
+dnl 	the test program (whose text is the first argument) succeeds, the second
+dnl 	argument is executed; if the test fails, the third argument is executed; and
+dnl 	if autoconf knows it is cross-compiling for another machine and therefore
+dnl 	can't run a test program at all, it doesn't try but just executes the fourth
+dnl 	argument.  Usually that last alternative should be the most conservative
+dnl 	assumption.
+
 CFLAGS="$save_CFLAGS"
 LDFLAGS="$save_LDFLAGS"
 
