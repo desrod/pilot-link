@@ -401,7 +401,7 @@ pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 		data->establishrate = data->rate = 57600;
 	}
 
-	if ((err = data->impl.open(ps, pa, addrlen)) == -1)
+	if ((err = data->impl.open(ps, pa, addrlen)) < 0)
 		return err;	/* errno already set */
 
 	ps->raddr 	= malloc(addrlen);
