@@ -325,7 +325,7 @@ if test "x$enable_userland" != "xno"; then
 
 	AC_MSG_CHECKING(whether to use included popt)
 	if test "x$with_included_popt" = "xyes"; then
-		msg_popt="yes (included)"
+		msg_popt="yes (internal)"
 	    AC_MSG_RESULT(yes)
 		POPT_LIBS='$(top_builddir)/popt/libpopt.la'
 	    POPT_INCLUDES='-I$(top_srcdir)/popt'
