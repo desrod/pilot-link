@@ -1,3 +1,10 @@
+2002-12-3  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pilot-xfer.c: Added feature to sync time with the desktop,
+	  properly excluding OS3.3 devices which are known to hard-reset
+	  when SetSysDate is called (known PalmOS bug) (Belousov Oleg
+	  <oleg@belousov.com>)
+
 2002-12-02  JP Rosevear  <jpr@ximian.com>
 
 	* include/pi-version.h.in: remove HOST_OS substitution, its in

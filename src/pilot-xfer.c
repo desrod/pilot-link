@@ -59,6 +59,7 @@ struct option options[] = {
 	{"backup",      required_argument, NULL, 'b'},
 	{"update",      required_argument, NULL, 'u'},
 	{"sync",        required_argument, NULL, 's'},
+	{"time",        no_argument,       NULL, 't'},
 	{"novsf",       no_argument,       NULL, 'S'},
 	{"restore",     required_argument, NULL, 'r'},
 	{"install",     required_argument, NULL, 'i'},
@@ -79,7 +80,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "-p:hvb:u:s:Sr:i:m:f:d:e:PlLa:x:FOIqc";
+static const char *optstring = "-p:hvb:u:s:tSr:i:m:f:d:e:PlLa:x:FOIqc";
 
 int	novsf	= 0;
 
@@ -526,7 +527,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 	printf("%s backup complete.\n",
 	       (rom == 2 ? "\nOS" : (rom == 1 ? "\nFlash" : "\nRAM")));
 
-	dlp_AddSyncLogEntry(sd, "Backup successful.\nThank you for using pilot-link.");
+	dlp_AddSyncLogEntry(sd, "Backup successful.\nThank you for using pilot-link.\n");
 }
 
 /***********************************************************************
@@ -1077,6 +1078,37 @@ void packInt( byte* dest, unsigned long l, int size ) {
 		l >>= 8;
 	}
 }
+/***********************************************************************
+ *
+ * Function:    Time
+ *
+ * Summary:     Sync time
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void Time(void)
+{
+	time_t  t1,t2;
+	char    text[30];
+	struct  SysInfo s;
+
+	Connect();
+
+	dlp_ReadSysInfo (sd, &s);
+
+	if ((s.romVersion >> 5) != 0x33) {
+		dlp_GetSysDateTime (sd, &t2);
+		t1 = time(NULL);
+		dlp_SetSysDateTime (sd, t1);
+		sprintf(text,"Time sync successful (%i sec).\n",t2-t1);
+		dlp_AddSyncLogEntry(sd, text);
+	} else {
+		dlp_AddSyncLogEntry(sd, "Syncing time will cause the device to\nhard-reset on PalmOS version 3.3!\n");
+	}
+}
 
 /***********************************************************************
  *
@@ -1117,6 +1149,7 @@ static void display_help(char *progname)
 	printf("     -a, --archive           Modifies -s to archive deleted files in specified\n");
 	printf("                             directory.\n");
 	printf("     -x, --exec              Execute a shell command for intermediate processing\n");
+	printf("     -t, --time              Sync the time on the Palm with the desktop time\n");
 	printf("     -F, --Flash             Modifies -b, -u, and -s, to back up non-OS db's\n");
 	printf("                             from Flash ROM\n");
 	printf("     -O, --Osflash           Modifies -b, -u, and -s, to back up OS db 's from\n");
@@ -1186,6 +1219,9 @@ int main(int argc, char *argv[])
 			break;
 		case 's':
 			Backup(optarg, 1, 1, quiet, do_rom, do_unsaved, archive_dir);
+			break;
+		case 't':
+			Time();
 			break;
 		case 'r':
 			Restore(optarg);
