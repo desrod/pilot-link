@@ -535,7 +535,7 @@ if $use_python; then
 	AC_MSG_CHECKING(python development kit)
 
 	PYTHONVER=[`$PYTHON -c "import sys, string; print string.split(sys.version)[0]"`]
-	if `$PYTHON -c "from distutils.core import setup, Extension;"`; then
+	if `$PYTHON -c "from distutils.core import setup, Extension;" > /dev/null 2>&1`; then
 		use_python=true
 		AC_MSG_RESULT(looks good)
 	else
