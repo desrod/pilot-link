@@ -29,6 +29,9 @@
 #include "pi-file.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+void usage(void);
+
 #ifdef sun
 extern char *optarg;
 extern int optind;
@@ -45,9 +48,20 @@ void dump(void *buf, int size);
 
 char *progname;
 
+/***********************************************************************
+ *
+ * Function:    usage
+ *
+ * Summary:     Print the --help screen and app arguments
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void usage(void)
 {
-	PalmHeader();
+	PalmHeader(progname);
 
 	fprintf(stderr, "   Usage: %s [-s] -p|-u dir file\n", progname);
 	fprintf(stderr, "   -p      pack the contents of a directory into the named file\n");
@@ -61,7 +75,6 @@ void usage(void)
 }
 
 int hflag, aflag, sflag, vflag, lflag, rflag, rnum;
-
 int main(int argc, char **argv)
 {
 	struct pi_file *pf;
@@ -133,6 +146,17 @@ int main(int argc, char **argv)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    iso_time_str
+ *
+ * Summary:     POSIX'ified time string
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 char *iso_time_str(time_t t)
 {
 	struct tm tm;
@@ -145,6 +169,17 @@ char *iso_time_str(time_t t)
 	return (buf);
 }
 
+/***********************************************************************
+ *
+ * Function:    dump
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump(void *buf, int n)
 {
 	int i, j, c;
@@ -170,6 +205,17 @@ void dump(void *buf, int n)
 	}
 }
 
+/***********************************************************************
+ *
+ * Function:    dump_header
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump_header(struct pi_file *pf, struct DBInfo *ip)
 {
 	printf("name: \"%s\"\n", ip->name);
@@ -195,9 +241,9 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 	printf("version: %d\n", ip->version);
 
-	printf("creation_time: %s\n", iso_time_str(ip->crdate));
-	printf("modified_time: %s\n", iso_time_str(ip->moddate));
-	printf("backup_time  : %s\n", iso_time_str(ip->backupdate));
+	printf("creation_time: %s\n", iso_time_str(ip->createDate));
+	printf("modified_time: %s\n", iso_time_str(ip->modifyDate));
+	printf("backup_time  : %s\n", iso_time_str(ip->backupDate));
 
 	printf("modification_number: %ld\n", ip->modnum);
 	printf("type: '%s', ", printlong(ip->type));
@@ -205,6 +251,17 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    dump_app_info
+ *
+ * Summary:     Dump the AppInfo block of the database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 {
 	void *app_info;
@@ -220,6 +277,17 @@ void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    dump_sort_info
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 {
 	void *sort_info;
@@ -235,6 +303,17 @@ void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    list_records
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void list_records(struct pi_file *pf, struct DBInfo *ip)
 {
 	int entnum;
@@ -285,6 +364,17 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    dump_record
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 {
 	int size;
@@ -319,3 +409,5 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 
 	printf("\n");
 }
+
+

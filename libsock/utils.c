@@ -53,6 +53,17 @@
 
 /* this routine ruthlessly stolen verbatim from Brian J. Swetland */
 
+/***********************************************************************
+ *
+ * Function:    crc16
+ *
+ * Summary:     Implementation of the CRC16 Cyclic Redundancy Check
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int crc16(unsigned char *ptr, int count)
 {
 	int crc, i;
@@ -70,6 +81,17 @@ int crc16(unsigned char *ptr, int count)
 }
 
 #ifndef HAVE_STRDUP
+/***********************************************************************
+ *
+ * Function:    strdup
+ *
+ * Summary:     Duplicate a string
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 char *strdup(const char *string)
 {
 	size_t length;
@@ -99,7 +121,18 @@ char *strdup(const char *string)
 extern char **environ;
 #endif
 
-/* Put STRING, which is of the form "NAME=VALUE", in the environment.  */
+/***********************************************************************
+ *
+ * Function:    putenv
+ *
+ * Summary:     Put STRING, which is of the form "NAME=VALUE", in the
+ *		environment
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int putenv(const char *string)
 {
 	const char *const name_end = strchr(string, '=');
@@ -153,6 +186,17 @@ int putenv(const char *string)
 #endif
 
 #ifndef HAVE_INET_ATON
+/***********************************************************************
+ *
+ * Function:    inet_aton
+ *
+ * Summary:     Manipulate our network address information
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int inet_aton(const char *cp, struct in_addr *addr)
 {
 	register u_long val;

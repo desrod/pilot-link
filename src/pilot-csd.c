@@ -42,6 +42,21 @@
 char hostname[130];
 struct in_addr address, netmask;
 
+/* Declare prototypes */
+void Help(char *progname);
+void fetch_host(char *hostname, int hostlen, struct in_addr *address, struct in_addr *mask);
+
+/***********************************************************************
+ *
+ * Function:    Help
+ *
+ * Summary:     Uh, the -help, of course
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Help(char *progname)
 {
 	PalmHeader(progname);
@@ -88,10 +103,17 @@ void Help(char *progname)
 # endif
 #endif
 
-/* While this function is useful in pi-csd, it is intended also to be a
-   demonstration of the proper (or improper, if I'm unlucky) techniques to
-   retrieve networking information. */
-
+/***********************************************************************
+ *
+ * Function:    fetch_host
+ *
+ * Summary:     Retrieve the networking information from the host
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void
 fetch_host(char *hostname, int hostlen, struct in_addr *address,
 	   struct in_addr *mask)
@@ -240,8 +262,8 @@ int main(int argc, char *argv[])
 {
 	int sockfd;
 	struct sockaddr_in serv_addr, cli_addr;
-	int clilen;
-	char mesg[1026];
+	unsigned int clilen;
+	unsigned char mesg[1026];
 	fd_set rset;
 	int n;
 	struct in_addr raddress;
@@ -357,7 +379,7 @@ int main(int argc, char *argv[])
 
 		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
 			struct in_addr ip, mask;
-			char *name = mesg + 12;
+			unsigned char *name = mesg + 12;
 
 			memcpy(&ip, mesg + 4, 4);
 			memcpy(&mask, mesg + 8, 4);
@@ -373,7 +395,7 @@ int main(int argc, char *argv[])
 					fprintf(stderr, " = accept.\n");
 
 				set_byte(mesg + 2, 0x02);
-				memcpy(mesg + 4, &address, 4);	/* address is already in motorola byte order */
+				memcpy(mesg + 4, &address, 4);	/* address is already in Motorola byte order */
 				n = sendto(sockfd, mesg, n, 0,
 					   (struct sockaddr *) &cli_addr,
 					   clilen);
@@ -389,8 +411,7 @@ int main(int argc, char *argv[])
 
 	      invalid:
 		if (!quiet)
-			fprintf(stderr, "invalid packet of %d bytes:\n",
-				n);
+			fprintf(stderr, "invalid packet of %d bytes:\n", n);
 		dumpdata(mesg, n);
 	}
 

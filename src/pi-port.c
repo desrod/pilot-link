@@ -23,6 +23,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -31,18 +37,26 @@
 #include "pi-slp.h"
 #include "pi-header.h"
 
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+/* Declare prototypes */
+void sigint(int num);
+void do_read(struct pi_socket *ps, int type, char *buffer, int length);
 
 void sigint(int num)
 {
 	*((char *) 0) = 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    do_read
+ *
+ * Summary:     Read the incoming data from the network socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 {
 	int len;
@@ -151,7 +165,7 @@ int main(int argc, char *argv[])
 		int max;
 		fd_set rset, wset, eset, oset;
 		struct sockaddr_in conn_addr;
-		int connlen = sizeof(conn_addr);
+		unsigned int connlen = sizeof(conn_addr);
 		int sent;
 
 		fd = accept(serverfd, (struct sockaddr *) &conn_addr,

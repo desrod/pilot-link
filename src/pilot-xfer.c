@@ -20,11 +20,10 @@
  */
 
 /* A few minor modifications, done April 19, 1998 by David H. Silber:
- *   Implemented a ``--version'' (or `-v') option to indicate which version
- *     of pilot-link a particular executable is from.
- * Added a ``--help'' alias for the `-h' option.
- * Added error checking to prevent ``Segmentation fault (core dumped)''
- *   when an unreadable exclude file is specified.
+    Implemented a ``--version'' (or `-v') option to indicate which version
+    of pilot-link a particular executable is from.  Added a ``--help'' alias
+    for the `-h' option.  Added error checking to prevent ``Segmentation
+    fault (core dumped)'' when an unreadable exclude file is specified.
  */
 
 #include <stdio.h>
@@ -55,6 +54,17 @@ int numexclude = 0;
 
 RETSIGTYPE SigHandler(int signal);
 
+/***********************************************************************
+ *
+ * Function:    MakeExcludeList
+ *
+ * Summar:      Excludes a list of dbnames from the operation called
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 void MakeExcludeList(char *efile)
 {
 	char temp[1024];
@@ -75,7 +85,18 @@ void MakeExcludeList(char *efile)
 	}
 }
 
-/* Protect = and / in filenames */
+/***********************************************************************
+ *
+ * Function:    protect_name
+ *
+ * Summary:     Protects filenames and paths which include 'illegal' 
+ *              characters, such as '/' and '=' in them. 
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 static void protect_name(char *d, char *s)
 {
 	while (*s) {
@@ -111,6 +132,17 @@ static void protect_name(char *d, char *s)
 	*d = '\0';
 }
 
+/***********************************************************************
+ *
+ * Function:    Connect
+ *
+ * Summary:     Establish the connection with the device
+ *
+ * Parameters:  None
+ *
+ * Return:      Nothing
+ *
+ ***********************************************************************/
 void Connect(void)
 {
 	struct pi_sockaddr addr;
@@ -164,6 +196,17 @@ void Connect(void)
 	fprintf(stderr, "Connected...\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    Disconnect
+ *
+ * Summary:     Disconnect from the device and close the open socket
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/ 
 void Disconnect(void)
 {
 	if (sd == 0)
@@ -184,6 +227,17 @@ RETSIGTYPE SigHandler(int signal)
 	exit(3);
 }
 
+/***********************************************************************
+ *
+ * Function:    VoidSyncFlags
+ *
+ * Summary:     Get the last PCID and lastSyncTime from the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/ 
 void VoidSyncFlags(void)
 {
 	struct PilotUser U;
@@ -200,6 +254,17 @@ void VoidSyncFlags(void)
 	}
 }
 
+/***********************************************************************
+ *
+ * Function:    RemoveFromList
+ *
+ * Summary:     Remove the excluded files from the op list
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void RemoveFromList(char *name, char **list, int max)
 {
 	int i;
@@ -212,6 +277,17 @@ void RemoveFromList(char *name, char **list, int max)
 	}
 }
 
+/***********************************************************************
+ *
+ * Function:    creator_is_PalmOS
+ *
+ * Summary:     Nothing
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int creator_is_PalmOS(long creator)
 {
 	union {
@@ -245,6 +321,17 @@ int creator_is_PalmOS(long creator)
 	return 1;
 }
 
+/***********************************************************************
+ *
+ * Function:    Backup
+ *
+ * Summary:     Build a filelist and back up the Palm to destination
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 	    int quiet, int do_rom, int unsaved, char *archive_dir)
 {
@@ -330,8 +417,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 			/* printf("Skipcheck:%s:%s:\n",exclude[x],info.name); */
 			if (strcmp(exclude[x], info.name) == 0) {
 				printf("Excluding '%s'...\n", name);
-				RemoveFromList(name, orig_files,
-					       ofile_total);
+				RemoveFromList(name, orig_files, ofile_total);
 				skip = 1;
 			}
 		}
@@ -341,13 +427,11 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 
 		if (rom == 1 && creator_is_PalmOS(info.creator)) {
 			if (!quiet)
-				printf("OS file, skipping '%s'.\n",
-				       info.name);
+				printf("OS file, skipping '%s'.\n", info.name);
 			continue;
 		} else if (rom == 2 && !creator_is_PalmOS(info.creator)) {
 			if (!quiet)
-				printf("Non-OS file, skipping '%s'.\n",
-				       info.name);
+				printf("Non-OS file, skipping '%s'.\n", info.name);
 			continue;
 		}
 
@@ -362,11 +446,8 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 			if (stat(name, &statb) == 0) {
 				if (info.modifyDate == statb.st_mtime) {
 					if (!quiet)
-						printf
-						    ("No change, skipping '%s'.\n",
-						     info.name);
-					RemoveFromList(name, orig_files,
-						       ofile_total);
+						printf("No change, skipping '%s'.\n", info.name);
+					RemoveFromList(name, orig_files, ofile_total);
 					continue;
 				}
 			}
@@ -420,25 +501,14 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 				if (remove_deleted) {
 
 					if (archive_dir) {
-						printf("Archiving '%s'.\n",
-						       orig_files[i]);
-						sprintf(newname, "%s/%s",
-							archive_dir,
-							&orig_files[i]
-							[dirname_len + 1]);
-						if (rename
-						    (orig_files[i],
-						     newname) != 0) {
-							fprintf(stderr,
-								"rename(%s, %s) ",
-								orig_files
-								[i],
-								newname);
+						printf("Archiving '%s'.\n", orig_files[i]);
+						sprintf(newname, "%s/%s", archive_dir, &orig_files[i] [dirname_len + 1]);
+						if (rename (orig_files[i], newname) != 0) {
+							fprintf(stderr, "rename(%s, %s) ", orig_files [i], newname);
 							perror("failed");
 						}
 					} else {
-						printf("Removing '%s'.\n",
-						       orig_files[i]);
+						printf("Removing '%s'.\n", orig_files[i]); 
 						unlink(orig_files[i]);
 					}
 				}
@@ -452,6 +522,17 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int rom,
 	       (rom == 2 ? "OS" : (rom == 1 ? "Flash" : "RAM")));
 }
 
+/***********************************************************************
+ *
+ * Function:    Fetch
+ *
+ * Summary:     Grab a file from the Palm, write to disk
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Fetch(char *dbname)
 {
 	struct DBInfo info;
@@ -478,7 +559,7 @@ void Fetch(char *dbname)
 	/* Judd - Graffiti hack 
 	   Graffiti ShortCuts with a space on the end or not is really
 	   supposed to be the same file, so we will treat it as such to
-	   avoid confusion.  remove the space.
+	   avoid confusion, remove the space.
 	 */
 	if (strcmp(name, "Graffiti ShortCuts ") == 0) {
 		strcpy(name, "Graffiti ShortCuts");
@@ -509,6 +590,17 @@ void Fetch(char *dbname)
 	printf("Fetch done.\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    Delete
+ *
+ * Summary:     Delete a database from the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Delete(char *dbname)
 {
 	struct DBInfo info;
@@ -559,6 +651,17 @@ int compare(struct db *d1, struct db *d2)
 	return d1->maxblock < d2->maxblock;
 }
 
+/***********************************************************************
+ *
+ * Function:    Restore
+ *
+ * Summary:     Send files to the Palm from disk, restoring Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Restore(char *dirname)
 {
 	DIR *dir;
@@ -698,6 +801,17 @@ void Restore(char *dirname)
 	printf("Restore done\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    Install
+ *
+ * Summary:     Push file(s) to the Palm from filelist
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Install(char *filename)
 {
 	struct pi_file *f;
@@ -729,6 +843,18 @@ void Install(char *filename)
 	printf("Install done\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    Merge
+ *
+ * Summary:     Adds the records in <file> into the corresponding
+ *		Palm database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Merge(char *filename)
 {
 	struct pi_file *f;
@@ -762,6 +888,17 @@ void Merge(char *filename)
 	printf("Merge done\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    List
+ *
+ * Summary:     List the databases found on the Palm device
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void List(int rom)
 {
 	struct DBInfo info;
@@ -793,6 +930,18 @@ void List(int rom)
 	printf("List done.\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    Purge
+ *
+ * Summary:     Purge any deleted data that hasn't been cleaned up
+ *              by a sync
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Purge(void)
 {
 	struct DBInfo info;
@@ -839,6 +988,17 @@ void Purge(void)
 	printf("Purge done.\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    Help
+ *
+ * Summary:     Print out the --help options and arguments
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Help(void)
 {
 
@@ -892,6 +1052,17 @@ void Help(void)
 	exit(0);
 }
 
+/***********************************************************************
+ *
+ * Function:    Version
+ *
+ * Summary:     Print the version splash
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void Version(void)
 {
 	PalmHeader(progname);

@@ -28,12 +28,34 @@
 #include "pi-dlp.h"
 #include "pi-hinote.h"
 
+/***********************************************************************
+ *
+ * Function:    free_HiNoteNote
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_HiNoteNote(struct HiNoteNote *a)
 {
 	if (a->text)
 		free(a->text);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_HiNoteNote
+ *
+ * Summary:     Unpack a HiNote record
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int unpack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
 {
 	if (len < 3)
@@ -44,6 +66,17 @@ int unpack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
 	return strlen((char *) &buffer[2]) + 3;
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_HiNoteNote
+ *
+ * Summary:     Pack a HiNote record
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
 {
 	int destlen;
@@ -68,6 +101,17 @@ int pack_HiNoteNote(struct HiNoteNote *a, unsigned char *buffer, int len)
 	return destlen;
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_HiNoteAppInfo
+ *
+ * Summary:     Unpack the HiNote AppInfo block
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 		     int len)
@@ -89,6 +133,17 @@ unpack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_HiNoteAppInfo
+ *
+ * Summary:     Pack the HiNote AppInfo block
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_HiNoteAppInfo(struct HiNoteAppInfo *ai, unsigned char *record,
 		   int len)

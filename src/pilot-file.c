@@ -47,6 +47,17 @@ void dump(void *buf, int size);
 
 char *progname;
 
+/***********************************************************************
+ *
+ * Function:    usage
+ *
+ * Summary:     Print out the program usage and arguments
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void usage(void)
 {
 	PalmHeader(progname);
@@ -144,6 +155,17 @@ int main(int argc, char **argv)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    iso_time_str
+ *
+ * Summary:     Build an ISO-compliant date string
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 char *iso_time_str(time_t t)
 {
 	struct tm tm;
@@ -156,6 +178,17 @@ char *iso_time_str(time_t t)
 	return (buf);
 }
 
+/***********************************************************************
+ *
+ * Function:    dump
+ *
+ * Summary:     Dump data as requested by other functions
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump(void *buf, int n)
 {
 	int i, j, c;
@@ -181,6 +214,17 @@ void dump(void *buf, int n)
 	}
 }
 
+/***********************************************************************
+ *
+ * Function:    dump_header
+ *
+ * Summary:     Dump the header section of the database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump_header(struct pi_file *pf, struct DBInfo *ip)
 {
 	printf("name: \"%s\"\n", ip->name);
@@ -214,6 +258,17 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    dump_app_info
+ *
+ * Summary:     Dump the AppInfo segment of the database(s)
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 {
 	void *app_info;
@@ -229,6 +284,17 @@ void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    dump_sort_info
+ *
+ * Summary:     Dump the SortInfo block of the database(s)
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 {
 	void *sort_info;
@@ -244,6 +310,17 @@ void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    list_records
+ *
+ * Summary:     List all records in the database(s)
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void list_records(struct pi_file *pf, struct DBInfo *ip)
 {
 	int entnum;
@@ -305,6 +382,17 @@ void list_records(struct pi_file *pf, struct DBInfo *ip)
 	printf("\n");
 }
 
+/***********************************************************************
+ *
+ * Function:    dump_record
+ *
+ * Summary:     Dump a record
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void dump_record(struct pi_file *pf, struct DBInfo *ip)
 {
 	int size;

@@ -30,6 +30,8 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+void Connect(void), Disconnect(void), Delete(void), Install(void), Fetch(void), Help(void); 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 int sd = 0;

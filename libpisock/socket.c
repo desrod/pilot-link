@@ -48,6 +48,18 @@
 #include <process.h>
 static long alm_countdown = -1;
 static void *alm_tid = 0;
+
+/***********************************************************************
+ *
+ * Function:    alarm_thread
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void alarm_thread(void *unused)
 {
 	long av;
@@ -62,6 +74,18 @@ void alarm_thread(void *unused)
 		ExitThread(0);
 	}
 }
+
+/***********************************************************************
+ *
+ * Function:    alarm
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 unsigned alarm(unsigned sec)
 {
 	long ret = alm_countdown;
@@ -96,6 +120,17 @@ static RETSIGTYPE pi_serial_onalarm(int signo);
 static int interval = 0;
 static int busy = 0;
 
+/***********************************************************************
+ *
+ * Function:    default_socket_connect
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 default_socket_connect(struct pi_socket *ps, struct sockaddr *addr,
 		       int flag)
@@ -103,11 +138,35 @@ default_socket_connect(struct pi_socket *ps, struct sockaddr *addr,
 	errno = ENOSYS;
 	return -1;
 }
+
+/***********************************************************************
+ *
+ * Function:    default_socket_listen
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int default_socket_listen(struct pi_socket *ps, int flag)
 {
 	errno = ENOSYS;
 	return -1;
 }
+
+/***********************************************************************
+ *
+ * Function:    default_socket_accept
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 default_socket_accept(struct pi_socket *ps, struct sockaddr *addr,
 		      int *flag)
@@ -115,21 +174,69 @@ default_socket_accept(struct pi_socket *ps, struct sockaddr *addr,
 	errno = ENOSYS;
 	return -1;
 }
+
+/***********************************************************************
+ *
+ * Function:    default_socket_close
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int default_socket_close(struct pi_socket *ps)
 {
 	return 0;
 }
+
+/***********************************************************************
+ *
+ * Function:    default_socket_tickle
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int default_socket_tickle(struct pi_socket *ps)
 {
 	errno = ENOSYS;
 	return -1;
 }
+
+/***********************************************************************
+ *
+ * Function:    default_socket_bind
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 default_socket_bind(struct pi_socket *ps, struct sockaddr *addr, int flag)
 {
 	errno = ENOSYS;
 	return -1;
 }
+
+/***********************************************************************
+ *
+ * Function:    default_socket_send
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 default_socket_send(struct pi_socket *ps, void *buf, int len,
 		    unsigned int flags)
@@ -137,6 +244,18 @@ default_socket_send(struct pi_socket *ps, void *buf, int len,
 	errno = ENOSYS;
 	return -1;
 }
+
+/***********************************************************************
+ *
+ * Function:    default_socket_recv
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 default_socket_recv(struct pi_socket *ps, void *buf, int len,
 		    unsigned int flags)
@@ -145,8 +264,17 @@ default_socket_recv(struct pi_socket *ps, void *buf, int len,
 	return -1;
 }
 
-/* Create a local connection endpoint */
-
+/***********************************************************************
+ *
+ * Function:    pi_socket
+ *
+ * Summary:     Create a local connection endpoint
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_socket(int domain, int type, int protocol)
 {
 	struct pi_socket *ps;
@@ -234,6 +362,17 @@ int pi_socket(int domain, int type, int protocol)
 	return ps->sd;
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_socket_recognize
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void pi_socket_recognize(struct pi_socket *ps)
 {
 	struct pi_socket *p;
@@ -247,8 +386,17 @@ void pi_socket_recognize(struct pi_socket *ps)
 	}
 }
 
-/* Connect to a remote server */
-
+/***********************************************************************
+ *
+ * Function:    pi_connect
+ *
+ * Summary:     Connect to a remote server
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
@@ -284,8 +432,17 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 	return -1;
 }
 
-/* Bind address to a local socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_bind
+ *
+ * Summary:     Bind address to a local socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
@@ -321,8 +478,17 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 	return -1;
 }
 
-/* Wait for an incoming connection */
-
+/***********************************************************************
+ *
+ * Function:    pi_listen
+ *
+ * Summary:     Wait for an incoming connection
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_listen(int pi_sd, int backlog)
 {
 	struct pi_socket *ps;
@@ -335,8 +501,17 @@ int pi_listen(int pi_sd, int backlog)
 	return ps->socket_listen(ps, backlog);
 }
 
-/* Accept an incoming connection */
-
+/***********************************************************************
+ *
+ * Function:    pi_accept
+ *
+ * Summary:     Accept an incoming connection
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
 {
 	struct pi_socket *ps;
@@ -351,6 +526,17 @@ int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
 	return ps->socket_accept(ps, addr, addrlen);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_accept_to
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
 {
@@ -366,7 +552,17 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
 	return ps->socket_accept(ps, addr, addrlen);
 }
 
-/* Set the maximum connection speed of the socket */
+/***********************************************************************
+ *
+ * Function:    pi_setmaxspeed
+ *
+ * Summary:     Set the maximum connection speed of the socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_setmaxspeed(int pi_sd, int speed, int overclock)
 {
 	struct pi_socket *ps;
@@ -387,6 +583,17 @@ int pi_setmaxspeed(int pi_sd, int speed, int overclock)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_getsockopt
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_getsockopt(int pi_sd, int level, int option_name, void *option_value,
 	      int *option_len)
@@ -418,8 +625,17 @@ pi_getsockopt(int pi_sd, int level, int option_name, void *option_value,
 	return -1;
 }
 
-/* Send msg on a connected socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_send
+ *
+ * Summary:     Send message on a connected socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
 {
 	struct pi_socket *ps;
@@ -435,8 +651,17 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
 	return ps->socket_send(ps, msg, len, flags);
 }
 
-/* Recv msg on a connected socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_recv
+ *
+ * Summary:     Receive msg on a connected socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
 {
 	struct pi_socket *ps;
@@ -449,22 +674,50 @@ int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
 	return ps->socket_recv(ps, msg, len, flags);
 }
 
-/* Wrapper for recv */
-
+/***********************************************************************
+ *
+ * Function:    pi_read
+ *
+ * Summary:     Wrapper for receive
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_read(int pi_sd, void *msg, int len)
 {
 	return pi_recv(pi_sd, msg, len, 0);
 }
 
-/* Wrapper for send */
 
+/***********************************************************************
+ *
+ * Function:    pi_write
+ *
+ * Summary:     Wrapper for send
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_write(int pi_sd, void *msg, int len)
 {
 	return pi_send(pi_sd, msg, len, 0);
 }
 
-/* Tickle a stream connection */
-
+/***********************************************************************
+ *
+ * Function:    pi_tickle
+ *
+ * Summary:     Tickle a stream connection
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_tickle(int pi_sd)
 {
 	struct pi_socket *ps;
@@ -477,8 +730,17 @@ int pi_tickle(int pi_sd)
 	return ps->socket_tickle(ps);
 }
 
-/* Close a connection, destroy the socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_close
+ *
+ * Summary:     Close a connection, destroy the socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_close(int pi_sd)
 {
 	int result;
@@ -512,8 +774,17 @@ int pi_close(int pi_sd)
 	return result;
 }
 
-/* Install an atexit handler that closes open sockets */
-
+/***********************************************************************
+ *
+ * Function:    pi_onexit
+ *
+ * Summary:     Install an atexit handler that closes open sockets
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void pi_onexit(void)
 {
 	struct pi_socket *p, *n;
@@ -527,6 +798,17 @@ void pi_onexit(void)
 
 }
 
+/***********************************************************************
+ *
+ * Function:    installexit
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void installexit(void)
 {
 	static int installedexit = 0;
@@ -537,8 +819,17 @@ void installexit(void)
 	installedexit = 1;
 }
 
-/* Get the local address for a socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_getsockname
+ *
+ * Summary:     Get the local address for a socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_getsockname(int pi_sd, struct sockaddr *addr, int *namelen)
 {
 	struct pi_socket *ps;
@@ -555,8 +846,17 @@ int pi_getsockname(int pi_sd, struct sockaddr *addr, int *namelen)
 	return 0;
 }
 
-/* Get the remote address for a socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_getsockpeer
+ *
+ * Summary:     Get the remote address for a socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
 {
 	struct pi_socket *ps;
@@ -573,6 +873,17 @@ int pi_getsockpeer(int pi_sd, struct sockaddr *addr, int *namelen)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_version
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_version(int pi_sd)
 {
 	struct pi_socket *ps;
@@ -585,6 +896,17 @@ int pi_version(int pi_sd)
 	return ps->version;
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_socket
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 struct pi_socket *find_pi_socket(int sd)
 {
 	struct pi_socket *p;
@@ -597,6 +919,17 @@ struct pi_socket *find_pi_socket(int sd)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_watchdog
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_watchdog(int pi_sd, int newinterval)
 {
 	struct pi_socket *ps;
@@ -613,6 +946,17 @@ int pi_watchdog(int pi_sd, int newinterval)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_serial_onalarm
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static RETSIGTYPE pi_serial_onalarm(int signo)
 {
 	struct pi_socket *p, *n;

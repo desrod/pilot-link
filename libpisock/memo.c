@@ -28,12 +28,34 @@
 #include "pi-dlp.h"
 #include "pi-memo.h"
 
+/***********************************************************************
+ *
+ * Function:    free_Memo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_Memo(struct Memo *a)
 {
 	if (a->text)
 		free(a->text);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_Memo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int unpack_Memo(struct Memo *a, unsigned char *buffer, int len)
 {
 	if (len < 1)
@@ -42,6 +64,17 @@ int unpack_Memo(struct Memo *a, unsigned char *buffer, int len)
 	return strlen((char *) buffer) + 1;
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_Memo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_Memo(struct Memo *a, unsigned char *buffer, int len)
 {
 	int destlen = (a->text ? strlen(a->text) : 0) + 1;
@@ -61,6 +94,17 @@ int pack_Memo(struct Memo *a, unsigned char *buffer, int len)
 	}
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_MemoAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
 {
@@ -81,6 +125,17 @@ unpack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_MemoAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_MemoAppInfo(struct MemoAppInfo *ai, unsigned char *record, int len)
 {

@@ -101,7 +101,17 @@ int dlp_trace = 0;
 #endif
 
 #if 0
-/* Eventual code to dynamically allocate buffer */
+/***********************************************************************
+ *
+ * Function:    dlp_buffer
+ *
+ * Summary:     Code to dynamically allocate buffer
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void *dlp_buffer(int sd, int cmd, int arg, int arglen,
 		 struct pi_socket *ps)
 {
@@ -220,6 +230,17 @@ dlp_exec(int sd, int cmd, int arg, const unsigned char /* @null@ */ *msg,
    applied both way, there is no immediate problem.
    -- KJA */
 
+/***********************************************************************
+ *
+ * Function:    dlp_ptohdate
+ *
+ * Summary:     Palm to "Human Date" format
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static time_t dlp_ptohdate(unsigned const char *data)
 {
 	struct tm t;
@@ -251,6 +272,17 @@ static time_t dlp_ptohdate(unsigned const char *data)
 	return mktime(&t);
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_htopdate
+ *
+ * Summary:     "Human Date" to Palm format
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void dlp_htopdate(time_t time, unsigned char *data)
 {				/* @+ptrnegate@ */
 	struct tm *t = localtime(&time);
@@ -273,6 +305,17 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 	return;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_GetSysDateTime
+ *
+ * Summary:     DLP 1.0 GetSysDateTime function
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_GetSysDateTime(int sd, time_t * t)
 {
 	unsigned char buf[8];
@@ -295,6 +338,17 @@ int dlp_GetSysDateTime(int sd, time_t * t)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_SetSysDateTime
+ *
+ * Summary:     DLP 1.0 SetSysDateTime function
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_SetSysDateTime(int sd, time_t time)
 {
 	unsigned char buf[8];
@@ -366,6 +420,17 @@ int dlp_SetSysDateTime(int sd, time_t time)
 #define sizeof_SIRequest		(2)
  /* end struct SIRequest */
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadStorageInfo
+ *
+ * Summary:     DLP 1.0 ReadStorageInfo to read ROM/RAM regions
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 {
 	int result;
@@ -425,6 +490,17 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadSysInfo
+ *
+ * Summary:     Read the System Information (memory, battery, etc.) 
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ReadSysInfo(int sd, struct SysInfo *s)
 {
 	int result;
@@ -455,6 +531,17 @@ int dlp_ReadSysInfo(int sd, struct SysInfo *s)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadDBList
+ *
+ * Summary:     Iterate through the list of databases on the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadDBList(int sd, int cardno, int flags, int start,
 	       struct DBInfo *info)
@@ -549,6 +636,18 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 	return result;
 }
 
+
+/***********************************************************************
+ *
+ * Function:    dlp_FindDBInfo
+ *
+ * Summary:     Search for a database on the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	       unsigned long type, unsigned long creator,
@@ -597,6 +696,17 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_OpenDB
+ *
+ * Summary:     Open the database for read/write/delete/mod
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 {
 	unsigned char handle;
@@ -643,6 +753,17 @@ int dlp_OpenDB(int sd, int cardno, int mode, char *name, int *dbhandle)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_DeleteDB
+ *
+ * Summary:     Delete the database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_DeleteDB(int sd, int card, const char *name)
 {
 	int result;
@@ -668,6 +789,17 @@ int dlp_DeleteDB(int sd, int card, const char *name)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_CreateDB
+ *
+ * Summary:     Create a database on the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	     int version, const char *name, int *dbhandle)
@@ -735,6 +867,17 @@ dlp_CreateDB(int sd, long creator, long type, int cardno, int flags,
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_CloseDB
+ *
+ * Summary:     Close the open database handle
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_CloseDB(int sd, int dbhandle)
 {
 	unsigned char handle = (unsigned char) dbhandle;
@@ -768,6 +911,17 @@ int dlp_CloseDB_All(int sd)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_CallApplication
+ *
+ * Summary:     Call an application entry point via an action code
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		    int action, int length, void *data,
@@ -883,6 +1037,17 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ResetSystem
+ *
+ * Summary:     Reset the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ResetSystem(int sd)
 {
 	int result;
@@ -896,6 +1061,17 @@ int dlp_ResetSystem(int sd)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_AddSyncLogEntry
+ *
+ * Summary:     Add text to the Palm's synchronization log
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_AddSyncLogEntry(int sd, char *entry)
 {
 	int result;
@@ -918,6 +1094,17 @@ int dlp_AddSyncLogEntry(int sd, char *entry)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadOpenDBInfo
+ *
+ * Summary:     Get information on an open database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 {
 	unsigned char buf[2];
@@ -948,6 +1135,17 @@ int dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_MoveCategory
+ *
+ * Summary:     Move a record from one position to another
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 {
 	int result;
@@ -973,6 +1171,17 @@ int dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_OpenConduit
+ *
+ * Summary:     This command is sent before each conduit is opened
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_OpenConduit(int sd)
 {
 	int result;
@@ -986,6 +1195,17 @@ int dlp_OpenConduit(int sd)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_EndOfSync
+ *
+ * Summary:     End the sync
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_EndOfSync(int sd, int status)
 {
 	int result;
@@ -1014,6 +1234,17 @@ int dlp_EndOfSync(int sd, int status)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_AbortSync
+ *
+ * Summary:     Enters a sync_aborted entry into the log
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_AbortSync(int sd)
 {
 	struct pi_socket *ps;
@@ -1032,6 +1263,17 @@ int dlp_AbortSync(int sd)
 	return pi_close(sd);
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_WriteUserInfo
+ *
+ * Summary:     Saves user information in a file or to stdout
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_WriteUserInfo(int sd, struct PilotUser *User)
 {
 	int result;
@@ -1067,6 +1309,17 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadUserInfo
+ *
+ * Summary:     Read user information from the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ReadUserInfo(int sd, struct PilotUser *User)
 {
 	int result;
@@ -1114,6 +1367,17 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadNetSyncInfo
+ *
+ * Summary:     Read Network HotSync settings from the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
 	int result;
@@ -1155,6 +1419,17 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_WriteNetSyncInfo
+ *
+ * Summary:     Write Network HotSync settings to the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 {
 	int result;
@@ -1201,6 +1476,17 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo *i)
 }
 
 #ifdef _PILOT_SYSPKT_H
+/***********************************************************************
+ *
+ * Function:    dlp_RPC
+ *
+ * Summary:     Remote Procedure Calls interface
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 {
 	int i;
@@ -1278,6 +1564,17 @@ int dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 	return err;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadFeature
+ *
+ * Summary:     Read a feature from Feature Manager on the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 		unsigned long *feature)
@@ -1367,6 +1664,17 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 }
 #endif				/* IFDEF _PILOT_SYSPKT_H */
 
+/***********************************************************************
+ *
+ * Function:    dlp_ResetLastSyncPC
+ *
+ * Summary:     Reset the LastSyncPC ID so we can start again
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ResetLastSyncPC(int sd)
 {
 	struct PilotUser U;
@@ -1378,6 +1686,17 @@ int dlp_ResetLastSyncPC(int sd)
 	return dlp_WriteUserInfo(sd, &U);
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ResetDBIndex
+ *
+ * Summary:     Reset the modified records index
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ResetDBIndex(int sd, int dbhandle)
 {
 	int result;
@@ -1401,6 +1720,17 @@ int dlp_ResetDBIndex(int sd, int dbhandle)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadRecordIDList
+ *
+ * Summary:     Read in a list of RecordIDs from the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Returns a list of unique RecordIDs
+ *
+ ***********************************************************************/
 int
 dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 		     recordid_t * IDs, int *count)
@@ -1450,6 +1780,17 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 	return nbytes;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_WriteRecord
+ *
+ * Summary:     Writes a new record to database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 		int catID, void *data, int length, recordid_t * NewID)
@@ -1520,6 +1861,17 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_DeleteRecord
+ *
+ * Summary:     Deletes a record from the database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 {
 	int result;
@@ -1547,6 +1899,18 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_DeleteCategory
+ *
+ * Summary:     Delete all records in a category. The category name 
+ *		is not changed.
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_DeleteCategory(int sd, int dbhandle, int category)
 {
 	int result;
@@ -1601,6 +1965,17 @@ int dlp_DeleteCategory(int sd, int dbhandle, int category)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadResourceByType
+ *
+ * Summary:     Read the record resources by ResourceID
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 		       void *buffer, int *index, int *size)
@@ -1648,6 +2023,17 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 	return result - 10;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadResourceByIndex
+ *
+ * Summary:     Read the record resources by IndexID
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
 			unsigned long *type, int *id, int *size)
@@ -1696,6 +2082,17 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, void *buffer,
 	return result - 10;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_WriteResource
+ *
+ * Summary:     Write out the data
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
 		  const void *data, int length)
@@ -1733,6 +2130,17 @@ dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_DeleteResource
+ *
+ * Summary:     Delete a single resource from the database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 		   int resID)
@@ -1761,6 +2169,17 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadAppBlock
+ *
+ * Summary:     Read the AppInfo block
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 {
 	int result;
@@ -1798,6 +2217,17 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	return result - 2;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_WriteAppBlock
+ *
+ * Summary:     Write the AppInfo block
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 		      int length)
 {
@@ -1831,6 +2261,17 @@ int dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadSortBlock
+ *
+ * Summary:     Read the SortBlock that matches the database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 {
@@ -1867,6 +2308,17 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	return result - 2;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_WriteSortBlock
+ *
+ * Summary:     Write the SortBlock that matches the database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 		       int length)
 {
@@ -1900,6 +2352,18 @@ int dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_CleanUpDatabase
+ *
+ * Summary:     Deletes all records which are marked as archived or 
+ *		deleted in the record database
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int dlp_CleanUpDatabase(int sd, int fHandle)
 {
 	int result;
@@ -1940,6 +2404,17 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadNextRecInCategory
+ *
+ * Summary:     Iterate through all records in category
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 			  void *buffer, recordid_t * id, int *index,
@@ -2066,6 +2541,17 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 	return result - 10;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadAppPreference
+ *
+ * Summary:     Read application preference
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 		      int maxsize, void *buffer, int *size, int *version)
@@ -2163,6 +2649,17 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int id, int backup,
 	return get_short(dlp_buf + 4);
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_WriteAppPreference
+ *
+ * Summary:     Write application preference
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 		       int version, void *buffer, int size)
@@ -2238,6 +2735,17 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadNextModifiedRecInCategory
+ *
+ * Summary:     Iterate through modified records in category
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 				  void *buffer, recordid_t * id,
@@ -2342,6 +2850,17 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 	return result - 10;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadNextModifiedRec
+ *
+ * Summary:     Iterate through modified records in category
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
 			int *index, int *size, int *attr, int *category)
@@ -2408,6 +2927,17 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer, recordid_t * id,
 	return result - 10;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadRecordById
+ *
+ * Summary:     Searches device database for match on a record by id
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 		   int *index, int *size, int *attr, int *category)
@@ -2480,6 +3010,17 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 	return result - 10;
 }
 
+/***********************************************************************
+ *
+ * Function:    dlp_ReadRecordByIndex
+ *
+ * Summary:     Searches device database for match on a record by index
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 dlp_ReadRecordByIndex(int sd, int fHandle, int index, void *buffer,
 		      recordid_t * id, int *size, int *attr, int *category)

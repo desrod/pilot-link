@@ -29,6 +29,10 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+void Help(char *progname);
+RETSIGTYPE sighandler(int signo);
+
 void Help(char *progname)
 {
 	fprintf(stderr, "   Usage: %s %s [pilot.rom]\n\n", progname,

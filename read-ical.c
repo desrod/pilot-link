@@ -31,6 +31,9 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+char *tclquote(char *in);
+
 char *tclquote(char *in)
 {
 	static char *buffer = 0;

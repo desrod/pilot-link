@@ -36,6 +36,11 @@
 
 int done = 0;
 
+/* Declare prototypes */
+void read_user(int sd);
+void read_pilot(int sd);
+void sig(int signal);
+
 void read_user(int sd)
 {
 	char line[256];

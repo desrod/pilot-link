@@ -44,8 +44,6 @@ int main(int argc, char *argv[])
 	char *progname = argv[0];
 	char *device = argv[1];
 
-//   PalmHeader(progname);
-
 	if (argc < 2) {
 		fprintf(stderr,
 			"   Assigns your Palm device a user name and unique userid\n\n");

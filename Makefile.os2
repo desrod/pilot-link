@@ -77,7 +77,7 @@ WITHTCL = $(TCLEXECS)
 WITHCXX = $(CXXEXECS)
 WITHPERL5 = $(PERLEXECS)
 
-CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
+CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-prc$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
 		install-memo$(EXT) install-user$(EXT) install-datebook$(EXT)\
 		install-todos$(EXT) pilot-addresses$(EXT) pilot-clip$(EXT)\
 		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT) $(CCEXECS) \
@@ -204,6 +204,9 @@ pi-getram$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pi-getram.o
 
 pilot-file$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-file.o
 	$(CCLINK) pilot-file.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
+
+pilot-prc$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-prc.o
+	$(CCLINK) pilot-prc.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
 
 pilot-clip$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-clip.o
 	$(CCLINK) pilot-clip.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)

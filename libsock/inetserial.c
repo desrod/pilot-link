@@ -49,6 +49,17 @@ static int n_close(struct pi_socket *ps);
 static int n_write(struct pi_socket *ps);
 static int n_read(struct pi_socket *ps, int timeout);
 
+/***********************************************************************
+ *
+ * Function:    pi_inetserial_open
+ *
+ * Summary:     Open up a socket outbound for network connectivity
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr,
 		   int addrlen)
@@ -106,6 +117,17 @@ pi_inetserial_open(struct pi_socket *ps, struct sockaddr *addr,
 	return ps->mac->fd;
 }
 
+/***********************************************************************
+ *
+ * Function:    n_changebaud
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int n_changebaud(struct pi_socket *ps)
 {
 	char buffer[20];
@@ -119,6 +141,17 @@ static int n_changebaud(struct pi_socket *ps)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    n_close
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int n_close(struct pi_socket *ps)
 {
 	int result;
@@ -140,6 +173,17 @@ static int n_close(struct pi_socket *ps)
 	return result;
 }
 
+/***********************************************************************
+ *
+ * Function:    n_write
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int n_write(struct pi_socket *ps)
 {
 	struct pi_skb *skb;
@@ -186,6 +230,17 @@ static int n_write(struct pi_socket *ps)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    n_read
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int n_read(struct pi_socket *ps, int timeout)
 {
 	int r;

@@ -27,6 +27,17 @@
 #include "pi-dlp.h"
 #include "pi-todo.h"
 
+/***********************************************************************
+ *
+ * Function:    free_ToDo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_ToDo(struct ToDo *a)
 {
 	if (a->description)
@@ -35,6 +46,17 @@ void free_ToDo(struct ToDo *a)
 		free(a->note);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_ToDo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 {
 	unsigned long d;
@@ -102,6 +124,17 @@ int unpack_ToDo(struct ToDo *a, unsigned char *buffer, int len)
 	return (buffer - start);	/* FIXME: return real length */
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_ToDo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
 {
 	int pos;
@@ -151,6 +184,17 @@ int pack_ToDo(struct ToDo *a, unsigned char *buf, int len)
 	return pos;
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_ToDoAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 {
@@ -171,6 +215,17 @@ unpack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_ToDoAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_ToDoAppInfo(struct ToDoAppInfo *ai, unsigned char *record, int len)
 {

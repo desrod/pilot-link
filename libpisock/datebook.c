@@ -40,6 +40,17 @@ char *DatebookRepeatTypeNames[] =
    dom2ndSun 	= REM Sun 8 
    domLastSun 	= REM Sun 1 -7 */
 
+/***********************************************************************
+ *
+ * Function:    free_Appointment
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_Appointment(struct Appointment *a)
 {
 	if (a->exception)
@@ -50,6 +61,17 @@ void free_Appointment(struct Appointment *a)
 		free(a->note);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_Appointment
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 {
@@ -214,6 +236,17 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 	return (p2 - buffer);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_Appointment
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 {
 	int iflags;
@@ -345,6 +378,17 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 	return ((long) pos - (long) buf);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_AppointmentAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
 			  unsigned char *record, int len)
@@ -362,6 +406,17 @@ unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
 	return i + 2;
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_AppointmentAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
 			unsigned char *record, int len)

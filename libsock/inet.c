@@ -55,6 +55,17 @@ static int pi_net_close(struct pi_socket *ps);
 
 extern int dlp_trace;
 
+/***********************************************************************
+ *
+ * Function:    pi_inet_connect
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
@@ -154,7 +165,17 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	return 0;
 }
 
-/* Bind address to a local socket */
+/***********************************************************************
+ *
+ * Function:    pi_inet_bind
+ *
+ * Summary:     Bind address to a local socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
 	int opt, optlen;
@@ -258,15 +279,33 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	return 0;
 }
 
-/* Wait for an incoming connection */
-
+/***********************************************************************
+ *
+ * Function:    pi_net_listen
+ *
+ * Summary:     Wait for an incoming connection
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int pi_net_listen(struct pi_socket *ps, int backlog)
 {
 	return listen(ps->sd, backlog);
 }
 
-/* Accept an incoming connection */
-
+/***********************************************************************
+ *
+ * Function:    pi_net_accept
+ *
+ * Summary:     Accept an incoming connection
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 pi_net_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
@@ -304,8 +343,17 @@ pi_net_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	return -1;
 }
 
-/* Send msg on a connected socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_net_send
+ *
+ * Summary:     Send msg on a connected socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 pi_net_send(struct pi_socket *ps, void *msg, int len, unsigned int flags)
 {
@@ -347,8 +395,17 @@ pi_net_send(struct pi_socket *ps, void *msg, int len, unsigned int flags)
 	return len;
 }
 
-/* Recv msg on a connected socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_net_recv
+ *
+ * Summary:     Receive message on a connected socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 pi_net_recv(struct pi_socket *ps, void *msg, int len, unsigned int flags)
 {
@@ -418,13 +475,33 @@ pi_net_recv(struct pi_socket *ps, void *msg, int len, unsigned int flags)
 	return len;
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_net_tickle
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int pi_net_tickle(struct pi_socket *ps)
 {
 	return -1;
 }
 
-/* Close a connection, destroy the socket */
-
+/***********************************************************************
+ *
+ * Function:    pi_net_close
+ *
+ * Summary:     Close a connection, destroy the socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int pi_net_close(struct pi_socket *ps)
 {
 	if (ps->type == PI_SOCK_STREAM) {

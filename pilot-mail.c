@@ -39,6 +39,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -46,12 +52,16 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+/* Declare prototypes */
+void markline(char *msg);
+int openmhmsg(char *dir, int num);
+int getpopchar(int socket);
+int getpopstring(int socket, char *buf);
+int getpopresult(int socket, char *buf);
+char *skipspace(char *c);
+void header(struct Mail *m, char *t);
+void Help(char *progname);
+void sigint(int num);
 
 extern time_t parsedate(char *p);
 

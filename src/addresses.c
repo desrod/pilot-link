@@ -33,8 +33,26 @@
 #include "pi-header.h"
 
 int sd = 0;
+void Disconnect(void);
 
 RETSIGTYPE SigHandler(int signal);
+
+void Disconnect(void)
+{
+	if (sd == 0)
+		return;
+
+	dlp_EndOfSync(sd, 0);
+	pi_close(sd);
+	sd = 0;
+}
+
+RETSIGTYPE SigHandler(int signal)
+{
+	puts("   Abort on signal!");
+	Disconnect();
+	exit(3);
+}
 
 int main(int argc, char *argv[])
 {
@@ -167,21 +185,4 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 
 	return 0;
-}
-
-void Disconnect(void)
-{
-	if (sd == 0)
-		return;
-
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-	sd = 0;
-}
-
-RETSIGTYPE SigHandler(int signal)
-{
-	puts("   Abort on signal!");
-	Disconnect();
-	exit(3);
 }

@@ -28,6 +28,17 @@
 #include "pi-dlp.h"
 #include "pi-appinfo.h"
 
+/***********************************************************************
+ *
+ * Function:    unpack_CategoryAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
 		       int len)
@@ -56,6 +67,17 @@ unpack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
 	return 2 + 16 * 16 + 16 + 4;
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_CategoryAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
 		     int len)

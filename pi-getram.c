@@ -31,6 +31,10 @@
 
 char *progname;
 
+/* Declare prototypes */
+void Help(void);
+RETSIGTYPE sighandler(int signo);
+
 void Help(void)
 {
 	fprintf(stderr, "usage: %s %s [-c] [pilot.ram]\n", progname,

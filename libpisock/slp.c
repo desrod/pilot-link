@@ -29,8 +29,17 @@
 #include "pi-socket.h"
 #include "pi-slp.h"
 
-/* Build and queue up an SLP packet to be transmitted */
-
+/***********************************************************************
+ *
+ * Function:    slp_tx
+ *
+ * Summary:     Build and queue up an SLP packet to be transmitted
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
 {
 	struct pi_skb *skb;
@@ -82,6 +91,17 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
    to keep a pile of status info while it builds frames for itself.  So
    here's the code that does that. */
 
+/***********************************************************************
+ *
+ * Function:    slp_rx
+ *
+ * Summary:     Accept SLP packets on the wire, kludgy workaround
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int slp_rx(struct pi_socket *ps)
 {
 	int i;
@@ -221,6 +241,17 @@ int slp_rx(struct pi_socket *ps)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    slp_dump
+ *
+ * Summary:     Dump the contents of the SPL frame
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void slp_dump(struct pi_skb *skb, int rxtx)
 {
 #ifdef DEBUG

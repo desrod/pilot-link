@@ -31,6 +31,17 @@
 char *MailSortTypeNames[] = { "Date", "Type", NULL };
 char *MailSyncTypeNames[] = { "All", "Send", "Filter", NULL };
 
+/***********************************************************************
+ *
+ * Function:    free_Mail
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_Mail(struct Mail *a)
 {
 	if (a->from)
@@ -51,12 +62,34 @@ void free_Mail(struct Mail *a)
 		free(a->body);
 }
 
+/***********************************************************************
+ *
+ * Function:    free_MailAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_MailAppInfo(struct MailAppInfo *a)
 {
 	/* if (a->signature)
 	   free(a->signature); */
 }
 
+/***********************************************************************
+ *
+ * Function:    free_MailSyncPref
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_MailSyncPref(struct MailSyncPref *a)
 {
 	if (a->filterTo);
@@ -67,12 +100,34 @@ void free_MailSyncPref(struct MailSyncPref *a)
 	free(a->filterSubject);
 }
 
+/***********************************************************************
+ *
+ * Function:    free_MailSignaturePref
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_MailSignaturePref(struct MailSignaturePref *a)
 {
 	if (a->signature);
 	free(a->signature);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_Mail
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
 {
 	unsigned long d;
@@ -193,6 +248,17 @@ int unpack_Mail(struct Mail *a, unsigned char *buffer, int len)
 	return (buffer - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_Mail
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
 {
 	unsigned char *start = buffer;
@@ -293,6 +359,17 @@ int pack_Mail(struct Mail *a, unsigned char *buffer, int len)
 	return (buffer - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_MailAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 {
@@ -320,6 +397,17 @@ unpack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_MailAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 {
@@ -357,6 +445,17 @@ pack_MailAppInfo(struct MailAppInfo *ai, unsigned char *record, int len)
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_MailSyncPref
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_MailSyncPref(struct MailSyncPref *a, unsigned char *record, int len)
 {
@@ -393,6 +492,17 @@ unpack_MailSyncPref(struct MailSyncPref *a, unsigned char *record, int len)
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_MailSyncPref
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record, int len)
 {
@@ -443,6 +553,17 @@ pack_MailSyncPref(struct MailSyncPref *ai, unsigned char *record, int len)
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_MailSignaturePref
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_MailSignaturePref(struct MailSignaturePref *a,
 			 unsigned char *record, int len)
@@ -459,6 +580,17 @@ unpack_MailSignaturePref(struct MailSignaturePref *a,
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_MailSignaturePref
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_MailSignaturePref(struct MailSignaturePref *ai, unsigned char *record,
 		       int len)

@@ -25,6 +25,11 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+void Help(char *progname);
+int compare_r(const void *av, const void *bv);
+
+/* Print usage instructions */
 void Help(char *progname)
 {
 	fprintf(stderr, "   Usage: %s %s dbname [dbname ...]\n\n",
@@ -41,6 +46,17 @@ struct record {
 	struct record *next;
 };
 
+/***********************************************************************
+ *
+ * Function:    compare_r
+ *
+ * Summary:     Compare records
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int compare_r(const void *av, const void *bv)
 {
 	struct record *a = *(struct record **) av;

@@ -46,6 +46,8 @@ int exit_fn(int sd, int argc, char **argv);
 char *strtoke(char *str, char *ws, char *delim);
 void exit_func(void);
 void sigexit(int sig);
+char *timestr(time_t t);
+void handle_user_commands(int sd);
 
 typedef int (*cmd_fn_t) (int, int, char **);
 
@@ -73,6 +75,17 @@ int exit_fn(int sd, int argc, char **argv)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    help_fn
+ *
+ * Summary:     Handle the parsing of -h inside dlpsh>
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int help_fn(int sd, int argc, char **argv)
 {
 	int i;
@@ -86,6 +99,18 @@ int help_fn(int sd, int argc, char **argv)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    user_fn
+ *
+ * Summary:     Set the username, UserID and PCID on the device, 
+ *		similar to install-user, but interactive
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int user_fn(int sd, int argc, char **argv)
 {
 	struct PilotUser U, nU;
@@ -159,6 +184,17 @@ int user_fn(int sd, int argc, char **argv)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    timestr
+ *
+ * Summary:     Build an ISO-compliant time string for use later
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 char *timestr(time_t t)
 {
 	struct tm tm;
@@ -171,7 +207,18 @@ char *timestr(time_t t)
 	return (buf);
 }
 
-/* Simple dump of CardInfo, which includes the RAM/ROM and manufacturer */
+/***********************************************************************
+ *
+ * Function:    df_fn
+ *
+ * Summary:     Simple dump of CardInfo, which includes the RAM/ROM 
+ * 		and manufacturer
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int df_fn(int sd, int argc, char **argv)
 {
 	struct CardInfo C;
@@ -199,6 +246,18 @@ int df_fn(int sd, int argc, char **argv)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    time_fn
+ *
+ * Summary:     ntpdate-style function for setting Palm time from
+ *		desktop clock
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int time_fn(int sd, int argc, char **argv)
 {
 
@@ -222,6 +281,17 @@ int time_fn(int sd, int argc, char **argv)
 
 }
 
+/***********************************************************************
+ *
+ * Function:    ls_fn
+ *
+ * Summary:     Similar to unix ls, lists files with -l and -r
+ *
+ * Parmeters:   -l for long and -r for ram
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int ls_fn(int sd, int argc, char **argv)
 {
 	int c, k, ret;
@@ -313,6 +383,17 @@ int ls_fn(int sd, int argc, char **argv)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    rm_fn
+ *
+ * Summary:     Similar to unix rm, deletes a database from the Palm
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int rm_fn(int sd, int argc, char **argv)
 {
 	int ret;
@@ -339,7 +420,17 @@ int rm_fn(int sd, int argc, char **argv)
 	return (0);
 }
 
-/* parse user commands and do the right thing.. */
+/***********************************************************************
+ *
+ * Function:    handle_user_commands
+ *
+ * Summary:     Parse user commands and arguments
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void handle_user_commands(int sd)
 {
 	char buf[256];
@@ -448,6 +539,17 @@ void sigexit(int sig)
 	exit(0);
 }
 
+/***********************************************************************
+ *
+ * Function:    exit_func
+ *
+ * Summary:     That's all folks, clean up and exit
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void exit_func(void)
 {
 #ifdef DEBUG
@@ -459,6 +561,17 @@ void exit_func(void)
 	pi_close(sd);
 }
 
+/***********************************************************************
+ *
+ * Function:    strtoke
+ *
+ * Summary:     Strip out path delimiters in arguments and filenames
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 char *strtoke(char *str, char *ws, char *delim)
 {
 	static char *s, *start;

@@ -28,6 +28,9 @@
 extern char *optarg;
 extern int optind;
 
+/* Declare prototypes */
+int usage(char *progname);
+
 #define PILOTPORT "/dev/pilot"
 
 int usage(char *progname)

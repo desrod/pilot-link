@@ -38,6 +38,17 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 static int so_write(struct pi_socket *ps);
 static int so_read(struct pi_socket *ps, int timeout);
 
+/***********************************************************************
+ *
+ * Function:    pi_serial_open
+ *
+ * Summary:     Open the serial port and establish a connection
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
@@ -75,6 +86,17 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	return ((int) fd);
 }
 
+/***********************************************************************
+ *
+ * Function:    so_changebaud
+ *
+ * Summary:     Change the speed on the file handle
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int so_changebaud(struct pi_socket *ps)
 {
 	HANDLE fd = (HANDLE) ps->mac->fd;
@@ -82,6 +104,17 @@ int so_changebaud(struct pi_socket *ps)
 	return win_changebaud(fd, ps->rate);
 }
 
+/***********************************************************************
+ *
+ * Function:    win_changebaud
+ *
+ * Summary:     Change the connection parameters on Win32
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int win_changebaud(HANDLE fd, int rate)
 {
 	BOOL rc;
@@ -99,19 +132,19 @@ static int win_changebaud(HANDLE fd, int rate)
 	ctmoCommPort.WriteTotalTimeoutConstant = 500;
 	SetCommTimeouts(fd, &ctmoCommPort);
 
-	dcbCommPort.DCBlength = sizeof(DCB);
+	dcbCommPort.DCBlength 		= sizeof(DCB);
 	GetCommState(fd, &dcbCommPort);
-	dcbCommPort.BaudRate = rate;
-	dcbCommPort.fOutxCtsFlow = (rate > 9600) ? TRUE : FALSE;	// CTS output flow control 
-	dcbCommPort.fOutxDsrFlow = 0;	// DSR output flow control 
-	dcbCommPort.fDtrControl = DTR_CONTROL_ENABLE;	// DTR flow control type 
-	dcbCommPort.fRtsControl = (rate > 9600) ? RTS_CONTROL_HANDSHAKE : RTS_CONTROL_ENABLE;	// RTS flow control type 
-	dcbCommPort.fTXContinueOnXoff = 0;	// XOFF continues Tx 
-	dcbCommPort.fOutX = 0;	// XON/XOFF out flow control 
-	dcbCommPort.fInX = 0;	// XON/XOFF in flow control 
-	dcbCommPort.ByteSize = 8;
-	dcbCommPort.Parity = NOPARITY;	// no parity
-	dcbCommPort.StopBits = 0;	// 1 stop bit
+	dcbCommPort.BaudRate 		= rate;
+	dcbCommPort.fOutxCtsFlow 	= (rate > 9600) ? TRUE : FALSE;		// CTS output flow control 
+	dcbCommPort.fOutxDsrFlow 	= 0;					// DSR output flow control 
+	dcbCommPort.fDtrControl 	= DTR_CONTROL_ENABLE;			// DTR flow control type 
+	dcbCommPort.fRtsControl 	= (rate > 9600) ? RTS_CONTROL_HANDSHAKE : RTS_CONTROL_ENABLE;	// RTS flow control type 
+	dcbCommPort.fTXContinueOnXoff 	= 0;					// XOFF continues Tx 
+	dcbCommPort.fOutX 		= 0;					// XON/XOFF out flow control 
+	dcbCommPort.fInX 		= 0;					// XON/XOFF in flow control 
+	dcbCommPort.ByteSize 		= 8;
+	dcbCommPort.Parity 		= NOPARITY;				// no parity
+	dcbCommPort.StopBits 		= 0;					// 1 stop bit
 
 	rc = SetCommState(fd, &dcbCommPort);
 
@@ -123,6 +156,17 @@ static int win_changebaud(HANDLE fd, int rate)
 		return -1;
 }
 
+/***********************************************************************
+ *
+ * Function:    so_close
+ *
+ * Summary:     Close the open socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_close(struct pi_socket *ps)
 {
 #ifndef NO_SERIAL_TRACE
@@ -133,6 +177,17 @@ static int so_close(struct pi_socket *ps)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    so_write
+ *
+ * Summary:     Write to the open socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_write(struct pi_socket *ps)
 {
 	struct pi_skb *skb;
@@ -174,6 +229,17 @@ static int so_write(struct pi_socket *ps)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    so_read
+ *
+ * Summary:     Read incoming data from the socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_read(struct pi_socket *ps, int timeout)
 {
 	int r;
@@ -221,7 +287,17 @@ static int so_read(struct pi_socket *ps, int timeout)
 	return 0;
 }
 
-/* Wait for incoming connection from Palm device */
+/***********************************************************************
+ *
+ * Function:    win_peek
+ *
+ * Summary:     Wait for incoming connection from Palm device
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int win_peek(struct pi_socket *ps, int timeout)
 {
 	int time = timeout;

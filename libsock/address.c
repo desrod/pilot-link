@@ -41,6 +41,17 @@ void free_Address(struct Address *a)
 #define lo(x) ((x) & 0x0f)
 #define pair(x,y) (((x) << 4) | (y))
 
+/***********************************************************************
+ *
+ * Function:    unpack_Address
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int unpack_Address(struct Address *a, unsigned char *buffer, int len)
 {
 	unsigned long contents;
@@ -87,6 +98,17 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
 	return (buffer - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_Address
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_Address(struct Address *a, unsigned char *record, int len)
 {
 	unsigned char *start = record;
@@ -140,6 +162,17 @@ int pack_Address(struct Address *a, unsigned char *record, int len)
 	return (buffer - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_AddressAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 		      int len)
@@ -180,6 +213,17 @@ unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_AddressAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 		    int len)

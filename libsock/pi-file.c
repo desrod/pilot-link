@@ -148,17 +148,49 @@ static void pi_file_free(struct pi_file *pf);
    return those.
    --KJA */
 
+/***********************************************************************
+ *
+ * Function:    pilot_time_to_unix_time
+ *
+ * Summary:     Convert the Palm time to Unix time
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static time_t pilot_time_to_unix_time(unsigned long raw_time)
 {
 	return (time_t) (raw_time - PILOT_TIME_DELTA);
 }
 
+/***********************************************************************
+ *
+ * Function:    unix_time_to_pilot_time
+ *
+ * Summary:     Convert Unix time to Palm time
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static unsigned long unix_time_to_pilot_time(time_t t)
 {
 	return (unsigned long) ((unsigned long) t + PILOT_TIME_DELTA);
 }
 
-/* open .prc or .pdb file for reading */
+/***********************************************************************
+ *
+ * Function:    pi_file
+ *
+ * Summary:     Open .prc or .pdb file for reading
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 struct pi_file *pi_file_open(char *name)
 {
 	struct pi_file *pf;
@@ -341,6 +373,17 @@ struct pi_file *pi_file_open(char *name)
 	return (NULL);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_close
+ *
+ * Summary:     Close the open file handle
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_close(struct pi_file *pf)
 {
 	int err;
@@ -360,6 +403,17 @@ int pi_file_close(struct pi_file *pf)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_free
+ *
+ * Summary:     Flush and clean the file handles used
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void pi_file_free(struct pi_file *pf)
 {
 	if (pf->f)
@@ -379,12 +433,34 @@ static void pi_file_free(struct pi_file *pf)
 	free(pf);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_get_info
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_get_info(struct pi_file *pf, struct DBInfo *infop)
 {
 	*infop = pf->info;
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_get_app_info
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_get_app_info(struct pi_file *pf, void **datap, int *sizep)
 {
 	*datap = pf->app_info;
@@ -392,6 +468,17 @@ int pi_file_get_app_info(struct pi_file *pf, void **datap, int *sizep)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_get_sort_info
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_get_sort_info(struct pi_file *pf, void **datap, int *sizep)
 {
 	*datap = pf->sort_info;
@@ -399,6 +486,17 @@ int pi_file_get_sort_info(struct pi_file *pf, void **datap, int *sizep)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_set_rbuf_size
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
 {
 	int new_size;
@@ -423,6 +521,17 @@ static int pi_file_set_rbuf_size(struct pi_file *pf, int size)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_find_resource_by_type_id
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 pi_file_find_resource_by_type_id(struct pi_file *pf,
 				 unsigned long type, int id, int *idxp)
@@ -445,6 +554,17 @@ pi_file_find_resource_by_type_id(struct pi_file *pf,
 	return (-1);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_read_resource_by_type_id
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_file_read_resource_by_type_id(struct pi_file *pf, unsigned long type,
 				 int id, void **bufp, int *sizep,
@@ -462,12 +582,34 @@ pi_file_read_resource_by_type_id(struct pi_file *pf, unsigned long type,
 	return (-1);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_type_id_used
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_type_id_used(struct pi_file *pf, unsigned long type, int id)
 {
 	return (pi_file_find_resource_by_type_id(pf, type, id, NULL) == 0);
 }
 
-/* returned buffer is valid until next call, or until pi_file_close */
+/***********************************************************************
+ *
+ * Function:    pi_file_read_resource
+ *
+ * Summary:     Returned buffer is valid until next call, or until
+ *		pi_file_close
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_file_read_resource(struct pi_file *pf, int idx, void **bufp, int *sizep,
 		      unsigned long *type, int *idp)
@@ -505,7 +647,18 @@ pi_file_read_resource(struct pi_file *pf, int idx, void **bufp, int *sizep,
 	return (0);
 }
 
-/* returned buffer is valid until next call, or until pi_file_close */
+/***********************************************************************
+ *
+ * Function:    pi_file_read_record
+ *
+ * Summary:     Returned buffer is valid until next call, or until
+ *		pi_file_close
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_file_read_record(struct pi_file *pf, int idx, void **bufp, int *sizep,
 		    int *attrp, int *catp, pi_uid_t * uidp)
@@ -553,6 +706,17 @@ pi_file_read_record(struct pi_file *pf, int idx, void **bufp, int *sizep,
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_read_record_by_id
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid, void **bufp,
 			  int *sizep, int *idxp, int *attrp, int *catp)
@@ -573,6 +737,17 @@ pi_file_read_record_by_id(struct pi_file *pf, pi_uid_t uid, void **bufp,
 	return (-1);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_id_used
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
 {
 	int idx;
@@ -586,6 +761,17 @@ int pi_file_id_used(struct pi_file *pf, pi_uid_t uid)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_create
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 struct pi_file *pi_file_create(char *name, struct DBInfo *info)
 {
 	struct pi_file *pf;
@@ -617,7 +803,18 @@ struct pi_file *pi_file_create(char *name, struct DBInfo *info)
 	return (NULL);
 }
 
-/* may call these any time before close (even multiple times) */
+/***********************************************************************
+ *
+ * Function:    pi_file_set_info
+ *
+ * Summary:     May call these any time before close (even multiple
+ *		times)
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
 {
 	if (!pf->for_writing)
@@ -632,6 +829,17 @@ int pi_file_set_info(struct pi_file *pf, struct DBInfo *ip)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_set_app_info
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_set_app_info(struct pi_file *pf, void *data, int size)
 {
 	void *p;
@@ -654,6 +862,17 @@ int pi_file_set_app_info(struct pi_file *pf, void *data, int size)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_set_sort_info
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
 {
 	void *p;
@@ -676,8 +895,18 @@ int pi_file_set_sort_info(struct pi_file *pf, void *data, int size)
 	return (0);
 }
 
-/* internal function to extend entry list if necessary, and return a pointer
-   to the next available slot */
+/***********************************************************************
+ *
+ * Function:    pi_file_append_entry
+ *
+ * Summary:     Internal function to extend entry list if necessary, 
+ *		and return a pointer to the next available slot
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static struct pi_file_entry *pi_file_append_entry(struct pi_file *pf)
 {
 	int new_count;
@@ -709,6 +938,17 @@ static struct pi_file_entry *pi_file_append_entry(struct pi_file *pf)
 	return (entp);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_append_resource
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_file_append_resource(struct pi_file *pf, void *buf, int size,
 			unsigned long type, int id)
@@ -732,6 +972,17 @@ pi_file_append_resource(struct pi_file *pf, void *buf, int size,
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_append_record
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_file_append_record(struct pi_file *pf, void *buf, int size, int attrs,
 		      int category, pi_uid_t uid)
@@ -759,6 +1010,17 @@ pi_file_append_record(struct pi_file *pf, void *buf, int size, int attrs,
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_get_entries
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_get_entries(struct pi_file *pf, int *entries)
 {
 	*entries = pf->nentries;
@@ -766,6 +1028,17 @@ int pi_file_get_entries(struct pi_file *pf, int *entries)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_close_for_write
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int pi_file_close_for_write(struct pi_file *pf)
 {
 	FILE *f;
@@ -863,6 +1136,17 @@ static int pi_file_close_for_write(struct pi_file *pf)
 	return (-1);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_retrieve
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 {
 	int db;
@@ -924,6 +1208,17 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 	return dlp_CloseDB(socket, db);
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_install
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_install(struct pi_file *pf, int socket, int cardno)
 {
 	int db;
@@ -1111,6 +1406,17 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	return -1;
 }
 
+/***********************************************************************
+ *
+ * Function:    pi_file_merge
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pi_file_merge(struct pi_file *pf, int socket, int cardno)
 {
 	int db;

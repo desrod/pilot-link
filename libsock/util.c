@@ -32,6 +32,17 @@
 
 #define PILOT_CHARSET "CP1252"
 
+/***********************************************************************
+ *
+ * Function:    convert_ToPilotChar
+ *
+ * Summary:     Convert the iconv desktop data to the Palm equivalent
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 convert_ToPilotChar(const char *charset, const char *text,
 		    int bytes, char **ptext)
@@ -61,6 +72,17 @@ convert_ToPilotChar(const char *charset, const char *text,
 #endif
 }
 
+/***********************************************************************
+ *
+ * Function:    convert_FromPilotChar
+ *
+ * Summary:     Convert from Palm charset to desktop iconv equivalent
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 convert_FromPilotChar(const char *charset, const char *ptext,
 		      int bytes, char **text)

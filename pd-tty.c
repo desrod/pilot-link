@@ -53,7 +53,8 @@ extern int Interactive;
 extern Tcl_Interp *interp;
 
 extern int tty;			/* Non-zero means standard input is a
-				   terminal-like device.  Zero means it's */
+				   terminal-like device.  Zero means it's 
+				   NULL */
 
 #if defined(READLINE_2_1)
 
@@ -77,6 +78,17 @@ static void Exit(ClientData d)
 		puts("");
 }
 
+/***********************************************************************
+ *
+ * Function:    execline
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void execline(char *line)
 {
 	int gotPartial = 0;
@@ -127,6 +139,17 @@ static void execline(char *line)
 				    execline);
 }
 
+/***********************************************************************
+ *
+ * Function:    do_readline
+ *
+ * Summary:     Internal readline routine
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void do_readline(void)
 {
 	char buf[20];
@@ -177,6 +200,17 @@ static void Exit(ClientData d)
 	rl_deprep_terminal();
 }
 
+/***********************************************************************
+ *
+ * Function:    do_readline
+ *
+ * Summary:     Internal readline routine
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void do_readline(void)
 {
 	char buf[20];
@@ -237,7 +271,18 @@ void do_readline(void)
 	Tcl_Eval(interp, buf);
 }
 
-/* Replace internal readline routine that retrieves a character */
+/***********************************************************************
+ *
+ * Function:    rl_getc
+ *
+ * Summary:     Replace internal readline routine that retrieves a 
+ *		character
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int rl_getc(FILE * stream)
 {
 	unsigned char c;
@@ -259,7 +304,18 @@ int rl_getc(FILE * stream)
 	}
 }
 
-/* Replace internal readline routine that gets a character without blocking */
+/***********************************************************************
+ *
+ * Function:    rl_gather_tyi
+ *
+ * Summary:     Replace internal readline routine that gets a character
+ *		without blocking
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void rl_gather_tyi(void)
 {
 	unsigned char c;
@@ -294,15 +350,25 @@ static int gotPartial = 0;
 
 static int mode = 0;
 
+/***********************************************************************
+ *
+ * Function:    do_readline
+ *
+ * Summary:     Process commands from stdin until there's an end-of-file
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void do_readline(void)
 {
 	char buf[20];
 	int exitCode = 0;
 	Tcl_Channel inChannel, outChannel;
 
-	/* Process commands from stdin until there's an end-of-file.  Note
-	   that we need to fetch the standard channels again after every
-	   eval, since they may have been changed. */
+	/* Note that we need to fetch the standard channels again after 
+	   every eval, since they may have been changed. */
 
 	inChannel = Tcl_GetChannel(interp, "stdin", NULL);
 	if (inChannel) {
@@ -338,23 +404,23 @@ void do_readline(void)
 
 
 
-/***
- *  
- * NAME:        StdinProc
+/***********************************************************************
  *
- * DESCRIPTION: This procedure is invoked by the event dispatcher whenever
+ * Function:    StdinProc
+ *
+ * Summary:     This procedure is invoked by the event dispatcher whenever
  *              standard input becomes readable.  It grabs the next line of
  *              input characters, adds them to a command being assembled,
  *              and executes the command if it's complete.
  *
- * ARGUMENTS:   None
+ * Parmeters:   None
  *
- * RETURNS:     None
- * 
- * COMMENTS:    Could be almost arbitrary, depending on the command that's used
- */
-
-/* ARGSUSED */
+ * Returns:     Nothing
+ *
+ * Comments:    Could be almost arbitrary, depending on the command 
+ *		that's used
+ *
+ ***********************************************************************/
 static void StdinProc(clientData, mask)
 ClientData clientData;		/* Not used. */
 int mask;			/* Not used. */
@@ -434,18 +500,19 @@ int mask;			/* Not used. */
 }
 
 
-/***
- *
- * NAME:        Prompt
- *
- * DESCRIPTION: Issue a prompt on standard output, or invoke a script to
- *              issue the prompt
- *
- * ARGUMENTS:   None
- *
- * RETURNS:     Outputs a prompt, Tcl script may be evaluated in interp
- */
 
+/***********************************************************************
+ *
+ * Function:    Prompt
+ *
+ * Summary:     Issue a prompt on standard output, or invoke a script
+ *		to issue the prompt
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Outputs a prompt, Tcl script may be evaluated in interp
+ *
+ ***********************************************************************/
 static void Prompt(interp, partial)
 Tcl_Interp *interp;		/* Interpreter to use for prompting. */
 
@@ -498,6 +565,17 @@ int partial;			/* Non-zero means there already exists a
 
 #endif				/* !USE_READLINE_2_0 and 2_1 */
 
+/***********************************************************************
+ *
+ * Function:    display
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void display(char *text, char *tag, int type)
 {
 	int i;
@@ -523,7 +601,7 @@ void display(char *text, char *tag, int type)
 		if (mode == 0)
 			Tcl_DStringAppend(&disp,
 					  ";.f.t mark unset display", -1);
-		/*printf("Exec |%s|\n", Tcl_DStringValue(&disp)); */
+		/* printf("Exec |%s|\n", Tcl_DStringValue(&disp)); */
 		Tcl_Eval(interp, Tcl_DStringValue(&disp));
 		/* puts(interp->result); */
 		Tcl_DStringFree(&disp);

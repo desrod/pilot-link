@@ -42,6 +42,17 @@ char *ExpenseTypeNames[] =
 	"Snack", "Subway", "Supplies", "Taxi", "Telephone", "Tips", "Tolls", "Train"
 };
 
+/***********************************************************************
+ *
+ * Function:    free_Expense
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_Expense(struct Expense *a)
 {
 	if (a->note)
@@ -56,6 +67,17 @@ void free_Expense(struct Expense *a)
 		free(a->attendees);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_Expense
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 {
 	unsigned long d;
@@ -150,6 +172,17 @@ int unpack_Expense(struct Expense *a, unsigned char *buffer, int len)
 	return (buffer - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_Expense
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_Expense(struct Expense *a, unsigned char *record, int len)
 {
 	unsigned char *buf = record;
@@ -225,6 +258,17 @@ int pack_Expense(struct Expense *a, unsigned char *record, int len)
 	return (buf - record);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_ExpenseAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 		      int len)
@@ -251,6 +295,17 @@ unpack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_ExpenseAppInfo
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 		    int len)
@@ -283,6 +338,17 @@ pack_ExpenseAppInfo(struct ExpenseAppInfo *ai, unsigned char *record,
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_ExpensePref
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 {
@@ -312,6 +378,17 @@ unpack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 	return (record - start);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_ExpensePref
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_ExpensePref(struct ExpensePref *p, unsigned char *record, int len)
 {
 	int i;

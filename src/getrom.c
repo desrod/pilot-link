@@ -21,12 +21,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <termios.h>
 
 #include "pi-source.h"
 #include "pi-serial.h"
 #include "pi-header.h"
 
-#include <termios.h>
+/* Declare prototypes */
+void Help(char *progname);
 
 void Help(char *progname)
 {

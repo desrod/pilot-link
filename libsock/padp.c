@@ -37,6 +37,17 @@
 
 /* @+matchanyintegral@ */
 
+/***********************************************************************
+ *
+ * Function:    padp_tx
+ *
+ * Summary:     Transmit PADP packets
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 /* @-predboolint@ */
 {
@@ -234,6 +245,17 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 #define recStartTimeout 30*1000
 #define recSegTimeout 30*1000
 
+/***********************************************************************
+ *
+ * Function:    padp_rx
+ *
+ * Summary:     Receive PADP packets
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int padp_rx(struct pi_socket *ps, void *buf, int len)
 {
 	struct pi_skb *skb;
@@ -493,6 +515,17 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 	return ouroffset;
 }
 
+/***********************************************************************
+ *
+ * Function:    padp_dump
+ *
+ * Summary:     Dump PADP packets 
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
 {
 #ifdef DEBUG

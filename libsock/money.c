@@ -28,6 +28,17 @@
 #include "pi-dlp.h"
 #include "pi-money.h"
 
+/***********************************************************************
+ *
+ * Function:    unpack_Transaction
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 {
@@ -87,6 +98,17 @@ unpack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 	return (p - buffer);
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_Transaction
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 {
 	unsigned char *p;
@@ -151,6 +173,17 @@ int pack_Transaction(struct Transaction *a, unsigned char *buffer, int len)
 	return (p - buffer);
 }
 
+/***********************************************************************
+ *
+ * Function:    unpack_MoneyAppInfo
+ *
+ * Summary:     Unpack the MoneyManager AppInfo block
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 {
@@ -180,6 +213,17 @@ unpack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 	return i + 603;
 }
 
+/***********************************************************************
+ *
+ * Function:    pack_MoneyAppInfo
+ *
+ * Summary:     Pack the MoneyManager AppInfo block
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pack_MoneyAppInfo(struct MoneyAppInfo *a, unsigned char *buffer, int len)
 {

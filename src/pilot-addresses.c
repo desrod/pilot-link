@@ -28,8 +28,19 @@
 
 #define PILOTPORT "/dev/pilot"
 
-/* Yet more hair: reorganize fields to match visible appearence */
+/* Define prototypes */
+int inchar(FILE * in);
+int read_field(char *dest, FILE * in);
+void outchar(char c, FILE * out);
+int write_field(FILE * out, char *source, int more);
+int match_category(char *buf, struct AddressAppInfo *aai);
+int match_phone(char *buf, struct AddressAppInfo *aai);
+int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
+int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
+void Help(char *progname);
+void Version(void);
 
+/* Yet more hair: reorganize fields to match visible appearence */
 int realentry[19] =
     { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18 };
 

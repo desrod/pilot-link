@@ -49,6 +49,17 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 static int so_write(struct pi_socket *ps);
 static int so_read(struct pi_socket *ps, int timeout);
 
+/***********************************************************************
+ *
+ * Function:    pi_serial_open
+ *
+ * Summary:     Open the serial connection and listen for incoming data
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int
 pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
@@ -138,6 +149,17 @@ struct STR_EXTSETBAUDRATE {
 	UCHAR fraction;
 };
 
+/***********************************************************************
+ *
+ * Function:    so_changebaud
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_changebaud(struct pi_socket *ps)
 {
 	int param_length;
@@ -202,6 +224,17 @@ static int so_changebaud(struct pi_socket *ps)
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    so_close
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_close(struct pi_socket *ps)
 {
 #ifndef NO_SERIAL_TRACE
@@ -213,10 +246,22 @@ static int so_close(struct pi_socket *ps)
 	return (0);
 }
 
-/* values for read_timeout and write_timeout 
-   0           = infinite timeout
-   1 to 65535  = timeout in seconds
-   -1          = dont change timeout */
+/***********************************************************************
+ *
+ * Function:    pi_socket_set_timeout
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ * Comments:    values for read_timeout and write_timeout
+ *                 0           = infinite timeout  
+ *                 1 to 65535  = timeout in seconds
+ *                -1           = dont change timeout
+ *
+ ***********************************************************************/
 static int
 pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 		      int write_timeout)
@@ -305,6 +350,17 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 	return (0);
 }
 
+/***********************************************************************
+ *
+ * Function:    so_write
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_write(struct pi_socket *ps)
 {
 	struct pi_skb *skb;
@@ -348,6 +404,17 @@ static int so_write(struct pi_socket *ps)
 	return 0;
 }
 
+/***********************************************************************
+ *
+ * Function:    so_read
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_read(struct pi_socket *ps, int timeout)
 {
 	int r;

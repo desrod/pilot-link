@@ -50,17 +50,17 @@ void write_memo_in_directory(char *dirname, struct Memo m,
 			     struct MemoAppInfo mai, int category,
 			     int verbose);
 
-/***
+/***********************************************************************
  *
- * NAME:    Help
+ * Function:    Help
  *
- * DESCRIPTION: Outputs the --help options
+ * Summary:     Outputs the program arguments and params
  *
- * ARGUMENTS:  None
+ * Parmeters:   None
  *
- * RETURNS:     Help options 
- */
-
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void
 Help(void)
 {
@@ -337,17 +337,17 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-/***
+/***********************************************************************
  *
- * FUNCTION:    write_memo_mbox
+ * Function:    write_memo_mbox
  *
- * DESCRIPTION: 
+ * Summary:     Write a memo entry to MailDB database
  *
- * PARAMETERS:  None
+ * Parmeters:   None
  *
- * RETURNS:
+ * Returns:     Nothing
  *
- */
+ ***********************************************************************/
 void
 write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 {
@@ -375,19 +375,19 @@ write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 	puts("");
 	puts(m.text);
 }
-/***
- *
- * FUNCTION:    write_memo_in_directory
- *
- * DESCRIPTION: Writes each memo into /$DIR/$CATEGORY/$FILENAME form
- *              after the user specifies the -d /dir/name argument
- *
- * PARAMETERS:  None
- *
- * RETURNS:     Help options
- * 
- */
 
+/***********************************************************************
+ *
+ * Function:    write_memo_in_directory
+ *
+ * Summary:     Writes each memo into /$DIR/$CATEGORY/$FILENAME form
+ *              after the user specifies the -d /dir/name argument  
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void
 write_memo_in_directory(char *dirname, struct Memo m,
 			struct MemoAppInfo mai, int category, int verbose)

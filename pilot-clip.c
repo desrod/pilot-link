@@ -26,6 +26,11 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+void *GetClip(int socket, int type, int *length);
+int SetClip(int socket, int type, void *data, int length);
+
+
 void *GetClip(int socket, int type, int *length)
 {
 	struct RPC_params p;
