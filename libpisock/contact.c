@@ -1,5 +1,8 @@
 /*
- * contact.c:  Translate Palm contact data formats
+ * contact.c: Support for palmOne's Contacts
+ *
+ * Copyright 2004  Joseph Carter
+ * portions of this code are Copyright 2004 Judd Montgomery
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -30,23 +33,15 @@
 #define lo(x) ((x) & 0x0f)
 #define pair(x,y) (((x) << 4) | (y))
 
-/***********************************************************************
- *
- * Function:	free_Contact
- *
- * Summary:		Frees (only) the allocated contents of a Contact.  Call
- *				this when the structure's data is no longer needed.
- *
- * Parameters:	+ *c, the Contact to be disposed of
- *
- * Returns:		Nothing
- *
- ***********************************************************************/
+
 void
-free_Contact (struct Contact *c)
+free_Contact (Contact_t *c)
 {
 	int				i;
 
+	if (c == NULL)
+		return;
+	
 	for (i = 0; i < NUM_CONTACT_ENTRIES; i++)
 		if (c->entry[i])
 			free(c->entry[i]);
@@ -58,23 +53,8 @@ free_Contact (struct Contact *c)
 }
 
 
-/***********************************************************************
- *
- * Function:	unpack_Contact
- *
- * Summary:		Unpacks raw contact data into a common structure for
- *				all known versions of palmOne Contacts
- *
- * Parameters:	+ *c, a Contact structure to fill in
- *				- *buf, a pi_buffer_t containing (only) the raw record
- *				- type, the type field from ContactAppInfo
- *
- * Returns:     0 on success
- *				-1 on error
- *
- ***********************************************************************/
 int
-unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
+unpack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 {
 	int				i;
 	uint32_t		contents1,
@@ -249,29 +229,8 @@ unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 }
 
 
-/***********************************************************************
- *
- * Function:    pack_Contact
- *
- * Summary:     Packs a Contact structure into raw data corresponding to
- *				that of a given version of palmOne Contacts
- *
- *				NOTE: Byte-for-byte reproduction of the original raw
- *				data is not guaranteed.  Moreover, if the target type
- *				does not support a given field in the Contact structure,
- *				that field is simply ignored to allow forward and
- *				backward compatibility.
- *
- * Parameters:  - *c, a Contact structure
- *				+ *buf, a pi_buffer_t to write to
- *				- type, the desired format of the output
- *
- * Returns:     0 on success
- *				-1 on error
- *
- ***********************************************************************/
 int
-pack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
+pack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 {
 	int l, destlen = 17;
 	size_t ofs;
@@ -398,25 +357,21 @@ pack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 }
 
 
-/***********************************************************************
- *
- * Function:    unpack_ContactAppInfo
- *
- * Summary:     Unpacks a raw AppInfo into a usable structure.  palmOne
- *				Contacts 1.0 and 1.1/1.2 are currently supported.
- *
- * Parameters:  + *ai, the ContactAppInfo structure to write
- *				- *buf, a pi_buffer_t containing (only) the raw AppInfo
- *
- * Returns:     0 on success
- *				-1 on error
- *
- ***********************************************************************/
+void
+free_ContactAppInfo (ContactAppInfo_t *ai)
+{
+	if (ai == NULL)
+		return;
+
+	pi_buffer_free (ai->internal);
+	ai->internal = NULL;
+}
+
+
 int
-unpack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
+unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 {
 	int				i,
-					j,
 					destlen;
 	ptrdiff_t		ofs = 0;
 
@@ -450,35 +405,24 @@ unpack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
 		return -1;
 	ofs += i;
 
-	memcpy(ai->internal, buf->data + ofs, 26);
+	ai->internal = pi_buffer_new (26);
+	pi_buffer_append (ai->internal, buf->data + ofs, 26);
 	ofs += 26;
-	memcpy(ai->labels, buf->data + ofs, 16 * ai->numLabels);
+
+	memcpy (ai->labels, buf->data + ofs, 16 * ai->numLabels);
 	ofs += 16 * ai->numLabels;
-	ai->country = get_byte(buf->data + ofs);
+
+	ai->country = get_byte (buf->data + ofs);
 	ofs += 2;
-	ai->sortByCompany = get_byte(buf->data + ofs);
+
+	ai->sortByCompany = get_byte (buf->data + ofs);
 	ofs += 2;
 
 	if (ofs != buf->used)
 		/* Should never happen */
 		return -1;
 
-	/* These are the fields that go in drop down menus */
-	for (i = 4, j = 0; i < 11; i++, j++) {
-		strcpy(ai->phoneLabels[j], ai->labels[i]);
-	}
-	strcpy(ai->phoneLabels[j], ai->labels[40]);
-
-	strcpy(ai->addrLabels[0], ai->labels[23]);
-	strcpy(ai->addrLabels[1], ai->labels[28]);
-	strcpy(ai->addrLabels[2], ai->labels[33]);
-
-	strcpy(ai->IMLabels[0], ai->labels[41]);
-	strcpy(ai->IMLabels[1], ai->labels[42]);
-	strcpy(ai->IMLabels[2], ai->labels[43]);
-	strcpy(ai->IMLabels[3], ai->labels[44]);
-	strcpy(ai->IMLabels[4], ai->labels[45]);
-
+	ai->numCustoms = 9;
 	strcpy(ai->customLabels[0], ai->labels[14]);
 	strcpy(ai->customLabels[1], ai->labels[15]);
 	strcpy(ai->customLabels[2], ai->labels[16]);
@@ -492,33 +436,17 @@ unpack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:	pack_ContactAppInfo
- *
- * Summary:		Build a raw AppInfo structure from a previously unpacked
- *				CategoryAppInfo structure.
- *
- *				NOTE: ContactAppInfo contains data necessary to produce
- *				only the raw AppInfo it was unpacked from.  Raw AppInfos
- *				can only be written to the devices they were read from.
- *				Use a read-modify-update on devices and database files.
- *				FIXME: Add a note about translate_ContactAppInfo once it
- *				exists.
- *
- * Parameters:	- *ai, an unpacked ContactAppInfo structure
- *				+ *buf, a pi_buffer_t to store the raw AppInfo into
- *
- * Returns:		0 on success
- *				-1 on error
- *
- ***********************************************************************/
 int
-pack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
+pack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 {
 	int				destlen;
 
 	if (buf == NULL || buf->data == NULL)
+		return -1;
+
+	if (ai->type != contacts_v10
+			&& ai->type != contacts_v11)
+		/* Don't support anything else yet */
 		return -1;
 
 	destlen = 278						/* categories */
@@ -534,7 +462,18 @@ pack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
 	if (buf->used != 278)
 		return -1;
 
-	pi_buffer_append (buf, ai->internal, 26);
+	pi_buffer_append_buffer (buf, ai->internal);
+
+	/* First write the custom labels back out */
+	strcpy(ai->labels[14], ai->customLabels[0]);
+	strcpy(ai->labels[15], ai->customLabels[1]);
+	strcpy(ai->labels[16], ai->customLabels[2]);
+	strcpy(ai->labels[17], ai->customLabels[3]);
+	strcpy(ai->labels[18], ai->customLabels[4]);
+	strcpy(ai->labels[19], ai->customLabels[5]);
+	strcpy(ai->labels[20], ai->customLabels[6]);
+	strcpy(ai->labels[21], ai->customLabels[7]);
+	strcpy(ai->labels[22], ai->customLabels[8]);
 
 	pi_buffer_append (buf, ai->labels, 16 * ai->numLabels);
 

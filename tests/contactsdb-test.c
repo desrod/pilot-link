@@ -176,7 +176,7 @@ print_appblock (int sd, int db, struct ContactAppInfo *cai)
 	printf (" Last Unique ID: %i\n", cai->category.lastUniqueID);
 
 	printf ("Internal data:\n");
-	hexprint (cai->internal, 26, 0, 0);
+	hexprint (cai->internal->data, cai->internal->used, 0, 0);
 
 	printf ("Field labels");
 	for (i = 0; i < cai->numLabels; i++)
@@ -186,28 +186,12 @@ print_appblock (int sd, int db, struct ContactAppInfo *cai)
 		printf ("%02i:%-16s ", i, cai->labels[i]);
 	}
 	
-	printf ("\nPhone labels");
-	for (i = 0; i < 8; i++)
+	printf ("\nCustom labels");
+	for (i = 0; i < cai->numCustoms; i++)
 	{
 		if (i%4 == 0)
 			printf ("\n ");
-		printf ("%02i:%-16s ", i, cai->phoneLabels[i]);
-	}
-
-	printf ("\nAddress labels");
-	for (i = 0; i < 3; i++)
-	{
-		if (i%4 == 0)
-			printf ("\n ");
-		printf ("%02i:%-16s ", i, cai->addrLabels[i]);
-	}
-
-	printf ("\nIM labels");
-	for (i = 0; i < 5; i++)
-	{
-		if (i%4 == 0)
-			printf ("\n ");
-		printf ("%02i:%-16s ", i, cai->IMLabels[i]);
+		printf ("%02i:%-16s ", i, cai->customLabels[i]);
 	}
 
 	printf ("\nCountry: %i\n", cai->country);
