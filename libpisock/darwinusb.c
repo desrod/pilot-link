@@ -768,26 +768,19 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 			}
 		}
 
-		/* Locate the pipes we're going to use for reading and writing. We have three
-		 * chances to find the right pipes:
-		 * 1. If we got a hint from the device, we try this one first.
-		 * 2. If we're still missing one or two pipes, give a second try looking for pipes with a
+		/* Locate the pipes we're going to use for reading and writing.
+		 * We have four chances to find the right pipes:
+		 * 1. If we got a hint from the device with input/output pipes, we try this one first.
+		 * 2. If we didn't get both pipes, try using the port number hint
+		 * 3. If we're still missing one or two pipes, give a second try looking for pipes with a
 		 *    64 bytes transfer size
-		 * 3. Finally of this failed, forget about the transfer size and take the first ones that
+		 * 4. Finally of this failed, forget about the transfer size and take the first ones that
 		 *    come (i.e. Tungsten W has a 64 bytes IN pipe and a 32 bytes OUT pipe).
 		 */
-		for (pass=1; pass <= 3 && (usb.in_pipe_ref==0 || usb.out_pipe_ref==0); pass++)
+		for (pass=1; pass <= 4 && (usb.in_pipe_ref==0 || usb.out_pipe_ref==0); pass++)
 		{
-			int ignorePacketSize = (pass == 3);
-			if (pass == 2)
-			{
-				port_number = 0xff;
-				input_pipe_number = 0xff;
-				output_pipe_number = 0xff;
-			}
-
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pass %d looking for pipes, port_number=0x%02x, input_pipe_number=0x%02x, output_pipe_number=0x%02x, ignorePacketSize=%d\n",
-				pass, port_number, input_pipe_number, output_pipe_number, ignorePacketSize));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pass %d looking for pipes, port_number=0x%02x, input_pipe_number=0x%02x, output_pipe_number=0x%02x\n",
+				pass, port_number, input_pipe_number, output_pipe_number));
 
 			for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
 			{
@@ -806,18 +799,20 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 					    direction == kUSBIn &&
 					    transferType == kUSBBulk)
 					{
-						if ((port_number != 0xff && number == port_number) ||
-							(input_pipe_number != 0xff && number == input_pipe_number) ||
-							(pass > 1 && (maxPacketSize == 64 || ignorePacketSize)))
+						if ((pass == 1 && input_pipe_number != 0xff && number == input_pipe_number) ||
+							(pass == 2 && port_number != 0xff && number == port_number) ||
+							(pass == 3 && maxPacketSize == 64) ||
+							 pass == 4)
 							usb.in_pipe_ref = pipeRef;
 					}
 					else if (usb.out_pipe_ref == 0 &&
 							 direction == kUSBOut &&
 							 transferType == kUSBBulk)
 					{
-						if ((port_number != 0xff && number == port_number) ||
-							(output_pipe_number != 0xff && number == output_pipe_number) ||
-							(pass > 1 && (maxPacketSize == 64 || ignorePacketSize)))
+						if ((pass == 1 && output_pipe_number != 0xff && number == output_pipe_number) ||
+							(pass == 2 && port_number != 0xff && number == port_number) ||
+							(pass == 3 && maxPacketSize == 64) ||
+							 pass == 4)
 							usb.out_pipe_ref = pipeRef;
 					}
 				}
