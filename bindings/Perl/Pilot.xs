@@ -23,6 +23,13 @@
 #include "XSUB.h"
 #include "patchlevel.h"
 
+/* FIXME Hack to get around a perl macro problem with calling the type 'int
+   dirty;' in pi-mail.h and pi-todo.h. This originally showed up with perl
+   5.6 and gcc-3.x, and was fixed in gcc, but now appears in perl 5.8 with
+   gcc-3.x. It smells like another internal macro being exposed into
+   userland. */
+#undef dirty
+
 #include "pi-macros.h"
 #include "pi-file.h"
 #include "pi-datebook.h"
@@ -34,6 +41,7 @@
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
+
 
 typedef unsigned char * CPTR;
 
