@@ -579,7 +579,7 @@ char *strtoke(char *str, char *ws, char *delim)
 			*start;
 
 
-	if (str != NULL) {
+	if (str) {
 		s = str;
 	}
 

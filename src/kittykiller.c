@@ -32,8 +32,7 @@ int main(int argc, char *argv[])
 	HWND hWnd = FindWindow(HOTSYNC_APP_CLASS, NULL);
 
 	/* if the HotSync manager is already running, send the exit message */
-	if (hWnd != NULL) {
-
+	if (hWnd) {
 		/* Send a message to the HotSync manager asking it to
 		   terminate without displaying the "Are you sure?"
 		   confirmation dialog. */

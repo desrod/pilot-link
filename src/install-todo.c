@@ -31,8 +31,6 @@
 #define _XOPEN_SOURCE /* glibc2 needs this */
 #endif
 
-#include <time.h>
-
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
