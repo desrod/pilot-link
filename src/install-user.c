@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
 	if (!user && !userid) {
 		printf("   Palm user: %s\n", User.username);
 		printf("   UserID:    %ld \n\n", User.userID);
+		pi_close(sd);
 		exit(0);
 	}
 	

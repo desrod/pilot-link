@@ -483,8 +483,13 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
  *
 	struct dlpRequest *req;
 	Trace(ReadSysInfo);
-
-	result = dlp_exec(sd, 0x12, 0x20, NULL, 0, dlp_buf, 256);
+	req = dlp_request_new (dlpFuncReadSysInfo, 1, 4);
+	dlp_buf[0] = 0x00;
+	dlp_buf[1] = 0x01;
+	dlp_buf[2] = 0x00;
+	dlp_buf[3] = 0x03;
+	
+	result = dlp_exec(sd, 0x12, 0x20, dlp_buf, 4, dlp_buf, 256);
 
 	Expect(10);
 
