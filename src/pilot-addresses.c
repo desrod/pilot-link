@@ -17,7 +17,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,24 +28,22 @@
 #include "pi-dlp.h"
 #include "pi-address.h"
 #include "pi-header.h"
+#include "userland.h"
 
 /* Define prototypes */
 int inchar(FILE * in);
 int read_field(char *dest, FILE * in);
 void outchar(char c, FILE * out);
 int write_field(FILE * out, char *source, int more);
-int match_category(char *buf, struct AddressAppInfo *aai);
 int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
 int read_csvline(FILE *f);
 
-static void display_help(const char *progname);
-
-int realentry[21] = 
+int realentry[21] =
     { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20 };
 
-char *tableheads[21] = { 
+char *tableheads[21] = {
 	"Last name",	/* 0 	*/
 	"First name", 	/* 1	*/
 	"Title", 	/* 2	*/
@@ -71,28 +68,28 @@ char *tableheads[21] = {
 };
 
 int 	tableformat 	= 0,
-	tabledelim 	= 1,
+	tabledelim 	= -1,
 	encodechars 	= 0,
 	augment 	= 0,
 	tablehead 	= 0,
 	defaultcategory = 0;
 
-char 	tabledelims[5] = { '\n', ',', ';', '\t' },
+char 	tabledelims[4] = { '\n', ',', ';', '\t' },
         *field[100],
         *unquote(char *);
 
 
 int read_csvline(FILE *f)
-{       
+{
 
         int     nfield;
-        char    *p, 
+        char    *p,
 		buf[0xffff],
 		*q;
-                               
+
         if (fgets(buf, sizeof(buf), f) == NULL)
                 return -1;
-  
+
         nfield = 0;
 
         for (q = buf; (p=strtok(q, ",\n\r")) != NULL; q = NULL)
@@ -106,20 +103,20 @@ char *unquote(char *p)
         if (p[0] == '"') {
                 if (p[strlen(p)-1] == '"')
                         p[strlen(p)-1] = '\0';
-                p++; 
+                p++;
         }
-        return p;   
-} 
+        return p;
+}
 
 
 /***********************************************************************
  *
  * Function:    inchar
  *
- * Summary:     Turn the protected name back into the "original" 
+ * Summary:     Turn the protected name back into the "original"
  *		characters
  *
- * Parameters:  
+ * Parameters:
  *
  * Returns:     Modified character, 'c'
  *
@@ -298,9 +295,9 @@ void outchar(char c, FILE * out)
  *
  * Summary:     Write out each field in the CSV
  *
- * Parameters:  
+ * Parameters:
  *
- * Returns:     
+ * Returns:
  *
  ***********************************************************************/
 int write_field(FILE * out, char *source, int more)
@@ -318,26 +315,6 @@ int write_field(FILE * out, char *source, int more)
 }
 
 
-/***********************************************************************
- *
- * Function:    match_category
- *
- * Summary:     Find and match the specified category name in 'buf'
- *
- * Parameters:  
- *
- * Returns:     
- *
- ***********************************************************************/
-int match_category(char *buf, struct AddressAppInfo *aai)
-{
-	int 	i;
-
-	for (i = 0; i < 16; i++)
-		if (strcasecmp(buf, aai->category.name[i]) == 0)
-			return i;
-	return atoi(buf);	/* 0 is default */
-}
 
 
 /***********************************************************************
@@ -346,9 +323,9 @@ int match_category(char *buf, struct AddressAppInfo *aai)
  *
  * Summary:     Find and match the 'phone' entries in 'buf'
  *
- * Parameters:  
+ * Parameters:
  *
- * Returns:     
+ * Returns:
  *
  ***********************************************************************/
 int match_phone(char *buf, struct AddressAppInfo *aai)
@@ -366,11 +343,11 @@ int match_phone(char *buf, struct AddressAppInfo *aai)
  *
  * Function:    read_file
  *
- * Summary:    	Open specified file and read into address records 
+ * Summary:    	Open specified file and read into address records
  *
  * Parameters:  filehandle
  *
- * Returns:     
+ * Returns:
  *
  ***********************************************************************/
 int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
@@ -394,7 +371,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 		addr.showPhone = 0;
 
 		if (i == 2) {
-			category = match_category(buf, aai);
+			category = userland_findcategory(&aai->category,buf);
 			i = read_field(buf, f);
 			if (i == 2) {
 				addr.showPhone = match_phone(buf, aai);
@@ -464,7 +441,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		category;
 	struct 	Address addr;
 	pi_buffer_t *buf;
-		
+
 	/* Print out the header and fields with fields intact. Note we
 	   'ignore' the last field (Private flag) and print our own here, so
 	   we don't have to chop off the trailing comma at the end. Hacky. */
@@ -528,39 +505,6 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 }
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n", progname);
-	printf("             [-d category] -r|-w [<file>]\n\n");
-	printf("     -t delim          include category, use delimiter (3=tab, 2=;, 1=,)\n");
-	printf("     -T                write header with titles\n");
-	printf("     -q                do not prompt for HotSync button press\n");
-	printf("     -a                augment records with additional information\n");
-	printf("     -e                escape special chcters with backslash\n");
-	printf("     -p port           use device file <port> to communicate with Palm\n");
-	printf("     -c category       install to category <category> by default\n");
-	printf("     -d category       delete old Palm records in <category>\n");
-	printf("     -D, --delall      delete all Palm records in all categories\n");
-	printf("     -r file           read records from <file> and install them to Palm\n");
-	printf("     -w file           get records from Palm and write them to <file>\n");
-	printf("     -h, --help        Display this information\n");
-	printf("     -v, --version     Display version information\n\n");
-
-	return;
-}
-
-
 int main(int argc, const char *argv[])
 {
 
@@ -569,101 +513,96 @@ int main(int argc, const char *argv[])
 		db,
 		l,
 		mode 			= 0,
-		quiet 			= 0,
 		sd 			= -1;
 
 	const char
-        	*progname 		= argv[0];	
+        	*progname 		= argv[0];
 
 	char 	*defaultcategoryname 	= 0,
 		*deletecategory 	= 0,
-		*port			= NULL,
 		*wrFilename		= NULL,
 		*rdFilename		= NULL,
 		buf[0xffff];
 
 	struct 	AddressAppInfo 	aai;
 	struct 	PilotUser 	User;
-	
+
 	poptContext po;
-	
+
 	struct poptOption options[] = {
-        	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-	        {"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
-	        {"delall",	'D', POPT_ARG_NONE, NULL, 'D', "Delete all Palm records in all categories"},
-        	{"titles",	'T', POPT_ARG_NONE, NULL, 'T', "Write header with titles"},
-	        {"escape",	'e', POPT_ARG_NONE, NULL, 'e', "Escape special chcters with backslash"},
-        	{"quiet",	'q', POPT_ARG_NONE, NULL, 'q', "Do not prompt for HotSync button press"},
-	        {"tdelim",	't', POPT_ARG_INT, &tabledelim, 't', "Include category, use delimiter (3=tab, 2=;, 1=,)"},
-        	{"delcat",	'd', POPT_ARG_STRING, &deletecategory, 0, "Delete old Palm records in <category>"},
-	        {"install",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to"},
-        	{"augment",	'a', POPT_ARG_NONE, NULL, 'a', "Augment records with additional information"},
+		USERLAND_RESERVED_OPTIONS
+	        {"delete-all",	 0 , POPT_ARG_NONE, &deleteallcategories, 0, "Delete all Palm records in all categories"},
+        	{"titles",	'T', POPT_ARG_NONE, &tablehead,           0, "Write header with titles"},
+	        {"escape",	'e', POPT_ARG_NONE, &encodechars,         0, "Escape special chcters with backslash"},
+	        {"delimiter",	't', POPT_ARG_INT,  &tabledelim,          0, "Include category, use delimiter (3=tab, 2=;, 1=,)"},
+        	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,      0, "Delete old Palm records in <category>"},
+	        {"category",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to"},
+        	{"augment",	'a', POPT_ARG_NONE, &augment,             0, "Augment records with additional information"},
 	        {"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm"},
         	{"write",	'w', POPT_ARG_STRING, &wrFilename, 'w', "Get records from Palm and write them to <file>"},
-	        POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+	        POPT_TABLEEND
 	};
-	
+
 	po = poptGetContext("pilot-addresses", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po," [-p port] <options> -r|-w file\n\n"
+		"   Reads addresses from the Palm to CSV file or\n"
+		"   writes addresses from CSV file to the Palm.\n\n");
+	userland_popt_alias(po,"delall",0,"--bad-option --delete-all");
+	userland_popt_alias(po,"delcat",0,"--bad-option --delete-category");
+	userland_popt_alias(po,"install",0,"--bad-option --category");
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
+		const char *duplicate_rw = "   ERROR: Can only specify one of -rw.\n";
 		switch (c) {
-			
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 't':
-			tableformat = 1;
-			break;
-		case 'D':
-			deleteallcategories = 1;
-			break;
-		case 'T':
-			tablehead = 1;
-			break;
-		case 'a':
-			augment = 1;
-			break;
-		case 'q':
-			quiet = 1;
-			break;
-		case 'e':
-			encodechars = 1;
-			break;
 		case 'r':
+			if (mode) {
+				fprintf(stderr,duplicate_rw);
+				return 1;
+			}
 			mode = 1;
 			break;
 		case 'w':
+			if (mode) {
+				fprintf(stderr,duplicate_rw);
+				return 1;
+			}
 			mode = 2;
 			break;
 		default:
-			display_help(progname);
-			return 0;
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+			return 1;
 		}
 	}
-	
-	if (argc < 2) {
-		display_help(progname);
-		return 0;
+
+	if (c < -1) userland_badoption(po,c);
+
+	/* The first implies that -t was given; the second that it wasn't,
+	   so use default, and the third if handles weird values. */
+	if ((tabledelim > 0) && (tabledelim < sizeof(tabledelim))) tableformat = 1;
+	if (tabledelim == -1) tabledelim = 1;
+	if ((tabledelim < 0) || (tabledelim > sizeof(tabledelim))) {
+		fprintf(stderr,"   ERROR: Invalid delimiter number %d.\n",tabledelim);
+		return 1;
 	}
 
-	sd = pilot_connect(port);
-	
+	if ((mode < 1) || (mode > 2)) {
+		fprintf(stderr,"   ERROR: Must specify one of -r -w.\n");
+		return 1;
+	}
+
+	sd = userland_connect();
+
 	if (sd < 0)
 		goto error;
-	
+
         if (dlp_ReadUserInfo(sd, &User) < 0)
                 goto error_close;
-	
+
 	/* Open the AddressDB.pdb database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
 		puts("Unable to open AddressDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-		exit(EXIT_FAILURE);
+		goto error_close;
 	}
 
 	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
@@ -671,7 +610,7 @@ int main(int argc, const char *argv[])
 
 	if (defaultcategoryname)
 		defaultcategory =
-		    match_category(defaultcategoryname, &aai);
+		    userland_findcategory(&aai.category,defaultcategoryname);
 	else
 		defaultcategory = 0;	/* Unfiled */
 
@@ -682,44 +621,41 @@ int main(int argc, const char *argv[])
 		if (f == NULL) {
 			sprintf(buf, "%s: %s", progname, wrFilename);
 			perror(buf);
-			exit(EXIT_FAILURE);
+			goto error_close;
 		}
 		write_file(f, sd, db, &aai);
 		if (deletecategory)
 			dlp_DeleteCategory(sd, db,
-					   match_category(deletecategory,
-							  &aai));
+				userland_findcategory(&aai.category,deletecategory));
 		fclose(f);
 
 	} else if (mode == 1) {	/* Read from file */
 		FILE *f = fopen(rdFilename, "r");
-		
+
 		if (f == NULL) {
 			fprintf(stderr, "Unable to open input file");
-			fprintf(stderr, " '%s' (%s)\n\n", 
-				rdFilename, strerror(errno));   
+			fprintf(stderr, " '%s' (%s)\n\n",
+				rdFilename, strerror(errno));
 			fprintf(stderr, "Please make sure the file");
 			fprintf(stderr, "'%s' exists, and that\n",
 				rdFilename);
 			fprintf(stderr, "it is readable by this user");
 			fprintf(stderr, " before launching.\n\n");
 
-			exit(EXIT_FAILURE);
+			goto error_close;
 		}
 		read_file(f, sd, db, &aai);
 		fclose(f);
 	} else if (deletecategory)
 		dlp_DeleteCategory(sd, db,
-				match_category (deletecategory, &aai));
+				userland_findcategory (&aai.category,deletecategory));
 	  else
 		if (deleteallcategories) {
 			int i;
 
 			for (i = 0; i < 16; i++)
-				if (strlen(aai.category.name[i]) >
-				    0)
-					dlp_DeleteCategory(sd, db,
-							   i);
+				if (strlen(aai.category.name[i]) > 0)
+					dlp_DeleteCategory(sd, db, i);
 		}
 
 	/* Close the database */
@@ -736,7 +672,7 @@ int main(int argc, const char *argv[])
 	} else if (mode == 2) {
 		dlp_AddSyncLogEntry(sd, "Successfully read Address Book from Palm.\n");
 	}
-	
+
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 
