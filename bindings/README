@@ -1,6 +1,0 @@
-The languages have been moved here to unclutter the top-level directory.
-Once pilot-link has successfully be converted over to using automake, this
-will be much easier to maintain, as well as drop in any new languages to add
-them to the package.
-
-							-The Management 
