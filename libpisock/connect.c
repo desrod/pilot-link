@@ -107,8 +107,9 @@ int pilot_connect(char *port)
 		return -1;
 	}
 
-	dlp_OpenConduit(sd);
+
 	fprintf(stderr, "Connected\n\n");
+
 
 	if (dlp_ReadSysInfo (sd, &sys_info) < 0) {
 		fprintf(stderr, "\n   Error read system info on %s\n", port);
@@ -116,5 +117,6 @@ int pilot_connect(char *port)
 		return -1;
 	}
 
+	dlp_OpenConduit(sd);
 	return sd;
 }

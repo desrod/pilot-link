@@ -1,3 +1,7 @@
+2002-06-30  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/connect.c: dlp_OpenConduit call fixed
+
 2002-06-28  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/palmpix.c: Missing prototype for DecodeRow
