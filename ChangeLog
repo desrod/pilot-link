@@ -2,6 +2,8 @@
 
 	* pilot-xfer.c: Revert an oops I did
 
+	* addresses.c: Removed the 'fancy' output (fstyle)
+
 2002-02-08  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/socket.c (ps_list_remove): update the prev_elem each

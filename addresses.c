@@ -40,11 +40,10 @@ struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
-	{"fancy",       no_argument,       NULL, 'f'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:f";
+static const char *optstring = "hvp:";
 
 static void Help(char *progname)
 {
@@ -52,7 +51,6 @@ static void Help(char *progname)
                "   Usage: %s -p <port> [options]\n\n"
 	       "   Options:\n"
 	       "   -p <port>      Use device file <port> to communicate with Palm\n"
-	       "   -f             Use the new \"fancy\" index card output format\n"
 	       "   -h             Display this information\n\n"
 	       "   Only the port option is required, the other options are... optional.\n\n"
 	       "   Example: %s -p /dev/pilot\n\n"
@@ -67,8 +65,7 @@ int main(int argc, char *argv[])
 	int 	c,		/* switch */
 		db,
 		index,
-		sd 		= -1,
-		fstyle 		= -1;
+		sd 		= -1;
 	
 	char 	*progname 	= argv[0],
 		*port 		= NULL;
@@ -88,9 +85,6 @@ int main(int argc, char *argv[])
                           exit(0);
                   case 'p':
                           port = optarg;
-                          break;
-                  case 'f':
-			  fstyle = 1;
                           break;
                 }
         }
@@ -148,42 +142,18 @@ int main(int argc, char *argv[])
 	
 			unpack_Address(&a, buffer, len);
 
-			/* Ignore this 'style' silliness. It was actually useful for me to 
-			   monkey around with this. The end result will be some XML output
-			   for the records at some point, though not using this verbose 
-			   mechanism. This is what happens when you don't sleep. -DD
-			 */
-			if (fstyle == 1) {
-				for(count=0;count<35;count++) printf(" ");
-				printf(".---------------.\n");
-				printf(".");
-				for(count=0;count<33;count++) printf("-");
-				printf("' %14s |\n", aai.category.name[category]);				
-			} else {
-				printf("Category: %s\n", aai.category.name[category]);
-			}
+			printf("Category: %s\n", aai.category.name[category]);
+
 			for (j = 0; j < 19; j++) {
 				if (a.entry[j]) {
 					int l = j;
 	
 					if ((l >= entryPhone1) && (l <= entryPhone5)) {
-						if (fstyle == 1) {
-							printf("| %-11s: %-35s |\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[j]);
-						} else {
-							printf("%s: %s\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[j]);
-						}
+						printf("%s: %s\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[j]);
 					} else {
-						if (fstyle == 1) {
-							printf("| %-11s: %-35s |\n", aai.labels[l], a.entry[j]);
-						} else {
-							printf("%s: %s\n", aai.labels[l], a.entry[j]);
-						}
+						printf("%s: %s\n", aai.labels[l], a.entry[j]);
 					}
 				}
-			}
-			if (fstyle == 1) {
-				printf("|"); for(count=0;count<50;count++) printf(" "); printf("|\n");
-				printf("`._____________[  ]__________[  ]_________________.'");
 			}
 			printf("\n");
 			free_Address(&a);
