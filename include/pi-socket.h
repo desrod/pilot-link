@@ -1,6 +1,8 @@
 #ifndef _PILOT_SOCKET_H_
 #define _PILOT_SOCKET_H_
 
+#include <unistd.h>
+
 #include "pi-args.h"
 
 #ifdef __cplusplus
