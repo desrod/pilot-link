@@ -83,7 +83,9 @@ extern "C" {
 	/** @brief Ensure the buffer is large enough to store @p capacity bytes of data
 	 *
 	 * This grows the allocated buffer as needed and updates the @a allocated
-	 * member. Doesn't touch the @a used member.
+	 * member. Doesn't touch the @a used member. After this call succeeds, you
+	 * can directly use the @a buffer->data pointer to store up to
+	 * @a buffer->allocated bytes using direct memory access.
 	 *
 	 * @param buf The buffer to grow
 	 * @param new_capacity The total number of bytes the buffer is expected to contain
