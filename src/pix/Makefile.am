@@ -10,7 +10,7 @@ PIX =			\
 	casemask.xbm	\
 	case.xbm
 
-if ENABLE_USERLAND
+if ENABLE_CONDUITS
 pixdir = $(datadir)/pilot-link/pix
 pix_DATA = $(PIX)
 endif

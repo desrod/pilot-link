@@ -1,6 +1,6 @@
 SUBDIRS=prc pix
 
-if ENABLE_USERLAND
+if ENABLE_CONDUITS
 
 if WITH_CXX
 CXX_DIR = libpisock++
