@@ -1205,7 +1205,7 @@ pi_file_close_for_write(pi_file_t *pf)
 	rewind(pf->tmpf);
 	do {
 		c = fread (buf, 1, sizeof (buf), pf->tmpf);
-		fwrite (buf, 1, sizeof (buf), f);
+		fwrite (buf, 1, c, f);
 	} while (c == sizeof (buf));
 	fflush(f);
 
