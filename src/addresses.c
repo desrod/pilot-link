@@ -22,12 +22,7 @@
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <signal.h>
-#include <utime.h>
 
-#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-address.h"
 #include "pi-dlp.h"
@@ -47,6 +42,18 @@ struct option options[] = {
 
 static const char *optstring = "p:hv";
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments  
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Dumps the Palm AddressDB database into a generic text output format\n\n");
@@ -56,9 +63,9 @@ static void display_help(char *progname)
 	printf("   -h             Display this information\n\n");
 	printf("   Only the port option is required, the other options are... optional.\n\n");
 	printf("   Example: %s -p /dev/pilot\n\n", progname);
-	printf("   You can redirect the output of %s to a file instead of the default\n", progname);
+	printf("   You can redirect the output of 'addresses' to a file instead of the default\n");
 	printf("   STDOUT by using redirection and pipes as necessary.\n\n");
-	printf("   Example: %s -p /dev/pilot -f > MyAddresses.txt\n\n", progname);
+	printf("   Example: %s -p /dev/pilot > MyAddresses.txt\n\n", progname);
 
 	return;
 }
@@ -114,10 +121,11 @@ int main(int argc, char *argv[])
 	unpack_AddressAppInfo(&aai, buffer, 0xffff);
 	
 	for (index = 0;; index++) {
-		int 	attr,
-			category,
-			i;
-		struct 	Address a;
+		int 	i,
+			attr,
+			category;
+
+		struct 	Address addr;
 
 		int len =
 		    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0, &attr,
@@ -131,28 +139,31 @@ int main(int argc, char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 	
-		unpack_Address(&a, buffer, len);
+		unpack_Address(&addr, buffer, len);
 
 		printf("Category: %s\n", aai.category.name[category]);
 
 		for (i = 0; i < 19; i++) {
-			if (a.entry[i]) {
+			if (addr.entry[i]) {
 				int l = i;
 	
 				if ((l >= entryPhone1) && (l <= entryPhone5)) {
-					printf("%s: %s\n", aai.phoneLabels[a.phoneLabel[l - entryPhone1]], a.entry[i]);
+					printf("%s: %s\n", 
+						aai.phoneLabels[addr.phoneLabel[l - entryPhone1]], 
+						addr.entry[i]);
 				} else {
-					printf("%s: %s\n", aai.labels[l], a.entry[i]);
+					printf("%s: %s\n", aai.labels[l], 
+						addr.entry[i]);
 				}
 			}
 		}
 		printf("\n");
-		free_Address(&a);
+		free_Address(&addr);
 	}
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);
-        dlp_AddSyncLogEntry(sd, "Successfully read addresses from Palm.\n"
+        dlp_AddSyncLogEntry(sd, "Successfully read addresses from Palm.\n\n"
 				"Thank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
