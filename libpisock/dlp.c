@@ -550,7 +550,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 				   to be transferred.
 				*/
 				pi_buffer_free (dlp_buf);
-				return pi_set_error(sd, PI_DLP_ERR_DATA_TOO_LARGE);
+				return pi_set_error(sd, PI_ERR_DLP_DATASIZE);
 			}
 			len = get_long (&buf[2]);
 			buf += 6;
@@ -2072,7 +2072,7 @@ dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags,
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0102) {
-		pi_set_error(sd, PI_DLP_ERR_UNSUPPORTED_CALL);
+		pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
 		return -129;
 	}
 
@@ -2978,7 +2978,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 		if ((length + 8) > DLP_BUF_SIZE) {
 			LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
 			     "DLP WriteRecord: data too large (>64k)"));
-			return PI_DLP_ERR_DATA_TOO_LARGE;
+			return PI_ERR_DLP_DATASIZE;
 		}
 
 		req = dlp_request_new(dlpFuncWriteRecord, 1, 8 + length);
@@ -3572,7 +3572,7 @@ dlp_WriteSortBlock(int sd, int fHandle, const /* @unique@ */ void *data,
 	if (length + 10 > DLP_BUF_SIZE) {
 		LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
 		     "DLP WriteSortBlock: data too large (>64k)"));
-		pi_set_error(sd, PI_DLP_ERR_DATA_TOO_LARGE);
+		pi_set_error(sd, PI_ERR_DLP_DATASIZE);
 		return -131;
 	}
 	memcpy(DLP_REQUEST_DATA(req, 0, 4), data, length);
@@ -3987,7 +3987,7 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 	if (size + 12 > DLP_BUF_SIZE) {
 		LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
 			 "DLP WriteAppPreferenceV2: data too large (>64k)"));
-		return PI_DLP_ERR_DATA_TOO_LARGE;
+		return PI_ERR_DLP_COMMAND;
 	}
 	memcpy(DLP_REQUEST_DATA(req, 0, 12), buffer, size);
 

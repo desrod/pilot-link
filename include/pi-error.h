@@ -69,15 +69,3 @@
 #define IS_GENERIC_ERR(error)		((error)<=-500 && (error)>-600)
 
 #endif
-
-
-/* Error codes for DLP functions */
-#define	PI_DLP_ERR_DISCONNECTED		-1			/* socket was disconnected */
-#define PI_DLP_ERR_STORAGE			-97			/* not enough storage provided to return data (was -2) */
-#define PI_DLP_ERR_MEMORY			-98			/* memory allocation failed */
-#define PI_DLP_ERR_PALMOS			-99			/* transaction failed (device returned an error) */
-#define PI_DLP_ERR_IO				-100		/* I/O error (i.e. a request couldn't be read or written) */
-#define PI_DLP_ERR_UNSUPPORTED_CALL	-129		/* attempted transaction is not supported by the device (i.e. device too old) */
-#define PI_DLP_ERR_SOCKET			-130		/* invalid socket */
-#define	PI_DLP_ERR_DATA_TOO_LARGE	-131		/* requested transfer with data block too large (>64k) */
-
