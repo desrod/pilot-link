@@ -4,6 +4,10 @@
 
 	* src/read-palmpix.c: s/U/User/ to align with other conduits
 
+	* src/memos.c: Use current date/time in output of "mail" headers,
+	  fixed placement of '\0' at the end of -c processing, added code to
+	  allow -c to be used when reading from a file (Michael Hartwig)
+	
 	* configure.in: Beginning fix for OSX/NeXT ENOMSG issue (errno.h)
 
 	* libpisock/dlp.c: Ditto

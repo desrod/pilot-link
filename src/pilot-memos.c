@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <regex.h>
 
@@ -78,12 +79,21 @@ void write_memo_in_directory(char *dirname, struct Memo m,
 void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 {
 	int 	j;
+	time_t	now;
+	char	*time_str;
+	
+	now = time( NULL );
 
-	printf("From Your.Palm Tue Oct 1 07:56:25 1996\n"
-	       "Received: Palm@p by memo Tue Oct 1 07:56:25 1996\n"
+	/* FIXME: might be good to get the time stamp of the memo file for
+	 * the "Received" line */
+
+	time_str = ctime(&now); 
+
+	printf("From Your.PDA\n"
+	       "Received: Palm@p by memo %s" 
 	       "To: you@y\n"
-	       "Date: Thu, 31 Oct 1996 23:34:38 -0500\n"
-	       "Subject: ");
+	       "Date: %s"
+	       "Subject: ", time_str, time_str ); 
 
 	/* print category name in brackets in subject field */
 	printf("[%s] ", mai.category.name[category]);
@@ -282,7 +292,7 @@ int main(int argc, char *argv[])
 		  case 'c':
 			  /* optarg is name of category to fetch memos of */
 			  strncpy(category_name, optarg, MAXDIRNAMELEN);
-			  filename[MAXDIRNAMELEN] = '\0';
+			  category_name[strlen( category_name )] = '\0';
 			  break;
 		  case 'r':
 			  /* optarg is a query to select memos by title */
@@ -394,6 +404,12 @@ int main(int argc, char *argv[])
 		if ((attr & dlpRecAttrDeleted)
 		    || (attr & dlpRecAttrArchived))
 			continue;
+
+		/* Skip memos whose category doesn't match */
+		if( match_category >= 0 ) {
+			if( match_category != category )
+				continue;
+		} 
 
 		unpack_Memo(&m, buffer, len);
 
