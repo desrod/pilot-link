@@ -808,15 +808,6 @@ dlp_ptohdate(const unsigned char *data)
 {
 	struct tm t;
 
-	memset(&t, 0, sizeof(t));
-	t.tm_sec 	= (int) data[6];
-	t.tm_min 	= (int) data[5];
-	t.tm_hour 	= (int) data[4];
-	t.tm_mday 	= (int) data[3];
-	t.tm_mon 	= (int) data[2] - 1;
-	t.tm_year 	= (((int)data[0] << 8) | (int)data[1]) - 1900;
-	t.tm_isdst 	= -1;
-
 	/* Seems like year comes back as all zeros if the date is "empty"
 	   (but other fields can vary).  And mktime() chokes on 1900 B.C. 
 	   (result of 0 minus 1900), returning -1, which the higher level
@@ -850,6 +841,16 @@ dlp_ptohdate(const unsigned char *data)
 
 		return (time_t) 0x83DAC000;	/* Fri Jan  1 00:00:00 1904 GMT */
 	}
+
+	memset(&t, 0, sizeof(t));
+	t.tm_sec 	= (int) data[6];
+	t.tm_min 	= (int) data[5];
+	t.tm_hour 	= (int) data[4];
+	t.tm_mday 	= (int) data[3];
+	t.tm_mon 	= (int) data[2] - 1;
+	t.tm_year 	= (((int)data[0] << 8) | (int)data[1]) - 1900;
+	t.tm_isdst 	= -1;
+
 	return mktime(&t);
 }
 
@@ -1196,8 +1197,8 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 			db.backupDate   = get_date(p + 38);
 			db.index	= get_short(p + 46);
 
+			memset(db.name, 0, sizeof(db.name));
 			strncpy(db.name, (char *)(p + 48), 32);
-			db.name[32]     = '\0';
 
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			    "DLP ReadDBList Name: '%s', Version: %d, More: %s\n",
@@ -1221,12 +1222,12 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 			    (!db.flags) ? "None" : ""));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, " (0x%2.2X)\n", db.flags));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			    "  Modnum: %ld, Index: %d, Creation date: %s",
-			    db.modnum, db.index, ctime(&db.createDate)));
+			    "  Modnum: %ld, Index: %d, Creation date: 0x%08lx, %s",
+			    db.modnum, db.index, db.createDate, ctime(&db.createDate)));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-			    " Modification date: %s", ctime(&db.modifyDate)));
+			    " Modification date: 0x%08lx, %s", db.modifyDate, ctime(&db.modifyDate)));
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, 
-			    " Backup date: %s", ctime(&db.backupDate)));
+			    " Backup date: 0x%08lx, %s", db.backupDate, ctime(&db.backupDate)));
 
 			if (pi_buffer_append(info, &db, sizeof(db)) == NULL) {
 				result = pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
@@ -3398,14 +3399,15 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
  *
  * Summary:     Read the AppInfo block that matches the database
  *
- * Parameters:  None
+ * Parameters:  retbuf is emptied prior to receiving data
+ *				reqbytes should be -1 to read from 'offset' 'till the end
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
  *
  ***************************************************************************/
 int
-dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
+dlp_ReadAppBlock(int sd, int fHandle, int offset, int reqbytes, pi_buffer_t *retbuf)
 {
 	int 	result,
 		data_len;
@@ -3415,6 +3417,9 @@ dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	Trace(dlp_ReadAppBlock);
 	pi_reset_errors(sd);
 
+	if (retbuf)
+		pi_buffer_clear(retbuf);
+
 	req = dlp_request_new(dlpFuncReadAppBlock, 1, 6);
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
@@ -3422,7 +3427,7 @@ dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), offset);
-	set_short(DLP_REQUEST_DATA(req, 0, 4), dlen);
+	set_short(DLP_REQUEST_DATA(req, 0, 4), reqbytes);
 
 	result = dlp_exec(sd, req, &res);
 
@@ -3433,8 +3438,8 @@ dlp_ReadAppBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 			data_len = PI_ERR_DLP_COMMAND;
 		else {
 			data_len = res->argv[0]->len - 2;
-			if (dbuf && data_len)
-				memcpy (dbuf, DLP_RESPONSE_DATA(res, 0, 2),
+			if (retbuf && data_len)
+				pi_buffer_append(retbuf, DLP_RESPONSE_DATA(res, 0, 2),
 					(size_t)data_len);
 			
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -3506,14 +3511,15 @@ dlp_WriteAppBlock(int sd, int fHandle, const /* @unique@ */ void *data,
  *
  * Summary:     Read the SortBlock that matches the database
  *
- * Parameters:  None
+ * Parameters:  retbuf emptied before receiving data
+ *				reqbytes: use -1 to get all data from offset on.
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
  *
  ***************************************************************************/
 int
-dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
+dlp_ReadSortBlock(int sd, int fHandle, int offset, int reqbytes, pi_buffer_t *retbuf)
 {
 	int 	result,
 		data_len;
@@ -3523,6 +3529,9 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	Trace(dlp_ReadSortBlock);
 	pi_reset_errors(sd);
 
+	if (retbuf)
+		pi_buffer_clear(retbuf);
+
 	req = dlp_request_new(dlpFuncReadSortBlock, 1, 6);
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
@@ -3530,7 +3539,7 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_short(DLP_REQUEST_DATA(req, 0, 2), offset);
-	set_short(DLP_REQUEST_DATA(req, 0, 4), dlen);
+	set_short(DLP_REQUEST_DATA(req, 0, 4), reqbytes);
 
 	result = dlp_exec(sd, req, &res);
 
@@ -3541,8 +3550,8 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 			data_len = PI_ERR_DLP_COMMAND;
 		else {
 			data_len = res->argv[0]->len - 2;
-			if (dbuf)
-				memcpy(dbuf, DLP_RESPONSE_DATA(res, 0, 2), 
+			if (retbuf)
+				pi_buffer_append(retbuf, DLP_RESPONSE_DATA(res, 0, 2), 
 					(size_t)data_len);
 			
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,

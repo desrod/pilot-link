@@ -629,15 +629,15 @@ typedef unsigned long FileRef;
 	extern int dlp_ResetLastSyncPC PI_ARGS((int sd));
 
 	extern int dlp_ReadAppBlock
-		PI_ARGS((int sd, int fHandle, int offset, void *dbuf,
-			int dlen));
+		PI_ARGS((int sd, int fHandle, int offset, int reqbytes,
+			pi_buffer_t *retbuf));
 
 	extern int dlp_WriteAppBlock
 		PI_ARGS((int sd,int fHandle,PI_CONST void *dbuf,size_t dlen));
 
 	extern int dlp_ReadSortBlock
-		PI_ARGS((int sd, int fHandle, int offset, void *dbuf,
-			int dlen));
+		PI_ARGS((int sd, int fHandle, int offset, int reqbytes,
+			pi_buffer_t *retbuf));
 
 	extern int dlp_WriteSortBlock
 		PI_ARGS((int sd, int fHandle, PI_CONST void *dbuf,
