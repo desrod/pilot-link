@@ -36,6 +36,9 @@ int pilot_connect(const char *port)
 		result;
 	struct 	pi_sockaddr addr;
 
+	if (port == NULL && getenv("PILOTPORT") == NULL)
+		putenv("PILOTPORT=/dev/pilot");
+	
 	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n",
 			port ? port : getenv("PILOTPORT"));

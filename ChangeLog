@@ -1,5 +1,10 @@
 2002-03-07  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/connect.c (pilot_connect): if the port is null and the
+	PILOTPORT env var is null, try using /dev/pilot
+
+2002-03-07  JP Rosevear  <jpr@ximian.com>
+	
 	* tools/Perl5/Pilot.xs: adjust expense wrappers
 
 	* read-expenses.c (main): print both font fields, the correct
