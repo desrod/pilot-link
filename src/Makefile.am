@@ -10,8 +10,6 @@ INCLUDES = 			\
 	-Iinclude		\
 	-I$(top_srcdir)/include \
 	$(PNG_CFLAGS)		\
-	$(TCL_INC)		\
-	$(TK_INC)		\
 	$(RL_CFLAGS)
 
 if WITH_CXX
@@ -20,15 +18,14 @@ else
 CCEXECS =
 endif
 
-if WITH_TK
-TKEXECS = pilot-debug
-else
-TKEXECS =
-endif
+#if WITH_TK
+#TKEXECS = pilot-debug
+#else
+#TKEXECS =
+#endif
 
 bin_PROGRAMS = 		\
 	$(CCEXECS)	\
-	$(TKEXECS)	\
 	addresses	\
 	debugsh		\
 	dlpsh		\
@@ -61,6 +58,7 @@ bin_PROGRAMS = 		\
 	read-notepad	\
 	read-palmpix	\
 	read-todos	\
+	pilot-todos	\
 	reminders
 
 if WITH_PERL
@@ -235,13 +233,12 @@ pilot_clip_SOURCES = 		\
 pilot_clip_LDADD = 				\
 	$(top_builddir)/libpisock/libpisock.la
 
-pilot_debug_SOURCES = 		\
-	pd-tty.c		\
-	pilot-debug.c
-pilot_debug_LDADD = 				\
-	$(TCLTKLIBS)				\
-	$(RL_LIBS)				\
-	$(top_builddir)/libpisock/libpisock.la
+#pilot_debug_SOURCES = 		\
+#	pd-tty.c		\
+#	pilot-debug.c
+#pilot_debug_LDADD = 				\
+#	$(TCLTKLIBS)				\ (RL_LIBS) \
+#	$(top_builddir)/libpisock/libpisock.la
 
 pilot_dedupe_SOURCES = 		\
 	$(getopt_sources)	\
@@ -316,6 +313,12 @@ read_todos_SOURCES = 		\
 	$(getopt_sources)	\
 	read-todos.c
 read_todos_LDADD = 				\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_todos_SOURCES = 		\
+	$(getopt_sources)	\
+	pilot-todos.c
+pilot_todos_LDADD = 				\
 	$(top_builddir)/libpisock/libpisock.la
 
 reminders_SOURCES = 		\

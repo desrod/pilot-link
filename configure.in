@@ -3,6 +3,9 @@
 AC_INIT(include/pi-version.h.in)
 AC_PREFIX_DEFAULT(/usr/local)
 
+dnl ******************************
+dnl Limit to a specific ac version
+dnl ******************************
 dnl AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
@@ -12,7 +15,7 @@ AC_SUBST(CXXFLAGS)
 AC_PATH_PROG(ID, id)
 
 dnl ******************************
-dnl Deny config/build as root
+dnl Warn re: config/build as root
 dnl ******************************
 if test `$ID -u` = 0; then 
 	echo ""
@@ -32,7 +35,7 @@ dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=11
-PILOT_LINK_MINOR=7
+PILOT_LINK_MINOR=8
 PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
@@ -43,7 +46,8 @@ VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 
 
 dnl ******************************
-dnl Pilot Link Library Version
+dnl Pilot Link Library Version 
+dnl libpisock.so
 dnl ******************************
 PISOCK_CURRENT=8
 PISOCK_REVISION=4
@@ -56,6 +60,7 @@ AC_SUBST(PISOCK_AGE)
 
 dnl ******************************
 dnl Pilot Link Sync Library Version
+dnl libpisync.so
 dnl ******************************
 PISYNC_CURRENT=0
 PISYNC_REVISION=0
@@ -68,6 +73,7 @@ AC_SUBST(PISYNC_AGE)
 
 dnl ******************************
 dnl Pilot Link C++ Library Version
+dnl libpisock++
 dnl ******************************
 PISOCKPP_CURRENT=0
 PISOCKPP_REVISION=0
@@ -92,7 +98,7 @@ AC_PROG_YACC
 
 
 dnl ******************************
-dnl Check for CVS source
+dnl Check if this was CVS source
 dnl ******************************
 if test -d "${srcdir}/CVS" ; then
         PL_FROM_CVS=yes
@@ -112,30 +118,31 @@ AC_STRUCT_TM
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
 
-AC_CHECK_HEADERS(dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/ioctl_compat.h sys/ioctl.h sys/malloc.h sys/select.h sys/sockio.h sys/time.h sys/utsname.h unistd.h)
-AC_CHECK_FUNCS(atexit cfmakeraw cfsetispeed cfsetospeed cfsetspeed dup2 gethostname inet_aton malloc memcpy memmove putenv sigaction snprintf strchr strdup strtok strtoul uname)
+AC_CHECK_HEADERS(
+	dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h 		\
+	netinet/in.h readline/history.h readline/readline.h stdint.h 	\
+	stdlib.h string.h strings.h sys/ioctl_compat.h sys/ioctl.h 	\
+	sys/malloc.h sys/select.h sys/sockio.h sys/time.h sys/utsname.h \
+	unistd.h)
 
-dnl Find optional libraries (borrowed from Tcl)
-tcl_checkBoth=0
-AC_CHECK_FUNC(connect, tcl_checkSocket=0, tcl_checkSocket=1)
-if test "$tcl_checkSocket" = 1; then
-    AC_CHECK_LIB(socket, main, LIBS="$LIBS -lsocket", tcl_checkBoth=1)
-fi
-if test "$tcl_checkBoth" = 1; then
-    tk_oldLibs=$LIBS
-    LIBS="$LIBS -lsocket -lnsl"
-    AC_CHECK_FUNC(accept, tcl_checkNsl=0, [LIBS=$tk_oldLibs])
-fi
+AC_CHECK_FUNCS(
+	atexit cfmakeraw cfsetispeed cfsetospeed cfsetspeed dup2 	\
+	gethostname inet_aton malloc memcpy memmove putenv sigaction	\
+	snprintf strchr strdup strtok strtoul uname)
+
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
 AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
 
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
-  ac_cv_termios_cspeed,
-[AC_TRY_COMPILE([#include <termios.h>], [int main(void) {
- struct termios t;t.c_ispeed=t.c_ospeed=0;}],
-  ac_cv_termios_cspeed=yes,ac_cv_termios_cspeed=no)])
+	ac_cv_termios_cspeed,
+
+	[AC_TRY_COMPILE(
+		[#include <termios.h>], [int main(void) {
+		 struct termios t;t.c_ispeed=t.c_ospeed=0;}],
+			ac_cv_termios_cspeed=yes,ac_cv_termios_cspeed=no)])
+
 if test $ac_cv_termios_cspeed = yes; then
-  AC_DEFINE(TERMIOS_CSPEED, 1, [Define if we have termios(3) support])
+	AC_DEFINE(TERMIOS_CSPEED, 1, [Define if we have termios(3) support])
 fi
 
 
@@ -144,12 +151,14 @@ dnl PNG Support
 dnl ******************************
 have_png=no
 msg_png=no
+
 AC_ARG_WITH(libpng, [  --with-libpng           Prefix where libpng is installed])
+
 case $withval in
-/*)
-    PNG_CFLAGS="-I$withval/include"
-    PNG_LIBS="-L$withval/lib"
-    ;;
+	/*)
+		PNG_CFLAGS="-I$withval/include"
+		PNG_LIBS="-L$withval/lib"
+	;;
 esac
 
 save_CFLAGS="$CFLAGS"
@@ -183,10 +192,12 @@ AC_SUBST(PNG_LIBS)
 
 
 dnl ******************************
-dnl USB Support
+dnl Test if building USB Support
+dnl for Linux or FreeBSD
 dnl ******************************
 msg_usb=no
 usb_type=
+
 case "$host" in
 	*linux*)
 		AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
@@ -204,37 +215,52 @@ AM_CONDITIONAL(WITH_FREEBSDUSB, test x$usb_type = xfreebsd)
 
 
 dnl ******************************
-dnl getopt
+dnl Test for getopt
 dnl ******************************
-dnl use our included getopt if the system doesn't have getopt() or getopt_long()
+
+dnl use our included getopt if the system doesn't have getopt() or
+dnl getopt_long()
+
 unistd_getopt=yes
 getopt_getopt=yes
-AC_CHECK_HEADER([unistd.h], [AC_CHECK_FUNCS([getopt getopt_long], , unistd_getopt=no)], unistd_getopt=no)
-AC_CHECK_HEADER([getopt.h], [AC_CHECK_FUNCS([getopt getopt_long], , getopt_getopt=no)], getopt_getopt=no)
-AM_CONDITIONAL(NEED_GETOPT, test x$unistd_getopt = xno -a x$getopt_getopt = xno)
+
+AC_CHECK_HEADER([unistd.h], [
+	AC_CHECK_FUNCS(
+		[getopt getopt_long], , unistd_getopt=no)], unistd_getopt=no)
+
+AC_CHECK_HEADER([getopt.h], [
+	AC_CHECK_FUNCS(
+		[getopt getopt_long], , getopt_getopt=no)], getopt_getopt=no)
+
+AM_CONDITIONAL(NEED_GETOPT, 
+	test x$unistd_getopt = xno -a x$getopt_getopt = xno)
 
 
 dnl ******************************
 dnl iconv checking
 dnl ******************************
 have_iconv=no
+
 AC_ARG_WITH(libiconv, [  --with-libiconv         Prefix where libiconv is installed])
+
 case $withval in
-/*)
-    ICONV_CFLAGS="-I$withval/include"
-    ICONV_LIBS="-L$withval/lib"
-    ;;
+	/*)
+		ICONV_CFLAGS="-I$withval/include"
+		ICONV_LIBS="-L$withval/lib"
+	;;
 esac
 
 save_CFLAGS="$CFLAGS"
 save_LDFLAGS="$LDFLAGS"
 CFLAGS="$CFLAGS $ICONV_CFLAGS"
 LDFLAGS="$LDFLAGS $ICONV_LIBS"
-AC_CHECK_LIB(iconv, libiconv, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"], [
-    AC_CHECK_FUNC(iconv, [
-	AC_CHECK_FUNCS(gnu_get_libc_version)
-	AC_MSG_CHECKING(if system iconv handles CP1252)
-	AC_TRY_RUN([
+
+AC_CHECK_LIB(
+	iconv, libiconv, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"], [
+		AC_CHECK_FUNC(iconv, [
+			AC_CHECK_FUNCS(gnu_get_libc_version)
+			AC_MSG_CHECKING(if system iconv handles CP1252)
+			AC_TRY_RUN([
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
@@ -290,11 +316,14 @@ dnl C++
 dnl ******************************
 use_cpp=false
 msg_cpp=no
+
 AC_ARG_WITH(cpp,      [  --with-cpp=cppexec      use C++ [default=yes]])
+
 if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
 	use_cpp=true
 fi
+
 AM_CONDITIONAL(WITH_CXX, $use_cpp)
 if $use_cpp; then
 	msg_cpp=yes
@@ -305,98 +334,106 @@ dnl ******************************
 dnl readline checking
 dnl ******************************
 msg_readline=no
+
 AC_ARG_WITH(readline,      [  --with-readline         use readline [default=yes]])
 if test "x$with_readline" != "xno"; then
 LIBS="$LIBS -lreadline"
-
 	dnl Let's check all the possible places for readline
 	for termlib in ncurses curses termcap terminfo termlib ; do
-		AC_CHECK_LIB(${termlib}, tputs, [LIBS="-l${termlib} $LIBS"; break])
+		AC_CHECK_LIB(${termlib}, 
+			add_history, [LIBS="-l${termlib} $LIBS"; break])
 		LIBS="$ac_save_LIBS"
 	done
 
-	AC_MSG_CHECKING(for readline)
-	AC_TRY_LINK(,[(void)readline(0);], RL_LIBS="-lreadline",
-		AC_TRY_LINK(,[(void)readline(0);], 
-		RL_LIBS="-lreadline -l${termlib}"))
+        AC_MSG_CHECKING(for readline)
+        AC_TRY_LINK([
+#include <stdio.h>
+#include <readline/readline.h>],[(void)readline(0);],
+                RL_LIBS="-lreadline",
 
-	if test "x$RL_LIBS" = "x"; then
-		AC_MSG_RESULT(not found)
-		AC_MSG_ERROR([Development headers for readline were not found, please correct.])
-	else
-		AC_MSG_RESULT(found)
-	fi
+        AC_TRY_LINK(,[(void)readline(0);], 
+                RL_LIBS="-lreadline -l${termlib}"))
+
+        if test "x$RL_LIBS" = "x"; then 
+                AC_MSG_RESULT(not found)
+                AC_MSG_ERROR([Development headers for readline were not found. Please correct.])
+        else
+                AC_MSG_RESULT(found)
+        fi
 fi
 
 if test "x$RL_LIBS" != "x"; then
-	AC_MSG_CHECKING(for basic readline functions)
+        AC_MSG_CHECKING(for basic readline functions)
 
-	ac_save_LIBS="$LIBS"
+        ac_save_LIBS="$LIBS"
 
-	LIBS="$LIBS $RL_LIBS"
-	AC_TRY_LINK([
+        LIBS="$LIBS $RL_LIBS"
+        AC_TRY_LINK([
 #include <stdio.h>
 #include <readline/readline.h>], [
 char *line; 
-line = readline("prompt");], 
-	[AC_TRY_LINK([
+line = readline("prompt");],      
+        [AC_TRY_LINK([
 #include <stdio.h>
-#include <readline/history.h>], [
+#include <readline/history.h>], [ 
 add_history("test");],
-	[msg_readline=partial])])
+        [msg_readline=partial])]) 
 
-	LIBS="$ac_save_LIBS"
+        LIBS="$ac_save_LIBS"
 
-	if test "xmsg_readline" = "xno"; then
-		AC_MSG_RESULT(no)
-	else
-		AC_MSG_RESULT(yes)
-	fi
+        if test "xmsg_readline" = "xno"; then
+                AC_MSG_RESULT(no)
+        else
+                AC_MSG_RESULT(yes)
+        fi
 fi
+
 if test "x$msg_readline" != "xno"; then
-	AC_MSG_CHECKING(for extra readline functions)
+        AC_MSG_CHECKING(for extra readline functions)
 
-	ac_save_LIBS="$LIBS"
+        ac_save_LIBS="$LIBS"
 
-	LIBS="$LIBS $RL_LIBS"
-	AC_TRY_LINK([
-#include <stdio.h>
+        LIBS="$LIBS $RL_LIBS"
+        AC_TRY_LINK([
+#include <stdio.h>   
 #include <readline/readline.h>], [
 rl_callback_read_char();], 
-	[AC_TRY_LINK([
+        [AC_TRY_LINK([
 #include <stdio.h>
 #include <readline/readline.h>], [
-static void execline(char *line)
+static void execline(char *line)  
 {}
 rl_callback_handler_install("prompt", execline);],
-	[AC_TRY_LINK([
+        [AC_TRY_LINK([
 #include <stdio.h>
 #include <readline/readline.h>], [
-rl_callback_handler_remove();],
-	[AC_TRY_LINK([
+rl_callback_handler_remove();],   
+        [AC_TRY_LINK([
 #include <stdio.h>
 #include <readline/readline.h>], [
 rl_forced_update_display();],
-	[msg_readline=full])])])])
+        [msg_readline=full])])])])
 
-	LIBS="$ac_save_LIBS"
+        LIBS="$ac_save_LIBS"
 
-	if test "x$msg_readline" != "xfull"; then
-		AC_MSG_RESULT(no)
-	else
-		AC_MSG_RESULT(yes)
-	fi
+        if test "x$msg_readline" != "xfull"; then
+                AC_MSG_RESULT(no)
+        else
+                AC_MSG_RESULT(yes)
+        fi
 fi
-
+  
 if test "x$msg_readline" = "xpartial"; then
-	AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
+        AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
 fi
+  
 if test "x$msg_readline" = "xfull"; then
-	AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
-	AC_DEFINE(HAVE_READLINE_EXTRA, 1, [Define if we have extra readline support])
+        AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
+        AC_DEFINE(HAVE_READLINE_EXTRA, 1, [Define if we have extra readline support])
 fi
+
 AC_SUBST(RL_CFLAGS)
-AC_SUBST(RL_LIBS)
+AC_SUBST(RL_LIBS)  
 
 
 dnl ******************************
@@ -404,36 +441,36 @@ dnl Perl
 dnl ******************************
 use_perl=false
 msg_perl=no
+
 AC_ARG_WITH(perl,    [  --with-perl=perlexec    use Perl [default=no]], , with_perl=no)
 if test "x$with_perl" = "xno"; then
+	AC_MSG_CHECKING(for existance of perl)
+	AC_MSG_RESULT(disabled)
 	PERL=''
 else
 	if test "x$with_perl" != "xyes" && test "x$with_perl" != "x"; then
 		PERL="$with_perl"
 	else
-		AC_PATH_PROG(PERL, perl)
+		AC_CHECK_PROG(PERL, perl, no)
 	fi
 fi
 
+dnl Check if version of Perl is sufficient
+PERL_MINVERSION="5.000_00"
+
 if test "x$PERL" != "x"; then
-	AC_MSG_CHECKING(perl version)
-	verstxt=`$PERL -e 'print $]'`
-        vers=`echo "$verstxt" | awk -F. '{ printf "%d", ($1 * 1000);}'`
-	if test "$vers" -ge 5000; then
-		if test "$vers" -lt 6000; then
-			AC_MSG_RESULT($verstxt)
-			PERLVER=$verstxt
-			use_perl=true
-		else
-			AC_MSG_RESULT($verstext [perl 5 not found])
-			AC_MSG_ERROR([Perl 5 or later not found, please correct.])
-			use_perl=false
-		fi
+	AC_MSG_CHECKING(for perl version greater than or equal to $PERL_MINVERSION)
+	$PERL -e "exit ! eval 'use $PERL_MINVERSION; 1'"
+	if test $? -ne 0; then
+		AC_MSG_RESULT(no);
+		use_perl=false
 	else
-		AC_MSG_RESULT($verstext [perl 5 not found])
-		AC_MSG_ERROR([Perl 5 or later not found, please correct.])
+		AC_MSG_RESULT(yes);
+		PERL_VERSION=`$PERL -e 'print $]'`
+		use_perl=true
 	fi
 fi
+
 AM_CONDITIONAL(WITH_PERL, $use_perl)
 if $use_perl; then
 	msg_perl=yes
@@ -446,12 +483,15 @@ dnl Java
 dnl ******************************
 use_java=false
 msg_java=no
+
 AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java [default=no]], , with_java=no)
+
 if test "x$with_java" != "xno"; then
 	AC_PATH_PROG(JAVAC, javac, , $with_java/bin:$PATH)
 	AC_PATH_PROG(JAVA, java, , $with_java/bin:$PATH)
 	AC_PATH_PROG(JAR, jar, ,$with_java/bin:$PATH)
 fi
+
 if test "x$JAVA" != "x" && test "x$JAVAC" != "x" && test "x$JAR" != "x"; then
 	AC_MSG_CHECKING(for Java Development Kit)
 	JAVABASE=`echo "$JAVAC" | sed -e "s/\/bin\/javac//"`
@@ -462,10 +502,13 @@ if test "x$JAVA" != "x" && test "x$JAVAC" != "x" && test "x$JAR" != "x"; then
 		AC_MSG_RESULT(not usable) 
 	fi
 fi
+
 AM_CONDITIONAL(WITH_JAVA, $use_java)
+
 if $use_java; then
 	msg_java=yes
 fi
+
 AC_SUBST(JAVA)
 AC_SUBST(JAVAC)
 AC_SUBST(JAR)
@@ -473,193 +516,11 @@ AC_SUBST(JAVABASE)
 
 
 dnl ******************************
-dnl TCL/ITCL/TK
-dnl ******************************
-use_tcl=false
-msg_tcl=no
-use_itcl=false
-msg_itcl=no
-use_tk=false
-msg_tk=no
-
-AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl [default=no]],  , with_tcl=no)
-AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use ITcl [default=no]],  , with_itcl=no)
-AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk [default=no]],  , with_tk=no)
-if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
-		for tcl_path in /usr /usr/contrib /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.4 /usr/local/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
-		if test -f $tcl_path/lib/tclConfig.sh; then
-			with_tcl=$tcl_path; break
-		elif test -f $tcl_path/lib/itcl/tclConfig.sh; then
-			itcl='/itcl'
-			with_tcl=$tcl_path; break
-		fi
-	done
-	if test "x$with_tcl" = "xyes"; then
-		echo "Unable to find Tcl base installation directory."
-		echo "Please give directory (such as /usr/local) as argument to --with-tcl=dir."
-		with_tcl=no
-	fi
-else
-	if test -f $with_tcl/lib/itcl/tclConfig.sh; then
-		itcl='/itcl'
-	fi
-fi 
-
-AC_MSG_CHECKING(for Tcl)
-if test "x$with_tcl" = "x"; then
-	AC_MSG_RESULT(not found)
-elif test "x$with_tcl" = "xno"; then
-	AC_MSG_RESULT(not used)
-else
-	tclConfig="$with_tcl/lib$itcl/tclConfig.sh"
-	if test ! -f $tclConfig; then
-		AC_MSG_RESULT(Unable to find tclConfig.sh)
-	else
-		. $tclConfig
-		AC_MSG_RESULT(version $TCL_VERSION from $tclConfig)
-		TCL_INC="-I$TCL_PREFIX/include$itcl"
-		TCL_BIN="$TCL_EXEC_PREFIX/bin"
-		TCLLIBS="$TCL_LIB_SPEC $TCL_LIBS"
-		TCLTKLIBS="$TCLLIBS"
-		TCLTK_LIBS="\$(TCL_LIB_SPEC) \$(TCL_LIBS)"
-		TCLTK_FLAGS="-DTCL \$(TCL_INC)"
-		TCLTKFLAGS="-DTCL $TCL_INC"
-		DEBIAN_TCL="\$(TCL_INC)/tcl"
-		DEBIANTCL="$TCL_INC/tcl"
-		use_tcl=true
-		
-		if test "x$with_itcl" = "xyes" || test "x$with_itcl" = "x"; then
-			for itcl_path in $with_tcl; do
-				if test -f $itcl_path/lib$itcl/itclConfig.sh; then
-					with_itcl=$itcl_path; break
-				fi
-			done
-			if test "x$with_itcl" = "xyes"; then
-				echo "Unable to find Itcl base installation directory."
-				echo "Please give directory (such as /usr/local/itcl2.2) as argument to --with-itcl=dir."
-				with_itcl=no
-			fi
-		fi 
-
-		AC_MSG_CHECKING(for Itcl)
-		if test "x$with_itcl" = "x"; then
-			AC_MSG_RESULT(not found)
-		elif test "x$with_itcl" = "xno"; then
-			AC_MSG_RESULT(not used)
-		else
-			itclConfig="$with_itcl/lib$itcl/itclConfig.sh"
-			if test ! -f $itclConfig; then
-				AC_MSG_RESULT(Unable to find itclConfig.sh)
-			else
-				. $itclConfig
-				AC_MSG_RESULT(version $ITCL_VERSION from $itclConfig)
-				ITCL_INC="-I$TK_PREFIX/include$itcl"
-				#TK_BIN="$TK_EXEC_PREFIX/bin"
-				#TKLIBS="$TK_LIB_SPEC $TCL_LIB_SPEC $TK_LIBS"
-				#TCLTK_LIBS="\$(TK_LIB_SPEC) \$(TCL_LIB_SPEC) \$(TK_LIBS)"
-				#TCLTK_FLAGS="$TCLTK_FLAGS -DTK \$(TK_INC)"
-				#TCLTKLIBS="$TKLIBS"
-				use_itcl=true
-				if test "x$ITCL_INC" = "x$TCL_INC"; then
-					ITCL_INC=" #same as TCL_INC"
-					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
-				else
-					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL $TK_INC"
-				fi
-			fi
-		fi
-
-		if test "x$with_tk" = "xyes" || test "x$with_tk" = "x"; then
-			for tk_path in $with_tcl; do
-				if test -f $tk_path/lib$itcl/tkConfig.sh; then
-					with_tk=$tk_path; break
-				fi
-			done
-			if test "x$with_tk" = "xyes"; then
-				echo "Unable to find Tk base installation directory."
-				echo "Please give directory (such as /usr/local) as argument to --with-tk=dir."
-				with_tk=no
-			fi
-		fi 
-		
-		AC_MSG_CHECKING(for Tk)
-		if test "x$with_tk" = "x"; then
-			AC_MSG_RESULT(not found)
-		elif test "x$with_tk" = "xno"; then
-			AC_MSG_RESULT(not used)
-		else
-			tkConfig="$with_tk/lib$itcl/tkConfig.sh"
-			if test ! -f $tkConfig; then
-				AC_MSG_RESULT(Unable to find tkConfig.sh)
-			else
-				. $tkConfig
-				AC_MSG_RESULT(version $TK_VERSION from $tkConfig)
-				TK_INC="-I$TK_PREFIX/include$itcl"
-				TK_BIN="$TK_EXEC_PREFIX/bin"
-				TKLIBS="$TK_LIB_SPEC $TCL_LIB_SPEC $TK_LIBS"
-				TCLTK_LIBS="\$(TK_LIB_SPEC) \$(TCL_LIB_SPEC) \$(TK_LIBS)"
-				TCLTK_FLAGS="$TCLTK_FLAGS -DTK \$(TK_INC)"
-				TCLTKLIBS="$TKLIBS"
-				use_tk=true
-				if test "x$TK_INC" = "x$TCL_INC"; then
-					TK_INC=" #same as TCL_INC"
-					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
-				else
-					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL $TK_INC"
-				fi
-			fi
-		fi
-
-
-	fi
-fi
-
-TCL_PACKAGE_PATH=`echo $TCL_PACKAGE_PATH | sed 's/ .*//'`
-
-AM_CONDITIONAL(WITH_TCL, $use_tcl)
-if $use_tcl; then
-	msg_tcl=yes
-fi
-AM_CONDITIONAL(WITH_ITCL, $use_itcl)
-if $use_itcl; then
-	msg_itcl=yes
-fi
-AM_CONDITIONAL(WITH_TK, $use_tk)
-if $use_tk; then
-	msg_tk=yes
-fi
-AC_SUBST(TCL_VERSION)
-AC_SUBST(TCL_LIBS)
-AC_SUBST(TCL_LIB_SPEC)
-AC_SUBST(TCL_PACKAGE_PATH)
-AC_SUBST(TCL_INC)
-AC_SUBST(TCL_BIN)
-AC_SUBST(TK_VERSION)
-AC_SUBST(TK_LIBS)
-AC_SUBST(TK_LIB_SPEC)
-AC_SUBST(TK_INC)
-AC_SUBST(TK_BIN)
-AC_SUBST(TCLTK_LIBS)
-AC_SUBST(TCLTK_FLAGS)
-AC_SUBST(TCLLIBS)
-AC_SUBST(TKLIBS)
-AC_SUBST(TCLTKLIBS)
-AC_SUBST(TCLTKFLAGS)
-AC_SUBST(DEBIAN_TCL)
-AC_SUBST(DEBIANTCL)
-
-TCLEXECS=''
-if test ! "x$TCL_VERSION" = "x"; then
-	TCLEXECS='pilot-debug$(EXT)'
-fi
-AC_SUBST(TCLEXECS)
-
-
-dnl ******************************
 dnl Python
 dnl ******************************
 use_python=false
 msg_python=no
+
 AC_ARG_WITH(python,   [  --with-python=pybase    use Python [default=no]],  , with_python=no)
 
 if test "x$with_python" != "xno"; then
@@ -671,8 +532,10 @@ fi
 if $use_python; then
 	AC_MSG_CHECKING(python development kit)
 
-	PYTHONVER=[`$PYTHON -c "import sys, string; print string.split(sys.version)[0]"`]
-	if `$PYTHON -c "from distutils.core import setup, Extension;" > /dev/null 2>&1`; then
+	# sys.stdout = StringIO.StringIO(); sends all strings to memory,
+	# more portable than the previous '>/dev/null' call
+	PYTHONVER=[`$PYTHON -c "import sys, string, StringIO; sys.stdout = StringIO.StringIO(); print string.split(sys.version)[0]"`]
+	if `$PYTHON -c "from distutils.core import setup, Extension;"`; then
 		use_python=true
 		AC_MSG_RESULT(looks good)
 	else
@@ -692,6 +555,7 @@ dnl ElectricFence (optional)
 dnl *************************************
 use_efence=false
 msg_efence=no   
+
 AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking [default=no]],  , with_efence=no)
 
 if test "x$with_efence" != "xno"; then
@@ -750,6 +614,7 @@ dnl *************************************
 dnl Extra warnings
 dnl *************************************
 set_compile_warnings=no
+
 AC_ARG_ENABLE(compile-warnings,
 	      [  --enable-compile-warnings   
                           Enable verbose compiler warnings],
@@ -832,12 +697,9 @@ echo "
 
   External Language Support
   -------------------------.
-  TCL support............. : $msg_tcl	$TCL_VERSION
-  ITCL support............ : $msg_itcl	$ITCL_VERSION
-  TK Support.............. : $msg_tk	$TK_VERSION
   Java support............ : $msg_java	
   Python support.......... : $msg_python	$PYTHONVER
-  Perl support............ : $msg_perl	$PERLVER
+  Perl support............ : $msg_perl	$PERL_VERSION
 "
 
 if [[ x"$PL_FROM_CVS" = xyes ]]; then
@@ -847,7 +709,6 @@ if [[ x"$PL_FROM_CVS" = xyes ]]; then
   echo " | This is likely to be unstable, or contain |"
   echo " | some incomplete features, or just plain   |"
   echo " | not work at all. Use it at your own risk. |"
-  echo " |                                           |"
   echo " \`-------------------------------------------'"
   echo ""
 fi
