@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
@@ -26,6 +27,11 @@
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "pi-appinfo.h"
+
+
+#define hi(x) (((x) >> 4) & 0x0f)
+#define lo(x) ((x) & 0x0f)
 
 
 typedef enum
@@ -56,7 +62,7 @@ hexprint (unsigned char *data, size_t len, size_t ofs, int ascii)
 
 	while (i < len)
 	{
-		printf (" %08X:", line);
+		printf ("  %08X:", line);
 		for (j = 0; j < 16; j++, i++)
 		{
 			if (i < len)
@@ -91,40 +97,36 @@ hexprint (unsigned char *data, size_t len, size_t ofs, int ascii)
 }
 
 
-int
-main (const int argc, const char **argv)
+void
+print_categories (unsigned char *buf, int len)
+{
+	CategoryAppInfo_t c;
+	int i;
+
+	unpack_CategoryAppInfo (&c, buf, len);
+	for (i = 0; i < 16; i++)
+	{
+		if (strlen(c.name[i]) > 0)
+			printf (" Category %i: %s\n",
+					c.ID[i], c.name[i]);
+	}
+	printf (" Last Unique ID: %i\n", c.lastUniqueID);
+
+	return;
+}
+
+
+pbooktype_t
+print_appblock (int sd, int db)
 {
 	int i;
 	int ofs;
-	int sd = -1;
-	int db;
 	int clabels;
 	unsigned char buf[0xffff];
 	unsigned char *data;
 	size_t len;
 	pbooktype_t dbtype;
 
-	if (argc != 2)
-	{
-		fprintf (stderr, "Usage: contactsdb-test <port>\n");
-		return 1;
-	}
-
-	sd = pilot_connect (argv[1]);
-
-	if (sd < 0)
-		goto error;
-
-	if (dlp_OpenConduit (sd) < 0)
-		goto error;
-	
-	if (dlp_OpenDB(sd, 0, dlpOpenRead, "ContactsDB-PAdd", &db) < 0)
-	{
-		fprintf (stderr, "Unable to open Contacts database\n");
-		dlp_AddSyncLogEntry (sd, "Unable to open ContactsDB.\n");
-		goto error;
-	}
-	
 	i = dlp_ReadAppBlock(sd, db, 0, buf, sizeof(buf));
 	data = (unsigned char *)&buf;
 
@@ -152,48 +154,249 @@ main (const int argc, const char **argv)
 		/* something's wrong */
 		goto error;
 
-	printf ("Skipping Categories (278 bytes)\n");
-	len -= 278;
+	printf ("Categories:\n");
+	print_categories (data + ofs, 278);
 	ofs += 278;
-	data += 278;
 
-	printf ("Unknown data (internal flags?)\n");
-	hexprint (data, 26, ofs, 0);
-	len -= 26;
-	data += 26;
+	printf ("Internal data:\n");
+	hexprint (data + ofs, 26, ofs, 0);
 	ofs += 26;
 
+	/*
+	 * Basically, ContactsDB 1.1 adds four field labels.  "Picture" is
+	 * inserted into the list at i == 46, and the contents of the picture menu
+	 * ("Camera", "Photos", "Remove") are appended to the end of the list,
+	 * beginning at i == 50.
+	 */
 	printf ("Field labels");
 	for (i = 0; i < clabels; i++)
 	{
 		if (i%4 == 0)
 			printf ("\n ");
-		printf ("%02i:%-16s ", i, (const char *)data);
+		printf ("%02i:%-16s ", i, (const char *)(data + ofs));
 		ofs += 16;
-		len -= 16;
-		data += 16;
 	}
 
-	printf ("\n\nCountry: %hhu\n", data[0]);
+	printf ("\n\nCountry: %hhu\n", *(data + ofs));
 
 	/* Skip a 0 byte */
-	data += 2;
 	ofs += 2;
-	len -= 2;
 
-	printf ("\nSorting: %s\n", data[0] ? "By company" : "By name");
+	printf ("\nSorting: %s\n", data + ofs ? "By company" : "By name");
 
 	/* Skip a 0 byte */
-	data += 2;
 	ofs += 2;
-	len -= 2;
 
-	if (len > 0)
+	if (ofs < len)
 	{
 		/* Should never be true! */
 		printf ("\n\nWhatever is left:\n");
-		hexprint (data, len, ofs, 1);
+		hexprint (data + ofs, len - ofs, ofs, 1);
 	}
+
+	puts("");
+
+	return dbtype;
+
+error:
+
+	return db_unknown;
+}
+
+
+void
+print_record (int recid, int attr, int category, pi_buffer_t *buf)
+{
+	size_t ofs = 0;
+	uint32_t contents1, contents2;
+	int i;
+	char *s;
+
+	printf ("Category %i, ID 0x%04x", category, (unsigned int)recid);
+	if (attr & dlpRecAttrDeleted)
+		printf (", deleted");
+	if (attr & dlpRecAttrDirty)
+		printf (", dirty");
+	if (attr & dlpRecAttrBusy)
+		printf (", busy");
+	if (attr & dlpRecAttrSecret)
+		printf (", secret");
+	if (attr & dlpRecAttrArchived)
+		printf (", archived");
+	if (attr == 0)
+		printf (", no attributes");
+	printf (" (%zu bytes)\n", buf->used);
+
+	if (buf->used == 0)
+		return;
+
+	if (buf->used < 17)
+		goto broken;
+
+	/*
+	 * The first 17 bytes are a header 
+	 */
+	printf (" Phone labels: { %i, %i, %i, %i, %i, %i, %i } (showing [%i])\n",
+			lo(get_byte(buf->data + 3)),
+			hi(get_byte(buf->data + 3)),
+			lo(get_byte(buf->data + 2)),
+			hi(get_byte(buf->data + 2)),
+			lo(get_byte(buf->data + 1)),
+			hi(get_byte(buf->data + 1)),
+			lo(get_byte(buf->data)),
+			hi(get_byte(buf->data)));
+	printf (" Address labels: { %i, %i, %i }\n",
+			lo(get_byte(buf->data + 5)),
+			hi(get_byte(buf->data + 5)),
+			lo(get_byte(buf->data + 4)));
+	/* high nybble of data[4] unused */
+
+	/* data[6] unused */
+
+	printf (" IM labels: { %i, %i }\n",
+			lo(get_byte(buf->data + 7)),
+			hi(get_byte(buf->data + 7)));
+
+	contents1 = get_long(buf->data + 8);
+	contents2 = get_long(buf->data + 12);
+	printf (" Record contents: 0x%08x 0x%08x\n", contents1, contents2);
+
+	/* + 17 to make it absolute */
+	printf (" Offset to Company: 0x%04x\n", get_byte(buf->data + 16) + 17);
+
+	ofs += 17;
+
+	for (i = 0; i < 28; i++)
+	{
+		if ((contents1 & (1 << i)) != 0)
+		{
+			/* This isn't safe, should probably be checking record length */
+			s = buf->data + ofs;
+			ofs += strlen(s) + 1;
+			printf (" Field %i: %s\n", i, s);
+			contents1 ^= (1 << i);
+		}
+	}
+
+	if (contents1 != 0)
+	{
+		/* we cleared all of the bits we recognize */
+		printf (" Unknown fields in contents1: 0x%08x\n", contents1);
+		goto broken;
+	}
+
+	for (i = 0; i < 11; i++)
+	{
+		if ((contents2 & (1 << i)) != 0)
+		{
+			/* This isn't safe, should probably be checking record length */
+			s = buf->data + ofs;
+			ofs += strlen(s) + 1;
+			printf (" Field %i: %s\n", i + 28, s);
+			contents2 ^= (1 << i);
+		}
+	}
+
+	if (contents2 & 0x1800)
+	{
+		uint16_t bday = get_short(buf->data + ofs);
+
+		ofs += 4;
+
+		printf (" Birthday: %i-%02i-%02i",
+				((bday & 0xfe00) >> 9) + 1904,
+				((bday & 0x01e0) >> 4) - 1,
+				bday & 0x001f);
+
+		/* if this is set without a date, it should be caught below */
+		if (contents2 & 0x2000)
+		{
+			int reminder = (int)get_byte(buf->data + ofs);
+
+			ofs++;
+			printf (" (reminder %i days before)", reminder);
+			contents2 ^= 0x2000;
+		}
+		puts ("");
+
+		contents2 ^= 0x1800;
+	}
+
+
+	if (contents2 != 0)
+	{
+		/* we cleared all of the bits we recognize */
+		printf (" Unknown fields in contents2: 0x%08x\n", contents2);
+		goto broken;
+	}
+
+	if (ofs < buf->used)
+	{
+		/* Under Contacts 1.0, this is probably actually an error */
+		printf ("Picture: %zu bytes\n", buf->used - ofs);
+	}
+
+	puts ("");
+
+	return;
+
+broken:
+
+	/* Something's wrong, print the whole record */
+	puts ("Broken/unrecognized record:");
+	hexprint (buf->data, buf->used, 0, 1);
+	puts("");
+	return;
+}
+
+
+int
+main (const int argc, const char **argv)
+{
+	int sd = -1;
+	int db;
+	pbooktype_t dbtype;
+	int i;
+	int l;
+	recordid_t recid;
+	int attr;
+	int category;
+	pi_buffer_t *buf;
+
+	if (argc != 2)
+	{
+		fprintf (stderr, "Usage: contactsdb-test <port>\n");
+		return 1;
+	}
+
+	sd = pilot_connect (argv[1]);
+
+	if (sd < 0)
+		goto error;
+
+	if (dlp_OpenConduit (sd) < 0)
+		goto error;
+	
+	if (dlp_OpenDB(sd, 0, dlpOpenRead, "ContactsDB-PAdd", &db) < 0)
+	{
+		fprintf (stderr, "Unable to open Contacts database\n");
+		dlp_AddSyncLogEntry (sd, "Unable to open ContactsDB.\n");
+		goto error;
+	}
+
+	dbtype = print_appblock(sd, db);
+
+
+	buf = pi_buffer_new (0xffff);
+	for (i = 0; /**/; i++)
+	{
+		l = dlp_ReadRecordByIndex (sd, db, i, buf, &recid, &attr, &category);
+		if (l < 0)
+			break;
+
+		print_record(recid, attr, category, buf);
+	}
+	pi_buffer_free (buf);
 
 	dlp_CloseDB(sd, db);
 	dlp_EndOfSync (sd, 0);
