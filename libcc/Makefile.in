@@ -55,36 +55,35 @@ depend:
 
 #Dependencies
 address.o: address.cc ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h \
- ../include/pi-address.h ../include/pi-appinfo.h \
- ../include/pi-appinfo.hxx ../include/pi-address.hxx
+  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-address.h \
+  ../include/pi-appinfo.h ../include/pi-appinfo.hxx \
+  ../include/pi-address.hxx
 appInfo.o: appInfo.cc ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h \
- ../include/pi-appinfo.hxx
+  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+  ../include/pi-sockaddr.h ../include/pi-macros.h \
+  ../include/pi-appinfo.hxx
 datebook.o: datebook.cc ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h \
- ../include/pi-datebook.h ../include/pi-appinfo.h \
- ../include/pi-appinfo.hxx ../include/pi-datebook.hxx
+  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+  ../include/pi-sockaddr.h ../include/pi-macros.h \
+  ../include/pi-datebook.h ../include/pi-appinfo.h \
+  ../include/pi-appinfo.hxx ../include/pi-datebook.hxx
 dlp.o: dlp.cc ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.hxx \
- ../include/pi-dlp.h
+  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.hxx \
+  ../include/pi-dlp.h
 iambicExpense.o: iambicExpense.cc ../include/pi-source.h \
- ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
- ../include/pi-version.h ../include/pi-sockaddr.h \
- ../include/pi-macros.h ../include/pi-iambicExpense.h \
- ../include/pi-appinfo.h ../include/pi-appinfo.hxx \
- ../include/pi-iambicExpense.hxx
+  ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
+  ../include/pi-version.h ../include/pi-sockaddr.h ../include/pi-macros.h \
+  ../include/pi-iambicExpense.h ../include/pi-appinfo.h \
+  ../include/pi-appinfo.hxx ../include/pi-iambicExpense.hxx
 memo.o: memo.cc ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-memo.h \
- ../include/pi-appinfo.h ../include/pi-appinfo.hxx \
- ../include/pi-memo.hxx
+  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-memo.h \
+  ../include/pi-appinfo.h ../include/pi-appinfo.hxx \
+  ../include/pi-memo.hxx
 todo.o: todo.cc ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
- ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-todo.h \
- ../include/pi-appinfo.h ../include/pi-appinfo.hxx \
- ../include/pi-todo.hxx
+  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-todo.h \
+  ../include/pi-appinfo.h ../include/pi-appinfo.hxx \
+  ../include/pi-todo.hxx

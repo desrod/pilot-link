@@ -1,5 +1,11 @@
 2001-01-23  JP Rosevear  <jpr@ximian.com>
 
+	* Makefile.in: Add a dist target
+
+	* autogen.sh: add for packaging systems
+
+2001-01-23  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/Makefile.in: update depends
 
 	* Makefile.in: Don't specifically include the header object file, its
