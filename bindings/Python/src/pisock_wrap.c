@@ -923,56 +923,80 @@ static swig_type_info *swig_types[46];
 #define DGETSTR(src,key,default) (PyDict_GetItemString(src,key) ? \
 				  PyString_AsString(PyDict_GetItemString(src,key)) : default)
 
-static PyObject *PIError;
-static PyObject *DLPError;
+static PyObject *PIError = NULL;
+static PyObject *DLPError = NULL;
 
 
-typedef int PIERROR;
-
-
-
-/* sd, dbf, sort, start, max, recordid_t *IDS, int *count
+/* pythonWrapper_handlePiErr
+ * called by each function that handles a PI_ERR return code
  */
-static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
-    int sd, dbf, sort, start, max;
-    int ret;
-    recordid_t *buf;
-    int count, i;
-    PyObject *list;
+static void* pythonWrapper_handlePiErr(int sd, int err)
+{
+	if (err == PI_ERR_DLP_PALMOS) {
+		int palmerr = pi_palmos_error(sd);
+		if (palmerr == dlpErrNoError || palmerr == dlpErrNotFound) {
+			Py_INCREF(Py_None);
+			return Py_None;
+		}
+		if (palmerr > dlpErrNoError && palmerr <= dlpErrUnknown) {
+			PyErr_SetObject(PIError,
+				Py_BuildValue("(is)", palmerr, dlp_strerror(palmerr)));
+			return NULL;
+		}
+	}
 
-    buf = (recordid_t *)PyMem_Malloc(0xFFFF);    
-
-    if (!PyArg_ParseTuple(args, "iiiii", &sd, &dbf, &sort, &start, &max))
+	if (IS_PROT_ERR(err)) {
+	  PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "protocol error"));
+	} else if (IS_SOCK_ERR(err)) {
+	  PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "socket error"));
+	} else if (IS_DLP_ERR(err)) {
+	  PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "dlp error"));
+	} else if (IS_FILE_ERR(err)) {
+	  PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "file error"));
+	} else if (IS_GENERIC_ERR(err)) {
+	  PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "generic error"));
+	} else {
+	  PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "pisock error"));
+	}	
 	return NULL;
-
-/* this is a rather simplistic wrapper.  if max is too big, we just
- * refuse to do it; we don't loop, figuring that that is the job of
- * the python wrapper.
- */
-    if (max > (0xFFFF/sizeof(recordid_t))) {
-	PyErr_SetString(PyExc_ValueError, "can only return about 64k worth of ids at once");
-	return NULL;
-    }
-
-    ret = dlp_ReadRecordIDList(sd, dbf, sort, start, max, buf, &count);
-
-    if (ret < 0) {
-	PyErr_SetObject(PIError, Py_BuildValue("(is)", ret, dlp_strerror(ret)));
-	PyMem_Free(buf);
-	return NULL;
-    } else {
-	list = PyList_New(0);
-	for (i=0; i<count; i++)
-	    PyList_Append(list, PyInt_FromLong((long)buf[i]));
-	PyMem_Free(buf);
-	return list;
-    }
 }
 
 
-
-typedef int DLPERROR;
-typedef int DLPDBERROR;
+static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
+	int sd, dbhandle, sort, start, max;
+	int ret;
+	recordid_t *buf;
+	int count, i;
+	PyObject *list;
+	
+	buf = (recordid_t *)PyMem_Malloc(0xFFFF);    
+	
+	if (!PyArg_ParseTuple(args, "iiiii", &sd, &dbhandle, &sort, &start, &max))
+		return NULL;
+	
+	/* this is a rather simplistic wrapper.  if max is too big, we just
+		* refuse to do it; we don't loop, figuring that that is the job of
+		* the python wrapper.
+		*/
+	if (max > (0xFFFF/sizeof(recordid_t))) {
+		PyErr_SetString(PyExc_ValueError, "can only return about 64k worth of ids at once");
+		return NULL;
+	}
+	
+	ret = dlp_ReadRecordIDList(sd, dbhandle, sort, start, max, buf, &count);
+	
+	if (ret < 0) {
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", ret, dlp_strerror(ret)));
+		PyMem_Free(buf);
+		return NULL;
+	} else {
+		list = PyList_New(0);
+		for (i=0; i<count; i++)
+			PyList_Append(list, PyInt_FromLong((long)buf[i]));
+		PyMem_Free(buf);
+		return list;
+	}
+}
 
 
 /* returns SWIG_OLDOBJ if the input is a raw char*, SWIG_PYSTR if is a PyString */
@@ -1216,7 +1240,7 @@ extern struct pi_protocol *pi_protocol(int,int);
 extern struct pi_protocol *pi_protocol_next(int,int);
 extern int pi_socket_connected(int);
 extern int pi_connect(int,char const *);
-extern int pi_bind(int,char const *);
+extern PI_ERR pi_bind(int,char const *);
 extern int pi_listen(int,int);
 extern int pi_accept(int,struct sockaddr *,size_t *);
 extern int pi_accept_to(int,struct sockaddr *,size_t *,int);
@@ -1499,88 +1523,89 @@ SWIG_FromCharPtr(const char* cptr)
 extern void dlp_set_protocol_version(int,int);
 extern time_t dlp_ptohdate(unsigned char const *);
 extern void dlp_htopdate(time_t,unsigned char *);
-extern int dlp_GetSysDateTime(int,time_t *);
-extern int dlp_SetSysDateTime(int,time_t);
-extern int dlp_ReadSysInfo(int,struct SysInfo *);
-extern int dlp_ReadStorageInfo(int,int,struct CardInfo *);
-extern int dlp_ReadUserInfo(int,struct PilotUser *);
-extern int dlp_WriteUserInfo(int,struct PilotUser *);
-extern int dlp_ResetLastSyncPC(int);
-extern int dlp_ReadNetSyncInfo(int,struct NetSyncInfo *);
-extern int dlp_WriteNetSyncInfo(int,struct NetSyncInfo const *);
-extern int dlp_OpenConduit(int);
-extern int dlp_EndOfSync(int,int);
-extern int dlp_AbortSync(int);
-extern int dlp_ReadFeature(int,unsigned long,unsigned int,unsigned long *);
-extern int dlp_GetROMToken(int,unsigned long,void *,size_t *);
-extern int dlp_AddSyncLogEntry(int,char *);
-extern int dlp_CallApplication(int,unsigned long,unsigned long,int,size_t,void const *,unsigned long *,pi_buffer_t *);
-extern int dlp_ReadAppPreference(int,unsigned long,int,int,int,void *,size_t *,int *);
-extern int dlp_WriteAppPreference(int,unsigned long,int,int,int,void const *,size_t);
-extern int dlp_ResetSystem(int);
-extern int dlp_ReadDBList(int,int,int,int,pi_buffer_t *);
-extern int dlp_FindDBByName(int,int,char const *,unsigned long *,int *,struct DBInfo *,struct DBSizeInfo *);
-extern int dlp_FindDBByOpenHandle(int,int,int *,unsigned long *,struct DBInfo *,struct DBSizeInfo *);
-extern int dlp_FindDBByTypeCreator(int,unsigned long,unsigned long,int,int,int *,unsigned long *,int *,struct DBInfo *,struct DBSizeInfo *);
-extern int dlp_FindDBInfo(int,int,int,char const *,unsigned long,unsigned long,struct DBInfo *);
-extern int dlp_OpenDB(int,int,int,char const *,int *);
-extern int dlp_CloseDB(int,int);
-extern int dlp_CloseDB_All(int);
-extern int dlp_DeleteDB(int,int,char const *);
-extern int dlp_CreateDB(int,unsigned long,unsigned long,int,int,unsigned int,char const *,int *);
-extern int dlp_ReadOpenDBInfo(int,int,int *);
-extern int dlp_SetDBInfo(int,int,int,int,unsigned int,time_t,time_t,time_t,unsigned long,unsigned long);
-extern int dlp_DeleteCategory(int,int,int);
-extern int dlp_MoveCategory(int,int,int,int);
-extern int dlp_ReadAppBlock(int,int,int,int,pi_buffer_t *);
-extern int dlp_WriteAppBlock(int,int,void const *,size_t);
-extern int dlp_ReadSortBlock(int,int,int,int,pi_buffer_t *);
-extern int dlp_WriteSortBlock(int,int,void const *,size_t);
-extern int dlp_CleanUpDatabase(int,int);
-extern int dlp_ResetSyncFlags(int,int);
-extern int dlp_ResetDBIndex(int,int);
-extern int dlp_ReadRecordById(int,int,recordid_t,pi_buffer_t *,int *,int *,int *);
-extern int dlp_ReadRecordByIndex(int,int,int,pi_buffer_t *,recordid_t *,int *,int *);
-extern int dlp_ReadNextModifiedRec(int,int,pi_buffer_t *,recordid_t *,int *,int *,int *);
-extern int dlp_ReadNextModifiedRecInCategory(int,int,int,pi_buffer_t *,recordid_t *,int *,int *);
-extern int dlp_ReadNextRecInCategory(int,int,int,pi_buffer_t *,recordid_t *,int *,int *);
-extern int dlp_WriteRecord(int,int,int,recordid_t,int,void const *,size_t,recordid_t *);
-extern int dlp_DeleteRecord(int,int,int,recordid_t);
-extern int dlp_ReadResourceByType(int,int,unsigned long,int,pi_buffer_t *,int *);
-extern int dlp_ReadResourceByIndex(int,int,int,pi_buffer_t *,unsigned long *,int *);
-extern int dlp_WriteResource(int,int,unsigned long,int,void const *,size_t);
-extern int dlp_DeleteResource(int,int,int,unsigned long,int);
-extern int dlp_ExpSlotEnumerate(int,int *,int *);
-extern int dlp_ExpCardPresent(int,int);
-extern int dlp_ExpCardInfo(int,int,unsigned long *,int *,char **);
-extern int dlp_ExpSlotMediaType(int,int,unsigned long *);
-extern int dlp_VFSVolumeEnumerate(int,int *,int *);
-extern int dlp_VFSVolumeInfo(int,int,struct VFSInfo *);
-extern int dlp_VFSVolumeGetLabel(int,int,int *,char *);
-extern int dlp_VFSVolumeSetLabel(int,int,char const *);
-extern int dlp_VFSVolumeSize(int,int,long *,long *);
-extern int dlp_VFSVolumeFormat(int,unsigned char,int,struct VFSSlotMountParam *);
-extern int dlp_VFSGetDefaultDir(int,int,char const *,char *,int *);
-extern int dlp_VFSDirEntryEnumerate(int,FileRef,unsigned long *,int *,struct VFSDirInfo *);
-extern int dlp_VFSDirCreate(int,int,char const *);
-extern int dlp_VFSImportDatabaseFromFile(int,int,char const *,int *,unsigned long *);
-extern int dlp_VFSExportDatabaseToFile(int,int,char const *,int,unsigned int);
-extern int dlp_VFSFileCreate(int,int,char const *);
-extern int dlp_VFSFileOpen(int,int,char const *,int,FileRef *);
-extern int dlp_VFSFileClose(int,FileRef);
-extern int dlp_VFSFileWrite(int,FileRef,void const *,size_t);
-extern int dlp_VFSFileRead(int,FileRef,pi_buffer_t *,size_t);
-extern int dlp_VFSFileDelete(int,int,char const *);
-extern int dlp_VFSFileRename(int,int,char const *,char const *);
-extern int dlp_VFSFileEOF(int,FileRef);
-extern int dlp_VFSFileTell(int,FileRef,int *);
-extern int dlp_VFSFileGetAttributes(int,FileRef,unsigned long *);
-extern int dlp_VFSFileSetAttributes(int,FileRef,unsigned long);
-extern int dlp_VFSFileGetDate(int,FileRef,int,time_t *);
-extern int dlp_VFSFileSetDate(int,FileRef,int,time_t);
-extern int dlp_VFSFileSeek(int,FileRef,int,int);
-extern int dlp_VFSFileResize(int,FileRef,int);
-extern int dlp_VFSFileSize(int,FileRef,int *);
+extern PI_ERR dlp_GetSysDateTime(int,time_t *);
+extern PI_ERR dlp_SetSysDateTime(int,time_t);
+extern PI_ERR dlp_ReadSysInfo(int,struct SysInfo *);
+extern PI_ERR dlp_ReadStorageInfo(int,int,struct CardInfo *);
+extern PI_ERR dlp_ReadUserInfo(int,struct PilotUser *);
+extern PI_ERR dlp_WriteUserInfo(int,struct PilotUser *);
+extern PI_ERR dlp_ResetLastSyncPC(int);
+extern PI_ERR dlp_ReadNetSyncInfo(int,struct NetSyncInfo *);
+extern PI_ERR dlp_WriteNetSyncInfo(int,struct NetSyncInfo const *);
+extern PI_ERR dlp_OpenConduit(int);
+extern PI_ERR dlp_EndOfSync(int,int);
+extern PI_ERR dlp_AbortSync(int);
+extern PI_ERR dlp_ReadFeature(int,unsigned long,unsigned int,unsigned long *);
+
+extern PI_ERR dlp_GetROMToken(int,unsigned long,void *,size_t *);
+extern PI_ERR dlp_AddSyncLogEntry(int,char *);
+extern PI_ERR dlp_CallApplication(int,unsigned long,unsigned long,int,size_t,void const *,unsigned long *,pi_buffer_t *);
+extern PI_ERR dlp_ReadAppPreference(int,unsigned long,int,int,int,void *,size_t *,int *);
+extern PI_ERR dlp_WriteAppPreference(int,unsigned long,int,int,int,void const *,size_t);
+extern PI_ERR dlp_ResetSystem(int);
+extern PI_ERR dlp_ReadDBList(int,int,int,int,pi_buffer_t *);
+extern PI_ERR dlp_FindDBByName(int,int,char const *,unsigned long *,int *,struct DBInfo *,struct DBSizeInfo *);
+extern PI_ERR dlp_FindDBByOpenHandle(int,int,int *,unsigned long *,struct DBInfo *,struct DBSizeInfo *);
+extern PI_ERR dlp_FindDBByTypeCreator(int,unsigned long,unsigned long,int,int,int *,unsigned long *,int *,struct DBInfo *,struct DBSizeInfo *);
+extern PI_ERR dlp_FindDBInfo(int,int,int,char const *,unsigned long,unsigned long,struct DBInfo *);
+extern PI_ERR dlp_OpenDB(int,int,int,char const *,int *);
+extern PI_ERR dlp_CloseDB(int,int);
+extern PI_ERR dlp_CloseDB_All(int);
+extern PI_ERR dlp_DeleteDB(int,int,char const *);
+extern PI_ERR dlp_CreateDB(int,unsigned long,unsigned long,int,int,unsigned int,char const *,int *);
+extern PI_ERR dlp_ReadOpenDBInfo(int,int,int *);
+extern PI_ERR dlp_SetDBInfo(int,int,int,int,unsigned int,time_t,time_t,time_t,unsigned long,unsigned long);
+extern PI_ERR dlp_DeleteCategory(int,int,int);
+extern PI_ERR dlp_MoveCategory(int,int,int,int);
+extern PI_ERR dlp_ReadAppBlock(int,int,int,int,pi_buffer_t *);
+extern PI_ERR dlp_WriteAppBlock(int,int,void const *,size_t);
+extern PI_ERR dlp_ReadSortBlock(int,int,int,int,pi_buffer_t *);
+extern PI_ERR dlp_WriteSortBlock(int,int,void const *,size_t);
+extern PI_ERR dlp_CleanUpDatabase(int,int);
+extern PI_ERR dlp_ResetSyncFlags(int,int);
+extern PI_ERR dlp_ResetDBIndex(int,int);
+extern PI_ERR dlp_ReadRecordById(int,int,recordid_t,pi_buffer_t *,int *,int *,int *);
+extern PI_ERR dlp_ReadRecordByIndex(int,int,int,pi_buffer_t *,recordid_t *,int *,int *);
+extern PI_ERR dlp_ReadNextModifiedRec(int,int,pi_buffer_t *,recordid_t *,int *,int *,int *);
+extern PI_ERR dlp_ReadNextModifiedRecInCategory(int,int,int,pi_buffer_t *,recordid_t *,int *,int *);
+extern PI_ERR dlp_ReadNextRecInCategory(int,int,int,pi_buffer_t *,recordid_t *,int *,int *);
+extern PI_ERR dlp_WriteRecord(int,int,int,recordid_t,int,void const *,size_t,recordid_t *);
+extern PI_ERR dlp_DeleteRecord(int,int,int,recordid_t);
+extern PI_ERR dlp_ReadResourceByType(int,int,unsigned long,int,pi_buffer_t *,int *);
+extern PI_ERR dlp_ReadResourceByIndex(int,int,int,pi_buffer_t *,unsigned long *,int *);
+extern PI_ERR dlp_WriteResource(int,int,unsigned long,int,void const *,size_t);
+extern PI_ERR dlp_DeleteResource(int,int,int,unsigned long,int);
+extern PI_ERR dlp_ExpSlotEnumerate(int,int *,int *);
+extern PI_ERR dlp_ExpCardPresent(int,int);
+extern PI_ERR dlp_ExpCardInfo(int,int,unsigned long *,int *,char **);
+extern PI_ERR dlp_ExpSlotMediaType(int,int,unsigned long *);
+extern PI_ERR dlp_VFSVolumeEnumerate(int,int *,int *);
+extern PI_ERR dlp_VFSVolumeInfo(int,int,struct VFSInfo *);
+extern PI_ERR dlp_VFSVolumeGetLabel(int,int,int *,char *);
+extern PI_ERR dlp_VFSVolumeSetLabel(int,int,char const *);
+extern PI_ERR dlp_VFSVolumeSize(int,int,long *,long *);
+extern PI_ERR dlp_VFSVolumeFormat(int,unsigned char,int,struct VFSSlotMountParam *);
+extern PI_ERR dlp_VFSGetDefaultDir(int,int,char const *,char *,int *);
+extern PI_ERR dlp_VFSDirEntryEnumerate(int,FileRef,unsigned long *,int *,struct VFSDirInfo *);
+extern PI_ERR dlp_VFSDirCreate(int,int,char const *);
+extern PI_ERR dlp_VFSImportDatabaseFromFile(int,int,char const *,int *,unsigned long *);
+extern PI_ERR dlp_VFSExportDatabaseToFile(int,int,char const *,int,unsigned int);
+extern PI_ERR dlp_VFSFileCreate(int,int,char const *);
+extern PI_ERR dlp_VFSFileOpen(int,int,char const *,int,FileRef *);
+extern PI_ERR dlp_VFSFileClose(int,FileRef);
+extern PI_ERR dlp_VFSFileWrite(int,FileRef,void const *,size_t);
+extern PI_ERR dlp_VFSFileRead(int,FileRef,pi_buffer_t *,size_t);
+extern PI_ERR dlp_VFSFileDelete(int,int,char const *);
+extern PI_ERR dlp_VFSFileRename(int,int,char const *,char const *);
+extern PI_ERR dlp_VFSFileEOF(int,FileRef);
+extern PI_ERR dlp_VFSFileTell(int,FileRef,int *);
+extern PI_ERR dlp_VFSFileGetAttributes(int,FileRef,unsigned long *);
+extern PI_ERR dlp_VFSFileSetAttributes(int,FileRef,unsigned long);
+extern PI_ERR dlp_VFSFileGetDate(int,FileRef,int,time_t *);
+extern PI_ERR dlp_VFSFileSetDate(int,FileRef,int,time_t);
+extern PI_ERR dlp_VFSFileSeek(int,FileRef,int,int);
+extern PI_ERR dlp_VFSFileResize(int,FileRef,int);
+extern PI_ERR dlp_VFSFileSize(int,FileRef,int *);
 
 typedef union {
 		struct {
@@ -2914,36 +2939,23 @@ static PyObject *_wrap_pi_connect(PyObject *self, PyObject *args) {
 }
 
 
-static PyObject *_wrap_pi_bind(PyObject *self, PyObject *args) {
+static PyObject *_wrap_pi_bind_(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     char *arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OO:pi_bind",&obj0,&obj1)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OO:pi_bind_",&obj0,&obj1)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     if (!SWIG_AsCharPtr(obj1, (char**)&arg2)) SWIG_fail;
-    result = (int)pi_bind(arg1,(char const *)arg2);
+    result = (PI_ERR)pi_bind(arg1,(char const *)arg2);
     
     {
-        if (result != 0) {
-            if (IS_PROT_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "protocol error"));
-            } else if (IS_SOCK_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "socket error"));
-            } else if (IS_DLP_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "dlp error"));
-            } else if (IS_FILE_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "file error"));
-            } else if (IS_GENERIC_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "generic error"));
-            } else {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result,"pisock error"));
-            }	
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -2969,26 +2981,7 @@ static PyObject *_wrap_pi_listen(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)pi_listen(arg1,arg2);
     
-    {
-        if (result != 0) {
-            if (IS_PROT_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "protocol error"));
-            } else if (IS_SOCK_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "socket error"));
-            } else if (IS_DLP_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "dlp error"));
-            } else if (IS_FILE_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "file error"));
-            } else if (IS_GENERIC_ERR(result)) {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result, "generic error"));
-            } else {
-                PyErr_SetObject(PIError, Py_BuildValue("(is)", result,"pisock error"));
-            }	
-            return NULL;
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
+    resultobj = SWIG_From_int((int)result);
     return resultobj;
     fail:
     return NULL;
@@ -3150,15 +3143,23 @@ static PyObject *_wrap_pi_recv(PyObject *self, PyObject *args) {
         resultobj = SWIG_NewPointerObj((void *)(resultptr), SWIGTYPE_p_ssize_t, 1);
     }
     {
-        PyObject *o1;
         if (arg2) {
-            o1 = Py_BuildValue("s#", arg2->data, arg2->used);
-            pi_buffer_free(arg2);
+            PyObject *o1 = Py_BuildValue("s#", arg2->data, arg2->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg2) {
+            pi_buffer_free(arg2);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg2) {
+            pi_buffer_free(arg2);
+        }
+    }
     return NULL;
 }
 
@@ -3189,15 +3190,23 @@ static PyObject *_wrap_pi_read(PyObject *self, PyObject *args) {
         resultobj = SWIG_NewPointerObj((void *)(resultptr), SWIGTYPE_p_ssize_t, 1);
     }
     {
-        PyObject *o1;
         if (arg2) {
-            o1 = Py_BuildValue("s#", arg2->data, arg2->used);
-            pi_buffer_free(arg2);
+            PyObject *o1 = Py_BuildValue("s#", arg2->data, arg2->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg2) {
+            pi_buffer_free(arg2);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg2) {
+            pi_buffer_free(arg2);
+        }
+    }
     return NULL;
 }
 
@@ -3210,14 +3219,14 @@ static PyObject *_wrap_pi_write(PyObject *self, PyObject *args) {
     ssize_t result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
-    PyObject * obj2 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOO:pi_write",&obj0,&obj1,&obj2)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OO:pi_write",&obj0,&obj1)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj1,&arg2,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    arg3 = (size_t)SWIG_As_unsigned_SS_long(obj2); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        arg2 = (void *)PyString_AsString(obj1);
+        arg3 = PyString_Size(obj1);
+    }
     result = pi_write(arg1,(void const *)arg2,arg3);
     
     {
@@ -4230,10 +4239,8 @@ static PyObject *_wrap_PilotUser_passwordLength_set(PyObject *self, PyObject *ar
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4264,10 +4271,8 @@ static PyObject *_wrap_PilotUser_passwordLength_get(PyObject *self, PyObject *ar
     
     resultobj = SWIG_From_unsigned_SS_long((unsigned long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4306,10 +4311,8 @@ static PyObject *_wrap_PilotUser_username_set(PyObject *self, PyObject *args) {
     }
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4346,10 +4349,8 @@ static PyObject *_wrap_PilotUser_username_get(PyObject *self, PyObject *args) {
         resultobj = SWIG_FromCharArray(result, size);
     }
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4388,10 +4389,8 @@ static PyObject *_wrap_PilotUser_password_set(PyObject *self, PyObject *args) {
     }
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4428,10 +4427,8 @@ static PyObject *_wrap_PilotUser_password_get(PyObject *self, PyObject *args) {
         resultobj = SWIG_FromCharArray(result, size);
     }
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4465,10 +4462,8 @@ static PyObject *_wrap_PilotUser_userID_set(PyObject *self, PyObject *args) {
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4499,10 +4494,8 @@ static PyObject *_wrap_PilotUser_userID_get(PyObject *self, PyObject *args) {
     
     resultobj = SWIG_From_unsigned_SS_long((unsigned long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4536,10 +4529,8 @@ static PyObject *_wrap_PilotUser_viewerID_set(PyObject *self, PyObject *args) {
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4570,10 +4561,8 @@ static PyObject *_wrap_PilotUser_viewerID_get(PyObject *self, PyObject *args) {
     
     resultobj = SWIG_From_unsigned_SS_long((unsigned long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4607,10 +4596,8 @@ static PyObject *_wrap_PilotUser_lastSyncPC_set(PyObject *self, PyObject *args) 
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4641,10 +4628,8 @@ static PyObject *_wrap_PilotUser_lastSyncPC_get(PyObject *self, PyObject *args) 
     
     resultobj = SWIG_From_unsigned_SS_long((unsigned long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4678,10 +4663,8 @@ static PyObject *_wrap_PilotUser_successfulSyncDate_set(PyObject *self, PyObject
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4712,10 +4695,8 @@ static PyObject *_wrap_PilotUser_successfulSyncDate_get(PyObject *self, PyObject
     
     resultobj = SWIG_From_long((long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4749,10 +4730,8 @@ static PyObject *_wrap_PilotUser_lastSyncDate_set(PyObject *self, PyObject *args
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4783,10 +4762,8 @@ static PyObject *_wrap_PilotUser_lastSyncDate_get(PyObject *self, PyObject *args
     
     resultobj = SWIG_From_long((long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4830,10 +4807,8 @@ static PyObject *_wrap_delete_PilotUser(PyObject *self, PyObject *args) {
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg1->userID,
             "viewerID", arg1->viewerID,
             "lastSyncPC", arg1->lastSyncPC,
@@ -4874,10 +4849,8 @@ static PyObject *_wrap_SysInfo_romVersion_set(PyObject *self, PyObject *args) {
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -4904,10 +4877,8 @@ static PyObject *_wrap_SysInfo_romVersion_get(PyObject *self, PyObject *args) {
     
     resultobj = SWIG_From_unsigned_SS_long((unsigned long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -4937,10 +4908,8 @@ static PyObject *_wrap_SysInfo_locale_set(PyObject *self, PyObject *args) {
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -4967,10 +4936,8 @@ static PyObject *_wrap_SysInfo_locale_get(PyObject *self, PyObject *args) {
     
     resultobj = SWIG_From_unsigned_SS_long((unsigned long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5000,10 +4967,8 @@ static PyObject *_wrap_SysInfo_prodIDLength_set(PyObject *self, PyObject *args) 
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5030,10 +4995,8 @@ static PyObject *_wrap_SysInfo_prodIDLength_get(PyObject *self, PyObject *args) 
     
     resultobj = SWIG_From_unsigned_SS_char((unsigned char)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5068,10 +5031,8 @@ static PyObject *_wrap_SysInfo_prodID_set(PyObject *self, PyObject *args) {
     }
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5104,10 +5065,8 @@ static PyObject *_wrap_SysInfo_prodID_get(PyObject *self, PyObject *args) {
         resultobj = SWIG_FromCharArray(result, size);
     }
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5137,10 +5096,8 @@ static PyObject *_wrap_SysInfo_dlpMajorVersion_set(PyObject *self, PyObject *arg
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5167,10 +5124,8 @@ static PyObject *_wrap_SysInfo_dlpMajorVersion_get(PyObject *self, PyObject *arg
     
     resultobj = SWIG_From_unsigned_SS_short((unsigned short)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5200,10 +5155,8 @@ static PyObject *_wrap_SysInfo_dlpMinorVersion_set(PyObject *self, PyObject *arg
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5230,10 +5183,8 @@ static PyObject *_wrap_SysInfo_dlpMinorVersion_get(PyObject *self, PyObject *arg
     
     resultobj = SWIG_From_unsigned_SS_short((unsigned short)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5263,10 +5214,8 @@ static PyObject *_wrap_SysInfo_compatMajorVersion_set(PyObject *self, PyObject *
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5293,10 +5242,8 @@ static PyObject *_wrap_SysInfo_compatMajorVersion_get(PyObject *self, PyObject *
     
     resultobj = SWIG_From_unsigned_SS_short((unsigned short)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5326,10 +5273,8 @@ static PyObject *_wrap_SysInfo_compatMinorVersion_set(PyObject *self, PyObject *
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5356,10 +5301,8 @@ static PyObject *_wrap_SysInfo_compatMinorVersion_get(PyObject *self, PyObject *
     
     resultobj = SWIG_From_unsigned_SS_short((unsigned short)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5389,10 +5332,8 @@ static PyObject *_wrap_SysInfo_maxRecSize_set(PyObject *self, PyObject *args) {
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5419,10 +5360,8 @@ static PyObject *_wrap_SysInfo_maxRecSize_get(PyObject *self, PyObject *args) {
     
     resultobj = SWIG_From_unsigned_SS_long((unsigned long)result);
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -5462,10 +5401,8 @@ static PyObject *_wrap_delete_SysInfo(PyObject *self, PyObject *args) {
     
     Py_INCREF(Py_None); resultobj = Py_None;
     {
-        PyObject *o;
-        
         if (arg1) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg1->romVersion,
             "locale", arg1->locale,
             "name", arg1->prodID, arg1->prodIDLength);
@@ -6130,8 +6067,14 @@ static PyObject *_wrap_DBInfo_creator_set(PyObject *self, PyObject *args) {
         if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
         arg1 = &temp;
     }
-    arg2 = (unsigned long)SWIG_As_unsigned_SS_long(obj1); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        if (PyString_Check(obj1)) {
+            arg2 = makelong(PyString_AS_STRING(obj1));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
     if (arg1) (arg1)->creator = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
@@ -8304,29 +8247,43 @@ static PyObject *_wrap_dlp_htopdate(PyObject *self, PyObject *args) {
 }
 
 
-static PyObject *_wrap_dlp_GetSysDateTime(PyObject *self, PyObject *args) {
+static PyObject *_wrap_dlp_GetSysDateTime_(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     time_t *arg2 = (time_t *) 0 ;
-    int result;
+    PI_ERR result;
+    time_t time2 ;
+    time_t time20 ;
     PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlp_GetSysDateTime",&obj0,&obj1)) goto fail;
+    {
+        arg2 = (time_t *)&time2;
+    }
+    if(!PyArg_ParseTuple(args,(char *)"O:dlp_GetSysDateTime_",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj1,(void **)(&arg2),SWIGTYPE_p_time_t,
-    SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_GetSysDateTime(arg1,arg2);
+    result = (PI_ERR)dlp_GetSysDateTime(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
+    }
+    {
+        if (arg2) {
+            resultobj = PyInt_FromLong((unsigned long ) arg2);
+            /* Ready for Python 2.4! */
+            /*       struct tm *t; */
+            /*       t = localtime(arg2); */
+            /*       resultobj = PyDate_FromDateAndTime(t->tm_year, */
+            /* 				       t->tm_mon, */
+            /* 				       t->tm_mday, */
+            /* 				       t->tm_hour, */
+            /* 				       t->tm_min, */
+            /* 				       t->tm_sec); */
+        }
     }
     return resultobj;
     fail:
@@ -8338,7 +8295,7 @@ static PyObject *_wrap_dlp_SetSysDateTime(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     time_t arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -8347,13 +8304,11 @@ static PyObject *_wrap_dlp_SetSysDateTime(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (time_t)SWIG_As_long(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_SetSysDateTime(arg1,arg2);
+    result = (PI_ERR)dlp_SetSysDateTime(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8368,7 +8323,7 @@ static PyObject *_wrap_dlp_ReadSysInfo(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     struct SysInfo *arg2 = (struct SysInfo *) 0 ;
-    int result;
+    PI_ERR result;
     struct SysInfo temp2 ;
     PyObject * obj0 = 0 ;
     
@@ -8378,22 +8333,18 @@ static PyObject *_wrap_dlp_ReadSysInfo(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_ReadSysInfo",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ReadSysInfo(arg1,arg2);
+    result = (PI_ERR)dlp_ReadSysInfo(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
     {
-        PyObject *o;
-        
         if (arg2) {
-            o = Py_BuildValue("{slslss#}",
+            PyObject *o = Py_BuildValue("{slslss#}",
             "romVersion", arg2->romVersion,
             "locale", arg2->locale,
             "name", arg2->prodID, arg2->prodIDLength);
@@ -8411,28 +8362,45 @@ static PyObject *_wrap_dlp_ReadStorageInfo(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     struct CardInfo *arg3 = (struct CardInfo *) 0 ;
-    int result;
+    PI_ERR result;
+    struct CardInfo temp3 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
-    PyObject * obj2 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOO:dlp_ReadStorageInfo",&obj0,&obj1,&obj2)) goto fail;
+    {
+        arg3 = &temp3;
+    }
+    if(!PyArg_ParseTuple(args,(char *)"OO:dlp_ReadStorageInfo",&obj0,&obj1)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_CardInfo,
-    SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadStorageInfo(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_ReadStorageInfo(arg1,arg2,arg3);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
+    }
+    {
+        if (arg3) {
+            resultobj = Py_BuildValue("{sisislslslslsssssi}",
+            "card", arg3->card,
+            "version", arg3->version,
+            "creation", arg3->creation,
+            "romSize", arg3->romSize,
+            "ramSize", arg3->ramSize,
+            "ramFree", arg3->ramFree,
+            "name", arg3->name,
+            "manufacturer", arg3->manufacturer,
+            "more", arg3->more);
+        } else {
+            // eh ?
+            PyErr_SetString(PyExc_RuntimeError,"No cardinfo returned.");
+            return NULL;      
+        }	
     }
     return resultobj;
     fail:
@@ -8444,7 +8412,7 @@ static PyObject *_wrap_dlp_ReadUserInfo(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     struct PilotUser *arg2 = (struct PilotUser *) 0 ;
-    int result;
+    PI_ERR result;
     struct PilotUser temp2 ;
     PyObject * obj0 = 0 ;
     
@@ -8454,22 +8422,18 @@ static PyObject *_wrap_dlp_ReadUserInfo(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_ReadUserInfo",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ReadUserInfo(arg1,arg2);
+    result = (PI_ERR)dlp_ReadUserInfo(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
     {
-        PyObject *o;
-        
         if (arg2) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg2->userID,
             "viewerID", arg2->viewerID,
             "lastSyncPC", arg2->lastSyncPC,
@@ -8490,7 +8454,7 @@ static PyObject *_wrap_dlp_WriteUserInfo(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     struct PilotUser *arg2 = (struct PilotUser *) 0 ;
-    int result;
+    PI_ERR result;
     struct PilotUser temp2 ;
     PyObject * obj0 = 0 ;
     
@@ -8500,22 +8464,18 @@ static PyObject *_wrap_dlp_WriteUserInfo(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_WriteUserInfo",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_WriteUserInfo(arg1,arg2);
+    result = (PI_ERR)dlp_WriteUserInfo(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
     {
-        PyObject *o;
-        
         if (arg2) {
-            o = Py_BuildValue("{slslslslslssss#}",
+            PyObject *o = Py_BuildValue("{slslslslslssss#}",
             "userID", arg2->userID,
             "viewerID", arg2->viewerID,
             "lastSyncPC", arg2->lastSyncPC,
@@ -8535,19 +8495,17 @@ static PyObject *_wrap_dlp_WriteUserInfo(PyObject *self, PyObject *args) {
 static PyObject *_wrap_dlp_ResetLastSyncPC(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_ResetLastSyncPC",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ResetLastSyncPC(arg1);
+    result = (PI_ERR)dlp_ResetLastSyncPC(arg1);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8562,7 +8520,7 @@ static PyObject *_wrap_dlp_ReadNetSyncInfo(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     struct NetSyncInfo *arg2 = (struct NetSyncInfo *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -8579,13 +8537,11 @@ static PyObject *_wrap_dlp_ReadNetSyncInfo(PyObject *self, PyObject *args) {
         
         arg2 = &temp;
     }
-    result = (int)dlp_ReadNetSyncInfo(arg1,arg2);
+    result = (PI_ERR)dlp_ReadNetSyncInfo(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8600,7 +8556,7 @@ static PyObject *_wrap_dlp_WriteNetSyncInfo(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     struct NetSyncInfo *arg2 = (struct NetSyncInfo *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -8617,13 +8573,11 @@ static PyObject *_wrap_dlp_WriteNetSyncInfo(PyObject *self, PyObject *args) {
         
         arg2 = &temp;
     }
-    result = (int)dlp_WriteNetSyncInfo(arg1,(struct NetSyncInfo const *)arg2);
+    result = (PI_ERR)dlp_WriteNetSyncInfo(arg1,(struct NetSyncInfo const *)arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8637,19 +8591,17 @@ static PyObject *_wrap_dlp_WriteNetSyncInfo(PyObject *self, PyObject *args) {
 static PyObject *_wrap_dlp_OpenConduit(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_OpenConduit",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_OpenConduit(arg1);
+    result = (PI_ERR)dlp_OpenConduit(arg1);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8664,7 +8616,7 @@ static PyObject *_wrap_dlp_EndOfSync(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     int arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -8673,13 +8625,11 @@ static PyObject *_wrap_dlp_EndOfSync(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_EndOfSync(arg1,arg2);
+    result = (PI_ERR)dlp_EndOfSync(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8693,19 +8643,17 @@ static PyObject *_wrap_dlp_EndOfSync(PyObject *self, PyObject *args) {
 static PyObject *_wrap_dlp_AbortSync(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_AbortSync",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_AbortSync(arg1);
+    result = (PI_ERR)dlp_AbortSync(arg1);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8722,32 +8670,38 @@ static PyObject *_wrap_dlp_ReadFeature(PyObject *self, PyObject *args) {
     unsigned long arg2 ;
     unsigned int arg3 ;
     unsigned long *arg4 = (unsigned long *) 0 ;
-    int result;
+    PI_ERR result;
+    unsigned long temp4 ;
+    int res4 = 0 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
-    PyObject * obj3 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOOO:dlp_ReadFeature",&obj0,&obj1,&obj2,&obj3)) goto fail;
+    arg4 = &temp4; res4 = SWIG_NEWOBJ;
+    if(!PyArg_ParseTuple(args,(char *)"OOO:dlp_ReadFeature",&obj0,&obj1,&obj2)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    arg2 = (unsigned long)SWIG_As_unsigned_SS_long(obj1); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        if (PyString_Check(obj1)) {
+            arg2 = makelong(PyString_AS_STRING(obj1));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
     arg3 = (unsigned int)SWIG_As_unsigned_SS_int(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj3,(void **)(&arg4),SWIGTYPE_p_unsigned_long,
-    SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadFeature(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_ReadFeature(arg1,arg2,arg3,arg4);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
+    resultobj = t_output_helper(resultobj, ((res4 == SWIG_NEWOBJ) ?
+    SWIG_From_unsigned_SS_long((*arg4)) : SWIG_NewPointerObj((void*)(arg4), SWIGTYPE_p_unsigned_long, 0)));
     return resultobj;
     fail:
     return NULL;
@@ -8760,7 +8714,7 @@ static PyObject *_wrap_dlp_GetROMToken(PyObject *self, PyObject *args) {
     unsigned long arg2 ;
     void *arg3 = (void *) 0 ;
     size_t *arg4 = (size_t *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -8774,9 +8728,15 @@ static PyObject *_wrap_dlp_GetROMToken(PyObject *self, PyObject *args) {
     if ((SWIG_ConvertPtr(obj2,&arg3,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj3,(void **)(&arg4),SWIGTYPE_p_size_t,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_GetROMToken(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_GetROMToken(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8787,7 +8747,7 @@ static PyObject *_wrap_dlp_AddSyncLogEntry(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     char *arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -8795,13 +8755,11 @@ static PyObject *_wrap_dlp_AddSyncLogEntry(PyObject *self, PyObject *args) {
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     if (!SWIG_AsCharPtr(obj1, (char**)&arg2)) SWIG_fail;
-    result = (int)dlp_AddSyncLogEntry(arg1,arg2);
+    result = (PI_ERR)dlp_AddSyncLogEntry(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8822,7 +8780,7 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
     void *arg6 = (void *) 0 ;
     unsigned long *arg7 = (unsigned long *) 0 ;
     pi_buffer_t *arg8 = (pi_buffer_t *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -8837,8 +8795,14 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"OOOOOOO:dlp_CallApplication",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    arg2 = (unsigned long)SWIG_As_unsigned_SS_long(obj1); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        if (PyString_Check(obj1)) {
+            arg2 = makelong(PyString_AS_STRING(obj1));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
     arg3 = (unsigned long)SWIG_As_unsigned_SS_long(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
@@ -8848,19 +8812,33 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
     if ((SWIG_ConvertPtr(obj5,&arg6,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj6,(void **)(&arg7),SWIGTYPE_p_unsigned_long,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_CallApplication(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
+    result = (PI_ERR)dlp_CallApplication(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
     
-    resultobj = SWIG_From_int((int)result);
     {
-        PyObject *o1;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
+    {
         if (arg8) {
-            o1 = Py_BuildValue("s#", arg8->data, arg8->used);
-            pi_buffer_free(arg8);
+            PyObject *o1 = Py_BuildValue("s#", arg8->data, arg8->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg8) {
+            pi_buffer_free(arg8);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg8) {
+            pi_buffer_free(arg8);
+        }
+    }
     return NULL;
 }
 
@@ -8875,7 +8853,7 @@ static PyObject *_wrap_dlp_ReadAppPreference(PyObject *self, PyObject *args) {
     void *arg6 = (void *) 0 ;
     size_t *arg7 = (size_t *) 0 ;
     int *arg8 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -8888,8 +8866,14 @@ static PyObject *_wrap_dlp_ReadAppPreference(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"OOOOOOOO:dlp_ReadAppPreference",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    arg2 = (unsigned long)SWIG_As_unsigned_SS_long(obj1); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        if (PyString_Check(obj1)) {
+            arg2 = makelong(PyString_AS_STRING(obj1));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
     arg3 = (int)SWIG_As_int(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
@@ -8901,16 +8885,20 @@ static PyObject *_wrap_dlp_ReadAppPreference(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj7,(void **)(&arg8),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadAppPreference(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+    result = (PI_ERR)dlp_ReadAppPreference(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
+    }
+    {
+        if (arg6) {
+            PyObject *o = Py_BuildValue("is#", arg8, arg6, arg7);
+            resultobj = t_output_helper(resultobj, o);
+        }
     }
     return resultobj;
     fail:
@@ -8927,36 +8915,40 @@ static PyObject *_wrap_dlp_WriteAppPreference(PyObject *self, PyObject *args) {
     int arg5 ;
     void *arg6 = (void *) 0 ;
     size_t arg7 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
     PyObject * obj3 = 0 ;
     PyObject * obj4 = 0 ;
     PyObject * obj5 = 0 ;
-    PyObject * obj6 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOOOOOO:dlp_WriteAppPreference",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OOOOOO:dlp_WriteAppPreference",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    arg2 = (unsigned long)SWIG_As_unsigned_SS_long(obj1); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        if (PyString_Check(obj1)) {
+            arg2 = makelong(PyString_AS_STRING(obj1));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
     arg3 = (int)SWIG_As_int(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
     arg5 = (int)SWIG_As_int(obj4); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj5,&arg6,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    arg7 = (size_t)SWIG_As_unsigned_SS_long(obj6); 
-    if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_WriteAppPreference(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7);
+    {
+        arg6 = (void *)PyString_AsString(obj5);
+        arg7 = PyString_Size(obj5);
+    }
+    result = (PI_ERR)dlp_WriteAppPreference(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -8970,19 +8962,17 @@ static PyObject *_wrap_dlp_WriteAppPreference(PyObject *self, PyObject *args) {
 static PyObject *_wrap_dlp_ResetSystem(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_ResetSystem",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ResetSystem(arg1);
+    result = (PI_ERR)dlp_ResetSystem(arg1);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9000,7 +8990,7 @@ static PyObject *_wrap_dlp_ReadDBList_(PyObject *self, PyObject *args) {
     int arg3 ;
     int arg4 ;
     pi_buffer_t *arg5 = (pi_buffer_t *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9018,27 +9008,23 @@ static PyObject *_wrap_dlp_ReadDBList_(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ReadDBList(arg1,arg2,arg3,arg4,arg5);
+    result = (PI_ERR)dlp_ReadDBList(arg1,arg2,arg3,arg4,arg5);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
     {
-        PyObject *o;
-        int j;
-        struct DBInfo	info;
-        
         if (arg5) {
+            int j;
+            struct DBInfo info;
             resultobj = PyList_New((arg5->used / sizeof(struct DBInfo)));
             for (j=0; j < (arg5->used / sizeof(struct DBInfo)); j++) {
                 memcpy(&info, arg5->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
-                o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
+                PyObject *o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
                 "more", info.more,
                 "flags", info.flags,
                 "miscFlags", info.miscFlags,
@@ -9073,8 +9059,18 @@ static PyObject *_wrap_dlp_ReadDBList_(PyObject *self, PyObject *args) {
             }
         }
     }
+    {
+        if (arg5) {
+            pi_buffer_free(arg5);
+        }
+    }
     return resultobj;
     fail:
+    {
+        if (arg5) {
+            pi_buffer_free(arg5);
+        }
+    }
     return NULL;
 }
 
@@ -9088,7 +9084,7 @@ static PyObject *_wrap_dlp_FindDBByName(PyObject *self, PyObject *args) {
     int *arg5 = (int *) 0 ;
     struct DBInfo *arg6 = (struct DBInfo *) 0 ;
     struct DBSizeInfo *arg7 = (struct DBSizeInfo *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9141,9 +9137,15 @@ static PyObject *_wrap_dlp_FindDBByName(PyObject *self, PyObject *args) {
     }
     if ((SWIG_ConvertPtr(obj6,(void **)(&arg7),SWIGTYPE_p_DBSizeInfo,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_FindDBByName(arg1,arg2,(char const *)arg3,arg4,arg5,arg6,arg7);
+    result = (PI_ERR)dlp_FindDBByName(arg1,arg2,(char const *)arg3,arg4,arg5,arg6,arg7);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9158,7 +9160,7 @@ static PyObject *_wrap_dlp_FindDBByOpenHandle(PyObject *self, PyObject *args) {
     unsigned long *arg4 = (unsigned long *) 0 ;
     struct DBInfo *arg5 = (struct DBInfo *) 0 ;
     struct DBSizeInfo *arg6 = (struct DBSizeInfo *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9209,9 +9211,15 @@ static PyObject *_wrap_dlp_FindDBByOpenHandle(PyObject *self, PyObject *args) {
     }
     if ((SWIG_ConvertPtr(obj5,(void **)(&arg6),SWIGTYPE_p_DBSizeInfo,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_FindDBByOpenHandle(arg1,arg2,arg3,arg4,arg5,arg6);
+    result = (PI_ERR)dlp_FindDBByOpenHandle(arg1,arg2,arg3,arg4,arg5,arg6);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9230,7 +9238,7 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
     int *arg8 = (int *) 0 ;
     struct DBInfo *arg9 = (struct DBInfo *) 0 ;
     struct DBSizeInfo *arg10 = (struct DBSizeInfo *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9247,8 +9255,14 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (unsigned long)SWIG_As_unsigned_SS_long(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    arg3 = (unsigned long)SWIG_As_unsigned_SS_long(obj2); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        if (PyString_Check(obj2)) {
+            arg3 = makelong(PyString_AS_STRING(obj2));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
     arg4 = (int)SWIG_As_int(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
     arg5 = (int)SWIG_As_int(obj4); 
@@ -9293,9 +9307,15 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
     }
     if ((SWIG_ConvertPtr(obj9,(void **)(&arg10),SWIGTYPE_p_DBSizeInfo,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_FindDBByTypeCreator(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
+    result = (PI_ERR)dlp_FindDBByTypeCreator(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9311,7 +9331,7 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
     unsigned long arg5 ;
     unsigned long arg6 ;
     struct DBInfo *arg7 = (struct DBInfo *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9330,8 +9350,14 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj3, (char**)&arg4)) SWIG_fail;
     arg5 = (unsigned long)SWIG_As_unsigned_SS_long(obj4); 
     if (PyErr_Occurred()) SWIG_fail;
-    arg6 = (unsigned long)SWIG_As_unsigned_SS_long(obj5); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        if (PyString_Check(obj5)) {
+            arg6 = makelong(PyString_AS_STRING(obj5));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
     {
         static struct DBInfo temp;
         
@@ -9364,13 +9390,11 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
         if (DGETLONG(obj6,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
         arg7 = &temp;
     }
-    result = (int)dlp_FindDBInfo(arg1,arg2,arg3,(char const *)arg4,arg5,arg6,arg7);
+    result = (PI_ERR)dlp_FindDBInfo(arg1,arg2,arg3,(char const *)arg4,arg5,arg6,arg7);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9388,7 +9412,7 @@ static PyObject *_wrap_dlp_OpenDB(PyObject *self, PyObject *args) {
     int arg3 ;
     char *arg4 ;
     int *arg5 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9405,13 +9429,11 @@ static PyObject *_wrap_dlp_OpenDB(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj3, (char**)&arg4)) SWIG_fail;
     if ((SWIG_ConvertPtr(obj4,(void **)(&arg5),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_OpenDB(arg1,arg2,arg3,(char const *)arg4,arg5);
+    result = (PI_ERR)dlp_OpenDB(arg1,arg2,arg3,(char const *)arg4,arg5);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9426,7 +9448,7 @@ static PyObject *_wrap_dlp_CloseDB(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     int arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -9435,13 +9457,11 @@ static PyObject *_wrap_dlp_CloseDB(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_CloseDB(arg1,arg2);
+    result = (PI_ERR)dlp_CloseDB(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9455,19 +9475,17 @@ static PyObject *_wrap_dlp_CloseDB(PyObject *self, PyObject *args) {
 static PyObject *_wrap_dlp_CloseDB_All(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_CloseDB_All",&obj0)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_CloseDB_All(arg1);
+    result = (PI_ERR)dlp_CloseDB_All(arg1);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9483,7 +9501,7 @@ static PyObject *_wrap_dlp_DeleteDB(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     char *arg3 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9494,13 +9512,11 @@ static PyObject *_wrap_dlp_DeleteDB(PyObject *self, PyObject *args) {
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) SWIG_fail;
-    result = (int)dlp_DeleteDB(arg1,arg2,(char const *)arg3);
+    result = (PI_ERR)dlp_DeleteDB(arg1,arg2,(char const *)arg3);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9521,7 +9537,7 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
     unsigned int arg6 ;
     char *arg7 ;
     int *arg8 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9534,8 +9550,14 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"OOOOOOOO:dlp_CreateDB",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
-    arg2 = (unsigned long)SWIG_As_unsigned_SS_long(obj1); 
-    if (PyErr_Occurred()) SWIG_fail;
+    {
+        if (PyString_Check(obj1)) {
+            arg2 = makelong(PyString_AS_STRING(obj1));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
     arg3 = (unsigned long)SWIG_As_unsigned_SS_long(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
@@ -9547,13 +9569,11 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj6, (char**)&arg7)) SWIG_fail;
     if ((SWIG_ConvertPtr(obj7,(void **)(&arg8),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_CreateDB(arg1,arg2,arg3,arg4,arg5,arg6,(char const *)arg7,arg8);
+    result = (PI_ERR)dlp_CreateDB(arg1,arg2,arg3,arg4,arg5,arg6,(char const *)arg7,arg8);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9569,7 +9589,7 @@ static PyObject *_wrap_dlp_ReadOpenDBInfo(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     int *arg3 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9581,13 +9601,11 @@ static PyObject *_wrap_dlp_ReadOpenDBInfo(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadOpenDBInfo(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_ReadOpenDBInfo(arg1,arg2,arg3);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9610,7 +9628,7 @@ static PyObject *_wrap_dlp_SetDBInfo(PyObject *self, PyObject *args) {
     time_t arg8 ;
     unsigned long arg9 ;
     unsigned long arg10 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9641,11 +9659,23 @@ static PyObject *_wrap_dlp_SetDBInfo(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg9 = (unsigned long)SWIG_As_unsigned_SS_long(obj8); 
     if (PyErr_Occurred()) SWIG_fail;
-    arg10 = (unsigned long)SWIG_As_unsigned_SS_long(obj9); 
-    if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_SetDBInfo(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
+    {
+        if (PyString_Check(obj9)) {
+            arg10 = makelong(PyString_AS_STRING(obj9));
+        } else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+            return NULL;
+        }
+    }
+    result = (PI_ERR)dlp_SetDBInfo(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9657,7 +9687,7 @@ static PyObject *_wrap_dlp_DeleteCategory(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     int arg3 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9669,13 +9699,11 @@ static PyObject *_wrap_dlp_DeleteCategory(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg3 = (int)SWIG_As_int(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_DeleteCategory(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_DeleteCategory(arg1,arg2,arg3);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9692,7 +9720,7 @@ static PyObject *_wrap_dlp_MoveCategory(PyObject *self, PyObject *args) {
     int arg2 ;
     int arg3 ;
     int arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9707,13 +9735,11 @@ static PyObject *_wrap_dlp_MoveCategory(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_MoveCategory(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_MoveCategory(arg1,arg2,arg3,arg4);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9731,7 +9757,7 @@ static PyObject *_wrap_dlp_ReadAppBlock(PyObject *self, PyObject *args) {
     int arg3 ;
     int arg4 ;
     pi_buffer_t *arg5 = (pi_buffer_t *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9749,27 +9775,33 @@ static PyObject *_wrap_dlp_ReadAppBlock(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ReadAppBlock(arg1,arg2,arg3,arg4,arg5);
+    result = (PI_ERR)dlp_ReadAppBlock(arg1,arg2,arg3,arg4,arg5);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg5) {
-            o1 = Py_BuildValue("s#", arg5->data, arg5->used);
-            pi_buffer_free(arg5);
+            PyObject *o1 = Py_BuildValue("s#", arg5->data, arg5->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg5) {
+            pi_buffer_free(arg5);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg5) {
+            pi_buffer_free(arg5);
+        }
+    }
     return NULL;
 }
 
@@ -9780,27 +9812,25 @@ static PyObject *_wrap_dlp_WriteAppBlock(PyObject *self, PyObject *args) {
     int arg2 ;
     void *arg3 = (void *) 0 ;
     size_t arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
-    PyObject * obj3 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOOO:dlp_WriteAppBlock",&obj0,&obj1,&obj2,&obj3)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OOO:dlp_WriteAppBlock",&obj0,&obj1,&obj2)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj2,&arg3,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    arg4 = (size_t)SWIG_As_unsigned_SS_long(obj3); 
-    if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_WriteAppBlock(arg1,arg2,(void const *)arg3,arg4);
+    {
+        arg3 = (void *)PyString_AsString(obj2);
+        arg4 = PyString_Size(obj2);
+    }
+    result = (PI_ERR)dlp_WriteAppBlock(arg1,arg2,(void const *)arg3,arg4);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9818,7 +9848,7 @@ static PyObject *_wrap_dlp_ReadSortBlock(PyObject *self, PyObject *args) {
     int arg3 ;
     int arg4 ;
     pi_buffer_t *arg5 = (pi_buffer_t *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -9836,27 +9866,33 @@ static PyObject *_wrap_dlp_ReadSortBlock(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ReadSortBlock(arg1,arg2,arg3,arg4,arg5);
+    result = (PI_ERR)dlp_ReadSortBlock(arg1,arg2,arg3,arg4,arg5);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg5) {
-            o1 = Py_BuildValue("s#", arg5->data, arg5->used);
-            pi_buffer_free(arg5);
+            PyObject *o1 = Py_BuildValue("s#", arg5->data, arg5->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg5) {
+            pi_buffer_free(arg5);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg5) {
+            pi_buffer_free(arg5);
+        }
+    }
     return NULL;
 }
 
@@ -9867,27 +9903,25 @@ static PyObject *_wrap_dlp_WriteSortBlock(PyObject *self, PyObject *args) {
     int arg2 ;
     void *arg3 = (void *) 0 ;
     size_t arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
-    PyObject * obj3 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOOO:dlp_WriteSortBlock",&obj0,&obj1,&obj2,&obj3)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OOO:dlp_WriteSortBlock",&obj0,&obj1,&obj2)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj2,&arg3,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    arg4 = (size_t)SWIG_As_unsigned_SS_long(obj3); 
-    if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_WriteSortBlock(arg1,arg2,(void const *)arg3,arg4);
+    {
+        arg3 = (void *)PyString_AsString(obj2);
+        arg4 = PyString_Size(obj2);
+    }
+    result = (PI_ERR)dlp_WriteSortBlock(arg1,arg2,(void const *)arg3,arg4);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9902,7 +9936,7 @@ static PyObject *_wrap_dlp_CleanUpDatabase(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     int arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -9911,13 +9945,11 @@ static PyObject *_wrap_dlp_CleanUpDatabase(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_CleanUpDatabase(arg1,arg2);
+    result = (PI_ERR)dlp_CleanUpDatabase(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9932,7 +9964,7 @@ static PyObject *_wrap_dlp_ResetSyncFlags(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     int arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -9941,13 +9973,11 @@ static PyObject *_wrap_dlp_ResetSyncFlags(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ResetSyncFlags(arg1,arg2);
+    result = (PI_ERR)dlp_ResetSyncFlags(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9962,7 +9992,7 @@ static PyObject *_wrap_dlp_ResetDBIndex(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     int arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -9971,13 +10001,11 @@ static PyObject *_wrap_dlp_ResetDBIndex(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ResetDBIndex(arg1,arg2);
+    result = (PI_ERR)dlp_ResetDBIndex(arg1,arg2);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -9997,7 +10025,7 @@ static PyObject *_wrap_dlp_ReadRecordById(PyObject *self, PyObject *args) {
     int *arg5 = (int *) 0 ;
     int *arg6 = (int *) 0 ;
     int *arg7 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10021,30 +10049,33 @@ static PyObject *_wrap_dlp_ReadRecordById(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj5,(void **)(&arg7),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadRecordById(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+    result = (PI_ERR)dlp_ReadRecordById(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg4) {
-            o1 = Py_BuildValue("s#", arg4->data, arg4->used);
-            pi_buffer_free(arg4);
+            PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
+        }
+    }
     return NULL;
 }
 
@@ -10058,7 +10089,7 @@ static PyObject *_wrap_dlp_ReadRecordByIndex(PyObject *self, PyObject *args) {
     recordid_t *arg5 = (recordid_t *) 0 ;
     int *arg6 = (int *) 0 ;
     int *arg7 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10082,30 +10113,33 @@ static PyObject *_wrap_dlp_ReadRecordByIndex(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj5,(void **)(&arg7),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadRecordByIndex(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+    result = (PI_ERR)dlp_ReadRecordByIndex(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg4) {
-            o1 = Py_BuildValue("s#", arg4->data, arg4->used);
-            pi_buffer_free(arg4);
+            PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
+        }
+    }
     return NULL;
 }
 
@@ -10119,7 +10153,7 @@ static PyObject *_wrap_dlp_ReadNextModifiedRec(PyObject *self, PyObject *args) {
     int *arg5 = (int *) 0 ;
     int *arg6 = (int *) 0 ;
     int *arg7 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10143,30 +10177,33 @@ static PyObject *_wrap_dlp_ReadNextModifiedRec(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj5,(void **)(&arg7),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadNextModifiedRec(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+    result = (PI_ERR)dlp_ReadNextModifiedRec(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg3) {
-            o1 = Py_BuildValue("s#", arg3->data, arg3->used);
-            pi_buffer_free(arg3);
+            PyObject *o1 = Py_BuildValue("s#", arg3->data, arg3->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg3) {
+            pi_buffer_free(arg3);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg3) {
+            pi_buffer_free(arg3);
+        }
+    }
     return NULL;
 }
 
@@ -10180,7 +10217,7 @@ static PyObject *_wrap_dlp_ReadNextModifiedRecInCategory(PyObject *self, PyObjec
     recordid_t *arg5 = (recordid_t *) 0 ;
     int *arg6 = (int *) 0 ;
     int *arg7 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10204,30 +10241,33 @@ static PyObject *_wrap_dlp_ReadNextModifiedRecInCategory(PyObject *self, PyObjec
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj5,(void **)(&arg7),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadNextModifiedRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+    result = (PI_ERR)dlp_ReadNextModifiedRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg4) {
-            o1 = Py_BuildValue("s#", arg4->data, arg4->used);
-            pi_buffer_free(arg4);
+            PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
+        }
+    }
     return NULL;
 }
 
@@ -10241,7 +10281,7 @@ static PyObject *_wrap_dlp_ReadNextRecInCategory(PyObject *self, PyObject *args)
     recordid_t *arg5 = (recordid_t *) 0 ;
     int *arg6 = (int *) 0 ;
     int *arg7 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10265,30 +10305,33 @@ static PyObject *_wrap_dlp_ReadNextRecInCategory(PyObject *self, PyObject *args)
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj5,(void **)(&arg7),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadNextRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+    result = (PI_ERR)dlp_ReadNextRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg4) {
-            o1 = Py_BuildValue("s#", arg4->data, arg4->used);
-            pi_buffer_free(arg4);
+            PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
+        }
+    }
     return NULL;
 }
 
@@ -10303,7 +10346,7 @@ static PyObject *_wrap_dlp_WriteRecord(PyObject *self, PyObject *args) {
     void *arg6 = (void *) 0 ;
     size_t arg7 ;
     recordid_t *arg8 = (recordid_t *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10311,9 +10354,8 @@ static PyObject *_wrap_dlp_WriteRecord(PyObject *self, PyObject *args) {
     PyObject * obj4 = 0 ;
     PyObject * obj5 = 0 ;
     PyObject * obj6 = 0 ;
-    PyObject * obj7 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOOOOOOO:dlp_WriteRecord",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OOOOOOO:dlp_WriteRecord",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
@@ -10324,24 +10366,20 @@ static PyObject *_wrap_dlp_WriteRecord(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg5 = (int)SWIG_As_int(obj4); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj5,&arg6,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    arg7 = (size_t)SWIG_As_unsigned_SS_long(obj6); 
-    if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj7,(void **)(&arg8),SWIGTYPE_p_recordid_t,
+    {
+        arg6 = (void *)PyString_AsString(obj5);
+        arg7 = PyString_Size(obj5);
+    }
+    if ((SWIG_ConvertPtr(obj6,(void **)(&arg8),SWIGTYPE_p_recordid_t,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_WriteRecord(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
+    result = (PI_ERR)dlp_WriteRecord(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     return resultobj;
     fail:
@@ -10355,7 +10393,7 @@ static PyObject *_wrap_dlp_DeleteRecord(PyObject *self, PyObject *args) {
     int arg2 ;
     int arg3 ;
     recordid_t arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10370,13 +10408,11 @@ static PyObject *_wrap_dlp_DeleteRecord(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (recordid_t)SWIG_As_unsigned_SS_long(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_DeleteRecord(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_DeleteRecord(arg1,arg2,arg3,arg4);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -10395,7 +10431,7 @@ static PyObject *_wrap_dlp_ReadResourceByType(PyObject *self, PyObject *args) {
     int arg4 ;
     pi_buffer_t *arg5 = (pi_buffer_t *) 0 ;
     int *arg6 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10416,30 +10452,33 @@ static PyObject *_wrap_dlp_ReadResourceByType(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj4,(void **)(&arg6),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadResourceByType(arg1,arg2,arg3,arg4,arg5,arg6);
+    result = (PI_ERR)dlp_ReadResourceByType(arg1,arg2,arg3,arg4,arg5,arg6);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg5) {
-            o1 = Py_BuildValue("s#", arg5->data, arg5->used);
-            pi_buffer_free(arg5);
+            PyObject *o1 = Py_BuildValue("s#", arg5->data, arg5->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg5) {
+            pi_buffer_free(arg5);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg5) {
+            pi_buffer_free(arg5);
+        }
+    }
     return NULL;
 }
 
@@ -10452,7 +10491,7 @@ static PyObject *_wrap_dlp_ReadResourceByIndex(PyObject *self, PyObject *args) {
     pi_buffer_t *arg4 = (pi_buffer_t *) 0 ;
     unsigned long *arg5 = (unsigned long *) 0 ;
     int *arg6 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10473,30 +10512,33 @@ static PyObject *_wrap_dlp_ReadResourceByIndex(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj4,(void **)(&arg6),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ReadResourceByIndex(arg1,arg2,arg3,arg4,arg5,arg6);
+    result = (PI_ERR)dlp_ReadResourceByIndex(arg1,arg2,arg3,arg4,arg5,arg6);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     {
-        PyObject *o1;
         if (arg4) {
-            o1 = Py_BuildValue("s#", arg4->data, arg4->used);
-            pi_buffer_free(arg4);
+            PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg4) {
+            pi_buffer_free(arg4);
+        }
+    }
     return NULL;
 }
 
@@ -10509,15 +10551,14 @@ static PyObject *_wrap_dlp_WriteResource(PyObject *self, PyObject *args) {
     int arg4 ;
     void *arg5 = (void *) 0 ;
     size_t arg6 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
     PyObject * obj3 = 0 ;
     PyObject * obj4 = 0 ;
-    PyObject * obj5 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOOOOO:dlp_WriteResource",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OOOOO:dlp_WriteResource",&obj0,&obj1,&obj2,&obj3,&obj4)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
@@ -10526,22 +10567,18 @@ static PyObject *_wrap_dlp_WriteResource(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj4,&arg5,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    arg6 = (size_t)SWIG_As_unsigned_SS_long(obj5); 
-    if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_WriteResource(arg1,arg2,arg3,arg4,(void const *)arg5,arg6);
+    {
+        arg5 = (void *)PyString_AsString(obj4);
+        arg6 = PyString_Size(obj4);
+    }
+    result = (PI_ERR)dlp_WriteResource(arg1,arg2,arg3,arg4,(void const *)arg5,arg6);
     
     {
-        if (result == -5) {
-            /* Why do we allow -5 as a non-error again ? NCP */
-            Py_INCREF(Py_None);
-            resultobj = Py_None;
-        } else if (result < 0) {
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
         }
-        Py_INCREF(Py_None);
         resultobj = Py_None;
+        Py_INCREF(Py_None);
     }
     return resultobj;
     fail:
@@ -10556,7 +10593,7 @@ static PyObject *_wrap_dlp_DeleteResource(PyObject *self, PyObject *args) {
     int arg3 ;
     unsigned long arg4 ;
     int arg5 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10574,13 +10611,11 @@ static PyObject *_wrap_dlp_DeleteResource(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg5 = (int)SWIG_As_int(obj4); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_DeleteResource(arg1,arg2,arg3,arg4,arg5);
+    result = (PI_ERR)dlp_DeleteResource(arg1,arg2,arg3,arg4,arg5);
     
     {
         if (result < 0) {
-            // Would be nice to check pi_palmos_error here if necessary, but we don't know the sd :-(
-            PyErr_SetObject(DLPError, Py_BuildValue("(is)", result, dlp_strerror(result)));
-            return NULL;
+            return pythonWrapper_handlePiErr(arg1, result);
         }
         resultobj = Py_None;
         Py_INCREF(Py_None);
@@ -10596,7 +10631,7 @@ static PyObject *_wrap_dlp_ExpSlotEnumerate(PyObject *self, PyObject *args) {
     int arg1 ;
     int *arg2 = (int *) 0 ;
     int *arg3 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10608,9 +10643,15 @@ static PyObject *_wrap_dlp_ExpSlotEnumerate(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ExpSlotEnumerate(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_ExpSlotEnumerate(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10621,7 +10662,7 @@ static PyObject *_wrap_dlp_ExpCardPresent(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     int arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -10630,9 +10671,15 @@ static PyObject *_wrap_dlp_ExpCardPresent(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_ExpCardPresent(arg1,arg2);
+    result = (PI_ERR)dlp_ExpCardPresent(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10646,7 +10693,7 @@ static PyObject *_wrap_dlp_ExpCardInfo(PyObject *self, PyObject *args) {
     unsigned long *arg3 = (unsigned long *) 0 ;
     int *arg4 = (int *) 0 ;
     char **arg5 = (char **) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10664,9 +10711,15 @@ static PyObject *_wrap_dlp_ExpCardInfo(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj4,(void **)(&arg5),SWIGTYPE_p_p_char,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ExpCardInfo(arg1,arg2,arg3,arg4,arg5);
+    result = (PI_ERR)dlp_ExpCardInfo(arg1,arg2,arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10678,7 +10731,7 @@ static PyObject *_wrap_dlp_ExpSlotMediaType(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     unsigned long *arg3 = (unsigned long *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10690,9 +10743,15 @@ static PyObject *_wrap_dlp_ExpSlotMediaType(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_unsigned_long,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_ExpSlotMediaType(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_ExpSlotMediaType(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10704,7 +10763,7 @@ static PyObject *_wrap_dlp_VFSVolumeEnumerate(PyObject *self, PyObject *args) {
     int arg1 ;
     int *arg2 = (int *) 0 ;
     int *arg3 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10716,9 +10775,15 @@ static PyObject *_wrap_dlp_VFSVolumeEnumerate(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSVolumeEnumerate(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_VFSVolumeEnumerate(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10730,7 +10795,7 @@ static PyObject *_wrap_dlp_VFSVolumeInfo(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     struct VFSInfo *arg3 = (struct VFSInfo *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10742,9 +10807,15 @@ static PyObject *_wrap_dlp_VFSVolumeInfo(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_VFSInfo,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSVolumeInfo(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_VFSVolumeInfo(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10757,7 +10828,7 @@ static PyObject *_wrap_dlp_VFSVolumeGetLabel(PyObject *self, PyObject *args) {
     int arg2 ;
     int *arg3 = (int *) 0 ;
     char *arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10771,9 +10842,15 @@ static PyObject *_wrap_dlp_VFSVolumeGetLabel(PyObject *self, PyObject *args) {
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if (!SWIG_AsCharPtr(obj3, (char**)&arg4)) SWIG_fail;
-    result = (int)dlp_VFSVolumeGetLabel(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_VFSVolumeGetLabel(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10785,7 +10862,7 @@ static PyObject *_wrap_dlp_VFSVolumeSetLabel(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     char *arg3 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10796,9 +10873,15 @@ static PyObject *_wrap_dlp_VFSVolumeSetLabel(PyObject *self, PyObject *args) {
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) SWIG_fail;
-    result = (int)dlp_VFSVolumeSetLabel(arg1,arg2,(char const *)arg3);
+    result = (PI_ERR)dlp_VFSVolumeSetLabel(arg1,arg2,(char const *)arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10811,7 +10894,7 @@ static PyObject *_wrap_dlp_VFSVolumeSize(PyObject *self, PyObject *args) {
     int arg2 ;
     long *arg3 = (long *) 0 ;
     long *arg4 = (long *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10826,9 +10909,15 @@ static PyObject *_wrap_dlp_VFSVolumeSize(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj3,(void **)(&arg4),SWIGTYPE_p_long,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSVolumeSize(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_VFSVolumeSize(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10841,7 +10930,7 @@ static PyObject *_wrap_dlp_VFSVolumeFormat(PyObject *self, PyObject *args) {
     unsigned char arg2 ;
     int arg3 ;
     struct VFSSlotMountParam *arg4 = (struct VFSSlotMountParam *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10856,9 +10945,15 @@ static PyObject *_wrap_dlp_VFSVolumeFormat(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj3,(void **)(&arg4),SWIGTYPE_p_VFSSlotMountParam,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSVolumeFormat(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_VFSVolumeFormat(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10872,7 +10967,7 @@ static PyObject *_wrap_dlp_VFSGetDefaultDir(PyObject *self, PyObject *args) {
     char *arg3 ;
     char *arg4 ;
     int *arg5 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10888,9 +10983,15 @@ static PyObject *_wrap_dlp_VFSGetDefaultDir(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj3, (char**)&arg4)) SWIG_fail;
     if ((SWIG_ConvertPtr(obj4,(void **)(&arg5),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSGetDefaultDir(arg1,arg2,(char const *)arg3,arg4,arg5);
+    result = (PI_ERR)dlp_VFSGetDefaultDir(arg1,arg2,(char const *)arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10904,7 +11005,7 @@ static PyObject *_wrap_dlp_VFSDirEntryEnumerate(PyObject *self, PyObject *args) 
     unsigned long *arg3 = (unsigned long *) 0 ;
     int *arg4 = (int *) 0 ;
     struct VFSDirInfo *arg5 = (struct VFSDirInfo *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10922,9 +11023,15 @@ static PyObject *_wrap_dlp_VFSDirEntryEnumerate(PyObject *self, PyObject *args) 
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj4,(void **)(&arg5),SWIGTYPE_p_VFSDirInfo,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSDirEntryEnumerate(arg1,arg2,arg3,arg4,arg5);
+    result = (PI_ERR)dlp_VFSDirEntryEnumerate(arg1,arg2,arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10936,7 +11043,7 @@ static PyObject *_wrap_dlp_VFSDirCreate(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     char *arg3 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10947,9 +11054,15 @@ static PyObject *_wrap_dlp_VFSDirCreate(PyObject *self, PyObject *args) {
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) SWIG_fail;
-    result = (int)dlp_VFSDirCreate(arg1,arg2,(char const *)arg3);
+    result = (PI_ERR)dlp_VFSDirCreate(arg1,arg2,(char const *)arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10963,7 +11076,7 @@ static PyObject *_wrap_dlp_VFSImportDatabaseFromFile(PyObject *self, PyObject *a
     char *arg3 ;
     int *arg4 = (int *) 0 ;
     unsigned long *arg5 = (unsigned long *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -10980,9 +11093,15 @@ static PyObject *_wrap_dlp_VFSImportDatabaseFromFile(PyObject *self, PyObject *a
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj4,(void **)(&arg5),SWIGTYPE_p_unsigned_long,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSImportDatabaseFromFile(arg1,arg2,(char const *)arg3,arg4,arg5);
+    result = (PI_ERR)dlp_VFSImportDatabaseFromFile(arg1,arg2,(char const *)arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10996,7 +11115,7 @@ static PyObject *_wrap_dlp_VFSExportDatabaseToFile(PyObject *self, PyObject *arg
     char *arg3 ;
     int arg4 ;
     unsigned int arg5 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11013,9 +11132,15 @@ static PyObject *_wrap_dlp_VFSExportDatabaseToFile(PyObject *self, PyObject *arg
     if (PyErr_Occurred()) SWIG_fail;
     arg5 = (unsigned int)SWIG_As_unsigned_SS_int(obj4); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSExportDatabaseToFile(arg1,arg2,(char const *)arg3,arg4,arg5);
+    result = (PI_ERR)dlp_VFSExportDatabaseToFile(arg1,arg2,(char const *)arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11027,7 +11152,7 @@ static PyObject *_wrap_dlp_VFSFileCreate(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     char *arg3 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11038,9 +11163,15 @@ static PyObject *_wrap_dlp_VFSFileCreate(PyObject *self, PyObject *args) {
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) SWIG_fail;
-    result = (int)dlp_VFSFileCreate(arg1,arg2,(char const *)arg3);
+    result = (PI_ERR)dlp_VFSFileCreate(arg1,arg2,(char const *)arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11054,7 +11185,7 @@ static PyObject *_wrap_dlp_VFSFileOpen(PyObject *self, PyObject *args) {
     char *arg3 ;
     int arg4 ;
     FileRef *arg5 = (FileRef *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11071,9 +11202,15 @@ static PyObject *_wrap_dlp_VFSFileOpen(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj4,(void **)(&arg5),SWIGTYPE_p_FileRef,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSFileOpen(arg1,arg2,(char const *)arg3,arg4,arg5);
+    result = (PI_ERR)dlp_VFSFileOpen(arg1,arg2,(char const *)arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11084,7 +11221,7 @@ static PyObject *_wrap_dlp_VFSFileClose(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     FileRef arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -11093,9 +11230,15 @@ static PyObject *_wrap_dlp_VFSFileClose(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (FileRef)SWIG_As_unsigned_SS_long(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSFileClose(arg1,arg2);
+    result = (PI_ERR)dlp_VFSFileClose(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11108,23 +11251,29 @@ static PyObject *_wrap_dlp_VFSFileWrite(PyObject *self, PyObject *args) {
     FileRef arg2 ;
     void *arg3 = (void *) 0 ;
     size_t arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
-    PyObject * obj3 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOOO:dlp_VFSFileWrite",&obj0,&obj1,&obj2,&obj3)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OOO:dlp_VFSFileWrite",&obj0,&obj1,&obj2)) goto fail;
     arg1 = (int)SWIG_As_int(obj0); 
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (FileRef)SWIG_As_unsigned_SS_long(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj2,&arg3,0,SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    arg4 = (size_t)SWIG_As_unsigned_SS_long(obj3); 
-    if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSFileWrite(arg1,arg2,(void const *)arg3,arg4);
+    {
+        arg3 = (void *)PyString_AsString(obj2);
+        arg4 = PyString_Size(obj2);
+    }
+    result = (PI_ERR)dlp_VFSFileWrite(arg1,arg2,(void const *)arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11137,7 +11286,7 @@ static PyObject *_wrap_dlp_VFSFileRead(PyObject *self, PyObject *args) {
     FileRef arg2 ;
     pi_buffer_t *arg3 = (pi_buffer_t *) 0 ;
     size_t arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11152,19 +11301,33 @@ static PyObject *_wrap_dlp_VFSFileRead(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (size_t)SWIG_As_unsigned_SS_long(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSFileRead(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_VFSFileRead(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
     {
-        PyObject *o1;
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
+    {
         if (arg3) {
-            o1 = Py_BuildValue("s#", arg3->data, arg3->used);
-            pi_buffer_free(arg3);
+            PyObject *o1 = Py_BuildValue("s#", arg3->data, arg3->used);
             resultobj = t_output_helper(resultobj, o1);
+        }
+    }
+    {
+        if (arg3) {
+            pi_buffer_free(arg3);
         }
     }
     return resultobj;
     fail:
+    {
+        if (arg3) {
+            pi_buffer_free(arg3);
+        }
+    }
     return NULL;
 }
 
@@ -11174,7 +11337,7 @@ static PyObject *_wrap_dlp_VFSFileDelete(PyObject *self, PyObject *args) {
     int arg1 ;
     int arg2 ;
     char *arg3 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11185,9 +11348,15 @@ static PyObject *_wrap_dlp_VFSFileDelete(PyObject *self, PyObject *args) {
     arg2 = (int)SWIG_As_int(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) SWIG_fail;
-    result = (int)dlp_VFSFileDelete(arg1,arg2,(char const *)arg3);
+    result = (PI_ERR)dlp_VFSFileDelete(arg1,arg2,(char const *)arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11200,7 +11369,7 @@ static PyObject *_wrap_dlp_VFSFileRename(PyObject *self, PyObject *args) {
     int arg2 ;
     char *arg3 ;
     char *arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11213,9 +11382,15 @@ static PyObject *_wrap_dlp_VFSFileRename(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) SWIG_fail;
     if (!SWIG_AsCharPtr(obj3, (char**)&arg4)) SWIG_fail;
-    result = (int)dlp_VFSFileRename(arg1,arg2,(char const *)arg3,(char const *)arg4);
+    result = (PI_ERR)dlp_VFSFileRename(arg1,arg2,(char const *)arg3,(char const *)arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11226,7 +11401,7 @@ static PyObject *_wrap_dlp_VFSFileEOF(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     int arg1 ;
     FileRef arg2 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -11235,9 +11410,15 @@ static PyObject *_wrap_dlp_VFSFileEOF(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg2 = (FileRef)SWIG_As_unsigned_SS_long(obj1); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSFileEOF(arg1,arg2);
+    result = (PI_ERR)dlp_VFSFileEOF(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11249,7 +11430,7 @@ static PyObject *_wrap_dlp_VFSFileTell(PyObject *self, PyObject *args) {
     int arg1 ;
     FileRef arg2 ;
     int *arg3 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11261,9 +11442,15 @@ static PyObject *_wrap_dlp_VFSFileTell(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSFileTell(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_VFSFileTell(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11275,7 +11462,7 @@ static PyObject *_wrap_dlp_VFSFileGetAttributes(PyObject *self, PyObject *args) 
     int arg1 ;
     FileRef arg2 ;
     unsigned long *arg3 = (unsigned long *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11287,9 +11474,15 @@ static PyObject *_wrap_dlp_VFSFileGetAttributes(PyObject *self, PyObject *args) 
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_unsigned_long,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSFileGetAttributes(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_VFSFileGetAttributes(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11301,7 +11494,7 @@ static PyObject *_wrap_dlp_VFSFileSetAttributes(PyObject *self, PyObject *args) 
     int arg1 ;
     FileRef arg2 ;
     unsigned long arg3 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11313,9 +11506,15 @@ static PyObject *_wrap_dlp_VFSFileSetAttributes(PyObject *self, PyObject *args) 
     if (PyErr_Occurred()) SWIG_fail;
     arg3 = (unsigned long)SWIG_As_unsigned_SS_long(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSFileSetAttributes(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_VFSFileSetAttributes(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11328,7 +11527,7 @@ static PyObject *_wrap_dlp_VFSFileGetDate(PyObject *self, PyObject *args) {
     FileRef arg2 ;
     int arg3 ;
     time_t *arg4 = (time_t *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11343,9 +11542,15 @@ static PyObject *_wrap_dlp_VFSFileGetDate(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj3,(void **)(&arg4),SWIGTYPE_p_time_t,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSFileGetDate(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_VFSFileGetDate(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11358,7 +11563,7 @@ static PyObject *_wrap_dlp_VFSFileSetDate(PyObject *self, PyObject *args) {
     FileRef arg2 ;
     int arg3 ;
     time_t arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11373,9 +11578,15 @@ static PyObject *_wrap_dlp_VFSFileSetDate(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (time_t)SWIG_As_long(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSFileSetDate(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_VFSFileSetDate(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11388,7 +11599,7 @@ static PyObject *_wrap_dlp_VFSFileSeek(PyObject *self, PyObject *args) {
     FileRef arg2 ;
     int arg3 ;
     int arg4 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11403,9 +11614,15 @@ static PyObject *_wrap_dlp_VFSFileSeek(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg4 = (int)SWIG_As_int(obj3); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSFileSeek(arg1,arg2,arg3,arg4);
+    result = (PI_ERR)dlp_VFSFileSeek(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11417,7 +11634,7 @@ static PyObject *_wrap_dlp_VFSFileResize(PyObject *self, PyObject *args) {
     int arg1 ;
     FileRef arg2 ;
     int arg3 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11429,9 +11646,15 @@ static PyObject *_wrap_dlp_VFSFileResize(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     arg3 = (int)SWIG_As_int(obj2); 
     if (PyErr_Occurred()) SWIG_fail;
-    result = (int)dlp_VFSFileResize(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_VFSFileResize(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -11443,7 +11666,7 @@ static PyObject *_wrap_dlp_VFSFileSize(PyObject *self, PyObject *args) {
     int arg1 ;
     FileRef arg2 ;
     int *arg3 = (int *) 0 ;
-    int result;
+    PI_ERR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
@@ -11455,9 +11678,15 @@ static PyObject *_wrap_dlp_VFSFileSize(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     if ((SWIG_ConvertPtr(obj2,(void **)(&arg3),SWIGTYPE_p_int,
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
-    result = (int)dlp_VFSFileSize(arg1,arg2,arg3);
+    result = (PI_ERR)dlp_VFSFileSize(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            return pythonWrapper_handlePiErr(arg1, result);
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -13851,7 +14080,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"pi_protocol_next", _wrap_pi_protocol_next, METH_VARARGS, NULL },
 	 { (char *)"pi_socket_connected", _wrap_pi_socket_connected, METH_VARARGS, NULL },
 	 { (char *)"pi_connect", _wrap_pi_connect, METH_VARARGS, NULL },
-	 { (char *)"pi_bind", _wrap_pi_bind, METH_VARARGS, NULL },
+	 { (char *)"pi_bind_", _wrap_pi_bind_, METH_VARARGS, NULL },
 	 { (char *)"pi_listen", _wrap_pi_listen, METH_VARARGS, NULL },
 	 { (char *)"pi_accept", _wrap_pi_accept, METH_VARARGS, NULL },
 	 { (char *)"pi_accept_to", _wrap_pi_accept_to, METH_VARARGS, NULL },
@@ -14060,7 +14289,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"dlp_set_protocol_version", _wrap_dlp_set_protocol_version, METH_VARARGS, NULL },
 	 { (char *)"dlp_ptohdate", _wrap_dlp_ptohdate, METH_VARARGS, NULL },
 	 { (char *)"dlp_htopdate", _wrap_dlp_htopdate, METH_VARARGS, NULL },
-	 { (char *)"dlp_GetSysDateTime", _wrap_dlp_GetSysDateTime, METH_VARARGS, NULL },
+	 { (char *)"dlp_GetSysDateTime_", _wrap_dlp_GetSysDateTime_, METH_VARARGS, NULL },
 	 { (char *)"dlp_SetSysDateTime", _wrap_dlp_SetSysDateTime, METH_VARARGS, NULL },
 	 { (char *)"dlp_ReadSysInfo", _wrap_dlp_ReadSysInfo, METH_VARARGS, NULL },
 	 { (char *)"dlp_ReadStorageInfo", _wrap_dlp_ReadStorageInfo, METH_VARARGS, NULL },

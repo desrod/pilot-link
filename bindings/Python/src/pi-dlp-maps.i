@@ -10,6 +10,49 @@
 }
 
 // -------------------------------------
+//  unsigned long creator
+// -------------------------------------
+%typemap (python,in) unsigned long creator {
+  if (PyString_Check($input)) {
+    $1 = makelong(PyString_AS_STRING($input));
+  } else {
+    PyErr_SetString(PyExc_TypeError,"You must specify a creator");
+    return NULL;
+  }
+}
+
+// -------------------------------------
+//  unsigned long *feature
+// -------------------------------------
+
+%apply unsigned long *OUTPUT { unsigned long *feature };
+
+// -------------------------------------
+//  time_t *time
+// -------------------------------------
+
+%rename(dlp_GetSysDateTime_) dlp_GetSysDateTime;
+
+%typemap (python,in,numinputs=0) time_t *time (time_t time) {
+    $1 = (time_t *)&time;
+}
+
+%typemap (python,argout) time_t *time (time_t time) {
+    if ($1) {
+      $result = PyInt_FromLong((unsigned long ) $1);
+      /* Ready for Python 2.4! Right now we wrap in python. */
+/*       struct tm *t; */
+/*       t = localtime($1); */
+/*       $result = PyDate_FromDateAndTime(t->tm_year, */
+/* 				       t->tm_mon, */
+/* 				       t->tm_mday, */
+/* 				       t->tm_hour, */
+/* 				       t->tm_min, */
+/* 				       t->tm_sec); */
+    }
+}
+
+// -------------------------------------
 // struct PilotUser
 // -------------------------------------
 %typemap (python,in) struct PilotUser* {
@@ -203,21 +246,24 @@
 // -------------------------------------
 %typemap (python,argout) (struct CardInfo *cardinfo) {
     if ($1) {
-		PyObject *o = Py_BuildValue("{sisislslslslsssssi}",
-									"card", $1->card,
-									"version", $1->version,
-									"creation", $1->creation,
-									"romSize", $1->romSize,
-									"ramSize", $1->ramSize,
-									"ramFree", $1->ramFree,
-									"name", $1->name,
-									"manufacturer", $1->manufacturer,
-									"more", $1->more);
-		$result = t_output_helper($result, o);
-    }
+      $result = Py_BuildValue("{sisislslslslsssssi}",
+			      "card", $1->card,
+			      "version", $1->version,
+			      "creation", $1->creation,
+			      "romSize", $1->romSize,
+			      "ramSize", $1->ramSize,
+			      "ramFree", $1->ramFree,
+			      "name", $1->name,
+			      "manufacturer", $1->manufacturer,
+			      "more", $1->more);
+    } else {
+      // eh ?
+      PyErr_SetString(PyExc_RuntimeError,"No cardinfo returned.");
+      return NULL;      
+    }	
 }
 
-%typemap (python,in,numinputs=0) struct CardInfo *OUTPUT (struct CardInfo temp) {
+%typemap (python,in,numinputs=0) struct CardInfo *cardinfo (struct CardInfo temp) {
     $1 = &temp;
 }
 

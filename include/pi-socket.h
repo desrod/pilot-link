@@ -61,6 +61,7 @@ extern "C" {
 #include "pi-version.h"
 #include "pi-sockaddr.h"
 #include "pi-buffer.h"
+#include "pi-error.h"		/* For PI_ERR */
 
 #define PI_AF_PILOT             0x00
 
@@ -227,7 +228,7 @@ typedef struct pi_socket_list
 	extern int pi_connect
 	    PI_ARGS((int pi_sd, const char *port));
 
-	extern int pi_bind
+	extern PI_ERR pi_bind
 	    PI_ARGS((int pi_sd, const char *port));
 
 	extern int pi_listen PI_ARGS((int pi_sd, int backlog));

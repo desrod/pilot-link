@@ -219,7 +219,7 @@ pi_socket_connected = _pisock.pi_socket_connected
 
 pi_connect = _pisock.pi_connect
 
-pi_bind = _pisock.pi_bind
+pi_bind_ = _pisock.pi_bind_
 
 pi_listen = _pisock.pi_listen
 
@@ -973,7 +973,7 @@ dlp_ptohdate = _pisock.dlp_ptohdate
 
 dlp_htopdate = _pisock.dlp_htopdate
 
-dlp_GetSysDateTime = _pisock.dlp_GetSysDateTime
+dlp_GetSysDateTime_ = _pisock.dlp_GetSysDateTime_
 
 dlp_SetSysDateTime = _pisock.dlp_SetSysDateTime
 

@@ -21,7 +21,8 @@ class OnlineTestCase(unittest.TestCase):
 
     def testdlp_GetSysDateTime(self):
         res = pisock.dlp_GetSysDateTime(sd)
-        print "GetSysDateTime: " + str(res)
+        if VERBOSE:
+            print "GetSysDateTime: %s" % res
 
     def testdlp_AddSyncLogEntry(self):
         pisock.dlp_AddSyncLogEntry(sd, "Python test.")
@@ -29,29 +30,40 @@ class OnlineTestCase(unittest.TestCase):
     def testdlp_ReadSysInfo(self):
         res = pisock.dlp_ReadSysInfo(sd)
         assert res!=None and res.has_key('romVersion')
-        print "ReadSysInfo: romVersion=" + hex(res['romVersion']) + " locale=" + hex(res['locale']) + " name='" + res['name'] + "'"
+        if VERBOSE:
+            print "ReadSysInfo: romVersion=%s locale=%s name='%s'" % (
+                hex(res['romVersion']),
+                hex(res['locale']),
+                res['name'])
 
     def testdlp_ReadStorageInfo(self):
-        info = []
-        res = pisock.dlp_ReadStorageInfo(sd,0,info)
-        assert info.has_key('manufacturer')
-        print "ReadStorageInfo: card 0, romSize=" + str(res['romSize']) + ", ramSize=" + str(res['ramSize']) + ", ramFree=" + str(res['ramFree']) + ", manufacturer=" + res['manufacturer']
+        res = pisock.dlp_ReadStorageInfo(sd,0)
+        assert res.has_key('manufacturer')
+        if VERBOSE:
+            print "ReadStorageInfo: card 0, romSize=%s ramSize=%s ramFree=%s manufacturer='%s'" % (
+                res['romSize'],
+                res['ramSize'],
+                res['ramFree'],
+                res['manufacturer'])
 
     def testdlp_ReadUserInfo(self):
         res = pisock.dlp_ReadUserInfo(sd)
         assert res!=None and len(res)>3
-        print "ReadUserInfo: username='" + res['name'] + "'"
+        if VERBOSE:
+            print "ReadUserInfo: username='%s'" % res['name']
 
     def testdlp_ReadFeature(self):
         res = pisock.dlp_ReadFeature(sd,'psys',2)
         assert res!=None
-        print "ReadFeature: processor type=" + hex(res)
+        if VERBOSE:        
+            print "ReadFeature: processor type=%s" % hex(res)
 
     def testdlp_ReadDBList(self):
         res = pisock.dlp_ReadDBList(sd,0,pisock.dlpDBListRAM)
         assert len(res) > 3
         assert res[0].has_key('name')
-        print "ReadDBList: " + str(len(res)) + " entries"
+        if VERBOSE:
+            print "ReadDBList: %s entries" % len(res)
 
 
 class OfflineTestCase(unittest.TestCase):
@@ -75,11 +87,16 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-p", "--port", dest="pilotport",
                       help="Perform online tests using port", metavar="PORT")
+    parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
+                      help="Print more output", default=0)
     (options, args) = parser.parse_args()
 
     runner = unittest.TextTestRunner()
 
+    VERBOSE = options.verbose
+
     if options.pilotport:
+        
         pilotport = options.pilotport
         print "Running online and offline tests using port %s" % pilotport
         print "Connecting"
@@ -90,10 +107,13 @@ if __name__ == "__main__":
         pisock.pi_bind(sd, pilotport)
         pisock.pi_listen(sd, 1)
         pisock.pi_accept(sd)
-        print pisock.dlp_ReadSysInfo(sd)
+        if VERBOSE:
+            print pisock.dlp_ReadSysInfo(sd)
+        else:
+            pisock.dlp_ReadSysInfo(sd)
         pisock.dlp_OpenConduit(sd)
         print "Connected"
-        runner.run(onlineSuite)
+        runner.run(combinedSuite)
         pisock.pi_close(sd)
         print "Disconnected"
     else:

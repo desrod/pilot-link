@@ -1,5 +1,8 @@
 // -*- C -*-
 
+// Give Python a slightly nicer implementation
+%rename(pi_bind_) pi_bind;
+
 //
 // pi-sockaddr... the real structure might be defined in one of two
 // different ways, but luckily SWIG doesn't really care.
