@@ -217,8 +217,31 @@ Talking to your Palm over USB
 
 		http://wiki.pilot-link.org/index.php/DeviceMatrix
 
-	If you see the successful message when you hit HotSync, now you can
-	launch any of pilot-link's various tools as follows:
+	2.) Make sure your kernel's .config is current for the target
+	    hardware you plan on running, and execute the following:
+
+		# make dep
+		# make modules SUBDIRS=drivers/usb/serial          # no leading slash
+		# make modules_install SUBDIRS=drivers/usb/serial  # ditto to above
+		# /sbin/depmod -ae
+
+	3.) With this module installed, you can now 'modprobe' the module to
+	    install it.
+
+	NOTE: With kernels later than 2.4.21, you can insert this module
+	with some parameters for your vendor and product id, without
+	recompiling it, using the following syntax:
+
+		# /sbin/insmod visor vendor=0x54c product=0x144
+
+	You can also put these in your /etc/modules.conf file as well, using
+	a similar syntax as follows:
+
+		options visor vendor=0x54c product=0x144
+
+	Once your module is loaded, and you see the successful message when
+	you hit HotSync, you can now launch any of pilot-link's various
+	conduits such as:
 
 		$ dlpsh -p /dev/ttyUSB1
 
