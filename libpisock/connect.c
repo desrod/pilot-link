@@ -160,7 +160,7 @@ pilot_connect(const char *port)
 			fprintf(stderr, "   Unable to bind to port: %s\n", 
 				portname);
 	                
-			fprintf(stderr, "   Please use --help for more 
+			fprintf(stderr, "   Please use --help for more "
 				"information\n\n");
 		} else
 			fprintf(stderr, "\n   No port specified\n");
