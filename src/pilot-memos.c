@@ -83,7 +83,7 @@ void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 	int 	j;
 	time_t	now;
 	char	*time_str;
-	
+
 	now = time( NULL );
 
 	/* FIXME: might be good to get the time stamp of the memo file for
@@ -91,11 +91,12 @@ void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
 
 	time_str = ctime(&now); 
 
-	printf("From: MemoDB@Palm.Handheld via pilot-link/memos\n"
+	printf("From Palm.Handheld %s"
+	       "From: pilot-link memos (MemoDB) <Palm.Handheld@your.machine>\n"
 	       "Received: %s" 
-	       "To: Your Machine\n"
+	       "To: You\n"
 	       "Date: %s"
-	       "Subject: ", time_str, time_str ); 
+	       "Subject: ", time_str, time_str, time_str); 
 
 	/* print category name in brackets in subject field */
 	printf("[%s] ", mai.category.name[category]);

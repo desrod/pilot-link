@@ -1,3 +1,8 @@
+2003-09-23 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/memos.c: Minor fix to make the output file a "real" mbox file,
+	  so other MUAs can load it as one. Closes Debian bug #212229
+
 2003-08-18 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Added AM_MAINTAINER_MODE to allow clean 
