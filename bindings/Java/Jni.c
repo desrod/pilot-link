@@ -22,6 +22,9 @@
  */
 
 #include <jni.h>
+#include <stdlib.h>
+#include <errno.h>
+
 #include "pi-source.h"
 
 #include "pi-dlp.h"
