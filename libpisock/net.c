@@ -414,6 +414,8 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 					return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
 				}
 				/* valid tickle packet; continue reading. */
+				LOG((PI_DBG_NET, PI_DBG_LVL_DEBUG,
+					"NET RX: received tickle packet\n"));
 				total_bytes = 0;
 				header->used = 0;
 				break;
