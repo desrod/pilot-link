@@ -21,7 +21,7 @@ typedef struct {
    unsigned short day;
    unsigned short month; 
    unsigned short year;
-   unsigned short s;      // Haven't figured this one out - AA
+   unsigned short s;      /* Haven't figured this one out - AA */
 } noteDate_t;
 
 typedef struct { 
@@ -30,29 +30,30 @@ typedef struct {
    unsigned short flags;      
 } noteHdr_t; 
 
-// flags
+/* flags */
 #define NOTEPAD_FLAG_BODY   0x01
 #define NOTEPAD_FLAG_NAME   0x02
 #define NOTEPAD_FLAG_ALARM  0x04
 
-// Actions 
+/* Actions */
 #define NOTEPAD_ACTION_OUTPUT  0x01
 #define NOTEPAD_ACTION_LIST    0x02
    
-// Output type
+/* Output type */
 #define NOTE_OUT_PPM       0x01
 #define NOTE_OUT_PNG       0x02
    
-// Note structure
-// When flags = 0x03
-//   noteHdr_t
-//   char name[0];       // NULL termniated and 1 padded to 2 byte boundary
-//   noteBody_t
-// When flags = 0x07
-//   noteHdr_t
-//   noteDate_t alarmTime
-//   char name[0];       // NULL termniated and 1 padded to 2 byte boundary
-//   noteBody_t
+/* Note structure
+ When flags = 0x03
+   noteHdr_t
+   char name[0];       // NULL termniated and 1 padded to 2 byte boundary
+   noteBody_t
+ When flags = 0x07
+   noteHdr_t
+   noteDate_t alarmTime
+   char name[0];       // NULL termniated and 1 padded to 2 byte boundary
+   noteBody_t
+*/
 
 			   
 typedef struct {
