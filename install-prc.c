@@ -25,7 +25,7 @@ main(int argc, char *argv[])
   unsigned char userid[64];
 
   if (argc < 3) {
-    fprintf(stderr,"usage:%s /dev/tty?? app.prc [app.prc] ...\n",argv[0]);
+    fprintf(stderr,"usage:%s /dev/cua? app.prc [app.prc] ...\n",argv[0]);
     exit(2);
   }
 

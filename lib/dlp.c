@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <sys/time.h>
+#include <errno.h>
 
 #include "pi-socket.h"
 #include "dlp.h"
@@ -50,11 +51,15 @@ int dlp_exec(int sd, int cmd, int arg, void *msg, int msglen,
   
   err = (dlp_buf[2] << 8) | dlp_buf[3];
   
-  if (err)
+  if (err) {
+    errno = -EIO;
     return -err;
-  
-  if (dlp_buf[0] != (cmd | 0x80)) /* received wrong response */
-    abort(); /* I'm not sure how to handle this */
+  }
+
+  if (dlp_buf[0] != (cmd | 0x80)) { /* received wrong response */
+    errno = -ENOMSG;
+    return -1;
+  }
   
   if ((dlp_buf[1] == 0) || (result==0)) /* no return blocks or buffers */
     return 0; 

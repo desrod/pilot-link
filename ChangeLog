@@ -1,0 +1,20 @@
+Oct 16, 1996	D. Jeff Dionne 0.2.1
+
+	moved the parts of libpisock.a to a seperate directory
+	moved the include files to a seperate directory
+	creates a few simple man pages, in a seperate directory
+	install-memo installs all files on the command line.
+	install-user new program, reads or sets Pilot user name
+	Attempted to reconstruct history for this ChangeLog.  All
+	previous ChangeLog entries are approximate, and short.
+
+Oct 15, 1996	D. Jeff Dionne 0.2.0
+
+	Integrated 2 patches for DLP from Kenneth Albanowski
+	Integrated 1 patch for CMP from Kenneth Albanowski
+	Integrated 1 patch for install-memo from Brian
+	Included COPYING license file from FSF
+
+Oct 8, 1996	D. Jeff Dionne 0.1.0
+
+	First functional release.

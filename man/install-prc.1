@@ -1,0 +1,28 @@
+.TH INSTALL-PRC 1 "USR Pilot tools" "FSF" \" -*- nroff -*-
+.SH NAME
+install-prc \- installs .prc files in a USR Pilot
+.SH SYNOPSIS
+.B install-prc /dev/cua? file.prc [file.prc] ...
+.SH DESCRIPTION
+This manual page
+documents the small application
+.BR install-prc .
+.B install-prc
+allows the user to send one or more Pilot executables to the Pilot connected 
+on the specified callout device.  Once executing
+.B install-prc
+the user must invoke HotSync on the target device.
+.SS OPTIONS
+none
+.SH USEAGE
+The program will connect to a target, and install the specifed Pilot
+executable(s).
+.SH BUGS
+.BR install-prc
+does not use the DLP layer.  Also,
+.BR install-prc
+does not properly disconnect from the target, which must time out.
+Fortunately, the target will complete the process correctly.
+.SH AUTHOR
+.B install-prc
+was written by D.Jeff Dionne
