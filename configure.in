@@ -7,6 +7,8 @@ dnl AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
 AC_SUBST(HOST_OS)
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
 
 dnl ******************************
 dnl Pilot Link Version
@@ -321,11 +323,11 @@ rl_callback_handler_remove();],
 #include <stdio.h>
 #include <readline/readline.h>], [
 rl_forced_update_display();],
-	[msg_readline=complete])])])])
+	[msg_readline=full])])])])
 
 	LIBS="$ac_save_LIBS"
 
-	if test "x$msg_readline" != "xcomplete"; then
+	if test "x$msg_readline" != "xfull"; then
 		AC_MSG_RESULT(no)
 	else
 		AC_MSG_RESULT(yes)
@@ -335,7 +337,7 @@ fi
 if test "x$msg_readline" = "xpartial"; then
 	AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
 fi
-if test "x$msg_readline" = "xcomplete"; then
+if test "x$msg_readline" = "xfull"; then
 	AC_DEFINE(HAVE_READLINE, 1, [Define if we have readline support])
 	AC_DEFINE(HAVE_READLINE_EXTRA, 1, [Define if we have extra readline support])
 fi
@@ -675,53 +677,50 @@ case "$host" in
 esac
 
 AC_OUTPUT([
-Makefile
-pilot-link.m4
-libpisock/Makefile
-libpisync/Makefile
-libpisock++/Makefile
-include/Makefile
-include/pi-version.h
-src/Makefile
-src/prc/Makefile
-src/pix/Makefile
-src/pilot-datebook/Makefile
-bindings/Makefile
-bindings/Perl/Makefile.PL
-bindings/Python/setup.py
-bindings/Java/Makefile
-doc/Makefile
-doc/man/Makefile
-tests/Makefile
+	Makefile
+	pilot-link.m4
+	libpisock/Makefile
+	libpisync/Makefile
+	libpisock++/Makefile
+	include/Makefile
+	include/pi-version.h
+	src/Makefile
+	src/prc/Makefile
+	src/pix/Makefile
+	src/pilot-datebook/Makefile
+	bindings/Makefile
+	bindings/Perl/Makefile.PL
+	bindings/Python/setup.py
+	bindings/Java/Makefile
+	doc/Makefile
+	doc/man/Makefile
+	tests/Makefile
 ])
 
 echo "
-  pilot-link.......... : $VERSION
-  libpisock........... : $PISOCK_CURRENT.$PISOCK_REVISION.$PISOCK_AGE
-  build host.......... : $host_os
+  Options detected/selected 
+  -------------------------.
+  pilot-link version...... : $VERSION
+  libpisock version....... : $PISOCK_CURRENT.$PISOCK_REVISION.$PISOCK_AGE
+  Build for host.......... : $host_os
+  Extra Warnings.......... : $set_compile_warnings
+  Direct USB support...... : $msg_usb
+  CFLAGS.................. : $CFLAGS
+  CXXFLAGS................ : $CXXFLAGS
 
-  Extra Warnings...... : $set_compile_warnings
+  Internal Language Support
+  -------------------------.
+  C++ support............. : $msg_cpp
+  Iconv support........... : $msg_iconv
+  PNG support............. : $msg_png
+  Readline support........ : $msg_readline
 
-  Universal Serial BUS
-  ----------------------
-  Direct USB support.. : $msg_usb
-
-  Extra Internal Support
-  ----------------------
-  C++ support......... : $msg_cpp
-  Iconv support....... : $msg_iconv
-  PNG support......... : $msg_png
-  Readline support.... : $msg_readline
-
-  Tcl/Tk/iTcl Support
-  ----------------------
-  TCL support......... : $msg_tcl	$TCL_VERSION
-  ITCL support........ : $msg_itcl	$ITCL_VERSION
-  TK Support.......... : $msg_tk	$TK_VERSION
-
-  Language Bindings
-  ----------------------
-  Java support........ : $msg_java	
-  Python support...... : $msg_python	$PYTHONVER
-  Perl support........ : $msg_perl	$PERLVER
+  External Language Support
+  -------------------------.
+  TCL support............. : $msg_tcl	$TCL_VERSION
+  ITCL support............ : $msg_itcl	$ITCL_VERSION
+  TK Support.............. : $msg_tk	$TK_VERSION
+  Java support............ : $msg_java	
+  Python support.......... : $msg_python	$PYTHONVER
+  Perl support............ : $msg_perl	$PERLVER
 "
