@@ -11,8 +11,5 @@ libpisync_la_SOURCES =	\
 libpisync_la_LIBADD = \
 	$(ICONV_LIBS)
 
-libpisync_la_LIBADD = \
-	$(ICONV_LIBS)
-
 libpisync_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISYNC_CURRENT):$(PISYNC_REVISION):$(PISYNC_AGE)
