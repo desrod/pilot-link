@@ -439,6 +439,7 @@ pi_inet_listen(pi_socket_t *ps, int backlog)
  * Returns:     socket descriptor on success, negative otherwise
  *
  ***********************************************************************/
+#include <netinet/tcp.h>
 static int
 pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
@@ -514,12 +515,15 @@ static int
 pi_inet_flush(pi_socket_t *ps, int flags)
 {
 	char buf[256];
+	int fl;
 
 	if (flags & PI_FLUSH_INPUT) {
-		fcntl(ps->sd, F_SETFL, O_NONBLOCK);
-		while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
-			;
-		fcntl(ps->sd, F_SETFL, 0);
+		if ((fl = fcntl(ps->sd, F_GETFL, 0)) != -1) {
+			fcntl(ps->sd, F_SETFL, fl | O_NONBLOCK);
+			while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
+				;
+			fcntl(ps->sd, F_SETFL, fl);
+		}
 	}
 	return 0;
 }

@@ -437,6 +437,7 @@ static int
 u_flush(pi_socket_t *ps, int flags)
 {
 	char buf[256];
+	int fl;
 	struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
 
 	if (flags & PI_FLUSH_INPUT) {
@@ -444,10 +445,12 @@ u_flush(pi_socket_t *ps, int flags)
 		data->used = 0;
 
 		/* flush pending data */
-		fcntl(ps->sd, F_SETFL, O_NONBLOCK);
-		while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
-			;
-		fcntl(ps->sd, F_SETFL, 0);
+		if ((fl = fcntl(ps->sd, F_GETFL, 0)) != -1) {
+			fcntl(ps->sd, F_SETFL, fl | O_NONBLOCK);
+			while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
+				;
+			fcntl(ps->sd, F_SETFL, fl);
+		}
 	}
 	return 0;
 }
