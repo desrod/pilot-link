@@ -522,18 +522,17 @@ static void Fetch(char *dbname)
 	struct 	pi_file *f;
 	char    *tmpPtr = dbname;
 
-	/* If the file extension is supplied, Fetch also, don't error */
-	while ((*tmpPtr != '\0') && (tmpPtr <= dbname + 256)) ++tmpPtr;
-	tmpPtr = tmpPtr -4;
-
-	if (*tmpPtr == '.') {
-		++tmpPtr;
-		if (*tmpPtr == 'p' || *tmpPtr == 'P') {
-			--tmpPtr;
-			*tmpPtr = '\0';
+	/* removes .pxx from the end of supplied dbname for the case where
+	   user wants ThisDB and specifies it as ThisDB.prc, etc */
+	while (*tmpPtr != '\0' && tmpPtr <= dbname + 265) tmpPtr++;
+	if (*(tmpPtr - 4) == '.') {
+		if (*(tmpPtr - 8) != '.' || /* handle special case .pdf.prc */ 
+			(*(tmpPtr - 7) != 'p' && *(tmpPtr - 7) != 'P')) {
+			if (*(tmpPtr - 3) == 'p' || *(tmpPtr - 3) == 'P') { 
+				*(tmpPtr - 4) = '\0';
+			}
 		}
 	}
-
 
 	Connect();
 

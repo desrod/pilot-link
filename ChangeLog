@@ -1,5 +1,10 @@
 2002-03-20  David A. Desrosiers <hacker at gnu-designs dot com>
 
+	* src/pilot-xfer.c: Another tweak to allow filenames with more than
+	  one extension, such as Adobe Palm Reader with MyFile.pdf.prc
+
+2002-03-20  David A. Desrosiers <hacker at gnu-designs dot com>
+
 	* README: Minor doc updates, removed redundant section about bugs
 	
 	* doc/README.debugging: Same
