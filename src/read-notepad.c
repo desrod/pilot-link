@@ -396,7 +396,13 @@ int main(int argc, const char *argv[])
    int type = NOTE_OUT_PPM;
 
    const char
-	*typename	= "png";
+	*typename	= 
+#ifdef HAVE_PNG
+	"png"
+#else
+	"ppm"
+#endif
+	;
 
    struct 	PilotUser User;
    struct 	NotePadAppInfo nai;
