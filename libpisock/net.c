@@ -477,6 +477,7 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 				LOG ((PI_DBG_NET, PI_DBG_LVL_ERR,
 					"NET RX (%i): Unknown packet type\n",
 					ps->sd));
+				CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, dumpdata((char *)header->data, PI_NET_HEADER_LEN));
 				pi_buffer_free(header);
 				return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
 		}
