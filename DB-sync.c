@@ -46,6 +46,7 @@ SyncDB(int sd, unsigned char *name, unsigned char *dataname, int dnamelen)
 
   if (index == -1) {
     fprintf(stderr, "Can't get a handle for %s\n",name);
+    free (data);
     return -1;
   }
 
@@ -102,4 +103,7 @@ SyncDB(int sd, unsigned char *name, unsigned char *dataname, int dnamelen)
   pi_read(sd, data, 1024);
 
   /* That's all folks! */
+
+  free(data);
+  return 0;
 }

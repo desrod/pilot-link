@@ -1,7 +1,11 @@
 #ifndef _PILOT_SOCKET_H_
 #define _PILOT_SOCKET_H_
 
+#ifdef bsdi
+#include <termios.h>
+#else
 #include <termio.h>
+#endif
 
 #define AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
 

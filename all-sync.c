@@ -16,6 +16,7 @@ static unsigned char confirm[][32] = {
   "Memo Pad",
   "To Do List",
   "Restore",
+  "Install",
   ""
 };
 

@@ -27,8 +27,8 @@ main(int argc, char *argv[])
 
   unsigned char userid[64];
 
-  if (argc != 2) {
-    fprintf(stderr,"usage:%s /dev/tty??\n",argv[0]);
+  if (argc < 2) {
+    fprintf(stderr,"usage:%s /dev/tty?? [app.prc]\n",argv[0]);
     exit(2);
   }
 
@@ -51,6 +51,7 @@ main(int argc, char *argv[])
   pi_write(sd,User,sizeof(User));
   pi_read(sd,userid,64);
 
+#if 1
   i = 0;
   do {
     *(unsigned short *)(&QueryRS[6]) = htons(i);
@@ -68,18 +69,29 @@ main(int argc, char *argv[])
     pi_read(sd,buf,64);
     i = ntohs(*(unsigned short *)(&buf[6])) + 1;
   } while (buf[1] == 1);
+#endif
 
+#if 1
   SyncAll(sd);
+#endif
+
+  if (argc == 3) {
+    LoadPRC(sd,argv[2]);
+  }
 
   pi_write(sd, SyncClose, sizeof(SyncClose));
   pi_read(sd, buf, 64);
-
+  
+#if 1
   memcpy(userid, CUser, sizeof(CUser));
   pi_write(sd, userid, 0x24);
   pi_read(sd, buf, 64);
+#endif
 
+#if 1
   /* confirm all ok */
   ConfirmAll(sd);
+#endif
 
   /* I think this is End Of Session */
 

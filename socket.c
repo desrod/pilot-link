@@ -6,7 +6,9 @@
  */
 
 #include <errno.h>
+#ifndef bsdi
 #include <malloc.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

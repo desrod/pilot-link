@@ -19,6 +19,11 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
   int count = 0;
   struct padp *padp;
   struct pi_skb *nskb;
+  char buf[64];
+
+#ifdef DEBUG
+  fprintf(stderr,"-----------------\n");
+#endif
 
   if (type == padData || type == padTickle) {
     ps->xid++;
@@ -29,6 +34,12 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
   if (type == padWake) ps->xid = 0xff;
 
   do {
+
+    if (!flags) {
+      pi_socket_read(ps);
+      padp_rx(ps, buf, 0);
+    }
+
     nskb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
 
     tlen = (len > 1024) ? 1024 : len;
@@ -85,13 +96,15 @@ int padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)
 #ifdef DEBUG
   int i;
 
-  fprintf(stderr,"PADP %s %s len=0x%.4x\n",
+  fprintf(stderr,"PADP %s %s %c%c len=0x%.4x\n",
 	  (padp->type == padData) ? "DATA" : ((padp->type == padAck) ? "ACK " : "LOOP"),
 	  rxtx ? "TX" : "RX" ,
+	  (padp->flags & FIRST) ? 'F' : ' ',
+	  (padp->flags & LAST) ? 'L' : ' ',
 	  ntohs(padp->size));
 
   if (!(padp->type == padAck)) {
-    for (i=0; i < ntohs(padp->size); i += 16) {
+    for (i=0; i < (ntohs(padp->size) & 0x3ff); i += 16) {
       dumpline(&skb->data[14 + i],
 	       ((ntohs(padp->size) - i) < 16) ? ntohs(padp->size) - i : 16,
 	       i);

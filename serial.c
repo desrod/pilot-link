@@ -11,8 +11,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <termio.h>
 #include "pi-socket.h"
+
+#ifdef bsdi
+#include <sys/ioctl_compat.h>
+#endif
 
 #ifndef N_TTY
 #ifndef NTTYDISC
@@ -38,7 +41,11 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   }
 
   /* Set the tty to raw and to the correct speed */
+#ifdef bsdi
+  tcgetattr(ps->mac.fd,&tcn);
+#else
   ioctl(ps->mac.fd,TCGETS,&tcn);
+#endif
 
   ps->tco = tcn;
 
@@ -49,21 +56,33 @@ int pi_device_open(char *tty, struct pi_socket *ps)
 
   tcn.c_lflag = NOFLSH;
 
+#ifdef bsdi
+  cfmakeraw(&tcn);
+#else
   tcn.c_line = N_TTY;
+#endif
 
   for(i=0;i<16;i++) tcn.c_cc[i]=0;
 
   tcn.c_cc[VMIN] = 1;
   tcn.c_cc[VTIME] = 0;
 
+#ifdef bsdi
+  tcsetattr(ps->mac.fd,TCSANOW,&tcn);
+#else
   ioctl(ps->mac.fd,TCSETSW,&tcn);
+#endif
 
   return ps->mac.fd;
 }
 
 int pi_device_close(struct pi_socket *ps)
 {
+#ifdef bsdi
+  tcsetattr(ps->mac.fd,TCSANOW, &ps->tco);
+#else
   ioctl(ps->mac.fd,TCSETSW,&ps->tco);
+#endif
   return close(ps->mac.fd);
 }
 
