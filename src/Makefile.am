@@ -14,6 +14,14 @@ INCLUDES = 			\
 	$(TCL_INCLUDES)		\
 	$(RL_CFLAGS)
 
+# Pedantic CFLAGS -std=c99 -g -Wshadow -Wall 		\
+#	-W -Waggregate-return -Wcast-align 		\
+#	-Wcast-qual -Wnested-externs 			\
+#	-Wpointer-arith -Wundef -Wbad-function-cast 	\
+#	-Wmissing-prototypes -Wstrict-prototypes 	\
+#	-Wmissing-declarations -Wconversion -Winline 	\
+#	-pedantic -O0
+
 # Commented out for now, will fix later
 #if WITH_CXX
 #CCEXECS = ccexample
@@ -138,9 +146,9 @@ install_hinote_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_memo_SOURCES = 		\
-	$(getopt_sources)	\
 	install-memo.c
 install_memo_LDADD = 		\
+	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 install_netsync_SOURCES = 	\
@@ -216,9 +224,9 @@ pi_nredir_LDADD = 		\
 #	$(top_builddir)/libpisock/libpisock.la
 
 pilot_addresses_SOURCES = 	\
-	$(getopt_sources)	\
 	pilot-addresses.c
 pilot_addresses_LDADD = 	\
+	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_archive_SOURCES =		\
@@ -256,9 +264,9 @@ pilot_file_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_foto_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-foto.c
 pilot_foto_LDADD = 		\
+	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 ######################################################
