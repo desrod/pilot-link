@@ -2,6 +2,7 @@
 #ifndef _PILOT_DLP_H_
 #define _PILOT_DLP_H_
 
+#include "pi-macros.h" /* For recordid_t */
 #include <sys/time.h>
 
 /* Note: All of these functions return an integer that if greater then zero
@@ -215,26 +216,23 @@ extern int dlp_ResetLastSyncPC(int sd);
  /* Convenience function to reset lastSyncPC in the UserInfo to 0 */
 
 extern int dlp_ReadAppBlock(int sd, int fHandle, int offset,
-                           unsigned char *dbuf, int dlen);
+                           void *dbuf, int dlen);
 
-extern int dlp_WriteAppBlock(int sd, int fHandle, const unsigned char *dbuf,
-                            int dlen);
+extern int dlp_WriteAppBlock(int sd, int fHandle, const void *dbuf, int dlen);
 
-extern int dlp_ReadSortBlock(int sd, int fHandle, int offset,
-                           unsigned char *dbuf, int dlen);
+extern int dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen);
 
-extern int dlp_WriteSortBlock(int sd, int fHandle, const unsigned char *dbuf,
-                            int dlen);
+extern int dlp_WriteSortBlock(int sd, int fHandle, const void *dbuf, int dlen);
 
 extern int dlp_ResetDBIndex(int sd, int dbhandle);
 
  /* Reset NextModified position to beginning */
 
 extern int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
-                         int start, int max, unsigned long * IDs);
+                         int start, int max, recordid_t * IDs);
                          
 extern int dlp_WriteRecord(int sd, int dbhandle, int flags,
-                 unsigned long recID, int catID, unsigned char *data, int length, long * NewID);
+                 recordid_t recID, int catID, void *data, int length, recordid_t * NewID);
 
  /* Write a new record to an open database. 
       Flags: 0 or dlpRecAttrSecret
@@ -246,27 +244,27 @@ extern int dlp_WriteRecord(int sd, int dbhandle, int flags,
       
       NewID: storage for returned ID, or null. */
 
-extern int dlp_DeleteRecord(int sd, int dbhandle, int all, unsigned long recID);
+extern int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID);
 
-extern int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, unsigned char* buffer, 
+extern int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, void * buffer, 
                           int* index, int* size);
 
-extern int dlp_ReadResourceByIndex(int sd, int fHandle, int index, unsigned char* buffer,
+extern int dlp_ReadResourceByIndex(int sd, int fHandle, int index, void* buffer,
                           unsigned long* type, int * id, int* size);
 
 extern int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
-                 const unsigned char *data, int length);
+                 const void *data, int length);
 
 extern int dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype, int resID);
 
-extern int dlp_ReadNextModifiedRec(int sd, int fHandle, unsigned char *buffer,
-                          unsigned long * id, int * index, int * size, int * attr, int * category);
+extern int dlp_ReadNextModifiedRec(int sd, int fHandle, void *buffer,
+                          recordid_t * id, int * index, int * size, int * attr, int * category);
 
-extern int dlp_ReadRecordById(int sd, int fHandle, unsigned long id, unsigned char * buffer, 
+extern int dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void * buffer, 
                           int * index, int * size, int * attr, int * category);
 
-extern int dlp_ReadRecordByIndex(int sd, int fHandle, int index, unsigned char * buffer, 
-                          long * id, int * size, int * attr, int * category);
+extern int dlp_ReadRecordByIndex(int sd, int fHandle, int index, void * buffer, 
+                          recordid_t * id, int * size, int * attr, int * category);
 
 extern int dlp_CleanUpDatabase(int sd, int fHandle);
 
@@ -279,8 +277,8 @@ extern int dlp_ResetSyncFlags(int sd, int fHandle);
      resource databases, set the last sync time to now. */
 
 extern int dlp_CallApplication(int sd, unsigned long creator, int action,
-                        int length, unsigned char * data,
+                        int length, void * data,
                         int * resultptr,
-                        int * retlen, unsigned char * retdata);
+                        int * retlen, void * retdata);
                   
 #endif /*_PILOT_DLP_H_*/

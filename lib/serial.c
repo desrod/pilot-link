@@ -213,9 +213,11 @@ int pi_device_close(struct pi_socket *ps)
   int result;
 #ifndef SGTTY
 
-#ifdef linux
+#if 1 /*defined(linux)*/
   /* Something isn't getting flushed somewhere. If this sleep is removed,
      the Pilot never gets the final padp Ack.*/
+  /* And now it turns out NetBSD requires this pause too. I'm turning
+     it on for everyone now, until I find a proper solution. */
   sleep(1);
 #endif
 
@@ -532,7 +534,7 @@ int pi_socket_flush(struct pi_socket *ps)
 int pi_socket_read(struct pi_socket *ps, int timeout)
 {
   int r;
-  char *buf;
+  unsigned char *buf;
 #ifdef SERIAL_TRACE
   int i;
 #endif

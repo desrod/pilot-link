@@ -27,7 +27,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/stat.h>
+
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-datebook.h"
@@ -69,18 +71,43 @@ char * backupname(char * memo) {
 }
 
 char * newfilename(PilotRecord * r) {
+	static char name[256];
 	static char buf[256];
-	static int i = 1;
 	struct stat stbuf;
-	while(1) {
-		sprintf(buf,"Memos/memo%d",i);
-		if(stat(buf,&stbuf)) {
-			sprintf(buf,"memo%d",i);
+	int i = 1;
+	char *rec, *end;
+
+	rec = r->record;
+	end = &r->record[r->length];
+
+	/* use first line as file name
+	 * but change whitespace chars into '.'
+	*/
+	while( rec < end && isspace(*rec) )		/* skip whitespace */
+		++rec;
+
+	for( i = 0; rec < end; ++i, ++rec) {
+		if( *rec == '\n' )
 			break;
-		}
-		i++;
+		else if( isspace(*rec) )
+			name[i] = '.';
+		else
+			name[i] = *rec;
 	}
-	return buf;
+	name[i] = '\0';
+
+	if( *name == '\0' )				/* an empty memo */
+		strcpy( name, "empty" );
+
+	if (stat(filename(name), &stbuf) != 0)
+		return name;
+
+	/* file name already exists, tack on a unique number */
+	for (i = 2; ; ++i) {
+		sprintf(buf, "%s,%d", name, i);
+		if (stat(filename(buf), &stbuf) != 0)
+			return buf;
+	}
 }
 
 char * newarchivename(PilotRecord * r, LocalRecord * l) {
@@ -104,7 +131,7 @@ char * newarchivename(PilotRecord * r, LocalRecord * l) {
    local ID mechanism is not relevent, only IDs given by the Pilot. */
 unsigned long GetPilotID(SyncAbs * thisSA,LocalRecord * Local) {
 	return Local->ID;
-	return 1;
+	/* return 1; */
 }
 
 /* Set the ID on a local record to match a given Pilot ID. */
@@ -405,6 +432,8 @@ int main(int argc, char *argv[])
   		continue;
   	if(strcmp(dirent->d_name,"Backup")==0)
   		continue;
+  	if(strcmp(dirent->d_name,"Memos.dir")==0)
+  		continue;
   	if(dirent->d_name[strlen(dirent->d_name)-1] == '~')
   		continue;
   	f->next = files;
@@ -414,7 +443,7 @@ int main(int argc, char *argv[])
   }
   closedir(d);
   
-  f = fopen("Memos.dir","r");
+  f = fopen(filename("Memos.dir"),"r");
   while (f && !feof(f)) {
   	long l;
   	LocalRecord * m = (LocalRecord*)malloc(sizeof(LocalRecord));
@@ -587,7 +616,7 @@ int main(int argc, char *argv[])
   pi_close(sd);  
 
   /* Rewrite memo index */
-  f = fopen("Memos.dir","w");
+  f = fopen(filename("Memos.dir"),"w");
   while(memos) {
   	fprintf(f,"%lu %lu %s\n", memos->ID, (unsigned long)memos->mtime, memos->name);
   	memos = memos->next;

@@ -72,7 +72,7 @@ void read_pilot(int sd)
   char buf[4096];
   int l = pi_read(sd, buf, 4096);
   puts("From Pilot:");
-  dumpdata(buf, l);
+  dumpdata((unsigned char *)buf, l);
   
   if(buf[2] == 0) { /* SysPkt command */
     if(buf[0] == 1) { /* Console */

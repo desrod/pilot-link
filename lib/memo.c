@@ -20,12 +20,12 @@ void free_Memo(struct Memo * a) {
 }
 
 void unpack_Memo(struct Memo * a, unsigned char * buffer, int len) {
-  a->text = strdup(buffer);
+  a->text = strdup((char*)buffer);
 }
 
 void pack_Memo(struct Memo * a, unsigned char * buffer, int * len) {
   if(a->text) {
-    strcpy(buffer,a->text);
+    strcpy((char*)buffer,a->text);
     *len = strlen(a->text)+1;
   } else {
     buffer[0] = 0;
@@ -60,4 +60,6 @@ void pack_MemoAppInfo(struct MemoAppInfo * ai, unsigned char * record, int * len
   record ++;
   set_byte(record, 0); /* gapfil */
   set_short(record+1, 0); /* gapfil */
+  
+  *len = 2+(16*16)+16+2+2;
 }

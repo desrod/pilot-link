@@ -52,8 +52,8 @@ void unpack_Address(struct Address * a, unsigned char * buffer, int len) {
   
   for(v=0;v<19;v++) {
     if(contents & (1 << v)) {
-      a->entry[v] = strdup(buffer);
-      buffer += strlen(buffer)+1;
+      a->entry[v] = strdup((char*)buffer);
+      buffer += strlen((char*)buffer)+1;
     } else {
       a->entry[v] = 0;
     }
@@ -125,4 +125,42 @@ void unpack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, i
     strcpy(ai->phonelabels[i-19+5],ai->labels[i]);
 }
 
-void pack_AddressAppInfo(struct AddressAppInfo *, unsigned char * AppInfo, int * len);
+/* Untested */
+void pack_AddressAppInfo(struct AddressAppInfo * ai, unsigned char * record, int * len)
+{
+  int i;
+  unsigned char * pos = record;
+
+  for(i=3;i<8;i++)
+    strcpy(ai->phonelabels[i-3],ai->labels[i]);
+  for(i=19;i<22;i++)
+    strcpy(ai->phonelabels[i-19+5],ai->labels[i]);
+  
+  memset(record, 0, 2+(16*16)+16+4+4+(16*22)+2);
+  
+  set_short(pos, ai->renamedcategories);
+  pos+=2;
+  for(i=0;i<16;i++) {
+    strncpy((char*)pos, ai->CategoryName[i], 16);
+    pos+=16;
+  }
+  memcpy(pos, (char*)ai->CategoryID, 16);
+  pos += 16;
+  set_byte(pos, ai->lastUniqueID);
+  pos+= 4;
+  set_long(pos, ai->dirtyfieldlabels);
+  pos+= 4;
+  memcpy(pos, ai->labels, 16*22);
+  pos += 16*22;
+  set_short(pos, ai->country);
+  pos+=2;
+  set_byte(pos, ai->sortByCompany);
+  pos+=2;
+  
+  for(i=3;i<8;i++)
+    strcpy(ai->phonelabels[i-3],ai->labels[i]);
+  for(i=19;i<22;i++)
+    strcpy(ai->phonelabels[i-19+5],ai->labels[i]);
+  
+  *len = (pos-record);
+}

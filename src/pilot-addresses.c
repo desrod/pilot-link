@@ -19,6 +19,29 @@ int realentry[19] =   { 0, 1, 13, 2,
                         14, 15, 16, 17,
                         18 };
 
+int encodechars = 0;
+
+int inchar(FILE *in) {
+  int c;
+
+  c = getc(in);
+  if (encodechars && c == '\\') {
+    c = getc(in);
+    switch(c) {
+      case 'b':                 c = '\b';  break;
+      case 'f':                 c = '\f';  break;
+      case 'n':                 c = '\n';  break;
+      case 't':                 c = '\t';  break;
+      case 'r':                 c = '\r';  break;
+      case 'v':                 c = '\v';  break;
+      case '\\':                c = '\\';  break;
+      default:  ungetc(c, in);  c = '\\';  break;
+    }
+  }
+  return c;
+}
+	
+
 int read_field(char * dest, FILE * in) {
   int c;
   
@@ -27,16 +50,16 @@ int read_field(char * dest, FILE * in) {
   } while ((c != EOF) && ((c == ' ') || (c == '\t') || (c == '\n') || (c == '\r')));
   
   if (c == '"') {
-    c = getc(in);
+    c = inchar(in);
     
     while (c != EOF) {
       if (c == '"') {
-        c = getc(in);
+        c = inchar(in);
         if (c != '"')
           break;
       }
       *dest++ = c;
-      c = getc(in);
+      c = inchar(in);
     }
   } else {
     while (c != EOF) {
@@ -44,7 +67,7 @@ int read_field(char * dest, FILE * in) {
           break;
       }
       *dest++ = c;
-      c = getc(in);
+      c = inchar(in);
     }
   }
   *dest++ = '\0';
@@ -62,13 +85,33 @@ int read_field(char * dest, FILE * in) {
     return 0;
 }
 
+void outchar(char c, FILE *out) {
+
+  if (encodechars) {
+    switch(c) {
+      case '"':   putc('"',  out);   putc('"',  out);  break;
+      case '\b':  putc('\\', out);   putc('b',  out);  break;
+      case '\f':  putc('\\', out);   putc('f',  out);  break;
+      case '\n':  putc('\\', out);   putc('n',  out);  break;
+      case '\t':  putc('\\', out);   putc('t',  out);  break;
+      case '\r':  putc('\\', out);   putc('r',  out);  break;
+      case '\v':  putc('\\', out);   putc('v',  out);  break;
+      case '\\':  putc('\\', out);   putc('\\', out);  break;
+      default:    putc(c, out);                        break;
+    }
+  }
+  else {
+    putc(c, out);
+    if (c == '"')
+      putc('"', out);
+  }
+}
+
 int write_field(FILE * out, char * source, int more) {
 
   putc('"', out);
   while (*source) {
-    putc(*source, out);
-    if (*source == '"')
-      putc(*source, out);
+    outchar(*source, out);
     source++;
   }
   putc('"',out);
@@ -167,11 +210,11 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo * aai)
     }
 #endif
 
-    pack_Address(&a, buf, &l);
+    pack_Address(&a, (unsigned char *)buf, &l);
 #ifdef DEBUG
     dumpdata(buf,l);
 #endif    
-    dlp_WriteRecord(sd, db, attribute, 0, category, buf, l, 0);
+    dlp_WriteRecord(sd, db, attribute, 0, category, (unsigned char *)buf, l, 0);
     
   } while(i >= 0);
   
@@ -188,12 +231,12 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo * aai)
   int category,attribute;
   
   for(i=0;
-      (j=dlp_ReadRecordByIndex(sd, db, i, buf, 0, &l, &attribute, &category))>=0;
+      (j=dlp_ReadRecordByIndex(sd, db, i, (unsigned char *)buf, 0, &l, &attribute, &category))>=0;
       i++)
       {
     if (attribute & dlpRecAttrDeleted)
       continue;
-    unpack_Address(&a, buf, l);
+    unpack_Address(&a, (unsigned char *)buf, l);
 
 /* Simplified system */
 #if 0    
@@ -224,11 +267,20 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo * aai)
     }
 
     for (j=0;j<19;j++) {
+#ifdef NOT_ALL_LABELS
       if (augment && (j >= 4) && (j<=8))
         if (a.phonelabel[j-4] != j-4)
           write_field(out, aai->phonelabels[a.phonelabel[j-4]], 2);
       if (a.entry[realentry[j]])
         write_field(out, a.entry[realentry[j]], 1);
+
+#else  /* print the phone labels if there is something in the field */
+      if (a.entry[realentry[j]]) {
+	if (augment && (j >= 4) && (j<=8))
+	  write_field(out, aai->phonelabels[a.phonelabel[j-4]], 2);
+        write_field(out, a.entry[realentry[j]], 1);
+      }
+#endif
       else
         write_field(out, "", 1);
     }
@@ -242,11 +294,26 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo * aai)
   return 0;
 }
 
+void deleterecords(int sd, int db, int cat) {
+	int rcat, rattr, i;
+	recordid_t id;
+	
+	for(i=0;;i++) {
+	  if (dlp_ReadRecordByIndex(sd,db,i,0,&id,0,&rattr,&rcat)<0)
+	    break;
+	  if (rattr & (dlpRecAttrDeleted| dlpRecAttrArchived))
+	    continue;
+	  
+	  if (rcat == cat)
+	    dlp_DeleteRecord(sd, db, 0, id);
+	}
+}
+
 char * progname;
 
 void Help(void)
 {
-  fprintf(stderr,"usage:%s %s [-c category] [-a] -r|-w file\n",progname,TTYPrompt);
+  fprintf(stderr,"usage:%s %s [-c category] [-d category] [-a] [-e] -r|-w file\n",progname,TTYPrompt);
   exit(2);
 }
 
@@ -261,6 +328,7 @@ int main(int argc, char *argv[])
   char buf[0xffff];
   struct AddressAppInfo aai;
   char * defaultcategoryname = 0;
+  char * deletecategory = 0;
   int mode = 0;
   int c;
 #ifdef sun
@@ -274,10 +342,17 @@ int main(int argc, char *argv[])
     Help();
 
   optind = 2;
-  while (((c = getopt(argc, argv, "c:arw")) != -1) && (mode == 0)) {
+  while (((c = getopt(argc, argv, "ed:c:arw")) != -1) && (mode == 0)) {
     switch (c) {
     case 'a':
       augment = 1;
+      break;
+    case 'd':
+      deletecategory = optarg;
+      break;
+    case 'e':
+      encodechars = 1;
+      break;
     case 'c':
       defaultcategoryname = optarg;
       break;
@@ -335,8 +410,8 @@ int main(int argc, char *argv[])
     exit(1);
   }
   
-  l = dlp_ReadAppBlock(sd, db, 0, buf, 0xffff);
-  unpack_AddressAppInfo(&aai, buf, l);
+  l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *)buf, 0xffff);
+  unpack_AddressAppInfo(&aai, (unsigned char *)buf, l);
 
   if (defaultcategoryname)
     defaultcategory = match_category(defaultcategoryname,&aai);
@@ -345,14 +420,28 @@ int main(int argc, char *argv[])
 
   if (mode == 2) { /* Write */
     FILE * f = fopen(argv[optind],"w");
+    if (f == NULL) {
+      sprintf(buf, "%s: %s", argv[0], argv[optind]);
+      perror(buf);
+      exit(1);
+    }
+    if (deletecategory) 
+      deleterecords(sd, db, match_category(deletecategory,&aai));
     write_file(f, sd, db, &aai);
     fclose(f);
   } else if (mode == 1) {
     FILE * f;
     while(optind < argc) {
       f = fopen(argv[optind],"r");
+      if (f == NULL) {
+        sprintf(buf, "%s: %s", argv[0], argv[optind]);
+        perror(buf);
+        continue;
+      }
       read_file(f, sd, db, &aai);
       fclose(f);
+      if (deletecategory) 
+        deleterecords(sd, db, match_category(deletecategory,&aai));
       optind++;
     }
   }

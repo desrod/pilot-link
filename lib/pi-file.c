@@ -563,6 +563,13 @@ pi_file_set_app_info (struct pi_file *pf, void *data, int size)
 {
   void *p;
 
+  if (!size) {
+    if (pf->app_info)
+      free (pf->app_info);
+    pf->app_info_size = 0;
+    return (0);
+  }
+
   if ((p = malloc (size)) == NULL)
     return (-1);
   memcpy (p, data, size);
@@ -578,6 +585,13 @@ int
 pi_file_set_sort_info (struct pi_file *pf, void *data, int size)
 {
   void *p;
+ 
+  if (!size) {
+    if (pf->sort_info)
+      free (pf->sort_info);
+    pf->sort_info_size = 0;
+    return (0);
+  }
 
   if ((p = malloc (size)) == NULL)
     return (-1);
@@ -781,7 +795,7 @@ int pi_file_retrieve(struct pi_file * pf, int socket, int cardno)
 {
   int db;
   int l,j;
-  char buffer[0xffff];
+  unsigned char buffer[0xffff];
   if(dlp_OpenDB(socket, cardno, dlpOpenRead, pf->info.name, &db)<0)
     return -1;
     

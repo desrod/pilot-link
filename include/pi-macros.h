@@ -1,6 +1,8 @@
 #ifndef _PILOT_MACROS_H_
 #define _PILOT_MACROS_H_
 
+typedef unsigned long recordid_t;
+
 #define get_long(ptr) (((ptr)[0] << 24) | \
                        ((ptr)[1] << 16) | \
                        ((ptr)[2] << 8)  | \

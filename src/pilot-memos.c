@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
     exit(1);
   }
   
-  dlp_ReadAppBlock(sd, db, 0, appblock, 0xffff);
-  unpack_MemoAppInfo(&mai, appblock, 0);
+  dlp_ReadAppBlock(sd, db, 0, (unsigned char *)appblock, 0xffff);
+  unpack_MemoAppInfo(&mai, (unsigned char *)appblock, 0);
 
   for (i=0;1;i++) {
   	struct Memo m;

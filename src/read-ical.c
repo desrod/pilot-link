@@ -204,22 +204,40 @@ int main(int argc, char *argv[])
 	                                                    a.repeatFreq);
 	    }
 	  } else if(a.repeatType == repeatWeekly) {
-	    fprintf(ical,"$i weekdays ");
-            if(a.repeatOn & 1)
-              fprintf(ical,"1 ");
-            if(a.repeatOn & 2)
-              fprintf(ical,"2 ");
-            if(a.repeatOn & 4)
-              fprintf(ical,"3 ");
-            if(a.repeatOn & 8)
-              fprintf(ical,"4 ");
-            if(a.repeatOn & 16)
-              fprintf(ical,"5 ");
-            if(a.repeatOn & 32)
-              fprintf(ical,"6 ");
-            if(a.repeatOn & 64)
-              fprintf(ical,"7 ");
-            fprintf(ical,"\n");
+	    /*
+	     * Handle the case where the user said weekly repeat, but
+	     * really meant daily repeat every n*7 days.  Note: We can't
+	     * do days of the week and a repeat-frequency > 1, so do the
+	     * best we can and go on.
+	     */
+	    if (a.repeatFreq > 1) {
+		int ii, found;
+		for (ii = 1, found = 0; ii < 128; ii <<= 1) {
+		    if (a.repeatOn & i)
+			found++;
+		}
+		if (found > 1)
+		    fprintf(stderr, "Incomplete translation of %s\n",
+			    a.description);
+		fprintf(ical,"$i dayrepeat %d $begin\n", a.repeatFreq * 7);
+	    } else {
+		fprintf(ical,"$i weekdays ");
+		if(a.repeatOn & 1)
+		  fprintf(ical,"1 ");
+		if(a.repeatOn & 2)
+		  fprintf(ical,"2 ");
+		if(a.repeatOn & 4)
+		  fprintf(ical,"3 ");
+		if(a.repeatOn & 8)
+		  fprintf(ical,"4 ");
+		if(a.repeatOn & 16)
+		  fprintf(ical,"5 ");
+		if(a.repeatOn & 32)
+		  fprintf(ical,"6 ");
+		if(a.repeatOn & 64)
+		  fprintf(ical,"7 ");
+		fprintf(ical,"\n");
+	    }
 	  } else if(a.repeatType == repeatYearly) {
 	    fprintf(ical,"$i monthrepeat %d $begin\n", 12 * a.repeatFreq);
 	  }

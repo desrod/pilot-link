@@ -40,7 +40,7 @@ int cmp_rx(struct pi_socket *ps, struct cmp * c)
 
 int cmp_init(struct pi_socket *ps, int baudrate)
 {
-  char cmpbuf[10];
+  unsigned char cmpbuf[10];
 
   set_byte(cmpbuf+0, 2);
   set_long(cmpbuf+2, 0);
@@ -58,7 +58,7 @@ int cmp_init(struct pi_socket *ps, int baudrate)
 
 int cmp_abort(struct pi_socket *ps, int reason)
 {
-  char cmpbuf[10];
+  unsigned char cmpbuf[10];
   
   set_byte(cmpbuf+0, 3);
   set_byte(cmpbuf+1, reason);
@@ -72,7 +72,7 @@ int cmp_abort(struct pi_socket *ps, int reason)
 
 int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 {
-  char cmpbuf[200];
+  unsigned char cmpbuf[200];
   
   set_byte(cmpbuf+0, 1);
   set_byte(cmpbuf+1, 0);

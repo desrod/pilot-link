@@ -54,7 +54,7 @@ struct pi_mac {
   int state;
   int expect;
   struct pi_skb *rxb;
-  char *buf;
+  unsigned char *buf;
 };
 
 struct pi_socket {

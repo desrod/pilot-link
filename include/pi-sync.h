@@ -4,7 +4,7 @@
 enum { RecordNothing , RecordNew, RecordDeleted, RecordModified, RecordPending };
 
 struct PilotRecord {
-	long ID;
+	recordid_t ID;
 	int attr;
 	int archived;
 	int secret;

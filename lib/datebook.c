@@ -80,7 +80,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 
   /* buffer+7 is gapfil */
 	
-	p2 = buffer+8;
+	p2 = (char*)buffer+8;
 	
 #define alarmFlag 64
 #define repeatFlag 32
@@ -174,7 +174,102 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
   
 }
 
-void pack_Appointment(struct Appointment *, unsigned char * record, int * len);
+void pack_Appointment(struct Appointment *a,
+                      unsigned char *buf,
+                      int *len)
+{
+    int iflags;
+    char *pos;
+
+    set_byte(buf, a->begin.tm_hour);
+    set_byte(buf+1, a->begin.tm_min);
+    set_byte(buf+2, a->end.tm_hour);
+    set_byte(buf+3, a->end.tm_min);
+    set_short(buf+4, ((a->begin.tm_year - 4) << 9) |
+              ((a->begin.tm_mon  + 1) << 5) |
+              a->begin.tm_mday);
+    
+    if (a->event)
+    {
+        set_long(buf, 0xffffffff);
+    }
+
+#define alarmFlag 64
+#define repeatFlag 32
+#define noteFlag 16
+#define exceptFlag 8
+#define descFlag 4
+
+    iflags = 0;
+    
+    pos = (char *)buf + 8;
+
+    if (a->alarm)
+    {
+        iflags |= alarmFlag;
+        
+        set_byte(pos, a->advance);
+        set_byte(pos+1, a->advanceUnits);
+        pos+=2;
+    }
+    
+    if (a->repeatType) {
+
+        iflags |= repeatFlag;
+
+    	set_byte(pos, a->repeatType);
+    	set_byte(pos+1, 0);
+    	pos+=2;
+    	
+    	if (a->repeatForever)
+    	    set_short(pos, 0xffff);
+    	else
+    	    set_short(pos, ((a->repeatEnd.tm_year - 4) << 9) |
+                ((a->repeatEnd.tm_mon  + 1) << 5) |
+                a->repeatEnd.tm_mday);
+        
+        pos+=2;
+        
+        set_byte(pos, a->repeatFreq); pos++;
+        set_byte(pos, a->repeatOn); pos++;
+        set_byte(pos, a->repeatWeekstart); pos++;
+        set_byte(pos, 0); pos++;
+    }
+    
+    if (a->exceptions) {
+        int i;
+        
+        iflags |= exceptFlag;
+        
+        set_short(pos, a->exceptions); pos+=2;
+        
+        for(i=0;i<a->exceptions;i++,pos+=2)
+    	    set_short(pos, ((a->exception[i].tm_year - 4) << 9) |
+                ((a->exception[i].tm_mon  + 1) << 5) |
+                a->exception[i].tm_mday);
+    }
+
+    if (a->description != NULL)
+    {
+        iflags |= descFlag;
+        
+        strcpy(pos, a->description);
+        pos += strlen(pos) + 1;
+    }
+    
+    if (a->note != NULL)
+    {
+        iflags |= noteFlag;
+        
+        strcpy(pos, a->note);
+        pos += strlen(pos) + 1;
+    }
+
+    set_byte(buf+6, iflags);
+
+    *len = ((long)pos - (long)buf);
+}
+
                   
 void unpack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * record, int len) {
   int i;

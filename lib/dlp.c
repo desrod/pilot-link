@@ -355,7 +355,7 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
   info->moddate = get_date(dlp_buf+30);
   info->backupdate = get_date(dlp_buf+38);
   info->index = get_short(dlp_buf+46);
-  strncpy(info->name, dlp_buf+48, 32);
+  strncpy(info->name, (char*)dlp_buf+48, 32);
   info->name[32] = '\0';
 
 #ifdef DLP_TRACE  
@@ -436,7 +436,7 @@ int dlp_OpenDB(int sd, int cardno, int mode, char * name, int * dbhandle)
 
   dlp_buf[0] = (unsigned char)cardno;
   dlp_buf[1] = (unsigned char)mode;
-  strcpy(&dlp_buf[2], name);
+  strcpy((char*)dlp_buf+2, name);
 
   Trace(OpenDB);
 
@@ -476,7 +476,7 @@ int dlp_DeleteDB(int sd, int card, const char * name)
   
   dlp_buf[0] = (unsigned char)card;
   dlp_buf[1] = (unsigned char)0;
-  strcpy(dlp_buf+2, name);
+  strcpy((char*)dlp_buf+2, name);
 
   Trace(DeleteDB);
 
@@ -503,7 +503,7 @@ int dlp_CreateDB(int sd, long creator, long type, int cardno,
   set_byte(dlp_buf+9, 0);
   set_short(dlp_buf+10, flags);
   set_short(dlp_buf+12, version);
-  strcpy(dlp_buf+14, name);
+  strcpy((char*)dlp_buf+14, name);
   
   Trace(CreateDB);
 
@@ -573,9 +573,9 @@ int dlp_CloseDB_All(int sd)
 }
 
 int dlp_CallApplication(int sd, unsigned long creator, int action, 
-                        int length, unsigned char * data,
+                        int length, void * data,
                         int * resultptr,
-                        int * retlen, unsigned char * retdata)
+                        int * retlen, void * retdata)
 {
   int result;
   
@@ -761,7 +761,7 @@ int dlp_WriteUserInfo(int sd, struct PilotUser *User)
   set_date(dlp_buf+12, User->lastSyncDate);
   set_byte(dlp_buf+20, 0xff);
   set_byte(dlp_buf+21, strlen(User->username)+1);
-  strcpy(dlp_buf+22, User->username);
+  strcpy((char*)dlp_buf+22, User->username);
 
   result = dlp_exec(sd, 0x11, 0x20, dlp_buf, 22+strlen(User->username)+1, NULL, 0);
   
@@ -842,7 +842,7 @@ int dlp_ResetDBIndex(int sd, int dbhandle)
 
 
 int dlp_ReadRecordIDList(int sd, int dbhandle, int sort, 
-                         int start, int max, unsigned long * IDs)
+                         int start, int max, recordid_t * IDs)
 {
   int result, i, ret;
   unsigned int nbytes;
@@ -882,7 +882,7 @@ int dlp_ReadRecordIDList(int sd, int dbhandle, int sort,
 }
 
 int dlp_WriteRecord(int sd, int dbhandle, int flags,
-                 unsigned long recID, int catID, unsigned char* data, int length, long* NewID)
+                 recordid_t recID, int catID, void* data, int length, recordid_t * NewID)
 {
   unsigned char buf[4];
   int result;
@@ -894,7 +894,7 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
   set_byte(dlp_buf+7, catID);
   
   if(length == -1)
-  	length = strlen(data)+1;
+  	length = strlen((char*)data)+1;
   	
   memcpy(dlp_buf+8, data, length);
 
@@ -937,7 +937,7 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
   return result;
 }
 
-int dlp_DeleteRecord(int sd, int dbhandle, int all, unsigned long recID)
+int dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 {
   int result;
   int flags = all ? 0x80 : 0;
@@ -961,7 +961,7 @@ int dlp_DeleteRecord(int sd, int dbhandle, int all, unsigned long recID)
 }
 
 
-int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, unsigned char* buffer, 
+int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, void* buffer, 
                           int* index, int* size)
 {
   int result;
@@ -1000,7 +1000,7 @@ int dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id, unsi
   return result-10;
 }
 
-int dlp_ReadResourceByIndex(int sd, int fHandle, int index, unsigned char* buffer,
+int dlp_ReadResourceByIndex(int sd, int fHandle, int index, void* buffer,
                           unsigned long* type, int * id, int* size)
 {
   int result;
@@ -1041,7 +1041,7 @@ int dlp_ReadResourceByIndex(int sd, int fHandle, int index, unsigned char* buffe
 }
 
 int dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
-                 const unsigned char* data, int length)
+                 const void* data, int length)
 {
   int result;
   
@@ -1092,7 +1092,7 @@ int dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype, int
 }
 
 int dlp_ReadAppBlock(int sd, int fHandle, int offset,
-                           unsigned char* dbuf, int dlen)
+                           void* dbuf, int dlen)
 {
   int result;
   
@@ -1124,7 +1124,7 @@ int dlp_ReadAppBlock(int sd, int fHandle, int offset,
   return result-2;
 }
 
-int dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@*/ unsigned char* data, int length)
+int dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@*/ void* data, int length)
 {
   int result;
   
@@ -1149,7 +1149,7 @@ int dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@*/ unsigned char* dat
 }
 
 int dlp_ReadSortBlock(int sd, int fHandle, int offset,
-                           unsigned char* dbuf, int dlen)
+                           void* dbuf, int dlen)
 {
   int result;
   
@@ -1178,7 +1178,7 @@ int dlp_ReadSortBlock(int sd, int fHandle, int offset,
   return result-2;
 }
 
-int dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@*/ unsigned char* data, int length)
+int dlp_WriteSortBlock(int sd, int fHandle, const /*@unique@*/ void* data, int length)
 {
   int result;
   set_byte(dlp_buf, fHandle);
@@ -1237,8 +1237,8 @@ int dlp_ResetSyncFlags(int sd, int fHandle)
   return result;
 }
 
-int dlp_ReadNextModifiedRec(int sd, int fHandle, unsigned char* buffer,
-                          unsigned long* id, int* index, int* size, int* attr, int* category)
+int dlp_ReadNextModifiedRec(int sd, int fHandle, void* buffer,
+                          recordid_t* id, int* index, int* size, int* attr, int* category)
 {
   unsigned char handle = fHandle;
   int result;
@@ -1292,7 +1292,7 @@ int dlp_ReadNextModifiedRec(int sd, int fHandle, unsigned char* buffer,
   return result-10;
 }
 
-int dlp_ReadRecordById(int sd, int fHandle, unsigned long id, unsigned char* buffer, 
+int dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void* buffer, 
                           int* index, int* size, int* attr, int* category)
 {
   int result;
@@ -1351,8 +1351,8 @@ int dlp_ReadRecordById(int sd, int fHandle, unsigned long id, unsigned char* buf
   return result-10;
 }
 
-int dlp_ReadRecordByIndex(int sd, int fHandle, int index, unsigned char* buffer,
-                          long* id, int* size, int* attr, int* category)
+int dlp_ReadRecordByIndex(int sd, int fHandle, int index, void* buffer,
+                          recordid_t* id, int* size, int* attr, int* category)
 {
   int result;
 #ifdef DLP_TRACE

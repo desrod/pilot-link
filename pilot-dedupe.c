@@ -97,10 +97,10 @@ int main(int argc, char *argv[])
   
     l=0;
     while(1) {
-      unsigned int attr;
-      unsigned long id;
-      unsigned int cat;
-      int len = dlp_ReadRecordByIndex(sd, db, l, buf, &id, 0, &attr, &cat);
+      int attr;
+      recordid_t id;
+      int cat;
+      int len = dlp_ReadRecordByIndex(sd, db, l, (unsigned char *)buf, &id, 0, &attr, &cat);
       
       l++;
       

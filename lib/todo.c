@@ -62,8 +62,8 @@ void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
     a->complete = 0;
   }
   
-  a->description = strdup(buffer+3);
-  a->note = strdup(buffer+3+strlen(buffer+3)+1);
+  a->description = strdup((char*)buffer+3);
+  a->note = strdup((char*)buffer+3+strlen((char*)buffer+3)+1);
 }
 
 void pack_ToDo(struct ToDo *a, unsigned char * buf, int * len) {
@@ -84,14 +84,14 @@ void pack_ToDo(struct ToDo *a, unsigned char * buf, int * len) {
   
   pos = 3;
   if(a->description) {
-    strcpy(buf+pos, a->description);
+    strcpy((char*)buf+pos, a->description);
     pos += strlen(a->description)+1;
   } else {
     buf[pos++] = 0;
   }
   
   if(a->note) {
-    strcpy(buf+pos, a->note);
+    strcpy((char*)buf+pos, a->note);
     pos += strlen(a->note)+1;
   } else {
     buf[pos++] = 0;
@@ -135,4 +135,6 @@ void pack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int * len
   set_short(record+3, ai->dirty);
   set_byte(record+5, ai->sortByPriority);
   set_byte(record+6, 0); /* gapfil */
+  
+  *len = 2 + (16*16) + 16 + 2 + 2 + 2 + 2;
 }

@@ -1,3 +1,17 @@
+Feb 23, 1997	Kenneth Albanowski
+
+	Added getrom executable, and included getrom.prc from CoPilot
+	    distribution with Greg Hewgill's permission.
+	Completed data pack & unpack support for all Pilot applications.
+	Modified headers and code (particularly dlp) to use new recordid_t
+		typedef for record IDs. This should prevent one source of 
+		sign problems.
+	Modified dlp headers and code to pass all buffers as void*'s instead
+	    of unsigned char *'s.
+	Added experimental Perl5 linkage. To use, change to Perl5/PDAPilot
+	    directory, run `perl Makefile.PL ; make test`, and stand back.
+	    Most bits are currently missing and some bits don't work.
+
 Feb  5, 1997	Kenneth Albanowski 0.5.0
 
 	Rearranged header files so they should be cleaner to externally use.

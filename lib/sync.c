@@ -69,7 +69,7 @@ void MergeToRemote(int handle, int db, struct SyncAbs * s) {
 int SlowSync(int handle, int db, struct SyncAbs * s ) {
 	int index = 0;
 	int retval = 0;
-	char buffer[0xffff];
+	unsigned char buffer[0xffff];
 	PilotRecord p;
 	p.record = buffer;
 	
@@ -100,7 +100,7 @@ int SlowSync(int handle, int db, struct SyncAbs * s ) {
 int FastSync(int handle, int db, struct SyncAbs * s ) {
 	int index = 0;
 	int retval = 0;
-	char buffer[0xffff];
+	unsigned char buffer[0xffff];
 	PilotRecord p;
 	p.record = buffer;
 	
@@ -148,7 +148,7 @@ int CopyToRemote(int handle, int db, struct SyncAbs * s) {
 
 /* Overwrite local (PC) with remote (Pilot) records. */
 int CopyFromRemote(int handle, int db, struct SyncAbs * s) {
-	char buffer[0xffff];
+	unsigned char buffer[0xffff];
 	int index = 0;
 	PilotRecord p;
 	p.record = buffer;

@@ -127,6 +127,7 @@ void Backup(char * dirname)
   	printf("Backing up '%s'... ", name);
   	fflush(stdout);
   	
+  	/* Ensure that DB-open flag is not kept */
   	info.flags &= 0xff;
   	
   	f = pi_file_create(name, &info);

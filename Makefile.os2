@@ -16,7 +16,8 @@ EXECS = install-memo$(EXT) install-user$(EXT)\
 		sync-memodir$(EXT) sync-ical$(EXT)\
 		pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT)\
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
-		test-connector$(EXT) test-acceptor$(EXT) debugsh$(EXT) dlpsh$(EXT)
+		test-connector$(EXT) test-acceptor$(EXT) debugsh$(EXT) dlpsh$(EXT) \
+		getrom$(EXT)
 
 PILIBS = libpisock.a
 
@@ -81,6 +82,9 @@ dlpsh$(EXT): $(PILIBS) dlpsh.o
 
 debugsh$(EXT): $(PILIBS) debugsh.o
 	$(CC) $(CFLAGS) debugsh.o $(PILIBS) -o $@ $(LIBS)
+
+getrom$(EXT): $(PILIBS) getrom.o
+	$(CC) $(CFLAGS) getrom.o $(PILIBS) -o $@ $(LIBS)
 	
 strip: $(EXECS)
 	$(STRIP) $(EXECS)
@@ -96,4 +100,5 @@ clean:
 	$(RM) *.o *.a *~ core a.out test_s test_c install-prc$(EXT) 
 	$(RM) $(EXECS)
 	$(RM) include/*~ man/*~ *.orig include/*.orig
+	$(RM) pilot.rom
 	$(SUBMAKE_COMM) clean

@@ -1,0 +1,10 @@
+use ExtUtils::MakeMaker;
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
+WriteMakefile(
+    'NAME'	=> 'PDA::Pilot',
+    'VERSION'	=> '0.1',
+    'LIBS'	=> ['-L../.. -lpisock'],   # e.g., '-lm' 
+    'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
+    'INC'	=> '',     # e.g., '-I/usr/include/other' 
+);

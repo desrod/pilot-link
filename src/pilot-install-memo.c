@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
     exit(1);
   }
   
-  l = dlp_ReadAppBlock(sd, db, 0, buf, 0xffff);
-  unpack_MemoAppInfo(&mai, buf, l);
+  l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *)buf, 0xffff);
+  unpack_MemoAppInfo(&mai, (unsigned char *)buf, l);
 
   category = 0;
   
@@ -115,7 +115,8 @@ int main(int argc, char *argv[])
     memo_buf[l + 1 + memo_size] = '\0';
 
     /* dlp_exec(sd, 0x26, 0x20, &db, 1, NULL, 0); */
-    dlp_WriteRecord(sd, (unsigned char)db, 0, 0, category, memo_buf, -1, 0);
+    dlp_WriteRecord(sd, (unsigned char)db, 0, 0, category,
+		    (unsigned char *)memo_buf, -1, 0);
     free(memo_buf);
   }
 
