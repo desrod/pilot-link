@@ -166,7 +166,7 @@ int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 
   opt=1;
   optlen=sizeof(opt);
-  if (setsockopt(ps->sd, SOL_SOCKET, SO_REUSEADDR, &opt, optlen)<0) {
+  if (setsockopt(ps->sd, SOL_SOCKET, SO_REUSEADDR, (void*)&opt, optlen)<0) {
     return -1;
   }
 

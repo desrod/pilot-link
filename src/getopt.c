@@ -179,6 +179,7 @@ static char *posixly_correct;
    whose names are inconsistent.  */
 
 char *getenv ();
+int strncmp (const char*, const char*, size_t);
 
 static char *
 my_index (str, chr)
@@ -486,7 +487,7 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
       const struct option *pfound = NULL;
       int exact = 0;
       int ambig = 0;
-      int indfound;
+      int indfound = 0;
       int option_index;
 
       for (nameend = nextchar; *nameend && *nameend != '='; nameend++)
@@ -538,7 +539,7 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 		optarg = nameend + 1;
 	      else
 		{
-		  if (opterr)
+		  if (opterr) {
 		   if (argv[optind - 1][1] == '-')
 		    /* --option */
 		    fprintf (stderr,
@@ -549,6 +550,7 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 		    fprintf (stderr,
 		     _("%s: option `%c%s' doesn't allow an argument\n"),
 		     argv[0], argv[optind - 1][0], pfound->name);
+		  }
 
 		  nextchar += strlen (nextchar);
 		  return '?';

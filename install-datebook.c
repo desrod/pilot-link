@@ -127,6 +127,9 @@ int main(int argc, char *argv[])
 	if (fields[0][0] == '\0' || fields[1][0] == '\0') { /* no start time */
 	  appointment.event = 1;
 	} else {
+	  appointment.event = 0;
+	}
+	if (fields[0][0] == '\0') {
 	  time_t t;
 	  appointment.event = 0;
 	  t = parsedate(fields[0]);
@@ -135,7 +138,9 @@ int main(int argc, char *argv[])
 	    continue;
 	  }
 	  appointment.begin = *localtime(&t);
-	  
+	}
+	if (fields[1][0] == '\0') {
+	  time_t t;
 	  t = parsedate(fields[1]);
 	  if (t == -1) {
 	    fprintf(stderr, "Invalid end date or time : %s\n", fields[1]);

@@ -6,7 +6,7 @@ SOCKOBJS = socket.$(O) serial.$(O) inetserial.$(O) slp.$(O) padp.$(O) \
 
 FILEOBJS = pi-file.$(O)
 
-APPOBJS = datebook.$(O) memo.$(O) address.$(O) todo.$(O) expense.$(O) mail.$(O) sync.$(O) appinfo.$(O)
+APPOBJS = datebook.$(O) memo.$(O) address.$(O) todo.$(O) expense.$(O) mail.$(O) sync.$(O) appinfo.$(O) hinote.$(O)
 
 UTILOBJS = utils.$(O)
 
@@ -111,6 +111,10 @@ expense.o expense.lo: expense.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
  ../include/pi-expense.h ../include/pi-appinfo.h
+hinote.o hinote.lo: hinote.c ../include/pi-source.h ../include/pi-config.h \
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-dlp.h \
+ ../include/pi-hinote.h ../include/pi-appinfo.h
 inet.o inet.lo: inet.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-inet.h \

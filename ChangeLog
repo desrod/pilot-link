@@ -1,4 +1,22 @@
 
+Jan 14,	1999	Kenneth Albanowski	0.9.1
+
+	Hi-Notes support (in 'hinotes' and 'install-hinote', courtesy of Bill
+	Goodman, and Michael Bravo.)
+	
+	Install-memo improvements.
+	
+	read-ical improvements (?) regarding secret records and alarms.
+	
+	Fixed pi-getrom's decoding of ROM version. (3.0 units should now
+	download complete ROM image.)
+	
+	Installation of databases fixed to allow uploading of databases with
+	zero-length resources.
+	
+	Direct support for "high" (nominally unsupported) baud rates via
+	PILOTHIGHRATE environment variable.
+
 Aug 23,  1998	Kenneth Albanowski	0.9.0
 
 	Please note a significant change: the license for the pisock library,

@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   int ret;
   int file;
   unsigned long ROMstart, ROMlength, ROMversion, offset, left;
-  int majorVersion, minorVersion, build, state;
+  int majorVersion, minorVersion, bugfixVersion, build, state;
 
   progname = argv[0];
 
@@ -103,9 +103,10 @@ NOTICE: Use of this program may place you in violation of your license\n\
     strcpy(name, "pilot.rom");
   else
     strcpy(name,argv[2]);
-  
+    
   majorVersion = (((ROMversion >> 28) & 0xf) * 10)+ ((ROMversion >> 24) & 0xf);
-  minorVersion = (((ROMversion >> 20) & 0xf) * 10)+ ((ROMversion >> 16) & 0xf);
+  minorVersion = ((ROMversion >> 20) & 0xf);
+  bugfixVersion = ((ROMversion >> 16) & 0xf);
   state = ((ROMversion >> 12) & 0xf);
   build = (((ROMversion >> 8) & 0xf) * 10)+(((ROMversion >> 4) & 0xf) * 10)+ (ROMversion  & 0xf);
 
@@ -114,7 +115,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
   	ROMlength = 0x200000;
   }
   
-  sprintf(name+strlen(name), "%d.%d", majorVersion, minorVersion);
+  sprintf(name+strlen(name), "%d.%d.%d", majorVersion, minorVersion, bugfixVersion);
   if (state!=3)
     sprintf(name+strlen(name), "%s%d", ((state==0) ? "d" : (state == 1) ? "a" : (state==2) ? "b" : "u"), build);
   

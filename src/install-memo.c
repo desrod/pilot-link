@@ -13,11 +13,12 @@
 
 extern char* optarg;
 extern int optind;
-    
+
+#define PILOTPORT "/dev/pilot"
 
 int usage(char *progname)
 {
-    fprintf(stderr, "usage: %s [-qrt] [-c category] %s file [file] ...\n",
+    fprintf(stderr, "usage: %s [-qrt] [-c category] [-p %s] file [file] ...\n",
 	    progname, TTYPrompt);
     fprintf(stderr, "       -q = do not prompt for HotSync button press\n");
     fprintf(stderr, "       -r = replace all memos in specified category\n");
@@ -48,10 +49,20 @@ int main(int argc, char *argv[])
   category_name = NULL;
   quiet = replace_category = add_title = 0;
 
-  while ((ch = getopt(argc, argv, "c:qrt")) != -1)
+  if (getenv("PILOTPORT")) {
+    strcpy(addr.pi_device,getenv("PILOTPORT"));
+  } else {
+    strcpy(addr.pi_device,PILOTPORT);
+  }
+  
+  while ((ch = getopt(argc, argv, "c:p:qrt")) != -1)
     switch (ch) {
     case 'c':
       category_name = optarg;
+      break;
+    case 'p':
+      /* optarg is name of port to use instead of $PILOTPORT or /dev/pilot */
+      strcpy(addr.pi_device,optarg);
       break;
     case 'q':
       quiet++;
@@ -70,7 +81,7 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if (argc < 2) {
+  if (argc < 1) {
     fprintf(stderr, "%s: insufficient number of arguments\n", progname);
     usage(progname);
   }
@@ -82,7 +93,8 @@ int main(int argc, char *argv[])
   }
 
   if (!quiet)
-    printf("Insert PalmPilot in cradel and press hotsync button...\n");
+    printf("Please insert Pilot in cradle on %s and press HotSync button.\n",
+      addr.pi_device);
 
   if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
@@ -90,7 +102,6 @@ int main(int argc, char *argv[])
   }
     
   addr.pi_family = PI_AF_SLP;
-  strcpy(addr.pi_device,argv[0]);
   
   ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
@@ -145,7 +156,7 @@ int main(int argc, char *argv[])
   } else
     category = 0;		/* unfiled */
 
-  for (i=1; i<argc; i++) {
+  for (i=0; i<argc; i++) {
   
     f = fopen(argv[i], "r");
     if (f == NULL) {
@@ -187,7 +198,7 @@ int main(int argc, char *argv[])
   U.lastSyncDate = U.successfulSyncDate;
   dlp_WriteUserInfo(sd,&U);
 
-  dlp_AddSyncLogEntry(sd, "Wrote memo to Pilot.\n");
+  dlp_AddSyncLogEntry(sd, "Wrote memo(s) to Pilot.\n");
   
   /* All of the following code is now unnecessary, but harmless */
   

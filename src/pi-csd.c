@@ -352,5 +352,7 @@ void main(int argc, char*argv[]) {
       fprintf(stderr, "invalid packet of %d bytes:\n", n);
     dumpdata(mesg, n);
   }
+  
+  exit(0);
 }
 

@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   char * port, * filename, * ptr;
-  struct pi_file * pif;
+  struct pi_file * pif = NULL;
   int db;
   int sd;
   int i;

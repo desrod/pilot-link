@@ -237,7 +237,34 @@ int main(int argc, char *argv[])
 	  fprintf(ical,"$i starttime %d\n", start);
 	  fprintf(ical,"$i length %d\n", end-start);
 	}
-	
+ 
+       /* Don't hilight private (secret) records */
+       if (attr & dlpRecAttrSecret) {
+           fprintf(ical,"$i hilite never\n");
+         }
+ 
+       /* Handle alarms */
+         if (a.alarm) {
+           if (a.event) { 
+             if (a.advanceUnits == 2 ) {
+                fprintf(ical,"$i earlywarning %d\n",a.advance);
+             } else {
+                fprintf(stderr,
+                   "Minute or hour alarm on untimed event ignored: %s\n",
+                   a.description);
+             }
+           } else {
+             switch (a.advanceUnits) {
+               case 0 : fprintf(ical,"$i alarms { %d }\n",a.advance);
+                        break;
+               case 1 : fprintf(ical,"$i alarms { %d }\n",a.advance*60);
+                        break;
+               case 2 : fprintf(ical,"$i earlywarning %d\n",a.advance);
+                        break;
+             }
+           }
+         }
+  
 	/* '\x95' is the "bullet" character */
 	fprintf(ical,"$i text %s\n", tclquote((pubtext &&
 	    a.description[0] != '\x95') ? pubtext : a.description));

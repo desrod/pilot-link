@@ -85,7 +85,7 @@ CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)
 		debugsh$(EXT) dlpsh$(EXT) \
 		getrom$(EXT) pi-getrom$(EXT) pi-getram$(EXT) pi-port$(EXT) \
 		pi-csd$(EXT) pi-nredir$(EXT) \
-		money2qif$(EXT)
+		money2qif$(EXT) install-hinote$(EXT) hinotes$(EXT)
 
 CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
 
@@ -155,6 +155,9 @@ install-datebook$(EXT): $(PILIB) $(GETOPT) install-datebook.o parsedate.o
 install-todos$(EXT): $(PILIB) $(GETOPT) install-todos.o
 	$(CCLINK) install-todos.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
+install-hinote$(EXT): $(PILIB) $(GETOPT) install-hinote.o
+	$(CCLINK) install-hinote.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
+
 pilot-addresses$(EXT): $(PILIB) $(GETOPT) pilot-addresses.o
 	$(CCLINK) pilot-addresses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
@@ -217,6 +220,9 @@ read-ical$(EXT): $(PILIB) $(GETOPT) read-ical.o
 
 addresses$(EXT): $(PILIB) $(GETOPT) addresses.o
 	$(CCLINK) addresses.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
+
+hinotes$(EXT): $(PILIB) $(GETOPT) hinotes.o
+	$(CCLINK) hinotes.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
 
 dlpsh$(EXT): $(PILIB) $(GETOPT) dlpsh.o
 	$(CCLINK) dlpsh.o $(PILIB) $(GETOPT) -o $@ $(LIBS)
@@ -338,10 +344,18 @@ getopt1.o: getopt1.c getopt.h
 getrom.o: getrom.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-serial.h
+hinotes.o: hinotes.c include/pi-source.h include/pi-config.h \
+ include/pi-socket.h include/pi-args.h include/pi-version.h \
+ include/pi-sockaddr.h include/pi-macros.h include/pi-hinote.h \
+ include/pi-appinfo.h include/pi-dlp.h
 install-datebook.o: install-datebook.c include/pi-source.h \
  include/pi-config.h include/pi-socket.h include/pi-args.h \
  include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
  include/pi-dlp.h include/pi-datebook.h include/pi-appinfo.h
+install-hinote.o: install-hinote.c include/pi-source.h \
+ include/pi-config.h include/pi-socket.h include/pi-args.h \
+ include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
+ include/pi-dlp.h include/pi-hinote.h include/pi-appinfo.h
 install-memo.o: install-memo.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \

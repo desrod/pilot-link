@@ -59,6 +59,7 @@ class address_t : public baseApp_t
 
      char *entry(labelTypes_t idx) { return _entry[idx]; }
      int whichPhone(void) const { return _whichPhone; }
+     int phoneLabel(int idx) { return _phoneLabels[idx]; }
      
      void unpack(void *);
 

@@ -1160,11 +1160,13 @@ int dlp_RPC(int sd, struct RPC_params * p, unsigned long * result)
   
   UninvertRPC(p);
   
-  if (result)
-    if(p->reply==RPC_PtrReply)
+  if (result) {
+    if (p->reply==RPC_PtrReply) {
       *result = A0;
-    else if (p->reply==RPC_IntReply)
+    } else if (p->reply==RPC_IntReply) {
       *result = D0;
+    }
+  }
   
   return err;
 }
@@ -1377,11 +1379,13 @@ int dlp_WriteRecord(int sd, int dbhandle, int flags,
   
   Expect(4);
   
-  if(NewID)
-    if(result == 4)
+  if (NewID) {
+    if (result == 4) {
       *NewID = get_long(buf); /* New record ID */
-    else
+    } else {
       *NewID = 0;
+    }
+  }
 
 #ifdef DLP_TRACE
   if (dlp_trace) {  

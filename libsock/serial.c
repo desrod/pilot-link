@@ -115,8 +115,14 @@ int pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
   struct pi_sockaddr * pa = (struct pi_sockaddr*)addr;
   if(ps->type == PI_SOCK_STREAM) {
     ps->establishrate = 9600; /* Default PADP connection rate */
-    if (getenv("PILOTRATE"))
+    if (getenv("PILOTRATE")) {
     	ps->establishrate = atoi(getenv("PILOTRATE"));
+    	ps->establishhighrate = 0;
+    }
+    if (getenv("PILOTHIGHRATE")) {
+    	ps->establishrate = atoi(getenv("PILOTHIGHRATE"));
+    	ps->establishhighrate = 1;
+    }
     ps->rate = 9600; /* Mandatory CMP conncetion rate */
   } else if(ps->type == PI_SOCK_RAW) {
     ps->establishrate = ps->rate = 57600; /* Mandatory SysPkt connection rate */
@@ -173,12 +179,14 @@ static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *ad
     if(cmp_rx(accept, &c) < 0)
       goto fail; /* Failed to establish connection, errno already set */
     if ((c.version & 0xFF00) == 0x0100) {
+
       if((unsigned long) accept->establishrate > c.baudrate) {
-#ifdef DEBUG
-        fprintf(stderr,"Rate %d too high, dropping to %ld\n",ps->establishrate,c.baudrate);
-#endif
-        accept->establishrate = c.baudrate;
+      	if (!accept->establishhighrate) {
+	        fprintf(stderr,"Rate %d too high, dropping to %ld\n",ps->establishrate,c.baudrate);
+	        accept->establishrate = c.baudrate;
+	}
       }
+
       accept->rate = accept->establishrate;
       accept->version = c.version;
       if(cmp_init(accept, accept->rate)<0)

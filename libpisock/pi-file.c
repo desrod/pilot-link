@@ -926,10 +926,12 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
       unsigned long type;
       int id;
       int size;
-      if( (pi_file_read_resource(pf, j, &buffer, &size, &type, &id)<0) ||
-          (dlp_WriteResource(socket, db, type, id, buffer, size)<0) ) {
+      if(pi_file_read_resource(pf, j, &buffer, &size, &type, &id)<0)
+      	goto fail;
+      if (size == 0)
+        continue; /* Skip empty resource, because it cannot be installed */
+      if (dlp_WriteResource(socket, db, type, id, buffer, size)<0)
         goto fail;
-      }
 
       /* If we see a 'boot' section, regardless of file type, require reset */
       if (type == pi_mktag ('b','o','o','t')) 
@@ -1004,10 +1006,12 @@ int pi_file_merge(struct pi_file * pf, int socket, int cardno)
       unsigned long type;
       int id;
       int size;
-      if( (pi_file_read_resource(pf, j, &buffer, &size, &type, &id)<0) ||
-          (dlp_WriteResource(socket, db, type, id, buffer, size)<0) ) {
+      if(pi_file_read_resource(pf, j, &buffer, &size, &type, &id)<0)
         goto fail;
-      }
+      if (size == 0)
+        continue;
+      if (dlp_WriteResource(socket, db, type, id, buffer, size)<0)
+        goto fail;
 
       /* If we see a 'boot' section, regardless of file type, require reset */
       if (type == pi_mktag ('b','o','o','t')) 

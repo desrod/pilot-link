@@ -246,7 +246,9 @@ sub RecordPilotToPlan {
 				}
 			}
 			$plan->{repeat}->[2] = $r;
-		
+		} elsif ($pilot->{repeat}->{type} eq "Weekly" and ($pilot->{repeat}->{frequency}>1)) {
+			$plan->{repeat}->[0] = (60*60*24) * $pilot->{repeat}->{frequency} * 7;
+			$plan->{repeat}->[4] = 0;
 		} elsif ($pilot->{repeat}->{type} eq "MonthlyByDate" and ($pilot->{repeat}->{frequency}==1)) {
 			$plan->{repeat}->[3] = 1 << $pilot->{begin}[3];
 		} elsif ($pilot->{repeat}->{type} eq "MonthlyByDay" and ($pilot->{repeat}->{frequency}==1)) {
@@ -1221,7 +1223,7 @@ sub ReadPlanReply {
 	my($reply) = "";
 
 	while (1) {
-		while ($partialReply =~ /^(.+?)(\\)?$/m) {
+		while ($partialReply =~ /^(.+?)(\\)?\n/m) {
 			$reply .= $1."\n";
 			$partialReply = $';
 			if (not defined($2)) {
