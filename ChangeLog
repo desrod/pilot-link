@@ -1,5 +1,8 @@
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
+	* include/Makefile.am: make valid variables
+
+2002-01-25  JP Rosevear  <jpr@ximian.com>	
 	* libsock/utils.c: include config.h
 
 	* libsock/unixserial.c (s_close): only reset the port when all

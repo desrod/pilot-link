@@ -1,4 +1,4 @@
-c_header_DATA = \
+c_headers = \
 	pi-address.h		\
 	pi-appinfo.h		\
 	pi-args.h		\
@@ -30,9 +30,10 @@ c_header_DATA = \
 	pi-util.h		\
 	pi-version.h
 
-c_noinstheader_DATA = 		\
+c_privheaders = 		\
 	pi-version.h.in
 
+c_header_DATA = $(c_headers)
 c_headerdir=$(includedir)
 
 cxx_header_DATA = \
@@ -46,8 +47,8 @@ cxx_header_DATA = \
 
 cxx_headerdir=$(includedir)
 
-EXTRA_DIST = \
-	$(c_header_DATA)	\
-	$(c_noinstheader_DATA)	\
+EXTRA_DIST = 			\
+	$(c_headers)		\
+	$(c_privheaders)	\
 	$(cxx_header_DATA)
 
