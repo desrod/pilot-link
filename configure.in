@@ -422,9 +422,6 @@ AC_DEFINE(HAVE_READLINE_HISTORY_H),,"-ltermcap")
 ], RL_LIBS="")
 fi
 
-save_CFLAGS="$CFLAGS"
-save_LDFLAGS="$LDFLAGS"
-
 AC_SUBST(RL_LIBS)
 
 
