@@ -57,6 +57,7 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 #include "pi-debug.h"
+#include "pi-error.h"
 
 /* Declare function prototypes */
 static pi_socket_list_t *ps_list_append (pi_socket_list_t *list,
@@ -503,12 +504,16 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 					found = 1;
 					break;
 				default:
+					/* here's the trick: the byte we read wasn't the one
+					   we were looking for, so we eliminate it with a
+					   normal read then do a PEEK again to catch the
+					   next one */
 					byte_buf.used = 0;
-					if (dev_prot->read (ps, &byte_buf, 1,
-						PI_MSG_PEEK) < 0) {
+					if (dev_prot->read (ps, &byte_buf, 1, 0) < 0
+						|| dev_prot->read (ps, &byte_buf, 1, PI_MSG_PEEK) < 0)
+					{
 						protocol = PI_PF_PADP;
-						LOG((PI_DBG_SOCK,
-						 PI_DBG_LVL_INFO,
+						LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 						 "Default\n"));
 						found = 1;
 					}
@@ -1529,22 +1534,24 @@ pi_close(int pi_sd)
 				ps->command = 1;
 				
 				/* then end sync, with clean status */
-				dlp_EndOfSync(ps->sd, 0);
+				result = dlp_EndOfSync(ps->sd, 0);
 
 				ps->command = 0;
 		}
 	}
 
-	if (ps->device != NULL)
-		result = ps->device->close (ps);
-	
-	psl = ps_list_remove (psl, pi_sd);
-	watch_list = ps_list_remove (watch_list, pi_sd);
+	if (result == 0) {
+		if (ps->device != NULL)
+			result = ps->device->close (ps);
+		
+		psl = ps_list_remove (psl, pi_sd);
+		watch_list = ps_list_remove (watch_list, pi_sd);
 
-	protocol_queue_destroy(ps);
-	if (ps->device != NULL)
-		ps->device->free(ps->device);
-	free(ps);
+		protocol_queue_destroy(ps);
+		if (ps->device != NULL)
+			ps->device->free(ps->device);
+		free(ps);
+	}
 
 	return result;
 }
@@ -1729,4 +1736,125 @@ pi_watchdog(int pi_sd, int newinterval)
 	alarm(interval);
 
 	return 0;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_error
+ *
+ * Summary:     return the last error that occured
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+int
+pi_error(int pi_sd)
+{
+	pi_socket_t *ps;
+
+	if ((ps = find_pi_socket(pi_sd)) == NULL) {
+		errno = ESRCH;
+		return PI_ERR_SOCK_INVALID;
+	}
+	return ps->last_error;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_set_error
+ *
+ * Summary:     set the last error code
+ *
+ * Parameters:  None
+ *
+ * Returns:     The error code that was just set
+ *
+ ***********************************************************************/
+int
+pi_set_error(int pi_sd, int error_code)
+{
+	pi_socket_t *ps;
+
+	if ((ps = find_pi_socket(pi_sd)))
+		ps->last_error = error_code;
+	else
+		errno = ESRCH;
+
+	/* also update errno if makes sense */
+	if (error_code == PI_ERR_GENERIC_MEMORY)
+		errno = ENOMEM;
+
+	return error_code;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_palmos_error
+ *
+ * Summary:     return the last error returned by the handheld
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+int
+pi_palmos_error(int pi_sd)
+{
+	pi_socket_t *ps;
+
+	if ((ps = find_pi_socket(pi_sd)) == NULL) {
+		errno = ESRCH;
+		return PI_ERR_SOCK_INVALID;
+	}
+	return ps->palmos_error;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_set_palmos_error
+ *
+ * Summary:     set the last Palm OS error code
+ *
+ * Parameters:  sd	-->			socket
+ *				erorr_code	-->	Palm OS error code
+ *
+ * Returns:     the error code that was just set
+ *
+ ***********************************************************************/
+int
+pi_set_palmos_error(int pi_sd, int error_code)
+{
+	pi_socket_t *ps;
+
+	if ((ps = find_pi_socket(pi_sd)))
+		ps->palmos_error = error_code;
+	else
+		errno = ESRCH;
+	return error_code;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_reset_errors
+ *
+ * Summary:     reset the last error and the last Palm OS error
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void
+pi_reset_errors(int pi_sd)
+{
+	pi_socket_t *ps;
+
+	if ((ps = find_pi_socket(pi_sd))) {
+		ps->last_error = 0;
+		ps->palmos_error = 0;
+	} else
+		errno = ESRCH;
 }

@@ -106,6 +106,9 @@ typedef struct pi_socket {
 	int accept_to;	/* timeout value for call to accept() */
 	int dlprecord;	/* Index used for some DLP functions */
 
+	int last_error;		/* error code returned by the last dlp_* command */
+	int palmos_error;	/* Palm OS error code returned by the last transaction with the handheld */
+
 #ifdef OS2
 	unsigned short os2_read_timeout;
 	unsigned short os2_write_timeout;
@@ -172,6 +175,16 @@ typedef struct pi_socket_list
 	extern struct pi_protocol *pi_protocol_next
 	    PI_ARGS((int pi_sd, int level));
 	
+	extern int pi_error
+		PI_ARGS((int pi_sd));
+	extern int pi_set_error
+		PI_ARGS((int pi_sd, int error_code));
+	extern int pi_palmos_error
+		PI_ARGS((int pi_sd));
+	extern int pi_set_palmos_error
+		PI_ARGS((int pi_sd, int error_code));
+	extern void pi_reset_errors
+		PI_ARGS((int sd));
 
 #ifdef __cplusplus
 }
