@@ -83,14 +83,10 @@ dlperror = _pisock.dlperror
 
 #define PI_DEPRECATED
 
+%include pi-error.i
 %include general-maps.i
-%include general-maps-errorhandling.i
-
 %include pi-socket-maps.i
-%include pi-socket-maps-errorhandling.i
-
 %include pi-dlp-maps.i
-%include pi-dlp-maps-errorhandling.i
 
 %include ../../../include/pi-args.h
 %include ../../../include/pi-header.h
