@@ -1,7 +1,6 @@
 #ifndef _PILOT_SOCKET_H_
 #define _PILOT_SOCKET_H_
 
-#include <errno.h>
 #include <termios.h>
 
 #ifdef __EMX__
@@ -10,10 +9,19 @@
 #define ENOMSG 150
 #define strcasecmp stricmp
 #define strncasecmp strnicmp
-#endif
 
-#ifndef ENOMSG
-#define ENOMSG 1024
+# include <sys/ioctl.h>
+# include <sys/time.h>
+# include <time.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <string.h>
+# include <stdlib.h>
+# include <netinet/in.h>
+# define TTYPrompt "com#"
+
+#else
+#include "pi-config.h"
 #endif
 
 #define AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
@@ -22,10 +30,12 @@
 #define PF_PADP   0x0002
 #define PF_LOOP   0x0003
 
+#ifndef SOCK_STREAM
 #define SOCK_STREAM    0x0010
 #define SOCK_DGRAM     0x0020
 #define SOCK_RAW       0x0030
 #define SOCK_SEQPACKET 0x0040
+#endif
 
 #define PilotSocketDLP       3
 #define PilotSocketConsole   1
@@ -112,6 +122,9 @@ int pi_sdtofd(int pi_sd);
 int pi_device_open(char *, struct pi_socket *ps);
 struct pi_socket *find_pi_socket(int sd);
 int crc16(unsigned char *ptr, int count);
+char * printlong (unsigned long val);
+void dumpline (char *buf, int len, int addr);
+void dumpdata (char * buf, int len);
 
 /* portable field access */
 

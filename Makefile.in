@@ -1,22 +1,17 @@
-CC = gcc
-CFLAGS = -O2 -g -I./include
+CC = @CC@
+CFLAGS = -Wall -O2 -g -I./include
 # -DDEBUG
-AR = ar cur
-RANLIB = ranlib
-#RANLIB = ar -s
-#RANLIB = true
+AR = ar -cur
+RANLIB = @RANLIB@
 RM = rm -f
 LIBS =
 # -lefence
-#LIBS = -lsocket -los2
 EXT =
-#EXT = .exe
 SUBMAKE_COMM = cd lib ; $(MAKE)
-#SUBMAKE_COMM = $(MAKE) -C lib
 
 all:	submake \
         install-prc$(EXT) install-pdb$(EXT) install-memo$(EXT) install-user$(EXT)\
-	install-todos$(EXT) read-ical$(EXT)\
+	install-todos$(EXT) read-ical$(EXT) sync-ical$(EXT)\
 	retrieve-prc$(EXT) retrieve-pdb$(EXT)\
         reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 	test-connector$(EXT) test-acceptor$(EXT) debugsh$(EXT) dlpsh$(EXT)
@@ -60,6 +55,9 @@ read-todos$(EXT): libpisock.a read-todos.o
 read-ical$(EXT): libpisock.a read-ical.o
 	$(CC) $(CFLAGS) read-ical.o libpisock.a -o $@ $(LIBS)
 
+sync-ical$(EXT): libpisock.a sync-ical.o
+	$(CC) $(CFLAGS) sync-ical.o libpisock.a -o $@ $(LIBS)
+
 addresses$(EXT): libpisock.a addresses.o
 	$(CC) $(CFLAGS) addresses.o libpisock.a -o $@ $(LIBS)
 
@@ -75,10 +73,15 @@ dlpsh$(EXT): libpisock.a dlpsh.o
 debugsh$(EXT): libpisock.a debugsh.o
 	$(CC) $(CFLAGS) debugsh.o libpisock.a -o $@ $(LIBS)
 
+distclean: clean
+	$(SUBMAKE_COMM) depend
+	$(RM) Makefile lib/Makefile lib/Makefile.in~ include/pi-config.h config.*
+	perl os2dist.pl
+
 clean:
 	$(RM) *.o *.a *~ core a.out test_s test_c install-prc$(EXT) 
 	$(RM) install-memo$(EXT) install-user$(EXT) dlpsh$(EXT) install-pdb$(EXT)
-	$(RM) read-ical$(EXT)
+	$(RM) read-ical$(EXT) sync-ical$(EXT)
 	$(RM) retrieve-prc$(EXT) retrieve-pdb$(EXT) install-todos$(EXT)
 	$(RM) reminders$(EXT) memos$(EXT) read-todos$(EXT) addresses$(EXT)
 	$(RM) test-acceptor$(EXT) test-connector$(EXT) debugsh$(EXT)

@@ -6,7 +6,7 @@
 #include "dlp.h"
 #include "pi-socket.h"
 
-LoadPDB(int sd, char *fname, int cardno)
+int LoadPDB(int sd, char *fname, int cardno)
 {
   FILE *fd;
   unsigned int flen;
@@ -28,12 +28,12 @@ LoadPDB(int sd, char *fname, int cardno)
   fd = fopen(fname,"r");
   if (!fd) return -1;
 
-  // get total length
+  /* get total length */
   fseek(fd, 0, SEEK_END);
   flen = ftell(fd);
   fseek(fd, 0, SEEK_SET);
 
-  // read PDB header
+  /* read PDB header */
   fread(prcbuf,SIZEOF_PDB,1,fd);
   strncpy(fh.AppName,prcbuf,32);
   fh.Type = get_long(prcbuf+60);
@@ -46,7 +46,7 @@ LoadPDB(int sd, char *fname, int cardno)
 	 fh.AppName,
 	 fh.NumSections);
 
-  // open database
+  /* open database */
   dlp_DeleteDB(sd, cardno, fh.AppName);
   printf("%d\n", dlp_CreateDB(sd, fh.Creator, fh.Type, cardno, 0, 1, fh.AppName, &apprec));
   
@@ -54,7 +54,7 @@ LoadPDB(int sd, char *fname, int cardno)
 
   sh = malloc(sizeof(pdb_sect_t) * (fh.NumSections+1));
   
-  // read sections
+  /* read sections */
   for (i=0;i<fh.NumSections;i++)
   {
     fread(shbuf,SIZEOF_PDB_SECT,1,fd);
@@ -113,7 +113,6 @@ int RetrievePDB(int sd, char *dname, char *fname, int cardno)
   unsigned char prcbuf[SIZEOF_PDB];
   pdb_t fh;
 
-  unsigned char shbuf[SIZEOF_PDB_SECT];
   pdb_sect_t* sh;
 
   int i;
@@ -133,12 +132,12 @@ int RetrievePDB(int sd, char *dname, char *fname, int cardno)
 
   if(dlp_OpenDB(sd, cardno, 0x80, dname, &apprec)<0) {
   	puts("failed to open db");
-  	return;
+  	return -1;
   }
   
   if(dlp_FindDBInfo(sd, cardno, 0, dname, 0, 0, &info)<0) {
   	puts("failed to get db info");
-  	return;
+  	return -1;
   }
 
   
@@ -154,7 +153,7 @@ int RetrievePDB(int sd, char *dname, char *fname, int cardno)
   fh.prcversion = 1;
   fh.version = info.version;
   
-  // Create PDB header
+  /* Create PDB header */
   memset(prcbuf, 0, SIZEOF_PDB);
   strncpy(prcbuf,dname,32);
   set_long(prcbuf+60,fh.Type);
@@ -177,9 +176,10 @@ int RetrievePDB(int sd, char *dname, char *fname, int cardno)
   sh = malloc(sizeof(pdb_sect_t) * (fh.NumSections+1));
   
   AppBlockLen = dlp_ReadAppBlock(sd, apprec, 0, 0, 0xFFFF);
-  if (AppBlockLen<=0)
+  if (AppBlockLen<=0) {
     AppBlockLen=0;
-  else {
+    AppBlock = 0;
+  } else {
     AppBlock = malloc(AppBlockLen);
     dlp_ReadAppBlock(sd, apprec, 0, AppBlock, AppBlockLen);
   }
@@ -188,7 +188,7 @@ int RetrievePDB(int sd, char *dname, char *fname, int cardno)
   if (AppBlockLen)
     fwrite(AppBlock, AppBlockLen, 1, fd);
   
-  // read sections
+  /* read sections */
   
   pos = SIZEOF_PDB+(SIZEOF_PDB_SECT*fh.NumSections)+2+AppBlockLen;
   
@@ -203,7 +203,7 @@ int RetrievePDB(int sd, char *dname, char *fname, int cardno)
     
     pos += size;
     
-    printf("Record %d, id %8.8X, category %d, attr %d, size %d, offset %d\n",i, sh[i].ID, sh[i].Category,sh[i].Attr,size,sh[i].Offset);
+    printf("Record %d, id %8.8lX, category %d, attr %d, size %d, offset %ld\n",i, sh[i].ID, sh[i].Category,sh[i].Attr,size,sh[i].Offset);
   }
   
   flen = pos;

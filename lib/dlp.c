@@ -7,9 +7,6 @@
  */
 
 #include <stdio.h>
-#include <sys/time.h>
-#include <errno.h>
-
 #include "pi-socket.h"
 #include "dlp.h"
 
@@ -20,10 +17,6 @@
 #define DLP_BUF_SIZE 0xffff
 static unsigned char dlp_buf[DLP_BUF_SIZE];
 static unsigned char exec_buf[DLP_BUF_SIZE];
-
-#ifdef sun
-#include <memory.h>
-#endif
 
 int dlp_exec(int sd, int cmd, int arg, void *msg, int msglen, 
              void *result, int maxlen)
@@ -167,7 +160,6 @@ int dlp_ReadSysInfo(int sd, struct SysInfo * s)
 
 int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * info)
 {
-  unsigned char handle;
   int result;
 
   dlp_buf[0] = (unsigned char)flags;
@@ -197,8 +189,6 @@ int dlp_ReadDBList(int sd, int cardno, int flags, int start, struct DBInfo * inf
 
 int dlp_FindDBInfo(int sd, int cardno, int start, char * dbname, unsigned long type, unsigned long creator, struct DBInfo * info)
 {
-  unsigned char handle;
-  int result;
   
   int i;
   
@@ -318,7 +308,6 @@ int dlp_AddSyncLogEntry(int sd, char * entry)
 int dlp_ReadOpenDBInfo(int sd, int dbhandle, int * records)
 {
   char buf[2];
-  unsigned char handle = dbhandle;
   int result = dlp_exec(sd, 0x2B, 0x20, &dbhandle, 1, &buf[0], 2);
   
   if (records)
@@ -346,7 +335,7 @@ int dlp_EndOfSync(int sd, int status)
   /* Messy code to set end-of-sync flag on socket 
      so pi_close won't do it for us */
   if (result == 0)
-    if (ps = find_pi_socket(sd))
+    if ( (ps = find_pi_socket(sd)) )
       ps->connected |= 2;
   
   return result;
@@ -356,7 +345,7 @@ int dlp_AbortSync(int sd) {
   struct pi_socket * ps;
   
   /* Set end-of-sync flag on socket so pi_close won't do a dlp_EndOfSync */
-  if (ps = find_pi_socket(sd))
+  if ( (ps = find_pi_socket(sd)) )
     ps->connected |= 2;
 
   pi_close(sd);

@@ -28,8 +28,6 @@
  * because the normal EndOfSync proceedings involves sending a padp packet,
  * which would not work as neither side is expecting such a packet.
  *
- * Lastly note that something is broken in this pair so that the connector
- * does not finish up. Otherwise it works (under Linux, at least).
  */ 
 
 #include <stdio.h>
@@ -37,7 +35,7 @@
 #include "pi-socket.h"
 #include "dlp.h"
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int sd;

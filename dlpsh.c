@@ -1,23 +1,14 @@
 /* DLP command Shell */
 
-#include <errno.h>
-#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-
-#include "padp.h"
 #include "pi-socket.h"
+#include "padp.h"
 #include "dlp.h"
+#include "pi-serial.h"
 
 #define TICKLE_INTERVAL 7
 
-#ifdef sun
-#define strtoul(str,ptr,base)	(unsigned long) strtol(str,ptr,base)
-#endif
 
 int socket_descriptor;
 struct pi_socket *ticklish_pi_socket;
@@ -50,6 +41,7 @@ struct Command command_list[] = {
 int exit_fn(int sd, int argc, char **argv) {
   exit_func();
   sigexit(0);
+  return 0;
 }
 
 int help_fn(int sd, int argc, char **argv) {
@@ -63,12 +55,13 @@ int help_fn(int sd, int argc, char **argv) {
     }
   }
   printf("\n");
+  return 0;
 }
 
 int user_fn(int sd, int argc, char **argv) {
   struct PilotUser U, nU;
   char fl_name = 0, fl_uid = 0, fl_vid = 0, fl_pid = 0;
-  int i, c, ret;
+  int c, ret;
 
 #ifdef sun
   extern char* optarg;
@@ -113,7 +106,7 @@ int user_fn(int sd, int argc, char **argv) {
 
   if (fl_name + fl_uid + fl_vid + fl_pid == 0) {
     printf("username = \"%s\"\n", U.username);
-    printf("userID = %08x   viewerID = %08x    PCid = %08x\n",
+    printf("userID = %08lx   viewerID = %08lx    PCid = %08lx\n",
            U.userID, U.viewerID, U.lastSyncPC);
     return 0;
   }
@@ -143,7 +136,6 @@ int user_fn(int sd, int argc, char **argv) {
 
 /* parse user commands and do the right thing.. */
 void handle_user_commands(int sd) {
-  int ret;
   char buf[256];
   char *argv[32];
   int argc;
@@ -179,7 +171,7 @@ int main(int argc, char **argv) {
   int ret;
 
   if (argc != 2) {
-    fprintf(stderr, "Usage: %s <tty>\n", argv[0]);
+    fprintf(stderr, "Usage: %s %s\n", argv[0],TTYPrompt);
     exit(1);
   }
 
@@ -234,11 +226,7 @@ int main(int argc, char **argv) {
   sigaction(SIGTERM, &sigact, NULL);
 
   socket_descriptor = sd;
-#ifdef sun
-  on_exit(exit_func,NULL);
-#else
   atexit(exit_func);
-#endif
 
   handle_user_commands(sd);
   exit(0);
@@ -269,7 +257,7 @@ void exit_func(void) {
 
 char *strtoke(char *str, char *ws, char *delim) {
   static char *s, *start;
-  int i, state;
+  int i;
 
   if (str != NULL) {
     s = str;

@@ -25,6 +25,6 @@ struct padp {
 
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type);
 int padp_rx(struct pi_socket *ps, void *buf, int len);
-int padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx);
+void padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx);
 
 #endif /* _PILOT_PADP_H_ */

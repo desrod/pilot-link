@@ -182,11 +182,9 @@ int slp_rx(struct pi_socket *ps)
   return 0;
 }
 
-int slp_dump(struct pi_skb *skb, int rxtx)
+void slp_dump(struct pi_skb *skb, int rxtx)
 {
 #ifdef DEBUG
-  int i;
-
   fprintf(stderr,"SLP %s %d->%d len=0x%.4x Prot=%d ID=0x%.2x\n",
 	  rxtx ? "TX" : "RX" ,
 	  skb->data[4],skb->data[3],
@@ -196,7 +194,7 @@ int slp_dump(struct pi_skb *skb, int rxtx)
 }
 
 
-dph(unsigned char *d)
+void dph(unsigned char *d)
 {
 #ifdef DEBUG
   int i;

@@ -12,14 +12,12 @@
 
 #include "pi-socket.h"
 #include "syspkt.h"
+#include "slp.h"
+#include "pi-serial.h"
 
 int syspkt_tx(struct pi_socket *ps, unsigned char *msg, int length)
 {
-  int i;
-  int count = 0;
-  struct padp *padp;
   struct pi_skb *nskb;
-  char buf[64];
 
 #ifdef DEBUG
   fprintf(stderr,"-----------------\n");
@@ -45,7 +43,6 @@ int syspkt_tx(struct pi_socket *ps, unsigned char *msg, int length)
 
 int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
 {
-  struct padp *padp;
   struct pi_skb *skb;
   int rlen =0;
   
@@ -72,7 +69,6 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
 int sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed, 
                        int keymod, int keyasc, int keycode)
 {
-  struct pi_sockaddr raddr;
   char buf[20];
   
   buf[0] = 2;
@@ -144,6 +140,7 @@ int sys_RPC(int sd, int trap, long * D0, long * A0, int params, struct RPC_param
       c += param[i].size;
     }
   }
+  return 0;
 }
 
 int RPC(int sd, int trap, int ret, ...)

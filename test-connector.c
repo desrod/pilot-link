@@ -11,7 +11,7 @@
 #include "pi-socket.h"
 #include "dlp.h"
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int sd;

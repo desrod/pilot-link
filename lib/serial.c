@@ -5,26 +5,18 @@
  * See the file COPYING for details.
  */
 
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <sys/time.h>
 #include <stdio.h>
 #include "pi-socket.h"
 #include "pi-serial.h"
+#include "slp.h"
 
-#ifdef bsdi
+#ifdef HAVE_SYS_IOCTL_COMPAT_H
 #include <sys/ioctl_compat.h>
 #endif
 
-#if 1
-#define POSIX
-#endif
-
-#if !defined(linux) && !defined(cfmakeraw)
+#ifndef HAVE_CFMAKERAW
 #define cfmakeraw(ptr) (ptr)->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR\
 					 |IGNCR|ICRNL|IXON);\
                        (ptr)->c_oflag &= ~OPOST;\
@@ -43,32 +35,49 @@
 
 #ifndef OS2
 
-#ifndef N_TTY
-#ifndef NTTYDISC
-#error "Can't define line discipline"
+#ifndef HAVE_CFSETSPEED
+#if defined(HAVE_CFSETISPEED) && defined(HAVE_CFSETOSPEED)
+#define cfsetspeed(t,speed) \
+  (cfsetispeed(t,speed) || cfsetospeed(t,speed))
 #else
-#define N_TTY NTTYDISC
-#endif /* NTTYDISC */
-#endif /* N_TTY */
+static int cfsetspeed(struct termios * t,int speed) {
+#ifdef HAVE_TERMIOS_CSPEED
+  t->c_ispeed=speed;
+  t->c_ospeed=speed;
+#else
+  t->c_cflag|=speed;
+#endif  
+}
+#endif
+#endif
 
 static int calcrate(int baudrate) {
-  if(baudrate == 9600)
-    return B9600;
+#ifdef B300
+  if(baudrate == 300) return B300;
+#endif
+#ifdef B1200
+  if(baudrate == 1200) return B1200;
+#endif
+#ifdef B2400
+  if(baudrate == 2400) return B2400;
+#endif
+#ifdef B4800
+  if(baudrate == 4800) return B4800;
+#endif
+#ifdef B9600
+  if(baudrate == 9600) return B9600;
+#endif
 #ifdef B19200
-  else if(baudrate == 19200)
-    return B19200;
+  else if(baudrate == 19200) return B19200;
 #endif
 #ifdef B38400
-  else if(baudrate == 38400)
-    return B38400;
+  else if(baudrate == 38400) return B38400;
 #endif
 #ifdef B57600
-  else if(baudrate == 57600)
-    return B57600;
+  else if(baudrate == 57600) return B57600;
 #endif
 #ifdef B115200
-  else if(baudrate == 115200)
-    return B115200;
+  else if(baudrate == 115200) return B115200;
 #endif
   else {
     printf("Unable to set baud rate %d\n", baudrate);
@@ -93,26 +102,20 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   }
 
   /* Set the tty to raw and to the correct speed */
-#ifdef POSIX
   tcgetattr(ps->mac.fd,&tcn);
-#else
-  ioctl(ps->mac.fd,TCGETS,&tcn);
-#endif
 
   ps->tco = tcn;
 
   tcn.c_oflag = 0;
   tcn.c_iflag = IGNBRK | IGNPAR;
 
-  tcn.c_cflag = CREAD | CLOCAL | calcrate(ps->rate) | CS8 ;
+  tcn.c_cflag = CREAD | CLOCAL | CS8;
+  
+  (void)cfsetspeed(&tcn, calcrate(ps->rate));
 
   tcn.c_lflag = NOFLSH;
 
-#ifdef POSIX
   cfmakeraw(&tcn);
-#else
-  tcn.c_line = N_TTY;
-#endif
 
   for(i=0;i<16;i++) tcn.c_cc[i]=0;
 
@@ -124,36 +127,22 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   i=ioctl(ps->mac.fd,TIOCMSET,&i);
 #endif                  
 
-#ifdef POSIX
   tcsetattr(ps->mac.fd,TCSANOW,&tcn);
-#else
-  ioctl(ps->mac.fd,TCSETSW,&tcn);
-#endif
 
   return ps->mac.fd;
 }
 
 int pi_device_changebaud(struct pi_socket *ps)
 {
-  int i;
-
   struct termios tcn;
 
   /* Set the tty to the new speed */
-#ifdef POSIX
   tcgetattr(ps->mac.fd,&tcn);
-#else
-  ioctl(ps->mac.fd,TCGETS,&tcn);
-#endif
 
-  tcn.c_cflag =  CREAD | CLOCAL | calcrate(ps->rate) | CS8;
+  tcn.c_cflag =  CREAD | CLOCAL | CS8;
+  (void)cfsetspeed(&tcn, calcrate(ps->rate));
 
-#ifdef POSIX
   tcsetattr(ps->mac.fd,TCSADRAIN,&tcn);
-#else
-  ioctl(ps->mac.fd,TCSETSW,&tcn);
-#endif
-
 
 #ifdef linux
   /* this pause seems necessary under Linux to let the serial
@@ -172,11 +161,9 @@ int pi_device_close(struct pi_socket *ps)
      the Pilot never gets the final padp Ack.*/
   sleep(1);
 #endif
-#ifdef POSIX
+
   tcsetattr(ps->mac.fd,TCSADRAIN, &ps->tco);
-#else
-  ioctl(ps->mac.fd,TCSETSW,&ps->tco);
-#endif
+
   result = close(ps->mac.fd);
   ps->mac.fd = 0;
   return result;
@@ -188,7 +175,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
 {
   int rc;
   HFILE fd;
-  unsigned long action, baudrate=9600;
+  unsigned long action;
   int filesize=0;
   int param_length;
 

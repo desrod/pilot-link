@@ -17,7 +17,7 @@
 #include "pi-socket.h"
 #include "dlp.h"
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int sd;
@@ -26,7 +26,7 @@ main(int argc, char *argv[])
   int ret;
 
   if (argc < 2) {
-    fprintf(stderr,"usage:%s /dev/tty?? [User name]\n",argv[0]);
+    fprintf(stderr,"usage:%s %s [User name]\n",argv[0],TTYPrompt);
     exit(2);
   }
 
@@ -73,7 +73,7 @@ main(int argc, char *argv[])
     dlp_WriteUserInfo(sd, &U);
   }
   
-  printf( "ROM Version: 0x%8.8X, locale: 0x%8.8X, name: '%s'\n", 
+  printf( "ROM Version: 0x%8.8lX, locale: 0x%8.8lX, name: '%s'\n", 
               S.ROMVersion, S.localizationID, S.name);
   
   pi_close(sd);

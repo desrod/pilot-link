@@ -25,12 +25,12 @@ int LoadPRC(int sd, char *fname, int cardno)
   fd = fopen(fname,"r");
   if (!fd) return -1;
 
-  // get total length
+  /* get total length */
   fseek(fd, 0, SEEK_END);
   flen = ftell(fd);
   fseek(fd, 0, SEEK_SET);
 
-  // read PRC header
+  /* read PRC header */
   fread(prcbuf,SIZEOF_PRC,1,fd);
   strncpy(fh.AppName,prcbuf,32);
   fh.Type = get_long(prcbuf+60);
@@ -43,7 +43,7 @@ int LoadPRC(int sd, char *fname, int cardno)
 	 fh.AppName,
 	 fh.NumSections);
 
-  // open database
+  /* open database */
   dlp_DeleteDB(sd, cardno, fh.AppName);
   printf("%d\n", dlp_CreateDB(sd, fh.Creator, fh.Type, cardno, dlpDBFlagResource, 1, fh.AppName, &apprec));
   
@@ -51,7 +51,7 @@ int LoadPRC(int sd, char *fname, int cardno)
 
   sh = malloc(sizeof(sect_t) * (fh.NumSections+1));
   
-  // read sections
+  /* read sections */
   for (i=0;i<fh.NumSections;i++)
   {
     fread(shbuf,SIZEOF_SECT,1,fd);
@@ -95,7 +95,6 @@ int RetrievePRC(int sd, char *dname, char *fname, int cardno)
   unsigned char prcbuf[SIZEOF_PRC];
   prc_t fh;
 
-  unsigned char shbuf[SIZEOF_SECT];
   sect_t* sh;
 
   int i;
@@ -113,12 +112,12 @@ int RetrievePRC(int sd, char *dname, char *fname, int cardno)
 
   if(dlp_OpenDB(sd, cardno, 0x80, dname, &apprec)<0) {
   	puts("failed to open db");
-  	return;
+  	return -1;
   }
   
   if(dlp_FindDBInfo(sd, cardno, 0, dname, 0, 0, &info)<0) {
   	puts("failed to get db info");
-  	return;
+  	return -1;
   }
 
   
@@ -134,7 +133,7 @@ int RetrievePRC(int sd, char *dname, char *fname, int cardno)
   fh.prcversion = 1;
   fh.version = info.version;
   
-  // Create PRC header
+  /* Create PRC header */
   memset(prcbuf, 0, SIZEOF_PRC);
   strncpy(prcbuf,dname,32);
   set_long(prcbuf+60,fh.Type);
@@ -156,7 +155,7 @@ int RetrievePRC(int sd, char *dname, char *fname, int cardno)
 
   sh = malloc(sizeof(sect_t) * (fh.NumSections+1));
   
-  // read sections
+  /* read sections */
   
   pos = SIZEOF_PRC+(SIZEOF_SECT*fh.NumSections)+2;
   
@@ -168,7 +167,7 @@ int RetrievePRC(int sd, char *dname, char *fname, int cardno)
     
     pos += size;
     
-    printf("Section %d, type %4.4s, id %d, size %d, offset %d\n",i, &sh[i].Type, sh[i].ID, size, sh[i].Offset);
+    printf("Section %d, type %s, id %d, size %d, offset %ld\n",i, printlong(sh[i].Type), sh[i].ID, size, sh[i].Offset);
   }
   
   flen = pos;

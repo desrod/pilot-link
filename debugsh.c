@@ -96,20 +96,15 @@ void sig(int signal) {
   done = 1;
 }
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-  struct pi_sockaddr laddr,raddr;
+  struct pi_sockaddr laddr;
   int sd;
-  char buf[64];
-  struct PilotUser U;
-  struct SysInfo S;
-  FILE *f;
-  int l;
   fd_set r,rin;
   int max;
 
   if (argc < 2) {
-    fprintf(stderr,"usage:%s /dev/tty??\n",argv[0]);
+    fprintf(stderr,"usage:%s %s\n",argv[0],TTYPrompt);
     exit(2);
   }
 
@@ -155,4 +150,5 @@ main(int argc, char *argv[])
   
   printf("\nExiting...\n");
   pi_close(sd);
+  exit(0);
 }

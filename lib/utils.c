@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include "pi-socket.h"
 
 /* this routine ruthlessly stolen verbatim from Brian J. Swetland */
@@ -27,7 +28,15 @@ int crc16(unsigned char *ptr, int count)
   return (crc & 0xFFFF);
 }
 
-dumpline (char *buf, int len, int addr)
+char * printlong (unsigned long val)
+{
+  static char buf[5];
+  set_long(buf, val);
+  buf[4] = 0;
+  return buf;
+}
+
+void dumpline (char *buf, int len, int addr)
 {
   int i;
 
@@ -48,7 +57,7 @@ dumpline (char *buf, int len, int addr)
   fprintf(stderr,"\n");
 }
 
-dumpdata (char * buf, int len) {
+void dumpdata (char * buf, int len) {
   int i;
   for(i=0;i<len;i+=16) {
     dumpline(buf+i, ((len-i)>16) ? 16 : len-i, i);

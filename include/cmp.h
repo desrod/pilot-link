@@ -2,7 +2,7 @@
 #ifndef _PILOT_CMP_H_
 #define _PILOT_CMP_H_
 
-#define OurCommVersion 0x01000000
+#define OurCommVersion 0x01000000L
 
 struct cmp {
   unsigned char type;
@@ -17,6 +17,9 @@ int cmp_init(struct pi_socket *ps, int baudrate);
 
 int cmp_abort(struct pi_socket *ps, int reason);
 
-int cmp_dump(unsigned char * cmp, int rxtx);
+int cmp_wakeup(struct pi_socket *ps, int maxbaud);
+
+void cmp_dump(unsigned char * cmp, int rxtx);
+
 
 #endif /* _PILOT_CMP_H_ */

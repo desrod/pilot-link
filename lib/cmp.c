@@ -9,6 +9,7 @@
 #include "pi-socket.h"
 #include "padp.h"
 #include "cmp.h"
+#include "pi-serial.h"
 
 int cmp_rx(struct pi_socket *ps, struct cmp * c)
 {
@@ -31,13 +32,14 @@ int cmp_rx(struct pi_socket *ps, struct cmp * c)
   c->commversion = get_long(cmpbuf+2);
   c->baudrate = get_long(cmpbuf+6);
 
-  End(cmp_rx);  
+  End(cmp_rx);
+  
+  return 0;
 }
 
 int cmp_init(struct pi_socket *ps, int baudrate)
 {
   char cmpbuf[10];
-  struct cmp c;
 
   set_byte(cmpbuf+0, 2);
   set_long(cmpbuf+2, 0);
@@ -81,11 +83,9 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
   return padp_tx(ps, cmpbuf, 10, padWake);
 }
 
-int cmp_dump(unsigned char * cmp, int rxtx)
+void cmp_dump(unsigned char * cmp, int rxtx)
 {
 #ifdef DEBUG
-  int i;
-  
 
   fprintf(stderr,"CMP %s %s",
 	  rxtx ? "TX" : "RX",

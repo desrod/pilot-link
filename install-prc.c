@@ -9,12 +9,11 @@
  */
 
 #include <stdio.h>
-#include "prc.h"
 #include "pi-socket.h"
+#include "prc.h"
+#include "dlp.h"
 
-static unsigned char User[] = { 0x10, 0};
-
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int sd;
@@ -22,10 +21,8 @@ main(int argc, char *argv[])
   char *buf;
   int ret;
 
-  unsigned char userid[64];
-
   if (argc < 3) {
-    fprintf(stderr,"usage:%s /dev/cua? app.prc [app.prc] ...\n",argv[0]);
+    fprintf(stderr,"usage:%s %s app.prc [app.prc] ...\n",argv[0],TTYPrompt);
     exit(2);
   }
 
@@ -65,7 +62,7 @@ main(int argc, char *argv[])
 
   for (i=2; i<argc; i++) LoadPRC(sd,argv[i], 0);
 
-  dlp_ResetSystem(sd,0);
+  dlp_ResetSystem(sd);
   
   dlp_EndOfSync(sd, 0);
 

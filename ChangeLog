@@ -1,3 +1,9 @@
+Dec 1, 1996		Kenneth Albanowski 0.3.2
+
+    Converted package to use autoconf for configuration.
+    Cleaned up package so -Wall is clean.
+    Added sync-ical stub. It does not do anything useful yet.
+
 Nov 25, 1996    Kenneth Albanowski 0.3.1
 
     Integrated Ulrich Hertlein's SunOS patches (in slightly changed form).

@@ -9,6 +9,11 @@ struct RPC_param {
   void * data;
 };
 
+int syspkt_tx(struct pi_socket *ps, unsigned char *msg, int length);
+                                    
+int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len);
+                                    
+
 int sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed, 
                        int keymod, int keyasc, int keycode);
 

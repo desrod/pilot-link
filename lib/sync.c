@@ -1,6 +1,6 @@
 /* sync.c:  Pilot synchronization logic
  *
- * (c) 1996, Kenneth Albanowski
+ * Copyright 1996, Kenneth Albanowski
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
@@ -13,42 +13,15 @@
  * needed to portably sync local databases.
  *  
  */
-
-#include <stdio.h>
-#include <errno.h>
+ 
 #include "pi-socket.h"
-#include "padp.h"
 #include "dlp.h"
 #include "sync.h"
 
-struct PilotRecord {
-	long ID;
-	long attr;
-	int length;
-	unsigned char * record;
-};
-
-typedef int (*f1)(long);
-typedef int (*f2)(long, long*);
-typedef int (*f3)(struct PilotRecord *);
-typedef int (*f4)(long, int);
-
-struct SyncAbs {
-	f2 MatchRecord;
-	f1 IsNew;
-	f1 IsModified;
-	f1 IsArchived;
-	f1 NoStatus;
-	f3 AppendLocal;
-	f3 AppendArchive;
-	f4 SetArchive;
-	f4 SetStatus;
-	f3 UseBackupStatus;
-};
-
-void SyncRecord(struct PilotRecord * remote, struct SyncAbs * s) {
+void SyncRecord(PilotRecord * remote, struct SyncAbs * s, void * ld) {
   long local;
   if( remote->attr & dlpRecAttrArchived ) {
+#if 0
     if(!s->MatchRecord(remote->ID,&local)) {
       s->AppendArchive(remote);
     } else {
@@ -65,6 +38,24 @@ void SyncRecord(struct PilotRecord * remote, struct SyncAbs * s) {
         }
       }
     }
+#endif  
   }
   /* Etc */
+}
+
+void SyncDB(int handle, int db, struct SyncAbs * s, void * ld) {
+	/* Slow sync */
+	char buffer[0xffff];
+	int i;
+	int len;
+	PilotRecord p;
+	
+	for(i=0;1;i++) {
+  	                           
+	  	int len = dlp_ReadRecordByIndex(handle, db, i, buffer, 0, 0, &p.attr, &p.category);
+	  	if(len<0)
+  			break;
+		SyncRecord(&p, s, ld);
+	}
+	/* More stuff needed to process local flags */
 }

@@ -14,29 +14,19 @@
 #include "dlp.h"
 
                   
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int db;
   int sd;
-  int count;
   int i;
-  int l;
-  time_t t;
-  int memo_size;
-  char *memo_buf;
-  FILE *f;
   struct PilotUser U;
   int ret;
   char buffer[0xffff];
   struct AddressAppInfo aai;
 
   if (argc < 2) {
-#ifdef linux  
-    fprintf(stderr,"usage:%s /dev/cua??\n",argv[0]);
-#else
-    fprintf(stderr,"usage:%s /dev/tty??\n",argv[0]);
-#endif
+    fprintf(stderr,"usage:%s %s\n",argv[0],TTYPrompt);
     exit(2);
   }
   if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
@@ -140,5 +130,6 @@ main(int argc, char *argv[])
   dlp_AddSyncLogEntry(sd, "Read addresses from Pilot.\n");
 
   pi_close(sd);  
+  exit(0);
 }
 

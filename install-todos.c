@@ -12,38 +12,29 @@
 #include "dlp.h"
 #include "todo.h"
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int db;
   int sd;
   int i;
-  int l;
-  time_t t;
   int ToDo_size;
   unsigned char ToDo_buf[0xffff];
   struct ToDo todo;
-  struct ToDoAppInfo todoApp;
   FILE *f;
   struct PilotUser U;
   int ret;
-  int dlen;
   int filelen;
   char note_text[] = "";
   char *cPtr;
   char *begPtr;
   char *file_text;
-  time_t now;
   int cLen;
   int count;
 
 #ifndef NOTHAPPENING
   if (argc < 3) {
-#ifdef linux  
-    fprintf(stderr,"usage:%s /dev/cua?? file [file] ...\n",argv[0]);
-#else
-    fprintf(stderr,"usage:%s /dev/tty?? file [file] ...\n",argv[0]);
-#endif
+    fprintf(stderr,"usage:%s %s file [file] ...\n",argv[0],TTYPrompt);
     exit(2);
   }
   if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {

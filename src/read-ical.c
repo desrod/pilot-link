@@ -1,4 +1,4 @@
-/* todos.c:  Translate Pilot ToDo database into generic format
+/* read-ical.c:  Translate Pilot ToDo and Datebook databases into ical 2.0 format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
@@ -14,18 +14,13 @@
 #include "datebook.h"
 #include "dlp.h"
 
-main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int db;
   int sd;
-  int count;
   int i;
-  int l;
-  time_t t;
-  int memo_size;
-  char *memo_buf;
-  FILE *f, *ical;
+  FILE *ical;
   struct PilotUser U;
   int ret;
   char buffer[0xffff];
@@ -33,11 +28,7 @@ main(int argc, char *argv[])
   struct ToDoAppInfo tai;
 
   if (argc < 3) {
-#ifdef linux  
-    fprintf(stderr,"usage:%s /dev/cua?? calfile # Calfile will be overwritten!\n",argv[0]);
-#else
-    fprintf(stderr,"usage:%s /dev/tty?? calfile # Calfile will be overwritten!\n",argv[0]);
-#endif
+    fprintf(stderr,"usage:%s %s calfile # Calfile will be overwritten!\n",argv[0],TTYPrompt);
     exit(2);
   }
   if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
@@ -92,7 +83,6 @@ main(int argc, char *argv[])
   for (i=0;1;i++) {
   	struct ToDo t;
   	int attr, category;
-  	int j;
   	                           
   	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr, &category);
   	if(len<0)
@@ -131,15 +121,9 @@ main(int argc, char *argv[])
   
 
   for (i=0;1;i++) {
-  	int iflags;
   	int j;
   	struct Appointment a;
-  	struct tm tm;
-  	unsigned int d;
-  	char * p, *p2;
   	int attr;
-  	char delta[80];
-  	char satisfy[256];
   	                           
   	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr, 0);
   	if(len<0)

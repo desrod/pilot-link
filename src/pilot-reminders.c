@@ -13,79 +13,21 @@
 #include "datebook.h"
 #include "dlp.h"
 
-/*enum alarmTypes {advMinutes, advHours, advDays};
-
-enum repeatTypes {
-   repeatNone,
-   repeatDaily,
-   repeatWeekly,
-   repeatMonthlyByDay,
-   repeatMonthlyByDate,
-   repeatYearly
-};
-
-enum  DayOfMonthType{
-       dom1stSun, dom1stMon, dom1stTue, dom1stWen, dom1stThu, dom1stFri, dom1stSat,
-       dom2ndSun, dom2ndMon, dom2ndTue, dom2ndWen, dom2ndThu, dom2ndFri, dom2ndSat,
-       dom3rdSun, dom3rdMon, dom3rdTue, dom3rdWen, dom3rdThu, dom3rdFri, dom3rdSat,
-       dom4thSun, dom4thMon, dom4thTue, dom4thWen, dom4thThu, dom4thFri, dom4thSat,
-       domLastSun, domLastMon, domLastTue, domLastWen, domLastThu, domLastFri,
-      domLastSat
-};*/
-
-/* dom1stSun = REM Sun 1  
- dom1stMon = Rem Mon 1 
- dom2ndSun = REM Sun 8 
- domLastSun = REM Sun 1 -7*/
-  
-                                                        
-
-/*struct Appointment {
-	int event;
-	struct tm begin, end;
-	
-	int advance;
-	int advanceUnits;
-	
-	int repeatType;
-	struct tm repeatEnd;
-	int repeatForever;
-	int repeatFreq;
-	int repeatOn;
-	int repeatWeekstart;
-	
-	int exceptions;
-	struct tm * exception;
-	
-	char * description;
-	char * note;
-};*/
-
 char *Weekday[7] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 char *Month[12] = {"jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"};
                   
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int db;
   int sd;
-  int count;
   int i;
-  int l;
-  time_t t;
-  int memo_size;
-  char *memo_buf;
-  FILE *f;
   struct PilotUser U;
   int ret;
   char buffer[0xffff];
 
   if (argc < 2) {
-#ifdef linux  
-    fprintf(stderr,"usage:%s /dev/cua??\n",argv[0]);
-#else
-    fprintf(stderr,"usage:%s /dev/tty??\n",argv[0]);
-#endif
+    fprintf(stderr,"usage:%s %s\n",argv[0],TTYPrompt);
     exit(2);
   }
   if (!(sd = pi_socket(AF_SLP, SOCK_STREAM, PF_PADP))) {
@@ -132,12 +74,8 @@ main(int argc, char *argv[])
   printf("PUSH-OMIT-CONTEXT\n");  
   printf("CLEAR-OMIT-CONTEXT\n");  
   for (i=0;1;i++) {
-  	int iflags;
   	int j;
   	struct Appointment a;
-  	struct tm tm;
-  	unsigned int d;
-  	char * p, *p2;
   	int attr;
   	char delta[80];
   	char satisfy[256];
@@ -339,5 +277,7 @@ main(int argc, char *argv[])
   dlp_AddSyncLogEntry(sd, "Read datebook from Pilot.\n");
 
   pi_close(sd);  
+  
+  exit(0);
 }
 

@@ -13,22 +13,17 @@
 #include "dlp.h"
 #include "pi-socket.h"
 
-static unsigned char User[] = { 0x10, 0};
-
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
   int sd;
   int i;
   char *buf;
   int ret;
-  struct DBInfo info;
   char fname[128];
 
-  unsigned char userid[64];
-
   if (argc < 3) {
-    fprintf(stderr,"usage:%s /dev/cua? dbname [dbname] ...\n",argv[0]);
+    fprintf(stderr,"usage:%s %s dbname [dbname] ...\n",argv[0],TTYPrompt);
     exit(2);
   }
 

@@ -21,10 +21,7 @@ void free_ToDo(struct ToDo * a) {
 }
 
 void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
-  int iflags;
-  char * p2;
   unsigned long d;
-  int j;
   
   a->due.tm_hour = 0;
   a->due.tm_min = 0;

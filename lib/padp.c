@@ -14,13 +14,13 @@
 #include "pi-socket.h"
 #include "padp.h"
 #include "slp.h"
+#include "pi-serial.h"
 
 #define xmitTimeout 4
 #define xmitRetries 14
 
 int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 {
-  int i;
   int flags = FIRST;
   int tlen;
   int count = 0;
@@ -29,7 +29,6 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 
   struct pi_skb* nskb;
   int retries;
-  char buf[64];
 
 #ifdef DEBUG
   fprintf(stderr,"-----------------\n");
@@ -166,13 +165,9 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   struct padp npadp;
 
   struct slp * slp;
-  char trans_id;
-  int rlen = 0;
-  int tlen;
   int data_len;
   int offset = 0;
   int ouroffset = 0;
-  int count = 0;
   time_t endtime;
   endtime = time(NULL)+recStartTimeout;
 
@@ -317,7 +312,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   return ouroffset;
 }
 
-int padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx)
+void padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx)
 {
 #ifdef DEBUG
   int i;

@@ -20,4 +20,7 @@ struct slp {
 int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len);
 int slp_rx(struct pi_socket *ps);
 
+void slp_dump(struct pi_skb *skb, int rxtx);
+void dph(unsigned char *d);
+                                            
 #endif /* _PILOT_PADP_SLP_H_ */

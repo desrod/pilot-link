@@ -18,9 +18,12 @@
 #include "padp.h"
 #include "cmp.h"
 #include "dlp.h"
+#include "syspkt.h"
 
 static struct pi_socket *psl = (struct pi_socket *)0;
 static int pi_next_socket = 3;            /* FIXME: This should be a real fd */
+
+void installexit(void);
 
 /* Create a local connection endpoint */
 
@@ -54,7 +57,7 @@ int pi_socket(int domain, int type, int protocol)
 #endif
 
   if(type == SOCK_STREAM) {
-#ifdef __sgi
+#ifdef XXX__sgi
     ps->establishrate = 9600; /* Default PADP connection rate */
 #else
     ps->establishrate = 19200; /* Default PADP connection rate */
@@ -82,7 +85,6 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
 {
   struct pi_socket *ps;
   struct cmp c;
-  char buf[5];
 
   if (!(ps = find_pi_socket(pi_sd))) {
     errno = ESRCH;
@@ -171,7 +173,6 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
 {
   struct pi_socket *ps;
   struct cmp c;
-  char buf[5];
 
   if (!(ps = find_pi_socket(pi_sd))) {
     errno = ESRCH;
@@ -187,7 +188,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
     if (c.commversion == OurCommVersion) {
       if(ps->establishrate > c.baudrate) {
 #ifdef DEBUG
-        fprintf(stderr,"Rate %d too high, dropping to %d\n",ps->establishrate,c.baudrate);
+        fprintf(stderr,"Rate %d too high, dropping to %ld\n",ps->establishrate,c.baudrate);
 #endif
         ps->establishrate = c.baudrate;
       }
@@ -204,7 +205,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
       pi_device_close(ps);
 
       fprintf(stderr, "pi_socket connection failed due to comm version mismatch\n");
-      fprintf(stderr, " (expected 0x%x, got 0x%x)\n", OurCommVersion, c.commversion);
+      fprintf(stderr, " (expected 0x%lx, got 0x%lx)\n", OurCommVersion, c.commversion);
 
       errno = ECONNREFUSED;
       return -1;
@@ -221,7 +222,6 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
 int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
 {
   struct pi_socket *ps;
-  char buf[200];
 
   if (!(ps = find_pi_socket(pi_sd))) {
     errno = ESRCH;
@@ -240,7 +240,6 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
 int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
 {
   struct pi_socket *ps;
-  char buf[200];
 
   if (!(ps = find_pi_socket(pi_sd))) {
     errno = ESRCH;
@@ -273,7 +272,6 @@ int pi_write(int pi_sd, void *msg, int len)
 int pi_tickle(int pi_sd)
 {
   struct pi_socket *ps;
-  char buf[200];
 
   if (!(ps = find_pi_socket(pi_sd))) {
     errno = ESRCH;
@@ -328,7 +326,7 @@ int pi_close(int pi_sd)
 
 /* Install an atexit handler that closes open sockets */
 
-int pi_onexit(void)
+void pi_onexit(void)
 {
   struct pi_socket *p, *n;
 
@@ -336,18 +334,15 @@ int pi_onexit(void)
     n = p->next;
     pi_close(p->sd);
   }
+  
 }
 
-int installexit(void)
+void installexit(void)
 {
   static installedexit = 0;
   
   if (!installedexit)
-#ifdef sun
-    on_exit(pi_onexit,NULL);
-#else
     atexit(pi_onexit);
-#endif
     
   installedexit = 1;
 }
@@ -367,6 +362,8 @@ int pi_getsockname(int pi_sd, struct pi_sockaddr * addr, int * namelen)
     *addr = ps->laddr;
   if(namelen)
     *namelen = sizeof(struct pi_sockaddr);
+    
+  return 0;
 }
 
 /* Get the remote address for a socket */
@@ -384,6 +381,8 @@ int pi_getsockpeer(int pi_sd, struct pi_sockaddr * addr, int * namelen)
     *addr = ps->raddr;
   if(namelen)
     *namelen = sizeof(struct pi_sockaddr);
+    
+  return 0;
 }
 
 /* Sigh.  Connect can't return a real fd since we don't know the device yet.

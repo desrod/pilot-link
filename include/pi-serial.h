@@ -1,3 +1,6 @@
+#ifndef _PILOT_SERIAL_H_
+#define _PILOT_SERIAL_H_
+
 int pi_device_open(char *tty, struct pi_socket *ps);
 int pi_device_changebaud(struct pi_socket *ps);
 int pi_device_close(struct pi_socket *ps);
@@ -9,3 +12,4 @@ int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 			  int write_timeout);
 #endif
 
+#endif
