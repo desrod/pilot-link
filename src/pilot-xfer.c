@@ -1821,7 +1821,7 @@ typedef struct cardreport_s {
 } cardreport_t;
 
 static int
-pilot_cardinfo ()
+palm_cardinfo ()
 {
 	int				i,
 					j,
@@ -1847,7 +1847,7 @@ pilot_cardinfo ()
 	/* VFS info */
 	if ((ret = dlp_VFSVolumeEnumerate(sd,&volume_count,volumes)) < 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
-				"pilot_cardinfo: dlp_VFSVolumeEnumerate returned %i\n", ret));
+				"palm_cardinfo: dlp_VFSVolumeEnumerate returned %i\n", ret));
 		goto cleanup;
 	}
 
@@ -1855,14 +1855,14 @@ pilot_cardinfo ()
 	{
 		if ((ret = dlp_VFSVolumeInfo(sd, volumes[i], &info)) < 0) {
 			LOG ((PI_DBG_USER, PI_DBG_LVL_ERR,
-					"pilot_cardinfo: dlp_VFSVolumeInfo returned %i\n", ret));
+					"palm_cardinfo: dlp_VFSVolumeInfo returned %i\n", ret));
 			goto cleanup;
 		}
 		if ((ret = dlp_VFSVolumeSize(sd, volumes[i], &size_used,
 						&size_total)) < 0)
 		{
 			LOG ((PI_DBG_USER, PI_DBG_LVL_ERR,
-					"pilot_cardinfo: dlp_VFSVolumeSize returned %i\n", ret));
+					"palm_cardinfo: dlp_VFSVolumeSize returned %i\n", ret));
 			goto cleanup;
 		}
 
@@ -1910,7 +1910,7 @@ pilot_cardinfo ()
 			digits_cardnum);
 	if (fmt == NULL) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
-					"pilot_cardinfo: unable to allocate hdr fmt memory\n"));
+					"palm_cardinfo: unable to allocate hdr fmt memory\n"));
 		goto cleanup;
 	}
 	
@@ -1921,7 +1921,7 @@ pilot_cardinfo ()
 			digits_cardnum);
 	if (fmt == NULL) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
-					"pilot_cardinfo: unable to allocate data fmt memory\n"));
+					"palm_cardinfo: unable to allocate data fmt memory\n"));
 		goto cleanup;
 	}
 
@@ -2171,12 +2171,12 @@ palm_list_VFS()
 
 	if (-2 == r)
 	{
-		printf("   Not ready reading drive C:\n");
+		fprintf(stderr,"   Not ready reading drive C:\n");
 		return;
 	}
 	if (r < 0)
 	{
-		printf("   No such directory, use pilot-xfer -C to list volumes.\n");
+		fprintf(stderr,"   No such directory, use pilot-xfer -C to list volumes.\n");
 		return;
 	}
 
@@ -2315,7 +2315,7 @@ main(int argc, const char *argv[])
 		/* modifiers for the various actions */
 		{"archive",  'a', POPT_ARG_STRING, &archive_dir, 0, "Modifies -s to archive deleted files in directory <dir>", "dir"},
 		{"exclude",  'e', POPT_ARG_STRING, NULL, 'e', "Exclude databases listed in <file> from being included", "file"},
-		{"vfsdir",   'D', POPT_ARG_STRING, &vfsdir, MEDIA_VFS, "Modifies -li to use VFS <dir> instead of internal storage", "dir"},
+		{"vfsdir",   'D', POPT_ARG_STRING, &vfsdir, MEDIA_VFS, "Modifies -lif to use VFS <dir> instead of internal storage", "dir"},
 		{"rom",       0 , POPT_ARG_NONE, NULL, MEDIA_FLASH, "Modifies -b, -u, and -s, to back up non-OS dbs from Flash ROM", NULL},
 		{"with-os",   0 , POPT_ARG_NONE, NULL, MEDIA_ROM, "Modifies -b, -u, and -s, to back up OS dbs from Flash ROM", NULL},
 		{"illegal",   0 , POPT_ARG_NONE, &unsaved, 0, "Modifies -b, -u, and -s, to back up the illegal database Unsaved Preferences.prc (normally skipped)", NULL},
@@ -2547,7 +2547,7 @@ main(int argc, const char *argv[])
 			palm_list(sync_flags);
 			break;
 		case palm_op_cardinfo:
-			pilot_cardinfo();
+			palm_cardinfo();
 			break;
 	}
 
