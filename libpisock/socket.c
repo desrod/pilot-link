@@ -1450,9 +1450,11 @@ pi_write(int pi_sd, void *msg, size_t len)
 int
 pi_tickle(int pi_sd)
 {
-	int 	result, type; 
-	size_t	len = 0;
-	size_t	size;
+	int 	result,
+		type,
+		oldtype;
+	size_t	len = 0,
+		size;
 	unsigned char 	msg[1];
 	pi_socket_t *ps;
 
@@ -1466,28 +1468,42 @@ pi_tickle(int pi_sd)
 
 	LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 			"SOCKET Tickling socket %d\n", pi_sd));
-
-	/* Enter command state */
-	ps->command = 1;
 	
-	/* Set the type to "tickle" */
 	switch (ps->cmd) {
 		case PI_CMD_CMP:
+			/* save previous packet type */
+			size = sizeof(type);
+			pi_getsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &oldtype, &size);
+			
+			/* set packet type to "tickle" */
 			type = padTickle;
 			size = sizeof(type);
 			pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &type, &size);
+
+			/* send packet */
+			result = ps->protocol_queue[0]->write (ps, msg, len, 0);
+			
+			/* restore previous packet type */
+			size = sizeof(type);
+			pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &oldtype, &size);
 			break;
+
 		case PI_CMD_NET:
+			/* Enter command state */
+			ps->command = 1;
+
+			/* Set the type to "tickle" */
 			type = PI_NET_TYPE_TCKL;
 			size = sizeof(type);
 			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_TYPE, &type, &size);
+			
+			/* send packet */
+			result = ps->cmd_queue[0]->write (ps, msg, len, 0);
+
+			/* Exit command state */
+			ps->command = 0;
 			break;
 	}
-
-	result = ps->cmd_queue[0]->write (ps, msg, len, 0);
-
-	/* Exit command state */
-	ps->command = 0;
 
 	return result;
 }
