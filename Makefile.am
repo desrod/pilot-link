@@ -102,7 +102,7 @@ dlpsh_LDADD = 					\
 
 #getrom_SOURCES = \
 #	getrom.c
-#getrom_LDADD = 					\
+#getrom_LDADD = 				\
 #	@LIBOBJS@				\
 #	$(top_builddir)/libsock/libpisock.la
 
