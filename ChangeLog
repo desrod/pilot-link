@@ -2,6 +2,8 @@
 
         * src/pd-tty.c: Fixed ifdef for tcl/tk (akkana@shallowsky.com)
 
+	* libpisock/net.c: Fix for Network Sync
+
 2002-08-30  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: define conditionals for usb support properly
