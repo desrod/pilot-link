@@ -800,12 +800,14 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 		/* according to linux code, PEG S-300 awaits these two requests */
 		/* USB_REQ_GET_CONFIGURATION */
 		ret = dev->impl.control_request (dev, 0x80, 0x08, 0, 0, NULL, 1, 0);
-		if (ret < 0)
+		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: Sony USB_REQ_GET_CONFIGURATION failed (err=%08x)\n", ret));
+		}
 		/* USB_REQ_GET_INTERFACE */
 		ret = dev->impl.control_request (dev, 0x80, 0x0A, 0, 0, NULL, 1, 0);
-		if (ret < 0)
+		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: Sony USB_REQ_GET_INTERFACE failed (err=%08x)\n", ret));
+		}
 	} else {
 		/* other devices will either accept or deny this generic call */
 		ret = USB_configure_generic (dev, input_pipe, output_pipe);
@@ -818,8 +820,9 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 		unsigned char ba[2] = { 0 };
 
 		ret = dev->impl.control_request (dev, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, 0, 0, &ba[0], 2, 0);
-		if (ret < 0)
+		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", ret));
+		}
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
 	}
 
