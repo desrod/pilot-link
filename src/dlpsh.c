@@ -23,7 +23,6 @@
 #include <config.h>
 #endif
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +34,7 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 #include "pi-error.h"
+#include "userland.h"
 
 #ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
@@ -745,33 +745,6 @@ char *strtoke(char *str, const char *ws, const char *delim)
 }
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   An interactive Desktop Link Protocol (DLP) Shell for your Palm device\n\n");
-	printf("   Usage: %s -p <port>\n", progname);
-	printf("   Options:\n");
-	printf("   -c, --command <cmd>       Execute <cmd> and exit immediately\n");
-	printf("   -p, --port <port>         Use device file <port> to communicate with Palm\n");
-	printf("   -h, --help                Display help information for %s\n", progname);
-	printf("   -v, --version             Display %s version information\n\n", progname);
-	printf("   dlpsh can query many different types of information from your Palm\n");
-	printf("   device, such as username, memory capacity, set the time, as well as\n");
-	printf("   other useful functions.\n\n");
-	printf("   While inside the dlpsh shell, type 'help' for more options.\n\n");
-
-	return;
-}
 
 
 int main(int argc, const char *argv[])
@@ -779,42 +752,42 @@ int main(int argc, const char *argv[])
 	int 	c		= -1,
 		sd 		= -1;
 
-	const char
-                *progname 	= argv[0];
-
-	char 	*port 		= NULL,
+	char
 		*cmd		= NULL;
 
 	poptContext po;
 
 	struct poptOption options[] = {
-		{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
-		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-        	{"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+		USERLAND_RESERVED_OPTIONS
 		{"command", 	'c', POPT_ARG_STRING, &cmd, 0, "Execute <cmd> and exit immediately"},
-		POPT_AUTOHELP
-        	{ NULL, 0, 0, NULL, 0 }
+		POPT_TABLEEND
 	} ;
 
 	po = poptGetContext("dlpsh", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"\n\n"
+	"   An interactive Desktop Link Protocol (DLP) Shell for your Palm device.\n"
+	"   dlpsh can query many different types of information from your Palm\n"
+	"   device, such as username, memory capacity, set the time, as well as\n"
+	"   other useful functions.\n\n"
+	"   While inside the dlpsh shell, type 'help' for more options.\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		switch (c) {
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		default:
-			display_help(progname);
-			return 0;
-		}
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
+	}
+
+	if ( c < -1) {
+		plu_badoption(po,c);
 	}
 
 	setjmp (main_jmp);
 
-	sd = pilot_connect(port);
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 
