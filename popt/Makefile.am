@@ -1,3 +1,5 @@
+if INCLUDED_POPT
+
 INCLUDES = -I$(top_srcdir)/include
 
 noinst_HEADERS = findme.h poptint.h system.h popt.h
@@ -13,3 +15,10 @@ sources:
 .PHONY: lclint
 lclint:
 	lclint ${DEFS} ${INCLUDES} ${libpopt_la_SOURCES}
+
+endif
+
+EXTRA_DIST =							\
+	findme.c findme.h poptint.h system.h popt.c popt.h	\
+	poptparse.c poptconfig.c popthelp.c
+

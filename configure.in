@@ -298,7 +298,7 @@ AC_ARG_WITH(included-popt,
 if test "x$with_included_popt" = "xyes"; then
 	msg_popt="yes (included)"
     AC_MSG_RESULT(yes)
-	POPT_LIBS='$(POPT_OBJS)'
+	POPT_LIBS='$(top_builddir)/popt/libpopt.la'
     POPT_INCLUDES="-I$srcdir/popt"
 else
     AC_MSG_RESULT(no)
@@ -409,11 +409,11 @@ AC_SUBST(ICONV_LIBS)
 dnl ******************************
 dnl C++
 dnl ******************************
-use_cpp=false
 msg_cpp=no
 LIBCXX=
 
-AC_ARG_WITH(cpp,      [  --with-cpp=cppexec      use C++                    [default=yes]])
+AC_ARG_WITH(cpp,
+		[  --with-cpp=cppexec      use C++                    [default=yes]])
 
 if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
@@ -421,15 +421,12 @@ if test "x$with_cpp" != "xno"; then
 	AC_CHECK_LIB(stdc++, main,LIBCXX=stdc++,
 		     AC_MSG_ERROR([Cannot find a Standard C++ library.]))
 	LIBS="$save_LIBS"
-	use_cpp=true
-fi
-AC_SUBST(LIBCXX)
-
-AM_CONDITIONAL(WITH_CXX, $use_cpp)
-if $use_cpp; then
 	msg_cpp=yes
 	CXXFLAGS="$CXXFLAGS -Wno-deprecated"
 fi
+AC_SUBST(LIBCXX)
+AM_CONDITIONAL(WITH_CXX, test "x$msg_cpp" = "xyes")
+
 
 dnl ******************************
 dnl readline checking
@@ -729,6 +726,7 @@ AC_OUTPUT([
 	doc/man/read-palmpix.1
 	doc/man/read-todos.1
 	tests/Makefile
+	darwin/Makefile
 ])
 
 echo "

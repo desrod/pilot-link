@@ -28,7 +28,7 @@
 #				the tclConfig.sh file
 #------------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_PATH_TCLCONFIG, [
+AC_DEFUN([PILOT_LINK_PATH_TCLCONFIG], [
     # Ok, lets find the tcl configuration
     # First, look for one uninstalled.
     # the alternative search directory is invoked by --with-tcl
@@ -127,7 +127,7 @@ AC_DEFUN(PILOT_LINK_PATH_TCLCONFIG, [
 #
 #------------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_LOAD_TCLCONFIG, [
+AC_DEFUN([PILOT_LINK_LOAD_TCLCONFIG], [
     AC_MSG_CHECKING([for existence of $TCL_BIN_DIR/tclConfig.sh])
 
     if test -f "$TCL_BIN_DIR/tclConfig.sh" ; then
@@ -214,7 +214,7 @@ AC_DEFUN(PILOT_LINK_LOAD_TCLCONFIG, [
 #
 #--------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_TCL_LINK_LIBS, [
+AC_DEFUN([PILOT_LINK_TCL_LINK_LIBS], [
     #--------------------------------------------------------------------
     # On a few very rare systems, all of the libm.a stuff is
     # already in libc.a.  Set compiler flags accordingly.
@@ -290,7 +290,7 @@ AC_DEFUN(PILOT_LINK_TCL_LINK_LIBS, [
 #
 #--------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_TCL_EARLY_FLAG,[
+AC_DEFUN([PILOT_LINK_TCL_EARLY_FLAG],[
     AC_CACHE_VAL([tcl_cv_flag_]translit($1,[A-Z],[a-z]),
 	AC_TRY_COMPILE([$2], $3, [tcl_cv_flag_]translit($1,[A-Z],[a-z])=no,
 	    AC_TRY_COMPILE([[#define ]$1[ 1
@@ -303,7 +303,7 @@ AC_DEFUN(PILOT_LINK_TCL_EARLY_FLAG,[
     fi
 ])
 
-AC_DEFUN(PILOT_LINK_TCL_EARLY_FLAGS,[
+AC_DEFUN([PILOT_LINK_TCL_EARLY_FLAGS],[
     AC_MSG_CHECKING([for required early compiler flags])
     tcl_flags=""
     PILOT_LINK_TCL_EARLY_FLAG(_ISOC99_SOURCE,[#include <stdlib.h>],
@@ -336,7 +336,7 @@ AC_DEFUN(PILOT_LINK_TCL_EARLY_FLAGS,[
 #
 #--------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_TCL_64BIT_FLAGS, [
+AC_DEFUN([PILOT_LINK_TCL_64BIT_FLAGS], [
     AC_MSG_CHECKING([for 64-bit integer type])
     AC_CACHE_VAL(tcl_cv_type_64bit,[
 	AC_TRY_COMPILE(,[__int64 value = (__int64) 0;],
@@ -405,7 +405,7 @@ AC_DEFUN(PILOT_LINK_TCL_64BIT_FLAGS, [
 #		TCL_INCLUDES
 #------------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_PUBLIC_TCL_HEADERS, [
+AC_DEFUN([PILOT_LINK_PUBLIC_TCL_HEADERS], [
     AC_MSG_CHECKING([for Tcl public headers])
 
     AC_ARG_WITH(tclinclude, [  --with-tclinclude       public Tcl header dir], with_tclinclude=${withval})
@@ -475,7 +475,7 @@ AC_DEFUN(PILOT_LINK_PUBLIC_TCL_HEADERS, [
 #		TCLSH_PROG
 #------------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_PROG_TCLSH, [
+AC_DEFUN([PILOT_LINK_PROG_TCLSH], [
     AC_MSG_CHECKING([for tclsh])
 
     AC_CACHE_VAL(ac_cv_path_tclsh, [
@@ -524,7 +524,7 @@ AC_DEFUN(PILOT_LINK_PROG_TCLSH, [
 #		WISH_PROG
 #------------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_PROG_WISH, [
+AC_DEFUN([PILOT_LINK_PROG_WISH], [
     AC_MSG_CHECKING([for wish])
 
     AC_CACHE_VAL(ac_cv_path_wish, [
@@ -577,7 +577,7 @@ AC_DEFUN(PILOT_LINK_PROG_WISH, [
 #				the $1Config.sh file
 #------------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_PATH_CONFIG, [
+AC_DEFUN([PILOT_LINK_PATH_CONFIG], [
     #
     # Ok, lets find the $1 configuration
     # First, look for one uninstalled.
@@ -670,7 +670,7 @@ AC_DEFUN(PILOT_LINK_PATH_CONFIG, [
 #
 #------------------------------------------------------------------------
 
-AC_DEFUN(PILOT_LINK_LOAD_CONFIG, [
+AC_DEFUN([PILOT_LINK_LOAD_CONFIG], [
     AC_MSG_CHECKING([for existence of ${$1_BIN_DIR}/$1Config.sh])
 
     if test -f "${$1_BIN_DIR}/$1Config.sh" ; then

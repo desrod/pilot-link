@@ -1,3 +1,5 @@
+if WITH_CXX
+
 INCLUDES = 			\
 	-I../include		\
 	-I$(top_srcdir)/include
@@ -17,3 +19,9 @@ libpisock___la_LIBADD = \
 
 libpisock___la_LDFLAGS = \
 	$(LIBCXX) -export-dynamic -version-info $(PISOCKPP_CURRENT):$(PISOCKPP_REVISION):$(PISOCKPP_AGE)
+
+endif
+
+EXTRA_DIST =							\
+	address.cc appInfo.cc datebook.cc dlp.cc memo.cc	\
+	todo.cc
