@@ -97,7 +97,7 @@
 
 /* Define prototypes */
 #ifdef PI_DEBUG
-static void record_dump (unsigned long recID, unsigned int index,
+static void record_dump (unsigned long recID, unsigned int recIndex,
 	int flags, int catID, char *data, int data_len);
 #endif
 
@@ -194,14 +194,14 @@ int dlp_trace = 0;
 #endif
 
 #ifdef PI_DEBUG
-static void record_dump (unsigned long recID, unsigned int index, int flags,
+static void record_dump (unsigned long recID, unsigned int recIndex, int flags,
 	int catID, char *data, int data_len)
 {
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 	    "  ID: 0x%8.8lX, Index: %u, Category: %d\n"
 	    "  Flags:%s%s%s%s%s%s (0x%2.2X), and %d bytes:\n",
 	    (unsigned long) recID,
-	    index,
+	    recIndex,
 		catID,
 	    (flags & dlpRecAttrDeleted) ? " Deleted" : "",
 	    (flags & dlpRecAttrDirty) ? " Dirty" : "",
@@ -3140,7 +3140,7 @@ dlp_DeleteCategory(int sd, int dbhandle, int category)
  ***********************************************************************/
 int
 dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
-		       pi_buffer_t *buffer, int *index)
+		       pi_buffer_t *buffer, int *resindex)
 {
 	int 	result,
 		data_len;
@@ -3167,8 +3167,8 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
 	
 	if (result > 0) {
 		data_len = res->argv[0]->len - 10;
-		if (index)
-			*index = get_short(DLP_RESPONSE_DATA(res, 0, 6));
+		if (resindex)
+			*resindex = get_short(DLP_RESPONSE_DATA(res, 0, 6));
 		if (buffer) {
 			pi_buffer_clear (buffer);
 			pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, 10),
@@ -3205,7 +3205,7 @@ dlp_ReadResourceByType(int sd, int fHandle, unsigned long type, int id,
  *
  ***********************************************************************/
 int
-dlp_ReadResourceByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
+dlp_ReadResourceByIndex(int sd, int fHandle, int resindex, pi_buffer_t *buffer,
 			unsigned long *type, int *id)
 {
 	int 	result,
@@ -3227,7 +3227,7 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
-		set_short(DLP_REQUEST_DATA(req, 0, 2), index);
+		set_short(DLP_REQUEST_DATA(req, 0, 2), resindex);
 		set_long(DLP_REQUEST_DATA(req, 0, 4), 0);
 		set_long(DLP_REQUEST_DATA(req, 0, 8), pi_maxrecsize(sd));
 		large = 1;
@@ -3238,7 +3238,7 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
-		set_short(DLP_REQUEST_DATA(req, 0, 2), index);
+		set_short(DLP_REQUEST_DATA(req, 0, 2), resindex);
 		set_long(DLP_REQUEST_DATA(req, 0, 4), DLP_BUF_SIZE);
 	}
 
@@ -3263,7 +3263,7 @@ dlp_ReadResourceByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 			"Index: %d, and %d bytes:\n",
 		    printlong(get_long(DLP_RESPONSE_DATA(res, 0, 0))),
 		    get_short(DLP_RESPONSE_DATA(res, 0, 4)),
-		    index, data_len));
+		    resindex, data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
 		      dumpdata(DLP_RESPONSE_DATA(res, 0, (large ? 12 : 10)),
 			 (size_t)data_len));
@@ -3674,7 +3674,7 @@ dlp_ResetSyncFlags(int sd, int fHandle)
  ***********************************************************************/
 int
 dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
-			  pi_buffer_t *buffer, recordid_t * id, int *index,
+			  pi_buffer_t *buffer, recordid_t * id, int *recindex,
 			  int *attr)
 {
 	int 	result,
@@ -3721,8 +3721,8 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 						    id, attr, &cat);
 
 			if (rec >= 0) {
-				if (index)
-					*index = ps->dlprecord;
+				if (recindex)
+					*recindex = ps->dlprecord;
 				ps->dlprecord++;
 			} else {
 				/* If none found, reset modified pointer so
@@ -3754,12 +3754,12 @@ dlp_ReadNextRecInCategory(int sd, int fHandle, int incategory,
 
 	if (result > 0) {
 		data_len = res->argv[0]->len - 10;
-		if (id) *id =
-			 get_long(DLP_RESPONSE_DATA(res, 0, 0));
-		if (index) *index =
-			 get_short(DLP_RESPONSE_DATA(res, 0, 4));
-		if (attr) *attr =
-			 get_byte(DLP_RESPONSE_DATA(res, 0, 8));
+		if (id)
+			*id = get_long(DLP_RESPONSE_DATA(res, 0, 0));
+		if (recindex)
+			*recindex = get_short(DLP_RESPONSE_DATA(res, 0, 4));
+		if (attr)
+			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
 		if (buffer) {
 			pi_buffer_clear (buffer);
 			pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, 10),
@@ -4012,7 +4012,7 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
  *              incategory --> Category to fetch records from.
  *              buffer     <-- Data from specified record. emptied prior to reading data
  *              id         <-- Record ID of record on palm device.
- *              index      <-- Specifies record to get.
+ *              recindex   <-- Specifies record to get.
  *              size       <-- Size of data returned in buffer.
  *              attr       <-- Attributes from record on palm device.
  *
@@ -4025,7 +4025,7 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 int
 dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 				  pi_buffer_t *buffer, recordid_t * id,
-				  int *index, int *attr)
+				  int *recindex, int *attr)
 {
 	int 	result,
 		data_len;
@@ -4047,7 +4047,7 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 		do {
 			/* Fetch next modified record (in any category) */
 			result = dlp_ReadNextModifiedRec(sd, fHandle, buffer,
-						    id, index, attr, &cat);
+						    id, recindex, attr, &cat);
 
 			/* If none found, reset modified pointer so that
 			 another search on a different (or the same!) category
@@ -4083,8 +4083,8 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 
 		if (id)
 			*id = get_long(DLP_RESPONSE_DATA(res, 0, 0));
-		if (index)
-			*index = get_short(DLP_RESPONSE_DATA(res, 0, 4));
+		if (recindex)
+			*recindex = get_short(DLP_RESPONSE_DATA(res, 0, 4));
 		if (attr)
 			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
 
@@ -4126,7 +4126,7 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
  ***********************************************************************/
 int
 dlp_ReadNextModifiedRec(int sd, int fHandle, pi_buffer_t *buffer, recordid_t * id,
-			int *index, int *attr, int *category)
+			int *recindex, int *attr, int *category)
 {
 	int 	result,
 		data_len;
@@ -4148,14 +4148,14 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, pi_buffer_t *buffer, recordid_t * i
 	
 	if (result >= 0) {
 		data_len = res->argv[0]->len -10;
-		if (id) *id =
-			 get_long(DLP_RESPONSE_DATA(res, 0, 0));
-		if (index) *index =
-			 get_short(DLP_RESPONSE_DATA(res, 0, 4));
-		if (attr) *attr =
-			 get_byte(DLP_RESPONSE_DATA(res, 0, 8));
-		if (category) *category =
-			 get_byte(DLP_RESPONSE_DATA(res, 0, 9));
+		if (id)
+			*id = get_long(DLP_RESPONSE_DATA(res, 0, 0));
+		if (recindex)
+			*recindex = get_short(DLP_RESPONSE_DATA(res, 0, 4));
+		if (attr)
+			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
+		if (category)
+			*category = get_byte(DLP_RESPONSE_DATA(res, 0, 9));
 
 		if (buffer) {
 			pi_buffer_clear (buffer);
@@ -4194,7 +4194,7 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, pi_buffer_t *buffer, recordid_t * i
  ***********************************************************************/
 int
 dlp_ReadRecordById(int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
-		   int *index, int *attr, int *category)
+		   int *recindex, int *attr, int *category)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -4219,8 +4219,8 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
 	
 	if (result > 0) {
 		result = res->argv[0]->len - 10;
-		if (index)
-			*index = get_short(DLP_RESPONSE_DATA(res, 0, 4));
+		if (recindex)
+			*recindex = get_short(DLP_RESPONSE_DATA(res, 0, 4));
 		if (attr)
 			*attr = get_byte(DLP_RESPONSE_DATA(res, 0, 8));
 		if (category)
@@ -4254,7 +4254,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
  *
  * Parameters:  sd       --> Socket descriptor as returned by pilot_connect().
  *              fHandle  --> Database handle as returned by dlp_OpenDB().
- *              index    --> Specifies record to get.
+ *              recindex --> Specifies record to get.
  *              buffer   <-- Data from specified record. emptied prior to reading data
  *              id       <-- Record ID of record on palm device.
  *              size     <-- Size of data returned in buffer.
@@ -4271,7 +4271,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
  *
  ***********************************************************************/
 int
-dlp_ReadRecordByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
+dlp_ReadRecordByIndex(int sd, int fHandle, int recindex, pi_buffer_t *buffer,
 	recordid_t * id, int *attr, int *category)
 {
 	int 	result,
@@ -4292,7 +4292,7 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
-		set_short(DLP_REQUEST_DATA(req, 0, 2), index);
+		set_short(DLP_REQUEST_DATA(req, 0, 2), recindex);
 		set_long(DLP_REQUEST_DATA(req, 0, 4), 0); /* Offset into record */
 		set_long(DLP_REQUEST_DATA(req, 0, 8), pi_maxrecsize(sd));	/* length to return */
 		large = 1;
@@ -4303,7 +4303,7 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
-		set_short(DLP_REQUEST_DATA(req, 0, 2), index);
+		set_short(DLP_REQUEST_DATA(req, 0, 2), recindex);
 		set_short(DLP_REQUEST_DATA(req, 0, 4), 0); /* Offset into record */
 		set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? DLP_BUF_SIZE : 0);	/* length to return */
 	}

@@ -635,10 +635,10 @@ typedef unsigned long FileRef;
 
 	extern int dlp_ReadResourceByType
 		PI_ARGS((int sd, int fHandle, unsigned long type, int id,
-			pi_buffer_t *buffer, int *index));
+			pi_buffer_t *buffer, int *resindex));
 
 	extern int dlp_ReadResourceByIndex
-		PI_ARGS((int sd, int fHandle, int index, pi_buffer_t *buffer,
+		PI_ARGS((int sd, int fHandle, int resindex, pi_buffer_t *buffer,
 			unsigned long *type, int *id));
 
 	extern int dlp_WriteResource
@@ -651,24 +651,23 @@ typedef unsigned long FileRef;
 
 	extern int dlp_ReadNextModifiedRec
 		PI_ARGS((int sd, int fHandle, pi_buffer_t *buffer, recordid_t * id,
-			int *index, int *attr, int *category));
+			int *recindex, int *attr, int *category));
 
 	extern int dlp_ReadNextModifiedRecInCategory
 		PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
-			recordid_t * id, int *index, int *attr));
+			recordid_t * id, int *recindex, int *attr));
 
 	extern int dlp_ReadNextRecInCategory
 		PI_ARGS((int sd, int fHandle, int incategory, pi_buffer_t *buffer,
-			recordid_t * id, int *index, int *attr));
+			recordid_t * id, int *recindex, int *attr));
 
 	extern int dlp_ReadRecordById
 		PI_ARGS((int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
-			int *index, int *attr, int *category));
+			int *recindex, int *attr, int *category));
 
 	extern int dlp_ReadRecordByIndex
-		PI_ARGS((int sd, int fHandle, int ind, pi_buffer_t *buffer,
-			recordid_t * id, int *attr,
-			int *category));
+		PI_ARGS((int sd, int fHandle, int recindex, pi_buffer_t *buffer,
+			recordid_t * id, int *attr, int *category));
 
 	/* Deletes all records in the opened database which are marked as
 	   archived or deleted.

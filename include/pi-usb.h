@@ -23,7 +23,7 @@ extern "C" {
 		int (*poll) PI_ARGS((pi_socket_t *ps, int timeout));
 
 		int (*control_request) PI_ARGS((struct pi_usb_data *usb_data,
-			int request_type, int request, int value, int index,
+			int request_type, int request, int value, int reqindex,
 			void *data, int size, int timeout));
 	} pi_usb_impl_t;
 
