@@ -404,30 +404,38 @@ typedef unsigned long FileRef;
 		dlpFindDBSrchFlagOnlyLatest = 0x40
 	};
 
+	/* After a DLP transaction, there may be a DLP or Palm OS error
+	 * if the result code is PI_ERR_DLP_PALMOS. In this case, use
+	 * pi_palmos_error(sd) to obtain the error code. It can be in the
+	 * DLP error range (0 > error < dlpErrLastError), or otherwise
+	 * in the Palm OS error range (see Palm OS header files for
+	 * definitions, in relation with each DLP call)
+	 */
 	enum dlpErrors {
 		dlpErrNoError 		= 0,
-		dlpErrSystem 		= -1,
-		dlpErrIllegalReq        = -2,
-		dlpErrMemory 		= -3,
-		dlpErrParam 		= -4,
-		dlpErrNotFound 		= -5,
-		dlpErrNoneOpen 		= -6,
-		dlpErrAlreadyOpen 	= -7,
-		dlpErrTooManyOpen 	= -8,
-		dlpErrExists 		= -9,
-		dlpErrOpen 		= -10,
-		dlpErrDeleted 		= -11,
-		dlpErrBusy 		= -12,
-		dlpErrNotSupp 		= -13,
-		dlpErrUnused1 		= -14,
-		dlpErrReadOnly 		= -15,
-		dlpErrSpace 		= -16,
-		dlpErrLimit 		= -17,
-		dlpErrSync 		= -18,
-		dlpErrWrapper 		= -19,
-		dlpErrArgument 		= -20,
-		dlpErrSize 		= -21,
-		dlpErrUnknown 		= -128
+		dlpErrSystem,
+		dlpErrIllegalReq,
+		dlpErrMemory,
+		dlpErrParam,
+		dlpErrNotFound,
+		dlpErrNoneOpen,
+		dlpErrAlreadyOpen,
+		dlpErrTooManyOpen,
+		dlpErrExists,
+		dlpErrOpen,
+		dlpErrDeleted,
+		dlpErrBusy,
+		dlpErrNotSupp,
+		dlpErrUnused1,
+		dlpErrReadOnly,
+		dlpErrSpace,
+		dlpErrLimit,
+		dlpErrSync,
+		dlpErrWrapper,
+		dlpErrArgument,
+		dlpErrSize,
+		
+		dlpErrUnknown = 127
 	};
 
 	struct dlpArg {
