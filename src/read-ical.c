@@ -20,7 +20,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,8 +30,7 @@
 #include "pi-datebook.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-
-static void display_help(const char *progname);
+#include "userland.h"
 
 char *tclquote(char *in)
 {
@@ -80,50 +78,27 @@ char *tclquote(char *in)
 	return buffer;
 }
 
-static void display_help(const char *progname)
-{
-	printf("   Dumps the DatebookDB and/or ToDo applications to ical format\n\n");
-	printf("   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -d, --datebook          Datebook only, no ToDos\n");
-	printf("     -t, --pubtext <pubtext> Replace text of items not started with a bullet\n");
-	printf("                             with pubtext\n");
-	printf("     -f, --file <filename>   Write the ical formatted file to this filename\n\n");
-	printf("   Note: calfile will be overwritten!\n\n");
 
-	return;
-}
-
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		db,
 		sd 		= -1,
 		i,
 		read_todos 	= -1;
-	FILE 	*ical;
+	FILE 	*ical = NULL;
 	unsigned char buffer[0xffff];
 	char 	cmd[255],
 		*ptext 		= NULL,
 		*icalfile 	= NULL,
-		*port 		= NULL,
-		*pubtext 	= NULL,
-		*progname 	= argv[0];
+		*pubtext 	= NULL;
 	struct ToDoAppInfo tai;
 	pi_buffer_t *recbuf;
 
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
+		USERLAND_RESERVED_OPTIONS
 		{"datebook", 'd', POPT_ARG_VAL, &read_todos, 0,
 		 "Datebook only, no ToDos", NULL},
 		{"pubtext", 't', POPT_ARG_STRING, &ptext, 0,
@@ -136,73 +111,72 @@ int main(int argc, char *argv[])
 	};
 
 	pc = poptGetContext("read-ical", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc,"\n\n"
+		"   Dumps the DatebookDB and/or ToDo applications to ical format.\n"
+		"   Requires the program 'ical'.\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(pc)) >= 0) {
-		switch (c) {
-
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-	
-		default:
-			display_help(progname);
-			return 0; 	
-		}
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
 	}
 
 	if (c < -1) {
-		/* an error occurred during option processing */
-		fprintf(stderr, "%s: %s\n",
-		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-		    poptStrerror(c));
+		plu_badoption(pc,c);
 		return 1;
 	}
 
 
 	if (icalfile == NULL) {
-		display_help(progname);
-		fprintf(stderr, "ical filename not specified. Please use the -f option\n");
-		exit(EXIT_FAILURE);
+		fprintf(stderr, "   ERROR: ical filename not specified. Please use the -f option.\n");
+		return 1;
 	}
 
-        sd = pilot_connect(port);
+        sd = plu_connect();
         if (sd < 0)
                 goto error;
 
-        if (dlp_OpenConduit(sd) < 0)
-                goto error_close;
-	
 	unlink(icalfile);
 	sprintf(cmd, "ical -list -f - -calendar %s", icalfile);
 	ical = popen(cmd, "w");
-
+	if (ical == NULL) {
+		int e = errno;
+		fprintf(stderr,"   ERROR: cannot start communication with ical.\n"
+			"          %s\n",strerror(e));
+		return 1;
+	}
 	fprintf(ical, "calendar cal $ical(calendar)\n");
+
+        if (dlp_OpenConduit(sd) < 0)
+                goto error_close;
+
 
 	if (read_todos) {
 		/* Open the ToDo database, store access handle in db */
 		if (dlp_OpenDB
 		    (sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-			printf("Unable to open ToDoDB.\n");
+			fprintf(stderr,"   ERROR: Unable to open ToDoDB on Palm.\n");
 			dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
-			exit(EXIT_FAILURE);
+			goto error_close;
 		}
 
 		dlp_ReadAppBlock(sd, db, 0, buffer,
 				 0xffff);
 		unpack_ToDoAppInfo(&tai, buffer, 0xffff);
-		
+
 		recbuf = pi_buffer_new (0xffff);
-		
+
 		for (i = 0;; i++) {
 			int 	attr,
 				category;
 			char 	id_buf[255];
 			struct 	ToDo t;
 			recordid_t id;
-			
+
 			int len = dlp_ReadRecordByIndex(sd, db, i, recbuf, &id, &attr, &category);
 
 			if (len < 0)
@@ -240,10 +214,9 @@ int main(int argc, char *argv[])
 	/* Open the Datebook's database, store access handle in db */
 	if (dlp_OpenDB
 	    (sd, 0, 0x80 | 0x40, "DatebookDB", &db) < 0) {
-		printf("Unable to open DatebookDB\n");
+		fprintf(stderr,"   ERROR: Unable to open DatebookDB on Palm.\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
-		pi_close(sd);
-		exit(EXIT_FAILURE);
+		goto error_close;
 	}
 
 	recbuf = pi_buffer_new (0xffff);
@@ -251,7 +224,7 @@ int main(int argc, char *argv[])
 	for (i = 0;; i++) {
 		int 	j,
 			attr;
-		char 	id_buf[255];				
+		char 	id_buf[255];
 		struct 	Appointment a;
 		recordid_t id;
 
@@ -337,7 +310,7 @@ int main(int argc, char *argv[])
 				fprintf(ical, "$i month_day %d $begin %d\n", a.begin.tm_mon + 1, a.repeatFrequency);
 			} else if (a.repeatType == repeatMonthlyByDay) {
 				if (a.repeatDay >= domLastSun) {
-					fprintf(ical, "$i month_last_week_day %d 1 $begin %d\n", a.repeatDay % 7 + 1, a.repeatFrequency); 
+					fprintf(ical, "$i month_last_week_day %d 1 $begin %d\n", a.repeatDay % 7 + 1, a.repeatFrequency);
 				} else {
 					fprintf(ical, "$i month_week_day %d %d $begin %d\n", a.repeatDay % 7 + 1, a.repeatDay / 7 + 1, a.repeatFrequency);
 				}
@@ -355,8 +328,9 @@ int main(int argc, char *argv[])
 						if (a.repeatDays [ii])
 							found++;
 					}
-					if (found > 1)
-						printf("Incomplete translation of %s\n", a.description);
+					if (found > 1) {
+						fprintf(stderr,"   WARNING: Incomplete translation of %s\n", a.description);
+					}
 					fprintf(ical, "$i dayrepeat %d $begin\n", a.repeatFrequency * 7);
 				} else {
 					int ii;
@@ -406,6 +380,12 @@ int main(int argc, char *argv[])
 	return 0;
 
 error_close:
+	if (ical) {
+		/* explicitly do NOT save on failure. since we've already unlinked
+		   the original ical file, we've still destroyed something. */
+		fprintf(ical, "exit\n");
+		pclose(ical);
+	}
         pi_close(sd);
 
 error:
