@@ -36,7 +36,6 @@
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
-#include "pi-inetserial.h"
 #include "pi-inet.h"
 #include "pi-slp.h"
 #include "pi-padp.h"
@@ -121,7 +120,6 @@ ps_list_remove (struct pi_socket_list *list, int sd)
 			free(elem);
 			break;
 		}
-				
 	}
 
 	return new_list;
@@ -189,10 +187,51 @@ protocol_queue_find_next (struct pi_socket *ps, int level)
 				return ps->protocol_queue[i + 1];
 		}
 	}
-	
-	printf ("Command/Next Not Found\n");
+
 	return NULL;
 }
+
+static void
+protocol_queue_build (struct pi_socket *ps) 
+{
+	struct pi_protocol *prot;
+
+	/* The connected protocol queue */
+	switch (ps->protocol) {
+	case PI_PF_PADP:
+		prot = padp_protocol ();
+		protocol_queue_add (ps, prot);
+	case PI_PF_SLP:
+		prot = slp_protocol ();
+		protocol_queue_add (ps, prot);
+		break;
+	case PI_PF_NET:
+		prot = net_protocol ();
+		protocol_queue_add (ps, prot);
+		break;
+	}
+
+	/* The command protocol queue */
+	switch (ps->protocol) {
+	case PI_PF_PADP:
+	case PI_PF_SLP:
+		prot = cmp_protocol ();
+		protocol_cmd_queue_add (ps, prot);
+		prot = padp_protocol ();
+		protocol_cmd_queue_add (ps, prot);
+		prot = slp_protocol ();
+		protocol_cmd_queue_add (ps, prot);
+		ps->cmd = PI_CMD_CMP;
+		break;
+	case PI_PF_NET:
+		prot = net_protocol ();
+		protocol_cmd_queue_add (ps, prot);
+		ps->cmd = PI_CMD_NET;
+		break;
+	}
+
+}
+
 
 struct pi_protocol *
 pi_protocol (int pi_sd, int level)
@@ -220,6 +259,7 @@ pi_protocol_next (int pi_sd, int level)
 	return protocol_queue_find_next(ps, level);
 }
 
+
 /* Environment Code */
 static void
 env_check (void) 
@@ -238,7 +278,7 @@ env_check (void)
 				*e = '\0';
 			else
 				done = 1;
-			
+
 			if (!strcmp(b, "SYS"))
 				types |= PI_DBG_SYS;
 			else if (!strcmp(b, "DEV"))
@@ -269,7 +309,7 @@ env_check (void)
 	if (getenv("PILOT_DEBUG_LEVEL")) {
 		const char *debug;
 		int level = 0;
-		
+
 		debug = getenv("PILOT_DEBUG_LEVEL");
 		if (!strcmp(debug, "NONE"))
 			level |= PI_DBG_LVL_NONE;
@@ -404,7 +444,6 @@ installexit(void)
 int pi_socket(int domain, int type, int protocol)
 {
 	struct pi_socket *ps;
-	struct pi_protocol *prot;
 
 	env_check ();
 	
@@ -430,54 +469,6 @@ int pi_socket(int domain, int type, int protocol)
 		return -1;
 	}
 
-	/* Build the protocol queues */
-	ps->protocol_queue = NULL;
-	ps->queue_len = 0;
-	ps->cmd_queue = NULL;
-	ps->cmd_len = 0;
-
-	/* The connected protocol queue */
-	switch (protocol) {
-	case PI_PF_PADP:
-		prot = padp_protocol ();
-		protocol_queue_add (ps, prot);
-	case PI_PF_SLP:
-		prot = slp_protocol ();
-		protocol_queue_add (ps, prot);
-		break;
-	case PI_PF_NET:
-		prot = net_protocol ();
-		protocol_queue_add (ps, prot);
-		break;
-	}
-
-	/* The command protocol queue */
-	switch (protocol) {
-	case PI_PF_PADP:
-	case PI_PF_SLP:
-		prot = cmp_protocol ();
-		protocol_cmd_queue_add (ps, prot);
-		prot = padp_protocol ();
-		protocol_cmd_queue_add (ps, prot);
-		prot = slp_protocol ();
-		protocol_cmd_queue_add (ps, prot);
-		ps->cmd = PI_CMD_CMP;
-		break;
-	case PI_PF_NET:
-		printf ("incorrect protocol\n");
-		prot = net_protocol ();
-		protocol_cmd_queue_add (ps, prot);
-		ps->cmd = PI_CMD_NET;
-		break;
-	}
-
-	/* Determine the device type */
-	ps->device = pi_serial_device ();
-	prot = ps->device->protocol (ps->device);
-	protocol_queue_add (ps, prot);
-	prot = ps->device->protocol (ps->device);
-	protocol_cmd_queue_add (ps, prot);
-
 	/* Initialize the rest of the fields */
 	ps->laddr 	= NULL;
 	ps->laddrlen 	= 0;
@@ -485,6 +476,11 @@ int pi_socket(int domain, int type, int protocol)
 	ps->raddrlen 	= 0;
 	ps->type 	= type;
 	ps->protocol 	= protocol;
+	ps->protocol_queue = NULL;
+	ps->queue_len   = 0;
+	ps->cmd_queue   = NULL;
+	ps->cmd_len     = 0;
+	ps->device      = NULL;
 	ps->connected 	= 0;
 	ps->command 	= 1;
 	ps->broken 	= 0;
@@ -583,11 +579,32 @@ void pi_socket_recognize(struct pi_socket *ps)
 int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
-
+	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
+	struct pi_protocol *prot;
+	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
+
+	/* Build the protocol queue */
+	protocol_queue_build (ps);
+	
+	/* Determine the device type */
+	if (strlen (paddr->pi_device) < 4)
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+	else if (!strncmp (paddr->pi_device, "ser:", 4))
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+	else if (!strncmp (paddr->pi_device, "net:", 4))
+		ps->device = pi_inet_device (PI_NET_DEV);
+	else
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+
+	/* Add the device protocol */
+	prot = ps->device->protocol (ps->device);
+	protocol_queue_add (ps, prot);
+	prot = ps->device->protocol (ps->device);
+	protocol_cmd_queue_add (ps, prot);
 
 	return ps->device->connect (ps, addr, addrlen);
 }
@@ -606,11 +623,32 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
-
+	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
+	struct pi_protocol *prot;
+	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
+
+	/* Build the protocol queue */
+	protocol_queue_build (ps);
+	
+	/* Determine the device type */
+	if (strlen (paddr->pi_device) < 4)
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+	else if (!strncmp (paddr->pi_device, "ser:", 4))
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+	else if (!strncmp (paddr->pi_device, "net:", 4))
+		ps->device = pi_inet_device (PI_NET_DEV);
+	else
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+
+	/* Add the device protocol */
+	prot = ps->device->protocol (ps->device);
+	protocol_queue_add (ps, prot);
+	prot = ps->device->protocol (ps->device);
+	protocol_cmd_queue_add (ps, prot);
 
 	return ps->device->bind (ps, addr, addrlen);
 }

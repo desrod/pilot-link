@@ -103,11 +103,37 @@ net_rx_handshake(struct pi_socket *ps)
 }
 
 int
+net_tx_handshake(struct pi_socket *ps)
+{
+	char msg1[22] = "\x90\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
+                        "\x08\x01\x00\x00\x00\x00\x00\x00\x00";
+	char msg2[50] = "\x92\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
+                        "\x24\xff\xff\xff\xff\x00\x3c\x00\x3c\x40\x00\x00\x00"
+                        "\x01\x00\x00\x00\xc0\xa8\xa5\x1e\x04\x01\x00\x00\x00"
+                        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+	char msg3[8]  = "\x93\x00\x00\x00\x00\x00\x00\x00";
+	char buffer[200];
+	
+	if (net_tx(ps, msg1, 22) < 0)
+		return -1;
+	if (net_rx(ps, buffer, 200) < 0)
+		return -1;
+	if (net_tx(ps, msg2, 50) < 0)
+		return -1;
+	if (net_rx(ps, buffer, 200) < 0)
+		return -1;
+	if (net_tx(ps, msg3, 8) < 0)
+		return -1;
+
+	return 0;
+}
+
+int
 net_tx(struct pi_socket *ps, unsigned char *msg, int len)
 {
 	struct pi_protocol *prot, *next;
 	struct pi_net_data *data;
-	unsigned char buf[6];
+	unsigned char buf[PI_NET_HEADER_LEN];
 	int bytes;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);
@@ -212,7 +238,7 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len)
 	cur = msg + PI_NET_HEADER_LEN;
 	memmove (msg, cur, packet_len);	
 
-	return len;
+	return packet_len;
 }
 
 static int

@@ -54,30 +54,35 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
-	char name[256];
-	char print[256];
-	int i, sd;
-	struct RPC_params p;
-	struct pi_sockaddr addr;
-	extern char *optarg;
-	extern int optind;
+	int 	idx,
+		sd,
+		ret,
+		file,
+		j,
+		copilot,
+		majorVersion,
+		minorVersion,
+		bugfixVersion,
+		build,
+		state;	
 
-	/*int err; */
-	int ret;
-	int file;
-	int j;
-	char *port = argv[1];
-	char *filename;
-	int copilot;
+	char 	name[256],
+		print[256],
+		*port = argv[1],
+		*filename;
+
+	struct 	RPC_params p;
+	struct 	pi_sockaddr addr;
+
 	unsigned long SRAMstart, SRAMlength, ROMversion, offset, left;
-	int majorVersion, minorVersion, bugfixVersion, build, state;
+	
 
 	progname = argv[0];
 
 	if (argc < 2)
 		Help();
 
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET))) {
 		perror("pi_socket");
 		exit(1);
 	}
@@ -116,10 +121,10 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-        fprintf(stderr, "   Warning: Please completely back up your Palm (with pilot-xfer -b)\n");
-        fprintf(stderr, "            before using this program!\n\n");
-        fprintf(stderr, "   Start HotSync (not getrom.prc) on your Palm.\n");
-        fprintf(stderr, "   Port: %s\n\n   Please press the HotSync button...\n", port);
+        printf("   Warning: Please completely back up your Palm (with pilot-xfer -b)\n"
+	       "            before using this program!\n\n"
+	       "   Start HotSync (not getrom.prc) on your Palm.\n"
+	       "   Port: %s\n\n   Please press the HotSync button...\n", port);
 
 	sd = pi_accept(sd, 0, 0);
 	if (sd == -1) {
@@ -151,9 +156,9 @@ int main(int argc, char *argv[])
 
 	majorVersion = 
 		(((ROMversion >> 28) & 0xf) * 10) + ((ROMversion >> 24) & 0xf);
-	minorVersion = ((ROMversion >> 20) & 0xf); 
-	bugfixVersion = ((ROMversion >> 16) & 0xf);
-	state = ((ROMversion >> 12) & 0xf);
+	minorVersion 	= ((ROMversion >> 20) & 0xf); 
+	bugfixVersion 	= ((ROMversion >> 16) & 0xf);
+	state 		= ((ROMversion >> 12) & 0xf);
 	build =
 	    (((ROMversion >> 8) & 0xf) * 10) +
 	    (((ROMversion >> 4) & 0xf) * 10) + (ROMversion & 0xf);
@@ -197,8 +202,8 @@ int main(int argc, char *argv[])
 #endif
 
 	signal(SIGINT, sighandler);
-	left = SRAMlength - offset;
-	i = offset;
+	left 	= SRAMlength - offset;
+	idx 	= offset;
 	while (left > 0) {
 		char buffer[256];
 		int len = left;
@@ -231,12 +236,12 @@ int main(int argc, char *argv[])
 			write(file, buffer, len);
 
 		offset += len;
-		if (cancel || !(i++ % 4))
+		if (cancel || !(idx++ % 4))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
 				printf("\nCancelled!\n");
 				goto cancel;
 			}
-		if (!(i % 8)) {
+		if (!(idx % 8)) {
 			sprintf(print, "%ld", offset);
 			PackRPC(&p, 0xA220, RPC_IntReply,
 				RPC_Ptr(print, strlen(print)),

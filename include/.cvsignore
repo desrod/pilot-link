@@ -3,3 +3,4 @@ Makefile.in
 stamp-h*
 pi-config.h
 pi-sockaddr.h
+pi-version.h

@@ -63,10 +63,7 @@ static int pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name
 				const void *option_value, int *option_len);
 static int pi_serial_close(struct pi_socket *ps);
 
-static struct pi_protocol *pi_serial_protocol (struct pi_device *dev);
-
-extern int dlp_trace;
-
+/* Protocol Functions */
 static struct pi_protocol *pi_serial_protocol_dup (struct pi_protocol *prot)
 {
 	struct pi_protocol *new_prot;
@@ -91,7 +88,7 @@ static struct pi_protocol *pi_serial_protocol (struct pi_device *dev)
 	data = dev->data;
 	
 	prot = (struct pi_protocol *)malloc (sizeof (struct pi_protocol));
-	prot->level = PI_LEVEL_SOCKET;
+	prot->level = PI_LEVEL_DEV;
 	prot->dup = pi_serial_protocol_dup;
 	prot->read = data->impl.read;
 	prot->write = data->impl.write;
@@ -102,7 +99,7 @@ static struct pi_protocol *pi_serial_protocol (struct pi_device *dev)
 	return prot;
 }
 
-
+/* Device Functions */
 static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 {
 	struct pi_device *new_dev;
@@ -134,7 +131,7 @@ static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 	return new_dev;
 }
 
-struct pi_device *pi_serial_device (void) 
+struct pi_device *pi_serial_device (int type) 
 {
 	struct pi_device *dev;
 	struct pi_serial_data *data;
@@ -150,7 +147,15 @@ struct pi_device *pi_serial_device (void)
 	dev->connect = pi_serial_connect;
 	dev->close = pi_serial_close;
 
-	pi_serial_impl_init (&data->impl);
+	switch (type) {
+	case PI_SERIAL_DEV:
+		pi_serial_impl_init (&data->impl);
+		break;
+	default:
+		pi_serial_impl_init (&data->impl);
+		break;
+	}
+	
 	data->fd = 0;
 	data->rate = -1;
 	data->establishrate = -1;
@@ -214,9 +219,25 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	ps->laddrlen = addrlen;
 
 	if (ps->type == PI_SOCK_STREAM) {
+		int size;
+		
 		switch (ps->cmd) {
 		case PI_CMD_CMP:
+			if (cmp_tx_handshake(ps) < 0)
+				goto fail;
+			
+			size = sizeof(data->rate);
+			pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
+				      &data->rate, &size);
+
+			/* We always reconfigure our port, no matter what */
+			if (data->impl.changebaud(ps) < 0)
+				goto fail;
+
+			break;
+			
 		case PI_CMD_NET:
+			break;
 		}
 	}
 	ps->connected = 1;
@@ -224,6 +245,10 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	ps->initiator = 1;	/* We initiated the link */
 
 	return 0;
+
+ fail:
+	pi_close (ps->sd);
+	return -1;
 }
 
 /***********************************************************************
@@ -313,7 +338,7 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 	struct pi_socket *accept = NULL;
 	int size;
-	
+
 	if (ps->type == PI_SOCK_STREAM) {
 		struct timeval tv;
 		
@@ -324,7 +349,6 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 		}
 
 		accept = pi_socket_copy(ps);
-
 		switch (accept->cmd) {
 		case PI_CMD_CMP:
 			if (cmp_rx_handshake(accept, data->establishrate, data->establishhighrate) < 0)
@@ -350,7 +374,7 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 			break;
 		case PI_CMD_NET:
 			if (net_rx_handshake(accept) < 0)
-				goto fail;
+				return -1;
 			break;
 		}
 
@@ -464,7 +488,6 @@ static int pi_serial_close(struct pi_socket *ps)
 			if ((ps->connected & 1) && !(ps->connected & 2)) {
 				/* then end sync, with clean status */
 				dlp_EndOfSync(ps->sd, 0);
-				printf("Writing end of sync\n");
 			}
 		
 	}

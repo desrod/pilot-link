@@ -174,7 +174,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 	struct pi_slp_data *data;
 	unsigned char slp_buf[PI_SLP_MTU];
 	int i, checksum, b1, b2, b3;
-	int state, expect, packet_len, bytes, total_bytes;
+	int state, expect = 0, packet_len, bytes, total_bytes;
 	unsigned char *cur;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);

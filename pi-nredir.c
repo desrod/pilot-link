@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "pi-debug.h"
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
@@ -38,7 +39,6 @@ int main(int argc, char *argv[])
 	int ret;
 	int sd;
 	int sd2;
-	struct sockaddr_in addr2;
 	struct pi_sockaddr addr;
 	struct NetSyncInfo N;
 	char buffer[0xffff];
@@ -104,26 +104,18 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	putenv("PILOTLOGFILE=PiDebugNet.log");
-
-	sd2 = pi_socket(AF_INET, PI_SOCK_STREAM, 0);
+	sd2 = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET);
 	if (sd2 < 0) {
 		perror("Unable to get socket 2");
 		exit(1);
 	}
-	printf("Got socket 2\n");
 
-	memset(&addr2, 0, sizeof(addr2));
-	addr2.sin_family = AF_INET;
-	addr2.sin_port = htons(14238);
-
-	if ((addr2.sin_addr.s_addr = inet_addr(N.hostAddress)) == -1) {
-		fprintf(stderr, "Unable to parse PC address '%s'\n",
-			N.hostAddress);
-		exit(1);
-	}
-
-	ret = pi_connect(sd2, (struct sockaddr *) &addr2, sizeof(addr2));
+	memset(&addr, 0, sizeof(addr));
+	addr.pi_family = PI_AF_PILOT;
+	strcpy(addr.pi_device, "net:");
+	strcpy(addr.pi_device + 4, N.hostAddress);
+	
+	ret = pi_connect(sd2, (struct sockaddr *) &addr, sizeof(addr));
 
 	if (ret < 0) {
 		perror("Unable to connect to PC");

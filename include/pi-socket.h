@@ -23,7 +23,7 @@ extern "C" {
 #define PI_CMD_NET 0x02
 
 enum PiOptLevels {
-	PI_LEVEL_SOCKET,
+	PI_LEVEL_DEV,
 	PI_LEVEL_SLP,
 	PI_LEVEL_PADP,
 	PI_LEVEL_NET,

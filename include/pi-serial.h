@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#define PI_SERIAL_DEV     1
+
 	struct pi_serial_impl {
 		int (*open) PI_ARGS((struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen));
 		int (*close) PI_ARGS((struct pi_socket *ps));
@@ -50,7 +52,7 @@ extern "C" {
 	};
 
 	extern struct pi_device *pi_serial_device
-            PI_ARGS((void));
+            PI_ARGS((int type));
 
 	extern void pi_serial_impl_init
 	    PI_ARGS((struct pi_serial_impl *impl));

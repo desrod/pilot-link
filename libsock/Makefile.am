@@ -26,6 +26,7 @@ libpisock_la_SOURCES =  \
 	dlp.c		\
 	expense.c	\
 	hinote.c	\
+	inet.c		\
 	mail.c		\
 	md5.c		\
 	memo.c		\

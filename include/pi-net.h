@@ -29,6 +29,8 @@ extern "C" {
 
 	extern int net_rx_handshake
 	    PI_ARGS((struct pi_socket *ps));
+	extern int net_tx_handshake
+	    PI_ARGS((struct pi_socket *ps));
 	extern int net_tx
 	    PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
 	extern int net_rx

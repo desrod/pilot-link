@@ -1,4 +1,39 @@
-2002-01-08  JP Rosevear  <jpr@ximian.com>
+2002-01-09  JP Rosevear  <jpr@ximian.com>
+
+	* pi-getram.c: merge from head
+
+	* pi-nredir.c: update for new net code
+
+	* libsock/unixserial.c: improve logging messages
+
+	* libsock/socket.c: build the proctocol queue during binding or
+	connecting so we can first determine the device type
+
+	* libsock/slp.c (slp_rx): kill warning
+
+	* libsock/serial.c (pi_serial_device): choose impl based on type
+	passed in
+	(pi_serial_connect): switch over to cmp handshaking
+
+	* libsock/net.c (net_rx): return the correct packet length
+	(net_tx_handshake): implement server-client handshake
+
+	* libsock/inet.c: convert to a generic device
+
+	* libsock/cmp.c (cmp_tx_handshake): implement
+	(cmp_wakeup): properly wakeup
+
+	* libsock/Makefile.am: build inet.c again
+
+	* include/pi-socket.h: rename PI_LEVEL_SOCKET to PI_LEVEL_DEV
+
+	* include/pi-serial.h: update proto
+
+	* include/pi-net.h: new proto
+
+	* include/pi-inet.h: update to be a device
+
+ 2002-01-08  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/socket.c: re-org code
 	(pi_version): get version from cmp or fake it for net

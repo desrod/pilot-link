@@ -409,11 +409,11 @@ static int s_poll(struct pi_socket *ps, int timeout)
 
 	if (!FD_ISSET(data->fd, &ready)) {
 		/* otherwise throw out any current packet and return */
-		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV Serial POLL timeout\n");
+		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV POLL Serial Unix timeout\n");
 		data->rx_errors++;
 		return -1;
 	}
-	LOG(PI_DBG_DEV, PI_DBG_LVL_DEBUG, "DEV Serial POLL Read data on %d\n", data->fd);
+	LOG(PI_DBG_DEV, PI_DBG_LVL_DEBUG, "DEV POLL Serial Unix Read data on %d\n", data->fd);
 
 	return 0;
 }
@@ -446,7 +446,7 @@ static int s_write(struct pi_socket *ps, unsigned char *buf, int len)
 	/* hack to slow things down so that the Visor will work */
 	usleep(10 + len);
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV Serial TX Bytes: %d\n", len);
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV TX Unix Serial Bytes: %d\n", len);
 
 	return len;
 }
@@ -486,13 +486,13 @@ static int s_read(struct pi_socket *ps, unsigned char *buf, int len)
 		r = read(data->fd, buf, len);
 	else {
 		/* otherwise throw out any current packet and return */
-		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV Serial RX timeout\n");
+		LOG(PI_DBG_DEV, PI_DBG_LVL_WARN, "DEV RX Unix Serial timeout\n");
 		data->rx_errors++;
 		return 0;
 	}
 	data->rx_bytes += r;
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV Serial RX Bytes: %d\n", r);
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX Unix Serial Bytes: %d\n", r);
 
 	return r;
 }

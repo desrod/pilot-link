@@ -86,7 +86,7 @@ cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establis
 	struct pi_protocol *prot;
 	struct pi_cmp_data *data;
 	unsigned char buf[PI_CMP_HEADER_LEN];
-	
+
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
 		return -1;
@@ -123,39 +123,30 @@ cmp_rx_handshake(struct pi_socket *ps, unsigned long establishrate, int establis
 int
 cmp_tx_handshake(struct pi_socket *ps) 
 {
-#if 0
-	struct cmp c;
+	struct pi_protocol *prot;
+	struct pi_cmp_data *data;
+
+	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
+	if (prot == NULL)
+		return -1;
+	data = (struct pi_cmp_data *)prot->data;
 
 	if (cmp_wakeup(ps, 38400) < 0)	/* Assume this box can't go over 38400 */
 		return -1;
 
-	if (cmp_rx(ps, &c) < 0)
+	if (cmp_rx(ps, NULL, 0) < 0)
 		return -1;	/* failed to read, errno already set */
 
-	if (c.type == 2) {
-		/* CMP init packet */
-
-		if (c.flags & 0x80) {
-				/* Change baud rate */
-			data->rate = c.baudrate;
-			if (data->impl.changebaud(ps) < 0)
-				return -1;
-
-		}
-
-	} else if (c.type == 3) {
-		/* CMP abort packet -- the other side didn't like us */
-		data->impl.close(ps);
-
-#ifdef DEBUG
-		fprintf(stderr,
-			"Received CMP abort from client\n");
-#endif
+	switch (data->type) {
+	case PI_CMP_TYPE_INIT:
+		return 0;
+	case PI_CMP_TYPE_ABRT:
+		LOG(PI_DBG_CMP, PI_DBG_LVL_NONE, "CMP Aborted by other end\n");
 		errno = -EIO;
 		return -1;
 	}
-#endif
-	return 0;
+
+	return -1;
 
 }
 
@@ -306,23 +297,20 @@ int cmp_abort(struct pi_socket *ps, int reason)
  ***********************************************************************/
 int cmp_wakeup(struct pi_socket *ps, int maxbaud)
 {
-	unsigned char cmpbuf[200];
-	int type, size;
+	struct pi_protocol *prot;
+	struct pi_cmp_data *data;
 	
-	set_byte(cmpbuf + 0, 1);
-	set_byte(cmpbuf + 1, 0);
-	set_short(cmpbuf + 2, CommVersion_1_0);
-	set_short(cmpbuf + 4, 0);
-	set_long(cmpbuf + 6, maxbaud);
+	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
+	if (prot == NULL)
+		return -1;
+	data = (struct pi_cmp_data *)prot->data;
 
-	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(cmpbuf, 1));
+	data->type = PI_CMP_TYPE_WAKE;
+	data->flags = 0;
+	data->version = CommVersion_1_0;
+	data->baudrate = maxbaud;
 
-	type = padWake;
-	size = sizeof(type);
-	pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, 
-		      &type, &size);
-
-	return padp_tx(ps, cmpbuf, 10);
+	return cmp_tx(ps, NULL, 0);
 }
 
 static int
