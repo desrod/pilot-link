@@ -1,3 +1,11 @@
+2001-12-08  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* install-user: More of the same. Cleaned up the $PILOTPORT 
+	  parsing goop, moved things around, and made the -h and 
+	  lack of any options make logical sense. Changed some of the
+	  options around a bit too, -n for netmask, -o for hostname
+	  (can't recycle -h on that one)
+
 2001-12-08  JP Rosevear  <jpr@ximian.com>
 
 	* autogen.sh: remove some useless aclocal checks

@@ -34,13 +34,13 @@ struct option options[] = {
 	{"port",     required_argument, NULL, 'p'},
 	{"user",     required_argument, NULL, 'u'},
 	{"userid",   required_argument, NULL, 'i'},
-	{"hostname", required_argument, NULL, 'n'},
+	{"hostname", required_argument, NULL, 'o'},
 	{"address",  required_argument, NULL, 'a'},
-	{"netmask",  required_argument, NULL, 'm'},
+	{"netmask",  required_argument, NULL, 'n'},
 	{NULL,       0,                 NULL, 0}
 };
 
-static const char *optstring = "hp:u:i:n:a:m:l:";
+static const char *optstring = "hp:u:i:o:a:n:l:";
 
 int main(int argc, char *argv[])
 {
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	struct CardInfo C;
 	struct NetSyncInfo N;
 	unsigned long romversion;
-	extern int opterr;
+	int opterr;
 	opterr = 0;
 
 	while ((c =
@@ -78,22 +78,28 @@ int main(int argc, char *argv[])
 		  case 'i':
 			  userid = optarg;
 			  break;
-		  case 'n':
+		  case 'o':
 			  hostname = optarg;
 			  break;
 		  case 'a':
 			  address = optarg;
 			  break;
-		  case 'm':
+		  case 'n':
 			  netmask = optarg;
 			  break;
-		  case ':':
+		  default:
 		}
 	}
 
-	if (port == NULL) {
-		printf("ERROR: You forgot to specify a valid port\n");
-		Help(progname);
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port=getenv("PILOTPORT");
+	}
+
+        if (port == NULL && argc > 1) {
+                printf("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		       "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n\n");
 		exit(1);
 	} else if (port != NULL) {
 		if (!user && userid) {
@@ -122,7 +128,7 @@ int main(int argc, char *argv[])
 				if (dlp_ReadStorageInfo(sd, C.card + 1, &C) < 0)
 					break;
 				printf
-				    ("\n   Card #%d has %lu bytes of ROM, and %lu bytes of RAM (%lu of that is free)\n",
+				    ("   Card #%d has %lu bytes of ROM, and %lu bytes of RAM (%lu of that is free)\n",
 				     C.card, C.romSize, C.ramSize,
 				     C.ramFree);
 				printf("   It is called '%s', and was made by '%s'.\n", C.name, C.manufacturer);
@@ -190,19 +196,21 @@ int main(int argc, char *argv[])
 
 static void Help(char *progname)
 {
-	PalmHeader(progname);
 	printf("   Assigns your Palm device a Username and unique UserID and can query the\n"
 	       "   device's Card Info\n\n"
 	       "   Usage: %s -p <port> -u \"User name\" -i <userid>\n"
-	       "                       -n <hostname> -a <ip> -m <subnet>\n\n"
+	       "                       -o <hostname> -a <ip> -n <subnet>\n\n"
+
+	       "     -p <port>           Use device file <port> to communicate with Palm\n"
+	       "     -u <username>       Your username, use quotes for spaces (see example)\n"
+	       "     -i <userid>         A 5-digit numeric UserID, required for PalmOS\n"
+	       "     -o <hostname>       The hostname of the desktop you are syncing with\n"
+	       "     -a <ip address>     IP address of the machine you connect your Palm to\n"
+	       "     -n <netmask>        The subnet mask of the network your Palm is on\n"
+               "     -h                  Display this information\n\n"
 	       "   Only the port option is required, the other options are... optional.\n\n"
-	       "   -p <port>       = use device file <port> to communicate with Palm\n"
-	       "   -u <user>       = your username, use quotes for spaces (see example)\n"
-	       "   -i <userid>     = a 5-digit numeric UserID, required for PalmOS\n"
-	       "   -n <hostname>   = the hostname of the desktop you are syncing with\n"
-	       "   -a <ip address> = ip address of the machine you connect your Palm to\n"
-	       "   -m <netmask>    = the subnet mask of the network your Palm is on\n\n"
 	       "   Example: %s -p /dev/ttyS0 -u \"John Q. Public\" -i 12345\n\n", progname, progname);
 
-	exit(0);
+	return;
 }
+
