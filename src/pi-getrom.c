@@ -360,6 +360,32 @@ int do_get_token(int sd, const char *token)
 	return 0;
 }
 
+int do_sysinfo(int sd)
+{
+	struct SysInfo info;
+	char buf[256];
+
+	if (dlp_ReadSysInfo(sd,&info) < 0) {
+		fprintf(stderr,"   ERROR: Could not read sysinfo.\n");
+		return -1;
+	}
+
+
+	memset(buf,0,sizeof(buf));
+	strncpy(buf,info.prodID,info.prodIDLength < sizeof(buf)-1 ? info.prodIDLength : sizeof(buf)-1);
+
+	fprintf(stdout,"ProdId:%s\n",buf);
+	fprintf(stdout,"ROM   :%ld\n",info.romVersion);
+	fprintf(stdout,"DLP   :%d.%d\n",info.dlpMajorVersion,info.dlpMinorVersion);
+	fprintf(stdout,"Compat:%d.%d\n",info.compatMajorVersion,info.compatMinorVersion);
+	fprintf(stdout,"Locale:%ld\n",info.locale);
+	fprintf(stdout,"MaxRec:%ld\n",info.maxRecSize);
+
+	return 0;
+}
+
+
+
 int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
@@ -369,13 +395,14 @@ int main(int argc, const char *argv[])
 	const char *filename = NULL;
 	char *token = NULL;
 
-	enum { mode_none, mode_getrom = 'R', mode_getram = 'r', mode_gettoken = 't' } mode = mode_none;
+	enum { mode_none, mode_getrom = 'R', mode_getram = 'r', mode_gettoken = 't', mode_sysinfo='s' } mode = mode_none;
 
 	poptContext po;
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
 		{"token", 't', POPT_ARG_STRING, &token, 't', "A ROM token to read (i.e. snum)", "token"},
+		{"sysinfo",'s',POPT_ARG_NONE,     NULL, 's', "Print SysInfo", NULL},
 		{"ram",    0 , POPT_ARG_NONE,     NULL, 'r', "Read RAM", NULL},
 		{"rom",    0 , POPT_ARG_NONE,     NULL, 'R', "Read ROM", NULL},
 		POPT_TABLEEND
@@ -425,6 +452,7 @@ int main(int argc, const char *argv[])
 	}
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch(c) {
+		case 's' :
 		case 't' :
 		case 'r' :
 		case 'R' :
@@ -466,6 +494,8 @@ int main(int argc, const char *argv[])
 			return 1;
 		}
 		break;
+	case mode_sysinfo:
+		break;
 	case mode_none:
 		/* impossible */
 		return 1;
@@ -486,6 +516,7 @@ int main(int argc, const char *argv[])
 		"   WARNING: Please completely back up your Palm (with pilot-xfer -b)\n"
 		"            before using this program!\n\n");
 		break;
+	case mode_sysinfo:
 	case mode_none:
 	case mode_gettoken:
 		/* nothing to do */
@@ -507,6 +538,9 @@ int main(int argc, const char *argv[])
 		break;
 	case mode_getram:
 		c = do_get_ram(sd,filename);
+		break;
+	case mode_sysinfo:
+		c = do_sysinfo(sd);
 		break;
 	case mode_none:
 		/* impossible */
