@@ -276,7 +276,7 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 				/* Adjust because every tenth loopback
 				   packet has a bogus check sum */
 				if (checksum != checksum_packet)
-					checksum = checksum & 0xff1f;
+					checksum = checksum | 0x00e0;
 			}
 			if (checksum != checksum_packet) {
 				LOG(PI_DBG_SLP, PI_DBG_LVL_ERR,
