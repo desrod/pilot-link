@@ -462,8 +462,10 @@ pi_usb_close(pi_socket_t *ps)
 {
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
-	if (ps->sd != 0)
+	if (ps->sd != 0)  {
 		data->impl.close (ps);
+		ps->sd = 0;
+	}
 
 	if (ps->laddr != NULL) {
 		free(ps->laddr);

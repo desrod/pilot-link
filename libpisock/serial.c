@@ -680,8 +680,10 @@ static int pi_serial_close(pi_socket_t *ps)
 	struct pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
 
-	if (ps->sd)
+	if (ps->sd) {
 		data->impl.close (ps);
+		ps->sd = 0;
+	}
 
 	if (ps->laddr) {
 		free(ps->laddr);
