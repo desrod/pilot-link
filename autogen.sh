@@ -82,7 +82,7 @@ do
   else
     echo processing $dr
     ( cd $dr
-      aclocalinclude="$ACLOCAL_FLAGS"
+      aclocalinclude="$ACLOCAL_FLAGS -I m4"
 
       if grep "^AM_GNU_GETTEXT" configure.in >/dev/null; then
 	if grep "sed.*POTFILES" configure.in >/dev/null; then

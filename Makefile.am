@@ -17,6 +17,8 @@ pppkgconfigdir = $(libdir)/pkgconfig
 pppkgconfig_DATA = pilot-link-pp.pc
 endif
 
+ACLOCAL_AMFLAGS = -I m4
+
 EXTRA_DIST = 			\
 	$(m4_DATA)		\
 	pilot-link.pc.in	\

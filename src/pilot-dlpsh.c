@@ -35,7 +35,7 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-#ifdef HAVE_READLINE
+#ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
@@ -579,7 +579,7 @@ void handle_single_command(int sd, char *cmd)
  ***********************************************************************/
 void handle_user_commands(int sd)
 {
-#ifdef HAVE_READLINE
+#ifdef HAVE_LIBREADLINE
 
 /* A safer alternative
 	char 	*line = (char *)malloc(256*sizeof(char)),
@@ -598,7 +598,7 @@ void handle_user_commands(int sd)
 	for (;;) {
 		fflush(stdout);
 
-#ifdef HAVE_READLINE
+#ifdef HAVE_LIBREADLINE
 		line = readline(prompt);
 		if (*line)	/* skip blanks */
 			add_history(line);
