@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
    unsigned char ToDo_buf[0xffff];
    struct ToDo todo;
    FILE *f;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    int filelen;
    char note_text[] = "";

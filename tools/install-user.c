@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
    struct pi_sockaddr addr;
    int sd;
-   struct PalmUser U;
+   struct PilotUser U;
    struct SysInfo S;
    struct CardInfo C;
    struct NetSyncInfo N;

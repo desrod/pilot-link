@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
    int db;
    int sd = 0;
    int i;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    unsigned char buffer[0xffff];
    char appblock[0xffff];

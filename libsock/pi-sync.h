@@ -19,7 +19,7 @@ extern "C" {
 
 typedef struct _SyncHandler SyncHandler;
 typedef struct _DesktopRecord DesktopRecord;
-typedef struct _PalmRecord PalmRecord;
+typedef struct _PilotRecord PilotRecord;
 	
 struct _DesktopRecord {
 	int recID;
@@ -27,7 +27,7 @@ struct _DesktopRecord {
 	int flags;
 };
 
-struct _PalmRecord {
+struct _PilotRecord {
 	recordid_t recID;
 	int catID;
 	int flags;
@@ -42,22 +42,22 @@ struct _SyncHandler {
 
 	int (*SetRecordID) (SyncHandler *, recordid_t, DesktopRecord *);
 	int (*GetRecordByID) (SyncHandler *, recordid_t, DesktopRecord **);
-	int (*CompareRecords) (SyncHandler *, PalmRecord *, DesktopRecord *);
+	int (*CompareRecords) (SyncHandler *, PilotRecord *, DesktopRecord *);
 	
 	int (*ForEachRecord) (SyncHandler *, DesktopRecord **);
 	int (*ForEachModifiedRecord) (SyncHandler *, DesktopRecord **);
 	
-	int (*AddRecord) (SyncHandler *, PalmRecord *);
-	int (*AddArchiveRecord) (SyncHandler *, PalmRecord *);
+	int (*AddRecord) (SyncHandler *, PilotRecord *);
+	int (*AddArchiveRecord) (SyncHandler *, PilotRecord *);
 
 	int (*DeleteRecord) (SyncHandler *, DesktopRecord *);
 	int (*DeleteArchiveRecord) (SyncHandler *, DesktopRecord *);
 	
-	int (*PrepareRecord) (SyncHandler *, DesktopRecord *, PalmRecord **);
-	int (*FreeRecord) (SyncHandler *, PalmRecord *);
+	int (*PrepareRecord) (SyncHandler *, DesktopRecord *, PilotRecord **);
+	int (*FreeRecord) (SyncHandler *, PilotRecord *);
 };
 
-PalmRecord *sync_NewPalmRecord (int buf_size);
+PilotRecord *sync_NewPilotRecord (int buf_size);
 DesktopRecord *sync_NewDesktopRecord (void);	
 
 int sync_CopyToRemote (SyncHandler *sh);

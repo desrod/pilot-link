@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
    unsigned char note_buf[0x8000];
    int note_size;
    FILE *f;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    char buf[0xffff];
    int category;

@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
    int sd;
    int i, l = 0;
    int lost, dupe, rec, sent;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    unsigned char buffer[0xffff];
    struct MailAppInfo tai;

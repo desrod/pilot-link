@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
    int memo_size;
    char *memo_buf;
    FILE *f;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    char buf[0xffff];
    int category;

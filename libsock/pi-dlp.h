@@ -15,7 +15,8 @@ extern "C" {
    is the number of bytes in the result, zero if there was no result, or
    less then zero if an error occured. Any return fields will be set to zero
    if an error occurs. All calls to dlp_* functions should check for a 
-   return value less then zero. */ struct PalmUser {
+   return value less then zero. */
+   struct PilotUser {
       unsigned long userID, viewerID, lastSyncPC;
       time_t successfulSyncDate, lastSyncDate;
       char username[128];
@@ -240,11 +241,11 @@ extern "C" {
    extern int dlp_MoveCategory
        PI_ARGS((int sd, int handle, int fromcat, int tocat));
 
-   extern int dlp_WriteUserInfo PI_ARGS((int sd, struct PalmUser * User));
+   extern int dlp_WriteUserInfo PI_ARGS((int sd, struct PilotUser * User));
 
    /* Tell the pilot who it is. */
 
-   extern int dlp_ReadUserInfo PI_ARGS((int sd, struct PalmUser * User));
+   extern int dlp_ReadUserInfo PI_ARGS((int sd, struct PilotUser * User));
 
    /* Ask the pilot who it is. */
 

@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
    struct pi_sockaddr addr;
    int db;
    int i;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    unsigned char buffer[0xffff];
    struct AddressAppInfo aai;

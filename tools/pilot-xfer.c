@@ -166,7 +166,7 @@ RETSIGTYPE SigHandler(int signal)
 
 void VoidSyncFlags(void)
 {
-   struct PalmUser U;
+   struct PilotUser U;
 
    Connect();
    if (dlp_ReadUserInfo(sd, &U) >= 0) {

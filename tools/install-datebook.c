@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
    unsigned char Appointment_buf[0xffff];
    struct Appointment appointment;
    FILE *f;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    int filelen;
    char *cPtr;

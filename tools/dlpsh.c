@@ -67,7 +67,7 @@ int help_fn(int sd, int argc, char **argv)
 
 int user_fn(int sd, int argc, char **argv)
 {
-   struct PalmUser U, nU;
+   struct PilotUser U, nU;
    char fl_name = 0, fl_uid = 0, fl_vid = 0, fl_pid = 0;
    int c, ret;
 

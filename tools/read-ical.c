@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
    int sd;
    int i;
    FILE *ical;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    unsigned char buffer[0xffff];
    char cmd[128];

@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
    int db;
    int sd;
    int l;
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    char buf[0xffff];
    char *progname = argv[0];

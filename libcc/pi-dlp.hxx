@@ -116,8 +116,8 @@ class DLP
 	  return dlp_MoveCategory(_sd, handle, from, to);
      }
 
-     int writeUserInfo(PalmUser *u) const { return dlp_WriteUserInfo(_sd,u); }
-     int readUserInfo(PalmUser *u) const { return dlp_ReadUserInfo(_sd, u); }
+     int writeUserInfo(PilotUser *u) const { return dlp_WriteUserInfo(_sd,u); }
+     int readUserInfo(PilotUser *u) const { return dlp_ReadUserInfo(_sd, u); }
 
      int resetLastSyncPC(void) const { return dlp_ResetLastSyncPC(_sd); }
 

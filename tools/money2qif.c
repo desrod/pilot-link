@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
    char *nl;
    char *progname = argv[0];
    char *port = argv[1];
-   struct PalmUser U;
+   struct PilotUser U;
    int ret;
    unsigned char buffer[0xffff];
    struct MoneyAppInfo mai;
