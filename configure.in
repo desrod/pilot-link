@@ -360,7 +360,7 @@ dnl C++
 dnl ******************************
 use_cpp=false
 msg_cpp=no
-AC_ARG_WITH(cpp,      [  --with-cpp=[cppexec]    use C++      [default=yes]])
+AC_ARG_WITH(cpp,      [  --with-cpp=cppexec      use C++ [default=yes]])
 if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
 	use_cpp=true
@@ -375,7 +375,7 @@ dnl Perl
 dnl ******************************
 use_perl=false
 msg_perl=no
-AC_ARG_WITH(perl,    [  --with-perl=perlexec    use Perl     [default=no]], , with_perl=no)
+AC_ARG_WITH(perl,    [  --with-perl=perlexec    use Perl [default=no]], , with_perl=no)
 if test "x$with_perl" = "xno"; then
 	PERL=''
 else
@@ -414,7 +414,7 @@ dnl Java
 dnl ******************************
 use_java=false
 msg_java=no
-AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java     [default=no]], , with_java=no)
+AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java [default=no]], , with_java=no)
 if test "x$with_java" != "xno"; then
 	AC_PATH_PROG(JAVAC, javac, , $with_java/bin:$PATH)
 	AC_PATH_PROG(JAVA, java, , $with_java/bin:$PATH)
@@ -449,9 +449,9 @@ msg_itcl=no
 use_tk=false
 msg_tk=no
 
-AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl      [default=no]],  , with_tcl=no)
-AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use ITcl     [default=no]],  , with_itcl=no)
-AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk       [default=no]],  , with_tk=no)
+AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl [default=no]],  , with_tcl=no)
+AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use ITcl [default=no]],  , with_itcl=no)
+AC_ARG_WITH(tk,       [  --with-tk=tkbasedir     use Tk [default=no]],  , with_tk=no)
 if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
 		for tcl_path in /usr /usr/contrib /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.4 /usr/local/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
 		if test -f $tcl_path/lib/tclConfig.sh; then
@@ -626,7 +626,7 @@ dnl Python
 dnl ******************************
 use_python=false
 msg_python=no
-AC_ARG_WITH(python,   [  --with-python=pybase    use Python   [default=no]],  , with_python=no)
+AC_ARG_WITH(python,   [  --with-python=pybase    use Python [default=no]],  , with_python=no)
 
 if test "x$with_python" != "xno"; then
         AC_PATH_PROGS(PYTHON, [python2 python])
@@ -658,7 +658,7 @@ dnl ElectricFence (optional)
 dnl *************************************
 use_efence=false
 msg_efence=no   
-AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking])
+AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking [default=no]],  , with_efence=no)
 
 case $withval in
 /*)
@@ -666,9 +666,8 @@ case $withval in
     ;;
 esac  
 
-AC_CHECK_LIB(efence, malloc, LIBS="$LIBS -lefence")
-
 if test "x$with_efence" != "xno"; then
+	AC_CHECK_LIB(efence, malloc, LIBS="$LIBS -lefence")
         if test "$ac_cv_lib_efence_malloc" = yes; then
                 use_efence=true
         else
@@ -695,9 +694,21 @@ AC_ARG_ENABLE(debug,
 	      [  --disable-debug         Shunt runtime debugging],
 	      set_debug=no)
 
+if test "${enable_debug+set}" = set; then
+	enableval="$enable_debug"
+	if eval "test x$enable_debug = xyes"; then
+		CFLAGS="-g $CFLAGS"
+		CXXFLAGS="-g $CXXFLAGS"
+	fi
+fi
+
 if test "$set_debug" != "no"; then
 	AC_DEFINE(PI_DEBUG, 1, [Define if we have debugging enabled])
+else
+	CFLAGS=`echo "$CFLAGS" | sed -e "s/-g //"`
+	CXXFLAGS=`echo "$CXXFLAGS" | sed -e "s/-g //"`
 fi
+
 
 dnl *************************************
 dnl Extra warnings
