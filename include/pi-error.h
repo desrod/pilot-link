@@ -37,6 +37,13 @@
  *
  */
 
+/** @brief Type definition for error returned by various function.
+ *
+ * The reason we have a typedef is mostly for swig-generated bindings
+ * to properly handle result codes
+ */
+typedef int PI_ERR;					/**< Type for result codes returned by various library functions (mainly for swig-generated bindings) */
+
 /** @brief Definition of errors returned by various libpisock functions */
 enum dlpErrorDefinitions {
 	/* PROTOCOL level errors */
