@@ -91,8 +91,7 @@ int main(int argc, char *argv[])
 		*port 		= NULL,
 		*filename;
 
-	time_t  start,end;
-        start = time(NULL);
+	time_t  start = time(NULL), end;
 	
 	struct 	RPC_params p;
 

@@ -50,7 +50,6 @@ libpisock_la_SOURCES =  \
 	slp.c		\
 	sys.c		\
 	socket.c	\
-	sync.c		\
 	syspkt.c	\
 	todo.c		\
 	util.c		\

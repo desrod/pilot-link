@@ -29,6 +29,13 @@ AC_SUBST(PISOCK_REVISION)
 AC_SUBST(PISOCK_AGE)
 
 dnl ******************************
+dnl Pilot Link Sync Library Version
+dnl ******************************
+PISYNC_CURRENT=0
+PISYNC_REVISION=0
+PISYNC_AGE=0
+
+dnl ******************************
 dnl Pilot Link C++ Library Version
 dnl ******************************
 PISOCKPP_CURRENT=0

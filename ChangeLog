@@ -1,5 +1,19 @@
 2002-04-18  JP Rosevear  <jpr@ximian.com>
 
+	* src/pi-getram.c (main): fix compilation
+
+	* src/pi-getrom.c (main): fix compilation
+
+	* libpisync/sync.c: move
+
+	* libpisync/Makefile.am: Compile libpisync library
+
+	* libpisock/Makefile.am: remove sync.c from sources
+
+	* configure.in: add sync library version
+
+2002-04-18  JP Rosevear  <jpr@ximian.com>
+	
 	* doc/Makefile.am: dist extra doc stuff
 
 	* libpisock/socket.c (pi_connect): add usb device
