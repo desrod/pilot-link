@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
 	char 	*progname 	= argv[0],
 		*port		= NULL,
 		*user 		= NULL,
-		*userid 	= NULL;
-	
+		*userid		= NULL;
+
 	struct 	PilotUser 	User;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 	}
-	
+
 	sd = pilot_connect(port);
 	if (sd < 0)
 		goto error;
@@ -104,18 +104,16 @@ int main(int argc, char *argv[])
 
 	if (!user && !userid) {
 		printf("   Palm user: %s\n", User.username);
-		printf("   UserID:    %ld \n\n", User.userID);
+		printf("   UserID:    %u\n\n", User.userID);
 		pi_close(sd);
 		return 0;
 	}
-	
-	/* Let's make sure we have valid arguments for these
-	   before we write the data to the Palm */
-	if (user)
-		strncpy(User.username, user, sizeof(User.username) - 1);
 
 	if (userid)
-		User.userID = atoi(userid);
+		User.userID = abs(atoi(userid));	
+
+	if (user)
+		strncpy(User.username, user, sizeof(User.username) - 1);
 	
 	User.lastSyncDate = time(NULL);
 
@@ -125,7 +123,7 @@ int main(int argc, char *argv[])
 	if (user)
 		printf("   Installed User Name: %s\n", User.username);
 	if (userid)
-		printf("   Installed User ID: %ld \n", User.userID);
+		printf("   Installed User ID: %u\n", User.userID);
 	printf("\n");
 	
 	if (dlp_AddSyncLogEntry(sd, "install-user, exited normally.\n"
