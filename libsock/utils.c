@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <math.h>
 
 #ifdef NeXT
 # include <stdlib.h>
@@ -101,4 +102,49 @@ void dumpdata (const unsigned char * buf, int len) {
   for(i=0;i<len;i+=16) {
     dumpline(buf+i, ((len-i)>16) ? 16 : len-i, i);
   }
+}
+
+double get_float(void * buffer) {
+	unsigned char * buf = buffer;
+
+	/* Load values */
+	unsigned long frac = get_long(buf);
+	long exp = get_short(buf+4);
+	int sign = get_byte(buf+6);
+	
+	/* Convert exponent to proper negative */
+	if (exp>0x7fffL) exp = exp-0xFFFFL-1;
+	
+	return ldexp(sign ? (double)frac : -(double)frac, exp);
+}
+
+void set_float(void * buffer, double value) {
+	unsigned char * buf = buffer;
+	
+	unsigned long frac;
+	unsigned long uexp;
+	int exp, sign;
+	
+	/* Take absolute */
+	if (value < 0) {
+		sign=0;
+		value = -value;
+	} else
+		sign=1;
+	
+	/* Convert mantissa to 32-bit integer, and take exponent */
+	frac = ldexp(frexp(value, &exp), 32);
+	exp -= 32;
+	
+	/* Convert exponent to 2's-complement unsigned short */
+	if (exp<0)
+		uexp = 0xFFFF+exp+1;
+	else
+		uexp = exp;
+		
+	/* Store values in buffer */
+	set_long(buf, frac);
+	set_short(buf+4, uexp);
+	set_byte(buf+6, sign);
+	set_byte(buf+7, 0);
 }

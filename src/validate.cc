@@ -5,11 +5,14 @@
 #include <string.h>
 #include <iostream.h>
 #include <unistd.h>
+#include <errno.h>
 #include "pi-file.h"
 #include "pi-todo.h"	
 #include "pi-memo.h"	
 #include "pi-datebook.h"
 #include "pi-address.h"
+
+typedef void (*funcPtr_t)(void *);
 
 void dump (void *buf, int n) {
      int i, j, c;
@@ -72,226 +75,177 @@ void compare(void *fromPilot, int pilotSize, void *pack1, int pack1size, void *p
 	  cerr << "Ken's packed data differs from the pilot" << endl;
 }
 
-uchar_t *buf, packedBuf[0xffff], kenBuf[0xffff];
-int size, packedSize1, packedSize2, kenSize, attrs, cat, nentries;
-recordid_t uid;
-void *packed, *app_info;
-int app_info_size;
-pi_file *pf;
+unsigned char packedBuf[0xffff], kenBuf[0xffff];
+int size, packedSize1, packedSize2, kenSize, nentries, entnum;
+void *packed;
 
-void memos() 
+void memos(void *buf) 
 {
-     cout << "Examining memo database" << endl;
-
-     pf = pi_file_open("MemoDB.pdb");
+     memo_t memo(buf);
      
-     if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
-	  cerr << "Unable to get app info" << endl;
+     packed = memo.pack(&packedSize1);
+     
+     packedSize2 = sizeof(packedBuf);
+     if (memo.pack(packedBuf, &packedSize2) == NULL) {
+	  cerr << "Record number " << (entnum + 1) << " too big for "
+	       << "the buffer you passed in." << endl;
 	  return;
      }
-
-     pi_file_get_entries(pf, &nentries);
      
-     memo_t memo;
+     Memo m;
+     unpack_Memo(&m, (unsigned char *) buf, size);
+     pack_Memo(&m, kenBuf, &kenSize);
+     free_Memo(&m);
      
-     for (int entnum = 0; entnum < nentries; entnum++) {
-	  if (pi_file_read_record(pf, entnum, (void **) &buf, &size,
-				  &attrs, &cat, &uid) < 0) {
-	       cout << "Error reading record number " << entnum << endl;
-	       return;
-	  }
-
-	  if ((attrs & dlpRecAttrDeleted) || (attrs & dlpRecAttrArchived))
-	       continue;
-
-	  memo.unpack(buf);
-
-	  packed = memo.pack(&packedSize1);
-	  
-	  packedSize2 = sizeof(packedBuf);
-	  if (memo.pack(packedBuf, &packedSize2) == NULL) {
-	       cerr << "Record number " << (entnum + 1) << " too big for "
-		    << "the buffer you passed in." << endl;
-	       continue;
-	  }
-
-	  Memo m;
-	  unpack_Memo(&m, buf, size);
-	  pack_Memo(&m, kenBuf, &kenSize);
-	  free_Memo(&m);
-
-	  compare(buf, size, packed, packedSize1, packedBuf, packedSize2, kenBuf, kenSize);
-	  
-	  delete packed;
-     }
-
-     pi_file_close(pf);
+     compare(buf, size, packed, packedSize1,
+	     packedBuf, packedSize2, kenBuf, kenSize);
+     
+     delete packed;
 }
 
-void todos() 
+void todos(void *buf) 
 {
-     cout << "Examining todo database" << endl;
-
-     pf = pi_file_open("ToDoDB.pdb");
+     todo_t todo(buf);
      
-     if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
-	  cerr << "Unable to get app info" << endl;
-	  return;
-     }
-
-     pi_file_get_entries(pf, &nentries);
+     packed = todo.pack(&packedSize1);
      
-     todo_t todo;
+     packedSize2 = sizeof(packedBuf);
+     todo.pack(packedBuf, &packedSize2);
      
-     for (int entnum = 0; entnum < nentries; entnum++) {
-	  if (pi_file_read_record(pf, entnum, (void **) &buf, &size,
-				  &attrs, &cat, &uid) < 0) {
-	       cout << "Error reading record number " << entnum << endl;
-	       return;
-	  }
-
-	  if ((attrs & dlpRecAttrDeleted) || (attrs & dlpRecAttrArchived))
-	       continue;
-
-	  todo.unpack(buf);
-
-	  packed = todo.pack(&packedSize1);
-	  
-	  packedSize2 = sizeof(packedBuf);
-	  todo.pack(packedBuf, &packedSize2);
-	  
-	  ToDo m;
-	  unpack_ToDo(&m, buf, size);
-	  pack_ToDo(&m, kenBuf, &kenSize);
-	  free_ToDo(&m);
-	  
-	  compare(buf, size, packed, packedSize1, packedBuf, packedSize2, kenBuf, kenSize);
-	  
-	  delete packed;
-     }
-
-     pi_file_close(pf);
+     ToDo m;
+     unpack_ToDo(&m, (unsigned char *) buf, size);
+     pack_ToDo(&m, kenBuf, &kenSize);
+     free_ToDo(&m);
+     
+     compare(buf, size, packed, packedSize1,
+	     packedBuf, packedSize2, kenBuf, kenSize);
+     
+     delete packed;
 }
 
-
-void appointments() 
+void appointments(void *buf) 
 {
-     cout << "Examining datebook database" << endl;
+     appointment_t appointment(buf);
 
-     pf = pi_file_open("DatebookDB.pdb");
+     packed = appointment.pack(&packedSize1);
      
-     if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
-	  cerr << "Unable to get app info" << endl;
+     // Fake packed + 7, as it's not used
+     unsigned char *ptr = (unsigned char *) buf;
+     *(((unsigned char *)packed) + 7) = *(ptr + 7);
+     
+     packedSize2 = sizeof(packedBuf);
+     if (appointment.pack(packedBuf, &packedSize2) == NULL) {
+	  cerr << "Record number " << (entnum + 1) << " too big for "
+	       << "the buffer you passed in." << endl;
 	  return;
      }
-
-     pi_file_get_entries(pf, &nentries);
+     packedBuf[7] = *(ptr + 7);
      
-     appointment_t appointment;
+     Appointment m;
+     unpack_Appointment(&m, ptr, size);
+     pack_Appointment(&m, kenBuf, &kenSize);
+     free_Appointment(&m);
+     kenBuf[7] = *(ptr + 7);
      
-     for (int entnum = 0; entnum < nentries; entnum++) {
-	  if (pi_file_read_record(pf, entnum, (void **) &buf, &size,
-				  &attrs, &cat, &uid) < 0) {
-	       cout << "Error reading record number " << entnum << endl;
-	       return;
-	  }
-
-	  if ((attrs & dlpRecAttrDeleted) || (attrs & dlpRecAttrArchived))
-	       continue;
-
-	  appointment.unpack(buf);
-
-	  packed = appointment.pack(&packedSize1);
-
-	  // Fake packed + 7, as it's not used
-	  *(((uchar_t *)packed) + 7) = buf[7];
+     // Fake the byte just before the description.  It's not used
+     if (appointment.repeatType() != appointment_t::none) {
+	  int fakePos = 15;
+	  if (appointment.hasAlarm()) 
+	       fakePos += 2;
 	  
-	  packedSize2 = sizeof(packedBuf);
-	  if (appointment.pack(packedBuf, &packedSize2) == NULL) {
-	       cerr << "Record number " << (entnum + 1) << " too big for "
-		    << "the buffer you passed in." << endl;
-	       continue;
-	  }
-	  packedBuf[7] = buf[7];
-	  
-	  Appointment m;
-	  unpack_Appointment(&m, buf, size);
-	  pack_Appointment(&m, kenBuf, &kenSize);
-	  free_Appointment(&m);
-	  packedBuf[7] = buf[7];
-	  
-	  compare(buf, size, packed, packedSize1, packedBuf, packedSize2, kenBuf, kenSize);
-
-	  delete packed;
+	  *(((unsigned char *)packed) + fakePos) = *(ptr + fakePos);
+	  packedBuf[fakePos] = *(ptr + fakePos);
+	  kenBuf[fakePos] = *(ptr + fakePos);
      }
 
-     pi_file_close(pf);
+     compare(buf, size, packed, packedSize1,
+	     packedBuf, packedSize2, kenBuf, kenSize);
+     
+     delete packed;
 }
      
-
-void addresses() 
+void addresses(void *buf) 
 {
-     cout << "Examining address database" << endl;
-
-     pf = pi_file_open("AddressDB.pdb");
+     address_t address(buf);
      
-     if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
-	  cerr << "Unable to get app info" << endl;
+     packed = address.pack(&packedSize1);
+     
+     // buf[0] is gapfill, so make them match
+     unsigned char *ptr = (unsigned char *) buf;
+     
+     *(((unsigned char *) packed)) = *ptr;
+     
+     packedSize2 = sizeof(packedBuf);
+     if (address.pack(packedBuf, &packedSize2) == NULL) {
+	  cerr << "Record number " << (entnum + 1) << " too big for "
+	       << "the buffer you passed in." << endl;
 	  return;
      }
-
-     pi_file_get_entries(pf, &nentries);
+     packedBuf[0] = *ptr;
      
-     address_t address;
+     Address m;
+     unpack_Address(&m, (unsigned char *) buf, size);
+     pack_Address(&m, kenBuf, &kenSize);
+     free_Address(&m);
+     kenBuf[0] = *ptr;
      
-     for (int entnum = 0; entnum < nentries; entnum++) {
-	  if (pi_file_read_record(pf, entnum, (void **) &buf, &size,
-				  &attrs, &cat, &uid) < 0) {
-	       cout << "Error reading record number " << entnum << endl;
-	       return;
-	  }
-
-	  if ((attrs & dlpRecAttrDeleted) || (attrs & dlpRecAttrArchived))
-	       continue;
-
-	  address.unpack(buf);
-
-	  packed = address.pack(&packedSize1);
-
-	  // buf[0] is gapfill, so make them match
-	  *(((uchar_t *) packed)) = buf[0];
-	  
-	  packedSize2 = sizeof(packedBuf);
-	  if (address.pack(packedBuf, &packedSize2) == NULL) {
-	       cerr << "Record number " << (entnum + 1) << " too big for "
-		    << "the buffer you passed in." << endl;
-	       continue;
-	  }
-	  packedBuf[0] = buf[0];
-	  
-	  Address m;
-	  unpack_Address(&m, buf, size);
-	  pack_Address(&m, kenBuf, &kenSize);
-	  free_Address(&m);
-	  packedBuf[0] = buf[0];
-	  
-	  compare(buf, size, packed, packedSize1, packedBuf, packedSize2, kenBuf, kenSize);
-
-	  delete packed;
-     }
-
-     pi_file_close(pf);
+     compare(buf, size, packed, packedSize1,
+	     packedBuf, packedSize2, kenBuf, kenSize);
+     
+     delete packed;
 }
 
 /* ARGSUSED */
 int main(int argc, char **argv)
 {
      chdir("/afs/pdx/u/g/r/grosch/.xusrpilot/backup");
+
+     struct {
+	  char *db;
+	  funcPtr_t func;
+     } *aptr, apps[] = {
+	  { "MemoDB.pdb", memos },
+	  { "ToDoDB.pdb", todos },
+	  { "DatebookDB.pdb", appointments },
+	  { "AddressDB.pdb", addresses },
+	  { NULL, NULL }
+     };
+
+     void *app_info, *buf;
+     int app_info_size, attrs;
+     pi_file *pf;
      
-     memos();
-     todos();
-     appointments();
-     addresses();
+     for (aptr = &apps[0]; aptr->db; aptr++) {
+	  cout << "Examining " << aptr->db << endl;
+	  
+	  if ((pf = pi_file_open(aptr->db)) == NULL) {
+	       cerr << "\tUnable to open " << aptr->db << ": " 
+		    << strerror(errno) << endl;
+	       continue;
+	  }
+
+	  if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
+	       cerr << "Unable to get app info" << endl;
+	       continue;
+	  }
+	  
+	  pi_file_get_entries(pf, &nentries);
+	  
+	  for (int entnum = 0; entnum < nentries; entnum++) {
+	       if (pi_file_read_record(pf, entnum, (void **) &buf, &size,
+				       &attrs, NULL, NULL) < 0) {
+		    cout << "Error reading record number " << entnum << endl;
+		    continue;
+	       }
+	       
+	       if ((attrs & dlpRecAttrDeleted) || (attrs & dlpRecAttrArchived))
+		    continue;
+
+	       (*(aptr->func))(buf);
+	  }
+	  
+	  pi_file_close(pf);
+     }
      
      return 0;
 }

@@ -2,6 +2,7 @@
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
+ *
  */
 
 #include <stdio.h>

@@ -59,6 +59,20 @@ bootstrap PDA::Pilot;
 
 # Preloaded methods go here.
 
+%PDA::Pilot::DBPackers = (	MemoDB => [	\&PDA::Pilot::Memo::Pack,
+										\&PDA::Pilot::Memo::Unpack,
+										\&PDA::Pilot::Memo::PackAppBlock,
+										\&PDA::Pilot::Memo::UnpackAppBlock],
+							ToDoDB => [	\&PDA::Pilot::ToDo::Pack,
+										\&PDA::Pilot::ToDo::Unpack,
+										\&PDA::Pilot::ToDo::PackAppBlock,
+										\&PDA::Pilot::ToDo::UnpackAppBlock]
+						);
+
+#%PDA::Pilot::PrefPackers = ( 'memo' => [\&PDA::Pilot::Memo::PackPref,
+#										\&PDA::Pilot::Memo::UnpackPref]
+#						);
+
 # Autoload methods go after __END__, and are processed by the autosplit program.
 
 1;

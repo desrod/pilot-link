@@ -11,6 +11,9 @@ extern unsigned long makelong (char * c);
 
 static PyObject * Error;
 
+static PyObject * DBPackers;
+static PyObject * PrefPackers;
+
 static PyMethodDef PiFile_methods[];
 
 static PyMethodDef Dlp_methods[];
@@ -20,6 +23,8 @@ static PyMethodDef DlpDB_methods[];
 typedef struct {
 	PyObject_HEAD
 	struct pi_file	*pf;
+
+	PyObject *Pack, *Unpack, *PackAppBlock, *UnpackAppBlock;
 } PiFileObject;
 
 staticforward PyTypeObject PiFile_Type;
@@ -36,6 +41,8 @@ typedef struct {
 	PyObject_HEAD
 	DlpObject * socket;
 	int handle;
+	
+	PyObject *Pack, *Unpack, *PackAppBlock, *UnpackAppBlock;
 } DlpDBObject;
 
 staticforward PyTypeObject Dlp_Type;
@@ -50,6 +57,10 @@ static void
 PiFile_dealloc(self)
 	PiFileObject *self;
 {
+	Py_XDECREF(self->Pack);
+	Py_XDECREF(self->Unpack);
+	Py_XDECREF(self->PackAppBlock);
+	Py_XDECREF(self->UnpackAppBlock);
 	if (self->pf)
 		pi_file_close(self->pf);
 	PyMem_DEL(self);
@@ -70,6 +81,10 @@ static void
 DlpDB_dealloc(self)
 	DlpDBObject *self;
 {
+	Py_XDECREF(self->Pack);
+	Py_XDECREF(self->Unpack);
+	Py_XDECREF(self->PackAppBlock);
+	Py_XDECREF(self->UnpackAppBlock);
 	if (self->handle)
 		dlp_CloseDB(self->socket->socket, self->handle);
 	if (self->socket)
@@ -465,6 +480,7 @@ OpenDB(self, args)
 	int mode = dlpOpenReadWrite, cardno = 0;
 	char * name;
 	int result, handle;
+	PyObject * packer;
 	DlpDBObject * obj;
 	if (!PyArg_ParseTuple(args, "s|ii", &name, &mode, &cardno))
 		return NULL;
@@ -477,6 +493,18 @@ OpenDB(self, args)
 	obj->socket = self;
 	obj->handle = handle;
 	Py_INCREF(self);
+	
+	obj->Pack = obj->Unpack = obj->PackAppBlock = obj->UnpackAppBlock = 0;
+	packer = PyDict_GetItemString(DBPackers, name);
+	if (packer && PyTuple_Check(packer)) {
+		PyArg_ParseTuple(packer, "|OOOO",
+			&obj->Pack, &obj->Unpack,
+			&obj->PackAppBlock, &obj->UnpackAppBlock);
+		Py_XINCREF(obj->Pack);
+		Py_XINCREF(obj->Unpack);
+		Py_XINCREF(obj->PackAppBlock);
+		Py_XINCREF(obj->UnpackAppBlock);
+	}
 	
 	return (PyObject*)obj;
 }
@@ -492,6 +520,7 @@ CreateDB(self, args)
 	int result;
 	int handle;
 	DlpDBObject * obj;
+	PyObject * packer;
 	if (!PyArg_ParseTuple(args, "sO&li|ii", &name, &ParseChar4, &creator, &type, &flags, &version, &cardno))
 		return NULL;
 
@@ -505,7 +534,83 @@ CreateDB(self, args)
 	obj->handle = handle;
 	Py_INCREF(self);
 
+	obj->Pack = obj->Unpack = obj->PackAppBlock = obj->UnpackAppBlock = 0;
+	packer = PyDict_GetItemString(DBPackers, name);
+	if (packer && PyTuple_Check(packer)) {
+		PyArg_ParseTuple(packer, "|OOOO",
+			&obj->Pack, &obj->Unpack,
+			&obj->PackAppBlock, &obj->UnpackAppBlock);
+		Py_XINCREF(obj->Pack);
+		Py_XINCREF(obj->Unpack);
+		Py_XINCREF(obj->PackAppBlock);
+		Py_XINCREF(obj->UnpackAppBlock);
+	}
+
 	return (PyObject*)obj;
+}
+
+static PyObject *
+DBUnpack(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	PyObject * incoming;
+	
+	if (!self->Unpack)
+		if (!PyArg_ParseTuple(args, "O", &incoming))
+			return NULL;
+		else
+			return incoming;
+	else
+		return PyEval_CallObject(self->Unpack, args);
+}
+
+static PyObject *
+DBPack(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	PyObject * incoming;
+	
+	if (!self->Pack)
+		if (!PyArg_ParseTuple(args, "O", &incoming))
+			return NULL;
+		else
+			return incoming;
+	else
+		return PyEval_CallObject(self->Pack, args);
+}
+
+static PyObject *
+DBPackAppBlock(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	PyObject * incoming;
+	
+	if (!self->PackAppBlock)
+		if (!PyArg_ParseTuple(args, "O", &incoming))
+			return NULL;
+		else
+			return incoming;
+	else
+		return PyEval_CallObject(self->PackAppBlock, args);
+}
+
+static PyObject *
+DBUnpackAppBlock(self, args)
+	DlpDBObject *self;
+	PyObject *args;
+{
+	PyObject * incoming;
+	
+	if (!self->UnpackAppBlock)
+		if (!PyArg_ParseTuple(args, "O", &incoming))
+			return NULL;
+		else
+			return incoming;
+	else
+		return PyEval_CallObject(self->UnpackAppBlock, args);
 }
 
 static PyObject *
@@ -663,7 +768,7 @@ SetRec(self, args)
 	if (!PyArg_ParseTuple(args, "s#lii", &data, &length, &id, &attr, &category))
 		return NULL;
 	
-	result = dlp_WriteRecord(self->socket->socket, self->handle, attr, id, category, self->socket->buffer, length, &newid);
+	result = dlp_WriteRecord(self->socket->socket, self->handle, attr, id, category, data, length, &newid);
 	
 	DlpDB_CheckError(result);
 	
@@ -682,7 +787,7 @@ SetRsc(self, args)
 	if (!PyArg_ParseTuple(args, "s#O&i", &data, &length, &ParseChar4, &type, &id))
 		return NULL;
 	
-	result = dlp_WriteResource(self->socket->socket, self->handle, type, id, self->socket->buffer, length);
+	result = dlp_WriteResource(self->socket->socket, self->handle, type, id, data, length);
 
 	DlpDB_CheckError(result);
 	
@@ -1002,6 +1107,7 @@ GetAppPref(self, args)
 	unsigned long creator;
 	int id, backup=1;
 	int length, version, result;
+	
 	if (!PyArg_ParseTuple(args, "O&i|i", &ParseChar4, &creator, &id, &backup))
 		return NULL;
 
@@ -1009,7 +1115,7 @@ GetAppPref(self, args)
 		0xffff, self->buffer, &length, &version);
 	
 	Dlp_CheckError(result);
-
+	
 	return Py_BuildValue("(s#i)", self->buffer, length, version);
 }
 
@@ -1021,9 +1127,10 @@ SetAppPref(self, args)
 	unsigned long creator;
 	int id, length, version, backup, result;
 	char * data;
+
 	if (!PyArg_ParseTuple(args, "O&is#ii", &ParseChar4, &creator, &id, &data, &length, &version, &backup))
 		return NULL;
-	
+
 	result = dlp_WriteAppPreference(self->socket, creator, id, backup,
 		version, data, length);
 		
@@ -1400,6 +1507,7 @@ OpenFile(self, args)
 	char * name;
 	struct pi_file * pf;
 	PiFileObject * retval;
+	PyObject * packer;
 	if (!PyArg_ParseTuple(args, "s", &name))
 		return NULL;
 
@@ -1411,6 +1519,18 @@ OpenFile(self, args)
 	
 	retval = PyObject_NEW(PiFileObject, &PiFile_Type);
 	retval->pf = pf;
+
+	retval->Pack = retval->Unpack = retval->PackAppBlock = retval->UnpackAppBlock = 0;
+	packer = PyDict_GetItemString(DBPackers, name);
+	if (packer && PyTuple_Check(packer)) {
+		PyArg_ParseTuple(packer, "|OOOO",
+			&retval->Pack, &retval->Unpack,
+			&retval->PackAppBlock, &retval->UnpackAppBlock);
+		Py_XINCREF(retval->Pack);
+		Py_XINCREF(retval->Unpack);
+		Py_XINCREF(retval->PackAppBlock);
+		Py_XINCREF(retval->UnpackAppBlock);
+	}
 
 	return (PyObject*)retval;
 }
@@ -1425,7 +1545,7 @@ CreateFile(self, args)
 	struct pi_file * pf;
 	struct DBInfo i;
 	PiFileObject * retval;
-	PyObject * d;
+	PyObject * d, *packer;
 	if (!PyArg_ParseTuple(args, "sO!", &name, &PyDict_Type, &d))
 		return NULL;
 	
@@ -1440,6 +1560,19 @@ CreateFile(self, args)
 	
 	retval = PyObject_NEW(PiFileObject, &PiFile_Type);
 	retval->pf = pf;
+
+	retval->Pack = retval->Unpack = retval->PackAppBlock = retval->UnpackAppBlock = 0;
+	packer = PyDict_GetItemString(DBPackers, name);
+	if (packer && PyTuple_Check(packer)) {
+		PyArg_ParseTuple(packer, "|OOOO",
+			&retval->Pack, &retval->Unpack,
+			&retval->PackAppBlock, &retval->UnpackAppBlock);
+		Py_XINCREF(retval->Pack);
+		Py_XINCREF(retval->Unpack);
+		Py_XINCREF(retval->PackAppBlock);
+		Py_XINCREF(retval->UnpackAppBlock);
+	}
+
 
 	return (PyObject*)retval;
 }
@@ -2082,6 +2215,10 @@ static PyMethodDef DlpDB_methods[] = {
 	{"Purge",	Purge, 1},
 	{"ResetNext",	ResetNext, 1},
 	{"ResetFlags",	ResetFlags, 1},
+	{"Unpack",	DBUnpack, 1},
+	{"Pack",	DBPack, 1},
+	{"UnpackAppBlock",	DBUnpackAppBlock, 1},
+	{"PackAppBlock",	DBPackAppBlock, 1},
 	{NULL,	NULL}
 };
 
@@ -2113,11 +2250,30 @@ static PyMethodDef Methods[] = {
 void
 initpdapilot()
 {
-	PyObject *m, *d, *main;
+	PyObject *m, *d, *main, *t;
 	main = m = Py_InitModule("pdapilot", Methods);
 	d = PyModule_GetDict(m);
 	Error = PyString_FromString("pdapilot.error");
 	PyDict_SetItemString(d, "error", Error);
+	
+	DBPackers = PyDict_New();
+	PyDict_SetItemString(d, "DBPackers", DBPackers);
+	
+	t = PyTuple_New(4);
+	PyTuple_SetItem(t, 0, PyDict_GetItemString(d, "MemoPack"));
+	PyTuple_SetItem(t, 1, PyDict_GetItemString(d, "MemoUnpack"));
+	PyTuple_SetItem(t, 2, PyDict_GetItemString(d, "MemoPackAppBlock"));
+	PyTuple_SetItem(t, 3, PyDict_GetItemString(d, "MemoUnpackAppBlock"));
+	PyDict_SetItemString(DBPackers, "MemoDB", t);
+	Py_DECREF(t);
+
+	t = PyTuple_New(4);
+	PyTuple_SetItem(t, 0, PyDict_GetItemString(d, "TodoPack"));
+	PyTuple_SetItem(t, 1, PyDict_GetItemString(d, "TodoUnpack"));
+	PyTuple_SetItem(t, 2, PyDict_GetItemString(d, "TodoPackAppBlock"));
+	PyTuple_SetItem(t, 3, PyDict_GetItemString(d, "TodoUnpackAppBlock"));
+	PyDict_SetItemString(DBPackers, "ToDoDB", t);
+	Py_DECREF(t);
 
 	SetDictInt("PI_AF_SLP", PI_AF_SLP);
 

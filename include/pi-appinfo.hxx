@@ -3,9 +3,6 @@
 
 #ifdef __cplusplus
 
-#include <memory.h>		// For memset on some architectures
-#include <string.h>
-#include <sys/types.h>
 #include "pi-macros.h"
 
 const BASE_APP_INFO_SIZE = 278;	// All apps take up 278 bytes of the same stuff
@@ -29,9 +26,9 @@ class appInfo_t
      
      char *category(const int);
      int categoryIndex(charConst_t) const;
-     bool addCategory(charConst_t);
+     int addCategory(charConst_t);
      const category_t &allCategories(void) const { return _categoryName; }
-     bool removeCategory(charConst_t);
+     int removeCategory(charConst_t);
      ucharConst_t categoryID(void) const { return _categoryID; }
      unsigned char lastUniqueID(void) const { return _lastUniqueID; }
      int renamedCategories(void) const { return _renamedCategories; }
@@ -65,7 +62,7 @@ class baseApp_t
      // virtual functions
      virtual ~baseApp_t(void) {}
      
-     virtual void unpack(void *, bool = false) = 0;
+     virtual void unpack(void *, int = 0) = 0;
      virtual void *pack(int *) = 0;
      virtual void *pack(void *, int *) = 0;
 

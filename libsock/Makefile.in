@@ -38,49 +38,50 @@ depend:
 
 #Dependencies
 address.o: address.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-address.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-address.h
 cmp.o: cmp.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-padp.h \
- ../include/pi-cmp.h ../include/pi-serial.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-padp.h ../include/pi-cmp.h ../include/pi-serial.h
 datebook.o: datebook.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-datebook.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-datebook.h
 dlp.o: dlp.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-syspkt.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-syspkt.h
 expense.o: expense.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-expense.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-expense.h
 mail.o: mail.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-mail.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-mail.h
 memo.o: memo.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-memo.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-memo.h
 padp.o: padp.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-padp.h \
- ../include/pi-slp.h ../include/pi-serial.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-padp.h ../include/pi-slp.h ../include/pi-serial.h
 pi-file.o: pi-file.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-file.h \
- ../include/pi-dlp.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-file.h ../include/pi-dlp.h
 serial.o: serial.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-serial.h \
- ../include/pi-slp.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-serial.h ../include/pi-slp.h
 slp.o: slp.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-slp.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-slp.h
 socket.o: socket.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-serial.h \
- ../include/pi-padp.h ../include/pi-cmp.h ../include/pi-dlp.h \
- ../include/pi-syspkt.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-serial.h ../include/pi-padp.h ../include/pi-cmp.h \
+ ../include/pi-dlp.h ../include/pi-syspkt.h
 sync.o: sync.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-sync.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-sync.h
 syspkt.o: syspkt.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-syspkt.h \
- ../include/pi-slp.h ../include/pi-serial.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-syspkt.h ../include/pi-slp.h ../include/pi-serial.h
 todo.o: todo.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h ../include/pi-dlp.h \
- ../include/pi-todo.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-dlp.h ../include/pi-todo.h
 utils.o: utils.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-macros.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h

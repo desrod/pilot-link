@@ -5,6 +5,7 @@
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
+ * 
  */
 
 void display(char * text, char * tag, int type);

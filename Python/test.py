@@ -1,6 +1,14 @@
 import pdapilot
+from sys import stdin
 
-port = '/dev/cua3'
+print 'Please enter the serial port [/dev/cua3]: ',
+port = stdin.readline()
+port = port[0:len(port)-1]
+
+if len(port) == 0:
+  port = '/dev/cua3'
+
+print 'Using port',port
 
 socket = pdapilot.OpenPort(port)
 
@@ -29,15 +37,23 @@ r = db.GetRecord(0)
 
 print "Memo record 0 has ID ", r[2], " attribue ", r[3], ", and category ",r[4],"\n";
 
-r = pdapilot.MemoUnpack(r[0]);
+r2 = pdapilot.MemoUnpack(r[0]);
 
-print "Contents: '", r["text"], "'\n";
+print "Contents: '", r2["text"], "'\n";
+
+r3 = db.Unpack(r[0])
+
+print "Contents (through default unpacker):", r3
 
 app = db.GetAppBlock()
 
-app = pdapilot.MemoUnpackAppBlock(app)
+app2 = pdapilot.MemoUnpackAppBlock(app)
 
-print "Categories are", app["category"],"\n"
+print "Categories are", app2["category"],"\n"
+
+app3 = db.UnpackAppBlock(app)
+
+print "Categories (through default unpacker) are:", app3
 
 del db # Close database
 

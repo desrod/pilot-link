@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'	=> 'PDA::Pilot',
     'VERSION'	=> '0.1',
-    'LIBS'	=> ['-L../.. -lpisock'],   # e.g., '-lm' 
+    'LIBS'	=> ['-L../../libsock -lpisock'],   # e.g., '-lm' 
     'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
     'INC'	=> '',     # e.g., '-I/usr/include/other' 
 );

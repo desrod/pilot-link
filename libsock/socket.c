@@ -348,12 +348,13 @@ int pi_close(int pi_sd)
 {
   struct pi_socket *ps;
   struct pi_socket *p;
+  
 
   if (!(ps = find_pi_socket(pi_sd))) {
     errno = ESRCH;
     return -1;
   }
-  
+
   if (ps->type == PI_SOCK_STREAM) {
     if (ps->connected & 1) /* If socket is connected */
       if (!(ps->connected & 2)) /* And it wasn't end-of-synced */

@@ -1,7 +1,14 @@
 
 use PDA::Pilot;
 
-$port = $ARGV[0] || "/dev/cua3";
+if ($ARGV[0]) {
+	$port = $ARGV[0];
+} else {
+	print "What port should I use [/dev/cua3]: ";
+	$port = <STDIN>;
+	chop $port;
+	$port ||= "/dev/cua3";
+}
 
 $socket = PDA::Pilot::OpenPort($port);
 

@@ -1,9 +1,10 @@
 
+#include "pi-source.h"
 #include "pi-memo.h"
 
-void memo_t::unpack(void *text, bool firstTime) 
+void memo_t::unpack(void *text, int firstTime) 
 {
-     if (firstTime == false && _text)
+     if (!firstTime && _text)
 	  delete _text;
      
      _size = strlen((const char *) text) + 1;
@@ -73,5 +74,4 @@ memoList_t::~memoList_t(void) {
 	  delete ptr;
      }
 }
-
 

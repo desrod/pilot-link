@@ -4,7 +4,7 @@
 ## what is needed on your system
 
 #PDEXE = pilot-debug$(EXT)
-#TCLLIBS  = -L/usr/local/tcl7.5/lib -ltcl7.5 -ldl -lm
+#TCLLIBS  = -L/usr/local/tcl7.5/lib -ltcl7.5 -ldl
 #TCLDEFS  = -I/usr/local/tcl7.5/include
 
 ## You may uncomment the TK lines below if you have Tk >= 4.1, though Tk is
@@ -38,8 +38,10 @@ CXX = @CXX@
 CFLAGS = @CFLAGS@ @CWFLAG@ -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
 # -DDEBUG
 CXXFLAGS = @CXXFLAGS@ @CWFLAG@ -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
+LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 # -lefence
+CXXLIBS = @CXXLIBS@
 
 libcclib = @libcclib@
 cclib = @cclib@
@@ -61,17 +63,19 @@ SUBMAKE_COMM_CC = @SUBMAKE_COMM_CC@
 
 .cc.o: ; $(CXX) $(CXXFLAGS) -c $*.cc
 
-CCEXECS = ccexample$(EXT)
+CCEXECS = ccexample$(EXT) iambicexample$(EXT)
 
 EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) pilot-schlep$(EXT)\
 		install-memo$(EXT) install-user$(EXT)\
-		install-todos$(EXT) pilot-addresses$(EXT)\
+		install-todos$(EXT) pilot-addresses$(EXT) pilot-clip$(EXT)\
 		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT)\
 		sync-memodir$(EXT) sync-ical$(EXT) @ccexecs@ \
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
 		getrom$(EXT) \
 		test-connector$(EXT) test-acceptor$(EXT)
+
+PERLEXECS = pilot-undelete
 
 PILIBS = libpisock.a
 PICCLIBS = $(PILIBS) @cclib@
@@ -96,6 +100,9 @@ install: $(EXECS) installdirs libpisock.a
 		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
 		$(STRIP) $(bindir)/$$p; \
 	done
+	for p in $(EXECS) $(PERLEXECS); do \
+		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
+	done
 	for h in include/*.h $(srcdir)/include/*.h; do \
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
 	done
@@ -110,7 +117,7 @@ install: $(EXECS) installdirs libpisock.a
 	fi
 
 uninstall: $(EXECS)
-	-for p in $(EXECS) pilot-debug; do \
+	-for p in $(EXECS) $(PERLEXECS) pilot-debug; do \
 		$(RM) $(bindir)/$$p; \
 	done
 	-rmdir $(bindir)
@@ -123,85 +130,91 @@ uninstall: $(EXECS)
 	-rmdir $(libdir)
 
 install-memo$(EXT): $(PILIBS) install-memo.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) install-memo.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) install-memo.o $(PILIBS) -o $@ $(LIBS)
 
 install-todos$(EXT): $(PILIBS) install-todos.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) install-todos.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) install-todos.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-addresses$(EXT): $(PILIBS) pilot-addresses.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-addresses.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-addresses.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-dedupe$(EXT): $(PILIBS) pilot-dedupe.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-dedupe.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-dedupe.o $(PILIBS) -o $@ $(LIBS)
 
 install-user$(EXT): $(PILIBS) install-user.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) install-user.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) install-user.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-xfer$(EXT): $(PILIBS) pilot-xfer.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-xfer.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-xfer.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-schlep$(EXT): $(PILIBS) pilot-schlep.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-schlep.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-schlep.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-mail$(EXT): $(PILIBS) pilot-mail.o parsedate.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-mail.o parsedate.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-mail.o parsedate.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-file$(EXT): $(PILIBS) pilot-file.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)
+
+pilot-clip$(EXT): $(PILIBS) pilot-clip.o
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-clip.o $(PILIBS) -o $@ $(LIBS)
 
 pilot-debug.o: $(PILIBS) pilot-debug.c Makefile
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) $(TCLDEFS) $(TKDEFS) -c pilot-debug.c
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) $(TCLDEFS) $(TKDEFS) -c pilot-debug.c
 
 pd-tty.o: $(PILIBS) pd-tty.c Makefile
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) $(TCLDEFS) $(TKDEFS) $(RLDEFS) -c pd-tty.c
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) $(TCLDEFS) $(TKDEFS) $(RLDEFS) -c pd-tty.c
 
 pilot-debug$(EXT): $(PILIBS) pilot-debug.o pd-tty.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) pilot-debug.o pd-tty.o $(PILIBS) -o $@ $(TKLIBS) $(TCLLIBS) $(RLLIBS) $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-debug.o pd-tty.o $(PILIBS) -o $@ $(TKLIBS) $(TCLLIBS) $(RLLIBS) $(LIBS)
 
 reminders$(EXT): $(PILIBS) reminders.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) reminders.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) reminders.o $(PILIBS) -o $@ $(LIBS)
 
 memos$(EXT): $(PILIBS) memos.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) memos.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) memos.o $(PILIBS) -o $@ $(LIBS)
 
 read-todos$(EXT): $(PILIBS) read-todos.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) read-todos.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) read-todos.o $(PILIBS) -o $@ $(LIBS)
 
 read-expenses$(EXT): $(PILIBS) read-expenses.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) read-expenses.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) read-expenses.o $(PILIBS) -o $@ $(LIBS)
 
 read-ical$(EXT): $(PILIBS) read-ical.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) read-ical.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) read-ical.o $(PILIBS) -o $@ $(LIBS)
 
 sync-memodir$(EXT): $(PILIBS) sync-memodir.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) sync-memodir.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) sync-memodir.o $(PILIBS) -o $@ $(LIBS)
 
 sync-ical$(EXT): $(PILIBS) sync-ical.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) sync-ical.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) sync-ical.o $(PILIBS) -o $@ $(LIBS)
 
 addresses$(EXT): $(PILIBS) addresses.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) addresses.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) addresses.o $(PILIBS) -o $@ $(LIBS)
 
 test-connector$(EXT): $(PILIBS) test-connector.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) test-connector.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) test-connector.o $(PILIBS) -o $@ $(LIBS)
 
 test-acceptor$(EXT): $(PILIBS) test-acceptor.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) test-acceptor.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) test-acceptor.o $(PILIBS) -o $@ $(LIBS)
 
 dlpsh$(EXT): $(PILIBS) dlpsh.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) dlpsh.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) dlpsh.o $(PILIBS) -o $@ $(LIBS)
 
 debugsh$(EXT): $(PILIBS) debugsh.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) debugsh.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) debugsh.o $(PILIBS) -o $@ $(LIBS)
 
 ccexample$(EXT): $(PICCLIBS) ccexample.o
-	$(PURELINK) $(PURIFY) $(CXX) $(CXXFLAGS) ccexample.o $(PICCLIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS) ccexample.o $(PICCLIBS) -o $@ $(CXXLIBS) $(LIBS)
 
 validate$(EXT): $(PICCLIBS) validate.o
-	$(PURELINK) $(PURIFY) $(CXX) $(CXXFLAGS) validate.o $(PICCLIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS) validate.o $(PICCLIBS) -o $@ $(CXXLIBS) $(LIBS)
+
+iambicexample$(EXT): $(PICCLIBS) iambicexample.o
+	$(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS) iambicexample.o $(PICCLIBS) -o $@ $(CXXLIBS) $(LIBS)
 
 getrom$(EXT): $(PILIBS) getrom.o
-	$(PURELINK) $(PURIFY) $(CC) $(CFLAGS) getrom.o $(PILIBS) -o $@ $(LIBS)
+	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) getrom.o $(PILIBS) -o $@ $(LIBS)
 
 parsedate.c: parsedate.y
 	@echo Expect six shift/reduce conflicts

@@ -1,6 +1,8 @@
 #ifndef _PILOT_CMP_H_
 #define _PILOT_CMP_H_
 
+#include "pi-args.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,15 +18,15 @@ struct cmp {
   unsigned long baudrate;
 };
 
-extern int cmp_rx(struct pi_socket *ps, struct cmp * c);
+extern int cmp_rx PI_ARGS((struct pi_socket *ps, struct cmp * c));
 
-extern int cmp_init(struct pi_socket *ps, int baudrate);
+extern int cmp_init PI_ARGS((struct pi_socket *ps, int baudrate));
 
-extern int cmp_abort(struct pi_socket *ps, int reason);
+extern int cmp_abort PI_ARGS((struct pi_socket *ps, int reason));
 
-extern int cmp_wakeup(struct pi_socket *ps, int maxbaud);
+extern int cmp_wakeup PI_ARGS((struct pi_socket *ps, int maxbaud));
 
-extern void cmp_dump(unsigned char * cmp, int rxtx);
+extern void cmp_dump PI_ARGS((unsigned char * cmp, int rxtx));
 
 #ifdef __cplusplus
 }

@@ -7,8 +7,9 @@
           '@LIBS@', '-lsocket -los2', '@EXT@', '.EXE',
           '@SUBMAKE_COMM@', '$(MAKE) -C libsock -f Makefile.os2',
           '@SUBMAKE_COMM_CC@', '$(MAKE) -C libcc -f Makefile.os2',
-          '@CXX@', 'g++',
+          '@CXX@', 'gcc',
           '@CXXFLAGS@', '-g -O2 -fno-strength-reduce' ,
+          '@CXXLIBS@', '-lstdcpp',
           '@ARFLAGS@', '-cur',
           '@cclib@', 'libpicc.a', '@libcclib@', 'libcc/libpicc.a',
           '@ccexecs@', '$(CCEXECS)'

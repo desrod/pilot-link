@@ -2,11 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream.h>
+#include "pi-source.h"
 #include "pi-file.h"
 #include "pi-todo.h"
 #include "pi-memo.h"
 #include "pi-datebook.h"
 #include "pi-address.h"
+
+#define bool int
+#define false 0
+#define true 1
 
 static char *days[] = {
      "Sunday", "Monday", "Tuesday", "Wednesday",
@@ -205,6 +210,7 @@ void prettyPrintRepeat(appointment_t *appt)
 	      cout << "It repeats every " << freqToStr(freq) << "day";
 	      break;
 	 case appointment_t::weekly:
+	 {
 	      cout << "It repeats every " << freqToStr(freq) << "week on ";
 
 	      for (int i = 0; i < 7; i++) {
@@ -218,6 +224,7 @@ void prettyPrintRepeat(appointment_t *appt)
 	      }
 	      cout << endl;
 	      break;
+	 }
 	 case appointment_t::monthlyByDay:
 	      cout << "It repeats on the ";
 	      

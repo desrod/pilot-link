@@ -1,3 +1,4 @@
+#include "pi-source.h"
 #include "pi-datebook.h"
 
 #define alarmFlag 64
@@ -58,11 +59,11 @@ appointment_t::appointment_t(const appointment_t &oldCopy)
      }
 }
 
-void appointment_t::unpack(void *buf, bool firstTime) 
+void appointment_t::unpack(void *buf, int firstTime) 
 {
      // If we unpack more than once, we need to free up any old data first
      // so that we don't leak memory
-     if (firstTime == false) {
+     if (!firstTime) {
 	  if (_repeatEnd != NULL)
 	       delete _repeatEnd;
 	  if (_numExceptions != 0)
@@ -84,7 +85,7 @@ void appointment_t::unpack(void *buf, bool firstTime)
      _begin.tm_sec = 0;
      
      ptr += 3;
-     getBufTm(&_begin, ptr, false);
+     getBufTm(&_begin, ptr, 0);
      
      (void) memcpy(&_end, &_begin, sizeof(tm));
      
@@ -96,9 +97,9 @@ void appointment_t::unpack(void *buf, bool firstTime)
 	  _begin.tm_min = 0;
 	  _end.tm_hour = 0;
 	  _end.tm_min = 0;
-	  _untimed = true;
+	  _untimed = 1;
      } else
-	  _untimed = false;
+	  _untimed = 0;
 
      mktime(&_end);
 
@@ -109,7 +110,7 @@ void appointment_t::unpack(void *buf, bool firstTime)
      ptr += 2;
 
      if (flags & alarmFlag) {
-	  _hasAlarm = true;
+	  _hasAlarm = 1;
 	  _advance = get_byte(ptr);
 
 	  ++ptr;
@@ -117,7 +118,7 @@ void appointment_t::unpack(void *buf, bool firstTime)
 
 	  ++ptr;
      } else
-	  _hasAlarm = false;
+	  _hasAlarm = 0;
 
      if (flags & repeatFlag) {
 	  _repeatType = (repeatType_t) get_byte(ptr);
@@ -161,7 +162,7 @@ void appointment_t::unpack(void *buf, bool firstTime)
 	  _exceptions = new tm [_numExceptions];
 
 	  for (int i = 0; i < _numExceptions; i++, ptr += 2)
-	       getBufTm(&_exceptions[i], ptr, false);
+	       getBufTm(&_exceptions[i], ptr, 0);
      } else {
 	  _numExceptions = 0;
 	  _exceptions = NULL;
@@ -311,6 +312,70 @@ appointment_t::~appointment_t(void)
 	  delete _note;
      if (_description)
 	  delete _description;
+}
+
+int appointment_t::operator<(const appointment_t &right)
+{
+     tm a, b;
+
+     (void) memcpy(&a, &_begin, sizeof(tm));
+     (void) memcpy(&b, &(right._begin), sizeof(tm));
+
+     return mktime(&a) < mktime(&b);
+}
+
+int appointment_t::operator>(const appointment_t &right)
+{
+     tm a, b;
+
+     (void) memcpy(&a, &_begin, sizeof(tm));
+     (void) memcpy(&b, &(right._begin), sizeof(tm));
+
+     return mktime(&a) > mktime(&b);
+}
+
+// I doubt this works properly.  I haven't done any testing yet.
+int appointment_t::operator==(const appointment_t &right) 
+{
+#if 1
+     return memcmp(this, &right, sizeof(appointment_t));
+#else
+     tm a, b;
+
+     (void) memcpy(&a, &_begin, sizeof(tm));
+     (void) memcpy(&b, &(right._begin), sizeof(tm));
+
+     if (mktime(&a) != mktime(&b)) 
+	return 0;
+
+     (void) memcpy(&a, &_end, sizeof(tm));
+     (void) memcpy(&b, &(right._end), sizeof(tm));
+
+     if (mktime(&a) != mktime(&b)) 
+	return 0;
+     
+     if (strcmp(_description, right._description))
+	return 0;
+
+     if (strcmp(_note, right._note))
+	return 0;
+
+     if (_hasAlarm) {
+	if (right._hasAlarm == 0)
+	    return 0;
+
+	if (_advance != right._advance || _advanceUnits != right._advanceUnits)
+	    return 0;
+     }
+
+     if (_repeatType != right._repeatType)
+	return 0;
+
+     if (_numExceptions != right._numExceptions)
+	return 0;
+
+     return 0;
+#endif
 }
 
 appointmentList_t::~appointmentList_t() 

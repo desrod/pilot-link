@@ -1,3 +1,5 @@
+
+#include "pi-source.h"
 #include <string.h>
 #include "pi-todo.h"
 
@@ -52,11 +54,11 @@ todo_t::todo_t(const todo_t &oldCopy)
      }
 }
 
-void todo_t::unpack(void *buf, bool firstTime) 
+void todo_t::unpack(void *buf, int firstTime) 
 {
      // If we unpack more than once, we need to free up any old data first
      // so that we don't leak memory
-     if (firstTime == false) {
+     if (!firstTime) {
 	  if (_due)
 	       delete _due;
 	  if (_description)
@@ -86,10 +88,10 @@ void todo_t::unpack(void *buf, bool firstTime)
 
      ptr++;
      if (_priority & 0x80) {
-	  _complete = true;
+	  _complete = 1;
 	  _priority &= 0x7f;
      } else
-	  _complete = false;
+	  _complete = 0;
 
      int len = strlen((const char *) ptr);
      if (len) {

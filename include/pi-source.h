@@ -29,11 +29,13 @@ extern "C" {
 /*# include <netinet/in.h>*/
 # include <dirent.h>
 # include <errno.h>
+# include <assert.h>
 # define TTYPrompt "com#"
 # define RETSIGTYPE void
 # define HAVE_SIGACTION
 # define HAVE_DUP2
 # define HAVE_SYS_SELECT_H
+# define HAVE_STRDUP
 #else
 # include "pi-config.h"
 #endif
@@ -111,13 +113,15 @@ struct pi_socket {
 
 /* internal functions */
 
-extern int pi_device_open(char *, struct pi_socket *ps);
-extern struct pi_socket *find_pi_socket(int sd);
-extern int crc16(unsigned char *ptr, int count);
-extern char * printlong (unsigned long val);
-extern unsigned long makelong (char * c);
-extern void dumpline (const unsigned char *buf, int len, int addr);
-extern void dumpdata (const unsigned char * buf, int len);
+#include "pi-args.h"
+
+extern int pi_device_open PI_ARGS((char *, struct pi_socket *ps));
+extern struct pi_socket *find_pi_socket PI_ARGS((int sd));
+extern int crc16 PI_ARGS((unsigned char *ptr, int count));
+extern char * printlong PI_ARGS((unsigned long val));
+extern unsigned long makelong PI_ARGS((char * c));
+extern void dumpline PI_ARGS((const unsigned char *buf, int len, int addr));
+extern void dumpdata PI_ARGS((const unsigned char * buf, int len));
 
 #if defined(PADP_TRACE)
 #define Begin(a) fprintf(stderr,"Begin %s\n",#a)

@@ -1,6 +1,8 @@
 #ifndef _PILOT_PADP_SLP_H_
 #define _PILOT_PADP_SLP_H_
 
+#include "pi-args.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,11 +23,11 @@ struct slp {
   unsigned char csum;
 };
 
-extern int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len);
-extern int slp_rx(struct pi_socket *ps);
+extern int slp_tx PI_ARGS((struct pi_socket *ps, struct pi_skb *nskb, int len));
+extern int slp_rx PI_ARGS((struct pi_socket *ps));
 
-extern void slp_dump(struct pi_skb *skb, int rxtx);
-extern void dph(unsigned char *d);
+extern void slp_dump PI_ARGS((struct pi_skb *skb, int rxtx));
+extern void dph PI_ARGS((unsigned char *d));
                                             
 #ifdef __cplusplus
 }

@@ -1,6 +1,8 @@
 #ifndef _PILOT_SYSPKT_H
 #define _PILOT_SYSPKT_H
 
+#include "pi-args.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,36 +53,36 @@ struct RPC_params {
 
 extern int sys_RPCerror;
 
-extern int sys_UnpackState(void * buffer, struct Pilot_state * s);
+extern int sys_UnpackState PI_ARGS((void * buffer, struct Pilot_state * s));
 
-extern int sys_UnpackRegisters(void * buffer, struct Pilot_registers * r);
+extern int sys_UnpackRegisters PI_ARGS((void * buffer, struct Pilot_registers * r));
 
-extern int syspkt_tx(struct pi_socket *ps, unsigned char *msg, int length);
+extern int syspkt_tx  PI_ARGS((struct pi_socket *ps, unsigned char *msg, int length));
                                     
-extern int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len);
+extern int syspkt_rx PI_ARGS((struct pi_socket *ps, unsigned char *buf, int len));
                                     
 
-extern int sys_Continue(int sd, struct Pilot_registers * r, struct Pilot_watch * w);
-extern int sys_Step(int sd);
+extern int sys_Continue  PI_ARGS((int sd, struct Pilot_registers * r, struct Pilot_watch * w));
+extern int sys_Step  PI_ARGS((int sd));
 
-extern int sys_QueryState(int sd);
-extern int sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void * buf);
-extern int sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void * buf);
+extern int sys_QueryState  PI_ARGS((int sd));
+extern int sys_ReadMemory  PI_ARGS((int sd, unsigned long addr, unsigned long len, void * buf));
+extern int sys_WriteMemory  PI_ARGS((int sd, unsigned long addr, unsigned long len, void * buf));
 
-extern int sys_ToggleDbgBreaks(int sd);
+extern int sys_ToggleDbgBreaks  PI_ARGS((int sd));
 
-extern int sys_SetTrapBreaks(int sd, int * traps);
-extern int sys_GetTrapBreaks(int sd, int * traps);
+extern int sys_SetTrapBreaks  PI_ARGS((int sd, int * traps));
+extern int sys_GetTrapBreaks  PI_ARGS((int sd, int * traps));
 
-extern int sys_SetBreakpoints(int sd, struct Pilot_breakpoint * b);
-extern int sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, 
-                    int len, int caseinsensitive, void * data, unsigned long * found);
+extern int sys_SetBreakpoints  PI_ARGS((int sd, struct Pilot_breakpoint * b));
+extern int sys_Find  PI_ARGS((int sd, unsigned long startaddr, unsigned long stopaddr, 
+                    int len, int caseinsensitive, void * data, unsigned long * found));
              
 
-extern int sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed, 
-                       int keymod, int keyasc, int keycode);
+extern int sys_RemoteEvent  PI_ARGS((int sd, int penDown, int x, int y, int keypressed, 
+                       int keymod, int keyasc, int keycode));
 
-extern int sys_RPC(int sd, int socket, int trap, long * D0, long * A0, int params, struct RPC_param * param, int rep);
+extern int sys_RPC  PI_ARGS((int sd, int socket, int trap, long * D0, long * A0, int params, struct RPC_param * param, int rep));
 
 #define RPC_Byte(data) (-2),((unsigned int)htons((data)<<8))
 #define RPC_Short(data) (-2),((unsigned int)htons((data)))
@@ -99,19 +101,19 @@ extern int sys_RPC(int sd, int socket, int trap, long * D0, long * A0, int param
 #define RPC_PtrReply  1
 #define RPC_NoReply 0
 
-extern int RPC(int sd, int socket, int trap, int ret, ...);
+extern int RPC PI_ARGS((int sd, int socket, int trap, int ret, ...));
 
-extern void InvertRPC(struct RPC_params * p);
-extern void UninvertRPC(struct RPC_params * p);
+extern void InvertRPC PI_ARGS((struct RPC_params * p));
+extern void UninvertRPC PI_ARGS((struct RPC_params * p));
 
-extern int PackRPC(struct RPC_params * p, int trap, int reply, ...);
+extern int PackRPC PI_ARGS((struct RPC_params * p, int trap, int reply, ...));
 
-extern unsigned long DoRPC(int sd, int socket, struct RPC_params * p, int * error);
+extern unsigned long DoRPC PI_ARGS((int sd, int socket, struct RPC_params * p, int * error));
 
-extern int dlp_ProcessRPC(int sd, int trap, int ret, ...);
+extern int dlp_ProcessRPC PI_ARGS((int sd, int trap, int ret, ...));
 
-extern int RPC_Int_Void(int sd, int trap);
-extern int RPC_Ptr_Void(int sd, int trap);
+extern int RPC_Int_Void PI_ARGS((int sd, int trap));
+extern int RPC_Ptr_Void PI_ARGS((int sd, int trap));
 
 #ifdef __cplusplus
 }

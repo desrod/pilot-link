@@ -199,8 +199,10 @@ static SV * rv;
 #define newRV_noinc(s) ((rv=newRV(s)), SvREFCNT_dec(s), rv)
 #endif
 
-extern char * printlong (unsigned long val);
-extern unsigned long makelong (char * c);
+extern char * printlong _((unsigned long val));
+extern unsigned long makelong _((char * c));
+SV * newSVChar4 _((unsigned long arg));
+unsigned long SvChar4 _((SV *arg));
 
 typedef struct {
 	int errno;
@@ -249,6 +251,29 @@ SvChar4(arg)
 			croak("Char4 argument a string that isn't four bytes long");
 		return makelong(c);
 	}
+}
+
+SV * DoFunc(SV * arg, SV *func);
+
+SV *
+DoFunc(arg, func)
+	SV * arg;
+	SV * func;
+{
+	dSP;
+	SV * result;
+	printf("Invoking function %8.8x (%8.8x)\n", (unsigned long)func, (unsigned long)SvRV(func));
+	PUSHMARK(sp);
+	EXTEND(sp, 1);
+	PUSHs(arg);
+	PUTBACK;
+	printf("Starting call\n");
+	perl_call_sv(func, G_SCALAR);     /* NOTE: May longjmp (die)      */
+	printf("Ending call\n");
+	SPAGAIN;
+	result = POPs;
+	PUTBACK;
+	return result;
 }
 
 #define pack_dbinfo(arg, var, failure)	\
@@ -331,7 +356,7 @@ SvChar4(arg)
 #define ReturnReadRecord(buf,size) \
 	    if (result >=0) {	\
 		    EXTEND(sp, 5);	\
-	    	PUSHs(sv_2mortal(newSVpv(buf, size)));	\
+	    	PUSHs(sv_2mortal(newSVpv(buf,size)));	\
 		    if (GIMME != G_SCALAR) {	\
 		    	PUSHs(sv_2mortal(newSViv(index)));	\
 		    	PUSHs(sv_2mortal(newSViv(id)));	\
@@ -1445,6 +1470,19 @@ Close(self)
 	PDA::Pilot::DLP::DB *	self
 	CODE:
 	RETVAL = dlp_CloseDB(self->socket, self->handle);
+	self->handle=0;
+	OUTPUT:
+	RETVAL
+
+Result
+Autopack(self, setting=1, creator=0, name=0)
+	PDA::Pilot::DLP::DB *	self
+	bool	setting
+	Char4	creator
+	char *	name
+	CODE:
+	if (setting) {
+	}
 	OUTPUT:
 	RETVAL
 
@@ -1579,7 +1617,8 @@ SetAppBlock(self, block)
 	CODE:
 	{
 		int len;
-		void * c = SvPV(block, len);
+		void * c;
+		c = SvPV(block, len);
 		RETVAL = dlp_WriteAppBlock(self->socket, self->handle, c, len);
 	}
 	OUTPUT:
@@ -1681,7 +1720,8 @@ SetRecord(self, data, id, attr, category)
 	CODE:
 	{
 		int len, result;
-		void * c = SvPV(data, len);
+		void * c;
+		c = SvPV(data, len);
 		result = dlp_WriteRecord(self->socket, self->handle, attr, id, category, c, len, &RETVAL);
 		if (result<0) {
 			RETVAL = 0;
@@ -1724,7 +1764,8 @@ SetResource(self, data, type, id)
 	CODE:
 	{
 		int len, result;
-		void * c = SvPV(data, len);
+		void * c;
+		c = SvPV(data, len);
 		result = dlp_WriteResource(self->socket, self->handle, type, id, c, len);
 		if (result < 0) {
 			self->errno = result;
@@ -1759,7 +1800,8 @@ void
 DESTROY(self)
 	PDA::Pilot::DLP *	self
 	CODE:
-	pi_close(self->socket);
+	if (self->socket)
+		pi_close(self->socket);
 	free(self);
 
 int
@@ -1934,23 +1976,25 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0)
     RETVAL
 
 void
-GetAppPref(self, creator, number, backup=1)
+GetAppPref(self, creator, number, backup=1, raw=0)
 	PDA::Pilot::DLP *	self
 	Char4	creator
 	int	number
 	int	backup
+	int raw
 	PPCODE:
 	{
 	}
 
-int
-SetAppPref(self, data, creator, number, version, backup=1)
+void
+SetAppPref(self, data, creator, number, version, backup=1, raw=0)
 	PDA::Pilot::DLP *	self
 	SV *	data
 	Char4	creator
 	int	number
 	int	version
 	int	backup
+	int raw
 	PPCODE:
 	{
 	}
@@ -1961,7 +2005,9 @@ Close(self, status=0)
 	PDA::Pilot::DLP *	self
 	int	status
 	CODE:
-	RETVAL = dlp_EndOfSync(self->socket, status);
+	RETVAL = dlp_EndOfSync(self->socket, status) || pi_close(self->socket);
+	if (!RETVAL)
+		self->socket = 0;
 	OUTPUT:
 	RETVAL
 
@@ -1969,7 +2015,9 @@ Result
 Abort(self)
 	PDA::Pilot::DLP *	self
 	CODE:
-	RETVAL = dlp_AbortSync(self->socket);
+	RETVAL = dlp_AbortSync(self->socket) || pi_close(self->socket);
+	if (!RETVAL)
+		self->socket = 0;
 	OUTPUT:
 	RETVAL
 
@@ -2102,9 +2150,11 @@ PDA::Pilot::File *
 Open(name)
 	char *	name
 	CODE:
-	RETVAL = malloc(sizeof(PDA__Pilot__File));
-	RETVAL->errno = 0;
-	RETVAL->pf = pi_file_open(name);
+	{
+		RETVAL = malloc(sizeof(PDA__Pilot__File));
+		RETVAL->errno = 0;
+		RETVAL->pf = pi_file_open(name);
+	}
 	OUTPUT:
 	RETVAL
 

@@ -1,9 +1,12 @@
 #ifndef _PILOT_MACROS_H_
 #define _PILOT_MACROS_H_
 
-#include <sys/time.h> /* for struct tm */
+#include "pi-args.h"
 
 typedef unsigned long recordid_t;
+
+double get_float PI_ARGS((void * buffer));
+void set_float PI_ARGS((void * buffer, double value));
 
 #ifndef __cplusplus
 
@@ -97,7 +100,7 @@ inline void set_byte(void *buf, const int val)
      *((unsigned char *)buf) = val;
 }
 
-inline struct tm *getBufTm(struct tm *t, const void *buf, bool setTime) 
+inline struct tm *getBufTm(struct tm *t, const void *buf, int setTime) 
 {
      unsigned short int d = get_short(buf);
      

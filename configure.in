@@ -1,11 +1,13 @@
+
+# This is free software, licensed under the GNU Public License V2.
+# See the file COPYING for details.
+
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(include/pi-cmp.h)
 AC_CONFIG_AUX_DIR(scripts)
 
 dnl Check host type
 AC_CANONICAL_HOST
-
-
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -53,6 +55,7 @@ libcclib=''
 SUBMAKE_COMM='cd libsock ; $(MAKE) '
 SUBMAKE_COMM_CC='-true'
 EXT=''
+CXXLIBS=''
 if test $ac_cv_prog_cxx_works = yes; then
   ccexecs='$(CCEXECS)'
   cclib='libpicc.a'
@@ -65,9 +68,22 @@ AC_SUBST(libcclib)
 AC_SUBST(SUBMAKE_COMM)
 AC_SUBST(SUBMAKE_COMM_CC)
 AC_SUBST(EXT)
+AC_SUBST(CXXLIBS)
 
 
 dnl Checks for libraries.
+
+
+if test $ac_cv_prog_cxx_works = yes; then
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  if test $ac_cv_prog_gxx = yes; then
+    AC_CHECK_LIB(g++, main, CXXLIBS="$CXXLIBS -lg++")
+  fi
+  AC_LANG_RESTORE
+fi
+AC_CHECK_LIB(m, ldexp, LIBS="$LIBS -lm")
+AC_CHECK_LIB(PW, alloca, LIBS="$LIBS -lPW")
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -91,7 +107,7 @@ if test "$tcl_checkBoth" = 1; then
 fi
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
 AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
-                
+
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
@@ -119,6 +135,8 @@ esac])
 CWFLAG=$ac_cv_cwflag
 AC_SUBST(CWFLAG)
 
+CFLAGS="$CFLAGS `perl -e 'use Config; print $Config{cccdlflags}'`"
+
 dnl NeXT support
 case "$host" in
     *next*) CPLIB="ln -s"
@@ -134,4 +152,5 @@ AC_CONFIG_HEADER(include/pi-config.h)
 if test $ac_cv_prog_cxx_works = yes; then
   cc_m='libcc/Makefile'
 fi
+
 AC_OUTPUT(libsock/Makefile $cc_m Makefile)

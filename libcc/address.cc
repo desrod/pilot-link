@@ -1,3 +1,5 @@
+
+#include "pi-source.h"
 #include "pi-address.h"
 
 static inline int hi(const unsigned int x) { return (x >> 4) & 0x0f; }
@@ -67,11 +69,11 @@ address_t::address_t(const address_t &oldCopy)
 	  }
 }
 
-void address_t::unpack(void *buf, bool firstTime) 
+void address_t::unpack(void *buf, int firstTime) 
 {
      int i;
      
-     if (firstTime == false)
+     if (!firstTime)
 	  for (i = 0; i < 19; i++)
 	       if (_entry[i])
 		    delete _entry[i];

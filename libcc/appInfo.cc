@@ -1,4 +1,6 @@
-#include "pi-appinfo.h"
+
+#include "pi-source.h"
+#include "pi-appinfo.hxx"
 
 // Constructor for an app info has to determine the base appinfo fields
 appInfo_t::appInfo_t(const void *ap) 
@@ -40,39 +42,53 @@ int appInfo_t::categoryIndex(charConst_t category) const
 // you need to pack this application info and then load it to the pilot
 // If false is returned, there are already 16 categories defined
 
-// WARNING - DO NOT USE THIS FUNCTION YET.  IT IS NOT COMPLETELY WRITTEN.
-// I STILL NEED TO HAVE IT ASSIGN A NEW UNIQUE ID TO THE CATEGORY
-bool appInfo_t::addCategory(charConst_t category)
+int appInfo_t::addCategory(charConst_t category)
 {
-     return false; // To be removed once I finish the function
-
      for (short int i = 0; i < 16; i++)
 	  if (_categoryName[i][0] == '\0') {
 	       // We found a free slot
 	       (void) strcpy(_categoryName[i], category);
-	       return true;
+
+	       // Now find an ID to use.  We are allowed between 128 & 255,
+	       short int j;
+	       unsigned char id = 128;
+	       for (j = 0; j < 16; j++)
+		    if (_categoryName[i][0] != '\0' && _categoryID[j] > id)
+			 id = _categoryID[j];
+
+	       if (++id == 256) {
+		    id = 127;
+
+		    do {
+			 id++;
+			 for (j = 0; j < 16; j++)
+			      if (_categoryName[i][0] != '\0' &&
+				  _categoryID[j] == id)
+				   break;
+		    } while (j != 16);
+	       }
+
+	       _categoryID[i] = id;
+	       
+	       return 1;
 	  }
 
-     return false;
+     return 0;
 }
 
 // Given an existing category name, we remove it from the local info.  This
 // does not modify the info on the pilot.  See comments on addCategory().
 // Returns true if the category was removed, false if it was not found
-
-// WARNING - DO NOT USE THIS FUNCTION YET.  IT IS NOT COMPLETELY WRITTEN.
-// I STILL NEED TO HAVE IT COMPACT THE CATEGORIES AFTER IT DELETES ONE
-bool appInfo_t::removeCategory(charConst_t category) 
+int appInfo_t::removeCategory(charConst_t category) 
 {
-     return false;  // To be removed once I finish the function
      for (short int i = 0; i < 16; i++)
 	  if (!strcmp(_categoryName[i], category)) {
 	       // We found their category
-	       (void) memset(_categoryName[i], '\0', 16);
-	       return true;
+	       _categoryName[i][0] = '\0';
+	       return 1;
 	  }
 
-     return false;
+     return 0;
 }
 
 void appInfo_t::baseAppInfoPack(unsigned char *buffer) 

@@ -12,6 +12,8 @@
 #include "pi-source.h"
 #include "pi-serial.h"
 
+#include <termios.h>
+
 char * progname;
 
 void Help(void)
@@ -60,7 +62,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
                       
   printf("Please start Getrom.prc on your Pilot.\n");
   printf("Waiting for connection on %s...\n", argv[1]);
-  
+
   for(i=0;i < 128;i++) {
         do {
           l = read(ps.mac->fd, buf, 1);

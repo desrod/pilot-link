@@ -1,14 +1,13 @@
 #ifndef _PILOT_PADP_H_
 #define _PILOT_PADP_H_
 
+#include "pi-args.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "pi-socket.h"
-#ifdef OS2
-#include <time.h>
-#endif
 
 #define padData   1
 #define padWake   0x101
@@ -28,9 +27,9 @@ struct padp {
 
 #define SIZEOF_PADP 4
 
-extern int padp_tx(struct pi_socket *ps, void *msg, int len, int type);
-extern int padp_rx(struct pi_socket *ps, void *buf, int len);
-extern void padp_dump(struct pi_skb *skb, struct padp* padp, int rxtx);
+extern int padp_tx PI_ARGS((struct pi_socket *ps, void *msg, int len, int type));
+extern int padp_rx PI_ARGS((struct pi_socket *ps, void *buf, int len));
+extern void padp_dump PI_ARGS((struct pi_skb *skb, struct padp* padp, int rxtx));
 
 #ifdef __cplusplus
 }
