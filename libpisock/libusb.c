@@ -240,8 +240,8 @@ USB_close (void)
 #define MAX_READ_SIZE	4096
 #define AUTO_READ_SIZE	64
 static char				*RD_buffer = NULL;
-static int				RD_buffer_size;
-static int				RD_buffer_used;
+static size_t			RD_buffer_size;
+static size_t			RD_buffer_used;
 static pthread_mutex_t	RD_buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t	RD_buffer_available_cond = PTHREAD_COND_INITIALIZER;
 static int				RD_read_size;
