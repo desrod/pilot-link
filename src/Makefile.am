@@ -49,10 +49,10 @@ bin_PROGRAMS = 		\
 	pi-getromtoken	\
 	pi-nredir	\
 	pilot-addresses	\
+	pilot-archive	\
 	pilot-clip	\
 	pilot-dedupe	\
 	pilot-file	\
-	pilot-mail	\
 	pilot-prc	\
 	pilot-schlep	\
 	pilot-xfer	\
@@ -223,6 +223,12 @@ pilot_addresses_SOURCES = 	\
 pilot_addresses_LDADD = 			\
 	$(top_builddir)/libpisock/libpisock.la
 
+pilot_archive_SOURCES =       \
+        $(getopt_sources)       \
+        pilot-archive.c
+pilot_archive_LDADD =                         \
+        $(top_builddir)/libpisock/libpisock.la
+
 pilot_clip_SOURCES = 		\
 	$(getopt_sources)	\
 	pilot-clip.c
@@ -249,12 +255,18 @@ pilot_file_SOURCES = 		\
 pilot_file_LDADD = 				\
 	$(top_builddir)/libpisock/libpisock.la
 
-pilot_mail_SOURCES = 		\
-	$(getopt_sources)	\
-	parsedate.y		\
-	pilot-mail.c
-pilot_mail_LDADD = 				\
-	$(top_builddir)/libpisock/libpisock.la
+######################################################
+# pilot-mail has been deprecated, and replaced with 
+# pilot-mailsync. Please use that instead. 
+# http://wissrech.iam.uni-bonn.de/people/garcke/pms/
+######################################################
+#pilot_mail_SOURCES = 		\
+#	$(getopt_sources)	\
+#	parsedate.y		\
+#	pilot-mail.c
+#pilot_mail_LDADD = 				\
+#	$(top_builddir)/libpisock/libpisock.la
+######################################################
 
 pilot_prc_SOURCES = 		\
 	$(getopt_sources)	\

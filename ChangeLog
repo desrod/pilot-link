@@ -1,3 +1,9 @@
+2002-12-11 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/Makefile.am: Deprecate pilot-mail, promote use of
+	  pilot-mailsync. pilot-mail.c will stay here for those who wish to
+	  learn how to write conduits.
+
 2002-12-10 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* autogen.sh: UnixWare fixes for $VENDOR
