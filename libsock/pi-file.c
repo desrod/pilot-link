@@ -1399,8 +1399,6 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	/* Resource or record? */
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < pf->nentries; j++) {
-//			int 	size;
-
 			if ((pi_file_read_resource(pf, j, 0, &size, 0, 0)
 			     == 0) && (size > 65536)) {
 				printf("Database contains resource over 64K!\n");
