@@ -45,11 +45,12 @@ int plu_connect()
 	result = pi_bind(sd, plu_port);
 
 	if (result < 0) {
-		fprintf(stderr, "\n   Unable to bind to port: %s\n",
-				plu_port);
+		if (plu_port == NULL)
+			fprintf(stderr, "   No port specified\n");
+		else
+			fprintf(stderr, "   Unable to bind to port: %s\n", plu_port);
 
-		fprintf(stderr, "   Please use --help for more "
-				"information\n\n");
+		fprintf(stderr, "   Please use --help for more information\n\n");
 		return result;
 	}
 

@@ -1092,7 +1092,6 @@ static pi_socket_t *
 pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 {
 	pi_socket_t *ps;
-	char	*defport = "serial:/dev/pilot";
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1100,10 +1099,8 @@ pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 	}
 
 	if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
-		fprintf(stderr, "   No $PILOTPORT specified and no -p "
-				"<port> given.\n"
-				"   Defaulting to '%s'\n", defport);
-		port = defport;
+		errno = ENXIO;
+		return NULL;
 	}
 
 	/* Create the device and sockaddr */

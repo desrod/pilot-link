@@ -72,11 +72,12 @@ pilot_connect(const char *port)
 	result = pi_bind(sd, port);
 
 	if (result < 0) {
-		fprintf(stderr, "   Unable to bind to port: %s\n", 
-				port);
+		if (port == NULL)
+			fprintf(stderr, "   No port specified\n");
+		else
+			fprintf(stderr, "   Unable to bind to port: %s\n", port);
 
-		fprintf(stderr, "   Please use --help for more "
-				"information\n\n");
+		fprintf(stderr, "   Please use --help for more information\n\n");
 		return result;
 	}
 
