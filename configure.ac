@@ -136,6 +136,13 @@ case "$host" in
 		dnl Need -fPIC for shared libs
 		PIC_LIBS="-fPIC"
 	;;
+	*solaris*)
+		dnl Check if we need -lresolv for inet_pton
+		AC_CHECK_FUNC(inet_pton,,
+			[AC_CHECK_LIB(resolv,inet_pton,LIBS="-lresolv $LIBS")])
+		AC_CHECK_FUNC(pow,,
+			[AC_CHECK_LIB(pow,m,LIBS="-lm $LIBS")])
+	;;
 	*)
 	;;
 esac
