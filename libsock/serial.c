@@ -61,7 +61,13 @@ static int pi_serial_getsockopt(struct pi_socket *ps, int level, int option_name
 static int pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name, 
 				const void *option_value, int *option_len);
 
-// static int pi_serial_tickle(struct pi_socket *ps);
+/* Tickle needs to be fixed, currently does not seem to work over USB
+   because it needs PADP, and USB on 4.0 devices doesn't appear to use
+   PADP any longer. Hrm.. 
+
+   static int pi_serial_tickle(struct pi_socket *ps);
+*/
+
 static int pi_serial_close(struct pi_socket *ps);
 
 static struct pi_protocol *pi_serial_protocol (struct pi_device *dev);

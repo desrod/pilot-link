@@ -294,22 +294,22 @@ int pi_socket(int domain, int type, int protocol)
 	protocol_queue_add (ps, prot);
 	prot = ps->device->protocol (ps->device);
 	protocol_init_queue_add (ps, prot);
-	
+
 	/* Initialize the rest of the fields */
-	ps->laddr = NULL;
-	ps->laddrlen = 0;
-	ps->raddr = NULL;
-	ps->raddrlen = 0;
-	ps->type = type;
-	ps->protocol = protocol;
-	ps->connected = 0;
-	ps->accepted = 0;
-	ps->broken = 0;
-	ps->initiator = 0;
+	ps->laddr 	= NULL;
+	ps->laddrlen 	= 0;
+	ps->raddr 	= NULL;
+	ps->raddrlen 	= 0;
+	ps->type 	= type;
+	ps->protocol 	= protocol;
+	ps->connected 	= 0;
+	ps->accepted 	= 0;
+	ps->broken 	= 0;
+	ps->initiator 	= 0;
 	ps->minorversion = 0;
 	ps->majorversion = 0;
-	ps->version = 0;
-	ps->dlprecord = 0;
+	ps->version 	= 0;
+	ps->dlprecord 	= 0;
 
 #ifdef OS2
 	ps->os2_read_timeout = 60;
