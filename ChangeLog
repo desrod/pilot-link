@@ -1,5 +1,12 @@
 2001-12-18
 
+	* misc: Lots of cleanups, new 'Berkeley' indenting, renamed some
+	  types to be more 'human'.
+
+	* pilot-mail.c: Yes, it's being deprecated, but people still use it.
+	 %ENV parsing cruft cleaned up. Not yet complete. strlen and strcmp
+	 should go, in favor of the optarg they represent.
+
 	* read-ical.c: Reversed some changes to get it to build properly.
 	  Need to pare down main() in there, too large.
 

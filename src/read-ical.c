@@ -51,24 +51,28 @@ static const char *optstring = "hp:dt:f:";
 
 int main(int argc, char *argv[])
 {
-	int c;
-	int db;
-	int sd = -1;
-	int i;
-	int read_todos = -1;
-	FILE *ical;
-	unsigned char buffer[0xffff];
-	struct ToDoAppInfo tai;
-	char cmd[255];
-	char *dbonly = NULL;
-	char *ptext = NULL;
-	char *icalfile = NULL;
-	char *port = NULL;
-	char *pubtext = NULL;
-	char *progname = argv[0];
+	int 	chara,
+		db,
+		sd = -1,
+		index,
+		read_todos = -1;
 
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch (c) {
+	FILE 	*ical;
+
+	unsigned char buffer[0xffff];
+
+	char 	cmd[255],
+		*dbonly = NULL,
+		*ptext = NULL,
+		*icalfile = NULL,
+		*port = NULL,
+		*pubtext = NULL,
+		*progname = argv[0];
+
+	struct ToDoAppInfo tai;
+
+	while ((chara = getopt(argc, argv, optstring)) != -1) {
+		switch (chara) {
 
 		  case 'h':
 			  Help(progname);
@@ -136,12 +140,13 @@ int main(int argc, char *argv[])
 				dlp_ReadAppBlock(sd, db, 0, buffer,
 						 0xffff);
 				unpack_ToDoAppInfo(&tai, buffer, 0xffff);
-
-				for (i = 0;; i++) {
-					struct ToDo t;
-					int attr, category;
+				
+				for (index = 0;; index++) {
+					int 	attr,
+						category;
+					char 	id_buf[255];
+					struct 	ToDo t;
 					recordid_t id;
-					char id_buf[255];
 
 					int len =
 					    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, &category);
@@ -174,7 +179,7 @@ int main(int argc, char *argv[])
 				/* Close the database */
 				dlp_CloseDB(sd, db);
 
-				dlp_AddSyncLogEntry(sd, "Read todos from Palm.\n");
+				dlp_AddSyncLogEntry(sd, "Successfully read todos from Palm.\nThank you for using pilot-link.\n");
 			}
 
 			/* Open the Datebook's database, store access handle in db */
@@ -187,11 +192,11 @@ int main(int argc, char *argv[])
 			}
 
 			for (i = 0;; i++) {
-				int j;
-				struct Appointment a;
-				int attr;
+				int 	j,
+					attr;
+				char 	id_buf[255];				
+				struct 	Appointment a;
 				recordid_t id;
-				char id_buf[255];
 
 				int len =
 				    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, 0);
@@ -210,7 +215,8 @@ int main(int argc, char *argv[])
 					fprintf(ical, "set i [notice]\n");
 
 				} else {
-					int start, end;
+					int 	start,
+						end;
 
 					fprintf(ical, "set i [appointment]\n");
 
@@ -334,7 +340,9 @@ int main(int argc, char *argv[])
 			/* Close the database */
 			dlp_CloseDB(sd, db);
 
-			dlp_AddSyncLogEntry(sd, "read-ical successfully read Datebook from Palm.\nThank you for using pilot-link.\n");
+			dlp_AddSyncLogEntry(sd, "read-ical successfully read Datebook from Palm.\n"
+						"Thank you for using pilot-link.\n");
+			dlp_EndOfSync(sd, 0);
 			pi_close(sd);
 			return 0;
 		}
@@ -345,10 +353,10 @@ int main(int argc, char *argv[])
 
 char *tclquote(char *in)
 {
+	int 	len;
+	char 	*out,
+		*pos;
 	static char *buffer = 0;
-	char *out;
-	char *pos;
-	int len;
 
 	/* Skip leading bullet (and any whitespace after) */
 	if (in[0] == '\x95') {

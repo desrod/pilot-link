@@ -46,21 +46,21 @@ static const char *optstring = "hp:f:";
 
 int main(int argc, char *argv[])
 {
-	int c;
-	int db;
-	int i;
-	int sd = -1;
-	struct PilotUser User;
-	struct pi_file *pif = NULL;
-	struct ToDoAppInfo tai;
+	int 	chara,
+		db,
+		index,
+		sd = -1;
+	char 	*progname = argv[0],
+		*port = NULL,
+		*filename = NULL,
+		*ptr;
+	struct 	PilotUser User;
+	struct 	pi_file *pif = NULL;
+	struct 	ToDoAppInfo tai;
 	unsigned char buffer[0xffff];
-	char *progname = argv[0];
-	char *port = NULL;
-	char *filename = NULL;
-	char *ptr;
 	
-	while (((c = getopt(argc, argv, optstring)) != -1)) {
-		switch (c) {
+	while (((chara = getopt(argc, argv, optstring)) != -1)) {
+		switch (chara) {
 		  case 'h':
 			  Help(progname);
 			  exit(0);
@@ -130,15 +130,15 @@ int main(int argc, char *argv[])
 	
 		unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 	
-		for (i = 0;; i++) {
-			struct ToDo t;
-			int attr;
-			int category;
-			int len;
+		for (index = 0;; index++) {
+			int 	attr,
+				category,
+				len;
+			struct 	ToDo t;
 	
 			if (port) {
 				len =
-				    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
+				    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0,
 							  &attr, &category);
 	
 				if (len < 0)
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 			}
 			if (filename) {
 				if (pi_file_read_record
-				    (pif, i, (void *) &ptr, &len, &attr, &category,
+				    (pif, index, (void *) &ptr, &len, &attr, &category,
 				     0))
 					break;
 	
@@ -179,7 +179,8 @@ int main(int argc, char *argv[])
 		if (port) {
 			/* Close the database */
 			dlp_CloseDB(sd, db);
-			dlp_AddSyncLogEntry(sd, "Successfully read ToDos from Palm.\nThan you for using pilot-link.");
+			dlp_AddSyncLogEntry(sd, "Successfully read ToDos from Palm.\n"
+						"Thank you for using pilot-link.");
 			dlp_EndOfSync(sd, 0);
 			pi_close(sd);
 		}

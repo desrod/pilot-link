@@ -20,6 +20,7 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,143 +31,169 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+int pilot_connect(const char *port);
+static void Help(char *progname);
+
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"port",        required_argument, NULL, 'p'},
+	{"account",     required_argument, NULL, 'a'},
+	{NULL,          0,                 NULL, 0}
+};
+
+static const char *optstring = "hp:a:";
+
 int main(int argc, char *argv[])
 {
-	int db;
-	int i;
-	int sd;
-	int ret;
-	struct pi_sockaddr addr;
-	struct PilotUser U;
-	struct MoneyAppInfo mai;
-	char *nl;
-	char *progname = argv[0];
-	char *device = argv[1];
+	int 	chara,
+		db,
+		index,
+		sd = -1;
+
+	char 	*noteln,
+		*progname = argv[0],
+		*port = NULL,
+		*account = NULL;
+
+	struct 	PilotUser User;
+	struct 	MoneyAppInfo mai;
+
+	
 	unsigned char buffer[0xffff];
 
-	PalmHeader(progname);
+	while ((chara = getopt(argc, argv, optstring)) != -1) {
+		switch (chara) {
 
-	if (argc < 3) {
-		fprintf(stderr, "   Usage: %s %s Account\n\n", argv[0],
-			TTYPrompt);
-		exit(2);
-	}
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
-		exit(1);
-	}
-
-	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, device);
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-	     device);
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			device);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	puts("Connected...\n");
-
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
-
-	/* Tell user (via Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
-
-	/* Open the Money database, store access handle in db */
-	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MoneyDB", &db) < 0) {
-		puts("Unable to open MoneyDB");
-		dlp_AddSyncLogEntry(sd, "Unable to open MoneyDB.\n");
-		exit(1);
-	}
-
-	dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-	unpack_MoneyAppInfo(&mai, buffer, 0xffff);
-
-	for (i = 0; i < 16; i++)
-		if (!strcmp(mai.category.name[i], argv[2]))
-			break;
-
-	if (i < 16) {
-
-		printf("!Type:Bank\n");
-
-		for (i = 0;; i++) {
-			struct Transaction t;
-			int attr;
-			int category;
-
-			int len =
-			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
-						  &attr,
-						  &category);
-
-			if (len < 0)
-				break;
-
-			/* Skip deleted records */
-			if ((attr & dlpRecAttrDeleted)
-			    || (attr & dlpRecAttrArchived))
-				continue;
-
-			if (strcmp(mai.category.name[category], argv[2]))
-				continue;
-
-			unpack_Transaction(&t, buffer, len);
-
-			printf("D%02d/%02d/%2d\n", t.month, t.day,
-			       t.year - 1900);
-			if (t.checknum)
-				printf("N%d\n", t.checknum);
-			printf("T%ld.%02d\n", t.amount, t.amountc);
-			printf("P%s\n", t.description);
-			if (t.xfer == category)
-				printf("L%s\n",
-				       mai.typeLabels[(int) t.type]);
-			else
-				printf("L[%s]\n",
-				       mai.category.name[(int) t.xfer]);
-			if (strcmp(t.note, "")) {
-				while ((nl = strchr(t.note, '\n')))
-					*nl = ' ';
-				printf("M%s\n", t.note);
-			}
-			if (t.flags & 1)
-				printf("CX\n");
-			printf("\n^\n");
-
+		  case 'h':
+			  Help(progname);
+			  exit(0);
+		  case 'p':
+			  port = optarg;
+			  break;
+		  case 'a':
+			  account = optarg;
+			  break;
+		  default:
 		}
 	}
 
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
+	}
+
+	if (port == NULL && argc > 1) {
+		printf
+		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+		exit(1);
+	} else if (account == NULL) {
+		printf
+		    ("\nERROR: You must specify an Account Category as found in MicroMoney\n"
+		     "Please use -h for more detailed information on how to use this syntax.\n");
+		exit(1);
+	} else if (port != NULL) {
+		sd = pilot_connect(port);
+
+		/* Did we get a valid socket descriptor back? */
+		if (dlp_OpenConduit(sd) < 0) {
+			exit(1);
+		} 
+	
+		/* Ask the pilot who it is. */
+		dlp_ReadUserInfo(sd, &User);
+	
+		/* Tell user (via Palm) that we are starting things up */
+		dlp_OpenConduit(sd);
+	
+		/* Open the Money database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MoneyDB", &db) < 0) {
+			puts("Unable to open MoneyDB");
+			dlp_AddSyncLogEntry(sd, "Unable to open MoneyDB.\n");
+			exit(1);
+		}
+	
+		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+		unpack_MoneyAppInfo(&mai, buffer, 0xffff);
+	
+		for (index = 0; index < 16; index++)
+			if (!strcmp(mai.category.name[index], account))
+				break;
+	
+		if (index < 16) {
+	
+			printf("!Type:Bank\n");
+	
+			for (index = 0;; index++) {
+				int 	attr,
+					category;
+
+				struct 	Transaction t;
+	
+				int len =
+				    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0,
+							  &attr,
+							  &category);
+	
+				if (len < 0)
+					break;
+	
+				/* Skip deleted records */
+				if ((attr & dlpRecAttrDeleted)
+				    || (attr & dlpRecAttrArchived))
+					continue;
+	
+				if (strcmp(mai.category.name[category], account))
+					continue;
+	
+				unpack_Transaction(&t, buffer, len);
+	
+				printf("D%02d/%02d/%2d\n", t.month, t.day,
+				       t.year - 1900);
+				if (t.checknum)
+					printf("N%d\n", t.checknum);
+				printf("T%ld.%02d\n", t.amount, t.amountc);
+				printf("P%s\n", t.description);
+				if (t.xfer == category)
+					printf("L%s\n",
+					       mai.typeLabels[(int) t.type]);
+				else
+					printf("L[%s]\n",
+					       mai.category.name[(int) t.xfer]);
+				if (strcmp(t.note, "")) {
+					while ((noteln = strchr(t.note, '\n')))
+						*noteln = ' ';
+					printf("M%s\n", t.note);
+				}
+				if (t.flags & 1)
+					printf("CX\n");
+				printf("\n^\n");
+	
+			}
+		}
+	}
 	/* Close the database */
 	dlp_CloseDB(sd, db);
-
-	dlp_AddSyncLogEntry(sd, "Read MoneyDB from Palm.\n");
-
+	dlp_AddSyncLogEntry(sd, "money2qif, successfully read MoneyDB from Palm.\n"
+				"Thank you for using pilot-link.\n");
 	pi_close(sd);
-	return 0;
+	exit(0);
+}
+
+static void Help(char *progname)
+{
+	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n"
+	       "   Usage: %s -p <port> -a Account\n\n"
+	       "   Options:\n"
+	       "     -p <port>           Use device file <port> to communicate with Palm\n"
+	       "     -a Account          The name of the Account category in MicroMoney\n"
+	       "     -h                  Display this information\n\n"
+	       "   Examples: %s -p /dev/pilot -a BancGlobal\n\n"
+	       "   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n"
+	       "   on MicroMoney.\n\n"	       
+	       "   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n"
+	       "   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n"
+	       "   pilot-link yet.\n\n", progname, progname);
+	return;
 }

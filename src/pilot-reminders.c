@@ -46,16 +46,16 @@ char *Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "se
 
 int main(int argc, char *argv[])
 {
-	int c;
-	int db;
-	int i;
-	int sd = -1;
+	int 	chara,
+		db,
+		index,
+		sd = -1;
+	char 	*progname = argv[0],
+		*port = NULL;
 	unsigned char buffer[0xffff];
-	char *progname = argv[0];
-	char *port = NULL;
-	
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch (c) {
+
+	while ((chara = getopt(argc, argv, optstring)) != -1) {
+		switch (chara) {
 
 		  case 'h':
 			  Help(progname);
@@ -100,15 +100,15 @@ int main(int argc, char *argv[])
 	
 		printf("PUSH-OMIT-CONTEXT\n");
 		printf("CLEAR-OMIT-CONTEXT\n");
-		for (i = 0;; i++) {
-			struct Appointment a;
-			int attr;
-			int j;
-			char delta[80];
-			char satisfy[256];
+		for (index = 0;; index++) {
+			int 	attr,
+				j;
+			char 	delta[80],
+				satisfy[256];
+			struct 	Appointment a;
 	
 			int len =
-			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
+			    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0, &attr,
 						  0);
 	
 			if (len < 0)
@@ -217,8 +217,8 @@ int main(int argc, char *argv[])
 							a.begin.tm_mday);
 					}
 				} else if (a.repeatType == repeatMonthlyByDay) {
-					int day;
-					int weekday;
+					int 	day,
+						weekday;
 	
 					if (a.repeatDay >= domLastSun) {
 						day = 1;
@@ -287,7 +287,9 @@ int main(int argc, char *argv[])
 	
 		/* Close the database */
 		dlp_CloseDB(sd, db);
-		dlp_AddSyncLogEntry(sd, "Successfully read Datebook from Palm\nThank you for using pilot-link\n");
+		dlp_AddSyncLogEntry(sd, "Successfully read Datebook from Palm\n"
+					"Thank you for using pilot-link\n");
+		dlp_EndOfSync(sd, 0);
 		pi_close(sd);
 	}
 	return 0;

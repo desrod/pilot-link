@@ -51,20 +51,20 @@ static const char *optstring = "hp:ifd";
 
 int main(int argc, char *argv[])
 {
-	int c;
-	int sd = -1;
-	int segment = 4096;
-	int Install = -1;
-	int Fetch = -1;
-	int Delete = -1;
-	char *progname = argv[0];
-	char *port = NULL;
-	char *install = NULL;
-	char *fetch = NULL;
-	char *delete = NULL;
+	int 	chara,
+		sd 	= -1,
+		segment = 4096,
+		Install = -1,
+		Fetch 	= -1,
+		Delete 	= -1;
+	char 	*progname = argv[0],
+		*port 	= NULL,
+		*install = NULL,
+		*fetch 	= NULL,
+		*delete = NULL;
 
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch (c) {
+	while ((chara = getopt(argc, argv, optstring)) != -1) {
+		switch (chara) {
 
 		  case 'h':
 			  Help(progname);
@@ -109,16 +109,15 @@ int main(int argc, char *argv[])
 
 		/* Install here, not Fetch */
 		} else 	if (Install && Fetch == -1) {
+			int 	db,
+				j,
+				l;
 			unsigned long len;
-			int db;
-			int j;
-			int l;
-			char buffer[0xffff];
+			char 	buffer[0xffff];
 		
 			/* Need to fix this, we should not require redirection */
 			if (isatty(fileno(stdin))) {
-				fprintf(stderr,
-					"Cannot install from tty, please redirect from file.\n");
+				printf("Cannot install from tty, please redirect from file.\n");
 				exit(1);
 			}
 		
@@ -145,29 +144,29 @@ int main(int argc, char *argv[])
 			dlp_CloseDB(sd, db);
 		/* Fetch here, not Install */
 		} else if (Fetch && Install == -1) {
-			int db;
-			int i;
-			int l;
-			char buffer[0xffff];
+			int 	db,
+				index,
+				l;
+			char 	buffer[0xffff];
 		
 			if (dlp_OpenDB(sd, 0, dlpOpenRead, "Schlep", &db) < 0)
 				return 0;
 		
-			for (i = 0;
+			for (index = 0;
 			     (l =
 			      dlp_ReadResourceByType(sd, db, pi_mktag('D', 'A', 'T', 'A'),
-						     i, buffer, 0, 0)) > 0; i++) {
+						     index, buffer, 0, 0)) > 0; index++) {
 				write(fileno(stdout), buffer, l);
 				fprintf(stderr, ".");
 			}
-			fprintf(stderr, "\nFile successfully retrieved, please verify.\n");
+			printf("\nFile successfully retrieved, please verify.\n");
 
 		} else if (Delete && (Fetch == -1 && Install == -1)) {
 			dlp_DeleteDB(sd, 0, "Schlep");
 			printf("Delete successfully completed.\n");
 		}
-	dlp_AddSyncLogEntry(sd,
-			    "pilot-schlep, exited normally.\nThank you for using pilot-link.\n");
+	dlp_AddSyncLogEntry(sd, "pilot-schlep, exited normally.\n"
+				"Thank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	}
@@ -195,7 +194,8 @@ static void Help(char *progname)
 	       "   queried so you can potentially Install a PDF file, and retrieve it as a\n"
 	       "   ZIP file.  You must take care to remember what type of file you are\n"
 	       "   installing and fetching. This will be updated in a later release to\n"
-	       "   handle this type of capability, as well as handle multiple 'Schlep' files.\n\n", progname, progname, progname, progname, progname);
+	       "   handle this type of capability, as well as handle multiple 'Schlep' files.\n\n", 
+		progname, progname, progname, progname, progname);
 	return;
 }
 

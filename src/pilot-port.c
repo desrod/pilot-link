@@ -54,19 +54,21 @@ static const char *optstring = "hp:";
 
 int main(int argc, char *argv[])
 {
-	int c;
-	int sd = -1;
-	int netport = 4386;
-	struct pi_socket *ps;
-	struct sockaddr_in serv_addr;
-	int serverfd, fd;
-	char *buffer;
-	char *slpbuffer;
-	char *progname = argv[0];
-	char *port = NULL;
+	int 	chara,
+		sd = -1,
+		netport = 4386,
+		serverfd, fd;
+
+	struct 	pi_socket *ps;
+	struct 	sockaddr_in serv_addr;
 	
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch (c) {
+	char 	*buffer,
+		*slpbuffer,
+		*progname = argv[0],
+		*port = NULL;
+	
+	while ((chara = getopt(argc, argv, optstring)) != -1) {
+		switch (chara) {
 
 		  case 'h':
 			  Help(progname);
@@ -127,12 +129,17 @@ int main(int argc, char *argv[])
 		ps->serial_changebaud(ps);
 	
 		for (;;) {
-			int l;
-			int max;
-			fd_set rset, wset, eset, oset;
-			struct sockaddr_in conn_addr;
+			int 	l,
+				max,
+				sent;
+
+			fd_set 	rset,
+				wset, 
+				eset, 
+				oset;
+
+			struct 	sockaddr_in conn_addr;
 			unsigned int connlen = sizeof(conn_addr);
-			int sent;
 	
 			fd = accept(serverfd, (struct sockaddr *) &conn_addr,
 				    &connlen);
@@ -146,8 +153,8 @@ int main(int argc, char *argv[])
 			FD_SET(fd, &oset);
 			FD_SET(sd, &oset);
 	
-			sent = 0;
-			l = 0;
+			sent 	= 0;
+			l 	= 0;
 	
 			max = fd;
 			if (sd > max)
@@ -259,7 +266,7 @@ int main(int argc, char *argv[])
  ***********************************************************************/
 void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 {
-	int len;
+	int 	len;
 
 	printf("A %d byte packet of type %d has been received from the network\n",
 		length, type);
