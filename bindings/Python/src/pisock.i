@@ -91,6 +91,57 @@ static PyObject *Error;
 
 #define PI_MSG_PEEK 0x01
 
+enum PiOptLevels {
+        PI_LEVEL_DEV,
+        PI_LEVEL_SLP,
+        PI_LEVEL_PADP,
+        PI_LEVEL_NET,
+        PI_LEVEL_SYS,
+        PI_LEVEL_CMP,
+        PI_LEVEL_DLP,
+        PI_LEVEL_SOCK
+};
+
+enum PiOptDevice {
+        PI_DEV_RATE,
+        PI_DEV_ESTRATE,
+        PI_DEV_HIGHRATE,
+        PI_DEV_TIMEOUT
+};
+
+enum PiOptSLP {
+        PI_SLP_DEST,
+        PI_SLP_LASTDEST,
+        PI_SLP_SRC,
+        PI_SLP_LASTSRC,
+        PI_SLP_TYPE,
+        PI_SLP_LASTTYPE,
+        PI_SLP_TXID,
+        PI_SLP_LASTTXID
+};
+
+enum PiOptPADP {
+        PI_PADP_TYPE,
+        PI_PADP_LASTTYPE
+};
+
+enum PiOptCMP {
+        PI_CMP_TYPE,
+        PI_CMP_FLAGS,
+        PI_CMP_VERS,
+        PI_CMP_BAUD
+};
+
+enum PiOptNet {
+        PI_NET_TYPE
+};
+
+enum PiOptSock {
+        PI_SOCK_STATE
+};
+
+
+
 
 #define PI_PilotSocketDLP       3
 #define PI_PilotSocketConsole   1
@@ -104,13 +155,17 @@ static PyObject *Error;
 %typemap (python,in) struct sockaddr *INPUT {
     static struct pi_sockaddr temp;
     char *dev;
+    int len;
 
-    if (!PyArg_ParseTuple($source, "is", &temp.pi_family, &dev)) {
+    if (!PyArg_ParseTuple($source, "is#", &temp.pi_family, &dev, &len)) {
 	return NULL;
     }
-
-    strncpy(temp.pi_device, dev, 13);
-    temp.pi_device[13] = 0;
+    if (len > 255) {
+      // Should really raise an exception
+      len = 255;
+    }
+    strncpy(temp.pi_device, dev, len);
+    temp.pi_device[len] = 0;
 
     $target = (struct sockaddr *)&temp;
 }
@@ -155,6 +210,7 @@ extern int pi_getsockpeer (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT);
    pi_setsockopt now
 extern int pi_setmaxspeed (int pi_sd, int speed, int overclock);
 */
+extern int pi_setsockopt (int pi_sd, int level, int option_name, const void *option_value, int *option_len);
 extern int pi_getsockopt (int pi_sd, int level, int option_name, void * option_value, int * option_len);
 
 extern int pi_version (int pi_sd);

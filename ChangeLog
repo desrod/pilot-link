@@ -1,3 +1,13 @@
+2002-12-18 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* bindings/Python/README.txt: Deprecate, replace with README
+
+	* bindings/Python/test.py: New test suite (Nicholas Piper)
+	
+	* bindings/Python/src/pisock.i: Code cleanups (Nicholas Piper)
+
+	* bindings/Python/src/pisock_wrap.c: Ditto (Nicholas Piper)
+
 2002-12-16 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-xfer.c: Fixed incorrect Connect() placement

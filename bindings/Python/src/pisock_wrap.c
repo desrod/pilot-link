@@ -341,7 +341,7 @@ SWIG_GetPtr(char *c, void **ptr, char *t)
   }
   c++;
   /* Extract hex value from pointer */
-  while ((d = *c)) {
+  while (d = *c) {
     if ((d >= '0') && (d <= '9'))
       p = (p << 4) + (d - '0');
     else if ((d >= 'a') && (d <= 'f'))
@@ -461,7 +461,6 @@ typedef int DLPDBERROR;
 
 static PyObject *Error;
 
-/* This is not yet used in this code
 static PyObject* l_output_helper(PyObject* target, PyObject* o) {
     PyObject*   o2;
     if (!target) {                   
@@ -481,7 +480,6 @@ static PyObject* l_output_helper(PyObject* target, PyObject* o) {
     }
     return target;
 }
-*/
 
 static PyObject* t_output_helper(PyObject* target, PyObject* o) {
     PyObject*   o2;
@@ -508,6 +506,7 @@ static PyObject* t_output_helper(PyObject* target, PyObject* o) {
     }
     return target;
 }
+extern int pilot_connect(char *);
 extern int pi_socket(int ,int ,int );
 extern int pi_connect(int ,struct sockaddr *,int );
 extern int pi_bind(int ,struct sockaddr *,int );
@@ -520,6 +519,7 @@ extern int pi_read(int ,void *,int );
 extern int pi_write(int ,void *,int );
 extern int pi_getsockname(int ,struct sockaddr *,int *);
 extern int pi_getsockpeer(int ,struct sockaddr *,int *);
+extern int pi_setsockopt(int ,int ,int ,const void *,int *);
 extern int pi_getsockopt(int ,int ,int ,void *,int *);
 extern int pi_version(int );
 extern int pi_tickle(int );
@@ -675,6 +675,19 @@ PYCFUNC(_wrap_dlp_ReadRecordIDList) {
 #ifdef __cplusplus
 extern "C" {
 #endif
+static PyObject *_wrap_pilot_connect(PyObject *self, PyObject *args) {
+    PyObject * _resultobj;
+    int  _result;
+    char * _arg0;
+
+    self = self;
+    if(!PyArg_ParseTuple(args,"s:pilot_connect",&_arg0)) 
+        return NULL;
+    _result = (int )pilot_connect(_arg0);
+    _resultobj = Py_BuildValue("i",_result);
+    return _resultobj;
+}
+
 static PyObject *_wrap_pi_socket(PyObject *self, PyObject *args) {
     PyObject * _resultobj;
     int  _result;
@@ -707,13 +720,17 @@ static PyObject *_wrap_pi_connect(PyObject *self, PyObject *args) {
 {
     static struct pi_sockaddr temp;
     char *dev;
+    int len;
 
-    if (!PyArg_ParseTuple(_obj1, "is", &temp.pi_family, &dev)) {
+    if (!PyArg_ParseTuple(_obj1, "is#", &temp.pi_family, &dev, &len)) {
 	return NULL;
     }
-
-    strncpy(temp.pi_device, dev, 13);
-    temp.pi_device[13] = 0;
+    if (len > 255) {
+      // Should really raise an exception
+      len = 255;
+    }
+    strncpy(temp.pi_device, dev, len);
+    temp.pi_device[len] = 0;
 
     _arg1 = (struct sockaddr *)&temp;
 }
@@ -739,13 +756,17 @@ static PyObject *_wrap_pi_bind(PyObject *self, PyObject *args) {
 {
     static struct pi_sockaddr temp;
     char *dev;
+    int len;
 
-    if (!PyArg_ParseTuple(_obj1, "is", &temp.pi_family, &dev)) {
+    if (!PyArg_ParseTuple(_obj1, "is#", &temp.pi_family, &dev, &len)) {
 	return NULL;
     }
-
-    strncpy(temp.pi_device, dev, 13);
-    temp.pi_device[13] = 0;
+    if (len > 255) {
+      // Should really raise an exception
+      len = 255;
+    }
+    strncpy(temp.pi_device, dev, len);
+    temp.pi_device[len] = 0;
 
     _arg1 = (struct sockaddr *)&temp;
 }
@@ -1011,6 +1032,39 @@ static PyObject *_wrap_pi_getsockpeer(PyObject *self, PyObject *args) {
     return _resultobj;
 }
 
+static PyObject *_wrap_pi_setsockopt(PyObject *self, PyObject *args) {
+    PyObject * _resultobj;
+    int  _result;
+    int  _arg0;
+    int  _arg1;
+    int  _arg2;
+    void * _arg3;
+    int * _arg4;
+    PyObject * _argo3 = 0;
+    PyObject * _argo4 = 0;
+
+    self = self;
+    if(!PyArg_ParseTuple(args,"iiiOO:pi_setsockopt",&_arg0,&_arg1,&_arg2,&_argo3,&_argo4)) 
+        return NULL;
+    if (_argo3) {
+        if (_argo3 == Py_None) { _arg3 = NULL; }
+        else if (SWIG_GetPtrObj(_argo3,(void **) &_arg3,(char *) 0 )) {
+            PyErr_SetString(PyExc_TypeError,"Type error in argument 4 of pi_setsockopt. Expected _void_p.");
+        return NULL;
+        }
+    }
+    if (_argo4) {
+        if (_argo4 == Py_None) { _arg4 = NULL; }
+        else if (SWIG_GetPtrObj(_argo4,(void **) &_arg4,"_int_p")) {
+            PyErr_SetString(PyExc_TypeError,"Type error in argument 5 of pi_setsockopt. Expected _int_p.");
+        return NULL;
+        }
+    }
+    _result = (int )pi_setsockopt(_arg0,_arg1,_arg2,_arg3,_arg4);
+    _resultobj = Py_BuildValue("i",_result);
+    return _resultobj;
+}
+
 static PyObject *_wrap_pi_getsockopt(PyObject *self, PyObject *args) {
     PyObject * _resultobj;
     int  _result;
@@ -1103,7 +1157,7 @@ static int _wrap_dlp_errorlist_set(PyObject *val) {
     return 1;
 }
 
-static PyObject *_wrap_dlp_errorlist_get(void) {
+static PyObject *_wrap_dlp_errorlist_get() {
     PyObject * pyobj;
     char ptemp[128];
 
@@ -1262,7 +1316,7 @@ static PyObject *_wrap_dlp_ReadSysInfo(PyObject *self, PyObject *args) {
 	o = Py_BuildValue("{slslss#}",
 			  "romVersion", _arg1->romVersion,
 			  "locale", _arg1->locale,
-			  "product", _arg1->prodID, _arg1->prodIDLength);
+			  "name", _arg1->prodID, _arg1->prodIDLength);
 	_resultobj = t_output_helper(_resultobj, o);
     }
 }
@@ -3858,7 +3912,7 @@ static PyObject *_wrap_pi_file_append_record(PyObject *self, PyObject *args) {
     int  _arg2;
     int  _arg3;
     int  _arg4;
-    recordid_t * _arg5 = NULL;
+    recordid_t * _arg5;
     PyObject * _argo0 = 0;
     int  __buflen;
     PyObject * _obj1 = 0;
@@ -3999,21 +4053,7 @@ static PyObject *_wrap_pi_file_merge(PyObject *self, PyObject *args) {
     return _resultobj;
 }
 
-static PyObject *_wrap_print_splash(PyObject *self, PyObject *args) {
-    PyObject * _resultobj;
-    char * _arg0;
-
-    self = self;
-    if(!PyArg_ParseTuple(args,"s:print_splash",&_arg0)) 
-        return NULL;
-    print_splash(_arg0);
-    Py_INCREF(Py_None);
-    _resultobj = Py_None;
-    return _resultobj;
-}
-
 static PyMethodDef _pisockMethods[] = {
-	 { "print_splash", _wrap_print_splash, METH_VARARGS },
 	 { "pi_file_merge", _wrap_pi_file_merge, METH_VARARGS },
 	 { "pi_file_install", _wrap_pi_file_install, METH_VARARGS },
 	 { "pi_file_retrieve", _wrap_pi_file_retrieve, METH_VARARGS },
@@ -4087,6 +4127,7 @@ static PyMethodDef _pisockMethods[] = {
 	 { "pi_tickle", _wrap_pi_tickle, METH_VARARGS },
 	 { "pi_version", _wrap_pi_version, METH_VARARGS },
 	 { "pi_getsockopt", _wrap_pi_getsockopt, METH_VARARGS },
+	 { "pi_setsockopt", _wrap_pi_setsockopt, METH_VARARGS },
 	 { "pi_getsockpeer", _wrap_pi_getsockpeer, METH_VARARGS },
 	 { "pi_getsockname", _wrap_pi_getsockname, METH_VARARGS },
 	 { "pi_write", _wrap_pi_write, METH_VARARGS },
@@ -4099,6 +4140,7 @@ static PyMethodDef _pisockMethods[] = {
 	 { "pi_bind", _wrap_pi_bind, METH_VARARGS },
 	 { "pi_connect", _wrap_pi_connect, METH_VARARGS },
 	 { "pi_socket", _wrap_pi_socket, METH_VARARGS },
+	 { "pilot_connect", _wrap_pilot_connect, METH_VARARGS },
 	 { NULL, NULL }
 };
 #ifdef __cplusplus
@@ -4126,7 +4168,7 @@ static PyObject *SWIG_globals;
 #ifdef __cplusplus
 extern "C" 
 #endif
-SWIGEXPORT(void) init_pisock(void) {
+SWIGEXPORT(void) init_pisock() {
 	 PyObject *m, *d;
 	 SWIG_globals = SWIG_newvarlink();
 	 m = Py_InitModule("_pisock", _pisockMethods);
@@ -4135,16 +4177,47 @@ SWIGEXPORT(void) init_pisock(void) {
     __dlp_buf = (void *)PyMem_Malloc(DLPMAXBUF);
     Error = PyErr_NewException("pisock.error", NULL, NULL);
     PyDict_SetItemString(d, "error", Error);
-	 PyDict_SetItemString(d,"PI_AF_SLP", PyInt_FromLong((long) 0x0051));
-	 PyDict_SetItemString(d,"PI_AF_INETSLP", PyInt_FromLong((long) 0x0054));
-	 PyDict_SetItemString(d,"PI_PF_SLP", PyInt_FromLong((long) (0x0051)));
-	 PyDict_SetItemString(d,"PI_PF_PADP", PyInt_FromLong((long) 0x0052));
-	 PyDict_SetItemString(d,"PI_PF_LOOP", PyInt_FromLong((long) 0x0053));
+	 PyDict_SetItemString(d,"PI_AF_PILOT", PyInt_FromLong((long) 0x00));
+	 PyDict_SetItemString(d,"PI_PF_DEV", PyInt_FromLong((long) 0x01));
+	 PyDict_SetItemString(d,"PI_PF_SLP", PyInt_FromLong((long) 0x02));
+	 PyDict_SetItemString(d,"PI_PF_SYS", PyInt_FromLong((long) 0x03));
+	 PyDict_SetItemString(d,"PI_PF_PADP", PyInt_FromLong((long) 0x04));
+	 PyDict_SetItemString(d,"PI_PF_NET", PyInt_FromLong((long) 0x05));
+	 PyDict_SetItemString(d,"PI_PF_DLP", PyInt_FromLong((long) 0x06));
 	 PyDict_SetItemString(d,"PI_SOCK_STREAM", PyInt_FromLong((long) 0x0010));
-	 PyDict_SetItemString(d,"PI_SOCK_DGRAM", PyInt_FromLong((long) 0x0020));
 	 PyDict_SetItemString(d,"PI_SOCK_RAW", PyInt_FromLong((long) 0x0030));
-	 PyDict_SetItemString(d,"PI_SOCK_SEQPACKET", PyInt_FromLong((long) 0x0040));
-	 PyDict_SetItemString(d,"PI_SLP_SPEED", PyInt_FromLong((long) 0x0001));
+	 PyDict_SetItemString(d,"PI_CMD_CMP", PyInt_FromLong((long) 0x01));
+	 PyDict_SetItemString(d,"PI_CMD_NET", PyInt_FromLong((long) 0x02));
+	 PyDict_SetItemString(d,"PI_CMD_SYS", PyInt_FromLong((long) 0x03));
+	 PyDict_SetItemString(d,"PI_MSG_PEEK", PyInt_FromLong((long) 0x01));
+	 PyDict_SetItemString(d,"PI_LEVEL_DEV", PyInt_FromLong((long) PI_LEVEL_DEV));
+	 PyDict_SetItemString(d,"PI_LEVEL_SLP", PyInt_FromLong((long) PI_LEVEL_SLP));
+	 PyDict_SetItemString(d,"PI_LEVEL_PADP", PyInt_FromLong((long) PI_LEVEL_PADP));
+	 PyDict_SetItemString(d,"PI_LEVEL_NET", PyInt_FromLong((long) PI_LEVEL_NET));
+	 PyDict_SetItemString(d,"PI_LEVEL_SYS", PyInt_FromLong((long) PI_LEVEL_SYS));
+	 PyDict_SetItemString(d,"PI_LEVEL_CMP", PyInt_FromLong((long) PI_LEVEL_CMP));
+	 PyDict_SetItemString(d,"PI_LEVEL_DLP", PyInt_FromLong((long) PI_LEVEL_DLP));
+	 PyDict_SetItemString(d,"PI_LEVEL_SOCK", PyInt_FromLong((long) PI_LEVEL_SOCK));
+	 PyDict_SetItemString(d,"PI_DEV_RATE", PyInt_FromLong((long) PI_DEV_RATE));
+	 PyDict_SetItemString(d,"PI_DEV_ESTRATE", PyInt_FromLong((long) PI_DEV_ESTRATE));
+	 PyDict_SetItemString(d,"PI_DEV_HIGHRATE", PyInt_FromLong((long) PI_DEV_HIGHRATE));
+	 PyDict_SetItemString(d,"PI_DEV_TIMEOUT", PyInt_FromLong((long) PI_DEV_TIMEOUT));
+	 PyDict_SetItemString(d,"PI_SLP_DEST", PyInt_FromLong((long) PI_SLP_DEST));
+	 PyDict_SetItemString(d,"PI_SLP_LASTDEST", PyInt_FromLong((long) PI_SLP_LASTDEST));
+	 PyDict_SetItemString(d,"PI_SLP_SRC", PyInt_FromLong((long) PI_SLP_SRC));
+	 PyDict_SetItemString(d,"PI_SLP_LASTSRC", PyInt_FromLong((long) PI_SLP_LASTSRC));
+	 PyDict_SetItemString(d,"PI_SLP_TYPE", PyInt_FromLong((long) PI_SLP_TYPE));
+	 PyDict_SetItemString(d,"PI_SLP_LASTTYPE", PyInt_FromLong((long) PI_SLP_LASTTYPE));
+	 PyDict_SetItemString(d,"PI_SLP_TXID", PyInt_FromLong((long) PI_SLP_TXID));
+	 PyDict_SetItemString(d,"PI_SLP_LASTTXID", PyInt_FromLong((long) PI_SLP_LASTTXID));
+	 PyDict_SetItemString(d,"PI_PADP_TYPE", PyInt_FromLong((long) PI_PADP_TYPE));
+	 PyDict_SetItemString(d,"PI_PADP_LASTTYPE", PyInt_FromLong((long) PI_PADP_LASTTYPE));
+	 PyDict_SetItemString(d,"PI_CMP_TYPE", PyInt_FromLong((long) PI_CMP_TYPE));
+	 PyDict_SetItemString(d,"PI_CMP_FLAGS", PyInt_FromLong((long) PI_CMP_FLAGS));
+	 PyDict_SetItemString(d,"PI_CMP_VERS", PyInt_FromLong((long) PI_CMP_VERS));
+	 PyDict_SetItemString(d,"PI_CMP_BAUD", PyInt_FromLong((long) PI_CMP_BAUD));
+	 PyDict_SetItemString(d,"PI_NET_TYPE", PyInt_FromLong((long) PI_NET_TYPE));
+	 PyDict_SetItemString(d,"PI_SOCK_STATE", PyInt_FromLong((long) PI_SOCK_STATE));
 	 PyDict_SetItemString(d,"PI_PilotSocketDLP", PyInt_FromLong((long) 3));
 	 PyDict_SetItemString(d,"PI_PilotSocketConsole", PyInt_FromLong((long) 1));
 	 PyDict_SetItemString(d,"PI_PilotSocketDebugger", PyInt_FromLong((long) 0));
