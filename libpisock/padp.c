@@ -43,16 +43,19 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
   }
 
   if(ps->xid == (unsigned char)0)
-    ps->xid = (unsigned char)0x11; /* some random # */
+    ps->xid = (unsigned char)0x10; /* some random # */
 
-  if(ps->initiator) {
+ /* if(ps->initiator) {*/
     if(ps->xid >= (unsigned char)0xfe)
       ps->nextid = (unsigned char)1; /* wrap */
     else
       ps->nextid = ps->xid+(unsigned char)1;
-  } else {
+/*  } else {
     ps->nextid = ps->xid;
-  }
+  }*/
+  
+  if ((type != padAck) && !ps->initiator) 
+    ps->xid = ps->nextid;
   
   Begin(padp_tx);
   
@@ -85,7 +88,8 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
       
       if (type == padTickle) /* Tickles don't get acks */
         break;
-      
+   
+keepwaiting:
       At("Reading Ack");
       ps->serial_read(ps, xmitTimeout);
 
@@ -102,16 +106,48 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 
         padp_dump(skb, &padp, 0);
 
+        if (padp.flags & MEMERROR) {
 
+          /* Consume packet */
+          ps->rxq = skb->next;
+          free(skb);
+          
+          if (slp->id == ps->xid) {
+            /* OS 2.x enjoys sending erroneous memory errors */
+            
+            fprintf(stderr,"Out of memory\n");
+            errno = EMSGSIZE;
+  	      count = -1;
+  	      goto done;
+            return -1; /* Mimimum failure: transmission failed due to lack of
+                          memory in reciever link layer, but connection is still
+                          active. This transmission was lost, but other
+                          transmissions will be received. */
+          } else
+            goto keepwaiting;
+        } else
+        
         if ((slp->type == (unsigned char)2) && (padp.type == (unsigned char)padData) && 
             (slp->id == ps->xid) && (len==0)) {
           fprintf(stderr,"Missing ack\n");
           /* Incoming padData from response to this transmission.
              Maybe the Ack was lost */
           /* Don't consume packet, and return success. */
+	      count = 0;
+	      goto done;
           return 0;
-        } 
+        } else
+        
+        if (padp.type == (unsigned char)4) {
+          /* Tickle to avoid timeout */
 
+          /* Consume packet */
+          ps->rxq = skb->next;
+          free(skb);
+          
+          goto keepwaiting;
+        } else
+        
         if ((slp->type == (unsigned char)2) && 
             (padp.type == (unsigned char)padAck) && (slp->id == ps->xid)) {
           /* Got correct Ack */
@@ -121,26 +157,19 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
           ps->rxq = skb->next;
           free(skb);
               
-          if (flags & MEMERROR) {
-            fprintf(stderr,"Out of memory\n");
-            errno = EMSGSIZE;
-            return -1; /* Mimimum failure: transmission failed due to lack of
-                          memory in reciever link layer, but connection is still
-                          active. This transmission was lost, but other
-                          transmissions will be received. */
-          } else {
-            /* Successful Ack */
-            msg = ((char *)msg) + tlen;
-            len -= tlen;
-            count += tlen;
-            flags = 0;
-            break;
-          }
+          /* Successful Ack */
+          msg = ((char *)msg) + tlen;
+          len -= tlen;
+          count += tlen;
+          flags = 0;
+          break;
         } else {
           fprintf(stderr,"Weird packet\n");
           /* Got unknown packet */
           /* Don't consume packet */
           errno = EIO;
+	      count = -1;
+	      goto done;
           return -1; /* Unknown failure: received unknown packet */
         }
       }
@@ -148,14 +177,20 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
     
     if( retries == 0) {
       errno = ETIMEDOUT;
+	      count = -1;
+	      goto done;
       return -1; /* Maximum failure: transmission failed, and 
                     the connection must be presumed dead */
     }
     
   } while(len);
-  
-  if( type != padAck) 
+
+done:  
+  if ((type != padAck) && ps->initiator) 
     ps->xid = ps->nextid;
+
+  /*if( type != padAck) 
+    ps->xid = ps->nextid;*/
     
   End(padp_tx);
 
@@ -196,6 +231,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     if(time(NULL)>endtime) {
       /* Start timeout, return error */
       errno = ETIMEDOUT;
+      ouroffset = -1;
+      goto done;
       return -1;
     }
   
@@ -213,6 +250,40 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     padp.flags = get_byte((unsigned char*)(&skb->data[11]));
     padp.size = get_short((unsigned char*)(&skb->data[12]));
     
+    padp_dump(skb, &padp, 0);
+
+    if (padp.flags & MEMERROR) {
+
+      /* Consume packet */
+      ps->rxq = skb->next;
+      free(skb);
+
+      if (slp->id == ps->xid) {
+        fprintf(stderr,"Out of memory\n");
+        errno = EMSGSIZE;
+        ouroffset = -1;
+        goto done;
+        return -1; /* Mimimum failure: transmission failed due to lack of
+                      memory in reciever link layer, but connection is still
+                      active. This transmission was lost, but other
+                      transmissions will be received. */
+      }
+      continue;
+    } else
+
+    if (padp.type == (unsigned char)4) {
+      /* Tickle to avoid timeout */
+
+      endtime = time(NULL)+recStartTimeout;
+      fprintf(stderr,"Got tickled\n");
+
+      /* Consume packet */
+      ps->rxq = skb->next;
+      free(skb);
+      
+      continue;
+    } else
+
     if ((slp->type != 2) || (padp.type != padData) || 
         (slp->id != ps->xid) || !(padp.flags & FIRST)) {
       if(padp.type == padTickle) {
@@ -220,6 +291,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
         fprintf(stderr,"Got tickled\n");
       }
       fprintf(stderr,"Wrong packet type on queue\n");
+      ps->rxq = skb->next;
+      
       free(skb);
       ps->serial_read(ps, recStartTimeout);
       continue;
@@ -284,6 +357,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
           fprintf(stderr,"segment timeout\n");
           /* Segment timeout, return error */
           errno = ETIMEDOUT;
+      ouroffset = -1;
+      goto done;
           return -1;
         }
         
@@ -301,6 +376,40 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
         padp.flags = get_byte((unsigned char*)(&skb->data[11]));
         padp.size = get_short((unsigned char*)(&skb->data[12]));
 
+        padp_dump(skb, &padp, 0);
+
+        if (padp.flags & MEMERROR) {
+
+          /* Consume packet */
+          ps->rxq = skb->next;
+          free(skb);
+
+          if (slp->id == ps->xid) {
+            fprintf(stderr,"Out of memory\n");
+            errno = EMSGSIZE;
+        ouroffset = -1;
+        goto done;
+            return -1; /* Mimimum failure: transmission failed due to lack of
+                          memory in reciever link layer, but connection is still
+                          active. This transmission was lost, but other
+                          transmissions will be received. */
+          } else
+            continue;
+        } else
+
+        if (padp.type == (unsigned char)4) {
+          /* Tickle to avoid timeout */
+
+          endtime = time(NULL)+recStartTimeout;
+          fprintf(stderr,"Got tickled\n");
+
+          /* Consume packet */
+          ps->rxq = skb->next;
+          free(skb);
+
+          continue;
+        } else
+
         if ((slp->type != 2) || (padp.type != padData) || 
             (slp->id != ps->xid) || (padp.flags & FIRST)) {
           if(padp.type == padTickle) {
@@ -308,6 +417,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
             fprintf(stderr,"Got tickled\n");
           }
           fprintf(stderr,"Wrong packet type on queue\n");
+          ps->rxq = skb->next;
+          
           free(skb);
           ps->serial_read(ps, recSegTimeout);
           continue;
@@ -318,7 +429,8 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     }
   }
 
-  ps->xid = ps->nextid;
+done:
+  /*ps->xid = ps->nextid;*/
   
   End(padp_rx);
 

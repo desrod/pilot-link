@@ -116,17 +116,21 @@ clean:
 
 #Depend information starts here. Do not edit the text beyond this point!
 sync-ical.o: sync-ical.c ../include/pi-source.h ../include/pi-config.h \
- ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-sync.h ../include/pi-datebook.h ../include/pi-appinfo.h \
- ../include/pi-todo.h ../include/pi-dlp.h
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
+ ../include/pi-sockaddr.h ../include/pi-macros.h ../include/pi-sync.h \
+ ../include/pi-datebook.h ../include/pi-appinfo.h ../include/pi-todo.h \
+ ../include/pi-dlp.h
 sync-memodir.o: sync-memodir.c ../include/pi-source.h \
  ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
+ ../include/pi-version.h ../include/pi-sockaddr.h \
  ../include/pi-macros.h ../include/pi-datebook.h \
  ../include/pi-appinfo.h ../include/pi-todo.h ../include/pi-dlp.h \
  ../include/pi-sync.h
 test-acceptor.o: test-acceptor.c ../include/pi-source.h \
  ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
+ ../include/pi-version.h ../include/pi-sockaddr.h \
  ../include/pi-macros.h ../include/pi-dlp.h
 test-connector.o: test-connector.c ../include/pi-source.h \
  ../include/pi-config.h ../include/pi-socket.h ../include/pi-args.h \
+ ../include/pi-version.h ../include/pi-sockaddr.h \
  ../include/pi-macros.h ../include/pi-dlp.h

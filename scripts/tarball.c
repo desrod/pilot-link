@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "pi-socket.h"
+#include "pi-version.h"
 
 void main(void)
 {

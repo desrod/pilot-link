@@ -68,6 +68,72 @@ char * strdup(const char *string)
 }
 #endif
 
+#ifndef HAVE_PUTENV
+
+/* Borrowed from GNU sh-utils, and then probably from GNU libc */
+
+#if HAVE_GNU_LD
+# define environ __environ
+#else
+extern char **environ;
+#endif
+
+/* Put STRING, which is of the form "NAME=VALUE", in the environment.  */
+int
+putenv (string)
+     const char *string;
+{
+  const char *const name_end = strchr (string, '=');
+  register size_t size;
+  register char **ep;
+
+  if (name_end == NULL)
+    {
+      /* Remove the variable from the environment.  */
+      size = strlen (string);
+      for (ep = environ; *ep != NULL; ++ep)
+	if (!strncmp (*ep, string, size) && (*ep)[size] == '=')
+	  {
+	    while (ep[1] != NULL)
+	      {
+		ep[0] = ep[1];
+		++ep;
+	      }
+	    *ep = NULL;
+	    return 0;
+	  }
+    }
+
+  size = 0;
+  for (ep = environ; *ep != NULL; ++ep)
+    if (!strncmp (*ep, string, name_end - string) &&
+	(*ep)[name_end - string] == '=')
+      break;
+    else
+      ++size;
+
+  if (*ep == NULL)
+    {
+      static char **last_environ = NULL;
+      char **new_environ = (char **) malloc ((size + 2) * sizeof (char *));
+      if (new_environ == NULL)
+	return -1;
+      (void) memcpy ((void *) new_environ, (void *) environ,
+		     size * sizeof (char *));
+      new_environ[size] = (char *) string;
+      new_environ[size + 1] = NULL;
+      if (last_environ != NULL)
+	free ((void *) last_environ);
+      last_environ = new_environ;
+      environ = new_environ;
+    }
+  else
+    *ep = (char *) string;
+
+  return 0;
+}
+#endif
+
 #ifndef HAVE_INET_ATON
 int
 inet_aton(cp, addr)

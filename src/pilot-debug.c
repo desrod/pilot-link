@@ -1058,6 +1058,56 @@ int proc_port(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   return TCL_OK;
 }
 
+int proc_feature(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
+{
+
+  if (argc<2) {
+	Tcl_SetResult(interp, "feature: -all|-unreg <type> <id>|-set <type> <id> <value>|-get <type> <id>", TCL_STATIC);
+	return TCL_OK;
+  }
+
+  if (!DbgAttach(0))
+    return TCL_ERROR;
+  
+  if (strcmp(argv[1], "-all")==0) {
+     struct RPC_params p;
+     unsigned long type, value;
+     unsigned short int id;
+     int i,j;
+     
+     for(j=0;j<2;j++) { /* 0: RAM, 1: ROM */
+        Say(j ? "ROM:\n" : "RAM:\n");
+        for(i=0;;i++) {
+           unsigned long e1=0;
+           int e2=0;
+           char buffer[40];
+           PackRPC(&p, 0xA27D, RPC_IntReply, RPC_Short(i), RPC_Byte(j), RPC_LongPtr(&type), 
+              RPC_ShortPtr(&id), RPC_LongPtr(&value), RPC_End);
+  	   e1=DbgRPC(&p, &e2);
+           if (e1 || e2)
+             break;
+           sprintf(buffer,"\t%s, 0x%4.4x (%d) = 0x%8.8lx (%lu)", printlong(type), id, id, value, value);
+           Say(buffer);
+        }
+     }
+  } else if (strcmp(argv[1], "-unreg")==0) {
+     struct RPC_params p;
+     unsigned long type, e1;
+     unsigned short int id;
+     int e2;
+     type = makelong(argv[2]);
+     id = atoi(argv[3]);
+
+     PackRPC(&p, 0xA27A, RPC_IntReply, RPC_Long(type), RPC_Short(id),
+         RPC_End);
+
+     e1=DbgRPC(&p, &e2);
+  }
+
+  return TCL_OK;
+}
+
+
 int proc_inittkdbg(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
 #ifndef TK
@@ -1611,6 +1661,7 @@ pushbutton <button number>\tSimulate button push\n\
 mirror [bool]\tContinually view the Pilot's screen in the Remote UI window (if bool supplied, can turn on or off mirroring, otherwise toggles)\n\
 getdisplay\tShow the Pilot's display in the Remote UI window\n\
 updatedisplay\tForce a mirror refresh\n\
+feature\tSet/Get/Read features\n\
 ");
   return TCL_OK;
 }
@@ -1633,6 +1684,7 @@ struct { char * name; Tcl_CmdProc * proc; } cmds[] = {
 	{ "port",	proc_port },
 	{ "help",	proc_help },
 	{ "inittkdbg",  proc_inittkdbg },
+	{ "feature",	proc_feature },
 	{ 0, 0}
 };
 

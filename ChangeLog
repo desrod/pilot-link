@@ -1,3 +1,16 @@
+Dec  7,  1997	Kenneth Albanowski 0.8.8
+	Configuration changes:
+	  - add sa_len member to pi_sockaddr, to match OS
+	  - include compatability code for putenv
+	Library changes:
+	  - Modified PADP code to better cope with the timeout response of
+	    PalmOS 2.0. (The result is _not_ faster response, but less
+	    confusion.)
+	Utility changes:
+	  - pilot-debug has minimal feature support
+	  - install-memo has several new options, provided by Paul Traina
+	    <pst@Shockwave.COM>.
+
 Oct  7,  1997	Kenneth Albanowski 0.8.7
 	Configuration changes:
 	  - install .hxx headers

@@ -2278,7 +2278,7 @@ cat >> confdefs.h <<EOF
 EOF
 
 
-for ac_func in atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname putenv setenv
+for ac_func in atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname putenv
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:2285: checking for $ac_func" >&5
@@ -2923,7 +2923,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "libsock/Makefile $cc_m Makefile dubious/Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile include/pi-config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "libsock/Makefile $cc_m Makefile dubious/Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile include/pi-config.h include/pi-sockaddr.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -3139,7 +3139,7 @@ ac_eD='%g'
 if test "${CONFIG_HEADERS+set}" != set; then
 EOF
 cat >> $CONFIG_STATUS <<EOF
-  CONFIG_HEADERS="include/pi-config.h"
+  CONFIG_HEADERS="include/pi-config.h include/pi-sockaddr.h"
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 fi

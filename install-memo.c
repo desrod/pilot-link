@@ -11,6 +11,16 @@
 #include "pi-dlp.h"
 #include "pi-memo.h"
 
+int usage(char *progname)
+{
+    fprintf(stderr, "usage: %s [-qrt] [-c category] %s file [file] ...\n",
+	    progname, TTYPrompt);
+    fprintf(stderr, "       -q = do not prompt for HotSync button press\n");
+    fprintf(stderr, "       -r = replace all memos in specified category\n");
+    fprintf(stderr, "       -t = use filename as memo title\n");
+    exit(2);
+}
+
 int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
@@ -26,18 +36,56 @@ int main(int argc, char *argv[])
   char buf[0xffff];
   int category;
   struct MemoAppInfo mai;
+  char *progname, *category_name, ch;
+  int   preamble, quiet, replace_category, add_title;
 
-  if (argc < 3) {
-    fprintf(stderr,"usage:%s %s [-c category] file [file] ...\n",argv[0],TTYPrompt);
-    exit(2);
+  progname = argv[0];
+  category_name = NULL;
+  quiet = replace_category = add_title = 0;
+
+  while ((ch = getopt(argc, argv, "c:qrt")) != -1)
+    switch (ch) {
+    case 'c':
+      category_name = optarg;
+      break;
+    case 'q':
+      quiet++;
+      break;
+    case 'r':
+      replace_category++;
+      break;
+    case 't':
+      add_title++;
+      break;
+    case '?':
+    default:
+      usage(progname);
+    }
+
+  argc -= optind;
+  argv += optind;
+
+  if (argc < 2) {
+    fprintf(stderr, "%s: insufficient number of arguments\n", progname);
+    usage(progname);
   }
+
+  if (replace_category && !category_name) {
+    fprintf(stderr, "%s: memo category required when specifying replace\n",
+	    progname);
+    usage(progname);
+  }
+
+  if (!quiet)
+    printf("Insert PalmPilot in cradel and press hotsync button...\n");
+
   if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
     exit(1);
   }
     
   addr.pi_family = PI_AF_SLP;
-  strcpy(addr.pi_device,argv[1]);
+  strcpy(addr.pi_device,argv[0]);
   
   ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
@@ -73,47 +121,53 @@ int main(int argc, char *argv[])
   l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *)buf, 0xffff);
   unpack_MemoAppInfo(&mai, (unsigned char *)buf, l);
 
-  category = 0;
-  
-  for (i=2; i<argc; i++) {
-  
-    if (strcmp(argv[i],"-c")==0) {
-      for (l=0; l<16; l++)
-        if (strcasecmp(mai.category.name[l], argv[i+1]) == 0) {
-          category = l;
-          break;
-        }
-      if (l==16)
-        category = atoi(argv[i+1]);
-      i++;
-      continue;
+  if (category_name) {
+    category = -1;		/* invalid category */
+    for (i = 0; i < 16; i++)
+      if (!strcasecmp(mai.category.name[i], category_name)) {
+	category = i;
+	break;
+      }
+    if (category < 0) {
+      fprintf(stderr, "%s: category %s not found on PalmPilot\n",
+	      progname, category_name);
+      exit(2);
     }
 
+    if (replace_category)
+      dlp_DeleteCategory(sd, db, category);
+
+  } else
+    category = 0;		/* unfiled */
+
+  for (i=1; i<argc; i++) {
+  
     f = fopen(argv[i], "r");
     if (f == NULL) {
-      perror("fopen");
-      exit(1);
+      fprintf(stderr, "%s: cannot open %s (%s), skipping...\n",
+	      progname, argv[i], strerror(errno));
+      continue;
     }
 
     fseek(f, 0, SEEK_END);
     memo_size = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    l = strlen(argv[i]);
+    preamble = add_title ? strlen(argv[i]) + 1 : 0;
 
-    memo_buf = (char*)malloc(memo_size + l + 2);
+    memo_buf = (char*)malloc(memo_size + preamble + 1);
     if (memo_buf == NULL) {
       perror("malloc()");
       exit(1);
     }
 
-    strcpy(memo_buf, argv[i]);
-    memo_buf[l] = '\n';
+    if (preamble)
+      sprintf(memo_buf, "%s\n", argv[i]);
 
-    fread(memo_buf + l + 1, memo_size, 1, f);
-    memo_buf[l + 1 + memo_size] = '\0';
+    fread(memo_buf + preamble, memo_size, 1, f);
 
-    /* dlp_exec(sd, 0x26, 0x20, &db, 1, NULL, 0); */
+    memo_buf[memo_size + preamble] = '\0';
+
     dlp_WriteRecord(sd, (unsigned char)db, 0, 0, category,
 		    (unsigned char *)memo_buf, -1, 0);
     free(memo_buf);
