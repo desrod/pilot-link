@@ -1203,7 +1203,7 @@ static int findVFSRoot(const char *root_component, int list_root, long *match)
 	struct VFSInfo info;
 	int i;
 	int buflen;
-	char buf[256];
+	char buf[vfsMAXFILENAME];
 	long matched_volume = -1;
 
 	if (dlp_VFSVolumeEnumerate(sd,&volume_count,volumes) < 0) {
@@ -1218,7 +1218,7 @@ static int findVFSRoot(const char *root_component, int list_root, long *match)
 	for (i = 0; i<volume_count; ++i) {
 		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0) continue;
 
-		buflen=256;
+		buflen=vfsMAXFILENAME;
 		buf[0]=0;
 		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,buf);
 
@@ -1311,7 +1311,7 @@ static void ListVFSDir(long volume, const char *path)
  ***********************************************************************/
 static void ListVFS()
 {
-	char root_component[256];
+	char root_component[vfsMAXFILENAME];
 	int list_root = 0;
 	char *s;
 	long matched_volume = -1;
@@ -1325,9 +1325,9 @@ static void ListVFS()
 	/* Need to match the first directory in the name with a slot or
 	   volume name, so isolate that component. Copy the VFS dir, NUL out
 	   first "/" */
-	memset(root_component,0,256);
-	if ('/'==vfsdir[0]) strncpy(root_component,vfsdir+1,255);
-	else strncpy(root_component,vfsdir,255);
+	memset(root_component,0,vfsMAXFILENAME);
+	if ('/'==vfsdir[0]) strncpy(root_component,vfsdir+1,vfsMAXFILENAME-1);
+	else strncpy(root_component,vfsdir,vfsMAXFILENAME-1);
 	s = strchr(root_component,'/');
 	if (NULL != s) *s=0;
 
@@ -1356,12 +1356,12 @@ static void ListVFS()
 		/* Path includes slot/volume label. */
 		r = strlen(root_component);
 		if ('/'==vfsdir[0]) ++r; /* adjust for stripped / */
-		memset(root_component,0,256);
-		strncpy(root_component,vfsdir+r,255);
+		memset(root_component,0,vfsMAXFILENAME);
+		strncpy(root_component,vfsdir+r,vfsMAXFILENAME-1);
 	} else {
 		/* Path without slot label */
-		memset(root_component,0,256);
-		strncpy(root_component,vfsdir,255);
+		memset(root_component,0,vfsMAXFILENAME);
+		strncpy(root_component,vfsdir,vfsMAXFILENAME-1);
 	}
 
 	if (!root_component[0]) {
