@@ -38,8 +38,6 @@
 #include "pi-serial.h"
 #include "pi-error.h"
 
-static int sys_RPCerror;
-
 /* Declare prototypes */
 int sys_PackRegisters(void *data, struct Pilot_registers *r);
 int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
