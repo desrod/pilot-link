@@ -8,7 +8,14 @@
  */
 
 #include <string.h>
-#include <iostream.h>
+
+// The correct header is <iostream>, <iostream.h> was never a standard C++
+// header.  'cin', 'cout' etc. are located in the 'std::' namespace and
+// shoudl be used as 'std::cin', 'std::cout' etc. or as 'cin', 'cout' if
+// "using namespace std;"
+//
+// #include <iostream.h>
+#include <iostream>
 using namespace std;
 
 extern "C" {
