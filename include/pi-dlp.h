@@ -27,6 +27,10 @@ extern "C" {
 
 #include "pi-macros.h"		/* For recordid_t */
 
+/* version of the DLP protocol supported in this version */
+#define PI_DLP_VERSION_MAJOR 1
+#define PI_DLP_VERSION_MINOR 4
+
 #define PI_DLP_OFFSET_CMD  0
 #define PI_DLP_OFFSET_ARGC 1
 #define PI_DLP_OFFSET_ARGV 2
@@ -236,162 +240,95 @@ typedef unsigned long FileRef;
 
 		/* DLP 1.0 FUNCTIONS START HERE (PalmOS v1.0) */
 		dlpFuncReadUserInfo,			/* 0x10 */
-	
 		dlpFuncWriteUserInfo,			/* 0x11 */
-
-		dlpFuncReadSysInfo,				/* 0x12 */
-	
+		dlpFuncReadSysInfo,			/* 0x12 */
 		dlpFuncGetSysDateTime,			/* 0x13 */
-	
 		dlpFuncSetSysDateTime,			/* 0x14 */
-	
 		dlpFuncReadStorageInfo,			/* 0x15 */
-	
-		dlpFuncReadDBList,				/* 0x16 */
-	
-		dlpFuncOpenDB,					/* 0x17 */
-	
-		dlpFuncCreateDB,				/* 0x18 */
-	
-		dlpFuncCloseDB,					/* 0x19 */
-	
-		dlpFuncDeleteDB,				/* 0x1a */
-	
+		dlpFuncReadDBList,			/* 0x16 */
+		dlpFuncOpenDB,				/* 0x17 */
+		dlpFuncCreateDB,			/* 0x18 */
+		dlpFuncCloseDB,				/* 0x19 */
+		dlpFuncDeleteDB,			/* 0x1a */
 		dlpFuncReadAppBlock,			/* 0x1b */
-	
 		dlpFuncWriteAppBlock,			/* 0x1c */
-
 		dlpFuncReadSortBlock,			/* 0x1d */
-
 		dlpFuncWriteSortBlock,			/* 0x1e */
-
 		dlpFuncReadNextModifiedRec,		/* 0x1f */
-
-		dlpFuncReadRecord,				/* 0x20 */
-
-		dlpFuncWriteRecord,				/* 0x21 */
-
+		dlpFuncReadRecord,			/* 0x20 */
+		dlpFuncWriteRecord,			/* 0x21 */
 		dlpFuncDeleteRecord,			/* 0x22 */
-
 		dlpFuncReadResource,			/* 0x23 */
-
 		dlpFuncWriteResource,			/* 0x24 */
-
 		dlpFuncDeleteResource,			/* 0x25 */
-
 		dlpFuncCleanUpDatabase,			/* 0x26 */
-
 		dlpFuncResetSyncFlags,			/* 0x27 */
-
 		dlpFuncCallApplication,			/* 0x28 */
-
-		dlpFuncResetSystem,				/* 0x29 */
-	
+		dlpFuncResetSystem,			/* 0x29 */
 		dlpFuncAddSyncLogEntry,			/* 0x2a */
-	
 		dlpFuncReadOpenDBInfo,			/* 0x2b */
-	
 		dlpFuncMoveCategory,			/* 0x2c */
-	
-		dlpProcessRPC,					/* 0x2d */
-	
-		dlpFuncOpenConduit,				/* 0x2e */
-	
-		dlpFuncEndOfSync,				/* 0x2f */
-	
+		dlpProcessRPC,				/* 0x2d */
+		dlpFuncOpenConduit,			/* 0x2e */
+		dlpFuncEndOfSync,			/* 0x2f */
 		dlpFuncResetRecordIndex,		/* 0x30 */
-	
 		dlpFuncReadRecordIDList,		/* 0x31 */
 	
 		/* DLP 1.1 FUNCTIONS ADDED HERE (PalmOS v2.0 Personal, and Professional) */
-		dlpFuncReadNextRecInCategory,   /* 0x32 */
-	
+		dlpFuncReadNextRecInCategory,   	/* 0x32 */
 		dlpFuncReadNextModifiedRecInCategory,   /* 0x33 */
-	
 		dlpFuncReadAppPreference,		/* 0x34 */
-	
 		dlpFuncWriteAppPreference,		/* 0x35 */
-	
 		dlpFuncReadNetSyncInfo,			/* 0x36 */
-	
 		dlpFuncWriteNetSyncInfo,		/* 0x37 */
-
-		dlpFuncReadFeature,				/* 0x38 */
+		dlpFuncReadFeature,			/* 0x38 */
 	
 		/* DLP 1.2 FUNCTIONS ADDED HERE (PalmOS v3.0) */
-		dlpFuncFindDB,					/* 0x39 */
-
-		dlpFuncSetDBInfo,				/* 0x3a */
+		dlpFuncFindDB,				/* 0x39 */
+		dlpFuncSetDBInfo,			/* 0x3a */
 	
 		/* DLP 1.3 FUNCTIONS ADDED HERE (PalmOS v4.0) */
-		dlpLoopBackTest,				/* 0x3b */
-
+		dlpLoopBackTest,			/* 0x3b */
 		dlpFuncExpSlotEnumerate,		/* 0x3c */
-
 		dlpFuncExpCardPresent,			/* 0x3d */
-
-		dlpFuncExpCardInfo,				/* 0x3e */
-
+		dlpFuncExpCardInfo,			/* 0x3e */
 		dlpFuncVFSCustomControl,		/* 0x3f */
-
 		dlpFuncVFSGetDefaultDir,		/* 0x40 */
-
-		dlpFuncVFSImportDatabaseFromFile,   /* 0x41 */
-
-		dlpFuncVFSExportDatabaseToFile, /* 0x42 */
-
+		dlpFuncVFSImportDatabaseFromFile,	/* 0x41 */
+		dlpFuncVFSExportDatabaseToFile, 	/* 0x42 */
 		dlpFuncVFSFileCreate,			/* 0x43 */
-
-		dlpFuncVFSFileOpen,				/* 0x44 */
-
+		dlpFuncVFSFileOpen,			/* 0x44 */
 		dlpFuncVFSFileClose,			/* 0x45 */
-
 		dlpFuncVFSFileWrite,			/* 0x46 */
-
-		dlpFuncVFSFileRead,				/* 0x47 */
-
+		dlpFuncVFSFileRead,			/* 0x47 */
 		dlpFuncVFSFileDelete,			/* 0x48 */
-
 		dlpFuncVFSFileRename,			/* 0x49 */
-
-		dlpFuncVFSFileEOF,				/* 0x4a */
-
-		dlpFuncVFSFileTell,				/* 0x4b */
-
-		dlpFuncVFSFileGetAttributes,	/* 0x4c */
-
-		dlpFuncVFSFileSetAttributes,	/* 0x4d */
-
+		dlpFuncVFSFileEOF,			/* 0x4a */
+		dlpFuncVFSFileTell,			/* 0x4b */
+		dlpFuncVFSFileGetAttributes,		/* 0x4c */
+		dlpFuncVFSFileSetAttributes,		/* 0x4d */
 		dlpFuncVFSFileGetDate,			/* 0x4e */
-
 		dlpFuncVFSFileSetDate,			/* 0x4f */
-
 		dlpFuncVFSDirCreate,			/* 0x50 */
-
-		dlpFuncVFSDirEntryEnumerate,	/* 0x51 */
-
-		dlpFuncVFSGetFile,				/* 0x52 */
-
-		dlpFuncVFSPutFile,				/* 0x53 */
-
+		dlpFuncVFSDirEntryEnumerate,		/* 0x51 */
+		dlpFuncVFSGetFile,			/* 0x52 */
+		dlpFuncVFSPutFile,			/* 0x53 */
 		dlpFuncVFSVolumeFormat,			/* 0x54 */
-
 		dlpFuncVFSVolumeEnumerate,		/* 0x55 */
-
 		dlpFuncVFSVolumeInfo,			/* 0x56 */
-
 		dlpFuncVFSVolumeGetLabel,		/* 0x57 */
-
 		dlpFuncVFSVolumeSetLabel,		/* 0x58 */
-
 		dlpFuncVFSVolumeSize,			/* 0x59 */
-
-		dlpFuncVFSFileSeek,				/* 0x5a */
-
+		dlpFuncVFSFileSeek,			/* 0x5a */
 		dlpFuncVFSFileResize,			/* 0x5b */
+		dlpFuncVFSFileSize,			/* 0x5c */
 
-		dlpFuncVFSFileSize,				/* 0x5c */
-
+		/* DLP 1.4-TW functions added here (Palm OS 5/TapWave) */
+		dlpFuncExpSlotMediaType,                /* 0x5d */
+		dlpFuncWriteResourceStream,             /* 0x5e */
+		dlpFuncWriteRecordStream,               /* 0x5f */
+		dlpFuncReadResourceStream,              /* 0x60 */
+		dlpFuncReadRecordStream,                /* 0x61 */
 		dlpLastFunc
 	};
 	
@@ -872,6 +809,10 @@ typedef unsigned long FileRef;
 
 	extern int dlp_VFSFileSize
 		PI_ARGS((int sd, FileRef afile,int *size));
+
+	/* DLP 1.4 only (Palm OS 5.2) */
+	extern int dlp_ExpSlotMediaType 
+		PI_ARGS((int sd, int slotNum, unsigned long *mediaType));
 
 #ifdef __cplusplus
 }

@@ -984,9 +984,11 @@ dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
  *
  * Function:    dlp_ReadSysInfo
  *
- * Summary:     Read the System Information (memory, battery, etc.) 
+ * Summary:     Read the System Information (device DLP version, ROM
+ *              version, product ID, maximum record/resource size)
  *
- * Parameters:  None
+ * Parameters:  sd        --> socket descriptor
+ *              s         <-- system information
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
@@ -1003,8 +1005,8 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 
 	req = dlp_request_new (dlpFuncReadSysInfo, 1, 4);
 
-	set_short (DLP_REQUEST_DATA (req, 0, 0), 0x0001);
-	set_short (DLP_REQUEST_DATA (req, 0, 2), 0x0003);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), PI_DLP_VERSION_MAJOR);
+	set_short (DLP_REQUEST_DATA (req, 0, 2), PI_DLP_VERSION_MINOR);
 	
 	result = dlp_exec(sd, req, &res);
 
@@ -1019,6 +1021,7 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 			 s->prodIDLength);
 
 		if (res->argc > 1) {
+			/* response added in DLP 1.2 */
 			s->dlpMajorVersion =
 				 get_short (DLP_RESPONSE_DATA (res, 1, 0));
 			s->dlpMinorVersion =
@@ -1027,11 +1030,15 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 				 get_short (DLP_RESPONSE_DATA (res, 1, 4));
 			s->compatMinorVersion =
 				 get_short (DLP_RESPONSE_DATA (res, 1, 6));
+			s->maxRecSize =
+				get_long  (DLP_RESPONSE_DATA (res, 1, 8));
+
 		} else {
 			s->dlpMajorVersion = 0;
 			s->dlpMinorVersion = 0;
 			s->compatMajorVersion = 0;
 			s->compatMinorVersion = 0;
+			s->maxRecSize = 0;
 		}
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -1045,6 +1052,9 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "  Compat Major Ver=0x%4.4lX Compat Minor Vers=0x%4.4lX\n",
 		    s->compatMajorVersion, s->compatMinorVersion));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+		    "  Max Rec Size=%ld\n", s->maxRecSize));
+
 	}
 
 	dlp_response_free (res);
@@ -1095,7 +1105,7 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
 			info->miscFlags = 0;
 
 		info->flags 	 = get_short(DLP_RESPONSE_DATA(res, 0, 6));
-		info->type 	 = get_long(DLP_RESPONSE_DATA(res, 0, 8));
+		info->type	 = get_long(DLP_RESPONSE_DATA(res, 0, 8));
 		info->creator 	 = get_long(DLP_RESPONSE_DATA(res, 0, 12));
 		info->version 	 = get_short(DLP_RESPONSE_DATA(res, 0, 16));
 		info->modnum 	 = get_long(DLP_RESPONSE_DATA(res, 0, 18));
@@ -5745,6 +5755,7 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1, 3);
 	Trace(dlp_VFSFileResize);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -5791,6 +5802,7 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
+	RequireDLPVersion(1, 3);
 	Trace (dlp_VFSFileSize);
 	
 	req = dlp_request_new (dlpFuncVFSFileSize, 1, 4);
@@ -5811,6 +5823,59 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 	dlp_response_free (res);
 
 	if (result < -1)			// negated Palm OS error code
+		result = -result;
+	else if (result > 0)		// no error
+		result = 0;
+
+	return result;
+}
+
+
+/***********************************************************************
+ *
+ * Function:    dlp_ExpSlotMediaType
+ *
+ * Summary:     Return the type of media supported by an expansion slot (DLP
+ *              1.4 only)
+ *
+ * Parameters:  sd          --> socket descriptor
+ *              slotNum     --> slot to query (1...n)
+ *              mediaType   <-- media type
+ *
+ * Returns:     -1          dlp error (see errno)
+ *              0           no error
+ *              >0          Palm OS error code
+ *
+ ***********************************************************************/
+int
+dlp_ExpSlotMediaType(int sd, int slotNum, unsigned long *mediaType)
+{
+	int     result;
+	struct dlpRequest *req;
+	struct dlpResponse *res;
+ 
+	RequireDLPVersion(1,4);
+	Trace (dlp_ExpSlotMediaType);
+
+	req = dlp_request_new (dlpFuncExpSlotMediaType, 1, 2);
+
+	set_short (DLP_REQUEST_DATA (req, 0, 0), slotNum);
+
+	result = dlp_exec (sd, req, &res);
+
+	dlp_request_free (req);
+
+	if (result >= 0) {
+		*mediaType = get_long (DLP_RESPONSE_DATA (res, 0, 0));
+
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
+			"DLP Media Type for slot %d: %4.4s\n", 
+			slotNum, mediaType));
+	}
+
+	dlp_response_free (res);
+
+	if (result < -1)		// negated Palm OS error code
 		result = -result;
 	else if (result > 0)		// no error
 		result = 0;
