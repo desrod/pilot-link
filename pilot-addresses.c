@@ -65,173 +65,6 @@ int 	tableformat 	= 0,
 char 	tabledelims[5] = { '\n', ',', ';', '\t' },
 	*progname;
 
-int main(int argc, char *argv[])
-{
-
-	int 	ch,
-		deleteallcategories 	= 0,
-		db,
-		l,
-		mode 			= 0,
-		quiet 			= 0,
-		sd 			= -1;
-	char 	*defaultcategoryname 	= 0,
-		*deletecategory 	= 0,
-		*progname 		= argv[0],
-		*port			= NULL,
-		buf[0xffff];
-
-	struct 	AddressAppInfo 	aai;
-	struct 	PilotUser 	User;
-		
-	while (((ch = getopt(argc, argv, optstring)) != -1)
-	       && (mode == 0)) {
-		switch (ch) {
-
-		case 't':
-			tableformat = 1;
-			tabledelim = atoi(optarg);
-			break;
-		case 'D':
-			deleteallcategories = 1;
-			break;
-		case 'T':
-			tablehead = 1;
-			break;
-		case 'a':
-			augment = 1;
-			break;
-		case 'q':
-			quiet = 1;
-			break;
-		case 'p':
-			port = optarg;
-			break;
-		case 'd':
-			deletecategory = optarg;
-			break;
-		case 'e':
-			encodechars = 1;
-			break;
-		case 'c':
-			defaultcategoryname = optarg;
-			break;
-		case 'r':
-			mode = 1;
-			break;
-		case 'w':
-			mode = 2;
-			break;
-		case 'h':
-			Help(progname);
-			break;
-		default:
-		}
-	}
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
-	}
-
-	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
-		exit(1);
-	} else {
-		sd = pilot_connect(port);
-	
-		/* Ask the pilot who it is. */
-		dlp_ReadUserInfo(sd, &User);
-	
-		/* Tell user (via the Palm) that we are starting things up */
-		dlp_OpenConduit(sd);
-	
-		/* Open the MemoDB.pdb database, store access handle in db */
-		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
-			puts("Unable to open AddressDB");
-			dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-			exit(1);
-		}
-	
-		l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-		unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
-	
-		if (defaultcategoryname)
-			defaultcategory =
-			    match_category(defaultcategoryname, &aai);
-		else
-			defaultcategory = 0;	/* Unfiled */
-	
-		if (mode == 2) {	/* Write */
-			FILE *f = fopen(argv[optind], "w");
-	
-			if (f == NULL) {
-				sprintf(buf, "%s: %s", argv[0], argv[optind]);
-				perror(buf);
-				exit(1);
-			}
-			write_file(f, sd, db, &aai);
-			if (deletecategory)
-				dlp_DeleteCategory(sd, db,
-						   match_category(deletecategory,
-								  &aai));
-			fclose(f);
-		} else if (mode == 1) {
-			FILE *f;
-	
-			while (optind < argc) {
-				f = fopen(argv[optind], "r");
-				if (f == NULL) {
-					sprintf(buf, "%s: %s", argv[0],
-						argv[optind]);
-					perror(buf);
-					continue;
-				}
-				if (deletecategory)
-					dlp_DeleteCategory(sd, db,
-							   match_category
-							   (deletecategory, &aai));
-	
-				if (deleteallcategories) {
-					int i;
-	
-					for (i = 0; i < 16; i++)
-						if (strlen(aai.category.name[i]) >
-						    0)
-							dlp_DeleteCategory(sd, db,
-									   i);
-				}
-	
-				read_file(f, sd, db, &aai);
-				fclose(f);
-				optind++;
-			}
-		}
-	
-		/* Close the database */
-		dlp_CloseDB(sd, db);
-	
-		/* Tell the user who it is, with a different PC id. */
-		User.lastSyncPC = 0xDEADBEEF;
-		User.successfulSyncDate = time(NULL);
-		User.lastSyncDate = User.successfulSyncDate;
-		dlp_WriteUserInfo(sd, &User);
-	
-		if (mode == 1) {
-			dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
-		} else if (mode == 2) {
-			dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
-		}
-		
-		dlp_EndOfSync(sd, 0);
-		pi_close(sd);
-	
-		return 0;
-	}
-}
-
 int inchar(FILE * in)
 {
 	int 	ch;
@@ -628,4 +461,169 @@ static void Help(char *progname)
 	return;
 }
 
+int main(int argc, char *argv[])
+{
 
+	int 	ch,
+		deleteallcategories 	= 0,
+		db,
+		l,
+		mode 			= 0,
+		quiet 			= 0,
+		sd 			= -1;
+	char 	*defaultcategoryname 	= 0,
+		*deletecategory 	= 0,
+		*progname 		= argv[0],
+		*port			= NULL,
+		buf[0xffff];
+
+	struct 	AddressAppInfo 	aai;
+	struct 	PilotUser 	User;
+		
+	while (((ch = getopt(argc, argv, optstring)) != -1)
+	       && (mode == 0)) {
+		switch (ch) {
+
+		case 't':
+			tableformat = 1;
+			tabledelim = atoi(optarg);
+			break;
+		case 'D':
+			deleteallcategories = 1;
+			break;
+		case 'T':
+			tablehead = 1;
+			break;
+		case 'a':
+			augment = 1;
+			break;
+		case 'q':
+			quiet = 1;
+			break;
+		case 'p':
+			port = optarg;
+			break;
+		case 'd':
+			deletecategory = optarg;
+			break;
+		case 'e':
+			encodechars = 1;
+			break;
+		case 'c':
+			defaultcategoryname = optarg;
+			break;
+		case 'r':
+			mode = 1;
+			break;
+		case 'w':
+			mode = 2;
+			break;
+		case 'h':
+			Help(progname);
+			break;
+		default:
+		}
+	}
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
+	}
+
+	if (port == NULL && argc > 1) {
+		printf
+		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
+		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+		exit(1);
+	} else {
+		sd = pilot_connect(port);
+	
+		/* Ask the pilot who it is. */
+		dlp_ReadUserInfo(sd, &User);
+	
+		/* Tell user (via the Palm) that we are starting things up */
+		dlp_OpenConduit(sd);
+	
+		/* Open the MemoDB.pdb database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
+			puts("Unable to open AddressDB");
+			dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
+			exit(1);
+		}
+	
+		l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
+		unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
+	
+		if (defaultcategoryname)
+			defaultcategory =
+			    match_category(defaultcategoryname, &aai);
+		else
+			defaultcategory = 0;	/* Unfiled */
+	
+		if (mode == 2) {	/* Write */
+			FILE *f = fopen(argv[optind], "w");
+	
+			if (f == NULL) {
+				sprintf(buf, "%s: %s", argv[0], argv[optind]);
+				perror(buf);
+				exit(1);
+			}
+			write_file(f, sd, db, &aai);
+			if (deletecategory)
+				dlp_DeleteCategory(sd, db,
+						   match_category(deletecategory,
+								  &aai));
+			fclose(f);
+		} else if (mode == 1) {
+			FILE *f;
+	
+			while (optind < argc) {
+				f = fopen(argv[optind], "r");
+				if (f == NULL) {
+					sprintf(buf, "%s: %s", argv[0],
+						argv[optind]);
+					perror(buf);
+					continue;
+				}
+				if (deletecategory)
+					dlp_DeleteCategory(sd, db,
+							   match_category
+							   (deletecategory, &aai));
+	
+				if (deleteallcategories) {
+					int i;
+	
+					for (i = 0; i < 16; i++)
+						if (strlen(aai.category.name[i]) >
+						    0)
+							dlp_DeleteCategory(sd, db,
+									   i);
+				}
+	
+				read_file(f, sd, db, &aai);
+				fclose(f);
+				optind++;
+			}
+		}
+	
+		/* Close the database */
+		dlp_CloseDB(sd, db);
+	
+		/* Tell the user who it is, with a different PC id. */
+		User.lastSyncPC = 0xDEADBEEF;
+		User.successfulSyncDate = time(NULL);
+		User.lastSyncDate = User.successfulSyncDate;
+		dlp_WriteUserInfo(sd, &User);
+	
+		if (mode == 1) {
+			dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
+		} else if (mode == 2) {
+			dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
+		}
+		
+		dlp_EndOfSync(sd, 0);
+		pi_close(sd);
+	
+		return 0;
+	}
+}

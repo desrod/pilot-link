@@ -45,6 +45,22 @@ struct option options[] = {
 
 static const char *optstring = "hp:f:";
 
+static void Help(char *progname)
+{
+	printf
+	    ("   Syncronize your ToDo database with your desktop or server machine\n"
+	     "   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n"
+	     "     -p <port>      Use device file <port> to communicate with Palm\n"
+	     "     -f <filename>  Save ToDO entries in <filename> instead of writing to STDOUT\n"
+	     "     -h             Display this information\n\n"
+	     "   Examples: %s -p /dev/pilot -d ~/Palm\n\n"
+	     "   By default, the contents of your Palm's memo database will be written to\n"
+	     "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
+	     "   memo as a separate message.  The subject of each message will be the\n"
+	     "   category.\n\n", progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	ch,
@@ -190,20 +206,4 @@ int main(int argc, char *argv[])
 		}
 	}
 	return 0;
-}
-
-static void Help(char *progname)
-{
-	printf
-	    ("   Syncronize your ToDo database with your desktop or server machine\n"
-	     "   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n"
-	     "     -p <port>      Use device file <port> to communicate with Palm\n"
-	     "     -f <filename>  Save ToDO entries in <filename> instead of writing to STDOUT\n"
-	     "     -h             Display this information\n\n"
-	     "   Examples: %s -p /dev/pilot -d ~/Palm\n\n"
-	     "   By default, the contents of your Palm's memo database will be written to\n"
-	     "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
-	     "   memo as a separate message.  The subject of each message will be the\n"
-	     "   category.\n\n", progname, progname);
-	return;
 }

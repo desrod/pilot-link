@@ -44,10 +44,6 @@ int pilot_connect(const char *port);
 static void Help(char *progname);
 char hostname[130];
 struct in_addr address, netmask;
-
-/* Declare prototypes */
-void Help(char *progname);
-void fetch_host(char *hostname, int hostlen, struct in_addr *address, struct in_addr *mask);
 	
 #ifdef HAVE_SA_LEN
 #ifndef max
@@ -65,164 +61,6 @@ void fetch_host(char *hostname, int hostlen, struct in_addr *address, struct in_
 #  define IFF_POINTOPOINT IFF_POINTTOPOINT
 # endif
 #endif
-
-int main(int argc, char *argv[])
-{
-        struct hostent *hent;
-        struct in_addr raddress;
-        struct sockaddr_in serv_addr, cli_addr; 
-        int n;
-        int quiet = 0;
-        int sockfd;
-        char *progname = argv[0];
-
-        fd_set rset;
-        unsigned char mesg[1026];
-        unsigned int clilen; 
-
-	memset(&address, 0, sizeof(address));
-	memset(&netmask, 0, sizeof(netmask));
-	hostname[0] = 0;
-
-	fetch_host(hostname, 128, &address, &netmask);
-
-	while ((n = getopt(argc, argv, "h:s:a:q")) != EOF) {
-		switch (n) {
-		case 'h':
-			strcpy(hostname, optarg);
-			break;
-		case 'a':
-			if (!inet_aton(optarg, &address)) {
-				if ((hent = gethostbyname(optarg))) {
-					memcpy(&address.s_addr,
-					       hent->h_addr,
-					       sizeof(address));
-				} else {
-					fprintf(stderr,
-						"Invalid address '%s'\n\n",
-						optarg);
-					Help(progname);
-				}
-			}
-			break;
-		case 's':
-			if (!inet_aton(optarg, &netmask))
-				Help(progname);
-			break;
-		case 'q':
-			quiet = 1;
-			break;
-		case 'H':
-		case '?':
-		default:
-			Help(progname);
-		}
-	}
-
-	/* cannot execute without address and hostname */
-	if ((address.s_addr == 0) || (strlen(hostname) == 0))
-		Help(progname);
-
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sockfd < 0) {
-		perror("Unable to get socket");
-		exit(1);
-	}
-
-	memset(&serv_addr, 0, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(14237);
-
-	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
-	    < 0) {
-		perror("Unable to bind socket");
-		exit(1);
-	}
-
-	if (!quiet) {
-		fprintf(stderr,
-			"%s(%d): Connection Service Daemon for Palm Computing(tm) device active.\n",
-			progname, getpid());
-		fprintf(stderr,
-			"%s(%d): Accepting connection requests for '%s' at %s",
-			progname, getpid(), hostname, inet_ntoa(address));
-		fprintf(stderr, " with mask %s.\n", inet_ntoa(netmask)
-		    );
-	}
-	for (;;) {
-		clilen = sizeof(cli_addr);
-		FD_ZERO(&rset);
-		FD_SET(sockfd, &rset);
-		if (select(sockfd + 1, &rset, 0, 0, 0) < 0) {
-			perror("select failure");
-			exit(1);
-		}
-		n = recvfrom(sockfd, mesg, 1024, 0,
-			     (struct sockaddr *) &cli_addr, &clilen);
-
-		if (n < 0) {
-			continue;
-		}
-
-		mesg[n] = 0;
-
-		if (!quiet) {
-			hent =
-			    gethostbyaddr((char *) &cli_addr.sin_addr.
-					  s_addr, 4, AF_INET);
-			memcpy(&raddress, &cli_addr.sin_addr.s_addr, 4);
-
-			fprintf(stderr, "%s(%d): Connection from %s[%s], ",
-				progname,
-				getpid(), hent ? hent->h_name : "",
-				inet_ntoa(raddress));
-		}
-
-		if (get_short(mesg) != 0xFADE)
-			goto invalid;
-
-		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
-			struct in_addr ip, mask;
-			unsigned char *name = mesg + 12;
-
-			memcpy(&ip, mesg + 4, 4);
-			memcpy(&mask, mesg + 8, 4);
-
-			if (!quiet) {
-				fprintf(stderr, "req '%s', %s", name,
-					inet_ntoa(ip));
-				fprintf(stderr, ", %s", inet_ntoa(mask));
-			}
-
-			if (strcmp(hostname, name) == 0) {
-				if (!quiet)
-					fprintf(stderr, " = accept.\n");
-
-				set_byte(mesg + 2, 0x02);
-				memcpy(mesg + 4, &address, 4);	/* address is already in Motorola byte order */
-				n = sendto(sockfd, mesg, n, 0,
-					   (struct sockaddr *) &cli_addr,
-					   clilen);
-				if (n < 0) {
-					perror("sendto error");
-				}
-				continue;
-			}
-			if (!quiet)
-				fprintf(stderr, " = reject.\n");
-			continue;
-		}
-
-	      invalid:
-		if (!quiet)
-			fprintf(stderr, "invalid packet of %d bytes:\n", n);
-		dumpdata(mesg, n);
-	}
-
-	exit(0);
-}
-
 
 /***********************************************************************
  *
@@ -414,3 +252,246 @@ static void Help(char *progname)
 	printf("   Note: Currently the subnet mask is not used by %s.\n\n", progname);
 	exit(0);
 }
+
+int main(int argc, char *argv[])
+{
+        struct hostent *hent;
+        struct in_addr raddress;
+        struct sockaddr_in serv_addr, cli_addr; 
+        int n;
+        int quiet = 0;
+        int sockfd;
+        char *progname = argv[0];
+
+        fd_set rset;
+        unsigned char mesg[1026];
+        unsigned int clilen; 
+
+	memset(&address, 0, sizeof(address));
+	memset(&netmask, 0, sizeof(netmask));
+	hostname[0] = 0;
+
+	fetch_host(hostname, 128, &address, &netmask);
+
+	while ((n = getopt(argc, argv, "h:s:a:q")) != EOF) {
+		switch (n) {
+		case 'h':
+			strcpy(hostname, optarg);
+			break;
+		case 'a':
+			if (!inet_aton(optarg, &address)) {
+				if ((hent = gethostbyname(optarg))) {
+					memcpy(&address.s_addr,
+					       hent->h_addr,
+					       sizeof(address));
+				} else {
+					fprintf(stderr,
+						"Invalid address '%s'\n\n",
+						optarg);
+					Help(progname);
+				}
+			}
+			break;
+		case 's':
+			if (!inet_aton(optarg, &netmask))
+				Help(progname);
+			break;
+		case 'q':
+			quiet = 1;
+			break;
+		case 'H':
+		case '?':
+		default:
+			Help(progname);
+		}
+	}
+
+	/* cannot execute without address and hostname */
+	if ((address.s_addr == 0) || (strlen(hostname) == 0))
+		Help(progname);
+
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockfd < 0) {
+		perror("Unable to get socket");
+		exit(1);
+	}
+
+	memset(&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr.sin_port = htons(14237);
+
+	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
+	    < 0) {
+		perror("Unable to bind socket");
+		exit(1);
+	}
+
+	if (!quiet) {
+		fprintf(stderr,
+			"%s(%d): Connection Service Daemon for Palm Computing(tm) device active.\n",
+			progname, getpid());
+		fprintf(stderr,
+			"%s(%d): Accepting connection requests for '%s' at %s",
+			progname, getpid(), hostname, inet_ntoa(address));
+		fprintf(stderr, " with mask %s.\n", inet_ntoa(netmask)
+		    );
+	}
+	for (;;) {
+		clilen = sizeof(cli_addr);
+		FD_ZERO(&rset);
+		FD_SET(sockfd, &rset);
+		if (select(sockfd + 1, &rset, 0, 0, 0) < 0) {
+			perror("select failure");
+			exit(1);
+		}
+		n = recvfrom(sockfd, mesg, 1024, 0,
+			     (struct sockaddr *) &cli_addr, &clilen);
+
+		if (n < 0) {
+			continue;
+		}
+
+		mesg[n] = 0;
+
+		if (!quiet) {
+			hent =
+			    gethostbyaddr((char *) &cli_addr.sin_addr.
+					  s_addr, 4, AF_INET);
+			memcpy(&raddress, &cli_addr.sin_addr.s_addr, 4);
+
+			fprintf(stderr, "%s(%d): Connection from %s[%s], ",
+				progname,
+				getpid(), hent ? hent->h_name : "",
+				inet_ntoa(raddress));
+		}
+
+		if (get_short(mesg) != 0xFADE)
+			goto invalid;
+
+		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
+			struct in_addr ip, mask;
+			unsigned char *name = mesg + 12;
+
+			memcpy(&ip, mesg + 4, 4);
+			memcpy(&mask, mesg + 8, 4);
+
+			if (!quiet) {
+				fprintf(stderr, "req '%s', %s", name,
+					inet_ntoa(ip));
+				fprintf(stderr, ", %s", inet_ntoa(mask));
+			}
+
+			if (strcmp(hostname, name) == 0) {
+				if (!quiet)
+					fprintf(stderr, " = accept.\n");
+
+				set_byte(mesg + 2, 0x02);
+				memcpy(mesg + 4, &address, 4);	/* address is already in Motorola byte order */
+				n = sendto(sockfd, mesg, n, 0,
+					   (struct sockaddr *) &cli_addr,
+					   clilen);
+				if (n < 0) {
+					perror("sendto error");
+				}
+				continue;
+			}
+			if (!quiet)
+				fprintf(stderr, " = reject.\n");
+			continue;
+		}
+
+	memset(&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr.sin_port = htons(14237);
+
+	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
+	    < 0) {
+		perror("Unable to bind socket");
+		exit(1);
+	}
+
+	if (!quiet) {
+		fprintf(stderr,
+			"%s(%d): Connection Service Daemon for Palm Computing(tm) device active.\n",
+			progname, getpid());
+		fprintf(stderr,
+			"%s(%d): Accepting connection requests for '%s' at %s",
+			progname, getpid(), hostname, inet_ntoa(address));
+		fprintf(stderr, " with mask %s.\n", inet_ntoa(netmask)
+		    );
+	}
+	for (;;) {
+		clilen = sizeof(cli_addr);
+		FD_ZERO(&rset);
+		FD_SET(sockfd, &rset);
+		if (select(sockfd + 1, &rset, 0, 0, 0) < 0) {
+			perror("select failure");
+			exit(1);
+		}
+		n = recvfrom(sockfd, mesg, 1024, 0,
+			     (struct sockaddr *) &cli_addr, &clilen);
+
+		if (n < 0) {
+			continue;
+		}
+
+		mesg[n] = 0;
+
+		if (!quiet) {
+			hent =
+			    gethostbyaddr((char *) &cli_addr.sin_addr.
+					  s_addr, 4, AF_INET);
+			memcpy(&raddress, &cli_addr.sin_addr.s_addr, 4);
+
+			fprintf(stderr, "%s(%d): Connection from %s[%s], ",
+				progname,
+				getpid(), hent ? hent->h_name : "",
+				inet_ntoa(raddress));
+		}
+
+		if (get_short(mesg) != 0xFADE)
+			goto invalid;
+
+		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
+			struct in_addr ip, mask;
+			unsigned char *name = mesg + 12;
+
+			memcpy(&ip, mesg + 4, 4);
+			memcpy(&mask, mesg + 8, 4);
+
+			if (!quiet) {
+				fprintf(stderr, "req '%s', %s", name,
+					inet_ntoa(ip));
+				fprintf(stderr, ", %s", inet_ntoa(mask));
+			}
+
+			if (strcmp(hostname, name) == 0) {
+				if (!quiet)
+					fprintf(stderr, " = accept.\n");
+
+				set_byte(mesg + 2, 0x02);
+				memcpy(mesg + 4, &address, 4);	/* address is already in Motorola byte order */
+				n = sendto(sockfd, mesg, n, 0,
+					   (struct sockaddr *) &cli_addr,
+					   clilen);
+				if (n < 0) {
+					perror("sendto error");
+				}
+				continue;
+			}
+			if (!quiet)
+				fprintf(stderr, " = reject.\n");
+			continue;
+		}
+
+	      invalid:
+		if (!quiet)
+			fprintf(stderr, "invalid packet of %d bytes:\n", n);
+		dumpdata(mesg, n);
+	}
+
+	exit(0);
+}
+

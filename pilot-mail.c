@@ -65,6 +65,163 @@ static void Help(char *progname, char *port, char *from_address, char *pop_host,
 
 static const char *optstring = "s:p:d:f:H:u:p:P:k:m:h";
 
+void markline(char *msg)
+{
+	while ((*msg) != '\n' && (*msg) != 0) {
+		msg++;
+	}
+	(*msg) = 0;
+}
+
+int openmhmsg(char *dir, int num)
+{
+	char 	filename[1000];
+
+	sprintf(filename, "%s/%d", dir, num);
+
+	return open(filename, O_RDONLY);
+}
+
+int getpopchar(int socket)
+{
+	int 	len;
+	char 	buf;
+
+	do {
+		len = read(socket, &buf, 1);
+		if (len < 0)
+			return len;
+	} while ((len == 0) || (buf == '\r'));
+
+	return buf;
+}
+
+int getpopstring(int socket, char *buf)
+{
+	int 	count;
+
+	while ((count = getpopchar(socket)) >= 0) {
+		*buf++ = count;
+		if (count == '\n')
+			break;
+	}
+	*buf = '\0';
+	return count;
+}
+
+int getpopresult(int socket, char *buf)
+{
+	int 	count = getpopstring(socket, buf);
+
+	if (count < 0)
+		return count;
+
+	if (buf[0] == '+')
+		return 0;
+	else
+		return 1;
+}
+
+char *skipspace(char *count)
+{
+	while (count && ((*count == ' ') || (*count == '\t')))
+		count++;
+	return count;
+}
+
+void header(struct Mail *m, char *t)
+{
+	static char 	holding[4096];
+
+	if (t && strlen(t) && t[strlen(t) - 1] == '\n')
+		t[strlen(t) - 1] = 0;
+
+	if (t && ((t[0] == ' ') || (t[0] == '\t'))) {
+		if ((strlen(t) + strlen(holding)) > 4096)
+			return;	/* Just discard approximate overflow */
+		strcat(holding, t + 1);
+		return;
+	}
+
+	/* Decide on what we do with m->sendTo */
+
+	if (strncmp(holding, "From:", 5) == 0) {
+		m->from = strdup(skipspace(holding + 5));
+	} else if (strncmp(holding, "To:", 3) == 0) {
+		m->to = strdup(skipspace(holding + 3));
+	} else if (strncmp(holding, "Subject:", 8) == 0) {
+		m->subject = strdup(skipspace(holding + 8));
+	} else if (strncmp(holding, "Cc:", 3) == 0) {
+		m->cc = strdup(skipspace(holding + 3));
+	} else if (strncmp(holding, "Bcc:", 4) == 0) {
+		m->bcc = strdup(skipspace(holding + 4));
+	} else if (strncmp(holding, "Reply-To:", 9) == 0) {
+		m->replyTo = strdup(skipspace(holding + 9));
+	} else if (strncmp(holding, "Date:", 4) == 0) {
+		time_t d = parsedate(skipspace(holding + 5));
+
+		if (d != -1) {
+			struct 	tm *d2;
+
+			m->dated = 1;
+			d2 	 = localtime(&d);
+			m->date  = *d2;
+		}
+	}
+
+	holding[0] = '\0';
+
+	if (t)
+		strcpy(holding, t);
+}
+
+char *getvars(char *name, char *xdefault)
+{
+	char 	*s;
+
+	if ((s = getenv(name)) == NULL) {
+		s = xdefault;
+	}
+	return s;
+}
+
+static void Help(char *progname, char *port, char *pop_host, char *pop_user, 
+		 char *pop_pass, char *from_address, char *pop_keep, 
+		 char *pilot_dispose, char *topilot_mhdir, char *sendmail)
+{
+	printf("   Send and receive mail to and from your Palm device using POP3\n\n"
+	       "   Usage: %s -p <port> [options]\n\n"
+	       "     -p <port>            Use device file <port> to communicate with Palm\n"
+	       "                          [$PILOTPORT is currently: '%s']\n\n"
+	       "     -h                   Display this information\n"
+	       "     -H host              POP3 host (if empty, mail won't be received)\n"
+	       "                          [$POPHOST is currently: '%s']\n\n"
+	       "     -u user              POP3 user name\n"
+	       "                          [$POPUSER is currently: '%s']\n\n"
+	       "     -P pass              POP3 password\n"
+	       "                          [$POPPASS is currently: '%s']\n\n"
+	       "     -f address           Outgoing 'From:' line\n"
+	       "                          [$PILOTFROM is currently: '%s']\n\n"
+	       "     -k keep|delete       Keep mail on POP server\n"
+	       "                          [$POPKEEP is currently: '%s']\n\n"
+	       "     -d keep|delete|file  Disposition of sent mail\n"
+	       "                          [$PILOTDISPOSE is currently: '%s']\n\n"
+	       "     -m mhdir             MH directory to download to Palm\n"
+	       "                          [$TOPILOT_MHDIR is currently: '%s']\n\n"
+	       "     -s command           Sendmail command (if empty, mail won't be sent)\n"
+	       "                          [$SENDMAIL is currently: '%s']\n\n"
+	       "   All options may be specified by setting the environment variable named in\n"
+	       "   brackets.\n\n"
+	       "      ********************************************* **\n"
+	       "      ** NOTE!! This is being deprecated soon. This **\n"
+	       "      ** means that this application is going away! **\n"
+	       "      ** Please use pilot-mailsync instead. Consult **\n"
+	       "      ** the manpages for additional information... **\n"
+	       "      ************************************************\n\n", progname, port, 
+		pop_host, pop_user, pop_pass, from_address, pop_keep, pilot_dispose, topilot_mhdir, 
+		sendmail);
+	return;
+}
 int main(int argc, char *argv[])
 {
 	int 	count,
@@ -719,162 +876,4 @@ int main(int argc, char *argv[])
 
 	pi_close(sd);
 	return 0;
-}
-
-void markline(char *msg)
-{
-	while ((*msg) != '\n' && (*msg) != 0) {
-		msg++;
-	}
-	(*msg) = 0;
-}
-
-int openmhmsg(char *dir, int num)
-{
-	char 	filename[1000];
-
-	sprintf(filename, "%s/%d", dir, num);
-
-	return open(filename, O_RDONLY);
-}
-
-int getpopchar(int socket)
-{
-	int 	len;
-	char 	buf;
-
-	do {
-		len = read(socket, &buf, 1);
-		if (len < 0)
-			return len;
-	} while ((len == 0) || (buf == '\r'));
-
-	return buf;
-}
-
-int getpopstring(int socket, char *buf)
-{
-	int 	count;
-
-	while ((count = getpopchar(socket)) >= 0) {
-		*buf++ = count;
-		if (count == '\n')
-			break;
-	}
-	*buf = '\0';
-	return count;
-}
-
-int getpopresult(int socket, char *buf)
-{
-	int 	count = getpopstring(socket, buf);
-
-	if (count < 0)
-		return count;
-
-	if (buf[0] == '+')
-		return 0;
-	else
-		return 1;
-}
-
-char *skipspace(char *count)
-{
-	while (count && ((*count == ' ') || (*count == '\t')))
-		count++;
-	return count;
-}
-
-void header(struct Mail *m, char *t)
-{
-	static char 	holding[4096];
-
-	if (t && strlen(t) && t[strlen(t) - 1] == '\n')
-		t[strlen(t) - 1] = 0;
-
-	if (t && ((t[0] == ' ') || (t[0] == '\t'))) {
-		if ((strlen(t) + strlen(holding)) > 4096)
-			return;	/* Just discard approximate overflow */
-		strcat(holding, t + 1);
-		return;
-	}
-
-	/* Decide on what we do with m->sendTo */
-
-	if (strncmp(holding, "From:", 5) == 0) {
-		m->from = strdup(skipspace(holding + 5));
-	} else if (strncmp(holding, "To:", 3) == 0) {
-		m->to = strdup(skipspace(holding + 3));
-	} else if (strncmp(holding, "Subject:", 8) == 0) {
-		m->subject = strdup(skipspace(holding + 8));
-	} else if (strncmp(holding, "Cc:", 3) == 0) {
-		m->cc = strdup(skipspace(holding + 3));
-	} else if (strncmp(holding, "Bcc:", 4) == 0) {
-		m->bcc = strdup(skipspace(holding + 4));
-	} else if (strncmp(holding, "Reply-To:", 9) == 0) {
-		m->replyTo = strdup(skipspace(holding + 9));
-	} else if (strncmp(holding, "Date:", 4) == 0) {
-		time_t d = parsedate(skipspace(holding + 5));
-
-		if (d != -1) {
-			struct 	tm *d2;
-
-			m->dated = 1;
-			d2 	 = localtime(&d);
-			m->date  = *d2;
-		}
-	}
-
-	holding[0] = '\0';
-
-	if (t)
-		strcpy(holding, t);
-}
-
-char *getvars(char *name, char *xdefault)
-{
-	char 	*s;
-
-	if ((s = getenv(name)) == NULL) {
-		s = xdefault;
-	}
-	return s;
-}
-
-static void Help(char *progname, char *port, char *pop_host, char *pop_user, 
-		 char *pop_pass, char *from_address, char *pop_keep, 
-		 char *pilot_dispose, char *topilot_mhdir, char *sendmail)
-{
-	printf("   Send and receive mail to and from your Palm device using POP3\n\n"
-	       "   Usage: %s -p <port> [options]\n\n"
-	       "     -p <port>            Use device file <port> to communicate with Palm\n"
-	       "                          [$PILOTPORT is currently: '%s']\n\n"
-	       "     -h                   Display this information\n"
-	       "     -H host              POP3 host (if empty, mail won't be received)\n"
-	       "                          [$POPHOST is currently: '%s']\n\n"
-	       "     -u user              POP3 user name\n"
-	       "                          [$POPUSER is currently: '%s']\n\n"
-	       "     -P pass              POP3 password\n"
-	       "                          [$POPPASS is currently: '%s']\n\n"
-	       "     -f address           Outgoing 'From:' line\n"
-	       "                          [$PILOTFROM is currently: '%s']\n\n"
-	       "     -k keep|delete       Keep mail on POP server\n"
-	       "                          [$POPKEEP is currently: '%s']\n\n"
-	       "     -d keep|delete|file  Disposition of sent mail\n"
-	       "                          [$PILOTDISPOSE is currently: '%s']\n\n"
-	       "     -m mhdir             MH directory to download to Palm\n"
-	       "                          [$TOPILOT_MHDIR is currently: '%s']\n\n"
-	       "     -s command           Sendmail command (if empty, mail won't be sent)\n"
-	       "                          [$SENDMAIL is currently: '%s']\n\n"
-	       "   All options may be specified by setting the environment variable named in\n"
-	       "   brackets.\n\n"
-	       "      ********************************************* **\n"
-	       "      ** NOTE!! This is being deprecated soon. This **\n"
-	       "      ** means that this application is going away! **\n"
-	       "      ** Please use pilot-mailsync instead. Consult **\n"
-	       "      ** the manpages for additional information... **\n"
-	       "      ************************************************\n\n", progname, port, 
-		pop_host, pop_user, pop_pass, from_address, pop_keep, pilot_dispose, topilot_mhdir, 
-		sendmail);
-	return;
 }

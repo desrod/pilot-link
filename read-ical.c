@@ -50,6 +50,67 @@ char *tclquote(char *in);
 
 static const char *optstring = "hp:dt:f:";
 
+char *tclquote(char *in)
+{
+	int 	len;
+	char 	*out,
+		*pos;
+	static char *buffer = 0;
+
+	/* Skip leading bullet (and any whitespace after) */
+	if (in[0] == '\x95') {
+		++in;
+		while (in[0] == ' ' || in[0] == '\t') {
+			++in;
+		}
+	}
+
+	len = 3;
+	pos = in;
+	while (*pos) {
+		if ((*pos == '\\') || (*pos == '"') || (*pos == '[')
+		    || (*pos == '{')
+		    || (*pos == '$'))
+			len++;
+		len++;
+		pos++;
+	}
+
+	if (buffer)
+		free(buffer);
+	buffer = (char *) malloc(len);
+	out = buffer;
+
+	pos = in;
+	*out++ = '"';
+	while (*pos) {
+		if ((*pos == '\\') || (*pos == '"') || (*pos == '[')
+		    || (*pos == '{')
+		    || (*pos == '$'))
+			*out++ = '\\';
+		*out++ = *pos++;
+	}
+	*out++ = '"';
+	*out++ = '\0';
+
+	return buffer;
+}
+
+static void Help(char *progname)
+{
+	printf("   Dumps the DatebookDB and/or ToDo applications to ical format\n\n"
+	       "   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n"
+	       "   Options:\n"
+	       "   Note: calfile will be overwritten!\n"
+	       "   -p <port> Use device file <port> to communicate with Palm\n"
+	       "   -d             Datebook only, no ToDos\n"
+	       "   -t pubtext     Replace text of items not starting with a bullet\n"
+	       "                  with pubtext\n"
+	       "   -f filename    Write the ical formatted file to this filename\n"
+	       "   -h             Display this information\n\n", progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	ch,
@@ -345,66 +406,4 @@ int main(int argc, char *argv[])
 		}
 	}
 	return 0;
-}
-
-
-char *tclquote(char *in)
-{
-	int 	len;
-	char 	*out,
-		*pos;
-	static char *buffer = 0;
-
-	/* Skip leading bullet (and any whitespace after) */
-	if (in[0] == '\x95') {
-		++in;
-		while (in[0] == ' ' || in[0] == '\t') {
-			++in;
-		}
-	}
-
-	len = 3;
-	pos = in;
-	while (*pos) {
-		if ((*pos == '\\') || (*pos == '"') || (*pos == '[')
-		    || (*pos == '{')
-		    || (*pos == '$'))
-			len++;
-		len++;
-		pos++;
-	}
-
-	if (buffer)
-		free(buffer);
-	buffer = (char *) malloc(len);
-	out = buffer;
-
-	pos = in;
-	*out++ = '"';
-	while (*pos) {
-		if ((*pos == '\\') || (*pos == '"') || (*pos == '[')
-		    || (*pos == '{')
-		    || (*pos == '$'))
-			*out++ = '\\';
-		*out++ = *pos++;
-	}
-	*out++ = '"';
-	*out++ = '\0';
-
-	return buffer;
-}
-
-static void Help(char *progname)
-{
-	printf("   Dumps the DatebookDB and/or ToDo applications to ical format\n\n"
-	       "   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n"
-	       "   Options:\n"
-	       "   Note: calfile will be overwritten!\n"
-	       "   -p <port> Use device file <port> to communicate with Palm\n"
-	       "   -d             Datebook only, no ToDos\n"
-	       "   -t pubtext     Replace text of items not starting with a bullet\n"
-	       "                  with pubtext\n"
-	       "   -f filename    Write the ical formatted file to this filename\n"
-	       "   -h             Display this information\n\n", progname);
-	return;
 }

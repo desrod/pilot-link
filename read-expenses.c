@@ -44,6 +44,17 @@ struct option options[] = {
 
 static const char *optstring = "hp:";
 
+static void Help(char *progname)
+{
+	printf("   Export Palm Expense application database data into text format\n"
+	       "   Usage: %s -p <port>\n\n"
+	       "   Options:\n"
+	       "     -p <port>         Use device file <port> to communicate with Palm\n"
+	       "     -h                Display this information\n\n"
+	       "   Examples: %s -p /dev/pilot\n\n", progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	count,
@@ -206,15 +217,3 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 	exit(0);
 }
-
-static void Help(char *progname)
-{
-	printf("   Export Palm Expense application database data into text format\n"
-	       "   Usage: %s -p <port>\n\n"
-	       "   Options:\n"
-	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -h                Display this information\n\n"
-	       "   Examples: %s -p /dev/pilot\n\n", progname, progname);
-	return;
-}
-

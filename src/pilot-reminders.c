@@ -47,6 +47,22 @@ char 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
 	*Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", 
 			"aug", "sep", "oct", "nov", "dec"};
 
+static void Help(char *progname)
+{
+	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n"
+	       "   Please see http://www.roaringpenguin.com/remind.html or more\n"
+	       "   information on the Remind Calendar Program.\n\n"
+	       "   Usage: %s -p <port>\n\n"
+	       "   Options:\n"
+	       "     -p <port>    Use device file <port> to communicate with Palm\n"
+	       "     -h           Display this information\n\n"
+	       "   Examples: %s -p /dev/pilot\n"
+	       "             %s -p /dev/pilot > ~/Palm/remind.file\n\n"
+	       "   Your Datebook database will be written to STDOUT as it is converted\n"
+	       "   unless redirected to a file.\n\n", progname, progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	ch,
@@ -308,20 +324,4 @@ int main(int argc, char *argv[])
 		pi_close(sd);
 	}
 	return 0;
-}
-
-static void Help(char *progname)
-{
-	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n"
-	       "   Please see http://www.roaringpenguin.com/remind.html or more\n"
-	       "   information on the Remind Calendar Program.\n\n"
-	       "   Usage: %s -p <port>\n\n"
-	       "   Options:\n"
-	       "     -p <port>    Use device file <port> to communicate with Palm\n"
-	       "     -h           Display this information\n\n"
-	       "   Examples: %s -p /dev/pilot\n"
-	       "             %s -p /dev/pilot > ~/Palm/remind.file\n\n"
-	       "   Your Datebook database will be written to STDOUT as it is converted\n"
-	       "   unless redirected to a file.\n\n", progname, progname, progname);
-	return;
 }

@@ -54,6 +54,57 @@ struct option options[] = {
 
 static const char *optstring = "hp:";
 
+
+/***********************************************************************
+ *
+ * Function:    do_read
+ *
+ * Summary:     Read the incoming data from the network socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void do_read(struct pi_socket *ps, int type, char *buffer, int length)
+{
+	int 	len;
+
+	printf("A %d byte packet of type %d has been received from the network\n",
+		length, type);
+	dumpdata(buffer, length);
+	if (type == 0) {
+		struct pi_skb *nskb;
+		nskb = (struct pi_skb *) malloc(sizeof(struct pi_skb));
+
+		nskb->source = buffer[0];
+		nskb->dest = buffer[1];
+		nskb->type = buffer[2];
+		len = get_short(buffer + 3);
+		nskb->id = buffer[5];
+
+		memcpy(&nskb->data[10], buffer + 7, len);
+		slp_tx(ps, nskb, len);
+
+	} else if (type == 1) {
+		ps->rate = get_long(buffer);
+		pi_serial_flush(ps);
+		ps->serial_changebaud(ps);
+	}
+}
+
+
+static void Help(char *progname)
+{
+	printf("   Reads incoming remote Palm data during a Network HotSync\n\n"
+	       "   Usage: %s -p <port>\n\n"
+	       "   Options:\n"
+	       "     -p <port>    Use device file <port> to communicate with Palm\n"
+	       "     -h           Display this information\n\n"
+	       "   Examples: %s -p /dev/pilot\n\n", progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	ch,
@@ -250,55 +301,4 @@ int main(int argc, char *argv[])
 	}
 	end:
 	return 0;
-}
-
-
-/***********************************************************************
- *
- * Function:    do_read
- *
- * Summary:     Read the incoming data from the network socket
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void do_read(struct pi_socket *ps, int type, char *buffer, int length)
-{
-	int 	len;
-
-	printf("A %d byte packet of type %d has been received from the network\n",
-		length, type);
-	dumpdata(buffer, length);
-	if (type == 0) {
-		struct pi_skb *nskb;
-		nskb = (struct pi_skb *) malloc(sizeof(struct pi_skb));
-
-		nskb->source = buffer[0];
-		nskb->dest = buffer[1];
-		nskb->type = buffer[2];
-		len = get_short(buffer + 3);
-		nskb->id = buffer[5];
-
-		memcpy(&nskb->data[10], buffer + 7, len);
-		slp_tx(ps, nskb, len);
-
-	} else if (type == 1) {
-		ps->rate = get_long(buffer);
-		pi_serial_flush(ps);
-		ps->serial_changebaud(ps);
-	}
-}
-
-
-static void Help(char *progname)
-{
-	printf("   Reads incoming remote Palm data during a Network HotSync\n\n"
-	       "   Usage: %s -p <port>\n\n"
-	       "   Options:\n"
-	       "     -p <port>    Use device file <port> to communicate with Palm\n"
-	       "     -h           Display this information\n\n"
-	       "   Examples: %s -p /dev/pilot\n\n", progname, progname);
-	return;
 }

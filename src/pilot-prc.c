@@ -49,75 +49,6 @@ int hflag, aflag, sflag, vflag, lflag, rflag, rnum;
 
 static const char *optstring = "hasvlr:";
 
-int main(int argc, char **argv)
-{
-	struct pi_file *pf;
-	int c;
-	char *name;
-	struct DBInfo info;
-	char *progname = argv[0];
-
-	while ((c = getopt(argc, argv, optstring)) != EOF) {
-		switch (c) {
-		case 'h':
-			hflag = 1;
-			break;
-		case 'a':
-			aflag = 1;
-			break;
-		case 's':
-			sflag = 1;
-			break;
-		case 'v':
-			vflag = 1;
-			break;
-		case 'l':
-			lflag = 1;
-			break;
-		case 'r':
-			rflag = 1;
-			rnum = atoi(optarg);
-			break;
-		default:
-		}
-	}
-
-	if (optind >= argc)
-		Help(progname);
-
-	name = argv[optind++];
-
-	if (optind != argc)
-		Help(progname);
-
-	if ((pf = pi_file_open(name)) == NULL) {
-		fprintf(stderr, "can't open %s\n", name);
-		exit(1);
-	}
-
-	if (pi_file_get_info(pf, &info) < 0) {
-		fprintf(stderr, "can't get info\n\n");
-		exit(1);
-	}
-
-	if (hflag || vflag)
-		dump_header(pf, &info);
-
-	if (aflag || vflag)
-		dump_app_info(pf, &info);
-
-	if (sflag || vflag)
-		dump_sort_info(pf, &info);
-
-	if (lflag || vflag)
-		list_records(pf, &info);
-
-	if (rflag)
-		dump_record(pf, &info, rnum);
-
-	return 0;
-}
-
 /***********************************************************************
  *
  * Function:    iso_time_str
@@ -386,18 +317,6 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 	printf("\n");
 }
 
-
-/***********************************************************************
- *
- * Function:    Help
- *
- * Summary:     Print the --help screen and app arguments
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 static void Help(char *progname)
 {
 	PalmHeader(progname);
@@ -412,4 +331,73 @@ static void Help(char *progname)
 	       "     tSTR10000[.bin] (a reousrce with decimal index)\n"
 	       "     sort            (a file containing the names of other files)\n\n", progname);
 	return;
+}
+
+int main(int argc, char **argv)
+{
+	struct pi_file *pf;
+	int c;
+	char *name;
+	struct DBInfo info;
+	char *progname = argv[0];
+
+	while ((c = getopt(argc, argv, optstring)) != EOF) {
+		switch (c) {
+		case 'h':
+			hflag = 1;
+			break;
+		case 'a':
+			aflag = 1;
+			break;
+		case 's':
+			sflag = 1;
+			break;
+		case 'v':
+			vflag = 1;
+			break;
+		case 'l':
+			lflag = 1;
+			break;
+		case 'r':
+			rflag = 1;
+			rnum = atoi(optarg);
+			break;
+		default:
+		}
+	}
+
+	if (optind >= argc)
+		Help(progname);
+
+	name = argv[optind++];
+
+	if (optind != argc)
+		Help(progname);
+
+	if ((pf = pi_file_open(name)) == NULL) {
+		fprintf(stderr, "can't open %s\n", name);
+		exit(1);
+	}
+
+	if (pi_file_get_info(pf, &info) < 0) {
+		fprintf(stderr, "can't get info\n\n");
+		exit(1);
+	}
+
+	if (hflag || vflag)
+		dump_header(pf, &info);
+
+	if (aflag || vflag)
+		dump_app_info(pf, &info);
+
+	if (sflag || vflag)
+		dump_sort_info(pf, &info);
+
+	if (lflag || vflag)
+		list_records(pf, &info);
+
+	if (rflag)
+		dump_record(pf, &info, rnum);
+
+	return 0;
 }
