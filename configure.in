@@ -682,6 +682,7 @@ AC_OUTPUT([
 	doc/man/pi-getram.1
 	doc/man/pi-getrom.1
 	doc/man/pilot-addresses.1
+	doc/man/pilot-foto.1
 	doc/man/pilot-link.7
 	doc/man/pilot-xfer.1
 	doc/man/read-ical.1
