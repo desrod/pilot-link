@@ -1,4 +1,4 @@
-# This is free software, licensed under the GNU Public License V2.
+;# This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
 AC_INIT(include/pi-version.h.in)
 
@@ -20,7 +20,7 @@ dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=12
 PILOT_LINK_MINOR=0
-PILOT_LINK_PATCH=-rc8
+PILOT_LINK_PATCH=-rc9-popt
 
 AC_SUBST(PILOT_LINK_VERS)
 AC_SUBST(PILOT_LINK_MAJOR)
@@ -85,6 +85,7 @@ AC_CANONICAL_SYSTEM
 AC_DEFINE_UNQUOTED(HOST_OS, "$host", [Host type])
 
 AM_INIT_AUTOMAKE(pilot-link, [$VERSION])
+
 
 dnl ******************************
 dnl Checks for basic programs.
@@ -151,7 +152,7 @@ AC_CHECK_HEADERS(
 AC_CHECK_FUNCS(
 	atexit cfmakeraw cfsetispeed cfsetospeed cfsetspeed dup2 	\
 	gethostname inet_aton malloc memcpy memmove putenv sigaction	\
-	snprintf strchr strdup strtok strtoul uname)
+	snprintf strchr strdup strtok strtoul strerror uname)
 
 dnl Find optional libraries (borrowed from Tcl)
 tcl_checkBoth=0
@@ -282,6 +283,7 @@ AM_CONDITIONAL(WITH_FREEBSDUSB, test x$usb_type = xfreebsd)
 AM_CONDITIONAL(WITH_DARWINUSB, test x$usb_type = xdarwin)
 AC_SUBST(usb_libs)
 
+
 dnl *********************************
 dnl Check if using the included popt
 dnl *********************************
@@ -307,16 +309,16 @@ AC_MSG_CHECKING(whether to use included popt)
 if test x"$INCLUDED_POPT" = x"yes"; then
     AC_MSG_RESULT(yes)
     BUILD_POPT='$(POPT_OBJS)'  
-	POPTLIBS='$(POPT_OBJS)'
+	POPT_LIBS='$(POPT_OBJS)'
     POPT_FLAGS="-I$srcdir/popt"
 else
     AC_MSG_RESULT(no)
 	BUILD_POPT=""
-    POPTLIBS="-lpopt"
+    POPT_LIBS="-lpopt"
 fi
 AC_SUBST(INCLUDED_POPT)
 AC_SUBST(BUILD_POPT)
-AC_SUBST(POPTLIBS)
+AC_SUBST(POPT_LIBS)
 AC_SUBST(POPT_FLAGS)
 
 
@@ -571,6 +573,7 @@ if $use_tcl; then
 	msg_tcl=yes
 fi
 
+
 dnl ******************************
 dnl Python
 dnl ******************************
@@ -693,6 +696,7 @@ case "$host" in
 	;;
 esac
 
+
 dnl *************************************
 dnl Promote warnings to errors
 dnl *************************************
@@ -717,6 +721,7 @@ AC_OUTPUT([
 	libpisock++/Makefile
 	include/Makefile
 	include/pi-version.h
+	popt/Makefile
 	src/Makefile
 	src/prc/Makefile
 	src/pix/Makefile
@@ -728,7 +733,6 @@ AC_OUTPUT([
 	bindings/Tcl/Makefile
 	doc/Makefile
 	doc/man/Makefile
-
 	doc/man/addresses.1
 	doc/man/dlpsh.1
 	doc/man/hinotes.1
@@ -787,12 +791,13 @@ echo "
 "
 
 if [[ x"$PL_FROM_CVS" = xyes ]]; then
-  echo " .----- NOTICE ------------------------------."
-  echo " | You are using pilot-link from CVS source. |"
-  echo " |                                           |"
-  echo " | This is likely to be unstable, or contain |"
-  echo " | some incomplete features, or just plain   |"
-  echo " | not work at all. Use it at your own risk. |"
-  echo " \`-------------------------------------------'"
+  echo " .----- NOTICE ------------------------------------------------."
+  echo " |         You are using pilot-link from CVS source.           |"
+  echo " |                                                             |"
+  echo " | This is likely to be unstable, or contain some incomplete   |"
+  echo " | features, or just plain not work at all. Use it at your own |"
+  echo " | risk. Please help us to fix any bugs you find, by reporting |"       
+  echo " | them back to us via email or at http://bugs.pilot-link.org/ |"
+  echo " \`-------------------------------------------------------------'"
   echo ""
 fi
