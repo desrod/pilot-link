@@ -154,9 +154,9 @@ static void display_help(char *progname)
 	printf("     -h             Display this information\n\n");
 	printf("   Examples:\n");
 	printf("   To package up and store a file for later retrieval on your Palm:\n");
-	printf("             %s -p /dev/pilot -i < InstallThis.zip\n\n", progname);
+	printf("             %s -p /dev/pilot -i InstallThis.zip\n\n", progname);
 	printf("   To unpack a file that has been stored on your Palm device with %s:\n", progname);
-	printf("             %s -p /dev/pilot -f > RetrieveThis.pdf\n\n", progname);
+	printf("             %s -p /dev/pilot -f RetrieveThis.pdf\n\n", progname);
 	printf("   Please notice that you must use redirection to Install or Fetch files\n");
 	printf("   using %s. Currently the stored name and file type is not\n", progname);    
 	printf("   queried so you can potentially Install a PDF file, and retrieve it as a\n");
