@@ -38,6 +38,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>		/* Needed for Redhat 6.x machines */
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>

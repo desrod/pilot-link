@@ -39,6 +39,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>		/* Needed for Redhat 6.x machines */
 #endif
 
 #include "pi-debug.h"

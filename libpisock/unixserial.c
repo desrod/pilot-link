@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>		/* Needed for Redhat 6.x machines */
 #include <fcntl.h>
 #include <string.h>
 

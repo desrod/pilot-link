@@ -12,6 +12,14 @@
 	* pilot-debug.c: Remove internal extern, use <math.h> properly,
 	  which should exist on Sun machines anyway
 
+	* libsock/unixserial.c: Added <sys/time.h> to fix Redhat 6.x.
+	  Apparently Redhat 6.x with glibc-devel-2.1.3-23 doesn't like to
+	  build without this being defined, and errors out on 'timeval'.
+
+	* libsock/inet.c: Ditto
+
+	* libsock/serial.c: Ditto
+
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: set use_python to false when appropriate, same for
