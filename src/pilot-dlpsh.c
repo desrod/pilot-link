@@ -108,13 +108,14 @@ int df_fn(int sd, int argc, char *argv[])
 		if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
 			break;
 
-		printf("Filesystem           1k-blocks      Used   Available     Used     Total\n");
-		printf("Card0:ROM              %7lu", Card.romSize);
-                printf("       n/a     %7lu      n/a     %4luk\n", Card.romSize, Card.romSize/1024);
-		printf("Card0:RAM              %7lu   %7lu     %7lu     %3ld%%     %4luk\n", 
-			Card.ramSize, (Card.ramSize - Card.ramFree), Card.ramFree, 
-			((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
-		printf("Total (ROM + RAM)     %8lu   %7lu         n/a      n/a    %5luk\n\n", 
+		printf("Filesystem           1k-blocks         Used   Available     Used     Total\n");
+		printf("Card0:ROM            %9lu", Card.romSize);
+                printf("          n/a   %9lu      n/a     %4luk\n", Card.romSize, Card.romSize/1024);
+
+		printf("Card0:RAM            %9lu", Card.ramSize);
+		printf("     %8lu    %8lu    %3ld%%      %4luk\n", (Card.ramSize - Card.ramFree), Card.ramFree, ((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
+
+		printf("Total (ROM + RAM)     %8lu     %8lu         n/a      n/a    %5luk\n\n", 
 			(Card.romSize + Card.ramSize), (Card.romSize + Card.ramSize)-Card.ramFree, 
 			(Card.romSize + Card.ramSize)/1024);
 	}
