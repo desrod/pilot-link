@@ -25,8 +25,9 @@
 #include <config.h>
 #endif
  
-#include <stdlib.h>
+#include "getopt.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <pi-dlp.h>
@@ -38,6 +39,17 @@ static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
 
+
+struct option options[] = {
+        {"port",        required_argument, NULL, 'p'},
+        {"help",        no_argument,       NULL, 'h'},
+        {"version",     no_argument,       NULL, 'v'},
+        {"fetch",       required_argument, NULL, 'f'},
+        {"convert",     required_argument, NULL, 'c'},
+        {0,             0,                 0,    0}
+};
+
+static const char *optstring = "p:hvf:c:";
 
 #ifndef TRUE
 # define TRUE 1
@@ -239,59 +251,39 @@ int pdb_to_jpg(char *filename)
 
 int main(int argc, char *argv[])
 {
-        int i;
-        char *port;
-        int fetch;
-        int convert;
-        int convert_argc;
+        int 	c,
+		fetch,
+		convert;
+        char 	*port		= NULL,
+		*progname       = argv[0];
 
-        char    *progname       = argv[0];
-
-        port = NULL;
-        convert_argc = 0;
         fetch = convert = FALSE;
 
         if (argc == 1) {
                 display_help(progname);
         }
 
-        for (i = 1; i < argc; i++) {
-                if ((strcmp(argv[1], "-?") == 0) ||
-                    (strcmp(argv[1], "-help") == 0) ||
-                    (strcmp(argv[1], "-h") == 0) ||
-                    (strcmp(argv[1], "--help") == 0)) {
+        while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+                switch (c) {
+
+                case 'h':
                         display_help(progname);
-                        exit(0);
-                }
-                if (!strncasecmp(argv[i], "-p", 2)) {
-                        if (argc < i + 2) {
-                                display_help(progname);
-                                exit(0);
-                        }
-                        port = argv[++i];
-                }
-                if (!strncasecmp(argv[i], "-f", 2)) {
-                        fetch = TRUE;
-                }
-                if (!strncasecmp(argv[i], "-c", 2)) {
-                        convert = TRUE;
-                        convert_argc = i + 1;
+                        return 0;
+                case 'v':
+                        print_splash(progname);
+                        return 0;
+                case 'p':
+                        port = optarg;
+                        break;
+                case 'c':
+                        pdb_to_jpg(optarg);
+                        break;
+                case 'f':
+                        do_fetch(port);
+                        break;
+                default:
+                        display_help(progname);
+                        return 0;
                 }
         }
-
-        if (fetch) {
-                do_fetch(port);
-                return (0);
-        }
-
-        if (convert) {
-                for (i = convert_argc; i < argc; i++) {
-                        pdb_to_jpg(argv[i]);
-                }
-                printf("\n");
-                return 0;
-        }
-
-        printf("%s: Nothing to do!\n", argv[0]);
-        return 0;
 }
