@@ -9,44 +9,56 @@ use Time::Local;
 use MD5;
 use PDA::Pilot;
 
+############################################################
+#
+############################################################
 sub DatePlanToPerl {
-	my($PlanDate) = @_;
-	my($m,$d,$y) = split(m!/!,$PlanDate);
-	if ($y<40) {
-		$y+=100;
+	my ($PlanDate)	= @_;
+	my ($m,$d,$y)	= split(m!/!,$PlanDate);
+	if ($y < 40) {
+		$y += 100;
 	}
-	if ($y>1900) {
-		$y-=1900;
+	if ($y > 1900) {
+		$y -= 1900;
 	}
 	$m--;
 
 	timelocal(0,0,0,$d,$m,$y);
 }
 
+############################################################
+#
+############################################################
 sub TimePlanToPerl {
-	my($PlanTime) = @_;
-	my($h,$m,$s) = split(m!:!,$PlanTime);
+	my ($PlanTime)	= @_;
+	my ($h,$m,$s)	= split(m!:!,$PlanTime);
 	
 	return undef if $h == 99 and $m == 99 and $s == 99;
 	
-	$s + ($m*60) + ($h*60*60);
+	$s + ($m * 60) + ($h * 60 * 60);
 }
 
+############################################################
+#
+############################################################
 sub TimePerlToPlan {
-	my($PerlDT) = @_;
+	my ($PerlDT) = @_;
 	return "99:99:99" if not defined $PerlDT;
 
-	my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
 	    localtime($PerlDT);
 	
 	"$hour:$min:$sec";
 }
 
+############################################################
+#
+############################################################
 sub TimeRelPerlToPlan {
-	my($PerlDT) = @_;
+	my ($PerlDT) = @_;
 	return "99:99:99" if not defined $PerlDT;
 
-	my($sec,$min,$hour);
+	my ($sec,$min,$hour);
 	
 	$hour = int($PerlDT/ (60*60));
 	$PerlDT -= $hour*60*60;
@@ -60,9 +72,12 @@ sub TimeRelPerlToPlan {
 	"$hour:$min:$sec";
 }
 
+############################################################
+#
+############################################################
 sub DatePerlToPlan {
-	my($PerlDT) = @_;
-	my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+	my ($PerlDT) = @_;
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
 	    localtime($PerlDT);
 	
 	$year += 1900;
@@ -71,8 +86,11 @@ sub DatePerlToPlan {
 	"$mon/$mday/$year";
 }
 
+############################################################
+#
+############################################################
 sub RecordPlanToPilot {
-	my($plan,$pilot) = @_;
+	my ($plan,$pilot) = @_;
 	if (not defined $pilot) {
 		$pilot = PDA::Pilot::AppointmentDatabase->record;
 	}
@@ -97,7 +115,7 @@ sub RecordPlanToPilot {
 		return undef;
 	}
 	if ($plan->{early} or $plan->{late}) {
-		my($alarm) = $plan->{early} || $plan->{late};
+		my ($alarm) = $plan->{early} || $plan->{late};
 		if ($alarm > (60*60*24)) {
 			$pilot->{alarm}->{units} = "days";
 			$pilot->{alarm}->{advance} = int($alarm / (60*60*24));
@@ -124,7 +142,7 @@ sub RecordPlanToPilot {
 		if ($plan->{repeat}->[1]) {
 			$pilot->{repeat}->{end} = [gmtime($plan->{repeat}->[1])];
 		}
-		my($days,$end,$weekday,$mday,$yearly) = @{$plan->{repeat}};
+		my ($days,$end,$weekday,$mday,$yearly) = @{$plan->{repeat}};
 		print "Days: $days, End: $end, Weekday: $weekday, Mday: $mday, Yearly: $yearly\n";
 		$pilot->{repeat}->{weekstart} = 0;
 		$pilot->{repeat}->{frequency} = 1;
@@ -146,8 +164,8 @@ sub RecordPlanToPilot {
 				return undef;
 			}
 		} elsif(not $days and $weekday and not $mday and not $yearly) {
-			my($wday) = $pilot->{begin}[6];
-			my($week) = int(($pilot->{begin}[3]-1)/7);
+			my ($wday) = $pilot->{begin}[6];
+			my ($week) = int(($pilot->{begin}[3]-1)/7);
 			print "weekday = $weekday, wday = $wday, week = $week\n";
 			if (($weekday & 0x7f) != (1<<$wday)) {
 				return undef;
@@ -177,8 +195,11 @@ sub RecordPlanToPilot {
 	$pilot;
 }
 
+############################################################
+#
+############################################################
 sub RecordPilotToPlan {
-	my($pilot,$plan) = @_;
+	my ($pilot,$plan) = @_;
 	$plan = {color => 0} if not defined $plan;
 	
 	$plan->{pilotid} = $pilot->{id};
@@ -186,8 +207,8 @@ sub RecordPilotToPlan {
 	$plan->{message} = [split("\xA", $pilot->{note})] if defined $pilot->{note};
 	$plan->{note} = [split("\xA", $pilot->{description})] if defined $pilot->{description};
 	
-	my($date) = timelocal(@{$pilot->{begin}});
-	my($time) = $pilot->{begin}[0]+$pilot->{begin}[1]*60+$pilot->{begin}[2]*60*60;
+	my ($date) = timelocal(@{$pilot->{begin}});
+	my ($time) = $pilot->{begin}[0]+$pilot->{begin}[1]*60+$pilot->{begin}[2]*60*60;
 	$plan->{date} = $date;
 	if ($pilot->{event}) {
 		$plan->{time} = undef;
@@ -198,7 +219,7 @@ sub RecordPilotToPlan {
 	}
 	
 	if (exists $pilot->{alarm}) {
-		my($alarm)=0;
+		my($alarm) = 0;
 		$plan->{noalarm} = 0;
 		if ($pilot->{alarm}{units} eq "days") {
 			$alarm = $pilot->{alarm}->{advance} * (60*60*24);
@@ -241,23 +262,23 @@ sub RecordPilotToPlan {
 			$plan->{repeat}->[4] = 1;
 		
 		} elsif ($pilot->{repeat}->{type} eq "Weekly" and ($pilot->{repeat}->{frequency}==1)) {
-			my($r)=0;
+			my ($r) = 0;
 			foreach $i (0..6) {
 				if ($pilot->{repeat}->{days}[$i]) {
 					$r |= (1<<$i);
 				}
 			}
-			$plan->{repeat}->[2] = $r;
+			$plan->{repeat}->[2] 	= $r;
 		} elsif ($pilot->{repeat}->{type} eq "Weekly" and ($pilot->{repeat}->{frequency}>1)) {
-			$plan->{repeat}->[0] = (60*60*24) * $pilot->{repeat}->{frequency} * 7;
-			$plan->{repeat}->[4] = 0;
+			$plan->{repeat}->[0] 	= (60*60*24) * $pilot->{repeat}->{frequency} * 7;
+			$plan->{repeat}->[4] 	= 0;
 		} elsif ($pilot->{repeat}->{type} eq "MonthlyByDate" and ($pilot->{repeat}->{frequency}==1)) {
-			$plan->{repeat}->[3] = 1 << $pilot->{begin}[3];
+			$plan->{repeat}->[3] 	= 1 << $pilot->{begin}[3];
 		} elsif ($pilot->{repeat}->{type} eq "MonthlyByDay" and ($pilot->{repeat}->{frequency}==1)) {
-			my($day) = $pilot->{repeat}{day} % 7;
-			my($week) = int($pilot->{repeat}{day} / 7);
-			$week=5 if $week == 4;
-			$plan->{repeat}->[2] = (1 << $day) | (256 << $week);
+			my ($day) 	= $pilot->{repeat}{day} % 7;
+			my ($week) 	= int($pilot->{repeat}{day} / 7);
+			$week = 5 if $week == 4;
+			$plan->{repeat}->[2] 	= (1 << $day) | (256 << $week);
 		} else {
 			return undef;
 		}
@@ -269,9 +290,12 @@ sub RecordPilotToPlan {
 	$plan;
 }
 
+############################################################
+#
+############################################################
 sub generaterecord {
-	my($rec) = @_;
-	my(@output);
+	my ($rec) = @_;
+	my (@output);
 	
 	#print "Generating Plan record: ", Dumper($rec),"\n";
 
@@ -315,19 +339,19 @@ sub generaterecord {
 		}
 	}
 
-	my($hash) = new MD5;
+	my ($hash) = new MD5;
 	foreach (@output) {
 		#print "Adding |$_| to hash\n";
 		$hash->add($_);
 	}
 	$rec->{pilothash} = $hash->hexdigest;
 	{
-		my($i);
-		for($i=0;$i<@output;$i++) {
+		my ($i);
+		for ($i=0;$i<@output;$i++) {
 			last if $output[$i] =~ /^S/;
 		}
 		$rec->{pilotexcept} += 0;
-		my(@US) = @{$rec->{unhashedscript}};
+		my (@US) = @{$rec->{unhashedscript}};
 		unshift @US, "S\t#Pilot: 1 $pilotname $rec->{pilothash} $rec->{pilotexcept} $rec->{pilotid}";
 		splice @output, $i, 0, @US;
 	}
@@ -337,9 +361,12 @@ sub generaterecord {
 	join("\n",@output);
 }
 
+############################################################
+#
+############################################################
 sub PrintPlanRecord {
-	my($rec) = @_;
-	my($output);
+	my ($rec) = @_;
+	my ($output);
 	
 	$output = DatePerlToPlan($rec->{date});
 	if ($rec->{time}) {
@@ -350,7 +377,7 @@ sub PrintPlanRecord {
 	$output .= " (".join("\\n",@{$rec->{message}}).")" if defined $rec->{message};
 	
 	if ($rec->{repeat}) {
-		my(@r);
+		my (@r);
 		if ($rec->{repeat}[0]) {
 			push @r, "every " . ($rec->{repeat}[0] / (60*60*24)) . " days";
 		}
@@ -359,7 +386,7 @@ sub PrintPlanRecord {
 			push @r, "every year";
 		}
 		if ($rec->{repeat}[3]) {
-			my($i) = $rec->{repeat}[3];
+			my ($i) = $rec->{repeat}[3];
 			if ($i & 1) {
 				push @r, "the last day of each month";
 			}
@@ -380,9 +407,12 @@ sub PrintPlanRecord {
 	$output;
 }
 
+############################################################
+#
+############################################################
 sub PrintPilotRecord {
-	my($rec) = @_;
-	my($output);
+	my ($rec) = @_;
+	my ($output);
 	
 	$output = ($rec->{begin}[5]+1900)."/".($rec->{begin}[4]+1)."/".$rec->{begin}[3];
 	
@@ -404,11 +434,15 @@ sub PrintPilotRecord {
 	$output;
 }
 
-# takes a Plan record in hash format
+############################################################
+#
+# Takes a Plan record in hash format
+# 
+############################################################
 sub WritePlanRecord {
-	my($socket, $record) = @_; 
-	my($raw) = generaterecord($record);
-	my($reply);
+	my ($socket, $record) = @_; 
+	my ($raw) = generaterecord($record);
+	my ($reply);
 	$record->{id} ||= 0;
 	#print "ID is $record->{id}\n";
 	$raw =~ s/\n/\\\n/g;
@@ -430,9 +464,12 @@ sub WritePlanRecord {
 }
 
 
+############################################################
+#
+############################################################
 sub LoadPilotRecord {
-	my($db, $i) = @_;
-	my($record) = $db->getRecord($i);
+	my ($db, $i) = @_;
+	my ($record) = $db->getRecord($i);
 	if ($record) {
 		$pilotID{$record->{id}} = $record;
 	} elsif ($db->errno() != -5) { 			# dlpErrNotFound
@@ -442,40 +479,52 @@ sub LoadPilotRecord {
 }
 
 # takes a Plan record in hash format
+############################################################
+#
+# takes a Plan record in hash format
+#
+############################################################
 sub DeletePlanRecord {
-	my($socket, $record) = @_; 
-	my($raw);
+	my ($socket, $record) = @_; 
+	my ($raw);
 	$raw = "d$file $record->{id}\n";
 #	print "Deleting record $record->{id} (PilotID: $record->{pilotid}) in Plan\n";
 #	syswrite $socket, $raw, length($raw);
 	SendPlanCommand($socket, $raw);
 }
 
+############################################################
+#
 # takes a Palm record in hash format
+#
+############################################################
 sub WritePilotRecord {
-	my($db, $control, $record) = @_; 
+	my ($db, $control, $record) = @_; 
 	
 	$record->{id} ||= 0;
 	
 	#print "Installing record in Palm: ",Dumper($record);
 	
-	my($id) = $db->setRecord($record);
+	my ($id) = $db->setRecord($record);
 	
 	if ($id) {
-		$pilotID{$id} = $record;
-		my ($hash) = HashPilotRecord($record);						
+		$pilotID{$id} 	= $record;
+		my ($hash) 	= HashPilotRecord($record);						
 		$pilothash{$id} = $hash;
-		$dbname{$id} = $control->{name};
-		$record->{id} = $id;
-		$execptID{$id} = 0;
+		$dbname{$id} 	= $control->{name};
+		$record->{id} 	= $id;
+		$execptID{$id} 	= 0;
 	}
 	
 	$id;
 }
 
+############################################################
+#
+############################################################
 sub DeletePilotRecord {
-	my($db, $id) = @_; 
-	my($result) = $db->deleteRecord($id);
+	my ($db, $id) = @_; 
+	my ($result) = $db->deleteRecord($id);
 	if ($result>=0) {
 		delete $pilothash{$id};
 		delete $pilotID{$id};
@@ -488,16 +537,19 @@ sub DeletePilotRecord {
 
 $maxseed = 0;
 
+############################################################
+#
+############################################################
 sub dorecord {
-	my($db,$socket,$control, $i,$r) = @_;
+	my ($db,$socket,$control, $i,$r) = @_;
 #	print "Record: $r\n";
-	my(@l) = split(/\n/,$r);
-	my($rec) = { raw => [@l], other => [] };
-	my(@E,@R,@N,@M,@S,@US);
-	my($hash) = new MD5;
+	my (@l) = split(/\n/,$r);
+	my ($rec) = { raw => [@l], other => [] };
+	my (@E,@R,@N,@M,@S,@US);
+	my ($hash) = new MD5;
 	$l[0] =~ s/\s+/ /g;
 	$hash->add($l[0]);
-	my($date, $time, $length, $early, $late, $flags, $color) = split(/\s+/, shift @l);
+	my ($date, $time, $length, $early, $late, $flags, $color) = split(/\s+/, shift @l);
 	$rec->{pilotrec} = "";
 	foreach (@l) {
 		if (/^E\t/) {
@@ -510,7 +562,7 @@ sub dorecord {
 			my ($s) = $';
 			if ($s =~ /^\s*#Pilot:\s+(\d+)\s*(.*)$/) {
 				if ($1 == 1) { # version number
-					my($name,$hash,$except,$id) = split(/\s+/, $2);
+					my ($name,$hash,$except,$id) = split(/\s+/, $2);
 					#print Dumper({Name=>$name,Hash=>$hash,Except=>$except,ID=>$id});
 					if ($name eq $pilotname) {
 						$rec->{pilotid} = $id;
@@ -526,7 +578,7 @@ sub dorecord {
 				push @S, $s;
 			}
 		} elsif (/^R\t/) {
-			my($r) = $';
+			my ($r) = $';
 			$r =~ s/\s+/ /g;
 			$rec->{repeat} = [split(/\s+/, $r)];
 		} else {
@@ -537,28 +589,28 @@ sub dorecord {
 	}
 	$hash = $hash->hexdigest;
 	#print "Old hash: $hash, New hash: $rec->{pilothash}\n";
-	$rec->{modified} = ($rec->{pilothash} ne $hash);
-	$rec->{note} = \@N if @N;
-	$rec->{script} = \@S if @S;
-	$rec->{unhashedscript} = \@US if @US;
-	$rec->{message} = \@M if @M;
-	$rec->{date} = DatePlanToPerl($date);
-	$rec->{time} = TimePlanToPerl($time);
-	$rec->{length} = TimePlanToPerl($length);
-	$rec->{early} = TimePlanToPerl($early);
-	$rec->{late} = TimePlanToPerl($late);
-	$rec->{color} = $color;
+	$rec->{modified} 	= ($rec->{pilothash} ne $hash);
+	$rec->{note} 		= \@N if @N;
+	$rec->{script} 		= \@S if @S;
+	$rec->{unhashedscript} 	= \@US if @US;
+	$rec->{message} 	= \@M if @M;
+	$rec->{date} 		= DatePlanToPerl($date);
+	$rec->{time} 		= TimePlanToPerl($time);
+	$rec->{length} 		= TimePlanToPerl($length);
+	$rec->{early} 		= TimePlanToPerl($early);
+	$rec->{late} 		= TimePlanToPerl($late);
+	$rec->{color}		= $color;
 
-	$rec->{suspended} = substr($flags,0,1) ne "-";
-	$rec->{private} = substr($flags,1,1) ne "-";
-	$rec->{noalarm} = substr($flags,2,1) ne "-";
-	$rec->{hide_month} = substr($flags,3,1) ne "-";
-	$rec->{hide_year} = substr($flags,4,1) ne "-";
-	$rec->{hide_week} = substr($flags,5,1) ne "-";
-	$rec->{hide_yearover} = substr($flags,6,1) ne "-";
-	$rec->{d_flag} = substr($flags,7,1) ne "-";
-	$rec->{locked} = 1;
-	$rec->{id} = $i;
+	$rec->{suspended} 	= substr($flags,0,1) ne "-";
+	$rec->{private} 	= substr($flags,1,1) ne "-";
+	$rec->{noalarm} 	= substr($flags,2,1) ne "-";
+	$rec->{hide_month} 	= substr($flags,3,1) ne "-";
+	$rec->{hide_year} 	= substr($flags,4,1) ne "-";
+	$rec->{hide_week} 	= substr($flags,5,1) ne "-";
+	$rec->{hide_yearover} 	= substr($flags,6,1) ne "-";
+	$rec->{d_flag} 		= substr($flags,7,1) ne "-";
+	$rec->{locked} 		= 1;
+	$rec->{id} 		= $i;
 	
 	$rec->{exceptions} = [map(DatePlanToPerl($_), @E)] if @E;
 	
@@ -568,29 +620,38 @@ sub dorecord {
 	#print Dumper($rec);
 }
 
+############################################################
+#
+############################################################
 sub HashPilotRecord {
-	my($record) = @_;
-	my($hash) = new MD5;
+	my ($record) = @_;
+	my ($hash) = new MD5;
 	$hash->add($record->{raw});
 	$hash->hexdigest;
 }
 
 
+############################################################
+#
+############################################################
 sub doafterplan {
 
 	$ticklecount = 0;	# Reset ticklecount
 	$doticklecount = 100;	# Tickle every 100 loop
 
-	my($db,$socket,$control) = @_;
+	my ($db,$socket,$control) = @_;
 	print "After stuff:\n";
 
-	# This batch of code scans for Plan records with identical Pilot IDs,
-	# presumambly caused by duplicating a plan record. We remove the ids
-	# from the duplicates.  The weird sort is magic to prefer keeping the id
-	# (and thus leaving unmodified) of an otherwise unmodified record.
+	##################################################################
+	# This batch of code scans for Plan records with identical Pilot
+	# IDs, presumambly caused by duplicating a plan record. We remove
+	# the ids from the duplicates.  The weird sort is magic to prefer
+	# keeping the id (and thus leaving unmodified) of an otherwise
+	# unmodified record.
+	##################################################################
 	
 	my (@uniq) = sort {$a->{pilotid} <=> $b->{pilotid} or $a->{modified} <=> $b->{modified}} grep {exists $_->{pilotid}} values %planRecord;
-	my($i)=0;
+	my ($i) = 0;
 	for($i=@uniq-1;$i>=1;$i--) {
 		#print "Checking plan record: ", Dumper($uniq[$i]),"\n";
 		if ($uniq[$i]->{pilotid} == $uniq[$i-1]->{pilotid}) {
@@ -601,12 +662,14 @@ sub doafterplan {
 		}
 	}
 
-	# Use our saved Pilot ID cache to detect deleted Plan records.
-	# This will not catch deleted Plan records that were never assigned
-	# a Pilot ID, but that is OK because such records do not have to be removed
-	# from the Palm.
+	######################################################################
+	# Use our saved Pilot ID cache to detect deleted Plan records.  This
+	# will not catch deleted Plan records that were never assigned a
+	# Pilot ID, but that is OK because such records do not have to be
+	# removed from the Palm.
+	######################################################################
 
-	my($del)=-1;
+	my ($del) = -1;
 	foreach (keys %pilothash) {
 
 		# Palm records originally downloaded from a different Plan database
@@ -630,7 +693,9 @@ sub doafterplan {
 
 	foreach (keys %pilotID) {
 
-# Tickle the pilot so it will not time out during this
+	############################################################
+	# Tickle the pilot so it will not time out during this
+	############################################################
 	$ticklecount++;
 	if ($ticklecount >= $doticklecount) {
 		$dlp->tickle();
@@ -667,13 +732,16 @@ sub doafterplan {
 		#
 		#	delete $pilothash{$_};
 		} else {
-			my($hash) = HashPilotRecord($pilotID{$_});
+			my ($hash) = HashPilotRecord($pilotID{$_});
 			
-			# If the pilot record ID is not cached, then it is definitely
-			# new.  If the MD5 hash of the record is different from the
-			# cached hash, then it is definitely different. These checks are
-			# only needed during a slow sync (which will have inaccurate
+			######################################################
+			# If the pilot record ID is not cached, then it is
+			# definitely new.  If the MD5 hash of the record is
+			# different from the cached hash, then it is
+			# definitely different. These checks are only needed
+			# during a slow sync (which will have inaccurate
 			# flags), but are harmless during a fast sync.
+			######################################################
 			
 			#print "Old hash: $pilothash{$_}, new hash: $hash\n";
 			if ((not exists $pilothash{$_}) or ($hash ne $pilothash{$_})) {
@@ -700,7 +768,7 @@ sub doafterplan {
 					
 					#print "Installing pilot record in plan: ",Dumper($pilotID{$_});
 					
-					my($record) = RecordPilotToPlan($pilotID{$_});
+					my ($record) = RecordPilotToPlan($pilotID{$_});
 					if (not defined $record) {
 						# The record is not translatable to a Plan record. 
 						
@@ -720,16 +788,21 @@ sub doafterplan {
 				}
 			} elsif ($pilotID{$_}->{modified} and $planID{$_}->{deleted}) {
 
-				# The Palm record has a matching _deleted_ Plan record.
+				############################################
+				# The Palm record has a matching _deleted_
+				# Plan record.
 				
-				# This is collision, with a relatively simple solution.
-				# replace the Plan record with the Palm record. As the Plan
-				# record has already been permanently deleted, we need only copy
-				# the Palm record over.
+				# This is collision, with a relatively
+				# simple solution.  replace the Plan record
+				# with the Palm record. As the Plan record
+				# has already been permanently deleted, we
+				# need only copy the Palm record over.
 				
 				# Action: Install the Palm record in Plan
+				############################################
+
 								
-				my($record) = RecordPilotToPlan($pilotID{$_}, $planID{$_});
+				my ($record) = RecordPilotToPlan($pilotID{$_}, $planID{$_});
 				if (not defined $record) {
 					# The record is not translatable to a Plan record. 
 					
@@ -748,26 +821,36 @@ sub doafterplan {
 				
 			} elsif ($pilotID{$_}->{modified} and $planID{$_}->{modified}) {
 
-				# The Palm record has a matching _modified_ Plan record.
+
+				############################################
+				# The Palm record has a matching _modified_
+				# Plan record.
 				
-				# TODO: Use a comparator function to verify that the records
-				# are actually substantially different. If not, simply skip
-				# any action.
+				# TODO: Use a comparator function to verify
+				# that the records are actually
+				# substantially different. If not, simply
+				# skip any action.
 				
-				# This is collision with an ugly, but lossless, solution. 
-				# Neither the Palm or Plan record is inherantly preferable,
-				# so we duplicate each record on the other side, severing
-				# the link between the original new records, forging two new
-				# links and two new records, one on each side.
+				# This is collision with an ugly, but
+				# lossless, solution.  Neither the Palm or
+				# Plan record is inherantly preferable, so
+				# we duplicate each record on the other
+				# side, severing the link between the
+				# original new records, forging two new
+				# links and two new records, one on each
+				# side.
 				
-				# Action: Install the Palm record in Plan as a new,
-				# distinct, record, and install the Plan record on the Palm
-				# as a new, distinct, record.
+				# Action: Install the Palm record in Plan as
+				# a new, distinct, record, and install the
+				# Plan record on the Palm as a new,
+				# distinct, record.
+				############################################
+
 				
 				print "Log: Conflicting modified Plan and Palm records\n";
 				
 				{
-					my($record) = RecordPlanToPilot($planID{$_});
+					my ($record) = RecordPlanToPilot($planID{$_});
 					if (not defined $record) {
 						# The Plan record is not translatable to a Palm record. 
 						
@@ -776,7 +859,7 @@ sub doafterplan {
 						print "Log: Conflicting Plan record unsyncable.\n";
 					} else {
 						$record->{id} = 0;
-						my($id) = WritePilotRecord($db, $control, $record);
+						my ;($id) = WritePilotRecord($db, $control, $record);
 						
 						#$db->setRecord($record);
 						#
@@ -798,7 +881,7 @@ sub doafterplan {
 				}
 				
 				{
-					my($record) = RecordPilotToPlan($pilotID{$_});
+					my ($record) = RecordPilotToPlan($pilotID{$_});
 					if (not defined $record) {
 						# The Palm record is not translatable to a Plan record. 
 						
@@ -811,7 +894,7 @@ sub doafterplan {
 					
 						$record->{modified} = 0;
 						
-						my($id) = WritePlanRecord($socket, $record);
+						my ($id) = WritePlanRecord($socket, $record);
 
 						print "ID of new Plan record is $id\n";
 
@@ -819,13 +902,16 @@ sub doafterplan {
 				}
 			} elsif($pilotID{$_}->{modified}) {
 			
-				# At this point, we have a changed Palm record with an
-				# existing unmodified Plan record.
+				##########################################
+				# At this point, we have a changed Palm
+				# record with an existing unmodified Plan
+				# record.
 				
-				# Action: Install the Palm record in Plan, overwriting the
-				# Plan record.
+				# Action: Install the Palm record in Plan,
+				# overwriting the Plan record.
+				##########################################
 								
-				my($record) = RecordPilotToPlan($pilotID{$_}, $planID{$_});
+				my ($record) = RecordPilotToPlan($pilotID{$_}, $planID{$_});
 				if (not defined $record) {
 					# The record is not translatable to a Plan record. 
 					
@@ -856,7 +942,9 @@ sub doafterplan {
 
 	foreach (keys %planRecord) {
 
-# Tickle the pilot so it will not time out during this
+	############################################################
+	# Tickle the pilot so it will not time out during this
+	############################################################
 	$ticklecount++;
 	if ($ticklecount >= $doticklecount) {
 		$dlp->tickle();
@@ -864,8 +952,8 @@ sub doafterplan {
 	}
 
 		print "Plan record: ",PrintPlanRecord($planRecord{$_}),"\n";
-		my($record) = $planRecord{$_};
-		my($pid) = $planRecord{$_}->{pilotid};
+		my ($record) = $planRecord{$_};
+		my ($pid) = $planRecord{$_}->{pilotid};
 		
 		#print "Plan record: ",Dumper($record),"\n";
 		if ($record->{deleted}) {
@@ -900,7 +988,7 @@ sub doafterplan {
 			# fetched yet.
 
 			if (!$slowsync and defined $pid and not exists $pilotID{$pid}) {
-				my($precord) = LoadPilotRecord($db, $pid);
+				my ($precord) = LoadPilotRecord($db, $pid);
 				#$db->getRecord($pid);
 				if (defined $precord) {
 					if (not defined $dbname{$pid}) {
@@ -930,7 +1018,7 @@ sub doafterplan {
 					#print "Installing plan record in pilot: ",Dumper($record);
 					#print "Trying to install Plan record: ",Dumper($record),"\n";
 					
-					my($newrecord) = RecordPlanToPilot($record);
+					my ($newrecord) = RecordPlanToPilot($record);
 					if (not defined $newrecord) {
 						# The record is not translatable to a Palm record. 
 						
@@ -949,7 +1037,7 @@ sub doafterplan {
 						
 						$newrecord->{id} = 0;
 						$newrecord->{secret} = 0;
-						my($id) = WritePilotRecord($db,$control,$newrecord);
+						my ($id) = WritePilotRecord($db,$control,$newrecord);
 						#$db->setRecord($newrecord);
 
 						print "ID of new Palm record is $id\n";
@@ -974,7 +1062,7 @@ sub doafterplan {
 				
 				# Action: Install the Plan record in Palm
 								
-				my($newrecord) = RecordPlanToPilot($record, $pilotID{$pid});
+				my ($newrecord) = RecordPlanToPilot($record, $pilotID{$pid});
 				if (not defined $newrecord) {
 					# The record is not translatable to a Palm record. 
 					
@@ -1006,7 +1094,7 @@ sub doafterplan {
 				# Palm record.
 				
 				#print "Trying to install Plan record: ",Dumper($record),"\n";
-				my($newrecord) = RecordPlanToPilot($record, $pilotID{$pid});
+				my ;($newrecord) = RecordPlanToPilot($record, $pilotID{$pid});
 				if (not defined $newrecord) {
 					# The record is not translatable to a Plan record. 
 					
@@ -1048,7 +1136,9 @@ sub doafterplan {
 
 	foreach (keys %pilotID) {
 
-# Tickle the pilot so it will not time out during this
+	############################################################
+	# Tickle the pilot so it will not time out during this
+	############################################################
 	$ticklecount++;
 	if ($ticklecount >= $doticklecount) {
 		$dlp->tickle();
@@ -1056,9 +1146,10 @@ sub doafterplan {
 	}
 
 	
-		# Palm records originally downloaded from a different Plan database
-		# are off-limits during this pass.
-		
+		############################################################
+		# Palm records originally downloaded from a different Plan
+		# database are off-limits during this pass.
+		############################################################		
 		next if $dbname{$_} ne $control->{name}; 
 
 		#print "Palm record: ",Dumper($pilotID{$_}),"\n";
@@ -1096,22 +1187,24 @@ sub doafterplan {
 
 	foreach (keys %planRecord) {
 
-# Tickle the pilot so it will not time out during this
+	############################################################
+	# Tickle the pilot so it will not time out during this
+	############################################################
 	$ticklecount++;
 	if ($ticklecount >= $doticklecount) {
 		$dlp->tickle();
 		$ticklecount = 0;
 	}
 	
-		my($record) = $planRecord{$_};
-		my($pid) = $planRecord{$_}->{pilotid};
+		my ($record) = $planRecord{$_};
+		my ($pid) = $planRecord{$_}->{pilotid};
 		#print "Plan record: ",Dumper($record),"\n";
 		print "Plan record: ",PrintPlanRecord($planRecord{$_}),"\n";
 	
 		# In a fast sync, we might not have loaded the record yet.
 		
 		if (!$slowsync and defined $pid and not exists $pilotID{$pid}) {
-			my($precord) = LoadPilotRecord($db, $pid);
+			my ($precord) = LoadPilotRecord($db, $pid);
 			#$db->getRecord($pid);
 			if (defined $precord) {
 				if (not defined $dbname{$pid}) {
@@ -1155,6 +1248,9 @@ sub doafterplan {
 
 }
 
+############################################################
+#
+############################################################
 sub loadpilotrecords {
 	print "Loading pilot records:\n";
 
@@ -1212,8 +1308,11 @@ sub loadpilotrecords {
 	return 1;
 }
 
+############################################################
+#
+############################################################
 sub SendPlanCommand {
-	my($socket,$text) = @_;
+	my ($socket,$text) = @_;
 	#print "Sending |$text|\n";
 	while (length($text)) {
 		$len = syswrite $socket, $text, length($text);
@@ -1221,10 +1320,14 @@ sub SendPlanCommand {
 	}
 }
 
-my($partialReply) = "";
+my ($partialReply) = "";
+
+############################################################
+#
+############################################################
 sub ReadPlanReply {
-	my($socket) = @_;
-	my($reply) = "";
+	my ($socket) = @_;
+	my ($reply) = "";
 
 	while (1) {
 		while ($partialReply =~ /^(.+?)(\\)?\n/m) {
@@ -1246,14 +1349,17 @@ sub ReadPlanReply {
 				$reply = "";
 			}
 		}
-		while (sysread($socket,$partialReply,1024,length($partialReply))==1024 or /\\\Z/) {
+		while (sysread($socket,$partialReply,1024,length($partialReply)) == 1024 or /\\\Z/) {
 		}
 	}
 }
 	
 
+############################################################
+#
+############################################################
 sub SyncDB {
-	my($db, $control) = @_;
+	my ($db, $control) = @_;
 	
 	$dbname = $control->{dbname};
 	
@@ -1375,12 +1481,12 @@ open(C,"<$controldir/control");
 while(<C>) {
 	chomp;
 	next if /^#/;
-	my($i,@i) = split(/\s+/, $_);
-	my(@I);
-	my($first)=1;
-	my($defaultname);
+	my ($i,@i) = split(/\s+/, $_);
+	my (@I);
+	my ($first) = 1;
+	my ($defaultname);
 	foreach (@i) {
-		my($mode, $name, $host) = m/^(?:(wr|ro|rw):)?([^\@]+)(?:\@(.+))?$/;
+		my ($mode, $name, $host) = m/^(?:(wr|ro|rw):)?([^\@]+)(?:\@(.+))?$/;
 		if (not defined $mode) {
 			$mode = "rw";
 		}
@@ -1413,7 +1519,7 @@ if (loadpilotrecords) {
 	open (I, "<$controldir/ids.$pilotname");
 	foreach (<I>) {
 		chop;
-		my($id, $hash, $except, $dbname) = split(/\s+/, $_);
+		my ($id, $hash, $except, $dbname) = split(/\s+/, $_);
 		$pilothash{$id} = $hash;
 		$exceptID{$id} = $except;
 		if (not defined $dbname or not length $dbname) {
@@ -1470,6 +1576,5 @@ if (loadpilotrecords) {
 	$dlp->close;
 
 }
-
 
 close(C);
