@@ -32,7 +32,7 @@ public class test {
 		}
 	
 		
-		Pdapilot.DB z = y.open("MemoDB");
+		Pdapilot.DB z = y.open(new Pdapilot.todo.Database());
 		
 		Pdapilot.RecordID ids[] = z.getRecordIDs(false, 0, 0xffff);
 		for (int i=0;i<ids.length;i++) {

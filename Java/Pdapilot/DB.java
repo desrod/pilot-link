@@ -29,6 +29,17 @@ public class DB {
 				System.out.println("Using default dbclass");
 			}
 		}
+
+		DB(Dlp socket, int handle, String dbname, int dbmode, int dbcard, Database dbClass) {
+			this.socket = socket;
+			this.handle = handle;
+			this.dbname = dbname;
+			this.dbmode = dbmode;
+			this.dbcard = dbcard;
+			this.dbClass = dbClass;
+			
+			System.out.println("Opening database '"+dbname+"'");
+		}
 		
 		public void close() throws DlpException { 
 			/* this method should be idempotent */

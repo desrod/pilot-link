@@ -22,6 +22,14 @@ char * tclquote(char * in)
   char * pos;
   int len;
   
+  /* Skip leading bullet (and any whitespace after) */
+  if (in[0] == '\x95') {
+    ++in;
+    while(in[0] == ' ' || in[0] == '\t') {
+	++in;
+    }
+  }
+
   len = 3;
   pos = in;
   while(*pos) {
@@ -49,6 +57,17 @@ char * tclquote(char * in)
   return buffer;
 }
 
+static void Usage(char *progname)
+{
+    fprintf(stderr,"Usage: %s [-d] [-p pubtext] [%s] calfile\n"
+	    "Note: calfile will be overwritten!\n"
+	    "   -d         : Datebook only, no Todos\n"
+	    "   -p pubtext : Replace text of items not starting with a bullet "
+	    "with pubtext\n",
+	progname, TTYPrompt);
+    exit(2);
+}
+
 int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
@@ -61,10 +80,36 @@ int main(int argc, char *argv[])
   unsigned char buffer[0xffff];
   char cmd[128];
   struct ToDoAppInfo tai;
+  int read_todos = 1;
+  char *pubtext = NULL;
+  char *progname = argv[0];
+  char *port = getenv("PILOTPORT");
 
-  if (argc < 3) {
-    fprintf(stderr,"usage:%s %s calfile # Calfile will be overwritten!\n",argv[0],TTYPrompt);
-    exit(2);
+  if (!port) port = "/dev/pilot";
+
+  while (argc > 1 && argv[1][0] == '-') {
+    if (!strcmp(argv[1], "-d")) {
+	/* Datebook only */
+	read_todos = 0;
+    } else if (!strcmp(argv[1], "-p")) {
+	/* Public only, text supplied */
+	if (argv[2] == NULL) {
+	    Usage(progname);
+	}
+	pubtext = argv[2];
+	--argc; ++argv;
+    } else {
+	Usage(progname);
+    }
+    --argc; ++argv;
+  }
+
+  if (argc != 2 && argc != 3) {
+    Usage(progname);
+  }
+  if (argc == 3) {
+    port = argv[1];
+    --argc; ++argv;
   }
   if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
     perror("pi_socket");
@@ -72,7 +117,7 @@ int main(int argc, char *argv[])
   }
     
   addr.pi_family = PI_AF_SLP;
-  strcpy(addr.pi_device,argv[1]);
+  strcpy(addr.pi_device,port);
   
   ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
@@ -98,6 +143,13 @@ int main(int argc, char *argv[])
   /* Tell user (via Pilot) that we are starting things up */
   dlp_OpenConduit(sd);
   
+  unlink(argv[1]);
+  sprintf(cmd, "ical -f - -calendar %s", argv[1]);
+  ical = popen(cmd, "w");
+  
+  fprintf(ical,"calendar cal $ical(calendar)\n");
+  
+  if (read_todos) {
   /* Open the ToDo database, store access handle in db */
   if(dlp_OpenDB(sd, 0, 0x80|0x40, "ToDoDB", &db) < 0) {
     puts("Unable to open ToDoDB");
@@ -107,12 +159,6 @@ int main(int argc, char *argv[])
   
   dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
   unpack_ToDoAppInfo(&tai, buffer, 0);
-  
-  unlink(argv[2]);
-  sprintf(cmd, "ical -f - -calendar %s", argv[2]);
-  ical = popen(cmd, "w");
-  
-  fprintf(ical,"calendar cal $ical(calendar)\n");
   
   for (i=0;1;i++) {
   	struct ToDo t;
@@ -131,7 +177,9 @@ int main(int argc, char *argv[])
 	unpack_ToDo(&t, buffer, len);
 	
 	fprintf(ical,"set n [notice]\n");
-	fprintf(ical,"$n text %s\n", tclquote(t.description));
+	/* '\x95' is the "bullet" character */
+	fprintf(ical,"$n text %s\n", tclquote((pubtext &&
+	    t.description[0] != '\x95') ? pubtext : t.description));
 	fprintf(ical,"$n date [date today]\n");
 	fprintf(ical,"$n todo 1\n");
 	fprintf(ical,"$n option Priority %d\n", t.priority);
@@ -147,6 +195,7 @@ int main(int argc, char *argv[])
   dlp_CloseDB(sd, db);
 
   dlp_AddSyncLogEntry(sd, "Read todos from Pilot.\n");
+  }
 
   /* Open the Datebook's database, store access handle in db */
   if(dlp_OpenDB(sd, 0, 0x80|0x40, "DatebookDB", &db) < 0) {
@@ -190,7 +239,9 @@ int main(int argc, char *argv[])
 	  fprintf(ical,"$i length %d\n", end-start);
 	}
 	
-	fprintf(ical,"$i text %s\n", tclquote(a.description));
+	/* '\x95' is the "bullet" character */
+	fprintf(ical,"$i text %s\n", tclquote((pubtext &&
+	    a.description[0] != '\x95') ? pubtext : a.description));
 	
 	fprintf(ical,"set begin [date make %d %d %d]\n", a.begin.tm_mday,a.begin.tm_mon+1,a.begin.tm_year+1900);
 	

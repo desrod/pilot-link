@@ -205,6 +205,16 @@ if test $ac_cv_termios_cspeed = yes; then
   AC_DEFINE(TERMIOS_CSPEED)
 fi
 
+AC_CACHE_CHECK([for sa_len],
+  ac_cv_sa_len,
+[AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/socket.h>], [int main(void) {
+ struct sockaddr t;t.sa_len = 0;}],
+  ac_cv_sa_len=yes,ac_cv_sa_len=no)])
+if test $ac_cv_sa_len = yes; then
+  AC_DEFINE(HAVE_SA_LEN)
+fi
+
 dnl Check packages
 AC_ARG_WITH(tcl,      [  --with-tcl=tclbasedir   use Tcl     [default=yes]])
 AC_ARG_WITH(itcl,     [  --with-itcl=iclbasedir  use Itcl    [default=yes]])
@@ -232,6 +242,7 @@ if test "x$PERL5" != "x"; then
 fi
 changequote([, ])dnl
 
+AC_MSG_CHECKING(for Java Development Kit)
 if test "x$with_java" = "xyes" || test "x$with_java" = "x" ; then
 	for java_path in /usr/local/java /usr/local /usr/java /usr; do
 		if test -f $java_path/bin/javac; then
@@ -244,10 +255,12 @@ if test "x$with_java" = "xyes" || test "x$with_java" = "x" ; then
 		with_java=no
 	fi
 fi 
+if test "x$with_java" = "x"; then
+	with_java=no
+fi
 JAVABASE=''
 if test "x$with_java" != "xno"; then
 	# I'd like to check Java for version, but it doesn't seem to know how to do that. Odd.
-	AC_MSG_CHECKING(for Java)
 changequote(, )dnl
 	cat >test.java <<EOF
 	public class test { public static void main(String[] args) { 
@@ -257,14 +270,16 @@ EOF
 changequote([, ])dnl
 	$with_java/bin/javac test.java
 	case `$with_java/bin/java test` in
-		*present*) AC_MSG_RESULT(found) 
+		*present*) AC_MSG_RESULT(found in $with_java) 
 			WITHJAVA='WITHJAVA'
 			JAVABASE="$with_java"
 			;;
-		*)	AC_MSG_RESULT(not found) 
+		*)	AC_MSG_RESULT(not found)
 			with_java=no ;;
 	esac
 	rm -f test.java test.class
+else
+	AC_MSG_RESULT(not found)
 fi
 AC_SUBST(JAVABASE)
 

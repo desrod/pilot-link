@@ -4,6 +4,9 @@ public class Util {
 	static public String prettyPrint(byte[] b)
 		{ return prettyPrint(new String(b,0)); }
 	static public String prettyPrint(Object o) {
+		if (o == null) {
+			return "null";
+		}
 		char[] c = o.toString().toCharArray();
 		StringBuffer out = new StringBuffer();
 		for (int i=0;i<c.length;i++) {

@@ -98,6 +98,13 @@ public class Dlp extends Socket {
 				super.close();
 			}
 		}
+
+		public DB open(Pdapilot.Database dbClass)
+			throws DlpException
+		{
+			int handle = this.dlp_OpenDB(0, 0x40|0x80|0x20, dbClass.dbname());
+			return new DB(this, handle, dbClass.dbname(), 0x40|0x80|0x20, 0, dbClass);
+		}
 		
 		public DB open(String name) throws DlpException { return this.open(name,0x40|0x80|0x20); }
 		public DB open(String name, int mode) throws DlpException { return this.open(name,mode,0); }

@@ -2,7 +2,7 @@
 O = o
 
 SOCKOBJS = socket.$(O) serial.$(O) inetserial.$(O) slp.$(O) padp.$(O) \
-       dlp.$(O) cmp.$(O) syspkt.$(O)
+       dlp.$(O) cmp.$(O) syspkt.$(O) inet.$(O)
 
 FILEOBJS = pi-file.$(O)
 
@@ -102,6 +102,10 @@ dlp.o dlp.lo: dlp.c ../include/pi-source.h   \
 expense.o expense.lo: expense.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-expense.h
+inet.o inet.lo: inet.c ../include/pi-source.h   \
+ ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
+ ../include/pi-inet.h ../include/pi-slp.h ../include/pi-syspkt.h \
+ ../include/pi-padp.h ../include/pi-dlp.h
 inetserial.o inetserial.lo: inetserial.c ../include/pi-source.h \
    ../include/pi-socket.h ../include/pi-args.h \
  ../include/pi-macros.h ../include/pi-serial.h \

@@ -1,3 +1,30 @@
+Jul 26, 1997	Kenneth Albanowski 0.7.6
+
+	Configuration changes:
+	  - No more complaints if the Java Development Kit isn't installed.
+	  - sockaddr.sa_len member is detected (for pi-csd)
+	Pisocket library changes:
+	  - Support for Palm's TCP/IP NetSync(tm) has been added. To use this,
+	    give a program like pilot-xfer a port of '.' (a single period). You
+	    will also need to run (perhaps in the background) pi-csd, with its
+	    settings configured to match the PC NetSync(tm) settings on your
+	    PalmPilot(tm).
+	  - Leak of laddr/raddr members fixed.
+	Utility changes:
+	  - Added pi-csd program to allow network synchronization. This program
+	    must be running for your computer to accept NetSync(tm) connections
+	    from a PalmPilot(tm). You must of course also run whatever utility
+	    or synchronization program you want the PalmPilot(tm) to connect to.
+	  - Added pi-nredir to allow a normal (or network, for that matter)
+	    connection to be redirected over the network to pilot-link or the
+	    PalmPilot(tm) Desktop.
+	  - Read-ical patches by Ian G. applied, allowing use of a default port,
+	    and a method of hiding the text of datebook entries.
+	Java binding changes:
+	  - Todo application supported.
+	  - You can now open a database using an instance of Pdapilot.Database
+	    instead of a database name.
+
 Jul 22, 1997	Kenneth Albanowski 0.7.5
 
 	Configuration changes:

@@ -214,6 +214,11 @@ static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *ad
 
   pi_socket_recognize(accept);
   
+  accept->laddr = malloc(ps->laddrlen);
+  accept->raddr = malloc(ps->raddrlen);
+  memcpy(accept->laddr, ps->laddr, ps->laddrlen);
+  memcpy(accept->raddr, ps->raddr, ps->raddrlen);
+  
   accept->mac->ref++; /* Keep mac around even if the bound socket is closed */
   accept->initiator = 0; /* We accepted the link, we did not initiate it */
   
@@ -287,6 +292,11 @@ static int pi_serial_close(struct pi_socket * ps)
       free(ps->mac);
     }
   }
+  
+  if(ps->laddr)
+    free(ps->laddr);
+  if(ps->raddr)
+    free(ps->raddr);
 
   return 0;
 }

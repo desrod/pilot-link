@@ -2298,6 +2298,41 @@ EOF
 
 fi
 
+echo $ac_n "checking for sa_len""... $ac_c" 1>&6
+echo "configure:2303: checking for sa_len" >&5
+if eval "test \"`echo '$''{'ac_cv_sa_len'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2308 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+int main() {
+int main(void) {
+ struct sockaddr t;t.sa_len = 0;}
+; return 0; }
+EOF
+if { (eval echo configure:2317: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  ac_cv_sa_len=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ac_cv_sa_len=no
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$ac_cv_sa_len" 1>&6
+if test $ac_cv_sa_len = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_SA_LEN 1
+EOF
+
+fi
+
 # Check whether --with-tcl or --without-tcl was given.
 if test "${with_tcl+set}" = set; then
   withval="$with_tcl"
@@ -2344,7 +2379,7 @@ else
 		# Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2348: checking for $ac_word" >&5
+echo "configure:2383: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_PERL5'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2382,6 +2417,8 @@ if test "x$PERL5" != "x"; then
 	esac
 fi
 
+echo $ac_n "checking for Java Development Kit""... $ac_c" 1>&6
+echo "configure:2422: checking for Java Development Kit" >&5
 if test "x$with_java" = "xyes" || test "x$with_java" = "x" ; then
 	for java_path in /usr/local/java /usr/local /usr/java /usr; do
 		if test -f $java_path/bin/javac; then
@@ -2394,11 +2431,12 @@ if test "x$with_java" = "xyes" || test "x$with_java" = "x" ; then
 		with_java=no
 	fi
 fi 
+if test "x$with_java" = "x"; then
+	with_java=no
+fi
 JAVABASE=''
 if test "x$with_java" != "xno"; then
 	# I'd like to check Java for version, but it doesn't seem to know how to do that. Odd.
-	echo $ac_n "checking for Java""... $ac_c" 1>&6
-echo "configure:2402: checking for Java" >&5
 	cat >test.java <<EOF
 	public class test { public static void main(String[] args) { 
 		System.out.println("present");
@@ -2406,14 +2444,16 @@ echo "configure:2402: checking for Java" >&5
 EOF
 	$with_java/bin/javac test.java
 	case `$with_java/bin/java test` in
-		*present*) echo "$ac_t""found" 1>&6 
+		*present*) echo "$ac_t""found in $with_java" 1>&6 
 			WITHJAVA='WITHJAVA'
 			JAVABASE="$with_java"
 			;;
-		*)	echo "$ac_t""not found" 1>&6 
+		*)	echo "$ac_t""not found" 1>&6
 			with_java=no ;;
 	esac
 	rm -f test.java test.class
+else
+	echo "$ac_t""not found" 1>&6
 fi
 
 
@@ -2443,7 +2483,7 @@ else
 fi 
 
 echo $ac_n "checking for Tcl""... $ac_c" 1>&6
-echo "configure:2447: checking for Tcl" >&5
+echo "configure:2487: checking for Tcl" >&5
 TCL_VERSION=""
 TCL_LIBS=""
 TCL_LIB_SPEC=""
@@ -2494,7 +2534,7 @@ else
 		fi 
 
 		echo $ac_n "checking for Itcl""... $ac_c" 1>&6
-echo "configure:2498: checking for Itcl" >&5
+echo "configure:2538: checking for Itcl" >&5
 		if test "x$with_itcl" = "x"; then
 			echo "$ac_t""not found" 1>&6
 		elif test "x$with_itcl" = "xno"; then
@@ -2536,7 +2576,7 @@ echo "configure:2498: checking for Itcl" >&5
 		fi 
 		
 		echo $ac_n "checking for Tk""... $ac_c" 1>&6
-echo "configure:2540: checking for Tk" >&5
+echo "configure:2580: checking for Tk" >&5
 		if test "x$with_tk" = "x"; then
 			echo "$ac_t""not found" 1>&6
 		elif test "x$with_tk" = "xno"; then
@@ -2612,7 +2652,7 @@ if test "x$with_python" = "xyes" || test "x$with_python" = "x" ; then
 fi 
 
 echo $ac_n "checking for Python""... $ac_c" 1>&6
-echo "configure:2616: checking for Python" >&5
+echo "configure:2656: checking for Python" >&5
 
 PYTHONBASE=''
 PYTHONLIBDIR=''
@@ -2647,7 +2687,7 @@ fi
 
 
 echo $ac_n "checking for maximum warnings compiler flag""... $ac_c" 1>&6
-echo "configure:2651: checking for maximum warnings compiler flag" >&5
+echo "configure:2691: checking for maximum warnings compiler flag" >&5
 if eval "test \"`echo '$''{'ac_cv_cwflag'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else

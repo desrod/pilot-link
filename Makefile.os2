@@ -82,7 +82,8 @@ CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
 		getrom$(EXT) pi-port$(EXT) \
-		test-connector$(EXT) test-acceptor$(EXT)
+		test-connector$(EXT) test-acceptor$(EXT) \
+		pi-csd$(EXT) pi-nredir$(EXT)
 
 CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
 
@@ -123,7 +124,7 @@ install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
 	done
 	$(LIBTOOL) -n --finish $(libdir)
 
-uninstall: $(EXECS)
+uninstall:
 	-for p in $(EXECS) $(PERLEXECS) $(CXXEXECS) $(TCLEXECS); do \
 		$(RM) $(bindir)/$$p; \
 	done
@@ -213,6 +214,12 @@ dlpsh$(EXT): $(PILIB) dlpsh.o
 
 debugsh$(EXT): $(PILIB) debugsh.o
 	$(CCLINK) debugsh.o $(PILIB) -o $@ $(LIBS)
+
+pi-csd$(EXT): $(PILIB) pi-csd.o
+	$(CCLINK) pi-csd.o $(PILIB) -o $@ $(LIBS)
+
+pi-nredir$(EXT): $(PILIB) pi-nredir.o
+	$(CCLINK) pi-nredir.o $(PILIB) -o $@ $(LIBS)
 
 ccexample$(EXT): $(PILIB) $(PICCLIB) ccexample.o
 	$(CXXLINK) ccexample.o $(PILIB) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)

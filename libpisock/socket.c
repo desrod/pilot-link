@@ -56,8 +56,7 @@ int pi_socket(int domain, int type, int protocol)
     return -1;
   }
 
-  ps = malloc(sizeof(struct pi_socket));
-  memset(ps,0,sizeof(struct pi_socket));
+  ps = calloc(sizeof(struct pi_socket), 1);
 
 #ifdef OS2
   if((ps->sd = open("NUL", O_RDWR))==-1) {
@@ -150,8 +149,8 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
     
   if (conn == serial)
     return pi_serial_connect(ps, addr, addrlen);
-  /*else if (conn == inet)
-    return pi_inet_connect(ps, addr, addrlen);*/
+  else if (conn == inet)
+    return pi_inet_connect(ps, addr, addrlen);
     
   return -1;
 }
@@ -184,8 +183,8 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
     
   if (conn == serial)
     return pi_serial_bind(ps, addr, addrlen);
-  /*else if (conn == inet)
-    return pi_inet_bind(ps, addr, addrlen);*/
+  else if (conn == inet)
+    return pi_inet_bind(ps, addr, addrlen);
 
   return -1;
 }

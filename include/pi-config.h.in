@@ -52,6 +52,9 @@
 /* Define if you have the cispeed and cospeed members of struct termios */
 #undef TERMIOS_CSPEED
 
+/* Define if you have the sa_len member of struct sockaddr */
+#undef HAVE_SA_LEN
+
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 

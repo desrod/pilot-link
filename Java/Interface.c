@@ -11,6 +11,8 @@
 #include "Pdapilot_NetInfo.h"
 #include "Pdapilot_memo_Record.h"
 #include "Pdapilot_memo_AppBlock.h"
+#include "Pdapilot_todo_Record.h"
+#include "Pdapilot_todo_AppBlock.h"
 #include "Pdapilot_RecordID.h"
 #include "Pdapilot_Char4.h"
 #include "Pdapilot_DBInfo.h"
@@ -21,6 +23,7 @@
 #include "pi-dlp.h"
 #include "pi-socket.h"
 #include "pi-memo.h"
+#include "pi-todo.h"
 
 #include <signal.h>
 
@@ -73,6 +76,13 @@ Hjava_util_Date * makeJavaDate(time_t v) {
 	
 }	
 
+Hjava_util_Date * makeJavaDateTm(struct tm * tm) {
+	return (Hjava_util_Date*)execute_java_constructor(0, "java/util/Date", 0, 
+		"(IIIIII)",
+		tm->tm_year, tm->tm_mon, tm->tm_mday,
+		tm->tm_hour, tm->tm_min, tm->tm_sec);
+}	
+
 HPdapilot_Char4 * makeJavaChar4(long id) {
 	return (HPdapilot_Char4*)execute_java_constructor(
 		0, "Pdapilot/Char4", 0, 
@@ -110,6 +120,19 @@ time_t readJavaDate(Hjava_util_Date * date) {
 	tm.tm_sec = unhand(date)->tm_sec;
 	
 	return mktime(&tm);
+}
+
+struct tm * readJavaDateTm(Hjava_util_Date * date) {
+	static struct tm tm;
+	
+	tm.tm_year = unhand(date)->tm_year;
+	tm.tm_mon = unhand(date)->tm_mon;
+	tm.tm_mday = unhand(date)->tm_mday;
+	tm.tm_hour = unhand(date)->tm_hour;
+	tm.tm_min = unhand(date)->tm_min;
+	tm.tm_sec = unhand(date)->tm_sec;
+	
+	return &tm;
 }
 
 extern long Pdapilot_calls_pi_socket(struct HPdapilot_calls*self, long domain, long type, long protocol)
@@ -1026,3 +1049,105 @@ extern HArrayOfByte* Pdapilot_memo_AppBlock_pack(struct HPdapilot_memo_AppBlock 
 	return output;
 }
 
+
+extern void Pdapilot_todo_Record_unpack(struct HPdapilot_todo_Record * self,  struct HArrayOfByte *b)
+{
+	struct ToDo t;
+	unpack_ToDo(&t, unhand(b)->body, getArrayLength(b));
+	
+	unhand(self)->raw = b;
+	
+	unhand(self)->indefinite = t.indefinite;
+	unhand(self)->due = t.indefinite ? makeJavaDateTm(&t.due) : 0;
+	unhand(self)->priority = t.priority;
+	unhand(self)->complete = t.complete;
+	unhand(self)->description = t.description ? makeJavaString(t.description, strlen(t.description)) : 0;
+	unhand(self)->note = t.note ? makeJavaString(t.note, strlen(t.note)) : 0;
+	
+	free_ToDo(&t);
+}
+
+
+extern HArrayOfByte* Pdapilot_todo_Record_pack(struct HPdapilot_todo_Record * self){
+	char * buffer = malloc(0xffff);
+	int len;
+	HArrayOfByte * output;
+	
+	struct ToDo t;
+	
+	struct tm * tm;
+	
+	t.description = unhand(self)->description ? makeCString(unhand(self)->description) : 0;
+	t.note = unhand(self)->note ? makeCString(unhand(self)->note) : 0;
+	t.priority = unhand(self)->priority;
+	t.complete = unhand(self)->complete;
+	t.indefinite = unhand(self)->indefinite;
+	tm = readJavaDateTm(unhand(self)->due);
+	if (tm)
+		t.due = *tm;
+	
+	pack_ToDo(&t, buffer, &len);
+	
+	output = getByteArray(len);
+	memcpy(unhand(output)->body, buffer, len);
+	
+	unhand(self)->raw = output;
+	
+	free(buffer);
+	
+	return output;
+}
+
+extern void Pdapilot_todo_AppBlock_unpack(struct HPdapilot_todo_AppBlock * self,  struct HArrayOfByte *b)
+{
+	struct ToDoAppInfo t;
+	int i;
+
+	unpack_ToDoAppInfo(&t, unhand(b)->body, getArrayLength(b));
+	
+	unhand(self)->raw = b;
+	
+	unhand(self)->renamedCategories = t.renamedcategories;
+	unhand(self)->lastUniqueID = t.lastUniqueID;
+	unhand(self)->dirty = t.dirty;
+	unhand(self)->sortByPriority = t.sortByPriority;
+	if (!(unhand(self)->categoryName = makeStringArray(16)))
+		return;
+	if (!(unhand(self)->categoryID = makeIntArray(16)))
+		return;
+	
+	for (i=0;i<16;i++) {
+		unhand(unhand(self)->categoryName)->body[i] = (HObject*)makeJavaString(t.CategoryName[i], strlen(t.CategoryName[i]));
+		unhand(unhand(self)->categoryID)->body[i] = t.CategoryID[i];
+	}
+}
+
+extern HArrayOfByte* Pdapilot_todo_AppBlock_pack(struct HPdapilot_todo_AppBlock * self){
+	char * buffer = malloc(0xffff);
+	int len;
+	HArrayOfByte * output;
+	int i;
+	
+	struct ToDoAppInfo t;
+	
+	t.renamedcategories = unhand(self)->renamedCategories;
+	t.lastUniqueID = unhand(self)->lastUniqueID;
+	t.sortByPriority = unhand(self)->sortByPriority;
+	t.dirty = unhand(self)->dirty;
+
+	for (i=0;i<16;i++) {
+		javaString2CString((HString*)unhand(unhand(self)->categoryName)->body[i], t.CategoryName[i], 16);
+		t.CategoryID[i] = unhand(unhand(self)->categoryID)->body[i];
+	}
+	
+	pack_ToDoAppInfo(&t, buffer, &len);
+	
+	output = getByteArray(len);
+	memcpy(unhand(output)->body, buffer, len);
+	
+	unhand(self)->raw = output;
+	
+	free(buffer);
+	
+	return output;
+}
