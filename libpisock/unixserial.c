@@ -426,11 +426,11 @@ static int s_write(struct pi_socket *ps)
 			}
 #endif
 		ps->tx_bytes += skb->len;
-		free(skb);
 
 		ps->busy--;
 		/* hacke to slow things down so that the Visor will work */
 		usleep(10 + skb->len);
+		free(skb);
 		return 1;
 	}
 	return 0;

@@ -1,3 +1,8 @@
+2001-06-06  Peter Williams  <peterw@ximian.com>
+ 
+ 	* libsock/unixserial.c (s_write): Only free() skb after we access
+ 	skb->len, not before it.
+
 2001-06-06  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* Fixed/reverted the mess with the GPL vs. LGPL headers in a slew of
