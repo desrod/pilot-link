@@ -49,7 +49,7 @@ void print_splash(char *progname)
                 patchlevel);
 
 	printf("   See the file COPYING under docs for more info.\n\n"
-	       "   Please use -h for more detailed options.\n");
+	       "   Please use --help for more detailed options.\n");
 
 }
 
