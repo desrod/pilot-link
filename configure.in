@@ -35,6 +35,10 @@ PISYNC_CURRENT=0
 PISYNC_REVISION=0
 PISYNC_AGE=0
 
+AC_SUBST(PISYNC_CURRENT)
+AC_SUBST(PISYNC_REVISION)
+AC_SUBST(PISYNC_AGE)
+
 dnl ******************************
 dnl Pilot Link C++ Library Version
 dnl ******************************
@@ -616,6 +620,7 @@ AC_OUTPUT([
 Makefile
 pilot-link.m4
 libpisock/Makefile
+libpisync/Makefile
 libpisock++/Makefile
 include/Makefile
 include/pi-version.h

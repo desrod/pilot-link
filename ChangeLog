@@ -1,5 +1,11 @@
 2002-04-18  JP Rosevear  <jpr@ximian.com>
 
+	* Makefile.am: add libpisync as a subdir
+
+	* configure.in: AC_SUBST the version info
+
+2002-04-18  JP Rosevear  <jpr@ximian.com>
+	
 	* src/pi-getram.c (main): fix compilation
 
 	* src/pi-getrom.c (main): fix compilation

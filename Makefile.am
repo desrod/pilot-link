@@ -4,7 +4,7 @@ else
 CXX_DIR =
 endif
 
-SUBDIRS=libpisock $(CXX_DIR) include src bindings doc tests
+SUBDIRS=libpisock libpisync $(CXX_DIR) include src bindings doc tests
 
 m4dir = $(datadir)/aclocal
 m4_DATA = pilot-link.m4
