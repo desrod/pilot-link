@@ -115,9 +115,6 @@ int main(int argc, char *argv[])
 			break;
 		pi_write(sd2, buffer, len);
 	}
-	dlp_AddSyncLogEntry(sd, "pi-nredir, exited normally.\n"
-					"Thank you for using pilot-link.\n");
-	dlp_EndOfSync(sd, 0);
 
 	pi_close(sd);
 	pi_close(sd2);
