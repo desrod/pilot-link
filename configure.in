@@ -653,22 +653,30 @@ tests/Makefile
 ])
 
 echo "
-  pilot-link:		 $VERSION
-  libpisock:		 $PISOCK_CURRENT.$PISOCK_REVISION.$PISOCK_AGE
+  pilot-link.......... : $VERSION
+  libpisock........... : $PISOCK_CURRENT.$PISOCK_REVISION.$PISOCK_AGE
 
   Extra Warnings...... : $set_compile_warnings
   
+  Universal Serial BUS
+  ----------------------
   Direct USB support.. : $msg_usb
 
+  Extra Internal Support
+  ----------------------
   C++ support......... : $msg_cpp
   Iconv support....... : $msg_iconv
   PNG support......... : $msg_png
   Readline support.... : $msg_readline
 
+  Tcl/Tk/iTcl Support
+  ----------------------
   TCL support......... : $msg_tcl	$TCL_VERSION
   ITCL support........ : $msg_itcl	$ITCL_VERSION
   TK Support.......... : $msg_tk	$TK_VERSION
 
+  Language Bindings
+  ----------------------
   Java support........ : $msg_java	
   Python support...... : $msg_python	$PYTHONVER
   Perl support........ : $msg_perl	$PERLVER

@@ -1,3 +1,7 @@
+2002-08-21  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* configure.in: Updated output
+
 2002-08-16  David H. Silber <pilot@SilberSoft.com>
 
 	* libpisock/connect.h: Now that the pilot_connect() prototype is
