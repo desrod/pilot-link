@@ -39,7 +39,11 @@
 static void display_help(char *progname);
 void print_splash(char *progname);
 int pilot_connect(char *port);
-
+long write_header(FILE *out);
+long write_data(char *buffer, int index, int size, long dataChunkSize, FILE *out);
+int pdb_to_wav(char *filename);
+int fetch_wavs(int sd, char *dbname);
+int do_fetch(char *port, char *dbname);
 
 struct option options[] = {
         {"port",        required_argument, NULL, 'p'},
@@ -60,78 +64,106 @@ static const char *optstring = "p:hvf:c:";
 #endif
 
 
-
-/* Function : write_header
-   Summary  : writes out header of wave file with correct parameters
-   Parameters : File out - output file pointer
-   Returns : long - size of format chunk
-*/
-long write_header(FILE *out)
+/***********************************************************************
+ *
+ * Function:    write_header
+ *
+ * Summary:     Writes out header of wave file with correct parameters
+ *
+ * Parameters:  File out - output file pointer
+ *
+ * Returns:     long - size of format chunk
+ *
+ ***********************************************************************/
+long write_header(FILE * out)
 {
-  const char formatChunkID[4] = "fmt ";
-  long formatChunkSize;
-	
-  short wFormatTag;
-  unsigned short wChannels;
-  unsigned long dwSamplesPerSec;
-  unsigned long dwAvgBytesPerSec;
-  unsigned short wBlockAlign;
-  unsigned short wBitsPerSample;
-  unsigned short cbSize;
-  unsigned short wSamplesPerBlock;
+        const char formatChunkID[4] = "fmt ";
+        long formatChunkSize;
 
-  const char dataChunkID[4] = "data";
-  long dataChunkSize;
-  
-  long wWaveLength;
-		
-  formatChunkSize = 20; /* In bytes, not including formatChunkID and formatChunkSize itself */
-  wFormatTag = 17; /* 17 = Intel IMA (DVI) ADPCM */
-  wChannels = 1; /* Mono */
-  dwSamplesPerSec = 8000;
-  dwAvgBytesPerSec = 4425; /* This value varies with file - need formula*/
-  wBlockAlign = 256;
-  wBitsPerSample = 4;
-  cbSize = 2; /* Extended format block size including(it appears) cbSize itself */
-  wSamplesPerBlock = 505;
+        short wFormatTag;
+        unsigned short wChannels;
+        unsigned long dwSamplesPerSec;
+        unsigned long dwAvgBytesPerSec;
+        unsigned short wBlockAlign;
+        unsigned short wBitsPerSample;
+        unsigned short cbSize;
+        unsigned short wSamplesPerBlock;
 
-  dataChunkSize = 0; /* fill in at end of file with seek*/
+        const char dataChunkID[4] = "data";
+        long dataChunkSize;
 
-  wWaveLength = 0; /* fill in at end of file with seek*/
+        long wWaveLength;
 
-  /* RIFF Header */
-  fwrite("RIFF", 4, 1, out);
-  fwrite(&wWaveLength, 4, 1, out);
-  fwrite("WAVE", 4, 1, out);
+	/* In bytes, not including formatChunkID and formatChunkSize itself */
+        formatChunkSize = 20;
 
-  /* Format Chunk */
-  fwrite(formatChunkID, 4, 1, out);
-  fwrite(&formatChunkSize, 4, 1, out); /* Length of Format Chunk - 4 (fmt ) - 4 (length value itself) */
-  fwrite(&wFormatTag, 2, 1, out);
-  fwrite(&wChannels, 2, 1, out);
-  fwrite(&dwSamplesPerSec, 4, 1, out);
-  fwrite(&dwAvgBytesPerSec, 4, 1, out);
-  fwrite(&wBlockAlign, 2, 1, out);
-  fwrite(&wBitsPerSample, 2, 1, out);
-  /* Extended Format Chunk Fields */
-  fwrite(&cbSize, 2, 1, out); /* Extended format block size including(it appears) cbSize itself */
-  fwrite(&wSamplesPerBlock, 2, 1, out);
+	/* 17 = Intel IMA (DVI) ADPCM */
+        wFormatTag = 17;
 
-  /* Data Chunk */
-  fwrite(dataChunkID, 4, 1, out);
-  fwrite(&dataChunkSize, 4, 1, out);
+	/* Mono */
+        wChannels = 1;
+        dwSamplesPerSec = 8000;
 
-  return formatChunkSize;		
+        /* This value varies with file - need formula */
+        dwAvgBytesPerSec = 4425;
+        wBlockAlign = 256;
+        wBitsPerSample = 4;
+
+	/* Extended format block size including(it appears) cbSize itself */
+        cbSize = 2;
+        wSamplesPerBlock = 505;
+
+	/* fill in at end of file with seek */
+        dataChunkSize = 0;
+
+        /* fill in at end of file with seek */
+        wWaveLength = 0;
+
+        /* RIFF Header */
+        fwrite("RIFF", 4, 1, out);
+        fwrite(&wWaveLength, 4, 1, out);
+        fwrite("WAVE", 4, 1, out);
+
+        /* Format Chunk */
+        fwrite(formatChunkID, 4, 1, out);
+
+	/* Length of Format Chunk - 4 (fmt ) - 4 (length value itself) */
+        fwrite(&formatChunkSize, 4, 1, out);
+        fwrite(&wFormatTag, 2, 1, out);
+        fwrite(&wChannels, 2, 1, out);
+        fwrite(&dwSamplesPerSec, 4, 1, out);
+        fwrite(&dwAvgBytesPerSec, 4, 1, out);
+        fwrite(&wBlockAlign, 2, 1, out);
+        fwrite(&wBitsPerSample, 2, 1, out);
+
+        /* Extended Format Chunk Fields */
+
+	/* Extended format block size including(it appears) cbSize itself */
+        fwrite(&cbSize, 2, 1, out);
+        fwrite(&wSamplesPerBlock, 2, 1, out);
+
+        /* Data Chunk */
+        fwrite(dataChunkID, 4, 1, out);
+        fwrite(&dataChunkSize, 4, 1, out);
+
+        return formatChunkSize;
 }
 
-/* Function : write_data
-   Summary  : writes out data from record buffer updating dataChunkSize
-   Parameters : char pointer buffer - self explanatory
-                int size - size of data to be written
-                FILE *out - pointer to output file
-                long dataChunkSize - present data chunk size
-   Returns : long - updated dataChunkSize
-*/
+
+/***********************************************************************
+ *
+ * Function:    write_data
+ *
+ * Summary:     Writes out data from record buffer updating dataChunkSize
+ *
+ * Parameters:  char pointer buffer - self explanatory
+ *              int size - size of data to be written 
+ *              FILE *out - pointer to output file    
+ *              long dataChunkSize - present data chunk size
+ *
+ * Returns:     long - updated dataChunkSize
+ *
+ ***********************************************************************/
 long write_data(char *buffer, int index, int size, long dataChunkSize, FILE *out)
 {
 	if (index == 0) {
@@ -365,8 +397,8 @@ static void display_help(char *progname)
 	printf("     -f --fetch | <file> Fetch all wav files or specified wav file from the Palm\n");
 	printf("     -c --convert <file> Convert <file>.wav.pdb file to wav\n\n");
 	printf("   Examples: \n");
-	printf("      %s -p /dev/pilot -f MyVoiceMemo.wav.pdb\n", progname);
-	printf("      %s -c MyVoiceMemo.wav.pdb\n\n", progname);
+	printf("      pilot-wav -p /dev/pilot -f MyVoiceMemo.wav.pdb\n");
+	printf("      pilot-wav -c MyVoiceMemo.wav.pdb\n\n");
 	return;
 }
 
@@ -376,12 +408,13 @@ int main(int argc, char *argv[])
         int 	c,
 		fetch,
 		convert;
+
         char 	*port		= NULL,
 		*progname       = argv[0];
 
         fetch = convert = FALSE;
 
-        if (argc == 1) {
+        if (argc < 2 ) {
                 display_help(progname);
         }
 
