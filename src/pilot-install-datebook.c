@@ -1,4 +1,4 @@
-/* 
+/*
  * install-datebook.c:  Palm datebook installer
  *
  * Copyright 1997, Tero Kivinen
@@ -24,7 +24,6 @@
 #include <config.h>
 #endif
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,92 +31,61 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-datebook.h"
+#include "userland.h"
 
-/* Declare prototypes */
-static void display_help(const char *progname);
-void print_splash(const char *progname);
-int pilot_connect(const char *porg);
 extern time_t parsedate(char *p);
-
-static void display_help(const char *progname)
-{
-	printf("   Installs new Datebook entries onto your Palm handheld device\n\n");
-	printf("   Usage: %s -p <port> -r [file]\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -h --help         Display this information\n");
-	printf("     -v --version      Display version information\n");
-	printf("     -r [file]	       Read entries from file\n\n");
-	printf("   Examples: \n");
-	printf("      %s -p /dev/pilot -r db.txt\n\n", progname);
-
-        return;
-}
 
 int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		Appointment_size,
-		db,	
+		db,
 		fieldno,
 		filelen,
 		sd		= -1;
-	
+
 	const char
                 *progname	= argv[0];
 
-	char 	*port		= NULL,
+	char
 		*cPtr		= NULL,
 		*filename	= NULL,
 		*file_text	= NULL,
 		*fields[4];
-	
+
 	unsigned char Appointment_buf[0xffff];
 	FILE 	*f;
-	
+
 	struct 	PilotUser User;
 	struct 	Appointment appointment;
 
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+		USERLAND_RESERVED_OPTIONS
 		{"read", 'r', POPT_ARG_STRING, &filename, 0, "Read entries from <file>", "file"},
 		POPT_TABLEEND
 	};
 
 	pc = poptGetContext("install-datebook", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc,"\n   Installs new Datebook entries onto your Palm handheld device\n\n"
+		"   Example usage: \n"
+		"      -p /dev/pilot -r db.txt\n\n");
 
 	while ((c = poptGetNextOpt(pc)) >= 0) {
-                switch (c) {
-
-                case 'h':
-                        display_help(progname);
-                        return 0;
-                case 'v':
-                        print_splash(progname);
-                        return 0;
-		default:
-                        display_help(progname);
-                        return 0;
-                }
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
         }
 
 	if (c < -1) {
-		/* an error occurred during option processing */
-		fprintf(stderr, "%s: %s\n",
-		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-		    poptStrerror(c));
-		return 1;
+		userland_badoption(pc,c);
 	}
 	if (filename == NULL) {
-		display_help(progname);
+		fprintf(stderr,"   ERROR: No filename given.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	sd = pilot_connect(port);
+	sd = userland_connect();
 	if (sd < 0)
 		goto error;
 
@@ -129,16 +97,15 @@ int main(int argc, const char *argv[])
 
 	/* Open the Datebook's database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "DatebookDB", &db) < 0) {
-		puts("Unable to open DatebookDB");
+		fprintf(stderr,"   ERROR: Unable to open DatebookDB on Palm\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
-		pi_close(sd);
-		exit(EXIT_FAILURE);
+		goto error_close;
 	}
 
 	f = fopen(filename, "r");
 	if (f == NULL) {
 		perror("fopen");
-		exit(EXIT_FAILURE);
+		goto error_close;
 	}
 
 	fseek(f, 0, SEEK_END);
@@ -148,16 +115,18 @@ int main(int argc, const char *argv[])
 	file_text = (char *) malloc(filelen + 1);
 	if (file_text == NULL) {
 		perror("malloc()");
-		exit(EXIT_FAILURE);
+		fclose(f);
+		goto error_close;
 	}
 
 	fread(file_text, filelen, 1, f);
+	fclose(f);
 
 	file_text[filelen] 	= '\0';
 	cPtr 			= file_text;
 	fieldno 		= 0;
 	fields[fieldno++] 	= cPtr;
-	
+
 	while (cPtr - file_text < filelen) {
 		if (*cPtr == '\t') {
 			cPtr++;
@@ -253,11 +222,11 @@ int main(int argc, const char *argv[])
 			printf("Description: %s, %s\n",
 				appointment.description, appointment.note);
 
-			printf("date: %d/%d/%d %d:%02d\n", 
-				appointment.begin.tm_mon + 1, 
-				appointment.begin.tm_mday, 
-				appointment.begin.tm_year + 1900, 
-				appointment.begin.tm_hour, 
+			printf("date: %d/%d/%d %d:%02d\n",
+				appointment.begin.tm_mon + 1,
+				appointment.begin.tm_mday,
+				appointment.begin.tm_year + 1900,
+				appointment.begin.tm_hour,
 				appointment.begin.tm_min);
 
 			dlp_WriteRecord(sd, db, 0, 0, 0,
@@ -284,13 +253,13 @@ int main(int argc, const char *argv[])
 
 	if(dlp_EndOfSync(sd, 0) < 0);
 		goto error_close;
-	
+
 	if(pi_close(sd) < 0)
 		goto error;
-	
+
 error_close:
 	pi_close(sd);
-	
+
 error:
 	return -1;
 }
