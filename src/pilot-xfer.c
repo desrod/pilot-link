@@ -100,10 +100,6 @@ typedef enum {
 #define MIXIN_MASK  (0xf000)
 #define PURGE       (0x1000)
 
-/* Need a marker for deprecated options, must be different from the
-   palm_op_* enums and the MEDIA_ defines. */
-
-#define DEPRECATED_OPTION	(17722)
 
 
 
@@ -1658,29 +1654,6 @@ static void palm_purge(void)
 	printf("Purge complete.\n");
 }
 
-/***********************************************************************
- *
- * Summary:     Argument handling data structures and functions.
- *
- ***********************************************************************/
-
-
-static void add_popt_alias(poptContext pc,
-	const char *alias_long,
-	char alias_short,
-	const char *expansion)
-{
-	struct poptAlias alias = {
-		alias_long,
-		alias_short,
-		0,
-		NULL
-	} ;
-
-	poptParseArgvString(expansion,&alias.argc,&alias.argv);
-	poptAddAlias(pc,alias,0);
-}
-
 
 
 int main(int argc, const char *argv[])
@@ -1732,7 +1705,6 @@ int main(int argc, const char *argv[])
 
 		/* misc */
 		{"exec",     'x', POPT_ARG_STRING, NULL, 'x', "Execute a shell command for intermediate processing", "command"},
-		{"booger",    0 , POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, DEPRECATED_OPTION, NULL, NULL},
 		POPT_TABLEEND
 	};
 
@@ -1746,15 +1718,20 @@ int main(int argc, const char *argv[])
 
 	poptSetOtherOptionHelp(pc, help_header_text);
 	/* can't alias both short and long in one go, hence "dupes" */
-	add_popt_alias(pc,"List",0,"--booger --list --rom");
-	add_popt_alias(pc,"Listall",0,"--booger --list --rom");
-	add_popt_alias(pc,NULL,'L',"--booger --list --rom");
-	add_popt_alias(pc,"Flash",0,"--booger --rom");
-	add_popt_alias(pc,NULL,'F',"--booger --rom");
-	add_popt_alias(pc,"OsFlash", 0,"--booger --with-os");
-	add_popt_alias(pc,NULL, 'O',"--booger --with-os");
-	add_popt_alias(pc,"Illegal", 0,"--booger --illegal");
-	add_popt_alias(pc,NULL, 'I',"--booger --illegal");
+	userland_popt_alias(pc,"List",0,"--bad-option --list --rom");
+	userland_popt_alias(pc,"Listall",0,"--bad-option --list --rom");
+	userland_popt_alias(pc,NULL,'L',"--bad-option --list --rom");
+	userland_popt_alias(pc,"Flash",0,"--bad-option --rom");
+	userland_popt_alias(pc,NULL,'F',"--bad-option --rom");
+	userland_popt_alias(pc,"OsFlash", 0,"--bad-option --with-os");
+	userland_popt_alias(pc,NULL, 'O',"--bad-option --with-os");
+	userland_popt_alias(pc,"Illegal", 0,"--bad-option --illegal");
+	userland_popt_alias(pc,NULL, 'I',"--bad-option --illegal");
+	userland_set_badoption_help(
+		"       --rom instead of -F, --Flash\n"
+		"       --with-os instead of -O, --OsFlash\n"
+		"       --illegal instead of -I, --Illegal\n"
+		"       --list --rom instead of -L, --List, --Listall\n\n");
 
 	while ((optc = poptGetNextOpt(pc)) >= 0) {
 		switch (optc) {
@@ -1799,12 +1776,6 @@ int main(int argc, const char *argv[])
 				return -1;
 			}
 			break;
-		case DEPRECATED_OPTION :
-			fprintf(stderr,"   WARNING: You are using a deprecated option. Use the following instead:\n"
-				"       --rom instead of -F, --Flash\n"
-				"       --with-os instead of -O, --OsFlash\n"
-				"       --illegal instead of -I, --Illegal\n"
-				"       --list --rom instead of -L, --List, --Listall\n\n");
 			break;
 		default:
 			/* popt handles all other arguments internally by
