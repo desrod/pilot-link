@@ -19,7 +19,7 @@ for use in debugging.
 \fB\-p\fR, \fB\-\-port\fR <\fIport\fR>
 Use device file <\fIport\fR> to communicate with the Palm handheld.
 If this is not specified, will look for the \fI$PILOTPORT\fR environment
-variable. If both are not found or supplied, \fBinstall\-expenses\fR will
+variable. If both are not found or supplied, \fBpi\-getram\fR will
 fall back to /dev/pilot.
    
    
@@ -44,6 +44,7 @@ filename of 'pilot-3.5.0.ram'.
 
 .SH "USAGE"
 Connect to a target Palm handheld and fetch the RAM from the device.
+
 
 
 .SH "BUGS"
