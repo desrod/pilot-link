@@ -2,7 +2,8 @@
 
 	* src/pilot-xfer.c: Usability additions
 
-	* bindings/Makefile.am: Temporary workaround for --prefix
+	* bindings/Makefile.am: Temporary workaround for --prefix, fixed
+	  typo in build target
 
 2002-07-29  JP Rosevear  <jpr@ximian.com>
 
