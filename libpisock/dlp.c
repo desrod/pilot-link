@@ -1079,8 +1079,8 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_short (DLP_REQUEST_DATA (req, 0, 0), PI_DLP_VERSION_MAJOR);
-	set_short (DLP_REQUEST_DATA (req, 0, 2), PI_DLP_VERSION_MINOR);
+	set_short (DLP_REQUEST_DATA (req, 0, 0), dlp_version_major);
+	set_short (DLP_REQUEST_DATA (req, 0, 2), dlp_version_minor);
 	
 	result = dlp_exec(sd, req, &res);
 
