@@ -28,15 +28,15 @@
 int main(int argc, char *argv[])
 {
 
-   // obtain the handle for the HotSync manager's window
-   HWND hWnd = FindWindow(HOTSYNC_APP_CLASS, NULL);
+	// obtain the handle for the HotSync manager's window
+	HWND hWnd = FindWindow(HOTSYNC_APP_CLASS, NULL);
 
-   // if the HotSync manager is already running, send the exit message
-   if (hWnd != NULL) {
+	// if the HotSync manager is already running, send the exit message
+	if (hWnd != NULL) {
 
-      // Send a message to the HotSync manager asking it to terminate
-      // without displaying the "Are you sure?" confirmation dialog.
-      SendMessage(hWnd, WM_POKEHOTSYNC, PHS_QUIET_WM_CLOSE, 0);
-   }
-   return 0;
+		// Send a message to the HotSync manager asking it to terminate
+		// without displaying the "Are you sure?" confirmation dialog.
+		SendMessage(hWnd, WM_POKEHOTSYNC, PHS_QUIET_WM_CLOSE, 0);
+	}
+	return 0;
 }

@@ -30,366 +30,412 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
-char *
-tclquote(char *in)
+char *tclquote(char *in)
 {
-   static char *buffer = 0;
-   char *out;
-   char *pos;
-   int len;
+	static char *buffer = 0;
+	char *out;
+	char *pos;
+	int len;
 
-   /* Skip leading bullet (and any whitespace after) */
-   if (in[0] == '\x95') {
-      ++in;
-      while (in[0] == ' ' || in[0] == '\t') {
-	 ++in;
-      }
-   }
+	/* Skip leading bullet (and any whitespace after) */
+	if (in[0] == '\x95') {
+		++in;
+		while (in[0] == ' ' || in[0] == '\t') {
+			++in;
+		}
+	}
 
-   len = 3;
-   pos = in;
-   while (*pos) {
-      if ((*pos == '\\') || (*pos == '"') || (*pos == '[') || (*pos == '{')
-	  || (*pos == '$'))
-	 len++;
-      len++;
-      pos++;
-   }
+	len = 3;
+	pos = in;
+	while (*pos) {
+		if ((*pos == '\\') || (*pos == '"') || (*pos == '[')
+		    || (*pos == '{')
+		    || (*pos == '$'))
+			len++;
+		len++;
+		pos++;
+	}
 
-   if (buffer)
-      free(buffer);
-   buffer = (char *) malloc(len);
-   out = buffer;
+	if (buffer)
+		free(buffer);
+	buffer = (char *) malloc(len);
+	out = buffer;
 
-   pos = in;
-   *out++ = '"';
-   while (*pos) {
-      if ((*pos == '\\') || (*pos == '"') || (*pos == '[') || (*pos == '{')
-	  || (*pos == '$'))
-	 *out++ = '\\';
-      *out++ = *pos++;
-   }
-   *out++ = '"';
-   *out++ = '\0';
+	pos = in;
+	*out++ = '"';
+	while (*pos) {
+		if ((*pos == '\\') || (*pos == '"') || (*pos == '[')
+		    || (*pos == '{')
+		    || (*pos == '$'))
+			*out++ = '\\';
+		*out++ = *pos++;
+	}
+	*out++ = '"';
+	*out++ = '\0';
 
-   return buffer;
+	return buffer;
 }
 
-static void
-Help(char *progname)
+static void Help(char *progname)
 {
 
-   PalmHeader(progname);
+	PalmHeader(progname);
 
-   fprintf(stderr, "   Usage: %s [-d] [-p pubtext] [%s] calfile\n\n", progname, TTYPrompt);
-   fprintf(stderr, "   Note: calfile will be overwritten!\n");
-   fprintf(stderr, "   -d         : Datebook only, no Todos\n");
-   fprintf(stderr, "   -p pubtext : Replace text of items not starting with a bullet\n");
-   fprintf(stderr, "                with pubtext\n\n");
-   exit(2);
+	fprintf(stderr, "   Usage: %s [-d] [-p pubtext] [%s] calfile\n\n",
+		progname, TTYPrompt);
+	fprintf(stderr, "   Note: calfile will be overwritten!\n");
+	fprintf(stderr, "   -d         : Datebook only, no Todos\n");
+	fprintf(stderr,
+		"   -p pubtext : Replace text of items not starting with a bullet\n");
+	fprintf(stderr, "                with pubtext\n\n");
+	exit(2);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-   struct pi_sockaddr addr;
-   int db;
-   int sd;
-   int i;
-   FILE *ical;
-   struct PilotUser U;
-   int ret;
-   unsigned char buffer[0xffff];
-   char cmd[128];
-   struct ToDoAppInfo tai;
-   int read_todos = 1;
-   char *pubtext = NULL;
-   char *progname = argv[0];
-   char *device = argv[1];
+	struct pi_sockaddr addr;
+	int db;
+	int sd;
+	int i;
+	FILE *ical;
+	struct PilotUser U;
+	int ret;
+	unsigned char buffer[0xffff];
+	char cmd[128];
+	struct ToDoAppInfo tai;
+	int read_todos = 1;
+	char *pubtext = NULL;
+	char *progname = argv[0];
+	char *device = argv[1];
 
-   while (argc > 1 && argv[1][0] == '-') {
-      if (!strcmp(argv[1], "-d")) {
-	 /* Datebook only */
-	 read_todos = 0;
-      }
-      else if (!strcmp(argv[1], "-p")) {
-	 /* Public only, text supplied */
-	 if (argv[2] == NULL) {
-	    Help(progname);
-	 }
-	 pubtext = argv[2];
-	 --argc;
-	 ++argv;
-      }
-      else {
-	 Help(progname);
-      }
-      --argc;
-      ++argv;
-   }
+	while (argc > 1 && argv[1][0] == '-') {
+		if (!strcmp(argv[1], "-d")) {
+			/* Datebook only */
+			read_todos = 0;
+		} else if (!strcmp(argv[1], "-p")) {
+			/* Public only, text supplied */
+			if (argv[2] == NULL) {
+				Help(progname);
+			}
+			pubtext = argv[2];
+			--argc;
+			++argv;
+		} else {
+			Help(progname);
+		}
+		--argc;
+		++argv;
+	}
 
-   if (argc != 2 && argc != 3) {
-      Help(progname);
-   }
-   if (argc == 3) {
-      device = argv[1];
-      --argc;
-      ++argv;
-   }
-   if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-      perror("pi_socket");
-      exit(1);
-   }
+	if (argc != 2 && argc != 3) {
+		Help(progname);
+	}
+	if (argc == 3) {
+		device = argv[1];
+		--argc;
+		++argv;
+	}
+	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+		perror("pi_socket");
+		exit(1);
+	}
 
-   addr.pi_family = PI_AF_SLP;
-   strcpy(addr.pi_device, device);
+	addr.pi_family = PI_AF_SLP;
+	strcpy(addr.pi_device, device);
 
-   PalmHeader(progname);
+	PalmHeader(progname);
 
-   ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-   if (ret == -1)
-   {
-      fprintf(stderr, "\n   Unable to bind to port %s\n", device);
-      perror("   pi_bind");
-      fprintf(stderr, "\n");
-      exit (1);
-   }
-   
-   printf("   Port: %s\n\n   Please press the HotSync button now...\n", device);
+	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
+	if (ret == -1) {
+		fprintf(stderr, "\n   Unable to bind to port %s\n",
+			device);
+		perror("   pi_bind");
+		fprintf(stderr, "\n");
+		exit(1);
+	}
 
-   ret = pi_listen(sd, 1);
-   if (ret == -1) {
-      fprintf(stderr, "\n   Error listening on %s\n", device);
-      perror("   pi_listen");
-      fprintf(stderr, "\n");
-      exit(1);
-   }
+	printf
+	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
+	     device);
 
-   sd = pi_accept(sd, 0, 0);
-   if (sd == -1) {
-      fprintf(stderr, "\n   Error accepting data on %s\n", device);
-      perror("   pi_accept");
-      fprintf(stderr, "\n");
-      exit(1);
-   }
+	ret = pi_listen(sd, 1);
+	if (ret == -1) {
+		fprintf(stderr, "\n   Error listening on %s\n", device);
+		perror("   pi_listen");
+		fprintf(stderr, "\n");
+		exit(1);
+	}
 
-   fprintf(stderr, "Connected...\n");
+	sd = pi_accept(sd, 0, 0);
+	if (sd == -1) {
+		fprintf(stderr, "\n   Error accepting data on %s\n",
+			device);
+		perror("   pi_accept");
+		fprintf(stderr, "\n");
+		exit(1);
+	}
 
-   /* Ask the pilot who it is. */
-   dlp_ReadUserInfo(sd, &U);
+	fprintf(stderr, "Connected...\n");
 
-   /* Tell user (via Palm) that we are starting things up */
-   dlp_OpenConduit(sd);
+	/* Ask the pilot who it is. */
+	dlp_ReadUserInfo(sd, &U);
 
-   unlink(argv[1]);
-   sprintf(cmd, "ical -f - -calendar %s", argv[1]);
-   ical = popen(cmd, "w");
+	/* Tell user (via Palm) that we are starting things up */
+	dlp_OpenConduit(sd);
 
-   fprintf(ical, "calendar cal $ical(calendar)\n");
+	unlink(argv[1]);
+	sprintf(cmd, "ical -f - -calendar %s", argv[1]);
+	ical = popen(cmd, "w");
 
-   if (read_todos) {
-      /* Open the ToDo database, store access handle in db */
-      if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-	 puts("Unable to open ToDoDB");
-	 dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
-	 exit(1);
-      }
+	fprintf(ical, "calendar cal $ical(calendar)\n");
 
-      dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
-      unpack_ToDoAppInfo(&tai, buffer, 0xffff);
+	if (read_todos) {
+		/* Open the ToDo database, store access handle in db */
+		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
+			puts("Unable to open ToDoDB");
+			dlp_AddSyncLogEntry(sd,
+					    "Unable to open ToDoDB.\n");
+			exit(1);
+		}
 
-      for (i = 0;; i++) {
-	 struct ToDo t;
-	 int attr, category;
-	 recordid_t id;
-	 char id_buf[255];
+		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+		unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 
-	 int len = dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr,
-					 &category);
+		for (i = 0;; i++) {
+			struct ToDo t;
+			int attr, category;
+			recordid_t id;
+			char id_buf[255];
 
-	 if (len < 0)
-	    break;
+			int len =
+			    dlp_ReadRecordByIndex(sd, db, i, buffer, &id,
+						  0, &attr,
+						  &category);
 
-	 /* Skip deleted records */
-	 if ((attr & dlpRecAttrDeleted) || (attr & dlpRecAttrArchived))
-	    continue;
+			if (len < 0)
+				break;
 
-	 unpack_ToDo(&t, buffer, len);
+			/* Skip deleted records */
+			if ((attr & dlpRecAttrDeleted)
+			    || (attr & dlpRecAttrArchived))
+				continue;
 
-	 fprintf(ical, "set n [notice]\n");
-	 /* '\x95' is the "bullet" character */
-	 fprintf(ical, "$n text %s\n", tclquote((pubtext && t.description[0] != '\x95') ? pubtext : t.description));
-	 fprintf(ical, "$n date [date today]\n");
-	 fprintf(ical, "$n todo 1\n");
-	 fprintf(ical, "$n option Priority %d\n", t.priority);
-	 sprintf(id_buf, "%lx", id);
-	 fprintf(ical, "$n option PilotRecordId %s\n", id_buf);
-	 fprintf(ical, "$n done %d\n", t.complete ? 1 : 0);
-	 fprintf(ical, "cal add $n\n");
+			unpack_ToDo(&t, buffer, len);
 
-	 free_ToDo(&t);
+			fprintf(ical, "set n [notice]\n");
+			/* '\x95' is the "bullet" character */
+			fprintf(ical, "$n text %s\n",
+				tclquote((pubtext
+					  && t.description[0] !=
+					  '\x95') ? pubtext : t.
+					 description));
+			fprintf(ical, "$n date [date today]\n");
+			fprintf(ical, "$n todo 1\n");
+			fprintf(ical, "$n option Priority %d\n",
+				t.priority);
+			sprintf(id_buf, "%lx", id);
+			fprintf(ical, "$n option PilotRecordId %s\n",
+				id_buf);
+			fprintf(ical, "$n done %d\n", t.complete ? 1 : 0);
+			fprintf(ical, "cal add $n\n");
 
-      }
+			free_ToDo(&t);
 
-      /* Close the database */
-      dlp_CloseDB(sd, db);
+		}
 
-      dlp_AddSyncLogEntry(sd, "Read todos from Palm.\n");
-   }
+		/* Close the database */
+		dlp_CloseDB(sd, db);
 
-   /* Open the Datebook's database, store access handle in db */
-   if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "DatebookDB", &db) < 0) {
-      puts("Unable to open DatebookDB");
-      dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
-      pi_close(sd);
-      exit(1);
-   }
+		dlp_AddSyncLogEntry(sd, "Read todos from Palm.\n");
+	}
 
-   for (i = 0;; i++) {
-      int j;
-      struct Appointment a;
-      int attr;
-      recordid_t id;
-      char id_buf[255];
+	/* Open the Datebook's database, store access handle in db */
+	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "DatebookDB", &db) < 0) {
+		puts("Unable to open DatebookDB");
+		dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
+		pi_close(sd);
+		exit(1);
+	}
 
-      int len = dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, 0);
+	for (i = 0;; i++) {
+		int j;
+		struct Appointment a;
+		int attr;
+		recordid_t id;
+		char id_buf[255];
 
-      if (len < 0)
-	 break;
+		int len =
+		    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr,
+					  0);
 
-      /* Skip deleted records */
-      if ((attr & dlpRecAttrDeleted) || (attr & dlpRecAttrArchived))
-	 continue;
+		if (len < 0)
+			break;
 
-      unpack_Appointment(&a, buffer, len);
+		/* Skip deleted records */
+		if ((attr & dlpRecAttrDeleted)
+		    || (attr & dlpRecAttrArchived))
+			continue;
 
-      if (a.event) {
-	 fprintf(ical, "set i [notice]\n");
+		unpack_Appointment(&a, buffer, len);
 
-      }
-      else {
-	 int start, end;
+		if (a.event) {
+			fprintf(ical, "set i [notice]\n");
 
-	 fprintf(ical, "set i [appointment]\n");
+		} else {
+			int start, end;
 
-	 start = a.begin.tm_hour * 60 + a.begin.tm_min;
-	 end = a.end.tm_hour * 60 + a.end.tm_min;
+			fprintf(ical, "set i [appointment]\n");
 
-	 fprintf(ical, "$i starttime %d\n", start);
-	 fprintf(ical, "$i length %d\n", end - start);
-      }
+			start = a.begin.tm_hour * 60 + a.begin.tm_min;
+			end = a.end.tm_hour * 60 + a.end.tm_min;
 
-      /* Don't hilight private (secret) records */
-      if (attr & dlpRecAttrSecret) {
-	 fprintf(ical, "$i hilite never\n");
-      }
+			fprintf(ical, "$i starttime %d\n", start);
+			fprintf(ical, "$i length %d\n", end - start);
+		}
 
-      /* Handle alarms */
-      if (a.alarm) {
-	 if (a.event) {
-	    if (a.advanceUnits == 2) {
-	       fprintf(ical, "$i earlywarning %d\n", a.advance);
-	    }
-	    else {
-	       fprintf(stderr, "Minute or hour alarm on untimed event ignored: %s\n", a.description);
-	    }
-	 }
-	 else {
-	    switch (a.advanceUnits) {
-	    case 0:
-	       fprintf(ical, "$i alarms { %d }\n", a.advance);
-	       break;
-	    case 1:
-	       fprintf(ical, "$i alarms { %d }\n", a.advance * 60);
-	       break;
-	    case 2:
-	       fprintf(ical, "$i earlywarning %d\n", a.advance);
-	       break;
-	    }
-	 }
-      }
+		/* Don't hilight private (secret) records */
+		if (attr & dlpRecAttrSecret) {
+			fprintf(ical, "$i hilite never\n");
+		}
 
-      /* '\x95' is the "bullet" character */
-      fprintf(ical, "$i text %s\n", tclquote((pubtext && a.description[0] != '\x95') ? pubtext : a.description));
+		/* Handle alarms */
+		if (a.alarm) {
+			if (a.event) {
+				if (a.advanceUnits == 2) {
+					fprintf(ical,
+						"$i earlywarning %d\n",
+						a.advance);
+				} else {
+					fprintf(stderr,
+						"Minute or hour alarm on untimed event ignored: %s\n",
+						a.description);
+				}
+			} else {
+				switch (a.advanceUnits) {
+				case 0:
+					fprintf(ical, "$i alarms { %d }\n",
+						a.advance);
+					break;
+				case 1:
+					fprintf(ical, "$i alarms { %d }\n",
+						a.advance * 60);
+					break;
+				case 2:
+					fprintf(ical,
+						"$i earlywarning %d\n",
+						a.advance);
+					break;
+				}
+			}
+		}
 
-      fprintf(ical, "set begin [date make %d %d %d]\n", a.begin.tm_mday, a.begin.tm_mon + 1, a.begin.tm_year + 1900);
+		/* '\x95' is the "bullet" character */
+		fprintf(ical, "$i text %s\n",
+			tclquote((pubtext
+				  && a.description[0] !=
+				  '\x95') ? pubtext : a.description));
 
-      if (a.repeatFrequency) {
-	 if (a.repeatType == repeatDaily) {
-	    fprintf(ical, "$i dayrepeat %d $begin\n", a.repeatFrequency);
-	 }
-	 else if (a.repeatType == repeatMonthlyByDate) {
-	    fprintf(ical, "$i month_day %d $begin %d\n", a.begin.tm_mon + 1, a.repeatFrequency);
-	 }
-	 else if (a.repeatType == repeatMonthlyByDay) {
-	    if (a.repeatDay >= domLastSun) {
-	       fprintf(ical, "$i month_last_week_day %d 1 $begin %d\n", a.repeatDay % 7 + 1, a.repeatFrequency);
-	    }
-	    else {
-	       fprintf(ical, "$i month_week_day %d %d $begin %d\n", a.repeatDay % 7 + 1, a.repeatDay / 7 + 1, a.repeatFrequency);
-	    }
-	 }
-	 else if (a.repeatType == repeatWeekly) {
-	    /*
-	     * Handle the case where the user said weekly repeat, but
-	     * really meant daily repeat every n*7 days.  Note: We can't
-	     * do days of the week and a repeat-frequency > 1, so do the
-	     * best we can and go on.
-	     */
-	    if (a.repeatFrequency > 1) {
-	       int ii, found;
+		fprintf(ical, "set begin [date make %d %d %d]\n",
+			a.begin.tm_mday, a.begin.tm_mon + 1,
+			a.begin.tm_year + 1900);
 
-	       for (ii = 0, found = 0; ii < 7; ii++) {
-		  if (a.repeatDays[ii])
-		     found++;
-	       }
-	       if (found > 1)
-		  fprintf(stderr, "Incomplete translation of %s\n", a.description);
-	       fprintf(ical, "$i dayrepeat %d $begin\n", a.repeatFrequency * 7);
-	    }
-	    else {
-	       int ii;
+		if (a.repeatFrequency) {
+			if (a.repeatType == repeatDaily) {
+				fprintf(ical, "$i dayrepeat %d $begin\n",
+					a.repeatFrequency);
+			} else if (a.repeatType == repeatMonthlyByDate) {
+				fprintf(ical,
+					"$i month_day %d $begin %d\n",
+					a.begin.tm_mon + 1,
+					a.repeatFrequency);
+			} else if (a.repeatType == repeatMonthlyByDay) {
+				if (a.repeatDay >= domLastSun) {
+					fprintf(ical,
+						"$i month_last_week_day %d 1 $begin %d\n",
+						a.repeatDay % 7 + 1,
+						a.repeatFrequency);
+				} else {
+					fprintf(ical,
+						"$i month_week_day %d %d $begin %d\n",
+						a.repeatDay % 7 + 1,
+						a.repeatDay / 7 + 1,
+						a.repeatFrequency);
+				}
+			} else if (a.repeatType == repeatWeekly) {
+				/*
+				 * Handle the case where the user said weekly repeat, but
+				 * really meant daily repeat every n*7 days.  Note: We can't
+				 * do days of the week and a repeat-frequency > 1, so do the
+				 * best we can and go on.
+				 */
+				if (a.repeatFrequency > 1) {
+					int ii, found;
 
-	       fprintf(ical, "$i weekdays ");
-	       for (ii = 0; ii < 7; ii++)
-		  if (a.repeatDays[ii])
-		     fprintf(ical, "%d ", ii + 1);
-	       fprintf(ical, "\n");
-	    }
-	 }
-	 else if (a.repeatType == repeatYearly) {
-	    fprintf(ical, "$i monthrepeat %d $begin\n", 12 * a.repeatFrequency);
-	 }
-	 fprintf(ical, "$i start $begin\n");
-	 if (!a.repeatForever)
-	    fprintf(ical, "$i finish [date make %d %d %d]\n", a.repeatEnd.tm_mday, a.repeatEnd.tm_mon + 1, a.repeatEnd.tm_year + 1900);
-	 if (a.exceptions)
-	    for (j = 0; j < a.exceptions; j++)
-	       fprintf(ical, "$i deleteon [date make %d %d %d]\n", a.exception[j].tm_mday, a.exception[j].tm_mon + 1, a.exception[j].tm_year + 1900);
-      }
-      else
-	 fprintf(ical, "$i date $begin\n");
+					for (ii = 0, found = 0; ii < 7;
+					     ii++) {
+						if (a.repeatDays[ii])
+							found++;
+					}
+					if (found > 1)
+						fprintf(stderr,
+							"Incomplete translation of %s\n",
+							a.description);
+					fprintf(ical,
+						"$i dayrepeat %d $begin\n",
+						a.repeatFrequency * 7);
+				} else {
+					int ii;
 
-      sprintf(id_buf, "%lx", id);
-      fprintf(ical, "$i option PilotRecordId %s\n", id_buf);
+					fprintf(ical, "$i weekdays ");
+					for (ii = 0; ii < 7; ii++)
+						if (a.repeatDays[ii])
+							fprintf(ical,
+								"%d ",
+								ii + 1);
+					fprintf(ical, "\n");
+				}
+			} else if (a.repeatType == repeatYearly) {
+				fprintf(ical, "$i monthrepeat %d $begin\n",
+					12 * a.repeatFrequency);
+			}
+			fprintf(ical, "$i start $begin\n");
+			if (!a.repeatForever)
+				fprintf(ical,
+					"$i finish [date make %d %d %d]\n",
+					a.repeatEnd.tm_mday,
+					a.repeatEnd.tm_mon + 1,
+					a.repeatEnd.tm_year + 1900);
+			if (a.exceptions)
+				for (j = 0; j < a.exceptions; j++)
+					fprintf(ical,
+						"$i deleteon [date make %d %d %d]\n",
+						a.exception[j].tm_mday,
+						a.exception[j].tm_mon + 1,
+						a.exception[j].tm_year +
+						1900);
+		} else
+			fprintf(ical, "$i date $begin\n");
 
-      fprintf(ical, "cal add $i\n");
+		sprintf(id_buf, "%lx", id);
+		fprintf(ical, "$i option PilotRecordId %s\n", id_buf);
 
-      free_Appointment(&a);
+		fprintf(ical, "cal add $i\n");
 
-   }
+		free_Appointment(&a);
 
-   fprintf(ical, "cal save [cal main]\n");
-   fprintf(ical, "exit\n");
+	}
 
-   pclose(ical);
+	fprintf(ical, "cal save [cal main]\n");
+	fprintf(ical, "exit\n");
 
-   /* Close the database */
-   dlp_CloseDB(sd, db);
+	pclose(ical);
 
-   dlp_AddSyncLogEntry(sd, "Read datebook from Palm.\n");
+	/* Close the database */
+	dlp_CloseDB(sd, db);
 
-   pi_close(sd);
+	dlp_AddSyncLogEntry(sd, "Read datebook from Palm.\n");
 
-   return 0;
+	pi_close(sd);
+
+	return 0;
 }

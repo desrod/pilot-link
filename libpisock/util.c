@@ -32,28 +32,28 @@
 
 #define PILOT_CHARSET "CP1252"
 
-int 
-convert_ToPilotChar (const char *charset, const char *text, 
-		     int bytes, char **ptext)
+int
+convert_ToPilotChar(const char *charset, const char *text,
+		    int bytes, char **ptext)
 {
 #ifdef HAVE_ICONV
 	iconv_t cd;
 	char *ib, *ob;
 	size_t ibl, obl;
-	
-	cd = iconv_open (PILOT_CHARSET, charset);
+
+	cd = iconv_open(PILOT_CHARSET, charset);
 	if (!cd)
 		return -1;
-	
+
 	ibl = bytes;
 	obl = bytes * 4 + 1;
-	ib = strdup (text);
-	*ptext = ob = malloc (obl);
-	if (iconv (cd, &ib, &ibl, &ob, &obl) == -1)
+	ib = strdup(text);
+	*ptext = ob = malloc(obl);
+	if (iconv(cd, &ib, &ibl, &ob, &obl) == -1)
 		return -1;
 	*ob = '\0';
-	
-	iconv_close (cd);
+
+	iconv_close(cd);
 
 	return 0;
 #else
@@ -61,28 +61,28 @@ convert_ToPilotChar (const char *charset, const char *text,
 #endif
 }
 
-int 
-convert_FromPilotChar (const char *charset, const char *ptext, 
-		       int bytes, char **text)
+int
+convert_FromPilotChar(const char *charset, const char *ptext,
+		      int bytes, char **text)
 {
 #ifdef HAVE_ICONV
 	iconv_t cd;
 	char *ib, *ob;
 	size_t ibl, obl;
-	
-	cd = iconv_open (charset, PILOT_CHARSET);
+
+	cd = iconv_open(charset, PILOT_CHARSET);
 	if (!cd)
 		return -1;
-	
+
 	ibl = bytes;
 	obl = bytes * 4 + 1;
-	ib = strdup (ptext);
-	*text = ob = malloc (obl);
-	if (iconv (cd, &ib, &ibl, &ob, &obl) == -1)
+	ib = strdup(ptext);
+	*text = ob = malloc(obl);
+	if (iconv(cd, &ib, &ibl, &ob, &obl) == -1)
 		return -1;
 	*ob = '\0';
-	
-	iconv_close (cd);
+
+	iconv_close(cd);
 
 	return 0;
 #else

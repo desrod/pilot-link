@@ -1,3 +1,23 @@
+2001-04-29  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* MAJOR change to the codebase, everything was properly 
+          indented with 8-character tabs, bracing, brackets, etc. 
+          WARNING: Diffing this code will result in a HUGE diff.
+          (David A. Desrosiers)
+
+	* Begun weeding out all occurences of gets(), strcat(), 
+          sprintf(), and similar dangerous functions from the code
+          where they appeared. (David A. Desrosiers)
+
+	* memos.c: Added abilility to select the title of the memo
+          when sync'ing. (Tamito KAJIYAMA)
+
+	* memos.c: Escaping of ':' in OS/2 filenames (Bob Wittig)
+
+	* reminders.c: strncpy(addr.pi_device, device, sizeof(addr.pi_device));
+          These type of fixes will be applied the whole sourcebase soon.
+          (David A. Desrosiers)
+
 2001-03-30  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/Makefile.in: version should be 4.0.0 because the old
