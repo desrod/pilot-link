@@ -135,8 +135,6 @@ int main(int argc, const char *argv[])
 	struct 	PilotUser User;
 	struct 	ToDo todo;
 
-	todo.indefinite  = 1;
-
         const struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
                 { "priority",    'P', POPT_ARG_INT, &priority, 0, "The Priority (default is 1)", "[1|2|3|4|5]"},
@@ -147,6 +145,7 @@ int main(int argc, const char *argv[])
                 { "file",        'f', POPT_ARG_STRING, &filename, 0, "A local filename containing the Note text", "[filename]"},
 		POPT_TABLEEND
         };
+
 
         po = poptGetContext("install-todo", argc, (const char **) argv, options, 0);
 	poptSetOtherOptionHelp(po,
@@ -175,6 +174,7 @@ int main(int argc, const char *argv[])
 	}
 
 	/*  Setup some todo defaults */
+	todo.indefinite  = 1;
 	todo.priority    = priority;
 	todo.complete    = completed;
 	todo.description = description;

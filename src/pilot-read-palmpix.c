@@ -504,8 +504,8 @@ int main (int argc, const char **argv) {
 		int i = 0;
 
 		while((file_arg = poptGetArg(pc)) != NULL) {
-			i++;
 			struct pi_file *f = pi_file_open (file_arg);
+			i++;
 			if (f) {
 
 				struct DBInfo info;

@@ -710,6 +710,7 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	int          filesize;
 	int          original_filesize;
 	int          written_so_far;
+	pi_file_t    fake_file;
 
 	enum { bad_parameters=-1,
 	       cancel=-2,
@@ -760,7 +761,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	original_filesize = filesize;
 
 #define FBUFSIZ 65536
-	pi_file_t fake_file;
 	memset(&fake_file,0,sizeof(fake_file));
 	fake_file.file_name = /* const_cast */ (char *) basename;
 
@@ -1195,6 +1195,7 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 	size_t      written_so_far = 0;
 	enum { no_path=0, appended_filename=1, retried=2, done=3 } path_steps;
 	struct stat sbuf;
+	pi_file_t   fake_file;
 
 	if (fstat(fd,&sbuf) < 0) {
 		fprintf(stderr,"   ERROR: Cannot stat '%s'.\n",basename);
@@ -1317,7 +1318,6 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 		return internal_;
 	}
 
-	pi_file_t fake_file;
 	memset(&fake_file,0,sizeof(fake_file));
 
 	fake_file.file_name = /* const_cast */ (char *) basename;

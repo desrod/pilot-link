@@ -245,11 +245,6 @@ int main(int argc, const char *argv[])
 	unsigned char mesg[1026];
         unsigned int clilen;
 
-	memset(&address, 0, sizeof(address));
-	memset(&netmask, 0, sizeof(netmask));
-	hostname[0] = 0;
-
-	fetch_host(hostname, 128, &address, &netmask);
 
 	poptContext po;
 
@@ -264,6 +259,11 @@ int main(int argc, const char *argv[])
 		POPT_AUTOHELP
                 POPT_TABLEEND
 	};
+
+	memset(&address, 0, sizeof(address));
+	memset(&netmask, 0, sizeof(netmask));
+	hostname[0] = 0;
+	fetch_host(hostname, 128, &address, &netmask);
 
 	po = poptGetContext(progname, argc, argv, options, 0);
 	poptSetOtherOptionHelp(po,"\n\n"
