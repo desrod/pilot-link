@@ -1260,7 +1260,7 @@ static PyObject *_wrap_dlp_ReadSysInfo(PyObject *self, PyObject *args) {
 	o = Py_BuildValue("{slslss#}",
 			  "romVersion", _arg1->romVersion,
 			  "locale", _arg1->locale,
-			  "name", _arg1->name, _arg1->nameLength);
+			  "product", _arg1->prodID, _arg1->prodIDLength);
 	_resultobj = t_output_helper(_resultobj, o);
     }
 }

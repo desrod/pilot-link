@@ -3059,7 +3059,7 @@ getSysInfo(self)
 			HV * i = newHV();
 			hv_store(i, "romVersion", 10, newSViv(si.romVersion), 0);\
 	    	hv_store(i, "locale", 6, newSViv(si.locale), 0);\
-	    	hv_store(i, "name", 4, newSVpv(si.name, si.nameLength), 0);\
+	    	hv_store(i, "product", 4, newSVpv(si.prodID, si.prodIDLength), 0);\
 			RETVAL = newRV((SV*)i);
 		}
 	}

@@ -1,5 +1,11 @@
 2002-06-28  JP Rosevear  <jpr@ximian.com>
 
+	* bindings/Perl/Pilot.xs: reflect name->prodID renaming in SysInfo
+
+	* bindings/Python/src/pisock_wrap.c: ditto
+
+2002-06-28  JP Rosevear  <jpr@ximian.com>
+	
 	* src/Makefile.am: don't build iambicexample.cc
 
 	* src/iambicexample.cc: remove because lib support is gone
