@@ -329,8 +329,6 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 
 static void Help(char *progname)
 {
-	PalmHeader(progname);
-
 	printf("   Usage: %s [-s] -p|-u dir file\n"
 	       "     -s           Do not obey or generate a 'sort' list\n\n"
 	       "     -p           Pack the contents of a directory into the named file\n"
@@ -353,6 +351,10 @@ int main(int argc, char *argv[])
 	char 	*name,
 		*progname 	= argv[0];
 
+	/* FIXME - This code isn't even right. It's cut-and-paste
+	           from pilot-file, and pack()/unpack() functions
+		   aren't even present!! -DD */
+	
 	while ((c = getopt(argc, argv, optstring)) != EOF) {
 		switch (c) {
 		case 'h':

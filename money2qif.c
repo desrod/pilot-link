@@ -46,18 +46,18 @@ static const char *optstring = "hvp:a:";
 static void Help(char *progname)
 {
 	printf("   Convert and sync your MicroMoney account data Quicken QIF format\n\n"
-	       "   Usage: %s -p <port> -a Account\n\n"
+	       "   Usage: %s -p <port> -a AccountName\n"
 	       "   Options:\n"
-	       "     -p <port>           Use device file <port> to communicate with Palm\n"
-	       "     -a Account          The name of the Account category in MicroMoney\n"
+	       "     -p <port>         Use device file <port> to communicate with Palm\n"
+	       "     -a --account      The name of the Account category in MicroMoney\n"
 	       "     -h, --help        Display this information\n"
 	       "     -v, --version     Display version information\n\n"
-	       "   Examples: %s -p /dev/pilot -a BancGlobal\n\n"
+	       "   Examples: %s -p /dev/pilot -a BankGlobal\n\n"
 	       "   Please see http://www.techstop.com.my/MicroMoney.htm for more information\n"
 	       "   on MicroMoney.\n\n"	       
 	       "   NOTE: MicroMoney is no longer supported or supplied by Landware, and has\n"
 	       "   been superceded by PocketQuicken. There is no PocketQuicken conduit in\n"
-	       "   pilot-link yet.\n\n", progname, progname);
+	       "   pilot-link.\n\n", progname, progname);
 	return;
 }
 
@@ -96,11 +96,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (account == NULL) {
-		Help(progname);
+	if (optind > 1 && account == NULL) {
 		fprintf(stderr, "ERROR: You must specify an Account Category as found in MicroMoney \n");
 		return -1;
-	}
+	} 
 	
 	sd = pilot_connect(port);
 	if (sd < 0)
@@ -138,10 +137,10 @@ int main(int argc, char *argv[])
 			if (len < 0)
 				break;
 	
-				/* Skip deleted records */
+				
 			if ((attr & dlpRecAttrDeleted)
 			    || (attr & dlpRecAttrArchived))
-				continue;
+				continue; 	/* Skip deleted records */
 	
 			if (strcmp(mai.category.name[category], account))
 				continue;
@@ -180,7 +179,7 @@ int main(int argc, char *argv[])
 
 	return 0;
 
- error:
+error:
 	perror("   ERROR");
 	fprintf(stderr, "\n");
 

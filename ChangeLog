@@ -4,6 +4,18 @@
 
 	* pilot-file: Ditto, converted to getopt_long(), fixed missing args.
 
+	* memos.c: argument mismatch with -v/-V, fixed Help()
+	
+	* money2qif.c: Fixed a case test, text cleanups
+
+	* pilot-prc.c: Why is this even here anymore? Incomplete code. 
+
+	* install-user.c: optind() fallthrough to PalmHeader()
+
+	* pilot-xfer.c: Added a --novsf option to _NOT_ set VoidSyncFlags on
+	  cleanup. VoidSyncFlags causes JPilot to do a Slow Sync after each
+	  use. Needs a few more touches, but should be a functional hack.
+
 2002-02-09  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* pilot-xfer.c: Revert an oops I did

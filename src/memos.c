@@ -48,7 +48,7 @@ struct option options[] = {
         {"help",        no_argument,       NULL, 'h'},
         {"version",     no_argument,       NULL, 'v'},
         {"port",        required_argument, NULL, 'p'},
-        {"verbose",     no_argument,       NULL, 'v'},
+        {"verbose",     no_argument,       NULL, 'V'},
         {"delete",      required_argument, NULL, 'd'},
         {"file",        required_argument, NULL, 'f'},
         {"save",        required_argument, NULL, 's'},
@@ -57,7 +57,7 @@ struct option options[] = {
         {NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "vqdp:s:f:c:r:h";
+static const char *optstring = "hvp:Vd:f:s:c:r:";
 
 void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category);
 void write_memo_in_directory(char *dirname, struct Memo m,
@@ -195,16 +195,17 @@ write_memo_in_directory(char *dirname, struct Memo m,
 static void Help(char *progname)
 {
 	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n"
-	       "   Usage: memos [-p <port> | -f MemoDB] [options]\n\n"
+	       "   Usage: memos [-p <port> | -f MemoDB] [options]\n"
 	       "   Options:\n"
                "     -p <port>      Use device file <port> to communicate with Palm\n"
-               "     -h             Display this information\n"
-	       "     -v             Verbose, with -d, print each filename as it's written\n" 
-	       "     -d             Delete the memo named by <number>\n"
+               "     -h --help      Display this information\n"
+	       "     -v --version   Display version information\n"
+	       "     -V             Verbose, with -d, print each filename as it's written\n" 
+	       "     -d <num>       Delete the memo named by <number>\n"
 	       "     -f file        Use <file> as memo database file (rather than HotSync)\n"
 	       "     -s <dir>       Save memos in <dir> instead of writing to STDOUT\n"
 	       "     -c category    Only upload memos in this category\n"
-	       "     -r regexp      Select memos to be saved by title\n\n" 
+	       "     -r regexp      Select memos to be saved by regular expression on title\n\n" 
 	       "   By default, the contents of your Palm's memo database will be written to\n"
 	       "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
 	       "   memo as a separate message.  The subject of each message will be the\n"
@@ -300,8 +301,12 @@ int main(int argc, char *argv[])
 			  exit(0);
 		}
 	}
+	
+	if (optind < 2)
+		PalmHeader(progname);
+		exit(0);
 
-	/* Need to add tests here for port/filename, clean this. -DD */
+	/* FIXME - Need to add tests here for port/filename, clean this. -DD */
 	if (filename[0] == '\0') {
 	
 	        sd = pilot_connect(port);

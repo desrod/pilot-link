@@ -63,6 +63,7 @@ struct option options[] = {
 	{"backup",      required_argument, NULL, 'b'},
 	{"update",      required_argument, NULL, 'u'},
 	{"sync",        required_argument, NULL, 's'},
+	{"novsf",       no_argument,       NULL, 'S'},
 	{"restore",     required_argument, NULL, 'r'},
 	{"install",     required_argument, NULL, 'i'},
 	{"merge",       required_argument, NULL, 'm'},
@@ -81,7 +82,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "-hvp:b:u:s:r:i:m:f:d:e:P:lLa:FOIqc";
+static const char *optstring = "-hvp:b:u:s:Sr:i:m:f:d:e:P:lLa:FOIqc";
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -372,7 +373,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 
 		if (dlp_OpenConduit(sd) < 0) {
 			printf("Exiting on cancel, all data was not backed " 
-			       "up.\nHalted before backing up '%s'.\n",
+			       "up.\nStopped before backing up '%s'.\n",
 				info.name);
 			exit(1);
 		}
@@ -744,7 +745,8 @@ static void Restore(char *dirname)
 		pi_file_close(f);
 	}
 
-	VoidSyncFlags();
+	if (!novsf)
+		VoidSyncFlags();
 
 	for (i = 0; i < dbcount; i++) {
 		free(db[i]);
@@ -784,7 +786,8 @@ static void Install(char *filename)
 		fprintf(stderr, "done.\n");
 	pi_file_close(f);
 
-	VoidSyncFlags();
+	if (!novsf)
+		VoidSyncFlags();
 }
 
 /***********************************************************************
@@ -820,7 +823,8 @@ static void Merge(char *filename)
 		printf("OK\n");
 	pi_file_close(f);
 
-	VoidSyncFlags();
+	if (!novsf)
+		VoidSyncFlags();
 
 	printf("Merge done\n");
 }
@@ -910,7 +914,9 @@ static void Purge(void)
 
 	}
 
-	VoidSyncFlags();
+	if (!novsf)
+		VoidSyncFlags();
+	
 	printf("Purge done.\n");
 }
 
@@ -935,6 +941,7 @@ static void Help(char *progname)
 	       "     -u <dir>     Update <dir> with newer Palm data (--update)\n"
 	       "     -s <dir>     Same as -u above, but removes local files if data\n"
 	       "                  is removed from your Palm (--sync)\n"
+	       "     -S --novsf   Do _NOT_ reset the SyncFlags when sync completes\n"
 	       "     -r <dir>     Restore backupdir to your Palm (--restore)\n"
 	       "     -i dbname(s) Install local[prc | pdb] files to your Palm (--install)\n"
 	       "     -m file(s)   Adds the records in <file> into the corresponding Palm\n"
@@ -989,6 +996,7 @@ int main(int argc, char *argv[])
 		do_unsaved 	= 0,
 		timespent 	= 0,
 		quiet 		= 0,
+		novsf		= 0,
 		last_c          = 0;
 
         time_t 	start,end;
@@ -1064,6 +1072,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'I':
 			do_unsaved = 1;
+			break;
+		case 'S':
+			novsf = 1;
 			break;
 
 		/* FIXME: quiet needs to go away, replace with verbose */
