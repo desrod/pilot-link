@@ -13,9 +13,9 @@ extern "C" {
 		int (*open) PI_ARGS((pi_socket_t *ps,
 			struct pi_sockaddr *addr, size_t addrlen));
 		int (*close) PI_ARGS((pi_socket_t *ps));
-		int (*write) PI_ARGS((pi_socket_t *ps,
+		ssize_t (*write) PI_ARGS((pi_socket_t *ps,
 			unsigned char *buf, size_t len, int flags));
-		int (*read) PI_ARGS((pi_socket_t *ps,
+		ssize_t (*read) PI_ARGS((pi_socket_t *ps,
 			 unsigned char *buf, size_t len, int flags));
 		int (*poll) PI_ARGS((pi_socket_t *ps, int timeout));
 	} pi_usb_impl_t;

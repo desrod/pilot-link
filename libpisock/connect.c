@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
 #include <ifaddrs.h>
 #include <unistd.h>
 #include <sys/stat.h>

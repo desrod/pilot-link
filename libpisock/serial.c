@@ -56,12 +56,12 @@
 
 /* Declare prototypes */
 static int pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr, 
-			socklen_t addrlen);
+			size_t addrlen);
 static int pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr,
-			socklen_t addrlen);
+			size_t addrlen);
 static int pi_serial_listen(pi_socket_t *ps, int backlog);
 static int pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
-			socklen_t *addrlen);
+			size_t *addrlen);
 static int pi_serial_getsockopt(pi_socket_t *ps, int level,
 			int option_name, void *option_value,
 			size_t *option_len);
@@ -348,7 +348,7 @@ pi_serial_device (int type)
  ***********************************************************************/
 static int
 pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr,
-	socklen_t addrlen)
+	size_t addrlen)
 {
 	char 	*rate_env;
 	struct 	pi_serial_data *data =
@@ -444,7 +444,7 @@ pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr,
  *
  ***********************************************************************/
 static int
-pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr, socklen_t addrlen)
+pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	char 	*rate_env;
 	struct 	pi_serial_data *data =
@@ -526,7 +526,7 @@ static int pi_serial_listen(pi_socket_t *ps, int backlog)
  ***********************************************************************/
 static int
 pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
-	socklen_t *addrlen)
+	size_t *addrlen)
 {
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;

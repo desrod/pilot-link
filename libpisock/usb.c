@@ -43,12 +43,12 @@
 #include "pi-cmp.h"
 
 static int pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, 
-			     socklen_t addrlen);
+			     size_t addrlen);
 static int pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr,
-			  socklen_t addrlen);
+			  size_t addrlen);
 static int pi_usb_listen(pi_socket_t *ps, int backlog);
 static int pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr,
-			    socklen_t *addrlen);
+			    size_t *addrlen);
 static int pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name, 
 				void *option_value, size_t *option_len);
 static int pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -299,7 +299,7 @@ pi_usb_device (int type)
  *
  ***********************************************************************/
 static int
-pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, socklen_t addrlen)
+pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
@@ -343,7 +343,7 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, socklen_t addrlen)
  *
  ***********************************************************************/
 static int
-pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr, socklen_t addrlen)
+pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
@@ -393,7 +393,7 @@ pi_usb_listen(pi_socket_t *ps, int backlog)
  *
  ***********************************************************************/
 static int
-pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, socklen_t *addrlen)
+pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_socket *accept = NULL;

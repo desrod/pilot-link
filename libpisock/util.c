@@ -51,8 +51,7 @@ convert_ToPilotChar(const char *charset, const char *text,
 		    int bytes, char **ptext)
 {
 #ifdef HAVE_ICONV
-	char 	*ib,
-		*ob;
+	char*	ob;
 	iconv_t cd;
 	size_t 	ibl, obl;
 
@@ -62,10 +61,9 @@ convert_ToPilotChar(const char *charset, const char *text,
 
 	ibl 	= bytes;
 	obl 	= bytes * 4 + 1;
-	ib 	= (char *)text;
 	*ptext 	= ob = malloc(obl);
 	
-	if (iconv(cd, &ib, &ibl, &ob, &obl) == (size_t)-1)
+	if (iconv(cd, &text, &ibl, &ob, &obl) == (size_t)-1)
 		return -1;
 	*ob = '\0';
 
@@ -95,8 +93,7 @@ convert_FromPilotChar(const char *charset, const char *ptext,
 		      int bytes, char **text)
 {
 #ifdef HAVE_ICONV
-	char 	*ib,
-		*ob;
+	char*	ob;
 	iconv_t cd;
 	size_t 	ibl, obl;
 
@@ -106,10 +103,9 @@ convert_FromPilotChar(const char *charset, const char *ptext,
 
 	ibl 	= bytes;
 	obl 	= bytes * 4 + 1;
-	ib 	= (char *)ptext;
 	*text 	= ob = malloc(obl);
 	
-	if (iconv(cd, &ib, &ibl, &ob, &obl) == (size_t)-1)
+	if (iconv(cd, &ptext, &ibl, &ob, &obl) == (size_t)-1)
 		return -1;
 	*ob = '\0';
 

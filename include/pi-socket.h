@@ -136,7 +136,7 @@ typedef struct pi_socket_list
 
 	extern int pi_send
 	    PI_ARGS((int pi_sd, void *msg, size_t len, int flags));
-	extern int pi_recv
+	extern ssize_t pi_recv
 	    PI_ARGS((int pi_sd, void *msg, size_t len, int flags));
 
 	extern ssize_t pi_read PI_ARGS((int pi_sd, void *msg, size_t len));

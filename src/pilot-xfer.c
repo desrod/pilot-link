@@ -726,8 +726,8 @@ static void Restore(char *dirname)
 		i,
 		j,
 		max,
-		size,
 		save_errno 	= errno;
+	size_t	size;
 	DIR 	*dir;
 	struct 	dirent *dirent;
 	struct 	DBInfo info;

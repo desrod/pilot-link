@@ -38,9 +38,9 @@
 
 /* Declare prototypes */
 static int cmp_getsockopt(pi_socket_t *ps, int level, int option_name, 
-			  void *option_value, unsigned int *option_len);
+			  void *option_value, size_t *option_len);
 static int cmp_setsockopt(pi_socket_t *ps, int level, int option_name, 
-			  const void *option_value, unsigned int *option_len);
+			  const void *option_value, size_t *option_len);
 
 static pi_protocol_t *cmp_protocol_dup (pi_protocol_t *prot);
 static void cmp_protocol_free (pi_protocol_t *prot);
@@ -469,7 +469,7 @@ cmp_wakeup(pi_socket_t *ps, speed_t maxbaud)
  ***********************************************************************/
 static int
 cmp_getsockopt(pi_socket_t *ps, int level, int option_name, 
-	       void *option_value, unsigned int *option_len)
+	       void *option_value, size_t *option_len)
 {
 	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
@@ -531,7 +531,7 @@ cmp_getsockopt(pi_socket_t *ps, int level, int option_name,
  ***********************************************************************/
 static int
 cmp_setsockopt(pi_socket_t *ps, int level, int option_name, 
-	       const void *option_value, unsigned int *option_len)
+	       const void *option_value, size_t *option_len)
 {
 	pi_protocol_t *prot;
 	struct 	pi_padp_data *data;

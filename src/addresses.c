@@ -19,9 +19,11 @@
  *
  */
 
-#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include "getopt.h"
 
 #include "pi-socket.h"
 #include "pi-address.h"
