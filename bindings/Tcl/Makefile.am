@@ -1,6 +1,7 @@
-INCLUDES = 			\
-	-I../../include		\
-	-I$(top_srcdir)/include	\
+INCLUDES = 				\
+	-I../../include			\
+	-I$(top_srcdir)/include		\
+	-DPACKAGE_VERSION=\"1.0\"	\
 	$(TCL_INCLUDES)
 
 bin_PROGRAMS = pitclsh

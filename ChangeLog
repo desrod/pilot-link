@@ -1,5 +1,9 @@
 2003-07-01  JP Rosevear  <jpr@ximian.com>
 
+	* bindings/Tcl/Makefile.am: define package version
+
+2003-07-01  JP Rosevear  <jpr@ximian.com>
+	
 	* tcl.m4: remove the private header stuff and cygpath related
 	stuff for public headers
 
