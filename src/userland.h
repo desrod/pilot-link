@@ -75,6 +75,22 @@ extern void userland_badoption(poptContext pc, int optc);
 extern int userland_findcategory(const struct CategoryAppInfo *info, const char *name);
 
 /*
+ * Add an alias to a popt context; remember to use --bad-option in the alias
+ * to add a complaint about deprecated options. Do not pass in both
+ * a long and a short option in one go, use two calls for that.
+ */
+void userland_popt_alias(poptContext pc,
+	const char *alias_long,
+	char alias_short,
+	const char *expansion);
+
+/*
+ * Set explanation of what options to use in response to an alias
+ * that contains --bad-option.
+ */
+void userland_set_badoption_help(const char *help);
+
+/*
  * We need to be able to refer to the table of common options.
  */
 

@@ -30,6 +30,10 @@
 
 static char *port = NULL;
 int userland_quiet = 0;
+static char *badoption_help = NULL;
+
+
+#define ARGUMENT_BAD_OPTION	17227
 
 static void callback(poptContext pc,
 	int reason,
@@ -37,10 +41,18 @@ static void callback(poptContext pc,
 	const char *arg,
 	void *data)
 {
+	static int have_complained_already = 0;
 	switch(opt->val) {
 	case 'v' :
 		print_splash(poptGetInvocationName(pc));
 		exit(0);
+		break;
+	case ARGUMENT_BAD_OPTION:
+		if (!have_complained_already) {
+			fprintf(stderr,"   WARNING: You are using deprecated options. %s\n\n", badoption_help ? "Use these instead:" : "See --help for more.");
+			if (badoption_help) fprintf(stderr,"%s",badoption_help);
+			have_complained_already=1;
+		}
 		break;
 	}
 }
@@ -50,6 +62,7 @@ struct poptOption userland_common_options[] = {
 	{ "port",    'p', POPT_ARG_STRING, &port,  0 , "Use device <port> to communicate with Palm", "<port>"},
 	{ "version",  0 , POPT_ARG_NONE,    NULL, 'v', "Display version information", NULL},
 	{ "quiet",   'q', POPT_ARG_NONE,  &userland_quiet,  0 , "Suppress 'Hit HotSync button' message", NULL},
+	{ "bad-option",0, POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, ARGUMENT_BAD_OPTION, NULL, NULL },
 	POPT_TABLEEND
 } ;
 
@@ -133,6 +146,29 @@ int userland_findcategory(const struct CategoryAppInfo *info, const char *name)
 	}
 
 	return match_category;
+}
+
+void userland_popt_alias(poptContext pc,
+	const char *alias_long,
+	char alias_short,
+	const char *expansion)
+{
+	struct poptAlias alias = {
+		alias_long,
+		alias_short,
+		0,
+		NULL
+	} ;
+
+	poptParseArgvString(expansion,&alias.argc,&alias.argv);
+	poptAddAlias(pc,alias,0);
+}
+
+void userland_set_badoption_help(const char *h)
+{
+	if (badoption_help) free(badoption_help);
+	badoption_help = NULL;
+	if (h) badoption_help = strdup(h);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
