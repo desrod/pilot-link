@@ -303,3 +303,5 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 	return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -1,4 +1,3 @@
-/* ex: set tabstop=4 expandtab: */
 /*
  * read-todos.c:  Translate Palm ToDo database into generic format
  *
@@ -103,7 +102,7 @@ int main(int argc, char *argv[])
 			break;
 		default:
 			display_help(progname);
-			return 0;			
+			return 0;
 		}
 	}
 		
@@ -111,7 +110,7 @@ int main(int argc, char *argv[])
 	if (port) {
 		sd = pilot_connect(port);
 		if (sd < 0)
-			goto error;   
+			goto error;
 	
 		if (dlp_ReadUserInfo(sd, &User) < 0)
 			goto error_close;
@@ -222,8 +221,10 @@ int main(int argc, char *argv[])
 	return 0;
 	
 error_close:
-        pi_close(sd);
+	pi_close(sd);
 
 error:
-        return -1;
+	return -1;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

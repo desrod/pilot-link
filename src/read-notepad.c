@@ -1,5 +1,5 @@
 /*
- * notepad.c:  Translate Palm NotePad database into generic picture format
+ * read-notepad.c:  Translate Palm NotePad database into generic picture format
  *
  * Copyright (c) 2002, Angus Ainslie
  *
@@ -614,3 +614,5 @@ error:
 	return -1;
    
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

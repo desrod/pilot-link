@@ -1,4 +1,3 @@
-/* ex: set tabstop=4 expandtab: */
 /*
  * read-veo.c
  *
@@ -573,3 +572,5 @@ error:
    return -1;
 
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

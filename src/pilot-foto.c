@@ -578,27 +578,6 @@ int install_tux_with_name(int sd, char *name, int width, int height,
 
 /***********************************************************************
  *
- * Function:    unix_time_to_pilot_time
- *
- * Summary:     Convert Unix time to Palm time
- *
- * Parameters:  unix time
- *
- * Returns:     palm time
- *
- * FIXME:       This code is duplicated in many places
- *
- ***********************************************************************/
-#define PILOT_TIME_DELTA (unsigned)(2082844800)
-unsigned long
-unix_time_to_pilot_time(time_t t)
-{
-	return (unsigned long) ((unsigned long) t + PILOT_TIME_DELTA);
-}
-
-
-/***********************************************************************
- *
  * Function:    do_install
  *
  * Summary:     Does some validation to determine if file is a jpeg
@@ -1186,3 +1165,5 @@ int memcpy_tux_record(unsigned char *dest)
     memcpy(dest, tux, SIZE_OF_TUX);
     return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -61,7 +61,7 @@ static void display_help(const char *progname) {
 
                 printf("\n  Examples: \n");
 		printf("      %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
-			progname);
+			basename(progname));
                 exit(1);
 }
 
@@ -142,3 +142,5 @@ error_close:
 error:
 	return -1;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

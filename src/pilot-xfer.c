@@ -1,4 +1,3 @@
-/* ex: set tabstop=4 expandtab: */
 /*
  * pilot-xfer.c:  Palm Database transfer utility
  *
@@ -63,6 +62,9 @@ typedef struct {
   char dbType[4];
   char dbCreator[4];
   byte seed[4];
+
+
+
   byte nextRecList[4];
   char nRec[2];
 } pdb_t;
@@ -102,7 +104,7 @@ struct option options[] = {
 	{"list",        no_argument,       NULL, 'l'},
 	{"Listall",     no_argument,       NULL, 'L'},
 	{"archive",     required_argument, NULL, 'a'},
-	{"exec",	required_argument, NULL, 'x'},
+	{"exec",        required_argument, NULL, 'x'},
 	{"Flash",       no_argument,       NULL, 'F'},
 	{"Osflash",     no_argument,       NULL, 'O'},
 	{"Illegal",     no_argument,       NULL, 'I'},
@@ -1523,15 +1525,15 @@ int main(int argc, char *argv[])
 			dirname = optarg;
 			palm_operation = palm_op_backup;
 			sync_flags = BACKUP;
-                        if (verbose)
-                                printf("Option -b with value: %s\n", optarg);
+                if (verbose)
+                    printf("Option -b with value: %s\n", optarg);
 			break;
 		case 'u':
 			dirname = optarg;
 			palm_operation = palm_op_backup;
 			sync_flags = UPDATE;
-                        if (verbose)
-                                printf("Option -u with value: %s\n", optarg);
+                if (verbose)
+                    printf("Option -u with value: %s\n", optarg);
 			break;
 		case 's':
 			dirname = optarg;
@@ -1650,3 +1652,5 @@ int main(int argc, char *argv[])
 	printf("   Thank you for using pilot-link.\n");
 	return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
