@@ -1187,9 +1187,6 @@ int dlp_EndOfSync(int sd, int status)
 	if (ps == 0)
 		return 1;	/* General system error */
 
-	if ((ps->broken) || (!(ps->connected & 1)) || (ps->connected & 2))
-		return 1;	/* Don't end sync on an unavailable socket */
-
 	set_short(dlp_buf, status);
 
 	Trace(EndOfSync);
@@ -1201,7 +1198,7 @@ int dlp_EndOfSync(int sd, int status)
 	/* Messy code to set end-of-sync flag on socket 
 	   so pi_close won't do it for us */
 	if (result == 0)
-		ps->connected |= 2;
+		ps->state = PI_SOCK_CONEN;
 
 	return result;
 }
@@ -1228,11 +1225,11 @@ int dlp_AbortSync(int sd)
 	}
 #endif
 
-	/* Set end-of-sync flag on socket so pi_close won't do a dlp_EndOfSync */
+	/* Pretend we sent the sync end */
 	if ((ps = find_pi_socket(sd)))
-		ps->connected |= 2;
+		ps->state = PI_SOCK_CONEN;
 
-	return pi_close(sd);
+	return 0;
 }
 
 /***********************************************************************

@@ -109,9 +109,6 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 	struct padp padp;
 	int retries;
 
-	if (ps->broken)		/* Don't use an unavailable connection */
-		return -1;
-
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
 		return -1;
@@ -132,7 +129,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 	else
 		data->next_txid = data->txid + (unsigned char) 1;
 
-	if ((data->type != padAck) && !ps->initiator)
+	if ((data->type != padAck) && ps->state == PI_SOCK_CONAC)
 		data->txid = data->next_txid;
 
 	Begin(padp_tx);
@@ -263,7 +260,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 
 		if (retries == 0) {
 			errno = ETIMEDOUT;
-			ps->broken = -1;
+			ps->state = PI_SOCK_CONBK;
 			return -1;	/* Maximum failure: transmission
 					   failed, and the connection must
 					   be presumed dead */
@@ -272,7 +269,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len)
 	} while (len);
 
       done:
-	if ((data->type != padAck) && ps->initiator)
+	if ((data->type != padAck) && ps->state == PI_SOCK_CONIN)
 		data->txid = data->next_txid;
 
 	End(padp_tx);
@@ -307,9 +304,6 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 
 	endtime = time(NULL) + recStartTimeout / 1000;
 
-	if (ps->broken)		/* Don't use a broken connection */
-		return -1;
-
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
 		return -1;
@@ -318,7 +312,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 	if (next == NULL)
 		return -1;
 
-	if (!ps->initiator) {
+	if (ps->state == PI_SOCK_CONAC) {
 		if (data->txid >= 0xfe)
 			data->next_txid = 1;	/* wrap */
 		else
@@ -337,8 +331,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 			/* Start timeout, return error */
 			errno = ETIMEDOUT;
 			ouroffset = -1;
-			ps->broken = -1;	/* Bad timeout breaks connection */
-			goto done;
+			ps->state = PI_SOCK_CONBK;	/* Bad timeout breaks connection */
 			return -1;
 		}
 
@@ -459,8 +452,7 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len)
 					/* Segment timeout, return error */
 					errno = ETIMEDOUT;
 					ouroffset = -1;
-					ps->broken = -1;	/* Bad timeout breaks connection */
-					goto done;
+					ps->state = PI_SOCK_CONBK;	/* Bad timeout breaks connection */
 					return -1;
 				}
 

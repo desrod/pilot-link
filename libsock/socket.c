@@ -109,10 +109,11 @@ ps_list_find (struct pi_socket_list *list, int sd)
 static struct pi_socket_list *
 ps_list_remove (struct pi_socket_list *list, int sd) 
 {
-	struct pi_socket_list *elem, *new_list = list, *prev_elem = NULL;
+	struct pi_socket_list *elem, *new_list = list, *prev_elem;
 
+	prev_elem = NULL;
 	for (elem = list; elem != NULL; elem = elem->next) {
-		if (elem && elem->ps->sd == sd) {
+		if (elem->ps->sd == sd) {
 			if (prev_elem == NULL)
 				new_list = elem->next;
 			else
@@ -341,6 +342,25 @@ env_check (void)
 	}
 }
 
+/* Util functions */
+static int
+is_connected (struct pi_socket *ps) 
+{
+	if (ps->state == PI_SOCK_CONIN || ps->state == PI_SOCK_CONAC)
+		return 1;
+	
+	return 0;
+}
+
+static int
+is_listener (struct pi_socket *ps) 
+{
+	if (ps->state == PI_SOCK_LISTN)
+		return 1;
+	
+	return 0;
+}
+
 /* Alarm Handling Code */
 
 #ifdef WIN32
@@ -397,8 +417,8 @@ onalarm(int signo)
 	
 	for (l = watch_list; l != NULL; l = l->next) {
 		struct pi_socket *ps = l->ps;
-			
-		if (!ps->connected)
+
+		if (!is_connected(ps))
 			continue;
 
 		if (pi_tickle(ps->sd) < 0) {
@@ -475,21 +495,25 @@ int pi_socket(int domain, int type, int protocol)
 	}
 
 	/* Initialize the rest of the fields */
+	ps->type 	= type;
+	ps->protocol 	= protocol;
+	ps->cmd 	= 0;
+
 	ps->laddr 	= NULL;
 	ps->laddrlen 	= 0;
 	ps->raddr 	= NULL;
 	ps->raddrlen 	= 0;
-	ps->type 	= type;
-	ps->protocol 	= protocol;
+
 	ps->protocol_queue = NULL;
 	ps->queue_len   = 0;
 	ps->cmd_queue   = NULL;
 	ps->cmd_len     = 0;
 	ps->device      = NULL;
-	ps->connected 	= 0;
+
+	ps->state       = PI_SOCK_CLOSE;
 	ps->command 	= 1;
-	ps->broken 	= 0;
-	ps->initiator 	= 0;
+
+	ps->accept_to 	= 0;
 	ps->dlprecord 	= 0;
 
 #ifdef OS2
@@ -683,7 +707,7 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 int pi_listen(int pi_sd, int backlog)
 {
 	struct pi_socket *ps;
-
+	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
@@ -712,6 +736,9 @@ int pi_accept(int pi_sd, struct sockaddr *addr, int *addrlen)
 		return -1;
 	}
 
+	if (!is_listener (ps))
+		return -1;
+	
 	ps->accept_to = 0;
 
 	return ps->device->accept(ps, addr, addrlen);
@@ -737,6 +764,9 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, int *addrlen, int timeout)
 		errno = ESRCH;
 		return -1;
 	}
+
+	if (!is_listener (ps))
+		return -1;
 
 	ps->accept_to = timeout;
 
@@ -830,6 +860,9 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
 		return -1;
 	}
 
+	if (!is_connected (ps))
+		return -1;
+	
 	if (interval)
 		alarm(interval);
 
@@ -855,6 +888,9 @@ int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
 		errno = ESRCH;
 		return -1;
 	}
+
+	if (!is_connected (ps))
+		return -1;
 
 	return ps->protocol_queue[0]->read (ps, msg, len);
 }
@@ -914,7 +950,7 @@ int pi_tickle(int pi_sd)
 		return -1;
 	}
 
-	if (!ps->connected)
+	if (!is_connected (ps))
 		return -1;
 
 	LOG(PI_DBG_SOCK, PI_DBG_LVL_INFO, "SOCKET Tickling socket %d\n", pi_sd);
@@ -963,6 +999,17 @@ int pi_close(int pi_sd)
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
+	}
+
+	if (ps->type == PI_SOCK_STREAM) {
+		if (is_connected (ps)) {
+				ps->command = 1;
+				
+				/* then end sync, with clean status */
+				dlp_EndOfSync(ps->sd, 0);
+
+				ps->command = 0;
+		}
 	}
 
 	result = ps->device->close (ps);

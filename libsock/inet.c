@@ -223,9 +223,8 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 			goto fail;
 		break;
 	}
-	ps->connected = 1;
+	ps->state = PI_SOCK_CONIN;
 	ps->command = 0;
-	ps->initiator = 1;	/* We initiated the link */
 
 	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CONNECT Inet: Connected\n");
 	return 0;
@@ -323,7 +322,13 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
  ***********************************************************************/
 static int pi_inet_listen(struct pi_socket *ps, int backlog)
 {
-	return listen(ps->sd, backlog);
+	int result;
+	
+	result = listen(ps->sd, backlog);
+	if (result == 0)
+		ps->state = PI_SOCK_LISTN;
+
+	return result;
 }
 
 /***********************************************************************
@@ -359,7 +364,7 @@ pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 		break;
 	}
 
-	acpt->connected = 1;
+	acpt->state = PI_SOCK_CONAC;
 	acpt->command = 0;
 	acpt->dlprecord = 0;
 
@@ -485,17 +490,6 @@ pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name,
  ***********************************************************************/
 static int pi_inet_close(struct pi_socket *ps)
 {
-	if (ps->type == PI_SOCK_STREAM) {
-		/* If connection is not broken */
-		if (!(ps->broken))
-			/* Socket is connected and wasn't end-of-synced */
-			if ((ps->connected & 1) && !(ps->connected & 2)) {
-				/* then end sync, with clean status */
-				dlp_EndOfSync(ps->sd, 0);
-			}
-		
-	}
-
 	/* Close sd handle */
 	if (ps->sd)
 		close(ps->sd);

@@ -68,13 +68,18 @@ extern "C" {
 #include "pi-socket.h"
 #include "pi-macros.h"
 
-#define PI_SLP_MTU 1038
+#define PI_SOCK_LISTN  0x01  /* Listener */
+#define PI_SOCK_CONAC  0x02  /* Connected by accepting */
+#define PI_SOCK_CONIN  0x04  /* Connected by initiating */
+#define PI_SOCK_CONBK  0x08  /* Connected but broken */
+#define PI_SOCK_CONEN  0x10  /* Connected but end */
+#define PI_SOCK_CLOSE  0x20  /* Closed */
 
 	struct pi_skb {
 		struct pi_skb *next;
 		int len;
 		unsigned char source, dest, type, id;
-		unsigned char data[PI_SLP_MTU];
+		unsigned char data[1038];
 	};
 
 	struct sockaddr;
@@ -105,29 +110,28 @@ extern "C" {
 	};
 	
 	struct pi_socket {
+		int sd;
+
+		int type;
+		int protocol;
+		int cmd;
+
 		struct sockaddr *laddr;
 		int laddrlen;
 		struct sockaddr *raddr;
 		int raddrlen;
-		int type;
-		int protocol;
-		int cmd;
-		int sd;
-		int initiator;
 
 		struct pi_protocol **protocol_queue;
 		int queue_len;
 		struct pi_protocol **cmd_queue;
 		int cmd_len;
-
 		struct pi_device *device;
 
 		struct pi_skb *txq;
 		struct pi_skb *rxq;
 
-		int connected;		/* true on connected or accepted socket                            */
+		int state;
 		int command;		/* true when socket in command state                               */
-		int broken;		/* sth. went wrong so badly we cannot use this socket anymore      */
 		int accept_to;		/* timeout value for call to accept()                              */
 		int dlprecord;		/* Index used for some DLP functions */
 

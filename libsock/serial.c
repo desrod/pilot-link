@@ -238,9 +238,8 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 			break;
 		}
 	}
-	ps->connected = 1;
+	ps->state = PI_SOCK_CONIN;
 	ps->command = 0;
-	ps->initiator = 1;	/* We initiated the link */
 
 	return 0;
 
@@ -315,8 +314,13 @@ pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 static int pi_serial_listen(struct pi_socket *ps, int backlog)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
-
-	return data->impl.changebaud(ps);	/* ps->rate has been set by bind */
+	int result;
+	
+	result = data->impl.changebaud(ps);	/* ps->rate has been set by bind */
+	if (result == 0)
+		ps->state = PI_SOCK_LISTN;
+	
+	return result;
 }
 
 /***********************************************************************
@@ -337,16 +341,17 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	struct pi_socket *accept = NULL;
 	int size;
 
+	/* Wait for data */
+	if (data->impl.poll(ps, 0) < 0) {
+		errno = ETIMEDOUT;
+		goto fail;
+	}
+	
+	accept = pi_socket_copy(ps);
+
 	if (ps->type == PI_SOCK_STREAM) {
 		struct timeval tv;
-		
-		/* Wait for data */
-		if (data->impl.poll(ps, 0) < 0) {
-			errno = ETIMEDOUT;
-			goto fail;
-		}
 
-		accept = pi_socket_copy(ps);
 		switch (accept->cmd) {
 		case PI_CMD_CMP:
 			if (cmp_rx_handshake(accept, data->establishrate, data->establishhighrate) < 0)
@@ -376,18 +381,11 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 			break;
 		}
 
-		accept->connected = 1;
-		accept->command = 0;
 		accept->dlprecord = 0;
-	} else {
-		accept = pi_socket_copy(ps);
-
-		accept->connected = 1;
-		accept->command = 0;
 	}
 
-	accept->initiator = 0;	/* We accepted the link, we did not initiate
-				   it */
+	accept->command = 0;
+	accept->state = PI_SOCK_CONAC;
 
 	return accept->sd;
 
@@ -477,17 +475,6 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
  ***********************************************************************/
 static int pi_serial_close(struct pi_socket *ps)
 {
-	if (ps->type == PI_SOCK_STREAM) {
-		/* If connection is not broken */
-		if (!(ps->broken))
-			/* Socket is connected and wasn't end-of-synced */
-			if ((ps->connected & 1) && !(ps->connected & 2)) {
-				/* then end sync, with clean status */
-				dlp_EndOfSync(ps->sd, 0);
-			}
-		
-	}
-
 	if (ps->sd)
 		close(ps->sd);
 
