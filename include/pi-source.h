@@ -129,7 +129,6 @@ extern "C" {
 		int command;		/* true when socket in command state                               */
 		int broken;		/* sth. went wrong so badly we cannot use this socket anymore      */
 		int accept_to;		/* timeout value for call to accept()                              */
-		int tickle;
 		int dlprecord;		/* Index used for some DLP functions */
 
 #ifdef OS2

@@ -230,6 +230,11 @@ protocol_queue_build (struct pi_socket *ps)
 		break;
 	}
 
+	/* Add the device protocol */
+	prot = ps->device->protocol (ps->device);
+	protocol_queue_add (ps, prot);
+	prot = ps->device->protocol (ps->device);
+	protocol_cmd_queue_add (ps, prot);
 }
 
 
@@ -580,16 +585,12 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
 	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
-	struct pi_protocol *prot;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
 
-	/* Build the protocol queue */
-	protocol_queue_build (ps);
-	
 	/* Determine the device type */
 	if (strlen (paddr->pi_device) < 4)
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
@@ -600,12 +601,9 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 	else
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 
-	/* Add the device protocol */
-	prot = ps->device->protocol (ps->device);
-	protocol_queue_add (ps, prot);
-	prot = ps->device->protocol (ps->device);
-	protocol_cmd_queue_add (ps, prot);
-
+	/* Build the protocol queue */
+	protocol_queue_build (ps);
+	
 	return ps->device->connect (ps, addr, addrlen);
 }
 
@@ -624,15 +622,11 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 {
 	struct pi_socket *ps;
 	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
-	struct pi_protocol *prot;
 	
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return -1;
 	}
-
-	/* Build the protocol queue */
-	protocol_queue_build (ps);
 	
 	/* Determine the device type */
 	if (strlen (paddr->pi_device) < 4)
@@ -644,11 +638,8 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 	else
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 
-	/* Add the device protocol */
-	prot = ps->device->protocol (ps->device);
-	protocol_queue_add (ps, prot);
-	prot = ps->device->protocol (ps->device);
-	protocol_cmd_queue_add (ps, prot);
+	/* Build the protocol queue */
+	protocol_queue_build (ps);
 
 	return ps->device->bind (ps, addr, addrlen);
 }

@@ -13,7 +13,6 @@ c_header_DATA = \
 	pi-hinote.h		\
 	pi-iambicExpense.h	\
 	pi-inet.h		\
-	pi-inetserial.h		\
 	pi-macros.h		\
 	pi-mail.h		\
 	pi-md5.h		\

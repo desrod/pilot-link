@@ -1,3 +1,13 @@
+2002-01-10  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/socket.c (protocol_queue_build): add device protocol
+	(pi_connect): call above after device is determined
+	(pi_bind): ditto
+
+	* include/Makefile.am (c_header_DATA): remove pi-inetserial.h
+
+	* include/pi-source.h: remove unused tickle member
+
 2002-01-09  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/inet.c (pi_inet_accept): accept to the socket descriptor
