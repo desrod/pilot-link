@@ -1,3 +1,11 @@
+2002-02-08  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/socket.c (ps_list_remove): update the prev_elem each
+	iteration
+
+	* libsock/inet.c (pi_inet_accept): set correct sd when we know it
+	and don't recognize the socket twice
+	
 2002-02-08  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* pilot-xfer.c: Minor cleanups

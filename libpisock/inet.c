@@ -379,13 +379,15 @@ static int
 pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
 	struct 	pi_socket *acpt = NULL;
-
+	int sd;
+	
 	acpt = pi_socket_copy(ps);
 	
- 	acpt->sd = accept(ps->sd, addr, addrlen);
-	if (acpt->sd < 0)
+ 	sd = accept(ps->sd, addr, addrlen);
+	if (sd < 0)
 		goto fail;
 
+	pi_socket_setsd (acpt, sd);
 	pi_socket_init (acpt);
 
 	switch (acpt->cmd) {
@@ -402,8 +404,6 @@ pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	acpt->state 	= PI_SOCK_CONAC;
 	acpt->command 	= 0;
 	acpt->dlprecord = 0;
-
-	pi_socket_recognize(acpt);
 
 	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV ACCEPT Accepted\n");
 

@@ -134,6 +134,7 @@ ps_list_remove (struct pi_socket_list *list, int sd)
 			free(elem);
 			break;
 		}
+		prev_elem = elem;
 	}
 
 	return new_list;
