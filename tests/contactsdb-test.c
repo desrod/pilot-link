@@ -33,7 +33,8 @@ typedef enum
 	db_unknown = 0,
 	db_contacts521,
 	db_contacts528
-} db_devtype_t;
+}
+db_devtype_t;
 
 const char *dbdevnames[] =
 {
@@ -156,7 +157,7 @@ main (const int argc, const char **argv)
 	ofs += 278;
 	data += 278;
 
-	printf ("Unknown data (field mappings?)\n");
+	printf ("Unknown data (internal flags?)\n");
 	hexprint (data, 26, ofs, 0);
 	len -= 26;
 	data += 26;
