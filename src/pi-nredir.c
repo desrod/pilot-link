@@ -19,7 +19,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,15 +27,6 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hv";
 
 
 /***********************************************************************
@@ -84,7 +75,18 @@ int main(int argc, char *argv[])
 
 	struct 	NetSyncInfo 	Net;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
+	
+	po = poptGetContext("pi-nredir", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 
 		case 'h':
@@ -162,5 +164,3 @@ int main(int argc, char *argv[])
  error:
 	return -1;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

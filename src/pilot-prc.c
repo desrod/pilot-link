@@ -18,7 +18,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -40,7 +40,6 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record);
 char *iso_time_str(time_t t);
 void dump(void *buf, int size);
 
-static const char *optstring = "hasvlr:";
 
 /***********************************************************************
  *
@@ -318,7 +317,8 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 
 static void display_help(const char *progname)
 {
-	printf("   Usage: %s [-s] -p|-u dir file\n", progname);
+	printf("   Usage: %s [-s] -p|-u dir -f <file name>\n", progname);
+	printf("     -f           File to operate one\n\n");
 	printf("     -s           Do not obey or generate a 'sort' list\n\n");
 	printf("     -p           Pack the contents of a directory into the named file\n");
 	printf("     -u           Unpack the contents of the named file into a directory\n");
@@ -352,9 +352,25 @@ int main(int argc, char *argv[])
 	           from pilot-file, and pack()/unpack() functions
 		   aren't even present!! -DD */
 	
-	while ((c = getopt(argc, argv, optstring)) != EOF) {
+	poptContext po;
+	
+	struct poptOption options[] = {
+	
+	{"help",	'H', POPT_ARG_NONE, NULL, 'H', "Display this information"},
+	{"header",	'h', POPT_ARG_NONE, NULL, 'h', "Header"},
+	{"appinfo",	'a', POPT_ARG_NONE, NULL, 'a', "AppInfo"},
+	{"sortinfo",	's', POPT_ARG_NONE, NULL, 's', "Do not obey or generate a 'sort' list"},
+        {"verbose",	'v', POPT_ARG_NONE, NULL, 'v', "Verbose mode"},
+	{"list",	'l', POPT_ARG_NONE, NULL, 'l', "List records"},
+	{"record",	'r', POPT_ARG_INT, &rnum, 'r', "Record number"},
+	{"name",	'n', POPT_ARG_STRING, &name, 0, "File name"},		
+	 POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
+
+	po = poptGetContext("pilot-prc", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
-			
 		case 'h':
 			hflag = 1;		/* Header flag    */
 			break;
@@ -372,7 +388,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'r':
 			rflag = 1;      	/* Dump records   */
-			rnum = atoi(optarg);	/* Record number  */
 			break;
 		default:
 			display_help(progname);
@@ -380,14 +395,11 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (optind >= argc)
+	if(name == NULL) {
+		fprintf(stderr, "Please specify a file name\n");
 		display_help(progname);
-
-	name = argv[optind++];
-
-	if (optind != argc)
-		display_help(progname);
-
+		exit(EXIT_FAILURE);
+	}
 	if ((pf = pi_file_open(name)) == NULL) {
 		fprintf(stderr, "can't open %s\n", name);
 		exit(EXIT_FAILURE);
@@ -412,5 +424,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -1,3 +1,4 @@
+/* ex: set tabstop=4 expandtab: */
 /*
  * read-veo.c
  *
@@ -23,7 +24,7 @@
 # include <config.h>
 #endif
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,22 +45,6 @@
 #endif
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
-
-struct option options[] =
-{
-	 {"help", no_argument, NULL, 'h'},
-	 {"version", no_argument, NULL, 'v'},
-	 {"port", required_argument, NULL, 'p'},
-	 {"list", no_argument, NULL, 'l'},
-	 {"type", required_argument, NULL, 't'},
-	 {"name", required_argument, NULL, 'n'},
-	 {"colour", no_argument, NULL, 'c'},
-	 {"bias", required_argument, NULL, 'b'},
-	 {NULL, 0, NULL, 0}
-};
-
-static const char *optstring = "hvp:lt:n:cb:";
-
 #define VEO_COLOUR_CORRECT 0x01
 #define VEO_BIAS           0x12
 
@@ -1097,38 +1082,47 @@ int main (int argc, char *argv[])
 	 dbcount = 0, 
 	 type = VEO_OUT_PPM,
 	 bias = 50;
-   long flags = 0;
-   struct DBInfo info;
-   pi_buffer_t *buf;
+	long flags = 0;
+	struct DBInfo info;
+	pi_buffer_t *buf;
 
-   char *progname = argv[0], *port = NULL, *picname = NULL;
+	char *progname = argv[0], *port = NULL, *picname = NULL;
+	char *imgtype = NULL;
+	
+	struct PilotUser User;
+	unsigned char buffer[0xffff];
 
-   struct PilotUser User;
-   unsigned char buffer[0xffff];
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"list",	'l', POPT_ARG_NONE, NULL, 'l', "List Photos on device"},
+	{"type",	't', POPT_ARG_STRING, &imgtype, 't', "Specify picture output type (ppm or png)"},
+	{"name",	'n', POPT_ARG_STRING, &picname, 'n', "Specify output picture by name"},
+	{"colour",	'c', POPT_ARG_NONE, NULL, 'c', "Colour correct the output colours"},
+	{"bias",	'b', POPT_ARG_INT, &bias, 'b', "Lighten or darken the image; 0..50   darken image, 50..100 lighten image"},
+	 POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
 
-   while ((c = getopt_long (argc, argv, optstring, options, NULL)) != -1)
-	 {
-		switch (c)
-		  {
+	po = poptGetContext("read-veo", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
+		switch (c) {
 		   case 'h':
 			 display_help (progname);
 			 return 0;
 		   case 'v':
 			 print_splash (progname);
 			 return 0;
-		   case 'p':
-			 free (port);
-			 port = strdup (optarg);
-			 break;
 		   case 'n':
 			 action = VEO_ACTION_OUTPUT_ONE;
-			 picname = optarg;
 			 break;
 		   case 'l':
 			 action = VEO_ACTION_LIST;
 			 break;
 		   case 'b':
-			 bias = atoi( optarg );
 			 if( bias > 100 || bias < 0 )
 			   {
   				  fprintf (stderr, "Bad bias\n");
@@ -1142,7 +1136,7 @@ int main (int argc, char *argv[])
 			 flags |= VEO_COLOUR_CORRECT;
 			 break;
 		   case 't':
-			 if (!strncmp ("png", optarg, 3))
+			 if (!strncmp ("png", imgtype, 3))
 			   {
 #ifdef HAVE_PNG
 				  type = VEO_OUT_PNG;
@@ -1150,7 +1144,7 @@ int main (int argc, char *argv[])
 				  fprintf (stderr, "%s was built without png support\n", progname );
 #endif
 			   }
-			 else if (!strncmp ("ppm", optarg, 3))
+			 else if (!strncmp ("ppm", imgtype, 3))
 			   {
 				  type = VEO_OUT_PPM;
 			   }
@@ -1236,5 +1230,3 @@ error:
    return -1;
 
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

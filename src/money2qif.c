@@ -20,7 +20,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,17 +30,6 @@
 #include "pi-money.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"account",     required_argument, NULL, 'a'},
-	{NULL,          0,                 NULL,  0}
-};
-
-static const char *optstring = "p:hva:";
-
 
 /***********************************************************************
  *
@@ -78,6 +67,7 @@ int main(int argc, char *argv[])
 	int 	c,		/* switch */
 		db,
 		index,
+		po_err		= -1,
 		sd 		= -1;
 
 	char 	*noteln,
@@ -86,24 +76,29 @@ int main(int argc, char *argv[])
 		*account 	= NULL;
 
 	struct 	MoneyAppInfo mai;
-
 	pi_buffer_t *buffer;
+	
+	poptContext po;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (c) {
-
+	struct poptOption options[] = {
+	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"account", 	'a', POPT_ARG_STRING, &account, 0, "The name of the Account category in MicroMoney"},
+	POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
+	
+	po = poptGetContext("money2qif", argc, argv, options, 0);
+	
+	while ((po_err = poptGetNextOpt(po)) >= 0) {
+		switch (po_err) {
 		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		case 'p':
-			port = optarg;
-			break;
-		case 'a':
-			account = optarg;
-			break;
+                        display_help(progname);
+                        return 0;
+                case 'v':
+                        print_splash(progname);
+                        return 0;
 		default:
 			display_help(progname);
 			return 0;
@@ -199,5 +194,3 @@ int main(int argc, char *argv[])
 error:
 	return -1;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -19,7 +19,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,21 +38,6 @@
 #define MAXDIRNAMELEN 1024
 
 char *progname;
-
-struct option options[] = {
-        {"help",        no_argument,       NULL, 'h'},
-        {"version",     no_argument,       NULL, 'v'},
-        {"port",        required_argument, NULL, 'p'},
-        {"verbose",     no_argument,       NULL, 'V'},
-        {"delete",      required_argument, NULL, 'd'},
-        {"file",        required_argument, NULL, 'f'},
-        {"save",        required_argument, NULL, 's'},
-        {"category",    required_argument, NULL, 'c'},
-        {"regex",       required_argument, NULL, 'r'},
-        {NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvVd:f:s:c:r:";
 
 void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category);
 void write_memo_in_directory(char *dirname, struct Memo m,
@@ -259,7 +244,8 @@ int main(int argc, char *argv[])
 		*progname 	= argv[0],
 		*port 		= NULL,
 		category_name[MAXDIRNAMELEN + 1] = "",
-		filename[MAXDIRNAMELEN + 1], *ptr;
+		filename[MAXDIRNAMELEN + 1], *ptr,
+		*fnameArg, *dnameArg, *catnameArg, *regexArg;
 	
 	struct 	MemoAppInfo mai;
 	struct 	pi_file *pif = NULL;
@@ -267,8 +253,25 @@ int main(int argc, char *argv[])
 
 	regex_t title_pattern;
 	recordid_t id;
+	
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"verbose",	'V', POPT_ARG_NONE, NULL, 'V', "Verbose, with -d, print each filename when written"},
+	{"delete",	'd', POPT_ARG_NONE, NULL, 'd', "Delete memo named by number <num>"},				
+        {"file",	'f', POPT_ARG_STRING, &fnameArg, 'f', "Use <file> as input file (instead of MemoDB.pdb)"},
+        {"save",	's', POPT_ARG_STRING, &dnameArg, 's', "Save memos in <dir> instead of writing to STDOUT"},
+	{"category",	'c', POPT_ARG_STRING, &catnameArg, 'c', "Only upload memos in this category"},
+        {"regex",	'r', POPT_ARG_STRING, &regexArg, 'r', "Select memos saved by regular expression on title"},
+         POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	po = poptGetContext("memos", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 
 		case 'h':
@@ -277,26 +280,26 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
+		case 'V':
+			verbose = 1;
+			break;
 		case 'd':
 			delete = 1;
 			break;
-		case 'p':
-			port = optarg;
-			break;
 		case 'f':
-			strncpy(filename, optarg, MAXDIRNAMELEN);
+			strncpy(filename, fnameArg, MAXDIRNAMELEN);
 			filename[MAXDIRNAMELEN] = '\0';
 			break;
 		case 's':
-			strncpy(dirname, optarg, sizeof(dirname));
+			strncpy(dirname, dnameArg, sizeof(dirname));
 			mode = MEMO_DIRECTORY;
 			break;
 		case 'c':
-			strncpy(category_name, optarg, MAXDIRNAMELEN);
+			strncpy(category_name, catnameArg, MAXDIRNAMELEN);
 			category_name[strlen( category_name )] = '\0';
 			break;
 		case 'r':
-			ret = regcomp(&title_pattern, optarg, REG_NOSUB);
+			ret = regcomp(&title_pattern, regexArg, REG_NOSUB);
 			buf = (char *) malloc(bufsize);
 			if (ret) {
 				regerror(ret, &title_pattern, buf, bufsize);
@@ -459,5 +462,3 @@ error:
 
 	return -1;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

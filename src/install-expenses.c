@@ -17,7 +17,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,24 +30,6 @@
 static void display_help(const char *progname);
 void print_splash(char *progname);
 int pilot_connect(const char *porg);
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-        {"version",     no_argument,       NULL, 'v'},
-	{"ptype",       required_argument, NULL, 't'},
-	{"etype",       required_argument, NULL, 'e'},
-	{"amount",      required_argument, NULL, 'a'},
-	{"vendor",      required_argument, NULL, 'V'},
-	{"city",        required_argument, NULL, 'i'},
-	{"guests",	required_argument, NULL, 'g'},
-	{"note",        required_argument, NULL, 'n'},
-	{"category",    required_argument, NULL, 'c'},
-        {"replace",     required_argument, NULL, 'r'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvt:w:e:a:V:i:g:n:c:rt";
 
 char *paymentTypes[] = 
 {
@@ -108,7 +90,7 @@ static void display_help(const char *progname)
 	printf("     -e, --etype <etype>     Expense type (Airfare, Hotel, etc.)\n");
 	printf("     -a, --amount [amount]   Payment amount\n");
 	printf("     -V, --vendor [vendor]   Expense vendor name (Joe's Restaurant)\n");
-	printf("     -g, --guests <guests>   Nuber of guests for this expense entry\n");
+	printf("     -g, --guests <guests>   Number of guests for this expense entry\n");
 	printf("     -i, --city [city]       Location/city for this expense entry\n");
 	printf("     -n, --note [note]       Notes for this expense entry\n");
 	printf("     -c, --category <cat>    Install entry into this category\n\n");
@@ -127,36 +109,62 @@ int main(int argc, char *argv[])
 		i,
 		l,
 		category,
-		c,		/* switch */
+		po_err		= -1,
 		replace_category = 0;
 	
 	char 	*port		= NULL,
 		*progname 	= argv[0],
-		*category_name 	= NULL;
+		*category_name 	= NULL,
+		*expenseType	= NULL,
+		*paymentType	= NULL;
+	
+	
 
 	unsigned char buf[0xffff];
 	
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo eai;
-	struct 	Expense theExpense;
-
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (c) {
-			
-                case 'h':
+	struct 	Expense theExpense;	
+	
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"ptype", 	't', POPT_ARG_STRING, &paymentType, 't',"Payment type (Cash, Check, etc.)"},
+	{"etype", 	'e', POPT_ARG_STRING, &expenseType, 'e', "Expense type (Airfare, Hotel, etc.)"},
+	{"amount", 	'a', POPT_ARG_STRING, &theExpense.amount, 0, "Payment amount"},
+	{"vendor", 	'V', POPT_ARG_STRING, &theExpense.vendor, 0, "Expense vendor name (Joe's Restaurant)"},
+	{"city", 	'i', POPT_ARG_STRING, &theExpense.city, 0, "Location/city for this expense entry"},
+	{"guests", 	'g', POPT_ARG_STRING, &theExpense.attendees, 0, "Number of guests for this expense entry"},
+	{"note", 	'n', POPT_ARG_STRING, &theExpense.note, 0, "Notes for this expense entry"},
+	{"category", 	'c', POPT_ARG_STRING, &category_name, 0, "Install entry into this category"},
+        {"replace", 	'r', POPT_ARG_STRING, &category_name, 'r', "Replace entry in this category"},
+	POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
+	
+	po = poptGetContext("install-expenses", argc, argv, options, 0);
+	
+	if (argc < 2) {
+                display_help(progname);
+                exit(1);
+        }
+	
+	 while ((po_err = poptGetNextOpt(po)) >= 0) {
+		switch (po_err) {
+		case 'h':
                         display_help(progname);
                         return 0;
                 case 'v':
                         print_splash(progname);
                         return 0;
-		case 'p':
-			port = optarg;
-			break;
 		case 'e':
 			theExpense.type = etBus;
 			for (i = 0; expenseTypes[i] != NULL; i++)
 			{
-				if (strcasecmp(optarg, expenseTypes[i]) == 0)
+				if (strcasecmp(expenseType, expenseTypes[i]) == 0)
 				{
 					theExpense.type = i;
 					break;
@@ -167,30 +175,12 @@ int main(int argc, char *argv[])
 			theExpense.payment = epCash;
 			for (i = 0; paymentTypes[i] != NULL; i++)
 			{
-				if (strcasecmp(optarg, paymentTypes[i]) == 0)
+				if (strcasecmp(paymentType, paymentTypes[i]) == 0)
 				{
 					theExpense.payment = i;
 					break;
 				}
 			}
-			break;
-		case 'g':
-			theExpense.attendees = optarg;
-			break;
-		case 'a':
-			theExpense.amount = optarg;
-			break;
-		case 'V':
-			theExpense.vendor = optarg;
-			break;
-		case 'i':
-			theExpense.city = optarg;
-			break;
-		case 'n':
-			theExpense.note = optarg;
-			break;
-		case 'c':
-			category_name = optarg;
 			break;
 		case 'r':
 			replace_category++;
@@ -200,17 +190,16 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 	}
-
-	argc -= optind;
-	argv += optind;
-
-	if (replace_category && !category_name) {
+	puts("Done checking args");
+	if (replace_category && (!category_name || category_name == NULL)) {
 		fprintf(stderr,
 			"%s: expense category required when specifying replace\n",
 			progname);
 		display_help(progname);
 	}
 
+	puts("Connect to pilot...");
+	
 	sd = pilot_connect(port);
 	if (sd < 0)
 		goto error;
@@ -300,6 +289,7 @@ int main(int argc, char *argv[])
 	dlp_AddSyncLogEntry(sd, "Wrote memo(s) to Palm.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
+	poptFreeContext(po);
 	return 0;
 
 error_close:
@@ -308,5 +298,3 @@ error_close:
 error:
 	return -1;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

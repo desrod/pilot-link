@@ -26,7 +26,7 @@
 #include <config.h>
 #endif
  
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,17 +43,6 @@ long write_data(char *buffer, int index, int size, long dataChunkSize, FILE *out
 int pdb_to_wav(char *filename);
 int fetch_wavs(int sd, char *dbname);
 int do_fetch(char *port, char *dbname);
-
-struct option options[] = {
-        {"port",        required_argument, NULL, 'p'},
-        {"help",        no_argument,       NULL, 'h'},
-        {"version",     no_argument,       NULL, 'v'},
-        {"fetch",       required_argument, NULL, 'f'},
-        {"convert",     required_argument, NULL, 'c'},
-        {0,             0,                 0,    0}
-};
-
-static const char *optstring = "p:hvf:c:";
 
 #ifndef TRUE
 # define TRUE 1
@@ -413,16 +402,30 @@ int main(int argc, char *argv[])
 		convert;
 
         char 	*port		= NULL,
+		*filename	= NULL,
 		*progname       = argv[0];
 
         fetch = convert = FALSE;
+	
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"fetch",	'f', POPT_ARG_STRING, &filename, 'f', "Fetch all wav files or specified wav file from the Palm"},
+	{"convert",	'c', POPT_ARG_STRING, &filename, 'c', "Convert <file>.wav.pdb file to wav"},
+	 POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
 
         if (argc < 2 ) {
                 display_help(progname);
         }
 
-        while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-                switch (c) {
+	po = poptGetContext("memos", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
+		switch (c) {
 
                 case 'h':
                         display_help(progname);
@@ -430,14 +433,11 @@ int main(int argc, char *argv[])
                 case 'v':
                         print_splash(progname);
                         return 0;
-                case 'p':
-                        port = optarg;
-                        break;
-                case 'c':
-                        pdb_to_wav(optarg);
-                        break;
                 case 'f':
-                        do_fetch(port, optarg);
+                        do_fetch(port, filename);
+                        break;
+		 case 'c':
+                        pdb_to_wav(filename);
                         break;
                 default:
                         display_help(progname);
@@ -447,5 +447,3 @@ int main(int argc, char *argv[])
         
         return 0;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -19,7 +19,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -27,18 +27,6 @@
 #include "pi-dlp.h"
 #include "pi-todo.h"
 #include "pi-header.h"
-
-void install_ToDos(int sd, int db, char *filename);
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-        {"version",     no_argument,       NULL, 'v'},   
-	{"filename",    required_argument, NULL, 'f'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvf:";
 
 void install_ToDos(int sd, int db, char *filename)
 {
@@ -138,8 +126,20 @@ int main(int argc, char *argv[])
 		*filename 	= NULL,
 		*port 		= NULL;
 	struct 	PilotUser User;
+	
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"filename",	'f', POPT_ARG_STRING, &filename, 0, "A local file with formatted ToDo entries"},
+	 POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	po = poptGetContext("install-todos", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 
 		case 'h':
@@ -148,13 +148,6 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
-
-		case 'f':
-			filename = optarg;
-			break;
 		default:
 			display_help(progname);
 			return 0;
@@ -215,5 +208,3 @@ int main(int argc, char *argv[])
 	}
 	return 0;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

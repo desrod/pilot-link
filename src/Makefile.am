@@ -110,9 +110,9 @@ debugsh_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 dlpsh_SOURCES = 		\
-	$(getopt_sources)	\
 	dlpsh.c
 dlpsh_LDADD = 			\
+	$(POPT_LIBS)		\
 	$(RL_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
@@ -301,53 +301,47 @@ pilot_foto_LDADD = 		\
 ######################################################
 
 pilot_prc_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-prc.c
 pilot_prc_LDADD = 		\
+	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_schlep_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-schlep.c
 pilot_schlep_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_treofoto_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-treofoto.c
 pilot_treofoto_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_wav_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-wav.c
 pilot_wav_LDADD = 		\
+	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_xfer_SOURCES = 		\
-	$(getopt_sources)	\
 	pilot-xfer.c
 pilot_xfer_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_expenses_SOURCES = 	\
-	$(getopt_sources)	\
 	read-expenses.c
 read_expenses_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_ical_SOURCES = 		\
-	$(getopt_sources)	\
 	read-ical.c
 read_ical_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_notepad_SOURCES = 		\
-	$(getopt_sources)	\
 	read-notepad.c
 read_notepad_LDADD = 		\
 	$(POPT_LIBS)		\
@@ -355,7 +349,6 @@ read_notepad_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 read_palmpix_SOURCES = 		\
-	$(getopt_sources)	\
 	read-palmpix.c
 read_palmpix_LDADD = 		\
 	$(POPT_LIBS)		\

@@ -24,7 +24,7 @@
 #include <config.h>
 #endif
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,18 +44,6 @@
 #include "pi-serial.h"
 #include "pi-slp.h"
 #include "pi-header.h"
-
-struct option options[] = {
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"hostname",    required_argument, NULL, 'H'},
-	{"address",     required_argument, NULL, 'a'},
-	{"netmask",     required_argument, NULL, 'n'},
-	{"quiet",       required_argument, NULL, 'q'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "hvp:H:a:n:q";
 
 char hostname[130];
 struct in_addr address, netmask;
@@ -275,7 +263,9 @@ int main(int argc, char *argv[])
 	struct 	in_addr raddress;
 	struct 	sockaddr_in serv_addr, cli_addr; 
 
-        char 	*progname 	= argv[0];
+        char 	*progname 	= argv[0],
+		*addrarg	= NULL,
+		*nmarg		= NULL;
 
         fd_set 	rset;
 	unsigned char mesg[1026];
@@ -287,7 +277,21 @@ int main(int argc, char *argv[])
 
 	fetch_host(hostname, 128, &address, &netmask);
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"hostname",	'H', POPT_ARG_STRING, &hostname, 0, "The hostname used for verification"},
+	{"address",	'a', POPT_ARG_STRING, &addrarg, 'a', "IP address of the host"},
+	{"netmask",	'n', POPT_ARG_STRING, &nmarg, 'n', "The subnet mask of the address"},
+	{"quiet",	'q', POPT_ARG_NONE, NULL, 'q', "Turn off status messages"},
+	 POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
+	
+	po = poptGetContext("pi-csd", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 
 		case 'h':
@@ -296,25 +300,22 @@ int main(int argc, char *argv[])
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'H':
-			strcpy(hostname, optarg);
-			break;
 		case 'a':
-			if (!inet_pton(AF_INET, optarg, &address)) {
-				if ((hent = gethostbyname(optarg))) {
+			if (!inet_pton(AF_INET, addrarg, &address)) {
+				if ((hent = gethostbyname(addrarg))) {
 					memcpy(&address.s_addr,
 					       hent->h_addr,
 					       sizeof(address));
 				} else {
 					fprintf(stderr,
 						"Invalid address '%s'\n\n",
-						optarg);
+						addrarg);
 					display_help(progname);
 				}
 			}
 			break;
 		case 'n':
-			if (!inet_pton(AF_INET, optarg, &netmask))
+			if (!inet_pton(AF_INET, nmarg, &netmask))
 				display_help(progname);
 			break;
 		case 'q':
@@ -431,5 +432,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

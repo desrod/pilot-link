@@ -23,7 +23,7 @@
 #include <config.h>
 #endif
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -193,14 +193,15 @@ int help_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int ls_fn(int sd, int argc, char *argv[])
 {
-	static const char *ls_optstring = "lrh";
+	poptContext po;
 	
-	struct option ls_options[] = {
-		{"long", no_argument,       NULL, 'l'},
-		{"rom",  no_argument,       NULL, 'r'},
-		{"help", no_argument,       NULL, 'h'},
-		{NULL,   0,                 NULL, 0}
-	};
+	struct poptOption ls_options[] = {
+		{"long", 	'l', POPT_ARG_NONE, NULL, 'l', "List all RAM databases using \"expanded\" format"},
+		{"rom", 	'r', POPT_ARG_NONE, NULL, 'r', "List all ROM databases and applications"},
+		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+		POPT_AUTOHELP
+        	{ NULL, 0, 0, NULL, 0 }
+	} ;
 	
 	int 	c,		/* switch */
 		cardno,
@@ -213,8 +214,9 @@ int ls_fn(int sd, int argc, char *argv[])
 	pi_buffer_t *buf;
 	
 	optind = 0;
-		
-	while ((c = getopt_long(argc, argv, ls_optstring, ls_options, NULL)) != -1) {
+	
+	po = poptGetContext("install-expenses", argc, argv, ls_options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		  case 'r':
 			  rom_flag = 1;
@@ -395,18 +397,6 @@ int time_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int user_fn(int sd, int argc, char *argv[])
 {
-	
-	static const char *user_optstring = "u:i:v:p:h";
-	
-	struct option user_options[] = {
-		{"user",   required_argument,  NULL, 'u'},
-		{"id",     required_argument,  NULL, 'i'},
-		{"viewid", required_argument,  NULL, 'v'},
-		{"pcid",   required_argument,  NULL, 'p'},
-		{"help",   no_argument,        NULL, 'h'},
-		{NULL,     0,                  NULL, 0}
-	};
-
 	int 	c,		/* switch */
 		ret,
 		fl_name 	= 0,
@@ -416,25 +406,39 @@ int user_fn(int sd, int argc, char *argv[])
 	
 	struct 	PilotUser User, nUser;
 
+	char *userID, *viewerID, *lastSyncPC;
+	
 	optind = 0;
-
-	while ((c = getopt_long(argc, argv, user_optstring, user_options, NULL)) != -1) {
+	
+	poptContext po;
+	
+	struct poptOption user_options[] = {
+		{"user", 	'u', POPT_ARG_STRING, &nUser.username, 'u', "Set Username on the Palm device (use double-quotes)"},
+		{"id", 		'i', POPT_ARG_STRING, &userID, 'i', "Set the numeric UserID on the Palm device"},
+		{"viewid", 	'v', POPT_ARG_STRING, &viewerID, 'v', "Set the numeric ViewerID on the Palm device"},
+		{"pcid", 	'p', POPT_ARG_STRING, &lastSyncPC, 'p', "Set the numeric PCID on the Palm device"},
+		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},	
+		POPT_AUTOHELP
+        	{ NULL, 0, 0, NULL, 0 }
+		} ;
+	
+	po = poptGetContext("install-expenses", argc, argv, user_options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		  case 'u':
 			  fl_name = 1;
-			  strncpy(nUser.username, optarg, sizeof(nUser.username));
 			  break;
 		  case 'i':
 			  fl_uid = 1;
-			  nUser.userID = strtoul(optarg, NULL, 16);
+			  nUser.userID = strtoul(userID, NULL, 16);
 			  break;
 		  case 'v':
 			  fl_vid = 1;
-			  nUser.viewerID = strtoul(optarg, NULL, 16);
+			  nUser.viewerID = strtoul(viewerID, NULL, 16);
 			  break;
 		  case 'p':
 			  fl_pid = 1;
-			  nUser.lastSyncPC = strtoul(optarg, NULL, 16);
+			  nUser.lastSyncPC = strtoul(lastSyncPC, NULL, 16);
 			  break;
 		  case 'h':
 			  printf("   View or set user-specific Palm information\n\n");
@@ -766,46 +770,33 @@ static void display_help(const char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	c,		/* switch */
+	int 	c		= -1,
 		sd 		= -1;
 
 	char 	*progname 	= argv[0],
 		*port 		= NULL,
 		*cmd		= NULL;
+	
+	poptContext po;
+	
+	struct poptOption options[] = {
+		{"port", 	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        	{"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+		{"command", 	'c', POPT_ARG_STRING, &cmd, 0, "Execute <cmd> and exit immediately"},
+		POPT_AUTOHELP
+        	{ NULL, 0, 0, NULL, 0 }
+	} ;
 		
-	const char *optstring = "c:p:hv";
-
-	struct option options[] = {
-		{"command", required_argument, NULL, 'c'},
-		{"port",    required_argument, NULL, 'p'},
-		{"help",    no_argument,       NULL, 'h'},
-		{"version", no_argument,       NULL, 'v'},
-		{NULL,   0,                    NULL, 0}
-	};
-
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	po = poptGetContext("dlpsh", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
-
 		case 'h':
 			display_help(progname);
 			return 0;
 		case 'v':
 			print_splash(progname);
 			return 0;
-		case 'p':
-			port = optarg;
-			break;
-		case 'c':
-			if (cmd != NULL)
-			{
-			    /* can't -c twice */
-			    display_help(progname);
-			    return (0);
-			}
-			
-			/* FIXME: Knghtbrd: strndup this */
-			cmd = strdup(optarg);
-			break;
 		default:
 			display_help(progname);
 			return 0;
@@ -834,5 +825,3 @@ error_close:
 error:
 	return -1;	
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

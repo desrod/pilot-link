@@ -17,7 +17,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,26 +69,6 @@ char *tableheads[21] = {
 	"Private", 	/* 19	*/
 	"Category"	/* 20	*/
 };
-
-static const char *optstring = "hvDTeqp:t:d:c:arw";
-
-struct option options[] = {
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"delall",	no_argument,       NULL, 'D'},
-	{"titles", 	no_argument,       NULL, 'T'},
-	{"escape",	no_argument,       NULL, 'e'},
-	{"quiet",	no_argument,       NULL, 'q'},
-	{"port",        required_argument, NULL, 'p'},
-	{"tdelim",	required_argument, NULL, 't'},
-	{"delcat",	required_argument, NULL, 'd'},
-	{"install",	required_argument, NULL, 'c'},
-	{"augment",	no_argument,       NULL, 'a'},
-	{"read",        required_argument, NULL, 'r'},
-	{"write",	required_argument, NULL, 'w'},
-	{NULL,          0,                 NULL, 0}
-};
-
 
 int 	tableformat 	= 0,
 	tabledelim 	= 1,
@@ -596,13 +576,35 @@ int main(int argc, char *argv[])
 		*deletecategory 	= 0,
 		*progname 		= argv[0],
 		*port			= NULL,
+		*wrFilename		= NULL,
+		*rdFilename		= NULL,
 		buf[0xffff];
 
 	struct 	AddressAppInfo 	aai;
 	struct 	PilotUser 	User;
-		
-	while (((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
-	       && (mode == 0)) {
+	
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"delall",	'D', POPT_ARG_NONE, NULL, 'D', "Delete all Palm records in all categories"},
+	{"titles",	'T', POPT_ARG_NONE, NULL, 'T', "Write header with titles"},
+	{"escape",	'e', POPT_ARG_NONE, NULL, 'e', "Escape special chcters with backslash"},
+	{"quiet",	'q', POPT_ARG_NONE, NULL, 'q', "Do not prompt for HotSync button press"},
+	{"tdelim",	't', POPT_ARG_INT, &tabledelim, 't', "Include category, use delimiter (3=tab, 2=;, 1=,)"},
+	{"delcat",	'd', POPT_ARG_STRING, &deletecategory, 0, "Delete old Palm records in <category>"},
+	{"install",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to"},
+	{"augment",	'a', POPT_ARG_NONE, NULL, 'a', "Augment records with additional information"},
+	{"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm"},
+	{"write",	'w', POPT_ARG_STRING, &wrFilename, 'w', "Get records from Palm and write them to <file>"},
+	 POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
+	
+	po = poptGetContext("pilot-addresses", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 			
 		case 'h':
@@ -613,7 +615,6 @@ int main(int argc, char *argv[])
 			return 0;
 		case 't':
 			tableformat = 1;
-			tabledelim = atoi(optarg);
 			break;
 		case 'D':
 			deleteallcategories = 1;
@@ -627,17 +628,8 @@ int main(int argc, char *argv[])
 		case 'q':
 			quiet = 1;
 			break;
-		case 'p':
-			port = optarg;
-			break;
-		case 'd':
-			deletecategory = optarg;
-			break;
 		case 'e':
 			encodechars = 1;
-			break;
-		case 'c':
-			defaultcategoryname = optarg;
 			break;
 		case 'r':
 			mode = 1;
@@ -682,10 +674,10 @@ int main(int argc, char *argv[])
 
 	if (mode == 2) {		/* Write to file */
 		/* FIXME - Must test for existing file first! DD 2002/03/18 */
-		FILE *f = fopen(argv[optind], "w");
+		FILE *f = fopen(wrFilename, "w");
 
 		if (f == NULL) {
-			sprintf(buf, "%s: %s", argv[0], argv[optind]);
+			sprintf(buf, "%s: %s", progname, wrFilename);
 			perror(buf);
 			exit(EXIT_FAILURE);
 		}
@@ -697,41 +689,35 @@ int main(int argc, char *argv[])
 		fclose(f);
 
 	} else if (mode == 1) {	/* Read from file */
-		FILE *f = fopen(argv[optind], "r");
-		while (optind < argc) {
-			if (f == NULL) {
-				fprintf(stderr, "Unable to open input file");
-				fprintf(stderr, " '%s' (%s)\n\n", 
-					argv[optind], strerror(errno));   
-				fprintf(stderr, "Please make sure the file");
-				fprintf(stderr, "'%s' exists, and that\n",
-					argv[optind]);
+		FILE *f = fopen(rdFilename, "r");
+		
+		if (f == NULL) {
+			fprintf(stderr, "Unable to open input file");
+			fprintf(stderr, " '%s' (%s)\n\n", 
+				rdFilename, strerror(errno));   
+			fprintf(stderr, "Please make sure the file");
+			fprintf(stderr, "'%s' exists, and that\n",
+				rdFilename);
+			fprintf(stderr, "it is readable by this user");
+			fprintf(stderr, " before launching.\n\n");
 
-				fprintf(stderr, "it is readable by this user");
-				fprintf(stderr, " before launching.\n\n");
-
-				exit(EXIT_FAILURE);
-			}
-			if (deletecategory)
-				dlp_DeleteCategory(sd, db,
-						   match_category
-						   (deletecategory, &aai));
-
-			if (deleteallcategories) {
-				int i;
-
-				for (i = 0; i < 16; i++)
-					if (strlen(aai.category.name[i]) >
-					    0)
-						dlp_DeleteCategory(sd, db,
-								   i);
-			}
-
-			read_file(f, sd, db, &aai);
-			fclose(f);
-			optind++;
+			exit(EXIT_FAILURE);
 		}
-	}
+		read_file(f, sd, db, &aai);
+		fclose(f);
+	} else if (deletecategory)
+		dlp_DeleteCategory(sd, db,
+				match_category (deletecategory, &aai));
+	  else
+		if (deleteallcategories) {
+			int i;
+
+			for (i = 0; i < 16; i++)
+				if (strlen(aai.category.name[i]) >
+				    0)
+					dlp_DeleteCategory(sd, db,
+							   i);
+		}
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);
@@ -759,5 +745,3 @@ error_close:
 error:
         return -1;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

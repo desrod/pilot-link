@@ -1,3 +1,4 @@
+/* ex: set tabstop=4 expandtab: */
 /*
  * read-todos.c:  Translate Palm ToDo database into generic format
  *
@@ -22,7 +23,7 @@
 /* 12-27-2003:
    FIXME: Add "Private" and "Delete" flags */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,16 +33,6 @@
 #include "pi-todo.h"
 #include "pi-file.h"
 #include "pi-header.h"
-
-struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
-	{"help",        no_argument,       NULL, 'h'},
-	{"version",     no_argument,       NULL, 'v'},
-	{"file",        required_argument, NULL, 'f'},
-	{NULL,          0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hvf:";
 
 static void display_help(const char *progname)
 {
@@ -82,9 +73,23 @@ int main(int argc, char *argv[])
 	struct 	pi_file *pif 	= NULL;
 	struct 	ToDoAppInfo tai;
 	unsigned char buffer[0xffff];
-    pi_buffer_t *recbuf;
 	
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	pi_buffer_t *recbuf;
+	
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port", 	'p', POPT_ARG_STRING, &port, 'p', "Use device <port> to communicate with Palm"},
+	{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version", 	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"file", 	'f', POPT_ARG_STRING, &filename, 'f', "Save ToDO entries in <filename> instead of STDOUT"},
+	POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
+	
+	po = poptGetContext("read-todos", argc, argv, options, 0);
+	
+	 while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		case 'h':
 			display_help(progname);
@@ -93,11 +98,9 @@ int main(int argc, char *argv[])
 			print_splash(progname);
 			return 0;
 		case 'p':
-			port = optarg;
 			filename = NULL;
 			break;
 		case 'f':
-			filename = optarg;
 			port = NULL;
 			break;
 		default:
@@ -226,5 +229,3 @@ error_close:
 error:
 	return -1;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

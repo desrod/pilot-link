@@ -28,7 +28,7 @@
 #include <config.h>
 #endif
  
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,23 +55,6 @@ int install_tux_with_name(int sd, char *name, int width, int height,
 	long pdb_size, long mod_time, long file_time);
 
 #define SIZE_OF_TUX 3335
-
-struct option options[] = {
-     {"p",           required_argument, NULL, 'p'},
-     {"help",        no_argument,       NULL, 'h'},
-     {"delete",      required_argument, NULL, 'd'},
-     {"delall",      no_argument,       NULL, 'D'},
-     {"install",     required_argument, NULL, 'i'},
-     {"list",        no_argument,       NULL, 'l'},
-     {"fetch",       required_argument, NULL, 'f'},
-     {"fetchall",    no_argument,       NULL, 'F'},
-     {"version",     no_argument,       NULL, 'v'},
-     {"convert",     required_argument, NULL, 'c'},
-     {0,             0,                 0,    0}
-};
-
-static const char *optstring = "p:hi:ld:Df:Fvc:";
-
 #ifndef TRUE
 # define TRUE 1
 #endif
@@ -787,155 +770,134 @@ int pdb_to_jpg(char *filename)
  ***********************************************************************/
 int main(int argc, char *argv[])
 {
-   int c, fetch, convert;
-   int i;
-   int sd = 0;
-   int install_flag, delete_flag, fetch_flag;
-   int install_i, delete_i, fetch_i;
-   char *port = NULL;
-   char *progname = argv[0];
-   char **delete_files;
-   char **install_files;
-   char **fetch_files;
+	int c, fetch, convert;
+	int i;
+	int sd = 0;
+	int install_flag, delete_flag, fetch_flag;
+	int install_i, delete_i, fetch_i;
+	char *port = NULL;
+	char *progname = argv[0];
+	char *delete_files[512];
+	char *install_files[512];
+	char *fetch_files[512];
+	char *convert_file = NULL;
+	char *parg;
 
-   fetch = convert = FALSE;
+	poptContext po;
 
-   if (argc == 1) {
-      display_help(progname);
-   }
+	struct poptOption options[] = {
+	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	{"delete",	'd', POPT_ARG_STRING, NULL, 'd', "Delete a jpg file on the handheld"},
+	{"delall",	'D', POPT_ARG_NONE, NULL, 'D', "Delete ALL jpg files on the handheld"},
+	{"install",	'i', POPT_ARG_STRING, NULL, 'i', "Install a jpg file"},
+	{"list",	'l', POPT_ARG_NONE, NULL, 'l', "List all photos and thumbnails"},
+	{"fetch",	'f', POPT_ARG_STRING, NULL, 'f', "Fetch files from the Palm"},
+	{"fetchall",	'F', POPT_ARG_NONE, NULL, 'F', "Fetch ALL jpg files from the Palm"},
+	{"convert",	'c', POPT_ARG_STRING, &convert_file, 'c', "convert [file].jpg.pdb files to jpg"},
+    
+	 POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
 
-   delete_files=calloc(argc, sizeof(char *));
-   delete_files[0]=NULL;
-   install_files=calloc(argc, sizeof(char *));
-   install_files[0]=NULL;
-   fetch_files=calloc(argc, sizeof(char *));
-   fetch_files[0]=NULL;
-   install_i = delete_i = fetch_i = 0;
-   delete_flag = install_flag = fetch_flag = 0;
-   for (i=0; i<argc; i++) {
-      if (argv[i][0] == '-') {
-	 delete_flag=install_flag=fetch_flag=0;
-      }
-      if (!strcmp(argv[i], "-d")) {
-	 delete_flag=1;
-	 if (i+2>argc) {
-	    fprintf(stderr, "-d requires an argument\n");
-	    exit(-1);
-	 }
-	 continue;
-      }
-      if (!strcmp(argv[i], "-i")) {
-	 install_flag=1;
-	 if (i+2>argc) {
-	    fprintf(stderr, "-i requires an argument\n");
-	    exit(-1);
-	 }
-	 continue;
-      }
-      if (!strcmp(argv[i], "-f")) {
-	 fetch_flag=1;
-	 if (i+2>argc) {
-	    fprintf(stderr, "-f requires an argument\n");
-	    exit(-1);
-	 }
-	 continue;
-      }
-      if (install_flag) {
-	 install_files[install_i++] = argv[i];
-	 install_files[install_i] = NULL;
-      }
-      if (delete_flag) {
-	 delete_files[delete_i++] = argv[i];
-	 delete_files[delete_i] = NULL;
-      }
-      if (fetch_flag) {
-	 fetch_files[fetch_i++] = argv[i];
-	 fetch_files[fetch_i] = NULL;
-      }
+	
+	fetch = convert = FALSE;
 
-   }
-#ifdef DEBUG
-   for (i=0; install_files[i]; i++) {
-      printf("install %s\n", install_files[i]);
-   }
-   for (i=0; delete_files[i]; i++) {
-      printf("delete %s\n", delete_files[i]);
-   }
-   for (i=0; fetch_files[i]; i++) {
-      printf("fetch %s\n", fetch_files[i]);
-   }
-#endif
+	if (argc == 1) {
+	display_help(progname);
+	}
 
-   /* Get the port */
-   for (i=0; i<argc; i++) {
-      if (!strcmp(argv[i], "-p")) {
-	 if (i+1<argc) {
-	    port=argv[i+1];
-#ifdef DEBUG
-	    printf("port %s\n", port);
-#endif
-	 }
-      }
-   }
-   /* Run through the args far enough to see if a connection is required */
-   for (i=0; i<argc; i++) {
-      if ( (!strcmp(argv[i], "-D")) ||
-	   (!strcmp(argv[i], "-d")) ||
-	   (!strcmp(argv[i], "-F")) ||
-	   (!strcmp(argv[i], "-f")) ||
-	   (!strcmp(argv[i], "-l")) ||
-	   (!strcmp(argv[i], "-i")) ) {
-	 sd = pilot_connect(port);
-	 if (sd<=0) {
-	    exit(-1);
-	 }
-	 break;
-      }
-   }
+	install_i = delete_i = fetch_i = 0;
+	delete_flag = install_flag = fetch_flag = 0;
+  
+   	/* Run through the args far enough to see if a connection is required */
+	for (i=0; i<argc; i++) {
+		if ( (!strcmp(argv[i], "-D")) ||
+		(!strcmp(argv[i], "-d")) ||
+		(!strcmp(argv[i], "-F")) ||
+		(!strcmp(argv[i], "-f")) ||
+		(!strcmp(argv[i], "-l")) ||
+		(!strcmp(argv[i], "-i")) ) {
+	 		
+	 		break;
+		}
+	}
 
-   while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-      switch (c) {
-       case 'h':
-	 display_help(progname);
-	 return 0;
-       case 'D':
-	 do_delete(sd, NULL, 1);
-	 break;
-       case 'd':
-	 do_delete(sd, delete_files, 0);
-	 break;
-       case 'i':
-	 do_install(sd, install_files);
-	 break;
-       case 'l':
-	 do_list(sd);
-	 break;
-       case 'v':
-	 print_splash(progname);
-	 return 0;
-       case 'c':
-	 pdb_to_jpg(optarg);
-	 break;
-       case 'F':
-	 do_fetch(sd, NULL, 1);
-	 break;
-       case 'f':
-	 do_fetch(sd, fetch_files, 0);
-	 break;
-       case 'p':
-	 break;
-       default:
-	 display_help(progname);
-	 return 0;
-      }
-   }
+	po = poptGetContext("pilot-foto", argc, argv, options, 0);
+   
+	while ((c = poptGetNextOpt(po)) >= 0) {
+		switch (c) {
+		case 'h':
+			display_help(progname);
+		return 0;
+		case 'D':
+			sd = pilot_connect(port);
+			if (sd<=0) 
+		 		exit(-1);
+			do_delete(sd, NULL, 1);
+		break;
+		case 'd':
+			delete_files[delete_i++] = poptGetOptArg(po);
+		break;
+		case 'i':
+			install_files[install_i++] = poptGetOptArg(po);
+		break;
+		case 'l':
+			sd = pilot_connect(port);
+			if (sd<=0) 
+		 		exit(-1);
+			do_list(sd);
+		break;
+		case 'v':
+			print_splash(progname);
+		return 0;
+		case 'c':
+			pdb_to_jpg(convert_file);
+		break;
+		case 'F':
+			sd = pilot_connect(port);
+			if (sd<=0) 
+		 		exit(-1);
+			do_fetch(sd, NULL, 1);
+		break;
+		case 'f':
+			fetch_files[fetch_i++] = poptGetOptArg(po);
+		break;
+		default:
+			display_help(progname);
+		return 0;
+      		}
+	}
+	
+   	if(delete_i)
+	{
+		sd = pilot_connect(port);
+		if (sd<=0) 
+		 	exit(-1);	
+		do_delete(sd, delete_files, 0);
+	}
+	if(install_i)
+	{
+		sd = pilot_connect(port);
+		if (sd<=0) 
+		 	exit(-1);
+		do_install(sd, install_files);
+	}
+	if(fetch_i)
+	{
+		sd = pilot_connect(port);
+		if (sd<=0) 
+		 	exit(-1);
+		do_fetch(sd, fetch_files, 0);
+	}
+   
+	if (sd) {
+		dlp_EndOfSync(sd, dlpEndCodeNormal);
+		pi_close(sd);
+	}
 
-   if (sd) {
-      dlp_EndOfSync(sd, dlpEndCodeNormal);
-      pi_close(sd);
-   }
-
-   return 0;
+	return 0;
 }
 
 /* A thumbnail image formatted to be installed
@@ -1165,5 +1127,3 @@ int memcpy_tux_record(unsigned char *dest)
     memcpy(dest, tux, SIZE_OF_TUX);
     return 0;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -20,7 +20,7 @@
  *
  */
 
-#include "getopt.h"
+#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,15 +32,6 @@
 static void display_help(const char *progname);
 void print_splash(char *progname);
 int pilot_connect(const char *porg);
-
-struct option options[] = {
-	{"port",	required_argument, NULL, 'p'},
-	{"help",	no_argument,       NULL, 'h'},
-	{"version",	no_argument,       NULL, 'v'},
-	{NULL,		0,                 NULL, 0}
-};
-
-static const char *optstring = "p:hv";
 
 static void display_help(const char *progname)
 {
@@ -67,8 +58,18 @@ int main(int argc, char *argv[])
 	struct 	ToDoAppInfo tai;
 	pi_buffer_t *buffer;
 
+	poptContext po;
+	
+	struct poptOption options[] = {
+	{"port",	'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm"},
+	{"help",	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
+        {"version",	'v', POPT_ARG_NONE, NULL, 'v', "Display version information"},
+	 POPT_AUTOHELP
+        { NULL, 0, 0, NULL, 0 }
+	} ;
 
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+	po = poptGetContext("memos", argc, argv, options, 0);
+	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 
 		  case 'h':
@@ -77,9 +78,6 @@ int main(int argc, char *argv[])
 		  case 'v':
 			  print_splash(progname);
 			  return 0;
-		  case 'p':
-			  port = optarg;
-			  break;
 		  default:
 			  display_help(progname);
 			  return 0;
@@ -165,5 +163,3 @@ int main(int argc, char *argv[])
       error:
 	return -1;
 }
-
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
