@@ -1814,6 +1814,8 @@ dlp_WriteAppBlock(int sd, int fHandle, const /*@unique@ */ void *data,
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), fHandle);
    result = dlp_exec(sd, 0x1d, 0x20, dlp_buf, 6, dlp_buf, DLP_BUF_SIZE);
 
+   Expect(2)
+	set_short(DLP_REQUEST_DATA(req, 0, 2), offset);
 #ifdef DLP_TRACE
    if (dlp_trace) {
       fprintf(stderr, "  Read: %d bytes:\n", result - 2);

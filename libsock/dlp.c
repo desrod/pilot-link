@@ -1814,6 +1814,8 @@ dlp_ReadSortBlock(int sd, int fHandle, int offset, void *dbuf, int dlen)
 
    result = dlp_exec(sd, 0x1d, 0x20, dlp_buf, 6, dlp_buf, DLP_BUF_SIZE);
 
+   Expect(2)
+
 #ifdef DLP_TRACE
    if (dlp_trace) {
       fprintf(stderr, "  Read: %d bytes:\n", result - 2);

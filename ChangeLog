@@ -1,3 +1,8 @@
+2001-01-12  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/dlp.c (dlp_ReadSortBlock): Expect 2 bytes, fixes bug pointed 
+	out by Matthias Hessler <Matthias.Hessler@t-online.de>
+
 2001-01-11  JP Rosevear  <jpr@helixcode.com>
 
 	* read-ical.c (main): use ii instead of i to index repeat days in
