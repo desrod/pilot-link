@@ -121,7 +121,7 @@ AC_CHECK_HEADERS(
 	netinet/in.h readline/history.h readline/readline.h stdint.h 	\
 	stdlib.h string.h strings.h sys/ioctl_compat.h sys/ioctl.h 	\
 	sys/malloc.h sys/select.h sys/sockio.h sys/time.h sys/utsname.h \
-	unistd.h)
+	unistd.h IOKit/IOBSD.h)
 
 AC_CHECK_FUNCS(
 	atexit cfmakeraw cfsetispeed cfsetospeed cfsetspeed dup2 	\
@@ -348,7 +348,6 @@ dnl ******************************
 dnl readline checking
 dnl ******************************
 msg_readline=no
-
 AC_ARG_WITH(readline,      [  --with-readline         use readline               [default=yes]])
 if test "x$with_readline" != "xno"; then
 AC_CHECK_LIB(termcap, tgoto, [
@@ -362,6 +361,10 @@ AC_DEFINE(HAVE_READLINE_HISTORY_H),,"-ltermcap")
 	], RL_LIBS="", "-ltermcap")  
 ], RL_LIBS="")
 fi
+
+dnl For OSX builds
+CFLAGS="$CFLAGS -L/sw/lib"
+LDFLAGS="$LDFLAGS -I/sw/include"
 
 AC_SUBST(RL_LIBS)
 
