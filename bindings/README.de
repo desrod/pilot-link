@@ -1,0 +1,31 @@
+Feb 2003,    Stephan Bösebeck & John Mitchell
+
+Ich hab diese Pilotlink unterstützung für Java geschrieben, weil ich die ursprüngliche Version von David Goodenough nicht mit Java 1.4 ans laufen bekommen hab und alle anderen Java Unterstüztungen für Palm auf Windows aufsetzen bzw. JComm benötigen.
+Ich bin die Sache auch etwas anders angegangen:
+- Ich will den C-Part so klein wie möglich halten, damit ist es einfacher, platformunabhängig zu bleiben und die Erweiterung auf neue Datentypen (Fahrtenbücher, Bilder, Telefon etc.) ist in Java möglich. (ausserdem hab ich schon ne ganze Weile kein c mehr programmiert ;-)
+- Jede Kommunikation mit der Bibliothek wird über die Klasse org.gnu.PilotLink erledigt. Dort werden RawRecords verwendet (Eigentlich nur eine Classe um ein byte Array). Diese können wiederum umgebaut werden in andere Datenstrukturen (DatebookRecord, Memo, etc). Das ganze läuft ähnlich ab wie bei Streams:
+	DatebookRecord dbr=new DatebookRecord(PilotLink.getRecord...)
+
+Im Moment wird folgende Funktionalität unterstützt:
+- Lesen und schreiben von RawRecords (by index)
+- Lesen von User und Systeminfo
+- Lesen DatebookRecords
+- schreiben von DatebookRecords
+die Funktionalität wird bald erweitert werden...
+
+Im Moment gibt es ein Problem, mehr als eine DB pro Session zu öffnen. 
+Es wird eine Fehlernummer -1 ausgegeben, auch wenn die DB vorher geschlossen wird.
+Ich arbeite daran...
+
+INSTALL
+normalerweise sind folgende Schritte nötig:
+1) Im Makefile die Variable JAVA_HOME entsprechend setzen, die PORT Variable anpassen
+2) "make" ausführen
+3) als root "make install" machen
+4) evtl. Testen der installation mit "make test" oder "java test PORT", wobei PORT der pfad zum Pilot-Port ist.
+Das testprogramm sollte eine Verbindung zum Palm aufbauen können, momentan wird Port /dev/usb/tts/1 als Defaultport verwendet.
+Man kann das Speichern von Records auch probieren, indem man die datei test.java entsprechend ändert (Kommentare).
+Bei Fragen, Wünschen oder Anregungen, Mail an mich.
+
+Stephan Bösebeck (stephan_boesebeck@web.de)
+John Mitchell (jfm@minioak.com)
