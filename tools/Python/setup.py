@@ -2,7 +2,7 @@
 from distutils.core import setup, Extension
 
 setup(name = "python-libpisock",
-      version = "0.9.5.1",
+      version = "0.10.1",
       description = "Python binding for the pisock library.",
       author = "Rob Tillotson",
       author_email = "rob@pyrite.org",

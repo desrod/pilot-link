@@ -3,6 +3,8 @@
 	* pilot-xfer.c: Revert an oops I did
 
 	* addresses.c: Removed the 'fancy' output (fstyle)
+	
+	* tools/Python/setup.py: Incremented version
 
 2002-02-08  JP Rosevear  <jpr@ximian.com>
 
