@@ -114,18 +114,21 @@ dnl ******************************
 dnl USB Support
 dnl ******************************
 msg_usb=no
+usb_type=
 case "$host" in
 	*linux*)
-		AM_CONDITIONAL(WITH_LINUXUSB, true)
 		AC_DEFINE(HAVE_USB)
+		usb_type=linux
 		msg_usb=yes
 	;;
 	*freebsd*)
-		AM_CONDITIONAL(WITH_FREEBSDUSB, true)
 		AC_DEFINE(HAVE_USB)
+		usb_type=freebsd
 		msg_usb=yes
 	;;
 esac
+AM_CONDITIONAL(WITH_LINUXUSB, test x$usb_type = xlinux)
+AM_CONDITIONAL(WITH_FREEBSDUSB, test x$usb_type = xfreebsd)
 
 dnl ******************************
 dnl getopt
