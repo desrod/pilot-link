@@ -224,12 +224,6 @@ pi_nredir_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-#pi_port_SOURCES = 		\
-#	pi-port.c
-#pi_port_LDADD = 		\
-#	$(POPT_LIBS)		\
-#	$(top_builddir)/libpisock/libpisock.la
-
 pilot_addresses_SOURCES = 	\
 	pilot-addresses.c
 pilot_addresses_LDADD = 	\
@@ -243,17 +237,6 @@ pilot_clip_LDADD = 		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
-
-#pilot_debug_SOURCES = 		\
-#	pd-tty.c		\
-#	pilot-debug.c
-#pilot_debug_LDADD = 		\
-#	$(POPT_LIBS)		\
-#	$(TCL_LIBS)		\
-#	$(TCL_LIB_FLAG)		\
-#	$(TCL_INCLUDES)		\
-#	$(RL_LIBS)		\
-#	$(top_builddir)/libpisock/libpisock.la
 
 pilot_dedupe_SOURCES = 		\
 	pilot-dedupe.c
@@ -275,14 +258,6 @@ pilot_foto_LDADD = 		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
-
-
-######################################################
-# pilot-mail has been deprecated, and replaced with 
-# pilot-mailsync. Please use that instead. 
-# http://wissrech.iam.uni-bonn.de/people/garcke/pms/
-######################################################
-
 
 pilot_schlep_SOURCES = 		\
 	pilot-schlep.c
