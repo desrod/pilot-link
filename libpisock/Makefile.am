@@ -33,6 +33,7 @@ libpisock_la_SOURCES =  \
 	pi-header.c	\
 	serial.c	\
 	slp.c		\
+	sys.c		\
 	socket.c	\
 	sync.c		\
 	syspkt.c	\

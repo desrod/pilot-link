@@ -72,13 +72,6 @@ extern "C" {
 #define PI_SOCK_CONEN  0x10  /* Connected but end */
 #define PI_SOCK_CLOSE  0x20  /* Closed */
 
-	struct pi_skb {
-		int 	len;
-		struct 	pi_skb *next;
-		unsigned char source, dest, type, id;
-		unsigned char data[1038];
-	};
-
 	struct sockaddr;
 
 	struct pi_protocol {
@@ -125,9 +118,6 @@ extern "C" {
 		struct pi_protocol **cmd_queue;
 		int cmd_len;
 		struct pi_device *device;
-
-		struct pi_skb *txq;
-		struct pi_skb *rxq;
 
 		int state;
 		int command;		/* true when socket in command state                               */

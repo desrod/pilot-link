@@ -13,9 +13,10 @@ extern "C" {
 
 #define PI_PF_DEV               0x01
 #define PI_PF_SLP		0x02
-#define PI_PF_PADP		0x03
-#define PI_PF_NET		0x04
-#define PI_PF_DLP		0x05
+#define PI_PF_SYS		0x03
+#define PI_PF_PADP		0x04
+#define PI_PF_NET		0x05
+#define PI_PF_DLP		0x06
 
 #define PI_SOCK_STREAM		0x0010
 #define PI_SOCK_RAW		0x0030
@@ -30,6 +31,7 @@ enum PiOptLevels {
 	PI_LEVEL_SLP,
 	PI_LEVEL_PADP,
 	PI_LEVEL_NET,
+	PI_LEVEL_SYS,
 	PI_LEVEL_CMP,
 	PI_LEVEL_DLP,
 	PI_LEVEL_SOCK

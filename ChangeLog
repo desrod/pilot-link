@@ -1,5 +1,25 @@
 2002-03-19  JP Rosevear  <jpr@ximian.com>
 
+	* include/pi-sys.h: for new sys protocol
+
+	* include/pi-syspkt.h: remove protos
+
+	* include/pi-source.h: remove dead struct
+
+	* include/pi-socket.h: add PI_PF_SYS and PI_LEVEL_SYS
+
+	* libpisock/sys.c: implement the sys protocol
+
+	* libpisock/socket.c (protocol_queue_build): handle PI_PF_SYS
+
+	* libpisock/syspkt.c: remove syspkt_tx and syspkt_rx
+
+	* libpisock/Makefile.am: build sys.c
+
+	* libpisock/padp.c (padp_tx): remove useless unsigned char casts
+
+2002-03-19  JP Rosevear  <jpr@ximian.com>
+	
 	* libpisock/slp.c (slp_protocol): use new defines
 
 	* libpisock/padp.c (padp_rx): ditto

@@ -60,12 +60,6 @@ extern "C" {
 	extern int sys_UnpackRegisters
 	    PI_ARGS((void *buffer, struct Pilot_registers * r));
 
-	extern int syspkt_tx
-	    PI_ARGS((struct pi_socket * ps, void *msg, int length));
-
-	extern int syspkt_rx
-	    PI_ARGS((struct pi_socket * ps, void *buf, int len));
-
 	extern int sys_Continue
 	    PI_ARGS((int sd, struct Pilot_registers * r,
 		     struct Pilot_watch * w));

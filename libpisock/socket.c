@@ -292,12 +292,19 @@ protocol_queue_build (struct pi_socket *ps, int autodetect)
 		prot = net_protocol ();
 		protocol_queue_add (ps, prot);
 		break;
+	case PI_PF_SYS:
+		prot = sys_protocol ();
+		protocol_queue_add (ps, prot);
+		prot = slp_protocol ();
+		protocol_queue_add (ps, prot);
+		break;
 	}
 
 	/* The command protocol queue */
 	switch (protocol) {
 	case PI_PF_PADP:
 	case PI_PF_SLP:
+	case PI_PF_SYS:
 		prot 	= cmp_protocol ();
 		protocol_cmd_queue_add (ps, prot);
 	

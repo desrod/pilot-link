@@ -135,16 +135,16 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		return -1;
 
 	if (data->type == padWake) {
-		data->txid = (unsigned char) 0xff;
+		data->txid = 0xff;
 	}
 
-	if (data->txid == (unsigned char) 0)
-		data->txid = (unsigned char) 0x10;	/* some random # */
+	if (data->txid == 0)
+		data->txid = 0x10;	/* some random # */
 
-	if (data->txid >= (unsigned char) 0xfe)
-		data->next_txid = (unsigned char) 1;	/* wrap */
+	if (data->txid >= 0xfe)
+		data->next_txid = 1;	/* wrap */
 	else
-		data->next_txid = data->txid + (unsigned char) 1;
+		data->next_txid = data->txid + 1;
 
 	if ((data->type != padAck) && ps->state == PI_SOCK_CONAC)
 		data->txid = data->next_txid;
