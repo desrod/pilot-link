@@ -4,6 +4,7 @@
  * Copyright (c) 1997, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  * Copyright (c) 1999, John Franks
+ * Copyright (c) 2004, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -431,7 +432,7 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 				return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
 		}
 	}
-	
+
 	/* read the actual packet data */
 	total_bytes = 0;
 	packet_len = get_long(&header->data[PI_NET_OFFSET_SIZE]);
