@@ -2,6 +2,8 @@
 
 	* configure.in: Added HOST_OS and removed the -fullwarn for Irix
 
+	* src/Makefile.am: Fixed a typo on bin_SCRIPTS, missing end \
+
 2002-09-17  JP Rosevear  <jpr@ximian.com>
 
 	* src/pilot-datebook/Makefile.am: dist getopt*.c files because

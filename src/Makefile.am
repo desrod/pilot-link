@@ -71,7 +71,7 @@ else
 PERLSCRIPTS =
 endif
 
-bin_SCRIPTS =
+bin_SCRIPTS =		\
 	$(PERLSCRIPTS)
 
 ccexample_SOURCES = \
