@@ -99,6 +99,7 @@ libpiuserland_la_LDFLAGS =		\
 addresses_SOURCES = 		\
 	addresses.c
 addresses_LDADD = 		\
+	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 

@@ -28,46 +28,9 @@
 #include "pi-address.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "userland.h"
 
-const char *port        = NULL;
 
-const struct poptOption options[] = {
-        { "port",    'p', POPT_ARG_STRING, &port, 0, "Use device <port> to communicate with Palm", "<port>"},
-        { "help",    'h', POPT_ARG_NONE,   0, 'h', "Display this information"},
-        { "version", 'v', POPT_ARG_NONE,   0, 'v', "Display version information"},
-        POPT_AUTOHELP
-        { NULL, 0, 0, NULL, 0 }
-};
-
-poptContext po;
-
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Print out the --help options and arguments  
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("Dumps the Palm AddressDB database into a generic text output format\n\n");
-
-	poptPrintHelp(po, stderr, 0);
-
-	printf("\nOnly the port option is required, the other options are... optional.\n\n");
-	printf("Example:\n");
-	printf("  %s -p /dev/pilot\n\n", progname);
-	printf("You can redirect the output of 'addresses' to a file instead of the default\n");
-	printf("STDOUT by using redirection and pipes as necessary.\n\n");
-	printf("Example:\n");
-	printf("  %s -p /dev/pilot > MyAddresses.txt\n\n", progname);
-
-	return;
-}
 
 int main(int argc, char *argv[])
 {
@@ -75,52 +38,50 @@ int main(int argc, char *argv[])
 		index,
 		sd 		= -1,
 		po_err		= -1;
-	
+
 	char 	*progname 	= argv[0];
-	
+
 	struct 	AddressAppInfo aai;
+	poptContext po;
 
 	pi_buffer_t *buffer;
-	
+
+	struct poptOption options[] = {
+		USERLAND_RESERVED_OPTIONS
+		POPT_TABLEEND
+	} ;
         po = poptGetContext("addresses", argc, (const char **) argv, options, 0);
-  
-        if (argc < 2) {
-                display_help(progname);
-                exit(1);
-        }
-  
-        while ((po_err = poptGetNextOpt(po)) != -1) {
-                switch (po_err) {
+	poptSetOtherOptionHelp(po," [- port]\n\n"
+		"   Dumps the Palm AddressDB database into a generic text output format\n\n");
 
-		case 'v':
-			print_splash(progname);
-			return 0;
-		default:
-			poptPrintHelp(po, stderr, 0);
-			return 0;
-                }
+
+        while ((po_err = poptGetNextOpt(po)) >= 0) {
+		/* No arguments not handled by popt. */
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",po_err);
+		return 1;
         }
 
-	sd = pilot_connect(port);
+	if (po_err < -1) userland_badoption(po,po_err);
+	sd = userland_connect();
 
 	if (sd < 0)
 		goto error;
 
 	if (dlp_OpenConduit(sd) < 0)
 		goto error_close;
-	
+
 	/* Open the Address book's database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
-		puts("Unable to open AddressDB");
+		fprintf(stderr,"   ERROR: Unable to open AddressDB\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-		exit(EXIT_FAILURE);
+		goto error_close;
 	}
-	
+
 	buffer = pi_buffer_new (0xffff);
-	
+
 	dlp_ReadAppBlock(sd, db, 0, buffer->data, 0xffff);
 	unpack_AddressAppInfo(&aai, buffer->data, 0xffff);
-	
+
 	for (index = 0;; index++) {
 		int 	i,
 			attr,
@@ -131,15 +92,15 @@ int main(int argc, char *argv[])
 		int len =
 		    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, &attr,
 					  &category);
-	
+
 		if (len < 0)
 			break;
-	
+
 		/* Skip deleted records */
 		if ((attr & dlpRecAttrDeleted)
 		    || (attr & dlpRecAttrArchived))
 			continue;
-	
+
 		unpack_Address(&addr, buffer->data, buffer->used);
 
 		printf("Category: %s\n", aai.category.name[category]);
@@ -147,13 +108,13 @@ int main(int argc, char *argv[])
 		for (i = 0; i < 19; i++) {
 			if (addr.entry[i]) {
 				int l = i;
-	
+
 				if ((l >= entryPhone1) && (l <= entryPhone5)) {
-					printf("%s: %s\n", 
-						aai.phoneLabels[addr.phoneLabel[l - entryPhone1]], 
+					printf("%s: %s\n",
+						aai.phoneLabels[addr.phoneLabel[l - entryPhone1]],
 						addr.entry[i]);
 				} else {
-					printf("%s: %s\n", aai.labels[l], 
+					printf("%s: %s\n", aai.labels[l],
 						addr.entry[i]);
 				}
 			}
