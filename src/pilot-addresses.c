@@ -54,7 +54,25 @@ char *tableheads[22] = {
 	"Note", "Main", "Pager", "Mobile"
 };
 
-static const char *optstring = "DTeqp:t:d:c:arw";
+static const char *optstring = "hvDTeqp:t:d:i:arw";
+
+struct option options[] = {
+	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
+	{"delall",	no_argument,       NULL, 'D'},
+	{"titles", 	no_argument,       NULL, 'T'},
+	{"escape",	no_argument,       NULL, 'e'},
+	{"quiet",	no_argument,       NULL, 'q'},
+	{"port",        required_argument, NULL, 'p'},
+	{"tdelim",	required_argument, NULL, 't'},
+	{"delcat",	required_argument, NULL, 'd'},
+	{"install",	required_argument, NULL, 'i'},
+	{"augment",	no_argument,       NULL, 'a'},
+	{"read",        required_argument, NULL, 'r'},
+	{"write",	required_argument, NULL, 'w'},
+	{NULL,          0,                 NULL, 0}
+};
+
 
 int 	tableformat 	= 0,
 	tabledelim 	= 1,
@@ -454,12 +472,13 @@ static void print_help(char *progname)
 	       "     -a                augment records with additional information\n"
 	       "     -e                escape special chcters with backslash\n"
 	       "     -p port           use device file <port> to communicate with Palm\n"
-	       "     -c category       install to category <category> by default\n"
+	       "     -i category       install to category <category> by default\n"
 	       "     -d category       delete old Palm records in <category>\n"
 	       "     -D                delete all Palm records in all categories\n"
 	       "     -r file           read records from <file> and install them to Palm\n"
-	       "     -w file           get records from Palm and write them to <file>\n\n",
-	progname);
+	       "     -w file           get records from Palm and write them to <file>\n"
+	       "     -h, --help        Display this information\n"
+	       "     -v, --version     Display version information\n\n", progname);
 	return;
 }
 
@@ -483,10 +502,15 @@ int main(int argc, char *argv[])
 	struct 	AddressAppInfo 	aai;
 	struct 	PilotUser 	User;
 		
-	while (((c = getopt(argc, argv, optstring)) != -1)
+	while (((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
 	       && (mode == 0)) {
 		switch (c) {
-
+		case 'h':
+			print_help(progname);
+			return 0;
+		case 'v':
+			print_splash(progname);
+			return 0;
 		case 't':
 			tableformat = 1;
 			tabledelim = atoi(optarg);
@@ -512,7 +536,7 @@ int main(int argc, char *argv[])
 		case 'e':
 			encodechars = 1;
 			break;
-		case 'c':
+		case 'i':
 			defaultcategoryname = optarg;
 			break;
 		case 'r':
@@ -521,111 +545,101 @@ int main(int argc, char *argv[])
 		case 'w':
 			mode = 2;
 			break;
-		case 'h':
-			print_help(progname);
-			break;
 		}
-	}
-	if (argc < 2 && !getenv("PILOTPORT")) {
-		print_splash(progname);
-	} else if (port == NULL && getenv("PILOTPORT")) {
-		port = getenv("PILOTPORT");
 	}
 
-	if (port == NULL && argc > 1) {
-		printf
-		    ("\nERROR: At least one command parameter of '-p <port>' must be set, or the\n"
-		     "environment variable $PILOTPORT must be used if '-p' is omitted or missing.\n");
+	sd = pilot_connect(port);
+	if (sd < 0)
+		goto error;
+	
+	
+	/* Open the MemoDB.pdb database, store access handle in db */
+	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
+		puts("Unable to open AddressDB");
+		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
 		exit(1);
-	} else {
-		sd = pilot_connect(port);
-	
-		/* Ask the pilot who it is. */
-		dlp_ReadUserInfo(sd, &User);
-	
-		/* Tell user (via the Palm) that we are starting things up */
-		dlp_OpenConduit(sd);
-	
-		/* Open the MemoDB.pdb database, store access handle in db */
-		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
-			puts("Unable to open AddressDB");
-			dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
+	}
+
+	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
+	unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
+
+	if (defaultcategoryname)
+		defaultcategory =
+		    match_category(defaultcategoryname, &aai);
+	else
+		defaultcategory = 0;	/* Unfiled */
+
+	if (mode == 2) {	/* Write to file */
+		/* FIXME - Must test for existing file first! DD 2002/03/18 */
+		FILE *f = fopen(argv[optind], "w");
+
+		if (f == NULL) {
+			sprintf(buf, "%s: %s", argv[0], argv[optind]);
+			perror(buf);
 			exit(1);
 		}
-	
-		l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-		unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
-	
-		if (defaultcategoryname)
-			defaultcategory =
-			    match_category(defaultcategoryname, &aai);
-		else
-			defaultcategory = 0;	/* Unfiled */
-	
-		if (mode == 2) {	/* Write */
-			FILE *f = fopen(argv[optind], "w");
-	
+		write_file(f, sd, db, &aai);
+		if (deletecategory)
+			dlp_DeleteCategory(sd, db,
+					   match_category(deletecategory,
+							  &aai));
+		fclose(f);
+	} else if (mode == 1) {
+		FILE *f;
+
+		while (optind < argc) {
+			f = fopen(argv[optind], "r");
 			if (f == NULL) {
-				sprintf(buf, "%s: %s", argv[0], argv[optind]);
+				sprintf(buf, "%s: %s", argv[0],
+					argv[optind]);
 				perror(buf);
-				exit(1);
+				continue;
 			}
-			write_file(f, sd, db, &aai);
 			if (deletecategory)
 				dlp_DeleteCategory(sd, db,
-						   match_category(deletecategory,
-								  &aai));
-			fclose(f);
-		} else if (mode == 1) {
-			FILE *f;
-	
-			while (optind < argc) {
-				f = fopen(argv[optind], "r");
-				if (f == NULL) {
-					sprintf(buf, "%s: %s", argv[0],
-						argv[optind]);
-					perror(buf);
-					continue;
-				}
-				if (deletecategory)
-					dlp_DeleteCategory(sd, db,
-							   match_category
-							   (deletecategory, &aai));
-	
-				if (deleteallcategories) {
-					int i;
-	
-					for (i = 0; i < 16; i++)
-						if (strlen(aai.category.name[i]) >
-						    0)
-							dlp_DeleteCategory(sd, db,
-									   i);
-				}
-	
-				read_file(f, sd, db, &aai);
-				fclose(f);
-				optind++;
+						   match_category
+						   (deletecategory, &aai));
+
+			if (deleteallcategories) {
+				int i;
+
+				for (i = 0; i < 16; i++)
+					if (strlen(aai.category.name[i]) >
+					    0)
+						dlp_DeleteCategory(sd, db,
+								   i);
 			}
+
+			read_file(f, sd, db, &aai);
+			fclose(f);
+			optind++;
 		}
-	
-		/* Close the database */
-		dlp_CloseDB(sd, db);
-	
-		/* Tell the user who it is, with a different PC id. */
-		User.lastSyncPC = 0xDEADBEEF;
-		User.successfulSyncDate = time(NULL);
-		User.lastSyncDate = User.successfulSyncDate;
-		dlp_WriteUserInfo(sd, &User);
-	
-		if (mode == 1) {
-			dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
-		} else if (mode == 2) {
-			dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
-		}
-		
-		dlp_EndOfSync(sd, 0);
-		pi_close(sd);
-	
-		return 0;
 	}
+
+	/* Close the database */
+	dlp_CloseDB(sd, db);
+
+	/* Tell the user who it is, with a different PC id. */
+	User.lastSyncPC = 0xDEADBEEF;
+	User.successfulSyncDate = time(NULL);
+	User.lastSyncDate = User.successfulSyncDate;
+	dlp_WriteUserInfo(sd, &User);
+
+	if (mode == 1) {
+		dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
+	} else if (mode == 2) {
+		dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
+	}
+	
+	dlp_EndOfSync(sd, 0);
+	pi_close(sd);
+
+	return 0;
+
+error:
+	perror("   ERROR");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "   Please use --help for more information\n");
+	
+	return -1;
 }
