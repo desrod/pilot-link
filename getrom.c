@@ -40,22 +40,25 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
-	int l, p;
-	char buf[0xffff];
-	char *progname = argv[0];
-	char *port = argv[1];
-	int i;
-	struct pi_sockaddr addr;
+	int 	l,
+		p,	
+		rom,
+		version = 1,
+		max,
+		i;
+	
+	char 	buf[0xffff],
+		*progname = argv[0],
+		*port = argv[1];
+
 	unsigned char check;
-	struct pi_socket ps;
-	extern char *optarg;
-	extern int optind;
-	int rom;
-	int version = 1;
-	int max;
+	
+	struct 	pi_sockaddr addr;
+	struct 	pi_socket ps;
 
-	PalmHeader(progname);
-
+	extern 	char *optarg;
+	extern 	int optind;
+	
 	if (argc < 2)
 		Help(progname);
 
@@ -85,14 +88,13 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
-	fprintf(stderr, "   NOTICE: Use of this program may place you in violation\n");
-	fprintf(stderr, "           of your license agreement with Palm Computing.\n\n");
-	fprintf(stderr, "           Please read your Palm Computing handbook (\"Software\n");
-	fprintf(stderr, "           License Agreement\") before running this program.\n\n");
-	fprintf(stderr, "   Please launch %s on your Palm device.\n",
-		(version == 2) ? "Getrom2.prc" : "Getrom.prc");
-	fprintf(stderr, "   Port: %s\n\n   Please press the HotSync button...\n",
-		argv[1]);
+	printf("   NOTICE: Use of this program may place you in violation\n"
+	"           of your license agreement with Palm Computing.\n\n"
+	"           Please read your Palm Computing handbook (\"Software\n"
+	"           License Agreement\") before running this program.\n\n"
+	"   Please launch %s on your Palm device.\n"
+	"   Port: %s\n\n   Please press the HotSync button...\n", 
+		(version == 2) ? "Getrom2.prc" : "Getrom.prc", argv[1]);
 
 	max = (version == 2) ? 256 : 128;
 	for (i = 0; i < max; i++) {

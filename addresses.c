@@ -47,20 +47,23 @@ static const char *optstring = "hp:f";
 
 int main(int argc, char *argv[])
 {
-	int c;
-	int db;
-	int i;
-	int sd = -1;
-	int fstyle = -1;
-	struct AddressAppInfo aai;
-	unsigned char buffer[0xffff];
-	char *progname = argv[0];
-	char *port = NULL;
-	char *fancy = NULL;
+	int 	ch,
+		db,
+		index,
+		sd = -1,
+		fstyle = -1;
+	
+	char 	*progname = argv[0],
+		*port = NULL,
+		*fancy = NULL;
+	
+	struct 	AddressAppInfo aai;
 
-        while ((c =
+	unsigned char buffer[0xffff];
+	
+        while ((ch =
                 getopt(argc, argv, optstring)) != -1) {
-                switch (c) {
+                switch (ch) {
 
                   case 'h':
                           Help(progname);
@@ -108,15 +111,15 @@ int main(int argc, char *argv[])
 		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
 		unpack_AddressAppInfo(&aai, buffer, 0xffff);
 	
-		for (i = 0;; i++) {
-			struct Address a;
-			int attr;
- 			int category;
-			int count = 0;
-			int j;
-	
+		for (index = 0;; index++) {
+			int 	attr,
+				category,
+				count = 0,
+				j;
+			struct 	Address a;
+
 			int len =
-			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
+			    dlp_ReadRecordByIndex(sd, db, index, buffer, 0, 0, &attr,
 						  &category);
 	
 			if (len < 0)
@@ -132,7 +135,7 @@ int main(int argc, char *argv[])
 			/* Ignore this 'style' silliness. It was actually useful for me to 
 			   monkey around with this. The end result will be some XML output
 			   for the records at some point, though not using this verbose 
-			   mechanism.
+			   mechanism. This is what happens when you don't sleep. -DD
 			 */
 			if (fstyle == 1) {
 				for(count=0;count<35;count++) printf(" ");
@@ -173,8 +176,9 @@ int main(int argc, char *argv[])
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);
-
-        dlp_AddSyncLogEntry(sd, "Successfully read addresses from Palm\nThank you for using pilot-link.\n");
+        dlp_AddSyncLogEntry(sd, "Successfully read addresses from Palm.\n"
+				"Thank you for using pilot-link.\n");
+	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	return 0;
 }

@@ -32,22 +32,26 @@ extern time_t parsedate(char *p);
 
 int main(int argc, char *argv[])
 {
-	struct pi_sockaddr addr;
-	struct PilotUser U;
-	struct Appointment appointment;
-	int Appointment_size;
-	int db;
-	int fieldno;
-	int filelen;
-	int i;
-	int ret;
-	int sd;
-	char *cPtr;
-	char *file_text;
-	char *fields[4];
+	int 	Appointment_size,
+		db,	
+		fieldno,
+		filelen,
+		index,
+		ret,	
+		sd;
+	
+	char 	*cPtr,
+		*file_text,
+		*fields[4];
+	
 	unsigned char Appointment_buf[0xffff];
 	FILE *f;
+	
+	struct 	pi_sockaddr addr;
+	struct 	PilotUser U;
+	struct 	Appointment appointment;
 
+/*
 	if (argc < 3) {
 		fprintf(stderr, "usage:%s %s file [file] ...\n", argv[0],
 			TTYPrompt);
@@ -78,6 +82,7 @@ int main(int argc, char *argv[])
 		perror("pi_accept");
 		exit(1);
 	}
+*/
 
 	/* Ask the pilot who it is. */
 	dlp_ReadUserInfo(sd, &U);
@@ -93,9 +98,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	for (i = 2; i < argc; i++) {
+	for (index = 2; index < argc; index++) {
 
-		f = fopen(argv[i], "r");
+		f = fopen(argv[index], "r");
 		if (f == NULL) {
 			perror("fopen");
 			exit(1);
@@ -121,10 +126,8 @@ int main(int argc, char *argv[])
 			if (*cPtr == '\t') {
 				if (fieldno >= 4) {
 					if (fieldno == 4)
-						fprintf(stderr,
-							"Too many fields on the line : %s\n",
-							fields[fieldno -
-							       1]);
+						printf("Too many fields on the line : %s\n",
+							fields[fieldno - 1]);
 					fieldno++;
 					continue;
 				}
@@ -135,8 +138,7 @@ int main(int argc, char *argv[])
 				/* replace CR with terminator */
 				*cPtr++ = '\0';
 				if (fieldno != 4) {
-					fprintf(stderr,
-						"Too few fields : %s",
+					printf("Too few fields : %s",
 						fields[0]);
 					fieldno = 0;
 					fields[fieldno++] = cPtr;
@@ -153,8 +155,7 @@ int main(int argc, char *argv[])
 
 					t = parsedate(fields[0]);
 					if (t == -1) {
-						fprintf(stderr,
-							"Invalid start date or time : %s\n",
+						printf("Invalid start date or time : %s\n",
 							fields[0]);
 						continue;
 					}
@@ -165,8 +166,7 @@ int main(int argc, char *argv[])
 
 					t = parsedate(fields[1]);
 					if (t == -1) {
-						fprintf(stderr,
-							"Invalid end date or time : %s\n",
+						printf("Invalid end date or time : %s\n",
 							fields[1]);
 						continue;
 					}
@@ -228,11 +228,13 @@ int main(int argc, char *argv[])
 	U.lastSyncDate = U.successfulSyncDate;
 	dlp_WriteUserInfo(sd, &U);
 
-	dlp_AddSyncLogEntry(sd, "Wrote Appointment to Palm.\n");
+	dlp_AddSyncLogEntry(sd, "Successfully wrote Appointment to Palm.\n"
+				"Thank you for using pilot-link.\n");
 
 	/* All of the following code is now unnecessary, but harmless */
 
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
-	exit(0);
+	
+	return 0;
 }

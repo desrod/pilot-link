@@ -40,7 +40,8 @@
  ***********************************************************************/
 int cmp_rx(struct pi_socket *ps, struct cmp *c)
 {
-	int l;
+	int 	l;
+	
 	unsigned char cmpbuf[10];
 
 	Begin(cmp_rx);

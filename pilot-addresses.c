@@ -51,14 +51,239 @@ char *tableheads[22] =
 	"Custom4", "Note", "Main", "Pager", "Mobile"
 };
 
-int tableformat = 0;
-int tabledelim = 1;
-char tabledelims[5] = { '\n', ',', ';', '\t' };
-int encodechars = 0;
+static const char *optstring = "DTeqp:t:d:c:arw";
+
+int 	tableformat = 0,
+	tabledelim = 1,
+	encodechars = 0,
+	augment = 0,
+	tablehead = 0,
+	defaultcategory = 0;
+
+char 	tabledelims[5] = { '\n', ',', ';', '\t' },
+	*progname;
+
+int main(int argc, char *argv[])
+{
+
+	int 	ch,
+		deleteallcategories = 0,
+		db,
+		l,
+		mode = 0,
+		quiet = 0,
+		ret,
+		sd;
+	char 	*defaultcategoryname = 0,
+		*deletecategory = 0,
+		*progname = argv[0],
+		buf[0xffff];
+
+	struct 	AddressAppInfo 	aai;
+	struct 	PilotUser 	User;
+	struct 	pi_sockaddr 	addr;
+		
+	extern char *optarg;
+	extern int optind;
+
+	if (argc < 3)
+		Help(progname);
+
+	if (getenv("PILOTPORT")) {
+		strcpy(addr.pi_device, getenv("PILOTPORT"));
+	} else {
+		strcpy(addr.pi_device, PILOTPORT);
+	}
+
+	while (((ch = getopt(argc, argv, optstring)) != -1)
+	       && (mode == 0)) {
+		switch (ch) {
+
+		case 't':
+			tableformat = 1;
+			tabledelim = atoi(optarg);
+			break;
+		case 'D':
+			deleteallcategories = 1;
+			break;
+		case 'T':
+			tablehead = 1;
+			break;
+		case 'a':
+			augment = 1;
+			break;
+		case 'q':
+			quiet = 1;
+			break;
+		case 'p':
+			/* optarg is name of port to use instead of
+			   $PILOTPORT or /dev/pilot */
+
+			strcpy(addr.pi_device, optarg);
+			break;
+		case 'd':
+			deletecategory = optarg;
+			break;
+		case 'e':
+			encodechars = 1;
+			break;
+		case 'c':
+			defaultcategoryname = optarg;
+			break;
+		case 'r':
+			mode = 1;
+			break;
+		case 'w':
+			mode = 2;
+			break;
+		case 'h':
+		case '?':
+			Help(progname);
+		}
+	}
+
+	if (mode == 0)
+		Help(progname);
+
+	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
+		perror("pi_socket");
+		exit(1);
+	}
+
+	addr.pi_family = PI_AF_SLP;
+/*   strcpy(addr.pi_device, device); */
+
+	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
+	if (ret == -1) {
+		fprintf(stderr, "\n   Unable to bind to port %s\n",
+			addr.pi_device);
+		perror("   pi_bind");
+		fprintf(stderr, "\n");
+		exit(1);
+	}
+
+	if (!quiet) {
+		printf
+		    ("   Port: %s\n\n   Please press the HotSync button now...\n",
+		     addr.pi_device);
+	}
+
+	ret = pi_listen(sd, 1);
+	if (ret == -1) {
+		fprintf(stderr, "\n   Error listening on %s\n",
+			addr.pi_device);
+		perror("   pi_listen");
+		fprintf(stderr, "\n");
+		exit(1);
+	}
+
+	sd = pi_accept(sd, 0, 0);
+	if (sd == -1) {
+		fprintf(stderr, "\n   Error accepting data on %s\n",
+			addr.pi_device);
+		perror("   pi_accept");
+		fprintf(stderr, "\n");
+		exit(1);
+	}
+
+	if (!quiet) {
+		fprintf(stderr, "Connected...\n");
+	}
+
+	/* Ask the pilot who it is. */
+	dlp_ReadUserInfo(sd, &User);
+
+	/* Tell user (via the Palm) that we are starting things up */
+	dlp_OpenConduit(sd);
+
+	/* Open the MemoDB.pdb database, store access handle in db */
+	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
+		puts("Unable to open AddressDB");
+		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
+		exit(1);
+	}
+
+	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
+	unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
+
+	if (defaultcategoryname)
+		defaultcategory =
+		    match_category(defaultcategoryname, &aai);
+	else
+		defaultcategory = 0;	/* Unfiled */
+
+	if (mode == 2) {	/* Write */
+		FILE *f = fopen(argv[optind], "w");
+
+		if (f == NULL) {
+			sprintf(buf, "%s: %s", argv[0], argv[optind]);
+			perror(buf);
+			exit(1);
+		}
+		write_file(f, sd, db, &aai);
+		if (deletecategory)
+			dlp_DeleteCategory(sd, db,
+					   match_category(deletecategory,
+							  &aai));
+		fclose(f);
+	} else if (mode == 1) {
+		FILE *f;
+
+		while (optind < argc) {
+			f = fopen(argv[optind], "r");
+			if (f == NULL) {
+				sprintf(buf, "%s: %s", argv[0],
+					argv[optind]);
+				perror(buf);
+				continue;
+			}
+			if (deletecategory)
+				dlp_DeleteCategory(sd, db,
+						   match_category
+						   (deletecategory, &aai));
+
+			if (deleteallcategories) {
+				int i;
+
+				for (i = 0; i < 16; i++)
+					if (strlen(aai.category.name[i]) >
+					    0)
+						dlp_DeleteCategory(sd, db,
+								   i);
+			}
+
+			read_file(f, sd, db, &aai);
+			fclose(f);
+			optind++;
+		}
+	}
+
+	/* Close the database */
+	dlp_CloseDB(sd, db);
+
+	/* Tell the user who it is, with a different PC id. */
+	User.lastSyncPC = 0xDEADBEEF;
+	User.successfulSyncDate = time(NULL);
+	User.lastSyncDate = User.successfulSyncDate;
+	dlp_WriteUserInfo(sd, &User);
+
+	if (mode == 1) {
+		dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
+	} else if (mode == 2) {
+		dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
+	}
+
+	/* All of the following code is now unnecessary, but harmless */
+
+	dlp_EndOfSync(sd, 0);
+	pi_close(sd);
+
+	return 0;
+}
 
 int inchar(FILE * in)
 {
-	int c;
+	int 	c;
 
 	c = getc(in);
 	if (encodechars && c == '\\') {
@@ -237,8 +462,6 @@ int match_phone(char *buf, struct AddressAppInfo *aai)
 	return atoi(buf);	/* 0 is default */
 }
 
-int defaultcategory = 0;
-
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 {
 	struct Address a;
@@ -329,9 +552,6 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 
 	return 0;
 }
-
-int augment = 0;
-int tablehead = 0;
 
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 {
@@ -450,8 +670,6 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	return 0;
 }
 
-char *progname;
-
 void Help(char *progname)
 {
 	PalmHeader(progname);
@@ -463,7 +681,7 @@ void Help(char *progname)
 	fprintf(stderr, "     -T          = write header with titles\n");
 	fprintf(stderr, "     -q          = do not prompt for HotSync button press\n");
 	fprintf(stderr, "     -a          = augment records with additional information\n");
-	fprintf(stderr, "     -e          = escape special characters with backslash\n");
+	fprintf(stderr, "     -e          = escape special chcters with backslash\n");
 	fprintf(stderr, "     -p port     = use device file <port> to communicate with Palm\n");
 	fprintf(stderr, "     -c category = install to category <category> by default\n");
 	fprintf(stderr, "     -d category = delete old Palm records in <category>\n");
@@ -482,219 +700,3 @@ void Version(void)
 	exit(0);
 }
 
-int main(int argc, char *argv[])
-{
-	struct AddressAppInfo aai;
-	struct PilotUser U;
-	struct pi_sockaddr addr;
-	int c;
-	int deleteallcategories = 0;
-	int db;
-	int l;
-	int mode = 0;
-	int quiet = 0;
-	int ret;
-	int sd;
-	char *defaultcategoryname = 0;
-	char *deletecategory = 0;
-	char *progname = argv[0];
-	char buf[0xffff];
-/*	char *device = argv[1]; */
-
-	extern char *optarg;
-	extern int optind;
-
-	if (argc < 3)
-		Help(progname);
-
-	if (getenv("PILOTPORT")) {
-		strcpy(addr.pi_device, getenv("PILOTPORT"));
-	} else {
-		strcpy(addr.pi_device, PILOTPORT);
-	}
-
-	while (((c = getopt(argc, argv, "DTeqp:t:d:c:arw")) != -1)
-	       && (mode == 0)) {
-		switch (c) {
-
-		case 't':
-			tableformat = 1;
-			tabledelim = atoi(optarg);
-			break;
-		case 'D':
-			deleteallcategories = 1;
-			break;
-		case 'T':
-			tablehead = 1;
-			break;
-		case 'a':
-			augment = 1;
-			break;
-		case 'q':
-			quiet = 1;
-			break;
-		case 'p':
-			/* optarg is name of port to use instead of
-			   $PILOTPORT or /dev/pilot */
-
-			strcpy(addr.pi_device, optarg);
-			break;
-		case 'd':
-			deletecategory = optarg;
-			break;
-		case 'e':
-			encodechars = 1;
-			break;
-		case 'c':
-			defaultcategoryname = optarg;
-			break;
-		case 'r':
-			mode = 1;
-			break;
-		case 'w':
-			mode = 2;
-			break;
-		case 'h':
-		case '?':
-			Help(progname);
-		}
-	}
-
-	if (mode == 0)
-		Help(progname);
-
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
-		exit(1);
-	}
-
-	addr.pi_family = PI_AF_SLP;
-/*   strcpy(addr.pi_device, device); */
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			addr.pi_device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	if (!quiet) {
-		printf
-		    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-		     addr.pi_device);
-	}
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n",
-			addr.pi_device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			addr.pi_device);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	if (!quiet) {
-		fprintf(stderr, "Connected...\n");
-	}
-
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
-
-	/* Tell user (via the Palm) that we are starting things up */
-	dlp_OpenConduit(sd);
-
-	/* Open the MemoDB.pdb database, store access handle in db */
-	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
-		puts("Unable to open AddressDB");
-		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
-		exit(1);
-	}
-
-	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-	unpack_AddressAppInfo(&aai, (unsigned char *) buf, l);
-
-	if (defaultcategoryname)
-		defaultcategory =
-		    match_category(defaultcategoryname, &aai);
-	else
-		defaultcategory = 0;	/* Unfiled */
-
-	if (mode == 2) {	/* Write */
-		FILE *f = fopen(argv[optind], "w");
-
-		if (f == NULL) {
-			sprintf(buf, "%s: %s", argv[0], argv[optind]);
-			perror(buf);
-			exit(1);
-		}
-		write_file(f, sd, db, &aai);
-		if (deletecategory)
-			dlp_DeleteCategory(sd, db,
-					   match_category(deletecategory,
-							  &aai));
-		fclose(f);
-	} else if (mode == 1) {
-		FILE *f;
-
-		while (optind < argc) {
-			f = fopen(argv[optind], "r");
-			if (f == NULL) {
-				sprintf(buf, "%s: %s", argv[0],
-					argv[optind]);
-				perror(buf);
-				continue;
-			}
-			if (deletecategory)
-				dlp_DeleteCategory(sd, db,
-						   match_category
-						   (deletecategory, &aai));
-
-			if (deleteallcategories) {
-				int i;
-
-				for (i = 0; i < 16; i++)
-					if (strlen(aai.category.name[i]) >
-					    0)
-						dlp_DeleteCategory(sd, db,
-								   i);
-			}
-
-			read_file(f, sd, db, &aai);
-			fclose(f);
-			optind++;
-		}
-	}
-
-	/* Close the database */
-	dlp_CloseDB(sd, db);
-
-	/* Tell the user who it is, with a different PC id. */
-	U.lastSyncPC = 0xDEADBEEF;
-	U.successfulSyncDate = time(NULL);
-	U.lastSyncDate = U.successfulSyncDate;
-	dlp_WriteUserInfo(sd, &U);
-
-	if (mode == 1) {
-		dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
-	} else if (mode == 2) {
-		dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
-	}
-
-	/* All of the following code is now unnecessary, but harmless */
-
-	dlp_EndOfSync(sd, 0);
-	pi_close(sd);
-
-	return 0;
-}

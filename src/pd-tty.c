@@ -253,7 +253,7 @@ void do_readline(void)
  *
  * Summary:     This procedure is invoked by the event dispatcher whenever
  *              standard input becomes readable.  It grabs the next line of
- *              input characters, adds them to a command being assembled,
+ *              input chcters, adds them to a command being assembled,
  *              and executes the command if it's complete.
  *
  * Parmeters:   None

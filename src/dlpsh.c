@@ -84,6 +84,7 @@ struct Command command_list[] = {
 	{"quit", exit_fn},
 	{"rm",   rm_fn},
 	{"time", time_fn},
+	{"dtp",	 time_fn},
 	{"user", user_fn},
 	{NULL,   NULL}
 };
@@ -122,7 +123,7 @@ int main(int argc, char *argv[])
 	} else if (port != NULL) {
 
 		sd = pilot_connect(port);
-
+		
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
 			exit(1);
@@ -170,9 +171,9 @@ int df_fn(int sd, int argc, char *argv[])
 			break;
 
 		printf("Filesystem           1k-blocks      Used   Available     Used     Total\n");
-		printf("/dev/ROM               %7lu", Card.romSize);
+		printf("Card0:ROM              %7lu", Card.romSize);
                 printf("       n/a     %7lu      n/a     %4luk\n", Card.romSize, Card.romSize/1024);
-		printf("/dev/RAM               %7lu   %7lu     %7lu     %3ld%%     %4luk\n", 
+		printf("Card0:RAM              %7lu   %7lu     %7lu     %3ld%%     %4luk\n", 
 			Card.ramSize, (Card.ramSize - Card.ramFree), Card.ramFree, 
 			((Card.ramSize - Card.ramFree) * 100) / Card.ramSize, Card.ramSize/1024);
 		printf("Total (ROM + RAM)     %8lu   %7lu         n/a      n/a    %5luk\n\n", 
@@ -186,7 +187,7 @@ int df_fn(int sd, int argc, char *argv[])
  *
  * Function:    help_fn
  *
- * Summary:     Handle the parsing of -h inside dlpsh>
+ * Summary:     Handle the parsing of -h inside 'dlpsh>'
  *
  * Parmeters:   None
  *
@@ -195,24 +196,14 @@ int df_fn(int sd, int argc, char *argv[])
  ***********************************************************************/
 int help_fn(int sd, int argc, char *argv[])
 {
-
-/* Let's figure out a better way to do this to automagically 
-   "self-document" arguments
-
-	int inc;
-	for (inc = 0; command_list[inc].name != NULL; inc++) {
-		printf("%s\t\n", command_list[inc].name);
-	}
-*/
-
-	printf("Built-in commands:\n\n"
-	       "user     = print the currently set User information\n"
-	       "ls       = used with -l and -r to provide long and ROM file lists\n"
-	       "df       = display how much RAM and ROM is free on your device\n"
-	       "time     = set the time on the Palm using the desktop time\n"
-	       "rm       = remove a file, delete it entirely from the Palm device\n"
-	       "help     = You Are Here(tm)\n"
-	       "quit     = exit the DLP Protocol Shell\n\n"
+	printf("The current built-in commands are:\n\n"
+	       "   user           print the currently set User information\n"
+	       "   ls             used with -l and -r to provide long and ROM file lists\n"
+	       "   df             display how much RAM and ROM is free on your device\n"
+	       "   time,dtp       Desktop-to-Palm, set the time on the Palm from the desktop\n"
+	       "   rm             remove a file, delete it entirely from the Palm device\n"
+	       "   help           You Are Here(tm)\n"
+	       "   quit,exit      exit the DLP Protocol Shell\n\n"
 	       "Use '<command> -help' for more granular syntax and switches\n\n");
 	return 0;
 }
@@ -293,9 +284,11 @@ int ls_fn(int sd, int argc, char *argv[])
 		printf("  Filename: \"%s\"\n", info.name);
 
 		if (lflag) {
-			printf("       More: 0x%x     Flags: 0x%-4x             Type: %.4s\n", info.more, info.flags, (char *) &tag);
+			printf("       More: 0x%x     Flags: 0x%-4x             Type: %.4s\n",
+				info.more, info.flags, (char *) &tag);
 			tag = htonl(info.creator);
-			printf("  CreatorID: %s    Modification Number: %-4ld Version: %-2d\n", (char *) &tag, info.modnum, info.version);
+			printf("  CreatorID: %s    Modification Number: %-4ld Version: %-2d\n",
+				(char *) &tag, info.modnum, info.version);
 			printf("Created: %19s\n", timestr(info.createDate));
 			printf("Backup : %19s\n", timestr(info.backupDate));
 			printf("Modify : %19s\n\n", timestr(info.modifyDate));
@@ -375,7 +368,7 @@ int time_fn(int sd, int argc, char *argv[])
 	time(&ltime);
 	tm_ptr = localtime(&ltime);
 
-	strftime(timebuf, 80, "Now setting Palm time from desktop to:"
+	strftime(timebuf, 80, "Now setting Palm time from desktop to: "
 			      "%a %b %d %H:%M:%S %Z %Y\n", tm_ptr);
 	printf(timebuf);
 	s = dlp_SetSysDateTime(sd, ltime);
@@ -404,13 +397,13 @@ int user_fn(int sd, int argc, char *argv[])
 		fl_vid = 0, 
 		fl_pid = 0;
 	
-	int 	chara,
+	int 	ch,
 		ret;
 
 	optind = 0;
 
-	while ((chara = getopt(argc, argv, "n:i:v:p:h")) != -1) {
-		switch (chara) {
+	while ((ch = getopt(argc, argv, "n:i:v:p:h")) != -1) {
+		switch (ch) {
 		  case 'n':
 			  fl_name = 1;
 			  strncpy(nUser.username, optarg, sizeof(nUser.username));

@@ -29,75 +29,69 @@ extern "C" {
 
 #include "pi-macros.h"
 
-	typedef struct _SyncHandler SyncHandler;
-	typedef struct _DesktopRecord DesktopRecord;
-	typedef struct _PilotRecord PilotRecord;
+	typedef struct 	_SyncHandler SyncHandler;
+	typedef struct 	_DesktopRecord DesktopRecord;
+	typedef struct 	_PilotRecord PilotRecord;
 
 	struct _DesktopRecord {
-		int recID;
-		int catID;
-		int flags;
+		int 	recID,
+			catID,
+			flags;
 	};
 
 	struct _PilotRecord {
 		recordid_t recID;
-		int catID;
-		int flags;
-		void *buffer;
-		int len;
+		int 	catID,
+			flags,
+			len;
+		void 	*buffer;
+
 	};
 
 	struct _SyncHandler {
-		int sd;
+		int 	sd,
+			secret;
+		int 	(*Pre) (SyncHandler *, int dbhandle, int *slow);
+		int 	(*Post) (SyncHandler *, int dbhandle);
 
-		char *name;
-		int secret;
-
-		void *data;
-
-		int (*Pre) (SyncHandler *, int dbhandle, int *slow);
-		int (*Post) (SyncHandler *, int dbhandle);
-
-		int (*SetPilotID) (SyncHandler *, DesktopRecord *,
-				   recordid_t);
-		int (*SetStatusCleared) (SyncHandler *, DesktopRecord *);
-
-		int (*ForEach) (SyncHandler *, DesktopRecord **);
-		int (*ForEachModified) (SyncHandler *, DesktopRecord **);
-		int (*Compare) (SyncHandler *, PilotRecord *,
+		int 	(*SetPilotID) (SyncHandler *, DesktopRecord *,
+				recordid_t);
+		int 	(*SetStatusCleared) (SyncHandler *, DesktopRecord *);
+		int 	(*ForEach) (SyncHandler *, DesktopRecord **);
+		int 	(*ForEachModified) (SyncHandler *, DesktopRecord **);
+		int 	(*Compare) (SyncHandler *, PilotRecord *,
 				DesktopRecord *);
-
-		int (*AddRecord) (SyncHandler *, PilotRecord *);
-		int (*ReplaceRecord) (SyncHandler *, DesktopRecord *,
-				      PilotRecord *);
-		int (*DeleteRecord) (SyncHandler *, DesktopRecord *);
-		int (*ArchiveRecord) (SyncHandler *, DesktopRecord *,
-				      int archive);
-
-		int (*Match) (SyncHandler *, PilotRecord *,
-			      DesktopRecord **);
-		int (*FreeMatch) (SyncHandler *, DesktopRecord *);
-
-		int (*Prepare) (SyncHandler *, DesktopRecord *,
+		int 	(*AddRecord) (SyncHandler *, PilotRecord *);
+		int 	(*ReplaceRecord) (SyncHandler *, DesktopRecord *,
 				PilotRecord *);
+		int 	(*DeleteRecord) (SyncHandler *, DesktopRecord *);
+		int 	(*ArchiveRecord) (SyncHandler *, DesktopRecord *,
+				int archive);
+		int 	(*Match) (SyncHandler *, PilotRecord *,
+			      DesktopRecord **);
+		int 	(*FreeMatch) (SyncHandler *, DesktopRecord *);
+		int 	(*Prepare) (SyncHandler *, DesktopRecord *,
+				PilotRecord *);
+		char 	*name;
+		void 	*data;
+
+
 	};
 
 	PilotRecord *sync_NewPilotRecord(int buf_size);
 	PilotRecord *sync_CopyPilotRecord(const PilotRecord * precord);
-	void sync_FreePilotRecord(PilotRecord * precord);
+	void 	sync_FreePilotRecord(PilotRecord * precord);
 
 	DesktopRecord *sync_NewDesktopRecord(void);
 	DesktopRecord *sync_CopyDesktopRecord(const DesktopRecord *
 					      drecord);
-	void sync_FreeDesktopRecord(DesktopRecord * drecord);
+	void 	sync_FreeDesktopRecord(DesktopRecord * drecord);
 
-	int sync_CopyToPilot(SyncHandler * sh);
-	int sync_CopyFromPilot(SyncHandler * sh);
-
-	int sync_MergeToPilot(SyncHandler * sh);
-	int sync_MergeFromPilot(SyncHandler * sh);
-
-	int sync_Synchronize(SyncHandler * sh);
+	int 	sync_CopyToPilot(SyncHandler * sh),
+		sync_CopyFromPilot(SyncHandler * sh),
+		sync_MergeToPilot(SyncHandler * sh),
+		sync_MergeFromPilot(SyncHandler * sh),
+		sync_Synchronize(SyncHandler * sh);
 
 #ifdef __cplusplus
 }

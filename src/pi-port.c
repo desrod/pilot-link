@@ -54,7 +54,7 @@ static const char *optstring = "hp:";
 
 int main(int argc, char *argv[])
 {
-	int 	chara,
+	int 	ch,
 		sd = -1,
 		netport = 4386,
 		serverfd, fd;
@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
 		*progname = argv[0],
 		*port = NULL;
 	
-	while ((chara = getopt(argc, argv, optstring)) != -1) {
-		switch (chara) {
+	while ((ch = getopt(argc, argv, optstring)) != -1) {
+		switch (ch) {
 
 		  case 'h':
 			  Help(progname);

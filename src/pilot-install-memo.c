@@ -45,24 +45,28 @@ int usage(char *progname)
 
 int main(int argc, char *argv[])
 {
-        struct pi_sockaddr addr;
-        struct PilotUser U;
-        struct MemoAppInfo mai;
-	int add_title;
-	int category;
-	int ch;
-	int db;
-	int i; 
-	int l; 
-	int memo_size;
-	int preamble;
-	int quiet;
-	int replace_category;
-	int ret;
-	int sd;
-	char *memo_buf;
-	char *progname, *category_name;
-	char buf[0xffff];
+	int 	add_title,
+		category,
+		count,
+		db,
+		inc,
+		ReadAppBlock, 
+		memo_size,
+		preamble,
+		quiet,
+		replace_category,
+		ret,
+		sd;
+	
+	char 	*memo_buf,
+		*progname,
+		*category_name,
+		buf[0xffff];
+	
+        struct 	pi_sockaddr addr;
+        struct 	PilotUser U;
+        struct 	MemoAppInfo mai;
+
 	FILE *f;
 
 	progname = argv[0];
@@ -75,8 +79,8 @@ int main(int argc, char *argv[])
 		strcpy(addr.pi_device, PILOTPORT);
 	}
 
-	while ((ch = getopt(argc, argv, "c:p:qrt")) != -1)
-		switch (ch) {
+	while ((count = getopt(argc, argv, "c:p:qrt")) != -1)
+		switch (count) {
 		case 'c':
 			category_name = optarg;
 			break;
@@ -158,15 +162,15 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	l = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
-	unpack_MemoAppInfo(&mai, (unsigned char *) buf, l);
+	ReadAppBlock = dlp_ReadAppBlock(sd, db, 0, (unsigned char *) buf, 0xffff);
+	unpack_MemoAppInfo(&mai, (unsigned char *) buf, ReadAppBlock);
 
 	if (category_name) {
 		category = -1;	/* invalid category */
-		for (i = 0; i < 16; i++)
+		for (inc = 0; inc < 16; inc++)
 			if (!strcasecmp
-			    (mai.category.name[i], category_name)) {
-				category = i;
+			    (mai.category.name[inc], category_name)) {
+				category = inc;
 				break;
 			}
 		if (category < 0) {
@@ -182,13 +186,13 @@ int main(int argc, char *argv[])
 	} else
 		category = 0;	/* unfiled */
 
-	for (i = 0; i < argc; i++) {
+	for (inc = 0; inc < argc; inc++) {
 
-		f = fopen(argv[i], "r");
+		f = fopen(argv[inc], "r");
 		if (f == NULL) {
 			fprintf(stderr,
 				"%s: cannot open %s (%s), skipping...\n",
-				progname, argv[i], strerror(errno));
+				progname, argv[inc], strerror(errno));
 			continue;
 		}
 
@@ -196,7 +200,7 @@ int main(int argc, char *argv[])
 		memo_size = ftell(f);
 		fseek(f, 0, SEEK_SET);
 
-		preamble = add_title ? strlen(argv[i]) + 1 : 0;
+		preamble = add_title ? strlen(argv[inc]) + 1 : 0;
 
 		memo_buf = (char *) malloc(memo_size + preamble + 1);
 		if (memo_buf == NULL) {
@@ -205,7 +209,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (preamble)
-			sprintf(memo_buf, "%s\n", argv[i]);
+			sprintf(memo_buf, "%s\n", argv[inc]);
 
 		fread(memo_buf + preamble, memo_size, 1, f);
 
@@ -226,7 +230,8 @@ int main(int argc, char *argv[])
 	U.lastSyncDate = U.successfulSyncDate;
 	dlp_WriteUserInfo(sd, &U);
 
-	dlp_AddSyncLogEntry(sd, "Wrote memo(s) to Palm.\n");
+	dlp_AddSyncLogEntry(sd, "Successfully wrote memo(s) to Palm.\n"
+				"Thank you for using pilot-link.\n");
 
 	/* All of the following code is now unnecessary, but harmless */
 

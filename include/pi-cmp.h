@@ -11,10 +11,10 @@ extern "C" {
 #define CommVersion_2_0 0x0101L
 
 	struct cmp {
+		int 	reserved;
 		unsigned char type;
 		unsigned char flags;
 		unsigned int version;
-		int reserved;
 		unsigned long baudrate;
 	};
 
@@ -23,7 +23,7 @@ extern "C" {
 	extern int cmp_abort PI_ARGS((struct pi_socket * ps, int reason));
 
 	extern int cmp_wakeup
-	    PI_ARGS((struct pi_socket * ps, int maxbaud));
+		PI_ARGS((struct pi_socket * ps, int maxbaud));
 
 	extern void cmp_dump PI_ARGS((unsigned char *cmp, int rxtx));
 

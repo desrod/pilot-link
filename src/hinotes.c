@@ -60,17 +60,20 @@ static const char *optstring = "hp:d:";
 int main(int argc, char *argv[])
 {
 
-	int c;
-	int db;
-	int i;
-	int sd = -1;
-	int mode = MEMO_MBOX_STDOUT;
-	char appblock[0xffff];
-	char dirname[MAXDIRNAMELEN] = "";
-	char *progname = argv[0];
-	char *port = NULL;
-	struct HiNoteAppInfo mai;
-	struct PilotUser User;
+	int 	c,
+		db,
+		i,
+		sd = -1,
+		mode = MEMO_MBOX_STDOUT;
+
+	char 	appblock[0xffff],
+		dirname[MAXDIRNAMELEN] = "",
+		*progname = argv[0],
+		*port = NULL;
+
+	struct 	HiNoteAppInfo mai;
+	struct 	PilotUser User;
+
 	unsigned char buffer[0xffff];
 
 	while (((c = getopt(argc, argv, optstring)) != -1)) {
@@ -116,9 +119,10 @@ int main(int argc, char *argv[])
 
 		/* Open the Memo Pad's database, store access handle in db */
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "Hi-NoteDB", &db) < 0) {
-			puts("Unable to open Hi-NoteDB");
+			printf("Unable to open Hi-NoteDB. Is Hi-Notes installed?\n"
+			       "You must run Hi-Notes and create at least one entry first.\n");
 			dlp_AddSyncLogEntry(sd,
-					    "Unable to open Hi-NoteDB.\n");
+					    "Unable to locate or open Hi-NoteDB.\nFile not found.\n");
 			exit(1);
 		}
 
@@ -128,10 +132,10 @@ int main(int argc, char *argv[])
 				     0xffff);
 
 		for (i = 0;; i++) {
-			struct HiNoteNote m;
-			int attr;
-			int category;
-
+			int 	attr,
+				category;
+			struct 	HiNoteNote m;
+				
 			int len =
 			    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
 						  &attr,
@@ -160,7 +164,7 @@ int main(int argc, char *argv[])
 
 	/* Close the Hi-Note database and write out to the Palm logfile */
 	dlp_CloseDB(sd, db);
-	dlp_AddSyncLogEntry(sd, "Read Hi-Notes from Palm.\nThank you for using pilot-link.\n");
+	dlp_AddSyncLogEntry(sd, "Successfully read Hi-Notes from Palm.\nThank you for using pilot-link.\n");
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 	return 0;
@@ -170,11 +174,13 @@ int main(int argc, char *argv[])
 void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 		     struct HiNoteAppInfo mai, int category)
 {
-	int j;
+	int 	j;
 
-	time_t ltime;
-	struct tm *tm_ptr;
-	char c, fromtmbuf[80], recvtmbuf[80];
+	time_t 	ltime;
+	struct 	tm *tm_ptr;
+	char 	c, 
+		fromtmbuf[80],
+		recvtmbuf[80];
 
 	time(&ltime);
 	tm_ptr = localtime(&ltime);
@@ -208,9 +214,9 @@ void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 			     struct HiNoteAppInfo mai, int category)
 {
-	int j;
-	char pathbuffer[MAXDIRNAMELEN + (128 * 3)] = "";
-	char tmp[5] = "";
+	int 	j;
+	char 	pathbuffer[MAXDIRNAMELEN + (128 * 3)] = "",
+		tmp[5] = "";
 	FILE *fd;
 
 	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
@@ -243,7 +249,7 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 			strncat(pathbuffer, "=3D", 3);
 			continue;
 		}
-		/* escape if it's an ISO8859 control character (note: some
+		/* escape if it's an ISO8859 control chcter (note: some
 		   are printable on the Palm) */
 		if ((m.text[j] | 0x7f) < ' ') {
 			tmp[0] = '\0';
@@ -268,7 +274,7 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 static void Help(char *progname)
 {
 	printf
-	    ("   Syncronize your HiNotes database with your desktop or server machine\n\n"
+	    ("   Syncronize your Hi-Notes database with your desktop or server machine\n\n"
 	     "   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n"
 	     "     -p <port>      Use device file <port> to communicate with Palm\n"
 	     "     -d directory   Save memos in <dir> instead of writing to STDOUT\n"
@@ -283,9 +289,10 @@ static void Help(char *progname)
 	     "   subdirectory will contain the name of a category on the Palm where the\n"
 	     "   record was stored, and will contain the memos found in that category. \n\n"
 	     "   Each memo's filename will be the first line (up to the first 40\n"
-	     "   characters) of the memo.  Control characters, slashes, and equal signs\n"
+	     "   chcters) of the memo.  Control chcters, slashes, and equal signs\n"
 	     "   that would otherwise appear in filenames are converted after the fashion\n"
 	     "   of MIME's quoted-printable encoding.\n\n"
+	     "   -- WARNING -- WARNING -- WARNING -- WARNING -- WARNING -- WARNING --\n"
 	     "   Note that if you have two memos in the same category whose first lines\n"
 	     "   are identical, one of them will be OVERWRITTEN! This is unavoidable at\n"
 	     "   the present time, but may be fixed in a future release. Also, please note\n"

@@ -90,7 +90,7 @@ void MakeExcludeList(char *efile)
  * Function:    protect_name
  *
  * Summary:     Protects filenames and paths which include 'illegal' 
- *              characters, such as '/' and '=' in them. 
+ *              chcters, such as '/' and '=' in them. 
  *
  * Parameters:  None
  *

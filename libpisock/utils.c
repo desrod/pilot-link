@@ -65,7 +65,8 @@
  ***********************************************************************/
 int crc16(unsigned char *ptr, int count)
 {
-	int crc, i;
+	int 	crc,
+		i;
 
 	crc = 0;
 	while (--count >= 0) {
@@ -302,7 +303,7 @@ unsigned long makelong(char *c)
 
 void dumpline(const unsigned char *buf, int len, int addr)
 {
-	int i;
+	int 	i;
 
 	fprintf(stderr, "%.4x  ", addr);
 
@@ -328,7 +329,7 @@ void dumpline(const unsigned char *buf, int len, int addr)
 
 void dumpdata(const unsigned char *buf, int len)
 {
-	int i;
+	int 	i;
 
 	for (i = 0; i < len; i += 16) {
 		dumpline(buf + i, ((len - i) > 16) ? 16 : len - i, i);
@@ -349,10 +350,11 @@ double get_float(void *buffer)
 
 void set_float(void *buffer, double value)
 {
-	unsigned char *buf = buffer;
+	int 	exp, 
+		sign;
 
+	unsigned char *buf = buffer;
 	unsigned long frac;
-	int exp, sign;
 
 	/* Take absolute */
 	if (value < 0) {
@@ -374,7 +376,7 @@ void set_float(void *buffer, double value)
 
 int compareTm(struct tm *a, struct tm *b)
 {
-	int d;
+	int 	d;
 
 	d = a->tm_year - b->tm_year;
 	if (d)

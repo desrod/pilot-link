@@ -162,7 +162,7 @@ char **argv;
 
 		default:
 			printf
-			    ("?? getopt returned character code 0%o ??\n",
+			    ("?? getopt returned chcter code 0%o ??\n",
 			     c);
 		}
 	}

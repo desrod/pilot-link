@@ -46,7 +46,7 @@ static const char *optstring = "hp:";
 
 int main(int argc, char *argv[])
 {
-	int 	chara,
+	int 	ch,
 		len,
 		ret,
 		sd = -1,
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
 	struct 	sockaddr_in 	addr2;
 	struct 	NetSyncInfo 	Net;
 
-	while ((chara = getopt(argc, argv, optstring)) != -1) {
-		switch (chara) {
+	while ((ch = getopt(argc, argv, optstring)) != -1) {
+		switch (ch) {
 
 		  case 'h':
 			  Help(progname);
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 	
 		if (!Net.lanSync) {
 			fprintf(stderr,
-				"LAN Sync not enabled on your Palm, cancelling sync.\n");
+				"LANSync not enabled on your Palm, cancelling sync.\n");
 			exit(1);
 		}
 	

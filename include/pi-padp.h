@@ -27,12 +27,12 @@ extern "C" {
 
 #define SIZEOF_PADP 4
 
-	extern int padp_tx
-	    PI_ARGS((struct pi_socket * ps, void *msg, int len, int type));
+	extern int padp_tx 
+		PI_ARGS((struct pi_socket * ps, void *msg, int len, int type));
 	extern int padp_rx
-	    PI_ARGS((struct pi_socket * ps, void *buf, int len));
+		PI_ARGS((struct pi_socket * ps, void *buf, int len));
 	extern void padp_dump
-	    PI_ARGS((struct pi_skb * skb, struct padp * padp, int rxtx));
+		PI_ARGS((struct pi_skb * skb, struct padp * padp, int rxtx));
 
 #ifdef __cplusplus
 }

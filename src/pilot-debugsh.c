@@ -34,18 +34,80 @@
 #include <sys/select.h>
 #endif
 
-int done = 0;
+int 	done = 0;
 
 /* Declare prototypes */
 void read_user(int sd);
 void read_pilot(int sd);
 void sig(int signal);
 
+int main(int argc, char *argv[])
+{
+	int 	max,
+		sd;
+	
+	struct pi_sockaddr laddr;
+
+	fd_set r, rin;
+	char *progname = argv[0];
+
+	if (argc < 2) {
+		fprintf(stderr, "   Usage: %s %s\n\n", argv[0], TTYPrompt);
+		exit(2);
+	}
+
+	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP))) {
+		perror("pi_socket");
+		exit(1);
+	}
+
+	laddr.pi_family = PI_AF_SLP;
+	strcpy(laddr.pi_device, argv[1]);
+
+	pi_bind(sd, (struct sockaddr *) &laddr, sizeof(laddr));
+
+	/* Now we can read and write packets: to get the Palm to send a
+	   packet, write a ".2" shortcut, which starts the debugging mode.
+	   (Make sure to reset your Palm after finishing this example!) */
+
+	FD_ZERO(&r);
+	FD_SET(sd, &r);
+	FD_SET(fileno(stdin), &r);
+
+	max = sd;
+	if (fileno(stdin) > max)
+		max = fileno(stdin);
+
+	printf("debugsh>");
+	fflush(stdout);
+
+	signal(SIGINT, sig);
+
+	while (!done) {
+		rin = r;
+		if (select(max + 1, &rin, 0, 0, 0) >= 0) {
+			if (FD_ISSET(fileno(stdin), &rin)) {
+				read_user(sd);
+			} else if (FD_ISSET(sd, &rin)) {
+				read_pilot(sd);
+			}
+		} else {
+			break;
+		}
+	}
+
+	printf("\n   Exiting...\n");
+	pi_close(sd);
+
+	return 0;
+}
+
+
 void read_user(int sd)
 {
-	char line[256];
-	int l = read(fileno(stdin), line, 256);
-
+	char	line[256];
+	int 	l = read(fileno(stdin), line, 256);
+	
 	if (l > 0)
 		line[l - 1] = 0;
 
@@ -101,10 +163,10 @@ void read_user(int sd)
 
 void read_pilot(int sd)
 {
-	char buf[4096];
-	int l = pi_read(sd, buf, 4096);
-
-	puts("From Palm:");
+	char 	buf[4096];
+	int 	l = pi_read(sd, buf, 4096);
+	
+	printf("From Palm:");
 	dumpdata((unsigned char *) buf, l);
 
 	if (buf[2] == 0) {			/* SysPkt command 	*/
@@ -132,63 +194,3 @@ void sig(int signal)
 	done = 1;
 }
 
-int main(int argc, char *argv[])
-{
-	struct pi_sockaddr laddr;
-	int max;
-	int sd;
-	fd_set r, rin;
-	char *progname = argv[0];
-
-	PalmHeader(progname);
-
-	if (argc < 2) {
-		fprintf(stderr, "   Usage: %s %s\n\n", argv[0], TTYPrompt);
-		exit(2);
-	}
-
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_RAW, PI_PF_SLP))) {
-		perror("pi_socket");
-		exit(1);
-	}
-
-	laddr.pi_family = PI_AF_SLP;
-	strcpy(laddr.pi_device, argv[1]);
-
-	pi_bind(sd, (struct sockaddr *) &laddr, sizeof(laddr));
-
-	/* Now we can read and write packets: to get the Palm to send a
-	   packet, write a ".2" shortcut, which starts the debugging mode.
-	   (Make sure to reset your Palm after finishing this example!) */
-
-	FD_ZERO(&r);
-	FD_SET(sd, &r);
-	FD_SET(fileno(stdin), &r);
-
-	max = sd;
-	if (fileno(stdin) > max)
-		max = fileno(stdin);
-
-	printf("debugsh>");
-	fflush(stdout);
-
-	signal(SIGINT, sig);
-
-	while (!done) {
-		rin = r;
-		if (select(max + 1, &rin, 0, 0, 0) >= 0) {
-			if (FD_ISSET(fileno(stdin), &rin)) {
-				read_user(sd);
-			} else if (FD_ISSET(sd, &rin)) {
-				read_pilot(sd);
-			}
-		} else {
-			break;
-		}
-	}
-
-	printf("\n   Exiting...\n");
-	pi_close(sd);
-
-	return 0;
-}

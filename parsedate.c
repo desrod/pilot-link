@@ -1644,7 +1644,7 @@ date_lex()
     register int	nesting;
 
     for ( ; ; ) {
-	/* Get first character after the whitespace. */
+	/* Get first chcter after the whitespace. */
 	for ( ; ; ) {
 	    while (isspace(*yyInput))
 		yyInput++;

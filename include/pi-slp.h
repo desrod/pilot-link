@@ -24,10 +24,9 @@ extern "C" {
 	};
 
 	extern int slp_tx
-	    PI_ARGS((struct pi_socket * ps, struct pi_skb * nskb,
-		     int len));
+		PI_ARGS((struct pi_socket * ps, struct pi_skb * nskb,
+			int len));
 	extern int slp_rx PI_ARGS((struct pi_socket * ps));
-
 	extern void slp_dump PI_ARGS((struct pi_skb * skb, int rxtx));
 	extern void dph PI_ARGS((unsigned char *d));
 

@@ -41,12 +41,13 @@ struct option options[] = {
 
 static const char *optstring = "hp:";
 
-char *Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-char *Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"};
+char 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
+	*Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", 
+			"aug", "sep", "oct", "nov", "dec"};
 
 int main(int argc, char *argv[])
 {
-	int 	chara,
+	int 	ch,
 		db,
 		index,
 		sd = -1;
@@ -54,8 +55,8 @@ int main(int argc, char *argv[])
 		*port = NULL;
 	unsigned char buffer[0xffff];
 
-	while ((chara = getopt(argc, argv, optstring)) != -1) {
-		switch (chara) {
+	while ((ch = getopt(argc, argv, optstring)) != -1) {
+		switch (ch) {
 
 		  case 'h':
 			  Help(progname);
@@ -173,19 +174,19 @@ int main(int argc, char *argv[])
 	
 						/* if the month is equal to the starting month mod x */
 						snprintf(satisfy, 256,
-							"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate())) && (((monnum(trigdate())-1+year(trigdate())*12)%%%d) == ((%d+%d*12)%%%d))] ",
-							a.begin.tm_year + 1900,
-							a.begin.tm_mon + 1,
-							a.begin.tm_mday,
-							a.repeatFrequency,
-							a.begin.tm_year + 1900,
-							a.begin.tm_mon,
+							"SATISFY [(trigdate()>=date(%d,%d,%d)) "
+							"&& (!isomitted(trigdate())) "
+							"&& (((monnum(trigdate())-1+year(trigdate())*12)%%%d) "
+							"== ((%d+%d*12)%%%d))] ",
+							a.begin.tm_year + 1900, a.begin.tm_mon + 1,
+							a.begin.tm_mday, a.repeatFrequency,
+							a.begin.tm_year + 1900, a.begin.tm_mon,
 							a.repeatFrequency);
 					} else {
 						snprintf(satisfy,  256,
-							"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate()))] ",
-							a.begin.tm_year + 1900,
-							a.begin.tm_mon + 1,
+							"SATISFY [(trigdate()>=date(%d,%d,%d))"
+							"&& (!isomitted(trigdate()))] ",
+							a.begin.tm_year + 1900, a.begin.tm_mon + 1,
 							a.begin.tm_mday);
 					}
 				} else if (a.repeatType == repeatWeekly) {
@@ -200,20 +201,18 @@ int main(int argc, char *argv[])
 					if (a.repeatFrequency > 1) {
 						/* if the week is equal to the starting week mod x */
 						snprintf(satisfy, 256,
-							"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate())) && (((coerce(\"int\",trigdate())/7)%%%d) == ((coerce(\"int\",date(%d,%d,%d))/7)%%%d))] ",
-							a.begin.tm_year + 1900,
-							a.begin.tm_mon + 1,
-							a.begin.tm_mday,
-							a.repeatFrequency,
-							a.begin.tm_year + 1900,
-							a.begin.tm_mon + 1,
-							a.begin.tm_mday,
-							a.repeatFrequency);
+							"SATISFY [(trigdate()>=date(%d,%d,%d)) "
+							"&& (!isomitted(trigdate()))"							"&& (((coerce(\"int\",trigdate())/7)%%%d)"
+							"== ((coerce(\"int\",date(%d,%d,%d))/7)%%%d))] ",
+							a.begin.tm_year + 1900, a.begin.tm_mon + 1,
+							a.begin.tm_mday, a.repeatFrequency,
+							a.begin.tm_year + 1900, a.begin.tm_mon + 1,
+							a.begin.tm_mday, a.repeatFrequency);
 					} else {
 						snprintf(satisfy, 256,
-							"SATISFY [(trigdate()>=date(%d,%d,%d))  && (!isomitted(trigdate()))] ",
-							a.begin.tm_year + 1900,
-							a.begin.tm_mon + 1,
+							"SATISFY [(trigdate()>=date(%d,%d,%d))  "
+							"&& (!isomitted(trigdate()))] ",
+							a.begin.tm_year + 1900, a.begin.tm_mon + 1,
 							a.begin.tm_mday);
 					}
 				} else if (a.repeatType == repeatMonthlyByDay) {
@@ -235,10 +234,17 @@ int main(int argc, char *argv[])
 					if (a.repeatFrequency > 1) {
 	
 						snprintf(satisfy, 256,
-							"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate())) && (((monnum(trigdate())-1+year(trigdate())*12)%%%d) == ((%d+%d*12)%%%d))]", a.begin.tm_year + 1900, a.begin.tm_mon + 1, a.begin.tm_mday, a.repeatFrequency, a.begin.tm_year + 1900, a.begin.tm_mon, a.repeatFrequency);
+							"SATISFY [(trigdate()>=date(%d,%d,%d)) "
+							"&& (!isomitted(trigdate())) "
+							"&& (((monnum(trigdate())-1+year(trigdate())*12)%%%d) "
+							"== ((%d+%d*12)%%%d))]", a.begin.tm_year + 1900, 
+							a.begin.tm_mon + 1, a.begin.tm_mday, a.repeatFrequency, 
+							a.begin.tm_year + 1900, a.begin.tm_mon, a.repeatFrequency);
 					} else {
 						snprintf(satisfy, 256,
-							"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate()))]", a.begin.tm_year + 1900, a.begin.tm_mon + 1, a.begin.tm_mday);
+							"SATISFY [(trigdate()>=date(%d,%d,%d)) "
+							"&& (!isomitted(trigdate()))]", a.begin.tm_year + 1900,
+							a.begin.tm_mon + 1, a.begin.tm_mday);
 					}
 				} else if (a.repeatType == repeatYearly) {
 					/* On one day each year */
@@ -249,10 +255,17 @@ int main(int argc, char *argv[])
 	
 						/* if the year is equal to the starting year, mod x */
 						snprintf(satisfy, 256,
-							"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate())) && ((year(trigdate())%%%d) == (%d%%%d))]", a.begin.tm_year + 1900, a.begin.tm_mon + 1, a.begin.tm_mday, a.repeatFrequency, a.begin.tm_year + 1900, a.repeatFrequency);
+							"SATISFY [(trigdate()>=date(%d,%d,%d)) "
+							"&& (!isomitted(trigdate())) "
+							"&& ((year(trigdate())%%%d) == (%d%%%d))]", 
+							a.begin.tm_year + 1900, a.begin.tm_mon + 1, 
+							a.begin.tm_mday, a.repeatFrequency, 
+							a.begin.tm_year + 1900, a.repeatFrequency);
 					} else {
 						snprintf(satisfy, 256,
-							"SATISFY [(trigdate()>=date(%d,%d,%d)) && (!isomitted(trigdate()))]", a.begin.tm_year + 1900, a.begin.tm_mon + 1, a.begin.tm_mday);
+							"SATISFY [(trigdate()>=date(%d,%d,%d)) "
+							"&& (!isomitted(trigdate()))]", a.begin.tm_year + 1900, 
+							a.begin.tm_mon + 1, a.begin.tm_mday);
 					}
 				}
 	

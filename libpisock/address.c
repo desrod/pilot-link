@@ -38,7 +38,7 @@
  ***********************************************************************/
 void free_Address(struct Address *a)
 {
-	int i;
+	int 	i;
 
 	for (i = 0; i < 19; i++)
 		if (a->entry[i])
@@ -124,15 +124,15 @@ int unpack_Address(struct Address *a, unsigned char *buffer, int len)
  ***********************************************************************/
 int pack_Address(struct Address *a, unsigned char *record, int len)
 {
+	int 	l,
+		destlen = 9;
+
 	unsigned char *start = record;
 	unsigned char *buffer;
 	unsigned long contents;
 	unsigned long v;
 	unsigned long phoneflag;
 	unsigned char offset;
-	int l;
-
-	int destlen = 9;
 
 	for (v = 0; v < 19; v++)
 		if (a->entry[v])
@@ -193,10 +193,12 @@ int
 unpack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 		      int len)
 {
-	int i;
+	
+	int 	i,
+		destlen = 4 + 16 * 22 + 2 + 2;
+
 	unsigned char *start = record;
 	unsigned long r;
-	int destlen = 4 + 16 * 22 + 2 + 2;
 
 	i = unpack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
@@ -247,7 +249,7 @@ int
 pack_AddressAppInfo(struct AddressAppInfo *ai, unsigned char *record,
 		    int len)
 {
-	int i;
+	int 	i;
 	unsigned char *pos = record;
 	unsigned long r;
 	int destlen = 4 + 16 * 22 + 2 + 2;

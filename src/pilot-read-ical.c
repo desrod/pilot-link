@@ -51,16 +51,13 @@ static const char *optstring = "hp:dt:f:";
 
 int main(int argc, char *argv[])
 {
-	int 	chara,
+	int 	ch,
 		db,
 		sd = -1,
 		index,
 		read_todos = -1;
-
 	FILE 	*ical;
-
 	unsigned char buffer[0xffff];
-
 	char 	cmd[255],
 		*dbonly = NULL,
 		*ptext = NULL,
@@ -68,11 +65,10 @@ int main(int argc, char *argv[])
 		*port = NULL,
 		*pubtext = NULL,
 		*progname = argv[0];
-
 	struct ToDoAppInfo tai;
 
-	while ((chara = getopt(argc, argv, optstring)) != -1) {
-		switch (chara) {
+	while ((ch = getopt(argc, argv, optstring)) != -1) {
+		switch (ch) {
 
 		  case 'h':
 			  Help(progname);
@@ -132,7 +128,7 @@ int main(int argc, char *argv[])
 				/* Open the ToDo database, store access handle in db */
 				if (dlp_OpenDB
 				    (sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-					puts("Unable to open ToDoDB");
+					printf("Unable to open ToDoDB.\n");
 					dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
 					exit(1);
 				}
@@ -163,7 +159,7 @@ int main(int argc, char *argv[])
 
 					fprintf(ical, "set n [notice]\n");
 
-					/* '\x95' is the "bullet" character */
+					/* '\x95' is the "bullet" chcter */
 					fprintf(ical, "$n text %s\n", tclquote((pubtext && t.description[0] != '\x95') ? pubtext : t.description));
 					fprintf(ical, "$n date [date today]\n");
 					fprintf(ical, "$n todo 1\n");
@@ -185,7 +181,7 @@ int main(int argc, char *argv[])
 			/* Open the Datebook's database, store access handle in db */
 			if (dlp_OpenDB
 			    (sd, 0, 0x80 | 0x40, "DatebookDB", &db) < 0) {
-				puts("Unable to open DatebookDB");
+				printf("Unable to open DatebookDB\n");
 				dlp_AddSyncLogEntry(sd, "Unable to open DatebookDB.\n");
 				pi_close(sd);
 				exit(1);
@@ -259,7 +255,7 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				/* '\x95' is the "bullet" character */
+				/* '\x95' is the "bullet" chcter */
 				fprintf(ical, "$i text %s\n",
 					tclquote((pubtext
 						  && a.description[0] !=

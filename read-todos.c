@@ -46,7 +46,7 @@ static const char *optstring = "hp:f:";
 
 int main(int argc, char *argv[])
 {
-	int 	chara,
+	int 	ch,
 		db,
 		index,
 		sd = -1;
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
 	struct 	ToDoAppInfo tai;
 	unsigned char buffer[0xffff];
 	
-	while (((chara = getopt(argc, argv, optstring)) != -1)) {
-		switch (chara) {
+	while (((ch = getopt(argc, argv, optstring)) != -1)) {
+		switch (ch) {
 		  case 'h':
 			  Help(progname);
 			  exit(0);
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 			printf("Priority: %d\n", t.priority);
 			printf("Completed: %s\n", t.complete ? "Yes" : "No");
 			if (t.indefinite)
-				puts("Due: No Date");
+				printf("Due: No Date");
 			else
 				printf("Due: %s", asctime(&t.due));
 			if (t.description)

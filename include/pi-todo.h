@@ -9,18 +9,18 @@ extern "C" {
 #endif
 
 	struct ToDo {
-		int indefinite;
-		struct tm due;
-		int priority;
-		int complete;
-		char *description;
-		char *note;
+		int 	indefinite,
+			priority,
+			complete;
+		char 	*description,
+			*note;
+		struct 	tm due;
 	};
 
 	struct ToDoAppInfo {
-		struct CategoryAppInfo category;
-		int dirty;
-		int sortByPriority;
+		int 	dirty,
+			sortByPriority;
+		struct 	CategoryAppInfo category;
 	};
 
 	extern void free_ToDo PI_ARGS((struct ToDo *));

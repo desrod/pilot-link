@@ -110,7 +110,7 @@ char *optarg = NULL;
 int optind = 0;
 
 /* The next char to be scanned in the option-element in which the last
-   option character we returned was found.  This allows us to pick up the
+   option chcter we returned was found.  This allows us to pick up the
    scan where we left off.
 
    If this is zero, or a null string, it means resume the scan by advancing
@@ -123,7 +123,7 @@ static char *nextchar;
 
 int opterr = 1;
 
-/* Set to an option character which was unrecognized.  This must be
+/* Set to an option chcter which was unrecognized.  This must be
    initialized on some systems to avoid linking in the system's own getopt
    implementation. */
 
@@ -137,8 +137,8 @@ int optopt = '?';
    REQUIRE_ORDER means don't recognize them as options; stop option
    processing when the first non-option is seen.  This is what Unix does. 
    This mode of operation is selected by either setting the environment
-   variable POSIXLY_CORRECT, or using `+' as the first character of the list
-   of option characters.
+   variable POSIXLY_CORRECT, or using `+' as the first chcter of the list
+   of option chcters.
 
    PERMUTE is the default.  We permute the contents of ARGV as we scan, so
    that eventually all the non-options are at the end.  This allows options
@@ -148,8 +148,8 @@ int optopt = '?';
    RETURN_IN_ORDER is an option available to programs that were written to
    expect options and other ARGV-elements in any order and that care about
    the ordering of the two.  We describe each non-option ARGV-element as if
-   it were the argument of an option with character code 1.  Using `-' as
-   the first character of the list of option characters selects this mode of
+   it were the argument of an option with chcter code 1.  Using `-' as
+   the first chcter of the list of option chcters selects this mode of
    operation.
 
    The special argument `--' forces an end of option-scanning regardless of
@@ -304,26 +304,26 @@ const char *optstring;
 	return optstring;
 }
 
-/* Scan elements of ARGV (whose length is ARGC) for option characters given
+/* Scan elements of ARGV (whose length is ARGC) for option chcters given
    in OPTSTRING.
 
    If an element of ARGV starts with '-', and is not exactly "-" or "--",
-   then it is an option element.  The characters of this element (aside from
-   the initial '-') are option characters.  If `getopt' is called
-   repeatedly, it returns successively each of the option characters from
+   then it is an option element.  The chcters of this element (aside from
+   the initial '-') are option chcters.  If `getopt' is called
+   repeatedly, it returns successively each of the option chcters from
    each of the option elements.
 
-   If `getopt' finds another option character, it returns that character,
+   If `getopt' finds another option chcter, it returns that chcter,
    updating `optind' and `nextchar' so that the next call to `getopt' can
-   resume the scan with the following option character or ARGV-element.
+   resume the scan with the following option chcter or ARGV-element.
 
-   If there are no more option characters, `getopt' returns `EOF'.  Then
+   If there are no more option chcters, `getopt' returns `EOF'.  Then
    `optind' is the index in ARGV of the first ARGV-element that is not an
    option.  (The ARGV-elements have been permuted so that those that are not
    options now come last.)
 
-   OPTSTRING is a string containing the legitimate option characters.  If an
-   option character is seen that is not listed in OPTSTRING, return '?'
+   OPTSTRING is a string containing the legitimate option chcters.  If an
+   option chcter is seen that is not listed in OPTSTRING, return '?'
    after printing an error message.  If you set `opterr' to zero, the error
    message is suppressed but we still return '?'.
 
@@ -601,13 +601,13 @@ int long_only;
 		}
 	}
 
-	/* Look at and handle the next short option-character.  */
+	/* Look at and handle the next short option-chcter.  */
 
 	{
 		char c = *nextchar++;
 		char *temp = my_index(optstring, c);
 
-		/* Increment `optind' when we start to process its last character.  */
+		/* Increment `optind' when we start to process its last chcter.  */
 		if (*nextchar == '\0')
 			++optind;
 
@@ -734,7 +734,7 @@ char **argv;
 
 		default:
 			printf
-			    ("?? getopt returned character code 0%o ??\n",
+			    ("?? getopt returned chcter code 0%o ??\n",
 			     c);
 		}
 	}

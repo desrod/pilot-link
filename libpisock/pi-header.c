@@ -38,5 +38,7 @@ void PalmHeader(char *progname)
 	printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",
                 PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
                 patchlevel);
-	printf("   See the file COPYING for more details.\n\n");
+	printf("   See the file COPYING for more details.\n\n"
+	       "   Please use -h for more detailed options.\n");
+
 }

@@ -30,7 +30,7 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
-void usage(void);
+static void Help(char *progname);
 
 #ifdef sun
 extern char *optarg;
@@ -42,49 +42,22 @@ void dump_app_info(struct pi_file *pf, struct DBInfo *ip);
 void dump_sort_info(struct pi_file *pf, struct DBInfo *ip);
 void list_records(struct pi_file *pf, struct DBInfo *ip);
 void dump_record(struct pi_file *pf, struct DBInfo *ip, int record);
-
 char *iso_time_str(time_t t);
 void dump(void *buf, int size);
 
-char *progname;
-
-/***********************************************************************
- *
- * Function:    usage
- *
- * Summary:     Print the --help screen and app arguments
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void usage(void)
-{
-	PalmHeader(progname);
-
-	fprintf(stderr, "   Usage: %s [-s] -p|-u dir file\n", progname);
-	fprintf(stderr, "   -p      pack the contents of a directory into the named file\n");
-	fprintf(stderr, "   -u      unpack the contents of the named file into a directory\n");
-	fprintf(stderr, "   -s      don't obey/generate sort list\n\n");
-	fprintf(stderr, "   Contents of directory may include files like these:\n");
-	fprintf(stderr, "     tSTRx12CD[.bin] (a resource with hex index)\n");
-	fprintf(stderr, "     tSTR10000[.bin] (a reousrce with decimal index)\n");
-	fprintf(stderr, "     sort            (a file containing the names of other files)\n\n");
-	exit(1);
-}
-
 int hflag, aflag, sflag, vflag, lflag, rflag, rnum;
+
+static const char *optstring = "hasvlr:";
+
 int main(int argc, char **argv)
 {
 	struct pi_file *pf;
 	int c;
 	char *name;
 	struct DBInfo info;
+	char *progname = argv[0];
 
-	progname = argv[0];
-
-	while ((c = getopt(argc, argv, "haslr:v")) != EOF) {
+	while ((c = getopt(argc, argv, optstring)) != EOF) {
 		switch (c) {
 		case 'h':
 			hflag = 1;
@@ -106,17 +79,16 @@ int main(int argc, char **argv)
 			rnum = atoi(optarg);
 			break;
 		default:
-			usage();
 		}
 	}
 
 	if (optind >= argc)
-		usage();
+		Help(progname);
 
 	name = argv[optind++];
 
 	if (optind != argc)
-		usage();
+		Help(progname);
 
 	if ((pf = pi_file_open(name)) == NULL) {
 		fprintf(stderr, "can't open %s\n", name);
@@ -143,7 +115,7 @@ int main(int argc, char **argv)
 	if (rflag)
 		dump_record(pf, &info, rnum);
 
-	return (0);
+	return 0;
 }
 
 /***********************************************************************
@@ -415,3 +387,29 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 }
 
 
+/***********************************************************************
+ *
+ * Function:    Help
+ *
+ * Summary:     Print the --help screen and app arguments
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void Help(char *progname)
+{
+	PalmHeader(progname);
+
+	printf("   Usage: %s [-s] -p|-u dir file\n"
+	       "     -s           Do not obey or generate a 'sort' list\n\n"
+	       "     -p           Pack the contents of a directory into the named file\n"
+	       "     -u           Unpack the contents of the named file into a directory\n"
+	       "     -h           Display this information\n\n"
+	       "   Contents of directory may include files like these:\n"
+	       "     tSTRx12CD[.bin] (a resource with hex index)\n"
+	       "     tSTR10000[.bin] (a reousrce with decimal index)\n"
+	       "     sort            (a file containing the names of other files)\n\n", progname);
+	return;
+}

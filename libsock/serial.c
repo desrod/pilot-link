@@ -75,9 +75,9 @@ extern int dlp_trace;
 int
 pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
-	struct cmp c;
-	struct pi_sockaddr *pa = (struct pi_sockaddr *) addr;
-	char *rate_env;
+	char 	*rate_env;
+	struct 	cmp c;
+	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 
 	if (ps->type == PI_SOCK_STREAM) {
 		if (ps->establishrate == -1) {
@@ -182,8 +182,9 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 int
 pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
-	struct pi_sockaddr *pa = (struct pi_sockaddr *) addr;
-	char *rate_env;
+	char 	*rate_env;
+	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
+
 
 	if (ps->type == PI_SOCK_STREAM) {
 		if (ps->establishrate == -1) {
@@ -269,9 +270,9 @@ static int pi_serial_listen(struct pi_socket *ps, int backlog)
 static int
 pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
-	struct pi_socket *accept;
-	struct timeval tv;
-	struct cmp c;
+	struct 	pi_socket *accept;
+	struct 	timeval tv;
+	struct 	cmp c;
 
 	accept = malloc(sizeof(struct pi_socket));
 	memcpy(accept, ps, sizeof(struct pi_socket));

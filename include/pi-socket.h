@@ -34,13 +34,10 @@ extern "C" {
 #include "pi-sockaddr.h"
 #endif
 
-	struct pi_skb;
-
-	struct pi_mac;
-
-	struct pi_socket;
-
-	struct sockaddr;
+	struct 	pi_skb;
+	struct 	pi_mac;
+	struct 	pi_socket;
+	struct 	sockaddr;
 
 	extern int pi_socket PI_ARGS((int domain, int type, int protocol));
 	extern int pi_connect

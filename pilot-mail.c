@@ -17,21 +17,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
  * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
+ * You should have received a copy of the GNU General Public License alon
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
-
-#define PILOTPORT	""
-#define POPHOST 	""
-#define POPUSER		""
-#define POPPASS		""
-#define PILOTFROM	""
-#define SENDMAIL	"/usr/lib/sendmail -t -i"
-#define POPKEEP 	"keep"
-#define DISPOSE		"keep"
-#define TOPILOT_MHDIR   ""
 
 /* Todo: truncation, filtering, priority, notification */
 
@@ -60,282 +50,64 @@ int getpopstring(int socket, char *buf);
 int getpopresult(int socket, char *buf);
 char *skipspace(char *c);
 void header(struct Mail *m, char *t);
-void Help(char *progname);
-void sigint(int num);
-
 extern time_t parsedate(char *p);
 
-void markline(char *msg)
-{
-	while ((*msg) != '\n' && (*msg) != 0) {
-		msg++;
-	}
-	(*msg) = 0;
-}
+char *getvars(char *name, char *xdefault);
 
-int openmhmsg(char *dir, int num)
-{
-	char filename[1000];
+int pilot_connect(const char *port);
 
-	sprintf(filename, "%s/%d", dir, num);
+/* This should be a struct, maybe later, we're killing this anyway. Passing
+   this many things in is silly, but its cleaner than the previous. -DD 
+ */
+static void Help(char *progname, char *port, char *from_address, char *pop_host,
+		 char *pop_user, char *pop_pass, char *sendmail, char *pop_keep,
+		 char *pilot_dispose, char *topilot_mhdir);
 
-	return open(filename, O_RDONLY);
-}
-
-int getpopchar(int socket)
-{
-	char buf;
-	int l;
-
-	do {
-		l = read(socket, &buf, 1);
-		if (l < 0)
-			return l;
-	} while ((l == 0) || (buf == '\r'));
-
-	return buf;
-}
-
-int getpopstring(int socket, char *buf)
-{
-	int c;
-
-	while ((c = getpopchar(socket)) >= 0) {
-		*buf++ = c;
-		if (c == '\n')
-			break;
-	}
-	*buf = '\0';
-	return c;
-}
-
-int getpopresult(int socket, char *buf)
-{
-	int c = getpopstring(socket, buf);
-
-	if (c < 0)
-		return c;
-
-	if (buf[0] == '+')
-		return 0;
-	else
-		return 1;
-}
-
-char *skipspace(char *c)
-{
-	while (c && ((*c == ' ') || (*c == '\t')))
-		c++;
-	return c;
-}
-
-void header(struct Mail *m, char *t)
-{
-	static char holding[4096];
-
-	if (t && strlen(t) && t[strlen(t) - 1] == '\n')
-		t[strlen(t) - 1] = 0;
-
-	if (t && ((t[0] == ' ') || (t[0] == '\t'))) {
-		if ((strlen(t) + strlen(holding)) > 4096)
-			return;	/* Just discard approximate overflow */
-		strcat(holding, t + 1);
-		return;
-	}
-
-	/* Decide on what we do with m->sendTo */
-
-	if (strncmp(holding, "From:", 5) == 0) {
-		m->from = strdup(skipspace(holding + 5));
-	} else if (strncmp(holding, "To:", 3) == 0) {
-		m->to = strdup(skipspace(holding + 3));
-	} else if (strncmp(holding, "Subject:", 8) == 0) {
-		m->subject = strdup(skipspace(holding + 8));
-	} else if (strncmp(holding, "Cc:", 3) == 0) {
-		m->cc = strdup(skipspace(holding + 3));
-	} else if (strncmp(holding, "Bcc:", 4) == 0) {
-		m->bcc = strdup(skipspace(holding + 4));
-	} else if (strncmp(holding, "Reply-To:", 9) == 0) {
-		m->replyTo = strdup(skipspace(holding + 9));
-	} else if (strncmp(holding, "Date:", 4) == 0) {
-		time_t d = parsedate(skipspace(holding + 5));
-
-		if (d != -1) {
-			struct tm *d2;
-
-			m->dated = 1;
-			d2 = localtime(&d);
-			m->date = *d2;
-		}
-	}
-
-	holding[0] = 0;
-
-	if (t)
-		strcpy(holding, t);
-}
-
-void Help(char *progname)
-{
-	PalmHeader(progname);
-
-	fprintf(stderr, "   Usage: %s [options]\n\n", progname);
-	fprintf(stderr, "     -p port             = Serial port to use $(PILOTPORT)\n");
-	fprintf(stderr, "                           (defaults to '%s')\n",
-		PILOTPORT);
-	fprintf(stderr, "     -h host             = POP3 host (if empty, mail won't be received)\n");
-	fprintf(stderr, "                           $(POPHOST), (defaults to '%s')\n",
-		POPHOST);
-	fprintf(stderr, "     -u user             = POP3 user name $(POPUSER)\n");
-	fprintf(stderr, "                           (defaults to '%s')\n",
-		POPUSER);
-	fprintf(stderr, "     -P pass             = POP3 password $(POPPASS)\n");
-	fprintf(stderr, "                           (default value set)\n");
-	fprintf(stderr, "     -f address          = Outgoing 'From:' line $(PILOTFROM)\n");
-	fprintf(stderr, "                           (defaults to '%s')\n",
-		PILOTFROM);
-	fprintf(stderr, "     -s command          = Sendmail command (if empty, mail won't be sent)\n");
-	fprintf(stderr, "                           $(SENDMAIL), (defaults to '%s')\n",
-		SENDMAIL);
-	fprintf(stderr, "     -k keep|delete      = Keep mail on POP server $(POPKEEP)\n");
-	fprintf(stderr, "                           (defaults to '%s')\n",
-		POPKEEP);
-	fprintf(stderr, "     -d keep|delete|file = Disposition of sent mail $(PILOTDISPOSE)\n");
-	fprintf(stderr, "                           (defaults to '%s')\n",
-		DISPOSE);
-	fprintf(stderr, "     -m mhdir            = MH directory to download to Palm $(TOPILOT_MHDIR)\n");
-	fprintf(stderr, "                           (defaults to '%s')\n",
-		TOPILOT_MHDIR);
-	fprintf(stderr, "\n   All options may be specified by setting the environment variable named\n   in brackets.\n\n");
-	fprintf(stderr, "      ********************************************* **\n");
-	fprintf(stderr, "      ** NOTE!! This is being deprecated soon. This **\n");
-	fprintf(stderr, "      ** means that this application is going away! **\n");
-	fprintf(stderr, "      ** Please use pilot-mailsync instead. Consult **\n");
-	fprintf(stderr, "      ** the manpages for additional information... **\n");
-	fprintf(stderr, "      ************************************************\n\n");
-
-	exit(0);
-}
-
-void sigint(int num)
-{
-	*((char *) 0) = 0;
-}
+static const char *optstring = "s:p:d:f:H:u:p:P:k:m:h";
 
 int main(int argc, char *argv[])
 {
-	struct pi_sockaddr addr;
-	int db;
-	int sd;
-	int i, l = 0;
-	int lost, dupe, rec, sent;
-	struct PilotUser U;
-	int ret;
-	char buffer[0xffff];
-	struct MailAppInfo tai;
-	struct MailSyncPref p;
-	struct MailSignaturePref sig;
-	struct sockaddr_in pop_addr;
-	int popfd;
-	struct hostent *hostent;
-	int c;
-	char *progname = argv[0];
-	char *device = argv[1];
+	int 	count,
+		db,
+		sd,
+		inc, 
+		l = 0,
+		lost,
+		dupe,
+		rec,
+		sent,
+		popfd;
 
+	struct	PilotUser U;
+	struct	MailAppInfo tai;
+	struct 	MailSyncPref p;
+	struct 	MailSignaturePref sig;
+	struct 	sockaddr_in pop_addr;
+	struct 	hostent *hostent;
 
-	char *from_address =
-#ifdef PILOTFROM
-	    PILOTFROM;
-#else
-	    "";
-#endif
-	char *pop_host =
-#ifdef POPHOST
-	    POPHOST;
-#else
-	    "";
-#endif
-	char *pop_user =
-#ifdef POPUSER
-	    POPUSER;
-#else
-	    "";
-#endif
-	char *pop_pass =
-#ifdef POPPASS
-	    POPPASS;
-#else
-	    "";
-#endif
-	char *sendmail =
-#ifdef SENDMAIL
-	    SENDMAIL;
-#else
-	    "";
-#endif
-	char *pop_keep =
-#ifdef POPKEEP
-	    POPKEEP;
-#else
-	    "";
-#endif
-	char *dispose =
-#ifdef DISPOSE
-	    DISPOSE;
-#else
-	    "";
-#endif
-	char *port =
-#ifdef PILOTPORT
-	    PILOTPORT;
-#else
-	    "";
-#endif
-	char *mh_dir =
-#ifdef TOPILOT_MHDIR
-	    TOPILOT_MHDIR;
-#else
-	    "";
-#endif
+	char 	buffer[0xffff],
+		*progname = argv[0],
 
-	extern char *optarg;
-	extern int optind;
-
-
-	if (getenv("SENDMAIL"))
-		sendmail = getenv("SENDMAIL");
-	if (getenv("POPKEEP"))
-		pop_keep = getenv("POPKEEP");
-	if (getenv("PILOTDISPOSE"))
-		dispose = getenv("PILOTDISPOSE");
-	if (getenv("PILOTFROM"))
-		from_address = getenv("PILOTFROM");
-	if (getenv("POPHOST"))
-		pop_host = getenv("POPHOST");
-	if (getenv("POPUSER"))
-		pop_user = getenv("POPUSER");
-	if (getenv("POPPASS"))
-		pop_pass = getenv("POPPASS");
-	if (getenv("PILOTPORT"))
-		port = getenv("PILOTPORT");
-	if (getenv("TOPILOT_MHDIR"))
-		mh_dir = getenv("TOPILOT_MHDIR");
-
-	signal(SIGINT, sigint);
-
-	if (argc < 2)
-		Help(progname);
-
-
-	while ((c = getopt(argc, argv, "s:p:d:f:h:u:p:h:P:k:m:")) != -1) {
-		switch (c) {
+		/* Thanks to Jon Armstrong for helping me with this */
+		*port 			= getvars("PILOTPORT", "/dev/pilot"),
+		*from_address 		= getvars("PILOTFROM", ""),
+		*pop_host 		= getvars("POPHOST", ""),
+		*pop_user 		= getvars("POPUSER", ""),
+		*pop_pass 		= getvars("POPPASS", ""),
+		*sendmail 		= getvars("SENDMAIL", "/usr/lib/sendmail -t -i"),
+		*pop_keep 		= getvars("POPKEEP", "keep"),
+		*pilot_dispose 		= getvars("PILOTDISPOSE", "keep"),
+		*topilot_mhdir 		= getvars("TOPILOT_MHDIR", "");
+	
+	while ((count = getopt(argc, argv, optstring)) != -1) {
+		switch (count) {
 		case 's':
 			sendmail = optarg;
 			break;
 		case 'p':
 			port = optarg;
 			break;
-		case 'h':
+		case 'H':
 			pop_host = optarg;
 			break;
 		case 'u':
@@ -348,49 +120,52 @@ int main(int argc, char *argv[])
 			from_address = optarg;
 			break;
 		case 'd':
-			dispose = optarg;
+			pilot_dispose = optarg;
 			break;
 		case 'k':
 			pop_keep = optarg;
 			break;
 		case 'm':
-			mh_dir = optarg;
+			topilot_mhdir = optarg;
 			break;
-		case 'H':
-		case '?':
+		case 'h':
 		default:
-			Help(progname);
+			Help(progname, port, 
+		pop_host, pop_user, pop_pass, from_address, pop_keep, pilot_dispose, topilot_mhdir, 
+		sendmail);
 		}
 	}
 	argc -= optind;
 	argv += optind;
 
-	if (!strlen(port)) {
-		fprintf(stderr,
-			"\n   Port must be set before %s will function properly.\n\n",
-			progname);
-		Help(progname);
+	if (argc < 2 && !getenv("PILOTPORT")) {
+		PalmHeader(progname);
+	} else if (port == NULL && getenv("PILOTPORT")) {
+		port = getenv("PILOTPORT");
 	}
-
-
+	
 	if (!strlen(pop_host) && !strlen(sendmail)) {
-		fprintf(stderr,
-			"%s requires that at least one of -h or -s must be set.\n\n",
+		printf("%s requires that at least one of -h or -s must be set.\n\n",
 			progname);
-		Help(progname);
+		Help(progname, port, pop_host, pop_user, pop_pass, 
+		     from_address, pop_keep, pilot_dispose, 
+		     topilot_mhdir, sendmail);
 	}
 
 	if (strlen(pop_host)) {
 		if (!strlen(pop_user)) {
-			fprintf(stderr,
-				"\nUndeclared option -u must be set to receive mail.\n\n");
-			Help(progname);
+			printf("\nUndeclared option -u must be set to receive mail.\n\n");
+			Help(progname, port, pop_host, pop_user, pop_pass, 
+			     from_address, pop_keep, pilot_dispose, 
+			     topilot_mhdir, sendmail);
+		
 		} else if (!strlen(pop_keep)
 			   || (strcmp(pop_keep, "keep")
 			       && strcmp(pop_keep, "delete"))) {
-			fprintf(stderr,
-				"-k must have an argument of 'keep' or 'delete'.\n\n");
-			Help(progname);
+			printf("-k must have an argument of 'keep' or 'delete'.\n\n");
+			Help(progname, port, pop_host, pop_user, pop_pass, 
+			     from_address, pop_keep, pilot_dispose, 
+			     topilot_mhdir, sendmail);
 		}
 	}
 
@@ -399,58 +174,21 @@ int main(int argc, char *argv[])
 	}
 
 	if (strlen(sendmail)) {
-		if (!strlen(dispose) || (strcmp(dispose, "keep") &&
-					 strcmp(dispose, "delete") &&
-					 strcmp(dispose, "file"))) {
-			fprintf(stderr,
-				"-d must have an argument of 'keep', 'delete', or 'file'.\n\n");
-			Help(progname);
+		if (!strlen(pilot_dispose) || (strcmp(pilot_dispose, "keep") &&
+					 strcmp(pilot_dispose, "delete") &&
+					 strcmp(pilot_dispose, "file"))) {
+			printf("-d must have an argument of 'keep', 'delete', or 'file'.\n\n");
+			Help(progname, port, pop_host, pop_user, pop_pass, 
+			     from_address, pop_keep, pilot_dispose, 
+			     topilot_mhdir, sendmail);
 		}
-	}
-
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
-		exit(1);
 	}
 
 	lost = dupe = rec = sent = 0;
 
-	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, device);
 
-	PalmHeader(progname);
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		fprintf(stderr, "\n   Unable to bind to port %s\n",
-			device);
-		perror("   pi_bind");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	printf
-	    ("   Port: %s\n\n   Please press the HotSync button now...\n",
-	     device);
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		fprintf(stderr, "\n   Error listening on %s\n", device);
-		perror("   pi_listen");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		fprintf(stderr, "\n   Error accepting data on %s\n",
-			device);
-		perror("   pi_accept");
-		fprintf(stderr, "\n");
-		exit(1);
-	}
-
-	fprintf(stderr, "Connected...\n");
+	sd = pilot_connect(port);
+	
 	memset(&tai, '\0', sizeof(struct MailAppInfo));
 	memset(&p, '\0', sizeof(struct MailSyncPref));
 
@@ -462,8 +200,8 @@ int main(int argc, char *argv[])
 
 	/* Open the Mail database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MailDB", &db) < 0) {
-		fprintf(stderr, "Unable to open MailDB\n");
-		dlp_AddSyncLogEntry(sd, "Unable to open MailDB.\n");
+		printf("Unable to open MailDB\n");
+		dlp_AddSyncLogEntry(sd, "Unable to open MailDB.\nFile not found.");
 		exit(1);
 	}
 
@@ -472,12 +210,12 @@ int main(int argc, char *argv[])
 
 	setbuf(stderr, 0);
 
-	p.syncType = 0;
-	p.getHigh = 0;
+	p.syncType 	= 0;
+	p.getHigh 	= 0;
 	p.getContaining = 0;
-	p.truncate = 8 * 1024;
-	p.filterTo = 0;
-	p.filterFrom = 0;
+	p.truncate 	= 8 * 1024;
+	p.filterTo 	= 0;
+	p.filterFrom 	= 0;
 	p.filterSubject = 0;
 
 	if (pi_version(sd) > 0x0100) {
@@ -518,7 +256,7 @@ int main(int argc, char *argv[])
 	       sig.signature ? sig.signature : "<None>");
 
 #if 0
-	for (i = 0; 1; i++) {
+	for (inc = 0; 1; inc++) {
 		struct Mail t;
 		int attr, category;
 
@@ -549,8 +287,7 @@ int main(int argc, char *argv[])
 		printf("To: |%s|\n", t.to ? t.to : "<None>");
 		printf("Cc: |%s|\n", t.cc ? t.cc : "<None>");
 		printf("Bcc: |%s|\n", t.bcc ? t.bcc : "<None>");
-		printf("ReplyTo: |%s|\n",
-		       t.replyTo ? t.replyTo : "<None>");
+		printf("ReplyTo: |%s|\n", t.replyTo ? t.replyTo : "<None>");
 		printf("SendTo: |%s|\n", t.sentTo ? t.sentTo : "<None>");
 		printf("Body: |%s|\n", t.body ? t.body : "<None>");
 		printf("\n");
@@ -563,10 +300,10 @@ int main(int argc, char *argv[])
 		/* sendmail transmission section */
 
 		/* Iterate over messages in Outbox */
-		for (i = 0;; i++) {
-			struct Mail t;
-			int attr;
-			int size;
+		for (inc = 0;; inc++) {
+			struct 	Mail t;
+			int 	attr,
+				size;
 			recordid_t id;
 			FILE *sendf;
 
@@ -589,8 +326,7 @@ int main(int argc, char *argv[])
 			sendf = popen(sendmail, "w");
 
 			if (!sendf) {
-				fprintf(stderr,
-					"Error launching '%s' to transmit mail! (No mail lost, %d received, %d sent)\n",
+				printf("Error launching '%s' to transmit mail! (No mail lost, %d received, %d sent)\n",
 					sendmail, rec, sent);
 				pi_close(sd);
 				exit(1);
@@ -643,9 +379,9 @@ int main(int argc, char *argv[])
 
 			if (pclose(sendf) == 0) {
 				sent++;
-				if (strcmp(dispose, "keep") == 0) {
+				if (strcmp(pilot_dispose, "keep") == 0) {
 					dupe++;
-				} else if (strcmp(dispose, "delete") == 0) {
+				} else if (strcmp(pilot_dispose, "delete") == 0) {
 					dlp_DeleteRecord(sd, db, 0, id);
 				} else {
 					/* Rewrite into Filed category */
@@ -667,8 +403,7 @@ int main(int argc, char *argv[])
 		if ((pop_addr.sin_addr.s_addr = inet_addr(pop_host)) == -1) {
 			hostent = gethostbyname(pop_host);
 			if (!hostent) {
-				fprintf(stderr,
-					"Unable to resolve POP host '%s'",
+				printf("Unable to resolve POP host '%s'. Check your network settings.\n",
 					pop_host);
 				goto end;
 			}
@@ -687,8 +422,7 @@ int main(int argc, char *argv[])
 		    (popfd, (struct sockaddr *) &pop_addr,
 		     sizeof(pop_addr))
 		    < 0) {
-			fprintf(stderr,
-				"Unable to connect to POP server '%s'\n",
+			printf("Unable to connect to POP server '%s'\n",
 				pop_host);
 			close(popfd);
 			goto end;
@@ -696,8 +430,7 @@ int main(int argc, char *argv[])
 
 		read(popfd, buffer, 1024);
 		if (buffer[0] != '+') {
-			fprintf(stderr,
-				"POP server failed to announce itself\n");
+			printf("POP server failed to announce itself\n");
 			goto endpop;
 		}
 
@@ -705,8 +438,7 @@ int main(int argc, char *argv[])
 		write(popfd, buffer, strlen(buffer));
 		read(popfd, buffer, 1024);
 		if (buffer[0] != '+') {
-			fprintf(stderr,
-				"USER command to POP server failed\n");
+			printf("USER command to POP server failed. Verify your username.\n");
 			goto endpop;
 		}
 
@@ -714,16 +446,16 @@ int main(int argc, char *argv[])
 		write(popfd, buffer, strlen(buffer));
 		read(popfd, buffer, 1024);
 		if (buffer[0] != '+') {
-			fprintf(stderr,
-				"PASS command to POP server failed\n");
+			printf("PASS command to POP server failed\n. Verify your password.\n");
 			close(popfd);
 			goto endpop;
 		}
 
-		for (i = 1;; i++) {
-			int len;
-			char *msg;
-			int h;
+		for (inc = 1;; inc++) {
+			int 	len,
+				h;
+			char 	*msg;
+
 			struct Mail t;
 
 			t.to = 0;
@@ -736,7 +468,7 @@ int main(int argc, char *argv[])
 			t.body = 0;
 			t.dated = 0;
 
-			sprintf(buffer, "LIST %d\r\n", i);
+			sprintf(buffer, "LIST %d\r\n", inc);
 			write(popfd, buffer, strlen(buffer));
 			l = read(popfd, buffer, 1024);
 			if (l < 0) {
@@ -752,7 +484,7 @@ int main(int argc, char *argv[])
 			if (len > 16000)
 				continue;
 
-			sprintf(buffer, "RETR %d\r\n", i);
+			sprintf(buffer, "RETR %d\r\n", inc);
 			write(popfd, buffer, strlen(buffer));
 			l = getpopstring(popfd, buffer);
 			if ((l < 0) || (buffer[0] != '+')) {
@@ -765,8 +497,7 @@ int main(int argc, char *argv[])
 			h = 1;
 			for (;;) {
 				if (getpopstring(popfd, msg) < 0) {
-					fprintf(stderr,
-						"Error reading message\n");
+					printf("Error reading message\n");
 					goto endpop;
 				}
 
@@ -804,17 +535,16 @@ int main(int argc, char *argv[])
 
 			if (h) {
 				/* Oops, incomplete message, still reading headers */
-				fprintf(stderr, "Incomplete message %d\n",
-					i);
+				printf("Incomplete message %d\n",
+					inc);
 				free_Mail(&t);
 				continue;
 			}
 
 			if (strlen(msg) > p.truncate) {
 				/* We could truncate it, but we won't for now */
-				fprintf(stderr,
-					"Message %d too large (%ld bytes)\n",
-					i, (long) strlen(msg));
+				printf("Message %d too large (%ld bytes)\n",
+					inc, (long) strlen(msg));
 				free_Mail(&t);
 				continue;
 			}
@@ -827,21 +557,18 @@ int main(int argc, char *argv[])
 			    (sd, db, 0, 0, 0, buffer, len, 0) > 0) {
 				rec++;
 				if (strcmp(pop_keep, "delete") == 0) {
-					sprintf(buffer, "DELE %d\r\n", i);
+					sprintf(buffer, "DELE %d\r\n", inc);
 					write(popfd, buffer,
 					      strlen(buffer));
 					read(popfd, buffer, 1024);
 					if (buffer[0] != '+') {
-						fprintf(stderr,
-							"Error deleting message %d\n",
-							i);
+						printf("Error deleting message %d\n", inc);
 						dupe++;
 					}
 				} else
 					dupe++;
 			} else {
-				fprintf(stderr,
-					"Error writing message to Palm\n");
+				printf("Error writing message to Palm\n");
 			}
 
 			free_Mail(&t);
@@ -851,8 +578,7 @@ int main(int argc, char *argv[])
 		write(popfd, buffer, strlen(buffer));
 		read(popfd, buffer, 1024);
 		if (buffer[0] != '+') {
-			fprintf(stderr,
-				"QUIT command to POP server failed\n");
+			printf("QUIT command to POP server failed\n");
 		}
 
 	      endpop:
@@ -860,19 +586,19 @@ int main(int argc, char *argv[])
 
 	}
 
-	if (strlen(mh_dir)) {
+	if (strlen(topilot_mhdir)) {
 
-		fprintf(stderr, "Reading directory %s... ", mh_dir);
+		fprintf(stderr, "Reading directory %s... ", topilot_mhdir);
 		fflush(stderr);
 
 		/* MH directory reading section */
 
-		for (i = 1;; i++) {
-			int len;
-			char *msg;
-			int h;
-			struct Mail t;
-			int mhmsg;
+		for (inc = 1;; inc++) {
+			int 	len,
+				mhmsg,
+				h;
+			char 	*msg;
+			struct 	Mail t;
 
 			t.to = 0;
 			t.from = 0;
@@ -884,11 +610,11 @@ int main(int argc, char *argv[])
 			t.body = 0;
 			t.dated = 0;
 
-			if ((mhmsg = openmhmsg(mh_dir, i)) < 0) {
+			if ((mhmsg = openmhmsg(topilot_mhdir, inc)) < 0) {
 				break;
 			}
 
-			fprintf(stderr, "%d ", i);
+			fprintf(stderr, "%d ", inc);
 			fflush(stderr);
 
 			/* Read the message */
@@ -935,17 +661,15 @@ int main(int argc, char *argv[])
 
 			if (h) {
 				/* Oops, incomplete message, still reading headers */
-				fprintf(stderr, "Incomplete message %d\n",
-					i);
+				printf("Incomplete message %d\n", inc);
 				free_Mail(&t);
 				continue;
 			}
 
 			if (strlen(msg) > p.truncate) {
 				/* We could truncate it, but we won't for now */
-				fprintf(stderr,
-					"Message %d too large (%ld bytes)\n",
-					i, (long) strlen(msg));
+				printf("Message %d too large (%ld bytes)\n",
+					inc, (long) strlen(msg));
 				free_Mail(&t);
 				continue;
 			}
@@ -960,21 +684,19 @@ int main(int argc, char *argv[])
 				if (strcmp(pop_keep, "delete") == 0) {
 					char filename[1000];
 
-					sprintf(filename, "%s/%d", mh_dir,
-						i);
+					sprintf(filename, "%s/%d", topilot_mhdir,
+						inc);
 					close(mhmsg);
 					if (unlink(filename)) {
-						fprintf(stderr,
-							"Error deleting message %d\n",
-							i);
+						printf("Error deleting message %d\n",
+							inc);
 						dupe++;
 					}
 					continue;
 				} else
 					dupe++;
 			} else {
-				fprintf(stderr,
-					"Error writing message to Palm\n");
+				printf("Error writing message to Palm\n");
 			}
 
 			free_Mail(&t);
@@ -1009,4 +731,162 @@ int main(int argc, char *argv[])
 
 	pi_close(sd);
 	return 0;
+}
+
+void markline(char *msg)
+{
+	while ((*msg) != '\n' && (*msg) != 0) {
+		msg++;
+	}
+	(*msg) = 0;
+}
+
+int openmhmsg(char *dir, int num)
+{
+	char 	filename[1000];
+
+	sprintf(filename, "%s/%d", dir, num);
+
+	return open(filename, O_RDONLY);
+}
+
+int getpopchar(int socket)
+{
+	int 	len;
+	char 	buf;
+
+	do {
+		len = read(socket, &buf, 1);
+		if (len < 0)
+			return len;
+	} while ((len == 0) || (buf == '\r'));
+
+	return buf;
+}
+
+int getpopstring(int socket, char *buf)
+{
+	int 	count;
+
+	while ((count = getpopchar(socket)) >= 0) {
+		*buf++ = count;
+		if (count == '\n')
+			break;
+	}
+	*buf = '\0';
+	return count;
+}
+
+int getpopresult(int socket, char *buf)
+{
+	int 	count = getpopstring(socket, buf);
+
+	if (count < 0)
+		return count;
+
+	if (buf[0] == '+')
+		return 0;
+	else
+		return 1;
+}
+
+char *skipspace(char *count)
+{
+	while (count && ((*count == ' ') || (*count == '\t')))
+		count++;
+	return count;
+}
+
+void header(struct Mail *m, char *t)
+{
+	static char 	holding[4096];
+
+	if (t && strlen(t) && t[strlen(t) - 1] == '\n')
+		t[strlen(t) - 1] = 0;
+
+	if (t && ((t[0] == ' ') || (t[0] == '\t'))) {
+		if ((strlen(t) + strlen(holding)) > 4096)
+			return;	/* Just discard approximate overflow */
+		strcat(holding, t + 1);
+		return;
+	}
+
+	/* Decide on what we do with m->sendTo */
+
+	if (strncmp(holding, "From:", 5) == 0) {
+		m->from = strdup(skipspace(holding + 5));
+	} else if (strncmp(holding, "To:", 3) == 0) {
+		m->to = strdup(skipspace(holding + 3));
+	} else if (strncmp(holding, "Subject:", 8) == 0) {
+		m->subject = strdup(skipspace(holding + 8));
+	} else if (strncmp(holding, "Cc:", 3) == 0) {
+		m->cc = strdup(skipspace(holding + 3));
+	} else if (strncmp(holding, "Bcc:", 4) == 0) {
+		m->bcc = strdup(skipspace(holding + 4));
+	} else if (strncmp(holding, "Reply-To:", 9) == 0) {
+		m->replyTo = strdup(skipspace(holding + 9));
+	} else if (strncmp(holding, "Date:", 4) == 0) {
+		time_t d = parsedate(skipspace(holding + 5));
+
+		if (d != -1) {
+			struct 	tm *d2;
+
+			m->dated = 1;
+			d2 	 = localtime(&d);
+			m->date  = *d2;
+		}
+	}
+
+	holding[0] = '\0';
+
+	if (t)
+		strcpy(holding, t);
+}
+
+char *getvars(char *name, char *xdefault)
+{
+	char 	*s;
+
+	if ((s = getenv(name)) == NULL) {
+		s = xdefault;
+	}
+	return s;
+}
+
+static void Help(char *progname, char *port, char *pop_host, char *pop_user, 
+		 char *pop_pass, char *from_address, char *pop_keep, 
+		 char *pilot_dispose, char *topilot_mhdir, char *sendmail)
+{
+	printf("   Send and receive mail to and from your Palm device using POP3\n\n"
+	       "   Usage: %s -p <port> [options]\n\n"
+	       "     -p <port>            Use device file <port> to communicate with Palm\n"
+	       "                          [$PILOTPORT is currently: '%s']\n\n"
+	       "     -h                   Display this information\n"
+	       "     -H host              POP3 host (if empty, mail won't be received)\n"
+	       "                          [$POPHOST is currently: '%s']\n\n"
+	       "     -u user              POP3 user name\n"
+	       "                          [$POPUSER is currently: '%s']\n\n"
+	       "     -P pass              POP3 password\n"
+	       "                          [$POPPASS is currently: '%s']\n\n"
+	       "     -f address           Outgoing 'From:' line\n"
+	       "                          [$PILOTFROM is currently: '%s']\n\n"
+	       "     -k keep|delete       Keep mail on POP server\n"
+	       "                          [$POPKEEP is currently: '%s']\n\n"
+	       "     -d keep|delete|file  Disposition of sent mail\n"
+	       "                          [$PILOTDISPOSE is currently: '%s']\n\n"
+	       "     -m mhdir             MH directory to download to Palm\n"
+	       "                          [$TOPILOT_MHDIR is currently: '%s']\n\n"
+	       "     -s command           Sendmail command (if empty, mail won't be sent)\n"
+	       "                          [$SENDMAIL is currently: '%s']\n\n"
+	       "   All options may be specified by setting the environment variable named in\n"
+	       "   brackets.\n\n"
+	       "      ********************************************* **\n"
+	       "      ** NOTE!! This is being deprecated soon. This **\n"
+	       "      ** means that this application is going away! **\n"
+	       "      ** Please use pilot-mailsync instead. Consult **\n"
+	       "      ** the manpages for additional information... **\n"
+	       "      ************************************************\n\n", progname, port, 
+		pop_host, pop_user, pop_pass, from_address, pop_keep, pilot_dispose, topilot_mhdir, 
+		sendmail);
+	return;
 }

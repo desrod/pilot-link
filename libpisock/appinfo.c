@@ -40,8 +40,8 @@ int
 unpack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
 		       int len)
 {
-	int i;
-	int r;
+	int 	i,
+		r;
 
 	if (len < 2 + 16 * 16 + 16 + 4)
 		return 0;
@@ -79,8 +79,9 @@ int
 pack_CategoryAppInfo(struct CategoryAppInfo *ai, unsigned char *record,
 		     int len)
 {
-	int i;
-	int r;
+	int 	i,
+		r;
+	
 	unsigned char *start = record;
 
 	if (!record) {

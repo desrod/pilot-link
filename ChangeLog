@@ -1,3 +1,13 @@
+2001-12-30  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* Lots of changes, so many, I'm not listing the files here. Many
+	  formatting changes, GNU to Berkeley style formatting (MUCH easier
+	  to maintain and read), moved things over to getopt(), a few tweaks
+	  here and there.
+
+	* install-expense.c: New submission to install Expense entries on
+	  your Palm. Boisy G. Pitre <boisy@acadian-embedded.com>
+
 2001-12-29  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/Makefile.am: Include iconv cflags and libs where

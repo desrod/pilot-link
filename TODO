@@ -7,6 +7,9 @@ Major Issues
 ------------
 	Open/Pending
 	------------
+	- read-expenses/install-expense doesn't return the string of Type
+	  for 'Train, Airplane', etc.
+
 	- USB syncronization with m50x devices. DLP changes to facilitate
 	  these fixes. Document. 
 
@@ -58,6 +61,19 @@ Minor Issues
 	  calculating exactly how many bytes is needed to transfer a file
 	  won't be fun.)
 
+	- There's a small perl problem with writing the binary character 11
+	  to the end of a record. The following example illustates this:
+
+	#!/usr/bin/perl -w
+	use diagnostics;
+	use PDA::Pilot;
+	# it's the last value which makes the program fail;
+	# and it fails only for the value 11!
+	@rec = (0,0,0,0,0,0,0,0,11);
+	%info = ("type"=>"Data","creator"=>"XXXX","name"=>"test");
+	$pdb = PDA::Pilot::File::create("test.pdb", \%info ) or die "Oops!\n";
+	$rec = join('', map(chr, @rec));
+	$pdb->addRecordRaw($rec,0,0,0);
 
 
 Tweaks/Enhancements
@@ -68,11 +84,10 @@ Tweaks/Enhancements
 	  it's own function which will report --version calls.
 
 	- Start to condense the install-* binaries into one binary called
-	  pilot-install.
-
-	- Merge install-*.c into pilot-install. Too much duplicated code in there.
-	  Symlink the rest of the apps to pilot-install, and just test argv[0] to
-	  run the proper functions.
+	  pilot-install. getopt() is a prerequisite for this, so we can do
+	  'pilot-install -memos -todos' for example. Too much duplicated
+	  code in there.  Symlink the rest of the apps to pilot-install, and
+	  just test argv[0] to run the proper functions. Multi-call binary.
 
 	- 'pilot-xfer -f Foo' to pull 'Foo.prc' from your Palm works.
 	  Additional option to pull by CrID would be nice as well (and
@@ -102,17 +117,14 @@ New Features
 	  read records? Ideally the images should be $(NAME).png, and the
 	  text associated with it should be $(NAME).txt.
 
-	- Notepad support? pilot-notepad? We have to logically bind the
-	  notes and images together as a "pair" which can be sync'd to the
-	  desktop and back to the Palm from the desktop.
-
-	- Standard output format for the "4 Magic Buttons". XML? CSV? 
+	- Standard output format for the "4 Magic Buttons". XML? csv?
+	  iCal/vCard?
 	
 	- Full VFS support in libpisock for pilot-xfer -b, dlpsh, and friends.
 
 	- TRGPro CF direct writes (Card 1?) 
 
-	- Write iambicExpense.c
+	- Write iambicExpense.c (is this needed?)
 
 	- Teach sync-plan about the other repetition types that are
 	  convertable from Plan to Pilot.
@@ -127,3 +139,4 @@ New Features
 
 	- File size reported on all pilot-xfer'style syncs, ala:
 	  Backing up './Small Icon EditorSSle.prc'...(2192 bytes, OK)
+

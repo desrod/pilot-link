@@ -191,8 +191,9 @@ static int so_close(struct pi_socket *ps)
  ***********************************************************************/
 static int so_write(struct pi_socket *ps)
 {
-	struct pi_skb *skb;
-	int nwrote, len;
+	int 	nwrote,
+		len;
+	struct 	pi_skb *skb;
 
 #ifndef NO_SERIAL_TRACE
 	int i;
@@ -243,13 +244,13 @@ static int so_write(struct pi_socket *ps)
  ***********************************************************************/
 static int so_read(struct pi_socket *ps, int timeout)
 {
-	int r;
+	int 	r;
 	unsigned char *buf;
 
 #ifndef NO_SERIAL_TRACE
-	int i;
+	int 	i;
 #endif
-	int rc;
+	int 	rc;
 	HANDLE hCommPort = (HANDLE) ps->mac->fd;
 
 /*  pi_socket_set_timeout(ps,timeout,-1);  */
@@ -301,7 +302,7 @@ static int so_read(struct pi_socket *ps, int timeout)
  ***********************************************************************/
 int win_peek(struct pi_socket *ps, int timeout)
 {
-	int time = timeout;
+	int 	time = timeout;
 	COMSTAT comstat;
 	DWORD error;
 	HANDLE hCommPort = (HANDLE) ps->mac->fd;

@@ -20,6 +20,7 @@
  *
  */
 
+#include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,53 +40,15 @@
 #include "pi-slp.h"
 #include "pi-header.h"
 
+int pilot_connect(const char *port);
+static void Help(char *progname);
 char hostname[130];
 struct in_addr address, netmask;
 
 /* Declare prototypes */
 void Help(char *progname);
 void fetch_host(char *hostname, int hostlen, struct in_addr *address, struct in_addr *mask);
-
-/***********************************************************************
- *
- * Function:    Help
- *
- * Summary:     Uh, the -help, of course
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void Help(char *progname)
-{
-	PalmHeader(progname);
-
-	fprintf(stderr, "   Usage:%s [options]\n\n", progname);
-	fprintf(stderr, "   -h       <hostname> Name of host, used for verification\n");
-	if (strlen(hostname))
-		fprintf(stderr, "            (currently '%s')\n",
-			hostname);
-	else
-		fprintf(stderr, "                         (no default)\n");
-	fprintf(stderr, "   -a       <address> IP address of host\n");
-	if (address.s_addr)
-		fprintf(stderr, "            (currently '%s')\n",
-			inet_ntoa(address));
-	else
-		fprintf(stderr, "            (no default)\n");
-	fprintf(stderr, "   -s       <address> Subnet mask of IP address\n");
-	if (netmask.s_addr)
-		fprintf(stderr, "            (currently '%s')\n",
-			inet_ntoa(netmask));
-	else
-		fprintf(stderr, "            (no default)\n");
-	fprintf(stderr, "   -q       Quiet: turn off status messages\n\n");
-	fprintf(stderr, "   Note: Currently the subnet mask is not used by %s.\n\n",
-		progname);
-	exit(0);
-}
-
+	
 #ifdef HAVE_SA_LEN
 #ifndef max
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -103,162 +66,6 @@ void Help(char *progname)
 # endif
 #endif
 
-/***********************************************************************
- *
- * Function:    fetch_host
- *
- * Summary:     Retrieve the networking information from the host
- *
- * Parmeters:   None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-void
-fetch_host(char *hostname, int hostlen, struct in_addr *address,
-	   struct in_addr *mask)
-{
-	struct ifconf ifc;
-	struct ifreq *ifr, ifreqaddr, ifreqmask;
-	struct hostent *hent;
-	int i;
-	int n;
-	int s;
-
-#ifdef HAVE_GETHOSTNAME
-	/* Get host name the easy way */
-	gethostname(hostname, hostlen);
-#else
-# ifdef HAVE_UNAME
-	struct utsname uts;
-
-	if (uname(&uts) == 0) {
-		strncpy(hostname, uts.nodename, hostlen - 1);
-		hostname[hostlen - 1] = '\0';
-	}
-# endif				/* def HAVE_UNAME */
-#endif				/* def HAVE_GETHOSTNAME */
-
-	/* Get host address through DNS */
-	hent = gethostbyname(hostname);
-
-	if (hent) {
-		while (*hent->h_addr_list) {
-			struct in_addr haddr;
-
-			memcpy(&haddr, *(hent->h_addr_list++),
-			       sizeof(haddr));
-			if (haddr.s_addr != inet_addr("127.0.0.1"))
-				memcpy(address, &haddr, sizeof(haddr));
-		}
-	}
-#if defined(SIOCGIFCONF) && defined(SIOCGIFFLAGS)
-	s = socket(AF_INET, SOCK_DGRAM, 0);
-
-	if (s < 0)
-		return;
-
-	ifc.ifc_buf = calloc(1024, 1);
-	ifc.ifc_len = 1024;
-
-	if (ioctl(s, SIOCGIFCONF, (char *) &ifc) < 0)
-		goto done;
-
-	n = ifc.ifc_len;
-	for (i = 0; i < n; i += ifreq_size(*ifr)) {
-		struct sockaddr_in *a;
-		struct sockaddr_in *b;
-
-		ifr = (struct ifreq *) ((caddr_t) ifc.ifc_buf + i);
-		a = (struct sockaddr_in *) &ifr->ifr_addr;
-		strncpy(ifreqaddr.ifr_name, ifr->ifr_name,
-			sizeof(ifreqaddr.ifr_name));
-		strncpy(ifreqmask.ifr_name, ifr->ifr_name,
-			sizeof(ifreqmask.ifr_name));
-
-		if (ioctl(s, SIOCGIFFLAGS, (char *) &ifreqaddr) < 0)
-			continue;
-
-		/* Reject loopback device */
-#ifdef IFF_LOOPBACK
-		if (ifreqaddr.ifr_flags & IFF_LOOPBACK)
-			continue;
-#endif				/* def IFF_LOOPBACK */
-
-#ifdef IFF_UP
-		/* Reject down devices */
-		if (!(ifreqaddr.ifr_flags & IFF_UP))
-			continue;
-#endif				/* def IFF_UP */
-
-		if (ifr->ifr_addr.sa_family != AF_INET)
-			continue;
-
-		/* If it is a point-to-point device, use the dest address */
-#if defined(IFF_POINTOPOINT) && defined(SIOCGIFDSTADDR)
-		if (ifreqaddr.ifr_flags & IFF_POINTOPOINT) {
-			if (ioctl(s, SIOCGIFDSTADDR, (char *) &ifreqaddr) <
-			    0)
-				break;
-
-			a = (struct sockaddr_in *) &ifreqaddr.ifr_dstaddr;
-
-			if (address->s_addr == 0) {
-				memcpy(address, &a->sin_addr,
-				       sizeof(struct in_addr));
-			}
-		} else
-#endif				/* defined(IFF_POINTOPOINT) && defined(SIOCGIFDSTADDR) */
-			/* If it isn't a point-to-point device, use the address */
-#ifdef SIOCGIFADDR
-		{
-			if (ioctl(s, SIOCGIFADDR, (char *) &ifreqaddr) < 0)
-				break;
-
-			a = (struct sockaddr_in *) &ifreqaddr.ifr_addr;
-
-			if (address->s_addr == 0) {
-				memcpy(address, &a->sin_addr,
-				       sizeof(struct in_addr));
-			}
-		}
-#endif				/* def SIOCGIFADDR */
-		/* OK, we've got an address */
-
-		/* Compare netmask against the current address and see if it
-		   seems to match. */
-#ifdef SIOCGIFNETMASK
-		if (ioctl(s, SIOCGIFNETMASK, (char *) &ifreqmask) < 0)
-			break;
-
-/* Is there any system where we need to use ifr_netmask?  */
-#if 1
-		b = (struct sockaddr_in *) &ifreqmask.ifr_addr;
-#else
-		b = (struct sockaddr_in *) &ifreqmask.ifr_netmask;
-#endif
-
-		if ((mask->s_addr == 0) && (address->s_addr != 0)) {
-			if ((b->sin_addr.s_addr & a->sin_addr.s_addr) ==
-			    (b->sin_addr.s_addr & address->s_addr)) {
-				memcpy(mask, &b->sin_addr,
-				       sizeof(struct in_addr));
-
-				/* OK, we've got a netmask */
-
-				break;
-			}
-		}
-#endif				/* def SIOCGIFNETMASK */
-
-	}
-
-      done:
-	free(ifc.ifc_buf);
-	close(s);
-#endif				/* defined(SIOCGIFCONF) && defined(SIOCGIFFLAGS) */
-}
-
 int main(int argc, char *argv[])
 {
         struct hostent *hent;
@@ -268,8 +75,7 @@ int main(int argc, char *argv[])
         int quiet = 0;
         int sockfd;
         char *progname = argv[0];
-        extern char *optarg;
-        extern int optind;
+
         fd_set rset;
         unsigned char mesg[1026];
         unsigned int clilen; 
@@ -414,5 +220,197 @@ int main(int argc, char *argv[])
 		dumpdata(mesg, n);
 	}
 
+	exit(0);
+}
+
+
+/***********************************************************************
+ *
+ * Function:    fetch_host
+ *
+ * Summary:     Retrieve the networking information from the host
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void
+fetch_host(char *hostname, int hostlen, struct in_addr *address,
+	   struct in_addr *mask)
+{
+	struct ifconf ifc;
+	struct ifreq *ifr, ifreqaddr, ifreqmask;
+	struct hostent *hent;
+	int i;
+	int n;
+	int s;
+
+#ifdef HAVE_GETHOSTNAME
+	/* Get host name the easy way */
+	gethostname(hostname, hostlen);
+#else
+#ifdef HAVE_UNAME
+	struct utsname uts;
+
+	if (uname(&uts) == 0) {
+		strncpy(hostname, uts.nodename, hostlen - 1);
+		hostname[hostlen - 1] = '\0';
+	}
+#endif				/* def HAVE_UNAME */
+#endif				/* def HAVE_GETHOSTNAME */
+
+	/* Get host address through DNS */
+	hent = gethostbyname(hostname);
+
+	if (hent) {
+		while (*hent->h_addr_list) {
+			struct in_addr haddr;
+
+			memcpy(&haddr, *(hent->h_addr_list++),
+			       sizeof(haddr));
+			if (haddr.s_addr != inet_addr("127.0.0.1"))
+				memcpy(address, &haddr, sizeof(haddr));
+		}
+	}
+#if defined(SIOCGIFCONF) && defined(SIOCGIFFLAGS)
+	s = socket(AF_INET, SOCK_DGRAM, 0);
+
+	if (s < 0)
+		return;
+
+	ifc.ifc_buf = calloc(1024, 1);
+	ifc.ifc_len = 1024;
+
+	if (ioctl(s, SIOCGIFCONF, (char *) &ifc) < 0)
+		goto done;
+
+	n = ifc.ifc_len;
+	for (i = 0; i < n; i += ifreq_size(*ifr)) {
+		struct sockaddr_in *a;
+		struct sockaddr_in *b;
+
+		ifr = (struct ifreq *) ((caddr_t) ifc.ifc_buf + i);
+		a = (struct sockaddr_in *) &ifr->ifr_addr;
+		strncpy(ifreqaddr.ifr_name, ifr->ifr_name,
+			sizeof(ifreqaddr.ifr_name));
+		strncpy(ifreqmask.ifr_name, ifr->ifr_name,
+			sizeof(ifreqmask.ifr_name));
+
+		if (ioctl(s, SIOCGIFFLAGS, (char *) &ifreqaddr) < 0)
+			continue;
+
+		/* Reject loopback device */
+#ifdef IFF_LOOPBACK
+		if (ifreqaddr.ifr_flags & IFF_LOOPBACK)
+			continue;
+#endif				/* def IFF_LOOPBACK */
+
+#ifdef IFF_UP
+		/* Reject down devices */
+		if (!(ifreqaddr.ifr_flags & IFF_UP))
+			continue;
+#endif				/* def IFF_UP */
+
+		if (ifr->ifr_addr.sa_family != AF_INET)
+			continue;
+
+		/* If it is a point-to-point device, use the dest address */
+#if defined(IFF_POINTOPOINT) && defined(SIOCGIFDSTADDR)
+		if (ifreqaddr.ifr_flags & IFF_POINTOPOINT) {
+			if (ioctl(s, SIOCGIFDSTADDR, (char *) &ifreqaddr) <
+			    0)
+				break;
+
+			a = (struct sockaddr_in *) &ifreqaddr.ifr_dstaddr;
+
+			if (address->s_addr == 0) {
+				memcpy(address, &a->sin_addr,
+				       sizeof(struct in_addr));
+			}
+		} else
+#endif				/* defined(IFF_POINTOPOINT) && defined(SIOCGIFDSTADDR) */
+			/* If it isn't a point-to-point device, use the address */
+#ifdef SIOCGIFADDR
+		{
+			if (ioctl(s, SIOCGIFADDR, (char *) &ifreqaddr) < 0)
+				break;
+
+			a = (struct sockaddr_in *) &ifreqaddr.ifr_addr;
+
+			if (address->s_addr == 0) {
+				memcpy(address, &a->sin_addr,
+				       sizeof(struct in_addr));
+			}
+		}
+#endif				/* def SIOCGIFADDR */
+		/* OK, we've got an address */
+
+		/* Compare netmask against the current address and see if it
+		   seems to match. */
+#ifdef SIOCGIFNETMASK
+		if (ioctl(s, SIOCGIFNETMASK, (char *) &ifreqmask) < 0)
+			break;
+
+/* Is there any system where we need to use ifr_netmask?  */
+#if 1
+		b = (struct sockaddr_in *) &ifreqmask.ifr_addr;
+#else
+		b = (struct sockaddr_in *) &ifreqmask.ifr_netmask;
+#endif
+
+		if ((mask->s_addr == 0) && (address->s_addr != 0)) {
+			if ((b->sin_addr.s_addr & a->sin_addr.s_addr) ==
+			    (b->sin_addr.s_addr & address->s_addr)) {
+				memcpy(mask, &b->sin_addr,
+				       sizeof(struct in_addr));
+
+				/* OK, we've got a netmask */
+
+				break;
+			}
+		}
+#endif				/* def SIOCGIFNETMASK */
+
+	}
+
+      done:
+	free(ifc.ifc_buf);
+	close(s);
+#endif				/* defined(SIOCGIFCONF) && defined(SIOCGIFFLAGS) */
+}
+
+
+/***********************************************************************
+ *
+ * Function:    Help
+ *
+ * Summary:     Uh, the -help, of course
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void Help(char *progname)
+{
+	printf("   Usage:%s [options]\n\n", progname);
+	printf("   -h       <hostname> Name of host, used for verification\n");
+	if (strlen(hostname))
+		printf("            (currently '%s')\n", hostname);
+	else
+		printf("                         (no default)\n");
+	printf("   -a       <address> IP address of host\n");
+	if (address.s_addr)
+		printf("            (currently '%s')\n", inet_ntoa(address));
+	else
+		printf("            (no default)\n");
+	printf("   -s       <address> Subnet mask of IP address\n");
+	if (netmask.s_addr)
+		printf("            (currently '%s')\n", inet_ntoa(netmask));
+	else
+		printf("            (no default)\n");
+	printf("   -q       Quiet: turn off status messages\n\n");
+	printf("   Note: Currently the subnet mask is not used by %s.\n\n", progname);
 	exit(0);
 }

@@ -28,45 +28,45 @@ require AutoLoader;
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
-@EXPORT = qw(
-	PI_AF_SLP
-	PI_PF_LOOP
-	PI_PF_PADP
-	PI_PF_SLP
-	PI_PilotSocketConsole
-	PI_PilotSocketDLP
-	PI_PilotSocketDebugger
-	PI_PilotSocketRemoteUI
-	PI_SOCK_DGRAM
-	PI_SOCK_RAW
-	PI_SOCK_SEQPACKET
-	PI_SOCK_STREAM
-	dlpOpenRead
-	dlpOpenWrite
-    dlpOpenExclusive
-    dlpOpenSecret
-    dlpOpenReadWrite
-	dlpEndCodeNormal
-    dlpEndCodeOutOfMemory
-    dlpEndCodeUserCan
-    dlpEndCodeOther
- 	dlpRecAttrDeleted
-    dlpRecAttrDirty
-    dlpRecAttrBusy
-    dlpRecAttrSecret
-    dlpRecAttrArchived
- 	dlpDBFlagResource
-	dlpDBFlagReadOnly
-	dlpDBFlagAppInfoDirty
-	dlpDBFlagBackup
-	dlpDBFlagOpen
-	dlpDBFlagNewer
-	dlpDBFlagReset
-   dlpDBFlagCopyPrevention
-   dlpDBFlagStream
-	dlpDBListRAM
-	dlpDBListROM
+@ EXPORT = qw(PI_AF_SLP
+              PI_PF_LOOP
+              PI_PF_PADP
+              PI_PF_SLP
+              PI_PilotSocketConsole
+              PI_PilotSocketDLP
+              PI_PilotSocketDebugger
+              PI_PilotSocketRemoteUI
+              PI_SOCK_DGRAM
+              PI_SOCK_RAW
+              PI_SOCK_SEQPACKET
+              PI_SOCK_STREAM
+              dlpOpenRead
+              dlpOpenWrite
+              dlpOpenExclusive
+              dlpOpenSecret
+              dlpOpenReadWrite
+              dlpEndCodeNormal
+              dlpEndCodeOutOfMemory
+              dlpEndCodeUserCan
+              dlpEndCodeOther
+              dlpRecAttrDeleted
+              dlpRecAttrDirty
+              dlpRecAttrBusy
+              dlpRecAttrSecret
+              dlpRecAttrArchived
+              dlpDBFlagResource
+              dlpDBFlagReadOnly
+              dlpDBFlagAppInfoDirty
+              dlpDBFlagBackup
+              dlpDBFlagOpen
+              dlpDBFlagNewer
+              dlpDBFlagReset
+              dlpDBFlagCopyPrevention
+              dlpDBFlagStream 
+	      dlpDBListRAM
+	      dlpDBListROM
 );
+
 # Other items we are prepared to export if requested
 @EXPORT_OK = qw(
 	CompareTm
@@ -93,8 +93,7 @@ sub AUTOLOAD {
 	}
 	else {
 	    ($pack,$file,$line) = caller;
-	    die "Your vendor has not defined PDA::Pilot macro $constname, used at $file line $line.
-";
+	    die "Your vendor has not defined PDA::Pilot macro $constname, used at $file line $line.";
 	}
     }
     eval "sub $AUTOLOAD { $val }";
@@ -588,12 +587,12 @@ package PDA::Pilot;
 				ExpenseDB => 'PDA::Pilot::ExpenseDatabase'
 				);
 %PrefClasses = (	memo => 'PDA::Pilot::MemoDatabase',
-					todo => 'PDA::Pilot::ToDoDatabase',
-					mail => 'PDA::Pilot::MailDatabase',
-					date => 'PDA::Pilot::AppointmentDatabase',
-					addr => 'PDA::Pilot::AddressDatabase',
-					exps => 'PDA::Pilot::ExpenseDatabase'
-					);
+				todo => 'PDA::Pilot::ToDoDatabase',
+				mail => 'PDA::Pilot::MailDatabase',
+				date => 'PDA::Pilot::AppointmentDatabase',
+				addr => 'PDA::Pilot::AddressDatabase',
+				exps => 'PDA::Pilot::ExpenseDatabase'
+				);
 
 # Default classes
 $DBClasses{''} = 'PDA::Pilot::Database';

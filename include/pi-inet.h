@@ -8,11 +8,11 @@ extern "C" {
 #endif
 
 	extern int pi_inet_connect
-	    PI_ARGS((struct pi_socket * ps, struct sockaddr * addr,
-		     int addrlen));
+		PI_ARGS((struct pi_socket * ps, struct sockaddr * addr,
+			int addrlen));
 	extern int pi_inet_bind
-	    PI_ARGS((struct pi_socket * ps, struct sockaddr * addr,
-		     int addrlen));
+		PI_ARGS((struct pi_socket * ps, struct sockaddr * addr,
+			int addrlen));
 
 #ifdef __cplusplus
 }

@@ -45,7 +45,7 @@ static const char *optstring = "hp:a:";
 
 int main(int argc, char *argv[])
 {
-	int 	chara,
+	int 	ch,
 		db,
 		index,
 		sd = -1;
@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
 	
 	unsigned char buffer[0xffff];
 
-	while ((chara = getopt(argc, argv, optstring)) != -1) {
-		switch (chara) {
+	while ((ch = getopt(argc, argv, optstring)) != -1) {
+		switch (ch) {
 
 		  case 'h':
 			  Help(progname);
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 	
 		/* Open the Money database, store access handle in db */
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MoneyDB", &db) < 0) {
-			puts("Unable to open MoneyDB");
+			printf("Unable to open MoneyDB");
 			dlp_AddSyncLogEntry(sd, "Unable to open MoneyDB.\n");
 			exit(1);
 		}

@@ -51,7 +51,7 @@ static const char *optstring = "hp:ifd";
 
 int main(int argc, char *argv[])
 {
-	int 	chara,
+	int 	ch,
 		sd 	= -1,
 		segment = 4096,
 		Install = -1,
@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 		*fetch 	= NULL,
 		*delete = NULL;
 
-	while ((chara = getopt(argc, argv, optstring)) != -1) {
-		switch (chara) {
+	while ((ch = getopt(argc, argv, optstring)) != -1) {
+		switch (ch) {
 
 		  case 'h':
 			  Help(progname);

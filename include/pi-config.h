@@ -110,14 +110,14 @@ extern "C" {
 #endif
 
 #ifndef HAVE_STRDUP
-char * strdup(const char *string);
+char 	*strdup(const char *string);
 # ifndef bzero
 #  define bzero(b,len) memset(b,0,len)
 # endif
 #endif
 
 #ifndef HAVE_PUTENV
-int putenv(const char *string);
+int 	putenv(const char *string);
 #endif
 
 #ifdef __cplusplus

@@ -9,12 +9,12 @@
 struct pi_sockaddr {
   unsigned char pi_len;
   unsigned char pi_family;
-  char pi_device[255];
+  char 	pi_device[255];
 };
 #else
 struct pi_sockaddr {
   unsigned short pi_family;
-  char pi_device[255];
+  char 	pi_device[255];
 };
 #endif
 

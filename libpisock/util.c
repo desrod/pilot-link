@@ -49,8 +49,8 @@ convert_ToPilotChar(const char *charset, const char *text,
 {
 #ifdef HAVE_ICONV
 	iconv_t cd;
-	char *ib, *ob;
-	size_t ibl, obl;
+	char 	*ib, *ob;
+	size_t 	ibl, obl;
 
 	cd = iconv_open(PILOT_CHARSET, charset);
 	if (!cd)
@@ -90,8 +90,8 @@ convert_FromPilotChar(const char *charset, const char *ptext,
 {
 #ifdef HAVE_ICONV
 	iconv_t cd;
-	char *ib, *ob;
-	size_t ibl, obl;
+	char 	*ib, *ob;
+	size_t 	ibl, obl;
 
 	cd = iconv_open(charset, PILOT_CHARSET);
 	if (!cd)

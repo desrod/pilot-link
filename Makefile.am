@@ -31,6 +31,7 @@ bin_PROGRAMS = 		\
 	getrom		\
 	hinotes		\
 	install-datebook\
+	install-expenses \
 	install-hinote	\
 	install-memo	\
 	install-todos	\
@@ -109,6 +110,11 @@ install_datebook_SOURCES = \
 	install-datebook.c \
 	parsedate.y
 install_datebook_LDADD = \
+	$(top_builddir)/libsock/libpisock.la
+
+install_expenses_SOURCES = \
+	install-expenses.c
+install_expenses_LDADD = \
 	$(top_builddir)/libsock/libpisock.la
 
 install_hinote_SOURCES = \
