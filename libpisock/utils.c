@@ -400,6 +400,14 @@ int compareTm(struct tm *a, struct tm *b)
 }
 
 
+/* Fix some issues with some locales reporting 2 or 4 digit years */
+size_t palm_strftime(char *s, size_t max, const char *fmt,
+        const struct tm *tm) {
+
+        return strftime(s, max, fmt, tm);
+}
+
+
 #ifdef OS2
 /* Replacement version of getenv(), because the one in the EMX 0.9c, fix03
    dist appears to be busted when called from inside a DLL. (MJJ) */
