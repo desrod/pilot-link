@@ -145,6 +145,7 @@ int main(int argc, char *argv[])
 	} else {
 		printf("ERROR: Insufficient number of arguments\n\n");
 		display_help(progname);
+		exit(1);
 	}
 
 	unpack_ToDoAppInfo(&tai, buffer, 0xffff);
