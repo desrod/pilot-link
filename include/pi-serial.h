@@ -21,9 +21,6 @@ extern "C" {
 	struct pi_serial_data {
 		struct pi_serial_impl impl;
 
-		/* File descriptor */
-		int fd;
-
 		/* I/O options */
 #ifndef WIN32
 #ifndef OS2

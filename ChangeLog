@@ -1,5 +1,23 @@
 2002-01-10  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/unixserial.c (s_open): use pi_socket_setsd and don't
+	keep our own fd around
+
+	* libsock/inet.c (pi_inet_connect): use pi_socket_setsd and don't
+	keep our own fd around
+	(pi_inet_bind): ditto
+
+	* libsock/socket.c (pi_socket_setsd): makes the socket descriptor
+	refer to the new descriptor passed in
+
+	* include/pi-socket.h: add proto
+
+	* include/pi-serial.h: remove fd member
+
+	* include/pi-inet.h: remove fd member
+
+2002-01-10  JP Rosevear  <jpr@ximian.com>
+	
 	* libsock/socket.c (protocol_queue_build): add device protocol
 	(pi_connect): call above after device is determined
 	(pi_bind): ditto

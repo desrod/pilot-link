@@ -554,6 +554,31 @@ struct pi_socket *pi_socket_copy(struct pi_socket *ps)
 	return new_ps;
 }
 
+int pi_socket_setsd(struct pi_socket *ps, int sd)
+{
+	int orig;
+	
+	orig = sd;
+	
+#ifdef HAVE_DUP2
+	sd = dup2(sd, ps->sd);
+#else
+#ifdef F_DUPFD
+	close(ps->sd);
+	sd = fcntl(sd, F_DUPFD, ps->sd);
+#else
+	close(ps->sd);
+	sd = dup(sd);	/* Unreliable */
+#endif
+#endif
+	if (sd != orig)
+		close(orig);
+	else
+		return -1;
+
+	return 0;
+}
+
 /***********************************************************************
  *
  * Function:    pi_socket_recognize

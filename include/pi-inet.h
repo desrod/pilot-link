@@ -10,9 +10,6 @@ extern "C" {
 #define PI_NET_DEV     1
 
 	struct pi_inet_data {
-		/* File descriptor */
-		int fd;
-
 		/* Time out */
 		int timeout;
 		

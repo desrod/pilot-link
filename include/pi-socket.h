@@ -84,6 +84,7 @@ enum PiOptNet {
 
 	extern int pi_socket PI_ARGS((int domain, int type, int protocol));
 	extern struct pi_socket *pi_socket_copy PI_ARGS((struct pi_socket *ps));
+	extern int pi_socket_setsd PI_ARGS((struct pi_socket *ps, int sd));
 
 	extern int pi_connect
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,

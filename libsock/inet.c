@@ -112,7 +112,6 @@ static struct pi_device *pi_inet_device_dup (struct pi_device *dev)
 	
 	new_data = (struct pi_inet_data *)malloc (sizeof (struct pi_inet_data));
 	data = (struct pi_inet_data *)dev->data;
-	new_data->fd = dup(data->fd);
 	new_data->timeout = data->timeout;
 	new_data->rx_bytes = 0;
 	new_data->rx_errors = 0;
@@ -139,7 +138,6 @@ struct pi_device *pi_inet_device (int type)
 	dev->connect = pi_inet_connect;
 	dev->close = pi_inet_close;
 	
-	data->fd = 0;
 	data->timeout = 0;
 	data->rx_bytes = 0;
 	data->rx_errors = 0;
@@ -164,9 +162,9 @@ struct pi_device *pi_inet_device (int type)
 static int
 pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
-	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
 	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct sockaddr_in serv_addr;
+	int sd;
 	char *device = paddr->pi_device + 4;
 
 	/* Figure out the addresses to allow */
@@ -179,7 +177,7 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 		
 			if (!hostent) {
 				LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
-				    "DEV Inet -> Unable to determine host\n");
+				    "DEV CONNECT Inet: Unable to determine host\n");
 				return -1;
 			}
 			
@@ -191,35 +189,20 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	}
 	serv_addr.sin_port = htons(14238);
 
-	data->fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (data->fd < 0) {
+	sd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sd < 0) {
 		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
-		    "DEV Inet -> Unable to create socket\n");
+		    "DEV CONNECT Inet: Unable to create socket\n");
 		return -1;
 	}
-	
-	if (ps->sd) {
-		int orig = data->fd;
 
-#ifdef HAVE_DUP2
-		data->fd = dup2(data->fd, ps->sd);
-#else
-#ifdef F_DUPFD
-		close(ps->sd);
-		data->fd = fcntl(data->fd, F_DUPFD, ps->sd);
-#else
-		close(ps->sd);
-		data->fd = dup(data->fd);	/* Unreliable */
-#endif
-#endif
-		if (data->fd != orig)
-			close(orig);
-	}
+	if (pi_socket_setsd (ps, sd) < 0)
+		return -1;
 
-	if (connect (data->fd, (struct sockaddr *) &serv_addr,
+	if (connect (ps->sd, (struct sockaddr *) &serv_addr,
 		     sizeof(serv_addr)) < 0) {
 		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
-		    "DEV Inet -> Unable to connect\n");
+		    "DEV CONNECT Inet: Unable to connect\n");
 		return -1;
 	}
 	
@@ -244,7 +227,7 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	ps->command = 0;
 	ps->initiator = 1;	/* We initiated the link */
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV Inet -> Connected\n");
+	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CONNECT Inet: Connected\n");
 	return 0;
 
  fail:
@@ -265,10 +248,9 @@ pi_inet_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
  ***********************************************************************/
 static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
-	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
 	struct pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct sockaddr_in serv_addr;
-	int opt, optlen;
+	int opt, optlen, sd;
 	char *device = paddr->pi_device + 4;
 
 	/* Figure out the addresses to allow */
@@ -290,29 +272,14 @@ static int pi_inet_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen
 	}
 	serv_addr.sin_port = htons(14238);
 
-	data->fd = socket(AF_INET, SOCK_STREAM, 0);
-
-	if (ps->sd) {
-		int orig = data->fd;
-
-#ifdef HAVE_DUP2
-		data->fd = dup2(data->fd, ps->sd);
-#else
-#ifdef F_DUPFD
-		close(ps->sd);
-		data->fd = fcntl(data->fd, F_DUPFD, ps->sd);
-#else
-		close(ps->sd);
-		data->fd = dup(data->fd);	/* Unreliable */
-#endif
-#endif
-		if (data->fd != orig)
-			close(orig);
-		else {
-			puts("Unable to duplicate socket");
-			exit(1);
-		}
-	}
+	sd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sd < 0) {
+		LOG(PI_DBG_DEV, PI_DBG_LVL_ERR, 
+		    "DEV BIND Inet: Unable to create socket\n");
+		return -1;
+	}	
+	if (pi_socket_setsd (ps, sd) < 0)
+		return -1;
 
 	opt = 1;
 	optlen = sizeof(opt);
@@ -374,7 +341,6 @@ static int
 pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
 	struct pi_socket *acpt = NULL;
-	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
 
 	acpt = pi_socket_copy(ps);
 
@@ -462,7 +428,6 @@ pi_inet_read(struct pi_socket *ps, unsigned char *msg, int len)
 	FD_ZERO(&ready);
 	FD_SET(ps->sd, &ready);
 
-	LOG(PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV RX trying to read %d\n", data->fd);
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
 	if (data->timeout == 0)
@@ -520,8 +485,6 @@ pi_inet_setsockopt(struct pi_socket *ps, int level, int option_name,
  ***********************************************************************/
 static int pi_inet_close(struct pi_socket *ps)
 {
-	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
-
 	if (ps->type == PI_SOCK_STREAM) {
 		/* If connection is not broken */
 		if (!(ps->broken))
@@ -533,14 +496,9 @@ static int pi_inet_close(struct pi_socket *ps)
 		
 	}
 
-	/* If device still has a /dev/null handle */
-	/* Close /dev/null handle */
-	if (ps->sd && (ps->sd != data->fd))
+	/* Close sd handle */
+	if (ps->sd)
 		close(ps->sd);
-
-	/* If device was opened */
-	if (data->fd)
-		close(data->fd);
 
 	if (ps->laddr)
 		free(ps->laddr);

@@ -117,7 +117,6 @@ static struct pi_device *pi_serial_device_dup (struct pi_device *dev)
 	new_data = (struct pi_serial_data *)malloc (sizeof (struct pi_serial_data));
 	data = (struct pi_serial_data *)dev->data;
 	new_data->impl = data->impl;
-	new_data->fd = dup(data->fd);
 	new_data->rate = data->rate;
 	new_data->establishrate = data->establishrate;
 	new_data->establishhighrate = data->establishhighrate;
@@ -156,7 +155,6 @@ struct pi_device *pi_serial_device (int type)
 		break;
 	}
 	
-	data->fd = 0;
 	data->rate = -1;
 	data->establishrate = -1;
 	data->establishhighrate = -1;
@@ -479,8 +477,6 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
  ***********************************************************************/
 static int pi_serial_close(struct pi_socket *ps)
 {
-	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
-
 	if (ps->type == PI_SOCK_STREAM) {
 		/* If connection is not broken */
 		if (!(ps->broken))
@@ -492,14 +488,8 @@ static int pi_serial_close(struct pi_socket *ps)
 		
 	}
 
-	/* If device still has a /dev/null handle */
-	/* Close /dev/null handle */
-	if (ps->sd && (ps->sd != data->fd))
+	if (ps->sd)
 		close(ps->sd);
-
-	/* If device was opened */
-	if (data->fd)
-		data->impl.close(ps);
 
 	if (ps->laddr)
 		free(ps->laddr);
