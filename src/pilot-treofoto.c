@@ -1,4 +1,4 @@
-/* 
+/*
  * pilot-treofoto.c: Grab jpeg photos off a Treo 600 camera phone.
  *
  * (c) 2004, Matthew Allum <mallum@o-hand.com>
@@ -32,8 +32,8 @@
 #define IMG_PDB_NAME  "ImageLib_imageDB.pdb"
 #define PORT          "/dev/ttyUSB1"
 
-/* Record formats via script from 
- * http://www.xent.com/~bsittler/treo600/dumphotos  
+/* Record formats via script from
+ * http://www.xent.com/~bsittler/treo600/dumphotos
  */
 
 typedef struct MainDBImgRecord {

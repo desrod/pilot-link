@@ -1,5 +1,5 @@
 /* ex: set tabstop=4 expandtab: */
-/* 
+/*
  * read-palmpix.c:  PalmPix image convertor
  *
  * Copyright 2001 John Marshall <jmarshall@acm.org>
@@ -79,8 +79,8 @@ struct PalmPixState_pi_file
 static int getrecord_pi_file (struct PalmPixState *vstate, int recno,
 	void **buf, size_t *bufsize)
 {
- 
-	struct PalmPixState_pi_file *state = 
+
+	struct PalmPixState_pi_file *state =
 		(struct PalmPixState_pi_file *) vstate;
 
 	return pi_file_read_record (state->f, recno, buf, bufsize, NULL,
@@ -102,7 +102,7 @@ static int getrecord_pi_file (struct PalmPixState *vstate, int recno,
 struct PalmPixState_pi_socket
 {
 	struct PalmPixState state;
-	int 	sd, 
+	int 	sd,
 		db;
 };
 
@@ -118,16 +118,16 @@ struct PalmPixState_pi_socket
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int getrecord_pi_socket (struct PalmPixState *vstate, int recno, 
+static int getrecord_pi_socket (struct PalmPixState *vstate, int recno,
 	void **buf, size_t *bufsize)
 {
-   
+
 	static char buffer[65536];
     static pi_buffer_t fakebuf;
-   
+
 	struct PalmPixState_pi_socket *state =
 		(struct PalmPixState_pi_socket *) vstate;
-   
+
 	*buf = buffer;
     fakebuf.data = buffer;
     fakebuf.allocated = 0;
@@ -153,7 +153,7 @@ static const char *fmt_date (const struct PalmPixHeader *h)
 {
 	static char buf[24];
 
-	sprintf (buf, "%d-%02d-%02d %02d:%02d:%02d", h->year, h->month, 
+	sprintf (buf, "%d-%02d-%02d %02d:%02d:%02d", h->year, h->month,
 		h->day, h->hour, h->min, h->sec);
 
 	return buf;
@@ -190,7 +190,7 @@ void init_for_ppm (struct PalmPixState *state)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void write_ppm (FILE *f, const struct PalmPixState *state, 
+void write_ppm (FILE *f, const struct PalmPixState *state,
 	const struct PalmPixHeader *header)
 {
 	fprintf (f, "P6\n# %s (taken at %s)\n%d %d\n255\n",
@@ -215,34 +215,34 @@ void write_ppm (FILE *f, const struct PalmPixState *state,
 void write_png( FILE *f, const struct PalmPixState *state,
 	        const struct PalmPixHeader *header)
 {
-	int i; 
+	int i;
 	png_structp png_ptr;
 	png_infop info_ptr;
-   
+
 	png_ptr = png_create_write_struct
-		( PNG_LIBPNG_VER_STRING, png_voidp_NULL,  
+		( PNG_LIBPNG_VER_STRING, png_voidp_NULL,
 		png_error_ptr_NULL, png_error_ptr_NULL);
 
 	if(!png_ptr)
 		return;
-   
+
 	info_ptr = png_create_info_struct(png_ptr);
 	if(!info_ptr) {
 		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
 		return;
 	}
-   
+
 	if( setjmp( png_jmpbuf(png_ptr))) {
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		fclose(f);
 		return;
 	}
-   
+
 	png_init_io(png_ptr, f);
-   
+
 	png_set_IHDR(png_ptr, info_ptr, header->w, header->h,
 		8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-		PNG_COMPRESSION_TYPE_DEFAULT,  
+		PNG_COMPRESSION_TYPE_DEFAULT,
 		PNG_FILTER_TYPE_DEFAULT);
 
 	png_write_info( png_ptr, info_ptr );
@@ -251,10 +251,10 @@ void write_png( FILE *f, const struct PalmPixState *state,
 		png_write_row(png_ptr, &state->pixmap[i*header->w*3]);
 		png_write_flush(png_ptr);
 	}
-   
+
 	png_write_end(png_ptr, info_ptr);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-   
+
 }
 #endif
 
@@ -273,23 +273,23 @@ void write_png( FILE *f, const struct PalmPixState *state,
 int protect_files(char *name, char *extension)
 {
 	char *save_name, c = 1;
-   
+
 	save_name = strdup( name );
-   
+
 	if( NULL == save_name ) {
 		printf( "Failed to generate filename %s%s\n", name, extension );
 		return( 0 );
 	}
-	
+
 	sprintf( name, "%s%s", save_name, extension );
-   
+
 	while( access( name, F_OK ) == 0 ) {
 		sprintf( name, "%s_%02d%s", save_name, c, extension );
 		c++;
-	
+
 		if( c == 'z' + 1 )
 			c = 'A';
-	
+
 		if( c == 'Z' + 1 ) {
 			printf( "Failed to generate filename %s\n", name );
 			return( 0 );
@@ -311,16 +311,16 @@ int protect_files(char *name, char *extension)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int write_one (const struct PalmPixHeader *header, 
+static int write_one (const struct PalmPixHeader *header,
 	struct PalmPixState *state, int recno, const char *pixname)
 {
-   
+
 	if (unpack_PalmPix (state, header, recno, pixName) != 0) {
-	
+
 	init_for_ppm (state);
-	if (strcmp (state->pixname, pixname) == 0 
+	if (strcmp (state->pixname, pixname) == 0
 		&& unpack_PalmPix (state, header, recno,
-		pixName | pixPixmap) != 0) {	     
+		pixName | pixPixmap) != 0) {
 #ifdef HAVE_PNG
 		if( state->output_type == PALMPIX_OUT_PPM )
 			write_ppm( stdout, state, header);
@@ -332,7 +332,7 @@ static int write_one (const struct PalmPixHeader *header,
 #endif
 		free_PalmPix_data (state);
 		}
-	
+
 		recno = state->highest_recno;
 	}
 	return recno;
@@ -343,22 +343,22 @@ static int write_one (const struct PalmPixHeader *header,
  *
  * Function:    write_all
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int write_all (const struct PalmPixHeader *header, 
+static int write_all (const struct PalmPixHeader *header,
 	struct PalmPixState *state, int recno, const char *ignored)
 {
 	init_for_ppm (state);
 	if (unpack_PalmPix (state, header, recno, pixName | pixPixmap) != 0) {
-	
+
 	char fname[FILENAME_MAX], ext[10];
 	FILE *f;
-	
+
 	sprintf( fname, "%s", state->pixname );
 
 	if( state->output_type == PALMPIX_OUT_PPM )
@@ -370,10 +370,10 @@ static int write_all (const struct PalmPixHeader *header,
 	protect_files( fname, ext );
 
 	printf ("Generating %s...\n", fname);
-	
+
 	f = fopen (fname, "wb");
 	if (f) {
-#ifdef HAVE_PNG	     
+#ifdef HAVE_PNG
 		if( state->output_type == PALMPIX_OUT_PPM )
 			write_ppm(f, state, header);
 
@@ -384,9 +384,9 @@ static int write_all (const struct PalmPixHeader *header,
 #endif
 			fclose (f);
 	} else
-		fprintf (stderr, "%s: can't write to %s\n", 
+		fprintf (stderr, "%s: can't write to %s\n",
 			progname, fname);
-	
+
 		free_PalmPix_data (state);
 		recno = state->highest_recno;
 	}
@@ -410,7 +410,7 @@ static int list (const struct PalmPixHeader *h, struct PalmPixState *state,
 {
 	if (unpack_PalmPix (state, h, recno, pixName) != 0) {
 
-		printf ("%d x %d\t%d\t%s\t%s\n", 
+		printf ("%d x %d\t%d\t%s\t%s\n",
 			h->w, h->h, h->num, fmt_date (h), state->pixname);
 		recno = state->highest_recno;
 	}
@@ -422,15 +422,15 @@ static int list (const struct PalmPixHeader *h, struct PalmPixState *state,
  *
  * Function:    read_db
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
-void read_db (struct PalmPixState *state, int n, int (*action) 
-	(const struct PalmPixHeader *, struct PalmPixState *, 
+void read_db (struct PalmPixState *state, int n, int (*action)
+	(const struct PalmPixHeader *, struct PalmPixState *,
 	int, const char *), const char *action_arg)
 {
 	int i;
@@ -439,7 +439,7 @@ void read_db (struct PalmPixState *state, int n, int (*action)
 		void *buffer;
 		size_t bufsize;
 		struct PalmPixHeader header;
-	
+
 		if (state->getrecord (state, i, &buffer, &bufsize) == 0
 			&& unpack_PalmPixHeader (&header, buffer, bufsize) != 0)
 
@@ -464,7 +464,7 @@ static int fail (const char *func) {
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void display_help(const char *progname) 
+static void display_help(const char *progname)
 {
 	printf("   Convert all pictures in the files given, or found via connecting to a\n");
 	printf("   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");
@@ -481,14 +481,14 @@ static void display_help(const char *progname)
 	printf("     -s, --stretch,          Do a histogram stretch on the colour planes\n");
 	printf("     -t, --type,             Specify picture output type (ppm or png)\n");
 	printf("     -v, --version           Display %s version information\n", progname);
-	
+
 	return;
 }
 
 
 int main (int argc, char **argv) {
 	int 	c, 	/* switch */
-	sd	= -1, 
+	sd	= -1,
 	output_type = PALMPIX_OUT_PPM,
 	bias = 50,
 	flags = 0;
@@ -501,9 +501,9 @@ int main (int argc, char **argv) {
 	    	*file_arg	= NULL,
 	    	*type_str	= NULL;
 	struct 	PilotUser User;
-   
+
 	char *progname = argv[0];
-   
+
 	poptContext pc;
 
 	struct poptOption options[] = {
@@ -555,7 +555,7 @@ int main (int argc, char **argv) {
         		break;
 	        case 't':
 		        if( !strncmp( "png", type_str, 3 )) {
-#ifdef HAVE_PNG	     
+#ifdef HAVE_PNG
         			output_type = PALMPIX_OUT_PNG;
 #else
 	        		fprintf( stderr, "read-palmpix was built without png support\n" );
@@ -580,28 +580,28 @@ int main (int argc, char **argv) {
 		    poptStrerror(c));
 		return 1;
 	}
-	     
+
 	if(poptPeekArg(pc) != NULL) {
 		int i = 0;
-		
+
 		while((file_arg = poptGetArg(pc)) != NULL) {
 			i++;
 			struct pi_file *f = pi_file_open (file_arg);
 			if (f) {
-		  
+
 				struct DBInfo info;
 				if ((poptPeekArg(pc) != NULL || i > 1)
 				    && action != write_one)
 					printf ("%s:\n", file_arg);
-		  
+
 				pi_file_get_info (f, &info);
                 if (info.flags & dlpDBFlagResource) {
-		       
+
 				struct PalmPixState_pi_file s;
 				int n = 0;
-		       
+
 				s.state.output_type = output_type;
-		       
+
 				pi_file_get_entries (f, &n);
 				s.state.getrecord = getrecord_pi_file;
 				s.f = f;
@@ -626,7 +626,7 @@ int main (int argc, char **argv) {
 
 		if (dlp_ReadUserInfo(sd, &User) < 0)
 			return fail( "Read user info" );
-       
+
 		dlp_OpenConduit (sd);
 		dlp_ReadUserInfo (sd, &User);
 
@@ -634,21 +634,21 @@ int main (int argc, char **argv) {
 
 			struct PalmPixState_pi_socket s;
 			int n = 0;
-     
+
 			s.state.output_type = output_type;
 		    s.state.bias = bias;
 		    s.state.flags = flags;
-		   
+
 			dlp_ReadOpenDBInfo (sd, db, &n);
 			s.state.getrecord = getrecord_pi_socket;
 			s.sd = sd;
 			s.db = db;
 			read_db (&s.state, n, action, pixname);
 			dlp_CloseDB (sd, db);
-     
-			dlp_AddSyncLogEntry (sd, 
+
+			dlp_AddSyncLogEntry (sd,
 				"Read PalmPix images from Palm.\n");
-     
+
 			User.lastSyncPC = 0x00010000;
 			User.lastSyncDate = User.successfulSyncDate = time (NULL);
 			dlp_WriteUserInfo (sd, &User);

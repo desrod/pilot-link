@@ -1,4 +1,4 @@
-/* 
+/*
  * pilot-foto.c: Palm 'Foto' Image Fetcher/Converter
  *
  * This is a palm conduit to fetch Foto files from a Palm.  It can also
@@ -21,13 +21,13 @@
  *
  * Build with: gcc -g -W -pedantic -O2 -o pilot-foto pilot-foto.c \
  * ../libpisock/.libs/libpisock.so
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
- 
+
 #include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +43,7 @@
 static void display_help(const char *progname);
 void print_splash(const char *progname);
 int pilot_connect(const char *porg);
-int get_jpg_info(FILE *in, char *type, unsigned short *version, 
+int get_jpg_info(FILE *in, char *type, unsigned short *version,
 		 int *height, int *width);
 int do_list(int sd);
 int do_delete(int sd, char **delete_files, int all);
@@ -124,7 +124,7 @@ int get_jpg_info(FILE *in, char *type, unsigned short *version,
    char str[65536];
    size_t len;
    unsigned char m1, m2;
-    
+
    rewind(in);
 
    /* marker identifier, application use marker */
@@ -412,14 +412,14 @@ int do_fetch(int sd, char **fetch_files, int all)
 		category,
 		ret,
 		start;
-	
+
 	struct DBInfo info;
 	char creator[5];
 	char type[5];
 	pi_buffer_t *buffer;
-	
+
 	if ((!all) && (!fetch_files)) return -1;
-	
+
 	start = 0;
 	buffer = pi_buffer_new (65536);
 	while (dlp_ReadDBList(sd, 0, dlpOpenRead, start, buffer) > 0) {
@@ -457,14 +457,14 @@ int do_fetch(int sd, char **fetch_files, int all)
 				fprintf(stderr, "Unable to open %s\n", info.name);
 				continue;
 			}
-			
+
 			out = fopen(info.name, "wb");
 			if (!out) {
 				fprintf(stderr, "Failed, unable to create file %s\n", info.name);
 				dlp_CloseDB(sd, db);
 				continue;
 			}
-			
+
 			index = 0;
 			do {
 				ret = dlp_ReadRecordByIndex(sd, db, index, buffer, &id, &attr, &category);
@@ -508,7 +508,7 @@ int install_tux_with_name(int sd, char *name, int width, int height,
    record = malloc(rec_len+4);
    memcpy_tux_record(record);
    memcpy(&record[SIZE_OF_TUX], name, strlen(name));
-   
+
    /* Length of filename needs to be here */
    record[22]=(unsigned char)strlen(name);
 
@@ -663,7 +663,7 @@ int do_install(int sd, char **install_files)
       pi_file_close(pf);
       fclose(in);
 
-      pf = pi_file_open(pdb_file);   
+      pf = pi_file_open(pdb_file);
       if (!pf) {
 	 fprintf(stderr, "Could not open %s\n", pdb_file);
 	 exit(-1);
@@ -799,7 +799,7 @@ int main(int argc, const char *argv[])
                 POPT_AUTOHELP
                 { NULL, 0, 0, NULL, 0 }
 	};
-	
+
 	fetch = convert = FALSE;
 
 	if (argc == 1) {
@@ -808,7 +808,7 @@ int main(int argc, const char *argv[])
 
 	install_i = delete_i = fetch_i = 0;
 	delete_flag = install_flag = fetch_flag = 0;
-  
+
    	/* Run through the args far enough to see if a connection is required */
 	for (i=0; i<argc; i++) {
 		if ( (!strcmp(argv[i], "-D")) ||
@@ -817,13 +817,13 @@ int main(int argc, const char *argv[])
 		(!strcmp(argv[i], "-f")) ||
 		(!strcmp(argv[i], "-l")) ||
 		(!strcmp(argv[i], "-i")) ) {
-	 		
+
 	 		break;
 		}
 	}
 
 	po = poptGetContext("pilot-foto", argc, argv, options, 0);
-   
+
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		case 'h':
@@ -831,7 +831,7 @@ int main(int argc, const char *argv[])
 		return 0;
 		case 'D':
 			sd = pilot_connect(port);
-			if (sd<=0) 
+			if (sd<=0)
 		 		exit(-1);
 			do_delete(sd, NULL, 1);
 		break;
@@ -843,7 +843,7 @@ int main(int argc, const char *argv[])
 		break;
 		case 'l':
 			sd = pilot_connect(port);
-			if (sd<=0) 
+			if (sd<=0)
 		 		exit(-1);
 			do_list(sd);
 		break;
@@ -855,7 +855,7 @@ int main(int argc, const char *argv[])
 		break;
 		case 'F':
 			sd = pilot_connect(port);
-			if (sd<=0) 
+			if (sd<=0)
 		 		exit(-1);
 			do_fetch(sd, NULL, 1);
 		break;
@@ -867,29 +867,29 @@ int main(int argc, const char *argv[])
 		return 0;
       		}
 	}
-	
+
    	if(delete_i)
 	{
 		sd = pilot_connect(port);
-		if (sd<=0) 
-		 	exit(-1);	
+		if (sd<=0)
+		 	exit(-1);
 		do_delete(sd, delete_files, 0);
 	}
 	if(install_i)
 	{
 		sd = pilot_connect(port);
-		if (sd<=0) 
+		if (sd<=0)
 		 	exit(-1);
 		do_install(sd, install_files);
 	}
 	if(fetch_i)
 	{
 		sd = pilot_connect(port);
-		if (sd<=0) 
+		if (sd<=0)
 		 	exit(-1);
 		do_fetch(sd, fetch_files, 0);
 	}
-   
+
 	if (sd) {
 		dlp_EndOfSync(sd, dlpEndCodeNormal);
 		pi_close(sd);
