@@ -1,5 +1,8 @@
 2001-03-30  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/Makefile.in: version should be 4.0.0 because the old
+	sync interface was removed and the new one added
+
 	* libsock/sync.c (sync_MergeFromPilot_fast): Free the record if it
 	wasn't added to the queue not vice versa
 	(sync_MergeFromPilot_slow): ditto
