@@ -1,5 +1,5 @@
 /*
- * userland.c: General definitions for userland conduits.
+ * plu_args.c: common popt argument processing routines
  *
  * Copyright (C) 2004 by Adriaan de Groot <groot@kde.org>
  *
@@ -22,7 +22,7 @@
 #include "userland.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 char *plu_port = NULL;
 int plu_quiet = 0;

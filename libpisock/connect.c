@@ -33,25 +33,24 @@
 
 /***********************************************************************
  *
- * Function:    pilot_connect
+ * Function:    pilot_connect  [DEPRECATED]
  *
  * Summary:     Connect to a Palm device.
  *
  * Parameters:  port. Communications port through which the Palm device is
- *              connected.  If this is NULL, pilot_connect() will attempt to
- *              discover the correct port, and fall back to /dev/pilot.
+ *              connected.
  *
  * Returns:     Socket descriptor of type 'client_sd', if successful.
  *		Returns 1, if the connection can not be established.
  *
- *  If 'port' is NULL, the PILOTPORT environment variable is checked.
+ *  'port' is allowed to be NULL for the pi_bind call because pi_bind will
+ *  check your PILOTPORT environment variable.  If port is NULL and the
+ *  attempt to connect fails for any reason, we simply assume the user didn't
+ *  provide one, because pilot_connect doesn't have a way of knowing, for the
+ *  time being.
  *
- *  If neither of them are set, the port defaults to /dev/pilot.
- *
- *  A socket is created. A message is displayed, reminding the user to press
- *  the HotSync button. pilot_connect() waits for communication to be
- *  established... potentially forever. Once communication is established,
- *  the socket descriptor is returned.
+ * This function is deprecated because it doesn't really belong in libpisock.
+ * It will remain at least until it has been properly replaced.
  *
  ***********************************************************************/
 int
