@@ -324,7 +324,7 @@ if test "x$JAVA" != "x" && test "x$JAVAC" != "x" && test "x$JAR" != "x"; then
 		use_java=true
 		AC_MSG_RESULT(looks good) 
 	else
-		AC_MSG_RESULT(not useable) 
+		AC_MSG_RESULT(not usable) 
 	fi
 fi
 AM_CONDITIONAL(WITH_JAVA, $use_java)
@@ -539,7 +539,7 @@ if $use_python; then
 		use_python=true
 		AC_MSG_RESULT(looks good)
 	else
-		AC_MSG_RESULT(not useable)
+		AC_MSG_RESULT(not usable)
 	fi
 fi
 AM_CONDITIONAL(WITH_PYTHON, $use_python)
