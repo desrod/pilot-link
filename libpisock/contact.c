@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 
 #include "pi-macros.h"
@@ -41,6 +42,8 @@ void free_Contact(struct Contact *c)
 	for (i = 0; i < NUM_CONTACT_ENTRIES; i++)
 		if (c->entry[i])
 			free(c->entry[i]);
+	if (c->picture != NULL)
+		pi_buffer_free (c->picture);
 }
 
 #define hi(x) (((x) >> 4) & 0x0f)
@@ -83,8 +86,8 @@ int unpack_Contact(struct Contact *c, unsigned char *buffer, int len)
 	c->addressLabel[1] = hi(get_byte(buffer + 5));
 	c->addressLabel[0] = lo(get_byte(buffer + 5));
 
-	c->IMLabel[1] = hi(get_byte(buffer + 7)) - 1; /* First (AIM) = 1, not 0 on HH. */
-	c->IMLabel[0] = lo(get_byte(buffer + 7)) - 1;
+	c->IMLabel[1] = hi(get_byte(buffer + 7));
+	c->IMLabel[0] = lo(get_byte(buffer + 7));
 
 	contents = get_long(start + 8);
 
@@ -116,9 +119,9 @@ int unpack_Contact(struct Contact *c, unsigned char *buffer, int len)
 		}
 	}
 
-	/* I think one of these is a birthday flag and one is an alarm flag.
-	 * Since both are always set there is no way to know which is which.
-	 * It could be something like a flag for advanceUnits also.
+	/* Both of these are set if the birthday field is set.  Previously
+	 * this comment suspected one may be an alarm, but I see no evidence
+	 * of that.  --KB
 	 */
 	if ((contents & 0x0800) || (contents & 0x1000)) {
                 c->birthdayFlag = 1;
@@ -151,6 +154,14 @@ int unpack_Contact(struct Contact *c, unsigned char *buffer, int len)
 	} else {
 		c->reminderFlag = 0;
 	}
+
+	if (len > (size_t)(buffer - start)) {
+		if ((c->picture = pi_buffer_new (len)) == NULL)
+			return -1;
+
+		pi_buffer_append (c->picture, buffer, len);
+	} else
+		c->picture = NULL;
 
 	return (buffer - start);
 }
@@ -188,8 +199,13 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
 		if (c->entry[v]) {
 			destlen += (strlen(c->entry[v]) + 1);
 		}
-		if (c->birthdayFlag) destlen += 3;
-		if (c->reminderFlag) destlen += 2;
+	}
+	if (c->birthdayFlag)
+		destlen += 3;
+	if (c->reminderFlag)
+		destlen += 2;
+	if (c->picture != NULL) {
+		destlen += c->picture->used;
 	}
 
 	if (!record)
@@ -219,21 +235,6 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
 		}
 	}
 
-	phoneflag  = (((unsigned long) c->phoneLabel[0]) & 0xF) << 0;
-	phoneflag |= (((unsigned long) c->phoneLabel[1]) & 0xF) << 4;
-	phoneflag |= (((unsigned long) c->phoneLabel[2]) & 0xF) << 8;
-	phoneflag |= (((unsigned long) c->phoneLabel[3]) & 0xF) << 12;
-	phoneflag |= (((unsigned long) c->phoneLabel[4]) & 0xF) << 16;
-	phoneflag |= (((unsigned long) c->phoneLabel[5]) & 0xF) << 20;
-	phoneflag |= (((unsigned long) c->phoneLabel[6]) & 0xF) << 24;
-	phoneflag |= (((unsigned long) c->showPhone) & 0xF) << 28;
-
-	typesflag   = (((unsigned long) c->IMLabel[0]+1) & 0xF) << 0; /* First = 1, not 0 on HH. */
-	typesflag  |= (((unsigned long) c->IMLabel[1]+1) & 0xF) << 4;
-	typesflag  |= (((unsigned long) c->addressLabel[0]) & 0xF) << 16;
-	typesflag  |= (((unsigned long) c->addressLabel[1]) & 0xF) << 20;
-	typesflag  |= (((unsigned long) c->addressLabel[2]) & 0xF) << 24;
-
 	if (c->birthdayFlag) {
 		contents2 |= 0x1800;
 		packed_date = (((c->birthday.tm_year - 4) << 9) & 0xFE00) |
@@ -251,6 +252,25 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
 		set_byte(buffer, c->advance);
 		buffer += 1;
 	}
+	if (c->picture != NULL) {
+		memcpy (buffer, c->picture->data, c->picture->used);
+		buffer += c->picture->used;
+	}
+
+	phoneflag  = (((unsigned long) c->phoneLabel[0]) & 0xF) << 0;
+	phoneflag |= (((unsigned long) c->phoneLabel[1]) & 0xF) << 4;
+	phoneflag |= (((unsigned long) c->phoneLabel[2]) & 0xF) << 8;
+	phoneflag |= (((unsigned long) c->phoneLabel[3]) & 0xF) << 12;
+	phoneflag |= (((unsigned long) c->phoneLabel[4]) & 0xF) << 16;
+	phoneflag |= (((unsigned long) c->phoneLabel[5]) & 0xF) << 20;
+	phoneflag |= (((unsigned long) c->phoneLabel[6]) & 0xF) << 24;
+	phoneflag |= (((unsigned long) c->showPhone) & 0xF) << 28;
+
+	typesflag   = (((unsigned long) c->IMLabel[0]) & 0xF) << 0;
+	typesflag  |= (((unsigned long) c->IMLabel[1]) & 0xF) << 4;
+	typesflag  |= (((unsigned long) c->addressLabel[0]) & 0xF) << 16;
+	typesflag  |= (((unsigned long) c->addressLabel[1]) & 0xF) << 20;
+	typesflag  |= (((unsigned long) c->addressLabel[2]) & 0xF) << 24;
 
 	set_long(record, phoneflag);
 	set_long(record + 4, typesflag);
@@ -274,49 +294,64 @@ int pack_Contact(struct Contact *c, unsigned char *record, int len)
  * Function:    unpack_ContactAppInfo
  *
  * Summary:     Fill in the app info structure based on the raw app 
- *		info data
+ *				info data
  *
  * Parameters:  struct ContactAppInfo *ai, unsigned char *record, int len
  *
- * Returns:     The necessary length of the buffer if record is NULL,
- *		or 0 on error, the length of the data used from the 
- *		buffer otherwise
+ * Returns:     0 on success
+ *				-1 on error
  *
  ***********************************************************************/
 int
-unpack_ContactAppInfo(struct ContactAppInfo *ai, unsigned char *record,
-		      int len)
+unpack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
 {
-	int 	i, j,
-		destlen = 4 + 16 * 48 + 2 + 2;
+	int				i,
+					j,
+					destlen;
+	ptrdiff_t		ofs = 0;
 
-	unsigned char *start = record;
-	/* unsigned long r; */
+	if (buf == NULL || buf->data == NULL || ai == NULL)
+		return -1;
 
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!record)
-		return i + destlen;
+	switch (buf->used) {
+		case 1092:
+			ai->type = contacts_v10;
+			ai->numLabels = 49;
+			break;
+		case 1156:
+			ai->type = contacts_v11;
+			ai->numLabels = 53;
+			break;
+		default:
+			/* Unknown version */
+			return -1;
+	}
+	destlen = 278						/* categories */
+			+ 26						/* internal */
+			+ ai->numLabels * 16		/* a bunch of strings */
+			+ 2							/* country */
+			+ 2;						/* sorting */
+
+	if (buf->used < destlen)
+		return -1;
+
+	i = unpack_CategoryAppInfo(&ai->category, buf->data, buf->used);
 	if (!i)
-		return i;
-	record += i;
-	len -= i;
+		return -1;
+	ofs += i;
 
-	if (len < destlen)
-		return 0;
+	memcpy(ai->internal, buf->data + ofs, 26);
+	ofs += 26;
+	memcpy(ai->labels, buf->data + ofs, 16 * ai->numLabels);
+	ofs += 16 * ai->numLabels;
+	ai->country = get_byte(buf->data + ofs);
+	ofs += 2;
+	ai->sortByCompany = get_byte(buf->data + ofs);
+	ofs += 2;
 
-/*	r = get_long(record);
-	for (i = 0; i < 22; i++)
-		ai->labelRenamed[i] = !!(r & (1 << i));
-	record += 4;
-*/
-	memcpy(ai->unknown1, record, 26);
-	record += 26;
-	memcpy(ai->labels, record, 16 * 49);
-	record += 16 * 49;
-	ai->country = get_byte(record);
-	record += 2;
-	ai->sortByCompany = get_byte(record);
-	record += 2;
+	if (ofs != buf->used)
+		/* Should never happen */
+		return -1;
 
 	/* These are the fields that go in drop down menus */
 	for (i = 4, j = 0; i < 11; i++, j++) {
@@ -328,13 +363,23 @@ unpack_ContactAppInfo(struct ContactAppInfo *ai, unsigned char *record,
 	strcpy(ai->addrLabels[1], ai->labels[28]);
 	strcpy(ai->addrLabels[2], ai->labels[33]);
 
-	strcpy(ai->IMLabels[0], ai->labels[42]);
-	strcpy(ai->IMLabels[1], ai->labels[43]);
-	strcpy(ai->IMLabels[2], ai->labels[44]);
-	strcpy(ai->IMLabels[3], ai->labels[45]);
-	strcpy(ai->IMLabels[4], ai->labels[41]);
+	strcpy(ai->IMLabels[0], ai->labels[41]);
+	strcpy(ai->IMLabels[1], ai->labels[42]);
+	strcpy(ai->IMLabels[2], ai->labels[43]);
+	strcpy(ai->IMLabels[3], ai->labels[44]);
+	strcpy(ai->IMLabels[4], ai->labels[45]);
 
-	return (record - start);
+	strcpy(ai->customLabels[0], ai->labels[14]);
+	strcpy(ai->customLabels[1], ai->labels[15]);
+	strcpy(ai->customLabels[2], ai->labels[16]);
+	strcpy(ai->customLabels[3], ai->labels[17]);
+	strcpy(ai->customLabels[4], ai->labels[18]);
+	strcpy(ai->customLabels[5], ai->labels[19]);
+	strcpy(ai->customLabels[6], ai->labels[20]);
+	strcpy(ai->customLabels[7], ai->labels[21]);
+	strcpy(ai->customLabels[8], ai->labels[22]);
+
+	return 0;
 }
 
 /***********************************************************************
@@ -352,40 +397,37 @@ unpack_ContactAppInfo(struct ContactAppInfo *ai, unsigned char *record,
  *
  ***********************************************************************/
 int
-pack_ContactAppInfo(struct ContactAppInfo *ai, unsigned char *record,
-		    int len)
+pack_ContactAppInfo(struct ContactAppInfo *ai, pi_buffer_t *buf)
 {
-	int 	i,
-		destlen = 4 + 16 * 48 + 2 + 2;
-	unsigned char *pos = record;
+	int				destlen;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
-	if (!record)
-		return destlen + i;
-	if (!i)
-		return i;
 
-	pos += i;
-	len -= i;
+	if (buf == NULL)
+		return -1;
 
-	memcpy(pos, ai->unknown1, 26);
-	pos += 26;
+	destlen = 278						/* categories */
+			+ 26						/* internal */
+			+ ai->numLabels * 16		/* a bunch of strings */
+			+ 2							/* country */
+			+ 2;						/* sorting */
 
-	memcpy(pos, ai->labels, 16 * 49);
-	pos += 16 * 49;
+	pi_buffer_expect (buf, destlen);
 
-	set_byte(pos++, ai->country);
-	set_byte(pos++, 0);
+	buf->used = pack_CategoryAppInfo(&ai->category, buf->data, buf->allocated);
 
-	set_byte(pos++, ai->sortByCompany);
-	set_byte(pos++, 0);
+	if (buf->used != 278)
+		return -1;
 
-	/* r = 0;
-	for (i = 0; i < 22; i++)
-		if (ai->labelRenamed[i])
-			r |= (1 << i);
-	set_long(pos, r);
-	pos += 4;*/
+	pi_buffer_append (buf, ai->internal, 26);
 
-	return (pos - record);
+	pi_buffer_append (buf, ai->labels, 16 * ai->numLabels);
+
+	set_byte (buf->data + buf->used++, ai->country);
+	set_byte (buf->data + buf->used++, 0);
+	set_byte (buf->data + buf->used++, ai->sortByCompany);
+	set_byte (buf->data + buf->used++, 0);
+
+	return 0;
 }
+
+/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
