@@ -62,37 +62,37 @@
          renamed or removed.
       </para>
       <refsect2>
-         <title>addresses</title>
+         <para>addresses</para>
          <para>DEPRECATED: Use pilot-addresses --write|--human-readable
             instead.
          </para>
       </refsect2>
       <refsect2>
-         <title>hinotes</title>
+         <para>hinotes</para>
          <para>Syncronize your Hi-Notes database with your desktop machine.</para>
       </refsect2>
       <refsect2>
-         <title>install-datebook</title>
+         <para>install-datebook</para>
          <para>installs a new datebook entry onto your Palm handheld.</para>
       </refsect2>
       <refsect2>
-         <title>install-expenses</title>
+         <para>install-expenses</para>
          <para>Install an expense record from various parameters and arguments
             passed at connection time.
          </para>
       </refsect2>
       <refsect2>
-         <title>install-hinote</title>
+         <para>install-hinote</para>
          <para>Install local files into your Hi-Note database on your Palm
             handheld. 
          </para>
       </refsect2>
       <refsect2>
-         <title>install-memo</title>
+         <para>install-memo</para>
          <para>Installs a new Memo Pad entry onto your Palm handheld.</para>
       </refsect2>
       <refsect2>
-         <title>install-netsync</title>
+         <para>install-netsync</para>
          <para>reads or sets the Network Preferences information on a Palm
             Device. Modifies the "Network Preference" settings and reports
             additional intormation about the Palm, such as the IP, hostname,
@@ -100,15 +100,15 @@
          </para>
       </refsect2>
       <refsect2>
-         <title>install-todo</title>
+         <para>install-todo</para>
          <para>Updates the Palm ToDo list with one new entry.</para>
       </refsect2>
       <refsect2>
-         <title>install-todos</title>
+         <para>install-todos</para>
          <para>Updates the Palm ToDo list with entries from a local file.</para>
       </refsect2>
       <refsect2>
-         <title>install-user</title>
+         <para>install-user</para>
          <para>Reads or sets a Palm User and UserID on a Palm Device. Modifies
             the "User Preference" settings and reports additional intormation
             about the Palm, such as the Username and UserID as they are set on
@@ -116,17 +116,17 @@
          </para>
       </refsect2>
       <refsect2>
-         <title>memos</title>
+         <para>memos</para>
          <para>Manipulate Memo entries from a file or your Palm device.</para>
       </refsect2>
       <refsect2>
-         <title>money2qif</title>
+         <para>money2qif</para>
          <para>Convert and sync your MicroMoney account data Quicken QIF
             format.
          </para>
       </refsect2>
       <refsect2>
-         <title>pilot-addresses</title>
+         <para>pilot-addresses</para>
          <para>Read and write address book databases to and from a Palm
             handheld. 
          </para>
@@ -135,51 +135,51 @@
          </para>
       </refsect2>
       <refsect2>
-         <title>pilot-archive</title>
+         <para>pilot-archive</para>
          <para>DEPRECATED: Use read-todos -w --archived instead. </para>
       </refsect2>
       <refsect2>
-         <title>pilot-clip</title>
+         <para>pilot-clip</para>
          <para>Get or Set the Palm Clipboard contents from STDOUT/STDIN.</para>
       </refsect2>
       <refsect2>
-         <title>pilot-dedupe</title>
+         <para>pilot-dedupe</para>
          <para>Removes duplicate records from any Palm database.</para>
       </refsect2>
       <refsect2>
-         <title>pilot-file</title>
+         <para>pilot-file</para>
          <para>Dump application and header information from your local PRC/PDB
             files. 
          </para>
       </refsect2>
       <refsect2>
-         <title>pilot-foto</title>
+         <para>pilot-foto</para>
          <para>Palm 'Foto' Image Installer/Remover/Fetcher/Converter</para>
       </refsect2>
       <refsect2>
-         <title>pilot-schlep</title>
+         <para>pilot-schlep</para>
          <para>Package up any arbitrary file and sync it to your Palm device.</para>
       </refsect2>
       <refsect2>
-         <title>pilot-treofoto</title>
+         <para>pilot-treofoto</para>
          <para>Copies Treo foto databases to current directory and extracts
             .jpg files from them.
          </para>
       </refsect2>
       <refsect2>
-         <title>pilot-wav</title>
+         <para>pilot-wav</para>
          <para>Decodes Palm Voice Memo files to wav files you can read </para>
       </refsect2>
       <refsect2>
-         <title>pilot-xfer</title>
+         <para>pilot-xfer</para>
          <para>Backup, sync, and restore databases from a Palm handheld device.</para>
       </refsect2>
       <refsect2>
-         <title>read-expenses</title>
+         <para>read-expenses</para>
          <para>Export Palm Expense application data in a text format.</para>
       </refsect2>
       <refsect2>
-         <title>read-ical</title>
+         <para>read-ical</para>
          <para>Exports the DatebookDB and/or ToDo applications (DatebookDB.pdb
             and ToDoDB.pdb respectively) to Ical format. (The ical application
             must be installed and working on your system first. This is NOT the
@@ -187,33 +187,33 @@
          </para>
       </refsect2>
       <refsect2>
-         <title>read-notepad</title>
+         <para>read-notepad</para>
          <para>List the record information found in the Palm Notepad (Palm OS4
             and later) application.
          </para>
       </refsect2>
       <refsect2>
-         <title>read-palmpix</title>
+         <para>read-palmpix</para>
          <para>Convert all pictures in the files given or found on a Palm
             handheld.
          </para>
       </refsect2>
       <refsect2>
-         <title>read-screenshot</title>
+         <para>read-screenshot</para>
          <para>Read screenshots from Palm (ScreenShotDB).</para>
       </refsect2>
       <refsect2>
-         <title>read-todos</title>
+         <para>read-todos</para>
          <para>Syncronize your Palm ToDo application's database with your
             desktop machine.
          </para>
       </refsect2>
       <refsect2>
-         <title>read-veo</title>
+         <para>read-veo</para>
          <para>Synchronize your Veo Traveler databases </para>
       </refsect2>
       <refsect2>
-         <title>reminders</title>
+         <para>reminders</para>
          <para>Exports your Palm Datebook database into a 'remind' data file
             format. 
          </para>
@@ -222,42 +222,42 @@
    <refsect1>
       <title>Tools</title>
       <refsect2>
-         <title>debugsh</title>
+         <para>debugsh</para>
          <para>Simple debugging console for a Palm Handheld device
             (deprecated).
          </para>
       </refsect2>
       <refsect2>
-         <title>dlpsh</title>
-         <para>An interactive Desktop Link Protocol (DLP) Shell for your Palm
-            device.  This is very useful for debugging potential problems with 
-            your serial port. Query the RAM/ROM, list databases, change your
-            UserID or Username, and many other useful functions. This is the
-            "Swiss Army Knife" of any of pilot-link's tools.
+         <para>dlpsh</para>
+         <para>An interactive Desktop Link Protocol (DLP) Shell for your Palm device.  This is very
+            useful for debugging potential problems with your Palm's connection. You can also Query
+            the RAM/ROM, list databases, change your UserID or Username, set the time, and many
+            other useful functions. The DLP Shell is the "Swiss Army Knife" of any of pilot-link's
+            tools.
          </para>
       </refsect2>
       <refsect2>
-         <title>pi-csd</title>
+         <para>pi-csd</para>
          <para>Connection Service Daemon for Palm Devices</para>
       </refsect2>
       <refsect2>
-         <title>pi-getram</title>
+         <para>pi-getram</para>
          <para>Retrieves the RAM image from your Palm device for use in
             debugging.
          </para>
       </refsect2>
       <refsect2>
-         <title>pi-getrom</title>
+         <para>pi-getrom</para>
          <para>Retrieves the ROM image from your Palm device for use in
             debugging. 
          </para>
       </refsect2>
       <refsect2>
-         <title>pi-getromtoken</title>
+         <para>pi-getromtoken</para>
          <para>Reads a ROM token from a Palm Handheld device. </para>
       </refsect2>
       <refsect2>
-         <title>pi-nredir</title>
+         <para>pi-nredir</para>
          <para>Accept connection and redirect via Network Hotsync Protocol. </para>
       </refsect2>
    </refsect1>
@@ -267,17 +267,17 @@
          packages).
       </para>
       <refsect2>
-         <title>ietf2datebook.PL</title>
+         <para>ietf2datebook.PL</para>
          <para>Converts IETF agenda format to install-datebook format </para>
       </refsect2>
       <refsect2>
-         <title>pilot-undelete.PL</title>
+         <para>pilot-undelete.PL</para>
          <para>Turn previously archived records into normal (non-archived)
             records by resetting the "dirty" bit.
          </para>
       </refsect2>
       <refsect2>
-         <title>sync-plan.PL</title>
+         <para>sync-plan.PL</para>
          <para>completely  synchronize the Palm datebook with the "plan"
             calendar via
             netplan, including authenticating
@@ -293,15 +293,15 @@
          the application itself.
       </para>
       <refsect2>
-         <title>ccexample</title>
+         <para>ccexample</para>
          <para>test program demonstrating C++ interface.</para>
       </refsect2>
       <refsect2>
-         <title>iambicexample</title>
+         <para>iambicexample</para>
          <para>test program demonstrating C++ interface.</para>
       </refsect2>
       <refsect2>
-         <title>validate</title>
+         <para>validate</para>
          <para>experimental program to test C++ features.</para>
       </refsect2>
    </refsect1>

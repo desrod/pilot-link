@@ -1,5 +1,5 @@
 .\" -*- coding: us-ascii -*-
-.TH pilot-link 7 "@VERSION@"  
+.TH pilot-link 7 "@VERSION@"
 .SH NAME
 pilot-link \- A suite of tools for communicating with Palm handhelds, such as those made by Palm, Handspring, Handera, TRGPro, Sony or other Palm Compatible Handheld PDA device. 
 .SH SECTION
@@ -40,120 +40,200 @@ conduits
 have been merged, a lot have had new options added and some options
 have been
 renamed or removed.
-.SS ADDRESSES
+.SS 
+addresses
+.PP
 DEPRECATED: Use pilot-addresses --write|--human-readable
 instead.
-.SS HINOTES
+.SS 
+hinotes
+.PP
 Syncronize your Hi-Notes database with your desktop machine.
-.SS INSTALL-DATEBOOK
+.SS 
+install-datebook
+.PP
 installs a new datebook entry onto your Palm handheld.
-.SS INSTALL-EXPENSES
+.SS 
+install-expenses
+.PP
 Install an expense record from various parameters and arguments
 passed at connection time.
-.SS INSTALL-HINOTE
+.SS 
+install-hinote
+.PP
 Install local files into your Hi-Note database on your Palm
 handheld. 
-.SS INSTALL-MEMO
+.SS 
+install-memo
+.PP
 Installs a new Memo Pad entry onto your Palm handheld.
-.SS INSTALL-NETSYNC
+.SS 
+install-netsync
+.PP
 reads or sets the Network Preferences information on a Palm
 Device. Modifies the "Network Preference" settings and reports
 additional intormation about the Palm, such as the IP, hostname,
 and other information as they are set on the Palm.
-.SS INSTALL-TODO
+.SS 
+install-todo
+.PP
 Updates the Palm ToDo list with one new entry.
-.SS INSTALL-TODOS
+.SS 
+install-todos
+.PP
 Updates the Palm ToDo list with entries from a local file.
-.SS INSTALL-USER
+.SS 
+install-user
+.PP
 Reads or sets a Palm User and UserID on a Palm Device. Modifies
 the "User Preference" settings and reports additional intormation
 about the Palm, such as the Username and UserID as they are set on
 the Palm
-.SS MEMOS
+.SS 
+memos
+.PP
 Manipulate Memo entries from a file or your Palm device.
-.SS MONEY2QIF
+.SS 
+money2qif
+.PP
 Convert and sync your MicroMoney account data Quicken QIF
 format.
-.SS PILOT-ADDRESSES
+.SS 
+pilot-addresses
+.PP
 Read and write address book databases to and from a Palm
 handheld. 
 .PP
 Changes in 0.12: Incorporates functionality from the now
 deprecated \fBaddresses\fR conduit.
-.SS PILOT-ARCHIVE
+.SS 
+pilot-archive
+.PP
 DEPRECATED: Use read-todos -w --archived instead. 
-.SS PILOT-CLIP
+.SS 
+pilot-clip
+.PP
 Get or Set the Palm Clipboard contents from STDOUT/STDIN.
-.SS PILOT-DEDUPE
+.SS 
+pilot-dedupe
+.PP
 Removes duplicate records from any Palm database.
-.SS PILOT-FILE
+.SS 
+pilot-file
+.PP
 Dump application and header information from your local PRC/PDB
 files. 
-.SS PILOT-FOTO
+.SS 
+pilot-foto
+.PP
 Palm 'Foto' Image Installer/Remover/Fetcher/Converter
-.SS PILOT-SCHLEP
+.SS 
+pilot-schlep
+.PP
 Package up any arbitrary file and sync it to your Palm device.
-.SS PILOT-TREOFOTO
+.SS 
+pilot-treofoto
+.PP
 Copies Treo foto databases to current directory and extracts
 \&.jpg files from them.
-.SS PILOT-WAV
+.SS 
+pilot-wav
+.PP
 Decodes Palm Voice Memo files to wav files you can read 
-.SS PILOT-XFER
+.SS 
+pilot-xfer
+.PP
 Backup, sync, and restore databases from a Palm handheld device.
-.SS READ-EXPENSES
+.SS 
+read-expenses
+.PP
 Export Palm Expense application data in a text format.
-.SS READ-ICAL
+.SS 
+read-ical
+.PP
 Exports the DatebookDB and/or ToDo applications (DatebookDB.pdb
 and ToDoDB.pdb respectively) to Ical format. (The ical application
 must be installed and working on your system first. This is NOT the
 same thing as the iCal Calendar format, however).
-.SS READ-NOTEPAD
+.SS 
+read-notepad
+.PP
 List the record information found in the Palm Notepad (Palm OS4
 and later) application.
-.SS READ-PALMPIX
+.SS 
+read-palmpix
+.PP
 Convert all pictures in the files given or found on a Palm
 handheld.
-.SS READ-SCREENSHOT
+.SS 
+read-screenshot
+.PP
 Read screenshots from Palm (ScreenShotDB).
-.SS READ-TODOS
+.SS 
+read-todos
+.PP
 Syncronize your Palm ToDo application's database with your
 desktop machine.
-.SS READ-VEO
+.SS 
+read-veo
+.PP
 Synchronize your Veo Traveler databases 
-.SS REMINDERS
+.SS 
+reminders
+.PP
 Exports your Palm Datebook database into a 'remind' data file
 format. 
 .SH TOOLS
-.SS DEBUGSH
+.SS 
+debugsh
+.PP
 Simple debugging console for a Palm Handheld device
 (deprecated).
-.SS DLPSH
-An interactive Desktop Link Protocol (DLP) Shell for your Palm
-device. This is very useful for debugging potential problems with 
-your serial port. Query the RAM/ROM, list databases, change your
-UserID or Username, and many other useful functions. This is the
-"Swiss Army Knife" of any of pilot-link's tools.
-.SS PI-CSD
+.SS 
+dlpsh
+.PP
+An interactive Desktop Link Protocol (DLP) Shell for your Palm device. This is very
+useful for debugging potential problems with your Palm's connection. You can also Query
+the RAM/ROM, list databases, change your UserID or Username, set the time, and many
+other useful functions. The DLP Shell is the "Swiss Army Knife" of any of pilot-link's
+tools.
+.SS 
+pi-csd
+.PP
 Connection Service Daemon for Palm Devices
-.SS PI-GETRAM
+.SS 
+pi-getram
+.PP
 Retrieves the RAM image from your Palm device for use in
 debugging.
-.SS PI-GETROM
+.SS 
+pi-getrom
+.PP
 Retrieves the ROM image from your Palm device for use in
 debugging. 
-.SS PI-GETROMTOKEN
+.SS 
+pi-getromtoken
+.PP
 Reads a ROM token from a Palm Handheld device. 
-.SS PI-NREDIR
+.SS 
+pi-nredir
+.PP
 Accept connection and redirect via Network Hotsync Protocol. 
 .SH "PERL SCRIPTS"
 (Available from the source code, not always installed from
 packages).
-.SS IETF2DATEBOOK.PL
+.SS 
+ietf2datebook.PL
+.PP
 Converts IETF agenda format to install-datebook format 
-.SS PILOT-UNDELETE.PL
+.SS 
+pilot-undelete.PL
+.PP
 Turn previously archived records into normal (non-archived)
 records by resetting the "dirty" bit.
-.SS SYNC-PLAN.PL
+.SS 
+sync-plan.PL
+.PP
 completely synchronize the Palm datebook with the "plan"
 calendar via
 netplan, including authenticating
@@ -163,11 +243,17 @@ Some of these programs are not intended for general end-users. More
 detailed documentation on their usage can be obtained by reading the
 source of
 the application itself.
-.SS CCEXAMPLE
+.SS 
+ccexample
+.PP
 test program demonstrating C++ interface.
-.SS IAMBICEXAMPLE
+.SS 
+iambicexample
+.PP
 test program demonstrating C++ interface.
-.SS VALIDATE
+.SS 
+validate
+.PP
 experimental program to test C++ features.
 .SH OBTAINING
 The most current version of the pilot-link suite of tools can be
