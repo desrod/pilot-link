@@ -31,17 +31,20 @@
 #include "pi-hinote.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
 static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 
 struct option options[] = {
-	{"help",        no_argument,       NULL, 'h'},
 	{"port",        required_argument, NULL, 'p'},
+	{"help",        no_argument,       NULL, 'h'},
+        {"version",     no_argument,       NULL, 'v'},
 	{"category",    required_argument, NULL, 'c'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hp:c:";
-
+static const char *optstring = "p:hvc:";
 
 static void display_help(char *progname)
 {

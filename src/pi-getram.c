@@ -35,27 +35,32 @@
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 int cancel = 0;
 
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{"copilot",     no_argument,       NULL, 'c'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:c";
+static const char *optstring = "p:hvc";
 
 static void display_help(char *progname)
 {
 	printf("   Retrieves the RAM image from your Palm device\n\n");
 	printf("   Usage: %s -p <port> [--copilot] [pilot.ram]\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -c, --copilot     Use to indicate the RAM file will be used with Copilot\n");
-	printf("     -h, --help        Display this information\n\n");
-	printf("     -v, --version     Display this information\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -c, --copilot           RAM file defined to be used with Copilot\n\n");
 	printf("   Only the port option is required, the other options are... optional.\n\n");
 	printf("   Examples: %s -p /dev/pilot myram\n", progname);
 	printf("             %s -p /dev/pilot --copilot\n\n", progname);
@@ -102,7 +107,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;
@@ -117,7 +122,7 @@ int main(int argc, char *argv[])
 	else
 		filename = NULL;
 
-        printf("\tWarning: Please completely back up your Palm (with pilot-xfer -b)\n"
+	printf("\tWarning: Please completely back up your Palm (with pilot-xfer -b)\n"
 	       "\t         before using this program!\n\n");
 	
 	sd = pilot_connect(port);
@@ -249,7 +254,7 @@ int main(int argc, char *argv[])
 	printf("   RAM fetch complete\n");	
 	end = time(NULL);
         timespent = (end-start);
-        printf("   RAM fetched in: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
+	printf("   RAM fetched in: %d:%02d:%02d\n",timespent/3600, (timespent/60)%60, timespent%60);
 
 
 

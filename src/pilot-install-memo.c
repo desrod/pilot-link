@@ -31,21 +31,24 @@
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-memo.h"
+#include "pi-header.h"
 
 /* Declare prototypes */
-int usage(char *progname);
-
-static const char *optstring = "c:p:rthv";
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 
 struct option options[] = {
+	{"port"   ,     required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port"   ,     required_argument, NULL, 'p'},
 	{"category",    required_argument, NULL, 'c'},
 	{"replace",     no_argument,       NULL, 'r'},
 	{"title",       no_argument,       NULL, 't'},
 	{NULL,          0,                 NULL, 0}
 };
+
+static const char *optstring = "p:hvc:rt";
 
 static void display_help(char *progname)
 {
@@ -99,7 +102,9 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			break;
 			exit(0);
-		
+		case 'v':
+			display_splash(progname);
+			exit(0);
 		}
 	}
 		

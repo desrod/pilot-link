@@ -41,7 +41,7 @@ perl-build: Perl/Makefile
 	cd Perl && $(MAKE)
 
 perl-install: perl-build
-	cd Perl && $(MAKE) install PREFIX=$(DESTDIR)$(prefix)
+	cd Perl && $(MAKE) install PREFIX=$(PREFIX)
 
 perl-uninstall: Perl/Makefile
 	cd Perl && $(MAKE) uninstall

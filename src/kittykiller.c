@@ -1,5 +1,5 @@
 /* 
- * kittykiller.c - Kill the Hotsync Manager
+ * kittykiller.c - Kill the HotSync Manager
  *
  * Copyright (c) 1999, Tilo Christ
  *

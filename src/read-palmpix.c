@@ -44,8 +44,12 @@
 #endif
 #endif
 
-
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 const char *progname;
+int protect_files(char *name, char *extension);
 
 void write_png (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
 void write_ppm (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
@@ -54,28 +58,29 @@ void init_for_ppm (struct PalmPixState *state);
 void read_db (struct PalmPixState *state, int n, int (*action) (const struct PalmPixHeader *, struct PalmPixState *, int, const char *), const char *action_arg);
 
 struct option options[] = {
-	{"name",	required_argument, NULL, 'n'},
-	{"list",	no_argument, NULL, 'l'},
-	{"help",	no_argument, NULL, 'h'},     
-	{"type",        required_argument, NULL, 't'},
-	{"version",	no_argument, NULL, 'v'},    
-	{NULL,		no_argument, NULL, 0}
+	{"port", 	required_argument,  NULL, 'p'},
+	{"help", 	no_argument,        NULL, 'h'},
+	{"version", 	no_argument,        NULL, 'v'},
+	{"name",	required_argument,  NULL, 'n'},
+	{"list",	no_argument,        NULL, 'l'},
+	{"type",        required_argument,  NULL, 't'},
+	{NULL,		no_argument,        NULL, 0}
 };
 
-static const char optstring[] = "ln:p:hvt:";
+static const char optstring[] = "p:hvln:t:";
 
 static void display_help(char *progname) 
 {
-        printf("   Convert all pictures in the files given, or found via connecting to a\n");
-        printf("   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");
-        printf("   Usage: %s [-p port] [-l | -n pixname] [file]...\n", progname);
-        printf("   Options:\n");
-        printf("     -p <port>    Use device file <port> to communicate with Palm\n");
-        printf("     -h           Display this information\n");
-        printf("     --type, -t   specify picture output type\n");
-        printf("                  either \"ppm\" or \"png\"\n");
-        printf("     --list, -l   List picture information instead of converting\n");
-        printf("     -n [name]    Convert only <pixname>, and output to stdout as type\n\n");
+	printf("   Convert all pictures in the files given, or found via connecting to a\n");
+	printf("   Palm handheld if no files are given, writing each to <pixname>.ppm\n\n");
+	printf("   Usage: %s [-p port] [-l | -n pixname] [file]...\n\n", progname);
+	printf("   Options:\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -t, --type,             Specify picture output type (ppm or png)\n");
+	printf("     -l, --list,             List picture information instead of converting\n");
+	printf("     -n, --name [name]       Convert only <name>, and output to STDOUT as type\n\n");
 	
 	exit(0);
 }
@@ -430,7 +435,7 @@ int
 	   break;
 
 	 case 'v':
-	   print_splash(progname);
+	   display_splash(progname);
 	   return EXIT_SUCCESS;
 	     
 	 default:

@@ -34,30 +34,33 @@
 #include "pi-dlp.h"
 #include "pi-datebook.h"
 
-extern time_t parsedate(char *p);
+/* Declare prototypes */
 static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+extern time_t parsedate(char *p);
 
 struct option options[] = {
+        {"port",        required_argument, NULL, 'p'},
         {"help",        no_argument,       NULL, 'h'},
         {"version",     no_argument,       NULL, 'v'},
-        {"port",        required_argument, NULL, 'p'},
         {"read",        required_argument, NULL, 'r'},
         {0,             0,                 0,    0}
 };
 
-static const char *optstring = "hvp:r:";
+static const char *optstring = "p:hvr:";
 
 static void display_help(char *progname)
 {
-        printf("   Installs new Datebook entries onto your Palm handheld device\n\n");
-        printf("   Usage: %s -p <port> -r [file]\n\n", progname);
-        printf("   Options:\n");
-        printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-        printf("     -h --help         Display this information\n");
-        printf("     -v --version      Display version information\n");
-        printf("     -r [file]	       Read entries from file\n\n");
-        printf("   Examples: \n");
-        printf("      %s -p /dev/pilot -r db.txt\n\n", progname);
+	printf("   Installs new Datebook entries onto your Palm handheld device\n\n");
+	printf("   Usage: %s -p <port> -r [file]\n\n", progname);
+	printf("   Options:\n");
+	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
+	printf("     -h --help         Display this information\n");
+	printf("     -v --version      Display version information\n");
+	printf("     -r [file]	       Read entries from file\n\n");
+	printf("   Examples: \n");
+	printf("      %s -p /dev/pilot -r db.txt\n\n", progname);
 
         exit(0);
 }
@@ -69,7 +72,6 @@ int main(int argc, char *argv[])
 		db,	
 		fieldno,
 		filelen,
-		index,
 		sd		= -1;
 	
 	char 	*progname	= argv[0],
@@ -93,7 +95,7 @@ int main(int argc, char *argv[])
                         display_help(progname);
                         exit(0);
                 case 'v':
-                        print_splash(progname);
+                        display_splash(progname);
                         exit(0);
                 case 'p':
                         port = optarg;
@@ -237,8 +239,8 @@ int main(int argc, char *argv[])
 					     Appointment_buf,
 					     sizeof
 					     (Appointment_buf));
-			printf("Description: %s, %s, %s\n",
-				appointment.description);
+			printf("Description: %s, %s\n",
+				appointment.description, appointment.note);
 
 			dlp_WriteRecord(sd, db, 0, 0, 0,
 					Appointment_buf,

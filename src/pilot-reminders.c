@@ -30,16 +30,19 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
 static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:";
+static const char *optstring = "p:hv";
 
 char 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
 	*Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", 
@@ -47,19 +50,19 @@ char 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
 
 static void display_help(char *progname)
 {
-	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n");
-	printf("   Please see http://www.roaringpenguin.com/remind.html for more\n");
-	printf("   information on the Remind Calendar Program.\n\n");
-	printf("   Usage: %s -p <port>\n", progname);
+	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n\n");
+	printf("   Usage: %s -p <port>\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help        Display this information\n");
-	printf("     -v, --version     Display version information\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n\n", progname);
 	printf("   Examples:\n");
 	printf("     %s -p /dev/pilot   # Exports to STDOUT\n", progname);
 	printf("     %s -p /dev/pilot > ~/Palm/remind.file\n\n", progname);
 	printf("   Your Datebook database will be written to STDOUT as it is converted\n");
 	printf("   unless redirected to a file.\n\n");
+	printf("   Please see http://www.roaringpenguin.com/remind.html for more\n");
+	printf("   information on the Remind Calendar Program.\n\n");
 	
 	exit(0);
 }
@@ -81,7 +84,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;

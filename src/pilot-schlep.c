@@ -35,18 +35,21 @@
 #include "pi-header.h"
 
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{"install",     required_argument, NULL, 'i'},
 	{"fetch",       required_argument, NULL, 'f'},
 	{"delete",      no_argument,       NULL, 'd'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:i:f:d";
+static const char *optstring = "p:hvi:f:d";
 
 /* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 static int Fetch(int sd, char *filename) 
@@ -145,24 +148,28 @@ static int Delete(int sd)
 static void display_help(char *progname)
 {
 	printf("   Package up any arbitrary file and sync it to your Palm device\n\n");
-	printf("   Usage: %s -p <port> [options]\n", progname);
+	printf("   Usage: %s -p <port> [options]\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
-	printf("     -i < filename  Pack up and install the arbitrary file to your Palm\n");
-	printf("     -f > filename  Unpack the arbitrary file from your Palm device\n");
-	printf("     -d             Delete the packaged 'Schlep' file from your Palm device\n");
-	printf("     -h             Display this information\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -i, --install < file    Pack and install the file to your Palm\n");
+	printf("     -f, --fetch > file      Unpack the file from your Palm device\n");
+	printf("     -d, --delete            Delete the packaged file from your Palm device\n\n");
 	printf("   Examples:\n");
-	printf("   To package up and store a file for later retrieval on your Palm:\n");
+	printf("     To package up and store a file for later retrieval on your Palm:\n");
 	printf("             %s -p /dev/pilot -i InstallThis.zip\n\n", progname);
-	printf("   To unpack a file that has been stored on your Palm device with %s:\n", progname);
+	printf("     To unpack a file that has been stored on your Palm with %s:\n", progname);
 	printf("             %s -p /dev/pilot -f RetrieveThis.pdf\n\n", progname);
 	printf("   Please notice that you must use redirection to Install or Fetch files\n");
-	printf("   using %s. Currently the stored name and file type is not\n", progname);    
-	printf("   queried so you can potentially Install a PDF file, and retrieve it as a\n");
-	printf("   ZIP file.  You must take care to remember what type of file you are\n");
-	printf("   installing and fetching. This will be updated in a later release to\n");
-	printf("   handle this type of capability, as well as handle multiple 'Schlep' files.\n\n");
+	printf("   using %s.\n\n", progname);
+
+	printf("   Currently the stored name and file type is not queried so you can\n");
+	printf("   potentially Install a PDF file, and retrieve it as a ZIP file.\n\n");
+
+	printf("   You must take care to remember what type of file you are installing and\n");
+	printf("   fetching. This will be updated in a later release to handle this type of\n");
+	printf("   capability, as well as handle multiple 'Schlep' files.\n\n");
 
 	exit(0);
 }
@@ -187,7 +194,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			exit(0);
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			exit(0);
 		case 'p':
 			port = optarg;

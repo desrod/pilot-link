@@ -44,9 +44,13 @@
 #endif
 #endif
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 char *progname;
 
-static void display_help(char *progname);
+int protect_files(char *name, char *extension);
 void write_ppm( FILE *f, struct NotePad *n );
 void output_picture( int type, struct NotePad n );
 void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category );
@@ -68,15 +72,16 @@ static const char *optstring = "hvp:lt:";
 
 static void display_help(char *progname)
 {
-	printf("   Syncronize your NotePad database with your desktop or server machine\n");
+	printf("   Syncronize your NotePad database with your desktop or server machine\n\n");
 	printf("   Usage: %s -p /dev/pilot [options]\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
-	printf("     -l             List Notes on device\n");
-	printf("     -t             specify picture output type\n");
-	printf("                    either \"ppm\" or \"png\"\n");
-	printf("     -h             Display this information\n\n");
-	printf("   Examples: %s -p /dev/pilot\n\n", progname);
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n\n", progname);
+	printf("     -l                      List Notes on device\n");
+	printf("     -t                      Specify picture output type\n");
+	printf("                             either \"ppm\" or \"png\"\n\n");
+	printf("   Examples: %s -p /dev/pilot -l -t png\n\n", progname);
 
 	exit(0);
 }
@@ -338,7 +343,7 @@ int main(int argc, char *argv[])
 	   display_help(progname);
 	   exit(0);
 	 case 'v':
-	   print_splash(progname);
+	   display_splash(progname);
 	   return 0;
 	 case 'p':
 	   port = optarg;
@@ -400,8 +405,9 @@ int main(int argc, char *argv[])
    for (i = 0;; i++) 
      {
 	int 	attr,
-	  category,
-	  len;
+		category,
+		len;
+
 	struct 	NotePad n;
 	
 	if( sd ) 

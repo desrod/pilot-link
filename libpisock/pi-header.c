@@ -25,9 +25,9 @@
 #include <stdio.h>
 #include "pi-version.h"
 
-void print_splash(char *progname);
+void display_splash(char *progname);
 
-void print_splash(char *progname)
+void display_splash(char *progname)
 {
         char 	*patchlevel = "";
 
@@ -35,17 +35,20 @@ void print_splash(char *progname)
         patchlevel = PILOT_LINK_PATCH;
 #endif
 	printf("   .--------------------------------------------.\n"
-	       "   | (c) Copyright 1996-2001, pilot-link team   |\n"
+	       "   | (c) Copyright 1996-2003, pilot-link team   |\n"
 	       "   |   Join the pilot-link lists to help out.   |\n"
 	       "   `--------------------------------------------'\n"
-	       "   This is %s from pilot-link version %d.%d.%d%s\n"
-	       "   Build date: %s %s\n\n", progname, PILOT_LINK_VERSION, 
-	       PILOT_LINK_MAJOR, PILOT_LINK_MINOR, patchlevel, __DATE__,
-	       __TIME__);
+	       "   This is %s, from pilot-link version %d.%d.%d%s\n\n"
+	       "   Build target..: %s\n"
+	       "   Build date....: %s %s\n\n", progname, 
+		PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, 
+		patchlevel, HOST_OS, __DATE__, __TIME__);
+
 	printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",
                 PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
                 patchlevel);
-	printf("   See the file COPYING under the docs dir for more info.\n\n"
+
+	printf("   See the file COPYING under docs for more info.\n\n"
 	       "   Please use -h for more detailed options.\n");
 
 }

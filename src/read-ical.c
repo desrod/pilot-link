@@ -36,9 +36,9 @@
 static void display_help(char *progname);
 
 struct option options[] = {
+	{"port", 	required_argument,  NULL, 'p'},
 	{"help", 	no_argument,        NULL, 'h'},
 	{"version", 	no_argument,        NULL, 'v'},
-	{"port", 	required_argument,  NULL, 'p'},
 	{"datebook", 	no_argument,        NULL, 'd'},
 	{"pubtext", 	no_argument,        NULL, 't'},
 	{"file",	required_argument,  NULL, 'f'},
@@ -46,9 +46,12 @@ struct option options[] = {
 };
 
 /* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 char *tclquote(char *in);
 
-static const char *optstring = "hvp:dt:f:";
+static const char *optstring = "p:hvdt:f:";
 
 char *tclquote(char *in)
 {
@@ -99,16 +102,16 @@ char *tclquote(char *in)
 static void display_help(char *progname)
 {
 	printf("   Dumps the DatebookDB and/or ToDo applications to ical format\n\n");
-	printf("   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n", progname);
+	printf("   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n\n", progname);
 	printf("   Options:\n");
-	printf("   Note: calfile will be overwritten!\n");
-	printf("   -p <port> Use device file <port> to communicate with Palm\n");
-	printf("   -d             Datebook only, no ToDos\n");
-	printf("   -t pubtext     Replace text of items not starting with a bullet\n");
-	printf("                  with pubtext\n");
-	printf("   -f filename    Write the ical formatted file to this filename\n");
-	printf("   -h             Display this information\n");
-	printf("   -v             Display version information\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -d, --datebook          Datebook only, no ToDos\n");
+	printf("     -t, --pubtext <pubtext> Replace text of items not started with a bullet\n");
+	printf("                             with pubtext\n");
+	printf("     -f, --file <filename>   Write the ical formatted file to this filename\n\n");
+	printf("   Note: calfile will be overwritten!\n\n");
 
 	exit(0);
 }
@@ -138,7 +141,7 @@ int main(int argc, char *argv[])
 			  display_help(progname);
 			  exit(0);
 		  case 'v':
-			  print_splash(progname);
+			  display_splash(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;

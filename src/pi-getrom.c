@@ -37,25 +37,30 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 int cancel = 0;
 
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:";
+static const char *optstring = "p:hv";
 
 static void display_help(char *progname)
 {
 	printf("   Retrieves the ROM image from your Palm device\n\n");
 	printf("   Usage: %s -p <port> [--copilot] [pilot.rom]\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help        Display this information\n\n");
-	printf("     -v, --version     Display this information\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n"); 
+	printf("     -h, --help              Display help information for %s\n", progname);   
+	printf("     -v, --version           Display %s version information\n\n", progname);  
 	printf("   Only the port option is required, the other options are... optional.\n\n");
 	printf("   Examples: %s -p /dev/pilot myrom\n\n", progname);
 }
@@ -102,7 +107,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;

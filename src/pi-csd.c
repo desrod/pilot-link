@@ -46,6 +46,11 @@
 #include "pi-slp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
@@ -295,7 +300,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			return 0;
 		case 'H':
 			strcpy(hostname, optarg);

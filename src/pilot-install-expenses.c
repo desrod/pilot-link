@@ -27,24 +27,28 @@
 #include "pi-dlp.h"
 #include "pi-expense.h"
 
+/* Declare prototypes */
 static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
-	{"help",        no_argument,       NULL, 'h'},
 	{"port",        required_argument, NULL, 'p'},
-	{"ttype",       required_argument, NULL, 't'},
-	{"who",         required_argument, NULL, 'w'},
+	{"help",        no_argument,       NULL, 'h'},
+        {"version",     no_argument,       NULL, 'v'},
+	{"ptype",       required_argument, NULL, 't'},
 	{"etype",       required_argument, NULL, 'e'},
 	{"amount",      required_argument, NULL, 'a'},
-	{"vendor",      required_argument, NULL, 'v'},
+	{"vendor",      required_argument, NULL, 'V'},
 	{"city",        required_argument, NULL, 'i'},
+	{"guests",	required_argument, NULL, 'g'},
 	{"note",        required_argument, NULL, 'n'},
+	{"category",    required_argument, NULL, 'c'},
+        {"replace",     required_argument, NULL, 'r'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
-static const char *optstring = "hp:t:w:e:a:v:i:n:c:qrt";
+static const char *optstring = "p:hvt:w:e:a:V:i:g:n:c:rt";
 
 char *paymentTypes[] = 
 {
@@ -95,17 +99,24 @@ char *expenseTypes[] =
 
 static void display_help(char *progname)
 {
-	printf("Usage: %s [-qrt] [-c category] -p <port> file [file] ...\n",
-		progname);
-	printf("       -q = do not prompt for HotSync button press\n");
-	printf("       -t = payment type\n");
-	printf("       -e = expense type\n");
-	printf("       -a = payment amount\n");
-	printf("       -v = vendor\n");
-	printf("       -g = attendees\n");
-	printf("       -l = city\n");
-	printf("       -n = note\n");
-	
+	printf("   Install Expense application entries to your Palm device\n\n");
+	printf("   Usage: %s [-qrt] [-c category] -p <port> file [file] ...\n", progname);
+	printf("   Options:\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname); 
+	printf("     -v, --version           Display %s version information\n", progname);  
+	printf("     -t, --ttype <ptype>     Payment type (Cash, Check, etc.)\n");
+	printf("     -e, --etype <etype>     Expense type (Airfare, Hotel, etc.)\n");
+	printf("     -a, --amount [amount]   Payment amount\n");
+	printf("     -V, --vendor [vendor]   Expense vendor name (Joe's Restaurant)\n");
+	printf("     -g, --guests <guests>   Nuber of guests for this expense entry\n");
+	printf("     -i, --city [city]       Location/city for this expense entry\n");
+	printf("     -n, --note [note]       Notes for this expense entry\n");
+	printf("     -c, --category <cat>    Install entry into this category\n\n");
+	printf("     -r, --replace <cat>     Replace entry in this category\n\n");
+	printf("   Example:\n");
+	printf("     %s -p /dev/pilot -c Unfiled -t Cash -e Meals -a 10.00 -V McDonalds \n");
+	printf("                      -g 21 -l \"San Francisco\" -N \"This is a note\"\n\n", progname);
 	exit(0);
 }
 
@@ -117,7 +128,6 @@ int main(int argc, char *argv[])
 		l,
 		category,
 		c,		/* switch */
-		quiet, 
 		replace_category, 
 		add_title;
 	
@@ -131,11 +141,11 @@ int main(int argc, char *argv[])
 	struct 	ExpenseAppInfo mai;
 	struct 	Expense theExpense;
 
-	quiet = replace_category = add_title = 0;
-
-
-	while ((c = getopt(argc, argv, optstring)) != -1)
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
+                case 'h':
+                        display_help(progname);
+                        exit(0);
 		case 'e':
 			theExpense.type = etBus;
 			for (i = 0; expenseTypes[i] != NULL; i++)
@@ -164,10 +174,10 @@ int main(int argc, char *argv[])
 		case 'a':
 			theExpense.amount = optarg;
 			break;
-		case 'v':
+		case 'V':
 			theExpense.vendor = optarg;
 			break;
-		case 'l':
+		case 'i':
 			theExpense.city = optarg;
 			break;
 		case 'n':
@@ -177,42 +187,25 @@ int main(int argc, char *argv[])
 			category_name = optarg;
 			break;
 		case 'p':
-			/* optarg is name of port to use instead of
-			   $PILOTPORT or /dev/pilot */
-			strcpy(addr.pi_device, optarg);
-			break;
-		case 'q':
-			quiet++;
+			port = optarg;
 			break;
 		case 'r':
 			replace_category++;
 			break;
+                case 'v':
+                        display_splash(progname);
+                        exit(0);
 		}
+	}
 
 	argc -= optind;
 	argv += optind;
-
-	if (argc < 1) {
-		fprintf(stderr, "%s: insufficient number of arguments\n",
-			progname);
-		display_help(progname);
-	}
 
 	if (replace_category && !category_name) {
 		fprintf(stderr,
 			"%s: expense category required when specifying replace\n",
 			progname);
 		display_help(progname);
-	}
-
-	if (!quiet)
-		printf
-		    ("Please insert Palm in cradle on %s and press HotSync button.\n",
-		     addr.pi_device);
-
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-		perror("pi_socket");
-		exit(1);
 	}
 
 	sd = pilot_connect(port);
@@ -292,15 +285,14 @@ int main(int argc, char *argv[])
 	dlp_CloseDB(sd, db);
 
 	/* Tell the user who it is, with a different PC id. */
-	User.lastSyncPC = 0x00010000;
+	User.lastSyncPC 	= 0x00010000;
 	User.successfulSyncDate = time(NULL);
-	User.lastSyncDate = User.successfulSyncDate;
+	User.lastSyncDate 	= User.successfulSyncDate;
 	dlp_WriteUserInfo(sd, &User);
 
 	dlp_AddSyncLogEntry(sd, "Wrote memo(s) to Palm.\n");
 
 	/* All of the following code is now unnecessary, but harmless */
-
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
 

@@ -32,6 +32,11 @@
 #include "pi-dlp.h"
 #include "pi-file.h"
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
@@ -40,7 +45,7 @@ struct option options[] = {
 	{"sortinfo",    no_argument,       NULL, 's'},
 	{"list",        no_argument,       NULL, 'l'},
 	{"record",      required_argument, NULL, 'r'},
-	{"record-res",  required_argument, NULL, 'R'},
+	{"dump-rec",    required_argument, NULL, 'R'},
 	{"dump",        no_argument,       NULL, 'd'},
 	{"dump-res",    no_argument,       NULL, 'D'},
 	{NULL,          0,                 NULL, 0}
@@ -379,18 +384,18 @@ static void dump_record(struct pi_file *pf, struct DBInfo *ip, char *rkey, int f
 static void display_help(char *progname)
 {
 	printf("   Dump application and header information from your local PRC/PDB files\n\n");
-	printf("   Usage: %s [options] file\n", progname);
+	printf("   Usage: %s [options] file\n\n", progname);
 	printf("   Options:\n");
-	printf("     -H --header       Dump the header of the database(s)\n");
-	printf("     -a --appinfo      Dump app_info segment of the database(s)\n");
-	printf("     -s --sortinfo     Dump sort_info block of database(s)\n");
-	printf("     -l                List all records in the database(s)\n");
-	printf("     -r <num>          Dump a record (<num> is an index, or eg 'code0' or a uid '1234')\n");
-	printf("     -R <num>          As above but also dump resources to files\n");
-	printf("     -d --dump         Dump all data and all records, very verbose\n");
-	printf("     -D --dump-res     As above but also dump resources to files\n");
-	printf("     -h --help         Display this information\n");
-	printf("     -v, --version     Display version information\n\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -H --header             Dump the header of the database(s)\n");
+	printf("     -a --appinfo            Dump app_info segment of the database(s)\n");
+	printf("     -s --sortinfo           Dump sort_info block of database(s)\n");
+	printf("     -l, --list              List all records in the database(s)\n");
+	printf("     -r, --record <num>      Dump a record by index ('code0') or uid ('1234')\n");
+	printf("     -R, --dump-rec <num>    Same as above but also dump records to files\n");
+	printf("     -d, --dump              Dump all data and all records, very verbose\n");
+	printf("     -D, --dump-res          Same as above but also dump resources to files\n\n");
 	printf("        Examples: %s -l Foo.prc\n", progname);
 	printf("                  %s -H -a Bar.pdb\n\n", progname);
 
@@ -420,7 +425,7 @@ int main(int argc, char **argv)
 			display_help(progname);
 			exit(0);
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			exit(0);
 		case 'H':
 			hflag = 1;

@@ -1,4 +1,40 @@
 --------------------------------------------------------------------------
+pilot-link 0.11.6, "Torrent of Lucidity", 12-XX-2002
+--------------------------------------------------------------------------
+A few bugs squashed in this one, improved stability, two new conduits,
+manpages, docs, more..
+
+Major Features:
+        * None at this time
+
+Other Features:
+        * New install-todo conduit (Robert A. Kaplan)
+	* New install-expenses conduit
+	* Cleaned up pilot_connect() to report better error conditions, and
+	  propose possible solutions to solving them for general users
+	* Added HOST_OS detection and linked into each conduit, to assist
+	  debugging
+
+Bug Fixes:
+        * Fix for failures on usb:// notation use
+        * Fix for missing pi_close() elements
+        * Fix for installing files larger than available space on device
+	* Fix for autoconf 2.1x and 2.5x compatibility
+	* Fix for TCL version detection in pilot-debug
+	* Fix for CreatorID output in dlpsh
+	* Fix to allow gcc 3.2  builds
+	* Fix for pilot_connect() that was losing the client socket
+
+Known Problems:
+	* FreeBSD hangs on USB synchronization (this may not be a pilot-link
+	  bug, as serial, IR works using the same code structures)
+        * Java bindings missing manifest
+        * snprintf() calls fail on Irix 6.4 systems   
+        * Improper getopt_long propagation on Irix 6.4
+        * autoconf/automake 2.5x problems on AIX
+
+
+--------------------------------------------------------------------------
 pilot-link 0.11.5, "Insomnia", 09-28-2002
 --------------------------------------------------------------------------
 Just minor bugs, closing up a few BSD and zoning in on some BSD and Irix
@@ -23,7 +59,7 @@ Known Problems:
 
 --------------------------------------------------------------------------
 pilot-link 0.11.4, "Alzheimer Release", 09-16-2002
---------------------------------------------------------------------------
+-------------------------------------------------------------------------
 Some major bugs have been fixed in this release, which now supercedes all
 previous releases in the 0.11.x series.
 

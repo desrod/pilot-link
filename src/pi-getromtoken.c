@@ -36,25 +36,30 @@
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
 	{"token",       required_argument, NULL, 't'},
-	{"port",        required_argument, NULL, 'p'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:u:i:t:";
+static const char *optstring = "p:hvu:i:t:";
 
 static void display_help(char *progname)
 {
 	printf("   Reads a ROM token from a Palm Handheld device\n\n");
 	printf("   Usage: %s -p <port> -t <romtoken>\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -t <token>        A ROM token to read (i.e. snum)\n");
-	printf("     -h, --help        Display this information\n");
-	printf("     -v, --version     Display version information\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -t <token>              A ROM token to read (i.e. snum)\n\n");
 	printf("   Example: %s -p /dev/pilot -t snum\n\n", progname);
 	printf("   Other tokens you may currently extract are:\n");
 	printf("       adcc:  Entropy for internal A->D convertor calibration\n");
@@ -86,7 +91,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;

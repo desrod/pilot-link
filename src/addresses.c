@@ -33,16 +33,19 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
 static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:";
+static const char *optstring = "p:hv";
 
 static void display_help(char *progname)
 {
@@ -81,7 +84,7 @@ int main(int argc, char *argv[])
                           display_help(progname);
                           exit(0);
                   case 'v':
-                          print_splash(progname);
+                          display_splash(progname);
                           exit(0);
                   case 'p':
                           port = optarg;

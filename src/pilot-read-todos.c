@@ -31,25 +31,30 @@
 #include "pi-file.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
 static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
 
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{"file",        required_argument, NULL, 'f'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:f:";
+static const char *optstring = "p:hvf:";
 
 static void display_help(char *progname)
 {
-	printf("   Syncronize your ToDo database with your desktop or server machine\n");
-	printf("   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n", progname);
-	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
-	printf("     -f <filename>  Save ToDO entries in <filename> instead of writing to STDOUT\n");
-	printf("     -h             Display this information\n\n");
+	printf("   Syncronize your ToDo database with your desktop or server machine\n\n");
+	printf("   Usage: %s -p <port> [options]\n\n", progname);
+	printf("   Options:\n", progname);
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname); 
+	printf("     -v, --version           Display %s version information\n", progname);  
+	printf("     -f, --file <filename>   Save ToDO entries in <filename> instead of STDOUT\n\n");
 	printf("   Examples: %s -p /dev/pilot -d ~/Palm\n\n", progname);
 	printf("   By default, the contents of your Palm's memo database will be written to\n");
 	printf("   standard output as a standard Unix mailbox (mbox-format) file, with each\n");
@@ -80,7 +85,7 @@ int main(int argc, char *argv[])
 			  display_help(progname);
 			  exit(0);
                   case 'v':
-			  print_splash(progname);
+			  display_splash(progname);
 			  return 0;
 		  case 'p':
 			  port = optarg;

@@ -29,16 +29,21 @@
 #include "pi-dlp.h"
 #include "pi-header.h"
 
+/* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{"get",         no_argument,       NULL, 'g'},
 	{"set",         no_argument,       NULL, 's'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:gs";
+static const char *optstring = "p:hvgs";
 
 static void *GetClip(int socket, int type, int *length)
 {
@@ -125,14 +130,14 @@ static int SetClip(int socket, int type, void *data, int length)
 
 static void display_help(char *progname)
 {
-	printf("   Get the clipboard contents to stdout or set the clipboard contents from stdin\n\n");
-	printf("   Usage: %s -p <port> -g | -s <value>\n", progname);
+	printf("   Get or Set the Palm Clipboard contents from STDOUT/STDIN\n\n");
+	printf("   Usage: %s -p <port> -g | -s <value>\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>         Use device file <port> to communicate with Palm\n");
-	printf("     -g --get          Get the contents of the clipboard\n");
-	printf("     -s <value>        Set the value <value> in the clipboard\n");
-	printf("     -h --help         Display this information\n");
-	printf("     -v --version      Display version information\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -g, --get               Get the contents of the clipboard\n");
+	printf("     -s, --set <value>       Set the value <value> in the clipboard\n\n");
 	printf("   Examples: %s -p /dev/pilot -g\n", progname);
 	printf("             %s -p /dev/pilot -s \"Put this in the clipboard\"\n\n", progname);
 
@@ -156,7 +161,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			exit(0);
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			exit(0);
 		case 'p':
 			port = optarg;

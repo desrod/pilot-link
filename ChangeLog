@@ -1,3 +1,49 @@
+2002-11-29  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/*.c: Cleaned up all of the --help, --version, getopt_long()
+	  declarations, included all of the --long options and reformatted
+	  them
+
+        * configure.in: Added CFLAGS, CXXFLAGS, exported HOST_OS
+
+        * doc/install-expenses.1: Added new manpage for install-expenses
+
+        * doc/README.usb: Minor changes to handle non-Handspring handhelds
+
+        * include/pi-version.h.in: Export HOST_OS to assist debugging
+
+        * libpisock/connect.c: Better error reporting, minor formatting
+	  changes
+
+        * libpisock/pi-file.c: pedantic cleanups
+
+        * src/dlpsh.c: Fixed CreatorID printf() confusion
+
+        * src/hinotes.c: pedantic cleanups
+
+        * src/install-expenses.c: Code cleanup, added getopt_long()
+
+        * src/install-todo.c: Added new ToDo conduit from Robert A. Kaplan,
+	  code cleanup
+
+        * src/install-todos.c: Expanded display_help() slightly
+
+        * src/Makefile.am: Added install-todo.c target
+
+        * src/memos.c: Ditto, chasing deleted memo bug (#359)
+
+        * src/pilot-debug.c: Fix for TCL version detection (again?) I need
+          testers or TCL gurus to test/validate this for me. Anyone?
+
+	* src/pilot-addresses.c: Cleaned up location of tabledelim values
+	  (silly bug!)
+
+	* src/pilot-xfer.c: Added feature to close bug #265. pilot-xfer will
+	  now check available space on the Palm before each file is
+	  installed. If the target file is larger than available space, it
+	  will be skipped. Need to clean up symantics between Install and
+	  Restore functions here.
+
 2002-11-24  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Fixed AC_INIT to allow compatibility with autoconf

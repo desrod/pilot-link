@@ -39,19 +39,20 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 void do_read(struct pi_socket *ps, int type, char *buffer, int length);
 
-static void display_help(char *progname);
-
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",	no_argument,       NULL, 'v'},
-	{"port",        required_argument, NULL, 'p'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:";
-
+static const char *optstring = "p:hv";
 
 /***********************************************************************
  *
@@ -94,11 +95,11 @@ void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 static void display_help(char *progname)
 {
 	printf("   Reads incoming remote Palm data during a Network HotSync\n\n");
-	printf("   Usage: %s -p <port>\n", progname);
+	printf("   Usage: %s -p <port>\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
-	printf("     -h             Display this information\n");
-	printf("     -v --version   Display version information\n\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname); 
+	printf("     -v, --version           Display %s version information\n\n", progname);  
 	printf("   Examples: %s -p /dev/pilot\n\n", progname);
 
 	exit(0);
@@ -126,7 +127,7 @@ int main(int argc, char *argv[])
 			  display_help(progname);
 			  exit(0);
 		  case 'v':
-			  print_splash(progname);
+			  display_splash(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;

@@ -1314,7 +1314,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	void 	*buffer;
 
 	version = pi_version(socket);
-//	printf("\n");
+	/* printf("\n"); */
 
 	/* Delete DB if it already exists */
 	dlp_DeleteDB(socket, cardno, pf->info.name);
@@ -1493,7 +1493,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 					       start_time));
 			*/
 		}
-//		printf("\n");
+		/* printf("\n"); */
 	}
 
 	if (reset)
