@@ -1,0 +1,66 @@
+.TH PI-GETROM 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+
+.SH NAME
+.B pi-getrom
+\- Retrieves the ROM image from your Palm device
+
+.SH SYNOPSIS
+.B pi-getrom
+\-p <port> [--copilot] [pilot.rom]
+
+.SH DESCRIPTION
+.B pi-getrom
+is used to fetch the ROM from your Palm handheld device for use in debugging
+Palm applications through the use of POSE, the Palm OS Emulator application
+
+.SS OPTIONS
+.TP
+.BI \-p\ \--port\  <port> ,
+Use device file
+.I port
+to communicate with the Palm handheld device. If this is not specified, will
+look for the $PILOTPORT environment variable. If both are not found, will
+fall back to /dev/pilot.
+   
+.TP
+.BI \-h\ \--help\,
+Display help synopsis for
+.B pi-getrom
+
+.TP
+.BI \-v\ \--version\,
+Display version of
+.B pi-getrom
+
+.TP
+.BI \--copilot\,
+format the ROM for use in the CoPilot application, instead of the POSE format
+
+.TP
+.BI filename
+Write the ROM to this file
+
+.SH USAGE
+Connect to a target Palm handheld device and fetch the ROM for use in
+debugging Palm applications through the use of POSE, the Palm OS Emulator or
+with CoPilot
+
+.SH LICENSING
+Warning: Please completely back up your Palm before using this program!
+
+Use of this program may place you in violation of your license agreement
+with Palm, Inc. or OEM partners. Please read your Palm handbook ("Software
+License Agreement") before running this program.
+
+
+.SH KNOWN BUGS
+.B pi-getrom 
+has no known bugs
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
+.SH AUTHOR
+.B pi-getrom
+was written by Kenneth Albanowski
