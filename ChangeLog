@@ -1,5 +1,10 @@
 2003-07-01  JP Rosevear  <jpr@ximian.com>
 
+	* Makefile.am: only install the -pp pkgconfig file if c++ is
+	enabled
+
+2003-07-01  JP Rosevear  <jpr@ximian.com>
+	
 	* configure.in: output the pkgconfig files
 
 	* Makefile.am: dist the pkgconfig files and install them
