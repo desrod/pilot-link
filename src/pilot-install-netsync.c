@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 			return 0;
 		case 'p':
 			free(port);
-			port = strdup(optarg);
+			port = priv_strdup(optarg);
 			break;
 		case 'e':
 			enable = 1;
@@ -103,15 +103,15 @@ int main(int argc, char *argv[])
 			break;
 		case 'n':
 			free(hostname);
-			hostname = strdup(optarg);
+			hostname = priv_strdup(optarg);
 			break;
 		case 'i':
 			free(address);
-			address = strdup(optarg);
+			address = priv_strdup(optarg);
 			break;
 		case 'm':
 			free(netmask);
-			netmask = strdup(optarg); 
+			netmask = priv_strdup(optarg); 
 			break;
 		default:
 			display_help(progname);
