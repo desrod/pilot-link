@@ -29,6 +29,7 @@
 #include "pi-file.h"
 #include "pi-header.h"
 #include "pi-dlp.h"
+#include "pi-socket.h"
 #include "userland.h"
 
 #define MAIN_PDB_NAME "ImageLib_mainDB.pdb"

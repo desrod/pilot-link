@@ -372,13 +372,9 @@ int main(int argc, const char **argv)
 		rflag 		= 0,
 		filedump 	= 0;
 
-	const char
-                *progname 	= argv[0];
+	char *rkey           = NULL;
 
-	char 	*name,
-		*rkey           = NULL;
-
-	char **rargv = NULL;
+	const char **rargv = NULL;
 
 	struct 	pi_file *pf;
 	struct 	DBInfo info;
@@ -434,7 +430,7 @@ int main(int argc, const char **argv)
 	}
 
 	while (*rargv) {
-		name = *rargv++;
+		const char *name = *rargv++;
 
 		if ((pf = pi_file_open(name)) == NULL) {
 			fprintf(stderr, "   ERROR: Can't open '%s' Does '%s' exist?\n\n",

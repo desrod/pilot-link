@@ -74,16 +74,16 @@ int pilot_connect(const char *port);
    Knghtbrd: In the meantime, let's fix the warnings...
 */
 
-int 	df_fn(int sd, int argc, char *argv[]),
-	reopen_fn(int sd, int argc, char *argv[]),
-	exit_fn(int sd, int argc, char *argv[]),
+int 	df_fn(int sd, int argc, const char *argv[]),
+	reopen_fn(int sd, int argc, const char *argv[]),
+	exit_fn(int sd, int argc, const char *argv[]),
 	ls_fn(int sd, int argc, const char *argv[]),
-	help_fn(int sd, int argc, char *argv[]),
-	rm_fn(int sd, int argc, char *argv[]),
-	time_fn(int sd, int argc, char *argv[]),
+	help_fn(int sd, int argc, const char *argv[]),
+	rm_fn(int sd, int argc, const char *argv[]),
+	time_fn(int sd, int argc, const char *argv[]),
 	user_fn(int sd, int argc, const char *argv[]);
 
-char 	*strtoke(char *str, char *ws, char *delim),
+char 	*strtoke(char *str, const char *ws, const char *delim),
 	*timestr(time_t t);
 
 static jmp_buf main_jmp;
@@ -91,7 +91,7 @@ static jmp_buf main_jmp;
 void exit_func(void);
 void handle_user_commands(int sd);
 
-typedef int (*cmd_fn_t) (int, int, char **);
+typedef int (*cmd_fn_t) (int, int, const char **);
 
 struct Command {
 	char *name;
@@ -123,7 +123,7 @@ struct Command command_list[] = {
  * Returns:     Nothing
  *
  ***********************************************************************/
-int df_fn(int sd, int argc, char *argv[])
+int df_fn(int sd, int argc, const char *argv[])
 {
 	struct 	CardInfo Card;
 
@@ -164,7 +164,7 @@ int df_fn(int sd, int argc, char *argv[])
  * Returns:     Nothing
  *
  ***********************************************************************/
-int help_fn(int sd, int argc, char *argv[])
+int help_fn(int sd, int argc, const char *argv[])
 {
 	printf("The current built-in commands are:\n\n");
 	printf("   user           print the currently set User information\n");
@@ -320,12 +320,12 @@ int ls_fn(int sd, int argc, const char *argv[])
  * Returns:     Nothing
  *
  ***********************************************************************/
-int rm_fn(int sd, int argc, char *argv[])
+int rm_fn(int sd, int argc, const char *argv[])
 {
 	int 	cardno,
 		ret;
 
-	char 	*name;
+	const char 	*name;
 
 
 	if (argc != 2) {
@@ -365,7 +365,7 @@ int rm_fn(int sd, int argc, char *argv[])
  * Returns:     Nothing
  *
  ***********************************************************************/
-int time_fn(int sd, int argc, char *argv[])
+int time_fn(int sd, int argc, const char *argv[])
 {
 	int 	s;
 	time_t 	ltime;
@@ -539,16 +539,17 @@ char *timestr(time_t t)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void parse_command(int sd, char *cmd)
+void parse_command(int sd, const char *cmd)
 {
 	char 	*argv[32];
 	int 	argc,
 		inc;
+	char *cmd_dup = strdup(cmd);
 
 	argc = 0;
 
 	/* Changing input? BAD BAD BAD... -DD */
-	argv[0] = strtoke(cmd, " \t\n", "\"'");
+	argv[0] = strtoke(cmd_dup, " \t\n", "\"'");
 
 	while (argv[argc] != NULL) {
 		argc++;
@@ -557,15 +558,18 @@ void parse_command(int sd, char *cmd)
 		argv[argc] = strtoke(NULL, " \t\n", "\"'");
 	}
 
-	if (argc == 0)
+	if (argc == 0) {
+		free(cmd_dup);
 		return;
+	}
 
 	for (inc = 0; command_list[inc].name != NULL; inc++) {
 		if (strcasecmp(argv[0], command_list[inc].name) == 0) {
-			command_list[inc].func(sd, argc, argv);
+			command_list[inc].func(sd, argc, (const char **)argv);
 		}
 	}
 
+	free(cmd_dup);
 	return;
 }
 
@@ -659,7 +663,7 @@ void handle_user_commands(int sd)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int exit_fn(int sd, int argc, char *argv[])
+int exit_fn(int sd, int argc, const char *argv[])
 {
 	printf("Exiting.\n");
 	dlp_AddSyncLogEntry(sd, "dlpsh, the DLP Protocol Shell ended.\n\n"
@@ -681,7 +685,7 @@ int exit_fn(int sd, int argc, char *argv[])
  * Returns:     Nothing
  *
  ***********************************************************************/
-int reopen_fn(int sd, int argc, char *argv[])
+int reopen_fn(int sd, int argc, const char *argv[])
 {
 	printf("Reopening.\n");
 	dlp_AddSyncLogEntry(sd, "dlpsh, the DLP Protocol Shell ended.\n\n"
@@ -706,10 +710,10 @@ int reopen_fn(int sd, int argc, char *argv[])
  * Returns:     Input string minus path delimiters (ala basepath)
  *
  ***********************************************************************/
-char *strtoke(char *str, char *ws, char *delim)
+char *strtoke(char *str, const char *ws, const char *delim)
 {
 	int 		inc;
-	static char 	*s,
+	static char 	*s = NULL,
 			*start;
 
 	if (str != NULL) {

@@ -44,9 +44,6 @@ int main(int argc, const char *argv[])
 		filelen,
 		sd		= -1;
 
-	const char
-                *progname	= argv[0];
-
 	char
 		*cPtr		= NULL,
 		*filename	= NULL,
