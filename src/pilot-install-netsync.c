@@ -40,7 +40,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "hvp:eH:a:n:l:";
+static const char *optstring = "hvp:en:i:m:";
 
 static void print_help(char *progname)
 {
@@ -88,13 +88,13 @@ int main(int argc, char *argv[])
 		case 'e':
 			enable = 1;
 			break;
-		case 'o':
+		case 'n':
 			hostname = optarg;
 			break;
-		case 'a':
+		case 'i':
 			address = optarg;
 			break;
-		case 'n':
+		case 'm':
 			netmask = optarg;
 			break;
 		}
