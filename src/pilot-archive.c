@@ -20,30 +20,13 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "pi-source.h"
 #include "pi-todo.h"
 #include "pi-dlp.h"
-
-/* Declare prototypes */
-static void display_help(const char *progname);
-void print_splash(const char *progname);
-int pilot_connect(const char *porg);
-
-static void display_help(const char *progname)
-{
-	printf("   Exports any records marked as \"Archived\" on your Palm to CSV format\n\n");
-	printf("   Usage: %s -p <port>\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n\n", progname);
-
-	return;
-}
+#include "userland.h"
 
 int main(int argc, const char *argv[])
 {
@@ -52,49 +35,40 @@ int main(int argc, const char *argv[])
 		i,
 		sd = -1;
 
-	const char
-                *progname 	= argv[0],
-		*port 		= NULL;
-
 	struct 	ToDoAppInfo tai;
 	pi_buffer_t *buffer;
 
 	poptContext po;
 
 	struct poptOption options[] = {
-                {"port",	'p', POPT_ARG_STRING, &port, 0,  "Use device <port> to communicate with Palm"},
-                {"help",	'h', POPT_ARG_NONE, NULL,   'h', "Display this information"},
-                {"version",	'v', POPT_ARG_NONE, NULL,   'v', "Display version information"},
-                POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+		USERLAND_RESERVED_OPTIONS
+		POPT_TABLEEND
 	};
 
 	po = poptGetContext("pilot-archive", argc, argv, options, 0);
+	poptSetOtherOptionHelp(po,"\n\n"
+	"   Exports any ToDo records marked as \"Archived\" on your Palm to CSV format\n\n");
 
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
 	while ((c = poptGetNextOpt(po)) >= 0) {
-		switch (c) {
-
-		  case 'h':
-			  display_help(progname);
-			  return 0;
-		  case 'v':
-			  print_splash(progname);
-			  return 0;
-		  default:
-			  display_help(progname);
-			  return 0;
-		}
+	}
+	if (c < -1) {
+		plu_badoption(po,c);
 	}
 
-	sd = pilot_connect(port);
+	sd = plu_connect();
 	if (sd < 0)
 		goto error;
 
 	/* Open the ToDo database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "ToDoDB", &db) < 0) {
-		puts("Unable to open ToDoDB");
+		fprintf(stderr,"   ERROR: Unable to open ToDoDB on Palm.\n");
 		dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
-		exit(EXIT_FAILURE);
+		pi_close(sd);
+		goto error;
 	}
 
 	buffer = pi_buffer_new (0xffff);
@@ -107,13 +81,11 @@ int main(int argc, const char *argv[])
 		int attr, category, len = 0;
 		struct ToDo todo;
 
-		if (port) {
-			len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0,
-				&attr, &category);
+		len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0,
+			&attr, &category);
 
-			if (len < 0)
-				break;
-		}
+		if (len < 0)
+			break;
 
 		/* Only if records are marked as "Archive to Desktop" */
 		if (attr & dlpRecAttrArchived) {
