@@ -1,3 +1,9 @@
+2004-04-16  Nicholas Piper  <nick@nickpiper.co.uk>
+
+	* libpisock/versamail.c: Handling of attachment meta-data. We
+	can't decode it yet, but we can keep the data over an unpack/pack
+	and say how many attachments there are.
+
 2004-04-15  Nicholas Piper  <nick@nickpiper.co.uk>
 
 	* libpisock/contact.c: Committing Judds work

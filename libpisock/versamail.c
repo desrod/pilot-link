@@ -39,12 +39,13 @@
 
 /*
 
-Todo: What is rfu1 and 2?
+Todo: What is unknown1 and 2?
       What is reserved 1 and 2?
       What is download ? (It's non zero, when there is more to d/l,
                           and appears to be an ID, allocated
                           by VersaMail. Maybe an index into another db?)
       How do we do attachments ? They are not kept in-line, but in another db.
+      Attachments are related to unknown3.
       Why is mark = 2, when there is no mark set, and 3 when it is?
 
 */
@@ -59,6 +60,7 @@ void free_VersaMail(struct VersaMail *a) {
   if (a->dateString) free(a->dateString);
   if (a->body) free(a->body);
   if (a->replyTo) free(a->replyTo);
+  if (a->unknown3) free(a->unknown3);
 }
 
 
@@ -108,7 +110,6 @@ void free_VersaMail(struct VersaMail *a) {
     };                                          \
   }                                             \
 
-
 #define CONVERT_TIME_T_PALM_TO_UNIX(t) (t=t-2082844800)
 #define CONVERT_TIME_T_UNIX_TO_PALM(t) (t=t+2082844800)
 
@@ -118,27 +119,40 @@ int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
   struct tm *date_tm;
   unsigned char *start = buffer;
 
+  /* 000000 - 000003 */
   a->imapuid = (unsigned long) get_long(buffer);
   SHUFFLE_BUFFER(4);
+  
 
   /* This is different to the other databases, because Palm didn't
      write VersaMail :-) */
+  /* 000004 - 000007 */
   date_t = (time_t) get_long(buffer);
   CONVERT_TIME_T_PALM_TO_UNIX(date_t);
   date_tm = localtime(&date_t);
   memcpy(&(a->date), date_tm, sizeof(struct tm));
   SHUFFLE_BUFFER(4);
 
+  /* 000008 - 000009 */
   GET_SHORT_INTO(a->category);
+
+  /* 00000A - 00000B */  
   GET_SHORT_INTO(a->accountNo);
-  GET_SHORT_INTO(a->rfu1);
+
+  /* 00000C - 00000D */  
+  GET_SHORT_INTO(a->unknown1);
+  /* 00000E - 00000E */  
   GET_BYTE_INTO(a->download);
+  /* 00000F - 00000F */  
+  GET_BYTE_INTO(a->mark);
+  /* of the above, bit 0 is mark, apparently bit 4 is header-only flag,
+     and it looks like bit 1 is always set, which gives a normal
+     value of 2 */
 
-  a->mark = (get_byte(buffer));
-  SHUFFLE_BUFFER(1);
+  /* 000010 - 000011 */  
+  GET_SHORT_INTO(a->unknown2);
 
-  GET_SHORT_INTO(a->rfu2);
-
+  /* 000012 - 000013 */  
   a->reserved1 = (get_byte(buffer  )     );
   a->reserved2 = (get_byte(buffer+1) >> 1);
   a->read      = (get_byte(buffer+1) && 1);
@@ -154,6 +168,7 @@ int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
      be able to calculate if there is more or not, exactly.
   */
 
+  /* 000014 - 000017 */  
   a->msgSize = get_long(buffer);
   SHUFFLE_BUFFER(4);
 
@@ -167,6 +182,51 @@ int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
   GET_STR_INTO(a->body);
   GET_STR_INTO(a->replyTo);
 
+  a->unknown3length = 0;
+  a->unknown3 = NULL;
+  a->attachmentCount = 0;
+  if (len > 0) {
+    a->unknown3 = (void *)malloc(len);
+
+    /*
+      printf("Msg has extra %d bytes. That's 4*%d + %d\n",
+           len, len / 4, len % 4);
+    */
+
+
+    /*
+Example:
+
+Byte   0: 0x        43 | C |     67   / Variable amount of 'rubbish'
+Byte   1: 0x        50 | P |     80   \ NOT neccessary !NULL
+Byte   2: 0x         0 | . |      0   /
+Byte   3: 0x        68 | h |    104   | Each attachment adds four bytes,
+Byte   4: 0x  ffffffc0 | . |    -64   | NULL, an int, then two signed ints
+Byte   5: 0x  ffffff90 | . |   -112   \ 
+Byte   6: 0x         0 | . |      0   /
+Byte   7: 0x        68 | h |    104   |
+Byte   8: 0x  ffffffc0 | . |    -64   |
+Byte   9: 0x  ffffff92 | . |   -110   \
+Byte  10: 0x         0 | . |      0   /
+Byte  11: 0x        68 | h |    104   |
+Byte  12: 0x  ffffffc0 | . |    -64   |
+Byte  13: 0x  ffffff94 | . |   -108   \
+Byte  14: 0x         0 | . |      0   /
+Byte  15: 0x         0 | . |      0   | Then we end with a block of
+Byte  16: 0x         0 | . |      0   | four NULLs
+Byte  17: 0x         0 | . |      0   \
+
+The 'rubbish' doesn't seem to be for alignment within the pdb, AFAIKS.
+    */
+
+    a->attachmentCount = (len / 4) - 1;
+    if (a->unknown3) {
+      a->unknown3length = len;
+      memcpy(a->unknown3, buffer, len);
+      SHUFFLE_BUFFER(len);
+    }
+  }
+
   return (buffer - start);
 }
 
@@ -175,7 +235,7 @@ int pack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
   unsigned int destlen;
   unsigned char *start = buffer;
 
-  destlen = 4+4+2+2+2+2+2+2+4;
+  destlen = 4+4+2+2+2+2+2+2+4+a->unknown3length;
 
   ADD_LENGTH(a->messageUID, destlen);
   ADD_LENGTH(a->to, destlen);
@@ -204,13 +264,13 @@ int pack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
   SHUFFLE_BUFFER(2);
   set_short(buffer, a->accountNo);
   SHUFFLE_BUFFER(2);
-  set_short(buffer, a->rfu1);
+  set_short(buffer, a->unknown1);
   SHUFFLE_BUFFER(2);
   set_byte(buffer, a->download);
   SHUFFLE_BUFFER(1);
   set_byte(buffer, a->mark);
   SHUFFLE_BUFFER(1);
-  set_short(buffer, a->rfu2);
+  set_short(buffer, a->unknown2);
   SHUFFLE_BUFFER(2);
 
   set_byte(buffer, a->reserved1);
@@ -230,7 +290,28 @@ int pack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
   PUT_STR_FROM(a->body);
   PUT_STR_FROM(a->replyTo);  
 
+  if (a->unknown3length > 0) {
+    memcpy(buffer, a->unknown3, a->unknown3length);
+  }
+
   return (buffer - start);
+}
+
+void free_VersaMailAppInfo(struct VersaMailAppInfo *a) {
+}
+
+int unpack_VersaMailAppInfo(struct VersaMailAppInfo *ai, 
+                        unsigned char *record, int len) {
+  int i;
+  unsigned char *start = record;
+  
+  i = unpack_CategoryAppInfo(&ai->category, record, len);
+  if (!i)
+    return i;
+  record += i;
+  len -= i;
+
+  return (record - start);
 }
 
 /* 
