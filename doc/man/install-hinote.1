@@ -1,25 +1,52 @@
-.TH INSTALL-USER 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+.TH INSTALL-HINOTE 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+
 .SH NAME
-install-hinote \- installs a new Hi-Note in a Palm Device
+.B install-hinote 
+\- installs a new Hi-Note in a Palm Device
+
 .SH SYNOPSIS
-.B install-hinote /dev/cua? filename [filename filename ...]
+.B install-hinote 
+\-p <port> filename [filename filename ...] -c <category>
+
 .SH DESCRIPTION
-This manual page
-documents the small application
-.BR install-hinote .
 .B install-hinote
-allows the user to write one or more files as a new Hi-Note or Hi-Notes,
-respectively, on the Pilot connected to the specified callout
-device.  Once 
-.B install-hinote
-is started, the user must invoke HotSync on the target device.
+allows the user to write one or more files as a new Hi-Note or into the
+Hi-Notes Palm application itself, on the Palm handheld device. Please see
+http://www.cyclos.com/ for more information on Hi-Note.
+
 .SS OPTIONS
-none
-.SH USEAGE
-The program will connect to a target, and write the file or files
-given on the command line.
-.SH BUGS
+.TP
+.BI \-p\ \--port\  <port> ,
+Use device file 
+.I <port>
+to communicate with the Palm handheld device. If this is not specified, will
+look for the $PILOTPORT environment variable. If both are not found, will   
+fall back to /dev/pilot
+
+.TP
+.BI \-h\ \--help\,
+Display help synopsis
+
+.TP
+.BI \-v\ \--version\,
+Display version of
+.B install-netsync
+
+.TP
+.BI \-c\ \--category\ <category>,
+Write files to <category> in the Hi-NOte application
+
+.SH USAGE
+The program will connect to a target Palm handheld device, and writes the
+file or files given on the command line into the Hi-Note application.
+
+.SH KNOWN BUGS
 The Palm Device may have a maximum length on Hi-Note sizes.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
 .SH AUTHOR
 .B install-hinote
-was written by Bill Goodman
+was written by Bill Goodman <\fIbgoodman@cyclos.com\fP>

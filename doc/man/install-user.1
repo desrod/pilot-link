@@ -1,25 +1,61 @@
 .TH INSTALL-USER 1 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
+
 .SH NAME
-install-user \- reads or installs a User Name in a Palm Device
+.B install-user 
+\- reads or sets a Palm UserName and UserID on a Palm Device
+
 .SH SYNOPSIS
-.B install-user /dev/cua? [username]
+.B install-user
+\-p /dev/pilot -u <username> -i <id>
+
 .SH DESCRIPTION
-This manual page
-documents the small application
-.BR install-user .
 .B install-user
-allows the user to read or change the User Name on the Pilot connected 
-to the specified callout device.  Once executing
-.B install-user
-the user must invoke HotSync on the target device.
+allows the user to read or change the User Name on the Pilot connected to
+the specified callout device.
+
 .SS OPTIONS
-none
-.SH USEAGE
-The program will connect to a target, and read install the User Name
-given on the command line, or read the User Name if none is specified.
-.SH BUGS
+.TP
+.BI \-p\ \--port\  <port> ,
+Use device file
+.I port
+to communicate with the Palm handheld device. If this is not specified, will
+look for the $PILOTPORT environment variable. If both are not found, will
+fall back to /dev/pilot.
+   
+.TP
+.BI \-h\ \--help\,   
+Display help synopsis for 
+.B install-user
+
+.TP
+.BI \-v\ \--version\,
+Display version of
+.B install-user
+
+.TP
+.BI \-u\ \--user\ <username>,
+Set the username, use quotes for spaces, as in "John Q. Public"
+
+.TP
+.BI \-i\ \--id\ <userid>,
+Set the 5-digit numeric UserID on the device (used in many application
+registration schemes)
+
+.SH USAGE
+The program will connect to a target Palm handheld device, and read or set
+the Palm UserName specified or display the Palm username and UserID if none
+is specified.
+
+.SH KNOWN BUGS
 .BR install-user
 has no known bugs.
+
+.SH "REPORTING BUGS"
+Report bugs at
+.I http://bugs.pilot-link.org/
+
 .SH AUTHOR
 .B install-user
-was written by D. Jeff Dionne
+was originally written by D. Jeff Dionne
+
+
