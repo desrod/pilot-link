@@ -1,1 +1,6 @@
+Makefile
 Makefile.PL
+blib
+pm_to_blib
+Pilot.c
+Pilot.bs
