@@ -85,7 +85,6 @@
 
 #define set_date(ptr,val) (dlp_htopdate((val),(ptr)))
 
-#define DLP_BUF_SIZE 0xffff
 #define DLP_REQUEST_DATA(req, arg, offset) &req->argv[arg]->data[offset]
 #define DLP_RESPONSE_DATA(res, arg, offset) &res->argv[arg]->data[offset]
 
