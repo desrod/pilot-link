@@ -97,7 +97,8 @@
 
 /* Define prototypes */
 #ifdef PI_DEBUG
-static void record_dump (char *data);
+static void record_dump (unsigned long recID, unsigned int index,
+	int flags, int catID, char *data, int data_len);
 #endif
 
 char *dlp_errorlist[] = {
@@ -193,26 +194,23 @@ int dlp_trace = 0;
 #endif
 
 #ifdef PI_DEBUG
-static void record_dump (char *data)
+static void record_dump (unsigned long recID, unsigned int index, int flags,
+	int catID, char *data, int data_len)
 {
-	size_t size, flags;
-	
-	size = get_short(&data[6]);
-	flags = get_byte(&data[8]);
-
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-	    "  ID: 0x%8.8lX, Index: %d, Category: %d\n"
-	    "  Flags: %s%s%s%s%s%s (0x%2.2X), and %d bytes:\n",
-	    (unsigned long) get_long(&data[0]),
-	    get_short(&data[4]), get_byte(&data[9]),
+	    "  ID: 0x%8.8lX, Index: %u, Category: %d\n"
+	    "  Flags:%s%s%s%s%s%s (0x%2.2X), and %d bytes:\n",
+	    (unsigned long) recID,
+	    index,
+		catID,
 	    (flags & dlpRecAttrDeleted) ? " Deleted" : "",
 	    (flags & dlpRecAttrDirty) ? " Dirty" : "",
 	    (flags & dlpRecAttrBusy) ? " Busy" : "",
 	    (flags & dlpRecAttrSecret) ? " Secret" : "",
 	    (flags & dlpRecAttrArchived) ? " Archive" : "",
 	    (!flags) ? " None" : "",
-	    flags, size));
-	dumpdata((char *)&data[10], size);
+	    flags, data_len));
+	dumpdata(data, data_len);
 }
 #endif
 
@@ -2996,9 +2994,6 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 		memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
 	}
 
-	CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
-		 record_dump(DLP_RESPONSE_DATA(req, 0, 0)));
-
 	result = dlp_exec(sd, req, &res);
 
 	dlp_request_free(req);
@@ -3010,6 +3005,14 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP WriteRecord Record ID: 0x%8.8lX\n",
 		    get_long(DLP_RESPONSE_DATA(res, 0, 0))));
+
+		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
+			record_dump(
+				get_long(DLP_RESPONSE_DATA(res, 0, 0)), /* recID */
+				0xffff,									/* index */
+				flags,
+				catID,
+				data, length));
 	}
 	
 	dlp_response_free(res);
@@ -4093,7 +4096,12 @@ dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
 		}
 
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
-			 record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+			 record_dump(
+				get_long(DLP_RESPONSE_DATA(res, 0, 0)),			/* recID */
+				get_short(DLP_RESPONSE_DATA(res, 0, 4)),		/* index */
+				get_byte(DLP_RESPONSE_DATA(res, 0, 8)),			/* flags */
+				get_byte(DLP_RESPONSE_DATA(res, 0, 9)),			/* catID */
+				DLP_RESPONSE_DATA(res, 0, 10), data_len));
 	} else {
 		data_len = result;
 	}
@@ -4157,11 +4165,16 @@ dlp_ReadNextModifiedRec(int sd, int fHandle, pi_buffer_t *buffer, recordid_t * i
 		}
 
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
-			 record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+			 record_dump(
+				get_long(DLP_RESPONSE_DATA(res, 0, 0)),			/* recID */
+				get_short(DLP_RESPONSE_DATA(res, 0, 4)),		/* index */
+				get_byte(DLP_RESPONSE_DATA(res, 0, 8)),			/* flags */
+				get_byte(DLP_RESPONSE_DATA(res, 0, 9)),			/* catID */
+				DLP_RESPONSE_DATA(res, 0, 10), data_len));
 	} else {
 		data_len = result;
 	}
-	
+
 	dlp_response_free(res);
 	
 	return data_len;
@@ -4220,7 +4233,12 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
 		}
 
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
-			 record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+			 record_dump(
+				get_long(DLP_RESPONSE_DATA(res, 0, 0)),			/* recID */
+				get_short(DLP_RESPONSE_DATA(res, 0, 4)),		/* index */
+				get_byte(DLP_RESPONSE_DATA(res, 0, 8)),			/* flags */
+				get_byte(DLP_RESPONSE_DATA(res, 0, 9)),			/* catID */
+				DLP_RESPONSE_DATA(res, 0, 10), result));
 	}
 	
 	dlp_response_free(res);
@@ -4309,7 +4327,12 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int index, pi_buffer_t *buffer,
 		}
 
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
-			 record_dump(DLP_RESPONSE_DATA(res, 0, 0)));
+			 record_dump(
+				get_long(DLP_RESPONSE_DATA(res, 0, 0)),			/* recID */
+				get_short(DLP_RESPONSE_DATA(res, 0, 4)),		/* index */
+				get_byte(DLP_RESPONSE_DATA(res, 0, large ? 12 : 8)),	/* flags */
+				get_byte(DLP_RESPONSE_DATA(res, 0, large ? 13 : 9)),	/* catID */
+				DLP_RESPONSE_DATA(res, 0, large ? 14 : 10), result));
 	}
 
 	dlp_response_free(res);
