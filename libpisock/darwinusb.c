@@ -233,6 +233,7 @@ acceptedDevices[] = {
 	{0x054c, 0x0066},	// Sony T, SJ series, and other Palm OS 4.0 devices
 	{0x054c, 0x0095},	// Sony S360
 	{0x054c, 0x000a},	// Sony NR and other Palm OS 4.1 devices
+	{0x054c, 0x009a},	// Sony NR70V/U
 	{0x054c, 0x00da},	// Sony NX
 	{0x054c, 0x00e9},	// Sony NZ
 	{0x054c, 0x0144},	// Sony UX
