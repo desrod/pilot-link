@@ -6,7 +6,6 @@ AC_INIT(include/pi-version.h.in)
 dnl AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AC_SUBST(HOST_OS)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
 
@@ -60,6 +59,7 @@ AC_SUBST(PISOCKPP_AGE)
 dnl Check host type
 AC_CANONICAL_HOST
 AC_CANONICAL_SYSTEM
+AC_DEFINE_UNQUOTED(HOST_OS, "$host", [Host type])
 
 AM_INIT_AUTOMAKE(pilot-link, [$VERSION])
 
@@ -702,7 +702,7 @@ echo "
   -------------------------.
   pilot-link version...... : $VERSION
   libpisock version....... : $PISOCK_CURRENT.$PISOCK_REVISION.$PISOCK_AGE
-  Build for host.......... : $host_os
+  Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
   CFLAGS.................. : $CFLAGS

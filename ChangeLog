@@ -1,3 +1,10 @@
+2002-12-02  JP Rosevear  <jpr@ximian.com>
+
+	* include/pi-version.h.in: remove HOST_OS substitution, its in
+	config.h now
+
+	* configure.in: define HOST_OS here
+
 2002-11-29  Angus Ainslie <angusa at deltatee dot com>
 
 	* pi-notepad.h: added a type field for OS 5
