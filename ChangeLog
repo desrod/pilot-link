@@ -1,3 +1,26 @@
+2003-06-17 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* Completely new Java bindings imported, check the README and TODO
+
+	* Removed the static HAVE_SYS_TIME_H calls and put them in
+	  the convenience header pi-tconfig.h for now
+
+	* Removed the TCL checks for this release, pending a proper tcl.m4
+	  macro injection (TEA has usable code)
+
+	* src/pilot-foto.c: New conduit to fetch/read/convert Zire71 camera
+	  images
+
+	* doc/man/pilot-foto.1.in: Manpage for same
+
+	* doc/man/install-datebook.1.in: Fixed a small typo
+
+	* bindings/Tcl/test.tcl: Bring to current; s/cua3/ttyS0/
+
+	* libpisock/serial.c: Fixed a socket leak (Robert L Krawitz)
+
+	* libpisock/socket.c: Ditto (Robert L Krawitz)
+
 2003-05-14 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pi-getrom.c: Deprecate CoPilot functions, use POSE

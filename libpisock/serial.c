@@ -156,6 +156,8 @@ static void pi_serial_device_free (struct pi_device *dev)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)dev->data;
 
+	(*(data->ref))--;
+
 	if (*(data->ref) == 0)
 		free (data->ref);
 	free(data);
@@ -538,8 +540,6 @@ pi_serial_setsockopt(struct pi_socket *ps, int level, int option_name,
 static int pi_serial_close(struct pi_socket *ps)
 {
 	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
-
-	(*(data->ref))--;
 
 	if (ps->sd)
 		data->impl.close (ps);

@@ -816,7 +816,8 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
  ***********************************************************************/
 int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 {
-	int 	paddrlen = addrlen;
+	int 	paddrlen = addrlen,
+		bind_return;
 	struct 	pi_socket *ps;
 	struct 	pi_sockaddr *paddr = (struct pi_sockaddr *) addr;
 	struct 	pi_sockaddr eaddr;
@@ -851,7 +852,13 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 	else
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 
-	return ps->device->bind (ps, (struct sockaddr *)paddr, paddrlen);
+	bind_return =
+		ps->device->bind (ps, (struct sockaddr *)paddr, paddrlen);
+	if (bind_return < 0) {
+		ps->device->free (ps->device);
+		ps->device = NULL;
+	}
+	return bind_return;
 }
 
 /***********************************************************************
