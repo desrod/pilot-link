@@ -451,8 +451,11 @@ pi_inet_listen(pi_socket_t *ps, int backlog)
 static int
 pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
-	int sd,
-		err;
+	int	sd,
+		err,
+		split = 0,
+		chunksize = 0;
+	size_t	len;
 	
  	sd = accept(ps->sd, addr, (socklen_t *)addrlen);
 	if (sd < 0)
@@ -469,6 +472,12 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 		case PI_CMD_NET:
 			if ((err = net_rx_handshake(ps)) < 0)
 				return err;
+			len = sizeof (split);
+			pi_setsockopt(sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
+				&split, &len);
+			len = sizeof (chunksize);
+			pi_setsockopt(sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
+				&chunksize, &len);
 			break;
 	}
 

@@ -153,8 +153,8 @@ pi_protocol_t
 		prot->setsockopt 	= net_setsockopt;
 
 		data->type 		= PI_NET_TYPE_DATA;
-		data->split_writes = 0;
-		data->write_chunksize = 0;
+		data->split_writes = 1;
+		data->write_chunksize = 4096;
 		data->txid 		= 0x00;
 		prot->data 		= data;
 	}
