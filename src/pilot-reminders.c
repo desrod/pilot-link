@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 {
 	int 	count,
 		db,
-		idx,
+		i,
 		sd 		= -1;
 	char 	*progname 	= argv[0],
 		*port 		= NULL;
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 	
 	printf("PUSH-OMIT-CONTEXT\n");
 	printf("CLEAR-OMIT-CONTEXT\n");
-	for (idx = 0;; idx++) {
+	for (i = 0;; i++) {
 		int 	attr,
 			j;
 		char 	delta[80],
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 		struct 	Appointment a;
 	
 		int len =
-			dlp_ReadRecordByIndex(sd, db, idx, buffer, 0, 0, &attr,
+			dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
 					      0);
 	
 		if (len < 0)

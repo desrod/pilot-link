@@ -86,21 +86,21 @@ char *iso_time_str(time_t t)
 void dump(void *buf, int n)
 {
 	int 	ch,
-		idx,
+		i,
 		j;
 
-	for (idx = 0; idx < n; idx += 16) {
-		printf("%04x: ", idx);
+	for (i = 0; i < n; i += 16) {
+		printf("%04x: ", i);
 		for (j = 0; j < 16; j++) {
-			if (idx + j < n)
+			if (i + j < n)
 				printf("%02x ",
-				       ((unsigned char *) buf)[idx + j]);
+				       ((unsigned char *) buf)[i + j]);
 			else
 				printf("   ");
 		}
 		printf("  ");
-		for (j = 0; j < 16 && idx + j < n; j++) {
-			ch = ((unsigned char *) buf)[idx + j] & 0x7f;
+		for (j = 0; j < 16 && i + j < n; j++) {
+			ch = ((unsigned char *) buf)[i + j] & 0x7f;
 			if (ch < ' ' || ch >= 0x7f)
 				putchar('.');
 			else

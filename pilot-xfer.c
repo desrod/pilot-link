@@ -299,7 +299,6 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 	    int rom, int unsaved, char *archive_dir)
 {
 	struct dirent *dirent;
-	int filecounter = 0;
 	int i;
 	int ofile_len;
 	int ofile_total;
@@ -371,7 +370,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		}
 
 		if (dlp_OpenConduit(sd) < 0) {
-			printf("Exiting on cancel, all data was not backed" 
+			printf("Exiting on cancel, all data was not backed " 
 			       "up.\nHalted before backing up '%s'.\n",
 				info.name);
 			exit(1);

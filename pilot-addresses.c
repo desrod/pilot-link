@@ -228,27 +228,27 @@ int write_field(FILE * out, char *source, int more)
 
 int match_category(char *buf, struct AddressAppInfo *aai)
 {
-	int idx;
+	int i;
 
-	for (idx = 0; idx < 16; idx++)
-		if (strcasecmp(buf, aai->category.name[idx]) == 0)
-			return idx;
+	for (i = 0; i < 16; i++)
+		if (strcasecmp(buf, aai->category.name[i]) == 0)
+			return i;
 	return atoi(buf);	/* 0 is default */
 }
 
 int match_phone(char *buf, struct AddressAppInfo *aai)
 {
-	int idx;
+	int i;
 
-	for (idx = 0; idx < 8; idx++)
-		if (strcasecmp(buf, aai->phoneLabels[idx]) == 0)
-			return idx;
+	for (i = 0; i < 8; i++)
+		if (strcasecmp(buf, aai->phoneLabels[i]) == 0)
+			return i;
 	return atoi(buf);	/* 0 is default */
 }
 
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 {
-	int 	idx,
+	int 	i,
 		l,
 		attribute,
 		category;
@@ -257,56 +257,56 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 
 
 	do {
-		idx = read_field(buf, in);
+		i = read_field(buf, in);
 
 		memset(&a, 0, sizeof(a));
 		a.showPhone = 0;
 
 		if (tableformat) {
 			category = match_category(buf, aai);
-			idx = read_field(buf, in);
+			i = read_field(buf, in);
 		} else {
-			if (idx == 2) {
+			if (i == 2) {
 				category = match_category(buf, aai);
-				idx = read_field(buf, in);
-				if (idx == 2) {
+				i = read_field(buf, in);
+				if (i == 2) {
 					a.showPhone =
 					    match_phone(buf, aai);
-					idx = read_field(buf, in);
+					i = read_field(buf, in);
 				}
 			} else
 				category = defaultcategory;
 		}
-		if (idx < 0)
+		if (i < 0)
 			break;
 
 		attribute = 0;
 
-		for (l = 0; (idx >= 0) && (l < 19); l++) {
+		for (l = 0; (i >= 0) && (l < 19); l++) {
 			int l2 = realentry[l];
 
 			if ((l2 >= 3) && (l2 <= 7)) {
-				if (idx != 2 || tableformat)
+				if (i != 2 || tableformat)
 					a.phoneLabel[l2 - 3] = l2 - 3;
 				else {
 					a.phoneLabel[l2 - 3] =
 					    match_phone(buf, aai);
-					idx = read_field(buf, in);
+					i = read_field(buf, in);
 				}
 			}
 
 			a.entry[l2] = strdup(buf);
 
-			if (idx == 0)
+			if (i == 0)
 				break;
 
-			idx = read_field(buf, in);
+			i = read_field(buf, in);
 		}
 
 		attribute = (atoi(buf) ? dlpRecAttrSecret : 0);
 
-		while (idx > 0) {	/* Too many fields in record */
-			idx = read_field(buf, in);
+		while (i > 0) {	/* Too many fields in record */
+			i = read_field(buf, in);
 		}
 
 #ifdef DEBUG
@@ -332,14 +332,14 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 		dlp_WriteRecord(sd, db, attribute, 0, category,
 				(unsigned char *) buf, l, 0);
 
-	} while (idx >= 0);
+	} while (i >= 0);
 
 	return 0;
 }
 
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 {
-	int 	idx,
+	int 	i,
 		j,
 		l,
 		attribute,
@@ -357,11 +357,11 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		write_field(out, "Private-Flag", 0);
 	}
 
-	for (idx = 0;
+	for (i = 0;
 	     (j =
-	      dlp_ReadRecordByIndex(sd, db, idx, (unsigned char *) buf, 0,
+	      dlp_ReadRecordByIndex(sd, db, i, (unsigned char *) buf, 0,
 				    &l, &attribute, &category)) >= 0;
-	     idx++) {
+	     i++) {
 
 
 		if (attribute & dlpRecAttrDeleted)

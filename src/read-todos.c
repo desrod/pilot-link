@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 {
 	int 	ch,
 		db,
-		idx,
+		i,
 		sd 		= -1;
 	char 	*progname 	= argv[0],
 		*port 		= NULL,
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 	
 		unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 	
-		for (idx = 0;; idx++) {
+		for (i = 0;; i++) {
 			int 	attr,
 				category,
 				len;
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 	
 			if (port) {
 				len =
-				    dlp_ReadRecordByIndex(sd, db, idx, buffer, 0, 0,
+				    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0,
 							  &attr, &category);
 	
 				if (len < 0)
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 			}
 			if (filename) {
 				if (pi_file_read_record
-				    (pif, idx, (void *) &ptr, &len, &attr, &category,
+				    (pif, i, (void *) &ptr, &len, &attr, &category,
 				     0))
 					break;
 	

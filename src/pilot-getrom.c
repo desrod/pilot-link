@@ -72,7 +72,7 @@ struct record *records = 0;
 int main(int argc, char *argv[])
 {
 	int 	count,
-		idx,
+		i,
 		sd,
 		file,
 		majorVersion,
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
 	signal(SIGINT, sighandler);
 	left = ROMlength - offset;
-	idx = offset;
+	i = offset;
 	while (left > 0) {
 		char buffer[256];
 		int len = left;
@@ -214,12 +214,12 @@ int main(int argc, char *argv[])
 		else
 			write(file, buffer, len);
 		offset += len;
-		if (cancel || !(idx++ % 8))
+		if (cancel || !(i++ % 8))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
 				printf("\nCancelled!\n");
 				goto cancel;
 			}
-		if (!(idx % 16)) {
+		if (!(i % 16)) {
 			sprintf(print, "%ld", offset);
 			PackRPC(&p, 0xA220, RPC_IntReply,
 				RPC_Ptr(print, strlen(print)),

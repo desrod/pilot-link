@@ -73,7 +73,7 @@ struct record *records = 0;
 int main(int argc, char *argv[])
 {
 	int 	count,
-		idx,
+		i,
 		sd,
 		file,
 		j,
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 
 	signal(SIGINT, sighandler);
 	left 	= SRAMlength - offset;
-	idx 	= offset;
+	i 	= offset;
 	while (left > 0) {
 		char buffer[256];
 		int len = left;
@@ -231,12 +231,12 @@ int main(int argc, char *argv[])
 			write(file, buffer, len);
 
 		offset += len;
-		if (cancel || !(idx++ % 4))
+		if (cancel || !(i++ % 4))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
 				printf("\nCancelled!\n");
 				goto cancel;
 			}
-		if (!(idx % 8)) {
+		if (!(i % 8)) {
 			sprintf(print, "%ld", offset);
 			PackRPC(&p, 0xA220, RPC_IntReply,
 				RPC_Ptr(print, strlen(print)),

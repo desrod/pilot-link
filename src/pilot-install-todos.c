@@ -49,7 +49,7 @@ void install_ToDos(int sd, int db, char *filename)
 {
 	int 	ToDo_size,
 		cLen		= 0,
-		idx		= 0,
+		i		= 0,
 		filelen;
         char 	*file_text 	= NULL,
 		*cPtr 		= file_text,
@@ -77,8 +77,8 @@ void install_ToDos(int sd, int db, char *filename)
 
 	fread(file_text, filelen, 1, f);
 
-	while (idx < filelen) {
-		idx++;
+	while (i < filelen) {
+		i++;
 		/* printf("c:%c.\n",*cPtr); */
 		if (*cPtr == '\n') {
 			todo.description = begPtr;

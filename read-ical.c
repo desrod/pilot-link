@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 	int 	ch,
 		db,
 		sd 		= -1,
-		idx,
+		i,
 		read_todos 	= -1;
 	FILE 	*ical;
 	unsigned char buffer[0xffff];
@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 						 0xffff);
 				unpack_ToDoAppInfo(&tai, buffer, 0xffff);
 				
-				for (idx = 0;; idx++) {
+				for (i = 0;; i++) {
 					int 	attr,
 						category;
 					char 	id_buf[255];
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 					recordid_t id;
 
 					int len =
-					    dlp_ReadRecordByIndex(sd, db, idx, buffer, &id, 0, &attr, &category);
+					    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, &category);
 
 					if (len < 0)
 						break;
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			for (idx = 0;; idx++) {
+			for (i = 0;; i++) {
 				int 	j,
 					attr;
 				char 	id_buf[255];				
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 				recordid_t id;
 
 				int len =
-				    dlp_ReadRecordByIndex(sd, db, idx, buffer, &id, 0, &attr, 0);
+				    dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, 0);
 
 				if (len < 0)
 					break;

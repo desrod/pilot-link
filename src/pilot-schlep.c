@@ -54,7 +54,7 @@ static const char *optstring = "hvp:i:f:d";
 static int Fetch(int sd, char *filename) 
 {
 	int 	db,
-		idx,
+		i,
 		l,
 		fd;
 	char 	buffer[0xffff];
@@ -69,9 +69,9 @@ static int Fetch(int sd, char *filename)
 	if (dlp_OpenDB(sd, 0, dlpOpenRead, "Schlep", &db) < 0)
 		return -1;
 
-	for (idx = 0; 
+	for (i = 0; 
 	     (l = dlp_ReadResourceByType(sd, db, pi_mktag('D', 'A', 'T', 'A'),
-					 idx, buffer, 0, 0)) > 0; idx++) {
+					 i, buffer, 0, 0)) > 0; i++) {
 		if (write(fd, buffer, l) < 0) {
 			printf("%d bytes read (Incomplete)\n\n", l);
 			close(fd);

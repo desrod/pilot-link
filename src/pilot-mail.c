@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 	int 	count,
 		db,
 		sd,
-		idx, 
+		i, 
 		l = 0,
 		lost,
 		dupe,
@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
 	       sig.signature ? sig.signature : "<None>");
 
 #if 0
-	for (idx = 0; 1; idx++) {
+	for (i = 0; 1; i++) {
 		struct Mail t;
 		int attr, category;
 
@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
 		/* sendmail transmission section */
 
 		/* Iterate over messages in Outbox */
-		for (idx = 0;; idx++) {
+		for (i = 0;; i++) {
 			struct 	Mail t;
 			int 	attr,
 				size;
@@ -596,7 +596,7 @@ int main(int argc, char *argv[])
 			goto endpop;
 		}
 
-		for (idx = 1;; idx++) {
+		for (i = 1;; i++) {
 			int 	len,
 				h;
 			char 	*msg;
@@ -613,7 +613,7 @@ int main(int argc, char *argv[])
 			t.body = 0;
 			t.dated = 0;
 
-			sprintf(buffer, "LIST %d\r\n", idx);
+			sprintf(buffer, "LIST %d\r\n", i);
 			write(popfd, buffer, strlen(buffer));
 			l = read(popfd, buffer, 1024);
 			if (l < 0) {
@@ -629,7 +629,7 @@ int main(int argc, char *argv[])
 			if (len > 16000)
 				continue;
 
-			sprintf(buffer, "RETR %d\r\n", idx);
+			sprintf(buffer, "RETR %d\r\n", i);
 			write(popfd, buffer, strlen(buffer));
 			l = getpopstring(popfd, buffer);
 			if ((l < 0) || (buffer[0] != '+')) {
@@ -681,7 +681,7 @@ int main(int argc, char *argv[])
 			if (h) {
 				/* Oops, incomplete message, still reading headers */
 				printf("Incomplete message %d\n",
-					idx);
+					i);
 				free_Mail(&t);
 				continue;
 			}
@@ -689,7 +689,7 @@ int main(int argc, char *argv[])
 			if (strlen(msg) > p.truncate) {
 				/* We could truncate it, but we won't for now */
 				printf("Message %d too large (%ld bytes)\n",
-					idx, (long) strlen(msg));
+					i, (long) strlen(msg));
 				free_Mail(&t);
 				continue;
 			}
@@ -702,12 +702,12 @@ int main(int argc, char *argv[])
 			    (sd, db, 0, 0, 0, buffer, len, 0) > 0) {
 				rec++;
 				if (strcmp(pop_keep, "delete") == 0) {
-					sprintf(buffer, "DELE %d\r\n", idx);
+					sprintf(buffer, "DELE %d\r\n", i);
 					write(popfd, buffer,
 					      strlen(buffer));
 					read(popfd, buffer, 1024);
 					if (buffer[0] != '+') {
-						printf("Error deleting message %d\n", idx);
+						printf("Error deleting message %d\n", i);
 						dupe++;
 					}
 				} else
@@ -738,7 +738,7 @@ int main(int argc, char *argv[])
 
 		/* MH directory reading section */
 
-		for (idx = 1;; idx++) {
+		for (i = 1;; i++) {
 			int 	len,
 				mhmsg,
 				h;
@@ -755,11 +755,11 @@ int main(int argc, char *argv[])
 			t.body = 0;
 			t.dated = 0;
 
-			if ((mhmsg = openmhmsg(topilot_mhdir, idx)) < 0) {
+			if ((mhmsg = openmhmsg(topilot_mhdir, i)) < 0) {
 				break;
 			}
 
-			fprintf(stderr, "%d ", idx);
+			fprintf(stderr, "%d ", i);
 			fflush(stderr);
 
 			/* Read the message */
@@ -806,7 +806,7 @@ int main(int argc, char *argv[])
 
 			if (h) {
 				/* Oops, incomplete message, still reading headers */
-				printf("Incomplete message %d\n", idx);
+				printf("Incomplete message %d\n", i);
 				free_Mail(&t);
 				continue;
 			}
@@ -814,7 +814,7 @@ int main(int argc, char *argv[])
 			if (strlen(msg) > p.truncate) {
 				/* We could truncate it, but we won't for now */
 				printf("Message %d too large (%ld bytes)\n",
-					idx, (long) strlen(msg));
+					i, (long) strlen(msg));
 				free_Mail(&t);
 				continue;
 			}
@@ -830,11 +830,11 @@ int main(int argc, char *argv[])
 					char filename[1000];
 
 					sprintf(filename, "%s/%d", topilot_mhdir,
-						idx);
+						i);
 					close(mhmsg);
 					if (unlink(filename)) {
 						printf("Error deleting message %d\n",
-							idx);
+							i);
 						dupe++;
 					}
 					continue;
