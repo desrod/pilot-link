@@ -28,7 +28,7 @@ usb_SOURCE = usb.c freebsdusb.c
 endif
 
 if WITH_DARWINUSB
-usb_SOURCE = usb.c darwinusb.c darwinusbcore.cpp
+usb_SOURCE = usb.c darwinusb.c
 endif
 
 lib_LTLIBRARIES = libpisock.la

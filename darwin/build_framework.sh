@@ -4,7 +4,7 @@
 #
 what=libpisock
 libs=../libpisock/.libs/libpisock.a
-linkflags="-framework System -framework Carbon -framework IOKit -liconv -lgcc -lstdc++"
+linkflags="-framework System -framework IOKit -liconv -lgcc"
 incs=../include
 
 rm -Rf $what.framework

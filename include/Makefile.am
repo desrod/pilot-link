@@ -1,5 +1,4 @@
 c_headers = 			\
-	darwinusbcore.h		\
 	pi-address.h		\
 	pi-appinfo.h		\
 	pi-args.h		\
