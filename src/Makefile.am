@@ -279,6 +279,8 @@ CLEANFILES = $(PERLSCRIPTS)
 
 EXTRA_DIST = 			\
 	getopt.h		\
+	getopt.c		\
+	getopt1.c		\
 	ietf2datebook.PL	\
 	pilot-undelete.PL	\
 	sync-plan.PL

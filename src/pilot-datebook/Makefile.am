@@ -45,6 +45,8 @@ pilot_datebook_SOURCES = 		\
 pilot_datebook_LDADD =			\
 	$(top_builddir)/libpisock/libpisock.la	
 
-EXTRA_DIST =				\
-        getopt.h
+EXTRA_DIST =			\
+	getopt.h		\
+	getopt.c		\
+	getopt1.c		\
 

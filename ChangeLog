@@ -1,3 +1,10 @@
+2002-09-17  JP Rosevear  <jpr@ximian.com>
+
+	* src/pilot-datebook/Makefile.am: dist getopt*.c files because
+	LIBOBJS works differently now (broken for non-gnu platforms)
+
+	* src/Makefile.am: ditto
+
 2002-09-16  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Perl/Pilot.xs: Small hack to get around a possible
