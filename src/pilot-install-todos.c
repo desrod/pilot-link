@@ -47,16 +47,16 @@ static const char *optstring = "hp:f:";
 
 int main(int argc, char *argv[])
 {
-	int c;
-        int db;
-        int sd = -1;
-	struct PilotUser User;
-        char *progname = argv[0];
-	char *filename = NULL;
-	char *port = NULL;
+	int 	ch,
+		db,
+		sd 		= -1;
+        char 	*progname 	= argv[0],
+		*filename 	= NULL,
+		*port 		= NULL;
+	struct 	PilotUser User;
 
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch (c) {
+	while ((ch = getopt(argc, argv, optstring)) != -1) {
+		switch (ch) {
 
 		  case 'h':
 			  Help(progname);
@@ -132,17 +132,17 @@ int main(int argc, char *argv[])
 
 void install_ToDos(int sd, int db, char *filename)
 {
-	int ToDo_size;
-        int cLen;
-        int count;
-        int filelen;
-        struct ToDo todo;
-        char *begPtr;
-        char *cPtr;
-        char *file_text;
-        char note_text[] = "";
+	int 	ToDo_size,
+		cLen		= 0,
+		idx		= 0,
+		filelen;
+        char 	*file_text 	= NULL,
+		*cPtr 		= file_text,
+		*begPtr 	= cPtr,
+		note_text[] 	= "";
         unsigned char ToDo_buf[0xffff];
-        FILE *f;	
+        struct 	ToDo todo;
+        FILE 	*f;	
 				
 	f = fopen(filename, "r");
 	if (f == NULL) {
@@ -162,14 +162,8 @@ void install_ToDos(int sd, int db, char *filename)
 
 	fread(file_text, filelen, 1, f);
 
-	/* printf("file: %s\n",file_text); */
-
-	cPtr = file_text;
-	begPtr = cPtr;
-	cLen = 0;
-	count = 0;
-	while (count < filelen) {
-		count++;
+	while (idx < filelen) {
+		idx++;
 		/* printf("c:%c.\n",*cPtr); */
 		if (*cPtr == '\n') {
 			todo.description = begPtr;
