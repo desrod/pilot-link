@@ -25,7 +25,6 @@
 #include <string.h>
 
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
 
@@ -43,21 +42,34 @@ struct option options[] = {
 
 static const char *optstring = "p:hv";
 
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Print out the --help options and arguments  
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static void display_help(char *progname)
 {
 	printf("   Accept connection and redirect via Network Hotsync Protocol\n\n");
 	printf("   Usage: %s -p <port>\n\n", progname);
 	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n"); 
-	printf("     -h, --help              Display help information for %s\n", progname);   
-	printf("     -v, --version           Display %s version information\n\n", progname);  
+	printf("     -p --port <port>    Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help          Display help information\n");   
+	printf("     -v, --version       Display version information\n\n");  
 	printf("   Examples: %s -p /dev/pilot\n\n", progname);
-	printf("   This will bind your locally connected device to a network port,and\n");
+	printf("   This will bind your locally connected device to a network port, and\n");
 	printf("   redirect them through the network device to a listening server as\n");
 	printf("   specified in the LANSync Preferences panel on your Palm.\n\n");
 
 	return;
 }
+
 
 int main(int argc, char *argv[])
 {
