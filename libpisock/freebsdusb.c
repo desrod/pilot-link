@@ -346,8 +346,8 @@ static ssize_t
 u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
-	int	rlen,
-		bytes_read = 0;
+	ssize_t	rlen;
+	int bytes_read = 0;
 	fd_set ready;
 	
 	if (flags == PI_MSG_PEEK && len > 256)
@@ -396,7 +396,7 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 	/* read data to pre-sized buffer */
-	rlen = recv(ps->sd, &buf->data[buf->used], len);
+	rlen = recv(ps->sd, &buf->data[buf->used], len, 0);
 	if (rlen > 0) {
 		if (flags == PI_MSG_PEEK) {
 			memcpy(data->buf, buf->data + buf->used, rlen);
