@@ -30,6 +30,10 @@
 #include "pi-macros.h"
 #include "pi-palmpix.h"
   
+void DecodeRow(uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData,
+               uint32_t *offset, int32_t *firstWord, int16_t *PPLutsW,
+               uint8_t *PPLuts, uint16_t halfWidth);
+
 uint8_t huffWidth[] = {
    0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,
      0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,
