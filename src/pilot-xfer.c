@@ -443,9 +443,9 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		}
 
 		if (only_changed) {
-			printf("Synchronizing %-40s\n", name); 
+			printf("Synchronizing %-42s\n", name); 
 		} else {
-			printf("Backing up %-40s", name);
+			printf("Backing up %-42s", name);
 		} 
 		fflush(stdout);
 
@@ -845,7 +845,7 @@ static void Install(char *filename)
 		exit(1);
 	}
 
-	fprintf(stderr, "Installing %-40s", filename);
+	fprintf(stderr, "Installing %-42s", filename);
 	fflush(stdout);
 
 	if (pi_file_install(f, sd, 0) < 0) {

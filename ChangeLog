@@ -1,3 +1,7 @@
+2002-07-31  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/pilot-xfer.c: Terminal corruption fixes
+
 2002-07-30  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Makefile.am: Temporary workaround for --prefix, fixed
