@@ -29,8 +29,6 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
-int pilot_connect(char *port);
-
 int pilot_connect(char *port)
 {
 	int 	sd, 
