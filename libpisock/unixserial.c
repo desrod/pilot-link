@@ -120,7 +120,7 @@ static int cfsetspeed(struct termios *t, int speed)
 
 /* Declare prototypes */
 static int s_open(pi_socket_t *ps, struct pi_sockaddr *addr,
-	socklen_t addrlen);
+	size_t addrlen);
 static int s_close(pi_socket_t *ps);
 static int s_changebaud(pi_socket_t *ps);
 static ssize_t s_write(pi_socket_t *ps, unsigned char *buf, size_t len,
@@ -147,13 +147,13 @@ static void s_delay(time_t sec, suseconds_t usec);
  * Summary:     Open the serial port and establish a connection for
  *		unix
  *
- * Parameters:	pi_socket_t*, pi_socket_taddr*, socklen_t
+ * Parameters:	pi_socket_t*, pi_socket_taddr*, size_t
  *
  * Returns:     The file descriptor or negative on error
  *
  ***********************************************************************/
 int
-s_open(pi_socket_t *ps, struct pi_sockaddr *addr, socklen_t addrlen)
+s_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
 	int 	fd, 
 		i;

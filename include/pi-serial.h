@@ -12,7 +12,7 @@ extern "C" {
 
 	struct pi_serial_impl {
 		int (*open) PI_ARGS((pi_socket_t *ps,
-			struct pi_sockaddr *addr, socklen_t addrlen));
+			struct pi_sockaddr *addr, size_t addrlen));
 		int (*close) PI_ARGS((pi_socket_t *ps));
 		int (*changebaud) PI_ARGS((pi_socket_t *ps));
 		ssize_t (*write) PI_ARGS((pi_socket_t *ps,

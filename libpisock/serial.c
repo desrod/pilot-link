@@ -253,7 +253,7 @@ pi_serial_device (int type)
  *
  * Summary:     Connect socket to a given address
  *
- * Parameters:  pi_socket*, sockaddr*, socklen_t
+ * Parameters:  pi_socket*, sockaddr*, size_t
  *
  * Returns:     A negative number on error, 0 otherwise
  *
@@ -346,7 +346,7 @@ fail:
  *
  * Summary:     Bind address to a local socket
  *
- * Parameters:  pi_socket*, sockaddr*, socklen_t
+ * Parameters:  pi_socket*, sockaddr*, size_t
  *
  * Returns:     A negative number on error, 0 otherwise
  *
