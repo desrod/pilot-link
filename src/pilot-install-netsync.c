@@ -96,7 +96,6 @@ int main(int argc, char *argv[])
 		case 'n':
 			netmask = optarg;
 			break;
-		default:
 		}
 	}
 	if (hostname == NULL && address == NULL && netmask == NULL) {

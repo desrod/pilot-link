@@ -109,7 +109,6 @@ int main(int argc, char *argv[])
 		case 'c':
 			copilot = 1;
 			break;
-		default:
 		}
 	}
 	if (optind > 0)

@@ -93,7 +93,6 @@ int main(int argc, char *argv[])
 		case 'a':
 			account = optarg;
 			break;
-		default:
 		}
 	}
 

@@ -87,7 +87,6 @@ int main(int argc, char *argv[])
 		case 'i':
 			userid = optarg;
 			break;
-		default:
 		}
 	}
 	if (user == NULL && userid == NULL) {

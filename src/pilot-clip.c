@@ -167,7 +167,6 @@ int main(int argc, char *argv[])
 		case 's':
 			getset = 1;
 			break;
-		default:
 		}
 	}
 	if (getset < 0) {

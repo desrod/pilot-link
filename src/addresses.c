@@ -36,16 +36,15 @@
 int pilot_connect(const char *port);
 static void Help(char *progname);
 
-/* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
+	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{"fancy",       no_argument,       NULL, 'f'},
 	{NULL,          0,                 NULL, 0}
 };
-*/
 
-static const char *optstring = "hp:f";
+static const char *optstring = "hvp:f";
 
 static void Help(char *progname)
 {
@@ -65,35 +64,34 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	ch,
+	int 	count,
 		db,
 		index,
 		sd = -1,
 		fstyle = -1;
 	
 	char 	*progname = argv[0],
-		*port = NULL,
-		*fancy = NULL;
+		*port = NULL;
 	
 	struct 	AddressAppInfo aai;
 
 	unsigned char buffer[0xffff];
 	
-        while ((ch =
-                getopt(argc, argv, optstring)) != -1) {
-                switch (ch) {
+        while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+                switch (count) {
 
                   case 'h':
                           Help(progname);
+                          exit(0);
+                  case 'v':
+                          PalmHeader(progname);
                           exit(0);
                   case 'p':
                           port = optarg;
                           break;
                   case 'f':
-                          fancy = optarg;
 			  fstyle = 1;
                           break;
-                  default:
                 }
         }
 

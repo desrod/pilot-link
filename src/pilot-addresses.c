@@ -521,7 +521,6 @@ int main(int argc, char *argv[])
 		case 'h':
 			Help(progname);
 			break;
-		default:
 		}
 	}
 	if (argc < 2 && !getenv("PILOTPORT")) {

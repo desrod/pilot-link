@@ -440,7 +440,6 @@ int main(int argc, char **argv)
 			rflag = 1;
 			rkey = optarg;
 			break;
-		default:
 		}
 	}
 

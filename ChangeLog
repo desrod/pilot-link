@@ -1,3 +1,10 @@
+2002-01-22  JP Rosevear  <jpr@ximian.com>
+
+	* addresses.c (main): convert to getopt_long
+
+	* *.c: remove blank default: clauses which screws up some non-gcc
+	compilers
+
 2002-01-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* General warning cleanup in libsock/* and . 

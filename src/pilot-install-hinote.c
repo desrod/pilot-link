@@ -98,7 +98,6 @@ int main(int argc, char *argv[])
 		  case 'c':
 			  cat = optarg;
 			  break;
-		  default:
 		}
 	}
 

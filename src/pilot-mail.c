@@ -290,7 +290,6 @@ int main(int argc, char *argv[])
 		case 'm':
 			topilot_mhdir = optarg;
 			break;
-		default:
 		}
 	}
 	argc -= optind;

@@ -127,7 +127,6 @@ int main(int argc, char *argv[])
 		  case 'p':
 			  port = optarg;
 			  break;
-		  default:
 		}
 	}
 

@@ -149,7 +149,6 @@ int main(int argc, char *argv[])
 			  icalfile = optarg;
 			  strncpy(icalfile, optarg, sizeof(icalfile));
 			  break;
-		  default:
 		}
 	}
 

@@ -311,7 +311,6 @@ int main(int argc, char *argv[])
 		case 'q':
 			quiet = 1;
 			break;
-		default:
 		}
 	}
 

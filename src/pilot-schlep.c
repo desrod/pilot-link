@@ -202,7 +202,6 @@ int main(int argc, char *argv[])
 		case 'd':
 			delete = 1;
 			break;
-		default:
 		}
 	}
 	

@@ -1035,7 +1035,6 @@ int main(int argc, char *argv[])
 		case 'c':
 			quiet = 1;
 			break;
-		default:
 		}
 	}
 

@@ -362,7 +362,6 @@ int main(int argc, char **argv)
 			rflag = 1;
 			rnum = atoi(optarg);
 			break;
-		default:
 		}
 	}
 

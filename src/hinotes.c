@@ -224,7 +224,6 @@ int main(int argc, char *argv[])
 			  strncpy(dirname, optarg, sizeof(dirname));
 			  mode = MEMO_DIRECTORY;
 			  break;
-		  default:
 		}
 	}
 

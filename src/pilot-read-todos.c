@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
 		  case 'f':
 			  filename = optarg;
 			  break;
-		  default:
 		}
 	}
 		
