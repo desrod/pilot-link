@@ -9,7 +9,7 @@
 
 	* install-hinote.c: PILOTPORT conversion, flattened
 
-	* memos.c: Ditto
+	* memos.c: Ditto, fixed options, removed -D, -Q, -q, etc.
 
 2002-02-08  JP Rosevear  <jpr@ximian.com>
 

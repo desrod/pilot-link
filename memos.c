@@ -44,6 +44,21 @@ char *progname;
 int pilot_connect(const char *port);
 static void Help(char *progname);
 
+struct option options[] = {
+        {"help",        no_argument,       NULL, 'h'},
+        {"version",     no_argument,       NULL, 'v'},
+        {"port",        required_argument, NULL, 'p'},
+        {"verbose",     no_argument,       NULL, 'v'},
+        {"delete",      required_argument, NULL, 'd'},
+        {"file",        required_argument, NULL, 'f'},
+        {"save",        required_argument, NULL, 's'},
+        {"category",    required_argument, NULL, 'c'},
+        {"regex",       required_argument, NULL, 'r'},
+        {NULL,          0,                 NULL, 0}
+};
+
+static const char *optstring = "vqdp:s:f:c:r:h";
+
 void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category);
 void write_memo_in_directory(char *dirname, struct Memo m,
 			     struct MemoAppInfo mai, int category,
@@ -182,21 +197,19 @@ static void Help(char *progname)
 	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n"
 	       "   Usage: memos [-p <port> | -f MemoDB] [options]\n\n"
 	       "   Options:\n"
-	       "    -q          = quiet, do not prompt for HotSync button press\n"
-	       "    -v          = verbose, with -d, print each filename as it's written\n" 
-	       "    -Q          = do not announce which files are opened\n"
-	       "    -D          = delete the memo named by <number>\n"
-	       "    -p port     = use device file <port> to communicate with Palm\n"
-	       "    -f file     = use <file> as memo database file (rather than hotsyncing)\n"
-	       "    -d dir      = save memos in <dir> instead of writing to STDOUT\n"
-	       "    -c category = only upload memos in this category\n"
-	       "    -t regexp   = select memos to be saved by title\n" 
-	       "    -h|-?       = print this usage summary\n\n"
+               "     -p <port>      Use device file <port> to communicate with Palm\n"
+               "     -h             Display this information\n"
+	       "     -v             Verbose, with -d, print each filename as it's written\n" 
+	       "     -d             Delete the memo named by <number>\n"
+	       "     -f file        Use <file> as memo database file (rather than HotSync)\n"
+	       "     -s <dir>       Save memos in <dir> instead of writing to STDOUT\n"
+	       "     -c category    Only upload memos in this category\n"
+	       "     -r regexp      Select memos to be saved by title\n\n" 
 	       "   By default, the contents of your Palm's memo database will be written to\n"
 	       "   standard output as a standard Unix mailbox (mbox-format) file, with each\n"
 	       "   memo as a separate message.  The subject of each message will be the\n"
 	       "   category.\n\n"
-	       "   If '-d' is specified, than instead of being written to standard output,\n"
+	       "   If '-s' is specified, than instead of being written to standard output,\n"
 	       "   will be saved in subdirectories of <dir>.  Each subdirectory will be the\n"
 	       "   name of a category on the Palm, and will contain the memos in that\n"
 	       "   category.  Each memo's filename will be the first line (up to the first\n"
@@ -220,7 +233,6 @@ int main(int argc, char *argv[])
 		len,
 		ret,
 		sd 		= -1,
-		quiet 		= 0,
 		verbose 	= 0,
 		delete 		= 0,
 		mode 		= MEMO_MBOX_STDOUT,
@@ -245,18 +257,12 @@ int main(int argc, char *argv[])
 	regex_t title_pattern;
 	recordid_t id;
 
-	while (((c = getopt(argc, argv, "vqQDp:d:f:c:t:h?")) != -1)) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'v':
-			  verbose = 1;
-			  break;
-		  case 'q':
-			  quiet = 1;
-			  break;
-		  case 'Q':
-			  verbose = 0;
-			  break;
-		  case 'D':
+			  PalmHeader(progname);
+			  exit(0);
+		  case 'd':
 			  delete = 1;
 			  break;
 		  case 'p':
@@ -267,7 +273,7 @@ int main(int argc, char *argv[])
 			  strncpy(filename, optarg, MAXDIRNAMELEN);
 			  filename[MAXDIRNAMELEN] = '\0';
 			  break;
-		  case 'd':
+		  case 's':
 			  /* optarg is name of directory to create and store memos in */
 			  strncpy(dirname, optarg, sizeof(dirname));
 			  mode = MEMO_DIRECTORY;
@@ -277,7 +283,7 @@ int main(int argc, char *argv[])
 			  strncpy(category_name, optarg, MAXDIRNAMELEN);
 			  filename[MAXDIRNAMELEN] = '\0';
 			  break;
-		  case 't':
+		  case 'r':
 			  /* optarg is a query to select memos by title */
 			  ret = regcomp(&title_pattern, optarg, REG_NOSUB);
 			  buf = (char *) malloc(bufsize);
@@ -290,14 +296,13 @@ int main(int argc, char *argv[])
 			  title_matching = 1;
 			  break;
 		  case 'h':
-		  case '?':
 			  Help(progname);
+			  exit(0);
 		}
 	}
 
 	/* Need to add tests here for port/filename, clean this. -DD */
 	if (filename[0] == '\0') {
-
 	
 	        sd = pilot_connect(port);
 
