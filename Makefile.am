@@ -4,7 +4,7 @@ else
 CXX_DIR =
 endif
 
-SUBDIRS=libsock . $(CXX_DIR) include man tests tools
+SUBDIRS=libsock $(CXX_DIR) include man tests . tools
 
 INCLUDES = 			\
 	-I$(top_srcdir)/include \
