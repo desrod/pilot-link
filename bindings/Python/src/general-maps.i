@@ -4,11 +4,11 @@
 %apply long { time_t }
 
 
-%typemap (python,in,numinputs=0) (pi_buffer_t *) {
+%typemap (in,numinputs=0) (pi_buffer_t *) {
   $1 = pi_buffer_new(0xFFFF);
 }
 
-%typemap (python,in,numinputs=0) (size_t *OUTBUFLEN) (size_t outbuflen) {
+%typemap (in,numinputs=0) (size_t *OUTBUFLEN) (size_t outbuflen) {
   outbuflen = 0xFFFF;
   $1 = &outbuflen;
 }
@@ -60,21 +60,7 @@
     }
 }
 
-%typemap (python,in,numinputs=0) unsigned long *OUTSTR4 (unsigned long temp) {
+%typemap (in,numinputs=0) unsigned long *OUTSTR4 (unsigned long temp) {
     $1 = &temp;
 }
 
-
-// for functions that return 0 on success or something else on error
-%typemap (python,out) PIERROR {
-    int *res_pointer, res;
-    res_pointer = (int *) $1;
-    res = *res_pointer;
-    if (res != 0) {
-	PyErr_SetObject(PIError, Py_BuildValue("(is)", res,
-					     "pisock error"));
-	return NULL;
-    }
-    $result = Py_None;
-    Py_INCREF(Py_None);
-}

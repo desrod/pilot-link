@@ -55,8 +55,6 @@ extern unsigned long makelong(char *c);
 #define DGETSTR(src,key,default) (PyDict_GetItemString(src,key) ? \
 				  PyString_AsString(PyDict_GetItemString(src,key)) : default)
 
-typedef int PIERROR;
-
 static PyObject *PIError;
 %}
 
@@ -75,8 +73,12 @@ error = _pisock.error
 #define PI_DEPRECATED
 
 %include general-maps.i
+%include general-maps-errorhandling.i
+
 %include pi-socket-maps.i
+
 %include pi-dlp-maps.i
+%include pi-dlp-maps-errorhandling.i
 
 %include ../../../include/pi-args.h
 %include ../../../include/pi-header.h

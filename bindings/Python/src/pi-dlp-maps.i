@@ -1,10 +1,5 @@
 // -*- C -*-
 
-%{
-typedef int DLPERROR;
-typedef int DLPDBERROR;
-%}
-
 
 // a char value that allows None for a null value.
 %typemap (python,in) char *ALLOWNULL {
@@ -72,11 +67,11 @@ typedef int DLPDBERROR;
     }
 }
 
-%typemap (python,in,numinputs=0) struct SysInfo * (struct SysInfo temp) {
+%typemap (in,numinputs=0) struct SysInfo * (struct SysInfo temp) {
     $1 = &temp;
 }
 
-%typemap (python,in,numinputs=0) (pi_buffer_t *dblist) {
+%typemap (in,numinputs=0) (pi_buffer_t *dblist) {
   $1 = pi_buffer_new(0xFFFF);
 }
 
@@ -165,7 +160,7 @@ typedef int DLPDBERROR;
     }
 }
 
-%typemap (python,in,numinputs=0) struct DBInfo *OUTPUT (struct DBInfo temp) {
+%typemap (in,numinputs=0) struct DBInfo *OUTPUT (struct DBInfo temp) {
     $1 = &temp;
 }
 
@@ -253,32 +248,6 @@ typedef int DLPDBERROR;
     $1 = &temp;
 }
 
-%typemap (python,out) DLPERROR {
-    if ($1 < 0) {
-	PyErr_SetObject(PIError, Py_BuildValue("(is)", $1,
-					     dlp_strerror($1)));
-	return NULL;
-    }
-    $result = Py_None;
-    Py_INCREF(Py_None);
-}
-
-/* Here we go for a list of all the functions which need handling as if they return DLPERROR */
-%typemap (python,out) int dlp_ReadDBList = DLPERROR;
-
-%typemap (python,out) DLPDBERROR {
-    if ($1 == -5) {
-	Py_INCREF(Py_None);
-	return Py_None;
-    } else if ($1 < 0) {
-	PyErr_SetObject(PIError, Py_BuildValue("(is)", $1,
-					     dlp_strerror($1)));
-	return NULL;
-    }
-    $result = Py_None;
-    Py_INCREF(Py_None);
-}
-
 // XXX
 %typemap (python,in) (const void *INBUF, size_t INBUFLEN) {
   $1 = (void *)PyString_AsString($input);
@@ -294,7 +263,7 @@ typedef int DLPDBERROR;
   }
 }
 
-%typemap (python,in,numinputs=0) (int reqbytes, pi_buffer_t *OUTBUF) {
+%typemap (in,numinputs=0) (int reqbytes, pi_buffer_t *OUTBUF) {
   $1 = 0xFFFF;
   $2 = pi_buffer_new($1);
 }

@@ -925,13 +925,10 @@ extern unsigned long makelong(char *c);
 #define DGETSTR(src,key,default) (PyDict_GetItemString(src,key) ? \
 				  PyString_AsString(PyDict_GetItemString(src,key)) : default)
 
-typedef int PIERROR;
-
 static PyObject *PIError;
 
 
-typedef int DLPERROR;
-typedef int DLPDBERROR;
+typedef int PIERROR;
 
 
 
@@ -973,6 +970,10 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
     }
 }
 
+
+
+typedef int DLPERROR;
+typedef int DLPDBERROR;
 
 
 /* returns SWIG_OLDOBJ if the input is a raw char*, SWIG_PYSTR if is a PyString */
@@ -8627,7 +8628,15 @@ static PyObject *_wrap_dlp_GetSysDateTime(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_GetSysDateTime(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8649,7 +8658,15 @@ static PyObject *_wrap_dlp_SetSysDateTime(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_SetSysDateTime(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8672,7 +8689,15 @@ static PyObject *_wrap_dlp_ReadSysInfo(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_ReadSysInfo(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     {
         PyObject *o;
         
@@ -8709,7 +8734,15 @@ static PyObject *_wrap_dlp_ReadStorageInfo(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadStorageInfo(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8732,7 +8765,15 @@ static PyObject *_wrap_dlp_ReadUserInfo(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_ReadUserInfo(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     {
         PyObject *o;
         
@@ -8770,7 +8811,15 @@ static PyObject *_wrap_dlp_WriteUserInfo(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_WriteUserInfo(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     {
         PyObject *o;
         
@@ -8803,7 +8852,15 @@ static PyObject *_wrap_dlp_ResetLastSyncPC(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_ResetLastSyncPC(arg1);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8833,7 +8890,15 @@ static PyObject *_wrap_dlp_ReadNetSyncInfo(PyObject *self, PyObject *args) {
     }
     result = (int)dlp_ReadNetSyncInfo(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8863,7 +8928,15 @@ static PyObject *_wrap_dlp_WriteNetSyncInfo(PyObject *self, PyObject *args) {
     }
     result = (int)dlp_WriteNetSyncInfo(arg1,(struct NetSyncInfo const *)arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8881,7 +8954,15 @@ static PyObject *_wrap_dlp_OpenConduit(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_OpenConduit(arg1);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8903,7 +8984,15 @@ static PyObject *_wrap_dlp_EndOfSync(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_EndOfSync(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8921,7 +9010,15 @@ static PyObject *_wrap_dlp_AbortSync(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_AbortSync(arg1);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -8951,7 +9048,15 @@ static PyObject *_wrap_dlp_ReadFeature(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadFeature(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9001,7 +9106,15 @@ static PyObject *_wrap_dlp_AddSyncLogEntry(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj1, (char**)&arg2)) SWIG_fail;
     result = (int)dlp_AddSyncLogEntry(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9099,7 +9212,15 @@ static PyObject *_wrap_dlp_ReadAppPreference(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadAppPreference(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9140,7 +9261,15 @@ static PyObject *_wrap_dlp_WriteAppPreference(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_WriteAppPreference(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9158,7 +9287,15 @@ static PyObject *_wrap_dlp_ResetSystem(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_ResetSystem(arg1);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9538,7 +9675,15 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
     }
     result = (int)dlp_FindDBInfo(arg1,arg2,arg3,(char const *)arg4,arg5,arg6,arg7);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9571,7 +9716,15 @@ static PyObject *_wrap_dlp_OpenDB(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_OpenDB(arg1,arg2,arg3,(char const *)arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9593,7 +9746,15 @@ static PyObject *_wrap_dlp_CloseDB(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_CloseDB(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9611,7 +9772,15 @@ static PyObject *_wrap_dlp_CloseDB_All(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_CloseDB_All(arg1);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9636,7 +9805,15 @@ static PyObject *_wrap_dlp_DeleteDB(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) SWIG_fail;
     result = (int)dlp_DeleteDB(arg1,arg2,(char const *)arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9681,7 +9858,15 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_CreateDB(arg1,arg2,arg3,arg4,arg5,arg6,(char const *)arg7,arg8);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9707,7 +9892,15 @@ static PyObject *_wrap_dlp_ReadOpenDBInfo(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadOpenDBInfo(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9787,7 +9980,15 @@ static PyObject *_wrap_dlp_DeleteCategory(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_DeleteCategory(arg1,arg2,arg3);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9817,7 +10018,15 @@ static PyObject *_wrap_dlp_MoveCategory(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_MoveCategory(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9851,7 +10060,15 @@ static PyObject *_wrap_dlp_ReadAppBlock(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_ReadAppBlock(arg1,arg2,arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     {
         PyObject *o1;
         if (arg5) {
@@ -9888,7 +10105,15 @@ static PyObject *_wrap_dlp_WriteAppBlock(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_WriteAppBlock(arg1,arg2,(void const *)arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9922,7 +10147,15 @@ static PyObject *_wrap_dlp_ReadSortBlock(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_ReadSortBlock(arg1,arg2,arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     {
         PyObject *o1;
         if (arg5) {
@@ -9959,7 +10192,15 @@ static PyObject *_wrap_dlp_WriteSortBlock(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_WriteSortBlock(arg1,arg2,(void const *)arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -9981,7 +10222,15 @@ static PyObject *_wrap_dlp_CleanUpDatabase(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_CleanUpDatabase(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10003,7 +10252,15 @@ static PyObject *_wrap_dlp_ResetSyncFlags(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_ResetSyncFlags(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10025,7 +10282,15 @@ static PyObject *_wrap_dlp_ResetDBIndex(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_ResetDBIndex(arg1,arg2);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10067,7 +10332,18 @@ static PyObject *_wrap_dlp_ReadRecordById(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadRecordById(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     {
         PyObject *o1;
         if (arg4) {
@@ -10117,7 +10393,18 @@ static PyObject *_wrap_dlp_ReadRecordByIndex(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadRecordByIndex(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     {
         PyObject *o1;
         if (arg4) {
@@ -10167,7 +10454,18 @@ static PyObject *_wrap_dlp_ReadNextModifiedRec(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadNextModifiedRec(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     {
         PyObject *o1;
         if (arg3) {
@@ -10217,7 +10515,18 @@ static PyObject *_wrap_dlp_ReadNextModifiedRecInCategory(PyObject *self, PyObjec
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadNextModifiedRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     {
         PyObject *o1;
         if (arg4) {
@@ -10267,7 +10576,18 @@ static PyObject *_wrap_dlp_ReadNextRecInCategory(PyObject *self, PyObject *args)
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadNextRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     {
         PyObject *o1;
         if (arg4) {
@@ -10320,7 +10640,18 @@ static PyObject *_wrap_dlp_WriteRecord(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_WriteRecord(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10350,7 +10681,15 @@ static PyObject *_wrap_dlp_DeleteRecord(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_DeleteRecord(arg1,arg2,arg3,arg4);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10388,7 +10727,18 @@ static PyObject *_wrap_dlp_ReadResourceByType(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadResourceByType(arg1,arg2,arg3,arg4,arg5,arg6);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     {
         PyObject *o1;
         if (arg5) {
@@ -10434,7 +10784,18 @@ static PyObject *_wrap_dlp_ReadResourceByIndex(PyObject *self, PyObject *args) {
     SWIG_POINTER_EXCEPTION | 0)) == -1) SWIG_fail;
     result = (int)dlp_ReadResourceByIndex(arg1,arg2,arg3,arg4,arg5,arg6);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     {
         PyObject *o1;
         if (arg4) {
@@ -10479,7 +10840,18 @@ static PyObject *_wrap_dlp_WriteResource(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_WriteResource(arg1,arg2,arg3,arg4,(void const *)arg5,arg6);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result == -5) {
+            /* Why do we allow -5 as a non-error again ? NCP */
+            Py_INCREF(Py_None);
+            resultobj = Py_None;
+        } else if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result, dlp_strerror(result)));
+            return NULL;
+        }
+        Py_INCREF(Py_None);
+        resultobj = Py_None;
+    }
     return resultobj;
     fail:
     return NULL;
@@ -10513,7 +10885,15 @@ static PyObject *_wrap_dlp_DeleteResource(PyObject *self, PyObject *args) {
     if (PyErr_Occurred()) SWIG_fail;
     result = (int)dlp_DeleteResource(arg1,arg2,arg3,arg4,arg5);
     
-    resultobj = SWIG_From_int((int)result);
+    {
+        if (result < 0) {
+            PyErr_SetObject(PIError, Py_BuildValue("(is)", result,
+            dlp_strerror(result)));
+            return NULL;
+        }
+        resultobj = Py_None;
+        Py_INCREF(Py_None);
+    }
     return resultobj;
     fail:
     return NULL;
