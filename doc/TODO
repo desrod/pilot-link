@@ -26,6 +26,8 @@ Major Issues
         - pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
 	  - Split out "Sync" from Backup function
 
+	- "strict-ify" sync-plan.PL
+
 
 	Fixed/Closed
 	------------
@@ -102,6 +104,18 @@ Minor Issues
 
 Tweaks/Enhancements
 -------------------
+	- Add proper curses updates to pilot-xfer -b -f -i -s -p to look
+	  something like:
+
+	.--------------------------------------------------------------.
+	| File:     /tmp/palm/Alpha-Lg.pdb                  Successful |
+	| Size:     3,462 bytes, 3.38k           1,028,492 bytes total |
+	| Progress: [==========================>                 ] 62% |
+	| Overall:  [=======================>                    ] 50% |
+	| Time:     00:11:23                                           |
+	| Files: 234 remaining, 468 total                              |
+	`--------------------------------------------------------------'
+
 	- Remove the pi_bind, pi_listen, pi_accept from all relevant files,
 	  and create a function pi_error() which will return the proper
 	  responses. Additionally, remove PalmHeader() and stick that in
