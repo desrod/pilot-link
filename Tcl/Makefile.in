@@ -1,0 +1,89 @@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+libdir = @libdir@
+pixdir = ${libdir}/pix
+includedir = @includedir@
+mandir = @mandir@/man1
+srcdir = ../@srcdir@
+VPATH = ../@srcdir@
+
+TCL_INC = @TCL_INC@
+TK_INC = @TK_INC@
+TCL_BIN = @TCL_BIN@
+TCL_LIBS = @TCL_LIB_SPEC@ @TCL_LIBS@
+TK_LIBS = @TCLTK_LIBS@
+TCL_VERSION = @TCL_VERSION@
+TK_VERSION = @TK_VERSION@
+TCL_SH = @TCL_BIN@/tclsh@TCL_VERSION@
+
+PACKAGES = @TCL_PACKAGE_PATH@
+
+top_builddir = ..
+
+CC = @CC@
+CFLAGS = @CFLAGS@ @CWFLAG@ -DLIBDIR=\"$(libdir)\" -I../include -I$(srcdir)/include
+# -DDEBUG
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+# -lefence
+
+
+INSTALL = $(LIBTOOL) @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+YACC = @YACC@
+RANLIB = @RANLIB@
+RM = rm -f
+STRIP = strip
+SHELL = /bin/sh
+CPLIB = @CPLIB@
+EXT = @EXT@
+SUBMAKE_COMM = @SUBMAKE_COMM@
+SUBMAKE_COMM_CC = @SUBMAKE_COMM_CC@
+LIBTOOL = @LIBTOOL@
+
+CCLINK = $(LIBTOOL) --mode=link $(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS)
+
+OBJS = pdapilot.lo
+
+LIB = pdapilot.la
+
+INTERPS = pitcl$(TCL_VERSION) piwish$(TK_VERSION)
+
+.SUFFIXES: .out .o .lo .cc .c .e .r .f .y .l .s .p
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+
+all: $(LIB) $(INTERPS)
+
+pitcl$(TCL_VERSION): tclAppInit.o $(LIB)
+	$(CCLINK) -o pitcl$(TCL_VERSION) tclAppInit.o $(LIB) $(TCL_LIBS)
+
+piwish$(TK_VERSION): tkAppInit.o $(LIB)
+	$(CCLINK) -o piwish$(TK_VERSION) -DWISH tkAppInit.o $(LIB) $(TK_LIBS)
+
+installdirs:
+	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(PACKAGES)
+
+install: installdirs $(LIB)
+	$(INSTALL_DATA) $(LIB) $(PACKAGES)/$(LIB)
+	$(LIBTOOL) -n --finish $(PACKAGES)
+
+uninstall: 
+	-$(LIBTOOL) $(RM) $(PACKAGES)/$(LIB)
+
+$(LIB): $(OBJS) Makefile
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) \
+		-export-dynamic -rpath $(PACKAGES) \
+		-o $(LIB) $(OBJS) -L$(libdir) -lpisock
+
+test: $(LIB)
+	$(TclSh) test.tcl
+
+clean:
+	$(RM) *.o *.a *.lo *.la core a.out *.so $(INTERPS)
+	$(RM) -r .libs
+	$(RM) *~

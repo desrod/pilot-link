@@ -90,7 +90,7 @@ char * newfilename(PilotRecord * r) {
 	for( i = 0; rec < end; ++i, ++rec) {
 		if( *rec == '\n' )
 			break;
-		else if( isspace(*rec) )
+		else if( !isalnum(*rec) )
 			name[i] = '.';
 		else
 			name[i] = *rec;

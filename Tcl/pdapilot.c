@@ -964,7 +964,7 @@ static struct { char * name; Tcl_ObjCmdProc *proc; int export;} oprocs[] = {
 	{0,0}
 };
 
-int Pilotlink_Init(Tcl_Interp *interp) {
+int Pdapilot_Init(Tcl_Interp *interp) {
 	int i;
 	Tcl_Namespace  * namespacePtr;
 	Tcl_CallFrame frame;

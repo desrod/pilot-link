@@ -24,6 +24,7 @@ while(<>) {
     foreach $k (keys %defs) {
       s/$k/$defs{$k}/g;
     }
+    s/\.la/.a/g;
 	print;
 }
 
@@ -37,6 +38,7 @@ while(<>) {
     }
 	s#../include/pi-config.h# #g;
 	s#unixserial#os2serial#g;
+	s#O = lo#O = o#g;
 	print;
 }
 
@@ -47,5 +49,6 @@ while(<>) {
       s/$k/$defs{$k}/g;
     }
 	s#../include/pi-config.h# #g;
+	s#O = lo#O = o#g;
 	print;
 }

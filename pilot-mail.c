@@ -254,6 +254,7 @@ int main(int argc, char *argv[])
 
   extern char* optarg;
   extern int optind;
+  
 
   if (getenv("SENDMAIL"))
     sendmail = getenv("SENDMAIL");
@@ -273,6 +274,8 @@ int main(int argc, char *argv[])
     port = getenv("PILOTPORT");
     
   signal(SIGINT, sigint);
+
+  optind = 0;
   
   while ((c = getopt(argc, argv, "s:p:d:f:h:u:p:h:P:k:")) != EOF) {
     switch (c) {

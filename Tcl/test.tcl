@@ -1,6 +1,6 @@
 #!/usr/local/tcl8.0/bin/tclsh8.0
 
-load ./PilotLink.so
+#load ./PilotLink.so
 
 set bar 0
 

@@ -1,3 +1,13 @@
+Jun 29, 1997	Kenneth Albanowski 0.7.2
+
+	Complete reimplemenation of library production, using version 0.9h of
+		Gordon Matzigkeit's libtool package.
+	Added Tcl, Tk, & Python auto-detection to configure script (use
+		'configure --help' to see what options can be modified.)
+	Rewrote Python compilation to use standard dynamic compilation technique.
+	Rewrote Tcl compilation to use libtool and to generate binaries.
+	Added David Warren's patch to add serial delays for SGI.
+
 Jun 22, 1997	Kenneth Albanowski 0.7.1
 
 	Added Ian's patches to install man-pages, and dump records in

@@ -1,18 +1,4 @@
 
-## If you want to make pilot-debug, and have Tcl >= 7.5, then uncomment the
-## following three lines and correct the library and include paths to match
-## what is needed on your system
-
-#PDEXE = pilot-debug$(EXT)
-#TCLLIBS  = -L/usr/local/tcl7.5/lib -ltcl7.5 -ldl
-#TCLDEFS  = -I/usr/local/tcl7.5/include
-
-## You may uncomment the TK lines below if you have Tk >= 4.1, though Tk is
-## not required, either for compilation or execution.
-
-#TKLIBS  = -L/usr/local/tcl7.5/lib -L/usr/X11/lib -ltk4.1 -lX11
-#TKDEFS  = -DTK -I/usr/local/tcl7.5/include
-
 ## If you have GNU readline 2.0 (all other versions not presently supported)
 ## you may compile much better command-line support into pilot-debug by
 ## uncommenting these lines, correcting the libraries and paths if needed.
@@ -30,14 +16,24 @@ mandir = @mandir@/man1
 srcdir = @srcdir@
 VPATH = @srcdir@
 
+top_builddir = .
+
 PURELINK =
 PURIFY =
 
+TCL_LIBS = @TCL_LIBS@
+TCL_LIB_SPEC = @TCL_LIB_SPEC@
+TCL_INC = @TCL_INC@
+TK_LIBS = @TK_LIBS@
+TK_LIB_SPEC = @TK_LIB_SPEC@
+TK_INC = @TK_INC@
+TCLTK_LIBS = @TCLTK_LIBS@
+
 CC = @CC@
 CXX = @CXX@
-CFLAGS = @CFLAGS@ @CWFLAG@ -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
+CFLAGS = @CFLAGS@ @CWFLAG@ $(RLDEFS) -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
 # -DDEBUG
-CXXFLAGS = @CXXFLAGS@ @CWFLAG@ -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
+CXXFLAGS = @CXXFLAGS@ @CWFLAG@ $(RLDEFS) -DLIBDIR=\"$(libdir)\" -I./include -I$(srcdir)/include
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 # -lefence
@@ -46,7 +42,7 @@ CXXLIBS = @CXXLIBS@
 libcclib = @libcclib@
 cclib = @cclib@
 
-INSTALL = @INSTALL@
+INSTALL = $(LIBTOOL) @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 YACC = @YACC@
@@ -58,14 +54,24 @@ CPLIB = @CPLIB@
 EXT = @EXT@
 SUBMAKE_COMM = @SUBMAKE_COMM@
 SUBMAKE_COMM_CC = @SUBMAKE_COMM_CC@
+LIBTOOL = @LIBTOOL@
+
+CCLINK = $(LIBTOOL) --mode=link $(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS)
+CXXLINK = $(LIBTOOL) --mode=link $(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS)
 
 .SUFFIXES: .out .o .cc .c .e .r .f .y .l .s .p
 
-.cc.o: ; $(CXX) $(CXXFLAGS) -c $*.cc
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+.cc.o:
+	$(CXX) $(CXXFLAGS) -c $<
 
 CCEXECS = ccexample$(EXT) iambicexample$(EXT)
 
-EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) pilot-schlep$(EXT)\
+TCLEXECS = @TCLEXECS@
+
+EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
 		install-memo$(EXT) install-user$(EXT)\
 		install-todos$(EXT) pilot-addresses$(EXT) pilot-clip$(EXT)\
 		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT)\
@@ -73,29 +79,28 @@ EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) pilot-schl
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
 		getrom$(EXT) pi-port$(EXT) \
-		test-connector$(EXT) test-acceptor$(EXT)
+		test-connector$(EXT) test-acceptor$(EXT) $(TCLEXECS)
+
 
 PERLEXECS = pilot-undelete
 
-PILIBS = libpisock.a
-PICCLIBS = $(PILIBS) @cclib@
+PILIB = libsock/libpisock.la
+PICCLIB = @libcclib@
 
 all: submake $(EXECS)
 
-submake libsock/libpisock.a $(libcclib):
-	$(SUBMAKE_COMM)
-	$(SUBMAKE_COMM_CC)
-
-libpisock.a: libsock/libpisock.a
-	$(CPLIB) libsock/libpisock.a libpisock.a
-
-libpicc.a: libcc/libpicc.a
-	$(CPLIB) libcc/libpicc.a libpicc.a
+submake $(PILIB) $(PICCLIB):
+	$(SUBMAKE_COMM) libpisock.la
+	$(SUBMAKE_COMM_CC) libpicc.la
 
 installdirs:
 	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(bindir) $(includedir) $(libdir) $(pixdir)
 
-install: $(EXECS) installdirs libpisock.a
+install: $(EXECS) installdirs $(PILIB) $(PICCLIB)
+	$(INSTALL_DATA) $(PILIB) $(libdir)/libpisock.la
+	if test -f $(PICCLIB); then \
+		$(INSTALL_DATA) $(PICCLIB) $(libdir)/libpicc.la; \
+	fi
 	for p in $(EXECS); do \
 		$(INSTALL_PROGRAM) $$p $(bindir)/$$p; \
 		$(STRIP) $(bindir)/$$p; \
@@ -112,12 +117,7 @@ install: $(EXECS) installdirs libpisock.a
 	for p in $(srcdir)/pix/*.gif $(srcdir)/pix/*.xbm; do \
 		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
 	done
-	$(INSTALL_DATA) libpisock.a $(libdir)/libpisock.a
-	$(RANLIB) $(libdir)/libpisock.a
-	if test -f libpicc.a; then \
-		$(INSTALL_DATA) libpicc.a $(libdir)/libpicc.a; \
-		$(RANLIB) $(libdir)/libpicc.a; \
-	fi
+	$(LIBTOOL) -n --finish $(libdir)
 
 uninstall: $(EXECS)
 	-for p in $(EXECS) $(PERLEXECS) pilot-debug; do \
@@ -128,99 +128,99 @@ uninstall: $(EXECS)
 		$(RM) $(includedir)/`basename $$h`; \
 	done
 	-rmdir $(includedir)
-	-$(RM) $(libdir)/libpisock.a
-	-$(RM) $(libdir)/libpicc.a
+	-$(LIBTOOL) $(RM) $(libdir)/libpisock.la
+	-$(LIBTOOL) $(RM) $(libdir)/libpicc.la
 	-rmdir $(libdir)
 
-install-memo$(EXT): $(PILIBS) install-memo.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) install-memo.o $(PILIBS) -o $@ $(LIBS)
+install-memo$(EXT): $(PILIB) install-memo.o
+	$(CCLINK) install-memo.o $(PILIB) -o $@ $(LIBS)
 
-install-todos$(EXT): $(PILIBS) install-todos.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) install-todos.o $(PILIBS) -o $@ $(LIBS)
+install-todos$(EXT): $(PILIB) install-todos.o
+	$(CCLINK) install-todos.o $(PILIB) -o $@ $(LIBS)
 
-pilot-addresses$(EXT): $(PILIBS) pilot-addresses.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-addresses.o $(PILIBS) -o $@ $(LIBS)
+pilot-addresses$(EXT): $(PILIB) pilot-addresses.o
+	$(CCLINK) pilot-addresses.o $(PILIB) -o $@ $(LIBS)
 
-pilot-dedupe$(EXT): $(PILIBS) pilot-dedupe.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-dedupe.o $(PILIBS) -o $@ $(LIBS)
+pilot-dedupe$(EXT): $(PILIB) pilot-dedupe.o
+	$(CCLINK) pilot-dedupe.o $(PILIB) -o $@ $(LIBS)
 
-install-user$(EXT): $(PILIBS) install-user.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) install-user.o $(PILIBS) -o $@ $(LIBS)
+install-user$(EXT): $(PILIB) install-user.o
+	$(CCLINK) install-user.o $(PILIB) -o $@ $(LIBS)
 
-pilot-xfer$(EXT): $(PILIBS) pilot-xfer.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-xfer.o $(PILIBS) -o $@ $(LIBS)
+pilot-xfer$(EXT): $(PILIB) pilot-xfer.o
+	$(CCLINK) pilot-xfer.o $(PILIB) -o $@ $(LIBS)
 
-pilot-schlep$(EXT): $(PILIBS) pilot-schlep.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-schlep.o $(PILIBS) -o $@ $(LIBS)
+pilot-schlep$(EXT): $(PILIB) pilot-schlep.o
+	$(CCLINK) pilot-schlep.o $(PILIB) -o $@ $(LIBS)
 
-pilot-mail$(EXT): $(PILIBS) pilot-mail.o parsedate.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-mail.o parsedate.o $(PILIBS) -o $@ $(LIBS)
+pilot-mail$(EXT): $(PILIB) pilot-mail.o parsedate.o
+	$(CCLINK) pilot-mail.o parsedate.o $(PILIB) -o $@ $(LIBS)
 
-pi-port$(EXT): $(PILIBS) pi-port.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pi-port.o $(PILIBS) -o $@ $(LIBS)
+pi-port$(EXT): $(PILIB) pi-port.o
+	$(CCLINK) pi-port.o $(PILIB) -o $@ $(LIBS)
 
-pilot-file$(EXT): $(PILIBS) pilot-file.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)
+pilot-file$(EXT): $(PILIB) pilot-file.o
+	$(CCLINK) pilot-file.o $(PILIB) -o $@ $(LIBS)
 
-pilot-clip$(EXT): $(PILIBS) pilot-clip.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-clip.o $(PILIBS) -o $@ $(LIBS)
+pilot-clip$(EXT): $(PILIB) pilot-clip.o
+	$(CCLINK) pilot-clip.o $(PILIB) -o $@ $(LIBS)
 
-pilot-debug.o: $(PILIBS) pilot-debug.c Makefile
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) $(TCLDEFS) $(TKDEFS) -c pilot-debug.c
+pilot-debug.o: pilot-debug.c Makefile
+	$(CC) $(CFLAGS) -c pilot-debug.c
 
-pd-tty.o: $(PILIBS) pd-tty.c Makefile
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) $(TCLDEFS) $(TKDEFS) $(RLDEFS) -c pd-tty.c
+pd-tty.o: pd-tty.c Makefile
+	$(CC) $(CFLAGS) -c pd-tty.c
 
-pilot-debug$(EXT): $(PILIBS) pilot-debug.o pd-tty.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) pilot-debug.o pd-tty.o $(PILIBS) -o $@ $(TKLIBS) $(TCLLIBS) $(RLLIBS) $(LIBS)
+pilot-debug$(EXT): $(PILIB) pilot-debug.o pd-tty.o
+	$(CCLINK) pilot-debug.o pd-tty.o $(PILIB) -o $@ $(TCLTK_LIBS) $(RLLIBS) $(LIBS)
 
-reminders$(EXT): $(PILIBS) reminders.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) reminders.o $(PILIBS) -o $@ $(LIBS)
+reminders$(EXT): $(PILIB) reminders.o
+	$(CCLINK) reminders.o $(PILIB) -o $@ $(LIBS)
 
-memos$(EXT): $(PILIBS) memos.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) memos.o $(PILIBS) -o $@ $(LIBS)
+memos$(EXT): $(PILIB) memos.o
+	$(CCLINK) memos.o $(PILIB) -o $@ $(LIBS)
 
-read-todos$(EXT): $(PILIBS) read-todos.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) read-todos.o $(PILIBS) -o $@ $(LIBS)
+read-todos$(EXT): $(PILIB) read-todos.o
+	$(CCLINK) read-todos.o $(PILIB) -o $@ $(LIBS)
 
-read-expenses$(EXT): $(PILIBS) read-expenses.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) read-expenses.o $(PILIBS) -o $@ $(LIBS)
+read-expenses$(EXT): $(PILIB) read-expenses.o
+	$(CCLINK) read-expenses.o $(PILIB) -o $@ $(LIBS)
 
-read-ical$(EXT): $(PILIBS) read-ical.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) read-ical.o $(PILIBS) -o $@ $(LIBS)
+read-ical$(EXT): $(PILIB) read-ical.o
+	$(CCLINK) read-ical.o $(PILIB) -o $@ $(LIBS)
 
-sync-memodir$(EXT): $(PILIBS) sync-memodir.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) sync-memodir.o $(PILIBS) -o $@ $(LIBS)
+sync-memodir$(EXT): $(PILIB) sync-memodir.o
+	$(CCLINK) sync-memodir.o $(PILIB) -o $@ $(LIBS)
 
-sync-ical$(EXT): $(PILIBS) sync-ical.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) sync-ical.o $(PILIBS) -o $@ $(LIBS)
+sync-ical$(EXT): $(PILIB) sync-ical.o
+	$(CCLINK) sync-ical.o $(PILIB) -o $@ $(LIBS)
 
-addresses$(EXT): $(PILIBS) addresses.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) addresses.o $(PILIBS) -o $@ $(LIBS)
+addresses$(EXT): $(PILIB) addresses.o
+	$(CCLINK) addresses.o $(PILIB) -o $@ $(LIBS)
 
-test-connector$(EXT): $(PILIBS) test-connector.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) test-connector.o $(PILIBS) -o $@ $(LIBS)
+test-connector$(EXT): $(PILIB) test-connector.o
+	$(CCLINK) test-connector.o $(PILIB) -o $@ $(LIBS)
 
-test-acceptor$(EXT): $(PILIBS) test-acceptor.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) test-acceptor.o $(PILIBS) -o $@ $(LIBS)
+test-acceptor$(EXT): $(PILIB) test-acceptor.o
+	$(CCLINK) test-acceptor.o $(PILIB) -o $@ $(LIBS)
 
-dlpsh$(EXT): $(PILIBS) dlpsh.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) dlpsh.o $(PILIBS) -o $@ $(LIBS)
+dlpsh$(EXT): $(PILIB) dlpsh.o
+	$(CCLINK) dlpsh.o $(PILIB) -o $@ $(LIBS)
 
-debugsh$(EXT): $(PILIBS) debugsh.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) debugsh.o $(PILIBS) -o $@ $(LIBS)
+debugsh$(EXT): $(PILIB) debugsh.o
+	$(CCLINK) debugsh.o $(PILIB) -o $@ $(LIBS)
 
-ccexample$(EXT): $(PICCLIBS) ccexample.o
-	$(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS) ccexample.o $(PICCLIBS) -o $@ $(CXXLIBS) $(LIBS)
+ccexample$(EXT): $(PILIB) $(PICCLIB) ccexample.o
+	$(CXXLINK) ccexample.o $(PILIB) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-validate$(EXT): $(PICCLIBS) validate.o
-	$(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS) validate.o $(PICCLIBS) -o $@ $(CXXLIBS) $(LIBS)
+validate$(EXT): $(PILIB) $(PICCLIB) validate.o
+	$(CXXLINK) validate.o $(PILIB) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-iambicexample$(EXT): $(PICCLIBS) iambicexample.o
-	$(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS) iambicexample.o $(PICCLIBS) -o $@ $(CXXLIBS) $(LIBS)
+iambicexample$(EXT): $(PILIB) $(PICCLIB) iambicexample.o
+	$(CXXLINK) iambicexample.o $(PILIB) $(PICCLIB) -o $@ $(CXXLIBS) $(LIBS)
 
-getrom$(EXT): $(PILIBS) getrom.o
-	$(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS) getrom.o $(PILIBS) -o $@ $(LIBS)
+getrom$(EXT): $(PILIB) getrom.o
+	$(CCLINK) getrom.o $(PILIB) -o $@ $(LIBS)
 
 parsedate.c: parsedate.y
 	@echo Expect six shift/reduce conflicts
@@ -230,12 +230,6 @@ parsedate.c: parsedate.y
 strip: $(EXECS)
 	$(STRIP) $(EXECS)
 
-Perl5/PDAPilot/Makefile: Perl5/PDAPilot/Makefile.PL
-	cd Perl5/PDAPilot && perl Makefile.PL
-
-perl: Perl5/PDAPilot/Makefile
-	cd Perl5/PDAPilot && make
-
 distclean: clean
 	@-p4 edit Makefile.os2 */Makefile.os2 */Makefile.in 2>&1 >> /dev/null
 	$(SUBMAKE_COMM) depend
@@ -244,13 +238,18 @@ distclean: clean
 	$(RM) libcc/Makefile libcc/Makefile.in~
 	$(RM) config.log config.status config.cache
 	$(RM) PiDebug.log 
+	-cd Perl5 ; make realclean
+	-cd Python ; make clean
+	-cd Tcl ; make clean
 	$(RM) *~ *.orig */*~ */*.orig
 	perl scripts/os2dist.pl
 	@-p4 revert `p4 diff -sr Makefile.os2 */Makefile.os2 */Makefile.in` 2>&1 >> /dev/null 
 
 clean:
-	$(RM) *.o *.a core a.out test_s test_c install-prc$(EXT) pilot-debug$(EXT)
+	$(RM) *.o *.a *.lo *.la core a.out test_s test_c install-prc$(EXT) pilot-debug$(EXT)
+	$(RM) -r .libs
 	$(RM) $(EXECS) validate
-	$(RM) pilot.rom pilot2.rom
+	$(RM) pilot.rom pilot2.rom libtool
 	$(SUBMAKE_COMM) clean
 	$(SUBMAKE_COMM_CC) clean
+	

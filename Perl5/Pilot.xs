@@ -2,16 +2,16 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#include "../../include/pi-macros.h"
-#include "../../include/pi-file.h"
-#include "../../include/pi-datebook.h"
-#include "../../include/pi-memo.h"
-#include "../../include/pi-address.h"
-#include "../../include/pi-todo.h"
-#include "../../include/pi-mail.h"
-#include "../../include/pi-socket.h"
-#include "../../include/pi-dlp.h"
-#include "../../include/pi-syspkt.h"
+#include "pi-macros.h"
+#include "pi-file.h"
+#include "pi-datebook.h"
+#include "pi-memo.h"
+#include "pi-address.h"
+#include "pi-todo.h"
+#include "pi-mail.h"
+#include "pi-socket.h"
+#include "pi-dlp.h"
+#include "pi-syspkt.h"
 
 static int
 not_here(s)
@@ -357,17 +357,17 @@ DoFunc(arg, func)
 
 #define ReturnReadRecord(buf,size) \
 	    if (result >=0) {	\
-		    EXTEND(sp, 5);	\
-	    	PUSHs(sv_2mortal(newSVpv(buf,size)));	\
+	    	EXTEND(sp, 5);	\
+		    PUSHs(sv_2mortal(newSVpv(buf,size)));	\
 		    if (GIMME != G_SCALAR) {	\
 		    	PUSHs(sv_2mortal(newSViv(index)));	\
 		    	PUSHs(sv_2mortal(newSViv(id)));	\
 		    	PUSHs(sv_2mortal(newSViv(attr)));	\
 		    	PUSHs(sv_2mortal(newSViv(category)));	\
-		    }	\
+		    } \
 		} else {	\
-	    	PUSHs(&sv_undef);	\
 	    	self->errno = result;\
+	    	PUSHs(&sv_undef);	\
 	    }
 
 #define ReturnReadResource(buf,size) \
@@ -1975,6 +1975,7 @@ Open(self, name, mode=dlpOpenReadWrite, cardno=0, raw=0)
 				if (h)
 					c = hv_fetch(h, name, strlen(name), 0);
 			}
+			
 			if ( type == -13) { /* record database */
 				sv_bless(RETVAL, c ? gv_stashsv(*c, 1) :
 				                     gv_stashpv("PDA::Pilot::DLP::RecordDBPtr",0));

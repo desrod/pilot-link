@@ -1,3 +1,4 @@
+sub FooBar { return $_[0] . "x" };
 
 use PDA::Pilot;
 
@@ -37,6 +38,7 @@ $ui = $dlp->GetUserInfo;
 
 print "Battery voltage is $b[0], (warning marker $b[1], critical marker $b[2])\n";
 
+if (1) {
 $db = $dlp->Open("MemoDB");
 
 print "db class is ", ref $db, "\n";
@@ -60,7 +62,7 @@ print "Categories: @{$app->{categoryName}}\n";
 #print "Resource: @r, error: ", ($db->errno()),"\n";
 
 undef $db; # Close database
-
+}
 undef $dlp; # Close connection
 
 print "Your name is $ui->{name}\n";

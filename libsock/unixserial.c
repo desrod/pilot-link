@@ -230,6 +230,11 @@ int pi_serial_open(struct pi_socket *ps, struct pi_sockaddr * addr, int addrlen)
 # define sleeping_beauty
 #endif
 
+/* SGI IRIX fails to flush hardware FIFO on port close */
+#ifdef __sgi
+# define sleeping_beauty
+#endif
+
 static int s_changebaud(struct pi_socket *ps)
 {
 #ifndef SGTTY

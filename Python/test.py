@@ -1,4 +1,11 @@
-import pdapilot
+
+try:
+	import pdapilot
+except:
+	import sys
+	sys.path.append('./.libs/')
+	import pdapilot
+
 from sys import stdin
 
 print 'Please enter the serial port [/dev/cua3]: ',

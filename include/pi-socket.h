@@ -9,7 +9,7 @@ extern "C" {
 
 #define PILOT_LINK_VERSION 0
 #define PILOT_LINK_MAJOR 7
-#define PILOT_LINK_MINOR 1
+#define PILOT_LINK_MINOR 2
 
 #define PI_AF_SLP 0x0051        /* arbitrary, for completeness, just in case */
 #define PI_AF_INETSLP 0x0054    
