@@ -38,6 +38,7 @@
 #include "pi-file.h"
 #include "pi-header.h"
 #include "pi-util.h"
+#include "pi-error.h"
 
 #include "userland.h"
 
@@ -1047,147 +1048,102 @@ palm_restore(const char *dirname)
 
 /***********************************************************************
  *
- * Function:    palm_install_internal
+ * Function:    install_progress
  *
- * Summary:     Push file(s) to the Palm
+ * Summary:     Sample progress output for the pi_file_install*
+ *              functions.
  *
- * Parameters:  filename --> local filesystem path for file to install.
+ * Parameters:  see pi_file_install docs.
  *
- * Returns:     Nothing
+ * Returns:     PI_TRANSFER_CONTINUE, because it doesn't allow PC-side
+ *              cancels.
  *
  ***********************************************************************/
-static void palm_install_internal(const char *filename)
+
+static int install_progress(int sd, pi_file_t *pf, int total, int xfer, int records)
 {
-	static int		totalsize;
-	struct pi_file	*f;
-	struct stat		sbuf;
-	struct CardInfo	Card;
+	const char *filename = NULL;
 
-	Card.card = -1;
-	Card.more = 1;
-
-	f = pi_file_open(filename);
-
-	if (f == 0)
-	{
-		printf("Unable to open '%s'!\n", filename);
-		return;
+	if (pf && pf->file_name) {
+		filename = pf->file_name;
+	}
+	if (!filename) {
+		filename="<unnamed>";
 	}
 
-	if (dlp_OpenConduit(sd) < 0)
-	{
-		fprintf(stderr, "\nExiting on cancel, some files were not "
-				"installed\n\n");
-		exit(EXIT_FAILURE);
-	}
+	fprintf(stdout,"\r   Installing '%s' ... (%d bytes)",filename,xfer);
+	fflush(stdout);
 
-	fprintf(stderr, "   Installing '%s'... ", filename);
-
-	stat(filename, &sbuf);
-
-	while (Card.more)
-	{
-		if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
-			break;
-	}
-
-	if (sbuf.st_size > Card.ramFree)
-	{
-		fprintf(stderr, "\n\n");
-		fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
-		fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
-			(unsigned long)sbuf.st_size, Card.ramFree);
-		return;
-	}
-
-	if (pi_file_install(f, sd, 0, NULL) < 0)
-	{
-		fprintf(stderr, "failed.\n");
-
-	} else if (stat(filename, &sbuf) == 0)
-	{
-		printf("(%lu bytes, %ld KiB total)\n\n",
-			(unsigned long)sbuf.st_size, (totalsize == 0)
-			? (long)sbuf.st_size/1024
-			: totalsize/1024);
-		totalsize += sbuf.st_size;
-	}
-
-	pi_file_close(f);
+	return PI_TRANSFER_CONTINUE;
 }
 
 /***********************************************************************
  *
- * Function:    palm_install_VFS
+ * Function:    pi_file_install_VFS
  *
- * Summary:     Push file(s) to the Palm
+ * Summary:     Push file(s) to the Palm's VFS (parameters intentionally
+ *              similar to pi_file_install).
  *
- * Parameters:  filename --> local filesystem path for file to install.
+ * Parameters:  fd       --> open file descriptor for file
+ *              basename --> filename or description of file
+ *              socket   --> sd, connection to Palm
+ *              vfspath  --> target in VFS, may be dir or filename
+ *              f        --> progress function, in the style of pi_file_install
  *
- * Returns:     Nothing
+ * Returns:     -1 on bad parameters
+ *              -2 on cancelled sync
+ *              -3 on bad vfs path
+ *              -4 on bad local file
+ *              -5 on insufficient VFS space for the file
+ *              -6 on memory allocation error
+ *              >=0 if all went well (size of installed file)
+ *
+ * Note:        Should probably return an ssize_t and refuse to do files >
+ *              2Gb, due to signedness.
  *
  ***********************************************************************/
-static void
-palm_install_VFS(const char *localfile, const char *vfspath)
+static int pi_file_install_VFS(const int fd, const char *basename, const int socket, const char *vfspath, progress_func f)
 {
-	static unsigned long
-					totalsize = 0;
-	long			volume = -1;
-	long			used,
-					total,
-					freespace;
-	char			rpath[vfsMAXFILENAME];
-	int				rpathlen = vfsMAXFILENAME;
-	const char		*basename;
-	FileRef			file;
-	long			attributes;
-	char			*filebuffer;
-	int				fd,
-					writesize,
-					offset;
-	size_t			readsize;
-	size_t			written_so_far;
+	enum { bad_parameters=-1,
+	       cancel=-2,
+	       bad_vfs_path=-3,
+	       bad_local_file=-4,
+	       insufficient_space=-5,
+	       internal_=-6
+	} ;
 
-	struct stat				sbuf;
+	char        rpath[vfsMAXFILENAME];
+	int         rpathlen = vfsMAXFILENAME;
+	FileRef     file;
+	long        attributes;
+	char        *filebuffer = NULL;
+	long        volume = -1;
+	long        used,
+	            total,
+	            freespace;
+	int
+	            writesize,
+	            offset;
+	size_t      readsize;
+	size_t      written_so_far = 0;
+	enum { no_path=0, appended_filename=1, retried=2, done=3 } path_steps;
+	struct stat sbuf;
 
-	if (NULL == vfspath)
-	{
-		/* how the heck did we get here then? */
-		fprintf(stderr,"\n   No VFS path given.\n");
-		return;
-	}
-
-	if (dlp_OpenConduit(sd) < 0)
-	{
-		fprintf(stderr, "\nExiting on cancel, some files were not"
-				"installed\n\n");
-		exit(EXIT_FAILURE);
+	if (fstat(fd,&sbuf) < 0) {
+		fprintf(stderr,"   ERROR: Cannot stat '%s'.\n",basename);
+		return bad_local_file;
 	}
 
 	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0)
 	{
 		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n", vfspath);
-		return;
+		return bad_vfs_path;
 	}
 
-	fprintf(stdout, "   Installing '%s'... ", localfile);
-	fflush(stdout);
-
-	if (stat(localfile, &sbuf) < 0)
-	{
-		fprintf(stderr,"   Unable to open '%s'!\n", localfile);
-		return;
-	}
-	if (S_IFREG != (sbuf.st_mode & S_IFREG))
-	{
-		fprintf(stderr,"   Not a regular file.\n");
-		return;
-	}
-
-	if (dlp_VFSVolumeSize(sd,volume,&used,&total)<0)
+	if (dlp_VFSVolumeSize(socket,volume,&used,&total)<0)
 	{
 		fprintf(stderr,"   Unable to get volume size.\n");
-		return;
+		return bad_vfs_path;
 	}
 
 	/* Calculate free space but leave last 64k free on card */
@@ -1199,29 +1155,32 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 		fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
 		fprintf(stderr, "   We needed %lu and only had %lu available..\n\n",
 				(unsigned long)sbuf.st_size, freespace);
-		return;
+		return insufficient_space;
 	}
-#define APPEND_BASENAME fd-=1; \
-	basename = strrchr(localfile,'/'); \
-		if (NULL == basename) basename = localfile; else basename++; \
+#define APPEND_BASENAME path_steps-=1; \
 			if (rpath[rpathlen-1] != '/') { \
 				rpath[rpathlen++]='/'; \
 					rpath[rpathlen]=0; \
 			} \
-	strncat(rpath,basename,vfsMAXFILENAME-rpathlen-1); \
-		rpathlen = strlen(rpath);
+			strncat(rpath,basename,vfsMAXFILENAME-rpathlen-1); \
+			rpathlen = strlen(rpath);
 
-	fd = 0;
+	path_steps = no_path;
 
-	while (fd<2)
+	while (path_steps<retried)
 	{
 		/* Don't retry by default. APPEND_BASENAME changes
-		the file being tries, so it decrements fd again.
-		Because we add _two_ here, (two steps fwd, one step back)
-		we try at most twice anyway. */
-		fd+=2;
+		   the file being tries, so it decrements fd again.
+		   Because we add _two_ here, (two steps fwd, one step back)
+		   we try at most twice anyway.
+		      no_path->retried
+		      appended_filename -> done
+		   Note that APPEND_BASENAME takes one off, so
+		      retried->appended_basename
+		*/
+		path_steps+=2;
 
-		if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenRead,&file) < 0)
+		if (dlp_VFSFileOpen(socket,volume,rpath,dlpVFSOpenRead,&file) < 0)
 		{
 			/* Target doesn't exist. If it ends with a /, try to
 			create the directory and then act as if the existing
@@ -1231,18 +1190,18 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 			{
 				/* directory, doesn't exist. Don't try to mkdir /. */
 				if ((rpathlen > 1)
-						&& (dlp_VFSDirCreate(sd,volume,rpath) < 0))
+						&& (dlp_VFSDirCreate(socket,volume,rpath) < 0))
 				{
 					fprintf(stderr,"   Could not create destination directory.\n");
-					return;
+					return bad_vfs_path;
 				}
 				APPEND_BASENAME
 			}
-			if (dlp_VFSFileCreate(sd,volume,rpath) < 0)
+			if (dlp_VFSFileCreate(socket,volume,rpath) < 0)
 			{
 				fprintf(stderr,"   Cannot create destination file '%s'.\n",
 						rpath);
-				return;
+				return bad_vfs_path;
 			}
 		}
 		else
@@ -1250,58 +1209,52 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 			/* Exists, and may be a directory, or a filename. If it's
 			a filename, that's fine as long as we're installing
 			just a single file. */
-			if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
+			if (dlp_VFSFileGetAttributes(socket,file,&attributes) < 0)
 			{
 				fprintf(stderr,"   Could not get attributes for destination.\n");
-				(void) dlp_VFSFileClose(sd,file);
-				return;
+				(void) dlp_VFSFileClose(socket,file);
+				return bad_vfs_path;
 			}
 
 			if (attributes & vfsFileAttrDirectory)
 			{
 				APPEND_BASENAME
-				dlp_VFSFileClose(sd,file);
+				dlp_VFSFileClose(socket,file);
 				/* Now for sure it's a filename in a directory. */
 			} else {
-				dlp_VFSFileClose(sd,file);
+				dlp_VFSFileClose(socket,file);
 				if ('/' == rpath[rpathlen-1])
 				{
 					/* was expecting a directory */
 					fprintf(stderr,"   Destination is not a directory.\n");
-					return;
-				}
-				if (totalsize > 0)
-				{
-					fprintf(stderr,"   Must specify directory when installing multiple files.\n");
-					return;
+					return bad_vfs_path;
 				}
 			}
 		}
 	}
 #undef APPEND_BASENAME
 
-	if (dlp_VFSFileOpen(sd,volume,rpath,0x7,&file) < 0)
+	if (dlp_VFSFileOpen(socket,volume,rpath,0x7,&file) < 0)
 	{
 		fprintf(stderr,"   Cannot open destination file '%s'.\n",rpath);
-		return;
+		return bad_vfs_path;
 	}
 
-	fd = open(localfile,O_RDONLY);
-	if (fd < 0)
-	{
-		fprintf(stderr,"   Cannot open local file for reading.\n");
-		dlp_VFSFileClose(sd,file);
-		return;
-	}
 #define FBUFSIZ 65536
 	filebuffer = (char *)malloc(FBUFSIZ);
 	if (NULL == filebuffer)
 	{
 		fprintf(stderr,"   Cannot allocate memory for file copy.\n");
-		dlp_VFSFileClose(sd,file);
+		dlp_VFSFileClose(socket,file);
 		close(fd);
-		return;
+		return internal_;
 	}
+
+	pi_file_t fake_file;
+	memset(&fake_file,0,sizeof(fake_file));
+
+	fake_file.file_name = /* const_cast */ (char *) basename;
+
 
 	writesize = 0;
 	written_so_far = 0;
@@ -1312,34 +1265,206 @@ palm_install_VFS(const char *localfile, const char *vfspath)
 		offset=0;
 		while (readsize > 0)
 		{
-			writesize = dlp_VFSFileWrite(sd,file,filebuffer+offset,readsize);
+			writesize = dlp_VFSFileWrite(socket,file,filebuffer+offset,readsize);
 			if (writesize < 0)
 			{
 				fprintf(stderr,"   Error while writing file.\n");
 				break;
 			}
 			readsize -= writesize;
-			totalsize += writesize;
 			offset += writesize;
 			written_so_far += writesize;
 
 			if ((writesize>0) || (readsize > 0)) {
-				fprintf(stdout, "\r   Installing '%s'... (%lu bytes)", localfile,written_so_far);
-				fflush(stdout);
+				if (f && (f(socket,&fake_file,(int)sbuf.st_size,
+					(int)written_so_far,0) == PI_TRANSFER_STOP)) {
+					sbuf.st_size = 0;
+					pi_set_error(socket,PI_ERR_FILE_ABORTED);
+					goto cleanup;
+				}
 			}
 		}
 	}
 
+cleanup:
 	free(filebuffer);
-	dlp_VFSFileClose(sd,file);
+	dlp_VFSFileClose(socket,file);
 	close(fd);
 
-	printf("\r   Installing '%s'... (%lu bytes, %ld KiB total)\n",
-		localfile,
-		(unsigned long)sbuf.st_size, totalsize/1024);
-	/* Advancing totalsize already done by write loop.
-	totalsize += sbuf.st_size; */
+
+	return sbuf.st_size;
 }
+
+/***********************************************************************
+ *
+ * Function:    palm_install_internal
+ *
+ * Summary:     Push file(s) to the Palm
+ *
+ * Parameters:  filename --> local filesystem path for file to install.
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void palm_install_internal(const char *filename)
+{
+	static unsigned long totalsize;
+	struct pi_file	*f;
+	struct stat		sbuf;
+	struct CardInfo	Card;
+	const char *basename = strrchr(filename,'/');
+	if (basename) {
+		basename = basename+1;
+	} else {
+		basename = filename;
+	}
+
+	Card.card = -1;
+	Card.more = 1;
+
+	f = pi_file_open(filename);
+
+	if (f == NULL)
+	{
+		fprintf(stderr,"   ERROR: Unable to open '%s'!\n", filename);
+		return;
+	}
+	if (f->file_name == NULL) {
+		/* pi_file_open doesn't set the filename (or not to anything nice),
+		   so set it instead; need strdup because the file struct owns the
+		   string. */
+		f->file_name = strdup(basename);
+	}
+
+	if (dlp_OpenConduit(sd) < 0)
+	{
+		fprintf(stderr, "   CANCEL: Exiting on cancel, some files were not "
+				"installed\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	fprintf(stdout, "   Installing '%s'... ", basename);
+	fflush(stdout);
+
+	stat(filename, &sbuf);
+
+	while (Card.more)
+	{
+		if (dlp_ReadStorageInfo(sd, Card.card + 1, &Card) < 0)
+			break;
+	}
+
+	if (sbuf.st_size > Card.ramFree)
+	{
+		fprintf(stderr, "   ERROR: Insufficient space to install this file on your Palm.\n");
+		fprintf(stderr, "          We needed %lu and only had %lu available..\n\n",
+			(unsigned long)sbuf.st_size, Card.ramFree);
+		return;
+	}
+
+	/* TODO: shouldn't this use Card.card? If we're looking for _a_
+	   card that can hold the file, shouldn't we check in the while
+	   loop above?  */
+	if (pi_file_install(f, sd, 0, install_progress) < 0) {
+		/* TODO: Does pi_file_install print a diagnostic? */
+		fprintf(stderr, "   ERROR: pi_file_install failed.\n");
+	} else {
+		totalsize += sbuf.st_size;
+		printf("   %ld KiB total.\n", totalsize/1024);
+		fflush(stdout);
+	}
+
+	pi_file_close(f);
+}
+
+/***********************************************************************
+ *
+ * Function:    palm_install_VFS
+ *
+ * Summary:     Push file to the Palm's VFS.
+ *
+ * Parameters:  localfile --> local filesystem path for file to install.
+ *              vfspath   --> target for file (may be dir or filename).
+ *
+ * Returns:     -1 on bad parameters
+ *              -2 on cancelled sync
+ *              -3 on bad vfs path
+ *              -4 on bad local file
+ *              -5 on insufficient VFS space for the file
+ *              -6 on memory allocation error
+ *              0 if all went well
+ *
+ ***********************************************************************/
+static int
+palm_install_VFS(const char *localfile, const char *vfspath)
+{
+	enum { bad_parameters=-1,
+	       cancel=-2,
+	       bad_vfs_path=-3,
+	       bad_local_file=-4,
+	       insufficient_space=-5,
+	       internal_=-6
+	} ;
+
+	static unsigned long totalsize = 0;
+
+	int fd = -1;
+	struct stat sbuf;
+	const char *basename = strrchr(localfile,'/');
+	if (basename) {
+		basename = basename+1;
+	} else {
+		basename = localfile;
+	}
+
+	if (NULL == vfspath)
+	{
+		/* how the heck did we get here then? */
+		fprintf(stderr,"\n   ERROR: No VFS path given.\n");
+		return bad_parameters;
+	}
+
+	if (stat(localfile, &sbuf) < 0)
+	{
+		fprintf(stderr,"   ERROR: Unable to open '%s'!\n", localfile);
+		return bad_local_file;
+	}
+	if (S_IFREG != (sbuf.st_mode & S_IFREG))
+	{
+		fprintf(stderr,"   ERROR: Not a regular file.\n");
+		return bad_local_file;
+	}
+
+	fd = open(localfile,O_RDONLY);
+	if (fd < 0)
+	{
+		fprintf(stderr,"   ERROR: Cannot open local file for reading.\n");
+		return bad_local_file;
+	}
+
+	if (dlp_OpenConduit(sd) < 0)
+	{
+		fprintf(stderr, "   ERROR: Exiting on cancel, some files were not"
+				"installed\n\n");
+		return cancel;
+	}
+
+	fprintf(stdout, "   Installing '%s'... ", basename);
+	fflush(stdout);
+
+	if(pi_file_install_VFS(fd,basename,sd,vfspath,install_progress) < 0) {
+		fprintf(stderr,"   ERROR: pi_file_install_VFS failed.\n");
+	} else {
+		totalsize += sbuf.st_size;
+		printf("   %ld KiB total.\n", totalsize/1024);
+		fflush(stdout);
+	}
+
+	close(fd);
+	return 0;
+}
+
+
 
 static void
 palm_install(unsigned long int flags,const char *localfile)
