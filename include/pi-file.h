@@ -116,6 +116,11 @@ extern "C" {
 	    PI_ARGS((pi_file_t * pf, int socket, int cardno,
 			progress_func report_progress));
 
+	extern unsigned long unix_time_to_pilot_time
+	    PI_ARGS((time_t t));
+	extern time_t pilot_time_to_unix_time
+	    PI_ARGS((unsigned long raw_time));
+
 #ifdef __cplusplus
 }
 #endif

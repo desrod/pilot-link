@@ -95,7 +95,6 @@
 /* Declare prototypes */
 static int pi_file_close_for_write(pi_file_t *pf);
 static void pi_file_free(pi_file_t *pf);
-/* static unsigned long unix_time_to_pilot_time(time_t t); */
 
 /* this seems to work, but what about leap years? */
 /*#define PILOT_TIME_DELTA (((unsigned)(1970 - 1904) * 365 * 24 * 60 * 60) + 1450800)*/
@@ -135,7 +134,7 @@ static void pi_file_free(pi_file_t *pf);
  * Returns:     unix time
  *
  ***********************************************************************/
-static time_t
+time_t
 pilot_time_to_unix_time(unsigned long raw_time)
 {
 	return (time_t) (raw_time - PILOT_TIME_DELTA);
