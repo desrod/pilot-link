@@ -45,7 +45,6 @@ struct option options[] = {
 
 static const char *optstring = "hp:ifd";
 
-
 /* Declare prototypes */
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -107,6 +106,8 @@ int main(int argc, char *argv[])
 		/* Did we get a valid socket descriptor back? */
 		if (dlp_OpenConduit(sd) < 0) {
 			exit(1);
+
+		/* Install here, not Fetch */
 		} else 	if (Install && Fetch == -1) {
 			unsigned long len;
 			int db;
@@ -114,6 +115,7 @@ int main(int argc, char *argv[])
 			int l;
 			char buffer[0xffff];
 		
+			/* Need to fix this, we should not require redirection */
 			if (isatty(fileno(stdin))) {
 				fprintf(stderr,
 					"Cannot install from tty, please redirect from file.\n");
@@ -141,6 +143,7 @@ int main(int argc, char *argv[])
 			printf("\n%d bytes written\n", l);
 		
 			dlp_CloseDB(sd, db);
+		/* Fetch here, not Install */
 		} else if (Fetch && Install == -1) {
 			int db;
 			int i;
