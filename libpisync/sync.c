@@ -27,8 +27,14 @@
 #include "pi-dlp.h"
 #include "pi-sync.h"
 
-#define PErrorCheck(r) if (r < 0) return r;
-#define ErrorCheck(r)  if (r != 0) return r; 
+typedef enum {
+	PILOT,
+	DESKTOP,
+	BOTH
+} RecordModifier;
+
+#define PilotCheck(func)   if (rec_mod == PILOT || rec_mod == BOTH) if ((result = func) < 0) return result;
+#define DesktopCheck(func) if (rec_mod == DESKTOP || rec_mod == BOTH) if ((result = func) < 0) return result;
 
 PilotRecord *
 sync_NewPilotRecord (int buf_size)
@@ -55,41 +61,39 @@ sync_NewDesktopRecord (void)
 }
 
 static int
-delete_both (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord)
+delete_both (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord, RecordModifier rec_mod)
 {
 	int result = 0;
 	
 	if (drecord != NULL) {
-		result = sh->DeleteRecord (sh, drecord);
-		ErrorCheck(result);
+		DesktopCheck (sh->DeleteRecord (sh, drecord));
 	}
 	
 	
 	if (precord != NULL) {
-		result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-		ErrorCheck(result);
+		PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
 	}
 
 	return result;
 }
 
 static int
-store_record_on_pilot (SyncHandler *sh, int dbhandle, DesktopRecord *drecord)
+store_record_on_pilot (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, RecordModifier rec_mod)
 {
 	PilotRecord precord;
 	recordid_t id;
 	int result = 0;
 	
 	memset (&precord, 0, sizeof (PilotRecord));
+
 	result = sh->Prepare (sh, drecord, &precord);
-	ErrorCheck(result);
+	if (result != 0) return result;
 
-	result = dlp_WriteRecord (sh->sd, dbhandle, 0,
-				  precord.recID, precord.catID, 
-				  precord.buffer, precord.len, &id);
-	PErrorCheck(result);
+	PilotCheck (dlp_WriteRecord (sh->sd, dbhandle, 0,
+				      precord.recID, precord.catID, 
+				      precord.buffer, precord.len, &id));
 
-	result = sh->SetPilotID (sh, drecord, id);
+	DesktopCheck (sh->SetPilotID (sh, drecord, id));
 
 	return result;
 }
@@ -106,7 +110,7 @@ close_db (SyncHandler *sh, int dbhandle)
 }
 
 static int
-sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord)
+sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord *precord, RecordModifier rec_mod)
 {
 	int parch = 0, pdel = 0, pchange = 0;
 	int darch = 0, ddel = 0, dchange = 0;
@@ -127,102 +131,99 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 	}
 	
 	if (precord != NULL && drecord == NULL) {
-		sh->AddRecord (sh, precord);
-
+		DesktopCheck (sh->AddRecord (sh, precord));
+		
 	} else if (precord == NULL && drecord != NULL) {
-		store_record_on_pilot (sh, dbhandle, drecord);
+		DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
 		
 	} else if (parch && ddel) {
-		sh->ReplaceRecord (sh, drecord, precord);
-		sh->ArchiveRecord (sh, drecord, 0);
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (sh->ReplaceRecord (sh, drecord, precord));
+		DesktopCheck (sh->ArchiveRecord (sh, drecord, 0));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (parch && !darch && !dchange) {
-		sh->ArchiveRecord (sh, drecord, 1);
+		DesktopCheck (sh->ArchiveRecord (sh, drecord, 1));
 		
 	} else if (parch && drecord == NULL) {
-		sh->AddRecord (sh, precord);
-		sh->ArchiveRecord (sh, drecord, 1);
+		DesktopCheck (sh->AddRecord (sh, precord));
+		DesktopCheck (sh->ArchiveRecord (sh, drecord, 1));
 		
 	} else if (parch && pchange && !darch && dchange) {
 		int comp;
 		
 		comp = sh->Compare (sh, precord, drecord);
 		if (comp == 0) {
-			sh->ArchiveRecord (sh, drecord, 1);
-			result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-			ErrorCheck(result);
-			sh->SetStatusCleared (sh, drecord);
+			DesktopCheck (sh->ArchiveRecord (sh, drecord, 1));
+			PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
+			DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		} else {
-			result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-			ErrorCheck(result);
-			store_record_on_pilot (sh, dbhandle, drecord);				
-			sh->AddRecord (sh, precord);
-			sh->SetStatusCleared (sh, drecord);
+			PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
+			DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+			DesktopCheck (sh->AddRecord (sh, precord));
+			DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		}
 		
 	} else if (parch && !pchange && !darch && dchange) {
-		dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-		store_record_on_pilot (sh, dbhandle, drecord);
-		sh->SetStatusCleared (sh, drecord);
+		PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
+		DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 
 	} else if (pchange && darch && dchange) {
 		int comp;
 		
 		comp = sh->Compare (sh, precord, drecord);
 		if (comp == 0) {
-			result = dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-			ErrorCheck(result);
+			PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
 		} else {
-			sh->ArchiveRecord (sh, drecord, 0);
-			sh->ReplaceRecord (sh, drecord, precord);
+			DesktopCheck (sh->ArchiveRecord (sh, drecord, 0));
+			DesktopCheck (sh->ReplaceRecord (sh, drecord, precord));
 		}
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 
 	} else if (pchange && darch && !dchange) {
-		sh->ArchiveRecord (sh, drecord, 0);
-		sh->ReplaceRecord (sh, drecord, precord);
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (sh->ArchiveRecord (sh, drecord, 0));
+		DesktopCheck (sh->ReplaceRecord (sh, drecord, precord));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 			
 	} else if (pchange && dchange) {
 		int comp;
 		
 		comp = sh->Compare (sh, precord, drecord);
 		if (comp != 0) {
-			sh->AddRecord (sh, precord);
+			DesktopCheck (sh->AddRecord (sh, precord));
 			drecord->recID = 0;
- 			store_record_on_pilot (sh, dbhandle, drecord);
+ 			DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
 		}
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (pchange && ddel) {
-		sh->ReplaceRecord (sh, drecord, precord);
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (sh->ReplaceRecord (sh, drecord, precord));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (pchange && !dchange) {
-		sh->ReplaceRecord (sh, drecord, precord);
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (sh->ReplaceRecord (sh, drecord, precord));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (pdel && dchange) {
-		store_record_on_pilot (sh, dbhandle, drecord);
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (pdel && !dchange) {
-		delete_both (sh, dbhandle, drecord, precord);
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (delete_both (sh, dbhandle, drecord, precord, rec_mod));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (!pchange && darch) {
-		dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-		sh->SetStatusCleared (sh, drecord);
+		PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (!pchange && dchange) {
-		dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID);
-		store_record_on_pilot (sh, dbhandle, drecord);
-		sh->SetStatusCleared (sh, drecord);
+		PilotCheck (dlp_DeleteRecord (sh->sd, dbhandle, 0, precord->recID));
+		DesktopCheck (store_record_on_pilot (sh, dbhandle, drecord, rec_mod));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
 	} else if (!pchange && ddel) {
-		delete_both (sh, dbhandle, drecord, precord);
-		sh->SetStatusCleared (sh, drecord);
+		DesktopCheck (delete_both (sh, dbhandle, drecord, precord, rec_mod));
+		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 
 	}
 
@@ -238,21 +239,23 @@ sync_CopyToPilot (SyncHandler *sh)
 	int result = 0;
 	
 	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
-	PErrorCheck(result);
+	if (result < 0) goto cleanup;
 
 	result = sh->Pre (sh, dbhandle, &slow);
-	ErrorCheck(result);
+	if (result < 0) goto cleanup;
 	
 	result = dlp_DeleteRecord (sh->sd, dbhandle, 1, 0);
-	PErrorCheck(result);
+	if (result < 0) goto cleanup;
+		
 	
 	while (sh->ForEach (sh, &drecord) == 0 && drecord) {
-		result = store_record_on_pilot (sh, dbhandle, drecord);
-		if (result != 0) break;
+		result = store_record_on_pilot (sh, dbhandle, drecord, PILOT);
+		if (result < 0) goto cleanup;
 	}
 
 	result = sh->Post (sh, dbhandle);
 
+ cleanup:
 	close_db (sh, dbhandle);
 
 	return result;
@@ -269,14 +272,14 @@ sync_CopyFromPilot (SyncHandler *sh)
 	int result = 0;
 
 	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
-	PErrorCheck(result);
-
+	if (result < 0) goto cleanup;
+	
 	result = sh->Pre (sh, dbhandle, &slow);
-	ErrorCheck(result);
+	if (result < 0) goto cleanup;
 	
 	while (sh->ForEach (sh, &drecord) == 0 && drecord) {
 		result = sh->DeleteRecord (sh, drecord);
-		ErrorCheck(result);
+		if (result < 0) goto cleanup;
 	}
 	
 	index = 0;
@@ -284,20 +287,21 @@ sync_CopyFromPilot (SyncHandler *sh)
 				      &precord->recID, &precord->len, 
 				      &precord->flags, &precord->catID) > 0) {
 		result = sh->AddRecord (sh, precord);
-		ErrorCheck(result);
+		if (result < 0) goto cleanup;
 		
 		index++;
 	}
 
 	result = sh->Post (sh, dbhandle);
 
+ cleanup:
 	close_db (sh, dbhandle);
 
 	return result;
 }
 
 static int
-sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle)
+sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
 	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
 	DesktopRecord *drecord = NULL;
@@ -307,14 +311,14 @@ sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle)
 					&precord->recID, NULL, &precord->len,
 					&precord->flags, &precord->catID) >= 0) {
 		result = sh->Match (sh, precord, &drecord);
-		ErrorCheck(result);
+		DesktopCheck(result);
 		
-		result = sync_record (sh, dbhandle, drecord, precord);
-		ErrorCheck(result);
+		result = sync_record (sh, dbhandle, drecord, precord, rec_mod);
+		DesktopCheck(result);
 
 		if (drecord) {
 			result = sh->FreeMatch (sh, drecord);
-			ErrorCheck(result);
+			DesktopCheck(result);
 		}
 	}
 
@@ -322,7 +326,7 @@ sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle)
 }
 
 static int
-sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle)
+sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
 	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
 	DesktopRecord *drecord = NULL;
@@ -335,7 +339,7 @@ sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle)
 				      &precord->recID, &precord->len, 
 				      &precord->flags, &precord->catID) > 0) {
 		result = sh->Match (sh, precord, &drecord);
-		ErrorCheck(result);
+		DesktopCheck(result);
 
 		/* Since this is a slow sync, we must calculate the flags */
 		parch = precord->flags & dlpRecAttrArchived;
@@ -357,12 +361,12 @@ sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle)
 		if (psecret)
 			precord->flags = precord->flags | dlpRecAttrSecret;
 		
-		result = sync_record (sh, dbhandle, drecord, precord);
-		ErrorCheck(result);
+		result = sync_record (sh, dbhandle, drecord, precord, rec_mod);
+		DesktopCheck(result);
 
 		if (drecord) {
 			result = sh->FreeMatch (sh, drecord);
-			ErrorCheck(result);
+			DesktopCheck(result);
 		}
 		
 		index++;
@@ -379,26 +383,29 @@ sync_MergeFromPilot (SyncHandler *sh)
 	int result = 0;
 	
 	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
-	PErrorCheck(result);
-
-	result = sh->Pre (sh, dbhandle, &slow);
-	ErrorCheck(result);
+	if (result < 0) goto cleanup;
 	
-	if (!slow)
-		result = sync_MergeFromPilot_fast (sh, dbhandle);
-	else
-		result = sync_MergeFromPilot_slow (sh, dbhandle);
-	ErrorCheck(result);
-
+	result = sh->Pre (sh, dbhandle, &slow);
+	if (result < 0) goto cleanup;
+	
+	if (!slow) {
+		result = sync_MergeFromPilot_fast (sh, dbhandle, DESKTOP);
+		if (result < 0) goto cleanup;
+	} else {
+		result = sync_MergeFromPilot_slow (sh, dbhandle, DESKTOP);
+		if (result < 0) goto cleanup;
+	}
+	
 	result = sh->Post (sh, dbhandle);
 
+ cleanup:
 	close_db (sh, dbhandle);
 
 	return result;
 }
 
 static int
-sync_MergeToPilot_fast (SyncHandler *sh, int dbhandle)
+sync_MergeToPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
 	PilotRecord *precord = NULL;
 	DesktopRecord *drecord = NULL;
@@ -408,17 +415,15 @@ sync_MergeToPilot_fast (SyncHandler *sh, int dbhandle)
 		if (drecord->recID != 0) {
 			precord = sync_NewPilotRecord (DLP_BUF_SIZE);
 			precord->recID = drecord->recID;
-			result = dlp_ReadRecordById (sh->sd, dbhandle, 
-						     precord->recID,
-						     precord->buffer, 
-						     NULL, &precord->len, 
-						     &precord->flags,
-						     &precord->catID);
-			PErrorCheck(result);
+			PilotCheck (dlp_ReadRecordById (sh->sd, dbhandle, 
+							 precord->recID,
+							 precord->buffer, 
+							 NULL, &precord->len, 
+							 &precord->flags,
+							 &precord->catID));
 		}
 		
-		result = sync_record (sh, dbhandle, drecord, precord);
-		ErrorCheck(result);
+		DesktopCheck (sync_record (sh, dbhandle, drecord, precord, rec_mod));
 
 		if (precord)
 			free (precord);
@@ -429,7 +434,7 @@ sync_MergeToPilot_fast (SyncHandler *sh, int dbhandle)
 }
 
 static int
-sync_MergeToPilot_slow (SyncHandler *sh, int dbhandle)
+sync_MergeToPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
 	PilotRecord *precord = NULL;
 	DesktopRecord *drecord = NULL;
@@ -440,13 +445,12 @@ sync_MergeToPilot_slow (SyncHandler *sh, int dbhandle)
 		if (drecord->recID != 0) {
 			precord = sync_NewPilotRecord (DLP_BUF_SIZE);
 			precord->recID = drecord->recID;
-			result = dlp_ReadRecordById (sh->sd, dbhandle, 
-						     precord->recID,
-						     precord->buffer, 
-						     NULL, &precord->len, 
-						     &precord->flags, 
-						     &precord->catID);
-			PErrorCheck(result);
+			PilotCheck (dlp_ReadRecordById (sh->sd, dbhandle, 
+							 precord->recID,
+							 precord->buffer, 
+							 NULL, &precord->len, 
+							 &precord->flags, 
+							 &precord->catID));
 		}
 
 		/* Since this is a slow sync, we must calculate the flags */
@@ -469,8 +473,7 @@ sync_MergeToPilot_slow (SyncHandler *sh, int dbhandle)
 		if (dsecret)
 			drecord->flags = drecord->flags | dlpRecAttrSecret;
 		
-		result = sync_record (sh, dbhandle, drecord, precord);
-		ErrorCheck(result);
+		DesktopCheck (sync_record (sh, dbhandle, drecord, precord, rec_mod));
 
 		if (precord)
 			free (precord);
@@ -488,19 +491,22 @@ sync_MergeToPilot (SyncHandler *sh)
 	int result = 0;
 	
 	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
-	PErrorCheck(result);
+	if (result < 0) goto cleanup;
 
 	result = sh->Pre (sh, dbhandle, &slow);
-	ErrorCheck(result);
+	if (result < 0) goto cleanup;
 
-	if (!slow)
-		result = sync_MergeToPilot_fast (sh, dbhandle);
-	else
-		result = sync_MergeToPilot_slow (sh, dbhandle);
-	ErrorCheck(result);
-	
+	if (!slow) {
+		sync_MergeToPilot_fast (sh, dbhandle, PILOT);
+		if (result < 0) goto cleanup;
+	} else {
+		sync_MergeToPilot_slow (sh, dbhandle, PILOT);
+		if (result < 0) goto cleanup;
+	}
+
 	result = sh->Post (sh, dbhandle);
 
+ cleanup:
 	close_db (sh, dbhandle);
 
 	return result;
@@ -514,31 +520,29 @@ sync_Synchronize (SyncHandler *sh)
 	int result = 0;
 	
 	result = dlp_OpenDB (sh->sd, 0, dlpOpenReadWrite, sh->name, &dbhandle);
-	PErrorCheck(result);
+	if (result < 0) goto cleanup;
 
 	result = sh->Pre (sh, dbhandle, &slow);
-	ErrorCheck(result);
+	if (result != 0) goto cleanup;
 	
 	if (!slow) {
-		result = sync_MergeFromPilot_fast (sh, dbhandle);
-		ErrorCheck(result);
+		result = sync_MergeFromPilot_fast (sh, dbhandle, BOTH);
+		if (result < 0) goto cleanup;
 		
-		result = sync_MergeToPilot_fast (sh, dbhandle);
-		ErrorCheck(result);
+		result = sync_MergeToPilot_fast (sh, dbhandle, BOTH);
+		if (result < 0) goto cleanup;
 	} else {
-		result = sync_MergeFromPilot_slow (sh, dbhandle);
-		ErrorCheck(result);
+		result = sync_MergeFromPilot_slow (sh, dbhandle, BOTH);
+		if (result < 0) goto cleanup;
 		
-		result = sync_MergeToPilot_slow (sh, dbhandle);
-		ErrorCheck(result);
+		result = sync_MergeToPilot_slow (sh, dbhandle, BOTH);
+		if (result < 0) goto cleanup;
 	}
 	
 	result = sh->Post (sh, dbhandle);
-	
+
+ cleanup:
 	close_db (sh, dbhandle);
 
 	return result;
 }
-
-
-
