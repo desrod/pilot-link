@@ -36,7 +36,7 @@ void print_splash(char *progname)
 #endif
 	printf("   .--------------------------------------------.\n"
 	       "   | (c) Copyright 1996-2001, pilot-link team   |\n"
-	       "   |    Join the pilot-unix list to contribute. |\n"
+	       "   |   Join the pilot-link lists to help out.   |\n"
 	       "   `--------------------------------------------'\n"
 	       "   This is %s from pilot-link version %d.%d.%d%s\n"
 	       "   Build date: %s %s\n\n", progname, PILOT_LINK_VERSION, 
@@ -45,7 +45,7 @@ void print_splash(char *progname)
 	printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",
                 PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
                 patchlevel);
-	printf("   See the file COPYING for more details.\n\n"
+	printf("   See the file COPYING under the docs dir for more info.\n\n"
 	       "   Please use -h for more detailed options.\n");
 
 }
