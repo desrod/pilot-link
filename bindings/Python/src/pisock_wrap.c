@@ -3999,21 +3999,21 @@ static PyObject *_wrap_pi_file_merge(PyObject *self, PyObject *args) {
     return _resultobj;
 }
 
-static PyObject *_wrap_display_splash(PyObject *self, PyObject *args) {
+static PyObject *_wrap_print_splash(PyObject *self, PyObject *args) {
     PyObject * _resultobj;
     char * _arg0;
 
     self = self;
-    if(!PyArg_ParseTuple(args,"s:display_splash",&_arg0)) 
+    if(!PyArg_ParseTuple(args,"s:print_splash",&_arg0)) 
         return NULL;
-    display_splash(_arg0);
+    print_splash(_arg0);
     Py_INCREF(Py_None);
     _resultobj = Py_None;
     return _resultobj;
 }
 
 static PyMethodDef _pisockMethods[] = {
-	 { "display_splash", _wrap_display_splash, METH_VARARGS },
+	 { "print_splash", _wrap_print_splash, METH_VARARGS },
 	 { "pi_file_merge", _wrap_pi_file_merge, METH_VARARGS },
 	 { "pi_file_install", _wrap_pi_file_install, METH_VARARGS },
 	 { "pi_file_retrieve", _wrap_pi_file_retrieve, METH_VARARGS },
