@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <iostream.h>
+using namespace std;
 
 extern "C" {
 #include <stdio.h>

@@ -1,3 +1,16 @@
+2002-05-04  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/ccexample.cc: Fixed a namespace typing problem with gcc 3.x.x
+	  builds (Sergei Pachkov)
+
+	* src/iambicexample.cc: Same
+
+	* include/pi-datebook.hxx: Same
+	
+	* libpisock++/dlp.cc: Same
+
+	* doc/README.usb: Draft pilot-link USB howto
+
 2002-04-28  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* doc/man/install-datebook.1: Fixed some typos, changed around some

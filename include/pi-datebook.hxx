@@ -5,6 +5,8 @@ extern "C" {
 #include <memory.h>
 }
 #include <iostream.h>
+using namespace std;
+
 #include "pi-appinfo.hxx"
 
 const int APPOINTMENT_APP_INFO_SIZE = 280;

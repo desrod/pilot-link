@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <iostream.h>
+using namespace std;
+
 #include <unistd.h>
 #include <errno.h>
 

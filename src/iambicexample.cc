@@ -25,7 +25,10 @@
 
 #include <stdio.h>
 #include <math.h>
+
 #include <iostream.h>
+using namespace std;
+
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
