@@ -63,7 +63,7 @@ char *paymentTypes[] =
 
 char *expenseTypes[] = 
 {
-	"airfare",
+	"airfare", 
 	"breakfast",
 	"bus",
 	"businessmeals",
@@ -112,24 +112,25 @@ static void Help(char *progname)
 int main(int argc, char *argv[])
 {
 	int 	db,
-		sd,
+		sd		= -1,
 		idx,
 		l,
-		ret,
 		category,
 		ch,
 		quiet, 
 		replace_category, 
 		add_title;
-	char 	buf[0xffff],
-		*progname = argv[0],
-		*category_name = NULL;
+	char 	*port		= NULL,
+		buf[0xffff],
+		*progname 	= argv[0],
+		*category_name 	= NULL;
 	struct 	pi_sockaddr addr;
-	struct 	PilotUser U;
+	struct 	PilotUser User;
 	struct 	ExpenseAppInfo mai;
 	struct 	Expense theExpense;
 
 	quiet = replace_category = add_title = 0;
+
 
 	while ((ch = getopt(argc, argv, optstring)) != -1)
 		switch (ch) {
@@ -215,30 +216,14 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	addr.pi_family = PI_AF_PILOT;
+	sd = pilot_connect(port);
+	if (sd < 0)
+		goto error;
 
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		perror("pi_bind");
-		exit(1);
-	}
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		perror("pi_listen");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		perror("pi_accept");
-		exit(1);
-	}
-
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
-
-	/* Tell user (via Palm) that we are starting things up */
+	if (dlp_OpenConduit(sd) < 0)
+		goto error_close;
+	
+	dlp_ReadUserInfo(sd, &User);
 	dlp_OpenConduit(sd);
 
 	/* Open the Expense's database, store access handle in db */
@@ -308,10 +293,10 @@ int main(int argc, char *argv[])
 	dlp_CloseDB(sd, db);
 
 	/* Tell the user who it is, with a different PC id. */
-	U.lastSyncPC = 0x00010000;
-	U.successfulSyncDate = time(NULL);
-	U.lastSyncDate = U.successfulSyncDate;
-	dlp_WriteUserInfo(sd, &U);
+	User.lastSyncPC = 0x00010000;
+	User.successfulSyncDate = time(NULL);
+	User.lastSyncDate = User.successfulSyncDate;
+	dlp_WriteUserInfo(sd, &User);
 
 	dlp_AddSyncLogEntry(sd, "Wrote memo(s) to Palm.\n");
 
@@ -321,5 +306,14 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 
 	return 0;
+
+ error_close:
+	pi_close(sd);
+	
+ error:
+	perror("   ERROR");
+	fprintf(stderr, "\n");
+
+	return -1;
 }
 

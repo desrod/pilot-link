@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 	
  error:
-	perror("\tERROR:");
+	perror("   ERROR");
 	fprintf(stderr, "\n");
 
 	return -1;

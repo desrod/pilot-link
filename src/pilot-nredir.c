@@ -41,6 +41,21 @@ struct option options[] = {
 
 static const char *optstring = "hvp:";
 
+static void Help(char *progname)
+{
+	printf("   Accept connection and redirect via Network Hotsync Protocol\n\n"
+	       "   Usage: %s -p <port>\n\n"
+	       "   Options:\n"
+	       "     -p <port>           Use device file <port> to communicate with Palm\n"
+	       "     -h                  Display this information\n\n"
+	       "   Examples: %s -p /dev/pilot\n\n"
+	       "   This will bind your locally connected device to a network port,and\n"
+	       "   redirect them through the network device to a listening server as\n"
+	       "   specified in the LANSync Preferences panel on your Palm.\n\n",
+	       progname, progname);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
 	int 	count,
@@ -120,23 +135,10 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 
  error:
-	perror("\tERROR:");
+	perror("   ERROR");
 	fprintf(stderr, "\n");
 
 	return -1;
 }
 
-static void Help(char *progname)
-{
-	printf("   Accept connection and redirect via Network Hotsync Protocol\n\n"
-	       "   Usage: %s -p <port>\n\n"
-	       "   Options:\n"
-	       "     -p <port>           Use device file <port> to communicate with Palm\n"
-	       "     -h                  Display this information\n\n"
-	       "   Examples: %s -p /dev/pilot\n\n"
-	       "   This will bind your locally connected device to a network port,and\n"
-	       "   redirect them through the network device to a listening server as\n"
-	       "   specified in the LANSync Preferences panel on your Palm.\n\n",
-	       progname, progname);
-	return;
-}
+

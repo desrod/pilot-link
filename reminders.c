@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
 	return 0;
 
  error:
-	perror("\tERROR:");
+	perror("   ERROR");
 	fprintf(stderr, "\n");
 
 	return -1;

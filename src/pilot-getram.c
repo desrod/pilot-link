@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 	
 	sd = pilot_connect(port);
 	if (sd < 0) {
-		perror("\tERROR:");
+		perror("   ERROR");
 		fprintf(stderr, "\n");
 		return -1;
 	}

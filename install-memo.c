@@ -32,27 +32,25 @@
 #include "pi-dlp.h"
 #include "pi-memo.h"
 
-extern char *optarg;
-extern int optind;
-
 /* Declare prototypes */
+int pilot_connect(const char *port);
 int usage(char *progname);
 
 #define PILOTPORT "/dev/pilot"
 
-int usage(char *progname)
+static void Help(char *progname)
 {
-	fprintf(stderr, "usage: %s [-qrt] [-c category] [-p %s] file [file] ...\n",
-		progname, TTYPrompt);
-	fprintf(stderr, "       -q = do not prompt for HotSync button press\n");
-	fprintf(stderr, "       -r = replace all memos in specified category\n");
-	fprintf(stderr, "       -t = use filename as memo title\n");
-	exit(2);
+	printf("Usage: %s -p <port> [-qrt] [-c category] file [file] ...\n"
+	       "       -q = do not prompt for HotSync button press\n"
+	       "       -r = replace all memos in specified category\n"
+	       "       -t = use filename as memo title\n", progname);
+
+	return;
 }
 
 int main(int argc, char *argv[])
 {
-	int 	add_title,
+	int 	add_title	= 0,
 		category,
 		ch,
 		db,
@@ -60,44 +58,27 @@ int main(int argc, char *argv[])
 		ReadAppBlock, 
 		memo_size,
 		preamble,
-		quiet,
-		replace_category,
-		ret,
-		sd;
+		replace_category= 0,
+		sd		= -1;
 	
-	char 	*memo_buf,
-		*progname,
-		*category_name,
+	char 	*port		= NULL,
+		*memo_buf,
+		*progname	= argv[0],
+		*category_name	= NULL,
 		buf[0xffff];
 	
-        struct 	pi_sockaddr addr;
-        struct 	PilotUser U;
+        struct 	PilotUser User;
         struct 	MemoAppInfo mai;
 
 	FILE *f;
-
-	progname = argv[0];
-	category_name = NULL;
-	quiet = replace_category = add_title = 0;
-
-	if (getenv("PILOTPORT")) {
-		strcpy(addr.pi_device, getenv("PILOTPORT"));
-	} else {
-		strcpy(addr.pi_device, PILOTPORT);
-	}
-
+	
 	while ((ch = getopt(argc, argv, "c:p:qrt")) != -1)
 		switch (ch) {
 		case 'c':
 			category_name = optarg;
 			break;
 		case 'p':
-			/* optarg is name of port to use instead of
-			   $PILOTPORT or /dev/pilot */
-			strcpy(addr.pi_device, optarg);
-			break;
-		case 'q':
-			quiet++;
+			port = optarg;
 			break;
 		case 'r':
 			replace_category++;
@@ -105,66 +86,27 @@ int main(int argc, char *argv[])
 		case 't':
 			add_title++;
 			break;
-		case '?':
-		default:
-			usage(progname);
 		}
 
-	argc -= optind;
-	argv += optind;
-
-	if (argc < 1) {
-		fprintf(stderr, "%s: insufficient number of arguments\n",
-			progname);
-		usage(progname);
-	}
-
 	if (replace_category && !category_name) {
-		fprintf(stderr,
-			"%s: memo category required when specifying replace\n",
+		printf("%s: memo category required when specifying replace\n",
 			progname);
-		usage(progname);
+		Help(progname);
 	}
+	
+	sd = pilot_connect(port);
+	if (sd < 0)
+		goto error;
 
-	if (!quiet)
-		printf
-		    ("Please insert Palm in cradle on %s and press HotSync button.\n",
-		     addr.pi_device);
-
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
-		perror("pi_socket");
-		exit(1);
-	}
-
-	addr.pi_family = PI_AF_PILOT;
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		perror("pi_bind");
-		exit(1);
-	}
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		perror("pi_listen");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		perror("pi_accept");
-		exit(1);
-	}
-
-	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
-
-	/* Tell user (via Palm) that we are starting things up */
+	if (dlp_OpenConduit(sd) < 0)
+		goto error_close;
+	
+	dlp_ReadUserInfo(sd, &User);
 	dlp_OpenConduit(sd);
 
 	/* Open the Memo Pad's database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "MemoDB", &db) < 0) {
-		puts("Unable to open MemoDB");
+		printf("Unable to open MemoDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open MemoDB.\n");
 		exit(1);
 	}
@@ -181,9 +123,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 		if (category < 0) {
-			fprintf(stderr,
-				"%s: category %s not found on Palm\n",
-				progname, category_name);
+			printf("Category %s not found on Palm\n", category_name);
 			exit(2);
 		}
 
@@ -197,8 +137,7 @@ int main(int argc, char *argv[])
 
 		f = fopen(argv[inc], "r");
 		if (f == NULL) {
-			fprintf(stderr,
-				"%s: cannot open %s (%s), skipping...\n",
+			printf("%s: cannot open %s (%s), skipping...\n",
 				progname, argv[inc], strerror(errno));
 			continue;
 		}
@@ -232,10 +171,10 @@ int main(int argc, char *argv[])
 	dlp_CloseDB(sd, db);
 
 	/* Tell the user who it is, with a different PC id. */
-	U.lastSyncPC = 0x00010000;
-	U.successfulSyncDate = time(NULL);
-	U.lastSyncDate = U.successfulSyncDate;
-	dlp_WriteUserInfo(sd, &U);
+	User.lastSyncPC = 0x00010000;
+	User.successfulSyncDate = time(NULL);
+	User.lastSyncDate = User.successfulSyncDate;
+	dlp_WriteUserInfo(sd, &User);
 
 	dlp_AddSyncLogEntry(sd, "Successfully wrote memo(s) to Palm.\n"
 				"Thank you for using pilot-link.\n");
@@ -246,4 +185,13 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 
 	return 0;
+ 
+ error_close:
+	pi_close(sd);
+	
+ error:
+	perror("   ERROR");
+	fprintf(stderr, "\n");
+
+	return -1;
 }

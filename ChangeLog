@@ -3,6 +3,9 @@
 	* dlpsh.c: More bugs squashed, getopt_long'ified, added more useful
 	  -h options to each option, fixed a very ugly 'user -u' bug
 
+	* $TOPDIR/*.c: Cleaned up the perror() printfs, no double-colon, no
+	  tabs
+
 2002-01-23  David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* install-datebook.c: Added pilot_connect();

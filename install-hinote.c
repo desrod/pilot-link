@@ -122,11 +122,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 		
-		/* Ask the pilot who it is. */
 		dlp_ReadUserInfo(sd, &User);
-	
-		/* Tell user (via Palm) that we are starting things up */
-		dlp_OpenConduit(sd);
 	
 		/* Open Hi-Note's database, store access handle in db */
 		if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "Hi-NoteDB", &db) < 0) {
