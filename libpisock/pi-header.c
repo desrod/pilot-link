@@ -1,5 +1,5 @@
 /*
- * pi-header.c:  Splash for the version/etc. 
+ * pi-header.c:  Splash for the version/etc.
  *
  * Copyright (c) 2000, David A. Desrosiers
  *
@@ -7,7 +7,7 @@
  * under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
@@ -24,13 +24,13 @@
 
 #include <stdio.h>
 #include "pi-version.h"
+#include "pi-header.h"
 
-void print_splash(char *progname);
-
-void print_splash(char *progname)
+void print_splash(const char *progname)
 {
         char 	*patchlevel = "";
 
+	fprintf(stderr,"   DEPRECATED: The application is calling print_splash()\n");
 #ifdef PILOT_LINK_PATCH
         patchlevel = PILOT_LINK_PATCH;
 #endif
@@ -40,8 +40,8 @@ void print_splash(char *progname)
 	       "   `--------------------------------------------'\n"
 	       "   This is %s, from pilot-link version %d.%d.%d%s\n\n"
 	       "   Build target..: %s\n"
-	       "   Build date....: %s %s\n\n", progname, 
-		PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, 
+	       "   Build date....: %s %s\n\n", progname,
+		PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
 		patchlevel, HOST_OS, __DATE__, __TIME__);
 
 	printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",

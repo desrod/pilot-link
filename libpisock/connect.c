@@ -62,6 +62,7 @@ pilot_connect(const char *port)
 	struct  SysInfo sys_info;
 
 	fprintf(stderr, "\n");
+	fprintf(stderr,"   DEPRECATED: The application is calling pilot_connect()\n");
 	if ((sd = pi_socket(PI_AF_PILOT,
 			PI_SOCK_STREAM, PI_PF_DLP)) < 0) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n", port);
