@@ -12,6 +12,8 @@
 
 #include "pilot-datebook-job.h"
 
+#include <string.h>
+
 
 /* Name used to call this program */
 char * progname;
@@ -77,6 +79,7 @@ usage (char * progname, char * opt_arg)
     fprintf (stderr, "  -v          verbose/debug mode\n");
     fprintf (stderr, "  -h          show this help\n");
     fprintf (stderr, "  -hhelp      show overview on all available help screens\n");
+    fprintf (stderr, "  -p <port>   Use device file <port> to communicate with Palm\n");
     fprintf (stderr, "\n");
     fprintf (stderr, "[command]:\n");
     fprintf (stderr, "  -i <cond>   only do next command if <cond> is true\n");

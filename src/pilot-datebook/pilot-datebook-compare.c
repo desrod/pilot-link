@@ -7,8 +7,9 @@
  */
 
 
-#include "pilot-datebook-compare.h"
+#include <string.h> 
 
+#include "pilot-datebook-compare.h"
 
 /* Public functions */
 

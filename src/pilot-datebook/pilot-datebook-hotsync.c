@@ -36,10 +36,22 @@
 char HOTSYNC_DATEBOOK_DB_NAME[] = "DatebookDB";
 char HOTSYNC_DEFAULT_PORT[] = "/dev/pilot";
 
-
 /* Public functions */
 
 /* For init */
+
+char *port = NULL;
+
+static char*
+hotsync_get_port(void)
+{
+  if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
+    fprintf(stderr, "No $PILOTPORT specified and no -p <port> given.\n"
+            "Defaulting to '%s'\n\n", HOTSYNC_DEFAULT_PORT);
+    port = HOTSYNC_DEFAULT_PORT;
+  }
+  return port;
+}
 
 /* Initialize read data structure */
 int
@@ -50,7 +62,7 @@ hotsync_init_read (struct hotsync_file_data * in_file)
   debug_message("Entering hotsync_init_read\n");
 
   /* Init own data structure */
-  in_file->filename = HOTSYNC_DEFAULT_PORT;
+  in_file->filename = hotsync_get_port();
   in_file->file_is_open = FALSE;
   in_file->socket = 0;
   in_file->database = 0;
@@ -76,7 +88,7 @@ hotsync_init_write (struct hotsync_file_data * out_file)
   debug_message("Entering hotsync_init_write\n");
 
   /* Init own data structure */
-  out_file->filename = HOTSYNC_DEFAULT_PORT;
+  out_file->filename = hotsync_get_port();
   out_file->file_is_open = FALSE;
   out_file->socket = 0;
   out_file->database = 0;
@@ -103,7 +115,7 @@ hotsync_exit_read (struct hotsync_file_data * in_file)
 
   /* Free memory */
   if (in_file->filename
-      && in_file->filename != HOTSYNC_DEFAULT_PORT)
+      && in_file->filename != port)
     free (in_file->filename);
 
   /* Debug */
@@ -121,7 +133,7 @@ hotsync_exit_write (struct hotsync_file_data * out_file)
 
   /* Free memory */
   if (out_file->filename
-      && out_file->filename != HOTSYNC_DEFAULT_PORT)
+      && out_file->filename != port)
     free (out_file->filename);
 
   /* Debug */
@@ -146,7 +158,7 @@ hotsync_set_read_option (struct hotsync_file_data * in_file, char opt, char * op
       if (opt_arg != NULL
 	  && *opt_arg != '\0') {
 	if (in_file->filename
-	    && in_file->filename != HOTSYNC_DEFAULT_PORT)
+	    && in_file->filename != port)
 	  free (in_file->filename);
 	in_file->filename = strdup(opt_arg);
 	rc = TRUE;
@@ -186,7 +198,7 @@ hotsync_set_write_option (struct hotsync_file_data * out_file, char opt, char * 
       if (opt_arg != NULL
 	  && *opt_arg != '\0') {
 	if (out_file->filename
-	    && out_file->filename != HOTSYNC_DEFAULT_PORT)
+	    && out_file->filename != port)
 	  free (out_file->filename);
 	out_file->filename = strdup(opt_arg);
 	rc = TRUE;
@@ -530,76 +542,34 @@ hotsync_show_write_statistics (struct hotsync_file_data * out_file)
 
 /* Private functions */
 
+/* This isn't declared anywhere ... copying what pilot-xfer does. */
+int pilot_connect(const char *port);
+
 /* Open hotsync data connection for reading or writing */
 void
 hotsync_open (struct hotsync_file_data * file, struct header_data * header, enum dlpOpenFlags open_flags, char * device)
 {
-  struct pi_sockaddr addr;
-  char buffer[0xffff];
-  int ret;
-
-
-  /* Debug */
-  debug_message("Entering hotsync_open\n");
-
-  /* Init */
-  if (open_flags & dlpOpenRead)
-    strcpy(buffer, " for reading");
-  else if (open_flags & dlpOpenWrite)
-    strcpy(buffer, " for writing");
-  else if (open_flags & dlpOpenRead & dlpOpenWrite)
-    strcpy(buffer, " for reading/writing");
-  else
-    buffer[0] = '\0';
-
-  file->file_is_open = FALSE;
-  addr.pi_family = PI_AF_PILOT;
-  strcpy(addr.pi_device, device);
-
-  /* Open socket */
-  if (!(file->socket = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP)))
-    error_message("Can not open socket%s\n", buffer);
-
-  /* Bind */
-  ret = pi_bind(file->socket, (struct sockaddr*)&addr, sizeof(addr));
-  if(ret == -1)
-    error_message("\n   Unable to bind to port %s%s\n", device, buffer);
-
-  info_message("   Port: %s\n\n   Please press the HotSync button now...\n", device);
-
-  /* Listen */
-  ret = pi_listen(file->socket, 1);
-  if(ret == -1)
-    error_message("\n   Error listening on %s%s\n", device, buffer);
-
-  /* Accept */
-  file->socket = pi_accept(file->socket, 0, 0);
-  if(file->socket == -1)
-    error_message("\n   Error accepting data on %s%s\n", device, buffer);
-
-  /* Now connected to Pilot */
-  info_message("Connected...\n");
-
-  /* Ask pilot about user information */
-  dlp_ReadUserInfo(file->socket, &(file->user));
-  
-  /* Tell user (via Pilot) that we are starting things up */
-  if (dlp_OpenConduit(file->socket) < 0) {
+  /* pilot_connect() does everything up through here, returns file->socket */
+  file->socket = pilot_connect(file->filename);
+  if (file->socket < 0) {
     dlp_AddSyncLogEntry(file->socket, "Unable to open conduit.\n");
     pi_close(file->socket);
-    error_message("Unable to open conduit%s\n", buffer);
+    error_message("Unable to open conduit %s\n", file->filename);
   }
-  
+
+#if 0
   /* Read info header */
   /* Want to read it before opening database for accuracy
      (database will have open flag otherwise) and safety */
   if (dlp_FindDBInfo(file->socket, 0, 0, HOTSYNC_DATEBOOK_DB_NAME,
 		     0, 0, &(header->info)) < 0)
-    error_message("Can not get database header info from input file\n\n");
+    error_message("Can not get database header info for %s\n",
+                  HOTSYNC_DATEBOOK_DB_NAME);
 
   if ((header->info).flags & dlpDBFlagResource)
     error_message("Input file is not a Datebook file, resource flag is set!\n\n");
 
+#endif
 
   /* Open the Datebook's database, store access handle in db */
   file->database = 0;
@@ -607,7 +577,7 @@ hotsync_open (struct hotsync_file_data * file, struct header_data * header, enum
 		&(file->database)) < 0) {
     dlp_AddSyncLogEntry(file->socket, "Unable to open datebook database.\n");
     pi_close(file->socket);
-    error_message("Unable to open datebook database%s\n", buffer);
+    error_message("Unable to open datebook database%s\n", file->filename);
   }
 
   /* Now connection is open */

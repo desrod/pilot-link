@@ -6,6 +6,7 @@
  * See the file COPYING for details.
  */
 
+#include "getopt.h"
           
 #include "pilot-datebook-joblist.h"
 
@@ -13,6 +14,10 @@
 
 #include "pilot-datebook-io.h"
 #include "pilot-datebook-sort.h"
+
+#include "pilot-datebook-hotsync.h"
+
+#include <string.h>
 
 
 /* Internally used 'global' variables
@@ -205,13 +210,30 @@ joblist_set_param (struct job_list * joblist, int argc, char **argv)
   return TRUE;
 }
 
+static struct option options[] = {
+        {"help",        optional_argument, NULL, 'h'},
+        {"version",     no_argument,       NULL, 'v'},
+        {"port",        required_argument, NULL, 'p'},
+        {"verbose",     no_argument,       NULL, 'V'},
+        {"quiet",       no_argument,       NULL, 'q'},
+        {"delete",      required_argument, NULL, 'd'},
+        {"write",       required_argument, NULL, 'w'},
+        {"if",          required_argument, NULL, 'i'},
+        {"sort",        required_argument, NULL, 's'},
+        {"update",      required_argument, NULL, 'u'},
+        {"delete",      required_argument, NULL, 'd'},
+        {NULL,          0,                 NULL, 0}
+};
+
+static const char *optstring = "-qvr:w:s:u:di:h::?f:o:l:t:";
 
 /* Parse command line options */
 void
 joblist_parse_param (struct job_list * joblist, int argc, char **argv, char * progname)
 {
   struct job * cur_job;
-  char c;
+  char 	c,	/* switch */
+	port	= NULL;
   int optind2;
 
 
@@ -223,7 +245,7 @@ joblist_parse_param (struct job_list * joblist, int argc, char **argv, char * pr
   /* Read all command line options */
   cur_job = NULL;
   optind = 0;
-  while ((c = getopt (argc, argv, "-qvr:w:s:u:di:h::?f:o:l:t:")) != EOF) {
+  while ((c = getopt_long (argc, argv, optstring, options, NULL)) != EOF) {
 
     switch (c) {
       /* General options */
@@ -238,6 +260,9 @@ joblist_parse_param (struct job_list * joblist, int argc, char **argv, char * pr
       break;
     case 'h':
       usage (progname, optarg);
+      break;
+    case 'p':
+      port = optarg;
       break;
 
       /* Commands */

@@ -58,7 +58,7 @@ char *tableheads[22] = {
 	"Main", "Pager", "Mobile"
 };
 
-static const char *optstring = "hvDTeqp:t:d:i:arw";
+static const char *optstring = "hvDTeqp:t:d:c:arw";
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -130,12 +130,13 @@ int inchar(FILE * in)
 int read_field(char *dest, FILE * in)
 {
 	int 	c;
+	char * _p = dest;
 
 	do {			/* Absorb whitespace */
 		c = getc(in);
-	} while ((c != EOF)
-		 && ((c == ' ') || (c == '\t') || (c == '\n')
-		     || (c == '\r')));
+		if(c == '\n')
+			return 0;
+	} while ((c != EOF) && ((c == ' ') || (c == '\t') || (c == '\r')));
 
 	if (c == '"') {
 		c = inchar(in);
@@ -151,7 +152,7 @@ int read_field(char *dest, FILE * in)
 		}
 	} else {
 		while (c != EOF) {
-			if (c == ','
+			if (c == ',' || c == '\n'
 			    || (tableformat
 				&& c == tabledelims[tabledelim])) {
 				break;
@@ -344,6 +345,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 				printf(" %s: %s\n", aai->labels[l],
 				       a.entry[l]);
 		}
+		printf(" read_field returns %d\n", i);
 #endif
 
 		l = pack_Address(&a, (unsigned char *) buf, sizeof(buf));
@@ -410,6 +412,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 						    1);
 				write_field(out, a.entry[j], -1);
 			}
+		pi_tickle(ps->sd);
 		}
 		putc('\n', out);
 #endif
@@ -540,7 +543,7 @@ int main(int argc, char *argv[])
 		case 'e':
 			encodechars = 1;
 			break;
-		case 'i':
+		case 'c':
 			defaultcategoryname = optarg;
 			break;
 		case 'r':
