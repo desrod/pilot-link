@@ -360,7 +360,7 @@ dnl C++
 dnl ******************************
 use_cpp=false
 msg_cpp=no
-AC_ARG_WITH(cpp,      [  --with-cpp=[cppexec]      use C++      [default=yes]])
+AC_ARG_WITH(cpp,      [  --with-cpp=[cppexec]    use C++      [default=yes]])
 if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
 	use_cpp=true
@@ -652,11 +652,31 @@ if $use_python; then
 fi
 AC_SUBST(PYTHON)
 
+
+dnl *************************************
+dnl ElectricFence (optional)
+dnl *************************************
+msg_efence=no
+AC_ARG_WITH(efence, [  --with-efence           use ElectricFence checking], [AC_CHECK_LIB(efence,malloc)
+if test "$ac_cv_lib_efence_malloc" = yes; then
+	use_efence=true
+	LIBS="$LIBS -lefence"
+else
+	use_efence=false
+        AC_MSG_WARN([Unable to locate ElectricFence library!])
+fi])
+
+if $use_efence; then
+	msg_efence=yes
+else
+	msg_efence=no
+fi
+
 dnl *************************************
 dnl Runtime debugging
 dnl *************************************
 AC_ARG_ENABLE(debug,
-	      [  --disable-debug             Shunt runtime debugging],
+	      [  --disable-debug         Shunt runtime debugging],
 	      set_debug=no)
 
 if test "$set_debug" != "no"; then
@@ -668,7 +688,8 @@ dnl Extra warnings
 dnl *************************************
 set_compile_warnings=no
 AC_ARG_ENABLE(compile-warnings,
-	      [  --enable-compile-warnings   Enable verbose compiler warnings],
+	      [  --enable-compile-warnings   
+                          Enable verbose compiler warnings],
 	      set_compile_warnings=yes)
 
 if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
@@ -716,6 +737,7 @@ echo "
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
+  ElectricFence checks.... : $msg_efence
   CFLAGS.................. : $CFLAGS
   CXXFLAGS................ : $CXXFLAGS
 
@@ -744,7 +766,6 @@ if [[ x"$PL_FROM_CVS" = xyes ]]; then
   echo " | some incomplete features, or just plain   |"
   echo " | not work at all. Use it at your own risk. |"
   echo " |                                           |"
-  echo " |         You have been warned.             |"
   echo " \`-------------------------------------------'"
   echo ""
 fi
