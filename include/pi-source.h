@@ -68,10 +68,6 @@ extern "C" {
 #include "pi-socket.h"
 #include "pi-macros.h"
 
-#ifdef HAVE_GETTEXT
-#include "i18n.h"
-#endif 	/* HAVE_GETTEXT */
-
 #define PI_SLP_MTU 1038
 
 	struct pi_skb {

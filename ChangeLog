@@ -1,5 +1,10 @@
 2001-11-17  JP Rosevear  <jpr@ximian.com>
 
+	* include/pi-source.h: remove i18n.h inclusion
+
+	* include/i18n.h: kill
+2001-11-17  JP Rosevear  <jpr@ximian.com>	
+
 	* acconfig.h: re-add file
 
 2001-11-17  JP Rosevear  <jpr@ximian.com>
