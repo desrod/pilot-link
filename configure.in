@@ -130,6 +130,21 @@ AC_CHECK_FUNCS(
 	gethostname inet_aton malloc memcpy memmove putenv sigaction	\
 	snprintf strchr strdup strtok strtoul uname)
 
+dnl Find optional libraries (borrowed from Tcl)
+tcl_checkBoth=0
+AC_CHECK_FUNC(connect, tcl_checkSocket=0, tcl_checkSocket=1)
+
+if test "$tcl_checkSocket" = 1; then
+        AC_CHECK_LIB(socket, main, LIBS="$LIBS -lsocket", tcl_checkBoth=1)
+fi
+
+if test "$tcl_checkBoth" = 1; then
+        tk_oldLibs=$LIBS
+        LIBS="$LIBS -lsocket -lnsl"
+        AC_CHECK_FUNC(
+                accept, tcl_checkNsl=0, [LIBS=$tk_oldLibs])
+fi
+
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
 AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
 
@@ -317,7 +332,7 @@ dnl ******************************
 use_cpp=false
 msg_cpp=no
 
-AC_ARG_WITH(cpp,      [  --with-cpp=cppexec      use C++ [default=yes]])
+AC_ARG_WITH(cpp,      [  --with-cpp=cppexec      use C++                    [default=yes]])
 
 if test "x$with_cpp" != "xno"; then
 	AC_PROG_CXX
@@ -327,6 +342,7 @@ fi
 AM_CONDITIONAL(WITH_CXX, $use_cpp)
 if $use_cpp; then
 	msg_cpp=yes
+	CXXFLAGS="$CXXFLAGS -Wno-deprecated"
 fi
 
 
@@ -335,7 +351,7 @@ dnl readline checking
 dnl ******************************
 msg_readline=no
 
-AC_ARG_WITH(readline,      [  --with-readline         use readline [default=yes]])
+AC_ARG_WITH(readline,      [  --with-readline         use readline               [default=yes]])
 if test "x$with_readline" != "xno"; then
 LIBS="$LIBS -lreadline"
 	dnl Let's check all the possible places for readline
@@ -442,16 +458,16 @@ dnl ******************************
 use_perl=false
 msg_perl=no
 
-AC_ARG_WITH(perl,    [  --with-perl=perlexec    use Perl [default=no]], , with_perl=no)
+AC_ARG_WITH(perl,    [  --with-perl=perlexec    use Perl                   [default=no]], , with_perl=no)
 if test "x$with_perl" = "xno"; then
-	AC_MSG_CHECKING(for existance of perl)
-	AC_MSG_RESULT(disabled)
+	AC_MSG_CHECKING(if perl was enabled)
+	AC_MSG_RESULT(no)
 	PERL=''
 else
 	if test "x$with_perl" != "xyes" && test "x$with_perl" != "x"; then
 		PERL="$with_perl"
 	else
-		AC_CHECK_PROG(PERL, perl, no)
+		AC_CHECK_PROG(PERL, perl, perl)
 	fi
 fi
 
@@ -484,7 +500,7 @@ dnl ******************************
 use_java=false
 msg_java=no
 
-AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java [default=no]], , with_java=no)
+AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java                   [default=no]], , with_java=no)
 
 if test "x$with_java" != "xno"; then
 	AC_PATH_PROG(JAVAC, javac, , $with_java/bin:$PATH)
@@ -514,6 +530,221 @@ AC_SUBST(JAVAC)
 AC_SUBST(JAR)
 AC_SUBST(JAVABASE)	
 
+dnl ******************************
+dnl TCL/ITCL/TK
+dnl ******************************
+
+echo "Checking your Tcl/Tk installation"
+legal_tk_versions="8.4 8.3 8.2 8.1 8.0"
+legal_tcl_versions="8.4 8.3 8.2 8.1 8.0"
+
+# Find tclsh to find tclConfig.sh
+AC_ARG_WITH(tclsh,[  --with-tclsh=<path>     full path to tclsh],
+	tclsh="$withval") 
+if test -n "$tclsh"; then
+	AC_MSG_CHECKING(for tclsh)
+	AC_MSG_RESULT($tclsh)
+else
+	tclsh_list=
+	for v in $legal_tcl_versions; do
+		tclsh_list="$tclsh_list tclsh$v"
+	done
+
+	# Look for tclsh variants in $prefix/bin, and then in $PATH.
+	AC_PATH_PROGS(tclsh,$tclsh_list)
+fi
+
+if test -z "$tclsh"; then
+	with_tcl=no
+	AC_MSG_ERROR(I could not find tclsh in your search PATH.
+
+Please supply the location of a tclsh executable by
+running configure with the following option
+        --with-tclsh=<full path to tclsh>)
+fi
+
+# Run tclsh to find tclConfig.sh
+AC_MSG_CHECKING(for tclConfig.sh)
+AC_ARG_WITH(tclconfig,
+[  --with-tclconfig=<path> directory that contains tclConfig.sh],
+tclconfig="$withval")
+if test -z "$tclconfig"; then
+	changequote(,)
+	tclconfig=`echo 'puts stdout [file dirname [info library]]' | $tclsh`
+	changequote([,])
+fi
+
+if test ! -f "$tclconfig/tclConfig.sh"; then
+	AC_MSG_ERROR(I could not find tclConfig.sh.
+
+Please specify the directory that contains tclConfig.sh
+by running configure with the following option
+
+        --with-tclconfig=<path of dir containing tclConfig.sh>
+
+Warning: Only Tcl versions 7.5 and later provide a tclConfig.sh file.
+Make sure you have a new enough version installed on your
+system.)
+fi
+AC_MSG_RESULT($tclconfig/tclConfig.sh)
+
+# Look for tkConfig.sh (in same directory as tclConfig.sh?)
+AC_MSG_CHECKING(for tkConfig.sh)
+AC_ARG_WITH(tkconfig,
+[  --with-tkconfig=<path>  directory that contains tkConfig.sh],
+tkconfig="$withval")
+
+if test -z "$tkconfig"; then
+	tkconfig="$tclconfig"   
+fi
+
+if test ! -f "$tkconfig/tkConfig.sh"; then
+	with_tk=no
+	AC_MSG_ERROR(I could not find tkConfig.sh.
+
+Please specify the directory that contains tkConfig.sh
+by running configure with the following option
+
+        --with-tkconfig=<path of dir containing tkConfig.sh>
+
+Warning: Only Tk versions 4.1 and later provide a tkConfig.sh file.
+Make sure you have a new enough version installed on your system.) 
+fi
+AC_MSG_RESULT($tkconfig/tkConfig.sh)
+
+# Load the Tcl/Tk configuration files
+. $tclconfig/tclConfig.sh
+use_tcl=true
+
+. $tkconfig/tkConfig.sh  
+use_tk=true
+
+if test -z "$TCL_EXEC_PREFIX"; then TCL_EXEC_PREFIX="$TCL_PREFIX"; fi
+if test -z "$TK_EXEC_PREFIX"; then TK_EXEC_PREFIX="$TK_PREFIX"; fi   
+
+# Check that the library files exist
+AC_MSG_CHECKING(for installed Tcl/Tk library files)
+lib1="${TCL_EXEC_PREFIX}/lib/libtcl${TCL_VERSION}.so"
+lib2="${TK_EXEC_PREFIX}/lib/libtk${TK_VERSION}.so"   
+for f in "$lib1" "$lib2"; do
+	if test ! -f "$f"; then 
+		AC_MSG_RESULT($f not found)
+		AC_MSG_ERROR(Make sure Tcl/Tk are installed correctly on your
+system and then rerun configure.)
+	fi
+done  
+AC_MSG_RESULT(ok)
+
+# Find the flags for linking with the Tcl/Tk libraries
+if test "$TCL_LIB_VERSIONS_OK" = "ok"; then TCL_LIB_VERSIONS_OK=yes; fi
+if test "$TCL_LIB_VERSIONS_OK" = "1";  then TCL_LIB_VERSIONS_OK=yes; fi
+
+if test -z "$TCL_LIB_SPEC"; then
+	if test "$TCL_LIB_VERSIONS_OK" = "yes"; then
+		TCL_LIB_SPEC="-L${TCL_EXEC_PREFIX}/lib -ltcl${VERSION}${DBGX}"
+	else
+		TCL_LIB_SPEC="${TCL_EXEC_PREFIX}/lib/${TCL_LIB_FILE}"
+	fi
+fi
+  
+if test -z "$TK_LIB_SPEC"; then
+	if test "$TCL_LIB_VERSIONS_OK" = "yes"; then
+		TK_LIB_SPEC="-L${TK_EXEC_PREFIX}/lib -ltk${VERSION}${DBGX}"
+	else
+		TK_LIB_SPEC="${TK_EXEC_PREFIX}/lib/${TK_LIB_FILE}"
+	fi
+fi
+
+# Check Tcl/Tk versions
+AC_REQUIRE_CPP()
+
+AC_MSG_CHECKING(for up-to-date Tcl version in tcl.h)
+AC_ARG_WITH(tclhdir,
+[  --with-tclhdir=<path>   directory that contains tcl.h],
+	tclhdir="$withval")
+if test -z "$tclhdir"; then
+	# Search for tcl.h
+	tclhdir="${TCL_PREFIX}/include"
+	for dir in "${TCL_PREFIX}/include" /usr/include /usr/include/tcl; do
+		if test -f "$dir/tcl.h"; then
+			tclhdir="$dir"
+			break
+		fi   
+	done     
+fi
+  
+# Find tk.h
+AC_ARG_WITH(tkhdir,
+[  --with-tkhdir=<path>    directory that contains tk.h],
+	tkhdir="$withval")
+
+if test -z "$tkhdir"; then
+	# Search for tk.h
+	tkhdir="$tclhdir"
+	for dir in "${TK_PREFIX}/include" /usr/include /usr/include/tcl; do
+		if test -f "$dir/tk.h"; then
+			tkhdir="$dir"
+			break
+		fi   
+	done     
+fi
+  
+AC_EGREP_CPP(good_tcl_version,
+[#include "$tclhdir/tcl.h"
+#if ((TCL_MAJOR_VERSION == $TCL_MAJOR_VERSION) && (TCL_MINOR_VERSION == $TCL_MINOR_VERSION))
+	good_tcl_version
+#endif],is_good_tcl_version=yes,is_good_tcl_version=no)
+
+AC_MSG_RESULT($is_good_tcl_version)
+if test "$is_good_tcl_version" = "no"; then exit 1; fi
+
+AC_MSG_CHECKING(for up-to-date Tk version in tk.h)
+AC_EGREP_CPP(good_tk_version,
+[#include "$tkhdir/tk.h"
+
+#if ((TK_MAJOR_VERSION == $TK_MAJOR_VERSION) && (TK_MINOR_VERSION == $TK_MINOR_VERSION))
+	good_tk_version
+#endif],is_good_tk_version=yes,is_good_tk_version=no)
+
+AC_MSG_RESULT($is_good_tk_version)
+if test "$is_good_tk_version" = "no"; then exit 1; fi
+
+TCL_INCDIR="$tclhdir"
+TK_INCDIR="$tkhdir"  
+
+AM_CONDITIONAL(WITH_TCL, $use_tcl)
+if $use_tcl; then
+	msg_tcl=yes
+fi
+AM_CONDITIONAL(WITH_ITCL, $use_itcl)
+if $use_itcl; then
+	msg_itcl=yes
+fi
+AM_CONDITIONAL(WITH_TK, $use_tk)
+if $use_tk; then
+	msg_tk=yes
+fi
+
+# Export variables discovered during Tcl/Tk configuration
+AC_SUBST(TCL_VERSION)
+AC_SUBST(TCL_LIB_SPEC)
+AC_SUBST(TCL_PREFIX)
+AC_SUBST(TCL_EXEC_PREFIX)
+AC_SUBST(TCL_LIBS)
+AC_SUBST(TK_LIB_SPEC)
+AC_SUBST(TK_LIBS)
+AC_SUBST(TK_PREFIX)
+AC_SUBST(TK_EXEC_PREFIX)
+AC_SUBST(TK_XINCLUDES)
+AC_SUBST(TCL_INCDIR)
+AC_SUBST(TK_INCDIR)
+
+TCLEXECS=''
+if test ! "x$TCL_VERSION" = "x"; then
+        TCLEXECS='pilot-debug$(EXT)'
+fi                                   
+AC_SUBST(TCLEXECS) 
+
 
 dnl ******************************
 dnl Python
@@ -521,7 +752,7 @@ dnl ******************************
 use_python=false
 msg_python=no
 
-AC_ARG_WITH(python,   [  --with-python=pybase    use Python [default=no]],  , with_python=no)
+AC_ARG_WITH(python,   [  --with-python=pybase    use Python                 [default=no]],  , with_python=no)
 
 if test "x$with_python" != "xno"; then
         AC_PATH_PROGS(PYTHON, [python2 python])
@@ -534,7 +765,7 @@ if $use_python; then
 
 	# sys.stdout = StringIO.StringIO(); sends all strings to memory,
 	# more portable than the previous '>/dev/null' call
-	PYTHONVER=[`$PYTHON -c "import sys, string, StringIO; sys.stdout = StringIO.StringIO(); print string.split(sys.version)[0]"`]
+	PYTHONVER=[`$PYTHON -c "import sys, string; print string.split(sys.version)[0]"`]
 	if `$PYTHON -c "from distutils.core import setup, Extension;"`; then
 		use_python=true
 		AC_MSG_RESULT(looks good)
@@ -697,6 +928,8 @@ echo "
 
   External Language Support
   -------------------------.
+  TCL support............. : $msg_tcl	$TCL_VERSION   
+  TK Support.............. : $msg_tk	$TK_VERSION
   Java support............ : $msg_java	
   Python support.......... : $msg_python	$PYTHONVER
   Perl support............ : $msg_perl	$PERL_VERSION
