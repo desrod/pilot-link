@@ -34,10 +34,10 @@
  *
  * Function:	free_Contact
  *
- * Summary:		Frees the allocated contents of a Contact.  Call this
- *				when the structure's data is no longer needed.
+ * Summary:		Frees (only) the allocated contents of a Contact.  Call
+ *				this when the structure's data is no longer needed.
  *
- * Parameters:	*c, the Contact to be disposed of
+ * Parameters:	+ *c, the Contact to be disposed of
  *
  * Returns:		Nothing
  *
@@ -51,8 +51,10 @@ free_Contact (struct Contact *c)
 		if (c->entry[i])
 			free(c->entry[i]);
 
-	if (c->picture != NULL)
+	if (c->picture != NULL) {
 		pi_buffer_free (c->picture);
+		c->picture = NULL;
+	}
 }
 
 
@@ -60,15 +62,15 @@ free_Contact (struct Contact *c)
  *
  * Function:	unpack_Contact
  *
- * Summary:		Unpacks a raw contact data into a common structure for
- *				all known version of palmOne Contacts
+ * Summary:		Unpacks raw contact data into a common structure for
+ *				all known versions of palmOne Contacts
  *
- * Parameters:	*c, a Contact structure to fill in
- *				*buf, a pi_buffer_t containing (only) the raw record
- *				type, the type field from ContactAppInfo
+ * Parameters:	+ *c, a Contact structure to fill in
+ *				- *buf, a pi_buffer_t containing (only) the raw record
+ *				- type, the type field from ContactAppInfo
  *
- * Returns:     0 on error, the length of the data used from the
- *		buffer otherwise
+ * Returns:     0 on success
+ *				-1 on error
  *
  ***********************************************************************/
 int
@@ -77,7 +79,8 @@ unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 	int				i;
 	uint32_t		contents1,
 					contents2;
-	size_t			ofs;
+	size_t			ofs,
+					imgsize;
 	uint16_t		packed_date;
 
 	if (c == NULL)
@@ -126,6 +129,7 @@ unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 			if (ofs <= buf->used)
 				c->entry[i] = strdup (buf->data + ofs);
 			else
+				/* Record is cut short */
 				return -1;
 
 			while (ofs < buf->used)
@@ -141,6 +145,7 @@ unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 			if (ofs <= buf->used)
 				c->entry[i + 28] = strdup (buf->data + ofs);
 			else
+				/* Record is cut short */
 				return -1;
 
 			while (ofs < buf->used)
@@ -155,6 +160,7 @@ unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 	if (contents2 & 0x1800) {
 		/* Two bytes of padding */
 		if (ofs - buf->used < 4)
+			/* Record is cut short */
 			return -1;
 
 		c->birthdayFlag = 1;
@@ -173,6 +179,7 @@ unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 
 		if (contents2 & 0x2000) {
 			if (ofs - buf->used < 1)
+				/* Record is cut short */
 				return -1;
 
 			c->reminder = get_byte(buf->data + ofs++);
@@ -193,15 +200,50 @@ unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 					contents2, contents1));
 	}
 
-	if (ofs < buf->used) {
-		if (type == contacts_v11) {
-			if ((c->picture = pi_buffer_new (buf->used - ofs)) == NULL)
+	if (ofs < buf->used && type == contacts_v11) {
+		if (ofs + 6 > buf->used)
+			/* Should have at least a 6 byte image header */
+			return -1;
+
+		if (strncasecmp (buf->data + ofs, "Bd00", 4) != 0)
+			/* Wrong signature */
+			return -1;
+
+		ofs += 4;
+		imgsize = get_short (buf->data + ofs);
+		ofs += 2;
+		
+		/*
+		 * If imgsize is 0, there's a header but no image.
+		 * If imgsize is 2, there's a header and type, but no image.
+		 * If imgsize is 1, something's wrong
+		 */
+		if (imgsize == 1)
+			return -1;
+
+		if (imgsize > 2) {
+			/* There's an image here... */
+
+			if (get_short (buf->data + ofs) != 0x0001)
+				/* ... but we don't support it */
 				return -1;
 
-			pi_buffer_append (c->picture, buf->data + ofs, buf->used - ofs);
-		} else
-			return -1;
-	}
+			ofs += 2;
+			imgsize -= 2;
+				
+			if ((c->picture = pi_buffer_new (imgsize)) == NULL)
+				return -1;
+
+			pi_buffer_append (c->picture, buf->data + ofs, imgsize);
+			ofs += imgsize;
+			c->pictype = cpic_jpeg;
+		}
+	} else
+		c->pictype = cpic_none;
+
+	if (ofs < buf->used)
+		/* Extra crap at the end of the record */
+		return -1;
 
 	return 0;
 }
@@ -211,22 +253,27 @@ unpack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
  *
  * Function:    pack_Contact
  *
- * Summary:     Fill in the raw contact record data based on the 
- *		contact structure
+ * Summary:     Packs a Contact structure into raw data corresponding to
+ *				that of a given version of palmOne Contacts
  *
- * Parameters:  struct Contact *c, unsigned char *record, int len
+ *				NOTE: Byte-for-byte reproduction of the original raw
+ *				data is not guaranteed.  Moreover, if the target type
+ *				does not support a given field in the Contact structure,
+ *				that field is simply ignored to allow forward and
+ *				backward compatibility.
  *
- * Returns:     The length of the buffer required if record is NULL,
- *		or 0 on error, the length of the data used from the 
- *		buffer otherwise
+ * Parameters:  - *c, a Contact structure
+ *				+ *buf, a pi_buffer_t to write to
+ *				- type, the desired format of the output
+ *
+ * Returns:     0 on success
+ *				-1 on error
  *
  ***********************************************************************/
 int
 pack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 {
-	int 	l,
-		destlen = 17;
-
+	int l, destlen = 17;
 	size_t ofs;
 	unsigned long contents1, contents2;
 	unsigned long v;
@@ -254,7 +301,8 @@ pack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 	if (c->reminder != -1)
 		destlen += 2;
 	if (c->picture != NULL) {
-		destlen += c->picture->used;
+		if (type == contacts_v11 && c->pictype == cpic_jpeg)
+			destlen += c->picture->used + 8;
 	}
 
 	if (buf == NULL || buf->data == NULL)
@@ -303,7 +351,15 @@ pack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
 			/* no reminder */
 			set_byte(buf->data + ofs++, 0);
 	}
-	if (type == contacts_v11 && c->picture != NULL) {
+	if (type == contacts_v11
+			&& c->pictype == cpic_jpeg
+			&& c->picture != NULL) {
+		strncpy (buf->data + ofs, "Bd00", 4);	/* no \0 */
+		ofs += 4;
+		set_short (buf->data + ofs, c->picture->used + 2);
+		ofs += 2;
+		set_short (buf->data + ofs, 0x0001);
+		ofs += 2;
 		memcpy (buf->data + ofs, c->picture->data, c->picture->used);
 		ofs += c->picture->used;
 	}
@@ -349,8 +405,8 @@ pack_Contact (struct Contact *c, pi_buffer_t *buf, contactsType type)
  * Summary:     Unpacks a raw AppInfo into a usable structure.  palmOne
  *				Contacts 1.0 and 1.1/1.2 are currently supported.
  *
- * Parameters:  *ai, the ContactAppInfo structure to write
- *				*buf, a pi_buffer_t containing (only) the raw AppInfo
+ * Parameters:  + *ai, the ContactAppInfo structure to write
+ *				- *buf, a pi_buffer_t containing (only) the raw AppInfo
  *
  * Returns:     0 on success
  *				-1 on error
@@ -450,8 +506,8 @@ unpack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
  *				FIXME: Add a note about translate_ContactAppInfo once it
  *				exists.
  *
- * Parameters:	*ai, an unpacked ContactAppInfo structure
- *				*buf, a pi_buffer_t to store the raw AppInfo into
+ * Parameters:	- *ai, an unpacked ContactAppInfo structure
+ *				+ *buf, a pi_buffer_t to store the raw AppInfo into
  *
  * Returns:		0 on success
  *				-1 on error
@@ -490,4 +546,4 @@ pack_ContactAppInfo (struct ContactAppInfo *ai, pi_buffer_t *buf)
 	return 0;
 }
 
-/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ft=c tw=78 ts=4 sw=4 sts=4 noexpandtab: cin */

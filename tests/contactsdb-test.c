@@ -29,6 +29,7 @@
 #include "pi-contact.h"
 
 #undef PRINT_USELESS_CRAP
+#undef SAVE_PICTURES
 
 #define hi(x) (((x) >> 4) & 0x0f)
 #define lo(x) ((x) & 0x0f)
@@ -307,8 +308,26 @@ print_records (int sd, int db, struct ContactAppInfo *cai)
 			puts ("");
 		}
 
-		if (c.picture != NULL)
-			printf (" Picture        : %zu bytes\n", c.picture->used);
+		if (c.picture != NULL) {
+#ifdef SAVE_PICTURES
+			char fname[25];
+			FILE *f;
+
+			snprintf (fname, 24, "rec-%lu.%s",
+					(uint32_t)recid,
+					c.pictype == cpic_jpeg ? "jpeg" : "img");
+			printf (" Picture        : %s\n", fname);
+			f = fopen (fname, "wb");
+			if (f) {
+				fwrite (c.picture->data, c.picture->used, 1, f);
+				fclose (f);
+			}
+#else
+			printf (" Picture        : %s (%zu bytes)\n",
+					c.pictype == cpic_jpeg ? "JPEG" : "Unknown format",
+					c.picture->used);
+#endif /* SAVE_PICTURES */
+		}
 
 		free_Contact (&c);
 	}

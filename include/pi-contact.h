@@ -21,6 +21,11 @@ typedef enum {
 	contacts_v11
 } contactsType;
 
+typedef enum {
+	cpic_none,
+	cpic_jpeg
+} contactsPicType;
+
 enum {
 	contLastname,
 	contFirstname,
@@ -76,6 +81,7 @@ struct Contact {
 
 	int reminder;
 
+	contactsPicType pictype;
 	pi_buffer_t *picture;
 };
 
@@ -109,4 +115,4 @@ extern int pack_ContactAppInfo
 #endif /* __cplusplus */
 #endif /* _PILOT_CONTACT_H_ */
 
-/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ft=c tw=78 ts=4 sw=4 sts=4 noexpandtab: cin */
