@@ -664,7 +664,7 @@ AC_ARG_ENABLE(compile-warnings,
 
 if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
-		-std=c99 -g -Wshadow -Wall -W -Waggregate-return -Wcast-align 	\
+		-std=gnu99 -g -Wshadow -Wall -W -Waggregate-return -Wcast-align 	\
 		-Wcast-qual -Wnested-externs -Wpointer-arith -Wundef -Winline	\
 		-Wbad-function-cast -pedantic -O0"
 
