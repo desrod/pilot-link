@@ -69,19 +69,19 @@ struct option options[] = {
 	{"fetch",       required_argument, NULL, 'f'},
 	{"delete",      required_argument, NULL, 'd'},
 	{"exclude",     required_argument, NULL, 'e'},
-	{"purge",       required_argument, NULL, 'P'},
+	{"Purge",       required_argument, NULL, 'P'},
 	{"list",        no_argument,       NULL, 'l'},
-	{"list-all",    no_argument,       NULL, 'L'},
+	{"Listall",     no_argument,       NULL, 'L'},
 	{"archive",     required_argument, NULL, 'a'},
-	{"flash",       no_argument,       NULL, 'F'},
-	{"flash-os",    no_argument,       NULL, 'O'},
-	{"illegal",     no_argument,       NULL, 'I'},
+	{"Flash",       no_argument,       NULL, 'F'},
+	{"Osflash",     no_argument,       NULL, 'O'},
+	{"Illegal",     no_argument,       NULL, 'I'},
 	{"quiet",       no_argument,       NULL, 'q'},
 	{"count",       no_argument,       NULL, 'c'},
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "-hvp:b:u:s:r:i:m:f:d:e:P:lLa:FOIqc";
+static const char *optstring = "hvp:b:u:s:r:i:m:f:d:e:P:lLa:FOIqc";
 
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
@@ -927,44 +927,58 @@ static void Purge(void)
  ***********************************************************************/
 static void Help(char *progname)
 {
-	PalmHeader(progname);
-
 	printf("   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n\n"
-	       "   -b[ackup] backupdir   = copy the contents of your palm to < backupdir >\n"
-	       "   -u[pdate] backupdir   = update backupdir with newer Palm data\n"
-	       "   -s[ync] backupdir     = same as - u above, but removes local files if data\n"
-	       "                           is removed from your Palm\n"
-	       "   -r[estore] backupdir  = restore backupdir to your Palm\n"
-	       "   -i[nstall] dbname(s)  = install local[prc | pdb] files to your Palm\n"
-	       "   -m[erge] filename(s)  = adds the records in <file> into the corresponding\n"
-	       "                           Palm database\n"
-	       "   -f[etch] dbname(s)    = retrieve dbname(s) from your Palm\n"
-	       "   -d[elete] dbname(s)   = delete(permanently) dbname(s) from your Palm\n"
-	       "   -e[xclude] filename   = exclude dbname(s) listed in <filename> from being\n"
-	       "                           included by -backup, -sync, or -update.\n"
-	       "   -P[urge]              = purge any deleted data that hasn't been cleaned up\n"
-	       "                           by a sync\n\n"
- 	       "   -l[ist]               = list all application and 3 rd party data on the Palm\n"
-	       "   -L[istall]            = list all data, internal and external on the Palm\n"
-	       "   -v[ersion]            = report the version of %s\n", progname, progname);
+	       "   Options:\n"
+	       "     -p <port>    Use device file <port> to communicate with Palm\n"
+	       "     -h           Display this information (--port)\n"
+	       "     -b <dir>     Copy the contents of your palm to <dir> (--backup)\n"
+	       "     -u <dir>     Update <dir> with newer Palm data (--update)\n"
+	       "     -s <dir>     Same as -u above, but removes local files if data\n"
+	       "                  is removed from your Palm (--sync)\n"
+	       "     -r <dir>     Restore backupdir to your Palm (--restore)\n"
+	       "     -i dbname(s) Install local[prc | pdb] files to your Palm (--install)\n"
+	       "     -m file(s)   Adds the records in <file> into the corresponding Palm\n"
+	       "                  database (--merge)\n"
+	       "     -f dbname(s) Retrieve dbname(s) from your Palm (--fetch)\n"
+	       "     -d dbname(s) Delete (permanently) dbname(s) from your Palm (--delete)\n"
+	       "     -e filename  Exclude dbname(s) listed by <filename> from being included\n"
+	       "                  by -backup, -sync, or -update. (--exclude)\n"
+	       "     -P           Purge any deleted data that hasn't been cleaned up by a\n"
+	       "                  sync (--Purge)\n"
+	       "     -l           List all application and 3 rd party data on the Palm\n"
+	       "                  (--list)\n"
+	       "     -L           List all data, internal and external on the Palm\n"
+	       "                  (--Listall)\n"
+	       "     -v           Report the version of %s (--version)\n", progname, progname);
+
 	printf("                           (currently %d.%d.%d%s)\n"
-	       "   -h[elp]               = reprint this usage screen\n\n"
-	       "   -a modifies -s to archive deleted files in specified directory.\n"
-	       "   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n"
-	       "   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n"
-	       "   -I modifies -b, -u, and -s, to back up \"illegal\"\n"
-	       "      Unsaved Preferences.prc (normally skipped, per Palm's recommendation).\n"
-	       "   -q makes all the backup options shut up about skipped files.\n"
-	       "   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n"
+	       "     -a           modifies -s to archive deleted files in specified\n"
+	       "                  directory. (--archive)\n"
+	       "     -F           modifies -b, -u, and -s, to back up non-OS db\'s from Flash\n"
+	       "                  ROM. (--Flash)\n"
+	       "     -O           modifies -b, -u, and -s, to back up OS db 's from Flash\n"
+	       "                  ROM. (--Osflash)\n"
+	       "     -I           modifies -b, -u, and -s, to back up the \'illegal\' database\n"
+	       "                  Unsaved Preferences.prc (normally skipped, per Palm's\n"
+	       "                  recommendation). (--Illegal)\n"
+	       "     -q           makes all the backup options shut up about skipped files.\n"
+	       "                  (--quiet)\n"
+	       "     -c           does same as '-q', but counts files(\"[nnn]...\") as they\n"
+	       "                  are processed. (--count)\n\n"
+
  	       "   The serial port used to connect to may be specified by the $PILOTPORT\n"
 	       "   environment variable in your shell instead of the command line.  If it is\n"
 	       "   not specified anywhere, it will default to /dev/pilot.\n\n"
- 	       "   Additionally, the baud rate to connect with may be specified by the\n"
-	       "   $PILOTRATE environment variable.If not specified, it will default to 9600.\n"
-	       "   Please use caution setting $PILOTRATE to higher values, as several types of\n"
-	       "   workstations have problems with higher baud rates.\n"
- 	       "   Always consult the man page(s) for additional usage of these options as well\n"
-	       "   as details on the results of combining other parameters together.\n\n", PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
+
+	       "   Additionally, the baud rate to connect with may be specified by the\n"
+	       "   $PILOTRATE environment variable.If not specified, it will default to\n"
+	       "   a safe rate of 9600.\n\n"
+
+	       "   Please use caution setting $PILOTRATE to higher values, as several types\n"
+	       "   of workstations have problems with higher baud rates.  Always consult the\n"
+	       "   man page(s) for additional usage of these options as well as details on\n"
+	       "   the results of combining other parameters together.\n\n",
+		   PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
 	exit(0);
 }
 
@@ -1051,6 +1065,8 @@ int main(int argc, char *argv[])
 		case 'I':
 			do_unsaved = 1;
 			break;
+
+		/* FIXME: quiet needs to go away, replace with verbose */
 		case 'q':
 			quiet = 2;
 			break;
@@ -1058,6 +1074,7 @@ int main(int argc, char *argv[])
 			quiet = 1;
 			break;
 		}
+
 		if (c > 1) {
 			last_c=c;
 		}
