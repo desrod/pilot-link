@@ -12,15 +12,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
 #include <ctype.h> /* isspace */
 #include <stdarg.h> /* va_arg, vprintf stuff */
 
-#include "../../include/pi-source.h"
-#include "../../include/pi-socket.h"
-#include "../../include/pi-dlp.h"
-#include "../../include/pi-file.h"
-#include "../../include/pi-datebook.h"
+#include "pi-source.h"
+#include "pi-socket.h"
+#include "pi-dlp.h"
+#include "pi-file.h"
+#include "pi-datebook.h"
 
 
 #ifdef sun
