@@ -1,3 +1,12 @@
+2001-10-26  JP Rosevear  <jpr@ximian.com>
+
+	* libsock/util.c (convert_ToPilotChar): plug leak
+	(convert_FromPilotChar): ditto
+
+	* libsock/sync.c (sync_MergeToPilot_fast): free all of the pilot
+	record
+	(sync_MergeToPilot_slow): ditto
+
 2001-10-17  JP Rosevear  <jpr@ximian.com>
  
  	* libsock/sync.c (sync_record): If the record was created and

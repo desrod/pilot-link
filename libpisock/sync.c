@@ -833,7 +833,7 @@ sync_MergeToPilot_fast(SyncHandler * sh, int dbhandle,
 			   (sh, dbhandle, drecord, precord, &rq, rec_mod));
 
 		if (precord)
-			free(precord);
+			sync_FreePilotRecord (precord);
 		precord = NULL;
 	}
 
@@ -901,7 +901,7 @@ sync_MergeToPilot_slow(SyncHandler * sh, int dbhandle,
 			   (sh, dbhandle, drecord, precord, &rq, rec_mod));
 
 		if (precord)
-			free(precord);
+			sync_FreePilotRecord (precord);
 		precord = NULL;
 	}
 
