@@ -34,7 +34,7 @@ int pilot_connect(const char *port)
 	int sd;
 	struct pi_sockaddr addr;
 
-	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_PADP))) {
+	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET))) {
 		perror("   Reason: pi_socket");
 		return -1;
 	}

@@ -1,5 +1,10 @@
 2002-01-05  JP Rosevear  <jpr@ximian.com>
 
+	* libsock/connect.c (pilot_connect): switch back to _NET for
+	testing
+
+2002-01-05  JP Rosevear  <jpr@ximian.com>
+	
 	* Merge from the main line
 
 2002-01-05  JP Rosevear  <jpr@ximian.com>
