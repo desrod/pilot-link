@@ -180,20 +180,20 @@ pi_protocol_t
 int
 net_rx_handshake(pi_socket_t *ps)
 {
-	unsigned char msg1[50] = 
+	static const unsigned char msg1[] =	/* 50 bytes */
 		"\x12\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
 		"\x24\xff\xff\xff\xff\x3c\x00\x3c\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\xc0\xa8\xa5\x1f\x04\x27\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	unsigned char msg2[46] = 
+	static const unsigned char msg2[] =	/* 46 bytes */
 		"\x13\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
 		"\x20\xff\xff\xff\xff\x00\x3c\x00\x3c\x00\x00\x00\x00"
 		"\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00";
 	pi_buffer_t *buffer;
 	int err;
-	
-	buffer = pi_buffer_new (200);
+
+	buffer = pi_buffer_new (256);
 	if (buffer == NULL) {
 		errno = ENOMEM;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
@@ -228,20 +228,20 @@ net_rx_handshake(pi_socket_t *ps)
 int
 net_tx_handshake(pi_socket_t *ps)
 {
-	unsigned char msg1[22] = 
+	static const unsigned char msg1[] =	/* 22 bytes */
 		"\x90\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
 		"\x08\x01\x00\x00\x00\x00\x00\x00\x00";
-	unsigned char msg2[50] = 
+	static const unsigned char msg2[] =	/* 50 bytes */
 		"\x92\x01\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00"
 		"\x24\xff\xff\xff\xff\x00\x3c\x00\x3c\x40\x00\x00\x00"
 		"\x01\x00\x00\x00\xc0\xa8\xa5\x1e\x04\x01\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	unsigned char msg3[8]  = 
+	static const unsigned char msg3[] =	/* 8 bytes */
 		"\x93\x00\x00\x00\x00\x00\x00\x00";
 	pi_buffer_t *buffer;
 	int err;
-	
-	buffer = pi_buffer_new (200);
+
+	buffer = pi_buffer_new (256);
 	if (buffer == NULL) {
 		errno = ENOMEM;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
@@ -301,7 +301,7 @@ net_flush(pi_socket_t *ps, int flags)
  *
  ***********************************************************************/
 ssize_t
-net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
+net_tx(pi_socket_t *ps, const unsigned char *msg, size_t len, int flags)
 {
 	int 	bytes,
 			offset,
