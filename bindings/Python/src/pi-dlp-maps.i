@@ -11,8 +11,10 @@
 }
 
 
+// -------------------------------------
 // struct PilotUser
-%typemap (python,in) struct PilotUser * {
+// -------------------------------------
+%typemap (python,in) struct PilotUser* {
     static struct PilotUser temp;
     int l;
     PyObject *foo;
@@ -34,7 +36,7 @@
     $1 = &temp;    
 }
 
-%typemap (python,argout) struct PilotUser * {
+%typemap (python,argout) struct PilotUser* {
     PyObject *o;
     
     if ($1) {
@@ -50,11 +52,13 @@
     }
 }
 
-%typemap (python,in,numinputs=0) struct PilotUser * (struct PilotUser temp) {
+%typemap (python,in,numinputs=0) struct PilotUser* (struct PilotUser temp) {
     $1 = &temp;
 }
 
+// -------------------------------------
 // struct SysInfo
+// -------------------------------------
 %typemap (python,argout) struct SysInfo * {
     PyObject *o;
     
@@ -67,11 +71,15 @@
     }
 }
 
-%rename(dlp_ReadDBList_) dlp_ReadDBList;
-
-%typemap (in,numinputs=0) struct SysInfo * (struct SysInfo temp) {
+%typemap (in,numinputs=0) struct SysInfo* (struct SysInfo temp) {
     $1 = &temp;
 }
+
+// -------------------------------------
+// Processing of a buffer containing a
+// database list
+// -------------------------------------
+%rename(dlp_ReadDBList_) dlp_ReadDBList;
 
 %typemap (in,numinputs=0) (pi_buffer_t *dblist) {
   $1 = pi_buffer_new(0xFFFF);
@@ -123,7 +131,9 @@
 }
 
 
+// -------------------------------------
 // struct DBInfo
+// -------------------------------------
 %typemap (python,argout) struct DBInfo *OUTPUT {
     PyObject *o;
 
@@ -200,7 +210,9 @@
 }
     
     
+// -------------------------------------
 // struct CardInfo
+// -------------------------------------
 %typemap (python,argout) struct CardInfo *OUTPUT {
     PyObject *o;
 
@@ -223,6 +235,9 @@
     $1 = &temp;
 }
 
+// -------------------------------------
+// struct NetSyncInfo
+// -------------------------------------
 %typemap (python,argout) struct NetSyncInfo *OUTPUT {
     PyObject *o;
     if ($1){
@@ -250,13 +265,17 @@
     $1 = &temp;
 }
 
-// XXX
-%typemap (python,in) (const void *INBUF, size_t INBUFLEN) {
+// -------------------------------------
+// Passing data as parameter
+// -------------------------------------
+%typemap (python,in) (const void *databuf, size_t datasize) {
   $1 = (void *)PyString_AsString($input);
   $2 = PyString_Size($input);
 }
 
+// -------------------------------------
 // Used by dlp_ReadAppPreference
+// -------------------------------------
 %typemap (python,argout) (void *OUTBUF, size_t *OUTBUFLEN, int *OUTPUT) {
   PyObject *o;
   if ($1) {
@@ -265,52 +284,50 @@
   }
 }
 
-%typemap (in,numinputs=0) (int reqbytes, pi_buffer_t *OUTBUF) {
+%typemap (in,numinputs=0) (int reqbytes, pi_buffer_t *retbuf) {
   $1 = 0xFFFF;
   $2 = pi_buffer_new($1);
 }
 
 
+// -------------------------------------
+// dlp_ReadRecordIDList custom wrapper
+// -------------------------------------
 %native(dlp_ReadRecordIDList) PyObject *_wrap_dlp_ReadRecordIDList(PyObject *, PyObject *);
-
 %{
-
-/* sd, dbf, sort, start, max, recordid_t *IDS, int *count
- */
 static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
-    int sd, dbf, sort, start, max;
-    int ret;
-    recordid_t *buf;
-    int count, i;
-    PyObject *list;
-
-    buf = (recordid_t *)PyMem_Malloc(0xFFFF);    
-
-    if (!PyArg_ParseTuple(args, "iiiii", &sd, &dbf, &sort, &start, &max))
-	return NULL;
-
-/* this is a rather simplistic wrapper.  if max is too big, we just
- * refuse to do it; we don't loop, figuring that that is the job of
- * the python wrapper.
- */
-    if (max > (0xFFFF/sizeof(recordid_t))) {
-	PyErr_SetString(PyExc_ValueError, "can only return about 64k worth of ids at once");
-	return NULL;
-    }
-
-    ret = dlp_ReadRecordIDList(sd, dbf, sort, start, max, buf, &count);
-
-    if (ret < 0) {
-	PyErr_SetObject(PIError, Py_BuildValue("(is)", ret, dlp_strerror(ret)));
-	PyMem_Free(buf);
-	return NULL;
-    } else {
-	list = PyList_New(0);
-	for (i=0; i<count; i++)
-	    PyList_Append(list, PyInt_FromLong((long)buf[i]));
-	PyMem_Free(buf);
-	return list;
-    }
+	int sd, dbf, sort, start, max;
+	int ret;
+	recordid_t *buf;
+	int count, i;
+	PyObject *list;
+	
+	buf = (recordid_t *)PyMem_Malloc(0xFFFF);    
+	
+	if (!PyArg_ParseTuple(args, "iiiii", &sd, &dbf, &sort, &start, &max))
+		return NULL;
+	
+	/* this is a rather simplistic wrapper.  if max is too big, we just
+		* refuse to do it; we don't loop, figuring that that is the job of
+		* the python wrapper.
+		*/
+	if (max > (0xFFFF/sizeof(recordid_t))) {
+		PyErr_SetString(PyExc_ValueError, "can only return about 64k worth of ids at once");
+		return NULL;
+	}
+	
+	ret = dlp_ReadRecordIDList(sd, dbf, sort, start, max, buf, &count);
+	
+	if (ret < 0) {
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", ret, dlp_strerror(ret)));
+		PyMem_Free(buf);
+		return NULL;
+	} else {
+		list = PyList_New(0);
+		for (i=0; i<count; i++)
+			PyList_Append(list, PyInt_FromLong((long)buf[i]));
+		PyMem_Free(buf);
+		return list;
+	}
 }
-
 %}
