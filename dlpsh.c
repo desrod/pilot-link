@@ -219,7 +219,7 @@ int ls_fn(int sd, int argc, char *argv[])
 		}
 
 
-		printf("  Filename: \"%s\"\n", info.name);
+		printf("%s\n", info.name);
 
 		if (lflag) {
 			printf("       More: 0x%x     Flags: 0x%-4x             Type: %.4s\n",

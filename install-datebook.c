@@ -34,6 +34,7 @@
 #include "pi-datebook.h"
 
 extern time_t parsedate(char *p);
+int pilot_connect(const char *port);
 
 int main(int argc, char *argv[])
 {
@@ -42,55 +43,28 @@ int main(int argc, char *argv[])
 		fieldno,
 		filelen,
 		index,
-		ret,	
-		sd;
+		sd		= -1;
 	
-	char 	*cPtr,
-		*file_text,
+	char 	*port		= NULL,
+		*cPtr		= NULL,
+		*file_text	= NULL,
 		*fields[4];
 	
 	unsigned char Appointment_buf[0xffff];
 	FILE *f;
 	
-	struct 	pi_sockaddr addr;
-	struct 	PilotUser U;
+	struct 	PilotUser User;
 	struct 	Appointment appointment;
 
-/*
-	if (argc < 3) {
-		fprintf(stderr, "usage:%s %s file [file] ...\n", argv[0],
-			TTYPrompt);
-		exit(2);
-	}
-	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
-		exit(1);
-	}
+	sd = pilot_connect(port);
+	if (sd < 0)
+		goto error;
 
-	addr.pi_family = PI_AF_SLP;
-	strcpy(addr.pi_device, argv[1]);
-
-	ret = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret == -1) {
-		perror("pi_bind");
-		exit(1);
-	}
-
-	ret = pi_listen(sd, 1);
-	if (ret == -1) {
-		perror("pi_listen");
-		exit(1);
-	}
-
-	sd = pi_accept(sd, 0, 0);
-	if (sd == -1) {
-		perror("pi_accept");
-		exit(1);
-	}
-*/
+	if (dlp_OpenConduit(sd) < 0)
+		goto error_close;
 
 	/* Ask the pilot who it is. */
-	dlp_ReadUserInfo(sd, &U);
+	dlp_ReadUserInfo(sd, &User);
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
@@ -228,10 +202,10 @@ int main(int argc, char *argv[])
 	dlp_CloseDB(sd, db);
 
 	/* Tell the user who it is, with a different PC id. */
-	U.lastSyncPC = 0x00010000;
-	U.successfulSyncDate = time(NULL);
-	U.lastSyncDate = U.successfulSyncDate;
-	dlp_WriteUserInfo(sd, &U);
+	User.lastSyncPC = 0x00010000;
+	User.successfulSyncDate = time(NULL);
+	User.lastSyncDate = User.successfulSyncDate;
+	dlp_WriteUserInfo(sd, &User);
 
 	dlp_AddSyncLogEntry(sd, "Successfully wrote Appointment to Palm.\n"
 				"Thank you for using pilot-link.\n");
@@ -242,4 +216,13 @@ int main(int argc, char *argv[])
 	pi_close(sd);
 	
 	return 0;
+	
+ error_close:
+	pi_close(sd);
+	
+ error:
+	perror("\tERROR:");
+	fprintf(stderr, "\n");
+
+	return -1;
 }

@@ -40,6 +40,8 @@ Minor Issues
 ------------
 	Open/Pending
 	------------
+	- Add current date/time to dlp_AddSyncLogEntry(); 
+
 	- install-hinote duplicate note detection, export of notes from
 	  Hi-NoteDB.pdb into desktop text files. Can we easily handle
 	  images?
