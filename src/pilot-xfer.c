@@ -1242,7 +1242,7 @@ static void print_volumeinfo(const char *buf, long volume, struct VFSInfo *info)
 	long size_used, size_total;
 
 	/* Only relevant when listing dir / */
-	printf("   /slot%d\n",info->slotRefNum);
+	printf("   /card%d\n",info->slotRefNum);
 	if (buf && (buf[0])) printf("   /%s\n",buf);
 	printf("      ");
 	switch(info->fsType) {
@@ -1402,7 +1402,7 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root, long *m
 	}
 
 	/* Here we scan the "root directory" of the Pilot.  We will fake out
-	   a bunch of directories pointing to the various slots on the
+	   a bunch of directories pointing to the various "cards" on the
 	   device. If we're listing, print everything out, otherwise remain
 	   silent and just set matched_volume if there's a match in the
 	   first filename component. */
@@ -1420,7 +1420,7 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root, long *m
 				break;
 			}
 			/* volume label no longer important, overwrite */
-			sprintf(buf,"slot%d",info.slotRefNum);
+			sprintf(buf,"card%d",info.slotRefNum);
 
 			if (0 == strcmp(root_component,buf)) {
 				matched_volume = volumes[i];
@@ -1436,7 +1436,7 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root, long *m
 	}
 
 	if ((matched_volume < 0) && (1 == volume_count)) {
-		/* Assume that with one slot, just go look there. */
+		/* Assume that with one card, just go look there. */
 		*match = volumes[0];
 		return 1;
 	}
@@ -1454,11 +1454,11 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root, long *m
  *              fills buffer @p rpath with the path to the file relative
  *              to the volume.
  *
- *              Acceptable root components are /slotX/ for slot indicators
+ *              Acceptable root components are /cardX/ for card indicators
  *              or /volumename/ for for identifying VFS volumes by their
  *              volume name. In the special case that there is only one
  *              VFS volume, no root component need be specified, and
- *              "/DCIM/" will map to "/slot1/DCIM/".
+ *              "/DCIM/" will map to "/card1/DCIM/".
  *
  * Parameters:  verbose        --> list root instead of searching.
  *              path           --> path to search for.
@@ -1493,13 +1493,13 @@ static int findVFSPath(int verbose, const char *path, long *volume,
 	if (r < 0) return r;
 
 	if (0 == r) {
-		/* Path includes slot/volume label. */
+		/* Path includes card/volume label. */
 		r = strlen(rpath);
 		if ('/'==path[0]) ++r; /* adjust for stripped / */
 		memset(rpath,0,*rpathlen);
 		strncpy(rpath,path+r,*rpathlen-1);
 	} else {
-		/* Path without slot label */
+		/* Path without card label */
 		memset(rpath,0,*rpathlen);
 		strncpy(rpath,path,*rpathlen-1);
 	}
@@ -1557,10 +1557,10 @@ static void palm_list_VFSDir(long volume, const char *path)
  *
  * Summary:     Show information about the directory or file specified
  *              in global vfsdir. Listing / will always tell you the
- *              physical VFS slots present; other paths should specify
- *              either a slot as /slotX/ in the path of a volume label.
- *              As a special case, /dir/ is mapped to /slot1/dir/ if
- *              there is only one slot.
+ *              physical VFS cards present; other paths should specify
+ *              either a card as /cardX/ in the path of a volume label.
+ *              As a special case, /dir/ is mapped to /card1/dir/ if
+ *              there is only one card.
  *
  * Parameters:  None
  *
@@ -1594,7 +1594,7 @@ static void palm_list_VFS()
 		return;
 	}
 	if (r < 0) {
-		printf("   No such directory, list directory / for slot names.\n");
+		printf("   No such directory, list directory / for card names.\n");
 		return;
 	}
 
