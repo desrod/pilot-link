@@ -1,3 +1,15 @@
+2003-07-18  JP Rosevear  <jpr@ximian.com>
+
+	* tests/dlp-test.c (main): update FindDBBy calls
+
+	* libpisock/dlp.c (dlp_FindDBByName): return the localid and
+	dbhandle if requested, check dlp version
+	(dlp_FindDBByOpenHandle): return localid if requested
+	(dlp_FindDBByTypeCreator): return card, localid and dbhandle if
+	requested, check dlp version
+
+	* include/pi-dlp.h: update prototypes
+
 2003-07-14  JP Rosevear  <jpr@ximian.com>
 
 	* src/pilot-xfer.c (main): remove unused var

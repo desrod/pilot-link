@@ -569,14 +569,17 @@ extern "C" {
 			 unsigned long type, unsigned long creator));
 
 	extern int dlp_FindDBByName
-	        PI_ARGS((int sd, int cardno, char *name, struct DBInfo *info, struct DBSizeInfo *size));
+	        PI_ARGS((int sd, int cardno, char *name, int *localid, int *dbhandle,
+			 struct DBInfo *info, struct DBSizeInfo *size));
 
 	extern int dlp_FindDBByOpenHandle 
-	        PI_ARGS((int sd, int dbhandle, int *cardno, struct DBInfo *info, struct DBSizeInfo *size));
+	        PI_ARGS((int sd, int dbhandle, int *cardno, int *localid, 
+			 struct DBInfo *info, struct DBSizeInfo *size));
 
 	extern int dlp_FindDBByTypeCreator
 	        PI_ARGS((int sd, unsigned long type, unsigned long creator, int start, 
-			 int latest, int *cardno, struct DBInfo *info, struct DBSizeInfo *size));
+			 int latest, int *cardno, int *localid, int *dbhandle,
+			 struct DBInfo *info, struct DBSizeInfo *size));
 
 	struct RPC_params;
 

@@ -318,7 +318,7 @@ main (int argc, char **argv)
 	result = dlp_OpenDB (sd, 0, dlpOpenReadWrite, "TestRecord", &handle);
 	CHECK_RESULT(dlp_OpenDB);
 	
-	result = dlp_FindDBByOpenHandle (sd, handle, &cardno, &dbi, &dbsi);
+	result = dlp_FindDBByOpenHandle (sd, handle, &cardno, NULL, &dbi, &dbsi);
 	CHECK_RESULT(dlp_FindDBByOpenHandle);
 	if (strcmp (dbi.name, "TestRecord") || !(dbi.flags & dlpDBFlagBackup)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Database info mismatch with openhandle\n"));
@@ -328,14 +328,14 @@ main (int argc, char **argv)
 	result = dlp_CloseDB (sd, handle);
 	CHECK_RESULT(dlp_CloseDB);
 	
-	result = dlp_FindDBByName (sd, 0, "TestRecord", &dbi, &dbsi);
+	result = dlp_FindDBByName (sd, 0, "TestRecord", NULL, NULL, &dbi, &dbsi);
 	CHECK_RESULT(dlp_FindDBByName);
 	if (strcmp (dbi.name, "TestRecord") || !(dbi.flags & dlpDBFlagBackup)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Database info mismatch with name\n"));
 		goto error;
 	}
 
-	result = dlp_FindDBByTypeCreator (sd, DATA, CREATOR, 1, 0, &cardno, &dbi, &dbsi);
+	result = dlp_FindDBByTypeCreator (sd, DATA, CREATOR, 1, 0, &cardno, NULL, NULL, &dbi, &dbsi);
 	CHECK_RESULT(dlp_FindDBByName);
 	if (strcmp (dbi.name, "TestRecord") || !(dbi.flags & dlpDBFlagBackup)) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Database info mismatch with type/creator\n"));

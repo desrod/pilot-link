@@ -891,7 +891,8 @@ dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
 	return -1;
 
       found:
-int dlp_FindDBByName (int sd, int cardno, char *name, struct DBInfo *info, struct DBSizeInfo *size)
+int dlp_FindDBByName (int sd, int cardno, char *name, int *localid, int *dbhandle,
+ * Returns:	Nothing
  *
  ***********************************************************************/
 int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, int *dbhandle,
@@ -900,9 +901,12 @@ int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, in
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
+	int flags = 0;
+	
+	Trace(FindDBByName);
 
 	if (pi_version(sd) < 0x0102)
-	if (info)
+		return -129;
 
 	req = dlp_request_new(dlpFuncFindDB, 1, 2 + (strlen(name) + 1));
 
@@ -916,6 +920,11 @@ int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, in
 	strcpy(DLP_REQUEST_DATA(req, 0, 2), name);
 
 	result = dlp_exec(sd, req, &res);
+	
+	dlp_request_free(req);
+	
+	if (result >= 0) {
+		if (localid)
 			*localid = get_long(DLP_RESPONSE_DATA(res, 0, 2));
 		if (dbhandle)
 			*dbhandle = get_long(DLP_RESPONSE_DATA(res, 0, 6));
@@ -974,7 +983,8 @@ int dlp_FindDBByName (int sd, int cardno, char *name, unsigned long *localid, in
 	}
 	
 	dlp_response_free(res);
-int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, struct DBInfo *info, struct DBSizeInfo *size)
+int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, int *localid, 
+ * Returns:     Nothing
  *
  ***********************************************************************/
 int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *localid, 
@@ -988,7 +998,7 @@ int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *lo
 	Trace(FindDBByName);
 
 	if (pi_version(sd) < 0x0102)
-	if (info)
+		return -129;
 
 	req = dlp_request_new_with_argid(dlpFuncFindDB, 0x21, 1, 2);
 
@@ -1003,6 +1013,8 @@ int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *lo
 	result = dlp_exec(sd, req, &res);
 	
 	dlp_request_free(req);
+	
+	if (result >= 0) {
 		if (cardno)
 			*cardno = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
 		if (localid)
@@ -1063,7 +1075,8 @@ int dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno, unsigned long *lo
 	
 	dlp_response_free(res);
  *
-			     int latest, int *cardno, struct DBInfo *info, struct DBSizeInfo *size)
+			     int latest, int *cardno, int *localid, int *dbhandle, 
+ *
  ***********************************************************************/
 int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, int start, 
 			     int latest, int *cardno, unsigned long *localid, int *dbhandle, 
@@ -1072,9 +1085,12 @@ int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, 
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
+	int flags = 0, search_flags = 0;
+	
+	Trace(FindDBByName);
 
 	if (pi_version(sd) < 0x0102)
-	if (info)
+		return -129;
 
 	req = dlp_request_new_with_argid(dlpFuncFindDB, 0x22, 1, 10);
 
@@ -1097,6 +1113,10 @@ int dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator, 
 	result = dlp_exec(sd, req, &res);
 	
 	dlp_request_free(req);
+	
+	if (result >= 0) {
+		if (cardno)
+			*cardno = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
 		if (localid)
 			*localid = get_long(DLP_RESPONSE_DATA(res, 0, 2));
 		if (dbhandle)
