@@ -39,7 +39,7 @@
 #include "pi-error.h"
 
 /* Declare prototypes */
-int sys_RPCerror;
+static int sys_RPCerror;
 int sys_PackRegisters(void *data, struct Pilot_registers *r);
 int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
