@@ -39,10 +39,6 @@
       <para>Use exactly one of -brsudfimlI; mix in -aexDPv, --rom and
          --with-os.
       </para>
-      <para>(Note that some options are not shown above and short option
-         aliases		are excluded for brevity. Please see <emphasis>OPTIONS</emphasis> for
-         the full list of available options).
-      </para>
    </refsect1>
    <refsect1>
       <title>Description</title>

@@ -26,10 +26,6 @@ or
 .PP
 Use exactly one of -brsudfimlI; mix in -aexDPv, --rom and
 --with-os.
-.PP
-(Note that some options are not shown above and short option
-aliases are excluded for brevity. Please see \fIOPTIONS\fR for
-the full list of available options).
 .SH DESCRIPTION
 This is the swiss-army-knife of the entire pilot-link suite.
 .PP
