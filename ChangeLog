@@ -1,3 +1,13 @@
+2001-10-0   David A. Desrosiers <hacker@gnu-designs.com>
+	
+	* Forgot to update the ChangeLog entry for 09-24. Ewps. 
+
+2001-09-24  David A. Desrosiers <hacker@gnu-designs.com>
+
+	* pilot-addresses.c: Several people have reported this, it's fixed
+	  now. The original offending line was still in the code, commented
+	  out, but made it's way into production.
+
 2001-07-21  David A. Desrosiers <hacker@gnu-designs.com>
 
 	* Makefile.os2.in: Forgot to add this back to the cvs (David A.
