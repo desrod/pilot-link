@@ -1,6 +1,9 @@
 /*
  * sync.c:  Implement generic synchronization algorithm
  *
+ * Documentation of the sync cases is at:
+ * http://www.palmos.com/dev/tech/docs/conduits/win/CnComp_Conduits.html#926365
+ *
  * Copyright (c) 2000, Helix Code Inc.
  *
  * Author: JP Rosevear <jpr@helixcode.com> 
@@ -33,6 +36,15 @@ typedef enum {
 	BOTH
 } RecordModifier;
 
+typedef struct _PilotRecordList PilotRecordList;
+
+struct _PilotRecordList
+{
+	PilotRecord *record;
+	PilotRecordList *next;
+};
+
+
 #define PilotCheck(func)   if (rec_mod == PILOT || rec_mod == BOTH) if ((result = func) < 0) return result;
 #define DesktopCheck(func) if (rec_mod == DESKTOP || rec_mod == BOTH) if ((result = func) < 0) return result;
 
@@ -49,6 +61,15 @@ sync_NewPilotRecord (int buf_size)
 	return precord;
 }
 
+void
+sync_FreePilotRecord (PilotRecord *precord) 
+{
+	if (precord->buffer)
+		free (precord->buffer);
+	
+	free (precord);
+}
+
 DesktopRecord *
 sync_NewDesktopRecord (void)
 {
@@ -58,6 +79,25 @@ sync_NewDesktopRecord (void)
 	memset (drecord, 0, sizeof (DesktopRecord));
 
 	return drecord;
+}
+
+void
+sync_FreeDesktopRecord (DesktopRecord *drecord) 
+{
+	free (drecord);
+}
+
+void
+free_pilot_record_list (PilotRecordList *pl) 
+{
+	PilotRecordList *l;
+
+	while (pl != NULL) {
+		l = pl;
+		pl = pl->next;
+		sync_FreePilotRecord (l->record);
+		free (l);
+	}
 }
 
 static int
@@ -130,7 +170,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		dchange = (drecord->flags & dlpRecAttrDirty) && (!ddel);
 	}
 	
-	if (precord != NULL && drecord == NULL) {
+	if (precord != NULL && !parch && !pdel && drecord == NULL) {
 		DesktopCheck (sh->AddRecord (sh, precord));
 		
 	} else if (precord == NULL && drecord != NULL) {
@@ -141,13 +181,17 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 		DesktopCheck (sh->ArchiveRecord (sh, drecord, 1));
 		DesktopCheck (sh->SetStatusCleared (sh, drecord));
 		
-	} else if (parch && !darch && !dchange) {
+	} else if (parch && !darch && !dchange && drecord != NULL) {
 		DesktopCheck (sh->ArchiveRecord (sh, drecord, 1));
 		
 	} else if (parch && drecord == NULL) {
 		DesktopCheck (sh->AddRecord (sh, precord));
+		result = sh->Match (sh, precord, &drecord);
+		if (result != 0 || drecord == NULL)
+			return -1;
 		DesktopCheck (sh->ArchiveRecord (sh, drecord, 1));
-		
+		result = sh->FreeMatch (sh, drecord);
+
 	} else if (parch && pchange && !darch && dchange) {
 		int comp;
 		
@@ -229,7 +273,7 @@ sync_record (SyncHandler *sh, int dbhandle, DesktopRecord *drecord, PilotRecord 
 
 	}
 
-	return 0;
+	return result;
 }
 
 int
@@ -251,7 +295,7 @@ sync_CopyToPilot (SyncHandler *sh)
 		
 	
 	while (sh->ForEach (sh, &drecord) == 0 && drecord) {
-		result = store_record_on_pilot (sh, dbhandle, drecord, PILOT);
+		result = store_record_on_pilot (sh, dbhandle, drecord, BOTH);
 		if (result < 0) goto cleanup;
 	}
 
@@ -305,6 +349,8 @@ sync_CopyFromPilot (SyncHandler *sh)
 static int
 sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 {
+	PilotRecordList *pl = NULL;
+	PilotRecordList *l = NULL;
 	PilotRecord *precord = sync_NewPilotRecord (DLP_BUF_SIZE);
 	DesktopRecord *drecord = NULL;
 	int result = 0;
@@ -312,6 +358,25 @@ sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 	while (dlp_ReadNextModifiedRec (sh->sd, dbhandle, precord->buffer,
 					&precord->recID, NULL, &precord->len,
 					&precord->flags, &precord->catID) >= 0) {
+		PilotRecordList *elem = malloc (sizeof (PilotRecordList));
+
+		elem->record = precord;
+		elem->next = NULL;
+
+		if (pl == NULL) {
+			pl = l = elem;
+		} else {
+			l->next = elem;		
+			l = l->next;
+		}
+
+		precord = sync_NewPilotRecord (DLP_BUF_SIZE);
+	}
+	sync_FreePilotRecord (precord);
+	
+	for (l = pl; l != NULL; l = l->next) {
+		precord = l->record;
+
 		result = sh->Match (sh, precord, &drecord);
 		DesktopCheck(result);
 		
@@ -323,7 +388,9 @@ sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 			DesktopCheck(result);
 		}
 	}
-
+	
+	free_pilot_record_list (pl);
+	
 	return result;
 }
 

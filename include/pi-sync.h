@@ -75,7 +75,10 @@ struct _SyncHandler {
 };
 
 PilotRecord *sync_NewPilotRecord (int buf_size);
+void sync_FreePilotRecord (PilotRecord *precord);
+	
 DesktopRecord *sync_NewDesktopRecord (void);	
+void sync_FreeDesktopRecord (DesktopRecord *drecord);
 
 int sync_CopyToPilot (SyncHandler *sh);
 int sync_CopyFromPilot (SyncHandler *sh);

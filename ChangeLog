@@ -1,3 +1,21 @@
+2000-12-21  JP Rosevear  <jpr@helixcode.com>
+
+	* include/pi-sync.h: new prototypes
+
+	* libsock/sync.c (sync_FreePilotRecord): util function for pilot 
+	records
+	(sync_FreeDesktopRecord): ditto for desktop records
+	(free_pilot_record_list): free the linked list
+	(sync_record): Correct sync logic errors
+	(sync_MergeFromPilot_fast): Build a list of the pilot records before
+	iterating because its not valid to edit in place during the get
+	mod record loop
+
+2000-12-20  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c (sync_CopyToPilot): Pass BOTH to store_record_on_pilot
+	so that the pilot id is set on the desktop
+
 2000-12-19  JP Rosevear  <jpr@helixcode.com>
 
 	* libsock/util.c (convert_FromPilotChar): Fix implementation
