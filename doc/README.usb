@@ -1,90 +1,99 @@
-Since the release of 0.10.99 of pilot-link, USB-based Palm handheld devices
-are fully supported. To get this working will require a few things to be
-configured on your desktop machine first, and verified to be working.
+Updated: Thu Jan 22 17:07:55 EST 2004
+
+Since the release of version 0.10.99 of pilot-link, USB-based Palm handheld
+devices are fully supported by the suite. To get this working will require a
+few things to be configured on your desktop or server machine first, and a
+few steps to verify that it is working properly.
 	
-Currently (as of 12/24/2002), the USB code has only been engineered to work
-with Linux-based desktop machines, but porting it to work with FreeBSD, OSX,
-and Win32 should not be much harder. Please see README.porting for more
-details on how to help.
+Currently (as of 1/1/2004), the USB code has only been engineered to work
+with Linux and BSD-based operating systems on several architectures. Porting
+it to work with OSX, Win32, and any other POSIX-compliant environment should
+not be much harder. Please see README.porting in the pilot-link docs
+subdirectory for more details on how to help.
 
 
 Linux USB Configuration
 -----------------------
 	First, in order to get USB working with your Palm device, your
 	desktop machine must support the USB subsystem. Depending on your
-	machine configuration, this may require a kernel recompile, or the
-	insertion of the required modules.
+	machine configuration, this may require enabling USB in the
+	machine's BIOS, or a kernel recompile, or the insertion of the
+	required modules for your USB subsystem. Many of these are supported
+	by current Linux kernels.
 
-	If you should find that your kernel is older than 2.4.18 (as of the
+	If you should find that your kernel is older than 2.4.21 (as of the
 	time of this README), you will need to do a kernel upgrade. Using
-	kernels older than 2.4.18 are not recommended and may not work for
+	kernels older than 2.4.21 are not recommended and may not work for
 	newer Palm devices, as the kernel-level visor.o module that is
 	required may not have support for your newer Palm device. More on
 	this later.
 
 	First, verify that you have USB working on your system. If you're
-	using a USB-based keyboard or mouse, you already have USB support in
-	your linux kernel, which was probably provided by your Linux
-	distribution.
+	using a USB-based keyboard or mouse and it works properly, you
+	already have functioning USB support in your linux kernel, which was
+	probably provided by your Linux distribution by default.
 
 	If you are not using a USB device already, you can try to probe for
-	the USB host controller that your system supports (you _do_ have a
-	system with USB ports on it, right?) with the following syntax: 
+	the USB host controller that your system supports (you do have a
+	system with USB ports on it, right?) with the following syntax, as
+	the 'root' user (only root can load and unload kernel modules):
 
-		# modprobe usb-ohci
+		# /sbin/modprobe usb-ohci
 
 	..or
 
-		# modprobe usb-uhci
+		# /sbin/modprobe usb-uhci
 
 	..or 
 
-		# modprobe usb
+		# /sbin/modprobe usb
 
 	Each motherboard will have a specific chipset that one of these
 	drivers should support. You will only need one, so please don't be
-	alarmed if you try to modprobe one of the above, and receive errors.
+	alarmed if you try to modprobe one of the above, and receive errors. 
 	If you do, it simply means that the host controller isn't what the
-	driver expects.
+	driver expects. Try the others. 
 
 	Once you have that working, verified to be loaded with 'lsmod', you
 	can then try loading the USB serial support layer, using:
 
-		# modprobe usbserial
+		# /sbin/modprobe usbserial
 
-	Then on top of that, add the Visor driver. 
+	If this is successful, you should see the following in the system
+	logs (/var/log/messages, generally):
 
-	NOTE: You do not need to be using a Handspring Visor to use this
-	driver. The name 'visor.o' is simply from a legacy time when the
-	_only_ USB-based Palm handheld device was a Handspring Visor. Now
-	that Sony and Palm also produce USB-based handheld devices, the code
-	still is inside visor.o, but it retains its legacy name.
+		kernel: usb.c: registered new driver serial
+		kernel: usbserial.c: USB Serial support registered for Generic
+		kernel: usbserial.c: USB Serial Driver core v1.4
 
-		# modprobe visor
+	Then on top of that, add the Visor driver. The name of the driver is
+	called 'visor' for historical reasons, when the only USB-based Palm
+	handheld device was the Handspring Visor handheld. Many vendors such
+	as Sony, Palm, and others provide Palm handhelds with USB support,
+	and this 'visor' module should contain the proper code to sync and
+	communicate with them; the code still is inside the driver but it
+	retains its legacy name.
 
-	Now if you do an 'lsmod' you should see something similar to this:
+		# /sbin/modprobe visor
+
+	If successful, you should see the following entries in the logs:
+
+		kernel: usbserial.c: USB Serial support registered for Handspring Visor / Treo / Palm 4.0 / Clié 4.x
+		kernel: usbserial.c: USB Serial support registered for Sony Clié 3.5
+		kernel: visor.c: USB HandSpring Visor, Palm m50x, Treo, Sony Clié driver v1.7
+
+	Don't be alarmed if your version does not show these exact strings. 
+	As long as you see the usbserial and visor driver load successfully,
+	without reporting any errors or unresolved symbols, the system is
+	ready for the next step.
+
+	Now if you do an '/sbin/lsmod' you should see something similar to this:
 
 		Module                  Size  Used by    Tainted: PF 
 		visor                   9036   0  (unused)
 		usbserial              19904   0  [visor]
 		usb-ohci               18080   0  (unused)
 		usb-uhci               23012   0  (unused)
-	
-	Loading the two modules above (usbserial, visor) will show you some
-	important information in your system logs (/var/log), which should
-	look similar to the following:
-
-	May  4 12:20:39 broccoli kernel: usb.c: registered new driver serial
-	May  4 12:20:39 broccoli kernel: usbserial.c: USB Serial support registered for Generic
-	May  4 12:20:39 broccoli kernel: usbserial.c: USB Serial Driver core v1.5
-	May  4 12:20:41 broccoli kernel: usbserial.c: USB Serial support registered for Handspring Visor / Palm 4.0 / Clié 4.x
-	May  4 12:20:41 broccoli kernel: usbserial.c: USB Serial support registered for Sony Clié 3.5
-	May  4 12:20:41 broccoli kernel: visor.c: USB HandSpring Visor, Palm m50x, Sony Clié driver v2.0
-	
-	Don't be alarmed if your version does not show these exact strings.
-	As long as you see the usbserial and visor driver load successfully,
-	without reporting any errors or unresolved symbols, the system is
-	ready for the next step.
 
 	Next we must verify that the actual USB devices are created and
 	registered in /dev for you.
@@ -96,36 +105,40 @@ Linux USB Configuration
 	For Palm devices, you will need no more than two of these devices,
 	/dev/ttyUSB0 and /dev/ttyUSB1, depending on your Palm device
 	manufacturer (as of the time of this README, two Sony models use
-	/dev/ttyUSB0, and the rest of the Sony and Palm models use
-	/dev/ttyUSB1)
+	/dev/ttyUSB0, and the rest of the Sony and Palm models seem to be
+	using /dev/ttyUSB1)
 
-		# mknod /dev/ttyUSB0 c 188 0
-		# mknod /dev/ttyUSB1 c 188 1
+		# /bin/mknod /dev/ttyUSB0 c 188 0
+		# /bin/mknod /dev/ttyUSB1 c 188 1
 
-	If you are using devfs (not recommended for security reasons), the
-    	devices supported will show up as /dev/usb/tts/0 and /dev/usb/tts/1
-    	respectively.
+	If you are using devfs (currently not recommended for security
+    	reasons), the devices supported will show up as /dev/usb/tts/0 and
+    	/dev/usb/tts/1 respectively. More on devfs issues will be covered
+	later in this document.
 
 	Also, make sure your user has read and write permissions to those
 	device nodes: 
 
-		# chmod 0666 /dev/ttyUSB?    # the '?' is a wildcard and
-					     # will chmod all ttyUSB* 
-					     # devices 
+		# the '?' used below is a wildcard and will chmod all
+		# ttyUSB* devices with a single digit (USB1, USB2, USB3,
+		# and so on).
+
+		# /bin/chmod 0666 /dev/ttyUSB?
 	..or
 
-		# chmod a+rw /dev/ttyUSB?
+		# /bin/chmod a+rw /dev/ttyUSB?
 
 
 Linux Kernel Condfiguration
 ---------------------------
 	If your distrubution-supplied Linux kernel does not have native USB
 	support, you will have to build it into your kernel first. Building
-	a linux kernel is not as hard or as daunting as it seems, and is in
+	a Linux kernel is not as hard or as daunting as it seems, and is in
 	fact, quite rewarding. Not only do custom kernels perform better,
 	but they tend to be faster, because they only include support for
-	hardware _on_ your system. You wouldn't build a kernel for SCSI
-	support, if you didn't have SCSI drives in your system, would you?
+	hardware _on_ your system, and not hardware you don't. You wouldn't
+	build a kernel for SCSI support, if you didn't have SCSI drives in
+	your system, would you?
 
 	There is a very comprehensive and concise kernel-building-HOWTO
 	which will walk you through the entire process, in non-confusing
@@ -137,10 +150,10 @@ Linux Kernel Condfiguration
 	necessary support for USB devices and USB host controller support
 	into it afterwards.
 	
-	After configuring your Linux kernel, you will find in your
-	$KERNEL_DIR, is a file called .config ("dot config"). In this file,
-	are several parameters you will need to add/change to enable proper
-	USB support.
+	After configuring your Linux kernel, you will find in your kernel
+	source directory, is a file called .config ("dot config"). In this
+	file, are several parameters you will need to add/change to enable
+	proper USB support.
 
 		CONFIG_USB=y
 		CONFIG_USB_DEBUG=y
@@ -156,89 +169,83 @@ Linux Kernel Condfiguration
 	If you would like to support for other USB devices (such as a
 	USB-based digital camera, or scanner) you can add it here as well.
 
-	Rebuild your kernel as specified, and then proceed to the previous
-	section to verify that all required USB bits are functioning.
+	Rebuild your kernel as specified in your favorite kernel HOWTO, and
+	then proceed to the previous section to verify that all required USB
+	bits are functioning.
 
 
 Talking to your Palm over USB
 -----------------------------
-	To now "speak" to these interfaces, you must hit the HotSync button
-	on your cradle _FIRST_, before launching any of pilot-link's various
-	utilities. When you hit the HotSync button on the cradle or by
-	tapping on your HotSync icon on the Palm itself, you should see
-	something similar to the following in the system logs (/var/log): 
+	To now "speak" to these devices you've created, using the drivers
+	you loaded, you must hit the HotSync button on your cradle first,
+	before launching any of pilot-link's various utilities, if your
+	version of pilot-link is earlier than 0.11.8. If your pilot-link
+	version is 0.11.8 or later, you don't need to hit HotSync first.
 
-		May  4 12:31:36 broccoli kernel: Manufacturer: Palm, Inc.
-		May  4 12:31:36 broccoli kernel: Product: Palm Handheld
-		May  4 12:31:36 broccoli kernel: SerialNumber: L0JH14R12345
-		May  4 12:31:36 broccoli kernel: usbserial.c: Handspring Visor / Palm 4.0 / Clié 4.x converter detected
-		May  4 12:31:36 broccoli kernel: visor.c: Handspring Visor / Palm 4.0 / Clié 4.x: Number of ports: 2
-		May  4 12:31:36 broccoli kernel: visor.c: Handspring Visor / Palm 4.0 / Clié 4.x: port 1, is for Generic use and is bound to ttyUSB0
-		May  4 12:31:36 broccoli kernel: visor.c: Handspring Visor / Palm 4.0 / Clié 4.x: port 2, is for HotSync use and is bound to ttyUSB1
-		May  4 12:31:36 broccoli kernel: usbserial.c: Handspring Visor / Palm 4.0 / Clié 4.x converter now attached to ttyUSB0 (or usb/tts/0 for devfs)
-		May  4 12:31:36 broccoli kernel: usbserial.c: Handspring Visor / Palm 4.0 / Clié 4.x converter now attached to ttyUSB1 (or usb/tts/1 for devfs)
-		May  4 12:31:36 broccoli kernel: usb.c: serial driver claimed interface c76aa160
+	When you hit the HotSync button on the cradle or by tapping on your
+	HotSync icon on the Palm itself, you should see something similar to
+	the following in the system logs (/var/log):
 
-	If you received errors or see a message similar to: 
+		kernel: Manufacturer: Palm, Inc.
+		kernel: Product: Palm Handheld
+		kernel: SerialNumber: L0JH14R12345
+		kernel: usbserial.c: Handspring Visor / Palm 4.0 / Clié 4.x converter detected
+		kernel: visor.c: Handspring Visor / Palm 4.0 / Clié 4.x: Number of ports: 2
+		kernel: visor.c: Handspring Visor / Palm 4.0 / Clié 4.x: port 1, is for Generic use and is bound to ttyUSB0
+		kernel: visor.c: Handspring Visor / Palm 4.0 / Clié 4.x: port 2, is for HotSync use and is bound to ttyUSB1
+		kernel: usbserial.c: Handspring Visor / Palm 4.0 / Clié 4.x converter now attached to ttyUSB0 (or usb/tts/0 for devfs)
+		kernel: usbserial.c: Handspring Visor / Palm 4.0 / Clié 4.x converter now attached to ttyUSB1 (or usb/tts/1 for devfs)
+		kernel: usb.c: serial driver claimed interface c76aa160
 
-		May  4 12:31:36 broccoli kernel: usb.c: USB device 28 (vend/prod 0x54c/0x95) is not claimed by any active driver
+	If you received errors or see a message similar to the following:
 
-	..you will need to upgrade your visor driver to a more current
-	version. You can do this with a kernel upgrade, or by simply
-	replacing the visor.c and visor.h files with more recent versions.
+		kernel: usb.c: USB device 28 (vend/prod 0x54c/0x95) is not claimed by any active driver
+
+	In this case, you will need to upgrade your 'visor' driver to a more
+	current version. You can do this with a kernel upgrade, or by simply
+	replacing the visor.c and visor.h files with more recent versions. 
+
+	You can also add the proper values for your device to the visor.h
+	file manually, and rebuilding just the module itself, without a
+	kernel upgrade, using the following process:
+
+	1.) Edit the drivers/usb/serial/visor.h file and add the proper
+	    vendor and product values for your device. You can find out what
+	    these might be by looking at the log error message as described
+	    above, or look at the pilot-link wiki for your device model at
+	    the following URL:
+
+		http://wiki.pilot-link.org/index.php/DeviceMatrix
 
 	If you see the successful message when you hit HotSync, now you can
 	launch any of pilot-link's various tools as follows:
 
-		$ ./dlpsh -p /dev/ttyUSB1
+		$ dlpsh -p /dev/ttyUSB1
 
 	..or 
 
 		export PILOTPORT=/dev/ttyUSB1
-		$ ./pilot-xfer -l
+		$ pilot-xfer -l
 
-	..and it should connect and allow you to talk to your Palm device.
-	The $PILOTPORT environment variable will be read if the '-p' option
-	is not specified. If you do not specify either, /dev/pilot will be
-	used if it exists.
-
+	It should connect and allow you to talk to your Palm device.  The
+	$PILOTPORT environment variable will be read if the '-p' option is
+	not specified. If you do not specify either, /dev/pilot will be used
+	if it exists. Substitute ttyUSB1 for your port, based on the
+	DeviceMatrix above.
 
 USB Palm Handheld Device Kernel Matrix
 --------------------------------------
 	Many thanks go to Greg Kroah for his tireless work supporting these
-	new devices as they come out. Below is the matrix of which kernels
-	support which Palm handheld device. If you see your Palm in this
-	list, you must be running the corresponding kernel version to be
-	able to use it with pilot-link or ColdSync using the USB interface.
+	new devices as they come out. The matrix of which kernels support
+	which Palm handheld device can be found at the pilot-link wiki, at the following URL:
 
-	Device			Kernel version	Vendor/ProdID	Port Linux/BSD
-	------			--------------  -------------	--------------
-	Acer S50                                0502/0736	Unknown
+		http://wiki.pilot-link.org/index.php/DeviceMatrix
 
-	Handspring Treo 90	2.5.52		082d/0200
-	           Treo 180	2.5.52		082d/????
-	           Treo 270	2.5.52		082d/????
-	           Treo 300	2.5.52		082d/0100
-	           Visor			082d/0100	USB1
-	           Visor Edge
-	           Visor Deluxe   		082d/0100	USB1/ugen/ucom0
-	           Visor Platinum 2.4.18-14	082d/0100	USB1/ugen/ucom0
-	           Visor Prism    		082d/0100	USB1/ugen/ucom0
+	If you see your Palm in this list, you must be running the
+	corresponding kernel version to be able to use it with pilot-link or
+	ColdSync using the USB interface. 
 
-	Palm I705                 2.4.19-pre6   0830/0020	USB1/ucom0
-	     M130 (no networking) 2.4.19-pre5   0830/0050
-	     M500                 2.4.6-pre1    0830/0001	USB1/ucom0
-	     M505                 2.4.6-pre1    0830/0002	USB1/ucom0
-	     M515                 2.4.19-pre2   0830/0003	USB1/ucom0
-	     Tungsten-T           		0830/0060
-	     Zire                 		0830/0070	USB1/ucom0
-	     Tungsten-Z				0830/0031
+	If you don't see your Palm device there, feel free to add your entry
+	so others can benefit from the vendor and product information you've
+	added.
 
-	Sony Clie 320		2.4.10-pre2	054c/????	USB0/ucom0
-	     Clie		2.4.10-pre5	054c/0038
-	     Clie		2.4.10-pre5	054c/0060
-	     Clie		2.4.19-pre7	054c/009a
-	     Clie N610C                         054c/????	USB1/ucom0
-	     Clie T615C                         054c/????	USB1/ucom0
-	     Clie NX70U/V       2.4.20		054c/????
-	     Clie S360		2.4.19-pre2	054c/0095
