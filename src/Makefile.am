@@ -34,11 +34,12 @@ bin_PROGRAMS = 		\
 	dlpsh		\
 	hinotes		\
 	install-datebook\
-	install-expenses \
+	install-expenses\
 	install-hinote	\
 	install-memo	\
 	install-netsync	\
 	install-todos	\
+	install-todo	\
 	install-user	\
 	memos		\
 	money2qif	\
@@ -155,6 +156,12 @@ install_todos_SOURCES = 	\
 	install-todos.c
 install_todos_LDADD = 				\
 	$(top_builddir)/libpisock/libpisock.la
+
+install_todo_SOURCES =         \
+        $(getopt_sources)       \
+        install-todo.c  
+install_todo_LDADD =                           \
+        $(top_builddir)/libpisock/libpisock.la
 
 install_user_SOURCES = 		\
 	$(getopt_sources)	\
