@@ -64,6 +64,9 @@
 #include "pi-macros.h"
 #include "pi-palmpix.h"
 
+#define max(a,b) (( a > b ) ? a : b )
+#define min(a,b) (( a < b ) ? a : b )
+
 void DecodeRow(uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData,
                uint32_t *offset, int32_t *firstWord, uint16_t *PPLutsW,
                uint8_t *PPLuts, uint16_t halfWidth);
@@ -1112,6 +1115,8 @@ static void Bias( double bias, int width, int height, uint8_t *data )
    int i;
    double num, denom, t;
       
+   fprintf( stderr, "Bias factor : %lf\n", bias );
+   
    for( i=0; i<width*height; i++ )
      {
 	t = (double)data[i]/256.0;
@@ -1121,6 +1126,298 @@ static void Bias( double bias, int width, int height, uint8_t *data )
      }
 }
 
+/***********************************************************************
+ * Odd green rows and even green rows have a different histogram
+ ***********************************************************************/
+int ColourCorrect ( const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr, uint8_t *gb, uint8_t *b )
+{
+	uint8_t *tmpRow;
+	uint8_t gbMin, gbMax, grMin, grMax, rMin, rMax, bMin, bMax;
+	float grInc, gbInc, rInc, bInc, grCur, gbCur, rCur, bCur;
+	float rMean = 0, grMean = 0, gbMean = 0, bMean = 0, maxMean;
+	uint16_t	width = picHdr->w/2;
+	uint16_t	height = picHdr->h/2;
+	int i;
+    uint8_t red[256], greenB[256], greenR[256], blue[256];
+   
+	memset( red, 0, 256 * sizeof( uint8_t ));
+	memset( greenR, 0, 256 * sizeof( uint8_t ));
+	memset( greenB, 0, 256 * sizeof( uint8_t ));
+	memset( blue, 0, 256 * sizeof( uint8_t ));
+ 
+	gbMin = grMin = rMin = bMin = 255;
+	gbMax = grMax = rMax = bMax = 0;
+		
+	for( i=0; i<width*height; i ++ )
+	{
+		gbMin = min( gbMin, gb[i] );
+		grMin = min( grMin, gr[i] );
+		rMin = min( rMin, r[i] );
+		bMin = min( bMin, b[i] );
+
+	    gbMax = max( gbMax, gb[i] );
+		grMax = max( grMax, gr[i] );
+		rMax = max( rMax, r[i] );
+		bMax = max( bMax, b[i] );
+		
+		rMean += r[i];
+		gbMean += gb[i];
+		grMean += gr[i];
+		bMean += b[i];
+	}	
+	
+	rMean = rMean / ( width * height );
+	gbMean = gbMean / ( width * height );
+	grMean = grMean / ( width * height );
+	bMean = bMean / ( width * height );
+	
+	maxMean = max( max( gbMean-gbMin, grMean-grMin ), max( bMean-bMin, rMean-rMin ));
+		
+	rInc = maxMean / (rMean-rMin);
+   	grInc = maxMean / (grMean-grMin);
+   	gbInc = maxMean / (gbMean-gbMin);
+   	bInc = maxMean / (bMean-bMin);
+	
+   rCur = 0;
+   grCur = 0;
+   gbCur = 0;
+   bCur = 0;
+
+   for (i = 0; i<256; i++)
+	 {
+	 	if( i < rMin )
+		 	red[i] = 0;
+		else 
+		{
+			if( rCur < 255 )
+			  red[i] = rCur;
+			else
+			  red[i] = 255;
+
+			rCur += rInc;
+		}
+
+		if( i < grMin )
+			greenR[i] = 0;
+		else
+		{
+			if( grCur < 255 )
+			  greenR[i] = grCur;
+			else
+			  greenR[i] = 255;
+
+			grCur += grInc;
+		}
+		
+		if( i < gbMin )
+			greenB[i] = 0;
+		else
+		{
+			if( gbCur < 255 )
+			  greenB[i] = gbCur;
+			else
+			  greenB[i] = 255;
+
+			gbCur += gbInc;
+		}
+		
+		if( i < bMin )
+			blue[i] = 0;
+		else
+		{
+			if( bCur < 255 )
+			  blue[i] = bCur;
+			else
+			  blue[i] = 255;
+
+			bCur += bInc;
+		}
+	 }
+
+	for( i=0; i<width*height; i ++ )
+	{
+		gb[i] = greenB[gb[i]];
+		gr[i] = greenR[gr[i]];
+		b[i] = blue[b[i]];
+		r[i] = red[r[i]];
+	}	
+	
+	return( 1 );
+}
+
+int Histogram( const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr, uint8_t *gb, uint8_t *b )
+{
+	uint8_t *tmpRow;
+	uint8_t gbMin, gbMax, grMin, grMax, rMin, rMax, bMin, bMax;
+    uint32_t rCum, grCum, gbCum, bCum;
+    uint32_t grC[256], gbC[256], rC[256], bC[256];
+	float grInc, gbInc, rInc, bInc, grCur, gbCur, rCur, bCur;
+	uint16_t	width = picHdr->w/2;
+	uint16_t	height = picHdr->h/2;
+	int i;
+    float clip;
+    uint8_t red[256], greenB[256], greenR[256], blue[256];
+   	float redCeiling = 254;
+   	float greenCeiling = 252;
+   	float blueCeiling = 255;
+   
+	memset( red, 0, 256 * sizeof( uint8_t ));
+	memset( greenR, 0, 256 * sizeof( uint8_t ));
+	memset( greenB, 0, 256 * sizeof( uint8_t ));
+	memset( blue, 0, 256 * sizeof( uint8_t ));
+ 
+	memset( rC, 0, 256 * sizeof( uint32_t ));
+	memset( grC, 0, 256 * sizeof( uint32_t ));
+	memset( gbC, 0, 256 * sizeof( uint32_t ));
+	memset( bC, 0, 256 * sizeof( uint32_t ));
+ 
+	gbMin = grMin = rMin = bMin = 255;
+	gbMax = grMax = rMax = bMax = 0;
+		
+	for( i=0; i<width*height; i ++ )
+	{
+	    rC[r[i]]++;
+	    grC[gr[i]]++;
+	    gbC[gb[i]]++;
+	    bC[b[i]]++;
+	}	
+
+    rCum = grCum = gbCum = bCum = 0;
+    
+    clip = 0.05 * width * height;
+   
+    for( i=0; i<256; i++ )
+	{
+	   rCum += rC[i];
+	   
+	   if( rMin == 255 &&  rCum > clip )
+			rMin = i;
+
+	   grCum += grC[i];
+	   
+	   if( grMin == 255 && grCum > clip )
+			grMin = i;
+
+	   gbCum += gbC[i];
+	   
+	   if( gbMin == 255 && gbCum > clip )
+			gbMin = i;
+
+	   bCum += bC[i];
+	   
+	   if( bMin == 255 && bCum > clip )
+			bMin = i;
+	   
+	   if( rMin != 255 && grMin != 255 && gbMin != 255 && bMin != 255 )
+		 break;
+	}
+   
+    rCum = grCum = gbCum = bCum = 0;
+    
+    for( i=255; i > 0; i-- )
+	{
+	   rCum += rC[i];
+	   
+	   if( rMax == 0 &&  rCum > clip )
+			rMax = i;
+
+	   grCum += grC[i];
+	   
+	   if( grMax == 0 && grCum > clip )
+			grMax = i;
+
+	   gbCum += gbC[i];
+	   
+	   if( gbMax == 0 && gbCum > clip )
+			gbMax = i;
+
+	   bCum += bC[i];
+	   
+	   if( bMax == 0 && bCum > clip )
+			bMax = i;
+
+	   if( rMax != 0 && grMax != 0 && gbMax != 0 && bMax != 0 )
+		 break;
+	}
+   
+	rInc = redCeiling / (rMax-rMin);
+   	grInc = greenCeiling / (grMax-grMin);
+   	gbInc = greenCeiling / (gbMax-gbMin);
+   	bInc = blueCeiling / (bMax-bMin);
+	
+   rCur = 0;
+   grCur = 0;
+   gbCur = 0;
+   bCur = 0;
+
+   for (i = 0; i<256; i++)
+	 {
+	 	if( i < rMin )
+		 	red[i] = 0;
+		else 
+		{
+			if( rCur < redCeiling )
+			  red[i] = rCur;
+			else
+			  red[i] = greenCeiling;
+
+			rCur += rInc;
+		}
+
+		if( i < grMin )
+			greenR[i] = 0;
+		else
+		{
+			if( grCur < greenCeiling )
+			  greenR[i] = grCur;
+			else
+			  greenR[i] = greenCeiling;
+
+			grCur += grInc;
+		}
+		
+		if( i < gbMin )
+			greenB[i] = 0;
+		else
+		{
+			if( gbCur < greenCeiling )
+			  greenB[i] = gbCur;
+			else
+			  greenB[i] = blueCeiling;
+
+			gbCur += gbInc;
+		}
+		
+		if( i < bMin )
+			blue[i] = 0;
+		else
+		{
+			if( bCur < blueCeiling )
+			  blue[i] = bCur;
+			else
+			  blue[i] = blueCeiling;
+
+			bCur += bInc;
+		}
+	 }
+
+	for( i=0; i<width*height; i ++ )
+	{
+		gb[i] = greenB[gb[i]];
+		gr[i] = greenR[gr[i]];
+		b[i] = blue[b[i]];
+		r[i] = red[r[i]];
+	}	
+	
+	return( 1 );
+}
+
+/*****************************************************************************
+ * The interpolation function looks a litte strange in that it uses 4 * the
+ * green component when the green component is centered. This is to compensate
+ * for a different intensity on odd and even green rows. All green 
+ * interpolations have an equal number of pixels from a red row and blue row.
+ *****************************************************************************/
 static void Interpolate( const struct PalmPixHeader *pixHdr, uint8_t *red, uint8_t *greenR, uint8_t *greenB, uint8_t *blue, uint8_t *pp, int offset_r, int offset_g, int offset_b )
 {
    int idx, offset, ppOff;
@@ -1150,7 +1447,7 @@ static void Interpolate( const struct PalmPixHeader *pixHdr, uint8_t *red, uint8
 		  pp[3 * (ppOff + rowOff) + offset_b] = b;
 		  
 		  r = (red[offset + x] + red[offset + rawWidth + x])>>1;
-		  g = greenB[offset + x];
+		  g = (( greenB[offset + x] << 2 ) + greenR[offset+x] + greenR[offset+x+1] + greenR[offset+x+rawWidth] + greenR[offset+x+rawWidth+1] )>>3;
 		  b = (blue[offset + x] + blue[offset + x + 1])>>1;
 		  pp[3 * (ppOff + rowOff + 1) + offset_r] = r;
 		  pp[3 * (ppOff + rowOff + 1) + offset_g] = g;
@@ -1165,7 +1462,7 @@ static void Interpolate( const struct PalmPixHeader *pixHdr, uint8_t *red, uint8
 		  rowOff = x*2;
 		  
 		  r = (red[offset + x - 1] + red[offset + x])>>1;
-		  g = greenR[offset + x];
+		  g = (( greenR[offset + x] << 2 ) + greenB[offset-rawWidth+x-1] + greenB[offset-rawWidth+x] + greenB[offset+x-1] + greenB[offset+x] )>>3;
 		  b = (blue[offset-rawWidth+x] + blue[offset+x])>>1;
 		  pp[3 * (ppOff + rowOff) + offset_r] = r;
 		  pp[3 * (ppOff + rowOff) + offset_g] = g;
@@ -1454,15 +1751,29 @@ int unpack_PalmPix (struct PalmPixState *s,
 		  
 	       }
 		 
-	     
-	     Bias (0.85, rawWidth, rawHeight, chan[k]);
-	     
 	  }
-	  
+
+	if( s->flags & PALMPIX_COLOUR_CORRECTION )
+		  ColourCorrect ( h, chan[pixChannelR], chan[pixChannelGR], 
+				  chan[pixChannelGB], chan[pixChannelB] ); 
+
+	if( s->bias != 50 ) 
+    {
+	   Bias ( (double)s->bias / 100.0, rawWidth, rawHeight, chan[pixChannelR]);
+	   Bias ( (double)s->bias / 100.0, rawWidth, rawHeight, chan[pixChannelGR]);
+	   Bias ( (double)s->bias / 100.0, rawWidth, rawHeight, chan[pixChannelGB]);
+	   Bias ( (double)s->bias / 100.0, rawWidth, rawHeight, chan[pixChannelB]);
+	}
+
+	if( s->flags & PALMPIX_HISTOGRAM_STRETCH )
+		  Histogram ( h, chan[pixChannelR], chan[pixChannelGR], 
+				  chan[pixChannelGB], chan[pixChannelB] ); 
+
 	Interpolate (h,
 		     chan[pixChannelR], chan[pixChannelGR],
 		     chan[pixChannelGB], chan[pixChannelB],
 		     s->pixmap, s->offset_r, s->offset_g, s->offset_b);
+	   
 	failed = 0;
 	
 failed:
