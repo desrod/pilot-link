@@ -5,6 +5,7 @@
  * Copyright (c) 1997-1999, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  * Copyright (c) 2000-2001, JP Rosevear
+ * Copyright (c) 2004-2005, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -936,12 +937,8 @@ pi_socket(int domain, int type, int protocol)
 	ps->type 	= type;
 	ps->protocol 	= protocol;
 	ps->state       = PI_SOCK_CLOSE;
+	ps->honor_rx_to	= 1;
 	ps->command 	= 1;
-
-#ifdef OS2
-	ps->os2_read_timeout 	= 60;
-	ps->os2_write_timeout 	= 60;
-#endif
  
 	/* post the new socket to the list */
 	list = pi_socket_recognize(ps);
@@ -1240,6 +1237,13 @@ pi_getsockopt(int pi_sd, int level, int option_name,
 			}
 			memcpy (option_value, &ps->state, sizeof (ps->state));
 			*option_len = sizeof (ps->state);
+		} else if (option_name == PI_SOCK_HONOR_RX_TIMEOUT) {
+			if (*option_len != sizeof (ps->honor_rx_to)) {
+				errno = EINVAL;
+				return PI_ERR_GENERIC_ARGUMENT;
+			}
+			memcpy (option_value, &ps->honor_rx_to, sizeof (ps->honor_rx_to));
+			*option_len = sizeof (ps->honor_rx_to);
 		}
 		return 0;
 	}
@@ -1286,6 +1290,12 @@ pi_setsockopt(int pi_sd, int level, int option_name,
 				return PI_ERR_GENERIC_ARGUMENT;
 			}
 			memcpy (&ps->state, option_value, sizeof (ps->state));
+		} else if (option_name == PI_SOCK_HONOR_RX_TIMEOUT) {
+			if (*option_len != sizeof (ps->honor_rx_to)) {
+				errno = EINVAL;
+				return PI_ERR_GENERIC_ARGUMENT;
+			}
+			memcpy (&ps->honor_rx_to, option_value, sizeof (ps->honor_rx_to));
 		}
 		return 0;
 	}

@@ -140,7 +140,8 @@ enum PiOptNet {
 
 /** @brief Socket level options (use pi_getsockopt() and pi_setsockopt()) */
 enum PiOptSock {
-	PI_SOCK_STATE
+	PI_SOCK_STATE,			/**< Socket state (listening, closed, etc.) */
+	PI_SOCK_HONOR_RX_TIMEOUT	/**< Set to 1 to honor timeouts when waiting for data. Set to 0 to disable timeout (i.e. during dlp_CallApplication) */
 };
 
 struct	pi_protocol;			/* forward declaration */
@@ -164,7 +165,8 @@ typedef struct pi_socket {
 	int cmd_len;			/**< Command queue length */
 	struct pi_device *device;	/**< Low-level device we're talking to */
 
-	int state;			/**< Current socket state (initially #PI_SOCK_CLOSE) */
+	int state;			/**< Current socket state (initially #PI_SOCK_CLOSE). Use pi_setsockopt() with #PI_SOCK_STATE to set the state. */
+	int honor_rx_to;		/**< Honor packet reception timeouts. Set most to 1 of the time to have timeout management on incoming packets. Can be disabled when needed using pi_setsockopt() with #PI_SOCK_HONOR_RX_TIMEOUT. This is used, for example, to disable timeouts in dlp_CallApplication() so that lengthy tasks don't return an error. */
 	int command;			/**< true when socket in command state  */
 	int accept_to;			/**< timeout value for call to accept() */
 	int dlprecord;			/**< Index used for some DLP functions */
@@ -174,11 +176,6 @@ typedef struct pi_socket {
 
 	int last_error;			/**< error code returned by the last dlp_* command */
 	int palmos_error;		/**< Palm OS error code returned by the last transaction with the handheld */
-
-#ifdef OS2
-	unsigned short os2_read_timeout;
-	unsigned short os2_write_timeout;
-#endif
 } pi_socket_t;
 
 /** @brief Internal sockets chained list */
