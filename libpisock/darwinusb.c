@@ -240,7 +240,7 @@ static struct {
 }
 acceptedDevices[] = {
 	/* Sony */
-	{0x054c, 0x0038},	// Sony Palm OS 3.5 devices
+	{0x054c, 0x0038},	// Sony Palm OS 3.5 devices, S300
 	{0x054c, 0x0066},	// Sony T, S320, SJ series, and other Palm OS 4.0 devices
 	{0x054c, 0x0095},	// Sony S360
 	{0x054c, 0x000a},	// Sony NR and other Palm OS 4.1 devices
@@ -254,7 +254,7 @@ acceptedDevices[] = {
 	{0x081e, 0xdf00},   // Dana?
 
 	/* HANDSPRING (vendor 0x082d) */
-	{0x082d, 0x0100},	// Visor, Treo 300
+	{0x082d, 0x0100},	// Visor
 	{0x082d, 0x0200},	// Treo
 	{0x082d, 0x0300},	// Treo 600
 
@@ -273,7 +273,7 @@ acceptedDevices[] = {
 	{0x0830, 0x0052},
 	{0x0830, 0x0053},
 	{0x0830, 0x0060},	// Tungsten series, Zire 71
-	{0x0830, 0x0061},	// Zire 31, 72
+	{0x0830, 0x0061},	// Zire 31, 72, T5
 	{0x0830, 0x0062},
 	{0x0830, 0x0063},
 	{0x0830, 0x0070},	// Zire
@@ -512,14 +512,21 @@ device_added (void *refCon, io_iterator_t iterator)
 			continue;
 		}
 
-		kr  = (*dev)->ResetDevice (dev);
-		if (kr != kIOReturnSuccess)
+		if (vendor == VENDOR_TAPWAVE)
 		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to reset device (kr=0x%08x)\n", kr));
-			(*dev)->USBDeviceClose (dev);
-			(*dev)->Release(dev);
-			IOObjectRelease (ioDevice);
-			continue;
+			/* for some reason I don't understand yet, the starting handshake doesn't work properly
+			 * if I don't reset the USB port of the device first. This slows connection down but
+			 * allows it to work, until I resolve it
+			 */
+			kr  = (*dev)->ResetDevice (dev);
+			if (kr != kIOReturnSuccess)
+			{
+				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to reset device (kr=0x%08x)\n", kr));
+				(*dev)->USBDeviceClose (dev);
+				(*dev)->Release(dev);
+				IOObjectRelease (ioDevice);
+				continue;
+			}
 		}
 
 		kr = configure_device (dev, vendor, product, &port_number, &input_pipe_number, &output_pipe_number);
@@ -638,10 +645,12 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 
 		if (vendor == VENDOR_TAPWAVE)
 		{
-			// Tapwave: for Zodiac, the TwUSBD.sys driver on Windows sends 
-			// the ext-connection-info packet two additional times.
+/* useless
+			// Tapwave: for Zodiac, the TwUSBD.sys driver on Windows sends the ext-connection-info packet
+			// two additional times.
 			read_generic_connection_information (dev, NULL, NULL, NULL);
 			read_generic_connection_information (dev, NULL, NULL, NULL);
+*/
 		}
 	}
 
