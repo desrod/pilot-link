@@ -1,5 +1,10 @@
 2002-10-11  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/dlp.c (dlp_GetROMToken): add trace to getromtoken call
+	(dlp_WriteRecord): use record_dump call
+
+2002-10-11  JP Rosevear  <jpr@ximian.com>
+	
 	* configure.in: put a space in between putenv and sigaction so
 	they functions are correctly checked for; update png check to look
 	for png setjmp support

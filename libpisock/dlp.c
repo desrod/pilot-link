@@ -1791,6 +1791,8 @@ dlp_GetROMToken(int sd, unsigned long token, char *buffer, unsigned int *size)
 	unsigned long result;
 
 	struct RPC_params p;
+	
+	int val;
 	unsigned long buffer_ptr;
 
 	Trace(GetROMToken);
@@ -2014,29 +2016,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_long(DLP_REQUEST_DATA(req, 0, 2), recID);
 	set_byte(DLP_REQUEST_DATA(req, 0, 6), flags);
-#ifdef DLP_TRACE
-	if (dlp_trace) {
-		fprintf(stderr,
-			" Wrote: Handle: %d, RecordID: 0x%8.8lX, Category: %d\n",
-			dbhandle, (unsigned long) recID, catID);
-		fprintf(stderr, "        Flags:");
-		if (flags & dlpRecAttrDeleted)
-			fprintf(stderr, " Deleted");
-		if (flags & dlpRecAttrDirty)
-			fprintf(stderr, " Dirty");
-		if (flags & dlpRecAttrBusy)
-			fprintf(stderr, " Busy");
-		if (flags & dlpRecAttrSecret)
-			fprintf(stderr, " Secret");
-		if (flags & dlpRecAttrArchived)
-			fprintf(stderr, " Archive");
-		if (!flags)
-			fprintf(stderr, " None");
-		fprintf(stderr, " (0x%2.2X), and %d bytes of data: \n",
-			flags, length);
-		dumpdata(data, length);
-	}
-#endif
+	set_byte(DLP_REQUEST_DATA(req, 0, 7), catID);
 
 	memcpy(DLP_REQUEST_DATA(req, 0, 8), data, length);
 
