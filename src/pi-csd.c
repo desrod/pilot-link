@@ -96,7 +96,7 @@ struct in_addr address, netmask;
  *
  ***********************************************************************/
 static void
-fetch_host(char *hostname, int hostlen, struct in_addr *address,
+fetch_host(char *hostname, size_t hostlen, struct in_addr *address,
 	   struct in_addr *mask)
 {
 	int 	i,
@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
         char 	*progname 	= argv[0];
 
         fd_set 	rset;
-        unsigned char mesg[1026];
+	unsigned char mesg[1026];
         unsigned int clilen; 
 
 	memset(&address, 0, sizeof(address));
@@ -306,7 +306,7 @@ int main(int argc, char *argv[])
 			strcpy(hostname, optarg);
 			break;
 		case 'a':
-			if (!inet_aton(optarg, &address)) {
+			if (!inet_pton(AF_INET, optarg, &address)) {
 				if ((hent = gethostbyname(optarg))) {
 					memcpy(&address.s_addr,
 					       hent->h_addr,
@@ -320,7 +320,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 'n':
-			if (!inet_aton(optarg, &netmask))
+			if (!inet_pton(AF_INET, optarg, &netmask))
 				display_help(progname);
 			break;
 		case 'q':
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockfd < 0) {
 		perror("Unable to get socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	memset(&serv_addr, 0, sizeof(serv_addr));
@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
 	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
 	    < 0) {
 		perror("Unable to bind socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (!quiet) {
@@ -371,7 +371,7 @@ int main(int argc, char *argv[])
 		FD_SET(sockfd, &rset);
 		if (select(sockfd + 1, &rset, 0, 0, 0) < 0) {
 			perror("select failure");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		n = recvfrom(sockfd, mesg, 1024, 0,
 			     (struct sockaddr *) &cli_addr, &clilen);
@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
 
 		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
 			struct 	in_addr ip, mask;
-			unsigned char *name = mesg + 12;
+			char *name = mesg + 12;
 
 			memcpy(&ip, mesg + 4, 4);
 			memcpy(&mask, mesg + 8, 4);
