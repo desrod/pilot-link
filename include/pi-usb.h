@@ -42,8 +42,7 @@ extern "C" {
 		struct pi_usb_impl impl;
 		struct pi_usb_dev dev;
 
-		unsigned char buf[256];
-		unsigned char *pos;
+		unsigned char buf[256];		/* temp. buffer to hold incoming data when peeking at init time*/
 		size_t buf_size;
 		
 		/* I/O options */
