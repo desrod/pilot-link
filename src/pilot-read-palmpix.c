@@ -42,7 +42,6 @@
 
 
 const char *progname;
-int pilot_connect(const char *port);
 
 void write_png (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);
 void write_ppm (FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header);

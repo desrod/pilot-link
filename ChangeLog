@@ -1,3 +1,9 @@
+2002-08-16  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* include/pi-header.h: Added proto for pilot_connect();
+		
+	* src/*.c: Removed static proto declarations
+
 2002-08-15  JP Rosevear  <jpr@ximian.com>
 
 	* libpisock/usb.c (pi_usb_device_dup): make the ref null, since we

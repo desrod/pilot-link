@@ -55,8 +55,6 @@ extern time_t parsedate(char *p);
 
 char *getvars(char *name, char *xdefault);
 
-int pilot_connect(const char *port);
-
 /* This should be a struct, maybe later, we're killing this anyway. Passing
    this many things in is silly, but its cleaner than the previous. -DD 
  */

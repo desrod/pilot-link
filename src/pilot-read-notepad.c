@@ -42,7 +42,6 @@
 
 char *progname;
 
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 void write_ppm( FILE *f, struct NotePad *n );
 void output_picture( int type, struct NotePad n );

@@ -1442,7 +1442,7 @@ static int proc_port(ClientData clientData, Tcl_Interp * interp, int argc,
 
         fd = port;
 
-#if (TCL_MAJOR_VERSION<8 && TCL_MINOR_VERSION <4)
+#if (TCL_MAJOR_VERSION<8 || (TCL_MAJOR_VERSION==8 && TCL_MINOR_VERSION <4))
         channel = Tcl_MakeFileChannel((ClientData) fd, 0, TCL_READABLE);
 #else
         channel = Tcl_MakeFileChannel((ClientData) fd, TCL_READABLE);

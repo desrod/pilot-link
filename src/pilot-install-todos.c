@@ -31,7 +31,6 @@
 
 void install_ToDos(int sd, int db, char *filename);
 
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 
 /* Not used yet, getopt_long() coming soon! 

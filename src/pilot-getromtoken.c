@@ -36,8 +36,6 @@
 #include "pi-syspkt.h"
 #include "pi-dlp.h"
 
-int pilot_connect(const char *port);
-
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},

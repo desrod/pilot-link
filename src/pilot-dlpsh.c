@@ -63,7 +63,6 @@ void handle_user_commands(int sd);
 
 typedef int (*cmd_fn_t) (int, int, char **);
 
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 
 struct Command {

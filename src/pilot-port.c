@@ -41,7 +41,6 @@
 /* Declare prototypes */
 void do_read(struct pi_socket *ps, int type, char *buffer, int length);
 
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 
 struct option options[] = {

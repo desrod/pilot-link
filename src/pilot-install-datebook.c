@@ -35,7 +35,6 @@
 #include "pi-datebook.h"
 
 extern time_t parsedate(char *p);
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 
 struct option options[] = {

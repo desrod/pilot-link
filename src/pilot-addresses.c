@@ -28,8 +28,6 @@
 #include "pi-address.h"
 #include "pi-header.h"
 
-#define PILOTPORT "/dev/pilot"
-
 /* Define prototypes */
 int inchar(FILE * in);
 int read_field(char *dest, FILE * in);
@@ -40,13 +38,8 @@ int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
 
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 
-/* Yet more hair: reorganize fields to match visible appearence
-int realentry[19] =
-    { 0, 1, 2, 14, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 3, 15, 16, 17, 18 };
-*/
 int realentry[19] = 
     { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18 };
 
@@ -178,7 +171,6 @@ int read_field(char *dest, FILE * in)
 
 void outchar(char c, FILE * out)
 {
-
 	if (encodechars) {
 		switch (c) {
 		case '"':
@@ -276,6 +268,8 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 	char 	buf[0xffff];
 	struct 	Address a;
 
+	printf("Writing CSV entries to Palm Address Book... ");
+	fflush(stdout);
 	do {
 		i = read_field(buf, in);
 
@@ -354,6 +348,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 
 	} while (i >= 0);
 
+	printf("done.\n");
 	return 0;
 }
 
@@ -379,6 +374,8 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		write_field(out, "Private-Flag", 0);
 	}
 
+	printf("Writing Palm Address Book entries to file... ");
+	fflush(stdout);
 	for (i = 0;
 	     (j =
 	      dlp_ReadRecordByIndex(sd, db, i, (unsigned char *) buf, 0,
@@ -389,7 +386,6 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		if (attribute & dlpRecAttrDeleted)
 			continue;
 		unpack_Address(&a, (unsigned char *) buf, l);
-		dlp_AddSyncLogEntry(sd, ".");
 
 /* Simplified system */
 #if 0
@@ -462,7 +458,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 
 #endif
 	}
-
+	printf("done.\n");
 	return 0;
 }
 
@@ -633,9 +629,9 @@ int main(int argc, char *argv[])
 	dlp_WriteUserInfo(sd, &User);
 
 	if (mode == 1) {
-		dlp_AddSyncLogEntry(sd, "Wrote addresses to Palm.\n");
+		dlp_AddSyncLogEntry(sd, "Wrote entries to Palm Address Book.\n");
 	} else if (mode == 2) {
-		dlp_AddSyncLogEntry(sd, "Read addresses from Palm.\n");
+		dlp_AddSyncLogEntry(sd, "Successfully read Address Book from Palm.\n");
 	}
 	
 	dlp_EndOfSync(sd, 0);

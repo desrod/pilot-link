@@ -46,8 +46,6 @@
 #include "pi-slp.h"
 #include "pi-header.h"
 
-int pilot_connect(const char *port);
-
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},

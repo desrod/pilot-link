@@ -31,7 +31,6 @@
 #include "pi-hinote.h"
 #include "pi-header.h"
 
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 
 struct option options[] = {

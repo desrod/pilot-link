@@ -33,7 +33,6 @@
 #include "pi-memo.h"
 
 /* Declare prototypes */
-int pilot_connect(const char *port);
 int usage(char *progname);
 
 static const char *optstring = "c:p:rthv";

@@ -42,7 +42,6 @@
 int verbose = 0;
 char *progname;
 
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 
 struct option options[] = {

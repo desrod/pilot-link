@@ -36,7 +36,6 @@
 #include "pi-dlp.h"
 
 int cancel = 0;
-int pilot_connect(const char *port);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},

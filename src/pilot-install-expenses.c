@@ -27,7 +27,6 @@
 #include "pi-dlp.h"
 #include "pi-expense.h"
 
-int pilot_connect(const char *port);
 static void display_help(char *progname);
 
 /* Not used yet, getopt_long() coming soon! 
