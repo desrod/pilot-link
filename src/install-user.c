@@ -66,7 +66,7 @@ static void display_help(char *progname)
 	printf("     -h --help         Display this information\n");
 	printf("     -v --version      Display version information\n\n");
 	printf("   Examples: \n");
-	printf("      %s -p /dev/pilot -u \"John Q. Public\" -i 12345\n\n", progname);
+	printf("      install-user -p /dev/pilot -u \"John Q. Public\" -i 12345\n\n");
 
 	return;
 }
@@ -115,13 +115,13 @@ int main(int argc, char *argv[])
 
 	if (!user && !userid) {
 		printf("   Palm user: %s\n", User.username);
-		printf("   UserID:    %ld\n\n", User.userID);
+		printf("   UserID:    %lu\n\n", User.userID);
 		pi_close(sd);
 		return 0;
 	}
 
 	if (userid)
-		User.userID = abs(atoi(userid));	
+		User.userID = abs(atoi(userid));
 
 	if (user)
 		strncpy(User.username, user, sizeof(User.username) - 1);
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 	if (user)
 		printf("   Installed User Name: %s\n", User.username);
 	if (userid)
-		printf("   Installed User ID: %ld\n", User.userID);
+		printf("   Installed User ID: %lu\n", User.userID);
 	printf("\n");
 	
 	if (dlp_AddSyncLogEntry(sd, "install-user exited normally.\n"
