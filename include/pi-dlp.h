@@ -479,7 +479,7 @@ typedef unsigned long FileRef;
 			struct DBInfo * info));
 
 	extern int dlp_FindDBInfo
-		PI_ARGS((int sd, int cardno, int start, char *dbname,
+		PI_ARGS((int sd, int cardno, int start, const char *dbname,
 			unsigned long type, unsigned long creator,
 			struct DBInfo * info));
 

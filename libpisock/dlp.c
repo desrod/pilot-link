@@ -1165,7 +1165,7 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start,
  *
  ***********************************************************************/
 int
-dlp_FindDBInfo(int sd, int cardno, int start, char *dbname,
+dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 	       unsigned long type, unsigned long creator,
 	       struct DBInfo *info)
 {
