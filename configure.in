@@ -1,9 +1,9 @@
 # This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
-AC_INIT(pilot-link, 0.11.6-devel)
+AC_INIT(include/pi-version.h)
 
 # Force 2.53 for additional BSD fixes, --help output
-dnl AC_PREREQ(2.53)
+AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
 AC_SUBST(HOST_OS)
