@@ -119,9 +119,7 @@ int main(int argc, char *argv[])
 		} else {
 
 			unlink(icalfile);
-			printf("About to run ical here\n");
 			sprintf(cmd, "ical -list -f - -calendar %s", icalfile);
-			printf("Just executed the ical command 'cal -f - -calendar %s'\n", icalfile);
 			ical = popen(cmd, "w");
 
 			fprintf(ical, "calendar cal $ical(calendar)\n");
