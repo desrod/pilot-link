@@ -1000,6 +1000,8 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 	}
 
 	fprintf(stderr, "   Installing '%s'... ", localfile);
+	fprintf(stderr,"* volume=%d rpath=%s local=%s\n",
+		volume,rpath,localfile);
 
 	if (stat(localfile, &sbuf) < 0) {
 		fprintf(stderr,"   Unable to open '%s'!\n", localfile);
@@ -1025,7 +1027,7 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 			(unsigned long)sbuf.st_size, freespace);
 		return;
 	}
-#define APPEND_BASENAME \
+#define APPEND_BASENAME fd-=1; \
 			basename = strrchr(localfile,'/'); \
 			if (NULL == basename) basename = localfile; else basename++; \
 			if (rpath[rpathlen-1] != '/') { \
@@ -1034,53 +1036,64 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 			} \
 			strncat(rpath,basename,vfsMAXFILENAME-rpathlen-1);
 
-	if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenRead,&file) < 0)
+	fd = 0;
+	while (fd<2)
 	{
-		/* Target doesn't exist. If it ends with a /, try to
-		   create the directory and then act as if the existing
-		   directory was given as target. If it doesn't, carry
-		   on, it's a regular file to create. */
-		if ('/' == rpath[rpathlen-1]) {
-			/* directory, doesn't exist. */
-			if (dlp_VFSDirCreate(sd,volume,rpath) < 0) {
-				fprintf(stderr,"  Could not create destination directory.\n");
+		/* Don't retry by default. APPEND_BASENAME changes
+		the file being tries, so it decrements fd again.
+		Because we add _two_ here, (two steps fwd, one step back)
+		we try at most twice anyway. */
+		fd+=2;
+
+		if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenRead,&file) < 0)
+		{
+			/* Target doesn't exist. If it ends with a /, try to
+			create the directory and then act as if the existing
+			directory was given as target. If it doesn't, carry
+			on, it's a regular file to create. */
+			if ('/' == rpath[rpathlen-1]) {
+				/* directory, doesn't exist. Don't try to mkdir /. */
+				if ((rpathlen > 1) &&
+					(dlp_VFSDirCreate(sd,volume,rpath) < 0)) {
+					fprintf(stderr,"  Could not create destination directory.\n");
+					return;
+				}
+				APPEND_BASENAME
+			}
+			if (dlp_VFSFileCreate(sd,volume,rpath) < 0) {
+				fprintf(stderr,"  Cannot create destination file '%s'.\n",rpath);
 				return;
 			}
-			APPEND_BASENAME
 		}
-	}
-	else
-	{
-		/* Exists, and may be a directory, or a filename. If it's
-		   a filename, that's fine as long as we're installing
-		   just a single file. */
-		if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
+		else
 		{
-			fprintf(stderr,"   Could not get attributes for destination.\n");
-			(void) dlp_VFSFileClose(sd,file);
-			return;
-		}
+			/* Exists, and may be a directory, or a filename. If it's
+			a filename, that's fine as long as we're installing
+			just a single file. */
+			if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
+			{
+				fprintf(stderr,"   Could not get attributes for destination.\n");
+				(void) dlp_VFSFileClose(sd,file);
+				return;
+			}
 
-		if (attributes & vfsFileAttrDirectory) {
-			APPEND_BASENAME
-			dlp_VFSFileClose(sd,file);
-			/* Now for sure it's a filename in a directory. */
-		}
-		else {
-			dlp_VFSFileClose(sd,file);
+			fprintf(stderr,"* Got attrib %lx on %s\n",attributes,rpath);
+			if (attributes & vfsFileAttrDirectory) {
+				APPEND_BASENAME
+				dlp_VFSFileClose(sd,file);
+				/* Now for sure it's a filename in a directory. */
+				fprintf(stderr,"* Using %s\n",rpath);
+			}
+			else {
+				dlp_VFSFileClose(sd,file);
+			}
 		}
 	}
 #undef APPEND_BASENAME
 
-	if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenWrite | vfsModeTruncate,&file) < 0) {
-		if (dlp_VFSFileCreate(sd,volume,rpath) < 0) {
-			fprintf(stderr,"  Cannot create destination file '%s'.\n",rpath);
-			return;
-		}
-		if (dlp_VFSFileOpen(sd,volume,rpath,dlpVFSOpenWrite | vfsModeTruncate,&file) < 0) {
-			fprintf(stderr,"  Cannot open destination file '%s'.\n",rpath);
-			return;
-		}
+	if (dlp_VFSFileOpen(sd,volume,rpath,0x7,&file) < 0) {
+		fprintf(stderr,"  Cannot open destination file '%s'.\n",rpath);
+		return;
 	}
 
 	fd = open(localfile,O_RDONLY);
@@ -1826,11 +1839,11 @@ int main(int argc, char *argv[])
 			Purge();
 			break;
 		case 'l':
-			media_type = palm_media_ram;
+			if (media_type != palm_media_vfs) media_type = palm_media_ram;
                         palm_operation = palm_op_list;
 			break;
 		case 'L':
-			media_type = palm_media_rom;
+			if (media_type != palm_media_vfs) media_type = palm_media_rom;
 			palm_operation = palm_op_list;
 			break;
 		case 'a':
