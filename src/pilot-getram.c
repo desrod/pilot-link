@@ -46,7 +46,6 @@ struct option options[] = {
 	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
-	{"copilot",     no_argument,       NULL, 'c'},
 	{NULL,          0,                 NULL, 0}
 };
 
@@ -55,15 +54,13 @@ static const char *optstring = "p:hvc";
 static void display_help(char *progname)
 {
 	printf("   Retrieves the RAM image from your Palm device\n\n");
-	printf("   Usage: %s -p <port> [--copilot] [pilot.ram]\n\n", progname);
+	printf("   Usage: %s -p <port> [pilot.ram]\n\n", progname);
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
 	printf("     -h, --help              Display help information for %s\n", progname);
 	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -c, --copilot           RAM file defined to be used with Copilot\n\n");
 	printf("   Only the port option is required, the other options are... optional.\n\n");
-	printf("   Examples: %s -p /dev/pilot myram\n", progname);
-	printf("             %s -p /dev/pilot --copilot\n\n", progname);
+	printf("   Examples: %s -p /dev/pilot myram\n\n", progname);
 }
 
 static void sighandler(int signo)
@@ -80,7 +77,6 @@ int main(int argc, char *argv[])
 		sd,
 		file,
 		j,
-		copilot 	= 0,
 		majorVersion,
 		minorVersion,
 		bugfixVersion,
@@ -111,9 +107,6 @@ int main(int argc, char *argv[])
 			return 0;
 		case 'p':
 			port = optarg;
-			break;
-		case 'c':
-			copilot = 1;
 			break;
 		}
 	}
@@ -217,11 +210,6 @@ int main(int argc, char *argv[])
 			RPC_End);
 		/* err = */ dlp_RPC(sd, &p, 0);
 		left -= len;
-
-		if (copilot)
-			for (j = 0; j < len; j += 2)
-				*(short int *) (buffer + j) =
-				    get_short(buffer + j);
 
 		/* If the buffer only contains zeros, skip instead of
 		   writing, so that the file will be holey. */
