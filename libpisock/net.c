@@ -353,49 +353,83 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 	pi_setsockopt(ps->sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
 		      &timeout, &size);
 
-	total_bytes = 0;
 	header = pi_buffer_new (PI_NET_HEADER_LEN);
 	if (header == NULL) {
 		errno = ENOMEM;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
-	if (data->txid == 0) {	
-		/* Peek to see if it is a headerless packet */
-		bytes = next->read(ps, header, 1, flags);
-		if (bytes <= 0) {
-			pi_buffer_free (header);
-			return bytes;
-		}
-
-		LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
-			"NET RX: Checking for headerless packet %d\n",
-			header->data[0]));
-
-		if (header->data[0] == 0x90) {
-			/* Cause the header bytes to be skipped */
+	/* loop until we find a non-tickle packet (if the other end
+	   sends us a tickle, we would receive it prior to getting
+	   the expected reply to one of our commands, so we need
+	   to make sure tickle packets don't get in the way) */
+	total_bytes = 0;
+	while (!total_bytes) {
+		if (data->txid == 0) {	
+			/* Peek to see if it is a headerless packet */
+			bytes = next->read(ps, header, 1, flags);
+			if (bytes <= 0) {
+				pi_buffer_free (header);
+				return bytes;
+			}
+			
 			LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
-				"NET RX: Headerless packet\n"));
-			total_bytes = PI_NET_HEADER_LEN;
-			header->data[PI_NET_OFFSET_TYPE] = PI_NET_TYPE_DATA;
-			header->data[PI_NET_OFFSET_TXID] = 0x01;
-			set_long (&header->data[PI_NET_OFFSET_SIZE], 21);
-		} else {
+				  "NET RX: Checking for headerless packet %d\n",
+				  header->data[0]));
+			
+			if (header->data[0] == 0x90) {
+				/* Cause the header bytes to be skipped */
+				LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
+					  "NET RX: Headerless packet\n"));
+				total_bytes = PI_NET_HEADER_LEN;
+				header->data[PI_NET_OFFSET_TYPE] = PI_NET_TYPE_DATA;
+				header->data[PI_NET_OFFSET_TXID] = 0x01;
+				set_long (&header->data[PI_NET_OFFSET_SIZE], 21);
+				break;
+			} else {
+				total_bytes += bytes;
+			}
+		}
+		
+		/* bytes in what's left of the header */
+		while (total_bytes < PI_NET_HEADER_LEN) {
+			bytes = next->read(ps, header,
+							   (size_t)(PI_NET_HEADER_LEN - total_bytes), flags);
+			if (bytes <= 0) {
+				pi_buffer_free (header);
+				return bytes;
+			}
 			total_bytes += bytes;
 		}
-	}
+		
+		packet_len = get_long(&header->data[PI_NET_OFFSET_SIZE]);
+		data->type = header->data[PI_NET_OFFSET_TYPE];
 
-	/* bytes in what's left of the header */
-	while (total_bytes < PI_NET_HEADER_LEN) {
-		bytes = next->read(ps, header,
-			(size_t)(PI_NET_HEADER_LEN - total_bytes), flags);
-		if (bytes <= 0) {
-			pi_buffer_free (header);
-			return bytes;
+		switch (data->type) {
+			case PI_NET_TYPE_TCKL:
+				if (packet_len != 0) {
+					LOG ((PI_DBG_NET, PI_DBG_LVL_ERR,
+						"NET RX: tickle packet with non-zero length\n"));
+					pi_buffer_free(header);
+					return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
+				}
+				/* valid tickle packet; continue reading. */
+				total_bytes = 0;
+				header->used = 0;
+				break;
+			
+			case PI_NET_TYPE_DATA:
+				/* move on to reading the rest of the packet */
+				break;
+
+			default:
+				LOG ((PI_DBG_NET, PI_DBG_LVL_ERR,
+					"NET RX: Unknown packet type\n"));
+				pi_buffer_free(header);
+				return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
 		}
-		total_bytes += bytes;
 	}
-
+	
 	/* read the actual packet data */
 	total_bytes = 0;
 	packet_len = get_long(&header->data[PI_NET_OFFSET_SIZE]);
