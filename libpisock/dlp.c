@@ -4898,7 +4898,7 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
  *				data		<-> buffer to hold the data, emptied first
  *				len			--> on input, number of bytes to read
  * 
- * Returns:     negative number on error
+ * Returns:     negative number on error, total number of bytes read otherwise
  *
  ***********************************************************************/
 int
@@ -4907,6 +4907,7 @@ dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
+	size_t bytes = 0;
 
 	RequireDLPVersion(sd,1,2);
 	Trace(dlp_VFSFileRead);
@@ -4928,11 +4929,18 @@ dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 	if (result >= 0) {
 		do {
 			result = pi_read(sd, data, len);
-			len -= result;
+			if (result > 0) {
+				len -= result;
+				bytes += result;
+			}
 		} while (result > 0 && len > 0);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		     "Readbytes: %d\n", len));
+		     "dlp_VFSFileRead: read %u bytes (result=%d)\n",
+			(unsigned)bytes, result));
+
+		if (result >= 0)
+			result = bytes;
 	}
 
 	dlp_response_free(res);
