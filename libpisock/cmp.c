@@ -20,7 +20,7 @@ int cmp_rx(struct pi_socket *ps, struct cmp * c)
   Begin(cmp_rx);
   
   if(!ps->rxq)
-    ps->device_read(ps, 200);
+    ps->serial_read(ps, 200);
   l = padp_rx(ps, cmpbuf, 10);
   
   if( l < 10)
@@ -98,7 +98,7 @@ void cmp_dump(unsigned char * cmp, int rxtx)
 	  "");
   if((get_byte(cmp) < 1) || (get_byte(cmp) > 3))
   	fprintf(stderr, "UNK %d", get_byte(cmp));
-  fprintf(stderr,"  Flags: %2.2X Version: %8.8X Baud: %8.8X (%d)\n",
+  fprintf(stderr,"  Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
 	  get_byte(cmp+1),
 	  get_long(cmp+2),
 	  get_long(cmp+6),

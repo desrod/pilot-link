@@ -27,11 +27,11 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
   slp->_be  = 0xbe;
   slp->_ef  = 0xef;
   slp->_ed  = 0xed;
-  slp->dest = ps->raddr.pi_port;
-  slp->src  = ps->laddr.pi_port;
-  slp->type = ps->protocol;
+  slp->dest = nskb->dest;
+  slp->src  = nskb->source;
+  slp->type = nskb->type;
   slp->dlen = htons(len);
-  slp->id   = ps->xid;
+  slp->id   = nskb->id;
 
   for (n = i = 0; i<9; i++) n += nskb->data[i];
   slp->csum = 0xff & n;
@@ -134,10 +134,14 @@ int slp_rx(struct pi_socket *ps)
 #endif
 	) {
 
-      ps->xid = ps->mac->rxb->data[8];
+      ps->mac->rxb->dest = ps->mac->rxb->data[3];
+      ps->mac->rxb->source = ps->mac->rxb->data[4];
+      ps->mac->rxb->type = ps->mac->rxb->data[5];
+      ps->mac->rxb->id = ps->mac->rxb->data[8];
+      /*ps->xid = ps->mac->rxb->data[8];
       ps->laddr.pi_port = ps->mac->rxb->data[3];
-      ps->raddr.pi_port = ps->mac->rxb->data[4];
-      ps->protocol = ps->mac->rxb->data[5];
+      ps->raddr.pi_port = ps->mac->rxb->data[4]; 
+      ps->protocol = ps->mac->rxb->data[5]; XXX */
       
       /* hack to ignore LOOP packets... */
 

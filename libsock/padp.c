@@ -62,6 +62,10 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
     do {
 
       nskb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
+      
+      nskb->type = ps->protocol;
+      nskb->dest = nskb->source = PI_PilotSocketDLP;
+      nskb->id = ps->xid;
 
       tlen = (len > 1024) ? 1024 : len;
 
@@ -83,7 +87,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
         break;
       
       At("Reading Ack");
-      ps->device_read(ps, xmitTimeout);
+      ps->serial_read(ps, xmitTimeout);
 
       if(ps->rxq) {
         struct pi_skb *skb;
@@ -97,7 +101,8 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
         padp.size = get_short((unsigned char*)(&skb->data[12]));
 
         padp_dump(skb, &padp, 0);
-        
+
+
         if ((slp->type == (unsigned char)2) && (padp.type == (unsigned char)padData) && 
             (slp->id == ps->xid) && (len==0)) {
           fprintf(stderr,"Missing ack\n");
@@ -195,7 +200,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     }
   
     if (!ps->rxq) {
-      ps->device_read(ps, recStartTimeout);
+      ps->serial_read(ps, recStartTimeout);
       continue;
     }
 
@@ -207,7 +212,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     padp.type = get_byte((unsigned char*)(&skb->data[10]));
     padp.flags = get_byte((unsigned char*)(&skb->data[11]));
     padp.size = get_short((unsigned char*)(&skb->data[12]));
-
+    
     if ((slp->type != 2) || (padp.type != padData) || 
         (slp->id != ps->xid) || !(padp.flags & FIRST)) {
       if(padp.type == padTickle) {
@@ -216,7 +221,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
       }
       fprintf(stderr,"Wrong packet type on queue\n");
       free(skb);
-      ps->device_read(ps, recStartTimeout);
+      ps->serial_read(ps, recStartTimeout);
       continue;
     }
     break;
@@ -236,6 +241,10 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     
     nskb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
 
+    nskb->type = ps->protocol;
+    nskb->dest = nskb->source = PI_PilotSocketDLP;
+    nskb->id = ps->xid;
+
     npadp.type = padAck;
     npadp.flags = padp.flags;
     npadp.size = padp.size;
@@ -247,7 +256,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     padp_dump(nskb, &npadp, 1);
   
     slp_tx(ps, nskb, 4);
-    pi_socket_flush(ps); /* It's an Ack, so flush it already */
+    pi_serial_flush(ps); /* It's an Ack, so flush it already */
     At(sent Ack);
     
     /* calculate length and offset */
@@ -279,7 +288,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
         }
         
         if(!ps->rxq) {
-          ps->device_read(ps, recSegTimeout);
+          ps->serial_read(ps, recSegTimeout);
           continue;
         }
         
@@ -291,7 +300,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
         padp.type = get_byte((unsigned char*)(&skb->data[10]));
         padp.flags = get_byte((unsigned char*)(&skb->data[11]));
         padp.size = get_short((unsigned char*)(&skb->data[12]));
-      
+
         if ((slp->type != 2) || (padp.type != padData) || 
             (slp->id != ps->xid) || (padp.flags & FIRST)) {
           if(padp.type == padTickle) {
@@ -300,7 +309,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
           }
           fprintf(stderr,"Wrong packet type on queue\n");
           free(skb);
-          ps->device_read(ps, recSegTimeout);
+          ps->serial_read(ps, recSegTimeout);
           continue;
         }
         At(got good packet);

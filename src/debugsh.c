@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
   laddr.pi_family = PI_AF_SLP;
   strcpy(laddr.pi_device,argv[1]);
   
-  pi_bind(sd, &laddr, sizeof(laddr));
+  pi_bind(sd, (struct sockaddr*)&laddr, sizeof(laddr));
   
   /* Now we can read and write packets: to get the Pilot to send a packet,
      write a ".2" shortcut, which starts the debugging mode. (Make sure to

@@ -54,6 +54,7 @@ extern "C" {
 struct pi_skb {
   struct pi_skb *next;
   int len;
+  unsigned char source, dest, type, id;
   unsigned char data[PI_SLP_MTU];
 };
 
@@ -67,8 +68,10 @@ struct pi_mac {
 };
 
 struct pi_socket {
-  struct pi_sockaddr laddr;
-  struct pi_sockaddr raddr;
+  struct sockaddr *laddr;
+  int laddrlen;
+  struct sockaddr *raddr;
+  int raddrlen;
   int type;
   int protocol;
   unsigned char xid;
@@ -103,10 +106,18 @@ struct pi_socket {
   int tx_errors;
   int rx_errors;
   char last_tid;
-  int (*device_close)(struct pi_socket*);
-  int (*device_changebaud)(struct pi_socket*);
-  int (*device_write)(struct pi_socket*);
-  int (*device_read)(struct pi_socket*, int);
+  int (*socket_connect)(struct pi_socket*, struct sockaddr*, int);
+  int (*socket_listen)(struct pi_socket*, int);
+  int (*socket_accept)(struct pi_socket*, struct sockaddr*, int*);
+  int (*socket_close)(struct pi_socket*);
+  int (*socket_tickle)(struct pi_socket*);
+  int (*socket_bind)(struct pi_socket*, struct sockaddr*, int);
+  int (*socket_send)(struct pi_socket*, void * buf, int len, unsigned int flags);
+  int (*socket_recv)(struct pi_socket*, void * buf, int len, unsigned int flags);
+  int (*serial_close)(struct pi_socket*);
+  int (*serial_changebaud)(struct pi_socket*);
+  int (*serial_write)(struct pi_socket*);
+  int (*serial_read)(struct pi_socket*, int);
 #ifdef OS2
   unsigned short os2_read_timeout;
   unsigned short os2_write_timeout;
@@ -121,7 +132,7 @@ struct pi_socket {
 
 #include "pi-args.h"
 
-extern int pi_socket_flush PI_ARGS((struct pi_socket *ps));
+extern void pi_socket_recognize PI_ARGS((struct pi_socket*));                                              
 extern struct pi_socket *find_pi_socket PI_ARGS((int sd));
 extern int crc16 PI_ARGS((unsigned char *ptr, int count));
 extern char * printlong PI_ARGS((unsigned long val));

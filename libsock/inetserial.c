@@ -1,6 +1,6 @@
-/* net.c:
+/* inetserial.c: Experimental interface layer to pi-port via TCP/IP
  *
- * (c) 1996, D. Jeff Dionne.
+ * Copyright (c) 1996, 1997,  D. Jeff Dionne & Kenneth Albanowski.
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
  */
@@ -13,18 +13,31 @@
 #include <stdio.h>
 #include "pi-source.h"
 #include "pi-socket.h"
-#include "pi-net.h"
+#include "pi-serial.h"
+#include "pi-inetserial.h"
 #include "pi-slp.h"
+#include "pi-syspkt.h"
+#include "pi-padp.h"
 
-int pi_net_device_open(char *host, struct pi_socket *ps)
+static int n_changebaud(struct pi_socket *ps);
+static int n_close(struct pi_socket *ps);
+static int n_write(struct pi_socket *ps);
+static int n_read(struct pi_socket *ps, int timeout);
+
+int pi_inetserial_open(struct pi_socket *ps, struct sockaddr * addr, int addrlen)
 {
   struct sockaddr_in serv_addr;
   ps->mac->fd = socket(AF_INET, SOCK_STREAM, 0);
   
-  memset(&serv_addr, 0, sizeof(serv_addr));
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_addr.s_addr = inet_addr(host);
-  serv_addr.sin_port = htons(4386);
+  if (addr->sa_family == AF_INET) {
+    memcpy(&serv_addr, addr, addrlen);
+  } else {
+    struct pi_sockaddr * pa = (struct pi_sockaddr*)addr;
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr(pa->pi_device+1);
+    serv_addr.sin_port = htons(4386);
+  }
 
   connect(ps->mac->fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
@@ -53,15 +66,15 @@ int pi_net_device_open(char *host, struct pi_socket *ps)
   }
 #endif
 
-  ps->device_read = pi_net_device_read;
-  ps->device_write = pi_net_device_write;
-  ps->device_close = pi_net_device_close;
-  ps->device_changebaud = pi_net_device_changebaud;
+  ps->serial_read = n_read;
+  ps->serial_write = n_write;
+  ps->serial_close = n_close;
+  ps->serial_changebaud = n_changebaud;
 
   return ps->mac->fd;
 }
 
-int pi_net_device_changebaud(struct pi_socket *ps)
+static int n_changebaud(struct pi_socket *ps)
 {
   char buffer[20];
   
@@ -74,7 +87,7 @@ int pi_net_device_changebaud(struct pi_socket *ps)
   return 0;
 }
 
-int pi_net_device_close(struct pi_socket *ps)
+static int n_close(struct pi_socket *ps)
 {
   int result;
   char buffer[4];
@@ -95,7 +108,7 @@ int pi_net_device_close(struct pi_socket *ps)
   return result;
 }
 
-int pi_net_device_write(struct pi_socket *ps)
+static int n_write(struct pi_socket *ps)
 {
   struct pi_skb *skb;
   int nwrote, len;
@@ -143,7 +156,7 @@ int pi_net_device_write(struct pi_socket *ps)
   return 0;
 }
 
-int pi_net_device_read(struct pi_socket *ps, int timeout)
+static int n_read(struct pi_socket *ps, int timeout)
 {
   int r;
   unsigned char *buf;
@@ -156,7 +169,7 @@ int pi_net_device_read(struct pi_socket *ps, int timeout)
   FD_ZERO(&ready);
   FD_SET(ps->mac->fd, &ready);
 
-  pi_socket_flush(ps);              /* We likely want to be in sync with tx */
+  pi_serial_flush(ps);              /* We likely want to be in sync with tx */
   
   if (!ps->mac->expect) slp_rx(ps);  /* let SLP know we want a packet */
 

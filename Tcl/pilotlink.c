@@ -550,16 +550,15 @@ CreateSocket(Tcl_Interp * interp, int protocol, char * remote, int server)
 		alen = strlen(device)+1+4;
 		addr = (struct pi_sockaddr*)malloc(alen);
 		strcpy(addr->pi_device, device);
-		addr->pi_port = 3;
 		addr->pi_family = PI_AF_SLP;
 	}
 	printf("addr = %d\n", (long)addr);
 
 	if (server) {
-		result = pi_bind(sock, addr, alen);
+		result = pi_bind(sock, (struct sockaddr*)addr, alen);
 		pi_listen(sock, 1);
 	} else {
-      result = pi_connect(sock, addr, alen);
+      result = pi_connect(sock, (struct sockaddr*)addr, alen);
 	}
 	printf(" result = %d\n", result);
 
@@ -833,11 +832,10 @@ bindCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * CONST ob
 		alen = strlen(device)+1+4;
 		addr = (struct pi_sockaddr*)malloc(alen);
 		strcpy(addr->pi_device, device);
-		addr->pi_port = port;
 		addr->pi_family = family;
 	}
 	
-	result = pi_bind(s, addr, alen);
+	result = pi_bind(s, (struct sockaddr*)addr, alen);
 	
 	if (addr)
 		free(addr);

@@ -34,40 +34,36 @@ void do_read(struct pi_socket * ps, int type, char * buffer, int length)
   dumpdata(buffer, length);
   if (type == 0 ) {
     struct pi_skb * nskb;
-    ps->laddr.pi_port = buffer[0];
-    ps->raddr.pi_port = buffer[1];
-    ps->protocol = buffer[2];
-    ps->xid = buffer[3];
-
     nskb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
+
+    nskb->source = buffer[0];
+    nskb->dest = buffer[1];
+    nskb->type = buffer[2];
+    nskb->id = buffer[3];
+    
     memcpy(&nskb->data[10], buffer+4, length-4);
     slp_tx(ps, nskb, length-4);
 
   } else if (type == 1 ) {
 
     ps->rate = get_long(buffer);
-    pi_socket_flush(ps);
-    ps->device_changebaud(ps);
+    pi_serial_flush(ps);
+    ps->serial_changebaud(ps);
   }
 }
                   
 int main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
-  int db;
   int sd;
-  int i,l;
   struct pi_socket * ps;
   int ret;
   struct sockaddr_in serv_addr;
   int serverfd, fd;
-  int c;
   char * buffer;
   char * slpbuffer;
   char * device = argv[1];
   int port = 4386;
-  
-  struct pi_skb *rxq;
   
   extern char* optarg;
   extern int optind;
@@ -107,7 +103,7 @@ int main(int argc, char *argv[])
   addr.pi_family = PI_AF_SLP;
   strcpy(addr.pi_device,device);
 
-  ret = pi_bind(sd, &addr, sizeof(addr));
+  ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
     perror("pi_bind");
     exit(1);
@@ -115,7 +111,7 @@ int main(int argc, char *argv[])
   
   ps = find_pi_socket(sd);
   ps->rate = 9600;
-  ps->device_changebaud(ps);
+  ps->serial_changebaud(ps);
 
   for (;;) {
     int l;
@@ -175,9 +171,10 @@ int main(int argc, char *argv[])
           }
         }
         skip:
+        ;
       }
       if (FD_ISSET(sd, &rset)) {
-        ps->device_read(ps, 1);
+        ps->serial_read(ps, 1);
         if (ps->rxq) {
           fprintf(stderr, "A %d byte packet has been received from the serial port\n", ps->rxq->len);
         }
@@ -201,7 +198,7 @@ int main(int argc, char *argv[])
       }
       if (FD_ISSET(sd, &wset) && ps->txq) {
         fprintf(stderr, "A %d byte packet is being sent to the serial port\n", ps->txq->len);
-        ps->device_write(ps);
+        ps->serial_write(ps);
       }
       if (FD_ISSET(fd, &eset)) {
       	break;

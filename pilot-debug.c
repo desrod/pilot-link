@@ -1005,7 +1005,7 @@ int proc_port(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
   laddr.pi_family = PI_AF_SLP;
   strcpy(laddr.pi_device,argv[1]);
   
-  if (pi_bind(port, &laddr, sizeof(laddr))==-1) {
+  if (pi_bind(port, (struct sockaddr*)&laddr, sizeof(laddr))==-1) {
     Say("Unable to open port '");
     Say(argv[1]);
     Say("': ");

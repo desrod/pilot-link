@@ -310,10 +310,9 @@ int main(int argc, char **argv) {
   }
 
   addr.pi_family = PI_AF_SLP;
-  addr.pi_port = 3;
   strcpy(addr.pi_device, argv[1]);
 
-  ret = pi_bind(sd, &addr, sizeof(addr));
+  ret = pi_bind(sd, (struct sockaddr*)&addr, sizeof(addr));
   if (ret == -1) {
     perror("pi_bind");
     exit(1);
@@ -327,7 +326,7 @@ int main(int argc, char **argv) {
 
   printf("Connecting to Pilot at %s...", argv[1]); fflush(stdout);
 
-  sd = pi_accept(sd, &addr, NULL);
+  sd = pi_accept(sd, 0, NULL);
   if (sd == -1) {
     perror("pi_accept");
     exit(1);

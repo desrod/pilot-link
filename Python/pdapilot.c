@@ -293,7 +293,7 @@ Bind(self, args)
 	if (PyString_Check(addr)) {
 		a = (struct pi_sockaddr *)PyString_AsString(addr);
 		len = PyString_Size(addr);
-		i = pi_bind(socket,a,len);
+		i = pi_bind(socket,(struct sockaddr*)a,len);
 	} else if (PyDict_Check(addr)) {
 		PyObject * e = PyDict_GetItemString(addr, "device");
 		if (e) {
@@ -303,11 +303,9 @@ Bind(self, args)
 			
 			e = PyDict_GetItemString(addr, "family");
 			a->pi_family = e ? PyInt_AsLong(e) : 0;
-			e = PyDict_GetItemString(addr, "port");
-			a->pi_port = e ? PyInt_AsLong(e) : 0;
 			
 		}
-		i = pi_bind(socket,a,len);
+		i = pi_bind(socket,(struct sockaddr*)a,len);
 		free(a);
 	} else {
 		PyErr_SetString(Error, "second argument not string or dict");
@@ -374,7 +372,7 @@ OpenPort(self, args)
 	Py_DECREF(a);
 	if (!b)
 		return NULL;
-	a = Py_BuildValue("(O{sisiss})", b, "port", 3, "family", PI_AF_SLP, "device", port);
+	a = Py_BuildValue("(O{siss})", b, "family", PI_AF_SLP, "device", port);
 	c = Bind(self, a);
 	Py_DECREF(a);
 	if (!c)

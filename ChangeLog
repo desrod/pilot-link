@@ -1,3 +1,31 @@
+Jun 14, 1997	Kenneth Albanowski 0.7.0
+
+	Substantial modification to socket implementation. The serial and socket
+		layers now have significantly more separation and modularity, with
+		the goal of allowing clean serial implementations, across both
+		architectures (os2, amiga, unix, etc.) and interfaces (direct
+		serial, networked serial redirector, etc.). A higher layer will
+		allow for connections that do not use the serial interface and
+		protocols at all, though this is not utilized in this version.
+	All pi_ functions that deal with addresses now use sockaddr struct *
+		params instead of pi_sockaddr. Any C programs using pilot-link
+		directly will need to be modified. The parameter is still a
+		pi_sockaddr, but it must be cast to (struct sockaddr*), as with the
+		genuine socket functions.
+	The pi_port element has been removed from the pi_sockaddr structure. Any
+		C code constructing these structures will have to be modified.
+	All included programs and language bindings have been modified as
+		described above.
+	SLP, PADP, and syspackets recoded slightly to better deal with xid
+		generation.
+	The OS/2 and UNIX serial code was stripped out of serial.c, and placed
+		into os2serial.c and unixserial.c. If you wish to port the serial
+		layer, please do so in a new file (amigaserial.c, etc.)
+	Added '-2' switch to getrom, which should retrieve the entire ROM if
+		a PalmPilot and getrom2.prc are used.
+	Getrom2.prc included from the latest version of CoPilot (I hope Greg
+		doesn't mind.)
+
 Jun 8, 1997 	Kenneth Albanowski 0.6.6
 
 	Added highly experimental networked connections. The concept is to run

@@ -1392,12 +1392,11 @@ Bind(socket, sockaddr)
 			a = calloc(1,sizeof(struct pi_sockaddr)+strlen(name));
 			strcpy(a->pi_device, name);
 	    	a->pi_family = (s = hv_fetch(h, "family", 6, 0)) ? SvIV(*s) : 0;
-	    	a->pi_port = (s = hv_fetch(h, "port", 4, 0)) ? SvIV(*s) : 0;
-			RETVAL = pi_bind(socket, a, sizeof(struct pi_sockaddr)+strlen(name));
+			RETVAL = pi_bind(socket, (struct sockaddr*)a, sizeof(struct pi_sockaddr)+strlen(name));
 		} else {
 			int len;
 			void * c = SvPV(sockaddr, len);
-			RETVAL = pi_bind(socket, (struct pi_sockaddr*)c, len);
+			RETVAL = pi_bind(socket, (struct sockaddr*)c, len);
 		}
 	}
 	OUTPUT:
@@ -1412,9 +1411,8 @@ OpenPort(port)
 		int socket = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP);
 		
 		strcpy(a.pi_device, port);
-		a.pi_port = PI_PilotSocketDLP;
 		a.pi_family = PI_AF_SLP;
-		pi_bind(socket, &a, sizeof(a));
+		pi_bind(socket, (struct sockaddr*)&a, sizeof(a));
 		
 		pi_listen(socket, 1);
 		
@@ -1431,7 +1429,7 @@ Accept(socket)
 		struct pi_sockaddr a;
 		int len = sizeof(struct pi_sockaddr);
 		int result;
-		result = pi_accept(socket, &a, &len);
+		result = pi_accept(socket, (struct sockaddr*)&a, &len);
 		if (result < 0) {
 			RETVAL = newSViv(result);
 		} else {

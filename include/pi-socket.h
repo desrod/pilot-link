@@ -8,10 +8,11 @@ extern "C" {
 #endif
 
 #define PILOT_LINK_VERSION 0
-#define PILOT_LINK_MAJOR 6
-#define PILOT_LINK_MINOR 5
+#define PILOT_LINK_MAJOR 7
+#define PILOT_LINK_MINOR 0
 
 #define PI_AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
+#define PI_AF_INETSLP 0x0004    
 
 #define PI_PF_SLP    PI_AF_SLP
 #define PI_PF_PADP   0x0002
@@ -29,7 +30,6 @@ extern "C" {
 
 struct pi_sockaddr {
   unsigned short pi_family;
-  unsigned short pi_port;
   char pi_device[12];
 };
 
@@ -40,10 +40,10 @@ struct pi_mac;
 struct pi_socket;
 
 extern int pi_socket PI_ARGS((int domain, int type, int protocol));
-extern int pi_connect PI_ARGS((int pi_sd, struct pi_sockaddr *remote_addr, int addrlen));
-extern int pi_bind PI_ARGS((int pi_sd, struct pi_sockaddr *my_addr, int addrlen));
+extern int pi_connect PI_ARGS((int pi_sd, struct sockaddr *remote_addr, int addrlen));
+extern int pi_bind PI_ARGS((int pi_sd, struct sockaddr *my_addr, int addrlen));
 extern int pi_listen PI_ARGS((int pi_sd, int backlog));
-extern int pi_accept PI_ARGS((int pi_sd, struct pi_sockaddr *remote_addr, int *addrlen));
+extern int pi_accept PI_ARGS((int pi_sd, struct sockaddr *remote_addr, int *addrlen));
 
 extern int pi_send PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
 extern int pi_recv PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
@@ -51,8 +51,8 @@ extern int pi_recv PI_ARGS((int pi_sd, void *msg, int len, unsigned int flags));
 extern int pi_read PI_ARGS((int pi_sd, void *msg, int len));
 extern int pi_write PI_ARGS((int pi_sd, void *msg, int len));
 
-extern int pi_getsockname PI_ARGS((int pi_sd, struct pi_sockaddr * addr, int * namelen));
-extern int pi_getsockpeer PI_ARGS((int pi_sd, struct pi_sockaddr * addr, int * namelen));
+extern int pi_getsockname PI_ARGS((int pi_sd, struct sockaddr * addr, int * namelen));
+extern int pi_getsockpeer PI_ARGS((int pi_sd, struct sockaddr * addr, int * namelen));
 
 extern unsigned int pi_version PI_ARGS((int pi_sd));
 

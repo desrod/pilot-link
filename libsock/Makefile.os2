@@ -1,4 +1,4 @@
-SOCKOBJS = socket.o serial.o net.o slp.o padp.o \
+SOCKOBJS = socket.o serial.o inetserial.o slp.o padp.o \
        dlp.o cmp.o syspkt.o
 
 FILEOBJS = pi-file.o
@@ -7,7 +7,9 @@ APPOBJS = datebook.o memo.o address.o todo.o expense.o mail.o sync.o
 
 UTILOBJS = utils.o
 
-OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS)
+SERIAL = os2serial.o
+
+OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS) $(SERIAL)
 
 srcdir = ../
 VPATH = ../
@@ -52,15 +54,21 @@ dlp.o: dlp.c ../include/pi-source.h   \
 expense.o: expense.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-expense.h
+inetserial.o: inetserial.c ../include/pi-source.h \
+   ../include/pi-socket.h ../include/pi-args.h \
+ ../include/pi-macros.h ../include/pi-serial.h \
+ ../include/pi-inetserial.h ../include/pi-slp.h ../include/pi-syspkt.h \
+ ../include/pi-padp.h
 mail.o: mail.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-mail.h
 memo.o: memo.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-memo.h
-net.o: net.c ../include/pi-source.h   \
+os2serial.o: os2serial.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-net.h ../include/pi-slp.h
+ ../include/pi-serial.h ../include/pi-slp.h ../include/pi-syspkt.h \
+ ../include/pi-padp.h
 padp.o: padp.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-padp.h ../include/pi-slp.h ../include/pi-serial.h
@@ -69,14 +77,17 @@ pi-file.o: pi-file.c ../include/pi-source.h   \
  ../include/pi-file.h ../include/pi-dlp.h
 serial.o: serial.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-serial.h ../include/pi-slp.h
+ ../include/pi-serial.h ../include/pi-inetserial.h \
+ ../include/pi-padp.h ../include/pi-cmp.h ../include/pi-dlp.h \
+ ../include/pi-syspkt.h
 slp.o: slp.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-slp.h
 socket.o: socket.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
- ../include/pi-serial.h ../include/pi-net.h ../include/pi-padp.h \
- ../include/pi-cmp.h ../include/pi-dlp.h ../include/pi-syspkt.h
+ ../include/pi-serial.h ../include/pi-inetserial.h \
+ ../include/pi-inet.h ../include/pi-padp.h ../include/pi-cmp.h \
+ ../include/pi-dlp.h ../include/pi-syspkt.h
 sync.o: sync.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-sync.h
@@ -86,5 +97,9 @@ syspkt.o: syspkt.c ../include/pi-source.h   \
 todo.o: todo.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h \
  ../include/pi-dlp.h ../include/pi-todo.h
+os2serial.o: os2serial.c ../include/pi-source.h \
+   ../include/pi-socket.h ../include/pi-args.h \
+ ../include/pi-macros.h ../include/pi-serial.h ../include/pi-slp.h \
+ ../include/pi-syspkt.h ../include/pi-padp.h
 utils.o: utils.c ../include/pi-source.h   \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-macros.h

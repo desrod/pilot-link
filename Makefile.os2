@@ -72,7 +72,7 @@ EXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) $(PDEXE) pilot-schl
 		sync-memodir$(EXT) sync-ical$(EXT) $(CCEXECS) \
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
-		getrom$(EXT) pi-port$(EXT)\
+		getrom$(EXT) pi-port$(EXT) \
 		test-connector$(EXT) test-acceptor$(EXT)
 
 PERLEXECS = pilot-undelete
@@ -242,6 +242,6 @@ distclean: clean
 clean:
 	$(RM) *.o *.a core a.out test_s test_c install-prc$(EXT) pilot-debug$(EXT)
 	$(RM) $(EXECS) validate
-	$(RM) pilot.rom
+	$(RM) pilot.rom pilot2.rom
 	$(SUBMAKE_COMM) clean
 	$(SUBMAKE_COMM_CC) clean

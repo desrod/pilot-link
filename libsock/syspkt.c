@@ -18,39 +18,47 @@
 
 int sys_RPCerror;
 
-int syspkt_tx(struct pi_socket *ps, unsigned char *msg, int length)
+int syspkt_tx(struct pi_socket *ps, void *m, int length)
 {
   struct pi_skb *nskb;
+  unsigned char * msg = m;
 
 #ifdef DEBUG
   fprintf(stderr,"-----------------\n");
 #endif
 
-  ps->laddr.pi_port = msg[0];
+  /*ps->laddr.pi_port = msg[0];
   ps->raddr.pi_port = msg[1];
-  ps->protocol = msg[2];
+  ps->protocol = msg[2]; XXX */
   /*ps->xid = msg[3];*/
   
+  if ((!ps->xid) || (ps->xid==0xff)) ps->xid = 0x11; /* some random # */
   ps->xid++;
   ps->xid &= 0xff;
   if ((!ps->xid) || (ps->xid==0xff)) ps->xid = 0x11; /* some random # */
                  
   nskb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
+  nskb->source = msg[0];
+  nskb->dest = msg[1];
+  nskb->type = msg[2];
+  nskb->id = ps->xid;
+  
   memcpy(&nskb->data[10], msg+4, length-4);
   slp_tx(ps, nskb, length-4);
   
-  pi_socket_flush(ps);
+  pi_serial_flush(ps);
 
   return 0;
 }
 
-int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
+int syspkt_rx(struct pi_socket *ps, void *b, int len)
 {
   struct pi_skb *skb;
+  unsigned char * buf = b;
   int rlen =0;
   
   if (!ps->rxq)
-    ps->device_read(ps, 1);
+    ps->serial_read(ps, 1);
   
   if (!ps->rxq)
     return 0;
@@ -60,10 +68,10 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
   
   rlen = skb->len-12;
   
-  buf[0] = ps->laddr.pi_port;
-  buf[1] = ps->raddr.pi_port;
-  buf[2] = ps->protocol;
-  buf[3] = ps->xid;
+  buf[0] = skb->source;
+  buf[1] = skb->dest;
+  buf[2] = skb->type;
+  buf[3] = skb->id;
  
   memcpy(buf+4, &skb->data[10], rlen);
   

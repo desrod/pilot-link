@@ -36,6 +36,7 @@ while(<>) {
       s/$k/$defs{$k}/g;
     }
 	s#../include/pi-config.h# #g;
+	s#unixserial#os2serial#g;
 	print;
 }
 

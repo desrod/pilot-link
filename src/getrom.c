@@ -18,7 +18,7 @@ char * progname;
 
 void Help(void)
 {
-  fprintf(stderr,"usage: %s %s\n",progname,TTYPrompt);
+  fprintf(stderr,"usage: %s [-2] %s\n",progname,TTYPrompt);
   exit(2);
 }
 
@@ -29,26 +29,38 @@ int main(int argc, char *argv[])
   int l,p;
   char buf[0xffff];
   int i;
+  struct pi_sockaddr addr;
   unsigned char check;
   struct pi_socket ps;
   extern char* optarg;
   extern int optind;
   int rom;
+  int version = 1;
+  int max;
 
   progname = argv[0];
 
   if (argc < 2)
     Help();
   
+  if (strcmp(argv[1], "-2")==0) {
+    version = 2;
+    argv++;
+    argc--;
+  }
+  
+  addr.pi_family = PI_AF_SLP;
+  strcpy(addr.pi_device, argv[1]);
+  
   ps.mac = calloc(1, sizeof(struct pi_mac));
   ps.rate = 38400;
   ps.sd = 0;
-  if (pi_serial_device_open(argv[1], &ps) == -1) {
+  if (pi_serial_open(&ps, &addr, sizeof(addr)) == -1) {
     perror("Unable to open port");
     exit(0);
   }
 
-  rom = open("pilot.rom",O_WRONLY|O_CREAT|O_TRUNC,0666);
+  rom = open((version == 2) ? "pilot2.rom" : "pilot.rom",O_WRONLY|O_CREAT|O_TRUNC,0666);
   if (rom == -1) {
     perror("Unable to create pilot.rom");
     exit(0);
@@ -60,16 +72,17 @@ NOTICE: Use of this program may place you in violation of your license\n\
         handbook (\"Software License Agreement\") before running this program.\
 \n\n");
                       
-  printf("Please start Getrom.prc on your Pilot.\n");
+  printf("Please start %s on your Pilot.\n", (version == 2) ? "Getrom2.prc" : "Getrom.prc");
   printf("Waiting for connection on %s...\n", argv[1]);
 
-  for(i=0;i < 128;i++) {
+  max = (version == 2) ? 256 : 128;
+  for(i=0;i < max;i++) {
         do {
           l = read(ps.mac->fd, buf, 1);
           if (l<1)
             continue;
   	} while (buf[0] != '*');
-  	printf("\r%d/128", i+1);
+  	printf("\r%d/%d", i+1, max);
         fflush(stdout);
   	
   	p = 0;
@@ -106,7 +119,7 @@ NOTICE: Use of this program may place you in violation of your license\n\
 error:
   close(rom);
           
-  ps.device_close(&ps);
+  ps.serial_close(&ps);
   
   exit(0);
 }

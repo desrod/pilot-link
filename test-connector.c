@@ -25,10 +25,9 @@ int main(int argc, char *argv[])
   }
     
   addr.pi_family = PI_AF_SLP;
-  addr.pi_port = 3;
   strcpy(addr.pi_device,"/dev/ttyp9");
   
-  ret = pi_connect(sd, &addr, sizeof(addr));
+  ret = pi_connect(sd, (struct sockaddr*)&addr, sizeof(addr));
   if(ret == -1) {
     perror("pi_connect");
     exit(1);
