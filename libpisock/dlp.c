@@ -2879,7 +2879,6 @@ dlp_DeleteRecord(int sd, int dbhandle, int all, recordid_t recID)
 	return result;
 }
 
-
 /***********************************************************************
  *
  * Function:    dlp_DeleteCategory
@@ -5355,7 +5354,7 @@ dlp_VFSVolumeEnumerate(int sd, int *numVols, int *volRefs)
 
 	if (result >= 0) {
 		int vols, i;
-		
+
 		vols = get_short (DLP_RESPONSE_DATA (res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -5373,6 +5372,8 @@ dlp_VFSVolumeEnumerate(int sd, int *numVols, int *volRefs)
 
 		*numVols = vols;
 	}
+	else
+		*numVols = 0;
 
 	dlp_response_free (res);
 
