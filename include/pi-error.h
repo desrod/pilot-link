@@ -23,12 +23,27 @@
 #ifndef _PILOT_ERROR_H_
 #define _PILOT_ERROR_H_
 
+/*
+ * Error code definitions
+ *
+ * Note that these error codes are tailored to not conflict
+ * with dlpErr* codes defined in dlp.h, and which can be
+ * checked using pi_palmos_error()
+ *
+ */
+
+/* PROTOCOL level errors */
+#define PI_ERR_PROT_ABORTED			-100		/* aborted by other end */
+#define PI_ERR_PROT_INCOMPATIBLE	-101		/* can't talk with other end */
+#define PI_ERR_PROT_BADPACKET		-102		/* bad packet (used with serial protocols) */
+
 /* SOCKET level errors */
 #define PI_ERR_SOCK_DISCONNECTED	-200		/* connection has been broken */
 #define PI_ERR_SOCK_INVALID			-201		/* invalid protocol stack */
 #define PI_ERR_SOCK_TIMEOUT			-202		/* communications timeout (but link not known as broken) */
 #define	PI_ERR_SOCK_CANCELED		-203		/* last data transfer was canceled */
 #define PI_ERR_SOCK_IO				-204		/* generic I/O error */
+#define PI_ERR_SOCK_LISTENER		-205		/* socket can't listen/accept */
 
 /* DLP level error */
 #define PI_ERR_DLP_BUFSIZE			-300		/* provided buffer is not big enough to store data */
@@ -36,14 +51,18 @@
 #define PI_ERR_DLP_UNSUPPORTED		-302		/* this DLP call is not supported by the connected handheld */
 #define PI_ERR_DLP_SOCKET			-303		/* invalid socket */
 #define	PI_ERR_DLP_DATASIZE			-304		/* requested transfer with data block too large (>64k) */
+#define PI_ERR_DLP_COMMAND			-305		/* command error (the device returned an invalid response) */
 
 /* FILE level error */
 #define PI_ERR_FILE_INVALID			-400		/* invalid prc/pdb/pqa file */
 
 /* GENERIC errors */
 #define PI_ERR_GENERIC_MEMORY		-500		/* not enough memory */
+#define PI_ERR_GENERIC_ARGUMENT		-501		/* invalid argument(s) */
+#define PI_ERR_GENERIC_SYSTEM		-502		/* generic system error */
 
 /* Macros */
+#define IS_PROT_ERR(error)			((error)<=-100 && (error)>-200)
 #define IS_SOCK_ERR(error)			((error)<=-200 && (error)>-300)
 #define IS_DLP_ERR(error)			((error)<=-300 && (error)>-400)
 #define IS_FILE_ERR(error)			((error)<=-400 && (error)>-500)
