@@ -1,9 +1,9 @@
 #ifndef _PILOT_EXPENSE_H_
 #define _PILOT_EXPENSE_H_
 
+#include <time.h>
 #include "pi-args.h"
 #include "pi-appinfo.h"
-#include "pi-tconfig.h"
 
 #ifdef __cplusplus
 extern "C" {
