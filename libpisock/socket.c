@@ -47,6 +47,7 @@
 #include "pi-serial.h"
 #include "pi-inet.h"
 #include "pi-slp.h"
+#include "pi-sys.h"
 #include "pi-padp.h"
 #include "pi-cmp.h"
 #include "pi-net.h"

@@ -1,5 +1,9 @@
 2002-03-19  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/socket.c: include pi-sys.h
+
+2002-03-19  JP Rosevear  <jpr@ximian.com>
+	
 	*include/Makefile.am: only install c++ headers if we built the c++
 	lib
 	

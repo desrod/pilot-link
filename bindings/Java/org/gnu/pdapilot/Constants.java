@@ -29,9 +29,9 @@ public class Constants {
    public static int PI_AF_PILOT = 0;
    public static int PI_PF_DEV = 1;
    public static int PI_PF_SLP = 2;
-   public static int PI_PF_PADP = 3;
-   public static int PI_PF_NET = 4;
-   public static int PI_PF_DLP = 5;
+   public static int PI_PF_PADP = 4;
+   public static int PI_PF_NET = 5;
+   public static int PI_PF_DLP = 6;
    public static int PI_SOCK_STREAM = 16;
    public static int PI_SOCK_RAW = 48;
    }
