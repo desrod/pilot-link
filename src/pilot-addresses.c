@@ -78,7 +78,6 @@ char *tableheads[21] = {
 int 	tableformat 	= 0,
 	tabledelim 	= -1,
 	augment 	= 0,
-	tablehead 	= 0,
 	defaultcategory = 0;
 
 
@@ -454,14 +453,12 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	/* Print out the header and fields with fields intact. Note we
 	   'ignore' the last field (Private flag) and print our own here, so
 	   we don't have to chop off the trailing comma at the end. Hacky. */
-	if (tablehead) {
-		fprintf(out, "# ");
-		for (j = 0; j < 19; j++) {
-			write_field(out, tableheads[j],
-				    tabledelim);
-		}
-		write_field(out, "Private", 0);
+	fprintf(out, "# ");
+	for (j = 0; j < 19; j++) {
+		write_field(out, tableheads[j],
+			    tabledelim);
 	}
+	write_field(out, "Private", term_newline);
 
 	printf("   Writing Palm Address Book entries to file... ");
 	fflush(stdout);
@@ -536,7 +533,6 @@ int main(int argc, const char *argv[])
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
 	        {"delete-all",	 0 , POPT_ARG_NONE, &run_mode,  mode_delete_all, "Delete all Palm records in all categories"},
-        	{"titles",	'T', POPT_ARG_NONE, &tablehead,           0, "Write header with titles"},
 	        {"delimiter",	't', POPT_ARG_INT,  &tabledelim,          0, "Include category, use delimiter (3=tab, 2=;, 1=,)"},
         	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,'d', "Delete old Palm records in <category>", "category"},
 	        {"category",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to", "category"},
