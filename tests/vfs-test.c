@@ -78,6 +78,7 @@ int main (int argc, char **argv)
 	unsigned long flags;
 
 	sd = pilot_connect (argv[1]);
+	if (sd < 0) return 1;
 
 	t1 = time (NULL);
 	LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "VFSTEST Starting at %s", ctime (&t1)));
