@@ -305,7 +305,7 @@ net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 		return bytes;
 	}
 
-	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1));
+	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1, ps->sd));
 	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, dumpdata((char *)msg, len));
 	
 	free(buf);
@@ -375,13 +375,14 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 			}
 			
 			LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
-				  "NET RX: Checking for headerless packet %d\n",
-				  header->data[0]));
+				  "NET RX (%i): Checking for headerless packet %d\n",
+				  ps->sd, header->data[0]));
 			
 			if (header->data[0] == 0x90) {
 				/* Cause the header bytes to be skipped */
 				LOG ((PI_DBG_NET, PI_DBG_LVL_INFO,
-					  "NET RX: Headerless packet\n"));
+					  "NET RX (%i): Headerless packet\n",
+					  ps->sd));
 				total_bytes = PI_NET_HEADER_LEN;
 				header->data[PI_NET_OFFSET_TYPE] = PI_NET_TYPE_DATA;
 				header->data[PI_NET_OFFSET_TXID] = 0x01;
@@ -410,13 +411,15 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 			case PI_NET_TYPE_TCKL:
 				if (packet_len != 0) {
 					LOG ((PI_DBG_NET, PI_DBG_LVL_ERR,
-						"NET RX: tickle packet with non-zero length\n"));
+						"NET RX (%i): tickle packet with non-zero length\n",
+						ps->sd));
 					pi_buffer_free(header);
 					return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
 				}
 				/* valid tickle packet; continue reading. */
 				LOG((PI_DBG_NET, PI_DBG_LVL_DEBUG,
-					"NET RX: received tickle packet\n"));
+					"NET RX (%i): received tickle packet\n",
+					ps->sd));
 				total_bytes = 0;
 				header->used = 0;
 				break;
@@ -427,7 +430,8 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 
 			default:
 				LOG ((PI_DBG_NET, PI_DBG_LVL_ERR,
-					"NET RX: Unknown packet type\n"));
+					"NET RX (%i): Unknown packet type\n",
+					ps->sd));
 				pi_buffer_free(header);
 				return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
 		}
@@ -447,7 +451,7 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 		total_bytes += bytes;
 	}
 
-	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(header->data, 0));
+	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(header->data, 0, ps->sd));
 	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(header->data, msg->data));
 
 	/* Update the transaction id */
@@ -554,11 +558,12 @@ net_setsockopt(pi_socket_t *ps, int level, int option_name,
  *
  ***********************************************************************/
 void
-net_dump_header(unsigned char *data, int rxtx)
+net_dump_header(unsigned char *data, int rxtx, int sd)
 {
 	LOG((PI_DBG_NET, PI_DBG_LVL_NONE,
-	    "NET %s type=%d txid=0x%.2x len=0x%.4x\n",
+	    "NET %s sd=%i type=%d txid=0x%.2x len=0x%.4x\n",
 	    rxtx ? "TX" : "RX",
+	    sd,
 	    get_byte(&data[PI_NET_OFFSET_TYPE]),
 	    get_byte(&data[PI_NET_OFFSET_TXID]),
 	    get_long(&data[PI_NET_OFFSET_SIZE])));

@@ -42,7 +42,7 @@ extern "C" {
 		 int flags));
 
 	extern void net_dump_header
-	    PI_ARGS((unsigned char *data, int rxtx));
+	    PI_ARGS((unsigned char *data, int rxtx, int sd));
 	extern void net_dump
 	    PI_ARGS((unsigned char *header, unsigned char *data));
 
