@@ -121,7 +121,7 @@ const char *media_name(int m)
 
 /***********************************************************************
  *
- * Function:    MakeExcludeList
+ * Function:    make_excludelist
  *
  * Summar:      Excludes a list of dbnames from the operation called
  *
@@ -130,7 +130,7 @@ const char *media_name(int m)
  * Return:      Nothing
  *
  ***********************************************************************/
-static void MakeExcludeList(const char *efile)
+static void make_excludelist(const char *efile)
 {
 	char 	temp[1024];
 
@@ -220,7 +220,7 @@ static void protect_name(char *d, const char *s)
 
 /***********************************************************************
  *
- * Function:    Connect
+ * Function:    palm_connect
  *
  * Summary:     Establish the connection with the device
  *
@@ -229,7 +229,7 @@ static void protect_name(char *d, const char *s)
  * Return:      Nothing
  *
  ***********************************************************************/
-static void Connect(void)
+static void palm_connect(void)
  {
 	if (sd != 0)
 		return;
@@ -243,7 +243,7 @@ static void Connect(void)
 
 /***********************************************************************
  *
- * Function:    RemoveFromList
+ * Function:    list_remove
  *
  * Summary:     Remove the excluded files from the op list
  *
@@ -252,7 +252,7 @@ static void Connect(void)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void RemoveFromList(char *name, char **list, int max)
+static void list_remove(char *name, char **list, int max)
 {
 	int i;
 
@@ -266,7 +266,7 @@ static void RemoveFromList(char *name, char **list, int max)
 
 /***********************************************************************
  *
- * Function:    creator_is_PalmOS
+ * Function:    palm_creator
  *
  * Summary:     Skip Palm files which match the internal Palm CreatorID
  *
@@ -275,7 +275,7 @@ static void RemoveFromList(char *name, char **list, int max)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int creator_is_PalmOS(unsigned long creator)
+static int palm_creator(unsigned long creator)
 {
 	union {
 		long    L;
@@ -311,7 +311,7 @@ static int creator_is_PalmOS(unsigned long creator)
 
 /***********************************************************************
  *
- * Function:    Backup
+ * Function:    palm_backup
  *
  * Summary:     Build a file list and back up the Palm to destination
  *
@@ -320,8 +320,8 @@ static int creator_is_PalmOS(unsigned long creator)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Backup(char *dirname, unsigned long int flags,
-	int unsaved, char *archive_dir)
+static void palm_backup(const char *dirname, unsigned long int flags,
+	int unsaved, const char *archive_dir)
 {
 
 	int	i		= 0,
@@ -429,7 +429,7 @@ static void Backup(char *dirname, unsigned long int flags,
 		strcat(name, "/");
 		protect_name(name + strlen(name), info.name);
 
-		if (creator_is_PalmOS(info.creator)) {
+		if (palm_creator(info.creator)) {
 			printf("   [-][skip][%s] Skipping OS file '%s'.\n",
 				crid, info.name);
 			continue;
@@ -446,7 +446,7 @@ static void Backup(char *dirname, unsigned long int flags,
 		for (excl = 0; excl < numexclude; excl++) {
 			if (strcmp(exclude[excl], info.name) == 0) {
 				printf("   [-][excl] Excluding '%s'...\n", name);
-				RemoveFromList(name, orig_files, ofile_total);
+				list_remove(name, orig_files, ofile_total);
 				skip = 1;
 			}
 		}
@@ -466,7 +466,7 @@ static void Backup(char *dirname, unsigned long int flags,
 			continue;
 		}
 
-		RemoveFromList(name, orig_files, ofile_total);
+	        list_remove(name, orig_files, ofile_total);
 		if (stat(name, &sbuf) && (flags & UPDATE) == 0) {
 			if (info.modifyDate == sbuf.st_mtime) {
 				printf("   [-][unch] Unchanged, skipping %s\n",
@@ -545,7 +545,7 @@ static void Backup(char *dirname, unsigned long int flags,
 	free(name);
 
 
-	printf("%s backup complete.", media_name(flags & MEDIA_MASK));
+	printf("\n   %s backup complete.", media_name(flags & MEDIA_MASK));
 
 	printf(" %d files backed up, %d skipped, %d file%s failed.\n",
 		(filecount ? filecount - 1 : 0), skipped, failed, (failed == 1) ? "" : "s");
@@ -558,7 +558,7 @@ static void Backup(char *dirname, unsigned long int flags,
 
 /***********************************************************************
  *
- * Function:    Fetch
+ * Function:    palm_fetch
  *
  * Summary:     Grab a file from the Palm, write to disk
  *
@@ -567,7 +567,7 @@ static void Backup(char *dirname, unsigned long int flags,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Fetch(const char *dbname)
+static void palm_fetch(const char *dbname)
 {
 	struct 	DBInfo info;
 	char 	name[256],
@@ -638,7 +638,7 @@ static void Fetch(const char *dbname)
 
 /***********************************************************************
  *
- * Function:    Delete
+ * Function:    palm_delete
  *
  * Summary:     Delete a database from the Palm
  *
@@ -647,11 +647,11 @@ static void Fetch(const char *dbname)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Delete(const char *dbname)
+static void palm_delete(const char *dbname)
 {
 	struct 	DBInfo info;
 
-	Connect();
+	palm_connect();
 
 	dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info);
 
@@ -694,7 +694,7 @@ static int compare(struct db *d1, struct db *d2)
 
 /***********************************************************************
  *
- * Function:    Restore
+ * Function:    palm_restore
  *
  * Summary:     Send files to the Palm from disk, restoring Palm
  *
@@ -703,7 +703,7 @@ static int compare(struct db *d1, struct db *d2)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Restore(char *dirname)
+static void palm_restore(const char *dirname)
 {
 	int 	dbcount 	= 0,
 		i,
@@ -849,7 +849,7 @@ static void Restore(char *dirname)
 
 /***********************************************************************
  *
- * Function:    InstallInternal
+ * Function:    palm_install_internal
  *
  * Summary:     Push file(s) to the Palm
  *
@@ -858,7 +858,7 @@ static void Restore(char *dirname)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void InstallInternal(const char *filename)
+static void palm_install_internal(const char *filename)
 {
 	static int totalsize;
 
@@ -916,7 +916,7 @@ static void InstallInternal(const char *filename)
 
 /***********************************************************************
  *
- * Function:    InstallInternal
+ * Function:    palm_install_VFS
  *
  * Summary:     Push file(s) to the Palm
  *
@@ -925,7 +925,7 @@ static void InstallInternal(const char *filename)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void InstallVFS(const char *localfile, const char *vfspath)
+static void palm_install_VFS(const char *localfile, const char *vfspath)
 {
 	static unsigned long totalsize = 0;
 	long volume = -1;
@@ -1103,17 +1103,17 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 	totalsize += sbuf.st_size; */
 }
 
-static void Install(unsigned long int flags,const char *localfile)
+static void palm_install(unsigned long int flags,const char *localfile)
 {
-	Connect();
+	palm_connect();
 	switch(flags & MEDIA_MASK) {
 	case MEDIA_RAM :
 	case MEDIA_ROM :
 	case MEDIA_FLASH :
-		InstallInternal(localfile);
+		palm_install_internal(localfile);
 		break;
 	case MEDIA_VFS :
-		InstallVFS(localfile,vfsdir);
+		palm_install_VFS(localfile,vfsdir);
 		break;
 	default :
 		fprintf(stderr,"   ERROR: Unknown media type %lx\n",(flags & MEDIA_MASK));
@@ -1123,7 +1123,7 @@ static void Install(unsigned long int flags,const char *localfile)
 
 /***********************************************************************
  *
- * Function:    Merge
+ * Function:    palm_merge
  *
  * Summary:     Adds the records in <file> into the corresponding
  *		Palm database
@@ -1133,11 +1133,11 @@ static void Install(unsigned long int flags,const char *localfile)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Merge(const char *filename)
+static void palm_merge(const char *filename)
 {
 	struct pi_file *f;
 
-	Connect();
+	palm_connect();
 
 	f = pi_file_open(filename);
 
@@ -1161,7 +1161,7 @@ static void Merge(const char *filename)
 
 /***********************************************************************
  *
- * Function:    ListInternal
+ * Function:    palm_list_internal
  *
  * Summary:     List the databases found on the Palm device's internal
  * 		memory.
@@ -1171,7 +1171,7 @@ static void Merge(const char *filename)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void ListInternal(unsigned long int flags)
+static void palm_list_internal(unsigned long int flags)
 {
 	int 	i		= 0,
 		j,
@@ -1207,7 +1207,7 @@ static void ListInternal(unsigned long int flags)
 
 /***********************************************************************
  *
- * Function:    PrintVolumeInfo
+ * Function:    print_volumeinfo
  *
  * Summary:     Show information about the given @p volume; the
  *              VFSInfo structure @p info should already have been
@@ -1221,7 +1221,7 @@ static void ListInternal(unsigned long int flags)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void PrintVolumeInfo(const char *buf, long volume, struct VFSInfo *info)
+static void print_volumeinfo(const char *buf, long volume, struct VFSInfo *info)
 {
 	long size_used, size_total;
 
@@ -1253,7 +1253,7 @@ static void PrintVolumeInfo(const char *buf, long volume, struct VFSInfo *info)
 
 /***********************************************************************
  *
- * Function:    PrintFileInfo
+ * Function:    print_fileinfo
  *
  * Summary:     Show information about the given @p file (which is
  *              assumed to have VFS path @p path).
@@ -1264,7 +1264,7 @@ static void PrintVolumeInfo(const char *buf, long volume, struct VFSInfo *info)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void PrintFileInfo(const char *path, FileRef file)
+static void print_fileinfo(const char *path, FileRef file)
 {
 	int size;
 	time_t date;
@@ -1280,7 +1280,7 @@ static void PrintFileInfo(const char *path, FileRef file)
 
 /***********************************************************************
  *
- * Function:    PrintDir
+ * Function:    print_dir
  *
  * Summary:     Show information about the given @p dir on VFS
  *              volume @p volume. The directory is assumed to have
@@ -1293,7 +1293,7 @@ static void PrintFileInfo(const char *path, FileRef file)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void PrintDir(long volume, const char *path, FileRef dir)
+static void print_dir(long volume, const char *path, FileRef dir)
 {
 	unsigned long it = 0;
 	int max = 64;
@@ -1331,7 +1331,7 @@ static void PrintDir(long volume, const char *path, FileRef dir)
 			if (dlp_VFSFileOpen(sd,volume,buf,dlpVFSOpenRead,&file) < 0) {
 				printf("   %s: No such file or directory.\n",infos[i].name);
 			} else {
-				PrintFileInfo(infos[i].name, file);
+				print_fileinfo(infos[i].name, file);
 				dlp_VFSFileClose(sd,file);
 			}
 		}
@@ -1341,7 +1341,7 @@ static void PrintDir(long volume, const char *path, FileRef dir)
 
 /***********************************************************************
  *
- * Function:    FindVFSRoot_clumsy
+ * Function:    findVFSRoot_clumsy
  *
  * Summary:     For internal use only. May contain live weasels.
  *
@@ -1396,7 +1396,7 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root, long *m
 				break;
 			}
 		}
-		else PrintVolumeInfo(buf,volumes[i],&info);
+		else print_volumeinfo(buf,volumes[i],&info);
 	}
 
 	if (matched_volume >= 0) {
@@ -1414,7 +1414,7 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root, long *m
 
 /***********************************************************************
  *
- * Function:    FindVFSPath
+ * Function:    findVFSPath
  *
  * Summary:     Twofold: if @p verbose is non-zero, list the "fake root"
  *              directory containing all the VFS volumes. Otherwise
@@ -1483,10 +1483,10 @@ static int findVFSPath(int verbose, const char *path, long *volume,
 
 /***********************************************************************
  *
- * Function:    ListVFSDir
+ * Function:    palm_list_VFSDir
  *
  * Summary:     Dispatch listing for given @p path to either
- *              PrintDir or PrintFileInfo, depending on type.
+ *              print_dir or print_fileinfo, depending on type.
  *
  * Parameters:  volume      --> volume ref number.
  *              path        --> path to file or directory.
@@ -1494,7 +1494,7 @@ static int findVFSPath(int verbose, const char *path, long *volume,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void ListVFSDir(long volume, const char *path)
+static void palm_list_VFSDir(long volume, const char *path)
 {
 	FileRef file;
 	unsigned long attributes;
@@ -1511,10 +1511,10 @@ static void ListVFSDir(long volume, const char *path)
 
 	if (vfsFileAttrDirectory == (attributes & vfsFileAttrDirectory)) {
 		/* directory */
-		PrintDir(volume,path,file);
+		print_dir(volume,path,file);
 	} else {
 		/* file */
-		PrintFileInfo(path,file);
+		print_fileinfo(path,file);
 	}
 
 	(void) dlp_VFSFileClose(sd,file);
@@ -1522,7 +1522,7 @@ static void ListVFSDir(long volume, const char *path)
 
 /***********************************************************************
  *
- * Function:    ListVFS
+ * Function:    palm_list_VFS
  *
  * Summary:     Show information about the directory or file specified
  *              in global vfsdir. Listing / will always tell you the
@@ -1536,7 +1536,7 @@ static void ListVFSDir(long volume, const char *path)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void ListVFS()
+static void palm_list_VFS()
 {
 	char root_component[vfsMAXFILENAME];
 	int rootlen = vfsMAXFILENAME;
@@ -1568,12 +1568,12 @@ static void ListVFS()
 	}
 
 	/* printf("   Reading card dir %s on volume %ld\n",root_component,matched_volume); */
-	ListVFSDir(matched_volume,root_component);
+	palm_list_VFSDir(matched_volume,root_component);
 }
 
 /***********************************************************************
  *
- * Function:    List
+ * Function:    palm_list
  *
  * Summary:     List the databases found on the Palm device.
  *              Dispatches to previous List*() functions.
@@ -1583,17 +1583,17 @@ static void ListVFS()
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void List(unsigned long int flags)
+static void palm_list(unsigned long int flags)
 {
-	Connect();
+	palm_connect();
 	switch(flags & MEDIA_MASK) {
 	case MEDIA_RAM :
 	case MEDIA_ROM :
 	case MEDIA_FLASH :
-		ListInternal(flags);
+		palm_list_internal(flags);
 		break;
 	case MEDIA_VFS :
-		ListVFS();
+		palm_list_VFS();
 		break;
 	default :
 		fprintf(stderr,"   ERROR: Unknown media type %lx.\n",flags & MEDIA_MASK);
@@ -1604,7 +1604,7 @@ static void List(unsigned long int flags)
 
 /***********************************************************************
  *
- * Function:    Purge
+ * Function:    palm_purge
  *
  * Summary:     Purge any deleted data that hasn't been cleaned up
  *              by a sync
@@ -1614,14 +1614,14 @@ static void List(unsigned long int flags)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Purge(void)
+static void palm_purge(void)
 {
 	int 	i	= 0,
 		h;
 	struct 	DBInfo info;
 	pi_buffer_t *buffer;
 
-	Connect();
+	palm_connect();
 
 	printf("Reading list of databases to purge...\n");
 
@@ -1671,19 +1671,19 @@ static void set_operation(int opt, palm_op_t *op, unsigned long int *flags)
 	switch(opt) {
 	case 'b' :
 		*op = palm_op_backup;
-		*flags |= BACKUP;
+		*flags = BACKUP;
 		break;
 	case 'u' :
 		*op = palm_op_backup;
-		*flags |= UPDATE;
+		*flags = UPDATE;
 		break;
 	case 's' :
 		*op = palm_op_backup;
-		*flags |= UPDATE | SYNC;
+		*flags = UPDATE | SYNC;
 		break;
 	case 'r' :
 		*op = palm_op_restore;
-		*flags |= BACKUP;
+		*flags = BACKUP;
 		break;
 	case 'i' :
 		*op = palm_op_install;
@@ -1715,15 +1715,13 @@ static void set_operation(int opt, palm_op_t *op, unsigned long int *flags)
 
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	int 	optc,		/* switch */
 		unsaved 	= 0,
                 verbose         = 0;
 
-	char 	*archive_dir 	= NULL,
-		*dirname	= NULL,
-		*progname 	= argv[0];
+	const char *archive_dir = NULL, *dirname = NULL, *progname = argv[0];
 
 	unsigned long int sync_flags = palm_op_backup;
 	palm_op_t palm_operation     = palm_op_noop;
@@ -1735,73 +1733,39 @@ int main(int argc, char *argv[])
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-			"Use device file <port> to communicate with Palm", "port"},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-			"Show program version information", NULL},
-		{"verbose", 'V', POPT_ARG_NONE, &verbose, 0,
-			"Print  verbose  information - normally routine "
-			"progress messages will be displayed.", NULL},
+		{"port",     'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
+		{"version",  'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+		{"verbose",  'V', POPT_ARG_NONE, &verbose, 0, "Print  verbose  information - normally routine progress messages will be displayed.", NULL},
 
 		/* action indicators that take a <dir> argument */
+		{"backup",   'b', POPT_ARG_STRING, &dirname, 'b', "Back up your Palm to <dir>", "dir"},
+		{"update",   'u', POPT_ARG_STRING, &dirname, 'u', "Update <dir> with newer Palm data", "dir"},
+		{"sync",     's', POPT_ARG_STRING, &dirname, 's', "Same as -u option, but removes local files if data is removed from your Palm", "dir"},
+		{"restore",  'r', POPT_ARG_STRING, &dirname, 'r', "Restore backupdir <dir> to your Palm", "dir"},
 
-		{"backup", 'b', POPT_ARG_STRING, &dirname, 'b',
-			"Back up your Palm to <dir>", "dir"},
-		{"update", 'u', POPT_ARG_STRING, &dirname, 'u',
-			"Update <dir> with newer Palm data", "dir"},
-		{"sync", 's', POPT_ARG_STRING, &dirname, 's',
-			"Same as -u option, but removes local files if "
-			"data is removed from your Palm", "dir"},
-		{"restore", 'r', POPT_ARG_STRING, &dirname, 'r',
-			"Restore backupdir <dir> to your Palm", "dir"},
-
-		/* action indicators that take no argument, but eat the
-			remaining command-line arguments. */
-
-		{"install", 'i', POPT_ARG_NONE, NULL, 'i',
-			"Install local prc, pdb, pqa files to your Palm", "file"},
-		{"fetch", 'f', POPT_ARG_NONE, NULL, 'f',
-			"Retrieve [db] from your Palm", "db"},
-		{"merge", 'm', POPT_ARG_NONE, NULL, 'm',
-			"Adds the records in <file> into the corresponding Palm database", "file"},
-		{"delete", 'd', POPT_ARG_NONE, NULL, 'd',
-			"Delete (permanently) [db] from your Palm", "db"},
+		/* action indicators that take no argument, but eat the remaining command-line arguments. */
+		{"install",  'i', POPT_ARG_NONE, NULL, 'i', "Install local prc, pdb, pqa files to your Palm", "file"},
+		{"fetch",    'f', POPT_ARG_NONE, NULL, 'f', "Retrieve [db] from your Palm", "db"},
+		{"merge",    'm', POPT_ARG_NONE, NULL, 'm', "Adds the records in <file> into the corresponding Palm database", "file"},
+		{"delete",   'd', POPT_ARG_NONE, NULL, 'd', "Delete (permanently) [db] from your Palm", "db"},
 
 		/* action indicators that take no arguments. */
-
-		{"list", 'l', POPT_ARG_NONE, NULL, 'l',
-			"List all application and 3rd party Palm data/apps", NULL},
-		{"Listall", 'L', POPT_ARG_NONE, NULL, 'L',
-			"List all data, internal and external on the Palm", NULL},
+		{"list",     'l', POPT_ARG_NONE, NULL, 'l', "List all application and 3rd party Palm data/apps", NULL},
+		{"Listall",  'L', POPT_ARG_NONE, NULL, 'L', "List all data, internal and external on the Palm", NULL},
 
 		/* action indicators that may be mixed in with the others */
-
-		{"Purge", 'P', POPT_ARG_NONE, NULL, 'P',
-			"Purge any deleted data that hasn't been cleaned up", NULL},
+		{"Purge",    'P', POPT_ARG_NONE, NULL, 'P', "Purge any deleted data that hasn't been cleaned up", NULL},
 
 		/* modifiers for the various actions */
-
-		{"archive", 'a', POPT_ARG_STRING, &archive_dir, 0,
-			"Modifies -s to archive deleted files in directory <dir>", "dir"},
-		{"exclude", 'e', POPT_ARG_STRING, NULL, 'e',
-			"Exclude databases listed in <file> from being included",
-			"file"},
-		{"vfsdir", 'D', POPT_ARG_STRING, &vfsdir, 'D',
-			"Modifies all of -lLi to use VFS <dir> instead of internal storage", "dir"},
-		{"Flash", 'F', POPT_ARG_NONE, NULL, 'F',
-			"Modifies -b, -u, and -s, to back up non-OS db's"
-			" from Flash ROM", NULL},
-		{"OsFlash", 'O', POPT_ARG_NONE, NULL, 'O',
-			"Modifies -b, -u, and -s, to back up OS db's"
-			" from Flash ROM", NULL},
-		{"Illegal", 'I', POPT_ARG_NONE, &unsaved, 0,
-			"Modifies -b, -u, and -s, to back up the 'illegal"
-		" database Unsaved Preferences.prc (normally skipped)", NULL},
+		{"archive",  'a', POPT_ARG_STRING, &archive_dir, 0, "Modifies -s to archive deleted files in directory <dir>", "dir"},
+		{"exclude",  'e', POPT_ARG_STRING, NULL, 'e', "Exclude databases listed in <file> from being included", "file"},
+		{"vfsdir",   'D', POPT_ARG_STRING, &vfsdir, 'D', "Modifies all of -lLi to use VFS <dir> instead of internal storage", "dir"},
+		{"Flash",    'F', POPT_ARG_NONE, NULL, 'F', "Modifies -b, -u, and -s, to back up non-OS dbs from Flash ROM", NULL}, 
+		{"OsFlash",  'O', POPT_ARG_NONE, NULL, 'O', "Modifies -b, -u, and -s, to back up OS dbs from Flash ROM", NULL},
+		{"Illegal",  'I', POPT_ARG_NONE, &unsaved, 0, "Modifies -b, -u, and -s, to back up the illegal database Unsaved Preferences.prc (normally skipped)", NULL},
 
 		/* misc */
-
-		{"exec", 'x', POPT_ARG_STRING, NULL, 'x',
-			"Execute a shell command for intermediate processing", "command"},
+		{"exec", 'x', POPT_ARG_STRING, NULL, 'x', "Execute a shell command for intermediate processing", "command"},
 		POPT_AUTOHELP
 		POPT_TABLEEND
 	};
@@ -1819,6 +1783,7 @@ int main(int argc, char *argv[])
 	};
 
 	pc = poptGetContext("pilot-xfer", argc, argv, options, 0);
+
 	poptSetOtherOptionHelp(pc, help_header_text);
 	poptAddAlias(pc, listall_alias, 0);
 
@@ -1883,7 +1848,7 @@ int main(int argc, char *argv[])
 		/* Misc */
 
 		case 'e':
-			MakeExcludeList(poptGetOptArg(pc));
+			make_excludelist(poptGetOptArg(pc));
 			break;
 		case 'x':
 			if (system(poptGetOptArg(pc))) {
@@ -1962,16 +1927,16 @@ int main(int argc, char *argv[])
 	}
 
 	/* actual operation */
-	Connect();
+	palm_connect();
 	switch(palm_operation) {
 	case palm_op_noop: /* handled above */
 		exit(1);
 		break;
 	case palm_op_backup:
-		Backup(dirname, sync_flags, unsaved, archive_dir);
+		palm_backup(dirname, sync_flags, unsaved, archive_dir);
 		break;
 	case palm_op_restore:
-		Restore(dirname);
+		palm_restore(dirname);
 		break;
 	case palm_op_merge:
 	case palm_op_install:
@@ -1979,21 +1944,21 @@ int main(int argc, char *argv[])
 	case palm_op_delete:
 		while (rargv && *rargv) {
 			switch(palm_operation) {
-			case palm_op_merge: Merge(*rargv); break;
-			case palm_op_fetch: Fetch(*rargv); break;
-			case palm_op_delete: Delete(*rargv); break;
-			case palm_op_install: Install(sync_flags,*rargv); break;
+			case palm_op_merge: palm_merge(*rargv); break;
+			case palm_op_fetch: palm_fetch(*rargv); break;
+			case palm_op_delete: palm_delete(*rargv); break;
+			case palm_op_install: palm_install(sync_flags,*rargv); break;
 			default: /* impossible */ break;
 			}
 			rargv++;
 		}
 		break;
 	case palm_op_list:
-		List(sync_flags);
+		palm_list(sync_flags);
 		break;
 	}
 
-	if (sync_flags & PURGE) Purge();
+	if (sync_flags & PURGE) palm_purge();
 
 	pi_close(sd);
 	puts(gracias);
