@@ -30,9 +30,15 @@ void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
   a->due.tm_min = 0;
   a->due.tm_sec = 0;
   d = (unsigned short int)get_short(buffer);
-  a->due.tm_year = (d >> 9) + 4;
-  a->due.tm_mon = ((d >> 5) & 15) - 1;
-  a->due.tm_mday = d & 31;
+  if (d != 0xffff) {
+    a->due.tm_year = (d >> 9) + 4;
+    a->due.tm_mon = ((d >> 5) & 15) - 1;
+    a->due.tm_mday = d & 31;
+    mktime(&a->due);
+    a->indefinite = 0;
+  } else {
+    a->indefinite = 1;
+  }
 
   a->priority = get_byte(buffer+2);
   if(a->priority & 0x80) {
@@ -46,3 +52,37 @@ void unpack_ToDo(struct ToDo * a, unsigned char * buffer, int len) {
 
 void pack_ToDo(struct ToDo *, unsigned char * record, int * len);
                   
+void unpack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int len) {
+  int i;
+  ai->renamedcategories = get_short(record);
+  record+=2;
+  for(i=0;i<16;i++) {
+    memcpy(ai->CategoryName[i], record, 16);
+    record += 16;
+  }
+  memcpy(ai->CategoryID, record, 16);
+  record += 16;
+  ai->lastUniqueID = get_byte(record);
+  record += 4;
+  ai->dirty = get_short(record);
+  ai->sortByPriority = get_byte(record);
+}
+
+void pack_ToDoAppInfo(struct ToDoAppInfo * ai, unsigned char * record, int * len) {
+  int i;
+  set_short(record, ai->renamedcategories);
+  record += 2;
+  for(i=0;i<16;i++) {
+    memcpy(record, ai->CategoryName[i], 16);
+    record += 16;
+  }
+  memcpy(record, ai->CategoryID, 16);
+  record += 16;
+  set_byte(record, ai->lastUniqueID);
+  record ++;
+  set_byte(record, 0); /* gapfil */
+  set_short(record+1, 0); /* gapfil */
+  set_short(record+3, ai->dirty);
+  set_byte(record+5, ai->sortByPriority);
+  set_byte(record+6, 0); /* gapfil */
+}

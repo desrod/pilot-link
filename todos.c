@@ -1,4 +1,4 @@
-/* memos.c:  Translate Pilot Memos into e-mail format
+/* todos.c:  Translate Pilot ToDo database into generic format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
@@ -10,9 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "pi-socket.h"
-#include "memo.h"
+#include "todo.h"
 #include "dlp.h"
 
+                  
 main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
@@ -28,8 +29,7 @@ main(int argc, char *argv[])
   struct PilotUser U;
   int ret;
   char buffer[0xffff];
-  char appblock[0xffff];
-  struct MemoAppInfo mai;
+  struct ToDoAppInfo tai;
 
   if (argc < 2) {
 #ifdef linux  
@@ -72,21 +72,19 @@ main(int argc, char *argv[])
   /* Tell user (via Pilot) that we are starting things up */
   dlp_OpenConduit(sd);
   
-  /* Open the Datebook's database, store access handle in db */
-  if(dlp_OpenDB(sd, 0, 0x80|0x40, "MemoDB", &db) < 0) {
-    puts("Unable to open MemoDB");
-    dlp_AddSyncLogEntry(sd, "Unable to open MemoDB.\n");
+  /* Open the ToDo database, store access handle in db */
+  if(dlp_OpenDB(sd, 0, 0x80|0x40, "ToDoDB", &db) < 0) {
+    puts("Unable to open ToDoDB");
+    dlp_AddSyncLogEntry(sd, "Unable to open ToDoDB.\n");
     exit(1);
   }
   
-  dlp_ReadAppBlock(sd, db, 0, appblock, 0xffff);
-  unpack_MemoAppInfo(&mai, appblock, 0);
-
+  dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+  unpack_ToDoAppInfo(&tai, buffer, 0);
+  
   for (i=0;1;i++) {
-  	struct Memo m;
-  	int attr;
-  	int category;
-  	char subject[80];
+  	struct ToDo t;
+  	int attr, category;
   	int j;
   	                           
   	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr, &category);
@@ -97,28 +95,28 @@ main(int argc, char *argv[])
   	if((attr & dlpRecAttrDeleted) || (attr & dlpRecAttrArchived))
   		continue;
   		
-	unpack_Memo(&m, buffer, len);
+	unpack_ToDo(&t, buffer, len);
 	
-	printf("From your.pilot Tue Oct  1 07:56:25 1996\nReceived: Pilot@p by memo Tue Oct  1 07:56:25 1996\nTo: you@y\nDate: Thu, 31 Oct 1996 23:34:38 -0500\n");
-	printf("Subject: ");
-	printf("[%s] ", mai.CategoryName[category]);
-	for(j=0;j<40;j++) {
-		if((!m.text[j]) || (m.text[j] == '\n'))
-			break;
-		printf("%c",m.text[j]);
-	}
-	if(j==40)
-		printf("...\n");
+	printf("Category: %s\n", tai.CategoryName[category]);
+	printf("Priority: %d\n", t.priority);
+	printf("Completed: %s\n", t.complete ? "Yes" : "No");
+	if(t.indefinite)
+	  puts("Due: No Date");
 	else
-		printf("\n");
-	puts("");
-	puts(m.text);
+	  printf("Due: %s", asctime(&t.due));
+	if(t.description)
+	  printf("Description: %s\n", t.description);
+	if(t.note)
+	  printf("Note: %s\n", t.note );
+	printf("\n");
+
+	free_ToDo(&t);
   }
 
   /* Close the database */
   dlp_CloseDB(sd, db);
 
-  dlp_AddSyncLogEntry(sd, "Read memos from Pilot.\n");
+  dlp_AddSyncLogEntry(sd, "Read todos from Pilot.\n");
 
   pi_close(sd);  
 }

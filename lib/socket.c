@@ -45,9 +45,15 @@ int pi_socket(int domain, int type, int protocol)
   ps->protocol = protocol;
   ps->connected = 0;
   ps->mac.fd = 0;
+  ps->xid = 0;
+  ps->initiator = 0;
   
-  if(type == SOCK_STREAM)
+  if(type == SOCK_STREAM) 
+#ifdef __sgi
+    ps->rate = 9600; /* Default PADP connection rate */
+#else
     ps->rate = 19200; /* Default PADP connection rate */
+#endif
   else if(type == SOCK_RAW)
     ps->rate = 57600; /* Mandatory SysPkt connection rate */
     
@@ -86,12 +92,11 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
    
   if(ps->type == SOCK_STREAM) {
 
-    cmp_wakeup(ps, 38400); /* Assume this box can't go over 38400 */
+    if(cmp_wakeup(ps, 38400)<0) /* Assume this box can't go over 38400 */
+      return -1;
 
-    pi_socket_read(ps);
-    cmp_rx(ps, &c); /* Accept incoming CMP response */
-
-    /* FIXME: if that wasn't a CMP response packet, fail or loop */
+    if(cmp_rx(ps, &c) < 0)
+      return -1; /* failed to read, errno already set */
 
     if(c.type == 2) {
       /* CMP init packet */
@@ -114,6 +119,9 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
       return -1;
     }
   }
+  
+  ps->initiator = 1; /* We initiated the link */
+  
   return 0;
 }
 
@@ -166,10 +174,9 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
 
   if(ps->type == SOCK_STREAM) {
 
-    pi_socket_read(ps);
-    cmp_rx(ps, &c); /* Accept incoming CMP wakeup packet */
-
-    /* FIXME: if that wasn't a CMP wakeup packet, fail or loop */
+    pi_socket_read(ps, 20);
+    if(cmp_rx(ps, &c) < 0)
+      return -1; /* Failed to establish connection, errno already set */
 
     if(c.commversion == OurCommVersion) {
       if(ps->rate > c.baudrate) {
@@ -178,7 +185,8 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
 #endif
         ps->rate = c.baudrate;
       }
-      cmp_init(ps, ps->rate);
+      if(cmp_init(ps, ps->rate)<0)
+        return -1;
       if(ps->rate != 9600) {
         pi_socket_flush(ps);
         pi_device_changebaud(ps);
@@ -189,13 +197,16 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
       cmp_abort(ps, 0x80); /* 0x80 means the comm version wasn't compatible*/
       pi_device_close(ps);
 
-      puts("pi_socket connection failed due to comm version mismatch");
-      printf(" (expected 0x%x, got 0x%x)\n", OurCommVersion, c.commversion);
+      fprintf(stderr, "pi_socket connection failed due to comm version mismatch\n");
+      fprintf(stderr, " (expected 0x%x, got 0x%x)\n", OurCommVersion, c.commversion);
 
-      /* FIXME: set errno to something useful */
+      errno = ECONNREFUSED;
       return -1;
     }
   }
+  
+  ps->initiator = 0; /* We accepted the link, we did not initiate it */
+  
   return pi_sd; /* FIXME: return different socket */
 }
 
@@ -212,13 +223,10 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
   }
 
   if(ps->type == SOCK_STREAM) {
-    padp_tx(ps,msg,len,padData);
-    pi_socket_read(ps);
-    padp_rx(ps, buf, 0);
+    return padp_tx(ps,msg,len,padData);
   } else {
-    syspkt_tx(ps, msg, len);
+    return syspkt_tx(ps, msg, len);
   }
-  return len;
 }
 
 /* Recv msg on a connected socket */
@@ -233,9 +241,8 @@ int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
     return -1;
   }
 
-  pi_socket_read(ps);
   if(ps->type == SOCK_STREAM) {
-    return padp_rx(ps,msg,len,padData);
+    return padp_rx(ps,msg,len);
   } else {
     return syspkt_rx(ps,msg,len);
   }
@@ -269,8 +276,10 @@ int pi_tickle(int pi_sd)
   
   if(ps->type == SOCK_STREAM)
     return padp_tx(ps,0,0,padTickle);
-  else
-    return -1; /* FIXME: set errno to something useful */
+  else {
+    errno = EOPNOTSUPP;
+    return -1;
+  }
 }
 
 /* Close a connection, destroy the socket */

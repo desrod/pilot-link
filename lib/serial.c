@@ -11,6 +11,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
+#include <stdio.h>
 #include "pi-socket.h"
 #include "pi-serial.h"
 
@@ -18,8 +20,17 @@
 #include <sys/ioctl_compat.h>
 #endif
 
-#if defined(linux) || defined(bsdi)
+#if 1
 #define POSIX
+#endif
+
+#if !defined(linux) && !defined(cfmakeraw)
+#define cfmakeraw(ptr) (ptr)->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR\
+					 |IGNCR|ICRNL|IXON);\
+                       (ptr)->c_oflag &= ~OPOST;\
+                       (ptr)->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);\
+                       (ptr)->c_cflag &= ~(CSIZE|PARENB);\
+                       (ptr)->c_cflag |= CS8
 #endif
 
 #ifdef OS2
@@ -234,7 +245,10 @@ int pi_device_open(char *tty, struct pi_socket *ps)
     }
   /* set it to 9600 baud */
   ps->mac.fd=fd;
-  pi_device_changebaud(ps,9600);
+  if (ps->protocol == PF_PADP)
+    pi_device_changebaud(ps,9600);
+  else
+    pi_device_changebaud(ps,57600);
   return(fd);  
 }
 
@@ -326,13 +340,24 @@ int pi_socket_flush(struct pi_socket *ps)
   return 0;
 }
 
-int pi_socket_read(struct pi_socket *ps)
+int pi_socket_read(struct pi_socket *ps, int timeout)
 {
   int r;
   char *buf;
 #ifdef OS2
   int rc;
+#else
+  fd_set ready,ready2;
+  struct timeval t;
+  
+  FD_ZERO(&ready);
+  FD_SET(ps->mac.fd, &ready);
+  t.tv_sec = timeout;
+  t.tv_usec = 0;
 #endif
+
+  /* FIXME: if timeout == 0, wait forever for packet, otherwise wait till
+     timeout seconds -- NOT IMPLEMENTED FOR OS/2! */
 
   pi_socket_flush(ps);              /* We likely want to be in sync with tx */
   if (!ps->mac.expect) slp_rx(ps);  /* let SLP know we want a packet */
@@ -344,7 +369,21 @@ int pi_socket_read(struct pi_socket *ps)
 #ifdef OS2
       rc=DosRead(ps->mac.fd,buf,ps->mac.expect,(unsigned long *)&r);
 #else
-      r = read(ps->mac.fd, buf, ps->mac.expect);
+      ready2 = ready;
+      select(ps->mac.fd+1,&ready2,0,0,&t);
+      /* If data is available in time, read it */
+      if(FD_ISSET(ps->mac.fd,&ready2))
+        r = read(ps->mac.fd, buf, ps->mac.expect);
+      else {
+        /* otherwise throw out any current packet and return */
+#ifdef DEBUG
+        fprintf(stderr, "Serial RX: timeout\n");
+#endif
+        ps->mac.state = ps->mac.expect = 1;
+        ps->mac.buf = ps->mac.rxb->data;
+        ps->rx_errors++;
+        return 0;
+      }
 #endif
 #ifdef DEBUG
       write(7, buf, r);

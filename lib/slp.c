@@ -38,7 +38,8 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
   for (n = i = 0; i<9; i++) n += nskb->data[i];
   slp->csum = 0xff & n;
 
-  *(unsigned short *)(&nskb->data[len+10]) = htons(crc16(nskb->data, len+10));
+  set_short(&nskb->data[len+10], crc16(nskb->data, len+10));
+  
   nskb->len = len+12;
   nskb->next = (struct pi_skb *)0;
 
@@ -114,7 +115,7 @@ int slp_rx(struct pi_socket *ps)
 
     if ((v & 0xff) == ps->mac.rxb->data[9]) {
       ps->mac.state++;
-      ps->mac.rxb->len = 12+ ntohs(*(unsigned short *)(&ps->mac.rxb->data[6]));
+      ps->mac.rxb->len = 12+ get_short(&ps->mac.rxb->data[6]);
       ps->mac.expect = ps->mac.rxb->len - 10;
       ps->mac.buf += 7;
     }
@@ -125,10 +126,10 @@ int slp_rx(struct pi_socket *ps)
     v = crc16(ps->mac.rxb->data, ps->mac.rxb->len - 2);
 
     if ((v == 
-	ntohs(*(unsigned short *)(&ps->mac.rxb->data[ps->mac.rxb->len - 2])))
+	get_short(&ps->mac.rxb->data[ps->mac.rxb->len - 2]))
 #if 0
 	|| (0xbeef == 
-	ntohs(*(unsigned short *)(&ps->mac.rxb->data[ps->mac.rxb->len - 2])))
+	get_short(&ps->mac.rxb->data[ps->mac.rxb->len - 2]))
 #endif
 	) {
 
@@ -156,7 +157,7 @@ int slp_rx(struct pi_socket *ps)
       ps->rx_packets++;
     } else {
 #ifdef DEBUG
-      fprintf(stderr,"my crc=0x%.4x your crc=0x%.4x\n", v, ntohs(*(unsigned short *)(&ps->mac.rxb->data[ps->mac.rxb->len - 2])));
+      fprintf(stderr,"my crc=0x%.4x your crc=0x%.4x\n", v, get_short((&ps->mac.rxb->data[ps->mac.rxb->len - 2])));
 #endif
     }
     slp_dump(ps->mac.rxb,0);
@@ -188,7 +189,7 @@ int slp_dump(struct pi_skb *skb, int rxtx)
   fprintf(stderr,"SLP %s %d->%d len=0x%.4x Prot=%d ID=0x%.2x\n",
 	  rxtx ? "TX" : "RX" ,
 	  skb->data[4],skb->data[3],
-	  ntohs(*(unsigned short *)(&skb->data[6])),
+	  get_short(&skb->data[6]),
 	  skb->data[5],skb->data[8]);
 #endif
 }

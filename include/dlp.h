@@ -138,6 +138,12 @@ int dlp_ReadUserInfo(int sd, struct PilotUser *User);
 
  /* Ask the pilot who it is. */
 
+int dlp_ReadAppBlock(int sd, unsigned char fHandle, short offset,
+                           unsigned char *dbuf, int dlen);
+
+int dlp_WriteAppBlock(int sd, unsigned char fHandle, unsigned char *dbuf,
+                            int dlen);
+
 int dlp_WriteRecord(int sd, unsigned char dbhandle, unsigned char flags,
                  long recID, short catID, char *data, int length, long * NewID);
 

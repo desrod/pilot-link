@@ -1,3 +1,16 @@
+Nov 12, 1996	Kenneth Albanowski 0.3.0
+
+    Integrated David Morgan's mktime and indefinite todo patch
+    Integrated my patches
+      - AppInfo block support for all Pilot applications
+      - new "addresses" end user program
+      - new "todos" end user program
+    Rewrote PADP to match USR specs
+    Rewrote xid generation as part of PADP rewrite, and made it
+      always an unsigned character
+    Added stub lib/sync.c
+    Added dependencies in lib/Makefile
+
 Nov 1, 1996	D. Jeff Dionne 0.2.4
 
 	Integrated 5 patches from Kenneth Albanowski

@@ -1,4 +1,4 @@
-/* memos.c:  Translate Pilot Memos into e-mail format
+/* addresses.c:  Translate Pilot address book into a generic format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
@@ -10,9 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "pi-socket.h"
-#include "memo.h"
+#include "address.h"
 #include "dlp.h"
 
+                  
 main(int argc, char *argv[])
 {
   struct pi_sockaddr addr;
@@ -28,8 +29,7 @@ main(int argc, char *argv[])
   struct PilotUser U;
   int ret;
   char buffer[0xffff];
-  char appblock[0xffff];
-  struct MemoAppInfo mai;
+  struct AddressAppInfo aai;
 
   if (argc < 2) {
 #ifdef linux  
@@ -72,21 +72,19 @@ main(int argc, char *argv[])
   /* Tell user (via Pilot) that we are starting things up */
   dlp_OpenConduit(sd);
   
-  /* Open the Datebook's database, store access handle in db */
-  if(dlp_OpenDB(sd, 0, 0x80|0x40, "MemoDB", &db) < 0) {
-    puts("Unable to open MemoDB");
-    dlp_AddSyncLogEntry(sd, "Unable to open MemoDB.\n");
+  /* Open the Address book's database, store access handle in db */
+  if(dlp_OpenDB(sd, 0, 0x80|0x40, "AddressDB", &db) < 0) {
+    puts("Unable to open AddressDB");
+    dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
     exit(1);
   }
   
-  dlp_ReadAppBlock(sd, db, 0, appblock, 0xffff);
-  unpack_MemoAppInfo(&mai, appblock, 0);
-
+  dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+  unpack_AddressAppInfo(&aai, buffer, 0);
+  
   for (i=0;1;i++) {
-  	struct Memo m;
-  	int attr;
-  	int category;
-  	char subject[80];
+  	struct Address a;
+  	int attr, category;
   	int j;
   	                           
   	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr, &category);
@@ -97,28 +95,49 @@ main(int argc, char *argv[])
   	if((attr & dlpRecAttrDeleted) || (attr & dlpRecAttrArchived))
   		continue;
   		
-	unpack_Memo(&m, buffer, len);
+	unpack_Address(&a, buffer, len);
 	
-	printf("From your.pilot Tue Oct  1 07:56:25 1996\nReceived: Pilot@p by memo Tue Oct  1 07:56:25 1996\nTo: you@y\nDate: Thu, 31 Oct 1996 23:34:38 -0500\n");
-	printf("Subject: ");
-	printf("[%s] ", mai.CategoryName[category]);
-	for(j=0;j<40;j++) {
-		if((!m.text[j]) || (m.text[j] == '\n'))
-			break;
-		printf("%c",m.text[j]);
+	printf("Category: %s\n", aai.CategoryName[category]);
+	for(j=0;j<19;j++) {
+	  if(a.entry[j]) {
+	    int l = j;
+	    if(l == entryPhone1) {
+	       l = entryPhone1 + a.phonelabel1;
+	       if(a.phonelabel1 >= 5) 
+	         l += 16 - 5;
+	    }
+	    if(l == entryPhone2) {
+	       l = entryPhone1 + a.phonelabel2;
+	       if(a.phonelabel2 >= 5) 
+	         l += 16 - 5;
+	    }
+	    if(l == entryPhone3) {
+	       l = entryPhone1 + a.phonelabel3;
+	       if(a.phonelabel3 >= 5) 
+	         l += 16 - 5;
+	    }
+	    if(l == entryPhone4) {
+	       l = entryPhone1 + a.phonelabel4;
+	       if(a.phonelabel4 >= 5)
+	         l += 16 - 5;
+	    }
+	    if(l == entryPhone5) {
+	       l = entryPhone1 + a.phonelabel5;
+	       if(a.phonelabel5 >= 5) 
+	         l += 16 - 5;
+	    }
+	    printf("%s: %s\n", aai.labels[l], a.entry[j]);
+	  }
 	}
-	if(j==40)
-		printf("...\n");
-	else
-		printf("\n");
-	puts("");
-	puts(m.text);
+	printf("\n");
+
+	free_Address(&a);
   }
 
   /* Close the database */
   dlp_CloseDB(sd, db);
 
-  dlp_AddSyncLogEntry(sd, "Read memos from Pilot.\n");
+  dlp_AddSyncLogEntry(sd, "Read addresses from Pilot.\n");
 
   pi_close(sd);  
 }

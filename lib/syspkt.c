@@ -48,8 +48,9 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
   struct padp *padp;
   struct pi_skb *skb;
   int rlen =0;
-
-  if (!ps->rxq) return 0;
+  
+  if (!ps->rxq)
+    pi_socket_read(ps, 10);
 
   skb = ps->rxq;
   ps->rxq = skb->next;

@@ -28,6 +28,8 @@ main(int argc, char *argv[])
   struct PilotUser U;
   int ret;
   char buffer[0xffff];
+  char appblock[0xffff];
+  struct MemoAppInfo mai;
 
   if (argc < 2) {
 #ifdef linux  
@@ -76,12 +78,18 @@ main(int argc, char *argv[])
     dlp_AddSyncLogEntry(sd, "Unable to open MemoDB.\n");
     exit(1);
   }
+  
+  dlp_ReadAppBlock(sd, db, 0, appblock, 0xffff);
+  unpack_MemoAppInfo(&mai, appblock, 0);
 
   for (i=0;1;i++) {
   	struct Memo m;
   	int attr;
+  	int category;
+  	char subject[80];
+  	int j;
   	                           
-  	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr, 0);
+  	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr, &category);
   	if(len<0)
   		break;
   		
@@ -91,7 +99,19 @@ main(int argc, char *argv[])
   		
 	unpack_Memo(&m, buffer, len);
 	
-	printf("From your.pilot Tue Oct  1 07:56:25 1996\nReceived: Pilot@p by memo Tue Oct  1 07:56:25 1996\nTo: you@y\nDate: Thu, 31 Oct 1996 23:34:38 -0500\nSubject: None\n\n");
+	printf("From your.pilot Tue Oct  1 07:56:25 1996\nReceived: Pilot@p by memo Tue Oct  1 07:56:25 1996\nTo: you@y\nDate: Thu, 31 Oct 1996 23:34:38 -0500\n");
+	printf("Subject: ");
+	printf("[%s] ", mai.CategoryName[category]);
+	for(j=0;j<40;j++) {
+		if((!m.text[j]) || (m.text[j] == '\n'))
+			break;
+		printf("%c",m.text[j]);
+	}
+	if(j==40)
+		printf("...\n");
+	else
+		printf("\n");
+	puts("");
 	puts(m.text);
   }
 

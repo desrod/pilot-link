@@ -12,12 +12,23 @@
 
 int cmp_rx(struct pi_socket *ps, struct cmp * c)
 {
-  padp_rx(ps, c, sizeof(struct cmp));
+  int l;
+  
+  Begin(cmp_rx);
+  
+  if(!ps->rxq)
+    pi_socket_read(ps, 20);
+  l = padp_rx(ps, c, sizeof(struct cmp));
+  
+  if( l <= 0)
+    return -1;
 
   cmp_dump(c,0);
 
   c->baudrate = ntohl(c->baudrate); /* This baud rate is the _maximum_, not the default */
   c->commversion = ntohl(c->commversion);
+
+  End(cmp_rx);  
 }
 
 int cmp_init(struct pi_socket *ps, int baudrate)
@@ -38,9 +49,7 @@ int cmp_init(struct pi_socket *ps, int baudrate)
   
   cmp_dump(&c,1);
   
-  padp_tx(ps, &c, sizeof(struct cmp), padData);
-  pi_socket_read(ps);
-  padp_rx(ps, buf, 0);
+  return padp_tx(ps, &c, sizeof(struct cmp), padData);
 }
 
 int cmp_abort(struct pi_socket *ps, int reason)
@@ -55,9 +64,7 @@ int cmp_abort(struct pi_socket *ps, int reason)
   
   cmp_dump(&c,1);
   
-  padp_tx(ps, &c, sizeof(struct cmp), padData);
-  pi_socket_read(ps);
-  padp_rx(ps, buf, 0);
+  return padp_tx(ps, &c, sizeof(struct cmp), padData);
 }
 
 int cmp_wakeup(struct pi_socket *ps, int maxbaud)
@@ -72,9 +79,7 @@ int cmp_wakeup(struct pi_socket *ps, int maxbaud)
   
   cmp_dump(&c,1);
   
-  padp_tx(ps, &c, sizeof(struct cmp), padData);
-  pi_socket_read(ps);
-  padp_rx(ps, buf, 0);
+  return padp_tx(ps, &c, sizeof(struct cmp), padWake);
 }
 
 int cmp_dump(struct cmp * cmp, int rxtx)

@@ -44,9 +44,21 @@ struct Appointment {
 	char * note;
 };
 
+struct AppointmentAppInfo {
+  unsigned int renamedcategories; /* Bitfield of categories with changed names */
+  char CategoryName[16][16]; /* 16 categories of 15 characters+nul each */
+  unsigned char CategoryID[16]; 
+  unsigned char lastUniqueID; /* Each category gets a unique ID, for sync tracking
+                                 purposes. Those from the Pilot are between 0 & 127.
+                                 Those from the PC are between 128 & 255. I'm not
+                                 sure what role lastUniqueID plays. */
+  int startOfWeek;
+};
+
 void free_Appointment(struct Appointment *);
 void unpack_Appointment(struct Appointment *, unsigned char * record, int len);
 void pack_Appointment(struct Appointment *, unsigned char * record, int * len);
-
+void unpack_AppointmentAppInfo(struct AppointmentAppInfo *, unsigned char * AppInfo, int len);
+void pack_AppointmentAppInfo(struct AppointmentAppInfo *, unsigned char * AppInfo, int * len);
 
 #endif /* _PILOT_DATEBOOK_H_ */

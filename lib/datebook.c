@@ -45,10 +45,18 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
   a->end.tm_hour = get_byte(buffer+2);
   a->end.tm_min = get_byte(buffer+3);
 	
-  if(a->end.tm_hour == -1)
+  if(get_short(buffer) == 0xffff) {
     a->event = 1;
-  else
+    a->begin.tm_hour = 0;
+    a->begin.tm_min = 0;
+    a->end.tm_hour = 0;
+    a->end.tm_min = 0;
+  } else {
     a->event = 0;
+  }
+  
+  mktime(&a->begin);
+  mktime(&a->end);
 	  
   iflags = get_byte(buffer+6);
 
@@ -88,6 +96,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 			a->repeatEnd.tm_min = 0;
 			a->repeatEnd.tm_hour = 0;
 			a->repeatEnd.tm_sec = 0;
+			mktime(&a->repeatEnd);
 			a->repeatForever = 0;
 		}
 		a->repeatFreq = get_byte(p2); p2++;
@@ -113,6 +122,7 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 			a->exception[j].tm_hour = 0;
 			a->exception[j].tm_min = 0;
 			a->exception[j].tm_sec = 0;
+			mktime(&a->exception[j]);
 		}
 		
 		}
@@ -141,3 +151,34 @@ void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len)
 
 void pack_Appointment(struct Appointment *, unsigned char * record, int * len);
                   
+void unpack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * record, int len) {
+  int i;
+  ai->renamedcategories = get_short(record);
+  record+=2;
+  for(i=0;i<16;i++) {
+    memcpy(ai->CategoryName[i], record, 16);
+    record += 16;
+  }
+  memcpy(ai->CategoryID, record, 16);
+  record += 16;
+  ai->lastUniqueID = get_byte(record);
+  record += 4;
+  ai->startOfWeek = get_byte(record);
+}
+
+void pack_AppointmentAppInfo(struct AppointmentAppInfo * ai, unsigned char * record, int * len) {
+  int i;
+  set_short(record, ai->renamedcategories);
+  record += 2;
+  for(i=0;i<16;i++) {
+    memcpy(record, ai->CategoryName[i], 16);
+    record += 16;
+  }
+  memcpy(record, ai->CategoryID, 16);
+  record += 16;
+  set_byte(record, ai->lastUniqueID);
+  record ++;
+  set_byte(record, 0); /* gapfil */
+  set_short(record+1, 0); /* gapfil */
+  set_byte(record+3, ai->startOfWeek);
+}

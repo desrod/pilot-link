@@ -4,20 +4,22 @@ CFLAGS = -O2 -g -I./include
 AR = ar -cur
 RANLIB = ranlib
 #RANLIB = ar -s
+#RANLIB = true
 RM = rm -f
 LIBS =
+# -lefence
 #LIBS = -lsocket -los2
 EXT =
 #EXT = .exe
 
-all:	install-prc$(EXT) install-memo$(EXT) install-user$(EXT)\
-        reminders$(EXT) memos$(EXT)\
+all:	submake install-prc$(EXT) install-memo$(EXT) install-user$(EXT)\
+        reminders$(EXT) memos$(EXT) addresses$(EXT) todos$(EXT)\
 	test-connector$(EXT) test-acceptor$(EXT) debugsh$(EXT) dlpsh$(EXT)
 
 submake:
 	cd lib; make
 
-libpisock.a: submake
+libpisock.a: lib/libpisock.a
 	cp lib/libpisock.a libpisock.a
 
 install-memo$(EXT): libpisock.a install-memo.o
@@ -35,6 +37,12 @@ reminders$(EXT): libpisock.a reminders.o
 memos$(EXT): libpisock.a memos.o
 	$(CC) $(CFLAGS) memos.o libpisock.a -o $@ $(LIBS)
 
+todos$(EXT): libpisock.a todos.o
+	$(CC) $(CFLAGS) todos.o libpisock.a -o $@ $(LIBS)
+
+addresses$(EXT): libpisock.a addresses.o
+	$(CC) $(CFLAGS) addresses.o libpisock.a -o $@ $(LIBS)
+
 test-connector$(EXT): libpisock.a test-connector.o
 	$(CC) $(CFLAGS) test-connector.o libpisock.a -o $@ $(LIBS)
 
@@ -50,7 +58,7 @@ debugsh$(EXT): libpisock.a debugsh.o
 clean:
 	$(RM) *.o *.a *~ core a.out test_s test_c install-prc$(EXT) 
 	$(RM) install-memo$(EXT) install-user$(EXT) dlpsh$(EXT)
-	$(RM) reminders$(EXT) memos$(EXT)
+	$(RM) reminders$(EXT) memos$(EXT) todos$(EXT) addresses$(EXT)
 	$(RM) test-acceptor$(EXT) test-connector$(EXT) debugsh$(EXT)
-	$(RM) include/*~ *.orig
+	$(RM) include/*~ *.orig include/*.orig
 	cd lib ; make clean

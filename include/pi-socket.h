@@ -56,8 +56,10 @@ struct pi_socket {
   struct pi_sockaddr raddr;
   int type;
   int protocol;
-  int xid;
+  unsigned char xid;
+  unsigned char nextid;
   int sd;
+  int initiator;
   struct pi_mac mac;
 #ifndef OS2
   struct termios tco;
@@ -124,6 +126,16 @@ int crc16(unsigned char *ptr, int count);
 		            ((ptr)[1] = ((val) >> 0) & 0xff))
 
 #define set_byte(ptr,val) ((ptr)[0]=(val))
+
+#ifdef TRACE
+#define Begin(a) fprintf(stderr,"Begin %s\n",#a)
+#define At(a)    fprintf(stderr,"At %s\n",#a)
+#define End(a)   fprintf(stderr,"End %s\n",#a)
+#else
+#define Begin(a)
+#define At(a)
+#define End(a)
+#endif
 
 #endif /* _PILOT_SOCKET_H_ */
 

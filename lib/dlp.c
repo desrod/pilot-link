@@ -353,17 +353,25 @@ int dlp_WriteResource(int sd, unsigned char dbhandle, long type, int id,
   return dlp_exec(sd, 0x24, 0x20, dlp_buf, 10+length, NULL, 0);
 }
 
-int dlp_ReadDBAppInfoBlock(int sd, unsigned char fHandle, short offset,
+int dlp_ReadAppBlock(int sd, unsigned char fHandle, short offset,
                            unsigned char *dbuf, int dlen) {
+  int result;
+  
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, 0x00);
   set_short(dlp_buf+2, offset);
   set_short(dlp_buf+4, dlen);
   
-  return dlp_exec(sd, 0x1b, 0x20, dlp_buf, 6, dbuf, dlen);
+  result = dlp_exec(sd, 0x1b, 0x20, dlp_buf, 6, dlp_buf, 0xffff);
+  
+  if(result >= 2) {
+    memcpy(dbuf, dlp_buf+2, result-2);
+    return result-2;
+  } else
+    return result;
 }
 
-int dlp_WriteDBAppInfoBlock(int sd, unsigned char fHandle, unsigned char *dbuf,
+int dlp_WriteAppBlock(int sd, unsigned char fHandle, unsigned char *dbuf,
                             int dlen) {
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, 0x00);
