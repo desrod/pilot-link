@@ -149,6 +149,7 @@ typedef struct pi_socket_list
 
 	extern ssize_t pi_read PI_ARGS((int pi_sd, pi_buffer_t *msg, size_t len));
 	extern ssize_t pi_write PI_ARGS((int pi_sd, void *msg, size_t len));
+	extern void pi_flush PI_ARGS((int pi_sd, int flags));
 
 	extern int pi_getsockname
 	    PI_ARGS((int pi_sd, struct sockaddr * addr, size_t *namelen));

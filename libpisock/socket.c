@@ -1394,6 +1394,33 @@ pi_write(int pi_sd, void *msg, size_t len)
 
 /***********************************************************************
  *
+ * Function:    pi_flush
+ *
+ * Summary:     flush input and output buffers
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+void
+pi_flush(int pi_sd, int flags)
+{
+	pi_socket_t *ps;
+
+	if (!(ps = find_pi_socket(pi_sd))) {
+		errno = ESRCH;
+		return;
+	}
+
+	if (!is_connected (ps))
+		return;
+	
+	ps->protocol_queue[0]->flush (ps, flags);
+}
+
+/***********************************************************************
+ *
  * Function:    pi_tickle
  *
  * Summary:     Tickle a stream connection
