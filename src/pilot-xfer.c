@@ -178,6 +178,14 @@ static void MakeExcludeList(char *efile)
 static void protect_name(char *d, char *s)
 {
 
+	/* Maybe even..
+	char *c = strchr("/=\r\n", foo); 
+
+	if (c) { 
+		d += sprintf(d, "=%02X", c); 
+	}
+	*/
+
 	while (*s) {
 		switch (*s) {
 		case '/':
@@ -185,22 +193,26 @@ static void protect_name(char *d, char *s)
 			*(d++) = '2';
 			*(d++) = 'F';
 			break;
+
 		case '=':
 			*(d++) = '=';
 			*(d++) = '3';
 			*(d++) = 'D';
 			break;
+
 		case '\x0A':
 			*(d++) = '=';
 			*(d++) = '0';
 			*(d++) = 'A';
 			break;
+
 		case '\x0D':
 			*(d++) = '=';
 			*(d++) = '0';
 			*(d++) = 'D';
 			break;
-		/* If you feel the need: 
+
+		/* Replace spaces in names with =20
 		case ' ': 
 			*(d++) = '='; 
 			*(d++) = '2'; 
@@ -348,7 +360,9 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		ofile_len	= 0,
 		ofile_total	= 0,
 		save_errno	= errno,
-		filecount 	= 0;	
+		filecount 	= 0,
+		failed		= 0,
+		armlets		= 0;	
 
 	static int totalsize;
 
@@ -412,7 +426,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		}
 	}
 
-	for (;;) {
+	do {
 		struct 	DBInfo info;
 		struct 	pi_file *f;
 		struct 	utimbuf times;
@@ -421,6 +435,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			x;
 		
 		char 	name[256];
+		char	*Buffer;
 		struct 	stat statb;
 
 		if (dlp_ReadDBList(sd, 0, (media_type ? 0x40 : 0x80), i, &info) < 0)
@@ -434,35 +449,33 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			return;
 		}
 		
-		/* We do this to unbuffer stdout, fixes the printf() problem */
-
-		/*
-		printf("\x1B[K\r");
-		setvbuf(stdout, Buffer, _IONBF, sizeof(Buffer));
-		*/
-
 		strncpy(name, dirname, sizeof(name));
 		strcat(name, "/");
+
 		protect_name(name + strlen(name), info.name);
 
-		if (info.flags & dlpDBFlagResource) {
-			strcat(name, ".prc");
+		if (info.flags & dlpDBFlagResource) { strcat(name, ".prc");
 		} else if (!(info.flags & dlpDBFlagClipping)) {
 			strcat(name, ".pdb");
 		}
 		
+		/* We do this to unbuffer stdout, fixes the printf() problem */
+		printf("\x1B[K\r");
+		setvbuf(stdout, Buffer, _IONBF, sizeof(Buffer));
+
 		for (x = 0; x < numexclude; x++) {
 			if (strcmp(exclude[x], info.name) == 0) {
 				printf("=== Excluding '%s'...\n", name);
-				fflush(stdout);
+				fflush(NULL);
 				RemoveFromList(name, orig_files, ofile_total);
 				skip = 1;
 			}
 		}
 
                 if (info.creator == pi_mktag('a', '6', '8', 'k')) {
-			/* printf("=== Skipping ARMlet '%s'\n", info.name);
-			fflush(stdout); */
+			printf("=== Skipping ARMlet '%s'\n", info.name);
+			fflush(NULL);
+			armlets++;
 			continue;
 		}
 
@@ -474,7 +487,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 				if (creator_is_PalmOS(info.creator)) {
 					printf("=== Non-OS file, skipping '%s'\n\n", 
 						info.name);
-					fflush(stdout);
+					fflush(NULL);
 					continue;
 				}
 				break;
@@ -486,14 +499,14 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 					(info.creator == pi_mktag('m', 'o', 'd', 'm'))) {
 					printf("\n=== Crash file, skipping '%s'.\n\n", 
 						info.name);
-					fflush(stdout);
+					fflush(NULL);
 					continue;
 				}
 				
 				if (!creator_is_PalmOS(info.creator)) {
 					printf("=== OS file, skipping '%s'.\n\n", 
 						info.name);
-					fflush(stdout);
+					fflush(NULL);
 					continue;
 					
 				}
@@ -506,7 +519,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		if (!unsaved
 		    && strcmp(info.name, "Unsaved Preferences") == 0) {
 			printf("=== Skipping '%s'\n", info.name);
-			fflush(stdout);
+			fflush(NULL);
 			continue;
 		}
 
@@ -515,7 +528,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 				if (info.modifyDate == statb.st_mtime) {
 					printf("=== Unchanged, skipping %s\n\n", 
 						name);
-					fflush(stdout);
+					fflush(NULL);
 					RemoveFromList(name, orig_files, ofile_total); 
 					continue;
 				}
@@ -528,7 +541,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		if ((flags & BACKUP) && (stat(name, &sbuf) == 0)) {
 			printf("   [%-3d] %s '%s' (%ld bytes, %d KiB total)\n", 
 				filecount, synctext, name, sbuf.st_size, totalsize/1024);
-			fflush(stdout);
+			fflush(NULL);
 			filecount++;
 			totalsize += sbuf.st_size;
                         RemoveFromList(name, orig_files, ofile_total);
@@ -540,8 +553,9 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 			printf("\nFailed, unable to create file.\n");
 			break;
 		} else if (pi_file_retrieve(f, sd, 0) < 0) {
-			printf("\n=== Failed, unable to retrieve %s from the Palm.\n", name);
-			fflush(stdout);
+			printf("=== Failed, unable to retrieve %s from the Palm.\n", name);
+			fflush(NULL);
+			failed++;
 		} 
 
 		pi_file_close(f);
@@ -549,7 +563,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		times.actime 	= info.createDate;
 		times.modtime 	= info.modifyDate;
 		utime(name, &times);
-	}
+	} while (1);
 		
 	if (orig_files) {
 		int 	dirname_len = strlen(dirname);
@@ -583,7 +597,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 	printf("%s backup complete.",
 	       (media_type == 2 ? "\n   OS" : (media_type == 1 ? "\n   Flash" : "\n   RAM")));
 
-	printf(" %d files backed up.\n", filecount - 1);
+	printf("%d files backed up, %d skipped, %d file%s failed.\n", filecount - 1, armlets, failed, (failed == 1) ? "" : "s");
 	sprintf(synclog, "%d files successfully backed up.\n\nThank you for using pilot-link.",
 		filecount - 1);
 	dlp_AddSyncLogEntry(sd, synclog);
@@ -903,11 +917,12 @@ static void Install(char *filename)
 	}
 
 	if (dlp_OpenConduit(sd) < 0) {
-                fprintf(stderr, "\nExiting on cancel, some files were not installed\n\n");
+                fprintf(stderr, "\nExiting on cancel, some files were not"
+			       "installed\n\n");
 		exit(1);
 	}
 
-	fprintf(stderr, "   Installing %-35s", filename);
+	fprintf(stderr, "   Installing '%s'... ", filename);
 
 	stat(filename, &sbuf);
 
@@ -928,8 +943,11 @@ static void Install(char *filename)
 		fprintf(stderr, "failed.\n");
 
 	} else if (stat(filename, &sbuf) == 0) {
-		printf("\n\t(%7ld bytes, %3d kb total)\n\n",
-			sbuf.st_size, totalsize/1024);
+		printf("(%ld bytes, %ld KiB total)\n",
+			sbuf.st_size, (totalsize == 0) 
+			? (long)sbuf.st_size/1024 
+			: totalsize/1024);
+		fflush(NULL);
 		totalsize += sbuf.st_size;
 	}
 	
@@ -1180,7 +1198,6 @@ int main(int argc, char *argv[])
 {
 	int 	optc,		/* switch */
 		unsaved 	= 0,
-		last_optc	= 0,
                 verbose         = 0;
 
 	char 	*archive_dir 	= NULL,
@@ -1195,11 +1212,6 @@ int main(int argc, char *argv[])
 	while ((optc = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (optc) {
 
-		case 1:
-			if (last_optc == 'i') {
-				Install(optarg);
-			}
-			break;
                 case 'V':
                         verbose = 1;
                         break;
@@ -1233,7 +1245,7 @@ int main(int argc, char *argv[])
 			palm_operation = backup;
 			sync_flags = UPDATE|SYNC;
 			if (verbose)
-				printf("Option -u with value: %s\n", optarg);
+				printf("Option -s with value: %s\n", optarg);
 			break;
 		case 't':
 			palm_operation = set_palm_time;
@@ -1244,6 +1256,8 @@ int main(int argc, char *argv[])
 		case 'i':
 			dbname = optarg;
 			palm_operation = install;
+                        if (verbose)
+                                printf("Option -i with value: %s\n", optarg);
 			break;
 		case 'm':
 			Merge(optarg);
@@ -1292,10 +1306,6 @@ int main(int argc, char *argv[])
 			break;
 		default:
 			break;
-		}
-
-		if (optc > 1) {
-			last_optc = optc;
 		}
 	}
 
