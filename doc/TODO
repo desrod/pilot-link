@@ -7,16 +7,8 @@ Major Issues
 ------------
 	Open/Pending
 	------------
-	- pilot-xfer does not test for the existance of the target directory
-	  when using '-b <dir>'. Critical. 
-
 	- read-expenses/install-expense doesn't return the string of Type
 	  for 'Train, Airplane', etc.
-
-	- USB syncronization with m50x devices. DLP changes to facilitate
-	  these fixes. Document. 
-
-	- Fix the broken readline() support 	
 
 	- Need to clean up the OS/2 defines, or remove them entirely. This
 	  requires that the ./configure be reversed into configure.in/auto*
@@ -25,10 +17,23 @@ Major Issues
 
 	- Check RPC code (something broken on large-endian machines?)
 
-	- Fix DLP to understand multiple return arguments.
+        - pilot-addresses -T header fix (don't import header into record)
+
+        - pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
+
 
 	Fixed/Closed
 	------------
+	- Fix DLP to understand multiple return arguments.
+
+	- USB syncronization with m50x devices. DLP changes to facilitate
+	  these fixes. Document. 
+
+	- Fix the broken readline() support 	
+
+	- pilot-xfer does not test for the existance of the target directory
+	  when using '-b <dir>'. Critical. 
+
 	- Java code needs to be cleaned up. Any volunteers? I could learn
 	  this, but it would slow down releases (thanks to David Goodenough
 	  for taking on this task!)
@@ -40,14 +45,18 @@ Minor Issues
 ------------
 	Open/Pending
 	------------
+        - configure.in to handle testing for python-devel installed
+          #include <Python.h> int main() {PyObject x; return 0;}
+
+        - Add missing DLP 1.2 calls
+
+        - Fix all remaining -pedantic warnings and errors Update
+
 	- Add current date/time to dlp_AddSyncLogEntry(); 
 
 	- install-hinote duplicate note detection, export of notes from
 	  Hi-NoteDB.pdb into desktop text files. Can we easily handle
 	  images?
-
-	- Argument handling needs gutted and rewritten from the ground up
-	  (getopt(), longopt(), getopt_long() and friends)
 
 	- Review pilot-mail. Do we need this? Can we depricate this, and
 	  begin the transition over to Hollis' work on pilot-mailsync?
@@ -65,6 +74,10 @@ Minor Issues
 	  instrument PADP and perhaps SLP transmissions, receptions, and
 	  calculating exactly how many bytes is needed to transfer a file
 	  won't be fun.)
+
+        - Update Java bindings to use Ant instead of {g|n}make
+
+        - Rewrite Perl bindings to take advantage of MakeMaker
 
 	- There's a small perl problem with writing the binary character 11
 	  to the end of a record. The following example illustates this:
@@ -111,12 +124,14 @@ Tweaks/Enhancements
 	- Perl bindingss: Change record representation from string to object
 	  to match Python implementation. Add packers. Document.
 
-	- Python bindings: Add packers. Document.
-
 	- Collapse: read-todos/install-todos, memos/install-memos, etc.
+
+        - pilot-datebook updated to match remaining structure
 
 New Features
 ------------
+        - pxd, first cut at a pilot-xfer'ized daemon
+
 	- Deal with the m100 API to Notepad. Has anyone taken a look at the
 	  data structures and come up with a way we can replicate them, to
 	  read records? Ideally the images should be $(NAME).png, and the

@@ -1,3 +1,46 @@
+Pilot-Link 0.11.1, "Ocean's Eleven", 07-18-2002
+-----------------------------------------------
+
+This is a minor bugfix release to squish some of the bugs that creeped in
+under the door into the 0.11 release. Most notably: 
+	
+	User Updates
+	------------
+	- pilot-xfer -f didn't work at all in 0.11, fixed. 
+	- pilot-xfer -f bugfix for non-writable local files 
+	- read-palmpix now takes arguments for output file type, '-t png' or
+	  '-t ppm'
+	- read-notepad also updated to accept the same argument types
+
+	Development Updates
+	-------------------
+	- All of the language bindings (Perl, Python, Java, Tcl, Tk, iTcl)
+	  all default to off, unless specified. If you want to enable them,
+	  you must use --with-foo, where 'foo' is the binding of your
+	  choice, such as --with-perl
+	- Fixed some of the gcc-related warnings (more to come)
+	- Minor Python build fix
+
+	ToDo List for 0.11.2
+	--------------------
+	User Updates
+	------------
+	- pilot-addresses -T header fix (don't import header into record)
+	- pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
+	- pxd, first cut at a pilot-xfer'ized daemon
+	- missing manpages corrected
+	- pilot-datebook updated to match remaining structure
+
+	Development Updates
+	-------------------
+	- Fix all remaining -pedantic warnings and errors Update
+	- configure.in to handle testing for python-devel installed
+	  #include <Python.h> int main() {PyObject x; return 0;}
+	- Update Java bindings to use Ant instead of {g|n}make 
+	- Rewrite Perl bindings to take advantage of MakeMaker 
+	- Add missing DLP 1.2 calls
+
+
 Pilot-Link 0.11, "Ocean's Eleven", 07-12-2002
 ---------------------------------------------
 

@@ -7,6 +7,8 @@
 	* bindings/Makefile.am: s/PERL5/PERL/ since we're already testing
 	  for the version in configure
 
+	* Fixed erroneous use of // for comments where applicable
+
 2002-07-17  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-datebook/Makefile.am: Removed trailing space
