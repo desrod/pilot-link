@@ -1,3 +1,7 @@
+2003-11-26 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/connect.c: Fixed connect syntax error
+
 2003-11-11 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in Fixing a possible Gentoo issue. We should be using

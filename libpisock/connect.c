@@ -82,7 +82,7 @@ int pilot_connect(char *port)
 
 	fprintf(stderr, "\n");
 	begin:
-	if (!(parent_sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
+	if ((parent_sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP)) < 0) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n",
 			port ? port : getenv("PILOTPORT"));
 		return -1;
@@ -97,13 +97,11 @@ int pilot_connect(char *port)
 		result = pi_bind(parent_sd, NULL, 0);
 	}
 
-
 	if (result < 0) {
 		int 	save_errno = errno;
 		char 	*portname;
 
 		portname = (port != NULL) ? port : getenv("PILOTPORT");
-
 
 		if (portname) {
 			char realport[50];
