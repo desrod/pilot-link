@@ -100,8 +100,8 @@ dnl ******************************
 dnl Defaults for GCC
 dnl ******************************
 if test "x$GCC" = "xyes"; then
-	CFLAGS=${CFLAGS:-"-g -Wall"}
-	CXXFLAGS=${CXXFLAGS:-"-g -Wall"}
+	CFLAGS=${CFLAGS:-"-g2 -Wall"}
+	CXXFLAGS=${CXXFLAGS:-"-g2 -Wall"}
 fi
 
 
@@ -672,21 +672,23 @@ fi
 dnl *************************************
 dnl Runtime debugging
 dnl *************************************
+set_debug=yes
 AC_ARG_ENABLE(debug,
 	      [  --disable-debug         Shunt runtime debugging],
-	      set_debug=no)
+	      [set_debug=no])
 
 if test "${enable_debug+set}" = set; then
-	enableval="$enable_debug"
-	if eval "test x$enable_debug = xyes"; then
+	if test "$enable_debug" = yes; then
 		CFLAGS="-g $CFLAGS"
 		CXXFLAGS="-g $CXXFLAGS"
+		set_debug=yes
 	fi
 fi
-
-if test "$set_debug" != "no"; then
+if test "$set_debug" = "yes"; then
+	echo "Activating runtime debugging code"
 	AC_DEFINE(PI_DEBUG, 1, [Define if we have debugging enabled])
 else
+	echo "Disabling runtime debugging"
 	CFLAGS=`echo "$CFLAGS" | sed -e "s/-g //"`
 	CXXFLAGS=`echo "$CXXFLAGS" | sed -e "s/-g //"`
 fi
