@@ -1,5 +1,0 @@
-
-LD_LIBRARY_PATH=_libs:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH
-
-$1 $2
