@@ -37,50 +37,51 @@
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
 /*
- * header:
- * 32		name
- * 2		flags
- * 2		version
- * 4		creation time
- * 4 		modification time
- * 4		backup time
- * 4		modification number
- * 4		app info offset 
- * 4		sort info offset
- * 4		type
- * 4		creator
- * 4		uniq id seed (I think it is just garbage)
- * 4		next record list id (normally 0, or ptr to extended hdr)
- * 2		num records for this header
- *
- * Hypothetically plus 2 more bytes if an extended or perhaps secondary
- * header (not supported) (In practice, this value is never set, instead it
- * usually indicates a damaged file.)
- *
- * if the low bit of attr is on, then next thing is a list of resource entry
- * descriptors:
- *
- * resource entry header
- * 4		type
- * 2		id
- * 4		offset
- *
- * otherwise, if the low bit of attr is off, the next thing is a list of
- * record entry decriptors:
- *
- * record entry header
- * 4		offset
- * 1		record attributes
- * 3		unique id
- *
- * then two bytes of unknown purpose, \0\0 seems safe
- *
- * next, the app_info, if any, then the sort_info, if any
- *
- * then the space used the data. Every offset is an offset from the
- * beginning of the file, and will point until this area. Each block starts
- * at the given offset and ends at the beginning of the next block. The last
- * block ends at the end of the file. */
+   header:
+   32		name
+   2		flags
+   2		version
+   4		creation time
+   4 		modification time
+   4		backup time
+   4		modification number
+   4		app info offset 
+   4		sort info offset
+   4		type
+   4		creator
+   4		uniq id seed (I think it is just garbage)
+   4		next record list id (normally 0, or ptr to extended hdr)
+   2		num records for this header
+ 
+   Hypothetically plus 2 more bytes if an extended or perhaps secondary
+   header (not supported) (In practice, this value is never set, instead it
+   usually indicates a damaged file.)
+ 
+   if the low bit of attr is on, then next thing is a list of resource entry
+   descriptors:
+ 
+   resource entry header
+   4		type
+   2		id
+   4		offset
+ 
+   otherwise, if the low bit of attr is off, the next thing is a list of
+   record entry decriptors:
+ 
+   record entry header
+   4		offset
+   1		record attributes
+   3		unique id
+ 
+   then two bytes of unknown purpose, \0\0 seems safe
+ 
+   next, the app_info, if any, then the sort_info, if any
+ 
+   then the space used the data. Every offset is an offset from the
+   beginning of the file, and will point until this area. Each block starts
+   at the given offset and ends at the beginning of the next block. The last
+   block ends at the end of the file.
+ */
 
 #define PI_HDR_SIZE 78
 #define PI_RESOURCE_ENT_SIZE 10

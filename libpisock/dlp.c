@@ -70,7 +70,8 @@ char *dlp_errorlist[] = {
 };
 
 
-	if ((unsigned int) error > sizeof(dlp_errorlist))
+char *dlp_strerror(int error)
+//	if ((unsigned int) error > sizeof(dlp_errorlist))
 {
 	if (error < 0)
 		error = -error;

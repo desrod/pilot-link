@@ -10,7 +10,7 @@ FILEOBJS 	= pi-file.$(O)
 PIHEADER 	= pi-header.$(O)
 APPOBJS 	= datebook.$(O) memo.$(O) address.$(O) todo.$(O) \
 		  expense.$(O) mail.$(O) sync.$(O) appinfo.$(O) hinote.$(O)
-UTILOBJS 	= utils.$(O) util.$(O)
+UTILOBJS 	= utils.$(O) util.$(O) connect.$(O)
 MD5 		= md5.$(O)
 SERIAL 		= unixserial.$(O)
 OBJS 		= $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(PIHEADER) $(UTILOBJS) $(MD5) $(SERIAL)
@@ -94,6 +94,9 @@ cmp.o cmp.lo: cmp.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \
  ../include/pi-padp.h ../include/pi-cmp.h ../include/pi-serial.h
+connect.o connect.lo: connect.c ../include/pi-socket.h ../include/pi-args.h \
+ ../include/pi-version.h ../include/pi-sockaddr.h \
+ ../include/pi-header.h ../include/pi-dlp.h ../include/pi-macros.h
 datebook.o datebook.lo: datebook.c ../include/pi-source.h ../include/pi-config.h \
  ../include/pi-socket.h ../include/pi-args.h ../include/pi-version.h \
  ../include/pi-sockaddr.h ../include/pi-macros.h ../include/i18n.h \

@@ -1,7 +1,15 @@
+2001-11-05  David A. Desrosiers <hacker at gnu-designs dot com>
+	
+	* install-user.c: Slowly moving stuff over to getopt_long()
+
+	* libsock/connect.c: moving out redundant code into external objects
+
 2001-11-03  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Makefile.os2: ..should not be in the cvs. It's created
 	  dynamically (or should be)
+
+	* pilot-xfer.c: Typo in Unsaved Preferences.prc, not pdb. 
 
 2001-10-31  David A. Desrosiers <hacker at gnu-designs dot com>
 

@@ -70,7 +70,8 @@ char *dlp_strerror(int error)
 {
 	if (error < 0)
 		error = -error;
-	if ((unsigned int) error > sizeof(dlp_errorlist))
+	if ((unsigned int) error >= (sizeof(dlp_errorlist)/(sizeof(char *))))
+//	if ((unsigned int) error > sizeof(dlp_errorlist))
 		return "Unknown error";
 	else
 		return dlp_errorlist[error];

@@ -156,7 +156,7 @@ void Connect(void)
 	signal(SIGSEGV, SigHandler);
 
 	if (!(sd = pi_socket(PI_AF_SLP, PI_SOCK_STREAM, PI_PF_PADP))) {
-		perror("pi_socket");
+		perror("   pi_socket");
 		exit(1);
 	}
 
@@ -179,7 +179,7 @@ void Connect(void)
 	ret = pi_listen(sd, 1);
 	if (ret == -1) {
 		fprintf(stderr, "\n   Error listening on %s\n", device);
-		perror("pi_listen");
+		perror("   pi_listen");
 		fprintf(stderr, "\n");
 		exit(1);
 	}
@@ -188,7 +188,7 @@ void Connect(void)
 	if (sd == -1) {
 		fprintf(stderr, "\n   Error accepting data on %s\n",
 			device);
-		perror("pi_accept");
+		perror("   pi_accept");
 		fprintf(stderr, "\n");
 		exit(1);
 	}
@@ -410,7 +410,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 
 		if (dlp_OpenConduit(sd) < 0) {
 			fprintf(stderr,
-				"Exiting on cancel, all data _not_ backed up, stopped before backing up '%s'.\n",
+				"Exiting on cancel, all data was not backed up, halted before backing up '%s'.\n",
 				info.name);
 			exit(1);
 		}
@@ -479,7 +479,7 @@ void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 		if (pi_file_retrieve(f, sd, 0) < 0)
 			printf("Failed, unable to back up database\n");
 		else
-			printf("OK\n");
+			printf("done.\n");
 		pi_file_close(f);
 
 		/* Note: This is no guarantee that the times on the host
@@ -848,12 +848,10 @@ void Install(char *filename)
 	if (pi_file_install(f, sd, 0) < 0)
 		printf("failed.\n");
 	else
-		printf("OK\n");
+		printf("done.\n");
 	pi_file_close(f);
 
 	VoidSyncFlags();
-
-	printf("Install done\n");
 }
 
 /***********************************************************************

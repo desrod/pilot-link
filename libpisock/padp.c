@@ -208,7 +208,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 					flags = 0;
 					break;
 				} else {
-					fprintf(stderr, "Weird packet\n");
+					fprintf(stderr, "\n   Weird packet (port speed problem?)\n");
 					/* Got unknown packet */
 					/* Don't consume packet */
 					errno = EIO;
@@ -349,7 +349,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
 				    time(NULL) + recStartTimeout / 1000;
 				fprintf(stderr, "Got tickled\n");
 			}
-			fprintf(stderr, "Wrong packet type on queue\n");
+			fprintf(stderr, "\n   Wrong packet type on queue (port speed problem?)\n");
 			ps->rxq = skb->next;
 
 			free(skb);
