@@ -145,7 +145,7 @@ extern int pi_write (int pi_sd, void *msg, int len);
 extern int pi_getsockname (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT);
 extern int pi_getsockpeer (int pi_sd, struct sockaddr *OUTPUT, int *OUTPUT);
 
-extern int pi_setmaxspeed (int pi_sd, int speed, int overclock);
+// extern int pi_setmaxspeed (int pi_sd, int speed, int overclock);
 extern int pi_getsockopt (int pi_sd, int level, int option_name, void * option_value, int * option_len);
 
 extern int pi_version (int pi_sd);
@@ -701,9 +701,9 @@ extern PIERROR pi_file_merge (struct pi_file *pf, int socket, int cardno);
 // pi-slp
 // pi-sync
 
-// and some miscellaneous things
-void PalmHeader (char *progname);
 
+// and some miscellaneous things 
+void print_splash (char *progname); 
 
 %{
 
