@@ -33,9 +33,9 @@
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-error.h"
+#include "pi-source.h"
+#include "pi-header.h"
 
-/* Prototypes */
-int pilot_connect(char *port);
 
 /* For various protocol versions, set to 0 to not test those versions */
 #define DLP_1_1 1

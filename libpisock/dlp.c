@@ -154,7 +154,9 @@ char * exp_errorlist[] = {
 	"Incompatible API version"
 };
 
+#ifdef DLP_TRACE
 static int dlp_trace = 0;
+#endif
 static int dlp_version_major = PI_DLP_VERSION_MAJOR;
 static int dlp_version_minor = PI_DLP_VERSION_MINOR;
 

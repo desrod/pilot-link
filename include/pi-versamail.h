@@ -43,6 +43,8 @@ extern "C" {
 
 	extern int unpack_VersaMail
 	    PI_ARGS((struct VersaMail *, unsigned char *record, int len));
+	extern int pack_VersaMail
+	    PI_ARGS((struct VersaMail *a, unsigned char *buffer, int len));
 	
 	extern void free_VersaMail PI_ARGS((struct VersaMail *));
 
