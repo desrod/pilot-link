@@ -3,6 +3,8 @@
 	* install-memo.c: Fixed an error that reported the following:
 	  "cannot open install-memo (No such file or directory)"
 
+	* libsock/pi-file.c: Fixed a problem when size was uninitialized.
+
 2002-01-29  David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* CodingGuidelines: moved to doc

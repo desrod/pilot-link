@@ -1195,6 +1195,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 	int 	db,
 		l,
 		j,
+		size		= 0,
 		written 	= 0;
 	
 	unsigned char buffer[0xffff];
@@ -1214,12 +1215,12 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 		return -1;
 
 	if (pf->info.flags & dlpDBFlagResource)
+
 		for (j = 0; j < l; j++) {
-			int 	id,
-				size;
+			int 	id;
 			unsigned long type;
 
-			written = written + size;
+			written += size;
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
@@ -1234,8 +1235,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 			}
 	} else
 		for (j = 0; j < l; j++) {
-			int 	size,
-				attr,
+			int 	attr,
 				category;
 			unsigned long id;
 
@@ -1246,7 +1246,7 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 				return -1;
 			}
 
-			written = written + size;
+			written += size;
 			display_rate(j + 1, l, written,
 				     (int) ((unsigned long) time(NULL) -
 					    start_time));
@@ -1283,6 +1283,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 		l,
 		j,
 		reset 		= 0,
+		size		= 0,
 		flags,
 		version,
 		freeai 		= 0;
@@ -1398,7 +1399,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	/* Resource or record? */
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < pf->nentries; j++) {
-			int 	size;
+//			int 	size;
 
 			if ((pi_file_read_resource(pf, j, 0, &size, 0, 0)
 			     == 0) && (size > 65536)) {
@@ -1407,8 +1408,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			}
 		}
 		for (j = 0; j < pf->nentries; j++) {
-			int 	id,
-				size;
+			int 	id;
 			unsigned long type;
 
 			if (pi_file_read_resource
@@ -1442,8 +1442,7 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 			}
 		}
 		for (j = 0; j < pf->nentries; j++) {
-			int 	size,
-				attr,
+			int 	attr,
 				category;
 			unsigned long id;
 
