@@ -328,8 +328,9 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 {
 	int 	i,
 		ofile_len,
-		ofile_total;
-	
+		ofile_total,
+		filecount 	= 0;	
+
 	static int totalsize;
 
 	struct 	dirent *dirent;
@@ -408,8 +409,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		i = info.index + 1;
 
 		if (dlp_OpenConduit(sd) < 0) {
-			printf("\n");
-			printf("Exiting on cancel, all data was not backed " 
+			printf("\nExiting on cancel, all data was not backed " 
 			       "up.\nStopped before backing up '%s'.\n\n",
 				info.name);
 			fflush(stdout);
@@ -427,7 +427,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 
 		for (x = 0; x < numexclude; x++) {
 			if (strcmp(exclude[x], info.name) == 0) {
-				fprintf(stdout, "== Excluding '%s'...\n", name);
+				fprintf(stdout, "=== Excluding '%s'...\n", name);
 				RemoveFromList(name, orig_files, ofile_total);
 				skip = 1;
 			}
@@ -437,54 +437,56 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 			continue;
 
 		if (rom == 1 && creator_is_PalmOS(info.creator)) {
-			printf("== OS file, skipping '%s'.\n", info.name);
+			printf("=== OS file, skipping '%s'.\n", info.name);
 			continue;
 		} else if (rom == 2 && !creator_is_PalmOS(info.creator)) {
-			printf("== Non-OS file, skipping '%s'\n", info.name);
+			printf("=== Non-OS file, skipping '%s'\n", info.name);
 			continue;
 		}
 
 		if (!unsaved
 		    && strcmp(info.name, "Unsaved Preferences") == 0) {
-			printf("== Skipping '%s'\n", info.name);
+			printf("=== Skipping '%s'\n", info.name);
 			continue;
 		}
 
 		if (only_changed) {
 			if (stat(name, &statb) == 0) {
 				if (info.modifyDate == statb.st_mtime) {
-					printf("No change, skipping '%s'.\n", info.name);
+					printf("No change, skipping '%s'\r", info.name);
 					RemoveFromList(name, orig_files, ofile_total);
+					fflush(stdout);
 					continue;
 				}
 			}
 		}
 
 		if (only_changed) {
-			fprintf(stdout, "Synchronizing %-35s\n", name); 
+			printf("[%-3d] Synchronizing %-35.30s", filecount, name); 
 		} else {
-			printf("Backing up %-35s", name);
-			fflush(stdout);
+			printf("[%-3d] Backing up %-35.30s", filecount, name);
 		}
+		fflush(stdout);
+		filecount++;
 
 		/* Ensure that DB-open and DB-ReadOnly flags are not kept */
 		info.flags &= ~(dlpDBFlagOpen | dlpDBFlagReadOnly);
 
 		f = pi_file_create(name, &info);
 		if (f == 0) {
-			printf("Failed, unable to create file\n");
+			printf("\nFailed, unable to create file\n");
 			break;
 		}
 
 		if (pi_file_retrieve(f, sd, 0) < 0) {
-			printf("Failed, unable to back up database\n");
+			printf("\nFailed, unable to back up database %s\n", name);
 		} else if (stat(name, &sbuf) == 0) {
-			printf("\n\t(%7ld bytes, %3d kb total)\n\n", 
-				sbuf.st_size, totalsize/1024);
+			printf("[%7ld bytes/%3d kb total]", sbuf.st_size, totalsize/1024);
 			totalsize += sbuf.st_size;
-		} else {
-			printf("\n");
 		}
+
+		fputs("\x1B[K\r", stdout );
+		fflush(stdout);
 
 		pi_file_close(f);
 
@@ -507,7 +509,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 		if (remove_deleted && dlp_OpenConduit(sd) < 0) {
 			/* If the connection has gone down here, there is
 			   probably a communication error. */
-			printf("Exiting on error, stopped before removing files.\n");
+			printf("\nExiting on error, stopped before removing files.\n");
 			exit(1);
 		}
 
@@ -516,7 +518,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted,
 				if (remove_deleted) {
 
 					if (archive_dir) {
-						printf("Archiving '%s'.\n", orig_files[i]);
+						printf("Archiving '%s'", orig_files[i]);
 						sprintf(newname, "%s/%s", archive_dir, &orig_files[i] [dirname_len + 1]);
 						if (rename (orig_files[i], newname) != 0) {
 							printf("rename(%s, %s) ", orig_files [i], newname);
