@@ -104,7 +104,12 @@ AC_C_CONST
 AC_HEADER_TIME
 AC_STRUCT_TM
 AC_PROG_GCC_TRADITIONAL
+
+dnl autoconf's test isn't -Werror clean.  Oops.
+save_CFLAGS="$CFLAGS"
+CFLAGS=`echo $save_CFLAGS | sed -e s/-Werror//g`
 AC_TYPE_SIGNAL
+CFLAGS="$save_CFLAGS"
 
 AC_CHECK_HEADERS(
 	dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h 		\
