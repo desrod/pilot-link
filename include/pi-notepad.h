@@ -43,6 +43,10 @@ typedef struct {
 #define NOTE_OUT_PPM       0x01
 #define NOTE_OUT_PNG       0x02
    
+/* Data Type */
+#define NOTEPAD_DATA_BITS  0x01     // OS 4 notepad
+#define NOTEPAD_DATA_PNG   0x02     // OS 5 notepad
+   
 /* Note structure
  When flags = 0x03
    noteHdr_t
@@ -61,7 +65,7 @@ typedef struct {
    unsigned long width;
    unsigned long height;
    unsigned long l1;		/* 1 ul x ?			*/
-   unsigned long l2;		/* 1 ul y ?			*/
+   unsigned long dataType;
    unsigned int dataLen;	/* length of dataRecs in bytes	*/
 } body_t;
    
