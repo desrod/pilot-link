@@ -272,8 +272,7 @@ pilot_foto_LDADD = 		\
 #	parsedate.y		\
 #	pilot-mail.c
 #pilot_mail_LDADD = 		\
-#	$(top_builddir)/libpisock/libpisock.la	\
-	$(top_builddir)/popt/libpopt.la
+#	$(top_builddir)/libpisock/libpisock.la
 ######################################################
 
 pilot_prc_SOURCES = 		\
@@ -332,7 +331,7 @@ read_screenshot_SOURCES =	\
 read_screenshot_LDADD =		\
         $(PNG_LIBS)		\
         $(top_builddir)/libpisock/libpisock.la	\
-        $(top_builddir)/popt/libpopt.la
+	$(POPT_LIBS)
 
 read_todos_SOURCES = 		\
 	$(getopt_sources)	\
