@@ -9,7 +9,7 @@ record's image will be converted to files, using Portable Network Graphic
 
 .SH SYNOPSIS
 .B read-notepad 
-\-p <port> --list
+\-p <port> --list --type <type>
 
 .SH DESCRIPTION
 .B read-notepad 
@@ -20,7 +20,7 @@ by installed libraries at build time) on their system.
 
 .SS OPTIONS
 .TP
-.BI \-p\ \--port\  <port> ,
+.BI \-p\ \--port\  <port>\,
 Use device file 
 .I port
 to communicate with the Palm handheld device. If this is not specified, will
@@ -38,15 +38,18 @@ Display version of
 .B read-notepad
 
 .TP
-.BI \-l\ --list\,
+.BI \-l\ \--list\,
 List picture information found on the device instead of converting them to
 image files
+
+.TP
+.BI \-t\ --type\  <type>\,
+Specify the output picture type. Can be either "png" or "ppm".
 
 .SH USAGE
 The program will connect to the target Palm handheld device, and list or
 convert the records and images found in the Palm Notepad application to
-Portable Network Graphic (.png) or Portable Pixmap (.ppm) files. The output
-type is currently a compile time option.
+Portable Network Graphic (.png) or Portable Pixmap (.ppm) files.
 
 .SH KNOWN BUGS
 .B read-notepad
