@@ -5,6 +5,12 @@
 
 	* libpisock++/dlp.cc: Ditto
 
+	* doc/README.usb: Updated text for 0.11.5, need more detail
+	
+	* NEWS: Ditto
+
+	* configure.in: Fixed minor typo
+
 2002-09-27  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Python/src/pisock.i: Added pilot_connect() 

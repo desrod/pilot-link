@@ -1,4 +1,4 @@
-;# This is free software, licensed under the GNU Public License V2.
+# This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
 AC_INIT(include/pi-cmp.h)
 AM_CONFIG_HEADER(config.h)
@@ -22,7 +22,7 @@ dnl ******************************
 dnl Pilot Link Library Version
 dnl ******************************
 PISOCK_CURRENT=8
-PISOCK_REVISION=1
+PISOCK_REVISION=2
 PISOCK_AGE=0
 
 AC_SUBST(PISOCK_CURRENT)
