@@ -38,7 +38,7 @@ static void print_help(char *progname);
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
 	{"port",        required_argument, NULL, 'p'},
-	{"cat",         required_argument, NULL, 'c'},
+	{"category",    required_argument, NULL, 'c'},
 	{NULL,          0,                 NULL, 0}
 };
 */

@@ -34,7 +34,7 @@ struct option options[] = {
 	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{"user",        required_argument, NULL, 'u'},
-	{"userid",      required_argument, NULL, 'i'},
+	{"id",          required_argument, NULL, 'i'},
 	{NULL,          0,                 NULL, 0}
 };
 
@@ -47,7 +47,7 @@ static void print_help(char *progname)
 	       "                       -o <hostname> -a <ip> -n <subnet>\n"
 	       "   Options:\n"
 	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -u <username>     Your username, use quotes for spaces (see example)\n"
+	       "     -u <username>     Set the username, use quotes for spaces (see example)\n"
 	       "     -i <userid>       A 5-digit numeric UserID, required for PalmOS\n"
 	       "     -h --help         Display this information\n"
 	       "     -v --version      Display version information\n\n"

@@ -34,9 +34,9 @@ struct option options[] = {
 	{"version",     no_argument,       NULL, 'v'},
 	{"port",        required_argument, NULL, 'p'},
 	{"enable",      no_argument,       NULL, 'e'},
-	{"hostname",    required_argument, NULL, 'H'},
-	{"address",     required_argument, NULL, 'a'},
-	{"netmask",     required_argument, NULL, 'n'},
+	{"name",        required_argument, NULL, 'n'},
+	{"ip",          required_argument, NULL, 'i'},
+	{"mask",        required_argument, NULL, 'm'},
 	{NULL,          0,                 NULL, 0}
 };
 
@@ -48,10 +48,10 @@ static void print_help(char *progname)
 	       "   Usage: %s -p <port> -H <hostname> -a <ip> -n <subnet>\n\n"
 	       "   Options:\n"
 	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -e <hostname>     Enables LANSync on the Palm\n"
-	       "     -H <hostname>     The hostname of the desktop you are syncing with\n"
-	       "     -a <ip address>   IP address of the machine you connect your Palm to\n"
-	       "     -n <netmask>      The subnet mask of the network your Palm is on\n"
+	       "     -e                Enables LANSync on the Palm\n"
+	       "     -n <name>         The hostname of the desktop you are syncing with\n"
+	       "     -i, --ip <ip>     IP address of the machine you connect your Palm to\n"
+	       "     -m <mask>         The subnet mask of the network your Palm is on\n"
 	       "     -h, --help        Display this information\n"
 	       "     -v, --version     Display version information\n\n"
 	       "   Examples: %s -p /dev/pilot -H \"localhost\" -a 127.0.0.1 -n 255.255.255.0\n\n",
