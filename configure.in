@@ -1,6 +1,7 @@
 # This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
 AC_INIT(include/pi-version.h.in)
+AC_PREFIX_DEFAULT(/usr/local)
 
 dnl AC_PREREQ(2.53)
 
