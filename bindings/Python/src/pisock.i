@@ -53,30 +53,29 @@ from pisockextras import *
 #include "pi-source.h"
 #include "pi-error.h"
 
-
 #define DGETLONG(src,key,default) (PyDict_GetItemString(src,key) ? \
 				   PyInt_AsLong(PyDict_GetItemString(src,key)) : default)
 
 #define DGETSTR(src,key,default) (PyDict_GetItemString(src,key) ? \
 				  PyString_AsString(PyDict_GetItemString(src,key)) : default)
 
-static PyObject *PIError;
-static PyObject *DLPError;
+static PyObject *PIError = NULL;
+static PyObject *DLPError = NULL;
 %}
 
 %init %{
-  PIError = PyErr_NewException("pisock.error", NULL, NULL);
-  Py_INCREF(PIError);
-  PyDict_SetItemString(d, "error", PIError);
+	PIError = PyErr_NewException("pisock.error", NULL, NULL);
+	Py_INCREF(PIError);
+	PyDict_SetItemString(d, "error", PIError);
 
-  DLPError = PyErr_NewException("pisock.dlperror", PIError, NULL);
-  Py_INCREF(DLPError);
-  PyDict_SetItemString(d, "dlperror", DLPError);
+	DLPError = PyErr_NewException("pisock.dlperror", PIError, NULL);
+	Py_INCREF(DLPError);
+	PyDict_SetItemString(d, "dlperror", DLPError);
 %}
 
 %pythoncode %{ 
-error = _pisock.error 
-dlperror = _pisock.dlperror
+	error = _pisock.error 
+	dlperror = _pisock.dlperror
 %} 
 
 %include typemaps.i
