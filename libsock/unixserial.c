@@ -235,6 +235,13 @@ static int s_changebaud(struct pi_socket *ps)
 #ifndef SGTTY
   struct termios tcn;
 
+#ifdef sleeping_beauty
+  struct timeval tv; 
+  tv.tv_sec = 0;
+  tv.tv_usec = 50000;
+  select(0,0,0,0, &tv);
+#endif
+
   /* Set the tty to the new speed */
   tcgetattr(ps->mac->fd,&tcn);
 
@@ -244,7 +251,9 @@ static int s_changebaud(struct pi_socket *ps)
   tcsetattr(ps->mac->fd,TCSADRAIN,&tcn);
 
 #ifdef sleeping_beauty
-  sleep(1);
+  tv.tv_sec = 0;
+  tv.tv_usec = 50000;
+  select(0,0,0,0, &tv);
 #endif
 
 #else
@@ -268,17 +277,13 @@ static int s_close(struct pi_socket *ps)
   int result;
 #ifndef SGTTY
 
-#ifdef sleeping_beauty
-  sleep(1);
-#endif
-
   tcsetattr(ps->mac->fd,TCSADRAIN, &ps->tco);
 #else
 
   ioctl(ps->mac->fd, TIOCSETP, &ps->tco);
 
 #endif
-
+    
   result = close(ps->mac->fd);
   ps->mac->fd = 0;
 

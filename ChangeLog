@@ -1,3 +1,21 @@
+Jun 22, 1997	Kenneth Albanowski 0.7.1
+
+	Added Ian's patches to install man-pages, and dump records in
+		pilot-file.
+	Added Andreas Wrede's patch to sync-ical.
+	Added Tero Kivinen's patch to add RecordID to read-ical.
+	Modified PI_AF_* constants to reduce likelyhood of conflicting with
+		AF_INET constant.
+	Added a new UNIX serial pause after baud rate negotation even if the
+		rate didn't change. This prevents a dropped packet.
+	Tuned serial pauses before and after baud rate change. I am now losing
+		no packets at all. OS/2 code may need to be adjusted in a similar
+		manner.
+	Added pi_file_merge routine and -m switch to pilot-xfer. This merges
+		record from a file into an existing database, which is especially
+		useful for Dinkypad. Note that this could potentially damage some
+		third-party application databases.
+
 Jun 14, 1997	Kenneth Albanowski 0.7.0
 
 	Substantial modification to socket implementation. The serial and socket

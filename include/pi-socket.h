@@ -9,14 +9,14 @@ extern "C" {
 
 #define PILOT_LINK_VERSION 0
 #define PILOT_LINK_MAJOR 7
-#define PILOT_LINK_MINOR 0
+#define PILOT_LINK_MINOR 1
 
-#define PI_AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
-#define PI_AF_INETSLP 0x0004    
+#define PI_AF_SLP 0x0051        /* arbitrary, for completeness, just in case */
+#define PI_AF_INETSLP 0x0054    
 
 #define PI_PF_SLP    PI_AF_SLP
-#define PI_PF_PADP   0x0002
-#define PI_PF_LOOP   0x0003
+#define PI_PF_PADP   0x0052
+#define PI_PF_LOOP   0x0053
 
 #define PI_SOCK_STREAM    0x0010
 #define PI_SOCK_DGRAM     0x0020

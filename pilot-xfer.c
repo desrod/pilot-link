@@ -406,6 +406,37 @@ void Install(char * filename)
   printf("Install done\n");
 }
 
+void Merge(char * filename)
+{
+  struct pi_file * f;
+  
+  Connect();
+
+  if ( dlp_OpenConduit(sd) < 0) {
+    puts("Exiting on cancel. All data not restored.");
+    exit(1);
+  }
+
+  f = pi_file_open(filename);
+  if (f==0) {
+    printf("Unable to open '%s'!\n", filename);
+    return;
+  }
+  
+  
+  printf("Merging %s... ", filename);
+  fflush(stdout);
+  if(pi_file_merge(f, sd, 0)<0)
+    printf("failed.\n");
+  else
+    printf("OK\n");
+  pi_file_close(f);
+  
+  VoidSyncFlags();
+
+  printf("Merge done\n");
+}
+
 void List(void)
 {
   struct DBInfo info;
@@ -483,6 +514,7 @@ void Help(void)
       printf("Where a command is one of: -b(ackup)  backupdir\n");
       printf("                           -r(estore) backupdir\n");
       printf("                           -i(nstall) filename \n");
+      printf("                           -m(erge)   filename \n");
       printf("                           -f(etch)   dbname   \n");
       printf("                           -d(elete)  dbname   \n");
       printf("                           -e(xclude) filename\n");
@@ -509,7 +541,7 @@ int main(int argc, char *argv[])
   device = argv[1];
   
   optind = 2;
-  while ((c = getopt(argc, argv, "b:e:r:i:f:d:plh")) != -1) {
+  while ((c = getopt(argc, argv, "b:e:r:i:m:f:d:plh")) != -1) {
     switch (c) {
     case 'b':
       Backup(optarg);
@@ -519,6 +551,9 @@ int main(int argc, char *argv[])
       break;
     case 'i':
       Install(optarg);
+      break;
+    case 'm':
+      Merge(optarg);
       break;
     case 'f':
       Fetch(optarg);

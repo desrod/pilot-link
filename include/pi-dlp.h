@@ -54,7 +54,7 @@ struct CardInfo {
 };
 
 struct NetSyncInfo {
-  int active;
+  int lansync;
   char PCName[256]; /* Null terminated string */
   char PCAddr[40]; /* Null terminated string */
   char PCMask[40]; /* Null terminated string */

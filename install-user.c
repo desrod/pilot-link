@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   struct PilotUser U;
   struct SysInfo S;
   struct CardInfo C;
+  struct NetSyncInfo N;
   unsigned long romversion;
   int ret;
 
@@ -95,6 +96,11 @@ int main(int argc, char *argv[])
   dlp_ReadFeature(sd, makelong("psys"), 1, &romversion);
   
   printf( "ROM Version through ReadFeature: 0x%8.8lX\n", romversion);
+  
+  if (dlp_ReadNetSyncInfo(sd, &N) >= 0) {
+    printf( "NetSync: LAN sync = %d, Host name = '%s', address = '%s', netmask ='%s'\n",
+    	N.lansync, N.PCName, N.PCAddr, N.PCMask);
+  }
   
   pi_close(sd);
   exit(0);

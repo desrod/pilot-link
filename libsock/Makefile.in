@@ -17,9 +17,9 @@ VPATH = @srcdir@
 CC = @CC@
 CFLAGS = @CFLAGS@ @CWFLAG@ -I../include -I$(srcdir)/../include
 # -DPADP_TRACE
+# -DDEBUG
 # -DNO_DLP_TRACE
 # -DNO_SERIAL_TRACE
-# -DDEBUG
 AR = ar
 ARFLAGS = @ARFLAGS@
 RANLIB = @RANLIB@

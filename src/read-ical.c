@@ -117,8 +117,10 @@ int main(int argc, char *argv[])
   for (i=0;1;i++) {
   	struct ToDo t;
   	int attr, category;
+  	recordid_t id;
+  	char id_buf[255];
   	                           
-  	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr, &category);
+  	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, &category);
   	if(len<0)
   		break;
   		
@@ -133,6 +135,8 @@ int main(int argc, char *argv[])
 	fprintf(ical,"$n date [date today]\n");
 	fprintf(ical,"$n todo 1\n");
 	fprintf(ical,"$n option Priority %d\n", t.priority);
+        sprintf(id_buf, "%lx", id);
+        fprintf(ical,"$i option PilotRecordId %s\n", id_buf);
 	fprintf(ical,"$n done %d\n", t.complete ? 1 : 0);
 	fprintf(ical,"cal add $n\n");
 	
@@ -158,8 +162,10 @@ int main(int argc, char *argv[])
   	int j;
   	struct Appointment a;
   	int attr;
+  	recordid_t id;
+  	char id_buf[255];
   	                           
-  	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr, 0);
+  	int len = dlp_ReadRecordByIndex(sd, db, i, buffer, &id, 0, &attr, 0);
   	if(len<0)
   		break;
   		
@@ -252,6 +258,9 @@ int main(int argc, char *argv[])
 	} else 
           fprintf(ical,"$i date $begin\n");
 	
+        sprintf(id_buf, "%lx", id);
+        fprintf(ical,"$i option PilotRecordId %s\n", id_buf);
+        
 	fprintf(ical,"cal add $i\n");
 
 	free_Appointment(&a);

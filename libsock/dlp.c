@@ -94,6 +94,32 @@ int dlp_trace = 0;
 #endif
 
 
+#if 0
+/* Eventual code to dynamically allocate buffer */
+void * dlp_buffer(int sd, int cmd, int arg, int arglen, struct pi_socket * ps)
+{
+  unsigned char * buf;
+  *ps = pi_find_socket(sd);
+  if (*ps)
+    return 0;
+  
+  len = 50 + msglen;
+  if (ps->dlpbuflen < len) {
+    ps->dlpbuflen = len+1024;
+    if (ps->dlpbuf) 
+      ps->dlpbuf = realloc(ps->dlpbuf, ps->dlpbuflen);
+    else
+      ps->dlpbuf = malloc(ps->dlpbuflen);
+  }
+  
+  buf = ps->dlpbuf;
+  
+  buf[0] = (unsigned char)cmd;
+  buf[1] = etc.
+  
+}
+#endif
+
 int dlp_exec(int sd, int cmd, int arg, 
              const unsigned char /*@null@*/ *msg, int msglen, 
              unsigned char /*@out@*/ /*@null@*/ *result, int maxlen)
@@ -1005,7 +1031,7 @@ int dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo * i)
   Expect(24);
   
 
-  i->active = get_byte(dlp_buf);
+  i->lansync = get_byte(dlp_buf);
   p = 24;
 
   memcpy(i->PCName, dlp_buf+p, get_short(dlp_buf+18));
@@ -1047,7 +1073,7 @@ int dlp_WriteNetSyncInfo(int sd, struct NetSyncInfo * i)
 #endif
   
   set_byte(dlp_buf, 0x80|0x40|0x20|0x10); /* Change all settings */
-  set_byte(dlp_buf+1, i->active);
+  set_byte(dlp_buf+1, i->lansync);
   set_long(dlp_buf+2, 0);  /* Reserved1 */
   set_long(dlp_buf+6, 0);  /* Reserved2 */
   set_long(dlp_buf+10, 0); /* Reserved3 */

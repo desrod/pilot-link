@@ -49,6 +49,7 @@ extern int pi_file_append_record PI_ARGS((struct pi_file *pf, void *buf, int siz
 			     
 extern int pi_file_retrieve PI_ARGS((struct pi_file * pf, int socket, int cardno));
 extern int pi_file_install PI_ARGS((struct pi_file * pf, int socket, int cardno));
+extern int pi_file_merge PI_ARGS((struct pi_file * pf, int socket, int cardno));
 
 #ifdef __cplusplus
 }

@@ -63,7 +63,7 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 
       nskb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
       
-      nskb->type = ps->protocol;
+      nskb->type = 2;
       nskb->dest = nskb->source = PI_PilotSocketDLP;
       nskb->id = ps->xid;
 
@@ -241,7 +241,7 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
     
     nskb = (struct pi_skb *)malloc(sizeof(struct pi_skb));
 
-    nskb->type = ps->protocol;
+    nskb->type = 2;
     nskb->dest = nskb->source = PI_PilotSocketDLP;
     nskb->id = ps->xid;
 

@@ -46,7 +46,8 @@ int pi_socket(int domain, int type, int protocol)
       protocol = PI_PF_SLP;
   }
 
-  if ((domain != PI_AF_SLP) ||
+  if (((domain != PI_AF_SLP) && 
+       (domain != AF_INET)) ||
       ((type  != PI_SOCK_STREAM) &&
       (type   != PI_SOCK_RAW)) ||
       ((protocol != PI_PF_PADP) &&

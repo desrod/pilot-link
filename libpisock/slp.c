@@ -145,7 +145,7 @@ int slp_rx(struct pi_socket *ps)
       
       /* hack to ignore LOOP packets... */
 
-      if (ps->mac->rxb->data[5] == PI_PF_LOOP) {
+      if (ps->mac->rxb->data[5] == 3 /*PI_PF_LOOP*/) {
 	ps->mac->expect = 1;
 	ps->mac->state = 1;
 	ps->mac->rxb->next = (struct pi_skb *)0;

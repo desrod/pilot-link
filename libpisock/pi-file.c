@@ -883,12 +883,13 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
   /* Compensate for bug in OS 2.x Memo */
   if((version > 0x0100) && (strcmp(pf->info.name, "MemoDB")==0) && (l>0) && (l<282))
   {
-      /* Justification: The appInfo structure was accidentally lengthend in OS 2.0,
-         but the Memo application does not check that it is long enough, hence the
-         shorter block from OS 1.x will cause the 2.0 Memo application to lock up
-         if the sort preferences are modified. This code detects the installation
-         of a short app info block on a 2.0 machine, and lengthens it. This 
-         transformation will never lose information. */
+      /* Justification: The appInfo structure was accidentally lengthend in
+         OS 2.0, but the Memo application does not check that it is long
+         enough, hence the shorter block from OS 1.x will cause the 2.0 Memo
+         application to lock up if the sort preferences are modified. This
+         code detects the installation of a short app info block on a 2.0
+         machine, and lengthens it. This transformation will never lose
+         information. */
 
       void * b2 = calloc(1, 282);
       memcpy(b2, buffer, l);
@@ -948,5 +949,65 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
 fail:
   dlp_CloseDB(socket, db);
   dlp_DeleteDB(socket, cardno, pf->info.name);
+  return -1;
+}  	
+
+int pi_file_merge(struct pi_file * pf, int socket, int cardno)
+{
+  int db;
+  int j;
+  int reset = 0;
+  int version;
+  void * buffer;
+  
+  version = pi_version(socket);
+  
+  if(dlp_OpenDB(socket, cardno, dlpOpenReadWrite|dlpOpenSecret, pf->info.name, &db)<0)
+    return pi_file_install(pf, socket, cardno);
+  
+  /* All system updates seen to have the 'ptch' type, so trigger a reboot on those */
+  if (pf->info.creator == pi_mktag('p','t','c','h'))
+    reset = 1; 
+   
+  if (pf->info.flags & dlpDBFlagReset)
+    reset = 1;
+      
+  /* Resource or record? */
+  if(pf->info.flags & dlpDBFlagResource)
+    for(j=0;j<pf->nentries;j++) {
+      unsigned long type;
+      int id;
+      int size;
+      if( (pi_file_read_resource(pf, j, &buffer, &size, &type, &id)<0) ||
+          (dlp_WriteResource(socket, db, type, id, buffer, size)<0) ) {
+        goto fail;
+      }
+
+      /* If we see a 'boot' section, regardless of file type, require reset */
+      if (type == pi_mktag ('b','o','o','t')) 
+        reset = 1;
+    }
+  else
+    for(j=0;j<pf->nentries;j++) {
+      unsigned long id;
+      int size;
+      int attr;
+      int category;
+      if(pi_file_read_record(pf, j, &buffer, &size, &attr, &category, &id)<0)
+        goto fail;
+      if ((attr & (dlpRecAttrArchived|dlpRecAttrDeleted)) &&
+         (version < 0x0101))
+         continue; /* Old OS cannot install deleted records, so don't try */
+      if(dlp_WriteRecord(socket, db, attr, 0, category, buffer, size, 0)<0)
+        goto fail;
+    }
+  
+  if(reset)
+    dlp_ResetSystem(socket);
+  	
+  return dlp_CloseDB(socket, db);
+
+fail:
+  dlp_CloseDB(socket, db);
   return -1;
 }  	

@@ -43,10 +43,11 @@ usage (void)
   fprintf (stderr, "  -l      list records\n");
   fprintf (stderr, "  -r #    dump a record\n");
   fprintf (stderr, "  -v      dump all data and all records\n");
+  fprintf (stderr, "  -R, -V  as -r, -v, but also dump resources to files\n");
   exit (1);
 }
 
-int hflag, aflag, sflag, vflag, lflag, rflag, rnum;
+int hflag=0, aflag=0, sflag=0, vflag=0, lflag=0, rflag=0, rnum=0, filedump=0;
 
 int
 main (int argc, char **argv)
@@ -58,7 +59,7 @@ main (int argc, char **argv)
   
   progname = argv[0];
 
-  while ((c = getopt (argc, argv, "haslr:v")) != EOF) {
+  while ((c = getopt (argc, argv, "haslr:R:vV")) != EOF) {
     switch (c) {
     case 'h':
       hflag = 1;
@@ -69,12 +70,18 @@ main (int argc, char **argv)
     case 's':
       sflag = 1;
       break;
+    case 'V':
+      filedump = 1;
+      /* FALLTHROUGH */
     case 'v':
       vflag = 1;
       break;
     case 'l':
       lflag = 1;
       break;
+    case 'R':
+      filedump = 1;
+      /* FALLTHROUGH */
     case 'r':
       rflag = 1;
       rnum = atoi(optarg);
@@ -237,6 +244,15 @@ list_records (struct pi_file *pf, struct DBInfo *ip)
       if (vflag) {
         dump(buf,size);
         printf ("\n");
+	if (filedump) {
+	    FILE *fp;
+	    char name[64];
+	    sprintf(name, "%4s%04x.bin", printlong(type), id);
+	    fp = fopen(name, "w");
+	    fwrite(buf, size, 1, fp);
+	    fclose(fp);
+	    printf("(written to %s)\n", name);
+	}
       }
     }
   } else {
@@ -277,6 +293,15 @@ dump_record (struct pi_file *pf, struct DBInfo *ip, int record)
     }
     printf ("%d\t%d\t%s\t%d\n", record, size, printlong(type), id);
     dump(buf,size);
+    if (filedump) {
+	FILE *fp;
+	char name[64];
+	sprintf(name, "%4s%04x.bin", printlong(type), id);
+	fp = fopen(name, "w");
+	fwrite(buf, size, 1, fp);
+	fclose(fp);
+	printf("(written to %s)\n", name);
+    }
   } else {
     printf ("entries\n");
     printf ("index\tsize\tattrs\tcat\tuid\n");

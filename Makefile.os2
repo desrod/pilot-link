@@ -26,7 +26,7 @@ bindir = @bindir@
 libdir = @libdir@
 pixdir = ${libdir}/pix
 includedir = @includedir@
-mandir = @mandir@
+mandir = @mandir@/man1
 srcdir = ./
 VPATH = ./
 
@@ -105,6 +105,9 @@ install: $(EXECS) installdirs libpisock.a
 	done
 	for h in include/*.h $(srcdir)/include/*.h; do \
 		$(INSTALL_DATA) $$h $(includedir)/`basename $$h`; \
+	done
+	for m in $(srcdir)/man/*; do \
+		$(INSTALL_DATA) $$m $(mandir)/`basename $$m`; \
 	done
 	for p in $(srcdir)/pix/*.gif $(srcdir)/pix/*.xbm; do \
 		$(INSTALL_DATA) $$p $(pixdir)/`basename $$p`; \
@@ -226,6 +229,12 @@ parsedate.c: parsedate.y
 
 strip: $(EXECS)
 	$(STRIP) $(EXECS)
+
+Perl5/PDAPilot/Makefile: Perl5/PDAPilot/Makefile.PL
+	cd Perl5/PDAPilot && perl Makefile.PL
+
+perl: Perl5/PDAPilot/Makefile
+	cd Perl5/PDAPilot && make
 
 distclean: clean
 	@-p4 edit Makefile.os2 */Makefile.os2 */Makefile.in 2>&1 >> /dev/null

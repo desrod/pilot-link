@@ -410,6 +410,8 @@ int main(int argc, char *argv[])
   abs.Compare = Compare;
   abs.Transmit = Transmit;
   abs.FreeTransmit = FreeTransmit;
+
+  fprintf(stderr, "A Warning be upon Ye: Here Be Dragons!\nThis program is incomplete, ill-considered, and unreliable!\nDo not Rely on without Consideration of Completing the program...\n\n");
   
   if (argc < 2) {
     fprintf(stderr,"usage:%s %s # A directory called Memos will be created!\n",argv[0],TTYPrompt);

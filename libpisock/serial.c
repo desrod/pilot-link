@@ -182,6 +182,14 @@ static int pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *ad
       pi_serial_flush(accept);
       if(accept->rate != 9600) {
         accept->serial_changebaud(accept);
+      } else {
+        /* Apparently the device reconfigures its serial port even if the
+           baud rate is unchanged, so we'll need to pause a little so that
+           the next transmitted packet won't be lost */
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 50000;
+        select(0, 0, 0, 0, &tv);
       }
       accept->connected = 1;
       accept->dlprecord = 0;
