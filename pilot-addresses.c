@@ -297,16 +297,27 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo * aai)
 void deleterecords(int sd, int db, int cat) {
 	int rcat, rattr, i;
 	recordid_t id;
+	int del;
 	
-	for(i=0;;i++) {
-	  if (dlp_ReadRecordByIndex(sd,db,i,0,&id,0,&rattr,&rcat)<0)
-	    break;
-	  if (rattr & (dlpRecAttrDeleted| dlpRecAttrArchived))
-	    continue;
+	/* The outermost loop is an abominable hack to assure all records
+	   worthy of deletion are actually deleted. It appears that
+	   deleting a record moves it to the end of the list, thus
+	   causing only half the records to be deleted. The loop should
+	   guarantee that all are deleted. */
+	do {
+	  del = 0;
+	  for(i=0;;i++) {
+	    if (dlp_ReadRecordByIndex(sd,db,i,0,&id,0,&rattr,&rcat)<0)
+	      break;
+	    if (rattr & (dlpRecAttrDeleted| dlpRecAttrArchived))
+	      continue;
 	  
-	  if (rcat == cat)
-	    dlp_DeleteRecord(sd, db, 0, id);
-	}
+	    if (rcat == cat) {
+	      dlp_DeleteRecord(sd, db, 0, id);
+	      del++;
+	    }
+	  }
+	} while (del>0);
 }
 
 char * progname;

@@ -27,7 +27,7 @@
 # include <errno.h>
 # define TTYPrompt "com#"
 # define RETSIGTYPE void
-
+# define HAVE_SIGACTION
 #else
 # include "pi-config.h"
 #endif

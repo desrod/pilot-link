@@ -16,6 +16,8 @@
 #include "pi-slp.h"
 #include "pi-serial.h"
 
+int sys_RPCerror;
+
 int syspkt_tx(struct pi_socket *ps, unsigned char *msg, int length)
 {
   struct pi_skb *nskb;
@@ -48,12 +50,15 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
   int rlen =0;
   
   if (!ps->rxq)
-    pi_socket_read(ps, 10);
+    pi_socket_read(ps, 1);
+  
+  if (!ps->rxq)
+    return 0;
 
   skb = ps->rxq;
   ps->rxq = skb->next;
   
-  rlen = skb->len;
+  rlen = skb->len-12;
   
   buf[0] = ps->laddr.port;
   buf[1] = ps->raddr.port;
@@ -66,6 +71,154 @@ int syspkt_rx(struct pi_socket *ps, unsigned char *buf, int len)
   return rlen+4;
 
 }
+
+
+int sys_UnpackState(void * buffer, struct Pilot_state * s)
+{
+  unsigned char * data = buffer;
+// printf("\n%s:%x:d84> current state:\n",
+//	    		sidename[slp->side], slp->pid);
+  s->reset = get_short(data);
+  s->exception = get_short(data+2);
+  memcpy(s->func_name, data+152, 32);
+  s->func_name[32-1] = 0;
+  sys_UnpackRegisters(data+4, &s->regs);
+  
+  return 0;
+/*	    	printf("  Just reset: %s, exception: %4.4x\n",
+	    		get_short(slp->data+2) ? "yes" : "no", 
+	    		get_short(slp->data+4));
+	    	for (i=0;i<8;i++) {
+	    		printf("  D%d: %8.8X",
+	    			i, get_long(slp->data+6+i*4));
+	    		if (i<7)
+	    			printf("    A%d: %8.8X",
+	    				i, get_long(slp->data+38+i*4));
+	    		printf("\n");
+	    	}
+	    	printf("  USP: %8.8X    SSP: %8.8X\n",
+	    		get_long(slp->data+66), get_long(slp->data+70));
+	    	printf("  PC:  %8.8X    SR:  %4.4X\n",
+	    		get_long(slp->data+74), get_short(slp->data+78));
+	    	printf("  Instructions at PC:\n");
+	    	dumpdata(slp->data+80, 15*2);
+	    	printf("  Breakpoints:\n");
+	    	for (i=0;i<6;i++) {
+	    		printf("    #%d: @ %8.8X, Enabled: %s, installed %s\n",
+	    			i,
+	    			get_long(slp->data+110+i*6),
+	    			get_byte(slp->data+114+i*6) ? "yes" : "no",
+	    			get_byte(slp->data+115+i*6) ? "yes" : "no");
+	    	}
+	    	printf("  Start address of function: %8.8X, end address: %8.8X\n",
+	    		get_long(slp->data+146), get_long(slp->data+150));
+	    	printf("  Function name '%.32s'\n", slp->data+154);
+	    	printf("  Trap table revision: %x\n", get_short(slp->data+186));
+	    	break;
+*/
+}
+
+int sys_UnpackRegisters(void * data, struct Pilot_registers * r)
+{
+  unsigned char * buffer = data;
+  r->D[0] = get_long(buffer+0);
+  r->D[1] = get_long(buffer+4);
+  r->D[2] = get_long(buffer+8);
+  r->D[3] = get_long(buffer+12);
+  r->D[4] = get_long(buffer+16);
+  r->D[5] = get_long(buffer+20);
+  r->D[6] = get_long(buffer+24);
+  r->D[7] = get_long(buffer+28);
+  r->A[0] = get_long(buffer+32);
+  r->A[1] = get_long(buffer+36);
+  r->A[2] = get_long(buffer+40);
+  r->A[3] = get_long(buffer+44);
+  r->A[4] = get_long(buffer+48);
+  r->A[5] = get_long(buffer+52);
+  r->A[6] = get_long(buffer+56);
+  r->USP = get_long(buffer+60);
+  r->SSP = get_long(buffer+64);
+  r->PC = get_long(buffer+68);
+  r->SR = get_short(buffer+72);
+  
+  return 0;
+}
+
+int sys_PackRegisters(void * data, struct Pilot_registers * r)
+{
+  unsigned char * buffer = data;
+  int i;
+  for (i=0;i<8;i++)
+    set_long(buffer+i*4, r->D[i]);
+  for (i=0;i<7;i++)
+    set_long(buffer+32+i*4, r->A[i]);
+  set_long(buffer+60, r->USP);
+  set_long(buffer+64, r->SSP);
+  set_long(buffer+68, r->PC);
+  set_short(buffer+72, r->SR);
+  
+  return 0;
+}
+
+int sys_Continue(int sd, struct Pilot_continue * c)
+{
+  char buf[94];
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0x07;
+  buf[5] = 0; /*gapfil*/
+  
+  sys_PackRegisters(buf+6, &c->regs);
+  set_byte(buf+80, c->watch);
+  set_byte(buf+81, 0);
+  set_long(buf+82, c->watch_address);
+  set_long(buf+86, c->watch_length);
+  set_long(buf+90, c->watch_checksum);
+  
+  return pi_write(sd, buf, 94);
+}
+
+int sys_SetBreakpoints(int sd, struct Pilot_breakpoint * b)
+{
+  char buf[94];
+  int i;
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0x0c;
+  buf[5] = 0; /*gapfil*/
+  
+  for (i=0;i<6;i++) {
+    set_long(buf+6+i*6, b[i].address);
+    set_byte(buf+7+i*6, b[i].enabled);
+    set_byte(buf+8+i*6, b[i].installed);
+  }
+  
+  return pi_write(sd, buf, 42);
+}
+
+int sys_QueryState(int sd)
+{
+  char buf[6];
+  
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = 0;
+  
+  buf[4] = 0;
+  buf[5] = 0; /*gapfil*/
+  
+  return pi_write(sd, buf, 6);
+}
+
 
 int sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed, 
                        int keymod, int keyasc, int keycode)
@@ -97,31 +250,17 @@ int sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
   return pi_write(sd, buf, 16+4);
 }
 
-int sys_RPC(int sd, int dlp, int trap, long * D0, long * A0, int params, struct RPC_param * param, int rep)
+int sys_RPC(int sd, int socket, int trap, long * D0, long * A0, int params, struct RPC_param * param, int reply)
 {
   unsigned char buf[4096];
   int i;
   unsigned char * c;
   
-  /* dlp flag is intended to let RPC work within DLP layer. Unfortunately, I
-     can't make it work at all, either due to bugs in the code, or my lack
-     of understanding of how it should be implemented. The documentation is
-     not good. */
-         
-  if (dlp) {
-    buf[0] = 0x2D;
-    buf[1] = 1;
-    buf[2] = 0x20|0x80;
-    buf[3] = 0;
-    buf[4] = 0;
-    buf[5] = 0;
-  } else {
-    buf[0] = 1;
-    buf[1] = 1;
-    buf[2] = 0;
-    buf[4] = 0x0a;
-    buf[5] = 0;
-  }
+  buf[0] = socket; /* 0 for debug, 1 for console */
+  buf[1] = socket;
+  buf[2] = 0;
+  buf[4] = 0x0a;
+  buf[5] = 0;
   
   set_short(buf+6, trap);
   set_long(buf+8, *D0);
@@ -137,15 +276,20 @@ int sys_RPC(int sd, int dlp, int trap, long * D0, long * A0, int params, struct 
     c += param[i].size;
   }
   
-  if (dlp)
+  if (socket == 3)
     set_short(buf+4, c-buf - 6);
   
   pi_write(sd, buf, c-buf);
   
-  if(rep) {
-    pi_read(sd, buf, 4096);
+  if(reply) {
+    int l = pi_read(sd, buf, 4096);
   
-    /* FIXME: Check to make sure incoming packet is response */
+    if (l < 0)
+      return l;
+    if (l < 6)
+      return -1;
+    if (buf[4] != 0x8a)
+      return -2;
     
     *D0 = get_long(buf+8);
     *A0 = get_long(buf+12);
@@ -161,7 +305,7 @@ int sys_RPC(int sd, int dlp, int trap, long * D0, long * A0, int params, struct 
   return 0;
 }
 
-int RPC(int sd, int trap, int ret, ...)
+int RPC(int sd, int socket, int trap, int reply, ...)
 {
   va_list ap;
   struct RPC_param p[20];
@@ -169,7 +313,7 @@ int RPC(int sd, int trap, int ret, ...)
   int i=0,j;
   long D0=0,A0=0;
 
-  va_start(ap, ret);
+  va_start(ap, reply);
   while(1) {
     int type = va_arg(ap, int);
     if(type == 0)
@@ -200,12 +344,12 @@ int RPC(int sd, int trap, int ret, ...)
   }
   va_end(ap);
   
-  sys_RPC(sd, 0, trap, &D0, &A0, i, p, ret != 2);
+  sys_RPCerror = sys_RPC(sd, socket, trap, &D0, &A0, i, p, reply != 2);
   
   for(j=0;j<i;j++) {
-      if(p[i].invert) {
-        void * c = p[i].data;
-        if(p[i].size == 2) {
+      if(p[j].invert) {
+        void * c = p[j].data;
+        if(p[j].size == 2) {
           int * s = c;
           *s = htons(*s);
         } else {
@@ -215,41 +359,39 @@ int RPC(int sd, int trap, int ret, ...)
       }
   }
   
-  if(ret)
+  if(reply)
     return A0;
   else
     return D0;
 }
 
-int dlp_ProcessRPC(int sd, int trap, int ret, ...)
+int PackRPC(struct RPC_params * p, int trap, int reply, ...)
 {
-  /* Flat busted. Sorry. */
-
   va_list ap;
-  struct RPC_param p[20];
-  int RPC_arg[20];
-  int i=0,j;
-  long D0=0,A0=0;
+  int i=0;
+  
+  p->trap = trap;
+  p->reply = reply;
 
-  va_start(ap, ret);
+  va_start(ap, reply);
   while(1) {
-    int type = va_arg(ap, int);
+    int type = (int)va_arg(ap, int);
     if(type == 0)
       break;
     if(type < 0) {
-      p[i].byRef = 0;
-      p[i].size = -type;
-      RPC_arg[i] = va_arg(ap,int);
-      p[i].data = &RPC_arg[i];
-      p[i].invert = 0;
+      p->param[i].byRef = 0;
+      p->param[i].size = -type;
+      p->param[i].arg = (int)va_arg(ap, int);
+      p->param[i].data = &p->param[i].arg;
+      p->param[i].invert = 0;
     } else {
-      void * c = va_arg(ap,void*);
-      p[i].byRef = 1;
-      p[i].size = type;
-      p[i].data = c;
-      p[i].invert = va_arg(ap,int);
-      if(p[i].invert) {
-        if(p[i].size == 2) {
+      void * c = (void*)va_arg(ap,void*);
+      p->param[i].byRef = 1;
+      p->param[i].size = type;
+      p->param[i].data = c;
+      p->param[i].invert = (int)va_arg(ap,int);
+      if(p->param[i].invert) {
+        if(p->param[i].size == 2) {
           int * s = c;
           *s = htons(*s);
         } else {
@@ -260,14 +402,27 @@ int dlp_ProcessRPC(int sd, int trap, int ret, ...)
     }
     i++;
   }
+  p->args = i;
   va_end(ap);
   
-  sys_RPC(sd, 1, trap, &D0, &A0, i, p, ret != 2);
+  return 0;
+}
+
+unsigned long DoRPC(int sd, int socket, struct RPC_params * p, int * error)
+{
+  int j;
+  int err;
+  unsigned long D0=0,A0=0;
+
+  err = sys_RPC(sd, socket, p->trap, &D0, &A0, p->args, &p->param[0], p->reply);
   
-  for(j=0;j<i;j++) {
-      if(p[i].invert) {
-        void * c = p[i].data;
-        if(p[i].size == 2) {
+  if (error)
+    *error = err;
+  
+  for(j=0;j<p->args;j++) {
+      if(p->param[j].invert) {
+        void * c = p->param[j].data;
+        if(p->param[j].size == 2) {
           int * s = c;
           *s = htons(*s);
         } else {
@@ -277,27 +432,29 @@ int dlp_ProcessRPC(int sd, int trap, int ret, ...)
       }
   }
   
-  if(ret)
+  if(p->reply==RPC_PtrReply)
     return A0;
-  else
+  else if (p->reply==RPC_IntReply)
     return D0;
+  else
+    return err;
 }
 
 int RPC_Int_Void(int sd, int trap) {
-  return RPC(sd, trap, 0, RPC_End);
+  return RPC(sd, 1, trap, 0, RPC_End);
 }
 
 int RPC_Ptr_Void(int sd, int trap) {
-  return RPC(sd, trap, 1, RPC_End);
+  return RPC(sd, 1, trap, 1, RPC_End);
 }
 
 /* Untested complex RPC example
 int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
                     long * freeram) {
-  return RPC(sd, 0xA004, 0, RPC_Short(cardno), RPC_Ptr(cardname, 32), 
-                            RPC_Ptr(manufname, 32), RPC_ShortPtr(version),
-                            RPC_LongPtr(date), RPC_LongPtr(romsize),
-                            RPC_LongPtr(ramsize), RPC_LongPtr(freeram));
+  return RPC(sd, 1, 0xA004, 0, RPC_Short(cardno), RPC_Ptr(cardname, 32), 
+                               RPC_Ptr(manufname, 32), RPC_ShortPtr(version),
+                               RPC_LongPtr(date), RPC_LongPtr(romsize),
+                               RPC_LongPtr(ramsize), RPC_LongPtr(freeram));
 }                    
 */

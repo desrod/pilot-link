@@ -146,11 +146,6 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   tcn.c_cc[VMIN] = 1;
   tcn.c_cc[VTIME] = 0;
   
-#ifdef linux
-  i=TIOCM_RTS|TIOCM_DTR;
-  i=ioctl(ps->mac.fd,TIOCMSET,&i);
-#endif                  
-
   tcsetattr(ps->mac.fd,TCSANOW,&tcn);
 #else
   /* Set the tty to raw and to the correct speed */
@@ -296,7 +291,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
     }
   ps->mac.fd=fd;
   pi_device_changebaud(ps);
-  pi_socket_set_timeout(ps,-1,60);
+  pi_socket_set_timeout(ps,-1,600);
   
 #ifdef SERIAL_TRACE
   if (debugh==0) {
@@ -421,7 +416,7 @@ int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
     }
       else
 	{
-	  newtimeout=read_timeout * 10 -0.1;
+	  newtimeout=read_timeout -0.1;
 	  if (newtimeout>65535)
 	    newtimeout=65535;
 	  devinfo.usReadTimeout=newtimeout;
@@ -436,7 +431,7 @@ int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
       else
 	{
 	  devinfo.fbTimeout &= 0xFE;
-	  newtimeout=write_timeout*10;
+	  newtimeout=write_timeout;
 	  if (newtimeout>65535)
 	    newtimeout=65535;
 	  devinfo.usWriteTimeout=newtimeout;
@@ -549,7 +544,7 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
 #endif
 
   /* FIXME: if timeout == 0, wait forever for packet, otherwise wait till
-     timeout seconds */
+     timeout tenth-of-seconds */
 
 #ifdef OS2
   /* for OS2, timeout of 0 is almost forever, only 1.8 hours */
@@ -573,8 +568,8 @@ int pi_socket_read(struct pi_socket *ps, int timeout)
       if (rc)
 #else /* #ifdef OS2 */
       ready2 = ready;
-      t.tv_sec = timeout;
-      t.tv_usec = 0;
+      t.tv_sec = timeout/10;
+      t.tv_usec = (timeout % 10) * 100000;
       select(ps->mac.fd+1,&ready2,0,0,&t);
       /* If data is available in time, read it */
       if(FD_ISSET(ps->mac.fd,&ready2))

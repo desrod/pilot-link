@@ -15,6 +15,10 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 
+#ifdef OS2
+#include <sys/select.h>
+#endif
+
 int done = 0;
 
 void read_user(int sd)
@@ -31,25 +35,25 @@ void read_user(int sd)
     sys_RemoteEvent(sd, 1, 5,200, 0, 0,0,0); /* Set the pen down */
     sys_RemoteEvent(sd, 0, 5,200, 0, 0,0,0); /* And then lift it up */
   } else if(strcmp(line,"reboot")==0) {
-    RPC(sd, 0xA08C, 2, RPC_End);
+    RPC(sd, 1, 0xA08C, 2, RPC_End);
   } else if(strcmp(line,"coldboot")==0) {
-    RPC(sd, 0xA08B, 2, RPC_Long(0),RPC_Long(0),RPC_Long(0),RPC_Long(0), RPC_End);
+    RPC(sd, 1, 0xA08B, 2, RPC_Long(0),RPC_Long(0),RPC_Long(0),RPC_Long(0), RPC_End);
   } else if(strcmp(line,"numdb")==0) {
     printf("Number of databases on card 0: %d\n",
-      RPC(sd, 0xA043, 0, RPC_Short(0), RPC_End)
+      RPC(sd, 1, 0xA043, 0, RPC_Short(0), RPC_End)
     );
   } else if(strcmp(line,"dbinfo")==0) {
     long creator, type, appInfo, sortInfo, modnum, backdate, moddate, crdate, version, attr;
     char name[32];
 
-    int id = RPC(sd, 0xA044, 0, RPC_Short(0), RPC_Short(0), RPC_End);
+    int id = RPC(sd, 1, 0xA044, 0, RPC_Short(0), RPC_Short(0), RPC_End);
                           
-    RPC(sd, 0xA046, 0, RPC_Short(0), RPC_Long(id), 
-                       RPC_Ptr(name,32),
-                       RPC_ShortRef(attr), RPC_ShortRef(version), RPC_LongRef(crdate),
-                       RPC_LongRef(moddate), RPC_LongRef(backdate), RPC_LongRef(modnum),
-                       RPC_LongRef(appInfo), RPC_LongRef(sortInfo), RPC_LongRef(type),
-                       RPC_LongRef(creator), RPC_End);
+    RPC(sd, 1, 0xA046, 0, RPC_Short(0), RPC_Long(id), 
+                          RPC_Ptr(name,32),
+                          RPC_ShortRef(attr), RPC_ShortRef(version), RPC_LongRef(crdate),
+                          RPC_LongRef(moddate), RPC_LongRef(backdate), RPC_LongRef(modnum),
+                          RPC_LongRef(appInfo), RPC_LongRef(sortInfo), RPC_LongRef(type),
+                          RPC_LongRef(creator), RPC_End);
     
     printf("The name of db 0 (LocalID %x) is %s\n", id, name);
     

@@ -7,6 +7,11 @@ Sorry for not providing decent information here. The basics are:
     
   3) play around, _carefully_. pilot-xfer is probably the most useful
      program for you, and also the safest.
+     
+Note on pilot-debug: this program is a work-in-progress, and requires Tcl
+7.6 (or greater) and Tk 4.2 (or greater). You'll need to modify Makefile to
+compile it (the directions are right at the top.) Currently pilot-debug needs to
+be executed in the pilot-link directory if you want the fancy images.
 
 Usage notes:
 

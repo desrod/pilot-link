@@ -1,4 +1,22 @@
-Feb 23, 1997	Kenneth Albanowski
+Mar  2, 1997	Kenneth Albanowski 0.5.2
+
+	Added Pilot-debug executable -- you'll need to modify Makefile to
+	    compile it, read README for further instructions.
+	Removed Linux DTR & RTS code, as per Ted Ts'o's request.
+	Added Matthew Schnee's latest OS/2 patches.
+	Changed default connection rate to 9600 from 19200. (For some reason
+	    19200 now doesn't seem to be working on my machine. I have no
+	    idea where the problem lies, hardware or software.)
+	Modified lib/serial code (both UNIX and OS/2 sections) to use timeouts
+	    specified in tenth seconds, allowing finer grained timeouts. This is
+	    specifically used in the syspkt code to respond faster to RPC
+	    failures.
+	Modified lib/syspkt.c and include/pi-syspkt.h extensively to support
+	    pilot-debug. This includes new packet transmission routines and
+	    more modular RPC code.
+	Added hack fix for deletion problem in pilot-addresses.
+	
+Feb 23, 1997	Kenneth Albanowski 0.5.1
 
 	Added getrom executable, and included getrom.prc from CoPilot
 	    distribution with Greg Hewgill's permission.

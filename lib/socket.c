@@ -58,7 +58,7 @@ int pi_socket(int domain, int type, int protocol)
 #ifdef __sgi
     ps->establishrate = 9600; /* Default PADP connection rate */
 #else
-    ps->establishrate = 19200; /* Default PADP connection rate */
+    ps->establishrate = 9600 /*19200*/; /* Default PADP connection rate */
 #endif
     if (getenv("PILOTRATE"))
     	ps->establishrate = atoi(getenv("PILOTRATE"));
@@ -181,7 +181,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
 
   if(ps->type == PI_SOCK_STREAM) {
 
-    pi_socket_read(ps, 20);
+    pi_socket_read(ps, 200);
     if(cmp_rx(ps, &c) < 0)
       return -1; /* Failed to establish connection, errno already set */
 
@@ -197,7 +197,7 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
         return -1;
       if(ps->rate != 9600) {
         pi_socket_flush(ps);
-        pi_device_changebaud(ps);
+       /* pi_device_changebaud(ps);*/
       }
       ps->connected = 1;
     }else {

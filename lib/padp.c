@@ -17,8 +17,8 @@
 #include "pi-slp.h"
 #include "pi-serial.h"
 
-#define xmitTimeout 4
-#define xmitRetries 14
+#define xmitTimeout 4*10
+#define xmitRetries 14*10
 
 /*@+matchanyintegral@*/
 
@@ -157,8 +157,8 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
   return count;
 }
 
-#define recStartTimeout 45
-#define recSegTimeout 45
+#define recStartTimeout 45*10
+#define recSegTimeout 45*10
 
 
 int padp_rx(struct pi_socket *ps, void *buf, int len)

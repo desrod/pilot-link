@@ -7,6 +7,9 @@
  */
 
 #include <stdio.h>
+#ifdef __EMX__
+#include <sys/types.h>
+#endif
 #include <sys/stat.h>
 #include <signal.h>
 #include "pi-source.h"

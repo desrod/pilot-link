@@ -20,7 +20,7 @@ int cmp_rx(struct pi_socket *ps, struct cmp * c)
   Begin(cmp_rx);
   
   if(!ps->rxq)
-    pi_socket_read(ps, 20);
+    pi_socket_read(ps, 200);
   l = padp_rx(ps, cmpbuf, 10);
   
   if( l < 10)

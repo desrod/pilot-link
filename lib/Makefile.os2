@@ -11,7 +11,7 @@ UTILOBJS = utils.o
 OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS)
 
 CC = gcc
-CFLAGS = -g -O2 -Wall -I../include
+CFLAGS = -g -O2 -fno-strength-reduce -Wall -I../include
 # -DSERIAL_TRACE
 # -DDLP_TRACE
 # -DPADP_TRACE

@@ -1,12 +1,21 @@
+
+## If you want to make pilot-debug, and have Tcl >= 7.6 and Tk >= 4.2, then
+## uncomment the following lines and correct the library and include
+## paths to match what is needed on your system
+
+#TKDEBUG = pilot-debug$(EXT)
+#TKLIBS  = -L/usr/local/tcl8.0/lib -L/usr/X11/lib -ltk -ltcl -lX11 -ldl -lm
+#TKINCS  = -I/usr/local/tcl8.0/include
+
 CC = gcc
-CFLAGS = -g -O2 -Wall -I./include
+CFLAGS = -g -O2 -fno-strength-reduce -Wall -I./include $(TKINCS)
 # -DDEBUG
 RANLIB = ar -s
 RM = rm -f
 STRIP = strip
 LIBS = -lsocket -los2
 # -lefence
-CPLIB = copy
+CPLIB = cp
 EXT = .EXE
 SUBMAKE_COMM = $(MAKE) -C lib -f Makefile.os2
 
@@ -17,7 +26,7 @@ EXECS = install-memo$(EXT) install-user$(EXT)\
 		pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT)\
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		test-connector$(EXT) test-acceptor$(EXT) debugsh$(EXT) dlpsh$(EXT) \
-		getrom$(EXT)
+		getrom$(EXT) $(TKDEBUG)
 
 PILIBS = libpisock.a
 
@@ -49,6 +58,9 @@ pilot-xfer$(EXT): $(PILIBS) pilot-xfer.o
 
 pilot-file$(EXT): $(PILIBS) pilot-file.o
 	$(CC) $(CFLAGS) pilot-file.o $(PILIBS) -o $@ $(LIBS)
+
+pilot-debug$(EXT): $(PILIBS) pilot-debug.o
+	$(CC) $(CFLAGS) pilot-debug.o $(PILIBS) -o $@ $(TKLIBS) $(LIBS)
 
 reminders$(EXT): $(PILIBS) reminders.o
 	$(CC) $(CFLAGS) reminders.o $(PILIBS) -o $@ $(LIBS)
@@ -82,6 +94,7 @@ dlpsh$(EXT): $(PILIBS) dlpsh.o
 
 debugsh$(EXT): $(PILIBS) debugsh.o
 	$(CC) $(CFLAGS) debugsh.o $(PILIBS) -o $@ $(LIBS)
+
 
 getrom$(EXT): $(PILIBS) getrom.o
 	$(CC) $(CFLAGS) getrom.o $(PILIBS) -o $@ $(LIBS)

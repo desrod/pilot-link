@@ -30,7 +30,7 @@ void free_Appointment(struct Appointment * a) {
 
 void unpack_Appointment(struct Appointment * a, unsigned char * buffer, int len) {
   int iflags;
-  char * p2;
+  unsigned char * p2;
   unsigned long d;
   int j;
   
