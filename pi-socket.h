@@ -50,6 +50,8 @@ struct pi_socket {
   struct pi_skb *txq;
   struct pi_skb *rxq;
   struct pi_socket *next;
+  int rate;
+  int connected;
   int tx_packets;
   int rx_packets;
   int tx_bytes;

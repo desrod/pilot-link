@@ -17,6 +17,10 @@
 #include <sys/ioctl_compat.h>
 #endif
 
+#if defined(linux) || defined(bsdi)
+#define POSIX
+#endif
+
 #ifndef N_TTY
 #ifndef NTTYDISC
 #error "Can't define line discipline"
@@ -41,7 +45,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   }
 
   /* Set the tty to raw and to the correct speed */
-#ifdef bsdi
+#ifdef POSIX
   tcgetattr(ps->mac.fd,&tcn);
 #else
   ioctl(ps->mac.fd,TCGETS,&tcn);
@@ -52,11 +56,12 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   tcn.c_oflag = 0;
   tcn.c_iflag = IGNBRK | IGNPAR;
 
+  /* Always start a connection at 9600 baud */
   tcn.c_cflag = CREAD | CLOCAL | B9600 | CS8 ;
 
   tcn.c_lflag = NOFLSH;
 
-#ifdef bsdi
+#ifdef POSIX
   cfmakeraw(&tcn);
 #else
   tcn.c_line = N_TTY;
@@ -66,8 +71,13 @@ int pi_device_open(char *tty, struct pi_socket *ps)
 
   tcn.c_cc[VMIN] = 1;
   tcn.c_cc[VTIME] = 0;
+  
+#ifdef linux
+  i=TIOCM_RTS|TIOCM_DTR;
+  i=ioctl(ps->mac.fd,TIOCMSET,&i);
+#endif                  
 
-#ifdef bsdi
+#ifdef POSIX
   tcsetattr(ps->mac.fd,TCSANOW,&tcn);
 #else
   ioctl(ps->mac.fd,TCSETSW,&tcn);
@@ -76,9 +86,64 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   return ps->mac.fd;
 }
 
+int pi_device_changebaud(struct pi_socket *ps, int baudrate)
+{
+  int i;
+  struct termios tcn;
+
+  /* Set the tty to the new speed */
+#ifdef POSIX
+  tcgetattr(ps->mac.fd,&tcn);
+#else
+  ioctl(ps->mac.fd,TCGETS,&tcn);
+#endif
+
+  ps->tco = tcn;
+
+  tcn.c_cflag &= ~CBAUD;
+
+  if(baudrate == 9600)
+    baudrate = B9600;
+#ifdef B19200
+  else if(baudrate == 19200)
+    baudrate = B19200;
+#endif
+#ifdef B38400
+  else if(baudrate == 38400)
+    baudrate = B38400;
+#endif
+#ifdef B57600
+  else if(baudrate == 57600)
+    baudrate = B57600;
+#endif
+#ifdef B115200
+  else if(baudrate == 115200)
+    baudrate = B115200;
+#endif
+  else
+    abort(); /* invalid baud rate */
+                                                     
+  tcn.c_cflag |= baudrate;
+
+#ifdef POSIX
+  tcsetattr(ps->mac.fd,TCSANOW,&tcn);
+#else
+  ioctl(ps->mac.fd,TCSETSW,&tcn);
+#endif
+
+
+#ifdef linux
+  /* this pause seems necessary under Linux to let the serial
+     port realign itself */
+  sleep(1);
+#endif
+
+  return 0;
+}
+
 int pi_device_close(struct pi_socket *ps)
 {
-#ifdef bsdi
+#ifdef POSIX
   tcsetattr(ps->mac.fd,TCSANOW, &ps->tco);
 #else
   ioctl(ps->mac.fd,TCSETSW,&ps->tco);
@@ -96,6 +161,9 @@ int pi_socket_send(struct pi_socket *ps)
     ps->txq = skb->next;
 
     write(ps->mac.fd,skb->data,skb->len);
+#ifdef DEBUG
+    write(6,skb->data,skb->len);
+#endif
     ps->tx_bytes += skb->len;
     free(skb);
 
@@ -123,6 +191,9 @@ int pi_socket_read(struct pi_socket *ps)
 
     while (ps->mac.expect) {
       r = read(ps->mac.fd, buf, ps->mac.expect);
+#ifdef DEBUG
+      write(7, buf, r);
+#endif
       ps->rx_bytes += r;
       buf += r;
       ps->mac.expect -= r;

@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include "pi-socket.h"
 
-static unsigned char Ident[] = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned char User[] = { 0x10, 0};
 
 static unsigned char SyncClose[] = { 0x29, 0 };
@@ -45,7 +44,6 @@ main(int argc, char *argv[])
 
   buf = (char *)malloc(4096);  /* some huge (in Pilot terms) working space */
 
-  pi_write(sd,Ident,sizeof(Ident));
   pi_write(sd,User,sizeof(User));
   pi_read(sd,userid,64);
 
@@ -56,9 +54,10 @@ main(int argc, char *argv[])
   
   /* I think this is End Of Session */
 
-  pi_write(sd,EOS,sizeof(EOS));
-  pi_read(sd, buf, 64);
+  dlp_EndOfSync(sd, 0);
 
+  pi_close(sd);
+  
   /* wait a second, for things to close */
   sleep(1);
 }

@@ -98,6 +98,8 @@ main(int argc, char *argv[])
   pi_write(sd,EOS,sizeof(EOS));
   pi_read(sd, buf, 64);
 
+  pi_close(sd);
+
   /* wait a second, for things to close */
   sleep(1);
 }

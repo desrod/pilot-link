@@ -14,6 +14,8 @@
 #include <fcntl.h>
 #include "pi-socket.h"
 #include "padp.h"
+#include "cmp.h"
+#include "dlp.h"
 
 static struct pi_socket *psl = (struct pi_socket *)0;
 static int pi_next_socket = 3;            /* FIXME: This should be a real fd */
@@ -37,6 +39,8 @@ int pi_socket(int domain, int type, int protocol)
   memset(ps,0,sizeof(struct pi_socket));
 
   ps->protocol = protocol;
+  ps->rate = 19200;
+  ps->connected = 0;
 
   if (!psl) psl = ps;
   else {
@@ -53,6 +57,7 @@ int pi_socket(int domain, int type, int protocol)
 int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
 {
   struct pi_socket *ps;
+  struct cmp c;
   char buf[5];
 
   if (!(ps = find_pi_socket(pi_sd))) {
@@ -67,11 +72,39 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
   ps->raddr = *addr;
   ps->laddr = *addr;     /* FIXME: This is not always true! */
 
-  /* Now we send some magic to the other end.... */
 
-  padp_tx(ps,wakeup,sizeof(wakeup),padWake);
   pi_socket_read(ps);
-  padp_rx(ps, buf, 0);
+  cmp_rx(ps, &c); /* Accept incoming CMP wakeup packet */
+  
+  /* FIXME: if that wasn't a CMP wakeup packet, fail or loop */
+
+  if(c.commversion == 1) {
+    if(ps->rate > c.baudrate) {
+#ifdef DEBUG
+      printf("Rate %d too high, dropping to %d\n",ps->rate,c.baudrate);
+#endif      
+      ps->rate = c.baudrate;
+    }
+    cmp_init(ps, ps->rate);
+    if(ps->rate != 9600) {
+      pi_socket_flush(ps);
+      pi_device_changebaud(ps, ps->rate);
+    }
+    ps->connected = 1;
+
+    /* Now that we've made a successful connection,
+       make sure it goes away as needed */
+    
+    installexit();
+
+  } else {
+    cmp_abort(ps, 0x80); /* 0x80 means the comm version wasn't compatible*/
+    pi_device_close(addr->device, ps);
+    
+    /* FIXME: set errno to something useful */
+    return -1;
+  }
+  
 
   return 0;
 }
@@ -174,9 +207,50 @@ int pi_write(int pi_sd, void *msg, int len)
 
 int pi_close(int pi_sd)
 {
-  errno = ENOSYS;
-  return -1;
+  struct pi_socket *ps;
+
+  if (!(ps = find_pi_socket(pi_sd))) {
+    errno = ESRCH;
+    return -1;
+  }
+  
+  if (ps->connected & 1) { /* If socket is connected */
+    if (!(ps->connected & 2)) /* And it wasn't end-of-synced */
+      dlp_EndOfSync(pi_sd, 0);  /* Then do it now, with clean status */
+  
+    pi_socket_flush(ps);
+  
+    ps->connected = 0;
+  
+    pi_device_close(ps->raddr.device, ps); /* FIXME: raddr or laddr? */
+  }
+  
+  /* FIXME: remove socket from list */
+  return 0;
 }
+
+/* Install an atexit handler that closes open sockets */
+
+int pi_onexit(void)
+{
+  struct pi_socket *p, *n;
+
+  for (p=psl; p; p=n ) {
+    n = p->next;
+    pi_close(p->sd);
+  }
+}
+
+int installexit(void)
+{
+  static installedexit = 0;
+  
+  if (!installedexit)
+    atexit(pi_onexit);
+    
+  installedexit = 1;
+}
+
 
 /* Sigh.  Connect can't return a real fd since we don't know the device yet.
    Therefore, we need this uglyness so that ppl can use select() and friends */
