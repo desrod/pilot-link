@@ -407,10 +407,7 @@ int user_fn(int sd, int argc, const char *argv[])
 
 	char *userID, *viewerID, *lastSyncPC;
 
-	optind = 0;
-
 	poptContext po;
-
 	struct poptOption user_options[] = {
 		{"user", 	'u', POPT_ARG_STRING, &nUser.username, 'u', "Set Username on the Palm device (use double-quotes)"},
 		{"id", 		'i', POPT_ARG_STRING, &userID, 'i', "Set the numeric UserID on the Palm device"},
@@ -421,6 +418,7 @@ int user_fn(int sd, int argc, const char *argv[])
         	{ NULL, 0, 0, NULL, 0 }
 		} ;
 
+	optind = 0;
 	po = poptGetContext("dlpsh", argc, argv, user_options, 0);
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
