@@ -1,3 +1,451 @@
+2005-01-31 00:55  desrod
+
+	* configure.ac: Updated for latest manpage additions
+
+2005-01-31 00:39  desrod
+
+	* doc/man/: Makefile.am, debugsh.1.in, install-todos.1.in,
+	  money2qif.1.in, pi-csd.1.in, pi-nredir.1.in, pilot-clip.1.in,
+	  pilot-dedupe.1.in, pilot-file.1.in, pilot-schlep.1.in,
+	  pilot-treofoto.1.in, pilot-wav.1.in, read-screenshot.1.in,
+	  reminders.1.in: Adding missing manpages for -pre2
+
+2005-01-31 00:30  desrod
+
+	* doc/man/: addresses.1.in, dlpsh.1.in, hinotes.1.in,
+	  ietf2datebook.1.in, install-datebook.1.in, install-expenses.1.in,
+	  install-hinote.1.in, install-memo.1.in, install-netsync.1.in,
+	  install-todo.1.in, install-user.1.in, memos.1.in, pi-getram.1.in,
+	  pi-getrom.1.in, pi-getromtoken.1.in, pilot-addresses.1.in,
+	  pilot-archive.1.in, pilot-foto.1.in, pilot-link.7.in,
+	  pilot-xfer.1.in, read-expenses.1.in, read-ical.1.in,
+	  read-notepad.1.in, read-palmpix.1.in, read-todos.1.in,
+	  read-veo.1.in: Updated manpages from converted XML files in
+	  ../xml
+
+2005-01-31 00:25  desrod
+
+	* doc/xml/: addresses.xml, debugsh.xml, dlpsh.xml, hinotes.xml,
+	  ietf2datebook.xml, install-datebook.xml, install-expenses.xml,
+	  install-hinote.xml, install-memo.xml, install-netsync.xml,
+	  install-todo.xml, install-todos.xml, install-user.xml, memos.xml,
+	  money2qif.xml, pi-csd.xml, pi-getram.xml, pi-getrom.xml,
+	  pi-getromtoken.xml, pi-nredir.xml, pilot-addresses.xml,
+	  pilot-archive.xml, pilot-clip.xml, pilot-dedupe.xml,
+	  pilot-file.xml, pilot-foto.xml, pilot-link.xml, pilot-schlep.xml,
+	  pilot-treofoto.xml, pilot-wav.xml, pilot-xfer.xml,
+	  read-expenses.xml, read-ical.xml, read-notepad.xml,
+	  read-palmpix.xml, read-screenshot.xml, read-todos.xml,
+	  read-veo.xml, reminders.xml: Adding XML versions of the manpages
+	  to the tree. These will not be disted but will remain in CVS for
+	  continuous editing and updating. Thanks to Neil Williams for the
+	  first big push, with major modifications of his work on my part
+	  to unify them and clean them up a bit.
+
+2005-01-28 13:52  desrod
+
+	* bindings/Java/Makefile.am: Oops, commented line here causes
+	  java_files to go undefined, breaking the build. Fixed.
+
+2005-01-26 16:49  nicholas
+
+	* bindings/Python/: TODO, test.py, src/pi-socket.i, src/pisock.i,
+	  src/pisock.py, src/pisock_wrap.c: Expose pisock.error exception
+
+2005-01-25 10:48  fpillet
+
+	* libpisock/pi-file.c: check error in dlp_ReadAppBlock in
+	  pi_file_retrieve
+
+2005-01-25 10:39  fpillet
+
+	* libpisock/pi-file.c: Get info about the database first in all
+	  cases, and try to get the appBlock only if its size is > 0. This
+	  fixes a Treo 600 crash on some ROM files where you can't get
+	  their appBlock without crashing HotSync
+
+2005-01-25 09:01  fpillet
+
+	* src/pilot-xfer.c: updated to properly detect PQA files. Previous
+	  method using the Launchable flag was improper, as other files may
+	  also be launchable without being web clippings
+
+2005-01-25 08:42  fpillet
+
+	* include/pi-dlp.h: added new DB flag definitions up to (and
+	  including) OS 6 database flags. Renamed dlpDBFlagClipping to
+	  dlpDBFlagLaunchable as it is the official function of this bit
+
+2005-01-24 12:28  fpillet
+
+	* libpisock/linuxusb.c: Fixed typo
+
+2005-01-23 13:48  nicholas
+
+	* bindings/Python/: TODO, test.py, src/general-maps.i,
+	  src/pi-dlp-maps.i, src/pi-file.i, src/pi-header.i,
+	  src/pi-socket-maps.i, src/pi-socket.i, src/pi-source.i,
+	  src/pisock.i, src/pisock.py, src/pisock_wrap.c: * Moved entries
+	  out of pisock.i into several different files, to start   to
+	  improve maintainability
+
+	  * Have dlp_ReadDBList() return a list of dicts
+
+	  * Catch up with changes that broke compiling against 0.12 pre1
+	  (may still be   lots of other issues around here)
+
+	  * Removed most of the by-hand wrapping and improved swig typemaps
+	  to replace   it
+
+	  * Put a little hack in test.py so that it can run against an
+	  uninstalled	version of the pisock module
+
+2005-01-20 17:02  adridg
+
+	* src/pilot-xfer.c: Don't use asprintf since it isn't available
+	  everywhere (or we could have gone the route of providing a
+	  portability library). Fix a corner case where lack of memory
+	  could cause you to free a const string.
+
+2005-01-20 16:30  adridg
+
+	* configure.ac: Fix for 1416, 1418, I hope
+
+2005-01-20 16:07  adridg
+
+	* libpisock/inet.c, m4/socklen.m4: Typenames not for the squeamish
+
+2005-01-20 16:03  adridg
+
+	* libpisock/: connect.c, contact.c: More header-file madness
+
+2005-01-20 15:51  adridg
+
+	* libpisock/contact.c: stdint not everywhere
+
+2005-01-20 15:03  adridg
+
+	* libpisock/freebsdusb.c: Build
+
+2005-01-20 14:58  adridg
+
+	* include/pi-serial.h, libpisock/inet.c, libpisock/serial.c,
+	  libpisock/unixserial.c: Remove socklen_t from the API, and map to
+	  kde_socklen_t (the 'right' type for the third argument for
+	  accept(2)) where needed (only in inet.c).
+
+2005-01-20 14:50  adridg
+
+	* README: Remind for folks building from source on BSD
+
+2005-01-20 13:19  fpillet
+
+	* libpisock/: freebsdusb.c, inet.c, linuxusb.c: more flush() fixes
+
+2005-01-20 13:03  fpillet
+
+	* libpisock/libusb.c: added flush() support to libusb
+
+2005-01-20 11:59  fpillet
+
+	* libpisock/freebsdusb.c: added missing parameter to recv() in
+	  freebsdusb
+
+2005-01-20 11:55  fpillet
+
+	* libpisock/unixserial.c: fixed bug in my unixserial changes
+	  (doesn't seem to like using recv(Ã) instead of read())
+
+2005-01-20 11:13  fpillet
+
+	* libpisock/serial.c: forgot to duplicate the flush() ptr in
+	  pi_protocol_dup
+
+2005-01-20 10:20  fpillet
+
+	* libpisock/: darwinusb.c, linuxusb.c, unixserial.c, usb.c,
+	  freebsdusb.c, inet.c: flush() implementation at interface level,
+	  bug fixes
+
+2005-01-20 10:20  fpillet
+
+	* libpisock/: cmp.c, net.c, padp.c, slp.c, sys.c, serial.c:
+	  flush()Ã implementation in the protocol stack
+
+2005-01-20 10:18  fpillet
+
+	* include/: pi-serial.h, pi-source.h, pi-usb.h: added flush() call
+	  to protocol
+
+2005-01-20 10:18  fpillet
+
+	* include/pi-dlp.h: added constness to dlp_CallApplication()
+	  parameter, numbered DLP error codes to easy debugging
+
+2005-01-20 10:17  fpillet
+
+	* libpisock/dlp.c: flush input buffer before issuing a new DLP call
+	  to make sure we don't get an answer to a previous request
+
+2005-01-20 10:16  fpillet
+
+	* include/pi-socket.h, libpisock/socket.c: added pi_flush() call
+
+2005-01-19 16:02  adridg
+
+	* configure.ac: Check for ifaddrs.h (not present on Solaris) --
+	  adding a new AC_CHECK_HEADERS call instead of editing old,
+	  because this causes a smaller diff :)
+
+2005-01-19 15:58  adridg
+
+	* configure.ac, m4/socklen.m4: Configure check for socklen_t, which
+	  doesn't exist everywhere.
+
+2005-01-19 15:25  adridg
+
+	* src/read-screenshot.c, src/read-veo.c, tests/contactsdb-test.c:
+	  No stdint needed (or exists) on 4-stable
+
+2005-01-19 15:18  adridg
+
+	* src/: install-todo.c, pi-csd.c, pilot-xfer.c, read-palmpix.c:
+	  More gcc 2.95 / 4-stable stuff
+
+2005-01-19 15:11  adridg
+
+	* src/install-netsync.c: Another 4-stable fix: need sys/types for
+	  sys/socket; previous commit used HAVE_, but I see it's included
+	  unconditionally in other files, so do same here.
+
+2005-01-19 15:08  adridg
+
+	* src/dlpsh.c: gcc 2.95: no statements between declarations
+
+2005-01-19 14:26  adridg
+
+	* src/dlpsh.c: For Fernan: #include dependent system header for
+	  4-stable
+
+2005-01-19 14:21  adridg
+
+	* src/pilot-addresses.c: Constness, which I stumbled over when
+	  #including this file in a C++ program (KPilot, which needs
+	  compatible CSV output)
+
+2005-01-14 20:39  adridg
+
+	* doc/man/install-datebook.1.in, src/install-datebook.c: For bug
+	  1411: bail on file error _before_ connecting to the Pilot;
+	  improve manpage to state that exactly one file is read.
+
+2005-01-14 12:50  desrod
+
+	* configure.ac: Cut over to -pre2, so there is no confusion between
+	  HEAD and the current -pre1 release version.
+
+2005-01-10 17:34  adridg
+
+	* src/read-notepad.c: Default to a value that does not cause a
+	  warning when the value is left default
+
+2005-01-10 08:06  knghtbrd
+
+	* src/read-notepad.c: Default to png.  If you don't have libpng and
+	  don't specify that you want ppm, you'll get a warning about
+	  getting ppm instead of png.  I figure that is reasonable, pending
+	  a rewrite of this program which supports installing new notepad
+	  pages.
+
+2005-01-10 07:57  fpillet
+
+	* libpisock/net.c: dump invalid header as hex bytes when NET header
+	  not recognized
+
+2005-01-10 07:55  fpillet
+
+	* libpisock/socket.c: my bad -- need to wake up. Properly applied
+	  Aaron's patch this time
+
+2005-01-10 07:50  fpillet
+
+	* libpisock/: socket.c: Aaron's fix: reset pi_buffer_t in
+	  protocol_queue_build() after reading a first byte when protocol
+	  wasn't immediately recognized
+
+2005-01-10 06:03  fpillet
+
+	* libpisock/dlp.c: log error and dump invalid data in
+	  dlp_response_read if # bytes invalid
+
+2005-01-09 06:42  knghtbrd
+
+	* include/pi-contact.h, libpisock/contact.c,
+	  tests/contactsdb-test.c: Turned ContactsAppInfo_t labels field
+	  into an opaque pi_buffer_t.  Fixed a typeo in the name of
+	  free_ContactsAppInfo, and modified contactsdb_test accordingly.
+
+2005-01-09 06:06  knghtbrd
+
+	* include/pi-contact.h, libpisock/contact.c,
+	  tests/contactsdb-test.c: structs ContactsAppInfo and Contact have
+	  _t typedefs now.  Added numCustoms field to ContactsAppInfo and
+	  removed the addr/im/phone labels (how they're done will change
+	  soon).  Packing a ContactsAppInfo now copies the customLabels
+	  field back in to the labels array before writing (you should
+	  treat labels and internal as opaque!)  Added freeContactsAppInfo
+	  for disposing of allocated data in the structure.  Added more
+	  error checking where it was needed.  Fixed up Copyright headers
+	  and included proper attributions.  Moved function documentation
+	  from contact.c to pi-contact.h, where it will do more good.
+
+2005-01-06 02:12  knghtbrd
+
+	* src/pilot-foto.c: Check your pointers before you dereference
+	  them!
+
+2005-01-05 15:09  adridg
+
+	* src/install-todo.c: Avoid printing possible uninitialized buffer.
+
+2005-01-02 19:44  adridg
+
+	* src/pilot-addresses.c: Make --delete-all work
+
+2005-01-02 06:15  knghtbrd
+
+	* include/pi-contact.h, libpisock/contact.c,
+	  tests/contactsdb-test.c: Tweaked the handling of the picture
+	  field of a Contact.  We have enough information now to process
+	  and recreate the header, so we now do so in the pack/unpack
+	  functions.  The picture field will contain only the JPEG data
+	  now, and the pictype field has been added to help future-proof
+	  the structure.  Currently accepted values for pictype are
+	  cpic_none and cpic_jpeg.  I also cleaned up some function
+	  headers.
+
+2004-12-31 01:58  knghtbrd
+
+	* include/pi-contact.h, libpisock/contact.c,
+	  tests/contactsdb-test.c: The next stage of my libpisock Contacts
+	  code rewrite.  All functions now take pi_buffer_t's instead of
+	  seperate buffers/lens and return 0 or -1 on error.  The only
+	  function not completely rewritten from the ContactsDB code
+	  contributed by ... who contributed it? ... is pack_Contact, which
+	  is going to remain as-is until I add AddressDB handling to this
+	  code.
+
+	  Please note, while I was able to promise byte-for-byte AppInfo,
+	  there are a couple of unused nybbles whose (unused) contents are
+	  not reproduced.
+
+2004-12-23 12:28  knghtbrd
+
+	* tests/contactsdb-test.c: contactsdb-test now uses the libpisock
+	  code because I needed to be sure that the libpisock code actually
+	  worked on all devices I could test.
+
+2004-12-23 12:24  knghtbrd
+
+	* include/pi-contact.h, libpisock/contact.c: Support for all
+	  versions of ContactsDB, plus some minor bugfixes for the existing
+	  support for Tungsten E/T3.  I can't myself use this format, so
+	  expect it to change between now and 0.12's final release to be
+	  more similar to the format I cooked up for my own use.
+
+2004-12-22 19:30  desrod
+
+	* src/Makefile.am: More cruft-removal
+
+2004-12-22 19:27  desrod
+
+	* autogen.sh: Remove some unused cruft (actually, this is a
+	  stealthy attempt to test the commit log emails, shh!)
+
+2004-12-22 19:22  desrod
+
+	* autogen.sh: This should really be refactored a bit, it isn't
+	  self-healing or scalable, but for the short term, this will do.
+
+2004-12-22 17:57  adridg
+
+	* src/: Makefile.am, addresses.c, pilot-archive.c: Remove
+	  addresses(1) and pilot-archive(1)
+
+2004-12-22 15:00  adridg
+
+	* src/read-todos.c: Fix for #1230
+
+2004-12-21 19:03  adridg
+
+	* src/: pilot-archive.c, read-todos.c: Deprecate silly -archive and
+	  merge into read-todos.
+
+2004-12-21 18:14  adridg
+
+	* src/pilot-addresses.c: Fix dangerously misleading help text
+
+2004-12-21 18:12  adridg
+
+	* configure.ac: Give NULL_DEVICE a good default value
+
+2004-12-21 17:32  adridg
+
+	* src/: pilot-treofoto.c, read-expenses.c, reminders.c: Add -w
+	  (mandatory) to all
+
+2004-12-21 17:10  adridg
+
+	* src/pilot-addresses.c: Allow --write - to go to stdout, to mimic
+	  old addresses(1) behavior
+
+2004-12-21 17:01  adridg
+
+	* src/: pilot-addresses.c, pilot-archive.c, pilot-treofoto.c,
+	  read-expenses.c, reminders.c, userland.c: Remove remainder of
+	  wonky no-args handling
+
+2004-12-21 16:58  adridg
+
+	* include/pi-userland.h, src/addresses.c, src/dlpsh.c: dlpsh needs
+	  <-i|-c> now.
+
+2004-12-21 16:28  adridg
+
+	* src/pi-nredir.c: Back out previous 'fix': you _must_ specify -n
+	  now to get pi-nredir to function. Calling it with no args will
+	  print usage.
+
+2004-12-21 15:03  adridg
+
+	* src/pilot-xfer.c: pilot-xfer needs an argument to indicate
+	  action, so let it bail with no args just like everyone else
+
+2004-12-21 14:51  adridg
+
+	* include/pi-userland.h, src/addresses.c, src/pi-nredir.c,
+	  src/pilot-archive.c, src/pilot-treofoto.c, src/read-expenses.c,
+	  src/reminders.c, src/userland.c: Another thing slapped into
+	  userland.
+
+	  For the conduits that don't _need_ any arguments, if there is a
+	  port set somewhere else (for the time being: in PILOTPORT), don't
+	  bail out but do your stuff.
+
+2004-12-20 18:50  fpillet
+
+	* src/memos.c: fixed incorrect casts
+
+2004-12-20 18:43  desrod
+
+	* include/pi-userland.h: Arg! There's always one last file missing
+	  at commit/release time. DOH!
+
+2004-12-20 17:54  desrod
+
+	* ChangeLog: Update ChangeLog to current with all commit changes to
+	  date
+
 2004-12-20 17:37  desrod
 
 	* pilot-link.m4.in: More strict auto* checking on the macros we're
