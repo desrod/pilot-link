@@ -532,10 +532,18 @@ dnl ******************************
 dnl TCL/ITCL/TK
 dnl ******************************
 
-echo "Checking your Tcl/Tk installation"
-PILOT_LINK INIT
 PILOT_LINK_PATH_TCLCONFIG
+PILOT_LINK_LOAD_TCLCONFIG
+PILOT_LINK_PUBLIC_TCL_HEADERS
+PILOT_LINK_PROG_TCLSH
+PILOT_LINK_PROG_WISH
 
+AC_SUBST(TCL_LIB_FILE)
+AC_SUBST(TCL_LIB_FLAG)
+AC_SUBST(TCL_LIB_SPEC)
+AC_SUBST(TCL_LIBS)
+AC_SUBST(TCLSH_PROG)
+AC_SUBST(WISH_PROG)
 
 dnl ******************************
 dnl Python
@@ -674,6 +682,7 @@ AC_OUTPUT([
 	bindings/Perl/Makefile.PL
 	bindings/Python/setup.py
 	bindings/Java/Makefile
+	bindings/Tcl/Makefile
 	doc/Makefile
 	doc/man/Makefile
 	doc/man/addresses.1
@@ -720,8 +729,7 @@ echo "
 
   External Language Support
   -------------------------.
-  TCL support............. : $msg_tcl	$TCL_VERSION   
-  TK Support.............. : $msg_tk	$TK_VERSION
+  TCL support............. : $msg_tcl
   Java support............ : $msg_java	
   Python support.......... : $msg_python	$PYTHONVER
   Perl support............ : $msg_perl	$PERL_VERSION

@@ -1,5 +1,13 @@
 2003-06-30  JP Rosevear  <jpr@ximian.com>
 
+	* configure.in: update tcl check
+
+	* bindings/Tcl/pitcl.c: update for current libpisock
+
+	* bindings/Tcl/Makefile.am: automakize
+
+2003-06-30  JP Rosevear  <jpr@ximian.com>
+	
 	* include/pi-util.h: fix comment
 
 2003-06-17 David A. Desrosiers <hacker at gnu-designs dot com>

@@ -15,6 +15,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 #include <tcl.h>
 #include <pi-source.h>
 #include <pi-socket.h>
@@ -30,34 +31,37 @@ struct tcl_e {char *name; long value;};
 char buf[0xffff];
 
 static struct tcl_e domains[] = {
-	{"PI_AF_SLP", PI_AF_SLP},
-	{"AF_SLP", PI_AF_SLP},
-	{"SLP", PI_AF_SLP},
+	{"PI_AF_PILOT", PI_AF_PILOT},
+	{"AF_PILOT", PI_AF_PILOT},
+	{"PILOT", PI_AF_PILOT},
 	{0,0}};
 static struct tcl_e protocols[] = {
+	{"PI_PF_DEV", PI_PF_DEV},
 	{"PI_PF_SLP", PI_PF_SLP}, 
+	{"PI_PF_SYS", PI_PF_SYS}, 
 	{"PI_PF_PADP", PI_PF_PADP},
-	{"PI_PF_LOOP", PI_PF_LOOP},
+	{"PI_PF_NET", PI_PF_NET},
+	{"PI_PF_DLP", PI_PF_DLP},
+	{"PF_DEV", PI_PF_DEV},
 	{"PF_SLP", PI_PF_SLP}, 
+	{"PF_SYS", PI_PF_SYS}, 
 	{"PF_PADP", PI_PF_PADP},
-	{"PF_LOOP", PI_PF_LOOP},
+	{"PF_NET", PI_PF_NET},
+	{"PF_DLP", PI_PF_DLP},
+	{"DEV", PI_PF_DEV},
 	{"SLP", PI_PF_SLP}, 
+	{"SYS", PI_PF_SYS}, 
 	{"PADP", PI_PF_PADP},
-	{"LOOP", PI_PF_LOOP},
+	{"NET", PI_PF_NET},
+	{"DLP", PI_PF_DLP},
 	{0,0}};
 static struct tcl_e types[] = {
 	{"PI_SOCK_STREAM", PI_SOCK_STREAM},
-	{"PI_SOCK_DGRAM", PI_SOCK_DGRAM},
 	{"PI_SOCK_RAW", PI_SOCK_RAW},
-	{"PI_SOCK_SEQPACKET", PI_SOCK_SEQPACKET},
 	{"SOCK_STREAM", PI_SOCK_STREAM},
-	{"SOCK_DGRAM", PI_SOCK_DGRAM},
 	{"SOCK_RAW", PI_SOCK_RAW},
-	{"SOCK_SEQPACKET", PI_SOCK_SEQPACKET},
 	{"STREAM", PI_SOCK_STREAM},
-	{"DGRAM", PI_SOCK_DGRAM},
 	{"RAW", PI_SOCK_RAW},
-	{"SEQPACKET", PI_SOCK_SEQPACKET},
 	{0,0}};
 
 static int
@@ -658,7 +662,7 @@ CreateSocket(Tcl_Interp * interp, int protocol, char * remote, int server)
 	int result;
 	int sock;
 	int type;
-	int domain = PI_AF_SLP;
+	int domain = PI_AF_PILOT;
 	struct pi_sockaddr * addr = 0;
 	int alen = 0;
 	
@@ -677,13 +681,13 @@ CreateSocket(Tcl_Interp * interp, int protocol, char * remote, int server)
 
 	statePtr->fd = sock;
 
-	if (domain == PI_AF_SLP) {
+	if (domain == PI_AF_PILOT) {
 		char * device;
 		device = remote;
 		alen = strlen(device)+1+4;
 		addr = (struct pi_sockaddr*)malloc(alen);
 		strcpy(addr->pi_device, device);
-		addr->pi_family = PI_AF_SLP;
+		addr->pi_family = PI_AF_PILOT;
 	}
 	printf("addr = %ld\n", (long)addr);
 
@@ -955,7 +959,7 @@ bindCmd(ClientData clientData, Tcl_Interp * interp, int argc, char * argv[])
 	Tcl_GetInt(interp, argv[1], &s);
 	family = tcl_enum(interp, argv[2], domains);
 	
-	if (family == PI_AF_SLP) {
+	if (family == PI_AF_PILOT) {
 		device = argv[3];
 		alen = strlen(device)+1+4;
 		addr = (struct pi_sockaddr*)malloc(alen);

@@ -1,109 +1,440 @@
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-PACKAGE_VERSION = 1.0
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+
 bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
 libdir = @libdir@
-pixdir = ${libdir}/pix
+infodir = @infodir@
+mandir = @mandir@
 includedir = @includedir@
-mandir = @mandir@/man1
-srcdir = ../../@srcdir@
-VPATH = ../../@srcdir@
+oldincludedir = /usr/include
 
-TCL_BIN = @TCL_BIN@
-TCL_VERSION = @TCL_VERSION@
+DESTDIR =
 
-TK_VERSION = @TK_VERSION@
-TCL_SH = @TCL_BIN@/tclsh@TCL_VERSION@
-
-TCLTK_FLAGS = @TCLTKFLAGS@
-
-TCL_LIBS = @TCLLIBS@
-TK_LIBS = @TKLIBS@
-
-PACKAGES = @TCL_PACKAGE_PATH@
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
 
 top_builddir = ../..
 
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
+AS = @AS@
 CC = @CC@
-CDEFS = -DPACKAGE_VERSION=\"$(PACKAGE_VERSION)\" -DLIBDIR=\"$(libdir)\"
-CFLAGS = -I../../include -I$(srcdir)/include @CFLAGS@ @CWFLAG@ $(CDEFS) $(TCLTK_FLAGS)
-# -DDEBUG
+CFLAGS = @CFLAGS@
+CXX = @CXX@
+CXXFLAGS = @CXXFLAGS@
+DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
+ICONV_CFLAGS = @ICONV_CFLAGS@
+ICONV_LIBS = @ICONV_LIBS@
+ID = @ID@
+JAR = @JAR@
+JAVA = @JAVA@
+JAVABASE = @JAVABASE@
+JAVAC = @JAVAC@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
+PACKAGE = @PACKAGE@
+PERL = @PERL@
+PILOT_LINK_MAJOR = @PILOT_LINK_MAJOR@
+PILOT_LINK_MINOR = @PILOT_LINK_MINOR@
+PILOT_LINK_PATCH = @PILOT_LINK_PATCH@
+PILOT_LINK_VERS = @PILOT_LINK_VERS@
+PISOCKPP_AGE = @PISOCKPP_AGE@
+PISOCKPP_CURRENT = @PISOCKPP_CURRENT@
+PISOCKPP_REVISION = @PISOCKPP_REVISION@
+PISOCK_AGE = @PISOCK_AGE@
+PISOCK_CURRENT = @PISOCK_CURRENT@
+PISOCK_REVISION = @PISOCK_REVISION@
+PISYNC_AGE = @PISYNC_AGE@
+PISYNC_CURRENT = @PISYNC_CURRENT@
+PISYNC_REVISION = @PISYNC_REVISION@
+PNG_CFLAGS = @PNG_CFLAGS@
+PNG_LIBS = @PNG_LIBS@
+PYTHON = @PYTHON@
+RANLIB = @RANLIB@
+RL_CFLAGS = @RL_CFLAGS@
+RL_LIBS = @RL_LIBS@
+STRIP = @STRIP@
+TCLSH_PROG = @TCLSH_PROG@
+TCL_LIBS = @TCL_LIBS@
+TCL_LIB_FILE = @TCL_LIB_FILE@
+TCL_LIB_FLAG = @TCL_LIB_FLAG@
+TCL_LIB_SPEC = @TCL_LIB_SPEC@
+VERSION = @VERSION@
+WISH_PROG = @WISH_PROG@
+YACC = @YACC@
+
+INCLUDES = \
+	-I../../include		\
+	-I$(top_srcdir)/include
+
+
+bin_PROGRAMS = pitclsh
+lib_LTLIBRARIES = libpitcl.la
+
+libpitcl_la_SOURCES = pitcl.c
+
+libpitcl_la_LIBADD = \
+	$(TCL_LIB_SPEC)				\
+	$(top_builddir)/libpisock/libpisock.la
+
+
+libpitcl_la_LDFLAGS = \
+	-export-dynamic -version-info 0:0:0
+
+
+pitclsh_SOURCES = tclAppInit.c
+
+pitclsh_LDADD = \
+	$(TCL_LIB_SPEC)				\
+	$(top_builddir)/libpisock/libpisock.la	\
+	libpitcl.la
+
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../../config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(lib_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I../..
+CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-# -lefence
+libpitcl_la_DEPENDENCIES =  $(top_builddir)/libpisock/libpisock.la
+libpitcl_la_OBJECTS =  pitcl.lo
+bin_PROGRAMS =  pitclsh$(EXEEXT)
+PROGRAMS =  $(bin_PROGRAMS)
+
+pitclsh_OBJECTS =  tclAppInit.$(OBJEXT)
+pitclsh_DEPENDENCIES =  $(top_builddir)/libpisock/libpisock.la \
+libpitcl.la
+pitclsh_LDFLAGS = 
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  README Makefile.am Makefile.in
 
 
-INSTALL = $(LIBTOOL) @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA = @INSTALL_DATA@
-YACC = @YACC@
-RANLIB = @RANLIB@
-RM = rm -f
-STRIP = strip
-SHELL = /bin/sh
-CPLIB = @CPLIB@
-EXT = @EXT@
-SUBMAKE_COMM = @SUBMAKE_COMM@
-SUBMAKE_COMM_CC = @SUBMAKE_COMM_CC@
-LIBTOOL = @LIBTOOL@
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-CCLINK = $(LIBTOOL) --mode=link $(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS)
+TAR = gtar
+GZIP_ENV = --best
+DEP_FILES =  .deps/pitcl.P .deps/tclAppInit.P
+SOURCES = $(libpitcl_la_SOURCES) $(pitclsh_SOURCES)
+OBJECTS = $(libpitcl_la_OBJECTS) $(pitclsh_OBJECTS)
 
-OBJS = pitcl.lo
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .lo .o .obj .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu bindings/Tcl/Makefile
 
-LIB = libpitcl$(PACKAGE_VERSION).$(TCL_VERSION).la
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-TCLINTERP = pitclsh$(PACKAGE_VERSION).$(TCL_VERSION)
-TKINTERP = piwish$(PACKAGE_VERSION).$(TK_VERSION)
 
-WITHTCL = $(TCLINTERP)
-WITHTK = $(TKINTERP)
+mostlyclean-libLTLIBRARIES:
 
-INTERPS = $(@WITHTCL@) $(@WITHTK@)
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
 
-PACKLIB = $(PACKAGES)/pitcl$(PACKAGE_VERSION)
+distclean-libLTLIBRARIES:
 
-.SUFFIXES: .out .o .lo .cc .c .e .r .f .y .l .s .p
+maintainer-clean-libLTLIBRARIES:
 
-.c.lo:
-	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
 
-all: $(LIB) $(INTERPS)
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(libdir)/$$p; \
+	done
 
-$(TCLINTERP): tclAppInit.o $(LIB)
-	$(CCLINK) -o $(TCLINTERP) tclAppInit.o $(LIB) $(TCL_LIBS)
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
 
-$(TKINTERP): tkAppInit.o $(LIB)
-	$(CCLINK) -o $(TKINTERP) tkAppInit.o $(LIB) $(TK_LIBS)
+.s.o:
+	$(COMPILE) -c $<
 
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+libpitcl.la: $(libpitcl_la_OBJECTS) $(libpitcl_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(libpitcl_la_LDFLAGS) $(libpitcl_la_OBJECTS) $(libpitcl_la_LIBADD) $(LIBS)
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
+
+pitclsh$(EXEEXT): $(pitclsh_OBJECTS) $(pitclsh_DEPENDENCIES)
+	@rm -f pitclsh$(EXEEXT)
+	$(LINK) $(pitclsh_LDFLAGS) $(pitclsh_OBJECTS) $(pitclsh_LDADD) $(LIBS)
+
+tags: TAGS
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = bindings/Tcl
+
+distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu bindings/Tcl/Makefile
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am: install-libLTLIBRARIES install-binPROGRAMS
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-libLTLIBRARIES uninstall-binPROGRAMS
+uninstall: uninstall-am
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(SHELL) ${srcdir}/scripts/mkinstalldirs $(PACKAGES) $(PACKLIB)
+	$(mkinstalldirs)  $(DESTDIR)$(libdir) $(DESTDIR)$(bindir)
 
-install: installdirs $(LIB)
-	$(INSTALL_DATA) $(LIB) $(PACKAGES)/$(LIB)
-	echo 'package ifneeded PiTcl $(PACKAGE_VERSION).$(TCL_VERSION) [list load "[file join [file dirname $$dir] libpitcl$(PACKAGE_VERSION).$(TCL_VERSION).so]" PiTcl]' >> $(PACKLIB)/pkgIndex.tcl 
-	$(INSTALL_PROGRAM) $(TCLINTERP) $(TCL_BIN)/$(TCLINTERP)
-	$(INSTALL_PROGRAM) $(TKINTERP) $(TCL_BIN)/$(TKINTERP)
-	$(LIBTOOL) -n --finish $(PACKAGES)
 
-uninstall: 
-	-$(LIBTOOL) $(RM) $(PACKAGES)/$(LIB)
-	grep -v '$(PACKAGE_VERSION).$(TCL_VERSION)' < $(PACKLIB)/pkgIndex.tcl > /tmp/plpkgIdx; cat /tmp/plpkgIdx > $(PACKLIB)/pkgIndex.tcl ; rm /tmp/plpkgIdx
-	$(LIBTOOL) $(RM) $(TCL_BIN)/$(TCLINTERP)
-	$(LIBTOOL) $(RM) $(TCL_BIN)/$(TKINTERP)
-	$(LIBTOOL) -n --finish $(PACKAGES)
+mostlyclean-generic:
 
-$(LIB): $(OBJS) Makefile
-	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) \
-		-export-dynamic -rpath $(PACKAGES) \
-		-o $(LIB) $(OBJS) -L$(libdir) -lpisock
+clean-generic:
 
-test: $(TCLINTERP) $(LIB)
-	$(TCLINTERP) test.tcl
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
-clean:
-	$(RM) *.o *.a *.lo *.la core a.out *.so pitclsh* piwish*
-	$(RM) -rf .libs _libs
-	$(RM) *~
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-libLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-binPROGRAMS \
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-libLTLIBRARIES clean-compile clean-libtool \
+		clean-binPROGRAMS clean-tags clean-depend clean-generic \
+		mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-libLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-binPROGRAMS distclean-tags \
+		distclean-depend distclean-generic clean-am
+	-rm -f libtool
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-libLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-binPROGRAMS maintainer-clean-tags \
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
+uninstall-libLTLIBRARIES install-libLTLIBRARIES mostlyclean-compile \
+distclean-compile clean-compile maintainer-clean-compile \
+mostlyclean-libtool distclean-libtool clean-libtool \
+maintainer-clean-libtool mostlyclean-binPROGRAMS distclean-binPROGRAMS \
+clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
+install-binPROGRAMS tags mostlyclean-tags distclean-tags clean-tags \
+maintainer-clean-tags distdir mostlyclean-depend distclean-depend \
+clean-depend maintainer-clean-depend info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:
