@@ -32,7 +32,7 @@
 
 /* Define prototypes */
 int inchar(FILE * in);
-int read_field(char *dest, FILE * in);
+int read_field(char *dest, FILE * in, size_t length);
 void outchar(char c, FILE * out);
 int write_field(FILE * out, char *source, int more);
 int match_phone(char *buf, struct AddressAppInfo *aai);
@@ -140,14 +140,18 @@ int inchar(FILE * in)
  * Returns:     0
  *
  ***********************************************************************/
-int read_field(char *dest, FILE *in)
+int read_field(char *dest, FILE *in, size_t length)
 {
 	int 	c;
+
+	if (length<=1) return -1;
+	/* reserve space for trailing NUL */
+	length--;
 
 	do {	/* Absorb whitespace */
 		c = getc(in);
 		if(c == '\n') {
-			c = ' ';
+			*dest = 0;
 			return 0;
 		}
 
@@ -163,7 +167,9 @@ int read_field(char *dest, FILE *in)
 					break;
 			}
 			*dest++ = c;
-			c= inchar(in);
+			if (!(--length))
+				break;
+			c = inchar(in);
 		}
 	} else {
 		while (c != EOF) {
@@ -173,6 +179,8 @@ int read_field(char *dest, FILE *in)
 				break;
 			}
 			*dest++ = c;
+			if (!(--length))
+				break;
 			c = inchar(in);
 		}
 	}
@@ -302,7 +310,7 @@ int match_phone(char *buf, struct AddressAppInfo *aai)
 	int 	i;
 
 	for (i = 0; i < 8; i++)
-		if (strcasecmp(buf, aai->phoneLabels[i]) == 0)
+		if (strncasecmp(buf, aai->phoneLabels[i], sizeof(aai->phoneLabels[0])) == 0)
 			return i;
 	return atoi(buf);	/* 0 is default */
 }
@@ -347,7 +355,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 		} else {
 			ungetc(l,f);
 		}
-		i = read_field(buf, f);
+		i = read_field(buf, f, sizeof(buf));
 		/* fprintf(stderr,"* Field=%s\n",buf); */
 
 		memset(&addr, 0, sizeof(addr));
@@ -356,10 +364,10 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 		if (i == 2) {
 			category = plu_findcategory(&aai->category,buf,
 				PLU_CAT_CASE_INSENSITIVE | PLU_CAT_DEFAULT_UNFILED);
-			i = read_field(buf, f);
+			i = read_field(buf, f, sizeof(buf));
 			if (i == 2) {
 				addr.showPhone = match_phone(buf, aai);
-				i = read_field(buf, f);
+				i = read_field(buf, f, sizeof(buf));
 			}
 		} else {
 			category = defaultcategory;
@@ -378,7 +386,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 					addr.phoneLabel[l2 - 3] = l2 - 3;
 				else {
 					addr.phoneLabel[l2 - 3] = match_phone(buf, aai);
-					i = read_field(buf, f);
+					i = read_field(buf, f, sizeof(buf));
 				}
 			} else {
 				if (buf[0]) {
@@ -392,13 +400,13 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 			if (i == 0)
 				break;
 
-			i = read_field(buf, f);
+			i = read_field(buf, f, sizeof(buf));
 		}
 
 		attribute = (atoi(buf) ? dlpRecAttrSecret : 0);
 
 		while (i > 0) {	/* Too many fields in record */
-			i = read_field(buf, f);
+			i = read_field(buf, f, sizeof(buf));
 		}
 
 		l = pack_Address(&addr, (unsigned char *) buf, sizeof(buf));
