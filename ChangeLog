@@ -1,3 +1,7 @@
+2004-04-15  Nicholas Piper  <nick@nickpiper.co.uk>
+
+	* include/pi-versamail.h: Created
+
 2004-02-24 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/dlp.c: Fix comments
