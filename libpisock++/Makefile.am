@@ -20,6 +20,7 @@ libpisock___la_LIBADD = \
 libpisock___la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCKPP_CURRENT):$(PISOCKPP_REVISION):$(PISOCKPP_AGE)
 
+libpisock___la_CXXFLAGS = $(PIC_LIBS)
 endif
 
 EXTRA_DIST =							\

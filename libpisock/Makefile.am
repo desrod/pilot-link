@@ -5,7 +5,7 @@ INCLUDES = 			\
 
 serial_FILES = 		\
 	unixserial.c 	\
-	os2serial.c 
+	os2serial.c
 serial_SOURCE = unixserial.c
 
 usb_FILES = 		\
@@ -73,5 +73,6 @@ libpisock_la_LIBADD = \
 
 libpisock_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
+libpisock_la_CFLAGS = $(PIC_LIBS)
 
 EXTRA_DIST = $(serial_FILES) $(usb_FILES)

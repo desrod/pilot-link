@@ -29,7 +29,7 @@ VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 
 
 dnl ******************************
-dnl Pilot Link Library Version 
+dnl Pilot Link Library Version
 dnl libpisock.so.CURRENT.AGE.REVISION
 dnl ******************************
 PISOCK_CURRENT=9
@@ -109,6 +109,12 @@ dnl ******************************
 dnl Platform-specific things
 dnl ******************************
 
+dnl PIC_LIBS is flags needed to compile PIC, for shared libs
+dnl where some linker offsets are not allowed. Currently set
+dnl for FreeBSD-amd64 only.
+PIC_LIBS=""
+
+
 case "$host" in
         *darwin*)
 		dnl Use fink under MacOS X
@@ -123,14 +129,17 @@ case "$host" in
 
 		null_device="/dev/null"
         ;;
-
+	amd64*freebsd*)
+		dnl Need -fPIC for shared libs
+		PIC_LIBS="-fPIC"
+	;;
 	*)
 		null_device="/dev/null"
 	;;
 esac
 AC_DEFINE_UNQUOTED(NULL_DEVICE, "$null_device",
 		   [Your system's bitbucket (usually /dev/null or NUL)])
-
+AC_SUBST(PIC_LIBS)
 
 dnl ******************************
 dnl Check if this was CVS source
@@ -141,7 +150,7 @@ fi
 
 
 dnl ******************************
-dnl Pilot Link Checks 
+dnl Pilot Link Checks
 dnl ******************************
 AC_HEADER_STDC
 AC_C_CONST
@@ -215,7 +224,7 @@ if test "x$enable_conduits" != "xno"; then
 	AC_ARG_WITH(libpng,
 		[  --with-libpng           Prefix where libpng is installed]
 	)
-	
+
 	case $with_libpng in
 		/*)
 		PNG_CFLAGS="-I$withval/include"
@@ -233,7 +242,7 @@ if test "x$enable_conduits" != "xno"; then
 		AC_CHECK_HEADER(png.h, , have_png=no)
 		if test "$have_png" = yes; then
 			AC_MSG_CHECKING(for png setjmp support)
-			AC_EGREP_CPP(yes, 
+			AC_EGREP_CPP(yes,
 			[#include <png.h>
 			#ifdef PNG_SETJMP_SUPPORTED
 				yes
@@ -528,9 +537,9 @@ if test "x$JAVA" != "x" && test "x$JAVAC" != "x" && test "x$JAR" != "x"; then
 	JAVABASE=`echo "$JAVAC" | sed -e "s/\/bin\/javac//"`
 	if test -f "$JAVABASE/include/jni.h"; then
 		use_java=true
-		AC_MSG_RESULT(looks good) 
+		AC_MSG_RESULT(looks good)
 	else
-		AC_MSG_RESULT(not usable) 
+		AC_MSG_RESULT(not usable)
 	fi
 fi
 
@@ -545,7 +554,7 @@ fi
 AC_SUBST(JAVA)
 AC_SUBST(JAVAC)
 AC_SUBST(JAR)
-AC_SUBST(JAVABASE)	
+AC_SUBST(JAVABASE)
 AC_SUBST(JAVA_VERSION)
 
 
@@ -615,7 +624,7 @@ dnl *************************************
 dnl ElectricFence (optional)
 dnl *************************************
 use_efence=false
-msg_efence=no   
+msg_efence=no
 
 AC_ARG_WITH(efence, [  --with-efence           use ElectricFence          [default=no]],  , with_efence=no)
 
@@ -632,7 +641,7 @@ if test "x$with_efence" != "xno"; then
                 exit 1;
         fi
 fi
-  
+
 if $use_efence; then
         msg_efence=yes
 else
@@ -677,7 +686,7 @@ dnl *************************************
 set_compile_warnings=no
 
 AC_ARG_ENABLE(compile-warnings,
-	      [  --enable-compile-warnings   
+	      [  --enable-compile-warnings
                           Enable verbose compiler warnings],
 	      set_compile_warnings=yes)
 
@@ -705,7 +714,7 @@ dnl *************************************
 dnl (already done) enable_werror=no
 
 AC_ARG_ENABLE(compile-werror,
-	      [  --enable-compile-werror   
+	      [  --enable-compile-werror
                           Causes warnings to be treated as errors in GCC],
 	      enable_werror=yes)
 if test "x$GCC" = "xyes" -a "x$enable_werror" = "xyes"; then
@@ -763,7 +772,7 @@ AC_OUTPUT([
 ])
 
 AC_MSG_RESULT([
-  Options detected/selected 
+  Options detected/selected
   -------------------------.
   pilot-link version...... : $VERSION
   libpisock version....... : $PISOCK_CURRENT.$PISOCK_AGE.$PISOCK_REVISION
@@ -802,7 +811,7 @@ if [[ x"$PL_FROM_CVS" = xyes ]]; then
   echo " |                                                             |"
   echo " | This is likely to be unstable, or contain some incomplete   |"
   echo " | features, or just plain not work at all. Use it at your own |"
-  echo " | risk. Please help us to fix any bugs you find, by reporting |"       
+  echo " | risk. Please help us to fix any bugs you find, by reporting |"
   echo " | them back to us via email or at http://bugs.pilot-link.org/ |"
   echo " \`-------------------------------------------------------------'"
   echo ""
