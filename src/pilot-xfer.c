@@ -107,7 +107,7 @@ typedef enum {
 
 
 
-int 	sd 	= 0;
+int 	sd 	= -1;
 char    *vfsdir = NULL;
 
 #define MAXEXCLUDE 100
@@ -868,7 +868,7 @@ static void palm_install_internal(const char *filename)
 	}
 
 	if (dlp_OpenConduit(sd) < 0) {
-		fprintf(stderr, "\nExiting on cancel, some files were not"
+		fprintf(stderr, "\nExiting on cancel, some files were not "
 				"installed\n\n");
 		exit(EXIT_FAILURE);
 	}
@@ -1888,7 +1888,7 @@ int main(int argc, const char *argv[])
 	}
 
 	/* actual operation */
-	userland_connect();
+	sd = userland_connect();
 	switch(palm_operation) {
 	case palm_op_noop: /* handled above */
 		exit(1);
