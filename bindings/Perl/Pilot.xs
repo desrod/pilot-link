@@ -420,7 +420,7 @@ SvChar4(arg)
 	}
 
 #define unpack_userinfo(arg, var)\
-	if ((SvTYPE(arg) == SVt_RV) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {\
+	if (SvROK(arg) && (SvTYPE(SvRV(arg))==SVt_PVHV)) {\
 	    HV * i = (HV*)SvRV(arg);\
 	    SV ** s;\
 	    var.userID = (s = hv_fetch(i, "userID", 6, 0)) ? SvIV(*s) : 0;\
