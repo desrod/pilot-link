@@ -1,3 +1,9 @@
+2002-10-11  JP Rosevear  <jpr@ximian.com>
+
+	* configure.in: put a space in between putenv and sigaction so
+	they functions are correctly checked for; update png check to look
+	for png setjmp support
+
 2002-10-03  JP Rosevear  <jpr@ximian.com>
 
 	* src/pilot-xfer.c: initialize totalsize to 0
