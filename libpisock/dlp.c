@@ -30,10 +30,14 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-/* We need to fix this for OSX and NeXT systems that 
-   don't provide ENOMSG. Use EINVAL instead. */
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
+
+/* For systems that don't provide ENOMSG. Use EINVAL instead. */
+#ifndef        ENOMSG
+#define ENOMSG EINVAL
+#endif /* ENOMSG */
+
 #endif /* HAVE_ERRNO_H */
 
 #include <string.h>

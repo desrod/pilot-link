@@ -3,6 +3,9 @@
 	* libpisock/connect.c: Fix for QNX/Solaris builds, <sys/errno.h>
 	  should be <errno.h>, fixes a mistake on 2-25 commit
 
+	* libpisock/dlp.c: Fix for missing ENOMSG on BSD and Darwin systems
+	  (Ian Darwin)
+
 2002-07-18  JP Rosevear  <jpr@ximian.com>
 
 	* bindings/Makefile.am: add dist hook to remove the CVS dirs from
