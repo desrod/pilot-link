@@ -259,18 +259,19 @@ dlp_response_read (struct dlpResponse **res, int sd)
 
 	response = dlp_response_new (dlp_buf[0] & 0x7f, dlp_buf[1]);
 	*res = response;
-	for (i = 0, argid = PI_DLP_ARG_FIRST_ID; i < response->argc; i++, argid++) {
-		if (get_byte (buf) == argid) {
-			len = get_byte(&buf[1]);
-			buf += 2;
-		} else if ((get_byte (buf) & 0x7f) == argid) {
-			len = get_long (&buf[2]);
-			buf += 6;
-		} else if ((get_short(buf) & 0x3FFF) == argid) {
+
+	response->err = get_short (&dlp_buf[2]);
+
+	buf = dlp_buf + 4;
+	for (i = 0; i < response->argc; i++) {
+		if ((get_byte(buf) & PI_DLP_ARG_FLAG_LONG) == PI_DLP_ARG_FLAG_LONG) {
+			argid = get_short (buf) & 0x3FFF;
 			len = get_long (&buf[2]);
 			buf += 6;
 		} else if ((get_byte (buf) & PI_DLP_ARG_FLAG_SHORT) == PI_DLP_ARG_FLAG_SHORT) {
-			return -1;
+			argid = get_byte(buf) & 0x7f;
+			len = get_short (&buf[2]);
+			buf += 4;
 		} else {
 			argid = get_byte(buf);
 			len = get_byte(&buf[1]);

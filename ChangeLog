@@ -1,5 +1,10 @@
 2002-10-11  JP Rosevear  <jpr@ximian.com>
 
+	* libpisock/dlp.c (dlp_response_read): don't depend on the return
+	arguments starting at a certain number
+	
+2002-10-11  JP Rosevear  <jpr@ximian.com>
+
 	* libpisock/dlp.c (dlp_GetROMToken): add trace to getromtoken call
 	(dlp_WriteRecord): use record_dump call
 
