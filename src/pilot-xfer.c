@@ -1699,12 +1699,10 @@ static void set_operation(int opt, palm_op_t *op, unsigned long int *flags)
 		break;
 	case 'l' :
 		*op = palm_op_list;
-		*flags &= ~(MEDIA_MASK);
 		*flags |= MEDIA_RAM;
 		break;
 	case 'L' :
 		*op = palm_op_list;
-		*flags &= ~(MEDIA_MASK);
 		*flags |= MEDIA_ROM;
 		break;
 	default:
@@ -1760,7 +1758,7 @@ int main(int argc, const char *argv[])
 		{"archive",  'a', POPT_ARG_STRING, &archive_dir, 0, "Modifies -s to archive deleted files in directory <dir>", "dir"},
 		{"exclude",  'e', POPT_ARG_STRING, NULL, 'e', "Exclude databases listed in <file> from being included", "file"},
 		{"vfsdir",   'D', POPT_ARG_STRING, &vfsdir, 'D', "Modifies all of -lLi to use VFS <dir> instead of internal storage", "dir"},
-		{"Flash",    'F', POPT_ARG_NONE, NULL, 'F', "Modifies -b, -u, and -s, to back up non-OS dbs from Flash ROM", NULL}, 
+		{"Flash",    'F', POPT_ARG_NONE, NULL, 'F', "Modifies -b, -u, and -s, to back up non-OS dbs from Flash ROM", NULL},
 		{"OsFlash",  'O', POPT_ARG_NONE, NULL, 'O', "Modifies -b, -u, and -s, to back up OS dbs from Flash ROM", NULL},
 		{"Illegal",  'I', POPT_ARG_NONE, &unsaved, 0, "Modifies -b, -u, and -s, to back up the illegal database Unsaved Preferences.prc (normally skipped)", NULL},
 
@@ -1831,15 +1829,12 @@ int main(int argc, const char *argv[])
 			sync_flags |= PURGE;
 			break;
 		case 'D':
-			if (vfsdir && vfsdir[0]) sync_flags |= MEDIA_VFS;
-			else sync_flags &= ~(MEDIA_VFS);
+			sync_flags |= MEDIA_VFS;
 			break;
 		case 'F':
-			sync_flags &= ~MEDIA_MASK;
 			sync_flags |= MEDIA_FLASH;
 			break;
 		case 'O':
-			sync_flags &= ~MEDIA_MASK;
 			sync_flags |= MEDIA_ROM;
 			break;
 
@@ -1883,6 +1878,42 @@ int main(int argc, const char *argv[])
 	}
 
 	/* sanity checking */
+	switch(sync_flags & MEDIA_MASK) {
+	case MEDIA_RAM:
+	case MEDIA_ROM:
+	case MEDIA_FLASH:
+	case MEDIA_VFS:
+		/* These are all clearly OK */
+		break;
+	default:
+		/* VFS can be combined with -l or -L, both of which set the
+		   media type (a bad idea, IMO), so let VFS override. */
+		if ((palm_op_list == palm_operation) &&
+			(sync_flags & MEDIA_VFS)) {
+			sync_flags &= ~(MEDIA_MASK);
+			sync_flags |= MEDIA_VFS;
+		}
+		else {
+			char media_names[64];
+			memset(media_names,0,sizeof(media_names));
+			if (sync_flags & MEDIA_ROM) {
+				strncat(media_names,media_name(MEDIA_ROM),sizeof(media_names));
+				strncat(media_names,", ",sizeof(media_names));
+			}
+			if (sync_flags & MEDIA_FLASH) {
+				strncat(media_names,media_name(MEDIA_FLASH),sizeof(media_names));
+				strncat(media_names,", ",sizeof(media_names));
+			}
+			if (sync_flags & MEDIA_VFS) {
+				strncat(media_names,media_name(MEDIA_VFS),sizeof(media_names));
+			}
+
+			fprintf(stderr,"   ERROR: Combining media types %s not supported.\n",media_names);
+			return 1;
+		}
+		break;
+	}
+
 	switch(palm_operation) {
 		struct stat sbuf;
 	case palm_op_backup:
