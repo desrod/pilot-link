@@ -7,6 +7,8 @@
 	  (seriously, cleaning up the types, making them match
 	  CodingGuidelines)
 
+	* Fixed a few typos in the above mass conversion (thanks Andreas)
+
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: set use_python to false when appropriate, same for

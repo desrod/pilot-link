@@ -73,7 +73,7 @@ int inchar(FILE * in)
 	c = getc(in);
 	if (encodechars && c == '\\') {
 		c = getc(in);
-		switch (ch) {
+		switch (c) {
 		case 'b':
 			c = '\b';
 			break;
@@ -96,7 +96,7 @@ int inchar(FILE * in)
 			c = '\\';
 			break;
 		default:
-			ungetc(ch, in);
+			ungetc(c, in);
 			c = '\\';
 			break;
 		}
@@ -145,11 +145,11 @@ int read_field(char *dest, FILE * in)
 
 	if (c == ',')
 		return 1;
-	else if (ch == ';')
+	else if (c == ';')
 		return 2;
-	else if (ch == '\t')
+	else if (c == '\t')
 		return 3;
-	else if (ch == EOF)
+	else if (c == EOF)
 		return -1;	/* No more */
 	else
 		return 0;
@@ -157,7 +157,6 @@ int read_field(char *dest, FILE * in)
 
 void outchar(char c, FILE * out)
 {
-	int 	c;	/* switch */
 
 	if (encodechars) {
 		switch (c) {

@@ -129,7 +129,7 @@ static int DeDupe (int sd, char *dbname)
 		    || (attr & dlpRecAttrArchived))
 			continue;
 
-		count++;
+		c++;
 
 		r = (struct record *)
 			malloc(sizeof(struct record));
@@ -149,10 +149,10 @@ static int DeDupe (int sd, char *dbname)
 	sortidx = malloc(sizeof(struct record *) * c);
 
 	r = records;
-	for (k = 0; r && (k < count); k++, r = r->next)
+	for (k = 0; r && (k < c); k++, r = r->next)
 		sortidx[k] = r;
 
-	qsort(sortidx, count, sizeof(struct record *), compare_r);
+	qsort(sortidx, c, sizeof(struct record *), compare_r);
 
 	printf("Scanning for duplicates...\n");
 

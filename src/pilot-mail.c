@@ -107,7 +107,7 @@ int getpopstring(int socket, char *buf)
 			break;
 	}
 	*buf = '\0';
-	return count;
+	return c;
 }
 
 int getpopresult(int socket, char *buf)

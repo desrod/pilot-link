@@ -971,7 +971,7 @@ static void Help(char *progname)
 int main(int argc, char *argv[])
 {
 	int 	c,		/* switch */
-	int 	do_rom 		= 0,
+	 	do_rom 		= 0,
 		do_unsaved 	= 0,
 		timespent 	= 0,
 		quiet 		= 0;
