@@ -31,9 +31,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <pi-dlp.h>
-#include <pi-file.h>
-#include <pi-socket.h>
+#include "pi-dlp.h"
+#include "pi-file.h"
+#include "pi-socket.h"
 
 /* Declare prototypes */
 static void display_help(char *progname);
@@ -60,32 +60,6 @@ static const char *optstring = "p:hvf:c:";
 #endif
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Uh, the -help, of course
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(char *progname)
-{
-	printf("   Decodes Palm Voice Memo files to wav files you can read\n\n");
-	printf("   Usage: %s -p <port> [options] file\n", progname);
-	printf("   Options:\n");
-	printf("     -p --port <port>    Use device file <port> to communicate with Palm\n");
-	printf("     -h --help           Display this information\n");
-	printf("     -v --version        Display version information\n");
-	printf("     -f --fetch all | [file]   Fetch all wav files or specified wav file from the Palm\n");
-	printf("     -c --convert [file] Convert [file].wav.pdb file to wav\n\n");
-	printf("   Examples: \n");
-	printf("      %s -p /dev/pilot -f MyVoiceMemo.wav.pdb\n", progname);
-	printf("      %s -c MyVoiceMemo.wav.pdb\n\n", progname);
-	return;
-}
 
 /* Function : write_header
    Summary  : writes out header of wave file with correct parameters
@@ -366,6 +340,34 @@ int pdb_to_wav(char *filename)
         pi_file_close(pi_fp);
         printf("OK, wrote %ld bytes to %s\n", dataChunkSize, info.name);
         return 0;
+}
+
+
+/***********************************************************************
+ *
+ * Function:    display_help
+ *
+ * Summary:     Uh, the -help, of course
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static void display_help(char *progname)
+{
+	printf("   Decodes Palm Voice Memo files to wav files you can read\n\n");
+	printf("   Usage: %s -p <port> [options] file\n", progname);
+	printf("   Options:\n");
+	printf("     -p --port <port>    Use device file <port> to communicate with Palm\n");
+	printf("     -h --help           Display this information\n");
+	printf("     -v --version        Display version information\n");
+	printf("     -f --fetch | <file> Fetch all wav files or specified wav file from the Palm\n");
+	printf("     -c --convert <file> Convert <file>.wav.pdb file to wav\n\n");
+	printf("   Examples: \n");
+	printf("      %s -p /dev/pilot -f MyVoiceMemo.wav.pdb\n", progname);
+	printf("      %s -c MyVoiceMemo.wav.pdb\n\n", progname);
+	return;
 }
 
 

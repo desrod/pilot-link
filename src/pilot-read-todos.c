@@ -1,5 +1,5 @@
 /*
- * todos.c:  Translate Palm ToDo database into generic format
+ * read-todos.c:  Translate Palm ToDo database into generic format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *
@@ -19,17 +19,19 @@
  *
  */
 
+/* 12-27-2003:
+   FIXME: Add "Private" and "Delete" flags */
+
 #include "getopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
-#include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-todo.h"
-#include "pi-dlp.h"
 #include "pi-file.h"
+#include "pi-dlp.h"	/* Also included in pi-file.h */
 #include "pi-header.h"
 
 /* Declare prototypes */
@@ -81,6 +83,7 @@ int main(int argc, char *argv[])
 		*port 		= NULL,
 		*filename 	= NULL,
 		*ptr;
+
 	struct 	PilotUser User;
 	struct 	pi_file *pif 	= NULL;
 	struct 	ToDoAppInfo tai;
@@ -108,6 +111,7 @@ int main(int argc, char *argv[])
 		}
 	}
 		
+	/* Read ToDoDB.pdb from the Palm directly */
 	if (port) {
 		sd = pilot_connect(port);
 		if (sd < 0)
@@ -125,6 +129,8 @@ int main(int argc, char *argv[])
 		}
 	
 		dlp_ReadAppBlock(sd, db, 0, buffer, 0xffff);
+
+	/* Read ToDoDB.pdb from disk */
 	} else if (filename) {
 		int 	len;
 
@@ -142,6 +148,8 @@ int main(int argc, char *argv[])
 		}
 
 		memcpy(buffer, ptr, len);
+
+	/* No arguments specified */
 	} else {
 		printf("ERROR: Insufficient number of arguments\n\n");
 		display_help(progname);
@@ -154,7 +162,8 @@ int main(int argc, char *argv[])
 		int 	attr,
 			category,
 			len;
-		struct 	ToDo t;
+
+		struct 	ToDo todo;
 
 		if (port) {
 			len =
@@ -178,22 +187,27 @@ int main(int argc, char *argv[])
 		    || (attr & dlpRecAttrArchived))
 			continue;
 
-		unpack_ToDo(&t, buffer, len);
+		unpack_ToDo(&todo, buffer, len);
 
 		printf("Category: %s\n", tai.category.name[category]);
-		printf("Priority: %d\n", t.priority);
-		printf("Completed: %s\n", t.complete ? "Yes" : "No");
-		if (t.indefinite)
+		printf("Priority: %d\n", todo.priority);
+		printf("Completed: %s\n", todo.complete ? "Yes" : "No");
+
+		if (todo.indefinite) {
 			printf("Due: No Date");
-		else
-			printf("Due: %s", asctime(&t.due));
-		if (t.description)
-			printf("Description: %s\n", t.description);
-		if (t.note)
-			printf("Note: %s\n", t.note);
+		} else {
+			printf("Due: %s", asctime(&todo.due));
+		}
+
+		if (todo.description)
+			printf("Description: %s\n", todo.description);
+
+		if (todo.note)
+			printf("Note: %s\n", todo.note);
+
 		printf("\n");
 
-		free_ToDo(&t);
+		free_ToDo(&todo);
 	}
 
 	if (port) {
