@@ -1302,6 +1302,8 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 		}
 	}
 
+	pi_buffer_free(buffer);
+
 	return dlp_CloseDB(socket, db);
 
 fail:
