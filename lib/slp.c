@@ -135,7 +135,8 @@ int slp_rx(struct pi_socket *ps)
       ps->xid = ps->mac.rxb->data[8];
       ps->laddr.port = ps->mac.rxb->data[3];
       ps->raddr.port = ps->mac.rxb->data[4];
-
+      ps->protocol = ps->mac.rxb->data[5];
+      
       /* hack to ignore LOOP packets... */
 
       if (ps->mac.rxb->data[5] == PF_LOOP) {

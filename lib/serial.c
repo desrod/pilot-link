@@ -96,7 +96,7 @@ int pi_device_open(char *tty, struct pi_socket *ps)
   if (ps->protocol == PF_PADP)
     tcn.c_cflag = CREAD | CLOCAL | calcrate(9600) | CS8 ;
   else
-    tcn.c_cflag = CREAD | CLOCAL | calcrate(38400) | CS8 ;
+    tcn.c_cflag = CREAD | CLOCAL | calcrate(57600) | CS8 ;
 
   tcn.c_lflag = NOFLSH;
 

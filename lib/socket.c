@@ -11,6 +11,7 @@
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include "pi-socket.h"
 #include "pi-serial.h"
@@ -30,9 +31,9 @@ int pi_socket(int domain, int type, int protocol)
 
   if ((domain != AF_SLP) ||
       ((type  != SOCK_STREAM) &&
-      (type   != SOCK_DGRAM)) ||
+      (type   != SOCK_RAW)) ||
       ((protocol != PF_PADP) &&
-       (protocol != PF_SYS))) {  /* FIXME:  Need to support more */
+       (protocol != PF_SLP))) {  /* FIXME:  Need to support more */
     errno = EINVAL;
     return -1;
   }
@@ -45,10 +46,10 @@ int pi_socket(int domain, int type, int protocol)
   ps->connected = 0;
   ps->mac.fd = 0;
   
-  if(protocol == PF_PADP)
+  if(type == SOCK_STREAM)
     ps->rate = 19200; /* Default PADP connection rate */
-  else if(protocol = PF_SYS)
-    ps->rate = 38400; /* Mandatory SysPkt connection rate */
+  else if(type == SOCK_RAW)
+    ps->rate = 57600; /* Mandatory SysPkt connection rate */
     
   installexit();
 
@@ -83,7 +84,7 @@ int pi_connect(int pi_sd, struct pi_sockaddr *addr, int addrlen)
   ps->raddr = *addr;
   ps->laddr = *addr;
    
-  if(ps->protocol == PF_PADP) {
+  if(ps->type == SOCK_STREAM) {
 
     cmp_wakeup(ps, 38400); /* Assume this box can't go over 38400 */
 
@@ -147,8 +148,6 @@ int pi_listen(int pi_sd, int backlog)
     errno = ESRCH;
     return -1;
   }
-
-  pi_socket_read(ps);
   return 0;
 }
 
@@ -165,8 +164,9 @@ int pi_accept(int pi_sd, struct pi_sockaddr *addr, int *addrlen)
     return -1;
   }
 
-  if(ps->protocol == PF_PADP) {
+  if(ps->type == SOCK_STREAM) {
 
+    pi_socket_read(ps);
     cmp_rx(ps, &c); /* Accept incoming CMP wakeup packet */
 
     /* FIXME: if that wasn't a CMP wakeup packet, fail or loop */
@@ -211,41 +211,12 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
     return -1;
   }
 
-  if(ps->protocol == PF_PADP) {
+  if(ps->type == SOCK_STREAM) {
     padp_tx(ps,msg,len,padData);
     pi_socket_read(ps);
     padp_rx(ps, buf, 0);
-  } else if(ps->protocol == PF_SYS) {
-    syspkt_tx(ps, msg,len);
-  }
-  return len;
-}
-
-/* Send msg on a half-connected socket */
-
-int pi_sendto(int pi_sd, void *msg, int len, unsigned int flags, 
-            struct pi_sockaddr * addr, int tolen)
-{
-  struct pi_socket *ps;
-  char buf[200];
-
-  if (!(ps = find_pi_socket(pi_sd))) {
-    errno = ESRCH;
-    return -1;
-  }
-  
-  if(addr) {
-    ps->raddr.port = addr->port; /* Set both for now, as a previous recvfrom 
-                                    could have knocked out laddr */
-    ps->laddr.port = addr->port;
-  }
-
-  if(ps->protocol == PF_PADP) {
-    padp_tx(ps,msg,len,padData);
-    pi_socket_read(ps);
-    padp_rx(ps, buf, 0);
-  } else if(ps->protocol == PF_SYS) {
-    syspkt_tx(ps, msg,len);
+  } else {
+    syspkt_tx(ps, msg, len);
   }
   return len;
 }
@@ -263,36 +234,9 @@ int pi_recv(int pi_sd, void *msg, int len, unsigned int flags)
   }
 
   pi_socket_read(ps);
-  if(ps->protocol == PF_PADP) {
+  if(ps->type == SOCK_STREAM) {
     return padp_rx(ps,msg,len,padData);
-  } else if(ps->protocol = PF_SYS) {
-    return syspkt_rx(ps,msg,len);
-  }
-}
-
-/* Recv msg on a half-connected socket */
-
-int pi_recvfrom(int pi_sd, void *msg, int len, unsigned int flags,
-                struct pi_sockaddr * addr, int *fromlen)
-{
-  struct pi_socket *ps;
-  char buf[200];
-
-  if (!(ps = find_pi_socket(pi_sd))) {
-    errno = ESRCH;
-    return -1;
-  }
-
-  pi_socket_read(ps);
-  
-  if(addr)
- 	*addr = ps->raddr;
-  if(fromlen)
-  	*fromlen = sizeof(struct pi_sockaddr);
-  
-  if(ps->protocol == PF_PADP) {
-    return padp_rx(ps,msg,len,padData);
-  } else if(ps->protocol == PF_SYS) {
+  } else {
     return syspkt_rx(ps,msg,len);
   }
 }
@@ -323,7 +267,7 @@ int pi_tickle(int pi_sd)
     return -1;
   }
   
-  if(ps->protocol == PF_PADP)
+  if(ps->type == SOCK_STREAM)
     return padp_tx(ps,0,0,padTickle);
   else
     return -1; /* FIXME: set errno to something useful */
@@ -341,7 +285,7 @@ int pi_close(int pi_sd)
     return -1;
   }
   
-  if (ps->protocol == PF_PADP) {
+  if (ps->type == SOCK_STREAM) {
     if (ps->connected & 1) /* If socket is connected */
       if (!(ps->connected & 2)) /* And it wasn't end-of-synced */
         dlp_EndOfSync(pi_sd, 0);  /* Then do it now, with clean status */

@@ -15,7 +15,7 @@
 
 #define AF_SLP 0x0001        /* arbitrary, for completeness, just in case */
 
-#define PF_SYS    0x0000
+#define PF_SLP    AF_SLP
 #define PF_PADP   0x0002
 #define PF_LOOP   0x0003
 
@@ -85,11 +85,6 @@ int pi_accept(int pi_sd, struct pi_sockaddr *remote_addr, int *addrlen);
 int pi_send(int pi_sd, void *msg, int len, unsigned int flags);
 int pi_recv(int pi_sd, void *msg, int len, unsigned int flags);
 
-int pi_sendto(int pi_sd, void *msg, int len, unsigned int flags, 
-            struct pi_sockaddr * addr, int tolen);
-int pi_recvfrom(int pi_sd, void *msg, int len, unsigned int flags,
-                struct pi_sockaddr * addr, int *fromlen);
-
 int pi_read(int pi_sd, void *msg, int len);
 int pi_write(int pi_sd, void *msg, int len);
 
@@ -107,6 +102,28 @@ int pi_sdtofd(int pi_sd);
 int pi_device_open(char *, struct pi_socket *ps);
 struct pi_socket *find_pi_socket(int sd);
 int crc16(unsigned char *ptr, int count);
+
+/* portable field access */
+
+#define get_long(ptr) (((ptr)[0] << 24) | \
+                       ((ptr)[1] << 16) | \
+                       ((ptr)[2] << 8)  | \
+                       ((ptr)[3] << 0))
+                       
+#define get_short(ptr) (((ptr)[0] << 8)  | \
+                        ((ptr)[1] << 0))
+                        
+#define get_byte(ptr) ((ptr)[0])
+
+#define set_long(ptr,val) (((ptr)[0] = ((val) >> 24) & 0xff), \
+		          ((ptr)[1] = ((val) >> 16) & 0xff), \
+		          ((ptr)[2] = ((val) >> 8) & 0xff), \
+		          ((ptr)[3] = ((val) >> 0) & 0xff))
+                       
+#define set_short(ptr,val) (((ptr)[0] = ((val) >> 8) & 0xff), \
+		            ((ptr)[1] = ((val) >> 0) & 0xff))
+
+#define set_byte(ptr,val) ((ptr)[0]=(val))
 
 #endif /* _PILOT_SOCKET_H_ */
 

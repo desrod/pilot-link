@@ -1,4 +1,5 @@
-OBJS = socket.o serial.o slp.o padp.o prcread.o utils.o dlp.o cmp.o syspkt.o
+OBJS = socket.o serial.o slp.o padp.o prcread.o utils.o \
+       dlp.o cmp.o syspkt.o datebook.o memo.o address.o todo.o
 
 CC = gcc
 CFLAGS = -O2 -g -I../include
@@ -16,4 +17,4 @@ libpisock.a: $(OBJS)
 	$(RANLIB) libpisock.a
 
 clean:
-	$(RM) *.o *.a *~ core a.out
+	$(RM) *.o *.a *~ core a.out *.orig

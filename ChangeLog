@@ -1,3 +1,17 @@
+Nov 1, 1996	D. Jeff Dionne 0.2.4
+
+	Integrated 5 patches from Kenneth Albanowski
+	  - RPC
+	  - new "debugsh" program that talks to Pilot over RPC
+	  - cleanup of "system packets"
+	  - new "memo" end user program
+	  - new "remind" end user program
+	Limit the generated value of xid in padp_tx to 0x7f, hopfully
+	  will fix the problems with long running syncs.  DJD.
+	accept() now blocks insted of listen().  DJD.
+	padp will now re-assemble fragments. DJD.
+	install-prc now updates the Pilot display as it goes along. DJD.
+
 Oct 24, 1996	D. Jeff Dionne 0.2.3
 
 	Integrated patches for "system packets" from Kenneth Albanowski

@@ -28,8 +28,8 @@ int padp_tx(struct pi_socket *ps, void *msg, int len, int type)
 
   if (type == padData || type == padTickle) {
     ps->xid++;
-    ps->xid &= 0xff;
-    if ((!ps->xid) || (ps->xid==0xff)) ps->xid = 0x11; /* some random # */
+    ps->xid &= 0x7f;
+    if (!ps->xid) ps->xid = 0x11; /* some random # */
   }
 
   if (type == padWake) ps->xid = 0xff;
@@ -82,7 +82,10 @@ int padp_rx(struct pi_socket *ps, void *buf, int len)
   struct padp *padp;
   struct pi_skb *skb;
   char trans_id;
-  int rlen =0;
+  int rlen = 0;
+  int data_len;
+  int frag_off = 0;
+  int count = 0;
 
 retry:
   if (!ps->rxq) return 0;
@@ -93,18 +96,29 @@ retry:
   padp = (struct padp *)(&skb->data[10]);
 
   trans_id = ((struct slp *)(skb->data))->id;
+  data_len = ntohs(*(unsigned short *)(&skb->data[6])) - 4;
 
   padp_dump(skb, padp, 0);
 
   if (padp->type == padData) {
 
     padp_tx(ps,(void *)padp,0,padAck);
-    rlen = (ntohs(padp->size) <= len) ? ntohs(padp->size) : len;
-    memcpy(buf,&skb->data[14],rlen);
+    rlen = (frag_off + data_len <= len) ? data_len : len - frag_off;
+
+    if (rlen > 0) {
+      memcpy(buf + frag_off,&skb->data[14],rlen);
+      count += rlen;
+    }
+    frag_off += data_len;
+  }
+
+  if (!(padp->flags & LAST)) {
+    free(skb);
+    pi_socket_read(ps);
+    goto retry;
   }
 
   free (skb);
-
 
 #ifdef DEBUG
   fprintf(stderr, "PADP tid:%02x last:%02x t-l:%02x\n", trans_id, ps->last_tid,
@@ -122,7 +136,7 @@ retry:
 
   ps->last_tid = trans_id;
 
-  return rlen;
+  return count;
 }
 
 int padp_dump(struct pi_skb *skb, struct padp *padp, int rxtx)

@@ -13,31 +13,9 @@
 #include "pi-socket.h"
 #include "dlp.h"
 
-/* These functions are inefficient, but completely portable */
-
-#define get_long(ptr) (((ptr)[0] << 24) | \
-                       ((ptr)[1] << 16) | \
-                       ((ptr)[2] << 8)  | \
-                       ((ptr)[3] << 0))
-                       
-#define get_short(ptr) (((ptr)[0] << 8)  | \
-                        ((ptr)[1] << 0)
-                        
 #define get_date(ptr) (dlp_ptohdate((ptr)))                        
 
-#define get_byte(ptr) ((ptr)[0])
-
-#define set_long(ptr,val) (((ptr)[0] = ((val) >> 24) & 0xff), \
-		          ((ptr)[1] = ((val) >> 16) & 0xff), \
-		          ((ptr)[2] = ((val) >> 8) & 0xff), \
-		          ((ptr)[3] = ((val) >> 0) & 0xff))
-                       
-#define set_short(ptr,val) (((ptr)[0] = ((val) >> 8) & 0xff), \
-		            ((ptr)[1] = ((val) >> 0) & 0xff))
-
 #define set_date(ptr,val) (dlp_htopdate((val),(ptr)))                        
-
-#define set_byte(ptr,val) ((ptr)[0]=(val))
 
 
 static unsigned char dlp_buf[0xffff];
@@ -394,34 +372,90 @@ int dlp_WriteDBAppInfoBlock(int sd, unsigned char fHandle, unsigned char *dbuf,
   return dlp_exec(sd, 0x1c, 0x20, dlp_buf, dlen+2, NULL, 0);
 }
 
-/* FIXME:  Is this what this command code does? */
-int dlp_ResetSyncFlags(int sd, unsigned char fHandle) {
+int dlp_CleanUpDatabase(int sd, unsigned char fHandle) {
   return dlp_exec(sd, 0x26, 0x20, &fHandle, sizeof(fHandle), NULL, 0);
 }
 
-int dlp_ReadNextModifiedRec(int sd, unsigned char fHandle, unsigned char *dbuf,
-                       int dlen) {
-  return dlp_exec(sd, 0x1f, 0x20, &fHandle, sizeof(fHandle), dbuf, dlen);
+int dlp_ResetSyncFlags(int sd, unsigned char fHandle) {
+  return dlp_exec(sd, 0x27, 0x20, &fHandle, sizeof(fHandle), NULL, 0);
 }
 
-int dlp_ReadRecordById(int sd, unsigned char fHandle, long id, short offset,
-                       unsigned char *dbuf, int dlen) {
+int dlp_ReadNextModifiedRec(int sd, unsigned char fHandle, unsigned char *buffer,
+                          int * id, int * index, int * size, int * attr, int * category) {
+  int result = dlp_exec(sd, 0x1f, 0x20, &fHandle, sizeof(fHandle), dlp_buf, 0xffff);
+
+  if (result >= 10) {
+    if (id)
+      *id = get_long(dlp_buf);
+    if (index)
+      *index = get_short(dlp_buf+4);
+    if (size)
+      *size = get_short(dlp_buf+6);
+    if (attr)
+      *attr = get_byte(dlp_buf+8);
+    if (category)
+      *category = get_byte(dlp_buf+9);
+      
+    memcpy(buffer, dlp_buf+10, result-10);
+    
+    return result-10;
+  } else
+    return result;
+}
+
+int dlp_ReadRecordById(int sd, unsigned char fHandle, long id, char * buffer, 
+                          int * index, int * size, int * attr, int * category) {
+  int result;
+  
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, 0x00);
   set_long(dlp_buf+2, id);
-  set_short(dlp_buf+6, offset);
-  set_short(dlp_buf+8, dlen);
+  set_short(dlp_buf+6, 0); /* Offset into record */
+  set_short(dlp_buf+8, 0xffff); /* length to return */
 
-  return dlp_exec(sd, 0x20, 0x20, dlp_buf, 10, dbuf, dlen);
+  result = dlp_exec(sd, 0x20, 0x20, dlp_buf, 10, dlp_buf, 0xffff);
+  
+  if (result >= 10) {
+    /*id = get_long(dlp_buf);*/
+    if (index)
+      *index = get_short(dlp_buf+4);
+    if (size)
+      *size = get_short(dlp_buf+6);
+    if (attr)
+      *attr = get_byte(dlp_buf+8);
+    if (category)
+      *category = get_byte(dlp_buf+9);
+    memcpy(buffer, dlp_buf+10, result-10);
+    return result-10;
+  } else
+    return result;
 }
 
-int dlp_ReadRecordByIndex(int sd, unsigned char fHandle, short index,
-                          short offset, unsigned char *dbuf, int dlen) {
+int dlp_ReadRecordByIndex(int sd, unsigned char fHandle, short index, char * buffer, 
+                          long * id, int * size, int * attr, int * category) {
+  int result;
+  
   set_byte(dlp_buf, fHandle);
   set_byte(dlp_buf+1, 0x00);
   set_short(dlp_buf+2, index);
-  set_short(dlp_buf+4, offset);
-  set_short(dlp_buf+6, dlen);
+  set_short(dlp_buf+4, 0); /* Offset into record */
+  set_short(dlp_buf+6, 0xffff); /* length to return */
 
-  return dlp_exec(sd, 0x21, 0x20, dlp_buf, 8, dbuf, dlen);
- }
+  result = dlp_exec(sd, 0x20, 0x21, dlp_buf, 8, dlp_buf, 0xffff);
+  
+  if (result >= 10) {
+    if (id)
+      *id = get_long(dlp_buf);
+    /*get_short(dlp_buf+4) == index*/
+    if (size)
+      *size = get_short(dlp_buf+6);
+    if (attr)
+      *attr = get_byte(dlp_buf+8);
+    if (category)
+      *category = get_byte(dlp_buf+9);
+    memcpy(buffer, dlp_buf+10, result-10);
+    
+    return result-10;
+  } else
+    return result;
+}

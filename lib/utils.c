@@ -27,7 +27,6 @@ int crc16(unsigned char *ptr, int count)
   return (crc & 0xFFFF);
 }
 
-#ifdef DEBUG
 dumpline (char *buf, int len, int addr)
 {
   int i;
@@ -48,4 +47,10 @@ dumpline (char *buf, int len, int addr)
   }
   fprintf(stderr,"\n");
 }
-#endif
+
+dumpdata (char * buf, int len) {
+  int i;
+  for(i=0;i<len;i+=16) {
+    dumpline(buf+i, ((len-i)>16) ? 16 : len-i, i);
+  }
+}

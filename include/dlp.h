@@ -153,5 +153,24 @@ int dlp_WriteRecord(int sd, unsigned char dbhandle, unsigned char flags,
 
 int dlp_WriteResource(int sd, unsigned char dbhandle, long type, int id,
                  const char *data, int length);
+
+int dlp_ReadNextModifiedRec(int sd, unsigned char fHandle, unsigned char *buffer,
+                          int * id, int * index, int * size, int * attr, int * category);
+
+int dlp_ReadRecordById(int sd, unsigned char fHandle, long id, char * buffer, 
+                          int * index, int * size, int * attr, int * category);
+
+int dlp_ReadRecordByIndex(int sd, unsigned char fHandle, short index, char * buffer, 
+                          long * id, int * size, int * attr, int * category);
+
+int dlp_CleanUpDatabase(int sd, unsigned char fHandle);
+
+  /* Deletes all records in the opened database which are marked as archived
+     or deleted. */
+
+int dlp_ResetSyncFlags(int sd, unsigned char fHandle);
+
+  /* For record databases, reset all dirty flags. For both record and
+     resource databases, set the last sync time to now. */
                   
 #endif /*_PILOT_DLP_H_*/

@@ -59,8 +59,8 @@ main(int argc, char *argv[])
 
   buf = (char *)malloc(4096);  /* some huge (in Pilot terms) working space */
 
-  /*pi_write(sd,User,sizeof(User));
-  pi_read(sd,userid,64);*/
+  /* Tell user (via Pilot) that we are starting things up */
+  dlp_OpenConduit(sd);
 
   for (i=2; i<argc; i++) LoadPRC(sd,argv[i]);
 
