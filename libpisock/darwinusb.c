@@ -123,7 +123,7 @@ static pthread_t usb_thread = 0;
 
 typedef struct
 {
-	IOUSBInterfaceInterface **interface;
+	IOUSBInterfaceInterface182 **interface;
 	IOUSBDeviceInterface **device;		/* kept for CLOSE_NOTIFICATION */
 	io_object_t device_notification;	/* for device removal */
 
@@ -159,31 +159,21 @@ static usb_connection_t usb = {
 	0,0
 };
 
-/* local prototypes */
-static IOReturn	control_request (IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, void *pData, UInt16 maxReplyLength);
-static void		device_added (void *refCon, io_iterator_t iterator);
-static void		device_notification (usb_connection_t *connexion, io_service_t service, natural_t messageType, void *messageArgument);
-static void		read_completion (usb_connection_t *connexion, IOReturn result, void *arg0);
-static int		accepts_device (unsigned short vendor, unsigned short product);
-static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int *port_number, int *input_pipe_number, int *output_pipe_number);
-static IOReturn	find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number);
-static int		prime_read (usb_connection_t *connexion);
-static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev);
-static IOReturn	read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
-
-//
-// USB control requests we send to the devices
-// Got them from linux/drivers/usb/serial/visor.h
-//
+/*
+ * USB control requests we send to the devices
+ * Got them from linux/drivers/usb/serial/visor.h
+ *
+ */
 #define	GENERIC_REQUEST_BYTES_AVAILABLE			0x01
 #define	GENERIC_CLOSE_NOTIFICATION				0x02
 #define VISOR_GET_CONNECTION_INFORMATION		0x03
 #define PALM_GET_EXT_CONNECTION_INFORMATION		0x04
 
-//
-// Structures defining the info a device returns
-// Got them from linux/drivers/usb/serial/visor.h
-//
+/*
+ * Structures defining the info a device returns
+ * Got them from linux/drivers/usb/serial/visor.h
+ *
+ */
 typedef struct
 {
 	UInt16 num_ports;
@@ -191,7 +181,7 @@ typedef struct
 	{
 		UInt8 port_function_id;
 		UInt8 port;
-	} connections[2];
+	} connections[8];
 } visor_connection_info;
 
 /* struct visor_connection_info.connection[x].port defines: */
@@ -216,12 +206,13 @@ typedef struct
 		UInt8 port;
 		UInt8 endpoint_info;
 		UInt16 reserved;
-    } connections[2];
+    } connections[8];
 } palm_ext_connection_info;
 
-//
-// Some vendor and product codes we use
-//
+/*
+ * Some vendor and product codes we use
+ *
+ */
 #define	VENDOR_SONY					0x054c
 #define	VENDOR_HANDSPRING			0x082d
 #define	VENDOR_PALMONE				0x0830
@@ -230,10 +221,11 @@ typedef struct
 #define	PRODUCT_HANDSPRING_VISOR	0x0100
 #define PRODUCT_SONY_CLIE_3_5		0x0038
 
-//
-// This table helps us determine whether a connecting USB device is
-// one we'd like to talk to.
-//
+/*
+ * This table helps us determine whether a connecting USB device is
+ * one we'd like to talk to.
+ *
+ */
 static struct {
 	unsigned short vendorID;
 	unsigned short productID;
@@ -298,6 +290,20 @@ acceptedDevices[] = {
 	/* Samsung */
 	{0x04e8, 0x8001}	// I330
 };
+
+
+/* local prototypes */
+static IOReturn	control_request (IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, void *pData, UInt16 maxReplyLength);
+static void		device_added (void *refCon, io_iterator_t iterator);
+static void		device_notification (usb_connection_t *connexion, io_service_t service, natural_t messageType, void *messageArgument);
+static void		read_completion (usb_connection_t *connexion, IOReturn result, void *arg0);
+static int		accepts_device (unsigned short vendor, unsigned short product);
+static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int *port_number, int *input_pipe_number, int *output_pipe_number);
+static IOReturn	find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number);
+static int		prime_read (usb_connection_t *connexion);
+static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe);
+static void		decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
+static IOReturn	read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
 
 
 /***************************************************************************/
@@ -512,23 +518,6 @@ device_added (void *refCon, io_iterator_t iterator)
 			continue;
 		}
 
-		if (vendor == VENDOR_TAPWAVE)
-		{
-			/* for some reason I don't understand yet, the starting handshake doesn't work properly
-			 * if I don't reset the USB port of the device first. This slows connection down but
-			 * allows it to work, until I resolve it
-			 */
-			kr  = (*dev)->ResetDevice (dev);
-			if (kr != kIOReturnSuccess)
-			{
-				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to reset device (kr=0x%08x)\n", kr));
-				(*dev)->USBDeviceClose (dev);
-				(*dev)->Release(dev);
-				IOObjectRelease (ioDevice);
-				continue;
-			}
-		}
-
 		kr = configure_device (dev, vendor, product, &port_number, &input_pipe_number, &output_pipe_number);
 		if (kr != kIOReturnSuccess)
 		{
@@ -572,91 +561,134 @@ device_added (void *refCon, io_iterator_t iterator)
 static IOReturn
 configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int *port_number, int *input_pipe_number, int *output_pipe_number)
 {
-	UInt8 numConf, conf;
+	UInt8 numConf, conf, deviceClass;
 	IOReturn kr;
 	IOUSBConfigurationDescriptorPtr confDesc;
 
-	kr = (*dev)->GetNumberOfConfigurations (dev, &numConf);
-	if (!numConf)
-	{
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: device has zero configurations!\n"));
-		return -1;
-	}
-
-	/* try all possible configurations if the first one fails
-	 * (shouldn't happen in most cases though)
+	/* Get the device class. Most handhelds are registered as composite devices
+	 * and therefore already opened & configured by OS X drivers!
 	 */
-	for (conf=0; conf < numConf; conf++)
+	kr = (*dev)->GetDeviceClass (dev, &deviceClass);
+	if (kr != kIOReturnSuccess)
+		return kr;
+
+	if (deviceClass != kUSBCompositeClass)
 	{
-		kr = (*dev)->GetConfigurationDescriptorPtr(dev, 0, &confDesc);
-		if (kr)
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: trying to configure device\n"));
+
+		kr = (*dev)->GetNumberOfConfigurations (dev, &numConf);
+		if (!numConf)
 		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get config descriptor for index %d (err=%08x numConf=%d)\n",
-				0, kr, (int)numConf));
-			continue;
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: device has zero configurations!\n"));
+			return -1;
 		}
 
-		kr = (*dev)->SetConfiguration(dev, confDesc->bConfigurationValue);
-		if (kr == kIOReturnSuccess)
-			break;
+		/* try all possible configurations if the first one fails
+		 * (shouldn't happen in most cases though)
+		 */
+		for (conf=0; conf < numConf; conf++)
+		{
+			kr = (*dev)->GetConfigurationDescriptorPtr(dev, 0, &confDesc);
+			if (kr)
+			{
+				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get config descriptor for index %d (err=%08x numConf=%d)\n",
+					0, kr, (int)numConf));
+				continue;
+			}
 
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to set configuration to value %d (err=%08x numConf=%d)\n",
-			(int)confDesc->bConfigurationValue, kr, (int)numConf));
+			kr = (*dev)->SetConfiguration(dev, confDesc->bConfigurationValue);
+			if (kr == kIOReturnSuccess)
+				break;
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to set configuration to value %d (err=%08x numConf=%d)\n",
+				(int)confDesc->bConfigurationValue, kr, (int)numConf));
+		}
+		if (conf == numConf)
+			return kr;
 	}
-	if (conf == numConf)
-		return kr;
 
 	/*
 	 * Device specific magic incantations
 	 *
 	 * Many devices agree on talking only if you say the "magic" incantation first.
 	 * Usually, it's a control request or a sequence of control requests
+	 * Additionally, this gives us a chance to try finding the pipes we want
 	 *
 	 */
 	if (vendor == VENDOR_PALMONE && product == PRODUCT_PALMCONNECT_USB)
 	{
-		// PalmConnect USB is a serial <-> USB adapter. Even though it shows up
-		// as a USB device, it really requires talking using a serial protocol
+		/* PalmConnect USB is a serial <-> USB adapter. Even though it shows up
+		 * as a USB device, it really requires talking using a serial protocol
+		 */
 		return kIOReturnSuccess;
 	}
 
-	if (vendor == VENDOR_HANDSPRING && product == PRODUCT_HANDSPRING_VISOR)
+	/* try reading pipe information */
+	kr = read_generic_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
+	if (kr != kIOReturnSuccess)
 	{
-		kr = read_visor_connection_information (dev);
-	}
-	else if (vendor == VENDOR_SONY && product == PRODUCT_SONY_CLIE_3_5)
-	{
-		// according to linux code, PEG S-300 awaits these two requests
-		kr = control_request (dev, USBmakebmRequestType(kUSBIn, kUSBStandard, kUSBDevice), 0x08 /* USB_REQ_GET_CONFIGURATION */, NULL, 1);
+		/* didn't work? try reading the Visor way */
+		kr = read_visor_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
 		if (kr != kIOReturnSuccess)
 		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: Sony USB_REQ_GET_CONFIGURATION failed (err=%08x)\n", kr));
-		}
-		kr = control_request (dev, USBmakebmRequestType(kUSBIn, kUSBStandard, kUSBDevice), 0x0A /* USB_REQ_GET_INTERFACE */, NULL, 1);
-		if (kr != kIOReturnSuccess)
-		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: Sony USB_REQ_GET_INTERFACE failed (err=%08x)\n", kr));
+			/* still didn't work? let's try harder. It seems that some devices are sending
+			 * the port info on one of the pipes, try catching it
+			 */
+			UInt8 intfNumEndpoints;
+			int pipeRef;
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: checking data sent by device\n"));
+
+			kr = (*usb.interface)->GetNumEndpoints (usb.interface, &intfNumEndpoints);
+			if (kr != kIOReturnSuccess)
+				return kr;
+			for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
+			{
+				UInt8 direction, number, transferType, interval;
+				UInt16 maxPacketSize;
+				kr = (*usb.interface)->GetPipeProperties (usb.interface, pipeRef, &direction, &number,
+									  &transferType, &maxPacketSize, &interval);
+				if (kr != kIOReturnSuccess)
+					continue;
+				if (direction == kUSBIn)
+				{
+					UInt32 size = sizeof(usb.read_buffer);
+
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: trying pipe %d type=%d\n", pipeRef, (int)transferType));
+					if (transferType == kUSBBulk)
+						kr = (*usb.interface)->ReadPipeTO (usb.interface, pipeRef, &usb.read_buffer, &size, 1000, 250);
+					else
+						kr = (*usb.interface)->ReadPipe (usb.interface, pipeRef, &usb.read_buffer, &size);
+
+					if (kr == kIOReturnSuccess && size >= 8)
+					{
+						/* got something!! */
+						LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: got %d bytes there!\n", (int)size));
+						CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(usb.read_buffer, size));
+
+						/* the data sent by the device looks like it's a connection info buffer with
+						 * 'VNDR' prefix
+						 */
+						if (usb.read_buffer[0]=='V' &&
+							usb.read_buffer[1]=='N' &&
+							usb.read_buffer[2]=='D' &&
+							usb.read_buffer[3]=='R')
+						{
+							palm_ext_connection_info ci;
+							memcpy(&ci, &usb.read_buffer[6], sizeof(ci));
+							decode_generic_connection_information(&ci, port_number, input_pipe_number, output_pipe_number);
+							break;
+						}
+					}
+				}
+			}
 		}
 	}
-	else
-	{
-		// other devices will either accept or deny this generic call
-		kr = read_generic_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
 
-		if (vendor == VENDOR_TAPWAVE)
-		{
-/* useless
-			// Tapwave: for Zodiac, the TwUSBD.sys driver on Windows sends the ext-connection-info packet
-			// two additional times.
-			read_generic_connection_information (dev, NULL, NULL, NULL);
-			read_generic_connection_information (dev, NULL, NULL, NULL);
-*/
-		}
-	}
-
-	// query bytes available. Not that we really care,
-	// but most devices expect to receive this before
-	// they agree on talking to us.
+	/* query bytes available. Not that we really care,
+	 * but most devices expect to receive this before
+	 * they agree on talking to us.
+	 */
 	if (vendor != VENDOR_TAPWAVE)
 	{
 		unsigned char ba[2];
@@ -859,7 +891,7 @@ control_request(IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, vo
 }
 
 static IOReturn
-read_visor_connection_information (IOUSBDeviceInterface **dev)
+read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe)
 {
 	int i;
 	kern_return_t kr;
@@ -872,9 +904,8 @@ read_visor_connection_information (IOUSBDeviceInterface **dev)
 	}
 	else
 	{
+		ci.num_ports >>= 8;				/* number of ports is little-endian */
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: VISOR_GET_CONNECTION_INFORMATION, num_ports=%d\n", ci.num_ports));
-		if (ci.num_ports > 2)
-			ci.num_ports = 2;
 		for (i=0; i < ci.num_ports; i++)
 		{
 			char *function_str;
@@ -888,6 +919,8 @@ read_visor_connection_information (IOUSBDeviceInterface **dev)
 					break;
 				case VISOR_FUNCTION_HOTSYNC:
 					function_str="HOTSYNC";
+					if (port_number)
+						*port_number = ci.connections[i].port;
 					break;
 				case VISOR_FUNCTION_CONSOLE:
 					function_str="CONSOLE";
@@ -906,10 +939,43 @@ read_visor_connection_information (IOUSBDeviceInterface **dev)
 	return kr;
 }
 
+static void
+decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe)
+{
+	int i;
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: decode_generic_connection_information num_ports=%d, endpoint_numbers_different=%d\n", ci->num_ports, ci->endpoint_numbers_different));
+	for (i=0; i < ci->num_ports; i++)
+	{
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx\n", i, ci->connections[i].port_function_id));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci->connections[i].port));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, ci->connections[i].endpoint_info));
+		if (ci->connections[i].port_function_id == 'cnys')
+		{
+			/* 'sync': we found the port/pipes to use for synchronization
+			 * force find_interfaces to select this one rather than another one
+			 * if the port number in the structure is not 0, there are chances
+			 * that the "number" of each pipe is a port number. Otherwise, if
+			 * the endpoint info is not 0, chances are that it contains input
+			 * and output pipe number that are also the "number" value of the pipe
+			 * (in this case, each pipe has a different "number")
+			 */
+			if (port_number && ci->connections[i].port)
+					*port_number = ci->connections[i].port;
+			if (ci->connections[i].endpoint_info)
+			{
+				if (input_pipe)
+					*input_pipe = ci->connections[i].endpoint_info >> 4;
+				if (output_pipe)
+					*output_pipe = ci->connections[i].endpoint_info & 0x0f;
+			}
+		}
+	}
+}
+
 static IOReturn
 read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe)
 {
-	int i;
 	kern_return_t  kr;
 	palm_ext_connection_info ci;
 
@@ -919,34 +985,7 @@ read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_numbe
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", kr));
 	}
 	else
-	{
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: PALM_GET_EXT_CONNECTION_INFORMATION, num_ports=%d, endpoint_numbers_different=%d\n", ci.num_ports, ci.endpoint_numbers_different));
-		for (i=0; i < ci.num_ports; i++)
-		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx\n", i, ci.connections[i].port_function_id));
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci.connections[i].port));
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, ci.connections[i].endpoint_info));
-			if (ci.connections[i].port_function_id == 'cnys')
-			{
-				// 'sync': we found the port/pipes to use for synchronization
-				// force find_interfaces to select this one rather than another one
-				// if the port number in the structure is not 0, there are chances
-				// that the "number" of each pipe is a port number. Otherwise, if
-				// the endpoint info is not 0, chances are that it contains input
-				// and output pipe number that are also the "number" value of the pipe
-				// (in this case, each pipe has a different "number")
-				if (port_number && ci.connections[i].port)
-						*port_number = ci.connections[i].port;
-				if (ci.connections[i].endpoint_info)
-				{
-					if (input_pipe)
-						*input_pipe = ci.connections[i].endpoint_info >> 4;
-					if (output_pipe)
-						*output_pipe = ci.connections[i].endpoint_info & 0x0f;
-				}
-			}
-		}
-	}
+		decode_generic_connection_information(&ci, port_number, input_pipe, output_pipe);
 	return kr;
 }
 
