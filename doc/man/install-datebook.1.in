@@ -7,13 +7,17 @@ handheld.
 
 
 .SH "SYNOPSIS"
-\fBinstall\-datebook\fR [\fB\-p\fR <\fIport\fR>] \-r [<\fIfilename\fR> ...]
+\fBinstall\-datebook\fR [\fIcommon\-options\fR] \-r <\fIfilename\fR>
 .LP 
 
 .SH "DESCRIPTION"
-\fBinstall\-datebook\fR allows the user to create one or more datebook entries from one or more source files. 
+\fBinstall\-datebook\fR allows the user to create one or more datebook entries from a text file.
 .LP 
-The format of the source file contains one datebook entry per line, containing four tab separated fields. The fields are start date/time, end date/time, alarm settings, and the description of datebook entry. This program doesn't yet support repeated entries. The date and time must be in format understand by \fIparsedate.y\fR. At the very least, the following two formats are understood:
+The format of the text file contains one datebook entry per line, containing four tab separated fields. 
+The fields are start date/time, end date/time, alarm settings, and the description of datebook entry. 
+This program doesn't yet support repeated entries. 
+The date and time must be in format understand by \fIparsedate.y\fR. 
+At the very least, the following two formats are understood:
 .IP 
 August 11, 1997 0800 GMT+300
 
@@ -29,7 +33,14 @@ Registration [__NL__]
 August 11, 1997 0900 GMT+300 [__TAB__] August 11, 1997 0930 GMT+300 [__TAB__]
 2m [__TAB__] Introductions [__NL__]
 .SH "OPTIONS"
-No options are supported at this time. 
+.TP
+See \fBpilot-link\fR(7) for details on the common options.
+
+.TP
+\fB\-\-read\fR, \fB\-r\fR <\fIfilename\fR>
+Read the given \fIfilename\fR and add those entries to the datebook. 
+
+
 
 
 .SH "USAGE"

@@ -51,7 +51,7 @@ int main(int argc, const char *argv[])
 		*fields[4];
 
 	unsigned char Appointment_buf[0xffff];
-	FILE 	*f;
+	FILE 	*f = NULL;
 
 	struct 	PilotUser User;
 	struct 	Appointment appointment;
@@ -65,7 +65,8 @@ int main(int argc, const char *argv[])
 	};
 
 	pc = poptGetContext("install-datebook", argc, argv, options, 0);
-	poptSetOtherOptionHelp(pc,"\n   Installs new Datebook entries onto your Palm handheld device\n\n"
+	poptSetOtherOptionHelp(pc,"\n   Installs new Datebook entries onto your Palm handheld device.\n"
+		"   You must specify -r and a single filename.\n\n"
 		"   Example usage: \n"
 		"      -p /dev/pilot -r db.txt\n\n");
 
@@ -87,6 +88,27 @@ int main(int argc, const char *argv[])
 		return 1;
 	}
 
+	f = fopen(filename, "r");
+	if (f == NULL) {
+		perror("fopen");
+		return 1;
+	}
+
+	fseek(f, 0, SEEK_END);
+	filelen = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	file_text = (char *) malloc(filelen + 1);
+	if (file_text == NULL) {
+		perror("malloc()");
+		fclose(f);
+		return 1;
+	}
+
+	fread(file_text, filelen, 1, f);
+	fclose(f);
+	f = NULL;
+
 	sd = plu_connect();
 	if (sd < 0)
 		goto error;
@@ -104,25 +126,7 @@ int main(int argc, const char *argv[])
 		goto error_close;
 	}
 
-	f = fopen(filename, "r");
-	if (f == NULL) {
-		perror("fopen");
-		goto error_close;
-	}
 
-	fseek(f, 0, SEEK_END);
-	filelen = ftell(f);
-	fseek(f, 0, SEEK_SET);
-
-	file_text = (char *) malloc(filelen + 1);
-	if (file_text == NULL) {
-		perror("malloc()");
-		fclose(f);
-		goto error_close;
-	}
-
-	fread(file_text, filelen, 1, f);
-	fclose(f);
 
 	file_text[filelen] 	= '\0';
 	cPtr 			= file_text;
