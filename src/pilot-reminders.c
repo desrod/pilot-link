@@ -65,7 +65,7 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	c,		/* switch */
 		db,
 		i,
 		sd 		= -1;
@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
 		*port 		= NULL;
 	unsigned char buffer[0xffff];
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);

@@ -127,22 +127,31 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
 	printf("flags: 0x%x", ip->flags);
 	if (ip->flags & dlpDBFlagNewer)
 		printf(" NEWER");
+	
 	if (ip->flags & dlpDBFlagReset)
 		printf(" RESET");
+	
 	if (ip->flags & dlpDBFlagResource)
 		printf(" RESOURCE");
+	
 	if (ip->flags & dlpDBFlagReadOnly)
 		printf(" READ_ONLY");
+	
 	if (ip->flags & dlpDBFlagAppInfoDirty)
 		printf(" APP-INFO-DIRTY");
+	
 	if (ip->flags & dlpDBFlagBackup)
 		printf(" BACKUP");
+	
 	if (ip->flags & dlpDBFlagCopyPrevention)
 		printf(" COPY-PREVENTION");
+	
 	if (ip->flags & dlpDBFlagStream)
 		printf(" STREAM");
+	
 	if (ip->flags & dlpDBFlagOpen)
 		printf(" OPEN");
+	
 	printf("\n");
 	printf("version: %d\n", ip->version);
 
@@ -169,8 +178,8 @@ void dump_header(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
 {
-	void *app_info;
-	int app_info_size;
+	int 	app_info_size;
+	void 	*app_info;
 
 	if (pi_file_get_app_info(pf, &app_info, &app_info_size) < 0) {
 		printf("can't get app_info\n\n");
@@ -195,8 +204,8 @@ void dump_app_info(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
 {
-	void *sort_info;
-	int sort_info_size;
+	int 	sort_info_size;
+	void 	*sort_info;
 
 	if (pi_file_get_sort_info(pf, &sort_info, &sort_info_size) < 0) {
 		printf("can't get sort_info\n\n");
@@ -221,15 +230,16 @@ void dump_sort_info(struct pi_file *pf, struct DBInfo *ip)
  ***********************************************************************/
 void list_records(struct pi_file *pf, struct DBInfo *ip)
 {
-	int attrs;
-	int cat;
-	int entnum;
-	int id;
-	int nentries;
-	int size;
+	int 	attrs,
+		cat,
+		entnum,
+		id,
+		nentries,
+		size;
+	
 	unsigned long type, uid;
-	void *buf;
 
+	void 	*buf;
 
 	pi_file_get_entries(pf, &nentries);
 
@@ -333,13 +343,15 @@ static void Help(char *progname)
 	return;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-	struct pi_file *pf;
-	int c;
-	char *name;
-	struct DBInfo info;
-	char *progname = argv[0];
+	int 	c;		/* switch */
+
+	struct 	pi_file *pf;
+	struct 	DBInfo info;
+
+	char 	*name,
+		*progname 	= argv[0];
 
 	while ((c = getopt(argc, argv, optstring)) != EOF) {
 		switch (c) {

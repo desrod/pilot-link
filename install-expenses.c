@@ -116,14 +116,16 @@ int main(int argc, char *argv[])
 		i,
 		l,
 		category,
-		ch,
+		c,		/* switch */
 		quiet, 
 		replace_category, 
 		add_title;
+	
 	char 	*port		= NULL,
 		buf[0xffff],
 		*progname 	= argv[0],
 		*category_name 	= NULL;
+	
 	struct 	pi_sockaddr addr;
 	struct 	PilotUser User;
 	struct 	ExpenseAppInfo mai;
@@ -132,8 +134,8 @@ int main(int argc, char *argv[])
 	quiet = replace_category = add_title = 0;
 
 
-	while ((ch = getopt(argc, argv, optstring)) != -1)
-		switch (ch) {
+	while ((c = getopt(argc, argv, optstring)) != -1)
+		switch (c) {
 		case 'e':
 			theExpense.type = etBus;
 			for (i = 0; expenseTypes[i] != NULL; i++)
@@ -185,9 +187,6 @@ int main(int argc, char *argv[])
 		case 'r':
 			replace_category++;
 			break;
-		case '?':
-		default:
-			Help(progname);
 		}
 
 	argc -= optind;
@@ -255,24 +254,23 @@ int main(int argc, char *argv[])
 			dlp_DeleteCategory(sd, db, category);
 
 	} else {
-		char buff[256], *b;
-		int size;
+		int 	size;
+		char 	buff[256], *b;
 
-		category = 0;	/* unfiled */
-
-		theExpense.currency = 0;
-		theExpense.attendees = "Northern Alliance";
+		category 		= 0;	/* unfiled */
+		theExpense.currency 	= 0;
+		theExpense.attendees 	= "Northern Alliance";
 
 		b = buff;
 
 		/* Date */
-		*(b++) = 0xc3;
-		*(b++) = 0x45;
+		*(b++) 	= 0xc3;
+		*(b++) 	= 0x45;
 
-		*(b++) = theExpense.type;
-		*(b++) = theExpense.payment;
-		*(b++) = theExpense.currency;
-		*(b++) = 0x00;
+		*(b++) 	= theExpense.type;
+		*(b++) 	= theExpense.payment;
+		*(b++) 	= theExpense.currency;
+		*(b++) 	= 0x00;
 		strcpy(b, theExpense.amount);
 		b += strlen(theExpense.amount) + 1;
 		strcpy(b, theExpense.vendor);

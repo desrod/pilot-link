@@ -87,9 +87,9 @@ static int compare_r(const void *av, const void *bv)
 
 static int DeDupe (int sd, char *dbname) 
 {
-	int 	count,
+	int 	c,
 		db,
-		dupe = 0,
+		dupe 	= 0,
 		j,
 		k,
 		l;
@@ -108,10 +108,10 @@ static int DeDupe (int sd, char *dbname)
 	printf("Reading records...\n");
 
 	l 	= 0;
-	count 	= 0;
+	c 	= 0;
 	for (;;) {
-		int attr;
-		int cat;
+		int 	attr,
+			cat;
 		recordid_t id;
 		int len =
 			dlp_ReadRecordByIndex(sd, db, l,
@@ -134,19 +134,19 @@ static int DeDupe (int sd, char *dbname)
 		r = (struct record *)
 			malloc(sizeof(struct record));
 
-		r->data = (char *) malloc(len);
+		r->data 	= (char *) malloc(len);
 		memcpy(r->data, buf, len);
-		r->len = len;
-		r->cat = cat;
-		r->id = id;
-		r->index = l;
+		r->len 		= len;
+		r->cat 		= cat;
+		r->id 		= id;
+		r->index 	= l;
 
-		r->next = records;
-		records = r;
+		r->next 	= records;
+		records 	= r;
 
 	}
 
-	sortidx = malloc(sizeof(struct record *) * count);
+	sortidx = malloc(sizeof(struct record *) * c);
 
 	r = records;
 	for (k = 0; r && (k < count); k++, r = r->next)
@@ -156,16 +156,16 @@ static int DeDupe (int sd, char *dbname)
 
 	printf("Scanning for duplicates...\n");
 
-	for (k = 0; k < count; k++) {
-		struct record *r2;
-		int d = 0;
+	for (k = 0; k < c; k++) {
+		struct 	record *r2;
+		int 	d = 0;
 
 		r = sortidx[k];
 
 		if (r->len < 0)
 			continue;
 
-		for (j = k + 1; j < count; j++) {
+		for (j = k + 1; j < c; j++) {
 			r2 = sortidx[j];
 
 			if (r2->len < 0)
@@ -226,13 +226,13 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int     count,
-		sd;
+	int     c,		/* switch */
+		sd		= -1;
 	char 	*port 	        = NULL,
 		*progname 	= argv[0];
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);

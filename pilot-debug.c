@@ -257,44 +257,52 @@ Read_Pilot(ClientData clientData, int mask)
       if (buf[0] == 2) {	/* UI 			*/
 	 if ((!console) || debugger) {
 	    Say("Console active\n");
-	    console = 1;
-	    debugger = 0;
+	    console 	= 1;
+	    debugger 	= 0;
 	    SetModeLabel();
 	    Tcl_VarEval(interp, "checkin 25", NULL);
 	 }
 	 if (buf[4] == 0x0c) {	/* Screen update 	*/
 #ifdef TK
-	    if (usetk) {
-	       int i, x1, y1, sx, sy, w, h, bytes;
-	       int y, x;
-	       char buffer[8192];
-	       Tk_PhotoImageBlock block;
-	       Tk_PhotoHandle handle;
+		if (usetk) {
+			int 	i,
+				x1,
+				y1,
+				sx,
+				sy,
+				w,
+				h,
+				bytes;
+			int 	y,
+				x;
+			char 	buffer[8192];
+			Tk_PhotoImageBlock block;
+			Tk_PhotoHandle handle;
 
-	       bytes = get_short(buf + 6);
-	       y1 = get_short(buf + 8);
-	       x1 = get_short(buf + 10);
-	       sy = get_short(buf + 12);
-	       sx = get_short(buf + 14);
-	       h = get_short(buf + 16);
-	       w = get_short(buf + 18);
+			bytes 	= get_short(buf + 6);
+			y1 	= get_short(buf + 8);
+			x1 	= get_short(buf + 10);
+			sy 	= get_short(buf + 12);
+			sx 	= get_short(buf + 14);
+			h 	= get_short(buf + 16);
+			w 	= get_short(buf + 18);
 
-	       block.width = w + x1;
-	       block.height = h;
-	       block.pitch = w + x1;
-	       block.pixelSize = 1;
-	       block.offset[0] = 0;
-	       block.offset[1] = 0;
-	       block.offset[2] = 0;
-	       block.pixelPtr = buffer;
+			block.width 	= w + x1;
+			block.height 	= h;
+			block.pitch 	= w + x1;
+			block.pixelSize = 1;
+			block.offset[0] = 0;
+			block.offset[1] = 0;
+			block.offset[2] = 0;
+			block.pixelPtr 	= buffer;
 
 #if (TK_MAJOR_VERSION < 8) || ((TK_MAJOR_VERSION == 8) && (TK_RELEASE_LEVEL < 2))
 	       handle = Tk_FindPhoto("Case");
 #else
 	       handle = Tk_FindPhoto(interp, "Case");
 #endif
-	       i = 0;
-	       l = 0;
+	       i 	= 0;
+	       l 	= 0;
 	       for (y = 0; y < h; y++) {
 		  l = 20 + (y * bytes);
 		  for (x = 0; x < (w + x1); x++) {
@@ -508,7 +516,7 @@ int majorVersion, minorVersion, stateVersion, buildVersion;
 static void DbgGetDeviceVersion(void)
 {
         int 	result;
-        struct RPC_params p;
+        struct 	RPC_params p;
         unsigned long ROMversion;
 
         ROMversion = 0x12345678;
@@ -543,7 +551,7 @@ static void DbgGetDeviceVersion(void)
  ***********************************************************************/
 static int DbgAttach(int verify)
 {
-        struct RPC_params p;
+        struct 	RPC_params p;
 
         if (!port) {
                 Error
@@ -569,8 +577,8 @@ static int DbgAttach(int verify)
         }
 
         if (!debugger && (verify || !console)) {
-                int err;
-                int old = console;
+                int 	err,
+			old = console;
 
                 console = 0;
                 PackRPC(&p, 0xA09E, RPC_IntReply, RPC_End);     /* TaskID, a harmless call */
@@ -618,9 +626,9 @@ static int DbgAttachDebugger(int verify)
         }
 
         if (!debugger || verify) {
-                int old = debugger;
-
-                debugger = 0;
+                int 	old 	= debugger;
+                debugger 	= 0;
+		
                 sys_QueryState(port);
                 Read_Pilot(0, 0);
                 SetModeLabel();
@@ -663,8 +671,8 @@ static int DbgAttachConsole(int verify)
                 PackRPC(&p, 0xA09E, RPC_IntReply, RPC_End);     /* TaskID, a harmless call */
                 DoRPC(port, 1, &p, &err);
                 if (err == 0) {
-                        console = 1;
-                        debugger = 0;
+                        console 	= 1;
+                        debugger 	= 0;
                         SetModeLabel();
                 } else {
                         if (!debugger)
@@ -696,7 +704,7 @@ static int DbgAttachConsole(int verify)
 static unsigned long DbgRPC(struct RPC_params *p, int *error)
 {
         unsigned long result = 0;
-        int err = -1;
+        int 	err = -1;
 
         if (!port) {
                 Error
@@ -786,10 +794,9 @@ static int proc_g(ClientData clientData, Tcl_Interp * interp, int argc,
         Say("Resuming execution\n");
 
         /* Assume the Palm is no longer halted */
-
-        debugger = 0;
-        console = 0;
-        stalestate = 1;
+        debugger 	= 0;
+        console 	= 0;
+        stalestate 	= 1;
         SetModeLabel();
 
         Tcl_VarEval(interp, "checkupin 25", NULL);
@@ -833,10 +840,9 @@ static int proc_t(ClientData clientData, Tcl_Interp * interp, int argc,
         Say("Resuming execution\n");
 
         /* Assume the Palm is no longer halted */
-
-        debugger = 0;
-        console = 0;
-        stalestate = 1;
+        debugger 	= 0;
+        console 	= 0;
+        stalestate 	= 1;
         SetModeLabel();
 
         Tcl_VarEval(interp, "checkupin 25", NULL);
@@ -913,9 +919,9 @@ static int proc_coldboot(ClientData clientData, Tcl_Interp * interp, int argc,
         DbgRPC(&p, 0);
 
         /* And sever attachment */
-        debugger = 0;
-        console = 0;
-        stalestate = 1;
+        debugger 	= 0;
+        console 	= 0;
+        stalestate 	= 1;
         SetModeLabel();
 
         Tcl_VarEval(interp, "checkupin 25", NULL);
@@ -944,9 +950,9 @@ static int proc_warmboot(ClientData clientData, Tcl_Interp * interp, int argc,
         DbgRPC(&p, 0);
 
         /* And sever attachment */
-        debugger = 0;
-        console = 0;
-        stalestate = 1;
+        debugger 	= 0;
+        console 	= 0;
+        stalestate 	= 1;
         SetModeLabel();
 
         Tcl_VarEval(interp, "checkupin 25", NULL);
@@ -976,8 +982,8 @@ static int proc_battery(ClientData clientData, Tcl_Interp * interp, int argc,
 		v,
 		kind,
 		pluggedin;
-        char buffer[30];
-        struct RPC_params p;
+        char 	buffer[30];
+        struct 	RPC_params p;
 
         if (!DbgAttach(0))
                 return TCL_ERROR;
@@ -1045,7 +1051,7 @@ static int proc_mirror(ClientData clientData, Tcl_Interp * interp, int argc,
 		active,
 		scrGlobals,
 		doDrawNotify;
-        struct RPC_params p;
+        struct 	RPC_params p;
         unsigned long addr;
 
         if (!DbgAttachConsole(0))
@@ -1055,12 +1061,12 @@ static int proc_mirror(ClientData clientData, Tcl_Interp * interp, int argc,
 
         switch (majorVersion) {
           case 1:
-                  scrGlobals = 356;
-                  doDrawNotify = 18;
+                  scrGlobals 	= 356;
+                  doDrawNotify 	= 18;
                   break;
           case 2:
-                  scrGlobals = 356;
-                  doDrawNotify = 18;
+                  scrGlobals 	= 356;
+                  doDrawNotify 	= 18;
                   break;
           default:
                   Say("I don't know how to change mirroring on this device version\n");
@@ -1124,7 +1130,7 @@ static int proc_updatedisplay(ClientData clientData, Tcl_Interp * interp,
 {
         int 	e1,
 		e2;
-        struct RPC_params p;
+        struct 	RPC_params p;
 
         if (!DbgAttachConsole(0))
                 return TCL_ERROR;
@@ -1155,7 +1161,7 @@ static int proc_getdisplay(ClientData clientData, Tcl_Interp * interp, int argc,
 		buffer2[0xffff];
         Tk_PhotoImageBlock block;
         Tk_PhotoHandle handle;
-        struct RPC_params p;
+        struct 	RPC_params p;
         unsigned long addr;
 
         if (!usetk) {
@@ -1183,9 +1189,9 @@ static int proc_getdisplay(ClientData clientData, Tcl_Interp * interp, int argc,
                 }
         }
 
-        block.width = 160;
-        block.height = 160;
-        block.pitch = 160;
+        block.width 	= 160;
+        block.height 	= 160;
+        block.pitch 	= 160;
         block.pixelSize = 1;
         block.offset[0] = 0;
         block.offset[1] = 0;
@@ -1398,9 +1404,9 @@ static int proc_key(ClientData clientData, Tcl_Interp * interp, int argc,
 static int proc_port(ClientData clientData, Tcl_Interp * interp, int argc,
 		     char *argv[])
 {
-        static struct pi_sockaddr laddr;
-        static Tcl_Channel channel;
-        int fd;
+        static 	struct pi_sockaddr laddr;
+        static 	Tcl_Channel channel;
+        int 	fd;
 
         if (argc < 2) {
                 if (port)
@@ -2285,11 +2291,14 @@ set one with 'port /dev/something'\\n\\n\"
 
 int main(int argc, char *argv[])
 {
-	char *args, *fileName;
-	char buf[20];
-	int code;
+	int 	code,
+		exitCode = 0;
+
+	char 	*args, *fileName,
+		buf[20];
+
 	size_t length;
-	int exitCode = 0;
+
 	Tcl_Channel errChannel;
 
 	Tcl_FindExecutable(argv[0]);

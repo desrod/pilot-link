@@ -57,7 +57,7 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	c,		/* switch */
 		db,
 		i,
 		ret,
@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
 	struct 	ExpenseAppInfo tai;
 	struct 	ExpensePref tp;
 		
-	while ((count = getopt(argc, argv, optstring)) != -1) {
-		switch (count) {
+	while ((c = getopt(argc, argv, optstring)) != -1) {
+		switch (c) {
 		  case 'h':
 			  Help(progname);
 			  exit(0);

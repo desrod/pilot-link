@@ -62,7 +62,7 @@ static int so_read(struct pi_socket *ps, int timeout);
 int
 pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
-	int 	rc,
+	int 	c,
 		filesize = 0;
 	HFILE 	fd;
 	unsigned long action;
@@ -83,34 +83,34 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 		     OPEN_ACTION_OPEN_IF_EXISTS,			/* file open action 				*/
 		     OPEN_SHARE_DENYREADWRITE | OPEN_ACCESS_READWRITE,	/* open mode 					*/
 		     0);						/* extended attributes 				*/
-	if (rc) {
-		switch (rc) {
-		case 2:		/* ERROR_FILE_NOT_FOUND  	*/
-			errno = ENOENT;
+	if (c) {
+		switch (c) {
+		case 2:		
+			errno = ENOENT;		/* ERROR_FILE_NOT_FOUND  	*/
 			break;
-		case 3:		/* ERROR_PATH_NOT_FOUND  	*/
-			errno = ENOTDIR;
+		case 3:		
+			errno = ENOTDIR;	/* ERROR_PATH_NOT_FOUND  	*/
 			break;
-		case 4:		/* ERROR_TOO_MANY_OPEN_FILES  	*/
-			errno = EMFILE;
+		case 4:		
+			errno = EMFILE;		/* ERROR_TOO_MANY_OPEN_FILES  	*/
 			break;
-		case 5:		/* ERROR_ACCESS_DENIED  	*/
-			errno = EACCES;
+		case 5:		
+			errno = EACCES;		/* ERROR_ACCESS_DENIED  	*/
 			break;
-		case 32:	/* ERROR_SHARING_VIOLATION  	*/
-			errno = EBUSY;
+		case 32:	
+			errno = EBUSY;		/* ERROR_SHARING_VIOLATION  	*/
 			break;
-		case 82:	/* ERROR_CANNOT_MAKE  		*/
-			errno = EEXIST;
+		case 82:	
+			errno = EEXIST;		/* ERROR_CANNOT_MAKE  		*/
 			break;
-		case 99:	/* ERROR_DEVICE_IN_USE  	*/
-			errno = EBUSY;
+		case 99:	
+			errno = EBUSY;		/* ERROR_DEVICE_IN_USE  	*/
 			break;
-		case 112:	/* ERROR_DISK_FULL  		*/
-			errno = ENOSPC;
+		case 112:	
+			errno = ENOSPC;		/* ERROR_DISK_FULL  		*/
 			break;
-		case 87:	/* ERROR_INVALID_PARAMETER  	*/
-			errno = EINVAL;
+		case 87:	
+			errno = EINVAL;		/* ERROR_INVALID_PARAMETER  	*/
 			break;
 		default:
 			errno = -ENOMSG;
@@ -163,7 +163,7 @@ struct STR_EXTSETBAUDRATE {
 static int so_changebaud(struct pi_socket *ps)
 {
 	int 	param_length,
-		rc;
+		c;		/* switch */
 	unsigned char linctrl[3] = { 8, 0, 0 };
 	struct STR_EXTSETBAUDRATE extsetbaudrate;
 
@@ -172,7 +172,7 @@ static int so_changebaud(struct pi_socket *ps)
 						/* that could be used here, let me know */
 
 	param_length = sizeof(extsetbaudrate);
-	rc = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 			*/
+	c = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 			*/
 			 IOCTL_ASYNC,				/* asyncronous change 			*/
 			 ASYNC_EXTSETBAUDRATE,			/* set the baudrate 			*/
 			 &extsetbaudrate,			/* pointer to the baudrate 		*/
@@ -185,9 +185,9 @@ static int so_changebaud(struct pi_socket *ps)
 	/* also set the port to 8N1 as OS/2 defaults to some braindead
 	   values */
 
-	if (!rc) {							/* but only if the previous operation succeeded 	*/
+	if (!c) {							/* but only if the previous operation succeeded 	*/
 		param_length = 3;					/* 3 bytes for line control 				*/
-		rc = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 					*/
+		c = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 					*/
 				 IOCTL_ASYNC,				/* asyncronous change 					*/
 				 ASYNC_SETLINECTRL,			/* set the line controls 				*/
 				 linctrl,				/* pointer to the configuration 			*/
@@ -198,16 +198,16 @@ static int so_changebaud(struct pi_socket *ps)
 				 NULL);					/* length of data returned 				*/
 	}
 
-	if (rc) {
-		switch (rc) {
-		case 1:		/* ERROR_INVALID_FUNCTION 	*/
-			errno = ENOTTY;
+	if (c) {
+		switch (c) {
+		case 1:		
+			errno = ENOTTY;		/* ERROR_INVALID_FUNCTION 	*/
 			break;
-		case 6:		/* ERROR_INVALID_HANDLE 	*/
-			errno = EBADF;
+		case 6:		
+			errno = EBADF;		/* ERROR_INVALID_HANDLE 	*/
 			break;
-		case 87:	/* ERROR_INVALID_PARAMETER 	*/
-			errno = EINVAL;
+		case 87:	
+			errno = EINVAL;		/* ERROR_INVALID_PARAMETER 	*/
 			break;
 		default:
 			errno = -ENOMSG;
@@ -268,7 +268,7 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 {
 	int 	param_length,
 		ret_len,
-		rc,
+		c,		/* switch */
 		newtimeout;
 	DCBINFO devinfo;
 
@@ -278,7 +278,7 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 		return (0);
 
 	ret_len = sizeof(DCBINFO);
-	rc = DosDevIOCtl(ps->mac->fd,			/* file decsriptor 			*/
+	c = DosDevIOCtl(ps->mac->fd,			/* file decsriptor 			*/
 			 IOCTL_ASYNC,			/* asyncronous change 			*/
 			 ASYNC_GETDCBINFO,		/* get device control block info 	*/
 			 NULL,				/*  					*/
@@ -287,7 +287,7 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 			 &devinfo,			/* data to be recieved 			*/
 			 ret_len,			/* length of data 			*/
 			 (unsigned long *) &ret_len);	/* length of data returned 		*/
-	if (rc)
+	if (c)
 		goto error;
 
 	if (read_timeout != -1) {
@@ -312,7 +312,7 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 		}
 	}
 	param_length = sizeof(DCBINFO);
-	rc = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 			*/
+	c = DosDevIOCtl(ps->mac->fd,				/* file decsriptor 			*/
 			 IOCTL_ASYNC,				/* asyncronous change 			*/
 			 ASYNC_SETDCBINFO,			/* get device control block info 	*/
 			 &devinfo,				/* parameters to set  			*/
@@ -323,16 +323,16 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 			 NULL);					/* length of data returned 		*/
 
       error:
-	if (rc) {
-		switch (rc) {
-		case 1:		/* ERROR_INVALID_FUNCTION 	*/
-			errno = ENOTTY;
+	if (c) {
+		switch (c) {
+		case 1:		
+			errno = ENOTTY;		/* ERROR_INVALID_FUNCTION 	*/
 			break;
-		case 6:		/* ERROR_INVALID_HANDLE 	*/
-			errno = EBADF;
+		case 6:		
+			errno = EBADF;		/* ERROR_INVALID_HANDLE 	*/
 			break;
-		case 87:	/* ERROR_INVALID_PARAMETER 	*/
-			errno = EINVAL;
+		case 87:	
+			errno = EINVAL;		/* ERROR_INVALID_PARAMETER 	*/
 			break;
 		default:
 			errno = -ENOMSG;
@@ -371,19 +371,19 @@ static int so_write(struct pi_socket *ps)
 #ifndef NO_SERIAL_TRACE
 	int 	i;
 #endif
-	int 	rc;
+	int 	c;	/* switch */
 
 	if (ps->txq) {
 
 		ps->busy++;
 
-		skb = ps->txq;
+		skb 	= ps->txq;
 		ps->txq = skb->next;
 
 		len = 0;
 		while (len < skb->len) {
 			nwrote = 0;
-			rc = DosWrite(ps->mac->fd, skb->data, skb->len,
+			c = DosWrite(ps->mac->fd, skb->data, skb->len,
 				      (unsigned long *) &nwrote);
 			if (nwrote <= 0)
 				break;	/* transmission failure */
@@ -425,7 +425,7 @@ static int so_read(struct pi_socket *ps, int timeout)
 #ifndef NO_SERIAL_TRACE
 	int 	i;
 #endif
-	int 	rc;
+	int 	c;
 
 	/* FIXME: if timeout == 0, wait forever for packet, otherwise wait
 	   till timeout milli-seconds */
@@ -433,8 +433,8 @@ static int so_read(struct pi_socket *ps, int timeout)
 	/* for OS2, timeout of 0 is almost forever, only 1.8 hours if no
 	   timeout is set at all, the timeout defaults to 1 minute */
 
-	rc = pi_socket_set_timeout(ps, timeout / 100, -1);
-	if (rc == -1) {
+	c = pi_socket_set_timeout(ps, timeout / 100, -1);
+	if (c == -1) {
 		fprintf(stderr,
 			"error setting timeout, old timeout used\n");
 	}
@@ -447,15 +447,15 @@ static int so_read(struct pi_socket *ps, int timeout)
 		buf = ps->mac->buf;
 
 		while (ps->mac->expect) {
-			rc = DosRead(ps->mac->fd, buf, ps->mac->expect,
+			c = DosRead(ps->mac->fd, buf, ps->mac->expect,
 				     (unsigned long *) &r);
-			if (rc) {
+			if (c) {
 				/* otherwise throw out any current packet and return */
 #ifdef DEBUG
 				fprintf(stderr, "Serial RX: timeout\n");
 #endif
-				ps->mac->state = ps->mac->expect = 1;
-				ps->mac->buf = ps->mac->rxb->data;
+				ps->mac->state 	= ps->mac->expect = 1;
+				ps->mac->buf 	= ps->mac->rxb->data;
 				ps->rx_errors++;
 				return 0;
 			}

@@ -61,7 +61,7 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	ch,
+	int 	c,		/* switch */
 		enable          = 0,
 		sd 		= -1;
 	char 	*progname 	= argv[0],
@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
 
 	opterr = 0;
 
-	while ((ch = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (ch) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);

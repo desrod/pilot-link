@@ -66,18 +66,18 @@ int main(int argc, char *argv[])
 	int 	db,
 		sd,
 		index,
-		ch,
+		c,		/* switch */
 		j,
 		filenamelen,
 		filelen,
 		err,
-		category = 0,
+		category 	= 0,
 		note_size;
 	
 	char 	*file_text,
-		*progname = argv[0],
-		*port = NULL,
-		*cat = NULL,
+		*progname 	= argv[0],
+		*port 		= NULL,
+		*cat 		= NULL,
 		buf[0xffff];
 	
 	unsigned char note_buf[0x8000];
@@ -88,8 +88,8 @@ int main(int argc, char *argv[])
 	struct 	HiNoteNote note;
 		
 	
-	while (((ch = getopt(argc, argv, optstring)) != -1)) {
-		switch (ch) {
+	while (((c = getopt(argc, argv, optstring)) != -1)) {
+		switch (c) {
 		  case 'h':
 			  Help(progname);
 			  exit(0);

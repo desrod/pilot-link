@@ -123,9 +123,11 @@ struct pi_protocol *slp_protocol (void)
 int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 {
 	int 	bytes;
+	
 	struct 	pi_protocol *prot, *next;
 	struct 	pi_slp_data *data;
 	struct 	slp *slp;
+		
 	unsigned char slp_buf[PI_SLP_MTU];
 	unsigned int i;
 	unsigned int n;
@@ -189,11 +191,21 @@ int slp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
  ***********************************************************************/
 int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 {
-	struct pi_protocol *prot, *next;
-	struct pi_slp_data *data;
+	int 	i, 
+		checksum, 
+		b1, 
+		b2, 
+		b3,	
+		state,
+		expect 		= 0,
+		packet_len,
+		bytes,
+		total_bytes;
+	
+	struct 	pi_protocol *prot, *next;
+	struct 	pi_slp_data *data;
 	unsigned char slp_buf[PI_SLP_MTU];
-	int i, checksum, b1, b2, b3;
-	int state, expect = 0, packet_len, bytes, total_bytes;
+
 	unsigned char *cur;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
@@ -204,9 +216,9 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	if (next == NULL)
 		return -1;
 
-	state = 0;
-	packet_len = 0;
-	total_bytes = 0;
+	state 		= 0;
+	packet_len 	= 0;
+	total_bytes 	= 0;
 	cur = slp_buf;
 	for (;;) {
 		switch (state) {		
@@ -267,10 +279,10 @@ int slp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 			/* FIXME: Handle LOOP packets */
 
 			/* Track the info so getsockopt will work */
-			data->last_dest = get_byte(&slp_buf[PI_SLP_OFFSET_DEST]);
-			data->last_src = get_byte(&slp_buf[PI_SLP_OFFSET_SRC]);
-			data->last_type = get_byte(&slp_buf[PI_SLP_OFFSET_TYPE]);
-			data->last_txid = get_byte(&slp_buf[PI_SLP_OFFSET_TXID]);
+			data->last_dest 	= get_byte(&slp_buf[PI_SLP_OFFSET_DEST]);
+			data->last_src 		= get_byte(&slp_buf[PI_SLP_OFFSET_SRC]);
+			data->last_type 	= get_byte(&slp_buf[PI_SLP_OFFSET_TYPE]);
+			data->last_txid 	= get_byte(&slp_buf[PI_SLP_OFFSET_TXID]);
 
 			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf, 0));
 			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf));

@@ -107,19 +107,21 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	ch,
-		sd = -1,
-		netport = 4386,
+	int 	c,		/* switch */
+		sd 		= -1,
+		netport 	= 4386,
 		serverfd, fd;
+
 	struct 	pi_socket *ps;
 	struct 	sockaddr_in serv_addr;
+
 	char 	*buffer,
 		*slpbuffer,
-		*progname = argv[0],
-		*port = NULL;
+		*progname 	= argv[0],
+		*port 		= NULL;
 	
-	while ((ch = getopt(argc, argv, optstring)) != -1) {
-		switch (ch) {
+	while ((c = getopt(argc, argv, optstring)) != -1) {
+		switch (c) {
 
 		  case 'h':
 			  Help(progname);

@@ -171,8 +171,10 @@ int cmp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 	int 	bytes,
 		type,
 		size;
+	
 	struct 	pi_protocol *prot, *next;
 	struct 	pi_cmp_data *data;
+		
 	unsigned char cmp_buf[PI_CMP_HEADER_LEN];
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);

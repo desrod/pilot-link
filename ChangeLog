@@ -3,6 +3,10 @@
 	* CodingGuidelines: First draft of Coding Guidelines. I needed to
 	  divert my attention to avoid burn.
 
+	* $TOPDIR/*.c, libsock/*.c: More whitespace to annoy jpr..
+	  (seriously, cleaning up the types, making them match
+	  CodingGuidelines)
+
 2002-01-25  JP Rosevear  <jpr@ximian.com>
 
 	* configure.in: set use_python to false when appropriate, same for

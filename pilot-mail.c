@@ -99,11 +99,11 @@ int getpopchar(int socket)
 
 int getpopstring(int socket, char *buf)
 {
-	int 	count;
+	int 	c;	/* switch */
 
-	while ((count = getpopchar(socket)) >= 0) {
-		*buf++ = count;
-		if (count == '\n')
+	while ((c = getpopchar(socket)) >= 0) {
+		*buf++ = c;
+		if (c == '\n')
 			break;
 	}
 	*buf = '\0';
@@ -112,10 +112,10 @@ int getpopstring(int socket, char *buf)
 
 int getpopresult(int socket, char *buf)
 {
-	int 	count = getpopstring(socket, buf);
+	int 	c = getpopstring(socket, buf);
 
-	if (count < 0)
-		return count;
+	if (c < 0)
+		return c;
 
 	if (buf[0] == '+')
 		return 0;
@@ -123,11 +123,11 @@ int getpopresult(int socket, char *buf)
 		return 1;
 }
 
-char *skipspace(char *count)
+char *skipspace(char *c)
 {
-	while (count && ((*count == ' ') || (*count == '\t')))
-		count++;
-	return count;
+	while (c && ((*c == ' ') || (*c == '\t')))
+		c++;
+	return c;
 }
 
 void header(struct Mail *m, char *t)
@@ -225,11 +225,11 @@ static void Help(char *progname, char *port, char *pop_host, char *pop_user,
 }
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	c,		/* switch */
 		db,
-		sd,
+		sd		= -1,
 		i, 
-		l = 0,
+		l 		= 0,
 		lost,
 		dupe,
 		rec,
@@ -257,8 +257,8 @@ int main(int argc, char *argv[])
 		*pilot_dispose 	= getvars("PILOTDISPOSE", "keep"),
 		*topilot_mhdir 	= getvars("TOPILOT_MHDIR", "");
 	
-	while ((count = getopt(argc, argv, optstring)) != -1) {
-		switch (count) {
+	while ((c = getopt(argc, argv, optstring)) != -1) {
+		switch (c) {
 		case 's':
 			sendmail = optarg;
 			break;
@@ -402,8 +402,10 @@ int main(int argc, char *argv[])
 
 #if 0
 	for (i = 0; 1; i++) {
+		int 	attr, 
+			category;
+		
 		struct Mail t;
-		int attr, category;
 
 		int len =
 		    dlp_ReadRecordByIndex(sd, db, i, buffer, 0, 0, &attr,
@@ -603,15 +605,15 @@ int main(int argc, char *argv[])
 
 			struct Mail t;
 
-			t.to = 0;
-			t.from = 0;
-			t.cc = 0;
-			t.bcc = 0;
-			t.subject = 0;
-			t.replyTo = 0;
-			t.sentTo = 0;
-			t.body = 0;
-			t.dated = 0;
+			t.to 		= 0;
+			t.from 		= 0;
+			t.cc 		= 0;
+			t.bcc 		= 0;
+			t.subject 	= 0;
+			t.replyTo 	= 0;
+			t.sentTo 	= 0;
+			t.body 		= 0;
+			t.dated 	= 0;
 
 			sprintf(buffer, "LIST %d\r\n", i);
 			write(popfd, buffer, strlen(buffer));
@@ -745,15 +747,15 @@ int main(int argc, char *argv[])
 			char 	*msg;
 			struct 	Mail t;
 
-			t.to = 0;
-			t.from = 0;
-			t.cc = 0;
-			t.bcc = 0;
-			t.subject = 0;
-			t.replyTo = 0;
-			t.sentTo = 0;
-			t.body = 0;
-			t.dated = 0;
+			t.to 		= 0;
+			t.from 		= 0;
+			t.cc 		= 0;
+			t.bcc 		= 0;
+			t.subject 	= 0;
+			t.replyTo 	= 0;
+			t.sentTo 	= 0;
+			t.body 		= 0;
+			t.dated 	= 0;
 
 			if ((mhmsg = openmhmsg(topilot_mhdir, i)) < 0) {
 				break;

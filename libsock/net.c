@@ -188,8 +188,10 @@ net_rx(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 	int 	bytes, 
 		total_bytes, 
 		packet_len;
+	
 	struct 	pi_protocol *prot, *next;
 	struct 	pi_net_data *data;
+		
 	unsigned char *cur;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_NET);

@@ -97,10 +97,11 @@ int main(int argc, char *argv[])
 
 		fread(file_text, filelen, 1, f);
 
-		file_text[filelen] = '\0';
-		cPtr = file_text;
-		fieldno = 0;
-		fields[fieldno++] = cPtr;
+		file_text[filelen] 	= '\0';
+		cPtr 			= file_text;
+		fieldno 		= 0;
+		fields[fieldno++] 	= cPtr;
+		
 		while (cPtr - file_text < filelen) {
 			if (*cPtr == '\t') {
 				if (fieldno >= 4) {
@@ -165,21 +166,21 @@ int main(int argc, char *argv[])
 						appointment.advanceUnits =
 						    advDays;
 				} else {
-					appointment.alarm = 0;
-					appointment.advance = 0;
+					appointment.alarm 	= 0;
+					appointment.advance 	= 0;
 					appointment.advanceUnits = 0;
 				}
-				appointment.repeatType = repeatNone;
-				appointment.repeatForever = 0;
-				appointment.repeatEnd.tm_mday = 0;
-				appointment.repeatEnd.tm_mon = 0;
-				appointment.repeatEnd.tm_wday = 0;
-				appointment.repeatFrequency = 0;
-				appointment.repeatWeekstart = 0;
-				appointment.exceptions = 0;
-				appointment.exception = NULL;
-				appointment.description = fields[3];
-				appointment.note = NULL;
+				appointment.repeatType 		= repeatNone;
+				appointment.repeatForever 	= 0;
+				appointment.repeatEnd.tm_mday 	= 0;
+				appointment.repeatEnd.tm_mon 	= 0;
+				appointment.repeatEnd.tm_wday 	= 0;
+				appointment.repeatFrequency 	= 0;
+				appointment.repeatWeekstart 	= 0;
+				appointment.exceptions 		= 0;
+				appointment.exception 		= NULL;
+				appointment.description 	= fields[3];
+				appointment.note 		= NULL;
 
 				Appointment_size =
 				    pack_Appointment(&appointment,
@@ -202,9 +203,9 @@ int main(int argc, char *argv[])
 	dlp_CloseDB(sd, db);
 
 	/* Tell the user who it is, with a different PC id. */
-	User.lastSyncPC = 0x00010000;
+	User.lastSyncPC 	= 0x00010000;
 	User.successfulSyncDate = time(NULL);
-	User.lastSyncDate = User.successfulSyncDate;
+	User.lastSyncDate 	= User.successfulSyncDate;
 	dlp_WriteUserInfo(sd, &User);
 
 	dlp_AddSyncLogEntry(sd, "Successfully wrote Appointment to Palm.\n"

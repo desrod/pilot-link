@@ -95,12 +95,12 @@ static void Exit(ClientData d)
  ***********************************************************************/
 static void execline(char *line)
 {
-	int gotPartial = 0;
-	char *cmd;
+	int 	gotPartial 	= 0;
+	char 	*cmd;
 
 	if (line == 0) {
 		char buf[20];
-		int exitCode = 0;
+		int 	exitCode = 0;
 
 		sprintf(buf, "exit %d", exitCode);
 		Tcl_Eval(interp, buf);
@@ -114,11 +114,11 @@ static void execline(char *line)
 	if (!Tcl_CommandComplete(cmd)) {
 		gotPartial = 1;
 	} else {
-		int code;
+		int 	code;
 
-		gotPartial = 0;
-		mode = 0;
-		code = Tcl_RecordAndEval(interp, cmd, TCL_EVAL_GLOBAL);
+		gotPartial 	= 0;
+		mode 		= 0;
+		code 		= Tcl_RecordAndEval(interp, cmd, TCL_EVAL_GLOBAL);
 
 		Tcl_DStringFree(&command);
 		if (*interp->result != 0) {
@@ -156,8 +156,9 @@ static void execline(char *line)
  ***********************************************************************/
 void do_readline(void)
 {
-	char buf[20];
-	int exitCode = 0;
+	char 	buf[20];
+	int 	exitCode 	= 0;
+	
 	Tcl_Channel in = Tcl_GetStdChannel(TCL_STDIN);
 
 	Tcl_SetChannelOption(interp, in, "-blocking", "off");
@@ -180,7 +181,6 @@ void do_readline(void)
 #else
 
 static void StdinProc(ClientData clientData, int mask);
-
 static void Prompt(Tcl_Interp * interp, int partial);
 
 static Tcl_DString command;	/* Used to buffer incomplete commands being
@@ -189,9 +189,8 @@ static Tcl_DString command;	/* Used to buffer incomplete commands being
 static Tcl_DString line;	/* Used to read the next line from the
 				   terminal input. */
 
-static int gotPartial = 0;
-
-static int mode = 0;
+static int gotPartial 	= 0;
+static int mode 	= 0;
 
 /***********************************************************************
  *
@@ -206,8 +205,9 @@ static int mode = 0;
  ***********************************************************************/
 void do_readline(void)
 {
-	char buf[20];
-	int exitCode = 0;
+	char 	buf[20];
+	int 	exitCode 	= 0;
+	
 	Tcl_Channel inChannel, outChannel;
 
 	/* Note that we need to fetch the standard channels again after 
@@ -268,8 +268,10 @@ static void StdinProc(clientData, mask)
 ClientData clientData;		/* Not used. */
 int mask;			/* Not used. */
 {
-	char *cmd;
-	int code, count;
+	int 	code,
+		count;
+	char 	*cmd;
+
 	Tcl_Channel newchan, chan = (Tcl_Channel) clientData;
 
 	count = Tcl_Gets(chan, &line);
@@ -363,13 +365,13 @@ int partial;			/* Non-zero means there already exists a
 				   partial command, so use the secondary
 				   prompt. */
 {
-	char *promptCmd;
-	int code;
+	char 	*promptCmd;
+	int 	code;
+	
 	Tcl_Channel outChannel, errChannel;
 
-	errChannel = Tcl_GetChannel(interp, "stderr", NULL);
-
-	promptCmd = Tcl_GetVar(interp,
+	errChannel 	= Tcl_GetChannel(interp, "stderr", NULL);
+	promptCmd 	= Tcl_GetVar(interp,
 			       partial ? "tcl_prompt2" : "tcl_prompt1",
 			       TCL_GLOBAL_ONLY);
 	if (promptCmd == NULL) {
@@ -421,7 +423,7 @@ int partial;			/* Non-zero means there already exists a
  ***********************************************************************/
 void display(char *text, char *tag, int type)
 {
-	int i;
+	int 	i;
 
 #ifdef TK
 	if (usetk) {

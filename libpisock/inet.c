@@ -161,12 +161,12 @@ struct pi_device *pi_inet_device (int type)
 	dev->connect 		= pi_inet_connect;
 	dev->close 		= pi_inet_close;
 	
-	data->timeout 	= 0;
-	data->rx_bytes 	= 0;
-	data->rx_errors = 0;
-	data->tx_bytes 	= 0;
-	data->tx_errors = 0;
-	dev->data 	= data;
+	data->timeout 		= 0;
+	data->rx_bytes 		= 0;
+	data->rx_errors 	= 0;
+	data->tx_bytes 		= 0;
+	data->tx_errors 	= 0;
+	dev->data 		= data;
 	
 	return dev;
 }
@@ -429,7 +429,7 @@ pi_inet_write(struct pi_socket *ps, unsigned char *msg, int len, int flags)
 {
 	int 	total,
 		nwrote;
-	struct pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
+	struct 	pi_inet_data *data = (struct pi_inet_data *)ps->device->data;
 
 
 	total = len;

@@ -108,22 +108,20 @@ write_memo_in_directory(char *dirname, struct Memo m,
 		tmp[5] = "";
 	FILE *fd;
 
-	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
+	/* Should check if dirname exists and is a directory */
 	mkdir(dirname, 0700);
 
-	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
-
-	/* create a directory for the category */
+	/* Create a directory for the category */
 	strncat(pathbuffer, dirname, MAXDIRNAMELEN);
 	strncat(pathbuffer, "/", 1);
 
-	/* SHOULD MAKE SURE CATEGORY DOESN'T HAVE SLASHES IN IT */
+	/* Should make sure category doesn't have slashes in it */
 	strncat(pathbuffer, mai.category.name[category], 60);
 
-	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
+	/* Should check if dirname exists and is a directory */
 	mkdir(pathbuffer, 0700);
 
-	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
+	/* Should check if there were problems creating directory */
 	/* open the actual file to write */
 	strncat(pathbuffer, "/", 1);
 	for (j = 0; j < 40; j++) {
@@ -215,7 +213,7 @@ static void Help(char *progname)
 int main(int argc, char *argv[])
 {
 	int 	attr, 
-		ch,
+		c,		/* switch */
 		category,
 		db,
 		index,
@@ -234,9 +232,9 @@ int main(int argc, char *argv[])
 	
 	char 	appblock[0xffff],
 		dirname[MAXDIRNAMELEN] = "",
-		*buf = NULL,
-		*progname = argv[0],
-		*port = NULL,
+		*buf 		= NULL,
+		*progname 	= argv[0],
+		*port 		= NULL,
 		category_name[MAXDIRNAMELEN + 1] = "",
 		filename[MAXDIRNAMELEN + 1], *ptr;
 	
@@ -248,8 +246,8 @@ int main(int argc, char *argv[])
 	regex_t title_pattern;
 	recordid_t id;
 
-	while (((ch = getopt(argc, argv, "vqQDp:d:f:c:t:h?")) != -1)) {
-		switch (ch) {
+	while (((c = getopt(argc, argv, "vqQDp:d:f:c:t:h?")) != -1)) {
+		switch (c) {
 		  case 'v':
 			  verbose = 1;
 			  break;

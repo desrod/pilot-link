@@ -59,7 +59,6 @@ static int Fetch(int sd, char *filename)
 		fd;
 	char 	buffer[0xffff];
 		
-
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (fd < 0)
 		return -1;
@@ -172,18 +171,19 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	ch,
+	int 	c,		/* switch */
 		sd 		= -1,
 
 		install 	= -1,
 		fetch 		= -1,
 		delete 		= -1;
+	
 	char 	*progname 	= argv[0],
 		*port 		= NULL,
 		*filename 	= NULL;
 
-	while ((ch = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (ch) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);

@@ -63,7 +63,7 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	ch,
+	int 	c,		/* switch */
 		db,
 		i,
 		sd 		= -1;
@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
 	struct 	ToDoAppInfo tai;
 	unsigned char buffer[0xffff];
 	
-	while (((ch = getopt(argc, argv, optstring)) != -1)) {
-		switch (ch) {
+	while (((c = getopt(argc, argv, optstring)) != -1)) {
+		switch (c) {
 		  case 'h':
 			  Help(progname);
 			  exit(0);

@@ -143,11 +143,11 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 
 	p2 = (unsigned char *) buffer + 8;
 
-#define alarmFlag 64
-#define repeatFlag 32
-#define noteFlag 16
-#define exceptFlag 8
-#define descFlag 4
+#define alarmFlag 	64
+#define repeatFlag 	32
+#define noteFlag 	16
+#define exceptFlag 	8
+#define descFlag 	4
 
 	if (iflags & alarmFlag) {
 		a->alarm 	= 1;
@@ -297,11 +297,11 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 	if (a->event) {
 		set_long(buf, 0xffffffff);
 	}
-#define alarmFlag 64
-#define repeatFlag 32
-#define noteFlag 16
-#define exceptFlag 8
-#define descFlag 4
+#define alarmFlag 	64
+#define repeatFlag 	32
+#define noteFlag 	16
+#define exceptFlag 	8
+#define descFlag 	4
 
 	iflags = 0;
 

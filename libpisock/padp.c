@@ -117,6 +117,7 @@ int padp_tx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		tlen,
 		count 	= 0,
 		retries;
+	
 	struct 	pi_protocol *prot, *next;
 	struct 	pi_padp_data *data;
 
@@ -354,17 +355,17 @@ int padp_rx(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 		
 		if (time(NULL) > endtime) {
 			/* Start timeout, return error */
-			errno = ETIMEDOUT;
-			ouroffset = -1;
-			ps->state = PI_SOCK_CONBK;	/* Bad timeout breaks connection */
+			errno 		= ETIMEDOUT;
+			ouroffset 	= -1;
+			ps->state 	= PI_SOCK_CONBK;	/* Bad timeout breaks connection */
 			return -1;
 		}
 
 		data_len = next->read(ps, padp_buf, PI_PADP_MTU, flags);
 		
-		padp.type = get_byte(&padp_buf[PI_PADP_OFFSET_TYPE]);
-		padp.flags = get_byte(&padp_buf[PI_PADP_OFFSET_FLGS]);
-		padp.size = get_short(&padp_buf[PI_PADP_OFFSET_SIZE]);
+		padp.type 	= get_byte(&padp_buf[PI_PADP_OFFSET_TYPE]);
+		padp.flags 	= get_byte(&padp_buf[PI_PADP_OFFSET_FLGS]);
+		padp.size 	= get_short(&padp_buf[PI_PADP_OFFSET_SIZE]);
 
 		size = sizeof(type);
 		/* FIXME: error checking */

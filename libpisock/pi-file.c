@@ -223,9 +223,11 @@ static unsigned long unix_time_to_pilot_time(time_t t)
 struct pi_file *pi_file_open(char *name)
 {
 	int 	i;
+	
 	struct 	pi_file *pf;
 	struct 	DBInfo *ip;
 	struct 	pi_file_entry *entp;
+		
 	unsigned char buf[PI_HDR_SIZE];
 	unsigned char *p;
 	unsigned long offset, app_info_offset, sort_info_offset;
@@ -248,8 +250,8 @@ struct pi_file *pi_file_open(char *name)
 		goto bad;
 	}
 
-	p = buf;
-	ip = &pf->info;
+	p 	= buf;
+	ip 	= &pf->info;
 
 	memcpy(ip->name, p, 32);
 	ip->flags 		= get_short(p + 32);
@@ -315,18 +317,18 @@ struct pi_file *pi_file_open(char *name)
 
 			p = buf;
 			if (pf->resource_flag) {
-				entp->type = get_long(p);
-				entp->id = get_short(p + 4);
-				entp->offset = get_long(p + 6);
+				entp->type 	= get_long(p);
+				entp->id 	= get_short(p + 4);
+				entp->offset 	= get_long(p + 6);
 #ifdef DEBUG
 				printf("Entry %d '%s' #%d @%X\n", i,
 				       printlong(entp->type), entp->id,
 				       entp->offset);
 #endif
 			} else {
-				entp->offset = get_long(p);
-				entp->attrs = get_byte(p + 4);
-				entp->uid = get_treble(p + 5);
+				entp->offset 	= get_long(p);
+				entp->attrs 	= get_byte(p + 4);
+				entp->uid 	= get_treble(p + 5);
 #ifdef DEBUG
 				printf("Entry %d 0x%8.8X %2.2X @%X\n", i,
 				       (int) entp->uid, entp->attrs,
@@ -337,8 +339,8 @@ struct pi_file *pi_file_open(char *name)
 
 		for (i = 0, entp = pf->entries + pf->nentries - 1;
 		     i < pf->nentries; i++, entp--) {
-			entp->size = offset - entp->offset;
-			offset = entp->offset;
+			entp->size 	= offset - entp->offset;
+			offset 		= entp->offset;
 #ifdef DEBUG
 			printf("Entry %d, size %d\n", pf->nentries - i - 1,
 			       entp->size);
@@ -352,16 +354,16 @@ struct pi_file *pi_file_open(char *name)
 	}
 
 	if (sort_info_offset) {
-		pf->sort_info_size = offset - sort_info_offset;
-		offset = sort_info_offset;
+		pf->sort_info_size 	= offset - sort_info_offset;
+		offset 			= sort_info_offset;
 #ifdef DEBUG
 		printf("Sort info, size %d\n", pf->sort_info_size);
 #endif
 	}
 
 	if (app_info_offset) {
-		pf->app_info_size = offset - app_info_offset;
-		offset = app_info_offset;
+		pf->app_info_size 	= offset - app_info_offset;
+		offset 			= app_info_offset;
 #ifdef DEBUG
 		printf("App info, size %d\n", pf->app_info_size);
 #endif
@@ -446,18 +448,25 @@ static void pi_file_free(struct pi_file *pf)
 {
 	if (pf->f)
 		fclose(pf->f);
+	
 	if (pf->app_info)
 		free(pf->app_info);
+	
 	if (pf->sort_info)
 		free(pf->sort_info);
+	
 	if (pf->entries)
 		free(pf->entries);
+	
 	if (pf->file_name)
 		free(pf->file_name);
+	
 	if (pf->rbuf)
 		free(pf->rbuf);
+	
 	if (pf->tmpf)
 		fclose(pf->tmpf);
+	
 	free(pf);
 }
 
@@ -997,9 +1006,9 @@ pi_file_append_resource(struct pi_file *pf, void *buf, int size,
 		return (-1);
 	}
 
-	entp->size = size;
-	entp->type = type;
-	entp->id = id;
+	entp->size 	= size;
+	entp->type 	= type;
+	entp->id 	= id;
 
 	return (0);
 }
@@ -1034,9 +1043,9 @@ int pi_file_append_record(struct pi_file *pf, void *buf, int size,
 		return (-1);
 	}
 
-	entp->size = size;
-	entp->attrs = (attrs & 0xf0) | (category & 0xf);
-	entp->uid = uid;
+	entp->size 	= size;
+	entp->attrs 	= (attrs & 0xf0) | (category & 0xf);
+	entp->uid 	= uid;
 
 	return (0);
 }
@@ -1076,8 +1085,10 @@ static int pi_file_close_for_write(struct pi_file *pf)
 		offset,
 		c;
 	FILE 	*f;
+	
 	struct 	DBInfo *ip;
 	struct 	pi_file_entry *entp;
+		
 	unsigned char buf[PI_HDR_SIZE];
 	unsigned char *p;
 
@@ -1184,7 +1195,8 @@ int pi_file_retrieve(struct pi_file *pf, int socket, int cardno)
 	int 	db,
 		l,
 		j,
-		written = 0;
+		written 	= 0;
+	
 	unsigned char buffer[0xffff];
 
 	printf("\n");
@@ -1270,10 +1282,11 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 	int 	db,
 		l,
 		j,
-		reset 	= 0,
+		reset 		= 0,
 		flags,
-		version;
-	int 	freeai 	= 0;
+		version,
+		freeai 		= 0;
+	
 	void 	*buffer;
 
 	version = pi_version(socket);
@@ -1362,9 +1375,10 @@ int pi_file_install(struct pi_file *pf, int socket, int cardno)
 
 		void *b2 = calloc(1, 282);
 		memcpy(b2, buffer, l);
-		buffer = b2;
-		l = 282;
-		freeai = 1;
+		    
+		buffer 	= b2;
+		l 	= 282;
+		freeai 	= 1;
 	}
 
 	/* All system updates seen to have the 'ptch' type, so trigger a

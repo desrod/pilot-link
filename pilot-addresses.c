@@ -68,82 +68,82 @@ char 	tabledelims[5] = { '\n', ',', ';', '\t' },
 
 int inchar(FILE * in)
 {
-	int 	ch;
+	int 	c;	/* switch */
 
-	ch = getc(in);
-	if (encodechars && ch == '\\') {
-		ch = getc(in);
+	c = getc(in);
+	if (encodechars && c == '\\') {
+		c = getc(in);
 		switch (ch) {
 		case 'b':
-			ch = '\b';
+			c = '\b';
 			break;
 		case 'f':
-			ch = '\f';
+			c = '\f';
 			break;
 		case 'n':
-			ch = '\n';
+			c = '\n';
 			break;
 		case 't':
-			ch = '\t';
+			c = '\t';
 			break;
 		case 'r':
-			ch = '\r';
+			c = '\r';
 			break;
 		case 'v':
-			ch = '\v';
+			c = '\v';
 			break;
 		case '\\':
-			ch = '\\';
+			c = '\\';
 			break;
 		default:
 			ungetc(ch, in);
-			ch = '\\';
+			c = '\\';
 			break;
 		}
 	}
-	return ch;
+	return c;
 }
 
 
 int read_field(char *dest, FILE * in)
 {
-	int 	ch;
+	int 	c;
 
 	do {			/* Absorb whitespace */
-		ch = getc(in);
-	} while ((ch != EOF)
-		 && ((ch == ' ') || (ch == '\t') || (ch == '\n')
-		     || (ch == '\r')));
+		c = getc(in);
+	} while ((c != EOF)
+		 && ((c == ' ') || (c == '\t') || (c == '\n')
+		     || (c == '\r')));
 
-	if (ch == '"') {
-		ch = inchar(in);
+	if (c == '"') {
+		c = inchar(in);
 
-		while (ch != EOF) {
-			if (ch == '"') {
-				ch = inchar(in);
-				if (ch != '"')
+		while (c != EOF) {
+			if (c == '"') {
+				c = inchar(in);
+				if (c != '"')
 					break;
 			}
-			*dest++ = ch;
-			ch = inchar(in);
+			*dest++ = c;
+			c= inchar(in);
 		}
 	} else {
-		while (ch != EOF) {
-			if (ch == ','
+		while (c != EOF) {
+			if (c == ','
 			    || (tableformat
-				&& ch == tabledelims[tabledelim])) {
+				&& c == tabledelims[tabledelim])) {
 				break;
 			}
-			*dest++ = ch;
-			ch = inchar(in);
+			*dest++ = c;
+			c = inchar(in);
 		}
 	}
 	*dest++ = '\0';
 
-	while ((ch != EOF) && ((ch == ' ') || (ch == '\t')))	/* Absorb whitespace */
-		ch = getc(in);
+	while ((c != EOF) && ((c == ' ') || (c == '\t')))	/* Absorb whitespace */
+		c = getc(in);
 
-	if (ch == ',')
+	if (c == ',')
 		return 1;
 	else if (ch == ';')
 		return 2;
@@ -157,6 +157,7 @@ int read_field(char *dest, FILE * in)
 
 void outchar(char c, FILE * out)
 {
+	int 	c;	/* switch */
 
 	if (encodechars) {
 		switch (c) {
@@ -228,7 +229,7 @@ int write_field(FILE * out, char *source, int more)
 
 int match_category(char *buf, struct AddressAppInfo *aai)
 {
-	int i;
+	int 	i;
 
 	for (i = 0; i < 16; i++)
 		if (strcasecmp(buf, aai->category.name[i]) == 0)
@@ -238,7 +239,7 @@ int match_category(char *buf, struct AddressAppInfo *aai)
 
 int match_phone(char *buf, struct AddressAppInfo *aai)
 {
-	int i;
+	int 	i;
 
 	for (i = 0; i < 8; i++)
 		if (strcasecmp(buf, aai->phoneLabels[i]) == 0)
@@ -254,7 +255,6 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 		category;
 	char 	buf[0xffff];
 	struct 	Address a;
-
 
 	do {
 		i = read_field(buf, in);
@@ -344,7 +344,9 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		l,
 		attribute,
 		category;
+	
 	char 	buf[0xffff];
+	
 	struct 	Address a;
 		
 	if (tablehead) {
@@ -465,13 +467,14 @@ static void Help(char *progname)
 int main(int argc, char *argv[])
 {
 
-	int 	ch,
+	int 	c,			/* switch */
 		deleteallcategories 	= 0,
 		db,
 		l,
 		mode 			= 0,
 		quiet 			= 0,
 		sd 			= -1;
+	
 	char 	*defaultcategoryname 	= 0,
 		*deletecategory 	= 0,
 		*progname 		= argv[0],
@@ -481,9 +484,9 @@ int main(int argc, char *argv[])
 	struct 	AddressAppInfo 	aai;
 	struct 	PilotUser 	User;
 		
-	while (((ch = getopt(argc, argv, optstring)) != -1)
+	while (((c = getopt(argc, argv, optstring)) != -1)
 	       && (mode == 0)) {
-		switch (ch) {
+		switch (c) {
 
 		case 't':
 			tableformat = 1;

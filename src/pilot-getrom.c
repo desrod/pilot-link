@@ -71,9 +71,9 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	c,		/* switch */
 		i,
-		sd,
+		sd		= -1,
 		file,
 		majorVersion,
 		minorVersion,
@@ -94,8 +94,8 @@ int main(int argc, char *argv[])
 	unsigned long offset;
 	unsigned long left;
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);
@@ -145,9 +145,9 @@ int main(int argc, char *argv[])
 
 	majorVersion =
 	    (((ROMversion >> 28) & 0xf) * 10) + ((ROMversion >> 24) & 0xf);
-	minorVersion = ((ROMversion >> 20) & 0xf);
-	bugfixVersion = ((ROMversion >> 16) & 0xf);
-	state = ((ROMversion >> 12) & 0xf);
+	minorVersion 	= ((ROMversion >> 20) & 0xf);
+	bugfixVersion 	= ((ROMversion >> 16) & 0xf);
+	state 		= ((ROMversion >> 12) & 0xf);
 	build =
 	    (((ROMversion >> 8) & 0xf) * 10) +
 	    (((ROMversion >> 4) & 0xf) * 10) + (ROMversion & 0xf);
@@ -188,10 +188,10 @@ int main(int argc, char *argv[])
 	left = ROMlength - offset;
 	i = offset;
 	while (left > 0) {
-		char buffer[256];
-		int len = left;
-		int j;
-		double perc = ((double) offset / ROMlength) * 100.0;
+		int 	len = left,
+			j;
+		char 	buffer[256];
+		double 	perc = ((double) offset / ROMlength) * 100.0;
 
 		if (len > 256)
 			len = 256;

@@ -125,11 +125,11 @@ static int win_changebaud(HANDLE fd, int rate)
 	SetupComm(fd, 4096, 4096);
 
 	/* Timeouts equal to those used by Palm Desktop */
-	ctmoCommPort.ReadIntervalTimeout = 2000;
-	ctmoCommPort.ReadTotalTimeoutMultiplier = 15;
-	ctmoCommPort.ReadTotalTimeoutConstant = 500;
-	ctmoCommPort.WriteTotalTimeoutMultiplier = 15;
-	ctmoCommPort.WriteTotalTimeoutConstant = 500;
+	ctmoCommPort.ReadIntervalTimeout 		= 2000;
+	ctmoCommPort.ReadTotalTimeoutMultiplier 	= 15;
+	ctmoCommPort.ReadTotalTimeoutConstant 		= 500;
+	ctmoCommPort.WriteTotalTimeoutMultiplier 	= 15;
+	ctmoCommPort.WriteTotalTimeoutConstant 		= 500;
 	SetCommTimeouts(fd, &ctmoCommPort);
 
 	dcbCommPort.DCBlength 		= sizeof(DCB);
@@ -196,9 +196,9 @@ static int so_write(struct pi_socket *ps)
 	struct 	pi_skb *skb;
 
 #ifndef NO_SERIAL_TRACE
-	int i;
+	int 	i;
 #endif
-	int rc;
+	int 	rc;
 	HANDLE hCommPort = (HANDLE) ps->mac->fd;
 
 	if (ps->txq) {

@@ -97,7 +97,7 @@ struct Command command_list[] = {
  ***********************************************************************/
 int df_fn(int sd, int argc, char *argv[])
 {
-	struct CardInfo Card;
+	struct 	CardInfo Card;
 
 	Card.card = -1;
 	Card.more = 1;
@@ -166,7 +166,7 @@ int ls_fn(int sd, int argc, char *argv[])
 		{NULL,   0,                 NULL, 0}
 	};
 	
-	int 	ch,
+	int 	c,		/* switch */
 		cardno,
 		flags,
 		ret,
@@ -176,8 +176,8 @@ int ls_fn(int sd, int argc, char *argv[])
 	
 	optind = 0;
 		
-	while ((ch = getopt_long(argc, argv, ls_optstring, ls_options, NULL)) != -1) {
-		switch (ch) {
+	while ((c = getopt_long(argc, argv, ls_optstring, ls_options, NULL)) != -1) {
+		switch (c) {
 		  case 'r':
 			  rom_flag = 1;
 			  break;
@@ -278,9 +278,9 @@ int rm_fn(int sd, int argc, char *argv[])
 		return (0);
 	}
 
-	name = argv[1];
+	name 	= argv[1];
+	cardno 	= 0;
 
-	cardno = 0;
 	if ((ret = dlp_DeleteDB(sd, cardno, name)) < 0) {
 		if (ret == dlpErrNotFound) {
 			printf("%s: not found\n", name);
@@ -350,7 +350,7 @@ int user_fn(int sd, int argc, char *argv[])
 		{NULL,     0,                  NULL, 0}
 	};
 
-	int 	ch,
+	int 	c,		/* switch */
 		ret,
 		fl_name 	= 0,
 		fl_uid 		= 0,
@@ -361,8 +361,8 @@ int user_fn(int sd, int argc, char *argv[])
 
 	optind = 0;
 
-	while ((ch = getopt_long(argc, argv, user_optstring, user_options, NULL)) != -1) {
-		switch (ch) {
+	while ((c = getopt_long(argc, argv, user_optstring, user_options, NULL)) != -1) {
+		switch (c) {
 		  case 'u':
 			  fl_name = 1;
 			  strncpy(nUser.username, optarg, sizeof(nUser.username));
@@ -514,7 +514,7 @@ void handle_user_commands(int sd)
 	if (fgets(buf, 256, stdin) == NULL)
 		break;
 
-	argc = 0;
+	argc 	= 0;
 	argv[0] = strtoke(buf, " \t\n", "\"'");
 #endif
 
@@ -614,7 +614,7 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	ch,
+	int 	c,		/* switch */
 		sd 		= -1;
 
 	char 	*progname 	= argv[0],
@@ -628,8 +628,8 @@ int main(int argc, char *argv[])
 		{NULL,   0,                 NULL, 0}
 	};
 
-	while ((ch = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (ch) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 		  case 'h':
 			  Help(progname);
 			  exit(0);

@@ -72,12 +72,12 @@ struct record *records = 0;
 
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	c,		/* switch */
 		i,
 		sd,
 		file,
 		j,
-		copilot = 0,
+		copilot 	= 0,
 		majorVersion,
 		minorVersion,
 		bugfixVersion,
@@ -86,16 +86,16 @@ int main(int argc, char *argv[])
 
 	char 	name[256],
 		print[256],
-		*progname = argv[0],
-		*port = NULL,
+		*progname 	= argv[0],
+		*port 		= NULL,
 		*filename;
 
 	struct 	RPC_params p;
 
 	unsigned long SRAMstart, SRAMlength, ROMversion, offset, left;
 	
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);
@@ -200,9 +200,9 @@ int main(int argc, char *argv[])
 	left 	= SRAMlength - offset;
 	i 	= offset;
 	while (left > 0) {
-		char buffer[256];
-		int len = left;
-		double perc = ((double) offset / SRAMlength) * 100.0;
+		int 	len 	= left;
+		char 	buffer[256];
+		double 	perc 	= ((double) offset / SRAMlength) * 100.0;
 
 		if (len > 256)
 			len = 256;

@@ -129,22 +129,31 @@ static void dump_header(struct pi_file *pf, struct DBInfo *ip)
 	printf("flags: 0x%x", ip->flags);
 	if (ip->flags & dlpDBFlagNewer)
 		printf(" NEWER");
+	
 	if (ip->flags & dlpDBFlagReset)
 		printf(" RESET");
+	
 	if (ip->flags & dlpDBFlagResource)
 		printf(" RESOURCE");
+	
 	if (ip->flags & dlpDBFlagReadOnly)
 		printf(" READ_ONLY");
+	
 	if (ip->flags & dlpDBFlagAppInfoDirty)
 		printf(" APP-INFO-DIRTY");
+	
 	if (ip->flags & dlpDBFlagBackup)
 		printf(" BACKUP");
+	
 	if (ip->flags & dlpDBFlagCopyPrevention)
 		printf(" COPY-PREVENTION");
+	
 	if (ip->flags & dlpDBFlagStream)
 		printf(" STREAM");
+	
 	if (ip->flags & dlpDBFlagOpen)
 		printf(" OPEN");
+	
 	printf("\n");
 	printf("version: %d\n", ip->version);
 	printf("creation_time: %s\n", iso_time_str(ip->createDate));
@@ -392,22 +401,22 @@ static void Help(char *progname)
 
 int main(int argc, char **argv)
 {
-	int 	count,
-		hflag = 0,
-		aflag = 0,
-		sflag = 0,
-		dflag = 0,
-		lflag = 0, 
-		rflag = 0,
-		filedump = 0;
+	int 	c,		/* switch */
+		hflag 		= 0,
+		aflag 		= 0,
+		sflag 		= 0,
+		dflag 		= 0,
+		lflag 		= 0, 
+		rflag 		= 0,
+		filedump 	= 0;
 	char 	*name,
 		*rkey           = NULL,
 		*progname 	= argv[0];
 	struct 	pi_file *pf;
 	struct 	DBInfo info;
 		
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);

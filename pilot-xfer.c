@@ -104,8 +104,8 @@ int numexclude = 0;
  ***********************************************************************/
 static void MakeExcludeList(char *efile)
 {
-	char temp[1024];
-	FILE *f = fopen(efile, "r");
+	char 	temp[1024];
+	FILE 	*f = fopen(efile, "r");
 
 	/*  If the Exclude file cannot be opened, ... */
 	if (!f) {
@@ -203,7 +203,7 @@ static void Connect(void)
  ***********************************************************************/ 
 static void VoidSyncFlags(void)
 {
-	struct PilotUser U;
+	struct 	PilotUser U;
 
 	Connect();
 	if (dlp_ReadUserInfo(sd, &U) >= 0) {
@@ -230,7 +230,7 @@ static void VoidSyncFlags(void)
  ***********************************************************************/
 static void RemoveFromList(char *name, char **list, int max)
 {
-	int i;
+	int 	i;
 
 	for (i = 0; i < max; i++) {
 		if (list[i] != NULL && strcmp(name, list[i]) == 0) {
@@ -254,10 +254,10 @@ static void RemoveFromList(char *name, char **list, int max)
 static int creator_is_PalmOS(long creator)
 {
 	union {
-		long L;
-		char C[4];
+		long 	L;
+		char 	C[4];
 	} buf;
-	int n;
+	int 	n;
 	static long special_cases[] = {
 		pi_mktag('p', 'p', 'p', '_'),
 		pi_mktag('u', '8', 'E', 'Z')
@@ -298,12 +298,13 @@ static int creator_is_PalmOS(long creator)
 static void Backup(char *dirname, int only_changed, int remove_deleted, int quiet,
 	    int rom, int unsaved, char *archive_dir)
 {
-	struct dirent *dirent;
-	int i;
-	int ofile_len;
-	int ofile_total;
-	char **orig_files = 0;
-	DIR *dir;
+	int 	i,
+		ofile_len,
+		ofile_total;
+	struct 	dirent *dirent;
+
+	char 	**orig_files = 0;
+	DIR 	*dir;
 
 	Connect();
 
@@ -312,8 +313,8 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		mkdir(archive_dir, 0700);
 
 	/* Read original list of files in the backup dir */
-	ofile_total = 0;
-	ofile_len = 0;
+	ofile_total 	= 0;
+	ofile_len 	= 0;
 
 	if (only_changed) {
 		dir = opendir(dirname);
@@ -358,7 +359,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		int 	skip = 0,
 			x;
 		char 	name[256];
-		struct stat statb;
+		struct 	stat statb;
 
 		if (dlp_ReadDBList(sd, 0, (rom ? 0x40 : 0x80), i, &info) <
 		    0)
@@ -456,8 +457,8 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 	}
 
 	if (orig_files) {
-		int dirname_len = strlen(dirname);
-		char newname[256];
+		int 	dirname_len = strlen(dirname);
+		char 	newname[256];
 
 		if (remove_deleted && dlp_OpenConduit(sd) < 0) {
 			/* If the connection has gone down here, there is
@@ -506,9 +507,9 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
  ***********************************************************************/
 static void Fetch(char *dbname)
 {
-	struct DBInfo info;
-	char name[256];
-	struct pi_file *f;
+	struct 	DBInfo info;
+	char 	name[256];
+	struct 	pi_file *f;
 
 	Connect();
 
@@ -567,7 +568,7 @@ static void Fetch(char *dbname)
  ***********************************************************************/
 static void Delete(char *dbname)
 {
-	struct DBInfo info;
+	struct 	DBInfo info;
 
 	Connect();
 
@@ -588,9 +589,11 @@ static void Delete(char *dbname)
 }
 
 struct db {
-	char name[256];
-	int flags;
-	int maxblock;
+	int 	flags,
+		maxblock;
+
+	char 	name[256];
+
 	unsigned long creator, type;
 };
 
@@ -620,19 +623,18 @@ static int compare(struct db *d1, struct db *d2)
  ***********************************************************************/
 static void Restore(char *dirname)
 {
-	DIR *dir;
-	struct dirent *dirent;
-	struct DBInfo info;
-	struct db **db = NULL;
-	struct pi_file *f;
-	int dbcount = 0;
-	int i;
-	int j;
-	int max;
-	int size;
-
+	int 	dbcount 	= 0,
+		i,
+		j,
+		max,
+		size;
+	DIR 	*dir;
+	struct 	dirent *dirent;
+	struct 	DBInfo info;
+	struct 	db **db 	= NULL;
+	struct 	pi_file *f;
+		
 	dir = opendir(dirname);
-
 
 	/* Find out how many directory entries exist, so that we can
 	   allocate the buffer.  We avoid scandir() for maximum portability.
@@ -671,10 +673,10 @@ static void Restore(char *dirname)
 
 		pi_file_get_info(f, &info);
 
-		db[dbcount]->creator = info.creator;
-		db[dbcount]->type = info.type;
-		db[dbcount]->flags = info.flags;
-		db[dbcount]->maxblock = 0;
+		db[dbcount]->creator 	= info.creator;
+		db[dbcount]->type 	= info.type;
+		db[dbcount]->flags 	= info.flags;
+		db[dbcount]->maxblock 	= 0;
 
 		pi_file_get_entries(f, &max);
 
@@ -765,7 +767,7 @@ static void Restore(char *dirname)
  ***********************************************************************/
 static void Install(char *filename)
 {
-	struct pi_file *f;
+	struct 	pi_file *f;
 
 	Connect();
 
@@ -836,9 +838,9 @@ static void Merge(char *filename)
  ***********************************************************************/
 static void List(int rom)
 {
-	struct DBInfo info;
-	int i;
-	int dbcount = 0; 
+	int 	i,
+		dbcount 	= 0; 
+	struct 	DBInfo info;
 
 	Connect();
 
@@ -875,9 +877,9 @@ static void List(int rom)
  ***********************************************************************/
 static void Purge(void)
 {
-	struct DBInfo info;
-	int i;
-	int h;
+	int 	i,
+		h;
+	struct 	DBInfo info;
 
 	Connect();
 
@@ -968,19 +970,21 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int count;
-	char *archive_dir = NULL;
-	int do_rom = 0;
-	int do_unsaved = 0;
-	int timespent = 0;
-	int quiet = 0;
-        time_t start,end;
-	char 	*progname 	= argv[0];
+	int 	c,		/* switch */
+	int 	do_rom 		= 0,
+		do_unsaved 	= 0,
+		timespent 	= 0,
+		quiet 		= 0;
+
+        time_t 	start,end;
+	
+	char 	*archive_dir 	= NULL,
+		*progname 	= argv[0];
 
         start = time(NULL);
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);

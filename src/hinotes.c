@@ -70,8 +70,8 @@ void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 		recvtmbuf[80];
 
 	time(&ltime);
-	tm_ptr = localtime(&ltime);
-	c = *asctime(tm_ptr);
+	tm_ptr 	= localtime(&ltime);
+	c 	= *asctime(tm_ptr);
 
 	strftime(fromtmbuf, 80, "%a, %d %b %H:%M:%S %Y (%Z)\n", tm_ptr);
 	strftime(recvtmbuf, 80, "%d %b %H:%M:%S %Y\n", tm_ptr);
@@ -93,8 +93,8 @@ void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 		printf("...\n");
 	else
 		printf("\n");
-	puts("");
-	puts(m.text);
+	printf("\n");
+	printf(m.text);
 	printf("\n");
 }
 
@@ -106,22 +106,20 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 		tmp[5] = "";
 	FILE *fd;
 
-	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
+	/* Should check if dirname exists and is a directory */
 	mkdir(dirname, 0755);
-
-	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
 
 	/* create a directory for the category */
 	strncat(pathbuffer, dirname, MAXDIRNAMELEN);
 	strncat(pathbuffer, "/", 1);
 
-	/* SHOULD MAKE SURE CATEGORY DOESN'T HAVE SLASHES IN IT */
+	/* Should make sure category doesn't have slashes in it */
 	strncat(pathbuffer, mai.category.name[category], 60);
 
-	/* SHOULD CHECK IF DIRNAME EXISTS AND IS A DIRECTORY */
+	/* Should check if dirname exists and is a directory */
 	mkdir(pathbuffer, 0755);
 
-	/* SHOULD CHECK IF THERE WERE PROBLEMS CREATING DIRECTORY */
+	/* Should check if there were problems creating directory */
 
 	/* open the actual file to write */
 	strncat(pathbuffer, "/", 1);
@@ -195,16 +193,16 @@ static void Help(char *progname)
 int main(int argc, char *argv[])
 {
 
-	int 	c,
+	int 	c,		/* switch */
 		db,
 		i,
-		sd = -1,
-		mode = MEMO_MBOX_STDOUT;
+		sd 		= -1,
+		mode 		= MEMO_MBOX_STDOUT;
 
 	char 	appblock[0xffff],
 		dirname[MAXDIRNAMELEN] = "",
-		*progname = argv[0],
-		*port = NULL;
+		*progname 	= argv[0],
+		*port 		= NULL;
 
 	struct 	HiNoteAppInfo mai;
 	struct 	PilotUser User;

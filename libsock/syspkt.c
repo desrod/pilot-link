@@ -115,7 +115,7 @@ int syspkt_rx(struct pi_socket *ps, void *b, int len)
 	unsigned char *buf = b;
 
 	if (!ps->rxq)
-//		ps->serial_read(ps, 100);
+		/* ps->serial_read(ps, 100); */
 
 	if (!ps->rxq)
 		return 0;
@@ -294,7 +294,6 @@ int sys_Step(int sd)
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 0;
-
 	buf[4] = 0x03;
 	buf[5] = 0;		/* gapfill */
 
@@ -317,12 +316,10 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
 	int 	idx;
 	char 	buf[94];
 
-
 	buf[0] = 0;
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 0;
-
 	buf[4] = 0x0c;
 	buf[5] = 0;		/* gapfill */
 
@@ -362,7 +359,6 @@ int sys_SetTrapBreaks(int sd, int *traps)
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 0;
-
 	buf[4] = 0x11;
 	buf[5] = 0;		/* gapfill */
 
@@ -400,7 +396,6 @@ int sys_GetTrapBreaks(int sd, int *traps)
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 0;
-
 	buf[4] = 0x10;
 	buf[5] = 0;		/* gapfill */
 
@@ -438,7 +433,6 @@ int sys_ToggleDbgBreaks(int sd)
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 0;
-
 	buf[4] = 0x0d;
 	buf[5] = 0;		/* gapfill */
 
@@ -471,7 +465,6 @@ int sys_QueryState(int sd)
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 0;
-
 	buf[4] = 0;
 	buf[5] = 0;		/* gapfill */
 
@@ -506,7 +499,6 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
 		buf[1] = 0;
 		buf[2] = 0;
 		buf[3] = 0;
-
 		buf[4] = 0x01;
 		buf[5] = 0;	/* gapfill */
 
@@ -559,7 +551,6 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
 		buf[1] = 0;
 		buf[2] = 0;
 		buf[3] = 0;
-
 		buf[4] = 0x02;
 		buf[5] = 0;	/* gapfill */
 
@@ -606,7 +597,6 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, int len,
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 0;
-
 	buf[4] = 0x11;
 	buf[5] = 0;		/* gapfill */
 
@@ -651,7 +641,6 @@ sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
 	buf[1] 	= 2;
 	buf[2] 	= 0;
 	buf[3] 	= 0x11;
-
 	buf[4] 	= 0x0d;		/* RemoteEvtCommand	*/
 	buf[5] 	= 0;		/* gapfill 		*/
 	buf[6] 	= penDown;
@@ -756,13 +745,13 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
  ***********************************************************************/
 int RPC(int sd, int socket, int trap, int reply, ...)
 {
-	int 	idx = 0,
+	int 	idx 	= 0,
 		j,
 		RPC_arg[20];
 	va_list ap;
 	struct 	RPC_param p[20];
-	long 	D0 = 0,
-		A0 = 0;
+	long 	D0 	= 0,
+		A0 	= 0;
 
 	va_start(ap, reply);
 	for (;;) {

@@ -63,23 +63,23 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	c,		/* switch */
 		db,
 		index,
-		sd = -1;
+		sd 		= -1;
 
 	char 	*noteln,
-		*progname = argv[0],
-		*port = NULL,
-		*account = NULL;
+		*progname 	= argv[0],
+		*port 		= NULL,
+		*account 	= NULL;
 
 	struct 	MoneyAppInfo mai;
 
 	
 	unsigned char buffer[0xffff];
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);

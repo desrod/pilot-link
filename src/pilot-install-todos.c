@@ -51,11 +51,14 @@ void install_ToDos(int sd, int db, char *filename)
 		cLen		= 0,
 		i		= 0,
 		filelen;
+	
         char 	*file_text 	= NULL,
 		*cPtr 		= file_text,
 		*begPtr 	= cPtr,
 		note_text[] 	= "";
+	
         unsigned char ToDo_buf[0xffff];
+	
         struct 	ToDo todo;
         FILE 	*f;	
 				
@@ -85,8 +88,8 @@ void install_ToDos(int sd, int db, char *filename)
 			/* replace CR with terminator */
 			*cPtr = '\0';
 
-			todo.priority = 4;
-			todo.complete = 1;
+			todo.priority 	= 4;
+			todo.complete 	= 1;
 			todo.indefinite = 1;
 			/* now = time(0);
 			   todo.due = *localtime(&now); */
@@ -127,7 +130,7 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	ch,
+	int 	c,		/* switch */
 		db,
 		sd 		= -1;
         char 	*progname 	= argv[0],
@@ -135,8 +138,8 @@ int main(int argc, char *argv[])
 		*port 		= NULL;
 	struct 	PilotUser User;
 
-	while ((ch = getopt(argc, argv, optstring)) != -1) {
-		switch (ch) {
+	while ((c = getopt(argc, argv, optstring)) != -1) {
+		switch (c) {
 
 		  case 'h':
 			  Help(progname);

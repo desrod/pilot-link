@@ -97,11 +97,11 @@ PilotRecord *sync_CopyPilotRecord(const PilotRecord * precord)
 
 	new_record = sync_NewPilotRecord(sizeof(precord->buffer));
 
-	new_record->recID = precord->recID;
-	new_record->catID = precord->catID;
-	new_record->flags = precord->flags;
+	new_record->recID 	= precord->recID;
+	new_record->catID 	= precord->catID;
+	new_record->flags 	= precord->flags;
 	memcpy(new_record->buffer, precord->buffer, precord->len);
-	new_record->len = precord->len;
+	new_record->len 	= precord->len;
 
 	return new_record;
 }
@@ -162,9 +162,8 @@ DesktopRecord *sync_CopyDesktopRecord(const DesktopRecord * drecord)
 {
 	DesktopRecord *new_record;
 
-	new_record = sync_NewDesktopRecord();
-
-	*new_record = *drecord;
+	new_record 	= sync_NewDesktopRecord();
+	*new_record 	= *drecord;
 
 	return new_record;
 }

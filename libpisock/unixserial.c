@@ -149,12 +149,12 @@ static int s_poll(struct pi_socket *ps, int timeout);
 
 void pi_serial_impl_init (struct pi_serial_impl *impl)
 {
-	impl->open = s_open;
-	impl->close = s_close;
-	impl->changebaud = s_changebaud;
-	impl->write = s_write;
-	impl->read = s_read;
-	impl->poll = s_poll;
+	impl->open 		= s_open;
+	impl->close 		= s_close;
+	impl->changebaud 	= s_changebaud;
+	impl->write 		= s_write;
+	impl->read 		= s_read;
+	impl->poll 		= s_poll;
 }
 
 
@@ -211,7 +211,7 @@ s_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	for (i = 0; i < 16; i++)
 		tcn.c_cc[i] = 0;
 
-	tcn.c_cc[VMIN] = 1;
+	tcn.c_cc[VMIN] 	= 1;
 	tcn.c_cc[VTIME] = 0;
 
 	tcsetattr(fd, TCSANOW, &tcn);
@@ -413,7 +413,7 @@ static int s_write(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 {
 	int 	total,
 		nwrote;
-	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct 	pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 
 
 	total = len;
@@ -436,7 +436,7 @@ static int s_write(struct pi_socket *ps, unsigned char *buf, int len, int flags)
 static int s_read_buf (struct pi_socket *ps, unsigned char *buf, int len) 
 {
 	int 	rbuf;
-	struct pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
+	struct 	pi_serial_data *data = (struct pi_serial_data *)ps->device->data;
 
 	rbuf = data->buf_size;
 	if (rbuf > len)

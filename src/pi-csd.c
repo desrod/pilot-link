@@ -33,6 +33,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+
 #include <netinet/in.h>
 #include <net/if.h>
 #include <arpa/inet.h>
@@ -95,19 +96,20 @@ static void
 fetch_host(char *hostname, int hostlen, struct in_addr *address,
 	   struct in_addr *mask)
 {
-	struct ifconf ifc;
-	struct ifreq *ifr, ifreqaddr, ifreqmask;
-	struct hostent *hent;
-	int i;
-	int n;
-	int s;
+	int 	i,
+		n,
+		s;
+
+	struct 	ifconf ifc;
+	struct 	ifreq *ifr, ifreqaddr, ifreqmask;
+	struct 	hostent *hent;
 
 #ifdef HAVE_GETHOSTNAME
 	/* Get host name the easy way */
 	gethostname(hostname, hostlen);
 #else
 #ifdef HAVE_UNAME
-	struct utsname uts;
+	struct 	utsname uts;
 
 	if (uname(&uts) == 0) {
 		strncpy(hostname, uts.nodename, hostlen - 1);
@@ -146,10 +148,12 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 		struct sockaddr_in *a;
 		struct sockaddr_in *b;
 
-		ifr = (struct ifreq *) ((caddr_t) ifc.ifc_buf + i);
-		a = (struct sockaddr_in *) &ifr->ifr_addr;
+		ifr 	= (struct ifreq *) ((caddr_t) ifc.ifc_buf + i);
+		a 	= (struct sockaddr_in *) &ifr->ifr_addr;
+
 		strncpy(ifreqaddr.ifr_name, ifr->ifr_name,
 			sizeof(ifreqaddr.ifr_name));
+		
 		strncpy(ifreqmask.ifr_name, ifr->ifr_name,
 			sizeof(ifreqmask.ifr_name));
 
@@ -265,15 +269,18 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-        struct hostent *hent;
-        struct in_addr raddress;
-        struct sockaddr_in serv_addr, cli_addr; 
-        int count, n;
-        int quiet = 0;
-        int sockfd;
-        char *progname = argv[0];
+        int 	c,		/* switch */
+		n,
+		quiet 		= 0,
+		sockfd;
+	
+        struct	hostent *hent;
+	struct 	in_addr raddress;
+	struct 	sockaddr_in serv_addr, cli_addr; 
 
-        fd_set rset;
+        char 	*progname 	= argv[0];
+
+        fd_set 	rset;
         unsigned char mesg[1026];
         unsigned int clilen; 
 
@@ -283,8 +290,8 @@ int main(int argc, char *argv[])
 
 	fetch_host(hostname, 128, &address, &netmask);
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);
@@ -332,9 +339,9 @@ int main(int argc, char *argv[])
 	}
 
 	memset(&serv_addr, 0, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(14237);
+	serv_addr.sin_family 		= AF_INET;
+	serv_addr.sin_addr.s_addr 	= htonl(INADDR_ANY);
+	serv_addr.sin_port 		= htons(14237);
 
 	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
 	    < 0) {
@@ -385,7 +392,7 @@ int main(int argc, char *argv[])
 			goto invalid;
 
 		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
-			struct in_addr ip, mask;
+			struct 	in_addr ip, mask;
 			unsigned char *name = mesg + 12;
 
 			memcpy(&ip, mesg + 4, 4);

@@ -58,10 +58,10 @@ static void Help(char *progname)
 
 int main(int argc, char *argv[])
 {
-	int 	count,
+	int 	c,		/* switch */
 		len,
-		sd = -1,
-		sd2 = -1; 	/* This is the network socket */
+		sd 		= -1,
+		sd2 		= -1; 	/* This is the network socket */
 
 	char 	buffer[0xffff],
 		*progname = argv[0],
@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
 	struct 	pi_sockaddr 	addr;
 	struct 	NetSyncInfo 	Net;
 
-	while ((count = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
-		switch (count) {
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
+		switch (c) {
 
 		case 'h':
 			Help(progname);

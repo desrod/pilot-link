@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 {
 	int 	add_title	= 0,
 		category,
-		ch,
+		c,		/* switch */
 		db,
 		inc,
 		ReadAppBlock, 
@@ -72,8 +72,8 @@ int main(int argc, char *argv[])
 
 	FILE *f;
 	
-	while ((ch = getopt(argc, argv, "c:p:qrt")) != -1)
-		switch (ch) {
+	while ((c = getopt(argc, argv, "c:p:qrt")) != -1)
+		switch (c) {
 		case 'c':
 			category_name = optarg;
 			break;

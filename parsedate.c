@@ -2,17 +2,17 @@
 /*  A Bison parser, made from /src/cvs/palm/pilot-link/11-16-2001/pilot-link/parsedate.y
     by GNU Bison version 1.28  */
 
-#define YYBISON 1  /* Identify Bison output.  */
+#define YYBISON 	1  	/* Identify Bison output.  */
 
-#define	tDAY	257
+#define	tDAY		257
 #define	tDAYZONE	258
 #define	tMERIDIAN	259
-#define	tMONTH	260
+#define	tMONTH		260
 #define	tMONTH_UNIT	261
 #define	tSEC_UNIT	262
 #define	tSNUMBER	263
 #define	tUNUMBER	264
-#define	tZONE	265
+#define	tZONE		265
 
 #line 1 "parsedate.y"
 
