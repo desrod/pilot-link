@@ -4224,10 +4224,10 @@ dlp_ExpSlotEnumerate(int sd, int *numSlots, int *slotRefs)
 	 
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
 	else if (result > 0)
-		result = 0;				// no error
+		result = 0;				/* no error */
 
 	return result;
 }
@@ -4268,10 +4268,10 @@ dlp_ExpCardPresent(int sd, int slotRef)
 	dlp_request_free(req);
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
 	else if (result > 0)
-		result = 0;				// no error
+		result = 0;				/* no error */
 
 	return result;
 }
@@ -4341,10 +4341,10 @@ dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *numStrings,
 
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
 	else if (result > 0)
-		result = 0;				// no error
+		result = 0;				/* no error */
 
 	return result;
 }
@@ -4415,10 +4415,10 @@ dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir,
 	
 	dlp_response_free(res);
 	
-	if (result < -2)			// negated Palm OS error code
+	if (result < -2)			/* negated Palm OS error code */
 		result = -result;
 	else if (result > 0)
-		result = 0;				// no error
+		result = 0;				/* no error */
 
 	return result;
 }
@@ -4473,9 +4473,9 @@ dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
 	
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4517,9 +4517,9 @@ dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
 	dlp_request_free(req);
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4562,9 +4562,9 @@ dlp_VFSFileCreate(int sd, int volRefNum, const char *name)
 	dlp_request_free (req);
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4624,9 +4624,9 @@ dlp_VFSFileOpen(int sd, int volRefNum, const char *path, int openMode,
 	
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4670,9 +4670,9 @@ dlp_VFSFileClose(int sd, FileRef fileRef)
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		"Closed FileRef: %x\n", fileRef));
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4738,9 +4738,9 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
 
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4800,9 +4800,9 @@ dlp_VFSFileRead(int sd, FileRef fileRef, unsigned char *data, size_t *len)
 
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4844,9 +4844,9 @@ dlp_VFSFileDelete(int sd, int volRefNum, const char *path)
 	dlp_request_free (req);
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4896,9 +4896,9 @@ dlp_VFSFileRename(int sd, int volRefNum, const char *path,
 	dlp_request_free (req);
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4938,9 +4938,9 @@ dlp_VFSFileEOF(int sd, FileRef fileRef)
 	dlp_request_free (req);
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -4986,9 +4986,9 @@ dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
 	
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5034,9 +5034,9 @@ dlp_VFSFileGetAttributes (int sd, FileRef fileRef, unsigned long *attributes)
 
 	dlp_response_free(res);	
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5078,9 +5078,9 @@ dlp_VFSFileSetAttributes(int sd, FileRef fileRef, unsigned long attributes)
 	dlp_request_free (req);
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5136,9 +5136,9 @@ dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
 	
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5190,9 +5190,9 @@ dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 	dlp_request_free (req);
 	dlp_response_free (res);	
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5234,9 +5234,9 @@ dlp_VFSDirCreate(int sd, int volRefNum, const char *path)
 	dlp_request_free (req);
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5335,9 +5335,9 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 	
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;  
@@ -5389,9 +5389,9 @@ dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	dlp_request_free(req);
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5454,9 +5454,9 @@ dlp_VFSVolumeEnumerate(int sd, int *numVols, int *volRefs)
 
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5521,9 +5521,9 @@ dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *volInfo)
 	
 	dlp_response_free(res);
 	
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5576,9 +5576,9 @@ dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
 	
 	dlp_response_free(res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5621,9 +5621,9 @@ dlp_VFSVolumeSetLabel(int sd, int volRefNum, const char *name)
 	dlp_response_free (res);
 	dlp_request_free (req);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5676,9 +5676,9 @@ dlp_VFSVolumeSize(int sd, int volRefNum, long *volSizeUsed,
 
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5726,9 +5726,9 @@ dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
 	dlp_request_free (req);
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5771,9 +5771,9 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 	dlp_request_free (req);
 	dlp_response_free (res);
 	
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5822,9 +5822,9 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 	
 	dlp_response_free (res);
 
-	if (result < -1)			// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
@@ -5835,8 +5835,8 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
  *
  * Function:    dlp_ExpSlotMediaType
  *
- * Summary:     Return the type of media supported by an expansion slot (DLP
- *              1.4 only)
+ * Summary:     Return the type of media supported by an expansion slot
+ *				(DLP 1.4 only)
  *
  * Parameters:  sd          --> socket descriptor
  *              slotNum     --> slot to query (1...n)
@@ -5854,7 +5854,7 @@ dlp_ExpSlotMediaType(int sd, int slotNum, unsigned long *mediaType)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
  
-	RequireDLPVersion(1,4);
+	RequireDLPVersion(1, 4);
 	Trace (dlp_ExpSlotMediaType);
 
 	req = dlp_request_new (dlpFuncExpSlotMediaType, 1, 2);
@@ -5875,9 +5875,9 @@ dlp_ExpSlotMediaType(int sd, int slotNum, unsigned long *mediaType)
 
 	dlp_response_free (res);
 
-	if (result < -1)		// negated Palm OS error code
+	if (result < -1)			/* negated Palm OS error code */
 		result = -result;
-	else if (result > 0)		// no error
+	else if (result > 0)		/* no error */
 		result = 0;
 
 	return result;
