@@ -594,7 +594,6 @@ typedef unsigned long FileRef;
 	 */
 	extern int dlp_EndOfSync PI_ARGS((int sd, int status));
 
-
 	/* Terminate HotSync _without_ notifying Palm. This will cause the
 	   Palm to time out, and should (if I remember right) lose any
 	   changes to unclosed databases. _Never_ use under ordinary
@@ -712,13 +711,11 @@ typedef unsigned long FileRef;
 	 */
 	extern int dlp_ResetSyncFlags PI_ARGS((int sd, int fHandle));
 
-
 	/* 32-bit retcode and data over 64K only supported on v2.0 Palms */
 	extern int dlp_CallApplication
 		PI_ARGS((int sd, unsigned long creator, unsigned long type,
 			int action, size_t length, void *data,
-			unsigned long *retcode, size_t maxretlen, int *retlen,
-			void *retdata));
+			unsigned long *retcode, pi_buffer_t *retbuf));
 
 	extern int dlp_ReadFeature
 		PI_ARGS((int sd, unsigned long creator, unsigned int num,

@@ -1809,7 +1809,7 @@ dlp_CloseDB_All(int sd)
  *
  * Summary:     Call an application entry point via an action code
  *
- * Parameters:  None
+ * Parameters:	retbuf is emptied prior to receiving data
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
@@ -1818,8 +1818,7 @@ dlp_CloseDB_All(int sd)
 int
 dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		    int action, size_t length, void *data,
-		    unsigned long *retcode, size_t maxretlen, int *retlen,
-		    void *retdata)
+		    unsigned long *retcode, pi_buffer_t *retbuf)
 {
 	int 	result,
 		version = pi_version(sd);
@@ -1829,6 +1828,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 
 	Trace(dlp_CallApplication);
 	pi_reset_errors(sd);
+	if (retbuf)
+		pi_buffer_clear(retbuf);
 
 	if (version >= 0x0101) {	/* PalmOS 2.0 call encoding */
 
@@ -1839,8 +1840,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			return -131;
 		}
 
-		req = dlp_request_new_with_argid(dlpFuncCallApplication,
-			 0x21, 1, 22 + length);
+		req = dlp_request_new_with_argid(
+				dlpFuncCallApplication, 0x21, 1, 22 + length);
 		if (req == NULL)
 			return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
@@ -1850,7 +1851,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 		set_long(DLP_REQUEST_DATA(req, 0, 10), length);
 		set_long(DLP_REQUEST_DATA(req, 0, 14), 0);
 		set_long(DLP_REQUEST_DATA(req, 0, 18), 0);
-		memcpy(DLP_REQUEST_DATA(req, 0, 22), data, length);
+		if (length)
+			memcpy(DLP_REQUEST_DATA(req, 0, 22), data, length);
 
 		result = dlp_exec(sd, req, &res);
 
@@ -1860,13 +1862,9 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			data_len = res->argv[0]->len - 16;
 			
 			if (retcode)
-				*retcode =
-				 get_long(DLP_RESPONSE_DATA(res, 0, 0));
-			if (retlen)
-				*retlen = data_len;
-			if (retdata)
-				memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 16),
-				data_len > maxretlen ? maxretlen : data_len);
+				*retcode = get_long(DLP_RESPONSE_DATA(res, 0, 0));
+			if (retbuf)
+				pi_buffer_append(retbuf, DLP_RESPONSE_DATA(res, 0, 16), data_len);
 
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     "DLP CallApplication Result: %lu (0x%8.8lX), "
@@ -1906,12 +1904,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			if (retcode)
 				*retcode =
 				 get_short(DLP_RESPONSE_DATA(res, 0, 2));
-			if (retlen)
-				*retlen = data_len;
-			
-			if (retdata)
-				memcpy(retdata, DLP_RESPONSE_DATA(res, 0, 6),
-					data_len > maxretlen ? maxretlen : data_len);
+			if (retbuf)
+				pi_buffer_append(retbuf, DLP_RESPONSE_DATA(res, 0, 6), data_len);
 			
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 			     "DLP CallApplication Action: %d Result:"
