@@ -134,7 +134,7 @@ pi_debug_set_file (const char *path)
  *
  ***********************************************************************/
 void
-pi_log (int type, int level, char *format, ...)
+pi_log (int type, int level, const char *format, ...)
 {
 	va_list ap;
 

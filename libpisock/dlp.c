@@ -57,7 +57,7 @@
 /* Define prototypes */
 #ifdef PI_DEBUG
 static void record_dump (unsigned long recID, unsigned int recIndex,
-	int flags, int catID, char *data, int data_len);
+	int flags, int catID, const char *data, int data_len);
 #endif
 
 char *dlp_errorlist[] = {
@@ -158,7 +158,7 @@ static int dlp_version_minor = PI_DLP_VERSION_MINOR;
 
 #ifdef PI_DEBUG
 static void record_dump (unsigned long recID, unsigned int recIndex, int flags,
-	int catID, char *data, int data_len)
+	int catID, const char *data, int data_len)
 {
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 	    "  ID: 0x%8.8lX, Index: %u, Category: %d\n"
