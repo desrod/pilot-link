@@ -30,15 +30,23 @@
 #include "pi-header.h"
 #include "userland.h"
 
+/* These are indexes in the tabledelims array */
+enum terminators { term_newline=0,
+	term_comma=1,
+	term_semi=2,
+	term_tab=3 } ;
+char 	tabledelims[4] = { '\n', ',', ';', '\t' };
+
+
+
 /* Define prototypes */
 int inchar(FILE * in);
 int read_field(char *dest, FILE * in, size_t length);
 void outchar(char c, FILE * out);
-int write_field(FILE * out, char *source, int more);
+int write_field(FILE * out, char *source, enum terminators more);
 int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
-int read_csvline(FILE *f);
 
 int realentry[21] =
     { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20 };
@@ -74,7 +82,6 @@ int 	tableformat 	= 0,
 	tablehead 	= 0,
 	defaultcategory = 0;
 
-char 	tabledelims[4] = { '\n', ',', ';', '\t' };
 
 
 
@@ -135,9 +142,18 @@ int inchar(FILE * in)
  *
  * Summary:     Reach each field of the CSV during read_file
  *
- * Parameters:  Inbound filehandle
+ * Parameters:  dest    <-> Buffer for storing field contents
+ *              in      --> Inbound filehandle
+ *              length  --> Size of buffer
  *
- * Returns:     0
+ * Returns:     0 for end of line
+ *              1 for , termination
+ *              2 for ; termination
+ *              3 for \t termination
+ *             -1 on end of file
+ *
+ *              Note that these correspond to indexes in the tabledelims
+ *              array, and should be preserved.
  *
  ***********************************************************************/
 int read_field(char *dest, FILE *in, size_t length)
@@ -152,7 +168,7 @@ int read_field(char *dest, FILE *in, size_t length)
 		c = getc(in);
 		if(c == '\n') {
 			*dest = 0;
-			return 0;
+			return term_newline;
 		}
 
 	} while ((c != EOF) && ((c == ' ') || (c == '\t') || (c == '\r')));
@@ -191,19 +207,18 @@ int read_field(char *dest, FILE *in, size_t length)
 		c = getc(in);
 
 	if (c == ',')
-		return 1;
+		return term_comma;
 
 	else if (c == ';')
-		return 2;
+		return term_semi;
 
 	else if (c == '\t')
-		return 3;
+		return term_tab;
 
 	else if (c == EOF)
 		return -1;	/* No more */
-
 	else
-		return 0;
+		return term_newline;
 }
 
 
@@ -272,12 +287,14 @@ void outchar(char c, FILE * out)
  *
  * Summary:     Write out each field in the CSV
  *
- * Parameters:
+ * Parameters:  out    --> output file handle
+ *              source --> NUL-terminated data to output
+ *              more   --> delimiter number
  *
  * Returns:
  *
  ***********************************************************************/
-int write_field(FILE * out, char *source, int more)
+int write_field(FILE * out, char *source, enum terminators more)
 {
 	putc('"', out);
 
@@ -361,11 +378,11 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 		memset(&addr, 0, sizeof(addr));
 		addr.showPhone = 0;
 
-		if (i == 2) {
+		if (i == term_semi) {
 			category = plu_findcategory(&aai->category,buf,
 				PLU_CAT_CASE_INSENSITIVE | PLU_CAT_DEFAULT_UNFILED);
 			i = read_field(buf, f, sizeof(buf));
-			if (i == 2) {
+			if (i == term_semi) {
 				addr.showPhone = match_phone(buf, aai);
 				i = read_field(buf, f, sizeof(buf));
 			}
@@ -382,7 +399,7 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
 			int l2 = realentry[l];
 
 			if ((l2 >= 3) && (l2 <= 7)) {
-				if (i != 2 || tableformat)
+				if (i != term_semi || tableformat)
 					addr.phoneLabel[l2 - 3] = l2 - 3;
 				else {
 					addr.phoneLabel[l2 - 3] = match_phone(buf, aai);
@@ -471,18 +488,19 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		if (tableformat || (augment && category) || (augment && addr.showPhone)) {
 			write_field(out,
 					aai->category.name[category],
-					2);
+					term_semi);
 			write_field(out,
 					aai->phoneLabels[addr.phoneLabel[addr.showPhone]],
-					2);
+					term_semi);
 		}
 
 		for (j = 0; j < 19; j++) {
 			if (addr.entry[realentry[j]]) {
-				if (augment && (j >= 4) && (j <= 8))
+				if (augment && (j >= 4) && (j <= 8)) {
 					write_field(out,
 						    aai->phoneLabels[addr.phoneLabel
-								     [j - 4]], 2);
+								     [j - 4]], term_semi);
+				}
 				write_field(out, addr.entry[realentry[j]],
 					    tabledelim);
 			} else
@@ -490,7 +508,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		}
 
 		sprintf((char *)buf->data, "%d", (attribute & dlpRecAttrSecret) ? 1 : 0);
-		write_field(out, (char *)buf->data, 0);
+		write_field(out, (char *)buf->data, term_newline);
 	}
 	pi_buffer_free (buf);
 	printf("done.\n");
@@ -612,7 +630,8 @@ int main(int argc, const char *argv[])
 		tabledelim = 1;
 	}
 	if ((tabledelim < 0) || (tabledelim > sizeof(tabledelim))) {
-		fprintf(stderr,"   ERROR: Invalid delimiter number %d.\n",tabledelim);
+		fprintf(stderr,"   ERROR: Invalid delimiter number %d (use 0-%d).\n",
+			tabledelim,(int)(sizeof(tabledelim)));
 		return 1;
 	}
 
