@@ -1,3 +1,9 @@
+2000-11-29  JP Rosevear  <jpr@helixcode.com>
+
+	* libsock/sync.c: Add error checking for all callbacks and dlp calls.
+	Add writable checks so the merge to pilot and merge from pilot only
+	affect the pilot and desktop records respectively.
+
 2000-11-28  JP Rosevear  <jpr@helixcode.com>
 
 	* doc/syncabs.sgml: Update design docs
