@@ -29,16 +29,17 @@
 #include "pi-socket.h"
 #include "pi-slp.h"
 
-/**
- * slp_tx:
- * @ps: Socket information 
- * @nskb: Packet information
- * @len: Length of the packet
- * 
- * Build and queue up an SLP packet to be transmitted
- * 
- * Return value: A negative number on error, 0 otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    slp_tx
+ *
+ * Summary:     Build and queue up an SLP packet to be transmitted
+ *
+ * Parmeters:   None
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
 int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
 {
 	struct pi_skb *skb;
@@ -83,39 +84,35 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
 	return 0;
 }
 
-/**
- * slp_rx:
- * @ps: 
- * 
- * Accept SLP packets on the wire.  
+/* Sigh.  SLP is a really broken protocol.  It has no proper framing, so it
+   makes a proper "device driver" layer impossible.  There ought to be a
+   layer below SLP that reads frames off the wire and passes them up. 
+   Insted, all we can do is have the device driver give us bytes and SLP has
+   to keep a pile of status info while it builds frames for itself.  So
+   here's the code that does that. */
+
+/***********************************************************************
  *
- * SLP is a really broken protocol.  It has no proper framing, so it
- * makes a proper "device driver" layer impossible.  There ought to be
- * a layer below SLP that reads frames off the wire and passes them
- * up.  Insted, all we can do is have the device driver give us bytes
- * and SLP has to keep a pile of status info while it builds frames
- * for itself.
+ * Function:    slp_rx
  *
- * Return value: 
- **/
+ * Summary:     Accept SLP packets on the wire
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 int slp_rx(struct pi_socket *ps)
 {
 	int i;
 	int v;
 	struct pi_skb *skb;
 
-        /* Sigh.  SLP is a really broken protocol.  It has no proper framing, so it
-	   makes a proper "device driver" layer impossible.  There ought to be a
-	   layer below SLP that reads frames off the wire and passes them up. 
-	   Insted, all we can do is have the device driver give us bytes and SLP has
-	   to keep a pile of status info while it builds frames for itself.  So
-	   here's the code that does that. */
-
 	if (!ps->mac->state) {
 		ps->mac->expect = 1;
 		ps->mac->state = 1;
 		ps->mac->rxb =
-			(struct pi_skb *) malloc(sizeof(struct pi_skb));
+		    (struct pi_skb *) malloc(sizeof(struct pi_skb));
 
 		ps->mac->rxb->next = (struct pi_skb *) 0;
 		ps->mac->buf = ps->mac->rxb->data;
@@ -163,7 +160,7 @@ int slp_rx(struct pi_socket *ps)
 		if ((v & 0xff) == ps->mac->rxb->data[9]) {
 			ps->mac->state++;
 			ps->mac->rxb->len =
-				12 + get_short(&ps->mac->rxb->data[6]);
+			    12 + get_short(&ps->mac->rxb->data[6]);
 			ps->mac->expect = ps->mac->rxb->len - 10;
 			ps->mac->buf += 7;
 		}
@@ -184,7 +181,7 @@ int slp_rx(struct pi_socket *ps)
 			get_short(&ps->mac->rxb->
 				  data[ps->mac->rxb->len - 2]))
 #endif
-			) {
+		    ) {
 
 			ps->mac->rxb->dest = ps->mac->rxb->data[3];
 			ps->mac->rxb->source = ps->mac->rxb->data[4];
@@ -244,13 +241,17 @@ int slp_rx(struct pi_socket *ps)
 	return 0;
 }
 
-/**
- * slp_dump:
- * @skb: The packet information
- * @rxtx: Transmit receive flag (0 for transmit)
- * 
- * Dump the contents of the SLP frame to stderr
- **/
+/***********************************************************************
+ *
+ * Function:    slp_dump
+ *
+ * Summary:     Dump the contents of the SPL frame
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void slp_dump(struct pi_skb *skb, int rxtx)
 {
 #ifdef DEBUG
@@ -260,12 +261,17 @@ void slp_dump(struct pi_skb *skb, int rxtx)
 #endif
 }
 
-/**
- * dph:
- * @d: Data
- * 
- * Dump the raw data to stderr
- **/
+/***********************************************************************
+ *
+ * Function:    dph
+ *
+ * Summary:     Dump the raw data to stderr
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing 
+ *
+ ***********************************************************************/
 void dph(unsigned char *d)
 {
 #ifdef DEBUG

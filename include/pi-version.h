@@ -6,8 +6,7 @@
 #define PILOT_LINK_MINOR 5
 
 /* If releasing a version without a patch number, make sure that this is not
-   defined, simply leave blank quotes.
- */
+   defined, simply leave blank quotes. */
 
 #define PILOT_LINK_PATCH "-pre6"
 #endif				/* _PILOT_VERSION_H_ */

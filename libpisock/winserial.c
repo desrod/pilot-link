@@ -38,16 +38,18 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 static int so_write(struct pi_socket *ps);
 static int so_read(struct pi_socket *ps, int timeout);
 
-/**
- * pi_serial_open:
- * @ps: Socket information
- * @addr: Address information
- * @addrlen: Unused parameter
- * 
- * Open the serial port and establish a connection for win32
- * 
- * Return value: The file descriptor
- **/
+/***********************************************************************
+ *
+ * Function:    pi_serial_open
+ *
+ * Summary:     Open the serial port and establish a connection for 
+ *		Win32
+ *
+ * Parmeters:   None
+ *
+ * Returns:     The file descriptor
+ *
+ ***********************************************************************/
 int
 pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
@@ -85,16 +87,35 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 	return ((int) fd);
 }
 
-/* Change the speed of the socket/file descriptor */
-static int so_changebaud(struct pi_socket *ps)
+/***********************************************************************
+ *
+ * Function:    so_changebaud
+ *
+ * Summary:     Change the speed of the socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+int so_changebaud(struct pi_socket *ps)
 {
 	HANDLE fd = (HANDLE) ps->mac->fd;
 
 	return win_changebaud(fd, ps->rate);
 }
 
-
-/* Change the connection parameters on Win32 */
+/***********************************************************************
+ *
+ * Function:    win_changebaud
+ *
+ * Summary:     Change the connection parameters on Win32
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int win_changebaud(HANDLE fd, int rate)
 {
 	BOOL rc;
@@ -134,7 +155,17 @@ static int win_changebaud(HANDLE fd, int rate)
 		return 0;
 }
 
-/* Close the open socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    so_close
+ *
+ * Summary:     Close the open socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_close(struct pi_socket *ps)
 {
 #ifndef NO_SERIAL_TRACE
@@ -145,7 +176,17 @@ static int so_close(struct pi_socket *ps)
 	return (0);
 }
 
-/* Write to the open socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    so_write
+ *
+ * Summary:     Write to the open socket/file descriptor 
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_write(struct pi_socket *ps)
 {
 	struct pi_skb *skb;
@@ -187,7 +228,17 @@ static int so_write(struct pi_socket *ps)
 	return 0;
 }
 
-/* Read incoming data from the socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    so_read
+ *
+ * Summary:     Read incoming data from the socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_read(struct pi_socket *ps, int timeout)
 {
 	int r;
@@ -235,15 +286,17 @@ static int so_read(struct pi_socket *ps, int timeout)
 	return 0;
 }
 
-/**
- * win_peek:
- * @ps: Socket information
- * @timeout: Seconds to wait
- * 
- * Wait for incoming connection from the device
- * 
- * Return value: -1 if no connection, 0 otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    win_peek
+ *
+ * Summary:     Wait for incoming connection from Palm device
+ *
+ * Parmeters:   None
+ *
+ * Returns:     -1 if no connection, 0 otherwise
+ *
+ ***********************************************************************/
 int win_peek(struct pi_socket *ps, int timeout)
 {
 	int time = timeout;

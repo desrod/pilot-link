@@ -1,14 +1,39 @@
+/*
+ * iambicexample.cc: iambic's Time and Expense Tracking tool, test 
+ *		     application written in C++
+ *
+ *		     For more information, go here: 
+ *		     http://www.iambic.com/AllTime/
+ *
+ * (c) 1996-2001, Scott Grosch
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ */
 
-#include "pi-source.h"
 #include <stdio.h>
 #include <math.h>
 #include <iostream.h>
 #include <sys/types.h>
 #include <stdlib.h>
+
+#include "pi-source.h"
 #include "pi-file.h"
 #include "pi-iambicExpense.h"
 
-const char *const DEFAULT_FILE = "/afs/pdx/u/g/r/grosch/.xusrpilot/backup/ExpenseDB-IAMBIC.pdb";
+const char *const DEFAULT_FILE = "ExpenseDB-IAMBIC.pdb";
 
 static char *months[] = {
      "January", "February", "March", "April", "May", "June", "July",
@@ -17,40 +42,41 @@ static char *months[] = {
 
 static char *commify(const double amount)
 {
-     static char buf[30], srcBuf[30];
-     char *dst, *src;
-     int i;
-     
-     (void) sprintf(srcBuf, "%.2f", amount);
-     
-     dst = &buf[sizeof(buf) - 1];
-     src = &srcBuf[strlen(srcBuf) - 1];
-     
-     /* Copy in the cents and the decimal*/
-     *dst-- = '\0';
-     *dst-- = *src--;
-     *dst-- = *src--;
-     *dst-- = *src--;
-     
-     /* Now copy the dollars, adding in commas where necessary */
-     for (i = 1; src >= srcBuf; src--, i++) {
-          *dst-- = *src;
-	  
-          if (i % 3 == 0 && src != srcBuf)
-               *dst-- = ',';
-     }
-     
-     *dst = '$';
-     
-     return dst;
+        static char buf[30], srcBuf[30];
+        char *dst, *src;
+        int i;
+
+        (void) sprintf(srcBuf, "%.2f", amount);
+
+        dst = &buf[sizeof(buf) - 1];
+        src = &srcBuf[strlen(srcBuf) - 1];
+
+        /* Copy in the cents and the decimal */
+        *dst-- = '\0';
+        *dst-- = *src--;
+        *dst-- = *src--;
+        *dst-- = *src--;
+
+        /* Now copy the dollars, adding in commas where necessary */
+        for (i = 1; src >= srcBuf; src--, i++) {
+                *dst-- = *src;
+
+                if (i % 3 == 0 && src != srcBuf)
+                        *dst-- = ',';
+        }
+
+        *dst = '$';
+
+        return dst;
 }
 
-     
+
 struct iambicExpenseTypes_t {
-     char *name;
-     double total;
-     iambicExpenseTypes_t *next;
-     iambicExpenseTypes_t() : name(NULL), total(0.0), next(NULL) {};
+	char *name;
+	double total;
+	iambicExpenseTypes_t *next;
+	iambicExpenseTypes_t():name(NULL), total(0.0), next(NULL) {
+        };
 } *typesHead;
 
 static void generateHeader(const int idx) 
@@ -171,96 +197,104 @@ static void generateHeader(const int idx)
      cout << months[idx] << " Expenditures) [" << endl;
 }
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
-     pi_file *pf = pi_file_open((char *) DEFAULT_FILE);
-     
-     if (pf == NULL) {
-          perror("pi_file_open");
-          return 1;
-     }
+        pi_file *pf = pi_file_open((char *) DEFAULT_FILE);
 
-     int month;
-     
-     if (argc == 2)
-	  month = atoi(argv[1]) - 1;
-     else {
-	  time_t curTime = time(NULL);
-	  tm *curDate = localtime(&curTime);
-	  month = curDate->tm_mon;
-     }
-     
-     int nentries;
-     pi_file_get_entries(pf, &nentries);
-     
-     unsigned char *buf;
-     int attrs, cat;
-     
-     iambicExpense_t expense;
-     const char *sptr;
-     double exchangeRate, amount, total = 0.0;
-     const tm *datePtr;
-     iambicExpenseTypes_t *typePtr;
-     
-     typesHead = new iambicExpenseTypes_t;
-     
-     for (int entnum = 0; entnum < nentries; entnum++) {
-          if (pi_file_read_record(pf, entnum, (void **) &buf, 0,
-                                  &attrs, &cat, 0) < 0) {
-               cout << "Error reading record number " << entnum << endl;
-	       continue;
-          }
-	  
-          /* Skip deleted records */
-          if ((attrs & dlpRecAttrDeleted) || (attrs & dlpRecAttrArchived))
-               continue;
+        if (pf == NULL) {
+                perror("pi_file_open");
+                return 1;
+        }
 
-	  expense.unpack(buf);
-	  
-	  // We only want to print records from this month
-	  datePtr = expense.date();
-	  if (datePtr->tm_mon != month)
-	       continue;
-	  
-	  if ((sptr = expense.type()) == NULL)
-	       sptr = "Unknown";
-	  
-	  amount = expense.amount();
-	  
-	  if ((exchangeRate = expense.exchangeRate()) != 1.0)
-	       amount = floor(exchangeRate * amount * 100.0) / 100.0;
-	  
-	  for (typePtr = typesHead->next; typePtr != NULL; typePtr = typePtr->next)
-	       if (!strcmp(typePtr->name, sptr)) {
-		    typePtr->total += amount;
-		    break;
-	       }
-	  
-	  if (typePtr == NULL) {
-	       typePtr = new iambicExpenseTypes_t;
-	       typePtr->name = strdup(sptr);
-	       typePtr->total = amount;
-	       typePtr->next = typesHead->next;
-	       typesHead->next = typePtr;
-	  }
-	  
-	  total += amount;
-     }
+        int month;
 
-     generateHeader(month);
-     
-     double percent;
-     
-     for (typePtr = typesHead->next; typePtr != NULL; typePtr = typePtr->next) {
-	  percent = typePtr->total / total;
-	  cout << "  [(" << typePtr->name << ") " << percent << " ("
-	       << commify(typePtr->total) << ")]" << endl;
-     }
+        if (argc == 2)
+                month = atoi(argv[1]) - 1;
+        else {
+                time_t curTime = time(NULL);
+                tm *curDate = localtime(&curTime);
 
-     cout << "] (" << commify(total) << ") doit" << endl << "showpage" << endl;
-     cout << "%%Trailer" << endl;
-     
-     pi_file_close(pf);
-     
-     return 0;
+                month = curDate->tm_mon;
+        }
+
+        int nentries;
+
+        pi_file_get_entries(pf, &nentries);
+
+        unsigned char *buf;
+        int attrs, cat;
+
+        iambicExpense_t expense;
+        const char *sptr;
+        double exchangeRate, amount, total = 0.0;
+        const tm *datePtr;
+        iambicExpenseTypes_t *typePtr;
+
+        typesHead = new iambicExpenseTypes_t;
+
+        for (int entnum = 0; entnum < nentries; entnum++) {
+                if (pi_file_read_record(pf, entnum, (void **) &buf, 0,
+                                        &attrs, &cat, 0) < 0) {
+                        cout << "Error reading record number " << entnum <<
+                            endl;
+                        continue;
+                }
+
+                /* Skip deleted records */
+                if ((attrs & dlpRecAttrDeleted)
+                    || (attrs & dlpRecAttrArchived))
+                        continue;
+
+                expense.unpack(buf);
+
+                // We only want to print records from this month
+                datePtr = expense.date();
+                if (datePtr->tm_mon != month)
+                        continue;
+
+                if ((sptr = expense.type()) == NULL)
+                        sptr = "Unknown";
+
+                amount = expense.amount();
+
+                if ((exchangeRate = expense.exchangeRate()) != 1.0)
+                        amount =
+                            floor(exchangeRate * amount * 100.0) / 100.0;
+
+                for (typePtr = typesHead->next; typePtr != NULL;
+                     typePtr = typePtr->next)
+                        if (!strcmp(typePtr->name, sptr)) {
+                                typePtr->total += amount;
+                                break;
+                        }
+
+                if (typePtr == NULL) {
+                        typePtr = new iambicExpenseTypes_t;
+                        typePtr->name = strdup(sptr);
+                        typePtr->total = amount;
+                        typePtr->next = typesHead->next;
+                        typesHead->next = typePtr;
+                }
+
+                total += amount;
+        }
+
+        generateHeader(month);
+
+        double percent;
+
+        for (typePtr = typesHead->next; typePtr != NULL;
+             typePtr = typePtr->next) {
+                percent = typePtr->total / total;
+                cout << "  [(" << typePtr->name << ") " << percent << " ("
+                    << commify(typePtr->total) << ")]" << endl;
+        }
+
+        cout << "] (" << commify(total) << ") doit" << endl << "showpage"
+            << endl;
+        cout << "%%Trailer" << endl;
+
+        pi_file_close(pf);
+
+        return 0;
 }

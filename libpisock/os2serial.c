@@ -49,16 +49,17 @@ static int pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 static int so_write(struct pi_socket *ps);
 static int so_read(struct pi_socket *ps, int timeout);
 
-/**
- * pi_serial_open:
- * @ps: Socket information
- * @addr: Address information
- * @addrlen: Unused parameter
- * 
- * Open the serial port and establish a connection for os2
- * 
- * Return value: The file descriptor
- **/
+/***********************************************************************
+ *
+ * Function:    pi_serial_open
+ *
+ * Summary:     Open the serial connection and listen for incoming data
+ *
+ * Parmeters:   None
+ *
+ * Returns:     The file descriptor used
+ *
+ ***********************************************************************/
 int
 pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
@@ -148,7 +149,17 @@ struct STR_EXTSETBAUDRATE {
 	UCHAR fraction;
 };
 
-/* Change the speed of the socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    so_changebaud
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_changebaud(struct pi_socket *ps)
 {
 	int param_length;
@@ -213,7 +224,17 @@ static int so_changebaud(struct pi_socket *ps)
 	return (0);
 }
 
-/* Close the open socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    so_close
+ *
+ * Summary:     Close the open socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_close(struct pi_socket *ps)
 {
 #ifndef NO_SERIAL_TRACE
@@ -225,14 +246,22 @@ static int so_close(struct pi_socket *ps)
 	return (0);
 }
 
-/* Set a timeout for the socket/file descriptor
+/***********************************************************************
  *
- * Values for read_timeout and write_timeout:
+ * Function:    pi_socket_set_timeout
+ *
+ * Summary:     Set a timeout value for the socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ * Comments:    values for read_timeout and write_timeout
  *                 0           = infinite timeout  
  *                 1 to 65535  = timeout in seconds
  *                -1           = dont change timeout
  *
- */
+ ***********************************************************************/
 static int
 pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 		      int write_timeout)
@@ -321,7 +350,17 @@ pi_socket_set_timeout(struct pi_socket *ps, int read_timeout,
 	return (0);
 }
 
-/* Write to the open socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    so_write
+ *
+ * Summary:     Write our data to the open socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_write(struct pi_socket *ps)
 {
 	struct pi_skb *skb;
@@ -365,7 +404,17 @@ static int so_write(struct pi_socket *ps)
 	return 0;
 }
 
-/* Read incoming data from the socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    so_read
+ *
+ * Summary:     Read incoming data from the socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int so_read(struct pi_socket *ps, int timeout)
 {
 	int r;

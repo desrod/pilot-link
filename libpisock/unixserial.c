@@ -138,16 +138,18 @@ static int s_close(struct pi_socket *ps);
 static int s_write(struct pi_socket *ps);
 static int s_read(struct pi_socket *ps, int timeout);
 
-/**
- * pi_serial_open:
- * @ps: Socket information
- * @addr: Address information
- * @addrlen: Unused parameter
- * 
- * Open the serial port and establish a connection for unix
- * 
- * Return value: The file descriptor
- **/
+/***********************************************************************
+ *
+ * Function:    pi_serial_open
+ *
+ * Summary:     Open the serial port and establish a connection for
+ *		unix
+ *
+ * Parmeters:   None
+ *
+ * Returns:     The file descriptor
+ *
+ ***********************************************************************/
 int
 pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 {
@@ -283,7 +285,17 @@ pi_serial_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
 #endif
 
 #ifdef sleeping_beauty
-/* Delay for a given period have time */
+/***********************************************************************
+ *
+ * Function:    s_delay
+ *
+ * Summary:     Delay for a given period have time
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static s_delay(int sec, int usec)
 {
 	struct timeval tv;
@@ -294,7 +306,17 @@ static s_delay(int sec, int usec)
 }
 #endif
 
-/* Change the speed of the socket */
+/***********************************************************************
+ *
+ * Function:    s_changebaud
+ *
+ * Summary:     Change the speed of the socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int s_changebaud(struct pi_socket *ps)
 {
 #ifndef SGTTY
@@ -327,7 +349,17 @@ static int s_changebaud(struct pi_socket *ps)
 	return 0;
 }
 
-/* Close the open socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    s_close
+ *
+ * Summary:     Close the open socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int s_close(struct pi_socket *ps)
 {
 	int result;
@@ -353,7 +385,17 @@ static int s_close(struct pi_socket *ps)
 	return result;
 }
 
-/* Write to the open socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    s_write
+ *
+ * Summary:     Write to the open socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int s_write(struct pi_socket *ps)
 {
 	struct pi_skb *skb;
@@ -395,7 +437,17 @@ static int s_write(struct pi_socket *ps)
 	return 0;
 }
 
-/* Read incoming data from the socket/file descriptor */
+/***********************************************************************
+ *
+ * Function:    s_read
+ *
+ * Summary:     Read incoming data from the socket/file descriptor
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int s_read(struct pi_socket *ps, int timeout)
 {
 	int r;

@@ -1,30 +1,48 @@
+2001-05-25  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-24
+
+	* tools/Perl5/Pilot.xs: Fixed a typo in 'creatDate' (Hadmut Danisch)
+
+	* install-hinote.c: Fixed to include detection of notes > 28k (David
+	  A. Desrosiers)
+
+	* iambicexample.cc: Poked around and added the banner, removed
+	  static file declaration path (still static for now, need to
+	  install AllTime and test it out)
+
+	* More documentation fixes, rolled back out of gtk-doc for now,
+	  until we can agree on a portable format to represent these docs in
+	  (kudos to jpr for the work and the idea) (David A. Desrosiers)
+
+	* Closed 5 bugs listed at Sourceforge (David A. Desrosiers)
+
 2001-05-23  JP Rosevear  <jpr@ximian.com>
 
-	* libsock/sync.c: Document all public and private functions (the
-	public ones in much more detail
+        * libsock/sync.c: Document all public and private functions (the
+        public ones in much more detail
 
-	* libsock/dlp.c: Ditto
-	
-	* libsock/unixserial.c: ditto
+        * libsock/dlp.c: Ditto
+        
+        * libsock/unixserial.c: ditto
 
-	* libsock/winserial.c: ditto
-	(so_changebaud): make static
+        * libsock/winserial.c: ditto
+        (so_changebaud): make static
 
-	* libsock/os2serial.c: ditto
+        * libsock/os2serial.c: ditto
 
-	* libsock/serial.c: ditto
+        * libsock/serial.c: ditto
 
-	* libsock/slp.c: ditto
+        * libsock/slp.c: ditto
 
-	* libsock/cmp.c: ditto
+        * libsock/cmp.c: ditto
 
-	* libsock/datebook.c: ditto
+        * libsock/datebook.c: ditto
 
-	* libsock/address.c: ditto
+        * libsock/address.c: ditto
 
-	* libsock/util.c: ditto
+        * libsock/util.c: ditto
 
-	* libsock/inetserial.c: ditto
+        * libsock/inetserial.c: ditto
 
 2001-05-22  David A. Desrosiers <hacker@gnu-designs.com>
 

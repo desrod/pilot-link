@@ -62,16 +62,17 @@ static int pi_serial_close(struct pi_socket *ps);
 
 extern int dlp_trace;
 
-/**
- * pi_serial_connect:
- * @ps: Socket information
- * @addr: Address to connect to
- * @addrlen: Length of address
- * 
- * Connect socket to a given address
- * 
- * Return value: A negative number on error, 0 otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    pi_serial_connect
+ *
+ * Summary:     Connect socket to a given address
+ *
+ * Parmeters:   None
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
 int
 pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
@@ -168,16 +169,17 @@ pi_serial_connect(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	return 0;
 }
 
-/**
- * pi_serial_bind:
- * @ps: Socket information
- * @addr: Address to connect to
- * @addrlen: Length of address
- * 
- * Bind address to a local socket
- * 
- * Return value: A negative number on error, 0 otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    pi_serial_bind
+ *
+ * Summary:     Bind address to a local socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
 int
 pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 {
@@ -238,13 +240,33 @@ pi_serial_bind(struct pi_socket *ps, struct sockaddr *addr, int addrlen)
 	return 0;
 }
 
-/* Prepare for incoming connections */
+/***********************************************************************
+ *
+ * Function:    pi_serial_listen
+ *
+ * Summary:     Prepare for incoming connections
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int pi_serial_listen(struct pi_socket *ps, int backlog)
 {
 	return ps->serial_changebaud(ps);	/* ps->rate has been set by bind */
 }
 
-/* Accept an incoming connection */
+/***********************************************************************
+ *
+ * Function:    pi_serial_accept
+ *
+ * Summary:     Accept an incoming connection
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
@@ -347,7 +369,17 @@ pi_serial_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 	return -1;
 }
 
-/* Send message on a connected socket */
+/***********************************************************************
+ *
+ * Function:    pi_serial_send
+ *
+ * Summary:     Send message on a connected socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 pi_serial_send(struct pi_socket *ps, void *msg, int len,
 	       unsigned int flags)
@@ -362,7 +394,17 @@ pi_serial_send(struct pi_socket *ps, void *msg, int len,
 #endif
 }
 
-/* Receive message on a connected socket */
+/***********************************************************************
+ *
+ * Function:    pi_serial_recv
+ *
+ * Summary:     Receive message on a connected socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int
 pi_serial_recv(struct pi_socket *ps, void *msg, int len,
 	       unsigned int flags)
@@ -377,7 +419,17 @@ pi_serial_recv(struct pi_socket *ps, void *msg, int len,
 #endif
 }
 
-/* Tickle the connection to keep it alive */
+/***********************************************************************
+ *
+ * Function:    pi_serial_tickle
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int pi_serial_tickle(struct pi_socket *ps)
 {
 	if (ps->type == PI_SOCK_STREAM) {
@@ -398,7 +450,17 @@ static int pi_serial_tickle(struct pi_socket *ps)
 	}
 }
 
-/* Close a connection, destroy the socket */
+/***********************************************************************
+ *
+ * Function:    pi_serial_close
+ *
+ * Summary:     Close a connection, destroy the socket
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static int pi_serial_close(struct pi_socket *ps)
 {
 #ifdef DEBUG
@@ -443,14 +505,17 @@ static int pi_serial_close(struct pi_socket *ps)
 	return 0;
 }
 
-/**
- * pi_serial_flush:
- * @ps: Socket information
- * 
- * Flush the socket of all data
- * 
- * Return value: A negative number on error, 0 otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    pi_serial_flush
+ *
+ * Summary:     Flush the socket of all data
+ *
+ * Parmeters:   None
+ *
+ * Returns:     A negative number on error, 0 otherwise
+ *
+ ***********************************************************************/
 int pi_serial_flush(struct pi_socket *ps)
 {
 	while (ps->serial_write(ps));

@@ -21,12 +21,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-hinote.h"
 #include "pi-header.h"
+
+
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +40,8 @@ int main(int argc, char *argv[])
 	int j;
 	int filenamelen;
 	int filelen;
+	struct stat info;
+	int err;
 	char *file_text;
 	unsigned char note_buf[0x8000];
 	int note_size;
@@ -49,7 +54,6 @@ int main(int argc, char *argv[])
 	struct HiNoteNote note;
 	char *progname = argv[0];
 	char *device = argv[1];
-
 	PalmHeader(progname);
 
 
@@ -133,7 +137,26 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		f = fopen(argv[i], "r");
+	        /* Attempt to check the file size */
+	        /* stat() returns nonzero on error */
+	        err = stat(argv[i], &info);
+	        if (err) {
+		   /* FIXME: use perror() */
+		   printf("Error accessing file: %s\n", argv[i]);
+		   exit(1);
+		}
+
+	        /* If size is good, open the file. */
+		if (info.st_size > 28672) {
+
+			printf("\nNote size of this note (%i bytes) is greater than allowed size of 28k\n"
+			       "(28,672 bytes), please reduce into two or more pieces and sync each again.\n\n", (int)info.st_size);
+
+		        exit(1);
+		} else {
+			f = fopen(argv[i], "r");
+		}
+
 		if (f == NULL) {
 			perror("fopen");
 			exit(1);
@@ -157,6 +180,7 @@ int main(int argc, char *argv[])
 		fread(file_text + filenamelen + 1, filelen, 1, f);
 		file_text[filenamelen + 1 + filelen] = '\0';
 
+
 		note.text = file_text;
 		note.flags = 0x40;
 		note.level = 0;
@@ -164,6 +188,7 @@ int main(int argc, char *argv[])
 		    pack_HiNoteNote(&note, note_buf, sizeof(note_buf));
 
 		/* dlp_exec(sd, 0x26, 0x20, &db, 1, NULL, 0); */
+		fprintf(stderr, "Installing %s to Hi-Note application...\n", argv[i]);
 		dlp_WriteRecord(sd, db, 0, 0, category, note_buf,
 				note_size, 0);
 		free(file_text);

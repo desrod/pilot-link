@@ -61,7 +61,7 @@
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     CRC + NULL
  *
  ***********************************************************************/
 int crc16(unsigned char *ptr, int count)
@@ -89,7 +89,7 @@ int crc16(unsigned char *ptr, int count)
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     String or NULL
  *
  ***********************************************************************/
 char *strdup(const char *string)
@@ -130,7 +130,7 @@ extern char **environ;
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     0 for success, nonzero if any errors occur
  *
  ***********************************************************************/
 int putenv(const char *string)

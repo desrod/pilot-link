@@ -39,11 +39,11 @@ int sys_RPCerror;
  *
  * Function:    syspkt_tx
  *
- * Summary:     
+ * Summary:     Send a text message
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     0 if success, nonzero otherwise
  *
  ***********************************************************************/
 int syspkt_tx(struct pi_socket *ps, void *m, int length)
@@ -87,11 +87,11 @@ int syspkt_tx(struct pi_socket *ps, void *m, int length)
  *
  * Function:    syspkt_rx
  *
- * Summary:     
+ * Summary:     Receive text message
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     Length of the message + 4 bytes
  *
  ***********************************************************************/
 int syspkt_rx(struct pi_socket *ps, void *b, int len)
@@ -127,7 +127,7 @@ int syspkt_rx(struct pi_socket *ps, void *b, int len)
  *
  * Function:    sys_UnpackState
  *
- * Summary:     
+ * Summary:     Get the state command
  *
  * Parmeters:   None
  *
@@ -162,11 +162,11 @@ int sys_UnpackState(void *buffer, struct Pilot_state *s)
  *
  * Function:    sys_UnpackRegisters
  *
- * Summary:     
+ * Summary:     Read the register commands
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     0
  *
  ***********************************************************************/
 int sys_UnpackRegisters(void *data, struct Pilot_registers *r)
@@ -200,11 +200,11 @@ int sys_UnpackRegisters(void *data, struct Pilot_registers *r)
  *
  * Function:    sys_PackRegisters
  *
- * Summary:     
+ * Summary:     Pack the register commands
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     0
  *
  ***********************************************************************/
 int sys_PackRegisters(void *data, struct Pilot_registers *r)
@@ -228,7 +228,7 @@ int sys_PackRegisters(void *data, struct Pilot_registers *r)
  *
  * Function:    sys_Continue
  *
- * Summary:     
+ * Summary:     Define the Continue command
  *
  * Parmeters:   None
  *
@@ -264,11 +264,11 @@ int sys_Continue(int sd, struct Pilot_registers *r, struct Pilot_watch *w)
  *
  * Function:    sys_Step
  *
- * Summary:     
+ * Summary:     Single-step command
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     Socket, command, 6 bytes
  *
  ***********************************************************************/
 int sys_Step(int sd)
@@ -290,7 +290,7 @@ int sys_Step(int sd)
  *
  * Function:    sys_SetBreakpoints
  *
- * Summary:     
+ * Summary:     Set the breakpoints (0x0C, 0x8C)
  *
  * Parmeters:   None
  *
@@ -330,7 +330,7 @@ int sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
  *
  * Function:    sys_SetTrapBreaks
  *
- * Summary:     
+ * Summary:     Set the Trap Breaks (0x11, 0x91)
  *
  * Parmeters:   None
  *
@@ -368,7 +368,7 @@ int sys_SetTrapBreaks(int sd, int *traps)
  *
  * Function:    sys_GetTrapBreaks
  *
- * Summary:     
+ * Summary:     Get the Trap Breaks (0x10, 0x90)
  *
  * Parmeters:   None
  *
@@ -406,7 +406,7 @@ int sys_GetTrapBreaks(int sd, int *traps)
  *
  * Function:    sys_ToggleDbgBreaks
  *
- * Summary:     
+ * Summary:     Enable the DbgBreaks command (0x0D, 0x8D)
  *
  * Parmeters:   None
  *
@@ -440,7 +440,7 @@ int sys_ToggleDbgBreaks(int sd)
  *
  * Function:    sys_QueryState
  *
- * Summary:     
+ * Summary:     Query the state (uh)
  *
  * Parmeters:   None
  *
@@ -466,7 +466,7 @@ int sys_QueryState(int sd)
  *
  * Function:    sys_ReadMemory
  *
- * Summary:     
+ * Summary:     Read memory (0x01, 0x81)
  *
  * Parmeters:   None
  *
@@ -519,7 +519,7 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
  *
  * Function:    sys_WriteMemory
  *
- * Summary:     
+ * Summary:     Write memory (0x02, 0x82) 
  *
  * Parmeters:   None
  *
@@ -572,7 +572,7 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
  *
  * Function:    sys_Find
  *
- * Summary:     
+ * Summary:     Searches a range of addresses for data (0x13, 0x80)
  *
  * Parmeters:   None
  *
@@ -617,7 +617,8 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, int len,
  *
  * Function:    sys_RemoteEvent
  *
- * Summary:     
+ * Summary:     Parameters sent from host to target to feed pen and 
+ *		keyboard events. They do not require a response.
  *
  * Parmeters:   None
  *
@@ -659,7 +660,7 @@ sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
  *
  * Function:    sys_RPC
  *
- * Summary:     
+ * Summary:     Remote Procedure calls (0x0A, 0x8A)
  *
  * Parmeters:   None
  *
@@ -811,7 +812,7 @@ int RPC(int sd, int socket, int trap, int reply, ...)
  *
  * Function:    PackRPC
  *
- * Summary:     
+ * Summary:     Pack the RPC structure for transmission
  *
  * Parmeters:   None
  *
@@ -933,7 +934,7 @@ void InvertRPC(struct RPC_params *p)
  *
  * Function:    DoRPC
  *
- * Summary:     
+ * Summary:     Actually execute the RPC query/response
  *
  * Parmeters:   None
  *

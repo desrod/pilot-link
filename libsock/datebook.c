@@ -40,12 +40,17 @@ char *DatebookRepeatTypeNames[] =
    dom2ndSun 	= REM Sun 8 
    domLastSun 	= REM Sun 1 -7 */
 
-/**
- * free_Appointment:
- * @a: Appointment structure
- * 
- * Frees members of the apointment structure
- **/
+/***********************************************************************
+ *
+ * Function:    free_Appointment
+ *
+ * Summary:     Frees members of the apointment structure
+ *
+ * Parmeters:   Appointment structure
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 void free_Appointment(struct Appointment *a)
 {
 	if (a->exception)
@@ -56,17 +61,19 @@ void free_Appointment(struct Appointment *a)
 		free(a->note);
 }
 
-/**
- * unpack_Appointment:
- * @a: Appointment structure to fill in
- * @buffer: Buffer containing appointment record data
- * @len: Buffer length
- * 
- *  Fill in the appointment structure based on the raw record data
- * 
- * Return value: 0 on error, the length of the data used from the
- * buffer otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    unpack_Appointment
+ *
+ * Summary:     Fill in the appointment structure based on the raw 
+ *		record data
+ *
+ * Parmeters:   None
+ *
+ * Returns:     0 on error, the length of the data used from the
+ *		buffer otherwise
+ *
+ ***********************************************************************/
 int
 unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 {
@@ -231,19 +238,20 @@ unpack_Appointment(struct Appointment *a, unsigned char *buffer, int len)
 	return (p2 - buffer);
 }
 
-/**
- * pack_Appointment:
- * @a: Appointment structure
- * @buf: Buffer to fill with appointment record information
- * @len: Length of buffer
- * 
- * Fill in the raw appointment record data based on the appointment
- * structure
- * 
- * Return value: The length of the buffer required if record is NULL,
- * OR 0 on error, the length of the data used from the buffer
- * otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    pack_Appointment
+ *
+ * Summary:	Fill in the raw appointment record data based on the 
+ *		appointment structure
+ *
+ * Parmeters:   None
+ *
+ * Returns:     The length of the buffer required if record is NULL,
+ *		or 0 on error, the length of the data used from the 
+ *		buffer otherwise
+ *
+ ***********************************************************************/
 int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 {
 	int iflags;
@@ -375,18 +383,20 @@ int pack_Appointment(struct Appointment *a, unsigned char *buf, int len)
 	return ((long) pos - (long) buf);
 }
 
-/**
- * unpack_AppointmentAppInfo:
- * @ai: AppointmentAppInfo structure to fill in
- * @record: Buffer containing appointment app info record data
- * @len: Buffer length
- * 
- * Fill in the app info structure based on the raw app info data
- * 
- * Return value: The necessary length of the buffer if record is NULL,
- * OR 0 on error, the length of the data used from the buffer
- * otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    unpack_AppointmentAppInfo
+ *
+ * Summary:     Fill in the app info structure based on the raw app 
+ *		info data
+ *
+ * Parmeters:   None
+ *
+ * Returns:     The necessary length of the buffer if record is NULL,
+ *		or 0 on error, the length of the data used from the 
+ *		buffer otherwise
+ *
+ ***********************************************************************/
 int
 unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
 			  unsigned char *record, int len)
@@ -404,18 +414,20 @@ unpack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
 	return i + 2;
 }
 
-/**
- * pack_AppointmentAppInfo:
- * @ai: AppointmentAppInfo structure
- * @record: Buffer to fill with address app info information 
- * @len: Length of buffer
- * 
- * Fill in the raw app info record data based on the app info structure
- * 
- * Return value: The length of the buffer required if record is NULL,
- * OR 0 on error, the length of the data used from the buffer
- * otherwise
- **/
+/***********************************************************************
+ *
+ * Function:    pack_AppointmentAppInfo
+ *
+ * Summary:     Fill in the raw app info record data based on the app 
+ *		info structure
+ *
+ * Parmeters:   None
+ *
+ * Returns:     The length of the buffer required if record is NULL,
+ *		or 0 on error, the length of the data used from the 
+ *		buffer otherwise
+ *
+ ***********************************************************************/
 int
 pack_AppointmentAppInfo(struct AppointmentAppInfo *ai,
 			unsigned char *record, int len)

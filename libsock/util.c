@@ -32,17 +32,18 @@
 
 #define PILOT_CHARSET "CP1252"
 
-/**
- * convert_ToPilotChar:
- * @charset: Current character set
- * @text: Text to convert
- * @bytes: Text length
- * @ptext: A pointer to a variable set to the newly encoded text
- * 
- * Convert any supported text encoding to the pilot encoding
- * 
- * Return value: 0 on success, -1 on failure
- **/
+/***********************************************************************
+ *
+ * Function:    convert_ToPilotChar
+ *
+ * Summary:     Convert any supported desktop text encoding to the Palm
+ *		supported encoding
+ *
+ * Parmeters:   None
+ *
+ * Returns:     0 on success, -1 on failure
+ *
+ ***********************************************************************/
 int
 convert_ToPilotChar(const char *charset, const char *text,
 		    int bytes, char **ptext)
@@ -72,17 +73,18 @@ convert_ToPilotChar(const char *charset, const char *text,
 #endif
 }
 
-/**
- * convert_FromPilotChar:
- * @charset: Character set to convert to
- * @ptext: Text encoded in pilot format (CP1252)
- * @bytes: Text length
- * @text: A pointer to a variable set to the newly encoded text
- * 
- * 
- * 
- * Return value: 0 on success, -1 on failure
- **/
+/***********************************************************************
+ *
+ * Function:    convert_FromPilotChar
+ *
+ * Summary:     Convert from Palm supported encoding to a supported 
+ *		desktop text encoding
+ *
+ * Parmeters:   None
+ *
+ * Returns:     0 on success, -1 on failure
+ *
+ ***********************************************************************/
 int
 convert_FromPilotChar(const char *charset, const char *ptext,
 		      int bytes, char **text)

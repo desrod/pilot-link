@@ -124,11 +124,11 @@ static int busy = 0;
  *
  * Function:    default_socket_connect
  *
- * Summary:     
+ * Summary:     Connect to the socket passed in the descriptor
  *
  * Parmeters:   None
  *
- * Returns:     Nothing
+ * Returns:     -1
  *
  ***********************************************************************/
 static int
@@ -143,7 +143,7 @@ default_socket_connect(struct pi_socket *ps, struct sockaddr *addr,
  *
  * Function:    default_socket_listen
  *
- * Summary:     
+ * Summary:     Listen to the socket passed to the call
  *
  * Parmeters:   None
  *
@@ -179,7 +179,7 @@ default_socket_accept(struct pi_socket *ps, struct sockaddr *addr,
  *
  * Function:    default_socket_close
  *
- * Summary:     
+ * Summary:     Close the open socket
  *
  * Parmeters:   None
  *
@@ -195,7 +195,7 @@ static int default_socket_close(struct pi_socket *ps)
  *
  * Function:    default_socket_tickle
  *
- * Summary:     
+ * Summary:     Keep the socket open with a tickle packet
  *
  * Parmeters:   None
  *
@@ -946,7 +946,17 @@ int pi_watchdog(int pi_sd, int newinterval)
 	return 0;
 }
 
-/* Handle SIGALRM, tickle every socket */
+/***********************************************************************
+ *
+ * Function:    pi_serial_onalarm
+ *
+ * Summary:     
+ *
+ * Parmeters:   None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
 static RETSIGTYPE pi_serial_onalarm(int signo)
 {
 	struct pi_socket *p, *n;
