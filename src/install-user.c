@@ -101,7 +101,8 @@ int main(int argc, char *argv[])
 
 	if (!user && !userid) {
 		printf("   Palm user: %s\n", User.username);
-		printf("   UserID:    %ld \n", User.userID);   
+		printf("   UserID:    %ld \n\n", User.userID);
+		exit(0);
 	}
 	
 	/* Let's make sure we have valid arguments for these

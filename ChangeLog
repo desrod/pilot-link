@@ -1,3 +1,7 @@
+2002-03-18  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* src/install-user.c: Exit when no arguments are specified
+
 2002-03-18  JP Rosevear  <jpr@ximian.com>
 
 	* src/dlpsh.c (strtoke): don't run past the end of the string on
