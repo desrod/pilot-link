@@ -297,7 +297,7 @@ static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short ven
 static IOReturn	find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved);
 static int		prime_read (usb_connection_t *connexion);
 static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe);
-static int		decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
+static void		decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
 
 
@@ -891,6 +891,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 	kern_return_t kr;
 	visor_connection_info ci;
 
+	memset(&ci, 0, sizeof(ci));
 	kr = control_request (dev, 0xc2, VISOR_GET_CONNECTION_INFORMATION, &ci, sizeof(ci));
 	if (kr != kIOReturnSuccess)
 	{
@@ -936,15 +937,13 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 	return kr;
 }
 
-static int
+static void
 decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe)
 {
 	int i;
 
 	CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(ci, sizeof(*ci)));
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: decode_generic_connection_information num_ports=%d, endpoint_numbers_different=%d\n", ci->num_ports, ci->endpoint_numbers_different));
-	if (ci->num_ports == 0)
-		return -1;
 	for (i=0; i < ci->num_ports; i++)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx\n", i, ci->connections[i].port_function_id));
@@ -973,7 +972,6 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 			}
 		}
 	}
-	return kIOReturnSuccess;
 }
 
 static IOReturn
@@ -982,13 +980,15 @@ read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_numbe
 	kern_return_t  kr;
 	palm_ext_connection_info ci;
 
+	memset(&ci, 0, sizeof(ci));
 	kr = control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, &ci, sizeof(ci));
 	if (kr != kIOReturnSuccess)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", kr));
 		return kr;
 	}
-	return decode_generic_connection_information(&ci, port_number, input_pipe, output_pipe);
+	decode_generic_connection_information(&ci, port_number, input_pipe, output_pipe);
+	return kIOReturnSuccess;
 }
 
 static void
