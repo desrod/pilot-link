@@ -128,7 +128,7 @@ struct VFSSlotMountParam {
 /** @brief Information about a VFS volume, returned by dlp_VFSVolumeInfo() */
 struct VFSInfo {
 	/* 0: read-only etc. */
-	unsigned long   attributes;
+	unsigned long   attributes;		/**< Volume attributes (see #dlpVFSVolumeAttributes enum) */
 
 	/* 4: Filesystem type for this volume (defined below).
 	      These you can expect to see in devices:
@@ -148,20 +148,20 @@ struct VFSInfo {
 		  'novl' (Novell filesystem)
 		  'ntfs' (Windows NT filesystem)
 	*/
-	unsigned long   fsType;
+	unsigned long   fsType;			/**< File system time (four-char code, see above) */
 
 	/* 8: Creator code of filesystem driver for this volume. */
-	unsigned long   fsCreator;
+	unsigned long   fsCreator;		/**< File system creator (four-char code) */
 
 	/* For slot based filesystems: (mountClass = VFSMountClass_SlotDriver)
 	   12: mount class that mounted this volume */
-	unsigned long   mountClass;
+	unsigned long   mountClass;		/**< Mount class */
 
 	/* 16: Library on which the volume is mounted */
-	int slotLibRefNum;
+	int slotLibRefNum;			/**< Slot library reference number */
 
 	/* 18: ExpMgr slot number of card containing volume */
-	int slotRefNum;
+	int slotRefNum;				/**< Expansion manager slot number */
 
 	/* 20: Type of card media (mediaMemoryStick, mediaCompactFlash, etc.)
 	       These you can expect to see in devices:
@@ -178,10 +178,10 @@ struct VFSInfo {
 		   'ramd' (RAM disk)
 		   'smed' (SmartMedia)
 	*/
-	unsigned long   mediaType;
+	unsigned long   mediaType;		/**< Media type (see above) */
 
 	/* 24: reserved for future use (other mountclasses may need more space) */
-	unsigned long   reserved;
+	unsigned long   reserved;		/**< Reserved, set to 0 */
 };
 
 /** @brief Information about the handheld user
@@ -420,16 +420,35 @@ enum dlpFunctions {
 		dlpRecAttrSecret 	= 0x10,		/**< Record is secret */
 		dlpRecAttrArchived 	= 0x08		/**< Tagged for archival during next sync */
 	};
-/*@}*/
 
-/** @brief Mode flags used in dlp_OpenDB() */
-enum dlpOpenFlags {
-	dlpOpenRead 		= 0x80,		/**< Open database for reading */
-	dlpOpenWrite 		= 0x40,		/**< Open database for writing */
-	dlpOpenExclusive 	= 0x20,		/**< Open database with exclusive access */
-	dlpOpenSecret 		= 0x10,		/**< Show secret records */
-	dlpOpenReadWrite 	= 0xC0		/**< Open database for reading and writing (equivalent to (#dlpOpenRead | #dlpOpenWrite)) */
-};
+	/** @brief Mode flags used in dlp_OpenDB() */
+	enum dlpOpenFlags {
+		dlpOpenRead 		= 0x80,		/**< Open database for reading */
+		dlpOpenWrite 		= 0x40,		/**< Open database for writing */
+		dlpOpenExclusive 	= 0x20,		/**< Open database with exclusive access */
+		dlpOpenSecret 		= 0x10,		/**< Show secret records */
+		dlpOpenReadWrite 	= 0xC0		/**< Open database for reading and writing (equivalent to (#dlpOpenRead | #dlpOpenWrite)) */
+	};
+
+	/** @brief Flags passed to dlp_ReadDBList() */
+	enum dlpDBList {
+		dlpDBListRAM 		= 0x80,		/**< List RAM databases */
+		dlpDBListROM 		= 0x40,		/**< List ROM databases */
+		dlpDBListMultiple	= 0x20		/**< DLP 1.2 and above: list as many databases as possible at once */
+	};
+
+	enum dlpFindDBOptFlags {
+		dlpFindDBOptFlagGetAttributes	= 0x80,
+		dlpFindDBOptFlagGetSize		= 0x40,
+		dlpFindDBOptFlagMaxRecSize	= 0x20
+	};
+
+	enum dlpFindDBSrchFlags {
+		dlpFindDBSrchFlagNewSearch	= 0x80,
+		dlpFindDBSrchFlagOnlyLatest	= 0x40
+	};
+
+/*@}*/
 
 /** @brief End status values for dlp_EndOfSync() */
 enum dlpEndStatus {
@@ -439,25 +458,7 @@ enum dlpEndStatus {
 	dlpEndCodeOther				/**< dlpEndCodeOther and higher == "Anything else" */
 };
 
-/** @brief Flags passed to dlp_ReadDBList() */
-enum dlpDBList {
-	dlpDBListRAM 		= 0x80,		/**< List RAM databases */
-	dlpDBListROM 		= 0x40,		/**< List ROM databases */
-	dlpDBListMultiple	= 0x20		/**< DLP 1.2 and above: list as many databases as possible at once */
-};
-
-enum dlpFindDBOptFlags {
-	dlpFindDBOptFlagGetAttributes	= 0x80,
-	dlpFindDBOptFlagGetSize		= 0x40,
-	dlpFindDBOptFlagMaxRecSize	= 0x20
-};
-
-enum dlpFindDBSrchFlags {
-	dlpFindDBSrchFlagNewSearch	= 0x80,
-	dlpFindDBSrchFlagOnlyLatest	= 0x40
-};
-
-/** @name Expansion Mgr and VFS Mgr constants */
+/** @name Expansion manager and VFS manager constants */
 /*@{*/
 	/** @brief Expansion card capabilities, as returned by dlp_ExpCardInfo() */
 	enum dlpExpCardCapabilities {
@@ -583,1224 +584,1237 @@ struct dlpResponse {
 };
 
 
-/* @name Functions internally used by dlp.c */
+/* @name Functions used internally by dlp.c */
 /*@{*/
+	extern struct dlpArg * dlp_arg_new PI_ARGS((int id_, size_t len));
+	extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
+	extern int dlp_arg_len PI_ARGS((int argc, struct dlpArg **argv));
 
-/** @brief Convert a Palm OS date to a local date
- *
- * Local dates are using the local machine's timezone. If the Palm OS date
- * is undefined, the local date is set to @c 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT)
- *
- * @param data Ptr to a time/date data block returned by Palm OS
- * @return converted date
- */
-extern time_t dlp_ptohdate PI_ARGS((PI_CONST unsigned char *data));
+	extern struct dlpRequest *dlp_request_new
+		PI_ARGS((enum dlpFunctions cmd, int argc, ...));
+	extern struct dlpRequest * dlp_request_new_with_argid
+		PI_ARGS((enum dlpFunctions cmd, int argid, int argc, ...));
+	extern void dlp_request_free PI_ARGS((struct dlpRequest *req));
 
-/** @brief Convert a date to Palm OS date
- *
- * If the local date is @c 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT) the Palm OS date
- * is set to undefined. Otherwise the date is converted from local time to Palm OS
- *
- * @param time The date to convert
- * @param data Ptr to an 8 byte buffer to hold the Palm OS date
- */
-extern void dlp_htopdate PI_ARGS((time_t time, unsigned char *data));
+	extern struct dlpResponse *dlp_response_new
+		PI_ARGS((enum dlpFunctions cmd, int argc));
+	extern ssize_t dlp_response_read PI_ARGS((struct dlpResponse **res,
+		int sd));
+	extern ssize_t dlp_request_write PI_ARGS((struct dlpRequest *req,
+		int sd));
+	extern void dlp_response_free PI_ARGS((struct dlpResponse *req));
 
-extern struct dlpArg * dlp_arg_new PI_ARGS((int id_, size_t len));
-extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
-extern int dlp_arg_len PI_ARGS((int argc, struct dlpArg **argv));
+	extern int dlp_exec PI_ARGS((int sd, struct dlpRequest *req,
+		struct dlpResponse **res));
 
-extern struct dlpRequest *dlp_request_new
-	PI_ARGS((enum dlpFunctions cmd, int argc, ...));
-extern struct dlpRequest * dlp_request_new_with_argid
-	PI_ARGS((enum dlpFunctions cmd, int argid, int argc, ...));
-extern void dlp_request_free PI_ARGS((struct dlpRequest *req));
+	extern char *dlp_errorlist[];
+	extern char *dlp_strerror(int error);
 
-extern struct dlpResponse *dlp_response_new
-	PI_ARGS((enum dlpFunctions cmd, int argc));
-extern ssize_t dlp_response_read PI_ARGS((struct dlpResponse **res,
-	int sd));
-extern ssize_t dlp_request_write PI_ARGS((struct dlpRequest *req,
-	int sd));
-extern void dlp_response_free PI_ARGS((struct dlpResponse *req));
+	struct RPC_params;
+	extern int dlp_RPC
+		PI_ARGS((int sd, struct RPC_params * p,
+			unsigned long *result));
+/*@}*/
 
-extern int dlp_exec PI_ARGS((int sd, struct dlpRequest *req,
-	struct dlpResponse **res));
+/** @name DLP library functions */
+/*@{*/
+	/** @brief Set the version of the DLP protocol we report to the device.
+	 *
+	 * During the handshake phase, the device and the desktop exchange the
+	 * version of the DLP protocol both support. If the device's DLP version
+	 * is higher than the desktop's, the device usually refuses to connect.
+	 * 
+	 * @param major Protocol major version
+	 * @param minor Protocol minor version
+	 */
+	extern void dlp_set_protocol_version
+			PI_ARGS((int major, int minor));
 
-extern char *dlp_errorlist[];
-extern char *dlp_strerror(int error);
+	/** @brief Convert a Palm OS date to a local date
+	 *
+	 * Local dates are using the local machine's timezone. If the Palm OS date
+	 * is undefined, the local date is set to @c 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT)
+	 *
+	 * @param data Ptr to a time/date data block returned by Palm OS
+	 * @return converted date
+	 */
+	extern time_t dlp_ptohdate PI_ARGS((PI_CONST unsigned char *data));
 
-struct RPC_params;
-extern int dlp_RPC
-	PI_ARGS((int sd, struct RPC_params * p,
-		unsigned long *result));
+	/** @brief Convert a date to Palm OS date
+	 *
+	 * If the local date is @c 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT) the Palm OS date
+	 * is set to undefined. Otherwise the date is converted from local time to Palm OS
+	 *
+	 * @param time The date to convert
+	 * @param data Ptr to an 8 byte buffer to hold the Palm OS date
+	 */
+	extern void dlp_htopdate PI_ARGS((time_t time, unsigned char *data));
+/*@}*/
+
+/** @name System functions */
+/*@{*/
+	/** @brief Get the time from the device and return it as a local time_t value
+	 *
+	 * @param sd Socket number
+	 * @param t Pointer to a time_t to fill
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_GetSysDateTime PI_ARGS((int sd, time_t *t));
+
+	/** @brief Set the time on the Palm using a local time_t value.
+	 *
+	 * @param sd Socket number
+	 * @param t New time to set the device to (expressed using the computer's timezone)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_SetSysDateTime PI_ARGS((int sd, time_t t));
+
+	/** @brief Read the system information block
+	 *
+	 * @param sd Socket number
+	 * @param s Returned system information
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadSysInfo PI_ARGS((int sd, struct SysInfo * s));
+
+	/** @brief Read information about internal handheld memory
+	 *
+	 * @param sd Socket number
+	 * @param cardno Card number (zero based)
+	 * @param c Returned information about the memory card.
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadStorageInfo
+		PI_ARGS((int sd, int cardno, struct CardInfo * c));
+
+	/** @brief Read the device user information
+	 *
+	 * @param sd Socket number
+	 * @param user Returned user info
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadUserInfo
+		PI_ARGS((int sd, struct PilotUser *user));
+
+	/** @brief Change the device user information
+	 *
+	 * @param sd Socket number
+	 * @param user New user info
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_WriteUserInfo
+		PI_ARGS((int sd, struct PilotUser *user));
+
+	/** @brief Convenience function to reset lastSyncPC in the UserInfo to 0
+	 *
+	 * @param sd Socket number
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ResetLastSyncPC PI_ARGS((int sd));
+
+	/** @brief Read Network HotSync information
+	 *
+	 * Supported on Palm OS 2.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param info On return, filled NetSyncInfo structure
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadNetSyncInfo
+		PI_ARGS((int sd, struct NetSyncInfo *info));
+
+	/** @brief Set Network HotSync information
+	 *
+	 * Supported on Palm OS 2.0 and later
+	 *
+	 * @param sd Socket number
+	 * @param info NetSyncInfo structure to set
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_WriteNetSyncInfo
+		PI_ARGS((int sd, PI_CONST struct NetSyncInfo *info));
+
+	/** @brief State that a conduit has started running on the desktop
+	 *
+	 * Puts up a status message on the device. Calling this method regularly
+	 * is also the only reliable way to know whether the user pressed the Cancel
+	 * button on the device.
+	 *
+	 * @param sd Socket number
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_OpenConduit PI_ARGS((int sd));
+
+	/** @brief Terminate connection with the device
+	 *
+	 * Required at the end of a session. The pi_socket layer
+	 * will call this for you if you don't. After the device receives this
+	 * command, it will terminate the connection.
+	 *
+	 * @param sd Socket number
+	 * @param status End of sync status (see #dlpEndStatus enum)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_EndOfSync PI_ARGS((int sd, int status));
+
+	/** @brief Terminate HotSync _without_ notifying Palm.
+	 *
+	 * This will cause the Palm to time out, and should (if I remember right)
+	 * lose any changes to unclosed databases. _Never_ use under ordinary
+	 * circumstances. If the sync needs to be aborted in a reasonable
+	 * manner, use EndOfSync with a non-zero status.
+	 *
+	 * @param sd Socket number
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_AbortSync PI_ARGS((int sd));
+
+	/** @brief Read a Feature from the device
+	 *
+	 * @param sd Socket number
+	 * @param creator Feature creator
+	 * @param num Feature number
+	 * @param feature On return, the feature value
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadFeature
+		PI_ARGS((int sd, unsigned long creator, unsigned int num,
+			unsigned long *feature));
+
+	/** @brief Emulation of the SysGetROMToken function on the device
+	 *
+	 * Supported on Palm OS 2.0 through 4.0. Using this function
+	 * is not recommended.
+	 *
+	 * @warning This function uses 68K RPC calls to perform its duty,
+	 * and is therefore not supported on devices running Palm OS 5.0
+	 * and later. Actually, it may even crash the device.
+	 *
+	 * @param sd Socket number
+	 * @param token ROM token to read
+	 * @param buffer Buffer to store the token data in
+	 * @param size Size of data to read
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_GetROMToken
+		PI_ARGS((int sd, unsigned long token, char *buffer, size_t *size));
+
+	/** @brief Add an entry into the HotSync log on the device
+	 *
+	 * Move to the next line with \\n, as usual. You may invoke this
+	 * command once or more before calling dlp_EndOfSync(), but it is
+	 * not required.
+	 *
+	 * @param sd Socket number
+	 * @param entry Nul-terminated string with the text to insert in the log
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_AddSyncLogEntry PI_ARGS((int sd, char *entry));
+
+	/** @brief Call an application on the device
+	 *
+	 * 32-bit retcode and data over 64k only supported on Palm OS 2.0 and later.
+	 *
+	 * This function allows calling an application (or any PRC that responds
+	 * to launch codes) using a custom launch code and custom data. The
+	 * application can return data too, using DlkControl() and the
+	 * dlkCtlSendCallAppReply selector. See Palm OS documentation for more
+	 * information.
+	 *
+	 * @param sd Socket number
+	 * @param creator Creator code of the application to call
+	 * @param type Type code of the application to call
+	 * @param action Launch code to send to the application
+	 * @param length Length of data block to pass to the application
+	 * @param data Data block to pass to the application
+	 * @param retcode On return, result code returned by the application
+	 * @param retbuf Buffer allocated using pi_buffer_new(). On return contains the data returned by the application
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_CallApplication
+		PI_ARGS((int sd, unsigned long creator, unsigned long type,
+			int action, size_t length, PI_CONST void *data,
+			unsigned long *retcode, pi_buffer_t *retbuf));
+
+	/** @brief Convenience function to ead an app preference data block
+	 *
+	 * Supported on Palm OS 2.0 and later, emulated for Palm OS 1.x.
+	 *
+	 * @param sd Socket number
+	 * @param creator Application creator
+	 * @param prefID Preference ID
+	 * @param backup If set, read from backup prefs (see Palm OS documentation). This flag is ignored on Palm OS 1.x.
+	 * @param maxsize Maximum size of the data to return in buffer
+	 * @param buffer If not NULL, buffer should be of size @p maxsize. On return, contains the preference data
+	 * @param size If not NULL, on return contains the size of the preference data block
+	 * @param version 
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadAppPreference
+		PI_ARGS((int sd, unsigned long creator, int prefID, int backup,
+			int maxsize, void *buffer, size_t *size, int *version));
+
+	/** @brief Write an app preference data block
+	 *
+	 * Supported on Palm OS 2.0 and later. Emulated on Palm OS 1.x.
+	 *
+	 * @param sd Socket number
+	 * @param creator Application creator
+	 * @param prefID Preference ID
+	 * @param backup If set, write to backup prefs (see Palm OS documentation). This flag is ignored on Palm OS 1.x.
+	 * @param version Version of the pref to write
+	 * @param buffer Ptr to the data to write
+	 * @param size Size of the data to write
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_WriteAppPreference
+		PI_ARGS((int sd, unsigned long creator, int prefID, int backup,
+			int version, void *buffer, size_t size));
+
+	/** @brief Require reboot of device after HotSync terminates
+	 *
+	 * @param sd Socket number
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ResetSystem PI_ARGS((int sd));
 
 /*@}*/
 
-/** @brief Set the version of the DLP protocol we report to the device.
- *
- * During the handshake phase, the device and the desktop exchange the
- * version of the DLP protocol both support. If the device's DLP version
- * is higher than the desktop's, the device usually refuses to connect.
- * 
- * @param major Protocol major version
- * @param minor Protocol minor version
- */
-extern void dlp_set_protocol_version
-		PI_ARGS((int major, int minor));
-
-/** @brief Get the time from the device and return it as a local time_t value
- *
- * @param sd Socket number
- * @param t Pointer to a time_t to fill
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_GetSysDateTime PI_ARGS((int sd, time_t *t));
-
-/** @brief Set the time on the Palm using a local time_t value.
- *
- * @param sd Socket number
- * @param t New time to set the device to (expressed using the computer's timezone)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_SetSysDateTime PI_ARGS((int sd, time_t t));
-
-/** @brief Read information about internal handheld memory
- *
- * @param sd Socket number
- * @param cardno Card number (zero based)
- * @param c Returned information about the memory card.
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadStorageInfo
-	PI_ARGS((int sd, int cardno, struct CardInfo * c));
-
-/** @brief Read the system information block
- *
- * @param sd Socket number
- * @param s Returned system information
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadSysInfo PI_ARGS((int sd, struct SysInfo * s));
-
-/** @brief Read the database list from the device
- *
- * The database list can be read either one database at a time (slower),
- * or passing ::dlpDBListMultiple in the @p flags member. Pass ::dlpDBListRAM
- * in @p flags to get the list of databases in RAM, and ::dlpDBListROM to get
- * the list of databases in ROM. You can mix flags to obtain the desired
- * result. Passing ::dlpDBListMultiple will return several DBInfo
- * structures at once (usually 20). Use (info->used / sizeof(DBInfo)) to
- * know how many database information blocks were returned.
- * For the next call, pass the last DBInfo->index value + 1 to start to
- * the next database. @n @n
- * When all the database informations have been retrieved, this function returns
- * #PI_ERR_DLP_PALMOS and pi_palmos_error() returns #dlpErrNotFound.
- * 
- * @param sd Socket number
- * @param cardno Card number (should be 0)
- * @param flags Flags (see #dlpDBList enum)
- * @param start Index of first database to list (zero based)
- * @param info Buffer filled with one or more DBInfo structure
- * @return A negative value if an error occured or the DB list is exhausted (see pi-error.h)
- *
- */
-extern int dlp_ReadDBList
-	PI_ARGS((int sd, int cardno, int flags, int start,
-		pi_buffer_t *info));
-
-/** @brief Look for a database on the device
- *
- * This function does not match any DLP layer function, but is
- * intended as a shortcut for programs looking for databases. It
- * uses a fairly byzantine mechanism for ordering the RAM databases
- * before the ROM ones. You must feed the @a index slot from the
- * returned info in @p start the next time round.
- *
- * @param sd Socket number
- * @param cardno Card number (should be 0)
- * @param start Index of first database to list (zero based)
- * @param dbname If not NULL, look for a database with this name
- * @param type If not 0, matching database must have this type
- * @param creator If not 0, matching database must have this creator code
- * @param info Returned database information on success
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_FindDBInfo
-	PI_ARGS((int sd, int cardno, int start, PI_CONST char *dbname,
-		unsigned long type, unsigned long creator,
-		struct DBInfo *info));
-
-/** @brief Open a database on the Palm.
- *
- * @param sd Socket number
- * @param cardno Card number (should be 0)
- * @param mode Open mode (see #dlpOpenFlags enum)
- * @param name Database name
- * @param dbhandle Returned database handle to use if other calls like dlp_CloseDB()
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_OpenDB
-	PI_ARGS((int sd, int cardno, int mode, PI_CONST char *name,
-		int *dbhandle));
-
-/** @brief Close an opened database
- *
- * @param sd Socket number
- * @param dbhandle The DB handle returned by dlp_OpenDB()
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_CloseDB PI_ARGS((int sd, int dbhandle));
-
-/** @brief Close all opened databases
- *
- * @param sd Socket number
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_CloseDB_All PI_ARGS((int sd));
-
-/** @brief Delete an existing database from the device
- *
- * @param sd Socket number
- * @param cardno Card number (should be 0)
- * @param name Database name
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_DeleteDB
-	PI_ARGS((int sd, int cardno, PI_CONST char *name));
-
-/** @brief Create database on the device
- *
- * After creation, the database is open and ready for use. You should
- * call dlp_CloseDB() once you're done with the database.
- *
- * @param sd Socket number
- * @param creator Creator code for the new database (four-char code)
- * @param type Type code for the new database (four-char code)
- * @param cardno Card number (should be 0)
- * @param flags Database flags (see #dlpDBFlags enum)
- * @param version Database version number
- * @param name Database name
- * @param dbhandle On return, DB handle to pass to other calls like dlp_CloseDB()
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_CreateDB
-	PI_ARGS((int sd, unsigned long creator, unsigned long type,
-		int cardno, int flags, unsigned int version,
-		PI_CONST char *name, int *dbhandle));
-
-/** @brief Require reboot of device after HotSync terminates
- *
- * @param sd Socket number
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ResetSystem PI_ARGS((int sd));
-
-/** @brief Add an entry into the HotSync log on the device
- *
- * Move to the next line with \\n, as usual. You may invoke this
- * command once or more before calling dlp_EndOfSync(), but it is
- * not required.
- *
- * @param sd Socket number
- * @param entry Nul-terminated string with the text to insert in the log
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_AddSyncLogEntry PI_ARGS((int sd, char *entry));
-
-/** @brief State that a conduit has started running on the desktop
- *
- * Puts up a status message on the device. Calling this method regularly
- * is also the only reliable way to know whether the user pressed the Cancel
- * button on the device.
- *
- * @param sd Socket number
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_OpenConduit PI_ARGS((int sd));
-
-/** @brief Terminate connection with the device
- *
- * Required at the end of a session. The pi_socket layer
- * will call this for you if you don't. After the device receives this
- * command, it will terminate the connection.
- *
- * @param sd Socket number
- * @param status End of sync status (see #dlpEndStatus enum)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_EndOfSync PI_ARGS((int sd, int status));
-
-/** @brief Terminate HotSync _without_ notifying Palm.
- *
- * This will cause the Palm to time out, and should (if I remember right)
- * lose any changes to unclosed databases. _Never_ use under ordinary
- * circumstances. If the sync needs to be aborted in a reasonable
- * manner, use EndOfSync with a non-zero status.
- *
- * @param sd Socket number
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_AbortSync PI_ARGS((int sd));
-
-/** @brief Return the number of records in an opened database.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param records On return, number of records in the database
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadOpenDBInfo
-	PI_ARGS((int sd, int dbhandle, int *records));
-
-/** @brief Move all records from a category to another category
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param fromcat Category to move from (0-15)
- * @param tocat Category to move to (0-15)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_MoveCategory
-	PI_ARGS((int sd, int dbhandle, int fromcat, int tocat));
-
-/** @brief Change the device user information
- *
- * @param sd Socket number
- * @param user New user info
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_WriteUserInfo
-	PI_ARGS((int sd, struct PilotUser *user));
-
-/** @brief Read the device user information
- *
- * @param sd Socket number
- * @param user Returned user info
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadUserInfo
-	PI_ARGS((int sd, struct PilotUser *user));
-
-/** @brief Convenience function to reset lastSyncPC in the UserInfo to 0
- *
- * @param sd Socket number
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ResetLastSyncPC PI_ARGS((int sd));
-
-/** @brief Read a database's AppInfo block
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param offset Offset to start reading from (0 based)
- * @param reqbytes Number of bytes to read (pass -1 to read all data from @p offset to the end of the AppInfo block)
- * @param retbuf Buffer allocated using pi_buffer_new(). On return contains the data from the AppInfo block
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadAppBlock
-	PI_ARGS((int sd, int dbhandle, int offset, int reqbytes,
-		pi_buffer_t *retbuf));
-
-/** @brief Write a database's AppInfo block
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param dbuf Pointer to the new AppInfo data.
- * @param dlen Length of the new AppInfo data. If 0, the AppInfo block is removed.
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_WriteAppBlock
-	PI_ARGS((int sd,int dbhandle,PI_CONST void *dbuf,size_t dlen));
-
-/** @brief Read a database's SortInfo block
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param offset Offset to start reading from (0 based)
- * @param reqbytes Number of bytes to read (pass -1 to read all data from @p offset to the end of the SortInfo block)
- * @param retbuf Buffer allocated using pi_buffer_new(). On return contains the data from the SortInfo block
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadSortBlock
-	PI_ARGS((int sd, int dbhandle, int offset, int reqbytes,
-		pi_buffer_t *retbuf));
-
-/** @brief Write a database's SortInfo block
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param dbuf Pointer to the new SortInfo data.
- * @param dlen Length of the new SortInfo data. If 0, the SortInfo block is removed.
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_WriteSortBlock
-	PI_ARGS((int sd, int dbhandle, PI_CONST void *dbuf,
-		size_t dlen));
-
-/** @brief Reset the nextRecord position used in dlp_ReadNextRecInCategory()
- *
- * This resets the nextRecord both internally and on the device.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ResetDBIndex PI_ARGS((int sd, int dbhandle));
-
-/** @brief Read the list of record IDs from an open database
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param sort If non-zero, the on-device application with the same DB creator will be called to re-sort the records prior to returning the list
- * @param start Index of first record ID to return (zero based)
- * @param max Maximum number of record IDs to return
- * @param IDs On return, @p count record IDs
- * @param count On return, the number of record IDs found in @p IDs
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadRecordIDList
-	PI_ARGS((int sd, int dbhandle, int sort, int start, int max,
-		recordid_t * IDs, int *count));
-
-/** @brief Create a new record in a database
- *
- * Use this call to add records to a database. On DLP 1.4 and later, you can create records
- * bigger than 64k. Set the record ID to 0 to have the device generate the record ID itself,
- * or assign a record ID of your own. Read Palm's documentation for information about
- * record IDs, as there is a way to indicate which records were created by the desktop and
- * which ones were created by the device applications.
- *
- * If you pass -1 as the data length, the function will treat the data as a string and use
- * strlen(data)+1 as the data length (that is, the string is written including the
- * terminating nul character).
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param flags Record attributes (see #dlpRecAttributes enum)
- * @param recID Record ID of the new record. If 0, device will generate a new record ID for this record.
- * @param catID Category of the new record
- * @param data Ptr to record data
- * @param length Record data length
- * @param newRecID On return, record ID that was assigned to this record
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_WriteRecord
-	PI_ARGS((int sd, int dbhandle, int flags, recordid_t recID,
-		int catID, void *data, size_t length,
-		recordid_t *newRecID));
-
-/** @brief Delete an existing record from a database
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param all If set, ALL records are deleted from the database.
- * @param recID Record ID of record to delete if @p all == 0.
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_DeleteRecord
-	PI_ARGS((int sd, int dbhandle, int all, recordid_t recID));
-
-/** @brief Delete a category from a database
- *
- * Any record in that category will be moved to the Unfiled category.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param category Category to delete
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_DeleteCategory
-	PI_ARGS((int sd, int dbhandle, int category));
-
-/** @brief Read a resource identified by its type and ID
- *
- * @note To read resources larger than 64K, you should use dlp_ReadResourceByIndex().
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param type Type code for the resource (four-char code)
- * @param resID Resource ID
- * @param buffer If not NULL, a buffer allocated using pi_buffer_new(). On return, contains the resource contents
- * @param resindex If not NULL, on return contains the resource index
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadResourceByType
-	PI_ARGS((int sd, int dbhandle, unsigned long type, int resID,
-		pi_buffer_t *buffer, int *resindex));
-
-/** @brief Read a resource identified by its resource index
- *
- * This function supports reading resources larger than 64k on
- * DLP 1.4 and later (Palm OS 5.2 and later).
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param resindex Resource index
- * @param buffer If not NULL, a buffer allocated using pi_buffer_new(). On return, contains the resource contents
- * @param type If not NULL, on return contains the resource type
- * @param resID If not NULL, on return contains the resource ID
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadResourceByIndex
-	PI_ARGS((int sd, int dbhandle, int resindex, pi_buffer_t *buffer,
-		unsigned long *type, int *resID));
-
-/** @brief Create a new resource of overwrite an existing one
- *
- * This function supports writing resources larger than 64k on
- * DLP 1.4 and later (Palm OS 5.2 and later).
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param type Resource type (four-char code)
- * @param resID Resource ID
- * @param data Ptr to resource data
- * @param length Length of resource data to write
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_WriteResource
-	PI_ARGS((int sd, int dbhandle, unsigned long type, int resID,
-		PI_CONST void *data, size_t length));
-
-/** @brief Delete a resource or all resources from a resource file
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param all If set, all resources are removed from this database (@p restype and @p resID are ignored)
- * @param restype Resource type (four-char code)
- * @param resID Resource ID
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_DeleteResource
-	PI_ARGS((int sd, int dbhandle, int all, unsigned long restype,
-		int resID));
-
-/** @brief Iterate through modified records in database
- *
- * Return subsequent modified records on each call. Use dlp_ResetDBIndex()
- * prior to starting iterations. Once all the records have been seen,
- * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
- * #dlpErrNotFound.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
- * @param recuid If not NULL, contains the record unique ID on return
- * @param recindex If not NULL, contains the record index on return
- * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
- * @param category If not NULL, contains the record category on return
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadNextModifiedRec
-	PI_ARGS((int sd, int dbhandle, pi_buffer_t *buffer, recordid_t *recuid,
-		int *recindex, int *attr, int *category));
-
-/** @brief Iterate through modified records in category
- *
- * Return subsequent modified records on each call. Use dlp_ResetDBIndex()
- * prior to starting iterations. Once all the records have been seen,
- * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
- * #dlpErrNotFound.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param category The category to iterate into
- * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
- * @param recuid If not NULL, contains the record unique ID on return
- * @param recindex If not NULL, contains the record index on return
- * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadNextModifiedRecInCategory
-	PI_ARGS((int sd, int dbhandle, int category, pi_buffer_t *buffer,
-		recordid_t *recuid, int *recindex, int *attr));
-
-/** @brief Iterate through records in category
- *
- * Return subsequent records on each call. Use dlp_ResetDBIndex()
- * prior to starting iterations. Once all the records have been seen,
- * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
- * #dlpErrNotFound.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param category The category to iterate into
- * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
- * @param recuid If not NULL, contains the record unique ID on return
- * @param recindex If not NULL, contains the record index on return
- * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadNextRecInCategory
-	PI_ARGS((int sd, int dbhandle, int category, pi_buffer_t *buffer,
-		recordid_t *recuid, int *recindex, int *attr));
-
-/** @brief Read a record using its unique ID
- *
- * Read a record identified by its unique ID. Make sure you only
- * request records that effectively exist in the database (use
- * dlp_ReadRecordIDList() to retrieve the unique IDs of all records
- * in the database).
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param recuid Record unique ID
- * @param buffer If not NULL, a buffer allocated using pi_buffer_new(). On return, contains the record contents
- * @param recindex If not NULL, contains the record index on return.
- * @param attr If not NULL, contains the record attributes on return.
- * @param category If not NULL, contains the record category on return.
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadRecordById
-	PI_ARGS((int sd, int dbhandle, recordid_t recuid, pi_buffer_t *buffer,
-		int *recindex, int *attr, int *category));
-
-/** @brief Read a record using its index
- *
- * Read a record by record index (zero-based). Make sure you only
- * request records within the bounds of database records
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param recindex Record index (zero based)
- * @param buffer If not NULL, a buffer allocated using pi_buffer_new(). On return, contains the record contents
- * @param recuid If not NULL, contains the record UID on return.
- * @param attr If not NULL, contains the record attributes on return.
- * @param category If not NULL, contains the record category on return.
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadRecordByIndex
-	PI_ARGS((int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
-		recordid_t *recuid, int *attr, int *category));
-
-/** @brief Clean up a database by removing deleted/archived records
- *
- * Delete all records in the opened database which are marked as
- * archived or deleted.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_CleanUpDatabase PI_ARGS((int sd, int dbhandle));
-
-/** @brief Reset dirty record flags, update sync time
- *
- * For record databases, reset all dirty flags. For both record and
- * resource databases, set the last sync time to now.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ResetSyncFlags PI_ARGS((int sd, int dbhandle));
-
-/** @brief Call an application on the device
- *
- * 32-bit retcode and data over 64k only supported on Palm OS 2.0 and later.
- *
- * This function allows calling an application (or any PRC that responds
- * to launch codes) using a custom launch code and custom data. The
- * application can return data too, using DlkControl() and the
- * dlkCtlSendCallAppReply selector. See Palm OS documentation for more
- * information.
- *
- * @param sd Socket number
- * @param creator Creator code of the application to call
- * @param type Type code of the application to call
- * @param action Launch code to send to the application
- * @param length Length of data block to pass to the application
- * @param data Data block to pass to the application
- * @param retcode On return, result code returned by the application
- * @param retbuf Buffer allocated using pi_buffer_new(). On return contains the data returned by the application
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_CallApplication
-	PI_ARGS((int sd, unsigned long creator, unsigned long type,
-		int action, size_t length, PI_CONST void *data,
-		unsigned long *retcode, pi_buffer_t *retbuf));
-
-/** @brief Read a Feature from the device
- *
- * @param sd Socket number
- * @param creator Feature creator
- * @param num Feature number
- * @param feature On return, the feature value
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadFeature
-	PI_ARGS((int sd, unsigned long creator, unsigned int num,
-		unsigned long *feature));
-
-/** @brief Emulation of the SysGetROMToken function on the device
- *
- * Supported on Palm OS 2.0 through 4.0. Using this function
- * is not recommended.
- *
- * @warning This function uses 68K RPC calls to perform its duty,
- * and is therefore not supported on devices running Palm OS 5.0
- * and later. Actually, it may even crash the device.
- *
- * @param sd Socket number
- * @param token ROM token to read
- * @param buffer Buffer to store the token data in
- * @param size Size of data to read
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_GetROMToken
-	PI_ARGS((int sd, unsigned long token, char *buffer, size_t *size));
-
-/** @brief Read Network HotSync information
- *
- * Supported on Palm OS 2.0 and later.
- *
- * @param sd Socket number
- * @param info On return, filled NetSyncInfo structure
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadNetSyncInfo
-	PI_ARGS((int sd, struct NetSyncInfo *info));
-
-/** @brief Set Network HotSync information
- *
- * Supported on Palm OS 2.0 and later
- *
- * @param sd Socket number
- * @param info NetSyncInfo structure to set
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_WriteNetSyncInfo
-	PI_ARGS((int sd, PI_CONST struct NetSyncInfo *info));
-
-/** @brief Convenience function to ead an app preference data block
- *
- * Supported on Palm OS 2.0 and later, emulated for Palm OS 1.x.
- *
- * @param sd Socket number
- * @param creator Application creator
- * @param prefID Preference ID
- * @param backup If set, read from backup prefs (see Palm OS documentation). This flag is ignored on Palm OS 1.x.
- * @param maxsize Maximum size of the data to return in buffer
- * @param buffer If not NULL, buffer should be of size @p maxsize. On return, contains the preference data
- * @param size If not NULL, on return contains the size of the preference data block
- * @param version 
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ReadAppPreference
-	PI_ARGS((int sd, unsigned long creator, int prefID, int backup,
-		int maxsize, void *buffer, size_t *size, int *version));
-
-/** @brief Write an app preference data block
- *
- * Supported on Palm OS 2.0 and later. Emulated on Palm OS 1.x.
- *
- * @param sd Socket number
- * @param creator Application creator
- * @param prefID Preference ID
- * @param backup If set, write to backup prefs (see Palm OS documentation). This flag is ignored on Palm OS 1.x.
- * @param version Version of the pref to write
- * @param buffer Ptr to the data to write
- * @param size Size of the data to write
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_WriteAppPreference
-	PI_ARGS((int sd, unsigned long creator, int prefID, int backup,
-		int version, void *buffer, size_t size));
-
-/** @brief Change database information
- *
- * Supported on Palm OS 3.0 (DLP 1.2) and later.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param flags Flags to set for this database (see #dlpDBFlags enum)
- * @param clearFlags Flags to clear for this database (see #dlpDBFlags enum)
- * @param version Version of this database
- * @param createDate Creation date of this database
- * @param modifyDate Modification date of this database (use @c 0x83DAC000 to unset)
- * @param backupDate Last backup date of this database (use @c 0x83DAC000 to unset)
- * @param type Database type code (four-char code)
- * @param creator Database creator code (four-char code)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_SetDBInfo
-	PI_ARGS((int sd, int dbhandle, int flags, int clearFlags, unsigned int version,
-		 time_t createDate, time_t modifyDate, time_t backupDate,
-		 unsigned long type, unsigned long creator));
-
-/** @brief Find a database by name
- *
- * Supported on Palm OS 3.0 (DLP 1.2) and later.
- *
- * @param sd Socket number
- * @param cardno Memory card number (usually 0)
- * @param name Database name
- * @param localid If not NULL, on return contains the LocalID of the database if it was found
- * @param dbhandle If not NULL, on return contains the handle of the database if it is currently open
- * @param info If not NULL, on return contains information about the database
- * @param size If not NULL, on return contains information about the database size
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_FindDBByName
-	PI_ARGS((int sd, int cardno, PI_CONST char *name, unsigned long *localid, int *dbhandle,
-		 struct DBInfo *info, struct DBSizeInfo *size));
-
-/** @brief Get information about an open database
- *
- * Supported on Palm OS 3.0 (DLP 1.2) and later.
- *
- * @param sd Socket number
- * @param dbhandle Open database handle, obtained from dlp_OpenDB()
- * @param cardno If not NULL, on return contains the cardno of the memory card the database resides on
- * @param localid If not NULL, on return contains the LocalID of the database
- * @param info If not NULL, on return contains information about the database
- * @param size If not NULL, on return contains information about the database size
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_FindDBByOpenHandle
-	PI_ARGS((int sd, int dbhandle, int *cardno, unsigned long *localid,
-		 struct DBInfo *info, struct DBSizeInfo *size));
-
-/** @brief Find databases by type and/or creator
- *
- * Supported on Palm OS 3.0 (DLP 1.2) and later. To look for multiple databases,
- * make a first call with @p start set to 1, then subsequent calls with @p start set to 0
- * until no more database is found.
- *
- * @param sd Socket number
- * @param type If not 0, type code to look for
- * @param creator If not 0, creator code to look for
- * @param start If set, start a new search
- * @param latest If set, returns the database with the latest version if there are several identical databases
- * @param cardno If not NULL, on return contains the memory card number the database resides on
- * @param localid If not NULL, on return contains the LocalID of the database
- * @param dbhandle If not NULL, on return contains the handle of the database if it is currently open
- * @param info If not NULL, on return contains information about the database
- * @param size If not NULL, on return contains information about the database size
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_FindDBByTypeCreator
-	PI_ARGS((int sd, unsigned long type, unsigned long creator, int start,
-		 int latest, int *cardno, unsigned long *localid, int *dbhandle,
-		 struct DBInfo *info, struct DBSizeInfo *size));
-
-/** @brief Enumerate expansion slots
- *
- * Supported on Palm OS 4.0 and later. Expansion slots are physical slots
- * present on the device. To check whether a card is inserted in a slot,
- * use dlp_ExpCardPresent().
- *
- * @param sd Socket number
- * @param numSlots On input, maximum number of slots that can be returned in the slotRefs array. On return, the actual number of slot references returned in @p slotRefs.
- * @param slotRefs On return, @p numSlots slot references
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ExpSlotEnumerate
-	PI_ARGS((int sd, int *numSlots, int *slotRefs));
-
-/** @brief Checks whether a card is inserted in a slot
- *
- * Supported on Palm OS 4.0 and later. Returns >=0 if a card
- * is inserted in the slot.
- *
- * @param sd Socket number
- * @param slotRef The slot reference as returned by dlp_ExpSlotEnumerate().
- * @return A negative value if an error occured (see pi-error.h), >=0 if a card is inserted
- */
-extern int dlp_ExpCardPresent
-	PI_ARGS((int sd, int slotRef));
-
-/** @brief Get information about a removable card inserted in an expansion slot
- *
- * Supported on Palm OS 4.0 and later. The info strings are returned in a
- * single malloc()'ed buffer as a suite of nul-terminated string, one
- * after the other.
- *
- * @param sd Socket number
- * @param slotRef The slot reference as returned by dlp_ExpSlotEnumerate().
- * @param flags If not NULL, the card flags (see #dlpExpCardCapabilities enum)
- * @param numStrings On return, the number of strings found in the @p strings array
- * @param strings If not NULL, ptr to a char*. If there are strings to return, this function allocates a buffer to hold the strings. You are responsible for free()'ing the buffer once you're done with it.
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ExpCardInfo
-	PI_ARGS((int sd, int slotRef, unsigned long *flags,
-		 int *numStrings, char **strings));
-
-/** @brief Get the default storage directory for a given file type
- *
- * Supported on Palm OS 4.0 and later. Return the default directory
- * for a file type. File types as expressed as MIME types, for
- * example "image/jpeg", or as a simple file extension (i.e. ".jpg")
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param name MIME type to get the default directory for
- * @param dir A buffer to hold the default path
- * @param len On input, the length of the @p dir buffer. On return, contains the length of the path string (including the nul terminator)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSGetDefaultDir
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *name,char *dir, int *len));
-
-/** @brief Import a VFS file to a database on the handheld
- *
- * Supported on Palm OS 4.0 and later. The file is converted to a
- * full fledged database and stored in the handheld's RAM.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param pathNameP Path of the file to transfer to the handheld
- * @param cardno On return, card number the database was created on (usually 0)
- * @param localid On return, LocalID of the database that was created
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSImportDatabaseFromFile
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *pathNameP,
-		 int *cardno, unsigned long *localid));
-
-/** @brief Export a database to a VFS file
- *
- * Supported on Palm OS 4.0 and later. The database is converted to a
- * .prc, .pdb or .pqa file on the VFS volume.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param pathNameP Path of the file to create on the VFS volume
- * @param cardno Card number the database resides on (usually 0)
- * @param localid LocalID of the database to export
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSExportDatabaseToFile
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *pathNameP,
-		int cardno, unsigned int localid));
-
-/** @brief Create a new file on a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param name Full path of the file to create
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileCreate
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
-
-/** @brief Open an existing file on a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param path Full path of the file to open
- * @param openMode Open mode flags (see #dlpVFSOpenFlags enum)
- * @param outFileRef On return, file reference to the open file
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileOpen
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *path, int openMode,
-		FileRef *outFileRef));
-
-/** @brief Close an open VFS file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File reference obtained from dlp_VFSFileOpen()
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileClose
-	PI_ARGS((int sd, FileRef afile));
-
-/** @brief Write data to an open file
- *
- * Supported on Palm OS 4.0 and later. Will return the number of bytes
- * written if successful.
- *
- * @param sd Socket number
- * @param afile File reference obtained from dlp_VFSFileOpen()
- * @param data Ptr to the data to write
- * @param len Length of the data to write
- * @return A negative value if an error occured (see pi-error.h), the number of bytes written otherwise.
- */
-extern int dlp_VFSFileWrite
-	PI_ARGS((int sd, FileRef afile, unsigned char *data, size_t len));
-
-/** @brief Read data from an open file
- *
- * Supported on Palm OS 4.0 and later. Will return the total number of bytes
- * actually read.
- *
- * @param sd Socket number
- * @param afile File reference obtained from dlp_VFSFileOpen()
- * @param data Buffer allocated using pi_buffer_new(). Buffer is being emptied first with pi_buffer_clear(). On return contains the data read from the file.
- * @param numBytes Number of bytes to read from the file.
- * @return A negative value if an error occured (see pi-error.h), or the total number of bytes read
- */
-extern int dlp_VFSFileRead
-	PI_ARGS((int sd, FileRef afile, pi_buffer_t *data, size_t numBytes));
-
-/** @brief Delete an existing file from a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param name Full access path to the file to delete
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileDelete
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
-
-/** @brief Rename an existing file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @note This function can NOT be used to move a file from one place
- * to another. You can only rename a file that will stay in the same
- * directory.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param name Full access path to the file to rename
- * @param newname New file name, without the rest of the access path
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileRename
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *name,
-		PI_CONST char *newname));
-
-/** @brief Checks whether the current position is at the end of file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File reference obtained from dlp_VFSFileOpen()
- * @return A negative value if an error occured (see pi-error.h). 0 if not at EOF, >0 if at EOF.
- */
-extern int dlp_VFSFileEOF
-	PI_ARGS((int sd, FileRef afile));
-
-/** @brief Return the current seek position in an open file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File reference obtained from dlp_VFSFileOpen()
- * @param position On return, current absolute position in the file
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileTell
-	PI_ARGS((int sd, FileRef afile, int *position));
-
-/** @brief Return the attributes of an open file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File reference obtained from dlp_VFSFileOpen()
- * @param attributes On return, file attributes (see #dlpVFSFileAttributeConstants enum)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileGetAttributes
-	PI_ARGS((int sd, FileRef afile, unsigned long *attributes));
-
-/** @brief Change the attributes of an open file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File reference obtained from dlp_VFSFileOpen()
- * @param attributes n-New file attributes (see #dlpVFSFileAttributeConstants enum)
- * @return A negative value if an error occured (see pi-error.h).
- */
-extern int dlp_VFSFileSetAttributes
-	PI_ARGS((int sd, FileRef afile, unsigned long attributes));
-
-/** @brief Return one of the dates associated with an open file or directory
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File or directory reference obtained from dlp_VFSFileOpen()
- * @param which The date you want (see #dlpVFSDateConstants enum)
- * @param date On return, the requested date
- * @return A negative value if an error occured (see pi-error.h).
- */
-extern int dlp_VFSFileGetDate
-	PI_ARGS((int sd, FileRef afile, int which, time_t *date));
-
-/** @brief Change one of the dates for an open file or directory
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File or directory reference obtained from dlp_VFSFileOpen()
- * @param which The date you want to change (see #dlpVFSDateConstants enum)
- * @param date The new date to set
- * @return A negative value if an error occured (see pi-error.h).
- */
-extern int dlp_VFSFileSetDate
-	PI_ARGS((int sd, FileRef afile, int which, time_t date));
-
-/** @brief Create a new directory on a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param path Full path for the directory to create
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSDirCreate
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *path));
-
-/** @brief Iterate through the entries in a directory
- *
- * Supported on Palm OS 4.0 and later. At the beginning you set
- * @p dirIterator to #vfsIteratorStart, then call this function
- * repeatedly until it returns an error code of the iterator becomes
- * #vfsIteratorStop.
- *
- * @param sd Socket number
- * @param dirRefNum Directory reference obtained from dlp_VFSFileOpen()
- * @param dirIterator Ptr to an iterator. Start with #vfsIteratorStart
- * @param maxDirItems On input, the max number of VFSDirInfo structures stored in @p dirItems. On output, the actual number of items.
- * @param dirItems Preallocated array that contains a number of VFSDirInfo structures on return.
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSDirEntryEnumerate
-	PI_ARGS((int sd, FileRef dirRefNum, unsigned long *dirIterator,
-		int *maxDirItems, struct VFSDirInfo *dirItems));
-
-/** @brief Format a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param flags Format flags (undocumented for now)
- * @param fsLibRef File system lib ref (undocumented for now)
- * @param param Slot mount parameters (undocumented for now)
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSVolumeFormat
-	PI_ARGS((int sd, unsigned char flags, int fsLibRef,
-		struct VFSSlotMountParam *param));
-
-/** @brief Returns a list of connected VFS volumes
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param numVols On input, the maximum number of volume references that can be returned. On output, the actual number of volume references
- * @param volRefs On output, @p numVols volume references
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSVolumeEnumerate
-	PI_ARGS((int sd, int *numVols, int *volRefs));
-
-/** @brief Returns information about a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param volInfo On return, volume information
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSVolumeInfo
-	PI_ARGS((int sd, int volRefNum, struct VFSInfo *volInfo));
-
-/** @brief Return the label (name) of a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param len On input, the maximum size of the name buffer. On output, the name length (including the ending nul byte)
- * @param name On output, the nul-terminated volume name
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSVolumeGetLabel
-	PI_ARGS((int sd, int volRefNum, int *len, char *name));
-
-/** @brief Change the label (name) of a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param name New volume name
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSVolumeSetLabel
-	PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
-
-/** @brief Return the total and used size of a VFS volume
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
- * @param volSizeUsed On return, number of bytes used on the volume
- * @param volSizeTotal On return, total size of the volume in bytes
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSVolumeSize
-	PI_ARGS((int sd, int volRefNum, long *volSizeUsed,
-		long *volSizeTotal));
-
-/** @brief Change the current seek position in an open file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File or directory reference obtained from dlp_VFSFileOpen()
- * @param origin Where to seek from (see #dlpVFSSeekConstants enum)
- * @param offset Seek offset
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileSeek
-	PI_ARGS((int sd, FileRef afile, int origin, int offset));
-
-/** @brief Resize an open file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File or directory reference obtained from dlp_VFSFileOpen()
- * @param newSize New file size
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileResize
-	PI_ARGS((int sd, FileRef afile, int newSize));
-
-/** @brief Return the size of an open file
- *
- * Supported on Palm OS 4.0 and later.
- *
- * @param sd Socket number
- * @param afile File or directory reference obtained from dlp_VFSFileOpen()
- * @param size On return, the actual size of the file
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_VFSFileSize
-	PI_ARGS((int sd, FileRef afile,int *size));
-
-/* DLP 1.4 only (Palm OS 5.2, seen on TapWave) */
-/** @brief Return the type of media supported by an expansion slot
- *
- * Supported on Palm OS 5.2 and later (DLP 1.4 and later).
- *
- * @param sd Socket number
- * @param slotNum Slot ref to query (obtained from dlp_ExpSlotEnumerate())
- * @param mediaType On return, the media type
- * @return A negative value if an error occured (see pi-error.h)
- */
-extern int dlp_ExpSlotMediaType
-	PI_ARGS((int sd, int slotNum, unsigned long *mediaType));
+/** @name Databse access functions */
+/*@{*/
+	/** @brief Read the database list from the device
+	 *
+	 * The database list can be read either one database at a time (slower),
+	 * or passing ::dlpDBListMultiple in the @p flags member. Pass ::dlpDBListRAM
+	 * in @p flags to get the list of databases in RAM, and ::dlpDBListROM to get
+	 * the list of databases in ROM. You can mix flags to obtain the desired
+	 * result. Passing ::dlpDBListMultiple will return several DBInfo
+	 * structures at once (usually 20). Use (info->used / sizeof(DBInfo)) to
+	 * know how many database information blocks were returned.
+	 * For the next call, pass the last DBInfo->index value + 1 to start to
+	 * the next database. @n @n
+	 * When all the database informations have been retrieved, this function returns
+	 * #PI_ERR_DLP_PALMOS and pi_palmos_error() returns #dlpErrNotFound.
+	 * 
+	 * @param sd Socket number
+	 * @param cardno Card number (should be 0)
+	 * @param flags Flags (see #dlpDBList enum)
+	 * @param start Index of first database to list (zero based)
+	 * @param info Buffer filled with one or more DBInfo structure
+	 * @return A negative value if an error occured or the DB list is exhausted (see pi-error.h)
+	 *
+	 */
+	extern int dlp_ReadDBList
+		PI_ARGS((int sd, int cardno, int flags, int start,
+			pi_buffer_t *info));
+
+	/** @brief Find a database by name
+	 *
+	 * Supported on Palm OS 3.0 (DLP 1.2) and later.
+	 *
+	 * @param sd Socket number
+	 * @param cardno Memory card number (usually 0)
+	 * @param name Database name
+	 * @param localid If not NULL, on return contains the LocalID of the database if it was found
+	 * @param dbhandle If not NULL, on return contains the handle of the database if it is currently open
+	 * @param info If not NULL, on return contains information about the database
+	 * @param size If not NULL, on return contains information about the database size
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_FindDBByName
+		PI_ARGS((int sd, int cardno, PI_CONST char *name, unsigned long *localid, int *dbhandle,
+			 struct DBInfo *info, struct DBSizeInfo *size));
+
+	/** @brief Get information about an open database
+	 *
+	 * Supported on Palm OS 3.0 (DLP 1.2) and later.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param cardno If not NULL, on return contains the cardno of the memory card the database resides on
+	 * @param localid If not NULL, on return contains the LocalID of the database
+	 * @param info If not NULL, on return contains information about the database
+	 * @param size If not NULL, on return contains information about the database size
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_FindDBByOpenHandle
+		PI_ARGS((int sd, int dbhandle, int *cardno, unsigned long *localid,
+			 struct DBInfo *info, struct DBSizeInfo *size));
+
+	/** @brief Find databases by type and/or creator
+	 *
+	 * Supported on Palm OS 3.0 (DLP 1.2) and later. To look for multiple databases,
+	 * make a first call with @p start set to 1, then subsequent calls with @p start set to 0
+	 * until no more database is found.
+	 *
+	 * @param sd Socket number
+	 * @param type If not 0, type code to look for
+	 * @param creator If not 0, creator code to look for
+	 * @param start If set, start a new search
+	 * @param latest If set, returns the database with the latest version if there are several identical databases
+	 * @param cardno If not NULL, on return contains the memory card number the database resides on
+	 * @param localid If not NULL, on return contains the LocalID of the database
+	 * @param dbhandle If not NULL, on return contains the handle of the database if it is currently open
+	 * @param info If not NULL, on return contains information about the database
+	 * @param size If not NULL, on return contains information about the database size
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_FindDBByTypeCreator
+		PI_ARGS((int sd, unsigned long type, unsigned long creator, int start,
+			 int latest, int *cardno, unsigned long *localid, int *dbhandle,
+			 struct DBInfo *info, struct DBSizeInfo *size));
+
+	/** @brief Look for a database on the device
+	 *
+	 * This function does not match any DLP layer function, but is
+	 * intended as a shortcut for programs looking for databases. It
+	 * uses a fairly byzantine mechanism for ordering the RAM databases
+	 * before the ROM ones. You must feed the @a index slot from the
+	 * returned info in @p start the next time round.
+	 *
+	 * @param sd Socket number
+	 * @param cardno Card number (should be 0)
+	 * @param start Index of first database to list (zero based)
+	 * @param dbname If not NULL, look for a database with this name
+	 * @param type If not 0, matching database must have this type
+	 * @param creator If not 0, matching database must have this creator code
+	 * @param info Returned database information on success
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_FindDBInfo
+		PI_ARGS((int sd, int cardno, int start, PI_CONST char *dbname,
+			unsigned long type, unsigned long creator,
+			struct DBInfo *info));
+
+	/** @brief Open a database on the Palm.
+	 *
+	 * @param sd Socket number
+	 * @param cardno Card number (should be 0)
+	 * @param mode Open mode (see #dlpOpenFlags enum)
+	 * @param name Database name
+	 * @param dbhandle Returned database handle to use if other calls like dlp_CloseDB()
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_OpenDB
+		PI_ARGS((int sd, int cardno, int mode, PI_CONST char *name,
+			int *dbhandle));
+
+	/** @brief Close an opened database
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle The DB handle returned by dlp_OpenDB()
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_CloseDB PI_ARGS((int sd, int dbhandle));
+
+	/** @brief Close all opened databases
+	 *
+	 * @param sd Socket number
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_CloseDB_All PI_ARGS((int sd));
+
+	/** @brief Delete an existing database from the device
+	 *
+	 * @param sd Socket number
+	 * @param cardno Card number (should be 0)
+	 * @param name Database name
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_DeleteDB
+		PI_ARGS((int sd, int cardno, PI_CONST char *name));
+
+	/** @brief Create database on the device
+	 *
+	 * After creation, the database is open and ready for use. You should
+	 * call dlp_CloseDB() once you're done with the database.
+	 *
+	 * @param sd Socket number
+	 * @param creator Creator code for the new database (four-char code)
+	 * @param type Type code for the new database (four-char code)
+	 * @param cardno Card number (should be 0)
+	 * @param flags Database flags (see #dlpDBFlags enum)
+	 * @param version Database version number
+	 * @param name Database name
+	 * @param dbhandle On return, DB handle to pass to other calls like dlp_CloseDB()
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_CreateDB
+		PI_ARGS((int sd, unsigned long creator, unsigned long type,
+			int cardno, int flags, unsigned int version,
+			PI_CONST char *name, int *dbhandle));
+
+	/** @brief Return the number of records in an opened database.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param records On return, number of records in the database
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadOpenDBInfo
+		PI_ARGS((int sd, int dbhandle, int *records));
+
+	/** @brief Change information for an open database
+	 *
+	 * Supported on Palm OS 3.0 (DLP 1.2) and later.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param flags Flags to set for this database (see #dlpDBFlags enum)
+	 * @param clearFlags Flags to clear for this database (see #dlpDBFlags enum)
+	 * @param version Version of this database
+	 * @param createDate Creation date of this database
+	 * @param modifyDate Modification date of this database (use @c 0x83DAC000 to unset)
+	 * @param backupDate Last backup date of this database (use @c 0x83DAC000 to unset)
+	 * @param type Database type code (four-char code)
+	 * @param creator Database creator code (four-char code)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_SetDBInfo
+		PI_ARGS((int sd, int dbhandle, int flags, int clearFlags, unsigned int version,
+			 time_t createDate, time_t modifyDate, time_t backupDate,
+			 unsigned long type, unsigned long creator));
+
+	/** @brief Delete a category from a database
+	 *
+	 * Any record in that category will be moved to the Unfiled category.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param category Category to delete
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_DeleteCategory
+		PI_ARGS((int sd, int dbhandle, int category));
+
+	/** @brief Move all records from a category to another category
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param fromcat Category to move from (0-15)
+	 * @param tocat Category to move to (0-15)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_MoveCategory
+		PI_ARGS((int sd, int dbhandle, int fromcat, int tocat));
+
+	/** @brief Read a database's AppInfo block
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param offset Offset to start reading from (0 based)
+	 * @param reqbytes Number of bytes to read (pass -1 to read all data from @p offset to the end of the AppInfo block)
+	 * @param retbuf Buffer allocated using pi_buffer_new(). On return contains the data from the AppInfo block
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadAppBlock
+		PI_ARGS((int sd, int dbhandle, int offset, int reqbytes,
+			pi_buffer_t *retbuf));
+
+	/** @brief Write a database's AppInfo block
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param dbuf Pointer to the new AppInfo data.
+	 * @param dlen Length of the new AppInfo data. If 0, the AppInfo block is removed.
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_WriteAppBlock
+		PI_ARGS((int sd,int dbhandle,PI_CONST void *dbuf,size_t dlen));
+
+	/** @brief Read a database's SortInfo block
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param offset Offset to start reading from (0 based)
+	 * @param reqbytes Number of bytes to read (pass -1 to read all data from @p offset to the end of the SortInfo block)
+	 * @param retbuf Buffer allocated using pi_buffer_new(). On return contains the data from the SortInfo block
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadSortBlock
+		PI_ARGS((int sd, int dbhandle, int offset, int reqbytes,
+			pi_buffer_t *retbuf));
+
+	/** @brief Write a database's SortInfo block
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param dbuf Pointer to the new SortInfo data.
+	 * @param dlen Length of the new SortInfo data. If 0, the SortInfo block is removed.
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_WriteSortBlock
+		PI_ARGS((int sd, int dbhandle, PI_CONST void *dbuf,
+			size_t dlen));
+
+	/** @brief Clean up a database by removing deleted/archived records
+	 *
+	 * Delete all records in the opened database which are marked as
+	 * archived or deleted.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_CleanUpDatabase PI_ARGS((int sd, int dbhandle));
+
+	/** @brief Reset dirty record flags, update sync time
+	 *
+	 * For record databases, reset all dirty flags. For both record and
+	 * resource databases, set the last sync time to now.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ResetSyncFlags PI_ARGS((int sd, int dbhandle));
+
+	/** @brief Reset the nextRecord position used in dlp_ReadNextRecInCategory()
+	 *
+	 * This resets the nextRecord both internally and on the device.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ResetDBIndex PI_ARGS((int sd, int dbhandle));
+
+	/** @brief Read the list of record IDs from an open database
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param sort If non-zero, the on-device application with the same DB creator will be called to re-sort the records prior to returning the list
+	 * @param start Index of first record ID to return (zero based)
+	 * @param max Maximum number of record IDs to return
+	 * @param IDs On return, @p count record IDs
+	 * @param count On return, the number of record IDs found in @p IDs
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadRecordIDList
+		PI_ARGS((int sd, int dbhandle, int sort, int start, int max,
+			recordid_t * IDs, int *count));
+
+	/** @brief Read a record using its unique ID
+	 *
+	 * Read a record identified by its unique ID. Make sure you only
+	 * request records that effectively exist in the database (use
+	 * dlp_ReadRecordIDList() to retrieve the unique IDs of all records
+	 * in the database).
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param recuid Record unique ID
+	 * @param buffer If not NULL, a buffer allocated using pi_buffer_new(). On return, contains the record contents
+	 * @param recindex If not NULL, contains the record index on return.
+	 * @param attr If not NULL, contains the record attributes on return.
+	 * @param category If not NULL, contains the record category on return.
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadRecordById
+		PI_ARGS((int sd, int dbhandle, recordid_t recuid, pi_buffer_t *buffer,
+			int *recindex, int *attr, int *category));
+
+	/** @brief Read a record using its index
+	 *
+	 * Read a record by record index (zero-based). Make sure you only
+	 * request records within the bounds of database records
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param recindex Record index (zero based)
+	 * @param buffer If not NULL, a buffer allocated using pi_buffer_new(). On return, contains the record contents
+	 * @param recuid If not NULL, contains the record UID on return.
+	 * @param attr If not NULL, contains the record attributes on return.
+	 * @param category If not NULL, contains the record category on return.
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadRecordByIndex
+		PI_ARGS((int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
+			recordid_t *recuid, int *attr, int *category));
+
+	/** @brief Iterate through modified records in database
+	 *
+	 * Return subsequent modified records on each call. Use dlp_ResetDBIndex()
+	 * prior to starting iterations. Once all the records have been seen,
+	 * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
+	 * #dlpErrNotFound.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
+	 * @param recuid If not NULL, contains the record unique ID on return
+	 * @param recindex If not NULL, contains the record index on return
+	 * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
+	 * @param category If not NULL, contains the record category on return
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadNextModifiedRec
+		PI_ARGS((int sd, int dbhandle, pi_buffer_t *buffer, recordid_t *recuid,
+			int *recindex, int *attr, int *category));
+
+	/** @brief Iterate through modified records in category
+	 *
+	 * Return subsequent modified records on each call. Use dlp_ResetDBIndex()
+	 * prior to starting iterations. Once all the records have been seen,
+	 * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
+	 * #dlpErrNotFound.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param category The category to iterate into
+	 * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
+	 * @param recuid If not NULL, contains the record unique ID on return
+	 * @param recindex If not NULL, contains the record index on return
+	 * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadNextModifiedRecInCategory
+		PI_ARGS((int sd, int dbhandle, int category, pi_buffer_t *buffer,
+			recordid_t *recuid, int *recindex, int *attr));
+
+	/** @brief Iterate through records in category
+	 *
+	 * Return subsequent records on each call. Use dlp_ResetDBIndex()
+	 * prior to starting iterations. Once all the records have been seen,
+	 * this function returns PI_ERR_DLP_PALMOS and pi_palmos_error() returns
+	 * #dlpErrNotFound.
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param category The category to iterate into
+	 * @param buffer If not NULL, a buffer created using pi_buffer_new(). Buffer is cleared first using pi_buffer_clear(). On return, contains the record data
+	 * @param recuid If not NULL, contains the record unique ID on return
+	 * @param recindex If not NULL, contains the record index on return
+	 * @param attr If not NULL, contains the record attributes on return (see #dlpRecAttributes enum)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadNextRecInCategory
+		PI_ARGS((int sd, int dbhandle, int category, pi_buffer_t *buffer,
+			recordid_t *recuid, int *recindex, int *attr));
+
+	/** @brief Create a new record in a database
+	 *
+	 * Use this call to add records to a database. On DLP 1.4 and later, you can create records
+	 * bigger than 64k. Set the record ID to 0 to have the device generate the record ID itself,
+	 * or assign a record ID of your own. Read Palm's documentation for information about
+	 * record IDs, as there is a way to indicate which records were created by the desktop and
+	 * which ones were created by the device applications.
+	 *
+	 * If you pass -1 as the data length, the function will treat the data as a string and use
+	 * strlen(data)+1 as the data length (that is, the string is written including the
+	 * terminating nul character).
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param flags Record attributes (see #dlpRecAttributes enum)
+	 * @param recID Record ID of the new record. If 0, device will generate a new record ID for this record.
+	 * @param catID Category of the new record
+	 * @param data Ptr to record data
+	 * @param length Record data length
+	 * @param newRecID On return, record ID that was assigned to this record
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_WriteRecord
+		PI_ARGS((int sd, int dbhandle, int flags, recordid_t recID,
+			int catID, void *data, size_t length,
+			recordid_t *newRecID));
+
+	/** @brief Delete an existing record from a database
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param all If set, ALL records are deleted from the database.
+	 * @param recID Record ID of record to delete if @p all == 0.
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_DeleteRecord
+		PI_ARGS((int sd, int dbhandle, int all, recordid_t recID));
+
+	/** @brief Read a resource identified by its type and ID
+	 *
+	 * @note To read resources larger than 64K, you should use dlp_ReadResourceByIndex().
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param type Type code for the resource (four-char code)
+	 * @param resID Resource ID
+	 * @param buffer If not NULL, a buffer allocated using pi_buffer_new(). On return, contains the resource contents
+	 * @param resindex If not NULL, on return contains the resource index
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadResourceByType
+		PI_ARGS((int sd, int dbhandle, unsigned long type, int resID,
+			pi_buffer_t *buffer, int *resindex));
+
+	/** @brief Read a resource identified by its resource index
+	 *
+	 * This function supports reading resources larger than 64k on
+	 * DLP 1.4 and later (Palm OS 5.2 and later).
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param resindex Resource index
+	 * @param buffer If not NULL, a buffer allocated using pi_buffer_new(). On return, contains the resource contents
+	 * @param type If not NULL, on return contains the resource type
+	 * @param resID If not NULL, on return contains the resource ID
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ReadResourceByIndex
+		PI_ARGS((int sd, int dbhandle, int resindex, pi_buffer_t *buffer,
+			unsigned long *type, int *resID));
+
+	/** @brief Create a new resource of overwrite an existing one
+	 *
+	 * This function supports writing resources larger than 64k on
+	 * DLP 1.4 and later (Palm OS 5.2 and later).
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param type Resource type (four-char code)
+	 * @param resID Resource ID
+	 * @param data Ptr to resource data
+	 * @param length Length of resource data to write
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_WriteResource
+		PI_ARGS((int sd, int dbhandle, unsigned long type, int resID,
+			PI_CONST void *data, size_t length));
+
+	/** @brief Delete a resource or all resources from a resource file
+	 *
+	 * @param sd Socket number
+	 * @param dbhandle Open database handle, obtained from dlp_OpenDB()
+	 * @param all If set, all resources are removed from this database (@p restype and @p resID are ignored)
+	 * @param restype Resource type (four-char code)
+	 * @param resID Resource ID
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_DeleteResource
+		PI_ARGS((int sd, int dbhandle, int all, unsigned long restype,
+			int resID));
+/*@}*/
+
+/** @name Expansion manager functions */
+/*@{*/
+	/** @brief Enumerate expansion slots
+	 *
+	 * Supported on Palm OS 4.0 and later. Expansion slots are physical slots
+	 * present on the device. To check whether a card is inserted in a slot,
+	 * use dlp_ExpCardPresent().
+	 *
+	 * @param sd Socket number
+	 * @param numSlots On input, maximum number of slots that can be returned in the slotRefs array. On return, the actual number of slot references returned in @p slotRefs.
+	 * @param slotRefs On return, @p numSlots slot references
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ExpSlotEnumerate
+		PI_ARGS((int sd, int *numSlots, int *slotRefs));
+
+	/** @brief Checks whether a card is inserted in a slot
+	 *
+	 * Supported on Palm OS 4.0 and later. Returns >=0 if a card
+	 * is inserted in the slot.
+	 *
+	 * @param sd Socket number
+	 * @param slotRef The slot reference as returned by dlp_ExpSlotEnumerate().
+	 * @return A negative value if an error occured (see pi-error.h), >=0 if a card is inserted
+	 */
+	extern int dlp_ExpCardPresent
+		PI_ARGS((int sd, int slotRef));
+
+	/** @brief Get information about a removable card inserted in an expansion slot
+	 *
+	 * Supported on Palm OS 4.0 and later. The info strings are returned in a
+	 * single malloc()'ed buffer as a suite of nul-terminated string, one
+	 * after the other.
+	 *
+	 * @param sd Socket number
+	 * @param slotRef The slot reference as returned by dlp_ExpSlotEnumerate().
+	 * @param flags If not NULL, the card flags (see #dlpExpCardCapabilities enum)
+	 * @param numStrings On return, the number of strings found in the @p strings array
+	 * @param strings If not NULL, ptr to a char*. If there are strings to return, this function allocates a buffer to hold the strings. You are responsible for free()'ing the buffer once you're done with it.
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ExpCardInfo
+		PI_ARGS((int sd, int slotRef, unsigned long *flags,
+			 int *numStrings, char **strings));
+
+	/** @brief Return the type of media supported by an expansion slot
+	 *
+	 * Supported on Palm OS 5.2 and later (DLP 1.4 and later).
+	 *
+	 * @param sd Socket number
+	 * @param slotNum Slot ref to query (obtained from dlp_ExpSlotEnumerate())
+	 * @param mediaType On return, the media type
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_ExpSlotMediaType
+		PI_ARGS((int sd, int slotNum, unsigned long *mediaType));
+/*@}*/
+
+/** @name VFS manager functions */
+/*@{*/
+	/** @brief Returns a list of connected VFS volumes
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param numVols On input, the maximum number of volume references that can be returned. On output, the actual number of volume references
+	 * @param volRefs On output, @p numVols volume references
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSVolumeEnumerate
+		PI_ARGS((int sd, int *numVols, int *volRefs));
+
+	/** @brief Returns information about a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param volInfo On return, volume information
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSVolumeInfo
+		PI_ARGS((int sd, int volRefNum, struct VFSInfo *volInfo));
+
+	/** @brief Return the label (name) of a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param len On input, the maximum size of the name buffer. On output, the name length (including the ending nul byte)
+	 * @param name On output, the nul-terminated volume name
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSVolumeGetLabel
+		PI_ARGS((int sd, int volRefNum, int *len, char *name));
+
+	/** @brief Change the label (name) of a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param name New volume name
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSVolumeSetLabel
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
+
+	/** @brief Return the total and used size of a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param volSizeUsed On return, number of bytes used on the volume
+	 * @param volSizeTotal On return, total size of the volume in bytes
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSVolumeSize
+		PI_ARGS((int sd, int volRefNum, long *volSizeUsed,
+			long *volSizeTotal));
+
+	/** @brief Format a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param flags Format flags (undocumented for now)
+	 * @param fsLibRef File system lib ref (undocumented for now)
+	 * @param param Slot mount parameters (undocumented for now)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSVolumeFormat
+		PI_ARGS((int sd, unsigned char flags, int fsLibRef,
+			struct VFSSlotMountParam *param));
+
+	/** @brief Get the default storage directory for a given file type
+	 *
+	 * Supported on Palm OS 4.0 and later. Return the default directory
+	 * for a file type. File types as expressed as MIME types, for
+	 * example "image/jpeg", or as a simple file extension (i.e. ".jpg")
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param name MIME type to get the default directory for
+	 * @param dir A buffer to hold the default path
+	 * @param len On input, the length of the @p dir buffer. On return, contains the length of the path string (including the nul terminator)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSGetDefaultDir
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *name,char *dir, int *len));
+
+	/** @brief Iterate through the entries in a directory
+	 *
+	 * Supported on Palm OS 4.0 and later. At the beginning you set
+	 * @p dirIterator to #vfsIteratorStart, then call this function
+	 * repeatedly until it returns an error code of the iterator becomes
+	 * #vfsIteratorStop.
+	 *
+	 * @param sd Socket number
+	 * @param dirRefNum Directory reference obtained from dlp_VFSFileOpen()
+	 * @param dirIterator Ptr to an iterator. Start with #vfsIteratorStart
+	 * @param maxDirItems On input, the max number of VFSDirInfo structures stored in @p dirItems. On output, the actual number of items.
+	 * @param dirItems Preallocated array that contains a number of VFSDirInfo structures on return.
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSDirEntryEnumerate
+		PI_ARGS((int sd, FileRef dirRefNum, unsigned long *dirIterator,
+			int *maxDirItems, struct VFSDirInfo *dirItems));
+
+	/** @brief Create a new directory on a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param path Full path for the directory to create
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSDirCreate
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *path));
+
+	/** @brief Import a VFS file to a database on the handheld
+	 *
+	 * Supported on Palm OS 4.0 and later. The file is converted to a
+	 * full fledged database and stored in the handheld's RAM.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param pathNameP Path of the file to transfer to the handheld
+	 * @param cardno On return, card number the database was created on (usually 0)
+	 * @param localid On return, LocalID of the database that was created
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSImportDatabaseFromFile
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *pathNameP,
+			 int *cardno, unsigned long *localid));
+
+	/** @brief Export a database to a VFS file
+	 *
+	 * Supported on Palm OS 4.0 and later. The database is converted to a
+	 * .prc, .pdb or .pqa file on the VFS volume.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param pathNameP Path of the file to create on the VFS volume
+	 * @param cardno Card number the database resides on (usually 0)
+	 * @param localid LocalID of the database to export
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSExportDatabaseToFile
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *pathNameP,
+			int cardno, unsigned int localid));
+
+	/** @brief Create a new file on a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param name Full path of the file to create
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileCreate
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
+
+	/** @brief Open an existing file on a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param path Full path of the file to open
+	 * @param openMode Open mode flags (see #dlpVFSOpenFlags enum)
+	 * @param outFileRef On return, file reference to the open file
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileOpen
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *path, int openMode,
+			FileRef *outFileRef));
+
+	/** @brief Close an open VFS file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File reference obtained from dlp_VFSFileOpen()
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileClose
+		PI_ARGS((int sd, FileRef afile));
+
+	/** @brief Write data to an open file
+	 *
+	 * Supported on Palm OS 4.0 and later. Will return the number of bytes
+	 * written if successful.
+	 *
+	 * @param sd Socket number
+	 * @param afile File reference obtained from dlp_VFSFileOpen()
+	 * @param data Ptr to the data to write
+	 * @param len Length of the data to write
+	 * @return A negative value if an error occured (see pi-error.h), the number of bytes written otherwise.
+	 */
+	extern int dlp_VFSFileWrite
+		PI_ARGS((int sd, FileRef afile, unsigned char *data, size_t len));
+
+	/** @brief Read data from an open file
+	 *
+	 * Supported on Palm OS 4.0 and later. Will return the total number of bytes
+	 * actually read.
+	 *
+	 * @param sd Socket number
+	 * @param afile File reference obtained from dlp_VFSFileOpen()
+	 * @param data Buffer allocated using pi_buffer_new(). Buffer is being emptied first with pi_buffer_clear(). On return contains the data read from the file.
+	 * @param numBytes Number of bytes to read from the file.
+	 * @return A negative value if an error occured (see pi-error.h), or the total number of bytes read
+	 */
+	extern int dlp_VFSFileRead
+		PI_ARGS((int sd, FileRef afile, pi_buffer_t *data, size_t numBytes));
+
+	/** @brief Delete an existing file from a VFS volume
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param name Full access path to the file to delete
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileDelete
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *name));
+
+	/** @brief Rename an existing file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @note This function can NOT be used to move a file from one place
+	 * to another. You can only rename a file that will stay in the same
+	 * directory.
+	 *
+	 * @param sd Socket number
+	 * @param volRefNum Volume reference number (obtained from dlp_VFSVolumeEnumerate())
+	 * @param name Full access path to the file to rename
+	 * @param newname New file name, without the rest of the access path
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileRename
+		PI_ARGS((int sd, int volRefNum, PI_CONST char *name,
+			PI_CONST char *newname));
+
+	/** @brief Checks whether the current position is at the end of file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File reference obtained from dlp_VFSFileOpen()
+	 * @return A negative value if an error occured (see pi-error.h). 0 if not at EOF, >0 if at EOF.
+	 */
+	extern int dlp_VFSFileEOF
+		PI_ARGS((int sd, FileRef afile));
+
+	/** @brief Return the current seek position in an open file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File reference obtained from dlp_VFSFileOpen()
+	 * @param position On return, current absolute position in the file
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileTell
+		PI_ARGS((int sd, FileRef afile, int *position));
+
+	/** @brief Return the attributes of an open file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File reference obtained from dlp_VFSFileOpen()
+	 * @param attributes On return, file attributes (see #dlpVFSFileAttributeConstants enum)
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileGetAttributes
+		PI_ARGS((int sd, FileRef afile, unsigned long *attributes));
+
+	/** @brief Change the attributes of an open file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File reference obtained from dlp_VFSFileOpen()
+	 * @param attributes n-New file attributes (see #dlpVFSFileAttributeConstants enum)
+	 * @return A negative value if an error occured (see pi-error.h).
+	 */
+	extern int dlp_VFSFileSetAttributes
+		PI_ARGS((int sd, FileRef afile, unsigned long attributes));
+
+	/** @brief Return one of the dates associated with an open file or directory
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+	 * @param which The date you want (see #dlpVFSDateConstants enum)
+	 * @param date On return, the requested date
+	 * @return A negative value if an error occured (see pi-error.h).
+	 */
+	extern int dlp_VFSFileGetDate
+		PI_ARGS((int sd, FileRef afile, int which, time_t *date));
+
+	/** @brief Change one of the dates for an open file or directory
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+	 * @param which The date you want to change (see #dlpVFSDateConstants enum)
+	 * @param date The new date to set
+	 * @return A negative value if an error occured (see pi-error.h).
+	 */
+	extern int dlp_VFSFileSetDate
+		PI_ARGS((int sd, FileRef afile, int which, time_t date));
+
+	/** @brief Change the current seek position in an open file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+	 * @param origin Where to seek from (see #dlpVFSSeekConstants enum)
+	 * @param offset Seek offset
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileSeek
+		PI_ARGS((int sd, FileRef afile, int origin, int offset));
+
+	/** @brief Resize an open file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+	 * @param newSize New file size
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileResize
+		PI_ARGS((int sd, FileRef afile, int newSize));
+
+	/** @brief Return the size of an open file
+	 *
+	 * Supported on Palm OS 4.0 and later.
+	 *
+	 * @param sd Socket number
+	 * @param afile File or directory reference obtained from dlp_VFSFileOpen()
+	 * @param size On return, the actual size of the file
+	 * @return A negative value if an error occured (see pi-error.h)
+	 */
+	extern int dlp_VFSFileSize
+		PI_ARGS((int sd, FileRef afile,int *size));
+/*@}*/
 
 #ifdef __cplusplus
 }
