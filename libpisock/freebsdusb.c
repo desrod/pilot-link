@@ -392,11 +392,14 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		}
 		buf->used += rlen;
 		bytes_read += rlen;
-	}
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		 "DEV RX USB FreeBSD Bytes: %d:%d\n", bytes_read,
-		 bytes_read + data->buf_size));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+			"DEV RX USB FreeBSD Bytes: %d:%d\n", bytes_read,
+			bytes_read + data->buf_size));
+
+	}
+	else
+		bytes_read = PI_ERR_SOCK_IO;
 
 	return bytes_read;
 }
