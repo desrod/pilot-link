@@ -47,10 +47,7 @@
 #include "pi-socket.h"
 #include "pi-serial.h"
 #include "pi-net.h"
-#include "pi-padp.h"
 #include "pi-cmp.h"
-#include "pi-dlp.h"
-#include "pi-syspkt.h"
 
 #ifdef OS2
 #include <sys/select.h>

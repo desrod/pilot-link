@@ -52,18 +52,16 @@ AC_PROG_YACC
 
 dnl ******************************
 dnl Pilot Link Checks 
-dnl
-dnl If you update these, update
-dnl pilot-link.m4 as well
 dnl ******************************
-
-dnl If you update these, update pilot-link.m4 as well
 AC_HEADER_STDC
 AC_C_CONST
 AC_HEADER_TIME
 AC_STRUCT_TM
+AC_PROG_GCC_TRADITIONAL
+AC_TYPE_SIGNAL
 
 AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h sys/ioctl_compat.h memory.h string.h strings.h unistd.h stdlib.h netinet/in.h dirent.h sys/ndir.h sys/dir.h ndir.h sys/select.h sockio.h netdb.h sys/utsname.h)
+AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname putenv)
 
 dnl Find optional libraries (borrowed from Tcl)
 tcl_checkBoth=0
@@ -79,14 +77,6 @@ fi
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
 AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
 
-dnl Checks for library functions.
-AC_PROG_GCC_TRADITIONAL
-AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(atexit strchr strdup memcpy memmove strtoul cfmakeraw cfsetspeed cfsetispeed cfsetospeed sigaction dup2 inet_aton gethostname uname putenv)
-
-dnl ******************************
-dnl Private Pilot Link Checks
-dnl ******************************
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
   ac_cv_termios_cspeed,
 [AC_TRY_COMPILE([#include <termios.h>], [int main(void) {
@@ -95,6 +85,23 @@ AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
 if test $ac_cv_termios_cspeed = yes; then
   AC_DEFINE(TERMIOS_CSPEED)
 fi
+
+dnl ******************************
+dnl USB Support
+dnl ******************************
+msg_usb=no
+case "$host" in
+	*linux*)
+		AM_CONDITIONAL(WITH_LINUXUSB, true)
+		AC_DEFINE(HAVE_USB)
+		msg_usb=yes
+	;;
+	*freebsd*)
+		AM_CONDITIONAL(WITH_FREEBSDUSB, true)
+		AC_DEFINE(HAVE_USB)
+		msg_usb=yes
+	;;
+esac
 
 dnl ******************************
 dnl getopt
@@ -619,6 +626,8 @@ tests/Makefile
 echo "
   pilot-link $VERSION
   
+  Direct USB support.. : $msg_usb
+
   C++ support......... : $msg_cpp
   Iconv support....... : $msg_iconv
   Readline support.... : $msg_readline

@@ -1,3 +1,25 @@
+2002-04-18  JP Rosevear  <jpr@ximian.com>
+
+	* doc/Makefile.am: dist extra doc stuff
+
+	* libpisock/socket.c (pi_connect): add usb device
+	(pi_bind): ditto
+
+	* libpisock/freebsdusb.c: freebsd usb device implementation
+
+	* libpisock/linuxusb.c: linux usb device implementation
+
+	* libpisock/usb.c: generic usb device
+
+	* libpisock/Makefile.am: compile usb sources if needed
+
+	* include/Makefile.am: install new pi-usb.h header
+
+	* acconfig.h: add HAVE_USB
+
+	* configure.in: clean up configure checks slightly, check for usb
+	platforms
+
 2002-04-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* bindings/Makefile.am: Typo, s/buildir/builddir/, remove
@@ -28,6 +50,21 @@
           not writable. This needs a better solution.
 
         * libpisock/connect.c: Added some minor cleanups, perror()
+
+2002-04-02  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* bindings/Python/setup.py: Fixed libdir
+	
+	* bindings/Python/src/pisock.i: Removed references to PalmHeader()
+	  and pi_setmaxspeed so the module will properly import.
+
+	* bindings/Python/src/pisock_wrap.c: Updated with swig. 
+
+	* src/pilot-xfer.c: Fixed a bug in Restore() when the directory is
+	  missing, fixed a permission problem when the target directory is
+	  not writable. This needs a better solution. 
+
+	* libpisock/connect.c: Added some minor cleanups, perror()
 
 2002-04-02  David A. Desrosiers <hacker at gnu-designs dot com>
 

@@ -1,3 +1,4 @@
+#undef HAVE_USB
 #undef HAVE_ICONV
 #undef HAVE_READLINE
 #undef HAVE_READLINE_EXTRA

@@ -1,4 +1,4 @@
-c_headers = \
+c_headers = 			\
 	pi-address.h		\
 	pi-appinfo.h		\
 	pi-args.h		\
@@ -28,6 +28,7 @@ c_headers = \
 	pi-sys.h		\
 	pi-syspkt.h		\
 	pi-todo.h		\
+	pi-usb.h		\
 	pi-util.h		\
 	pi-version.h
 

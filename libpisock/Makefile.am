@@ -3,16 +3,31 @@ INCLUDES = 			\
 	-I$(top_srcdir)/include	\
 	$(ICONV_CFLAGS)
 
-serial_FILES = \
+serial_FILES = 		\
 	unixserial.c 	\
 	winserial.c	\
 	os2serial.c 
 serial_SOURCE = unixserial.c
 
+usb_FILES = 		\
+	usb.c		\
+	linuxusb.c	\
+	freebsdusb.c
+
+if WITH_LINUXUSB
+usb_SOURCE = usb.c linuxusb.c
+else
+if WITH_FREEBSDUSB
+usb_SOURCE = usb.c freebsdusb.c
+else
+usb_SOURCE =
+endif
+endif
 lib_LTLIBRARIES = libpisock.la
 
 libpisock_la_SOURCES =  \
 	$(serial_SOURCE)\
+	$(usb_SOURCE)	\
 	address.c	\
 	appinfo.c	\
 	connect.c	\

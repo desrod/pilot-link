@@ -45,6 +45,9 @@
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-serial.h"
+#ifdef HAVE_USB
+#include "pi-usb.h"
+#endif
 #include "pi-inet.h"
 #include "pi-slp.h"
 #include "pi-sys.h"
@@ -413,6 +416,8 @@ env_check (void)
 				types |= PI_DBG_API;
 			else if (!strcmp(b, "USER"))
 				types |= PI_DBG_USER;
+			else if (!strcmp(b, "ALL"))
+				types |= PI_DBG_ALL;
 			e++;
 			b = e;
 		}
@@ -778,6 +783,10 @@ int pi_connect(int pi_sd, struct sockaddr *addr, int addrlen)
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 	else if (!strncmp (paddr->pi_device, "ser:", 4))
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
+#ifdef HAVE_USB	
+	else if (!strncmp (paddr->pi_device, "usb:", 4))
+		ps->device = pi_usb_device (PI_USB_DEV);
+#endif
 	else if (!strncmp (paddr->pi_device, "net:", 4))
 		ps->device = pi_inet_device (PI_NET_DEV);
 	else
@@ -828,6 +837,10 @@ int pi_bind(int pi_sd, struct sockaddr *addr, int addrlen)
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 	else if (!strncmp (paddr->pi_device, "ser:", 4))
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
+#ifdef HAVE_USB	
+	else if (!strncmp (paddr->pi_device, "usb:", 4))
+		ps->device = pi_usb_device (PI_USB_DEV);
+#endif
 	else if (!strncmp (paddr->pi_device, "net:", 4))
 		ps->device = pi_inet_device (PI_NET_DEV);
 	else
