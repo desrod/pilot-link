@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
 	     filename = NULL;
 
 	   break;
-#ifdef 0	   
+#if 0	   
 	 case 'f':
 	   filename = optarg;
 	   break;
