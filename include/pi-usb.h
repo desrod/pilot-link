@@ -48,7 +48,7 @@ extern "C" {
 #define USB_INIT_NONE		(1<<0)
 #define USB_INIT_TAPWAVE	(1<<1)
 #define USB_INIT_VISOR		(1<<2)
-#define USB_INIT_SONY_CILE	(1<<3)
+#define USB_INIT_SONY_CLIE	(1<<3)
 
 	typedef struct pi_usb_dev {
 		u_int16_t	vendor, product;

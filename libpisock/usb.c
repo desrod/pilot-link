@@ -503,7 +503,7 @@ pi_usb_dev_t known_devices[] = {
 		.vendor 	= 0x054c,
 		.product 	= 0x0038,
 		.idstr 		= "Sony S S320 and other Palm OS 3.5 devices",
-		.flags 		= USB_INIT_SONY_CILE,
+		.flags 		= USB_INIT_SONY_CLIE,
 	},
 
 	{
@@ -798,7 +798,7 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 		return 0;
 	else if (flags & USB_INIT_VISOR)
 		ret = USB_configure_visor (dev, input_pipe, output_pipe);
-	else if (flags & USB_INIT_SONY_CILE) {
+	else if (flags & USB_INIT_SONY_CLIE) {
 		/* according to linux code, PEG S-300 awaits these two requests */
 		/* USB_REQ_GET_CONFIGURATION */
 		ret = dev->impl.control_request (dev, 0x80, 0x08, 0, 0, NULL, 1, 0);
