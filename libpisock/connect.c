@@ -203,5 +203,6 @@ pilot_connect(char *port)
 	}
 
 	dlp_OpenConduit(client_sd);
+	pi_close(parent_sd);
 	return client_sd;
 }
