@@ -40,10 +40,10 @@ extern "C" {
 		int establishhighrate));
 	extern int cmp_tx_handshake
 	  PI_ARGS((pi_socket_t *ps));
-	extern int cmp_tx
+	extern ssize_t cmp_tx
 	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
 		size_t len, int flags));
-	extern int cmp_rx
+	extern ssize_t cmp_rx
 	  PI_ARGS((pi_socket_t *ps, pi_buffer_t *msg,
 		size_t expect, int flags));
 

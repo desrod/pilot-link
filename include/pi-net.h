@@ -34,10 +34,10 @@ extern "C" {
 	    PI_ARGS((pi_socket_t *ps));
 	extern int net_tx_handshake
 	    PI_ARGS((pi_socket_t *ps));
-	extern int net_tx
+	extern ssize_t net_tx
 	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
 		 int flags));
-	extern int net_rx
+	extern ssize_t net_rx
 	    PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf, size_t expect,
 		 int flags));
 

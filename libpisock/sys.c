@@ -167,7 +167,7 @@ sys_protocol (void)
  * Returns:     0 if success, nonzero otherwise
  *
  ***********************************************************************/
-int
+ssize_t
 sys_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	pi_protocol_t	*prot,
@@ -229,7 +229,7 @@ sys_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
  * Returns:     Length of read or -1 on error
  *
  ***********************************************************************/
-int
+ssize_t
 sys_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	pi_protocol_t	*next,

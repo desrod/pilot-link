@@ -264,7 +264,7 @@ net_tx_handshake(pi_socket_t *ps)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int
+ssize_t
 net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
 {
 	int 	bytes;
@@ -322,7 +322,7 @@ net_tx(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
  *              length of the received packet.
  *
  ***********************************************************************/
-int
+ssize_t
 net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 {
 	int 	bytes, 

@@ -179,7 +179,7 @@ pi_protocol_t
  * Returns:     Number of packets transmitted
  *
  ***********************************************************************/
-int
+ssize_t
 padp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	int 	fl 	= FIRST;
@@ -401,7 +401,7 @@ done:
  * Returns:     number of bytes received or -1 on error
  *
  ***********************************************************************/
-int
+ssize_t
 padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 {
 	int 	bytes,

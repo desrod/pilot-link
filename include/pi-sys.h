@@ -18,10 +18,10 @@ extern "C" {
 	extern pi_protocol_t *sys_protocol
 	    PI_ARGS((void));
 
-	extern int sys_tx
+	extern ssize_t sys_tx
 	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
 		 size_t len, int flags));
-	extern int sys_rx
+	extern ssize_t sys_rx
 	  PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf,
 		 size_t len, int flags));
 

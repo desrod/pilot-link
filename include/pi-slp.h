@@ -65,9 +65,9 @@ extern "C" {
 	extern pi_protocol_t *slp_protocol
 	    PI_ARGS((void));
 
-	extern int slp_tx
+	extern ssize_t slp_tx
 	    PI_ARGS((pi_socket_t * ps, unsigned char *buf, size_t len, int flags));
-	extern int slp_rx
+	extern ssize_t slp_rx
 	    PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags));
 
 	extern void slp_dump_header

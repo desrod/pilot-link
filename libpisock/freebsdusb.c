@@ -57,13 +57,10 @@
 #endif
 
 /* Declare prototypes */
-static int u_open(pi_socket_t *ps, struct pi_sockaddr *addr,
-	int addrlen);
+static int u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(pi_socket_t *ps);
-static int u_write(pi_socket_t *ps, unsigned char *buf,
-	int len, int flags);
-static int u_read(pi_socket_t *ps, unsigned char *buf, int len,
-	int flags);
+static ssize_t u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
+static ssize_t u_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
 static int u_poll(pi_socket_t *ps, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
@@ -97,15 +94,15 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
  *
  ***********************************************************************/
 static int
-u_open(pi_socket_t *ps, struct pi_sockaddr *addr, int addrlen)
+u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
 	int 	fd,
 		i,
 		endpoint_fd;
 
 	struct 	usb_device_info udi;
-	struct 	usb_ctl_request ur; 
-	unsigned char usbresponse[50];
+	/* struct 	usb_ctl_request ur;	*/
+	/* unsigned char usbresponse[50];	*/
 
 	/* The +4 is to remove the "usb:" part from the string so you are
 	   just left with "/dev/ugenX" */
@@ -276,7 +273,7 @@ u_poll(pi_socket_t *ps, int timeout)
  * 		error
  *
  ***********************************************************************/
-static int
+static ssize_t
 u_write(pi_socket_t *ps, unsigned char *buf, int len, int flags)
 {
 	int 	nwrote, 
@@ -335,8 +332,8 @@ u_write(pi_socket_t *ps, unsigned char *buf, int len, int flags)
  *              the buffer and copied to buf.
  *
  ***********************************************************************/
-static int
-u_read(pi_socket_t *ps, unsigned char *buf, int len, int flags)
+static ssize_t
+u_read(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
         struct pi_usb_data *data = (struct pi_usb_data *) ps->device->data;
         int bytes_want = 0;
@@ -366,7 +363,7 @@ u_read(pi_socket_t *ps, unsigned char *buf, int len, int flags)
                 /* reset data buffer */
                 data->pos = data->buf;
                 /* offset storage to no overwrite data copied the buffer */
-                pbuf_pos = buf + bytes_read;
+                pbuf_pos = buf->data + bytes_read;
                 bytes_want = len - bytes_read;
                 do {
                         if (bytes_want >= MAX_BUF) {

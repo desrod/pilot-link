@@ -1131,7 +1131,7 @@ static void Bias( double bias, int width, int height, uint8_t *data )
  ***********************************************************************/
 int ColourCorrect ( const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr, uint8_t *gb, uint8_t *b )
 {
-	uint8_t *tmpRow;
+	/* uint8_t *tmpRow; */
 	uint8_t gbMin, gbMax, grMin, grMax, rMin, rMax, bMin, bMax;
 	float grInc, gbInc, rInc, bInc, grCur, gbCur, rCur, bCur;
 	float rMean = 0, grMean = 0, gbMean = 0, bMean = 0, maxMean;
@@ -1247,7 +1247,7 @@ int ColourCorrect ( const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr,
 
 int Histogram( const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr, uint8_t *gb, uint8_t *b )
 {
-	uint8_t *tmpRow;
+	/* uint8_t *tmpRow; */
 	uint8_t gbMin, gbMax, grMin, grMax, rMin, rMax, bMin, bMax;
     uint32_t rCum, grCum, gbCum, bCum;
     uint32_t grC[256], gbC[256], rC[256], bC[256];
@@ -1721,7 +1721,7 @@ int unpack_PalmPix (struct PalmPixState *s,
 	     for (nbytes = 0; nbytes < h->chansize[k]; recno++) 
 	       {
 		  void *buffer;
-		  int bufsize;
+		  size_t bufsize;
 		  if (s->getrecord (s, recno, &buffer, &bufsize) == 0) 
 		    {
 		       if (bufsize > h->chansize[k] - nbytes)

@@ -192,7 +192,7 @@ slp_protocol (void)
  * Returns:     A negative number on error, 0 otherwise
  *
  ***********************************************************************/
-int
+ssize_t
 slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes;
@@ -268,7 +268,7 @@ slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
  * Returns:     packet length or -1 on error
  *
  ***********************************************************************/
-int
+ssize_t
 slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	int 	i, 
