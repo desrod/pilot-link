@@ -10,7 +10,7 @@ SUBDIRS = $(JAVA_DIR)
 # Python Building
 #
 python-build: Python/setup.py
-	cd $(srcdir)/Python && LD_LIBRARY_PATH=$(top_buildir)/libpisock/.libs/ $(PYTHON) setup.py build
+	cd $(srcdir)/Python && $(PYTHON) setup.py build
 
 python-install: python-build
 	cd $(srcdir)/Python && $(PYTHON) setup.py install

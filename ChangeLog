@@ -1,6 +1,6 @@
 2002-04-12  David A. Desrosiers <hacker at gnu-designs dot com>
 
-	* bindings/Makefile.in: Typo, s/buildir/builddir/, remove
+	* bindings/Makefile.am: Typo, s/buildir/builddir/, remove
 	  LD_LIBRARY_PATH which is ignored by distutils anyway (David
 	  Gibson)
 
