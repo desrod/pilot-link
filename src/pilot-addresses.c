@@ -29,6 +29,10 @@
 #include "pi-header.h"
 
 /* Define prototypes */
+static void display_help(char *progname);
+void display_splash(char *progname);
+int pilot_connect(char *port);
+
 int inchar(FILE * in);
 int read_field(char *dest, FILE * in);
 void outchar(char c, FILE * out);
@@ -38,28 +42,24 @@ int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
 
-static void display_help(char *progname);
-
-int realentry[19] = 
-    { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18 };
+int realentry[21] = 
+    { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20 };
 
 char *tableheads[23] = { 
-	"Last name", "First name", "Title", "Company", "Work", "Home",
-	"Fax", "Other", "E-mail", "Address", "City", "State", "Zip Code",
+	"Last Name", "First Name", "Title", "Company", "Work", "Home",
+	"Fax", "Other", "E-Mail", "Address", "City", "State", "Zip",
 	"Country", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Note",
-	"Main", "Pager", "Mobile"
+	"Private", "Category"
 };
 
-static const char *optstring = "hvDTeqp:t:d:c:arw";
-
 struct option options[] = {
+	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
 	{"delall",	no_argument,       NULL, 'D'},
 	{"titles", 	no_argument,       NULL, 'T'},
 	{"escape",	no_argument,       NULL, 'e'},
 	{"quiet",	no_argument,       NULL, 'q'},
-	{"port",        required_argument, NULL, 'p'},
 	{"tdelim",	required_argument, NULL, 't'},
 	{"delcat",	required_argument, NULL, 'd'},
 	{"install",	required_argument, NULL, 'c'},
@@ -69,6 +69,7 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
+static const char *optstring = "p:hvDTeqt:d:c:arw";
 
 int 	tableformat 	= 0,
 	tabledelim 	= 1,
@@ -296,7 +297,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 
 		attribute = 0;
 
-		for (l = 0; (i >= 0) && (l < 19); l++) {
+		for (l = 0; (i >= 0) && (l < 21); l++) {
 			int l2 = realentry[l];
 
 			if ((l2 >= 3) && (l2 <= 7)) {
@@ -326,7 +327,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 #ifdef DEBUG
 		printf("Category %s (%d)\n", aai->category.name[category],
 		       category);
-		for (l = 0; l < 19; l++) {
+		for (l = 0; l < 21; l++) {
 			if ((l >= 3) && (l <= 7))
 				printf(" %s (%d): %s\n",
 				       aai->phoneLabels[a.
@@ -366,12 +367,12 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		
 	if (tablehead) {
 		fprintf(out, "# ");
-		write_field(out, "Category", tabledelim);
-		for (j = 0; j < 19; j++) {
+		for (j = 0; j < 21; j++) {
 			write_field(out, tableheads[realentry[j]],
 				    tabledelim);
+			fprintf(out, " ");
 		}
-		write_field(out, "Private-Flag", 0);
+		fprintf(out, "\n");
 	}
 
 	printf("Writing Palm Address Book entries to file... ");
@@ -392,7 +393,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		write_field(out, "Category", 1);
 		write_field(out, aai->category.name[category], -1);
 
-		for (j = 0; j < 19; j++) {
+		for (j = 0; j < 21; j++) {
 			if (a.entry[j]) {
 				putc(',', out);
 				putc('\n', out);
@@ -428,7 +429,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 			}
 		}
 
-		for (j = 0; j < 19; j++) {
+		for (j = 0; j < 21; j++) {
 #ifdef NOT_ALL_LABELS
 			if (augment && (j >= 4) && (j <= 8))
 				if (a.phoneLabel[j - 4] != j - 4)
@@ -465,20 +466,21 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 static void display_help(char *progname)
 {
 	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n", progname);
-	printf("             [-d category] -r|-w [<file>]\n\n");
-	printf("     -t delim          include category, use delimiter (3=tab, 2=;, 1=,)\n");
-	printf("     -T                write header with titles\n");
-	printf("     -q                do not prompt for HotSync button press\n");
-	printf("     -a                augment records with additional information\n");
-	printf("     -e                escape special chcters with backslash\n");
-	printf("     -p port           use device file <port> to communicate with Palm\n");
-	printf("     -c category       install to category <category> by default\n");
-	printf("     -d category       delete old Palm records in <category>\n");
-	printf("     -D                delete all Palm records in all categories\n");
-	printf("     -r file           read records from <file> and install them to Palm\n");
-	printf("     -w file           get records from Palm and write them to <file>\n");
-	printf("     -h, --help        Display this information\n");
-	printf("     -v, --version     Display version information\n\n");
+	printf("             [-d category] -r|-w [<file>]\n");
+	printf("   Options:\n");
+	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
+	printf("     -h, --help              Display help information for %s\n", progname);
+	printf("     -v, --version           Display %s version information\n", progname);
+	printf("     -t, --tdelim <delim>    Include category, use delimiter (3=tab, 2=;, 1=,)\n");
+	printf("     -T, --titles            Write header with titles\n");
+	printf("     -q, --quiet             Do not prompt for HotSync button press\n");
+	printf("     -a, --augment           Augment records with additional information\n");
+	printf("     -e, --escape            Escape special chcters with backslash\n");
+	printf("     -c, --category <cat>    Install to category <cat> by default\n");
+	printf("     -d, --delcat <cat>      Delete old Palm records in <cat>\n");
+	printf("     -D, --delall            Delete all Palm records in all categories\n");
+	printf("     -r, --read [file]..     Read records from <file> and install them to Palm\n");
+	printf("     -w, --write [file]..    Get records from Palm and write them to <file>\n\n");
 
 	exit(0);
 }
@@ -510,7 +512,7 @@ int main(int argc, char *argv[])
 			display_help(progname);
 			return 0;
 		case 'v':
-			print_splash(progname);
+			display_splash(progname);
 			return 0;
 		case 't':
 			tableformat = 1;
