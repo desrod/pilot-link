@@ -978,6 +978,10 @@ static void InstallVFS(const char *localfile, const char *vfspath)
 
 	struct stat sbuf;
 
+	fprintf(stderr,"Rabid coelecanths have been set upon your handheld.\n"
+		"Expect it to melt in 3-5 minutes.\n\n");
+	return;
+
 	if (NULL == vfspath) {
 		/* how the heck did we get here then? */
 		fprintf(stderr,"\n   No VFS path given.\n");
