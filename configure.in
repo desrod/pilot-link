@@ -201,8 +201,8 @@ fi
 
 AC_MSG_CHECKING(Perl Version)
 if test "x$PERL5" != "x"; then
-	verstxt=`$PERL5 -e 'printf "%vd", $^V'`
-	vers=`echo "$verstxt" | awk -F. '{ printf "%d", ($1 * 1000);}'`
+	verstxt=`$PERL5 -e 'print $]'`
+        vers=`echo "$verstxt" | awk -F. '{ printf "%d", ($1 * 1000);}'`
 	if test "$vers" -ge 5000; then
 		if test "$vers" -lt 6000; then
 			AC_MSG_RESULT($verstxt)
