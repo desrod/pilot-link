@@ -41,7 +41,7 @@ void pi_log (int type, int level, char *format, ...)
 {
 	va_list ap;
 
-	if (!(debug_types & type) && !(debug_types & PI_DBG_ALL))
+	if (!(debug_types & type) && !(type == PI_DBG_ALL))
 		return;
 	
 	if (debug_level < level)
