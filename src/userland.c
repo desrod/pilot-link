@@ -129,6 +129,8 @@ void userland_badoption(poptContext pc, int optc)
 	fprintf(stderr, "%s: %s\n",
 		poptBadOption(pc, POPT_BADOPTION_NOALIAS),
 		poptStrerror(optc));
+
+        poptPrintUsage(pc, stderr, 0);
 	exit(1);
 }
 

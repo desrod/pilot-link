@@ -37,12 +37,10 @@
 #define MEMO_DIRECTORY 1
 #define MAXDIRNAMELEN 1024
 
-char *progname;
-
 void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category);
 void write_memo_in_directory(char *dirname, struct Memo m,
 			     struct MemoAppInfo mai, int category,
-			     int verbose);
+			     int verbose, const char *progname);
 
 /***********************************************************************
  *
@@ -106,7 +104,7 @@ void write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category)
  ***********************************************************************/
 void
 write_memo_in_directory(char *dirname, struct Memo m,
-			struct MemoAppInfo mai, int category, int verbose)
+			struct MemoAppInfo mai, int category, int verbose, const char *progname)
 {
 	int 	j;
 	char 	pathbuffer[MAXDIRNAMELEN + (128 * 3)] = "",
@@ -220,23 +218,25 @@ int main(int argc, const char *argv[])
 	};
 
 	po = poptGetContext("memos", argc, argv, options, 0);
-	poptSetOtherOptionHelp(po," [-p port] [-v] <memo options>\n\n"
-		"   Manipulate MemoDB.pdb entries from a file or your Palm device\n\n"
-		"   By default, the contents of your Palm's memo database will be written to\n"
-		"   standard output as a standard UNIX mailbox (mbox-format) file, with each\n"
-		"   memo as a separate message.  The subject of each message will be the\n"
-		"   category.\n\n"
-		"   If '-s' is specified, than instead of being written to standard output,\n"
-		"   will be saved in subdirectories of <dir>. Each subdirectory will be the\n"
-		"   name of a category on the Palm, and will contain the memos in that\n"
-		"   category. Each memo's filename will be the first line (up to the first 40\n"
-		"   characters) of the memo. Control chcters, slashes, and equal signs that\n"
-		"   would otherwise appear in filenames are converted after the fashion of\n"
-		"   MIME's quoted-printable encoding. Note that if you have two memos in the\n"
-		"   same category whose first lines are identical, one of them will be\n"
-		"   overwritten.\n\n"
-		"   If '-f' is specified, the specified file will be treated as a memo\n"
-		"   database from which to read memos, rather than HotSyncing from the Palm.\n\n");
+	poptSetOtherOptionHelp(po,"[-p port] [-v] <options>\n\n"
+		"  Manipulate Memo entries from a file or your Palm device\n\n"
+		"  By default, the contents of your Palm's memo database will be written to\n"
+		"  standard output as a standard UNIX mailbox (mbox-format) file, with each\n"
+		"  memo as a separate message.  The subject of each message will be the\n"
+		"  category.\n\n"
+
+		"  If '-s' is specified, than instead of being written to standard output,\n"
+		"  will be saved in subdirectories of <dir>. Each subdirectory will be the\n"
+		"  name of a category on the Palm, and will contain the memos in that\n"
+		"  category. Each memo's filename will be the first line (up to the first 40\n"
+		"  characters) of the memo. Control chcters, slashes, and equal signs that\n"
+		"  would otherwise appear in filenames are converted after the fashion of\n"
+		"  MIME's quoted-printable encoding. Note that if you have two memos in the\n"
+		"  same category whose first lines are identical, one of them will be\n"
+		"  overwritten.\n\n"
+
+		"  If '-f' is specified, the specified file will be treated as a memo\n"
+		"  database from which to read memos, rather than HotSyncing from the Palm.\n");
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
@@ -264,10 +264,12 @@ int main(int argc, const char *argv[])
 			break;
 		default:
 			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
-			return 1;
+			return -1;
 		}
 	}
-	if (c < -1) userland_badoption(po,c);
+
+	if (c < -1)
+                userland_badoption(po, c);
 
 	/* FIXME - Need to add tests here for port/filename, clean this. -DD */
 	if (filename[0] == '\0') {
@@ -380,7 +382,7 @@ int main(int argc, const char *argv[])
 			  break;
 		  case MEMO_DIRECTORY:
 			  write_memo_in_directory(dirname, m, mai,
-						  category, verbose);
+						  category, verbose, progname);
 			  break;
 		}
 	}
@@ -413,7 +415,5 @@ error_close:
 	pi_close(sd);
 
 error:
-	fprintf(stderr, "Please use -h for more detailed options.\n");
-
 	return -1;
 }
