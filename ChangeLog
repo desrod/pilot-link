@@ -1,3 +1,26 @@
+2003-12-27 David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/connect.c: Make sure we are a valid tty before printing
+	  the connect messages, so redirection to files works properly.
+
+	* src/*.c: Remove unused/redundant/incorrect headers
+
+	* src/addresses.c: More descriptive structure members: s/a/addr/,
+	  removed incorrect argument in the example, minor SyncLog output
+	  fixes.
+
+	* src/install-user.c: Minor type cleanups
+
+	* src/pilot-xfer.c: Flags instead of running functions in the
+	  switch, remove crufty code
+
+	* src/dlpsh.c: Minor reformatting/cleanup
+
+	* src/install-todo.c: Fix closing cleanup, missing WriteUserInfo
+	  call, cleaned up sd call, remove cruft,
+
+	* src/read-veo.c: C99 comments, minor type fixes, remove unused vars
+
 2003-12-21 David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* configure.in: Remove check for root/UID == 0

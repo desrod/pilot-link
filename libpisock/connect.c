@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <ifaddrs.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
@@ -122,8 +123,10 @@ int pilot_connect(char *port)
 
 			} else if (errno == ENODEV) {
 				while (count <= 5) {
-					fprintf(stderr, "\r   Port not connected, sleeping for 2 seconds, ");
-					fprintf(stderr, "%d retries..", 5-count);
+					if (isatty(fileno(stdout))) {
+						fprintf(stderr, "\r   Port not connected, sleeping for 2 seconds, ");
+						fprintf(stderr, "%d retries..", 5-count);
+					}
 					sleep(2);
 					count++;
 					goto begin;
@@ -146,10 +149,11 @@ int pilot_connect(char *port)
 		return -1;
 	}
 
-	fprintf(stderr,
-		"\n   Listening to port: %s\n\n   Please press the HotSync "
-		"button now... ",
-		port ? port : getenv("PILOTPORT"));
+	if (isatty(fileno(stdout))) {
+		printf("\n   Listening to port: %s\n\n   Please press the HotSync "
+			"button now... ",
+			port ? port : getenv("PILOTPORT"));
+	}
 
 	if (pi_listen(parent_sd, 1) == -1) {
 		fprintf(stderr, "\n   Error listening on %s\n", port);
@@ -166,7 +170,8 @@ int pilot_connect(char *port)
 		return -1;
 	}
 
-	fprintf(stderr, "Connected\n\n");
+	if (isatty(fileno(stdout)))
+		printf("Connected\n\n");
 
 	if (dlp_ReadSysInfo(client_sd, &sys_info) < 0) {
 		fprintf(stderr, "\n   Error read system info on %s\n", port);
@@ -176,5 +181,6 @@ int pilot_connect(char *port)
 	}
 
 	dlp_OpenConduit(client_sd);
+	fflush(NULL);
 	return client_sd;
 }
