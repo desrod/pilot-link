@@ -25,10 +25,29 @@ If this is not specified, will look for the \fI$PILOTPORT\fR environment
 variable. If both are not found or supplied, \fBread\-palmpix\fR will
 fall back to /dev/pilot.
 
+.TP
+\fB\-b\fR, \fB\-\-bias [num]\fR
+lighten or darken the image.
+.br
+num   0..50   darken image
+.br
+num   50..100 lighten image
+
+
+.TP
+\fB\-c\fR, \fB\-\-colour\fR
+Colour correct the output colours. This is probably not neccessary for
+most photos.
+
 
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
 Display the help synopsis for \fBread\-palmpix\fR.
+
+
+.TP 
+\fB\-s\fR, \fB\-\-stretch\fR
+Do a histogram stretch of the colour planes.
 
 
 .TP 
@@ -66,12 +85,7 @@ files by default.
 .PP
 \fBKNOWN BUGS\fR
 .IP
-\fBread\-palmpix\fR's colour correction is not yet as good as Kodak's own,
-but Kodak has deprecated the PalmPix device, so it is not likely that there
-will be any updates to their software in the future, so this may be as good
-as it gets. A simple method to improve the look of colours is to do a
-histogram equalization in your favourite image editor.
-
+None Known
 
 .PP
 \fBREPORTING BUGS\fR
