@@ -1,9 +1,9 @@
 # This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
-AC_INIT(include/pi-version.h)
+AC_INIT(include/pi-version.h.in)
 
 # Force 2.53 for additional BSD fixes, --help output
-AC_PREREQ(2.53)
+dnl AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
 AC_SUBST(HOST_OS)
