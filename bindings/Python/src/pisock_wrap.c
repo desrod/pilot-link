@@ -2108,7 +2108,7 @@ static PyObject *_wrap_dlp_ReadDBList(PyObject *self, PyObject *args) {
     int arg2 ;
     int arg3 ;
     int arg4 ;
-    pi_buffer_t *arg5 = (pi_buffer_t *) 0;
+    pi_buffer_t *arg5 = (pi_buffer_t *) 0 ;
     DLPERROR result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
@@ -2147,7 +2147,7 @@ static PyObject *_wrap_dlp_ReadDBList(PyObject *self, PyObject *args) {
             resultobj = PyList_New((arg5->used / sizeof(struct DBInfo)));
             for (j=0; j < (arg5->used / sizeof(struct DBInfo)); j++) {
                 memcpy(&info, arg5->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
-                o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisi}",
+                o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
                 "more", info.more,
                 "flags", info.flags,
                 "miscFlags", info.miscFlags,
@@ -2165,21 +2165,19 @@ static PyObject *_wrap_dlp_ReadDBList(PyObject *self, PyObject *args) {
                 "flagReadOnly", !!(info.flags & dlpDBFlagReadOnly),
                 "flagAppInfoDirty", !!(info.flags & dlpDBFlagAppInfoDirty),
                 "flagBackup", !!(info.flags & dlpDBFlagBackup),
-                "flagClipping", !!(info.flags & dlpDBFlagLaunchable),
+                "flagClipping", !!(info.flags & dlpDBFlagClipping),
                 "flagOpen", !!(info.flags & dlpDBFlagOpen),
                 "flagNewer", !!(info.flags & dlpDBFlagNewer),
                 "flagReset", !!(info.flags & dlpDBFlagReset),
                 "flagCopyPrevention", !!(info.flags & dlpDBFlagCopyPrevention),
                 "flagStream", !!(info.flags & dlpDBFlagStream),
-				"flagSchema", !!(info.flags & dlpDBFlagSchema),
-				"flagSecure", !!(info.flags & dlpDBFlagSecure),
-				"flagExtended", !!(info.flags & dlpDBFlagExtended),
-				"flagFixedUp", !!(info.flags & dlpDBFlagFixedUp),
-				
                 "flagExcludeFromSync", !!(info.miscFlags & dlpDBMiscFlagExcludeFromSync),
-				"flagRAMBased", !!(info.miscFlags & dlpDBMiscFlagRamBased));
                 
-				Py_INCREF(o);
+                "flagSchema", !!(info.flags & dlpDBFlagSchema),
+                "flagSecure", !!(info.flags & dlpDBFlagSecure),
+                "flagExtended", !!(info.flags & dlpDBFlagExtended),
+                "flagFixedUp", !!(info.flags & dlpDBFlagFixedUp));
+                Py_INCREF(o);
                 PyList_SET_ITEM(resultobj, j, o);
             }
         }
@@ -2256,7 +2254,7 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
         PyObject *o;
         
         if (arg7) {
-            o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisi}",
+            o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
             "more", arg7->more,
             "flags", arg7->flags,
             "miscFlags", arg7->miscFlags,
@@ -2274,13 +2272,18 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
             "flagReadOnly", !!(arg7->flags & dlpDBFlagReadOnly),
             "flagAppInfoDirty", !!(arg7->flags & dlpDBFlagAppInfoDirty),
             "flagBackup", !!(arg7->flags & dlpDBFlagBackup),
-            "flagClipping", !!(arg7->flags & dlpDBFlagLaunchable),
+            "flagClipping", !!(arg7->flags & dlpDBFlagClipping),
             "flagOpen", !!(arg7->flags & dlpDBFlagOpen),
             "flagNewer", !!(arg7->flags & dlpDBFlagNewer),
             "flagReset", !!(arg7->flags & dlpDBFlagReset),
             "flagCopyPrevention", !!(arg7->flags & dlpDBFlagCopyPrevention),
             "flagStream", !!(arg7->flags & dlpDBFlagStream),
-            "flagExcludeFromSync", !!(arg7->miscFlags & dlpDBMiscFlagExcludeFromSync));
+            "flagExcludeFromSync", !!(arg7->miscFlags & dlpDBMiscFlagExcludeFromSync),
+            
+            "flagSchema", !!(arg7->flags & dlpDBFlagSchema),
+            "flagSecure", !!(arg7->flags & dlpDBFlagSecure),
+            "flagExtended", !!(arg7->flags & dlpDBFlagExtended),
+            "flagFixedUp", !!(arg7->flags & dlpDBFlagFixedUp));
             resultobj = t_output_helper(resultobj, o);
         }
     }
@@ -4111,7 +4114,7 @@ static PyObject *_wrap_pi_file_get_info(PyObject *self, PyObject *args) {
         PyObject *o;
         
         if (arg2) {
-            o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisi}",
+            o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
             "more", arg2->more,
             "flags", arg2->flags,
             "miscFlags", arg2->miscFlags,
@@ -4129,13 +4132,18 @@ static PyObject *_wrap_pi_file_get_info(PyObject *self, PyObject *args) {
             "flagReadOnly", !!(arg2->flags & dlpDBFlagReadOnly),
             "flagAppInfoDirty", !!(arg2->flags & dlpDBFlagAppInfoDirty),
             "flagBackup", !!(arg2->flags & dlpDBFlagBackup),
-            "flagClipping", !!(arg2->flags & dlpDBFlagLaunchable),
+            "flagClipping", !!(arg2->flags & dlpDBFlagClipping),
             "flagOpen", !!(arg2->flags & dlpDBFlagOpen),
             "flagNewer", !!(arg2->flags & dlpDBFlagNewer),
             "flagReset", !!(arg2->flags & dlpDBFlagReset),
             "flagCopyPrevention", !!(arg2->flags & dlpDBFlagCopyPrevention),
             "flagStream", !!(arg2->flags & dlpDBFlagStream),
-            "flagExcludeFromSync", !!(arg2->miscFlags & dlpDBMiscFlagExcludeFromSync));
+            "flagExcludeFromSync", !!(arg2->miscFlags & dlpDBMiscFlagExcludeFromSync),
+            
+            "flagSchema", !!(arg2->flags & dlpDBFlagSchema),
+            "flagSecure", !!(arg2->flags & dlpDBFlagSecure),
+            "flagExtended", !!(arg2->flags & dlpDBFlagExtended),
+            "flagFixedUp", !!(arg2->flags & dlpDBFlagFixedUp));
             resultobj = t_output_helper(resultobj, o);
         }
     }
@@ -4572,11 +4580,16 @@ static PyObject *_wrap_pi_file_create(PyObject *self, PyObject *args) {
         if (DGETLONG(obj1,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
         if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
         if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagLaunchable;
+        if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagClipping;
+        if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
         if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
         if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
         if (DGETLONG(obj1,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
         if (DGETLONG(obj1,"flagStream",0)) temp.flags |= dlpDBFlagStream;
+        if (DGETLONG(obj1,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
+        if (DGETLONG(obj1,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
+        if (DGETLONG(obj1,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
+        if (DGETLONG(obj1,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
         temp.miscFlags = 0;
         if (DGETLONG(obj1,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
         arg2 = &temp;
@@ -4619,12 +4632,16 @@ static PyObject *_wrap_pi_file_set_info(PyObject *self, PyObject *args) {
         if (DGETLONG(obj1,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
         if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
         if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagLaunchable;
+        if (DGETLONG(obj1,"flagClipping",0)) temp.flags |= dlpDBFlagClipping;
         if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
         if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
         if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
         if (DGETLONG(obj1,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
         if (DGETLONG(obj1,"flagStream",0)) temp.flags |= dlpDBFlagStream;
+        if (DGETLONG(obj1,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
+        if (DGETLONG(obj1,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
+        if (DGETLONG(obj1,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
+        if (DGETLONG(obj1,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
         temp.miscFlags = 0;
         if (DGETLONG(obj1,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
         arg2 = &temp;
@@ -5175,7 +5192,7 @@ SWIGEXPORT(void) SWIG_init(void) {
     PyDict_SetItemString(d,"dlpDBFlagReadOnly", SWIG_From_int((int)dlpDBFlagReadOnly));
     PyDict_SetItemString(d,"dlpDBFlagAppInfoDirty", SWIG_From_int((int)dlpDBFlagAppInfoDirty));
     PyDict_SetItemString(d,"dlpDBFlagBackup", SWIG_From_int((int)dlpDBFlagBackup));
-    PyDict_SetItemString(d,"dlpDBFlagClipping", SWIG_From_int((int)dlpDBFlagLaunchable));
+    PyDict_SetItemString(d,"dlpDBFlagClipping", SWIG_From_int((int)dlpDBFlagClipping));
     PyDict_SetItemString(d,"dlpDBFlagOpen", SWIG_From_int((int)dlpDBFlagOpen));
     PyDict_SetItemString(d,"dlpDBFlagNewer", SWIG_From_int((int)dlpDBFlagNewer));
     PyDict_SetItemString(d,"dlpDBFlagReset", SWIG_From_int((int)dlpDBFlagReset));
