@@ -842,9 +842,9 @@ extern PIERROR pi_file_set_app_info(struct pi_file *,void *,size_t);
 extern PIERROR pi_file_set_sort_info(struct pi_file *,void *,size_t);
 extern PIERROR pi_file_append_resource(struct pi_file *,void *,size_t,unsigned long,int);
 extern PIERROR pi_file_append_record(struct pi_file *,void *,size_t,int,int,recordid_t);
-extern PIERROR pi_file_retrieve(struct pi_file *,int,int);
-extern PIERROR pi_file_install(struct pi_file *,int,int);
-extern PIERROR pi_file_merge(struct pi_file *,int,int);
+extern PIERROR pi_file_retrieve(struct pi_file *,int,int,progress_func);
+extern PIERROR pi_file_install(struct pi_file *,int,int,progress_func);
+extern PIERROR pi_file_merge(struct pi_file *,int,int,progress_func);
 
 
 #define PYCFUNC(x) static PyObject *x (PyObject *self, PyObject *args)
@@ -3896,7 +3896,7 @@ static PyObject *_wrap_pi_file_retrieve(PyObject *self, PyObject *args) {
     
     if(!PyArg_ParseTuple(args,(char *)"Oii:pi_file_retrieve",&obj0,&arg2,&arg3)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_retrieve(arg1,arg2,arg3);
+    result = pi_file_retrieve(arg1,arg2,arg3,NULL);
     
     {
         int *res_pointer, res;
@@ -3926,7 +3926,7 @@ static PyObject *_wrap_pi_file_install(PyObject *self, PyObject *args) {
     
     if(!PyArg_ParseTuple(args,(char *)"Oii:pi_file_install",&obj0,&arg2,&arg3)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_install(arg1,arg2,arg3);
+    result = pi_file_install(arg1,arg2,arg3,NULL);
     
     {
         int *res_pointer, res;
@@ -3956,7 +3956,7 @@ static PyObject *_wrap_pi_file_merge(PyObject *self, PyObject *args) {
     
     if(!PyArg_ParseTuple(args,(char *)"Oii:pi_file_merge",&obj0,&arg2,&arg3)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_pi_file,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = pi_file_merge(arg1,arg2,arg3);
+    result = pi_file_merge(arg1,arg2,arg3,NULL);
     
     {
         int *res_pointer, res;

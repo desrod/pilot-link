@@ -43,6 +43,13 @@ extern "C" {
 
 	} pi_file_t;
 
+	/* progress callback definition (the number of records
+	   can be obtained by looking at pf->nentries so we don't
+	   need to repeat it in the parameters) */
+	typedef void (*progress_func)(int socket, pi_file_t *pf,
+		int total_bytes, int transferred_bytes,
+		int transferred_records);
+
 	/* most functions return -1 for error, 0 for ok */
 
 	/* read-only open */
@@ -93,11 +100,14 @@ extern "C" {
 		     int category, pi_uid_t uid));
 
 	extern int pi_file_retrieve
-	    PI_ARGS((pi_file_t * pf, int socket, int cardno));
+	    PI_ARGS((pi_file_t * pf, int socket, int cardno,
+			progress_func report_progress));
 	extern int pi_file_install
-	    PI_ARGS((pi_file_t * pf, int socket, int cardno));
+	    PI_ARGS((pi_file_t * pf, int socket, int cardno,
+			progress_func report_progress));
 	extern int pi_file_merge
-	    PI_ARGS((pi_file_t * pf, int socket, int cardno));
+	    PI_ARGS((pi_file_t * pf, int socket, int cardno,
+			progress_func report_progress));
 
 #ifdef __cplusplus
 }

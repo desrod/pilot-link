@@ -2,6 +2,7 @@
  * Pilot File Interface Library
  * Pace Willisson <pace@blitz.com> December 1996
  * Additions by Kenneth Albanowski
+ * Additions by Florent Pillet
  *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
@@ -95,38 +96,6 @@ static int pi_file_close_for_write(pi_file_t *pf);
 static void pi_file_free(pi_file_t *pf);
 /* static unsigned long unix_time_to_pilot_time(time_t t); */
 
-static int file_size;
-static unsigned long start_time;
-
-void display_rate(int record, int records, int written, int elapsed);
-
-void display_rate(int record, int records, int written, int elapsed)
-{
-	int 	est_done;
-	float 	k_sec;
-
-	if (elapsed < 1)
-		elapsed = 1;
-	if (written < 1)
-		written = 1;
-	k_sec = ((double) (written / 1024) / (double) elapsed);
-	
-	if (file_size > 0) {
-		est_done = (file_size - written) / (written / elapsed);
-
-		fprintf(stderr,
-		 "   Record %3d of %3d. Wrote %9d bytes of %9d. Elapsed:"
-		 "%2d sec.  %0.2f KB/s  Remaining: %d\r", record, records, 
-			written, file_size, elapsed, k_sec, est_done);
-	} else {
-		fprintf(stderr,
-		 "   Record %3d of %3d. Wrote %9d bytes. Elapsed: %2d "
-		 "sec.  %0.2f KB/s.\r",
-		 record, records, written, elapsed, k_sec);
-
-	}
-}
-
 /* this seems to work, but what about leap years? */
 /*#define PILOT_TIME_DELTA (((unsigned)(1970 - 1904) * 365 * 24 * 60 * 60) + 1450800)*/
 
@@ -204,7 +173,8 @@ unix_time_to_pilot_time(time_t t)
 pi_file_t
 *pi_file_open(const char *name)
 {
-	int 	i;
+	int 	i,
+		file_size;
 	
 	pi_file_t *pf;
 	struct 	DBInfo *ip;
@@ -224,7 +194,6 @@ pi_file_t
 
 	fseek(pf->f, 0, SEEK_END);
 	file_size = ftell(pf->f);
-	start_time = (unsigned long) time(NULL);
 	fseek(pf->f, 0, SEEK_SET);
 
 	if (fread(buf, PI_HDR_SIZE, 1, pf->f) != (size_t) 1) {
@@ -1226,7 +1195,9 @@ pi_file_close_for_write(pi_file_t *pf)
  *
  * Function:    pi_file_retrieve
  *
- * Summary:     
+ * Summary:     Fetch a file from the device. If caller wants to be
+ *				notified of download progress, it should pass a
+ *				progress_func ptr.
  *
  * Parameters:  None
  *
@@ -1234,18 +1205,27 @@ pi_file_close_for_write(pi_file_t *pf)
  *
  ***********************************************************************/
 int
-pi_file_retrieve(pi_file_t *pf, int socket, int cardno)
+pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
+	progress_func report_progress)
 {
 	int 	db,
 		l,
 		j,
-		written 	= 0;
+		written 	= 0,
+		total_size,
+		nrec		= -1;
 	pi_buffer_t *buffer;
-
-	start_time = (unsigned long) time(NULL);
 
 	if (dlp_OpenDB (socket, cardno, dlpOpenRead | dlpOpenSecret, pf->info.name, &db) < 0)
 		return -1;
+
+	if (report_progress) {
+		struct DBSizeInfo size_info;
+		if (dlp_FindDBByName(socket, cardno, pf->info.name, NULL, NULL, NULL, &size_info) < 0)
+			return -1;
+		total_size = size_info.totalBytes + size_info.appBlockSize;
+		nrec = size_info.numRecords;
+	}
 
 	buffer = pi_buffer_new (DLP_BUF_SIZE);
 	if (buffer == NULL) {
@@ -1254,55 +1234,54 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno)
 	}
 
 	l = dlp_ReadAppBlock(socket, db, 0, buffer->data, buffer->allocated);
-	if (l > 0)
+	if (l > 0) {
 		pi_file_set_app_info(pf, buffer->data, (size_t)l);
+		written = l;
+		if (report_progress)
+			report_progress(socket, pf, total_size, written, 0);
+	}
 
-	if (dlp_ReadOpenDBInfo(socket, db, &l) < 0) {
-		pi_buffer_free (buffer);
-		return -1;
+	if (nrec < 0) {
+		if (dlp_ReadOpenDBInfo(socket, db, &nrec) < 0) {
+			pi_buffer_free (buffer);
+			return -1;
+		}
 	}
 
 	if (pf->info.flags & dlpDBFlagResource) {
-		for (j = 0; j < l; j++) {
+		for (j = 0; j < nrec; j++) {
 			int 	id;
 			unsigned long type;
 
-			if ((dlp_ReadResourceByIndex(socket, db, j, buffer, &type, &id) < 0)
-			    || (pi_file_append_resource (pf, buffer->data, buffer->used, type, id) < 0)) {
-				pi_buffer_free (buffer);
+			if (dlp_ReadResourceByIndex(socket, db, j, buffer, &type, &id) < 0
+			    || pi_file_append_resource (pf, buffer->data, buffer->used, type, id) < 0) {
 				dlp_CloseDB(socket, db);
+				pi_buffer_free (buffer);
 				return -1;
 			}
 			
 			written += buffer->used;
 
-/* FIXME - need to add callbacks for this info, not print here -DD */
-#ifdef FILEDEBUG
-			display_rate(j + 1, l, written,
-				     (int) ((unsigned long) time(NULL) -
-					    start_time));
-#endif
+			if (report_progress)
+				report_progress(socket, pf, total_size, written, j+1);
 		}
-	} else for (j = 0; j < l; j++) {
+	} else for (j = 0; j < nrec; j++) {
 		int 	attr,
 			category;
 		unsigned long id;
 
-		if ((dlp_ReadRecordByIndex
+		if (dlp_ReadRecordByIndex
 		     (socket, db, j, buffer, &id, &attr,
-		      &category) < 0)) {
+		      &category) < 0) {
 			dlp_CloseDB(socket, db);
+			pi_buffer_free (buffer);
 			return -1;
 		}
 
 		written += buffer->used;
 
-/* FIXME - need to add callbacks for this info, not print here -DD  */
-#ifdef FILEDEBUG
-		display_rate(j + 1, l, written,
-			     (int) ((unsigned long) time(NULL) -
-				    start_time));
-#endif
+		if (report_progress)
+			report_progress(socket, pf, total_size, written, j+1);
 
 		/* There is no way to restore records with these
 		   attributes, so there is no use in backing them up
@@ -1334,7 +1313,8 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno)
  *
  ***********************************************************************/
 int
-pi_file_install(pi_file_t *pf, int socket, int cardno)
+pi_file_install(pi_file_t *pf, int socket, int cardno,
+	progress_func report_progress)
 {
 	int 	db,
 		j,
@@ -1342,20 +1322,41 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 		flags,
 		version,
 		freeai 		= 0;
-
-	size_t	l;
-	size_t	size = 0;
-	
+	size_t	l,
+		size = 0,
+		total_size;
 	void 	*buffer;
 
 	version = pi_version(socket);
+
+	/* compute total size for progress reporting, and check that
+	   either records are 64k or less, or the handheld can accept
+	   large records. we do this prior to starting the install,
+	   to avoid messing the device up if we have to fail. */
+	total_size = pf->app_info_size;
+	for (j = 0; j < pf->nentries; j++) {
+		int result =  (pf->info.flags & dlpDBFlagResource) ?
+			pi_file_read_resource(pf, j, 0, &size, 0, 0) :
+			pi_file_read_record(pf, j, 0, &size, 0, 0, 0);
+		if (result != 0) {
+			LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+				"FILE INSTALL can't read all records/resources\n"));
+			goto fail;
+		}
+		if (size > 65536 && version < 0x0104) {
+			LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+				"FILE INSTALL Database contains"
+				" record/resource over 64K!\n"));
+			goto fail;
+		}
+		total_size += size;
+	}
 
 	/* Delete DB if it already exists */
 	dlp_DeleteDB(socket, cardno, pf->info.name);
 
 	 /* Judd - 25Nov99 - Graffiti hack We want to make sure that these 2
 	    flags get set for this one */
-
 	if (pf->info.creator == pi_mktag('g', 'r', 'a', 'f')) {
 		flags |= dlpDBFlagNewer;
 		flags |= dlpDBFlagReset;
@@ -1417,8 +1418,10 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 	pi_file_get_app_info(pf, &buffer, &l);
 
 	/* Compensate for bug in OS 2.x Memo */
-	if ((version > 0x0100) && (strcmp(pf->info.name, "MemoDB") == 0)
-	    && (l > 0) && (l < 282)) {
+	if (version > 0x0100
+		&& strcmp(pf->info.name, "MemoDB") == 0
+		&& l > 0
+		&& l < 282) {
 		/* Justification: The appInfo structure was accidentally
 		   lengthend in OS 2.0, but the Memo application does not
 		   check that it is long enough, hence the shorter block
@@ -1427,13 +1430,12 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 		   detects the installation of a short app info block on a
 		   2.0 machine, and lengthens it. This transformation will
 		   never lose information. */
-
 		void *b2 = calloc(1, 282);
 		memcpy(b2, buffer, (size_t)l);
-		    
-		buffer 	= b2;
-		l 	= 282;
-		freeai 	= 1;
+		buffer = b2;
+		total_size += 282 - l;
+		l = 282;
+		freeai = 1;
 	}
 
 	/* All system updates seen to have the 'ptch' type, so trigger a
@@ -1444,29 +1446,30 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 	if (pf->info.flags & dlpDBFlagReset)
 		reset = 1;
 
-	if (l > 0)
-		dlp_WriteAppBlock(socket, db, buffer, l);
-
-	if (freeai)
-		free(buffer);
-
-	/* Resource or record? */
-	if (pf->info.flags & dlpDBFlagResource) {
-		for (j = 0; j < pf->nentries; j++) {
-			if ((pi_file_read_resource(pf, j, 0, &size, 0, 0)
-			     == 0) && (size > 65536 && pi_version(socket) < 0x0104)) {
-				LOG((PI_DBG_API, PI_DBG_LVL_ERR,
-				    "FILE INSTALL Database contains"
-					" resource over 64K!\n"));
-				goto fail;
-			}
+	/* Upload appInfo block */
+	if (l > 0) {
+		if (dlp_WriteAppBlock(socket, db, buffer, l) < 0) {
+			if (freeai)
+				free(buffer);
+			goto fail;
 		}
+		
+		if (freeai)
+			free(buffer);
+
+		if (report_progress)
+			report_progress(socket, pf, total_size, l, 0);
+	}
+
+	/* Upload resources / records */
+	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < pf->nentries; j++) {
 			int 	id;
 			unsigned long type;
 
 			if (pi_file_read_resource
-			    (pf, j, &buffer, &size, &type, &id) < 0)
+				(pf, j, &buffer, &size, &type,	
+				 &id) < 0)
 				goto fail;
 
 			/* Skip empty resource, it cannot be installed */
@@ -1477,12 +1480,10 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 			    (socket, db, type, id, buffer, size) < 0)
 				goto fail;
 
-/* FIXME - need to add callbacks for this info, not print here -DD  */
-#ifdef FILEDEBUG
-			display_rate(j + 1, pf->nentries, ftell(pf->f),
-				     (double) ((unsigned long) time(NULL) -
-					       start_time));
-#endif
+			l += size;
+
+			if (report_progress)
+				report_progress(socket, pf, total_size, l, j);
 			
 			/* If we see a 'boot' section, regardless of file
 			   type, require reset */
@@ -1490,17 +1491,6 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 				reset = 1;
 		}
 	} else {
-		for (j = 0; j < pf->nentries; j++) {
-			size_t size;
-
-			if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0)
-			      == 0)) && (size > 65536 && pi_version(socket) < 0x0104)) {
-				LOG((PI_DBG_API, PI_DBG_LVL_ERR,
-				    "FILE INSTALL Database contains"
-					" resource over 64K!\n"));
-				goto fail;
-			}
-		}
 		for (j = 0; j < pf->nentries; j++) {
 			int 	attr,
 				category;
@@ -1514,7 +1504,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 			/* Old OS version cannot install deleted records, so
 			   don't even try */
 			if ((attr & (dlpRecAttrArchived | dlpRecAttrDeleted))
-			    && (version < 0x0101))
+			    && version < 0x0101)
 				continue;
 
 			if (dlp_WriteRecord
@@ -1522,12 +1512,10 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 			     0) < 0)
 				goto fail;
 
-/* FIXME - need to add callbacks for this info, not print here -DD  */
-#ifdef FILEDEBUG
-			display_rate(j + 1, pf->nentries, ftell(pf->f),
-				     (double) ((unsigned long) time(NULL) -
-					       start_time));
-#endif
+			l += size;
+
+			if (report_progress)
+				report_progress(socket, pf, total_size, l, j);
 		}
 	}
 
@@ -1536,9 +1524,12 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
 
 	return dlp_CloseDB(socket, db);
 
-      fail:
+fail:
 	dlp_CloseDB(socket, db);
 	dlp_DeleteDB(socket, cardno, pf->info.name);
+	/* FIXME: for proper error reporting, if there is no "last DLP error
+	   code" we should set an error code indicating that the failure
+	   was in pi_install() itself */
 	return -1;
 }
 
@@ -1555,20 +1546,46 @@ pi_file_install(pi_file_t *pf, int socket, int cardno)
  *
  ***********************************************************************/
 int
-pi_file_merge(pi_file_t *pf, int socket, int cardno)
+pi_file_merge(pi_file_t *pf, int socket, int cardno,
+	progress_func report_progress)
 {
 	int 	db,
 		j,
 		reset 	= 0,
-		version;
+		version,
+		total_size = 0,
+		bytes_written = 0;
 	void 	*buffer;
+	size_t	size;
 	
 	version = pi_version(socket);
 
 	if (dlp_OpenDB
 	    (socket, cardno, dlpOpenReadWrite | dlpOpenSecret,
 	     pf->info.name, &db) < 0)
-		return pi_file_install(pf, socket, cardno);
+		return pi_file_install(pf, socket, cardno, report_progress);
+
+	/* compute total size for progress reporting, and check that
+	   either records are 64k or less, or the handheld can accept
+	   large records. we do this prior to starting the install,
+	   to avoid messing the device up if we have to fail. */
+	for (j = 0; j < pf->nentries; j++) {
+		int result =  (pf->info.flags & dlpDBFlagResource) ?
+			pi_file_read_resource(pf, j, 0, &size, 0, 0) :
+			pi_file_read_record(pf, j, 0, &size, 0, 0, 0);
+		if (result != 0) {
+			LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+				"FILE INSTALL can't read all records/resources\n"));
+			goto fail;
+		}
+		if (size > 65536 && version < 0x0104) {
+			LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+				"FILE INSTALL Database contains"
+				" record/resource over 64K!\n"));
+			goto fail;
+		}
+		total_size += size;
+	}
 
 	/* All system updates seen to have the 'ptch' type, so trigger a
 	   reboot on those */
@@ -1578,31 +1595,27 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno)
 	if (pf->info.flags & dlpDBFlagReset)
 		reset = 1;
 
-	/* Resource or record? */
+	/* Upload resources / records */
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < pf->nentries; j++) {
-			size_t 	size;
-
-			if ((pi_file_read_resource(pf, j, 0, &size, 0, 0)
-			     == 0) && (size > 65536)) {
-				printf("Database contains"
-					" resource over 64K!\n");
-				goto fail;
-			}
-		}
-		for (j = 0; j < pf->nentries; j++) {
 			int 	id;
-			size_t	size;
 			unsigned long type;
 
 			if (pi_file_read_resource
 			    (pf, j, &buffer, &size, &type, &id) < 0)
 				goto fail;
+
 			if (size == 0)
 				continue;
+
 			if (dlp_WriteResource
 			    (socket, db, type, id, buffer, size) < 0)
 				goto fail;
+
+			bytes_written += size;
+
+			if (report_progress)
+				report_progress(socket, pf, total_size, bytes_written, j);
 
 			/* If we see a 'boot' section, regardless of file
 			   type, require reset */
@@ -1611,16 +1624,6 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno)
 		}
 	} else {
 		for (j = 0; j < pf->nentries; j++) {
-			size_t 	size;
-
-			if (((pi_file_read_record(pf, j, 0, &size, 0, 0, 0)
-			      == 0)) && (size > 65536)) {
-				printf("Database contains record over 64K!\n");
-				goto fail;
-			}
-		}
-		for (j = 0; j < pf->nentries; j++) {
-			size_t 	size;
 			int	attr,
 				category;
 			unsigned long id;
@@ -1633,12 +1636,19 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno)
 			/* Old OS version cannot install deleted records, so
 			   don't even try */
 			if ((attr & (dlpRecAttrArchived | dlpRecAttrDeleted))
-			    && (version < 0x0101))
+			    && version < 0x0101)
 				continue;
+
 			if (dlp_WriteRecord
 			    (socket, db, attr, 0, category, buffer, size,
 			     0) < 0)
 				goto fail;
+
+			bytes_written += size;
+
+			if (report_progress)
+				report_progress(socket, pf, total_size, bytes_written, j);
+
 		}
 	}
 
@@ -1647,7 +1657,7 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno)
 
 	return dlp_CloseDB(socket, db);
 
-      fail:
+fail:
 	dlp_CloseDB(socket, db);
 	return -1;
 }

@@ -525,7 +525,7 @@ static void Backup(char *dirname, unsigned long int flags, palm_media_t
 		if (f == 0) {
 			printf("\nFailed, unable to create file.\n");
 			break;
-		} else if (pi_file_retrieve(f, sd, 0) < 0) {
+		} else if (pi_file_retrieve(f, sd, 0, NULL) < 0) {
 			printf("\n   [-][fail][%s] Failed, unable to retrieve %s from the Palm.\n", 
 				crid, info.name);
 			failed++;
@@ -646,7 +646,7 @@ static void Fetch(char *dbname)
 	if (f == 0) {
 		printf("Failed, unable to create file.\n");
 		return;
-	} else if (pi_file_retrieve(f, sd, 0) < 0) {
+	} else if (pi_file_retrieve(f, sd, 0, NULL) < 0) {
 		printf("Failed, unable to fetch database from the Palm.\n");
 	}
 
@@ -853,7 +853,7 @@ static void Restore(char *dirname)
 			exit(EXIT_FAILURE);
         	}
 
-		if (pi_file_install(f, sd, 0) < 0) {
+		if (pi_file_install(f, sd, 0, NULL) < 0) {
 			printf("failed.\n");
 		} else {
 			printf("OK\n");
@@ -927,7 +927,7 @@ static void Install(char *filename)
 		return;
 	}
 
-	if (pi_file_install(f, sd, 0) < 0) {
+	if (pi_file_install(f, sd, 0, NULL) < 0) {
 		fprintf(stderr, "failed.\n");
 
 	} else if (stat(filename, &sbuf) == 0) {
@@ -971,7 +971,7 @@ static void Merge(char *filename)
 
 	printf("Merging %s... ", filename);
 	fflush(stdout);
-	if (pi_file_merge(f, sd, 0) < 0)
+	if (pi_file_merge(f, sd, 0, NULL) < 0)
 		printf("failed.\n");
 	else
 		printf("OK\n");
@@ -999,6 +999,7 @@ static void Merge(char *filename)
 static void List(palm_media_t media_type)
 {
 	int 	i		= 0,
+		j,
 		dbcount 	= 0; 
 	struct 	DBInfo info;
 	char	text[10],
@@ -1014,12 +1015,14 @@ static void List(palm_media_t media_type)
 	
 	for (;;) {
 		if (dlp_ReadDBList
-		    (sd, 0, (media_type ? 0x80 | 0x40 : 0x80), i, buffer) < 0)
+		    (sd, 0, (media_type ? 0x80 | 0x40 : 0x80) | dlpDBListMultiple, i, buffer) < 0)
 			break;
-		memcpy(&info, buffer->data, sizeof(struct DBInfo));
-		dbcount++;
-		i = info.index + 1;
-		printf("   %s\n", info.name);
+		for (j=0; j < (buffer->used / sizeof(struct DBInfo)); j++) {
+			memcpy(&info, buffer->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
+			dbcount++;
+			i = info.index + 1;
+			printf("   %s\n", info.name);
+		}
 		fflush(stdout);
 	}
 	pi_buffer_free(buffer);

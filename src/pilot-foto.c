@@ -708,7 +708,7 @@ int do_install(int sd, char **install_files)
 	 exit(-1);
       }
 
-      ret = pi_file_install(pf, sd, 0);
+      ret = pi_file_install(pf, sd, 0, NULL);
 
       if (stat(pdb_file, &sbuf) == 0) {
 	pdb_size = sbuf.st_size;
