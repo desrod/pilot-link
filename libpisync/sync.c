@@ -463,7 +463,7 @@ sync_MergeFromPilot_fast (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 		ErrorCheck (sh->Match (sh, precord, &drecord));
 		ErrorCheck (sync_record (sh, dbhandle, drecord, precord, &rq, rec_mod));
 
-		if (drecord && rq.count != count)
+		if (drecord && rq.count == count)
 			ErrorCheck (sh->FreeMatch (sh, drecord));
 	}
 	sync_FreePilotRecord (precord);
@@ -512,7 +512,7 @@ sync_MergeFromPilot_slow (SyncHandler *sh, int dbhandle, RecordModifier rec_mod)
 		
 		ErrorCheck (sync_record (sh, dbhandle, drecord, precord, &rq, rec_mod));
 
-		if (drecord && rq.count != count)
+		if (drecord && rq.count == count)
 			ErrorCheck (sh->FreeMatch (sh, drecord));
 
 		index++;
