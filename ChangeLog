@@ -1,3 +1,14 @@
+2002-01-18  JP Rosevear  <jpr@ximian.com>
+
+	* pilot-xfer.c: remove dlp_OpenConduit calls because pilot_connect
+	does that
+
+	* libsock/net.c (net_tx_handshake): limit receive length to size
+	of net packets
+
+	* libsock/inet.c (pi_inet_accept): copy socket before accepting,
+	init after
+
 2002-01-16  JP Rosevear  <jpr@ximian.com>
 
 	* install-netsync.c: use -H to specify host

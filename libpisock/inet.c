@@ -358,11 +358,12 @@ pi_inet_accept(struct pi_socket *ps, struct sockaddr *addr, int *addrlen)
 {
 	struct 	pi_socket *acpt = NULL;
 
+	acpt = pi_socket_copy(ps);
+	
  	acpt->sd = accept(ps->sd, addr, addrlen);
 	if (acpt->sd < 0)
 		goto fail;
 
-	acpt = pi_socket_copy(ps);
 	pi_socket_init (acpt);
 
 	switch (acpt->cmd) {

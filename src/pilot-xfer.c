@@ -502,12 +502,6 @@ static void Fetch(char *dbname)
 
 	Connect();
 
-	if (dlp_OpenConduit(sd) < 0) {
-		printf("Exiting on cancel, stopped before fetching '%s'.\n",
-			dbname);
-		exit(1);
-	}
-
 	if (dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info) < 0) {
 		printf("Unable to locate database '%s', fetch skipped.\n",
 		       dbname);
@@ -566,12 +560,6 @@ static void Delete(char *dbname)
 	struct DBInfo info;
 
 	Connect();
-
-	if (dlp_OpenConduit(sd) < 0) {
-		printf("Exiting on cancel, stopped before deleting '%s'.\n",
-			dbname);
-		exit(1);
-	}
 
 	dlp_FindDBInfo(sd, 0, 0, dbname, 0, 0, &info);
 
@@ -730,12 +718,6 @@ static void Restore(char *dirname)
 
 	for (i = 0; i < dbcount; i++) {
 
-		if (dlp_OpenConduit(sd) < 0) {
-			printf("Exiting on cancel, all data not restored, stopped before restoing '%s'.\n",
-				db[i]->name);
-			exit(1);
-		}
-
 		f = pi_file_open(db[i]->name);
 		if (f == 0) {
 			printf("Unable to open '%s'!\n", db[i]->name);
@@ -777,12 +759,6 @@ static void Install(char *filename)
 
 	Connect();
 
-	if (dlp_OpenConduit(sd) < 0) {
-		printf("Exiting on cancel, stopped before installing '%s'.\n",
-			filename);
-		exit(1);
-	}
-
 	f = pi_file_open(filename);
 	if (f == 0) {
 		printf("Unable to open '%s'!\n", filename);
@@ -816,12 +792,6 @@ static void Merge(char *filename)
 	struct pi_file *f;
 
 	Connect();
-
-	if (dlp_OpenConduit(sd) < 0) {
-		printf("Exiting on cancel, stopped before merging '%s'.\n",
-			filename);
-		exit(1);
-	}
 
 	f = pi_file_open(filename);
 	if (f == 0) {
@@ -862,11 +832,6 @@ static void List(int rom)
 
 	Connect();
 
-	if (dlp_OpenConduit(sd) < 0) {
-		printf("Exiting on cancel, stopped before listing databases.\n");
-		exit(1);
-	}
-
 	if (rom)
 		printf("Reading list of databases in RAM and ROM...\n");
 	else
@@ -905,11 +870,6 @@ static void Purge(void)
 	int h;
 
 	Connect();
-
-	if (dlp_OpenConduit(sd) < 0) {
-		printf("Exiting on cancel, stopped before purging databases.\n");
-		exit(1);
-	}
 
 	printf("Reading list of databases to purge...\n");
 

@@ -125,11 +125,11 @@ net_tx_handshake(struct pi_socket *ps)
 	
 	if (net_tx(ps, msg1, 22, 0) < 0)
 		return -1;
-	if (net_rx(ps, buffer, 200, 0) < 0)
+	if (net_rx(ps, buffer, 50, 0) < 0)
 		return -1;
 	if (net_tx(ps, msg2, 50, 0) < 0)
 		return -1;
-	if (net_rx(ps, buffer, 200, 0) < 0)
+	if (net_rx(ps, buffer, 46, 0) < 0)
 		return -1;
 	if (net_tx(ps, msg3, 8, 0) < 0)
 		return -1;
