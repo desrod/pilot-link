@@ -2,4 +2,5 @@ Makefile
 Makefile.in
 .deps
 .libs
+dlp-test
 packers

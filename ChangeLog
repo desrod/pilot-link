@@ -1,7 +1,73 @@
+2002-06-24  JP Rosevear  <jpr@ximian.com>
+
+	* tests/dlp-test.c (main): add tests for the remaining 1.1 DLP
+	calls
+
+	* libpisock/dlp.c (dlp_WriteAppPreference): set the reserved byte
+	to 0 not 11 and copy the buffer to the request, not the response
+
+2002-06-24  JP Rosevear  <jpr@ximian.com>
+	
+	* tests/dlp-test.c: Make logging more consistent
+	
+2002-06-24  JP Rosevear  <jpr@ximian.com>
+
+	* tests/dlp-test.c: add copyright, improve docs, write a more
+	complete test of records, finishes all the 1.0 DLP calls i'm
+	going to do
+
+	* libpisock/dlp.c (dlp_ReadOpenDBInfo): this has 1 arg, not 0
+	(dlp_ReadRecordIDList): the arg is 6 bytes long, also set the max
+	value
+	(dlp_WriteRecord): get the new record id properly
+	(dlp_DeleteRecord): create the request with the right command
+	(dlp_DeleteCategory): bitwise and instead of boolean and 
+	(dlp_WriteAppPreference): this has 1 arg, not 0
+	(dlp_ReadNextModifiedRecInCategory): ditto
+
 2002-06-22  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* doc/README.usb: Added USB device matrix
 
+2002-06-21  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/dlp.c (dlp_request_new_with_argid): to create a
+	request starting at something other than the first argid
+	(dlp_response_read): simplify
+	(dlp_request_write): make sure to write the correct argid
+	(dlp_exec_new): don't return 0 if there was a dlp error
+	(dlp_ReadStorageInfo): the manufacturer and name lengths are only
+	1 byte long
+	(dlp_ReadSysInfo): read from the response data
+	(dlp_ReadDBList): ditto
+	(dlp_OpenDB): card number and mode are only 1 byte
+	(dlp_DeleteDB): ditto
+	(dlp_CreateDB): allow space for the null string char
+	(dlp_CloseDB_All): start at argid 0x21
+	(dlp_CallApplication): ditto and remove old undeleted code
+	(dlp_AddSyncLogEntry): copy in the entry to the request data
+	(dlp_EndOfSync): use correct function enum
+	(dlp_RPC): make dlp_buf local to here
+	(dlp_DeleteCategory): use the 0 arg offset rather than 1
+	(dlp_ReadResourceByType): ditto
+	(dlp_ReadResourceByIndex): ditto
+	(dlp_ReadAppBlock): ditto
+	(dlp_ReadSortBlock): ditto
+	(dlp_DeleteResource): use correct function enum
+	(dlp_ReadNextRecInCategory): get data from response
+	(dlp_WriteAppPreference): make dlp_buf local to here
+	(dlp_ReadRecordByIndex): use request data and start argid at 0x21
+
+	* include/pi-dlp.h: new proto
+
+	* tests/dlp-test.c: regression test for dlp
+
+	* tests/Makefile.am: add dlp-test to the build
+
+2002-06-06  JP Rosevear  <jpr@ximian.com>
+
+	* libpisock/dlp.c: convert all functions over to new arg system
+	
 2002-05-29  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/socket.c: Adjust size of realloc protocol_queue_add (jhmark) 
