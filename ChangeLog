@@ -1,3 +1,13 @@
+May 25, 1997	Kenneth Albanowski 0.6.4
+
+	Added pi_watchdog function to automatically tickle sockets.
+	Modified dlpsh to use watchdog.
+	Added get_s/set_s macros to manipulate signed Pilot values. The old routines
+		are now officially unsigned.
+	Modified get/set float routines to use signed macros.
+	Added scripts/struct.pl, a first attempt at a portable structure preprocessor.
+	Modified libsock/dlp.c to use struct.pl for ReadStorageInfo.
+
 May 18, 1997	Kenneth Albanowski 0.6.3
 
     Serial code uses PILOTPORT environment variable if a port isn't specified (but

@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-mail.h"
@@ -326,6 +327,11 @@ int main(int argc, char *argv[])
       Help(argv);
     } 
   }
+
+  if ( !strlen( pop_pass ) )
+    {
+      pop_pass = getpass( "POP password: " );
+    }
   
   if (strlen(sendmail)) {
     if (!strlen(dispose) || (strcmp(dispose,"keep") &&

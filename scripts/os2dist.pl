@@ -17,8 +17,8 @@
         
 $defs{'@srcdir@'} = './';
 
-open(STDIN,"<Makefile.in");
-open(STDOUT,">Makefile.os2");
+open(STDIN,"<Makefile.in") or die "Unable to read Makefile.in";
+open(STDOUT,">Makefile.os2") or die "Unable to write to Makefile.os2";
 while(<>) {
     foreach $k (keys %defs) {
       s/$k/$defs{$k}/g;
@@ -28,8 +28,8 @@ while(<>) {
 
 $defs{'@srcdir@'} = '../';
 
-open(STDIN,"<libsock/Makefile.in");
-open(STDOUT,">libsock/Makefile.os2");
+open(STDIN,"<libsock/Makefile.in") or die "Unable to read Makefile.in";
+open(STDOUT,">libsock/Makefile.os2") or die "Unable to write to libsock/Makefile.os2";
 while(<>) {
     foreach $k (keys %defs) {
       s/$k/$defs{$k}/g;
@@ -38,8 +38,8 @@ while(<>) {
 	print;
 }
 
-open(STDIN,"<libcc/Makefile.in");
-open(STDOUT,">libcc/Makefile.os2");
+open(STDIN,"<libcc/Makefile.in") or die "Unable to read Makefile.in";
+open(STDOUT,">libcc/Makefile.os2") or die "Unable to write to libcc/Makefile.os2";
 while(<>) {
     foreach $k (keys %defs) {
       s/$k/$defs{$k}/g;

@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <signal.h>
 #include <fcntl.h>
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -23,6 +24,10 @@ static struct pi_socket *psl = (struct pi_socket *)0;
 void installexit(void);
 
 extern int dlp_trace;
+
+/* Automated tickling interval */
+int interval=0;
+int busy=0;
 
 /* Create a local connection endpoint */
 
@@ -65,6 +70,7 @@ int pi_socket(int domain, int type, int protocol)
   ps->majorversion = 0;
   ps->version = 0;
   ps->dlprecord = 0;
+  ps->busy = 0;
   
 #ifdef OS2
   ps->os2_read_timeout=60;
@@ -275,6 +281,9 @@ int pi_send(int pi_sd, void *msg, int len, unsigned int flags)
     errno = ESRCH;
     return -1;
   }
+  
+  if (interval)
+    alarm(interval);
 
   if(ps->type == PI_SOCK_STREAM) {
     return padp_tx(ps,msg,len,padData);
@@ -329,6 +338,8 @@ int pi_tickle(int pi_sd)
   if(ps->type == PI_SOCK_STREAM) {
     struct padp pd;
     int ret;
+    if (ps->busy || !ps->connected)
+      return -1;
     pd.type = padTickle;
     pd.flags = 0x00;
     pd.size = 0x00;
@@ -337,6 +348,29 @@ int pi_tickle(int pi_sd)
     return ret;
   }
   else {
+    errno = EOPNOTSUPP;
+    return -1;
+  }
+}
+
+RETSIGTYPE pi_onalarm(int);
+
+int pi_watchdog(int pi_sd, int newinterval)
+{
+  struct pi_socket *ps;
+
+  if (!(ps = find_pi_socket(pi_sd))) {
+    errno = ESRCH;
+    return -1;
+  }
+  
+  if(ps->type == PI_SOCK_STREAM) {
+    ps->tickle = 1;
+    signal(SIGALRM, pi_onalarm);
+    interval = newinterval;
+    alarm(interval);
+    return 0;
+  } else {
     errno = EOPNOTSUPP;
     return -1;
   }
@@ -354,6 +388,8 @@ int pi_close(int pi_sd)
     errno = ESRCH;
     return -1;
   }
+  
+  busy++;
 
   if (ps->type == PI_SOCK_STREAM) {
     if (ps->connected & 1) /* If socket is connected */
@@ -386,6 +422,8 @@ int pi_close(int pi_sd)
       }
     }
   }
+  
+  busy--;
 
   free(ps);
   return 0;
@@ -402,6 +440,35 @@ void pi_onexit(void)
     pi_close(p->sd);
   }
   
+}
+
+RETSIGTYPE pi_onalarm(int signo)
+{
+  struct pi_socket *p, *n;
+  
+  signal(SIGALRM,pi_onalarm);
+  
+  if (busy) {
+#ifdef DEBUG
+    fprintf(stderr, "world is busy. Rescheduling.\n");
+#endif
+    alarm(1);
+  } else
+    for (p=psl; p; p=n ) {
+      n = p->next;
+      if (p->connected) {
+#ifdef DEBUG
+        fprintf(stderr, "Tickling socket %d\n", p->sd);
+#endif
+        if (pi_tickle(p->sd)==-1) {
+#ifdef DEBUG
+          fprintf(stderr, " but socket is busy. Rescheduling.\n");
+#endif
+          alarm(1);
+        } else
+          alarm(interval);
+      }
+    }
 }
 
 void installexit(void)

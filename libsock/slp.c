@@ -41,11 +41,13 @@ int slp_tx(struct pi_socket *ps, struct pi_skb *nskb, int len)
   nskb->len = len+12;
   nskb->next = (struct pi_skb *)0;
 
+  ps->busy++;
   if (!ps->txq) ps->txq = nskb;
   else {
     for (skb = ps->txq; skb->next; skb=skb->next);
     skb->next = nskb;
   }
+  ps->busy--;
 
   dph(nskb->data);
   slp_dump(nskb,1);

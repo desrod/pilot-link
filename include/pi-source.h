@@ -92,6 +92,8 @@ struct pi_socket {
   int accepted;  /* only true on accepted socket */
   int majorversion;
   int minorversion;
+  int tickle;
+  int busy;
   int version; /* In form of 0xAABB where AA is major version and BB is minor version */
   int dlprecord; /* Index used for some DLP functions */
   int tx_packets;

@@ -23,7 +23,6 @@ int exit_fn(int sd, int argc, char **argv);
 char *strtoke(char *str, char *ws, char *delim);
 void exit_func(void);
 void sigexit(int sig);
-void sigalarm(int sig);
 
 typedef int (*cmd_fn_t)(int, int, char **);
 
@@ -99,8 +98,6 @@ int user_fn(int sd, int argc, char **argv) {
     }
   }
 
-  alarm(TICKLE_INTERVAL);
-
   ret = dlp_ReadUserInfo(sd, &U);
   if (ret < 0) {
     printf("dlp_ReadUserInfo: err %d\n", ret);
@@ -125,8 +122,6 @@ int user_fn(int sd, int argc, char **argv) {
 
   U.succSyncDate = time(NULL);
   U.lastSyncDate = U.succSyncDate;
-
-  alarm(TICKLE_INTERVAL);
 
   ret = dlp_WriteUserInfo(sd, &U);
   if (ret < 0) {
@@ -190,8 +185,6 @@ ls_fn(int sd, int argc, char **argv)
   for (;;) {
     struct DBInfo info;
     long tag;
-
-    alarm(TICKLE_INTERVAL);
 
     /*
      * The databases are numbered starting at 0.  The first 12 are in
@@ -299,11 +292,6 @@ void handle_user_commands(int sd) {
 
 int main(int argc, char **argv) {
   struct pi_sockaddr addr;
-#ifdef HAVE_SIGACTION
-  struct sigaction sigact;
-#else
-  struct sigvec vec;
-#endif
   
   int sd;
   int ret;
@@ -348,47 +336,13 @@ int main(int argc, char **argv) {
   printf("connected.\n");
 
   /* Stayin' alive, stayin' alive... */
-  ticklish_pi_socket = find_pi_socket(sd);
-
-  /* Set up signal handlers. */
-
-#ifdef HAVE_SIGACTION
-  sigact.sa_handler = sigalarm;
-  sigemptyset(&sigact.sa_mask);
-  sigact.sa_flags = 0;
-  sigaction(SIGALRM, &sigact, NULL);
-
-  sigact.sa_handler = sigexit;
-  sigaction(SIGINT, &sigact, NULL);
-  sigaction(SIGTERM, &sigact, NULL);
-#else
-  vec.sv_handler = sigalarm;
-  vec.sv_mask = 0;
-  vec.sv_onstack = 0;
-  sigvec(SIGALRM, &vec, NULL);
-  
-  vec.sv_handler = sigexit;
-  sigvec(SIGINT, &vec, NULL);
-  sigvec(SIGTERM, &vec, NULL);
-#endif
-
-  alarm(TICKLE_INTERVAL);
+  pi_watchdog(sd, TICKLE_INTERVAL);
 
   socket_descriptor = sd;
   atexit(exit_func);
 
   handle_user_commands(sd);
   exit(0);
-}
-
-void sigalarm(int sig) {
-  struct padp pd;
-  pd.type = padTickle;
-  pd.flags = 0x00;
-  pd.size = 0x00;
-  padp_tx(ticklish_pi_socket, (void *)&pd, 0, padTickle);
-  pi_socket_flush(ticklish_pi_socket);
-  alarm(TICKLE_INTERVAL);
 }
 
 void sigexit(int sig) {
@@ -399,7 +353,6 @@ void exit_func(void) {
 #ifdef DEBUG
   fprintf(stderr, "\n\n================== EXITING ===================\n\n\n");
 #endif
-  alarm(0);
   dlp_EndOfSync(socket_descriptor, 0);
   pi_close(socket_descriptor);
 }

@@ -1,6 +1,6 @@
 /* dlp.c:  Pilot DLP protocol
  *
- * (c) 1996, Kenneth Albanowski
+ * Copyright (c) 1996, 1997, Kenneth Albanowski
  *
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
@@ -268,13 +268,56 @@ int dlp_SetSysDateTime(int sd, time_t time)
   return result;
 	dlp_request_free(req);
 	dlp_response_free(res);
+/* begin struct SI
+ *  Byte    number		byte(0)
+ *  Byte    more		byte(1)
+ *  Byte    unused		byte(2)
+ *  Byte    count		byte(3)
+ *  Byte    totalSize		byte(4)
+ *  Byte    cardNo		byte(5)
+ *  Word    cardVersion		short(6)
+ *  DlpDateTimeType crDate	date(8)
+ *  DWord   romSize		long(16)
+ *  DWord   ramSize		long(20)
+ *  DWord   freeRam		long(24)
+ *  Byte    cardNameSize	byte(28)
+ *  Byte    cardManufSize	byte(29)
+ *  Char[0] cardNameAndManuf	byte(30)
+ * struct read access */
+#define SI_number(ptr)		get_byte((ptr)+0)
+#define SI_more(ptr)		get_byte((ptr)+1)
+#define SI_unused(ptr)		get_byte((ptr)+2)
+#define SI_count(ptr)		get_byte((ptr)+3)
+#define SI_totalSize(ptr)		get_byte((ptr)+4)
+#define SI_cardNo(ptr)		get_byte((ptr)+5)
+#define SI_cardVersion(ptr)		get_short((ptr)+6)
+#define SI_crDate(ptr)		get_date((ptr)+8)
+#define SI_romSize(ptr)		get_long((ptr)+16)
+#define SI_ramSize(ptr)		get_long((ptr)+20)
+#define SI_freeRam(ptr)		get_long((ptr)+24)
+#define SI_cardNameSize(ptr)		get_byte((ptr)+28)
+#define SI_cardManufSize(ptr)		get_byte((ptr)+29)
+#define SI_cardNameAndManuf(ptr,idx)	get_byte((ptr)+30+1*(idx))
+#define ptr_SI_cardNameAndManuf(ptr,idx)	((ptr)+30+1*(idx))
+#define sizeof_SI		(30)
+ /* end struct SI */
+
+/* begin struct SIRequest
+ *  Byte    cardNo		byte(0)
+ *  Byte    unused		byte(1)
+ * struct write access */
+#define SIRequest_cardNo(ptr,val)		set_byte((ptr)+0,(val))
+#define SIRequest_unused(ptr,val)		set_byte((ptr)+1,(val))
+#define sizeof_SIRequest		(2)
+ /* end struct SIRequest */
+
 int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c)
 {
   int result;
   int len1,len2;
   
-  set_byte(dlp_buf, cardno);
-  set_byte(dlp_buf+1, 0);
+  SIRequest_cardNo(dlp_buf, cardno);
+  SIRequest_unused(dlp_buf, 0);
   
   Trace(ReadStorageInfo);
   
@@ -288,23 +331,23 @@ int dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo * c)
   
   c->more = 0;
   
-  Expect(30);
+  Expect(sizeof_SI);
   
-  c->more = get_byte(dlp_buf+1) || (get_byte(dlp_buf+3) > 1);
+  c->more = SI_more(dlp_buf) || (SI_count(dlp_buf) > 1);
   
-  c->cardno = get_byte(dlp_buf+1+4);
-  c->version = get_short(dlp_buf+2+4);
-  c->creation = dlp_ptohdate(dlp_buf+4+4);
-  c->ROMsize = get_long(dlp_buf+12+4);
-  c->RAMsize = get_long(dlp_buf+16+4);
-  c->RAMfree = get_long(dlp_buf+20+4);
+  c->cardno =	SI_cardNo(dlp_buf);
+  c->version =	SI_cardVersion(dlp_buf);
+  c->creation = SI_crDate(dlp_buf);
+  c->ROMsize =	SI_romSize(dlp_buf);
+  c->RAMsize =	SI_ramSize(dlp_buf);
+  c->RAMfree =	SI_freeRam(dlp_buf);
   
-  len1 = get_byte(dlp_buf+24+4);
-  memcpy(c->name, dlp_buf+26+4, len1);
+  len1 = SI_cardNameSize(dlp_buf);
+  memcpy(c->name, ptr_SI_cardNameAndManuf(dlp_buf,0), len1);
   c->name[len1] = '\0';
   
-  len2 = get_byte(dlp_buf+25+4);
-  memcpy(c->manuf, dlp_buf+26+4+len1, len2);
+  len2 = SI_cardManufSize(dlp_buf);
+  memcpy(c->manuf, ptr_SI_cardNameAndManuf(dlp_buf, len1), len2);
   c->manuf[len2] = '\0';
   
 #ifdef DLP_TRACE
@@ -682,7 +725,7 @@ int dlp_CallApplication(int sd, unsigned long creator, unsigned long type, int a
   
 #ifdef DLP_TRACE  
     if (dlp_trace) {  
-      fprintf(stderr, "  Read: Result: %d (0x%8.8X), and %d bytes:\n",
+      fprintf(stderr, "  Read: Result: %lu (0x%8.8lX), and %d bytes:\n",
         get_long(dlp_buf), get_long(dlp_buf+4), result);
       dumpdata(dlp_buf+16,result);
     }

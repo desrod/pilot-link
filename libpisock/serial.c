@@ -541,23 +541,33 @@ error:
 int pi_socket_send(struct pi_socket *ps)
 {
   struct pi_skb *skb;
+  int nwrote, len;
 #ifndef NO_SERIAL_TRACE
   int i;
 #endif
 #ifdef OS2
-  int rc,nwrote;
+  int rc;
 #endif
 
   if (ps->txq) {
+  
+    ps->busy++;
 
     skb = ps->txq;
     ps->txq = skb->next;
 
+    len = 0;
+    while (len<skb->len) {
+      nwrote = 0;
 #ifdef OS2
-    rc=DosWrite(ps->mac->fd,skb->data,skb->len,(unsigned long *)&nwrote);
+      rc=DosWrite(ps->mac->fd,skb->data,skb->len,(unsigned long *)&nwrote);
 #else
-    write(ps->mac->fd,skb->data,skb->len);
+      nwrote=write(ps->mac->fd,skb->data,skb->len);
 #endif
+      if (nwrote<=0)
+        break; /* transmission failure */
+      len += nwrote;
+    }
 #ifndef NO_SERIAL_TRACE
     if (ps->debuglog)
       for (i=0;i<skb->len;i++) {
@@ -568,6 +578,8 @@ int pi_socket_send(struct pi_socket *ps)
     ps->tx_bytes += skb->len;
     free(skb);
 
+    ps->busy--;
+    
     return 1;
   }
   return 0;

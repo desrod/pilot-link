@@ -231,7 +231,7 @@ void iambicExpense_t::unpack(void *buf, int firstTimeThrough)
      _flags = *ptr++;
      
      if (_flags & hasExchangeRate)
-	  _exchangeRate = getDouble(&ptr, true);
+	  _exchangeRate = getDouble(&ptr, 1);
      else
 	  _exchangeRate = 1.0;
      

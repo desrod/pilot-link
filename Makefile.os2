@@ -225,6 +225,7 @@ strip: $(EXECS)
 	$(STRIP) $(EXECS)
 
 distclean: clean
+	@-p4 edit Makefile.os2 */Makefile.os2 */Makefile.in 2>&1 >> /dev/null
 	$(SUBMAKE_COMM) depend
 	$(SUBMAKE_COMM_CC) depend
 	$(RM) Makefile libsock/Makefile libsock/Makefile.in~ include/pi-config.h
@@ -233,6 +234,7 @@ distclean: clean
 	$(RM) PiDebug.log 
 	$(RM) *~ *.orig */*~ */*.orig
 	perl scripts/os2dist.pl
+	@-p4 revert `p4 diff -sr Makefile.os2 */Makefile.os2 */Makefile.in` 2>&1 >> /dev/null 
 
 clean:
 	$(RM) *.o *.a core a.out test_s test_c install-prc$(EXT) pilot-debug$(EXT)

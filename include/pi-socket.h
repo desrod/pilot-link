@@ -57,6 +57,7 @@ extern int pi_getsockpeer PI_ARGS((int pi_sd, struct pi_sockaddr * addr, int * n
 extern unsigned int pi_version PI_ARGS((int pi_sd));
 
 extern int pi_tickle PI_ARGS((int pi_sd));
+extern int pi_watchdog PI_ARGS((int pi_sd, int interval));
 
 extern int pi_close PI_ARGS((int pi_sd));
 
