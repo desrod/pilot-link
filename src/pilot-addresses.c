@@ -48,10 +48,10 @@ int realentry[19] =
     { 0, 1, 2, 14, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 3, 15, 16, 17, 18 };
 */
 int realentry[19] = 
-    { 0, 1, 2, 13, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18 };
+    { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18 };
 
 char *tableheads[23] = { 
-	"Last name", "First name", "Company", "Title", "Work", "Home",
+	"Last name", "First name", "Title", "Company", "Work", "Home",
 	"Fax", "Other", "E-mail", "Address", "City", "State", "Zip Code",
 	"Country", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Note",
 	"Main", "Pager", "Mobile"
