@@ -1,8 +1,20 @@
 2001-05-23  JP Rosevear  <jpr@ximian.com>
 
-	* libsock/sync.c: Document all public functions
+	* libsock/sync.c: Document all public and private functions (the
+	public ones in much more detail
 
 	* libsock/dlp.c: Ditto
+	
+	* libsock/unixserial.c: ditto
+
+	* libsock/winserial.c: ditto
+	(so_changebaud): make static
+
+	* libsock/os2serial.c: ditto
+
+	* libsock/serial.c: ditto
+
+	* libsock/slp.c: ditto
 
 2001-05-22  David A. Desrosiers <hacker@gnu-designs.com>
 
