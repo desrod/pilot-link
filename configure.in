@@ -241,7 +241,7 @@ if test "x$enable_userland" != "xno"; then
 	CFLAGS="$save_CFLAGS"
 	LDFLAGS="$save_LDFLAGS"
 else
-	msg_png=
+	msg_png="none"
 	PNG_CFLAGS=
 	PNG_LIBS=
 fi
@@ -314,27 +314,29 @@ AC_ARG_WITH(included-popt,
 if test "x$enable_userland" != "xno"; then
 	if test "x$with_included_popt" != "xyes"; then
 		dnl Determine if system popt is good enough
+		save_LIBS="$LIBS"
 		AC_CHECK_HEADER(popt.h,
 			AC_CHECK_LIB(popt, poptStrippedArgv,,
 				[with_included_popt="yes"]),
 			[with_included_popt="yes"]
 		)
+		LIBS="$save_LIBS"
 	fi
 
 	AC_MSG_CHECKING(whether to use included popt)
 	if test "x$with_included_popt" = "xyes"; then
-		msg_popt="included"
+		msg_popt="yes (included)"
 	    AC_MSG_RESULT(yes)
 		POPT_LIBS='$(top_builddir)/popt/libpopt.la'
 	    POPT_INCLUDES='-I$(top_srcdir)/popt'
 	else
 	    AC_MSG_RESULT(no)
-		msg_popt="system"
+		msg_popt="yes (system)"
 	    POPT_LIBS="-lpopt"
 	fi
 else
 	with_included_popt="no"
-	msg_popt=
+	msg_popt="none"
 	POPT_LIBS=
 	POPT_INCLUDES=
 fi
@@ -479,7 +481,11 @@ AM_CONDITIONAL(WITH_CXX, test "x$msg_cxx" = "xyes")
 dnl ******************************
 dnl readline checking
 dnl ******************************
-VL_LIB_READLINE
+if test "x$enable_userland" != "xno"; then
+	VL_LIB_READLINE
+else
+	msg_readline="none"
+fi
 
 dnl ******************************
 dnl Perl

@@ -50,7 +50,6 @@ dnl Modifications by T. Joseph Carter for pilot-link:
 dnl  - Don't put -lreadline in LIBS
 dnl  - Add --without-readline to disable use of it
 dnl  - Set msg_readline and RL_LIBS appropriately
-dnl  - Runs only if enable_userland != no
 dnl
 dnl  TODO:
 dnl   - Add --with-readline-includes and -headers
@@ -58,61 +57,56 @@ dnl   - Make the above default to $with_readline/{include,lib} if set to
 dnl     something other than "yes" or "no".
 dnl
 AC_DEFUN([VL_LIB_READLINE], [
-  if "x$enable_userland" != "xno"; then
-    AC_ARG_WITH(readline,
-        [  --without-readline      disable the use of readline],,
-        with_readline="yes")
-    RL_LIBS=
-    msg_readline="no"
-    if test "x$with_readline" != "xno"; then
+  msg_readline="no"
+  RL_LIBS=""
+  AC_ARG_WITH(readline,
+      [  --without-readline      disable the use of readline],,
+      with_readline="yes")
+  if test "x$with_readline" != "xno"; then
 
-      AC_CACHE_CHECK([for a readline compatible library],
-                     vl_cv_lib_readline, [
-        ORIG_LIBS="$LIBS"
-        for readline_lib in readline edit editline; do
-          for termcap_lib in "" termcap curses ncurses; do
-            if test -z "$termcap_lib"; then
-              TRY_LIB="-l$readline_lib"
-            else
-              TRY_LIB="-l$readline_lib -l$termcap_lib"
-            fi
-            LIBS="$ORIG_LIBS $TRY_LIB"
-            AC_TRY_LINK_FUNC(readline, vl_cv_lib_readline="$TRY_LIB")
-            if test -n "$vl_cv_lib_readline"; then
-              break
-            fi
-          done
+    AC_CACHE_CHECK([for a readline compatible library],
+                   vl_cv_lib_readline, [
+      ORIG_LIBS="$LIBS"
+      for readline_lib in readline edit editline; do
+        for termcap_lib in "" termcap curses ncurses; do
+          if test -z "$termcap_lib"; then
+            TRY_LIB="-l$readline_lib"
+          else
+            TRY_LIB="-l$readline_lib -l$termcap_lib"
+          fi
+          LIBS="$ORIG_LIBS $TRY_LIB"
+          AC_TRY_LINK_FUNC(readline, vl_cv_lib_readline="$TRY_LIB")
           if test -n "$vl_cv_lib_readline"; then
             break
           fi
         done
-        if test -z "$vl_cv_lib_readline"; then
-          vl_cv_lib_readline="no"
+        if test -n "$vl_cv_lib_readline"; then
+          break
         fi
-        LIBS="$ORIG_LIBS"
-      ])
-    fi
-
-    if test "$vl_cv_lib_readline" != "no"; then
-      msg_readline="yes"
-      RL_LIBS="$vl_cv_lib_readline"
-      AC_DEFINE(HAVE_LIBREADLINE, 1,
-                [Define if you have a readline compatible library])
-      AC_CHECK_HEADERS(readline.h readline/readline.h)
-      AC_CACHE_CHECK([whether readline supports history],
-                     vl_cv_lib_readline_history, [
-        vl_cv_lib_readline_history="no"
-        AC_TRY_LINK_FUNC(add_history, vl_cv_lib_readline_history="yes")
-      ])
-      if test "$vl_cv_lib_readline_history" = "yes"; then
-        AC_DEFINE(HAVE_READLINE_HISTORY, 1,
-                  [Define if your readline library has \`add_history'])
-        AC_CHECK_HEADERS(history.h readline/history.h)
+      done
+      if test -z "$vl_cv_lib_readline"; then
+        vl_cv_lib_readline="no"
       fi
+      LIBS="$ORIG_LIBS"
+    ])
+  fi
+
+  if test "$vl_cv_lib_readline" != "no"; then
+    msg_readline="yes"
+    RL_LIBS="$vl_cv_lib_readline"
+    AC_DEFINE(HAVE_LIBREADLINE, 1,
+              [Define if you have a readline compatible library])
+    AC_CHECK_HEADERS(readline.h readline/readline.h)
+    AC_CACHE_CHECK([whether readline supports history],
+                   vl_cv_lib_readline_history, [
+      vl_cv_lib_readline_history="no"
+      AC_TRY_LINK_FUNC(add_history, vl_cv_lib_readline_history="yes")
+    ])
+    if test "$vl_cv_lib_readline_history" = "yes"; then
+      AC_DEFINE(HAVE_READLINE_HISTORY, 1,
+                [Define if your readline library has \`add_history'])
+      AC_CHECK_HEADERS(history.h readline/history.h)
     fi
-  else
-    msg_readline=
-    RL_LIBS=
   fi
   AC_SUBST(RL_LIBS)
 ])dnl
