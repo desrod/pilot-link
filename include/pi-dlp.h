@@ -42,7 +42,7 @@ extern "C" {
 
 #define PI_DLP_ARG_FIRST_ID 0x20
 
-#define DLP_BUF_SIZE 0xffff
+#define DLP_BUF_SIZE 0x1fff
 
 #define vfsFileAttrReadOnly     (0x00000001UL)
 #define vfsFileAttrHidden       (0x00000002UL)
