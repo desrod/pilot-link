@@ -204,6 +204,7 @@ if test $ac_cv_termios_cspeed = yes; then
 	AC_DEFINE(TERMIOS_CSPEED, 1, [Define if we have termios(3) support])
 fi
 
+AC_CHECK_SOCKLEN_T
 
 dnl ******************************
 dnl pilot-link conduits
