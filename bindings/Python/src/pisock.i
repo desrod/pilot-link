@@ -74,8 +74,8 @@ static PyObject *DLPError = NULL;
 %}
 
 %pythoncode %{ 
-	error = _pisock.error 
-	dlperror = _pisock.dlperror
+error = _pisock.error 
+dlperror = _pisock.dlperror
 %} 
 
 %include typemaps.i
