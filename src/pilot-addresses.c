@@ -460,20 +460,13 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 			continue;
 		unpack_Address(&addr, buf->data, buf->used);
 
-		if (tableformat || (augment && (category || addr.showPhone))) {
-			if (tableformat)
-				write_field(out,
-					    aai->category.name[category],
-					    tabledelim);
-			else
-				write_field(out,
-					    aai->category.name[category],
-					    2);
-			if (addr.showPhone && (!tableformat)) {
-				write_field(out,
-					    aai->phoneLabels[addr.showPhone],
-					    2);
-			}
+		if (tableformat || (augment && category) || (augment && addr.showPhone)) {
+			write_field(out,
+					aai->category.name[category],
+					2);
+			write_field(out,
+					aai->phoneLabels[addr.phoneLabel[addr.showPhone]],
+					2);
 		}
 
 		for (j = 0; j < 19; j++) {
