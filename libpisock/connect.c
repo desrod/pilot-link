@@ -22,23 +22,39 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <sys/stat.h>
 
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
 
 /* Declare prototypes */
-int pilot_connect(const char *port);
+int pilot_connect(char *port);
 
-int pilot_connect(const char *port)
+int pilot_connect(char *port)
 {
 	int 	sd, 
-		result;
+		result, 
+		err	= 0;
 	struct 	pi_sockaddr addr;
+	struct 	stat attr;			/* Device attributes			*/
+	char 	*defport = "/dev/pilot";	/* Default port if none specified 	*/
 
-	if (port == NULL && getenv("PILOTPORT") == NULL)
-		putenv("PILOTPORT=/dev/pilot");
-	
+	if (port == NULL && (port = getenv("PILOTPORT")) == NULL) {
+		fprintf(stderr, "No $PILOTPORT specified and no -p <port> given.\n"
+			"Defaulting to '%s'\n\n", defport);
+		port = defport;
+		err = stat(port, &attr);
+	}
+
+	if (err) {
+		perror("   ERROR:");
+		fprintf(stderr, "   Error accessing: '%s'. Does '%s' exist?\n",
+		       port, port);
+		fprintf(stderr, "   Please use --help for more information\n\n");
+		exit(1);
+	}
+
 	if (!(sd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_DLP))) {
 		fprintf(stderr, "\n   Unable to create socket '%s'\n",
 			port ? port : getenv("PILOTPORT"));
@@ -48,7 +64,8 @@ int pilot_connect(const char *port)
 	if (port != NULL) {
 		addr.pi_family = PI_AF_PILOT;
 		strncpy(addr.pi_device, port, sizeof(addr.pi_device));
-		result = pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
+		result =
+		    pi_bind(sd, (struct sockaddr *) &addr, sizeof(addr));
 	} else {
 		result = pi_bind(sd, NULL, 0);
 	}
@@ -57,14 +74,13 @@ int pilot_connect(const char *port)
 		int save_errno = errno;
 		char *portname;
 
-		portname = port ? port : getenv("PILOTPORT");
+		portname = (port != NULL) ? port : getenv("PILOTPORT");
 
 		if (portname) {
-			fprintf(stderr, "\n   ");
+			fprintf(stderr, "\n");
 			errno = save_errno;
-			perror(portname);
 			fprintf(stderr, "   Unable to bind to port '%s'\n",
-				port);
+				portname);
 		} else
 			fprintf(stderr, "\n   No port specified\n");
 		pi_close(sd);

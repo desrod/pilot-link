@@ -1,3 +1,9 @@
+2002-03-19  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/connect.c: A slightly better test for existance of
+	  /dev/pilot, and removed the putenv() call. No children need (or
+	  can access) this, so there's no need to set it here.
+
 2002-03-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/install-user.c: Exit when no arguments are specified
