@@ -2240,7 +2240,7 @@ read(socket, len)
 	    if (len > sizeof(mybuf))
 	    	len = sizeof(mybuf);
 	    result = pi_read(socket, mybuf, len);
-	    if (RETVAL >=0) 
+	    if (result >=0) 
 	    	RETVAL = newSVpv(mybuf, result);
 	    else
 	    	RETVAL = &sv_undef;
@@ -2382,7 +2382,7 @@ class(self, name=0)
 		SV ** s = 0;
 		HV * h;
 		if (name) {
-			int len;
+			STRLEN len;
 			h = perl_get_hv("PDA::Pilot::DBClasses", 0);
 			if (!h)
 				croak("DBClasses doesn't exist");
@@ -3176,7 +3176,7 @@ open(self, name, mode=0, cardno=0)
 			nummode = dlpOpenRead|dlpOpenWrite|dlpOpenSecret;
 		else {
 			char *c;
-			int len;
+			STRLEN len;
 			nummode = SvIV(mode);
 			if (SvPOKp(mode)) {
 				c = SvPV(mode, len);
@@ -3484,8 +3484,9 @@ callApplication(self, creator, type, action, data=&sv_undef, maxretlen=0xFFFF)
 		STRLEN len;
 		int result;
 		(void)SvPV(data,len);
-		result = dlp_CallApplication(self->socket, creator, type, action, len, SvPV(data,len),
-		                    &retcode, maxretlen, &len, mybuf);
+		result = dlp_CallApplication(self->socket, creator, 
+				    type, action, len, SvPV(data,len),
+		                    &retcode, maxretlen, (int *)&len, mybuf);
 		EXTEND(sp, 2);
 		if (result >= 0) {
 			PUSHs(sv_2mortal(newSVpv(mybuf, len)));
@@ -3598,7 +3599,7 @@ class(self, name=0)
 		SV ** s = 0;
 		HV * h;
 		if (name) {
-			int len;
+			STRLEN len;
 			h = perl_get_hv("PDA::Pilot::DBClasses", 0);
 			if (!h)
 				croak("DBClasses doesn't exist");
@@ -3770,7 +3771,7 @@ setSortBlock(self, data)
 	SV *	data
 	CODE:
 	{
-	    int len;
+	    STRLEN len;
 	    char * c;
 	    PackSI;
 	    c = SvPV(data, len);

@@ -10,6 +10,9 @@ Things to-do (in order of importance, highest = most important):
 	    for netsync, as results larger then 64K are possible.)
 	  - Fix DLP to understand multiple return arguments.
 	  - Write iambicExpense.c
+	Utiltities:
+	  - Teach sync-plan about the other repetition types that are
+	    convertable from Plan to Pilot.
 	Tcl binding:
 	  - Add Tcl 8 specific code to allow retrieval of raw records, and optionally
 	    use Tcl routines for packing and unpacking.

@@ -7,6 +7,7 @@
           '@CWFLAG@', '-Wall', '@CPLIB@', 'cp', '@YACC@', 'bison -y', 
           '@LIBS@', '-lsocket -los2', '@EXT@', '.EXE',
           '@SUBMAKE_COMM@', '$(MAKE) -C $(top_builddir)/libsock -f Makefile.os2',
+          '@SUBMAKE_COMM_DUBIOUS@', '$(MAKE) -C $(top_builddir)/dubious -f Makefile.os2',
           '@SUBMAKE_COMM_CC@', '$(MAKE) -C $(top_builddir)/libcc -f Makefile.os2',
           '@CXX@', 'gcc',
           '@CXXFLAGS@', '-g -O2 -fno-strength-reduce' ,
@@ -59,6 +60,16 @@ while(<>) {
 
 open(STDIN,"<libcc/Makefile.in") or die "Unable to read libcc/Makefile.in";
 open(STDOUT,">libcc/Makefile.os2") or die "Unable to write to libcc/Makefile.os2";
+while(<>) {
+    foreach $k (keys %defs) {
+      s/$k/$defs{$k}/g;
+    }
+	s#\.\./include/pi-config.h# #g;
+	print;
+}
+
+open(STDIN,"<dubious/Makefile.in") or die "Unable to read dubious/Makefile.in";
+open(STDOUT,">dubious/Makefile.os2") or die "Unable to write to dubious/Makefile.os2";
 while(<>) {
     foreach $k (keys %defs) {
       s/$k/$defs{$k}/g;

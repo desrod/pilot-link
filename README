@@ -22,8 +22,18 @@ Usage notes:
 
   read-ical and sync-ical will only run if you have ical-2.x installed and
   in the path.
+
+  sync-plan is a full syncronization program, though it has some interesting
+  quirks and requirements. You must running netplan from plan-1.6.1
+  (probably available at <http://www.in-berlin.de/User/bitrot>). Future or
+  later versions may work, but I cannot gaurantee this. Sync-plan does _not_
+  check the Pilot's user name, so be very careful not to sync two Pilots to
+  the same Plan database. This will not work in a useful manner, at the
+  moment. Sync-plan leaves a file, that has a name starting with
+  "pilothash", in the current directory. This file must be present for all
+  future syncs between that plan database and that Pilot.
   
-  sync-mail and sync-memodir are useless stubs at the moment.
+  As sync-plan is a work in progress, please contact me with any problems.
   
   The default connection rate is 9600 baud. You are welcome to try higher
   baud rates (19200, 38400, or 57600) by setting the PILOTRATE environment

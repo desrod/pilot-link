@@ -1,3 +1,12 @@
+Aug 31, 1997	Kenneth Albanowski 0.8.4
+	Configuration changes:
+	  - libtool 1.0b included (which means you can say './libtool gdb pilot-mail')
+	  - 'dubious' directory added
+	Utility changes:
+	  - Added sync-plan module to do complete Pilot<->Plan synchronization.
+	Perl 5 binding changes:
+	  - Several bug fixes by Bharat.
+
 Aug 24, 1997	Kenneth Albanowski 0.8.3
 	Perl 5 binding changes:
 	  - Default attributes of new records.

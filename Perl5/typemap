@@ -22,7 +22,7 @@ T_CHAR4
 		if (SvIOKp($arg) || SvNOKp($arg))
 			$var = SvIV($arg);
 		else {
-		    int len;
+		    STRLEN len;
 		    char * c = SvPV($arg, len);
 		    $var = makelong(c);
 		}

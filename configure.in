@@ -80,6 +80,7 @@ ccexecs=''
 cclib=''
 libcclib=''
 SUBMAKE_COMM='cd $(top_builddir)/libsock ; $(MAKE) '
+SUBMAKE_COMM_DUBIOUS='cd $(top_builddir)/dubious ; $(MAKE) '
 SUBMAKE_COMM_CC='-true'
 EXT=''
 CXXLIBS=''
@@ -97,6 +98,7 @@ AC_SUBST(ccexecs)
 AC_SUBST(cclib)
 AC_SUBST(libcclib)
 AC_SUBST(SUBMAKE_COMM)
+AC_SUBST(SUBMAKE_COMM_DUBIOUS)
 AC_SUBST(SUBMAKE_COMM_CC)
 AC_SUBST(EXT)
 AC_SUBST(CXXLIBS)
@@ -570,4 +572,4 @@ LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTLIBOBJS)
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTALLOCA)
-AC_OUTPUT(libsock/Makefile $cc_m Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile)
+AC_OUTPUT(libsock/Makefile $cc_m Makefile dubious/Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile)

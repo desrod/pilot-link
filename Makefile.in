@@ -55,6 +55,7 @@ SHELL = /bin/sh
 CPLIB = @CPLIB@
 EXT = @EXT@
 SUBMAKE_COMM = @SUBMAKE_COMM@
+SUBMAKE_COMM_DUBIOUS = @SUBMAKE_COMM_DUBIOUS@
 SUBMAKE_COMM_CC = @SUBMAKE_COMM_CC@
 
 LIBTOOL = @LIBTOOL@
@@ -79,19 +80,17 @@ WITHPERL5 = $(PERLEXECS)
 CEXECS = pilot-xfer$(EXT) pilot-file$(EXT) pilot-dedupe$(EXT) pilot-schlep$(EXT)\
 		install-memo$(EXT) install-user$(EXT) install-datebook$(EXT)\
 		install-todos$(EXT) pilot-addresses$(EXT) pilot-clip$(EXT)\
-		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT)\
-		sync-memodir$(EXT) sync-ical$(EXT) @ccexecs@ \
+		read-ical$(EXT) pilot-mail$(EXT) read-expenses$(EXT) @ccexecs@ \
 	    reminders$(EXT) memos$(EXT) addresses$(EXT) read-todos$(EXT)\
 		debugsh$(EXT) dlpsh$(EXT) \
 		getrom$(EXT) pi-getrom$(EXT) pi-port$(EXT) \
-		test-connector$(EXT) test-acceptor$(EXT) \
 		pi-csd$(EXT) pi-nredir$(EXT) 
 
 CXXEXECS = ccexample$(EXT) iambicexample$(EXT)
 
 TCLEXECS = pilot-debug$(EXT)
 
-PERLEXECS = pilot-undelete ietf2datebook
+PERLEXECS = pilot-undelete ietf2datebook sync-plan
 
 EXECS = $(CEXECS) $(@WITHTCL@) $(@WITHCXX@) $(@WITHPERL5@)
 
@@ -204,20 +203,8 @@ read-expenses$(EXT): $(PILIB) read-expenses.o
 read-ical$(EXT): $(PILIB) read-ical.o
 	$(CCLINK) read-ical.o $(PILIB) -o $@ $(LIBS)
 
-sync-memodir$(EXT): $(PILIB) sync-memodir.o
-	$(CCLINK) sync-memodir.o $(PILIB) -o $@ $(LIBS)
-
-sync-ical$(EXT): $(PILIB) sync-ical.o
-	$(CCLINK) sync-ical.o $(PILIB) -o $@ $(LIBS)
-
 addresses$(EXT): $(PILIB) addresses.o
 	$(CCLINK) addresses.o $(PILIB) -o $@ $(LIBS)
-
-test-connector$(EXT): $(PILIB) test-connector.o
-	$(CCLINK) test-connector.o $(PILIB) -o $@ $(LIBS)
-
-test-acceptor$(EXT): $(PILIB) test-acceptor.o
-	$(CCLINK) test-acceptor.o $(PILIB) -o $@ $(LIBS)
 
 dlpsh$(EXT): $(PILIB) dlpsh.o
 	$(CCLINK) dlpsh.o $(PILIB) -o $@ $(LIBS)
@@ -256,6 +243,10 @@ ietf2datebook: ietf2datebook.PL
 	$(PERL5) ietf2datebook.PL > ietf2datebook
 	chmod +x ietf2datebook
 
+sync-plan: sync-plan.PL
+	$(PERL5) sync-plan.PL > sync-plan
+	chmod +x sync-plan
+
 FORCE:
 
 Python:	FORCE
@@ -280,6 +271,7 @@ depend:
 	@-p4 edit Makefile.in */Makefile.in 2>&1 >> /dev/null
 	@-chmod +w */Makefile.in 2>&1 >> /dev/null
 	$(SUBMAKE_COMM) depend
+	$(SUBMAKE_COMM_DUBIOUS) depend
 	$(SUBMAKE_COMM_CC) depend
 	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -w -MM -Iinclude *.c >> Makefile.in
 	@-p4 revert `p4 diff -sr Makefile.in */Makefile.in` 2>&1 >> /dev/null 
@@ -291,7 +283,7 @@ os2:
 	@-p4 revert `p4 diff -sr Makefile.os2 */Makefile.os2` 2>&1 >> /dev/null 
 
 distclean: clean depend os2
-	$(RM) Makefile libsock/Makefil include/pi-config.h
+	$(RM) Makefile libsock/Makefile dubious/Makefile include/pi-config.h
 	$(RM) libcc/Makefile
 	$(RM) config.log config.status config.cache libtool
 	$(RM) PiDebug.log
@@ -307,8 +299,9 @@ clean:
 	$(RM) *.o *.a *.lo *.la core a.out tarball test_s test_c install-prc$(EXT) pilot-debug$(EXT)
 	$(RM) -r .libs
 	$(RM) $(CEXECS) $(TCLEXECS) $(CXXEXECS) $(PERLEXECS) validate 
-	$(RM) pilot.rom* pilot2.rom*
+	$(RM) pilot.rom* pilot2.rom* pilotids.*
 	$(SUBMAKE_COMM) clean
+	$(SUBMAKE_COMM_DUBIOUS) clean
 	$(SUBMAKE_COMM_CC) clean
 
 tarball: distclean
@@ -403,17 +396,3 @@ read-todos.o: read-todos.c include/pi-source.h include/pi-config.h \
 reminders.o: reminders.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-macros.h \
  include/pi-datebook.h include/pi-appinfo.h include/pi-dlp.h
-sync-ical.o: sync-ical.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-macros.h \
- include/pi-sync.h include/pi-datebook.h include/pi-appinfo.h \
- include/pi-todo.h include/pi-dlp.h
-sync-memodir.o: sync-memodir.c include/pi-source.h include/pi-config.h \
- include/pi-socket.h include/pi-args.h include/pi-macros.h \
- include/pi-datebook.h include/pi-appinfo.h include/pi-todo.h \
- include/pi-dlp.h include/pi-sync.h
-test-acceptor.o: test-acceptor.c include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-macros.h include/pi-dlp.h
-test-connector.o: test-connector.c include/pi-source.h \
- include/pi-config.h include/pi-socket.h include/pi-args.h \
- include/pi-macros.h include/pi-dlp.h
