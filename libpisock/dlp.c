@@ -738,11 +738,17 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 	*res = NULL;
 
 	if ((result = dlp_request_write (req, sd)) < req->argc) {
+		LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
+			    "DLP sd:%i dlp_request_write returned %i\n",
+			    sd, result));
 		errno = -EIO;
 		return result;
 	}
 
 	if ((bytes = dlp_response_read (res, sd)) < 0) {
+		LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
+			    "DLP sd:%i dlp_response_read returned %i\n",
+			    sd, bytes));
 		errno = -EIO;
 		return bytes;
 	}
@@ -3316,8 +3322,12 @@ dlp_WriteResource(int sd, int dbhandle, unsigned long type, int id,
 			length = 0xffff;
 		req = dlp_request_new(dlpFuncWriteResource, 1, 10 + length);
 	}
-	if (req == NULL)
+	if (req == NULL) {
+		LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
+			    "DLP sd:%i large:%i dlp_request_new failed\n",
+			    sd, large));
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
+	}
 
 	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
