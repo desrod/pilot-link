@@ -36,6 +36,10 @@
 #include "pi-macros.h"
 #include "pi-todo.h"
 
+/* Maximum length of Description and Note fields */
+#define DescMaxLength 256
+#define NoteMaxLength 4096
+
 /***********************************************************************
  *
  * Function:    free_ToDo

@@ -1,3 +1,8 @@
+2002-07-12  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* libpisock/todo.c: Added maximum length #defines for Description
+	  and Note length, will add check code later
+
 2002-07-11  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* src/pilot-addresses.c: WriteUserInfo fix
