@@ -470,14 +470,27 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 				return err;
 			break;
 		case PI_CMD_NET:
-			if ((err = net_rx_handshake(ps)) < 0)
-				return err;
+			/* network: make sure we don't split writes. set socket option
+			 * on both the command and non-command instances of the protocol
+			 */
 			len = sizeof (split);
 			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
 				&split, &len);
 			len = sizeof (chunksize);
 			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
 				&chunksize, &len);
+
+			ps->command ^= 1;
+			len = sizeof (split);
+			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
+				&split, &len);
+			len = sizeof (chunksize);
+			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
+				&chunksize, &len);
+			ps->command ^= 1;
+
+			if ((err = net_rx_handshake(ps)) < 0)
+				return err;
 			break;
 	}
 
