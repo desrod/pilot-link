@@ -733,8 +733,11 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 		
 		/* The Palm m130 and Tungsten T return the wrong code for VFSVolumeInfo */
 		/* Tungsten T5 (and maybe Treo 650) return dlpFuncEndOfSync for dlpFuncWriteResource */
+		/* In some cases, the Tapwave Zodiac returns dlpFuncReadRecord instead of dlpFuncReadRecordEx */
 		if ((req->cmd != dlpFuncVFSVolumeInfo || (*res)->cmd != dlpFuncVFSVolumeSize)
-			&& req->cmd != dlpFuncWriteResource)
+			&& req->cmd != dlpFuncWriteResource			/* T5 */
+			&& req->cmd != dlpFuncReadRecord			/* Zodiac */
+			&& req->cmd != dlpFuncReadRecordEx)			/* Zodiac */
 		{
 			errno = -ENOMSG;
 
