@@ -19,7 +19,6 @@
  *
  */
 
-#include "popt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,9 +36,8 @@
 #include "pi-serial.h"
 #include "pi-slp.h"
 #include "pi-header.h"
+#include "userland.h"
 
-/* Declare prototypes */
-static void display_help(const char *progname);
 
 void do_read(struct pi_socket *ps, int type, char *buffer, int length);
 
@@ -81,18 +79,6 @@ void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 	}
 }
 
-static void display_help(const char *progname)
-{
-	printf("   Reads incoming remote Palm data during a Network HotSync\n\n");
-	printf("   Usage: %s -p <port>\n\n", progname);
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname); 
-	printf("     -v, --version           Display %s version information\n\n", progname);  
-	printf("   Examples: %s -p serial:/dev/ttyUSB0\n\n", progname);
-
-	return;
-}
 
 int main(int argc, char *argv[])
 {
@@ -105,87 +91,76 @@ int main(int argc, char *argv[])
 	struct 	sockaddr_in serv_addr;
 
 	char 	*buffer,
-		*slpbuffer,
-		*progname 	= argv[0],
-		*port 		= NULL;
+		*slpbuffer;
 
 	poptContext pc;
 
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0, "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h', "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v', "Show program version information", NULL},
+		USERLAND_RESERVED_OPTIONS
 		POPT_TABLEEND
 	};
 
 	pc = poptGetContext("pi-port", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc,"\n\n"
+	"   Reads incoming remote Palm data during a Network HotSync\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
+	}
 
 	while ((c = poptGetNextOpt(pc)) >= 0) {
-		switch (c) {
-		
-		case 'h':
-			display_help(progname);
-			return 0;
-		case 'v':
-			print_splash(progname);
-			return 0;
-		default:
-			display_help(progname);
-			return 0;
-		}
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
+		return 1;
 	}
 
 	if (c < -1) {
-		/* an error occurred during option processing */
-		fprintf(stderr, "%s: %s\n",
-		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-		    poptStrerror(c));
-		return 1;
+		plu_badoption(pc,c);
 	}
-	
 
-        sd = pilot_connect(port);
+
+        sd = plu_connect();
         if (sd < 0)
                 goto error;
 
         if (dlp_OpenConduit(sd) < 0)
                 goto error_close;
 
-	
+
 	buffer = malloc(0xFFFF + 128);
 	slpbuffer = malloc(0xFFFF + 128);
 
 	if ((serverfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		perror("Unable to obtain socket");
+		fprintf(stderr,"   ERROR: Unable to obtain socket: %s.\n",strerror(errno));
 		goto end;
 	}
-	
+
 	memset((char *) &serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(netport);
-	
+
 	if (bind
 	    (serverfd, (struct sockaddr *) &serv_addr,
 	     sizeof(serv_addr)) < 0) {
-		perror("Unable to bind local address");
+	        fprintf(stderr,"   ERROR: Unable to bind local address: %s.\n",strerror(errno));
 		goto end;
 	}
-	
+
 	listen(serverfd, 5);
-	
+
 	ps = find_pi_socket(sd);
 	ps->rate = 9600;
 	ps->serial_changebaud(ps);
-	
+
 	for (;;) {
 		int 	l,
 			max,
 			sent;
 
 		fd_set 	rset,
-			wset, 
-			eset, 
+			wset,
+			eset,
 			oset;
 
 		struct 	sockaddr_in conn_addr;
@@ -195,7 +170,7 @@ int main(int argc, char *argv[])
 			    &connlen);
 
 		if (fd < 0) {
-			perror("Server: accept error");
+			fprintf(stderr,"   ERROR: accept error: %s.\n",strerror(errno));
 			goto end;
 		}
 
