@@ -330,3 +330,5 @@ sys_dump(unsigned char *data, size_t len)
 {
 	dumpdata((char *)&data[PI_SYS_HEADER_LEN], len);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

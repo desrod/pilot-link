@@ -629,3 +629,5 @@ slp_dump(unsigned char *data)
 	size = get_short(&data[PI_SLP_OFFSET_SIZE]);
 	dumpdata((char *)&data[PI_SLP_HEADER_LEN], size);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

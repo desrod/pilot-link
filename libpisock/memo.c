@@ -167,3 +167,5 @@ pack_MemoAppInfo(MemoAppInfo_t *appinfo, unsigned char *record, size_t len)
 
 	return (record - start);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

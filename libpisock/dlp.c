@@ -1,4 +1,5 @@
-/*
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/*                              
  * dlp.c:  Palm DLP protocol
  *
  * Copyright (c) 1996, 1997, Kenneth Albanowski
@@ -20,25 +21,11 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
 
-/*
+/***************************************************************************
+ *
  * Documentation marked with DHS is my fault.
  *               -- David H. Silber <pilot@SilberSoft.com>
- */
-
-/***************************************************************************
- *  The functions in this file use the Desktop Link Protocol to interact
- *  with a connected Palm device.
  *
- *  The first section of this file contains utility functions.
- *
- *  Functions useful to people writing conduits are at the end.  (Search
- *  for '<Conduit>'.)
- *
- *  -- DHS
- ***************************************************************************/
-
-
-/***************************************************************************
  *  Key to documentation
  *
  *  Parameters marked with '-->' are data passed in to the function.
@@ -50,13 +37,8 @@
  *  -- DHS
  ***************************************************************************/
 
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
-
-#ifdef WIN32
-#include <winsock.h>		/* for hton* */
 #endif
 
 #include <stdlib.h>
@@ -220,10 +202,10 @@ static void record_dump (unsigned long recID, unsigned int recIndex, int flags,
  *
  * Function:	dlp_set_protocol_version
  *
- * Summary:	set the protocol version we should announce to the device
- *		when it connects (see pi-dlp.h for details). This should be
- *		done prior to connecting with device if you want to change
- *		from the defaults.
+ * Summary:	set the protocol version we should announce to the device when
+ *		it connects (see pi-dlp.h for details). This should be done
+ *		prior to connecting with device if you want to change from
+ *		the defaults.
  *
  * Parameters:	major	--> protocol major version
  *		minor	--> protocol minor version
@@ -420,8 +402,8 @@ dlp_request_new (enum dlpFunctions cmd, int argc, ...)
  *
  * Summary:	creates a new dlpRequest instance with argid
  *
- * Parameters:	dlpFunction command, number of dlpArgs, argid,
- *		lengths of dlpArgs data member
+ * Parameters:	dlpFunction command, number of dlpArgs, argid, lengths of
+ *		dlpArgs data member
  *
  * Returns:     dlpRequest* or NULL if failure
  *
@@ -893,8 +875,7 @@ dlp_htopdate(time_t ti, unsigned char *data)
  *
  * Function:    dlp_GetSysDateTime
  *
- * Summary:     DLP 1.0 GetSysDateTime function to get device date 
- *		and time
+ * Summary:     DLP 1.0 GetSysDateTime function to get device date and time
  *
  * Parameters:  None
  *
@@ -937,8 +918,8 @@ dlp_GetSysDateTime(int sd, time_t * t)
  *
  * Function:    dlp_SetSysDateTime
  *
- * Summary:     DLP 1.0 SetSysDateTime function to set the device date
- *		and time
+ * Summary:     DLP 1.0 SetSysDateTime function to set the device date and
+ *		time
  *
  * Parameters:  None
  *
@@ -1139,13 +1120,13 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
  *		cardno  --> card number (should be 0)
  *		flags   --> see enum dlpDBList in pi-dlp.h
  *		start   --> index of first database to list
- *		info    <-> buffer containing one or more DBInfo structs
- *			    depending on `flags' and the DLP version
- *			    running on the device.
+ *		info	<-> buffer containing one or more DBInfo structs
+ *			    depending on `flags' and the DLP version running
+ *			    on the device.
  *
- * Returns:	A negative number on error, the number of bytes read
- *		otherwise. Use (info->used / sizeof(DBInfo)) to know how
- *		many database information blocks were returned
+ * Returns:	A negative number on error, the number of bytes read otherwise.
+ *		Use (info->used / sizeof(DBInfo)) to know how many database
+ *		information blocks were returned
  *
  ***************************************************************************/
 int
@@ -4047,8 +4028,6 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
  *
- * Parameter documentation by DHS.
- *
  ***************************************************************************/
 int
 dlp_ReadNextModifiedRecInCategory(int sd, int fHandle, int incategory,
@@ -4295,8 +4274,6 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, pi_buffer_t *buffer,
  * Turns this request for a particular record in the database into a
  * low-level dlp request.
  *
- * Parameter documentation by DHS.
- *
  ***************************************************************************/
 int
 dlp_ReadRecordByIndex(int sd, int fHandle, int recindex, pi_buffer_t *buffer,
@@ -4376,10 +4353,9 @@ dlp_ReadRecordByIndex(int sd, int fHandle, int recindex, pi_buffer_t *buffer,
  * 		and later)
  *
  * Parameters:  sd		--> Socket descriptor as returned by pilot_connect().
- * 		numSlots	<-> on input, the maximum number of slot
- * 				    refs that can be stored in the slotRefs
- * 				    array.  On output, the number of slots
- * 				    on the device
+ * 		numSlots	<-> on input, the maximum number of slot refs
+ * 				    that can be stored in the slotRefs array. 
+ * 				    On output, the number of slots on the device
  * 		slotRefs	<-- an array of int with the ref of each slot
  * 
  * Returns:     negative number on error
@@ -4441,7 +4417,7 @@ dlp_ExpSlotEnumerate(int sd, int *numSlots, int *slotRefs)
  * 		and later)
  *
  * Parameters:  sd	--> socket descriptor as returned by pilot_connect().
- * 		slotRef	--> slot ref as returned by dlp_ExpCardInfo()
+ *		slotRef	--> slot ref as returned by dlp_ExpCardInfo()
  * 
  * Returns:     negative number on error
  *
@@ -4483,11 +4459,10 @@ dlp_ExpCardPresent(int sd, int slotRef)
  *		flags		<-- card capabilities (see ExpansionMgr.h in
  *				    Palm OS headers)
  *		numStrings	<-- number of packed information strings
- *		strings		<-- if strings was not NULL and
- *				    numStrings>0, the function returns a new
- *				    buffer with the packed strings. It is
- *				    the caller's responsibility to free()
- *				    the buffer.
+ *		strings		<-- if strings was not NULL and numStrings>0,
+ *				    the function returns a new buffer with the
+ *				    packed strings. It is the caller's
+ *				    responsibility to free() the buffer.
  * 
  * Returns:     negative number on error
  *
@@ -4551,13 +4526,14 @@ dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *numStrings,
  *		a particular type
  *
  * Parameters:  sd		--> socket descriptor
- *		volRefNum   	--> volume reference number returned from
- *				    dlp_VFSVolumeEnumerate()
- *		type		--> file type. can be either a MIME type
- *				    (ie "image/jpeg") or a file extension (ie ".jpg")
+ *		volRefNum	--> volume reference number returned from
+ *	    			    dlp_VFSVolumeEnumerate()
+ *		type		--> file type. can be either a MIME type (ie
+ *		    		    "image/jpeg") or a file extension (ie
+ *		                    ".jpg")
  *		dir		<-> a buffer to hold the returned path
  *		len		<-> on input, the maximum size of the dir
- *				    buffer. on output, the effective size
+ *			            buffer. on output, the effective size
  *				    (counting the nul terminator)
  * 
  * Returns:     negative number on error
@@ -4716,9 +4692,9 @@ dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
  *
  * Summary:     Create a new file
  *
- * Parameters:  sd		--> socket descriptor
- *		volRefNum   	--> volume reference number returned from
- *				    dlp_VFSVolumeEnumerate()
+ * Parameters:  sd	        --> socket descriptor
+ *		volRefNum       --> volume reference number returned from
+ *			            dlp_VFSVolumeEnumerate()
  *		path		--> full path of the file to create
  * 
  * Returns:     negative number on error
@@ -4757,10 +4733,10 @@ dlp_VFSFileCreate(int sd, int volRefNum, const char *name)
  *
  * Summary:     Open a file or directory and return a FileRef to it
  *
- * Parameters:  sd		--> socket descriptor
- *		volRefNum   	--> volume reference number returned from
+ * Parameters:  sd      	--> socket descriptor
+ *		volRefNum       --> volume reference number returned from
  *				    dlp_VFSVolumeEnumerate()
- *		path		--> access path to the file or directory
+ *		path	        --> access path to the file or directory
  *		openMode	--> open mode, use constants from Palm SDK
  *		fileRef		<-- returned file reference
  * 
@@ -4814,9 +4790,9 @@ dlp_VFSFileOpen(int sd, int volRefNum, const char *path, int openMode,
  *
  * Summary:     Close an open file or directory
  *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file or directory reference obtained
- *				    from dlp_VFSFileOpen()
+ * Parameters:  sd	--> socket descriptor
+ *		fileRef	--> file or directory reference obtained from
+ *			    dlp_VFSFileOpen()
  * 
  * Returns:     negative number on error
  *
@@ -4856,10 +4832,10 @@ dlp_VFSFileClose(int sd, FileRef fileRef)
  *
  * Summary:     Write data to an open file
  *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
- *		data		--> data buffer to write
- *		len		--> number of bytes to write
+ * Parameters:  sd	--> socket descriptor
+ *		fileRef	--> file reference obtained from dlp_VFSFileOpen()
+ *		data	--> data buffer to write
+ *		len	--> number of bytes to write
  *
  * Returns:     negative number on error, number of bytes written on success
  *
@@ -4922,10 +4898,10 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, unsigned char *data, size_t len)
  *
  * Summary:     Read data from an open file
  *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
- *		data		<-> buffer to hold the data, emptied first
- *		len		--> on input, number of bytes to read
+ * Parameters:  sd	--> socket descriptor
+ *		fileRef	--> file reference obtained from dlp_VFSFileOpen()
+ *		data	<-> buffer to hold the data, emptied first
+ *		len	--> on input, number of bytes to read
  * 
  * Returns:     negative number on error, total number of bytes read otherwise
  *
@@ -5072,8 +5048,8 @@ dlp_VFSFileRename(int sd, int volRefNum, const char *path,
  *
  * Summary:     Checks whether the current position is at the end of file
  *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ * Parameters:  sd	--> socket descriptor
+ *		fileRef	--> file reference obtained from dlp_VFSFileOpen()
  * 
  * Returns:     negative number on error
  *
@@ -5154,8 +5130,8 @@ dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
  *
  * Summary:     Return the attributes of an open file
  *
- * Parameters:  sd		--> socket descriptor
- *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
+ * Parameters:  sd	        --> socket descriptor
+ *		fileRef 	--> file reference obtained from dlp_VFSFileOpen()
  *		attributes	<-- file attributes (see Palm SDK's VFSMgr.h)
  * 
  * Returns:     negative number on error
@@ -5237,7 +5213,7 @@ dlp_VFSFileSetAttributes(int sd, FileRef fileRef, unsigned long attributes)
  * Function:    dlp_VFSFileGetDate
  *
  * Summary:     Return one of the dates associated with an open file or
- *		directory (creation, modification or last access)
+ *				directory (creation, modification or last access)
  *
  * Parameters:  sd		--> socket descriptor
  *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
@@ -5295,7 +5271,7 @@ dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
  *
  * Parameters:  sd		--> socket descriptor
  *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
- *		whichDate   	--> which date you want (vfsFileDateCreated,
+ *		whichDate       --> which date you want (vfsFileDateCreated,
  *				    vfsFileDateModified or vfsFileDateAccessed)
  *		date		--> the date
  * 
@@ -5384,12 +5360,12 @@ dlp_VFSDirCreate(int sd, int volRefNum, const char *path)
  *
  * Parameters:  sd		--> socket descriptor 
  *		dirRefNum	--> FileRef obtained from dlp_VFSFileOpen()
- *		dirIterator	<-> iterator we use to navigate in the dirs. 
- *				    start with vfsIteratorStart
+ *		dirIterator	<-> iterator we use to navigate in the dirs.
+ *		    		    start with vfsIteratorStart
  *		maxDirItems	<-> on input, the max. number of VFSDirInfo
  *				    structs that can be filled at once.  on
  *				    output, the actual number of items
- *		data		<-- `maxDirItems' directory items
+ *		data		<-- "maxDirItems" directory items
  * 
  * Returns:     negative number on error
  *
@@ -5541,11 +5517,10 @@ dlp_VFSVolumeFormat(int sd, unsigned char flags,
  *
  * Summary:     Returns a list of connected VFS volumes
  *
- * Parameters:  sd		--> socket descriptor 
+ * Parameters:  sd              --> socket descriptor 
  *		numVols		<-> on input, the maximum number of volume
- *				    references that can be returned. On
- *				    output, the actual number of volume
- *				    references
+ *				    references that can be returned. On output,
+ *				    the actual number of volume references
  *		volRefs		<-- an array of volume references
  * 
  * Returns:     negative number on error
@@ -5605,7 +5580,7 @@ dlp_VFSVolumeEnumerate(int sd, int *numVols, int *volRefs)
  *
  * Summary:     Returns information about one VFS volume
  *
- * Parameters:  sd		--> socket descriptor 
+ * Parameters:  sd      	--> socket descriptor 
  *		volRefNum	--> as returned by dlp_VFSVolumeEnumerate()
  *		volInfo		<-- volume information
  * 
@@ -5669,10 +5644,10 @@ dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *volInfo)
  * Summary:     Return the label (name) of a VFS volume
  *
  * Parameters:  sd		--> socket descriptor 
- *		volRefNum   	--> as returned by dlp_VFSVolumeEnumerate()
- *		len		<-> on input, the maximum size of the name
- *				    buffer (including the ending nul byte).
- *				    on output, the used size
+ *		volRefNum       --> as returned by dlp_VFSVolumeEnumerate()
+ *		len     	<-> on input, the maximum size of the name
+ *				    buffer (including the ending nul byte). on
+ *				    output, the used size
  *		name		<-- the volume name
  * 
  * Returns:     negative number on error
@@ -5721,8 +5696,8 @@ dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
  * Summary:     Change the label (name) of a VFS volume
  *
  * Parameters:  sd		--> socket descriptor 
- *		volRefNum   	--> as returned by dlp_VFSVolumeEnumerate()
- *		name		--> the new volume name
+ *		volRefNum       --> as returned by dlp_VFSVolumeEnumerate()
+ *		name	        --> the new volume name
  * 
  * Returns:     negative number on error
  *
@@ -5812,7 +5787,7 @@ dlp_VFSVolumeSize(int sd, int volRefNum, long *volSizeUsed,
  *
  * Summary:     Change the current seek position in an open file
  *
- * Parameters:  sd		--> socket descriptor
+ * Parameters:  sd	        --> socket descriptor
  *		fileRef		--> file reference obtained from dlp_VFSFileOpen()
  *		origin		--> seek origin (use vfsOriginXXX from pi-dlp.h)
  *		offset		--> offset relative to the chosen origin
@@ -5858,9 +5833,9 @@ dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
  *
  * Summary:     Resize an open file
  *
- * Parameters:  sd	--> socket descriptor
- *		fileRef	--> file reference obtained from dlp_VFSFileOpen()
- *		newSize	--> the new file size
+ * Parameters:  sd		--> socket descriptor
+ *		fileRef	        --> file reference obtained from dlp_VFSFileOpen()
+ *		newSize	        --> the new file size
  * 
  * Returns:     negative number on error
  *
@@ -5901,9 +5876,9 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
  *
  * Summary:     Return the size of an open file
  *
- * Parameters:  sd	--> socket descriptor
- *		fileRef	--> file reference obtained from dlp_VFSFileOpen()
- *		size	<-- the size of the file
+ * Parameters:  sd		--> socket descriptor
+ *		fileRef	        --> file reference obtained from dlp_VFSFileOpen()
+ *		size	        <-- the size of the file
  * 
  * Returns:     negative number on error
  *
@@ -5947,7 +5922,7 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
  * Function:    dlp_ExpSlotMediaType
  *
  * Summary:     Return the type of media supported by an expansion slot (DLP
- *		1.4 only)
+ *				1.4 only)
  *
  * Parameters:  sd		--> socket descriptor
  *              slotNum		--> slot to query (1...n)
@@ -5989,3 +5964,6 @@ dlp_ExpSlotMediaType(int sd, int slotNum, unsigned long *mediaType)
 
 	return result;
 }
+
+
+

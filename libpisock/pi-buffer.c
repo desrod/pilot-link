@@ -175,3 +175,5 @@ pi_buffer_free (pi_buffer_t* buf)
 		free (buf->data);
 	free (buf);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -707,3 +707,5 @@ static int pi_inet_close(pi_socket_t *ps)
 
 	return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

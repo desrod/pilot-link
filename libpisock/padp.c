@@ -884,3 +884,5 @@ padp_dump(unsigned char *data)
 	if (type != padAck)
 		dumpdata((char *)&data[PI_PADP_HEADER_LEN], size);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

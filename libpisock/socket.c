@@ -1899,3 +1899,5 @@ pi_socket_connected(int pi_sd)
 	errno = ESRCH;
 	return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

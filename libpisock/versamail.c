@@ -1,4 +1,4 @@
-/* -*- Mode: C; c-basic-indent: 4; indent-tabs-mode: nil -*-
+/*
  * versamail.c:  Translate VersaMail data formats
  *
  * Copyright (c) 2004, Nick Piper
@@ -371,3 +371,5 @@ body
 replayTo
 
 */
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

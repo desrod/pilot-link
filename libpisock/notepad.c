@@ -253,3 +253,5 @@ pack_NotePadAppInfo(NotePadAppInfo_t *appinfo, unsigned char *record,
 
 	return (record - start);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -52,3 +52,5 @@ void print_splash(char *progname)
 	       "   Please use -h for more detailed options.\n");
 
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

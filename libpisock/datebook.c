@@ -466,3 +466,5 @@ pack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
 
 	return (record - start);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

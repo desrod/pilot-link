@@ -123,6 +123,7 @@ char *strdup(const char *s)
 extern char **environ;
 #endif
 
+
 /***********************************************************************
  *
  * Function:    putenv
@@ -400,7 +401,6 @@ int compareTm(struct tm *a, struct tm *b)
 
 
 #ifdef OS2
-
 /* Replacement version of getenv(), because the one in the EMX 0.9c, fix03
    dist appears to be busted when called from inside a DLL. (MJJ) */
 char *getenv(const char *envar)
@@ -415,5 +415,6 @@ char *getenv(const char *envar)
 	else
 		return envstring;
 }
-
 #endif
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

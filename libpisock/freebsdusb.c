@@ -402,3 +402,5 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 
 	return bytes_read;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

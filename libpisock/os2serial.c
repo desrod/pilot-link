@@ -496,3 +496,5 @@ so_read(pi_socket_t *ps, int timeout)
 	}
 	return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -116,3 +116,5 @@ convert_FromPilotChar(const char *charset, const char *ptext,
 	return -1;
 #endif
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

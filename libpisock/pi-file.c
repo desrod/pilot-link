@@ -1730,3 +1730,5 @@ fail:
 		result = pi_set_error(socket, PI_ERR_FILE_ERROR);
 	return result;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

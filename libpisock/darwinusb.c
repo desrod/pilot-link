@@ -1,5 +1,4 @@
-/* vi: ts=4 sw=4
- * 
+/*
  * darwinusb.c: I/O support for Darwin (Mac OS X) USB
  *
  * Copyright (c) 2004, Florent Pillet.
@@ -1259,3 +1258,4 @@ pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->poll = u_poll;
 }
 
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -497,3 +497,4 @@ u_control_request (pi_usb_data_t *usb_data, int request_type, int request,
 	return usb_control_msg (usb_data->ref, request_type, request, value, index, data, size, timeout);
 }
 
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

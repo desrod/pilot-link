@@ -584,3 +584,5 @@ net_dump(unsigned char *header, unsigned char *data)
 	size = get_long(&header[PI_NET_OFFSET_SIZE]);
 	dumpdata((char *)data, size);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

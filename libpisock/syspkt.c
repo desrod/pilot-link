@@ -1052,3 +1052,4 @@ RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                                RPC_LongPtr(ramsize), RPC_LongPtr(freeram));
 }                    
 
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

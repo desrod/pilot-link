@@ -257,3 +257,5 @@ pack_MoneyAppInfo(MoneyAppInfo_t *appinfo, unsigned char *buffer, size_t len)
 
 	return (i + 603);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
