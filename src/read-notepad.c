@@ -207,7 +207,7 @@ void print_note_info( struct NotePad n, struct NotePadAppInfo nai, int category 
    else
      printf( "Alarm set for: none\n" );
    
-   printf( "Pictue: " );
+   printf( "Picture: " );
    
    if( n.flags & NOTEPAD_FLAG_BODY )
      printf( "yes\n" );
