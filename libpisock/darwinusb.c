@@ -102,12 +102,13 @@
 
 /* Define this to make debug logs include USB debug info */
 #undef DEBUG_USB
+/*#define DEBUG_USB 1*/
 
 /*
  * These values are somewhat tricky.  Priming reads with a size of exactly one
  * USB packet works best (no timeouts).  Probably best to leave these as they are.
  */
-#define MAX_AUTO_READ_SIZE	4096//16384
+#define MAX_AUTO_READ_SIZE	4096
 #define AUTO_READ_SIZE		64
 
 
@@ -297,7 +298,7 @@ static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short ven
 static IOReturn	find_interfaces (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved);
 static int		prime_read (usb_connection_t *connexion);
 static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe);
-static void		decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
+static IOReturn	decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
 
 
@@ -314,6 +315,10 @@ start_listening(void)
 	CFMutableDictionaryRef matchingDict;
 	CFRunLoopSourceRef runLoopSource;
 	kern_return_t kr;
+
+#ifdef DEBUG_USB
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: start_listening\n"));
+#endif
 
 	usb_notify_port = NULL;
 	usb_device_added_iter = NULL;
@@ -384,6 +389,10 @@ start_listening(void)
 static void
 stop_listening(void)
 {
+#ifdef DEBUG_USB
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stop_listening\n"));
+#endif
+
 	if (usb.device_notification)
 	{
 		// do this first to not get caught in a loop if called from device_notification()
@@ -475,6 +484,10 @@ device_added (void *refCon, io_iterator_t iterator)
 		output_pipe_number = 0xff,
 		pipe_info_retrieved = 0;
 
+#ifdef DEBUG_USB
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: device_added\n"));
+#endif
+
 	while ((ioDevice = IOIteratorNext (iterator)))
 	{
 		if (usb.opened)
@@ -482,6 +495,7 @@ device_added (void *refCon, io_iterator_t iterator)
 			/* we can only handle one connection at once for now
 			 * (this will change soon)
 			 */
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: a USB connection is already open. Giving up."));
 			IOObjectRelease (ioDevice);
 			break;
 		}
@@ -507,6 +521,9 @@ device_added (void *refCon, io_iterator_t iterator)
 		kr = (*dev)->GetDeviceProduct (dev, &product);
 		if (accepts_device(vendor, product) == 0)
 		{
+#ifdef DEBUG_USB
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: not accepting device (vendor=0x%04x product=0x%04x)\n", vendor, product));
+#endif
 			(*dev)->Release(dev);
 			IOObjectRelease (ioDevice);
 			continue;
@@ -526,7 +543,9 @@ device_added (void *refCon, io_iterator_t iterator)
 		kr = configure_device (dev, vendor, product, &port_number, &input_pipe_number, &output_pipe_number, &pipe_info_retrieved);
 		if (kr != kIOReturnSuccess)
 		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to configure device (kr=0x%08x)\n", kr));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, (kr == kIOReturnNotReady)
+												?	"darwinusb: device not ready to synchonize\n"
+												:	"darwinusb: unable to configure device (kr=0x%08x)\n", kr));
 			(*dev)->USBDeviceClose (dev);
 			(*dev)->Release (dev);
 			IOObjectRelease (ioDevice);
@@ -546,6 +565,7 @@ device_added (void *refCon, io_iterator_t iterator)
 		/* Register for an interest notification for this device,
 		 * so we get notified when it goes away
 		 */
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: registering for disconnect notification\n"));
 		kr = IOServiceAddInterestNotification(
 				usb_notify_port,
 				ioDevice,
@@ -635,10 +655,15 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 	 * pipes. We first try the generic control code, and if it
 	 * doesn't work we try the Visor one which seems to be
 	 * supported by some devices
+	 * Also, we can detect that a T5 is in "wait" mode (device
+	 * seen on USB but not synchronizing) and in this case we
+	 * return a kIOReturnNotReady code.
 	 */
 	kr = read_generic_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
-	if (kr != kIOReturnSuccess)
+	if (kr != kIOReturnSuccess && kr != kIOReturnNotReady)
 		kr = read_visor_connection_information (dev, port_number, input_pipe_number, output_pipe_number);
+	if (kr == kIOReturnNotReady)
+		return kr;
 	*pipe_info_retrieved = (kr == kIOReturnSuccess);
 
 	/* query bytes available. Not that we really care,
@@ -943,7 +968,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 	return kr;
 }
 
-static void
+static IOReturn
 decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe)
 {
 	int i;
@@ -953,11 +978,17 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 
 	for (i=0; i < ci->num_ports; i++)
 	{
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx\n", i, ci->connections[i].port_function_id));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx ('%4.4s')\n", i, ci->connections[i].port_function_id, (char*)&ci->connections[i].port_function_id));
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci->connections[i].port));
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, ci->connections[i].endpoint_info));
-		if (ci->connections[i].port_function_id == 'cnys' ||
-			ci->connections[i].port_function_id == 'Lsfr')		/* T5 */
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d (0x%02x)\n", i, ci->connections[i].endpoint_info, (int)ci->connections[i].endpoint_info));
+		if (ci->connections[i].port_function_id == 'Lsfr')
+		{
+			/* This is a T5 in USB connected but not synchronizing:
+			 * don't bother trying to talk to it
+			 */
+			return kIOReturnNotReady;
+		}
+		if (ci->connections[i].port_function_id == 'cnys')
 		{
 			/* 'sync': we found the port/pipes to use for synchronization
 			 * If endpoint_numbers_different is != 0, then the number of each
@@ -979,6 +1010,8 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 			}
 		}
 	}
+
+	return kIOReturnSuccess;
 }
 
 static IOReturn
@@ -994,17 +1027,19 @@ read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_numbe
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", kr));
 		return kr;
 	}
-	decode_generic_connection_information(&ci, port_number, input_pipe, output_pipe);
-	return kIOReturnSuccess;
+	return decode_generic_connection_information(&ci, port_number, input_pipe, output_pipe);
 }
 
 static void
 device_notification(usb_connection_t *c, io_service_t service, natural_t messageType, void *messageArgument)
 {
+#ifdef DEBUG_USB
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: device_notification (messageType=0x%08lx)\n", messageType));
+#endif
 	if (messageType == kIOMessageServiceIsTerminated)
 	{
 		c->opened = 0;		// so that stop_listening() does'nt try to send the control_request
-		stop_listening ();
+		stop_listening();
 
 		// In case the reading thread is waiting for data,
 		// we need to raise the usb_data_available cond once.
