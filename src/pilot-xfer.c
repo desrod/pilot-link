@@ -1,3 +1,4 @@
+ /* ex: set tabstop=8 expandtab: */
 /* 
  * pilot-xfer.c:  Palm Database transfer utility
  *
@@ -17,13 +18,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
- */
-
-/* A few minor modifications, done April 19, 1998 by David H. Silber:
-    Implemented a ``--version'' (or `-v') option to indicate which version
-    of pilot-link a particular executable is from.  Added a ``--help'' alias
-    for the `-h' option.  Added error checking to prevent ``Segmentation
-    fault (core dumped)'' when an unreadable exclude file is specified.
  */
 
 #include "getopt.h"

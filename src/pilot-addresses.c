@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "pi-source.h"
 #include "pi-socket.h"
@@ -29,10 +30,6 @@
 #include "pi-header.h"
 
 /* Define prototypes */
-static void display_help(char *progname);
-void print_splash(char *progname);
-int pilot_connect(char *port);
-
 int inchar(FILE * in);
 int read_field(char *dest, FILE * in);
 void outchar(char c, FILE * out);
@@ -42,24 +39,45 @@ int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
 
+static void display_help(char *progname);
+
 int realentry[21] = 
     { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20 };
 
-char *tableheads[23] = { 
-	"Last Name", "First Name", "Title", "Company", "Work", "Home",
-	"Fax", "Other", "E-Mail", "Address", "City", "State", "Zip",
-	"Country", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Note",
-	"Private", "Category"
+char *tableheads[21] = { 
+	"Last name",	// 0 
+	"First name", 	// 1
+	"Title", 	// 2 
+	"Company", 	// 3
+	"Work", 	// 4
+	"Home",		// 5
+	"Fax", 		// 6
+	"Other", 	// 7
+	"E-mail", 	// 8
+	"Address", 	// 9
+	"City", 	// 10
+	"State",	// 11
+	"Zip Code",	// 12
+	"Country", 	// 13
+	"Custom 1", 	// 14
+	"Custom 2", 	// 15
+	"Custom 3", 	// 16
+	"Custom 4", 	// 17
+	"Note",		// 18
+	"Private", 	// 19
+	"Category"	// 20
 };
 
+static const char *optstring = "hvDTeqp:t:d:c:arw";
+
 struct option options[] = {
-	{"port",        required_argument, NULL, 'p'},
 	{"help",        no_argument,       NULL, 'h'},
 	{"version",     no_argument,       NULL, 'v'},
 	{"delall",	no_argument,       NULL, 'D'},
 	{"titles", 	no_argument,       NULL, 'T'},
 	{"escape",	no_argument,       NULL, 'e'},
 	{"quiet",	no_argument,       NULL, 'q'},
+	{"port",        required_argument, NULL, 'p'},
 	{"tdelim",	required_argument, NULL, 't'},
 	{"delcat",	required_argument, NULL, 'd'},
 	{"install",	required_argument, NULL, 'c'},
@@ -69,7 +87,6 @@ struct option options[] = {
 	{NULL,          0,                 NULL, 0}
 };
 
-static const char *optstring = "p:hvDTeqt:d:c:arw";
 
 int 	tableformat 	= 0,
 	tabledelim 	= 1,
@@ -269,7 +286,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 	char 	buf[0xffff];
 	struct 	Address a;
 
-	printf("Writing CSV entries to Palm Address Book... ");
+	printf("   Reading CSV entries, writing to Palm Address Book... ");
 	fflush(stdout);
 	do {
 		i = read_field(buf, in);
@@ -309,7 +326,6 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 					i = read_field(buf, in);
 				}
 			}
-
 			a.entry[l2] = strdup(buf);
 
 			if (i == 0)
@@ -324,26 +340,8 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai)
 			i = read_field(buf, in);
 		}
 
-#ifdef DEBUG
-		printf("Category %s (%d)\n", aai->category.name[category],
-		       category);
-		for (l = 0; l < 21; l++) {
-			if ((l >= 3) && (l <= 7))
-				printf(" %s (%d): %s\n",
-				       aai->phoneLabels[a.
-							phoneLabel[l - 3]],
-				       a.phoneLabel[l - 3], a.entry[l]);
-			else
-				printf(" %s: %s\n", aai->labels[l],
-				       a.entry[l]);
-		}
-		printf(" read_field returns %d\n", i);
-#endif
-
 		l = pack_Address(&a, (unsigned char *) buf, sizeof(buf));
-#ifdef DEBUG
-		dumpdata(buf, l);
-#endif
+
 		dlp_WriteRecord(sd, db, attribute, 0, category,
 				(unsigned char *) buf, l, 0);
 
@@ -365,17 +363,20 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	
 	struct 	Address a;
 		
+	/* Print out the header and fields with fields intact. Note we
+	   'ignore' the last field (Private flag) and print our own here, so
+	   we don't have to chop off the trailing comma at the end. Hacky.
+	   */
 	if (tablehead) {
 		fprintf(out, "# ");
-		for (j = 0; j < 21; j++) {
-			write_field(out, tableheads[realentry[j]],
+		for (j = 0; j < 19; j++) {
+			write_field(out, tableheads[j],
 				    tabledelim);
-			fprintf(out, " ");
 		}
-		fprintf(out, "\n");
+		write_field(out, "Private", 0);
 	}
 
-	printf("Writing Palm Address Book entries to file... ");
+	printf("   Writing Palm Address Book entries to file... ");
 	fflush(stdout);
 	for (i = 0;
 	     (j =
@@ -393,7 +394,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 		write_field(out, "Category", 1);
 		write_field(out, aai->category.name[category], -1);
 
-		for (j = 0; j < 21; j++) {
+		for (j = 0; j < 19; j++) {
 			if (a.entry[j]) {
 				putc(',', out);
 				putc('\n', out);
@@ -429,7 +430,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 			}
 		}
 
-		for (j = 0; j < 21; j++) {
+		for (j = 0; j < 19; j++) {
 #ifdef NOT_ALL_LABELS
 			if (augment && (j >= 4) && (j <= 8))
 				if (a.phoneLabel[j - 4] != j - 4)
@@ -466,21 +467,20 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 static void display_help(char *progname)
 {
 	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n", progname);
-	printf("             [-d category] -r|-w [<file>]\n");
-	printf("   Options:\n");
-	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");
-	printf("     -h, --help              Display help information for %s\n", progname);
-	printf("     -v, --version           Display %s version information\n", progname);
-	printf("     -t, --tdelim <delim>    Include category, use delimiter (3=tab, 2=;, 1=,)\n");
-	printf("     -T, --titles            Write header with titles\n");
-	printf("     -q, --quiet             Do not prompt for HotSync button press\n");
-	printf("     -a, --augment           Augment records with additional information\n");
-	printf("     -e, --escape            Escape special chcters with backslash\n");
-	printf("     -c, --category <cat>    Install to category <cat> by default\n");
-	printf("     -d, --delcat <cat>      Delete old Palm records in <cat>\n");
-	printf("     -D, --delall            Delete all Palm records in all categories\n");
-	printf("     -r, --read [file]..     Read records from <file> and install them to Palm\n");
-	printf("     -w, --write [file]..    Get records from Palm and write them to <file>\n\n");
+	printf("             [-d category] -r|-w [<file>]\n\n");
+	printf("     -t delim          include category, use delimiter (3=tab, 2=;, 1=,)\n");
+	printf("     -T                write header with titles\n");
+	printf("     -q                do not prompt for HotSync button press\n");
+	printf("     -a                augment records with additional information\n");
+	printf("     -e                escape special chcters with backslash\n");
+	printf("     -p port           use device file <port> to communicate with Palm\n");
+	printf("     -c category       install to category <category> by default\n");
+	printf("     -d category       delete old Palm records in <category>\n");
+	printf("     -D                delete all Palm records in all categories\n");
+	printf("     -r file           read records from <file> and install them to Palm\n");
+	printf("     -w file           get records from Palm and write them to <file>\n");
+	printf("     -h, --help        Display this information\n");
+	printf("     -v, --version     Display version information\n\n");
 
 	exit(0);
 }
@@ -558,7 +558,7 @@ int main(int argc, char *argv[])
         if (dlp_ReadUserInfo(sd, &User) < 0)
                 goto error_close;
 	
-	/* Open the AddressDB.pdb database, store access handle in db */
+	/* Open the MemoDB.pdb database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
 		puts("Unable to open AddressDB");
 		dlp_AddSyncLogEntry(sd, "Unable to open AddressDB.\n");
@@ -590,15 +590,21 @@ int main(int argc, char *argv[])
 							  &aai));
 		fclose(f);
 	} else if (mode == 1) {
-		FILE *f;
+		FILE *f = fopen(argv[optind], "r");
 
 		while (optind < argc) {
-			f = fopen(argv[optind], "r");
 			if (f == NULL) {
-				sprintf(buf, "%s: %s", argv[0],
+				fprintf(stderr, "Unable to open input file");
+				fprintf(stderr, " '%s' (%s)\n\n", 
+					argv[optind], strerror(errno));   
+				fprintf(stderr, "Please make sure the file");
+				fprintf(stderr, "'%s' exists, and that\n",
 					argv[optind]);
-				perror(buf);
-				continue;
+
+				fprintf(stderr, "it is readable by this user");
+				fprintf(stderr, " before launching.\n\n");
+
+				exit(1);
 			}
 			if (deletecategory)
 				dlp_DeleteCategory(sd, db,

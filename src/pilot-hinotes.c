@@ -159,14 +159,14 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 
 static void display_help(char *progname)
 {
-	printf("   Syncronize your Hi-Notes database with your desktop or server machine\n\n");
+	printf("   Syncronize your Hi-Notes database with your desktop machine\n\n");
 	printf("   Usage: %s -p /dev/pilot [options]\n\n" "   Options:\n", progname);
 	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
 	printf("     -d directory   Save memos in <dir> instead of writing to STDOUT\n");
 	printf("     -h             Display this information\n\n");
 	printf("   Examples: %s -p /dev/pilot -d ~/Palm\n\n", progname);
 	printf("   By default, the contents of your Palm's memo database will be written to\n");
-	printf("   standard output as a standard Unix mailbox (mbox-format) file, with each\n");
+	printf("   STDOUT as a standard Unix mailbox (in mbox-format) file, with each\n");
 	printf("   memo as a separate message.  The subject of each message will be the\n");
 	printf("   category.\n\n");
 	printf("   The memos will be written to STDOUT unless the '-d' option is specified.\n");
@@ -174,17 +174,16 @@ static void display_help(char *progname)
 	printf("   subdirectory will contain the name of a category on the Palm where the\n");
 	printf("   record was stored, and will contain the memos found in that category. \n\n");
 	printf("   Each memo's filename will be the first line (up to the first 40\n");
-	printf("   chcters) of the memo.  Control chcters, slashes, and equal signs\n");
-	printf("   that would otherwise appear in filenames are converted after the fashion\n");
-	printf("   of MIME's quoted-printable encoding.\n\n");
-	printf("   -- WARNING -- WARNING -- WARNING -- WARNING -- WARNING -- WARNING --\n");
+	printf("   characters) of the memo.  Control characters, slashes, and equal signs\n");
+	printf("   that would otherwise appear in filenames are converted using the correct\n");
+	printf("   MIME's quoted-printable encoding.\n\n");
+	printf("   ----------------------------------------------------------------------\n");
+	printf("   WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING\n");
+        printf("   ----------------------------------------------------------------------\n");
 	printf("   Note that if you have two memos in the same category whose first lines\n");
 	printf("   are identical, one of them will be OVERWRITTEN! This is unavoidable at\n");
 	printf("   the present time, but may be fixed in a future release. Also, please note\n");
 	printf("   that syncronizing Hi-Note images is not supported at this time, only text.\n\n");
-	printf("   The serial port to connect to may be specified by the $PILOTPORT\n");
-	printf("   environment variable instead of by -p' on the command line. If not\n");
-	printf("   specified anywhere it will default to /dev/pilot.\n\n");
 	printf("   Please see http://www.cyclos.com/ for more information on Hi-Note.\n\n");
 
 	exit(0);

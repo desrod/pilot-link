@@ -48,7 +48,7 @@ static const char *optstring = "p:hvf:";
 
 static void display_help(char *progname)
 {
-	printf("   Syncronize your ToDo database with your desktop or server machine\n\n");
+	printf("   Syncronize your ToDo database with your desktop machine\n\n");
 	printf("   Usage: %s -p <port> [options]\n\n", progname);
 	printf("   Options:\n", progname);
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");

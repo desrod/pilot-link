@@ -72,7 +72,7 @@ static const char *optstring = "hvp:lt:";
 
 static void display_help(char *progname)
 {
-	printf("   Syncronize your NotePad database with your desktop or server machine\n\n");
+	printf("   Syncronize your NotePad database with your desktop machine\n\n");
 	printf("   Usage: %s -p /dev/pilot [options]\n\n", progname);
 	printf("   Options:\n");
 	printf("     -p, --port <port>       Use device file <port> to communicate with Palm\n");

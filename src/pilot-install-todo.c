@@ -98,7 +98,8 @@ void install_ToDo(int sd, int db, struct ToDo todo)
 	char  time[DATE_STR_MAX];
 
 	printf("Indefinite:  %i\n", todo.indefinite);
-	strftime(time, DATE_STR_MAX, "%a %b %d %H:%M:%S %Z %Y", &todo.due);
+	if (!todo.indefinite)
+		strftime(time, DATE_STR_MAX, "%a %b %d %H:%M:%S %Z %Y", &todo.due);
 	printf("Due Date:    %s\n", time);
 	printf("Priority:    %i\n", todo.priority);
 	printf("Complete:    %i\n", todo.complete);
@@ -118,8 +119,7 @@ void install_ToDo(int sd, int db, struct ToDo todo)
 static void display_help(char *progname)
 {
 	printf("   Updates the Palm ToDo list with one new entry\n\n");
-
-	printf("   Usage: %s [-pdycnNt] command(s) [item]\n", progname);
+	printf("   Usage: %s [-pdycnft] command(s) [item]\n", progname);
 	printf("   Options:\n");
 	printf("     -p <port>      Use device file <port> to communicate with Palm\n");
 	printf("     -P <priority>  The Priority (default 4)\n");
@@ -147,13 +147,15 @@ int main(int argc, char *argv[])
 	struct 	PilotUser User;
 	struct 	ToDo todo;
 
-
 	/*  Setup some todo defaults */
 	todo.indefinite = 1;
 	todo.priority = 4;
 	todo.complete = 0;
 	todo.description = "";
 	todo.note = "";
+	todo.due.tm_sec = 0;
+	todo.due.tm_min = 0;
+	todo.due.tm_hour = 0;
 
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
