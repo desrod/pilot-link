@@ -364,7 +364,8 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		pi_buffer_append(buf, data->buf, bytes_read);
 		if (flags != PI_MSG_PEEK) {
 			data->buf_size -= bytes_read;
-			memcpy(data->buf, data->buf + bytes_read, data->buf_size);
+			if (data->buf_size > 0)
+				memmove(data->buf, data->buf + bytes_read, data->buf_size);
 		}
 		if (!len)
 			return bytes_read;

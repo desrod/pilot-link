@@ -392,7 +392,7 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len)
 	data->buf_size -= rbuf;
 	
 	if (data->buf_size > 0)
-		memcpy(data->buf, &data->buf[rbuf], data->buf_size);
+		memmove(data->buf, &data->buf[rbuf], data->buf_size);
 	
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
 		"DEV RX Unix Serial Buffer Read %d bytes\n", rbuf));
