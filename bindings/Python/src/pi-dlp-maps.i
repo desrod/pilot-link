@@ -107,7 +107,7 @@ typedef int DLPDBERROR;
 			"flagReadOnly", !!(info.flags & dlpDBFlagReadOnly),
 			"flagAppInfoDirty", !!(info.flags & dlpDBFlagAppInfoDirty),
 			"flagBackup", !!(info.flags & dlpDBFlagBackup),
-			"flagClipping", !!(info.flags & dlpDBFlagClipping),
+			"flagLaunchable", !!(info.flags & dlpDBFlagLaunchable),
 			"flagOpen", !!(info.flags & dlpDBFlagOpen),
 			"flagNewer", !!(info.flags & dlpDBFlagNewer),
 			"flagReset", !!(info.flags & dlpDBFlagReset),
@@ -149,7 +149,7 @@ typedef int DLPDBERROR;
 			  "flagReadOnly", !!($1->flags & dlpDBFlagReadOnly),
 			  "flagAppInfoDirty", !!($1->flags & dlpDBFlagAppInfoDirty),
 			  "flagBackup", !!($1->flags & dlpDBFlagBackup),
-			  "flagClipping", !!($1->flags & dlpDBFlagClipping),
+			  "flagLaunchable", !!($1->flags & dlpDBFlagLaunchable),
 			  "flagOpen", !!($1->flags & dlpDBFlagOpen),
 			  "flagNewer", !!($1->flags & dlpDBFlagNewer),
 			  "flagReset", !!($1->flags & dlpDBFlagReset),
@@ -187,7 +187,7 @@ typedef int DLPDBERROR;
     if (DGETLONG($input,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
     if (DGETLONG($input,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
     if (DGETLONG($input,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-    if (DGETLONG($input,"flagClipping",0)) temp.flags |= dlpDBFlagClipping;
+    if (DGETLONG($input,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
     if (DGETLONG($input,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
     if (DGETLONG($input,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
     if (DGETLONG($input,"flagReset",0)) temp.flags |= dlpDBFlagReset;

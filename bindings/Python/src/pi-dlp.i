@@ -1,27 +1,36 @@
 // -*-C-*-
 
-extern char * dlp_errorlist[];
 extern char * dlp_strerror(int error);
 
 enum dlpDBFlags {
-	dlpDBFlagResource = 0x0001, /* Resource DB, instead of record DB */
-	dlpDBFlagReadOnly = 0x0002, /* DB is read only */
-	dlpDBFlagAppInfoDirty = 0x0004, /* AppInfo data has been modified */
-	dlpDBFlagBackup = 0x0008, /* DB is tagged for generic backup */
-	dlpDBFlagClipping = 0x0200, /* DB is a Palm Query Application (PQA) */
-	dlpDBFlagOpen = 0x8000, /* DB is currently open */
-	
+	dlpDBFlagResource 	= 0x0001,	/**< Resource database */
+	dlpDBFlagReadOnly 	= 0x0002,	/**< Database is read only */
+	dlpDBFlagAppInfoDirty 	= 0x0004,	/**< AppInfo data has been modified */
+	dlpDBFlagBackup 	= 0x0008,	/**< Database should be backed up during HotSync */
+	dlpDBFlagHidden		= 0x0100,	/**< Database is hidden */
+	dlpDBFlagLaunchable	= 0x0200,	/**< Database is launchable data (show in Launcher, launch app by Creator) */
+	dlpDBFlagRecyclable	= 0x0400,	/**< Database will be deleted shortly */
+	dlpDBFlagBundle		= 0x0800,	/**< Database is bundled with others having same creator (i.e. for Beam) */
+	dlpDBFlagOpen 		= 0x8000,	/**< Database is currently open */
+
 	/* v2.0 specific */
-	dlpDBFlagNewer = 0x0010, /* Newer version may be installed over open DB */
-	dlpDBFlagReset = 0x0020, /* Reset after installation */
+	dlpDBFlagNewer 		= 0x0010,	/**< Newer version may be installed over open DB (Palm OS 2.0 and later) */
+	dlpDBFlagReset 		= 0x0020,	/**< Reset after installation (Palm OS 2.0 and later) */
 
 	/* v3.0 specific */
-	dlpDBFlagCopyPrevention = 0x0040, /* DB should not be beamed */
-	dlpDBFlagStream = 0x0080          /* DB implements a file stream */
+	dlpDBFlagCopyPrevention = 0x0040,	/**< Database should not be beamed or sent (Palm OS 3.0 and later) */
+	dlpDBFlagStream 	= 0x0080,	/**< Database is a file stream (Palm OS 3.0 and later) */
+
+	/* OS 6+ */
+	dlpDBFlagSchema		= 0x1000,	/**< Schema database (Palm OS 6.0 and later) */
+	dlpDBFlagSecure		= 0x2000,	/**< Secure database (Palm OS 6.0 and later) */
+	dlpDBFlagExtended	= dlpDBFlagSecure, /**< Set if Schema not set and DB is Extended (Palm OS 6.0 and later) */
+	dlpDBFlagFixedUp	= 0x4000	/**< Temp flag used to clear DB on write (Palm OS 6.0 and later) */
 };
 
 enum dlpDBMiscFlags {
-	dlpDBMiscFlagExcludeFromSync = 0x80
+	dlpDBMiscFlagExcludeFromSync = 0x80,
+	dlpDBMiscFlagRamBased 	= 0x40		/**< DLP 1.2 and later: this database is in RAM */
 };
 
 enum dlpRecAttributes {
@@ -53,29 +62,31 @@ enum dlpDBList {
 	dlpDBListMultiple = 0x20		/* defined for DLP 1.2 */
 };
 
-enum dlpErrors { 
-  dlpErrNoError = -1,
-  dlpErrSystem  = -2,
-  dlpErrMemory  = -3,
-  dlpErrParam   = -4,
-  dlpErrNotFound = -5,
-  dlpErrNoneOpen = -6,
-  dlpErrAlreadyOpen = -7,
-  dlpErrTooManyOpen = -8,
-  dlpErrExists = -9,
-  dlpErrOpen = -10,
-  dlpErrDeleted = -11,
-  dlpErrBusy = -12,
-  dlpErrNotSupp = -13,
-  dlpErrUnused1 = -14,
-  dlpErrReadOnly = -15,
-  dlpErrSpace = -16,
-  dlpErrLimit = -17,
-  dlpErrSync = -18,
-  dlpErrWrapper = -19,
-  dlpErrArgument = -20,
-  dlpErrSize = -21,
-  dlpErrUnknown = -128
+enum dlpErrors {
+	dlpErrNoError = 0,	/**< No error */
+	dlpErrSystem,		/**< System error (0x0001) */
+	dlpErrIllegalReq,	/**< Illegal request, not supported by this version of DLP (0x0002) */
+	dlpErrMemory,		/**< Not enough memory (0x0003) */
+	dlpErrParam,		/**< Invalid parameter (0x0004) */
+	dlpErrNotFound,		/**< File, database or record not found (0x0005) */
+	dlpErrNoneOpen,		/**< No file opened (0x0006) */
+	dlpErrAlreadyOpen,	/**< File already open (0x0007) */
+	dlpErrTooManyOpen,	/**< Too many open files (0x0008) */
+	dlpErrExists,		/**< File already exists (0x0009) */
+	dlpErrOpen,		/**< Can't open file (0x000a) */
+	dlpErrDeleted,		/**< File deleted (0x000b) */
+	dlpErrBusy,		/**< Record busy (0x000c) */
+	dlpErrNotSupp,		/**< Call not supported (0x000d) */
+	dlpErrUnused1,		/**< @e Unused (0x000e) */
+	dlpErrReadOnly,		/**< File is read-only (0x000f) */
+	dlpErrSpace,		/**< Not enough space left on device (0x0010) */
+	dlpErrLimit,		/**< Limit reached (0x0011) */
+	dlpErrSync,		/**< Sync error (0x0012) */
+	dlpErrWrapper,		/**< Wrapper error (0x0013) */
+	dlpErrArgument,		/**< Invalid argument (0x0014) */
+	dlpErrSize,		/**< Invalid size (0x0015) */
+
+	dlpErrUnknown = 127	/**< Unknown error (0x007F) */
 };
 
 // DLP functions
@@ -169,11 +180,10 @@ extern DLPERROR dlp_ResetSyncFlags (int sd, int fHandle);
 extern DLPERROR dlp_ReadFeature (int sd, unsigned long STR4, unsigned int num, 
 				 unsigned long *OUTPUT);
 extern DLPERROR dlp_ReadNetSyncInfo (int sd, struct NetSyncInfo *OUTPUT);
-extern DLPERROR dlp_WriteNetSyncInfo (int sd, struct NetSyncInfo * i);
+extern DLPERROR dlp_WriteNetSyncInfo (int sd, const struct NetSyncInfo *i);
 extern DLPERROR dlp_ReadAppPreference (int sd, unsigned long STR4, int id_, int backup,
 				       int DLPMAXBUF, void *OUTBUF, size_t *OUTBUFLEN, 
 				       int *OUTPUT);
 extern DLPERROR dlp_WriteAppPreference (int sd, unsigned long STR4, int id, int backup,
 					int version, void *INBUF, size_t INBUFLEN);
-// and the most complex of all... i'm not even sure how it works.
-//extern int dlp_RPC (int sd, struct RPC_params * p, unsigned long *OUTPUT);
+
