@@ -221,10 +221,4 @@ int plu_getromversion(int sd, plu_romversion_t *d)
 	return 0;
 }
 
-int plu_portgiven()
-{
-	const char *port = getenv(env_pilotport);
-	return (port != NULL);
-}
-
 /* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */

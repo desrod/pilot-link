@@ -60,7 +60,7 @@ int main(int argc, const char *argv[])
 		"   Please see http://www.roaringpenguin.com/remind.html for more\n"
 		"   information on the Remind Calendar Program.\n\n");
 
-	if ((argc < 2) && !plu_portgiven()) {
+	if ((argc < 2)) {
 		poptPrintUsage(pc,stderr,0);
 		return 1;
 	}

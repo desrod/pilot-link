@@ -151,7 +151,7 @@ int main(int argc, const char *argv[])
 		"   Copies Treo foto databases to current directory and\n"
 		"   extracts .jpg files from them.");
 
-	if ((argc < 2) && !plu_portgiven()) {
+	if ((argc < 2)) {
 		poptPrintUsage(po,stderr,0);
 		return 1;
 	}

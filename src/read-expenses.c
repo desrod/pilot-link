@@ -58,7 +58,7 @@ int main(int argc, const char *argv[])
 	poptSetOtherOptionHelp(po,"\n\n"
 		"   Export Palm Expense application database data into text format\n\n");
 
-	if ((argc < 2) && !plu_portgiven()) {
+	if ((argc < 2)) {
 		poptPrintUsage(po,stderr,0);
 		return 1;
 	}

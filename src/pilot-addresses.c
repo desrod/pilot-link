@@ -46,7 +46,7 @@ void outchar(char c, FILE * out);
 int write_field(FILE * out, char *source, enum terminators more);
 int match_phone(char *buf, struct AddressAppInfo *aai);
 int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
-int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
+int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai, int human /* human-readable or CSV */);
 
 int realentry[21] =
     { 0, 1, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20 };
@@ -484,7 +484,67 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
  * Returns:     0
  *
  ***********************************************************************/
-int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
+
+void write_record_CSV(FILE *out, struct AddressAppInfo *aai, struct Address *addr, const int attribute, const int category)
+{
+	int j;
+	char buffer[16];
+
+	if (augment && (category || addr->showPhone)) {
+		write_field(out,
+				aai->category.name[category],
+				term_semi);
+		write_field(out,
+				aai->phoneLabels[addr->phoneLabel[addr->showPhone]],
+				term_semi);
+	}
+
+	for (j = 0; j < 19; j++) {
+		if (addr->entry[realentry[j]]) {
+			if (augment && (j >= 4) && (j <= 8)) {
+				write_field(out,
+						aai->phoneLabels[addr->phoneLabel
+								[j - 4]], term_semi);
+			}
+			write_field(out, addr->entry[realentry[j]],
+					tabledelim);
+		} else {
+			write_field(out, "", tabledelim);
+		}
+	}
+
+	snprintf(buffer, sizeof(buffer), "%d", (attribute & dlpRecAttrSecret) ? 1 : 0);
+	write_field(out, buffer, tabledelim);
+
+	write_field(out,
+		aai->category.name[category],
+		term_newline);
+}
+
+void write_record_human(FILE *out, struct AddressAppInfo *aai, struct Address *addr, const int attribute, const int category)
+{
+	int i;
+
+	printf("Category: %s\n", aai->category.name[category]);
+
+	for (i = 0; i < 19; i++) {
+		if (addr->entry[i]) {
+			int l = i;
+
+			if ((l >= entryPhone1) && (l <= entryPhone5)) {
+				printf("%s: %s\n",
+					aai->phoneLabels[addr->phoneLabel[l - entryPhone1]],
+					addr->entry[i]);
+			} else {
+				printf("%s: %s\n", aai->labels[l],
+					addr->entry[i]);
+			}
+		}
+	}
+	printf("\n");
+}
+
+int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai, int human)
 {
 	int 	i,
 		j,
@@ -496,16 +556,18 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	int count = 0;
 	const char *progress = "   Writing Palm Address Book entries to file... ";
 
-	/* Print out the header and fields with fields intact. Note we
-	   'ignore' the last field (Private flag) and print our own here, so
-	   we don't have to chop off the trailing comma at the end. Hacky. */
-	fprintf(out, "# ");
-	for (j = 0; j < 21; j++) {
-		write_field(out, tableheads[j],
-			    j<20 ? tabledelim : term_newline);
-	}
-	if (augment) {
-		fprintf(out,"### This in an augmented (non-standard) CSV file.\n");
+	if (!human) {
+		/* Print out the header and fields with fields intact. Note we
+		'ignore' the last field (Private flag) and print our own here, so
+		we don't have to chop off the trailing comma at the end. Hacky. */
+		fprintf(out, "# ");
+		for (j = 0; j < 21; j++) {
+			write_field(out, tableheads[j],
+				j<20 ? tabledelim : term_newline);
+		}
+		if (augment) {
+			fprintf(out,"### This in an augmented (non-standard) CSV file.\n");
+		}
 	}
 
 	if (!plu_quiet) {
@@ -525,35 +587,12 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 			continue;
 		unpack_Address(&addr, buf->data, buf->used);
 
-		if (augment && (category || addr.showPhone)) {
-			write_field(out,
-					aai->category.name[category],
-					term_semi);
-			write_field(out,
-					aai->phoneLabels[addr.phoneLabel[addr.showPhone]],
-					term_semi);
+		if (!human) {
+			write_record_CSV(out,aai,&addr,attribute,category);
+		} else {
+			write_record_human(out,aai,&addr,attribute,category);
 		}
 
-		for (j = 0; j < 19; j++) {
-			if (addr.entry[realentry[j]]) {
-				if (augment && (j >= 4) && (j <= 8)) {
-					write_field(out,
-						    aai->phoneLabels[addr.phoneLabel
-								     [j - 4]], term_semi);
-				}
-				write_field(out, addr.entry[realentry[j]],
-					    tabledelim);
-			} else {
-				write_field(out, "", tabledelim);
-			}
-		}
-
-		sprintf((char *)buf->data, "%d", (attribute & dlpRecAttrSecret) ? 1 : 0);
-		write_field(out, (char *)buf->data, tabledelim);
-
-		write_field(out,
-			aai->category.name[category],
-			term_newline);
 
 		++count;
 		if (!plu_quiet) {
@@ -590,6 +629,7 @@ int main(int argc, const char *argv[])
 		*wrFilename		= NULL,
 		*rdFilename		= NULL,
 		buf[0xffff];
+	int writehuman = 0;
 
 	pi_buffer_t *appblock;
 
@@ -607,6 +647,7 @@ int main(int argc, const char *argv[])
         	{"augment",	'a', POPT_ARG_NONE, &augment,             0, "Augment records with additional information"},
 	        {"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm", "file"},
         	{"write",	'w', POPT_ARG_STRING, &wrFilename, 'w', "Get records from Palm and write them to <file>", "file"},
+		{"human-readable",'C', POPT_ARG_NONE, &writehuman, 0, "Write generic human-readable output instead of CSV"},
 	        POPT_TABLEEND
 	};
 
@@ -614,12 +655,14 @@ int main(int argc, const char *argv[])
 
 	po = poptGetContext("pilot-addresses", argc, argv, options, 0);
 	poptSetOtherOptionHelp(po,"\n\n"
-		"   Reads addresses from the Palm to CSV file or\n"
+		"   Reads addresses from the Palm to file or\n"
 		"   writes addresses from CSV file to the Palm.\n\n"
 		"   Provide exactly one of --read or --write.\n\n");
 	plu_popt_alias(po,"delall",0,"--bad-option --delete-all");
 	plu_popt_alias(po,"delcat",0,"--bad-option --delete-category");
 	plu_popt_alias(po,"install",0,"--bad-option --category");
+	/* Useful alias */
+	plu_popt_alias(po,"no-csv",0,"--human-readable");
 
 	if (argc < 2) {
 		poptPrintUsage(po,stderr,0);
@@ -722,13 +765,12 @@ int main(int argc, const char *argv[])
 	case mode_write:
 		/* FIXME - Must test for existing file first! DD 2002/03/18 */
 		f = fopen(wrFilename, "w");
-
 		if (f == NULL) {
 			sprintf(buf, "%s: %s", progname, wrFilename);
 			perror(buf);
 			goto error_close;
 		}
-		write_file(f, sd, db, &aai);
+		write_file(f, sd, db, &aai, writehuman);
 		if (deletecategory) {
 			dlp_DeleteCategory(sd, db,
 				plu_findcategory(&aai.category,deletecategory,PLU_CAT_CASE_INSENSITIVE | PLU_CAT_WARN_UNKNOWN));

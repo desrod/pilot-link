@@ -50,7 +50,7 @@ int main(int argc, const char *argv[])
 	"   Exports any ToDo records marked as \"Archived\" on your Palm to\n"
 	"   human-readable format\n\n");
 
-	if ((argc < 2) && !plu_portgiven()) {
+	if (argc < 2) {
 		poptPrintUsage(po,stderr,0);
 		return 1;
 	}
