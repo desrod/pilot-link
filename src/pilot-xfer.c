@@ -797,54 +797,55 @@ void Purge(void)
 void Help(void) 
 {
 
-   PalmHeader(progname);
-   fprintf(stderr,"   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n", progname);
-   fprintf(stderr,"   -b[ackup] backupdir   = copy the contents of your palm to < backupdir >\n");
-   fprintf(stderr,"   -u[pdate] backupdir   = update backupdir with newer Palm data\n");
-   fprintf(stderr,"   -s[ync] backupdir     = same as - u above, but removes local files if data\n");
-   fprintf(stderr,"                           is removed from your Palm\n");
-   fprintf(stderr,"   -r[estore] backupdir  = restore backupdir to your Palm\n"); 
-   fprintf(stderr,"   -i[nstall] dbname(s)  = install local[prc | pdb] files to your Palm\n");
-   fprintf(stderr,"   -m[erge] filename(s)  = adds the records in <file> into the corresponding\n");
-   fprintf(stderr,"                           Palm database\n");
-   fprintf(stderr,"   -f[etch] dbname(s)    = retrieve dbname(s) from your Palm\n");
-   fprintf(stderr,"   -d[elete] dbname(s)   = delete(permanently) dbname(s) from your Palm\n");
-   fprintf(stderr,"   -e[xclude] filename   = exclude dbname(s) listed in <filename> from being\n");
-   fprintf(stderr,"                           included by -backup, -sync, or -update.\n");
-   fprintf(stderr,"   -P[urge]              = purge any deleted data that hasn't been cleaned up\n");
-   fprintf(stderr,"                           by a sync\n\n");
+   fprintf(stderr, "\n");
+   fprintf(stderr, "   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n\n", progname);
+   fprintf(stderr, "   -b[ackup] backupdir   = copy the contents of your palm to < backupdir >\n");
+   fprintf(stderr, "   -u[pdate] backupdir   = update backupdir with newer Palm data\n");
+   fprintf(stderr, "   -s[ync] backupdir     = same as - u above, but removes local files if data\n");
+   fprintf(stderr, "                           is removed from your Palm\n");
+   fprintf(stderr, "   -r[estore] backupdir  = restore backupdir to your Palm\n"); 
+   fprintf(stderr, "   -i[nstall] dbname(s)  = install local[prc | pdb] files to your Palm\n");
+   fprintf(stderr, "   -m[erge] filename(s)  = adds the records in <file> into the corresponding\n");
+   fprintf(stderr, "                           Palm database\n");
+   fprintf(stderr, "   -f[etch] dbname(s)    = retrieve dbname(s) from your Palm\n");
+   fprintf(stderr, "   -d[elete] dbname(s)   = delete(permanently) dbname(s) from your Palm\n");
+   fprintf(stderr, "   -e[xclude] filename   = exclude dbname(s) listed in <filename> from being\n");
+   fprintf(stderr, "                           included by -backup, -sync, or -update.\n");
+   fprintf(stderr, "   -P[urge]              = purge any deleted data that hasn't been cleaned up\n");
+   fprintf(stderr, "                           by a sync\n\n");
 
-   fprintf(stderr,"   -B[ackup]             = backup your Palm, clearing the read-only bits on all\n");
-   fprintf(stderr,"                           backed up databases\n");
-   fprintf(stderr,"   -U                    = update but clear the read-only bit upon sync\n");
-   fprintf(stderr,"   -S[ync]               = sync your Palm with a directory, clearing the\n");
-   fprintf(stderr,"                           read-only bit in the process for all sync'd\n");
-   fprintf(stderr,"                           databases\n\n");
+   fprintf(stderr, "   -B[ackup]             = backup your Palm, clearing the read-only bits on all\n");
+   fprintf(stderr, "                           backed up databases\n");
+   fprintf(stderr, "   -U                    = update but clear the read-only bit upon sync\n");
+   fprintf(stderr, "   -S[ync]               = sync your Palm with a directory, clearing the\n");
+   fprintf(stderr, "                           read-only bit in the process for all sync'd\n");
+   fprintf(stderr, "                           databases\n\n");
 
-   fprintf(stderr,"   -l[ist]               = list all application and 3 rd party data on the Palm\n");
-   fprintf(stderr,"   -L[istall]            = list all data, internal and external on the Palm\n");
-   fprintf(stderr,"   -v[ersion]            = report the version of %s(currently %d.%d.%d)\n", progname, PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR);
-   fprintf(stderr,"   -h[elp]               = reprint this usage screen\n\n");
+   fprintf(stderr, "   -l[ist]               = list all application and 3 rd party data on the Palm\n");
+   fprintf(stderr, "   -L[istall]            = list all data, internal and external on the Palm\n");
+   fprintf(stderr, "   -v[ersion]            = report the version of %s\n", progname);
+   fprintf(stderr, "                           (currently %d.%d.%d%s)\n", PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, PILOT_LINK_PATCH);
+   fprintf(stderr, "   -h[elp]               = reprint this usage screen\n\n");
 
-   fprintf(stderr,"   -a modifies -s to archive deleted files in specified directory.\n");
-   fprintf(stderr,"   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n");
-   fprintf(stderr,"   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n");
-   fprintf(stderr,"   -I modifies -b|-B, -u|-U, and -s|-S, to back up \"illegal\"\n");
-   fprintf(stderr,"      Unsaved Preferences.PDB (normally skipped, per Palm's recommendation).\n");
-   fprintf(stderr,"   -q makes all the backup options shut up about skipped files.\n");
-   fprintf(stderr,"   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n");
+   fprintf(stderr, "   -a modifies -s to archive deleted files in specified directory.\n");
+   fprintf(stderr, "   -F modifies -b, -u, and -s, to back up non-OS db's from Flash ROM.\n");
+   fprintf(stderr, "   -O modifies -b, -u, and -s, to back up OS db 's from Flash ROM.\n");
+   fprintf(stderr, "   -I modifies -b|-B, -u|-U, and -s|-S, to back up \"illegal\"\n");
+   fprintf(stderr, "      Unsaved Preferences.PDB (normally skipped, per Palm's recommendation).\n");
+   fprintf(stderr, "   -q makes all the backup options shut up about skipped files.\n");
+   fprintf(stderr, "   -c does same as '-q', but counts files(\"[nnn]...\") as they go by.\n\n");
 
-   fprintf(stderr,"   The serial port used to connect to may be specified by the $PILOTPORT\n");
-   fprintf(stderr,"   environment variable in your shell instead of the command line.  If it is\n");
-   fprintf(stderr,"   not specified anywhere, it will default to /dev/pilot.\n\n");
+   fprintf(stderr, "   The serial port used to connect to may be specified by the $PILOTPORT\n");
+   fprintf(stderr, "   environment variable in your shell instead of the command line.  If it is\n");
+   fprintf(stderr, "   not specified anywhere, it will default to /dev/pilot.\n\n");
    
-   fprintf(stderr,"   Additionally, the baud rate to connect with may be specified by the\n");
-   fprintf(stderr,"   $PILOTRATE environment variable.If not specified, it will default to 9600.\n");
-   fprintf(stderr,"   Please use caution setting $PILOTRATE to higher values, as several types of\n");
-   fprintf(stderr,"   workstations have problems with higher baud rates.\n");
+   fprintf(stderr, "   Additionally, the baud rate to connect with may be specified by the\n");
+   fprintf(stderr, "   $PILOTRATE environment variable.If not specified, it will default to 9600.\n");
+   fprintf(stderr, "   Please use caution setting $PILOTRATE to higher values, as several types of\n");
+   fprintf(stderr, "   workstations have problems with higher baud rates.\n");
    
-   fprintf(stderr,"   Always consult the man page(s) for additional usage of these options as well\n");
-   fprintf(stderr,"   as details on the results of combining other parameters together.\n\n");
+   fprintf(stderr, "   Always consult the man page(s) for additional usage of these options as well\n");
+   fprintf(stderr, "   as details on the results of combining other parameters together.\n\n");
 
 exit(0);}
 

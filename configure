@@ -997,8 +997,9 @@ fi
 
 echo "$ac_t""$ac_cv_prog_gnu_ld" 1>&6
 
+
 echo $ac_n "checking for BSD-compatible nm""... $ac_c" 1>&6
-echo "configure:1979: checking for BSD-compatible nm" >&5
+echo "configure:1300: checking for BSD-compatible nm" >&5
 if eval "test \"`echo '$''{'ac_cv_path_NM'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1032,6 +1033,7 @@ fi
 
 NM="$ac_cv_path_NM"
 echo "$ac_t""$NM" 1>&6
+
 
 echo $ac_n "checking whether ln -s works""... $ac_c" 1>&6
 echo "configure:1038: checking whether ln -s works" >&5
@@ -1354,7 +1356,6 @@ ccexecs=''
 cclib=''
 libcclib=''
 SUBMAKE_COMM='cd $(top_builddir)/libsock ; $(MAKE) '
-SUBMAKE_COMM_DUBIOUS='cd $(top_builddir)/dubious ; $(MAKE) '
 SUBMAKE_COMM_CC='-true'
 EXT=''
 CXXLIBS=''
@@ -1876,7 +1877,7 @@ else
 int main() {
 
 /* Ultrix mips cc rejects this.  */
-typedef int charset[2]; const charset x;
+typedef int charset[2]; const charset x = {0,0};
 /* SunOS 4.1.1 cc rejects this.  */
 char const *const *ccp;
 char **p;
@@ -2641,7 +2642,7 @@ fi
 
 itcl=''
 if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
-	for tcl_path in /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local /usr /usr/local/tcl7.4; do
+	for tcl_path in /usr /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
 		if test -f $tcl_path/lib/tclConfig.sh; then
 			with_tcl=$tcl_path; break
 		elif test -f $tcl_path/lib/itcl/tclConfig.sh; then
@@ -2696,6 +2697,7 @@ else
 		TCLTK_LIBS="\$(TCL_LIB_SPEC) \$(TCL_LIBS)"
 		TCLTK_FLAGS="-DTCL \$(TCL_INC)"
 		TCLTKFLAGS="-DTCL $TCL_INC"
+		DEBIANTCL="$TCL_INC/tcl"
 		WITHTCL='WITHTCL'
 		
 		if test "x$with_itcl" = "xyes" || test "x$with_itcl" = "x"; then
@@ -2733,9 +2735,9 @@ echo "configure:2716: checking for Itcl" >&5
 				#WITHTK='WITHTK'
 				if test "x$ITCL_INC" = "x$TCL_INC"; then
 					ITCL_INC=" #same as TCL_INC"
-				#	TCLTKFLAGS="-DTCL -DTK $TCL_INC"
-				#else
-				#	TCLTKFLAGS="-DTCL -DTK $TCL_INC $TK_INC"
+					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
+				else
+					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL $TK_INC"
 				fi
 			fi
 		fi
@@ -2775,9 +2777,9 @@ echo "configure:2758: checking for Tk" >&5
 				WITHTK='WITHTK'
 				if test "x$TK_INC" = "x$TCL_INC"; then
 					TK_INC=" #same as TCL_INC"
-					TCLTKFLAGS="-DTCL -DTK $TCL_INC"
+					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL"
 				else
-					TCLTKFLAGS="-DTCL -DTK $TCL_INC $TK_INC"
+					TCLTKFLAGS="-DTCL -DTK $TCL_INC $DEBIANTCL $TK_INC"
 				fi
 			fi
 		fi
@@ -3046,7 +3048,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "libsock/Makefile $cc_m Makefile dubious/Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile include/pi-config.h include/pi-sockaddr.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "libsock/Makefile $cc_m Makefile tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile include/pi-config.h include/pi-sockaddr.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -3098,7 +3100,6 @@ s%@ccexecs@%$ccexecs%g
 s%@cclib@%$cclib%g
 s%@libcclib@%$libcclib%g
 s%@SUBMAKE_COMM@%$SUBMAKE_COMM%g
-s%@SUBMAKE_COMM_DUBIOUS@%$SUBMAKE_COMM_DUBIOUS%g
 s%@SUBMAKE_COMM_CC@%$SUBMAKE_COMM_CC%g
 s%@EXT@%$EXT%g
 s%@CXXLIBS@%$CXXLIBS%g
@@ -3187,7 +3188,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"libsock/Makefile $cc_m Makefile dubious/Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile"}
+CONFIG_FILES=\${CONFIG_FILES-"libsock/Makefile $cc_m Makefile tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then

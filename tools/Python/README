@@ -1,0 +1,162 @@
+
+As of 0.8.0: Any documentation included is dubious at best.
+
+
+New, as of 0.7.3: the module has been completely overhauled to support a
+more robust installation process ('make install' might just work!) and the
+actual interface has been substantially modified to automatically pack and
+unpack records.
+
+Note that currently only packing/unpacking is implemented for Memos, ToDos,
+and two of the Mail preferences, but extending this is merely a SMOP.
+
+I'll try and give a slight taste of how it now works. 
+
+   socket = pdapilot.OpenPort('/dev/cua3') # Shorthand for open serial
+                                           # connection, returns an integer
+
+   dlp = pdapilot.Accept(port) # Returns a new object when the connection succeeds
+   
+   db = dlp.Open('MemoDB')  # Open the database, return yet another object
+   
+   print db.Class      # Shows that pdapilot.Memo has been chosen.  You
+                       # could deactivate packing by switching to a more
+                       # primitive class: db.Class = pdapilot.RecordDatabase
+   
+   r = db.GetRecord(0) # Get the first record, returning an object
+                       # of pdapilot.Memo.Record class. r.raw is the record
+                       # contents, r.text contains the unpacked text, and
+                       # r.id, r.attr, & r.category contain the obvious.
+   
+   print r # Dump the record to show what it contains
+   
+   r.text = r.text + "Hello world!" # append text to record
+   
+   db.SetRecord(r) # Write record to database. Since it contains the
+                   # original ID number, this overwrites the original record
+                   # with this new one.
+
+   r2 = db.NewRecord() # Construct a new blank record with appropriate
+                       # attributes for the Memo database.
+                       # This record could also have been constructed via
+                       # pdapilot.Memo.Record()
+
+   r2.text = 'Hello again!'
+   
+   r2.id = 0 # Must set ID
+   
+   db.SetRecord(r2) # Append record (since ID is zero, a new ID will be assigned)
+   
+   r3 = pdapilot.Database.Record() # Construct new blank record that is not
+                                   #  specific to Memo
+   
+   r3.raw = "Foo\0" # Access the raw record. Actually, all of the "r"
+                    # objects have contained a raw attribute. Note that
+                    # changes to the raw attribute are not automatically
+                    # mirrored in the unpacked slots (and vice versa).
+                    # Changes to the raw data will not be respected when the
+                    # block is repacked.
+
+   r4 = db.NewAppBlock() # Returns an empty pdapilot.Memo.AppBlock object
+   
+   print r4.categoryname # print out the categories
+   
+   print r4.pack() # Show what the packed record looks like (this incidentally updates r4.raw)
+   
+---
+
+
+This is an experimental piece of code to interface Python to the pilot-link
+library. To use it, you will have to figure out how to link and install the
+.c file so that your Python installation can use it. The included Makefile
+will probably only work for ELF systems.
+
+(Note that I have only tested this with Python 1.4, and have no particular
+expectation of it working with earlier or later versions.)
+
+Usage notes:
+
+	Start with 'importing pdapilot'.
+	
+	Look at test.py for examples of simple usage.
+	
+Documentation (such as it is):	
+	
+	pdapilot.OpenPort(device): Open a device, ready for Accept
+		
+		returns a file descriptor which may be used to access the given device
+		(serial port) with the Accept routine.
+		
+		This routine is built out of Socket, Bind, & Listen.
+
+	pdapilot.Socket(domain,type,protocol): returns a new pilot socket.
+
+	pdapilot.Bind(socket, address): binds a socket to the given address.
+
+	pdapilot.Listen(socket, backup):
+	
+	pdapilot.Accept(socket): Waits for incoming Palm connection
+	
+		returns a new pdapilot.dlp object if a connection succeeds.
+	
+	pdapilot.FileOpen(filename): Opens the named .prc or .pdb file
+	
+		returns a new pdapilot.file object if the file can be opened.
+	
+	pdapilot.FileCreate(filename, info): Creates the named .prc or .pdb file
+	
+		returns a new pdapilot.file object if the file can be created.
+		info must be a dictionary containing elements such as these:
+		
+			flags, miscflags, type, creator, version, index, modnum,
+			crdate, moddate, backupdate, name
+		
+		type and creator may each be an integer or a 4-character string.
+	
+	pdapilot.MemoUnpack(string): Unpacks a Memo record
+	
+		Treats string as a record from the MemoDB database and returns
+		the contents in a dictionary.
+
+	pdapilot.MemoPack(dict): Packs a Memo record
+	
+		Packs the dictionary into a string suitable for insertion
+		in the MemoDB database.
+
+	pdapilot.MemoUnpackAppBlock(string): Unpacks a Memo App block
+	
+		Treats string as the AppBlock from the MemoDB database and returns
+		the contents in a dictionary.
+
+	pdapilot.MemoPackAppBlock(dict): Packs a Memo App block
+	
+		Packs the dictionary into a string suitable for putting
+		in the MemoDB database's AppBlock.
+
+	pdapilot.TodoUnpack(string): Unpacks a Todo record
+
+	pdapilot.TodoPack(dict): Packs a Todo record
+
+	pdapilot.TodoUnpackAppBlock(string): Unpacks a Todo App block
+
+	pdapilot.TodoPackAppBlock(dict): Packs a Todo App block
+	
+Methods of pdapilot.dlp:
+	
+	Close(status=0): Closes the Palm connection
+	
+		If status is non-zero, convey that status to the Palm.
+		Note that Close is automatic on destruction of a pdapilot.dlp
+		object.
+
+	Open(name): Opens a database
+	
+		returns a new pdapilot.dlp.db object if successful, otherwise
+		throws pdapilot.error.
+
+	Create(name,...): Creates a database
+	
+		returns a new pdapilot.dlp.db object if successful, otherwise
+		throws pdapilot.error.
+
+	etc.

@@ -44,6 +44,9 @@ CXXLIBS = @CXXLIBS@
 libcclib = @libcclib@
 cclib = @cclib@
 
+LANGS = Perl5 Java Tcl Python
+SUBDIRS = tools
+
 INSTALL = $(LIBTOOL) @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
@@ -55,7 +58,6 @@ SHELL = /bin/sh
 CPLIB = @CPLIB@
 EXT = @EXT@
 SUBMAKE_COMM = @SUBMAKE_COMM@
-SUBMAKE_COMM_DUBIOUS = @SUBMAKE_COMM_DUBIOUS@
 SUBMAKE_COMM_CC = @SUBMAKE_COMM_CC@
 
 LIBTOOL = @LIBTOOL@
@@ -64,13 +66,17 @@ LIBTOOLLINK = $(LIBTOOL) --mode=link
 CCLINK = $(LIBTOOLLINK)  $(PURELINK) $(PURIFY) $(CC) $(LDFLAGS) $(CFLAGS)
 CXXLINK = $(LIBTOOLLINK) $(PURELINK) $(PURIFY) $(CXX) $(LDFLAGS) $(CXXFLAGS)
 
-.SUFFIXES: .out .o .cc .c .e .r .f .y .l .s .p
+.SUFFIXES: .out .o .cc .c .e .r .f .y .l .s .p .PL
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
 .cc.o:
 	$(CXX) $(CXXFLAGS) -c $<
+
+.PL:
+	$(PERL5) $< > $@
+	chmod +x $@
 
 
 WITHTCL = $(TCLEXECS)
@@ -204,12 +210,6 @@ pilot-file$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-file.o
 pilot-clip$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-clip.o
 	$(CCLINK) pilot-clip.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(LIBS)
 
-pilot-debug.o: pilot-debug.c Makefile
-	$(CC) $(CFLAGS) -c pilot-debug.c
-
-pd-tty.o: pd-tty.c Makefile
-	$(CC) $(CFLAGS) -c pd-tty.c
-
 pilot-debug$(EXT): $(PILIB) $(PIHEADER) $(GETOPT) pilot-debug.o pd-tty.o
 	$(CCLINK) pilot-debug.o pd-tty.o $(PILIB) $(PIHEADER) $(GETOPT) -o $@ $(TCLTK_LIBS) $(RLLIBS) $(LIBS)
 
@@ -264,30 +264,24 @@ parsedate.c: parsedate.y
 	mv y.tab.c parsedate.c
 
 pilot-undelete: pilot-undelete.PL
-	$(PERL5) pilot-undelete.PL > pilot-undelete
-	chmod +x pilot-undelete
 
 ietf2datebook: ietf2datebook.PL
-	$(PERL5) ietf2datebook.PL > ietf2datebook
-	chmod +x ietf2datebook
 
 sync-plan: sync-plan.PL
-	$(PERL5) sync-plan.PL > sync-plan
-	chmod +x sync-plan
 
 FORCE:
 
 Python:	FORCE
-	cd Python; $(MAKE)
+	cd $(SUBDIRS)/Python; $(MAKE)
 
 Perl5 Perl: FORCE
-	cd Perl5; $(PERL5) Makefile.PL && $(MAKE)
+	cd $(SUBDIRS)/Perl5; $(PERL5) Makefile.PL && $(MAKE)
 
 Tcl: FORCE
-	cd Tcl; $(MAKE)
+	cd $(SUBDIRS)/Tcl; $(MAKE)
 	
 Java: FORCE
-	cd Java; $(MAKE)
+	cd $(SUBDIRS)/Java; $(MAKE)
 	
 check test tests: FORCE
 	cd tests; $(MAKE) tests
@@ -299,7 +293,6 @@ depend:
 #	@-p4 edit Makefile.in */Makefile.in 2>&1 >> /dev/null
 	@-chmod +w */Makefile.in 2>&1 >> /dev/null
 	$(SUBMAKE_COMM) depend
-	$(SUBMAKE_COMM_DUBIOUS) depend
 	$(SUBMAKE_COMM_CC) depend
 	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -w -MM -Iinclude *.c >> Makefile.in
 #	@-p4 revert `p4 diff -sr Makefile.in */Makefile.in` 2>&1 >> /dev/null 
@@ -311,17 +304,17 @@ os2:
 	@-p4 revert `p4 diff -sr Makefile.os2 */Makefile.os2` 2>&1 >> /dev/null 
 
 distclean: clean depend
-	$(RM) Makefile libsock/Makefile dubious/Makefile include/pi-config.h include/pi-sockaddr.h
+	$(RM) Makefile libsock/Makefile include/pi-config.h include/pi-sockaddr.h
 	$(RM) libcc/Makefile
 	$(RM) config.log config.status config.cache libtool
 	$(RM) PiDebug.log
-	-cd Perl5 ; $(MAKE) realclean ; rm Makefile.PL
-	-cd Python ; $(MAKE) distclean
-	-cd Tcl ; $(MAKE) clean
-	-cd Java ; $(MAKE) distclean
+	-cd $(SUBDIRS)/Perl5 ; $(MAKE) realclean ; rm Makefile.PL
+	-cd $(SUBDIRS)/Python ; $(MAKE) distclean
+	-cd $(SUBDIRS)/Tcl ; $(MAKE) clean
+	-cd $(SUBDIRS)/Java ; $(MAKE) distclean
 	-cd tests ; $(MAKE) distclean
 	$(RM) *~ *.orig */*~ */*.orig
-	$(RM) Tcl/Makefile Perl5/Makefile.PL Perl5/Makefile Python/Makefile
+	$(RM) $(SUBDIRS)/Tcl/Makefile $(SUBDIRS)/Perl5/Makefile.PL $(SUBDIRS)/Perl5/Makefile $(SUBDIRS)/Python/Makefile
 
 clean:
 	$(RM) *.o *.a *.lo *.la core a.out tarball test_s test_c install-prc$(EXT) pilot-debug$(EXT)
@@ -329,7 +322,6 @@ clean:
 	$(RM) $(CEXECS) $(TCLEXECS) $(CXXEXECS) $(PERLEXECS) validate 
 	$(RM) pilot.rom* pilot2.rom* sync-plan.ids.*
 	$(SUBMAKE_COMM) clean
-	$(SUBMAKE_COMM_DUBIOUS) clean
 	$(SUBMAKE_COMM_CC) clean
 
 tarball: distclean
@@ -337,18 +329,22 @@ tarball: distclean
 	./tarball
 
 #Depend information starts here. Do not edit the text beyond this point!
+address-db.o: address-db.c pi-socket.h
 addresses.o: addresses.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-address.h \
- include/pi-appinfo.h include/pi-dlp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-address.h include/pi-appinfo.h include/pi-dlp.h \
+ include/pi-header.h
+datebook-db.o: datebook-db.c pi-socket.h
 debugsh.o: debugsh.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-syspkt.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-syspkt.h include/pi-header.h
 dlpsh.o: dlpsh.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-padp.h \
- include/pi-dlp.h include/pi-serial.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-padp.h include/pi-dlp.h include/pi-serial.h \
+ include/pi-header.h
 getopt.o: getopt.c
 getopt1.o: getopt1.c getopt.h
 getrom.o: getrom.c include/pi-source.h include/pi-config.h \
@@ -357,49 +353,56 @@ getrom.o: getrom.c include/pi-source.h include/pi-config.h \
  include/pi-header.h
 hinotes.o: hinotes.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-hinote.h \
- include/pi-appinfo.h include/pi-dlp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-hinote.h include/pi-appinfo.h include/pi-dlp.h \
+ include/pi-header.h
 install-datebook.o: install-datebook.c include/pi-source.h \
  include/pi-config.h include/pi-socket.h include/pi-args.h \
  include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/pi-dlp.h include/pi-datebook.h include/pi-appinfo.h
+ pi-socket.h include/pi-dlp.h include/pi-datebook.h \
+ include/pi-appinfo.h
 install-hinote.o: install-hinote.c include/pi-source.h \
  include/pi-config.h include/pi-socket.h include/pi-args.h \
  include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/pi-dlp.h include/pi-hinote.h include/pi-appinfo.h \
+ pi-socket.h include/pi-dlp.h include/pi-hinote.h include/pi-appinfo.h \
  include/pi-header.h
 install-memo.o: install-memo.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-memo.h include/pi-appinfo.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-memo.h include/pi-appinfo.h
 install-todos.o: install-todos.c include/pi-source.h \
  include/pi-config.h include/pi-socket.h include/pi-args.h \
  include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/pi-dlp.h include/pi-todo.h include/pi-appinfo.h \
+ pi-socket.h include/pi-dlp.h include/pi-todo.h include/pi-appinfo.h \
  include/pi-header.h
 install-user.o: install-user.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-header.h
 kittykiller.o: kittykiller.c
+main.o: main.c padp.h
+memo-db.o: memo-db.c pi-socket.h
 memos.o: memos.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-memo.h \
- include/pi-appinfo.h include/pi-dlp.h include/pi-file.h \
- include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-memo.h include/pi-appinfo.h include/pi-dlp.h \
+ include/pi-file.h include/pi-header.h
 money2qif.o: money2qif.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-money.h \
- include/pi-appinfo.h include/pi-dlp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-money.h include/pi-appinfo.h include/pi-dlp.h \
+ include/pi-header.h
+padp.o: padp.c pi-socket.h padp.h
 parsedate.o: parsedate.c
 pd-tty.o: pd-tty.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-syspkt.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-syspkt.h
 pi-csd.o: pi-csd.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-serial.h include/pi-slp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-serial.h include/pi-slp.h \
+ include/pi-header.h
 pi-getram.o: pi-getram.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
  include/pi-sockaddr.h include/pi-macros.h include/pi-syspkt.h \
@@ -410,65 +413,74 @@ pi-getrom.o: pi-getrom.c include/pi-source.h include/pi-config.h \
  include/pi-dlp.h include/pi-header.h
 pi-nredir.o: pi-nredir.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-header.h
 pi-port.o: pi-port.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-serial.h include/pi-slp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-serial.h include/pi-slp.h \
+ include/pi-header.h
 pilot-addresses.o: pilot-addresses.c include/pi-source.h \
  include/pi-config.h include/pi-socket.h include/pi-args.h \
  include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/pi-dlp.h include/pi-address.h include/pi-appinfo.h \
- include/pi-header.h
+ pi-socket.h include/pi-dlp.h include/pi-address.h \
+ include/pi-appinfo.h include/pi-header.h
 pilot-clip.o: pilot-clip.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-syspkt.h \
- include/pi-dlp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-syspkt.h include/pi-dlp.h include/pi-header.h
 pilot-debug.o: pilot-debug.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-syspkt.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-syspkt.h
 pilot-dedupe.o: pilot-dedupe.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-header.h
 pilot-file.o: pilot-file.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-file.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-file.h include/pi-header.h
 pilot-mail.o: pilot-mail.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-mail.h \
- include/pi-appinfo.h include/pi-dlp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-mail.h include/pi-appinfo.h include/pi-dlp.h \
+ include/pi-header.h
 pilot-prc.o: pilot-prc.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-dlp.h \
- include/pi-file.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-dlp.h include/pi-file.h include/pi-header.h
 pilot-schlep.o: pilot-schlep.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-file.h \
- include/pi-dlp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-file.h include/pi-dlp.h include/pi-header.h
 pilot-xfer.o: pilot-xfer.c getopt.h include/pi-source.h \
  include/pi-config.h include/pi-socket.h include/pi-args.h \
  include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/pi-file.h include/pi-dlp.h include/pi-header.h
+ pi-socket.h include/pi-file.h include/pi-dlp.h include/pi-header.h
 read-expenses.o: read-expenses.c include/pi-source.h \
  include/pi-config.h include/pi-socket.h include/pi-args.h \
  include/pi-version.h include/pi-sockaddr.h include/pi-macros.h \
- include/pi-expense.h include/pi-appinfo.h include/pi-dlp.h \
- include/pi-header.h
+ pi-socket.h include/pi-expense.h include/pi-appinfo.h \
+ include/pi-dlp.h include/pi-header.h
 read-ical.o: read-ical.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-todo.h \
- include/pi-appinfo.h include/pi-datebook.h include/pi-dlp.h \
- include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-todo.h include/pi-appinfo.h include/pi-datebook.h \
+ include/pi-dlp.h include/pi-header.h
 read-todos.o: read-todos.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-todo.h \
- include/pi-appinfo.h include/pi-dlp.h include/pi-file.h \
- include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-todo.h include/pi-appinfo.h include/pi-dlp.h \
+ include/pi-file.h include/pi-header.h
 reminders.o: reminders.c include/pi-source.h include/pi-config.h \
  include/pi-socket.h include/pi-args.h include/pi-version.h \
- include/pi-sockaddr.h include/pi-macros.h include/pi-datebook.h \
- include/pi-appinfo.h include/pi-dlp.h include/pi-header.h
+ include/pi-sockaddr.h include/pi-macros.h pi-socket.h \
+ include/pi-datebook.h include/pi-appinfo.h include/pi-dlp.h \
+ include/pi-header.h
+serial.o: serial.c pi-socket.h
+slp.o: slp.c pi-socket.h slp.h
+socket.o: socket.c pi-socket.h padp.h
+test_c.o: test_c.c pi-socket.h
+test_s.o: test_s.c pi-socket.h
+utils.o: utils.c pi-socket.h

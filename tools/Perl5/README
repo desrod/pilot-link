@@ -1,0 +1,17 @@
+
+As of 0.8.0: Any documentation included is dubious at best.
+
+
+This is an experimental piece of code to interface Perl 5 to the pilot-link
+library. To use it, you will need to perform these steps:
+
+   perl Makefile.PL
+   make
+
+If everything is working, you can "make install" as root to install this
+interface system-wide. You can try "make test" before that.
+
+(Note that I have only tested this with Perl 5.004, though I have no reason
+to believe it won't work with earlier or later versions.)
+
+For documentation (such as it is), please read test.pl.

@@ -1,0 +1,58 @@
+TYPEMAP
+PDA::Pilot::File *	T_PTROBJ
+PDA::Pilot::DLP *	T_PTROBJ
+PDA::Pilot::DLP::DB *	T_PTROBJ
+PDA::Pilot::DLP::ResourceDB *	T_PTROBJ
+PDA::Pilot::DLP::RecordDB *	T_PTROBJ
+DlpDB	T_PTROBJ
+DBInfo	T_DBInfo
+UserInfo	T_UserInfo
+Char4	T_CHAR4
+Result	T_RESULT
+
+INPUT
+T_DBInfo
+	unpack_dbinfo($arg, $var);
+
+T_UserInfo
+	unpack_userinfo($arg, $var);
+
+T_CHAR4
+	{
+		if (SvIOKp($arg) || SvNOKp($arg))
+			$var = SvIV($arg);
+		else {
+		    STRLEN len;
+		    char * c = SvPV($arg, len);
+		    $var = makelong(c);
+		}
+	}
+T_PTROBJ
+	if (sv_derived_from($arg, \"${ntype}\")) {
+		IV tmp = SvIV((SV*)SvRV($arg));
+		$var = ($type) tmp;
+	}
+	else
+		croak(\"$var is not of type ${ntype}\")
+
+OUTPUT
+T_DBInfo
+	pack_dbinfo($arg, $var, 0);
+
+T_UserInfo
+	pack_userinfo($arg, $var, 0);
+
+T_CHAR4
+	{
+		char * c = printlong($var);
+		sv_setpvn($arg, c, 4);
+	}
+
+T_RESULT
+	if ($var < 0) {
+		sv_setsv($arg, &sv_no);
+		self->errnop = $var;
+	} else
+		sv_setsv($arg, &sv_yes);
+T_PTROBJ
+	sv_setref_pv($arg, \"${ntype}\", (void*)$var);

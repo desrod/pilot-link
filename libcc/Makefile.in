@@ -29,7 +29,7 @@ LIBTOOL = @LIBTOOL@
 .SUFFIXES: .out .o .lo .la .cc .c .e .r .f .y .l .s .p
 
 .cc.o:
-	$(CXX) $(CXXFLAGS) -c $*.cc
+	$(CXX) $(CXXFLAGS) -c $<
 
 .cc.lo:
 	$(LIBTOOL) --mode=compile $(CXX) $(CXXFLAGS) -c $<

@@ -1,3 +1,18 @@
+2000-10-20  David A. Desrosiers <hacker@linuxcare.com>
+
+	* Cleaned up some more "ascii art". Nice small
+          tight header now. 
+
+	* Moved the $(LANG) to their own ./tools dir
+          in preparation for the autoconfiscating of 
+          pilot-link. 
+
+	* configure.in fix for Debian's broken Tcl
+          include path mess. Still not perfect. 
+
+	* Beginning the merge of install-????.c into 
+          pilot-install -foo. 
+
 2000-10-18  David A. Desrosiers <hacker@linuxcare.com>
 
         * s/port = argv[1]/device = argv[1]/

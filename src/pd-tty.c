@@ -38,14 +38,13 @@ void do_readline(void);
 
 #ifdef TK
 extern int usetk;
-
-# include <tk/tk.h>
+#include <tk.h>
 #else
-# include <tcl/tcl.h>
+#include <tcl.h>
 #endif
 
 #ifndef TCL_ACTIVE
-# define TCL_ACTIVE TCL_READABLE
+#define TCL_ACTIVE TCL_READABLE
 #endif
 
 extern int Interactive;
@@ -53,7 +52,7 @@ extern int Interactive;
 extern Tcl_Interp *interp;
 
 extern int tty;			/*
-                                 * Non-zero means standard input is a
+				 * Non-zero means standard input is a
 				 * terminal-like device.  Zero means it's
 				 */
 
@@ -66,22 +65,23 @@ static Tcl_DString command;
 
 static int mode = 0;
 
-static void Readable(ClientData d, int mask)
+static void
+Readable(ClientData d, int mask)
 {
    mode = 1;
    rl_callback_read_char();
 }
 
-
-static void Exit(ClientData d)
+static void
+Exit(ClientData d)
 {
    rl_callback_handler_remove();
    if (mode)
       puts("");
 }
 
-
-static void execline(char *line)
+static void
+execline(char *line)
 {
    int gotPartial = 0;
    char *cmd;
@@ -101,7 +101,8 @@ static void execline(char *line)
 
    if (!Tcl_CommandComplete(cmd)) {
       gotPartial = 1;
-   } else {
+   }
+   else {
       int code;
 
       gotPartial = 0;
@@ -114,7 +115,8 @@ static void execline(char *line)
 
 	 if (code != TCL_OK) {
 	    chan = Tcl_GetChannel(interp, "stderr", NULL);
-	 } else {
+	 }
+	 else {
 	    chan = Tcl_GetChannel(interp, "stdout", NULL);
 	 }
 	 if (chan) {
@@ -125,11 +127,11 @@ static void execline(char *line)
       Tcl_ResetResult(interp);
    }
 
-   rl_callback_handler_install(gotPartial ? "> " : "pilot-debug> ",
-			       execline);
+   rl_callback_handler_install(gotPartial ? "> " : "pilot-debug> ", execline);
 }
 
-void do_readline(void)
+void
+do_readline(void)
 {
    char buf[20];
    int exitCode = 0;
@@ -169,17 +171,20 @@ static Tcl_DString command;
 
 static int mode = 0;
 
-static void Readable(ClientData d, int mask)
+static void
+Readable(ClientData d, int mask)
 {
    readable = 1;
 }
 
-static void Exit(ClientData d)
+static void
+Exit(ClientData d)
 {
    rl_deprep_terminal();
 }
 
-void do_readline(void)
+void
+do_readline(void)
 {
    char buf[20];
    int gotPartial = 0;
@@ -207,10 +212,10 @@ void do_readline(void)
 
       if (!Tcl_CommandComplete(cmd)) {
 	 gotPartial = 1;
-      } else {
+      }
+      else {
 	 gotPartial = 0;
 	 code = Tcl_RecordAndEval(interp, cmd, TCL_EVAL_GLOBAL);
-
 
 	 Tcl_DStringFree(&command);
 	 if (*interp->result != 0) {
@@ -218,7 +223,8 @@ void do_readline(void)
 
 	    if (code != TCL_OK) {
 	       chan = Tcl_GetChannel(interp, "stderr", NULL);
-	    } else {
+	    }
+	    else {
 	       chan = Tcl_GetChannel(interp, "stdout", NULL);
 	    }
 	    if (chan) {
@@ -233,9 +239,9 @@ void do_readline(void)
    Tcl_Eval(interp, buf);
 }
 
-
 /* Replace internal readline routine that retrieves a character */
-int rl_getc(FILE * stream)
+int
+rl_getc(FILE * stream)
 {
    unsigned char c;
    int d;
@@ -257,7 +263,8 @@ int rl_getc(FILE * stream)
 }
 
 /* Replace internal readline routine that gets a character without blocking */
-void rl_gather_tyi(void)
+void
+rl_gather_tyi(void)
 {
    unsigned char c;
    int d;
@@ -281,7 +288,6 @@ static void StdinProc(ClientData clientData, int mask);
 
 static void Prompt(Tcl_Interp * interp, int partial);
 
-
 static Tcl_DString command;	/* Used to buffer incomplete commands being
 				 * read from stdin. */
 
@@ -292,8 +298,8 @@ static int gotPartial = 0;
 
 static int mode = 0;
 
-
-void do_readline(void)
+void
+do_readline(void)
 {
    char buf[20];
    int exitCode = 0;
@@ -357,11 +363,11 @@ void do_readline(void)
  *----------------------------------------------------------------------
  */
 
-
     /* ARGSUSED */
-static void StdinProc(clientData, mask)
-ClientData clientData;		/* Not used. */
-int mask;			/* Not used. */
+static void
+StdinProc(clientData, mask)
+     ClientData clientData;	/* Not used. */
+     int mask;			/* Not used. */
 {
    char *cmd;
    int code, count;
@@ -373,11 +379,13 @@ int mask;			/* Not used. */
       if (!gotPartial) {
 	 if (tty) {
 	    Tcl_Exit(0);
-	 } else {
+	 }
+	 else {
 	    Tcl_DeleteChannelHandler(chan, StdinProc, (ClientData) chan);
 	 }
 	 return;
-      } else {
+      }
+      else {
 	 count = 0;
       }
    }
@@ -400,8 +408,7 @@ int mask;			/* Not used. */
     * command being evaluated.
     */
 
-   Tcl_CreateChannelHandler(chan, TCL_ACTIVE, StdinProc,
-			    (ClientData) chan);
+   Tcl_CreateChannelHandler(chan, TCL_ACTIVE, StdinProc, (ClientData) chan);
    code = Tcl_RecordAndEval(interp, cmd, TCL_EVAL_GLOBAL);
    newchan = Tcl_GetChannel(interp, "stdin", NULL);
    if (chan != newchan) {
@@ -415,9 +422,11 @@ int mask;			/* Not used. */
    if (*interp->result != 0) {
       if (code != TCL_OK) {
 	 chan = Tcl_GetChannel(interp, "stderr", NULL);
-      } else if (tty) {
+      }
+      else if (tty) {
 	 chan = Tcl_GetChannel(interp, "stdout", NULL);
-      } else {
+      }
+      else {
 	 chan = NULL;
       }
       if (chan) {
@@ -455,9 +464,10 @@ int mask;			/* Not used. */
  *----------------------------------------------------------------------
  */
 
-static void Prompt(interp, partial)
-Tcl_Interp *interp;		/* Interpreter to use for prompting. */
-int partial;			/* Non-zero means there already
+static void
+Prompt(interp, partial)
+     Tcl_Interp *interp;	/* Interpreter to use for prompting. */
+     int partial;		/* Non-zero means there already
 
 				 * exists a partial command, so use
 				 * the secondary prompt. */
@@ -477,7 +487,8 @@ int partial;			/* Non-zero means there already
       if (!partial && outChannel) {
 	 Tcl_Write(outChannel, "% ", 2);
       }
-   } else {
+   }
+   else {
       code = Tcl_Eval(interp, promptCmd);
       outChannel = Tcl_GetChannel(interp, "stdout", NULL);
       if (code != TCL_OK) {
@@ -494,7 +505,8 @@ int partial;			/* Non-zero means there already
 	    Tcl_Write(errChannel, "\n", 1);
 	 }
 	 goto defaultPrompt;
-      } else if (*interp->result && outChannel) {
+      }
+      else if (*interp->result && outChannel) {
 	 Tcl_Write(outChannel, interp->result, strlen(interp->result));
       }
    }
@@ -503,11 +515,10 @@ int partial;			/* Non-zero means there already
    }
 }
 
+#endif /*!USE_READLINE_2_0 and 2_1 */
 
-
-#endif				/*!USE_READLINE_2_0 and 2_1 */
-
-void display(char *text, char *tag, int type)
+void
+display(char *text, char *tag, int type)
 {
    int i;
 
@@ -518,8 +529,7 @@ void display(char *text, char *tag, int type)
       Tcl_DStringInit(&disp);
       if (mode == 0) {
 	 Tcl_DStringAppend(&disp,
-			   ".f.t mark set display {insert linestart};",
-			   -1);
+			   ".f.t mark set display {insert linestart};", -1);
 	 mode = 1;
       }
       Tcl_DStringAppend(&disp, ".f.t insert display", -1);

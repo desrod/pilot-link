@@ -80,7 +80,6 @@ ccexecs=''
 cclib=''
 libcclib=''
 SUBMAKE_COMM='cd $(top_builddir)/libsock ; $(MAKE) '
-SUBMAKE_COMM_DUBIOUS='cd $(top_builddir)/dubious ; $(MAKE) '
 SUBMAKE_COMM_CC='-true'
 EXT=''
 CXXLIBS=''
@@ -98,7 +97,6 @@ AC_SUBST(ccexecs)
 AC_SUBST(cclib)
 AC_SUBST(libcclib)
 AC_SUBST(SUBMAKE_COMM)
-AC_SUBST(SUBMAKE_COMM_DUBIOUS)
 AC_SUBST(SUBMAKE_COMM_CC)
 AC_SUBST(EXT)
 AC_SUBST(CXXLIBS)
@@ -313,7 +311,7 @@ fi
 
 itcl=''
 if test "x$with_tcl" = "xyes" || test "x$with_tcl" = "x" ; then
-	for tcl_path in /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local /usr /usr/local/tcl7.4; do
+	for tcl_path in /usr /usr/local /usr/lib/tcl8.3 /usr/local/tcl8.0 /usr/local/tcl7.6 /usr/local/tcl7.5 /usr/local/tcl7.4; do
 		if test -f $tcl_path/lib/tclConfig.sh; then
 			with_tcl=$tcl_path; break
 		elif test -f $tcl_path/lib/itcl/tclConfig.sh; then
@@ -367,6 +365,8 @@ else
 		TCLTK_LIBS="\$(TCL_LIB_SPEC) \$(TCL_LIBS)"
 		TCLTK_FLAGS="-DTCL \$(TCL_INC)"
 		TCLTKFLAGS="-DTCL $TCL_INC"
+		DEBIAN_TCL="\$(TCL_INC)/tcl"
+		DEBIANTCL="$TCL_INC/tcl"
 		WITHTCL='WITHTCL'
 		
 		if test "x$with_itcl" = "xyes" || test "x$with_itcl" = "x"; then
@@ -403,9 +403,9 @@ else
 				#WITHTK='WITHTK'
 				if test "x$ITCL_INC" = "x$TCL_INC"; then
 					ITCL_INC=" #same as TCL_INC"
-				#	TCLTKFLAGS="-DTCL -DTK $TCL_INC"
-				#else
-				#	TCLTKFLAGS="-DTCL -DTK $TCL_INC $TK_INC"
+					TCLTKFLAGS="-DTCL -DTK -FOO $TCL_INC $DEBIANTCL"
+				else
+					TCLTKFLAGS="-DTCL -DTK -FOO $TCL_INC $DEBIANTCL $TK_INC"
 				fi
 			fi
 		fi
@@ -444,9 +444,9 @@ else
 				WITHTK='WITHTK'
 				if test "x$TK_INC" = "x$TCL_INC"; then
 					TK_INC=" #same as TCL_INC"
-					TCLTKFLAGS="-DTCL -DTK $TCL_INC"
+					TCLTKFLAGS="-DTCL -DTK -FOO $TCL_INC $DEBIANTCL"
 				else
-					TCLTKFLAGS="-DTCL -DTK $TCL_INC $TK_INC"
+					TCLTKFLAGS="-DTCL -DTK -FOO $TCL_INC $DEBIANTCL $TK_INC"
 				fi
 			fi
 		fi
@@ -474,7 +474,8 @@ AC_SUBST(TCLLIBS)
 AC_SUBST(TKLIBS)
 AC_SUBST(TCLTKLIBS)
 AC_SUBST(TCLTKFLAGS)
-
+AC_SUBST(DEBIAN_TCL)
+AC_SUBST(DEBIANTCL)
 
 TCLEXECS=''
 if test ! "x$TCL_VERSION" = "x"; then
@@ -574,4 +575,4 @@ LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTLIBOBJS)
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/\.lo/g'`
 AC_SUBST(LTALLOCA)
-AC_OUTPUT(libsock/Makefile $cc_m Makefile dubious/Makefile Python/Makefile Tcl/Makefile Perl5/Makefile.PL Java/Makefile tests/Makefile)
+AC_OUTPUT(libsock/Makefile $cc_m Makefile tools/Python/Makefile tools/Tcl/Makefile tools/Perl5/Makefile.PL tools/Java/Makefile tests/Makefile)
