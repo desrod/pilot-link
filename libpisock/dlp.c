@@ -23,6 +23,32 @@
  *               -- David H. Silber <pilot@SilberSoft.com>
  */
 
+/***********************************************************************
+ *  The functions in this file use the Desktop Link Protocol to interact
+ *  with a connected Palm device.
+ *
+ *  The first section of this file contains utility functions.
+ *
+ *  Functions useful to people writing conduits are at the end.  (Search
+ *  for '<Conduit>'.)
+ *
+ *  -- DHS
+ ***********************************************************************/
+
+
+/***********************************************************************
+ *  Key to documentation
+ *
+ *  Parameters marked with '-->' are data passed in to the function.
+ *  Parameters marked with '<--' are data passed back from the function.
+ *    If the argument is a NULL, no data is returned.
+ *  Parameters marked with '<->' are used for data passed in and then
+ *    (possibly modified) data passed back.
+ *
+ *  -- DHS
+ ***********************************************************************/
+
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -510,6 +536,14 @@ static void dlp_htopdate(time_t time, unsigned char *data)
 	data[2] = (unsigned char) (t->tm_mon + 1);
 	data[0] = (unsigned char) ((year >> 8) & 0xff);
 	data[1] = (unsigned char) ((year >> 0) & 0xff);
+
+	return;
+}
+
+
+/***********************************************************************
+ *  Functions for use by conduit programmers start here.   <Conduit>
+ *
  *  -- DHS
  ***********************************************************************/
 
@@ -2899,11 +2933,21 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int id, int backup,
 /***********************************************************************
  *
  * Function:    dlp_ReadNextModifiedRecInCategory
- * Parameters:  None
+ *
+ * Summary:     Iterate through modified records in category, returning 
+ *		subsequent modifieded records on each call
+ *
+ * Parameters:  sd         --> Socket descriptor as returned by
+ *                             pilot_connect().
+ *              fHandle    --> Database handle as returned by dlp_OpenDB().
+ *              incategory --> Category to fetch records from.
+ *              buffer     <-- Data from specified record.
  *              id         <-- Record ID of record on palm device.
  *              index      <-- Specifies record to get.
  *              size       <-- Size of data returned in buffer.
  *              attr       <-- Attributes from record on palm device.
+ *
+ * Returns:     A negative number on error, the number of bytes read
  *		otherwise
  *
  * Parameter documentation by DHS.
@@ -3104,14 +3148,14 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
 
 /***********************************************************************
  *
- * Parameters:  sd       -- Socket descriptor as returned by pilot_connect().
- *              fHandle  -- Database handle as returned by dlp_OpenDB().
- *              index    -- Specifies record to get.
- *              buffer   -- Data from specified record.
- *              id       -- Record ID of record on palm device? (*)
- *              size     -- Size of data returned in buffer.
- *              attr     -- Attributes from record on palm device? (*)
- *              category -- Category from record on palm device? (*)
+ * Function:    dlp_ReadRecordByIndex
+ *
+ * Summary:     Searches device database for match on a record by index
+ *
+ * Parameters:  sd       --> Socket descriptor as returned by pilot_connect().
+ *              fHandle  --> Database handle as returned by dlp_OpenDB().
+ *              index    --> Specifies record to get.
+ *              buffer   <-- Data from specified record.
  *              id       <-- Record ID of record on palm device.
  *              size     <-- Size of data returned in buffer.
  *              attr     <-- Attributes from record on palm device.
@@ -3119,8 +3163,7 @@ dlp_ReadRecordById(int sd, int fHandle, recordid_t id, void *buffer,
  *
  * Returns:     A negative number on error, the number of bytes read
  *		otherwise
- * (*)  I'm guessing on these.  If you have better information, fix this
- * documentation.  DHS
+ *
  * Turns this request for a particular record in the database into a
  * low-level dlp request.
  *
