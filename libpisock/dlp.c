@@ -751,7 +751,8 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 	if ((*res)->cmd != req->cmd) {
 		
 		/* The Palm m130 and Tungsten T return the wrong code for VFSVolumeInfo */
-		if (req->cmd != dlpFuncVFSVolumeInfo ||
+		/* Tungsten T5 (and maybe Treo 650) return dlpFuncEndOfSync for dlpFuncWriteResource */
+		if ((req->cmd != dlpFuncVFSVolumeInfo && req->cmd != dlpFuncWriteResource) ||
 				(*res)->cmd != dlpFuncVFSVolumeSize) {
 			errno = -ENOMSG;
 
