@@ -644,9 +644,7 @@ configure_device(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned sho
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", kr));
 		}
-#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
-#endif
 	}
 
     return kIOReturnSuccess;
@@ -663,7 +661,7 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 	UInt8 intfClass;
 	UInt8 intfSubClass;
 	UInt8 intfNumEndpoints;
-	int pipeRef;
+	int pipeRef, pass;
 	IOUSBFindInterfaceRequest request;
 	IOCFPlugInInterface **plugInInterface = NULL;
 
@@ -696,9 +694,7 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 		// get the interface class and subclass
 		kr = (*usb_interface)->GetInterfaceClass (usb_interface, &intfClass);
 		kr = (*usb_interface)->GetInterfaceSubClass (usb_interface, &intfSubClass);
-#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface class %d, subclass %d\n", intfClass, intfSubClass));
-#endif
 
 		// Now open the interface. This will cause the pipes to be instantiated that are
 		// associated with the endpoints defined in the interface descriptor.
@@ -720,42 +716,63 @@ find_interfaces(IOUSBDeviceInterface **dev, unsigned short vendor, unsigned shor
 			usb_interface = NULL;
 			continue;
 		}
-#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: interface has %d endpoints\n", intfNumEndpoints));
-#endif
 
-		// locate the pipes we're going to use for reading and writing. If we got a hint
-		// from the PALM_GET_EXT_CONNECTION_INFORMATION, we try this one first. In case
-		// we don't find both pipes with the endpoint hint, we try again without the hint
-		// and take the first ones that come. 
-try_pipes:
-		for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
+		// Locate the pipes we're going to use for reading and writing. We have three
+		// chances to find the right pipes:
+		// 1. If we got a hint from the PALM_GET_EXT_CONNECTION_INFORMATION, we try this one first.
+		// 2. If we're still missing one or two pipes, give a second try looking for pipes with a
+		//    64 bytes transfer size
+		// 3. Finally of this failed, forget about the transfer size and take the first ones that
+		//    come (i.e. Tungsten W has a 64 bytes IN pipe and a 32 bytes OUT pipe).
+		for (pass=0; pass < 3 && (usb_in_pipe_ref==0 || usb_out_pipe_ref==0); pass++)
 		{
-			UInt8 direction, number, transferType, interval;
-			UInt16 maxPacketSize;
-
-			kr = (*usb_interface)->GetPipeProperties (usb_interface, pipeRef, &direction, &number, &transferType, &maxPacketSize, &interval);
-#ifdef DEBUG_USB
-			if (kr == kIOReturnSuccess)
-				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x\n",pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval));
-#endif
-			if (kr != kIOReturnSuccess)
-				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get properties of pipe %d (kr=0x%08x)\n", pipeRef, kr));
-			else
+			int ignorePacketSize = 0;
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pass %d looking for pipes\n", pass+1));
+			if (pass == 1)
 			{
-				if (direction == kUSBIn && transferType == kUSBBulk && maxPacketSize == 64 && (inputPipeNumber == 0xff || number == inputPipeNumber))
-					usb_in_pipe_ref = pipeRef;
-				else if (direction == kUSBOut && transferType == kUSBBulk && maxPacketSize == 64 && (outputPipeNumber == 0xff || number == outputPipeNumber))
-					usb_out_pipe_ref = pipeRef;
+				// second pass: don't try to guess pipe numbers
+				inputPipeNumber = 0xff;
+				outputPipeNumber = 0xff;
 			}
-		}
-		if ((usb_in_pipe_ref==0 || usb_out_pipe_ref==0) && (inputPipeNumber != 0xff || outputPipeNumber != 0xff))
-		{
-			// just in case we failed finding the pipes (ie the connection info struct has changed format),
-			// make a second try with "wild guess" method.
-			inputPipeNumber = 0xff;
-			outputPipeNumber = 0xff;
-			goto try_pipes;
+			else if (pass == 2)
+			{
+				// last chance: forget about transfer size,
+				// just take the first pipes that come
+				ignorePacketSize = 1;
+			}
+			for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
+			{
+				UInt8 direction, number, transferType, interval;
+				UInt16 maxPacketSize;
+
+				kr = (*usb_interface)->GetPipeProperties (usb_interface, pipeRef, &direction, &number,
+									  &transferType, &maxPacketSize, &interval);
+				if (kr != kIOReturnSuccess)
+				{
+					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to get properties of pipe %d (kr=0x%08x)\n", pipeRef, kr));
+				}
+				else
+				{
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x\n",pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval));
+					if (usb_in_pipe_ref == 0 &&
+					    direction == kUSBIn &&
+					    transferType == kUSBBulk &&
+					    (maxPacketSize == 64 || ignorePacketSize) &&
+					    (inputPipeNumber == 0xff || number == inputPipeNumber))
+					{
+						usb_in_pipe_ref = pipeRef;
+					}
+					else if (usb_out_pipe_ref == 0 &&
+						 direction == kUSBOut &&
+						 transferType == kUSBBulk &&
+						 (maxPacketSize == 64 || ignorePacketSize) &&
+						 (outputPipeNumber == 0xff || number == outputPipeNumber))
+					{
+						usb_out_pipe_ref = pipeRef;
+					}
+				}
+			}
 		}
 
 		if (usb_in_pipe_ref && usb_out_pipe_ref)
@@ -770,9 +787,7 @@ try_pipes:
 			}
 			else
 			{
-#ifdef DEBUG_USB
 				LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: USBConnection OPENED usb_in_pipe_ref=%d usb_out_pipe_ref=%d\n", usb_in_pipe_ref, usb_out_pipe_ref));
-#endif
 				usb_opened = 1;
 				CFRunLoopAddSource (CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
 				//usb_read_ahead_size = MAX_AUTO_READ_SIZE;
@@ -780,6 +795,8 @@ try_pipes:
 				break;
 			}
 		}
+
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: couldn't find any suitable pipes pair on this interface\n"));
 
 		// if we didn't find two suitable pipes, close the interface
 		(*usb_interface)->USBInterfaceClose (usb_interface);
@@ -920,9 +937,7 @@ device_notification(void *refCon, io_service_t service, natural_t messageType, v
 		pthread_cond_broadcast (&read_queue_data_avail_cond);
 		pthread_mutex_unlock (&read_queue_mutex);
 
-#ifdef DEBUG_USB
 		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: device_notification(): USBConnection CLOSED\n"));
-#endif
 	}
 }
 
@@ -990,7 +1005,7 @@ prime_read(void)
 		//usb_last_read_ahead_size = MAX_AUTO_READ_SIZE;	// testing
 
 #ifdef DEBUG_USB
-		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: prime_read() for %d bytes\n", usb_last_read_ahead_size));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read() for %d bytes\n", usb_last_read_ahead_size));
 #endif
 
 		IOReturn kr;
@@ -1000,7 +1015,7 @@ prime_read(void)
 		if (kr == kIOUSBPipeStalled)
 		{
 #ifdef DEBUG_USB
-			LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: stalled -- clearing stall and re-priming\n"));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stalled -- clearing stall and re-priming\n"));
 #endif
 			(*usb_interface)->ClearPipeStall (usb_interface, usb_in_pipe_ref);
 			kr = (*usb_interface)->ReadPipeAsync (	usb_interface, usb_in_pipe_ref, usb_read_buffer,
