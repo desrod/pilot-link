@@ -392,6 +392,11 @@ sync_record(SyncHandler * sh, int dbhandle,
 		dchange = (drecord->flags & dlpRecAttrDirty) && (!ddel);
 	}
 
+	/* Bail if the pilot record was created and deleted between syncs */
+	if (drecord == NULL && !parch && pdel)
+		return 0;
+	
+	/* Sync logic */
 	if (precord != NULL && !parch && !pdel && drecord == NULL) {
 		DesktopCheck(sh->AddRecord(sh, precord));
 
