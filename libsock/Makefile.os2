@@ -1,5 +1,5 @@
 SOCKOBJS = socket.o serial.o slp.o padp.o \
-       dlp.o cmp.o syspkt.o pi-file.o\
+       dlp.o cmp.o syspkt.o
 
 FILEOBJS = pi-file.o
 
@@ -9,8 +9,11 @@ UTILOBJS = utils.o
 
 OBJS = $(SOCKOBJS) $(FILEOBJS) $(APPOBJS) $(UTILOBJS)
 
+srcdir = ../
+VPATH = ../
+
 CC = gcc
-CFLAGS = -g -O2 -fno-strength-reduce -Wall -I../include
+CFLAGS = -g -O2 -fno-strength-reduce -Wall -I../include -I$(srcdir)/../include
 # -DPADP_TRACE
 # -DNO_DLP_TRACE
 # -DNO_SERIAL_TRACE
@@ -28,7 +31,7 @@ libpisock.a: $(OBJS)
 	$(RANLIB) libpisock.a
 
 clean:
-	$(RM) *.o *.a *~ core a.out *.orig
+	$(RM) *.o *.a core a.out *.orig
 
 depend:
 	perl -i~ -ne 'print if 1../^#Depend/' Makefile.in ; gcc -MM -I../include *.c >> Makefile.in

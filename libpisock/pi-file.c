@@ -848,13 +848,17 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
   int l,j;
   int reset = 0;
   int flags;
+  int version;
   void * buffer;
+  
+  version = pi_version(socket);
   
   /* Delete DB if it already exists */
   dlp_DeleteDB(socket, cardno, pf->info.name);
   
   /* Set up DB flags */
   flags = pf->info.flags;
+  
   if (strcmp(pf->info.name, "Graffiti ShortCuts ")==0) {
     flags |= 0x8000; /* Rewrite an open DB */
     reset = 1; /* To be on the safe side */
@@ -887,9 +891,7 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
       int size;
       if( (pi_file_read_resource(pf, j, &buffer, &size, &type, &id)<0) ||
           (dlp_WriteResource(socket, db, type, id, buffer, size)<0) ) {
-        dlp_CloseDB(socket, db);
-        dlp_DeleteDB(socket, cardno, pf->info.name);
-        return -1;
+        goto fail;
       }
 
       /* If we see a 'boot' section, regardless of file type, require reset */
@@ -902,16 +904,22 @@ int pi_file_install(struct pi_file * pf, int socket, int cardno)
       int size;
       int attr;
       int category;
-      if( (pi_file_read_record(pf, j, &buffer, &size, &attr, &category, &id)<0) ||
-          (dlp_WriteRecord(socket, db, attr, id, category, buffer, size, 0)<0)) {
-        dlp_CloseDB(socket, db);
-        dlp_DeleteDB(socket, cardno, pf->info.name);
-        return -1;
-      }
+      if(pi_file_read_record(pf, j, &buffer, &size, &attr, &category, &id)<0)
+        goto fail;
+      if ((attr & (dlpRecAttrArchived|dlpRecAttrDeleted)) &&
+         (version < 0x0101))
+         continue; /* Old OS cannot install deleted records, so don't try */
+      if(dlp_WriteRecord(socket, db, attr, id, category, buffer, size, 0)<0)
+        goto fail;
     }
   
   if(reset)
     dlp_ResetSystem(socket);
   	
   return dlp_CloseDB(socket, db);
+
+fail:
+  dlp_CloseDB(socket, db);
+  dlp_DeleteDB(socket, cardno, pf->info.name);
+  return -1;
 }  	

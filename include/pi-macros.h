@@ -1,11 +1,12 @@
 #ifndef _PILOT_MACROS_H_
 #define _PILOT_MACROS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <sys/time.h> /* for struct tm */
 
 typedef unsigned long recordid_t;
+typedef unsigned char uchar_t;		/* MUST GO!!! */
+
+#ifndef __cplusplus
 
 #define get_long(ptr) ((((unsigned char*)(ptr))[0] << 24) | \
                        (((unsigned char*)(ptr))[1] << 16) | \
@@ -37,8 +38,98 @@ typedef unsigned long recordid_t;
 
 #define char4(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 
-#ifdef __cplusplus
+#else /*ifdef __cplusplus*/
+
+inline unsigned long get_long(const void *buf) 
+{
+     unsigned char *ptr = (unsigned char *) buf;
+
+     return (*ptr << 24) | (*(++ptr) << 16) | (*(++ptr) << 8) | *(++ptr);
 }
-#endif
+
+inline unsigned long get_treble(const void *buf) 
+{
+     unsigned char *ptr = (unsigned char *) buf;
+
+     return (*ptr << 16) | (*(++ptr) << 8) | *(++ptr);
+}
+
+inline int get_short(const void *buf) 
+{
+     unsigned char *ptr = (unsigned char *) buf;
+
+     return (*ptr << 8) | *(++ptr);
+}
+
+inline int get_byte(const void *buf) 
+{
+     return *((unsigned char *) buf);
+}
+
+inline void set_long(void *buf, const unsigned long val) 
+{
+     unsigned char *ptr = (unsigned char *) buf;
+
+     *ptr = (val >> 24) & 0xff;
+     *(++ptr) = (val >> 16) & 0xff;
+     *(++ptr) = (val >> 8) & 0xff;
+     *(++ptr) = val & 0xff;
+}
+
+inline void set_treble(void *buf, const unsigned long val) 
+{
+     unsigned char *ptr = (unsigned char *) buf;
+     
+     *ptr = (val >> 16) & 0xff;
+     *(++ptr) = (val >> 8) & 0xff;
+     *(++ptr) = val & 0xff;
+}
+
+inline void set_short(void *buf, const int val) 
+{
+     unsigned char *ptr = (unsigned char *) buf;
+
+     *ptr = (val >> 8) & 0xff;
+     *(++ptr) = val & 0xff;
+}
+
+inline void set_byte(void *buf, const int val) 
+{
+     *((unsigned char *)buf) = val;
+}
+
+inline struct tm *getBufTm(struct tm *t, const void *buf, bool setTime) 
+{
+     unsigned short int d = get_short(buf);
+     
+     t->tm_year = (d >> 9) + 4;
+     t->tm_mon = ((d >> 5) & 15) - 1;
+     t->tm_mday = d & 31;
+
+     if (setTime) {
+	  t->tm_hour = 0;
+	  t->tm_min = 0;
+	  t->tm_sec = 0;
+     }
+     
+     t->tm_isdst = -1;
+
+     mktime(t);
+     
+     return t;
+}
+
+inline void setBufTm(void *buf, const struct tm *t)
+{
+     set_short(buf,
+	       ((t->tm_year - 4) << 9) | ((t->tm_mon + 1) << 5) | t->tm_mday);
+}
+
+inline unsigned long char4(char c1, char c2, char c3, char c4)
+{
+     return (c1<<24)|(c2<<16)|(c3<<8)|c4;
+}
+
+#endif /*__cplusplus*/
 
 #endif /* _PILOT_MACROS_H_ */

@@ -2,29 +2,47 @@
 
 # Conjure up OS/2 specific makefiles
 
+%defs = ( '@RANLIB@', 'ar -s', '@CC@', 'gcc', '@CFLAGS@', '-g -O2 -fno-strength-reduce',
+          '@CWFLAG@', '-Wall', '@CPLIB@', 'cp', '@YACC@', 'bison -y', 
+          '@LIBS@', '-lsocket -los2', '@EXT@', '.EXE',
+          '@SUBMAKE_COMM@', '$(MAKE) -C libsock -f Makefile.os2',
+          '@SUBMAKE_COMM_CC@', '$(MAKE) -C libcc -f Makefile.os2',
+          '@CXX@', 'g++',
+          '@CXXFLAGS@', '-g -O2 -fno-strength-reduce' ,
+          '@ARFLAGS@', '-cur',
+          '@cclib@', 'libpicc.a', '@libcclib@', 'libcc/libpicc.a',
+          '@ccexecs@', '$(CCEXECS)'
+        );
+        
+$defs{'@srcdir@'} = './';
+
 open(STDIN,"<Makefile.in");
 open(STDOUT,">Makefile.os2");
 while(<>) {
-	s/\@RANLIB\@/ar -s/g;
-	s/\@CC\@/gcc/g;
-	s/\@CFLAGS\@/-g -O2 -fno-strength-reduce/g;
-	s/\@CWFLAG\@/-Wall/g;
-	s/\@CPLIB\@/cp/g;
-	s/\@YACC\@/bison -y/g;
-	s/^LIBS\s+=.*/$& -lsocket -los2/;
-	s/^EXT\s+=.*/EXT = .EXE/;
-	s/^SUBMAKE_COMM\s+=.*/SUBMAKE_COMM = \$(MAKE) -C lib -f Makefile.os2/;
+    foreach $k (keys %defs) {
+      s/$k/$defs{$k}/g;
+    }
 	print;
 }
 
-open(STDIN,"<lib/Makefile.in");
-open(STDOUT,">lib/Makefile.os2");
+$defs{'@srcdir@'} = '../';
+
+open(STDIN,"<libsock/Makefile.in");
+open(STDOUT,">libsock/Makefile.os2");
 while(<>) {
-	s/\@RANLIB\@/ar -s/g;
-	s/\@CC\@/gcc/g;
-	s/\@CFLAGS\@/-g -O2 -fno-strength-reduce/g;
-	s/\@CWFLAG\@/-Wall/g;
-	s/\@ARFLAGS\@/-cur/g;
+    foreach $k (keys %defs) {
+      s/$k/$defs{$k}/g;
+    }
+	s#../include/pi-config.h# #g;
+	print;
+}
+
+open(STDIN,"<libcc/Makefile.in");
+open(STDOUT,">libcc/Makefile.os2");
+while(<>) {
+    foreach $k (keys %defs) {
+      s/$k/$defs{$k}/g;
+    }
 	s#../include/pi-config.h# #g;
 	print;
 }

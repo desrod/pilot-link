@@ -3,7 +3,7 @@
  * This is free software, licensed under the GNU Public License V2.
  * See the file COPYING for details.
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -15,6 +15,14 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 
+/* Definitions for functions in pd-tty.c */
+
+extern void do_readline(void);
+
+/* Display text asynchronously, and make sure it doesn't interfere with
+   the current prompt */
+extern void display(char * text, char * tag, int type);
+ 
 #ifndef LIBDIR
 # define LIBDIR "."
 #endif
@@ -42,8 +50,8 @@ int done = 0;
 
 int Interactive = 1;
 
-static Tcl_Interp * interp;        
-static struct Pilot_state state;
+Tcl_Interp * interp;        
+struct Pilot_state state;
 
 int debugger = 0; /* If non-zero, then debugger is thought to be active */
 int console = 0;  /* If non-zero, then console is thought to be active 
@@ -55,6 +63,11 @@ int stalestate = 1; /* If non-zero, then the current Pilot state (in particular 
                        should be assumed out-of-date */
                        
 int port = 0;
+
+
+int tty;			/* Non-zero means standard input is a
+				 * terminal-like device.  Zero means it's*/
+
 
 /* Misc utility */
 void SetLabel(const char * label, const char * value)
@@ -253,18 +266,16 @@ void Read_Pilot(ClientData clientData, int mask) {
       	for(i=6;i<l;i++)
       	  if(buf[i] == '\r')
       	    buf[i] = '\n';      	
-        /* Insert message into both debug and console windows */
+        /* Insert message into both debug and console windows */        
 #ifdef TK
 	if (usetk) {
-          Tcl_VarEval(interp,".f.t insert end \"",buf+6,"\"",NULL);
           Tcl_VarEval(interp,".console.t insert end \"",buf+6,"\"",NULL);
-          Tcl_VarEval(interp,".f.t mark set insert end",NULL);
           Tcl_VarEval(interp,".console.t mark set insert end",NULL);
-          Tcl_VarEval(interp,".f.t see insert",NULL);
           Tcl_VarEval(interp,".console.t see insert",NULL);
-        } else
+        }
 #endif
-        Tcl_VarEval(interp,"Say \"",buf+6,"\"",NULL);
+	display(buf+6, "Console: ", 2);
+
         return;
       }
     } else if (buf[0] == 0) { /* Debug */
@@ -278,15 +289,9 @@ void Read_Pilot(ClientData clientData, int mask) {
           for(i=6;i<l;i++)
       	    if(buf[i] == '\r')
       	      buf[i] = '\n';      	
-#ifdef TK
-          if (usetk) {
-     	    /* Insert message into debug window */
- 	    Tcl_VarEval(interp,".f.t insert end \"",buf+6,"\"",NULL);
-            Tcl_VarEval(interp,".f.t mark set insert end",NULL);
-            Tcl_VarEval(interp,".f.t see insert",NULL);
-          } else
-#endif
-          Tcl_VarEval(interp,"Say \"",buf+6,"\"",NULL);
+
+	display(buf+6, "Debug: ", 1);
+          
           return;
     	}
     	else if (buf[4] == 0x8c) { /* Breakpoints set */
@@ -301,7 +306,7 @@ void Read_Pilot(ClientData clientData, int mask) {
     	   	char buffer[40];
     	   	sprintf(buffer, "Pilot halted at %8.8lX (function %s) with exception %d\n",
     	   		state.regs.PC, state.func_name, state.exception);
-    	   	Say(buffer);
+    	   	display(buffer, "Debug: ", 1);
     	   	stalestate = 0;
     	   }
     	   
@@ -1425,7 +1430,21 @@ bind .console.t <Control-KeyPress-Return> {tkTextInsert .console.t \"\\n\" ; bre
 bind .f.t <Control-KeyPress-Return> {tkTextInsert .f.t \"\\n\" ; break}
 
 bind .console.t <KeyPress-Return> {Console [.console.t get {insert linestart} {insert lineend}] ; break}
-bind .f.t <KeyPress-Return> {Debugger [.f.t get {insert linestart} {insert lineend}] ; break}
+bind .f.t <KeyPress-Return> {
+	set line [.f.t get {insert linestart} {insert lineend}]
+	set f [string first \">\" $line]
+	incr f
+	set line [string range $line $f end]
+	.f.t mark set insert {insert lineend}
+	.f.t insert insert \\n
+	Debugger $line
+	if {[.f.t compare insert != {insert linestart}]} {
+		.f.t insert insert \"\\n\"
+	}
+	.f.t insert insert \"pilot-debug> \"
+	.f.t see insert
+	break
+}
 
 proc Console {cmd} {
 	.console.t mark set insert {insert lineend}
@@ -1434,16 +1453,16 @@ proc Console {cmd} {
 }
 
 proc Debugger {cmd} {
-	.f.t mark set insert {insert lineend}
-	tkTextInsert .f.t \\n
+	#.f.t mark set insert {insert lineend}
+	#tkTextInsert .f.t \\n
 	if {[string length [string trim $cmd]]!=0} {
 		set code [catch {eval $cmd} message]
 		if {[string length $message]} {
 			set message [string trimright $message]
 			Say \"$message\\n\"
-			if {[.f.t compare insert != {insert linestart}]} {
-				Say \"\\\n\"
-			}
+			#if {[.f.t compare insert != {insert linestart}]} {
+			#	Say \"\\\n\"
+			#}
 		}
 	}
 }
@@ -1458,7 +1477,6 @@ proc Say {text} {
 	  set result \"$result$text\"
 	}
 }
-
 
 ", NULL);
   puts(interp->result);
@@ -1656,21 +1674,6 @@ set one with 'port /dev/something'\\n\\n\"
     return TCL_OK;
 }
 
-static void
-StdinProc(ClientData clientData, int mask);
-
-static void
-Prompt(Tcl_Interp * interp, int partial);
-
-
-static Tcl_DString command;	/* Used to buffer incomplete commands being
-				 * read from stdin. */
-static Tcl_DString line;	/* Used to read the next line from the
-                                 * terminal input. */
-static int tty;			/* Non-zero means standard input is a
-				 * terminal-like device.  Zero means it's*/
-
-
 int main(int argc, char *argv[])
 {
     char *args, *fileName;
@@ -1678,7 +1681,7 @@ int main(int argc, char *argv[])
     int code;
     size_t length;
     int exitCode = 0;
-    Tcl_Channel inChannel, outChannel, errChannel;
+    Tcl_Channel errChannel;
 
     Tcl_FindExecutable(argv[0]);
     interp = Tcl_CreateInterp();
@@ -1799,29 +1802,8 @@ int main(int argc, char *argv[])
      * eval, since they may have been changed.
      */
 
-    inChannel = Tcl_GetChannel(interp, "stdin", NULL);
-    if (inChannel) {
-	Tcl_CreateChannelHandler(inChannel, TCL_READABLE|TCL_ACTIVE,
-		StdinProc, (ClientData) inChannel);
-    }
-    if (tty) {
-	Prompt(interp, 0);
-    }
-    outChannel = Tcl_GetChannel(interp, "stdout", NULL);
-    if (outChannel) {
-	Tcl_Flush(outChannel);
-    }
-    Tcl_DStringInit(&command);
-    Tcl_CreateExitHandler((Tcl_ExitProc *) Tcl_DStringFree, (ClientData) &command);
-    Tcl_DStringInit(&line);
-    Tcl_ResetResult(interp);
- 
-    /*
-     * Loop infinitely until all event handlers are passive. Then exit.
-     * Rather than calling exit, invoke the "exit" command so that
-     * users can replace "exit" with some other command to do additional
-     * cleanup on exit.  The Tcl_Eval call should never return.
-     */
+    do_readline();
+
      
 #ifdef TK
     }
@@ -1831,183 +1813,12 @@ done:
 
 #ifdef TK
     if (usetk) {
+        Tcl_VarEval(interp, ".f.t insert end {pilot-debug> }; .f.t set mark insert end",0);
         Tk_MainLoop();
         Tcl_DeleteInterp(interp);
         Tcl_Exit(0);
-    } else {
-#endif
-        while (Tcl_DoOneEvent(0)) {
-        }
-        sprintf(buffer, "exit %d", exitCode);
-        Tcl_Eval(interp, buffer);
-#ifdef TK
     }
 #endif
     return 0;
 }
 
-/*
- *----------------------------------------------------------------------
- *
- * StdinProc --
- *
- *	This procedure is invoked by the event dispatcher whenever
- *	standard input becomes readable.  It grabs the next line of
- *	input characters, adds them to a command being assembled, and
- *	executes the command if it's complete.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Could be almost arbitrary, depending on the command that's
- *	typed.
- *
- *----------------------------------------------------------------------
- */
-
-    /* ARGSUSED */
-static void
-StdinProc(clientData, mask)
-    ClientData clientData;		/* Not used. */
-    int mask;				/* Not used. */
-{
-    static int gotPartial = 0;
-    char *cmd;
-    int code, count;
-    Tcl_Channel newchan, chan = (Tcl_Channel) clientData;
-
-    count = Tcl_Gets(chan, &line);
-
-    if (count < 0) {
-	if (!gotPartial) {
-	    if (tty) {
-		Tcl_Exit(0);
-	    } else {
-		Tcl_DeleteChannelHandler(chan, StdinProc, (ClientData) chan);
-	    }
-	    return;
-	} else {
-	    count = 0;
-	}
-    }
-
-    (void) Tcl_DStringAppend(&command, Tcl_DStringValue(&line), -1);
-    cmd = Tcl_DStringAppend(&command, "\n", -1);
-    Tcl_DStringFree(&line);
-    
-    if (!Tcl_CommandComplete(cmd)) {
-        gotPartial = 1;
-        goto prompt;
-    }
-    gotPartial = 0;
-
-    /*
-     * Disable the stdin channel handler while evaluating the command;
-     * otherwise if the command re-enters the event loop we might
-     * process commands from stdin before the current command is
-     * finished.  Among other things, this will trash the text of the
-     * command being evaluated.
-     */
-
-    Tcl_CreateChannelHandler(chan, TCL_ACTIVE, StdinProc, (ClientData) chan);
-    code = Tcl_RecordAndEval(interp, cmd, TCL_EVAL_GLOBAL);
-    newchan = Tcl_GetChannel(interp, "stdin", NULL);
-    if (chan != newchan) {
-	Tcl_DeleteChannelHandler(chan, StdinProc, (ClientData) chan);
-    }
-    if (newchan) {
-	Tcl_CreateChannelHandler(newchan, TCL_READABLE | TCL_ACTIVE,
-		StdinProc, (ClientData) newchan);
-    }
-    Tcl_DStringFree(&command);
-    if (*interp->result != 0) {
-	if (code != TCL_OK) {
-	    chan = Tcl_GetChannel(interp, "stderr", NULL);
-	} else if (tty) {
-	    chan = Tcl_GetChannel(interp, "stdout", NULL);
-	} else {
-	    chan = NULL;
-	}
-	if (chan) {
-	    Tcl_Write(chan, interp->result, -1);
-	    Tcl_Write(chan, "\n", 1);
-	}
-    }
-
-    /*
-     * Output a prompt.
-     */
-
-    prompt:
-    if (tty) {
-	Prompt(interp, gotPartial);
-    }
-    Tcl_ResetResult(interp);
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * Prompt --
- *
- *	Issue a prompt on standard output, or invoke a script
- *	to issue the prompt.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	A prompt gets output, and a Tcl script may be evaluated
- *	in interp.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-Prompt(interp, partial)
-    Tcl_Interp *interp;			/* Interpreter to use for prompting. */
-    int partial;			/* Non-zero means there already
-					 * exists a partial command, so use
-					 * the secondary prompt. */
-{
-    char *promptCmd;
-    int code;
-    Tcl_Channel outChannel, errChannel;
-
-    errChannel = Tcl_GetChannel(interp, "stderr", NULL);
-
-    promptCmd = Tcl_GetVar(interp,
-	partial ? "tcl_prompt2" : "tcl_prompt1", TCL_GLOBAL_ONLY);
-    if (promptCmd == NULL) {
-	outChannel = Tcl_GetChannel(interp, "stdout", NULL);
-defaultPrompt:
-	if (!partial && outChannel) {
-            Tcl_Write(outChannel, "% ", 2);
-	}
-    } else {
-	code = Tcl_Eval(interp, promptCmd);
-	outChannel = Tcl_GetChannel(interp, "stdout", NULL);
-	if (code != TCL_OK) {
-	    Tcl_AddErrorInfo(interp,
-		    "\n    (script that generates prompt)");
-            /*
-             * We must check that errChannel is a real channel - it
-             * is possible that someone has transferred stderr out of
-             * this interpreter with "interp transfer".
-             */
-
-	    errChannel = Tcl_GetChannel(interp, "stdout", NULL);
-            if (errChannel != (Tcl_Channel) NULL) {
-                Tcl_Write(errChannel, interp->result, -1);
-                Tcl_Write(errChannel, "\n", 1);
-            }
-	    goto defaultPrompt;
-	} else if (*interp->result && outChannel) {
-	    Tcl_Write(outChannel, interp->result, strlen(interp->result));
-	}
-    }
-    if (outChannel) {
-        Tcl_Flush(outChannel);
-    }
-}

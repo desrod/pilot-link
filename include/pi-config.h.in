@@ -194,7 +194,7 @@ char * strdup(const char *string);
 # define ENOMSG 1024
 #endif
 
-#ifdef linux
+#if defined(linux) || defined(__FreeBSD__)
 # define TTYPrompt "/dev/cua??"
 #else
 # define TTYPrompt "/dev/tty??"

@@ -275,8 +275,7 @@ int main(int argc, char *argv[])
     
   signal(SIGINT, sigint);
   
-  optind = 0;
-  while ((c = getopt(argc, argv, "s:p:d:f:h:u:p:h:P:k:")) != -1) {
+  while ((c = getopt(argc, argv, "s:p:d:f:h:u:p:h:P:k:")) != EOF) {
     switch (c) {
       case 's':
         sendmail = optarg;
@@ -306,6 +305,8 @@ int main(int argc, char *argv[])
         Help(argv);
     }
   }
+  argc -= optind;
+  argv += optind;
   
   if (!strlen(port)) {
     fprintf(stderr, "Port must be set.\n\n");
@@ -682,7 +683,7 @@ int main(int argc, char *argv[])
     
     if (strlen(msg) > p.truncate) {
       /* We could truncate it, but we won't for now */
-      fprintf(stderr, "Message %d too large (%d bytes)\n", i, strlen(msg));
+      fprintf(stderr, "Message %d too large (%ld bytes)\n", i, (long)strlen(msg));
       free_Mail(&t);
       continue;
     }

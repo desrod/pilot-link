@@ -109,6 +109,7 @@ void VoidSyncFlags(void)
                                   any Desktop software that databases
                                   have been altered, and that a slow
                                   sync is necessary */
+    U.lastSyncDate = U.succSyncDate = time(0);
     dlp_WriteUserInfo(sd, &U);
   } 
 }

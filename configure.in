@@ -5,11 +5,67 @@ AC_CONFIG_AUX_DIR(scripts)
 dnl Check host type
 AC_CANONICAL_HOST
 
+
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 AC_PROG_YACC
+
+AC_CHECK_PROGS(CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_CACHE_CHECK([whether C++ compiler ($CXX $CXFLAGS $LDFLAGS) works],
+  ac_cv_prog_cxx_works,
+[AC_TRY_COMPILE([#include <stdio.h>], [class a { public: int b; a::a(void); };
+a b; ],
+  ac_cv_prog_cxx_works=yes,ac_cv_prog_cxx_works=no)])
+AC_LANG_RESTORE
+
+AC_PROG_CXX_GNU
+
+if test $ac_cv_prog_gxx = yes; then
+  GXX=yes
+dnl Check whether -g works, even if CXXFLAGS is set, in case the package
+dnl plays around with CXXFLAGS (such as to build both debugging and
+dnl normal versions of a library), tasteless as that idea is.
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS=
+  AC_PROG_CXX_G
+  if test "$ac_test_CXXFLAGS" = set; then
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  elif test $ac_cv_prog_cxx_g = yes; then
+    CXXFLAGS="-g -O2"
+  else
+    CXXFLAGS="-O2"
+  fi
+else
+  GXX=
+  test "${CXXFLAGS+set}" = set || CXXFLAGS="-g"
+fi
+
+ccexecs=''
+cclib=''
+libcclib=''
+SUBMAKE_COMM='cd libsock ; $(MAKE) '
+SUBMAKE_COMM_CC='-true'
+EXT=''
+if test $ac_cv_prog_cxx_works = yes; then
+  ccexecs='$(CCEXECS)'
+  cclib='libpicc.a'
+  libcclib='libcc/libpicc.a'
+  SUBMAKE_COMM_CC='cd libcc ; $(MAKE) '
+fi
+AC_SUBST(ccexecs)
+AC_SUBST(cclib)
+AC_SUBST(libcclib)
+AC_SUBST(SUBMAKE_COMM)
+AC_SUBST(SUBMAKE_COMM_CC)
+AC_SUBST(EXT)
+
 
 dnl Checks for libraries.
 
@@ -74,4 +130,8 @@ AC_SUBST(CPLIB)
 AC_SUBST(ARFLAGS)
 
 AC_CONFIG_HEADER(include/pi-config.h)
-AC_OUTPUT(lib/Makefile Makefile)
+
+if test $ac_cv_prog_cxx_works = yes; then
+  cc_m='libcc/Makefile'
+fi
+AC_OUTPUT(libsock/Makefile $cc_m Makefile)

@@ -1,3 +1,20 @@
+Apr 28, 1997	Kenneth Albanowski 0.6.0
+
+	Primary feature: optional C++ support. If you have a C++ compiler, you'll
+	   get new code, and a new library.
+    Added Scott Grosch's <grosch@ichips.intel.com> C++ code, and completely
+       mucked up autoconf getting it to understand optional C++ code.
+	Paul Traina's <pst@Shockwave.COM> patches for pilot-mail's use of getopt.
+    Fixed simple variable definition problem affecting SGTYY in serial.c
+    Fixed lib/Makefile trailing slash and object duplication.
+    Added pd-tty.c to break out tty/async display code from pilot-debug.
+    Added GNU readline 2.0 support to pilot-debug (see Makefile).
+    Added complete Pilot Expense application DB support.
+    Added read-expenses program to document expenses reading.
+    Modified lib/pi-file so it will not even attempt to install deleted records
+       (even if the DB contains them) on an old Pilot, but will retrieve
+       them if possible.
+
 Apr 20, 1997	Kenneth Albanowski 0.5.7
 	
 	Adaption for NeXTStep and Solaris configuration problems.

@@ -12,10 +12,11 @@ Sorry for not providing decent information here. The basics are:
   4) run 'make install' if you feel the need.
      
 Note on pilot-debug: this program is a work-in-progress, and requires Tcl
-7.5 (or greater) and optionally Tk 4.1 (or greater). You'll need to modify
-Makefile to compile it (the directions are right at the top.) Currently you
-must have installed pilot-link or run pilot-debug in the pilot-link
-directory if you want the fancy images for the Remote UI window.
+7.5 (or greater) and optionally Tk 4.1 (or greater) and/or Readline 2.0.
+You'll need to modify Makefile to compile it (the directions are right at
+the top.) You must have install pilot-link or else run pilot-debug in the
+pilot-link source directory if you want the fancy images for the Remote UI
+window.
 
 Usage notes:
 
@@ -38,6 +39,9 @@ Usage notes:
   If you wish, you may easily change the default settings (pop host,
   password, etc.) for pilot-mail by editing the top of pilot-mail.c, as well
   as by setting the environment variables indicated in its help.
+  
+  Scott Grosch's "validate" program is included, and can be made via 'make
+  validate', but it may not be of use to anyone but Scott.
 
 Debugging notes:
 
