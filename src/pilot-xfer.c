@@ -302,7 +302,7 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 	int 	i,
 		ofile_len,
 		ofile_total,
-		totalsize;
+		totalsize = 0;
 
 	struct 	dirent *dirent;
 	struct 	stat sbuf;
