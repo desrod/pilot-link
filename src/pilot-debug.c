@@ -1908,7 +1908,7 @@ Please connect your Palm and start console or debugging mode.\n\n\
 (Console mode is a background task that can respond to a few commands,\n
 most importantly RPC which lets any function on the Palm be invoked. The\n
 Palm operates as usual while console mode is active, except that since\n
-the serial port is help open, HotSync and other applications that use\n
+the serial port is held open, HotSync and other applications that use\n
 the serial port will not work. Debug mode is activated on demand or when\n
 the Palm crashes. In debug mode, the CPU is halted, and no commands may\n
 be executed, except via a debugging console like this one.)\n\n\
@@ -1933,8 +1933,8 @@ updated on request or when the Palm halts.\n\n\
 
 
 The Debugging Console window is the primary interface for pilot-debug.\n
-Pressing Return on a \ line that contains text will execute that line as\n
-a Tcl command. (Try 'expr 3+4'.) All of \ the usual Tcl and Tk commands\n
+Pressing Return on a line that contains text will execute that line as\n
+a Tcl command. (Try 'expr 3+4'.) All of the usual Tcl and Tk commands\n
 are available, as well as some special-purpose ones, including 'help',\n
 'coldboot', 'warmboot', 'attach', 't', and 'g', (the last one continues\n
 after the Palm halts.)\n\n\ Execute 'help' for the list of commands\n

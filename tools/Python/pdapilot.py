@@ -69,6 +69,7 @@ class RecordBlock (Block):
 				self.modified = 1
 			else:
 				self.mofified = 0
+				self.modified = 0
 			if attr & 0x20:
 				self.busy = 1
 			else:

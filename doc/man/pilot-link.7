@@ -1,4 +1,4 @@
-.TH PILOT-LINK 7 "3Com Pilot Tools" "FSF" \" -*- nroff -*-
+.TH PILOT-LINK 7 "Palm Computing Device Tools" "FSF" \" -*- nroff -*-
 .SH NAME
 pilot-link \- a suite of tools for communicating with Palm Computing, Inc. 
 Palm Devices as well as the Handspring Visor, TRGPro, and other devices 
@@ -41,7 +41,8 @@ command-line interface to a Palm debug monitor
 .TP
 .B dlpsh
 command-line interface to Palm HotSync protocol. This is very useful for
-debugging potential problems with your serial port.
+debugging potential problems with your serial port. Query the RAM/ROM, 
+list databases, change your UserID or Username, and many more functions.
 
 .TP
 .B getrom
@@ -73,11 +74,13 @@ import ToDo records from a text format into the Palm
 
 .TP
 .B install-user
-modify user name settings (and report lots of into) about the Palm
+modify User Preference settings and report additional intormation about
+the Palm, such as the Network Hotsync ID and Username/UserID
 
 .TP
 .B memos
-export memos from the Palm in mailbox format
+export memos from the Palm in mailbox format into one file, or one of two
+formats: one-file-per-record or one-directory-per-category
 
 .TP
 .B pi-csd
@@ -98,11 +101,12 @@ HotSync(tm) protocol
 
 .TP
 .B pi-port
-experimental program to separate serial layer from pilot-link
+experimental program to abstract the serial layer from pilot-link
 
 .TP
 .B pilot-addresses
-import and export address book to and from your Palm
+import and export records from the Address Book (AddressDB.pdb) on your
+Palm
 
 .TP
 .B pilot-clip
@@ -118,7 +122,8 @@ strips duplicate records from Palm databases
 
 .TP
 .B pilot-file
-dissect .prc and .pdb files
+dissect .prc and .pdb files to view header, app_info, and record
+information
 
 .TP
 .B pilot-mail
@@ -130,15 +135,17 @@ obtain this package.
 
 .TP
 .B pilot-schlep
-store a single file on the Palm
+stores a single file on the Palm or retrieve one from the Palm
 
 .TP
 .B pilot-undelete
-turn previously archived records into normal records by resetting the Dirty bit
+turn previously archived records into normal records by resetting the
+Dirty bit
 
 .TP
 .B pilot-xfer
-back up, restore, install & delete Palm databases. The Swiss Army Chainsaw of 
+back up, restore, install & delete Palm databases. The Swiss Army Chainsaw
+of
 .B pilot-link
 
 .TP
@@ -147,8 +154,8 @@ export Palm expense database into text format
 
 .TP
 .B read-ical
-export Palm Datebook and ToDo databases (DatebookDB.pdb and ToDoDB.pdb respectively) 
-into an Ical calendar (ical is required)
+export Palm Datebook and ToDo databases (DatebookDB.pdb and ToDoDB.pdb
+respectively)  into an Ical calendar (ical is required)
 
 .TP
 .B read-todos
@@ -160,7 +167,8 @@ export Palm Datebook into a 'remind' data file
 
 .TP
 .B sync-plan
-completely synchronize the Palm datebook with the Plan calendar via netplan                                               
+completely synchronize the Palm datebook with the Plan calendar via
+netplan, including authenticating to the netplan server
 
 .SH ADVANCED PROGRAMS
 Some of these programs are not intended for general end-users.
@@ -179,13 +187,14 @@ experimental program to test C++ features
 .SH OBTAINING
 The  most  current  version of the
 .I pilot-link
-suite of tools can be found at the following FTP site:
+suite of tools can be found at the following web site:
 
 .RS
-.I ftp://gnu-designs.com/pub/palm/pilot-link/
+.I http://www.gnu-designs.com/pilot-link/
 .RE
 .SH MAILING LIST
-The pilot-unix mailing list is maintained by Matthew Cravit. Its mandate is: 
+The pilot-unix mailing list is maintained by Matthew Cravit. Its mandate
+is:
 .RS
 
 The pilot-unix mailing list is for discussion and idea-sharing for those

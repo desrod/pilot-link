@@ -558,11 +558,9 @@ void Restore(char *dirname)
    rewinddir(dir);
 
    while ((dirent = readdir(dir))) {
-      char name[256];
 
       if (dirent->d_name[0] == '.')
 	 continue;
-
 
       db[dbcount] = (struct db *) malloc(sizeof(struct db));
 
@@ -877,8 +875,7 @@ struct {
  , {"help",    'h'}
  , {0, 0}
 };
-                                                                                                			 
-			 
+
 int main(int argc, char *argv[])
 {
    int mode;
