@@ -46,6 +46,7 @@ bin_PROGRAMS = 		\
 	pilot-clip	\
 	pilot-dedupe	\
 	pilot-file	\
+	pilot-foto	\
 	pilot-prc	\
 	pilot-schlep	\
 	pilot-xfer	\
@@ -246,6 +247,12 @@ pilot_file_SOURCES = 		\
 	$(getopt_sources)	\
 	pilot-file.c
 pilot_file_LDADD = 				\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_foto_SOURCES = 		\
+	$(getopt_sources)	\
+	pilot-foto.c
+pilot_foto_LDADD = 				\
 	$(top_builddir)/libpisock/libpisock.la
 
 ######################################################
