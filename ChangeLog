@@ -4,6 +4,10 @@
 
 	* src/pilot-xfer.c: Fix totalsize() 
 
+	* configure.in: Fix some bogus warnings with autoconf
+
+	* acconfig.h: Dump it, not needed with new configure.in changes
+
 2002-11-17  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* libpisock/pi-header.c: Minor verbage changes

@@ -301,8 +301,9 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 {
 	int 	i,
 		ofile_len,
-		ofile_total,
-		totalsize;
+		ofile_total;
+	
+	static int totalsize;
 
 	struct 	dirent *dirent;
 	struct 	stat sbuf;
@@ -463,8 +464,8 @@ static void Backup(char *dirname, int only_changed, int remove_deleted, int quie
 		if (pi_file_retrieve(f, sd, 0) < 0) {
 			printf("Failed, unable to back up database\n");
 		} else if (stat(name, &sbuf) == 0 && !quiet) {
-			printf("[%7ld bytes | %-6.1f kb total]\n", 
-				sbuf.st_size, (float)totalsize/1024);
+			printf("[%7ld bytes | %3ld kb total]\n", 
+				sbuf.st_size, totalsize/1024);
 			totalsize += sbuf.st_size;
 		} else {
 			printf("\n");
@@ -830,7 +831,7 @@ static void Restore(char *dirname)
  ***********************************************************************/
 static void Install(char *filename)
 {
-	static int totalsize = 0;
+	static int totalsize;
 
 	struct 	pi_file *f;
 	struct 	stat sbuf;
@@ -856,7 +857,7 @@ static void Install(char *filename)
 		fprintf(stderr, "failed.\n");
 	} else if (stat(filename, &sbuf) == 0) {
 		totalsize += sbuf.st_size;
-		printf("[%7ld bytes | %7ld total]\n", sbuf.st_size, totalsize);
+		printf("[%7ld bytes | %3ld total]\n", sbuf.st_size, totalsize);
 	}
 	
 	pi_file_close(f);

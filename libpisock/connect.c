@@ -110,6 +110,7 @@ int pilot_connect(char *port)
 		} else
 			fprintf(stderr, "\n   No port specified\n");
 		pi_close(parent_sd);
+		pi_close(client_sd);
 		return -1;
 	}
 
@@ -120,6 +121,7 @@ int pilot_connect(char *port)
 	if (pi_listen(parent_sd, 1) == -1) {
 		fprintf(stderr, "\n   Error listening on %s\n", port);
 		pi_close(parent_sd);
+		pi_close(client_sd);
 		return -1;
 	}
 
@@ -127,6 +129,7 @@ int pilot_connect(char *port)
 	if (client_sd == -1) {
 		fprintf(stderr, "\n   Error accepting data on %s\n", port);
 		pi_close(parent_sd);
+		pi_close(client_sd);
 		return -1;
 	}
 
