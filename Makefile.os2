@@ -1,5 +1,5 @@
 # Generated automatically from Makefile.os2.in by configure.
-prefix 		= /opt/pilot
+prefix 		= /usr/local/palm
 exec_prefix 	= ${prefix}
 bindir 		= ${exec_prefix}/bin
 libdir 		= ${exec_prefix}/lib
@@ -8,7 +8,7 @@ includedir 	= ${prefix}/include
 mandir1 	= ${prefix}/man/man1
 mandir7 	= ${prefix}/man/man7
 srcdir 		= .
-localedir 	= /opt/pilot/locale
+localedir 	= /usr/local/palm/locale
 
 top_builddir 	= .
 
@@ -16,7 +16,7 @@ PURELINK 	=
 PURIFY 		=
 
 # Libraries needed to link with Tcl & (optionally) Tk
-TCLTK_LIBS 	= -L/usr/lib -ltk8.3 -L/usr/lib -ltcl8.3${TCL_DBGX} -L/usr/X11R6/lib -lX11 -ldl  -lieee -lm
+TCLTK_LIBS 	= -L/usr/lib -ltk8.0${TK_DBGX} -L/usr/lib -ltcl8.0${TCL_DBGX} -L/usr/X11R6/lib -lX11 -ldl  -lieee -lm
 
 # Include directives needed to compile with Tcl & Tk, and
 # -DTCL if Tcl is available, and
@@ -24,7 +24,7 @@ TCLTK_LIBS 	= -L/usr/lib -ltk8.3 -L/usr/lib -ltcl8.3${TCL_DBGX} -L/usr/X11R6/lib
 TCLTK_FLAGS 	= -DTCL -DTK -I/usr/include -I/usr/include/tcl
 
 # Libraries needed to link with GNU readline
-RLLIBS 		= -lreadline -ltermcap
+RLLIBS 		= -lreadline
 
 # Include directives needed to compile with GNU readline, and
 # -DREADLINE_2_0 if GNU readline 2.0 is available, or 
@@ -55,11 +55,11 @@ SUBDIRS 	= tools
 CAT		= /bin/cat
 CPLIB		= cp
 EXT		= 
-GZIP		= /usr/bin/gzip
+GZIP		= /bin/gzip
 INSTALL		= $(LIBTOOL) /usr/bin/install -c
 INSTALL_DATA	= ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
-LINT		= 
+LINT		= /usr/bin/lint
 RANLIB		= ranlib
 RM		= rm -f
 SHELL		= /bin/sh

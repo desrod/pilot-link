@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 	dlp_ReadFeature(sd, makelong("psys"), 1, &ROMversion);
 
 	if (argc < 3)
-		strcpy(name, "pilot.rom");
+		strcpy(name, "pilot-");
 	else
 		strcpy(name, argv[2]);
 
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 		ROMlength = 0x200000;
 	}
 
-	sprintf(name + strlen(name), "%d.%d.%d", majorVersion,
+	sprintf(name + strlen(name), "%d.%d.%d.rom", majorVersion,
 		minorVersion, bugfixVersion);
 	if (state != 3)
 		sprintf(name + strlen(name), "%s%d",
@@ -181,10 +181,14 @@ int main(int argc, char *argv[])
 		char buffer[256];
 		int len = left;
 		int j;
+//		double perc = (offset*100.0) / ROMlength;
+		double perc = ((double) offset / ROMlength) * 100.0;
 
 		if (len > 256)
 			len = 256;
-		printf("\r%ld of %ld bytes", offset, ROMlength);
+
+		printf("\r%ld of %ld bytes (%.2f%%)", offset, ROMlength, perc);
+
 		fflush(stdout);
 		PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),
 			RPC_Long(offset + ROMstart), RPC_Long(len),

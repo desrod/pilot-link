@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	char *filename;
 	int copilot;
 	unsigned long SRAMstart, SRAMlength, ROMversion, offset, left;
-	int majorVersion, minorVersion, build, state;
+	int majorVersion, minorVersion, bugfixVersion, build, state;
 
 	progname = argv[0];
 
@@ -116,13 +116,10 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	printf
-	    ("   Warning: Please back up your Palm (with pilot-xfer -b) before using this program!\n\n");
-
-	printf("   Please start HotSync (not getrom.prc) on your Palm.\n");
-	printf
-	    ("   Port: %s\n\n   Please insert the Palm in the cradle and press the HotSync button.\n",
-	     port);
+        fprintf(stderr, "   Warning: Please completely back up your Palm (with pilot-xfer -b)\n");
+        fprintf(stderr, "            before using this program!\n\n");
+        fprintf(stderr, "   Start HotSync (not getrom.prc) on your Palm.\n");
+        fprintf(stderr, "   Port: %s\n\n   Please press the HotSync button...\n", port);
 
 	sd = pi_accept(sd, 0, 0);
 	if (sd == -1) {
@@ -148,27 +145,26 @@ int main(int argc, char *argv[])
 	dlp_ReadFeature(sd, makelong("psys"), 1, &ROMversion);
 
 	if (!filename)
-		strcpy(name, "pilot.ram");
+		strcpy(name, "pilot-");
 	else
 		strcpy(name, filename);
 
-	majorVersion =
-	    (((ROMversion >> 28) & 0xf) * 10) + ((ROMversion >> 24) & 0xf);
-	minorVersion =
-	    (((ROMversion >> 20) & 0xf) * 10) + ((ROMversion >> 16) & 0xf);
+	majorVersion = 
+		(((ROMversion >> 28) & 0xf) * 10) + ((ROMversion >> 24) & 0xf);
+	minorVersion = ((ROMversion >> 20) & 0xf); 
+	bugfixVersion = ((ROMversion >> 16) & 0xf);
 	state = ((ROMversion >> 12) & 0xf);
 	build =
 	    (((ROMversion >> 8) & 0xf) * 10) +
 	    (((ROMversion >> 4) & 0xf) * 10) + (ROMversion & 0xf);
 
-	sprintf(name + strlen(name), "%d.%d", majorVersion, minorVersion);
+	sprintf(name + strlen(name), "%d.%d.%d.ram", majorVersion, minorVersion, bugfixVersion);
 	if (state != 3)
 		sprintf(name + strlen(name), "%s%d",
 			((state == 0) ? "d" : (state ==
 					       1) ? "a" : (state ==
 							   2) ? "b" : "u"),
 			build);
-	sprintf(name + strlen(name), ".%lu", SRAMlength / 1024);
 
 	printf("Generating %s\n", name);
 
@@ -206,10 +202,12 @@ int main(int argc, char *argv[])
 	while (left > 0) {
 		char buffer[256];
 		int len = left;
+		double perc = ((double) offset / SRAMlength) * 100.0;
 
 		if (len > 256)
 			len = 256;
-		printf("\r%ld of %ld bytes", offset, SRAMlength);
+
+                printf("\r%ld of %ld bytes (%.2f%%)", offset, SRAMlength, perc);
 		fflush(stdout);
 		PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),
 			RPC_Long(offset + SRAMstart), RPC_Long(len),

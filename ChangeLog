@@ -1,3 +1,12 @@
+2001-10-30  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* pi-getrom.c: updated to output percent completion, working on the
+	  bugs with newer ROM images crashing POSE
+
+	* pi-getram.c: similar fixes, added bugfixVersion so pi-getram's
+	  output matches pi-getrom's output file (pilot-3.5.1.ram for
+	  example)
+
 2001-10-26  JP Rosevear  <jpr@ximian.com>
 
 	* libsock/util.c (convert_ToPilotChar): plug leak
@@ -12,17 +21,17 @@
  	* libsock/sync.c (sync_record): If the record was created and
 	deleted between syncs (without being archived) ignore it
  
-2001-10-03  David A. Desrosiers <hacker@gnu-designs.com>
+2001-10-03  David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* Forgot to update the ChangeLog entry for 09-24. Ewps. 
 
-2001-09-24  David A. Desrosiers <hacker@gnu-designs.com>
+2001-09-24  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* pilot-addresses.c: Several people have reported this, it's fixed
 	  now. The original offending line was still in the code, commented
 	  out, but made it's way into production.
 
-2001-07-21  David A. Desrosiers <hacker@gnu-designs.com>
+2001-07-21  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Makefile.os2.in: Forgot to add this back to the cvs (David A.
 	  Desrosiers)
@@ -42,27 +51,27 @@
 	* libsock/dlp.c: epoch fixes/additions, fixed incorrect date
 	  returned. (David A. Desrosiers)
 
-2001-07-17  David A. Desrosiers <hacker@gnu-designs.com>
+2001-07-17  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* scripts/ltmain.sh: 'program=lt-'$name' crept in. Cleaned.
 
-2001-07-12  David A. Desrosiers <hacker@gnu-designs.com>
+2001-07-12  David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* include/i18n.h: Oops! 
 
-2001-07-12  David A. Desrosiers <hacker@gnu-designs.com>
+2001-07-12  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* TODO: New layout and format, more conducive to allowing others to
 	  see where the most help is needed, sorted by severity.
 
-2001-06-24  David A. Desrosiers <hacker@gnu-designs.com>
+2001-06-24  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* pilot-xfer.c: Removed the "orphaned" -B/-U/-S options which never
 	  had the proper code to work, in an unreachable segment, also the
 	  -F/-O options should be working, and the -I option should once
 	  again be properly parsed (Carl Jacobsen, Brian Bock)
 
-2001-06-20  David A. Desrosiers <hacker@gnu-designs.com>
+2001-06-20  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* parsedate.y: Added missing <string.h> include that caused problems
 	  on IA64 builds (David A. Desrosiers)
@@ -93,7 +102,7 @@
 
 	* pilot-debug.c: Fixes for changes in Tcl/Tk. This will soon go away. 
 
-2001-06-18  David A. Desrosiers <hacker@gnu-designs.com>
+2001-06-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Makefile.in: Changed the 'strip -s' target to 'strip' to properly
 	  strip the binaries on a SunOS/Sparc target (now that I have one to
@@ -120,7 +129,7 @@
  	* libsock/unixserial.c (s_write): Only free() skb after we access
  	skb->len, not before it.
 
-2001-06-06  David A. Desrosiers <hacker@gnu-designs.com>
+2001-06-06  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Fixed/reverted the mess with the GPL vs. LGPL headers in a slew of
 	  files. I made a mistake back in October 2000 and put the wrong
@@ -130,11 +139,11 @@
 
 	* libsock/dlp-backup.c: Removed, redundant file
 
-2001-05-28  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-28  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* tools/Perl5/Pilot.xs: Fixed tabbing out of order
 
-2001-05-25  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-25  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* reminders.c: Cleaned up ANSI warning about newlines [trigdate]
 	  (David A. Desrosiers)
@@ -144,7 +153,7 @@
 
 	* dlpsh.c: Addition of 'userID = %08lx (%i)', etc. fixes
 
-2001-05-25  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-25  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* include/md5.h: Renamed md5.h to pi-md5.h to be more in line with
 	  the current include/* naming scheme.
@@ -157,7 +166,7 @@
 	* tools/Perl5/dump.pl: Fixed shebang to be a bit more portable
 	  (recommended by the perl newsgroups and the Camel book)
 
-2001-05-25  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-25  David A. Desrosiers <hacker at gnu-designs dot com>
 2001-05-24
 
 	* tools/Perl5/Pilot.xs: Fixed a typo in 'creatDate' (Hadmut Danisch)
@@ -203,7 +212,7 @@
 
         * libsock/inetserial.c: ditto
 
-2001-05-22  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-22  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Makefile.in/Makefile.os2: Fixed the "double-header" install
 	  problem with the Makefile in the install stanza. Fixed the
@@ -229,19 +238,19 @@
 	* pilot-xfer.c: Possible fix for 'time' on Next Openstep, commented
 	  out, need to test. (Juergen Sell)
 
-2001-05-20  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-20  David A. Desrosiers <hacker at gnu-designs dot com>
 	
 	* Started the documenting of every function in the code, more
 	  cleanups. 
 
-2001-05-15  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-15  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* pilot-addresses.c: Fix to make it possible to store the adresses
 	  to csv from palm, edit them in gnumeric, and then upload them into
 	  palm again. (Field while be terminated by "," OR "\n") (Thomas
 	  Guettler)
 
-2001-05-13  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-13  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* memos.c: Added an additional fix to the -t handling in the
 	  original patch to allow for a regular expression to be used in
@@ -256,7 +265,7 @@
 
 	* Makefile.in: manpage ${srcdir}/man fix (John Marshall)
 
-2001-05-09  David A. Desrosiers <hacker@gnu-designs.com>
+2001-05-09  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* pilot-schlep.c: Updated the help verbage to be a bit more verbose
 	  about what the tool actually does. (Walter Koch, Voytek Eymont)
@@ -281,7 +290,7 @@
 	* dlpsh.c: Cleaned up the 'df' function again, no more eye-candy.
 	  Need to clean up argument parsing here. (David A. Desrosiers)
 
-2001-04-29  David A. Desrosiers <hacker@gnu-designs.com>
+2001-04-29  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* MAJOR change to the codebase, everything was properly indented
           with 8-character tabs, bracing, brackets, etc.  WARNING: Diffing
@@ -347,7 +356,7 @@
 
         * configure: Regenerate.
 
-2001-03-01 David A. Desrosiers
+2001-03-01 David A. Desrosiers <hacker at gnu-designs dot com>
 
         * Addition of CopyPrevention and Stream flags to various interfaces
           (John Marshall)
@@ -357,7 +366,7 @@
 
           General code cleanups and housecleaning
 
-2001-02-28 David A. Desrosiers
+2001-02-28 David A. Desrosiers <hacker at gnu-designs dot com>
 
         * kittykiller.c: Fixed ^M madness man/install-memos.1: More ^M
           madness. (Carl Jacobsen)
@@ -371,7 +380,7 @@
 
           tools/Python/pdapilot.py: fixed a typo in a member variable name
 
-2001-02-25 David A. Desrosiers
+2001-02-25 David A. Desrosiers <hacker at gnu-designs dot com>
 
         * memos.c: Fixed the detection of the %ENV for PILOTPORT and the
           device name from pi_device to argv[1] (Bob Wittig)
@@ -390,7 +399,7 @@
           sync-plan.PL: Added capability to authenticate to the Netplan
           Server (Mark Peletier)
 
-2001-02-17 David A. Desrosiers
+2001-02-17 David A. Desrosiers <hacker at gnu-designs dot com>
 
         * aclocal.m4: Fixed the BSD nm test (again). How many times do we
           have to keep fixing this?!
@@ -402,7 +411,7 @@
           layout of 'help'. Fixed some of the formatting. Lots more to do to
           this binary.
 
-2001-01-28 David A. Desrosiers
+2001-01-28 David A. Desrosiers <hacker at gnu-designs dot com> 
 
         * Makefile.in: Removed '-FOO' from the tcl/itcl testing. 
           configure.in/configure
@@ -541,7 +550,7 @@
 	* include/pi-sync.h: Remove free prepare callback and update
 	prepare callback
 
-2000-11-03  David A. Desrosiers
+2000-11-03  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Makefile.in: Oops, my bad. $(PIXDIR) fix.
 
@@ -554,7 +563,7 @@
 	* include/pi-sync.h: Remove AddArchive and DeleteArchive,
 	add SetStatusCleared and ArchiveRecord.
 
-2000-10-30  David A. Desrosiers <hacker@linuxcare.com>
+2000-10-30  David A. Desrosiers <hacker at linuxcare dot com>
 
 	* dlpsh time macro change [John Marshall]
 
@@ -609,7 +618,7 @@
 	the id of the record
 	(sync_MergeToPilot_fast): ditto
 
-2000-10-20  David A. Desrosiers <hacker@linuxcare.com>
+2000-10-20  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Cleaned up some more "ascii art". Nice small tight header now.
 
@@ -621,7 +630,7 @@
 
 	* Beginning the merge of install-????.c into pilot-install -foo.
 
-2000-10-18  David A. Desrosiers <hacker@linuxcare.com>
+2000-10-18  David A. Desrosiers <hacker at gnu-designs dot com>
 
         * s/port = argv[1]/device = argv[1]/
 
@@ -648,7 +657,7 @@
 
 	* More ANSI-C'ification (gotta love -pedantic)
 		
-2000-10-14  David A. Desrosiers <hacker@linuxcare.com>
+2000-10-14  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* dlpsh.c: Added a 'time' option to sync unix desktop time and date
           to Palm.
@@ -681,7 +690,7 @@
         * libsock/sync.c (sync_MergeToPilot_slow): Only try and obtain a pilot
         record if there record id set.
 
-2000-10-08  David A. Desrosiers <hacker@linuxcare.com>
+2000-10-08  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* dlpsh.c: Added a mem function to determine the amount of ROM/RAM
           on the device, and ROM/RAM free. Only works w/Card 0
