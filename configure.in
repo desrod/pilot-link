@@ -100,6 +100,17 @@ if test $ac_cv_termios_cspeed = yes; then
 fi
 
 dnl ******************************
+dnl PNG Support
+dnl ******************************
+AC_CHECK_LIB(png, main, [have_png=yes; LIBS="$LIBS -lpng"])
+if test "$have_png" = yes; then
+	AC_DEFINE(HAVE_PNG)
+	msg_png=yes
+else
+	msg_png=no
+fi
+
+dnl ******************************
 dnl USB Support
 dnl ******************************
 msg_usb=no
@@ -645,6 +656,7 @@ echo "
 
   C++ support......... : $msg_cpp
   Iconv support....... : $msg_iconv
+  PNG support......... : $msg_png
   Readline support.... : $msg_readline
 
   TCL support......... : $msg_tcl	($TCL_VERSION)
