@@ -53,7 +53,7 @@ extern "C" {
 	extern int net_tx_handshake
 	    PI_ARGS((pi_socket_t *ps));
 	extern ssize_t net_tx
-	    PI_ARGS((pi_socket_t *ps, unsigned char *buf, size_t len,
+	    PI_ARGS((pi_socket_t *ps, PI_CONST unsigned char *buf, size_t len,
 		 int flags));
 	extern ssize_t net_rx
 	    PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf, size_t expect,

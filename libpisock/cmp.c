@@ -293,7 +293,7 @@ cmp_tx_handshake(pi_socket_t *ps)
  *
  ***********************************************************************/
 ssize_t
-cmp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+cmp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes,
 		type;
@@ -608,7 +608,7 @@ cmp_setsockopt(pi_socket_t *ps, int level, int option_name,
  *
  ***********************************************************************/
 void
-cmp_dump(unsigned char *cmp, int rxtx)
+cmp_dump(const unsigned char *cmp, int rxtx)
 {
 	char *type;
 	

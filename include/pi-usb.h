@@ -34,7 +34,7 @@ extern "C" {
 			struct pi_sockaddr *addr, size_t addrlen));
 		int (*close) PI_ARGS((pi_socket_t *ps));
 		ssize_t (*write) PI_ARGS((pi_socket_t *ps,
-			unsigned char *buf, size_t len, int flags));
+			PI_CONST unsigned char *buf, size_t len, int flags));
 		ssize_t (*read) PI_ARGS((pi_socket_t *ps,
 			 pi_buffer_t *buf, size_t expect, int flags));
 		int (*flush) PI_ARGS((pi_socket_t *ps, int flags));

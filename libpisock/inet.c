@@ -57,7 +57,7 @@ static int pi_inet_listen(pi_socket_t *ps, int backlog);
 static int pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr,
 			 size_t *addrlen);
 static ssize_t pi_inet_read(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags);
-static ssize_t pi_inet_write(pi_socket_t *ps, unsigned char *msg, size_t len, int flags);
+static ssize_t pi_inet_write(pi_socket_t *ps, const unsigned char *msg, size_t len, int flags);
 static int pi_inet_getsockopt(pi_socket_t *ps, int level, int option_name, 
 			      void *option_value, size_t *option_len);
 static int pi_inet_setsockopt(pi_socket_t *ps, int level, int option_name, 
@@ -545,7 +545,7 @@ pi_inet_flush(pi_socket_t *ps, int flags)
  *
  ***********************************************************************/
 static ssize_t
-pi_inet_write(pi_socket_t *ps, unsigned char *msg, size_t len, int flags)
+pi_inet_write(pi_socket_t *ps, const unsigned char *msg, size_t len, int flags)
 {
 	int 	total,
 		nwrote;

@@ -191,7 +191,7 @@ slp_protocol (void)
  *
  ***********************************************************************/
 ssize_t
-slp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+slp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes;
 	pi_protocol_t	*prot,
@@ -622,7 +622,7 @@ slp_setsockopt(pi_socket_t *ps, int level, int option_name,
  *
  ***********************************************************************/
 void
-slp_dump_header(unsigned char *data, int rxtx)
+slp_dump_header(const unsigned char *data, int rxtx)
 {	
 	LOG((PI_DBG_SLP, PI_DBG_LVL_NONE,
 	    "SLP %s %d->%d type=%d txid=0x%.2x len=0x%.4x checksum=0x%.2x\n",
@@ -648,7 +648,7 @@ slp_dump_header(unsigned char *data, int rxtx)
  *
  ***********************************************************************/
 void
-slp_dump(unsigned char *data)
+slp_dump(const unsigned char *data)
 {
 	size_t 	size;
 

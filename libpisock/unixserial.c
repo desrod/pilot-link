@@ -123,8 +123,8 @@ static int s_open(pi_socket_t *ps, struct pi_sockaddr *addr,
 	size_t addrlen);
 static int s_close(pi_socket_t *ps);
 static int s_changebaud(pi_socket_t *ps);
-static ssize_t s_write(pi_socket_t *ps, unsigned char *buf, size_t len,
-	int flags);
+static ssize_t s_write(pi_socket_t *ps, const unsigned char *buf,
+	size_t len, int flags);
 static ssize_t s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len,
 	int flags);
 static int s_poll(pi_socket_t *ps, int timeout);
@@ -319,7 +319,7 @@ s_poll(pi_socket_t *ps, int timeout)
  *
  ***********************************************************************/
 static ssize_t
-s_write(pi_socket_t *ps, unsigned char *buf, size_t len,
+s_write(pi_socket_t *ps, const unsigned char *buf, size_t len,
 	int flags)
 {
 	ssize_t	total,

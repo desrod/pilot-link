@@ -169,7 +169,7 @@ sys_protocol (void)
  *
  ***********************************************************************/
 ssize_t
-sys_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+sys_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
 	pi_protocol_t	*prot,
 			*next;
@@ -337,7 +337,7 @@ sys_setsockopt(pi_socket_t *ps, int level, int option_name,
  *
  ***********************************************************************/
 void
-sys_dump_header(unsigned char *data, int rxtx)
+sys_dump_header(const unsigned char *data, int rxtx)
 {
 	LOG((PI_DBG_SYS, PI_DBG_LVL_NONE,
 	    "SYS %s\n", rxtx ? "TX" : "RX"));
@@ -356,7 +356,7 @@ sys_dump_header(unsigned char *data, int rxtx)
  *
  ***********************************************************************/
 void
-sys_dump(unsigned char *data, size_t len)
+sys_dump(const unsigned char *data, size_t len)
 {
 	dumpdata((char *)&data[PI_SYS_HEADER_LEN], len);
 }

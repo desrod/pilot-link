@@ -87,7 +87,7 @@ extern "C" {
 			PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf,
 				size_t expect, int flags));
 		ssize_t	(*write)
-			PI_ARGS((pi_socket_t *ps, unsigned char *buf,
+			PI_ARGS((pi_socket_t *ps, PI_CONST unsigned char *buf,
 				size_t len, int flags));
 		int (*flush)
 			PI_ARGS((pi_socket_t *ps, int flags));

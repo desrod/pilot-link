@@ -51,7 +51,7 @@
 
 static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(struct pi_socket *ps);
-static int u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags);
+static int u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags);
 static int u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout);
 static int u_poll(struct pi_socket *ps, int timeout);
@@ -381,7 +381,7 @@ u_poll(struct pi_socket *ps, int timeout)
 }
 
 static int
-u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
+u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
 	int ret;

@@ -61,10 +61,11 @@
 /* Declare prototypes */
 static int u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(pi_socket_t *ps);
-static ssize_t u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
+static ssize_t u_write(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags);
 static ssize_t u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_poll(pi_socket_t *ps, int timeout);
 static int u_flush(pi_socket_t *ps, int flags);
+
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
 	impl->open 	= u_open;
@@ -280,7 +281,7 @@ u_poll(pi_socket_t *ps, int timeout)
  *
  ***********************************************************************/
 static ssize_t
-u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+u_write(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int 	nwrote, 
 		total, 

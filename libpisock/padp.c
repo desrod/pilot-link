@@ -63,8 +63,8 @@ static int padp_sendack(struct pi_socket *ps, struct pi_padp_data *data,
  * Returns:     pi_protocol_t* or NULL if operation failed
  *
  ***********************************************************************/
-static pi_protocol_t
-*padp_protocol_dup (pi_protocol_t *prot)
+static pi_protocol_t*
+padp_protocol_dup (pi_protocol_t *prot)
 {
 	pi_protocol_t	*new_prot = NULL;
 	pi_padp_data_t	*data = NULL,
@@ -179,7 +179,7 @@ pi_protocol_t
  *
  ***********************************************************************/
 ssize_t
-padp_tx(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+padp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int 	fl 	= FIRST,
 		count 	= 0,
@@ -847,7 +847,7 @@ padp_sendack(struct pi_socket *ps,
  *
  ***********************************************************************/
 void
-padp_dump_header(unsigned char *data, int rxtx)
+padp_dump_header(const unsigned char *data, int rxtx)
 {
 	int 	s;
 	char 	*stype;
@@ -900,7 +900,7 @@ padp_dump_header(unsigned char *data, int rxtx)
  *
  ***********************************************************************/
 void
-padp_dump(unsigned char *data)
+padp_dump(const unsigned char *data)
 {
 	size_t 	size;
 	unsigned char type;

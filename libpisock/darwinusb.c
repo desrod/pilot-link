@@ -1154,7 +1154,7 @@ u_poll(struct pi_socket *ps, int timeout)
 }
 
 static int
-u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
+u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 {
 	if (!usb_opened)
 	{
@@ -1164,7 +1164,7 @@ u_write(struct pi_socket *ps, unsigned char *buf, size_t len, int flags)
 		return 0;
 	}
 
-	IOReturn kr = (*usb_interface)->WritePipe(usb_interface, usb_out_pipe_ref, buf, len);
+	IOReturn kr = (*usb_interface)->WritePipe(usb_interface, usb_out_pipe_ref, (void *)buf, len);
 	if (kr != kIOReturnSuccess) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
 	}

@@ -83,14 +83,14 @@ extern "C" {
 	    PI_ARGS((void));
 
 	extern ssize_t slp_tx
-	    PI_ARGS((pi_socket_t * ps, unsigned char *buf, size_t len, int flags));
+	    PI_ARGS((pi_socket_t * ps, PI_CONST unsigned char *buf, size_t len, int flags));
 	extern ssize_t slp_rx
 	    PI_ARGS((pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags));
 
 	extern void slp_dump_header
-	    PI_ARGS((unsigned char *data, int rxtx));
+	    PI_ARGS((PI_CONST unsigned char *data, int rxtx));
 	extern void slp_dump
-	    PI_ARGS((unsigned char *data));
+	    PI_ARGS((PI_CONST unsigned char *data));
 
 #ifdef __cplusplus
 }

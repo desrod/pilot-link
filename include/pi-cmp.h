@@ -58,7 +58,7 @@ extern "C" {
 	extern int cmp_tx_handshake
 	  PI_ARGS((pi_socket_t *ps));
 	extern ssize_t cmp_tx
-	  PI_ARGS((pi_socket_t *ps, unsigned char *buf,
+	  PI_ARGS((pi_socket_t *ps, PI_CONST unsigned char *buf,
 		size_t len, int flags));
 	extern ssize_t cmp_rx
 	  PI_ARGS((pi_socket_t *ps, pi_buffer_t *msg,
@@ -72,7 +72,7 @@ extern "C" {
 	  PI_ARGS((pi_socket_t *ps, speed_t maxbaud));
 
 	extern void cmp_dump
-	  PI_ARGS((unsigned char *cmp, int rxtx));
+	  PI_ARGS((PI_CONST unsigned char *cmp, int rxtx));
 
 #ifdef __cplusplus
 }
