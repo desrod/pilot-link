@@ -27,7 +27,7 @@ public:
 
 class iambicExpense_t : public baseApp_t
 {
-	friend iambicExpenseList_t;
+	friend class iambicExpenseList_t;
 
 	short _flags;
 	char *_type;
