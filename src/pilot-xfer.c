@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "pi-debug.h"
 #include "pi-socket.h"
 #include "pi-file.h"
 #include "pi-header.h"
@@ -79,7 +80,8 @@ typedef enum {
 	palm_op_merge,
 	palm_op_fetch,
 	palm_op_delete,
-	palm_op_list
+	palm_op_list,
+	palm_op_cardinfo
 } palm_op_t;
 
 /* Flags specifying various bits of behavior. Should be
@@ -111,8 +113,8 @@ int		numexclude = 0;
 
 
 
-static int findVFSPath(int verbose, const char *path, long *volume,
-		char *rpath, int *rpathlen);
+static int findVFSPath(const char *path, long *volume, char *rpath,
+		int *rpathlen);
 
 
 const char
@@ -718,7 +720,7 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	} ;
 
 
-	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0)
+	if (findVFSPath(vfspath,&volume,rpath,&rpathlen) < 0)
 	{
 		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n", vfspath);
 		return bad_vfs_path;
@@ -1199,7 +1201,7 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 		return bad_local_file;
 	}
 
-	if (findVFSPath(0,vfspath,&volume,rpath,&rpathlen) < 0)
+	if (findVFSPath(vfspath,&volume,rpath,&rpathlen) < 0)
 	{
 		fprintf(stderr,"\n   VFS path '%s' does not exist.\n\n", vfspath);
 		return bad_vfs_path;
@@ -1806,6 +1808,41 @@ print_dir(long volume, const char *path, FileRef dir)
 }
 
 
+static int
+palm_cardinfo ()
+{
+	int				i,
+					ret,
+					volume_count = 16,
+					volumes[16];
+	struct VFSInfo	info;
+	char			buf[vfsMAXFILENAME];
+	int				len;					/* should be size_t in dlp.c? */
+
+	/* VFS info */
+	if ((ret = dlp_VFSVolumeEnumerate(sd,&volume_count,volumes)) < 0) {
+		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
+				"palm_cardinfo: dlp_VFSVolumeEnumerate returned %i\n", ret));
+		return ret;
+	}
+
+	for (i = 0; i < volume_count; i++)
+	{
+		/* Real volume? */
+		if (dlp_VFSVolumeInfo(sd, volumes[i], &info) < 0)
+			continue;
+
+		len = sizeof(buf);
+		buf[0] = '\0';
+		dlp_VFSVolumeGetLabel (sd, volumes[i], &len, buf);
+
+		print_volumeinfo (buf, volumes[i], &info);
+	}
+
+	return 0;
+}
+
+
 /***********************************************************************
  *
  * Function:    findVFSRoot_clumsy
@@ -1813,7 +1850,6 @@ print_dir(long volume, const char *path, FileRef dir)
  * Summary:     For internal use only. May contain live weasels.
  *
  * Parameters:  root_component --> root path to search for.
- *              list_root      --> list contents? (otherwise just search)
  *              match          <-> volume matching root_component.
  *
  * Returns:     -2 on VFSVolumeEnumerate error,
@@ -1823,8 +1859,8 @@ print_dir(long volume, const char *path, FileRef dir)
  *                match is set.
  *
  ***********************************************************************/
-static int findVFSRoot_clumsy(const char *root_component, int list_root,
-		long *match)
+static int
+findVFSRoot_clumsy(const char *root_component, long *match)
 {
 	int				volume_count		= 16;
 	int				volumes[16];
@@ -1853,35 +1889,26 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root,
 		buf[0]=0;
 		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,buf);
 
-		if (!list_root)
-		{
-			/* Not listing, so just check matches and continue. */
-			if (0 == strcmp(root_component,buf))
-			{
-				matched_volume = volumes[i];
-				break;
-			}
-			/* volume label no longer important, overwrite */
-			sprintf(buf,"card%d",info.slotRefNum);
-
-			if (0 == strcmp(root_component,buf))
-			{
-				matched_volume = volumes[i];
-				break;
-			}
+		/* Not listing, so just check matches and continue. */
+		if (0 == strcmp(root_component,buf)) {
+			matched_volume = volumes[i];
+			break;
 		}
-		else
-			print_volumeinfo(buf,volumes[i],&info);
+		/* volume label no longer important, overwrite */
+		sprintf(buf,"card%d",info.slotRefNum);
+
+		if (0 == strcmp(root_component,buf)) {
+			matched_volume = volumes[i];
+			break;
+		}
 	}
 
-	if (matched_volume >= 0)
-	{
+	if (matched_volume >= 0) {
 		*match = matched_volume;
 		return 0;
 	}
 
-	if ((matched_volume < 0) && (1 == volume_count))
-	{
+	if ((matched_volume < 0) && (1 == volume_count)) {
 		/* Assume that with one card, just go look there. */
 		*match = volumes[0];
 		return 1;
@@ -1893,9 +1920,7 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root,
  *
  * Function:    findVFSPath
  *
- * Summary:     Twofold: if @p verbose is non-zero, list the "fake root"
- *              directory containing all the VFS volumes. Otherwise
- *              search the VFS volumes for @p path. Sets @p volume
+ * Summary:     Search the VFS volumes for @p path. Sets @p volume
  *              equal to the VFS volume matching @p path (if any) and
  *              fills buffer @p rpath with the path to the file relative
  *              to the volume.
@@ -1906,8 +1931,7 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root,
  *              VFS volume, no root component need be specified, and
  *              "/DCIM/" will map to "/card1/DCIM/".
  *
- * Parameters:  verbose        --> list root instead of searching.
- *              path           --> path to search for.
+ * Parameters:  path           --> path to search for.
  *              volume         <-> volume containing path.
  *              rpath          <-> buffer for path relative to volume.
  *              rpathlen       <-> in: length of buffer; out: length of
@@ -1919,8 +1943,7 @@ static int findVFSRoot_clumsy(const char *root_component, int list_root,
  *
  ***********************************************************************/
 static int
-findVFSPath(int verbose, const char *path, long *volume,
-		char *rpath, int *rpathlen)
+findVFSPath(const char *path, long *volume, char *rpath, int *rpathlen)
 {
 	char	*s;
 	int		r;
@@ -1940,9 +1963,7 @@ findVFSPath(int verbose, const char *path, long *volume,
 		*s=0;
 
 
-	r = findVFSRoot_clumsy(rpath,verbose,volume);
-	if (verbose)
-		return 1;
+	r = findVFSRoot_clumsy(rpath,volume);
 	if (r < 0)
 		return r;
 
@@ -2032,7 +2053,6 @@ palm_list_VFS()
 {
 	char	root_component[vfsMAXFILENAME];
 	int		rootlen							= vfsMAXFILENAME;
-	int		list_root						= 0;
 	long	matched_volume					= -1;
 	int		r;
 
@@ -2040,19 +2060,13 @@ palm_list_VFS()
 	   here. */
 	if (NULL == vfsdir)
 		vfsdir="/";
-	if (0 == strcmp(vfsdir,"/"))
-		list_root = 1;
 
 	/* Find the given directory. Will list the VFS root dir if the
 	   requested dir is "/" */
 	printf("   Directory of %s...\n",vfsdir);
 
-	r = findVFSPath(list_root,vfsdir,&matched_volume,root_component,&rootlen);
-	if (list_root)
-		return;
+	r = findVFSPath(vfsdir,&matched_volume,root_component,&rootlen);
 
-
-	/* Failures and "/" mean we can quit now. */
 	if (-2 == r)
 	{
 		printf("   Not ready reading drive C:\n");
@@ -2060,7 +2074,7 @@ palm_list_VFS()
 	}
 	if (r < 0)
 	{
-		printf("   No such directory, list directory / for card names.\n");
+		printf("   No such directory, use pilot-xfer -C to list volumes.\n");
 		return;
 	}
 
@@ -2167,7 +2181,7 @@ main(int argc, const char *argv[])
 		                *dirname        = NULL;
 	unsigned long int	sync_flags		= 0;
 	palm_op_t			palm_operation	= palm_op_noop;
-	const char			*gracias		= "   Thank you for using pilot-link.\n";
+	const char			*gracias		= "\n   Thank you for using pilot-link.\n";
 
 	const char			**rargv;		/* for scanning remaining arguments */
 	int					rargc;
@@ -2191,6 +2205,7 @@ main(int argc, const char *argv[])
 
 		/* action indicators that take no arguments. */
 		{"list",     'l', POPT_ARG_NONE, NULL, palm_op_list, "List all application and 3rd party Palm data/apps", NULL},
+		{"cardinfo", 'C', POPT_ARG_NONE, NULL, palm_op_cardinfo, "Show information on available cards", NULL},
 
 		/* action indicators that may be mixed in with the others */
 		{"Purge",    'P', POPT_BIT_SET, &sync_flags, PURGE, "Purge any deleted data that hasn't been cleaned up", NULL},
@@ -2212,7 +2227,7 @@ main(int argc, const char *argv[])
 		"\n"
 		"   Sync, backup, install, delete and more from your Palm device.\n"
 		"   This is the swiss-army-knife of the entire pilot-link suite.\n\n"
-		"   Use exactly one of -brsudfiml; mix in -aexDPv, --rom and --with-os.\n\n";
+		"   Use exactly one of -brsudfimlI; mix in -aexDPv, --rom and --with-os.\n\n";
 
 	pc = poptGetContext("pilot-xfer", argc, argv, options, 0);
 
@@ -2248,9 +2263,10 @@ main(int argc, const char *argv[])
 			case palm_op_fetch:
 			case palm_op_delete:
 			case palm_op_list:
+			case palm_op_cardinfo:
 				if (palm_op_noop != palm_operation)
 				{
-					fprintf(stderr,"   ERROR: specify only one of -brsuimfdlL.\n");
+					fprintf(stderr,"   ERROR: specify only one of -brsuimfdlLC.\n");
 					return 1;
 				}
 				palm_operation = optc;
@@ -2340,16 +2356,17 @@ main(int argc, const char *argv[])
 				}
 			}
 			/* FALLTHRU */
+		case palm_op_cardinfo:
 		case palm_op_list:
 			if (rargc > 0)
 			{
-				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlL.\n");
+				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n");
 				fprintf(stderr,gracias);
 				return 1;
 			}
 			break;
 		case palm_op_noop:
-			fprintf(stderr,"   ERROR: Must specify one of -bursimfdl.\n");
+			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n");
 			fprintf(stderr,gracias);
 			return 1;
 			break;
@@ -2426,6 +2443,9 @@ main(int argc, const char *argv[])
 			break;
 		case palm_op_list:
 			palm_list(sync_flags);
+			break;
+		case palm_op_cardinfo:
+			palm_cardinfo();
 			break;
 	}
 
