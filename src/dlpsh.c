@@ -34,6 +34,7 @@
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
+#include "pi-error.h"
 
 #ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
@@ -258,11 +259,15 @@ int ls_fn(int sd, int argc, char *argv[])
 		   return. */
 		ret = dlp_ReadDBList(sd, cardno, flags | dlpDBListMultiple, start, buf);
 
-		if (ret == -5 /* dlpRespErrNotFound */ ) 
+		if (ret == PI_ERR_DLP_PALMOS &&
+				pi_palmos_error(sd) == dlpErrNotFound) 
 			break;
 
 		if (ret < 0) {
-			printf("dlp_ReadDBList: err %d\n", ret);
+			if (ret == PI_ERR_DLP_PALMOS)
+				printf("dlp_ReadDBList: PalmOS err 0x%04x\n", pi_palmos_error(sd));
+			else
+				printf("dlp_ReadDBList: err %d\n", ret);
 			pi_buffer_free (buf);
 			return -1;
 		}
@@ -332,7 +337,7 @@ int rm_fn(int sd, int argc, char *argv[])
 	cardno 	= 0;
 
 	if ((ret = dlp_DeleteDB(sd, cardno, name)) < 0) {
-		if (ret == dlpErrNotFound) {
+		if (ret == PI_ERR_DLP_PALMOS && pi_palmos_error(sd) == dlpErrNotFound) {
 			printf("%s: not found\n", name);
 			return (0);
 		}
