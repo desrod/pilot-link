@@ -32,7 +32,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 /* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
@@ -46,7 +46,7 @@ struct option options[] = {
 static const char *optstring = "hp:c:";
 
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf
 	    ("   Install local files into your Hi-Notes database on your Palm device\n\n"
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 	while (((c = getopt(argc, argv, optstring)) != -1)) {
 		switch (c) {
 		  case 'h':
-			  Help(progname);
+			  print_help(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;

@@ -25,9 +25,9 @@
 #include <stdio.h>
 #include "pi-version.h"
 
-void PalmHeader(char *progname);
+void print_splash(char *progname);
 
-void PalmHeader(char *progname)
+void print_splash(char *progname)
 {
         char 	*patchlevel = "";
 

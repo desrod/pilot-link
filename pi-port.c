@@ -42,7 +42,7 @@
 void do_read(struct pi_socket *ps, int type, char *buffer, int length);
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -92,7 +92,7 @@ void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 	}
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Reads incoming remote Palm data during a Network HotSync\n\n"
 	       "   Usage: %s -p <port>\n"
@@ -122,10 +122,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		  case 'h':
-			  Help(progname);
+			  print_help(progname);
 			  exit(0);
 		  case 'v':
-			  PalmHeader(progname);
+			  print_splash(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;

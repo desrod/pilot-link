@@ -40,7 +40,7 @@ struct option options[] = {
 
 static const char *optstring = "hvp:u:i:";
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Assigns your Palm device a Username and unique UserID\n\n"
 	       "   Usage: %s -p <port> -u \"User name\" -i <userid>\n"
@@ -75,10 +75,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			exit(0);
 		case 'v':
-			PalmHeader(progname);
+			print_splash(progname);
 			exit(0);
 		case 'p':
 			port = optarg;

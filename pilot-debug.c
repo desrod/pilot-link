@@ -1956,7 +1956,7 @@ pack .f.y -fill y -side right
 pack [menubutton .m.file -text {File} -menu .m.file.m] -side left
 #pack [menubutton .m.edit -text {Edit} -menu .m.edit.m] -side left
 pack [menubutton .m.windows -text {Windows} -menu .m.windows.m] -side left
-#pack [menubutton .m.help -text {Help} -menu .m.help.m] -side right
+#pack [menubutton .m.help -text {print_help} -menu .m.help.m] -side right
 
 menu .m.file.m
 menu .m.windows.m
@@ -2081,7 +2081,7 @@ proc Say {text} {
 static int proc_help(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
   Say("\
---- Help ---\n\
+--- print_help ---\n\
 g [<addr>]                 Go: Resume execution (if address is supplied,
                                will start at that point)\n\
 t <addr1> [<addr2>]      Till: Resume execution until addr1 (if addr2 is

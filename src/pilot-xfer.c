@@ -924,7 +924,7 @@ static void Purge(void)
 
 /***********************************************************************
  *
- * Function:    Help
+ * Function:    print_help
  *
  * Summary:     Print out the --help options and arguments
  *
@@ -933,7 +933,7 @@ static void Purge(void)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Usage: %s [-p port] [ -F|-O -U -q|-c ] command(s)\n\n"
 	       "   Options:\n"
@@ -1018,10 +1018,10 @@ int main(int argc, char *argv[])
 			/* else { Unknown param, let it go by quietly } */
 			break;
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			return 0;
 		case 'v':
-			PalmHeader(progname);
+			print_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;
@@ -1093,7 +1093,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc < 2) {
-		Help(progname);
+		print_help(progname);
 		printf("Insufficient number of arguments\n");
 	}
 

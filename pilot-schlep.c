@@ -144,7 +144,7 @@ static int Delete(int sd)
 	return 0;
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Package up any arbitrary file and sync it to your Palm device\n\n"
 	       "   Usage: %s -p <port> [options]\n"
@@ -186,10 +186,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			exit(0);
 		case 'v':
-			PalmHeader(progname);
+			print_splash(progname);
 			exit(0);
 		case 'p':
 			port = optarg;
@@ -209,11 +209,11 @@ int main(int argc, char *argv[])
 	}
 	
 	if (install + fetch + delete > -1) {
-		Help(progname);
+		print_help(progname);
 		fprintf(stderr, "ERROR: You must specify only one action\n");
 		return -1;
 	} else if (install + fetch + delete == -3) {
-		Help(progname);
+		print_help(progname);
 		fprintf(stderr, "ERROR: You must specify at least one action\n");
 		return -1;
 	}

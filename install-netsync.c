@@ -42,7 +42,7 @@ struct option options[] = {
 
 static const char *optstring = "hvp:eH:a:n:l:";
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Assigns your Palm device NetSync information\n\n"
 	       "   Usage: %s -p <port> -H <hostname> -a <ip> -n <subnet>\n\n"
@@ -77,10 +77,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			return 0;
 		case 'v':
-			PalmHeader(progname);
+			print_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;

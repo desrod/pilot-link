@@ -42,7 +42,7 @@ int verbose = 0;
 char *progname;
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 struct option options[] = {
         {"help",        no_argument,       NULL, 'h'},
@@ -183,7 +183,7 @@ write_memo_in_directory(char *dirname, struct Memo m,
 
 /***********************************************************************
  *
- * Function:    Help
+ * Function:    print_help
  *
  * Summary:     Outputs the program arguments and params
  *
@@ -192,7 +192,7 @@ write_memo_in_directory(char *dirname, struct Memo m,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Manipulate your MemoDB.pdb file or your Memos database on your Palm device\n\n"
 	       "   Usage: memos [-p <port> | -f MemoDB] [options]\n"
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'v':
-			  PalmHeader(progname);
+			  print_splash(progname);
 			  exit(0);
 		  case 'd':
 			  delete = 1;
@@ -297,13 +297,13 @@ int main(int argc, char *argv[])
 			  title_matching = 1;
 			  break;
 		  case 'h':
-			  Help(progname);
+			  print_help(progname);
 			  exit(0);
 		}
 	}
 	
 	if (optind < 2)
-		PalmHeader(progname);
+		print_splash(progname);
 		exit(0);
 
 	/* FIXME - Need to add tests here for port/filename, clean this. -DD */

@@ -126,15 +126,16 @@ static int SetClip(int socket, int type, void *data, int length)
 	return 1;
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Get the clipboard contents to stdout or set the clipboard contents from stdin\n\n"
 	       "   Usage: %s -p <port> -g | -s <value>\n"
 	       "   Options:\n"
 	       "     -p <port>         Use device file <port> to communicate with Palm\n"
-	       "     -g                Get the contents of the clipboard\n"
+	       "     -g --get          Get the contents of the clipboard\n"
 	       "     -s <value>        Set the value <value> in the clipboard\n"
-	       "     -h                Display this information\n\n"
+	       "     -h --help         Display this information\n"
+	       "     -v --version      Display version information\n\n"
 	       "   Examples: %s -p /dev/pilot -g\n"
 	       "             %s -p /dev/pilot -s \"Put this in the clipboard\"\n\n", 
 	       progname, progname, progname);
@@ -155,11 +156,11 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			exit(0);
 		case 'v':
-			PalmHeader(progname);
-			return 0;
+			print_splash(progname);
+			exit(0);
 		case 'p':
 			port = optarg;
 			break;
@@ -172,8 +173,9 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (getset < 0) {
-		Help(progname);
-		fprintf(stderr, "ERROR: You must specify whether to get or set the clipboard\n");
+		print_help(progname);
+		fprintf(stderr, "ERROR: You must specify whether to "
+				"\"Get\" or \"Set\" the clipboard\n");
 		return -1;
 	}
 	
@@ -208,13 +210,13 @@ int main(int argc, char *argv[])
 
 	return 0;
 
-
- error_close:
+error_close:
 	pi_close(sd);
 	
- error:
+error:
 	perror("   ERROR");
 	fprintf(stderr, "\n");
+	fprintf(stderr, "   Please use --help for more information\n\n");
 
 	return -1;	
 }

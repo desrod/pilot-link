@@ -1,3 +1,7 @@
+2002-03-01  David A. Desrosiers <hacker at gnu-designs dot com>
+
+	* s/PalmHeader/print_splash/ && s/Help/print_help/
+
 2002-02-27  David A. Desrosiers <hacker at gnu-designs dot com>
 
 	* Makefile.am: Fixes to build outside $SRCDIR (John Marshall)

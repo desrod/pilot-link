@@ -30,7 +30,7 @@
 #include "pi-header.h"
 
 /* Declare prototypes */
-static void Help(char *progname);
+static void print_help(char *progname);
 
 #ifdef sun
 extern char *optarg;
@@ -327,7 +327,7 @@ void dump_record(struct pi_file *pf, struct DBInfo *ip, int record)
 	printf("\n");
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Usage: %s [-s] -p|-u dir file\n"
 	       "     -s           Do not obey or generate a 'sort' list\n\n"
@@ -380,12 +380,12 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind >= argc)
-		Help(progname);
+		print_help(progname);
 
 	name = argv[optind++];
 
 	if (optind != argc)
-		Help(progname);
+		print_help(progname);
 
 	if ((pf = pi_file_open(name)) == NULL) {
 		fprintf(stderr, "can't open %s\n", name);

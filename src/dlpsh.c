@@ -64,7 +64,7 @@ void handle_user_commands(int sd);
 typedef int (*cmd_fn_t) (int, int, char **);
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 struct Command {
 	char *name;
@@ -599,7 +599,7 @@ char *strtoke(char *str, char *ws, char *delim)
 	return start;
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   An interactive DLP Protocol Shell for your Palm device\n\n"
 	       "   Usage: %s -p <port>\n"
@@ -634,13 +634,13 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'h':
-			  Help(progname);
+			  print_help(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;
 			  break;
 		  case 'v':
-			  PalmHeader(progname);
+			  print_splash(progname);
 			  exit(0);
 		}
 	}	

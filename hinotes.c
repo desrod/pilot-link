@@ -33,7 +33,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 /* constants to determine how to produce memos */
 #define MEMO_MBOX_STDOUT 0
@@ -156,7 +156,7 @@ void write_memo_in_directory(char *dirname, struct HiNoteNote m,
 	fclose(fd);
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf
 	    ("   Syncronize your Hi-Notes database with your desktop or server machine\n\n"
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 	while (((c = getopt(argc, argv, optstring)) != -1)) {
 		switch (c) {
 		  case 'h':
-			  Help(progname);
+			  print_help(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
+		print_splash(progname);
 	} else if (port == NULL && getenv("PILOTPORT")) {
 		port = getenv("PILOTPORT");
 	}

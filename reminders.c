@@ -31,7 +31,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -46,7 +46,7 @@ char 	*Weekday[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
 	*Month[12]  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", 
 			"aug", "sep", "oct", "nov", "dec"};
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Exports your Palm Datebook database into a 'remind' data file format.\n"
 	       "   Please see http://www.roaringpenguin.com/remind.html for more\n"
@@ -78,10 +78,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			return 0;
 		case 'v':
-			PalmHeader(progname);
+			print_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;

@@ -41,7 +41,7 @@ int read_file(FILE * in, int sd, int db, struct AddressAppInfo *aai);
 int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai);
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 /* Yet more hair: reorganize fields to match visible appearence */
 int realentry[19] =
@@ -444,7 +444,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai)
 	return 0;
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Usage: %s [-aeqDT] [-t delim] [-p port] [-c category]\n"
 	       "             [-d category] -r|-w [<file>]\n\n"
@@ -522,12 +522,12 @@ int main(int argc, char *argv[])
 			mode = 2;
 			break;
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			break;
 		}
 	}
 	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
+		print_splash(progname);
 	} else if (port == NULL && getenv("PILOTPORT")) {
 		port = getenv("PILOTPORT");
 	}

@@ -48,7 +48,7 @@ struct option options[] = {
 
 static const char *optstring = "hvp:c";
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Retrieves the RAM image from your Palm device\n\n"
 	       "   Usage: %s -p <port> [--copilot] [pilot.ram]\n\n"
@@ -98,10 +98,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			return 0;
 		case 'v':
-			PalmHeader(progname);
+			print_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;

@@ -32,7 +32,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 struct option options[] = {
 	{"help",        no_argument,       NULL, 'h'},
@@ -44,7 +44,7 @@ struct option options[] = {
 
 static const char *optstring = "hvp:f:";
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf
 	    ("   Syncronize your ToDo database with your desktop or server machine\n"
@@ -78,10 +78,10 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		  case 'h':
-			  Help(progname);
+			  print_help(progname);
 			  exit(0);
                   case 'v':
-			  PalmHeader(progname);
+			  print_splash(progname);
 			  return 0;
 		  case 'p':
 			  port = optarg;

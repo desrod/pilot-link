@@ -242,7 +242,7 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
 
 /***********************************************************************
  *
- * Function:    Help
+ * Function:    print_help
  *
  * Summary:     Uh, the -help, of course
  *
@@ -251,7 +251,7 @@ fetch_host(char *hostname, int hostlen, struct in_addr *address,
  * Returns:     Nothing
  *
  ***********************************************************************/
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Connection Service Daemon for Palm Devices\n\n"
 	       "   Usage: %s -H <hostname> -a <ip> -n <subnet>\n\n"
@@ -294,10 +294,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			return 0;
 		case 'v':
-			PalmHeader(progname);
+			print_splash(progname);
 			return 0;
 		case 'H':
 			strcpy(hostname, optarg);
@@ -312,13 +312,13 @@ int main(int argc, char *argv[])
 					fprintf(stderr,
 						"Invalid address '%s'\n\n",
 						optarg);
-					Help(progname);
+					print_help(progname);
 				}
 			}
 			break;
 		case 'n':
 			if (!inet_aton(optarg, &netmask))
-				Help(progname);
+				print_help(progname);
 			break;
 		case 'q':
 			quiet = 1;
@@ -328,7 +328,7 @@ int main(int argc, char *argv[])
 
 	/* cannot execute without address and hostname */
 	if ((address.s_addr == 0) || (strlen(hostname) == 0)) {
-		Help(progname);
+		print_help(progname);
 		return -1;
 	}
 	

@@ -1,1 +1,1 @@
-void PalmHeader(char *progname);
+void print_splash(char *progname);

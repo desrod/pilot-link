@@ -60,7 +60,7 @@ int pilot_connect(const char *port);
 /* This should be a struct, maybe later, we're killing this anyway. Passing
    this many things in is silly, but its cleaner than the previous. -DD 
  */
-static void Help(char *progname, char *port, char *from_address, char *pop_host,
+static void print_help(char *progname, char *port, char *from_address, char *pop_host,
 		 char *pop_user, char *pop_pass, char *sendmail, char *pop_keep,
 		 char *pilot_dispose, char *topilot_mhdir);
 
@@ -186,7 +186,7 @@ char *getvars(char *name, char *xdefault)
 	return s;
 }
 
-static void Help(char *progname, char *port, char *pop_host, char *pop_user, 
+static void print_help(char *progname, char *port, char *pop_host, char *pop_user, 
 		 char *pop_pass, char *from_address, char *pop_keep, 
 		 char *pilot_dispose, char *topilot_mhdir, char *sendmail)
 {
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 			sendmail = optarg;
 			break;
 		case 'h':
-			Help(progname, port, pop_host, pop_user, pop_pass, 
+			print_help(progname, port, pop_host, pop_user, pop_pass, 
 			     from_address, pop_keep, pilot_dispose, 
 			     topilot_mhdir, sendmail);
 			break;
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
 	argv += optind;
 
 	if (argc < 2 && !getenv("PILOTPORT")) {
-		// PalmHeader(progname);
+		// print_splash(progname);
 	} else if (port == NULL && getenv("PILOTPORT")) {
 		port = getenv("PILOTPORT");
 	}

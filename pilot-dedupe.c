@@ -209,7 +209,7 @@ static int DeDupe (int sd, char *dbname)
 	return 0;
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Removes duplicate records from any Palm database\n\n"
 	       "   Usage: %s -p <port> dbname [dbname ...]\n"
@@ -235,10 +235,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		case 'h':
-			Help(progname);
+			print_help(progname);
 			return 0;
 		case 'v':
-			PalmHeader(progname);
+			print_splash(progname);
 			return 0;
 		case 'p':
 			port = optarg;
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind < 0) {
-		Help(progname);
+		print_help(progname);
 		fprintf(stderr, "\tERROR: You must specify atleast one database\n");
 		return -1;		
 	}

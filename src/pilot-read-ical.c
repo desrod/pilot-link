@@ -34,7 +34,7 @@
 #include "pi-header.h"
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 struct option options[] = {
 	{"help", 	no_argument,        NULL, 'h'},
@@ -97,7 +97,7 @@ char *tclquote(char *in)
 	return buffer;
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Dumps the DatebookDB and/or ToDo applications to ical format\n\n"
 	       "   Usage: %s -p <port> [-d] [-t pubtext] -f icalfile\n"
@@ -135,10 +135,10 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		  case 'h':
-			  Help(progname);
+			  print_help(progname);
 			  exit(0);
 		  case 'v':
-			  PalmHeader(progname);
+			  print_splash(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;

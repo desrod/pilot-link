@@ -32,7 +32,7 @@
 void install_ToDos(int sd, int db, char *filename);
 
 int pilot_connect(const char *port);
-static void Help(char *progname);
+static void print_help(char *progname);
 
 /* Not used yet, getopt_long() coming soon! 
 struct option options[] = {
@@ -113,7 +113,7 @@ void install_ToDos(int sd, int db, char *filename)
 	return;
 }
 
-static void Help(char *progname)
+static void print_help(char *progname)
 {
 	printf("   Updates the Palm ToDo list with entries from a local file\n\n"
 	       "   Usage: %s -p <port> -f <filename>\n"
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 
 		  case 'h':
-			  Help(progname);
+			  print_help(progname);
 			  exit(0);
 		  case 'p':
 			  port = optarg;
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc < 2 && !getenv("PILOTPORT")) {
-		PalmHeader(progname);
+		print_splash(progname);
 	} else if (port == NULL && getenv("PILOTPORT")) {
 		port = getenv("PILOTPORT");
 	}
