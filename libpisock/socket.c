@@ -116,7 +116,7 @@ ps_list_dump (pi_socket_list_t *list)
 		list = list->next;
 	}
 }
-	      
+
 /***********************************************************************
  *
  * Function:    ps_list_append
@@ -145,12 +145,11 @@ ps_list_append (pi_socket_list_t *list, pi_socket_t *ps)
 		new_elem->next 	= NULL;
 
 		if (list == NULL)
-			list = new_elem;
-		else {
-			elem = list;
-			while (elem->next != NULL)
-				elem = elem->next;
-		}
+			return new_elem;
+
+		elem = list;
+		while (elem->next != NULL)
+			elem = elem->next;
 		elem->next = new_elem;
 	} else
 		list = NULL;
