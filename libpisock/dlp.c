@@ -1318,10 +1318,8 @@ dlp_FindDBByName (int sd, int cardno, PI_CONST char *name, unsigned long *locali
 	Trace(FindDBByName);
 	pi_reset_errors(sd);
 
-	if (pi_version(sd) < 0x0102) {
-		pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
-		return -129;
-	}
+	if (pi_version(sd) < 0x0102)
+		return pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
 
 	req = dlp_request_new(dlpFuncFindDB, 1, 2 + (strlen(name) + 1));
 	if (req == NULL)
@@ -1360,10 +1358,8 @@ dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno,
 	Trace(FindDBByName);
 	pi_reset_errors(sd);
 
-	if (pi_version(sd) < 0x0102) {
-		pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
-		return -129;
-	}
+	if (pi_version(sd) < 0x0102)
+		return pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
 
 	req = dlp_request_new_with_argid(dlpFuncFindDB, 0x21, 1, 2);
 	if (req == NULL)
@@ -1406,10 +1402,8 @@ dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator,
 	Trace(FindDBByName);
 	pi_reset_errors(sd);
 
-	if (pi_version(sd) < 0x0102) {
-		pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
-		return -129;
-	}
+	if (pi_version(sd) < 0x0102)
+		return pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
 
 	req = dlp_request_new_with_argid(dlpFuncFindDB, 0x22, 1, 10);
 	if (req == NULL)
@@ -1819,10 +1813,8 @@ dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags,
 	Trace(SetDBInfo);
 	pi_reset_errors(sd);
 
-	if (pi_version(sd) < 0x0102) {
-		pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
-		return -129;
-	}
+	if (pi_version(sd) < 0x0102)
+		return pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
 
 	req = dlp_request_new(dlpFuncSetDBInfo, 1, 40);
 	if (req == NULL)
@@ -2064,10 +2056,8 @@ dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 	Trace(ReadNetSyncInfo);
 	pi_reset_errors(sd);
 
-	if (pi_version(sd) < 0x0101) {
-		pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
-		return -129;	/* This call only functions under PalmOS 2.0 */
-	}
+	if (pi_version(sd) < 0x0101)
+		return pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
 
 	req = dlp_request_new(dlpFuncReadNetSyncInfo, 0);
 	if (req == NULL)
@@ -2119,10 +2109,8 @@ dlp_WriteNetSyncInfo(int sd, const struct NetSyncInfo *i)
 	Trace(WriteNetSyncInfo);
 	pi_reset_errors(sd);
 
-	if (pi_version(sd) < 0x0101) {
-		pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
-		return -129;
-	}
+	if (pi_version(sd) < 0x0101)
+		return pi_set_error(sd, PI_ERR_DLP_UNSUPPORTED);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 	    "DLP ReadNetSyncInfo Active: %d\n", i->lanSync ? 1 : 0));
