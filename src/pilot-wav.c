@@ -1,11 +1,11 @@
-/* 
+/*
  * pilot-wav.c: Palm Voice Memo Wav Fetcher/Converter
  *
  * This is a palm conduit to fetch Memo Wav files from a Palm.  It can also
  * convert *.wav.pdb files that have already been fetched from the Palm.
  *
  * Copyright (C) 2003 by David Turner
- * Based on pilot-foto Copyright (C) 2003 by Judd Montgomery 
+ * Based on pilot-foto Copyright (C) 2003 by Judd Montgomery
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,24 +25,21 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
- 
-#include "popt.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "pi-file.h"
 #include "pi-source.h"
+#include "userland.h"
 
 /* Declare prototypes */
-static void display_help(const char *progname);
-void print_splash(const char *progname);
-int pilot_connect(const char *porg);
 long write_header(FILE *out);
 long write_data(char *buffer, int index, int size, long dataChunkSize, FILE *out);
 int pdb_to_wav(char *filename);
 int fetch_wavs(int sd, char *dbname);
-int do_fetch(char *port, char *dbname);
+int do_fetch(char *dbname);
 
 #ifndef TRUE
 # define TRUE 1
@@ -145,8 +142,8 @@ long write_header(FILE * out)
  * Summary:     Writes out data from record buffer updating dataChunkSize
  *
  * Parameters:  char pointer buffer - self explanatory
- *              int size - size of data to be written 
- *              FILE *out - pointer to output file    
+ *              int size - size of data to be written
+ *              FILE *out - pointer to output file
  *              long dataChunkSize - present data chunk size
  *
  * Returns:     long - updated dataChunkSize
@@ -190,9 +187,9 @@ int fetch_wavs(int sd, char *dbname)
 	char creator[5];
 	char type[5];
 	pi_buffer_t *buffer;
-	
+
         int booldb = TRUE;
-        
+
         long wWaveLength;
         long formatChunkSize;
         long dataChunkSize;
@@ -222,13 +219,15 @@ int fetch_wavs(int sd, char *dbname)
 		}
 
                 if (!(strcmp(creator, "Vpad") || strcmp(type, "strm") || booldb)) {
-		       			memset (buffer->data, 0, buffer->allocated); 
-                        printf("Fetching '%s' (Creator ID '%s')... ",
-                               info.name, creator);
+			memset (buffer->data, 0, buffer->allocated);
+			if (!plu_quiet) {
+				printf("Fetching '%s' (Creator ID '%s')... ",
+					info.name, creator);
+			}
                         ret =
                             dlp_OpenDB(sd, 0, dlpOpenRead, info.name, &db);
                         if (ret < 0) {
-                                fprintf(stderr, "Unable to open %s\n",
+                                fprintf(stderr, "   WARNING: Unable to open %s\n",
                                         info.name);
                                 continue;
                         }
@@ -236,13 +235,14 @@ int fetch_wavs(int sd, char *dbname)
                         out = fopen(info.name, "w");
                         if (!out) {
                                 fprintf(stderr,
-                                        "Failed, unable to create file %s\n",
+                                        "   WARNING: Failed, unable to create file %s\n",
                                         info.name);
+				dlp_CloseDB(sd,db);
                                 continue;
                         }
-                        
+
                         formatChunkSize = write_header(out);
-                        
+
                         index = 0;
                         dataChunkSize = 0;
                         ret = 1;
@@ -263,7 +263,9 @@ int fetch_wavs(int sd, char *dbname)
 			fwrite(&wWaveLength, 4, 1, out);
                         dlp_CloseDB(sd, db);
                         fclose(out);
-                        printf("OK\n");
+			if (!plu_quiet) {
+                        	printf("OK\n");
+			}
                 }
         }
 		pi_buffer_free(buffer);
@@ -282,12 +284,12 @@ int fetch_wavs(int sd, char *dbname)
  * Returns:     0
  *
  ***********************************************************************/
-int do_fetch(char *port, char *dbname)
+int do_fetch(char *dbname)
 {
         int     sd              = -1,
-		ret;   
+		ret;
 
-        sd = pilot_connect(port);
+        sd = plu_connect();
 
 	ret = fetch_wavs(sd, dbname);
 
@@ -327,17 +329,20 @@ int pdb_to_wav(char *filename)
         long formatChunkSize;
 	long dataChunkSize;
 
-        printf("converting %s... ", filename);
+	if (!plu_quiet) {
+        	printf("Converting %s... ", filename);
+	}
         pi_fp = pi_file_open(filename);
         if (!pi_fp) {
-                printf("FAILED: could not open %s\n", filename);
+                fprintf(stderr,"   FAILED: could not open %s\n", filename);
                 return -1;
         }
         pi_file_get_info(pi_fp, &info);
 
         out = fopen(info.name, "w");
         if (!out) {
-                printf("FAILED: could not open %s to write\n", info.name);
+		pi_file_close(pi_fp);
+                fprintf(stderr,"   FAILED: could not open %s to write\n", info.name);
                 return -1;
         }
 
@@ -362,101 +367,59 @@ int pdb_to_wav(char *filename)
 	fwrite(&wWaveLength, 4, 1, out);
         fclose(out);
         pi_file_close(pi_fp);
-        printf("OK, wrote %ld bytes to %s\n", dataChunkSize, info.name);
+	if (!plu_quiet) {
+        	printf("OK, wrote %ld bytes to %s\n", dataChunkSize, info.name);
+	}
         return 0;
 }
 
 
-/***********************************************************************
- *
- * Function:    display_help
- *
- * Summary:     Uh, the -help, of course
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void display_help(const char *progname)
-{
-	printf("   Decodes Palm Voice Memo files to wav files you can read\n\n");
-	printf("   Usage: %s -p <port> [options] file\n", progname);
-	printf("   Options:\n");
-	printf("     -p --port <port>    Use device file <port> to communicate with Palm\n");
-	printf("     -h --help           Display this information\n");
-	printf("     -v --version        Display version information\n");
-	printf("     -f --fetch | <file> Fetch all wav files or specified wav file from the Palm\n");
-	printf("     -c --convert <file> Convert <file>.wav.pdb file to wav\n\n");
-	printf("   Examples: \n");
-	printf("      pilot-wav -p serial:/dev/ttyUSB0 -f MyVoiceMemo.wav.pdb\n");
-	printf("      pilot-wav -c MyVoiceMemo.wav.pdb\n\n");
-	return;
-}
 
 
 int main(int argc, const char *argv[])
 {
         int 	c;
 
-	const char
-                *progname       = argv[0];
-
-        char 	*port		= NULL,
+        char
 	    	*fetch		= NULL,
 	    	*convert	= NULL;
 
-        if (argc < 2 ) {
-                display_help(progname);
-        }
-	
 	poptContext pc;
-	
+
 	struct poptOption options[] = {
-		{"port", 'p', POPT_ARG_STRING, &port, 0,
-		 "Use device file <port> to communicate with Palm", "port"},
-		{"help", 'h', POPT_ARG_NONE, NULL, 'h',
-		 "Display help information", NULL},
-		{"version", 'v', POPT_ARG_NONE, NULL, 'v',
-		 "Show program version information", NULL},
-		{"fetch", 'f', POPT_ARG_STRING, &fetch, 0,
-		 "Fetch all wav files or specified wav file from the Palm",
-		 "[file|all]"},
-		{"convert", 'c', POPT_ARG_STRING, &convert, 0,
-		 "Convert <file>.wav.pdb file to wav", "file"},
+		USERLAND_RESERVED_OPTIONS
+		{"fetch", 'f', POPT_ARG_STRING, &fetch, 0, "Fetch all wav files or specified wav file from the Palm", "[file|all]"},
+		{"convert", 'c', POPT_ARG_STRING, &convert, 0, "Convert <file>.wav.pdb file to wav", "file"},
 		POPT_TABLEEND
 	};
 
 	pc = poptGetContext("pilot-wav", argc, argv, options, 0);
+	poptSetOtherOptionHelp(pc,"\n\n"
+	"   Decodes Palm Voice Memo files to wav files you can read\n\n"
+	"   Example arguments: \n"
+	"      pilot-wav -p serial:/dev/ttyUSB0 -f MyVoiceMemo.wav.pdb\n"
+	"      pilot-wav -c MyVoiceMemo.wav.pdb\n\n");
+
+	if (argc < 2 ) {
+		poptPrintUsage(pc,stderr,0);
+		return 1;
+	}
+
 
 	while ((c = poptGetNextOpt(pc)) >= 0) {
-		switch (c) {
-
-                case 'h':
-                        display_help(progname);
-                        return 0;
-                case 'v':
-                        print_splash(progname);
-                        return 0;
-                default:
-                        display_help(progname);
-                        return 0;
-                }
-        }
-        
-	if (c < -1) {
-		/* an error occurred during option processing */
-		fprintf(stderr, "%s: %s\n",
-		    poptBadOption(pc, POPT_BADOPTION_NOALIAS),
-		    poptStrerror(c));
+		fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);
 		return 1;
+        }
+
+	if (c < -1) {
+		plu_badoption(pc,c);
 	}
 
 	if(convert != NULL)
 		pdb_to_wav(convert);
 
 	if(fetch != NULL)
-		do_fetch(port, fetch);
-        
+		do_fetch(fetch);
+
         return 0;
 }
