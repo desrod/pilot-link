@@ -66,7 +66,6 @@ extern "C" {
 		/* I/O options */
 		void *ref;
 
-		/* Time out */
 		int timeout;
 	} pi_usb_data_t;
 
