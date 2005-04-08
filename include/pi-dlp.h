@@ -782,7 +782,7 @@ struct dlpResponse {
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_ReadFeature
-		PI_ARGS((int sd, unsigned long creator, unsigned int num,
+		PI_ARGS((int sd, unsigned long creator, int num,
 			unsigned long *feature));
 
 	/** @brief Emulation of the SysGetROMToken function on the device

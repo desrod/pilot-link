@@ -222,19 +222,19 @@ typedef struct pi_socket_list
 	extern int pi_socket_connected
 		PI_ARGS((int pi_sd));
 
-	extern int pi_connect
+	extern PI_ERR pi_connect
 	    PI_ARGS((int pi_sd, const char *port));
 
 	extern PI_ERR pi_bind
 	    PI_ARGS((int pi_sd, const char *port));
 
-	extern int pi_listen PI_ARGS((int pi_sd, int backlog));
+	extern PI_ERR pi_listen PI_ARGS((int pi_sd, int backlog));
 
-	extern int pi_accept
+	extern PI_ERR pi_accept
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
 		     size_t *namelen));
 
-	extern int pi_accept_to
+	extern PI_ERR pi_accept_to
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen,
 		     int timeout));
 
@@ -326,7 +326,7 @@ typedef struct pi_socket_list
 	 * @param pi_sd Socket descriptor
 	 * @return DLP version or #PI_ERR_SOCK_INVALID if socket was not found
 	 */
-	extern int pi_version PI_ARGS((int pi_sd));
+	extern PI_ERR pi_version PI_ARGS((int pi_sd));
 	
 	/** @brief Return the maximum size of a database record that can be transferred
 	 *
@@ -355,7 +355,7 @@ typedef struct pi_socket_list
 	 * @param pi_sd Socket descriptor
 	 * @return An error code if an error occured (see pi-error.h)
 	 */
-	extern int pi_tickle PI_ARGS((int pi_sd));
+	extern PI_ERR pi_tickle PI_ARGS((int pi_sd));
 
 	/** @brief Set a watchdog that will call pi_tickle() at regular intervals
 	 *
