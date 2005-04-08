@@ -23,26 +23,7 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
 
-#include <mach/mach.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <errno.h>
-
-#include <IOKit/IOKitLib.h>
-#include <IOKit/IOMessage.h>
-#include <IOKit/IOCFPlugIn.h>
-#include <IOKit/usb/IOUSBLib.h>
-
-#include "pi-debug.h"
-#include "pi-socket.h"
-#include "pi-source.h"
-#include "pi-usb.h"
-#include "pi-error.h"
-
-/*
- * Theory of operation
+/* Theory of operation
  *
  * Darwin IOKit is different from traditional unix i/o. It is much more
  * structured, and also more complex.
@@ -63,27 +44,20 @@
  *   ID and product ID and only accept those that are known to be Palm OS
  *   devices
  * - We then examine the device interfaces and select the pipes we're going to
- *   use for input and output [1].
+ *   use for input and output.
  * - We register for notifications coming from the device. When the device
  *   goes away, our notification callback is called and we can cleanly close
  *   things.
  * - Once everything is initialized, we fire a first "read" from the read
  *   pipe.  Subsequent reads are fired directly from the previous read's
- *   completion routine [2].
+ *   completion routine [1].
  * - In case the thread or application is aborted, the IOKit will clean things
  *   up for us.
  * - The controlling thread can also call darwin_usb_stop_listening() which
  *   will close the USB connection and release all buffers.
  *
  *
- * [1] Usually, Palm OS devices expose 4 bulk pipes: 2 "in" and 2 "out". One
- *     of the issues we face is to guess which pipe to use to receive data,
- *     and which pipe to use to send data. Some devices reply to the extended
- *     connection information request, which provides information about the
- *     endpoint to use for synchronization, but some others don't. In this
- *     case we're pretty much on our one, trying to guess which pipe to use.
- *
- * [2] Reading is done asynchronously and in a chained way: we fire a read
+ * [1] Reading is done asynchronously and in a chained way: we fire a read
  *     with ReadPipeAsync(). Once the read completes (or fails), our
  *     completion routine is called. As long as the read is not "aborted"
  *     (which means the device has been disconnected), we fire another read
@@ -97,8 +71,25 @@
  *     Writes, in the contrary, are synchronous for now. I can make them async
  *     as well, though I have not explored the implications for the libpisock
  *     code yet.  This could speed things up a bit as well, though.
- *
  */
+
+#include <mach/mach.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <errno.h>
+
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOMessage.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/usb/IOUSBLib.h>
+
+#include "pi-debug.h"
+#include "pi-socket.h"
+#include "pi-source.h"
+#include "pi-usb.h"
+#include "pi-error.h"
 
 /* Define this to make debug logs include USB debug info */
 #undef DEBUG_USB
@@ -110,6 +101,8 @@
 #define MAX_AUTO_READ_SIZE	4096
 #define AUTO_READ_SIZE		64
 
+/* Options */
+static int accept_multiple_simultaneous_connections = 0;	/* disabled by default, set to 1 to enable */
 
 /* IOKit interface */
 static IONotificationPortRef usb_notify_port;
@@ -120,11 +113,16 @@ static CFRunLoopRef usb_run_loop = 0;
 static pthread_mutex_t usb_run_loop_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t usb_thread_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t usb_thread_ready_cond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t usb_connections_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t usb_connection_added_cond = PTHREAD_COND_INITIALIZER;
 static pthread_t usb_thread = 0;
 
-/* Device interface */
-typedef struct
+/* Device interface linked list */
+typedef struct usb_connection_t
 {
+	struct usb_connection_t *next;		/* linked list */
+	struct pi_socket *ps;				/* the pilot-link socket we're associated with (if already paired) */
+
 	IOUSBInterfaceInterface182 **interface;
 	IOUSBDeviceInterface **device;		/* kept for CLOSE_NOTIFICATION */
 	io_object_t device_notification;	/* for device removal */
@@ -147,19 +145,7 @@ typedef struct
 	char read_buffer[MAX_AUTO_READ_SIZE];
 } usb_connection_t;
 
-/* temporary -- will be a linked list when we add
- * multiple simultaneous connections support
- */
-static usb_connection_t usb = {
-	NULL,
-	NULL,
-	NULL,
-	0,0,0,0,0,0,
-	PTHREAD_MUTEX_INITIALIZER,
-	PTHREAD_COND_INITIALIZER,
-	NULL,
-	0,0
-};
+static usb_connection_t *usb_connections = NULL;	/* linked list of active connections */
 
 /* USB control requests we send to the devices
  * Got them from linux/drivers/usb/serial/visor.h
@@ -300,13 +286,119 @@ static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, i
 static IOReturn	decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
 
+/***************************************************************************/
+/*                                                                         */
+/*                 GLOBAL DARWINUSB OPTION FOR CLIENT CODE                 */
+/*                                                                         */
+/***************************************************************************/
+void
+darwinusb_setoptions(int multiple_connections_support)
+{
+	accept_multiple_simultaneous_connections = multiple_connections_support;
+}
+
+
+/***************************************************************************/
+/*                                                                         */
+/*                   CONNECTIONS LINKED LIST MANAGEMENT                    */
+/*                                                                         */
+/***************************************************************************/
+static void
+add_connection(usb_connection_t *c)
+{
+	usb_connection_t *elem;
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: adding connection %p to linked list\n", c));
+#ifdef DEBUG_USB
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: \tinterface = %p\n", c->interface));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: \tdevice = %p\n", c->device));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: \tdevice_notification = %ld\n", (long)c->device_notification));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: \topened = %d\n", c->opened));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: \tin_pipe_ref = %d\n", c->in_pipe_ref));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: \tout_pipe_ref = %d\n", c->out_pipe_ref));
+#endif
+
+	pthread_mutex_lock(&usb_connections_mutex);
+	if (usb_connections == NULL)
+		usb_connections = c;
+	else
+	{
+		elem = usb_connections;
+		while (elem->next)
+			elem = elem->next;
+		elem->next = c;
+	}
+	pthread_cond_signal(&usb_connection_added_cond);
+	pthread_mutex_unlock(&usb_connections_mutex);
+}
+
+static void
+remove_connection(usb_connection_t *c)
+{
+	usb_connection_t *previous, *elem;
+	
+	pthread_mutex_lock(&usb_connections_mutex);
+	elem = usb_connections;
+	previous = NULL;
+	while (elem != NULL && elem != c)
+	{
+		previous = elem;
+		elem = elem->next;
+	}
+	if (elem)
+	{
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: removing connection %p from linked list\n", c));
+		if (previous)
+			previous->next = elem->next;
+		else
+			usb_connections = elem->next;
+		free(elem);
+	}
+	pthread_mutex_unlock(&usb_connections_mutex);
+}
+
+static int
+connection_exists(usb_connection_t *c)
+{
+	usb_connection_t *elem;
+	pthread_mutex_lock(&usb_connections_mutex);
+	elem = usb_connections;
+	while (elem)
+	{
+		if (elem == c)
+			break;
+		elem = elem->next;
+	}
+	pthread_mutex_unlock(&usb_connections_mutex);
+	return elem != NULL;
+}
+
+static int
+device_already_in_use(IOUSBDeviceInterface **device)
+{
+	usb_connection_t *elem;
+	int inuse = 0;
+
+	pthread_mutex_lock(&usb_connections_mutex);
+	elem = usb_connections;
+	while (elem)
+	{
+		if (elem->device == device)
+		{
+			inuse = 1;
+			break;
+		}
+		elem = elem->next;
+	}
+	pthread_mutex_unlock(&usb_connections_mutex);
+	return inuse;
+}
 
 /***************************************************************************/
 /*                                                                         */
 /*                             INTERNAL ROUTINES                           */
 /*                                                                         */
 /***************************************************************************/
-
 static int
 start_listening(void)
 {
@@ -315,33 +407,9 @@ start_listening(void)
 	CFRunLoopSourceRef runLoopSource;
 	kern_return_t kr;
 
-#ifdef DEBUG_USB
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: start_listening\n"));
-#endif
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: start_listening for connections\n"));
 
-	usb_notify_port = NULL;
-	usb_device_added_iter = NULL;
-
-	/* initialize one connection structure (later, move this code to device_added()) */
-	usb.device_notification = NULL;
-	usb.interface = NULL;
-	usb.device = NULL;
-
-	usb.in_pipe_ref = 0;
-	usb.out_pipe_ref = 0;
-	usb.auto_read_size = AUTO_READ_SIZE;
-	usb.read_ahead_size = 0;
-	usb.last_read_ahead_size = 0;
-	usb.opened = 0;
-	if (usb.read_queue)
-	{
-		usb.read_queue = NULL;
-		free(usb.read_queue);
-	}
-	usb.read_queue_size = 0;
-	usb.read_queue_used = 0;
-
-	// first create a master_port for my task
+	/* first create a master_port for my task */
 	kr = IOMasterPort (MACH_PORT_NULL, &masterPort);
 	if (kr || !masterPort)
 	{
@@ -349,10 +417,11 @@ start_listening(void)
 		return PI_ERR_GENERIC_SYSTEM;
 	}
 
-	// Set up the matching criteria for the devices we're interested in
-	// Interested in instances of class IOUSBDevice and its subclasses
-	// Since we are supporting many USB devices, we just get notifications
-	// for all USB devices and sort out the ones that we want later.
+	/* Set up the matching criteria for the devices we're interested in
+	 * Interested in instances of class IOUSBDevice and its subclasses
+	 * Since we are supporting many USB devices, we just get notifications
+	 * for all USB devices and sort out the ones that we want later.
+	 */
 	matchingDict = IOServiceMatching (kIOUSBDeviceClassName);
 	if (!matchingDict)
 	{
@@ -361,25 +430,28 @@ start_listening(void)
 		return PI_ERR_GENERIC_SYSTEM;
 	}
 
-	// Create a notification port and add its run loop event source to our run loop
-	// This is how async notifications get set up.
+	/* Create a notification port and add its run loop event source to our run loop
+	 * This is how async notifications get set up.
+	 */
 	usb_notify_port = IONotificationPortCreate (masterPort);
 	runLoopSource = IONotificationPortGetRunLoopSource (usb_notify_port);
 	CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
 
-	// Now set up two notifications, one to be called when a raw device is first matched by I/O Kit, and the other to be
-	// called when the device is terminated.
-	kr = IOServiceAddMatchingNotification (	usb_notify_port,
+	/* Now set up two notifications, one to be called when a raw device is first matched by I/O Kit, and the other to be
+	 * called when the device is terminated.
+	 */
+	kr = IOServiceAddMatchingNotification (
+			usb_notify_port,
 			kIOFirstMatchNotification,
 			matchingDict,
 			device_added,
 			NULL,
 			&usb_device_added_iter);
 
-	// Iterate once to get already-present devices and arm the notification
+	/* Iterate once to get already-present devices and arm the notification */
 	device_added (NULL, usb_device_added_iter);
 
-	// Now done with the master_port
+	/* Now done with the master_port */
 	mach_port_deallocate (mach_task_self(), masterPort);
 
 	return 0;
@@ -388,18 +460,24 @@ start_listening(void)
 static void
 stop_listening(usb_connection_t *c)
 {
-#ifdef DEBUG_USB
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stop_listening\n"));
-#endif
+	int was_open = c->opened;
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stop_listening for connection %p\n",c));
+
+	c->opened = 0;
+	c->in_pipe_ref = 0;
+	c->out_pipe_ref = 0;
 
 	if (c->device_notification)
 	{
-		// do this first to not get caught in a loop if called from device_notification()
+		/* do this first to not get caught in a loop
+		 * if called from device_notification()
+		 */
 		IOObjectRelease (c->device_notification);
 		c->device_notification = NULL;
 	}
 
-	if (c->opened && c->device)
+	if (was_open && c->device)
 		control_request (c->device, 0xc2, GENERIC_CLOSE_NOTIFICATION, NULL, 0x12);
 
 	if (c->interface)
@@ -416,21 +494,7 @@ stop_listening(usb_connection_t *c)
 		c->device = NULL;
 	}
 
-	if (usb_device_added_iter)
-	{
-		IOObjectRelease (usb_device_added_iter);
-		usb_device_added_iter = NULL;
-	}
-
-	if (usb_notify_port)
-	{
-		IONotificationPortDestroy(usb_notify_port);
-		usb_notify_port = NULL;
-	}
-
-	c->opened = 0;
-	c->in_pipe_ref = 0;
-	c->out_pipe_ref = 0;
+	remove_connection(c);
 }
 
 static void *
@@ -438,12 +502,12 @@ usb_thread_run(void *foo)
 {
 	if (start_listening() == 0)
 	{
-		// obtain the CFRunLoop for this thread
+		/* obtain the CFRunLoop for this thread */
 		pthread_mutex_lock(&usb_run_loop_mutex);
 		usb_run_loop = CFRunLoopGetCurrent();
 		pthread_mutex_unlock(&usb_run_loop_mutex);
 
-		// signal main thread that init was successful
+		/* signal main thread that init was successful */
 		pthread_mutex_lock(&usb_thread_ready_mutex);
 		pthread_cond_signal(&usb_thread_ready_cond);
 		pthread_mutex_unlock(&usb_thread_ready_mutex);
@@ -454,11 +518,24 @@ usb_thread_run(void *foo)
 		usb_run_loop = 0;
 		pthread_mutex_unlock(&usb_run_loop_mutex);
 
-		stop_listening(&usb);
+		if (usb_device_added_iter)
+		{
+			IOObjectRelease (usb_device_added_iter);
+			usb_device_added_iter = NULL;
+		}
+
+		while (usb_connections != NULL)
+			stop_listening(usb_connections);
+
+		if (usb_notify_port)
+		{
+			IONotificationPortDestroy(usb_notify_port);
+			usb_notify_port = NULL;
+		}
 	}
 	else
 	{
-		// signal main thread that init failed
+		/* signal main thread that init failed */
 		usb_thread = 0;
 		usb_run_loop = NULL;
 		pthread_mutex_lock(&usb_thread_ready_mutex);
@@ -483,20 +560,15 @@ device_added (void *refCon, io_iterator_t iterator)
 		output_pipe_number = 0xff,
 		pipe_info_retrieved = 0;
 
-#ifdef DEBUG_USB
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: device_added\n"));
-#endif
 
 	while ((ioDevice = IOIteratorNext (iterator)))
 	{
-		if (usb.opened)
+		if (usb_connections != NULL && !accept_multiple_simultaneous_connections)
 		{
-			/* we can only handle one connection at once for now
-			 * (this will change soon)
-			 */
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: a USB connection is already open. Giving up."));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: new device plugged but we already have a running connection\n"));
 			IOObjectRelease (ioDevice);
-			break;
+			continue;
 		}
 
 		kr = IOCreatePlugInInterfaceForService (ioDevice, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
@@ -512,6 +584,16 @@ device_added (void *refCon, io_iterator_t iterator)
 		if (res || !dev)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: couldn't create a device interface (res=0x%08x)\n", (int) res));
+			IOObjectRelease (ioDevice);
+			continue;
+		}
+
+		/* make sure this device is not already being handled (this may happen
+		 * with some handhelds that reconnect immediately after disconnecting, like the T5)
+		 */
+		if (device_already_in_use(dev))
+		{
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: device %p already in use, skipping it\n"));
 			IOObjectRelease (ioDevice);
 			continue;
 		}
@@ -539,6 +621,7 @@ device_added (void *refCon, io_iterator_t iterator)
 			continue;
 		}
 
+		/* configure the device and query for its preferred I/O pipes */
 		kr = configure_device (dev, vendor, product, &port_number, &input_pipe_number, &output_pipe_number, &pipe_info_retrieved);
 		if (kr != kIOReturnSuccess)
 		{
@@ -551,15 +634,52 @@ device_added (void *refCon, io_iterator_t iterator)
 			continue;
 		}
 
-		kr = find_interfaces(&usb, dev, vendor, product, port_number, input_pipe_number, output_pipe_number, pipe_info_retrieved);
+		/* allocate and initialize the USB connection structure */
+		usb_connection_t *c = malloc(sizeof(usb_connection_t));
+		if (c == NULL)
+		{
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "out of memory"));
+			(*dev)->USBDeviceClose (dev);
+			(*dev)->Release (dev);
+			IOObjectRelease (ioDevice);
+			break;
+		}
+		memset(c, 0, sizeof(usb_connection_t));
+		c->auto_read_size = AUTO_READ_SIZE;
+		c->device = dev;
+		pthread_mutex_init(&c->read_queue_mutex, NULL);
+		pthread_cond_init(&c->read_queue_data_avail_cond, NULL);
+
+		/* try to locate the pipes we need to talk to the device */
+		kr = find_interfaces(c, dev, vendor, product, port_number, input_pipe_number, output_pipe_number, pipe_info_retrieved);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to find interfaces (kr=0x%08x)\n", kr));
+			free(c);
 			(*dev)->USBDeviceClose (dev);
 			(*dev)->Release (dev);
 			IOObjectRelease (ioDevice);
 			continue;
 		}
+
+		/* Just like with service matching notifications, we need to create an event source and add it
+		 * to our run loop in order to receive async completion notifications.
+		 */
+		CFRunLoopSourceRef runLoopSource;
+		kr = (*c->interface)->CreateInterfaceAsyncEventSource (c->interface, &runLoopSource);
+		if (kr != kIOReturnSuccess)
+		{
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: Unable to create async event source (%08x)\n", kr));
+			free(c);
+			(*dev)->USBDeviceClose (dev);
+			(*dev)->Release (dev);
+			IOObjectRelease (ioDevice);
+			continue;
+		}
+		c->opened = 1;
+		CFRunLoopAddSource (CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
+
+		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: USBConnection %p OPENED c->in_pipe_ref=%d c->out_pipe_ref=%d\n",c,c->in_pipe_ref,c->out_pipe_ref));
 
 		/* Register for an interest notification for this device,
 		 * so we get notified when it goes away
@@ -570,16 +690,15 @@ device_added (void *refCon, io_iterator_t iterator)
 				ioDevice,
 				kIOGeneralInterest,
 				(IOServiceInterestCallback)device_notification,
-				(void *)&usb,
-				&usb.device_notification);
-		if (kr != kIOReturnSuccess)
-		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable register for device interest notification (kr=0x%08x)\n", kr));
-		}
-
-		usb.device = dev;
+				(void *)c,
+				&c->device_notification);
 		IOObjectRelease(ioDevice);
-		break;
+
+		/* add the device to our linked list, then only start reading data
+		 * (order of operations matters here to avoid race conditions)
+		 */
+		add_connection(c);
+		prime_read(c);
 	}
 }
 
@@ -640,12 +759,6 @@ configure_device(IOUSBDeviceInterface **di,
 			return kr;
 	}
 
-	/* Device specific magic incantations
-	 *
-	 * Many devices agree on talking only if you say the "magic" incantation first.
-	 * Usually, it's a control request or a sequence of control requests
-	 * Additionally, this gives us a chance to try finding the pipes we want
-	 */
 	if (vendor == VENDOR_PALMONE && product == PRODUCT_PALMCONNECT_USB)
 	{
 		/* PalmConnect USB is a serial <-> USB adapter. Even though it shows up
@@ -794,7 +907,7 @@ find_interfaces(usb_connection_t *c,
 
 						if (kr == kIOReturnSuccess && size >= 8)
 						{
-							/* got something!! */
+							/* got something! */
 							LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: got %d bytes there!\n", (int)size));
 							CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata(c->read_buffer, size));
 							if (!memcmp(c->read_buffer, "VNDR10", 6))
@@ -864,29 +977,11 @@ find_interfaces(usb_connection_t *c,
 		}
 
 		if (c->in_pipe_ref && c->out_pipe_ref)
-		{
-			/* Just like with service matching notifications, we need to create an event source and add it
-			 * to our run loop in order to receive async completion notifications.
-			 */
-			CFRunLoopSourceRef runLoopSource;
-			kr = (*c->interface)->CreateInterfaceAsyncEventSource (c->interface, &runLoopSource);
-			if (kr != kIOReturnSuccess)
-			{
-				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: Unable to create async event source (%08x)\n", kr));
-			}
-			else
-			{
-				LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: USBConnection OPENED c->in_pipe_ref=%d c->out_pipe_ref=%d\n", c->in_pipe_ref, c->out_pipe_ref));
-				c->opened = 1;
-				CFRunLoopAddSource (CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
-				prime_read(c);
-				break;
-			}
-		}
+			return kIOReturnSuccess;
 
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: couldn't find any suitable pipes pair on this interface\n"));
 
-		// if we didn't find two suitable pipes, close the interface
+		/* if we didn't find two suitable pipes, close the interface */
 		(*c->interface)->USBInterfaceClose (c->interface);
 		(*c->interface)->Release (c->interface);
 		c->interface = NULL;
@@ -1045,23 +1140,23 @@ read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_numbe
 static void
 device_notification(usb_connection_t *c, io_service_t service, natural_t messageType, void *messageArgument)
 {
-#ifdef DEBUG_USB
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: device_notification (messageType=0x%08lx)\n", messageType));
-#endif
-	if (messageType == kIOMessageServiceIsTerminated)
+
+	if (messageType == kIOMessageServiceIsTerminated && c != NULL)
 	{
 		c->opened = 0;		// so that stop_listening() does'nt try to send the control_request
 		stop_listening(c);
 
-		// In case the reading thread is waiting for data,
-		// we need to raise the usb_data_available cond once.
-		// since darwin_usb_read tests usb.opened, it will
-		// gracefully exit during a data wait.
+		/* In case the reading thread is waiting for data,
+		 * we need to raise the usb_data_available cond once.
+		 * since darwin_usb_read tests usb.opened, it will
+		 * gracefully exit during a data wait.
+		 */
 		pthread_mutex_lock (&c->read_queue_mutex);
 		pthread_cond_broadcast (&c->read_queue_data_avail_cond);
 		pthread_mutex_unlock (&c->read_queue_mutex);
 
-		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: device_notification(): USBConnection CLOSED\n"));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "darwinusb: USBConnection %p CLOSED\n", c));
 	}
 }
 
@@ -1071,17 +1166,17 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 	size_t bytes_read = (size_t) arg0;
 
 #ifdef DEBUG_USB
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read_completion callback with %d bytes result=0x%08lx\n", bytes_read,(long)result));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read_completion(c=%p, result=0x%08lx, bytes_read=%d)\n", c, (long)result, bytes_read));
 #endif
 
-	if (!c->opened)
+	if (!connection_exists(c) || !c->opened)
 		return;
 
 	pthread_mutex_lock(&c->read_queue_mutex);
 
 	if (result != kIOReturnSuccess)
 	{
-		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "darwinusb: async read completion received error code 0x%08x\n", result));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "darwinusb: async read completion(%p) received error code 0x%08x\n", c, result));
 	}
 	else if (bytes_read > 0)
 	{
@@ -1136,12 +1231,10 @@ prime_read(usb_connection_t *c)
 			c->last_read_ahead_size = 64;				// USB packet size
 
 #ifdef DEBUG_USB
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read() for %d bytes\n",
-			c->last_read_ahead_size));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read(%p) for %d bytes\n", c, c->last_read_ahead_size));
 #endif
 
-		IOReturn kr;
-		kr = (*c->interface)->ReadPipeAsync (c->interface, c->in_pipe_ref,
+		IOReturn kr = (*c->interface)->ReadPipeAsync (c->interface, c->in_pipe_ref,
 				c->read_buffer, c->last_read_ahead_size, (IOAsyncCallback1)&read_completion, (void *)c);
 
 		if (kr == kIOUSBPipeStalled)
@@ -1157,7 +1250,7 @@ prime_read(usb_connection_t *c)
 		if (kr == kIOReturnSuccess)
 			return 1;
 
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb:  prime_read(): ReadPipeAsync returned error 0x%08x\n", kr));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb:  prime_read(%p): ReadPipeAsync returned error 0x%08x\n", c, kr));
 	}
 	return 0;
 }
@@ -1185,13 +1278,41 @@ accepts_device(unsigned short vendor, unsigned short product)
 /*                                                                         */
 /***************************************************************************/
 
+static usb_connection_t*
+connection_for_socket(pi_socket_t *ps)
+{
+	/* if there is no active connection associated with this socket,
+	 * try to associate the first unassociated connection
+	 */
+	usb_connection_t *c = ((pi_usb_data_t *)ps->device->data)->ref;
+	if (c == NULL)
+	{
+		pthread_mutex_lock(&usb_connections_mutex);
+		c = usb_connections;
+		while (c)
+		{
+			if (c->ps == NULL)
+			{
+				c->ps = ps;
+				((pi_usb_data_t *)ps->device->data)->ref = c;
+				break;
+			}
+			c = c->next;
+		}
+		pthread_mutex_unlock(&usb_connections_mutex);
+	}
+	return c;
+}
+
 static int
 u_flush(pi_socket_t *ps, int flags)
 {
-	if (flags & PI_FLUSH_INPUT) {
-		pthread_mutex_lock(&usb.read_queue_mutex);
-		usb.read_queue_used = 0;
-		pthread_mutex_unlock(&usb.read_queue_mutex);
+	usb_connection_t *c = connection_for_socket(ps);
+	if (c && (flags & PI_FLUSH_INPUT))
+	{
+		pthread_mutex_lock(&c->read_queue_mutex);
+		c->read_queue_used = 0;
+		pthread_mutex_unlock(&c->read_queue_mutex);
 	}
 	return 0;
 }
@@ -1199,10 +1320,11 @@ u_flush(pi_socket_t *ps, int flags)
 static int
 u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
-	// thread doesn't exist yet: create it and wait for
-	// the init phase to be either successful or failed
 	if (usb_thread == 0)
 	{
+		/* thread doesn't exist yet: create it and wait for
+		 * the init phase to be either successful or failed
+		 */
 		pthread_mutex_lock(&usb_thread_ready_mutex);
 		pthread_create(&usb_thread, NULL, usb_thread_run, NULL);
 		pthread_cond_wait(&usb_thread_ready_cond, &usb_thread_ready_mutex);
@@ -1213,42 +1335,55 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 		errno = EINVAL;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
-	u_flush(ps, PI_FLUSH_INPUT);
 	return 1;
 }
 
 static int
 u_close(struct pi_socket *ps)
 {
-	if (usb_thread)
-	{
-		pthread_mutex_lock(&usb_run_loop_mutex);
-		if (usb_run_loop != NULL)
-			CFRunLoopStop(usb_run_loop);
-		pthread_mutex_unlock(&usb_run_loop_mutex);
-
-		pthread_join(usb_thread, NULL);
-		usb_thread = 0;
-		
-		if (usb.read_queue)
-		{
-			/* don't need to lock the mutex since the thread has ended
-			 * (see pthread_join above)
-			 */
-			free (usb.read_queue);
-			usb.read_queue = NULL;
-			usb.read_queue_size = 0;
-			usb.read_queue_used = 0;
-		}
-	}
+	usb_connection_t *c = ((pi_usb_data_t *)ps->device->data)->ref;
+	if (c)
+		stop_listening(c);
 	return 0;
 }
 
 static int
 u_poll(struct pi_socket *ps, int timeout)
 {
-	pthread_mutex_lock(&usb.read_queue_mutex);
-	int available = usb.read_queue_used;
+	usb_connection_t *c = connection_for_socket(ps);
+	if (c == NULL)
+	{
+		pthread_mutex_lock(&usb_connections_mutex);
+		if (timeout)
+		{
+			struct timeval now;
+			struct timespec when;
+
+			gettimeofday(&now, NULL);
+			when.tv_sec = now.tv_sec + timeout / 1000;
+			when.tv_nsec = now.tv_usec + (timeout % 1000) * 1000 * 1000;
+			if (when.tv_nsec >= 1000000000)
+			{
+				when.tv_nsec -= 1000000000;
+				when.tv_sec++;
+			}
+
+			if (pthread_cond_timedwait(&usb_connection_added_cond, &usb_connections_mutex, &when) == ETIMEDOUT)
+			{
+				pthread_mutex_unlock(&usb_connections_mutex);
+				return PI_ERR_SOCK_TIMEOUT;
+			}
+		}
+		else
+			pthread_cond_wait(&usb_connection_added_cond, &usb_connections_mutex);
+		pthread_mutex_unlock(&usb_connections_mutex);
+		c = connection_for_socket(ps);
+		if (c == NULL)
+			return -1;
+	}
+
+	pthread_mutex_lock(&c->read_queue_mutex);
+	int available = c->read_queue_used;
 	if (!available)
 	{
 		if (timeout)
@@ -1265,28 +1400,29 @@ u_poll(struct pi_socket *ps, int timeout)
 				when.tv_sec++;
 			}
 
-			if (pthread_cond_timedwait(&usb.read_queue_data_avail_cond, &usb.read_queue_mutex, &when) == ETIMEDOUT)
+			if (pthread_cond_timedwait(&c->read_queue_data_avail_cond, &c->read_queue_mutex, &when) == ETIMEDOUT)
 			{
-				pthread_mutex_unlock(&usb.read_queue_mutex);
+				pthread_mutex_unlock(&c->read_queue_mutex);
 				return 0;
 			}
-			available = usb.read_queue_used;
+			available = c->read_queue_used;
 		}
 		else
 		{
 			// wait forever for some data to arrive
-			pthread_cond_wait(&usb.read_queue_data_avail_cond, &usb.read_queue_mutex);
-			available = usb.read_queue_used;
+			pthread_cond_wait(&c->read_queue_data_avail_cond, &c->read_queue_mutex);
+			available = c->read_queue_used;
 		}
 	}
-	pthread_mutex_unlock(&usb.read_queue_mutex);
+	pthread_mutex_unlock(&c->read_queue_mutex);
 	return available;
 }
 
 static int
 u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 {
-	if (!usb.opened)
+	usb_connection_t *c = connection_for_socket(ps);
+	if (c==NULL || !c->opened)
 	{
 		// make sure we report broken connections
 		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
@@ -1294,7 +1430,7 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 		return 0;
 	}
 
-	IOReturn kr = (*usb.interface)->WritePipe(usb.interface, usb.out_pipe_ref, (void *)buf, len);
+	IOReturn kr = (*c->interface)->WritePipe(c->interface, c->out_pipe_ref, (void *)buf, len);
 	if (kr != kIOReturnSuccess) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
 	}
@@ -1308,15 +1444,18 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	int bytes_read;
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
+	usb_connection_t *c = connection_for_socket(ps);
 
-	if (!usb.opened) {
-		// make sure we report broken connections
+	if (c==NULL || !c->opened)
+	{
+		/* make sure we report broken connections */
 		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
 			ps->state = PI_SOCK_CONBK;
 		return 0;
 	}
 
-	if (pi_buffer_expect (buf, len) == NULL) {
+	if (pi_buffer_expect (buf, len) == NULL)
+	{
 		errno = ENOMEM;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
@@ -1325,19 +1464,20 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: darwin_usb_read(len=%d, timeout=%d, flags=%d)\n", len, timeout, flags));
 #endif
 
-	pthread_mutex_lock(&usb.read_queue_mutex);
+	pthread_mutex_lock(&c->read_queue_mutex);
 
 	if (flags == PI_MSG_PEEK && len > 256)
 		len = 256;
 
-	if (usb.read_queue_used < len)
+	if (c->read_queue_used < len)
 	{
 		struct timeval now;
 		struct timespec when, nownow;
 		gettimeofday(&now, NULL);
 		when.tv_sec = now.tv_sec + timeout / 1000;
 		when.tv_nsec = now.tv_usec + (timeout % 1000) * 1000 * 1000;
-		if (when.tv_nsec >= 1000000000) {
+		if (when.tv_nsec >= 1000000000)
+		{
 			when.tv_nsec -= 1000000000;
 			when.tv_sec++;
 		}
@@ -1345,7 +1485,7 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 		do
 		{
 			/* next prime_read() will use a bigger read request */
-			usb.read_ahead_size = len - usb.read_queue_used - usb.last_read_ahead_size;
+			c->read_ahead_size = len - c->read_queue_used - c->last_read_ahead_size;
 
 			if (timeout)
 			{
@@ -1353,20 +1493,20 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 				TIMEVAL_TO_TIMESPEC(&now, &nownow);
 				if ((nownow.tv_sec == when.tv_sec ? (nownow.tv_nsec > when.tv_nsec) : (nownow.tv_sec > when.tv_sec)))
 					break;
-				if (pthread_cond_timedwait(&usb.read_queue_data_avail_cond, &usb.read_queue_mutex, &when) == ETIMEDOUT)
+				if (pthread_cond_timedwait(&c->read_queue_data_avail_cond, &c->read_queue_mutex, &when) == ETIMEDOUT)
 					break;
 			}
 			else
 			{
-				pthread_cond_wait(&usb.read_queue_data_avail_cond, &usb.read_queue_mutex);
+				pthread_cond_wait(&c->read_queue_data_avail_cond, &c->read_queue_mutex);
 			}
 		}
-		while (usb.opened && (usb.read_queue_used < len || (flags == PI_MSG_PEEK && usb.read_queue_used >= 256)));
+		while (c->opened && (c->read_queue_used < len || (flags == PI_MSG_PEEK && c->read_queue_used >= 256)));
 
-		usb.read_ahead_size = 0;
+		c->read_ahead_size = 0;
 	}
 
-	if (!usb.opened)
+	if (!c->opened)
 	{
 		/* make sure we report broken connections */
 		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
@@ -1375,37 +1515,37 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 	else
 	{
-		if (usb.read_queue_used < len)
-			len = usb.read_queue_used;
+		if (c->read_queue_used < len)
+			len = c->read_queue_used;
 
 		bytes_read = (int)len;
 
 		if (len)
 		{
-			pi_buffer_append (buf, usb.read_queue, len);
+			pi_buffer_append (buf, c->read_queue, len);
 
 			if (flags != PI_MSG_PEEK)
 			{
-				usb.read_queue_used -= len;
-				if (usb.read_queue_used > 0)
-					memmove(usb.read_queue, usb.read_queue + len, usb.read_queue_used);
-				if ((usb.read_queue_size - usb.read_queue_used) > (16L * 65535L))
+				c->read_queue_used -= len;
+				if (c->read_queue_used > 0)
+					memmove(c->read_queue, c->read_queue + len, c->read_queue_used);
+				if ((c->read_queue_size - c->read_queue_used) > (16L * 65535L))
 				{
 					/* if we have more than 1M free in the read queue, we'd better
 					 * shrink the buffer
 					 */
-					usb.read_queue_size = ((usb.read_queue_used + 0xfffe) & ~0xffff) - 1;
-					usb.read_queue = (char *) realloc (usb.read_queue, usb.read_queue_size);
+					c->read_queue_size = ((c->read_queue_used + 0xfffe) & ~0xffff) - 1;
+					c->read_queue = (char *) realloc (c->read_queue, c->read_queue_size);
 				}
 			}
 		}
 	}
 
 #ifdef DEBUG_USB
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read done, len=%d, remaining bytes in queue=%d\n", len, usb.read_queue_used));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read done, len=%d, remaining bytes in queue=%d\n", len, c->read_queue_used));
 #endif
 	
-	pthread_mutex_unlock(&usb.read_queue_mutex);
+	pthread_mutex_unlock(&c->read_queue_mutex);
 	return len;
 }
 
