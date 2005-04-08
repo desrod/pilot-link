@@ -2242,7 +2242,7 @@ dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
 
 
 int
-dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
+dlp_ReadFeature(int sd, unsigned long creator, int num,
 		unsigned long *feature)
 {
 	int 	result;
@@ -2264,7 +2264,7 @@ dlp_ReadFeature(int sd, unsigned long creator, unsigned int num,
 
 		PackRPC(&p, 0xA27B, RPC_IntReply,
 			RPC_Long(creator),
-			RPC_Short((unsigned short) num),
+			RPC_Short((short) num),
 			RPC_LongPtr(feature), RPC_End);
 
 		val = dlp_RPC(sd, &p, &errCode);
