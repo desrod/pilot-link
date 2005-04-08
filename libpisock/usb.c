@@ -220,18 +220,8 @@ pi_usb_device (int type)
 		dev->connect 		= pi_usb_connect;
 		dev->close 		= pi_usb_close;
 
-		switch (type) {
-			case PI_USB_DEV:
-				pi_usb_impl_init (&data->impl);
-				break;
-			default:
-				pi_usb_impl_init (&data->impl);
-				break;
-		}
-	
-		data->buf_size 		= 0;
-		data->ref               = NULL;
-		data->timeout 		= 0;
+		memset(data, 0, sizeof(struct pi_usb_data));
+		pi_usb_impl_init (&data->impl);
 		dev->data 		= data;
 	}
 	
