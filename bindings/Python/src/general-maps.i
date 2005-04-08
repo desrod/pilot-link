@@ -13,7 +13,7 @@
 	$1 = pi_buffer_new(0xFFFF);
 }
 
-%typemap (freearg,numinputs=0) (pi_buffer_t *) {
+%typemap (freearg) (pi_buffer_t *) {
 	if ($1) {
 		pi_buffer_free($1);
 	}

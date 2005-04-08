@@ -61,22 +61,16 @@ from pisockextras import *
 				  PyString_AsString(PyDict_GetItemString(src,key)) : default)
 
 static PyObject *PIError = NULL;
-static PyObject *DLPError = NULL;
 %}
 
 %init %{
 	PIError = PyErr_NewException("pisock.error", NULL, NULL);
 	Py_INCREF(PIError);
 	PyDict_SetItemString(d, "error", PIError);
-
-	DLPError = PyErr_NewException("pisock.dlperror", PIError, NULL);
-	Py_INCREF(DLPError);
-	PyDict_SetItemString(d, "dlperror", DLPError);
 %}
 
 %pythoncode %{ 
 error = _pisock.error 
-dlperror = _pisock.dlperror
 %} 
 
 %include typemaps.i

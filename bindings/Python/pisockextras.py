@@ -1,6 +1,5 @@
 import pisock
-import datetime
-import warnings
+import datetime, warnings
 
 def dlp_ReadDBList(sd, cardno=0, flags=None):
     ret = []
@@ -29,7 +28,7 @@ def pi_bind(sd, port="/dev/pilot"):
             raise pisock.error( (e[0], 'generic error opening port %s' % port ) )
         else:
             raise # let the original exception carry on up the chain.
-        
+
 def dlp_GetSysDateTime(sd):
     r = pisock.dlp_GetSysDateTime_(sd)
     warnings.warn("dlp_GetSysDateTime() may be returning incorrect values?")
