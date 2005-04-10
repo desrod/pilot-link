@@ -4040,6 +4040,8 @@ dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	size_t bytes = 0;
+	int freeze_txid = 1;
+	size_t opt_size = sizeof(int);
 
 	RequireDLPVersion(sd,1,2);
 	Trace(dlp_VFSFileRead);
@@ -4052,13 +4054,19 @@ dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 	set_long (DLP_REQUEST_DATA (req, 0, 0), fileRef);
 	set_long (DLP_REQUEST_DATA (req, 0, 4), len);
 
-	result = dlp_exec (sd, req, &res);
+	/* if we're using PADP, this socket option is required so that
+	 * the transfer can complete without error
+	 */
+	pi_setsockopt(sd, PI_LEVEL_PADP, PI_PADP_FREEZE_TXID, &freeze_txid, &opt_size);
+
+	result = dlp_exec (sd, req, &res);	
 
 	dlp_request_free (req);
 
 	pi_buffer_clear (data);
 
 	if (result >= 0) {
+
 		do {
 			result = pi_read(sd, data, len);
 			if (result > 0) {
@@ -4076,6 +4084,9 @@ dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 	}
 
 	dlp_response_free(res);
+
+	freeze_txid = 0;
+	pi_setsockopt(sd, PI_LEVEL_PADP, PI_PADP_FREEZE_TXID, &freeze_txid, &opt_size);
 
 	return result;
 }
