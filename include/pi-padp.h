@@ -51,6 +51,7 @@ extern "C" {
 	{
 		int type;
 		int last_type;
+		int freeze_txid;			/**< see #PI_PADP_FREEZE_TXID sockopt */
 
 		unsigned char txid;
 		unsigned next_txid;

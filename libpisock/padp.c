@@ -202,12 +202,14 @@ padp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 	if (data->type == padWake)
 		data->txid = 0xff;
 
-	if (data->txid == 0)
-		data->txid = 0x10;	/* some random # */
-	else if (data->txid >= 0xfe)
-		data->next_txid = 1;	/* wrap */
-	else
-		data->next_txid = data->txid + 1;
+	if (!data->freeze_txid) {
+		if (data->txid == 0)
+			data->txid = 0x10;	/* some random # */
+		else if (data->txid >= 0xfe)
+			data->next_txid = 1;	/* wrap */
+		else
+			data->next_txid = data->txid + 1;
+	}
 
 	if (data->type != padAck && ps->state == PI_SOCK_CONAC)
 		data->txid = data->next_txid;
@@ -432,13 +434,17 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
-	if (ps->state == PI_SOCK_CONAC) {
-		if (data->txid >= 0xfe)
-			data->next_txid = 1;	/* wrap */
-		else
-			data->next_txid = data->txid + 1;
-	} else {
-		data->next_txid = data->txid;
+	/* the txid may be "frozen" if we're in the process of doing a large read
+	 * over VFS. In this case, all packets have the same txid
+	 */
+	if (!data->freeze_txid) {
+		if (ps->state == PI_SOCK_CONAC) {
+			if (data->txid >= 0xfe)
+				data->next_txid = 1;	/* wrap */
+			else
+				data->next_txid = data->txid + 1;
+		} else
+			data->next_txid = data->txid;
 	}
 	
 	endtime = time(NULL) + PI_PADP_RX_BLOCK_TO / 1000;
@@ -460,6 +466,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 			      &timeout, &size);
 
 		total_bytes = 0;
+		padp_buf->used = 0;
 		while (total_bytes < PI_PADP_HEADER_LEN) {
 			bytes = next->read(ps, padp_buf, 
 				(size_t)PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes, flags);
@@ -569,8 +576,8 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 				 PI_DEV_TIMEOUT, &timeout, &size);
 
 			total_bytes = 0;
+			padp_buf->used = 0;
 			while (total_bytes < PI_PADP_HEADER_LEN) {
-				padp_buf->used = total_bytes;
 				bytes = next->read(ps, padp_buf, 
 					PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes,  flags);
 				if (bytes < 0) {
@@ -707,18 +714,24 @@ padp_getsockopt(pi_socket_t *ps, int level, int option_name,
 
 	switch (option_name) {
 		case PI_PADP_TYPE:
-			if (*option_len < sizeof (data->type))
+			if (*option_len != sizeof (data->type))
 				goto error;
 			memcpy (option_value, &data->type,
-					sizeof (data->type));
-			*option_len = sizeof (data->type);
+				sizeof (data->type));
 			break;
+
 		case PI_PADP_LASTTYPE:
-			if (*option_len < sizeof (data->last_type))
+			if (*option_len != sizeof (data->last_type))
 				goto error;
 			memcpy (option_value, &data->last_type,
-					sizeof (data->last_type));
-			*option_len = sizeof (data->last_type);
+				sizeof (data->last_type));
+			break;
+
+		case PI_PADP_FREEZE_TXID:
+			if (*option_len != sizeof (data->freeze_txid))
+				goto error;
+			memcpy (option_value, &data->freeze_txid,
+				sizeof(data->freeze_txid));
 			break;
 	}
 
@@ -747,6 +760,7 @@ padp_setsockopt(pi_socket_t *ps, int level, int option_name,
 {
 	pi_protocol_t *prot;
 	pi_padp_data_t *data;
+	int was_frozen;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
@@ -754,13 +768,26 @@ padp_setsockopt(pi_socket_t *ps, int level, int option_name,
 	data = (pi_padp_data_t *)prot->data;
 
 	switch (option_name) {
-	case PI_PADP_TYPE:
-		if (*option_len != sizeof (data->type))
-			goto error;
-		memcpy (&data->type, option_value,
-			sizeof (data->type));
-		*option_len = sizeof (data->type);
-		break;
+		case PI_PADP_TYPE:
+			if (*option_len != sizeof (data->type))
+				goto error;
+			memcpy (&data->type, option_value,
+				sizeof (data->type));
+			break;
+
+		case PI_PADP_FREEZE_TXID:
+			if (*option_len != sizeof (data->freeze_txid))
+				goto error;
+			was_frozen = data->freeze_txid;
+			memcpy (&data->freeze_txid, option_value,
+				sizeof (data->freeze_txid));
+			if (was_frozen && !data->freeze_txid)
+			{
+				data->next_txid++;
+				if (data->next_txid >= 0xfe)
+					data->next_txid = 1;
+			}
+			break;
 	}
 
 	return 0;
