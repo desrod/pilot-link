@@ -21,12 +21,16 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include <pi-debug.h>
+#include "pi-debug.h"
+#include "pi-threadsafe.h"
 
 static int debug_types = PI_DBG_NONE;
 static int debug_level = PI_DBG_LVL_NONE;
 static FILE *debug_file = NULL;
 
+#if HAVE_PTHREAD
+static pthread_mutex_t logfile_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
 /***********************************************************************
  *
@@ -96,7 +100,13 @@ pi_debug_get_level (void)
 void
 pi_debug_set_level (int level)
 {
+#if HAVE_PTHREAD
+	pi_mutex_lock(&logfile_mutex);
+#endif
 	debug_level = level;
+#if HAVE_PTHREAD
+	pi_mutex_unlock(&logfile_mutex);
+#endif
 }
 
 /***********************************************************************
@@ -113,12 +123,20 @@ pi_debug_set_level (int level)
 void
 pi_debug_set_file (const char *path) 
 {
+#if HAVE_PTHREAD
+	pi_mutex_lock(&logfile_mutex);
+#endif
+
 	if (debug_file != NULL && debug_file != stderr)
 		fclose (debug_file);
 
-	debug_file = fopen (path, "w");
+	debug_file = fopen (path, "a");
 	if (debug_file == NULL)
 		debug_file = stderr;
+
+#if HAVE_PTHREAD
+	pi_mutex_unlock(&logfile_mutex);
+#endif
 }
 
 
@@ -138,12 +156,15 @@ pi_log (int type, int level, const char *format, ...)
 {
 	va_list ap;
 
-	if (!(debug_types & type) && !(type == PI_DBG_ALL))
+	if (!(debug_types & type) && type != PI_DBG_ALL)
 		return;
 	
 	if (debug_level < level)
 		return;
 
+#if HAVE_PTHREAD
+	pi_mutex_lock(&logfile_mutex);
+#endif
 	if (debug_file == NULL)
 		debug_file = stderr;
 	
@@ -152,6 +173,9 @@ pi_log (int type, int level, const char *format, ...)
 	va_end(ap);
 
 	fflush(debug_file);
+#if HAVE_PTHREAD
+	pi_mutex_unlock(&logfile_mutex);
+#endif
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
