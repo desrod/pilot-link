@@ -92,8 +92,8 @@
 #include "pi-error.h"
 
 /* Define this to make debug logs include USB debug info */
-//#undef DEBUG_USB
-#define DEBUG_USB 1
+#undef DEBUG_USB
+/*#define DEBUG_USB 1*/
 
 /* These values are somewhat tricky.  Priming reads with a size of exactly one
  * USB packet works best (no timeouts).  Probably best to leave these as they are.
@@ -102,7 +102,11 @@
 #define AUTO_READ_SIZE		64
 
 /* Options */
+#if HAVE_PTHREAD
+static int accept_multiple_simultaneous_connections = 1;	/* enabled by default when compiling with --enable-threads */
+#else
 static int accept_multiple_simultaneous_connections = 0;	/* disabled by default, set to 1 to enable */
+#endif
 
 /* IOKit interface */
 static IONotificationPortRef usb_notify_port;
@@ -470,6 +474,8 @@ stop_listening(usb_connection_t *c)
 
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stop_listening for connection %p\n",c));
 
+		pthread_mutex_lock(&c->read_queue_mutex);
+
 		c->opened = 0;
 		c->in_pipe_ref = 0;
 		c->out_pipe_ref = 0;
@@ -499,7 +505,8 @@ stop_listening(usb_connection_t *c)
 			(*c->device)->Release (c->device);
 			c->device = NULL;
 		}
-		
+
+		pthread_mutex_unlock(&c->read_queue_mutex);
 		free(c);
 	}
 }
