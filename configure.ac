@@ -121,7 +121,9 @@ dnl set it in the platform-specific section below.
 null_device="/dev/null"
 
 case "$host" in
-        *darwin*)
+	*darwin*)
+		dnl define MACOSX for code use
+		CPPFLAGS="$CPPFLAGS -DMACOSX"
 		dnl Use fink under MacOS X
 		AC_MSG_CHECKING(for fink support)
 		if test -d "/sw/lib" -a -d "/sw/include"; then
@@ -131,7 +133,7 @@ case "$host" in
 		else
 			AC_MSG_RESULT(no)
 		fi
-        ;;
+    ;;
 	amd64*freebsd*)
 		dnl Need -fPIC for shared libs
 		PIC_LIBS="-fPIC"
@@ -314,12 +316,12 @@ else
 			usb_type=freebsd
 			msg_usb="yes, FreeBSD"
 		;;
-	       *darwin*)
-		       AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
-		       usb_type=darwin
-		       msg_usb="yes, Darwin"
-		       usb_libs="-Wl,-framework,IOKit"
-	       ;;
+	    *darwin*)
+		    AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
+		    usb_type=darwin
+		    msg_usb="yes, Darwin"
+		    usb_libs="-Wl,-framework,IOKit"
+	    ;;
 	esac
 fi
 AM_CONDITIONAL(WITH_USB, test x$usb_type)
