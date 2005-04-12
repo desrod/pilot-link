@@ -277,6 +277,7 @@ struct NetSyncInfo {
 	char 	hostSubnetMask[40];		/**< Device subnet mask. Null terminated string */
 };
 
+#ifndef SWIG	/* no need to clutter the bindings with this */
 enum dlpFunctions {
 	/* range reserved for internal use */
 	dlpReservedFunc = 0x0F,
@@ -377,6 +378,8 @@ enum dlpFunctions {
 	dlpFuncReadResourceEx,			/* 0x64 - function to read resources >64k by index in Tapwave */
 	dlpLastFunc
 };
+
+#endif	/* !SWIG */
 
 /** @name Database and record attributes */
 /*@{*/
@@ -561,6 +564,9 @@ enum dlpErrors {
 	dlpErrUnknown = 127	/**< Unknown error (0x007F) */
 };
 
+
+#ifndef SWIG	/* no need to clutter the bindings with this */
+
 /** @brief Internal DLP argument structure */
 struct dlpArg {
 	int 	id_;		/**< Argument ID (start at #PI_DLP_ARG_FIRST_ID) */
@@ -583,10 +589,11 @@ struct dlpResponse {
 	struct dlpArg **argv;	/**< Response arguments */
 };
 
+#endif	/* !SWIG */
 
 /* @name Functions used internally by dlp.c */
 /*@{*/
-#ifndef SWIG				/* don't export these functions to bindings */
+#ifndef SWIG	/* don't export these functions to bindings */
 	extern struct dlpArg * dlp_arg_new PI_ARGS((int id_, size_t len));
 	extern void dlp_arg_free PI_ARGS((struct dlpArg *arg));
 	extern int dlp_arg_len PI_ARGS((int argc, struct dlpArg **argv));
@@ -615,7 +622,7 @@ struct dlpResponse {
 	extern int dlp_RPC
 		PI_ARGS((int sd, struct RPC_params * p,
 			unsigned long *result));
-#endif						/* SWIG */
+#endif	/* !SWIG */
 /*@}*/
 
 /** @name DLP library functions */
