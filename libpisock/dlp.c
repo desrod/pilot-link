@@ -4076,7 +4076,7 @@ dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 		} while (result > 0 && len > 0);
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		     "dlp_VFSFileRead: read %u bytes (result=%d)\n",
+		     "dlp_VFSFileRead: read %u bytes (last pi_read was %d)\n",
 			(unsigned)bytes, result));
 
 		if (result >= 0)
