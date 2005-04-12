@@ -4,7 +4,7 @@
 
 import _pisock
 
-def _swig_setattr(self,class_type,name,value):
+def _swig_setattr_nondynamic(self,class_type,name,value,static=1):
     if (name == "this"):
         if isinstance(value, class_type):
             self.__dict__[name] = value.this
@@ -13,7 +13,13 @@ def _swig_setattr(self,class_type,name,value):
             return
     method = class_type.__swig_setmethods__.get(name,None)
     if method: return method(self,value)
-    self.__dict__[name] = value
+    if (not static) or hasattr(self,name) or (name == "thisown"):
+        self.__dict__[name] = value
+    else:
+        raise AttributeError("You cannot add attributes to %s" % self)
+
+def _swig_setattr(self,class_type,name,value):
+    return _swig_setattr_nondynamic(self,class_type,name,value,0)
 
 def _swig_getattr(self,class_type,name):
     method = class_type.__swig_getmethods__.get(name,None)
@@ -33,7 +39,6 @@ del types
 from pisockextras import *
 
 error = _pisock.error 
-dlperror = _pisock.dlperror
 
 
 print_splash = _pisock.print_splash
@@ -75,6 +80,7 @@ PI_SLP_TXID = _pisock.PI_SLP_TXID
 PI_SLP_LASTTXID = _pisock.PI_SLP_LASTTXID
 PI_PADP_TYPE = _pisock.PI_PADP_TYPE
 PI_PADP_LASTTYPE = _pisock.PI_PADP_LASTTYPE
+PI_PADP_FREEZE_TXID = _pisock.PI_PADP_FREEZE_TXID
 PI_CMP_TYPE = _pisock.PI_CMP_TYPE
 PI_CMP_FLAGS = _pisock.PI_CMP_FLAGS
 PI_CMP_VERS = _pisock.PI_CMP_VERS
@@ -83,13 +89,14 @@ PI_NET_TYPE = _pisock.PI_NET_TYPE
 PI_NET_SPLIT_WRITES = _pisock.PI_NET_SPLIT_WRITES
 PI_NET_WRITE_CHUNKSIZE = _pisock.PI_NET_WRITE_CHUNKSIZE
 PI_SOCK_STATE = _pisock.PI_SOCK_STATE
+PI_SOCK_HONOR_RX_TIMEOUT = _pisock.PI_SOCK_HONOR_RX_TIMEOUT
 class pi_socket_t(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, pi_socket_t, name, value)
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, pi_socket_t, name)
     def __repr__(self):
-        return "<C pi_socket_t instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C pi_socket_t instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["sd"] = _pisock.pi_socket_t_sd_set
     __swig_getmethods__["sd"] = _pisock.pi_socket_t_sd_get
     if _newclass:sd = property(_pisock.pi_socket_t_sd_get, _pisock.pi_socket_t_sd_set)
@@ -132,6 +139,9 @@ class pi_socket_t(_object):
     __swig_setmethods__["state"] = _pisock.pi_socket_t_state_set
     __swig_getmethods__["state"] = _pisock.pi_socket_t_state_get
     if _newclass:state = property(_pisock.pi_socket_t_state_get, _pisock.pi_socket_t_state_set)
+    __swig_setmethods__["honor_rx_to"] = _pisock.pi_socket_t_honor_rx_to_set
+    __swig_getmethods__["honor_rx_to"] = _pisock.pi_socket_t_honor_rx_to_get
+    if _newclass:honor_rx_to = property(_pisock.pi_socket_t_honor_rx_to_get, _pisock.pi_socket_t_honor_rx_to_set)
     __swig_setmethods__["command"] = _pisock.pi_socket_t_command_set
     __swig_getmethods__["command"] = _pisock.pi_socket_t_command_get
     if _newclass:command = property(_pisock.pi_socket_t_command_get, _pisock.pi_socket_t_command_set)
@@ -161,6 +171,7 @@ class pi_socket_t(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class pi_socket_tPtr(pi_socket_t):
     def __init__(self, this):
         _swig_setattr(self, pi_socket_t, 'this', this)
@@ -176,7 +187,7 @@ class pi_socket_list_t(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, pi_socket_list_t, name)
     def __repr__(self):
-        return "<C pi_socket_list_t instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C pi_socket_list_t instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["ps"] = _pisock.pi_socket_list_t_ps_set
     __swig_getmethods__["ps"] = _pisock.pi_socket_list_t_ps_get
     if _newclass:ps = property(_pisock.pi_socket_list_t_ps_get, _pisock.pi_socket_list_t_ps_set)
@@ -190,6 +201,7 @@ class pi_socket_list_t(_object):
         try:
             if self.thisown: destroy(self)
         except: pass
+
 
 class pi_socket_list_tPtr(pi_socket_list_t):
     def __init__(self, this):
@@ -281,7 +293,7 @@ class VFSDirInfo(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, VFSDirInfo, name)
     def __repr__(self):
-        return "<C VFSDirInfo instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C VFSDirInfo instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["attr"] = _pisock.VFSDirInfo_attr_set
     __swig_getmethods__["attr"] = _pisock.VFSDirInfo_attr_get
     if _newclass:attr = property(_pisock.VFSDirInfo_attr_get, _pisock.VFSDirInfo_attr_set)
@@ -296,6 +308,7 @@ class VFSDirInfo(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class VFSDirInfoPtr(VFSDirInfo):
     def __init__(self, this):
         _swig_setattr(self, VFSDirInfo, 'this', this)
@@ -309,7 +322,7 @@ class VFSAnyMountParam(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, VFSAnyMountParam, name)
     def __repr__(self):
-        return "<C VFSAnyMountParam instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C VFSAnyMountParam instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["volRefNum"] = _pisock.VFSAnyMountParam_volRefNum_set
     __swig_getmethods__["volRefNum"] = _pisock.VFSAnyMountParam_volRefNum_get
     if _newclass:volRefNum = property(_pisock.VFSAnyMountParam_volRefNum_get, _pisock.VFSAnyMountParam_volRefNum_set)
@@ -327,6 +340,7 @@ class VFSAnyMountParam(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class VFSAnyMountParamPtr(VFSAnyMountParam):
     def __init__(self, this):
         _swig_setattr(self, VFSAnyMountParam, 'this', this)
@@ -340,7 +354,7 @@ class VFSSlotMountParam(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, VFSSlotMountParam, name)
     def __repr__(self):
-        return "<C VFSSlotMountParam instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C VFSSlotMountParam instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["vfsMountParam"] = _pisock.VFSSlotMountParam_vfsMountParam_set
     __swig_getmethods__["vfsMountParam"] = _pisock.VFSSlotMountParam_vfsMountParam_get
     if _newclass:vfsMountParam = property(_pisock.VFSSlotMountParam_vfsMountParam_get, _pisock.VFSSlotMountParam_vfsMountParam_set)
@@ -358,6 +372,7 @@ class VFSSlotMountParam(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class VFSSlotMountParamPtr(VFSSlotMountParam):
     def __init__(self, this):
         _swig_setattr(self, VFSSlotMountParam, 'this', this)
@@ -371,7 +386,7 @@ class VFSInfo(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, VFSInfo, name)
     def __repr__(self):
-        return "<C VFSInfo instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C VFSInfo instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["attributes"] = _pisock.VFSInfo_attributes_set
     __swig_getmethods__["attributes"] = _pisock.VFSInfo_attributes_get
     if _newclass:attributes = property(_pisock.VFSInfo_attributes_get, _pisock.VFSInfo_attributes_set)
@@ -404,6 +419,7 @@ class VFSInfo(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class VFSInfoPtr(VFSInfo):
     def __init__(self, this):
         _swig_setattr(self, VFSInfo, 'this', this)
@@ -417,7 +433,7 @@ class PilotUser(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, PilotUser, name)
     def __repr__(self):
-        return "<C PilotUser instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C PilotUser instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["passwordLength"] = _pisock.PilotUser_passwordLength_set
     __swig_getmethods__["passwordLength"] = _pisock.PilotUser_passwordLength_get
     if _newclass:passwordLength = property(_pisock.PilotUser_passwordLength_get, _pisock.PilotUser_passwordLength_set)
@@ -450,6 +466,7 @@ class PilotUser(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class PilotUserPtr(PilotUser):
     def __init__(self, this):
         _swig_setattr(self, PilotUser, 'this', this)
@@ -463,7 +480,7 @@ class SysInfo(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, SysInfo, name)
     def __repr__(self):
-        return "<C SysInfo instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C SysInfo instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["romVersion"] = _pisock.SysInfo_romVersion_set
     __swig_getmethods__["romVersion"] = _pisock.SysInfo_romVersion_get
     if _newclass:romVersion = property(_pisock.SysInfo_romVersion_get, _pisock.SysInfo_romVersion_set)
@@ -499,6 +516,7 @@ class SysInfo(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class SysInfoPtr(SysInfo):
     def __init__(self, this):
         _swig_setattr(self, SysInfo, 'this', this)
@@ -512,7 +530,7 @@ class DBInfo(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, DBInfo, name)
     def __repr__(self):
-        return "<C DBInfo instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C DBInfo instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["more"] = _pisock.DBInfo_more_set
     __swig_getmethods__["more"] = _pisock.DBInfo_more_get
     if _newclass:more = property(_pisock.DBInfo_more_get, _pisock.DBInfo_more_set)
@@ -557,6 +575,7 @@ class DBInfo(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class DBInfoPtr(DBInfo):
     def __init__(self, this):
         _swig_setattr(self, DBInfo, 'this', this)
@@ -570,7 +589,7 @@ class DBSizeInfo(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, DBSizeInfo, name)
     def __repr__(self):
-        return "<C DBSizeInfo instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C DBSizeInfo instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["numRecords"] = _pisock.DBSizeInfo_numRecords_set
     __swig_getmethods__["numRecords"] = _pisock.DBSizeInfo_numRecords_get
     if _newclass:numRecords = property(_pisock.DBSizeInfo_numRecords_get, _pisock.DBSizeInfo_numRecords_set)
@@ -597,6 +616,7 @@ class DBSizeInfo(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class DBSizeInfoPtr(DBSizeInfo):
     def __init__(self, this):
         _swig_setattr(self, DBSizeInfo, 'this', this)
@@ -610,7 +630,7 @@ class CardInfo(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, CardInfo, name)
     def __repr__(self):
-        return "<C CardInfo instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C CardInfo instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["card"] = _pisock.CardInfo_card_set
     __swig_getmethods__["card"] = _pisock.CardInfo_card_get
     if _newclass:card = property(_pisock.CardInfo_card_get, _pisock.CardInfo_card_set)
@@ -646,6 +666,7 @@ class CardInfo(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class CardInfoPtr(CardInfo):
     def __init__(self, this):
         _swig_setattr(self, CardInfo, 'this', this)
@@ -659,7 +680,7 @@ class NetSyncInfo(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, NetSyncInfo, name)
     def __repr__(self):
-        return "<C NetSyncInfo instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C NetSyncInfo instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["lanSync"] = _pisock.NetSyncInfo_lanSync_set
     __swig_getmethods__["lanSync"] = _pisock.NetSyncInfo_lanSync_get
     if _newclass:lanSync = property(_pisock.NetSyncInfo_lanSync_get, _pisock.NetSyncInfo_lanSync_set)
@@ -679,6 +700,7 @@ class NetSyncInfo(_object):
         try:
             if self.thisown: destroy(self)
         except: pass
+
 
 class NetSyncInfoPtr(NetSyncInfo):
     def __init__(self, this):
@@ -876,7 +898,7 @@ class dlpArg(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, dlpArg, name)
     def __repr__(self):
-        return "<C dlpArg instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C dlpArg instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["id_"] = _pisock.dlpArg_id__set
     __swig_getmethods__["id_"] = _pisock.dlpArg_id__get
     if _newclass:id_ = property(_pisock.dlpArg_id__get, _pisock.dlpArg_id__set)
@@ -894,6 +916,7 @@ class dlpArg(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class dlpArgPtr(dlpArg):
     def __init__(self, this):
         _swig_setattr(self, dlpArg, 'this', this)
@@ -907,7 +930,7 @@ class dlpRequest(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, dlpRequest, name)
     def __repr__(self):
-        return "<C dlpRequest instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C dlpRequest instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["cmd"] = _pisock.dlpRequest_cmd_set
     __swig_getmethods__["cmd"] = _pisock.dlpRequest_cmd_get
     if _newclass:cmd = property(_pisock.dlpRequest_cmd_get, _pisock.dlpRequest_cmd_set)
@@ -925,6 +948,7 @@ class dlpRequest(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class dlpRequestPtr(dlpRequest):
     def __init__(self, this):
         _swig_setattr(self, dlpRequest, 'this', this)
@@ -938,7 +962,7 @@ class dlpResponse(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, dlpResponse, name)
     def __repr__(self):
-        return "<C dlpResponse instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C dlpResponse instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["cmd"] = _pisock.dlpResponse_cmd_set
     __swig_getmethods__["cmd"] = _pisock.dlpResponse_cmd_get
     if _newclass:cmd = property(_pisock.dlpResponse_cmd_get, _pisock.dlpResponse_cmd_set)
@@ -958,6 +982,7 @@ class dlpResponse(_object):
         try:
             if self.thisown: destroy(self)
         except: pass
+
 
 class dlpResponsePtr(dlpResponse):
     def __init__(self, this):
@@ -1142,7 +1167,7 @@ class pi_file_entry_t(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, pi_file_entry_t, name)
     def __repr__(self):
-        return "<C pi_file_entry_t instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C pi_file_entry_t instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["offset"] = _pisock.pi_file_entry_t_offset_set
     __swig_getmethods__["offset"] = _pisock.pi_file_entry_t_offset_get
     if _newclass:offset = property(_pisock.pi_file_entry_t_offset_get, _pisock.pi_file_entry_t_offset_set)
@@ -1169,6 +1194,7 @@ class pi_file_entry_t(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class pi_file_entry_tPtr(pi_file_entry_t):
     def __init__(self, this):
         _swig_setattr(self, pi_file_entry_t, 'this', this)
@@ -1182,7 +1208,7 @@ class pi_file_t(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, pi_file_t, name)
     def __repr__(self):
-        return "<C pi_file_t instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C pi_file_t instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["err"] = _pisock.pi_file_t_err_set
     __swig_getmethods__["err"] = _pisock.pi_file_t_err_get
     if _newclass:err = property(_pisock.pi_file_t_err_get, _pisock.pi_file_t_err_set)
@@ -1248,6 +1274,7 @@ class pi_file_t(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class pi_file_tPtr(pi_file_t):
     def __init__(self, this):
         _swig_setattr(self, pi_file_t, 'this', this)
@@ -1261,7 +1288,7 @@ class pi_progress_t(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, pi_progress_t, name)
     def __repr__(self):
-        return "<C pi_progress_t instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C pi_progress_t instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["type"] = _pisock.pi_progress_t_type_set
     __swig_getmethods__["type"] = _pisock.pi_progress_t_type_get
     if _newclass:type = property(_pisock.pi_progress_t_type_get, _pisock.pi_progress_t_type_set)
@@ -1281,6 +1308,7 @@ class pi_progress_t(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class pi_progress_tPtr(pi_progress_t):
     def __init__(self, this):
         _swig_setattr(self, pi_progress_t, 'this', this)
@@ -1294,7 +1322,7 @@ class pi_progress_t_data(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, pi_progress_t_data, name)
     def __repr__(self):
-        return "<C pi_progress_t_data instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C pi_progress_t_data instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_getmethods__["vfs"] = _pisock.pi_progress_t_data_vfs_get
     if _newclass:vfs = property(_pisock.pi_progress_t_data_vfs_get)
     __swig_getmethods__["db"] = _pisock.pi_progress_t_data_db_get
@@ -1306,6 +1334,7 @@ class pi_progress_t_data(_object):
         try:
             if self.thisown: destroy(self)
         except: pass
+
 
 class pi_progress_t_dataPtr(pi_progress_t_data):
     def __init__(self, this):
@@ -1320,7 +1349,7 @@ class pi_progress_t_data_vfs(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, pi_progress_t_data_vfs, name)
     def __repr__(self):
-        return "<C pi_progress_t_data_vfs instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C pi_progress_t_data_vfs instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["path"] = _pisock.pi_progress_t_data_vfs_path_set
     __swig_getmethods__["path"] = _pisock.pi_progress_t_data_vfs_path_get
     if _newclass:path = property(_pisock.pi_progress_t_data_vfs_path_get, _pisock.pi_progress_t_data_vfs_path_set)
@@ -1335,6 +1364,7 @@ class pi_progress_t_data_vfs(_object):
             if self.thisown: destroy(self)
         except: pass
 
+
 class pi_progress_t_data_vfsPtr(pi_progress_t_data_vfs):
     def __init__(self, this):
         _swig_setattr(self, pi_progress_t_data_vfs, 'this', this)
@@ -1348,7 +1378,7 @@ class pi_progress_t_data_db(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, pi_progress_t_data_db, name)
     def __repr__(self):
-        return "<C pi_progress_t_data_db instance at %s>" % (self.this,)
+        return "<%s.%s; proxy of C pi_progress_t_data_db instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
     __swig_setmethods__["pf"] = _pisock.pi_progress_t_data_db_pf_set
     __swig_getmethods__["pf"] = _pisock.pi_progress_t_data_db_pf_get
     if _newclass:pf = property(_pisock.pi_progress_t_data_db_pf_get, _pisock.pi_progress_t_data_db_pf_set)
@@ -1365,6 +1395,7 @@ class pi_progress_t_data_db(_object):
         try:
             if self.thisown: destroy(self)
         except: pass
+
 
 class pi_progress_t_data_dbPtr(pi_progress_t_data_db):
     def __init__(self, this):

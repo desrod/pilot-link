@@ -85,7 +85,27 @@ error = _pisock.error
 %include ../../../include/pi-args.h
 %include ../../../include/pi-header.h
 %include ../../../include/pi-socket.h
+
+ /* Put thread control around all those declarations that follow. */
+ /* We could specify particular functions to apply it to, I think with:
+    %feature("nonblocking") functionName 
+    after we declare what feature("nonblocking") is here. */
+
+%feature("nonblocking") {
+  {
+    PyThreadState *__save;
+    __save = PyEval_SaveThread();
+    $action
+    PyEval_RestoreThread(__save);
+  }
+}
+
 %include ../../../include/pi-dlp.h
+
+ /* Stop putting thread control around all those declarations that follow. */
+
+%feature("nonblocking") ;
+
 %include ../../../include/pi-socket.h
 %include ../../../include/pi-file.h
 %include ../../../include/pi-error.h

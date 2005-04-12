@@ -1,5 +1,10 @@
 #!/usr/bin/perl
 #
+# I *think* we can do this with swigs %feature()
+# support. http://www.swig.org/Doc1.3/Customization.html#features
+# Documentation isn't great. I'm trying it out, so Florent can see the results.
+# I disabled the call to this file in the Makefile for now. Nick Piper, April 2005
+#
 # post-process pisock_wrap.c to make the C calls non-blocking when running a multithreaded
 # Python interpreter. I didn't find a way to do that properly in SWIG, because we need to
 # bracket the C call to the wrapped function with SaveThread/RestoreThread to unlock the
