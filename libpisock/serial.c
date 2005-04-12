@@ -522,25 +522,32 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 				/* serial/network: make sure we don't split writes. set socket option
 				 * on both the command and non-command instances of the protocol
 				 */
-				/* FP: temporarily disabled. We need to turn frag. OFF for Bluetooth
+#ifdef MACOSX
+				/* We need to turn frag. OFF for Bluetooth
 				 * but this code is also used by USB on Linux and Freebsd
-				 
-				size = sizeof (split);
-				pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
-					&split, &size);
-				size = sizeof (chunksize);
-				pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
-					&chunksize, &size);
-
-				ps->command ^= 1;
-				size = sizeof (split);
-				pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
-					&split, &size);
-				size = sizeof (chunksize);
-				pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
-					&chunksize, &size);
-				ps->command ^= 1;
+				 * therefore, only compile it when running OS X
 				 */
+				{
+					int split = 0;
+					size_t chunksize = 0;
+
+					size = sizeof (split);
+					pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
+						&split, &size);
+					size = sizeof (chunksize);
+					pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
+						&chunksize, &size);
+
+					ps->command ^= 1;
+					size = sizeof (split);
+					pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_SPLIT_WRITES,
+						&split, &size);
+					size = sizeof (chunksize);
+					pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_WRITE_CHUNKSIZE,
+						&chunksize, &size);
+					ps->command ^= 1;
+				}
+#endif
 				if ((err = net_rx_handshake(ps)) < 0)
 					return err;
 				break;
