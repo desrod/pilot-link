@@ -1330,41 +1330,37 @@ SWIG_Python_GetTypeList() {
 #define  SWIGTYPE_p_VFSInfo swig_types[6] 
 #define  SWIGTYPE_p_pi_progress_t_data swig_types[7] 
 #define  SWIGTYPE_p_pi_socket_list swig_types[8] 
-#define  SWIGTYPE_p_DBInfo swig_types[9] 
-#define  SWIGTYPE_p_void swig_types[10] 
+#define  SWIGTYPE_p_void swig_types[9] 
+#define  SWIGTYPE_p_DBInfo swig_types[10] 
 #define  SWIGTYPE_p_p_void swig_types[11] 
-#define  SWIGTYPE_size_t swig_types[12] 
-#define  SWIGTYPE_p_size_t swig_types[13] 
-#define  SWIGTYPE_p_ssize_t swig_types[14] 
-#define  SWIGTYPE_p_pi_progress_t swig_types[15] 
+#define  SWIGTYPE_p_pi_progress_t swig_types[12] 
+#define  SWIGTYPE_size_t swig_types[13] 
+#define  SWIGTYPE_p_size_t swig_types[14] 
+#define  SWIGTYPE_p_ssize_t swig_types[15] 
 #define  SWIGTYPE_p_pi_buffer_t swig_types[16] 
-#define  SWIGTYPE_p_dlpRequest swig_types[17] 
-#define  SWIGTYPE_p_pi_file swig_types[18] 
-#define  SWIGTYPE_p_p_dlpArg swig_types[19] 
-#define  SWIGTYPE_p_dlpArg swig_types[20] 
-#define  SWIGTYPE_p_long swig_types[21] 
-#define  SWIGTYPE_p_pi_progress_t_data_vfs swig_types[22] 
-#define  SWIGTYPE_p_sockaddr swig_types[23] 
-#define  SWIGTYPE_p_pi_socket swig_types[24] 
-#define  SWIGTYPE_p_VFSSlotMountParam swig_types[25] 
-#define  SWIGTYPE_p_VFSAnyMountParam swig_types[26] 
-#define  SWIGTYPE_p_dlpResponse swig_types[27] 
-#define  SWIGTYPE_p_unsigned_char swig_types[28] 
-#define  SWIGTYPE_p_p_pi_protocol swig_types[29] 
-#define  SWIGTYPE_p_pi_protocol swig_types[30] 
-#define  SWIGTYPE_ptrdiff_t swig_types[31] 
-#define  SWIGTYPE_p_time_t swig_types[32] 
-#define  SWIGTYPE_p_VFSDirInfo swig_types[33] 
-#define  SWIGTYPE_p_NetSyncInfo swig_types[34] 
-#define  SWIGTYPE_p_FILE swig_types[35] 
-#define  SWIGTYPE_p_f_int_p_pi_progress_t__int swig_types[36] 
-#define  SWIGTYPE_p_PilotUser swig_types[37] 
-#define  SWIGTYPE_p_CardInfo swig_types[38] 
-#define  SWIGTYPE_p_pi_device swig_types[39] 
-#define  SWIGTYPE_p_int swig_types[40] 
-#define  SWIGTYPE_p_pi_progress_t_data_db swig_types[41] 
-#define  SWIGTYPE_p_unsigned_long swig_types[42] 
-static swig_type_info *swig_types[44];
+#define  SWIGTYPE_p_pi_file swig_types[17] 
+#define  SWIGTYPE_p_long swig_types[18] 
+#define  SWIGTYPE_p_pi_progress_t_data_vfs swig_types[19] 
+#define  SWIGTYPE_p_sockaddr swig_types[20] 
+#define  SWIGTYPE_p_pi_socket swig_types[21] 
+#define  SWIGTYPE_p_VFSSlotMountParam swig_types[22] 
+#define  SWIGTYPE_p_VFSAnyMountParam swig_types[23] 
+#define  SWIGTYPE_p_unsigned_char swig_types[24] 
+#define  SWIGTYPE_p_p_pi_protocol swig_types[25] 
+#define  SWIGTYPE_p_pi_protocol swig_types[26] 
+#define  SWIGTYPE_ptrdiff_t swig_types[27] 
+#define  SWIGTYPE_p_time_t swig_types[28] 
+#define  SWIGTYPE_p_VFSDirInfo swig_types[29] 
+#define  SWIGTYPE_p_NetSyncInfo swig_types[30] 
+#define  SWIGTYPE_p_FILE swig_types[31] 
+#define  SWIGTYPE_p_f_int_p_pi_progress_t__int swig_types[32] 
+#define  SWIGTYPE_p_PilotUser swig_types[33] 
+#define  SWIGTYPE_p_CardInfo swig_types[34] 
+#define  SWIGTYPE_p_pi_device swig_types[35] 
+#define  SWIGTYPE_p_int swig_types[36] 
+#define  SWIGTYPE_p_pi_progress_t_data_db swig_types[37] 
+#define  SWIGTYPE_p_unsigned_long swig_types[38] 
+static swig_type_info *swig_types[40];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -1377,15 +1373,13 @@ static swig_type_info *swig_types[44];
 #define SWIG_name    "_pisock"
 
 #include <time.h>
-#include "pi-args.h"
+#include "pi-header.h"
+#include "pi-source.h"
+#include "pi-error.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-util.h"
-#include "pi-header.h"
-#include "pi-source.h"
-#include "pi-error.h"
-
 
 #define DGETLONG(src,key,default) (PyDict_GetItemString(src,key) ? \
 				   PyInt_AsLong(PyDict_GetItemString(src,key)) : default)
@@ -1394,6 +1388,155 @@ static swig_type_info *swig_types[44];
 				  PyString_AsString(PyDict_GetItemString(src,key)) : default)
 
 static PyObject *PIError = NULL;
+
+
+
+static PyObject *PyObjectFromDBInfo(const struct DBInfo *dbi)
+{
+	return Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
+			"more", dbi->more,
+			"flags", dbi->flags,
+			"miscFlags", dbi->miscFlags,
+			"type", PyString_FromStringAndSize(printlong(dbi->type), 4),
+			"creator", PyString_FromStringAndSize(printlong(dbi->creator), 4),
+			"version", dbi->version,
+			"modnum", dbi->modnum,
+			"createDate", dbi->createDate,
+			"modifyDate", dbi->modifyDate,
+			"backupDate", dbi->backupDate,
+			"index", dbi->index,
+			"name", dbi->name,
+			
+			"flagResource", !!(dbi->flags & dlpDBFlagResource),
+			"flagReadOnly", !!(dbi->flags & dlpDBFlagReadOnly),
+			"flagAppInfoDirty", !!(dbi->flags & dlpDBFlagAppInfoDirty),
+			"flagBackup", !!(dbi->flags & dlpDBFlagBackup),
+			"flagLaunchable", !!(dbi->flags & dlpDBFlagLaunchable),
+			"flagOpen", !!(dbi->flags & dlpDBFlagOpen),
+			"flagNewer", !!(dbi->flags & dlpDBFlagNewer),
+			"flagReset", !!(dbi->flags & dlpDBFlagReset),
+			"flagCopyPrevention", !!(dbi->flags & dlpDBFlagCopyPrevention),
+			"flagStream", !!(dbi->flags & dlpDBFlagStream),
+			"flagExcludeFromSync", !!(dbi->miscFlags & dlpDBMiscFlagExcludeFromSync),
+			
+			"flagSchema", !!(dbi->flags & dlpDBFlagSchema),
+			"flagSecure", !!(dbi->flags & dlpDBFlagSecure),
+			"flagExtended", !!(dbi->flags & dlpDBFlagExtended),
+			"flagFixedUp", !!(dbi->flags & dlpDBFlagFixedUp));
+}
+
+static void PyObjectToDBInfo(PyObject *o, struct DBInfo *di)
+{
+	di->more = (int) DGETLONG(o, "more", 0);
+    di->type = makelong(DGETSTR(o, "type", "    "));
+    di->creator = makelong(DGETSTR(o, "creator", "    "));
+    di->version = DGETLONG(o, "version", 0);
+    di->modnum = DGETLONG(o, "modnum", 0);
+    di->createDate = DGETLONG(o, "createDate", 0);
+    di->modifyDate = DGETLONG(o, "modifyDate", 0);
+    di->backupDate = DGETLONG(o, "backupDate", 0);
+    di->index = DGETLONG(o, "index", 0);
+    strncpy(di->name, DGETSTR(o,"name",""), 34);
+    di->flags = 0;
+    if (DGETLONG(o,"flagResource",0)) di->flags |= dlpDBFlagResource;
+    if (DGETLONG(o,"flagReadOnly",0)) di->flags |= dlpDBFlagReadOnly;
+    if (DGETLONG(o,"flagAppInfoDirty",0)) di->flags |= dlpDBFlagAppInfoDirty;
+    if (DGETLONG(o,"flagBackup",0)) di->flags |= dlpDBFlagBackup;
+    if (DGETLONG(o,"flagLaunchable",0)) di->flags |= dlpDBFlagLaunchable;
+    if (DGETLONG(o,"flagOpen",0)) di->flags |= dlpDBFlagOpen;
+    if (DGETLONG(o,"flagNewer",0)) di->flags |= dlpDBFlagNewer;
+    if (DGETLONG(o,"flagReset",0)) di->flags |= dlpDBFlagReset;
+    if (DGETLONG(o,"flagCopyPrevention",0)) di->flags |= dlpDBFlagCopyPrevention;
+    if (DGETLONG(o,"flagStream",0)) di->flags |= dlpDBFlagStream;
+	if (DGETLONG(o,"flagSchema",0)) di->flags |= dlpDBFlagSchema;
+	if (DGETLONG(o,"flagSecure",0)) di->flags |= dlpDBFlagSecure;
+	if (DGETLONG(o,"flagExtended",0)) di->flags |= dlpDBFlagExtended;
+	if (DGETLONG(o,"flagFixedUp",0)) di->flags |= dlpDBFlagFixedUp;
+    di->miscFlags = 0;
+    if (DGETLONG(o,"flagExcludeFromSync",0)) di->miscFlags |= dlpDBMiscFlagExcludeFromSync;
+}
+
+static PyObject* PyObjectFromDBSizeInfo(const struct DBSizeInfo *si)
+{
+	return Py_BuildValue("{slslslslslsl}",
+			"numRecords", si->numRecords,
+			"totalBytes", si->totalBytes,
+			"dataBytes", si->dataBytes,
+			"appBlockSize", si->appBlockSize,
+			"sortBlockSize", si->sortBlockSize,
+			"maxRecSize", si->maxRecSize);
+}
+
+static PyObject* PyObjectFromCardInfo(const struct CardInfo *ci)
+{
+	return Py_BuildValue("{sisislslslslsssssi}",
+					      "card", ci->card,
+					      "version", ci->version,
+			    		  "creation", ci->creation,
+						  "romSize", ci->romSize,
+					      "ramSize", ci->ramSize,
+					      "ramFree", ci->ramFree,
+					      "name", ci->name,
+					      "manufacturer", ci->manufacturer,
+					      "more", ci->more);
+}
+
+static PyObject* PyObjectFromSysInfo(const struct SysInfo *si)
+{
+	return Py_BuildValue("{slslss#}",
+						  "romVersion", si->romVersion,
+						  "locale", si->locale,
+						  "name", si->prodID, si->prodIDLength);
+}
+
+static PyObject* PyObjectFromPilotUser(const struct PilotUser *pi)
+{
+		return Py_BuildValue("{slslslslslssss#}",
+							"userID", pi->userID,
+							"viewerID", pi->viewerID,
+							"lastSyncPC", pi->lastSyncPC,
+							"successfulSyncDate", pi->successfulSyncDate,
+							"lastSyncDate", pi->lastSyncDate,
+							"name", pi->username,
+							"password", pi->password, pi->passwordLength);
+}
+
+static void PyObjectToPilotUser(PyObject *o, struct PilotUser *pi)
+{
+    PyObject *foo;
+
+    pi->userID = DGETLONG(o,"userID",0);
+    pi->viewerID = DGETLONG(o,"viewerID",0);
+    pi->lastSyncPC = DGETLONG(o,"lastSyncPC",0);
+    pi->successfulSyncDate = DGETLONG(o,"successfulSyncDate",0);
+    pi->lastSyncDate = DGETLONG(o,"lastSyncDate",0);
+    strncpy(pi->username, DGETSTR(o,"name",""), 128);
+
+    foo = PyDict_GetItemString(o,"password");
+    if (PyString_Check(foo)) {
+		int l = PyString_Size(foo);
+		pi->passwordLength = l;
+		memcpy(pi->password, PyString_AsString(foo), l);
+    }
+}
+
+static PyObject* PyObjectFromNetSyncInfo(const struct NetSyncInfo *ni)
+{
+	return Py_BuildValue("{sissssss}",
+						  "lanSync", ni->lanSync,
+						  "hostName", ni->hostName,
+						  "hostAddress", ni->hostAddress,
+						  "hostSubnetMask", ni->hostSubnetMask);
+}
+
+static void PyObjectToNetSyncInfo(PyObject *o, struct NetSyncInfo *ni)
+{
+    ni->lanSync = (int) DGETLONG(o,"lanSync",0);
+    strncpy(ni->hostName, DGETSTR(o,"hostName",""), 256);
+    strncpy(ni->hostAddress, DGETSTR(o,"hostAddress",""), 40);
+    strncpy(ni->hostSubnetMask, DGETSTR(o,"hostSubnetMask",""), 40);
+}
+
 
 
 /* pythonWrapper_handlePiErr
@@ -1516,7 +1659,7 @@ SWIG_AsCharPtr(PyObject *obj, char **val)
 }
 
 
-  /*@/usr/share/swig1.3/python/pymacros.swg,66,SWIG_define@*/
+  /*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_int PyInt_FromLong
 /*@@*/
 
@@ -1734,7 +1877,7 @@ SWIGINTERNSHORT PyObject*
 }
 
 
-  /*@/usr/share/swig1.3/python/pymacros.swg,66,SWIG_define@*/
+  /*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_long PyInt_FromLong
 /*@@*/
 
@@ -1839,7 +1982,7 @@ SWIG_Check_unsigned_SS_short(PyObject* obj)
 }
 
 
-  /*@/usr/share/swig1.3/python/pymacros.swg,66,SWIG_define@*/
+  /*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_unsigned_SS_short PyInt_FromLong
 /*@@*/
 
@@ -1908,7 +2051,7 @@ SWIG_Check_unsigned_SS_char(PyObject* obj)
 }
 
 
-  /*@/usr/share/swig1.3/python/pymacros.swg,66,SWIG_define@*/
+  /*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_unsigned_SS_char PyInt_FromLong
 /*@@*/
 
@@ -1963,35 +2106,14 @@ SWIG_Check_unsigned_SS_int(PyObject* obj)
 
 
 #if UINT_MAX < LONG_MAX
-/*@/usr/share/swig1.3/python/pymacros.swg,66,SWIG_define@*/
+/*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_unsigned_SS_int SWIG_From_long
 /*@@*/
 #else
-/*@/usr/share/swig1.3/python/pymacros.swg,66,SWIG_define@*/
+/*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_unsigned_SS_int SWIG_From_unsigned_SS_long
 /*@@*/
 #endif
-
-
-SWIGINTERN PyObject *
-SWIG_FromCharPtr(const char* cptr)
-{ 
-  if (cptr) {
-    size_t size = strlen(cptr);
-    if (size > INT_MAX) {
-      return SWIG_NewPointerObj((char*)(cptr), 
-				SWIG_TypeQuery("char *"), 0);
-    } else {
-      if (size != 0) {
-	return PyString_FromStringAndSize(cptr, size);
-      } else {
-	return PyString_FromString(cptr);
-      }
-    }
-  }
-  Py_INCREF(Py_None);
-  return Py_None;
-}
 
 void dlp_set_protocol_version(int,int);
 time_t dlp_ptohdate(unsigned char const *);
@@ -2082,6 +2204,27 @@ PI_ERR dlp_VFSFileSeek(int,FileRef,int,int);
 PI_ERR dlp_VFSFileResize(int,FileRef,int);
 PI_ERR dlp_VFSFileSize(int,FileRef,int *);
 
+SWIGINTERN PyObject *
+SWIG_FromCharPtr(const char* cptr)
+{ 
+  if (cptr) {
+    size_t size = strlen(cptr);
+    if (size > INT_MAX) {
+      return SWIG_NewPointerObj((char*)(cptr), 
+				SWIG_TypeQuery("char *"), 0);
+    } else {
+      if (size != 0) {
+	return PyString_FromStringAndSize(cptr, size);
+      } else {
+	return PyString_FromString(cptr);
+      }
+    }
+  }
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+
 typedef union {
 		struct {
 			pi_file_t *pf;		/**< May be NULL */
@@ -2112,6 +2255,7 @@ typedef struct {
 
 
 pi_file_t *pi_file_open(char const *);
+pi_file_t *pi_file_create(char const *,struct DBInfo const *);
 int pi_file_close(pi_file_t *);
 void pi_file_get_info(pi_file_t *,struct DBInfo *);
 void pi_file_get_app_info(pi_file_t *,void **,size_t *);
@@ -2119,11 +2263,10 @@ void pi_file_get_sort_info(pi_file_t *,void **,size_t *);
 int pi_file_read_resource(pi_file_t *,int,void **,size_t *,unsigned long *,int *);
 int pi_file_read_resource_by_type_id(pi_file_t *,unsigned long,int,void **,size_t *,int *);
 int pi_file_type_id_used(pi_file_t *,unsigned long,int);
-int pi_file_read_record(pi_file_t *,int,void **,size_t *,int *,int *,pi_uid_t *);
-void pi_file_get_entries(pi_file_t *,int *);
-int pi_file_read_record_by_id(pi_file_t *,pi_uid_t,void **,size_t *,int *,int *,int *);
 int pi_file_id_used(pi_file_t *,pi_uid_t);
-pi_file_t *pi_file_create(char const *,struct DBInfo const *);
+int pi_file_read_record(pi_file_t *,int,void **,size_t *,int *,int *,pi_uid_t *);
+int pi_file_read_record_by_id(pi_file_t *,pi_uid_t,void **,size_t *,int *,int *,int *);
+void pi_file_get_entries(pi_file_t *,int *);
 int pi_file_set_info(pi_file_t *,struct DBInfo const *);
 int pi_file_set_app_info(pi_file_t *,void *,size_t);
 int pi_file_set_sort_info(pi_file_t *,void *,size_t);
@@ -3279,8 +3422,12 @@ static PyObject *_wrap_pi_socket(PyObject *self, PyObject *args) {
         arg3 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (int)pi_socket(arg1,arg2,arg3);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_socket(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3305,8 +3452,12 @@ static PyObject *_wrap_pi_socket_setsd(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (int)pi_socket_setsd(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_socket_setsd(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3337,8 +3488,12 @@ static PyObject *_wrap_pi_getsockname(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (int)pi_getsockname(arg1,arg2,arg3);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_getsockname(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3378,8 +3533,12 @@ static PyObject *_wrap_pi_getsockpeer(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (int)pi_getsockpeer(arg1,arg2,arg3);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_getsockpeer(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3432,8 +3591,12 @@ static PyObject *_wrap_pi_getsockopt(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj4, (void **)&arg5, SWIGTYPE_p_size_t, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(5)) SWIG_fail;
-    result = (int)pi_getsockopt(arg1,arg2,arg3,arg4,arg5);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_getsockopt(arg1,arg2,arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3477,8 +3640,12 @@ static PyObject *_wrap_pi_setsockopt(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj4, (void **)&arg5, SWIGTYPE_p_size_t, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(5)) SWIG_fail;
-    result = (int)pi_setsockopt(arg1,arg2,arg3,(void const *)arg4,arg5);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_setsockopt(arg1,arg2,arg3,(void const *)arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3505,8 +3672,12 @@ static PyObject *_wrap_pi_protocol(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (struct pi_protocol *)pi_protocol(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (struct pi_protocol *)pi_protocol(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_pi_protocol, 0);
     return resultobj;
     fail:
@@ -3531,8 +3702,12 @@ static PyObject *_wrap_pi_protocol_next(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (struct pi_protocol *)pi_protocol_next(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (struct pi_protocol *)pi_protocol_next(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_pi_protocol, 0);
     return resultobj;
     fail:
@@ -3551,8 +3726,12 @@ static PyObject *_wrap_pi_socket_connected(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (int)pi_socket_connected(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_socket_connected(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3578,15 +3757,17 @@ static PyObject *_wrap_pi_connect(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj1, (char**)&arg2)) {
         SWIG_arg_fail(2);SWIG_fail;
     }
-    result = (PI_ERR)pi_connect(arg1,(char const *)arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)pi_connect(arg1,(char const *)arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -3609,15 +3790,17 @@ static PyObject *_wrap_pi_bind_(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj1, (char**)&arg2)) {
         SWIG_arg_fail(2);SWIG_fail;
     }
-    result = (PI_ERR)pi_bind(arg1,(char const *)arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)pi_bind(arg1,(char const *)arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -3641,15 +3824,17 @@ static PyObject *_wrap_pi_listen(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)pi_listen(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)pi_listen(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -3677,15 +3862,17 @@ static PyObject *_wrap_pi_accept(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)pi_accept(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)pi_accept(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         PyObject *o;
         
@@ -3728,15 +3915,17 @@ static PyObject *_wrap_pi_accept_to(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)pi_accept_to(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)pi_accept_to(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         PyObject *o;
         
@@ -3763,8 +3952,12 @@ static PyObject *_wrap_pi_close(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (int)pi_close(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_close(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3804,8 +3997,12 @@ static PyObject *_wrap_pi_send(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (int)pi_send(arg1,(void const *)arg2,arg3,arg4);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_send(arg1,(void const *)arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -3842,8 +4039,12 @@ static PyObject *_wrap_pi_recv(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = pi_recv(arg1,arg2,arg3,arg4);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = pi_recv(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         ssize_t * resultptr;
         resultptr = (ssize_t *) malloc(sizeof(ssize_t));
@@ -3893,8 +4094,12 @@ static PyObject *_wrap_pi_read(PyObject *self, PyObject *args) {
         arg3 = (size_t)(SWIG_As_unsigned_SS_long(obj1)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = pi_read(arg1,arg2,arg3);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = pi_read(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         ssize_t * resultptr;
         resultptr = (ssize_t *) malloc(sizeof(ssize_t));
@@ -3937,12 +4142,16 @@ static PyObject *_wrap_pi_write(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    {
-        arg2 = (void *)PyString_AsString(obj1);
-        arg3 = PyString_Size(obj1);
-    }
-    result = pi_write(arg1,(void const *)arg2,arg3);
     
+    arg2 = (void *)PyString_AsString(obj1);
+    arg3 = PyString_Size(obj1);
+    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = pi_write(arg1,(void const *)arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         ssize_t * resultptr;
         resultptr = (ssize_t *) malloc(sizeof(ssize_t));
@@ -3971,8 +4180,12 @@ static PyObject *_wrap_pi_flush(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    pi_flush(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        pi_flush(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
@@ -3991,8 +4204,12 @@ static PyObject *_wrap_pi_error(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (int)pi_error(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_error(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -4019,8 +4236,12 @@ static PyObject *_wrap_pi_set_error(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (int)pi_set_error(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_set_error(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -4041,8 +4262,12 @@ static PyObject *_wrap_pi_palmos_error(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (int)pi_palmos_error(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_palmos_error(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -4069,8 +4294,12 @@ static PyObject *_wrap_pi_set_palmos_error(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (int)pi_set_palmos_error(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_set_palmos_error(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -4090,8 +4319,12 @@ static PyObject *_wrap_pi_reset_errors(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    pi_reset_errors(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        pi_reset_errors(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
@@ -4110,15 +4343,17 @@ static PyObject *_wrap_pi_version(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)pi_version(arg1);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)pi_version(arg1);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -4136,8 +4371,12 @@ static PyObject *_wrap_pi_maxrecsize(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (unsigned long)pi_maxrecsize(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (unsigned long)pi_maxrecsize(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
@@ -4158,15 +4397,17 @@ static PyObject *_wrap_pi_tickle(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)pi_tickle(arg1);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)pi_tickle(arg1);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -4190,8 +4431,12 @@ static PyObject *_wrap_pi_watchdog(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (int)pi_watchdog(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_watchdog(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -5053,9 +5298,9 @@ static PyObject *_wrap_PilotUser_passwordLength_set(PyObject *self, PyObject *ar
     struct PilotUser temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:PilotUser_passwordLength_set",&obj0)) goto fail;
     {
         arg2 = (size_t)(SWIG_As_unsigned_SS_long(obj0)); 
@@ -5064,19 +5309,9 @@ static PyObject *_wrap_PilotUser_passwordLength_set(PyObject *self, PyObject *ar
     if (arg1) (arg1)->passwordLength = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5089,28 +5324,18 @@ static PyObject *_wrap_PilotUser_passwordLength_get(PyObject *self, PyObject *ar
     size_t result;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":PilotUser_passwordLength_get")) goto fail;
     result =  ((arg1)->passwordLength);
     
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5125,9 +5350,9 @@ static PyObject *_wrap_PilotUser_username_set(PyObject *self, PyObject *args) {
     char temp2[128] ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:PilotUser_username_set",&obj0)) goto fail;
     {
         if (!SWIG_AsCharArray(obj0, temp2, 128)) {
@@ -5140,19 +5365,9 @@ static PyObject *_wrap_PilotUser_username_set(PyObject *self, PyObject *args) {
         else memset(arg1->username,0,128*sizeof(char));
     }
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5165,9 +5380,9 @@ static PyObject *_wrap_PilotUser_username_get(PyObject *self, PyObject *args) {
     char *result;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":PilotUser_username_get")) goto fail;
     result = (char *)(char *) ((arg1)->username);
     
@@ -5178,19 +5393,9 @@ static PyObject *_wrap_PilotUser_username_get(PyObject *self, PyObject *args) {
 #endif
         resultobj = SWIG_FromCharArray(result, size);
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5205,9 +5410,9 @@ static PyObject *_wrap_PilotUser_password_set(PyObject *self, PyObject *args) {
     char temp2[128] ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:PilotUser_password_set",&obj0)) goto fail;
     {
         if (!SWIG_AsCharArray(obj0, temp2, 128)) {
@@ -5220,19 +5425,9 @@ static PyObject *_wrap_PilotUser_password_set(PyObject *self, PyObject *args) {
         else memset(arg1->password,0,128*sizeof(char));
     }
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5245,9 +5440,9 @@ static PyObject *_wrap_PilotUser_password_get(PyObject *self, PyObject *args) {
     char *result;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":PilotUser_password_get")) goto fail;
     result = (char *)(char *) ((arg1)->password);
     
@@ -5258,19 +5453,9 @@ static PyObject *_wrap_PilotUser_password_get(PyObject *self, PyObject *args) {
 #endif
         resultobj = SWIG_FromCharArray(result, size);
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5284,9 +5469,9 @@ static PyObject *_wrap_PilotUser_userID_set(PyObject *self, PyObject *args) {
     struct PilotUser temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:PilotUser_userID_set",&obj0)) goto fail;
     {
         arg2 = (unsigned long)(SWIG_As_unsigned_SS_long(obj0)); 
@@ -5295,19 +5480,9 @@ static PyObject *_wrap_PilotUser_userID_set(PyObject *self, PyObject *args) {
     if (arg1) (arg1)->userID = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5320,28 +5495,18 @@ static PyObject *_wrap_PilotUser_userID_get(PyObject *self, PyObject *args) {
     unsigned long result;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":PilotUser_userID_get")) goto fail;
     result = (unsigned long) ((arg1)->userID);
     
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5355,9 +5520,9 @@ static PyObject *_wrap_PilotUser_viewerID_set(PyObject *self, PyObject *args) {
     struct PilotUser temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:PilotUser_viewerID_set",&obj0)) goto fail;
     {
         arg2 = (unsigned long)(SWIG_As_unsigned_SS_long(obj0)); 
@@ -5366,19 +5531,9 @@ static PyObject *_wrap_PilotUser_viewerID_set(PyObject *self, PyObject *args) {
     if (arg1) (arg1)->viewerID = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5391,28 +5546,18 @@ static PyObject *_wrap_PilotUser_viewerID_get(PyObject *self, PyObject *args) {
     unsigned long result;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":PilotUser_viewerID_get")) goto fail;
     result = (unsigned long) ((arg1)->viewerID);
     
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5426,9 +5571,9 @@ static PyObject *_wrap_PilotUser_lastSyncPC_set(PyObject *self, PyObject *args) 
     struct PilotUser temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:PilotUser_lastSyncPC_set",&obj0)) goto fail;
     {
         arg2 = (unsigned long)(SWIG_As_unsigned_SS_long(obj0)); 
@@ -5437,19 +5582,9 @@ static PyObject *_wrap_PilotUser_lastSyncPC_set(PyObject *self, PyObject *args) 
     if (arg1) (arg1)->lastSyncPC = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5462,28 +5597,18 @@ static PyObject *_wrap_PilotUser_lastSyncPC_get(PyObject *self, PyObject *args) 
     unsigned long result;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":PilotUser_lastSyncPC_get")) goto fail;
     result = (unsigned long) ((arg1)->lastSyncPC);
     
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5497,9 +5622,9 @@ static PyObject *_wrap_PilotUser_successfulSyncDate_set(PyObject *self, PyObject
     struct PilotUser temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:PilotUser_successfulSyncDate_set",&obj0)) goto fail;
     {
         arg2 = (time_t)(SWIG_As_long(obj0)); 
@@ -5508,19 +5633,9 @@ static PyObject *_wrap_PilotUser_successfulSyncDate_set(PyObject *self, PyObject
     if (arg1) (arg1)->successfulSyncDate = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5533,28 +5648,18 @@ static PyObject *_wrap_PilotUser_successfulSyncDate_get(PyObject *self, PyObject
     time_t result;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":PilotUser_successfulSyncDate_get")) goto fail;
     result =  ((arg1)->successfulSyncDate);
     
     {
         resultobj = SWIG_From_long((long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5568,9 +5673,9 @@ static PyObject *_wrap_PilotUser_lastSyncDate_set(PyObject *self, PyObject *args
     struct PilotUser temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:PilotUser_lastSyncDate_set",&obj0)) goto fail;
     {
         arg2 = (time_t)(SWIG_As_long(obj0)); 
@@ -5579,19 +5684,9 @@ static PyObject *_wrap_PilotUser_lastSyncDate_set(PyObject *self, PyObject *args
     if (arg1) (arg1)->lastSyncDate = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5604,28 +5699,18 @@ static PyObject *_wrap_PilotUser_lastSyncDate_get(PyObject *self, PyObject *args
     time_t result;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":PilotUser_lastSyncDate_get")) goto fail;
     result =  ((arg1)->lastSyncDate);
     
     {
         resultobj = SWIG_From_long((long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5651,26 +5736,16 @@ static PyObject *_wrap_delete_PilotUser(PyObject *self, PyObject *args) {
     struct PilotUser *arg1 = (struct PilotUser *) 0 ;
     struct PilotUser temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":delete_PilotUser")) goto fail;
     free((char *) arg1);
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg1->userID,
-            "viewerID", arg1->viewerID,
-            "lastSyncPC", arg1->lastSyncPC,
-            "successfulSyncDate", arg1->successfulSyncDate,
-            "lastSyncDate", arg1->lastSyncDate,
-            "name", arg1->username,
-            "password", arg1->password, arg1->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5691,9 +5766,9 @@ static PyObject *_wrap_SysInfo_romVersion_set(PyObject *self, PyObject *args) {
     struct SysInfo temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_romVersion_set",&obj0)) goto fail;
     {
         arg2 = (unsigned long)(SWIG_As_unsigned_SS_long(obj0)); 
@@ -5702,15 +5777,9 @@ static PyObject *_wrap_SysInfo_romVersion_set(PyObject *self, PyObject *args) {
     if (arg1) (arg1)->romVersion = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5723,24 +5792,18 @@ static PyObject *_wrap_SysInfo_romVersion_get(PyObject *self, PyObject *args) {
     unsigned long result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_romVersion_get")) goto fail;
     result = (unsigned long) ((arg1)->romVersion);
     
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5754,9 +5817,9 @@ static PyObject *_wrap_SysInfo_locale_set(PyObject *self, PyObject *args) {
     struct SysInfo temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_locale_set",&obj0)) goto fail;
     {
         arg2 = (unsigned long)(SWIG_As_unsigned_SS_long(obj0)); 
@@ -5765,15 +5828,9 @@ static PyObject *_wrap_SysInfo_locale_set(PyObject *self, PyObject *args) {
     if (arg1) (arg1)->locale = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5786,24 +5843,18 @@ static PyObject *_wrap_SysInfo_locale_get(PyObject *self, PyObject *args) {
     unsigned long result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_locale_get")) goto fail;
     result = (unsigned long) ((arg1)->locale);
     
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5817,9 +5868,9 @@ static PyObject *_wrap_SysInfo_prodIDLength_set(PyObject *self, PyObject *args) 
     struct SysInfo temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_prodIDLength_set",&obj0)) goto fail;
     {
         arg2 = (unsigned char)(SWIG_As_unsigned_SS_char(obj0)); 
@@ -5828,15 +5879,9 @@ static PyObject *_wrap_SysInfo_prodIDLength_set(PyObject *self, PyObject *args) 
     if (arg1) (arg1)->prodIDLength = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5849,24 +5894,18 @@ static PyObject *_wrap_SysInfo_prodIDLength_get(PyObject *self, PyObject *args) 
     unsigned char result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_prodIDLength_get")) goto fail;
     result = (unsigned char) ((arg1)->prodIDLength);
     
     {
         resultobj = SWIG_From_unsigned_SS_char((unsigned char)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5881,9 +5920,9 @@ static PyObject *_wrap_SysInfo_prodID_set(PyObject *self, PyObject *args) {
     char temp2[128] ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_prodID_set",&obj0)) goto fail;
     {
         if (!SWIG_AsCharArray(obj0, temp2, 128)) {
@@ -5896,15 +5935,9 @@ static PyObject *_wrap_SysInfo_prodID_set(PyObject *self, PyObject *args) {
         else memset(arg1->prodID,0,128*sizeof(char));
     }
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5917,9 +5950,9 @@ static PyObject *_wrap_SysInfo_prodID_get(PyObject *self, PyObject *args) {
     char *result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_prodID_get")) goto fail;
     result = (char *)(char *) ((arg1)->prodID);
     
@@ -5930,15 +5963,9 @@ static PyObject *_wrap_SysInfo_prodID_get(PyObject *self, PyObject *args) {
 #endif
         resultobj = SWIG_FromCharArray(result, size);
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5952,9 +5979,9 @@ static PyObject *_wrap_SysInfo_dlpMajorVersion_set(PyObject *self, PyObject *arg
     struct SysInfo temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_dlpMajorVersion_set",&obj0)) goto fail;
     {
         arg2 = (unsigned short)(SWIG_As_unsigned_SS_short(obj0)); 
@@ -5963,15 +5990,9 @@ static PyObject *_wrap_SysInfo_dlpMajorVersion_set(PyObject *self, PyObject *arg
     if (arg1) (arg1)->dlpMajorVersion = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -5984,24 +6005,18 @@ static PyObject *_wrap_SysInfo_dlpMajorVersion_get(PyObject *self, PyObject *arg
     unsigned short result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_dlpMajorVersion_get")) goto fail;
     result = (unsigned short) ((arg1)->dlpMajorVersion);
     
     {
         resultobj = SWIG_From_unsigned_SS_short((unsigned short)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6015,9 +6030,9 @@ static PyObject *_wrap_SysInfo_dlpMinorVersion_set(PyObject *self, PyObject *arg
     struct SysInfo temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_dlpMinorVersion_set",&obj0)) goto fail;
     {
         arg2 = (unsigned short)(SWIG_As_unsigned_SS_short(obj0)); 
@@ -6026,15 +6041,9 @@ static PyObject *_wrap_SysInfo_dlpMinorVersion_set(PyObject *self, PyObject *arg
     if (arg1) (arg1)->dlpMinorVersion = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6047,24 +6056,18 @@ static PyObject *_wrap_SysInfo_dlpMinorVersion_get(PyObject *self, PyObject *arg
     unsigned short result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_dlpMinorVersion_get")) goto fail;
     result = (unsigned short) ((arg1)->dlpMinorVersion);
     
     {
         resultobj = SWIG_From_unsigned_SS_short((unsigned short)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6078,9 +6081,9 @@ static PyObject *_wrap_SysInfo_compatMajorVersion_set(PyObject *self, PyObject *
     struct SysInfo temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_compatMajorVersion_set",&obj0)) goto fail;
     {
         arg2 = (unsigned short)(SWIG_As_unsigned_SS_short(obj0)); 
@@ -6089,15 +6092,9 @@ static PyObject *_wrap_SysInfo_compatMajorVersion_set(PyObject *self, PyObject *
     if (arg1) (arg1)->compatMajorVersion = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6110,24 +6107,18 @@ static PyObject *_wrap_SysInfo_compatMajorVersion_get(PyObject *self, PyObject *
     unsigned short result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_compatMajorVersion_get")) goto fail;
     result = (unsigned short) ((arg1)->compatMajorVersion);
     
     {
         resultobj = SWIG_From_unsigned_SS_short((unsigned short)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6141,9 +6132,9 @@ static PyObject *_wrap_SysInfo_compatMinorVersion_set(PyObject *self, PyObject *
     struct SysInfo temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_compatMinorVersion_set",&obj0)) goto fail;
     {
         arg2 = (unsigned short)(SWIG_As_unsigned_SS_short(obj0)); 
@@ -6152,15 +6143,9 @@ static PyObject *_wrap_SysInfo_compatMinorVersion_set(PyObject *self, PyObject *
     if (arg1) (arg1)->compatMinorVersion = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6173,24 +6158,18 @@ static PyObject *_wrap_SysInfo_compatMinorVersion_get(PyObject *self, PyObject *
     unsigned short result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_compatMinorVersion_get")) goto fail;
     result = (unsigned short) ((arg1)->compatMinorVersion);
     
     {
         resultobj = SWIG_From_unsigned_SS_short((unsigned short)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6204,9 +6183,9 @@ static PyObject *_wrap_SysInfo_maxRecSize_set(PyObject *self, PyObject *args) {
     struct SysInfo temp1 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:SysInfo_maxRecSize_set",&obj0)) goto fail;
     {
         arg2 = (unsigned long)(SWIG_As_unsigned_SS_long(obj0)); 
@@ -6215,15 +6194,9 @@ static PyObject *_wrap_SysInfo_maxRecSize_set(PyObject *self, PyObject *args) {
     if (arg1) (arg1)->maxRecSize = arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6236,24 +6209,18 @@ static PyObject *_wrap_SysInfo_maxRecSize_get(PyObject *self, PyObject *args) {
     unsigned long result;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":SysInfo_maxRecSize_get")) goto fail;
     result = (unsigned long) ((arg1)->maxRecSize);
     
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6279,22 +6246,16 @@ static PyObject *_wrap_delete_SysInfo(PyObject *self, PyObject *args) {
     struct SysInfo *arg1 = (struct SysInfo *) 0 ;
     struct SysInfo temp1 ;
     
-    {
-        arg1 = &temp1;
-    }
+    
+    arg1 = &temp1;
+    
     if(!PyArg_ParseTuple(args,(char *)":delete_SysInfo")) goto fail;
     free((char *) arg1);
     
     Py_INCREF(Py_None); resultobj = Py_None;
-    {
-        if (arg1) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg1->romVersion,
-            "locale", arg1->locale,
-            "name", arg1->prodID, arg1->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    
+    if (arg1) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg1));
+    
     return resultobj;
     fail:
     return NULL;
@@ -6316,38 +6277,8 @@ static PyObject *_wrap_DBInfo_more_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_more_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -6368,38 +6299,8 @@ static PyObject *_wrap_DBInfo_more_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_more_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (int) ((arg1)->more);
     
     {
@@ -6420,38 +6321,8 @@ static PyObject *_wrap_DBInfo_name_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_name_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         if (!SWIG_AsCharArray(obj1, temp2, 34)) {
             SWIG_arg_fail(2);SWIG_fail;
@@ -6476,38 +6347,8 @@ static PyObject *_wrap_DBInfo_name_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_name_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (char *)(char *) ((arg1)->name);
     
     {
@@ -6531,38 +6372,8 @@ static PyObject *_wrap_DBInfo_flags_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_flags_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (unsigned int)(SWIG_As_unsigned_SS_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -6583,38 +6394,8 @@ static PyObject *_wrap_DBInfo_flags_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_flags_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (unsigned int) ((arg1)->flags);
     
     {
@@ -6634,38 +6415,8 @@ static PyObject *_wrap_DBInfo_miscFlags_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_miscFlags_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (unsigned int)(SWIG_As_unsigned_SS_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -6686,38 +6437,8 @@ static PyObject *_wrap_DBInfo_miscFlags_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_miscFlags_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (unsigned int) ((arg1)->miscFlags);
     
     {
@@ -6737,38 +6458,8 @@ static PyObject *_wrap_DBInfo_version_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_version_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (unsigned int)(SWIG_As_unsigned_SS_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -6789,38 +6480,8 @@ static PyObject *_wrap_DBInfo_version_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_version_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (unsigned int) ((arg1)->version);
     
     {
@@ -6840,41 +6501,13 @@ static PyObject *_wrap_DBInfo_type_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_type_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -6896,38 +6529,8 @@ static PyObject *_wrap_DBInfo_type_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_type_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (unsigned long) ((arg1)->type);
     
     {
@@ -6947,41 +6550,13 @@ static PyObject *_wrap_DBInfo_creator_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_creator_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -7003,38 +6578,8 @@ static PyObject *_wrap_DBInfo_creator_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_creator_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (unsigned long) ((arg1)->creator);
     
     {
@@ -7054,38 +6599,8 @@ static PyObject *_wrap_DBInfo_modnum_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_modnum_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (unsigned long)(SWIG_As_unsigned_SS_long(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -7106,38 +6621,8 @@ static PyObject *_wrap_DBInfo_modnum_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_modnum_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (unsigned long) ((arg1)->modnum);
     
     {
@@ -7157,38 +6642,8 @@ static PyObject *_wrap_DBInfo_index_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_index_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (unsigned int)(SWIG_As_unsigned_SS_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -7209,38 +6664,8 @@ static PyObject *_wrap_DBInfo_index_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_index_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (unsigned int) ((arg1)->index);
     
     {
@@ -7260,38 +6685,8 @@ static PyObject *_wrap_DBInfo_createDate_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_createDate_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (time_t)(SWIG_As_long(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -7312,38 +6707,8 @@ static PyObject *_wrap_DBInfo_createDate_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_createDate_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result =  ((arg1)->createDate);
     
     {
@@ -7363,38 +6728,8 @@ static PyObject *_wrap_DBInfo_modifyDate_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_modifyDate_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (time_t)(SWIG_As_long(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -7415,38 +6750,8 @@ static PyObject *_wrap_DBInfo_modifyDate_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_modifyDate_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result =  ((arg1)->modifyDate);
     
     {
@@ -7466,38 +6771,8 @@ static PyObject *_wrap_DBInfo_backupDate_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:DBInfo_backupDate_set",&obj0,&obj1)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (time_t)(SWIG_As_long(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -7518,38 +6793,8 @@ static PyObject *_wrap_DBInfo_backupDate_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:DBInfo_backupDate_get",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result =  ((arg1)->backupDate);
     
     {
@@ -7581,38 +6826,8 @@ static PyObject *_wrap_delete_DBInfo(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:delete_DBInfo",&obj0)) goto fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj0, "more", 0);
-        temp.type = makelong(DGETSTR(obj0, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj0, "creator", "    "));
-        temp.version = DGETLONG(obj0, "version", 0);
-        temp.modnum = DGETLONG(obj0, "modnum", 0);
-        temp.createDate = DGETLONG(obj0, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj0, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj0, "backupDate", 0);
-        temp.index = DGETLONG(obj0, "index", 0);
-        strncpy(temp.name, DGETSTR(obj0,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj0,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj0,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj0,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj0,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj0,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj0,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj0,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj0,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj0,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj0,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj0,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj0,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj0,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj0,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj0,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     free((char *) arg1);
     
     Py_INCREF(Py_None); resultobj = Py_None;
@@ -8376,16 +7591,8 @@ static PyObject *_wrap_NetSyncInfo_lanSync_set(PyObject *self, PyObject *args) {
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:NetSyncInfo_lanSync_set",&obj0,&obj1)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
@@ -8406,16 +7613,8 @@ static PyObject *_wrap_NetSyncInfo_lanSync_get(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:NetSyncInfo_lanSync_get",&obj0)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (int) ((arg1)->lanSync);
     
     {
@@ -8436,16 +7635,8 @@ static PyObject *_wrap_NetSyncInfo_hostName_set(PyObject *self, PyObject *args) 
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:NetSyncInfo_hostName_set",&obj0,&obj1)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         if (!SWIG_AsCharArray(obj1, temp2, 256)) {
             SWIG_arg_fail(2);SWIG_fail;
@@ -8470,16 +7661,8 @@ static PyObject *_wrap_NetSyncInfo_hostName_get(PyObject *self, PyObject *args) 
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:NetSyncInfo_hostName_get",&obj0)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (char *)(char *) ((arg1)->hostName);
     
     {
@@ -8504,16 +7687,8 @@ static PyObject *_wrap_NetSyncInfo_hostAddress_set(PyObject *self, PyObject *arg
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:NetSyncInfo_hostAddress_set",&obj0,&obj1)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         if (!SWIG_AsCharArray(obj1, temp2, 40)) {
             SWIG_arg_fail(2);SWIG_fail;
@@ -8538,16 +7713,8 @@ static PyObject *_wrap_NetSyncInfo_hostAddress_get(PyObject *self, PyObject *arg
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:NetSyncInfo_hostAddress_get",&obj0)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (char *)(char *) ((arg1)->hostAddress);
     
     {
@@ -8572,16 +7739,8 @@ static PyObject *_wrap_NetSyncInfo_hostSubnetMask_set(PyObject *self, PyObject *
     PyObject * obj1 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"OO:NetSyncInfo_hostSubnetMask_set",&obj0,&obj1)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     {
         if (!SWIG_AsCharArray(obj1, temp2, 40)) {
             SWIG_arg_fail(2);SWIG_fail;
@@ -8606,16 +7765,8 @@ static PyObject *_wrap_NetSyncInfo_hostSubnetMask_get(PyObject *self, PyObject *
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:NetSyncInfo_hostSubnetMask_get",&obj0)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     result = (char *)(char *) ((arg1)->hostSubnetMask);
     
     {
@@ -8651,16 +7802,8 @@ static PyObject *_wrap_delete_NetSyncInfo(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     
     if(!PyArg_ParseTuple(args,(char *)"O:delete_NetSyncInfo",&obj0)) goto fail;
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj0,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj0,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj0,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj0,"hostSubnetMask",""), 40);
-        
-        arg1 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_NetSyncInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
     free((char *) arg1);
     
     Py_INCREF(Py_None); resultobj = Py_None;
@@ -8674,540 +7817,6 @@ static PyObject * NetSyncInfo_swigregister(PyObject *self, PyObject *args) {
     PyObject *obj;
     if (!PyArg_ParseTuple(args,(char*)"O", &obj)) return NULL;
     SWIG_TypeClientData(SWIGTYPE_p_NetSyncInfo, obj);
-    Py_INCREF(obj);
-    return Py_BuildValue((char *)"");
-}
-static PyObject *_wrap_dlpArg_id__set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpArg *arg1 = (struct dlpArg *) 0 ;
-    int arg2 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpArg_id__set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    {
-        arg2 = (int)(SWIG_As_int(obj1)); 
-        if (SWIG_arg_fail(2)) SWIG_fail;
-    }
-    if (arg1) (arg1)->id_ = arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpArg_id__get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpArg *arg1 = (struct dlpArg *) 0 ;
-    int result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpArg_id__get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (int) ((arg1)->id_);
-    
-    {
-        resultobj = SWIG_From_int((int)(result)); 
-    }
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpArg_len_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpArg *arg1 = (struct dlpArg *) 0 ;
-    size_t arg2 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpArg_len_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    {
-        arg2 = (size_t)(SWIG_As_unsigned_SS_long(obj1)); 
-        if (SWIG_arg_fail(2)) SWIG_fail;
-    }
-    if (arg1) (arg1)->len = arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpArg_len_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpArg *arg1 = (struct dlpArg *) 0 ;
-    size_t result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpArg_len_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result =  ((arg1)->len);
-    
-    {
-        resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
-    }
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpArg_data_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpArg *arg1 = (struct dlpArg *) 0 ;
-    char *arg2 = (char *) 0 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpArg_data_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    if (!SWIG_AsCharPtr(obj1, (char**)&arg2)) {
-        SWIG_arg_fail(2);SWIG_fail;
-    }
-    {
-        if (arg1->data) free((char*)arg1->data);
-        if (arg2) {
-            arg1->data = (char *) malloc(strlen(arg2)+1);
-            strcpy((char*)arg1->data,arg2);
-        } else {
-            arg1->data = 0;
-        }
-    }
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpArg_data_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpArg *arg1 = (struct dlpArg *) 0 ;
-    char *result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpArg_data_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (char *) ((arg1)->data);
-    
-    resultobj = SWIG_FromCharPtr(result);
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_new_dlpArg(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpArg *result;
-    
-    if(!PyArg_ParseTuple(args,(char *)":new_dlpArg")) goto fail;
-    result = (struct dlpArg *)(struct dlpArg *) calloc(1, sizeof(struct dlpArg));
-    
-    resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_dlpArg, 1);
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_delete_dlpArg(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpArg *arg1 = (struct dlpArg *) 0 ;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:delete_dlpArg",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    free((char *) arg1);
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject * dlpArg_swigregister(PyObject *self, PyObject *args) {
-    PyObject *obj;
-    if (!PyArg_ParseTuple(args,(char*)"O", &obj)) return NULL;
-    SWIG_TypeClientData(SWIGTYPE_p_dlpArg, obj);
-    Py_INCREF(obj);
-    return Py_BuildValue((char *)"");
-}
-static PyObject *_wrap_dlpRequest_cmd_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpRequest *arg1 = (struct dlpRequest *) 0 ;
-    enum dlpFunctions arg2 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpRequest_cmd_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpRequest, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    {
-        arg2 = (enum dlpFunctions)(SWIG_As_int(obj1)); 
-        if (SWIG_arg_fail(2)) SWIG_fail;
-    }
-    if (arg1) (arg1)->cmd = (enum dlpFunctions )arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpRequest_cmd_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpRequest *arg1 = (struct dlpRequest *) 0 ;
-    enum dlpFunctions result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpRequest_cmd_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpRequest, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (enum dlpFunctions) ((arg1)->cmd);
-    
-    resultobj = SWIG_From_int((result));
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpRequest_argc_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpRequest *arg1 = (struct dlpRequest *) 0 ;
-    int arg2 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpRequest_argc_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpRequest, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    {
-        arg2 = (int)(SWIG_As_int(obj1)); 
-        if (SWIG_arg_fail(2)) SWIG_fail;
-    }
-    if (arg1) (arg1)->argc = arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpRequest_argc_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpRequest *arg1 = (struct dlpRequest *) 0 ;
-    int result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpRequest_argc_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpRequest, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (int) ((arg1)->argc);
-    
-    {
-        resultobj = SWIG_From_int((int)(result)); 
-    }
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpRequest_argv_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpRequest *arg1 = (struct dlpRequest *) 0 ;
-    struct dlpArg **arg2 = (struct dlpArg **) 0 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpRequest_argv_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpRequest, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(2)) SWIG_fail;
-    if (arg1) (arg1)->argv = arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpRequest_argv_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpRequest *arg1 = (struct dlpRequest *) 0 ;
-    struct dlpArg **result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpRequest_argv_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpRequest, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (struct dlpArg **) ((arg1)->argv);
-    
-    resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_p_dlpArg, 0);
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_new_dlpRequest(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpRequest *result;
-    
-    if(!PyArg_ParseTuple(args,(char *)":new_dlpRequest")) goto fail;
-    result = (struct dlpRequest *)(struct dlpRequest *) calloc(1, sizeof(struct dlpRequest));
-    
-    resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_dlpRequest, 1);
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_delete_dlpRequest(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpRequest *arg1 = (struct dlpRequest *) 0 ;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:delete_dlpRequest",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpRequest, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    free((char *) arg1);
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject * dlpRequest_swigregister(PyObject *self, PyObject *args) {
-    PyObject *obj;
-    if (!PyArg_ParseTuple(args,(char*)"O", &obj)) return NULL;
-    SWIG_TypeClientData(SWIGTYPE_p_dlpRequest, obj);
-    Py_INCREF(obj);
-    return Py_BuildValue((char *)"");
-}
-static PyObject *_wrap_dlpResponse_cmd_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    enum dlpFunctions arg2 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpResponse_cmd_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    {
-        arg2 = (enum dlpFunctions)(SWIG_As_int(obj1)); 
-        if (SWIG_arg_fail(2)) SWIG_fail;
-    }
-    if (arg1) (arg1)->cmd = (enum dlpFunctions )arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpResponse_cmd_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    enum dlpFunctions result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpResponse_cmd_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (enum dlpFunctions) ((arg1)->cmd);
-    
-    resultobj = SWIG_From_int((result));
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpResponse_err_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    enum dlpErrors arg2 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpResponse_err_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    {
-        arg2 = (enum dlpErrors)(SWIG_As_int(obj1)); 
-        if (SWIG_arg_fail(2)) SWIG_fail;
-    }
-    if (arg1) (arg1)->err = (enum dlpErrors )arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpResponse_err_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    enum dlpErrors result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpResponse_err_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (enum dlpErrors) ((arg1)->err);
-    
-    resultobj = SWIG_From_int((result));
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpResponse_argc_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    int arg2 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpResponse_argc_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    {
-        arg2 = (int)(SWIG_As_int(obj1)); 
-        if (SWIG_arg_fail(2)) SWIG_fail;
-    }
-    if (arg1) (arg1)->argc = arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpResponse_argc_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    int result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpResponse_argc_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (int) ((arg1)->argc);
-    
-    {
-        resultobj = SWIG_From_int((int)(result)); 
-    }
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpResponse_argv_set(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    struct dlpArg **arg2 = (struct dlpArg **) 0 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlpResponse_argv_set",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_p_dlpArg, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(2)) SWIG_fail;
-    if (arg1) (arg1)->argv = arg2;
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_dlpResponse_argv_get(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    struct dlpArg **result;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:dlpResponse_argv_get",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (struct dlpArg **) ((arg1)->argv);
-    
-    resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_p_dlpArg, 0);
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_new_dlpResponse(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *result;
-    
-    if(!PyArg_ParseTuple(args,(char *)":new_dlpResponse")) goto fail;
-    result = (struct dlpResponse *)(struct dlpResponse *) calloc(1, sizeof(struct dlpResponse));
-    
-    resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_dlpResponse, 1);
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_delete_dlpResponse(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    struct dlpResponse *arg1 = (struct dlpResponse *) 0 ;
-    PyObject * obj0 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"O:delete_dlpResponse",&obj0)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_dlpResponse, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    free((char *) arg1);
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject * dlpResponse_swigregister(PyObject *self, PyObject *args) {
-    PyObject *obj;
-    if (!PyArg_ParseTuple(args,(char*)"O", &obj)) return NULL;
-    SWIG_TypeClientData(SWIGTYPE_p_dlpResponse, obj);
     Py_INCREF(obj);
     return Py_BuildValue((char *)"");
 }
@@ -9227,8 +7836,12 @@ static PyObject *_wrap_dlp_set_protocol_version(PyObject *self, PyObject *args) 
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    dlp_set_protocol_version(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        dlp_set_protocol_version(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
@@ -9245,8 +7858,12 @@ static PyObject *_wrap_dlp_ptohdate(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_ptohdate",&obj0)) goto fail;
     SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_unsigned_char, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(1)) SWIG_fail;
-    result = dlp_ptohdate((unsigned char const *)arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = dlp_ptohdate((unsigned char const *)arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_long((long)(result)); 
     }
@@ -9270,8 +7887,12 @@ static PyObject *_wrap_dlp_htopdate(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_unsigned_char, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(2)) SWIG_fail;
-    dlp_htopdate(arg1,arg2);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        dlp_htopdate(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
@@ -9296,15 +7917,17 @@ static PyObject *_wrap_dlp_GetSysDateTime_(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_GetSysDateTime(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_GetSysDateTime(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg2) {
             resultobj = PyInt_FromLong((unsigned long ) arg2);
@@ -9342,15 +7965,17 @@ static PyObject *_wrap_dlp_SetSysDateTime(PyObject *self, PyObject *args) {
         arg2 = (time_t)(SWIG_As_long(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_SetSysDateTime(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_SetSysDateTime(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -9365,32 +7990,28 @@ static PyObject *_wrap_dlp_ReadSysInfo(PyObject *self, PyObject *args) {
     struct SysInfo temp2 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg2 = &temp2;
-    }
+    
+    arg2 = &temp2;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_ReadSysInfo",&obj0)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadSysInfo(arg1,arg2);
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadSysInfo(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
-    {
-        if (arg2) {
-            PyObject *o = Py_BuildValue("{slslss#}",
-            "romVersion", arg2->romVersion,
-            "locale", arg2->locale,
-            "name", arg2->prodID, arg2->prodIDLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
+    
+    if (arg2) resultobj = t_output_helper(resultobj, PyObjectFromSysInfo(arg2));
+    
     return resultobj;
     fail:
     return NULL;
@@ -9407,9 +8028,9 @@ static PyObject *_wrap_dlp_ReadStorageInfo(PyObject *self, PyObject *args) {
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
-    {
-        arg3 = &temp3;
-    }
+    
+    arg3 = &temp3;
+    
     if(!PyArg_ParseTuple(args,(char *)"OO:dlp_ReadStorageInfo",&obj0,&obj1)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
@@ -9419,33 +8040,20 @@ static PyObject *_wrap_dlp_ReadStorageInfo(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadStorageInfo(arg1,arg2,arg3);
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadStorageInfo(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
-    {
-        if (arg3) {
-            resultobj = Py_BuildValue("{sisislslslslsssssi}",
-            "card", arg3->card,
-            "version", arg3->version,
-            "creation", arg3->creation,
-            "romSize", arg3->romSize,
-            "ramSize", arg3->ramSize,
-            "ramFree", arg3->ramFree,
-            "name", arg3->name,
-            "manufacturer", arg3->manufacturer,
-            "more", arg3->more);
-        } else {
-            // eh ?
-            PyErr_SetString(PyExc_RuntimeError,"No cardinfo returned.");
-            return NULL;      
-        }	
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
+    
+    if (arg3) resultobj = t_output_helper(resultobj, PyObjectFromCardInfo(arg3));
+    
     return resultobj;
     fail:
     return NULL;
@@ -9460,36 +8068,28 @@ static PyObject *_wrap_dlp_ReadUserInfo(PyObject *self, PyObject *args) {
     struct PilotUser temp2 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg2 = &temp2;
-    }
+    
+    arg2 = &temp2;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_ReadUserInfo",&obj0)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadUserInfo(arg1,arg2);
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadUserInfo(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
-    {
-        if (arg2) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg2->userID,
-            "viewerID", arg2->viewerID,
-            "lastSyncPC", arg2->lastSyncPC,
-            "successfulSyncDate", arg2->successfulSyncDate,
-            "lastSyncDate", arg2->lastSyncDate,
-            "name", arg2->username,
-            "password", arg2->password, arg2->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
+    
+    if (arg2) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg2));
+    
     return resultobj;
     fail:
     return NULL;
@@ -9504,36 +8104,28 @@ static PyObject *_wrap_dlp_WriteUserInfo(PyObject *self, PyObject *args) {
     struct PilotUser temp2 ;
     PyObject * obj0 = 0 ;
     
-    {
-        arg2 = &temp2;
-    }
+    
+    arg2 = &temp2;
+    
     if(!PyArg_ParseTuple(args,(char *)"O:dlp_WriteUserInfo",&obj0)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_WriteUserInfo(arg1,arg2);
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_WriteUserInfo(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
-    {
-        if (arg2) {
-            PyObject *o = Py_BuildValue("{slslslslslssss#}",
-            "userID", arg2->userID,
-            "viewerID", arg2->viewerID,
-            "lastSyncPC", arg2->lastSyncPC,
-            "successfulSyncDate", arg2->successfulSyncDate,
-            "lastSyncDate", arg2->lastSyncDate,
-            "name", arg2->username,
-            "password", arg2->password, arg2->passwordLength);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
+    
+    if (arg2) resultobj = t_output_helper(resultobj, PyObjectFromPilotUser(arg2));
+    
     return resultobj;
     fail:
     return NULL;
@@ -9551,15 +8143,17 @@ static PyObject *_wrap_dlp_ResetLastSyncPC(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ResetLastSyncPC(arg1);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ResetLastSyncPC(arg1);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -9571,33 +8165,31 @@ static PyObject *_wrap_dlp_ReadNetSyncInfo(PyObject *self, PyObject *args) {
     int arg1 ;
     struct NetSyncInfo *arg2 = (struct NetSyncInfo *) 0 ;
     PI_ERR result;
+    struct NetSyncInfo temp2 ;
     PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OO:dlp_ReadNetSyncInfo",&obj0,&obj1)) goto fail;
+    {
+        arg2 = &temp2;
+    }
+    if(!PyArg_ParseTuple(args,(char *)"O:dlp_ReadNetSyncInfo",&obj0)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
     {
-        static struct NetSyncInfo temp;
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadNetSyncInfo(arg1,arg2);
         
-        temp.lanSync = (int) DGETLONG(obj1,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj1,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj1,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj1,"hostSubnetMask",""), 40);
-        
-        arg2 = &temp;
+        PyEval_RestoreThread(__save);
     }
-    result = (PI_ERR)dlp_ReadNetSyncInfo(arg1,arg2);
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
+    
+    if (arg2) resultobj = t_output_helper(resultobj, PyObjectFromNetSyncInfo(arg2));
+    
     return resultobj;
     fail:
     return NULL;
@@ -9609,6 +8201,7 @@ static PyObject *_wrap_dlp_WriteNetSyncInfo(PyObject *self, PyObject *args) {
     int arg1 ;
     struct NetSyncInfo *arg2 = (struct NetSyncInfo *) 0 ;
     PI_ERR result;
+    struct NetSyncInfo temp2 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
@@ -9617,25 +8210,21 @@ static PyObject *_wrap_dlp_WriteNetSyncInfo(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    {
-        static struct NetSyncInfo temp;
-        
-        temp.lanSync = (int) DGETLONG(obj1,"lanSync",0);
-        strncpy(temp.hostName, DGETSTR(obj1,"hostName",""), 256);
-        strncpy(temp.hostAddress, DGETSTR(obj1,"hostAddress",""), 40);
-        strncpy(temp.hostSubnetMask, DGETSTR(obj1,"hostSubnetMask",""), 40);
-        
-        arg2 = &temp;
-    }
-    result = (PI_ERR)dlp_WriteNetSyncInfo(arg1,(struct NetSyncInfo const *)arg2);
+    
+    PyObjectToNetSyncInfo(obj1, &temp2);
+    arg2 = &temp2;
     
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_WriteNetSyncInfo(arg1,(struct NetSyncInfo const *)arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -9653,15 +8242,17 @@ static PyObject *_wrap_dlp_OpenConduit(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_OpenConduit(arg1);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_OpenConduit(arg1);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -9685,15 +8276,17 @@ static PyObject *_wrap_dlp_EndOfSync(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_EndOfSync(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_EndOfSync(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -9711,15 +8304,17 @@ static PyObject *_wrap_dlp_AbortSync(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_AbortSync(arg1);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_AbortSync(arg1);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -9748,6 +8343,8 @@ static PyObject *_wrap_dlp_ReadFeature(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -9757,15 +8354,17 @@ static PyObject *_wrap_dlp_ReadFeature(PyObject *self, PyObject *args) {
         arg3 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadFeature(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadFeature(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res4 == SWIG_NEWOBJ) ?
     SWIG_From_unsigned_SS_long((*arg4)) : SWIG_NewPointerObj((void*)(arg4), SWIGTYPE_p_unsigned_long, 0)));
     return resultobj;
@@ -9802,15 +8401,17 @@ static PyObject *_wrap_dlp_GetROMToken(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj3, (void **)&arg4, SWIGTYPE_p_size_t, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(4)) SWIG_fail;
-    result = (PI_ERR)dlp_GetROMToken(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_GetROMToken(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -9833,15 +8434,17 @@ static PyObject *_wrap_dlp_AddSyncLogEntry(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj1, (char**)&arg2)) {
         SWIG_arg_fail(2);SWIG_fail;
     }
-    result = (PI_ERR)dlp_AddSyncLogEntry(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_AddSyncLogEntry(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -9878,6 +8481,8 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -9886,6 +8491,8 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj2)) {
             arg3 = makelong(PyString_AS_STRING(obj2));
+        } else if (PyInt_Check(obj2)) {
+            arg3 = PyInt_AsLong(obj2);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -9906,15 +8513,17 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj6, (void **)&arg7, SWIGTYPE_p_unsigned_long, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(7)) SWIG_fail;
-    result = (PI_ERR)dlp_CallApplication(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_CallApplication(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg8) {
             PyObject *o1 = Py_BuildValue("s#", arg8->data, arg8->used);
@@ -9965,6 +8574,8 @@ static PyObject *_wrap_dlp_ReadAppPreference(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -9991,21 +8602,20 @@ static PyObject *_wrap_dlp_ReadAppPreference(PyObject *self, PyObject *args) {
     if (SWIG_arg_fail(7)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj7, (void **)&arg8, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(8)) SWIG_fail;
-    result = (PI_ERR)dlp_ReadAppPreference(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadAppPreference(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+        
+        PyEval_RestoreThread(__save);
+    }
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
-    {
-        if (arg6) {
-            PyObject *o = Py_BuildValue("is#", arg8, arg6, arg7);
-            resultobj = t_output_helper(resultobj, o);
-        }
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
+    
+    if (arg6) resultobj = t_output_helper(resultobj, Py_BuildValue("is#", arg8, arg6, arg7));
+    
     return resultobj;
     fail:
     return NULL;
@@ -10037,6 +8647,8 @@ static PyObject *_wrap_dlp_WriteAppPreference(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -10054,19 +8666,21 @@ static PyObject *_wrap_dlp_WriteAppPreference(PyObject *self, PyObject *args) {
         arg5 = (int)(SWIG_As_int(obj4)); 
         if (SWIG_arg_fail(5)) SWIG_fail;
     }
-    {
-        arg6 = (void *)PyString_AsString(obj5);
-        arg7 = PyString_Size(obj5);
-    }
-    result = (PI_ERR)dlp_WriteAppPreference(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7);
+    
+    arg6 = (void *)PyString_AsString(obj5);
+    arg7 = PyString_Size(obj5);
     
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_WriteAppPreference(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -10084,15 +8698,17 @@ static PyObject *_wrap_dlp_ResetSystem(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ResetSystem(arg1);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ResetSystem(arg1);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -10132,57 +8748,30 @@ static PyObject *_wrap_dlp_ReadDBList_(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadDBList(arg1,arg2,arg3,arg4,arg5);
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadDBList(arg1,arg2,arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
+    }
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
-    {
-        if (arg5) {
-            int j;
-            struct DBInfo info;
-            resultobj = PyList_New((arg5->used / sizeof(struct DBInfo)));
-            for (j=0; j < (arg5->used / sizeof(struct DBInfo)); j++) {
-                memcpy(&info, arg5->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
-                PyObject *o = Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
-                "more", info.more,
-                "flags", info.flags,
-                "miscFlags", info.miscFlags,
-                "type", PyString_FromStringAndSize(printlong(info.type), 4),
-                "creator", PyString_FromStringAndSize(printlong(info.creator), 4),
-                "version", info.version,
-                "modnum", info.modnum,
-                "createDate", info.createDate,
-                "modifyDate", info.modifyDate,
-                "backupDate", info.backupDate,
-                "index", info.index,
-                "name", info.name,
-                
-                "flagResource", !!(info.flags & dlpDBFlagResource),
-                "flagReadOnly", !!(info.flags & dlpDBFlagReadOnly),
-                "flagAppInfoDirty", !!(info.flags & dlpDBFlagAppInfoDirty),
-                "flagBackup", !!(info.flags & dlpDBFlagBackup),
-                "flagLaunchable", !!(info.flags & dlpDBFlagLaunchable),
-                "flagOpen", !!(info.flags & dlpDBFlagOpen),
-                "flagNewer", !!(info.flags & dlpDBFlagNewer),
-                "flagReset", !!(info.flags & dlpDBFlagReset),
-                "flagCopyPrevention", !!(info.flags & dlpDBFlagCopyPrevention),
-                "flagStream", !!(info.flags & dlpDBFlagStream),
-                "flagExcludeFromSync", !!(info.miscFlags & dlpDBMiscFlagExcludeFromSync),
-                
-                "flagSchema", !!(info.flags & dlpDBFlagSchema),
-                "flagSecure", !!(info.flags & dlpDBFlagSecure),
-                "flagExtended", !!(info.flags & dlpDBFlagExtended),
-                "flagFixedUp", !!(info.flags & dlpDBFlagFixedUp));
-                Py_INCREF(o);
-                PyList_SET_ITEM(resultobj, j, o);
-            }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
+    
+    if (arg5) {
+        int j;
+        struct DBInfo info;
+        resultobj = PyList_New((arg5->used / sizeof(struct DBInfo)));
+        for (j=0; j < (arg5->used / sizeof(struct DBInfo)); j++) {
+            memcpy(&info, arg5->data + j * sizeof(struct DBInfo), sizeof(struct DBInfo));
+            PyObject *o = PyObjectFromDBInfo(&info);
+            Py_INCREF(o);
+            PyList_SET_ITEM(resultobj, j, o);
         }
     }
+    
     {
         if (arg5) {
             pi_buffer_free(arg5);
@@ -10213,15 +8802,19 @@ static PyObject *_wrap_dlp_FindDBByName(PyObject *self, PyObject *args) {
     int res4 = 0 ;
     int temp5 ;
     int res5 = 0 ;
+    struct DBInfo temp16 ;
+    struct DBSizeInfo temp26 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
-    PyObject * obj3 = 0 ;
-    PyObject * obj4 = 0 ;
     
     arg4 = &temp4; res4 = SWIG_NEWOBJ;
     arg5 = &temp5; res5 = SWIG_NEWOBJ;
-    if(!PyArg_ParseTuple(args,(char *)"OOOOO:dlp_FindDBByName",&obj0,&obj1,&obj2,&obj3,&obj4)) goto fail;
+    
+    arg6 = &temp16;
+    arg7 = &temp26;
+    
+    if(!PyArg_ParseTuple(args,(char *)"OOO:dlp_FindDBByName",&obj0,&obj1,&obj2)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
@@ -10234,52 +8827,24 @@ static PyObject *_wrap_dlp_FindDBByName(PyObject *self, PyObject *args) {
         SWIG_arg_fail(3);SWIG_fail;
     }
     {
-        static struct DBInfo temp;
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_FindDBByName(arg1,arg2,(char const *)arg3,arg4,arg5,arg6,arg7);
         
-        temp.more = (int) DGETLONG(obj3, "more", 0);
-        temp.type = makelong(DGETSTR(obj3, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj3, "creator", "    "));
-        temp.version = DGETLONG(obj3, "version", 0);
-        temp.modnum = DGETLONG(obj3, "modnum", 0);
-        temp.createDate = DGETLONG(obj3, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj3, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj3, "backupDate", 0);
-        temp.index = DGETLONG(obj3, "index", 0);
-        strncpy(temp.name, DGETSTR(obj3,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj3,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj3,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj3,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj3,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj3,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj3,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj3,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj3,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj3,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj3,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj3,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj3,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj3,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj3,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj3,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg6 = &temp;
+        PyEval_RestoreThread(__save);
     }
-    SWIG_Python_ConvertPtr(obj4, (void **)&arg7, SWIGTYPE_p_DBSizeInfo, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(7)) SWIG_fail;
-    result = (PI_ERR)dlp_FindDBByName(arg1,arg2,(char const *)arg3,arg4,arg5,arg6,arg7);
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res4 == SWIG_NEWOBJ) ?
     SWIG_From_unsigned_SS_long((*arg4)) : SWIG_NewPointerObj((void*)(arg4), SWIGTYPE_p_unsigned_long, 0)));
     resultobj = t_output_helper(resultobj, ((res5 == SWIG_NEWOBJ) ?
     SWIG_From_int((*arg5)) : SWIG_NewPointerObj((void*)(arg5), SWIGTYPE_p_int, 0)));
+    
+    if (arg6) resultobj = t_output_helper(resultobj, PyObjectFromDBInfo(arg6));
+    if (arg7) resultobj = t_output_helper(resultobj, PyObjectFromDBSizeInfo(arg7));
+    
     return resultobj;
     fail:
     return NULL;
@@ -10299,14 +8864,18 @@ static PyObject *_wrap_dlp_FindDBByOpenHandle(PyObject *self, PyObject *args) {
     int res3 = 0 ;
     unsigned long temp4 ;
     int res4 = 0 ;
+    struct DBInfo temp15 ;
+    struct DBSizeInfo temp25 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
-    PyObject * obj2 = 0 ;
-    PyObject * obj3 = 0 ;
     
     arg3 = &temp3; res3 = SWIG_NEWOBJ;
     arg4 = &temp4; res4 = SWIG_NEWOBJ;
-    if(!PyArg_ParseTuple(args,(char *)"OOOO:dlp_FindDBByOpenHandle",&obj0,&obj1,&obj2,&obj3)) goto fail;
+    
+    arg5 = &temp15;
+    arg6 = &temp25;
+    
+    if(!PyArg_ParseTuple(args,(char *)"OO:dlp_FindDBByOpenHandle",&obj0,&obj1)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
@@ -10316,52 +8885,24 @@ static PyObject *_wrap_dlp_FindDBByOpenHandle(PyObject *self, PyObject *args) {
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
     {
-        static struct DBInfo temp;
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_FindDBByOpenHandle(arg1,arg2,arg3,arg4,arg5,arg6);
         
-        temp.more = (int) DGETLONG(obj2, "more", 0);
-        temp.type = makelong(DGETSTR(obj2, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj2, "creator", "    "));
-        temp.version = DGETLONG(obj2, "version", 0);
-        temp.modnum = DGETLONG(obj2, "modnum", 0);
-        temp.createDate = DGETLONG(obj2, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj2, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj2, "backupDate", 0);
-        temp.index = DGETLONG(obj2, "index", 0);
-        strncpy(temp.name, DGETSTR(obj2,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj2,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj2,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj2,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj2,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj2,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj2,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj2,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj2,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj2,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj2,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj2,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj2,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj2,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj2,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj2,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg5 = &temp;
+        PyEval_RestoreThread(__save);
     }
-    SWIG_Python_ConvertPtr(obj3, (void **)&arg6, SWIGTYPE_p_DBSizeInfo, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(6)) SWIG_fail;
-    result = (PI_ERR)dlp_FindDBByOpenHandle(arg1,arg2,arg3,arg4,arg5,arg6);
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res3 == SWIG_NEWOBJ) ?
     SWIG_From_int((*arg3)) : SWIG_NewPointerObj((void*)(arg3), SWIGTYPE_p_int, 0)));
     resultobj = t_output_helper(resultobj, ((res4 == SWIG_NEWOBJ) ?
     SWIG_From_unsigned_SS_long((*arg4)) : SWIG_NewPointerObj((void*)(arg4), SWIGTYPE_p_unsigned_long, 0)));
+    
+    if (arg5) resultobj = t_output_helper(resultobj, PyObjectFromDBInfo(arg5));
+    if (arg6) resultobj = t_output_helper(resultobj, PyObjectFromDBSizeInfo(arg6));
+    
     return resultobj;
     fail:
     return NULL;
@@ -10387,18 +8928,22 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
     int res7 = 0 ;
     int temp8 ;
     int res8 = 0 ;
+    struct DBInfo temp19 ;
+    struct DBSizeInfo temp29 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
     PyObject * obj3 = 0 ;
     PyObject * obj4 = 0 ;
-    PyObject * obj5 = 0 ;
-    PyObject * obj6 = 0 ;
     
     arg6 = &temp6; res6 = SWIG_NEWOBJ;
     arg7 = &temp7; res7 = SWIG_NEWOBJ;
     arg8 = &temp8; res8 = SWIG_NEWOBJ;
-    if(!PyArg_ParseTuple(args,(char *)"OOOOOOO:dlp_FindDBByTypeCreator",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) goto fail;
+    
+    arg9 = &temp19;
+    arg10 = &temp29;
+    
+    if(!PyArg_ParseTuple(args,(char *)"OOOOO:dlp_FindDBByTypeCreator",&obj0,&obj1,&obj2,&obj3,&obj4)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
@@ -10406,6 +8951,8 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -10414,6 +8961,8 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj2)) {
             arg3 = makelong(PyString_AS_STRING(obj2));
+        } else if (PyInt_Check(obj2)) {
+            arg3 = PyInt_AsLong(obj2);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -10428,54 +8977,26 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
         if (SWIG_arg_fail(5)) SWIG_fail;
     }
     {
-        static struct DBInfo temp;
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_FindDBByTypeCreator(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
         
-        temp.more = (int) DGETLONG(obj5, "more", 0);
-        temp.type = makelong(DGETSTR(obj5, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj5, "creator", "    "));
-        temp.version = DGETLONG(obj5, "version", 0);
-        temp.modnum = DGETLONG(obj5, "modnum", 0);
-        temp.createDate = DGETLONG(obj5, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj5, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj5, "backupDate", 0);
-        temp.index = DGETLONG(obj5, "index", 0);
-        strncpy(temp.name, DGETSTR(obj5,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj5,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj5,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj5,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj5,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj5,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj5,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj5,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj5,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj5,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj5,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj5,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj5,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj5,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj5,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj5,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg9 = &temp;
+        PyEval_RestoreThread(__save);
     }
-    SWIG_Python_ConvertPtr(obj6, (void **)&arg10, SWIGTYPE_p_DBSizeInfo, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(10)) SWIG_fail;
-    result = (PI_ERR)dlp_FindDBByTypeCreator(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res6 == SWIG_NEWOBJ) ?
     SWIG_From_int((*arg6)) : SWIG_NewPointerObj((void*)(arg6), SWIGTYPE_p_int, 0)));
     resultobj = t_output_helper(resultobj, ((res7 == SWIG_NEWOBJ) ?
     SWIG_From_unsigned_SS_long((*arg7)) : SWIG_NewPointerObj((void*)(arg7), SWIGTYPE_p_unsigned_long, 0)));
     resultobj = t_output_helper(resultobj, ((res8 == SWIG_NEWOBJ) ?
     SWIG_From_int((*arg8)) : SWIG_NewPointerObj((void*)(arg8), SWIGTYPE_p_int, 0)));
+    
+    if (arg9) resultobj = t_output_helper(resultobj, PyObjectFromDBInfo(arg9));
+    if (arg10) resultobj = t_output_helper(resultobj, PyObjectFromDBSizeInfo(arg10));
+    
     return resultobj;
     fail:
     return NULL;
@@ -10492,15 +9013,18 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
     unsigned long arg6 ;
     struct DBInfo *arg7 = (struct DBInfo *) 0 ;
     PI_ERR result;
+    struct DBInfo temp7 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
     PyObject * obj3 = 0 ;
     PyObject * obj4 = 0 ;
     PyObject * obj5 = 0 ;
-    PyObject * obj6 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOOOOOO:dlp_FindDBInfo",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) goto fail;
+    
+    arg7 = &temp7;
+    
+    if(!PyArg_ParseTuple(args,(char *)"OOOOOO:dlp_FindDBInfo",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
@@ -10519,6 +9043,8 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj4)) {
             arg5 = makelong(PyString_AS_STRING(obj4));
+        } else if (PyInt_Check(obj4)) {
+            arg5 = PyInt_AsLong(obj4);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -10527,52 +9053,27 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj5)) {
             arg6 = makelong(PyString_AS_STRING(obj5));
+        } else if (PyInt_Check(obj5)) {
+            arg6 = PyInt_AsLong(obj5);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
         }
     }
     {
-        static struct DBInfo temp;
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_FindDBInfo(arg1,arg2,arg3,(char const *)arg4,arg5,arg6,arg7);
         
-        temp.more = (int) DGETLONG(obj6, "more", 0);
-        temp.type = makelong(DGETSTR(obj6, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj6, "creator", "    "));
-        temp.version = DGETLONG(obj6, "version", 0);
-        temp.modnum = DGETLONG(obj6, "modnum", 0);
-        temp.createDate = DGETLONG(obj6, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj6, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj6, "backupDate", 0);
-        temp.index = DGETLONG(obj6, "index", 0);
-        strncpy(temp.name, DGETSTR(obj6,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj6,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj6,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj6,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj6,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj6,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj6,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj6,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj6,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj6,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj6,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj6,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj6,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj6,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj6,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj6,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg7 = &temp;
+        PyEval_RestoreThread(__save);
     }
-    result = (PI_ERR)dlp_FindDBInfo(arg1,arg2,arg3,(char const *)arg4,arg5,arg6,arg7);
     
-    {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
-    }
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
+    
+    if (arg7) resultobj = t_output_helper(resultobj, PyObjectFromDBInfo(arg7));
+    
     return resultobj;
     fail:
     return NULL;
@@ -10611,15 +9112,17 @@ static PyObject *_wrap_dlp_OpenDB(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj3, (char**)&arg4)) {
         SWIG_arg_fail(4);SWIG_fail;
     }
-    result = (PI_ERR)dlp_OpenDB(arg1,arg2,arg3,(char const *)arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_OpenDB(arg1,arg2,arg3,(char const *)arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res5 == SWIG_NEWOBJ) ?
     SWIG_From_int((*arg5)) : SWIG_NewPointerObj((void*)(arg5), SWIGTYPE_p_int, 0)));
     return resultobj;
@@ -10645,15 +9148,17 @@ static PyObject *_wrap_dlp_CloseDB(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_CloseDB(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_CloseDB(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -10671,15 +9176,17 @@ static PyObject *_wrap_dlp_CloseDB_All(PyObject *self, PyObject *args) {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_CloseDB_All(arg1);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_CloseDB_All(arg1);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -10708,15 +9215,17 @@ static PyObject *_wrap_dlp_DeleteDB(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) {
         SWIG_arg_fail(3);SWIG_fail;
     }
-    result = (PI_ERR)dlp_DeleteDB(arg1,arg2,(char const *)arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_DeleteDB(arg1,arg2,(char const *)arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -10753,6 +9262,8 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -10761,6 +9272,8 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj2)) {
             arg3 = makelong(PyString_AS_STRING(obj2));
+        } else if (PyInt_Check(obj2)) {
+            arg3 = PyInt_AsLong(obj2);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -10781,15 +9294,17 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj6, (char**)&arg7)) {
         SWIG_arg_fail(7);SWIG_fail;
     }
-    result = (PI_ERR)dlp_CreateDB(arg1,arg2,arg3,arg4,arg5,arg6,(char const *)arg7,arg8);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_CreateDB(arg1,arg2,arg3,arg4,arg5,arg6,(char const *)arg7,arg8);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res8 == SWIG_NEWOBJ) ?
     SWIG_From_int((*arg8)) : SWIG_NewPointerObj((void*)(arg8), SWIGTYPE_p_int, 0)));
     return resultobj;
@@ -10819,15 +9334,17 @@ static PyObject *_wrap_dlp_ReadOpenDBInfo(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadOpenDBInfo(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadOpenDBInfo(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res3 == SWIG_NEWOBJ) ?
     SWIG_From_int((*arg3)) : SWIG_NewPointerObj((void*)(arg3), SWIGTYPE_p_int, 0)));
     return resultobj;
@@ -10896,6 +9413,8 @@ static PyObject *_wrap_dlp_SetDBInfo(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj8)) {
             arg9 = makelong(PyString_AS_STRING(obj8));
+        } else if (PyInt_Check(obj8)) {
+            arg9 = PyInt_AsLong(obj8);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -10904,20 +9423,24 @@ static PyObject *_wrap_dlp_SetDBInfo(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj9)) {
             arg10 = makelong(PyString_AS_STRING(obj9));
+        } else if (PyInt_Check(obj9)) {
+            arg10 = PyInt_AsLong(obj9);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
         }
     }
-    result = (PI_ERR)dlp_SetDBInfo(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_SetDBInfo(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -10947,15 +9470,17 @@ static PyObject *_wrap_dlp_DeleteCategory(PyObject *self, PyObject *args) {
         arg3 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_DeleteCategory(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_DeleteCategory(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -10991,15 +9516,17 @@ static PyObject *_wrap_dlp_MoveCategory(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_MoveCategory(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_MoveCategory(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -11039,15 +9566,17 @@ static PyObject *_wrap_dlp_ReadAppBlock(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadAppBlock(arg1,arg2,arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadAppBlock(arg1,arg2,arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg5) {
             PyObject *o1 = Py_BuildValue("s#", arg5->data, arg5->used);
@@ -11090,19 +9619,21 @@ static PyObject *_wrap_dlp_WriteAppBlock(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    {
-        arg3 = (void *)PyString_AsString(obj2);
-        arg4 = PyString_Size(obj2);
-    }
-    result = (PI_ERR)dlp_WriteAppBlock(arg1,arg2,(void const *)arg3,arg4);
+    
+    arg3 = (void *)PyString_AsString(obj2);
+    arg4 = PyString_Size(obj2);
     
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_WriteAppBlock(arg1,arg2,(void const *)arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -11142,15 +9673,17 @@ static PyObject *_wrap_dlp_ReadSortBlock(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadSortBlock(arg1,arg2,arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadSortBlock(arg1,arg2,arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg5) {
             PyObject *o1 = Py_BuildValue("s#", arg5->data, arg5->used);
@@ -11193,19 +9726,21 @@ static PyObject *_wrap_dlp_WriteSortBlock(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    {
-        arg3 = (void *)PyString_AsString(obj2);
-        arg4 = PyString_Size(obj2);
-    }
-    result = (PI_ERR)dlp_WriteSortBlock(arg1,arg2,(void const *)arg3,arg4);
+    
+    arg3 = (void *)PyString_AsString(obj2);
+    arg4 = PyString_Size(obj2);
     
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_WriteSortBlock(arg1,arg2,(void const *)arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -11229,15 +9764,17 @@ static PyObject *_wrap_dlp_CleanUpDatabase(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_CleanUpDatabase(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_CleanUpDatabase(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -11261,15 +9798,17 @@ static PyObject *_wrap_dlp_ResetSyncFlags(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ResetSyncFlags(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ResetSyncFlags(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -11293,15 +9832,17 @@ static PyObject *_wrap_dlp_ResetDBIndex(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ResetDBIndex(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ResetDBIndex(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -11347,15 +9888,17 @@ static PyObject *_wrap_dlp_ReadRecordById(PyObject *self, PyObject *args) {
         arg3 = (recordid_t)(SWIG_As_unsigned_SS_long(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadRecordById(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadRecordById(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg4) {
             PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
@@ -11423,15 +9966,17 @@ static PyObject *_wrap_dlp_ReadRecordByIndex(PyObject *self, PyObject *args) {
         arg3 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadRecordByIndex(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadRecordByIndex(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg4) {
             PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
@@ -11497,15 +10042,17 @@ static PyObject *_wrap_dlp_ReadNextModifiedRec(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadNextModifiedRec(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadNextModifiedRec(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg3) {
             PyObject *o1 = Py_BuildValue("s#", arg3->data, arg3->used);
@@ -11575,15 +10122,17 @@ static PyObject *_wrap_dlp_ReadNextModifiedRecInCategory(PyObject *self, PyObjec
         arg3 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadNextModifiedRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadNextModifiedRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg4) {
             PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
@@ -11651,15 +10200,17 @@ static PyObject *_wrap_dlp_ReadNextRecInCategory(PyObject *self, PyObject *args)
         arg3 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadNextRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadNextRecInCategory(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg4) {
             PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
@@ -11730,19 +10281,21 @@ static PyObject *_wrap_dlp_WriteRecord(PyObject *self, PyObject *args) {
         arg5 = (int)(SWIG_As_int(obj4)); 
         if (SWIG_arg_fail(5)) SWIG_fail;
     }
-    {
-        arg6 = (void *)PyString_AsString(obj5);
-        arg7 = PyString_Size(obj5);
-    }
-    result = (PI_ERR)dlp_WriteRecord(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
+    
+    arg6 = (void *)PyString_AsString(obj5);
+    arg7 = PyString_Size(obj5);
     
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_WriteRecord(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res8 == SWIG_NEWOBJ) ?
     SWIG_From_unsigned_SS_long((*arg8)) : SWIG_NewPointerObj((void*)(arg8), SWIGTYPE_p_recordid_t, 0)));
     return resultobj;
@@ -11780,15 +10333,17 @@ static PyObject *_wrap_dlp_DeleteRecord(PyObject *self, PyObject *args) {
         arg4 = (recordid_t)(SWIG_As_unsigned_SS_long(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_DeleteRecord(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_DeleteRecord(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -11827,6 +10382,8 @@ static PyObject *_wrap_dlp_ReadResourceByType(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj2)) {
             arg3 = makelong(PyString_AS_STRING(obj2));
+        } else if (PyInt_Check(obj2)) {
+            arg3 = PyInt_AsLong(obj2);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -11836,15 +10393,17 @@ static PyObject *_wrap_dlp_ReadResourceByType(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ReadResourceByType(arg1,arg2,arg3,arg4,arg5,arg6);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadResourceByType(arg1,arg2,arg3,arg4,arg5,arg6);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg5) {
             PyObject *o1 = Py_BuildValue("s#", arg5->data, arg5->used);
@@ -11904,15 +10463,17 @@ static PyObject *_wrap_dlp_ReadResourceByIndex(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj3, (void **)&arg5, SWIGTYPE_p_unsigned_long, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(5)) SWIG_fail;
-    result = (PI_ERR)dlp_ReadResourceByIndex(arg1,arg2,arg3,arg4,arg5,arg6);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ReadResourceByIndex(arg1,arg2,arg3,arg4,arg5,arg6);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg4) {
             PyObject *o1 = Py_BuildValue("s#", arg4->data, arg4->used);
@@ -11969,19 +10530,21 @@ static PyObject *_wrap_dlp_WriteResource(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    {
-        arg5 = (void *)PyString_AsString(obj4);
-        arg6 = PyString_Size(obj4);
-    }
-    result = (PI_ERR)dlp_WriteResource(arg1,arg2,arg3,arg4,(void const *)arg5,arg6);
+    
+    arg5 = (void *)PyString_AsString(obj4);
+    arg6 = PyString_Size(obj4);
     
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_WriteResource(arg1,arg2,arg3,arg4,(void const *)arg5,arg6);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12023,15 +10586,17 @@ static PyObject *_wrap_dlp_DeleteResource(PyObject *self, PyObject *args) {
         arg5 = (int)(SWIG_As_int(obj4)); 
         if (SWIG_arg_fail(5)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_DeleteResource(arg1,arg2,arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_DeleteResource(arg1,arg2,arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12057,15 +10622,17 @@ static PyObject *_wrap_dlp_ExpSlotEnumerate(PyObject *self, PyObject *args) {
     if (SWIG_arg_fail(2)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    result = (PI_ERR)dlp_ExpSlotEnumerate(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ExpSlotEnumerate(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12089,15 +10656,17 @@ static PyObject *_wrap_dlp_ExpCardPresent(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_ExpCardPresent(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ExpCardPresent(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12133,15 +10702,17 @@ static PyObject *_wrap_dlp_ExpCardInfo(PyObject *self, PyObject *args) {
     if (SWIG_arg_fail(4)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj4, (void **)&arg5, SWIGTYPE_p_p_char, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(5)) SWIG_fail;
-    result = (PI_ERR)dlp_ExpCardInfo(arg1,arg2,arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ExpCardInfo(arg1,arg2,arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12169,15 +10740,17 @@ static PyObject *_wrap_dlp_ExpSlotMediaType(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_unsigned_long, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    result = (PI_ERR)dlp_ExpSlotMediaType(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_ExpSlotMediaType(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12203,15 +10776,17 @@ static PyObject *_wrap_dlp_VFSVolumeEnumerate(PyObject *self, PyObject *args) {
     if (SWIG_arg_fail(2)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSVolumeEnumerate(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSVolumeEnumerate(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12239,15 +10814,17 @@ static PyObject *_wrap_dlp_VFSVolumeInfo(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_VFSInfo, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSVolumeInfo(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSVolumeInfo(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12280,15 +10857,17 @@ static PyObject *_wrap_dlp_VFSVolumeGetLabel(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj3, (char**)&arg4)) {
         SWIG_arg_fail(4);SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSVolumeGetLabel(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSVolumeGetLabel(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12317,15 +10896,17 @@ static PyObject *_wrap_dlp_VFSVolumeSetLabel(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) {
         SWIG_arg_fail(3);SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSVolumeSetLabel(arg1,arg2,(char const *)arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSVolumeSetLabel(arg1,arg2,(char const *)arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12357,15 +10938,17 @@ static PyObject *_wrap_dlp_VFSVolumeSize(PyObject *self, PyObject *args) {
         arg2 = (int)(SWIG_As_int(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSVolumeSize(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSVolumeSize(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res3 == SWIG_NEWOBJ) ?
     SWIG_From_long((*arg3)) : SWIG_NewPointerObj((void*)(arg3), SWIGTYPE_p_long, 0)));
     resultobj = t_output_helper(resultobj, ((res4 == SWIG_NEWOBJ) ?
@@ -12403,15 +10986,17 @@ static PyObject *_wrap_dlp_VFSVolumeFormat(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj3, (void **)&arg4, SWIGTYPE_p_VFSSlotMountParam, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(4)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSVolumeFormat(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSVolumeFormat(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12449,15 +11034,17 @@ static PyObject *_wrap_dlp_VFSGetDefaultDir(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj4, (void **)&arg5, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(5)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSGetDefaultDir(arg1,arg2,(char const *)arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSGetDefaultDir(arg1,arg2,(char const *)arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12493,15 +11080,17 @@ static PyObject *_wrap_dlp_VFSDirEntryEnumerate(PyObject *self, PyObject *args) 
     if (SWIG_arg_fail(4)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj4, (void **)&arg5, SWIGTYPE_p_VFSDirInfo, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(5)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSDirEntryEnumerate(arg1,arg2,arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSDirEntryEnumerate(arg1,arg2,arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12530,15 +11119,17 @@ static PyObject *_wrap_dlp_VFSDirCreate(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) {
         SWIG_arg_fail(3);SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSDirCreate(arg1,arg2,(char const *)arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSDirCreate(arg1,arg2,(char const *)arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12575,15 +11166,17 @@ static PyObject *_wrap_dlp_VFSImportDatabaseFromFile(PyObject *self, PyObject *a
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) {
         SWIG_arg_fail(3);SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSImportDatabaseFromFile(arg1,arg2,(char const *)arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSImportDatabaseFromFile(arg1,arg2,(char const *)arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     resultobj = t_output_helper(resultobj, ((res4 == SWIG_NEWOBJ) ?
     SWIG_From_int((*arg4)) : SWIG_NewPointerObj((void*)(arg4), SWIGTYPE_p_int, 0)));
     resultobj = t_output_helper(resultobj, ((res5 == SWIG_NEWOBJ) ?
@@ -12628,15 +11221,17 @@ static PyObject *_wrap_dlp_VFSExportDatabaseToFile(PyObject *self, PyObject *arg
         arg5 = (unsigned int)(SWIG_As_unsigned_SS_int(obj4)); 
         if (SWIG_arg_fail(5)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSExportDatabaseToFile(arg1,arg2,(char const *)arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSExportDatabaseToFile(arg1,arg2,(char const *)arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12665,15 +11260,17 @@ static PyObject *_wrap_dlp_VFSFileCreate(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) {
         SWIG_arg_fail(3);SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileCreate(arg1,arg2,(char const *)arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileCreate(arg1,arg2,(char const *)arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12712,15 +11309,17 @@ static PyObject *_wrap_dlp_VFSFileOpen(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj4, (void **)&arg5, SWIGTYPE_p_unsigned_long, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(5)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSFileOpen(arg1,arg2,(char const *)arg3,arg4,arg5);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileOpen(arg1,arg2,(char const *)arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12744,15 +11343,17 @@ static PyObject *_wrap_dlp_VFSFileClose(PyObject *self, PyObject *args) {
         arg2 = (FileRef)(SWIG_As_unsigned_SS_long(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileClose(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileClose(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12779,19 +11380,21 @@ static PyObject *_wrap_dlp_VFSFileWrite(PyObject *self, PyObject *args) {
         arg2 = (FileRef)(SWIG_As_unsigned_SS_long(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    {
-        arg3 = (void *)PyString_AsString(obj2);
-        arg4 = PyString_Size(obj2);
-    }
-    result = (PI_ERR)dlp_VFSFileWrite(arg1,arg2,(void const *)arg3,arg4);
+    
+    arg3 = (void *)PyString_AsString(obj2);
+    arg4 = PyString_Size(obj2);
     
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileWrite(arg1,arg2,(void const *)arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12825,15 +11428,17 @@ static PyObject *_wrap_dlp_VFSFileRead(PyObject *self, PyObject *args) {
         arg4 = (size_t)(SWIG_As_unsigned_SS_long(obj2)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileRead(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileRead(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     {
         if (arg3) {
             PyObject *o1 = Py_BuildValue("s#", arg3->data, arg3->used);
@@ -12878,15 +11483,17 @@ static PyObject *_wrap_dlp_VFSFileDelete(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj2, (char**)&arg3)) {
         SWIG_arg_fail(3);SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileDelete(arg1,arg2,(char const *)arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileDelete(arg1,arg2,(char const *)arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12920,15 +11527,17 @@ static PyObject *_wrap_dlp_VFSFileRename(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj3, (char**)&arg4)) {
         SWIG_arg_fail(4);SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileRename(arg1,arg2,(char const *)arg3,(char const *)arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileRename(arg1,arg2,(char const *)arg3,(char const *)arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12952,15 +11561,17 @@ static PyObject *_wrap_dlp_VFSFileEOF(PyObject *self, PyObject *args) {
         arg2 = (FileRef)(SWIG_As_unsigned_SS_long(obj1)); 
         if (SWIG_arg_fail(2)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileEOF(arg1,arg2);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileEOF(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -12988,15 +11599,17 @@ static PyObject *_wrap_dlp_VFSFileTell(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSFileTell(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileTell(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -13024,15 +11637,17 @@ static PyObject *_wrap_dlp_VFSFileGetAttributes(PyObject *self, PyObject *args) 
     }
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_unsigned_long, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSFileGetAttributes(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileGetAttributes(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -13062,15 +11677,17 @@ static PyObject *_wrap_dlp_VFSFileSetAttributes(PyObject *self, PyObject *args) 
         arg3 = (unsigned long)(SWIG_As_unsigned_SS_long(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileSetAttributes(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileSetAttributes(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -13104,15 +11721,17 @@ static PyObject *_wrap_dlp_VFSFileGetDate(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj3, (void **)&arg4, SWIGTYPE_p_time_t, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(4)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSFileGetDate(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileGetDate(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -13148,15 +11767,17 @@ static PyObject *_wrap_dlp_VFSFileSetDate(PyObject *self, PyObject *args) {
         arg4 = (time_t)(SWIG_As_long(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileSetDate(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileSetDate(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -13192,15 +11813,17 @@ static PyObject *_wrap_dlp_VFSFileSeek(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileSeek(arg1,arg2,arg3,arg4);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileSeek(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -13230,15 +11853,17 @@ static PyObject *_wrap_dlp_VFSFileResize(PyObject *self, PyObject *args) {
         arg3 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (PI_ERR)dlp_VFSFileResize(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileResize(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -13266,15 +11891,17 @@ static PyObject *_wrap_dlp_VFSFileSize(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    result = (PI_ERR)dlp_VFSFileSize(arg1,arg2,arg3);
-    
     {
-        if (result < 0) {
-            return pythonWrapper_handlePiErr(arg1, result);
-        }
-        resultobj = Py_None;
-        Py_INCREF(Py_None);
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (PI_ERR)dlp_VFSFileSize(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
     }
+    
+    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    resultobj = Py_None;
+    Py_INCREF(Py_None);
+    
     return resultobj;
     fail:
     return NULL;
@@ -13466,6 +12093,8 @@ static PyObject *_wrap_pi_file_entry_t_type_set(PyObject *self, PyObject *args) 
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -14315,38 +12944,8 @@ static PyObject *_wrap_pi_file_t_info_set(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_t_info_set",&obj0,&obj1)) goto fail;
     SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_pi_file, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(1)) SWIG_fail;
-    {
-        static struct DBInfo temp;
-        
-        temp.more = (int) DGETLONG(obj1, "more", 0);
-        temp.type = makelong(DGETSTR(obj1, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj1, "creator", "    "));
-        temp.version = DGETLONG(obj1, "version", 0);
-        temp.modnum = DGETLONG(obj1, "modnum", 0);
-        temp.createDate = DGETLONG(obj1, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj1, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj1, "backupDate", 0);
-        temp.index = DGETLONG(obj1, "index", 0);
-        strncpy(temp.name, DGETSTR(obj1,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj1,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj1,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj1,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj1,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj1,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj1,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj1,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj1,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj1,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj1,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg2 = &temp;
-    }
+    SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(2)) SWIG_fail;
     if (arg1) (arg1)->info = *arg2;
     
     Py_INCREF(Py_None); resultobj = Py_None;
@@ -15006,8 +13605,39 @@ static PyObject *_wrap_pi_file_open(PyObject *self, PyObject *args) {
     if (!SWIG_AsCharPtr(obj0, (char**)&arg1)) {
         SWIG_arg_fail(1);SWIG_fail;
     }
-    result = (pi_file_t *)pi_file_open((char const *)arg1);
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (pi_file_t *)pi_file_open((char const *)arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
+    resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_pi_file, 0);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_pi_file_create(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    char *arg1 = (char *) 0 ;
+    struct DBInfo *arg2 = (struct DBInfo *) 0 ;
+    pi_file_t *result;
+    PyObject * obj0 = 0 ;
+    PyObject * obj1 = 0 ;
     
+    if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_create",&obj0,&obj1)) goto fail;
+    if (!SWIG_AsCharPtr(obj0, (char**)&arg1)) {
+        SWIG_arg_fail(1);SWIG_fail;
+    }
+    SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(2)) SWIG_fail;
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (pi_file_t *)pi_file_create((char const *)arg1,(struct DBInfo const *)arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_pi_file, 0);
     return resultobj;
     fail:
@@ -15024,8 +13654,12 @@ static PyObject *_wrap_pi_file_close(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"O:pi_file_close",&obj0)) goto fail;
     SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_pi_file, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(1)) SWIG_fail;
-    result = (int)pi_file_close(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_close(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15039,47 +13673,25 @@ static PyObject *_wrap_pi_file_get_info(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     pi_file_t *arg1 = (pi_file_t *) 0 ;
     struct DBInfo *arg2 = (struct DBInfo *) 0 ;
+    struct DBInfo temp2 ;
     PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_get_info",&obj0,&obj1)) goto fail;
+    
+    arg2 = &temp2;
+    
+    if(!PyArg_ParseTuple(args,(char *)"O:pi_file_get_info",&obj0)) goto fail;
     SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_pi_file, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(1)) SWIG_fail;
     {
-        static struct DBInfo temp;
+        PyThreadState *__save = PyEval_SaveThread();
+        pi_file_get_info(arg1,arg2);
         
-        temp.more = (int) DGETLONG(obj1, "more", 0);
-        temp.type = makelong(DGETSTR(obj1, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj1, "creator", "    "));
-        temp.version = DGETLONG(obj1, "version", 0);
-        temp.modnum = DGETLONG(obj1, "modnum", 0);
-        temp.createDate = DGETLONG(obj1, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj1, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj1, "backupDate", 0);
-        temp.index = DGETLONG(obj1, "index", 0);
-        strncpy(temp.name, DGETSTR(obj1,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj1,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj1,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj1,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj1,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj1,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj1,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj1,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj1,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj1,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj1,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg2 = &temp;
+        PyEval_RestoreThread(__save);
     }
-    pi_file_get_info(arg1,arg2);
-    
     Py_INCREF(Py_None); resultobj = Py_None;
+    
+    if (arg2) resultobj = t_output_helper(resultobj, PyObjectFromDBInfo(arg2));
+    
     return resultobj;
     fail:
     return NULL;
@@ -15102,8 +13714,12 @@ static PyObject *_wrap_pi_file_get_app_info(PyObject *self, PyObject *args) {
     if (SWIG_arg_fail(2)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_size_t, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    pi_file_get_app_info(arg1,arg2,arg3);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        pi_file_get_app_info(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
@@ -15127,8 +13743,12 @@ static PyObject *_wrap_pi_file_get_sort_info(PyObject *self, PyObject *args) {
     if (SWIG_arg_fail(2)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_size_t, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(3)) SWIG_fail;
-    pi_file_get_sort_info(arg1,arg2,arg3);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        pi_file_get_sort_info(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
@@ -15167,8 +13787,12 @@ static PyObject *_wrap_pi_file_read_resource(PyObject *self, PyObject *args) {
     if (SWIG_arg_fail(5)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj5, (void **)&arg6, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(6)) SWIG_fail;
-    result = (int)pi_file_read_resource(arg1,arg2,arg3,arg4,arg5,arg6);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_read_resource(arg1,arg2,arg3,arg4,arg5,arg6);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15200,6 +13824,8 @@ static PyObject *_wrap_pi_file_read_resource_by_type_id(PyObject *self, PyObject
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -15215,8 +13841,12 @@ static PyObject *_wrap_pi_file_read_resource_by_type_id(PyObject *self, PyObject
     if (SWIG_arg_fail(5)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj5, (void **)&arg6, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(6)) SWIG_fail;
-    result = (int)pi_file_read_resource_by_type_id(arg1,arg2,arg3,arg4,arg5,arg6);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_read_resource_by_type_id(arg1,arg2,arg3,arg4,arg5,arg6);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15242,6 +13872,8 @@ static PyObject *_wrap_pi_file_type_id_used(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj1)) {
             arg2 = makelong(PyString_AS_STRING(obj1));
+        } else if (PyInt_Check(obj1)) {
+            arg2 = PyInt_AsLong(obj1);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -15251,8 +13883,42 @@ static PyObject *_wrap_pi_file_type_id_used(PyObject *self, PyObject *args) {
         arg3 = (int)(SWIG_As_int(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (int)pi_file_type_id_used(arg1,arg2,arg3);
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_type_id_used(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
+    {
+        resultobj = SWIG_From_int((int)(result)); 
+    }
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_pi_file_id_used(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    pi_file_t *arg1 = (pi_file_t *) 0 ;
+    pi_uid_t arg2 ;
+    int result;
+    PyObject * obj0 = 0 ;
+    PyObject * obj1 = 0 ;
     
+    if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_id_used",&obj0,&obj1)) goto fail;
+    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_pi_file, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(1)) SWIG_fail;
+    {
+        arg2 = (pi_uid_t)(SWIG_As_unsigned_SS_long(obj1)); 
+        if (SWIG_arg_fail(2)) SWIG_fail;
+    }
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_id_used(arg1,arg2);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15297,32 +13963,15 @@ static PyObject *_wrap_pi_file_read_record(PyObject *self, PyObject *args) {
     if (SWIG_arg_fail(6)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj6, (void **)&arg7, SWIGTYPE_p_unsigned_long, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(7)) SWIG_fail;
-    result = (int)pi_file_read_record(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_read_record(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_pi_file_get_entries(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    pi_file_t *arg1 = (pi_file_t *) 0 ;
-    int *arg2 = (int *) 0 ;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_get_entries",&obj0,&obj1)) goto fail;
-    SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_pi_file, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(1)) SWIG_fail;
-    SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(2)) SWIG_fail;
-    pi_file_get_entries(arg1,arg2);
-    
-    Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
     return NULL;
@@ -15364,8 +14013,12 @@ static PyObject *_wrap_pi_file_read_record_by_id(PyObject *self, PyObject *args)
     if (SWIG_arg_fail(6)) SWIG_fail;
     SWIG_Python_ConvertPtr(obj6, (void **)&arg7, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(7)) SWIG_fail;
-    result = (int)pi_file_read_record_by_id(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_read_record_by_id(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15375,79 +14028,25 @@ static PyObject *_wrap_pi_file_read_record_by_id(PyObject *self, PyObject *args)
 }
 
 
-static PyObject *_wrap_pi_file_id_used(PyObject *self, PyObject *args) {
+static PyObject *_wrap_pi_file_get_entries(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     pi_file_t *arg1 = (pi_file_t *) 0 ;
-    pi_uid_t arg2 ;
-    int result;
+    int *arg2 = (int *) 0 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_id_used",&obj0,&obj1)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_get_entries",&obj0,&obj1)) goto fail;
     SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_pi_file, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(1)) SWIG_fail;
+    SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(2)) SWIG_fail;
     {
-        arg2 = (pi_uid_t)(SWIG_As_unsigned_SS_long(obj1)); 
-        if (SWIG_arg_fail(2)) SWIG_fail;
-    }
-    result = (int)pi_file_id_used(arg1,arg2);
-    
-    {
-        resultobj = SWIG_From_int((int)(result)); 
-    }
-    return resultobj;
-    fail:
-    return NULL;
-}
-
-
-static PyObject *_wrap_pi_file_create(PyObject *self, PyObject *args) {
-    PyObject *resultobj;
-    char *arg1 = (char *) 0 ;
-    struct DBInfo *arg2 = (struct DBInfo *) 0 ;
-    pi_file_t *result;
-    PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    
-    if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_create",&obj0,&obj1)) goto fail;
-    if (!SWIG_AsCharPtr(obj0, (char**)&arg1)) {
-        SWIG_arg_fail(1);SWIG_fail;
-    }
-    {
-        static struct DBInfo temp;
+        PyThreadState *__save = PyEval_SaveThread();
+        pi_file_get_entries(arg1,arg2);
         
-        temp.more = (int) DGETLONG(obj1, "more", 0);
-        temp.type = makelong(DGETSTR(obj1, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj1, "creator", "    "));
-        temp.version = DGETLONG(obj1, "version", 0);
-        temp.modnum = DGETLONG(obj1, "modnum", 0);
-        temp.createDate = DGETLONG(obj1, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj1, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj1, "backupDate", 0);
-        temp.index = DGETLONG(obj1, "index", 0);
-        strncpy(temp.name, DGETSTR(obj1,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj1,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj1,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj1,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj1,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj1,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj1,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj1,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj1,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj1,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj1,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg2 = &temp;
+        PyEval_RestoreThread(__save);
     }
-    result = (pi_file_t *)pi_file_create((char const *)arg1,(struct DBInfo const *)arg2);
-    
-    resultobj = SWIG_NewPointerObj((void*)(result), SWIGTYPE_p_pi_file, 0);
+    Py_INCREF(Py_None); resultobj = Py_None;
     return resultobj;
     fail:
     return NULL;
@@ -15465,40 +14064,14 @@ static PyObject *_wrap_pi_file_set_info(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args,(char *)"OO:pi_file_set_info",&obj0,&obj1)) goto fail;
     SWIG_Python_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_pi_file, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(1)) SWIG_fail;
+    SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_DBInfo, SWIG_POINTER_EXCEPTION | 0);
+    if (SWIG_arg_fail(2)) SWIG_fail;
     {
-        static struct DBInfo temp;
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_set_info(arg1,(struct DBInfo const *)arg2);
         
-        temp.more = (int) DGETLONG(obj1, "more", 0);
-        temp.type = makelong(DGETSTR(obj1, "type", "    "));
-        temp.creator = makelong(DGETSTR(obj1, "creator", "    "));
-        temp.version = DGETLONG(obj1, "version", 0);
-        temp.modnum = DGETLONG(obj1, "modnum", 0);
-        temp.createDate = DGETLONG(obj1, "createDate", 0);
-        temp.modifyDate = DGETLONG(obj1, "modifyDate", 0);
-        temp.backupDate = DGETLONG(obj1, "backupDate", 0);
-        temp.index = DGETLONG(obj1, "index", 0);
-        strncpy(temp.name, DGETSTR(obj1,"name",""), 34);
-        temp.flags = 0;
-        if (DGETLONG(obj1,"flagResource",0)) temp.flags |= dlpDBFlagResource;
-        if (DGETLONG(obj1,"flagReadOnly",0)) temp.flags |= dlpDBFlagReadOnly;
-        if (DGETLONG(obj1,"flagAppInfoDirty",0)) temp.flags |= dlpDBFlagAppInfoDirty;
-        if (DGETLONG(obj1,"flagBackup",0)) temp.flags |= dlpDBFlagBackup;
-        if (DGETLONG(obj1,"flagLaunchable",0)) temp.flags |= dlpDBFlagLaunchable;
-        if (DGETLONG(obj1,"flagOpen",0)) temp.flags |= dlpDBFlagOpen;
-        if (DGETLONG(obj1,"flagNewer",0)) temp.flags |= dlpDBFlagNewer;
-        if (DGETLONG(obj1,"flagReset",0)) temp.flags |= dlpDBFlagReset;
-        if (DGETLONG(obj1,"flagCopyPrevention",0)) temp.flags |= dlpDBFlagCopyPrevention;
-        if (DGETLONG(obj1,"flagStream",0)) temp.flags |= dlpDBFlagStream;
-        if (DGETLONG(obj1,"flagSchema",0)) temp.flags |= dlpDBFlagSchema;
-        if (DGETLONG(obj1,"flagSecure",0)) temp.flags |= dlpDBFlagSecure;
-        if (DGETLONG(obj1,"flagExtended",0)) temp.flags |= dlpDBFlagExtended;
-        if (DGETLONG(obj1,"flagFixedUp",0)) temp.flags |= dlpDBFlagFixedUp;
-        temp.miscFlags = 0;
-        if (DGETLONG(obj1,"flagExcludeFromSync",0)) temp.miscFlags |= dlpDBMiscFlagExcludeFromSync;
-        arg2 = &temp;
+        PyEval_RestoreThread(__save);
     }
-    result = (int)pi_file_set_info(arg1,(struct DBInfo const *)arg2);
-    
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15530,8 +14103,12 @@ static PyObject *_wrap_pi_file_set_app_info(PyObject *self, PyObject *args) {
         arg3 = (size_t)(SWIG_As_unsigned_SS_long(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (int)pi_file_set_app_info(arg1,arg2,arg3);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_set_app_info(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15563,8 +14140,12 @@ static PyObject *_wrap_pi_file_set_sort_info(PyObject *self, PyObject *args) {
         arg3 = (size_t)(SWIG_As_unsigned_SS_long(obj2)); 
         if (SWIG_arg_fail(3)) SWIG_fail;
     }
-    result = (int)pi_file_set_sort_info(arg1,arg2,arg3);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_set_sort_info(arg1,arg2,arg3);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15603,6 +14184,8 @@ static PyObject *_wrap_pi_file_append_resource(PyObject *self, PyObject *args) {
     {
         if (PyString_Check(obj3)) {
             arg4 = makelong(PyString_AS_STRING(obj3));
+        } else if (PyInt_Check(obj3)) {
+            arg4 = PyInt_AsLong(obj3);
         } else {
             PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
             return NULL;
@@ -15612,8 +14195,12 @@ static PyObject *_wrap_pi_file_append_resource(PyObject *self, PyObject *args) {
         arg5 = (int)(SWIG_As_int(obj4)); 
         if (SWIG_arg_fail(5)) SWIG_fail;
     }
-    result = (int)pi_file_append_resource(arg1,arg2,arg3,arg4,arg5);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_append_resource(arg1,arg2,arg3,arg4,arg5);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15663,8 +14250,12 @@ static PyObject *_wrap_pi_file_append_record(PyObject *self, PyObject *args) {
         arg6 = (pi_uid_t)(SWIG_As_unsigned_SS_long(obj5)); 
         if (SWIG_arg_fail(6)) SWIG_fail;
     }
-    result = (int)pi_file_append_record(arg1,arg2,arg3,arg4,arg5,arg6);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_append_record(arg1,arg2,arg3,arg4,arg5,arg6);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15699,8 +14290,12 @@ static PyObject *_wrap_pi_file_retrieve(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj3, (void **)&arg4, SWIGTYPE_p_f_int_p_pi_progress_t__int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(4)) SWIG_fail;
-    result = (int)pi_file_retrieve(arg1,arg2,arg3,arg4);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_retrieve(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15735,8 +14330,12 @@ static PyObject *_wrap_pi_file_install(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj3, (void **)&arg4, SWIGTYPE_p_f_int_p_pi_progress_t__int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(4)) SWIG_fail;
-    result = (int)pi_file_install(arg1,arg2,arg3,arg4);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_install(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15771,8 +14370,12 @@ static PyObject *_wrap_pi_file_merge(PyObject *self, PyObject *args) {
     }
     SWIG_Python_ConvertPtr(obj3, (void **)&arg4, SWIGTYPE_p_f_int_p_pi_progress_t__int, SWIG_POINTER_EXCEPTION | 0);
     if (SWIG_arg_fail(4)) SWIG_fail;
-    result = (int)pi_file_merge(arg1,arg2,arg3,arg4);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (int)pi_file_merge(arg1,arg2,arg3,arg4);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_int((int)(result)); 
     }
@@ -15793,8 +14396,12 @@ static PyObject *_wrap_unix_time_to_pilot_time(PyObject *self, PyObject *args) {
         arg1 = (time_t)(SWIG_As_long(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = (unsigned long)unix_time_to_pilot_time(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = (unsigned long)unix_time_to_pilot_time(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_unsigned_SS_long((unsigned long)(result)); 
     }
@@ -15815,8 +14422,12 @@ static PyObject *_wrap_pilot_time_to_unix_time(PyObject *self, PyObject *args) {
         arg1 = (unsigned long)(SWIG_As_unsigned_SS_long(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    result = pilot_time_to_unix_time(arg1);
-    
+    {
+        PyThreadState *__save = PyEval_SaveThread();
+        result = pilot_time_to_unix_time(arg1);
+        
+        PyEval_RestoreThread(__save);
+    }
     {
         resultobj = SWIG_From_long((long)(result)); 
     }
@@ -16071,35 +14682,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_NetSyncInfo", _wrap_new_NetSyncInfo, METH_VARARGS, NULL},
 	 { (char *)"delete_NetSyncInfo", _wrap_delete_NetSyncInfo, METH_VARARGS, NULL},
 	 { (char *)"NetSyncInfo_swigregister", NetSyncInfo_swigregister, METH_VARARGS, NULL},
-	 { (char *)"dlpArg_id__set", _wrap_dlpArg_id__set, METH_VARARGS, NULL},
-	 { (char *)"dlpArg_id__get", _wrap_dlpArg_id__get, METH_VARARGS, NULL},
-	 { (char *)"dlpArg_len_set", _wrap_dlpArg_len_set, METH_VARARGS, NULL},
-	 { (char *)"dlpArg_len_get", _wrap_dlpArg_len_get, METH_VARARGS, NULL},
-	 { (char *)"dlpArg_data_set", _wrap_dlpArg_data_set, METH_VARARGS, NULL},
-	 { (char *)"dlpArg_data_get", _wrap_dlpArg_data_get, METH_VARARGS, NULL},
-	 { (char *)"new_dlpArg", _wrap_new_dlpArg, METH_VARARGS, NULL},
-	 { (char *)"delete_dlpArg", _wrap_delete_dlpArg, METH_VARARGS, NULL},
-	 { (char *)"dlpArg_swigregister", dlpArg_swigregister, METH_VARARGS, NULL},
-	 { (char *)"dlpRequest_cmd_set", _wrap_dlpRequest_cmd_set, METH_VARARGS, NULL},
-	 { (char *)"dlpRequest_cmd_get", _wrap_dlpRequest_cmd_get, METH_VARARGS, NULL},
-	 { (char *)"dlpRequest_argc_set", _wrap_dlpRequest_argc_set, METH_VARARGS, NULL},
-	 { (char *)"dlpRequest_argc_get", _wrap_dlpRequest_argc_get, METH_VARARGS, NULL},
-	 { (char *)"dlpRequest_argv_set", _wrap_dlpRequest_argv_set, METH_VARARGS, NULL},
-	 { (char *)"dlpRequest_argv_get", _wrap_dlpRequest_argv_get, METH_VARARGS, NULL},
-	 { (char *)"new_dlpRequest", _wrap_new_dlpRequest, METH_VARARGS, NULL},
-	 { (char *)"delete_dlpRequest", _wrap_delete_dlpRequest, METH_VARARGS, NULL},
-	 { (char *)"dlpRequest_swigregister", dlpRequest_swigregister, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_cmd_set", _wrap_dlpResponse_cmd_set, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_cmd_get", _wrap_dlpResponse_cmd_get, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_err_set", _wrap_dlpResponse_err_set, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_err_get", _wrap_dlpResponse_err_get, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_argc_set", _wrap_dlpResponse_argc_set, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_argc_get", _wrap_dlpResponse_argc_get, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_argv_set", _wrap_dlpResponse_argv_set, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_argv_get", _wrap_dlpResponse_argv_get, METH_VARARGS, NULL},
-	 { (char *)"new_dlpResponse", _wrap_new_dlpResponse, METH_VARARGS, NULL},
-	 { (char *)"delete_dlpResponse", _wrap_delete_dlpResponse, METH_VARARGS, NULL},
-	 { (char *)"dlpResponse_swigregister", dlpResponse_swigregister, METH_VARARGS, NULL},
 	 { (char *)"dlp_set_protocol_version", _wrap_dlp_set_protocol_version, METH_VARARGS, NULL},
 	 { (char *)"dlp_ptohdate", _wrap_dlp_ptohdate, METH_VARARGS, NULL},
 	 { (char *)"dlp_htopdate", _wrap_dlp_htopdate, METH_VARARGS, NULL},
@@ -16273,6 +14855,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"delete_pi_progress_t_data_db", _wrap_delete_pi_progress_t_data_db, METH_VARARGS, NULL},
 	 { (char *)"pi_progress_t_data_db_swigregister", pi_progress_t_data_db_swigregister, METH_VARARGS, NULL},
 	 { (char *)"pi_file_open", _wrap_pi_file_open, METH_VARARGS, NULL},
+	 { (char *)"pi_file_create", _wrap_pi_file_create, METH_VARARGS, NULL},
 	 { (char *)"pi_file_close", _wrap_pi_file_close, METH_VARARGS, NULL},
 	 { (char *)"pi_file_get_info", _wrap_pi_file_get_info, METH_VARARGS, NULL},
 	 { (char *)"pi_file_get_app_info", _wrap_pi_file_get_app_info, METH_VARARGS, NULL},
@@ -16280,11 +14863,10 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"pi_file_read_resource", _wrap_pi_file_read_resource, METH_VARARGS, NULL},
 	 { (char *)"pi_file_read_resource_by_type_id", _wrap_pi_file_read_resource_by_type_id, METH_VARARGS, NULL},
 	 { (char *)"pi_file_type_id_used", _wrap_pi_file_type_id_used, METH_VARARGS, NULL},
-	 { (char *)"pi_file_read_record", _wrap_pi_file_read_record, METH_VARARGS, NULL},
-	 { (char *)"pi_file_get_entries", _wrap_pi_file_get_entries, METH_VARARGS, NULL},
-	 { (char *)"pi_file_read_record_by_id", _wrap_pi_file_read_record_by_id, METH_VARARGS, NULL},
 	 { (char *)"pi_file_id_used", _wrap_pi_file_id_used, METH_VARARGS, NULL},
-	 { (char *)"pi_file_create", _wrap_pi_file_create, METH_VARARGS, NULL},
+	 { (char *)"pi_file_read_record", _wrap_pi_file_read_record, METH_VARARGS, NULL},
+	 { (char *)"pi_file_read_record_by_id", _wrap_pi_file_read_record_by_id, METH_VARARGS, NULL},
+	 { (char *)"pi_file_get_entries", _wrap_pi_file_get_entries, METH_VARARGS, NULL},
 	 { (char *)"pi_file_set_info", _wrap_pi_file_set_info, METH_VARARGS, NULL},
 	 { (char *)"pi_file_set_app_info", _wrap_pi_file_set_app_info, METH_VARARGS, NULL},
 	 { (char *)"pi_file_set_sort_info", _wrap_pi_file_set_sort_info, METH_VARARGS, NULL},
@@ -16310,25 +14892,21 @@ static swig_type_info _swigt__p_pi_file_entry[] = {{"_p_pi_file_entry", 0, "stru
 static swig_type_info _swigt__p_VFSInfo[] = {{"_p_VFSInfo", 0, "struct VFSInfo *", 0, 0, 0, 0},{"_p_VFSInfo", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_progress_t_data[] = {{"_p_pi_progress_t_data", 0, "pi_progress_t_data *", 0, 0, 0, 0},{"_p_pi_progress_t_data", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_socket_list[] = {{"_p_pi_socket_list", 0, "struct pi_socket_list *|pi_socket_list_t *", 0, 0, 0, 0},{"_p_pi_socket_list", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
-static swig_type_info _swigt__p_DBInfo[] = {{"_p_DBInfo", 0, "struct DBInfo *", 0, 0, 0, 0},{"_p_DBInfo", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_void[] = {{"_p_void", 0, "void *", 0, 0, 0, 0},{"_p_void", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
+static swig_type_info _swigt__p_DBInfo[] = {{"_p_DBInfo", 0, "struct DBInfo *", 0, 0, 0, 0},{"_p_DBInfo", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_p_void[] = {{"_p_p_void", 0, "void **", 0, 0, 0, 0},{"_p_p_void", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
+static swig_type_info _swigt__p_pi_progress_t[] = {{"_p_pi_progress_t", 0, "pi_progress_t *", 0, 0, 0, 0},{"_p_pi_progress_t", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__size_t[] = {{"_size_t", 0, "size_t", 0, 0, 0, 0},{"_size_t", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_size_t[] = {{"_p_size_t", 0, "size_t *", 0, 0, 0, 0},{"_p_size_t", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_ssize_t[] = {{"_p_ssize_t", 0, "ssize_t *", 0, 0, 0, 0},{"_p_ssize_t", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
-static swig_type_info _swigt__p_pi_progress_t[] = {{"_p_pi_progress_t", 0, "pi_progress_t *", 0, 0, 0, 0},{"_p_pi_progress_t", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_buffer_t[] = {{"_p_pi_buffer_t", 0, "pi_buffer_t *", 0, 0, 0, 0},{"_p_pi_buffer_t", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
-static swig_type_info _swigt__p_dlpRequest[] = {{"_p_dlpRequest", 0, "dlpRequest *", 0, 0, 0, 0},{"_p_dlpRequest", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_file[] = {{"_p_pi_file", 0, "struct pi_file *|pi_file_t *", 0, 0, 0, 0},{"_p_pi_file", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
-static swig_type_info _swigt__p_p_dlpArg[] = {{"_p_p_dlpArg", 0, "struct dlpArg **", 0, 0, 0, 0},{"_p_p_dlpArg", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
-static swig_type_info _swigt__p_dlpArg[] = {{"_p_dlpArg", 0, "dlpArg *", 0, 0, 0, 0},{"_p_dlpArg", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_long[] = {{"_p_long", 0, "long *", 0, 0, 0, 0},{"_p_long", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_progress_t_data_vfs[] = {{"_p_pi_progress_t_data_vfs", 0, "pi_progress_t_data_vfs *", 0, 0, 0, 0},{"_p_pi_progress_t_data_vfs", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_sockaddr[] = {{"_p_sockaddr", 0, "struct sockaddr *", 0, 0, 0, 0},{"_p_sockaddr", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_socket[] = {{"_p_pi_socket", 0, "struct pi_socket *|pi_socket_t *", 0, 0, 0, 0},{"_p_pi_socket", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_VFSSlotMountParam[] = {{"_p_VFSSlotMountParam", 0, "struct VFSSlotMountParam *", 0, 0, 0, 0},{"_p_VFSSlotMountParam", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_VFSAnyMountParam[] = {{"_p_VFSAnyMountParam", 0, "struct VFSAnyMountParam *", 0, 0, 0, 0},{"_p_VFSAnyMountParam", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
-static swig_type_info _swigt__p_dlpResponse[] = {{"_p_dlpResponse", 0, "dlpResponse *", 0, 0, 0, 0},{"_p_dlpResponse", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_unsigned_char[] = {{"_p_unsigned_char", 0, "unsigned char *", 0, 0, 0, 0},{"_p_unsigned_char", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_p_pi_protocol[] = {{"_p_p_pi_protocol", 0, "struct pi_protocol **", 0, 0, 0, 0},{"_p_p_pi_protocol", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_protocol[] = {{"_p_pi_protocol", 0, "struct pi_protocol *", 0, 0, 0, 0},{"_p_pi_protocol", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
@@ -16341,7 +14919,7 @@ static swig_type_info _swigt__p_f_int_p_pi_progress_t__int[] = {{"_p_f_int_p_pi_
 static swig_type_info _swigt__p_PilotUser[] = {{"_p_PilotUser", 0, "struct PilotUser *", 0, 0, 0, 0},{"_p_PilotUser", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_CardInfo[] = {{"_p_CardInfo", 0, "struct CardInfo *", 0, 0, 0, 0},{"_p_CardInfo", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_device[] = {{"_p_pi_device", 0, "struct pi_device *", 0, 0, 0, 0},{"_p_pi_device", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
-static swig_type_info _swigt__p_int[] = {{"_p_int", 0, "int *|PI_ERR *", 0, 0, 0, 0},{"_p_int", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
+static swig_type_info _swigt__p_int[] = {{"_p_int", 0, "int *", 0, 0, 0, 0},{"_p_int", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_pi_progress_t_data_db[] = {{"_p_pi_progress_t_data_db", 0, "pi_progress_t_data_db *", 0, 0, 0, 0},{"_p_pi_progress_t_data_db", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 static swig_type_info _swigt__p_unsigned_long[] = {{"_p_unsigned_long", 0, "unsigned long *|pi_uid_t *", 0, 0, 0, 0},{"_p_unsigned_long", 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0}};
 
@@ -16355,25 +14933,21 @@ _swigt__p_pi_file_entry,
 _swigt__p_VFSInfo, 
 _swigt__p_pi_progress_t_data, 
 _swigt__p_pi_socket_list, 
-_swigt__p_DBInfo, 
 _swigt__p_void, 
+_swigt__p_DBInfo, 
 _swigt__p_p_void, 
+_swigt__p_pi_progress_t, 
 _swigt__size_t, 
 _swigt__p_size_t, 
 _swigt__p_ssize_t, 
-_swigt__p_pi_progress_t, 
 _swigt__p_pi_buffer_t, 
-_swigt__p_dlpRequest, 
 _swigt__p_pi_file, 
-_swigt__p_p_dlpArg, 
-_swigt__p_dlpArg, 
 _swigt__p_long, 
 _swigt__p_pi_progress_t_data_vfs, 
 _swigt__p_sockaddr, 
 _swigt__p_pi_socket, 
 _swigt__p_VFSSlotMountParam, 
 _swigt__p_VFSAnyMountParam, 
-_swigt__p_dlpResponse, 
 _swigt__p_unsigned_char, 
 _swigt__p_p_pi_protocol, 
 _swigt__p_pi_protocol, 
@@ -16745,6 +15319,72 @@ SWIGEXPORT(void) SWIG_init(void) {
     PyDict_SetItemString(d, "error", PIError);
     
     {
+        PyDict_SetItemString(d,"PI_ERR_PROT_ABORTED", SWIG_From_int((int)(PI_ERR_PROT_ABORTED))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_PROT_INCOMPATIBLE", SWIG_From_int((int)(PI_ERR_PROT_INCOMPATIBLE))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_PROT_BADPACKET", SWIG_From_int((int)(PI_ERR_PROT_BADPACKET))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_SOCK_DISCONNECTED", SWIG_From_int((int)(PI_ERR_SOCK_DISCONNECTED))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_SOCK_INVALID", SWIG_From_int((int)(PI_ERR_SOCK_INVALID))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_SOCK_TIMEOUT", SWIG_From_int((int)(PI_ERR_SOCK_TIMEOUT))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_SOCK_CANCELED", SWIG_From_int((int)(PI_ERR_SOCK_CANCELED))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_SOCK_IO", SWIG_From_int((int)(PI_ERR_SOCK_IO))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_SOCK_LISTENER", SWIG_From_int((int)(PI_ERR_SOCK_LISTENER))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_DLP_BUFSIZE", SWIG_From_int((int)(PI_ERR_DLP_BUFSIZE))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_DLP_PALMOS", SWIG_From_int((int)(PI_ERR_DLP_PALMOS))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_DLP_UNSUPPORTED", SWIG_From_int((int)(PI_ERR_DLP_UNSUPPORTED))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_DLP_SOCKET", SWIG_From_int((int)(PI_ERR_DLP_SOCKET))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_DLP_DATASIZE", SWIG_From_int((int)(PI_ERR_DLP_DATASIZE))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_DLP_COMMAND", SWIG_From_int((int)(PI_ERR_DLP_COMMAND))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_FILE_INVALID", SWIG_From_int((int)(PI_ERR_FILE_INVALID))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_FILE_ERROR", SWIG_From_int((int)(PI_ERR_FILE_ERROR))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_FILE_ABORTED", SWIG_From_int((int)(PI_ERR_FILE_ABORTED))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_FILE_NOT_FOUND", SWIG_From_int((int)(PI_ERR_FILE_NOT_FOUND))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_GENERIC_MEMORY", SWIG_From_int((int)(PI_ERR_GENERIC_MEMORY))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_GENERIC_ARGUMENT", SWIG_From_int((int)(PI_ERR_GENERIC_ARGUMENT))); 
+    }
+    {
+        PyDict_SetItemString(d,"PI_ERR_GENERIC_SYSTEM", SWIG_From_int((int)(PI_ERR_GENERIC_SYSTEM))); 
+    }
+    {
         PyDict_SetItemString(d,"PI_AF_PILOT", SWIG_From_int((int)(0x00))); 
     }
     {
@@ -16938,267 +15578,6 @@ SWIGEXPORT(void) SWIG_init(void) {
     }
     {
         PyDict_SetItemString(d,"vfsInvalidFileRef", SWIG_From_long((long)(0L))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpReservedFunc", SWIG_From_int((int)(dlpReservedFunc))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadUserInfo", SWIG_From_int((int)(dlpFuncReadUserInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteUserInfo", SWIG_From_int((int)(dlpFuncWriteUserInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadSysInfo", SWIG_From_int((int)(dlpFuncReadSysInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncGetSysDateTime", SWIG_From_int((int)(dlpFuncGetSysDateTime))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncSetSysDateTime", SWIG_From_int((int)(dlpFuncSetSysDateTime))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadStorageInfo", SWIG_From_int((int)(dlpFuncReadStorageInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadDBList", SWIG_From_int((int)(dlpFuncReadDBList))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncOpenDB", SWIG_From_int((int)(dlpFuncOpenDB))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncCreateDB", SWIG_From_int((int)(dlpFuncCreateDB))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncCloseDB", SWIG_From_int((int)(dlpFuncCloseDB))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncDeleteDB", SWIG_From_int((int)(dlpFuncDeleteDB))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadAppBlock", SWIG_From_int((int)(dlpFuncReadAppBlock))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteAppBlock", SWIG_From_int((int)(dlpFuncWriteAppBlock))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadSortBlock", SWIG_From_int((int)(dlpFuncReadSortBlock))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteSortBlock", SWIG_From_int((int)(dlpFuncWriteSortBlock))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadNextModifiedRec", SWIG_From_int((int)(dlpFuncReadNextModifiedRec))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadRecord", SWIG_From_int((int)(dlpFuncReadRecord))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteRecord", SWIG_From_int((int)(dlpFuncWriteRecord))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncDeleteRecord", SWIG_From_int((int)(dlpFuncDeleteRecord))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadResource", SWIG_From_int((int)(dlpFuncReadResource))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteResource", SWIG_From_int((int)(dlpFuncWriteResource))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncDeleteResource", SWIG_From_int((int)(dlpFuncDeleteResource))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncCleanUpDatabase", SWIG_From_int((int)(dlpFuncCleanUpDatabase))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncResetSyncFlags", SWIG_From_int((int)(dlpFuncResetSyncFlags))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncCallApplication", SWIG_From_int((int)(dlpFuncCallApplication))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncResetSystem", SWIG_From_int((int)(dlpFuncResetSystem))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncAddSyncLogEntry", SWIG_From_int((int)(dlpFuncAddSyncLogEntry))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadOpenDBInfo", SWIG_From_int((int)(dlpFuncReadOpenDBInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncMoveCategory", SWIG_From_int((int)(dlpFuncMoveCategory))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpProcessRPC", SWIG_From_int((int)(dlpProcessRPC))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncOpenConduit", SWIG_From_int((int)(dlpFuncOpenConduit))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncEndOfSync", SWIG_From_int((int)(dlpFuncEndOfSync))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncResetRecordIndex", SWIG_From_int((int)(dlpFuncResetRecordIndex))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadRecordIDList", SWIG_From_int((int)(dlpFuncReadRecordIDList))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadNextRecInCategory", SWIG_From_int((int)(dlpFuncReadNextRecInCategory))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadNextModifiedRecInCategory", SWIG_From_int((int)(dlpFuncReadNextModifiedRecInCategory))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadAppPreference", SWIG_From_int((int)(dlpFuncReadAppPreference))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteAppPreference", SWIG_From_int((int)(dlpFuncWriteAppPreference))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadNetSyncInfo", SWIG_From_int((int)(dlpFuncReadNetSyncInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteNetSyncInfo", SWIG_From_int((int)(dlpFuncWriteNetSyncInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadFeature", SWIG_From_int((int)(dlpFuncReadFeature))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncFindDB", SWIG_From_int((int)(dlpFuncFindDB))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncSetDBInfo", SWIG_From_int((int)(dlpFuncSetDBInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpLoopBackTest", SWIG_From_int((int)(dlpLoopBackTest))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncExpSlotEnumerate", SWIG_From_int((int)(dlpFuncExpSlotEnumerate))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncExpCardPresent", SWIG_From_int((int)(dlpFuncExpCardPresent))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncExpCardInfo", SWIG_From_int((int)(dlpFuncExpCardInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSCustomControl", SWIG_From_int((int)(dlpFuncVFSCustomControl))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSGetDefaultDir", SWIG_From_int((int)(dlpFuncVFSGetDefaultDir))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSImportDatabaseFromFile", SWIG_From_int((int)(dlpFuncVFSImportDatabaseFromFile))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSExportDatabaseToFile", SWIG_From_int((int)(dlpFuncVFSExportDatabaseToFile))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileCreate", SWIG_From_int((int)(dlpFuncVFSFileCreate))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileOpen", SWIG_From_int((int)(dlpFuncVFSFileOpen))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileClose", SWIG_From_int((int)(dlpFuncVFSFileClose))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileWrite", SWIG_From_int((int)(dlpFuncVFSFileWrite))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileRead", SWIG_From_int((int)(dlpFuncVFSFileRead))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileDelete", SWIG_From_int((int)(dlpFuncVFSFileDelete))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileRename", SWIG_From_int((int)(dlpFuncVFSFileRename))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileEOF", SWIG_From_int((int)(dlpFuncVFSFileEOF))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileTell", SWIG_From_int((int)(dlpFuncVFSFileTell))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileGetAttributes", SWIG_From_int((int)(dlpFuncVFSFileGetAttributes))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileSetAttributes", SWIG_From_int((int)(dlpFuncVFSFileSetAttributes))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileGetDate", SWIG_From_int((int)(dlpFuncVFSFileGetDate))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileSetDate", SWIG_From_int((int)(dlpFuncVFSFileSetDate))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSDirCreate", SWIG_From_int((int)(dlpFuncVFSDirCreate))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSDirEntryEnumerate", SWIG_From_int((int)(dlpFuncVFSDirEntryEnumerate))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSGetFile", SWIG_From_int((int)(dlpFuncVFSGetFile))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSPutFile", SWIG_From_int((int)(dlpFuncVFSPutFile))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSVolumeFormat", SWIG_From_int((int)(dlpFuncVFSVolumeFormat))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSVolumeEnumerate", SWIG_From_int((int)(dlpFuncVFSVolumeEnumerate))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSVolumeInfo", SWIG_From_int((int)(dlpFuncVFSVolumeInfo))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSVolumeGetLabel", SWIG_From_int((int)(dlpFuncVFSVolumeGetLabel))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSVolumeSetLabel", SWIG_From_int((int)(dlpFuncVFSVolumeSetLabel))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSVolumeSize", SWIG_From_int((int)(dlpFuncVFSVolumeSize))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileSeek", SWIG_From_int((int)(dlpFuncVFSFileSeek))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileResize", SWIG_From_int((int)(dlpFuncVFSFileResize))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncVFSFileSize", SWIG_From_int((int)(dlpFuncVFSFileSize))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncExpSlotMediaType", SWIG_From_int((int)(dlpFuncExpSlotMediaType))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteRecordEx", SWIG_From_int((int)(dlpFuncWriteRecordEx))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncWriteResourceEx", SWIG_From_int((int)(dlpFuncWriteResourceEx))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadRecordEx", SWIG_From_int((int)(dlpFuncReadRecordEx))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncUnknown1", SWIG_From_int((int)(dlpFuncUnknown1))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncUnknown3", SWIG_From_int((int)(dlpFuncUnknown3))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncUnknown4", SWIG_From_int((int)(dlpFuncUnknown4))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpFuncReadResourceEx", SWIG_From_int((int)(dlpFuncReadResourceEx))); 
-    }
-    {
-        PyDict_SetItemString(d,"dlpLastFunc", SWIG_From_int((int)(dlpLastFunc))); 
     }
     {
         PyDict_SetItemString(d,"dlpDBFlagResource", SWIG_From_int((int)(dlpDBFlagResource))); 
@@ -17505,72 +15884,6 @@ SWIGEXPORT(void) SWIG_init(void) {
     }
     {
         PyDict_SetItemString(d,"PI_TRANSFER_CONTINUE", SWIG_From_int((int)(1))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_PROT_ABORTED", SWIG_From_int((int)(PI_ERR_PROT_ABORTED))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_PROT_INCOMPATIBLE", SWIG_From_int((int)(PI_ERR_PROT_INCOMPATIBLE))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_PROT_BADPACKET", SWIG_From_int((int)(PI_ERR_PROT_BADPACKET))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_SOCK_DISCONNECTED", SWIG_From_int((int)(PI_ERR_SOCK_DISCONNECTED))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_SOCK_INVALID", SWIG_From_int((int)(PI_ERR_SOCK_INVALID))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_SOCK_TIMEOUT", SWIG_From_int((int)(PI_ERR_SOCK_TIMEOUT))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_SOCK_CANCELED", SWIG_From_int((int)(PI_ERR_SOCK_CANCELED))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_SOCK_IO", SWIG_From_int((int)(PI_ERR_SOCK_IO))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_SOCK_LISTENER", SWIG_From_int((int)(PI_ERR_SOCK_LISTENER))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_DLP_BUFSIZE", SWIG_From_int((int)(PI_ERR_DLP_BUFSIZE))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_DLP_PALMOS", SWIG_From_int((int)(PI_ERR_DLP_PALMOS))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_DLP_UNSUPPORTED", SWIG_From_int((int)(PI_ERR_DLP_UNSUPPORTED))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_DLP_SOCKET", SWIG_From_int((int)(PI_ERR_DLP_SOCKET))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_DLP_DATASIZE", SWIG_From_int((int)(PI_ERR_DLP_DATASIZE))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_DLP_COMMAND", SWIG_From_int((int)(PI_ERR_DLP_COMMAND))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_FILE_INVALID", SWIG_From_int((int)(PI_ERR_FILE_INVALID))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_FILE_ERROR", SWIG_From_int((int)(PI_ERR_FILE_ERROR))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_FILE_ABORTED", SWIG_From_int((int)(PI_ERR_FILE_ABORTED))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_FILE_NOT_FOUND", SWIG_From_int((int)(PI_ERR_FILE_NOT_FOUND))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_GENERIC_MEMORY", SWIG_From_int((int)(PI_ERR_GENERIC_MEMORY))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_GENERIC_ARGUMENT", SWIG_From_int((int)(PI_ERR_GENERIC_ARGUMENT))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_ERR_GENERIC_SYSTEM", SWIG_From_int((int)(PI_ERR_GENERIC_SYSTEM))); 
     }
 }
 

@@ -31,5 +31,4 @@ def pi_bind(sd, port="/dev/pilot"):
 
 def dlp_GetSysDateTime(sd):
     r = pisock.dlp_GetSysDateTime_(sd)
-    warnings.warn("dlp_GetSysDateTime() may be returning incorrect values?")
     return datetime.datetime.fromtimestamp(r)

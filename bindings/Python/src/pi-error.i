@@ -49,10 +49,8 @@ static void* pythonWrapper_handlePiErr(int sd, int err)
 // static function for handling (reduces
 // the total wrapper code size)
 // -------------------------------------
-%typemap (python,out) PI_ERR {
-	if ($1 < 0) {
-		return pythonWrapper_handlePiErr(arg1, $1);
-	}
+%typemap (python,out) PI_ERR %{
+	if ($1 < 0) return pythonWrapper_handlePiErr(arg1, $1);
 	$result = Py_None;
 	Py_INCREF(Py_None);
-}
+%}

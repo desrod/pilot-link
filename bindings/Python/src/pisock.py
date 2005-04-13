@@ -44,6 +44,28 @@ error = _pisock.error
 print_splash = _pisock.print_splash
 
 pilot_connect = _pisock.pilot_connect
+PI_ERR_PROT_ABORTED = _pisock.PI_ERR_PROT_ABORTED
+PI_ERR_PROT_INCOMPATIBLE = _pisock.PI_ERR_PROT_INCOMPATIBLE
+PI_ERR_PROT_BADPACKET = _pisock.PI_ERR_PROT_BADPACKET
+PI_ERR_SOCK_DISCONNECTED = _pisock.PI_ERR_SOCK_DISCONNECTED
+PI_ERR_SOCK_INVALID = _pisock.PI_ERR_SOCK_INVALID
+PI_ERR_SOCK_TIMEOUT = _pisock.PI_ERR_SOCK_TIMEOUT
+PI_ERR_SOCK_CANCELED = _pisock.PI_ERR_SOCK_CANCELED
+PI_ERR_SOCK_IO = _pisock.PI_ERR_SOCK_IO
+PI_ERR_SOCK_LISTENER = _pisock.PI_ERR_SOCK_LISTENER
+PI_ERR_DLP_BUFSIZE = _pisock.PI_ERR_DLP_BUFSIZE
+PI_ERR_DLP_PALMOS = _pisock.PI_ERR_DLP_PALMOS
+PI_ERR_DLP_UNSUPPORTED = _pisock.PI_ERR_DLP_UNSUPPORTED
+PI_ERR_DLP_SOCKET = _pisock.PI_ERR_DLP_SOCKET
+PI_ERR_DLP_DATASIZE = _pisock.PI_ERR_DLP_DATASIZE
+PI_ERR_DLP_COMMAND = _pisock.PI_ERR_DLP_COMMAND
+PI_ERR_FILE_INVALID = _pisock.PI_ERR_FILE_INVALID
+PI_ERR_FILE_ERROR = _pisock.PI_ERR_FILE_ERROR
+PI_ERR_FILE_ABORTED = _pisock.PI_ERR_FILE_ABORTED
+PI_ERR_FILE_NOT_FOUND = _pisock.PI_ERR_FILE_NOT_FOUND
+PI_ERR_GENERIC_MEMORY = _pisock.PI_ERR_GENERIC_MEMORY
+PI_ERR_GENERIC_ARGUMENT = _pisock.PI_ERR_GENERIC_ARGUMENT
+PI_ERR_GENERIC_SYSTEM = _pisock.PI_ERR_GENERIC_SYSTEM
 PI_AF_PILOT = _pisock.PI_AF_PILOT
 PI_SOCK_STREAM = _pisock.PI_SOCK_STREAM
 PI_SOCK_RAW = _pisock.PI_SOCK_RAW
@@ -709,93 +731,6 @@ class NetSyncInfoPtr(NetSyncInfo):
         _swig_setattr(self, NetSyncInfo,self.__class__,NetSyncInfo)
 _pisock.NetSyncInfo_swigregister(NetSyncInfoPtr)
 
-dlpReservedFunc = _pisock.dlpReservedFunc
-dlpFuncReadUserInfo = _pisock.dlpFuncReadUserInfo
-dlpFuncWriteUserInfo = _pisock.dlpFuncWriteUserInfo
-dlpFuncReadSysInfo = _pisock.dlpFuncReadSysInfo
-dlpFuncGetSysDateTime = _pisock.dlpFuncGetSysDateTime
-dlpFuncSetSysDateTime = _pisock.dlpFuncSetSysDateTime
-dlpFuncReadStorageInfo = _pisock.dlpFuncReadStorageInfo
-dlpFuncReadDBList = _pisock.dlpFuncReadDBList
-dlpFuncOpenDB = _pisock.dlpFuncOpenDB
-dlpFuncCreateDB = _pisock.dlpFuncCreateDB
-dlpFuncCloseDB = _pisock.dlpFuncCloseDB
-dlpFuncDeleteDB = _pisock.dlpFuncDeleteDB
-dlpFuncReadAppBlock = _pisock.dlpFuncReadAppBlock
-dlpFuncWriteAppBlock = _pisock.dlpFuncWriteAppBlock
-dlpFuncReadSortBlock = _pisock.dlpFuncReadSortBlock
-dlpFuncWriteSortBlock = _pisock.dlpFuncWriteSortBlock
-dlpFuncReadNextModifiedRec = _pisock.dlpFuncReadNextModifiedRec
-dlpFuncReadRecord = _pisock.dlpFuncReadRecord
-dlpFuncWriteRecord = _pisock.dlpFuncWriteRecord
-dlpFuncDeleteRecord = _pisock.dlpFuncDeleteRecord
-dlpFuncReadResource = _pisock.dlpFuncReadResource
-dlpFuncWriteResource = _pisock.dlpFuncWriteResource
-dlpFuncDeleteResource = _pisock.dlpFuncDeleteResource
-dlpFuncCleanUpDatabase = _pisock.dlpFuncCleanUpDatabase
-dlpFuncResetSyncFlags = _pisock.dlpFuncResetSyncFlags
-dlpFuncCallApplication = _pisock.dlpFuncCallApplication
-dlpFuncResetSystem = _pisock.dlpFuncResetSystem
-dlpFuncAddSyncLogEntry = _pisock.dlpFuncAddSyncLogEntry
-dlpFuncReadOpenDBInfo = _pisock.dlpFuncReadOpenDBInfo
-dlpFuncMoveCategory = _pisock.dlpFuncMoveCategory
-dlpProcessRPC = _pisock.dlpProcessRPC
-dlpFuncOpenConduit = _pisock.dlpFuncOpenConduit
-dlpFuncEndOfSync = _pisock.dlpFuncEndOfSync
-dlpFuncResetRecordIndex = _pisock.dlpFuncResetRecordIndex
-dlpFuncReadRecordIDList = _pisock.dlpFuncReadRecordIDList
-dlpFuncReadNextRecInCategory = _pisock.dlpFuncReadNextRecInCategory
-dlpFuncReadNextModifiedRecInCategory = _pisock.dlpFuncReadNextModifiedRecInCategory
-dlpFuncReadAppPreference = _pisock.dlpFuncReadAppPreference
-dlpFuncWriteAppPreference = _pisock.dlpFuncWriteAppPreference
-dlpFuncReadNetSyncInfo = _pisock.dlpFuncReadNetSyncInfo
-dlpFuncWriteNetSyncInfo = _pisock.dlpFuncWriteNetSyncInfo
-dlpFuncReadFeature = _pisock.dlpFuncReadFeature
-dlpFuncFindDB = _pisock.dlpFuncFindDB
-dlpFuncSetDBInfo = _pisock.dlpFuncSetDBInfo
-dlpLoopBackTest = _pisock.dlpLoopBackTest
-dlpFuncExpSlotEnumerate = _pisock.dlpFuncExpSlotEnumerate
-dlpFuncExpCardPresent = _pisock.dlpFuncExpCardPresent
-dlpFuncExpCardInfo = _pisock.dlpFuncExpCardInfo
-dlpFuncVFSCustomControl = _pisock.dlpFuncVFSCustomControl
-dlpFuncVFSGetDefaultDir = _pisock.dlpFuncVFSGetDefaultDir
-dlpFuncVFSImportDatabaseFromFile = _pisock.dlpFuncVFSImportDatabaseFromFile
-dlpFuncVFSExportDatabaseToFile = _pisock.dlpFuncVFSExportDatabaseToFile
-dlpFuncVFSFileCreate = _pisock.dlpFuncVFSFileCreate
-dlpFuncVFSFileOpen = _pisock.dlpFuncVFSFileOpen
-dlpFuncVFSFileClose = _pisock.dlpFuncVFSFileClose
-dlpFuncVFSFileWrite = _pisock.dlpFuncVFSFileWrite
-dlpFuncVFSFileRead = _pisock.dlpFuncVFSFileRead
-dlpFuncVFSFileDelete = _pisock.dlpFuncVFSFileDelete
-dlpFuncVFSFileRename = _pisock.dlpFuncVFSFileRename
-dlpFuncVFSFileEOF = _pisock.dlpFuncVFSFileEOF
-dlpFuncVFSFileTell = _pisock.dlpFuncVFSFileTell
-dlpFuncVFSFileGetAttributes = _pisock.dlpFuncVFSFileGetAttributes
-dlpFuncVFSFileSetAttributes = _pisock.dlpFuncVFSFileSetAttributes
-dlpFuncVFSFileGetDate = _pisock.dlpFuncVFSFileGetDate
-dlpFuncVFSFileSetDate = _pisock.dlpFuncVFSFileSetDate
-dlpFuncVFSDirCreate = _pisock.dlpFuncVFSDirCreate
-dlpFuncVFSDirEntryEnumerate = _pisock.dlpFuncVFSDirEntryEnumerate
-dlpFuncVFSGetFile = _pisock.dlpFuncVFSGetFile
-dlpFuncVFSPutFile = _pisock.dlpFuncVFSPutFile
-dlpFuncVFSVolumeFormat = _pisock.dlpFuncVFSVolumeFormat
-dlpFuncVFSVolumeEnumerate = _pisock.dlpFuncVFSVolumeEnumerate
-dlpFuncVFSVolumeInfo = _pisock.dlpFuncVFSVolumeInfo
-dlpFuncVFSVolumeGetLabel = _pisock.dlpFuncVFSVolumeGetLabel
-dlpFuncVFSVolumeSetLabel = _pisock.dlpFuncVFSVolumeSetLabel
-dlpFuncVFSVolumeSize = _pisock.dlpFuncVFSVolumeSize
-dlpFuncVFSFileSeek = _pisock.dlpFuncVFSFileSeek
-dlpFuncVFSFileResize = _pisock.dlpFuncVFSFileResize
-dlpFuncVFSFileSize = _pisock.dlpFuncVFSFileSize
-dlpFuncExpSlotMediaType = _pisock.dlpFuncExpSlotMediaType
-dlpFuncWriteRecordEx = _pisock.dlpFuncWriteRecordEx
-dlpFuncWriteResourceEx = _pisock.dlpFuncWriteResourceEx
-dlpFuncReadRecordEx = _pisock.dlpFuncReadRecordEx
-dlpFuncUnknown1 = _pisock.dlpFuncUnknown1
-dlpFuncUnknown3 = _pisock.dlpFuncUnknown3
-dlpFuncUnknown4 = _pisock.dlpFuncUnknown4
-dlpFuncReadResourceEx = _pisock.dlpFuncReadResourceEx
-dlpLastFunc = _pisock.dlpLastFunc
 dlpDBFlagResource = _pisock.dlpDBFlagResource
 dlpDBFlagReadOnly = _pisock.dlpDBFlagReadOnly
 dlpDBFlagAppInfoDirty = _pisock.dlpDBFlagAppInfoDirty
@@ -892,105 +827,6 @@ dlpErrWrapper = _pisock.dlpErrWrapper
 dlpErrArgument = _pisock.dlpErrArgument
 dlpErrSize = _pisock.dlpErrSize
 dlpErrUnknown = _pisock.dlpErrUnknown
-class dlpArg(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, dlpArg, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, dlpArg, name)
-    def __repr__(self):
-        return "<%s.%s; proxy of C dlpArg instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
-    __swig_setmethods__["id_"] = _pisock.dlpArg_id__set
-    __swig_getmethods__["id_"] = _pisock.dlpArg_id__get
-    if _newclass:id_ = property(_pisock.dlpArg_id__get, _pisock.dlpArg_id__set)
-    __swig_setmethods__["len"] = _pisock.dlpArg_len_set
-    __swig_getmethods__["len"] = _pisock.dlpArg_len_get
-    if _newclass:len = property(_pisock.dlpArg_len_get, _pisock.dlpArg_len_set)
-    __swig_setmethods__["data"] = _pisock.dlpArg_data_set
-    __swig_getmethods__["data"] = _pisock.dlpArg_data_get
-    if _newclass:data = property(_pisock.dlpArg_data_get, _pisock.dlpArg_data_set)
-    def __init__(self, *args):
-        _swig_setattr(self, dlpArg, 'this', _pisock.new_dlpArg(*args))
-        _swig_setattr(self, dlpArg, 'thisown', 1)
-    def __del__(self, destroy=_pisock.delete_dlpArg):
-        try:
-            if self.thisown: destroy(self)
-        except: pass
-
-
-class dlpArgPtr(dlpArg):
-    def __init__(self, this):
-        _swig_setattr(self, dlpArg, 'this', this)
-        if not hasattr(self,"thisown"): _swig_setattr(self, dlpArg, 'thisown', 0)
-        _swig_setattr(self, dlpArg,self.__class__,dlpArg)
-_pisock.dlpArg_swigregister(dlpArgPtr)
-
-class dlpRequest(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, dlpRequest, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, dlpRequest, name)
-    def __repr__(self):
-        return "<%s.%s; proxy of C dlpRequest instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
-    __swig_setmethods__["cmd"] = _pisock.dlpRequest_cmd_set
-    __swig_getmethods__["cmd"] = _pisock.dlpRequest_cmd_get
-    if _newclass:cmd = property(_pisock.dlpRequest_cmd_get, _pisock.dlpRequest_cmd_set)
-    __swig_setmethods__["argc"] = _pisock.dlpRequest_argc_set
-    __swig_getmethods__["argc"] = _pisock.dlpRequest_argc_get
-    if _newclass:argc = property(_pisock.dlpRequest_argc_get, _pisock.dlpRequest_argc_set)
-    __swig_setmethods__["argv"] = _pisock.dlpRequest_argv_set
-    __swig_getmethods__["argv"] = _pisock.dlpRequest_argv_get
-    if _newclass:argv = property(_pisock.dlpRequest_argv_get, _pisock.dlpRequest_argv_set)
-    def __init__(self, *args):
-        _swig_setattr(self, dlpRequest, 'this', _pisock.new_dlpRequest(*args))
-        _swig_setattr(self, dlpRequest, 'thisown', 1)
-    def __del__(self, destroy=_pisock.delete_dlpRequest):
-        try:
-            if self.thisown: destroy(self)
-        except: pass
-
-
-class dlpRequestPtr(dlpRequest):
-    def __init__(self, this):
-        _swig_setattr(self, dlpRequest, 'this', this)
-        if not hasattr(self,"thisown"): _swig_setattr(self, dlpRequest, 'thisown', 0)
-        _swig_setattr(self, dlpRequest,self.__class__,dlpRequest)
-_pisock.dlpRequest_swigregister(dlpRequestPtr)
-
-class dlpResponse(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, dlpResponse, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, dlpResponse, name)
-    def __repr__(self):
-        return "<%s.%s; proxy of C dlpResponse instance at %s>" % (self.__class__.__module__, self.__class__.__name__, self.this,)
-    __swig_setmethods__["cmd"] = _pisock.dlpResponse_cmd_set
-    __swig_getmethods__["cmd"] = _pisock.dlpResponse_cmd_get
-    if _newclass:cmd = property(_pisock.dlpResponse_cmd_get, _pisock.dlpResponse_cmd_set)
-    __swig_setmethods__["err"] = _pisock.dlpResponse_err_set
-    __swig_getmethods__["err"] = _pisock.dlpResponse_err_get
-    if _newclass:err = property(_pisock.dlpResponse_err_get, _pisock.dlpResponse_err_set)
-    __swig_setmethods__["argc"] = _pisock.dlpResponse_argc_set
-    __swig_getmethods__["argc"] = _pisock.dlpResponse_argc_get
-    if _newclass:argc = property(_pisock.dlpResponse_argc_get, _pisock.dlpResponse_argc_set)
-    __swig_setmethods__["argv"] = _pisock.dlpResponse_argv_set
-    __swig_getmethods__["argv"] = _pisock.dlpResponse_argv_get
-    if _newclass:argv = property(_pisock.dlpResponse_argv_get, _pisock.dlpResponse_argv_set)
-    def __init__(self, *args):
-        _swig_setattr(self, dlpResponse, 'this', _pisock.new_dlpResponse(*args))
-        _swig_setattr(self, dlpResponse, 'thisown', 1)
-    def __del__(self, destroy=_pisock.delete_dlpResponse):
-        try:
-            if self.thisown: destroy(self)
-        except: pass
-
-
-class dlpResponsePtr(dlpResponse):
-    def __init__(self, this):
-        _swig_setattr(self, dlpResponse, 'this', this)
-        if not hasattr(self,"thisown"): _swig_setattr(self, dlpResponse, 'thisown', 0)
-        _swig_setattr(self, dlpResponse,self.__class__,dlpResponse)
-_pisock.dlpResponse_swigregister(dlpResponsePtr)
-
 
 dlp_set_protocol_version = _pisock.dlp_set_protocol_version
 
@@ -1413,6 +1249,8 @@ PI_TRANSFER_CONTINUE = _pisock.PI_TRANSFER_CONTINUE
 
 pi_file_open = _pisock.pi_file_open
 
+pi_file_create = _pisock.pi_file_create
+
 pi_file_close = _pisock.pi_file_close
 
 pi_file_get_info = _pisock.pi_file_get_info
@@ -1427,15 +1265,13 @@ pi_file_read_resource_by_type_id = _pisock.pi_file_read_resource_by_type_id
 
 pi_file_type_id_used = _pisock.pi_file_type_id_used
 
-pi_file_read_record = _pisock.pi_file_read_record
+pi_file_id_used = _pisock.pi_file_id_used
 
-pi_file_get_entries = _pisock.pi_file_get_entries
+pi_file_read_record = _pisock.pi_file_read_record
 
 pi_file_read_record_by_id = _pisock.pi_file_read_record_by_id
 
-pi_file_id_used = _pisock.pi_file_id_used
-
-pi_file_create = _pisock.pi_file_create
+pi_file_get_entries = _pisock.pi_file_get_entries
 
 pi_file_set_info = _pisock.pi_file_set_info
 
@@ -1456,26 +1292,4 @@ pi_file_merge = _pisock.pi_file_merge
 unix_time_to_pilot_time = _pisock.unix_time_to_pilot_time
 
 pilot_time_to_unix_time = _pisock.pilot_time_to_unix_time
-PI_ERR_PROT_ABORTED = _pisock.PI_ERR_PROT_ABORTED
-PI_ERR_PROT_INCOMPATIBLE = _pisock.PI_ERR_PROT_INCOMPATIBLE
-PI_ERR_PROT_BADPACKET = _pisock.PI_ERR_PROT_BADPACKET
-PI_ERR_SOCK_DISCONNECTED = _pisock.PI_ERR_SOCK_DISCONNECTED
-PI_ERR_SOCK_INVALID = _pisock.PI_ERR_SOCK_INVALID
-PI_ERR_SOCK_TIMEOUT = _pisock.PI_ERR_SOCK_TIMEOUT
-PI_ERR_SOCK_CANCELED = _pisock.PI_ERR_SOCK_CANCELED
-PI_ERR_SOCK_IO = _pisock.PI_ERR_SOCK_IO
-PI_ERR_SOCK_LISTENER = _pisock.PI_ERR_SOCK_LISTENER
-PI_ERR_DLP_BUFSIZE = _pisock.PI_ERR_DLP_BUFSIZE
-PI_ERR_DLP_PALMOS = _pisock.PI_ERR_DLP_PALMOS
-PI_ERR_DLP_UNSUPPORTED = _pisock.PI_ERR_DLP_UNSUPPORTED
-PI_ERR_DLP_SOCKET = _pisock.PI_ERR_DLP_SOCKET
-PI_ERR_DLP_DATASIZE = _pisock.PI_ERR_DLP_DATASIZE
-PI_ERR_DLP_COMMAND = _pisock.PI_ERR_DLP_COMMAND
-PI_ERR_FILE_INVALID = _pisock.PI_ERR_FILE_INVALID
-PI_ERR_FILE_ERROR = _pisock.PI_ERR_FILE_ERROR
-PI_ERR_FILE_ABORTED = _pisock.PI_ERR_FILE_ABORTED
-PI_ERR_FILE_NOT_FOUND = _pisock.PI_ERR_FILE_NOT_FOUND
-PI_ERR_GENERIC_MEMORY = _pisock.PI_ERR_GENERIC_MEMORY
-PI_ERR_GENERIC_ARGUMENT = _pisock.PI_ERR_GENERIC_ARGUMENT
-PI_ERR_GENERIC_SYSTEM = _pisock.PI_ERR_GENERIC_SYSTEM
 

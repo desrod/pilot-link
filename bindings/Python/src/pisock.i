@@ -35,7 +35,6 @@
 // returns a negative status; the value of this exception will be a
 // tuple of the numeric error code and a message.
 
-
 %module pisock
 
 %pythoncode %{ 
@@ -44,15 +43,13 @@ from pisockextras import *
 
 %{
 #include <time.h>
-#include "pi-args.h"
+#include "pi-header.h"
+#include "pi-source.h"
+#include "pi-error.h"
 #include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-file.h"
 #include "pi-util.h"
-#include "pi-header.h"
-#include "pi-source.h"
-#include "pi-error.h"
-
 
 #define DGETLONG(src,key,default) (PyDict_GetItemString(src,key) ? \
 				   PyInt_AsLong(PyDict_GetItemString(src,key)) : default)
@@ -62,6 +59,8 @@ from pisockextras import *
 
 static PyObject *PIError = NULL;
 %}
+
+%include helperfuncs.i
 
 %init %{
 	PIError = PyErr_NewException("pisock.error", NULL, NULL);
@@ -84,29 +83,22 @@ error = _pisock.error
 
 %include ../../../include/pi-args.h
 %include ../../../include/pi-header.h
-%include ../../../include/pi-socket.h
+%include ../../../include/pi-error.h
 
- /* Put thread control around all those declarations that follow. */
- /* We could specify particular functions to apply it to, I think with:
-    %feature("nonblocking") functionName 
-    after we declare what feature("nonblocking") is here. */
-
-%feature("nonblocking") {
-  {
-    PyThreadState *__save;
-    __save = PyEval_SaveThread();
+/* Put thread control around all those declarations that follow
+ * we use the exception mechanism to plug our code just around
+ * the C function call
+ */
+%feature("except") {
+    PyThreadState *__save = PyEval_SaveThread();
     $action
     PyEval_RestoreThread(__save);
-  }
 }
 
-%include ../../../include/pi-dlp.h
-
- /* Stop putting thread control around all those declarations that follow. */
-
-%feature("nonblocking") ;
-
 %include ../../../include/pi-socket.h
+%include ../../../include/pi-dlp.h
 %include ../../../include/pi-file.h
-%include ../../../include/pi-error.h
+
+/* Stop putting thread control around all those declarations that follow. */
+%feature("except");
 
