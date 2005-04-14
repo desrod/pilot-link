@@ -728,22 +728,22 @@ struct dlpResponse {
 	 * Supported on Palm OS 2.0 and later.
 	 *
 	 * @param sd Socket number
-	 * @param info On return, filled NetSyncInfo structure
+	 * @param OUTPUT On return, filled NetSyncInfo structure
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_ReadNetSyncInfo
-		PI_ARGS((int sd, struct NetSyncInfo *info));
+		PI_ARGS((int sd, struct NetSyncInfo *OUTPUT));
 
 	/** @brief Set Network HotSync information
 	 *
 	 * Supported on Palm OS 2.0 and later
 	 *
 	 * @param sd Socket number
-	 * @param info NetSyncInfo structure to set
+	 * @param INPUT NetSyncInfo structure to set
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_WriteNetSyncInfo
-		PI_ARGS((int sd, PI_CONST struct NetSyncInfo *info));
+		PI_ARGS((int sd, PI_CONST struct NetSyncInfo *INPUT));
 
 	/** @brief State that a conduit has started running on the desktop
 	 *
@@ -989,13 +989,13 @@ struct dlpResponse {
 	 * @param dbname If not NULL, look for a database with this name
 	 * @param type If not 0, matching database must have this type
 	 * @param creator If not 0, matching database must have this creator code
-	 * @param dbInfo Returned database information on success
+	 * @param OUTPUT Returned database information on success
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_FindDBInfo
 		PI_ARGS((int sd, int cardno, int start, PI_CONST char *dbname,
 			unsigned long type, unsigned long creator,
-			struct DBInfo *dbInfo));
+			struct DBInfo *OUTPUT));
 
 	/** @brief Open a database on the Palm.
 	 *
