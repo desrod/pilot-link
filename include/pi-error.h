@@ -72,6 +72,7 @@ enum dlpErrorDefinitions {
 	PI_ERR_FILE_ERROR		= -401,		/**< generic error when reading/writing file */
 	PI_ERR_FILE_ABORTED		= -402,		/**< file transfer was aborted by progress callback, see pi_file_retrieve(), pi_file_install(), pi_file_merge() */
 	PI_ERR_FILE_NOT_FOUND		= -403,		/**< record or resource not found */
+	PI_ERR_FILE_ALREADY_EXISTS	= -404,		/**< a record with same UID or resource with same type/ID already exists */
 
 	/* GENERIC errors */
 	PI_ERR_GENERIC_MEMORY		= -500,		/**< not enough memory */
