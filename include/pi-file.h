@@ -18,6 +18,27 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
+
+/** @file pi-file.h
+ *  @brief Database file install, retrieve and management interface
+ *
+ * The pi-file layer is a convenience management library that provides for
+ * easy access, creation, install and retrieve of database files (PRC, PDB, PQA)
+ *
+ * Palm databases on the local machines can be created with pi_file_create()
+ * or opened read-only using pi_file_open(). Several functions are provided to
+ * access resources and records. Caller must make sure to use the appropriate
+ * functions, depending on the type of the database (i.e. only use the record
+ * read/write functions on data databases, only use the resource read/write
+ * functions on resource databases).
+ *
+ * A set of utility functions are provided to facilitate installing and
+ * retrieving databases on the devide. pi_file_install() will perform all the
+ * steps required to install a database on a device. pi_file_merge() can be used
+ * to update an existing database or add new records/resources to it.
+ * pi_file_retrieve() will read a database from the device.
+ */
+
 #ifndef _PILOT_FILE_H_
 #define _PILOT_FILE_H_
 
@@ -27,37 +48,36 @@ extern "C" {
 
 #include "pi-dlp.h"		/* For DBInfo */
 
-typedef unsigned long pi_uid_t;
-
+/** @brief Structure describing a record or resource entry in a database file */
 typedef struct pi_file_entry {
-	int 	offset;
-	int	size;
-	int	id_;
-	int	attrs;
-	unsigned long type;
-	pi_uid_t uid;
+	int 	offset;			/**< Offset in the on-disk file */
+	int	size;			/**< Size of the resource or record */
+	int	id_;			/**< For resources, resource ID */
+	int	attrs;			/**< Record attributes */
+	unsigned long type;		/**< For resdources, resource type */
+	recordid_t uid;			/**< For records, record unique ID */
 } pi_file_entry_t;
 
 typedef struct pi_file {
 	int 	err;
-	int	for_writing;
-	int	app_info_size;
-	int	sort_info_size;
+	int	for_writing;		/**< Non-zero if the file was opened with pi_file_create() */
+	int	app_info_size;		/**< Size of the appInfo block */
+	int	sort_info_size;		/**< Size of the sortInfo block */
 	int	next_record_list_id;
 	int	resource_flag;
 	int	ent_hdr_size;
-	int	nentries;
-	int	nentries_allocated;
+	int	nentries;		/**< Number of actual entries in the entries memory block */
+	int	nentries_allocated;	/**< Number of entries allocated in the entries memory block */
 	int	rbuf_size;
-	FILE 	*f;
-	FILE 	*tmpf;
-	char 	*file_name;
-	void 	*app_info;
-	void	*sort_info;
+	FILE 	*f;			/**< Actual on-disk file */
+	FILE 	*tmpf;			/**< Temporary file for databases opened with pi_file_create() */
+	char 	*file_name;		/**< Access path */
+	void 	*app_info;		/**< Pointer to the appInfo block or NULL */
+	void	*sort_info;		/**< Pointer to the sortInfo block or NULL */
 	void	*rbuf;
-	unsigned long unique_id_seed;
-	struct 	DBInfo info;
-	struct 	pi_file_entry *entries;
+	unsigned long unique_id_seed;	/**< Database file's unique ID seed as read from an existing file */
+	struct 	DBInfo info;		/**< Database information and attributes */
+	struct 	pi_file_entry *entries;	/**< Array of records / resources */
 } pi_file_t;
 
 /** @brief Transfer progress callback structure */
@@ -98,71 +118,250 @@ enum piProgressType {
 #define PI_TRANSFER_STOP	0		/**< Returned by progress callback to stop the transfer */
 #define	PI_TRANSFER_CONTINUE	1		/**< Returned by progress callback to continue the transfer */
 
-/* read-only open */
-extern pi_file_t *pi_file_open
-	PI_ARGS((const char *name));
+/** @name Opening and closing files */
+/*@{*/
+	/** @brief Open a database for read-only access
+	 *
+	 * Don't dispose of the returned structure directly.
+	 * Use pi_file_close() instead.
+	 *
+	 * @param name The access path to the database to open on the local machine
+	 * @return An initialized pi_file_t structure or NULL.
+	 */
+	extern pi_file_t *pi_file_open
+		PI_ARGS((const char *name));
 
-extern pi_file_t *pi_file_create
-    PI_ARGS((const char *name, const struct DBInfo *INPUT));
+	/** @brief Create a new database file
+	 *
+	 * A new database file is create on the local machine.
+	 *
+	 * @param name Access path of the new file to create
+	 * @param INPUT	Characteristics of the database to create
+	 * @return A new pi_file_t structure. Use pi_file_close() to write data and close file.
+	 */
+	extern pi_file_t *pi_file_create
+	    PI_ARGS((const char *name, const struct DBInfo *INPUT));
 
-/* closes read or write handle */
-extern int pi_file_close PI_ARGS((pi_file_t * pf));
+	/** @brief Closes a local file
+	 *
+	 * If the file had been opened with pi_file_create, all modifications
+	 * are written to disk before the file is closed
+	 *
+	 * @param pf	The pi_file_t structure is being disposed of by this function
+	 * @return An error code (see file pi-error.h)
+	 */
+	extern int pi_file_close PI_ARGS((pi_file_t *pf));
+/*@}*/
 
-extern void pi_file_get_info
-    PI_ARGS((pi_file_t * pf, struct DBInfo *OUTPUT));
-extern void pi_file_get_app_info
-    PI_ARGS((pi_file_t * pf, void **datap, size_t *sizep));
-extern void pi_file_get_sort_info
-    PI_ARGS((pi_file_t * pf, void **dadtap, size_t *sizep));
+/** @name Reading from open files */
+/*@{*/
+	/** @brief Returns database specification
+	 *
+	 * @param pf	An open file
+	 * @return DBInfo structure describing the file
+	 */
+	extern void pi_file_get_info
+	    PI_ARGS((const pi_file_t *pf, struct DBInfo *OUTPUT));
 
-extern int pi_file_read_resource
-    PI_ARGS((pi_file_t * pf, int idx, void **bufp, size_t *sizep,
-	     unsigned long *type, int *idp));
-extern int pi_file_read_resource_by_type_id
-    PI_ARGS((pi_file_t * pf, unsigned long type, int id_,
-	     void **bufp, size_t *sizep, int *idxp));
+	/** @brief Returns the file's appInfo block
+	 *
+	 * The returned data is not a copy of the pi_file_t's appInfo
+	 * structures. Don't dispose or modify it.
+	 *
+	 * @param pf An open file
+	 * @param datap On return, ptr to appInfo data or NULL
+	 * @param sizep On return, size of the appInfoBlock
+	 */
+	extern void pi_file_get_app_info
+	    PI_ARGS((pi_file_t *pf, void **datap, size_t *sizep));
 
-extern int pi_file_type_id_used
-    PI_ARGS((pi_file_t * pf, unsigned long type, int id_));
-extern int pi_file_id_used
-    PI_ARGS((pi_file_t * pf, pi_uid_t uid));
+	/** @brief Returns the file's sortInfo block
+	 *
+	 * The returned data is not a copy of the pi_file_t's sortInfo
+	 * block: do not dispose of it!
+	 *
+	 * @param pf An open file
+	 * @param datap On return, ptr to sortInfo data or NULL
+	 * @param sizep On return, size of the sortInfoBlock
+	 */
+	extern void pi_file_get_sort_info
+	    PI_ARGS((pi_file_t *pf, void **dadtap, size_t *sizep));
 
-extern int pi_file_read_record
-    PI_ARGS((pi_file_t * pf, int idx, void **bufp, size_t *sizep,
-	     int *attrp, int *catp, pi_uid_t * uidp));
-extern int pi_file_read_record_by_id
-    PI_ARGS((pi_file_t * pf, pi_uid_t uid, void **bufp,
-	     size_t *sizep, int *idxp, int *attrp, int *catp));
+	/** @brief Read a resource by index
+	 *
+	 * If it exists, the returned data points directly into the file
+	 * structures. Don't dispose or modify it.
+	 *
+	 * @param pf An open file
+	 * @param resindex The resource index
+	 * @param bufp On return, pointer to the resource data block
+	 * @param sizep If not NULL, size of the resource data
+	 * @param restype If not NULL, resource type
+	 * @param resid If not NULL, resource
+	 * @return Negative error code on error
+	 */
+	extern int pi_file_read_resource
+	    PI_ARGS((pi_file_t *pf, int resindex, void **bufp, size_t *sizep,
+		     unsigned long *restype, int *resid));
 
-extern void pi_file_get_entries
-    PI_ARGS((pi_file_t * pf, int *entries));
+	/** @brief Read a resource by type and ID
+	 *
+	 * If it exists, the returned data points directly into the file
+	 * structures.
+	 *
+	 * @param pf An open file
+	 * @param restype Resource type
+	 * @param resid Resource ID
+	 * @param bufp On return, pointer to the resource data or NULL
+	 * @param sizep If not NULL, the size of the resource data
+	 * @param resindex If not NULL, on return contains the resource index
+	 * @return Negative error code on error
+	 */
+	extern int pi_file_read_resource_by_type_id
+	    PI_ARGS((pi_file_t *pf, unsigned long restype, int resid,
+		     void **bufp, size_t *sizep, int *resindex));
 
-/* may call these any time before close (even multiple times) */
-extern int pi_file_set_info
-    PI_ARGS((pi_file_t * pf, const struct DBInfo * infop));
-extern int pi_file_set_app_info
-    PI_ARGS((pi_file_t * pf, void *data, size_t size));
-extern int pi_file_set_sort_info
-    PI_ARGS((pi_file_t * pf, void *data, size_t size));
+	/** @brief Checks whether a resource type/id exists in an open file
+	 *
+	 * @param pf An open file
+	 * @param restype Resource type to check
+	 * @param resid Resource ID to check
+	 * @return Non-zero if a resource with same type and id exists
+	 */
+	extern int pi_file_type_id_used
+	    PI_ARGS((const pi_file_t *pf, unsigned long restype, int resid));
 
-extern int pi_file_append_resource
-    PI_ARGS((pi_file_t * pf, void *buf, size_t size,
-	     unsigned long type, int id_));
-extern int pi_file_append_record
-    PI_ARGS((pi_file_t * pf, void *buf, size_t size, int attr,
-	     int category, pi_uid_t uid));
+	/** @brief Checks whether a record with the given UID exists
+	 *
+	 * @param pf An open file
+	 * @param uid The record UID to look for
+	 * @return Non-zero if a record with the same UID exists
+	 */
+	extern int pi_file_id_used
+	    PI_ARGS((const pi_file_t *pf, recordid_t uid));
 
-extern int pi_file_retrieve
-    PI_ARGS((pi_file_t * pf, int socket, int cardno,
-		progress_func report_progress));
-extern int pi_file_install
-    PI_ARGS((pi_file_t * pf, int socket, int cardno,
-		progress_func report_progress));
-extern int pi_file_merge
-    PI_ARGS((pi_file_t * pf, int socket, int cardno,
-		progress_func report_progress));
+	/** @brief Read a record by index
+	 *
+	 * If it exists, the returned data points directly into the file
+	 * structures. Don't dispose or modify it.
+	 *
+	 * @param pf An open file
+	 * @param recindex Record index
+	 * @param bufp On return, pointer to the resource data or NULL
+	 * @param sizep If not NULL, the size of the resource data
+	 * @param recattrs If not NULL, the record attributes
+	 * @param category If not NULL, the record category
+	 * @param recuid If not NULL, the record unique ID
+	 * @return Negative error code on error
+	 */
+	extern int pi_file_read_record
+	    PI_ARGS((pi_file_t *pf, int recindex, void **bufp, size_t *sizep,
+		     int *recattrs, int *category, recordid_t *recuid));
 
-/** @name Utilities */
+	/** @brief Read a record by unique ID
+	 *
+	 * If it exists, the returned data points directly into the file
+	 * structures. Don't dispose or modify it.
+	 *
+	 * @param pf An open file
+	 * @param recuid The record unique ID
+	 * @param bufp On return, pointer to the resource data or NULL
+	 * @param sizep If not NULL, the size of the resource data
+	 * @param recindex If not NULL, the record index
+	 * @param recattrs If not NULL, the record attributes
+	 * @param category If not NULL, the record category
+	 * @return Negative error code on error
+	 */
+	extern int pi_file_read_record_by_id
+	    PI_ARGS((pi_file_t *pf, recordid_t recuid, void **bufp,
+		     size_t *sizep, int *recindex, int *recattrs, int *category));
+
+#ifndef SWIG
+	extern void pi_file_get_entries
+	    PI_ARGS((pi_file_t *pf, int *entries));
+#endif
+/*@}*/
+
+/** @name Modifying files open for write */
+/*@{*/
+	/* may call these any time before close (even multiple times) */
+	extern int pi_file_set_info
+	    PI_ARGS((pi_file_t *pf, const struct DBInfo *infop));
+
+	/** @brief Set the database's appInfo block
+	 *
+	 * The file takes ownership of the passed data block
+	 *
+	 * @param pf A file open for write
+	 * @param data Pointer to the data or NULL to clear the appInfo block
+	 * @param size Size of the new data block
+	 * @return Negative code on error
+	 */
+	extern int pi_file_set_app_info
+	    PI_ARGS((pi_file_t *pf, void *data, size_t size));
+
+	/** @brief Set the database's sortInfo block
+	 *
+	 * The file takes ownership of the passed data block
+	 *
+	 * @param pf A file open for write
+	 * @param data Pointer to the data or NULL to clear the sortInfo block
+	 * @param size Size of the new data block
+	 * @return Negative code on error
+	 */
+	extern int pi_file_set_sort_info
+	    PI_ARGS((pi_file_t *pf, void *data, size_t size));
+
+	/** @brief Add a resource to a file open for write
+	 *
+	 * The file takes ownership of the passed data block
+	 * Function will return PI_ERR_FILE_ALREADY_EXISTS if resource with
+	 * same type/id already exists
+	 *
+	 * @param pf A file open for write
+	 * @param data The resource data
+	 * @param size The resource size
+	 * @param restype Resource type
+	 * @param resid Resource ID
+	 * @return Negative code on error.
+	 */
+	extern int pi_file_append_resource
+	    PI_ARGS((pi_file_t *pf, void *data, size_t size,
+		     unsigned long restype, int resid));
+
+	/** @brief Add a record to a file open for write
+	 *
+	 * The file takes ownership of the passed data block
+	 * Function will return PI_ERR_FILE_ALREADY_EXISTS if record with
+	 * same unique ID already exists in the database
+	 *
+	 * @param pf A file open for write
+	 * @param data The resource data
+	 * @param size The resource size
+	 * @param recattrs Record attributes
+	 * @param category Record category
+	 * @param recuid Record unique ID (pass 0 to have recuid automatically allocated)
+	 * @return Negative code on error.
+	 */
+	extern int pi_file_append_record
+	    PI_ARGS((pi_file_t *pf, void *buf, size_t size, int recattrs,
+		     int category, recordid_t recuid));
+/*@}*/
+
+/** @name File transfer utilities */
+/*@{*/
+	extern int pi_file_retrieve
+	    PI_ARGS((pi_file_t *pf, int socket, int cardno,
+			progress_func report_progress));
+	extern int pi_file_install
+	    PI_ARGS((pi_file_t *pf, int socket, int cardno,
+			progress_func report_progress));
+	extern int pi_file_merge
+	    PI_ARGS((pi_file_t *pf, int socket, int cardno,
+			progress_func report_progress));
+/*@}*/
+
+/** @name Time utilities */
 /*@{*/
 	extern unsigned long unix_time_to_pilot_time
 	    PI_ARGS((time_t t));

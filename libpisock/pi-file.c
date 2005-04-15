@@ -90,9 +90,12 @@
 #define PI_RESOURCE_ENT_SIZE 10
 #define PI_RECORD_ENT_SIZE 8
 
-/* Declare prototypes */
+/* Local prototypes */
 static int pi_file_close_for_write(pi_file_t *pf);
 static void pi_file_free(pi_file_t *pf);
+static int pi_file_find_resource_by_type_id(const pi_file_t *pf, unsigned long restype, int resid, int *resindex);
+static pi_file_entry_t *pi_file_append_entry(pi_file_t *pf);
+static int pi_file_set_rbuf_size(pi_file_t *pf, size_t size);
 
 /* this seems to work, but what about leap years? */
 /*#define PILOT_TIME_DELTA (((unsigned)(1970 - 1904) * 365 * 24 * 60 * 60) + 1450800)*/
@@ -119,55 +122,18 @@ static void pi_file_free(pi_file_t *pf);
    return those.
                                                                      --KJA
    */
-
-
-/***********************************************************************
- *
- * Function:    pilot_time_to_unix_time
- *
- * Summary:     Convert the Palm time to Unix time
- *
- * Parameters:  palm time
- *
- * Returns:     unix time
- *
- ***********************************************************************/
 time_t
 pilot_time_to_unix_time(unsigned long raw_time)
 {
 	return (time_t) (raw_time - PILOT_TIME_DELTA);
 }
 
-
-/***********************************************************************
- *
- * Function:    unix_time_to_pilot_time
- *
- * Summary:     Convert Unix time to Palm time
- *
- * Parameters:  unix time
- *
- * Returns:     palm time
- *
- ***********************************************************************/
 unsigned long
 unix_time_to_pilot_time(time_t t)
 {
 	return (unsigned long) ((unsigned long) t + PILOT_TIME_DELTA);
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file
- *
- * Summary:     Open .prc or .pdb file for reading
- *
- * Parameters:  file name
- *
- * Returns:     pi_file_t *file handle or NULL if failed
- *
- ***********************************************************************/
 pi_file_t
 *pi_file_open(const char *name)
 {
@@ -370,110 +336,30 @@ bad:
 	return NULL;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_close
- *
- * Summary:     Close the open file handle
- *
- * Parameters:  file handle pi_file_t*
- *
- * Returns:     0 for success, negative otherwise
- *
- ***********************************************************************/
 int
 pi_file_close(pi_file_t *pf)
 {
 	int 	err;
 
 	if (!pf)
-		return -1;
+		return PI_ERR_FILE_INVALID;
 
-	if (pf->for_writing) {
-		if (pi_file_close_for_write(pf) < 0)
-			pf->err = 1;
-	}
+	if (pf->for_writing)
+		pf->err = pi_file_close_for_write(pf);
 
 	err = pf->err;
 
 	pi_file_free(pf);
 
-	return err ? -1 : 0;
+	return err;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_free
- *
- * Summary:     Flush and clean the file handles used
- *
- * Parameters:  file handle pi_file_t*
- *
- * Returns:     void
- *
- ***********************************************************************/
-static
-void pi_file_free(pi_file_t *pf)
-{
-
-	ASSERT (pf != NULL);
-
-	if (pf->f != 0)
-		fclose(pf->f);
-	
-	if (pf->app_info != NULL)
-		free(pf->app_info);
-	
-	if (pf->sort_info != NULL)
-		free(pf->sort_info);
-	
-	if (pf->entries != NULL)
-		free(pf->entries);
-	
-	if (pf->file_name != NULL)
-		free(pf->file_name);
-	
-	if (pf->rbuf != NULL)
-		free(pf->rbuf);
-	
-	if (pf->tmpf != 0)
-		fclose(pf->tmpf);
-	
-	free(pf);
-}
-
-
-/***********************************************************************
- *
- * Function:    pi_file_get_info
- *
- * Summary:	retrieve file pi_file info
- *
- * Parameters:  file handle pi_file_t*, DBInfo
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 void
-pi_file_get_info(pi_file_t *pf, struct DBInfo *infop)
+pi_file_get_info(const pi_file_t *pf, struct DBInfo *infop)
 {
 	*infop = pf->info;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_get_app_info
- *
- * Summary:	retrieve pi_file app info
- *
- * Parameters:  file handle pi_file_t*, data buffer*, size*
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 void
 pi_file_get_app_info(pi_file_t *pf, void **datap, size_t *sizep)
 {
@@ -481,18 +367,6 @@ pi_file_get_app_info(pi_file_t *pf, void **datap, size_t *sizep)
 	*sizep = pf->app_info_size;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_get_sort_info
- *
- * Summary:	retrieves pi_file sort info
- *
- * Parameters:  file handle pi_file_t*, data*, size*
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 void
 pi_file_get_sort_info(pi_file_t *pf, void **datap, size_t *sizep)
 {
@@ -500,136 +374,28 @@ pi_file_get_sort_info(pi_file_t *pf, void **datap, size_t *sizep)
 	*sizep = pf->sort_info_size;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_set_rbuf_size
- *
- * Summary:	set pi_file rbuf size
- *
- * Parameters:  file handle pi_file_t*, rbuf size
- *
- * Returns:     0 for success, negative otherwise
- *
- ***********************************************************************/
-static int
-pi_file_set_rbuf_size(pi_file_t *pf, size_t size)
-{
-	size_t 	new_size;
-	void 	*rbuf;
-
-	if (size > (size_t)pf->rbuf_size) {
-		if (pf->rbuf_size == 0) {
-			new_size = size + 2048;
-			rbuf = malloc(new_size);
-		} else {
-			new_size = size + 2048;
-			rbuf = realloc(pf->rbuf, new_size);
-		}
-
-		if (rbuf == NULL)
-			return PI_ERR_GENERIC_MEMORY;
-
-		pf->rbuf_size = new_size;
-		pf->rbuf = rbuf;
-	}
-
-	return 0;
-}
-
-
-/***********************************************************************
- *
- * Function:    pi_file_find_resource_by_type_id
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Negative on error, 0 if found
- *
- ***********************************************************************/
-static int
-pi_file_find_resource_by_type_id(pi_file_t *pf,
-				 unsigned long type, int id_, int *idxp)
-{
-	int 	i;
-	struct 	pi_file_entry *entp;
-
-	if (!pf->resource_flag)
-		return PI_ERR_FILE_INVALID;
-
-	for (i = 0, entp = pf->entries; i < pf->nentries;
-	     i++, entp++) {
-		if (entp->type == type && entp->id_ == id_) {
-			if (idxp)
-				*idxp = i;
-			return 0;
-		}
-	}
-	return PI_ERR_FILE_NOT_FOUND;
-}
-
-
-/***********************************************************************
- *
- * Function:    pi_file_read_resource_by_type_id
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Negative on error (ie PI_ERR_FILE_RES_NOT_FOUND)
- *
- ***********************************************************************/
 int
-pi_file_read_resource_by_type_id(pi_file_t *pf, unsigned long type,
-				 int id_, void **bufp, size_t *sizep,
-				 int *idxp)
+pi_file_read_resource_by_type_id(pi_file_t *pf, unsigned long restype,
+				 int resid, void **bufp, size_t *sizep,
+				 int *resindex)
 {
 	int 	i,
 		result;
 
-	result = pi_file_find_resource_by_type_id(pf, type, id_, &i);
+	result = pi_file_find_resource_by_type_id(pf, restype, resid, &i);
 	if (result < 0)
 		return result;
-
-	if (idxp)
-		*idxp = i;
+	if (resindex)
+		*resindex = i;
 	return pi_file_read_resource(pf, i, bufp, sizep, NULL, NULL);
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_type_id_used
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
-pi_file_type_id_used(pi_file_t *pf, unsigned long type, int id_)
+pi_file_type_id_used(const pi_file_t *pf, unsigned long restype, int resid)
 {
-	return pi_file_find_resource_by_type_id(pf, type, id_, NULL) == 0;
+	return pi_file_find_resource_by_type_id(pf, restype, resid, NULL) == 0;
 }
 
-
-/*********************************************************************** 
- * 
- * Function:    pi_file_read_resource
- *
- * Summary:     Returned buffer is valid until next call, or until
- *              pi_file_close
- *
- * Parameters:  None
- *
- * Returns:     Negative on error, 0 if no error  
- *
- ***********************************************************************/
 int
 pi_file_read_resource(pi_file_t *pf, int i,
 		      void **bufp, size_t *sizep, unsigned long *type,
@@ -666,23 +432,10 @@ pi_file_read_resource(pi_file_t *pf, int i,
 	return 0;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_read_record
- *
- * Summary:     Returned buffer is valid until next call, or until
- *              pi_file_close
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
-pi_file_read_record(pi_file_t *pf, int i,
-		    void **bufp, size_t *sizep, int *attrp, int *catp,
-		    pi_uid_t * uidp)
+pi_file_read_record(pi_file_t *pf, int recindex,
+		    void **bufp, size_t *sizep, int *recattrs, int *category,
+		    recordid_t * recuid)
 {
 	int result;
 	pi_file_entry_t *entp;
@@ -690,10 +443,10 @@ pi_file_read_record(pi_file_t *pf, int i,
 	if (pf->for_writing || pf->resource_flag)
 		return PI_ERR_FILE_INVALID;
 
-	if (i < 0 || i >= pf->nentries)
+	if (recindex < 0 || recindex >= pf->nentries)
 		return PI_ERR_GENERIC_ARGUMENT;
 
-	entp = &pf->entries[i];
+	entp = &pf->entries[recindex];
 
 	if (bufp) {
 		if ((result = pi_file_set_rbuf_size(pf, (size_t) entp->size)) < 0) {
@@ -702,7 +455,7 @@ pi_file_read_record(pi_file_t *pf, int i,
 			return result;
 		}
 
-		fseek(pf->f, pf->entries[i].offset, SEEK_SET);
+		fseek(pf->f, pf->entries[recindex].offset, SEEK_SET);
 
 		if (fread(pf->rbuf, 1, (size_t) entp->size, pf->f) !=
 		    (size_t) entp->size) {
@@ -715,34 +468,22 @@ pi_file_read_record(pi_file_t *pf, int i,
 	}
 
 	LOG ((PI_DBG_API, PI_DBG_LVL_INFO,
-	     "FILE READ_RECORD Record: %d Bytes: %d\n", i, entp->size));
+	     "FILE READ_RECORD Record: %d Bytes: %d\n", recindex, entp->size));
 
 	if (sizep)
 		*sizep = entp->size;
-	if (attrp)
-		*attrp = entp->attrs & 0xf0;
-	if (catp)
-		*catp = entp->attrs & 0xf;
-	if (uidp)
-		*uidp = entp->uid;
+	if (recattrs)
+		*recattrs = entp->attrs & 0xf0;
+	if (category)
+		*category = entp->attrs & 0xf;
+	if (recuid)
+		*recuid = entp->uid;
 
 	return 0;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_read_record_by_id
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
-pi_file_read_record_by_id(pi_file_t *pf, pi_uid_t uid,
+pi_file_read_record_by_id(pi_file_t *pf, recordid_t uid,
 			  void **bufp, size_t *sizep, int *idxp, int *attrp,
 			  int *catp)
 {
@@ -762,20 +503,8 @@ pi_file_read_record_by_id(pi_file_t *pf, pi_uid_t uid,
 	return PI_ERR_FILE_NOT_FOUND;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_id_used
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
-pi_file_id_used(pi_file_t *pf, pi_uid_t uid)
+pi_file_id_used(const pi_file_t *pf, recordid_t uid)
 {
 	int 	i;
 	struct 	pi_file_entry *entp;
@@ -787,18 +516,6 @@ pi_file_id_used(pi_file_t *pf, pi_uid_t uid)
 	return 0;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_create
- *
- * Summary:     
- *
- * Parameters:  None
- *
- * Returns:     NULL on error
- *
- ***********************************************************************/
 pi_file_t *
 pi_file_create(const char *name, const struct DBInfo *info)
 {
@@ -831,19 +548,6 @@ bad:
 	return (NULL);
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_set_info
- *
- * Summary:     May call these any time before close (even multiple
- *              times)
- *
- * Parameters:  None
- *
- * Returns:     Negative on error
- *
- ***********************************************************************/
 int
 pi_file_set_info(pi_file_t *pf, const struct DBInfo *ip)
 {
@@ -859,18 +563,6 @@ pi_file_set_info(pi_file_t *pf, const struct DBInfo *ip)
 	return 0;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_set_app_info
- *
- * Summary:     
- *
- * Parameters:  None
- *
- * Returns:     Negative on error
- *
- ***********************************************************************/
 int
 pi_file_set_app_info(pi_file_t *pf, void *data, size_t size)
 {
@@ -897,18 +589,6 @@ pi_file_set_app_info(pi_file_t *pf, void *data, size_t size)
 	return 0;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_set_sort_info
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_file_set_sort_info(pi_file_t *pf, void *data, size_t size)
 {
@@ -935,268 +615,66 @@ pi_file_set_sort_info(pi_file_t *pf, void *data, size_t size)
 	return 0;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_append_entry
- *
- * Summary:     Internal function to extend entry list if necessary,
- *              and return a pointer to the next available slot
- *
- * Parameters:  None
- *
- * Returns:     NULL on allocation error
- *
- ***********************************************************************/
-static pi_file_entry_t
-*pi_file_append_entry(pi_file_t *pf)
-{
-	int 	new_count;
-	size_t	new_size;
-	struct 	pi_file_entry *new_entries;
-	struct 	pi_file_entry *entp;
-
-	if (pf->nentries >= pf->nentries_allocated) {
-		if (pf->nentries_allocated == 0)
-			new_count = 100;
-		else
-			new_count = pf->nentries_allocated * 3 / 2;
-		new_size = new_count * sizeof *pf->entries;
-
-		if (pf->entries == NULL)
-			new_entries = malloc(new_size);
-		else
-			new_entries = realloc(pf->entries, new_size);
-
-		if (new_entries == NULL)
-			return NULL;
-
-		pf->nentries_allocated = new_count;
-		pf->entries = new_entries;
-	}
-
-	entp = &pf->entries[pf->nentries++];
-	memset(entp, 0, sizeof *entp);
-	return entp;
-}
-
-
-/***********************************************************************
- *
- * Function:    pi_file_append_resource
- *
- * Summary:
- *
- * Parameters:  None 
- *
- * Returns:     Negative on error, size written on success
- *
- ***********************************************************************/
 int
-pi_file_append_resource(pi_file_t *pf, void *buf, size_t size,
-	unsigned long type, int id_)
+pi_file_append_resource(pi_file_t *pf, void *data, size_t size,
+	unsigned long restype, int resid)
 {
 	pi_file_entry_t *entp;
 
 	if (!pf->for_writing || !pf->resource_flag)
 		return PI_ERR_FILE_INVALID;
+	if (pi_file_find_resource_by_type_id(pf, restype, resid, NULL))
+		return PI_ERR_FILE_ALREADY_EXISTS;
 
 	entp = pi_file_append_entry(pf);
+	if (entp == NULL)
+		return PI_ERR_GENERIC_MEMORY;
 
-	if (size && fwrite(buf, size, 1, pf->tmpf) != 1) {
+	if (size && fwrite(data, size, 1, pf->tmpf) != 1) {
 		pf->err = 1;
 		return PI_ERR_FILE_ERROR;
 	}
 
 	entp->size 	= size;
-	entp->type 	= type;
-	entp->id_ 	= id_;
+	entp->type 	= restype;
+	entp->id_ 	= resid;
 
 	return size;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_append_record  
- *
- * Summary:
- *
- * Parameters:  None 
- *
- * Returns:     Negative on error, size written on success
- *
- ***********************************************************************/
 int
-pi_file_append_record(pi_file_t *pf, void *buf, size_t size,
-	int attrs, int category, pi_uid_t uid)
+pi_file_append_record(pi_file_t *pf, void *data, size_t size,
+	int recattrs, int category, recordid_t recuid)
 {
 	pi_file_entry_t *entp;
 
 	if (!pf->for_writing || pf->resource_flag)
 		return PI_ERR_FILE_INVALID;
+	if (recuid && pi_file_id_used(pf, recuid))
+		return PI_ERR_FILE_ALREADY_EXISTS;
 
 	entp = pi_file_append_entry(pf);
+	if (entp == NULL)
+		return PI_ERR_GENERIC_MEMORY;
 
-	if (size && fwrite(buf, size, 1, pf->tmpf) != 1) {
+	if (size && fwrite(data, size, 1, pf->tmpf) != 1) {
 		pf->err = 1;
 		return PI_ERR_FILE_ERROR;
 	}
 
 	entp->size 	= size;
-	entp->attrs 	= (attrs & 0xf0) | (category & 0xf);
-	entp->uid 	= uid;
+	entp->attrs 	= (recattrs & 0xf0) | (category & 0xf);
+	entp->uid 	= recuid;
 
 	return size;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_get_entries
- *
- * Summary:     
- *
- * Parameters:  None   
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 void
 pi_file_get_entries(pi_file_t *pf, int *entries)
 {
 	*entries = pf->nentries;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_close_for_write 
- *
- * Summary:     
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int
-pi_file_close_for_write(pi_file_t *pf)
-{
-	int 	i,
-		offset,
-		c;
-	FILE 	*f;
-	
-	struct 	DBInfo *ip;
-	struct 	pi_file_entry *entp;
-		
-	unsigned char buf[512];
-	unsigned char *p;
-
-	ip = &pf->info;
-	if (pf->nentries >= 64 * 1024) {
-		LOG((PI_DBG_API, PI_DBG_LVL_ERR,
-			 "pi_file_close_for_write: too many entries "
-			 "for this implentation of pi-file: %d\n",
-			 pf->nentries));
-		return PI_ERR_FILE_INVALID;
-	}
-
-	if ((f = fopen(pf->file_name, "wb")) == NULL)
-		return PI_ERR_FILE_ERROR;
-
-	ip = &pf->info;
-
-	offset = PI_HDR_SIZE + pf->nentries * pf->ent_hdr_size + 2;
-
-	p = buf;
-	memcpy(p, ip->name, 32);
-	set_short(p + 32, ip->flags);
-	set_short(p + 34, ip->version);
-	set_long(p + 36, unix_time_to_pilot_time(ip->createDate));
-	set_long(p + 40, unix_time_to_pilot_time(ip->modifyDate));
-	set_long(p + 44, unix_time_to_pilot_time(ip->backupDate));
-	set_long(p + 48, ip->modnum);
-	set_long(p + 52, pf->app_info_size ? offset : 0);
-	offset += pf->app_info_size;
-	set_long(p + 56, pf->sort_info_size ? offset : 0);
-	offset += pf->sort_info_size;
-	set_long(p + 60, ip->type);
-	set_long(p + 64, ip->creator);
-	set_long(p + 68, pf->unique_id_seed);
-	set_long(p + 72, pf->next_record_list_id);
-	set_short(p + 76, pf->nentries);
-
-	if (fwrite(buf, PI_HDR_SIZE, 1, f) != 1)
-		goto bad;
-
-	for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
-		entp->offset = offset;
-
-		p = buf;
-		if (pf->resource_flag) {
-			set_long(p, entp->type);
-			set_short(p + 4, entp->id_);
-			set_long(p + 6, entp->offset);
-		} else {
-			set_long(p, entp->offset);
-			set_byte(p + 4, entp->attrs);
-			set_treble(p + 5, entp->uid);
-		}
-
-		if (fwrite(buf, (size_t) pf->ent_hdr_size, 1, f) != 1)
-			goto bad;
-
-		offset += entp->size;
-	}
-
-	/* This may just be packing */
-	fwrite("\0\0", 1, 2, f);
-
-	if (pf->app_info
-	    && (fwrite(pf->app_info, 1,(size_t) pf->app_info_size, f) !=
-		(size_t) pf->app_info_size))
-		goto bad;
-
-	if (pf->sort_info
-	    && (fwrite(pf->sort_info, 1, (size_t) pf->sort_info_size, f) !=
-		(size_t) pf->sort_info_size))
-		goto bad;
-
-
-	rewind(pf->tmpf);
-	do {
-		c = fread (buf, 1, sizeof (buf), pf->tmpf);
-		fwrite (buf, 1, (size_t)c, f);
-	} while (c == sizeof (buf));
-	fflush(f);
-
-	if (ferror(f) || feof(f) || !feof(pf->tmpf))
-		goto bad;
-
-	fclose(f);
-	return 0;
-
-bad:
-	fclose(f);
-	return PI_ERR_FILE_ERROR;
-}
-
-
-/***********************************************************************
- *
- * Function:    pi_file_retrieve
- *
- * Summary:     Fetch a file from the device. If caller wants to be
- *				notified of download progress, it should pass a
- *				progress_func ptr.
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	progress_func report_progress)
@@ -1364,18 +842,6 @@ fail:
 	return result;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_install
- *
- * Summary:     
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_file_install(pi_file_t *pf, int socket, int cardno,
 	progress_func report_progress)
@@ -1632,18 +1098,6 @@ fail:
 	return result;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_file_merge
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_file_merge(pi_file_t *pf, int socket, int cardno,
 	progress_func report_progress)
@@ -1788,6 +1242,270 @@ fail:
 		result = pi_set_error(socket, PI_ERR_FILE_ERROR);
 	return result;
 }
+
+/*********************************************************************************/
+/*                                                                               */
+/*              INTERNAL FUNCTIONS                                               */
+/*                                                                               */
+/*********************************************************************************/
+
+/***********************************************************************
+ *
+ * Function:    pi_file_close_for_write 
+ *
+ * Summary:     Writes a file to disk
+ *
+ * Parameters:  None
+ *
+ * Returns:     Nothing
+ *
+ ***********************************************************************/
+static int
+pi_file_close_for_write(pi_file_t *pf)
+{
+	int 	i,
+		offset,
+		c;
+	FILE 	*f;
+	
+	struct 	DBInfo *ip;
+	struct 	pi_file_entry *entp;
+		
+	unsigned char buf[512];
+	unsigned char *p;
+
+	ip = &pf->info;
+	if (pf->nentries >= 64 * 1024) {
+		LOG((PI_DBG_API, PI_DBG_LVL_ERR,
+			 "pi_file_close_for_write: too many entries "
+			 "for this implentation of pi-file: %d\n",
+			 pf->nentries));
+		return PI_ERR_FILE_INVALID;
+	}
+
+	if ((f = fopen(pf->file_name, "wb")) == NULL)
+		return PI_ERR_FILE_ERROR;
+
+	ip = &pf->info;
+
+	offset = PI_HDR_SIZE + pf->nentries * pf->ent_hdr_size + 2;
+
+	p = buf;
+	memcpy(p, ip->name, 32);
+	set_short(p + 32, ip->flags);
+	set_short(p + 34, ip->version);
+	set_long(p + 36, unix_time_to_pilot_time(ip->createDate));
+	set_long(p + 40, unix_time_to_pilot_time(ip->modifyDate));
+	set_long(p + 44, unix_time_to_pilot_time(ip->backupDate));
+	set_long(p + 48, ip->modnum);
+	set_long(p + 52, pf->app_info_size ? offset : 0);
+	offset += pf->app_info_size;
+	set_long(p + 56, pf->sort_info_size ? offset : 0);
+	offset += pf->sort_info_size;
+	set_long(p + 60, ip->type);
+	set_long(p + 64, ip->creator);
+	set_long(p + 68, pf->unique_id_seed);
+	set_long(p + 72, pf->next_record_list_id);
+	set_short(p + 76, pf->nentries);
+
+	if (fwrite(buf, PI_HDR_SIZE, 1, f) != 1)
+		goto bad;
+
+	for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
+		entp->offset = offset;
+
+		p = buf;
+		if (pf->resource_flag) {
+			set_long(p, entp->type);
+			set_short(p + 4, entp->id_);
+			set_long(p + 6, entp->offset);
+		} else {
+			set_long(p, entp->offset);
+			set_byte(p + 4, entp->attrs);
+			set_treble(p + 5, entp->uid);
+		}
+
+		if (fwrite(buf, (size_t) pf->ent_hdr_size, 1, f) != 1)
+			goto bad;
+
+		offset += entp->size;
+	}
+
+	/* This may just be packing */
+	fwrite("\0\0", 1, 2, f);
+
+	if (pf->app_info
+	    && (fwrite(pf->app_info, 1,(size_t) pf->app_info_size, f) !=
+		(size_t) pf->app_info_size))
+		goto bad;
+
+	if (pf->sort_info
+	    && (fwrite(pf->sort_info, 1, (size_t) pf->sort_info_size, f) !=
+		(size_t) pf->sort_info_size))
+		goto bad;
+
+
+	rewind(pf->tmpf);
+	do {
+		c = fread (buf, 1, sizeof (buf), pf->tmpf);
+		fwrite (buf, 1, (size_t)c, f);
+	} while (c == sizeof (buf));
+	fflush(f);
+
+	if (ferror(f) || feof(f) || !feof(pf->tmpf))
+		goto bad;
+
+	fclose(f);
+	return 0;
+
+bad:
+	fclose(f);
+	return PI_ERR_FILE_ERROR;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_file_free
+ *
+ * Summary:     Flush and clean the file handles used
+ *
+ * Parameters:  file handle pi_file_t*
+ *
+ * Returns:     void
+ *
+ ***********************************************************************/
+static
+void pi_file_free(pi_file_t *pf)
+{
+	ASSERT (pf != NULL);
+
+	if (pf->f != 0)
+		fclose(pf->f);
+	
+	if (pf->app_info != NULL)
+		free(pf->app_info);
+	
+	if (pf->sort_info != NULL)
+		free(pf->sort_info);
+	
+	if (pf->entries != NULL)
+		free(pf->entries);
+	
+	if (pf->file_name != NULL)
+		free(pf->file_name);
+	
+	if (pf->rbuf != NULL)
+		free(pf->rbuf);
+	
+	if (pf->tmpf != 0)
+		fclose(pf->tmpf);
+
+	/* in case caller forgets the struct has been freed... */
+	memset(pf, 0, sizeof(pi_file_t));
+
+	free(pf);
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_file_set_rbuf_size
+ *
+ * Summary:	set pi_file rbuf size
+ *
+ * Parameters:  file handle pi_file_t*, rbuf size
+ *
+ * Returns:     0 for success, negative otherwise
+ *
+ ***********************************************************************/
+static int
+pi_file_set_rbuf_size(pi_file_t *pf, size_t size)
+{
+	size_t 	new_size;
+	void 	*rbuf;
+
+	if (size > (size_t)pf->rbuf_size) {
+		if (pf->rbuf_size == 0) {
+			new_size = size + 2048;
+			rbuf = malloc(new_size);
+		} else {
+			new_size = size + 2048;
+			rbuf = realloc(pf->rbuf, new_size);
+		}
+
+		if (rbuf == NULL)
+			return PI_ERR_GENERIC_MEMORY;
+
+		pf->rbuf_size = new_size;
+		pf->rbuf = rbuf;
+	}
+
+	return 0;
+}
+
+/***********************************************************************
+ *
+ * Function:    pi_file_append_entry
+ *
+ * Summary:     Internal function to extend entry list if necessary,
+ *              and return a pointer to the next available slot
+ *
+ * Parameters:  None
+ *
+ * Returns:     NULL on allocation error
+ *
+ ***********************************************************************/
+static pi_file_entry_t
+*pi_file_append_entry(pi_file_t *pf)
+{
+	int 	new_count;
+	size_t	new_size;
+	struct 	pi_file_entry *new_entries;
+	struct 	pi_file_entry *entp;
+
+	if (pf->nentries >= pf->nentries_allocated) {
+		if (pf->nentries_allocated == 0)
+			new_count = 100;
+		else
+			new_count = pf->nentries_allocated * 3 / 2;
+		new_size = new_count * sizeof *pf->entries;
+
+		if (pf->entries == NULL)
+			new_entries = malloc(new_size);
+		else
+			new_entries = realloc(pf->entries, new_size);
+
+		if (new_entries == NULL)
+			return NULL;
+
+		pf->nentries_allocated = new_count;
+		pf->entries = new_entries;
+	}
+
+	entp = &pf->entries[pf->nentries++];
+	memset(entp, 0, sizeof *entp);
+	return entp;
+}
+
+static int
+pi_file_find_resource_by_type_id(const pi_file_t *pf,
+				 unsigned long restype, int resid, int *resindex)
+{
+	int 	i;
+	struct 	pi_file_entry *entp;
+
+	if (!pf->resource_flag)
+		return PI_ERR_FILE_INVALID;
+
+	for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
+		if (entp->type == restype && entp->id_ == resid) {
+			if (resindex)
+				*resindex = i;
+			return 0;
+		}
+	}
+	return PI_ERR_FILE_NOT_FOUND;
+}
+
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
 /* Local Variables: */
