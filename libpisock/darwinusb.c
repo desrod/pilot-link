@@ -1336,12 +1336,12 @@ u_flush(pi_socket_t *ps, int flags)
 static int
 u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
+	pthread_mutex_lock(&usb_thread_ready_mutex);
 	if (usb_thread == 0)
 	{
 		/* thread doesn't exist yet: create it and wait for
 		 * the init phase to be either successful or failed
 		 */
-		pthread_mutex_lock(&usb_thread_ready_mutex);
 		pthread_create(&usb_thread, NULL, usb_thread_run, NULL);
 		pthread_cond_wait(&usb_thread_ready_cond, &usb_thread_ready_mutex);
 		pthread_mutex_unlock(&usb_thread_ready_mutex);
@@ -1351,6 +1351,7 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 		errno = EINVAL;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 	}
+	pthread_mutex_unlock(&usb_thread_ready_mutex);
 	return 1;
 }
 
