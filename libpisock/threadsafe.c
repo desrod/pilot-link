@@ -49,5 +49,14 @@ int pi_mutex_unlock(pi_mutex_t *mutex)
 #endif
 }
 
+unsigned long pi_thread_id()
+{
+#if HAVE_PTHREAD
+	return (unsigned long)pthread_self();
+#else
+	return 0;
+#endif
+}
+
 #include "pi-threadsafe.h"
 
