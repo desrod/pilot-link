@@ -288,27 +288,33 @@ unsigned long makelong(char *c)
 void dumpline(const char *buf, size_t len, unsigned int addr)
 {
 	unsigned int i;
+	int offset;
+	char line[256];
 
-	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "  %.4x  ", addr);
+	offset = sprintf(line, "  %.4x  ", addr);
 
 	for (i = 0; i < 16; i++) {
-
 		if (i < len)
-			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "%.2x ",
+			offset += sprintf(line+offset, "%.2x ",
 			       0xff & (unsigned int) buf[i]);
-		else
-			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "   ");
+		else {
+			strcpy(line+offset, "   ");
+			offset += 3;
+		}
 	}
 
-	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "  ");
+	strcpy(line+offset, "  ");
+	offset += 2;
 
 	for (i = 0; i < len; i++) {
 		if (isprint(buf[i]) && (buf[i] >= 32) && (buf[i] <= 126))
-			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "%c", buf[i]);
+			line[offset++] = buf[i];
 		else
-			pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, ".");
+			line[offset++] = '.';
 	}
-	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, "\n");
+
+	strcpy(line+offset,"\n");
+	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, line);
 }
 
 void dumpdata(const char *buf, size_t len)
