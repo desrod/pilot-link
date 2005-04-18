@@ -1956,7 +1956,7 @@ dlp_AbortSync(int sd)
 }
 
 int
-dlp_WriteUserInfo(int sd, struct PilotUser *User)
+dlp_WriteUserInfo(int sd, const struct PilotUser *User)
 {
 	int 	result;
 	struct dlpRequest *req;

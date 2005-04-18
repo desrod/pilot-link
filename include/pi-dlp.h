@@ -710,11 +710,11 @@ struct dlpResponse {
 	/** @brief Change the device user information
 	 *
 	 * @param sd Socket number
-	 * @param user New user info
+	 * @param INPUT New user info
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_WriteUserInfo
-		PI_ARGS((int sd, struct PilotUser *user));
+		PI_ARGS((int sd, PI_CONST struct PilotUser *INPUT));
 
 	/** @brief Convenience function to reset lastSyncPC in the UserInfo to 0
 	 *
