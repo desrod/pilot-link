@@ -20,10 +20,12 @@
 
 #include "pi-util.h"
 
+#ifndef SWIG
 /* Print the version splash 	*/
 void print_splash(const char *progname) PI_DEPRECATED;
 
 /* Connect to the Palm device	*/
 int pilot_connect(const char *port) PI_DEPRECATED;
+#endif
 
 #endif /* _PI_HEADER_H_ */
