@@ -151,8 +151,6 @@ pi_file_t
 	if ((pf = calloc(1, sizeof (pi_file_t))) == NULL)
 		return NULL;
 
-	pf->for_writing = 0;
-
 	if ((pf->f = fopen(name, "rb")) == NULL)
 		goto bad;
 
