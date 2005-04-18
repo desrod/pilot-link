@@ -80,6 +80,7 @@ error = _pisock.error
 %include general-maps.i
 %include pi-socket-maps.i
 %include pi-dlp-maps.i
+%include pi-file-maps.i
 
 %include ../../../include/pi-args.h
 %include ../../../include/pi-header.h
@@ -97,7 +98,6 @@ error = _pisock.error
 
 %include ../../../include/pi-socket.h
 %include ../../../include/pi-dlp.h
-%include ../../../include/pi-file.h
 
 /* Stop putting thread control around all those declarations that follow. */
 %feature("except");

@@ -81,6 +81,11 @@
 // -------------------------------------
 // struct PilotUser
 // -------------------------------------
+%typemap (python,in) const struct PilotUser* (struct PilotUser temp) %{
+	PyObjectToPilotUser($input, &temp);
+	$1 = &temp;
+%}
+
 %typemap (python,in,numinputs=0) struct PilotUser* (struct PilotUser temp) %{
     $1 = &temp;
 %}
@@ -98,17 +103,6 @@
 
 %typemap (python,argout) struct SysInfo * %{
     if ($1) $result = t_output_helper($result, PyObjectFromSysInfo($1));
-%}
-
-// -------------------------------------
-// struct DBInfo
-// -------------------------------------
-%typemap (in,numinputs=0) struct DBInfo *OUTPUT (struct DBInfo temp) %{
-    $1 = &temp;
-%}
-
-%typemap (python,argout) struct DBInfo *OUTPUT %{
-    if ($1) $result = t_output_helper($result, PyObjectFromDBInfo($1));
 %}
 
 // -------------------------------------
@@ -226,12 +220,11 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
 		PyErr_SetObject(PIError, Py_BuildValue("(is)", ret, dlp_strerror(ret)));
 		PyMem_Free(buf);
 		return NULL;
-	} else {
-		list = PyList_New(0);
-		for (i=0; i<count; i++)
-			PyList_Append(list, PyInt_FromLong((long)buf[i]));
-		PyMem_Free(buf);
-		return list;
 	}
+	list = PyList_New(0);
+	for (i=0; i<count; i++)
+		PyList_Append(list, PyInt_FromLong((long)buf[i]));
+	PyMem_Free(buf);
+	return list;
 }
 %}

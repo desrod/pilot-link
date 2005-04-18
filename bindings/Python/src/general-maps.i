@@ -31,7 +31,21 @@
   $1 = &outbuflen;
 }
 
+// -------------------------------------
+// struct DBInfo
+// -------------------------------------
+%typemap (in,numinputs=0) struct DBInfo *OUTPUT (struct DBInfo temp) %{
+    $1 = &temp;
+%}
+
+%typemap (python,argout) struct DBInfo *OUTPUT %{
+    if ($1) $result = t_output_helper($result, PyObjectFromDBInfo($1));
+%}
+
+// ------------------------------------------------------------------
+// Type/creator strings
 // a generic 4-character string type, for use as a type or creator ID
+// ------------------------------------------------------------------
 %typemap (python,in) unsigned long STR4 {
 	if (!($input) || ($input == Py_None)) {
 		$1 = 0;
