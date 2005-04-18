@@ -155,7 +155,10 @@ pi_log (int type, int level, const char *format, ...)
 
 	if (debug_file == NULL)
 		debug_file = stderr;
-	
+
+#if HAVE_PTHREAD
+	fprintf(debug_file, "[Thread 0x%08lx] ", pi_thread_id());
+#endif
 	va_start(ap, format);
 	vfprintf(debug_file, format, ap);
 	va_end(ap);
