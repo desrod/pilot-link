@@ -381,8 +381,8 @@ pi_file_read_resource_by_type_id(pi_file_t *pf, unsigned long restype,
 		result;
 
 	result = pi_file_find_resource_by_type_id(pf, restype, resid, &i);
-	if (result < 0)
-		return result;
+	if (!result)
+		return PI_ERR_FILE_NOT_FOUND;
 	if (resindex)
 		*resindex = i;
 	return pi_file_read_resource(pf, i, bufp, sizep, NULL, NULL);
@@ -391,7 +391,7 @@ pi_file_read_resource_by_type_id(pi_file_t *pf, unsigned long restype,
 int
 pi_file_type_id_used(const pi_file_t *pf, unsigned long restype, int resid)
 {
-	return pi_file_find_resource_by_type_id(pf, restype, resid, NULL) == 0;
+	return pi_file_find_resource_by_type_id(pf, restype, resid, NULL);
 }
 
 int
@@ -621,7 +621,7 @@ pi_file_append_resource(pi_file_t *pf, void *data, size_t size,
 
 	if (!pf->for_writing || !pf->resource_flag)
 		return PI_ERR_FILE_INVALID;
-	if (pi_file_find_resource_by_type_id(pf, restype, resid, NULL))
+	if (pi_file_type_id_used(pf, restype, resid))
 		return PI_ERR_FILE_ALREADY_EXISTS;
 
 	entp = pi_file_append_entry(pf);
@@ -1498,10 +1498,10 @@ pi_file_find_resource_by_type_id(const pi_file_t *pf,
 		if (entp->type == restype && entp->id_ == resid) {
 			if (resindex)
 				*resindex = i;
-			return 0;
+			return 1;
 		}
 	}
-	return PI_ERR_FILE_NOT_FOUND;
+	return 0;
 }
 
 
