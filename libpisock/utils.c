@@ -307,7 +307,13 @@ void dumpline(const char *buf, size_t len, unsigned int addr)
 	offset += 2;
 
 	for (i = 0; i < len; i++) {
-		if (isprint(buf[i]) && (buf[i] >= 32) && (buf[i] <= 126))
+		if (buf[i] == '%') {
+			/* since we're going through pi_log, we need to
+			 * properly escape % characters
+			 */
+			line[offset++] = '%';
+			line[offset++] = '%';
+		} else if (isprint(buf[i]) && buf[i] >= 32 && buf[i] <= 126)
 			line[offset++] = buf[i];
 		else
 			line[offset++] = '.';
