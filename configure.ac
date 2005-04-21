@@ -246,8 +246,10 @@ if test "x$enable_conduits" != "xno"; then
 	esac
 
 	save_CFLAGS="$CFLAGS"
+	save_CPPFLAGS="$CPPFLAGS"
 	save_LDFLAGS="$LDFLAGS"
 	CFLAGS="$CFLAGS $PNG_CFLAGS"
+	CPPFLAGS="$CPPFLAGS $PNG_CFLAGS"
 	LDFLAGS="$LDFLAGS $PNG_LIBS"
 
 	AC_CHECK_LIB(png, main, [have_png=yes; PNG_LIBS="$PNG_LIBS -lpng"],[have_png=no],[-lm])
@@ -269,6 +271,7 @@ if test "x$enable_conduits" != "xno"; then
 	fi
 
 	CFLAGS="$save_CFLAGS"
+	CPPFLAGS="$save_CPPFLAGS"
 	LDFLAGS="$save_LDFLAGS"
 else
 	msg_png="none"
