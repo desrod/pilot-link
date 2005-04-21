@@ -321,7 +321,7 @@ int pdb_to_wav(char *filename)
 		attr,
 		cat;
         void *buffer;
-        pi_uid_t uid;
+        recordid_t uid;
 
 	size_t	size;
 

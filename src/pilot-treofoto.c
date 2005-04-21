@@ -42,9 +42,9 @@
 typedef struct MainDBImgRecord {
 	unsigned char name[32];	/* padded NULL */
 	unsigned char unknown_1[8];
-	pi_uid_t first_image_uid;
+	recordid_t first_image_uid;
 	unsigned int unknown_2;
-	pi_uid_t first_thumb_uid;
+	recordid_t first_thumb_uid;
 	unsigned short image_n_blocks;
 	unsigned short thumb_n_blocks;
 	unsigned int timestamp;
@@ -60,7 +60,7 @@ int extract_image(struct pi_file *pi_fp, MainDBImgRecord * img_rec)
 	int i, attr, cat, nentries, fd;
 	size_t size;
 	void *Pbuf;
-	pi_uid_t uid, req_uid;
+	recordid_t uid, req_uid;
 	char imgfilename[1024];
 
 	snprintf(imgfilename, 1024, "%s.jpg", img_rec->name);
@@ -135,7 +135,7 @@ int main(int argc, const char *argv[])
 	struct pi_file *pi_fp = NULL, *img_fp = NULL;
 	int i, attr, cat, nentries;
 	size_t size;
-	pi_uid_t uid;
+	recordid_t uid;
 	MainDBImgRecord *img_rec;
 	int sd = -1;
 	int c;

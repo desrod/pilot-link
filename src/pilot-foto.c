@@ -536,7 +536,7 @@ int do_install(int sd, const char **install_files)
    struct pi_file *pf;
    struct DBInfo info;
    FILE *in;
-   pi_uid_t uid;
+   recordid_t uid;
    time_t ltime;
    unsigned char buf[0x1010];
    char pdb_file[256];
@@ -681,7 +681,7 @@ int pdb_to_jpg(const char *filename)
    int total_size;
    int attr;
    int cat;
-   pi_uid_t uid;
+   recordid_t uid;
 
    printf("converting %s...", filename);
    pi_fp = pi_file_open(filename);
