@@ -41,7 +41,7 @@
  * should call pi_palmos_error() to retrieve the error code returned by the
  * device itself. See the pi-dlp.h documentation for more information.
  *
- * Finally, pi_version() returned the version of the DLP protocol on the
+ * Finally, pi_version() returns the version of the DLP protocol on the
  * device. This can be used to check whether some features are supported,
  * such as VFS calls. See pi-dlp.h for more information.
  *
@@ -121,7 +121,7 @@ enum PiOptSLP {
 enum PiOptPADP {
 	PI_PADP_TYPE,
 	PI_PADP_LASTTYPE,
-	PI_PADP_FREEZE_TXID			/**< if set, don't increment txid when receiving a packet. Mainly used by dlp_VFSFileRead() */
+	PI_PADP_FREEZE_TXID		/**< if set, don't increment txid when receiving a packet. Mainly used by dlp_VFSFileRead() */
 };
 
 /** @brief CMP protocol socket options (use pi_getsockopt() and pi_setsockopt()) */
@@ -188,24 +188,82 @@ typedef struct pi_socket_list
 
 /** @name Socket management */
 /*@{*/
+	/** @brief Create a new socket
+	 *
+	 * Call this function to allocate a new socket which you will later
+	 * bind to a specific port
+	 *
+	 * @param domain Not used. Set to 0.
+	 * @param type Socket type (#PI_SOCK_STREAM or #PI_SOCK_RAW)
+	 * @param protocol Protocol to use (usually #PI_PF_DLP for #PI_SOCK_STREAM sockets)
+	 * @return Socket ID
+	 */
 	extern int pi_socket PI_ARGS((int domain, int type, int protocol));
+
 	extern int pi_socket_setsd PI_ARGS((pi_socket_t *ps, int pi_sd));
 
 	extern int pi_getsockname
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen));
+
 	extern int pi_getsockpeer
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen));
 
+	/** @brief Get a socket option
+	 *
+	 * You can get socket options for various levels of the protocol stack.
+	 * See the options list in #socket.h
+	 *
+	 * @param pi_sd	Socket descriptor
+	 * @param level Protocol level (see #PiOptLevels enum)
+	 * @param option_name Option "name" (i.e. #PI_DEV_TIMEOUT at #PI_LEVEL_DEV level)
+	 * @param option_value Pointer to the option value
+	 * @param option_len Len of the pointed option_value.
+	 * @return Negative code on error
+	 */
 	extern int pi_getsockopt
 	    PI_ARGS((int pi_sd, int level, int option_name,
 		     void *option_value, size_t *option_len));
+
+	/** @brief Set a socket option
+	 *
+	 * You can set socket options for various levels of the protocol stack.
+	 * See the options list in #socket.h
+	 *
+	 * @param pi_sd	Socket descriptor
+	 * @param level Protocol level (see #PiOptLevels enum)
+	 * @param option_name Option "name" (i.e. #PI_DEV_TIMEOUT at #PI_LEVEL_DEV level)
+	 * @param option_value Pointer to the option value
+	 * @param option_len Len of the pointed option_value.
+	 * @return Negative code on error
+	 */
 	extern int pi_setsockopt
 	    PI_ARGS((int pi_sd, int level, int option_name, 
 		     const void *option_value, size_t *option_len));
 
+	/** @brief Retrieve the protocol structure for the given level
+	 *
+	 * You should rarely need to use this function. It allows retrieving
+	 * the protocol structure for any protocol in a socket's protocol stack
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param level Protocol level (see #PiOptLevels enum)
+	 * @return Protocol structure pointer or NULL if not found
+	 */
 	extern struct pi_protocol *pi_protocol
 	    PI_ARGS((int pi_sd, int level));
 
+	/** @brief Browse the protocol stack
+	 *
+	 * You should rarely need to use this function. It allows retrieving the
+	 * next protocol in the stack, up from lower levels to upper levels. A
+	 * protocol stack always has a PI_LEVEL_DEV at bottom, so you can use
+	 * pi_protocol() to retrieve the lowest stack level, then repeatedly call
+	 * pi_protocol_next() to get the next protocol in the chain
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param level Level from which you want to get the next protocol (see #PiOptLevels enum)
+	 * @return Protocol structure ptr, or NULL if not found
+	 */
 	extern struct pi_protocol *pi_protocol_next
 	    PI_ARGS((int pi_sd, int level));	
 /*@}*/
@@ -226,19 +284,60 @@ typedef struct pi_socket_list
 	extern PI_ERR pi_connect
 	    PI_ARGS((int pi_sd, const char *port));
 
+	/** @brief Bind the socket to a specific port
+	 *
+	 * Call this function after creating a new socket with pi_socket()
+	 * to bind the socket to a specific port. Recognized port prefixes
+	 * are: "serial:", "usb:" and "net:". On Unix platforms, you need to
+	 * indicate the /dev entry to bind serial: and usb: to.
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param port Port string as described above
+	 * @return Negative error code on error
+	 */
 	extern PI_ERR pi_bind
 	    PI_ARGS((int pi_sd, const char *port));
 
 	extern PI_ERR pi_listen PI_ARGS((int pi_sd, int backlog));
 
+	/** @brief Wait for a handheld
+	 *
+	 * This function calls pi_accept_to() with a timeout of 0
+	 * (wait forever)
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param remote_addr Unused. Pass NULL.
+	 * @param namelen Unused. Pass NULL.
+	 * @return Negative error code on error, returns 0 once a device connects
+	 */
 	extern PI_ERR pi_accept
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr,
 		     size_t *namelen));
 
+	/** @brief Wait for a handheld
+	 *
+	 * Wait for a device to connect on the port the socket has been
+	 * bound to (using pi_bind()).
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param remote_addr Unused. Pass NULL.
+	 * @param namelen Unused. Pass NULL.
+	 * @param timeout Number of seconds to wait. Pass 0 to wait forever.
+	 * @return Negative error code on error, returns 0 once a device connects
+	 */
 	extern PI_ERR pi_accept_to
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen,
 		     int timeout));
 
+	/** @brief Close a socket
+	 *
+	 * This function closes a socket and disposes of all the
+	 * internal structures. If a device is currently connected
+	 * to this socket, the connection is interrupted.
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @return Negative error code on error
+	 */
 	extern int pi_close PI_ARGS((int pi_sd));
 /*@}*/
 
