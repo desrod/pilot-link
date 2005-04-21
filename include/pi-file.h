@@ -65,22 +65,29 @@ typedef struct pi_file {
 	int	sort_info_size;		/**< Size of the sortInfo block */
 	int	next_record_list_id;
 	int	resource_flag;
-	int	ent_hdr_size;
+	int	ent_hdr_size;	/**< Size of the header for each resource/record (depends on whether the file is a resource or record file) */
 	int	nentries;		/**< Number of actual entries in the entries memory block */
 	int	nentries_allocated;	/**< Number of entries allocated in the entries memory block */
-	int	rbuf_size;
+	int	rbuf_size;		/**< Size of the internal read buffer */
 	FILE 	*f;			/**< Actual on-disk file */
 	FILE 	*tmpf;			/**< Temporary file for databases opened with pi_file_create() */
 	char 	*file_name;		/**< Access path */
 	void 	*app_info;		/**< Pointer to the appInfo block or NULL */
 	void	*sort_info;		/**< Pointer to the sortInfo block or NULL */
-	void	*rbuf;
+	void	*rbuf;			/**< Read buffer, used internally */
 	unsigned long unique_id_seed;	/**< Database file's unique ID seed as read from an existing file */
 	struct 	DBInfo info;		/**< Database information and attributes */
 	struct 	pi_file_entry *entries;	/**< Array of records / resources */
 } pi_file_t;
 
-/** @brief Transfer progress callback structure */
+/** @brief Transfer progress callback structure
+ *
+ * The progress callback structure is prepared by the client application
+ * and passed to pi_file_install(), pi_file_merge() and pi_file_retrieve()
+ * functions. It allows the client application to be notified during a
+ * file transfer (i.e. to update a progress indicator) and gives it a chance
+ * to cancel transfers.
+ */
 typedef struct {
 	int type;				/**< Transfer type (see #piProgressType enum) */
 	int transferred_bytes;			/**< Current transferred bytes */
@@ -350,12 +357,50 @@ enum piProgressType {
 
 /** @name File transfer utilities */
 /*@{*/
+	/** @brief Retrieve a file from the handheld
+	 *
+	 * You must first create the local file using pi_file_create()
+	 *
+	 * @param pf A file open for write
+	 * @param socket Socket to the connected handheld
+	 * @param cardno Card number the file resides on (usually 0)
+	 * @param report_progress Progress function callback or NULL (see #pi_progress_t structure)
+	 * @return Negative code on error
+	 */
 	extern int pi_file_retrieve
 	    PI_ARGS((pi_file_t *pf, int socket, int cardno,
 			progress_func report_progress));
+
+	/** @brief Install a new file on the handheld
+	 *
+	 * You must first open the local file with pi_file_open()
+	 *
+	 * @param pf An open file
+	 * @param socket Socket to the connected handheld
+	 * @param cardno Card number to install to (usually 0)
+	 * @param report_progress Progress function callback or NULL (see #pi_progress_t structure)
+	 * @return Negative code on error
+	 */
 	extern int pi_file_install
 	    PI_ARGS((pi_file_t *pf, int socket, int cardno,
 			progress_func report_progress));
+
+	/** @brief Install a new file on the handheld or merge with an existing file
+	 *
+	 * The difference between this function and pi_file_install() is that
+	 * if the file already exists on the handheld, pi_file_merge() will append
+	 * data to the existing file. For resource files, all resources from the local
+	 * file are sent to the handheld. If resources with the same type/ID exist in
+	 * the handheld file, they are replaced with the new one.
+	 *
+	 * You must first open the local file with pi_file_open()
+	 *
+	 * @param pf An open file
+	 * @param socket Socket to the connected handheld
+	 * @param cardno Card number to install to (usually 0)
+	 * @param report_progress Progress function callback or NULL (see #pi_progress_t structure)
+	 * @return Negative code on error
+	 */
 	extern int pi_file_merge
 	    PI_ARGS((pi_file_t *pf, int socket, int cardno,
 			progress_func report_progress));
@@ -363,8 +408,19 @@ enum piProgressType {
 
 /** @name Time utilities */
 /*@{*/
+	/** @brief Convert Unix time to Palm OS time
+	 *
+	 * @param t Unix time value
+	 * @return Time value with Palm OS timebase
+	 */
 	extern unsigned long unix_time_to_pilot_time
 	    PI_ARGS((time_t t));
+
+	/** @brief Convert Palm OS time to Unix time
+	 *
+	 * @param raw_time Time value expressed in Palm OS timebase (seconds from 01-JAN-1904, 00:00)
+	 * @return Unix time
+	 */
 	extern time_t pilot_time_to_unix_time
 	    PI_ARGS((unsigned long raw_time));
 /*@}*/
