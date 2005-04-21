@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 	size_t size;
 	int attr;
 	int cat;
-	pi_uid_t uid;
+	recordid_t uid;
 	void *record;
 
 	DBname = "MultiMail Messages.pdb";
