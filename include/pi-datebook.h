@@ -88,10 +88,10 @@ extern "C" {
 	    PI_ARGS((struct Appointment *, pi_buffer_t *record, datebookType type));
 	extern int unpack_AppointmentAppInfo
 	  PI_ARGS((struct AppointmentAppInfo *, unsigned char *AppInfo,
-		     int len));
+		     size_t len));
 	extern int pack_AppointmentAppInfo
 	  PI_ARGS((struct AppointmentAppInfo *, unsigned char *AppInfo,
-		     int len));
+		     size_t len));
 
 #ifdef __cplusplus
 }

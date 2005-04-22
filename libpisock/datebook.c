@@ -422,7 +422,7 @@ pack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
  ***********************************************************************/
 int
 unpack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
-	unsigned char *record, int len)
+	unsigned char *record, size_t len)
 {
 	int 	i;
 
@@ -453,7 +453,7 @@ unpack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
  ***********************************************************************/
 int
 pack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
-	unsigned char *record, int len)
+	unsigned char *record, size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
