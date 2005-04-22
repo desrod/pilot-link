@@ -39,7 +39,7 @@
 #include "pi-error.h"
 
 /* Declare prototypes */
-static int sys_RPCerror;
+int sys_RPCerror;
 int sys_PackRegisters(void *data, struct Pilot_registers *r);
 int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
@@ -260,7 +260,7 @@ sys_SetBreakpoints(int sd, struct Pilot_breakpoint *b)
 		pi_buffer_free (buf);
 		return 0;
 	}
-	
+
 	pi_buffer_free (buf);
 	return 1;
 }
@@ -502,7 +502,7 @@ sys_ReadMemory(int sd, unsigned long addr, unsigned long len, void *dest)
  *
  * Function:    sys_WriteMemory
  *
- * Summary:     Write memory (0x02, 0x82) 
+ * Summary:     Write memory (0x02, 0x82)
  *
  * Parameters:  None
  *
@@ -556,7 +556,7 @@ sys_WriteMemory(int sd, unsigned long addr, unsigned long len, void *src)
 			return done;
 		}
 	} while (done < len);
-	
+
 	pi_buffer_free (buf);
 	return done;
 }
@@ -613,9 +613,9 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, size_t len,
 		*found = get_long(buf->data + 6);
 
 	byte = get_byte(buf->data + 10);
-	
+
 	pi_buffer_free (buf);
-	
+
 	return byte;
 }
 
@@ -624,7 +624,7 @@ sys_Find(int sd, unsigned long startaddr, unsigned long stopaddr, size_t len,
  *
  * Function:    sys_RemoteEvent
  *
- * Summary:     Parameters sent from host to target to feed pen and 
+ * Summary:     Parameters sent from host to target to feed pen and
  *		keyboard events. They do not require a response.
  *
  * Parameters:  None
@@ -732,7 +732,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 			c += 2 + ((get_byte(c + 1) + 1) & ~1);
 		}
 	}
-	
+
 	pi_buffer_free (buf);
 	return 0;
 }
@@ -877,7 +877,7 @@ PackRPC(struct RPC_params *p, int trap, int reply, ...)
  *
  * Function:    UninvertRPC
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -916,7 +916,7 @@ UninvertRPC(struct RPC_params *p)
  *
  * Function:    InvertRPC
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -993,7 +993,7 @@ DoRPC(int sd, int socket, struct RPC_params *p, int *error)
  *
  * Function:    RPC_Int_Void
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -1011,7 +1011,7 @@ RPC_Int_Void(int sd, int trap)
  *
  * Function:    RPC_Ptr_Void
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
@@ -1040,11 +1040,11 @@ int
 RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
                     long * freeram) {
-  return RPC(sd, 1, 0xA004, 0, RPC_Short(cardno), RPC_Ptr(cardname, 32), 
+  return RPC(sd, 1, 0xA004, 0, RPC_Short(cardno), RPC_Ptr(cardname, 32),
                                RPC_Ptr(manufname, 32), RPC_ShortPtr(version),
                                RPC_LongPtr(date), RPC_LongPtr(romsize),
                                RPC_LongPtr(ramsize), RPC_LongPtr(freeram));
-}                    
+}
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
 /* Local Variables: */
