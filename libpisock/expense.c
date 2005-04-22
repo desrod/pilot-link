@@ -7,7 +7,7 @@
  * under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
@@ -301,7 +301,7 @@ pack_Expense(Expense_t *expense, unsigned char *record, int len)
  ***********************************************************************/
 int
 unpack_ExpenseAppInfo(ExpenseAppInfo_t *appinfo, unsigned char *record,
-		      int len)
+		      size_t len)
 {
 	int 	i;
 	unsigned char *start = record;
@@ -338,7 +338,7 @@ unpack_ExpenseAppInfo(ExpenseAppInfo_t *appinfo, unsigned char *record,
  ***********************************************************************/
 int
 pack_ExpenseAppInfo(ExpenseAppInfo_t *appinfo, unsigned char *record,
-		    int len)
+		    size_t len)
 {
 	int 	i,
 		destlen = 2 + (16 + 4 + 8) * 4;
@@ -407,11 +407,11 @@ unpack_ExpensePref(ExpensePref_t *pref, unsigned char *record, int len)
 	}
 	for (i = 0; i < 2; i++) {
 		pref->unknown[i] = get_byte(record);
-		record++;		
+		record++;
 	}
 	pref->noteFont = get_byte(record);
 	record++;
-	
+
 	return (record - start);
 }
 
@@ -459,7 +459,7 @@ int pack_ExpensePref(ExpensePref_t *p, unsigned char *record, int len)
 
 	set_byte(record, p->noteFont);
 	record++;
-	
+
 	return record - start;
 }
 

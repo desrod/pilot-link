@@ -94,9 +94,9 @@ extern "C" {
 	extern int pack_ExpensePref
 	  PI_ARGS((struct ExpensePref *, unsigned char *record, int len));
 	extern int unpack_ExpenseAppInfo
-	  PI_ARGS((struct ExpenseAppInfo *, unsigned char *AppInfo, int len));
+	  PI_ARGS((struct ExpenseAppInfo *, unsigned char *AppInfo, size_t len));
 	extern int pack_ExpenseAppInfo
-	  PI_ARGS((struct ExpenseAppInfo *, unsigned char *AppInfo, int len));
+	  PI_ARGS((struct ExpenseAppInfo *, unsigned char *AppInfo, size_t len));
 
 #ifdef __cplusplus
 }

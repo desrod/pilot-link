@@ -7,7 +7,7 @@
  * under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
@@ -121,7 +121,7 @@ int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
   /* 000000 - 000003 */
   a->imapuid = (unsigned long) get_long(buffer);
   SHUFFLE_BUFFER(4);
-  
+
 
   /* This is different to the other databases, because Palm didn't
      write VersaMail :-) */
@@ -135,23 +135,23 @@ int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
   /* 000008 - 000009 */
   GET_SHORT_INTO(a->category);
 
-  /* 00000A - 00000B */  
+  /* 00000A - 00000B */
   GET_SHORT_INTO(a->accountNo);
 
-  /* 00000C - 00000D */  
+  /* 00000C - 00000D */
   GET_SHORT_INTO(a->unknown1);
-  /* 00000E - 00000E */  
+  /* 00000E - 00000E */
   GET_BYTE_INTO(a->download);
-  /* 00000F - 00000F */  
+  /* 00000F - 00000F */
   GET_BYTE_INTO(a->mark);
   /* of the above, bit 0 is mark, apparently bit 4 is header-only flag,
      and it looks like bit 1 is always set, which gives a normal
      value of 2 */
 
-  /* 000010 - 000011 */  
+  /* 000010 - 000011 */
   GET_SHORT_INTO(a->unknown2);
 
-  /* 000012 - 000013 */  
+  /* 000012 - 000013 */
   a->reserved1 = (get_byte(buffer  )     );
   a->reserved2 = (get_byte(buffer+1) >> 1);
   a->read      = (get_byte(buffer+1) && 1);
@@ -167,7 +167,7 @@ int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
      be able to calculate if there is more or not, exactly.
   */
 
-  /* 000014 - 000017 */  
+  /* 000014 - 000017 */
   a->msgSize = get_long(buffer);
   SHUFFLE_BUFFER(4);
 
@@ -201,7 +201,7 @@ Byte   1: 0x        50 | P |     80   \ NOT neccessary !NULL
 Byte   2: 0x         0 | . |      0   /
 Byte   3: 0x        68 | h |    104   | Each attachment adds four bytes,
 Byte   4: 0x  ffffffc0 | . |    -64   | NULL, an int, then two signed ints
-Byte   5: 0x  ffffff90 | . |   -112   \ 
+Byte   5: 0x  ffffff90 | . |   -112   \
 Byte   6: 0x         0 | . |      0   /
 Byte   7: 0x        68 | h |    104   |
 Byte   8: 0x  ffffffc0 | . |    -64   |
@@ -253,7 +253,7 @@ int pack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
 
   set_long(buffer, a->imapuid);
   SHUFFLE_BUFFER(4);
-  
+
   date_t = mktime(&(a->date));
   CONVERT_TIME_T_UNIX_TO_PALM(date_t);
   set_long(buffer, (unsigned long) date_t);
@@ -287,7 +287,7 @@ int pack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
   PUT_STR_FROM(a->subject);
   PUT_STR_FROM(a->dateString);
   PUT_STR_FROM(a->body);
-  PUT_STR_FROM(a->replyTo);  
+  PUT_STR_FROM(a->replyTo);
 
   if (a->unknown3length > 0) {
     memcpy(buffer, a->unknown3, a->unknown3length);
@@ -299,11 +299,11 @@ int pack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
 void free_VersaMailAppInfo(struct VersaMailAppInfo *a) {
 }
 
-int unpack_VersaMailAppInfo(struct VersaMailAppInfo *ai, 
-                        unsigned char *record, int len) {
+int unpack_VersaMailAppInfo(struct VersaMailAppInfo *ai,
+                        unsigned char *record, size_t len) {
   int i;
   unsigned char *start = record;
-  
+
   i = unpack_CategoryAppInfo(&ai->category, record, len);
   if (!i)
     return i;
@@ -313,7 +313,7 @@ int unpack_VersaMailAppInfo(struct VersaMailAppInfo *ai,
   return (record - start);
 }
 
-/* 
+/*
 
 Message provided to the maintainer of pilot-mailsync:
 (the above implementation does not fully agree, BTW)
@@ -324,7 +324,7 @@ Date: Sat, 31 Jan 2004 03:19:28 +0900
 From: Masaru matsumoto <matumoto@queuesoft.jp>
 To: Jochen Garcke <jochen@garcke.de>
 References: <401A7AE7.5090109@garcke.de>
-   
+
 Hi,
 
 The definition of the database is to refer to the following.
@@ -361,11 +361,11 @@ strlen(subject)+strlen(contents)+strlen(dateString)+strlen(replyto)+4;
 
 Field sequence :
 messageUID
-to  
+to
 from
 cc
 bcc
-subject   
+subject
 dateString
 body
 replayTo

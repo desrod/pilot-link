@@ -25,10 +25,10 @@ extern "C" {
 	    PI_ARGS((struct HiNoteNote *, unsigned char *record, int len));
 	extern int unpack_HiNoteAppInfo
 	    PI_ARGS((struct HiNoteAppInfo *, unsigned char *AppInfo,
-		     int len));
+		     size_t len));
 	extern int pack_HiNoteAppInfo
 	    PI_ARGS((struct HiNoteAppInfo *, unsigned char *AppInfo,
-		     int len));
+		     size_t len));
 
 #ifdef __cplusplus
 }

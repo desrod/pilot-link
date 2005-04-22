@@ -18,10 +18,10 @@ extern "C" {
 		unsigned int unknown1;
 		unsigned int download;
 		unsigned int mark;
-		unsigned int unknown2;		
-		unsigned int reserved1;		
+		unsigned int unknown2;
+		unsigned int reserved1;
 		unsigned int reserved2;
-		unsigned int read;		
+		unsigned int read;
 		unsigned int msgSize;
 		unsigned int attachmentCount;
 		char *messageUID;
@@ -45,13 +45,13 @@ extern "C" {
 	    PI_ARGS((struct VersaMail *, unsigned char *record, int len));
 	extern int pack_VersaMail
 	    PI_ARGS((struct VersaMail *a, unsigned char *buffer, int len));
-	
+
 	extern void free_VersaMail PI_ARGS((struct VersaMail *));
 
 	extern void free_VersaMailAppInfo PI_ARGS((struct VersaMailAppInfo *));
 	extern int unpack_VersaMailAppInfo PI_ARGS((struct VersaMailAppInfo *,
-																							unsigned char *AppInfo, int len));
-	
+		unsigned char *AppInfo, size_t len));
+
 #ifdef __cplusplus
 }
 #endif

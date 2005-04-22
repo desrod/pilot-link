@@ -7,7 +7,7 @@
  * under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
@@ -117,9 +117,9 @@ pack_HiNoteNote(HiNoteNote_t *hinote, unsigned char *buffer, int len)
  *
  ***********************************************************************/
 int
-unpack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, int len)
+unpack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
-	int 	i,	
+	int 	i,
 		index;
 	unsigned char *start;
 
@@ -149,7 +149,7 @@ unpack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, int len)
  *
  ***********************************************************************/
 int
-pack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, int len)
+pack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
 	int 	i,
 		index;
