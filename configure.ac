@@ -283,6 +283,16 @@ AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
 
 
+dnl ******************************
+dnl Threading support
+dnl ******************************
+msg_threads=no
+PILOT_LINK_THREADS_SUPPORT
+if $use_threads; then
+	msg_threads=yes
+fi
+
+
 dnl ***************************************
 dnl Test if building USB Support
 dnl for Linux, FreeBSD or Darwin (Mac OS X)
@@ -304,7 +314,11 @@ if test "$have_libusb" = yes; then
 			usb_libs="-lusb -Wl,-framework,IOKit"
 		;;
 		*)
-			usb_libs="-lusb -lpthread"
+			if test "$msg_threads" = "no"; then
+			    usb_libs="-lusb -lpthread"
+			else
+			    usb_libs="-lusb"
+			fi
 		;;
 	esac
 else
@@ -452,15 +466,6 @@ fi
 AC_SUBST(ICONV_CFLAGS)
 AC_SUBST(ICONV_LIBS)
 
-
-dnl ******************************
-dnl Threading support
-dnl ******************************
-msg_threads=no
-PILOT_LINK_THREADS_SUPPORT
-if $use_threads; then
-	msg_threads=yes
-fi
 
 dnl ******************************
 dnl C++
