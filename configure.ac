@@ -19,7 +19,7 @@ dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=12
 PILOT_LINK_MINOR=0
-PILOT_LINK_PATCH=-pre3
+PILOT_LINK_PATCH=-pre4
 
 AC_SUBST(PILOT_LINK_VERS)
 AC_SUBST(PILOT_LINK_MAJOR)
@@ -726,7 +726,7 @@ if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
 		-std=gnu99 -g -Wshadow -Wall -W -Waggregate-return -Wcast-align 	\
 		-Wcast-qual -Wnested-externs -Wpointer-arith -Wundef -Winline	\
-		-Wbad-function-cast -pedantic -O0"
+		-Wbad-function-cast -pedantic -O0 -fmudflap"
 
 fi
 

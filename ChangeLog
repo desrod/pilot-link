@@ -1,3 +1,652 @@
+2005-04-26 13:50  warp
+
+	* configure.ac: Better handle libusb and thread safe stuff in
+	  configure.  (Still needs work in the no-threads but libusb case.)
+
+2005-04-26 13:44  warp
+
+	* libpisock/Makefile.am: Fix --enable-threads without
+	  --enable-libusb.  (Note, libusb should really depend on
+	  --enable-threads or something.)
+
+2005-04-22 15:14  adridg
+
+	* include/pi-expense.h, include/pi-hinote.h,
+	  include/pi-versamail.h, libpisock/expense.c, libpisock/hinote.c,
+	  libpisock/versamail.c: int -> size_t consistency
+
+2005-04-22 15:01  adridg
+
+	* libpisock/syspkt.c: Don't mix static and non-static (it's
+	  declared in pi-syspkt.h)
+
+2005-04-22 09:25  adridg
+
+	* include/pi-datebook.h, libpisock/datebook.c: Basic consistency --
+	  still missing in lots of other cases, and ContactDB does it
+	  differently yet
+
+2005-04-21 12:03  fpillet
+
+	* configure.ac: propagate PNG_FLAGS to CPPFLAGS
+
+2005-04-21 11:37  fpillet
+
+	* include/pi-socket.h: Mo' doxygen documentation for socket calls
+
+2005-04-21 11:21  desrod
+
+	* tests/versamail-test.c: Oops, forgot this one too: pi_uid_t ->
+	  recordid_t
+
+2005-04-21 11:19  desrod
+
+	* src/: pilot-foto.c, pilot-treofoto.c, pilot-wav.c: Minor fixes
+	  for pi_uid_t to recordid_t from Florent's changes in the lib
+
+2005-04-21 08:21  fpillet
+
+	* include/pi-file.h: completed doxygen documentation
+
+2005-04-19 08:52  fpillet
+
+	* libpisock/pi-file.c: fixed a bug I introduced in
+	  pi_file_append_resource()
+
+2005-04-19 04:41  fpillet
+
+	* libpisock/utils.c: properly escape % chars before handing the
+	  string to pi_log
+
+2005-04-18 13:41  fpillet
+
+	* bindings/Python/TODO: updated TODO
+
+2005-04-18 13:40  fpillet
+
+	* bindings/Python/src/: general-maps.i, pi-dlp-maps.i,
+	  pi-file-maps.i, pisock.i, pisock.py, pisock_wrap.c: add
+	  pi_file_install() and pi_file_retrieve() but use custom
+	  implementations instead of raw mappings to allow simply passing a
+	  file path for read/write
+
+2005-04-18 13:37  fpillet
+
+	* include/pi-dlp.h, libpisock/dlp.c: constified parameter to
+	  dlp_WriteUserInfo for better bindings generation with swig
+
+2005-04-18 13:36  fpillet
+
+	* include/pi-header.h: don't interface deprecated functions with
+	  swig
+
+2005-04-18 13:34  fpillet
+
+	* libpisock/darwinusb.c: avoid init race condition
+
+2005-04-18 13:33  fpillet
+
+	* libpisock/debug.c: prefix log entries with thread ID when
+	  compiled with --enable-threads
+
+2005-04-18 13:32  fpillet
+
+	* libpisock/pi-file.c: remove useless init
+
+2005-04-18 13:30  fpillet
+
+	* libpisock/utils.c: do atomic writes in dumpline() -- faster
+	  logging, and pi_log() won't interfer when it adds the thread ID
+	  when compiled with --enable-threads
+
+2005-04-18 13:28  fpillet
+
+	* include/pi-threadsafe.h, libpisock/threadsafe.c: added
+	  pi_thread_id() call
+
+2005-04-15 08:00  fpillet
+
+	* include/pi-file.h, libpisock/pi-file.c: Reorganized prototypes,
+	  documented functions for doxygen, improving things for bindings
+	  generation
+
+2005-04-15 06:04  fpillet
+
+	* include/pi-error.h: Added new error code
+
+2005-04-14 03:12  fpillet
+
+	* include/: pi-dlp.h, pi-file.h: more tweaks for swig generation
+
+2005-04-13 05:31  fpillet
+
+	* bindings/Python/: pisockextras.py, src/helperfuncs.i,
+	  src/pi-dlp-maps.i, src/pi-error.i, src/pi-socket-maps.i,
+	  src/pisock.i, src/pisock.py, src/pisock_wrap.c,
+	  test/pisocktests.py: mucho improvements in bindings
+
+2005-04-12 11:47  fpillet
+
+	* libpisock/dlp.c: clarify log message
+
+2005-04-12 11:42  fpillet
+
+	* configure.ac: define MACOSX when compiling on darwin. Do NOT
+	  define DARWIN as this would conflict with system headers
+
+2005-04-12 11:42  fpillet
+
+	* libpisock/serial.c: turn fragmentation off on serial for MACOSX
+	  only for now
+
+2005-04-12 09:53  fpillet
+
+	* include/pi-dlp.h: some exclusions for thing we don't need to
+	  interface in bindings
+
+2005-04-12 06:36  nicholas
+
+	* bindings/Python/src/: Makefile, nonblocking_multithread.pl,
+	  pisock.i, pisock.py, pisock_wrap.c: Put in use of %feature to see
+	  if it solves the interpreter lock when calling pisock functions
+	  in a cleaner way than a post-processor for the C code. Florent,
+	  can you see if you like this method?
+
+2005-04-11 11:34  fpillet
+
+	* libpisock/darwinusb.c: auto-enable multiple simultaneous
+	  connection support when compiling with --enable-threads. Lock the
+	  queue mutex in stop_listening to make sure we don't have an
+	  access conflict with u__read()
+
+2005-04-11 05:22  fpillet
+
+	* libpisock/debug.c: reduce code bloat by properly using
+	  pi-threadsafe.h macros
+
+2005-04-11 05:20  fpillet
+
+	* libpisock/debug.c: added mutex when compiling with HAVE__THREADS
+	  so that logfile writes are atomic. Open logfile in append mode so
+	  that multiple connections don't clear the logfile when the
+	  connection drops
+
+2005-04-10 18:17  fpillet
+
+	* libpisock/darwinusb.c: √make sure another thread can't close same
+	  connection, better disconnection reporting, better logging
+
+2005-04-10 16:46  fpillet
+
+	* libpisock/dlp.c: freeze PADP txid during dlp_VFSFileRead
+
+2005-04-10 16:45  fpillet
+
+	* include/pi-padp.h, libpisock/padp.c, include/pi-socket.h: Added
+	  new sockopt to allow freezing the txid during large transfers
+	  (mainly for dlp_VFSFileRead)
+
+2005-04-08 13:29  fpillet
+
+	* libpisock/dlp.c: changed proto to match header
+
+2005-04-08 13:29  fpillet
+
+	* libpisock/usb.c: simplified code
+
+2005-04-08 13:28  fpillet
+
+	* libpisock/darwinusb.c: Added support for multiple simultaneous
+	  USB connections
+
+2005-04-08 13:26  fpillet
+
+	* include/: pi-dlp.h, pi-socket.h: swig and prototype tweaks
+
+2005-04-08 13:26  fpillet
+
+	* include/pi-usb.h: tweaks
+
+2005-04-08 13:25  fpillet
+
+	* bindings/Python/src/: Makefile, nonblocking_multithread.pl: some
+	  additions to postprocess pisock_wrap.c and make sure a
+	  multi-threaded python interpreter won't be completly blocked
+	  during C calls
+
+2005-04-08 13:17  fpillet
+
+	* bindings/Python/: pisockextras.py, src/general-maps.i,
+	  src/pi-dlp-maps.i, src/pi-dlp.i, src/pisock.i: Updating the
+	  interfaces to work with 0.12, lots of ongoing fixes
+
+2005-04-05 12:35  fpillet
+
+	* libpisock/darwinusb.c: more work to prepare for multiple
+	  simultaneous connection support
+
+2005-04-04 18:06  fpillet
+
+	* libpisock/darwinusb.c: Fixed the T5 connection issue that was
+	  bugging me
+
+2005-04-02 16:16  neilw
+
+	* src/read-todos.c: Fixing dlp_ReadRecordByIndex loop error
+
+2005-03-23 11:28  fpillet
+
+	* libpisock/darwinusb.c: reliability fixes, shielding against
+	  potential crashes if device disconnects before a read_completion
+	  is received
+
+2005-03-22 11:50  fpillet
+
+	* libpisock/darwinusb.c: even more tweaks
+
+2005-03-22 11:17  fpillet
+
+	* libpisock/darwinusb.c: tweak tweak tweakatitweak
+
+2005-03-22 10:40  fpillet
+
+	* libpisock/darwinusb.c: added dumpdata to try figuring out the
+	  info that the Treo 90 returns
+
+2005-03-22 10:19  fpillet
+
+	* libpisock/darwinusb.c: small fixes, trying to get the Treo 90
+	  working
+
+2005-03-16 17:34  fpillet
+
+	* src/dlpsh.c: fix minor alignment problem in df command, add 'dtp'
+	  command that's showed in help but not implemented, add 'bye'
+	  alias to quit/exit
+
+2005-03-16 11:10  fpillet
+
+	* libpisock/syspkt.c: this variable can't be global (it isn't
+	  anyway) -- causes ld to fail when building the framework on OS X
+
+2005-03-16 04:15  fpillet
+
+	* libpisock/darwinusb.c: Fixed an issue with finding the pipes on
+	  some handhelds
+
+2005-03-14 20:21  desrod
+
+	* libpisock/syspkt.c: Oops, this is a better fix for gcc4
+
+2005-03-14 20:14  desrod
+
+	* libpisock/syspkt.c: Smallish fix for gcc4
+
+2005-03-09 05:39  fpillet
+
+	* libpisock/darwinusb.c: tweaked comments and changed some code for
+	  better T5 compatibility (probably more to come)
+
+2005-03-08 07:40  fpillet
+
+	* libpisock/darwinusb.c: moved trying to get pipe info by reading
+	  from pipes in the find_interfaces() function, as
+	  configure_device() doesn't have the interface open yet
+
+2005-03-08 06:52  fpillet
+
+	* libpisock/darwinusb.c: Revised (once more) device configuration &
+	  pipe search. After some extensive USB tracing, I found out why my
+	  Sony wasn't connecting -- looks like the device didn't like to be
+	  re-configured while it had already been configured by the OS.
+	  This seems to work well with others as well. Also improved
+	  configuration reading using VISOR format, which is what Sony OS
+	  3/4 devices use.  T615C now works. TapWave connects faster and
+	  doesn't need USBReset() anymore.
+
+2005-03-08 04:49  fpillet
+
+	* libpisock/pi-file.c: Fixed issue with appInfo not being read on
+	  some files like AddressDB on T3: this was because the size
+	  returned by HotSync (this also happens straight on Palm OS, check
+	  it with Filez) is wrong -- it says there is no appInfo block
+	  whereas there is one. See comments in the code.
+
+2005-03-06 12:36  fpillet
+
+	* libpisock/dlp.c: deprecated -129 as a legitimate return code --
+	  functions now properly return PI_ERR_DLP_UNSUPPORTED
+
+2005-03-06 12:26  fpillet
+
+	* libpisock/pi-file.c: fixed bug recently introduced in
+	  pi_file_retrieve() that prevented it from working properly on
+	  devices prior Palm OS 3.0
+
+2005-03-06 07:46  nicholas
+
+	* bindings/Tcl/pitcl.c, include/pi-address.h,
+	  include/pi-datebook.h, include/pi-memo.h, include/pi-todo.h,
+	  libpisock/address.c, libpisock/contact.c, libpisock/datebook.c,
+	  libpisock/memo.c, libpisock/pi-buffer.c, libpisock/todo.c,
+	  src/install-datebook.c, src/install-todo.c, src/install-todos.c,
+	  src/memos.c, src/pilot-addresses.c, src/read-ical.c,
+	  src/read-todos.c, src/reminders.c, src/validate.cc,
+	  tests/contactsdb-test.c, tests/packers.c: Switch the
+	  packer/unpacker functions over to use pi-buffer-t instead of
+	  static buffers. Makes the arguments for them all match each
+	  other.
+
+2005-03-06 06:23  fpillet
+
+	* libpisock/darwinusb.c: removed the USBReset()√ call which was
+	  causing problems with m515, m500 and possibly other devices.
+	  Conditionalized it to presence of a Zodiac, which seems to be the
+	  only√ device still requiring it (hopefully I'll find a workaround
+	  soon)√
+
+2005-03-04 13:11  fpillet
+
+	* libpisock/dlp.c: integrated fix provided by Scott Gruby: Tapwave
+	  Zodiac may return wrong command index during
+	  dlpFuncReadRecord/dlpFuncReadRecordEx calls
+
+2005-03-04 09:06  fpillet
+
+	* libpisock/darwinusb.c: prepared darwinusb for multiple
+	  simultaneous connection support
+
+2005-03-04 06:09  fpillet
+
+	* include/pi-cmp.h, include/pi-net.h, include/pi-padp.h,
+	  include/pi-serial.h, include/pi-slp.h, include/pi-source.h,
+	  include/pi-sys.h, include/pi-usb.h, libpisock/cmp.c,
+	  libpisock/darwinusb.c, libpisock/freebsdusb.c, libpisock/inet.c,
+	  libpisock/libusb.c, libpisock/padp.c, libpisock/slp.c,
+	  libpisock/sys.c, libpisock/unixserial.c: revised constness
+	  accross the board
+
+2005-03-04 05:52  fpillet
+
+	* libpisock/net.c: change declaration of fixed handshake blocks,
+	  make message parameter to net_tx const
+
+2005-03-03 13:35  fpillet
+
+	* configure.ac: update, small bugfix on 'enable-debug'
+
+2005-03-03 13:34  fpillet
+
+	* include/Makefile.am, include/pi-threadsafe.h,
+	  libpisock/Makefile.am, libpisock/socket.c,
+	  libpisock/threadsafe.c: Added thread-safe code so that access to
+	  socket linked lists is thread safe
+
+2005-03-03 13:09  fpillet
+
+	* libpisock/darwinusb.c: revised pipe-detection code
+
+2005-03-03 10:11  nicholas
+
+	* include/pi-userland.h, libpisock/darwinusb.c,
+	  libpisock/datebook.c, libpisock/debug.c, libpisock/dlp.c,
+	  libpisock/expense.c, libpisock/freebsdusb.c, libpisock/hinote.c,
+	  libpisock/inet.c, libpisock/libusb.c, libpisock/linuxusb.c,
+	  libpisock/mail.c, libpisock/md5.c, libpisock/memo.c,
+	  libpisock/money.c, libpisock/net.c, libpisock/notepad.c,
+	  libpisock/os2serial.c, libpisock/padp.c, libpisock/palmpix.c,
+	  libpisock/pi-buffer.c, libpisock/pi-file.c,
+	  libpisock/pi-header.c, libpisock/serial.c, libpisock/slp.c,
+	  libpisock/socket.c, libpisock/sys.c, libpisock/syspkt.c,
+	  libpisock/todo.c, libpisock/unixserial.c, libpisock/usb.c,
+	  libpisock/utils.c, libpisock/veo.c, libpisock/versamail.c,
+	  libpisync/util.c, src/debugsh.c, src/hinotes.c,
+	  src/install-datebook.c, src/install-hinote.c, src/install-memo.c,
+	  src/install-netsync.c, src/install-todo.c, src/kittykiller.c,
+	  src/pd-tty.c, src/pi-port.c, src/pilot-debug.c,
+	  src/pilot-dedupe.c, src/pilot-schlep.c, src/pilot-treofoto.c,
+	  src/plu_args.c, src/read-ical.c, src/read-palmpix.c,
+	  src/reminders.c: Add emacs local variables to every place that
+	  has vi ones. This is to stop emacs trying to indent stuff a
+	  different way.
+
+2005-03-02 17:36  fpillet
+
+	* configure.ac, m4/threads.m4: added --enable-threads flag for
+	  thread-safe support
+
+2005-03-02 11:25  fpillet
+
+	* libpisock/dlp.c: disable RX timeouts during dlp_CallApplication()
+
+2005-03-02 11:24  fpillet
+
+	* libpisock/: net.c, padp.c: honor the PI_SOCK_HONOR_RX_TIMEOUT
+	  sockopt when waiting for packets so that we don't timeout on
+	  lengthy operations which don't tickle the connection
+
+2005-03-02 10:51  fpillet
+
+	* include/pi-dlp.h: complete documenting the known HotSync bug in
+	  VFSDirEntryEnumerate()
+
+2005-03-02 10:50  fpillet
+
+	* include/pi-socket.h, libpisock/socket.c: added
+	  PI_SOCK_HONOR_RX_TIMEOUT socket level option, so that we can
+	  disable RX timeouts when the device is going to perform a lengthy
+	  operation (mainly for dlp_CallApplication() use)
+
+2005-03-01 14:54  desrod
+
+	* include/pi-usb.h, libpisock/usb.c: Fix typos with SONY_CILE
+	  device.. closes bug-and-a-half #1452
+
+2005-03-01 14:33  warp
+
+	* libpisock/libusb.c: Take into consideration race conditions for
+	  reading, which nicely kills a hanging bug.  Kill a few other
+	  bugs.
+
+2005-02-22 10:40  fpillet
+
+	* include/pi-buffer.h, libpisock/pi-buffer.c: constified parameters
+	  where possible
+
+2005-02-21 17:53  nicholas
+
+	* bindings/Python/pisockextras.py,
+	  bindings/Python/src/pi-dlp-maps.i,
+	  bindings/Python/src/pi-socket-maps.i,
+	  bindings/Python/src/pisock.i, bindings/Python/src/pisock.py,
+	  bindings/Python/src/pisock_wrap.c,
+	  bindings/Python/test/pisocktests.py, include/pi-socket.h: Pass
+	  tests for dlp_ReadSysInfo, dlp_ReadStorageInfo, dlp_ReadUserInfo,
+	  dlp_ReadFeature. Rework a few bits of python code.
+
+2005-02-21 14:18  fpillet
+
+	* libpisock/darwinusb.c: added a third pass to find the USB pipes
+	  -- turns out the Tungsten W has one 64-bytes channel and one
+	  32-byte. Couldn't get it working yet, but at least it finds the
+	  pipes
+
+2005-02-21 10:19  fpillet
+
+	* bindings/Python/test/pisocktests.py: more tests. Need help with
+	  these funcs that take a ptr as argument
+
+2005-02-21 08:40  fpillet
+
+	* bindings/Python/test/pisocktests.py: new tests, show what's
+	  happening, took off offlinesuite from online tests because it
+	  fails when online
+
+2005-02-21 08:39  fpillet
+
+	* bindings/Python/pisockextras.py: tweaks
+
+2005-02-21 08:20  fpillet
+
+	* bindings/Python/pisockextras.py: fixed loop as dlp_ReadDBList_
+	  can return None
+
+2005-02-21 05:57  fpillet
+
+	* bindings/Python/src/pisock.i: restored proper indentation for
+	  Python code√
+
+2005-02-20 18:59  fpillet
+
+	* bindings/Python/src/pi-dlp-maps.i: tweaks, fixed a few bugs:
+	  dlp_ReadAppPreference's parameter had changed, removed a typemap
+	  that was causing a parameter to not be taken as input
+
+2005-02-20 18:34  fpillet
+
+	* bindings/Python/src/pi-dlp-maps.i: reindent, tweak
+
+2005-02-20 18:32  fpillet
+
+	* bindings/Python/src/pisock.i: picky picky: make sure static
+	  object ptrs are set to NULL; reindented code
+
+2005-02-20 18:31  fpillet
+
+	* bindings/Python/src/pi-error.i: better error mgmt: defer error
+	  processing to a func, this reduces the wrapper codesize
+
+2005-02-20 18:30  fpillet
+
+	* bindings/Python/src/general-maps.i: improved pi_buffer_t*
+	  handling so as not to leak in case of early termination
+
+2005-02-20 10:07  fpillet
+
+	* bindings/Python/src/pi-dlp-maps.i: More structured file
+
+2005-02-20 06:53  fpillet
+
+	* libpisock/socket.c: cast parameter as the protocol func isn't
+	  constified yet
+
+2005-02-20 06:52  fpillet
+
+	* include/pi-dlp.h: DLP functions now return PI_ERR, this eases
+	  swig integration. Try to harmonize prototypes as well, using
+	  meaningful and identical names where parameters are the same kind
+
+2005-02-20 06:25  fpillet
+
+	* bindings/Python/src/: general-maps-errorhandling.i,
+	  pi-dlp-maps-errorhandling.i: removed obsolete errorhandling files
+
+2005-02-20 06:25  fpillet
+
+	* bindings/Python/src/pisock.i: now use pi-error.i
+
+2005-02-20 06:15  nicholas
+
+	* bindings/Python/src/pi-error.i: Provide (weak) error strings to
+	  the caller
+
+2005-02-20 06:10  fpillet
+
+	* include/pi-error.h: new type PI_ERR
+
+2005-02-20 05:54  fpillet
+
+	* bindings/Python/src/pi-error.i: preparing interfaces for proper
+	  error handling
+
+2005-02-19 11:03  nicholas
+
+	* bindings/Python/: pisockextras.py, setup.py.in, test.py, test.sh,
+	  src/general-maps-errorhandling.i,
+	  src/pi-dlp-maps-errorhandling.i, src/pi-dlp-maps.i, src/pisock.i,
+	  src/pisock.py, src/pisock_wrap.c, test/pisocktests.py,
+	  test/run.sh: Better error handling, create pisockextras.py to
+	  provide nicer interfaces (see dlp_ReadDBList for example), start
+	  of unit ttest suite.
+
+2005-02-18 13:57  fpillet
+
+	* include/pi-dlp.h, libpisock/dlp.c: preparing prototypes for swig
+
+2005-02-18 13:56  fpillet
+
+	* include/pi-socket.h, libpisock/socket.c: updated data constness
+	  on pi_send() and pi_write()
+
+2005-02-18 13:17  fpillet
+
+	* darwin/build_framework.sh: framework build doesn't require
+	  libicon anymore
+
+2005-02-17 19:05  nicholas
+
+	* bindings/Python/: README, setup.py.in: Rebrand as Rob hasn't
+	  touched the code for a few years.
+
+2005-02-17 19:04  nicholas
+
+	* bindings/Python/src/pi-file.i: This file is not needed anymore
+
+2005-02-17 17:58  nicholas
+
+	* bindings/Python/src/: general-maps-errorhandling.i,
+	  general-maps.i, pi-dlp-maps-errorhandling.i, pi-dlp-maps.i,
+	  pisock.i, pisock_wrap.c: Make typemaps that are not specific to
+	  python be used for all languages, so maybe we can start to use
+	  this same files for perl. Put back exception checking for the
+	  dlp_ calls, in a new way.
+
+2005-02-17 17:19  nicholas
+
+	* bindings/Python/src/general-maps.i,
+	  bindings/Python/src/pi-dlp-maps.i, bindings/Python/src/pi-dlp.i,
+	  bindings/Python/src/pi-socket-maps.i,
+	  bindings/Python/src/pisock.i, include/pi-dlp.h: Python swig
+	  bindings no longer have their own copies of the prototypes. They
+	  are also a bit broken, but let's fix them as we write tests or
+	  code that uses them. This needed a little rename in pi-dlp.h.
+	  Error handling is even worse now, but see DLPERROR in
+	  pi-dlp-maps.i for the form of the start of a fix.
+
+2005-02-17 17:14  nicholas
+
+	* bindings/Python/src/: pisock_wrap.c, pisock.py: Doing this commit
+	  seperately, see my real commit in a few seconds time. This is to
+	  make the actual diff readable, as this is just a large
+	  autogenerated file.
+
+2005-02-17 14:04  fpillet
+
+	* libpisock/: Makefile.am, util.c: Removed util.c as
+	  convert_FromPilotChar and convert_ToPilotChar don't belong to
+	  libpisock
+
+2005-02-17 14:01  fpillet
+
+	* libpisync/: Makefile.am, util.c: moved util.c from libpisock as
+	  it really belongs to here
+
+2005-02-16 19:58  nicholas
+
+	* bindings/Python/test.py, bindings/Python/test.sh,
+	  bindings/Python/src/pi-dlp.i, bindings/Python/src/pi-header.i,
+	  bindings/Python/src/pi-socket-maps.i,
+	  bindings/Python/src/pi-socket.i, bindings/Python/src/pi-source.i,
+	  bindings/Python/src/pisock.i, bindings/Python/src/pisock.py,
+	  bindings/Python/src/pisock_wrap.c, include/pi-socket.h: Clean up
+	  some inconsistant names in pi-socket.h ; Have swig read
+	  pi-socket.h directly ; update python test.py to not use
+	  pilot_connect()
+
+2005-02-12 19:50  desrod
+
+	* ChangeLog: Re-gen ChangeLog
+
 2005-02-12 01:53  warp
 
 	* libpisock/libusb.c: Some warning cleanup.
