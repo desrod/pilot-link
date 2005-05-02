@@ -502,7 +502,7 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 			case PI_CMD_CMP:
 				if ((err = cmp_rx_handshake(ps, data->establishrate,
 											data->establishhighrate)) < 0)
-					return err;
+					goto fail;
 
 				size = sizeof(data->rate);
 				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
@@ -549,7 +549,7 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 				}
 #endif
 				if ((err = net_rx_handshake(ps)) < 0)
-					return err;
+					goto fail;
 				break;
 		}
 		ps->dlprecord = 0;

@@ -455,8 +455,10 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
  	sd = accept(ps->sd, addr, &l);
 	if (addrlen)
 		*addrlen = l;
-	if (sd < 0)
+	if (sd < 0) {
+		err = sd;
 		goto fail;
+	}
 
 	pi_socket_setsd(ps, sd);
 	pi_socket_init(ps);
@@ -464,7 +466,7 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	switch (ps->cmd) {
 		case PI_CMD_CMP:
 			if ((err = cmp_rx_handshake(ps, 57600, 0)) < 0)
-				return err;
+				goto fail;
 			break;
 		case PI_CMD_NET:
 			/* network: make sure we don't split writes. set socket option
@@ -487,7 +489,7 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 			ps->command ^= 1;
 
 			if ((err = net_rx_handshake(ps)) < 0)
-				return err;
+				goto fail;
 			break;
 	}
 
@@ -502,7 +504,7 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
  fail:
 	if (ps)
 		pi_close (ps->sd);
-	return PI_ERR_GENERIC_SYSTEM;
+	return err;
 }
 
 /***********************************************************************

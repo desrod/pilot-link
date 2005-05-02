@@ -344,10 +344,8 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 
 	/* Wait for data */
 	result = data->impl.poll(ps, ps->accept_to);
-	if (result < 0) {
-		pi_close(ps->sd);
-		return result;
-	}
+	if (result < 0)
+		goto fail;
 
 	data->timeout = ps->accept_to * 1000;
 
@@ -357,11 +355,11 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 		switch (ps->cmd) {
 			case PI_CMD_CMP:
 				if ((result = cmp_rx_handshake(ps, 57600, 1)) < 0)
-					return result;
+					goto fail;
 				break;
 			case PI_CMD_NET:
 				if ((result = net_rx_handshake(ps)) < 0)
-					return result;
+					goto fail;
 			break;
 		}
 		ps->dlprecord = 0;
@@ -372,6 +370,11 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	ps->state 	= PI_SOCK_CONAC;
 
 	return ps->sd;
+
+fail:
+	if (ps)
+		pi_close(ps->sd);
+	return result;
 }
 
 
