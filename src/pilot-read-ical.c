@@ -39,6 +39,10 @@ char *tclquote(char *in)
 		*pos;
 	static char *buffer = 0;
 
+	if (in == NULL) {
+		return buffer;
+	}
+
 	/* Skip leading bullet (and any whitespace after) */
 	if (in[0] == '\x95') {
 		++in;
