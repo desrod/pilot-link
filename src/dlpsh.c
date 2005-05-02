@@ -199,8 +199,7 @@ int ls_fn(int sd, int argc, const char *argv[])
 		{"long", 	'l', POPT_ARG_NONE, NULL, 'l', "List all RAM databases using \"expanded\" format"},
 		{"rom", 	'r', POPT_ARG_NONE, NULL, 'r', "List all ROM databases and applications"},
 		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-		POPT_AUTOHELP
-        	{ NULL, 0, 0, NULL, 0 }
+		POPT_TABLEEND
 	} ;
 
 	int 	c,		/* switch */
@@ -226,17 +225,17 @@ int ls_fn(int sd, int argc, const char *argv[])
 			  lflag = 1;
 			  break;
 		  case 'h':
-
-			  printf("   List all files and databases stored on your Palm device\n\n"
-			         "   Usage: ls [options]\n"
-				 "   Options:\n"
-				 "     -l --long      List all RAM databases using \"expanded\" format\n"
-				 "     -r --rom       List all ROM databases and applications\n\n"
-				 "     -h             Display this information\n\n"
-				 "     Typing 'ls' on it's own will use the 'simple' listing format\n\n"
-				 "     Example: ls -lr\n\n");
-			  return 0;
+		  	poptPrintHelp(po,stdout,0);
+		  	return 0;
 		}
+	}
+	if (c < -1)
+	{
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+				poptBadOption(po, POPT_BADOPTION_NOALIAS),
+				poptStrerror(c));
+		return 1;
 	}
 
 	cardno = 0;
@@ -399,25 +398,21 @@ int time_fn(int sd, int argc, const char *argv[])
 int user_fn(int sd, int argc, const char *argv[])
 {
 	int 	c,		/* switch */
-		ret,
-		fl_name 	= 0,
-		fl_uid 		= 0,
-		fl_vid 		= 0,
-		fl_pid 		= 0;
+		ret;
 
-	struct 	PilotUser User, nUser;
+	struct 	PilotUser User;
 
-	char *userID, *viewerID, *lastSyncPC;
+	char *userName = NULL;
+	char *userID = NULL, *viewerID = NULL, *lastSyncPC = NULL;
 
 	poptContext po;
 	struct poptOption user_options[] = {
-		{"user", 	'u', POPT_ARG_STRING, &nUser.username, 'u', "Set Username on the Palm device (use double-quotes)"},
+		{"user", 	'u', POPT_ARG_STRING, &userName, 'u', "Set Username on the Palm device (use double-quotes)"},
 		{"id", 		'i', POPT_ARG_STRING, &userID, 'i', "Set the numeric UserID on the Palm device"},
 		{"viewid", 	'v', POPT_ARG_STRING, &viewerID, 'v', "Set the numeric ViewerID on the Palm device"},
 		{"pcid", 	'p', POPT_ARG_STRING, &lastSyncPC, 'p', "Set the numeric PCID on the Palm device"},
 		{"help", 	'h', POPT_ARG_NONE, NULL, 'h', "Display this information"},
-		POPT_AUTOHELP
-        	{ NULL, 0, 0, NULL, 0 }
+		POPT_TABLEEND
 		} ;
 
 	optind = 0;
@@ -425,34 +420,27 @@ int user_fn(int sd, int argc, const char *argv[])
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
-		  case 'u':
-			  fl_name = 1;
-			  break;
-		  case 'i':
-			  fl_uid = 1;
-			  nUser.userID = strtoul(userID, NULL, 16);
-			  break;
-		  case 'v':
-			  fl_vid = 1;
-			  nUser.viewerID = strtoul(viewerID, NULL, 16);
-			  break;
+		  case 'u': /* FALLTHRU */
+		  case 'i': /* FALLTHRU */
+		  case 'v': /* FALLTHRU */
 		  case 'p':
-			  fl_pid = 1;
-			  nUser.lastSyncPC = strtoul(lastSyncPC, NULL, 16);
-			  break;
+			break;
 		  case 'h':
-			  printf("   View or set user-specific Palm information\n\n");
-			  printf("   Usage: user [options]\n");
-			  printf("   Options:\n");
-			  printf("     -u <Username>    Set Username on the Palm device (use double-quotes)\n");
-			  printf("     -i <UserID>      Set the numeric UserID on the Palm device\n");
-			  printf("     -v <ViewerID>    Set the numeric ViewerID on the Palm device\n");
-			  printf("     -p <PCid>        Set the numeric PCID on the Palm device\n\n");
-			  printf("     -h               Display this information\n\n");
-			  printf("     Typing 'user' on it's own will display the currently stored User info\n\n");
-			  printf("     Example: user -u \"John Q. Public\" -i 12345 -v 54321 -p 98765\n\n");
-			  return 0;
+		  	poptPrintHelp(po,stdout,0);
+		  	return 0;
+		  	break;
+		default :
+			fprintf(stderr,"Bad option %d (%c)\n",c,c);
+			return 0;
 		}
+	}
+	if (c < -1)
+	{
+		/* an error occurred during option processing */
+		fprintf(stderr, "%s: %s\n",
+				poptBadOption(po, POPT_BADOPTION_NOALIAS),
+				poptStrerror(c));
+		return 1;
 	}
 
 	ret = dlp_ReadUserInfo(sd, &User);
@@ -461,7 +449,7 @@ int user_fn(int sd, int argc, const char *argv[])
 		return -1;
 	}
 
-	if (fl_name + fl_uid + fl_vid + fl_pid == 0) {
+	if (!userName && !userID && !viewerID && !lastSyncPC) {
 		printf("   Username = \"%s\"\n"
 		       "   UserID   = %08lx (%i)\n"
 		       "   ViewerID = %08lx (%i)\n"
@@ -472,21 +460,25 @@ int user_fn(int sd, int argc, const char *argv[])
 		return 0;
 	}
 
-	if (fl_name)
-		strncpy(User.username, nUser.username, sizeof(User.username));
+	if (userName) {
+		strncpy(User.username, userName, sizeof(User.username));
 		printf("   Username = \"%s\"\n", User.username);
-	if (fl_uid)
-		User.userID = nUser.userID;
+	}
+	if (userID) {
+		User.userID = strtoul(userID, NULL, 16);;
 		printf("   UserID   = %08lx (%i)\n", User.userID,
 			(int) User.userID);
-	if (fl_vid)
-		User.viewerID = nUser.viewerID;
+	}
+	if (viewerID) {
+		User.viewerID = strtoul(viewerID, NULL, 16);;
 		printf("   ViewerID = %08lx (%i)\n", User.viewerID,
 			(int) User.viewerID);
-	if (fl_pid)
-		User.lastSyncPC = nUser.lastSyncPC;
+	}
+	if (lastSyncPC) {
+		User.lastSyncPC = strtoul(lastSyncPC, NULL, 16);
 		printf("   PCid     = %08lx (%i)\n", User.lastSyncPC,
 			(int) User.lastSyncPC);
+	}
 
 	User.successfulSyncDate = time(NULL);
 	User.lastSyncDate = User.successfulSyncDate;
