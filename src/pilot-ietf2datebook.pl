@@ -28,7 +28,7 @@ use strict;
 print <DATA>;
 
 __DATA__;
-# -*- perl -*-
+#!/usr/bin/env perl 
 
 while (<>) {
     chomp;
