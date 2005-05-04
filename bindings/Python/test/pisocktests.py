@@ -136,7 +136,6 @@ class OnlineTestCase(unittest.TestCase):
         pisock.dlp_CloseDB(sd,db)
         pisock.dlp_DeleteDB(sd,0,'PythonTestSuite')
 
-
 class OfflineTestCase(unittest.TestCase):
     def setUp(self):
         pass
