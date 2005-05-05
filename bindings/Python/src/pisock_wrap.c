@@ -8443,18 +8443,19 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
     unsigned long *arg7 = (unsigned long *) 0 ;
     pi_buffer_t *arg8 = (pi_buffer_t *) 0 ;
     PI_ERR result;
+    unsigned long temp7 ;
+    int res7 = 0 ;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
     PyObject * obj2 = 0 ;
     PyObject * obj3 = 0 ;
     PyObject * obj4 = 0 ;
-    PyObject * obj5 = 0 ;
-    PyObject * obj6 = 0 ;
     
+    arg7 = &temp7; res7 = SWIG_NEWOBJ;
     {
         arg8 = pi_buffer_new(0xFFFF);
     }
-    if(!PyArg_ParseTuple(args,(char *)"OOOOOOO:dlp_CallApplication",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OOOOO:dlp_CallApplication",&obj0,&obj1,&obj2,&obj3,&obj4)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
@@ -8483,17 +8484,10 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
         arg4 = (int)(SWIG_As_int(obj3)); 
         if (SWIG_arg_fail(4)) SWIG_fail;
     }
-    {
-        arg5 = (size_t)(SWIG_As_unsigned_SS_long(obj4)); 
-        if (SWIG_arg_fail(5)) SWIG_fail;
-    }
-    {
-        if ((SWIG_ConvertPtr(obj5,(void **)(&arg6),0,SWIG_POINTER_EXCEPTION|0))== -1) {
-            SWIG_arg_fail(6);SWIG_fail;
-        }
-    }
-    SWIG_Python_ConvertPtr(obj6, (void **)&arg7, SWIGTYPE_p_unsigned_long, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(7)) SWIG_fail;
+    
+    arg5 = PyString_Size(obj4);
+    arg6 = (void *)PyString_AsString(obj4);
+    
     {
         PyThreadState *__save = PyEval_SaveThread();
         result = (PI_ERR)dlp_CallApplication(arg1,arg2,arg3,arg4,arg5,(void const *)arg6,arg7,arg8);
@@ -8505,6 +8499,8 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
+    resultobj = t_output_helper(resultobj, ((res7 == SWIG_NEWOBJ) ?
+    SWIG_From_unsigned_SS_long((*arg7)) : SWIG_NewPointerObj((void*)(arg7), SWIGTYPE_p_unsigned_long, 0)));
     {
         if (arg8) {
             PyObject *o1 = Py_BuildValue("s#", arg8->data, arg8->used);

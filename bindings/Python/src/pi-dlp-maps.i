@@ -54,6 +54,7 @@
 %apply unsigned long *OUTPUT { recordid_t *recuid };
 %apply unsigned long *OUTPUT { recordid_t *newrecuid };
 %apply unsigned long *OUTPUT { unsigned long *localid };
+%apply unsigned long *OUTPUT { unsigned long *retcode };
 
 // -------------------------------------
 //  time_t *time
@@ -138,6 +139,11 @@
 %typemap (python,in) (const void *databuf, size_t datasize) %{
 	$1 = (void *)PyString_AsString($input);
 	$2 = PyString_Size($input);
+%}
+
+%typemap (python,in) (size_t datasize, const void *databuf) %{
+    $1 = PyString_Size($input);
+    $2 = (void *)PyString_AsString($input);
 %}
 
 // -------------------------------------
