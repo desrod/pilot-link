@@ -340,17 +340,32 @@ static int
 pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
-	int result;
+	int result, count = 0;
 
 	/* Wait for data */
-	result = data->impl.poll(ps, ps->accept_to);
-	if (result < 0)
-		goto fail;
+head:
+	result = data->impl.poll(ps, 1000);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, result: %d.\n", __FILE__, __LINE__, result));
+	if (result <= 0) {
+		/*
+		 * Evil kluge.
+		 * If we don't get any data the device may still be there.
+		 * We try to wake it up by sending a 'garbage' packet or 5.
+		 */
+		char buf[] = 
+			{ 0x01, 0x00, 0x00, 0x00, 0x00, 0x06 };
+		if (count++ > 5)
+			goto fail;
+		data->impl.write(ps, buf, sizeof (buf), 1000);
+		data->impl.write(ps, buf, sizeof (buf), 1000);
+		goto head;
+	}
 
 	data->timeout = ps->accept_to * 1000;
 
 	pi_socket_init(ps);
 
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, prot: 0x%x, type: 0x%x, cmd: 0x%x, count: %d.\n", __FILE__, __LINE__, ps->protocol, ps->type, ps->cmd, count));
 	if (ps->type == PI_SOCK_STREAM) {
 		switch (ps->cmd) {
 			case PI_CMD_CMP:
