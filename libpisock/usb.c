@@ -350,13 +350,11 @@ head:
 		/*
 		 * Evil kluge.
 		 * If we don't get any data the device may still be there.
-		 * We try to wake it up by sending a 'garbage' packet or 5.
+		 * We try to wake it up by sending an empty dummy packet.
 		 */
-		char buf[] = 
-			{ 0x01, 0x00, 0x00, 0x00, 0x00, 0x06 };
-		if (count++ > 5)
+		char buf[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };
+		if (count++)
 			goto fail;
-		data->impl.write(ps, buf, sizeof (buf), 1000);
 		data->impl.write(ps, buf, sizeof (buf), 1000);
 		goto head;
 	}
