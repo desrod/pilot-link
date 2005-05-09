@@ -68,8 +68,6 @@ extern "C" {
 		struct RPC_param param[20];
 	};
 
-	extern int sys_RPCerror;
-
 	extern int sys_UnpackState
 	    PI_ARGS((void *buffer, struct Pilot_state * s));
 

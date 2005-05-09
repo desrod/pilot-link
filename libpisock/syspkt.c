@@ -39,9 +39,8 @@
 #include "pi-error.h"
 
 /* Declare prototypes */
-int sys_RPCerror;
-int sys_PackRegisters(void *data, struct Pilot_registers *r);
-int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
+static int sys_PackRegisters(void *data, struct Pilot_registers *r);
+static int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
                     long * freeram);
 
@@ -135,7 +134,7 @@ sys_UnpackRegisters(void *data, struct Pilot_registers *r)
  * Returns:     0
  *
  ***********************************************************************/
-int
+static int
 sys_PackRegisters(void *data, struct Pilot_registers *r)
 {
 	int 	idx;
@@ -719,7 +718,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 
 		if (buf->data[0] != (unsigned char)0x8a) {
 			pi_buffer_free (buf);
-			return -2;
+			return pi_set_error(sd, -2);
 		}
 
 		*D0 = get_long(buf->data + 4);
@@ -797,8 +796,8 @@ RPC(int sd, int socket, int trap, int reply, ...)
 	}
 	va_end(ap);
 
-	sys_RPCerror =
-	    sys_RPC(sd, socket, trap, &D0, &A0, idx, p, reply != 2);
+	if (sys_RPC(sd, socket, trap, &D0, &A0, idx, p, reply != 2) < 0)
+	    return pi_error(sd);
 
 	for (j = 0; j < idx; j++) {
 		if (p[j].invert) {
@@ -818,8 +817,7 @@ RPC(int sd, int socket, int trap, int reply, ...)
 
 	if (reply)
 		return A0;
-	else
-		return D0;
+	return D0;
 }
 
 
@@ -1036,7 +1034,7 @@ RPC_Ptr_Void(int sd, int trap)
  * Returns:     Nothing
  *
  ***********************************************************************/
-int
+static int
 RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
                     int * version, long * date, long * romsize, long * ramsize,
                     long * freeram) {
