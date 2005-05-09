@@ -8,7 +8,7 @@
  * under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
@@ -86,7 +86,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
  *
  * Parameters:  ps is of type pi_socket_t which will given a copy of the
  *              valid file descriptor that is returned by the function.
- * 
+ *
  * 		addr of type pi_socketaddr contains the member pi_device
  *              which is a character string of the usb device.
  *
@@ -262,14 +262,14 @@ u_poll(pi_socket_t *ps, int timeout)
  * Function:    u_write
  *
  * Parameters:	ps is of type pi_socket that contains the sd member which is
- *              the file descriptor that the data in buf will be written to. 
+ *              the file descriptor that the data in buf will be written to.
  *
  *              buf is a unsigned char pointer that points to the data that
- *              is to be written to ps->sd.  
+ *              is to be written to ps->sd.
  *
  *		len is of type int and indicated the number of bytes to
- *              write to ps->sd.  
- * 
+ *              write to ps->sd.
+ *
  *		flags is of type int and contains various write flags.  What
  *              flags and should I respect them, since I am currently not
  *              checking this variable?
@@ -283,8 +283,8 @@ u_poll(pi_socket_t *ps, int timeout)
 static ssize_t
 u_write(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
-	int 	nwrote, 
-		total, 
+	int 	nwrote,
+		total,
 		write_len;
 	fd_set 	ready;
 
@@ -352,10 +352,10 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	int bytes_read = 0;
 	fd_set ready;
 	struct timeval t;
-	
+
 	if (flags == PI_MSG_PEEK && len > 256)
 		len = 256;
-	
+
 	if (pi_buffer_expect (buf, len) == NULL) {
 		errno = ENOMEM;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
@@ -399,7 +399,7 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 	/* read data to pre-sized buffer */
-	rlen = recv(ps->sd, &buf->data[buf->used], len, 0);
+	rlen = read(ps->sd, &buf->data[buf->used], len);
 	if (rlen > 0) {
 		if (flags == PI_MSG_PEEK) {
 			memcpy(data->buf, buf->data + buf->used, rlen);
@@ -450,7 +450,7 @@ u_flush(pi_socket_t *ps, int flags)
 		/* flush pending data */
 		if ((fl = fcntl(ps->sd, F_GETFL, 0)) != -1) {
 			fcntl(ps->sd, F_SETFL, fl | O_NONBLOCK);
-			while (recv(ps->sd, buf, sizeof(buf), 0) > 0)
+			while (read(ps->sd, buf, sizeof(buf)) > 0)
 				;
 			fcntl(ps->sd, F_SETFL, fl);
 		}
