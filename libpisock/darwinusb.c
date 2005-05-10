@@ -90,7 +90,7 @@
 
 /* Define this to make debug logs include USB debug info */
 #undef DEBUG_USB
-#define DEBUG_USB 1
+/*#define DEBUG_USB 1*/
 
 /* These values are somewhat tricky.  Priming reads with a size of exactly one
  * USB packet works best (no timeouts).  Probably best to leave these as they are.
