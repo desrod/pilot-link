@@ -45,16 +45,16 @@
 
 pi_protocol_t *pi_usb_protocol_dup (pi_protocol_t *prot);
 
-static int pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, 
+static int pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr,
 			     size_t addrlen);
 static int pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr,
 			  size_t addrlen);
 static int pi_usb_listen(pi_socket_t *ps, int backlog);
 static int pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr,
 			    size_t *addrlen);
-static int pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name, 
+static int pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
 				void *option_value, size_t *option_len);
-static int pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name, 
+static int pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name,
 				const void *option_value, size_t *option_len);
 static int pi_usb_close(pi_socket_t *ps);
 
@@ -81,7 +81,7 @@ pi_usb_protocol_dup (pi_protocol_t *prot)
 	pi_protocol_t *new_prot;
 
 	ASSERT(prot != NULL);
-	
+
 	new_prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
 
 	if (new_prot != NULL) {
@@ -115,7 +115,7 @@ static void
 pi_usb_protocol_free (pi_protocol_t *prot)
 {
 	ASSERT(prot != NULL);
-	
+
 	if (prot != NULL)
 		free(prot);
 }
@@ -134,14 +134,14 @@ pi_usb_protocol_free (pi_protocol_t *prot)
  ***********************************************************************/
 static pi_protocol_t *
 pi_usb_protocol (pi_device_t *dev)
-{	
+{
 	pi_protocol_t *prot;
 	pi_usb_data_t *data;
 
 	ASSERT(dev != NULL);
-	
+
 	data = dev->data;
-	
+
 	prot 	= (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
 
 	if (prot != NULL) {
@@ -155,7 +155,7 @@ pi_usb_protocol (pi_device_t *dev)
 		prot->setsockopt 	= pi_usb_setsockopt;
 		prot->data 		= NULL;
 	}
-	
+
 	return prot;
 }
 
@@ -171,7 +171,7 @@ pi_usb_protocol (pi_device_t *dev)
  *
  ***********************************************************************/
 static void
-pi_usb_device_free (pi_device_t *dev) 
+pi_usb_device_free (pi_device_t *dev)
 {
 	pi_usb_data_t *data = (pi_usb_data_t *)dev->data;
 
@@ -196,11 +196,11 @@ pi_usb_device_free (pi_device_t *dev)
  *
  ***********************************************************************/
 pi_device_t *
-pi_usb_device (int type) 
+pi_usb_device (int type)
 {
 	pi_device_t *dev;
 	pi_usb_data_t *data;
-	
+
 	dev = (pi_device_t *)malloc (sizeof (pi_device_t));
 	if (dev != NULL) {
 		data = (pi_usb_data_t *)malloc (sizeof (struct pi_usb_data));
@@ -209,11 +209,11 @@ pi_usb_device (int type)
 			dev = NULL;
 		}
 	}
-	
+
 	if (dev != NULL && data != NULL) {
 
 		dev->free 		= pi_usb_device_free;
-		dev->protocol 		= pi_usb_protocol;	
+		dev->protocol 		= pi_usb_protocol;
 		dev->bind 		= pi_usb_bind;
 		dev->listen 		= pi_usb_listen;
 		dev->accept 		= pi_usb_accept;
@@ -224,7 +224,7 @@ pi_usb_device (int type)
 		pi_usb_impl_init (&data->impl);
 		dev->data 		= data;
 	}
-	
+
 	return dev;
 }
 
@@ -261,7 +261,7 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 		switch (ps->cmd) {
 		case PI_CMD_CMP:
 			break;
-			
+
 		case PI_CMD_NET:
 			if ((result = net_tx_handshake(ps)) < 0)
 				return result;
@@ -321,7 +321,7 @@ static int
 pi_usb_listen(pi_socket_t *ps, int backlog)
 {
 	ps->state = PI_SOCK_LISTN;
-	
+
 	return 0;
 }
 
@@ -349,7 +349,7 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
         goto fail;
 #else
     result = data->impl.poll(ps, 1000);
-    LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, result: %d.\n", __FILE__, __LINE__, result));
+    LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, poll result: %d.\n", __FILE__, __LINE__, result));
     if (result <= 0) {
         /* Evil kludge.
          * If we don't get any data the device may still be there.
@@ -370,13 +370,17 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	if (ps->type == PI_SOCK_STREAM) {
 		switch (ps->cmd) {
 			case PI_CMD_CMP:
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, cmp rx.\n", __FILE__, __LINE__));
 				if ((result = cmp_rx_handshake(ps, 57600, 1)) < 0)
 					goto fail;
 				break;
 			case PI_CMD_NET:
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, net rx.\n", __FILE__, __LINE__));
 				if ((result = net_rx_handshake(ps)) < 0)
 					goto fail;
-			break;
+				break;
+			default:
+				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "%s: %d, unknown rx %x.\n", __FILE__, __LINE__,ps->cmd));
 		}
 		ps->dlprecord = 0;
 	}
@@ -406,7 +410,7 @@ fail:
  *
  ***********************************************************************/
 static int
-pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name, 
+pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
 		     void *option_value, size_t *option_len)
 {
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
@@ -439,7 +443,7 @@ pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
  *
  ***********************************************************************/
 static int
-pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name, 
+pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name,
 		     const void *option_value, size_t *option_len)
 {
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
@@ -500,7 +504,7 @@ pi_usb_close(pi_socket_t *ps)
 /*
  * This is the table of USB devices that we know about, what they are, and
  * some flags.
- * 
+ *
  * This table helps us determine whether a connecting USB device is one we'd
  * like to talk to.
  *
