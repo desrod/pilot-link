@@ -1,14 +1,10 @@
+#!/usr/bin/python
 
 from distutils.core import setup, Extension
-from shutil import copy
-from os import unlink
-
-# messy, I know. Please fix if you know how!
-copy("src/pisock.py", "pisock.py")
 
 setup(name = "python-libpisock",
       version = "@PILOT_LINK_VERS@.@PILOT_LINK_MAJOR@.@PILOT_LINK_MINOR@",
-      description = "Python binding for the pisock library.",
+      description = "Python bindings for the pisock library.",
       author = "Nick Piper",
       author_email = "nick@nickpiper.co.uk",
       url = "http://www.pilot-link.org/",
@@ -19,7 +15,6 @@ setup(name = "python-libpisock",
                                libraries=['pisock'],
                                )
                      ],
-      py_modules = ["pisock","pisockextras"],
-      )
+      package_dir = {'': 'src'},
+      py_modules = ["pisock","pisockextras"])
 
-unlink("pisock.py")

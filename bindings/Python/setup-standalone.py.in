@@ -1,0 +1,26 @@
+#!/usr/bin/python
+
+from distutils.core import setup, Extension
+import sys
+
+if sys.platform.startswith('darwin'):
+    link_options = ['-framework','Carbon','-framework','System','-framework','IOKit']
+else:
+    link_options = None
+
+setup(name = "python-libpisock",
+      version = "@PILOT_LINK_VERS@.@PILOT_LINK_MAJOR@.@PILOT_LINK_MINOR@",
+      description = "Python bindings for the pisock library linked in a standalone module (not requiring the libpisock shared lib).",
+      author = "Florent Pillet",
+      author_email = "pilot-link@florentpillet.com",
+      url = "http://www.pilot-link.org/",
+
+      ext_modules = [Extension("_pisock", ["src/pisock_wrap.c"],
+                               include_dirs = ['../../include'],
+                               extra_objects = ['../../libpisock/.libs/libpisock.a'],
+                               extra_link_args = link_options
+                               )
+                     ],
+      package_dir = {'': 'src'},
+      py_modules = ["pisock","pisockextras"])
+
