@@ -440,13 +440,12 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 
 	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG,
 		"SOCK fd=%d auto=%d\n",ps->sd,autodetect));
-	fprintf(stderr,"Doing init(2)\n");
+
 	/* The device protocol */
 	dev_prot 	= ps->device->protocol (ps->device);
 	dev_cmd_prot 	= ps->device->protocol (ps->device);
 
 	protocol = ps->protocol;
-	fprintf(stderr,"Done init(2)\n");
 
 	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG,
 		"SOCK proto=%d (DLP=%d)\n",protocol, PI_PF_DLP));
