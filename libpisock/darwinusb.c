@@ -457,9 +457,7 @@ start_listening(void)
 	runLoopSource = IONotificationPortGetRunLoopSource (usb_notify_port);
 	CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
 
-	/* Now set up two notifications, one to be called when a raw device is first matched by I/O Kit, and the other to be
-	 * called when the device is terminated.
-	 */
+	/* Set up a notifications to be called when a raw device is first matched by I/O Kit */
 	kr = IOServiceAddMatchingNotification (
 			usb_notify_port,
 			kIOFirstMatchNotification,
@@ -1460,7 +1458,7 @@ u_poll(struct pi_socket *ps, int timeout)
 			if (pthread_cond_timedwait(&c->read_queue_data_avail_cond, &c->read_queue_mutex, &when) == ETIMEDOUT)
 			{
 				pthread_mutex_unlock(&c->read_queue_mutex);
-				return 0;
+				return PI_ERR_SOCK_TIMEOUT;
 			}
 			available = c->read_queue_used;
 		}
