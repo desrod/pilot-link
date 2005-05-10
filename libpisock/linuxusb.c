@@ -139,7 +139,7 @@ u_close(pi_socket_t *ps)
  *
  * Parameters:  None
  *
- * Returns:     Nothing
+ * Returns:     1 on success, PI_ERR_SOCK_TIMEOUT on timeout
  *
  ***********************************************************************/
 static int
@@ -171,7 +171,7 @@ u_poll(pi_socket_t *ps, int timeout)
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
 		"DEV POLL USB Linux Found data on fd: %d\n", ps->sd));
 
-	return 0;
+	return 1;
 }
 
 

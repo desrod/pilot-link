@@ -87,7 +87,6 @@ USB_open (pi_usb_data_t *data)
 {
 	struct usb_bus *bus;
 	struct usb_device *dev;
-	int try = 0;
 	int ret;
 	u_int8_t input_endpoint = 0xFF, output_endpoint = 0xFF;
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
@@ -95,7 +94,6 @@ USB_open (pi_usb_data_t *data)
 #endif
 
 	usb_init ();
-restart:
 	usb_find_busses ();
 	usb_find_devices ();
 	CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (2));
@@ -121,17 +119,6 @@ restart:
 
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 			USB_handle = usb_open(dev);
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
-
-			if (!try++) {
-				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
-				usb_reset (USB_handle);
-				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
-				usb_close (USB_handle);
-				CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (0));
-				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
-				goto restart;
-			}
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 
 			data->ref = USB_handle;
@@ -204,12 +191,6 @@ claim:
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
 			return 1;
 		}
-	}
-
-	if (try && (try < 3)) {
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
-		sleep (1);
-		goto restart;
 	}
 
 	errno = ENODEV;

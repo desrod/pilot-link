@@ -241,7 +241,7 @@ u_close(pi_socket_t *ps)
  *
  * Parameters:	None
  *
- * Returns:     0 always since we buffer our own data and you can't poll()
+ * Returns:     1 always since we buffer our own data and you can't poll()
  *		FreeBSD USB devices?
  *
  ***********************************************************************/
