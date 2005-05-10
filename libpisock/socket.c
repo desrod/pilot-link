@@ -1006,6 +1006,7 @@ pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 		strncpy(addr->pi_device, port + 4, sizeof(addr->pi_device));
 		ps->device = pi_inet_device (PI_NET_DEV);
 	} else if (!strncmp (port, "bluetooth:", 10)) {
+	    /* warning: this code is not well tested */
 		strncpy(addr->pi_device, port + 10, sizeof(addr->pi_device));
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 		ps->protocol = PI_PF_NET;		/* force NET protocol over bluetooth */
