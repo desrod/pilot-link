@@ -908,25 +908,21 @@ pi_socket(int domain, int type, int protocol)
 int
 pi_socket_setsd(pi_socket_t *ps, int pi_sd)
 {
-	int 	orig;
-	
 #ifdef HAVE_DUP2
 	ps->sd = dup2(pi_sd, ps->sd);
 #else
-	#ifdef F_DUPFD
-		close(ps->sd);
+    close(ps->sd);
+    #ifdef F_DUPFD
 		ps->sd = fcntl(pi_sd, F_DUPFD, ps->sd);
 	#else
-		close(ps->sd);
-		ps->sd = dup(pi_sd);	/* Unreliable */
+		ps->sd = dup(pi_sd);
 	#endif
 #endif
-	if ( (ps->sd != pi_sd) && (ps->sd >= 0) ) {
-		close(pi_sd);
-		return 0;
-	}
-
-	return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
+    if (ps->sd == -1)
+        return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
+    if (ps->sd != pi_sd)
+	    close(pi_sd);
+	return 0;
 }
 
 
