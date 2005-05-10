@@ -62,14 +62,14 @@ static pi_socket_list_t *ps_list_append (pi_socket_list_t *list,
 static pi_socket_t *ps_list_find (pi_socket_list_t *list,
 	int pi_sd);
 static pi_socket_list_t *ps_list_remove (pi_socket_list_t *list,
-	int pi_sd); 
+	int pi_sd);
 static pi_socket_list_t *ps_list_copy (pi_socket_list_t *list);
 static void ps_list_free (pi_socket_list_t *list);
 
 static void protocol_queue_add (pi_socket_t *ps, pi_protocol_t *prot);
 static void protocol_cmd_queue_add (pi_socket_t *ps, pi_protocol_t *prot);
 static pi_protocol_t *protocol_queue_find (pi_socket_t *ps, int level);
-static pi_protocol_t *protocol_queue_find_next (pi_socket_t *ps, int level); 
+static pi_protocol_t *protocol_queue_find_next (pi_socket_t *ps, int level);
 
 int pi_socket_init(pi_socket_t *ps);
 
@@ -128,10 +128,10 @@ ps_list_dump (pi_socket_list_t *list)
  *
  ***********************************************************************/
 static pi_socket_list_t *
-ps_list_append (pi_socket_list_t *list, pi_socket_t *ps) 
+ps_list_append (pi_socket_list_t *list, pi_socket_t *ps)
 {
 	pi_socket_list_t *elem, *new_elem;
-	
+
 	ASSERT (ps != NULL);
 
 	new_elem = (pi_socket_list_t *) malloc (sizeof(pi_socket_list_t));
@@ -161,7 +161,7 @@ ps_list_append (pi_socket_list_t *list, pi_socket_t *ps)
  *		the first list element whose pi_socket_t* member points
  *		to a pi_socket matching the given socket descriptor
  *
- * Parameters:	pi_socket_list_t *, socket descriptor 
+ * Parameters:	pi_socket_list_t *, socket descriptor
  *
  * Returns:     pi_socket_t *, or NULL if no match
  *
@@ -191,7 +191,7 @@ ps_list_find (pi_socket_list_t *list, int pi_sd)
  * Summary:     remove first pi_socket_list element pointing to a pi_socket
  *		member matching socket descriptor
  *
- * Parameters:	pi_socket_list_t *, socket descriptor 
+ * Parameters:	pi_socket_list_t *, socket descriptor
  *
  * Returns:     the (possibly NULL) head pi_socket_list_t *
  *
@@ -202,7 +202,7 @@ ps_list_find (pi_socket_list_t *list, int pi_sd)
  *
  ***********************************************************************/
 static pi_socket_list_t *
-ps_list_remove (pi_socket_list_t *list, int pi_sd) 
+ps_list_remove (pi_socket_list_t *list, int pi_sd)
 {
 	pi_socket_list_t *elem,
 		*new_list = list,
@@ -241,10 +241,10 @@ ps_list_remove (pi_socket_list_t *list, int pi_sd)
  *
  ***********************************************************************/
 static pi_socket_list_t *
-ps_list_copy (pi_socket_list_t *list) 
+ps_list_copy (pi_socket_list_t *list)
 {
 	pi_socket_list_t *l, *new_list = NULL;
-	
+
 	for (l = list; l != NULL; l = l->next)
 		new_list = ps_list_append (new_list, l->ps);
 
@@ -275,7 +275,7 @@ ps_list_free (pi_socket_list_t *list)
 
 	if (list == NULL)
 		return;
-	
+
 	l = list;
 	do {
 		next = l->next;
@@ -349,7 +349,7 @@ protocol_cmd_queue_add (pi_socket_t *ps, pi_protocol_t *prot)
  *
  ***********************************************************************/
 static pi_protocol_t*
-protocol_queue_find (pi_socket_t *ps, int level) 
+protocol_queue_find (pi_socket_t *ps, int level)
 {
 	int 	i;
 
@@ -381,7 +381,7 @@ protocol_queue_find (pi_socket_t *ps, int level)
  *
  ***********************************************************************/
 static pi_protocol_t*
-protocol_queue_find_next (pi_socket_t *ps, int level) 
+protocol_queue_find_next (pi_socket_t *ps, int level)
 {
 	int 	i;
 
@@ -396,7 +396,7 @@ protocol_queue_find_next (pi_socket_t *ps, int level)
 
 	if (!ps->command && level == 0)
 		return ps->protocol_queue[0];
-	
+
 	if (ps->command) {
 		for (i = 0; i < ps->cmd_len - 1; i++) {
 			if (ps->cmd_queue[i]->level == level)
@@ -425,7 +425,7 @@ protocol_queue_find_next (pi_socket_t *ps, int level)
  *
  ***********************************************************************/
 static void
-protocol_queue_build (pi_socket_t *ps, int autodetect) 
+protocol_queue_build (pi_socket_t *ps, int autodetect)
 {
 	int 	protocol;
 	pi_protocol_t	*prot,
@@ -437,27 +437,34 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 	byte_buf.data = &byte;
 	byte_buf.allocated = 1;
 	byte_buf.used = 0;
-	
+
+	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG,
+		"SOCK fd=%d auto=%d\n",ps->sd,autodetect));
+	fprintf(stderr,"Doing init(2)\n");
 	/* The device protocol */
 	dev_prot 	= ps->device->protocol (ps->device);
 	dev_cmd_prot 	= ps->device->protocol (ps->device);
 
 	protocol = ps->protocol;
-	
+	fprintf(stderr,"Done init(2)\n");
+
+	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG,
+		"SOCK proto=%d (DLP=%d)\n",protocol, PI_PF_DLP));
+
 	if (protocol == PI_PF_DLP && autodetect) {
 		if (dev_prot->read (ps, &byte_buf, 1, PI_MSG_PEEK) > 0) {
 			int found = 0;
 			while (!found) {
 				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 				    "SOCK Peeked and found 0x%.2x, ", byte));
-				
+
 				switch (byte) {
 				case PI_SLP_SIG_BYTE1:
 					protocol = PI_PF_PADP;
 					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 						"PADP/SLP\n"));
 					found = 1;
-					break;			
+					break;
 				case PI_NET_SIG_BYTE1:
 				case 0x01:
 					protocol = PI_PF_NET;
@@ -498,7 +505,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 	} else {
 		dev_prot->flush(ps, PI_FLUSH_INPUT);
 	}
-	
+
 	/* The connected protocol queue */
 	switch (protocol) {
 		case PI_PF_PADP:
@@ -561,7 +568,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 static void
 protocol_queue_destroy (pi_socket_t *ps)
 {
-	int 	i;	
+	int 	i;
 	for (i = 0; i < ps->queue_len; i++)
 		ps->protocol_queue[i]->free(ps->protocol_queue[i]);
 	for (i = 0; i < ps->cmd_len; i++)
@@ -625,7 +632,7 @@ pi_protocol_next (int pi_sd, int level)
  *
  ***********************************************************************/
 static void
-env_dbgcheck (void) 
+env_dbgcheck (void)
 {
 	if (getenv("PILOT_DEBUG")) {
 		int 	types = 0,
@@ -633,7 +640,7 @@ env_dbgcheck (void)
 		char 	*debug,
 			*b,
 			*e;
-		
+
 		debug = strdup(getenv("PILOT_DEBUG"));
 
 		b 	= debug;
@@ -695,11 +702,11 @@ env_dbgcheck (void)
 
 		pi_debug_set_level (level);
 	}
-	
+
 	/* log file name */
 	if (getenv("PILOT_LOG")) {
 		const char *logfile;
-		
+
 		logfile = getenv("PILOT_LOGFILE");
 		if (logfile == NULL)
 			pi_debug_set_file("PiDebug.log");
@@ -721,7 +728,7 @@ env_dbgcheck (void)
  *
  ***********************************************************************/
 static int
-is_connected (pi_socket_t *ps) 
+is_connected (pi_socket_t *ps)
 {
 	return (ps->state == PI_SOCK_CONIN || ps->state == PI_SOCK_CONAC) ? 1 : 0;
 }
@@ -738,7 +745,7 @@ is_connected (pi_socket_t *ps)
  *
  ***********************************************************************/
 static int
-is_listener (pi_socket_t *ps) 
+is_listener (pi_socket_t *ps)
 {
 	return (ps->state == PI_SOCK_LISTN) ? 1 : 0;
 }
@@ -750,7 +757,7 @@ onalarm(int signo)
 	pi_socket_list_t *l;
 
 	signal(signo, onalarm);
-	
+
 	pi_mutex_lock(&watch_list_mutex);
 
 	for (l = watch_list; l != NULL; l = l->next) {
@@ -760,7 +767,7 @@ onalarm(int signo)
 			continue;
 
 		if (pi_tickle(ps->sd) < 0) {
-			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO, 
+			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 				"SOCKET Socket %d is busy during tickle\n",
 				ps->sd));
 			alarm(1);
@@ -843,7 +850,7 @@ pi_socket(int domain, int type, int protocol)
 	pi_socket_list_t *list;
 
 	env_dbgcheck ();
-	
+
 	if (protocol == 0) {
 		if (type == PI_SOCK_STREAM)
 			protocol = PI_PF_DLP;
@@ -873,7 +880,7 @@ pi_socket(int domain, int type, int protocol)
 	ps->state       = PI_SOCK_CLOSE;
 	ps->honor_rx_to	= 1;
 	ps->command 	= 1;
- 
+
 	/* post the new socket to the list */
 	list = pi_socket_recognize(ps);
 	if (list == NULL) {
@@ -914,7 +921,7 @@ pi_socket_setsd(pi_socket_t *ps, int pi_sd)
 		ps->sd = dup(pi_sd);	/* Unreliable */
 	#endif
 #endif
-	if (ps->sd != pi_sd) {
+	if ( (ps->sd != pi_sd) && (ps->sd >= 0) ) {
 		close(pi_sd);
 		return 0;
 	}
@@ -927,7 +934,7 @@ pi_socket_setsd(pi_socket_t *ps, int pi_sd)
  *
  * Function:    pi_socket_init
  *
- * Summary:     inits the pi_socket 
+ * Summary:     inits the pi_socket
  *
  * Parameters:  pi_socket_t*
  *
@@ -994,7 +1001,7 @@ pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 	if (!strncmp (port, "serial:", 7)) {
 		strncpy(addr->pi_device, port + 7, sizeof(addr->pi_device));
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
-#ifdef HAVE_USB	
+#ifdef HAVE_USB
 	} else if (!strncmp (port, "usb:", 4)) {
 		strncpy(addr->pi_device, port + 4, sizeof(addr->pi_device));
 		ps->device = pi_usb_device (PI_USB_DEV);
@@ -1031,14 +1038,14 @@ pi_connect(int pi_sd, const char *port)
 {
 	pi_socket_t *ps;
 	struct 	pi_sockaddr addr;
-	
+
 	ps = pi_devsocket(pi_sd, port, &addr);
 	if (!ps)
 		return PI_ERR_SOCK_INVALID;
 
 	/* Build the protocol queue */
 	protocol_queue_build (ps, 0);
-	
+
 	return ps->device->connect (ps, (struct sockaddr *)&addr, sizeof(addr));
 }
 
@@ -1089,7 +1096,7 @@ int
 pi_listen(int pi_sd, int backlog)
 {
 	pi_socket_t *ps;
-	
+
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return PI_ERR_SOCK_INVALID;
@@ -1156,12 +1163,12 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, size_t *addrlen, int timeout)
  *
  ***********************************************************************/
 int
-pi_getsockopt(int pi_sd, int level, int option_name, 
+pi_getsockopt(int pi_sd, int level, int option_name,
 	      void *option_value, size_t *option_len)
 {
 	pi_socket_t *ps;
 	pi_protocol_t *prot;
-	
+
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return PI_ERR_SOCK_INVALID;
@@ -1187,7 +1194,7 @@ pi_getsockopt(int pi_sd, int level, int option_name,
 	}
 
 	prot = protocol_queue_find (ps, level);
-	
+
 	if (prot == NULL || prot->level != level) {
 		errno = EINVAL;
 		return PI_ERR_SOCK_INVALID;
@@ -1210,12 +1217,12 @@ pi_getsockopt(int pi_sd, int level, int option_name,
  *
  ***********************************************************************/
 int
-pi_setsockopt(int pi_sd, int level, int option_name, 
-	      const void *option_value, size_t *option_len) 
+pi_setsockopt(int pi_sd, int level, int option_name,
+	      const void *option_value, size_t *option_len)
 {
 	pi_socket_t *ps;
 	pi_protocol_t *prot;
-	
+
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
 		return PI_ERR_SOCK_INVALID;
@@ -1237,7 +1244,7 @@ pi_setsockopt(int pi_sd, int level, int option_name,
 		}
 		return 0;
 	}
-		
+
 	prot = protocol_queue_find (ps, level);
 
 	if (prot == NULL || prot->level != level) {
@@ -1272,7 +1279,7 @@ pi_send(int pi_sd, const void *msg, size_t len, int flags)
 
 	if (!is_connected (ps))
 		return PI_ERR_SOCK_DISCONNECTED;
-	
+
 	if (interval)
 		alarm(interval);
 
@@ -1363,7 +1370,7 @@ pi_flush(int pi_sd, int flags)
 
 	if (!is_connected (ps))
 		return;
-	
+
 	ps->protocol_queue[0]->flush (ps, flags);
 }
 
@@ -1399,13 +1406,13 @@ pi_tickle(int pi_sd)
 
 	LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 			"SOCKET Tickling socket %d\n", pi_sd));
-	
+
 	switch (ps->cmd) {
 		case PI_CMD_CMP:
 			/* save previous packet type */
 			size = sizeof(type);
 			pi_getsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &oldtype, &size);
-			
+
 			/* set packet type to "tickle" */
 			type = padTickle;
 			size = sizeof(type);
@@ -1413,7 +1420,7 @@ pi_tickle(int pi_sd)
 
 			/* send packet */
 			result = ps->protocol_queue[0]->write (ps, msg, len, 0);
-			
+
 			/* restore previous packet type */
 			size = sizeof(type);
 			pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &oldtype, &size);
@@ -1427,7 +1434,7 @@ pi_tickle(int pi_sd)
 			type = PI_NET_TYPE_TCKL;
 			size = sizeof(type);
 			pi_setsockopt(ps->sd, PI_LEVEL_NET, PI_NET_TYPE, &type, &size);
-			
+
 			/* send packet */
 			result = ps->cmd_queue[0]->write (ps, msg, len, 0);
 
@@ -1465,7 +1472,7 @@ pi_close(int pi_sd)
 	if (ps->type == PI_SOCK_STREAM && ps->cmd != PI_CMD_SYS) {
 		if (is_connected (ps)) {
 				ps->command = 1;
-				
+
 				/* then end sync, with clean status */
 				result = dlp_EndOfSync(ps->sd, 0);
 
@@ -1584,19 +1591,19 @@ pi_version(int pi_sd)
 		errno = ESRCH;
 		return PI_ERR_SOCK_INVALID;
 	}
-	
+
 	if (ps->dlpversion)
 		return ps->dlpversion;
-	
+
 	if (dlp_ReadSysInfo (ps->sd, &si) < 0)
 		return 0x0000;
 
 	if (si.dlpMajorVersion != 0) {
 		ps->dlpversion = (si.dlpMajorVersion << 8) | si.dlpMinorVersion;
-		ps->maxrecsize = si.maxRecSize;		
+		ps->maxrecsize = si.maxRecSize;
 		return ps->dlpversion;
 	}
-	
+
 	/* Enter command state */
 	ps->command = 1;
 
@@ -1662,7 +1669,7 @@ find_pi_socket(int pi_sd)
 	pi_mutex_lock(&psl_mutex);
 	result = ps_list_find (psl, pi_sd);
 	pi_mutex_unlock(&psl_mutex);
-	
+
 	return result;
 }
 
@@ -1670,7 +1677,7 @@ find_pi_socket(int pi_sd)
  *
  * Function:    pi_watchdog
  *
- * Summary:     
+ * Summary:
  *
  * Parameters:  None
  *
