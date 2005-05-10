@@ -176,11 +176,9 @@ ps_list_find (pi_socket_list_t *list, int pi_sd)
 {
 	pi_socket_list_t *elem;
 	
-	for (elem = list; elem != NULL; elem = elem->next) {
-		if (elem->ps != NULL)
-			if (elem->ps->sd == pi_sd)
-				return elem->ps;
-	}
+	for (elem = list; elem != NULL; elem = elem->next)
+		if (elem->ps != NULL && elem->ps->sd == pi_sd)
+			return elem->ps;
 
 	return NULL;
 }
@@ -497,52 +495,51 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 		}
 	} else if (protocol == PI_PF_DLP) {
 		protocol = PI_PF_PADP;
+	} else {
+		dev_prot->flush(ps, PI_FLUSH_INPUT);
 	}
 	
 	/* The connected protocol queue */
 	switch (protocol) {
-	case PI_PF_PADP:
-		prot = padp_protocol ();
-		protocol_queue_add (ps, prot);
-	case PI_PF_SLP:
-		prot = slp_protocol ();
-		protocol_queue_add (ps, prot);
-		break;
-	case PI_PF_NET:
-		prot = net_protocol ();
-		protocol_queue_add (ps, prot);
-		break;
-	case PI_PF_SYS:
-		prot = sys_protocol ();
-		protocol_queue_add (ps, prot);
-		prot = slp_protocol ();
-		protocol_queue_add (ps, prot);
-		break;
+		case PI_PF_PADP:
+			prot = padp_protocol ();
+			protocol_queue_add (ps, prot);
+		case PI_PF_SLP:
+			prot = slp_protocol ();
+			protocol_queue_add (ps, prot);
+			break;
+		case PI_PF_NET:
+			prot = net_protocol ();
+			protocol_queue_add (ps, prot);
+			break;
+		case PI_PF_SYS:
+			prot = sys_protocol ();
+			protocol_queue_add (ps, prot);
+			prot = slp_protocol ();
+			protocol_queue_add (ps, prot);
+			break;
 	}
 
 	/* The command protocol queue */
 	switch (protocol) {
-	case PI_PF_PADP:
-	case PI_PF_SLP:
-		prot 	= cmp_protocol ();
-		protocol_cmd_queue_add (ps, prot);
-	
-		prot 	= padp_protocol ();
-		protocol_cmd_queue_add (ps, prot);
-	
-		prot 	= slp_protocol ();
-		protocol_cmd_queue_add (ps, prot);
-	
-		ps->cmd = PI_CMD_CMP;
-		break;
-	case PI_PF_NET:
-		prot 	= net_protocol ();
-		protocol_cmd_queue_add (ps, prot);
-		ps->cmd = PI_CMD_NET;
-		break;
-	case PI_PF_SYS:
-		ps->cmd = PI_CMD_SYS;
-		break;
+		case PI_PF_PADP:
+		case PI_PF_SLP:
+			prot = cmp_protocol ();
+			protocol_cmd_queue_add (ps, prot);
+			prot = padp_protocol ();
+			protocol_cmd_queue_add (ps, prot);
+			prot = slp_protocol ();
+			protocol_cmd_queue_add (ps, prot);
+			ps->cmd = PI_CMD_CMP;
+			break;
+		case PI_PF_NET:
+			prot = net_protocol ();
+			protocol_cmd_queue_add (ps, prot);
+			ps->cmd = PI_CMD_NET;
+			break;
+		case PI_PF_SYS:
+			ps->cmd = PI_CMD_SYS;
+			break;
 	}
 
 	protocol_queue_add (ps, dev_prot);
@@ -906,21 +903,19 @@ pi_socket_setsd(pi_socket_t *ps, int pi_sd)
 {
 	int 	orig;
 	
-	orig = pi_sd;
-	
 #ifdef HAVE_DUP2
-	pi_sd = dup2(pi_sd, ps->sd);
+	ps->sd = dup2(pi_sd, ps->sd);
 #else
 	#ifdef F_DUPFD
 		close(ps->sd);
-		pi_sd = fcntl(sd, F_DUPFD, ps->sd);
+		ps->sd = fcntl(pi_sd, F_DUPFD, ps->sd);
 	#else
 		close(ps->sd);
-		pi_sd = dup(pi_sd);	/* Unreliable */
+		ps->sd = dup(pi_sd);	/* Unreliable */
 	#endif
 #endif
-	if (pi_sd != orig) {
-		close(orig);
+	if (ps->sd != pi_sd) {
+		close(pi_sd);
 		return 0;
 	}
 
@@ -943,7 +938,6 @@ int
 pi_socket_init(pi_socket_t *ps)
 {
   	protocol_queue_build (ps, 1);
-
 	return 0;
 }
 
@@ -997,7 +991,7 @@ pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 
 	/* Create the device and sockaddr */
 	addr->pi_family = PI_AF_PILOT;
-	if (!strncmp (port, "serial:", 4)) {
+	if (!strncmp (port, "serial:", 7)) {
 		strncpy(addr->pi_device, port + 7, sizeof(addr->pi_device));
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 #ifdef HAVE_USB	
@@ -1008,6 +1002,10 @@ pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 	} else if (!strncmp (port, "net:", 4)) {
 		strncpy(addr->pi_device, port + 4, sizeof(addr->pi_device));
 		ps->device = pi_inet_device (PI_NET_DEV);
+	} else if (!strncmp (port, "bluetooth:", 10)) {
+		strncpy(addr->pi_device, port + 10, sizeof(addr->pi_device));
+		ps->device = pi_serial_device (PI_SERIAL_DEV);
+		ps->protocol = PI_PF_NET;		/* force NET protocol over bluetooth */
 	} else {
 		/* No prefix assumed to be serial: (for compatibility) */
 		strncpy(addr->pi_device, port, sizeof(addr->pi_device));
