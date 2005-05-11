@@ -4,7 +4,8 @@ SWIG source, use "swig -python pisock.i".)
 
 There is currently no documentation; that should be fixed soon.
 
-* Installation:
+
+INSTALLATION
 
 This package uses the standard Python "distutils" for installation. If you
 are running a version of Python >= 2.0 you have these already; for Python
@@ -25,12 +26,18 @@ To install the package, run the command
 It will place a module called 'pisock.so' in Python's site-packages
 directory.  To use the module, simply 'import pisock'.
 
+
+STANDALONE VERSION
+
 You can also build a standalone version that doesn't require the libpisock
 library to be installed on the system. This is particularly useful if you
 need to build a self-package application that doesn't depend on additional
 installs. To build the standalone verison, run the command
 
 	python setup-standalone.py build
+
+
+MULTIPLE PYTHON INSTALLS
 
 Note: If you have more than one version of Python installed, replace
 'python' in the above commands with the name of the interpreter you want to

@@ -4,9 +4,86 @@
 
 %{
 
+static PyObject *ConvertFromEncoding(const char *data, const char *encoding, const char *errors, int allowErrors)
+{
+    PyObject *buffer, *string = NULL;
+
+    buffer = PyBuffer_FromMemory((void *)data, strlen(data));
+    if (buffer == NULL)
+    {
+        if (allowErrors)
+        {
+            PyErr_Clear();
+            Py_INCREF(Py_None);
+            return Py_None;
+        }
+        return NULL;
+    }
+
+    string = PyUnicode_FromEncodedObject(buffer, encoding, errors);
+    if (string == NULL)
+        goto error;
+
+    Py_DECREF(buffer);
+    return string;
+
+error:
+    Py_XDECREF(buffer);
+    Py_XDECREF(string);
+    if (allowErrors)
+    {
+        PyErr_Clear();
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+    return NULL;
+}
+
+static int ConvertToEncoding(PyObject *object, const char *encoding, const char *errors, int allowErrors, char *buffer, int maxBufSize)
+{
+    int len;
+    char *s;
+    PyObject *encoded = NULL;
+
+    if (PyString_Check(object))
+        encoded = PyString_AsEncodedObject(object, encoding, errors);
+    else if (PyUnicode_Check(object))
+        encoded = PyUnicode_AsEncodedString(object, encoding, errors);
+
+    if (encoded == NULL)
+        goto error;
+
+    s = PyString_AsString(encoded);
+    if (s == NULL)
+        goto error;
+    len = strlen(s);
+    if (len)
+    {
+        if (len >= maxBufSize)
+            len = maxBufSize - 1;
+        memcpy(buffer, s, len);
+    }
+    buffer[len] = 0;
+
+    Py_DECREF(encoded);
+    return 1;
+
+error:
+    Py_XDECREF(encoded);
+    if (allowErrors)
+    {
+        PyErr_Clear();
+        memset(buffer, 0, maxBufSize);
+    }
+    return 0;
+}
+
 static PyObject *PyObjectFromDBInfo(const struct DBInfo *dbi)
 {
-	return Py_BuildValue("{sisisisOsOsislslslslsisssisisisisisisisisisisisisisisi}",
+    PyObject *returnObj;
+    PyObject *nameObj = ConvertFromEncoding(dbi->name, "palmos", "replace", 1);
+
+	returnObj = Py_BuildValue("{sisisisOsOsislslslslsisOsisisisisisisisisisisisisisisi}",
 			"more", dbi->more,
 			"flags", dbi->flags,
 			"miscFlags", dbi->miscFlags,
@@ -18,8 +95,8 @@ static PyObject *PyObjectFromDBInfo(const struct DBInfo *dbi)
 			"modifyDate", dbi->modifyDate,
 			"backupDate", dbi->backupDate,
 			"index", dbi->index,
-			"name", dbi->name,
-			
+			"name", nameObj,
+
 			"flagResource", !!(dbi->flags & dlpDBFlagResource),
 			"flagReadOnly", !!(dbi->flags & dlpDBFlagReadOnly),
 			"flagAppInfoDirty", !!(dbi->flags & dlpDBFlagAppInfoDirty),
@@ -36,10 +113,16 @@ static PyObject *PyObjectFromDBInfo(const struct DBInfo *dbi)
 			"flagSecure", !!(dbi->flags & dlpDBFlagSecure),
 			"flagExtended", !!(dbi->flags & dlpDBFlagExtended),
 			"flagFixedUp", !!(dbi->flags & dlpDBFlagFixedUp));
+
+    Py_DECREF(nameObj);
+    return returnObj;
 }
 
-static void PyObjectToDBInfo(PyObject *o, struct DBInfo *di)
+/* unused at that time
+static int PyObjectToDBInfo(PyObject *o, struct DBInfo *di)
 {
+    PyObject *nameObj;
+
 	di->more = (int) DGETLONG(o, "more", 0);
     di->type = makelong(DGETSTR(o, "type", "    "));
     di->creator = makelong(DGETSTR(o, "creator", "    "));
@@ -49,7 +132,12 @@ static void PyObjectToDBInfo(PyObject *o, struct DBInfo *di)
     di->modifyDate = DGETLONG(o, "modifyDate", 0);
     di->backupDate = DGETLONG(o, "backupDate", 0);
     di->index = DGETLONG(o, "index", 0);
-    strncpy(di->name, DGETSTR(o,"name",""), 34);
+    memset(di->name, 0, sizeof(di->name));
+    nameObj = PyDict_GetItemString(o,"name");
+    if (nameObj) {
+        if (!ConvertToEncoding(nameObj, "palmos", "replace", 1, di->name, sizeof(di->name)))
+            return 0;
+    }
     di->flags = 0;
     if (DGETLONG(o,"flagResource",0)) di->flags |= dlpDBFlagResource;
     if (DGETLONG(o,"flagReadOnly",0)) di->flags |= dlpDBFlagReadOnly;
@@ -67,7 +155,9 @@ static void PyObjectToDBInfo(PyObject *o, struct DBInfo *di)
 	if (DGETLONG(o,"flagFixedUp",0)) di->flags |= dlpDBFlagFixedUp;
     di->miscFlags = 0;
     if (DGETLONG(o,"flagExcludeFromSync",0)) di->miscFlags |= dlpDBMiscFlagExcludeFromSync;
+    return 1;
 }
+*/
 
 static PyObject* PyObjectFromDBSizeInfo(const struct DBSizeInfo *si)
 {
@@ -82,16 +172,25 @@ static PyObject* PyObjectFromDBSizeInfo(const struct DBSizeInfo *si)
 
 static PyObject* PyObjectFromCardInfo(const struct CardInfo *ci)
 {
-	return Py_BuildValue("{sisislslslslsssssi}",
+    PyObject *returnObj, *nameObj, *manufacturerObj;
+
+    nameObj = ConvertFromEncoding(ci->name, "cp1252", "replace", 1);
+    manufacturerObj = ConvertFromEncoding(ci->manufacturer, "cp1252", "replace", 1);
+
+	returnObj = Py_BuildValue("{sisislslslslsOsOsi}",
 					      "card", ci->card,
 					      "version", ci->version,
 			    		  "creation", ci->creation,
 						  "romSize", ci->romSize,
 					      "ramSize", ci->ramSize,
 					      "ramFree", ci->ramFree,
-					      "name", ci->name,
-					      "manufacturer", ci->manufacturer,
+					      "name", nameObj,
+					      "manufacturer", manufacturerObj,
 					      "more", ci->more);
+
+    Py_DECREF(nameObj);
+    Py_DECREF(manufacturerObj);
+    return returnObj;
 }
 
 static PyObject* PyObjectFromSysInfo(const struct SysInfo *si)
@@ -104,33 +203,51 @@ static PyObject* PyObjectFromSysInfo(const struct SysInfo *si)
 
 static PyObject* PyObjectFromPilotUser(const struct PilotUser *pi)
 {
-		return Py_BuildValue("{slslslslslssss#}",
-							"userID", pi->userID,
-							"viewerID", pi->viewerID,
-							"lastSyncPC", pi->lastSyncPC,
-							"successfulSyncDate", pi->successfulSyncDate,
-							"lastSyncDate", pi->lastSyncDate,
-							"name", pi->username,
-							"password", pi->password, pi->passwordLength);
+    PyObject *nameObj, *passwordObj, *returnObj;
+
+    nameObj = ConvertFromEncoding(pi->username, "palmos", "replace", 1);
+    passwordObj = ConvertFromEncoding(pi->password, "palmos", "strict", 1);
+
+    returnObj = Py_BuildValue("{slslslslslsOsO}",
+						"userID", pi->userID,
+						"viewerID", pi->viewerID,
+						"lastSyncPC", pi->lastSyncPC,
+						"successfulSyncDate", pi->successfulSyncDate,
+						"lastSyncDate", pi->lastSyncDate,
+						"name", nameObj,
+						"password", passwordObj);
+
+    Py_DECREF(nameObj);
+    Py_DECREF(passwordObj);
+    return returnObj;
 }
 
-static void PyObjectToPilotUser(PyObject *o, struct PilotUser *pi)
+static int PyObjectToPilotUser(PyObject *o, struct PilotUser *pi)
 {
-    PyObject *foo;
+    /* return 0 if string conversion to palmos charset failed, otherwise return 1 */
+    PyObject *stringObj;
 
     pi->userID = DGETLONG(o,"userID",0);
     pi->viewerID = DGETLONG(o,"viewerID",0);
     pi->lastSyncPC = DGETLONG(o,"lastSyncPC",0);
     pi->successfulSyncDate = DGETLONG(o,"successfulSyncDate",0);
     pi->lastSyncDate = DGETLONG(o,"lastSyncDate",0);
-    strncpy(pi->username, DGETSTR(o,"name",""), 128);
 
-    foo = PyDict_GetItemString(o,"password");
-    if (PyString_Check(foo)) {
-		int l = PyString_Size(foo);
-		pi->passwordLength = l;
-		memcpy(pi->password, PyString_AsString(foo), l);
+    memset(pi->username, 0, sizeof(pi->username));
+    stringObj = PyDict_GetItemString(o,"name");
+    if (stringObj) {
+        if (!ConvertToEncoding(stringObj, "palmos", "replace", 0, pi->username, sizeof(pi->username)))
+            return 0;
     }
+
+    memset(pi->password, 0, sizeof(pi->password));
+    stringObj = PyDict_GetItemString(o,"password");
+    if (stringObj) {
+        if (!ConvertToEncoding(stringObj, "palmos", "strict", 0, pi->password, sizeof(pi->password)))
+            return 0;
+    }
+
+    return 1;
 }
 
 static PyObject* PyObjectFromNetSyncInfo(const struct NetSyncInfo *ni)
@@ -145,9 +262,9 @@ static PyObject* PyObjectFromNetSyncInfo(const struct NetSyncInfo *ni)
 static void PyObjectToNetSyncInfo(PyObject *o, struct NetSyncInfo *ni)
 {
     ni->lanSync = (int) DGETLONG(o,"lanSync",0);
-    strncpy(ni->hostName, DGETSTR(o,"hostName",""), 256);
-    strncpy(ni->hostAddress, DGETSTR(o,"hostAddress",""), 40);
-    strncpy(ni->hostSubnetMask, DGETSTR(o,"hostSubnetMask",""), 40);
+    strncpy(ni->hostName, DGETSTR(o,"hostName",""), sizeof(ni->hostName));
+    strncpy(ni->hostAddress, DGETSTR(o,"hostAddress",""), sizeof(ni->hostAddress));
+    strncpy(ni->hostSubnetMask, DGETSTR(o,"hostSubnetMask",""), sizeof(ni->hostSubnetMask));
 }
 
 %}

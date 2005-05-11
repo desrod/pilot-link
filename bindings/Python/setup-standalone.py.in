@@ -23,4 +23,3 @@ setup(name = "python-libpisock",
                      ],
       package_dir = {'': 'src'},
       py_modules = ["pisock","pisockextras"])
-

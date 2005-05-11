@@ -5,9 +5,9 @@
 // TODO: map output parameters for dlp_ExpSlotMediaType()
 // TODO: map output parameters for VFS functions
 
-// -------------------------------------
+// -----------------------------------------------
 // a char value that allows None for a null value.
-// -------------------------------------
+// -----------------------------------------------
 %typemap (python,in) char *ALLOWNULL {
     if (!($input) || ($input == Py_None)) {
 		$1 = NULL;
@@ -83,7 +83,8 @@
 // struct PilotUser
 // -------------------------------------
 %typemap (python,in) const struct PilotUser* (struct PilotUser temp) %{
-	PyObjectToPilotUser($input, &temp);
+	if (!PyObjectToPilotUser($input, &temp))
+	    SWIG_fail;
 	$1 = &temp;
 %}
 
