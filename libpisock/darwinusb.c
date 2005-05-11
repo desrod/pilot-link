@@ -494,7 +494,7 @@ stop_listening(usb_connection_t *c)
 	    if (c->ps->device && c->ps->device->data)
 	        ((pi_usb_data_t *)c->ps->device->data)->ref = NULL;
     }
-	c->ps = NULL;
+    c->ps = NULL;
 
 	if (c->device_notification)
 	{
@@ -1397,8 +1397,11 @@ static int
 u_close(struct pi_socket *ps)
 {
 	usb_connection_t *c = ((pi_usb_data_t *)ps->device->data)->ref;
-	if (c && change_refcount(c, 1))
+	if (c && change_refcount(c, 1)) 
+	{
+	    c->ps = NULL;
 		change_refcount(c, -2);     /* decrement current refcount + disconnect */
+    }
 	return 0;
 }
 
@@ -1486,13 +1489,12 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
         change_refcount(c, -1);
 		return PI_ERR_SOCK_DISCONNECTED;
 	}
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "u_write begin"));
 
 	IOReturn kr = (*c->interface)->WritePipe(c->interface, c->out_pipe_ref, (void *)buf, len);
 	if (kr != kIOReturnSuccess) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
 	}
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "u_write end"));
+
     if (change_refcount(c, -1) <= 0)
         return PI_ERR_SOCK_DISCONNECTED;
 	return (kr != kIOReturnSuccess) ? 0 : len;
