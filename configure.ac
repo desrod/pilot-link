@@ -303,7 +303,7 @@ usb_type=
 usb_libs=
 
 AC_ARG_ENABLE(libusb,
-	      AS_HELP_STRING([--enable-libusb],[Enable usage of libusb]),
+	      AC_HELP_STRING([--enable-libusb],[Enable usage of libusb]),
 	      if test "x$enableval" != "xno" ; then
 	          AC_CHECK_LIB(usb, usb_open, [have_libusb=yes;],[have_libusb=no])
 	      fi
