@@ -1,5 +1,6 @@
 // -*- C -*-
 
+// TODO: convert PI_CONST char *dbname parameters using the ConvertToEncoding() function
 // TODO: map output parameters for dlp_ExpSlotEnumerate()
 // TODO: map output parameters for dlp_ExpCardInfo()
 // TODO: map output parameters for dlp_ExpSlotMediaType()
