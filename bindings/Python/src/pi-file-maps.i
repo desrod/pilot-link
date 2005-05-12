@@ -1,4 +1,27 @@
-// Provide our own wrappers for pi_file_install and pi_file_retrieve
+/*
+ * pi-file-maps.i
+ *
+ * Provide our own wrappers for pi_file_install and pi_file_retrieve
+ *
+ * Copyright (c) 2005, Florent Pillet.
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Library General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * $Id$
+ */
+
 // TODO: handle callback functions (ignored for now)
 
 %native(pi_file_install) PyObject *_wrap_pi_file_install(PyObject *, PyObject *);
@@ -35,9 +58,9 @@ static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
 	}
 
 	{
-        PyThreadState *__save = PyEval_SaveThread();
+        PyThreadState *save = PyEval_SaveThread();
         result = pi_file_install(pf, sd, cardno, NULL);
-        PyEval_RestoreThread(__save);
+        PyEval_RestoreThread(save);
 	}
 
 	pi_file_close(pf);
@@ -90,9 +113,9 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 	}
 
 	{
-        PyThreadState *__save = PyEval_SaveThread();
+        PyThreadState *save = PyEval_SaveThread();
         result = pi_file_retrieve(pf, sd, cardno, NULL);
-        PyEval_RestoreThread(__save);
+        PyEval_RestoreThread(save);
 	}
 
     if (result < 0)

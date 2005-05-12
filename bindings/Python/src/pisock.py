@@ -254,7 +254,7 @@ pi_socket_connected = _pisock.pi_socket_connected
 
 pi_connect = _pisock.pi_connect
 
-pi_bind_ = _pisock.pi_bind_
+pi_bind = _pisock.pi_bind
 
 pi_listen = _pisock.pi_listen
 

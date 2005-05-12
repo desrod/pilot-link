@@ -1,11 +1,17 @@
+Python bindings for libpisock (the pilot-link core)
+
 The C code for the interface is generated using SWIG, but SWIG is not
-required for building/installing it.  (To regenerate the wrapper from the
-SWIG source, use "swig -python pisock.i".)
+required for building/installing it.  To regenerate the wrapper from the
+SWIG source, do this:
 
-There is currently no documentation; that should be fixed soon.
+    cd ./src
+    swig -python pisock.i
+
+There is currently no documentation; that should be fixed "soon". To see
+real use examples, look at the test/pisocktests.py file
 
 
-INSTALLATION
+* INSTALLATION
 
 This package uses the standard Python "distutils" for installation. If you
 are running a version of Python >= 2.0 you have these already; for Python
@@ -27,17 +33,19 @@ It will place a module called 'pisock.so' in Python's site-packages
 directory.  To use the module, simply 'import pisock'.
 
 
-STANDALONE VERSION
+* STANDALONE VERSION
 
 You can also build a standalone version that doesn't require the libpisock
-library to be installed on the system. This is particularly useful if you
-need to build a self-package application that doesn't depend on additional
+shared library to be installed on the system. This is particularly useful
+if you need to build a packaged application that doesn't depend on additional
 installs. To build the standalone verison, run the command
 
 	python setup-standalone.py build
 
+Then copy the files from the build/libxxx/ folder to your Python package
 
-MULTIPLE PYTHON INSTALLS
+
+* MULTIPLE PYTHON INSTALLS
 
 Note: If you have more than one version of Python installed, replace
 'python' in the above commands with the name of the interpreter you want to
@@ -45,3 +53,19 @@ use for building and installation.  (For example, 'python2' for Python 2.x
 on some Linux distributions.) If you want to build/install for multiple
 versions of Python, just repeat the above steps for each one.
 
+
+* LICENSE
+
+This library is free software; you can redistribute it and/or modify it
+under the terms of the GNU Library General Public License as published by
+the Free Software Foundation; either version 2 of the License, or (at
+your option) any later version.
+
+This library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
+General Public License for more details.
+
+You should have received a copy of the GNU Library General Public License
+along with this library; if not, write to the Free Software Foundation,
+Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.

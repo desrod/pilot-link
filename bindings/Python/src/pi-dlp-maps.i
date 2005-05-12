@@ -1,37 +1,55 @@
-// -*- C -*-
+/*
+ * pi-dlp-maps.i
+ *
+ * Maps for the DLP function arguments, as well as some custom implementations
+ *
+ * Copyright (c) 2005, Florent Pillet.
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Library General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 // TODO: convert PI_CONST char *dbname parameters using the ConvertToEncoding() function
 // TODO: map output parameters for dlp_ExpSlotEnumerate()
 // TODO: map output parameters for dlp_ExpCardInfo()
 // TODO: map output parameters for dlp_ExpSlotMediaType()
 // TODO: map output parameters for VFS functions
+// TODO: map 'unsigned long *restype' output parameter
 
 // -----------------------------------------------
 // a char value that allows None for a null value.
 // -----------------------------------------------
 %typemap (python,in) char *ALLOWNULL {
-    if (!($input) || ($input == Py_None)) {
+    if (!($input) || ($input == Py_None))
 		$1 = NULL;
-    } else {
+    else
 		$1 = PyString_AsString($input);
-    }
 }
 
 // -------------------------------------
-//  unsigned long creator
+//  type/creator pair
 // -------------------------------------
 %typemap (python,in) unsigned long creator, unsigned long type {
-  if (PyString_Check($input)) {
-    $1 = makelong(PyString_AS_STRING($input));
-  } else if (PyInt_Check($input)) {
-	$1 = PyInt_AsLong($input);
-  } else {
-    PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+    if (PyString_Check($input))
+        $1 = makelong(PyString_AS_STRING($input));
+    else if (PyInt_Check($input))
+        $1 = PyInt_AsLong($input);
+    else
+        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
     return NULL;
-  }
 }
-
-// TODO: map 'unsigned long *restype' output parameter
 
 // ----------------------------------------------------------
 // output parameters. Output parameters should be ommitted
@@ -58,7 +76,7 @@
 %apply unsigned long *OUTPUT { unsigned long *retcode };
 
 // -------------------------------------
-//  time_t *time
+// time_t *time
 // -------------------------------------
 %rename(dlp_GetSysDateTime_) dlp_GetSysDateTime;
 
@@ -219,9 +237,9 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
 	}
 	
 	{
-		PyThreadState* __save = PyEval_SaveThread();
+		PyThreadState *save = PyEval_SaveThread();
 		ret = dlp_ReadRecordIDList(sd, dbhandle, sort, start, max, buf, &count);
-		PyEval_RestoreThread(__save);
+		PyEval_RestoreThread(save);
 	}
 	
 	if (ret < 0) {
@@ -229,9 +247,11 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
 		PyMem_Free(buf);
 		return NULL;
 	}
+
 	list = PyList_New(0);
 	for (i=0; i<count; i++)
 		PyList_Append(list, PyInt_FromLong((long)buf[i]));
+
 	PyMem_Free(buf);
 	return list;
 }
