@@ -1493,8 +1493,10 @@ pi_close(int pi_sd)
 		protocol_queue_destroy(ps);
 
 		if (ps->device != NULL)
-			ps->device->free(ps->device);
+		    ps->device->free(ps->device);
 
+		if (ps->sd > 0)
+		    close(ps->sd);
 		free(ps);
 	}
 
