@@ -35,7 +35,7 @@
 #include "pi-net.h"
 #include "pi-error.h"
 
-#define PI_NET_TIMEOUT 10*1000
+#define PI_NET_TIMEOUT 30*1000
 
 static int net_flush(pi_socket_t *ps, int flags);
 static int net_getsockopt(pi_socket_t *ps, int level, int option_name, 
