@@ -143,7 +143,14 @@ static int dlp_version_minor = PI_DLP_VERSION_MINOR;
 
 #ifdef PI_DEBUG
 	#define Trace(name) \
-		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP %s sd: %d\n", #name, sd));
+		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP sd=%d %s\n", sd, #name));
+    #ifdef __GNUC__
+        #define TraceX(name,format,...) \
+            LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP sd=%d %s " #format "\n", sd, #name, __VA_ARGS__));
+    #else
+        #define TraceX(name,format,...) \
+            LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP sd=%d %s\n", sd, #name));
+    #endif
 	#define Expect(count)    \
 		if (result < count) {  \
 			if (result < 0) {    \
@@ -1445,7 +1452,7 @@ dlp_OpenDB(int sd, int cardno, int mode, PI_CONST char *name, int *dbhandle)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(OpenDB);
+	TraceX(OpenDB,"'%s'",name);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncOpenDB, 1, 2 + strlen(name) + 1);
@@ -1479,7 +1486,7 @@ dlp_DeleteDB(int sd, int card, const char *name)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(DeleteDB);
+	TraceX(DeleteDB,"%s",name);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncDeleteDB, 1, 2 + (strlen(name) + 1));
@@ -1506,7 +1513,8 @@ dlp_CreateDB(int sd, unsigned long creator, unsigned long type, int cardno,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(CreateDB);
+	TraceX(CreateDB,"'%s' type='%4.4s' creator='%4.4s' flags=0x%04x version=%d",
+	    name,(const char *)&type,(const char *)&creator,flags,version);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncCreateDB, 1, 14 + (strlen(name) + 1));
@@ -1596,7 +1604,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_CallApplication);
+	TraceX(dlp_CallApplication,"type='%4.4s' creator='%4.4s' action=0x%04x",
+        (const char *)&type,(const char*)&creator,action);
 	pi_reset_errors(sd);
 	if (retbuf)
 		pi_buffer_clear(retbuf);
@@ -1723,7 +1732,7 @@ dlp_ResetSystem(int sd)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(ResetSystems);
+	Trace(ResetSystem);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncResetSystem, 0);
@@ -1745,7 +1754,7 @@ dlp_AddSyncLogEntry(int sd, char *entry)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(AddSyncLogEntry);
+	TraceX(AddSyncLogEntry,"%s",entry);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncAddSyncLogEntry, 1, strlen(entry) + 1);
@@ -2150,7 +2159,6 @@ dlp_WriteNetSyncInfo(int sd, const struct NetSyncInfo *i)
 	return result;
 }
 
-
 #ifdef _PILOT_SYSPKT_H
 int
 dlp_RPC(int sd, struct RPC_params *p, unsigned long *result)
@@ -2249,7 +2257,8 @@ dlp_ReadFeature(int sd, unsigned long creator, int num,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadFeature);
+	TraceX(dlp_ReadFeature,"creator='%4.4s' num=%d",
+        (const char *)&creator,num);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101) {
@@ -2788,7 +2797,7 @@ dlp_WriteResource(int sd, int dbhandle, unsigned long type, int resID,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_WriteResource);
+	TraceX(dlp_WriteResource,"'%4.4s' #%d",(const char *)&type,resID);
 	pi_reset_errors(sd);
 
 	/* TapWave (DLP 1.4) implements a `large' version of dlpFuncWriteResource,
