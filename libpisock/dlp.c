@@ -7,8 +7,8 @@
  * dlp.c:  Palm DLP protocol
  *
  * Copyright (c) 1996, 1997, Kenneth Albanowski
- * Copyright (c) 1998-2003, ???
- * Copyright (c) 2004, Florent Pillet
+ * Copyright (c) 1998-2003, David Desrosiers, JP Rosevear and others
+ * Copyright (c) 2004, 2005, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -864,7 +864,7 @@ dlp_GetSysDateTime(int sd, time_t * t)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(GetSysDateTime);
+	Trace(dlp_GetSysDateTime);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncGetSysDateTime, 0);
@@ -894,7 +894,7 @@ dlp_SetSysDateTime(int sd, time_t t)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(SetSysDateTime);
+	TraceX(dlp_SetSysDateTime,"time=0x%08lx",t);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncSetSysDateTime, 1, 8);
@@ -919,7 +919,7 @@ dlp_ReadStorageInfo(int sd, int cardno, struct CardInfo *c)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(ReadStorageInfo);
+	TraceX(dlp_ReadStorageInfo,"cardno=%d",cardno);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncReadStorageInfo, 1, 2);
@@ -978,7 +978,7 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(ReadSysInfo);
+	Trace(dlp_ReadSysInfo);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncReadSysInfo, 1, 4);
@@ -1053,7 +1053,7 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 	unsigned char *p;
 	struct DBInfo db;
 
-	Trace(ReadDBList);
+	TraceX(dlp_ReadDBList,"cardno=%d flags=0x%04x start=%d",cardno,flags,start);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncReadDBList, 1, 4);
@@ -1154,6 +1154,7 @@ dlp_FindDBInfo(int sd, int cardno, int start, const char *dbname,
 		j;
 	pi_buffer_t *buf;
 
+    TraceX(dlp_FindDBInfo,"cardno=%d start=%d",cardno,start);
 	pi_reset_errors(sd);
 
 	buf = pi_buffer_new (sizeof (struct DBInfo));
@@ -1322,7 +1323,7 @@ dlp_FindDBByName (int sd, int cardno, PI_CONST char *name, unsigned long *locali
 	struct dlpResponse *res;
 	int flags = 0;
 	
-	Trace(FindDBByName);
+	TraceX(dlp_FindDBByName,"cardno=%d name='%s'",cardno,name);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0102)
@@ -1362,7 +1363,7 @@ dlp_FindDBByOpenHandle (int sd, int dbhandle, int *cardno,
 	struct dlpResponse *res;
 	int flags = 0;
 	
-	Trace(FindDBByName);
+	Trace(dlp_FindDBByOpenHandle);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0102)
@@ -1406,7 +1407,8 @@ dlp_FindDBByTypeCreator (int sd, unsigned long type, unsigned long creator,
 	struct dlpResponse *res;
 	int flags = 0, search_flags = 0;
 	
-	Trace(FindDBByName);
+	TraceX(dlp_FindDBByTypeCreator,"type='%4.4s' creator='%4.4s' start=%d latest=%d",
+	    (const char *)&type,(const char *)&creator,start,latest);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0102)
@@ -1452,7 +1454,7 @@ dlp_OpenDB(int sd, int cardno, int mode, PI_CONST char *name, int *dbhandle)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	TraceX(OpenDB,"'%s'",name);
+	TraceX(dlp_OpenDB,"'%s'",name);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncOpenDB, 1, 2 + strlen(name) + 1);
@@ -1471,7 +1473,7 @@ dlp_OpenDB(int sd, int cardno, int mode, PI_CONST char *name, int *dbhandle)
 		*dbhandle = get_byte(DLP_RESPONSE_DATA(res, 0, 0));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		    "DLP OpenDB Handle=%d\n", *dbhandle));
+		    "-> dlp_OpenDB dbhandle=%d\n", *dbhandle));
 	}
 	
 	dlp_response_free(res);
@@ -1486,7 +1488,7 @@ dlp_DeleteDB(int sd, int card, const char *name)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	TraceX(DeleteDB,"%s",name);
+	TraceX(dlp_DeleteDB,"%s",name);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncDeleteDB, 1, 2 + (strlen(name) + 1));
@@ -1513,7 +1515,7 @@ dlp_CreateDB(int sd, unsigned long creator, unsigned long type, int cardno,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	TraceX(CreateDB,"'%s' type='%4.4s' creator='%4.4s' flags=0x%04x version=%d",
+	TraceX(dlp_CreateDB,"'%s' type='%4.4s' creator='%4.4s' flags=0x%04x version=%d",
 	    name,(const char *)&type,(const char *)&creator,flags,version);
 	pi_reset_errors(sd);
 
@@ -1552,7 +1554,7 @@ dlp_CloseDB(int sd, int dbhandle)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(CloseDB);
+	Trace(dlp_CloseDB);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncCloseDB, 1, 1);
@@ -1576,7 +1578,7 @@ dlp_CloseDB_All(int sd)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(CloseDB_All);
+	Trace(dlp_CloseDB_All);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new_with_argid(dlpFuncCloseDB, 0x21, 0);
@@ -1604,8 +1606,8 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	TraceX(dlp_CallApplication,"type='%4.4s' creator='%4.4s' action=0x%04x",
-        (const char *)&type,(const char*)&creator,action);
+	TraceX(dlp_CallApplication,"type='%4.4s' creator='%4.4s' action=0x%04x dataLength=%d",
+        (const char *)&type,(const char *)&creator,action,(int)length);
 	pi_reset_errors(sd);
 	if (retbuf)
 		pi_buffer_clear(retbuf);
@@ -1732,7 +1734,7 @@ dlp_ResetSystem(int sd)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(ResetSystem);
+	Trace(dlp_ResetSystem);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncResetSystem, 0);
@@ -1754,7 +1756,7 @@ dlp_AddSyncLogEntry(int sd, char *entry)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	TraceX(AddSyncLogEntry,"%s",entry);
+	TraceX(dlp_AddSyncLogEntry,"%s",entry);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncAddSyncLogEntry, 1, strlen(entry) + 1);
@@ -1783,7 +1785,7 @@ dlp_ReadOpenDBInfo(int sd, int dbhandle, int *records)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(ReadOpenDBInfo);
+	Trace(dlp_ReadOpenDBInfo);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncReadOpenDBInfo, 1, 1);
@@ -1819,7 +1821,7 @@ dlp_SetDBInfo (int sd, int dbhandle, int flags, int clearFlags,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
  	
-	Trace(SetDBInfo);
+	Trace(dlp_SetDBInfo);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0102)
@@ -1855,7 +1857,7 @@ dlp_MoveCategory(int sd, int handle, int fromcat, int tocat)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(MoveCategory);
+	TraceX(dlp_MoveCategory,"from %d to %d",fromcat,tocat);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncMoveCategory, 1, 4);
@@ -1888,7 +1890,7 @@ dlp_OpenConduit(int sd)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(OpenConduit);
+	Trace(dlp_OpenConduit);
 	pi_reset_errors(sd);
 	
 	req = dlp_request_new(dlpFuncOpenConduit, 0);
@@ -1917,7 +1919,7 @@ dlp_EndOfSync(int sd, int status)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(EndOfSync);
+	Trace(dlp_EndOfSync);
 	pi_reset_errors(sd);
 
 	ps = find_pi_socket(sd);
@@ -1950,7 +1952,7 @@ dlp_AbortSync(int sd)
 {
 	pi_socket_t	*ps;
 
-	Trace(AbortSync);
+	Trace(dlp_AbortSync);
 	pi_reset_errors(sd);
 
 	/* Pretend we sent the sync end */
@@ -1972,7 +1974,7 @@ dlp_WriteUserInfo(int sd, const struct PilotUser *User)
 	struct dlpResponse *res;
 	int len;
 	
-	Trace(WriteUserInfo);
+	Trace(dlp_WriteUserInfo);
 	pi_reset_errors(sd);
 
 	len = strlen (User->username) + 1;
@@ -2005,7 +2007,7 @@ dlp_ReadUserInfo(int sd, struct PilotUser *User)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	Trace(ReadUserInfo);
+	Trace(dlp_ReadUserInfo);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncReadUserInfo, 0);
@@ -2062,7 +2064,7 @@ dlp_ReadNetSyncInfo(int sd, struct NetSyncInfo *i)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(ReadNetSyncInfo);
+	Trace(dlp_ReadNetSyncInfo);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101)
@@ -2115,7 +2117,7 @@ dlp_WriteNetSyncInfo(int sd, const struct NetSyncInfo *i)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(WriteNetSyncInfo);
+	Trace(dlp_WriteNetSyncInfo);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101)
@@ -2257,8 +2259,7 @@ dlp_ReadFeature(int sd, unsigned long creator, int num,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	TraceX(dlp_ReadFeature,"creator='%4.4s' num=%d",
-        (const char *)&creator,num);
+	TraceX(dlp_ReadFeature,"creator='%4.4s' num=%d",(const char *)&creator,num);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101) {
@@ -2470,7 +2471,8 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadRecordIDList);
+	TraceX(dlp_ReadRecordIDList,"sort=%d start=%d max=%d",
+	    sort,start,max);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncReadRecordIDList, 1, 6);
@@ -2616,7 +2618,7 @@ dlp_DeleteCategory(int sd, int dbhandle, int category)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_DeleteCategory);
+	TraceX(dlp_DeleteCategory,"category=%d",category);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101) {
@@ -2672,7 +2674,7 @@ dlp_ReadResourceByType(int sd, int dbhandle, unsigned long type, int resID,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadResourceByType);
+	TraceX(dlp_ReadResourceByType,"type='%4.4s' resID=%d",(const char *)&type,resID);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new_with_argid(dlpFuncReadResource, 0x21, 1, 12);
@@ -2726,7 +2728,7 @@ dlp_ReadResourceByIndex(int sd, int dbhandle, int resindex, pi_buffer_t *buffer,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadResourceByIndex);
+	TraceX(dlp_ReadResourceByIndex,"resindex=%d",resindex);
 	pi_reset_errors(sd);
 
 	/* TapWave (DLP 1.4) implements a `large' version of dlpFuncReadResource,
@@ -2848,7 +2850,8 @@ dlp_DeleteResource(int sd, int dbhandle, int all, unsigned long restype,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_DeleteResource);
+	TraceX(dlp_DeleteResource,"restype='%4.4s' resID=%d all=%d",
+	        (const char *)&restype,resID,all);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncDeleteResource, 1, 8);
@@ -2876,7 +2879,7 @@ dlp_ReadAppBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *re
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadAppBlock);
+	TraceX(dlp_ReadAppBlock,"offset=%d reqbytes=%ld",offset,reqbytes);
 	pi_reset_errors(sd);
 
 	if (retbuf)
@@ -2927,7 +2930,7 @@ dlp_WriteAppBlock(int sd, int dbhandle, const /* @unique@ */ void *data,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_WriteAppBlock);
+	TraceX(dlp_WriteAppBlock,"length=%ld",length);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncWriteAppBlock, 1, 4 + length);
@@ -2963,7 +2966,7 @@ dlp_ReadSortBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *r
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadSortBlock);
+	TraceX(dlp_ReadSortBlock,"offset=%d reqbytes=%d",offset,reqbytes);
 	pi_reset_errors(sd);
 
 	if (retbuf)
@@ -3014,7 +3017,7 @@ dlp_WriteSortBlock(int sd, int dbhandle, const /* @unique@ */ void *data,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_WriteSortBlock);
+	TraceX(dlp_WriteSortBlock,"length=%ld",length);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncWriteSortBlock, 1, 4 + length);
@@ -3066,7 +3069,7 @@ dlp_CleanUpDatabase(int sd, int dbhandle)
 }
 
 int
-dlp_ResetSyncFlags(int sd, int dbandle)
+dlp_ResetSyncFlags(int sd, int dbhandle)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -3079,7 +3082,7 @@ dlp_ResetSyncFlags(int sd, int dbandle)
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbandle);
+	set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 
 	result = dlp_exec(sd, req, &res);
 	
@@ -3100,7 +3103,7 @@ dlp_ReadNextRecInCategory(int sd, int dbhandle, int category,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadNextRecInCategory);
+	TraceX(dlp_ReadNextRecInCategory,"category=%d",category);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101) {
@@ -3220,7 +3223,8 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int prefID, int backup,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadAppPreference);
+	TraceX(dlp_ReadAppPreference,"creator='%4.4s' prefID=%d backup=%d maxsize=%d",
+	    (const char *)creator,prefID,backup,maxsize);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101) {
@@ -3326,7 +3330,8 @@ dlp_WriteAppPreference(int sd, unsigned long creator, int prefID, int backup,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadAppPreference);
+	TraceX(dlp_WriteAppPreference,"creator='%4.4s' prefID=%d backup=%d version=%d size=%ld",
+	    (const char *)&creator,prefID,backup,version,size);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101) {
@@ -3399,7 +3404,7 @@ dlp_ReadNextModifiedRecInCategory(int sd, int dbhandle, int category,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadNextModifiedRecInCategory);
+	TraceX(dlp_ReadNextModifiedRecInCategory,"category=%d",category);
 	pi_reset_errors(sd);
 
 	if (pi_version(sd) < 0x0101) {
@@ -3540,7 +3545,7 @@ dlp_ReadRecordById(int sd, int dbhandle, recordid_t recuid, pi_buffer_t *buffer,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadRecordById);
+	TraceX(dlp_ReadRecordById,"recuid=0x%08lx",recuid);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncReadRecord, 1, 10);
@@ -3594,7 +3599,7 @@ dlp_ReadRecordByIndex(int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	Trace(dlp_ReadRecordByIndex);
+	TraceX(dlp_ReadRecordByIndex,"recindex=%d",recindex);
 	pi_reset_errors(sd);
 
 	/* TapWave (DLP 1.4) implements a `large' version of dlpFuncReadRecord,
@@ -3708,7 +3713,7 @@ dlp_ExpCardPresent(int sd, int slotRef)
 	struct dlpResponse *res;
 
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_ExpCardPresent);
+	TraceX(dlp_ExpCardPresent,"slotRef=%d",slotRef);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncExpCardPresent, 1, 2);
@@ -3726,7 +3731,7 @@ dlp_ExpCardPresent(int sd, int slotRef)
 }
 
 int
-dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *numStrings,
+dlp_ExpCardInfo(int sd, int slotRef, unsigned long *flags, int *numStrings,
 				char **strings)
 {
 	int result;
@@ -3734,14 +3739,14 @@ dlp_ExpCardInfo(int sd, int SlotRef, unsigned long *flags, int *numStrings,
 	struct dlpResponse* res;
 
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_ExpCardInfo);
+	TraceX(dlp_ExpCardInfo,"slotRef=%d",slotRef);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncExpCardInfo, 1, 2);
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
-	set_short(DLP_REQUEST_DATA(req, 0, 0), SlotRef);
+	set_short(DLP_REQUEST_DATA(req, 0, 0), slotRef);
 
 	result = dlp_exec(sd, req, &res);
 
@@ -3784,7 +3789,7 @@ dlp_VFSGetDefaultDir(int sd, int volRefNum, const char *type, char *dir,
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSGetDefaultDir);
+	TraceX(dlp_VFSGetDefaultDir,"volRefNum=%d",volRefNum);
 	pi_reset_errors(sd);
 	
 	req = dlp_request_new(dlpFuncVFSGetDefaultDir,
@@ -3832,7 +3837,7 @@ dlp_VFSImportDatabaseFromFile(int sd, int volRefNum, const char *path,
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSImportDatabaseFromFile);
+	TraceX(dlp_VFSImportDatabaseFromFile,"volRefNum=%d path='%s'",volRefNum,path);
 	pi_reset_errors(sd);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -3874,11 +3879,12 @@ dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
-	
+
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSExportDatabaseToFile);
+	TraceX(dlp_VFSExportDatabaseToFile,"cardno=%d localid=0x%08lx volRefNum=%d path='%s'",
+	    cardno,(long)localid,volRefNum,path);
 	pi_reset_errors(sd);
-	
+
 	req = dlp_request_new(dlpFuncVFSExportDatabaseToFile,
 		1, 8 + (strlen(path) + 1));
 	if (req == NULL)
@@ -3888,9 +3894,9 @@ dlp_VFSExportDatabaseToFile(int sd, int volRefNum, const char *path,
 	set_short(DLP_REQUEST_DATA(req, 0, 2), cardno);
 	set_long(DLP_REQUEST_DATA(req, 0, 4), localid);
 	strcpy(DLP_REQUEST_DATA(req, 0, 8), path);
-	
+
 	result = dlp_exec(sd, req, &res);
-	
+
 	dlp_request_free(req);
 	dlp_response_free(res);
 
@@ -3905,7 +3911,7 @@ dlp_VFSFileCreate(int sd, int volRefNum, const char *name)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileCreate);
+	TraceX(dlp_VFSFileCreate,"volRefNum=%d name='%s'",volRefNum,name);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileCreate, 1, 2 + (strlen(name) + 1));
@@ -3931,12 +3937,9 @@ dlp_VFSFileOpen(int sd, int volRefNum, const char *path, int openMode,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
-	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		"Open File %s Mode: %x VFSRef 0x%x\n",
-		path, openMode,volRefNum));
-	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileOpen);
+	TraceX(dlp_VFSFileOpen,"volRefNum=%d mode=0x%04x path='%s'",
+	    volRefNum,openMode,path);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileOpen, 1, 4 + (strlen (path) + 1));
@@ -3971,7 +3974,7 @@ dlp_VFSFileClose(int sd, FileRef fileRef)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileClose);
+	TraceX(dlp_VFSFileClose,"fileRef=%ld",fileRef);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileClose, 1, 4);
@@ -3999,7 +4002,7 @@ dlp_VFSFileWrite(int sd, FileRef fileRef, const void *data, size_t len)
 	struct dlpResponse *res = NULL;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileWrite);
+	TraceX(dlp_VFSFileWrite,"fileRef=%ld len=%ld",(long)fileRef,(long)len);
 	pi_reset_errors(sd);
 
 	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -4053,7 +4056,7 @@ dlp_VFSFileRead(int sd, FileRef fileRef, pi_buffer_t *data, size_t len)
 	size_t opt_size = sizeof(int);
 
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileRead);
+	TraceX(dlp_VFSFileRead,"fileRef=%ld len=%ld",(long)fileRef,(long)len);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileRead, 1, 8);
@@ -4108,7 +4111,7 @@ dlp_VFSFileDelete(int sd, int volRefNum, const char *path)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileDelete);
+	TraceX(dlp_VFSFileDelete,"volRefNum=%d path='%s'",volRefNum,path);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileDelete, 1, 2 + (strlen (path) + 1));
@@ -4134,11 +4137,9 @@ dlp_VFSFileRename(int sd, int volRefNum, const char *path,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		"Rename file %s to %s\n", path, newname));
-	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileRename);
+	TraceX(dlp_VFSFileRename,"volRefNum=%d file '%s' renamed '%s'",
+	    volRefNum,path,rename);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileRename,
@@ -4167,7 +4168,7 @@ dlp_VFSFileEOF(int sd, FileRef fileRef)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileEOF);
+	TraceX(dlp_VFSFileEOF,"fileRef=%ld",fileRef);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileEOF, 1, 4);
@@ -4192,7 +4193,7 @@ dlp_VFSFileTell(int sd, FileRef fileRef,int *position)
 	struct dlpResponse *res;
 
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileTell);
+	TraceX(dlp_VFSFileTell,"fileRef=%ld",fileRef);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncVFSFileTell, 1, 4);
@@ -4222,7 +4223,7 @@ dlp_VFSFileGetAttributes (int sd, FileRef fileRef, unsigned long *attributes)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileGetAttributes);
+	TraceX(dlp_VFSFileGetAttributes,"fileRef=%ld",fileRef);
 	pi_reset_errors(sd);
 	
 	req = dlp_request_new (dlpFuncVFSFileGetAttributes, 1, 4);
@@ -4252,7 +4253,8 @@ dlp_VFSFileSetAttributes(int sd, FileRef fileRef, unsigned long attributes)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileSetAttributes);
+	TraceX(dlp_VFSFileSetAttributes,"fileRef=%ld attributes=0x%08lx",
+	    fileRef,attributes);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileSetAttributes, 1, 8);
@@ -4278,7 +4280,7 @@ dlp_VFSFileGetDate(int sd, FileRef fileRef, int which, time_t *date)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileGetDate);
+	TraceX(dlp_VFSFileGetDate,"fileRef=%ld which=%d",fileRef,which);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileGetDate, 1, 6);
@@ -4314,14 +4316,9 @@ dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		"Set date(%d): %d / %x calc %d / %x\n", which,
-		date, date,
-		date + 2082852000,
-		date + 2082852000));
-	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileSetDate);
+	TraceX(dlp_VFSFileSetDate,"fileRef=%ld which=%d date=0x%08lx";
+	    (long)fileRef,which,(long)date);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncVFSFileSetDate, 1, 10);
@@ -4348,7 +4345,7 @@ dlp_VFSDirCreate(int sd, int volRefNum, const char *path)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSDirCreate);
+	TraceX(dlp_VFSDirCreate,"volRefNum=%d path='%s'",volRefNum,path);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSDirCreate, 1, 2 + (strlen(path) + 1));
@@ -4380,7 +4377,7 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 	struct dlpResponse *res;
 
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSDirEntryEnumerate);
+	TraceX(dlp_VFSDirEntryEnumerate,"dirRef=%ld",dirRefNum);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSDirEntryEnumerate, 1, 12);
@@ -4457,12 +4454,8 @@ dlp_VFSVolumeFormat(int sd, unsigned char flags,
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 	
-	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		"VFSVolumeFormat Ver-check %x != 0101 \n",
-			pi_version(sd)));
-	
 	RequireDLPVersion(sd,1,2);
-	Trace(VFSVolumeFormat);
+	Trace(dlp_VFSVolumeFormat);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncVFSVolumeFormat, 1, 4);
@@ -4545,7 +4538,7 @@ dlp_VFSVolumeInfo(int sd, int volRefNum, struct VFSInfo *volInfo)
 	struct dlpResponse *res;
 
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSVolumeInfo);
+	TraceX(dlp_VFSVolumeInfo,"volRefNum=%d",volRefNum);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSVolumeInfo, 1, 2);
@@ -4594,7 +4587,7 @@ dlp_VFSVolumeGetLabel(int sd, int volRefNum, int *len, char *name)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSVolumeGetLabel);
+	TraceX(dlp_VFSVolumeGetLabel,"volRefNum=%d",volRefNum);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSVolumeGetLabel, 1, 2);
@@ -4629,7 +4622,7 @@ dlp_VFSVolumeSetLabel(int sd, int volRefNum, const char *name)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSVolumeSetLabel);
+	TraceX(dlp_VFSVolumeSetLabel,"volRefNum=%d name='%s'",volRefNum,name);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSVolumeSetLabel, 1,
@@ -4657,7 +4650,7 @@ dlp_VFSVolumeSize(int sd, int volRefNum, long *volSizeUsed,
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSVolumeSize);
+	TraceX(dlp_VFSVolumeSize,"volRefNum=%d",volRefNum);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSVolumeSize, 1, 2);
@@ -4692,13 +4685,10 @@ dlp_VFSFileSeek(int sd, FileRef fileRef, int origin, int offset)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileSeek);
+	TraceX(dlp_VFSFileSeek,"fileRef=%ld origin=%d offset=%d",
+	    fileRef,origin,offset);
 	pi_reset_errors(sd);
 
-	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		"Seek %x to offset %d from origin %d\n",
-			fileRef,offset,origin));
-	
 	req = dlp_request_new (dlpFuncVFSFileSeek, 1, 10);
 	if (req == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
@@ -4722,11 +4712,8 @@ dlp_VFSFileResize(int sd, FileRef fileRef, int newSize)
 	struct dlpRequest *req; 
 	struct dlpResponse *res;
 	
-	LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
-		"Resize %x to %d bytes\n", fileRef, newSize));
-	
 	RequireDLPVersion(sd,1,2);
-	Trace(dlp_VFSFileResize);
+	TraceX(dlp_VFSFileResize,"fileRef=%ld newSize=%d",fileRef,newSize);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new(dlpFuncVFSFileResize, 1, 8);
@@ -4752,7 +4739,7 @@ dlp_VFSFileSize(int sd, FileRef fileRef, int *size)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	Trace (dlp_VFSFileSize);
+	TraceX(dlp_VFSFileSize,"fileRef=%ld",fileRef);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncVFSFileSize, 1, 4);
@@ -4785,7 +4772,7 @@ dlp_ExpSlotMediaType(int sd, int slotNum, unsigned long *mediaType)
 	struct dlpResponse *res;
  
 	RequireDLPVersion(sd,1, 4);
-	Trace (dlp_ExpSlotMediaType);
+	TraceX(dlp_ExpSlotMediaType,"slotNum=%d",slotNum);
 	pi_reset_errors(sd);
 
 	req = dlp_request_new (dlpFuncExpSlotMediaType, 1, 2);
