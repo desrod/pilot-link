@@ -46,9 +46,10 @@
         $1 = makelong(PyString_AS_STRING($input));
     else if (PyInt_Check($input))
         $1 = PyInt_AsLong($input);
-    else
+    else {
         PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-    return NULL;
+        SWIG_fail;
+    }
 }
 
 // ----------------------------------------------------------

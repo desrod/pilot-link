@@ -6611,9 +6611,10 @@ static PyObject *_wrap_DBInfo_type_set(PyObject *self, PyObject *args) {
         arg2 = makelong(PyString_AS_STRING(obj1));
         else if (PyInt_Check(obj1))
         arg2 = PyInt_AsLong(obj1);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     if (arg1) (arg1)->type = arg2;
     
@@ -6659,9 +6660,10 @@ static PyObject *_wrap_DBInfo_creator_set(PyObject *self, PyObject *args) {
         arg2 = makelong(PyString_AS_STRING(obj1));
         else if (PyInt_Check(obj1))
         arg2 = PyInt_AsLong(obj1);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     if (arg1) (arg1)->creator = arg2;
     
@@ -8461,9 +8463,10 @@ static PyObject *_wrap_dlp_ReadFeature(PyObject *self, PyObject *args) {
         arg2 = makelong(PyString_AS_STRING(obj1));
         else if (PyInt_Check(obj1))
         arg2 = PyInt_AsLong(obj1);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         arg3 = (int)(SWIG_As_int(obj2)); 
@@ -8602,18 +8605,20 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
         arg2 = makelong(PyString_AS_STRING(obj1));
         else if (PyInt_Check(obj1))
         arg2 = PyInt_AsLong(obj1);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         if (PyString_Check(obj2))
         arg3 = makelong(PyString_AS_STRING(obj2));
         else if (PyInt_Check(obj2))
         arg3 = PyInt_AsLong(obj2);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         arg4 = (int)(SWIG_As_int(obj3)); 
@@ -8689,9 +8694,10 @@ static PyObject *_wrap_dlp_ReadAppPreference(PyObject *self, PyObject *args) {
         arg2 = makelong(PyString_AS_STRING(obj1));
         else if (PyInt_Check(obj1))
         arg2 = PyInt_AsLong(obj1);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         arg3 = (int)(SWIG_As_int(obj2)); 
@@ -8762,9 +8768,10 @@ static PyObject *_wrap_dlp_WriteAppPreference(PyObject *self, PyObject *args) {
         arg2 = makelong(PyString_AS_STRING(obj1));
         else if (PyInt_Check(obj1))
         arg2 = PyInt_AsLong(obj1);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         arg3 = (int)(SWIG_As_int(obj2)); 
@@ -9070,18 +9077,20 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
         arg2 = makelong(PyString_AS_STRING(obj1));
         else if (PyInt_Check(obj1))
         arg2 = PyInt_AsLong(obj1);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         if (PyString_Check(obj2))
         arg3 = makelong(PyString_AS_STRING(obj2));
         else if (PyInt_Check(obj2))
         arg3 = PyInt_AsLong(obj2);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         arg4 = (int)(SWIG_As_int(obj3)); 
@@ -9161,18 +9170,20 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
         arg5 = makelong(PyString_AS_STRING(obj4));
         else if (PyInt_Check(obj4))
         arg5 = PyInt_AsLong(obj4);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         if (PyString_Check(obj5))
         arg6 = makelong(PyString_AS_STRING(obj5));
         else if (PyInt_Check(obj5))
         arg6 = PyInt_AsLong(obj5);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         PyThreadState *__save = PyEval_SaveThread();
@@ -9383,18 +9394,20 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
         arg2 = makelong(PyString_AS_STRING(obj1));
         else if (PyInt_Check(obj1))
         arg2 = PyInt_AsLong(obj1);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         if (PyString_Check(obj2))
         arg3 = makelong(PyString_AS_STRING(obj2));
         else if (PyInt_Check(obj2))
         arg3 = PyInt_AsLong(obj2);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         arg4 = (int)(SWIG_As_int(obj3)); 
@@ -9534,18 +9547,20 @@ static PyObject *_wrap_dlp_SetDBInfo(PyObject *self, PyObject *args) {
         arg9 = makelong(PyString_AS_STRING(obj8));
         else if (PyInt_Check(obj8))
         arg9 = PyInt_AsLong(obj8);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         if (PyString_Check(obj9))
         arg10 = makelong(PyString_AS_STRING(obj9));
         else if (PyInt_Check(obj9))
         arg10 = PyInt_AsLong(obj9);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         PyThreadState *__save = PyEval_SaveThread();
@@ -10518,9 +10533,10 @@ static PyObject *_wrap_dlp_ReadResourceByType(PyObject *self, PyObject *args) {
         arg3 = makelong(PyString_AS_STRING(obj2));
         else if (PyInt_Check(obj2))
         arg3 = PyInt_AsLong(obj2);
-        else
-        PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
-        return NULL;
+        else {
+            PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
+            SWIG_fail;
+        }
     }
     {
         arg4 = (int)(SWIG_As_int(obj3)); 
