@@ -1409,7 +1409,7 @@ u_close(struct pi_socket *ps)
 	    c->ps = NULL;
 		change_refcount(c, -2);     /* decrement current refcount + disconnect */
     }
-	return 0;
+	return close(ps->sd);
 }
 
 static int
