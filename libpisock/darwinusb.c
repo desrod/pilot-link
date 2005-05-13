@@ -93,7 +93,7 @@
 #ifdef PI_DEBUG
     #define DEBUG_USB 1
 #endif
-#undef DEBUG_USB        /* comment out to leave debug enabled */
+/*#undef DEBUG_USB*/        /* comment out to leave debug enabled */
 
 /* These values are somewhat tricky.  Priming reads with a size of exactly one
  * USB packet works best (no timeouts).  Probably best to leave these as they are.
@@ -1536,6 +1536,8 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 #ifdef DEBUG_USB
+    struct timeval startTime, endTime;
+    gettimeofday(&startTime, NULL);
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_read(ps=%p, c=%p, len=%d, timeout=%d, flags=%d)\n", ps, c, (int)len, timeout, flags));
 #endif
 
@@ -1615,7 +1617,12 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 #ifdef DEBUG_USB
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_read complete (bytes_read=%d, remaining bytes in queue=%d)\n", len, c->read_queue_used));
+    double a,b;
+    gettimeofday(&endTime, NULL);
+    a = (double)startTime.tv_sec + (double)startTime.tv_usec / (double)1000000;
+    b = (double)endTime.tv_sec + (double)endTime.tv_usec / (double)1000000;
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: -> u_read complete (bytes_read=%d, remaining bytes in queue=%d) in %.06fs\n",
+	    len, c->read_queue_used,b-a));
 #endif
 	
 	pthread_mutex_unlock(&c->read_queue_mutex);
