@@ -25,21 +25,19 @@
  */
 
 %{
-static void* pythonWrapper_handlePiErr(int sd, int err)
+static int pythonWrapper_handlePiErr(int sd, int err)
 {
     /* This function is called by each function
      * which receives a PI_ERR return code
      */
 	if (err == PI_ERR_DLP_PALMOS) {
 		int palmerr = pi_palmos_error(sd);
-		if (palmerr == dlpErrNoError || palmerr == dlpErrNotFound) {
-			Py_INCREF(Py_None);
-			return Py_None;
-		}
+		if (palmerr == dlpErrNoError)
+			return 0;
 		if (palmerr > dlpErrNoError && palmerr <= dlpErrUnknown) {
 			PyErr_SetObject(PIError,
 				Py_BuildValue("(is)", palmerr, dlp_strerror(palmerr)));
-			return NULL;
+			return err;
 		}
 	}
 
@@ -56,18 +54,18 @@ static void* pythonWrapper_handlePiErr(int sd, int err)
 	else
         PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "pisock error"));
 
-	return NULL;
+	return err;
 }
 %}
 
 
-// -------------------------------------
-// Returned errors: we pass them to our
-// static function for handling (reduces
-// the total wrapper code size)
-// -------------------------------------
+// -----------------------------------------------------------------
+// Returned errors: we pass them to our static function for handling
+// (reduces the total wrapper code size)
+// -----------------------------------------------------------------
 %typemap (python,out) PI_ERR %{
-	if ($1 < 0) return pythonWrapper_handlePiErr(arg1, $1);
+	if ($1 < 0 && pythonWrapper_handlePiErr(arg1, $1) != 0)
+        SWIG_fail;
 	$result = Py_None;
 	Py_INCREF(Py_None);
 %}

@@ -14,8 +14,8 @@ def dlp_ReadDBList(sd, cardno=0, flags=None):
             for db in lst:
                 i = db['index'] + 1
                 ret.append(db)
-        except pisock.dlperror:
-            if pisock.pi_palmos_error(sd) == pisock.dlpErrNotFound:
+        except pisock.error:
+            if pisock.pi_palmos_error(sd)==pisock.dlpErrNotFound:
                 return ret
             raise
 

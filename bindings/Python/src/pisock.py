@@ -70,7 +70,6 @@ PI_CMD_CMP = _pisock.PI_CMD_CMP
 PI_CMD_NET = _pisock.PI_CMD_NET
 PI_CMD_SYS = _pisock.PI_CMD_SYS
 PI_MSG_PEEK = _pisock.PI_MSG_PEEK
-PI_MSG_REALLOC = _pisock.PI_MSG_REALLOC
 PI_PF_DEV = _pisock.PI_PF_DEV
 PI_PF_SLP = _pisock.PI_PF_SLP
 PI_PF_SYS = _pisock.PI_PF_SYS

@@ -1646,21 +1646,19 @@ static void PyObjectToNetSyncInfo(PyObject *o, struct NetSyncInfo *ni)
 
 
 
-static void* pythonWrapper_handlePiErr(int sd, int err)
+static int pythonWrapper_handlePiErr(int sd, int err)
 {
     /* This function is called by each function
      * which receives a PI_ERR return code
      */
 	if (err == PI_ERR_DLP_PALMOS) {
 		int palmerr = pi_palmos_error(sd);
-		if (palmerr == dlpErrNoError || palmerr == dlpErrNotFound) {
-			Py_INCREF(Py_None);
-			return Py_None;
-		}
+		if (palmerr == dlpErrNoError)
+			return 0;
 		if (palmerr > dlpErrNoError && palmerr <= dlpErrUnknown) {
 			PyErr_SetObject(PIError,
 				Py_BuildValue("(is)", palmerr, dlp_strerror(palmerr)));
-			return NULL;
+			return err;
 		}
 	}
 
@@ -1677,7 +1675,7 @@ static void* pythonWrapper_handlePiErr(int sd, int err)
 	else
         PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "pisock error"));
 
-	return NULL;
+	return err;
 }
 
 
@@ -3862,7 +3860,8 @@ static PyObject *_wrap_pi_connect(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -3895,7 +3894,8 @@ static PyObject *_wrap_pi_bind(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -3929,7 +3929,8 @@ static PyObject *_wrap_pi_listen(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -3967,7 +3968,8 @@ static PyObject *_wrap_pi_accept(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -4020,7 +4022,8 @@ static PyObject *_wrap_pi_accept_to(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -4448,7 +4451,8 @@ static PyObject *_wrap_pi_version(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -4502,7 +4506,8 @@ static PyObject *_wrap_pi_tickle(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8020,7 +8025,8 @@ static PyObject *_wrap_dlp_GetSysDateTime_(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8068,7 +8074,8 @@ static PyObject *_wrap_dlp_SetSysDateTime(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8101,7 +8108,8 @@ static PyObject *_wrap_dlp_ReadSysInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8143,7 +8151,8 @@ static PyObject *_wrap_dlp_ReadStorageInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8179,7 +8188,8 @@ static PyObject *_wrap_dlp_ReadUserInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8218,7 +8228,8 @@ static PyObject *_wrap_dlp_WriteUserInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8249,7 +8260,8 @@ static PyObject *_wrap_dlp_ResetLastSyncPC(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8282,7 +8294,8 @@ static PyObject *_wrap_dlp_ReadNetSyncInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8320,7 +8333,8 @@ static PyObject *_wrap_dlp_WriteNetSyncInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8348,7 +8362,8 @@ static PyObject *_wrap_dlp_OpenConduit(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8382,7 +8397,8 @@ static PyObject *_wrap_dlp_EndOfSync(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8410,7 +8426,8 @@ static PyObject *_wrap_dlp_AbortSync(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8459,7 +8476,8 @@ static PyObject *_wrap_dlp_ReadFeature(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8506,7 +8524,8 @@ static PyObject *_wrap_dlp_GetROMToken(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8539,7 +8558,8 @@ static PyObject *_wrap_dlp_AddSyncLogEntry(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8610,7 +8630,8 @@ static PyObject *_wrap_dlp_CallApplication(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8700,7 +8721,8 @@ static PyObject *_wrap_dlp_ReadAppPreference(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8767,7 +8789,8 @@ static PyObject *_wrap_dlp_WriteAppPreference(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8795,7 +8818,8 @@ static PyObject *_wrap_dlp_ResetSystem(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8845,7 +8869,8 @@ static PyObject *_wrap_dlp_ReadDBList_(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8923,7 +8948,8 @@ static PyObject *_wrap_dlp_FindDBByName(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -8981,7 +9007,8 @@ static PyObject *_wrap_dlp_FindDBByOpenHandle(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9071,7 +9098,8 @@ static PyObject *_wrap_dlp_FindDBByTypeCreator(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9153,7 +9181,8 @@ static PyObject *_wrap_dlp_FindDBInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9205,7 +9234,8 @@ static PyObject *_wrap_dlp_OpenDB(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9241,7 +9271,8 @@ static PyObject *_wrap_dlp_CloseDB(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9269,7 +9300,8 @@ static PyObject *_wrap_dlp_CloseDB_All(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9308,7 +9340,8 @@ static PyObject *_wrap_dlp_DeleteDB(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9385,7 +9418,8 @@ static PyObject *_wrap_dlp_CreateDB(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9425,7 +9459,8 @@ static PyObject *_wrap_dlp_ReadOpenDBInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9519,7 +9554,8 @@ static PyObject *_wrap_dlp_SetDBInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9559,7 +9595,8 @@ static PyObject *_wrap_dlp_DeleteCategory(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9605,7 +9642,8 @@ static PyObject *_wrap_dlp_MoveCategory(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9655,7 +9693,8 @@ static PyObject *_wrap_dlp_ReadAppBlock(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9712,7 +9751,8 @@ static PyObject *_wrap_dlp_WriteAppBlock(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9762,7 +9802,8 @@ static PyObject *_wrap_dlp_ReadSortBlock(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9819,7 +9860,8 @@ static PyObject *_wrap_dlp_WriteSortBlock(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9853,7 +9895,8 @@ static PyObject *_wrap_dlp_CleanUpDatabase(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9887,7 +9930,8 @@ static PyObject *_wrap_dlp_ResetSyncFlags(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9921,7 +9965,8 @@ static PyObject *_wrap_dlp_ResetDBIndex(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -9977,7 +10022,8 @@ static PyObject *_wrap_dlp_ReadRecordById(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10055,7 +10101,8 @@ static PyObject *_wrap_dlp_ReadRecordByIndex(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10131,7 +10178,8 @@ static PyObject *_wrap_dlp_ReadNextModifiedRec(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10211,7 +10259,8 @@ static PyObject *_wrap_dlp_ReadNextModifiedRecInCategory(PyObject *self, PyObjec
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10289,7 +10338,8 @@ static PyObject *_wrap_dlp_ReadNextRecInCategory(PyObject *self, PyObject *args)
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10374,7 +10424,8 @@ static PyObject *_wrap_dlp_WriteRecord(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10422,7 +10473,8 @@ static PyObject *_wrap_dlp_DeleteRecord(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10481,7 +10533,8 @@ static PyObject *_wrap_dlp_ReadResourceByType(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10551,7 +10604,8 @@ static PyObject *_wrap_dlp_ReadResourceByIndex(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10622,7 +10676,8 @@ static PyObject *_wrap_dlp_WriteResource(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10674,7 +10729,8 @@ static PyObject *_wrap_dlp_DeleteResource(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10710,7 +10766,8 @@ static PyObject *_wrap_dlp_ExpSlotEnumerate(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10744,7 +10801,8 @@ static PyObject *_wrap_dlp_ExpCardPresent(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10790,7 +10848,8 @@ static PyObject *_wrap_dlp_ExpCardInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10828,7 +10887,8 @@ static PyObject *_wrap_dlp_ExpSlotMediaType(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10864,7 +10924,8 @@ static PyObject *_wrap_dlp_VFSVolumeEnumerate(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10902,7 +10963,8 @@ static PyObject *_wrap_dlp_VFSVolumeInfo(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10945,7 +11007,8 @@ static PyObject *_wrap_dlp_VFSVolumeGetLabel(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -10984,7 +11047,8 @@ static PyObject *_wrap_dlp_VFSVolumeSetLabel(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11026,7 +11090,8 @@ static PyObject *_wrap_dlp_VFSVolumeSize(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11074,7 +11139,8 @@ static PyObject *_wrap_dlp_VFSVolumeFormat(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11122,7 +11188,8 @@ static PyObject *_wrap_dlp_VFSGetDefaultDir(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11168,7 +11235,8 @@ static PyObject *_wrap_dlp_VFSDirEntryEnumerate(PyObject *self, PyObject *args) 
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11207,7 +11275,8 @@ static PyObject *_wrap_dlp_VFSDirCreate(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11254,7 +11323,8 @@ static PyObject *_wrap_dlp_VFSImportDatabaseFromFile(PyObject *self, PyObject *a
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11309,7 +11379,8 @@ static PyObject *_wrap_dlp_VFSExportDatabaseToFile(PyObject *self, PyObject *arg
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11348,7 +11419,8 @@ static PyObject *_wrap_dlp_VFSFileCreate(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11397,7 +11469,8 @@ static PyObject *_wrap_dlp_VFSFileOpen(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11431,7 +11504,8 @@ static PyObject *_wrap_dlp_VFSFileClose(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11472,7 +11546,8 @@ static PyObject *_wrap_dlp_VFSFileWrite(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11516,7 +11591,8 @@ static PyObject *_wrap_dlp_VFSFileRead(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11571,7 +11647,8 @@ static PyObject *_wrap_dlp_VFSFileDelete(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11615,7 +11692,8 @@ static PyObject *_wrap_dlp_VFSFileRename(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11649,7 +11727,8 @@ static PyObject *_wrap_dlp_VFSFileEOF(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11687,7 +11766,8 @@ static PyObject *_wrap_dlp_VFSFileTell(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11725,7 +11805,8 @@ static PyObject *_wrap_dlp_VFSFileGetAttributes(PyObject *self, PyObject *args) 
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11765,7 +11846,8 @@ static PyObject *_wrap_dlp_VFSFileSetAttributes(PyObject *self, PyObject *args) 
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11809,7 +11891,8 @@ static PyObject *_wrap_dlp_VFSFileGetDate(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11855,7 +11938,8 @@ static PyObject *_wrap_dlp_VFSFileSetDate(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11901,7 +11985,8 @@ static PyObject *_wrap_dlp_VFSFileSeek(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11941,7 +12026,8 @@ static PyObject *_wrap_dlp_VFSFileResize(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -11979,7 +12065,8 @@ static PyObject *_wrap_dlp_VFSFileSize(PyObject *self, PyObject *args) {
         PyEval_RestoreThread(__save);
     }
     
-    if (result < 0) return pythonWrapper_handlePiErr(arg1, result);
+    if (result < 0 && pythonWrapper_handlePiErr(arg1, result) != 0)
+    SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
     
@@ -12829,9 +12916,6 @@ SWIGEXPORT(void) SWIG_init(void) {
     }
     {
         PyDict_SetItemString(d,"PI_MSG_PEEK", SWIG_From_int((int)(0x01))); 
-    }
-    {
-        PyDict_SetItemString(d,"PI_MSG_REALLOC", SWIG_From_int((int)(0x02))); 
     }
     {
         PyDict_SetItemString(d,"PI_PF_DEV", SWIG_From_int((int)(PI_PF_DEV))); 
