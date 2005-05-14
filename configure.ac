@@ -366,8 +366,11 @@ if test "x$enable_conduits" != "xno"; then
 		dnl Determine if system popt is good enough
 		save_LIBS="$LIBS"
 		AC_CHECK_HEADER(popt.h,
-			AC_CHECK_LIB(popt, poptStrippedArgv,,
-				[with_included_popt="yes"]),
+			AC_CHECK_DECL(POPT_BIT_SET,
+				AC_CHECK_LIB(popt, poptStrippedArgv,,
+					[with_included_popt="yes"]),
+				[with_included_popt="yes"],
+				[#include <popt.h>]),
 			[with_included_popt="yes"]
 		)
 		LIBS="$save_LIBS"
