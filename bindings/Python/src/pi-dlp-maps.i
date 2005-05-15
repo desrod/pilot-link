@@ -85,18 +85,7 @@
     $1 = (time_t *)&time;
 }
 %typemap (python,argout) time_t *time (time_t time) {
-    if ($1) {
-      $result = PyInt_FromLong((unsigned long ) $1);
-      /* Ready for Python 2.4! Right now we wrap in python. */
-/*       struct tm *t; */
-/*       t = localtime($1); */
-/*       $result = PyDate_FromDateAndTime(t->tm_year, */
-/* 				       t->tm_mon, */
-/* 				       t->tm_mday, */
-/* 				       t->tm_hour, */
-/* 				       t->tm_min, */
-/* 				       t->tm_sec); */
-    }
+    if ($1) $result = PyInt_FromLong((unsigned long ) $1);
 }
 
 // -------------------------------------

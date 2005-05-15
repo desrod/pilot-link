@@ -4,6 +4,7 @@
 //
 // Copyright 1999-2001 Rob Tillotson <rob@pyrite.org>
 // All Rights Reserved
+// Copyright (c) 2005 Florent Pillet, Nick Piper
 //
 // Permission to use, copy, modify, and distribute this software and
 // its documentation for any purpose and without fee or royalty is

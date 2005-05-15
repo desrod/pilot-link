@@ -38,7 +38,7 @@ del types
 
 from pisockextras import *
 
-error = _pisock.error 
+error = _pisock.error
 
 PI_ERR_PROT_ABORTED = _pisock.PI_ERR_PROT_ABORTED
 PI_ERR_PROT_INCOMPATIBLE = _pisock.PI_ERR_PROT_INCOMPATIBLE
