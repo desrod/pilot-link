@@ -777,6 +777,7 @@ AC_OUTPUT([
 	bindings/Makefile
 	bindings/Perl/Makefile.PL
 	bindings/Python/setup.py
+	bindings/Python/setup-standalone.py
 	bindings/Java/Makefile
 	bindings/Tcl/Makefile
 	doc/Makefile
