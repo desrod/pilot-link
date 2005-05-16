@@ -830,18 +830,6 @@ installexit(void)
 	}
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_socket
- *
- * Summary:     Create a local connection endpoint
- *
- * Parameters:  domain, type, protocol
- *
- * Returns:     socket descriptor, or -1 on error
- *
- ***********************************************************************/
 int
 pi_socket(int domain, int type, int protocol)
 {
@@ -893,17 +881,6 @@ pi_socket(int domain, int type, int protocol)
 	return ps->sd;
 }
 
-/***********************************************************************
- *
- * Function:    pi_socket_setsd
- *
- * Summary:	dups a pi_socket descriptor
- *
- * Parameters:  pi_socket_t*, pi_socket descriptor
- *
- * Returns:     0 on success, -1 otherwise
- *
- ***********************************************************************/
 int
 pi_socket_setsd(pi_socket_t *ps, int pi_sd)
 {
@@ -1018,17 +995,6 @@ pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 	return ps;
 }
 
-/***********************************************************************
- *
- * Function:    pi_connect
- *
- * Summary:     Connect to a remote server
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_connect(int pi_sd, const char *port)
 {
@@ -1045,17 +1011,6 @@ pi_connect(int pi_sd, const char *port)
 	return ps->device->connect (ps, (struct sockaddr *)&addr, sizeof(addr));
 }
 
-/***********************************************************************
- *
- * Function:    pi_bind
- *
- * Summary:     Bind address to a local socket
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_bind(int pi_sd, const char *port)
 {
@@ -1077,17 +1032,6 @@ pi_bind(int pi_sd, const char *port)
 	return bind_return;
 }
 
-/***********************************************************************
- *
- * Function:    pi_listen
- *
- * Summary:     Wait for an incoming connection
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_listen(int pi_sd, int backlog)
 {
@@ -1101,38 +1045,17 @@ pi_listen(int pi_sd, int backlog)
 	return ps->device->listen (ps, backlog);
 }
 
-/***********************************************************************
- *
- * Function:    pi_accept
- *
- * Summary:     Wait forever for an incoming connection
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_accept(int pi_sd, struct sockaddr *addr, size_t *addrlen)
 {
 	return pi_accept_to(pi_sd, addr, addrlen, 0);
 }
 
-/***********************************************************************
- *
- * Function:    pi_accept_to
- *
- * Summary:     Accept an incoming connection (with timeout)
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_accept_to(int pi_sd, struct sockaddr *addr, size_t *addrlen, int timeout)
 {
 	pi_socket_t *ps;
+	int result;
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1144,20 +1067,13 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, size_t *addrlen, int timeout)
 
 	ps->accept_to = timeout;
 
-	return ps->device->accept(ps, addr, addrlen);
+	result = ps->device->accept(ps, addr, addrlen);
+	if (result < 0)
+		pi_close(pi_sd);
+
+	return result;
 }
 
-/***********************************************************************
- *
- * Function:    pi_getsockopt
- *
- * Summary:     Get a socket option
- *
- * Parameters:  None
- *
- * Returns:     0 on success, negative value on failure
- *
- ***********************************************************************/
 int
 pi_getsockopt(int pi_sd, int level, int option_name,
 	      void *option_value, size_t *option_len)
@@ -1200,18 +1116,6 @@ pi_getsockopt(int pi_sd, int level, int option_name,
 		option_value, option_len);
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_setsockopt
- *
- * Summary:     Set a socket option
- *
- * Parameters:  None
- *
- * Returns:     0 on success, negative value on failure
- *
- ***********************************************************************/
 int
 pi_setsockopt(int pi_sd, int level, int option_name,
 	      const void *option_value, size_t *option_len)
@@ -1343,17 +1247,6 @@ pi_write(int pi_sd, const void *msg, size_t len)
 	return pi_send(pi_sd, msg, len, 0);
 }
 
-/***********************************************************************
- *
- * Function:    pi_flush
- *
- * Summary:     flush input and output buffers
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 void
 pi_flush(int pi_sd, int flags)
 {
@@ -1370,17 +1263,6 @@ pi_flush(int pi_sd, int flags)
 	ps->protocol_queue[0]->flush (ps, flags);
 }
 
-/***********************************************************************
- *
- * Function:    pi_tickle
- *
- * Summary:     Tickle a stream connection
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_tickle(int pi_sd)
 {
@@ -1442,18 +1324,6 @@ pi_tickle(int pi_sd)
 	return result;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_close
- *
- * Summary:     Close a connection, destroy the socket
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_close(int pi_sd)
 {
@@ -1561,19 +1431,6 @@ pi_getsockpeer(int pi_sd, struct sockaddr *addr, size_t *namelen)
 	return 0;
 }
 
-
-/***********************************************************************
- *
- * Function:    pi_version
- *
- * Summary:     return the device's DLP version as a unsigned short
- *		(0xMMmm with MM=major, mm=minor)
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_version(int pi_sd)
 {
@@ -1619,18 +1476,6 @@ pi_version(int pi_sd)
 	return ps->dlpversion;
 }
 
-/***********************************************************************
- *
- * Function:    pi_maxrecsize
- *
- * Summary:     return the device's maximum record size, usually 0xffff
- *		but it goes much higher with Palm OS 5+ devices
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 unsigned long
 pi_maxrecsize(int pi_sd)
 {
@@ -1671,17 +1516,6 @@ find_pi_socket(int pi_sd)
 	return result;
 }
 
-/***********************************************************************
- *
- * Function:    pi_watchdog
- *
- * Summary:
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_watchdog(int pi_sd, int newinterval)
 {
@@ -1703,17 +1537,6 @@ pi_watchdog(int pi_sd, int newinterval)
 	return 0;
 }
 
-/***********************************************************************
- *
- * Function:    pi_error
- *
- * Summary:     return the last error that occured
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_error(int pi_sd)
 {
@@ -1726,17 +1549,6 @@ pi_error(int pi_sd)
 	return ps->last_error;
 }
 
-/***********************************************************************
- *
- * Function:    pi_set_error
- *
- * Summary:     set the last error code
- *
- * Parameters:  None
- *
- * Returns:     The error code that was just set
- *
- ***********************************************************************/
 int
 pi_set_error(int pi_sd, int error_code)
 {
@@ -1754,17 +1566,6 @@ pi_set_error(int pi_sd, int error_code)
 	return error_code;
 }
 
-/***********************************************************************
- *
- * Function:    pi_palmos_error
- *
- * Summary:     return the last error returned by the handheld
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 int
 pi_palmos_error(int pi_sd)
 {
@@ -1777,18 +1578,6 @@ pi_palmos_error(int pi_sd)
 	return ps->palmos_error;
 }
 
-/***********************************************************************
- *
- * Function:    pi_set_palmos_error
- *
- * Summary:     set the last Palm OS error code
- *
- * Parameters:  sd	-->			socket
- *				erorr_code	-->	Palm OS error code
- *
- * Returns:     the error code that was just set
- *
- ***********************************************************************/
 int
 pi_set_palmos_error(int pi_sd, int error_code)
 {
@@ -1801,17 +1590,6 @@ pi_set_palmos_error(int pi_sd, int error_code)
 	return error_code;
 }
 
-/***********************************************************************
- *
- * Function:    pi_reset_errors
- *
- * Summary:     reset the last error and the last Palm OS error
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
 void
 pi_reset_errors(int pi_sd)
 {
@@ -1824,17 +1602,6 @@ pi_reset_errors(int pi_sd)
 		errno = ESRCH;
 }
 
-/***********************************************************************
- *
- * Function:    pi_socket_connected
- *
- * Summary:     returns != 0 if the socket is connected
- *
- * Parameters:  None
- *
- * Returns:     0 for not connected, != 0 otherwise
- *
- ***********************************************************************/
 int
 pi_socket_connected(int pi_sd)
 {
