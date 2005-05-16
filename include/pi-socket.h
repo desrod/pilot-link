@@ -63,17 +63,17 @@ extern "C" {
 #include "pi-buffer.h"
 #include "pi-error.h"		/* For PI_ERR */
 
-#define PI_AF_PILOT             0x00
+#define PI_AF_PILOT	0x00
 
-#define PI_SOCK_STREAM		0x0010
-#define PI_SOCK_RAW		0x0030
+#define PI_SOCK_STREAM	0x0010	/**< Stream socket type, for pi_socket() function */
+#define PI_SOCK_RAW	0x0030	/**< Raw socket type, for pi_socket() function */
 
-#define PI_CMD_CMP		0x01
-#define PI_CMD_NET		0x02
-#define PI_CMD_SYS		0x03
+#define PI_CMD_CMP	0x01	/**< CMD command protocol type (for serial connections) */
+#define PI_CMD_NET	0x02	/**< NET protocol type (for inet and USB connections) */
+#define PI_CMD_SYS	0x03	/**< SYS protocol type (low-level, debugger connections) */
 
-#define PI_MSG_PEEK		0x01
-#define	PI_MSG_REALLOC		0x02
+#define PI_MSG_PEEK	0x01	/**< Use this flag with pi_recv() to 'peek' at the incoming data (will not be removed from input buffer) */
+/*#define	PI_MSG_REALLOC		0x02*/  /* deprecated (wasn't used) */
 
 /** @brief Protocol types */
 enum PiProtocolTypes {
@@ -200,11 +200,38 @@ typedef struct pi_socket_list
 	 */
 	extern int pi_socket PI_ARGS((int domain, int type, int protocol));
 
+	/** @brief Assign a new socket descriptor
+	 *
+	 * Assign a new socket descriptor to the socket. On platforms that
+	 * support it, this function reuses the socket's existing descriptor
+	 * after closing it first. In all cases (whether the sd changed or
+	 * not), you don't have to close the new @a pi_sd you passed.
+	 *
+	 * @param ps Socket structure
+	 * @param pi_sd New socket descriptor
+	 * @return The socket structure's new socket descriptor value or negative on error
+	 */
 	extern int pi_socket_setsd PI_ARGS((pi_socket_t *ps, int pi_sd));
 
+	/** @brief Get socket name
+	 *
+	 * Structure needs to have its @a laddr member initialized and valid
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param remote_addr Will receive the local name
+	 * @param namelen On input, the size allocated to receive the name. On output, the actual name length
+	 * @return 0 on success, negative on error
+	 */
 	extern int pi_getsockname
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen));
 
+	/** @brief Get a socket's remote address
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param remote_addr Will receive the remote address/name
+	 * @param namelen On input, maximum name/address length. On output, actual length
+	 * @return 0 on success, negative on error.
+	 */
 	extern int pi_getsockpeer
 	    PI_ARGS((int pi_sd, struct sockaddr * remote_addr, size_t *namelen));
 
@@ -281,6 +308,14 @@ typedef struct pi_socket_list
 	extern int pi_socket_connected
 		PI_ARGS((int pi_sd));
 
+	/** @brief Connect to a remote server
+	 *
+	 * Connect to a remote server.
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param port Port string (see pi_bind() description)
+	 * @return Negative on error
+	 */
 	extern PI_ERR pi_connect
 	    PI_ARGS((int pi_sd, const char *port));
 
@@ -303,7 +338,7 @@ typedef struct pi_socket_list
 	/** @brief Wait for a handheld
 	 *
 	 * This function calls pi_accept_to() with a timeout of 0
-	 * (wait forever)
+	 * (wait forever). If an error occurs, the socket is closed.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param remote_addr Unused. Pass NULL.
@@ -317,7 +352,8 @@ typedef struct pi_socket_list
 	/** @brief Wait for a handheld
 	 *
 	 * Wait for a device to connect on the port the socket has been
-	 * bound to (using pi_bind()).
+	 * bound to (using pi_bind()). If an error or timeout occurs, the socket
+	 * is closed.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param remote_addr Unused. Pass NULL.
@@ -343,13 +379,74 @@ typedef struct pi_socket_list
 
 /** @name Low-level data transfers */
 /*@{*/
+	/** @brief Send data on the given socket
+	 *
+	 * Perform a synchronous write on the given socket. Writes are
+	 * performed through the protocol stack. Therefore, the data you
+	 * send will be properly encapsulated in a packet conforming to
+	 * the connected protocol (i.e. NET protocol if you're talking to
+	 * a network or USB device). Usually, you won't send data directly,
+	 * but rather use the dlp_XXX functions to talk to the device.
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param msg Ptr to the data to send
+	 * @param len Size of the data to send
+	 * @param flags No write flag defined at this time
+	 * @return Number of bytes sent. Negative on error.
+	 */
 	extern int pi_send
 	    PI_ARGS((int pi_sd, PI_CONST void *msg, size_t len, int flags));
+
+	/** @brief Wait for incoming data from the device
+	 *
+	 * Wait for data sent by the device. Note that this function goes
+	 * through the protocol stack, therefore it waits for well-formed
+	 * packets and decodes them to extract the data. Usually, you won't
+	 * use this function directly. Instead, you'll use the dlp_XXX functions
+	 * to talk to the device. Remember that you need to pass a valid
+	 * pi_buffer_t (for example one allocated with pi_buffer_new()).
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param msg Ptr to a valid pi_buffer_t buffer that will contain the received data
+	 * @param len Size of the data we want to read
+	 * @param flags Read flags. Use #PI_MSG_PEEK to leave data in the input buffer.
+	 * @return Number of bytes read. Negative on error.
+	 */
 	extern ssize_t pi_recv
 	    PI_ARGS((int pi_sd, pi_buffer_t *msg, size_t len, int flags));
 
+	/** @brief Wait for incoming data from the device
+	 *
+	 * Alias for the pi_recv() function.
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param msg Ptr to a valid pi_buffer_t buffer that will contain the received data
+	 * @param len Size of the data we want to read
+	 * @return Number of bytes read. Negative on error.
+	 */
 	extern ssize_t pi_read PI_ARGS((int pi_sd, pi_buffer_t *msg, size_t len));
+
+	/** @brief Write data on the given socket
+	 *
+	 * Alias for the pi_send() function.
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param databuf Ptr to the data to send
+	 * @param datasize Size of the data to send
+	 * @return Number of bytes sent. Negative on error.
+	 */
 	extern ssize_t pi_write PI_ARGS((int pi_sd, PI_CONST void *databuf, size_t datasize));
+
+	/** @brief Flush input and/or output bytes
+	 *
+	 * Flush incoming and/or outgoing data. Most device implementations currently
+	 * only support flushing the bytes in the incoming data buffer, as most writes
+	 * are synchronous.
+	 *
+	 * @param pi_sd Socket descriptor
+	 * @param flags Mask with valus #PI_FLUSH_INPUT, #PI_FLUSH_OUTUT.
+	 * @return Negative on error
+	 */
 	extern void pi_flush PI_ARGS((int pi_sd, int flags));
 /*@}*/
 
