@@ -1000,6 +1000,7 @@ pi_connect(int pi_sd, const char *port)
 {
 	pi_socket_t *ps;
 	struct 	pi_sockaddr addr;
+	int result;
 
 	ps = pi_devsocket(pi_sd, port, &addr);
 	if (!ps)
@@ -1008,7 +1009,11 @@ pi_connect(int pi_sd, const char *port)
 	/* Build the protocol queue */
 	protocol_queue_build (ps, 0);
 
-	return ps->device->connect (ps, (struct sockaddr *)&addr, sizeof(addr));
+	result = ps->device->connect (ps, (struct sockaddr *)&addr, sizeof(addr));
+	if (result < 0)
+		pi_close(pi_sd);
+
+	return result;
 }
 
 int

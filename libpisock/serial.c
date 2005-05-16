@@ -65,7 +65,7 @@ static int pi_serial_setsockopt(pi_socket_t *ps, int level,
 			size_t *option_len);
 static int pi_serial_close(pi_socket_t *ps);
 
-int pi_socket_init(pi_socket_t *ps);
+extern int pi_socket_init(pi_socket_t *ps);
 
 
 /* Protocol Functions */
@@ -335,7 +335,6 @@ pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr,
 	return 0;
 
 fail:
-	pi_close (ps->sd);
 	return err;
 }
 
@@ -557,13 +556,11 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 
 	data->timeout = 0;
 	ps->command = 0;
-	ps->state 	= PI_SOCK_CONAC;
+	ps->state = PI_SOCK_CONAC;
 
 	return ps->sd;
 
 fail:
-	if (ps)
-		pi_close (ps->sd);
 	return err;
 }
 

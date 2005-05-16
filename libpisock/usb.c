@@ -46,12 +46,12 @@
 pi_protocol_t *pi_usb_protocol_dup (pi_protocol_t *prot);
 
 static int pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr,
-			     size_t addrlen);
+				 size_t addrlen);
 static int pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr,
 			  size_t addrlen);
 static int pi_usb_listen(pi_socket_t *ps, int backlog);
 static int pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr,
-			    size_t *addrlen);
+				size_t *addrlen);
 static int pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
 				void *option_value, size_t *option_len);
 static int pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name,
@@ -207,22 +207,19 @@ pi_usb_device (int type)
 		if (data == NULL) {
 			free(dev);
 			dev = NULL;
+		} else {
+			dev->free 		= pi_usb_device_free;
+			dev->protocol 		= pi_usb_protocol;
+			dev->bind 		= pi_usb_bind;
+			dev->listen 		= pi_usb_listen;
+			dev->accept 		= pi_usb_accept;
+			dev->connect 		= pi_usb_connect;
+			dev->close 		= pi_usb_close;
+
+			memset(data, 0, sizeof(struct pi_usb_data));
+			pi_usb_impl_init (&data->impl);
+			dev->data 		= data;
 		}
-	}
-
-	if (dev != NULL && data != NULL) {
-
-		dev->free 		= pi_usb_device_free;
-		dev->protocol 		= pi_usb_protocol;
-		dev->bind 		= pi_usb_bind;
-		dev->listen 		= pi_usb_listen;
-		dev->accept 		= pi_usb_accept;
-		dev->connect 		= pi_usb_connect;
-		dev->close 		= pi_usb_close;
-
-		memset(data, 0, sizeof(struct pi_usb_data));
-		pi_usb_impl_init (&data->impl);
-		dev->data 		= data;
 	}
 
 	return dev;
@@ -259,13 +256,13 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 
 	if (ps->type == PI_SOCK_STREAM) {
 		switch (ps->cmd) {
-		case PI_CMD_CMP:
-			break;
+			case PI_CMD_CMP:
+				break;
 
-		case PI_CMD_NET:
-			if ((result = net_tx_handshake(ps)) < 0)
-				return result;
-			break;
+			case PI_CMD_NET:
+				if ((result = net_tx_handshake(ps)) < 0)
+					return result;
+				break;
 		}
 	}
 	ps->state = PI_SOCK_CONIN;
@@ -321,7 +318,6 @@ static int
 pi_usb_listen(pi_socket_t *ps, int backlog)
 {
 	ps->state = PI_SOCK_LISTN;
-
 	return 0;
 }
 
@@ -352,22 +348,21 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	 * If we don't get any data the device may still be there.
 	 * We try to wake it up by sending an empty dummy packet.
 	 */
-    result = data->impl.poll(ps, 1000);
-    LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, poll result: %d.\n", __FILE__, __LINE__, result));
+	result = data->impl.poll(ps, 1000);
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, poll result: %d.\n", __FILE__, __LINE__, result));
 
-    if (result <= 0) {
-        char buf[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };
-        data->impl.write(ps, buf, sizeof (buf), 1000);
+	if (result <= 0) {
+		char buf[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };
+		data->impl.write(ps, buf, sizeof (buf), 1000);
 
 		if (timeout)
 			timeout -= 1000;
-    }
+	}
 #endif
 
-    result = data->impl.poll(ps, timeout);
-    if (result <= 0)
-        goto fail;
-
+	result = data->impl.poll(ps, timeout);
+	if (result <= 0)
+		goto fail;
 
 	pi_socket_init(ps);
 
@@ -392,16 +387,13 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 
 	data->timeout = 0;
 	ps->command = 0;
-	ps->state 	= PI_SOCK_CONAC;
+	ps->state = PI_SOCK_CONAC;
 
 	return ps->sd;
 
 fail:
-	if (ps)
-		pi_close(ps->sd);
 	return result;
 }
-
 
 /***********************************************************************
  *
@@ -416,20 +408,20 @@ fail:
  ***********************************************************************/
 static int
 pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
-		     void *option_value, size_t *option_len)
+			 void *option_value, size_t *option_len)
 {
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
 	switch (option_name) {
-	    case PI_DEV_TIMEOUT:
-		    if (*option_len != sizeof (data->timeout)) {
+		case PI_DEV_TIMEOUT:
+			if (*option_len != sizeof (data->timeout)) {
 				errno = EINVAL;
 				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
-		    }
-		    memcpy (option_value, &data->timeout,
-			    sizeof (data->timeout));
-		    *option_len = sizeof (data->timeout);
-		    break;
+			}
+			memcpy (option_value, &data->timeout,
+				sizeof (data->timeout));
+			*option_len = sizeof (data->timeout);
+			break;
 	}
 
 	return 0;
@@ -449,19 +441,19 @@ pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
  ***********************************************************************/
 static int
 pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name,
-		     const void *option_value, size_t *option_len)
+			 const void *option_value, size_t *option_len)
 {
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
 	switch (option_name) {
-	    case PI_DEV_TIMEOUT:
-		    if (*option_len != sizeof (data->timeout)) {
+		case PI_DEV_TIMEOUT:
+			if (*option_len != sizeof (data->timeout)) {
 				errno = EINVAL;
 				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
-		    }
-		    memcpy (&data->timeout, option_value,
-			    sizeof (data->timeout));
-		    break;
+			}
+			memcpy (&data->timeout, option_value,
+				sizeof (data->timeout));
+			break;
 	}
 
 	return 0;
@@ -514,7 +506,6 @@ pi_usb_close(pi_socket_t *ps)
  * like to talk to.
  *
  */
-
 pi_usb_dev_t known_devices[] = {
 	/* Sony */
 	{
@@ -846,7 +837,7 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
 	}
 
-    return 0;
+	return 0;
 }
 
 static int
