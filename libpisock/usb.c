@@ -342,7 +342,7 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	data->timeout = timeout = ps->accept_to * 1000;
 
 	/* Wait for data */
-#ifdef LINUX
+#ifdef linux
 	/*
 	 * Evil kludge for what appears to be a linux USB stack bug.
 	 * If we don't get any data the device may still be there.
