@@ -1403,9 +1403,9 @@ u_close(struct pi_socket *ps)
 	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_close(ps=%p c=%p\n",ps,c));
 	if (c && change_refcount(c, 1) > 0) 
 	{
+		c->opened = 0;		/* set opened to 0 so that other threads don't try to acquire this connection, as it is on the way out */
 		c->ps = NULL;
-		c->opened = 0;
-		change_refcount(c, -2);     /* decrement current refcount + disconnect */
+		change_refcount(c, -2);	/* decrement current refcount + disconnect */
 	}
 	return close(ps->sd);
 }
