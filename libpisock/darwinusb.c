@@ -95,6 +95,16 @@
 #endif
 /*#undef DEBUG_USB*/        /* comment out to leave debug enabled */
 
+/* Macro to log more information when debugging USB. Note that this is for
+ * my own use, mostly, as the info logged is primarily being used to
+ * debug complex thread/usb issues
+ */
+#ifdef DEBUG_USB
+	#define ULOG(a) LOG(a)
+#else
+	#define ULOG(a) do {} while(0)
+#endif
+
 /* These values are somewhat tricky.  Priming reads with a size of exactly one
  * USB packet works best (no timeouts).  Probably best to leave these as they are.
  */
@@ -125,7 +135,7 @@ static pthread_t usb_thread = 0;
 typedef struct usb_connection_t
 {
 	struct usb_connection_t *next;		/* linked list */
-	struct pi_socket *ps;				/* the pilot-link socket we're associated with (if already paired) */
+	struct pi_socket *ps;			/* the pilot-link socket we're associated with (if already paired) */
 
 	/* refcount management */
 	pthread_mutex_t ref_count_mutex;
@@ -135,19 +145,19 @@ typedef struct usb_connection_t
 	IOUSBDeviceInterface **device;		/* kept for CLOSE_NOTIFICATION */
 	io_object_t device_notification;	/* for device removal */
 
-	int opened;
-	int read_pending;                   /* set to 1 when a prime_read() has been issued and the read_completion() has not been called yet */
-	int in_pipe_ref;					/* pipe for reads */
-	int out_pipe_ref;					/* pipe for writes */
+	int opened;				/* set to != 0 if the connection is opened */
+	int read_pending;			/* set to 1 when a prime_read() has been issued and the read_completion() has not been called yet */
+	int in_pipe_ref;			/* pipe for reads */
+	int out_pipe_ref;			/* pipe for writes */
 
 	/* these provide hints about the size of the next read */
-	int auto_read_size;					/* if != 0, prime reads to the input pipe to get data permanently */
-	int read_ahead_size;				/* when waiting for big chunks of data, used as a hint to make bigger read requests */
-	int last_read_ahead_size;			/* also need this to properly compute the size of the next read */
+	int auto_read_size;			/* if != 0, prime reads to the input pipe to get data permanently */
+	int read_ahead_size;			/* when waiting for big chunks of data, used as a hint to make bigger read requests */
+	int last_read_ahead_size;		/* also need this to properly compute the size of the next read */
 
 	pthread_mutex_t read_queue_mutex;
 	pthread_cond_t read_queue_data_avail_cond;
-	char *read_queue;					/* stores completed reads, grows by 64k chunks */
+	char *read_queue;			/* stores completed reads, grows by 64k chunks */
 	size_t read_queue_size;
 	size_t read_queue_used;
 
@@ -159,10 +169,10 @@ static usb_connection_t *usb_connections = NULL;	/* linked list of active connec
 /* USB control requests we send to the devices
  * Got them from linux/drivers/usb/serial/visor.h
  */
-#define	GENERIC_REQUEST_BYTES_AVAILABLE			0x01
-#define	GENERIC_CLOSE_NOTIFICATION				0x02
-#define VISOR_GET_CONNECTION_INFORMATION		0x03
-#define PALM_GET_EXT_CONNECTION_INFORMATION		0x04
+#define	GENERIC_REQUEST_BYTES_AVAILABLE		0x01
+#define	GENERIC_CLOSE_NOTIFICATION		0x02
+#define VISOR_GET_CONNECTION_INFORMATION	0x03
+#define PALM_GET_EXT_CONNECTION_INFORMATION	0x04
 
 /* Structures defining the info a device returns
  * Got them from linux/drivers/usb/serial/visor.h
@@ -178,14 +188,14 @@ typedef struct
 } visor_connection_info;
 
 /* struct visor_connection_info.connection[x].port defines: */
-#define VISOR_ENDPOINT_1					0x01
-#define VISOR_ENDPOINT_2					0x02
+#define VISOR_ENDPOINT_1			0x01
+#define VISOR_ENDPOINT_2			0x02
 
 /* struct visor_connection_info.connection[x].port_function_id defines: */
-#define VISOR_FUNCTION_GENERIC				0x00
-#define VISOR_FUNCTION_DEBUGGER				0x01
-#define VISOR_FUNCTION_HOTSYNC				0x02
-#define VISOR_FUNCTION_CONSOLE				0x03
+#define VISOR_FUNCTION_GENERIC			0x00
+#define VISOR_FUNCTION_DEBUGGER			0x01
+#define VISOR_FUNCTION_HOTSYNC			0x02
+#define VISOR_FUNCTION_CONSOLE			0x03
 #define VISOR_FUNCTION_REMOTE_FILE_SYS		0x04
 
 typedef struct
@@ -203,10 +213,10 @@ typedef struct
 } palm_ext_connection_info;
 
 /* Some vendor and product codes we use */
-#define	VENDOR_SONY					0x054c
-#define	VENDOR_HANDSPRING			0x082d
-#define	VENDOR_PALMONE				0x0830
-#define	VENDOR_TAPWAVE				0x12ef
+#define	VENDOR_SONY			0x054c
+#define	VENDOR_HANDSPRING		0x082d
+#define	VENDOR_PALMONE			0x0830
+#define	VENDOR_TAPWAVE			0x12ef
 #define PRODUCT_PALMCONNECT_USB		0x0080
 #define	PRODUCT_HANDSPRING_VISOR	0x0100
 #define PRODUCT_SONY_CLIE_3_5		0x0038
@@ -297,6 +307,7 @@ static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, i
 static IOReturn	decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
 
+
 /***************************************************************************/
 /*                                                                         */
 /*                 GLOBAL DARWINUSB OPTION FOR CLIENT CODE                 */
@@ -376,7 +387,7 @@ connection_for_socket(pi_socket_t *ps)
 
 	pthread_mutex_lock(&usb_connections_mutex);
 	c = usb_connections;
-	while (c && c->ps != NULL)
+	while (c && (c->ps != NULL || c->opened == 0))		/* skip connections which are being disposed of (opened=0) */
 		c = c->next;
 	if (change_refcount(c, +1) <= 0)
 		c = NULL;
@@ -396,9 +407,6 @@ change_refcount(usb_connection_t *c, int increment)
 	 * zero, call the stop_listening() function
 	 */
 	int rc;
-#if DEBUG_USB
-	//LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: change_refcount(%p,%d)\n",c,increment));
-#endif
 	if (c == NULL)
 		return 0;
 	if (pthread_mutex_lock(&c->ref_count_mutex) != 0)
@@ -507,7 +515,7 @@ stop_listening(usb_connection_t *c)
 		 * if called from device_notification()
 		 */
 		IOObjectRelease (c->device_notification);
-		c->device_notification = NULL;
+		c->device_notification = 0;
 	}
 
 	if (was_open && c->device)
@@ -544,7 +552,7 @@ usb_thread_run(void *foo)
 
 		/* signal main thread that init was successful */
 		pthread_mutex_lock(&usb_thread_ready_mutex);
-		pthread_cond_signal(&usb_thread_ready_cond);
+		pthread_cond_broadcast(&usb_thread_ready_cond);
 		pthread_mutex_unlock(&usb_thread_ready_mutex);
 
 		CFRunLoopRun();
@@ -556,7 +564,7 @@ usb_thread_run(void *foo)
 		if (usb_device_added_iter)
 		{
 			IOObjectRelease (usb_device_added_iter);
-			usb_device_added_iter = NULL;
+			usb_device_added_iter = 0;
 		}
 
 		if (usb_notify_port)
@@ -669,9 +677,7 @@ device_added (void *refCon, io_iterator_t iterator)
 		kr = (*dev)->GetDeviceProduct (dev, &product);
 		if (accepts_device(vendor, product) == 0)
 		{
-#ifdef DEBUG_USB
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: not accepting device (vendor=0x%04x product=0x%04x)\n", vendor, product));
-#endif
+			ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: not accepting device (vendor=0x%04x product=0x%04x)\n", vendor, product));
 			(*dev)->Release(dev);
 			IOObjectRelease (ioDevice);
 			continue;
@@ -693,8 +699,8 @@ device_added (void *refCon, io_iterator_t iterator)
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, (kr == kIOReturnNotReady)
-												?	"darwinusb: device not ready to synchonize\n"
-												:	"darwinusb: unable to configure device (kr=0x%08x)\n", kr));
+				?	"darwinusb: device not ready to synchonize\n"
+				:	"darwinusb: unable to configure device (kr=0x%08x)\n", kr));
 			(*dev)->USBDeviceClose (dev);
 			(*dev)->Release (dev);
 			IOObjectRelease (ioDevice);
@@ -858,9 +864,7 @@ configure_device(IOUSBDeviceInterface **di,
 		unsigned char ba[2];
 		kr = control_request (di, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, &ba[0] , 2);
 		if (kr != kIOReturnSuccess)
-		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", kr));
-		}
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
 	}
 
@@ -1077,9 +1081,7 @@ control_request(IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, vo
 
 	kr = (*dev)->DeviceRequest (dev, &req);
 
-#ifdef DEBUG_USB
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: control_request(0x%02x) wLenDone=%d kr=0x%08lx\n", (int)request, req.wLenDone, kr));
-#endif
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: control_request(0x%02x) wLenDone=%d kr=0x%08lx\n", (int)request, req.wLenDone, kr));
 
 	if (pReply && !pData)
 		free (pReply);
@@ -1209,7 +1211,7 @@ device_notification(usb_connection_t *c, io_service_t service, natural_t message
 
 	if (messageType == kIOMessageServiceIsTerminated && c != NULL)
 	{
-		c->opened = 0;		// so that stop_listening() does'nt try to send the control_request
+		c->opened = 0;		/* so that stop_listening() does'nt try to send the control_request */
 		if (change_refcount(c,-1) > 0)
 		{
 			/* In case the reading thread is waiting for data,
@@ -1217,8 +1219,9 @@ device_notification(usb_connection_t *c, io_service_t service, natural_t message
 			 * since darwin_usb_read tests usb.opened, it will
 			 * gracefully exit during a data wait.
 			 */
+			ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: device_notification signaling c->read_queue_data_avail_cond for c=%p\n",c));
 			pthread_mutex_lock (&c->read_queue_mutex);
-			pthread_cond_broadcast (&c->read_queue_data_avail_cond);
+			pthread_cond_signal (&c->read_queue_data_avail_cond);
 		    	pthread_mutex_unlock (&c->read_queue_mutex);
 		}
 	}
@@ -1229,9 +1232,7 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 {
 	size_t bytes_read = (size_t) arg0;
 
-#ifdef DEBUG_USB
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read_completion(c=%p, result=0x%08lx, bytes_read=%d)\n", c, (long)result, bytes_read));
-#endif
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read_completion(c=%p, result=0x%08lx, bytes_read=%d)\n", c, (long)result, bytes_read));
 	if (!c->opened)
 	{
 	    	change_refcount(c, -1);
@@ -1263,7 +1264,8 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 		{
 			memcpy(c->read_queue + c->read_queue_used, c->read_buffer, bytes_read);
 			c->read_queue_used += bytes_read;
-			pthread_cond_broadcast(&c->read_queue_data_avail_cond);
+			ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: signaling c->read_queue_data_avail_cond for c=%p\n",c));
+			pthread_cond_signal(&c->read_queue_data_avail_cond);
 		}
 		else
 		{
@@ -1272,6 +1274,8 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 		}
 	}
 
+	pthread_mutex_unlock(&c->read_queue_mutex);
+
 	if (result != kIOReturnAborted && c->opened && usb_run_loop)
 	{
 		if (result != kIOReturnSuccess)
@@ -1279,8 +1283,7 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 		prime_read(c);
 	}
 
-	pthread_mutex_unlock(&c->read_queue_mutex);
-    change_refcount(c, -1);
+	change_refcount(c, -1);
 }
 
 static int
@@ -1307,18 +1310,14 @@ prime_read(usb_connection_t *c)
 		else if (c->last_read_ahead_size <= 0)
 			c->last_read_ahead_size = 64;			// USB packet size
 
-#ifdef DEBUG_USB
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read(%p) for %d bytes\n", c, c->last_read_ahead_size));
-#endif
+		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read(%p) for %d bytes\n", c, c->last_read_ahead_size));
 
 		IOReturn kr = (*c->interface)->ReadPipeAsync (c->interface, c->in_pipe_ref,
 				c->read_buffer, c->last_read_ahead_size, (IOAsyncCallback1)&read_completion, (void *)c);
 
 		if (kr == kIOUSBPipeStalled)
 		{
-#ifdef DEBUG_USB
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stalled -- clearing stall and re-priming\n"));
-#endif
+			ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stalled -- clearing stall and re-priming\n"));
 			(*c->interface)->ClearPipeStall (c->interface, c->in_pipe_ref);
 			kr = (*c->interface)->ReadPipeAsync (c->interface, c->in_pipe_ref,
 					c->read_buffer, c->last_read_ahead_size, (IOAsyncCallback1)&read_completion, (void *)c);
@@ -1401,9 +1400,11 @@ static int
 u_close(struct pi_socket *ps)
 {
 	usb_connection_t *c = ((pi_usb_data_t *)ps->device->data)->ref;
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_close(ps=%p c=%p\n",ps,c));
 	if (c && change_refcount(c, 1) > 0) 
 	{
 		c->ps = NULL;
+		c->opened = 0;
 		change_refcount(c, -2);     /* decrement current refcount + disconnect */
 	}
 	return close(ps->sd);
@@ -1413,25 +1414,25 @@ static int
 u_poll(struct pi_socket *ps, int timeout)
 {
 	usb_connection_t *c = connection_for_socket(ps);
+	struct timespec to;
+
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll(ps=%p c=%p, timeout=%d)\n",ps,c,timeout));
+
+	if (timeout)
+	{
+		to.tv_sec = timeout / 1000;
+		to.tv_nsec = (timeout % 1000) * 1000 * 1000;
+	}
+
 	if (c == NULL)
 	{
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> waiting for a connection to come up\n"));
 		pthread_mutex_lock(&usb_connections_mutex);
 		if (timeout)
 		{
-			struct timeval now;
-			struct timespec when;
-
-			gettimeofday(&now, NULL);
-			when.tv_sec = now.tv_sec + timeout / 1000;
-			when.tv_nsec = now.tv_usec + (timeout % 1000) * 1000 * 1000;
-			if (when.tv_nsec >= 1000000000)
+			if (pthread_cond_timedwait_relative_np(&usb_connection_added_cond, &usb_connections_mutex, &to) == ETIMEDOUT)
 			{
-				when.tv_nsec -= 1000000000;
-				when.tv_sec++;
-			}
-
-			if (pthread_cond_timedwait(&usb_connection_added_cond, &usb_connections_mutex, &when) == ETIMEDOUT)
-			{
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> connection wait timed out\n"));
 				pthread_mutex_unlock(&usb_connections_mutex);
 				return PI_ERR_SOCK_TIMEOUT;
 			}
@@ -1441,6 +1442,9 @@ u_poll(struct pi_socket *ps, int timeout)
 		pthread_mutex_unlock(&usb_connections_mutex);
 
 		c = connection_for_socket(ps);
+
+		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> end of wait, c=%p\n",c));
+
 		if (c == NULL)
 			return PI_ERR_SOCK_DISCONNECTED;
 	}
@@ -1449,22 +1453,12 @@ u_poll(struct pi_socket *ps, int timeout)
 	int available = c->read_queue_used;
 	if (!available)
 	{
+		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> waiting data to be available for c=%p\n",c));
 		if (timeout)
 		{
-			struct timeval now;
-			struct timespec when;
-
-			gettimeofday(&now, NULL);
-			when.tv_sec = now.tv_sec + timeout / 1000;
-			when.tv_nsec = now.tv_usec + (timeout % 1000) * 1000 * 1000;
-			if (when.tv_nsec >= 1000000000)
+			if (pthread_cond_timedwait_relative_np(&c->read_queue_data_avail_cond, &c->read_queue_mutex, &to) == ETIMEDOUT)
 			{
-				when.tv_nsec -= 1000000000;
-				when.tv_sec++;
-			}
-
-			if (pthread_cond_timedwait(&c->read_queue_data_avail_cond, &c->read_queue_mutex, &when) == ETIMEDOUT)
-			{
+				ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> data wait timed out\n"));
 				pthread_mutex_unlock(&c->read_queue_mutex);
 				return PI_ERR_SOCK_TIMEOUT;
 			}
@@ -1479,10 +1473,13 @@ u_poll(struct pi_socket *ps, int timeout)
 	}
 	pthread_mutex_unlock(&c->read_queue_mutex);
 	change_refcount(c, -1);
+
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> end, c=%p, available=%d\n",c,available));
+
 	return available;
 }
 
-static int
+static ssize_t
 u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 {
 	usb_connection_t *c = ((pi_usb_data_t *)ps->device->data)->ref;
@@ -1495,9 +1492,7 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 		return PI_ERR_SOCK_DISCONNECTED;
 	}
 
-#ifdef DEBUG_USB
-    LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_write(ps=%p, c=%p, len=%d, flags=%d)\n",ps,c,(int)len,flags));
-#endif
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_write(ps=%p, c=%p, len=%d, flags=%d)\n",ps,c,(int)len,flags));
 
 	IOReturn kr = (*c->interface)->WritePipe(c->interface, c->out_pipe_ref, (void *)buf, len);
 	if (kr != kIOReturnSuccess) {
@@ -1509,7 +1504,7 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 	return (kr != kIOReturnSuccess) ? 0 : len;
 }
 
-static int
+static ssize_t
 u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
@@ -1533,8 +1528,8 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 #ifdef DEBUG_USB
-    struct timeval startTime, endTime;
-    gettimeofday(&startTime, NULL);
+	struct timeval startTime, endTime;
+	gettimeofday(&startTime, NULL);
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_read(ps=%p, c=%p, len=%d, timeout=%d, flags=%d)\n", ps, c, (int)len, timeout, flags));
 #endif
 
@@ -1546,7 +1541,7 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	if (c->read_queue_used < len)
 	{
 		struct timeval now;
-		struct timespec when, nownow;
+		struct timespec when;
 		gettimeofday(&now, NULL);
 		when.tv_sec = now.tv_sec + timeout / 1000;
 		when.tv_nsec = now.tv_usec + (timeout % 1000) * 1000 * 1000;
@@ -1555,25 +1550,17 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 			when.tv_nsec -= 1000000000;
 			when.tv_sec++;
 		}
-
 		do
 		{
 			/* next prime_read() will use a bigger read request */
 			c->read_ahead_size = len - c->read_queue_used - c->last_read_ahead_size;
-
 			if (timeout)
 			{
-				gettimeofday(&now, NULL);
-				TIMEVAL_TO_TIMESPEC(&now, &nownow);
-				if ((nownow.tv_sec == when.tv_sec ? (nownow.tv_nsec > when.tv_nsec) : (nownow.tv_sec > when.tv_sec)))
-					break;
 				if (pthread_cond_timedwait(&c->read_queue_data_avail_cond, &c->read_queue_mutex, &when) == ETIMEDOUT)
 					break;
 			}
 			else
-			{
 				pthread_cond_wait(&c->read_queue_data_avail_cond, &c->read_queue_mutex);
-			}
 		}
 		while (c->opened && (c->read_queue_used < len || (flags == PI_MSG_PEEK && c->read_queue_used >= 256)));
 
@@ -1621,7 +1608,7 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: -> u_read complete (bytes_read=%d, remaining bytes in queue=%d) in %.06fs\n",
 	    len, c->read_queue_used,b-a));
 #endif
-	
+
 	pthread_mutex_unlock(&c->read_queue_mutex);
 	if (change_refcount(c, -1) <= 0)
 		len = PI_ERR_SOCK_DISCONNECTED;
