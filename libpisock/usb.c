@@ -354,9 +354,6 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	if (result <= 0) {
 		char buf[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };
 		data->impl.write(ps, buf, sizeof (buf), 1000);
-
-		if (timeout)
-			timeout -= 1000;
 	}
 #endif
 
