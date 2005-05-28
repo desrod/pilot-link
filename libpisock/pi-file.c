@@ -30,6 +30,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
@@ -1268,6 +1271,7 @@ pi_file_close_for_write(pi_file_t *pf)
 	
 	struct 	DBInfo *ip;
 	struct 	pi_file_entry *entp;
+	struct	stat sbuf;
 		
 	unsigned char buf[512];
 	unsigned char *p;
@@ -1280,6 +1284,18 @@ pi_file_close_for_write(pi_file_t *pf)
 			 pf->nentries));
 		return PI_ERR_FILE_INVALID;
 	}
+
+	/*
+	 * Unlink instead of overwriting.
+	 * For the case of something along the lines of:
+	 * cp -lav backup_2005_05_27 backup_2005_05_28
+	 * Then updating the new copy.
+	 * -- Warp.
+	 */
+
+	if (!stat (pf->file_name, &sbuf))
+	    if (S_ISREG(sbuf.st_mode))
+		unlink (pf->file_name);
 
 	if ((f = fopen(pf->file_name, "wb")) == NULL)
 		return PI_ERR_FILE_ERROR;
