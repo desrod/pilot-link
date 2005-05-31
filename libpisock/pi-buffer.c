@@ -33,6 +33,9 @@ pi_buffer_new (size_t capacity)
 	if (buf == NULL)
 		return NULL;
 
+	if (capacity <= 0)
+		capacity = 16;	/* allocating 0 byte is illegal - use a small value instead */
+
 	buf->data = (unsigned char *) malloc (capacity);
 	if (buf->data == NULL) {
 		free (buf);
