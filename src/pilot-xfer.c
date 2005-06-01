@@ -293,6 +293,7 @@ static int palm_creator(unsigned long creator)
 		pi_mktag('P', 'M', 'N', 'e'),   /* Ditto                */
 		pi_mktag('F', 'n', 't', '1'),   /* Hires font resource  */
 		pi_mktag('m', 'o', 'd', 'm'),
+		pi_mktag('a', '6', '8', 'k')	/* PACE cache files	*/
 	};
 
 	for (n = 0; n < sizeof(special_cases) / sizeof(long); n++)
