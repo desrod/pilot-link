@@ -1751,15 +1751,17 @@ static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
 	}
 
 	{
-        PyThreadState *save = PyEval_SaveThread();
-        result = pi_file_install(pf, sd, cardno, NULL);
-        PyEval_RestoreThread(save);
+		PyThreadState *save = PyEval_SaveThread();
+		result = pi_file_install(pf, sd, cardno, NULL);
+		PyEval_RestoreThread(save);
 	}
 
 	pi_file_close(pf);
 
-	if (result < 0)
-		return pythonWrapper_handlePiErr(sd, result);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
 
 	Py_INCREF(Py_None);
 	return Py_None;
