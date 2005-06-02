@@ -46,10 +46,10 @@ static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
 
 	sd = (int)(SWIG_As_int(obj1));
 	cardno = (int)(SWIG_As_int(obj2));
-    if (!SWIG_AsCharPtr(obj3, (char**)&path)) {
-        SWIG_arg_fail(3);
+	if (!SWIG_AsCharPtr(obj3, (char**)&path)) {
+		SWIG_arg_fail(3);
 		return NULL;
-    }
+	}
 
 	pf = pi_file_open(path);
 	if (pf == NULL) {
@@ -58,17 +58,19 @@ static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
 	}
 
 	{
-        PyThreadState *save = PyEval_SaveThread();
-        result = pi_file_install(pf, sd, cardno, NULL);
-        PyEval_RestoreThread(save);
+		PyThreadState *save = PyEval_SaveThread();
+		result = pi_file_install(pf, sd, cardno, NULL);
+		PyEval_RestoreThread(save);
 	}
 
 	pi_file_close(pf);
 
-    if (result < 0)
-		return pythonWrapper_handlePiErr(sd, result);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
 
-    Py_INCREF(Py_None);
+	Py_INCREF(Py_None);
 	return Py_None;
 }
 
@@ -92,10 +94,10 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 		return NULL;
 	sd = (int)(SWIG_As_int(obj1));
 	cardno = (int)(SWIG_As_int(obj2));
-    if (!SWIG_AsCharPtr(obj3, (char**)&dbname)) {
-        SWIG_arg_fail(3);
+	if (!SWIG_AsCharPtr(obj3, (char**)&dbname)) {
+		SWIG_arg_fail(3);
 		return NULL;
-    }
+	}
 	if (!SWIG_AsCharPtr(obj4, (char **)&path)) {
 		SWIG_arg_fail(4);
 		return NULL;
@@ -103,8 +105,10 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 
 	memset(&dbi, 0, sizeof(dbi));
 	result = dlp_FindDBByName(sd, cardno, dbname, NULL, NULL, &dbi, NULL);
-	if (result < 0)
-		return pythonWrapper_handlePiErr(sd, result);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
 
 	pf = pi_file_create(path, &dbi);
 	if (pf == NULL) {
@@ -113,19 +117,23 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 	}
 
 	{
-        PyThreadState *save = PyEval_SaveThread();
-        result = pi_file_retrieve(pf, sd, cardno, NULL);
-        PyEval_RestoreThread(save);
+		PyThreadState *save = PyEval_SaveThread();
+		result = pi_file_retrieve(pf, sd, cardno, NULL);
+		PyEval_RestoreThread(save);
 	}
 
-    if (result < 0)
-		return pythonWrapper_handlePiErr(sd, result);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
 
 	result = pi_file_close(pf);
-	if (result < 0)
-		return pythonWrapper_handlePiErr(sd, result);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
 
-    Py_INCREF(Py_None);
+	Py_INCREF(Py_None);
 	return Py_None;
 }
 

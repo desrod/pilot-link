@@ -1663,17 +1663,17 @@ static int pythonWrapper_handlePiErr(int sd, int err)
 	}
 
 	if (IS_PROT_ERR(err))
-	    PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "protocol error"));
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "protocol error"));
 	else if (IS_SOCK_ERR(err))
-        PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "socket error"));
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "socket error"));
 	else if (IS_DLP_ERR(err))
-        PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "DLP error"));
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "DLP error"));
 	else if (IS_FILE_ERR(err))
-	    PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "file error"));
-    else if (IS_GENERIC_ERR(err))
-	    PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "generic error"));
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "file error"));
+	else if (IS_GENERIC_ERR(err))
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "generic error"));
 	else
-        PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "pisock error"));
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", err, "pisock error"));
 
 	return err;
 }
@@ -1739,10 +1739,10 @@ static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
 
 	sd = (int)(SWIG_As_int(obj1));
 	cardno = (int)(SWIG_As_int(obj2));
-    if (!SWIG_AsCharPtr(obj3, (char**)&path)) {
-        SWIG_arg_fail(3);
+	if (!SWIG_AsCharPtr(obj3, (char**)&path)) {
+		SWIG_arg_fail(3);
 		return NULL;
-    }
+	}
 
 	pf = pi_file_open(path);
 	if (pf == NULL) {
@@ -1758,10 +1758,10 @@ static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
 
 	pi_file_close(pf);
 
-    if (result < 0)
+	if (result < 0)
 		return pythonWrapper_handlePiErr(sd, result);
 
-    Py_INCREF(Py_None);
+	Py_INCREF(Py_None);
 	return Py_None;
 }
 
@@ -1785,10 +1785,10 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 		return NULL;
 	sd = (int)(SWIG_As_int(obj1));
 	cardno = (int)(SWIG_As_int(obj2));
-    if (!SWIG_AsCharPtr(obj3, (char**)&dbname)) {
-        SWIG_arg_fail(3);
+	if (!SWIG_AsCharPtr(obj3, (char**)&dbname)) {
+		SWIG_arg_fail(3);
 		return NULL;
-    }
+	}
 	if (!SWIG_AsCharPtr(obj4, (char **)&path)) {
 		SWIG_arg_fail(4);
 		return NULL;
@@ -1796,8 +1796,10 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 
 	memset(&dbi, 0, sizeof(dbi));
 	result = dlp_FindDBByName(sd, cardno, dbname, NULL, NULL, &dbi, NULL);
-	if (result < 0)
-		return pythonWrapper_handlePiErr(sd, result);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
 
 	pf = pi_file_create(path, &dbi);
 	if (pf == NULL) {
@@ -1806,25 +1808,29 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 	}
 
 	{
-        PyThreadState *save = PyEval_SaveThread();
-        result = pi_file_retrieve(pf, sd, cardno, NULL);
-        PyEval_RestoreThread(save);
+		PyThreadState *save = PyEval_SaveThread();
+		result = pi_file_retrieve(pf, sd, cardno, NULL);
+		PyEval_RestoreThread(save);
 	}
 
-    if (result < 0)
-		return pythonWrapper_handlePiErr(sd, result);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
 
 	result = pi_file_close(pf);
-	if (result < 0)
-		return pythonWrapper_handlePiErr(sd, result);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
 
-    Py_INCREF(Py_None);
+	Py_INCREF(Py_None);
 	return Py_None;
 }
 
 
 
-  /*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
+  /*@/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_int PyInt_FromLong
 /*@@*/
 
@@ -2086,7 +2092,7 @@ SWIGINTERNSHORT PyObject*
 }
 
 
-  /*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
+  /*@/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_long PyInt_FromLong
 /*@@*/
 
@@ -2191,7 +2197,7 @@ SWIG_Check_unsigned_SS_short(PyObject* obj)
 }
 
 
-  /*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
+  /*@/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_unsigned_SS_short PyInt_FromLong
 /*@@*/
 
@@ -2260,7 +2266,7 @@ SWIG_Check_unsigned_SS_char(PyObject* obj)
 }
 
 
-  /*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
+  /*@/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_unsigned_SS_char PyInt_FromLong
 /*@@*/
 
@@ -2315,11 +2321,11 @@ SWIG_Check_unsigned_SS_int(PyObject* obj)
 
 
 #if UINT_MAX < LONG_MAX
-/*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
+/*@/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_unsigned_SS_int SWIG_From_long
 /*@@*/
 #else
-/*@/Volumes/UnixTools/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
+/*@/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_unsigned_SS_int SWIG_From_unsigned_SS_long
 /*@@*/
 #endif
@@ -8033,18 +8039,7 @@ static PyObject *_wrap_dlp_GetSysDateTime_(PyObject *self, PyObject *args) {
     Py_INCREF(Py_None);
     
     {
-        if (arg2) {
-            resultobj = PyInt_FromLong((unsigned long ) arg2);
-            /* Ready for Python 2.4! Right now we wrap in python. */
-            /*       struct tm *t; */
-            /*       t = localtime(arg2); */
-            /*       resultobj = PyDate_FromDateAndTime(t->tm_year, */
-            /* 				       t->tm_mon, */
-            /* 				       t->tm_mday, */
-            /* 				       t->tm_hour, */
-            /* 				       t->tm_min, */
-            /* 				       t->tm_sec); */
-        }
+        if (arg2) resultobj = PyInt_FromLong((unsigned long ) arg2);
     }
     return resultobj;
     fail:
