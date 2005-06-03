@@ -60,7 +60,7 @@ AC_DEFUN([VL_LIB_READLINE], [
   msg_readline="no"
   RL_LIBS=""
   AC_ARG_WITH(readline,
-      [  --without-readline      disable the use of readline],,
+      [  --without-readline      Disable readline            [[default=no]]],,
       with_readline="yes")
   if test "x$with_readline" != "xno"; then
 

@@ -36,7 +36,8 @@ AC_DEFUN([PILOT_LINK_PATH_TCLCONFIG], [
 
     use_tcl=false
 
-    AC_ARG_WITH(tcl, [  --with-tcl=tclconfig    use TCL], with_tclconfig=${withval}, with_tclconfig=no)
+    AC_ARG_WITH(tcl,[  --with-tcl=tclconfig    use Tcl,                    [[default=no]]],
+	with_tclconfig=${withval}, with_tclconfig=no)
 
     if test x"${with_tclconfig}" != xno ; then
 	AC_MSG_CHECKING([for Tcl configuration])

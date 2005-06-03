@@ -235,8 +235,7 @@ if test "x$enable_conduits" != "xno"; then
 	msg_png=no
 
 	AC_ARG_WITH(libpng,
-		[  --with-libpng           Prefix where libpng is installed]
-	)
+		[  --with-libpng           Prefix where libpng is installed])
 
 	case $with_libpng in
 		/*)
@@ -303,7 +302,7 @@ usb_type=
 usb_libs=
 
 AC_ARG_ENABLE(libusb,
-	      AC_HELP_STRING([--enable-libusb],[Enable usage of libusb]),
+	      AC_HELP_STRING([--enable-libusb         Enable usage of libusb]),
 	      if test "x$enableval" != "xno" ; then
 	          AC_CHECK_LIB(usb, usb_open, [have_libusb=yes;],[have_libusb=no])
 	      fi
@@ -479,11 +478,19 @@ dnl ******************************
 msg_cxx=no
 
 AC_ARG_WITH(cxx,
-		[  --with-cxx=compiler     build with C++ support      [autodetect]])
+		[  --with-cxx=compiler     Build with C++ support      [[default=no]]])
 
 if test "x$with_cxx" != "xno"; then
 	if test "x$with_cxx" = "xyes"; then
 		AC_PROG_CXX
+		AC_MSG_CHECKING([whether $CXX works])
+		AC_LANG_PUSH(C++)
+		AC_TRY_COMPILE([
+	#include <iostream>
+	using namespace std;
+	],,msg_cxx="yes",msg_cxx="no")
+		AC_LANG_POP(C++)
+		AC_MSG_RESULT([$msg_cxx])
 	else
 		AC_PROG_CXX([$with_cxx])
 	fi
@@ -491,17 +498,8 @@ if test "x$with_cxx" != "xno"; then
 	if test "x$GXX" = "xyes"; then
 		CXXFLAGS="$CXXFLAGS -Wno-deprecated"
 	fi
-	AC_MSG_CHECKING([whether $CXX works])
-	AC_LANG_PUSH(C++)
-	AC_TRY_COMPILE([
-#include <iostream>
-using namespace std;
-],,msg_cxx="yes",msg_cxx="no")
-	AC_LANG_POP(C++)
-	AC_MSG_RESULT([$msg_cxx])
 fi
 AM_CONDITIONAL(WITH_CXX, test "x$msg_cxx" = "xyes")
-
 
 dnl ******************************
 dnl readline checking
@@ -518,7 +516,8 @@ dnl ******************************
 use_perl=false
 msg_perl=no
 
-AC_ARG_WITH(perl,    [  --with-perl=perlexec    use Perl                   [default=no]], , with_perl=no)
+AC_ARG_WITH(perl,    [  --with-perl=perlexec    use Perl                    [[default=no]]],
+	, with_perl=no)
 if test "x$with_perl" = "xno"; then
 	AC_MSG_CHECKING(if perl was enabled)
 	AC_MSG_RESULT(no)
@@ -560,7 +559,8 @@ dnl ******************************
 use_java=false
 msg_java=no
 
-AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java                   [default=no]], , with_java=no)
+AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java                    [[default=no]]],
+	, with_java=no)
 
 if test "x$with_java" != "xno"; then
 	AC_PATH_PROG(JAVAC, javac, , $with_java/bin:$PATH)
@@ -627,7 +627,8 @@ dnl ******************************
 use_python=false
 msg_python=no
 
-AC_ARG_WITH(python,   [  --with-python=pybase    use Python                 [default=no]],  , with_python=no)
+AC_ARG_WITH(python,   [  --with-python=pybase    use Python,                 [[default=no]]],
+	, with_python=no)
 
 if test "x$with_python" != "xno"; then
         AC_PATH_PROGS(PYTHON, [python2 python])
@@ -662,7 +663,8 @@ dnl *************************************
 use_efence=false
 msg_efence=no
 
-AC_ARG_WITH(efence, [  --with-efence           use ElectricFence          [default=no]],  , with_efence=no)
+AC_ARG_WITH(efence, [  --with-efence           use ElectricFence,          [[default=no]]],
+	, with_efence=no)
 
 if test "x$with_efence" != "xno"; then
 	AC_CHECK_LIB(efence, malloc, LIBS="$LIBS -lefence")
@@ -714,7 +716,7 @@ dnl *************************************
 dnl Profiling information
 dnl *************************************
 AC_ARG_ENABLE(profile,
-        [  --enable-profile        use gprof profiling [default no]],
+        [  --enable-profile        use gprof profiling [[default=no]]],
         CFLAGS="-pg $CFLAGS")
 
 
