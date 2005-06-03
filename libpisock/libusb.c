@@ -445,8 +445,10 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
 
-	if (!RD_running)
+	if (!RD_running) {
+		pthread_mutex_unlock (&RD_buffer_mutex);
 		return -1;
+	}
 
 	if (RD_buffer_used < len)
 		len = RD_buffer_used;
